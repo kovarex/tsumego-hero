@@ -1,3 +1,2 @@
-// CSS barrel for the besogo board viewer bundle.
-import './besogo.css';
-import './board-flat.css';
+// CSS barrel for the besogo board-viewer bundle.
+import './besogo-css-entry.css';

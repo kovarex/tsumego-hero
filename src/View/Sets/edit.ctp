@@ -54,8 +54,7 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 							<span class="swatch" style="--swatch-color:<?php echo $presetColor; ?>" title="<?php echo $presetColor; ?>"
 								onclick="document.getElementById('set-color').value='<?php echo $presetColor; ?>'"></span>
 						<?php endforeach; ?>
-						<input type="color" id="set-color" name="data[Set][color]" value="<?php echo h($currentColor ?: '#74d14c'); ?>"
-							style="width:24px;height:24px;padding:0;border:2px solid var(--current-border-color);border-radius:var(--radius-full);cursor:pointer;background:none;">
+						<input type="color" id="set-color" name="data[Set][color]" value="<?php echo h($currentColor ?: '#74d14c'); ?>" class="color-input">
 					</div>
 				</div>
 				<div class="form-field">
@@ -63,7 +62,7 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 					<div class="set-edit__image">
 						<?php if (!empty($set['Set']['image'])): ?>
 							<img class="set-edit__thumb" src="/img/<?php echo h($set['Set']['image']); ?>" alt="Set image">
-							<label style="font-size:var(--font-size-sm);cursor:pointer"><input type="checkbox" name="data[Set][remove_image]" value="1"> Remove</label>
+							<label class="set-edit__remove"><input type="checkbox" name="data[Set][remove_image]" value="1"> Remove</label>
 						<?php endif; ?>
 						<input type="file" name="image" accept=".png,.jpg,.jpeg,.webp">
 					</div>
@@ -79,7 +78,7 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 
 		<div class="card card--purple set-edit__section">
 			<div class="set-edit__problems-head">
-				<h2 class="set-edit__heading" style="margin:0">Problems (<?php echo $problemCount; ?>)</h2>
+				<h2 class="set-edit__heading">Problems (<?php echo $problemCount; ?>)</h2>
 				<label class="set-edit__preview-toggle" title="Toggle board previews"><input type="checkbox" id="preview-zoom-slider">🔍 Preview</label>
 			</div>
 			<?php if ($problemCount === 0): ?>
@@ -97,7 +96,7 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 							</div>
 							<span class="set-edit__actions">
 								<?php if ($index > 0): ?>
-									<form method="post" action="/sets/reorderTsumego/<?php echo $setId; ?>" style="display:inline">
+									<form method="post" action="/sets/reorderTsumego/<?php echo $setId; ?>">
 										<input type="hidden" name="tsumego_id" value="<?php echo $tsumegoButton->tsumegoID; ?>">
 										<input type="hidden" name="dir" value="up">
 										<button type="submit" class="btn" title="Move up">▲</button>
@@ -106,7 +105,7 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 									<span class="btn btn--disabled" title="Move up">▲</span>
 								<?php endif; ?>
 								<?php if ($index < $problemCount - 1): ?>
-									<form method="post" action="/sets/reorderTsumego/<?php echo $setId; ?>" style="display:inline">
+									<form method="post" action="/sets/reorderTsumego/<?php echo $setId; ?>">
 										<input type="hidden" name="tsumego_id" value="<?php echo $tsumegoButton->tsumegoID; ?>">
 										<input type="hidden" name="dir" value="down">
 										<button type="submit" class="btn" title="Move down">▼</button>
@@ -114,7 +113,7 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 								<?php else: ?>
 									<span class="btn btn--disabled" title="Move down">▼</span>
 								<?php endif; ?>
-								<form method="post" action="/sets/removeTsumego/<?php echo $setId; ?>" style="display:inline" onsubmit="return confirm('Remove this problem from the set?');">
+								<form method="post" action="/sets/removeTsumego/<?php echo $setId; ?>" onsubmit="return confirm('Remove this problem from the set?');">
 									<input type="hidden" name="tsumego_id" value="<?php echo $tsumegoButton->tsumegoID; ?>">
 									<button type="submit" class="btn btn--danger" title="Remove">✕</button>
 								</form>

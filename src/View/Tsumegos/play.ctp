@@ -129,7 +129,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	}
 	$displayDescription = str_replace('[b]', $descriptionColor, $t['Tsumego']['description']);
 	if ($nothingInRange != false)
-		echo '<div align="center" style="color:red;font-weight:800;">'.$nothingInRange.'</div>';
+		echo '<div align="center" class="status-message">'.$nothingInRange.'</div>';
 	?>
 	<table width="100%" border="0" class="play-header-table">
 	<tr>
@@ -164,7 +164,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			echo '<div id="titleDescription" class="titleDescription2">';
 		echo '<a id="descriptionText">'.h($displayDescription).'</a> ';
 		if (isset($t['Tsumego']['hint']) && $t['Tsumego']['hint']!='')
-			echo '<font color="grey" style="font-style:italic;">('.h($t['Tsumego']['hint']).')</font>';
+			echo '<span class="hint italic">('.h($t['Tsumego']['hint']).')</span>';
 		if($tv!=null)
 		{
 			if($tv['TsumegoVariant']['type']=='score_estimating')
@@ -302,7 +302,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 				else
 				{
 					$makeProposal = 'Proposal sent';
-					$proposalSentColor = 'color:#717171;';
+					$proposalSentColor = 'color:var(--text-softer-color);';
 				}
 			}
 			$getTitle = str_replace('&','and',$set['Set']['title']);
@@ -333,11 +333,11 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		</div>
 		<br>
 		<?php
-			echo '<a id="openSgfLink" href="/editor/?setConnectionID='.$setConnection['SetConnection']['id'].'&sgfID='.$sgf['Sgf']['id'].'" style="margin-right:20px;'.$proposalSentColor.'" class="selectable-text">'.$makeProposal.'</a>';
-			echo '<a id="showx3" style="margin-right:20px;" class="selectable-text">Download SGF</a>';
-			echo '<a id="findSimilarProblems" style="margin-right:20px;" class="selectable-text">Find Similar Problems</a>';
+			echo '<a id="openSgfLink" href="/editor/?setConnectionID='.$setConnection['SetConnection']['id'].'&sgfID='.$sgf['Sgf']['id'].'" class="selectable-text mr-5" style="'.$proposalSentColor.'">'.$makeProposal.'</a>';
+			echo '<a id="showx3" class="selectable-text mr-5">Download SGF</a>';
+			echo '<a id="findSimilarProblems" class="selectable-text mr-5">Find Similar Problems</a>';
 			echo '<a id="showFilters" class="selectable-text">Filters<img id="greyArrowFilter" src="/img/greyArrow1.png"></a>';
-			echo ' <label style="cursor:pointer;font-size:12px;color:#888;margin-left:12px" title="Toggle board previews"><input type="checkbox" id="preview-zoom-slider" style="vertical-align:middle;margin-right:2px">🔍 Preview</label>';
+			echo ' <label class="preview-toggle" title="Toggle board previews"><input type="checkbox" id="preview-zoom-slider">🔍 Preview</label>';
 			echo '<br><br>';
 			echo '<div class="filters-outer">
 				<div id="msgFilters">
@@ -366,11 +366,11 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 
 			if(Auth::isAdmin())
 			{
-				echo '<a id="showx99" style="margin-right:20px;" class="selectable-text">Admin-Request Solution</a>';
-				echo '<a id="showx4" style="margin-right:20px;" class="selectable-text">Admin-Download</a>';
-				echo '<a id="show4" style="margin-right:20px;" class="selectable-text">Admin-Upload<img id="greyArrow4" src="/img/greyArrow1.png"></a>';
-				echo '<a id="showx6" style="margin-right:20px;" class="selectable-text '.$adHighlight.'">History</a>';
-				echo '<a id="showx8" style="margin-right:20px;" class="selectable-text">Rating</a>';
+				echo '<a id="showx99" class="selectable-text mr-5">Admin-Request Solution</a>';
+				echo '<a id="showx4" class="selectable-text mr-5">Admin-Download</a>';
+				echo '<a id="show4" class="selectable-text mr-5">Admin-Upload<img id="greyArrow4" src="/img/greyArrow1.png"></a>';
+				echo '<a id="showx6" class="selectable-text mr-5 '.$adHighlight.'">History</a>';
+				echo '<a id="showx8" class="selectable-text mr-5">Rating</a>';
 				echo '<a id="show5" class="selectable-text">Settings<img id="greyArrow5" src="/img/greyArrow1.png"></a>';
 				if($alternative_response==1)
 				{
@@ -483,7 +483,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 							'legend'=>false,
 							'value'=>$tv['TsumegoVariant']['numAnswer']
 						);
-						echo '<a id="showMC" class="selectable-text" style="display: inline-block;">Edit multiple choice
+						echo '<a id="showMC" class="selectable-text selectable-text--inline">Edit multiple choice
 						<img id="greyArrowMC" src="/img/greyArrow1.png"></a><br><br>';
 						echo '<div id="showxMC">';
 						echo $this->Form->create('Study');
@@ -500,7 +500,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 						echo '<br><br>';
 						echo '</div>';
 	}else{
-						echo '<a id="showSE" class="selectable-text" style="display: inline-block;">Edit correct answer
+						echo '<a id="showSE" class="selectable-text selectable-text--inline">Edit correct answer
 						<img id="greyArrowSE" src="/img/greyArrow1.png"></a><br><br>';
 						echo '<div id="showxSE">';
 						echo '<input type="button" value="Black wins" id="besogo-se-edit-black">';
@@ -736,13 +736,13 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	function drawActiveTiles(){
 		$(".active-tiles-container").html("");
 		for(let i=0;i<activeTopicTiles.length;i++)
-			$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--green" id="active-tiles-element'+i+'" onclick="removeActiveTopic('+i+')" style="cursor:context-menu">'+activeTopicTiles[i]+'</div>');
+			$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--green dropdown__tile--context" id="active-tiles-element'+i+'" onclick="removeActiveTopic('+i+')">'+activeTopicTiles[i]+'</div>');
 		for(let i=0;i<activeDifficultyTiles.length;i++)
-			$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--purple" id="active-tiles-element'+i+'" onclick="removeActiveDifficulty('+i+')" style="cursor:context-menu">'+activeDifficultyTiles[i]+'</div>');
+			$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--purple dropdown__tile--context" id="active-tiles-element'+i+'" onclick="removeActiveDifficulty('+i+')">'+activeDifficultyTiles[i]+'</div>');
 		for(let i=0;i<activeTagTiles.length;i++)
-			$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--brown" id="active-tiles-element'+i+'" onclick="removeActiveTag('+i+')" style="cursor:context-menu">'+activeTagTiles[i]+'</div>');
+			$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--brown dropdown__tile--context" id="active-tiles-element'+i+'" onclick="removeActiveTag('+i+')">'+activeTagTiles[i]+'</div>');
 		if(activeTopicTiles.length>0 || activeDifficultyTiles.length>0 || activeTagTiles.length>0)
-			$(".active-tiles-container").append('<a class="dropdown__tile dropdown__tile--muted" id="unselect-active-tiles" href="">clear</a><div style="clear:both"</div>');
+			$(".active-tiles-container").append('<a class="dropdown__tile dropdown__tile--muted" id="unselect-active-tiles" href="">clear</a><div class="clearfix"></div>');
 	}
 
 	$(".active-tiles-container").on("click", "#unselect-active-tiles", function(e){
@@ -1077,7 +1077,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	<?php
 		if (!Auth::isInTimeMode() && ($t['Tsumego']['status'] == 'F' || $t['Tsumego']['status'] == 'X')){
 		echo '
-				document.getElementById("status").innerHTML = \'<b style="font-size:17px">This problem is locked until \' + heartResetTime + \'</b>\';
+				document.getElementById("status").innerHTML = \'<b class="message--locked">This problem is locked until \' + heartResetTime + \'</b>\';
 				tryAgainTomorrow = true;
 				document.getElementById("status").style.color = "#e03c4b";
 				$(".besogo-board").addClass("besogo-board-red-glow");
@@ -1661,7 +1661,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 						if(remainingHealth - misplays < 0)
 						{
 							updateCurrentNavigationButton('F');
-							document.getElementById("status").innerHTML = '<b style="font-size:17px">This problem is locked until ' + heartResetTime + '</b>';
+							document.getElementById("status").innerHTML = '<b class="message--locked">This problem is locked until ' + heartResetTime + '</b>';
 							tryAgainTomorrow = true;
 							toggleBoardLock(true);
 							var resetBtn = document.getElementById("besogo-reset-button");

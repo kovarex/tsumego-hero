@@ -12,12 +12,13 @@
  * @package       app.View.Layouts
  * @since         CakePHP(tm) v 0.10.0.1076
  * @license       http://www.opensource.org/licenses/mit-license.php MIT License
- * 
+ *
  * @var View $this
  */
 
 $cakeDescription = __d('cake_dev', 'CakePHP: the rapid development php framework');
 App::uses('CookieFlash', 'Utility');
+App::uses('ViteManifest', 'Utility');
 ?>
 <!DOCTYPE html>
 <html>
@@ -31,11 +32,11 @@ App::uses('CookieFlash', 'Utility');
 	<?php
 		echo $this->Html->meta('icon');
 
-		echo $this->Html->css('cake.generic');
+		echo ViteManifest::css('app-theme');
 
-		echo $this->fetch('css');
-		echo $this->fetch('script');
-	?>
+echo $this->fetch('css');
+echo $this->fetch('script');
+?>
 </head>
 <body>
 	<div id="container">
@@ -50,11 +51,11 @@ App::uses('CookieFlash', 'Utility');
 		</div>
 		<div id="footer">
 			<?php echo $this->Html->link(
-					$this->Html->image('cake.power.gif', array('alt' => $cakeDescription, 'border' => '0')),
-					'http://www.cakephp.org/',
-					array('target' => '_blank', 'escape' => false)
-				);
-			?>
+				$this->Html->image('cake.power.gif', ['alt' => $cakeDescription, 'border' => '0']),
+				'http://www.cakephp.org/',
+				['target' => '_blank', 'escape' => false]
+			);
+?>
 		</div>
 	</div>
 	<?php echo $this->element('sql_dump'); ?>

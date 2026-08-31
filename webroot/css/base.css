@@ -64,4 +64,60 @@ ul
 	margin: 0;
 	padding: 0;
 }
+
+	/* FormHelper (CakePHP) element defaults. The design-system form styling
+	   uses the .form-field component; these raw-element defaults cover forms
+	   that emit stock FormHelper markup (login, add-user, create/edit set). */
+	fieldset
+	{
+		border: 1px solid var(--current-border-color);
+		border-radius: var(--radius-sm);
+		padding: var(--space-3);
+		margin-bottom: var(--space-4);
+	}
+
+	legend
+	{
+		font-weight: var(--font-weight-bold);
+		padding: 0 var(--space-1);
+		color: var(--text-color);
+	}
+
+	label
+	{
+		display: block;
+		font-weight: var(--font-weight-bold);
+		margin-bottom: var(--space-1);
+		color: var(--text-color);
+	}
+
+	input[type="text"],
+	input[type="password"],
+	input[type="email"],
+	input[type="number"],
+	input[type="url"],
+	textarea,
+	select
+	{
+		width: 100%;
+		box-sizing: border-box;
+		background: var(--surface-bar);
+		color: var(--text-color);
+		border: 1px solid var(--current-border-color);
+		border-radius: var(--radius-sm);
+		padding: var(--space-2);
+		font: inherit;
+	}
+
+	form .error
+	{
+		color: var(--feedback-error);
+		font-size: var(--font-size-sm);
+	}
+
+	form .required label::after
+	{
+		content: " *";
+		color: var(--feedback-error);
+	}
 }

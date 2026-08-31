@@ -17,7 +17,7 @@ switch ($code)
 	case 404:
 		$errorTitle = 'Page Not Found';
 		$errorColor = '#666';
-		$errorMessage = 'The requested page <strong style="color: var(--primary-color, #4CAF50);">' . h($url ?? $_SERVER['REQUEST_URI'] ?? '/') . '</strong> could not be found on this server.';
+		$errorMessage = 'The requested page <strong style="color: var(--color-green);">' . h($url ?? $_SERVER['REQUEST_URI'] ?? '/') . '</strong> could not be found on this server.';
 		$errorDetails = 'The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.';
 		break;
 	case 500:
@@ -57,10 +57,10 @@ $this->set('title_for_layout', $errorTitle);
 		<h1 style="font-size: 120px; color: <?php echo $errorColor; ?>; opacity: 0.15; margin: 0; line-height: 1; position: absolute; top: -20px; left: 50%; transform: translateX(-50%);"><?php echo $code; ?></h1>
 		<h2 style="font-size: 36px; color: var(--text-color, #333); margin: 60px 0 20px 0; position: relative; z-index: 2;"><?php echo $errorTitle; ?></h2>
 	</div>
-	<p style="font-size: 18px; color: var(--text-color-secondary, #666); line-height: 1.6; position: relative; z-index: 2;">
+	<p style="font-size: 18px; color: var(--text-softer-color); line-height: 1.6; position: relative; z-index: 2;">
 		<?php echo $errorMessage; ?>
 	</p>
-	<p style="font-size: 16px; color: var(--text-color-secondary, #666); line-height: 1.6; margin-top: 20px; position: relative; z-index: 2;">
+	<p style="font-size: 16px; color: var(--text-softer-color); line-height: 1.6; margin-top: 20px; position: relative; z-index: 2;">
 		<?php echo $errorDetails; ?>
 	</p>
 	
@@ -70,25 +70,25 @@ $this->set('title_for_layout', $errorTitle);
 			
 			<p style="margin: 15px 0; padding: 10px; background: rgba(0, 0, 0, 0.05); border-radius: 4px;">
 				<strong style="color: var(--text-color, #333);">Error Type:</strong><br>
-				<code style="color: #c7254e; background: rgba(0, 0, 0, 0.04); padding: 4px 8px; border-radius: 3px; display: inline-block; margin-top: 5px;"><?php echo h(get_class($error)); ?></code>
+				<code style="color: var(--feedback-error); background: rgba(0, 0, 0, 0.04); padding: 4px 8px; border-radius: 3px; display: inline-block; margin-top: 5px;"><?php echo h(get_class($error)); ?></code>
 			</p>
 			
 			<p style="margin: 15px 0; padding: 10px; background: rgba(0, 0, 0, 0.05); border-radius: 4px;">
 				<strong style="color: var(--text-color, #333);">Message:</strong><br>
-				<code style="color: #c7254e; background: rgba(0, 0, 0, 0.04); padding: 4px 8px; border-radius: 3px; display: inline-block; margin-top: 5px;"><?php echo h($error->getMessage()); ?></code>
+				<code style="color: var(--feedback-error); background: rgba(0, 0, 0, 0.04); padding: 4px 8px; border-radius: 3px; display: inline-block; margin-top: 5px;"><?php echo h($error->getMessage()); ?></code>
 			</p>
 			
 			<?php if (method_exists($error, 'getFile') && method_exists($error, 'getLine')): ?>
 				<p style="margin: 15px 0; padding: 10px; background: rgba(0, 0, 0, 0.05); border-radius: 4px;">
 					<strong style="color: var(--text-color, #333);">Location:</strong><br>
-					<code style="color: #c7254e; background: rgba(0, 0, 0, 0.04); padding: 4px 8px; border-radius: 3px; display: inline-block; margin-top: 5px;"><?php echo h($error->getFile()); ?> (line <?php echo h($error->getLine()); ?>)</code>
+				<code style="color: var(--feedback-error); background: rgba(0, 0, 0, 0.04); padding: 4px 8px; border-radius: 3px; display: inline-block; margin-top: 5px;"><?php echo h($error->getFile()); ?> (line <?php echo h($error->getLine()); ?>)</code>
 				</p>
 			<?php endif; ?>
 			
 			<?php if (method_exists($error, 'getTrace')): ?>
 				<div style="margin-top: 20px;">
 					<strong style="color: var(--text-color, #333); display: block; padding: 10px; background: rgba(0, 0, 0, 0.03); border-radius: 4px;">Stack Trace</strong>
-					<pre style="overflow: auto; max-height: 500px; background: rgba(0, 0, 0, 0.8); color: #f8f8f2; padding: 20px; border-radius: 5px; font-size: 13px; line-height: 1.6; margin-top: 10px; font-family: 'Consolas', 'Monaco', monospace;"><?php
+					<pre style="overflow: auto; max-height: 500px; background: rgba(0, 0, 0, 0.8); color: var(--color-white); padding: 20px; border-radius: 5px; font-size: 13px; line-height: 1.6; margin-top: 10px; font-family: 'Consolas', 'Monaco', monospace;"><?php
 						// Build trace with #-1 throw location
 						$traceLines = [];
 						$traceLines[] = '#-1 ' . h($error->getFile()) . '(' . h($error->getLine()) . ')';

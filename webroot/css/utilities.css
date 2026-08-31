@@ -1,8 +1,7 @@
 /* ══════════════════════════════════════════════════════
    Utilities layer (@layer utilities)
    Tiny single-purpose helpers. Add ONLY when a one-off
-   pattern recurs (used 2-5x) - never speculative. Planned:
-   .text-muted .flex .hidden .mt-* .mb-* .text-center .clearfix
+   pattern recurs (used 2-5x) - never speculative.
    ══════════════════════════════════════════════════════ */
 
 @layer utilities
@@ -11,5 +10,65 @@
 .text-muted
 {
 	color: var(--text-softer-color);
+}
+
+/* Alignment */
+.text-right
+{
+	text-align: right;
+}
+
+.text-center
+{
+	text-align: center;
+}
+
+/* Italic emphasis */
+.italic
+{
+	font-style: italic;
+}
+
+/* Table-cell vertical alignment */
+.valign-top
+{
+	vertical-align: top;
+}
+
+.valign-bottom
+{
+	vertical-align: bottom;
+}
+
+/* Plain link: inherit color, no underline until hover. */
+.link-plain
+{
+	color: inherit;
+	text-decoration: none;
+}
+
+.link-plain:hover
+{
+	text-decoration: underline;
+}
+
+/* JS-toggled visibility (replaces inline display:none). */
+.hidden
+{
+	display: none;
+}
+
+/* Clear floats (replaces inline clear:both). */
+.clearfix::after
+{
+	content: "";
+	display: table;
+	clear: both;
+}
+
+/* Right margin (used by rows of play-page action links). */
+.mr-5
+{
+	margin-right: var(--space-5);
 }
 }

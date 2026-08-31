@@ -14,4 +14,4 @@
    - components:  semantic BEM blocks — THE design system
    - page:        legacy + page-specific rules
    ══════════════════════════════════════════════════════ */
-@layer tokens, base, composition, utilities, components, page;
+@layer besogo, tokens, base, composition, utilities, components, page;

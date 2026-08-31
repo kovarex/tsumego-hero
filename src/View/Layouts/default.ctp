@@ -309,7 +309,7 @@ echo ViteManifest::legacyScript('legacy');
 						if(Auth::isLoggedIn())
 							echo '<li><a  '.$refreshLinkToDiscuss.'  class="'.$discussA.'" href="/comments'.$discussFilter.'">Discuss</a></li>';
 						else
-							echo '<li class="discuss-disabled"><a style="color:#aaa;">Discuss</a></li>';
+							echo '<li class="discuss-disabled"><a style="color:var(--surface-muted-text);">Discuss</a></li>';
 						if(Auth::isLoggedIn())
 							if(Auth::getUser()['sound'] == 'off')
 								$soundButtonImageValue = 'sound-icon2.png';
@@ -528,12 +528,12 @@ echo ViteManifest::legacyScript('legacy');
 	}
 
 	function boardsHover(){
-		document.getElementById("boardsInMenu").style.color = "#74D14C";
-		document.getElementById("boardsInMenu").style.backgroundColor = "grey";
+		document.getElementById("boardsInMenu").style.color = "var(--color-green)";
+		document.getElementById("boardsInMenu").style.backgroundColor = "var(--color-gray)";
 	}
 
 	function boardsNoHover(){
-		document.getElementById("boardsInMenu").style.color = "#d19fe4";
+		document.getElementById("boardsInMenu").style.color = "var(--color-purple-bright)";
 		document.getElementById("boardsInMenu").style.backgroundColor = "transparent";
 	}
 
@@ -617,26 +617,26 @@ echo ViteManifest::legacyScript('legacy');
 
 	function sandboxHover(){
 		if(document.getElementById("sandboxLink")) document.getElementById("sandboxLink").style.display = "inline-block";
-		if(document.getElementById("collectionsInMenu")) document.getElementById("collectionsInMenu").style.color = "#74d14c";
-		if(document.getElementById("collectionsInMenu")) document.getElementById("collectionsInMenu").style.backgroundColor = "grey";
+		if(document.getElementById("collectionsInMenu")) document.getElementById("collectionsInMenu").style.color = "var(--color-green)";
+		if(document.getElementById("collectionsInMenu")) document.getElementById("collectionsInMenu").style.backgroundColor = "var(--color-gray)";
 	}
 
 	function sandboxNoHover(){
 		if(document.getElementById("sandboxLink")) document.getElementById("sandboxLink").style.display = "none";
 		if(document.getElementById("collectionsInMenu")) document.getElementById("collectionsInMenu").style.backgroundColor = "rgba(0,0,0,0)";
-		if(document.getElementById("collectionsInMenu")) document.getElementById("collectionsInMenu").style.color = "#d19fe4";
+		if(document.getElementById("collectionsInMenu")) document.getElementById("collectionsInMenu").style.color = "var(--color-purple-bright)";
 	}
 
 	function leaderboardHover(){
 		if(document.getElementById("leaderboardLink")) document.getElementById("leaderboardLink").style.display = "inline-block";
-		if(document.getElementById("highscoreInMenu")) document.getElementById("highscoreInMenu").style.color = "#74d14c";
-		if(document.getElementById("highscoreInMenu")) document.getElementById("highscoreInMenu").style.backgroundColor = "grey";
+		if(document.getElementById("highscoreInMenu")) document.getElementById("highscoreInMenu").style.color = "var(--color-green)";
+		if(document.getElementById("highscoreInMenu")) document.getElementById("highscoreInMenu").style.backgroundColor = "var(--color-gray)";
 	}
 
 	function leaderboardNoHover(){
 		if(document.getElementById("leaderboardLink")) document.getElementById("leaderboardLink").style.display = "none";
 		if(document.getElementById("highscoreInMenu")) document.getElementById("highscoreInMenu").style.backgroundColor = "rgba(0,0,0,0)";
-		if(document.getElementById("highscoreInMenu")) document.getElementById("highscoreInMenu").style.color = "#d19fe4";
+		if(document.getElementById("highscoreInMenu")) document.getElementById("highscoreInMenu").style.color = "var(--color-purple-bright)";
 	}
 
 	function deleteAllCookies()

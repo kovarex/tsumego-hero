@@ -197,10 +197,10 @@
 .tsumego-comments__position-indicator {
 	display: none;
 	font-size: 12px;
-	color: #2a2;
+	color: var(--comment-green);
 }
 .tsumego-comments__position-indicator a {
-	color: #c33;
+	color: var(--comment-red);
 	margin-left: 5px;
 }
 /* Form buttons container */
@@ -226,11 +226,11 @@
 
 [data-theme=dark] .tsumego-comments__tab {
 	background: var(--surface-hover);
-	border-color: #555;
-	color: #ccc;
+	border-color: var(--surface-hover-strong);
+	color: var(--text-softer-color);
 }
 [data-theme=dark] .tsumego-comments__tab.active {
-	background: #555;
+	background: var(--surface-hover-strong);
 }
 [data-theme=dark] .tsumego-comments__tab:hover:not(.active) {
 	background: var(--surface-hover-strong);
@@ -238,7 +238,7 @@
 /* Empty tab dark theme */
 
 [data-theme=dark] .tsumego-comments__tab--empty:hover {
-	background: #333;
+	background: var(--surface-border-strong);
 }
 /* Add Comment form - dark theme */
 
@@ -250,7 +250,7 @@
 }
 [data-theme=dark] .tsumego-comments__form textarea {
 	background: var(--info-box-background);
-	border-color: #555;
+	border-color: var(--surface-hover-strong);
 	color: var(--text-color);
 }
 [data-theme=dark] .tsumego-comments__form textarea:focus {
@@ -261,14 +261,14 @@
 	color: var(--text-softer-color);
 }
 [data-theme=dark] .tsumego-comments__form label {
-	color: #ccc;
+	color: var(--text-softer-color);
 }
 [data-theme=dark] .tsumego-comments__position-btn {
 	background: var(--surface-hover-strong);
-	color: #ccc;
+	color: var(--text-softer-color);
 }
 [data-theme=dark] .tsumego-comments__position-btn:hover {
-	background: #555;
+	background: var(--surface-hover-strong);
 }
 /* Go coordinate - dark theme */
 
@@ -284,8 +284,8 @@
 	border-radius: 9px;
 }
 [data-theme=dark] .sandboxComment {
-	background: linear-gradient(#666, #424242);
-	box-shadow: 2px 2px #0f0f0f;
+	background: var(--time-dark-gradient);
+	box-shadow: 2px 2px var(--color-black);
 }
 /* ── Drag & drop (comment movement, admin) ── */
 
@@ -324,7 +324,7 @@
 
 .tsumego-comment--ghost {
 	opacity: 0.3;
-	background: #c8ebfb;
+	background: var(--comment-box-blue);
 }
 /* Issue drop overlay - appears over issue during drag */
 
@@ -340,7 +340,7 @@
 	justify-content: center;
 	z-index: 100;
 	border-radius: 8px;
-	border: 3px dashed #337ab7;
+	border: 3px dashed var(--comment-link-blue);
 	pointer-events: auto; /* Ensure overlay receives events */
 }
 .tsumego-issue__drop-overlay span {
@@ -357,7 +357,7 @@
 
 .tsumego-issue__drop-overlay--source {
 	background: rgba(240, 173, 78, 0.85);
-	border-color: #c87f0a;
+	border-color: var(--feedback-warning);
 }
 .tsumego-issue__drop-overlay--source.tsumego-issue__drop-overlay--active {
 	background: rgba(200, 127, 10, 0.9);
@@ -398,12 +398,12 @@
 @keyframes issue-highlight-light {
 	0%
 	{
-		background: #e6f0ff;
+		background: var(--comment-info-bg);
 		box-shadow: 0 0 20px rgba(66, 133, 244, 0.6);
 	}
 	100%
 	{
-		background: #fafafa;
+		background: var(--comment-light-bg);
 		box-shadow: none;
 	}
 }
@@ -436,12 +436,12 @@
 	font-weight: bold;
 }
 .tsumego-issue__badge.status--opened {
-	background: #f2dede;
-	color: #a94442;
+	background: var(--comment-error-bg);
+	color: var(--comment-error-fg);
 }
 .tsumego-issue__badge.status--closed {
-	background: #dff0d8;
-	color: #3c763d;
+	background: var(--comment-success-bg);
+	color: var(--comment-success-fg);
 }
 .tsumego-issue__meta {
 	color: var(--text-softer-color);
@@ -577,25 +577,25 @@
 
 [data-theme=dark] .tsumego-issue {
 	background: linear-gradient(var(--surface-hover), var(--info-box-background));
-	border-color: #555;
+	border-color: var(--surface-hover-strong);
 }
 [data-theme=dark] .tsumego-issue__badge.status--opened {
-	background: #5a2a2a;
+	background: var(--surface-danger);
 	color: var(--feedback-error);
 }
 [data-theme=dark] .tsumego-issue__badge.status--closed {
-	background: #2a4a2a;
-	color: #6bff6b;
+	background: var(--alert-success-bg);
+	color: var(--alert-success-fg);
 }
 @keyframes issue-highlight-dark {
 	0%
 	{
-		background: linear-gradient(#666, #555);
+		background: var(--issue-highlight-gradient);
 		box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
 	}
 	100%
 	{
-		background: linear-gradient(#3a3a3a, #2a2a2a);
+		background: linear-gradient(var(--surface-hover), var(--info-box-background));
 		box-shadow: none;
 	}
 }
@@ -609,19 +609,19 @@
 /* Issue reply button and form - dark theme */
 
 [data-theme=dark] .tsumego-issue__reply-toggle {
-	border-top-color: #555;
+	border-top-color: var(--surface-hover-strong);
 }
 [data-theme=dark] .tsumego-issue__reply-btn:hover {
 	background: var(--surface-hover-strong);
 	color: var(--text-color);
 }
 [data-theme=dark] .tsumego-issue__reply-form {
-	background: #333;
+	background: var(--surface-border-strong);
 	border-top-color: var(--surface-hover-strong);
 }
 [data-theme=dark] .tsumego-issue__reply-form textarea {
 	background: var(--info-box-background);
-	border-color: #555;
+	border-color: var(--surface-hover-strong);
 	color: var(--text-color);
 }
 [data-theme=dark] .tsumego-issue__reply-form textarea:focus {
@@ -634,16 +634,16 @@
 /* ── Issues page (dark) ── */
 
 [data-theme=dark] .issues-filter {
-	color: #ccc;
+	color: var(--text-softer-color);
 }
 [data-theme=dark] .issues-filter--active {
-	background: #007bff;
+	background: var(--color-blue-accent);
 }
 [data-theme=dark] .issues-list__empty {
 	color: var(--text-softer-color);
 }
 
 [data-theme="dark"] .deleteComment {
-	color: #f0f0f0;
+	color: var(--color-white);
 }
 }

@@ -22,7 +22,7 @@
 		<div class="toast" id="time-rank-unlock-alert">
 			<div class="toast__banner" align="center">Unlocked<span class="toast__close">x</span></div>
 			<span class="toast__body">
-		<a style="color:black;text-decoration:none;" href="/timeMode/overview"><img id="hpIcon1" src="/img/rankButton<?php echo $unlock['rank']; ?>.png">
+		<a style="color:var(--color-black);text-decoration:none;" href="/timeMode/overview"><img id="hpIcon1" src="/img/rankButton<?php echo $unlock['rank']; ?>.png">
 		  You unlocked the <?php echo $unlock['rank'];?> <?php echo $unlock['category']; ?> rank.
 		</a><br>
 		<br class="clear1"/></span>
@@ -34,7 +34,7 @@
 		function showSession($session, $isCurrent) {
 			echo '<tr>';
 			echo '<td colspan="5">';
-			$color = $session['status'] == 'passed' ? 'green' : '#e03c4b';
+			$color = $session['status'] == 'passed' ? 'var(--color-green)' : 'var(--feedback-error)';
 			echo '<h4 style="color:'.$color.';">'.($isCurrent ? 'Result' : 'Best').': '.$session['status'].'('.$session['solvedCount'].'/'.TimeModeUtil::$PROBLEM_COUNT.')';
 			if ($isCurrent) {
 				echo '- '.$session['points'].' points';
@@ -46,7 +46,7 @@
 					echo '<tr>';
 					echo '<td width="9%">#'.$attempt['order'].'</td>';
 					echo '<td width="46%"><a href="/tsumegos/play/'.$attempt['tsumego_id'].'">'.$attempt['set'].' - '.$attempt['set_order'].'</a></td>';
-					$color = $attempt['status'] == 'solved' ? 'green' : '#e03c4b';
+					$color = $attempt['status'] == 'solved' ? 'var(--color-green)' : 'var(--feedback-error)';
 					echo '<td width="7%" style="color:'.$color.';">'.$attempt['status'].'</td>';
 					echo '<td width="8%" style="color:'.$color.';">'.$attempt['seconds'].'</td>';
 					echo '<td>'.$attempt['points'].' points</td>';

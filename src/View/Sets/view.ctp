@@ -37,7 +37,7 @@ if($set['Set']['id'] == 11969 || $set['Set']['id'] == 29156 || $set['Set']['id']
 		<div class="new1">
 		<table border="0" width="100%">
 		<tr>
-			<td style="vertical-align:top;">
+			<td class="valign-top">
 				<?php
 				$saNum = 0;
 
@@ -57,38 +57,32 @@ echo HtmlSanitizer::sanitize((string) ($set['Set']['description'] ?? ''));
 if (!$noImage && $tsumegoFilters->query == 'topics' && $set['Set']['image'])
 {
 	if ($set['Set']['image'][2] != '-')
-		echo '<td width="195px" style="vertical-align:top;"><div align="center" class="set-image-zoom">
+		echo '<td width="195px" class="valign-top"><div align="center" class="set-image-zoom">
 							<a href="/' . $startingSetConnectionID . '">
-							<img height="252" width="182" style="border:1px solid black;object-fit:cover" src="/img/' . h($set['Set']['image']) . '"
+							<img height="252" width="182" src="/img/' . h($set['Set']['image']) . '"
 							alt="Tsumego Collection: ' . h($setTitle) . '" title="Tsumego Collection: ' . h($setTitle) . '">
 							</a></div></td>';
 	else
-		echo '<td width="195px" style="vertical-align:bottom;padding-bottom:17px;"><div align="center" class="set-image-zoom">
+		echo '<td width="195px" class="set-view__img-bottom"><div align="center" class="set-image-zoom">
 							<a href="/' . $startingSetConnectionID . '">
-							<img height="252" width="182" style="border:1px solid black;object-fit:cover" src="/img/' . h($set['Set']['image']) . '"
+							<img height="252" width="182" src="/img/' . h($set['Set']['image']) . '"
 							alt="Tsumego Collection: ' . h($setTitle) . '" title="Tsumego Collection: ' . h($setTitle) . '" width="210">
 							</a></div></td>';
 }
 elseif (!$noImage && $tsumegoFilters->query == 'difficulty')
-{
-	if ($lightDark == 'light')
-		$lightDarkImageBackground = 'style="background-color:gray;"';
-	else
-		$lightDarkImageBackground = '';
-	echo '<td width="195px" style="vertical-align:top;"><div ' . $lightDarkImageBackground . ' align="center" class="set-image-zoom">
+	echo '<td width="195px" class="valign-top"><div class="set-image-zoom set-image-zoom--rank" align="center">
 						<a href="/' . $startingSetConnectionID . '">
 						<span class="rank-icon rank-icon-large">' . h($set['Set']['id']) . '</span>
 						</a></div></td>';
-}
 else
-	echo '<td width="195px" style="vertical-align:top;"><div align="center"></div></td>';
+	echo '<td width="195px" class="valign-top"><div align="center"></div></td>';
 ?>
 		</tr>
 		<tr>
-			<td style="vertical-align:top;">
+			<td class="valign-top">
 				<table width="100%">
 					<tr>
-						<td style="vertical-align:top;" width="50%">
+						<td class="valign-top" width="50%">
 						<div align="center">
 						<br>
 						<?php
@@ -104,7 +98,7 @@ echo '<b>' . count($tsumegoButtons) . ' Problems<br>';
 ?>
 						</div>
 						</td>
-						<td style="vertical-align:bottom;" width="50%">
+						<td class="valign-bottom" width="50%">
 						<div align="center">
 							<br>
 							Difficulty: <?php
@@ -117,11 +111,11 @@ if ($tsumegoFilters->query != 'topics')
 					</tr>
 				</table>
 			</td>
-			<td style="vertical-align:top;">
+			<td class="valign-top">
 				<div align="center">
 				<br><br>
 					<?php
-					echo '<a class="btn" style="top:-16px;position:relative;" href="/' . $startingSetConnectionID . '">Start</a>';
+					echo '<a class="btn set-view__start" href="/' . $startingSetConnectionID . '">Start</a>';
 ?>
 				</div>
 			</td>
@@ -196,10 +190,10 @@ if ($tsumegoFilters->query != 'topics')
 				The problem numbers are displayed.
 			</div>
 			<div id="ratioInfo">
-				The solved and failed (s/f) attempts are displayed.<br><font style="color:gray;">Outdated and missing entries (-) are counted as fail.</font>
+				The solved and failed (s/f) attempts are displayed.<br><span class="hint">Outdated and missing entries (-) are counted as fail.</span>
 			</div>
 			<div id="timeInfo">
-				The time (in seconds) for solving is displayed.<br><font style="color:gray;">Outdated and missing entries (-) are counted as 60 seconds.</font>
+				The time (in seconds) for solving is displayed.<br><span class="hint">Outdated and missing entries (-) are counted as 60 seconds.</span>
 			</div>
 			</div>
 			<br>
@@ -221,7 +215,7 @@ if ($tsumegoFilters->query != 'topics')
 			</tr>
 			<?php
 			if (isset($canEdit) && $canEdit)
-				echo '<tr><td colspan="2" style="text-align:center;padding-top:8px">
+				echo '<tr><td colspan="2" class="set-view__edit-row">
 					<a class="btn" href="/sets/edit/' . $set['Set']['id'] . '">Edit Set</a>
 					</td></tr>';
 			?>
@@ -238,7 +232,7 @@ if ($tsumegoFilters->query != 'topics')
 		<div class="showFilters">
 			<a id="showFilters" class="selectable-text">Filters<img id="greyArrowFilter" src="/img/greyArrow1.png"></a>
 		</div>
-		<label style="vertical-align:middle;margin-left:12px;cursor:pointer;font-size:12px;color:#888" title="Toggle board previews"><input type="checkbox" id="preview-zoom-slider" style="vertical-align:middle;margin-right:2px">🔍 Preview</label>
+		<label class="preview-toggle" title="Toggle board previews"><input type="checkbox" id="preview-zoom-slider">🔍 Preview</label>
 		<div id="msgFilters">
 			<div class="active-tiles-container tiles-view"></div>
 		</div>
@@ -261,7 +255,7 @@ $totalPages = (int) ceil($tsumegoButtons->highestTsumegoOrder / $tsumegoFilters-
 if ($totalPages > 1):
 	$currentPage = $partition + 1;
 	?>
-	<div style="clear:both;display:block;width:100%;margin:12px 0;text-align:center">
+	<div class="pagination">
 <?php for ($p = 1; $p <= $totalPages; $p++): ?>
 <?php if ($p === $currentPage): ?>
 		<strong><?php echo $p; ?></strong>
@@ -274,7 +268,7 @@ if ($totalPages > 1):
 	</div>
 	</div>
 	</div>
-	<div style="clear:both;"></div>
+	<div class="clearfix"></div>
 
 	<script>
 	const activeTopicTiles = [];
@@ -297,13 +291,13 @@ if ($tsumegoFilters->query != 'tags')
 	function drawActiveTiles(){
 		$(".active-tiles-container").html("");
 		for(let i=0;i<activeTopicTiles.length;i++)
-			$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--green" id="active-tiles-element'+i+'" onclick="removeActiveTopic('+i+')" style="cursor:context-menu">'+activeTopicTiles[i]+'</div>');
+			$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--green dropdown__tile--context" id="active-tiles-element'+i+'" onclick="removeActiveTopic('+i+')">'+activeTopicTiles[i]+'</div>');
 		for(let i=0;i<activeDifficultyTiles.length;i++)
-			$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--purple" id="active-tiles-element'+i+'" onclick="removeActiveDifficulty('+i+')" style="cursor:context-menu">'+activeDifficultyTiles[i]+'</div>');
+			$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--purple dropdown__tile--context" id="active-tiles-element'+i+'" onclick="removeActiveDifficulty('+i+')">'+activeDifficultyTiles[i]+'</div>');
 		for(let i=0;i<activeTagTiles.length;i++)
-			$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--brown" id="active-tiles-element'+i+'" onclick="removeActiveTag('+i+')" style="cursor:context-menu">'+activeTagTiles[i]+'</div>');
+			$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--brown dropdown__tile--context" id="active-tiles-element'+i+'" onclick="removeActiveTag('+i+')">'+activeTagTiles[i]+'</div>');
 		if(activeTopicTiles.length>0 || activeDifficultyTiles.length>0 || activeTagTiles.length>0)
-			$(".active-tiles-container").append('<a class="dropdown__tile dropdown__tile--muted" id="unselect-active-tiles" href="">clear</a><div style="clear:both;"</div>');
+			$(".active-tiles-container").append('<a class="dropdown__tile dropdown__tile--muted" id="unselect-active-tiles" href="">clear</a><div class="clearfix"></div>');
 	}
 
 	$(".active-tiles-container").on("click", "#unselect-active-tiles", function(e){
@@ -375,7 +369,7 @@ if ($tsumegoFilters->query != 'tags')
 			$(".problem-nav__number").fadeIn(200);
 			$(".problem-nav__ratio").hide();
 			$(".problem-nav__time").hide();
-			$(".setViewCompleted").css("border", "1px solid #45ac6e");
+			$(".setViewCompleted").css("border", "1px solid var(--set-accent-green)");
 			$(".setViewAccuracy").css("border", "none");
 			$(".setViewTime").css("border", "none");
 		}
@@ -390,7 +384,7 @@ if ($tsumegoFilters->query != 'tags')
 			$(".problem-nav__ratio").fadeIn(200);
 			$(".problem-nav__time").hide();
 			$(".setViewCompleted").css("border", "none");
-			$(".setViewAccuracy").css("border", "1px solid #722394");
+			$(".setViewAccuracy").css("border", "1px solid var(--set-accent-purple)");
 			$(".setViewTime").css("border", "none");
 		}
 		function d3(){
@@ -405,7 +399,7 @@ if ($tsumegoFilters->query != 'tags')
 			$(".problem-nav__time").fadeIn(200);
 			$(".setViewCompleted").css("border", "none");
 			$(".setViewAccuracy").css("border", "none");
-			$(".setViewTime").css("border", "1px solid #b34717");
+			$(".setViewTime").css("border", "1px solid var(--set-accent-orange)");
 		}
 
 		<?php

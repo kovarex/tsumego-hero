@@ -28,38 +28,38 @@ $this->end();
 				<div class="new-tsumego-box new-tsumego-box--modes mode-select-box">
 				<?php
 					$loggedIn = Auth::isLoggedIn();
-					$lastVisit = (int)($_COOKIE['lastVisit'] ?? Constants::$DEFAULT_TSUMEGO_ID);
-					$modes = [
-						['name' => 'level', 'url' => '/tsumegos/play/' . $lastVisit . '?mode=1', 'label' => 'Level Mode', 'enabled' => true],
-						['name' => 'rating', 'url' => '/tsumegos/play/' . $lastVisit . '?mode=2', 'label' => 'Rating Mode', 'enabled' => $loggedIn],
-						['name' => 'time', 'url' => '/timeMode/overview', 'label' => 'Time Mode', 'enabled' => $loggedIn],
-						['name' => 'achievements', 'url' => '/achievements', 'label' => 'Achievements', 'enabled' => $loggedIn],
-					];
-					foreach ($modes as $mode)
-					{
-						$classes = 'mode-button mode-button-' . $mode['name'] . ($mode['enabled'] ? '' : ' mode-button-disabled');
-						$image = '<img src="/img/mode-button-' . $mode['name'] . '.png?v=1.0" alt="' . $mode['label'] . '" title="' . $mode['label'] . '" width="134" height="123">';
-						if ($mode['enabled'])
-							echo '<a class="' . $classes . '" href="' . $mode['url'] . '">' . $image . '</a>';
-						else
-							echo '<span class="' . $classes . '">' . $image . '</span>';
-					}
-				?>
+$lastVisit = (int) ($_COOKIE['lastVisit'] ?? Constants::$DEFAULT_TSUMEGO_ID);
+$modes = [
+	['name' => 'level', 'url' => '/tsumegos/play/' . $lastVisit . '?mode=1', 'label' => 'Level Mode', 'enabled' => true],
+	['name' => 'rating', 'url' => '/tsumegos/play/' . $lastVisit . '?mode=2', 'label' => 'Rating Mode', 'enabled' => $loggedIn],
+	['name' => 'time', 'url' => '/timeMode/overview', 'label' => 'Time Mode', 'enabled' => $loggedIn],
+	['name' => 'achievements', 'url' => '/achievements', 'label' => 'Achievements', 'enabled' => $loggedIn],
+];
+foreach ($modes as $mode)
+{
+	$classes = 'mode-button mode-button-' . $mode['name'] . ($mode['enabled'] ? '' : ' mode-button-disabled');
+	$image = '<img src="/img/mode-button-' . $mode['name'] . '.png?v=1.0" alt="' . $mode['label'] . '" title="' . $mode['label'] . '" width="134" height="123">';
+	if ($mode['enabled'])
+		echo '<a class="' . $classes . '" href="' . $mode['url'] . '">' . $image . '</a>';
+	else
+		echo '<span class="' . $classes . '">' . $image . '</span>';
+}
+?>
 				</div>
 				<?php
-					$achievementsProps = json_encode(['initialAchievements' => $recentAchievements], JSON_HEX_QUOT | JSON_HEX_APOS);
-					echo '<div class="achievements-panel">';
-					echo '<img src="/img/new_startpage/'.h($quote).'e.png?v=4.3" class="achievement-quote-pick" alt="Most Recent Achievements" title="Most Recent Achievements">';
-					echo '<div data-recent-achievements-root data-props="'.h($achievementsProps).'"></div>';
-					echo '</div>';
-				?>
+	$achievementsProps = json_encode(['initialAchievements' => $recentAchievements], JSON_HEX_QUOT | JSON_HEX_APOS);
+echo '<div class="achievements-panel">';
+echo '<img src="/img/new_startpage/' . h($quote) . 'e.png?v=4.3" class="achievement-quote-pick" alt="Most Recent Achievements" title="Most Recent Achievements">';
+echo '<div data-recent-achievements-root data-props="' . h($achievementsProps) . '"></div>';
+echo '</div>';
+?>
 
 				<p class="title4">Update 30.11.2025</p>
 				<div class="new1">
 					<p><b>Warning:</b><p>
 					<p>
 						If you have issues with problems always removing hearts on refresh, or similar, please try to clear the cookies this way:<br>
-						<img src="/img/cookies-cleanup.png" alt="This is how you clean the cookies." style="border: 2px solid #555;"><br>
+						<img src="/img/cookies-cleanup.png" alt="This is how you clean the cookies." class="img-bordered"><br>
 						I made several changes which should make the new cookies behave properly, but I didn't find a way to remove the old ones, which are breaking stuff.
 					</p>
 					<p>There is a lot of work going on. More details can be found in the forum posts</p>
@@ -72,7 +72,7 @@ $this->end();
 
 				<p class="title4">Site Growth</p>
 				<div class="new1">
-				<div style="height: 400px; width: 100%;"><canvas id="chartContainer"></canvas></div>
+				<div class="chart-box"><canvas id="chartContainer"></canvas></div>
 				<script>
 				new Chart(document.getElementById('chartContainer'), {
 					type: 'line',
@@ -81,11 +81,11 @@ $this->end();
 							label: 'Problems',
 							data: [
 								<?php
-									echo implode(",", array_map(function($r) {
-										$y = $r['problems'] !== null ? $r['problems'] : 'null';
-										return '{ x: \'' . $r['date'] . '\', y: ' . $y . ' }';
-									}, $chartData));
-								?>
+					echo implode(",", array_map(function ($r) {
+						$y = $r['problems'] !== null ? $r['problems'] : 'null';
+						return '{ x: \'' . $r['date'] . '\', y: ' . $y . ' }';
+					}, $chartData));
+?>
 							],
 							fill: true,
 							borderColor: '#d19fe4',
@@ -99,11 +99,11 @@ $this->end();
 							label: 'Users',
 							data: [
 								<?php
-									echo implode(",", array_map(function($r) {
-										$y = $r['users'] !== null ? $r['users'] : 'null';
-										return '{ x: \'' . $r['date'] . '\', y: ' . $y . ' }';
-									}, $chartData));
-								?>
+	echo implode(",", array_map(function ($r) {
+		$y = $r['users'] !== null ? $r['users'] : 'null';
+		return '{ x: \'' . $r['date'] . '\', y: ' . $y . ' }';
+	}, $chartData));
+?>
 							],
 							fill: false,
 							borderColor: '#5b9bd5',
@@ -178,10 +178,10 @@ $this->end();
 					<div class="new1">
 						<b>Customizable collection index page</b><br><br>
 						The collection index page got a makeover, which makes use of the newly introduced tags. You can set filters for three categories:
-							<b style="color:#77c14a">Topics</b>, <b style="color:#be6cdd">Difficulty</b> and <b style="color:#d5795a">Tags</b>.
+							<b class="text-topic">Topics</b>, <b class="text-difficulty">Difficulty</b> and <b class="text-tag">Tags</b>.
 						<br>
 						<div align="center">
-							<img style="margin:5px" src="/img/customizable-collections-example.png" title="Customizable Collections Example" width="85%">
+							<img class="img-padded" src="/img/customizable-collections-example.png" title="Customizable Collections Example" width="85%">
 						</div>
 						Further, there are two grouping parameters: Collection types and collection sizes. The type is set to one of the three filters.
 						In this example, the type is difficulty, which groups the problems in collections for the rank.
@@ -202,7 +202,7 @@ $this->end();
 					<a href="/tags/view/7">Under the Stones</a> tesuji, leave a tag.
 					<br>
 					<div align="center">
-						<img style="margin:5px" src="/img/example-tags-proposals.png" title="Example for tags and proposals" width="72%">
+						<img class="img-padded" src="/img/example-tags-proposals.png" title="Example for tags and proposals" width="72%">
 					</div>
 					It is now also possible to make proposals for improving the problem files. You select "Make Proposal", modify the move tree and save. An
 					admin is going to check and approve the changes. For getting rewards, a point system has been implemented: <b>Add tag (1 pt)</b>, <b>create new tag (3 pts)</b>,
@@ -306,40 +306,41 @@ $this->end();
 				Progress bar in level mode:<br>
 				<?php
 					$levelBarDisplayChecked1 = '';
-					$levelBarDisplayChecked2 = '';
-					if($levelBar==1)
-						$levelBarDisplayChecked1 = 'checked="checked"';
-					else
-						$levelBarDisplayChecked2 = 'checked="checked"';
-				?>
+$levelBarDisplayChecked2 = '';
+if($levelBar == 1)
+	$levelBarDisplayChecked1 = 'checked="checked"';
+else
+	$levelBarDisplayChecked2 = 'checked="checked"';
+?>
 				<input type="radio" id="levelBarDisplay1" name="levelBarDisplay" value="1" onclick="levelBarChange(1);" <?php echo $levelBarDisplayChecked1; ?>> <b id="levelBarDisplay1text">Show level</b><br>
 				<input type="radio" id="levelBarDisplay2" name="levelBarDisplay" value="2" onclick="levelBarChange(2);" <?php echo $levelBarDisplayChecked2; ?>> <b id="levelBarDisplay2text">Show rating (new)</b><br>
 				<br>
 				</div>
 				With this update, Tsumego attempts in any mode affect the user rating.<br>
 				<?php
-				$link1 = '';
-				$link2 = '';
-				$link3 = '';
-				if(Auth::isLoggedIn()){
-					$link1 = '/tsumegos/play/' . (int)($_COOKIE['lastVisit'] ?? 15352) . '?mode=1';
-					$link2 = '/ratingMode';
-					$link3 = '/timeMode/overview';
-				}
-				?>
-				• <a href="<?php echo $link1; ?>" style="color:#74d14c">Level mode</a> problems affect level and user rating.<br>
-				• <a href="<?php echo $link2; ?>" style="color:#c240f7">Rating mode</a> is the same as before, but all formulas for user and tsumego rating calculation have been improved.<br>
-				• <a href="<?php echo $link3; ?>" style="color:#ca6658">Time mode</a> also affects the user rating.<br><br>
+$link1 = '';
+$link2 = '';
+$link3 = '';
+if(Auth::isLoggedIn())
+{
+	$link1 = '/tsumegos/play/' . (int) ($_COOKIE['lastVisit'] ?? 15352) . '?mode=1';
+	$link2 = '/ratingMode';
+	$link3 = '/timeMode/overview';
+}
+?>
+				• <a href="<?php echo $link1; ?>" class="mode-link--level">Level mode</a> problems affect level and user rating.<br>
+				• <a href="<?php echo $link2; ?>" class="mode-link--rating">Rating mode</a> is the same as before, but all formulas for user and tsumego rating calculation have been improved.<br>
+				• <a href="<?php echo $link3; ?>" class="mode-link--time">Time mode</a> also affects the user rating.<br><br>
 
 				<b>Rewards:</b> Every Sunday, the 3 highest rated users that have no premium account get a premium upgrade. Next prize giving: 03.03.24. To give everyone a fresh start, all user ratings have been reset.<br><br>
 
 				<b>Profile page</b><br><br>
 				<?php
-				if(Auth::isLoggedIn())
-					echo 'The <a href="/users/view/'.Auth::getUserID().'">profile page</a> contains more data and is organized in line and bar charts.';
-				else
-					echo 'The profile page contains more data and is organized in line and bar charts.';
-				?>
+if(Auth::isLoggedIn())
+	echo 'The <a href="/users/view/' . Auth::getUserID() . '">profile page</a> contains more data and is organized in line and bar charts.';
+else
+	echo 'The profile page contains more data and is organized in line and bar charts.';
+?>
 				<br>
 				<br>
 				<div align="center">
@@ -486,24 +487,24 @@ $this->end();
 			<div>
 				<div class="new-tsumego-box new-tsumego-box--news">
 					<?php
-					if (!empty((array)$tsumegoButtonsOfPublishedTsumegos))
-					{
-						$dateLabel = isset($latestPublishDate) ? '<time datetime="' . $latestPublishDate . '" data-format="month-day">' . $latestPublishDate . '</time>' : '';
-						echo '<font color="#f0f0f0">Latest additions'.($dateLabel ? ' ('.$dateLabel.')' : '').':</font><br>';
-						$publishedBySet = [];
-						foreach ($tsumegoButtonsOfPublishedTsumegos as $tsumegoButton)
-							$publishedBySet[$tsumegoButton->setID][] = $tsumegoButton;
-						foreach ($publishedBySet as $setID => $setButtons)
-						{
-							echo '<a class="scheduleTsumego" href="/sets/view/'.$setID.'"><b>'
-								.$setButtons[0]->setTitle . ' - '.count($setButtons).' problems</b></a><br>';
-							echo '<div class="problem-nav__buttons">';
-							foreach ($setButtons as $index => $tsumegoButton)
-								$tsumegoButton->render($index);
-							echo '</div>';
-						}
-					}
-					?>
+	if (!empty((array) $tsumegoButtonsOfPublishedTsumegos))
+	{
+		$dateLabel = isset($latestPublishDate) ? '<time datetime="' . $latestPublishDate . '" data-format="month-day">' . $latestPublishDate . '</time>' : '';
+		echo '<font color="#f0f0f0">Latest additions' . ($dateLabel ? ' (' . $dateLabel . ')' : '') . ':</font><br>';
+		$publishedBySet = [];
+		foreach ($tsumegoButtonsOfPublishedTsumegos as $tsumegoButton)
+			$publishedBySet[$tsumegoButton->setID][] = $tsumegoButton;
+		foreach ($publishedBySet as $setID => $setButtons)
+		{
+			echo '<a class="scheduleTsumego" href="/sets/view/' . $setID . '"><b>'
+				. $setButtons[0]->setTitle . ' - ' . count($setButtons) . ' problems</b></a><br>';
+			echo '<div class="problem-nav__buttons">';
+			foreach ($setButtons as $index => $tsumegoButton)
+				$tsumegoButton->render($index);
+			echo '</div>';
+		}
+	}
+?>
 				</div>
 
 				<div class="quote-pick-wrapper">
@@ -523,7 +524,7 @@ $this->end();
 					The Level Evaluation Set is designed to assess and improve the reader’s strength in the game of Go through a focused collection of Tsumego and Tesuji problems. The first part is titled Beginner and covers problems around the double digit kyu ranks.
 					  <br><br>
 						<div align="center"><img width="90%" src="/img/level-evaluation-set-promo.png" alt="Level Evaluation Set: Beginner" title="Level Evaluation Set: Beginner"><br><br>
-						<a class="btn main-page" style="font-size:14px;" href="/sets/view/263">Play</a><br><br>
+						<a class="btn main-page" href="/sets/view/263">Play</a><br><br>
 						</div>
 					</div>
 				</div>
@@ -534,7 +535,7 @@ $this->end();
 					The status of the J group on its own is unsettled. Learn the details about this shape to improve your game, as you will certainly see it again.
 					  <br><br>
 						<div align="center"><img width="60%" src="/img/j-group-promo.png" alt="New Collection: The J Group" title="New Collection: The J Group"><br><br>
-						<a class="btn main-page" style="font-size:14px;" href="/sets/view/255">Play</a><br><br>
+						<a class="btn main-page" href="/sets/view/255">Play</a><br><br>
 						</div>
 					</div>
 				</div>
@@ -543,7 +544,7 @@ $this->end();
 					<div class="new1">
 					The Goban is just like a boundless sky with unlimited possibilities. The only limit is your imagination. Expand your imagination with this set of problems that contain extraordinary shapes and solutions.
 						<div align="center"><img width="68%" src="/img/boundless-sky-promo.png" alt="New Collection: Boundless Sky" title="New Collection: Boundless Sky"><br><br>
-							<a class="btn main-page" style="font-size:14px;" href="/sets/view/254">Play</a><br><br>
+							<a class="btn main-page" href="/sets/view/254">Play</a><br><br>
 						</div>
 					</div>
 				</div>
@@ -554,7 +555,7 @@ $this->end();
 					Basic knowledge of the L group to boost double digit kyu player's confidence ! A diligent study is worth it. The L group is a corner shape that
 					will appear again and again in your game.  <br><br>
 						<div align="center"><img width="60%" src="/img/promo-lgroup.png" alt="New Collection: The L Group" title="New Collection: The L Group"><br><br>
-						<a class="btn main-page" style="font-size:14px;" href="/sets/view/252">Play</a><br><br>
+						<a class="btn main-page" href="/sets/view/252">Play</a><br><br>
 						</div>
 					</div>
 				</div>
@@ -567,7 +568,7 @@ $this->end();
 					as enclosing, surrounding, placement, under the stones, as well as survival skills like increasing eyespace, connecting and sacrificing. <br><br>
 					<div align="center"><img width="80%" src="/img/wldpromo.png" alt="New Collection: Weiqi Life&Death Drills" title="New Collection: Weiqi Life&Death Drills">
 					<br><br>
-					<a class="btn main-page" style="font-size:14px;" href="/sets/view/250">Play</a><br><br></div>
+					<a class="btn main-page" href="/sets/view/250">Play</a><br><br></div>
 					</div>
 				</div>
 
@@ -577,7 +578,7 @@ $this->end();
 					Segoe Tesuji Dictionary is a three volume tesuji problem book-set, written by Segoe Kensaku and Go Seigen.
 					It is divided into sections according to the kind of move needed for the tesuji (e.g., tsuke or geta).<br><br>
 					<div align="center"><img width="95%" src="/img/segoe1-promo.png" alt="New Collection: Segoe Tesuji Dictionary" title="New Collection: Segoe Tesuji Dictionary">
-					<a class="btn main-page" style="font-size:14px;" href="/sets/view/248">Play</a><br><br></div>
+					<a class="btn main-page" href="/sets/view/248">Play</a><br><br></div>
 					</div>
 				</div>
 
@@ -589,7 +590,7 @@ $this->end();
 						Instead of that a group can be attacked to gain influence, gain territory, stabilize their own group, create thickness or many other reasons.
 						This collection teaches the best ways to attack groups to get an advantage on the board.<br><br>
 						<div align="center"><img width="60%" src="/img/attack-hero-promo.png" alt="New Collection: Attack Hero" title="New Collection: Attack Hero"><br><br>
-							<a class="btn main-page" style="font-size:14px;" href="/sets/view/246">Play</a><br><br>
+							<a class="btn main-page" href="/sets/view/246">Play</a><br><br>
 						</div>
 					</div>
 				</div>
@@ -602,7 +603,7 @@ $this->end();
 					life and death problems, compiled in 1713 by the Japanese go master Inoue Dosetsu Inseki. The problems in this collection
 					have a very high difficulty, so discussion of solutions might not always be possible.<br><br>
 					<div align="center"><img width="95%" src="/img/igo-hatzuyoron.png" alt="New Collection: Igo Hatsuyoron" title="New Collection: Igo Hatsuyoron">
-					<a class="btn main-page" style="font-size:14px;" href="/sets/view/242">Play</a><br><br></div>
+					<a class="btn main-page" href="/sets/view/242">Play</a><br><br></div>
 					</div>
 				</div>
 
@@ -617,7 +618,7 @@ $this->end();
 						<a href="https://australiango.asn.au/aga-books" target="_blank">australiango.asn.au/aga-books</a>
 						<br><br>
 						<div align="center"><img width="95%" src="/img/diabolical-new-promo.png" alt="New: Diabolical - the whole book" title="New: Diabolical - the whole book">
-						<a class="btn main-page" style="font-size:14px;" href="/sets/view/237">Play</a><br><br></div>
+						<a class="btn main-page" href="/sets/view/237">Play</a><br><br></div>
 					</div>
 				</div>
 
@@ -628,7 +629,7 @@ $this->end();
 						The task is to choose the best move from the given options. The problems were checked with AI for correctness. <br><br>
 						<div align="center"><img width="95%" src="/img/directionofplay-info.png" alt="New Collection: Direction of the Play" title="New Collection: Direction of the Play">
 
-						<a class="btn main-page" style="font-size:14px;" href="/sets/view/236">Play</a><br><br></div>
+						<a class="btn main-page" href="/sets/view/236">Play</a><br><br></div>
 					</div>
 				</div>
 
@@ -640,7 +641,7 @@ $this->end();
 						The first topics and the first Tesuji techniques to master are ladders (Shicho) and nets (Geta).<br><br>
 						<i>Kageyama says "If you want to capture stones, hold up two fingers and say to yourself: 'Can I capture with the net?' and 'Can I capture with the ladder?'"</i><br><br>
 						<div align="center"><img width="95%" src="/img/techniques.png" alt="New Collection: Techniques of TsumeGo" title="New Collection: Techniques of TsumeGo">
-						<a class="btn main-page" style="font-size:14px;" href="/sets/view/235">Play</a><br><br></div>
+						<a class="btn main-page" href="/sets/view/235">Play</a><br><br></div>
 					</div>
 				</div>
 
@@ -650,7 +651,7 @@ $this->end();
 								This series written by Kano Yoshinori in 1985 covers a large range of fundamental topics.
 						Volume 1 contains problems about recognizing atari, ladders, snapbacks and basic life and death problems. Created for Tsumego Hero by Stepan Trubitsin.
 						<div align="center"><img width="95%" src="/img/kano-yoshinori-promo.png" alt="New Collection: Kano Yoshinori" title="New Collection: Kano Yoshinori">
-						<a class="btn main-page" style="font-size:14px;" href="/sets/view/214">Play</a><br><br></div>
+						<a class="btn main-page" href="/sets/view/214">Play</a><br><br></div>
 					</div>
 				</div>
 
@@ -660,7 +661,7 @@ $this->end();
 						There's a saying in Go that your overall strength is limited by your endgame strength. Even if you are leading a lot in the opening and middle game, mistakes in endgame can still lose you the game. This collection allows you to practice and level-up your endgame in a small 9x9 board with real-game examples.
 						<div align="center"><img width="95%" src="/img/9x9-startpage.png">
 
-						<a class="btn main-page" style="font-size:14px;" href="/sets/view/207">Play</a><br><br></div>
+						<a class="btn main-page" href="/sets/view/207">Play</a><br><br></div>
 					</div>
 				</div>
 
@@ -671,7 +672,7 @@ $this->end();
 						That's the question this collection aims to answer.
 						<div align="center"><img width="95%" src="/img/sacrifical-tsumego-home.png">
 
-						<a class="btn main-page" style="font-size:14px;" href="/sets/view/197">Play</a><br><br></div>
+						<a class="btn main-page" href="/sets/view/197">Play</a><br><br></div>
 					</div>
 				</div>
 
@@ -682,7 +683,7 @@ $this->end();
 						Go Seigen once commented that Longshi's fighting skill
 						was of 13-dan strength. The problems in this collection are focused mainly on endgame tesujis.
 						<div align="center"><img width="95%" src="/img/yi-kuo-home.png">
-						<a class="btn main-page" style="font-size:14px;" href="/sets/view/195">Play</a><br><br></div>
+						<a class="btn main-page" href="/sets/view/195">Play</a><br><br></div>
 					</div>
 				</div>
 
@@ -691,9 +692,10 @@ $this->end();
 				</div>
 
 					<?php
-					if(Auth::isLoggedIn()){
-					if(false){
-					?>
+if(Auth::isLoggedIn())
+	if(false)
+	{
+		?>
 					<div id="sandboxVolunteers2">
 						<p class="title4">Sandbox</p>
 						<br>
@@ -701,82 +703,25 @@ $this->end();
 						There are new problems in the sandbox.</font>
 						<table border="0" width="300px">
 						<tr>
-						<td width="33%" style="text-align:center;font-size:17px;font-weight:800;">
+						<td class="sandbox-teaser" width="33%">
 						</td>
-						<td width="33%" style="text-align:center;font-size:17px;font-weight:800;">
-							<a href="/sets/sandbox" style="color:black;"><font size="4px">Enter</font><br></a>
+						<td class="sandbox-teaser" width="33%">
+							<a href="/sets/sandbox" class="link-plain"><font size="4px">Enter</font><br></a>
 						</td>
-						<td width="33%" style="text-align:center;font-size:17px;font-weight:800;">
-						</td>
-						</tr>
-						</table>
-						</div>
-					</div>
-					<?php
-					}
-
-					if(false){
-					?>
-					<div id="sandboxVolunteers">
-						<p class="title4">Sandbox Volunteers</p>
-						<br>
-						The Sandbox is an effort to increase the quality of the problems on Tsumego Hero.
-						All problems are there for trial, before they get published. A small group
-						of users has access. Their task is to solve them and comment if they find a mistake.
-						<br><br>
-						<div align="center">
-						Would you like to have early access to not published problems?
-						<table border="0" width="300px">
-						<tr>
-						<td width="33%" style="text-align:center;font-size:17px;font-weight:800;">
-							<a href="#" id="sandboxY" onclick="sandboxY(); return false;" style="color:black;">Yes</a>
-						</td>
-						<td width="33%" style="text-align:center;font-size:17px;font-weight:800;">
-							<a href="#" id="sandboxN" onclick="sandboxN(); return false;" style="color:black;">No</a>
-						</td>
-						<td width="33%" style="text-align:center;font-size:17px;font-weight:800;">
-							<a href="#" id="sandboxM" onclick="sandboxM(); return false;" style="color:black;">Maybe</a>
-						</td>
-						</tr>
-						</table>
-						</div>
-						<br>
-					</div>
-					<?php
-					}
-
-					if(false){
-					?>
-					<div id="sandboxVolunteers2">
-						<p class="title4">Sandbox Volunteers</p>
-						<br>
-						<div align="center"><font size="4px">
-						You have been invited.</font>
-						<table border="0" width="300px">
-						<tr>
-						<td width="33%" style="text-align:center;font-size:17px;font-weight:800;">
-						</td>
-						<td width="33%" style="text-align:center;font-size:17px;font-weight:800;">
-							<a href="/sets/beta" style="color:black;"><font size="4px">Enter</font><br></a>
-						</td>
-						<td width="33%" style="text-align:center;font-size:17px;font-weight:800;">
+						<td class="sandbox-teaser" width="33%">
 						</td>
 						</tr>
 						</table>
 						</div>
 					</div>
 					<?php
-					}
-					?>
-
-				<?php
-				}
-				?>
+	}
+?>
 			</div>
 	</div>
 
 		<br>
-		<div style="clear:both;"></div>
+		<div class="clearfix"></div>
 
 	<script>
 		let highestLeft = <?php echo $highestLeft; ?>;
@@ -817,32 +762,31 @@ $this->end();
 		}
 	</script>
 	<?php
-	if(!Auth::isLoggedIn()){
+	if(!Auth::isLoggedIn())
 		echo '<style>
 			#progressBarInLevelMode{
 				display:none;
 			}
 		</style>';
-	}
-	?>
+?>
 
 	<style>
 		<?php
-			$left = $highestLeft;
-			while($left>0){
-				if($left<$highestLeft-4){
-					echo '#news-left-'.$left.'{display:none;}';
-				}
-				$left--;
-			}
-			$right = $highestRight;
-			while($right>0){
-				if($right<$highestRight-7){
-					echo '#news-right-'.$right.'{display:none;}';
-				}
-				$right--;
-			}
-		?>
+		$left = $highestLeft;
+while($left > 0)
+{
+	if($left < $highestLeft - 4)
+		echo '#news-left-' . $left . '{display:none;}';
+	$left--;
+}
+$right = $highestRight;
+while($right > 0)
+{
+	if($right < $highestRight - 7)
+		echo '#news-right-' . $right . '{display:none;}';
+	$right--;
+}
+?>
 	</style>
 	<style>
 		.show-more{

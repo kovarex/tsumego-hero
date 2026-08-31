@@ -13,7 +13,7 @@
  */
 
 	echo '<div class="split split--sidebar">';
-	echo '<div style="text-align:left;border-right:1px solid #a0a0a0">';
+	echo '<div style="text-align:left;border-right:1px solid var(--surface-border-light)">';
 		$sgfProposalsRenderer->render();
 		$tagProposalsRenderer->render();
 		if($requestDeletion!=null){
