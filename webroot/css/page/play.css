@@ -291,8 +291,9 @@ h1 {
   width: 200px;
 }
 .besogo-board {
-  width: 50%;
-  margin: 0 315px;
+  width: min(760px, 100%) !important;
+  max-width: 100%;
+  margin: 0 auto !important;
   box-shadow: 0 2px 14px 0 rgba(0, 0, 0, 0.5), 0 6px 20px 0 rgba(0, 0, 0, 0.2);
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;

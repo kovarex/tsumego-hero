@@ -25,15 +25,12 @@
 	   a huge set overflows, otherwise the leftmost buttons become unreachable. */
 	justify-content: safe center;
 	gap: 2px;
-	overflow-x: auto;
+	/* Visible so the SGF-preview tooltips (absolutely positioned, z-index high)
+	   are NOT clipped by the strip, and so the strip never traps the mouse
+	   wheel into a scroll container. The buttons fit on one row since the
+	   max-width cap was removed. */
+	overflow: visible;
 	box-sizing: border-box;
-	scrollbar-width: none;
-	-ms-overflow-style: none;
-}
-
-.problem-nav__inner::-webkit-scrollbar
-{
-	display: none;
 }
 
 /* Base button look: the problem-status nav keeps its classic 58px two-tone button. */
@@ -42,7 +39,7 @@
 	width: 58px;
 	flex: 0 0 auto;
 	display: flex;
-	align-items: center;
+	align-items: stretch;
 	justify-content: center;
 	float: none;
 	font-weight: 700;
@@ -53,8 +50,22 @@
 	border-left-color: #cccccc;
 	border-radius: 9px;
 	margin: 1px;
+	height: 32px;
+	position: relative;
 	box-sizing: border-box;
 	background-image: url("/img/viewButton1.png");
+}
+
+/* The whole button is the clickable area: the anchor overlays the entire
+   item (absolute, inset:0) and centers its content (number/ratio/time). */
+.problem-nav__item a
+{
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-decoration: none;
 }
 
 /* The spacer between groups uses flex spacing instead of float. */
@@ -353,22 +364,13 @@ a[data-tsumego-id]:hover .tooltip-desc
 	pointer-events: none;
 }
 
-/* Mobile: the status strip wraps onto multiple rows so every button is
-   visible (no clipping, no scrollbars). Buttons are compressed slightly. */
+
 @media (width < 64rem)
 {
-	.problem-nav__inner {
+	.problem-nav__inner
+	{
 		flex-wrap: wrap;
 		height: auto;
-		padding-top: 6px;
-		padding-bottom: 6px;
-		justify-content: center;
-		overflow-x: visible;
-		gap: 4px;
-	}
-	.problem-nav__item {
-		width: 44px;
-		font-size: 13px;
 	}
 }
 }
