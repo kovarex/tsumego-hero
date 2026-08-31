@@ -294,6 +294,8 @@ h1 {
   width: 50%;
   margin: 0 315px;
   box-shadow: 0 2px 14px 0 rgba(0, 0, 0, 0.5), 0 6px 20px 0 rgba(0, 0, 0, 0.2);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 [data-theme="light"] .besogo-board-red-glow {
   box-shadow: 0 2px 14px 0 rgba(183, 19, 19, 0.8), 0 6px 20px 0 rgba(183, 19, 19, 0.2) !important;
@@ -547,11 +549,18 @@ h1 {
 }
 .besogo-container {
   flex-wrap: wrap;
+  max-width: 100%;
 }
 .besogo-bottom-panels {
   align-items: center;
   padding: 0px 5px;
   flex-basis: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.besogo-tsumegoPlayTool {
+  max-width: 100%;
+  overflow-x: auto;
 }
 .besogo-control {
   width: 33% !important;
@@ -602,6 +611,11 @@ h1 {
   color: #717171;
   right: 207px;
   margin-top: 18px;
+}
+/* Compact health counter (x / y). Hidden on desktop, where the full row of
+   heart images is shown; shown instead of the hearts on mobile. */
+.health-counter {
+  display: none;
 }
 #besogo-next-button-inactive,
 #besogo-back-button-inactive {
@@ -828,7 +842,10 @@ h1 {
 
 /* Mobile: stack the besogo control/tool panels and let the board fill the
    viewport. The board (besogo) sizes itself, so only the surrounding chrome
-   needs the fluid treatment. */
+   needs the fluid treatment. The embedded JS sets an inline width:60% +
+   margin:0 252px on .besogo-board which is tuned for a ~1261px container;
+   on a phone that pushes the board off-screen (it shrinks to 0), so we
+   override it to fill the container and drop the fixed side margins. */
 @media (width < 64rem)
 {
 	.besogo-control,
@@ -839,6 +856,107 @@ h1 {
 	}
 	.besogo-comment {
 		width: 100% !important;
+	}
+	.besogo-board {
+		width: 100% !important;
+		margin: 0 auto !important;
+	}
+	.besogo-container {
+		width: 100% !important;
+	}
+	#target {
+		max-width: 100%;
+		overflow: hidden;
+	}
+
+	/* Back/Reset/Next/Review row: let the buttons wrap to a second line
+	   instead of forcing a horizontal scrollbar. */
+	.besogo-tsumegoPlayTool {
+		flex-wrap: wrap;
+		justify-content: center;
+		overflow-x: hidden;
+		margin: 15px 10px 2px 10px;
+	}
+
+	/* "File by <author>" sits below the button row (it was desktop
+	   absolute right:207px which overlapped the buttons on a phone). */
+	#author-notice {
+		position: static;
+		flex-basis: 100%;
+		width: auto;
+		margin: 4px 0 0;
+		text-align: center;
+		font-size: 11px;
+		order: 99;
+	}
+
+	/* Rotation / orientation / fav icons: smaller + tighter so the row
+	   does not run away. */
+	#boardSpinClockwise,
+	#boardSpinCounterClockwise,
+	#boardOrientationTL,
+	#boardOrientationTR,
+	#boardOrientationBL,
+	#boardOrientationBR,
+	#colorOrientation,
+	#favButton,
+	.besogo-blank-space {
+		width: 22px;
+		height: 22px;
+		margin: 10px 2px 0 2px;
+	}
+
+	/* Health / title / hero powers stay in ONE row (no vertical stacking -
+	   that wastes vertical space). The hero-power cell is the crowded one,
+	   so the small side cells are allowed to shrink and the icons are made
+	   tiny enough to sit in one wrap-free row. */
+	.play-header-table {
+		table-layout: fixed;
+		width: 100%;
+	}
+	.play-header-table td {
+		padding: 4px 2px;
+	}
+
+	/* Hero power icons: very compact single row inside their narrow cell. */
+	#rejuvenation,
+	#intuition,
+	#revelation,
+	#sprint,
+	#refinement,
+	#potion {
+		width: 26px;
+		height: 26px;
+		margin: 3px 2px;
+		vertical-align: middle;
+	}
+
+	/* Hearts: show a compact "x / y" counter instead of a row of 17 hearts
+	   that overflows a 29%-wide table cell on a phone. The individual heart
+	   images stay in the DOM (used by JS) but are visually replaced. */
+	#health {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 4px;
+	}
+	#health img {
+		display: none;
+	}
+	.health-counter {
+		display: inline-block;
+		font-weight: 800;
+		font-size: 18px;
+		color: var(--text-color);
+	}
+	.health-counter::before {
+		content: "\2665";
+		display: inline-block;
+		font-size: 22px;
+		line-height: 1;
+		color: #e03c4b;
+		margin-right: 5px;
+		vertical-align: -2px;
 	}
 }
 }
