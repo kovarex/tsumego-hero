@@ -22,7 +22,7 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 
 <?php TimeGraphRenderer::renderScriptInclude(); ?>
 
-<div class="homeCenter2">
+<div>
 	<div class="profile-header">
 		<p class="profile-username"><?php echo h($user['User']['name']); ?> <?php User::renderPremium($user['User']); ?></p>
 		<?php echo $this->element('user_subnav', ['userID' => $user['User']['id'], 'activeTab' => 'profile']); ?>

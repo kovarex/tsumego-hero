@@ -3,7 +3,8 @@
  * @var View $this
  */
 ?>
-  <div class="homeLeft2">
+  <div class="split">
+  <div>
     <p class="title4">About</p>
 		<br>
 		[Updated on 19.03.2026]
@@ -22,7 +23,7 @@
     Joschka Zimdars (d4rkm4tter): 7421 problems, Stepan Trubitsin (Stepan): 1351 problems, Xiang Zhang (Sadaharu): 1305 problems, Michal Kovářík (kovarex): 845 problems, Kaan Malçok (posetcay): 809 problems, Ryan Smith: 750 problems, Jerome Hubert (jhubert): 497 problems, Innokentiy Zabirov (Neri): 361 problems, Akos Balogh (Farkas): 333 problems, junikki: 229 problems, Bradford Malbon: 224 problems, саша черных (Silent Gentleman): 218 problems, David Ulbricht: (GoDave89) 196 problems, Omicron: 120 problems, Timo Kreuzer: 114 problems, David Mitchell (Daviid): 100 problems, guile: 88 problems, Andrey: 58 problems, Olaf Voß (richyfourtytwo): 46 problems, Alexandre Dinerchtein: 45 problems
     
 	</div>
-  <div class="homeRight2">
+  <div>
     <p class="title4">&nbsp;&nbsp;&nbsp;</p>
 		<p class="title4date3">&nbsp;</p>
     <br>
@@ -37,6 +38,7 @@
     that is more complete and expandable.
     <br><br>
 	</div>
+  </div>
 
  
 <div style="clear:both;"></div>

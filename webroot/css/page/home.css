@@ -4,35 +4,7 @@
    composition object in composition.css (source order: modes first, news
    second). No text-align: justify - it is a readability anti-pattern (creates
    uneven 'rivers' of whitespace, especially bad in narrow mobile columns) and
-   it is a content style, so it does not belong on a layout object.
-   The .homeLeft2/.homeRight2/.homeCenter rules below are retained for the
-   remaining templates (about, impressum, view) that still use them. */
-.homeLeft2 {
-  width: 50%;
-  text-align: justify;
-  min-height: 100px;
-  height: auto;
-  float: left;
-  position: relative;
-  padding: 0 10px;
-}
-.homeRight2 {
-  width: 50%;
-  text-align: justify;
-  min-height: 100px;
-  height: auto;
-  float: right;
-  position: relative;
-  padding: 0 10px;
-}
-.homeCenter {
-  width: 750px;
-  text-align: justify;
-}
-.homeCenter2 {
-  width: 100%;
-  text-align: justify;
-}
+   it is a content style, so it does not belong on a layout object. */
 .gradient-heading {
   display: inline-block;
   font-size: 1.2rem;
@@ -386,10 +358,6 @@
 [data-theme="dark"] .scheduleTsumego {
 	color: #f0f0f0 !important;
 }
-[data-theme="dark"] .homeCenter2 {
-	background-color: #2a2a2a;
-	color: #fff;
-}
 
 /* Mobile-first: single column below 64rem (1024px), then widen.
    Uses range syntax (2026) — narrow screens first, add layout as width grows.
@@ -397,17 +365,6 @@
    the inner feed/cards fluid. */
 @media (width < 64rem)
 {
-	.homeLeft2,
-	.homeRight2 {
-		width: 100%;
-		float: none;
-		box-sizing: border-box;
-		padding: 0 8px;
-	}
-	.homeCenter {
-		width: 100%;
-		box-sizing: border-box;
-	}
 	.quote-pick-wrapper,
 	.achievement-quote-pick {
 		width: 100%;
