@@ -3,7 +3,8 @@
 #login-box {
   position: relative;
   margin: 5% auto;
-  width: 690px;
+  width: 100%;
+  max-width: 690px;
   height: 450px;
   background: #fff;
   border-radius: 2px;
@@ -13,7 +14,8 @@
   position: relative;
   margin: 5% auto;
   margin-bottom: 25px;
-  width: 900px;
+  width: 100%;
+  max-width: 900px;
   height: 670px;
   background: #fff;
   border-radius: 2px;
@@ -90,5 +92,27 @@
   background-size: cover;
   background-position: center;
   border-radius: 0 2px 2px 0;
+}
+
+/* Mobile: the two login halves stack instead of sitting side by side inside a
+   fixed-height absolute box. The decorative .right panel moves below the form
+   and the box grows with its content. */
+@media (width < 40rem)
+{
+	#login-box,
+	#login-box2 {
+		height: auto;
+	}
+	.left {
+		position: static;
+		width: 100%;
+		height: auto;
+		padding: 24px 16px;
+	}
+	.right {
+		position: static;
+		width: 100%;
+		height: 180px;
+	}
 }
 }

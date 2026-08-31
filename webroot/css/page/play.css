@@ -139,7 +139,9 @@
   background-color: white;
   border: 1px solid black;
   padding: 10px;
-  width: 600px;
+  width: 100%;
+  max-width: 600px;
+  box-sizing: border-box;
   font-size: 16px;
 }
 .boards-tile {
@@ -821,6 +823,22 @@ h1 {
 @media (max-width: 1300px) {
 	#sandboxLink {
 		top: 68px;
+	}
+}
+
+/* Mobile: stack the besogo control/tool panels and let the board fill the
+   viewport. The board (besogo) sizes itself, so only the surrounding chrome
+   needs the fluid treatment. */
+@media (width < 64rem)
+{
+	.besogo-control,
+	.besogo-tool,
+	.besogo-tree {
+		width: 100% !important;
+		max-width: none;
+	}
+	.besogo-comment {
+		width: 100% !important;
 	}
 }
 }

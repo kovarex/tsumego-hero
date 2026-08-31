@@ -164,7 +164,9 @@
   justify-content: left;
   align-items: center;
   margin: 5px auto;
-  width: 1228px;
+  width: 100%;
+  max-width: 1228px;
+  box-sizing: border-box;
 }
 #dropdown-topics {
   display: none;
@@ -471,5 +473,24 @@
 	letter-spacing: 0.06em;
 	color: transparent;
 	text-shadow: 0 0 0.08em rgba(229, 229, 229, 0.7);
+}
+
+/* Mobile: the set filter/search menu wraps and the tile dropdowns no longer
+   rely on absolute-left positions relative to a fixed-width container. */
+@media (width < 64rem)
+{
+	.set-search-menu {
+		margin: 5px 12px;
+		flex-wrap: wrap;
+		justify-content: flex-start;
+		gap: 8px;
+	}
+	.active-tiles-container {
+		margin-left: 12px;
+	}
+	.set-index {
+		padding: 0 12px;
+		box-sizing: border-box;
+	}
 }
 }
