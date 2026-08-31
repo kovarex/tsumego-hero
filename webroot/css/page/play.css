@@ -303,9 +303,14 @@ h1 {
   width: 200px;
 }
 .besogo-board {
-  width: min(760px, 100%) !important;
+  /* Do NOT force the width here: besogo's JS sets an inline width per
+     orientation (60% full, 78% horizontal half, 30% vertical half, 50% in
+     review). A forced width made rotated/portrait boards balloon in height
+     and pushed the review panels underneath. Let the JS size the board so it
+     scales with the container instead of being pinned to a fixed cap; only
+     stop it overflowing the container. */
   max-width: 100%;
-  margin: 0 auto !important;
+  margin: 0 auto;
   box-shadow: 0 2px 14px 0 rgba(0, 0, 0, 0.5), 0 6px 20px 0 rgba(0, 0, 0, 0.2);
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
