@@ -678,5 +678,5 @@ echo ViteManifest::legacyScript('legacy');
 // React app bundle
 echo ViteManifest::script('app');
 ?>
-
-
+</body>
+</html>

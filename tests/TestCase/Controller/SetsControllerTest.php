@@ -332,17 +332,9 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$this->testAction('sets/view/15k', ['return' => 'view']);
 		$dom = $this->getStringDom();
-		$titleDivs = $dom->querySelectorAll('.title4');
-		$this->assertCount(2, $titleDivs);
-		// The set title is one of the .title4 headings; don't assume its DOM index,
-		// since the two columns (set info / problems) may render in either order.
-		$setTitleFound = false;
-		foreach ($titleDivs as $titleDiv)
-			if ($titleDiv->textContent === '15k')
-			{
-				$setTitleFound = true;
-			}
-		$this->assertTrue($setTitleFound, 'Set title 15k should be rendered');
+		$setTitle = $dom->querySelectorAll('.set-view-title');
+		$this->assertCount(1, $setTitle);
+		$this->assertSame($setTitle[0]->textContent, '15k');
 
 		$problemButtons = $dom->querySelectorAll('.problem-nav__number');
 		$this->assertCount(1, $problemButtons);
@@ -354,23 +346,16 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$this->testAction('sets/view/10k', ['return' => 'view']);
 		$dom = $this->getStringDom();
-		$titleDivs = $dom->querySelectorAll('.title4');
-		$this->assertCount(2, $titleDivs);
-		// The set title is one of the .title4 headings; don't assume its DOM index.
-		$setTitleFound = false;
-		foreach ($titleDivs as $titleDiv)
-			if ($titleDiv->textContent === '10k')
-			{
-				$setTitleFound = true;
-			}
-		$this->assertTrue($setTitleFound, 'Set title 10k should be rendered');
+		$setTitle = $dom->querySelectorAll('.set-view-title');
+		$this->assertCount(1, $setTitle);
+		$this->assertSame($setTitle[0]->textContent, '10k');
 
 		$problemButtons = $dom->querySelectorAll('.problem-nav__number');
 		$this->assertCount(1, $problemButtons);
 		$this->assertSame($problemButtons[0]->textContent, '1');
 
 		$problemLinks = $dom->querySelectorAll('.tooltip');
-		$this->assertCount(1, $problemButtons);
+		$this->assertCount(1, $problemLinks);
 		$this->assertSame($problemLinks[0]->getAttribute('href'), '/' . $context->tsumegos[2]['set-connections'][0]['id']);
 	}
 
@@ -404,16 +389,9 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$this->testAction('sets/view/' . $context->tsumegos[0]['sets'][0]['id'], ['return' => 'view']);
 		$dom = $this->getStringDom();
-		$titleDivs = $dom->querySelectorAll('.title4');
-		$this->assertCount(2, $titleDivs);
-		// The set title is one of the .title4 headings; don't assume its DOM index.
-		$setTitleFound = false;
-		foreach ($titleDivs as $titleDiv)
-			if ($titleDiv->textContent === 'set 1')
-			{
-				$setTitleFound = true;
-			}
-		$this->assertTrue($setTitleFound, 'Set title set 1 should be rendered');
+		$setTitle = $dom->querySelectorAll('.set-view-title');
+		$this->assertCount(1, $setTitle);
+		$this->assertSame($setTitle[0]->textContent, 'set 1');
 
 		$problemButtons = $dom->querySelectorAll('.problem-nav__number');
 		$this->assertCount(1, $problemButtons);
@@ -425,23 +403,16 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$this->testAction('sets/view/' . $context->tsumegos[1]['sets'][0]['id'], ['return' => 'view']);
 		$dom = $this->getStringDom();
-		$titleDivs = $dom->querySelectorAll('.title4');
-		$this->assertCount(2, $titleDivs);
-		// The set title is one of the .title4 headings; don't assume its DOM index.
-		$setTitleFound = false;
-		foreach ($titleDivs as $titleDiv)
-			if ($titleDiv->textContent === 'set 2')
-			{
-				$setTitleFound = true;
-			}
-		$this->assertTrue($setTitleFound, 'Set title set 2 should be rendered');
+		$setTitle = $dom->querySelectorAll('.set-view-title');
+		$this->assertCount(1, $setTitle);
+		$this->assertSame($setTitle[0]->textContent, 'set 2');
 
 		$problemButtons = $dom->querySelectorAll('.problem-nav__number');
 		$this->assertCount(1, $problemButtons);
 		$this->assertSame($problemButtons[0]->textContent, '1');
 
 		$problemLinks = $dom->querySelectorAll('.tooltip');
-		$this->assertCount(1, $problemButtons);
+		$this->assertCount(1, $problemLinks);
 		$this->assertSame($problemLinks[0]->getAttribute('href'), '/' . $context->tsumegos[1]['set-connections'][0]['id']);
 	}
 
@@ -732,7 +703,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		// first we visit the 15k one
 		$collectionTopDivs[0]->click();
 		$this->assertSame(Util::getMyAddress() . '/sets/view/15k', $browser->driver->getCurrentURL());
-		$this->assertSame($this->setTitleFrom($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))), '15k');
+		$this->assertSame($this->getSetTitle($browser), '15k');
 
 		// now we are viewing the 15k set insides and checking the buttons
 		$buttons = $this->checkSetNavigationButtons($browser, 3, $context, function ($index) {
@@ -773,7 +744,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		// first we visit the 1d one
 		$collectionTopDivs[1]->click();
 		$this->assertSame(Util::getMyAddress() . '/sets/view/1d', $browser->driver->getCurrentURL());
-		$this->assertSame($this->setTitleFrom($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))), '1d');
+		$this->assertSame($this->getSetTitle($browser), '1d');
 
 		// now we are viewing the 1d set insides and checking the buttons
 		$buttons = $this->checkSetNavigationButtons($browser, 3, $context, function ($index) {
@@ -836,7 +807,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		// first visit the 'set 1'
 		$collectionTopDivs[0]->click();
 		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->tsumegos[0]['set-connections'][0]['set_id'], $browser->driver->getCurrentURL());
-		$this->assertSame($this->setTitleFrom($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))), 'set 1');
+		$this->assertSame($this->getSetTitle($browser), 'set 1');
 
 		// now we are viewing the 'set 1' insides and checking the buttons
 		$buttons = $this->checkSetNavigationButtons($browser, 2, $context, function ($index) {
@@ -872,7 +843,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->tsumegos[0]['set-connections'][0]['set_id'], $browser->driver->getCurrentURL());
 		$browser->driver->getPageSource();
 		$this->assertCount(2, $browser->getCssSelect('.title4'));
-		$this->assertSame($this->setTitleFrom($browser->getCssSelect('.title4')), 'set 1');
+		$this->assertSame($this->getSetTitle($browser), 'set 1');
 	}
 
 	public function testQueringSetsByRanksButLimitedByTopics(): void
@@ -921,7 +892,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		// first visit the 'set 15k'
 		$collectionTopDivs[0]->click();
 		$this->assertSame(Util::getMyAddress() . '/sets/view/15k', $browser->driver->getCurrentURL());
-		$this->assertSame($this->setTitleFrom($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))), '15k');
+		$this->assertSame($this->getSetTitle($browser), '15k');
 
 		// now we are viewing the 'set 2' insides and checking the buttons
 		$buttons = $this->checkSetNavigationButtons($browser, 2, $context, function ($index) {
@@ -955,7 +926,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		// clicking on next problem should get us back to the set
 		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
 		$this->assertSame(Util::getMyAddress() . '/sets/view/15k', $browser->driver->getCurrentURL());
-		$this->assertSame($this->setTitleFrom($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))), '15k');
+		$this->assertSame($this->getSetTitle($browser), '15k');
 	}
 
 	/**
@@ -1136,7 +1107,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		// going into the 'atari' set
 		$collectionTopDivs[0]->click();
 		$this->assertSame(Util::getMyAddress() . '/sets/view/atari', $browser->driver->getCurrentURL());
-		$this->assertSame($this->setTitleFrom($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))), 'atari');
+		$this->assertSame($this->getSetTitle($browser), 'atari');
 
 		// now we are viewing the 'atari' insides and checking the buttons
 		$buttons = $this->checkSetNavigationButtons($browser, 2, $context, function ($index) {
@@ -1168,7 +1139,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		// clicking on next problem should get us back to the set
 		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
 		$this->assertSame(Util::getMyAddress() . '/sets/view/atari', $browser->driver->getCurrentURL());
-		$this->assertSame($this->setTitleFrom($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))), 'atari');
+		$this->assertSame($this->getSetTitle($browser), 'atari');
 	}
 
 	public function testVisitingTopicBasedSetsRespectsTagFilters(): void
@@ -1206,7 +1177,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		// going into the 'set 1'
 		$collectionTopDivs[0]->click();
 		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->tsumegos[3]['set-connections'][0]['set_id'], $browser->driver->getCurrentURL());
-		$this->assertSame($this->setTitleFrom($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))), 'set 1');
+		$this->assertSame($this->getSetTitle($browser), 'set 1');
 
 		// now we are viewing the 'set 1' insides and checking the buttons
 		$buttons = $this->checkSetNavigationButtons($browser, 2, $context, function ($index) {
@@ -1238,7 +1209,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		// clicking on next problem should get us back to the set
 		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
 		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->tsumegos[3]['set-connections'][0]['set_id'], $browser->driver->getCurrentURL());
-		$this->assertSame($this->setTitleFrom($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))), 'set 1');
+		$this->assertSame($this->getSetTitle($browser), 'set 1');
 	}
 
 	private function checkSetFinishedPercent($browser, $index, $title, $percent): void
@@ -1975,23 +1946,14 @@ class SetsControllerTest extends TestCaseWithAuth
 	}
 
         /**
-         * The set view renders two .title4 headings: "Problems" (the list column)
-         * and the set title (the info column). Return the set title, which is the
-         * one that isn't "Problems". Finds it by value so the assertion doesn't
-         * depend on which column renders first in the DOM.
+         * The set-title heading carries the .set-view-title class (see Sets/view.ctp).
+         * Return its text.
          *
-         * @param array $titleDivs Selenium WebDriver elements matching .title4
+         * @param mixed $browser Browser instance
          */
-        private function setTitleFrom(array $titleDivs): string
+        private function getSetTitle($browser): string
         {
-                foreach ($titleDivs as $titleDiv)
-                {
-                        $text = $titleDiv->getText();
-                        if ($text !== 'Problems')
-                        {
-                                return $text;
-                        }
-                }
-                return '';
+                $titles = $browser->driver->findElements(WebDriverBy::cssSelector('.set-view-title'));
+                return $titles ? $titles[0]->getText() : '';
         }
 }

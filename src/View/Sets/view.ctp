@@ -33,7 +33,7 @@ if($set['Set']['id'] == 11969 || $set['Set']['id'] == 29156 || $set['Set']['id']
 </script>
 	<div class="split">
 		<div>
-		<?php echo '<p class="title4">' . h($setTitle) . '</p>';?>
+		<?php echo '<p class="title4 set-view-title">' . h($setTitle) . '</p>';?>
 		<div class="new1">
 		<table border="0" width="100%">
 		<tr>
