@@ -1771,23 +1771,13 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			echo 'options.alternativeResponse = false;';
 		if (!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0)
 		{
-			$sStatusB = '';
-			$sStatusW = '';
-			if (in_array($t['Tsumego']['semeaiType'], [1, 2, 3, 4, 5]))
-			{
-				[$sStatusB, $sStatusW] = Util::calculateLibertyStatus(
-					$multipleChoiceSquares,
-					$multipleChoiceTriangles,
-					$t['Tsumego']['minLib'],
-					$t['Tsumego']['maxLib'],
-					$t['Tsumego']['libertyCount'],
-					$t['Tsumego']['variance']);
-			}
-			else if($t['Tsumego']['semeaiType'] == 6)
-			{
-				$sStatusB = rand(0,$t['Tsumego']['variance']);
-				$sStatusW = rand(0,$t['Tsumego']['variance']);
-			}
+			[$sStatusB, $sStatusW] = Util::calculateLibertyStatus(
+				$multipleChoiceSquares,
+				$multipleChoiceTriangles,
+				$t['Tsumego']['minLib'],
+				$t['Tsumego']['maxLib'],
+				$t['Tsumego']['libertyCount'],
+				$t['Tsumego']['variance']);
 			echo 'options.multipleChoice = true;';
 			echo 'let sStatusB = '.$sStatusB.';';
 			echo 'let sStatusW = '.$sStatusW.';';
