@@ -48,11 +48,14 @@
 		--radius-full: 999px;
 
 		/* ── Typography ── */
-		--font-size-xs: 9px;
-		--font-size-sm: 11px;
-		--font-size-base: 12px;
-		--font-size-md: 13px;
-		--font-size-lg: 15px;
+		/* Fluid type scale: the viewport-relative term grows the size on wide
+		   screens; the clamp() caps keep the minimum (mobile) size readable
+		   without the text ballooning on very large monitors. */
+		--font-size-xs: clamp(9px, 0.5rem + 0.3vw, 10px);
+		--font-size-sm: clamp(11px, 0.6rem + 0.4vw, 12px);
+		--font-size-base: clamp(12px, 0.65rem + 0.5vw, 14px);
+		--font-size-md: clamp(13px, 0.7rem + 0.5vw, 15px);
+		--font-size-lg: clamp(15px, 0.8rem + 0.6vw, 17px);
 		--font-weight-normal: 400;
 		--font-weight-bold: 700;
 		--font-weight-heavy: 800;

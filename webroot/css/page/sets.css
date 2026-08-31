@@ -95,6 +95,9 @@
 .set-view-main {
   width: 100%;
   margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
 }
 .set-buttons-left,
 .set-buttons-right {
