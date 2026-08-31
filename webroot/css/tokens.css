@@ -1,0 +1,132 @@
+/* ══════════════════════════════════════════════════════
+   Design tokens — the single source of raw values.
+   Layer: tokens (see layers.css for the cascade contract).
+
+   - Brand tokens: theme-independent accents (green, purple, …).
+   - Theme tokens: switched by [data-theme] on <html>
+     (light = :root, dark = [data-theme="dark"]).
+
+   Rule: raw values (colors, spacing, radii, type) live ONLY here.
+   ══════════════════════════════════════════════════════ */
+
+@layer tokens
+{
+	/* ── Brand colors (theme-independent accents) ── */
+	:root
+	{
+		--color-green: #74d14c;
+		--color-green-dark: #366421;
+		--color-green-light: #82c95b;
+		--color-purple: #caa8d8;
+		--color-blue: #5b9bd5;
+		--color-blue-dark: #2a6496;
+		--color-red: #d63a49;
+		--color-red-muted: #e07070;
+		--color-yellow: #e6c832;
+		--color-yellow-dark: #b89a1a;
+		--color-red-fill: #e05555;
+		--color-red-fill-dark: #a02020;
+
+		/* ── Accent / feedback tokens (auto-adapt light ↔ dark) ── */
+		--color-blue-accent: #007bff;
+		--color-blue-accent-hover: #0056b3;
+		--feedback-error: #e03c4b;
+		--feedback-warning: #f0ad4e;
+		--surface-danger: #fee;
+		--surface-hover: #eee;
+		--surface-hover-strong: #ddd;
+
+		/* ── Spacing and radius ── */
+		--space-1: 4px;
+		--space-2: 8px;
+		--space-3: 12px;
+		--space-4: 16px;
+		--space-5: 24px;
+		--space-6: 32px;
+		--radius-sm: 4px;
+		--radius-md: 8px;
+		--radius-full: 999px;
+
+		/* ── Typography ── */
+		--font-size-xs: 9px;
+		--font-size-sm: 11px;
+		--font-size-base: 12px;
+		--font-size-md: 13px;
+		--font-size-lg: 15px;
+		--font-weight-normal: 400;
+		--font-weight-bold: 700;
+		--font-weight-heavy: 800;
+
+		/* ── Neutral colors ── */
+		--color-white: #fff;
+		--color-gray-dark: #4a4a4a;
+		--color-red-dark: #8b3a3a;
+		--color-red-darker: #4a2020;
+		--color-red-light: #ff8080;
+	}
+
+	/* ── Theme tokens: light is default (:root) ── */
+	:root
+	{
+		--text-color: #222;
+		--text-softer-color: grey;
+		--link-color: #0000EE;
+		--current-border-color: #ccc;
+		--surface-bar: #f5f5f5;
+		--dark-button-icon: url("/img/light-icon1x.png");
+		--new1-gradient: linear-gradient(#fff, #f2f2f2);
+		--title4-gradient: linear-gradient(#e1e1e1, #bdbdbd);
+		--body-background-gradient: linear-gradient(#282828, #424141);
+		--status-s-color: #3ecf78;
+		--status-c-color: #27ae60;
+		--status-f-color: #c63f4d;
+		--status-x-color: #a8323c;
+		--status-w-color: #34cfcc;
+		--status-v-color: #2d98e0;
+		--status-n-color: #7f8287;
+		--status-g-color: #daa520;
+		--status-g-highlight: #f5e080;
+		--paginator-button-text-color: #333;
+		--active-paginator-button-background-color: #333;
+		--active-paginator-button-text-color: #fff;
+		--paginator-info-text-color: #666;
+		--admin-text-color: #1010EE;
+		--info-box-background: #fff;
+	}
+
+	/* ── Dark theme overrides ── */
+	[data-theme="dark"]
+	{
+		--text-color: #ddd;
+		--text-softer-color: grey;
+		--link-color: #f0f0f0;
+		--current-border-color: #444;
+		--surface-bar: #303030;
+		--dark-button-icon: url("/img/dark-icon1.png");
+		--new1-gradient: linear-gradient(#3c3c3c, #2a2a2a);
+		--title4-gradient: linear-gradient(#737373, #4a4a4a);
+		--body-background-gradient: linear-gradient(#2a2a2a, #111);
+		--status-s-color: #0a4;
+		--status-c-color: #083;
+		--status-f-color: #dd3a4b;
+		--status-x-color: #c72a3b;
+		--status-w-color: #00aeab;
+		--status-v-color: #0088e3;
+		--status-n-color: #444;
+		--status-g-color: #b8860b;
+		--status-g-highlight: #e8c840;
+		--paginator-button-text-color: #ccc;
+		--active-paginator-button-background-color: #ccc;
+		--active-paginator-button-text-color: #000;
+		--paginator-info-text-color: #999;
+		--admin-text-color: #7EE0FF;
+		--info-box-background: #2a2a2a;
+		--color-blue-accent: #6db3f2;
+		--color-blue-accent-hover: #9dd0ff;
+		--feedback-error: #ff6b6b;
+		--feedback-warning: #c87f0a;
+		--surface-danger: #3a2020;
+		--surface-hover: #3a3a3a;
+		--surface-hover-strong: #444;
+	}
+}

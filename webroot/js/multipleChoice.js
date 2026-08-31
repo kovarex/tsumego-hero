@@ -528,14 +528,14 @@ function displayMultipleChoiceResult(num) {
       displayResult("S");
       multipleChoiceEnabled = false;
       //$(".alertBanner").css("background-color", "rgb(18, 121, 59)");
-      $(".alertBanner").addClass("alertBannerCorrect");
-      $(".alertBanner").html('Correct!<span class="alertClose">x</span>');
+      $(".toast__banner").addClass("toast__banner--success");
+      $(".toast__banner").html('Correct!<span class="toast__close">x</span>');
     } else {
       displayResult("F");
       multipleChoiceEnabled = false;
       //$(".alertBanner").css("background-color", "linear-gradient(rgba(214,70,74,1), rgba(201,95,105,1))");
-      $(".alertBanner").addClass("alertBannerIncorrect");
-      $(".alertBanner").html('Incorrect<span class="alertClose">x</span>');
+      $(".toast__banner").addClass("toast__banner--error");
+      $(".toast__banner").html('Incorrect<span class="toast__close">x</span>');
     }
     $("#multipleChoiceText").html(mText);
     $("#multipleChoiceAlerts").fadeIn(500);

@@ -25,8 +25,8 @@ $tabs = [
 		<div align="center">
 		<br>
 		<?php foreach ($tabs as $name => $url): ?>
-			<?php $class = ($name === $activeTab) ? 'buttonx-current' : 'new-buttonx'; ?>
-			<a class="new-button <?php echo $class; ?>" href="<?php echo $url; ?>"><?php echo $name; ?></a>
+			<?php $class = ($name === $activeTab) ? 'btn--inactive' : ''; ?>
+			<a class="btn <?php echo $class; ?>" href="<?php echo $url; ?>"><?php echo $name; ?></a>
 		<?php endforeach; ?>
 		<br><br>
 		</div>

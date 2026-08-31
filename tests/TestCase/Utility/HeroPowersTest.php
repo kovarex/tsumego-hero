@@ -90,7 +90,7 @@ class HeroPowersTest extends TestCaseWithAuth
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 
 		// Wait for navigation buttons to load
-		$browser->driver->wait(10)->until(WebDriverExpectedCondition::presenceOfElementLocated(WebDriverBy::cssSelector('div.tsumegoNavi2 li')));
+		$browser->driver->wait(10)->until(WebDriverExpectedCondition::presenceOfElementLocated(WebDriverBy::cssSelector('div.problem-nav__inner li')));
 
 		$this->checkPlayNavigationButtons($browser, 1, $context, function ($index) {
 			return $index;

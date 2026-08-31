@@ -130,10 +130,10 @@ export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags
 	const tagList = (addedTags.length > 0 || hiddenCount > 0) && (
 		<div style={{ marginBottom: 8 }} data-testid="tag-list">
 			{addedTags.map(t => (
-					<span key={t.id} style={{ display: 'inline-block', margin: '0 6px 4px 0', padding: '2px 8px', background: 'var(--info-box-background)', borderRadius: 12, fontSize: 13, color: 'var(--text-color)', border: '1px solid var(--current-border-color)' }}>
-						<a href={`/tags/view/${t.id}`} style={{ color: 'var(--link-color)', textDecoration: 'none' }} data-testid={makeIdValidName(t.name)} id={makeIdValidName(t.name)}>{t.name}</a>
+					<span key={t.id} className="tag-pill">
+						<a href={`/tags/view/${t.id}`} data-testid={makeIdValidName(t.name)} id={makeIdValidName(t.name)}>{t.name}</a>
 						{userId && ((t.isMine && !t.isApproved) || isAdmin) && (
-							<button onClick={() => handleRemove(t)} style={{ marginLeft: 4, background: 'none', border: 'none', color: 'var(--text-softer-color)', cursor: 'pointer', fontSize: 13 }} title="Remove tag" id={makeIdValidName(t.name).replace('tag-', 'remove-')}>×</button>
+							<button className="tag-pill__remove" onClick={() => handleRemove(t)} title="Remove tag" id={makeIdValidName(t.name).replace('tag-', 'remove-')}>×</button>
 					)}
 				</span>
 			))}
@@ -151,7 +151,7 @@ export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags
 		<div data-testid="tag-editor">
 			{tagList}
 
-			{error && <div style={{ color: '#e03c4b', marginBottom: 6 }} data-testid="tag-error">{error}</div>}
+			{error && <div style={{ color: 'var(--feedback-error)', marginBottom: 6 }} data-testid="tag-error">{error}</div>}
 
 			{!canAddMoreTags && (
 				<div style={{ color: 'var(--text-softer-color)', fontSize: 14 }}>Daily limit reached.</div>
@@ -190,7 +190,7 @@ export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags
 						{
 							const label = tag.isMine ? 'pending' : 'already proposed';
 							return (
-								<div key={tag.id} style={{ ...tagStyle, color: tag.isMine ? 'var(--text-softer-color)' : '#e03c4b', cursor: 'default' }}>
+								<div key={tag.id} style={{ ...tagStyle, color: tag.isMine ? 'var(--text-softer-color)' : 'var(--feedback-error)', cursor: 'default' }}>
 									{tag.name} <span style={{ color: 'var(--text-softer-color)', fontSize: 12 }}>({label})</span>
 								</div>
 							);

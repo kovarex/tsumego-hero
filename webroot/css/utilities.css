@@ -1,0 +1,15 @@
+/* ══════════════════════════════════════════════════════
+   Utilities layer (@layer utilities)
+   Tiny single-purpose helpers. Add ONLY when a one-off
+   pattern recurs (used 2-5x) - never speculative. Planned:
+   .text-muted .flex .hidden .mt-* .mb-* .text-center .clearfix
+   ══════════════════════════════════════════════════════ */
+
+@layer utilities
+{
+/* Muted text */
+.text-muted
+{
+	color: var(--text-softer-color);
+}
+}

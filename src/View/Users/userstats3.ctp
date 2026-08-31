@@ -18,7 +18,7 @@
 	
 	
 	
-	<table width="85%" border="0" class="userstatsstbale">
+	<table width="85%" border="0" class="data-table data-table--compact">
 	<tr>
 		<th>#</th>
 		<th>user-id</th>

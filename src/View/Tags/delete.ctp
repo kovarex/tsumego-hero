@@ -12,15 +12,15 @@
 
   <?php echo $this->Form->create('Tag'); ?>
 
-  <table>
-    <tr>
-      <td><label for="TagNameName">Type tag id for deletion:</label></td>
-      <td><input name="data[TagName][delete]" placeholder="Tag id" maxlength="50" type="text" id="TagNameName"></td>
-    </tr>
-  </table>
+  <div class="stack">
+    <div class="form-field">
+      <label class="form-field__label" for="TagNameName">Type tag id for deletion:</label>
+      <input class="form-field__control" name="data[TagName][delete]" placeholder="Tag id" maxlength="50" type="text" id="TagNameName">
+    </div>
+  </div>
   <br>
   <?php echo $this->Form->end('Delete'); ?>
 	<br>
-	<a class="new-button-default" href="/tags/view/<?php echo $tn['Tag']['id']; ?>">Back</a>
+	<a class="btn" href="/tags/view/<?php echo $tn['Tag']['id']; ?>">Back</a>
 
 </div>

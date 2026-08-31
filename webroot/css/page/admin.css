@@ -1,0 +1,13 @@
+@layer page
+{
+.adminpanel-table-text {
+  max-width: 350px;
+}
+.adminpanel-link {
+  white-space: nowrap;
+}
+.duplicateTable {
+  max-width: 800px;
+}
+.admin-text { color: var(--admin-text-color); }
+}

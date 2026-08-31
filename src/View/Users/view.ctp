@@ -263,18 +263,18 @@ foreach ($heroPowers as $power)
 	<tr>
 	<td width="50%">
 		<div align="center">
-			<a id="userShowLevelButtonLeft" class="new-button-time" onclick="activateSelection('level', 'Left');">Level</a>
-			<a id="userShowRatingButtonLeft" class="new-button-time" onclick="activateSelection('rating', 'Left');">Rating</a>
-			<a id="userShowTimeButtonLeft" class="new-button-time" onclick="activateSelection('time', 'Left');">Time</a>
-			<a id="userShowAchievementsButtonLeft" class="new-button-time" onclick="activateSelection('achievement', 'Left');">Achievements</a>
+			<a id="userShowLevelButtonLeft" class="btn" onclick="activateSelection('level', 'Left');">Level</a>
+			<a id="userShowRatingButtonLeft" class="btn" onclick="activateSelection('rating', 'Left');">Rating</a>
+			<a id="userShowTimeButtonLeft" class="btn" onclick="activateSelection('time', 'Left');">Time</a>
+			<a id="userShowAchievementsButtonLeft" class="btn" onclick="activateSelection('achievement', 'Left');">Achievements</a>
 		</div>
 	</td>
 	<td width="50%">
 		<div align="center">
-			<a id="userShowLevelButtonRight" class="new-button-time" onclick="activateSelection('level', 'Right');">Level</a>
-			<a id="userShowRatingButtonRight" class="new-button-time" onclick="activateSelection('rating', 'Right');">Rating</a>
-			<a id="userShowTimeButtonRight" class="new-button-time" onclick="activateSelection('time', 'Right');">Time</a>
-			<a id="userShowAchievementsButtonRight" class="new-button-time" onclick="activateSelection('achievement', 'Right');">Achievements</a>
+			<a id="userShowLevelButtonRight" class="btn" onclick="activateSelection('level', 'Right');">Level</a>
+			<a id="userShowRatingButtonRight" class="btn" onclick="activateSelection('rating', 'Right');">Rating</a>
+			<a id="userShowTimeButtonRight" class="btn" onclick="activateSelection('time', 'Right');">Time</a>
+			<a id="userShowAchievementsButtonRight" class="btn" onclick="activateSelection('achievement', 'Right');">Achievements</a>
 		</div>
 	</td>
 	</tr>
@@ -355,8 +355,7 @@ $("#show").click(function(){
 
 function updateButtonActivity(id, side, active)
 {
-	$("#" + id + 'Button' + side).addClass("new-button-time-" + (!active ? 'inactive' : ''));
-	$("#" + id + 'Button' + side).removeClass("new-button-time-" + (active ? 'inactive' : ''));
+	$("#" + id + 'Button' + side).toggleClass("btn--inactive", !active);
 	if (active)
 		$("#" + id + side).fadeIn(250);
 	else

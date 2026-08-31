@@ -267,8 +267,8 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	?>
 
 <?php if (isset($tsumegoButtons)) { ?>
-	<div class="tsumegoNavi1">
-		<div class="tsumegoNavi2">
+	<div class="problem-nav">
+		<div class="problem-nav__inner">
 			<?php
 			foreach ($tsumegoButtons as $index => $tsumegoButton) {
 				$tsumegoButton->render($index, $fav);
@@ -550,13 +550,13 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		?>
 	<?php if(!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0 || $tv!=null&&$tv['TsumegoVariant']['type']=='multiple_choice'){ ?>
 		<label>
-		<input type="checkbox" class="alertCheckbox1" id="alertCheckbox" autocomplete="off" />
-		<div class="alertBox alertInfo" id="multipleChoiceAlerts">
-		<div class="alertBanner">
+		<input type="checkbox" class="toast__toggle" id="alertCheckbox" autocomplete="off" />
+		<div class="toast" id="multipleChoiceAlerts">
+		<div class="toast__banner">
 		Infomation
-		<span class="alertClose">x</span>
+		<span class="toast__close">x</span>
 		</div>
-		<span class="alertText2">
+		<span class="toast__body toast__body--left">
 		<div id="multipleChoiceText"></div>
 		<div class="clear1"></div>
 		</span>
@@ -564,13 +564,13 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		</label>
 	<?php }else{ ?>
 		<label>
-			<input type="checkbox" class="alertCheckbox1" id="potionAlertCheckbox" autocomplete="off" />
-			<div class="alertBox alertInfo" id="potionAlerts">
-			<div class="alertBanner" align="center">
+			<input type="checkbox" class="toast__toggle" id="potionAlertCheckbox" autocomplete="off" />
+			<div class="toast" id="potionAlerts">
+			<div class="toast__banner" align="center">
 			Hero Power
-			<span class="alertClose">x</span>
+			<span class="toast__close">x</span>
 		</div>
-			<span class="alertText">
+			<span class="toast__body">
 	<?php
 			echo '<img id="hpIcon1" src="/img/hp5.png">
 			You found a potion, your hearts have been restored.<br>'
@@ -579,13 +579,13 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 					</div>
 		</label>
 		<label>
-		<input type="checkbox" class="alertCheckbox1" id="customAlertCheckbox" autocomplete="off" />
-		<div class="alertBox alertInfo" id="customAlerts">
-		<div class="alertBanner">
+		<input type="checkbox" class="toast__toggle" id="customAlertCheckbox" autocomplete="off" />
+		<div class="toast" id="customAlerts">
+		<div class="toast__banner">
 		Message
-		<span class="alertClose">x</span>
+		<span class="toast__close">x</span>
 		</div>
-		<span class="alertText3">
+		<span class="toast__body toast__body--wide">
 		<div id="customText"></div>
 		<div class="clear1"></div>
 		</span>
@@ -697,7 +697,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		// The navigation buttons don't exist in all of the modes
 		if (!current)
 			return;
-		current.parentElement.parentElement.className = 'status' + status + ' statusCurrent';
+		current.parentElement.parentElement.className = 'problem-nav__item problem-nav__item--' + status + ' problem-nav__item--current';
 	}
 
 	<?php
@@ -733,13 +733,13 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	function drawActiveTiles(){
 		$(".active-tiles-container").html("");
 		for(let i=0;i<activeTopicTiles.length;i++)
-			$(".active-tiles-container").append('<div class="dropdown-tile tile-color1" id="active-tiles-element'+i+'" onclick="removeActiveTopic('+i+')" style="cursor:context-menu">'+activeTopicTiles[i]+'</div>');
+			$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--green" id="active-tiles-element'+i+'" onclick="removeActiveTopic('+i+')" style="cursor:context-menu">'+activeTopicTiles[i]+'</div>');
 		for(let i=0;i<activeDifficultyTiles.length;i++)
-			$(".active-tiles-container").append('<div class="dropdown-tile tile-color2" id="active-tiles-element'+i+'" onclick="removeActiveDifficulty('+i+')" style="cursor:context-menu">'+activeDifficultyTiles[i]+'</div>');
+			$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--purple" id="active-tiles-element'+i+'" onclick="removeActiveDifficulty('+i+')" style="cursor:context-menu">'+activeDifficultyTiles[i]+'</div>');
 		for(let i=0;i<activeTagTiles.length;i++)
-			$(".active-tiles-container").append('<div class="dropdown-tile tile-color3" id="active-tiles-element'+i+'" onclick="removeActiveTag('+i+')" style="cursor:context-menu">'+activeTagTiles[i]+'</div>');
+			$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--brown" id="active-tiles-element'+i+'" onclick="removeActiveTag('+i+')" style="cursor:context-menu">'+activeTagTiles[i]+'</div>');
 		if(activeTopicTiles.length>0 || activeDifficultyTiles.length>0 || activeTagTiles.length>0)
-			$(".active-tiles-container").append('<a class="dropdown-tile tile-color4" id="unselect-active-tiles" href="">clear</a><div style="clear:both"</div>');
+			$(".active-tiles-container").append('<a class="dropdown__tile dropdown__tile--muted" id="unselect-active-tiles" href="">clear</a><div style="clear:both"</div>');
 	}
 
 	$(".active-tiles-container").on("click", "#unselect-active-tiles", function(e){
@@ -1023,7 +1023,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	if(Auth::isInLevelMode()){
 	}elseif(Auth::isInRatingMode()){
 		echo '
-			$(".tsumegoNavi1").hide();
+			$(".problem-nav").hide();
 			$(".tsumegoNavi-middle").hide();
 			$(".tsumegoNavi-middle2").show();
 			$(".mode1").css({"padding-top":"8px"});
@@ -1704,10 +1704,10 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		$('#customText').html(message);
 		$("#customAlerts").fadeIn(500);
 		if (color==='red')
-			$(".alertBanner").addClass("alertBannerIncorrect");
+			$(".toast__banner").addClass("toast__banner--error");
 		else
-			$(".alertBanner").addClass("alertBannerCorrect");
-		$(".alertBanner").html(topic+"<span class=\"alertClose\">x</span>");
+			$(".toast__banner").addClass("toast__banner--success");
+		$(".toast__banner").html(topic+"<span class=\"toast__close\">x</span>");
 	}
 
 	function resetParameters(isAtStart)

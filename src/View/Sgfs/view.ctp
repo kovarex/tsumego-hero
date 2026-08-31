@@ -40,7 +40,7 @@
 			<a href="/sgfs/view/<?php echo $id2; ?>">back</a>
 		<?php } ?>
 	</div>
-	<table class="highscoreTable" border="0">
+	<table class="data-table" border="0">
 	<tbody>
 	<tr>
 		<th>Date</th>

@@ -22,9 +22,9 @@ $categories = [2 => 'Slow', 1 => 'Fast', 0 => 'Blitz'];
 <div style="margin-bottom: 16px;">
 <?php foreach ($categories as $catIdx => $catName): ?>
 	<?php if ($catIdx == $currentCategory): ?>
-		<a class="new-button-time-inactive"><?php echo $catName; ?></a>
+		<a class="btn btn--inactive"><?php echo $catName; ?></a>
 	<?php else: ?>
-		<a class="new-button-time" href="/users/time_mode?category=<?php echo $catIdx; ?>&rank=<?php echo h($params2); ?>"><?php echo $catName; ?></a>
+		<a class="btn" href="/users/time_mode?category=<?php echo $catIdx; ?>&rank=<?php echo h($params2); ?>"><?php echo $catName; ?></a>
 	<?php endif; ?>
 <?php endforeach; ?>
 </div>
@@ -36,11 +36,11 @@ for ($j = 0; $j < count($modes[$currentCategory]); $j++):
 	$hasData = ($modes[$currentCategory][$j] == '1');
 	$isSelected = ($modes2[$currentCategory][$j] == $params2);
 	if ($hasData && !$isSelected):
-		echo '<a class="new-button-time" href="/users/time_mode?category=' . $currentCategory . '&rank=' . $modes2[$currentCategory][$j] . '">' . $modes2[$currentCategory][$j] . '</a>';
+		echo '<a class="btn" href="/users/time_mode?category=' . $currentCategory . '&rank=' . $modes2[$currentCategory][$j] . '">' . $modes2[$currentCategory][$j] . '</a>';
 	elseif ($isSelected):
-		echo '<a class="new-button-time-inactive">' . $modes2[$currentCategory][$j] . '</a>';
+		echo '<a class="btn btn--inactive">' . $modes2[$currentCategory][$j] . '</a>';
 	else:
-		echo '<a class="new-button-time-inactive2">' . $modes2[$currentCategory][$j] . '</a>';
+		echo '<a class="btn btn--inactive">' . $modes2[$currentCategory][$j] . '</a>';
 	endif;
 endfor;
 ?>

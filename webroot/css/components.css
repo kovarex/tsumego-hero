@@ -17,81 +17,8 @@
      here so the next page can reuse it.
    ══════════════════════════════════════════════════════ */
 
-:root
+@layer components
 {
-	/* ── Brand colors (theme-independent accents) ── */
-	--color-green: #74d14c;
-	--color-green-dark: #366421;
-	--color-green-light: #82c95b;
-	--color-purple: #caa8d8;
-	--color-blue: #5b9bd5;
-	--color-blue-dark: #2a6496;
-	--color-red: #d63a49;
-	--color-red-muted: #e07070;
-	--color-yellow: #e6c832;
-	--color-yellow-dark: #b89a1a;
-	--color-red-fill: #e05555;
-	--color-red-fill-dark: #a02020;
-
-
-
-	/* ── Spacing and radius ── */
-	--space-1: 4px;
-	--space-2: 8px;
-	--space-3: 12px;
-	--space-4: 16px;
-	--space-5: 24px;
-	--space-6: 32px;
-	--radius-sm: 4px;
-	--radius-md: 8px;
-	--radius-full: 999px;
-
-	/* ── Typography ── */
-	--font-size-xs: 9px;
-	--font-size-sm: 11px;
-	--font-size-base: 12px;
-	--font-size-md: 13px;
-	--font-size-lg: 15px;
-	--font-weight-normal: 400;
-	--font-weight-bold: 700;
-	--font-weight-heavy: 800;
-
-	/* ── Neutral colors ── */
-	--color-white: #fff;
-	--color-gray-dark: #4a4a4a;
-	--color-red-dark: #8b3a3a;
-	--color-red-darker: #4a2020;
-	--color-red-light: #ff8080;
-}
-
-/* ── Layout objects ── */
-.cluster
-{
-	display: flex;
-	flex-wrap: wrap;
-	gap: var(--space-1);
-	margin: 0 var(--space-1) var(--space-3);
-}
-
-.cluster--stretch
-{
-	align-items: stretch;
-}
-
-.cluster > *
-{
-	flex: 1;
-	min-width: 250px;
-}
-
-.stack
-{
-	display: flex;
-	flex-direction: column;
-	gap: var(--space-2);
-	align-items: flex-start;
-}
-
 /* ── Card ── */
 .card
 {
@@ -187,74 +114,122 @@
 	pointer-events: none;
 }
 
-/* ── Rarity badge ── */
-.rarity
+/* Thin variant: small track with the label above (set cards) */
+.progress--thin
 {
-	display: inline-block;
-	padding: 2px 8px;
-	border-radius: var(--radius-full);
-	font-size: var(--font-size-sm);
-	font-weight: var(--font-weight-heavy);
-	text-transform: uppercase;
-	letter-spacing: 0.5px;
-	margin-left: var(--space-2);
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	height: auto;
+	background: transparent;
+	border-radius: 0;
+	overflow: visible;
+	margin: 0;
 }
 
-.rarity--common
+.progress--thin .progress__label
 {
-	color: var(--color-green-dark);
-	background: var(--color-green-light);
+	position: static;
+	font-size: 14px;
+	font-weight: 600;
+	animation: progress-number-in 0.6s ease-out;
 }
 
-.rarity--uncommon
+.progress--thin .progress__track
 {
-	color: var(--color-blue-dark);
-	background: var(--color-blue);
+	position: relative;
+	width: 100%;
+	height: 5px;
+	border-radius: 3px;
+	background: rgba(0, 0, 0, 0.15);
 }
 
-.rarity--rare
+.progress--thin .progress__fill
 {
-	color: var(--color-purple);
-	background: var(--color-blue-dark);
+	position: absolute;
+	top: 0;
+	left: 0;
+	height: 100%;
+	min-width: 0;
+	border-radius: 3px;
+	background-color: #bbbbbb;
+	background-image: linear-gradient(#f5f5f5, #9b9b9b);
+	animation: progress-grow 0.6s ease-out;
 }
 
-.rarity--ultra-rare
+.progress--thin.progress--complete .progress__fill
 {
-	color: var(--color-yellow);
-	background: var(--color-red);
+	animation: progress-grow 0.6s ease-out, progress-glow 0.5s ease-out 0.6s;
+}
+
+@keyframes progress-grow
+{
+	from { width: 0; }
+}
+
+@keyframes progress-glow
+{
+	0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+	35% { box-shadow: 0 0 16px 4px rgba(255, 255, 255, 0.95); }
+	100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+}
+
+@keyframes progress-number-in
+{
+	from { opacity: 0; }
 }
 
 /* ── Button ── */
+/* Unified on the site's dominant button look (the green-text grey box that was
+   new-button-time) so the whole site has ONE button style. */
 .btn
 {
 	display: inline-block;
-	padding: var(--space-1) var(--space-3);
-	border: 1px solid var(--current-border-color);
-	border-radius: var(--radius-sm);
-	background: var(--new1-gradient);
-	color: var(--text-color);
+	font-family: "Times New Roman", Times, serif;
+	font-size: 16px;
+	font-weight: 800;
 	text-decoration: none;
-	font-size: var(--font-size-md);
+	text-transform: uppercase;
+	background-color: #5b5d60;
+	color: #74d13f;
+	padding: 8px 10px;
+	margin: 2px;
+	border: 1px solid #333333;
+	border-top-color: #cccccc;
+	border-left-color: #cccccc;
+	border-radius: 9px;
 	cursor: pointer;
-	transition: background 0.2s, color 0.2s;
+	transition: background 0.2s;
 }
 
 .btn:hover
 {
-	background: var(--color-gray-dark);
-	color: var(--color-white);
+	background-color: #737477;
+	color: #74d13f;
+	cursor: pointer;
 }
 
 .btn--disabled
 {
 	opacity: 0.5;
-	cursor: not-allowed;
 }
 
 .btn--disabled:hover
 {
-	background: var(--new1-gradient);
-	color: var(--text-color);
+	background-color: #5b5d60;
+	cursor: not-allowed;
+}
+
+.btn--inactive
+{
+	background-color: #8f9092;
+	color: #b0d999;
+}
+
+.btn--inactive:hover
+{
+	background-color: #8f9092;
+	color: #b0d999;
 }
 
 .btn--danger
@@ -267,6 +242,36 @@
 {
 	background: var(--color-red-darker);
 	color: var(--color-red-light);
+}
+
+.btn--small
+{
+	padding: 3px 8px;
+	font-size: 11px;
+}
+
+.btn--success
+{
+	border-color: var(--color-green-dark);
+	color: var(--color-green);
+}
+
+.btn--success:hover
+{
+	background: var(--color-green-dark);
+	color: var(--color-green-light);
+}
+
+.btn--warning
+{
+	border-color: var(--feedback-warning);
+	color: var(--feedback-warning);
+}
+
+.btn--warning:hover
+{
+	background: var(--feedback-warning);
+	color: var(--color-white);
 }
 
 /* ── Sub-navigation ── */
@@ -324,6 +329,84 @@
 	color: var(--color-white);
 	background: var(--color-blue-dark);
 	border-color: var(--color-blue-dark);
+}
+
+/* Status badges (problem status colors, from the --status-*-color tokens) */
+.badge--status-N, .badge--status-V, .badge--status-S, .badge--status-C,
+.badge--status-W, .badge--status-F, .badge--status-X, .badge--status-G
+{
+	padding: 4px 14px;
+	font-size: 14px;
+	font-weight: 800;
+	border-radius: 4px;
+	text-align: center;
+	min-width: 100px;
+	text-transform: none;
+	letter-spacing: normal;
+	border: none;
+	margin-top: 0;
+}
+
+.badge--status-N { background-color: var(--status-n-color); color: #fff; }
+.badge--status-V { background-color: var(--status-v-color); color: #fff; }
+.badge--status-S { background-color: var(--status-s-color); color: #fff; }
+.badge--status-C { background-color: var(--status-c-color); color: #fff; }
+.badge--status-W { background-color: var(--status-w-color); color: #fff; }
+.badge--status-F { background-color: var(--status-f-color); color: #fff; }
+.badge--status-X { background-color: var(--status-x-color); color: #fff; }
+
+.badge--status-G
+{
+	background: linear-gradient(135deg, var(--status-g-color), var(--status-g-highlight), var(--status-g-color));
+	color: #3d2e00;
+	box-shadow: 0 1px 4px rgba(218, 165, 32, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+	border: 1px solid rgba(180, 140, 30, 0.4);
+	position: relative;
+	overflow: hidden;
+}
+
+.badge--status-G::after
+{
+	content: "";
+	position: absolute;
+	top: -50%;
+	left: -75%;
+	width: 40%;
+	height: 200%;
+	background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+	transform: skewX(-25deg);
+	animation: goldenShine 3s ease-in-out infinite;
+	pointer-events: none;
+}
+
+/* ── Tag pill (tag chips; replaces inline-styled React tag pills) ── */
+.tag-pill
+{
+	display: inline-block;
+	margin: 0 6px 4px 0;
+	padding: 2px 8px;
+	border-radius: 12px;
+	font-size: 13px;
+	background: var(--info-box-background);
+	color: var(--text-color);
+	border: 1px solid var(--current-border-color);
+}
+
+.tag-pill a
+{
+	color: var(--link-color);
+	text-decoration: none;
+}
+
+.tag-pill__remove
+{
+	margin-left: var(--space-1);
+	padding: 0;
+	background: none;
+	border: none;
+	color: var(--text-softer-color);
+	cursor: pointer;
+	font-size: var(--font-size-md);
 }
 
 /* ── Field (inline group of controls) ── */
@@ -428,6 +511,122 @@
 	color: var(--text-softer-color);
 }
 
+/* ── Dropdown trigger / overlay / menu (checkbox-hack + JS toggled popover) ── */
+.dropdown__trigger
+{
+	cursor: pointer;
+}
+
+.dropdown__overlay
+{
+	display: none;
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+}
+
+.dropdown__menu
+{
+	background: var(--surface-bar);
+	border: var(--current-border-color) solid 1px;
+	border-radius: 3px;
+	position: absolute;
+	opacity: 0;
+	display: none;
+	transition: opacity 0.3s, visibility 0.3s;
+}
+
+.dropdown__open:checked ~ .dropdown__menu
+{
+	opacity: 1;
+	visibility: visible;
+}
+
+.dropdown__open:checked ~ .dropdown__overlay
+{
+	display: block;
+}
+
+/* Filter-tile panel (set picker: sets index/view, play) */
+.dropdown__menu--filters
+{
+	background: #222222;
+	color: white;
+	padding: 10px;
+	border-radius: 5px;
+	max-width: 380px;
+	border: 1px solid black;
+	opacity: 1;
+	transition: none;
+}
+
+.dropdown__tile
+{
+	background-color: #ffffff1a;
+	color: #fff;
+	border-radius: 50px;
+	padding: 4px 8px;
+	margin: 4px;
+	float: left;
+	white-space: nowrap;
+	cursor: pointer;
+	text-decoration: none;
+	background-image: linear-gradient(rgba(200, 200, 200, 0.15), rgba(33, 33, 33, 0.2));
+}
+
+.dropdown__tile:hover
+{
+	background-image: linear-gradient(rgba(200, 200, 200, 0.35), rgba(33, 33, 33, 0.4));
+}
+
+.dropdown__tile--green
+{
+	background-color: #558a35;
+}
+
+.dropdown__tile--purple
+{
+	background-color: #ac4bd0;
+}
+
+.dropdown__tile--brown
+{
+	background-color: #aa5538;
+}
+
+.dropdown__tile--muted
+{
+	background-color: #33333388;
+}
+
+[data-theme=dark] .dropdown__tile--muted
+{
+	background-color: #ffffff1a;
+}
+
+.dropdown__tile-actions
+{
+	float: left;
+	width: 100%;
+}
+
+.dropdown__tile-actions__select
+{
+	float: left;
+	font-weight: 800;
+	padding: 5px 9px;
+}
+
+.dropdown__tile-actions__submit
+{
+	float: right;
+	font-weight: 800;
+	padding: 5px 9px;
+	color: white;
+}
+
 /* ── Hint (muted helper text) ── */
 .hint
 {
@@ -445,6 +644,52 @@
 {
 	color: var(--color-green);
 	cursor: pointer;
+}
+
+/* ── Pagination ── */
+.pagination
+{
+	margin: 15px 0;
+	text-align: center;
+}
+
+.pagination__link
+{
+	display: inline-block;
+	margin: 0 2px;
+	padding: 5px 10px;
+	border: 1px solid #ccc;
+	text-decoration: none;
+	color: var(--paginator-button-text-color);
+	border-radius: 3px;
+}
+
+.pagination__link:hover
+{
+	text-decoration: underline;
+}
+
+.pagination__link--active
+{
+	display: inline-block;
+	margin: 0 2px;
+	padding: 5px 10px;
+	background: var(--active-paginator-button-background-color);
+	color: var(--active-paginator-button-text-color);
+	border: 1px solid #333;
+	border-radius: 3px;
+}
+
+.pagination__info
+{
+	color: var(--paginator-info-text-color);
+	margin-right: 10px;
+}
+
+.pagination__ellipsis
+{
+	margin: 0 5px;
+	color: var(--paginator-info-text-color);
 }
 
 /* ── Data table ── */
@@ -489,6 +734,11 @@
 	background: var(--surface-bar);
 }
 
+.data-table--compact td
+{
+	padding: 6px;
+}
+
 .data-table a
 {
 	color: inherit;
@@ -500,6 +750,281 @@
 	text-decoration: underline;
 }
 
+/* Highscore row states */
+.data-table__row--separator td
+{
+	font-size: 24px;
+	color: #888;
+	padding: 4px 0;
+	border: none;
+	background: transparent;
+}
 
+.data-table__row--self td
+{
+	font-weight: bold;
+}
 
+.data-table__row--self td:first-child
+{
+	border-left: 8px solid #4a90d9;
+	border-radius: 12px 0 0 12px;
+	color: #4a90d9;
+	white-space: nowrap;
+}
 
+.data-table__row--medal-gold td
+{
+	background: linear-gradient(135deg, #c9a14b, #edd478, #bf8f30, #e8cc6e) !important;
+	color: #3d1f00;
+}
+
+.data-table__row--medal-silver td
+{
+	background: linear-gradient(135deg, #9e9e9e, #cccccc, #8a8a8a, #c4c4c4) !important;
+	color: #222;
+}
+
+.data-table__row--medal-bronze td
+{
+	background: linear-gradient(135deg, #b8783e, #d4a060, #a06530, #c89458) !important;
+	color: #2d1400;
+}
+
+/* ── Feedback (spinner, skeleton, error) ── */
+.spinner
+{
+	display: inline-block;
+	width: 14px;
+	height: 14px;
+	border: 2px solid rgba(255, 255, 255, 0.3);
+	border-top-color: white;
+	border-radius: 50%;
+	animation: spin 0.6s linear infinite;
+	margin-right: 6px;
+	vertical-align: middle;
+}
+
+@keyframes spin
+{
+	to { transform: rotate(360deg); }
+}
+
+.skeleton-wrapper
+{
+	animation: skeleton-fade-in 0.2s ease-in;
+}
+
+@keyframes skeleton-fade-in
+{
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
+.skeleton-element
+{
+	background: linear-gradient(
+		90deg,
+		#f0f0f0 25%,
+		#e0e0e0 50%,
+		#f0f0f0 75%
+	);
+	background-size: 200% 100%;
+	animation: skeleton-shimmer 1.5s infinite;
+	display: inline-block;
+}
+
+@keyframes skeleton-shimmer
+{
+	0% { background-position: 200% 0; }
+	100% { background-position: -200% 0; }
+}
+
+.error-message
+{
+	padding: 20px;
+	margin: 20px 14px;
+	background: var(--surface-danger);
+	border: 2px solid var(--feedback-error);
+	border-radius: 8px;
+	text-align: center;
+}
+
+.error-message p
+{
+	margin: 0 0 15px 0;
+	color: var(--feedback-error);
+	font-size: 14px;
+}
+
+.error-boundary
+{
+	padding: 30px;
+	margin: 20px 14px;
+	background: #fee;
+	border: 3px solid #c33;
+	border-radius: 8px;
+	text-align: center;
+}
+
+.error-boundary__content h3
+{
+	margin: 0 0 10px 0;
+	color: #c33;
+	font-size: 18px;
+}
+
+.error-boundary__content p
+{
+	margin: 0 0 20px 0;
+	color: #666;
+	font-size: 14px;
+}
+
+.error-boundary__details
+{
+	margin-top: 20px;
+	text-align: left;
+	padding: 10px;
+	background: #fff;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+}
+
+.error-boundary__details summary
+{
+	cursor: pointer;
+	color: #666;
+	font-size: 12px;
+	padding: 5px;
+}
+
+.error-boundary__details pre
+{
+	margin: 10px 0 0 0;
+	padding: 10px;
+	background: #f5f5f5;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	overflow-x: auto;
+	font-size: 11px;
+	color: #c33;
+}
+
+.loading
+{
+	color: var(--text-softer-color);
+	font-size: var(--font-size-md);
+}
+
+/* ── Toast (dismissible bottom notification) ── */
+.toast
+{
+	position: fixed;
+	width: 1000px;
+	bottom: 1%;
+	left: 50%;
+	margin-left: -500px;
+	line-height: 1.8;
+	border-radius: 8px;
+	cursor: pointer;
+	font-family: sans-serif;
+	font-weight: 400;
+	display: none;
+	z-index: 9999;
+	background: linear-gradient(
+		180deg,
+		rgb(99.608% 99.608% 99.608%) 0%,
+		rgb(99.607% 99.607% 99.607%) 6.25%,
+		rgb(99.6% 99.6% 99.6%) 12.5%,
+		rgb(99.571% 99.571% 99.571%) 18.75%,
+		rgb(99.49% 99.49% 99.49%) 25%,
+		rgb(99.32% 99.32% 99.32%) 31.25%,
+		rgb(99.011% 99.011% 99.011%) 37.5%,
+		rgb(98.502% 98.502% 98.502%) 43.75%,
+		rgb(97.721% 97.721% 97.721%) 50%,
+		rgb(96.585% 96.585% 96.585%) 56.25%,
+		rgb(95% 95% 95%) 62.5%,
+		rgb(92.862% 92.862% 92.862%) 68.75%,
+		rgb(90.054% 90.054% 90.054%) 75%,
+		rgb(86.448% 86.448% 86.448%) 81.25%,
+		rgb(81.907% 81.907% 81.907%) 87.5%,
+		rgb(76.282% 76.282% 76.282%) 93.75%,
+		rgb(69.412% 69.412% 69.412%) 100%
+	);
+	border: 1px solid black;
+}
+
+/* Hidden checkbox that dismisses the toast when checked (label wraps both). */
+.toast__toggle
+{
+	display: none;
+}
+
+:checked + .toast
+{
+	display: none;
+}
+
+.toast__banner
+{
+	border-top-left-radius: 8px;
+	border-top-right-radius: 8px;
+	background: linear-gradient(rgb(100, 100, 100), rgb(36, 36, 36));
+	color: white;
+	height: 31px;
+	width: 100%;
+	font-weight: 800;
+}
+
+.toast__banner--error
+{
+	background: linear-gradient(rgb(217, 109, 112), rgb(202, 63, 76)) !important;
+}
+
+.toast__banner--success
+{
+	background: linear-gradient(rgb(26, 181, 88), rgb(18, 121, 59)) !important;
+}
+
+.toast__close
+{
+	float: right;
+	padding: 1px 5px 5px 5px;
+	font-size: 12px;
+}
+
+.toast__body
+{
+	display: table;
+	margin: 10px;
+	width: 100%;
+	text-align: center;
+	font-size: 16px;
+}
+
+.toast__body--left
+{
+	text-align: left;
+}
+
+.toast__body--wide
+{
+	width: 550px;
+	margin: 20px 10px;
+	text-align: center;
+}
+
+/* Achievement-completed popup (built by AchievementAlerts.js). Reuses the
+   .toast base; the color-3 text variants live in page/achievements.css. */
+.toast--achievement #hpIcon1
+{
+	top: 15px;
+	position: relative;
+	width: 40px;
+}
+
+[data-theme="dark"] .toast__body {
+	color: black;
+}
+} /* end @layer components */

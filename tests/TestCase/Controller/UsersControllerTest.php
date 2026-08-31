@@ -82,7 +82,7 @@ class UsersControllerTest extends ControllerTestCase
 		$browser->get('users/leaderboard');
 
 		// Ivan detkov is alone in the leaderboard, kovarex has no daily_xp but is shown at bottom
-		$browser->checkTable('.highscoreTable', $this,
+		$browser->checkTable('.data-table', $this,
 			[
 				['Place', 'Name', 'Premium', 'Solved', 'XP'],
 				['#1', 'Ivan Detkov ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING), '', '2', '10'],
@@ -95,7 +95,7 @@ class UsersControllerTest extends ControllerTestCase
 
 		// now kovarex is there (first, since solving gives more xp than Ivan's 10)
 		$browser->get('users/leaderboard');
-		$browser->checkTable('.highscoreTable', $this,
+		$browser->checkTable('.data-table', $this,
 			[
 				['Place', 'Name', 'Premium', 'Solved', 'XP'],
 				['#1', 'kovarex ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING), '', '1'],
@@ -182,7 +182,7 @@ class UsersControllerTest extends ControllerTestCase
 			['Completed:', '2 of 2'], // one problem in two sets still counted as one
 			['100%']]);
 
-		$this->assertSame('Reset old progress (1)', $browser->find('#reset-statuses-button')->getText());
+		$this->assertSame('RESET OLD PROGRESS (1)', $browser->find('#reset-statuses-button')->getText());
 
 		// clicking reset removes the status
 		$this->assertNotEmpty(ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[1]['id']]]));
@@ -310,8 +310,8 @@ class UsersControllerTest extends ControllerTestCase
 
 		$browser = Browser::instance();
 		$browser->get('/users/showPublishSchedule');
-		$this->assertTextContains('sandbox set', $browser->getTableCell('.highscoreTable', 1, 1)->getText());
-		$this->assertTextContains('268', $browser->getTableCell('.highscoreTable', 1, 1)->getText());
+		$this->assertTextContains('sandbox set', $browser->getTableCell('.data-table', 1, 1)->getText());
+		$this->assertTextContains('268', $browser->getTableCell('.data-table', 1, 1)->getText());
 	}
 
 	public function testResetOldProgressRemovesOnlyOldStatuses()
@@ -414,14 +414,14 @@ class UsersControllerTest extends ControllerTestCase
 		$this->assertTextContains('900.00', $this->view);
 		$this->assertTextNotContains('600.00', $this->view);
 		$this->assertTextNotContains('750.00', $this->view);
-		$this->assertTextContains('new-button-time-inactive">Slow</a>', $this->view);
+		$this->assertTextContains('btn--inactive">Slow</a>', $this->view);
 		$this->assertTextContains('category=1', $this->view); // Fast link preserves rank
 
 		// Fast/15k: shows 600, not 900 or 750
 		$this->testAction('users/time_mode?category=1&rank=15k', ['return' => 'view']);
 		$this->assertTextContains('600.00', $this->view);
 		$this->assertTextNotContains('900.00', $this->view);
-		$this->assertTextContains('new-button-time-inactive">Fast</a>', $this->view);
+		$this->assertTextContains('btn--inactive">Fast</a>', $this->view);
 
 		// Slow/10k: shows 750, not 900
 		$this->testAction('users/time_mode?category=2&rank=10k', ['return' => 'view']);

@@ -32,7 +32,7 @@ class HighscoreHelper extends AppHelper
 	): string {
 		$totalColumns = 3 + count($valueColumns); // Place + Name + Premium + values
 
-		$html = '<table class="highscoreTable" border="0">';
+		$html = '<table class="data-table" border="0">';
 
 		// Caption
 		$html .= '<caption><p class="title" style="margin-bottom: 16px;">' . $title . '</p>';
@@ -56,16 +56,16 @@ class HighscoreHelper extends AppHelper
 
 			// Gap separator for non-consecutive positions
 			if ($pos - $prevPosition > 1 && $prevPosition > 0)
-				$html .= '<tr class="color-separator"><td colspan="' . $totalColumns . '" align="center">⋮</td></tr>';
+				$html .= '<tr class="data-table__row--separator"><td colspan="' . $totalColumns . '" align="center">⋮</td></tr>';
 
 			// Medal colors for top 3
 			$medalClass = '';
 			if ($pos == 1)
-				$medalClass = ' medal-gold';
+				$medalClass = ' data-table__row--medal-gold';
 			elseif ($pos == 2)
-				$medalClass = ' medal-silver';
+				$medalClass = ' data-table__row--medal-silver';
 			elseif ($pos == 3)
-				$medalClass = ' medal-bronze';
+				$medalClass = ' data-table__row--medal-bronze';
 
 			// Self-view highlighting
 			$selfClass = '';
@@ -74,7 +74,7 @@ class HighscoreHelper extends AppHelper
 				$me = Auth::getUser();
 				$rowId = $row['id'] ?? null;
 				if ($me && $rowId !== null && $rowId == $me['id'])
-					$selfClass = ' color-self';
+					$selfClass = ' data-table__row--self';
 			}
 
 			$name = User::renderLink($row);
@@ -92,7 +92,7 @@ class HighscoreHelper extends AppHelper
 
 		// Footer with total user count
 		if ($totalUsers !== null)
-			$html .= '<tr class="color-separator"><td colspan="' . $totalColumns . '" align="center" style="font-size:13px;color:#999;padding:8px 0;">' . $totalUsers . ' users total</td></tr>';
+			$html .= '<tr class="data-table__row--separator"><td colspan="' . $totalColumns . '" align="center" style="font-size:13px;color:#999;padding:8px 0;">' . $totalUsers . ' users total</td></tr>';
 
 		$html .= '</table>';
 		return $html;

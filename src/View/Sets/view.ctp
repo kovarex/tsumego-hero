@@ -160,7 +160,7 @@ if ($tsumegoFilters->query != 'topics')
 				<div align="center">
 				<br><br>
 					<?php
-					echo '<a class="new-button new-buttonx" style="top:-16px;position:relative;" href="/' . $startingSetConnectionID . '">Start</a>';
+					echo '<a class="btn" style="top:-16px;position:relative;" href="/' . $startingSetConnectionID . '">Start</a>';
 ?>
 				</div>
 			</td>
@@ -226,9 +226,9 @@ if ($tsumegoFilters->query != 'topics')
 			<div align="center">
 			<br>
 			<br>
-			<a id="numbersButton" class="new-button-time" onclick="d1();">Numbers</a>
-			<a id="ratioButton" class="new-button-time" onclick="d2();">Accuracy</a>
-			<a id="timeButton" class="new-button-time" onclick="d3();">Time</a>
+			<a id="numbersButton" class="btn" onclick="d1();">Numbers</a>
+			<a id="ratioButton" class="btn" onclick="d2();">Accuracy</a>
+			<a id="timeButton" class="btn" onclick="d3();">Time</a>
 			<br>
 			<br>
 			<div id="numbersInfo">
@@ -261,7 +261,7 @@ if ($tsumegoFilters->query != 'topics')
 			<?php
 			if (isset($canEdit) && $canEdit)
 				echo '<tr><td colspan="2" style="text-align:center;padding-top:8px">
-					<a class="new-button" href="/sets/edit/' . $set['Set']['id'] . '">Edit Set</a>
+					<a class="btn" href="/sets/edit/' . $set['Set']['id'] . '">Edit Set</a>
 					</td></tr>';
 			?>
 			</tr>
@@ -295,13 +295,13 @@ if ($tsumegoFilters->query != 'tags')
 	function drawActiveTiles(){
 		$(".active-tiles-container").html("");
 		for(let i=0;i<activeTopicTiles.length;i++)
-			$(".active-tiles-container").append('<div class="dropdown-tile tile-color1" id="active-tiles-element'+i+'" onclick="removeActiveTopic('+i+')" style="cursor:context-menu">'+activeTopicTiles[i]+'</div>');
+			$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--green" id="active-tiles-element'+i+'" onclick="removeActiveTopic('+i+')" style="cursor:context-menu">'+activeTopicTiles[i]+'</div>');
 		for(let i=0;i<activeDifficultyTiles.length;i++)
-			$(".active-tiles-container").append('<div class="dropdown-tile tile-color2" id="active-tiles-element'+i+'" onclick="removeActiveDifficulty('+i+')" style="cursor:context-menu">'+activeDifficultyTiles[i]+'</div>');
+			$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--purple" id="active-tiles-element'+i+'" onclick="removeActiveDifficulty('+i+')" style="cursor:context-menu">'+activeDifficultyTiles[i]+'</div>');
 		for(let i=0;i<activeTagTiles.length;i++)
-			$(".active-tiles-container").append('<div class="dropdown-tile tile-color3" id="active-tiles-element'+i+'" onclick="removeActiveTag('+i+')" style="cursor:context-menu">'+activeTagTiles[i]+'</div>');
+			$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--brown" id="active-tiles-element'+i+'" onclick="removeActiveTag('+i+')" style="cursor:context-menu">'+activeTagTiles[i]+'</div>');
 		if(activeTopicTiles.length>0 || activeDifficultyTiles.length>0 || activeTagTiles.length>0)
-			$(".active-tiles-container").append('<a class="dropdown-tile tile-color4" id="unselect-active-tiles" href="">clear</a><div style="clear:both;"</div>');
+			$(".active-tiles-container").append('<a class="dropdown__tile dropdown__tile--muted" id="unselect-active-tiles" href="">clear</a><div style="clear:both;"</div>');
 	}
 
 	$(".active-tiles-container").on("click", "#unselect-active-tiles", function(e){
@@ -337,12 +337,9 @@ if ($tsumegoFilters->query != 'tags')
 		$("#msg2x").hide();
 		$("#ratioInfo").hide();
 		$("#timeInfo").hide();
-		$("#numbersButton").addClass("new-button-time-inactive");
-		$("#numbersButton").removeClass("new-button-time");
-		$("#ratioButton").addClass("new-button-time");
-		$("#ratioButton").removeClass("new-button-time-inactive");
-		$("#timeButton").addClass("new-button-time");
-		$("#timeButton").removeClass("new-button-time-inactive");
+		$("#numbersButton").addClass("btn--inactive");
+		$("#ratioButton").removeClass("btn--inactive");
+		$("#timeButton").removeClass("btn--inactive");
 
 		$("#showx").click(function(){
 			if(!msg2selected){
@@ -367,52 +364,43 @@ if ($tsumegoFilters->query != 'tags')
 		});
 
 		function d1(){
-			$("#numbersButton").addClass("new-button-time-inactive");
-			$("#numbersButton").removeClass("new-button-time");
-			$("#ratioButton").addClass("new-button-time");
-			$("#ratioButton").removeClass("new-button-time-inactive");
-			$("#timeButton").addClass("new-button-time");
-			$("#timeButton").removeClass("new-button-time-inactive");
+			$("#numbersButton").addClass("btn--inactive");
+			$("#ratioButton").removeClass("btn--inactive");
+			$("#timeButton").removeClass("btn--inactive");
 			$("#numbersInfo").fadeIn(250);
 			$("#ratioInfo").hide();
 			$("#timeInfo").hide();
-			$(".setViewButtons1").fadeIn(200);
-			$(".setViewButtons2").hide();
-			$(".setViewButtons3").hide();
+			$(".problem-nav__number").fadeIn(200);
+			$(".problem-nav__ratio").hide();
+			$(".problem-nav__time").hide();
 			$(".setViewCompleted").css("border", "1px solid #45ac6e");
 			$(".setViewAccuracy").css("border", "none");
 			$(".setViewTime").css("border", "none");
 		}
 		function d2(){
-			$("#numbersButton").addClass("new-button-time");
-			$("#numbersButton").removeClass("new-button-time-inactive");
-			$("#ratioButton").addClass("new-button-time-inactive");
-			$("#ratioButton").removeClass("new-button-time");
-			$("#timeButton").addClass("new-button-time");
-			$("#timeButton").removeClass("new-button-time-inactive");
+			$("#numbersButton").removeClass("btn--inactive");
+			$("#ratioButton").addClass("btn--inactive");
+			$("#timeButton").removeClass("btn--inactive");
 			$("#numbersInfo").hide();
 			$("#ratioInfo").fadeIn(250);
 			$("#timeInfo").hide();
-			$(".setViewButtons1").hide();
-			$(".setViewButtons2").fadeIn(200);
-			$(".setViewButtons3").hide();
+			$(".problem-nav__number").hide();
+			$(".problem-nav__ratio").fadeIn(200);
+			$(".problem-nav__time").hide();
 			$(".setViewCompleted").css("border", "none");
 			$(".setViewAccuracy").css("border", "1px solid #722394");
 			$(".setViewTime").css("border", "none");
 		}
 		function d3(){
-			$("#numbersButton").addClass("new-button-time");
-			$("#numbersButton").removeClass("new-button-time-inactive");
-			$("#ratioButton").addClass("new-button-time");
-			$("#ratioButton").removeClass("new-button-time-inactive");
-			$("#timeButton").addClass("new-button-time-inactive");
-			$("#timeButton").removeClass("new-button-time");
+			$("#numbersButton").removeClass("btn--inactive");
+			$("#ratioButton").removeClass("btn--inactive");
+			$("#timeButton").addClass("btn--inactive");
 			$("#numbersInfo").hide();
 			$("#ratioInfo").hide();
 			$("#timeInfo").fadeIn(250);
-			$(".setViewButtons1").hide();
-			$(".setViewButtons2").hide();
-			$(".setViewButtons3").fadeIn(200);
+			$(".problem-nav__number").hide();
+			$(".problem-nav__ratio").hide();
+			$(".problem-nav__time").fadeIn(200);
 			$(".setViewCompleted").css("border", "none");
 			$(".setViewAccuracy").css("border", "none");
 			$(".setViewTime").css("border", "1px solid #b34717");

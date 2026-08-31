@@ -1,0 +1,17 @@
+/* ══════════════════════════════════════════════════════
+   Cascade-layer manifest (order = priority; last wins).
+   Every stylesheet in the theme bundle appends to one of
+   these layers; the order declared here is the whole
+   cascade contract, so load order and specificity stop
+   mattering between layers.
+
+   Tokens → Base → Composition → Utilities → Components → Page
+
+   - tokens:      every CSS custom property (raw values live ONLY here)
+   - base:        element defaults (body, a, h1-h6, inputs, focus)
+   - composition: layout objects (.cluster, .stack, .grid, .split, …)
+   - utilities:   tiny single-purpose helpers (.text-muted, .mt-2, …)
+   - components:  semantic BEM blocks — THE design system
+   - page:        legacy + page-specific rules
+   ══════════════════════════════════════════════════════ */
+@layer tokens, base, composition, utilities, components, page;

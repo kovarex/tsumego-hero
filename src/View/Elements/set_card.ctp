@@ -23,22 +23,22 @@ else
 }
 $backgroundImage = $backgroundImage ?? 'linear-gradient(rgba(169, 169, 169, 0.30), rgba(0, 0, 0, 0.35))';
 ?>
-<a href="/sets/view/<?= $set['id'] ?><?= $partitionLink ?>" class="box1link">
-	<div class="box1 box1topic box1default topic-box<?= $set['id'] ?>"
+<a href="/sets/view/<?= $set['id'] ?><?= $partitionLink ?>" class="set-card__link">
+	<div class="set-card topic-box<?= $set['id'] ?>"
 		style="background-color:<?= h($set['color']) ?>;background-image: <?= $backgroundImage ?>">
 		<?php if ($percent >= 100): ?>
-			<div class="collection-completed">completed</div>
+			<div class="set-card__completed">completed</div>
 		<?php endif; ?>
-		<div class="collection-top"><?= h($set['name']) ?><?= $partitionText ?></div>
-		<div class="collection-middle-left"><?= $set['amount'] ?> <?= $problems ?></div>
+		<div class="set-card__top"><?= h($set['name']) ?><?= $partitionText ?></div>
+		<div class="set-card__middle-left"><?= $set['amount'] ?> <?= $problems ?></div>
 		<?php if ($set['difficulty']): ?>
-			<div class="collection-middle-right"><?= $tilde ?><?= $set['difficulty'] ?></div>
+			<div class="set-card__middle-right"><?= $tilde ?><?= $set['difficulty'] ?></div>
 		<?php endif; ?>
-		<div class="collection-bottom">
-			<div class="set-progress<?= $percent >= 100 ? ' set-progress--complete' : '' ?>">
-				<div class="set-progress-number" data-target="<?= $percent ?>"><?= $percent ?>%</div>
-				<div class="set-progress-track">
-					<div class="set-progress-fill" style="width: <?= $percent ?>%"></div>
+		<div class="set-card__bottom">
+			<div class="progress progress--thin<?= $percent >= 100 ? ' progress--complete' : '' ?>">
+				<div class="progress__label" data-target="<?= $percent ?>"><?= $percent ?>%</div>
+				<div class="progress__track">
+					<div class="progress__fill" style="width: <?= $percent ?>%"></div>
 				</div>
 			</div>
 		</div>

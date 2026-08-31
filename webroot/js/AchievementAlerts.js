@@ -8,20 +8,24 @@
  * HTML is ever injected and the /tsumegos/result endpoint stays pure data.
  *
  * Data shape: { id, name, description, xp, image, color }
+ *
+ * The popup reuses the .toast component (components.css) with a color
+ * modifier: class "toast toast--achievement <color>3". Children map to
+ * .toast__banner / .toast__close / .toast__body.
  */
 function showAchievementPopup(achievement)
 {
 	if (!achievement)
 		return;
 	var popup = document.createElement('div');
-	popup.className = 'alertBox alertInfo ' + achievement.color + '3 achievement-popup';
+	popup.className = 'toast toast--achievement ' + achievement.color + '3';
 
 	var banner = document.createElement('div');
-	banner.className = 'alertBanner';
+	banner.className = 'toast__banner';
 	banner.setAttribute('align', 'center');
 	banner.appendChild(document.createTextNode('Achievement Completed '));
 	var close = document.createElement('span');
-	close.className = 'alertClose';
+	close.className = 'toast__close';
 	close.textContent = 'x';
 	// The popup is blocking and important, so only the close button dismisses
 	// it; clicking the body does not (to avoid accidental dismissal).
@@ -33,7 +37,7 @@ function showAchievementPopup(achievement)
 	popup.appendChild(banner);
 
 	var text = document.createElement('span');
-	text.className = 'alertText';
+	text.className = 'toast__body';
 	var img = document.createElement('img');
 	img.id = 'hpIcon1';
 	img.src = '/img/' + achievement.image + '.png';

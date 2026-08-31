@@ -64,7 +64,7 @@ class SitesControllerTest extends ControllerTestCase
 		$this->assertStringContainsString('Latest additions', $source);
 		$this->assertStringContainsString('<time datetime="' . $today . '"', $source);
 
-		$buttons = $browser->getCssSelect('.setViewButtons1');
+		$buttons = $browser->getCssSelect('.problem-nav__number');
 		$this->assertCount(1, $buttons);
 		$this->assertSame('564', $buttons[0]->getText());
 
@@ -93,7 +93,7 @@ class SitesControllerTest extends ControllerTestCase
 		$this->assertStringContainsString('Latest additions', $source);
 		$this->assertStringContainsString('<time datetime="' . $pastDate . '"', $source);
 
-		$buttons = $browser->getCssSelect('.setViewButtons1');
+		$buttons = $browser->getCssSelect('.problem-nav__number');
 		$this->assertCount(1, $buttons);
 		$this->assertSame('564', $buttons[0]->getText());
 	}
@@ -187,7 +187,7 @@ class SitesControllerTest extends ControllerTestCase
 		$this->assertStringContainsString('Level Evaluation', $source);
 		$this->assertStringContainsString('Set Beginner', $source);
 		$this->assertSame(2, substr_count($source, 'class="scheduleTsumego"'));
-		$this->assertCount(2, $browser->getCssSelect('.setViewButtons1'));
+		$this->assertCount(2, $browser->getCssSelect('.problem-nav__number'));
 	}
 
 	/**
@@ -293,10 +293,9 @@ class SitesControllerTest extends ControllerTestCase
 		new ContextPreparator();
 		$browser->get('sites/index');
 
-		// Assert: Home link should have the green highlight color
+		// The home link gets the green highlight via the nav__link--active class
 		$pageSource = $browser->driver->getPageSource();
-		// The home link should have style="color:#74d14c;" when on home page
-		$this->assertStringContainsString('style="color:#74d14c;"', $pageSource,
+		$this->assertStringContainsString('class="homeMenuLink nav__link--active"', $pageSource,
 			'Home page should have navigation highlighting');
 	}
 

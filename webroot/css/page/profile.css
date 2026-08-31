@@ -1,8 +1,62 @@
+@layer page
+{
+.profileTable {
+  padding: 0;
+  margin: 0;
+}
+.profileTable tr {
+  padding: 0;
+  margin: 0;
+}
+.profileTable td {
+  padding: 0;
+  margin: 0;
+  vertical-align: top;
+}
+.profileTable h1 {
+  padding: 0;
+  margin: 0;
+  color: white;
+}
+.profileTable .h1 {
+  margin-left: 20px;
+}
+.profileTable2 a {
+  margin-left: 20px;
+}
+.h1profile h1,
+.profileTable2 a {
+  color: black;
+}
+.rank-icon {
+	display: inline-block;
+	width: 76px;
+	height: 76px;
+	font-family: Impact, 'Arial Black', sans-serif;
+	font-size: 44px;
+	font-weight: bold;
+	line-height: 76px;
+	text-align: center;
+	letter-spacing: -1px;
+	background: linear-gradient(to bottom, #55595D 0%, #B0B5BA 25%, #FFF 45%, #FFF 55%, #B0B5BA 75%, #55595D 100%);
+	-webkit-background-clip: text;
+	background-clip: text;
+	-webkit-text-fill-color: transparent;
+	filter: drop-shadow(0 1.5px 2.5px rgba(0,0,0,0.45));
+	-webkit-text-stroke: 0.3px #2D3033;
+}
+.rank-icon-large {
+	width: 182px;
+	height: 252px;
+	font-size: 100px;
+	line-height: 252px;
+}
 /* ══════════════════════════════════════════════════════
    Profile page styles
    Page-specific blocks only. Shared tokens and components
    live in components.css (imported globally).
    ══════════════════════════════════════════════════════ */
+
 
 /* ── Header ── */
 .profile-header
@@ -134,4 +188,11 @@
 .hero-powers__marker--unlocked .hero-powers__level
 {
 	color: #7ab0e0;
+}
+
+/* Dark overrides */
+[data-theme="dark"] .h1profile h1,
+[data-theme="dark"] .profileTable2 a {
+	color: #fff;
+}
 }

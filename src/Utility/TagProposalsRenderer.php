@@ -27,8 +27,8 @@ OFFSET " . $this->offset);
 	{
 		echo '<td class="adminpanel-table-text">' . User::renderLink($item) . ' made a proposal for <a href="/tags/view/' . (int) $item['tag_id'] . '">' . h($item['tag_name']) . '</a>:</td>';
 		echo '<td>';
-		echo '<a class="new-button-default2" href="/tags/acceptTagProposal/' . $item['tag_id'] . '" id="tag-accept-' . $item['tag_id'] . '">Accept</a>';
-		echo '<a class="new-button-default2" href="/tags/rejectTagProposal/' . $item['tag_id'] . '" id="tag-reject-' . $item['tag_id'] . '">Reject</a>';
+		echo '<a class="btn" href="/tags/acceptTagProposal/' . $item['tag_id'] . '" id="tag-accept-' . $item['tag_id'] . '">Accept</a>';
+		echo '<a class="btn" href="/tags/rejectTagProposal/' . $item['tag_id'] . '" id="tag-reject-' . $item['tag_id'] . '">Reject</a>';
 		echo '</td>';
 	}
 }

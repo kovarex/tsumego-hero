@@ -24,17 +24,17 @@
 							<i class="animate-icon fa fa-chevron-down" aria-hidden="true"></i>
 					</div>
 				</button>
-				<div align="left" id="dropdown-topics" class="dropdown-boxes">
+				<div align="left" id="dropdown-topics" class="dropdown__menu dropdown__menu--filters">
 					<?php
 						for($i=0; $i<count($setTiles); $i++){
 							if($setTiles[$i] != '[continuation]')
-								echo '<div class="dropdown-tile" id="tile-topics'.$i.'">'.h($setTiles[$i]).'</div>';
+								echo '<div class="dropdown__tile" id="tile-topics'.$i.'">'.h($setTiles[$i]).'</div>';
 						}
 					?>
-					<div class="tiles-submit">
-						<div class="dropdown-tile tiles-submit-inner-select" id="tile-topics-select-all">Select all</div>
+					<div class="dropdown__tile-actions">
+						<div class="dropdown__tile dropdown__tile-actions__select" id="tile-topics-select-all">Select all</div>
 						<?php if($tsumegoFilters->query){ ?>
-							<a class="dropdown-tile tiles-submit-inner" id="tile-topics-submit" href="">Search</a>
+							<a class="dropdown__tile dropdown__tile-actions__submit" id="tile-topics-submit" href="">Search</a>
 						<?php } ?>
 					</div>
 				</div>
@@ -48,17 +48,17 @@
 							<i class="animate-icon fa fa-chevron-down" aria-hidden="true"></i>
 					</div>
 				</button>
-				<div align="left" id="dropdown-difficulty" class="dropdown-boxes">
+				<div align="left" id="dropdown-difficulty" class="dropdown__menu dropdown__menu--filters">
 					<?php
 						for($i=0; $i<count($difficultyTiles); $i++){
 							if($difficultyTiles[$i] != '[continuation]')
-								echo '<div class="dropdown-tile" id="tile-difficulty'.$i.'">'.h($difficultyTiles[$i]).'</div>';
+								echo '<div class="dropdown__tile" id="tile-difficulty'.$i.'">'.h($difficultyTiles[$i]).'</div>';
 						}
 					?>
-					<div class="tiles-submit">
-						<div class="dropdown-tile tiles-submit-inner-select" id="tile-difficulty-select-all">Select all</div>
+					<div class="dropdown__tile-actions">
+						<div class="dropdown__tile dropdown__tile-actions__select" id="tile-difficulty-select-all">Select all</div>
 						<?php if($tsumegoFilters->query){ ?>
-							<a class="dropdown-tile tiles-submit-inner" id="tile-difficulty-submit" href="">Search</a>
+							<a class="dropdown__tile dropdown__tile-actions__submit" id="tile-difficulty-submit" href="">Search</a>
 						<?php } ?>
 					</div>
 				</div>
@@ -72,17 +72,17 @@
 							<i class="animate-icon fa fa-chevron-down" aria-hidden="true"></i>
 					</div>
 				</button>
-				<div align="left" id="dropdown-tags" class="dropdown-boxes">
+				<div align="left" id="dropdown-tags" class="dropdown__menu dropdown__menu--filters">
 					<?php
 						for($i=0; $i<count($tagTiles); $i++){
 							if($tagTiles[$i] != '[continuation]')
-								echo '<div class="dropdown-tile" id="tile-tags'.$i.'">'.h($tagTiles[$i]).'</div>';
+								echo '<div class="dropdown__tile" id="tile-tags'.$i.'">'.h($tagTiles[$i]).'</div>';
 						}
 					?>
-					<div class="tiles-submit">
-						<div class="dropdown-tile tiles-submit-inner-select" id="tile-tags-select-all">Select all</div>
+					<div class="dropdown__tile-actions">
+						<div class="dropdown__tile dropdown__tile-actions__select" id="tile-tags-select-all">Select all</div>
 						<?php if($tsumegoFilters->query){ ?>
-							<a class="dropdown-tile tiles-submit-inner" id="tile-tags-submit" href="">Search</a>
+							<a class="dropdown__tile dropdown__tile-actions__submit" id="tile-tags-submit" href="">Search</a>
 						<?php } ?>
 					</div>
 				</div>
@@ -468,7 +468,7 @@
 					if(activeTopicTiles[i] === initialTopicTiles[j])
 						initialTile = true;
 				if(query == "topics" || initialTile)
-					$(".active-tiles-container").append('<div class="dropdown-tile tile-color1" id="active-tiles-element'+i+'" onclick="removeActiveTopic('+i+')">'+activeTopicTiles[i]+'</div>');
+					$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--green" id="active-tiles-element'+i+'" onclick="removeActiveTopic('+i+')">'+activeTopicTiles[i]+'</div>');
 			}
 			for(let i=0;i<activeDifficultyTiles.length;i++){
 				let initialTile = false;
@@ -476,7 +476,7 @@
 					if(activeDifficultyTiles[i] === initialDifficultyTiles[j])
 						initialTile = true;
 				if(query == "difficulty" || initialTile)
-					$(".active-tiles-container").append('<div class="dropdown-tile tile-color2" id="active-tiles-element'+i+'" onclick="removeActiveDifficulty('+i+')">'+activeDifficultyTiles[i]+'</div>');
+					$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--purple" id="active-tiles-element'+i+'" onclick="removeActiveDifficulty('+i+')">'+activeDifficultyTiles[i]+'</div>');
 			}
 			for(let i=0;i<activeTagTiles.length;i++){
 				let initialTile = false;
@@ -484,7 +484,7 @@
 					if(activeTagTiles[i] === initialTagTiles[j])
 						initialTile = true;
 				if(query == "tags" || initialTile)
-					$(".active-tiles-container").append('<div class="dropdown-tile tile-color3" id="active-tiles-element'+i+'" onclick="removeActiveTag('+i+')">'+activeTagTiles[i]+'</div>');
+					$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--brown" id="active-tiles-element'+i+'" onclick="removeActiveTag('+i+')">'+activeTagTiles[i]+'</div>');
 			}
 			setCookie("filtered_sets", activeTopicTiles.length == 0 ? 'clear' : activeTopicTiles.join('@'));
 			setCookie("filtered_ranks", activeDifficultyTiles.length == 0 ? 'clear' : activeDifficultyTiles.join("@"));
@@ -493,7 +493,7 @@
 			|| query=="difficulty" && activeDifficultyTiles.length > 0
 			|| query=="tags" && activeTagTiles.length > 0
 			|| initialDraw && initialDrawCounter>0)
-				$(".active-tiles-container").append('<a class="dropdown-tile tile-color4" href="" id="unselect-active-tiles">clear</a>');
+				$(".active-tiles-container").append('<a class="dropdown__tile dropdown__tile--muted" href="" id="unselect-active-tiles">clear</a>');
 		}
 
 		$(".active-tiles-container").on("click", "#unselect-active-tiles", function(e) {
@@ -683,7 +683,7 @@
 				$("#dropdown-tags").fadeOut(250);
 			}
 		});
-		$(".dropdown-boxes").click(function(e){
+		$(".dropdown__menu").click(function(e){
 			e.stopPropagation();
 		});
 		$(".whitebox2").click(function(e){

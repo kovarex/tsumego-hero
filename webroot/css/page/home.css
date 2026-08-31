@@ -1,0 +1,372 @@
+@layer page
+{
+.homeLeft {
+  text-align: justify;
+  padding: 0 3px 0 6px;
+  width: 638px;
+  overflow: hidden;
+}
+.homeRight {
+  float: right;
+  text-align: justify;
+  padding: 0 6px 0 3px;
+  width: 638px;
+}
+.homeLeft2 {
+  width: 50%;
+  text-align: justify;
+  min-height: 100px;
+  height: auto;
+  float: left;
+  position: relative;
+  padding: 0 10px;
+}
+.homeRight2 {
+  width: 50%;
+  text-align: justify;
+  min-height: 100px;
+  height: auto;
+  float: right;
+  position: relative;
+  padding: 0 10px;
+}
+.homeCenter {
+  width: 750px;
+  text-align: justify;
+}
+.homeCenter2 {
+  width: 100%;
+  text-align: justify;
+}
+.gradient-heading {
+  display: inline-block;
+  font-size: 1.2rem;
+  line-height: 1.4;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-weight: 600;
+  background: linear-gradient(to left, #008e59, #3cc895);
+  color: transparent;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.scheduleTsumego {
+  display: block;
+  clear: both;
+  color: #f0f0f0;
+}
+.new1 {
+	background: var(--new1-gradient);
+	border-radius: 0 0 4px 4px;
+	border-bottom: 1px solid #777;
+	border-left: 1px solid #777;
+	border-right: 1px solid #777;
+	padding: 8px;
+	color: var(--text-color);
+}
+.new-tsumego-box {
+  background-repeat: no-repeat;
+  border-radius: 4px;
+  border: 1px solid #777;
+  padding: 8px;
+  height:175px;
+  margin-top:6px;
+}
+.homeLeft .new-tsumego-box {
+  background-image: url("/img/mode-select-bg-left.png");
+}
+.homeRight .new-tsumego-box {
+  background-image: url("/img/mode-select-bg-right.png");
+  background-size: 100% 100%;
+  min-height: 175px;
+  height: auto;
+  display: flow-root;
+}
+.achievement-quote-pick {
+  width:629px;
+  border: 1px solid #777;
+  border-radius: 4px;
+  margin-top: 6px;
+}
+.quote-pick-wrapper {
+  display:flex;
+  justify-content: space-between;
+  position:relative;
+  width:629px;
+  margin-top: 6px;
+}
+.user-pick-all {
+  position: absolute;
+  width: 312px;
+  padding: 10px;
+  font-size: 20px;
+  cursor: context-menu;
+}
+.quote-pick-1 {
+  width:312px;
+  border: 1px solid #777;
+  border-radius: 4px;
+}
+/* ── Mode button (home mode tiles) ── */
+.mode-button {
+	position: relative;
+	z-index: 0;
+	display: inline-block;
+	line-height: 0;
+	cursor: pointer;
+}
+.mode-button::before {
+	content: "";
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width: 170px;
+	height: 170px;
+	transform: translate(-50%, -50%);
+	border-radius: 50%;
+	background: radial-gradient(closest-side, var(--mode-glow) 0%, transparent 20%);
+	filter: blur(6px);
+	opacity: 0;
+	transition: opacity 0.15s ease;
+	pointer-events: none;
+}
+.mode-button img {
+	position: relative;
+	z-index: 1;
+	display: block;
+	transition: filter 0.15s ease;
+}
+.mode-button:hover::before {
+	opacity: 1;
+}
+.mode-button:hover img {
+	filter: brightness(1.45) saturate(1.6);
+}
+.mode-button-level {
+	--mode-glow: #8cff2e;
+}
+.mode-button-rating {
+	--mode-glow: #e05cff;
+}
+.mode-button-time {
+	--mode-glow: #ffa04a;
+}
+.mode-button-achievements {
+	--mode-glow: #4dffe6;
+}
+.mode-button-disabled::before {
+	display: none;
+}
+.mode-button-disabled,
+.mode-button-disabled:hover {
+	cursor: default;
+	filter: grayscale(1) opacity(0.65);
+}
+.mode-button-disabled:hover img {
+	filter: none;
+}
+
+#recent-achievement-stream {
+  font-size: 14px;
+  position: absolute;
+  top: 280px;
+  left: 90px;
+  width: 460px;
+}
+
+#recent-achievement-stream .recent-achievement-row {
+  display: flex;
+  align-items: center;
+  padding: 5px 5px;
+  box-sizing: border-box;
+  background-color: rgba(0, 0, 0, 0.45);
+  color: #f5f5f5;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+}
+
+#recent-achievement-stream .recent-achievement-icon {
+  flex: 0 0 44px;
+}
+
+#recent-achievement-stream .recent-achievement-body {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+#recent-achievement-stream .recent-achievement-message {
+  min-width: 0;
+  overflow: hidden;
+  word-wrap: break-word;
+}
+
+#recent-achievement-stream .recent-achievement-message a {
+  color: #dcdcdc;
+  text-decoration: underline;
+}
+
+#recent-achievement-stream .recent-achievement-message a:hover {
+  color: #ffffff;
+}
+
+/* User / achievement links emitted by React RecentAchievements.tsx */
+
+#recent-achievement-stream .recent-achievement-user-link,
+#recent-achievement-stream .recent-achievement-achievement-link {
+  color: #dcdcdc;
+}
+
+#recent-achievement-stream .recent-achievement-user-link:hover,
+#recent-achievement-stream .recent-achievement-achievement-link:hover {
+  color: #ffffff;
+}
+
+#recent-achievement-stream .recent-achievement-time {
+  color: #dcdcdc;
+  font-size: 12px;
+  margin-left: 12px;
+  white-space: nowrap;
+}
+
+.user-pick-all a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.user-pick-all a:hover {
+  text-decoration: underline;
+}
+
+
+.user-pick-q01 {
+  color: white !important;
+  left: 316px;
+  top: 172px;
+  font-family: Comic Sans MS, Times New Roman, verdana;
+}
+
+.user-pick-q02 {
+  color: #fdfdfd !important;
+  left: 316px;
+  top: 106px;
+  font-family: Impact, Times New Roman, verdana;
+}
+
+.user-pick-q03 {
+  color: #e05d8f !important;
+  left: 316px;
+  top: 89px;
+  font-family: Lucida Console, Times New Roman, verdana;
+}
+
+.user-pick-q04 {
+  color: #fdfdfe !important;
+  left: 316px;
+  top: 189px;
+  font-weight: bold;
+  font-family: Baskerville, Times New Roman, verdana;
+}
+
+.user-pick-q05 {
+  color: #fdfdfe !important;
+  left: 316px;
+  top: 121px;
+  font-size: 22px !important;
+  font-weight: bold;
+  font-family: Geneva, Times New Roman, verdana;
+}
+
+.user-pick-q06 {
+  color: #ad935e !important;
+  left: 316px;
+  top: 151px;
+  font-weight: bold;
+  font-family: Comic Sans MS, Times New Roman, verdana;
+}
+
+.user-pick-q07 {
+  color: #fce1c2 !important;
+  left: 342px;
+  top: 113px;
+  font-weight: bold;
+  font-family: Comic Sans MS, Times New Roman, verdana;
+}
+
+.user-pick-q08 {
+  color: black !important;
+  left: 300px;
+  top: 22px;
+  font-weight: bold;
+  font-family: Garamond, Times New Roman, verdana;
+}
+
+.user-pick-q09 {
+  color: white !important;
+  left: 318px;
+  top: 53px;
+  font-family: Helvetica, Times New Roman, verdana;
+}
+
+.user-pick-q10 {
+  color: #fed487 !important;
+  left: 317px;
+  top: 153px;
+  font-weight: bold;
+  font-family: Helvetica, Times New Roman, verdana;
+}
+
+.user-pick-q11 {
+  color: #fbcc5f !important;
+  left: 321px;
+  top: 125px;
+  font-size: 15px;
+  font-family: Helvetica, Times New Roman, verdana;
+}
+
+.user-pick-q12 {
+  color: #b83330 !important;
+  left: 321px;
+  top: 145px;
+  font-family: Helvetica, Times New Roman, verdana;
+}
+
+.user-pick-q13 {
+  color: white !important;
+  left: 321px;
+  top: 118px;
+  font-family: Helvetica, Times New Roman, verdana;
+}
+
+.user-pick-q96 {
+  left: 280px;
+  top: 130px;
+  font-family: Helvetica, Times New Roman, verdana;
+  color: black !important;
+}
+
+.user-pick-q97 {
+  left: 321px;
+  top: 128px;
+  font-family: Helvetica, Times New Roman, verdana;
+}
+
+.user-pick-q99 {
+  left: 321px;
+  top: 210px;
+  font-family: Helvetica, Times New Roman, verdana;
+}
+
+
+/* Dark overrides. */
+[data-theme="dark"] .scheduleTsumego {
+	color: #f0f0f0 !important;
+}
+[data-theme="dark"] .homeCenter2 {
+	background-color: #2a2a2a;
+	color: #fff;
+}
+}

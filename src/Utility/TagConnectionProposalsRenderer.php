@@ -49,8 +49,8 @@ OFFSET " . $this->offset, [Auth::getUserID()]);
 		new TsumegoButton($item['tsumego_id'], $item['set_connection_id'], $item['num'], $item['status'] ?: 'N', 0, $item['sgf'])->render();
 		echo '</td>';
 		echo '<td>';
-		echo '<a class="new-button-default2" href="/users/acceptTagConnectionProposal/' . $item['tag_connection_id'] . '" id="tag-connection-accept-' . $item['tag_connection_id'] . '">Accept</a>';
-		echo '<a class="new-button-default2" href="/users/rejectTagConnectionProposal/' . $item['tag_connection_id'] . '" id="tag-connection-reject-' . $item['tag_connection_id'] . '">Reject</a>';
+		echo '<a class="btn" href="/users/acceptTagConnectionProposal/' . $item['tag_connection_id'] . '" id="tag-connection-accept-' . $item['tag_connection_id'] . '">Accept</a>';
+		echo '<a class="btn" href="/users/rejectTagConnectionProposal/' . $item['tag_connection_id'] . '" id="tag-connection-reject-' . $item['tag_connection_id'] . '">Reject</a>';
 		echo '</td>';
 		echo '<td style="font-size:13px"><time datetime="' . Util::toIso8601($item['created']) . '" data-format="datetime">' . $item['created'] . '</time></td>';
 	}

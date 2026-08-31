@@ -15,8 +15,8 @@
 </div>
 <br>
 <div align="center">
-	<a class="new-button-inactive" href="#">Select</a>
-	<?php echo '<a class="new-button'.($hasFinishedSesssion ? '' : '-inactive').'" href="'.($hasFinishedSesssion ? '/timeMode/result' : '#').'">Results</a>'; ?>
+	<a class="btn btn--inactive" href="#">Select</a>
+	<?php echo '<a class="btn'.($hasFinishedSesssion ? '' : ' btn--inactive').'" href="'.($hasFinishedSesssion ? '/timeMode/result' : '#').'">Results</a>'; ?>
 </div>
 <br><br>
 <div align="center">

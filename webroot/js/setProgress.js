@@ -9,7 +9,7 @@
 		var prefersReducedMotion = window.matchMedia
 			&& window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-		var numbers = document.querySelectorAll('.set-progress-number[data-target]');
+		var numbers = document.querySelectorAll('.progress__label[data-target]');
 		if (!numbers.length || prefersReducedMotion)
 			return;
 
