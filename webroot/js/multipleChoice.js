@@ -454,11 +454,13 @@ function displayMultipleChoiceResult(num) {
           multipleChoiceInsideLiberties +
           " inside";
         wx1 = "favorite: " + whiteLibertiesBefore + " exclusive liberties";
-      } else {
-        fav = "Seki - same amount of liberties.<br>";
-        correct = 4;
-        $("#besogo-multipleChoice4").css("background-color", "#3ecf78");
       }
+		else if (multipleChoiceInsideLiberties != 0)
+		{
+			fav = "Seki - same amount of liberties.<br>";
+			correct = 4;
+			$("#besogo-multipleChoice4").css("background-color", "#3ecf78");
+		}
       if (whiteLiberties > blackLiberties) {
         bwSum = whiteLiberties - blackLiberties;
         plural = "";
@@ -497,10 +499,7 @@ function displayMultipleChoiceResult(num) {
           $("#besogo-multipleChoice2").css("background-color", "#3ecf78");
         }
       }
-      if (
-        whiteLiberties == blackLiberties &&
-        fav != "Seki - same amount of liberties.<br>"
-      ) {
+      if (whiteLiberties == blackLiberties && fav != "Seki - same amount of liberties.<br>") {
         x1 = "Unsettled. (whoever plays first accomplishes the task)";
         correct = 3;
         $("#besogo-multipleChoice3").css("background-color", "#3ecf78");
