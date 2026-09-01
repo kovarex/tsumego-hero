@@ -13,7 +13,7 @@
  */
 
 	echo '<div class="split split--sidebar">';
-	echo '<div style="text-align:left;border-right:1px solid var(--surface-border-light)">';
+	echo '<div style="text-align:left;border-right:1px solid var(--surface-border-light);flex:0 0 calc(60% - 6px)">';
 		$sgfProposalsRenderer->render();
 		$tagProposalsRenderer->render();
 		if($requestDeletion!=null){
@@ -30,7 +30,7 @@
 		$tagConnectionProposalsRenderer->render();
 	echo '</div>';
 
-	echo '<div>';
+	echo '<div style="flex:0 0 calc(40% - 6px)">';
 	$adminActivityRenderer->render();
 	echo '</div>';
 	echo '</div>';
