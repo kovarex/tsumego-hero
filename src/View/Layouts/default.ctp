@@ -335,7 +335,7 @@ echo ViteManifest::legacyScript('legacy');
 									<table id="dropdowntable" border="0"></table>
 									<br>
 									<div id="dropdowntable2" align="center">
-										<a class="btn" href="<?php echo h($_SERVER['REQUEST_URI']); ?>">Save</a>
+										<a class="btn btn--primary" href="<?php echo h($_SERVER['REQUEST_URI']); ?>">Save</a>
 										<br><br>
 									</div>
 									</div>

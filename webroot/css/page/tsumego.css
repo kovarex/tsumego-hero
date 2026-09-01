@@ -58,7 +58,7 @@
 	border-top-color: var(--surface-border-light);
 	border-left-color: var(--surface-border-light);
 	border-radius: 9px;
-	margin: 1px;
+	margin: 0;
 	height: 32px;
 	position: relative;
 	box-sizing: border-box;

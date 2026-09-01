@@ -61,7 +61,6 @@ OFFSET " . $this->offset, [Auth::getUserID()]);
 
 	public function renderItem(int $index, array $item): void
 	{
-		echo '<td>' . ($index + 1 + 100 * ($this->page - 1)) . '</td>';
 		echo '<td>';
 		if ($item['set_connection_id'])
 			new TsumegoButton($item['tsumego_id'], $item['set_connection_id'], $item['num'], $item['status'] ?: 'N', 0, $item['sgf'])->render();

@@ -278,6 +278,34 @@
 	color: var(--color-white);
 }
 
+/* Grey box + white text + wider padding: the pre-refactor .new-button look. */
+.btn--primary
+{
+	color: var(--color-white);
+	padding: 10px 13px;
+	margin: 5px;
+}
+
+.btn--primary:hover
+{
+	color: var(--color-white);
+}
+
+/* Neutral grey-gradient button: pre-refactor .new-button-default look. */
+.btn--neutral
+{
+	background: var(--new1-gradient);
+	color: var(--text-color);
+	border: 1px solid var(--color-black);
+	border-radius: 5px;
+}
+
+.btn--neutral:hover
+{
+	background: var(--color-gray-dark);
+	color: var(--color-white);
+}
+
 /* ── Sub-navigation ── */
 .subnav
 {

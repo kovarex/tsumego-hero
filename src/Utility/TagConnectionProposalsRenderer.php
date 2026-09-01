@@ -51,15 +51,15 @@ OFFSET " . $this->offset, [Auth::getUserID()]);
 
 	public function renderItem(int $index, array $item): void
 	{
-		echo '<td>' . ($index + 1) + ($this->page - 1) * self::$PAGE_SIZE . '</td><td class="adminpanel-table-text">' . User::renderLink($item) . ' added ';
+		echo '<td class="adminpanel-table-text">' . User::renderLink($item) . ' added ';
 		echo '<a class="adminpanel-link" href="/tags/view/' . $item['tag_id'] . '">' . h($item['tag_name']);
 		echo '</a> for <a class="adminpanel-link" href="/' . $item['set_connection_id'] . '">' . h($item['set_title']) . ' - ' . h($item['num']) . '</a></td>';
 		echo '<td>';
 		new TsumegoButton($item['tsumego_id'], $item['set_connection_id'], $item['num'], $item['status'] ?: 'N', 0, $item['sgf'])->render();
 		echo '</td>';
-		echo '<td>';
-		echo '<a class="btn" href="/users/acceptTagConnectionProposal/' . $item['tag_connection_id'] . '" id="tag-connection-accept-' . $item['tag_connection_id'] . '">Accept</a>';
-		echo '<a class="btn" href="/users/rejectTagConnectionProposal/' . $item['tag_connection_id'] . '" id="tag-connection-reject-' . $item['tag_connection_id'] . '">Reject</a>';
+		echo '<td style="white-space:nowrap">';
+		echo '<button class="btn btn--small" onclick="window.location=\'/users/acceptTagConnectionProposal/' . $item['tag_connection_id'] . '\'" id="tag-connection-accept-' . $item['tag_connection_id'] . '">Accept</button>';
+		echo '<button class="btn btn--small" onclick="window.location=\'/users/rejectTagConnectionProposal/' . $item['tag_connection_id'] . '\'" id="tag-connection-reject-' . $item['tag_connection_id'] . '">Reject</button>';
 		echo '</td>';
 		echo '<td style="font-size:13px"><time datetime="' . Util::toIso8601($item['created']) . '" data-format="datetime">' . $item['created'] . '</time></td>';
 	}
