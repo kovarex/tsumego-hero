@@ -1,12 +1,13 @@
 <?php
 
 App::uses('DataTableRenderer', 'Utility');
+App::uses('SetConnection', 'Model');
 
 class SGFProposalsRenderer extends DataTableRenderer
 {
 	public function __construct($urlParams)
 	{
-		$this->count = Util::query("SELECT COUNT(DISTINCT tsumego_id) as total FROM sgf WHERE accepted = false")[0]['total'];
+		$this->count = Util::query("SELECT COUNT(*) AS total FROM sgf p WHERE p.accepted = false AND EXISTS (SELECT 1 FROM set_connection sc WHERE sc.tsumego_id = p.tsumego_id)")[0]['total'];
 		parent::__construct($urlParams, 'sgf_proposals_page', 'SGF Proposals');
 		$this->data = Util::query("
 SELECT
@@ -16,10 +17,10 @@ SELECT
     p.id AS proposed_id,
     p.user_id AS proposed_user_id,
     user.name AS user_name,
-    set_connection.id AS set_connection_id,
-    set_connection.num AS num,
+    sc.id AS set_connection_id,
+    sc.num AS num,
     tsumego_status.status AS status,
-    CONCAT(`set`.title, ' ', `set`.title2) AS set_title
+    CONCAT(s.title, ' ', s.title2) AS set_title
 FROM sgf p
 JOIN (
     SELECT tsumego_id, MAX(id) AS latest_accepted_id
@@ -27,9 +28,17 @@ JOIN (
     WHERE accepted = TRUE
     GROUP BY tsumego_id
 ) a ON a.tsumego_id = p.tsumego_id
-JOIN set_connection ON set_connection.tsumego_id = p.tsumego_id
+JOIN set_connection sc ON sc.tsumego_id = p.tsumego_id
+    AND sc.id = (
+        SELECT sc2.id
+        FROM set_connection sc2
+        JOIN `set` s2 ON s2.id = sc2.set_id
+        WHERE sc2.tsumego_id = p.tsumego_id
+        ORDER BY " . SetConnection::displayOrderForSetSql('s2') . ", sc2.id ASC
+        LIMIT 1
+    )
+JOIN `set` s ON s.id = sc.set_id
 JOIN user ON p.user_id=user.id
-JOIN `set` ON `set`.id = set_connection.set_id
 LEFT JOIN sgf ON sgf.id = a.latest_accepted_id
 LEFT JOIN tsumego_status ON tsumego_status.user_id = ? AND tsumego_status.tsumego_id = p.tsumego_id
 WHERE p.accepted = FALSE
