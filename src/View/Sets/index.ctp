@@ -319,6 +319,9 @@
 		?>
 		$(document).ready(function(){
 			setCookie("query", query);
+			$("#tile-topics-select-all").html(selectAllTopics ? "Unselect all" : "Select all");
+			$("#tile-difficulty-select-all").html(selectAllDifficulty ? "Unselect all" : "Select all");
+			$("#tile-tags-select-all").html(selectAllTags ? "Unselect all" : "Select all");
 			drawActiveCollections();
 			drawActiveTiles(true);
 		});
@@ -717,9 +720,12 @@
 			window.location.href = "/sets";
 		});
 
-		let selectAllTopics = false;
-		let selectAllDifficulty = false;
-		let selectAllTags = false;
+		function isAllSelected(active, all){
+			return all.length > 0 && all.every(function(t){ return active.indexOf(t) !== -1; });
+		}
+		let selectAllTopics = isAllSelected(activeTopicTiles, allTopicTiles);
+		let selectAllDifficulty = isAllSelected(activeDifficultyTiles, allDifficultyTiles);
+		let selectAllTags = isAllSelected(activeTagTiles, allTagTiles);
 
 		$("#tile-topics-select-all").click(function(e){
 			e.stopPropagation();
