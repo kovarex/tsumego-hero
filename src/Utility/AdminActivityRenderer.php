@@ -1,6 +1,7 @@
 <?php
 
 App::uses('DataTableRenderer', 'Utility');
+App::uses('SetConnection', 'Model');
 
 class AdminActivityRenderer extends DataTableRenderer
 {
@@ -33,21 +34,17 @@ FROM
 	LEFT JOIN tsumego
 		ON admin_activity.tsumego_id = tsumego.id
 
-	/* pick exactly ONE set_connection per tsumego */
-	LEFT JOIN (
-		SELECT *
-		FROM (
-			SELECT
-				set_connection.*,
-				ROW_NUMBER() OVER (
-					PARTITION BY set_connection.tsumego_id
-					ORDER BY set_connection.id
-				) AS rn
-			FROM set_connection
-		) ranked_set_connection
-		WHERE ranked_set_connection.rn = 1
-	) set_connection
+	/* pick the representative set_connection per tsumego (public/official before favorites) */
+	LEFT JOIN set_connection
 		ON set_connection.tsumego_id = admin_activity.tsumego_id
+	   AND set_connection.id = (
+			SELECT sc2.id
+			FROM set_connection sc2
+			JOIN `set` s2 ON s2.id = sc2.set_id
+			WHERE sc2.tsumego_id = admin_activity.tsumego_id
+			ORDER BY " . SetConnection::displayOrderSql('s2', 'sc2') . "
+			LIMIT 1
+		)
 
 	LEFT JOIN `set`
 		ON `set`.id = set_connection.set_id

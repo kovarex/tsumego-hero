@@ -1,6 +1,7 @@
 <?php
 
 App::uses('DataTableRenderer', 'Utility');
+App::uses('SetConnection', 'Model');
 
 class TagConnectionProposalsRenderer extends DataTableRenderer
 {
@@ -30,6 +31,14 @@ FROM
 	JOIN tag ON tag_connection.tag_id = tag.id
 	JOIN tsumego ON tag_connection.tsumego_id = tsumego.id
 	JOIN set_connection ON set_connection.tsumego_id = tag_connection.tsumego_id
+		AND set_connection.id = (
+			SELECT sc2.id
+			FROM set_connection sc2
+			JOIN `set` s2 ON s2.id = sc2.set_id
+			WHERE sc2.tsumego_id = tag_connection.tsumego_id
+			ORDER BY " . SetConnection::displayOrderForSetSql('s2') . ", sc2.id ASC
+			LIMIT 1
+		)
 	JOIN user ON tag_connection.user_id = user.id
 	JOIN `set` ON `set`.id = set_connection.set_id
 	LEFT JOIN sgf ON sgf.id = (SELECT MAX(s2.id) FROM sgf s2 WHERE s2.tsumego_id = tsumego.id)
