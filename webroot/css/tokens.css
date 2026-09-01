@@ -63,7 +63,7 @@
 		--color-purple-btn-gradient: linear-gradient(#bd73d9, #9d31be);
 		--color-gold: #9a7b00;
 
-		/* Rank colors — difficulty filter bands (15k weakest, 9d strongest) */
+		/* Rank colors: difficulty filter bands (15k weakest, 9d strongest) */
 		--rank-15k: #3fc9c4;
 		--rank-14k: #3fbec9;
 		--rank-13k: #3fadc9;
@@ -88,6 +88,33 @@
 		--rank-7d: #f4587f;
 		--rank-8d: #f45865;
 		--rank-9d: #f45858;
+
+		/* Tag palette: tag.color stores an index into this list (0-24) */
+		--tag-palette-0: #d98787;
+		--tag-palette-1: #879565;
+		--tag-palette-2: #be9783;
+		--tag-palette-3: #bc742d;
+		--tag-palette-4: #996f1f;
+		--tag-palette-5: #9f3600;
+		--tag-palette-6: #99971f;
+		--tag-palette-7: #7209b7;
+		--tag-palette-8: #954d3f;
+		--tag-palette-9: #b3b525;
+		--tag-palette-10: #89991f;
+		--tag-palette-11: #913d5b;
+		--tag-palette-12: #4f4444;
+		--tag-palette-13: #b689c7;
+		--tag-palette-14: #a6587d;
+		--tag-palette-15: #2d254f;
+		--tag-palette-16: #9a328a;
+		--tag-palette-17: #66337a;
+		--tag-palette-18: #b82e7e;
+		--tag-palette-19: #77329a;
+		--tag-palette-20: #bb46c4;
+		--tag-palette-21: #7d0808;
+		--tag-palette-22: #884338;
+		--tag-palette-23: #bea588;
+		--tag-palette-24: #80767b;
 
 		--ach-gray: #808080;
 		--ach-black: #000;

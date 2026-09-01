@@ -49,6 +49,7 @@ class TsumegoFilters
 			{
 				$this->tags[] = $tag;
 				$this->tagIDs[] = $found['Tag']['id'];
+				$this->tagColors[$tag] = (int) $found['Tag']['color'];
 			}
 		}
 	}
@@ -143,9 +144,9 @@ class TsumegoFilters
 	{
 		if (empty($this->tagIDs))
 			return;
-		if (!str_contains($query->query, 'JOIN tag_connection'))
-			$query->query .= ' JOIN tag_connection ON tag_connection.tsumego_id = tsumego.id';
-		$query->conditions[] = 'tag_connection.tag_id IN (' . implode(',', $this->tagIDs) . ')';
+		$query->conditions[] = 'EXISTS (SELECT 1 FROM tag_connection tc
+			WHERE tc.tsumego_id = tsumego.id
+			AND tc.tag_id IN (' . implode(',', $this->tagIDs) . '))';
 	}
 
 	public function filterSets(Query $query): void
@@ -208,4 +209,5 @@ class TsumegoFilters
 	public array $ranks = [];
 	public array $tags = [];
 	public array $tagIDs = [];
+	public array $tagColors = [];
 }
