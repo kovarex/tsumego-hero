@@ -2,7 +2,7 @@
 {
 body {
 	font-family: Times New Roman, verdana, helvetica, arial, sans-serif;
-	font-size: clamp(16px, 0.9rem + 0.5vw, 18px);
+	font-size: clamp(15px, 0.9rem + 0.5vw, 16px);
 	margin: 0;
 	text-align: justify;
 	background: var(--body-background-gradient);
@@ -173,6 +173,7 @@ li a.menuLi.nav__link--active {
 }
 .btn.main-page {
   font-size: 14px;
+  color: #fff;
 }
 .sandbox-teaser {
   text-align: center;
@@ -541,6 +542,8 @@ input.newCheck {
    (nav a overrides the .btn color/padding otherwise). */
 #dropdowntable2 .btn {
   display: inline-block;
+  font-size: 16px;
+  padding: 10px 13px;
   color: var(--color-green);
   border-left: 1px solid var(--surface-ink);
   border-top: 1px solid var(--surface-ink);

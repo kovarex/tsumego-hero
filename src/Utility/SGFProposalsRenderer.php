@@ -57,8 +57,8 @@ OFFSET " . $this->offset, [Auth::getUserID()]);
 		echo '</td>';
 		echo '<td>';
 		new TsumegoButton($item['tsumego_id'], $item['set_connection_id'], $item['num'], $item['status'] ?: 'N', 0, $item['sgf'])->render();
-		echo '<td><a class="btn" href="/users/acceptSGFProposal/'
-			. $item['proposed_id'] . '" id="accept-' . $item['proposed_id'] . '">Accept</a>
-			<a class="btn" href="/users/rejectSGFProposal/' . $item['proposed_id'] . '" id="reject-' . $item['proposed_id'] . '">Reject</a></td>';
+		echo '<td><button class="btn" onclick="window.location=\'/users/acceptSGFProposal/'
+			. $item['proposed_id'] . '\'" id="accept-' . $item['proposed_id'] . '">Accept</button>
+			<button class="btn" onclick="window.location=\'/users/rejectSGFProposal/' . $item['proposed_id'] . '\'" id="reject-' . $item['proposed_id'] . '">Reject</button></td>';
 	}
 }

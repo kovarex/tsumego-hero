@@ -216,7 +216,7 @@ if ($tsumegoFilters->query != 'topics')
 			<?php
 			if (isset($canEdit) && $canEdit)
 				echo '<tr><td colspan="2" class="set-view__edit-row">
-					<a class="btn" href="/sets/edit/' . $set['Set']['id'] . '">Edit Set</a>
+					<a class="btn btn--primary" href="/sets/edit/' . $set['Set']['id'] . '">Edit Set</a>
 					</td></tr>';
 			?>
 			</tr>

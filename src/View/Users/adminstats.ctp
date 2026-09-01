@@ -21,7 +21,7 @@
 			for($i=0; $i<count($requestDeletion); $i++){
 				echo '<tr>';
 				echo '<td>'.h($requestDeletion[$i]['User']['name']).' has requested account deletion.</td>';
-				echo '<td><a class="btn" id="delete-user-'.($i+1).'" href="/users/adminstats?delete='.($requestDeletion[$i]['User']['id']*1111)
+				echo '<td><a class="btn btn--neutral" id="delete-user-'.($i+1).'" href="/users/adminstats?delete='.($requestDeletion[$i]['User']['id']*1111)
 				.'&hash='.md5($requestDeletion[$i]['User']['name']).'">Delete Account</a></td>';
 				echo '</tr>';
 			}
