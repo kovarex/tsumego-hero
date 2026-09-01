@@ -210,6 +210,14 @@ class Browser
 		$this->assertNoErrors();
 	}
 
+	// Click an element and accept any confirm() dialog it opens.
+	public function clickIdAndAcceptAlert($name)
+	{
+		$this->driver->findElement(WebDriverBy::id($name))->click();
+		$this->driver->switchTo()->alert()->accept();
+		$this->assertNoErrors();
+	}
+
 	public function clickCssSelect($name)
 	{
 		$this->driver->findElement(WebDriverBy::cssSelector($name))->click();

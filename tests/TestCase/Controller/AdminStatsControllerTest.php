@@ -474,7 +474,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 		]);
 		$browser->get('/users/adminstats');
 		//click deleted user button
-		$browser->clickId('delete-user-1');
+		$browser->clickIdAndAcceptAlert('delete-user-1');
 		// User should be deleted - page stays on adminstats
 		$this->assertStringContainsString('/users/adminstats', $browser->driver->getCurrentURL());
 		// user should be deleted so this should return null
