@@ -36,6 +36,10 @@ webroot/forums/store
 webroot/forums/config.php
 webroot/forums/vendor
 
+# PHPUnit code coverage reports (local + CI)
+/webroot/coverage/
+/coverage/
+
 # IDE and editor files #
 ########################
 .idea/
