@@ -102,7 +102,10 @@ $finalCoverage->append(RawCodeCoverageData::fromXdebugWithoutPathCoverage($filte
 $reportDir = __DIR__ . '/../../coverage';
 @mkdir($reportDir, 0777, true);
 
-$report = new HtmlReport();
-$report->process($coverage, $reportDir);
+$htmlReport = new HtmlReport();
+$htmlReport->process($coverage, $reportDir);
+
+$cloverReport = new \SebastianBergmann\CodeCoverage\Report\Clover();
+$cloverReport->process($coverage, $reportDir . '/coverage.xml');
 
 echo "✅ Merged coverage written to ./coverage\n";
