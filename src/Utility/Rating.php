@@ -150,4 +150,29 @@ class Rating
 			return Rating::getReadableRank($rank);
 		return strval($rating);
 	}
+
+	/**
+	 * All rank labels from 15k to 9d, weakest first. Colors are CSS tokens
+	 * (--rank-15k … --rank-9d) in webroot/css/tokens.css.
+	 *
+	 * @return string[]
+	 */
+	public static function ranks(): array
+	{
+		return [
+			'15k', '14k', '13k', '12k', '11k',
+			'10k', '9k', '8k', '7k', '6k',
+			'5k', '4k', '3k', '2k', '1k',
+			'1d', '2d', '3d', '4d', '5d',
+			'6d', '7d', '8d', '9d',
+		];
+	}
+
+	/**
+	 * Hex color for a rank label, referencing the CSS token (e.g. --rank-5k).
+	 */
+	public static function rankColorVar(string $rank): string
+	{
+		return 'var(--rank-' . $rank . ')';
+	}
 }

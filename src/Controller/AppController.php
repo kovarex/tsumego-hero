@@ -19,18 +19,6 @@ class AppController extends Controller
 		'Authorization'
 	];
 
-	protected function getDeletedSets()
-	{
-		$dSets = [];
-		$de = $this->Set->find('all', ['conditions' => ['public' => -1]]);
-		if (!$de)
-			$de = [];
-		foreach ($de as $item)
-			$dSets[] = $item['Set']['id'];
-
-		return $dSets;
-	}
-
 	/**
 	 * @param int $uid User ID
 	 * @param string $action Action type
@@ -61,17 +49,6 @@ class AppController extends Controller
 	public static function getAllTags()
 	{
 		return Util::query("SELECT * from tag WHERE approved = 1 ORDER BY tag.name");
-	}
-
-	public static function encrypt($str = null)
-	{
-		$secret_key = 'my_simple_secret_keyx';
-		$secret_iv = 'my_simple_secret_ivx';
-		$encrypt_method = 'AES-256-CBC';
-		$key = hash('sha256', $secret_key);
-		$iv = substr(hash('sha256', $secret_iv), 0, 16);
-
-		return base64_encode(openssl_encrypt($str, $encrypt_method, $key, 0, $iv));
 	}
 
 	protected function checkPictureLarge($u)
@@ -419,7 +396,6 @@ class AppController extends Controller
 				Auth::saveUserField('sound', $_COOKIE['sound']);
 				unset($_COOKIE['sound']);
 			}
-			$this->set('ac', true);
 			$this->set('user', Auth::getUser());
 		}
 
@@ -487,8 +463,6 @@ class AppController extends Controller
 			$achievementChecker->checkStandardAchievements()->finalize();
 			$this->set('achievementUpdates', $achievementChecker->updated);
 		}
-		$boardNames = [];
-
 		if (!is_null($boardsBitmask = Util::clearCookie('boards_bitmask')))
 		{
 			if (Auth::isLoggedIn())
@@ -508,7 +482,6 @@ class AppController extends Controller
 			$this->set('user', $displayUser);
 		}
 		$this->set('nextDay', $nextDay->format('m/d/Y'));
-		$this->set('boardNames', $boardNames);
 		$this->set('highscoreLink', $highscoreLink);
 		$this->set('lightDark', $lightDark);
 		$this->set('levelBar', $levelBar);

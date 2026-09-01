@@ -124,11 +124,6 @@ class TsumegoFilters
 		return "Unsupported yet";
 	}
 
-	public function setQuery($query)
-	{
-		$this->query = self::processItem('query', 'topics', null, $query);
-	}
-
 	public function filterRanks(Query $query): void
 	{
 		if (empty($this->ranks))
@@ -193,8 +188,8 @@ class TsumegoFilters
 			// difficulty mode shows no band above 9d, so higher ratings are not reachable
 			if (empty($this->ranks))
 			{
-				$ranks = SetsController::getExistingRanksArray();
-				$query->conditions[] = 'tsumego.rating < ' . RatingBounds::coverRank(end($ranks)['rank'], '15k')->max;
+				$ranks = Rating::ranks();
+				$query->conditions[] = 'tsumego.rating < ' . RatingBounds::coverRank(end($ranks), '15k')->max;
 			}
 			else
 				$this->filterRanks($query);

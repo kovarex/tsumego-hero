@@ -298,8 +298,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$tagNamesOffset = ($tagNamesPage - 1) * $perPage;
 
 		// Get total counts
-		$this->set('tagNamesTotal', $this->Tag->find('count', ['conditions' => ['approved' => 0]]));
-
 		$tags = $this->Tag->find('all', [
 			'conditions' => ['approved' => 0],
 			'limit' => $perPage,
@@ -313,8 +311,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		for ($i = 0; $i < $tagsByKeyCount; $i++)
 			$tKeys[$tagsByKey[$i]['Tag']['id']] = $tagsByKey[$i]['Tag']['name'];
 
-		$tagTsumegos = [];
-
 		$tagNamesCount = count($tags);
 		for ($i = 0; $i < $tagNamesCount; $i++)
 		{
@@ -326,7 +322,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 		$this->set('requestDeletion', $requestDeletion);
 		$this->set('tagNames', $tags);
-		$this->set('tagTsumegos', $tagTsumegos);
 
 		// Pagination data
 		$this->set('sgfProposalsRenderer', new SGFProposalsRenderer($this->params['url']));
@@ -777,11 +772,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		{
 			if (!empty($this->data))
 				if (isset($this->data['User']['email']))
-				{
 					if (Validation::email($this->data['User']['email']))
 						Auth::saveUserField('email', $this->data['User']['email']);
-					$this->set('data', $this->data['User']['email']);
-				}
 			if (isset($this->params['url']['undo']))
 				if ($this->params['url']['undo'] / 1111 == $id)
 					Auth::saveUserField('dbstorage', 1);

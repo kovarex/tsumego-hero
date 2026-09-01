@@ -52,7 +52,7 @@
 					<?php
 						for($i=0; $i<count($difficultyTiles); $i++){
 							if($difficultyTiles[$i] != '[continuation]')
-								echo '<div class="dropdown__tile" id="tile-difficulty'.$i.'">'.h($difficultyTiles[$i]).'</div>';
+								echo '<div class="dropdown__tile dropdown__tile--difficulty" id="tile-difficulty'.$i.'" style="--rank-color:'.Rating::rankColorVar($difficultyTiles[$i]).'">'.h($difficultyTiles[$i]).'</div>';
 						}
 					?>
 					<div class="dropdown__tile-actions">
@@ -344,7 +344,7 @@
 				for(let i=0;i<allDifficultyTiles.length;i++)
 					if(name === allDifficultyTiles[i])
 						position = i;
-				$("#tile-"+query+position).css("background", color);
+				$("#tile-"+query+position).toggleClass("is-selected", select);
 				tileDifficultyBool[position] = select;
 			}else if(query === "tags"){
 				for(let i=0;i<allTagTiles.length;i++)
@@ -476,7 +476,7 @@
 					if(activeDifficultyTiles[i] === initialDifficultyTiles[j])
 						initialTile = true;
 				if(query == "difficulty" || initialTile)
-					$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--purple" id="active-tiles-element'+i+'" onclick="removeActiveDifficulty('+i+')">'+activeDifficultyTiles[i]+'</div>');
+					$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--difficulty" style="--rank-color:var(--rank-'+activeDifficultyTiles[i]+')" id="active-tiles-element'+i+'" onclick="removeActiveDifficulty('+i+')">'+activeDifficultyTiles[i]+'</div>');
 			}
 			for(let i=0;i<activeTagTiles.length;i++){
 				let initialTile = false;
@@ -548,7 +548,7 @@
 			}
 			for(let i=0;i<allDifficultyTiles.length;i++){
 				if(allDifficultyTiles[i] === activeDifficultyTiles[index])
-					$("#tile-difficulty"+i).css("background", "#ffffff1a");
+					$("#tile-difficulty"+i).toggleClass("is-selected", false);
 			}
 			let newTiles = [];
 			for(let i=0;i<activeDifficultyTiles.length;i++){
@@ -751,7 +751,7 @@
 				activeDifficultyTiles = [];
 				activeDifficultyIds = allDifficultyIds;
 				for(let i=0;i<allDifficultyTiles.length;i++)
-					$("#tile-difficulty"+i).css("background", "#ffffff1a");
+					$("#tile-difficulty"+i).toggleClass("is-selected", false);
 				for(let i=0;i<tileDifficultyBool.length;i++)
 					tileDifficultyBool[i] = false;
 			}else{
@@ -759,7 +759,7 @@
 				activeDifficultyTiles = allDifficultyTiles;
 				activeDifficultyIds = allDifficultyIds;
 				for(let i=0;i<allDifficultyTiles.length;i++)
-					$("#tile-difficulty"+i).css("background", "var(--color-tile-purple)");
+					$("#tile-difficulty"+i).toggleClass("is-selected", true);
 				for(let i=0;i<tileDifficultyBool.length;i++)
 					tileDifficultyBool[i] = true;
 			}

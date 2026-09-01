@@ -43,21 +43,6 @@ class TsumegoIssue extends AppModel
 	public static int $OPENED_STATUS = 1;
 	public static int $CLOSED_STATUS = 2;
 
-	/**
-	 * Get the human-readable name for a status.
-	 *
-	 * @param int $status The status ID
-	 * @return string The status name
-	 * @throws \Exception If the status is invalid
-	 */
-	public static function statusName(int $status): string
-	{
-		if ($status === self::$OPENED_STATUS)
-			return 'Opened';
-		if ($status === self::$CLOSED_STATUS)
-			return 'Closed';
-		throw new \Exception("Invalid issue status: $status");
-	}
 
 	/**
 	 * Delete an issue if it has no non-deleted comments.

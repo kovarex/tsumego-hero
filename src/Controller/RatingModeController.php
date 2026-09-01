@@ -4,21 +4,16 @@ class RatingModeController extends AppController
 {
 	public static function ratingAdjustment($difficultySetting)
 	{
-		if ($difficultySetting == 1)
-			return -Constants::$RATING_MODE_DIFFERENCE_SETTING_3;
-		if ($difficultySetting == 2)
-			return -Constants::$RATING_MODE_DIFFERENCE_SETTING_2;
-		if ($difficultySetting == 3)
-			return -Constants::$RATING_MODE_DIFFERENCE_SETTING_1;
-		if ($difficultySetting == 4)
-			return 0;
-		if ($difficultySetting == 5)
-			return Constants::$RATING_MODE_DIFFERENCE_SETTING_1;
-		if ($difficultySetting == 6)
-			return Constants::$RATING_MODE_DIFFERENCE_SETTING_2;
-		if ($difficultySetting == 7)
-			return Constants::$RATING_MODE_DIFFERENCE_SETTING_3;
-		return 0;
+		$adjustments = [
+			1 => -Constants::$RATING_MODE_DIFFERENCE_SETTING_3,
+			2 => -Constants::$RATING_MODE_DIFFERENCE_SETTING_2,
+			3 => -Constants::$RATING_MODE_DIFFERENCE_SETTING_1,
+			4 => 0,
+			5 => Constants::$RATING_MODE_DIFFERENCE_SETTING_1,
+			6 => Constants::$RATING_MODE_DIFFERENCE_SETTING_2,
+			7 => Constants::$RATING_MODE_DIFFERENCE_SETTING_3,
+		];
+		return $adjustments[$difficultySetting] ?? 0;
 	}
 
 	public function index(): mixed

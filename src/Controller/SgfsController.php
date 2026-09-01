@@ -128,7 +128,6 @@ class SgfsController extends AppController
 		$this->set('name', $name);
 		$this->set('s', $s);
 		$this->set('id', $id);
-		$this->set('tNum', $t['Tsumego']['num']);
 		$this->set('dId', $dId);
 		$this->set('dTitle', $dTitle);
 	}
