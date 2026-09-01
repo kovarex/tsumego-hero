@@ -40,11 +40,6 @@ class BoardPosition
 		return self::pack(self::unpackX($packed), $size - 1 - self::unpackY($packed));
 	}
 
-	public static function mirror(int $packed): int
-	{
-		return self::pack(self::unpackY($packed), self::unpackX($packed));
-	}
-
 	public static function mirrorAround(int $packed, $pivot): int
 	{
 		$pivotX = self::unpackX($pivot);

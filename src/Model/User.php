@@ -54,20 +54,6 @@ class User extends AppModel
 		return '';
 	}
 
-	public static function getHeroPowersCount($user): int
-	{
-		$heroPowers = 0;
-		if($user['level'] >= HeroPowers::$SPRINT_MINIMUM_LEVEL)
-			$heroPowers++;
-		if($user['level'] >= HeroPowers::$INTUITION_MINIMUM_LEVEL)
-			$heroPowers++;
-		if($user['level'] >= HeroPowers::$REJUVENATION_MINIMUM_LEVEL)
-			$heroPowers++;
-		if($user['premium'] > 0 || $user['level'] >= HeroPowers::$REFINEMENT_MINIMUM_LEVEL)
-			$heroPowers++;
-		return $heroPowers;
-	}
-
 	public static function getHighestRating($user): float
 	{
 		$highestTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('first', [

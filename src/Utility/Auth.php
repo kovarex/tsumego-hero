@@ -79,11 +79,6 @@ class Auth
 		return Auth::isLoggedIn() && Auth::getUser()['premium'];
 	}
 
-	public static function premiumLevel(): int
-	{
-		return Auth::isLoggedIn() ? Auth::getUser()['premium'] : 0;
-	}
-
 	/**
 	 * Throws when $field is not an existing column on the user table, so a typo
 	 * or schema mismatch fails loudly instead of being silently dropped.
@@ -190,11 +185,6 @@ class Auth
 	public static function isInTimeMode(): bool
 	{
 		return Auth::getMode() == Constants::$TIME_MODE;
-	}
-
-	public static function addSuspicion(): void
-	{
-		Auth::incrementUserField('penalty', 1);
 	}
 
 	public static function XPisGainedInCurrentMode()

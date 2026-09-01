@@ -144,11 +144,11 @@ class SetsSelector
 
 	private function selectByDifficulty()
 	{
-		$ranks = SetsController::getExistingRanksArray();
+		$ranks = Rating::ranks();
 
 		if (!empty($this->tsumegoFilters->ranks))
 			$ranks = array_values(array_filter($ranks, function ($r) {
-				return in_array($r['rank'], $this->tsumegoFilters->ranks);
+				return in_array($r, $this->tsumegoFilters->ranks);
 			}));
 
 		// assign each tsumego to a rank band using the same bounds RatingBounds::coverRank uses
@@ -156,10 +156,10 @@ class SetsSelector
 		$rankOrder = 0;
 		foreach ($ranks as $rank)
 		{
-			$bounds = RatingBounds::coverRank($rank['rank'], '15k');
+			$bounds = RatingBounds::coverRank($rank, '15k');
 			$bands[] = [
-				'name' => $rank['rank'],
-				'color' => $rank['color'],
+				'name' => $rank,
+				'color' => Rating::rankColorVar($rank),
 				'order' => $rankOrder,
 				'min' => $bounds->min,
 				'max' => $bounds->max,

@@ -5,23 +5,6 @@ App::uses('TsumegoStatus', 'Model');
 
 class TsumegoUtil
 {
-	public static function getMapForCurrentUser($conditions = null): array
-	{
-		if (!$conditions)
-			$conditions = [];
-
-		$conditions['user_id'] = Auth::getUserID();
-		$statuses = ClassRegistry::init('TsumegoStatus')->find('all', ['conditions' => $conditions]);
-		if (!$statuses)
-			return [];
-
-		$result = [];
-		foreach ($statuses as $status)
-			$result[$status['TsumegoStatus']['tsumego_id']] = $status['TsumegoStatus']['status'];
-
-		return $result;
-	}
-
 	public static function getSetConnectionsWithTitles(int $tsumegoID): array
 	{
 		$rows = Util::query(

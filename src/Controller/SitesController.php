@@ -59,7 +59,6 @@ class SitesController extends AppController
 		$this->set('chartData', $chartData);
 		$this->set('latestPublishDate', $latestPublishDate);
 		$this->set('quote', $currentQuote);
-		$this->set('dayRecord', $dayRecord);
 
 		$recentAchievements = $this->AchievementStatus->getRecent();
 		$this->set('recentAchievements', $recentAchievements);

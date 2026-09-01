@@ -234,7 +234,38 @@ if ($tsumegoFilters->query != 'topics')
 		</div>
 		<label class="preview-toggle" title="Toggle board previews"><input type="checkbox" id="preview-zoom-slider">🔍 Preview</label>
 		<div id="msgFilters">
-			<div class="active-tiles-container tiles-view"></div>
+			<div class="active-tiles-container tiles-view">
+<?php
+$hasActiveTiles = false;
+if ($tsumegoFilters->query != 'topics')
+{
+	foreach ($tsumegoFilters->sets as $i => $setName)
+	{
+		$hasActiveTiles = true;
+		echo '<div class="dropdown__tile dropdown__tile--green dropdown__tile--context" id="active-set-element' . $i . '" onclick="removeActiveTopic(' . $i . ')">' . h($setName) . '</div>';
+	}
+}
+if ($tsumegoFilters->query != 'difficulty')
+{
+	foreach ($tsumegoFilters->ranks as $i => $rank)
+	{
+		$hasActiveTiles = true;
+		echo '<div class="dropdown__tile dropdown__tile--difficulty dropdown__tile--context" style="--rank-color:var(--rank-' . h($rank) . ')" id="active-rank-element' . $i . '" onclick="removeActiveDifficulty(' . $i . ')">' . h($rank) . '</div>';
+	}
+}
+if ($tsumegoFilters->query != 'tags')
+{
+	foreach ($tsumegoFilters->tags as $i => $tag)
+	{
+		$hasActiveTiles = true;
+		$color = (int) ($tsumegoFilters->tagColors[$tag] ?? 24);
+		echo '<div class="dropdown__tile dropdown__tile--tag dropdown__tile--context" style="--tag-color:var(--tag-palette-' . $color . ')" id="active-tag-element' . $i . '" onclick="removeActiveTag(' . $i . ')">' . h($tag) . '</div>';
+	}
+}
+if ($hasActiveTiles)
+	echo '<a class="dropdown__tile dropdown__tile--muted" id="unselect-active-tiles" href="">clear</a><div class="clearfix"></div>';
+?>
+			</div>
 		</div>
 		<div class="set-view-main">
 		<?php
@@ -271,38 +302,12 @@ if ($totalPages > 1):
 	<div class="clearfix"></div>
 
 	<script>
-	const activeTopicTiles = [];
-	const activeDifficultyTiles = [];
-	const activeTagTiles = [];
-
-	<?php
-		if ($tsumegoFilters->query != 'topics')
-			foreach ($tsumegoFilters->sets as $setName)
-				echo 'activeTopicTiles.push(' . json_encode($setName, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE) . ');';
-if ($tsumegoFilters->query != 'difficulty')
-	foreach ($tsumegoFilters->ranks as $rank)
-		echo 'activeDifficultyTiles.push(' . json_encode($rank, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE) . ');';
-if ($tsumegoFilters->query != 'tags')
-	foreach ($tsumegoFilters->tags as $tag)
-		echo 'activeTagTiles.push(' . json_encode($tag, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE) . ');';
-?>
-	drawActiveTiles();
-
-	function drawActiveTiles(){
-		$(".active-tiles-container").html("");
-		for(let i=0;i<activeTopicTiles.length;i++)
-			$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--green dropdown__tile--context" id="active-tiles-element'+i+'" onclick="removeActiveTopic('+i+')">'+activeTopicTiles[i]+'</div>');
-		for(let i=0;i<activeDifficultyTiles.length;i++)
-			$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--purple dropdown__tile--context" id="active-tiles-element'+i+'" onclick="removeActiveDifficulty('+i+')">'+activeDifficultyTiles[i]+'</div>');
-		for(let i=0;i<activeTagTiles.length;i++)
-			$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--brown dropdown__tile--context" id="active-tiles-element'+i+'" onclick="removeActiveTag('+i+')">'+activeTagTiles[i]+'</div>');
-		if(activeTopicTiles.length>0 || activeDifficultyTiles.length>0 || activeTagTiles.length>0)
-			$(".active-tiles-container").append('<a class="dropdown__tile dropdown__tile--muted" id="unselect-active-tiles" href="">clear</a><div class="clearfix"></div>');
-	}
+	const activeSets = <?php echo json_encode($tsumegoFilters->query != 'topics' ? array_values($tsumegoFilters->sets) : [], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
+	const activeRanks = <?php echo json_encode($tsumegoFilters->query != 'difficulty' ? array_values($tsumegoFilters->ranks) : [], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
+	const activeTags = <?php echo json_encode($tsumegoFilters->query != 'tags' ? array_values($tsumegoFilters->tags) : [], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 
 	$(".active-tiles-container").on("click", "#unselect-active-tiles", function(e){
 		e.preventDefault();
-		$(".active-tiles-container").html("");
 		setCookie("filtered_sets", "clear");
 		setCookie("filtered_ranks", "clear");
 		setCookie("filtered_tags", "clear");
@@ -310,20 +315,20 @@ if ($tsumegoFilters->query != 'tags')
 	});
 
 	function removeActiveTopic(index){
-		activeTopicTiles.splice(index, 1);
-		setCookie("filtered_sets", activeTopicTiles.length == 0 ? "clear" : activeTopicTiles.join("@"));
+		activeSets.splice(index, 1);
+		setCookie("filtered_sets", activeSets.length == 0 ? "clear" : activeSets.join("@"));
 		window.location.reload();
 	}
 
 	function removeActiveDifficulty(index){
-		activeDifficultyTiles.splice(index, 1);
-		setCookie("filtered_ranks", activeDifficultyTiles.length == 0 ? "clear" : activeDifficultyTiles.join("@"));
+		activeRanks.splice(index, 1);
+		setCookie("filtered_ranks", activeRanks.length == 0 ? "clear" : activeRanks.join("@"));
 		window.location.reload();
 	}
 
 	function removeActiveTag(index){
-		activeTagTiles.splice(index, 1);
-		setCookie("filtered_tags", activeTagTiles.length == 0 ? "clear" : activeTagTiles.join("@"));
+		activeTags.splice(index, 1);
+		setCookie("filtered_tags", activeTags.length == 0 ? "clear" : activeTags.join("@"));
 		window.location.reload();
 	}
 

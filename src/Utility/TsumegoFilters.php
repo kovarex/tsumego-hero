@@ -49,6 +49,7 @@ class TsumegoFilters
 			{
 				$this->tags[] = $tag;
 				$this->tagIDs[] = $found['Tag']['id'];
+				$this->tagColors[$tag] = (int) $found['Tag']['color'];
 			}
 		}
 	}
@@ -124,11 +125,6 @@ class TsumegoFilters
 		return "Unsupported yet";
 	}
 
-	public function setQuery($query)
-	{
-		$this->query = self::processItem('query', 'topics', null, $query);
-	}
-
 	public function filterRanks(Query $query): void
 	{
 		if (empty($this->ranks))
@@ -148,9 +144,9 @@ class TsumegoFilters
 	{
 		if (empty($this->tagIDs))
 			return;
-		if (!str_contains($query->query, 'JOIN tag_connection'))
-			$query->query .= ' JOIN tag_connection ON tag_connection.tsumego_id = tsumego.id';
-		$query->conditions[] = 'tag_connection.tag_id IN (' . implode(',', $this->tagIDs) . ')';
+		$query->conditions[] = 'EXISTS (SELECT 1 FROM tag_connection tc
+			WHERE tc.tsumego_id = tsumego.id
+			AND tc.tag_id IN (' . implode(',', $this->tagIDs) . '))';
 	}
 
 	public function filterSets(Query $query): void
@@ -193,8 +189,8 @@ class TsumegoFilters
 			// difficulty mode shows no band above 9d, so higher ratings are not reachable
 			if (empty($this->ranks))
 			{
-				$ranks = SetsController::getExistingRanksArray();
-				$query->conditions[] = 'tsumego.rating < ' . RatingBounds::coverRank(end($ranks)['rank'], '15k')->max;
+				$ranks = Rating::ranks();
+				$query->conditions[] = 'tsumego.rating < ' . RatingBounds::coverRank(end($ranks), '15k')->max;
 			}
 			else
 				$this->filterRanks($query);
@@ -213,4 +209,5 @@ class TsumegoFilters
 	public array $ranks = [];
 	public array $tags = [];
 	public array $tagIDs = [];
+	public array $tagColors = [];
 }

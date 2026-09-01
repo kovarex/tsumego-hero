@@ -72,7 +72,6 @@ class SetsController extends AppController
 		for ($i = 0; $i < $setsCount; $i++)
 		{
 			$ts = TsumegoUtil::collectTsumegosFromSet($sets[$i]['Set']['id']);
-			$sets[$i]['Set']['anz'] = count($ts);
 			$counter = 0;
 			$elo = 0;
 			$tsCount3 = count($ts);
@@ -93,14 +92,6 @@ class SetsController extends AppController
 			if (count($ts) > 0)
 				$percent = Util::getPercentButAvoid100UntilComplete($counter, count($ts));
 			$overallCounter += count($ts);
-			$sets[$i]['Set']['solvedNum'] = $counter;
-			$sets[$i]['Set']['solved'] = $percent;
-			$sets[$i]['Set']['solvedColor'] = $this->getSolvedColor($sets[$i]['Set']['solved']);
-			$sets[$i]['Set']['topicColor'] = $sets[$i]['Set']['color'];
-			$sets[$i]['Set']['difficultyColor'] = $this->getDifficultyColor($sets[$i]['Set']['difficulty']);
-			$sets[$i]['Set']['sizeColor'] = $this->getSizeColor($sets[$i]['Set']['anz']);
-			$sets[$i]['Set']['dateColor'] = $this->getDateColor(date('Ymd', strtotime($sets[$i]['Set']['created'])));
-
 			$sn = [];
 			$sn['id'] = $sets[$i]['Set']['id'];
 			$sn['name'] = $sets[$i]['Set']['title'];
@@ -117,7 +108,6 @@ class SetsController extends AppController
 			$admins[] = $item['User']['name'];
 
 		$this->set('admins', $admins);
-		$this->set('sets', $sets);
 		$this->set('setsNew', $setsNew);
 		$this->set('overallCounter', $overallCounter);
 	}
@@ -535,9 +525,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 			$setTiles[] = $set['Set']['title'];
 
 		//difficultyTiles
-		$dt = SetsController::getExistingRanksArray();
-		foreach ($dt as $item)
-			$difficultyTiles[] = $item['rank'];
+		$difficultyTiles = Rating::ranks();
 
 		//tagTiles
 		$tags = $this->Tag->find('all', [
@@ -570,12 +558,9 @@ ORDER BY sc.num ASC", [(int) $id]);
 			$this->set('achievementUpdate', $achievementChecker->updated);
 		}
 
-		$ranksArray = SetsController::getExistingRanksArray();
-		foreach ($ranksArray as &$rank)
-		{
-			$rank['id'] = $rank['rank'];
-			$rank['name'] = $rank['rank'];
-		}
+		$ranksArray = [];
+		foreach (Rating::ranks() as $rank)
+			$ranksArray[] = ['id' => $rank, 'name' => $rank];
 
 		if ($tsumegoFilters->query == 'topics' && empty($tsumegoFilters->sets))
 			$queryRefresh = false;
@@ -598,35 +583,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$this->set('queryRefresh', $queryRefresh);
 	}
 
-	public static function getDifficultyAndSolved($currentTagIds, $tsumegoStatusMap)
-	{
-		$tagTsumegoDifficulty = ClassRegistry::init('Tsumego')->find('all', ['conditions' => ['id' => $currentTagIds]]);
-		if (!$tagTsumegoDifficulty)
-			$tagTsumegoDifficulty = [];
-		$tagDifficultyResult = 0;
-		$statusCounter = 0;
-		$tagTsumegoDifficultyCount2 = count($tagTsumegoDifficulty);
-		for ($j = 0; $j < $tagTsumegoDifficultyCount2; $j++)
-		{
-			$tagDifficultyResult += $tagTsumegoDifficulty[$j]['Tsumego']['rating'];
-			if (isset($tsumegoStatusMap[$tagTsumegoDifficulty[$j]['Tsumego']['id']]))
-				if ($tsumegoStatusMap[$tagTsumegoDifficulty[$j]['Tsumego']['id']] == 'S' || $tsumegoStatusMap[$tagTsumegoDifficulty[$j]['Tsumego']['id']] == 'W' || $tsumegoStatusMap[$tagTsumegoDifficulty[$j]['Tsumego']['id']] == 'C')
-					$statusCounter++;
-		}
-		if (count($tagTsumegoDifficulty) > 0)
-			$tagDifficultyResult = $tagDifficultyResult / count($tagTsumegoDifficulty);
-		else
-			$tagDifficultyResult = 0;
-		$tagDifficultyResult = Rating::getReadableRankFromRating($tagDifficultyResult);
-		$return = [];
-		$return['difficulty'] = $tagDifficultyResult;
-		if (count($currentTagIds) > 0)
-			$return['solved'] = Util::getPercentButAvoid100UntilComplete($statusCounter, count($currentTagIds));
-		else
-			$return['solved'] = 0;
-
-		return $return;
-	}
 
 	/**
 	 * Gets the first unsolved set connection ID from a collection of tsumego buttons.
@@ -1008,7 +964,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 			if ($set['Set']['public'] == 0 && $set['Set']['user_id'] === null)
 				$this->set('_page', 'sandbox');
 			$this->set('isFav', false);
-			$this->set('isOwner', Auth::isLoggedIn() && $set['Set']['user_id'] == Auth::getUserID());
 			$this->set('canEdit', $this->Authorization->can($set, 'edit'));
 		}
 		else
@@ -1255,180 +1210,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 			$acA['AchievementCondition']['value'] = $accuracy;
 			$this->AchievementCondition->save($acA);
 		}
-	}
-
-
-	private function getDifficultyColor($difficulty = null)
-	{
-		if ($difficulty == 1)
-			return '#33cc33';
-		if ($difficulty == 2)
-			return '#709533';
-		if ($difficulty == 3)
-			return '#2e3370';
-		if ($difficulty == 4)
-			return '#ac5d33';
-		if ($difficulty == 5)
-			return '#e02e33';
-
-		return 'white';
-	}
-
-	private function getSizeColor($size = null)
-	{
-		$colors = [];
-		array_push($colors, '#cc6600');
-		array_push($colors, '#ac4e26');
-		array_push($colors, '#963e3e');
-		array_push($colors, '#802e58');
-		array_push($colors, '#60167d');
-		if ($size < 30)
-			return $colors[0];
-		if ($size < 60)
-			return $colors[1];
-		if ($size < 110)
-			return $colors[2];
-		if ($size < 202)
-			return $colors[3];
-
-		return $colors[4];
-	}
-
-	private function getDateColor($date = null)
-	{
-		$current = '20180705';
-		$dist = $current - $date;
-
-		if ($dist < 7)
-			return '#0033cc';
-		if ($dist < 100)
-			return '#0f33ad';
-		if ($dist < 150)
-			return '#1f338f';
-		if ($dist < 200)
-			return '#2e3370';
-		if ($dist < 300)
-			return '#3d3352';
-		if ($dist < 400)
-			return '#4c3333';
-		if ($dist < 500)
-			return '#57331f';
-
-		return '#663300';
-	}
-
-	private function getSolvedColor($percent = null)
-	{
-		$colors = [];
-
-		array_push($colors, '#333333');
-		array_push($colors, '#2e3d47');
-		array_push($colors, '#2b4252');
-		array_push($colors, '#29475c');
-		array_push($colors, '#264c66');
-		array_push($colors, '#245270');
-		array_push($colors, '#21577a');
-		array_push($colors, '#1f5c85');
-		array_push($colors, '#1c618f');
-		array_push($colors, '#1a6699');
-
-		array_push($colors, '#176ba3');
-		array_push($colors, '#1470ad');
-		array_push($colors, '#1275b8');
-		array_push($colors, '#0f7ac2');
-		array_push($colors, '#0d80cc');
-		array_push($colors, '#0a85d6');
-		array_push($colors, '#088ae0');
-		array_push($colors, '#058feb');
-		array_push($colors, '#0394f5');
-		array_push($colors, '#0099ff');
-
-		array_push($colors, '#039cf8');
-		array_push($colors, '#069ef2');
-		array_push($colors, '#09a1eb');
-		array_push($colors, '#0ca4e4');
-		array_push($colors, '#10a6dd');
-		array_push($colors, '#13a9d6');
-		array_push($colors, '#16acd0');
-		array_push($colors, '#19afc9');
-		array_push($colors, '#1cb1c2');
-		array_push($colors, '#1fb4bc');
-
-		array_push($colors, '#22b7b5');
-		array_push($colors, '#25b9ae');
-		array_push($colors, '#28bca7');
-		array_push($colors, '#2bbfa0');
-		array_push($colors, '#2ec29a');
-		array_push($colors, '#32c493');
-		array_push($colors, '#35c78c');
-		array_push($colors, '#38ca86');
-		array_push($colors, '#3bcc7f');
-		array_push($colors, '#3ecf78');
-		$steps = 2.5;
-		$colorsCount = count($colors);
-		for ($i = 0; $i < $colorsCount; $i++)
-		{
-			if ($percent <= $steps)
-				return $colors[$i];
-			$steps += 2.5;
-		}
-
-		return '#333333';
-	}
-
-	public static function getExistingRanksArray()
-	{
-		$ranksArray = [];
-		$ranksArray[0]['rank'] = '15k';
-		$ranksArray[1]['rank'] = '14k';
-		$ranksArray[2]['rank'] = '13k';
-		$ranksArray[3]['rank'] = '12k';
-		$ranksArray[4]['rank'] = '11k';
-		$ranksArray[5]['rank'] = '10k';
-		$ranksArray[6]['rank'] = '9k';
-		$ranksArray[7]['rank'] = '8k';
-		$ranksArray[8]['rank'] = '7k';
-		$ranksArray[9]['rank'] = '6k';
-		$ranksArray[10]['rank'] = '5k';
-		$ranksArray[11]['rank'] = '4k';
-		$ranksArray[12]['rank'] = '3k';
-		$ranksArray[13]['rank'] = '2k';
-		$ranksArray[14]['rank'] = '1k';
-		$ranksArray[15]['rank'] = '1d';
-		$ranksArray[16]['rank'] = '2d';
-		$ranksArray[17]['rank'] = '3d';
-		$ranksArray[18]['rank'] = '4d';
-		$ranksArray[19]['rank'] = '5d';
-		$ranksArray[20]['rank'] = '6d';
-		$ranksArray[21]['rank'] = '7d';
-		$ranksArray[22]['rank'] = '8d';
-		$ranksArray[23]['rank'] = '9d';
-		$ranksArray[0]['color'] = 'rgba(63,  201, 196, [o])';
-		$ranksArray[1]['color'] = 'rgba(63, 190, 201, [o])';
-		$ranksArray[2]['color'] = 'rgba(63, 173, 201, [o])';
-		$ranksArray[3]['color'] = 'rgba(63, 157, 201, [o])';
-		$ranksArray[4]['color'] = 'rgba(63, 141, 201, [o])';
-		$ranksArray[5]['color'] = 'rgba(88, 158, 244, [o])';
-		$ranksArray[6]['color'] = 'rgba(88, 140, 244, [o])';
-		$ranksArray[7]['color'] = 'rgba(88, 122, 244, [o])';
-		$ranksArray[8]['color'] = 'rgba(88, 103, 244, [o])';
-		$ranksArray[9]['color'] = 'rgba(90, 88, 244, [o])';
-		$ranksArray[10]['color'] = 'rgba(109, 88, 244, [o])';
-		$ranksArray[11]['color'] = 'rgba(127, 88, 244, [o])';
-		$ranksArray[12]['color'] = 'rgba(145, 88, 244, [o])';
-		$ranksArray[13]['color'] = 'rgba(163, 88, 244, [o])';
-		$ranksArray[14]['color'] = 'rgba(182, 88, 244, [o])';
-		$ranksArray[15]['color'] = 'rgba(200, 88, 244, [o])';
-		$ranksArray[16]['color'] = 'rgba(218, 88, 244, [o])';
-		$ranksArray[17]['color'] = 'rgba(236, 88, 244, [o])';
-		$ranksArray[18]['color'] = 'rgba(244, 88, 234, [o])';
-		$ranksArray[19]['color'] = 'rgba(244, 88, 187, [o])';
-		$ranksArray[20]['color'] = 'rgba(244, 88, 145, [o])';
-		$ranksArray[21]['color'] = 'rgba(244, 88, 127, [o])';
-		$ranksArray[22]['color'] = 'rgba(244, 88, 101, [o])';
-		$ranksArray[23]['color'] = 'rgba(244, 88, 88, [o])';
-
-		return $ranksArray;
 	}
 
 	#[HttpPost]

@@ -55,8 +55,8 @@
 	text-align: center;
 	text-decoration: none;
 	border: 1px solid var(--surface-border-strong);
-	border-top-color: var(--current-border-color);
-	border-left-color: var(--current-border-color);
+	border-top-color: var(--surface-border-light);
+	border-left-color: var(--surface-border-light);
 	border-radius: 9px;
 	margin: 1px;
 	height: 32px;

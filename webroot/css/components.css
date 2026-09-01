@@ -197,8 +197,8 @@
 	padding: 8px 10px;
 	margin: 2px;
 	border: 1px solid var(--surface-border-strong);
-	border-top-color: var(--current-border-color);
-	border-left-color: var(--current-border-color);
+	border-top-color: var(--surface-border-light);
+	border-left-color: var(--surface-border-light);
 	border-radius: 9px;
 	cursor: pointer;
 	transition: background 0.2s;
@@ -225,12 +225,14 @@
 .btn--inactive
 {
 	background-color: var(--surface-button-inactive);
+	background-image: none;
 	color: var(--text-button-inactive);
 }
 
 .btn--inactive:hover
 {
 	background-color: var(--surface-button-inactive);
+	background-image: none;
 	color: var(--text-button-inactive);
 }
 
@@ -624,6 +626,21 @@
 .dropdown__tile--brown
 {
 	background-color: var(--color-tile-brown);
+}
+
+.dropdown__tile--difficulty
+{
+	background-color: var(--rank-color, var(--surface-translucent));
+}
+
+.dropdown__tile--tag
+{
+	background-color: var(--tag-color, var(--surface-translucent));
+}
+
+.dropdown__tile--difficulty.is-selected
+{
+	outline: 2px solid var(--color-white);
 }
 
 .dropdown__tile--muted
