@@ -22,7 +22,7 @@
 				echo '<tr>';
 				echo '<td>'.h($requestDeletion[$i]['User']['name']).' has requested account deletion.</td>';
 				echo '<td><a class="btn btn--neutral" id="delete-user-'.($i+1).'" href="/users/adminstats?delete='.($requestDeletion[$i]['User']['id']*1111)
-				.'&hash='.md5($requestDeletion[$i]['User']['name']).'">Delete Account</a></td>';
+				.'&hash='.md5($requestDeletion[$i]['User']['name']).'" onclick="return confirm(\'Are you sure you want to delete this account?\');">Delete Account</a></td>';
 				echo '</tr>';
 			}
 			echo '</table><hr>';

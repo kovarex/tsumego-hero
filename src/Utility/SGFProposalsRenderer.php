@@ -50,15 +50,12 @@ OFFSET " . $this->offset, [Auth::getUserID()]);
 	{
 		echo '<td class="adminpanel-table-text">' . h($item['user_name']) . ' made a proposal for <a class="adminpanel-link" href="/'
 		. $item['set_connection_id'] . '">' . h($item['set_title']) . ' - ' . h($item['num']) . '</a>:</td>';
-		echo '<td>';
-		echo '<a href="/editor/?sgfID=' . $item['latest_accepted_id'] . '">current</a> |
-			<a href="/editor/?sgfID=' . $item['proposed_id'] . '">proposal</a> |
-			<a href="/editor/?sgfID=' . $item['proposed_id'] . '&diffID=' . $item['latest_accepted_id'] . '">diff</a>';
+		echo '<td style="white-space:nowrap">';
+		echo '<a href="/editor/?sgfID=' . $item['latest_accepted_id'] . '">current</a> | <a href="/editor/?sgfID=' . $item['proposed_id'] . '">proposal</a> | <a href="/editor/?sgfID=' . $item['proposed_id'] . '&diffID=' . $item['latest_accepted_id'] . '">diff</a>';
 		echo '</td>';
 		echo '<td>';
 		new TsumegoButton($item['tsumego_id'], $item['set_connection_id'], $item['num'], $item['status'] ?: 'N', 0, $item['sgf'])->render();
-		echo '<td><button class="btn" onclick="window.location=\'/users/acceptSGFProposal/'
-			. $item['proposed_id'] . '\'" id="accept-' . $item['proposed_id'] . '">Accept</button>
-			<button class="btn" onclick="window.location=\'/users/rejectSGFProposal/' . $item['proposed_id'] . '\'" id="reject-' . $item['proposed_id'] . '">Reject</button></td>';
+		echo '</td>';
+		echo '<td style="white-space:nowrap"><button class="btn" onclick="window.location=\'/users/acceptSGFProposal/' . $item['proposed_id'] . '\'" id="accept-' . $item['proposed_id'] . '">Accept</button> <button class="btn" onclick="window.location=\'/users/rejectSGFProposal/' . $item['proposed_id'] . '\'" id="reject-' . $item['proposed_id'] . '">Reject</button></td>';
 	}
 }
