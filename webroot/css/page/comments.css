@@ -227,7 +227,7 @@
 [data-theme=dark] .tsumego-comments__tab {
 	background: var(--surface-hover);
 	border-color: var(--surface-hover-strong);
-	color: #ccc;
+	color: var(--text-color);
 }
 [data-theme=dark] .tsumego-comments__tab.active {
 	background: var(--surface-hover-strong);
