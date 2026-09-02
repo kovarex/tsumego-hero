@@ -2,6 +2,7 @@
 
 App::uses('NotFoundException', 'Routing/Error');
 App::uses('HtmlSanitizer', 'Utility');
+App::uses('SetConnection', 'Model');
 
 use App\Attribute\HttpPost;
 
@@ -99,7 +100,7 @@ class TagsController extends AppController
 					. 'SELECT sc2.id FROM set_connection sc2 '
 					. 'JOIN `set` s2 ON s2.id = sc2.set_id '
 					. 'WHERE sc2.tsumego_id = tc.tsumego_id '
-					. 'ORDER BY s2.`order` ASC, sc2.id ASC LIMIT 1) '
+					. 'ORDER BY ' . SetConnection::displayOrderForSetSql('s2') . ', sc2.id ASC LIMIT 1) '
 				. 'JOIN `set` s ON s.id = sc.set_id '
 				. 'WHERE tc.user_id = ? '
 				. 'UNION ALL '
@@ -110,7 +111,7 @@ class TagsController extends AppController
 					. 'SELECT sc2.id FROM set_connection sc2 '
 					. 'JOIN `set` s2 ON s2.id = sc2.set_id '
 					. 'WHERE sc2.tsumego_id = sg.tsumego_id '
-					. 'ORDER BY s2.`order` ASC, sc2.id ASC LIMIT 1) '
+					. 'ORDER BY ' . SetConnection::displayOrderForSetSql('s2') . ', sc2.id ASC LIMIT 1) '
 				. 'JOIN `set` s ON s.id = sc.set_id '
 				. 'WHERE sg.user_id = ? '
 				. 'UNION ALL '
@@ -122,7 +123,7 @@ class TagsController extends AppController
 					. 'SELECT sc2.id FROM set_connection sc2 '
 					. 'JOIN `set` s2 ON s2.id = sc2.set_id '
 					. 'WHERE sc2.tsumego_id = r.tsumego_id '
-					. 'ORDER BY s2.`order` ASC, sc2.id ASC LIMIT 1) '
+					. 'ORDER BY ' . SetConnection::displayOrderForSetSql('s2') . ', sc2.id ASC LIMIT 1) '
 				. 'LEFT JOIN `set` s ON s.id = sc.set_id '
 				. 'WHERE r.user_id = ? AND (sc.id IS NOT NULL OR r.tsumego_id = 0) '
 			. ') AS contributions '

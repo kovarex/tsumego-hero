@@ -75,7 +75,7 @@ class TimeModeController extends AppController
 
 			$count = Util::query("
 SELECT
-    COUNT(*) AS count
+    COUNT(DISTINCT tsumego.id) AS count
 FROM
 	tsumego
 	JOIN set_connection ON set_connection.tsumego_id=tsumego.id
@@ -97,7 +97,7 @@ WHERE
 SELECT
     CASE " . $rankPartOfQuery . "
     END AS bucket,
-    COUNT(*) AS count
+    COUNT(DISTINCT tsumego.id) AS count
 FROM
 	tsumego
 	JOIN set_connection ON set_connection.tsumego_id=tsumego.id
