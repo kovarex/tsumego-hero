@@ -90,7 +90,7 @@ class SetViewFilterTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->getAnonymous('sets/view/' . $setId);
 
-		$toggle = $browser->driver->findElement(WebDriverBy::cssSelector('#preview-zoom-slider'));
+		$toggle = $browser->driver->findElement(WebDriverBy::cssSelector('.preview-zoom-toggle'));
 		$this->assertTrue($toggle->isDisplayed());
 	}
 }
