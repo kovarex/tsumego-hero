@@ -13,13 +13,15 @@
  */
 
 	echo '<div class="split">';
-	echo '<div style="text-align:left;flex:3 1 0;min-width:min(100%,20rem)">';
+	echo '<div style="text-align:left;flex:3 1 0;min-width:min-content">';
 
 		$sgfProposalsRenderer->render();
+		echo '<hr>';
 		$tagProposalsRenderer->render();
+		echo '<hr>';
 		if($requestDeletion!=null){
-			echo '<table border="0">';
-			echo '<caption style="text-align:left"><b>Account Deletion Requests</b></caption>';
+			echo '<table class="data-table data-table--compact">';
+			echo '<caption>Account Deletion Requests (' . count($requestDeletion) . ')</caption>';
 			for($i=0; $i<count($requestDeletion); $i++){
 				echo '<tr>';
 				echo '<td>'.h($requestDeletion[$i]['User']['name']).' has requested account deletion.</td>';
@@ -27,12 +29,13 @@
 				.'&hash='.md5($requestDeletion[$i]['User']['name']).'" onclick="return confirm(\'Are you sure you want to delete this account?\');">Delete Account</a></td>';
 				echo '</tr>';
 			}
-			echo '</table><hr>';
+			echo '</table>';
+			echo '<hr>';
 		}
 		$tagConnectionProposalsRenderer->render();
 	echo '</div>';
 
-	echo '<div style="flex:2 1 0;min-width:min(100%,20rem)">';
+	echo '<div style="flex:2 1 0;min-width:min-content">';
 
 	$adminActivityRenderer->render();
 	echo '</div>';

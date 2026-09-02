@@ -23,6 +23,11 @@ LIMIT " . self::$PAGE_SIZE . "
 OFFSET " . $this->offset);
 	}
 
+	protected function renderHeader(): void
+	{
+		echo '<tr><th>User</th><th>Tag</th><th></th></tr>';
+	}
+
 	public function renderItem(int $index, array $item): void
 	{
 		echo '<td>' . User::renderLink($item) . '</td>';

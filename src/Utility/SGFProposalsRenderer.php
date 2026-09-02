@@ -46,6 +46,11 @@ LIMIT " . self::$PAGE_SIZE . "
 OFFSET " . $this->offset, [Auth::getUserID()]);
 	}
 
+	protected function renderHeader(): void
+	{
+		echo '<tr><th>User</th><th>Problem</th><th>Compare</th><th></th><th></th></tr>';
+	}
+
 	public function renderItem(int $index, array $item): void
 	{
 		echo '<td>' . h($item['user_name']) . '</td>';

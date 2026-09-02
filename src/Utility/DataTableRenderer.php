@@ -13,9 +13,9 @@ abstract class DataTableRenderer
 
 	public function render()
 	{
-		echo '<h3 id="' . $this->name . '_header">' . $this->caption . ' (' . $this->count . ')</h3>';
 		echo PaginationHelper::render($this->page, $this->pageCount, $this->name);
 		echo '<table border="0" class="data-table data-table--compact" style="border-collapse:collapse;">';
+		echo '<caption id="' . $this->name . '_header">' . $this->caption . ' (' . $this->count . ')</caption>';
 		$this->renderHeader();
 		foreach ($this->data as $index => $item)
 		{

@@ -49,6 +49,11 @@ LIMIT " . self::$PAGE_SIZE . "
 OFFSET " . $this->offset, [Auth::getUserID()]);
 	}
 
+	protected function renderHeader(): void
+	{
+		echo '<tr><th>User</th><th>Tag</th><th style="min-width:200px">Problem</th><th></th><th></th><th>Date</th></tr>';
+	}
+
 	public function renderItem(int $index, array $item): void
 	{
 		echo '<td>' . User::renderLink($item) . '</td>';
