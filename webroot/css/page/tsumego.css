@@ -59,7 +59,7 @@
 	border-left-color: var(--surface-border-light);
 	border-radius: 9px;
 	margin: 0;
-	height: 32px;
+	height: 30px;
 	position: relative;
 	box-sizing: border-box;
 	background-image: url("/img/viewButton1.png");
