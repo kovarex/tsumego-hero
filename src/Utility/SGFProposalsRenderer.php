@@ -48,8 +48,8 @@ OFFSET " . $this->offset, [Auth::getUserID()]);
 
 	public function renderItem(int $index, array $item): void
 	{
-		echo '<td class="adminpanel-table-text">' . h($item['user_name']) . ' made a proposal for <a class="adminpanel-link" href="/'
-		. $item['set_connection_id'] . '">' . h($item['set_title']) . ' - ' . h($item['num']) . '</a>:</td>';
+		echo '<td>' . h($item['user_name']) . '</td>';
+		echo '<td><a class="adminpanel-link" href="/' . $item['set_connection_id'] . '">' . h($item['set_title']) . ' - ' . h($item['num']) . '</a></td>';
 		echo '<td style="white-space:nowrap">';
 		echo '<a href="/editor/?sgfID=' . $item['latest_accepted_id'] . '">current</a> | <a href="/editor/?sgfID=' . $item['proposed_id'] . '">proposal</a> | <a href="/editor/?sgfID=' . $item['proposed_id'] . '&diffID=' . $item['latest_accepted_id'] . '">diff</a>';
 		echo '</td>';

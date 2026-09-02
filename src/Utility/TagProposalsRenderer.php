@@ -25,7 +25,8 @@ OFFSET " . $this->offset);
 
 	public function renderItem(int $index, array $item): void
 	{
-		echo '<td class="adminpanel-table-text">' . User::renderLink($item) . ' made a proposal for <a href="/tags/view/' . (int) $item['tag_id'] . '">' . h($item['tag_name']) . '</a>:</td>';
+		echo '<td>' . User::renderLink($item) . '</td>';
+		echo '<td><a href="/tags/view/' . (int) $item['tag_id'] . '">' . h($item['tag_name']) . '</a></td>';
 		echo '<td>';
 		echo '<button class="btn btn--small" onclick="window.location=\'/tags/acceptTagProposal/' . $item['tag_id'] . '\'" id="tag-accept-' . $item['tag_id'] . '">Accept</button>';
 		echo '<button class="btn btn--small" onclick="window.location=\'/tags/rejectTagProposal/' . $item['tag_id'] . '\'" id="tag-reject-' . $item['tag_id'] . '">Reject</button>';
