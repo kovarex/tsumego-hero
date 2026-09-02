@@ -231,28 +231,20 @@ class Play
 
 		if (!isset($t['Tsumego']['file']) || $t['Tsumego']['file'] == '')
 			$t['Tsumego']['file'] = $currentSetConnection['SetConnection']['num'];
-		$orientation = null;
 		$playerColor = 'black';
-		if (isset($params['url']['orientation']))
-			$orientation = $params['url']['orientation'];
-		if (isset($params['url']['playercolor']))
-			$playerColor = $params['url']['playercolor'] === 'white' ? 'white' : 'black';
-		else
+		$preference = Auth::getPrefPlayerColor();
+		if ($preference === User::PREF_PLAYER_COLOR_ORIGINAL)
 		{
-			$preference = Auth::getPrefPlayerColor();
-			if ($preference === User::PREF_PLAYER_COLOR_ORIGINAL)
-			{
-				$firstMove = SgfParser::firstMoveColor($sgf['Sgf']['sgf']);
-				if ($firstMove === 'W')
-					$playerColor = 'white';
-				elseif ($firstMove === 'B')
-					$playerColor = 'black';
-				else
-					$playerColor = rand(0, 1) ? 'white' : 'black';
-			}
+			$firstMove = SgfParser::firstMoveColor($sgf['Sgf']['sgf']);
+			if ($firstMove === 'W')
+				$playerColor = 'white';
+			elseif ($firstMove === 'B')
+				$playerColor = 'black';
 			else
 				$playerColor = rand(0, 1) ? 'white' : 'black';
 		}
+		else
+			$playerColor = rand(0, 1) ? 'white' : 'black';
 
 		$checkBSize = 19;
 		for ($i = 2; $i <= 19; $i++)
@@ -391,7 +383,6 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		($this->setFunction)('idForSignature2', $idForSignature2);
 		($this->setFunction)('nothingInRange', $nothingInRange);
 		($this->setFunction)('sgf', $sgf);
-		($this->setFunction)('orientation', $orientation);
 		($this->setFunction)('corner', $corner);
 		($this->setFunction)('playerColor', $playerColor);
 		($this->setFunction)('suspiciousBehavior', $suspiciousBehavior);
