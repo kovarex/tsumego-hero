@@ -12,11 +12,7 @@ class DefaultBoardOrientationTest extends TestCaseWithAuth
 {
 	private static function setOrientationPreference(int $value): void
 	{
-		ClassRegistry::init('User')->updateAll(
-			['pref_board_orientation' => $value],
-			['id' => Auth::getUserID()]
-		);
-		Auth::getUser()['pref_board_orientation'] = $value;
+		Auth::saveUserField('pref_board_orientation', $value);
 	}
 
 	public function testOriginalUsesTopLeftCorner(): void

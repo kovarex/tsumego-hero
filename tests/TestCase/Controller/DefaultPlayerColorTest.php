@@ -17,11 +17,7 @@ class DefaultPlayerColorTest extends TestCaseWithAuth
 			'tsumego' => ['sets' => [['name' => 'originalUserSet', 'num' => 1]], 'description' => '[b]to play.', 'sgf' => ['data' => '(;GM[1]FF[4]SZ[19];B[aa])']],
 		]);
 		$this->login('originalUser');
-		ClassRegistry::init('User')->updateAll(
-			['pref_player_color' => User::PREF_PLAYER_COLOR_ORIGINAL],
-			['id' => Auth::getUserID()]
-		);
-		Auth::getUser()['pref_player_color'] = User::PREF_PLAYER_COLOR_ORIGINAL;
+		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
 
 		$this->testAction(
 			'/' . $context->tsumegos[0]['set-connections'][0]['id'],
@@ -45,11 +41,7 @@ class DefaultPlayerColorTest extends TestCaseWithAuth
 			],
 		]);
 		$this->login('originalUserWhite');
-		ClassRegistry::init('User')->updateAll(
-			['pref_player_color' => User::PREF_PLAYER_COLOR_ORIGINAL],
-			['id' => Auth::getUserID()]
-		);
-		Auth::getUser()['pref_player_color'] = User::PREF_PLAYER_COLOR_ORIGINAL;
+		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
 
 		$this->testAction(
 			'/' . $context->tsumegos[0]['set-connections'][0]['id'],
@@ -73,11 +65,7 @@ class DefaultPlayerColorTest extends TestCaseWithAuth
 			],
 		]);
 		$this->login('smallBoard');
-		ClassRegistry::init('User')->updateAll(
-			['pref_player_color' => User::PREF_PLAYER_COLOR_ORIGINAL],
-			['id' => Auth::getUserID()]
-		);
-		Auth::getUser()['pref_player_color'] = User::PREF_PLAYER_COLOR_ORIGINAL;
+		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
 
 		$this->testAction(
 			'/' . $context->tsumegos[0]['set-connections'][0]['id'],
@@ -145,11 +133,7 @@ class DefaultPlayerColorTest extends TestCaseWithAuth
 			'tsumego' => ['sets' => [['name' => 'randomSwapSet', 'num' => 1]], 'sgf' => ['data' => '(;GM[1]FF[4]SZ[19];B[aa])']],
 		]);
 		$this->login('randomSwap');
-		ClassRegistry::init('User')->updateAll(
-			['pref_player_color' => User::PREF_PLAYER_COLOR_RANDOM],
-			['id' => Auth::getUserID()]
-		);
-		Auth::getUser()['pref_player_color'] = User::PREF_PLAYER_COLOR_RANDOM;
+		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_RANDOM);
 
 		$this->testAction(
 			'/' . $context->tsumegos[0]['set-connections'][0]['id'],
