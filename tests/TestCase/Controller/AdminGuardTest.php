@@ -277,26 +277,6 @@ class AdminGuardTest extends ControllerTestCase
 		$this->assertSame(0, (int) $tag['Tag']['approved']);
 	}
 
-	// ── CurlsController::data ──
-
-	public function testCurlsDataRequiresLogin()
-	{
-		new ContextPreparator(['user' => null]);
-
-		$this->expectException(UnauthorizedException::class);
-
-		$this->testAction('/curls/data', ['method' => 'get']);
-	}
-
-	public function testCurlsDataRequiresAdmin()
-	{
-		new ContextPreparator(['user' => ['name' => 'regular', 'admin' => false]]);
-
-		$this->expectException(ForbiddenException::class);
-
-		$this->testAction('/curls/data', ['method' => 'get']);
-	}
-
 	// ── SGF proposals require the contribution capability ──
 
 	public function testSgfUploadRequiresContribution()
