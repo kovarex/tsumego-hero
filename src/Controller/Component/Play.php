@@ -277,13 +277,35 @@ class Play
 		// about the actual Black/White groups on the board, so the player always
 		// plays black here.
 		// Small boards and specific sets also force black.
+		// The player always plays black; when the SGF is White-first, invert the
+		// board so the player sees black as the side to move, and swap the
+		// true-color description (Black<->White) to match the player's color.
 		if ($tsumegoVariant != null
 			|| ($t['Tsumego']['semeaiType'] ?? 0) != 0
 			|| $checkBSize != 19
 			|| in_array($set['Set']['id'], [109, 233, 236, 239, 243, 244, 246, 251, 253]))
 		{
 			$playerColor = 'black';
-			$swapColors = false;
+			$swapColors = ($sgfColor === 'W');
+		}
+
+		// Optional URL override: ?playercolor=black|white forces the player color,
+		// even for small boards / semeai / variants that normally force black.
+		// No effect when the parameter is absent.
+		if (isset($params['url']['playercolor']))
+		{
+			$requested = strtolower((string) $params['url']['playercolor']);
+			if ($requested === 'white' || $requested === 'black')
+			{
+				$playerColor = $requested;
+				$sgfColor = SgfParser::firstMoveColor($sgf['Sgf']['sgf']);
+				if ($sgfColor === 'W')
+					$swapColors = $playerColor === 'black';
+				elseif ($sgfColor === 'B')
+					$swapColors = $playerColor === 'white';
+				else
+					$swapColors = false;
+			}
 		}
 
 		if (Util::getHealthBasedOnLevel(Auth::getWithDefault('level', 0)) >= 8)

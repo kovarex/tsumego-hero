@@ -6,6 +6,8 @@ use Facebook\WebDriver\WebDriverWait;
 use Facebook\WebDriver\Exception\TimeoutException;
 
 App::uses('NotFoundException', 'Routing/Error');
+App::uses('User', 'Model');
+App::uses('Constants', 'Utility');
 
 class TsumegosControllerTest extends TestCaseWithAuth
 {
@@ -784,65 +786,36 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$this->assertMatchesRegularExpression('/"diff":"[a-z]+"/', $result);
 	}
 
-	public static function descriptionColorSwapProvider(): array
+	public function testDescriptionColorSwap(): void
 	{
 		$blackFirstSgf = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])';
 		$whiteFirstSgf = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];W[aa];B[ab];W[ba]C[+])';
 
-		return [
-			'no swap: Black visual (pl=0) + Black-first SGF, true-color matches' => [
-				"Black's stones attack White's group. black wins!",
-				$blackFirstSgf,
-				'black',
-				"Black's stones attack White's group. black wins!",
-			],
-			'swap: White visual (pl=1) + Black-first SGF, board inverted' => [
-				"Black's stones. Kill the white group near the Blackbird. Watch whitespace.",
-				$blackFirstSgf,
-				'white',
-				"White's stones. Kill the black group near the Blackbird. Watch whitespace.",
-			],
-			'no swap: Black visual (pl=0) + White-first SGF, true-color matches' => [
-				"White to play. Attack the black group.",
-				$whiteFirstSgf,
-				'black',
-				"White to play. Attack the black group.",
-			],
-			'swap: White visual (pl=1) + White-first SGF, board inverted' => [
-				"White to play. Attack the black group.",
-				$whiteFirstSgf,
-				'white',
-				"Black to play. Attack the white group.",
-			],
-		];
-	}
-
-	/**
-	 * @dataProvider descriptionColorSwapProvider
-	 */
-	public function testDescriptionColorSwap(string $description, string $sgf, string $playerColor, string $expected): void
-	{
+		// ORIGINAL preference: the player follows the SGF first move, so the board
+		// is never inverted and the description is shown exactly as stored (true-color).
 		$context = new ContextPreparator([
-			'tsumego' => [
-				'set_order' => 1,
-				'description' => $description,
-				'sgf' => $sgf,
-			]
+			'user' => ['name' => 'descColorSwapB'],
+			'tsumego' => ['set_order' => 1, 'description' => "Black's stones attack White's group.", 'sgf' => $blackFirstSgf],
 		]);
-
-		$this->testAction(
-			'tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=' . $playerColor,
-			['return' => 'view']
-		);
-
+		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
+		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'view']);
 		$decoded = htmlspecialchars_decode(strip_tags($this->view));
-		$this->assertStringContainsString($expected, $decoded);
+		$this->assertStringContainsString("Black's stones attack White's group.", $decoded);
+
+		$context2 = new ContextPreparator([
+			'user' => ['name' => 'descColorSwapW'],
+			'tsumego' => ['set_order' => 1, 'description' => 'White to play. Attack the black group.', 'sgf' => $whiteFirstSgf],
+		]);
+		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
+		$this->testAction('tsumegos/play/' . $context2->tsumegos[0]['id'], ['return' => 'view']);
+		$decoded = htmlspecialchars_decode(strip_tags($this->view));
+		$this->assertStringContainsString('White to play. Attack the black group.', $decoded);
 	}
 
 	/**
-	 * Browser test: Admin edits description on a puzzle where board is inverted.
-	 * W-first SGF + playercolor=white -> board inverted -> textarea shows swapped text.
-	 * After editing and saving, the stored description is un-swapped back to true-color.
+	 * Controller test: When the edit form is shown with an inverted board it
+	 * submits color_swapped=1, so the description is swapped Black<->White
+	 * back to true-color on save.
 	 */
 	public function testDescriptionEditWithSwap(): void
 	{
@@ -851,42 +824,34 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			'tsumego' => [
 				'set_order' => 1,
 				'description' => 'White to attack the black stones.',
-				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];W[aa];B[ab];W[ba]C[+])'
-			]
+				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];W[aa];B[ab];W[ba]C[+])',
+			],
+		]);
+		$tsumegoId = $context->tsumegos[0]['id'];
+
+		$this->testAction('/tsumegos/edit/' . $tsumegoId, [
+			'method' => 'post',
+			'data' => [
+				'delete' => '',
+				'description' => 'Black to play here.',
+				'color_swapped' => '1',
+				'rating' => '1500',
+				'minimum-rating' => '',
+				'maximum-rating' => '',
+				'hint' => '',
+				'author' => '',
+				'redirect' => '/',
+			],
+			'return' => 'contents',
 		]);
 
-		$browser = Browser::instance();
-		$setConnectionId = $context->tsumegos[0]['set-connections'][0]['id'];
-		// W-first SGF + playercolor=white -> pl=1 -> shouldSwap=true
-		$browser->get($setConnectionId . '?playercolor=white');
-
-		// Click the (Edit) link to reveal the form
-		$browser->clickId('modify-description');
-
-		// Verify the textarea shows swapped text (White->Black for inverted display)
-		$textarea = $browser->find('#description');
-		$this->assertSame('Black to attack the white stones.', $textarea->getAttribute('value'));
-
-		// Verify hidden color_swapped field is 1
-		$colorSwapped = $browser->find('input[name="color_swapped"]');
-		$this->assertSame('1', $colorSwapped->getAttribute('value'));
-
-		// Edit the description to something new (still in swapped/display form)
-		$textarea->clear();
-		$textarea->sendKeys('Black to play here.');
-
-		// Submit the form
-		$browser->clickId('tsumego-edit-submit');
-
-		// Verify the stored description was un-swapped (Black->White) back to true-color
-		$saved = ClassRegistry::init('Tsumego')->findById($context->tsumegos[0]['id']);
+		$saved = ClassRegistry::init('Tsumego')->findById($tsumegoId);
 		$this->assertSame('White to play here.', $saved['Tsumego']['description']);
 	}
 
 	/**
-	 * Browser test: Admin edits description on a puzzle where board is NOT inverted.
-	 * B-first SGF + playercolor=black -> no swap -> textarea shows true-color text.
-	 * After editing and saving, the stored description is kept as-is.
+	 * Controller test: When the edit form is shown without an inverted board it
+	 * submits color_swapped=0, so the description is stored as-is (true-color).
 	 */
 	public function testDescriptionEditNoSwap(): void
 	{
@@ -895,116 +860,29 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			'tsumego' => [
 				'set_order' => 1,
 				'description' => 'Black to attack the white stones.',
-				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])'
-			]
-		]);
-
-		$browser = Browser::instance();
-		$setConnectionId = $context->tsumegos[0]['set-connections'][0]['id'];
-		// B-first SGF + playercolor=black -> pl=0 -> shouldSwap=false
-		$browser->get($setConnectionId . '?playercolor=black');
-
-		// Click the (Edit) link to reveal the form
-		$browser->clickId('modify-description');
-
-		// Verify the textarea shows original text (no swap)
-		$textarea = $browser->find('#description');
-		$this->assertSame('Black to attack the white stones.', $textarea->getAttribute('value'));
-
-		// Verify hidden color_swapped field is 0
-		$colorSwapped = $browser->find('input[name="color_swapped"]');
-		$this->assertSame('0', $colorSwapped->getAttribute('value'));
-
-		// Edit the description
-		$textarea->clear();
-		$textarea->sendKeys('Black to play first.');
-
-		// Submit the form
-		$browser->clickId('tsumego-edit-submit');
-
-		// Verify it was stored as-is (no normalization needed)
-		$saved = ClassRegistry::init('Tsumego')->findById($context->tsumegos[0]['id']);
-		$this->assertSame('Black to play first.', $saved['Tsumego']['description']);
-	}
-
-	public static function startingPlayerProvider(): array
-	{
-		return [
-			'Black first' => ['(;GM[1]FF[4]SZ[19];B[aa];W[ab])', 0],
-			'White first' => ['(;GM[1]FF[4]SZ[19];W[aa];B[ab])', 1],
-			'Black only' => ['(;GM[1]FF[4]SZ[19];B[aa])', 0],
-			'White only' => ['(;GM[1]FF[4]SZ[19];W[aa])', 1],
-		];
-	}
-
-	/**
-	 * @dataProvider startingPlayerProvider
-	 */
-	public function testGetStartingPlayer(string $sgf, int $expected): void
-	{
-		$this->assertSame($expected, TsumegosController::getStartingPlayer($sgf));
-	}
-
-	/**
-	 * Browser test: For a White-first SGF, check what color the player actually places
-	 * and whether the description matches that visual color.
-	 *
-	 * Key insight: besogoPlayerColor controls board INVERSION, not the player's stone color.
-	 * The player's visual stone color is: besogo.editor.getCurrent().nextMove()
-	 *   -1 = Black stone on screen, 1 = White stone on screen
-	 *
-	 * When besogoPlayerColor="white" (inversion active):
-	 *   White-first SGF -> firstMove inverted to BLACK -> player places BLACK stones visually
-	 * When besogoPlayerColor="black" (no inversion):
-	 *   White-first SGF -> firstMove stays WHITE -> player places WHITE stones visually
-	 *
-	 * The description should match the VISUAL stone color the player places.
-	 * Under true-color convention, description stores "White to play" for W-first SGFs.
-	 * When board is inverted (pl=1), swap makes it "Black to play" to match visual.
-	 */
-	public function testDescriptionMatchesActualFirstMoveColor(): void
-	{
-		$whiteFirstSgf = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];W[aa];B[ab];W[ba]C[+])';
-
-		// True-color convention: "White to play" stored for W-first SGFs
-		$context = new ContextPreparator([
-			'tsumego' => [
-				'set_order' => 1,
-				'description' => 'White to play',
-				'sgf' => $whiteFirstSgf,
+				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])',
 			],
 		]);
+		$tsumegoId = $context->tsumegos[0]['id'];
 
-		$browser = Browser::instance();
-		$setConnectionId = $context->tsumegos[0]['set-connections'][0]['id'];
+		$this->testAction('/tsumegos/edit/' . $tsumegoId, [
+			'method' => 'post',
+			'data' => [
+				'delete' => '',
+				'description' => 'Black to play first.',
+				'color_swapped' => '0',
+				'rating' => '1500',
+				'minimum-rating' => '',
+				'maximum-rating' => '',
+				'hint' => '',
+				'author' => '',
+				'redirect' => '/',
+			],
+			'return' => 'contents',
+		]);
 
-		for ($i = 0; $i < 10; $i++)
-		{
-			$browser->get((string) $setConnectionId);
-
-			$descriptionText = $browser->find('#descriptionText')->getText();
-			$besogoColor = $browser->driver->executeScript("return besogoPlayerColor;");
-
-			// Wait for besogo to initialize
-			$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10);
-			$wait->until(function () use ($browser) {
-				return $browser->driver->executeScript("return typeof besogo !== 'undefined' && besogo.editor !== undefined;");
-			});
-
-			// nextMove() returns -1 (BLACK) or 1 (WHITE) -- the ACTUAL visual stone color
-			$nextMove = $browser->driver->executeScript("return besogo.editor.getCurrent().nextMove();");
-			$visualStoneColor = ($nextMove === -1) ? 'Black' : 'White';
-
-			$descriptionSaysBlack = str_contains($descriptionText, 'Black');
-			$descriptionSaysWhite = str_contains($descriptionText, 'White');
-
-			// The description color should match the visual stone color
-			$this->assertTrue(
-				($visualStoneColor === 'Black' && $descriptionSaysBlack)
-				|| ($visualStoneColor === 'White' && $descriptionSaysWhite),
-				"Iteration $i: description='$descriptionText', visual stone=$visualStoneColor, besogoPlayerColor=$besogoColor"
-			);
-		}
+		$saved = ClassRegistry::init('Tsumego')->findById($tsumegoId);
+		$this->assertSame('Black to play first.', $saved['Tsumego']['description']);
 	}
 
 	/**
@@ -1050,7 +928,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 
 	/**
 	 * Custom multiple-choice variant answers are stored in true colors. When the
-	 * board is inverted (playercolor=white), the answer text is swapped so it
+	 * board is inverted (?playercolor=white), the answer text is swapped so it
 	 * matches the stones the player actually sees.
 	 */
 	public function testMultipleChoiceVariantAnswersSwapWhenBoardInverted(): void

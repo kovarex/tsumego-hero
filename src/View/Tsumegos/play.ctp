@@ -151,7 +151,7 @@
 			if($tv['TsumegoVariant']['type']=='score_estimating')
 			{
 				$capturesLabels = 'Black captures: '.$tv['TsumegoVariant']['answer2'].' | White captures: '.$tv['TsumegoVariant']['answer3'];
-				if ($pl == 1)
+				if ($swapColors)
 					$capturesLabels = $swapColorWords($capturesLabels);
 				echo '<br>';
 				echo '<span id="scoreEstimatingLabels">'.h($capturesLabels).' | Komi: '.h($tv['TsumegoVariant']['answer1']).'</span>';
@@ -163,7 +163,7 @@
 			<form id="tsumego-edit" method="post" action="/tsumegos/edit/<?php echo $t['Tsumego']['id']; ?>">
 				<input type="hidden" name="tsumego_id" value="<?php echo $t['Tsumego']['id']; ?>">
 				<input type="hidden" name="redirect" value="<?php echo h($_SERVER['REQUEST_URI']); ?>">
-				<input type="hidden" name="color_swapped" value="<?php echo $shouldSwap ? '1' : '0'; ?>">
+				<input type="hidden" name="color_swapped" value="<?php echo $swapColors ? '1' : '0'; ?>">
 				<table>
 					<tr>
 						<td><label for="description">Description:</label></td>
@@ -231,11 +231,11 @@
 	<div align="center">
 		<?php if($t['Tsumego']['set_id']==262){ ?>
 			<br>
-			<a id="submitScoreEstimatingBlackWins" href="#"><?php echo $pl == 1 ? 'White wins' : 'Black wins'; ?></a>
+			<a id="submitScoreEstimatingBlackWins" href="#"><?php echo $swapColors ? 'White wins' : 'Black wins'; ?></a>
 			<?php if(substr($tv['TsumegoVariant']['answer1'],-2) !== '.5') { ?>
 				<a id="submitScoreEstimatingJigo" href="#">Jigo</a>
 			<?php } ?>
-			<a id="submitScoreEstimatingWhiteWins" href="#"><?php echo $pl == 1 ? 'Black wins' : 'White wins'; ?></a>
+			<a id="submitScoreEstimatingWhiteWins" href="#"><?php echo $swapColors ? 'Black wins' : 'White wins'; ?></a>
 		<?php }else{ ?>
 			<a href="/<?php echo $setConnection['SetConnection']['id']; ?>" title="reset problem" id="besogo-next-button">Reset</a>
 			<input value="0" placeholder="Score" type="text" id="ScoreEstimatingSE">
