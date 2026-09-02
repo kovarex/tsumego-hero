@@ -404,6 +404,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 
 		// click the accept proposal button
 		$browser->clickId('reject-' . $context->tsumegos[0]['sgfs'][1]['id']);
+		$browser->waitUntilCssSelectorExistsWithText('#sgf_proposals_page_header', 'SGF Proposals (0)');
 
 		// we got redirected back to adminstats, the proposal shouldn't be visible anymore
 		$this->assertSame(Util::getMyAddress() . '/users/adminstats', $browser->driver->getCurrentURL());
@@ -424,6 +425,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 
 		// click the accept proposal button
 		$browser->clickId('tag-connection-accept-' . $context->tsumegos[0]['tag-connections'][0]['id']);
+		$browser->waitUntilCssSelectorExistsWithText('#tag_connection_proposals_page_header', 'New Tags (0)');
 
 		// we got redirected back to adminstats, the proposal shouldn't be visible anymore
 		$this->assertSame(Util::getMyAddress() . '/users/adminstats', $browser->driver->getCurrentURL());
@@ -449,6 +451,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 
 		// click the accept proposal button
 		$browser->clickId('tag-connection-reject-' . $context->tsumegos[0]['tag-connections'][0]['id']);
+		$browser->waitUntilCssSelectorExistsWithText('#tag_connection_proposals_page_header', 'New Tags (0)');
 
 		// we got redirected back to adminstats, the proposal shouldn't be visible anymore
 		$this->assertSame(Util::getMyAddress() . '/users/adminstats', $browser->driver->getCurrentURL());
@@ -475,6 +478,8 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$browser->get('/users/adminstats');
 		//click deleted user button
 		$browser->clickIdAndAcceptAlert('delete-user-1');
+		// Wait for the server-side deletion to be committed before asserting DB state
+		$browser->waitUntilCssSelectorDoesntExist('#delete-user-1');
 		// User should be deleted - page stays on adminstats
 		$this->assertStringContainsString('/users/adminstats', $browser->driver->getCurrentURL());
 		// user should be deleted so this should return null
