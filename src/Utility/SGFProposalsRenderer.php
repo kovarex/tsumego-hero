@@ -15,8 +15,12 @@ SELECT
     a.latest_accepted_id AS latest_accepted_id,
     COALESCE(sgf.sgf, '') AS sgf,
     p.id AS proposed_id,
+    p.user_id AS user_id,
     p.user_id AS proposed_user_id,
     user.name AS user_name,
+    user.external_id AS user_external_id,
+    user.picture AS user_picture,
+    user.rating AS user_rating,
     sc.id AS set_connection_id,
     sc.num AS num,
     tsumego_status.status AS status,
@@ -48,12 +52,12 @@ OFFSET " . $this->offset, [Auth::getUserID()]);
 
 	protected function renderHeader(): void
 	{
-		echo '<tr><th>User</th><th>Problem</th><th>Compare</th><th></th><th></th></tr>';
+		echo '<tr><th>User</th><th>Problem</th><th>Compare</th><th><label title="Toggle board previews"><input type="checkbox" class="preview-zoom-toggle">🔍</label></th><th></th></tr>';
 	}
 
 	public function renderItem(int $index, array $item): void
 	{
-		echo '<td>' . h($item['user_name']) . '</td>';
+		echo '<td>' . User::renderLink($item) . '</td>';
 		echo '<td><a class="adminpanel-link" href="/' . $item['set_connection_id'] . '">' . h($item['set_title']) . ' - ' . h($item['num']) . '</a></td>';
 		echo '<td style="white-space:nowrap">';
 		echo '<a href="/editor/?sgfID=' . $item['latest_accepted_id'] . '">current</a> | <a href="/editor/?sgfID=' . $item['proposed_id'] . '">proposal</a> | <a href="/editor/?sgfID=' . $item['proposed_id'] . '&diffID=' . $item['latest_accepted_id'] . '">diff</a>';

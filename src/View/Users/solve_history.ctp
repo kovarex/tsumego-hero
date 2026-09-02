@@ -15,7 +15,7 @@ echo '<p class="profile-username">' . h($userName) . '</p>';
 echo $this->element('user_subnav', ['userID' => $userID, 'activeTab' => 'solveHistory']);
 echo PaginationHelper::render($pageIndex, intval(ceil($count / $PAGE_SIZE)), 'page');
 echo '<table class="data-table">';
-echo '<thead><tr><th>Set</th><th>Tsumego <label style="cursor:pointer;font-size:11px;color:var(--text-softer-color);font-weight:normal;text-transform:none" title="Toggle board previews"><input type="checkbox" id="preview-zoom-slider" style="vertical-align:middle;margin-right:2px">🔍</label></th><th>Solved</th><th>Misplays</th><th>Rating</th><th>XP gained</th><th>Date</th></tr></thead>';
+echo '<thead><tr><th>Set</th><th>Tsumego <label style="cursor:pointer;font-size:11px;color:var(--text-softer-color);font-weight:normal;text-transform:none" title="Toggle board previews"><input type="checkbox" class="preview-zoom-toggle" style="vertical-align:middle;margin-right:2px">🔍</label></th><th>Solved</th><th>Misplays</th><th>Rating</th><th>XP gained</th><th>Date</th></tr></thead>';
 echo '<tbody>';
 foreach ($attempts as $attempt)
 {

@@ -79,7 +79,7 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 		<div class="card card--purple set-edit__section">
 			<div class="set-edit__problems-head">
 				<h2 class="set-edit__heading">Problems (<?php echo $problemCount; ?>)</h2>
-				<label class="set-edit__preview-toggle" title="Toggle board previews"><input type="checkbox" id="preview-zoom-slider">🔍 Preview</label>
+				<label class="set-edit__preview-toggle" title="Toggle board previews"><input type="checkbox" class="preview-zoom-toggle">🔍 Preview</label>
 			</div>
 			<?php if ($problemCount === 0): ?>
 				<p class="hint">No problems yet.</p>

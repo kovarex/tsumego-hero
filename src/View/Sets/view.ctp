@@ -232,7 +232,7 @@ if ($tsumegoFilters->query != 'topics')
 		<div class="showFilters">
 			<a id="showFilters" class="selectable-text">Filters<img id="greyArrowFilter" src="/img/greyArrow1.png"></a>
 		</div>
-		<label class="preview-toggle" title="Toggle board previews"><input type="checkbox" id="preview-zoom-slider">🔍 Preview</label>
+		<label class="preview-toggle" title="Toggle board previews"><input type="checkbox" class="preview-zoom-toggle">🔍 Preview</label>
 		<div id="msgFilters">
 			<div class="active-tiles-container tiles-view">
 <?php

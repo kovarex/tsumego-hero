@@ -51,7 +51,7 @@ OFFSET " . $this->offset, [Auth::getUserID()]);
 
 	protected function renderHeader(): void
 	{
-		echo '<tr><th>User</th><th>Tag</th><th style="min-width:200px">Problem</th><th></th><th></th><th>Date</th></tr>';
+		echo '<tr><th>User</th><th>Tag</th><th style="min-width:200px">Problem</th><th><label title="Toggle board previews"><input type="checkbox" class="preview-zoom-toggle">🔍</label></th><th></th><th>Date</th></tr>';
 	}
 
 	public function renderItem(int $index, array $item): void
