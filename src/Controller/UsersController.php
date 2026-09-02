@@ -1296,14 +1296,11 @@ WHERE user.id = ?", [$userId, $userId]);
 		return $this->redirect('/users/view/' . $userId);
 	}
 
+	#[HttpPost]
 	public function playerColorPreference(): void
 	{
 		$this->autoRender = false;
-		if (!Auth::isLoggedIn())
-		{
-			$this->response->statusCode(401);
-			return;
-		}
+		$this->Authorization->authorize('User', 'editPreferences');
 
 		$color = (int) ($this->request->data['color'] ?? User::PREF_PLAYER_COLOR_RANDOM);
 		if ($color < 0 || $color > 1)
@@ -1320,14 +1317,11 @@ WHERE user.id = ?", [$userId, $userId]);
 		$this->response->body(json_encode(['status' => 'ok']));
 	}
 
+	#[HttpPost]
 	public function boardOrientationPreference(): void
 	{
 		$this->autoRender = false;
-		if (!Auth::isLoggedIn())
-		{
-			$this->response->statusCode(401);
-			return;
-		}
+		$this->Authorization->authorize('User', 'editPreferences');
 
 		$orientation = (int) ($this->request->data['orientation'] ?? User::PREF_BOARD_ORIENTATION_RANDOM);
 		if ($orientation < 0 || $orientation > 1)

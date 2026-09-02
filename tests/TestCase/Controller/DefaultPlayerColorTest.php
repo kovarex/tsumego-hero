@@ -126,11 +126,11 @@ class DefaultPlayerColorTest extends TestCaseWithAuth
 	{
 		Auth::logout();
 
+		$this->expectException(UnauthorizedException::class);
+
 		$this->testAction('/users/playerColorPreference', [
 			'method' => 'post',
 			'data' => ['color' => User::PREF_PLAYER_COLOR_ORIGINAL],
 		]);
-
-		$this->assertSame(401, $this->controller->response->statusCode());
 	}
 }

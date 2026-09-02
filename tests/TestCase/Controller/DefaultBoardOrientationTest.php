@@ -100,11 +100,11 @@ class DefaultBoardOrientationTest extends TestCaseWithAuth
 	{
 		Auth::logout();
 
+		$this->expectException(UnauthorizedException::class);
+
 		$this->testAction('/users/boardOrientationPreference', [
 			'method' => 'post',
 			'data' => ['orientation' => User::PREF_BOARD_ORIENTATION_ORIGINAL],
 		]);
-
-		$this->assertSame(401, $this->controller->response->statusCode());
 	}
 }
