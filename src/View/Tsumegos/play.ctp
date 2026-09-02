@@ -658,6 +658,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	var nextButtonLink = "<?php echo $nextLink; ?>";
 	var noSkipNextButtonLink = "<?php echo $noSkipNextLink; ?>";
 	var timeModeTimer = (mode == 3 ? new TimeModeTimer() : null);
+	var timeModeSessionId = <?php echo json_encode(Auth::isInTimeMode() && !empty($timeMode->currentSession['TimeModeSession']['id']) ? (int) $timeMode->currentSession['TimeModeSession']['id'] : null); ?>;
 	var setID = <?php echo $set['Set']['id'] ?>;
 	var isMutable = true;
 	var deleteNextMoveGroup = false;
@@ -1535,6 +1536,10 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	{
 		if (besogoNoLogin)
 			return;
+		// The persisted line only matters until the result is committed: once the
+		// request is sent the outcome is locked in server-side, so clear it now
+		// (on send, not on the response) rather than leaving it stale.
+		clearPlayState();
 		let data = {
 			tsumego_id: tsumegoID,
 			seconds: secs,
@@ -1740,6 +1745,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			submitResult(false, seconds);
 		}
 		failAlreadyReported = false;
+		clearPlayState();
 	}
 	</script>
 	<script type="text/javascript">
@@ -1818,6 +1824,47 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		const cornerArray = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
 		shuffledCornerArray = cornerArray.sort((a, b) => 0.5 - Math.random());
 		options.corner = shuffledCornerArray[0];
+		// Mode-scoped key: level persists per problem (free navigation), time
+		// mode reuses a single slot for the current puzzle (session id stored
+		// inside keeps it scoped to the session), rating never persists.
+		window.playStateKey = function ()
+		{
+			if (mode == <?php echo Constants::$TIME_MODE; ?>)
+				return 'tsumegoHero.playState.3';
+			return 'tsumegoHero.playState.' + mode + '.' + tsumegoID;
+		};
+		// Saved board to restore; the corner must be set before create.
+		var savedPlayState = null;
+		try
+		{
+			var _savedPlayState = JSON.parse(localStorage.getItem(window.playStateKey()) || 'null');
+			var _restorable = !!_savedPlayState
+				&& _savedPlayState.tsumegoId === tsumegoID
+				&& _savedPlayState.mode === mode
+				&& _savedPlayState.sessionId === timeModeSessionId
+				&& _savedPlayState.sgfId === <?php echo json_encode($sgf['Sgf']['id'] ?? null); ?>
+				&& _savedPlayState.path && _savedPlayState.path.length > 0
+				&& mode != <?php echo Constants::$RATING_MODE; ?>
+				&& !tryAgainTomorrow && boardLockValue !== 1;
+			if (_restorable)
+			{
+				savedPlayState = _savedPlayState;
+				if (cornerArray.indexOf(_savedPlayState.corner) >= 0)
+					options.corner = _savedPlayState.corner;
+			}
+			else if (_savedPlayState
+				&& (_savedPlayState.sgfId !== <?php echo json_encode($sgf['Sgf']['id'] ?? null); ?>
+					|| !_savedPlayState.path || _savedPlayState.path.length === 0))
+			{
+				// The problem's SGF changed since this state was saved, so the
+				// saved line no longer means anything - the user gets a fresh board.
+				localStorage.removeItem(window.playStateKey());
+			}
+		}
+		catch (e)
+		{
+			// localStorage may be blocked (private mode); fall back to a random corner.
+		}
 		options.playerColor = besogoPlayerColor;
 		options.rootPath = '/besogo/';
 		options.theme = '<?php echo $boardSelection['texture']; ?>';
@@ -1853,6 +1900,37 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	besogo.editor.registerShowComment(showComment);
 	showComment(besogo.editor.getCurrent().comment || '');
 
+		// Restore the saved board once the page is fully loaded: the replay can
+		// touch globals like soundsEnabled that are only defined by scripts that
+		// run later. The line replays with autoplay off, so no result fires by
+		// itself; only a still-pending opponent response - scheduled 240ms later -
+		// can resume it.
+		if (savedPlayState)
+		{
+			var restoreSavedPlayState = function ()
+			{
+				// The saved line lives in the rotated frame - rotating the board
+				// moves the tree coordinates - so rotate the board back first,
+				// otherwise the line replays onto the wrong positions.
+				var savedRotation = typeof savedPlayState.rotation === 'number' ? savedPlayState.rotation : -1;
+				var guard = 0;
+				while (besogo.editor.getRotation() !== savedRotation && guard++ < 8)
+				{
+					var transformation = besogo.makeTransformation();
+					transformation.rotateClockwise = true;
+					besogo.editor.applyTransformation(transformation);
+					besogo.editor.applyRotation(true);
+				}
+				besogo.editor.restoreToPath(savedPlayState.path);
+				if (typeof savedPlayState.seconds === 'number')
+					seconds = savedPlayState.seconds;
+			};
+			if (document.readyState === 'complete')
+				restoreSavedPlayState();
+			else
+				window.addEventListener('load', restoreSavedPlayState);
+		}
+
 		function addStyleLink(cssURL)
 		{
 			var element = document.createElement('link');
@@ -1871,6 +1949,73 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			echo 'besogo.editor.adjustCommentCoords();';
 		}
 		?>
+	// Persist the play state (moves, corner, rotation) to localStorage so a
+	// refresh never resets the board. Restoring happens in the board-setup
+	// script above (the corner must be chosen before the board is created);
+	// this script only decides when to save and when to discard (cleared at
+	// commit, mode-scoped, session-scoped in time mode).
+	(function ()
+	{
+		var currentSgfId = <?php echo json_encode($sgf['Sgf']['id'] ?? null); ?>;
+		var saveTimer = null;
+
+		window.clearPlayState = function ()
+		{
+			// A save may already be pending for the interaction that just
+			// committed the result; drop it so the cleared state stays cleared.
+			if (saveTimer)
+			{
+				clearTimeout(saveTimer);
+				saveTimer = null;
+			}
+			try { localStorage.removeItem(window.playStateKey()); }
+			catch (e) { /* persistence is best-effort */ }
+		};
+
+		function savePlayState()
+		{
+			// Rating mode hands out a new random problem on every load, so there
+			// is nothing to resume or protect there - it never persists.
+			if (mode == <?php echo Constants::$RATING_MODE; ?>)
+				return;
+			if (!besogo || !besogo.editor)
+				return;
+			// A rotation/corner change moves the tree coordinates first and only
+			// then updates the orientation flag, so write on the next tick to
+			// capture path, rotation and corner from the same moment.
+			if (saveTimer)
+				clearTimeout(saveTimer);
+			saveTimer = setTimeout(function ()
+			{
+				saveTimer = null;
+				if (besogo.editor.getCurrentPath().length === 0)
+				{
+					clearPlayState();
+					return;
+				}
+				var state = {
+					path: besogo.editor.getCurrentPath(),
+					rotation: besogo.editor.getRotation(),
+					corner: besogo.editor.getCorner(),
+					tsumegoId: tsumegoID,
+					mode: mode,
+					sessionId: timeModeSessionId,
+					sgfId: currentSgfId,
+					seconds: seconds,
+					savedAt: Date.now()
+				};
+				try { localStorage.setItem(window.playStateKey(), JSON.stringify(state)); }
+				catch (e) { /* persistence is best-effort */ }
+			}, 0);
+		}
+
+		// Save the state on every board navigation / tree edit.
+		besogo.editor.addListener(function (msg)
+		{
+			if (msg.navChange || msg.treeChange)
+				savePlayState();
+		});
+	})();
 	</script>
 	<style>
 		#msg2,
