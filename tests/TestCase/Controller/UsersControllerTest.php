@@ -289,7 +289,7 @@ class UsersControllerTest extends ControllerTestCase
 		$this->assertTextContains('test set', $browser->driver->getPageSource());
 	}
 
-	public function testShowPublishSchedule()
+	public function testSchedulePageShowsSandboxSource()
 	{
 		$context = new ContextPreparator([
 			'user' => ['name' => 'admin', 'admin' => true],

@@ -24,6 +24,11 @@ class ScheduleTest extends TestCaseWithAuth
 		return [$context, $sandboxSetId, $targetSetId];
 	}
 
+	private static function futureDate(int $offset = 2): string
+	{
+		return date('Y-m-d', strtotime("+{$offset} days"));
+	}
+
 	public function testAddToScheduleCreatesRows(): void
 	{
 		[$context, $sandboxSetId, $targetSetId] = $this->_sandboxAndTarget([1, 2, 3]);
@@ -33,7 +38,7 @@ class ScheduleTest extends TestCaseWithAuth
 				'set_id_from' => $sandboxSetId,
 				'set_id_to' => $targetSetId,
 				'count' => 2,
-				'start_date' => '2026-09-01',
+				'start_date' => self::futureDate(),
 			],
 			'method' => 'POST',
 		]);
@@ -47,8 +52,8 @@ class ScheduleTest extends TestCaseWithAuth
 		$this->assertSame($context->tsumegos[1]['id'], (int) $second['tsumego_id']);
 		$this->assertSame($targetSetId, (int) $first['set_id']);
 		$this->assertSame($targetSetId, (int) $second['set_id']);
-		$this->assertSame('2026-09-01', $first['date']);
-		$this->assertSame('2026-09-02', $second['date']);
+		$this->assertSame(self::futureDate(), $first['date']);
+		$this->assertSame(self::futureDate(3), $second['date']);
 		$this->assertSame(0, (int) $first['published']);
 	}
 
@@ -57,12 +62,12 @@ class ScheduleTest extends TestCaseWithAuth
 		[$context, $sandboxSetId, $targetSetId] = $this->_sandboxAndTarget([1, 2]);
 
 		$this->testAction('/schedule/add', [
-			'data' => ['set_id_from' => $sandboxSetId, 'set_id_to' => $targetSetId, 'count' => 1, 'start_date' => '2026-09-01'],
+			'data' => ['set_id_from' => $sandboxSetId, 'set_id_to' => $targetSetId, 'count' => 1, 'start_date' => self::futureDate()],
 			'method' => 'POST',
 		]);
 
 		$this->testAction('/schedule/add', [
-			'data' => ['set_id_from' => $sandboxSetId, 'set_id_to' => $targetSetId, 'count' => 2, 'start_date' => '2026-09-02'],
+			'data' => ['set_id_from' => $sandboxSetId, 'set_id_to' => $targetSetId, 'count' => 2, 'start_date' => self::futureDate(3)],
 			'method' => 'POST',
 		]);
 
@@ -81,7 +86,7 @@ class ScheduleTest extends TestCaseWithAuth
 				'set_id_from' => $sandboxSetId,
 				'set_id_to' => $targetSetId,
 				'num' => 3,
-				'start_date' => '2026-09-01',
+				'start_date' => self::futureDate(),
 			],
 			'method' => 'POST',
 		]);
@@ -89,7 +94,7 @@ class ScheduleTest extends TestCaseWithAuth
 		$schedules = ClassRegistry::init('Schedule')->find('all');
 		$this->assertCount(1, $schedules);
 		$this->assertSame($context->tsumegos[2]['id'], (int) $schedules[0]['Schedule']['tsumego_id']);
-		$this->assertSame('2026-09-01', $schedules[0]['Schedule']['date']);
+		$this->assertSame(self::futureDate(), $schedules[0]['Schedule']['date']);
 	}
 
 	public function testAddToScheduleStartsFromNum(): void
@@ -102,7 +107,7 @@ class ScheduleTest extends TestCaseWithAuth
 				'set_id_to' => $targetSetId,
 				'num' => 2,
 				'count' => 2,
-				'start_date' => '2026-09-01',
+				'start_date' => self::futureDate(),
 			],
 			'method' => 'POST',
 		]);
@@ -136,7 +141,7 @@ class ScheduleTest extends TestCaseWithAuth
 				'set_id_from' => $sandboxSetId,
 				'set_id_to' => $targetSetId,
 				'count' => 3,
-				'start_date' => '2026-09-01',
+				'start_date' => self::futureDate(),
 			],
 			'method' => 'POST',
 		]);
@@ -158,7 +163,7 @@ class ScheduleTest extends TestCaseWithAuth
 		$this->expectException(ForbiddenException::class);
 
 		$this->testAction('/schedule/add', [
-			'data' => ['set_id_from' => 1, 'set_id_to' => 2, 'count' => 1, 'start_date' => '2026-09-01'],
+			'data' => ['set_id_from' => 1, 'set_id_to' => 2, 'count' => 1, 'start_date' => self::futureDate()],
 			'method' => 'POST',
 		]);
 	}
@@ -175,7 +180,7 @@ class ScheduleTest extends TestCaseWithAuth
 		]);
 	}
 
-	public function testShowPublishScheduleShowsSandboxSourceWhenNotYetInTarget(): void
+	public function testScheduleIndexShowsSandboxSourceWhenNotYetInTarget(): void
 	{
 		$context = new ContextPreparator([
 			'user' => ['name' => 'admin', 'admin' => true],
@@ -187,7 +192,7 @@ class ScheduleTest extends TestCaseWithAuth
 				['sets' => [['name' => 'target set', 'num' => 1]]],
 			],
 			'schedule' => [
-				['tsumego' => 0, 'set' => 'target set', 'date' => '2026-09-01'],
+				['tsumego' => 0, 'set' => 'target set', 'date' => self::futureDate()],
 			],
 		]);
 		$this->login('admin');
@@ -201,7 +206,7 @@ class ScheduleTest extends TestCaseWithAuth
 		$this->assertStringNotContainsString('other set', $p[0]['sandbox_set_title']);
 	}
 
-	public function testShowPublishScheduleShowsTargetSetWhenAlreadyThere(): void
+	public function testScheduleIndexShowsTargetSetWhenAlreadyThere(): void
 	{
 		$context = new ContextPreparator([
 			'user' => ['name' => 'admin', 'admin' => true],
@@ -209,7 +214,7 @@ class ScheduleTest extends TestCaseWithAuth
 				['sets' => [['name' => 'target set', 'num' => 436]]],
 			],
 			'schedule' => [
-				['tsumego' => 0, 'set' => 'target set', 'date' => '2026-09-01'],
+				['tsumego' => 0, 'set' => 'target set', 'date' => self::futureDate()],
 			],
 		]);
 		$this->login('admin');
@@ -227,7 +232,7 @@ class ScheduleTest extends TestCaseWithAuth
 		[$context, $sandboxSetId, $targetSetId] = $this->_sandboxAndTarget([1]);
 
 		$this->testAction('/schedule/add', [
-			'data' => ['set_id_from' => $sandboxSetId, 'set_id_to' => $targetSetId, 'count' => 1, 'start_date' => '2026-09-01'],
+			'data' => ['set_id_from' => $sandboxSetId, 'set_id_to' => $targetSetId, 'count' => 1, 'start_date' => self::futureDate()],
 			'method' => 'POST',
 		]);
 
@@ -246,7 +251,7 @@ class ScheduleTest extends TestCaseWithAuth
 				['sets' => [['name' => 'target set', 'num' => 1]]],
 			],
 			'schedule' => [
-				['tsumego' => 0, 'set' => 'target set', 'date' => '2026-09-01'],
+				['tsumego' => 0, 'set' => 'target set', 'date' => self::futureDate()],
 			],
 		]);
 		$this->login('admin');
@@ -269,7 +274,7 @@ class ScheduleTest extends TestCaseWithAuth
 		[$context, $sandboxSetId, $targetSetId] = $this->_sandboxAndTarget([1]);
 
 		$this->testAction('/schedule/add', [
-			'data' => ['set_id_from' => $sandboxSetId, 'set_id_to' => $targetSetId, 'count' => 1, 'start_date' => '2026-09-01'],
+			'data' => ['set_id_from' => $sandboxSetId, 'set_id_to' => $targetSetId, 'count' => 1, 'start_date' => self::futureDate()],
 			'method' => 'POST',
 		]);
 		$scheduleId = ClassRegistry::init('Schedule')->id;
@@ -277,7 +282,7 @@ class ScheduleTest extends TestCaseWithAuth
 		$this->testAction('/schedule/cancel/' . $scheduleId, ['method' => 'POST']);
 
 		$this->testAction('/schedule/add', [
-			'data' => ['set_id_from' => $sandboxSetId, 'set_id_to' => $targetSetId, 'count' => 1, 'start_date' => '2026-09-01'],
+			'data' => ['set_id_from' => $sandboxSetId, 'set_id_to' => $targetSetId, 'count' => 1, 'start_date' => self::futureDate()],
 			'method' => 'POST',
 		]);
 
@@ -289,7 +294,7 @@ class ScheduleTest extends TestCaseWithAuth
 		[$context, $sandboxSetId, $targetSetId] = $this->_sandboxAndTarget([1, 2]);
 
 		$this->testAction('/schedule/add', [
-			'data' => ['set_id_from' => $sandboxSetId, 'set_id_to' => $targetSetId, 'count' => 2, 'start_date' => '2026-09-01'],
+			'data' => ['set_id_from' => $sandboxSetId, 'set_id_to' => $targetSetId, 'count' => 2, 'start_date' => self::futureDate()],
 			'method' => 'POST',
 		]);
 
@@ -310,7 +315,7 @@ class ScheduleTest extends TestCaseWithAuth
 				['sets' => [['name' => 'target set', 'num' => 1]]],
 			],
 			'schedule' => [
-				['tsumego' => 0, 'set' => 'target set', 'date' => '2026-09-01', 'published' => 1],
+				['tsumego' => 0, 'set' => 'target set', 'date' => self::futureDate(), 'published' => 1],
 			],
 		]);
 		$this->login('admin');

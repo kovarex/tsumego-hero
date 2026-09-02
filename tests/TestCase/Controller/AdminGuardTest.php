@@ -181,7 +181,7 @@ class AdminGuardTest extends ControllerTestCase
 
 	// ── ScheduleController::index ──
 
-	public function testShowPublishScheduleRequiresAdmin()
+	public function testScheduleIndexRequiresAdmin()
 	{
 		new ContextPreparator(['user' => ['name' => 'regular', 'admin' => false]]);
 
