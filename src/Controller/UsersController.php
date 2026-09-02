@@ -1295,4 +1295,38 @@ WHERE user.id = ?", [$userId, $userId]);
 		CookieFlash::set('Deleted progress on ' . $deleted . ' problems', 'success');
 		return $this->redirect('/users/view/' . $userId);
 	}
+
+	#[HttpPost]
+	public function playerColorPreference(): void
+	{
+		$this->autoRender = false;
+		$this->Authorization->authorize('User', 'editPreferences');
+
+		$color = (int) ($this->request->data['color'] ?? User::PREF_PLAYER_COLOR_RANDOM);
+		if ($color < 0 || $color > 1)
+			$color = User::PREF_PLAYER_COLOR_RANDOM;
+
+		Auth::saveUserField('pref_player_color', $color);
+
+		$this->response->statusCode(200);
+		$this->response->type('application/json');
+		$this->response->body(json_encode(['status' => 'ok']));
+	}
+
+	#[HttpPost]
+	public function boardOrientationPreference(): void
+	{
+		$this->autoRender = false;
+		$this->Authorization->authorize('User', 'editPreferences');
+
+		$orientation = (int) ($this->request->data['orientation'] ?? User::PREF_BOARD_ORIENTATION_RANDOM);
+		if ($orientation < 0 || $orientation > 1)
+			$orientation = User::PREF_BOARD_ORIENTATION_RANDOM;
+
+		Auth::saveUserField('pref_board_orientation', $orientation);
+
+		$this->response->statusCode(200);
+		$this->response->type('application/json');
+		$this->response->body(json_encode(['status' => 'ok']));
+	}
 }

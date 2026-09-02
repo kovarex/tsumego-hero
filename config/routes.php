@@ -140,6 +140,14 @@ Router::connect(
 	['controller' => 'sets', 'action' => 'reorderTsumego'],
 	['pass' => ['id'], 'id' => '[0-9]+']
 );
+Router::connect(
+	'/users/playerColorPreference',
+	['controller' => 'Users', 'action' => 'playerColorPreference']
+);
+Router::connect(
+	'/users/boardOrientationPreference',
+	['controller' => 'Users', 'action' => 'boardOrientationPreference']
+);
 
 //Router::connect('/*', ['routeClass' => 'UrlRoute']);
 

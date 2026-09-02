@@ -79,6 +79,16 @@ class Auth
 		return Auth::isLoggedIn() && Auth::getUser()['premium'];
 	}
 
+	public static function getPrefPlayerColor(): int
+	{
+		return Auth::isLoggedIn() ? (int) Auth::getUser()['pref_player_color'] : User::PREF_PLAYER_COLOR_RANDOM;
+	}
+
+	public static function getPrefBoardOrientation(): int
+	{
+		return Auth::isLoggedIn() ? (int) Auth::getUser()['pref_board_orientation'] : User::PREF_BOARD_ORIENTATION_RANDOM;
+	}
+
 	/**
 	 * Throws when $field is not an existing column on the user table, so a typo
 	 * or schema mismatch fails loudly instead of being silently dropped.

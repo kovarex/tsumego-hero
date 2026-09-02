@@ -2,6 +2,11 @@
 
 class User extends AppModel
 {
+	public const PREF_PLAYER_COLOR_RANDOM = 0;
+	public const PREF_PLAYER_COLOR_ORIGINAL = 1;
+	public const PREF_BOARD_ORIENTATION_RANDOM = 0;
+	public const PREF_BOARD_ORIENTATION_ORIGINAL = 1;
+
 	public function __construct($id = false, $table = null, $ds = null)
 	{
 		$id['table'] =  'user';
