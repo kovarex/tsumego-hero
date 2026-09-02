@@ -2,7 +2,7 @@
 <html lang="en">
  <head>
   <meta charset="UTF-8">
-  <title>Code Coverage for /home/runner/work/tsumego-hero/tsumego-hero/src/Model/Reject.php</title>
+  <title>Code Coverage for /home/runner/work/tsumego-hero/tsumego-hero/src/Policy/UserPolicy.php</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="../_css/bootstrap.min.css?v=9.2.32" rel="stylesheet" type="text/css">
   <link href="../_css/octicons.css?v=9.2.32" rel="stylesheet" type="text/css">
@@ -17,8 +17,8 @@
       <nav aria-label="breadcrumb">
        <ol class="breadcrumb">
          <li class="breadcrumb-item"><a href="../index.html">/home/runner/work/tsumego-hero/tsumego-hero/src</a></li>
-         <li class="breadcrumb-item"><a href="index.html">Model</a></li>
-         <li class="breadcrumb-item active">Reject.php</li>
+         <li class="breadcrumb-item"><a href="index.html">Policy</a></li>
+         <li class="breadcrumb-item active">UserPolicy.php</li>
 
        </ol>
       </nav>
@@ -72,7 +72,7 @@
       </tr>
 
       <tr>
-       <td class="success">Reject</td>
+       <td class="success">UserPolicy</td>
        <td class="success big">       <div class="progress">
          <div class="progress-bar bg-success" role="progressbar" aria-valuenow="100.00" aria-valuemin="0" aria-valuemax="100" style="width: 100.00%">
            <span class="sr-only">100.00% covered (success)</span>
@@ -80,7 +80,7 @@
        </div>
 </td>
        <td class="success small"><div align="right">100.00%</div></td>
-       <td class="success small"><div align="right">2&nbsp;/&nbsp;2</div></td>
+       <td class="success small"><div align="right">1&nbsp;/&nbsp;1</div></td>
        <td class="success big">       <div class="progress">
          <div class="progress-bar bg-success" role="progressbar" aria-valuenow="100.00" aria-valuemin="0" aria-valuemax="100" style="width: 100.00%">
            <span class="sr-only">100.00% covered (success)</span>
@@ -101,7 +101,7 @@
       </tr>
 
       <tr>
-       <td class="success">&nbsp;<a href="#5"><abbr title="__construct($id, $table, $ds)">__construct</abbr></a></td>
+       <td class="success">&nbsp;<a href="#13"><abbr title="canEditPreferences($user): bool">canEditPreferences</abbr></a></td>
        <td class="success big">       <div class="progress">
          <div class="progress-bar bg-success" role="progressbar" aria-valuenow="100.00" aria-valuemin="0" aria-valuemax="100" style="width: 100.00%">
            <span class="sr-only">100.00% covered (success)</span>
@@ -109,7 +109,7 @@
        </div>
 </td>
        <td class="success small"><div align="right">100.00%</div></td>
-       <td class="success small"><div align="right">2&nbsp;/&nbsp;2</div></td>
+       <td class="success small"><div align="right">1&nbsp;/&nbsp;1</div></td>
        <td class="success big">       <div class="progress">
          <div class="progress-bar bg-success" role="progressbar" aria-valuenow="100.00" aria-valuemin="0" aria-valuemax="100" style="width: 100.00%">
            <span class="sr-only">100.00% covered (success)</span>
@@ -130,16 +130,21 @@
 <tbody>
     <tr class=" d-flex"><td  class="col-1 text-right"><a id="1" href="#1">1</a></td><td class="col-11 codeLine"><span class="default">&lt;?php</span></td></tr>
     <tr class=" d-flex"><td  class="col-1 text-right"><a id="2" href="#2">2</a></td><td class="col-11 codeLine"></td></tr>
-    <tr class=" d-flex"><td  class="col-1 text-right"><a id="3" href="#3">3</a></td><td class="col-11 codeLine"><span class="keyword">class</span><span class="default">&nbsp;</span><span class="default">Reject</span><span class="default">&nbsp;</span><span class="keyword">extends</span><span class="default">&nbsp;</span><span class="default">AppModel</span></td></tr>
-    <tr class=" d-flex"><td  class="col-1 text-right"><a id="4" href="#4">4</a></td><td class="col-11 codeLine"><span class="keyword">{</span></td></tr>
-    <tr class=" d-flex"><td  class="col-1 text-right"><a id="5" href="#5">5</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">public</span><span class="default">&nbsp;</span><span class="keyword">function</span><span class="default">&nbsp;</span><span class="default">__construct</span><span class="keyword">(</span><span class="default">$id</span><span class="default">&nbsp;</span><span class="keyword">=</span><span class="default">&nbsp;</span><span class="default">false</span><span class="keyword">,</span><span class="default">&nbsp;</span><span class="default">$table</span><span class="default">&nbsp;</span><span class="keyword">=</span><span class="default">&nbsp;</span><span class="default">null</span><span class="keyword">,</span><span class="default">&nbsp;</span><span class="default">$ds</span><span class="default">&nbsp;</span><span class="keyword">=</span><span class="default">&nbsp;</span><span class="default">null</span><span class="keyword">)</span></td></tr>
-    <tr class=" d-flex"><td  class="col-1 text-right"><a id="6" href="#6">6</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">{</span></td></tr>
-    <tr class="covered-by-large-tests popin d-flex"><td  data-title="4 tests cover line 7" data-content="&lt;ul&gt;&lt;li&gt;merged&lt;/li&gt;&lt;li class=&quot;covered-by-large-tests&quot;&gt;TagsUserTest::testAllSixTypesRenderCorrectly&lt;/li&gt;&lt;li class=&quot;covered-by-large-tests&quot;&gt;TagsUserTest::testRejectedItemWithoutSetConnectionIsSkipped&lt;/li&gt;&lt;li class=&quot;covered-by-large-tests&quot;&gt;TagsUserTest::testPendingItemsMixedWithAcceptedAndRejected&lt;/li&gt;&lt;/ul&gt;" data-placement="top" data-html="true" class="col-1 text-right"><a id="7" href="#7">7</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="default">$id</span><span class="keyword">[</span><span class="default">'table'</span><span class="keyword">]</span><span class="default">&nbsp;</span><span class="keyword">=</span><span class="default">&nbsp;&nbsp;</span><span class="default">'reject'</span><span class="keyword">;</span></td></tr>
-    <tr class="covered-by-large-tests popin d-flex"><td  data-title="4 tests cover line 8" data-content="&lt;ul&gt;&lt;li&gt;merged&lt;/li&gt;&lt;li class=&quot;covered-by-large-tests&quot;&gt;TagsUserTest::testAllSixTypesRenderCorrectly&lt;/li&gt;&lt;li class=&quot;covered-by-large-tests&quot;&gt;TagsUserTest::testRejectedItemWithoutSetConnectionIsSkipped&lt;/li&gt;&lt;li class=&quot;covered-by-large-tests&quot;&gt;TagsUserTest::testPendingItemsMixedWithAcceptedAndRejected&lt;/li&gt;&lt;/ul&gt;" data-placement="top" data-html="true" class="col-1 text-right"><a id="8" href="#8">8</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="default">parent</span><span class="default">::</span><span class="default">__construct</span><span class="keyword">(</span><span class="default">$id</span><span class="keyword">,</span><span class="default">&nbsp;</span><span class="default">$table</span><span class="keyword">,</span><span class="default">&nbsp;</span><span class="default">$ds</span><span class="keyword">)</span><span class="keyword">;</span></td></tr>
-    <tr class=" d-flex"><td  class="col-1 text-right"><a id="9" href="#9">9</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">}</span></td></tr>
-    <tr class=" d-flex"><td  class="col-1 text-right"><a id="10" href="#10">10</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">public</span><span class="default">&nbsp;</span><span class="default">$name</span><span class="default">&nbsp;</span><span class="keyword">=</span><span class="default">&nbsp;</span><span class="default">'Reject'</span><span class="keyword">;</span></td></tr>
-    <tr class=" d-flex"><td  class="col-1 text-right"><a id="11" href="#11">11</a></td><td class="col-11 codeLine"></td></tr>
-    <tr class=" d-flex"><td  class="col-1 text-right"><a id="12" href="#12">12</a></td><td class="col-11 codeLine"><span class="keyword">}</span></td></tr>
+    <tr class="covered-by-large-tests popin d-flex"><td  data-title="1 test covers line 3" data-content="&lt;ul&gt;&lt;li class=&quot;covered-by-large-tests&quot;&gt;DefaultBoardOrientationTest::testBoardOrientationPreferenceStoresValue&lt;/li&gt;&lt;/ul&gt;" data-placement="top" data-html="true" class="col-1 text-right"><a id="3" href="#3">3</a></td><td class="col-11 codeLine"><span class="default">App</span><span class="default">::</span><span class="default">uses</span><span class="keyword">(</span><span class="default">'BasePolicy'</span><span class="keyword">,</span><span class="default">&nbsp;</span><span class="default">'Policy'</span><span class="keyword">)</span><span class="keyword">;</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="4" href="#4">4</a></td><td class="col-11 codeLine"></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="5" href="#5">5</a></td><td class="col-11 codeLine"><span class="comment">/**</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="6" href="#6">6</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;*&nbsp;User-level&nbsp;authorization.</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="7" href="#7">7</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;*</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="8" href="#8">8</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;*&nbsp;Self-service&nbsp;actions&nbsp;that&nbsp;operate&nbsp;on&nbsp;the&nbsp;caller's&nbsp;own&nbsp;account&nbsp;(e.g.&nbsp;setting</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="9" href="#9">9</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;*&nbsp;personal&nbsp;preferences)&nbsp;only&nbsp;require&nbsp;an&nbsp;authenticated&nbsp;identity.</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="10" href="#10">10</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;*/</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="11" href="#11">11</a></td><td class="col-11 codeLine"><span class="keyword">class</span><span class="default">&nbsp;</span><span class="default">UserPolicy</span><span class="default">&nbsp;</span><span class="keyword">extends</span><span class="default">&nbsp;</span><span class="default">BasePolicy</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="12" href="#12">12</a></td><td class="col-11 codeLine"><span class="keyword">{</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="13" href="#13">13</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">public</span><span class="default">&nbsp;</span><span class="keyword">static</span><span class="default">&nbsp;</span><span class="keyword">function</span><span class="default">&nbsp;</span><span class="default">canEditPreferences</span><span class="keyword">(</span><span class="default">$user</span><span class="keyword">)</span><span class="keyword">:</span><span class="default">&nbsp;</span><span class="default">bool</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="14" href="#14">14</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">{</span></td></tr>
+    <tr class="covered-by-large-tests popin d-flex"><td  data-title="6 tests cover line 15" data-content="&lt;ul&gt;&lt;li class=&quot;covered-by-large-tests&quot;&gt;DefaultBoardOrientationTest::testBoardOrientationPreferenceStoresValue&lt;/li&gt;&lt;li class=&quot;covered-by-large-tests&quot;&gt;DefaultBoardOrientationTest::testBoardOrientationPreferenceClampsOutOfRangeValue&lt;/li&gt;&lt;li class=&quot;covered-by-large-tests&quot;&gt;DefaultBoardOrientationTest::testBoardOrientationPreferenceRequiresLogin&lt;/li&gt;&lt;li class=&quot;covered-by-large-tests&quot;&gt;DefaultPlayerColorTest::testPlayerColorPreferenceStoresValue&lt;/li&gt;&lt;li class=&quot;covered-by-large-tests&quot;&gt;DefaultPlayerColorTest::testPlayerColorPreferenceClampsOutOfRangeValue&lt;/li&gt;&lt;li class=&quot;covered-by-large-tests&quot;&gt;DefaultPlayerColorTest::testPlayerColorPreferenceRequiresLogin&lt;/li&gt;&lt;/ul&gt;" data-placement="top" data-html="true" class="col-1 text-right"><a id="15" href="#15">15</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">return</span><span class="default">&nbsp;</span><span class="default">$user</span><span class="default">&nbsp;</span><span class="default">!==</span><span class="default">&nbsp;</span><span class="default">null</span><span class="keyword">;</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="16" href="#16">16</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">}</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="17" href="#17">17</a></td><td class="col-11 codeLine"><span class="keyword">}</span></td></tr>
 
 </tbody>
 </table>
