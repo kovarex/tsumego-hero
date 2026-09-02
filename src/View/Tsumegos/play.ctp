@@ -169,7 +169,7 @@
 						<td><label for="description">Description:</label></td>
 						<td>
 							<textarea name="description" id="description" rows="3" style="width: 100%;"><?php echo h($displayDescription); ?></textarea>
-							<br><small style="color: #888;">Black/White are swapped on save to match the stored convention</small>
+							<br><small style="color: #888;">Describe the problem. <?php echo ($playerColor === 'white') ? 'White' : 'Black'; ?> is to move.</small>
 						</td>
 					</tr>
 					<tr>
