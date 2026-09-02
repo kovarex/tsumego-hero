@@ -1,6 +1,7 @@
 <?php
 
 App::uses('BoardComparator', 'Utility');
+App::uses('SetConnection', 'Model');
 require_once __DIR__ . '/BoardComparator.php';
 require_once __DIR__ . '/SimilarSearchResult.php';
 
@@ -30,22 +31,19 @@ class SimilarSearchLogic
 		$candidates = Util::query("
 SELECT
     tsumego.id AS tsumego_id,
-    set_connection_latest.id AS set_connection_id,
+    sc_best.id AS set_connection_id,
     COALESCE(sgf.sgf, '') AS sgf,
     sgf.first_move_color AS first_move_color,
     sgf.correct_moves AS correct_moves
 FROM tsumego
-JOIN (
-    SELECT
-        set_connection.tsumego_id,
-        MAX(set_connection.id) AS id
-    FROM set_connection
-    JOIN `set`
-        ON `set`.id = set_connection.set_id
-       AND `set`.public = 1
-    GROUP BY set_connection.tsumego_id
-) AS set_connection_latest
-    ON set_connection_latest.tsumego_id = tsumego.id
+JOIN set_connection sc_best ON sc_best.id = (
+    SELECT sc2.id
+    FROM set_connection sc2
+    JOIN `set` s2 ON s2.id = sc2.set_id
+    WHERE sc2.tsumego_id = tsumego.id AND s2.public = 1
+    ORDER BY " . SetConnection::displayOrderSql('s2', 'sc2') . "
+    LIMIT 1
+)
 LEFT JOIN sgf
     ON sgf.tsumego_id = tsumego.id
    AND sgf.accepted = 1

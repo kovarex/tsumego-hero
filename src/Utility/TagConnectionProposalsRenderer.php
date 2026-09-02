@@ -36,7 +36,7 @@ FROM
 			FROM set_connection sc2
 			JOIN `set` s2 ON s2.id = sc2.set_id
 			WHERE sc2.tsumego_id = tag_connection.tsumego_id
-			ORDER BY " . SetConnection::displayOrderForSetSql('s2') . ", sc2.id ASC
+			ORDER BY " . SetConnection::displayOrderSql('s2', 'sc2') . "
 			LIMIT 1
 		)
 	JOIN user ON tag_connection.user_id = user.id
