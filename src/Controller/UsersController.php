@@ -1306,11 +1306,7 @@ WHERE user.id = ?", [$userId, $userId]);
 		if ($color < 0 || $color > 1)
 			$color = User::PREF_PLAYER_COLOR_RANDOM;
 
-		ClassRegistry::init('User')->updateAll(
-			['pref_player_color' => $color],
-			['id' => Auth::getUserID()]
-		);
-		Auth::getUser()['pref_player_color'] = $color;
+		Auth::saveUserField('pref_player_color', $color);
 
 		$this->response->statusCode(200);
 		$this->response->type('application/json');
@@ -1327,11 +1323,7 @@ WHERE user.id = ?", [$userId, $userId]);
 		if ($orientation < 0 || $orientation > 1)
 			$orientation = User::PREF_BOARD_ORIENTATION_RANDOM;
 
-		ClassRegistry::init('User')->updateAll(
-			['pref_board_orientation' => $orientation],
-			['id' => Auth::getUserID()]
-		);
-		Auth::getUser()['pref_board_orientation'] = $orientation;
+		Auth::saveUserField('pref_board_orientation', $orientation);
 
 		$this->response->statusCode(200);
 		$this->response->type('application/json');
