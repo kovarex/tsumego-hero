@@ -3,6 +3,7 @@
 App::uses('TsumegoComment', 'Model');
 App::uses('User', 'Model');
 App::uses('TsumegosController', 'Controller');
+App::uses('SetConnection', 'Model');
 
 /**
  * TsumegoIssue Model
@@ -139,15 +140,14 @@ class TsumegoIssue extends AppModel
 			LEFT JOIN user u ON u.id = ti.user_id
 			LEFT JOIN tsumego_comment tc ON tc.tsumego_issue_id = ti.id AND tc.deleted = 0
 			LEFT JOIN user cu ON cu.id = tc.user_id
-			LEFT JOIN (
-				SELECT sc1.tsumego_id, sc1.num, sc1.set_id
-				FROM set_connection sc1
-				INNER JOIN (
-					SELECT tsumego_id, MIN(id) as min_id
-					FROM set_connection
-					GROUP BY tsumego_id
-				) sc2 ON sc1.id = sc2.min_id
-			) sc ON sc.tsumego_id = ti.tsumego_id
+			LEFT JOIN set_connection sc ON sc.id = (
+				SELECT sc2.id
+				FROM set_connection sc2
+				JOIN `set` s2 ON s2.id = sc2.set_id
+				WHERE sc2.tsumego_id = ti.tsumego_id
+				ORDER BY " . SetConnection::displayOrderSql('s2', 'sc2') . "
+				LIMIT 1
+			)
 			LEFT JOIN `set` s ON s.id = sc.set_id
 			WHERE ti.id IN ({$issueIdsStr})
 			ORDER BY ti.created DESC, ti.id DESC, tc.created ASC

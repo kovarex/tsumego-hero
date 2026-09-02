@@ -1,6 +1,7 @@
 <?php
 
 App::uses('Query', 'Utility');
+App::uses('SetConnection', 'Model');
 
 class TsumegoButtonsQueryBuilder
 {
@@ -13,7 +14,7 @@ class TsumegoButtonsQueryBuilder
 		$this->query = new Query('FROM tsumego');
 		if ($tsumegoFilters->query != 'topics')
 		{
-			$this->query->selects[] = "ROW_NUMBER() OVER (PARTITION BY tsumego.id ORDER BY set_connection.id, set_connection.num, tsumego.id) AS rn";
+			$this->query->selects[] = "ROW_NUMBER() OVER (PARTITION BY tsumego.id ORDER BY " . SetConnection::displayOrderSql('`set`', 'set_connection') . ") AS rn";
 			$this->query->prefix = "SELECT tsumego_id, set_connection_id, num, rating, sgf";
 			if (Auth::isLoggedIn())
 				$this->query->prefix .= ", status";

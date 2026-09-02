@@ -38,7 +38,7 @@ JOIN set_connection sc ON sc.tsumego_id = p.tsumego_id
         FROM set_connection sc2
         JOIN `set` s2 ON s2.id = sc2.set_id
         WHERE sc2.tsumego_id = p.tsumego_id
-        ORDER BY " . SetConnection::displayOrderForSetSql('s2') . ", sc2.id ASC
+        ORDER BY " . SetConnection::displayOrderSql('s2', 'sc2') . "
         LIMIT 1
     )
 JOIN `set` s ON s.id = sc.set_id
