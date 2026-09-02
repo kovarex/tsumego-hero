@@ -179,15 +179,15 @@ class AdminGuardTest extends ControllerTestCase
 		]);
 	}
 
-	// ── UsersController::showPublishSchedule ──
+	// ── ScheduleController::index ──
 
-	public function testShowPublishScheduleRequiresAdmin()
+	public function testScheduleIndexRequiresAdmin()
 	{
 		new ContextPreparator(['user' => ['name' => 'regular', 'admin' => false]]);
 
 		$this->expectException(ForbiddenException::class);
 
-		$this->testAction('/users/showPublishSchedule', ['method' => 'get']);
+		$this->testAction('/schedule', ['method' => 'get']);
 	}
 
 	// ── TagsController::edit / editAction ──

@@ -36,6 +36,7 @@ class ContextPreparator
 		$this->prepareTimeModeRanks(Util::extract('time-mode-ranks', $options));
 		$this->prepareTimeModeSessions(Util::extract('time-mode-sessions', $options));
 		$this->prepareProgressDeletion(Util::extract('progress-deletions', $options));
+		$this->prepareSchedule(Util::extract('schedule', $options));
 		$this->prepareDayRecords(Util::extract('day-records', $options));
 		$this->prepareAchievementConditions(Util::extract('achievement-conditions', $options));
 		$this->ensureAdminActivityTypes();
@@ -179,6 +180,14 @@ class ContextPreparator
 		$tsumego['pass'] = Util::extract('pass', $tsumegoInput) ?? 0;
 		$tsumego['deleted'] = Util::extract('deleted', $tsumegoInput);
 		$tsumego['author'] = Util::extract('author', $tsumegoInput) ?: '';
+		if ($solved = Util::extract('solved', $tsumegoInput))
+			$tsumego['solved'] = $solved;
+		if ($failed = Util::extract('failed', $tsumegoInput))
+			$tsumego['failed'] = $failed;
+		if ($userWin = Util::extract('userWin', $tsumegoInput))
+			$tsumego['userWin'] = $userWin;
+		if ($userLoss = Util::extract('userLoss', $tsumegoInput))
+			$tsumego['userLoss'] = $userLoss;
 		ClassRegistry::init('Tsumego')->create($tsumego);
 		ClassRegistry::init('Tsumego')->save($tsumego);
 		$tsumego = ClassRegistry::init('Tsumego')->find('first', ['order' => ['id' => 'DESC']])['Tsumego'];
@@ -647,6 +656,37 @@ class ContextPreparator
 		}
 	}
 
+	/**
+	 * Create schedule entries.
+	 *
+	 * Each entry: ['tsumego' => 0, 'set' => 'target set', 'date' => '2026-09-01', 'published' => 0]
+	 * - tsumego: index into $this->tsumegos (default 0)
+	 * - set: target set name (resolved via getOrCreateTsumegoSet)
+	 * - date: publish date
+	 * - published: 0 or 1 (default 0)
+	 */
+	public function prepareSchedule(?array $scheduleEntries): void
+	{
+		if (!$scheduleEntries)
+			return;
+
+		foreach ($scheduleEntries as $entry)
+		{
+			$tsumegoIndex = $entry['tsumego'] ?? 0;
+			$tsumegoId = $this->tsumegos[$tsumegoIndex]['id'];
+			$targetSetId = $this->getOrCreateTsumegoSet($entry['set'])['id'];
+
+			ClassRegistry::init('Schedule')->create();
+			ClassRegistry::init('Schedule')->save([
+				'tsumego_id' => $tsumegoId,
+				'set_id' => $targetSetId,
+				'date' => $entry['date'],
+				'published' => $entry['published'] ?? 0,
+				'created_by' => $this->user['id'] ?? null,
+			]);
+		}
+	}
+
 	public function prepareDayRecords(?array $dayRecords): void
 	{
 		if (!$dayRecords)
@@ -758,7 +798,9 @@ class ContextPreparator
 			AdminActivityType::ACCEPT_PROPOSAL => 'Accept Proposal',
 			AdminActivityType::REJECT_PROPOSAL => 'Reject Proposal',
 			AdminActivityType::TSUMEGO_MERGE => 'Tsumego Merge',
-			AdminActivityType::DELETE_USER => 'Delete User'];
+			AdminActivityType::DELETE_USER => 'Delete User',
+			AdminActivityType::ADD_TO_SCHEDULE => 'Add to Schedule',
+			AdminActivityType::CANCEL_SCHEDULE => 'Cancel Schedule'];
 
 		$adminActivityType = ClassRegistry::init('AdminActivityType');
 
