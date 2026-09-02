@@ -59,6 +59,11 @@ LIMIT " . self::$PAGE_SIZE . "
 OFFSET " . $this->offset, [Auth::getUserID()]);
 	}
 
+	protected function renderHeader(): void
+	{
+		echo '<tr><th><label title="Toggle board previews"><input type="checkbox" class="preview-zoom-toggle">🔍</label></th><th>Action</th><th>Date</th></tr>';
+	}
+
 	public function renderItem(int $index, array $item): void
 	{
 		echo '<td>';

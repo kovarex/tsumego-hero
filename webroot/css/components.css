@@ -207,13 +207,14 @@
 .btn:hover
 {
 	background-color: var(--surface-button-hover);
-	color: var(--color-green);
+	color: var(--color-white);
 	cursor: pointer;
 }
 
 .btn--disabled
 {
 	opacity: 0.5;
+	cursor: not-allowed;
 }
 
 .btn--disabled:hover
@@ -256,20 +257,22 @@
 
 .btn--success
 {
+	background: var(--color-green-dark);
 	border-color: var(--color-green-dark);
-	color: var(--color-green);
+	color: var(--color-white);
 }
 
 .btn--success:hover
 {
-	background: var(--color-green-dark);
-	color: var(--color-green-light);
+	background: var(--color-green);
+	color: var(--color-white);
 }
 
 .btn--warning
 {
+	background: var(--feedback-warning);
 	border-color: var(--feedback-warning);
-	color: var(--feedback-warning);
+	color: var(--color-white);
 }
 
 .btn--warning:hover

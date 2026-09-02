@@ -227,7 +227,7 @@
 [data-theme=dark] .tsumego-comments__tab {
 	background: var(--surface-hover);
 	border-color: var(--surface-hover-strong);
-	color: var(--text-softer-color);
+	color: var(--text-color);
 }
 [data-theme=dark] .tsumego-comments__tab.active {
 	background: var(--surface-hover-strong);
@@ -237,6 +237,9 @@
 }
 /* Empty tab dark theme */
 
+[data-theme=dark] .tsumego-comments__tab--empty {
+	color: var(--text-softer-color);
+}
 [data-theme=dark] .tsumego-comments__tab--empty:hover {
 	background: var(--surface-border-strong);
 }
