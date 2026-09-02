@@ -465,6 +465,20 @@
 	margin-right: var(--space-1);
 }
 
+.field__label
+{
+	font-weight: var(--font-weight-bold);
+	color: var(--text-color);
+}
+
+/* When a field has a group label (e.g. a preference heading), the label sits
+   on its own line and the options flow in a row beneath it, following the
+   WAI/MDN pattern for radio/checkbox groups. */
+.field > .field__label
+{
+	flex-basis: 100%;
+}
+
 /* ── Form field (stacked label + control) ── */
 .form-field
 {

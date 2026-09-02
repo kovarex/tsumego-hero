@@ -1295,4 +1295,52 @@ WHERE user.id = ?", [$userId, $userId]);
 		CookieFlash::set('Deleted progress on ' . $deleted . ' problems', 'success');
 		return $this->redirect('/users/view/' . $userId);
 	}
+
+	public function playerColorPreference(): void
+	{
+		$this->autoRender = false;
+		if (!Auth::isLoggedIn())
+		{
+			$this->response->statusCode(401);
+			return;
+		}
+
+		$color = (int) ($this->request->data['color'] ?? User::PREF_PLAYER_COLOR_RANDOM);
+		if ($color < 0 || $color > 1)
+			$color = User::PREF_PLAYER_COLOR_RANDOM;
+
+		ClassRegistry::init('User')->updateAll(
+			['pref_player_color' => $color],
+			['id' => Auth::getUserID()]
+		);
+		Auth::getUser()['pref_player_color'] = $color;
+
+		$this->response->statusCode(200);
+		$this->response->type('application/json');
+		$this->response->body(json_encode(['status' => 'ok']));
+	}
+
+	public function boardOrientationPreference(): void
+	{
+		$this->autoRender = false;
+		if (!Auth::isLoggedIn())
+		{
+			$this->response->statusCode(401);
+			return;
+		}
+
+		$orientation = (int) ($this->request->data['orientation'] ?? User::PREF_BOARD_ORIENTATION_RANDOM);
+		if ($orientation < 0 || $orientation > 1)
+			$orientation = User::PREF_BOARD_ORIENTATION_RANDOM;
+
+		ClassRegistry::init('User')->updateAll(
+			['pref_board_orientation' => $orientation],
+			['id' => Auth::getUserID()]
+		);
+		Auth::getUser()['pref_board_orientation'] = $orientation;
+
+		$this->response->statusCode(200);
+		$this->response->type('application/json');
+		$this->response->body(json_encode(['status' => 'ok']));
+	}
 }

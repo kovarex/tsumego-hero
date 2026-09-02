@@ -10,6 +10,8 @@ App::uses('SetPolicy', 'Policy');
 App::uses('TsumegoPolicy', 'Policy');
 App::uses('AdminActivityLogger', 'Utility');
 App::uses('AdminActivityType', 'Model');
+App::uses('User', 'Model');
+App::uses('SgfParser', 'Utility');
 App::uses('NotFoundException', 'Routing/Error');
 
 class Play
@@ -230,16 +232,55 @@ class Play
 		if (!isset($t['Tsumego']['file']) || $t['Tsumego']['file'] == '')
 			$t['Tsumego']['file'] = $currentSetConnection['SetConnection']['num'];
 		$orientation = null;
-		$colorOrientation = null;
+		$playerColor = 'black';
 		if (isset($params['url']['orientation']))
 			$orientation = $params['url']['orientation'];
 		if (isset($params['url']['playercolor']))
-			$colorOrientation = $params['url']['playercolor'];
+			$playerColor = $params['url']['playercolor'] === 'white' ? 'white' : 'black';
+		else
+		{
+			$preference = Auth::getPrefPlayerColor();
+			if ($preference === User::PREF_PLAYER_COLOR_ORIGINAL)
+			{
+				$firstMove = SgfParser::firstMoveColor($sgf['Sgf']['sgf']);
+				if ($firstMove === 'W')
+					$playerColor = 'white';
+				elseif ($firstMove === 'B')
+					$playerColor = 'black';
+				else
+					$playerColor = rand(0, 1) ? 'white' : 'black';
+			}
+			else
+				$playerColor = rand(0, 1) ? 'white' : 'black';
+		}
 
 		$checkBSize = 19;
 		for ($i = 2; $i <= 19; $i++)
 			if (strpos(';' . $set['Set']['title'], $i . 'x' . $i))
 				$checkBSize = $i;
+
+		// Board orientation preference: decide which corner the board faces.
+		// The corner is purely a visual mirror (hFlip/vFlip on coordinates), so
+		// it never affects solving. "Original" shows the problem's canonical
+		// orientation (besogo's loadSgf already normalizes the board to top-left
+		// internally, so top-left reproduces the thumbnail), "Random" picks a
+		// random corner for variety.
+		$corner = null;
+		$orientationPreference = Auth::getPrefBoardOrientation();
+		if ($orientationPreference === User::PREF_BOARD_ORIENTATION_ORIGINAL)
+			$corner = 'top-left';
+		else
+			$corner = Play::randomCorner();
+
+		// Variants (multiple-choice / score-estimating) and semeai questions are
+		// about the actual Black/White groups on the board, so the player always
+		// plays black here.
+		// Small boards and specific sets also force black.
+		if ($tsumegoVariant != null
+			|| ($t['Tsumego']['semeaiType'] ?? 0) != 0
+			|| $checkBSize != 19
+			|| in_array($set['Set']['id'], [109, 233, 236, 239, 243, 244, 246, 251, 253]))
+				$playerColor = 'black';
 
 		if (Util::getHealthBasedOnLevel(Auth::getWithDefault('level', 0)) >= 8)
 		{
@@ -263,7 +304,7 @@ class Play
 		elseif (Auth::isInTimeMode())($this->setFunction)('page', 'time mode');
 
 		$file = 'placeholder2.sgf';
-		$startingPlayer = TsumegosController::getStartingPlayer($sgf['Sgf']['sgf']);
+
 
 		$existingSignatures = ClassRegistry::init('Signature')->find('all', ['conditions' => ['tsumego_id' => $id]]);
 		if ($existingSignatures == null || $existingSignatures[0]['Signature']['created'] < date('Y-m-d', strtotime('-1 week')))
@@ -351,7 +392,8 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		($this->setFunction)('nothingInRange', $nothingInRange);
 		($this->setFunction)('sgf', $sgf);
 		($this->setFunction)('orientation', $orientation);
-		($this->setFunction)('colorOrientation', $colorOrientation);
+		($this->setFunction)('corner', $corner);
+		($this->setFunction)('playerColor', $playerColor);
 		($this->setFunction)('suspiciousBehavior', $suspiciousBehavior);
 		($this->setFunction)('isSandbox', $isSandbox);
 		($this->setFunction)('goldenTsumego', $goldenTsumego);
@@ -374,7 +416,6 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		($this->setFunction)('setConnection', $currentSetConnection);
 		($this->setFunction)('setConnections', $setConnections);
 		if (isset($params['url']['requestSolution']))($this->setFunction)('requestSolution', AdminActivityLogger::log(AdminActivityType::SOLUTION_REQUEST, $id));
-		($this->setFunction)('startingPlayer', $startingPlayer);
 		($this->setFunction)('tv', $tsumegoVariant);
 		($this->setFunction)('tsumegoFilters', $tsumegoFilters);
 		($this->setFunction)('queryTitle', $queryTitle);
@@ -405,6 +446,12 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 											</a>
 										</font>';
 		return '<a id="playTitleA" href="/sets/view/' . $set['Set']['id'] . $tsumegoButtons->getPartitionLinkSuffix() . '">' . $set['Set']['title'] . ' ' . $tsumegoButtons->getPartitionTitleSuffix() . ' ' . $order . '/' . $tsumegoButtons->highestTsumegoOrder . '</a>';
+	}
+
+	private static function randomCorner(): string
+	{
+		$corners = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
+		return $corners[array_rand($corners)];
 	}
 
 	private $setFunction;

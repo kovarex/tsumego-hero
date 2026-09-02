@@ -155,20 +155,6 @@ class TsumegosController extends AppController
 		return $t[$num];
 	}
 
-	public static function getStartingPlayer($sgf)
-	{
-		$bStart = strpos($sgf, ';B');
-		$wStart = strpos($sgf, ';W');
-		if ($wStart == 0)
-			return 0;
-		if ($bStart == 0)
-			return 1;
-		if ($bStart <= $wStart)
-			return 0;
-
-		return 1;
-	}
-
 	public function edit($tsumegoID)
 	{
 		$this->Authorization->authorize('Tsumego');

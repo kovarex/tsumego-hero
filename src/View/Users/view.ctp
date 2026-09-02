@@ -50,18 +50,41 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 		</table>
 	</div>
 	<div class="card card--green">
-		<div class="card__title">Progress bar</div>
-		<div class="field">
-			<?php
-			$levelBarDisplayChecked1 = '';
-			$levelBarDisplayChecked2 = '';
-			if ($levelBar == 1)
-				$levelBarDisplayChecked1 = 'checked="checked"';
-			else
-				$levelBarDisplayChecked2 = 'checked="checked"';
-			?>
-			<label class="field__option"><input type="radio" id="levelBarDisplay1" name="levelBarDisplay" value="1" onclick="levelBarChange(1);" <?php echo $levelBarDisplayChecked1; ?>> Level</label>
-			<label class="field__option"><input type="radio" id="levelBarDisplay2" name="levelBarDisplay" value="2" onclick="levelBarChange(2);" <?php echo $levelBarDisplayChecked2; ?>> Rating</label>
+		<div class="card__title">Preferences</div>
+		<div class="stack">
+			<div class="field">
+				<span class="field__label">Progress bar</span>
+				<?php
+				$levelBarDisplayChecked1 = '';
+				$levelBarDisplayChecked2 = '';
+				if ($levelBar == 1)
+					$levelBarDisplayChecked1 = 'checked="checked"';
+				else
+					$levelBarDisplayChecked2 = 'checked="checked"';
+				?>
+				<label class="field__option"><input type="radio" id="levelBarDisplay1" name="levelBarDisplay" value="1" onclick="levelBarChange(1);" <?php echo $levelBarDisplayChecked1; ?>> Level</label>
+				<label class="field__option"><input type="radio" id="levelBarDisplay2" name="levelBarDisplay" value="2" onclick="levelBarChange(2);" <?php echo $levelBarDisplayChecked2; ?>> Rating</label>
+			</div>
+			<div class="field">
+				<span class="field__label">Player color</span>
+				<?php
+				$playerColor = Auth::getPrefPlayerColor();
+				$playerColorRandomChecked = $playerColor === User::PREF_PLAYER_COLOR_RANDOM ? 'checked="checked"' : '';
+					$playerColorOriginalChecked = $playerColor === User::PREF_PLAYER_COLOR_ORIGINAL ? 'checked="checked"' : '';
+					?>
+					<label class="field__option"><input type="radio" name="playerColor" value="<?php echo User::PREF_PLAYER_COLOR_RANDOM; ?>" onclick="playerColorPreference(this.value);" <?php echo $playerColorRandomChecked; ?>> Random</label>
+					<label class="field__option"><input type="radio" name="playerColor" value="<?php echo User::PREF_PLAYER_COLOR_ORIGINAL; ?>" onclick="playerColorPreference(this.value);" <?php echo $playerColorOriginalChecked; ?>> Original</label>
+			</div>
+			<div class="field">
+				<span class="field__label">Board orientation</span>
+				<?php
+				$boardOrientation = Auth::getPrefBoardOrientation();
+				$boardOrientationRandomChecked = $boardOrientation === User::PREF_BOARD_ORIENTATION_RANDOM ? 'checked="checked"' : '';
+					$boardOrientationOriginalChecked = $boardOrientation === User::PREF_BOARD_ORIENTATION_ORIGINAL ? 'checked="checked"' : '';
+					?>
+					<label class="field__option"><input type="radio" name="boardOrientation" value="<?php echo User::PREF_BOARD_ORIENTATION_RANDOM; ?>" onclick="boardOrientationPreference(this.value);" <?php echo $boardOrientationRandomChecked; ?>> Random</label>
+					<label class="field__option"><input type="radio" name="boardOrientation" value="<?php echo User::PREF_BOARD_ORIENTATION_ORIGINAL; ?>" onclick="boardOrientationPreference(this.value);" <?php echo $boardOrientationOriginalChecked; ?>> Original</label>
+			</div>
 		</div>
 	</div>
 	<div class="card card--green">
@@ -419,4 +442,18 @@ function delUts(){
 	?>
 </script>
 <script>
+function playerColorPreference(color) {
+	fetch('/users/playerColorPreference', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+		body: 'color=' + encodeURIComponent(color)
+	});
+}
+function boardOrientationPreference(orientation) {
+	fetch('/users/boardOrientationPreference', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+		body: 'orientation=' + encodeURIComponent(orientation)
+	});
+}
 </script>
