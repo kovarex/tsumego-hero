@@ -8,6 +8,7 @@
  * @var int $checkBSize
  * @var string $playerColor 'black' or 'white'
  * @var string $corner
+ * @var bool $swapColors
  * @var array $difficulty
  * @var string $emptyHeart
  * @var bool $fav
@@ -1767,6 +1768,7 @@
 	?>
 		options.corner = "<?php echo $corner; ?>";
 		options.playerColor = "<?php echo $playerColor; ?>";
+		options.swapColors = <?php echo $swapColors ? 'true' : 'false'; ?>;
 		options.rootPath = '/besogo/';
 		options.theme = '<?php echo $boardSelection['texture']; ?>';
 		options.themeParameters = ['<?php echo $boardSelection['black']; ?>', '<?php echo $boardSelection['white']; ?>'];

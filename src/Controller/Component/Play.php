@@ -232,19 +232,27 @@ class Play
 		if (!isset($t['Tsumego']['file']) || $t['Tsumego']['file'] == '')
 			$t['Tsumego']['file'] = $currentSetConnection['SetConnection']['num'];
 		$playerColor = 'black';
-		$preference = Auth::getPrefPlayerColor();
-		if ($preference === User::PREF_PLAYER_COLOR_ORIGINAL)
+		$playerColorPreference = Auth::getPrefPlayerColor();
+		$sgfColor = SgfParser::firstMoveColor($sgf['Sgf']['sgf']);
+		$swapColors = false;
+		if ($playerColorPreference === User::PREF_PLAYER_COLOR_ORIGINAL)
 		{
-			$firstMove = SgfParser::firstMoveColor($sgf['Sgf']['sgf']);
-			if ($firstMove === 'W')
+			// Original: play the SGF as designed, no color swap.
+			if ($sgfColor === 'W')
 				$playerColor = 'white';
-			elseif ($firstMove === 'B')
-				$playerColor = 'black';
 			else
-				$playerColor = rand(0, 1) ? 'white' : 'black';
+				$playerColor = 'black';
 		}
 		else
+		{
+			// Random: randomly play black or white, swapping the board colors
+			// when the chosen side differs from the SGF's first move.
 			$playerColor = rand(0, 1) ? 'white' : 'black';
+			if ($sgfColor === 'W')
+				$swapColors = $playerColor === 'black';
+			elseif ($sgfColor === 'B')
+				$swapColors = $playerColor === 'white';
+		}
 
 		$checkBSize = 19;
 		for ($i = 2; $i <= 19; $i++)
@@ -272,7 +280,10 @@ class Play
 			|| ($t['Tsumego']['semeaiType'] ?? 0) != 0
 			|| $checkBSize != 19
 			|| in_array($set['Set']['id'], [109, 233, 236, 239, 243, 244, 246, 251, 253]))
-				$playerColor = 'black';
+		{
+			$playerColor = 'black';
+			$swapColors = false;
+		}
 
 		if (Util::getHealthBasedOnLevel(Auth::getWithDefault('level', 0)) >= 8)
 		{
@@ -385,6 +396,7 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		($this->setFunction)('sgf', $sgf);
 		($this->setFunction)('corner', $corner);
 		($this->setFunction)('playerColor', $playerColor);
+		($this->setFunction)('swapColors', $swapColors);
 		($this->setFunction)('suspiciousBehavior', $suspiciousBehavior);
 		($this->setFunction)('isSandbox', $isSandbox);
 		($this->setFunction)('goldenTsumego', $goldenTsumego);

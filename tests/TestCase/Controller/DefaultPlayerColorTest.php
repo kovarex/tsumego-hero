@@ -29,6 +29,7 @@ class DefaultPlayerColorTest extends TestCaseWithAuth
 		);
 
 		$this->assertTextContains('options.playerColor = "black"', $this->view);
+		$this->assertTextContains('options.swapColors = false', $this->view);
 		$this->assertTextContains('Black to play.', $this->view);
 	}
 
@@ -56,6 +57,7 @@ class DefaultPlayerColorTest extends TestCaseWithAuth
 		);
 
 		$this->assertTextContains('options.playerColor = "white"', $this->view);
+		$this->assertTextContains('options.swapColors = false', $this->view);
 		$this->assertTextContains('White to play.', $this->view);
 	}
 
@@ -83,6 +85,7 @@ class DefaultPlayerColorTest extends TestCaseWithAuth
 		);
 
 		$this->assertTextContains('options.playerColor = "black"', $this->view);
+		$this->assertTextContains('options.swapColors = false', $this->view);
 		$this->assertTextContains('Black to play.', $this->view);
 	}
 
@@ -132,5 +135,35 @@ class DefaultPlayerColorTest extends TestCaseWithAuth
 			'method' => 'post',
 			'data' => ['color' => User::PREF_PLAYER_COLOR_ORIGINAL],
 		]);
+	}
+
+	public function testRandomSwapMatchesChosenSide(): void
+	{
+		Auth::logout();
+		$context = new ContextPreparator([
+			'user' => ['name' => 'randomSwap'],
+			'tsumego' => ['sets' => [['name' => 'randomSwapSet', 'num' => 1]], 'sgf' => ['data' => '(;GM[1]FF[4]SZ[19];B[aa])']],
+		]);
+		$this->login('randomSwap');
+		ClassRegistry::init('User')->updateAll(
+			['pref_player_color' => User::PREF_PLAYER_COLOR_RANDOM],
+			['id' => Auth::getUserID()]
+		);
+		Auth::getUser()['pref_player_color'] = User::PREF_PLAYER_COLOR_RANDOM;
+
+		$this->testAction(
+			'/' . $context->tsumegos[0]['set-connections'][0]['id'],
+			['return' => 'view']
+		);
+
+		preg_match('/options\.playerColor = "(black|white)"/', $this->view, $playerColorMatch);
+		preg_match('/options\.swapColors = (true|false)/', $this->view, $swapColorsMatch);
+
+		$this->assertNotEmpty($playerColorMatch);
+		$this->assertNotEmpty($swapColorsMatch);
+		$this->assertSame(
+			$playerColorMatch[1] === 'white' ? 'true' : 'false',
+			$swapColorsMatch[1]
+		);
 	}
 }

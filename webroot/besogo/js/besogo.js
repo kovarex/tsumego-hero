@@ -321,6 +321,7 @@
     options.coord = options.coord || "none";
     options.tool = options.tsumegoPlayTool || "auto";
     besogo.playerColor = options.playerColor;
+    besogo.swapColors = !!options.swapColors;
     if (options.tsumegoPlayTool)
       options.tsumegoPlayTool = options.tsumegoPlayTool || "auto";
     if (options.panels === "") options.panels = [];
@@ -673,7 +674,7 @@
     besogo.coordArea["highestYconverted"] =
       convertedCoords.y[besogo.coordArea["highestY"] + 1];
 
-    if (besogo.playerColor === "white") {
+    if (besogo.swapColors) {
       let transformation = besogo.makeTransformation();
       transformation.invertColors = true;
       besogo.editor.applyTransformation(transformation);
