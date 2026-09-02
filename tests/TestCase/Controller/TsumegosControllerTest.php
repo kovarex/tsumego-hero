@@ -790,26 +790,26 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$whiteFirstSgf = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];W[aa];B[ab];W[ba]C[+])';
 
 		return [
-			'no swap: Black visual (pl=0) + Black-first SGF' => [
+			'no swap: Black visual (pl=0) + Black-first SGF, true-color matches' => [
 				"Black's stones attack White's group. black wins!",
 				$blackFirstSgf,
 				'black',
 				"Black's stones attack White's group. black wins!",
 			],
-			'swap: White visual (pl=1) + Black-first SGF, preserves word boundaries' => [
+			'swap: White visual (pl=1) + Black-first SGF, board inverted' => [
 				"Black's stones. Kill the white group near the Blackbird. Watch whitespace.",
 				$blackFirstSgf,
 				'white',
 				"White's stones. Kill the black group near the Blackbird. Watch whitespace.",
 			],
-			'swap: Black visual (pl=0) + White-first SGF, normalized Black swaps to White' => [
-				"Black to play. Attack the white group.",
+			'no swap: Black visual (pl=0) + White-first SGF, true-color matches' => [
+				"White to play. Attack the black group.",
 				$whiteFirstSgf,
 				'black',
 				"White to play. Attack the black group.",
 			],
-			'no swap: White visual (pl=1) + White-first SGF, normalized Black stays' => [
-				"Black to play. Attack the white group.",
+			'swap: White visual (pl=1) + White-first SGF, board inverted' => [
+				"White to play. Attack the black group.",
 				$whiteFirstSgf,
 				'white',
 				"Black to play. Attack the white group.",
@@ -840,9 +840,9 @@ class TsumegosControllerTest extends TestCaseWithAuth
 	}
 
 	/**
-	 * Browser test: Admin edits description on a puzzle where colors are swapped.
-	 * W-first SGF + playercolor=black -> swap active -> textarea shows swapped text.
-	 * After editing and saving, the stored description is normalized back (Black = solver).
+	 * Browser test: Admin edits description on a puzzle where board is inverted.
+	 * W-first SGF + playercolor=white -> board inverted -> textarea shows swapped text.
+	 * After editing and saving, the stored description is un-swapped back to true-color.
 	 */
 	public function testDescriptionEditWithSwap(): void
 	{
@@ -850,22 +850,22 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			'user' => ['admin' => true],
 			'tsumego' => [
 				'set_order' => 1,
-				'description' => 'Black to attack the white stones.',
+				'description' => 'White to attack the black stones.',
 				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];W[aa];B[ab];W[ba]C[+])'
 			]
 		]);
 
 		$browser = Browser::instance();
 		$setConnectionId = $context->tsumegos[0]['set-connections'][0]['id'];
-		// W-first SGF + playercolor=black -> pl=0, sP=1 -> shouldSwap=true
-		$browser->get($setConnectionId . '?playercolor=black');
+		// W-first SGF + playercolor=white -> pl=1 -> shouldSwap=true
+		$browser->get($setConnectionId . '?playercolor=white');
 
 		// Click the (Edit) link to reveal the form
 		$browser->clickId('modify-description');
 
-		// Verify the textarea shows swapped text (Black->White for display)
+		// Verify the textarea shows swapped text (White->Black for inverted display)
 		$textarea = $browser->find('#description');
-		$this->assertSame('White to attack the black stones.', $textarea->getAttribute('value'));
+		$this->assertSame('Black to attack the white stones.', $textarea->getAttribute('value'));
 
 		// Verify hidden color_swapped field is 1
 		$colorSwapped = $browser->find('input[name="color_swapped"]');
@@ -873,19 +873,19 @@ class TsumegosControllerTest extends TestCaseWithAuth
 
 		// Edit the description to something new (still in swapped/display form)
 		$textarea->clear();
-		$textarea->sendKeys('White to play here.');
+		$textarea->sendKeys('Black to play here.');
 
 		// Submit the form
 		$browser->clickId('tsumego-edit-submit');
 
-		// Verify the stored description was normalized (White->Black)
+		// Verify the stored description was un-swapped (Black->White) back to true-color
 		$saved = ClassRegistry::init('Tsumego')->findById($context->tsumegos[0]['id']);
-		$this->assertSame('Black to play here.', $saved['Tsumego']['description']);
+		$this->assertSame('White to play here.', $saved['Tsumego']['description']);
 	}
 
 	/**
-	 * Browser test: Admin edits description on a puzzle where colors are NOT swapped.
-	 * B-first SGF + playercolor=black -> no swap -> textarea shows original text.
+	 * Browser test: Admin edits description on a puzzle where board is NOT inverted.
+	 * B-first SGF + playercolor=black -> no swap -> textarea shows true-color text.
 	 * After editing and saving, the stored description is kept as-is.
 	 */
 	public function testDescriptionEditNoSwap(): void
@@ -901,7 +901,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 
 		$browser = Browser::instance();
 		$setConnectionId = $context->tsumegos[0]['set-connections'][0]['id'];
-		// B-first SGF + playercolor=black -> pl=0, sP=0 -> shouldSwap=false
+		// B-first SGF + playercolor=black -> pl=0 -> shouldSwap=false
 		$browser->get($setConnectionId . '?playercolor=black');
 
 		// Click the (Edit) link to reveal the form
@@ -959,18 +959,18 @@ class TsumegosControllerTest extends TestCaseWithAuth
 	 *   White-first SGF -> firstMove stays WHITE -> player places WHITE stones visually
 	 *
 	 * The description should match the VISUAL stone color the player places.
-	 * Under normalized convention, description stores "Black to play".
-	 * The swap formula ($pl != $startingPlayer) ensures correct visual match.
+	 * Under true-color convention, description stores "White to play" for W-first SGFs.
+	 * When board is inverted (pl=1), swap makes it "Black to play" to match visual.
 	 */
 	public function testDescriptionMatchesActualFirstMoveColor(): void
 	{
 		$whiteFirstSgf = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];W[aa];B[ab];W[ba]C[+])';
 
-		// Normalized convention: "Black to play" stored for ALL puzzles (Black = solver)
+		// True-color convention: "White to play" stored for W-first SGFs
 		$context = new ContextPreparator([
 			'tsumego' => [
 				'set_order' => 1,
-				'description' => 'Black to play',
+				'description' => 'White to play',
 				'sgf' => $whiteFirstSgf,
 			],
 		]);
@@ -1008,15 +1008,15 @@ class TsumegosControllerTest extends TestCaseWithAuth
 	}
 
 	/**
-	 * OG description should swap Black/White for White-first SGFs,
-	 * since the OG image always renders actual SGF stone colors.
+	 * OG description uses true-color convention — no swap needed.
+	 * The OG image renders actual SGF colors, and descriptions match the board.
 	 */
-	public function testOgDescriptionSwapsColorForWhiteFirstSgf(): void
+	public function testOgDescriptionUsesTrueColor(): void
 	{
 		$blackFirstSgf = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])';
 		$whiteFirstSgf = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];W[aa];B[ab];W[ba]C[+])';
 
-		// Black-first: OG description keeps "Black" (no swap)
+		// Black-first: OG description shows true-color "Black"
 		$context = new ContextPreparator([
 			'tsumego' => ['set_order' => 1, 'description' => 'Black to capture the white group', 'sgf' => $blackFirstSgf],
 		]);
@@ -1028,9 +1028,9 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$this->assertNotEmpty($m, 'og:description should exist for Black-first SGF');
 		$this->assertStringContainsString('Black to capture the white group', $m[1]);
 
-		// White-first: OG description swaps "Black" -> "White"
+		// White-first: OG description shows true-color "White"
 		$context2 = new ContextPreparator([
-			'tsumego' => ['set_order' => 1, 'description' => 'Black to capture the white group', 'sgf' => $whiteFirstSgf],
+			'tsumego' => ['set_order' => 1, 'description' => 'White to capture the black group', 'sgf' => $whiteFirstSgf],
 		]);
 		$result2 = $this->testAction(
 			'tsumegos/play/' . $context2->tsumegos[0]['id'],
