@@ -92,7 +92,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build React app
-        run: pnpm run build
+        run: ${{ github.ref == 'refs/heads/master' && 'pnpm run build:coverage' || 'pnpm run build' }}
 
       - name: Install ImageMagick for WebP conversion
         timeout-minutes: 5
@@ -197,6 +197,25 @@ jobs:
       - name: Merge coverage files
         if: github.ref == 'refs/heads/master'
         run: php .github/ci/merge-coverage.php
+
+      - name: Generate JS coverage report
+        if: github.ref == 'refs/heads/master'
+        run: pnpm run coverage:js
+
+      - name: Restore coverage history
+        if: github.ref == 'refs/heads/master'
+        run: |
+          git fetch --depth=1 origin gh-pages || true
+          mkdir -p coverage
+          if git cat-file -e origin/gh-pages:coverage/coverage-history.json 2>/dev/null; then
+            git show origin/gh-pages:coverage/coverage-history.json > coverage/coverage-history.json
+          else
+            echo '[]' > coverage/coverage-history.json
+          fi
+
+      - name: Generate combined coverage index
+        if: github.ref == 'refs/heads/master'
+        run: pnpm run coverage:index
 
       - name: Deploy coverage to GitHub Pages
         if: github.ref == 'refs/heads/master'
