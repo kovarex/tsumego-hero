@@ -40,6 +40,9 @@ webroot/forums/vendor
 /webroot/coverage/
 /coverage/
 
+# Generated changelog manifest (built by scripts/changelog-generate.mjs)
+/changelog/index.json
+
 # IDE and editor files #
 ########################
 .idea/

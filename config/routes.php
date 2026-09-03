@@ -36,6 +36,11 @@ Router::connect('/sitemap.xml', [
 Router::connect('/', ['controller' => 'sites', 'action' => 'index'], ['routeClass' => 'UrlRoute']);
 
 /**
+ * Public changelog / "what's new" page
+ */
+Router::connect('/changelog', ['controller' => 'changelog', 'action' => 'index']);
+
+/**
  * TsumegoComments routes - for managing comments on tsumego problems
  */
 Router::connect(
@@ -147,6 +152,22 @@ Router::connect(
 Router::connect(
 	'/users/boardOrientationPreference',
 	['controller' => 'Users', 'action' => 'boardOrientationPreference']
+);
+Router::connect(
+	'/profile',
+	['controller' => 'Users', 'action' => 'profile']
+);
+Router::connect(
+	'/me',
+	['controller' => 'Users', 'action' => 'profile']
+);
+Router::connect(
+	'/me/solve-history',
+	['controller' => 'Users', 'action' => 'meSolveHistory']
+);
+Router::connect(
+	'/me/contributions',
+	['controller' => 'Users', 'action' => 'meContributions']
 );
 
 //Router::connect('/*', ['routeClass' => 'UrlRoute']);

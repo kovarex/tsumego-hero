@@ -186,4 +186,13 @@ else
 fi
 
 
+# Generate changelog manifest (changelog/index.json) + record deployed revision
+echo "=== Generating changelog manifest + revision ==="
+if [[ "$IS_DDEV" = true ]]; then
+    ddev exec pnpm run changelog:gen
+else
+    pnpm run changelog:gen
+fi
+
+
 echo "=== Deploy complete ==="
