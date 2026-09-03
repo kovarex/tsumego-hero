@@ -149,9 +149,12 @@ class Browser
 			return;
 
 		// Wrapped so a failing driver (e.g. a page that never loaded) can't abort navigation.
-		try {
+		try
+		{
 			$coverage = $this->driver->executeScript('return window.__coverage__ || null;');
-		} catch (\Throwable $e) {
+		}
+		catch (\Throwable $e)
+		{
 			return;
 		}
 		if (!is_array($coverage) || empty($coverage))
