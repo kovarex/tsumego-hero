@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1788356834">
-  <project timestamp="1788356834">
+<coverage generated="1788395819">
+  <project timestamp="1788395819">
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Attribute/HttpDelete.php">
       <class name="App\Attribute\HttpDelete" namespace="global">
         <metrics complexity="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
@@ -1049,7 +1049,7 @@
     </file>
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Controller/CronController.php">
       <class name="CronController" namespace="global">
-        <metrics complexity="39" methods="11" coveredmethods="7" conditionals="0" coveredconditionals="0" statements="137" coveredstatements="129" elements="148" coveredelements="136"/>
+        <metrics complexity="39" methods="11" coveredmethods="7" conditionals="0" coveredconditionals="0" statements="137" coveredstatements="127" elements="148" coveredelements="134"/>
       </class>
       <line num="3" type="stmt" count="1"/>
       <line num="8" type="method" name="daily" visibility="public" complexity="3" crap="3" count="9"/>
@@ -1113,7 +1113,7 @@
       <line num="98" type="stmt" count="8"/>
       <line num="99" type="stmt" count="8"/>
       <line num="100" type="stmt" count="0"/>
-      <line num="103" type="method" name="createDayRecord" visibility="private" complexity="11" crap="11" count="8"/>
+      <line num="103" type="method" name="createDayRecord" visibility="private" complexity="11" crap="11.03" count="8"/>
       <line num="105" type="stmt" count="8"/>
       <line num="106" type="stmt" count="8"/>
       <line num="107" type="stmt" count="0"/>
@@ -1124,27 +1124,27 @@
       <line num="114" type="stmt" count="8"/>
       <line num="116" type="stmt" count="8"/>
       <line num="117" type="stmt" count="8"/>
-      <line num="118" type="stmt" count="4"/>
-      <line num="119" type="stmt" count="5"/>
-      <line num="120" type="stmt" count="2"/>
-      <line num="121" type="stmt" count="3"/>
-      <line num="122" type="stmt" count="3"/>
+      <line num="118" type="stmt" count="5"/>
+      <line num="119" type="stmt" count="4"/>
+      <line num="120" type="stmt" count="3"/>
+      <line num="121" type="stmt" count="2"/>
+      <line num="122" type="stmt" count="2"/>
       <line num="123" type="stmt" count="8"/>
       <line num="124" type="stmt" count="8"/>
       <line num="125" type="stmt" count="8"/>
-      <line num="126" type="stmt" count="3"/>
-      <line num="127" type="stmt" count="6"/>
-      <line num="128" type="stmt" count="3"/>
+      <line num="126" type="stmt" count="5"/>
+      <line num="127" type="stmt" count="4"/>
+      <line num="128" type="stmt" count="1"/>
       <line num="129" type="stmt" count="4"/>
       <line num="130" type="stmt" count="4"/>
       <line num="131" type="stmt" count="8"/>
       <line num="132" type="stmt" count="8"/>
       <line num="133" type="stmt" count="8"/>
-      <line num="134" type="stmt" count="2"/>
-      <line num="135" type="stmt" count="7"/>
+      <line num="134" type="stmt" count="4"/>
+      <line num="135" type="stmt" count="5"/>
       <line num="136" type="stmt" count="5"/>
-      <line num="137" type="stmt" count="2"/>
-      <line num="138" type="stmt" count="2"/>
+      <line num="137" type="stmt" count="0"/>
+      <line num="138" type="stmt" count="0"/>
       <line num="139" type="stmt" count="8"/>
       <line num="141" type="stmt" count="8"/>
       <line num="142" type="stmt" count="8"/>
@@ -1200,7 +1200,7 @@
       <line num="216" type="method" name="updateSolvedCounts" visibility="private" complexity="1" crap="1" count="8"/>
       <line num="218" type="stmt" count="8"/>
       <line num="225" type="stmt" count="8"/>
-      <metrics loc="228" ncloc="222" classes="1" methods="11" coveredmethods="7" conditionals="0" coveredconditionals="0" statements="138" coveredstatements="130" elements="149" coveredelements="137"/>
+      <metrics loc="228" ncloc="222" classes="1" methods="11" coveredmethods="7" conditionals="0" coveredconditionals="0" statements="138" coveredstatements="128" elements="149" coveredelements="135"/>
     </file>
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Controller/HeroController.php">
       <class name="HeroController" namespace="global">
@@ -4799,9 +4799,9 @@
     </file>
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Model/Behavior/EmptyIntegerBehavior.php">
       <class name="EmptyIntegerBehavior" namespace="global">
-        <metrics complexity="15" methods="3" coveredmethods="2" conditionals="0" coveredconditionals="0" statements="30" coveredstatements="17" elements="33" coveredelements="19"/>
+        <metrics complexity="15" methods="3" coveredmethods="2" conditionals="0" coveredconditionals="0" statements="30" coveredstatements="19" elements="33" coveredelements="21"/>
       </class>
-      <line num="28" type="method" name="beforeSave" visibility="public" complexity="12" crap="34.89" count="731"/>
+      <line num="28" type="method" name="beforeSave" visibility="public" complexity="12" crap="25.86" count="731"/>
       <line num="30" type="stmt" count="731"/>
       <line num="31" type="stmt" count="0"/>
       <line num="33" type="stmt" count="731"/>
@@ -4812,9 +4812,9 @@
       <line num="44" type="stmt" count="731"/>
       <line num="45" type="stmt" count="731"/>
       <line num="48" type="stmt" count="731"/>
-      <line num="51" type="stmt" count="0"/>
+      <line num="51" type="stmt" count="1"/>
       <line num="54" type="stmt" count="0"/>
-      <line num="59" type="stmt" count="0"/>
+      <line num="59" type="stmt" count="1"/>
       <line num="62" type="stmt" count="731"/>
       <line num="66" type="stmt" count="0"/>
       <line num="67" type="stmt" count="0"/>
@@ -4834,7 +4834,7 @@
       <line num="106" type="method" name="_isIntegerType" visibility="protected" complexity="1" crap="1" count="731"/>
       <line num="108" type="stmt" count="731"/>
       <line num="110" type="stmt" count="731"/>
-      <metrics loc="114" ncloc="72" classes="1" methods="3" coveredmethods="2" conditionals="0" coveredconditionals="0" statements="30" coveredstatements="17" elements="33" coveredelements="19"/>
+      <metrics loc="114" ncloc="72" classes="1" methods="3" coveredmethods="2" conditionals="0" coveredconditionals="0" statements="30" coveredstatements="19" elements="33" coveredelements="21"/>
     </file>
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Model/DayRecord.php">
       <class name="DayRecord" namespace="global">
@@ -6871,7 +6871,7 @@
     </file>
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Utility/JwtAuth.php">
       <class name="JwtAuth" namespace="global">
-        <metrics complexity="13" methods="7" coveredmethods="5" conditionals="0" coveredconditionals="0" statements="40" coveredstatements="38" elements="47" coveredelements="43"/>
+        <metrics complexity="13" methods="7" coveredmethods="4" conditionals="0" coveredconditionals="0" statements="40" coveredstatements="37" elements="47" coveredelements="41"/>
       </class>
       <line num="35" type="method" name="createToken" visibility="public" complexity="1" crap="1" count="9"/>
       <line num="37" type="stmt" count="9"/>
@@ -6886,9 +6886,9 @@
       <line num="59" type="stmt" count="4"/>
       <line num="61" type="stmt" count="3"/>
       <line num="63" type="stmt" count="3"/>
-      <line num="72" type="method" name="getUserIdFromCookie" visibility="public" complexity="4" crap="4" count="52"/>
+      <line num="72" type="method" name="getUserIdFromCookie" visibility="public" complexity="4" crap="4.07" count="52"/>
       <line num="74" type="stmt" count="52"/>
-      <line num="75" type="stmt" count="1"/>
+      <line num="75" type="stmt" count="0"/>
       <line num="77" type="stmt" count="52"/>
       <line num="78" type="stmt" count="51"/>
       <line num="80" type="stmt" count="2"/>
@@ -6920,7 +6920,7 @@
       <line num="136" type="stmt" count="10"/>
       <line num="137" type="stmt" count="0"/>
       <line num="139" type="stmt" count="10"/>
-      <metrics loc="142" ncloc="92" classes="1" methods="7" coveredmethods="5" conditionals="0" coveredconditionals="0" statements="40" coveredstatements="38" elements="47" coveredelements="43"/>
+      <metrics loc="142" ncloc="92" classes="1" methods="7" coveredmethods="4" conditionals="0" coveredconditionals="0" statements="40" coveredstatements="37" elements="47" coveredelements="41"/>
     </file>
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Utility/Level.php">
       <class name="XPForNextCalculator" namespace="global">
@@ -7064,9 +7064,9 @@
       <line num="173" type="stmt" count="294"/>
       <line num="176" type="stmt" count="291"/>
       <line num="177" type="stmt" count="291"/>
-      <line num="182" type="stmt" count="5"/>
-      <line num="183" type="stmt" count="5"/>
-      <line num="184" type="stmt" count="5"/>
+      <line num="182" type="stmt" count="6"/>
+      <line num="183" type="stmt" count="6"/>
+      <line num="184" type="stmt" count="6"/>
       <line num="191" type="method" name="getFromGuestStorage" visibility="private" complexity="2" crap="2.06" count="6"/>
       <line num="194" type="stmt" count="6"/>
       <line num="195" type="stmt" count="0"/>
@@ -9182,6 +9182,6 @@
       <line num="71" type="stmt" count="1"/>
       <metrics loc="74" ncloc="52" classes="1" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="32" coveredstatements="30" elements="33" coveredelements="30"/>
     </file>
-    <metrics files="128" loc="16051" ncloc="14417" classes="117" methods="641" coveredmethods="456" conditionals="0" coveredconditionals="0" statements="7769" coveredstatements="6985" elements="8410" coveredelements="7441"/>
+    <metrics files="128" loc="16051" ncloc="14417" classes="117" methods="641" coveredmethods="455" conditionals="0" coveredconditionals="0" statements="7769" coveredstatements="6984" elements="8410" coveredelements="7439"/>
   </project>
 </coverage>

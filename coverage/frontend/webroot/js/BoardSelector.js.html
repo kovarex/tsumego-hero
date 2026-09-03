@@ -1,0 +1,487 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Code coverage report for webroot/js/BoardSelector.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../../favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+    
+<body>
+<div class='wrapper'>
+    <div class='pad1'>
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">webroot/js</a> BoardSelector.js</h1>
+        <div class='clearfix'>
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">100% </span>
+                <span class="quiet">Statements</span>
+                <span class='fraction'>31/31</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">100% </span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>12/12</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">100% </span>
+                <span class="quiet">Functions</span>
+                <span class='fraction'>10/10</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">100% </span>
+                <span class="quiet">Lines</span>
+                <span class='fraction'>31/31</span>
+            </div>
+        
+            
+        </div>
+        <p class="quiet">
+            Press <em>n</em> or <em>j</em> to go to the next uncovered block, <em>b</em>, <em>p</em> or <em>k</em> for the previous block.
+        </p>
+        <template id="filterTemplate">
+            <div class="quiet">
+                Filter:
+                <input type="search" id="fileSearch">
+            </div>
+        </template>
+    </div>
+    <div class='status-line high'></div>
+    <pre><table class="coverage">
+<tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
+<a name='L2'></a><a href='#L2'>2</a>
+<a name='L3'></a><a href='#L3'>3</a>
+<a name='L4'></a><a href='#L4'>4</a>
+<a name='L5'></a><a href='#L5'>5</a>
+<a name='L6'></a><a href='#L6'>6</a>
+<a name='L7'></a><a href='#L7'>7</a>
+<a name='L8'></a><a href='#L8'>8</a>
+<a name='L9'></a><a href='#L9'>9</a>
+<a name='L10'></a><a href='#L10'>10</a>
+<a name='L11'></a><a href='#L11'>11</a>
+<a name='L12'></a><a href='#L12'>12</a>
+<a name='L13'></a><a href='#L13'>13</a>
+<a name='L14'></a><a href='#L14'>14</a>
+<a name='L15'></a><a href='#L15'>15</a>
+<a name='L16'></a><a href='#L16'>16</a>
+<a name='L17'></a><a href='#L17'>17</a>
+<a name='L18'></a><a href='#L18'>18</a>
+<a name='L19'></a><a href='#L19'>19</a>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a>
+<a name='L34'></a><a href='#L34'>34</a>
+<a name='L35'></a><a href='#L35'>35</a>
+<a name='L36'></a><a href='#L36'>36</a>
+<a name='L37'></a><a href='#L37'>37</a>
+<a name='L38'></a><a href='#L38'>38</a>
+<a name='L39'></a><a href='#L39'>39</a>
+<a name='L40'></a><a href='#L40'>40</a>
+<a name='L41'></a><a href='#L41'>41</a>
+<a name='L42'></a><a href='#L42'>42</a>
+<a name='L43'></a><a href='#L43'>43</a>
+<a name='L44'></a><a href='#L44'>44</a>
+<a name='L45'></a><a href='#L45'>45</a>
+<a name='L46'></a><a href='#L46'>46</a>
+<a name='L47'></a><a href='#L47'>47</a>
+<a name='L48'></a><a href='#L48'>48</a>
+<a name='L49'></a><a href='#L49'>49</a>
+<a name='L50'></a><a href='#L50'>50</a>
+<a name='L51'></a><a href='#L51'>51</a>
+<a name='L52'></a><a href='#L52'>52</a>
+<a name='L53'></a><a href='#L53'>53</a>
+<a name='L54'></a><a href='#L54'>54</a>
+<a name='L55'></a><a href='#L55'>55</a>
+<a name='L56'></a><a href='#L56'>56</a>
+<a name='L57'></a><a href='#L57'>57</a>
+<a name='L58'></a><a href='#L58'>58</a>
+<a name='L59'></a><a href='#L59'>59</a>
+<a name='L60'></a><a href='#L60'>60</a>
+<a name='L61'></a><a href='#L61'>61</a>
+<a name='L62'></a><a href='#L62'>62</a>
+<a name='L63'></a><a href='#L63'>63</a>
+<a name='L64'></a><a href='#L64'>64</a>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a>
+<a name='L76'></a><a href='#L76'>76</a>
+<a name='L77'></a><a href='#L77'>77</a>
+<a name='L78'></a><a href='#L78'>78</a>
+<a name='L79'></a><a href='#L79'>79</a>
+<a name='L80'></a><a href='#L80'>80</a>
+<a name='L81'></a><a href='#L81'>81</a>
+<a name='L82'></a><a href='#L82'>82</a>
+<a name='L83'></a><a href='#L83'>83</a>
+<a name='L84'></a><a href='#L84'>84</a>
+<a name='L85'></a><a href='#L85'>85</a>
+<a name='L86'></a><a href='#L86'>86</a>
+<a name='L87'></a><a href='#L87'>87</a>
+<a name='L88'></a><a href='#L88'>88</a>
+<a name='L89'></a><a href='#L89'>89</a>
+<a name='L90'></a><a href='#L90'>90</a>
+<a name='L91'></a><a href='#L91'>91</a>
+<a name='L92'></a><a href='#L92'>92</a>
+<a name='L93'></a><a href='#L93'>93</a>
+<a name='L94'></a><a href='#L94'>94</a>
+<a name='L95'></a><a href='#L95'>95</a>
+<a name='L96'></a><a href='#L96'>96</a>
+<a name='L97'></a><a href='#L97'>97</a>
+<a name='L98'></a><a href='#L98'>98</a>
+<a name='L99'></a><a href='#L99'>99</a>
+<a name='L100'></a><a href='#L100'>100</a>
+<a name='L101'></a><a href='#L101'>101</a>
+<a name='L102'></a><a href='#L102'>102</a>
+<a name='L103'></a><a href='#L103'>103</a>
+<a name='L104'></a><a href='#L104'>104</a>
+<a name='L105'></a><a href='#L105'>105</a>
+<a name='L106'></a><a href='#L106'>106</a>
+<a name='L107'></a><a href='#L107'>107</a>
+<a name='L108'></a><a href='#L108'>108</a>
+<a name='L109'></a><a href='#L109'>109</a>
+<a name='L110'></a><a href='#L110'>110</a>
+<a name='L111'></a><a href='#L111'>111</a>
+<a name='L112'></a><a href='#L112'>112</a>
+<a name='L113'></a><a href='#L113'>113</a>
+<a name='L114'></a><a href='#L114'>114</a>
+<a name='L115'></a><a href='#L115'>115</a>
+<a name='L116'></a><a href='#L116'>116</a>
+<a name='L117'></a><a href='#L117'>117</a>
+<a name='L118'></a><a href='#L118'>118</a>
+<a name='L119'></a><a href='#L119'>119</a>
+<a name='L120'></a><a href='#L120'>120</a>
+<a name='L121'></a><a href='#L121'>121</a>
+<a name='L122'></a><a href='#L122'>122</a>
+<a name='L123'></a><a href='#L123'>123</a>
+<a name='L124'></a><a href='#L124'>124</a>
+<a name='L125'></a><a href='#L125'>125</a>
+<a name='L126'></a><a href='#L126'>126</a>
+<a name='L127'></a><a href='#L127'>127</a>
+<a name='L128'></a><a href='#L128'>128</a>
+<a name='L129'></a><a href='#L129'>129</a>
+<a name='L130'></a><a href='#L130'>130</a>
+<a name='L131'></a><a href='#L131'>131</a>
+<a name='L132'></a><a href='#L132'>132</a>
+<a name='L133'></a><a href='#L133'>133</a>
+<a name='L134'></a><a href='#L134'>134</a>
+<a name='L135'></a><a href='#L135'>135</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">205x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">205x</span>
+<span class="cline-any cline-yes">205x</span>
+<span class="cline-any cline-yes">205x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">205x</span>
+<span class="cline-any cline-yes">205x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">205x</span>
+<span class="cline-any cline-yes">10455x</span>
+<span class="cline-any cline-yes">10455x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">10455x</span>
+<span class="cline-any cline-yes">10455x</span>
+<span class="cline-any cline-yes">2460x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">205x</span>
+<span class="cline-any cline-yes">205x</span>
+<span class="cline-any cline-yes">205x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">10455x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">54x</span>
+<span class="cline-any cline-yes">53x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">102x</span>
+<span class="cline-any cline-yes">102x</span>
+<span class="cline-any cline-yes">51x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">class BoardSelector
+{
+	// Note: this data is duplicated in BoardSelector.php
+	// the reason for this duplication is, that on client, I can cache this js file and don't have to send it every refresh
+	// While on backend, I still need to have access to it, to properly setup the board directly without relying on js reload.
+	static boards =
+	[
+		{name: 'Pine', index: 1, texture: 'texture1', black: 'black34.png', white: 'white34.png'},
+		{name: 'Ash', index: 2, texture: 'texture2', black: 'black34.png', white: 'white34.png'},
+		{name: 'Maple', index: 3, texture: 'texture3', black: 'black34.png', white: 'white34.png'},
+		{name: 'Shin Kaya', index: 4, texture: 'texture4', black: 'black.png', white: 'white.png'},
+		{name: 'Birch', index: 5, texture: 'texture5', black: 'black34.png', white: 'white34.png'},
+		{name: 'Wenge', index: 6, texture: 'texture6', black: 'black.png', white: 'white.png'},
+		{name: 'Walnut', index: 7, texture: 'texture7', black: 'black34.png', white: 'white34.png'},
+		{name: 'Mahogany', index: 8, texture: 'texture8', black: 'black.png', white: 'white.png'},
+		{name: 'Blackwood', index: 9, texture: 'texture9', black: 'black.png', white: 'white.png'},
+		{name: 'Marble 1', index: 10, texture: 'texture10', black: 'black34.png', white: 'white34.png'},
+		{name: 'Marble 2', index: 11, texture: 'texture11', black: 'black34.png', white: 'white34.png'},
+		{name: 'Marble 3', index: 12, texture: 'texture12', black: 'black34.png', white: 'white34.png'},
+		{name: 'Tibet Spruce', index: 13, texture: 'texture13', black: 'black34.png', white: 'white34.png'},
+		{name: 'Marble 4', index: 14, texture: 'texture14', black: 'black34.png', white: 'white34.png'},
+		{name: 'Marble 5', index: 15, texture: 'texture15', black: 'black.png', white: 'white.png'},
+		{name: 'Quarry 1', index: 16, texture: 'texture16', black: 'black34.png', white: 'white34.png'},
+		{name: 'Flowers', index: 17, texture: 'texture17', black: 'black34.png', white: 'white34.png'},
+		{name: 'Nova', index: 18, texture: 'texture18', black: 'black.png', white: 'white.png'},
+		{name: 'Spring', index: 19, texture: 'texture19', black: 'black34.png', white: 'white34.png'},
+		{name: 'Moon', index: 20, texture: 'texture20', black: 'black34.png', white: 'white34.png'},
+		{name: 'Apex', index: 33, texture: 'texture33', black: 'black34.png', white: 'white34.png'},
+		{name: 'Gold 1', index: 21, texture: 'texture21', black: 'black.png', white: 'whiteKo.png'},
+		{name: 'Amber', index: 22, texture: 'texture22', black: 'black34.png', white: 'white34.png'},
+		{name: 'Marble 6', index: 34, texture: 'texture34', black: 'black.png', white: 'white.png'},
+		{name: 'Marble 7', index: 35, texture: 'texture35', black: 'black34.png', white: 'white34.png'},
+		{name: 'Marble 8', index: 36, texture: 'texture36', black: 'black.png', white: 'white.png'},
+		{name: 'Marble 9', index: 37, texture: 'texture37', black: 'black34.png', white: 'white34.png'},
+		{name: 'Marble 10', index: 38, texture: 'texture38', black: 'black38.png', white: 'white34.png'},
+		{name: 'Jade', index: 39, texture: 'texture39', black: 'black.png', white: 'white.png'},
+		{name: 'Quarry 2', index: 40, texture: 'texture40', black: 'black34.png', white: 'white34.png'},
+		{name: 'Black Bricks', index: 41, texture: 'texture41', black: 'black34.png', white: 'white34.png'},
+		{name: 'Wallpaper 1', index: 42, texture: 'texture42', black: 'black34.png', white: 'white42.png'},
+		{name: 'Wallpaper 2', index: 43, texture: 'texture43', black: 'black34.png', white: 'white42.png'},
+		{name: 'Gold &amp; Gray', index: 44, texture: 'texture44', black: 'black34.png', white: 'white34.png'},
+		{name: 'Gold &amp; Pink', index: 45, texture: 'texture45', black: 'black34.png', white: 'white42.png'},
+		{name: 'Veil', index: 47, texture: 'texture47', black: 'black34.png', white: 'white34.png'},
+		{name: 'Tiles', index: 48, texture: 'texture48', black: 'black34.png', white: 'white34.png'},
+		{name: 'Mars', index: 49, texture: 'texture49', black: 'black.png', white: 'white.png'},
+		{name: 'Pink Cloud', index: 50, texture: 'texture50', black: 'black34.png', white: 'white34.png'},
+		{name: 'Reptile', index: 51, texture: 'texture51', black: 'black34.png', white: 'white34.png'},
+		{name: 'Mezmerizing', index: 52, texture: 'texture52', black: 'black34.png', white: 'white34.png'},
+		{name: 'Magenta Sky', index: 53, texture: 'texture53', black: 'black34.png', white: 'white34.png'},
+		{name: 'Tsumego Hero', index: 54, texture: 'texture54', black: 'black54.png', white: 'white54.png'},
+		{name: 'Pretty', index: 23, texture: 'texture23', black: 'black.png', white: 'whiteFlower.png'},
+		{name: 'Hunting', index: 24, texture: 'texture24', black: 'black24.png', white: 'white24.png'},
+		{name: 'Haunted', index: 25, texture: 'texture25', black: 'blackGhost.png', white: 'white.png'},
+		{name: 'Carnage', index: 26, texture: 'texture26', black: 'blackInvis.png', white: 'whiteCarnage.png'},
+		{name: 'Blind Spot', index: 27, texture: 'texture27', black: 'black27.png', white: 'white27.png'},
+		{name: 'Giants', index: 28, texture: 'texture28', black: 'blackGiant.png', white: 'whiteKo.png'},
+		{name: 'Gems', index: 29, texture: 'texture29', black: 'blackKo.png', white: 'whiteKo.png'},
+		{name: 'Grandmaster', index: 30, texture: 'texture55', black: 'blackGalaxy.png', white: 'whiteGalaxy.png'}
+	];
+&nbsp;
+	constructor(selected)
+	{
+		this.selectedMask = BigInt(selected);
+		document.getElementById('dropdowntable').innerHTML = this.renderTable();
+		document.getElementById("boards-unselect-all").addEventListener('click', (event) =&gt;
+		{
+			this.unselectOrSelectAll();
+		});
+	}
+&nbsp;
+	renderTable() {
+		let html = "&lt;tr&gt;";
+		let count = 0;
+&nbsp;
+		BoardSelector.boards.forEach(board =&gt; {
+			const checked = this.isChecked(board.index) ? "checked" : "";
+			html += `&lt;td width="19px" align="right" style="position:relative;top:1px;padding:4px;"&gt;
+						&lt;input type="checkbox" class="newCheck" id="newCheck${board.index}" ${checked} onclick="boardSelector.selectAndSave(${board.index}, this.checked);"&gt;
+					&lt;/td&gt;
+					&lt;td width="19px" align="center" style="position:relative;top:3px;padding:2px;"&gt;
+						&lt;div class="img-${board.index}small"&gt;&lt;/div&gt;
+					&lt;/td&gt;
+					&lt;td width="115px" style="padding:0px;text-align:left;"&gt;${board.name}&lt;/td&gt;`;
+			count++;
+			if (count % 4 === 0)
+				html += "&lt;/tr&gt;&lt;tr&gt;";
+		});
+&nbsp;
+		html += "&lt;/tr&gt;";
+		html += '&lt;td colSpan="3"&gt;&lt;div class="boards-tile dropdown__tile-actions__select" id="boards-unselect-all"&gt;Unselect all&lt;/div&gt;&lt;/td&gt;';
+		return html;
+	}
+&nbsp;
+	isChecked(index) {
+		return (this.selectedMask &amp; (1n &lt;&lt; BigInt(index - 1))) !== 0n;
+	}
+&nbsp;
+	selectAndSave(index, value)
+	{
+		this.select(index, value);
+		this.saveCookie();
+	}
+&nbsp;
+	select(index, value)
+	{
+		if (value)
+			this.selectedMask |= (1n &lt;&lt; BigInt(index - 1));
+		else
+			this.selectedMask &amp;= ~(1n &lt;&lt; BigInt(index - 1));
+	}
+&nbsp;
+	unselectOrSelectAll()
+	{
+		let newValue = (this.selectedMask == 0 ? 1 : 0);
+		this.selectedMask = BigInt(0);
+&nbsp;
+		BoardSelector.boards.forEach(board =&gt;
+		{
+			document.getElementById(`newCheck${board.index}`).checked = newValue;
+			if (newValue)
+				this.select(board.index, true)
+		});
+&nbsp;
+		$("#boards-unselect-all").html(newValue ? "Unselect all" : "Select all");
+		this.saveCookie();
+	}
+&nbsp;
+	saveCookie()
+	{
+		setCookie('boards_bitmask', this.selectedMask.toString());
+	}
+&nbsp;
+	selectedMask;
+}
+&nbsp;</pre></td></tr></table></pre>
+
+                <div class='push'></div><!-- for sticky footer -->
+            </div><!-- /wrapper -->
+            <div class='footer quiet pad2 space-top1 center small'>
+                Code coverage generated by
+                <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
+                at 2026-09-03T00:37:03.618Z
+            </div>
+        <script src="../../prettify.js"></script>
+        <script>
+            window.onload = function () {
+                prettyPrint();
+            };
+        </script>
+        <script src="../../sorter.js"></script>
+        <script src="../../block-navigation.js"></script>
+    </body>
+</html>
+    
