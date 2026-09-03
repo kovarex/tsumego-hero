@@ -3,6 +3,13 @@ import { resolve as pathResolve, join } from 'node:path';
 import { createHash } from 'node:crypto';
 import { defineConfig, transformWithEsbuild } from 'vite';
 import react from '@vitejs/plugin-react';
+import istanbul from 'vite-plugin-istanbul';
+import { createInstrumenter } from 'istanbul-lib-instrument';
+
+// Enable Istanbul instrumentation only for the CI coverage build (VITE_COVERAGE=true),
+// so the produced bundle populates window.__coverage__ that the Selenium tests collect.
+// Never enabled for production.
+const isCoverageBuild = process.env.VITE_COVERAGE === 'true';
 
 /**
  * Legacy JS files (global-scope scripts, must remain non-module to stay in global scope).
@@ -83,10 +90,25 @@ function legacyBundlePlugin(name, files, { minify = true } = {}) {
 		},
 
 		async closeBundle() {
-			// Concatenate all files in order
+			// Concatenate all files in order. In the coverage build, instrument each legacy
+			// global-scope script (with autoWrap:false so it stays global) so it reports to
+			// window.__coverage__ as well, not just the React app modules.
+			const instrumenter = isCoverageBuild
+				? createInstrumenter({
+					coverageGlobalScope: 'globalThis',
+					coverageGlobalScopeFunc: false,
+					esModules: false,
+					autoWrap: false,
+					produceSourceMap: false,
+				})
+				: null;
+
 			const parts = files.map(f => {
 				const abs = pathResolve(rootDir, f);
-				return readFileSync(abs, 'utf-8');
+				let src = readFileSync(abs, 'utf-8');
+				if (instrumenter)
+					src = instrumenter.instrumentSync(src, abs);
+				return src;
 			});
 			const code = parts.join(';\n\n');
 
@@ -130,7 +152,22 @@ function legacyBundlePlugin(name, files, { minify = true } = {}) {
 const isWatchMode = process.argv.includes('--watch');
 
 export default defineConfig({
-	plugins: [react(), legacyBundlePlugin('app', LEGACY_APP_FILES), legacyBundlePlugin('besogo', LEGACY_BESOGO_FILES, { minify: false })],
+	plugins: [
+		react(),
+		...(
+			isCoverageBuild
+				? [istanbul({
+					include: ['app/**/*.{ts,tsx}'],
+					exclude: ['**/*.test.**', '**/*.spec.**'],
+					extension: ['.ts', '.tsx'],
+					requireEnv: false,
+					forceBuildInstrument: true,
+				})]
+				: []
+		),
+		legacyBundlePlugin('app', LEGACY_APP_FILES),
+		legacyBundlePlugin('besogo', LEGACY_BESOGO_FILES, { minify: false }),
+	],
 	build: {
 		// All built assets go to webroot/dist/ (CSS bundles, React app, source maps, manifest)
 		outDir: 'webroot/dist',

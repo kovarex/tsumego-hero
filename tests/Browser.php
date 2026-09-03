@@ -16,6 +16,9 @@ class Browser
 {
 	private array $ignoredJsErrorPatterns = [];
 
+	// Counter for per-page JS coverage snapshots written to /tmp/coverage/js-raw-*.json
+	private static int $jsCoverageCounter = 0;
+
 	public function __construct()
 	{
 		$browser = getenv('SELENIUM_BROWSER') ?: 'firefox';
@@ -122,6 +125,9 @@ class Browser
 		{
 			try
 			{
+				// Capture JS coverage from the final page before closing the driver.
+				// Only enabled when the app was built with VITE_COVERAGE=true (CI coverage run).
+				self::$browser->captureJsCoverage();
 				self::$browser->driver->quit();
 			}
 			catch (\Exception $e)
@@ -130,6 +136,33 @@ class Browser
 			}
 			self::$browser = null;
 		}
+	}
+
+	/**
+	 * Snapshot window.__coverage__ (populated by vite-plugin-istanbul) to /tmp/coverage/js-raw-<n>.json.
+	 * Called when leaving a page (start of get/getAnonymous) and in shutdown(), so every visited page's
+	 * accumulated coverage is captured. Snapshots are merged afterwards by scripts/js-coverage-report.sh.
+	 */
+	private function captureJsCoverage(): void
+	{
+		if (getenv('TEST_ENVIRONMENT') !== 'github-ci' || !file_exists('/tmp/coverage'))
+			return;
+
+		// Wrapped so a failing driver (e.g. a page that never loaded) can't abort navigation.
+		try
+		{
+			$coverage = $this->driver->executeScript('return window.__coverage__ || null;');
+		}
+		catch (\Throwable $e)
+		{
+			return;
+		}
+		if (!is_array($coverage) || empty($coverage))
+			return;
+
+		self::$jsCoverageCounter++;
+		$file = '/tmp/coverage/js-raw-' . self::$jsCoverageCounter . '.json';
+		file_put_contents($file, json_encode($coverage));
 	}
 
 	public function assertNoErrors(): void
@@ -182,6 +215,9 @@ class Browser
 
 	public function get(string $url): void
 	{
+		// Capture JS coverage from the page we are leaving before navigating away.
+		$this->captureJsCoverage();
+
 		if ($url != 'empty.php' && Auth::isLoggedIn())
 		{
 			$this->driver->manage()->addCookie(['name' => "hackedLoggedInUserID", 'value' => (string) Auth::getUserID()]);
@@ -198,6 +234,8 @@ class Browser
 	// Get URL without setting auth cookie, for testing anonymous access
 	public function getAnonymous(string $url): void
 	{
+		$this->captureJsCoverage();
+
 		$url = ltrim($url, '/');
 		$this->driver->manage()->timeouts()->pageLoadTimeout(60);
 		$this->driver->get(Util::getMyAddress() . '/' . $url);
