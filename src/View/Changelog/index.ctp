@@ -1,4 +1,8 @@
 <?php
+/**
+ * @var string|null $revision
+ * @var array $entries
+ */
 $changelogProps = json_encode(['entries' => $entries], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 ?>
 <div class="changelog-page">

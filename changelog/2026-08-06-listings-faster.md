@@ -1,4 +1,4 @@
 ---
 commit: ce3161a5d
 ---
-Performance: [Set](/sets), [favorites](/sets/view/favorites), and tag listings load faster.
+Performance: The sets a problem belongs to now load faster.

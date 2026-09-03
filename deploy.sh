@@ -189,9 +189,9 @@ fi
 # Generate changelog manifest (changelog/index.json) + record deployed revision
 echo "=== Generating changelog manifest + revision ==="
 if [[ "$IS_DDEV" = true ]]; then
-    ddev exec pnpm run changelog:gen
+    ddev exec CI=true npx pnpm@10 run changelog:gen
 else
-    pnpm run changelog:gen
+    CI=true npx pnpm@10 run changelog:gen
 fi
 
 

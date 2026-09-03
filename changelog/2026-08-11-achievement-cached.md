@@ -1,4 +1,4 @@
 ---
 commit: 60d7cfec2
 ---
-Performance: [Achievement data](/achievements) now loads faster.
+Performance: Recent achievements on the landing page now load faster.

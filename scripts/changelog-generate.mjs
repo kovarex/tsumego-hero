@@ -42,7 +42,7 @@ function buildShipMap() {
 			if (line.trim()) map[line.trim()] = ts;
 		}
 	} catch (e) {
-		// No git history (e.g. fresh checkout) — fall back to file mtime below.
+			// No git history (e.g. fresh checkout); fall back to file mtime below.
 	}
 	return map;
 }
@@ -127,7 +127,7 @@ try {
 	const head = execSync(`git rev-parse HEAD`, { encoding: 'utf8', cwd: ROOT }).trim();
 	if (head) revision = head;
 } catch (e) {
-	// git not available — revision stays null
+		// git not available; revision stays null
 }
 
 writeFileSync(OUT, JSON.stringify({ revision, entries }, null, 2) + '\n');

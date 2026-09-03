@@ -1,4 +1,4 @@
 ---
 commit: 1fc9cdf93
 ---
-Added: [Set buttons](/sets) now show a status tooltip on hover.
+Added: The status buttons on a problem in a set now show the status label as a tooltip on hover.

@@ -130,6 +130,9 @@ echo $this->fetch('script');
 // Legacy app.js bundle (global-scope scripts — served as plain <script>, not type="module")
 echo ViteManifest::legacyScript('legacy');
 ?>
+<script>
+	window.__CHANGELOG_TS = <?php echo json_encode($changelogTimestamps ?? []); ?>;
+</script>
 </head>
 
 <body>
@@ -266,7 +269,7 @@ echo ViteManifest::legacyScript('legacy');
 						echo '<li><a class="'.$websitefunctionsA.'" href="/sites/websitefunctions">Functions & Modes</a></li>';
 						echo '<li><a class="'.$gotutorialA.'" href="/sites/gotutorial">Go Rules</a></li>';
 						echo '<li class="newMenuLi1-forum"><a id="forumLink" href="/forums">Forums</a></li>';
-						echo '<li><a class="'.$changelogA.'" href="/changelog">What\'s new</a></li>';
+						echo '<li><a class="'.$changelogA.'" href="/changelog">What\'s new<span class="nav__new-badge"></span></a></li>';
 						echo '<li><a class="'.$aboutA.'" href="/sites/about">About</a></li>';
 						echo '</ul>';
 						echo '</li>';
