@@ -156,9 +156,11 @@ export function CommentForm({
 							disabled={isSubmitting}
 						/>
 						<span aria-hidden="true">📌</span>
-						{form.position
-							? `Move ${positionMoveNumber ?? '?'} attached`
-							: 'Attach board position'}
+						<span>
+							{form.position
+								? `Move ${positionMoveNumber ?? '?'} attached`
+								: 'Attach board position'}
+						</span>
 					</label>
 				</div>
 
