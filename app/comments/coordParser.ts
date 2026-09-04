@@ -51,33 +51,64 @@ function normalizeCoord(letter: string, digits: string): string
 	return letter.toUpperCase() + digits;
 }
 
-// Detects a color marker immediately preceding a coordinate (within the given
-// prefix). Prefers full words ("black"/"white"), then a bare b/w/B/W.
+// Words that may appear in a gap between two moves of one line. Anything else
+// (e.g. "is", "the", "because") is prose and ends the run. Move verbs, connectives
+// and colour markers are all allowed so prose like "kill with H18" still reads as
+// a move link while "is wrong for black" does not.
+const CONNECTOR_WORDS = new Set([
+	// connectives
+	'then', 'and', 'if', 'after', 'before', 'next', 'now', 'with', 'at', 'into',
+	'to', 'by', 'or', 'either', 'when', 'as', 'also', 'first', 'second', 'finally',
+	'again', 'followed', 'still', 'until', 'once', 'while',
+	// move verbs
+	'play', 'plays', 'played', 'playing', 'take', 'takes', 'took', 'answer',
+	'answers', 'respond', 'responds', 'connect', 'connects', 'capture', 'captures',
+	'fill', 'fills', 'throw', 'throws', 'atari', 'kill', 'kills', 'force', 'forces',
+	'make', 'makes', 'get', 'gets', 'eat', 'eats', 'block', 'blocks', 'cut', 'cuts',
+	'extend', 'extends', 'nobi', 'put', 'puts', 'keep', 'keeps', 'lead', 'leads',
+	'result', 'results', 'better',
+	// modal auxiliaries linking a follow-up move
+	'can', 'could', 'should', 'would', 'will', 'may', 'might', 'must', 'do',
+	'does', 'did'
+]);
+
+function isColorWord(w: string): boolean
+{
+	const lw = w.toLowerCase();
+	return lw === 'black' || lw === 'white' || lw === 'b' || lw === 'w';
+}
+
+// Detects a color marker attached to a coordinate. The marker sits either
+// immediately before the coordinate (e.g. "white C1", ",w", "bL18") or, in a
+// phrase like "B kills with C1", at the very start of the gap.
 function detectColor(prefix: string): CoordColor | undefined
 {
 	const trimmed = prefix.trim();
+	if (!trimmed) 
+		return undefined;
+
+	// Full word right before the coordinate: "white C1".
 	const word = trimmed.match(/(black|white)\b\s*$/i);
 	if (word) 
 		return /^black$/i.test(word[1]) ? 'b' : 'w';
 
-	// A bare letter, but only if it is a standalone word (not part of a bigger
-	// word like "ab" or the coordinate's own letter).
-	const letter = trimmed.match(/(?:^|\s)([bwBW])\s*[,\-:]?\s*$/);
+	// Bare letter right before the coordinate, after punctuation/space/start:
+	// "w C1", ",w C1", "-B?", ";w". The letter must not be part of a bigger word.
+	const letter = trimmed.match(/(?:^|[^\p{L}])([bwBW])\s*[,\-:]?\s*$/u);
 	if (letter) 
 		return /[bB]/.test(letter[1]) ? 'b' : 'w';
 
-	return undefined;
-}
+	// Leading bare single-letter marker: "B kills with C1", "W plays at D2".
+	const lead = trimmed.match(/^([bwBW])\b/);
+	if (lead) 
+		return /[bB]/.test(lead[1]) ? 'b' : 'w';
 
-// Removes a trailing color marker (and its surrounding punctuation) from a gap
-// so that a comma-list like "w C1, b E2" still classifies as a sequence rather
-// than being split by the embedded color letters.
-function stripTrailingColor(gap: string): string
-{
-	let g = gap;
-	g = g.replace(/\s*(black|white)\b\s*[,\-:]?\s*$/i, '');
-	g = g.replace(/(?:^|\s)([bwBW])\s*[,\-:]?\s*$/i, '');
-	return g;
+	// Leading full word: "black kills with C1".
+	const leadWord = trimmed.match(/^(black|white)\b/i);
+	if (leadWord) 
+		return /^black$/i.test(leadWord[1]) ? 'b' : 'w';
+
+	return undefined;
 }
 
 // Classifies the text sitting between two consecutive coordinates.
@@ -96,17 +127,31 @@ function classifyGap(gap: string): 'sequence' | 'alternative' | 'break'
 	if (/^\/$/.test(t)) 
 		return 'alternative';
 
-	// connector words
-	if (/^(then|and|if|after|before|next)$/i.test(t)) 
-		return 'sequence';
-	if (/^(or|either)$/i.test(t)) 
+	// A sentence boundary (period / question mark / exclamation) ends the run.
+	if (/[.!?]/.test(t)) 
+		return 'break';
+
+	// "instead of" / "instead" marks a replacement choice (an alternative).
+	if (/\binstead\b/i.test(t)) 
 		return 'alternative';
 
-	// whitespace around punctuation counts as a connector too
-	if (/^[\s\-–—,;:>+]+$/.test(t)) 
-		return 'sequence';
+	const words = t.match(/[A-Za-z]+/g) || [];
 
-	return 'break';
+	// No letters: only punctuation/whitespace joins. A stray digit (e.g. a
+	// numbered list marker) is not a connector and splits the run.
+	if (words.length === 0)
+		return /[0-9]/.test(t) ? 'break' : 'sequence';
+
+	// Any prose word (not a connector and not a colour marker) means the two
+	// coordinates are not a single move line.
+	if (!words.every(w => CONNECTOR_WORDS.has(w.toLowerCase()) || isColorWord(w))) 
+		return 'break';
+
+	// "or" / "either" join coordinates as choices, not a sequence.
+	if (words.some(w => /^(or|either)$/i.test(w))) 
+		return 'alternative';
+
+	return 'sequence';
 }
 
 /**
@@ -134,7 +179,7 @@ export function parseCoordinateReferences(text: string): ParsedSlice[]
 		const start = m.index;
 		const end = start + m[0].length;
 		const gap = text.slice(cursor, start);
-		const conn = run ? classifyGap(stripTrailingColor(gap)) : 'break';
+		const conn = run ? classifyGap(gap) : 'break';
 
 		if (!run || conn === 'break')
 		{

@@ -60,6 +60,28 @@ interface BesogoEditor
 	setAnchoredComments(nodeCounts: Map<BesogoNode, number>): void;
 
 	/**
+	 * Convert a western coordinate label (e.g. "R19") to its internal (x, y).
+	 * The label space is canonical: the same label always means the same
+	 * intersection regardless of the displayed corner.
+	 */
+	coordLabelToXY(coord: string): { x: number; y: number } | null;
+
+	/**
+	 * Convert a resolved internal (x, y) back to a western coordinate label.
+	 * Inverse of coordLabelToXY.
+	 */
+	coordXYToLabel(x: number, y: number): string | null;
+
+	/**
+	 * Re-label comment coordinates (authored in the commenters board
+	 * orientation) to match the currently-displayed board. Falls back to the
+	 * input labels when the orientation cannot be determined uniquely.
+	 * @param coords Comment coordinate labels, e.g. ["T3","Q2"]
+	 * @param positionString Optional comment.position anchor
+	 */
+	transformCommentCoords(coords: string[], positionString?: string | null): string[];
+
+	/**
 	 * Register a listener for editor state changes (navChange/treeChange/etc).
 	 */
 	addListener(listener: (msg: { navChange?: boolean; treeChange?: boolean; stoneChange?: boolean }) => void): void;
@@ -170,8 +192,13 @@ declare global
 		 * @param event Mouse event for positioning
 		 * @param position Optional comment.position anchor - when present, the
 		 *   preview shows the anchored board position instead of the current one.
+		 * @param sequence Optional sequence context - when the coordinate is part
+		 *   of a dash-joined sequence (e.g. R19-P19-Q19), the preview replays the
+		 *   moves before the hovered coordinate so the board reflects the
+		 *   position righoption t before that move. sequence.coords are the full list of
+		 *   coordinates, sequence.index is the hovered index.
 		 */
-		showCoordPopup(coord: string, event: MouseEvent, position?: string): void;
+		showCoordPopup(coord: string, event: MouseEvent, position?: string, sequence?: { coords: string[]; colors?: (string | null)[]; index: number }): void;
 
 		/**
 		 * Hide coordinate popup.

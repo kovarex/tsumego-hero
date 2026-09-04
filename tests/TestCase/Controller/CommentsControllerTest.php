@@ -283,6 +283,139 @@ class CommentsControllerTest extends ControllerTestCase
 		$this->assertGreaterThanOrEqual(1, count($browser->driver->findElements(WebDriverBy::cssSelector('.go-coord-group--alternative'))));
 	}
 
+	/**
+	 * A comma followed by the connector word "then" (e.g. "...A16, then A18?")
+	 * is a sequence continuation, not a sentence break, so the trailing move
+	 * stays in the same sequence group rather than splitting off as a single.
+	 */
+	public function testCommentCoordinatesKeepCommaThenInSequence()
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => [
+				'set_order' => 1,
+				'status' => 'S',
+				'comments' => [[
+					'message' => 'F17,B16,D17, then A18?'
+				]]
+			]
+		]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->expandComments();
+
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(function ($driver) {
+			return count($driver->findElements(WebDriverBy::cssSelector('.go-coord'))) >= 4;
+		});
+
+		// All four moves must be highlighted.
+		$coords = [];
+		foreach ($browser->driver->findElements(WebDriverBy::cssSelector('.go-coord')) as $gc)
+			$coords[] = $gc->getAttribute('data-coord');
+		$this->assertContains('F17', $coords);
+		$this->assertContains('B16', $coords);
+		$this->assertContains('D17', $coords);
+		$this->assertContains('A18', $coords);
+
+		// The trailing "then A18" must join the same sequence group, not split.
+		$seqGroups = $browser->driver->findElements(WebDriverBy::cssSelector('.go-coord-group--sequence'));
+		$this->assertGreaterThanOrEqual(1, count($seqGroups));
+		$this->assertStringContainsString('A18', $seqGroups[0]->getText());
+	}
+
+	/**
+	 * A sequence written with colour markers and short move phrases (e.g.
+	 * "B kills with H18") is still one sequence. Compact "w"/"b" markers after a
+	 * comma must be recognised as colours, so all five moves form a single group
+	 * with the correct black/white labels.
+	 */
+	public function testCommentCoordinatesGroupColoredMovePhrases()
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => [
+				'set_order' => 1,
+				'status' => 'S',
+				'comments' => [[
+					'message' => 'B H19,w K18, b L18, after w J19 B kills with H18!'
+				]]
+			]
+		]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->expandComments();
+
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(function ($driver) {
+			return count($driver->findElements(WebDriverBy::cssSelector('.go-coord'))) >= 5;
+		});
+
+		// All five moves highlight, and every one is black/white labelled as the
+		// author wrote it.
+		$colors = [];
+		foreach ($browser->driver->findElements(WebDriverBy::cssSelector('.go-coord')) as $gc)
+		{
+			$coord = $gc->getAttribute('data-coord');
+			$color = $gc->getAttribute('data-color');
+			$colors[$coord] = $color;
+		}
+		$this->assertSame('b', $colors['H19'] ?? null);
+		$this->assertSame('w', $colors['K18'] ?? null);
+		$this->assertSame('b', $colors['L18'] ?? null);
+		$this->assertSame('w', $colors['J19'] ?? null);
+		$this->assertSame('b', $colors['H18'] ?? null);
+
+		// One sequence group containing the trailing "kills with H18" move.
+		$seqGroups = $browser->driver->findElements(WebDriverBy::cssSelector('.go-coord-group--sequence'));
+		$this->assertGreaterThanOrEqual(1, count($seqGroups));
+		$this->assertStringContainsString('H19', $seqGroups[0]->getText());
+		$this->assertStringContainsString('H18', $seqGroups[0]->getText());
+	}
+
+	/**
+	 * A coordinate label must always map to the same absolute intersection, so
+	 * hovering distinct labels like R19 and C19 must highlight different points.
+	 * The old "spin" heuristic collapsed them onto one position.
+	 */
+	public function testCoordHoverMapsLabelsToDistinctIntersections()
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => [
+				'set_order' => 1,
+				'status' => 'S',
+				'sgf' => '(;GM[1]FF[4]SZ[19]AB[aa]AP[test:1])',
+				'comments' => [['message' => 'R19 vs C19']]
+			]
+		]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->expandComments();
+		$browser->waitForBoard();
+
+		$result = $browser->driver->executeScript(
+			'var size = besogo.scaleParameters.boardCoordSize;'
+			. 'var xyR = besogo.editor.coordLabelToXY("R19");'
+			. 'var xyC = besogo.editor.coordLabelToXY("C19");'
+			. 'besogo.editor.displayHoverCoord("R19");'
+			. 'var g = document.querySelector(".besogo-board svg").querySelector("#nextMoveGroup");'
+			. 'function blue(){var c=[].slice.call(g.querySelectorAll("circle")).filter(function(x){return x.getAttribute("fill")==="blue";})[0];return c?[c.getAttribute("cx"),c.getAttribute("cy")]:null;}'
+			. 'var r19 = blue();'
+			. 'besogo.editor.displayHoverCoord("C19");'
+			. 'var c19 = blue();'
+			. 'besogo.editor.displayHoverCoord(-1);'
+			. 'return {size:size, xyR:xyR, xyC:xyC, r19:r19, c19:c19};'
+		);
+
+		$this->assertSame(19, $result['size']);
+		$this->assertSame(['x' => 17, 'y' => 1], $result['xyR']);
+		$this->assertSame(['x' => 3, 'y' => 1], $result['xyC']);
+		$this->assertNotNull($result['r19']);
+		$this->assertNotNull($result['c19']);
+		$this->assertNotSame($result['r19'], $result['c19'], 'Distinct labels must not collapse onto one intersection');
+	}
+
 	public function testDontShowCommentsUntilProblemIsSolved()
 	{
 		$context = new ContextPreparator(['tsumego' => ['set_order' => 1, 'comments' => [['message' => 'spoiler']]]]);

@@ -92,6 +92,12 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     resetToStart: resetToStart,
     registerShowComment: registerShowComment,
     displayHoverCoord: displayHoverCoord,
+    displayHoverCoordAt: displayHoverCoordAt,
+    coordLabelToXY: coordLabelToXY,
+    resolveSequencePath: resolveSequencePath,
+    resolveSequenceHover: resolveSequenceHover,
+    coordXYToLabel: coordXYToLabel,
+    transformCommentCoords: transformCommentCoords,
     commentPosition: commentPosition,
     findNodeForPosition: findNodeForPosition,
     getAnchoredCommentCount: getAnchoredCommentCount,
@@ -1195,6 +1201,245 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     var node = followNodePath(coords);
     if (node) return node;
     return followNodePath(coords.slice().reverse());
+  }
+
+  // Converts an absolute coordinate label (e.g. "R19") into its internal
+  // (x, y) intersection using the western label mapping. The label space is
+  // canonical - the same label always means the same intersection regardless
+  // of which corner the board is currently shown in. Returns null for an
+  // out-of-range label.
+  function coordLabelToXY(coord) {
+    var size = getBoardTransformSize();
+    var letter = coord.charAt(0).toUpperCase();
+    var c1 = letter.charCodeAt(0) - 65;
+    if (c1 > 7) c1--;
+    var num = parseInt(coord.substring(1), 10);
+    var x = c1 + 1;
+    var y = size - num + 1;
+    if (x < 1 || x > size || y < 1 || y > size) return null;
+    return { x: x, y: y };
+  }
+
+  // Applies one of the four corner orientations (the Klein four-group) to a
+  // coordinate: 0 identity, 1 mirror-x, 2 mirror-y, 3 both.
+  function orientCoord(coord, orientation, size) {
+    var out = { x: coord.x, y: coord.y };
+    if (orientation === 1 || orientation === 3) out.x = size + 1 - coord.x;
+    if (orientation === 2 || orientation === 3) out.y = size + 1 - coord.y;
+    return out;
+  }
+
+  // Resolves a comment coordinate sequence (labels, e.g. ["R19","P19","Q19"])
+  // into internal coordinates in the currently-active tree space. The comment
+  // was authored in some board orientation; because the puzzle tree is sparse,
+  // only one of the four orientations makes the sequence map onto real tree
+  // nodes. We try all four and pick the one whose prefix walks the furthest
+  // down the tree from `startNode` (or the root when startNode is null).
+  //
+  // Returns { coords, matches, orientation } where coords[i] is the resolved
+  // internal position of the i-th label under the winning orientation, matches
+  // is how many consecutive moves from startNode matched real children, and
+  // orientation is the winning orientation index (0..3). matches may be 0 when
+  // no orientation fits the tree at all.
+  function resolveSequencePath(coords, startNode) {
+    var size = getBoardTransformSize();
+    var best = { coords: null, matches: -1, orientation: 0 };
+    var start = startNode || root;
+    for (var orientation = 0; orientation < 4; orientation++) {
+      var resolved = [];
+      var valid = true;
+      for (var i = 0; i < coords.length; i++) {
+        var base = coordLabelToXY(coords[i]);
+        if (!base) { valid = false; break; }
+        resolved.push(orientCoord(base, orientation, size));
+      }
+      if (!valid) continue;
+      var matches = 0;
+      var walk = start;
+      for (var j = 0; j < resolved.length; j++) {
+        var child = findChildByCoord(walk, resolved[j]);
+        if (!child) break;
+        walk = child;
+        matches++;
+      }
+      if (matches > best.matches) {
+        best = { coords: resolved, matches: matches, orientation: orientation };
+      }
+    }
+    return best;
+  }
+
+  // Finds the shallowest descendant of `node` (strictly below it) whose move
+  // matches `coord`, or null when there is none. Searching for the shallowest
+  // keeps the resolved path as close to the sequence as possible (fewest
+  // unlisted intermediate moves inserted).
+  function findDescendant(node, coord, color) {
+    var bestNode = null;
+    var bestDepth = Infinity;
+    (function visit(n, depth) {
+      for (var i = 0; i < n.children.length; i++) {
+        var child = n.children[i];
+        if (child.move) {
+          if (child.move.x === coord.x && child.move.y === coord.y && depth < bestDepth) {
+            if (color === undefined || child.move.color === color) {
+              bestNode = child;
+              bestDepth = depth;
+            }
+          }
+        }
+        visit(child, depth + 1);
+      }
+    })(node, 1);
+    return bestNode;
+  }
+
+  // Maps a comment colour marker (b/w) to the besogo stone colour (-1/1).
+  function commentColorToStone(color) {
+    if (color === 'b') return -1;
+    if (color === 'w') return 1;
+    return undefined;
+  }
+
+  function nodeDepth(node) {
+    var depth = 0;
+    while (node && node.parent) {
+      depth++;
+      node = node.parent;
+    }
+    return depth;
+  }
+
+  // Resolves a comment coordinate sequence for a hover on `hoverIndex`.
+  // Unlike resolveSequencePath (which requires each coord to be a direct child
+  // of the previous), this treats the sequence as a subsequence: it finds the
+  // tree path that contains the coords in order (allowing intermediate moves),
+  // and returns the node the hovered coordinate lands on plus the node right
+  // before it. This lets hovering a move always show the board just before it,
+  // even when the comment omits intermediate moves or spans different branches.
+  //
+  // Returns { found, beforeNode, hoverNode, orientation, coords, matched }.
+  // `found` is true when the hovered coordinate landed on a tree node;
+  // `beforeNode` is the node to show (the move just before the hovered one and
+  // from which the hovered move is a next move).
+  function resolveSequenceHover(coords, hoverIndex, startNode, colors) {
+    var size = getBoardTransformSize();
+    var start = startNode || root;
+    var best = null;
+    for (var orientation = 0; orientation < 4; orientation++) {
+      var resolved = [];
+      var valid = true;
+      for (var i = 0; i < coords.length; i++) {
+        var base = coordLabelToXY(coords[i]);
+        if (!base) { valid = false; break; }
+        resolved.push(orientCoord(base, orientation, size));
+      }
+      if (!valid) continue;
+      var cur = start;
+      var matched = 0;
+      var hoverNode = null;
+      var beforeNode = null;
+      var nodes = [];
+      for (var k = 0; k < coords.length; k++) {
+        var wantColor = commentColorToStone(colors && colors[k]);
+        var found = findDescendant(cur, resolved[k], wantColor);
+        if (!found) break;
+        nodes.push(found);
+        if (k === hoverIndex) {
+          hoverNode = found;
+          beforeNode = found.parent || cur;
+        }
+        cur = found;
+        matched = k + 1;
+      }
+      if (!hoverNode) continue;
+      // Prefer the orientation that matches the most coords; on a tie prefer
+      // the shallower hover node (fewer inserted intermediate moves).
+      var score = matched * 10000 - nodeDepth(hoverNode);
+      if (!best || score > best.score) {
+        best = {
+          found: true,
+          beforeNode: beforeNode,
+          hoverNode: hoverNode,
+          orientation: orientation,
+          coords: resolved,
+          matched: matched,
+          nodes: nodes,
+          score: score
+        };
+      }
+    }
+    if (best) return best;
+    return { found: false, beforeNode: null, hoverNode: null, orientation: 0, coords: null, matched: 0, nodes: [], score: 0 };
+  }
+
+  // Converts an internal (x, y) back to a western coordinate label (e.g. A17).
+  // Inverse of coordLabelToXY; used to re-label a resolved position for display.
+  function coordXYToLabel(x, y) {
+    var size = getBoardTransformSize();
+    if (x < 1 || x > size || y < 1 || y > size) return null;
+    var labels = besogo.coord.western(size, size);
+    return labels.x[x] + labels.y[y];
+  }
+
+  // Determines the board orientation (0..3) that maps the most of `coords` onto
+  // real tree nodes under `startNode` (or root). This is the orientation the
+  // comment was authored in, relative to the currently-displayed board, and is
+  // used to re-label comment coordinates for display.
+  function resolveCoordsOrientation(coords, startNode) {
+    var size = getBoardTransformSize();
+    var start = startNode || root;
+    var bestCount = -1;
+    var bestOrientation = 0;
+    var ambiguous = false;
+    var counts = [0, 0, 0, 0];
+    for (var orientation = 0; orientation < 4; orientation++) {
+      var present = 0;
+      for (var i = 0; i < coords.length; i++) {
+        var base = coordLabelToXY(coords[i]);
+        if (!base) continue;
+        if (findDescendant(start, orientCoord(base, orientation, size))) present++;
+      }
+      counts[orientation] = present;
+      if (present > bestCount) {
+        bestCount = present;
+        bestOrientation = orientation;
+        ambiguous = false;
+      } else if (present === bestCount) {
+        ambiguous = true;
+      }
+    }
+    return { orientation: bestOrientation, count: bestCount, ambiguous: ambiguous };
+  }
+
+  // Transforms a list of comment coordinate labels (authored in the commenters
+  // board orientation) into the labels they map to on the currently-displayed
+  // board. Uses the comment anchor (position) or tree-matching to recover the
+  // authors orientation. Returns an array of display labels, falling back to
+  // the original labels when the orientation cannot be determined uniquely.
+  function transformCommentCoords(coords, positionString) {
+    var size = getBoardTransformSize();
+    var startNode = positionString ? findNodeForPosition(positionString) : null;
+    var resolved = resolveCoordsOrientation(coords, startNode);
+    var out = [];
+    for (var i = 0; i < coords.length; i++) {
+      var base = coordLabelToXY(coords[i]);
+      if (!base || (resolved.ambiguous && resolved.count <= 1)) {
+        out.push(coords[i]);
+        continue;
+      }
+      var pos = orientCoord(base, resolved.orientation, size);
+      var label = coordXYToLabel(pos.x, pos.y);
+      out.push(label || coords[i]);
+    }
+    return out;
+  }
+
+  // Highlights a single intersection on the main board by its internal (x, y).
+  // Used for sequence hover where the coordinate must be shown at the position
+  // resolved for the current orientation, not at its raw label intersection.
+  function displayHoverCoordAt(x, y) {
+    if (besogo.boardDisplay && besogo.boardDisplay.displayHoverCoordAt)
+      besogo.boardDisplay.displayHoverCoordAt(x, y);
   }
 
   // ── Anchored-comment badge support ────────────────────────────────

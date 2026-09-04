@@ -18,11 +18,11 @@ interface CommentProps
 // Component for a single Go coordinate span with hover handlers.
 // When the comment is anchored to a board position, the hover preview shows
 // that anchored position so the coordinate is interpreted "from the comment".
-function CoordSpan({ coord, position, color }: { coord: string; position?: string | null; color?: 'b' | 'w' })
+function CoordSpan({ coord, position, color, sequence }: { coord: string; position?: string | null; color?: 'b' | 'w'; sequence?: { coords: string[]; index: number } })
 {
 	const handleMouseEnter = (e: React.MouseEvent) =>
 	{
-		window.showCoordPopup(coord, e.nativeEvent, position ?? undefined);
+		window.showCoordPopup(coord, e.nativeEvent, position ?? undefined, sequence);
 	};
 
 	const handleMouseLeave = () =>
@@ -42,6 +42,25 @@ function CoordSpan({ coord, position, color }: { coord: string; position?: strin
 			{coord}
 		</span>
 	);
+}
+
+// Re-label comment coordinates written in the commenter's board orientation so
+// they match the currently-displayed board (e.g. "T3" -> "A17" when the board
+// is shown top-left). Falls back to the authored labels when the board is not
+// ready or the orientation cannot be determined uniquely.
+function transformCoords(coords: string[], position?: string | null): string[]
+{
+	const editor = typeof window.besogo !== 'undefined' && window.besogo ? window.besogo.editor : null;
+	if (!editor || typeof editor.transformCommentCoords !== 'function')
+		return coords;
+	try
+	{
+		return editor.transformCommentCoords(coords, position ?? undefined);
+	}
+	catch
+	{
+		return coords;
+	}
 }
 
 // Parse comment text and return React nodes with coordinate highlighting.
@@ -64,12 +83,25 @@ function renderCommentText(text: string | null | undefined, position?: string | 
 		const groupClass = kind === 'single' ? '' : ` go-coord-group go-coord-group--${kind}`;
 		const children: React.ReactNode[] = [];
 
+		// Transform the authored labels to the displayed board orientation so the
+		// comment text agrees with the board the reader sees.
+		const boardCoords = transformCoords(tokens.map(t => t.coord), position);
+
+		// For a dash/arrow-joined sequence, each coordinate carries the full list
+		// of moves plus its own index so hover can preview the moves before it.
+		// Alternatives (e.g. F2/G1) and single coords have no sequence context.
+		const sequenceCoords = kind === 'sequence' ? boardCoords : undefined;
+		// Per-move explicit colour (w/b) from the comment, or null to alternate.
+		const sequenceColors = kind === 'sequence' ? tokens.map(t => t.color ?? null) : undefined;
+
 		tokens.forEach((token, i) =>
 		{
 			if (i > 0) 
 				children.push(separators[i - 1] || ' ');
+			const coord = boardCoords[i] ?? token.coord;
+			const sequence = sequenceCoords ? { coords: sequenceCoords, colors: sequenceColors, index: i } : undefined;
 			children.push(
-				<CoordSpan key={`coord-${key++}`} coord={token.coord} position={position} color={token.color} />
+				<CoordSpan key={`coord-${key++}`} coord={coord} position={position} color={token.color} sequence={sequence} />
 			);
 		});
 
