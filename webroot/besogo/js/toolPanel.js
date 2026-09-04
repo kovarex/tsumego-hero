@@ -548,7 +548,9 @@ besogo.makeToolPanel = function (container, editor) {
               editor.setReviewMode(false);
             }
             besogo.editor.setControlButtonLock(false);
-            besogo.editor.resetToStart();
+            // Do NOT reset the board to the start position when toggling review
+            // mode: preserve the node the user navigated to so they don't lose
+            // their place in the tree.
             document.getElementById("status").innerHTML = "";
             besogo.editor.notifyListeners({
               treeChange: true,

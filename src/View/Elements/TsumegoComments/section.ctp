@@ -17,11 +17,25 @@ $userId = Auth::isLoggedIn() ? Auth::getUserID() : null;
 // Calculate counts for tabs (only thing we need from server)
 $TsumegoIssue = ClassRegistry::init('TsumegoIssue');
 $counts = $TsumegoIssue->getCommentSectionCounts($tsumegoId);
+
+// Slim list of position-anchored comment positions so the review tree can show
+// badges before the user opens the comments tab (avoids fetching all comments).
+$TsumegoComment = ClassRegistry::init('TsumegoComment');
+$anchoredPositions = $TsumegoComment->find('list', [
+	'fields' => ['id', 'position'],
+	'conditions' => [
+		'tsumego_id' => $tsumegoId,
+		'position !=' => null,
+		'deleted' => 0,
+	],
+]);
+
 $props = json_encode([
 	'userId' => $userId,
 	'isAdmin' => Auth::isAdmin(),
 	'tsumegoId' => (int) $tsumegoId,
 	'initialCounts' => $counts,
+	'initialAnchoredPositions' => array_values($anchoredPositions),
 ]);
 ?>
 

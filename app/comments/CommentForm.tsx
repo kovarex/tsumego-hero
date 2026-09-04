@@ -33,77 +33,77 @@ export function CommentForm({
 		setForm({ text: '', position: undefined, reportAsIssue: false });
 	};
 
-	const togglePosition = () =>
+	// Builds the position string for the currently-selected board node, or null
+	// when the board is at a node without a move (e.g. the root position).
+	const buildPositionFromCurrent = (): string | null =>
 	{
-		if (!form.position)
+		// Get position from besogo editor
+		const current = window.besogo.editor.getCurrent();
+		if (!current.move)
 		{
-			// Get position from besogo editor
-			const current = window.besogo.editor.getCurrent();
-			if (!current.move)
-			{
-				alert('No move at current position');
-				return;
-			}
+			alert('No move at current position');
+			return null;
+		}
 
-			// Get orientation from besogo
-			const besogoOrientation = window.besogo.editor.getOrientation();
-			const orientation = besogoOrientation[1] === 'full-board' ? 'full-board' : besogoOrientation[0];
+		// Get orientation from besogo
+		const besogoOrientation = window.besogo.editor.getOrientation();
+		const orientation = besogoOrientation[1] === 'full-board' ? 'full-board' : besogoOrientation[0];
 
-			// Use coordinates directly from besogo (NO normalization)
-			const moveX = current.move.x;
-			const moveY = current.move.y;
+		// Use coordinates directly from besogo (NO normalization)
+		const moveX = current.move.x;
+		const moveY = current.move.y;
 
-			// Get parent coordinates
-			let pX = -1;
-			let pY = -1;
-			if (current.moveNumber > 1 && current.parent && current.parent.move)
-			{
-				pX = current.parent.move.x;
-				pY = current.parent.move.y;
-			}
+		// Get parent coordinates
+		let pX = -1;
+		let pY = -1;
+		if (current.moveNumber > 1 && current.parent && current.parent.move)
+		{
+			pX = current.parent.move.x;
+			pY = current.parent.move.y;
+		}
 
-			// Get first child coordinates
-			let cX = -1;
-			let cY = -1;
-			if (current.children && current.children.length > 0 && current.children[0].move)
-			{
-				cX = current.children[0].move.x;
-				cY = current.children[0].move.y;
-			}
+		// Get first child coordinates
+		let cX = -1;
+		let cY = -1;
+		if (current.children && current.children.length > 0 && current.children[0].move)
+		{
+			cX = current.children[0].move.x;
+			cY = current.children[0].move.y;
+		}
 
-			// Build path from ROOT to CURRENT (reversed order)
-			const pathCoords: [number, number][] = [];
-			pathCoords.push([moveX, moveY]);
-			let newP = current.parent;
-			while (newP && newP.move)
-			{
-				pathCoords.push([newP.move.x, newP.move.y]);
-				newP = newP.parent;
-			}
-			// Reverse to go from root to current (matches PHP version)
-			pathCoords.reverse();
-			const newPcoords = pathCoords.map(c => `${c[0]}/${c[1]}`).join('+');
+		// Build path from ROOT to CURRENT (reversed order)
+		const pathCoords: [number, number][] = [];
+		pathCoords.push([moveX, moveY]);
+		let newP = current.parent;
+		while (newP && newP.move)
+		{
+			pathCoords.push([newP.move.x, newP.move.y]);
+			newP = newP.parent;
+		}
+		// Reverse to go from root to current (matches PHP version)
+		pathCoords.reverse();
+		const newPcoords = pathCoords.map(c => `${c[0]}/${c[1]}`).join('+');
 
-			// Store with current orientation (matches original PHP behavior)
-			const pos = `${moveX}/${moveY}/${pX}/${pY}/${cX}/${cY}/${current.moveNumber}/${current.children?.length || 0}/${orientation}|${newPcoords}`;
+		// Store with current orientation (matches original PHP behavior)
+		return `${moveX}/${moveY}/${pX}/${pY}/${cX}/${cY}/${current.moveNumber}/${current.children?.length || 0}/${orientation}|${newPcoords}`;
+	};
 
-			// Add "[current position]" to message text
-			const newText = form.text + '[current position]';
-			if (newText.length > 2000)
-			{
-				alert('Cannot add board position: comment would exceed 2000 character limit. Please shorten your message first.');
-				return;
-			}
-
-			setForm(f => ({ ...f, text: newText, position: pos }));
+	// The checkbox is the single "Attach board position" toggle.
+	// Checking captures the current position; unchecking removes it.
+	const handlePositionToggle = (e: React.ChangeEvent<HTMLInputElement>) =>
+	{
+		if (e.target.checked)
+		{
+			const pos = buildPositionFromCurrent();
+			if (pos)
+				setForm(f => ({ ...f, position: pos }));
 		}
 		else
-		{
-			// Remove position and "[current position]" text
-			const textWithoutPosition = form.text.replace('[current position]', '');
-			setForm(f => ({ ...f, text: textWithoutPosition, position: undefined }));
-		}
+			setForm(f => ({ ...f, position: undefined }));
 	};
+
+	// Move number of the attached position, for display ("Move 5 attached").
+	const positionMoveNumber = form.position ? parseInt(form.position.split('/')[6], 10) : null;
 
 	return (
 		<div className="tsumego-comments__form">
@@ -147,26 +147,19 @@ export function CommentForm({
 						</label>
 					)}
 
-					<button type="button" className="tsumego-comments__position-btn" onClick={togglePosition}>
-						<img src="/img/positionIcon1.png" width="16" alt="" />
-						Add board position
-					</button>
-
-					{form.position && (
-						<span className="tsumego-comments__position-indicator">
-							✓ Position attached
-							<a
-								href="#"
-								onClick={e =>
-								{
-									e.preventDefault();
-									setForm(f => ({ ...f, position: undefined }));
-								}}
-							>
-								Remove
-							</a>
-						</span>
-					)}
+					<label className="tsumego-comments__position-toggle">
+						<input
+							type="checkbox"
+							id="attachPositionCheckbox-tsumegoCommentForm"
+							checked={!!form.position}
+							onChange={handlePositionToggle}
+							disabled={isSubmitting}
+						/>
+						<span aria-hidden="true">📌</span>
+						{form.position
+							? `Move ${positionMoveNumber ?? '?'} attached`
+							: 'Attach board position'}
+					</label>
 				</div>
 
 				<div className="tsumego-comments__form-buttons">

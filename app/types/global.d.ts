@@ -42,6 +42,34 @@ interface BesogoEditor
 	getOrientation(): [string, string];
 
 	/**
+	 * Resolve a comment's `position` string to the game-tree node it anchors.
+	 * Returns null when the node cannot be found. Does not navigate/mutate.
+	 * @param positionString The comment.position value (e.g. "3/3/.../full-board|x/y+x/y")
+	 */
+	findNodeForPosition(positionString: string): BesogoNode | null;
+
+	/**
+	 * Get the number of position-anchored comments attached to a node.
+	 */
+	getAnchoredCommentCount(node: BesogoNode): number;
+
+	/**
+	 * Set which nodes have position-anchored comments (Map of node -> count).
+	 * Triggers a tree rebuild so badges appear when review mode is on.
+	 */
+	setAnchoredComments(nodeCounts: Map<BesogoNode, number>): void;
+
+	/**
+	 * Register a listener for editor state changes (navChange/treeChange/etc).
+	 */
+	addListener(listener: (msg: { navChange?: boolean; treeChange?: boolean; stoneChange?: boolean }) => void): void;
+
+	/**
+	 * Remove a previously registered listener.
+	 */
+	removeListener(listener: (msg: { navChange?: boolean; treeChange?: boolean; stoneChange?: boolean }) => void): void;
+
+	/**
 	 * Navigate to a saved board position.
 	 * @param positionParams Array of position parameters from database:
 	 *   [x, y, parentX, parentY, childX, childY, moveNumber, childrenCount, orientation, path]
@@ -140,8 +168,10 @@ declare global
 		 * Defined in play.ctp.
 		 * @param coord Go coordinate like "C3", "D4"
 		 * @param event Mouse event for positioning
+		 * @param position Optional comment.position anchor - when present, the
+		 *   preview shows the anchored board position instead of the current one.
 		 */
-		showCoordPopup(coord: string, event: MouseEvent): void;
+		showCoordPopup(coord: string, event: MouseEvent, position?: string): void;
 
 		/**
 		 * Hide coordinate popup.
@@ -151,4 +181,4 @@ declare global
 	}
 }
 
-export {};
+export type { BesogoNode, BesogoEditor, Besogo };

@@ -51,6 +51,152 @@ class CommentsControllerTest extends ControllerTestCase
 		$browser->waitUntilCssSelectorDoesntExist('#comment_' . $comment['TsumegoComment']['id']);
 	}
 
+	public function testAddCommentWithBoardPositionStoresAnchorWithoutMarker()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => [
+				'set_order' => 1,
+				'status' => 'S',
+				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])'
+			]
+		]);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->expandComments();
+
+		// Navigate the board to a move so a position can be anchored
+		$browser->clickBoard(1, 1);
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(function ($driver) {
+			return $driver->executeScript('return window.besogo && besogo.editor.getCurrent().moveNumber >= 1;');
+		});
+
+		// Enable review mode so the tree panel rebuilds and shows node badges
+		$browser->driver->executeScript("window.besogo.editor.setReviewMode(true); window.besogo.editor.notifyListeners({treeChange:true, navChange:true, stoneChange:true});");
+
+		// Type a comment and attach the current board position
+		$messageField = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-comments__form textarea'));
+		$messageField->click();
+		$messageField->sendKeys("Check this move");
+		$positionToggle = $browser->driver->findElement(WebDriverBy::cssSelector('#attachPositionCheckbox-tsumegoCommentForm'));
+		$positionToggle->click();
+		$this->assertTrue($positionToggle->isSelected(), 'Position toggle should be checked after attaching');
+
+		// The message text must not contain the literal marker (it's now structured data)
+		$this->assertStringNotContainsString('[current position]', $messageField->getAttribute('value'));
+
+		$submitButton = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-comments__form button[type="submit"]'));
+		$submitButton->click();
+
+		// Wait for React to process the submission (form clears)
+		$wait->until(function ($driver) {
+			$textarea = $driver->findElement(WebDriverBy::cssSelector('.tsumego-comments__form textarea'));
+			return $textarea->getAttribute('value') === '';
+		});
+
+		// The stored comment must carry a position but not the marker in the message
+		$comment = ClassRegistry::init('TsumegoComment')->find('first', ['order' => 'TsumegoComment.id DESC']);
+		$this->assertNotNull($comment['TsumegoComment']['position']);
+		$this->assertSame('Check this move', $comment['TsumegoComment']['message']);
+		$this->assertStringNotContainsString('[current position]', $comment['TsumegoComment']['message']);
+
+		// The rendered comment shows a "Move N" chip (instead of the marker) ...
+		$browser->waitUntilCssSelectorExists('.tsumego-comment__position-label');
+		// ... and the review tree node is badged for the anchored comment
+		$browser->waitUntilCssSelectorExists('.besogo-tree-comment-badge');
+	}
+
+	public function testReviewBadgeShowsWithoutOpeningComments()
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => [
+				'set_order' => 1,
+				'status' => 'S',
+				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])',
+				'comments' => [['message' => 'anchored note', 'position' => '1/1/-1/-1/0/0/1/0/full-board|1/1']]
+			]
+		]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		// Enable review mode so the review tree renders. The badge is computed
+		// eagerly from the slim SSR positions - no need to open the comments tab.
+		$browser->driver->executeScript("window.besogo.editor.setReviewMode(true); window.besogo.editor.notifyListeners({treeChange:true, navChange:true, stoneChange:true});");
+
+		// The badge for the anchored comment should appear immediately, without
+		// the user having opened the comments tab.
+		$browser->waitUntilCssSelectorExists('.besogo-tree-comment-badge');
+		$this->assertGreaterThan(0, count($browser->getCssSelect('.besogo-tree-comment-badge')));
+	}
+
+	/**
+	 * Two anchored comments on two DIFFERENT nodes should produce two tree
+	 * badges - not collapse onto a single node (regression for the resolver
+	 * walking the whole subtree instead of the actual path).
+	 */
+	public function testMultipleCommentBadgesOnDifferentNodes()
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => [
+				'set_order' => 1,
+				'status' => 'S',
+				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])',
+				'alternative_response' => 0,
+			]
+		]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		// Capture the board position strings for move 1 and move 2.
+		$positions = $browser->driver->executeScript("
+			var e = window.besogo.editor;
+			var root = e.getRoot();
+			function capture(node) {
+				e.setCurrent(node);
+				var cur = e.getCurrent();
+				var or = e.getOrientation();
+				var orientation = or[1] === 'full-board' ? 'full-board' : or[0];
+				var path = [[cur.move.x, cur.move.y]];
+				var np = cur.parent;
+				while (np && np.move) { path.push([np.move.x, np.move.y]); np = np.parent; }
+				path.reverse();
+				var p = path.map(function(c){ return c[0] + '/' + c[1]; }).join('+');
+				var pX = (cur.parent && cur.parent.move) ? cur.parent.move.x : -1;
+				var pY = (cur.parent && cur.parent.move) ? cur.parent.move.y : -1;
+				return cur.move.x + '/' + cur.move.y + '/' + pX + '/' + pY + '/0/0/' + cur.moveNumber + '/0/' + orientation + '|' + p;
+			}
+			if (!root.children || root.children.length === 0) return [];
+			var node1 = root.children[0];
+			if (!node1.children || node1.children.length === 0) return [capture(node1)];
+			return [capture(node1), capture(node1.children[0])];
+		");
+		$this->assertGreaterThanOrEqual(2, count($positions));
+
+		// Seed one anchored comment on each of the two different nodes.
+		$commentModel = ClassRegistry::init('TsumegoComment');
+		foreach ($positions as $i => $position)
+		{
+			$commentModel->create();
+			$commentModel->save([
+				'tsumego_id' => $context->tsumegos[0]['id'],
+				'user_id' => $context->user['id'],
+				'message' => 'anchor ' . ($i + 1),
+				'position' => $position,
+			]);
+		}
+
+		// Reload so the eager SSR positions include both anchored comments.
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->driver->executeScript("window.besogo.editor.setReviewMode(true); window.besogo.editor.notifyListeners({treeChange:true, navChange:true, stoneChange:true});");
+
+		$browser->waitUntilCssSelectorExists('.besogo-tree-comment-badge');
+		$badgeCount = count($browser->getCssSelect('.besogo-tree-comment-badge'));
+		$this->assertGreaterThanOrEqual(2, $badgeCount, 'Two anchored comments on different nodes should produce two badges');
+	}
+
 	public function testDontShowCommentsUntilProblemIsSolved()
 	{
 		$context = new ContextPreparator(['tsumego' => ['set_order' => 1, 'comments' => [['message' => 'spoiler']]]]);

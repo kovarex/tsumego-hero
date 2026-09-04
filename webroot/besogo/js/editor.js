@@ -39,12 +39,14 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     // when false, the moves are blue and considered to be just explore moves by the review/testing when solving and don't affect autoplay nor correct calculations
     remainingRequiredNodes = [],
     commentParamList = [],
+    anchoredCommentNodes = new Map(),
     displayResult = null,
     showComment = null,
     addTimeForMovePlayed = null;
 
   return {
     addListener: addListener,
+    removeListener: removeListener,
     click: click,
     nextNode: nextNode,
     prevNode: prevNode,
@@ -91,6 +93,9 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     registerShowComment: registerShowComment,
     displayHoverCoord: displayHoverCoord,
     commentPosition: commentPosition,
+    findNodeForPosition: findNodeForPosition,
+    getAnchoredCommentCount: getAnchoredCommentCount,
+    setAnchoredComments: setAnchoredComments,
     commentTreeSearch: commentTreeSearch,
     commentTreeSearchExtendPath: commentTreeSearchExtendPath,
     getOrientation: getOrientation,
@@ -698,6 +703,12 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     listeners.push(listener);
   }
 
+  // Removes a previously registered listener (used for React cleanup)
+  function removeListener(listener) {
+    var index = listeners.indexOf(listener);
+    if (index !== -1) listeners.splice(index, 1);
+  }
+
   // Notify listeners with the given message object
   //  Data sent to listeners:
   //    tool: changed tool selection
@@ -1077,6 +1088,125 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
       return "l-60,-60v-" + 120 * (childPos - prevChildPos);
     // Extend double-bend drop line back to parent
     else return "l-60,-60v-" + 120 * (childPos - y - 1) + "l-60,-60";
+  }
+
+  // ── Position-anchored comment support ─────────────────────────────
+  // Comments store a `position` string that identifies a node in the game
+  // tree via a root-to-current move path. Because the board corner mutates
+  // node coordinates in place (applyTransformation), a stored path is in the
+  // corner space that was active when the comment was saved. To resolve it
+  // against the current tree we first normalise the stored path back to the
+  // canonical top-left space (inverse of the saved orientation), then apply
+  // the currently-active corner, and walk the tree following that path.
+
+  function getBoardTransformSize() {
+    return (besogo.scaleParameters && besogo.scaleParameters.boardCoordSize) || 19;
+  }
+
+  function reflectCoord(coord, axis, size) {
+    var out = { x: coord.x, y: coord.y };
+    if (axis === 'x') out.x = size + 1 - coord.x;
+    else if (axis === 'y') out.y = size + 1 - coord.y;
+    else if (axis === 'both') {
+      out.x = size + 1 - coord.x;
+      out.y = size + 1 - coord.y;
+    }
+    return out;
+  }
+
+  function inverseSavedOrientation(coord, orientation, size) {
+    if (orientation === 'top-right') return reflectCoord(coord, 'x', size);
+    if (orientation === 'bottom-left') return reflectCoord(coord, 'y', size);
+    if (orientation === 'bottom-right') return reflectCoord(coord, 'both', size);
+    return { x: coord.x, y: coord.y };
+  }
+
+  function applyCurrentCorner(coord, size) {
+    var corner = besogo.boardParameters && besogo.boardParameters.corner;
+    if (corner === 'top-right') return reflectCoord(coord, 'x', size);
+    if (corner === 'bottom-left') return reflectCoord(coord, 'y', size);
+    if (corner === 'bottom-right') return reflectCoord(coord, 'both', size);
+    return { x: coord.x, y: coord.y };
+  }
+
+  // Parses a comment.position string into a list of move coords in the space
+  // of the currently-active board corner. Returns [] if the path is empty.
+  function parseNormalizedCommentPath(positionString) {
+    if (!positionString) return [];
+    var pieces = positionString.split('|');
+    var main = pieces[0].split('/');
+    var orientation = main[8];
+    var size = getBoardTransformSize();
+    var coords = [];
+    var tokens;
+    if (pieces[1]) tokens = pieces[1].split('+');
+    else tokens = [main[0] + '/' + main[1]]; // fall back to the current move only
+    for (var i = 0; i < tokens.length; i++) {
+      var p = tokens[i].split('/');
+      if (p.length < 2) continue;
+      var coord = { x: parseInt(p[0], 10), y: parseInt(p[1], 10) };
+      var canonical = inverseSavedOrientation(coord, orientation, size);
+      coords.push(applyCurrentCorner(canonical, size));
+    }
+    return coords;
+  }
+
+  // Finds the deepest child (descending through null-move/setup nodes) whose
+  // Finds the direct child (or its continuation through null-move/setup nodes)
+  // whose move matches the coordinate. Child moves among siblings are unique in
+  // a game tree, so we must only descend along the actual path - NOT search the
+  // whole subtree, which would match transpositions from other variations and
+  // collapse different comments onto the same node.
+  function findChildByCoord(node, coord) {
+    if (!node) return null;
+    for (var i = 0; i < node.children.length; i++) {
+      var child = node.children[i];
+      if (!child.move)
+      {
+        // setup node: the path passes through it - inspect its continuation
+        var result = findChildByCoord(child, coord);
+        if (result) return result;
+      }
+      else if (child.move.x === coord.x && child.move.y === coord.y)
+        return child;
+    }
+    return null;
+  }
+
+  // Follows a list of coords (root->current) through the tree.
+  function followNodePath(coords) {
+    var node = root;
+    for (var i = 0; i < coords.length; i++) {
+      node = findChildByCoord(node, coords[i]);
+      if (!node) return null;
+    }
+    return node;
+  }
+
+  // Resolves a comment.position string to the game-tree node it anchors, or
+  // null when it cannot be found (e.g. the tree changed underneath). Does not
+  // navigate or mutate the editor state.
+  //
+  // The React form stores the path root->current; the legacy PHP form stored it
+  // current->root. We try both orders so old comments still resolve.
+  function findNodeForPosition(positionString) {
+    var coords = parseNormalizedCommentPath(positionString);
+    if (coords.length === 0) return null;
+    var node = followNodePath(coords);
+    if (node) return node;
+    return followNodePath(coords.slice().reverse());
+  }
+
+  // ── Anchored-comment badge support ────────────────────────────────
+  // `setAnchoredComments` receives a Map of node -> comment count and tells
+  // the tree panel to redraw (only effective when review mode is on).
+  function getAnchoredCommentCount(node) {
+    return anchoredCommentNodes.get(node) || 0;
+  }
+
+  function setAnchoredComments(nodeCounts) {
+    anchoredCommentNodes = nodeCounts || new Map();
+    notifyListeners({ treeChange: true });
   }
 
   function getOrientation() {

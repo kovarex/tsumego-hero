@@ -1398,10 +1398,22 @@
 		document.body.appendChild(coordPopupDiv);
 	}
 
-	function showCoordPopup(coord, event) {
+	function showCoordPopup(coord, event, position) {
 		createCoordPopup();
 		var mainBoard = document.querySelector(".besogo-board svg");
 		if (!mainBoard) return;
+
+		// If the comment is anchored to a board position, preview the context of
+		// that anchored position so the coordinate is shown "from the comment",
+		// not from wherever the user currently is in the tree.
+		var restoreNode = null;
+		if (position) {
+			var anchoredNode = besogo.editor.findNodeForPosition(position);
+			if (anchoredNode) {
+				restoreNode = besogo.editor.getCurrent();
+				besogo.editor.setCurrent(anchoredNode);
+			}
+		}
 
 		// Always highlight on main board
 		besogo.editor.displayHoverCoord(coord);
@@ -1412,12 +1424,18 @@
 			coordPopupTimeout = null;
 	}
 
-		// Show popup near cursor
+		// Show popup near cursor (clone the board at the previewed position)
 		var clone = mainBoard.cloneNode(true);
 		clone.style.width = "400px";
 		clone.style.height = "400px";
 		coordPopupDiv.innerHTML = "";
 		coordPopupDiv.appendChild(clone);
+
+		// Restore the original position after capturing the preview
+		if (restoreNode) {
+			besogo.editor.setCurrent(restoreNode);
+			besogo.editor.displayHoverCoord(-1);
+		}
 
 		// Position near cursor
 		var x = event.clientX + 15;
