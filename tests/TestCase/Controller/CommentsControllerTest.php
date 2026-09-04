@@ -197,6 +197,92 @@ class CommentsControllerTest extends ControllerTestCase
 		$this->assertGreaterThanOrEqual(2, $badgeCount, 'Two anchored comments on different nodes should produce two badges');
 	}
 
+	/**
+	 * Coordinate references in comments should be detected case-insensitively
+	 * (lowercase "r19" is common), and sequences/alternatives should be grouped.
+	 */
+	public function testCommentCoordinatesParseLowercaseSequencesAndAlternatives()
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => [
+				'set_order' => 1,
+				'status' => 'S',
+				'comments' => [[
+					'message' => 'r19-p19-q19-q18-t19 works. Alternatively F2/G1. w C1, b E2.'
+				]]
+			]
+		]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->expandComments();
+
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(function ($driver) {
+			return count($driver->findElements(WebDriverBy::cssSelector('.go-coord'))) >= 7;
+		});
+
+		// Lowercase coordinates should be highlighted (case-insensitive) and
+		// normalized to uppercase internal coordinates.
+		$coords = [];
+		foreach ($browser->driver->findElements(WebDriverBy::cssSelector('.go-coord')) as $gc)
+			$coords[] = $gc->getAttribute('data-coord');
+
+		$this->assertContains('R19', $coords);
+		$this->assertContains('T19', $coords);
+		$this->assertContains('F2', $coords);
+		$this->assertContains('G1', $coords);
+		$this->assertContains('C1', $coords);
+		$this->assertContains('E2', $coords);
+
+		// Color markers are parsed ("w C1" and "b E2").
+		foreach ($browser->driver->findElements(WebDriverBy::cssSelector('.go-coord')) as $gc)
+		{
+			$coord = $gc->getAttribute('data-coord');
+			$color = $gc->getAttribute('data-color');
+			if ($coord === 'C1') $this->assertSame('w', $color);
+			if ($coord === 'E2') $this->assertSame('b', $color);
+		}
+
+		// Dash sequences are grouped, and slash 'either/or' alternatives too.
+		$this->assertGreaterThanOrEqual(1, count($browser->driver->findElements(WebDriverBy::cssSelector('.go-coord-group--sequence'))));
+		$this->assertGreaterThanOrEqual(1, count($browser->driver->findElements(WebDriverBy::cssSelector('.go-coord-group--alternative'))));
+	}
+
+	public function testCommentCoordinatesParseArrowsAndOr()
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => [
+				'set_order' => 1,
+				'status' => 'S',
+				'comments' => [[
+					'message' => 'After T3->S2->Q2. Alternatively C1 or B3.'
+				]]
+			]
+		]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->expandComments();
+
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(function ($driver) {
+			return count($driver->findElements(WebDriverBy::cssSelector('.go-coord'))) >= 5;
+		});
+
+		$coords = [];
+		foreach ($browser->driver->findElements(WebDriverBy::cssSelector('.go-coord')) as $gc)
+			$coords[] = $gc->getAttribute('data-coord');
+		$this->assertContains('T3', $coords);
+		$this->assertContains('Q2', $coords);
+		$this->assertContains('C1', $coords);
+		$this->assertContains('B3', $coords);
+
+		// Arrow sequences are grouped, and "or" alternatives too.
+		$this->assertGreaterThanOrEqual(1, count($browser->driver->findElements(WebDriverBy::cssSelector('.go-coord-group--sequence'))));
+		$this->assertGreaterThanOrEqual(1, count($browser->driver->findElements(WebDriverBy::cssSelector('.go-coord-group--alternative'))));
+	}
+
 	public function testDontShowCommentsUntilProblemIsSolved()
 	{
 		$context = new ContextPreparator(['tsumego' => ['set_order' => 1, 'comments' => [['message' => 'spoiler']]]]);

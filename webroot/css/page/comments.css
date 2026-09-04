@@ -167,6 +167,30 @@
 	background-color: rgba(30, 107, 184, 0.2);
 	border-bottom-color: transparent;
 }
+/* Color-marker hint from the comment (e.g. "b C1" / "white C1") */
+
+.go-coord--b {
+	background-color: rgba(0, 0, 0, 0.1);
+}
+.go-coord--w {
+	background-color: rgba(0, 0, 0, 0.04);
+}
+[data-theme=dark] .go-coord--w {
+	background-color: rgba(255, 255, 255, 0.12);
+}
+/* Coordinates grouped into a sequence or alternative */
+
+.go-coord-group {
+	white-space: nowrap;
+}
+.go-coord-group--sequence {
+	background: rgba(109, 179, 242, 0.12);
+	border-radius: 3px;
+	padding: 0 2px;
+}
+.go-coord-group--alternative {
+	font-style: italic;
+}
 /* Delete button cleanup - make it look dangerous */
 
 .deleteComment {

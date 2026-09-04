@@ -3,6 +3,7 @@ import type { Comment as CommentType } from './commentTypes';
 import { IssueStatus, type IssueStatusId } from '../issues/issueTypes';
 import { useAuth } from '../shared/AuthContext';
 import dayjs from 'dayjs';
+import { parseCoordinateReferences } from './coordParser';
 
 interface CommentProps
 {
@@ -17,7 +18,7 @@ interface CommentProps
 // Component for a single Go coordinate span with hover handlers.
 // When the comment is anchored to a board position, the hover preview shows
 // that anchored position so the coordinate is interpreted "from the comment".
-function CoordSpan({ coord, position }: { coord: string; position?: string | null })
+function CoordSpan({ coord, position, color }: { coord: string; position?: string | null; color?: 'b' | 'w' })
 {
 	const handleMouseEnter = (e: React.MouseEvent) =>
 	{
@@ -31,8 +32,9 @@ function CoordSpan({ coord, position }: { coord: string; position?: string | nul
 
 	return (
 		<span
-			className="go-coord"
+			className={`go-coord${color ? ` go-coord--${color}` : ''}`}
 			data-coord={coord}
+			data-color={color ?? ''}
 			title="Hover to highlight on board"
 			onMouseEnter={handleMouseEnter}
 			onMouseLeave={handleMouseLeave}
@@ -42,38 +44,43 @@ function CoordSpan({ coord, position }: { coord: string; position?: string | nul
 	);
 }
 
-// Parse comment text and return React nodes with coordinate highlighting
+// Parse comment text and return React nodes with coordinate highlighting.
+// Uses the coordinate parser so lowercase coords, sequences (M16-N17-M20),
+// alternatives (F2/G1) and color markers are recognized consistently.
 function renderCommentText(text: string | null | undefined, position?: string | null): React.ReactNode[]
 {
 	if (!text) 
 		return [];
 
-	const coordPattern = /\b([A-HJ-T])(\d{1,2})\b/g;
-	const parts: React.ReactNode[] = [];
-	let lastIndex = 0;
-	let match;
+	const slices = parseCoordinateReferences(text);
+	let key = 0;
 
-	while ((match = coordPattern.exec(text)) !== null)
+	return slices.map(slice =>
 	{
-		const num = parseInt(match[2]);
-		// Only valid Go coordinates (1-19)
-		if (num >= 1 && num <= 19)
+		if (slice.type === 'text') 
+			return slice.text;
+
+		const { kind, tokens, separators } = slice;
+		const groupClass = kind === 'single' ? '' : ` go-coord-group go-coord-group--${kind}`;
+		const children: React.ReactNode[] = [];
+
+		tokens.forEach((token, i) =>
 		{
-			// Add text before coordinate
-			if (match.index > lastIndex) 
-				parts.push(text.substring(lastIndex, match.index));
+			if (i > 0) 
+				children.push(separators[i - 1] || ' ');
+			children.push(
+				<CoordSpan key={`coord-${key++}`} coord={token.coord} position={position} color={token.color} />
+			);
+		});
 
-			// Add coordinate component
-			parts.push(<CoordSpan key={`coord-${match.index}`} coord={match[0]} position={position} />);
-			lastIndex = match.index + match[0].length;
-		}
-	}
-
-	// Add remaining text
-	if (lastIndex < text.length) 
-		parts.push(text.substring(lastIndex));
-
-	return parts.length > 0 ? parts : [text];
+		if (kind === 'single') 
+			return children;
+		return (
+			<span key={`group-${key++}`} className={groupClass.trim()}>
+				{children}
+			</span>
+		);
+	});
 }
 
 export function Comment({
