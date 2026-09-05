@@ -50,8 +50,8 @@ function Feed({ entries }: { entries: ChangelogEntry[] })
 						<div className="changelog__group" key={category}>
 							<h3 className="changelog__category">{category}</h3>
 							<ul className="changelog__list">
-								{list.map(e => (
-									<li key={e.file}>
+								{list.map((e, index) => (
+									<li key={`${e.file}-${index}`}>
 										<div className="changelog__text">
 											<ReactMarkdown components={markdownComponents}>{e.text}</ReactMarkdown>
 										</div>
