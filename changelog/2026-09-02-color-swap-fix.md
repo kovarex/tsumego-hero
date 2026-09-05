@@ -1,1 +1,1 @@
-Fixed: When you flip the board, problem descriptions and answer choices now follow the new orientation.
+Fixed: When you change the color of tones, problem descriptions and answer choices now follow.
