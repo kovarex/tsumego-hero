@@ -570,6 +570,41 @@ class TsumegosControllerTest extends TestCaseWithAuth
 	}
 
 	/**
+	 * Toggling review mode should NOT reset the board to the start position.
+	 * If the user navigated to a move, entering/leaving review keeps them there.
+	 */
+	public function testReviewTogglePreservesBoardPosition()
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => [
+				'set_order' => 1,
+				'status' => 'S',
+				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])'
+			]
+		]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		// Navigate to the first move so the board is not at the root position.
+		// Use setCurrent (not clickBoard) so the puzzle's auto-response cannot
+		// advance the board independently of the review toggle.
+		$browser->driver->executeScript("var root = window.besogo.editor.getRoot(); if (root.children && root.children.length) { window.besogo.editor.setCurrent(root.children[0]); }");
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(function ($driver) {
+			return $driver->executeScript('return window.besogo && besogo.editor.getCurrent().moveNumber >= 1;');
+		});
+		$moveBefore = $browser->driver->executeScript('return window.besogo.editor.getCurrent().moveNumber;');
+		$this->assertGreaterThanOrEqual(1, $moveBefore);
+
+		// Toggle review mode - the board should keep the current position
+		$browser->clickId('besogo-review-button');
+
+		$moveAfter = $browser->driver->executeScript('return window.besogo.editor.getCurrent().moveNumber;');
+		$this->assertSame($moveBefore, $moveAfter, 'Review toggle should not reset the board to the start position');
+	}
+
+	/**
 	 * When user fails a problem, the board should NOT lock.
 	 * User should be able to continue clicking (though they won't solve it after first failure).
 	 */

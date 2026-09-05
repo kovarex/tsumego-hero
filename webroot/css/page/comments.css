@@ -51,6 +51,44 @@
 .tsumego-comments__tab--empty:hover {
 	background: var(--surface-hover);
 }
+/* Anchor-scope filter (All / General / On board) */
+
+.tsumego-comments__anchor-filter {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin: 0 14px 12px 14px;
+	flex-wrap: wrap;
+}
+.tsumego-comments__anchor-label {
+	font-size: 12px;
+	color: var(--text-softer-color);
+	margin-right: 2px;
+}
+.tsumego-comments__anchor-btn {
+	padding: 4px 12px;
+	border: 1px solid var(--current-border-color);
+	background: var(--surface-bar);
+	color: var(--text-softer-color);
+	cursor: pointer;
+	border-radius: 12px;
+	font-family: Georgia, serif;
+	font-size: 12px;
+}
+.tsumego-comments__anchor-btn.active {
+	background: var(--text-softer-color);
+	color: var(--color-white);
+	border-color: var(--text-softer-color);
+}
+.tsumego-comments__anchor-btn:hover:not(.active) {
+	background: var(--surface-hover);
+}
+.tsumego-comments__anchor-empty {
+	margin: 0 14px 12px 14px;
+	color: var(--text-softer-color);
+	font-size: 13px;
+	font-style: italic;
+}
 /* Standalone comment styling */
 
 .tsumego-comment--standalone {
@@ -80,6 +118,26 @@
 	font-size: 11px;
 	color: var(--text-softer-color);
 }
+/* Position-anchored comment "Move N" chip (clickable -> jumps to position) */
+
+.tsumego-comment__position-label {
+	display: inline-block;
+	margin-left: 6px;
+	padding: 1px 7px;
+	border: none;
+	border-radius: 10px;
+	background: var(--info-box-background);
+	color: var(--text-softer-color);
+	font-size: 11px;
+	white-space: nowrap;
+	cursor: pointer;
+	font-family: inherit;
+	vertical-align: middle;
+}
+.tsumego-comment__position-label:hover {
+	background: var(--surface-hover);
+	color: var(--text-color);
+}
 /* Comment content / text */
 
 .tsumego-comment__content {
@@ -108,6 +166,30 @@
 .go-coord:hover {
 	background-color: rgba(30, 107, 184, 0.2);
 	border-bottom-color: transparent;
+}
+/* Color-marker hint from the comment (e.g. "b C1" / "white C1") */
+
+.go-coord--b {
+	background-color: rgba(0, 0, 0, 0.1);
+}
+.go-coord--w {
+	background-color: rgba(0, 0, 0, 0.04);
+}
+[data-theme=dark] .go-coord--w {
+	background-color: rgba(255, 255, 255, 0.12);
+}
+/* Coordinates grouped into a sequence or alternative */
+
+.go-coord-group {
+	white-space: nowrap;
+}
+.go-coord-group--sequence {
+	background: rgba(109, 179, 242, 0.12);
+	border-radius: 3px;
+	padding: 0 2px;
+}
+.go-coord-group--alternative {
+	font-style: italic;
 }
 /* Delete button cleanup - make it look dangerous */
 
@@ -180,28 +262,11 @@
 	gap: 5px;
 	cursor: pointer;
 }
-.tsumego-comments__position-btn {
-	background: transparent;
-	border: 1px solid var(--text-softer-color);
-	border-radius: 4px;
-	padding: 4px 8px;
+.tsumego-comments__position-toggle {
 	font-size: 12px;
-	cursor: pointer;
-	display: flex;
-	align-items: center;
-	gap: 4px;
 }
-.tsumego-comments__position-btn:hover {
-	background: var(--surface-hover);
-}
-.tsumego-comments__position-indicator {
-	display: none;
-	font-size: 12px;
-	color: var(--comment-green);
-}
-.tsumego-comments__position-indicator a {
-	color: var(--comment-red);
-	margin-left: 5px;
+.tsumego-comments__position-toggle input {
+	accent-color: var(--color-green);
 }
 /* Form buttons container */
 
@@ -266,12 +331,8 @@
 [data-theme=dark] .tsumego-comments__form label {
 	color: var(--text-softer-color);
 }
-[data-theme=dark] .tsumego-comments__position-btn {
-	background: var(--surface-hover-strong);
+[data-theme=dark] .tsumego-comments__position-toggle {
 	color: var(--text-softer-color);
-}
-[data-theme=dark] .tsumego-comments__position-btn:hover {
-	background: var(--surface-hover-strong);
 }
 /* Go coordinate - dark theme */
 

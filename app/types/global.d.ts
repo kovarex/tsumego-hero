@@ -42,6 +42,56 @@ interface BesogoEditor
 	getOrientation(): [string, string];
 
 	/**
+	 * Resolve a comment's `position` string to the game-tree node it anchors.
+	 * Returns null when the node cannot be found. Does not navigate/mutate.
+	 * @param positionString The comment.position value (e.g. "3/3/.../full-board|x/y+x/y")
+	 */
+	findNodeForPosition(positionString: string): BesogoNode | null;
+
+	/**
+	 * Get the number of position-anchored comments attached to a node.
+	 */
+	getAnchoredCommentCount(node: BesogoNode): number;
+
+	/**
+	 * Set which nodes have position-anchored comments (Map of node -> count).
+	 * Triggers a tree rebuild so badges appear when review mode is on.
+	 */
+	setAnchoredComments(nodeCounts: Map<BesogoNode, number>): void;
+
+	/**
+	 * Convert a western coordinate label (e.g. "R19") to its internal (x, y).
+	 * The label space is canonical: the same label always means the same
+	 * intersection regardless of the displayed corner.
+	 */
+	coordLabelToXY(coord: string): { x: number; y: number } | null;
+
+	/**
+	 * Convert a resolved internal (x, y) back to a western coordinate label.
+	 * Inverse of coordLabelToXY.
+	 */
+	coordXYToLabel(x: number, y: number): string | null;
+
+	/**
+	 * Re-label comment coordinates (authored in the commenters board
+	 * orientation) to match the currently-displayed board. Falls back to the
+	 * input labels when the orientation cannot be determined uniquely.
+	 * @param coords Comment coordinate labels, e.g. ["T3","Q2"]
+	 * @param positionString Optional comment.position anchor
+	 */
+	transformCommentCoords(coords: string[], positionString?: string | null): string[];
+
+	/**
+	 * Register a listener for editor state changes (navChange/treeChange/etc).
+	 */
+	addListener(listener: (msg: { navChange?: boolean; treeChange?: boolean; stoneChange?: boolean }) => void): void;
+
+	/**
+	 * Remove a previously registered listener.
+	 */
+	removeListener(listener: (msg: { navChange?: boolean; treeChange?: boolean; stoneChange?: boolean }) => void): void;
+
+	/**
 	 * Navigate to a saved board position.
 	 * @param positionParams Array of position parameters from database:
 	 *   [x, y, parentX, parentY, childX, childY, moveNumber, childrenCount, orientation, path]
@@ -140,8 +190,15 @@ declare global
 		 * Defined in play.ctp.
 		 * @param coord Go coordinate like "C3", "D4"
 		 * @param event Mouse event for positioning
+		 * @param position Optional comment.position anchor - when present, the
+		 *   preview shows the anchored board position instead of the current one.
+		 * @param sequence Optional sequence context - when the coordinate is part
+		 *   of a dash-joined sequence (e.g. R19-P19-Q19), the preview replays the
+		 *   moves before the hovered coordinate so the board reflects the
+		 *   position righoption t before that move. sequence.coords are the full list of
+		 *   coordinates, sequence.index is the hovered index.
 		 */
-		showCoordPopup(coord: string, event: MouseEvent): void;
+		showCoordPopup(coord: string, event: MouseEvent, position?: string, sequence?: { coords: string[]; colors?: (string | null)[]; index: number }): void;
 
 		/**
 		 * Hide coordinate popup.
@@ -151,4 +208,4 @@ declare global
 	}
 }
 
-export {};
+export type { BesogoNode, BesogoEditor, Besogo };

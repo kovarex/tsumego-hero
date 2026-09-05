@@ -37,7 +37,14 @@
     -moz-user-select: none;      /* Firefox */
     -ms-user-select: none;       /* Internet Explorer/Edge */
      user-select: none;
-     
+     }
+
+.besogo-tree-comment-badge { /* Badge on review-tree nodes with anchored comments */
+    pointer-events: none;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
+}
+.besogo-tree-comment-badge__bubble {
+    fill: var(--color-purple-vivid, #6239ff);
 }
 
 .besogo-panels {
