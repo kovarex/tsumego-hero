@@ -8,15 +8,16 @@
  *   - colored moves:       "b D18, w B19", "black R19", "W-T19"
  *
  * This parser tokenizes such text into "slices": plain text or a run of
- * coordinates, tagging each run as a single / sequence / alternative and
- * recording an optional color per coordinate. It is orientation-agnostic
- * (coordinates are absolute board intersections) and does NOT depend on besogo.
+ * coordinates, tagging each run as a sequence or alternative (a lone
+ * coordinate is a one-move sequence) and recording an optional color per
+ * coordinate. It is orientation-agnostic (coordinates are absolute board
+ * intersections) and does NOT depend on besogo.
  *
  * It deliberately uses heuristics that match the actual comment corpus and
  * degrades gracefully (a coordinate it cannot link into a run is still kept).
  */
 export type CoordColor = 'b' | 'w';
-export type CoordGroupKind = 'single' | 'sequence' | 'alternative';
+export type CoordGroupKind = 'sequence' | 'alternative';
 
 export interface CoordToken
 {
@@ -186,14 +187,16 @@ export function parseCoordinateReferences(text: string): ParsedSlice[]
 			// Emit the text before this coordinate (leading text or a break).
 			if (gap) 
 				slices.push({ type: 'text', text: gap });
-			run = { type: 'coords', kind: 'single', tokens: [], separators: [] };
+			run = { type: 'coords', kind: 'sequence', tokens: [], separators: [] };
 			slices.push(run);
 			cursor = start;
 		}
 		else
 		{
 			// Continue the run; the gap is a connector stored as a separator.
-			run.separators.push(gap.trim() || ' ');
+			// Keep the author's surrounding whitespace (collapsed) so word
+			// separators like " and " stay readable instead of "B17andA16".
+			run.separators.push(gap ? gap.replace(/\s+/g, ' ') : ' ');
 			run.kind = conn === 'alternative' ? 'alternative' : 'sequence';
 		}
 

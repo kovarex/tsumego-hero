@@ -284,6 +284,37 @@ class CommentsControllerTest extends ControllerTestCase
 	}
 
 	/**
+	 * A lone coordinate is a one-move sequence: it renders in a sequence group so
+	 * hovering it shows the move on the board like any other sequence.
+	 */
+	public function testCommentSingleCoordinateRendersAsSequenceGroup()
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => [
+				'set_order' => 1,
+				'status' => 'S',
+				'comments' => [[
+					'message' => 'White lives with R19.'
+				]]
+			]
+		]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->expandComments();
+
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(function ($driver) {
+			return count($driver->findElements(WebDriverBy::cssSelector('.go-coord'))) >= 1;
+		});
+
+		// A lone coordinate sits in a sequence group, not bare.
+		$seqGroups = $browser->driver->findElements(WebDriverBy::cssSelector('.go-coord-group--sequence'));
+		$this->assertGreaterThanOrEqual(1, count($seqGroups));
+		$this->assertStringContainsString('R19', $seqGroups[0]->getText());
+	}
+
+	/**
 	 * A comma followed by the connector word "then" (e.g. "...A16, then A18?")
 	 * is a sequence continuation, not a sentence break, so the trailing move
 	 * stays in the same sequence group rather than splitting off as a single.
@@ -322,6 +353,9 @@ class CommentsControllerTest extends ControllerTestCase
 		$seqGroups = $browser->driver->findElements(WebDriverBy::cssSelector('.go-coord-group--sequence'));
 		$this->assertGreaterThanOrEqual(1, count($seqGroups));
 		$this->assertStringContainsString('A18', $seqGroups[0]->getText());
+		// The connector keeps its surrounding spaces, so it reads "D17, then A18"
+		// rather than the unreadable "D17, thenA18".
+		$this->assertStringContainsString('D17, then A18', $seqGroups[0]->getText());
 	}
 
 	/**

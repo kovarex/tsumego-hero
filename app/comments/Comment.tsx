@@ -80,16 +80,17 @@ function renderCommentText(text: string | null | undefined, position?: string | 
 			return slice.text;
 
 		const { kind, tokens, separators } = slice;
-		const groupClass = kind === 'single' ? '' : ` go-coord-group go-coord-group--${kind}`;
+		const groupClass = ` go-coord-group go-coord-group--${kind}`;
 		const children: React.ReactNode[] = [];
 
 		// Transform the authored labels to the displayed board orientation so the
 		// comment text agrees with the board the reader sees.
 		const boardCoords = transformCoords(tokens.map(t => t.coord), position);
 
-		// For a dash/arrow-joined sequence, each coordinate carries the full list
-		// of moves plus its own index so hover can preview the moves before it.
-		// Alternatives (e.g. F2/G1) and single coords have no sequence context.
+		// For a sequence, each coordinate carries the full list of moves plus its
+		// own index so hover can preview the moves before it. A lone coordinate is
+		// a one-move sequence, so it carries this context too. Alternatives (e.g.
+		// F2/G1) have no sequence context.
 		const sequenceCoords = kind === 'sequence' ? boardCoords : undefined;
 		// Per-move explicit colour (w/b) from the comment, or null to alternate.
 		const sequenceColors = kind === 'sequence' ? tokens.map(t => t.color ?? null) : undefined;
@@ -105,8 +106,6 @@ function renderCommentText(text: string | null | undefined, position?: string | 
 			);
 		});
 
-		if (kind === 'single') 
-			return children;
 		return (
 			<span key={`group-${key++}`} className={groupClass.trim()}>
 				{children}
