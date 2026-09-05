@@ -141,6 +141,31 @@ a[href="/changelog"]
 	margin: 0 0 var(--space-1);
 }
 
+.changelog__category--added
+{
+	color: var(--status-c-color);
+}
+
+.changelog__category--fixed
+{
+	color: var(--status-f-color);
+}
+
+.changelog__category--changed
+{
+	color: var(--status-v-color);
+}
+
+.changelog__category--performance
+{
+	color: var(--status-w-color);
+}
+
+.changelog__category--removed
+{
+	color: var(--status-n-color);
+}
+
 .changelog__list
 {
 	list-style: none;

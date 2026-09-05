@@ -47,7 +47,7 @@ function Feed({ entries }: { entries: ChangelogEntry[] })
 					<h2 className="changelog__date">{date}</h2>
 					{categories.map(([category, list]) => (
 						<div className="changelog__group" key={category}>
-							<h3 className="changelog__category">{category}</h3>
+							<h3 className={`changelog__category changelog__category--${category.toLowerCase()}`}>{category}</h3>
 							<ul className="changelog__list">
 								{list.map((e, index) => (
 									<li key={`${e.file}-${index}`}>
