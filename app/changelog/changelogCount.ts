@@ -2,8 +2,6 @@ import type { ChangelogEntry } from './changelogTypes';
 
 const LAST_SEEN_KEY = 'tsumego-changelog-last-seen';
 
-// The newest timestamp a player has seen on the changelog. Stored locally so
-// "new" is per player and stays accurate without a server round trip.
 export function getLastSeen(): number
 {
 	try
@@ -29,17 +27,12 @@ export function markSeen(ts: number): void
 	}
 }
 
-// How many entries are newer than the marker. No marker means nothing to
-// compare against, so there's nothing new yet.
+// How many entries are newer than the marker.
 export function countNew(entries: ChangelogEntry[], lastSeen: number): number
 {
 	return lastSeen === 0 ? 0 : entries.filter(e => e.ts > lastSeen).length;
 }
 
-// Update the count badge on the "What's new" nav link. The timestamps of the
-// changelog entries are emitted inline by the layout (window.__CHANGELOG_TS),
-// so the count is computed locally without a round trip. The badge only shows
-// once a marker exists and there is something newer.
 export function syncMenuNewBadge(): void
 {
 	const badge = document.querySelector<HTMLElement>('a[href="/changelog"] .nav__new-badge');

@@ -38,7 +38,6 @@ function groupByDay(entries: ChangelogEntry[]): { date: string; categories: [str
 	}));
 }
 
-// Render a list of day/category groups.
 function Feed({ entries }: { entries: ChangelogEntry[] })
 {
 	return (
@@ -67,16 +66,13 @@ function Feed({ entries }: { entries: ChangelogEntry[] })
 }
 
 /**
- * Renders the changelog feed. Entries are provided by the server (from the
- * generated changelog/index.json) via the mount element's data-props.
- *
- * Entries newer than the player's last visit are grouped at the top behind a
- * blue left rule that ends with a count; the marker is advanced once shown.
+ * Renders the changelog feed from the mount element's data-props. New entries
+ * since the player's last visit are grouped at the top; the marker advances on
+ * render.
  */
 export function Changelog({ entries }: { entries: ChangelogEntry[] })
 {
-	// Snapshot the last-seen marker at mount so new entries can be flagged;
-	// after render the marker is advanced and the menu badge is refreshed.
+	// Snapshot the marker at mount; it's advanced in the effect below.
 	const lastSeen = useMemo(() => getLastSeen(), []);
 
 	useEffect(() =>

@@ -15,8 +15,6 @@ function initializeApp()
 	mountApp('[data-tag-editor-root]', TagEditor);
 	mountApp('[data-changelog-root]', Changelog);
 
-	// Show how many changelog entries are new since the player's last visit on
-	// the "What's new" menu item. Reads the local marker and counts newer ones.
 	syncMenuNewBadge();
 
 	// Expose React Query invalidation for Selenium testing
