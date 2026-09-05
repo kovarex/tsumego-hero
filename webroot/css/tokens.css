@@ -231,6 +231,7 @@
 		--font-size-base: clamp(11px, 0.65rem + 0.5vw, 12px);
 		--font-size-md: clamp(12px, 0.7rem + 0.5vw, 13px);
 		--font-size-lg: clamp(14px, 0.8rem + 0.6vw, 15px);
+		--font-size-xl: clamp(17px, 1rem + 0.8vw, 20px);
 		--font-weight-normal: 400;
 		--font-weight-bold: 700;
 		--font-weight-heavy: 800;

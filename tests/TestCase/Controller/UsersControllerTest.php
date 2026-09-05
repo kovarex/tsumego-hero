@@ -72,6 +72,42 @@ class UsersControllerTest extends ControllerTestCase
 		$this->assertTextContains('kovarex', $browser->driver->getPageSource());
 	}
 
+	public function testProfileRedirectsToOwnProfile()
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'kovarex']]);
+		$browser = Browser::instance();
+		$browser->get('profile');
+		$currentUrl = $browser->driver->getCurrentURL();
+		$this->assertStringContainsString('/users/view/' . $context->user['id'], $currentUrl, "Expected /profile to redirect to own profile, but was at: $currentUrl");
+	}
+
+	public function testMeRedirectsToOwnProfile()
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'kovarex']]);
+		$browser = Browser::instance();
+		$browser->get('me');
+		$currentUrl = $browser->driver->getCurrentURL();
+		$this->assertStringContainsString('/users/view/' . $context->user['id'], $currentUrl, "Expected /me to redirect to own profile, but was at: $currentUrl");
+	}
+
+	public function testMeSolveHistoryRedirects()
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'kovarex']]);
+		$browser = Browser::instance();
+		$browser->get('me/solve-history');
+		$currentUrl = $browser->driver->getCurrentURL();
+		$this->assertStringContainsString('/users/solveHistory/' . $context->user['id'], $currentUrl, "Expected /me/solve-history to redirect, but was at: $currentUrl");
+	}
+
+	public function testMeContributionsRedirects()
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'kovarex']]);
+		$browser = Browser::instance();
+		$browser->get('me/contributions');
+		$currentUrl = $browser->driver->getCurrentURL();
+		$this->assertStringContainsString('/tags/user/' . $context->user['id'], $currentUrl, "Expected /me/contributions to redirect, but was at: $currentUrl");
+	}
+
 	public function testDailyHighscore()
 	{
 		$context = new ContextPreparator([

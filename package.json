@@ -10,6 +10,7 @@
     "build:coverage": "VITE_COVERAGE=true vite build",
     "coverage:js": "bash scripts/js-coverage-report.sh",
     "coverage:index": "node scripts/coverage-index.mjs",
+    "changelog:gen": "node scripts/changelog-generate.mjs",
     "lint": "eslint app --ext .ts,.tsx",
     "lint:fix": "eslint app --ext .ts,.tsx --fix",
     "format": "prettier --write \"app/**/*.{ts,tsx}\" && eslint app --ext .ts,.tsx --fix",
@@ -20,6 +21,7 @@
     "dayjs": "^1.11.19",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-markdown": "^10.1.0",
     "sortablejs": "^1.15.6"
   },
   "devDependencies": {

@@ -1,0 +1,53 @@
+import type { ChangelogEntry } from './changelogTypes';
+
+const LAST_SEEN_KEY = 'tsumego-changelog-last-seen';
+
+export function getLastSeen(): number
+{
+	try
+	{
+		return parseInt(localStorage.getItem(LAST_SEEN_KEY) || '0', 10) || 0;
+	}
+	catch
+	{
+		return 0;
+	}
+}
+
+// Record that the player has seen everything up to `ts`.
+export function markSeen(ts: number): void
+{
+	try
+	{
+		localStorage.setItem(LAST_SEEN_KEY, String(ts));
+	}
+	catch
+	{
+		// ignore
+	}
+}
+
+// How many entries are newer than the marker.
+export function countNew(entries: ChangelogEntry[], lastSeen: number): number
+{
+	return lastSeen === 0 ? 0 : entries.filter(e => e.ts > lastSeen).length;
+}
+
+export function syncMenuNewBadge(): void
+{
+	const badge = document.querySelector<HTMLElement>('a[href="/changelog"] .nav__new-badge');
+	if (!badge)
+		return;
+
+	const lastSeen = getLastSeen();
+	if (lastSeen === 0)
+	{
+		badge.classList.remove('nav__new-badge--visible');
+		return;
+	}
+
+	const timestamps: number[] = (window as unknown as { __CHANGELOG_TS?: number[] }).__CHANGELOG_TS ?? [];
+	const count = timestamps.filter(ts => ts > lastSeen).length;
+	badge.textContent = String(count);
+	badge.classList.toggle('nav__new-badge--visible', count > 0);
+}

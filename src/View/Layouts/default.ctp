@@ -130,6 +130,9 @@ echo $this->fetch('script');
 // Legacy app.js bundle (global-scope scripts — served as plain <script>, not type="module")
 echo ViteManifest::legacyScript('legacy');
 ?>
+<script>
+	window.__CHANGELOG_TS = <?php echo json_encode($changelogTimestamps ?? []); ?>;
+</script>
 </head>
 
 <body>
@@ -212,6 +215,7 @@ echo ViteManifest::legacyScript('legacy');
 			$websitefunctionsA = '';
 			$gotutorialA = '';
 			$aboutA = '';
+			$changelogA = '';
 
 			$_page = $_page ?? '';
 			if($_page == 'home') $homeA = 'nav__link--active';
@@ -233,6 +237,7 @@ echo ViteManifest::legacyScript('legacy');
 			else if($_page == 'websitefunctions') $websitefunctionsA = 'nav__link--active';
 			else if($_page == 'gotutorial') $gotutorialA = 'nav__link--active';
 			else if($_page == 'about') $aboutA = 'nav__link--active';
+			else if($_page == 'changelog') $changelogA = 'nav__link--active';
 			else if($_page == 'levelHighscore') $levelHighscoreA = 'nav__link--active';
 			else if($_page == 'ratingHighscore') $ratingHighscoreA = 'nav__link--active';
 			else if($_page == 'achievementHighscore') $achievementHighscoreA = 'nav__link--active';
@@ -264,6 +269,7 @@ echo ViteManifest::legacyScript('legacy');
 						echo '<li><a class="'.$websitefunctionsA.'" href="/sites/websitefunctions">Functions & Modes</a></li>';
 						echo '<li><a class="'.$gotutorialA.'" href="/sites/gotutorial">Go Rules</a></li>';
 						echo '<li class="newMenuLi1-forum"><a id="forumLink" href="/forums">Forums</a></li>';
+						echo '<li><a class="'.$changelogA.'" href="/changelog">What\'s new<span class="nav__new-badge"></span></a></li>';
 						echo '<li><a class="'.$aboutA.'" href="/sites/about">About</a></li>';
 						echo '</ul>';
 						echo '</li>';

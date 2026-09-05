@@ -736,6 +736,32 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('totalUsers', Util::query("SELECT COUNT(*) as cnt FROM user WHERE daily_xp > 0")[0]['cnt']);
 	}
 
+	/**
+	 * Redirect to the logged-in user's own profile page.
+	 *
+	 * @return void
+	 */
+	public function profile(): void
+	{
+		if (!Auth::isLoggedIn())
+			$this->redirect('/users/login');
+		$this->redirect('/users/view/' . Auth::getUserID());
+	}
+
+	public function meSolveHistory(): void
+	{
+		if (!Auth::isLoggedIn())
+			$this->redirect('/users/login');
+		$this->redirect('/users/solveHistory/' . Auth::getUserID());
+	}
+
+	public function meContributions(): void
+	{
+		if (!Auth::isLoggedIn())
+			$this->redirect('/users/login');
+		$this->redirect('/tags/user/' . Auth::getUserID());
+	}
+
 	public function view($id = null): mixed
 	{
 		$this->set('_page', 'user');
