@@ -1,1 +1,1 @@
-Added: Comments that point to a board position now highlight the moves on the board, with badges in the move tree.
+Added: Hovering a coordinate in a comment now shows the moves on the board, and positions with comments are marked with a badge in the move tree.
