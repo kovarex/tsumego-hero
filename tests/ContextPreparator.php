@@ -2,6 +2,7 @@
 
 App::uses('BoardSelector', 'Utility');
 App::uses('SgfParser', 'Utility');
+App::uses('User', 'Model');
 
 class ContextPreparator
 {
@@ -110,6 +111,8 @@ class ContextPreparator
 			$user['damage'] = Util::extract('damage', $userInput) ?? 0;
 		$user['sprint_start'] = Util::extract('sprint_start', $userInput) ?: null;
 		$user['mode'] = Util::extract('mode', $userInput) ?: Constants::$LEVEL_MODE;
+		$user['pref_player_color'] = Util::extract('pref_player_color', $userInput) ?? User::PREF_PLAYER_COLOR_RANDOM;
+		$user['pref_board_orientation'] = Util::extract('pref_board_orientation', $userInput) ?? User::PREF_BOARD_ORIENTATION_RANDOM;
 		if ($lastTimeModeCategoryID = Util::extract('last-time-mode-category-id', $userInput))
 			$user['last_time_mode_category_id'] = $lastTimeModeCategoryID;
 
