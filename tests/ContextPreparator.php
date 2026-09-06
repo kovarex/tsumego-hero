@@ -195,6 +195,7 @@ class ContextPreparator
 		$this->prepareTsumegoSgfs(Util::extract('sgfs', $tsumegoInput), $tsumego);
 		$this->prepareTsumegoComments(Util::extract('comments', $tsumegoInput), $tsumego);
 		$this->prepareTsumegoIssues(Util::extract('issues', $tsumegoInput), $tsumego);
+		$this->prepareTsumegoVariants(Util::extract('variants', $tsumegoInput), $tsumego);
 		$this->checkOptionsConsumed($tsumegoInput);
 		return $tsumego;
 	}
@@ -326,6 +327,25 @@ class ContextPreparator
 			$this->prepareTsumegoComment(['message' => $message], $tsumego, $issueId);
 
 		$this->checkOptionsConsumed($issueInput);
+	}
+
+	private function prepareTsumegoVariants(?array $tsumegoVariants, &$tsumego): void
+	{
+		if (!$tsumegoVariants)
+			return;
+		foreach ($tsumegoVariants as $variantInput)
+			$this->prepareTsumegoVariant($variantInput, $tsumego);
+	}
+
+	private function prepareTsumegoVariant(array $variantInput, &$tsumego): void
+	{
+		$variant = array_merge(['tsumego_id' => $tsumego['id']], $variantInput);
+		$variantModel = ClassRegistry::init('TsumegoVariant');
+		$variantModel->create($variant);
+		$variantModel->save($variant);
+		$savedVariant = $variantModel->data['TsumegoVariant'];
+		$savedVariant['id'] = $variantModel->id;
+		$tsumego['variants'][] = $savedVariant;
 	}
 
 	private function prepareTsumegoStatuses($tsumegoStatuses, $tsumego): void

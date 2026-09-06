@@ -919,13 +919,6 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$this->assertStringContainsString('White to capture the black group', $m2[1]);
 	}
 
-	private function createTsumegoVariant(int $tsumegoId, array $variantData): void
-	{
-		$variant = ['TsumegoVariant' => array_merge(['tsumego_id' => $tsumegoId], $variantData)];
-		ClassRegistry::init('TsumegoVariant')->create($variant);
-		ClassRegistry::init('TsumegoVariant')->save($variant);
-	}
-
 	/**
 	 * Custom multiple-choice variant answers are stored in true colors. When the
 	 * board is inverted (?playercolor=white), the answer text is swapped so it
@@ -939,15 +932,15 @@ class TsumegosControllerTest extends TestCaseWithAuth
 				'set_order' => 1,
 				'description' => 'Black to play. What is the result?',
 				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])',
+				'variants' => [[
+					'type' => 'multiple_choice',
+					'answer1' => 'White is dead',
+					'answer2' => 'Ko',
+					'answer3' => 'Seki in sente',
+					'answer4' => 'Seki in gote',
+					'numAnswer' => '3',
+				]],
 			],
-		]);
-		$this->createTsumegoVariant($context->tsumegos[0]['id'], [
-			'type' => 'multiple_choice',
-			'answer1' => 'White is dead',
-			'answer2' => 'Ko',
-			'answer3' => 'Seki in sente',
-			'answer4' => 'Seki in gote',
-			'numAnswer' => '3',
 		]);
 
 		// No inversion: answers keep their true colors.
@@ -973,14 +966,14 @@ class TsumegosControllerTest extends TestCaseWithAuth
 				'set_order' => 1,
 				'description' => 'Who wins?',
 				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])',
+				'variants' => [[
+					'type' => 'score_estimating',
+					'answer1' => '6.5',
+					'answer2' => '3',
+					'answer3' => '6',
+					'numAnswer' => '0',
+				]],
 			],
-		]);
-		$this->createTsumegoVariant($context->tsumegos[0]['id'], [
-			'type' => 'score_estimating',
-			'answer1' => '6.5',
-			'answer2' => '3',
-			'answer3' => '6',
-			'numAnswer' => '0',
 		]);
 
 		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'view']);
@@ -1004,15 +997,15 @@ class TsumegosControllerTest extends TestCaseWithAuth
 				'set_order' => 1,
 				'description' => 'Black to play. What is the result?',
 				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc]AW[dd];B[aa];W[ab];B[ba]C[+])',
+				'variants' => [[
+					'type' => 'multiple_choice',
+					'answer1' => 'White is dead',
+					'answer2' => 'Ko',
+					'answer3' => 'Seki in sente',
+					'answer4' => 'Seki in gote',
+					'numAnswer' => '3',
+				]],
 			],
-		]);
-		$this->createTsumegoVariant($context->tsumegos[0]['id'], [
-			'type' => 'multiple_choice',
-			'answer1' => 'White is dead',
-			'answer2' => 'Ko',
-			'answer3' => 'Seki in sente',
-			'answer4' => 'Seki in gote',
-			'numAnswer' => '3',
 		]);
 
 		$browser = Browser::instance();
