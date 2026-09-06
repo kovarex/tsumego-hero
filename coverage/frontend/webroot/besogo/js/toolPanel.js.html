@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">20.91% </span>
+                <span class="strong">20.53% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>147/703</span>
+                <span class='fraction'>147/716</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">18.21% </span>
+                <span class="strong">17.43% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>57/313</span>
+                <span class='fraction'>57/327</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">14.81% </span>
+                <span class="strong">14.45% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>12/81</span>
+                <span class='fraction'>12/83</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">21.18% </span>
+                <span class="strong">20.93% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>143/675</span>
+                <span class='fraction'>143/683</span>
             </div>
         
             
@@ -1350,7 +1350,20 @@
 <a name='L1285'></a><a href='#L1285'>1285</a>
 <a name='L1286'></a><a href='#L1286'>1286</a>
 <a name='L1287'></a><a href='#L1287'>1287</a>
-<a name='L1288'></a><a href='#L1288'>1288</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">58x</span>
+<a name='L1288'></a><a href='#L1288'>1288</a>
+<a name='L1289'></a><a href='#L1289'>1289</a>
+<a name='L1290'></a><a href='#L1290'>1290</a>
+<a name='L1291'></a><a href='#L1291'>1291</a>
+<a name='L1292'></a><a href='#L1292'>1292</a>
+<a name='L1293'></a><a href='#L1293'>1293</a>
+<a name='L1294'></a><a href='#L1294'>1294</a>
+<a name='L1295'></a><a href='#L1295'>1295</a>
+<a name='L1296'></a><a href='#L1296'>1296</a>
+<a name='L1297'></a><a href='#L1297'>1297</a>
+<a name='L1298'></a><a href='#L1298'>1298</a>
+<a name='L1299'></a><a href='#L1299'>1299</a>
+<a name='L1300'></a><a href='#L1300'>1300</a>
+<a name='L1301'></a><a href='#L1301'>1301</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">58x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -2060,8 +2073,21 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -3256,7 +3282,7 @@
 <span class="cstat-no" title="statement not covered" >      if (setID != 262)</span>
       {
 <span class="cstat-no" title="statement not covered" >        makeButtonText(</span>
-          "Black wins",
+          besogo.boardInverted ? "White wins" : "Black wins",
           "",
 <span class="fstat-no" title="function not covered" >          fu</span>nction () {
 <span class="cstat-no" title="statement not covered" >            displayScoreEstimatingResult("b");</span>
@@ -3265,7 +3291,7 @@
         );
 &nbsp;
 <span class="cstat-no" title="statement not covered" >        makeButtonText(</span>
-          "White wins",
+          besogo.boardInverted ? "Black wins" : "White wins",
           "",
 <span class="fstat-no" title="function not covered" >          fu</span>nction () {
 <span class="cstat-no" title="statement not covered" >            displayScoreEstimatingResult("w");</span>
@@ -3300,7 +3326,7 @@
 <span class="cstat-no" title="statement not covered" >      makeHyperlinkText("Back","previous problem", previousButtonLink, prevButtonId);</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >      makeButtonText(</span>
-        "Black is dead",
+        besogo.boardInverted ? "White is dead" : "Black is dead",
         "",
 <span class="fstat-no" title="function not covered" >        fu</span>nction () {
 <span class="cstat-no" title="statement not covered" >          displayMultipleChoiceResult(1);</span>
@@ -3309,7 +3335,7 @@
       );
 &nbsp;
 <span class="cstat-no" title="statement not covered" >      makeButtonText(</span>
-        "White is dead",
+        besogo.boardInverted ? "Black is dead" : "White is dead",
         "",
 <span class="fstat-no" title="function not covered" >        fu</span>nction () {
 <span class="cstat-no" title="statement not covered" >          displayMultipleChoiceResult(2);</span>
@@ -3343,14 +3369,27 @@
       "change the color of your stones",
       "colorOrientation",
 <span class="fstat-no" title="function not covered" >      fu</span>nction () {
+<span class="cstat-no" title="statement not covered" >        besogo.boardInverted = !besogo.boardInverted;</span>
+        let swapColorWords = <span class="cstat-no" title="statement not covered" >besogo.swapColorWords;</span>
         let transformation = <span class="cstat-no" title="statement not covered" >besogo.makeTransformation();</span>
 <span class="cstat-no" title="statement not covered" >        transformation.invertColors = true;</span>
-        let descriptionText = <span class="cstat-no" title="statement not covered" >$("#descriptionText").text();</span>
-<span class="cstat-no" title="statement not covered" >        if (descriptionText.includes("Black"))</span>
-<span class="cstat-no" title="statement not covered" >          descriptionText = descriptionText.replaceAll("Black", "White");</span>
-        else <span class="cstat-no" title="statement not covered" >if (descriptionText.includes("White"))</span>
-<span class="cstat-no" title="statement not covered" >          descriptionText = descriptionText.replaceAll("White", "Black");</span>
-<span class="cstat-no" title="statement not covered" >        $("#descriptionText").text(descriptionText);</span>
+        // Any true-color text shown to the player must follow the board's colors.
+        let desc = <span class="cstat-no" title="statement not covered" >$("#descriptionText");</span>
+<span class="cstat-no" title="statement not covered" >        if (desc.length) <span class="cstat-no" title="statement not covered" >desc.text(swapColorWords(desc.text()));</span></span>
+        let theComment = <span class="cstat-no" title="statement not covered" >$("#theComment");</span>
+<span class="cstat-no" title="statement not covered" >        if (theComment.length) <span class="cstat-no" title="statement not covered" >theComment.text(swapColorWords(theComment.text()));</span></span>
+        // Multiple-choice answers (custom multiple-choice and semeai share these ids).
+<span class="cstat-no" title="statement not covered" >        ["besogo-multipleChoice1", "besogo-multipleChoice2", "besogo-multipleChoice3", "besogo-multipleChoice4"].forEach(<span class="fstat-no" title="function not covered" >fu</span>nction (id) {</span>
+          let el = <span class="cstat-no" title="statement not covered" >$("#" + id);</span>
+<span class="cstat-no" title="statement not covered" >          if (el.length) <span class="cstat-no" title="statement not covered" >el.val(swapColorWords(el.val()));</span></span>
+        });
+        // Score-estimating result buttons and summary labels.
+<span class="cstat-no" title="statement not covered" >        ["besogo-se-black", "besogo-se-white"].forEach(<span class="fstat-no" title="function not covered" >fu</span>nction (id) {</span>
+          let el = <span class="cstat-no" title="statement not covered" >$("#" + id);</span>
+<span class="cstat-no" title="statement not covered" >          if (el.length) <span class="cstat-no" title="statement not covered" >el.val(swapColorWords(el.val()));</span></span>
+        });
+        let scoreLabels = <span class="cstat-no" title="statement not covered" >$("#scoreEstimatingLabels");</span>
+<span class="cstat-no" title="statement not covered" >        if (scoreLabels.length) <span class="cstat-no" title="statement not covered" >scoreLabels.text(swapColorWords(scoreLabels.text()));</span></span>
 <span class="cstat-no" title="statement not covered" >        besogo.editor.applyTransformation(transformation);</span>
       }
     );
@@ -3931,7 +3970,7 @@
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-09-06T03:48:53.053Z
+                at 2026-09-06T10:21:53.795Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
