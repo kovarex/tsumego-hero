@@ -47,6 +47,15 @@ class AdminGuardTest extends ControllerTestCase
 		$this->testAction('/users/uploads', ['method' => 'get']);
 	}
 
+	public function testUserstatsRequiresLogin()
+	{
+		new ContextPreparator(['user' => null]);
+
+		$this->expectException(UnauthorizedException::class);
+
+		$this->testAction('/users/userstats', ['method' => 'get']);
+	}
+
 	public function testUserstatsRequiresAdmin()
 	{
 		new ContextPreparator(['user' => ['name' => 'regular', 'admin' => false]]);
@@ -54,6 +63,15 @@ class AdminGuardTest extends ControllerTestCase
 		$this->expectException(ForbiddenException::class);
 
 		$this->testAction('/users/userstats', ['method' => 'get']);
+	}
+
+	public function testUserstats3RequiresLogin()
+	{
+		new ContextPreparator(['user' => null]);
+
+		$this->expectException(UnauthorizedException::class);
+
+		$this->testAction('/users/userstats3', ['method' => 'get']);
 	}
 
 	public function testUserstats3RequiresAdmin()

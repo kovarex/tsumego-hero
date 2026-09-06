@@ -19,8 +19,6 @@
  * @var bool $goldenTsumego
  * @var bool $hasSgfProposal
  * @var int $i
- * @var int $idForSignature
- * @var int $idForSignature2
  * @var bool $isAllowedToContribute
  * @var bool $canAddMoreTags
  * @var bool $isSandbox
@@ -650,8 +648,6 @@
 	var file = <?php echo json_encode($file, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 	var tsumegoFileLink = "<?php echo $t['Tsumego']['id']; ?>";
 	var requestSignature = "<?php echo $requestSignature; ?>";
-	var idForSignature = "<?php echo $idForSignature; ?>";
-	var idForSignature2 = "<?php echo $idForSignature2; ?>";
 	var author = <?php echo json_encode($t['Tsumego']['author'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 	var userSets = <?php echo $userSetsJson; ?>;
 	var besogoMode2Solved = false;
