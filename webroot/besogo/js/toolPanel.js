@@ -622,7 +622,7 @@ besogo.makeToolPanel = function (container, editor) {
           function () {
             displayScoreEstimatingResult("b");
           },
-          "besogo-score-wins-a"
+          "besogo-se-winner-black"
         );
 
         makeButtonText(
@@ -631,7 +631,7 @@ besogo.makeToolPanel = function (container, editor) {
           function () {
             displayScoreEstimatingResult("w");
           },
-          "besogo-score-wins-b"
+          "besogo-se-winner-white"
         );
         makeButtonText(
           "-",
@@ -719,7 +719,7 @@ besogo.makeToolPanel = function (container, editor) {
           if (el.length) el.val(swapColorWords(el.val()));
         });
         // Score-estimating result buttons and summary labels.
-        ["besogo-score-wins-a", "besogo-score-wins-b"].forEach(function (id) {
+        ["besogo-se-winner-black", "besogo-se-winner-white"].forEach(function (id) {
           let el = $("#" + id);
           if (el.length) el.val(swapColorWords(el.val()));
         });
