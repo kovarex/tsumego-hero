@@ -1255,7 +1255,6 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
       signatures +
       tsumegoFileLink +
       ";SameSite=Lax";
-    //if(idForSignature!==-1) window.location.href = "/tsumegos/play/"+idForSignature+"?idForTheThing="+idForSignature2;
   }
 
   function createSignature(a) {

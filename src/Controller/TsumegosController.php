@@ -135,26 +135,6 @@ class TsumegosController extends AppController
 		return null;
 	}
 
-	public static function getTheIdForTheThing($num)
-	{
-		$t = [];
-		$s = ClassRegistry::init('Set')->find('all', ['order' => 'id ASC', 'conditions' => ['public' => 1]]) ?: [];
-		$sCount = count($s);
-
-		for ($i = 0; $i < $sCount; $i++)
-		{
-			$sc = ClassRegistry::init('SetConnection')->find('all', ['order' => 'tsumego_id ASC', 'conditions' => ['set_id' => $s[$i]['Set']['id']]]) ?: [];
-			$scCount = count($sc);
-
-			for ($j = 0; $j < $scCount; $j++)
-				array_push($t, $sc[$j]['SetConnection']['tsumego_id']);
-		}
-		if ($num >= count($t))
-			return -1;
-
-		return $t[$num];
-	}
-
 	public function edit($tsumegoID)
 	{
 		$this->Authorization->authorize('Tsumego');

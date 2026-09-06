@@ -360,13 +360,6 @@ class Play
 			}
 			unset($_COOKIE['signatures']);
 		}
-		$idForSignature = -1;
-		$idForSignature2 = -1;
-		if (isset($params['url']['idForTheThing']))
-		{
-			$idForSignature2 = $params['url']['idForTheThing'] + 1;
-			$idForSignature = TsumegosController::getTheIdForTheThing($idForSignature2);
-		}
 
 		$tagData = ClassRegistry::init('Tag')::getForTsumego($id);
 
@@ -413,8 +406,6 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 
 		($this->setFunction)('tagData', $tagData);
 		($this->setFunction)('requestSignature', $requestSignature);
-		($this->setFunction)('idForSignature', $idForSignature);
-		($this->setFunction)('idForSignature2', $idForSignature2);
 		($this->setFunction)('nothingInRange', $nothingInRange);
 		($this->setFunction)('sgf', $sgf);
 		($this->setFunction)('corner', $corner);
