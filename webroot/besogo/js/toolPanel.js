@@ -661,7 +661,7 @@ besogo.makeToolPanel = function (container, editor) {
       makeHyperlinkText("Back","previous problem", previousButtonLink, prevButtonId);
 
       makeButtonText(
-        besogo.boardInverted ? besogo.swapColorWords("Black is dead") : "Black is dead",
+        besogo.boardInverted ? "White is dead" : "Black is dead",
         "",
         function () {
           displayMultipleChoiceResult(1);
@@ -670,7 +670,7 @@ besogo.makeToolPanel = function (container, editor) {
       );
 
       makeButtonText(
-        besogo.boardInverted ? besogo.swapColorWords("White is dead") : "White is dead",
+        besogo.boardInverted ? "Black is dead" : "White is dead",
         "",
         function () {
           displayMultipleChoiceResult(2);
