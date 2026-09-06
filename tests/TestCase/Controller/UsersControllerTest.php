@@ -519,6 +519,23 @@ class UsersControllerTest extends ControllerTestCase
 		$this->assertStringContainsString('/users/view/' . $context->user['id'], $this->view);
 	}
 
+	public function testAdminCanDemoteSelfInBrowser()
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
+		$browser = Browser::instance();
+
+		$browser->get('users/demote_admin');
+
+		$browser->driver->findElement(WebDriverBy::id('UserDemote'))->sendKeys('test');
+		$browser->driver->findElement(WebDriverBy::cssSelector('input[type="submit"]'))->click();
+
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(fn($d) => str_contains($d->getCurrentURL(), '/users/view/' . $context->user['id']));
+
+		$user = ClassRegistry::init('User')->findById($context->user['id']);
+		$this->assertSame(0, (int) $user['User']['isAdmin']);
+	}
+
 	public function testNonAdminDemoteIsNoop()
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'regular', 'admin' => false]]);
