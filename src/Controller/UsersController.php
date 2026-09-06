@@ -1106,7 +1106,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 
 		$this->set('redirect', $redirect);
 		$this->set('status', $status);
-		$this->set('u', $user);
+		$this->set('u', ['User' => $user]);
 	}
 
 	public function solveHistory($userID)

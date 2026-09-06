@@ -510,10 +510,13 @@ class UsersControllerTest extends ControllerTestCase
 		$this->testAction('/users/demote_admin', [
 			'data' => ['User' => ['demote' => 'test']],
 			'method' => 'POST',
+			'return' => 'view',
 		]);
 
 		$user = ClassRegistry::init('User')->findById($context->user['id']);
 		$this->assertSame(0, (int) $user['User']['isAdmin']);
+		// The view must redirect to the demoted user's own profile with the id filled in.
+		$this->assertStringContainsString('/users/view/' . $context->user['id'], $this->view);
 	}
 
 	public function testNonAdminDemoteIsNoop()
