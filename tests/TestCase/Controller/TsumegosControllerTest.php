@@ -1025,4 +1025,122 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$this->assertSame('Black is dead', $browser->find('#besogo-multipleChoice1')->getAttribute('value'));
 		$this->assertSame('White to play. What is the result?', $browser->find('#descriptionText')->getText());
 	}
+
+	/**
+	 * When the player's color opposes the SGF's first move the board is inverted and
+	 * the description swaps Black<->White so the player sees their own color as the
+	 * side to move. (?playercolor sets up the scenario.)
+	 */
+	public function testDescriptionSwapsWhenPlayerColorOpposesFirstMove(): void
+	{
+		$blackFirst = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])';
+		$whiteFirst = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];W[aa];B[ab];W[ba]C[+])';
+
+		$context = new ContextPreparator([
+			'user' => ['name' => 'descOpposeB'],
+			'tsumego' => ['set_order' => 1, 'description' => 'Black to play.', 'sgf' => $blackFirst],
+		]);
+		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
+		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=white', ['return' => 'view']);
+		$this->assertStringContainsString('White to play.', $this->view);
+		$this->assertStringNotContainsString('Black to play.', $this->view);
+
+		$context2 = new ContextPreparator([
+			'user' => ['name' => 'descOpposeW'],
+			'tsumego' => ['set_order' => 1, 'description' => 'White to play.', 'sgf' => $whiteFirst],
+		]);
+		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
+		$this->testAction('tsumegos/play/' . $context2->tsumegos[0]['id'] . '?playercolor=black', ['return' => 'view']);
+		$this->assertStringContainsString('Black to play.', $this->view);
+	}
+
+	/**
+	 * When the player's color matches the SGF's first move the board is not inverted
+	 * and the description is shown exactly as stored. (?playercolor sets up the scenario.)
+	 */
+	public function testDescriptionDoesNotSwapWhenPlayerColorMatchesFirstMove(): void
+	{
+		$blackFirst = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])';
+		$whiteFirst = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];W[aa];B[ab];W[ba]C[+])';
+
+		$context = new ContextPreparator([
+			'user' => ['name' => 'descMatchB'],
+			'tsumego' => ['set_order' => 1, 'description' => 'Black to play.', 'sgf' => $blackFirst],
+		]);
+		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
+		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=black', ['return' => 'view']);
+		$this->assertStringContainsString('Black to play.', $this->view);
+
+		$context2 = new ContextPreparator([
+			'user' => ['name' => 'descMatchW'],
+			'tsumego' => ['set_order' => 1, 'description' => 'White to play.', 'sgf' => $whiteFirst],
+		]);
+		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
+		$this->testAction('tsumegos/play/' . $context2->tsumegos[0]['id'] . '?playercolor=white', ['return' => 'view']);
+		$this->assertStringContainsString('White to play.', $this->view);
+	}
+
+	/**
+	 * When the board is inverted, every color word in a description swaps, so a
+	 * description that names both colours stays internally consistent.
+	 */
+	public function testDescriptionSwapsAllColorWords(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'descAllWords'],
+			'tsumego' => ['set_order' => 1, 'description' => 'Black to play. Find the way to kill the white group.', 'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])'],
+		]);
+		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
+		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=white', ['return' => 'view']);
+		$this->assertStringContainsString('White to play. Find the way to kill the black group.', $this->view);
+	}
+
+	/**
+	 * Color swaps match whole words only, so a colour word that is part of a larger
+	 * word (like "Blackbird") is left untouched.
+	 */
+	public function testDescriptionSwapRespectsWordBoundaries(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'descBoundary'],
+			'tsumego' => ['set_order' => 1, 'description' => 'Black to play. The Blackbird group is white.', 'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])'],
+		]);
+		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
+		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=white', ['return' => 'view']);
+		$this->assertStringContainsString('White to play. The Blackbird group is black.', $this->view);
+	}
+
+	/**
+	 * Color swaps preserve the original casing of each word.
+	 */
+	public function testDescriptionSwapPreservesCase(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'descCase'],
+			'tsumego' => ['set_order' => 1, 'description' => 'black stones attack White stones.', 'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])'],
+		]);
+		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
+		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=white', ['return' => 'view']);
+		$this->assertStringContainsString('white stones attack Black stones.', $this->view);
+	}
+
+	/**
+	 * A White-first problem in a collection that forces the player to black (small
+	 * board) inverts the board and swaps the description automatically, without any
+	 * URL override. This is the reported "Problems from Professional Games" case.
+	 */
+	public function testForcedBlackWhiteFirstSwapsDescription(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'descForcedBlack'],
+			'tsumego' => [
+				'sets' => [['name' => '9x9 Test Set', 'num' => 1]],
+				'description' => 'White to play. Find the way to kill the black group.',
+				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[9];W[aa];B[ab];W[ba]C[+])',
+			],
+		]);
+		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
+		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'view']);
+		$this->assertStringContainsString('Black to play. Find the way to kill the white group.', $this->view);
+	}
 }
