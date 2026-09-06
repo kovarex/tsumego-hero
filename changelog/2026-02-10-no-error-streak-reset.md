@@ -1,4 +1,4 @@
 ---
 commit: 40c2d7157
 ---
-Fixed: Your no-error streak now resets when you solve with a misplay.
+Fixed: Your no-error streak now resets when you solve with a misplay ([discussion](/forums/viewtopic.php?t=113)).
