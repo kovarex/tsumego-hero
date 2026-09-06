@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1788592833">
-  <project timestamp="1788592833">
+<coverage generated="1788666529">
+  <project timestamp="1788666529">
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Attribute/HttpDelete.php">
       <class name="App\Attribute\HttpDelete" namespace="global">
         <metrics complexity="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
@@ -1155,27 +1155,27 @@
       <line num="114" type="stmt" count="8"/>
       <line num="116" type="stmt" count="8"/>
       <line num="117" type="stmt" count="8"/>
-      <line num="118" type="stmt" count="2"/>
-      <line num="119" type="stmt" count="7"/>
-      <line num="120" type="stmt" count="6"/>
-      <line num="121" type="stmt" count="2"/>
-      <line num="122" type="stmt" count="2"/>
+      <line num="118" type="stmt" count="4"/>
+      <line num="119" type="stmt" count="5"/>
+      <line num="120" type="stmt" count="2"/>
+      <line num="121" type="stmt" count="4"/>
+      <line num="122" type="stmt" count="4"/>
       <line num="123" type="stmt" count="8"/>
       <line num="124" type="stmt" count="8"/>
       <line num="125" type="stmt" count="8"/>
       <line num="126" type="stmt" count="3"/>
-      <line num="127" type="stmt" count="5"/>
-      <line num="128" type="stmt" count="1"/>
-      <line num="129" type="stmt" count="5"/>
-      <line num="130" type="stmt" count="5"/>
+      <line num="127" type="stmt" count="6"/>
+      <line num="128" type="stmt" count="3"/>
+      <line num="129" type="stmt" count="3"/>
+      <line num="130" type="stmt" count="3"/>
       <line num="131" type="stmt" count="8"/>
       <line num="132" type="stmt" count="8"/>
       <line num="133" type="stmt" count="8"/>
       <line num="134" type="stmt" count="3"/>
-      <line num="135" type="stmt" count="6"/>
-      <line num="136" type="stmt" count="3"/>
-      <line num="137" type="stmt" count="3"/>
-      <line num="138" type="stmt" count="3"/>
+      <line num="135" type="stmt" count="5"/>
+      <line num="136" type="stmt" count="5"/>
+      <line num="137" type="stmt" count="1"/>
+      <line num="138" type="stmt" count="1"/>
       <line num="139" type="stmt" count="8"/>
       <line num="141" type="stmt" count="8"/>
       <line num="142" type="stmt" count="8"/>
@@ -7107,9 +7107,9 @@
       <line num="173" type="stmt" count="294"/>
       <line num="176" type="stmt" count="291"/>
       <line num="177" type="stmt" count="291"/>
-      <line num="182" type="stmt" count="6"/>
-      <line num="183" type="stmt" count="6"/>
-      <line num="184" type="stmt" count="6"/>
+      <line num="182" type="stmt" count="5"/>
+      <line num="183" type="stmt" count="5"/>
+      <line num="184" type="stmt" count="5"/>
       <line num="191" type="method" name="getFromGuestStorage" visibility="private" complexity="2" crap="2.06" count="6"/>
       <line num="194" type="stmt" count="6"/>
       <line num="195" type="stmt" count="0"/>
