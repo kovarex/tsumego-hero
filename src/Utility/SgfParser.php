@@ -58,6 +58,115 @@ class SgfParser
 		return $blackPos < $whitePos ? 'B' : 'W';
 	}
 
+	/**
+	 * Validate that an SGF string is structurally well-formed for a Go problem.
+	 *
+	 * Catches malformed input that the lenient parsing used elsewhere ignores,
+	 * such as a move node that is not '-'prefixed (e.g. "AB[cc]B[aa]") or a node
+	 * that mixes setup stones with a move.
+	 *
+	 * @param string $sgf
+	 * @return string|null An error description, or null when the SGF is valid.
+	 */
+	public static function validate(string $sgf): ?string
+	{
+		$maxSize = 1024 * 1024; // 1 MB
+		if (strlen($sgf) > $maxSize)
+			return 'SGF data exceeds maximum size of 1 MB.';
+
+		$s = trim($sgf);
+		if ($s === '')
+			return 'SGF data is empty.';
+		if (!str_starts_with($s, '(;'))
+			return 'Invalid SGF: must start with "(;".';
+		if (substr($s, -1) !== ')')
+			return 'Invalid SGF: must end with ")".';
+		if (substr_count($s, '[') !== substr_count($s, ']'))
+			return 'Invalid SGF: unbalanced brackets.';
+
+		$len = strlen($s);
+		$i = 0;
+		$nodeHasSetup = false;
+		$nodeHasMove = false;
+		$inValue = false;
+
+		while ($i < $len)
+		{
+			$ch = $s[$i];
+
+			if ($ch === '[')
+			{
+				$inValue = true;
+				$i++;
+				continue;
+			}
+
+			if ($ch === ']')
+			{
+				$inValue = false;
+				$i++;
+				continue;
+			}
+
+			// Everything inside a property value is opaque; skip it.
+			// In SGF a backslash escapes the next character (e.g. "\[" or "\]"),
+			// so skip that too, otherwise an escaped ']' would end the value.
+			if ($inValue)
+			{
+				if ($ch === '\\')
+				{
+					$i += 2;
+					continue;
+				}
+				$i++;
+				continue;
+			}
+
+			if ($ch === '(' || ctype_space($ch))
+			{
+				$i++;
+				continue;
+			}
+
+			if ($ch === ';')
+			{
+				if ($nodeHasSetup && $nodeHasMove)
+					return 'Invalid SGF: a node cannot contain both setup stones (AB/AW/AE) and a move (B/W).';
+				$nodeHasSetup = false;
+				$nodeHasMove = false;
+				$i++;
+				continue;
+			}
+
+			if ($ch === ')')
+			{
+				if ($nodeHasSetup && $nodeHasMove)
+					return 'Invalid SGF: a node cannot contain both setup stones (AB/AW/AE) and a move (B/W).';
+				$i++;
+				continue;
+			}
+
+			if (ctype_upper($ch))
+			{
+				$start = $i;
+				while ($i < $len && ctype_upper($s[$i]))
+					$i++;
+				$ident = substr($s, $start, $i - $start);
+				if ($i >= $len || $s[$i] !== '[')
+					return "Invalid SGF: property '{$ident}' must be followed by '['.";
+				if ($ident === 'AB' || $ident === 'AW' || $ident === 'AE')
+					$nodeHasSetup = true;
+				if ($ident === 'B' || $ident === 'W')
+					$nodeHasMove = true;
+				continue;
+			}
+
+			return "Invalid SGF: unexpected character '{$ch}' at position {$i}.";
+		}
+
+		return null;
+	}
+
 	private static function detectBoardSize(string $sgf): int
 	{
 		$boardSizePos = strpos($sgf, 'SZ');

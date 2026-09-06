@@ -1,6 +1,7 @@
 <?php
 
 App::uses('BoardSelector', 'Utility');
+App::uses('SgfParser', 'Utility');
 
 class ContextPreparator
 {
@@ -258,6 +259,7 @@ class ContextPreparator
 		ClassRegistry::init('Sgf')->create($sgf);
 		$sgf['tsumego_id'] = $tsumego['id'];
 		$sgf['sgf'] = Util::extract('data', $tsumegoSgf);
+		$this->validateFixtureSgf($sgf['sgf'], $tsumego['id']);
 		$sgf['accepted'] = Util::extractWithDefault('accepted', $tsumegoSgf, true);
 		$sgf['correct_moves'] = Util::extract('correct_moves', $tsumegoSgf);
 		$sgf['first_move_color'] = Util::extract('first_move_color', $tsumegoSgf);
@@ -268,6 +270,16 @@ class ContextPreparator
 		$savedSgf['id'] = $sgfModel->id;
 		$tsumego['sgfs'][] = $savedSgf;
 		$this->checkOptionsConsumed($tsumegoSgf);
+	}
+
+	private function validateFixtureSgf(string $sgf, int $tsumegoId): void
+	{
+		$error = SgfParser::validate($sgf);
+		if ($error !== null)
+			throw new Exception("Invalid fixture SGF for tsumego {$tsumegoId}: {$error}");
+
+		if (!str_contains($sgf, 'GM[1]'))
+			throw new Exception("Invalid fixture SGF for tsumego {$tsumegoId}: must contain GM[1] (Go game marker).");
 	}
 
 	private function prepareTsumegoSgfs(?array $tsumegoSgfs, &$tsumego): void
