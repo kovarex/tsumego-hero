@@ -167,6 +167,78 @@ class SgfParser
 		return null;
 	}
 
+	/**
+	 * Validate that the SGF declares a Go game.
+	 *
+	 * Per the SGF spec the game (GM) property defaults to 1 (Go) when omitted,
+	 * so a missing GM is accepted. Only an explicitly non-Go GM is rejected.
+	 *
+	 * @param string $sgf
+	 * @return string|null An error description, or null when the SGF is a Go game.
+	 */
+	public static function validateGame(string $sgf): ?string
+	{
+		$s = trim($sgf);
+		$len = strlen($s);
+		$i = 0;
+		$inValue = false;
+
+		while ($i < $len)
+		{
+			$ch = $s[$i];
+
+			if ($ch === '[')
+			{
+				$inValue = true;
+				$i++;
+				continue;
+			}
+
+			if ($ch === ']')
+			{
+				$inValue = false;
+				$i++;
+				continue;
+			}
+
+			// Everything inside a property value is opaque; skip it.
+			if ($inValue)
+			{
+				$i++;
+				continue;
+			}
+
+			if ($ch === '\\')
+			{
+				$i += 2;
+				continue;
+			}
+
+			if (ctype_upper($ch))
+			{
+				$start = $i;
+				while ($i < $len && ctype_upper($s[$i]))
+					$i++;
+				$ident = substr($s, $start, $i - $start);
+				if ($ident === 'GM' && $i < $len && $s[$i] === '[')
+				{
+					$i++; // skip '['
+					$valStart = $i;
+					while ($i < $len && $s[$i] !== ']')
+						$i++;
+					$game = substr($s, $valStart, $i - $valStart);
+					if ($game !== '1')
+						return 'Invalid SGF: game (GM) must be Go (1).';
+				}
+				continue;
+			}
+
+			$i++;
+		}
+
+		return null;
+	}
+
 	private static function detectBoardSize(string $sgf): int
 	{
 		$boardSizePos = strpos($sgf, 'SZ');

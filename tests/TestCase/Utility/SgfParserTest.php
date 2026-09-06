@@ -89,4 +89,21 @@ class SgfParserTest extends CakeTestCase
 		$valid = "(;FF[4]GM[1]CA[UTF-8]AP[besogo:0.0.2-alpha]SZ[19]ST[2]\nRU[Japanese]KM[6.50]\nAB[ac][ad]AW[ab][af](;B[ae]\nC[+[b\\] can play C16 for seki]);W[ce])";
 		$this->assertNull(SgfParser::validate($valid));
 	}
+
+	public function testValidateGameDefaultsToGoWhenMissing(): void
+	{
+		// GM is omitted -> defaults to Go (1), so it must be accepted.
+		$valid = '(;FF[4]SZ[19];B[aa];W[ab])';
+		$this->assertNull(SgfParser::validateGame($valid));
+	}
+
+	public function testValidateGameAcceptsExplicitGo(): void
+	{
+		$this->assertNull(SgfParser::validateGame('(;GM[1]FF[4]SZ[19];B[aa])'));
+	}
+
+	public function testValidateGameRejectsNonGoGame(): void
+	{
+		$this->assertNotNull(SgfParser::validateGame('(;GM[2]FF[4]SZ[19];B[aa])'));
+	}
 }

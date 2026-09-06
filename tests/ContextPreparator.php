@@ -278,8 +278,9 @@ class ContextPreparator
 		if ($error !== null)
 			throw new Exception("Invalid fixture SGF for tsumego {$tsumegoId}: {$error}");
 
-		if (!str_contains($sgf, 'GM[1]'))
-			throw new Exception("Invalid fixture SGF for tsumego {$tsumegoId}: must contain GM[1] (Go game marker).");
+		$gameError = SgfParser::validateGame($sgf);
+		if ($gameError !== null)
+			throw new Exception("Invalid fixture SGF for tsumego {$tsumegoId}: {$gameError}");
 	}
 
 	private function prepareTsumegoSgfs(?array $tsumegoSgfs, &$tsumego): void

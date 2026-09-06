@@ -65,7 +65,8 @@ class SgfController extends AppController
 		if ($error !== null)
 			throw new BadRequestException('Invalid SGF format: ' . $error);
 
-		if (!str_contains($sgf, 'GM[1]'))
-			throw new BadRequestException('Invalid SGF format: must contain GM[1] (Go game marker).');
+		$gameError = SgfParser::validateGame($sgf);
+		if ($gameError !== null)
+			throw new BadRequestException('Invalid SGF format: ' . $gameError);
 	}
 }
