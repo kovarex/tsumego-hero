@@ -617,7 +617,7 @@ besogo.makeToolPanel = function (container, editor) {
       if (setID != 262)
       {
         makeButtonText(
-          "Black wins",
+          besogo.boardInverted ? "White wins" : "Black wins",
           "",
           function () {
             displayScoreEstimatingResult("b");
@@ -626,7 +626,7 @@ besogo.makeToolPanel = function (container, editor) {
         );
 
         makeButtonText(
-          "White wins",
+          besogo.boardInverted ? "Black wins" : "White wins",
           "",
           function () {
             displayScoreEstimatingResult("w");
@@ -661,7 +661,7 @@ besogo.makeToolPanel = function (container, editor) {
       makeHyperlinkText("Back","previous problem", previousButtonLink, prevButtonId);
 
       makeButtonText(
-        "Black is dead",
+        besogo.boardInverted ? "White is dead" : "Black is dead",
         "",
         function () {
           displayMultipleChoiceResult(1);
@@ -670,7 +670,7 @@ besogo.makeToolPanel = function (container, editor) {
       );
 
       makeButtonText(
-        "White is dead",
+        besogo.boardInverted ? "Black is dead" : "White is dead",
         "",
         function () {
           displayMultipleChoiceResult(2);
@@ -704,14 +704,27 @@ besogo.makeToolPanel = function (container, editor) {
       "change the color of your stones",
       "colorOrientation",
       function () {
+        besogo.boardInverted = !besogo.boardInverted;
+        let swapColorWords = besogo.swapColorWords;
         let transformation = besogo.makeTransformation();
         transformation.invertColors = true;
-        let descriptionText = $("#descriptionText").text();
-        if (descriptionText.includes("Black"))
-          descriptionText = descriptionText.replaceAll("Black", "White");
-        else if (descriptionText.includes("White"))
-          descriptionText = descriptionText.replaceAll("White", "Black");
-        $("#descriptionText").text(descriptionText);
+        // Any true-color text shown to the player must follow the board's colors.
+        let desc = $("#descriptionText");
+        if (desc.length) desc.text(swapColorWords(desc.text()));
+        let theComment = $("#theComment");
+        if (theComment.length) theComment.text(swapColorWords(theComment.text()));
+        // Multiple-choice answers (custom multiple-choice and semeai share these ids).
+        ["besogo-multipleChoice1", "besogo-multipleChoice2", "besogo-multipleChoice3", "besogo-multipleChoice4"].forEach(function (id) {
+          let el = $("#" + id);
+          if (el.length) el.val(swapColorWords(el.val()));
+        });
+        // Score-estimating result buttons and summary labels.
+        ["besogo-se-black", "besogo-se-white"].forEach(function (id) {
+          let el = $("#" + id);
+          if (el.length) el.val(swapColorWords(el.val()));
+        });
+        let scoreLabels = $("#scoreEstimatingLabels");
+        if (scoreLabels.length) scoreLabels.text(swapColorWords(scoreLabels.text()));
         besogo.editor.applyTransformation(transformation);
       }
     );

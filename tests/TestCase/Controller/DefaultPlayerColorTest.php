@@ -14,7 +14,7 @@ class DefaultPlayerColorTest extends TestCaseWithAuth
 		Auth::logout();
 		$context = new ContextPreparator([
 			'user' => ['name' => 'originalUser'],
-			'tsumego' => ['sets' => [['name' => 'originalUserSet', 'num' => 1]], 'description' => '[b]to play.', 'sgf' => ['data' => '(;GM[1]FF[4]SZ[19];B[aa])']],
+			'tsumego' => ['sets' => [['name' => 'originalUserSet', 'num' => 1]], 'description' => 'Black to play.', 'sgf' => ['data' => '(;GM[1]FF[4]SZ[19];B[aa])']],
 		]);
 		$this->login('originalUser');
 		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
@@ -36,7 +36,7 @@ class DefaultPlayerColorTest extends TestCaseWithAuth
 			'user' => ['name' => 'originalUserWhite'],
 			'tsumego' => [
 				'sets' => [['name' => 'originalUserWhiteSet', 'num' => 1]],
-				'description' => '[b]to play.',
+				'description' => 'White to play.',
 				'sgf' => ['data' => '(;GM[1]FF[4]SZ[19];W[aa])'],
 			],
 		]);
@@ -60,7 +60,7 @@ class DefaultPlayerColorTest extends TestCaseWithAuth
 			'user' => ['name' => 'smallBoard'],
 			'tsumego' => [
 				'sets' => [['name' => '9x9 Test Set', 'num' => 1]],
-				'description' => '[b]to play.',
+				'description' => 'White to play.',
 				'sgf' => ['data' => '(;GM[1]FF[4]SZ[9];W[aa])'],
 			],
 		]);
@@ -73,7 +73,7 @@ class DefaultPlayerColorTest extends TestCaseWithAuth
 		);
 
 		$this->assertTextContains('options.playerColor = "black"', $this->view);
-		$this->assertTextContains('options.swapColors = false', $this->view);
+		$this->assertTextContains('options.swapColors = true', $this->view);
 		$this->assertTextContains('Black to play.', $this->view);
 	}
 

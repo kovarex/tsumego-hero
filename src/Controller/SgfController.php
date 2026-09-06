@@ -2,6 +2,7 @@
 
 App::uses('AdminActivityLogger', 'Utility');
 App::uses('AdminActivityType', 'Model');
+App::uses('SgfParser', 'Utility');
 App::uses('NotFoundException', 'Routing/Error');
 App::uses('BadRequestException', 'Routing/Error');
 App::uses('ForbiddenException', 'Routing/Error');
@@ -60,15 +61,12 @@ class SgfController extends AppController
 
 	public static function validateSgfFormat(string $sgf): void
 	{
-		$maxSize = 1024 * 1024; // 1 MB
-		if (strlen($sgf) > $maxSize)
-			throw new BadRequestException('SGF data exceeds maximum size of 1 MB.');
+		$error = SgfParser::validate($sgf);
+		if ($error !== null)
+			throw new BadRequestException('Invalid SGF format: ' . $error);
 
-		$trimmed = trim($sgf);
-		if (!str_starts_with($trimmed, '(;'))
-			throw new BadRequestException('Invalid SGF format: must start with "(;".');
-
-		if (!str_contains($trimmed, 'GM[1]'))
-			throw new BadRequestException('Invalid SGF format: must contain GM[1] (Go game marker).');
+		$gameError = SgfParser::validateGame($sgf);
+		if ($gameError !== null)
+			throw new BadRequestException('Invalid SGF format: ' . $gameError);
 	}
 }

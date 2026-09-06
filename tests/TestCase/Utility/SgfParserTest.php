@@ -46,4 +46,64 @@ class SgfParserTest extends CakeTestCase
 		$this->assertSame('W', SgfParser::firstMoveColor('(;GM[1]SZ[19];W[aa];B[bb])'));
 		$this->assertSame('N', SgfParser::firstMoveColor('(;GM[1]SZ[19]AB[aa])'));
 	}
+
+	public function testValidateAcceptsWellFormedSgf(): void
+	{
+		$valid = "(;GM[1]FF[4]CA[UTF-8]AP[CGoban:3]ST[2]SZ[19]KM[0.00]\nAB[jm][km]AW[hm][im];B[aa];W[ab])";
+		$this->assertNull(SgfParser::validate($valid));
+	}
+
+	public function testValidateAcceptsSetupAndMoveInDifferentNodes(): void
+	{
+		$valid = '(;GM[1]SZ[19];AB[cc];B[aa])';
+		$this->assertNull(SgfParser::validate($valid));
+	}
+
+	public function testValidateRejectsMoveNodeNotPrefixedBySemicolon(): void
+	{
+		// "B[aa]" is glued to the setup node without a ';', so it is not a real move node.
+		$malformed = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AW[hm][im]AB[jm][km]B[aa];W[ab];B[ba]C[+])';
+		$this->assertNotNull(SgfParser::validate($malformed));
+	}
+
+	public function testValidateRejectsSetupAndMoveInSameNode(): void
+	{
+		$malformed = '(;GM[1]SZ[19]AB[cc]B[aa])';
+		$this->assertNotNull(SgfParser::validate($malformed));
+	}
+
+	public function testValidateRejectsUnbalancedBrackets(): void
+	{
+		$this->assertNotNull(SgfParser::validate('(;GM[1]SZ[19];B[aa)'));
+	}
+
+	public function testValidateRejectsBadPrefix(): void
+	{
+		$this->assertNotNull(SgfParser::validate('GM[1]SZ[19];B[aa]'));
+	}
+
+	public function testValidateAllowsEscapedBracketsInComment(): void
+	{
+		// A "\[" / "\]" inside a comment value must be treated as literal, not
+		// as an opening/closing bracket (this is the real SGF from the DB).
+		$valid = "(;FF[4]GM[1]CA[UTF-8]AP[besogo:0.0.2-alpha]SZ[19]ST[2]\nRU[Japanese]KM[6.50]\nAB[ac][ad]AW[ab][af](;B[ae]\nC[+[b\\] can play C16 for seki]);W[ce])";
+		$this->assertNull(SgfParser::validate($valid));
+	}
+
+	public function testValidateGameDefaultsToGoWhenMissing(): void
+	{
+		// GM is omitted -> defaults to Go (1), so it must be accepted.
+		$valid = '(;FF[4]SZ[19];B[aa];W[ab])';
+		$this->assertNull(SgfParser::validateGame($valid));
+	}
+
+	public function testValidateGameAcceptsExplicitGo(): void
+	{
+		$this->assertNull(SgfParser::validateGame('(;GM[1]FF[4]SZ[19];B[aa])'));
+	}
+
+	public function testValidateGameRejectsNonGoGame(): void
+	{
+		$this->assertNotNull(SgfParser::validateGame('(;GM[2]FF[4]SZ[19];B[aa])'));
+	}
 }

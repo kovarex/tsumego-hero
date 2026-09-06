@@ -1,6 +1,7 @@
 <?php
 
 App::uses('BoardSelector', 'Utility');
+App::uses('SgfParser', 'Utility');
 
 class ContextPreparator
 {
@@ -177,6 +178,11 @@ class ContextPreparator
 		$tsumego['maximum_rating'] = Util::extract('maximum_rating', $tsumegoInput) ?: null;
 		$tsumego['alternative_response'] = Util::extract('alternative_response', $tsumegoInput) ?? 1;
 		$tsumego['pass'] = Util::extract('pass', $tsumegoInput) ?? 0;
+		$tsumego['semeaiType'] = Util::extract('semeai_type', $tsumegoInput);
+		$tsumego['minLib'] = Util::extract('min_lib', $tsumegoInput);
+		$tsumego['maxLib'] = Util::extract('max_lib', $tsumegoInput);
+		$tsumego['libertyCount'] = Util::extract('liberty_count', $tsumegoInput);
+		$tsumego['variance'] = Util::extract('variance', $tsumegoInput);
 		$tsumego['deleted'] = Util::extract('deleted', $tsumegoInput);
 		$tsumego['author'] = Util::extract('author', $tsumegoInput) ?: '';
 		ClassRegistry::init('Tsumego')->create($tsumego);
@@ -195,6 +201,7 @@ class ContextPreparator
 		$this->prepareTsumegoSgfs(Util::extract('sgfs', $tsumegoInput), $tsumego);
 		$this->prepareTsumegoComments(Util::extract('comments', $tsumegoInput), $tsumego);
 		$this->prepareTsumegoIssues(Util::extract('issues', $tsumegoInput), $tsumego);
+		$this->prepareTsumegoVariants(Util::extract('variants', $tsumegoInput), $tsumego);
 		$this->checkOptionsConsumed($tsumegoInput);
 		return $tsumego;
 	}
@@ -252,6 +259,7 @@ class ContextPreparator
 		ClassRegistry::init('Sgf')->create($sgf);
 		$sgf['tsumego_id'] = $tsumego['id'];
 		$sgf['sgf'] = Util::extract('data', $tsumegoSgf);
+		$this->validateFixtureSgf($sgf['sgf'], $tsumego['id']);
 		$sgf['accepted'] = Util::extractWithDefault('accepted', $tsumegoSgf, true);
 		$sgf['correct_moves'] = Util::extract('correct_moves', $tsumegoSgf);
 		$sgf['first_move_color'] = Util::extract('first_move_color', $tsumegoSgf);
@@ -262,6 +270,17 @@ class ContextPreparator
 		$savedSgf['id'] = $sgfModel->id;
 		$tsumego['sgfs'][] = $savedSgf;
 		$this->checkOptionsConsumed($tsumegoSgf);
+	}
+
+	private function validateFixtureSgf(string $sgf, int $tsumegoId): void
+	{
+		$error = SgfParser::validate($sgf);
+		if ($error !== null)
+			throw new Exception("Invalid fixture SGF for tsumego {$tsumegoId}: {$error}");
+
+		$gameError = SgfParser::validateGame($sgf);
+		if ($gameError !== null)
+			throw new Exception("Invalid fixture SGF for tsumego {$tsumegoId}: {$gameError}");
 	}
 
 	private function prepareTsumegoSgfs(?array $tsumegoSgfs, &$tsumego): void
@@ -326,6 +345,25 @@ class ContextPreparator
 			$this->prepareTsumegoComment(['message' => $message], $tsumego, $issueId);
 
 		$this->checkOptionsConsumed($issueInput);
+	}
+
+	private function prepareTsumegoVariants(?array $tsumegoVariants, &$tsumego): void
+	{
+		if (!$tsumegoVariants)
+			return;
+		foreach ($tsumegoVariants as $variantInput)
+			$this->prepareTsumegoVariant($variantInput, $tsumego);
+	}
+
+	private function prepareTsumegoVariant(array $variantInput, &$tsumego): void
+	{
+		$variant = array_merge(['tsumego_id' => $tsumego['id']], $variantInput);
+		$variantModel = ClassRegistry::init('TsumegoVariant');
+		$variantModel->create($variant);
+		$variantModel->save($variant);
+		$savedVariant = $variantModel->data['TsumegoVariant'];
+		$savedVariant['id'] = $variantModel->id;
+		$tsumego['variants'][] = $savedVariant;
 	}
 
 	private function prepareTsumegoStatuses($tsumegoStatuses, $tsumego): void
