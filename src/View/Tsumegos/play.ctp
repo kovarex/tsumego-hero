@@ -825,8 +825,8 @@
 				hasChosen = true;
 				locked = true;
 				$("#ScoreEstimatingSE").prop("disabled", true);
-				$("#besogo-se-black").css("background-color", color);
-				$("#besogo-se-white").css("background-color", color);
+				$("#besogo-score-wins-a").css("background-color", color);
+				$("#besogo-score-wins-b").css("background-color", color);
 				$("#besogo-se-more").css("background-color", color);
 				$("#besogo-se-less").css("background-color", color);
 				$("#submitScoreEstimatingSE").css("background-color", color);
@@ -1822,7 +1822,7 @@
 	var showComment = function(commentText)
 		{
 			$("#theComment").css("display", commentText.length == 0 ? "none" : "block");
-			$("#theComment").text(commentText);
+			$("#theComment").text(besogo.boardInverted ? besogo.swapColorWords(commentText) : commentText);
 		};
 	besogo.editor.registerShowComment(showComment);
 	showComment(besogo.editor.getCurrent().comment || '');

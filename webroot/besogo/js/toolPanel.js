@@ -617,21 +617,21 @@ besogo.makeToolPanel = function (container, editor) {
       if (setID != 262)
       {
         makeButtonText(
-          "Black wins",
+          besogo.boardInverted ? besogo.swapColorWords("Black wins") : "Black wins",
           "",
           function () {
             displayScoreEstimatingResult("b");
           },
-          "besogo-se-black"
+          "besogo-score-wins-a"
         );
 
         makeButtonText(
-          "White wins",
+          besogo.boardInverted ? besogo.swapColorWords("White wins") : "White wins",
           "",
           function () {
             displayScoreEstimatingResult("w");
           },
-          "besogo-se-white"
+          "besogo-score-wins-b"
         );
         makeButtonText(
           "-",
@@ -661,7 +661,7 @@ besogo.makeToolPanel = function (container, editor) {
       makeHyperlinkText("Back","previous problem", previousButtonLink, prevButtonId);
 
       makeButtonText(
-        "Black is dead",
+        besogo.boardInverted ? besogo.swapColorWords("Black is dead") : "Black is dead",
         "",
         function () {
           displayMultipleChoiceResult(1);
@@ -670,7 +670,7 @@ besogo.makeToolPanel = function (container, editor) {
       );
 
       makeButtonText(
-        "White is dead",
+        besogo.boardInverted ? besogo.swapColorWords("White is dead") : "White is dead",
         "",
         function () {
           displayMultipleChoiceResult(2);
@@ -704,33 +704,27 @@ besogo.makeToolPanel = function (container, editor) {
       "change the color of your stones",
       "colorOrientation",
       function () {
+        besogo.boardInverted = !besogo.boardInverted;
+        let swapColorWords = besogo.swapColorWords;
         let transformation = besogo.makeTransformation();
         transformation.invertColors = true;
-        let swapColorWords = function (text) {
-          return text.replace(/\b(Black|black|White|white)\b/g, function (m) {
-            return { Black: "White", black: "white", White: "Black", white: "black" }[m];
-          });
-        };
-        $("#descriptionText").text(swapColorWords($("#descriptionText").text()));
-        if (besogo.multipleChoiceCustom === "multiple_choice") {
-          // Custom multiple-choice answers are stored in true colors; match the inverted board.
-          ["besogo-multipleChoice1", "besogo-multipleChoice2", "besogo-multipleChoice3", "besogo-multipleChoice4"].forEach(function (id) {
-            let el = $("#" + id);
-            if (el.length) el.val(swapColorWords(el.val()));
-          });
-        } else if (besogo.multipleChoiceCustom === "score_estimating") {
-          // Score-estimating result buttons and summary labels.
-          ["besogo-se-black", "besogo-se-white"].forEach(function (id) {
-            let el = $("#" + id);
-            if (el.length) el.val(swapColorWords(el.val()));
-          });
-          ["submitScoreEstimatingBlackWins", "submitScoreEstimatingWhiteWins"].forEach(function (id) {
-            let el = $("#" + id);
-            if (el.length) el.text(swapColorWords(el.text()));
-          });
-          let scoreLabels = $("#scoreEstimatingLabels");
-          if (scoreLabels.length) scoreLabels.text(swapColorWords(scoreLabels.text()));
-        }
+        // Any true-color text shown to the player must follow the board's colors.
+        let desc = $("#descriptionText");
+        if (desc.length) desc.text(swapColorWords(desc.text()));
+        let theComment = $("#theComment");
+        if (theComment.length) theComment.text(swapColorWords(theComment.text()));
+        // Multiple-choice answers (custom multiple-choice and semeai share these ids).
+        ["besogo-multipleChoice1", "besogo-multipleChoice2", "besogo-multipleChoice3", "besogo-multipleChoice4"].forEach(function (id) {
+          let el = $("#" + id);
+          if (el.length) el.val(swapColorWords(el.val()));
+        });
+        // Score-estimating result buttons and summary labels.
+        ["besogo-score-wins-a", "besogo-score-wins-b"].forEach(function (id) {
+          let el = $("#" + id);
+          if (el.length) el.val(swapColorWords(el.val()));
+        });
+        let scoreLabels = $("#scoreEstimatingLabels");
+        if (scoreLabels.length) scoreLabels.text(swapColorWords(scoreLabels.text()));
         besogo.editor.applyTransformation(transformation);
       }
     );

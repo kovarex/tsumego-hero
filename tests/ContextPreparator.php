@@ -177,6 +177,11 @@ class ContextPreparator
 		$tsumego['maximum_rating'] = Util::extract('maximum_rating', $tsumegoInput) ?: null;
 		$tsumego['alternative_response'] = Util::extract('alternative_response', $tsumegoInput) ?? 1;
 		$tsumego['pass'] = Util::extract('pass', $tsumegoInput) ?? 0;
+		$tsumego['semeaiType'] = Util::extract('semeai_type', $tsumegoInput);
+		$tsumego['minLib'] = Util::extract('min_lib', $tsumegoInput);
+		$tsumego['maxLib'] = Util::extract('max_lib', $tsumegoInput);
+		$tsumego['libertyCount'] = Util::extract('liberty_count', $tsumegoInput);
+		$tsumego['variance'] = Util::extract('variance', $tsumegoInput);
 		$tsumego['deleted'] = Util::extract('deleted', $tsumegoInput);
 		$tsumego['author'] = Util::extract('author', $tsumegoInput) ?: '';
 		ClassRegistry::init('Tsumego')->create($tsumego);

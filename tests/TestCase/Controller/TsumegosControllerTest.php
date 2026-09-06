@@ -1143,4 +1143,122 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'view']);
 		$this->assertStringContainsString('Black to play. Find the way to kill the white group.', $this->view);
 	}
+
+	/**
+	 * Browser test: the orientation button swaps the score-estimating "Black wins" /
+	 * "White wins" buttons so they match the inverted board.
+	 */
+	public function testOrientationButtonSwapsScoreButtons(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => [
+				'set_order' => 1,
+				'description' => 'Who wins?',
+				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])',
+				'variants' => [[
+					'type' => 'score_estimating',
+					'answer1' => '6.5',
+					'answer2' => '3',
+					'answer3' => '6',
+					'numAnswer' => '0',
+				]],
+			],
+		]);
+
+		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
+
+		$browser = Browser::instance();
+		$browser->get((string) $context->tsumegos[0]['set-connections'][0]['id']);
+
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10);
+		$wait->until(function () use ($browser) {
+			return $browser->driver->executeScript(
+				"return typeof besogo !== 'undefined' && document.getElementById('besogo-score-wins-a') !== null;"
+			);
+		});
+
+		$this->assertSame('Black wins', $browser->find('#besogo-score-wins-a')->getAttribute('value'));
+
+		$browser->driver->executeScript("document.getElementById('colorOrientation').click();");
+
+		$this->assertSame('White wins', $browser->find('#besogo-score-wins-a')->getAttribute('value'));
+		$this->assertSame('Black wins', $browser->find('#besogo-score-wins-b')->getAttribute('value'));
+	}
+
+	/**
+	 * Browser test: the orientation button swaps the semeai "Black is dead" /
+	 * "White is dead" buttons so they match the inverted board.
+	 */
+	public function testOrientationButtonSwapsSemeaiButtons(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => [
+				'set_order' => 1,
+				'semeai_type' => 1,
+				'min_lib' => 0,
+				'max_lib' => 2,
+				'liberty_count' => 6,
+				'variance' => 2,
+				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AW[hm][im][gn][jn][go][jo][gp][jp][eq][gq][jq][fr][jr][gs][js]AB[jm][km][in][ln][io][lo][ip][lp];B[aa];W[ab];B[ba]C[+])',
+			],
+		]);
+
+		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
+
+		$browser = Browser::instance();
+		$browser->get((string) $context->tsumegos[0]['set-connections'][0]['id']);
+
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10);
+		$wait->until(function () use ($browser) {
+			return $browser->driver->executeScript(
+				"return typeof besogo !== 'undefined' && document.getElementById('besogo-multipleChoice1') !== null;"
+			);
+		});
+
+		$button1 = $browser->find('#besogo-multipleChoice1');
+		$button2 = $browser->find('#besogo-multipleChoice2');
+		$this->assertSame('Black is dead', $button1->getAttribute('value'));
+		$this->assertSame('White is dead', $button2->getAttribute('value'));
+
+		$browser->driver->executeScript("document.getElementById('colorOrientation').click();");
+
+		$this->assertSame('White is dead', $button1->getAttribute('value'));
+		$this->assertSame('Black is dead', $button2->getAttribute('value'));
+	}
+
+	/**
+	 * Browser test: the orientation button swaps the SGF comment text so it matches
+	 * the inverted board.
+	 */
+	public function testOrientationButtonSwapsSgfComment(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => [
+				'set_order' => 1,
+				'description' => 'Black to play.',
+				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]C[Black to play. Save the black group.];B[aa];W[ab];B[ba]C[+])',
+			],
+		]);
+
+		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
+
+		$browser = Browser::instance();
+		$browser->get((string) $context->tsumegos[0]['set-connections'][0]['id']);
+
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10);
+		$wait->until(function () use ($browser) {
+			return $browser->driver->executeScript(
+				"return typeof besogo !== 'undefined' && document.getElementById('theComment') !== null;"
+			);
+		});
+
+		$comment = $browser->find('#theComment');
+		$this->assertStringContainsString('Black to play', $comment->getText());
+
+		$browser->driver->executeScript("document.getElementById('colorOrientation').click();");
+		$this->assertStringContainsString('White to play', $comment->getText());
+	}
 }

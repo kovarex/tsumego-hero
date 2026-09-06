@@ -396,8 +396,8 @@ h1 {
 #besogo-multipleChoice2,
 #besogo-multipleChoice3,
 #besogo-multipleChoice4,
-#besogo-se-black,
-#besogo-se-white,
+#besogo-score-wins-a,
+#besogo-score-wins-b,
 
 #besogo-se-more,
 #besogo-se-less {
@@ -462,8 +462,8 @@ h1 {
 #besogo-multipleChoice2:hover,
 #besogo-multipleChoice3:hover,
 #besogo-multipleChoice4:hover,
-#besogo-se-black:hover,
-#besogo-se-white:hover,
+#besogo-score-wins-a:hover,
+#besogo-score-wins-b:hover,
 #besogo-se-more:hover,
 #besogo-se-less:hover,
 #submitScoreEstimatingSE:hover, #submitScoreEstimatingBlackWins:hover, #submitScoreEstimatingWhiteWins:hover, #submitScoreEstimatingJigo:hover {
