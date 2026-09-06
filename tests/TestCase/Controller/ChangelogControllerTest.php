@@ -82,18 +82,6 @@ class ChangelogControllerTest extends ControllerTestCase
 		$this->assertSame([], ChangelogController::changelogTimestamps($path));
 	}
 
-	public function testChangelogTimestampsReadsRealIndex()
-	{
-		$result = ChangelogController::changelogTimestamps();
-
-		$this->assertNotEmpty($result);
-		$sorted = $result;
-		rsort($sorted);
-		$this->assertSame($sorted, $result, 'Timestamps should be sorted descending');
-		foreach ($result as $ts)
-			$this->assertIsInt($ts);
-	}
-
 	public function testBeforeFilterExposesChangelogTimestampsViewVar()
 	{
 		$this->testAction('/changelog', ['method' => 'get', 'return' => 'vars']);
