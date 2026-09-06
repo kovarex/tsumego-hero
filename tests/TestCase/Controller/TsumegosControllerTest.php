@@ -1174,16 +1174,16 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10);
 		$wait->until(function () use ($browser) {
 			return $browser->driver->executeScript(
-				"return typeof besogo !== 'undefined' && document.getElementById('besogo-se-winner-black') !== null;"
+				"return typeof besogo !== 'undefined' && document.getElementById('besogo-se-black') !== null;"
 			);
 		});
 
-		$this->assertSame('Black wins', $browser->find('#besogo-se-winner-black')->getAttribute('value'));
+		$this->assertSame('Black wins', $browser->find('#besogo-se-black')->getAttribute('value'));
 
 		$browser->driver->executeScript("document.getElementById('colorOrientation').click();");
 
-		$this->assertSame('White wins', $browser->find('#besogo-se-winner-black')->getAttribute('value'));
-		$this->assertSame('Black wins', $browser->find('#besogo-se-winner-white')->getAttribute('value'));
+		$this->assertSame('White wins', $browser->find('#besogo-se-black')->getAttribute('value'));
+		$this->assertSame('Black wins', $browser->find('#besogo-se-white')->getAttribute('value'));
 	}
 
 	/**

@@ -617,21 +617,21 @@ besogo.makeToolPanel = function (container, editor) {
       if (setID != 262)
       {
         makeButtonText(
-          besogo.boardInverted ? besogo.swapColorWords("Black wins") : "Black wins",
+          besogo.boardInverted ? "White wins" : "Black wins",
           "",
           function () {
             displayScoreEstimatingResult("b");
           },
-          "besogo-se-winner-black"
+          "besogo-se-black"
         );
 
         makeButtonText(
-          besogo.boardInverted ? besogo.swapColorWords("White wins") : "White wins",
+          besogo.boardInverted ? "Black wins" : "White wins",
           "",
           function () {
             displayScoreEstimatingResult("w");
           },
-          "besogo-se-winner-white"
+          "besogo-se-white"
         );
         makeButtonText(
           "-",
@@ -719,7 +719,7 @@ besogo.makeToolPanel = function (container, editor) {
           if (el.length) el.val(swapColorWords(el.val()));
         });
         // Score-estimating result buttons and summary labels.
-        ["besogo-se-winner-black", "besogo-se-winner-white"].forEach(function (id) {
+        ["besogo-se-black", "besogo-se-white"].forEach(function (id) {
           let el = $("#" + id);
           if (el.length) el.val(swapColorWords(el.val()));
         });

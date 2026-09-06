@@ -825,8 +825,8 @@
 				hasChosen = true;
 				locked = true;
 				$("#ScoreEstimatingSE").prop("disabled", true);
-				$("#besogo-se-winner-black").css("background-color", color);
-				$("#besogo-se-winner-white").css("background-color", color);
+				$("#besogo-se-black").css("background-color", color);
+				$("#besogo-se-white").css("background-color", color);
 				$("#besogo-se-more").css("background-color", color);
 				$("#besogo-se-less").css("background-color", color);
 				$("#submitScoreEstimatingSE").css("background-color", color);
