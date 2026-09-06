@@ -493,4 +493,39 @@ class UsersControllerTest extends ControllerTestCase
 			$this->assertTextContains("category={$catId}&rank=", $this->view);
 		}
 	}
+
+	public function testDemoteAdminRedirectsAnonymousToLogin()
+	{
+		new ContextPreparator(['user' => null]);
+
+		$this->testAction('/users/demote_admin', ['method' => 'get']);
+
+		$this->assertSame(302, $this->controller->response->statusCode());
+	}
+
+	public function testAdminCanDemoteSelf()
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
+
+		$this->testAction('/users/demote_admin', [
+			'data' => ['User' => ['demote' => 'test']],
+			'method' => 'POST',
+		]);
+
+		$user = ClassRegistry::init('User')->findById($context->user['id']);
+		$this->assertSame(0, (int) $user['User']['isAdmin']);
+	}
+
+	public function testNonAdminDemoteIsNoop()
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'regular', 'admin' => false]]);
+
+		$this->testAction('/users/demote_admin', [
+			'data' => ['User' => ['demote' => 'test']],
+			'method' => 'POST',
+		]);
+
+		$user = ClassRegistry::init('User')->findById($context->user['id']);
+		$this->assertSame(0, (int) $user['User']['isAdmin']);
+	}
 }

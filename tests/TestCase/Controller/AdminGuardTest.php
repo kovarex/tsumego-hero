@@ -65,6 +65,40 @@ class AdminGuardTest extends ControllerTestCase
 		$this->testAction('/users/userstats3', ['method' => 'get']);
 	}
 
+	public function testUserstatsAllowsAdmin()
+	{
+		new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
+
+		$this->testAction('/users/userstats', ['method' => 'get']);
+
+		$this->assertSame(200, $this->controller->response->statusCode());
+	}
+
+	public function testUserstats3AllowsAdmin()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'admin', 'admin' => true],
+			'tsumego' => [
+				'sets' => [['name' => 'stats set', 'public' => 1, 'num' => 1]],
+			],
+		]);
+
+		$setId = $context->tsumegos[0]['set-connections'][0]['set_id'];
+
+		$this->testAction('/users/userstats3/' . $setId, ['method' => 'get']);
+
+		$this->assertSame(200, $this->controller->response->statusCode());
+	}
+
+	public function testUserstats3AllowsAdminWithoutSet()
+	{
+		new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
+
+		$this->testAction('/users/userstats3', ['method' => 'get']);
+
+		$this->assertSame(200, $this->controller->response->statusCode());
+	}
+
 	public function testAdminstatsAllowsAdmin()
 	{
 		new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);

@@ -172,16 +172,17 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->loadModel('Tsumego');
 		$this->loadModel('SetConnection');
 
-		$ts = TsumegoUtil::collectTsumegosFromSet($sid);
-		$ids = [];
-		$tsCount = count($ts);
-		for ($i = 0; $i < $tsCount; $i++)
-			array_push($ids, $ts[$i]['Tsumego']['id']);
-
 		if ($sid == null)
 			$ur = $this->TsumegoAttempt->find('all', ['limit' => 500, 'order' => 'created DESC']);
 		else
-			$ur = $this->TsumegoAttempt->find('all', ['order' => 'updated DESC', 'conditions' => ['tsumego_id' => $ids]]);
+		{
+			$ts = TsumegoUtil::collectTsumegosFromSet($sid);
+			$ids = [];
+			$tsCount = count($ts);
+			for ($i = 0; $i < $tsCount; $i++)
+				array_push($ids, $ts[$i]['Tsumego']['id']);
+			$ur = $this->TsumegoAttempt->find('all', ['order' => 'created DESC', 'conditions' => ['tsumego_id' => $ids]]);
+		}
 
 		$urCount = count($ur);
 		for ($i = 0; $i < $urCount; $i++)
@@ -977,15 +978,6 @@ ORDER BY category DESC', [$user['User']['id']]));
 	}
 
 	/**
-	 * @param string|int|null $id Set ID
-	 * @return void
-	 */
-	public function sets($id = null)
-	{
-		$this->set('id', $id);
-	}
-
-	/**
 	 * @return void
 	 */
 	public function logout()
@@ -1091,14 +1083,13 @@ ORDER BY category DESC', [$user['User']['id']]));
 	}
 
 	/**
-	 * @return void
 	 */
 	public function demote_admin()
 	{
 		$redirect = false;
 		$status = '';
 		if (!Auth::isLoggedIn())
-			return;
+			return $this->redirect('/users/login');
 
 		if (!empty($this->data))
 			if (isset($this->data['User']['demote']))
