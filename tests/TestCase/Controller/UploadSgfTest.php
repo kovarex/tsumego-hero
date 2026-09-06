@@ -16,7 +16,7 @@ class UploadSgfTest extends TestCaseWithAuth
 		$this->assertTrue($openLink->isDisplayed());
 		$this->assertSame($openLink->getText(), "Open");
 		$openLink->click();
-		$browser->waitUntilIDExists('#sgfCommentButton');
+		$browser->waitUntilIDExists('sgfCommentButton');
 		$commentEditButton = $browser->driver->findElement(WebDriverBy::cssSelector('#sgfCommentButton'));
 		$commentEditButton->click();
 		$commentEditField = $browser->driver->findElement(WebDriverBy::cssSelector('#commentEditField'));

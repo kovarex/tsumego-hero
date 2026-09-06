@@ -25,7 +25,7 @@ class SgfControllerUploadTest extends TestCaseWithAuth
 		$this->assertTrue($openLink->isDisplayed());
 		$this->assertSame($openLink->getText(), "Open");
 		$openLink->click();
-		$browser->waitUntilIDExists('#sgfCommentButton');
+		$browser->waitUntilIDExists('sgfCommentButton');
 		$browser->clickId('sgfCommentButton');
 		$browser->clickId('commentEditField');
 		$browser->driver->getKeyboard()->sendKeys("Hello from test");

@@ -296,8 +296,8 @@ class Browser
 
 	public function waitUntilIDExists($id)
 	{
-		new WebDriverWait($this->driver, 5, 500)->until(function () {
-			return $this->idExists('commentBox');
+		new WebDriverWait($this->driver, 5, 500)->until(function () use ($id) {
+			return $this->idExists($id);
 		});
 	}
 
@@ -359,6 +359,22 @@ class Browser
 						return true;
 				}
 				return false;
+			}
+		);
+	}
+
+	/**
+	 * Wait until a JavaScript expression evaluates truthy.
+	 * Great for besogo/board state checks that aren't exposed via the DOM.
+	 *
+	 * @param string $expression A JS expression (no surrounding `return`).
+	 * @param int $timeout Timeout in seconds
+	 */
+	public function waitUntilJs(string $expression, int $timeout = 10): void
+	{
+		new WebDriverWait($this->driver, $timeout, 200)->until(
+			function () use ($expression) {
+				return $this->driver->executeScript('return (' . $expression . ');');
 			}
 		);
 	}
