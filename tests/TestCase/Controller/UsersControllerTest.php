@@ -266,6 +266,36 @@ class UsersControllerTest extends ControllerTestCase
 			'Solve history link should be present on profile');
 	}
 
+	/**
+	 * Test that profile achievements link to the correct achievement id.
+	 *
+	 * Achievement ids are not contiguous (id 100 is missing), so the profile
+	 * must resolve each achievement status to the matching achievement.
+	 */
+	public function testProfileAchievementLinksToCorrectAchievement(): void
+	{
+		// This only breaks because the ids are not contiguous, so pin the
+		// precondition that id 100 is absent from the achievement table.
+		$this->assertEmpty(
+			ClassRegistry::init('Achievement')->findById(100),
+			'Test relies on achievement id 100 being absent'
+		);
+
+		$context = new ContextPreparator([
+			'user' => [
+				'name' => 'achievementuser',
+				'achievement-statuses' => [
+					['id' => 115, 'created' => date('Y-m-d H:i:s')],
+				],
+			],
+		]);
+
+		$this->testAction('users/view/' . $context->user['id'], ['return' => 'view']);
+
+		$this->assertStringContainsString('/achievements/view/115', $this->view);
+		$this->assertStringContainsString('1000 Weiqi problems 2nd half', $this->view);
+	}
+
 	public function testSolveHistoryShowsOnlyViewableSets(): void
 	{
 		$context = new ContextPreparator([

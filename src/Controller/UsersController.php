@@ -870,16 +870,26 @@ ORDER BY category DESC', [$user['User']['id']]));
 		$tsumegoCount = ClassRegistry::init('Tsumego')->countPublicProblems();
 		$canResetOldTsumegoStatuses = Util::getPercent($user['User']['solved'], $tsumegoCount) >= Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED;
 
-		$asCount = count($as);
-		for ($i = 0; $i < $asCount; $i++)
+		$achievementById = [];
+		foreach ($ach as $achievement)
+			$achievementById[$achievement['Achievement']['id']] = $achievement['Achievement'];
+
+		$asList = [];
+		foreach ($as as $item)
 		{
-			$as[$i]['AchievementStatus']['a_title'] = $ach[$as[$i]['AchievementStatus']['achievement_id'] - 1]['Achievement']['name'];
-			$as[$i]['AchievementStatus']['a_description'] = $ach[$as[$i]['AchievementStatus']['achievement_id'] - 1]['Achievement']['description'];
-			$as[$i]['AchievementStatus']['a_image'] = $ach[$as[$i]['AchievementStatus']['achievement_id'] - 1]['Achievement']['image'];
-			$as[$i]['AchievementStatus']['a_color'] = $ach[$as[$i]['AchievementStatus']['achievement_id'] - 1]['Achievement']['color'];
-			$as[$i]['AchievementStatus']['a_id'] = $ach[$as[$i]['AchievementStatus']['achievement_id'] - 1]['Achievement']['id'];
-			$as[$i]['AchievementStatus']['a_xp'] = $ach[$as[$i]['AchievementStatus']['achievement_id'] - 1]['Achievement']['xp'];
+			$achievementId = (int) $item['AchievementStatus']['achievement_id'];
+			if (!isset($achievementById[$achievementId]))
+				continue;
+			$achievement = $achievementById[$achievementId];
+			$item['AchievementStatus']['a_title'] = $achievement['name'];
+			$item['AchievementStatus']['a_description'] = $achievement['description'];
+			$item['AchievementStatus']['a_image'] = $achievement['image'];
+			$item['AchievementStatus']['a_color'] = $achievement['color'];
+			$item['AchievementStatus']['a_id'] = $achievement['id'];
+			$item['AchievementStatus']['a_xp'] = $achievement['xp'];
+			$asList[] = $item;
 		}
+		$as = $asList;
 
 		$aNum = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $id]]);
 		$asx = $this->AchievementStatus->find('first', ['conditions' => ['user_id' => $id, 'achievement_id' => 46]]);
