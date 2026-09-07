@@ -91,7 +91,7 @@ class AchievementsController extends AppController
 		$currentUserStatus = [];
 		$completerCount = $this->AchievementStatus->find('count', ['conditions' => ['achievement_id' => $id]]);
 		$completers = $this->AchievementStatus->find('all', [
-			'order' => 'created DESC',
+			'order' => 'created DESC, AchievementStatus.id DESC',
 			'conditions' => ['achievement_id' => $id],
 			'limit' => 10]);
 		if (!$completers)
