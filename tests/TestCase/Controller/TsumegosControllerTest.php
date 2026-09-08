@@ -371,6 +371,58 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$this->assertStringContainsString('data-sgf-preview', $result);
 	}
 
+	public function testMergeFormShowsOnlyPublicSetConnections()
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumegos' => [
+				[
+					'sgf' => '(;GM[1]FF[4]SZ[19];B[aa])',
+					'sets' => [
+						['name' => 'masterSetA', 'num' => 1],
+						['name' => 'Favorites', 'num' => 1, 'user_id' => 'self', 'public' => 0, 'default' => true],
+					],
+				],
+				[
+					'sgf' => '(;GM[1]FF[4]SZ[19];B[bb])',
+					'sets' => [
+						['name' => 'slaveSet', 'num' => 1],
+						['name' => 'Favorites', 'num' => 2, 'user_id' => 'self', 'public' => 0],
+					],
+				],
+			],
+		]);
+
+		$favSet = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => 'Favorites', 'user_id' => $context->user['id']]]);
+		$this->assertNotEmpty($favSet, 'Favorites set should exist from test setup');
+		$favoritesSetId = $favSet['Set']['id'];
+
+		$publicConnectionIds = [];
+		$favoriteConnectionIds = [];
+		foreach (array_merge($context->tsumegos[0]['set-connections'], $context->tsumegos[1]['set-connections']) as $sc)
+		{
+			if ($sc['set_id'] == $favoritesSetId)
+				$favoriteConnectionIds[] = $sc['id'];
+			else
+				$publicConnectionIds[] = $sc['id'];
+		}
+		$this->assertNotEmpty($publicConnectionIds, 'Test setup must include public connections');
+		$this->assertNotEmpty($favoriteConnectionIds, 'Test setup must include favorites connections');
+
+		$result = $this->testAction('/tsumegos/mergeFinalForm', [
+			'data' => [
+				'master-id' => $context->tsumegos[0]['set-connections'][0]['id'],
+				'slave-id' => $context->tsumegos[1]['set-connections'][0]['id'],
+			],
+			'return' => 'view',
+		]);
+
+		foreach ($publicConnectionIds as $id)
+			$this->assertStringContainsString('href="/' . $id . '"', $result, 'Public occurrence should be shown');
+		foreach ($favoriteConnectionIds as $id)
+			$this->assertStringNotContainsString('href="/' . $id . '"', $result, 'Favorites occurrence should be hidden');
+	}
+
 	public function testSimilarSearchPreviewIncludesDiff()
 	{
 		$context = new ContextPreparator([
