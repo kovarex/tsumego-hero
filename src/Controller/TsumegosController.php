@@ -281,8 +281,24 @@ class TsumegosController extends AppController
 			CookieFlash::set('These are already merged.', 'error');
 			$this->redirect('/tsumegos/mergeForm');
 		}
-		$masterSetConnectionBrothers = ClassRegistry::init('SetConnection')->find('all', ['conditions' => ['tsumego_id' => $masterSetConnection['tsumego_id']]]);
-		$slaveSetConnectionBrothers = ClassRegistry::init('SetConnection')->find('all', ['conditions' => ['tsumego_id' => $slaveSetConnection['tsumego_id']]]);
+		$masterSetConnectionBrothers = ClassRegistry::init('SetConnection')->find('all', [
+			'joins' => [[
+				'table' => 'set',
+				'alias' => 'S',
+				'type' => 'INNER',
+				'conditions' => ['S.id = SetConnection.set_id'],
+			]],
+			'conditions' => ['SetConnection.tsumego_id' => $masterSetConnection['tsumego_id'], 'S.public' => 1],
+		]);
+		$slaveSetConnectionBrothers = ClassRegistry::init('SetConnection')->find('all', [
+			'joins' => [[
+				'table' => 'set',
+				'alias' => 'S',
+				'type' => 'INNER',
+				'conditions' => ['S.id = SetConnection.set_id'],
+			]],
+			'conditions' => ['SetConnection.tsumego_id' => $slaveSetConnection['tsumego_id'], 'S.public' => 1],
+		]);
 		$masterTsumego = ClassRegistry::init('Tsumego')->findById($masterSetConnection['tsumego_id']);
 		$slaveTsumego = ClassRegistry::init('Tsumego')->findById($slaveSetConnection['tsumego_id']);
 
