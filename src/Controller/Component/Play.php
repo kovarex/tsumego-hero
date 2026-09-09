@@ -7,6 +7,7 @@ use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
 use App\Utility\BoardSelector;
 use App\Utility\Constants;
+use App\Utility\MistakeTraining;
 use App\Utility\SetNavigationButtonsInput;
 use App\Utility\SgfParser;
 use App\Utility\TimeMode;
@@ -219,6 +220,20 @@ class Play
 			($this->setFunction)('multipleChoiceTriangles', count(Util::getFollowingSgfCoordinates($sgf['Sgf']['sgf'], strpos($sgf['Sgf']['sgf'], 'TR') + 2)));
 			($this->setFunction)('multipleChoiceSquares', count(Util::getFollowingSgfCoordinates($sgf['Sgf']['sgf'], strpos($sgf['Sgf']['sgf'], 'SQ') + 2)));
 		}
+		if ($tsumegoFilters->query == 'topics')($this->setFunction)('_title', $set['Set']['title'] . ' ' . $currentSetConnection['SetConnection']['num'] . '/' . $highestTsumegoOrder . ' on Tsumego Hero');
+		else
+		($this->setFunction)('_title', ($_COOKIE['lastSet'] ?? 'Tsumego') . ' ' . $currentSetConnection['SetConnection']['num'] . '/' . $highestTsumegoOrder . ' on Tsumego Hero');
+
+		// If in training mode but this tsumego isn't in the training queue, reset to level mode
+		if (Auth::isInMistakeTrainingMode())
+		{
+			$mtStatus = ClassRegistry::init('TsumegoStatus')->find('first', [
+				'conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $id],
+			]);
+			if (!$mtStatus || empty($mtStatus['TsumegoStatus']['mistake_training_due']))
+				Auth::saveUserField('mode', Constants::$LEVEL_MODE);
+		}
+
 		if (Auth::isInLevelMode())
 		{
 			$tsumegoButtons = new TsumegoButtons($tsumegoFilters, $currentSetConnection['SetConnection']['id'], null, $set['Set']['id']);
@@ -228,6 +243,12 @@ class Play
 			if ($tsumegoFilters->query == 'topics')($this->setFunction)('_title', $set['Set']['title'] . ' ' . $currentSetConnection['SetConnection']['num'] . '/' . $tsumegoButtons->highestTsumegoOrder . ' on Tsumego Hero');
 			else
 			($this->setFunction)('_title', ($_COOKIE['lastSet'] ?? 'Tsumego') . ' ' . $currentSetConnection['SetConnection']['num'] . '/' . $tsumegoButtons->highestTsumegoOrder . ' on Tsumego Hero');
+		}
+		elseif (Auth::isInMistakeTrainingMode())
+		{
+			$mtButtons = MistakeTraining::buildQueueButtons($currentSetConnection['SetConnection']['id']);
+			new SetNavigationButtonsInput($this->setFunction)->execute($mtButtons, $currentSetConnection);
+			($this->setFunction)('_title', 'Mistake Training ' . $mtButtons->currentOrder . '/' . $mtButtons->highestTsumegoOrder . ' on Tsumego Hero');
 		}
 
 		$t['Tsumego']['status'] = $tsumegoStatus;
@@ -397,8 +418,10 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		}
 		($this->setFunction)('userSetsJson', $userSetsJson);
 
-		if (Auth::isInLevelMode())
+		if (Auth::isInLevelMode() && isset($tsumegoButtons))
 			$tsumegoButtons->exportCurrentAndPreviousLink($this->setFunction, $tsumegoFilters, $setConnectionID, $set);
+		elseif (Auth::isInMistakeTrainingMode() && isset($mtButtons))
+			$mtButtons->exportCurrentAndPreviousLink($this->setFunction, $tsumegoFilters, $setConnectionID, $set, '/mistake-training');
 
 		($this->setFunction)('isAllowedToContribute', $isAllowedToContribute);
 		($this->setFunction)('canAddMoreTags', $canAddMoreTags);
@@ -455,6 +478,9 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 						<div id="sliderText">regular</div>
 						</div>
 						<a id="playTitleA" href=""></a>';
+
+		if (Auth::isInMistakeTrainingMode())
+			return '<a id="playTitleA" href="/mistake-training">Mistake Training ' . ($tsumegoButtons->currentOrder ?? 0) . '/' . ($tsumegoButtons->highestTsumegoOrder ?? 0) . '</a>';
 
 		$order = $setConnection['SetConnection']['num'];
 		if ($tsumegoFilters->query == 'difficulty' || $tsumegoFilters->query == 'tags')

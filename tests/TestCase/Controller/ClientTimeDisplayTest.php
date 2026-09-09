@@ -2,6 +2,8 @@
 
 use Facebook\WebDriver\WebDriverBy;
 
+App::uses('Constants', 'Utility');
+
 class ClientTimeDisplayTest extends TestCaseWithAuth
 {
 	public function testSolveHistoryDisplaysTimeInBrowserTimezone(): void
@@ -19,6 +21,7 @@ class ClientTimeDisplayTest extends TestCaseWithAuth
 				'tsumego_id' => $context->tsumegos[0]['id'],
 				'solved' => 1,
 				'misplays' => 0,
+				'mode' => Constants::$LEVEL_MODE,
 				'user_rating' => 1000,
 				'gain' => 0,
 				'seconds' => 10,
