@@ -654,7 +654,7 @@
 	var disableAutoplay = false;
 	var besogoNoLogin = false;
 	var sprintSeconds = <?php echo Constants::$SPRINT_SECONDS; ?>;
-	var problemSolved = <?php echo Util::boolString(TsumegoUtil::hasStateAllowingInspection($t)); ?>;
+	var problemSolved = <?php echo Util::boolString(!Auth::isInTimeMode() && TsumegoUtil::hasStateAllowingInspection($t)); ?>;
 	var playerRatingCalculationModifier = <?php echo Constants::$PLAYER_RATING_CALCULATION_MODIFIER; ?>;
 	let multipleChoiceLibertiesB = 0;
 	let multipleChoiceLibertiesW = 0;
@@ -1062,7 +1062,8 @@
 		';
 	}
 
-		if($t['Tsumego']['status']=='S' || $t['Tsumego']['status']=='C'){
+		$reviewEnabled = false;
+		if(!Auth::isInTimeMode() && ($t['Tsumego']['status']=='S' || $t['Tsumego']['status']=='C')){
 			$reviewEnabled = true;
 			echo 'reviewEnabled = true;';
 	}
