@@ -828,7 +828,6 @@ WHERE
 			FROM tsumego_attempt
 			WHERE user_id = :user_id
 			  AND created > :oldest
-			  AND IFNULL(mode, 1) <> " . Constants::$MISTAKE_TRAINING_MODE . "
 			GROUP BY DATE(created)
 			ORDER BY day ASC
 		", ['user_id' => $id, 'oldest'  => $oldest]);
@@ -1141,7 +1140,6 @@ SELECT
 	tsumego_attempt.solved AS solved,
 	tsumego_attempt.misplays AS misplays,
 	tsumego_attempt.user_rating AS user_rating,
-	tsumego_attempt.mode AS mode,
 	COALESCE(sgf.sgf, '') AS sgf
 FROM
 	tsumego_attempt

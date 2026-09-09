@@ -301,8 +301,8 @@ echo ViteManifest::legacyScript('legacy');
 						if(Auth::isLoggedIn()){
 							echo '<li><a class="'.$ratingModeA.'" href="/ratingMode">Rating</a></li>';
 							echo '<li><a class="'.$timeModeA.'" href="/timeMode/overview">Time</a></li>';
-							$mtLabel = 'Mistake Training' . (!empty($mtDueCount) ? ' (' . $mtDueCount . ')' : '');
-							echo '<li><a style="font-size:16px" href="/mistake-training">' . $mtLabel . '</a></li>';
+							$mistakeTrainingLabel = 'Mistake Training' . (!empty($mistakeTrainingDueCount) ? ' (' . $mistakeTrainingDueCount . ')' : '');
+							echo '<li><a style="font-size:16px" href="/mistake-training">' . $mistakeTrainingLabel . '</a></li>';
 						}
 								echo '</ul>';
 						echo '<li><a '.$refreshLinkToHighscore.' class="'.$highscoreA.'" href="/users/'.$highscoreLink.'">Highscore</a>';

@@ -6,6 +6,7 @@ App::uses('TsumegoFilters', 'Utility');
 App::uses('AchievementChecker', 'Utility');
 App::uses('HeroPowers', 'Utility');
 App::uses('TimeMode', 'Utility');
+App::uses('MistakeTraining', 'Utility');
 App::uses('ChangelogController', 'Controller');
 
 class AppController extends Controller
@@ -490,7 +491,7 @@ class AppController extends Controller
 		$this->set('lastProfileRight', $lastProfileRight);
 		$this->set('timeMode', $timeMode);
 		$this->set('changelogTimestamps', ChangelogController::changelogTimestamps());
-		$this->set('mtDueCount', Auth::isLoggedIn() ? $this->TsumegoStatus->mistakeTrainingDueCount((int) Auth::getUserID()) : 0);
+		$this->set('mistakeTrainingDueCount', Auth::isLoggedIn() ? MistakeTraining::dueCount((int) Auth::getUserID()) : 0);
 	}
 
 	public function afterFilter() {}

@@ -1020,7 +1020,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 				'conditions' => [
 					'user_id' => Auth::getUserID(),
 					'tsumego_id' => $tsIds,
-					'IFNULL(mode, 1) <> ' . Constants::$MISTAKE_TRAINING_MODE,
 				],
 			]) ?: [];
 			$urCount2 = count($ur);

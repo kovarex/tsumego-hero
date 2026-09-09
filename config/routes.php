@@ -99,7 +99,7 @@ Router::connect(
  */
 Router::connect(
 	'/mistake-training',
-	['controller' => 'Tsumegos', 'action' => 'mistakeTraining']
+	['controller' => 'MistakeTraining', 'action' => 'play']
 );
 
 /**

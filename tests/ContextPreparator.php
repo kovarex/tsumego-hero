@@ -382,7 +382,7 @@ class ContextPreparator
 	{
 		$statusValue = $tsumegoStatus ? (is_string($tsumegoStatus) ? $tsumegoStatus : $tsumegoStatus['name']) : null;
 		$updated = $tsumegoStatus ? (is_string($tsumegoStatus) ? null : $tsumegoStatus['updated']) : null;
-		$mtDue = $tsumegoStatus ? (is_string($tsumegoStatus) ? null : ($tsumegoStatus['mistake_training_due'] ?? null)) : null;
+		$mistakeTrainingDue = $tsumegoStatus ? (is_string($tsumegoStatus) ? null : ($tsumegoStatus['mistake_training_due'] ?? null)) : null;
 		$userID = $tsumegoStatus
 			? (is_string($tsumegoStatus)
 				? $this->user['id']
@@ -403,8 +403,6 @@ class ContextPreparator
 				$originalTsumegoStatus['TsumegoStatus']['status'] = $statusValue;
 				if ($updated)
 					$originalTsumegoStatus['TsumegoStatus']['updated'] = $updated;
-				if ($mtDue)
-					$originalTsumegoStatus['TsumegoStatus']['mistake_training_due'] = $mtDue;
 				ClassRegistry::init('TsumegoStatus')->save($originalTsumegoStatus);
 			}
 		elseif ($tsumegoStatus)
@@ -413,12 +411,37 @@ class ContextPreparator
 			$originalTsumegoStatus['TsumegoStatus']['status'] = $statusValue;
 			if ($updated)
 				$originalTsumegoStatus['TsumegoStatus']['updated'] = $updated;
-			if ($mtDue)
-				$originalTsumegoStatus['TsumegoStatus']['mistake_training_due'] = $mtDue;
 			$originalTsumegoStatus['TsumegoStatus']['user_id'] = $userID;
 			$originalTsumegoStatus['TsumegoStatus']['tsumego_id'] = $tsumego['id'];
 			ClassRegistry::init('TsumegoStatus')->create($originalTsumegoStatus);
 			ClassRegistry::init('TsumegoStatus')->save($originalTsumegoStatus);
+		}
+
+		// A status fixture with mistake_training_due now marks the problem as in
+		// the training pool (the due column moved to mistake_training_pool).
+		if ($mistakeTrainingDue !== null)
+			$this->prepareMistakeTrainingPoolEntry($userID, (int) $tsumego['id'], $mistakeTrainingDue);
+	}
+
+	private function prepareMistakeTrainingPoolEntry(int $userId, int $tsumegoId, $mistakeTrainingDue): void
+	{
+		$pool = ClassRegistry::init('MistakeTrainingPool');
+		$existing = $pool->find('first', ['conditions' => ['user_id' => $userId, 'tsumego_id' => $tsumegoId]]);
+		$data = [
+			'user_id' => $userId,
+			'tsumego_id' => $tsumegoId,
+			'rung' => 0,
+			'next_due' => $mistakeTrainingDue,
+		];
+		if ($existing)
+		{
+			$existing['MistakeTrainingPool']['next_due'] = $mistakeTrainingDue;
+			$pool->save($existing['MistakeTrainingPool']);
+		}
+		else
+		{
+			$pool->create();
+			$pool->save($data);
 		}
 	}
 
