@@ -56,6 +56,14 @@ class TsumegoUtil
 		return TsumegoUtil::isRecentlySolved($tsumego['Tsumego']['status']);
 	}
 
+	// Whether the problem is in a solved/inspectable state for the current mode.
+	// In time mode every problem is presented fresh, so this is always false at
+	// page load (the solved state is tracked per-session and flips client-side).
+	public static function hasStateAllowingInspectionForCurrentMode($tsumego)
+	{
+		return !Auth::isInTimeMode() && TsumegoUtil::hasStateAllowingInspection($tsumego);
+	}
+
 	public static function isRecentlySolved($status)
 	{
 		return $status == TsumegoStatus::$SOLVED || $status == TsumegoStatus::$MASTERED;

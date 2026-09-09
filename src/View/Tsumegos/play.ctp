@@ -296,7 +296,7 @@
 			'isAdmin' => Auth::isAdmin(),
 			'tsumegoId' => (int) $t['Tsumego']['id'],
 			'isTimeMode' => Auth::isInTimeMode(),
-			'problemSolved' => TsumegoUtil::hasStateAllowingInspection($t),
+			'problemSolved' => TsumegoUtil::hasStateAllowingInspectionForCurrentMode($t),
 			'canAddMoreTags' => $canAddMoreTags,
 			'isAllowedToContribute' => $isAllowedToContribute,
 			'initialTags' => array_map(fn($row) => [
@@ -654,7 +654,7 @@
 	var disableAutoplay = false;
 	var besogoNoLogin = false;
 	var sprintSeconds = <?php echo Constants::$SPRINT_SECONDS; ?>;
-	var problemSolved = <?php echo Util::boolString(!Auth::isInTimeMode() && TsumegoUtil::hasStateAllowingInspection($t)); ?>;
+	var problemSolved = <?php echo Util::boolString(TsumegoUtil::hasStateAllowingInspectionForCurrentMode($t)); ?>;
 	var playerRatingCalculationModifier = <?php echo Constants::$PLAYER_RATING_CALCULATION_MODIFIER; ?>;
 	let multipleChoiceLibertiesB = 0;
 	let multipleChoiceLibertiesW = 0;
@@ -1063,7 +1063,7 @@
 	}
 
 		$reviewEnabled = false;
-		if(!Auth::isInTimeMode() && ($t['Tsumego']['status']=='S' || $t['Tsumego']['status']=='C')){
+		if(TsumegoUtil::hasStateAllowingInspectionForCurrentMode($t)){
 			$reviewEnabled = true;
 			echo 'reviewEnabled = true;';
 	}
