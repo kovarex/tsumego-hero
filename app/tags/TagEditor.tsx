@@ -120,12 +120,13 @@ export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags
 
 	const addedTags = tags.filter(t =>
 		t.isAdded && (t.isApproved || t.isMine) &&
-		(t.isMine || problemSolved || (!isTimeMode && !t.isHint))
+		(isTimeMode ? t.isMine : (t.isMine || problemSolved || !t.isHint))
 	);
 
-	const hiddenCount = problemSolved ? 0 : isTimeMode
+	const hiddenCount = isTimeMode
 		? tags.filter(t => t.isAdded && !t.isMine && (t.isApproved || t.isMine)).length
-		: tags.filter(t => t.isAdded && t.isHint && !t.isMine && (t.isApproved || t.isMine)).length;
+		: problemSolved ? 0
+			: tags.filter(t => t.isAdded && t.isHint && !t.isMine && (t.isApproved || t.isMine)).length;
 
 	const tagList = (addedTags.length > 0 || hiddenCount > 0) && (
 		<div style={{ marginBottom: 8 }} data-testid="tag-list">

@@ -296,7 +296,7 @@
 			'isAdmin' => Auth::isAdmin(),
 			'tsumegoId' => (int) $t['Tsumego']['id'],
 			'isTimeMode' => Auth::isInTimeMode(),
-			'problemSolved' => TsumegoUtil::hasStateAllowingInspectionForCurrentMode($t),
+			'problemSolved' => TsumegoUtil::hasStateAllowingInspection($t),
 			'canAddMoreTags' => $canAddMoreTags,
 			'isAllowedToContribute' => $isAllowedToContribute,
 			'initialTags' => array_map(fn($row) => [
