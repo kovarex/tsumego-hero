@@ -679,7 +679,33 @@ class TagTest extends ControllerTestCase
 		$browser->clickId('tag_hint_false');
 		$browser->clickId('submit_tag');
 		$tag = ClassRegistry::init('Tag')->find('first')['Tag'];
-		$this->assertSame(0, $tag['hint']);
+		$this->assertSame(0, $tag['hint']); // hint value was not touched
+	}
+
+	public function testTagContributionsShowsUsersTagActivity()
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tags' => [['name' => 'snapback', 'approved' => 1]]]);
+		$browser = Browser::instance();
+		$browser->get('tags/user/' . $context->user['id']);
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertStringContainsString($context->user['display_name'], $pageSource);
+		$this->assertStringContainsString('snapback', $pageSource);
+		$this->assertStringContainsString('accepted', $pageSource);
+	}
+
+	public function testTagContributionsShowsViewedUsersNameNotViewersName()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'viewer'],
+			'other-users' => [['name' => 'contributor']]]);
+		$browser = Browser::instance();
+		$browser->get('tags/user/' . $context->otherUsers[0]['id']);
+		// The contributions header shows the viewed user's display name, not the viewer's.
+		$username = $browser->find('.profile-username')->getText();
+		$this->assertStringContainsString('DN_contributor', $username);
+		$this->assertStringNotContainsString('DN_viewer', $username);
 	}
 
 	public function testAdminAcceptsTagProposal()

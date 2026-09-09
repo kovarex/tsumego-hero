@@ -159,7 +159,7 @@ echo ViteManifest::legacyScript('legacy');
 			?>
 			<div class="site-nav__account">
 				<div class="site-nav__account-user">
-					<a href="/users/view/<?php echo Auth::getUserID(); ?>"><?php echo h(Auth::getUser()['name']); ?></a>
+					<a href="/users/view/<?php echo Auth::getUserID(); ?>"><?php echo h(Auth::getUser()['display_name']); ?></a>
 				</div>
 				<nav class="site-nav__account-links">
 					<ul>

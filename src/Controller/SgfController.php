@@ -23,7 +23,7 @@ class SgfController extends AppController
 
 		$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['tsumego_id' => $sgf['Sgf']['tsumego_id'], 'user_id' => Auth::getUserID()]]);
 		if (!Auth::isAdmin() && (!$status || !TsumegoUtil::isRecentlySolved($status['TsumegoStatus']['status'])))
-			throw new ForbiddenException('Related tsumego is not in a solved state for the user ' . Auth::getUser()['name']);
+			throw new ForbiddenException('Related tsumego is not in a solved state for the user ' . Auth::getUser()['display_name']);
 
 		$this->response->statusCode(200);
 		$this->response->body($sgf['Sgf']['sgf']);

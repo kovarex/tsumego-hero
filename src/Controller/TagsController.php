@@ -65,7 +65,7 @@ class TagsController extends AppController
 			throw new NotFoundException('Tag not found');
 		$allTags = $this->getAllTags();
 		$user = $this->User->findById($tn['Tag']['user_id']);
-		$tn['Tag']['user'] = $user['User']['name'];
+		$tn['Tag']['user'] = $user ? $user['User'] : null;
 		$this->set('allTags', $allTags);
 		$this->set('tn', $tn);
 		$this->set('canAddTag', $this->Authorization->can('Tag', 'add'));

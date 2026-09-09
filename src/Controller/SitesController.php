@@ -45,9 +45,10 @@ class SitesController extends AppController
 		{
 			$currentQuote = $dayRecord['DayRecord']['quote'];
 			$userOfTheDay = $this->User->find('first', ['conditions' => ['id' => $dayRecord['DayRecord']['user_id']]]);
-			$this->set('userOfTheDay', $this->checkPictureLarge($userOfTheDay));
-			$this->set('userOfTheDayId', $userOfTheDay['User']['id']);
+			$this->set('userOfTheDay', $userOfTheDay ? $userOfTheDay['User'] : null);
 		}
+		else
+			$this->set('userOfTheDay', null);
 
 		$this->set('tsumegoButtonsOfPublishedTsumegos', $tsumegoButtonsOfPublishedTsumegos);
 		$chartData = Cache::read('homepage_chart', 'long');
@@ -60,6 +61,7 @@ class SitesController extends AppController
 		$this->set('latestPublishDate', $latestPublishDate);
 		$this->set('quote', $currentQuote);
 
+		$this->loadModel('AchievementStatus');
 		$recentAchievements = $this->AchievementStatus->getRecent();
 		$this->set('recentAchievements', $recentAchievements);
 	}

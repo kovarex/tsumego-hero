@@ -489,7 +489,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$adminActivities = ClassRegistry::init('AdminActivity')->find('all');
 		$this->assertCount(1, $adminActivities);
 		$this->assertSame($adminActivities[0]['AdminActivity']['type'], AdminActivityType::DELETE_USER);
-		$this->assertSame('TwT', $adminActivities[0]['AdminActivity']['old_value']);
+		$this->assertSame('DN_TwT', $adminActivities[0]['AdminActivity']['old_value']);
 		$this->assertSame(null, $adminActivities[0]['AdminActivity']['new_value']);
 	}
 }

@@ -24,9 +24,9 @@
 			echo '<caption>Account Deletion Requests (' . count($requestDeletion) . ')</caption>';
 			for($i=0; $i<count($requestDeletion); $i++){
 				echo '<tr>';
-				echo '<td>'.h($requestDeletion[$i]['User']['name']).' has requested account deletion.</td>';
-				echo '<td><a class="btn btn--small btn--danger" id="delete-user-'.($i+1).'" href="/users/adminstats?delete='.($requestDeletion[$i]['User']['id']*1111)
-				.'&hash='.md5($requestDeletion[$i]['User']['name']).'" onclick="return confirm(\'Are you sure you want to delete this account?\');">Delete Account</a></td>';
+								echo '<td>'.User::renderLink($requestDeletion[$i]['User']).' has requested account deletion.</td>';
+								echo '<td><a class="btn btn--small btn--danger" id="delete-user-'.($i+1).'" href="/users/adminstats?delete='.($requestDeletion[$i]['User']['id']*1111)
+								.'&hash='.md5($requestDeletion[$i]['User']['display_name']).'" onclick="return confirm(\'Are you sure you want to delete this account?\');">Delete Account</a></td>';
 				echo '</tr>';
 			}
 			echo '</table>';
