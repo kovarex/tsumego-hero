@@ -75,6 +75,7 @@
 	align-items: center;
 	justify-content: center;
 	text-decoration: none;
+	color: var(--color-white);
 }
 
 /* The spacer between groups uses flex spacing instead of float. */
@@ -90,17 +91,22 @@
 .problem-nav__item--current
 {
 	position: relative;
-	border: 3px solid var(--current-border-color);
+	z-index: 20;
 }
 
-.problem-nav__item--current::before
+.problem-nav__item--current .problem-nav__number
 {
-	content: "";
-	position: absolute;
-	inset: -5px;
-	border-radius: 9px;
-	pointer-events: none;
+	text-shadow: 0 0 8px rgba(255, 255, 255, 0.95);
 }
+
+.problem-nav__item--N.problem-nav__item--current { box-shadow: 0 0 12px 4px var(--status-n-color), inset 0 0 12px rgba(255, 255, 255, 0.5); }
+.problem-nav__item--V.problem-nav__item--current { box-shadow: 0 0 12px 4px var(--status-v-color), inset 0 0 12px rgba(255, 255, 255, 0.5); }
+.problem-nav__item--S.problem-nav__item--current { box-shadow: 0 0 12px 4px var(--status-s-color), inset 0 0 12px rgba(255, 255, 255, 0.5); }
+.problem-nav__item--C.problem-nav__item--current { box-shadow: 0 0 12px 4px var(--status-c-color), inset 0 0 12px rgba(255, 255, 255, 0.5); }
+.problem-nav__item--W.problem-nav__item--current { box-shadow: 0 0 12px 4px var(--status-w-color), inset 0 0 12px rgba(255, 255, 255, 0.5); }
+.problem-nav__item--F.problem-nav__item--current { box-shadow: 0 0 12px 4px var(--status-f-color), inset 0 0 12px rgba(255, 255, 255, 0.5); }
+.problem-nav__item--X.problem-nav__item--current { box-shadow: 0 0 12px 4px var(--status-x-color), inset 0 0 12px rgba(255, 255, 255, 0.5); }
+.problem-nav__item--G.problem-nav__item--current { box-shadow: 0 0 12px 4px var(--status-g-color), inset 0 0 12px rgba(255, 255, 255, 0.5); }
 
 .problem-nav__item--N
 {
