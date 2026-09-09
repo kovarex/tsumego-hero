@@ -783,7 +783,8 @@ use App\Utility\ViteManifest;
 		echo 'besogoNoLogin = true;';
 	}
 
-	if ($authorx == Auth::getWithDefault('name', ''))
+	$authorUserId = $t['Tsumego']['author_user_id'] ?? null;
+	if ($authorUserId !== null && $authorUserId == Auth::getUserID())
 		echo 'authorProblem = true;';
 	if($requestSolution)
 		echo 'authorProblem = true;';

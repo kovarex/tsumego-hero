@@ -9,7 +9,7 @@ use phpbb\user;
 
 /**
  * JWT-based authentication provider for phpBB.
- * 
+ *
  * Uses the same JWT tokens as the main Tsumego Hero application
  */
 class jwtauth implements provider_interface
@@ -28,8 +28,7 @@ class jwtauth implements provider_interface
 		user $user,
 		string $phpbb_root_path,
 		string $php_ext
-	)
-	{
+	) {
 		$this->request = $request;
 		$this->db      = $db;
 		$this->config  = $config;
@@ -50,17 +49,17 @@ class jwtauth implements provider_interface
 
 	public function link_account(array $user)
 	{
-		return array('status' => LOGIN_SUCCESS);
+		return ['status' => LOGIN_SUCCESS];
 	}
 
 	public function unlink_account(array $user)
 	{
-		return array('status' => LOGIN_SUCCESS);
+		return ['status' => LOGIN_SUCCESS];
 	}
 
 	public function get_auth_link_data($user_id = 0)
 	{
-		return array();
+		return [];
 	}
 
 	public function login_link_has_necessary_data(array $data)
@@ -86,7 +85,7 @@ class jwtauth implements provider_interface
 			return false;
 
 		// Load user from main app database
-		$sql = 'SELECT id, name, email
+		$sql = 'SELECT id, display_name as name, email
         FROM user
         WHERE id = ' . (int) $userId;
 		$result = $this->db->sql_query($sql);
@@ -106,7 +105,7 @@ class jwtauth implements provider_interface
 		{
 			return [
 				'status'   => LOGIN_SUCCESS,
-				'error_msg'=> false,
+				'error_msg' => false,
 				'user_row' => $this->user->data,
 			];
 		}
@@ -155,10 +154,10 @@ class jwtauth implements provider_interface
 
 	/**
 	 * Validate JWT token and extract user ID.
-	 * 
+	 *
 	 * This duplicates logic from src/Utility/JwtAuth.php
 	 * because we can't easily include CakePHP classes in phpBB context.
-	 * 
+	 *
 	 * @param string $token JWT token
 	 * @return int|null User ID if valid, null otherwise
 	 */
@@ -202,12 +201,12 @@ class jwtauth implements provider_interface
 		// Load CakePHP config file
 		// phpbb_root_path points to webroot/forums/, we need config/core.php at project root
 		$configPath = $this->phpbb_root_path . '../../config/core.php';
-		
+
 		if (!file_exists($configPath))
 			throw new \Exception('Config file not found: ' . $configPath);
 
 		$configContent = file_get_contents($configPath);
-		
+
 		// Extract Security.salt value using regex
 		// Matches: Configure::write('Security.salt', 'VALUE');
 		if (preg_match("/Configure::write\\('Security\\.salt',\\s*'([^']+)'/", $configContent, $matches))
@@ -256,7 +255,7 @@ class jwtauth implements provider_interface
 
 		include_once($this->phpbb_root_path . 'includes/functions_user.' . $this->php_ext);
 
-		$user_row = array(
+		$user_row = [
 			'username'         => $ext['name'],
 			'username_clean'   => strtolower($ext['name']),
 			'user_email'       => $ext['email'],
@@ -267,7 +266,7 @@ class jwtauth implements provider_interface
 			'user_passchg'     => time(),
 			'user_password'    => phpbb_hash(bin2hex(random_bytes(16))),
 			'external_id'      => (int) $ext['id'],
-		);
+		];
 
 		$phpbb_id = user_add($user_row);
 
