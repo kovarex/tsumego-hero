@@ -72,12 +72,13 @@ class AppController extends Controller
 	{
 		return self::checkPicture($u['User']);
 	}
+
 	/**
 	 * @param UserRow $user
 	 */
 	public static function checkPicture(array $user): string
 	{
-		return User::displayName($user['id'] ?? null, $user['name'], $user['external_id']);
+		return User::displayName($user['id'] ?? null, $user['display_name'] ?? $user['name'] ?? null);
 	}
 
 	public static function saveDanSolveCondition(string $solvedTsumegoRank, int $tId): void
@@ -394,6 +395,18 @@ class AppController extends Controller
 
 		if (Auth::isLoggedIn())
 		{
+			if (!empty(Auth::getUser()['needs_display_name_change']))
+			{
+				$controller = $this->request->params['controller'];
+				$action = $this->request->params['action'];
+				$allowedChangeActions = ['users/changename', 'users/updatename', 'users/logout', 'users/login'];
+				if (!in_array($controller . '/' . $action, $allowedChangeActions, true))
+				{
+					$this->redirect(['controller' => 'users', 'action' => 'changename']);
+					return;
+				}
+			}
+
 			if ($lastTimeModeCategoryID = Util::clearCookie('lastTimeModeCategoryID'))
 				Auth::saveUserField('last_time_mode_category_id', $lastTimeModeCategoryID);
 			if (Auth::getUser()['lastHighscore'] == Constants::$HIGHSCORE_LEVEL)
@@ -489,12 +502,7 @@ class AppController extends Controller
 
 		$nextDay = new DateTime('tomorrow');
 		if (Auth::isLoggedIn())
-		{
-			$user = Auth::getUser();
-			$displayUser = $user;
-			$displayUser['name'] = $this->checkPicture($user);
-			$this->set('user', $displayUser);
-		}
+			$this->set('user', Auth::getUser());
 		$this->set('nextDay', $nextDay->format('m/d/Y'));
 		$this->set('highscoreLink', $highscoreLink);
 		$this->set('lightDark', $lightDark);

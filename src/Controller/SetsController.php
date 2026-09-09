@@ -101,7 +101,7 @@ class SetsController extends AppController
 		$adminsList = $this->User->find('all', ['order' => 'id ASC', 'conditions' => ['isAdmin >' => 0]]) ?: [];
 		$admins = [];
 		foreach ($adminsList as $item)
-			$admins[] = $item['User']['name'];
+			$admins[] = $item['User']['display_name'];
 
 		$this->set('admins', $admins);
 		$this->set('setsNew', $setsNew);
@@ -129,7 +129,7 @@ class SetsController extends AppController
 		$profileUser = $this->User->findById($userId);
 		if ($profileUser)
 			$this->assertUserVisible($profileUser['User']);
-		$pageTitle = $isOwn ? 'My Sets' : h($profileUser['User']['name']) . "'s Sets";
+		$pageTitle = $isOwn ? 'My Sets' : h($profileUser['User']['display_name']) . "'s Sets";
 		$this->set('_title', 'Tsumego Hero - ' . $pageTitle);
 		$this->set('profileUser', $profileUser ? $profileUser['User'] : null);
 		$this->set('isOwn', $isOwn);
@@ -216,7 +216,8 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 				$t['Tsumego']['difficulty'] = 4;
 				$t['Tsumego']['variance'] = 100;
 				$t['Tsumego']['description'] = 'b to kill';
-				$t['Tsumego']['author'] = Auth::getUser()['name'];
+				$t['Tsumego']['author'] = Auth::getUser()['display_name'];
+				$t['Tsumego']['author_user_id'] = Auth::getUserID();
 				$this->Tsumego->create();
 				$this->Tsumego->save($t);
 
@@ -684,7 +685,8 @@ ORDER BY sc.num ASC", [(int) $id]);
 		{
 			$tsumego = [];
 			$tsumego['num'] = $this->request->data['order'];
-			$tsumego['author'] = Auth::getUser()['name'];
+			$tsumego['author'] = Auth::getUser()['display_name'];
+			$tsumego['author_user_id'] = Auth::getUserID();
 			$tsumegoModel->create();
 			$tsumegoModel->save($tsumego);
 
@@ -736,7 +738,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 				'title' => 'Favorites',
 				'public' => 0,
 				'image' => null,
-				'author' => Auth::getUser()['name'],
+				'author' => Auth::getUser()['display_name'],
 				'order' => Constants::$DEFAULT_SET_ORDER,
 			],
 		]);

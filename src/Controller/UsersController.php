@@ -5,6 +5,8 @@ use App\Utility\AdminActivityRenderer;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\CookieFlash;
+use App\Utility\GoogleTokenVerifier;
+use App\Utility\GoogleTokenVerifierInterface;
 use App\Utility\SGFProposalsRenderer;
 use App\Utility\TagConnectionProposalsRenderer;
 use App\Utility\TagProposalsRenderer;
@@ -12,10 +14,59 @@ use App\Utility\TimeModeUtil;
 use App\Utility\TsumegoUtil;
 use App\Utility\Util;
 use App\Attribute\HttpPost;
+use App\Attribute\HttpGet;
 
 class UsersController extends AppController
 {
 	public $helpers = ['Html', 'Form', 'Highscore'];
+
+	protected ?GoogleTokenVerifierInterface $tokenVerifier = null;
+
+	/**
+	 * Static test verifier (used by tests to inject FakeGoogleTokenVerifier)
+	 */
+	private static ?GoogleTokenVerifierInterface $testVerifier = null;
+
+	/**
+	 * Set the Google token verifier for testing (static, affects all instances)
+	 */
+	public static function setTestTokenVerifier(?GoogleTokenVerifierInterface $verifier): void
+	{
+		self::$testVerifier = $verifier;
+	}
+
+	/**
+	 * Check if running in test environment (test verifier is set)
+	 */
+	private function isTestEnvironment(): bool
+	{
+		return self::$testVerifier !== null;
+	}
+
+	/**
+	 * Set the Google token verifier (for this instance)
+	 */
+	public function setTokenVerifier(GoogleTokenVerifierInterface $verifier): void
+	{
+		$this->tokenVerifier = $verifier;
+	}
+
+	/**
+	 * Get the Google token verifier (lazily creates real verifier if not set)
+	 */
+	protected function getTokenVerifier(): GoogleTokenVerifierInterface
+	{
+		// Test verifier takes precedence
+		if (self::$testVerifier !== null)
+			return self::$testVerifier;
+
+		if ($this->tokenVerifier === null)
+		{
+			$clientId = '986748597524-05gdpjqrfop96k6haga9gvj1f61sji6v.apps.googleusercontent.com';
+			$this->tokenVerifier = new GoogleTokenVerifier($clientId);
+		}
+		return $this->tokenVerifier;
+	}
 
 	// shows the publish schedule
 	public function showPublishSchedule(): void
@@ -52,18 +103,29 @@ class UsersController extends AppController
 		if (empty($this->request->data))
 			return;
 
-		$user = $this->User->findByEmail($this->request->data['User']['email']);
+		$userEmail = $this->request->data['User']['email'];
+
+		// Only allow password reset for local users (not Google Sign-In users)
+		$user = $this->User->findLocalUserByEmail($userEmail);
 		if (!$user)
+		{
+			// Check if it's a Google user - show helpful message
+			$googleUser = $this->User->findByEmail($userEmail);
+			if ($googleUser && User::isGoogleUser($googleUser['User']))
+				CookieFlash::set('This account uses Google Sign-In. Please sign in with Google.', 'info');
+			// For non-existent emails, don't reveal this - just show generic sent message
 			return;
+		}
+
 		$randomString = Util::generateRandomString(20);
 		$user['User']['passwordreset'] = $randomString;
 		$this->User->save($user);
 
-		$email = $this->_getEmailer();
-		$email->from(['me@tsumego.com' => 'https://tsumego.com']);
-		$email->to($this->request->data['User']['email']);
-		$email->subject('Password reset for your Tsumego Hero account');
-		$email->send('Click the following button to reset your password. If you have not requested the password reset,
+		$emailer = $this->_getEmailer();
+		$emailer->from(['me@tsumego.com' => 'https://tsumego.com']);
+		$emailer->to($userEmail);
+		$emailer->subject('Password reset for your Tsumego Hero account');
+		$emailer->send('Click the following button to reset your password. If you have not requested the password reset,
 then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/' . $randomString);
 	}
 
@@ -133,7 +195,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		for ($i = 0; $i < $urCount; $i++)
 		{
 			$u = $this->User->findById($ur[$i]['TsumegoAttempt']['user_id']);
-			$ur[$i]['TsumegoAttempt']['user_name'] = $u['User']['name'];
+			$ur[$i]['TsumegoAttempt']['user_name'] = $u['User']['display_name'];
 			$ur[$i]['TsumegoAttempt']['level'] = $u['User']['level'];
 			$t = $this->Tsumego->findById($ur[$i]['TsumegoAttempt']['tsumego_id']);
 			$scT = $this->SetConnection->findDisplaySetConnection($t['Tsumego']['id']);
@@ -186,7 +248,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		for ($i = 0; $i < $urCount; $i++)
 		{
 			$u = $this->User->findById($ur[$i]['TsumegoAttempt']['user_id']);
-			$ur[$i]['TsumegoAttempt']['user_name'] = $u['User']['name'];
+			$ur[$i]['TsumegoAttempt']['user_name'] = $u['User']['display_name'];
 			$t = $this->Tsumego->findById($ur[$i]['TsumegoAttempt']['tsumego_id']);
 			$ur[$i]['TsumegoAttempt']['tsumego_num'] = $t['Tsumego']['num'];
 			$ur[$i]['TsumegoAttempt']['tsumego_xp'] = $t['Tsumego']['difficulty'];
@@ -235,7 +297,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 
 			$u = $this->User->findById($s[$i]['Sgf']['user_id']);
-			$s[$i]['Sgf']['user'] = $u['User']['name'];
+			$s[$i]['Sgf']['user'] = $u['User']['display_name'];
 			$t = $this->Tsumego->findById($s[$i]['Sgf']['tsumego_id']);
 			$scT = $this->SetConnection->findDisplaySetConnection($t['Tsumego']['id']);
 			$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
@@ -312,8 +374,12 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$input = $this->request->data['username'];
 		if (empty($input))
 			return null;
+
+		// findByName won't find Google users (they have name=NULL after migration)
 		if ($user = $this->User->findByName($input))
 			return $user;
+
+		// findByEmail could find Google users, which we'll handle in login()
 		if ($user = $this->User->findByEmail($input))
 			return $user;
 		return null;
@@ -346,6 +412,13 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		if (!$user)
 		{
 			CookieFlash::set('Unknown user', 'error');
+			return null;
+		}
+
+		// Google users should use "Sign in with Google" button
+		if (User::isGoogleUser($user['User']))
+		{
+			CookieFlash::set('This account uses Google Sign-In. Please use the "Sign in with Google" button.', 'info');
 			return null;
 		}
 
@@ -425,9 +498,16 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			return;
 		}
 
+		if ($this->User->findByEmail($this->request->data['User']['email']))
+		{
+			CookieFlash::set('Email already exists', 'error');
+			return;
+		}
+
 		$userData = $this->request->data;
 		$userData['User']['password_hash'] = password_hash($this->request->data['User']['password1'], PASSWORD_DEFAULT);
 		$userData['User']['name'] = $this->request->data['User']['name'];
+		$userData['User']['display_name'] = User::generateUniqueDisplayName($this->request->data['User']['name']);
 		$userData['User']['email'] = $this->request->data['User']['email'];
 
 		$this->User->create();
@@ -450,6 +530,102 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	}
 
 	/**
+	 * Render the forced display-name change form. Only users flagged with
+	 * needs_display_name_change can reach this (free renaming is disabled).
+	 *
+	 * @return mixed
+	 */
+	#[HttpGet]
+	public function changename()
+	{
+		$user = Auth::getUser();
+		if (!$user)
+			return $this->redirect('/users/login');
+
+		if (empty($user['needs_display_name_change']))
+		{
+			CookieFlash::set(__('You can only change your display name when asked to.'), 'error');
+			return $this->redirect('/');
+		}
+
+		$this->set('_page', 'changename');
+		$this->set('_title', 'Choose your display name');
+		$this->set('user', $user);
+		return null;
+	}
+
+	/**
+	 * Update user's display name. Only allowed when the user is forced to
+	 * (needs_display_name_change = 1), e.g. after a migration rename or a
+	 * duplicate Google name. Clears the flag on success.
+	 *
+	 * @return mixed
+	 */
+	#[HttpPost]
+	public function updatename()
+	{
+		$userId = Auth::getUserID();
+		if (!$userId)
+		{
+			CookieFlash::set(__('You must be logged in.'), 'error');
+			return $this->redirect('/');
+		}
+
+		$user = $this->User->findById($userId);
+		if (!$user)
+		{
+			CookieFlash::set(__('User not found.'), 'error');
+			return $this->redirect('/');
+		}
+
+		// Display names can only be changed when the user is forced to (migration
+		// rename or a duplicate Google name). Free renaming is intentionally disabled.
+		if (empty($user['User']['needs_display_name_change']))
+		{
+			CookieFlash::set(__('You can only change your display name when asked to.'), 'error');
+			return $this->redirect('/');
+		}
+
+		$newDisplayName = User::normalizeDisplayName($this->request->data['User']['display_name'] ?? '');
+
+		if (empty($newDisplayName))
+		{
+			CookieFlash::set(__('Display name cannot be empty.'), 'error');
+			return $this->redirect(['action' => 'changename']);
+		}
+
+		// Validate display name length
+		if (strlen($newDisplayName) < 3 || strlen($newDisplayName) > 50)
+		{
+			CookieFlash::set(__('Display name must be between 3 and 50 characters.'), 'error');
+			return $this->redirect(['action' => 'changename']);
+		}
+
+		// Check uniqueness - another user might have this display_name
+		$existingUser = $this->User->find('first', [
+			'conditions' => [
+				'display_name' => $newDisplayName,
+				'id !=' => $userId,
+			],
+		]);
+		if ($existingUser)
+		{
+			CookieFlash::set(__('This display name is already taken.'), 'error');
+			return $this->redirect(['action' => 'changename']);
+		}
+
+		// Update display_name (including forum sync)
+		User::updateDisplayName($userId, $newDisplayName);
+
+		// Clear the forced flag and update the session
+		Auth::saveUserField('display_name', $newDisplayName);
+		Auth::saveUserField('needs_display_name_change', false);
+
+		CookieFlash::set(__('Display name updated successfully.'), 'success');
+		return $this->redirect('/sets/');
+	}
+
+	/**
 	 * @return void
 	 */
 	public function highscore(): void
@@ -458,7 +634,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('_title', 'Tsumego Hero - Highscore');
 
 		$this->set('users', $this->queryHighscoreWithSelfView(
-			"SELECT id, name, external_id, picture, rating, premium, level, xp, solved,
+			"SELECT id, display_name, external_id, picture, email, rating, premium, level, xp, solved,
 				ROW_NUMBER() OVER (ORDER BY level DESC, xp DESC) as position
 			FROM user
 			WHERE deleted IS NULL",
@@ -480,7 +656,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		}
 
 		$this->set('users', $this->queryHighscoreWithSelfView(
-			"SELECT id, name, external_id, picture, rating, premium,
+			"SELECT id, display_name, external_id, picture, email, rating, premium,
 				ROW_NUMBER() OVER (ORDER BY rating DESC) as position
 			FROM user
 			WHERE deleted IS NULL"
@@ -501,9 +677,10 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('tagContributors', $this->queryHighscoreWithSelfView("
 			SELECT
 				user.id as id,
-				user.name as name,
+				user.display_name as display_name,
 				user.external_id as external_id,
 				user.picture as picture,
+				user.email as email,
 				user.rating as rating,
 				user.premium as premium,
 				COUNT(tag_connection.id) AS tag_count,
@@ -532,11 +709,12 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('users', $this->queryHighscoreWithSelfView("
 			SELECT
 				user.id AS id,
-				user.name AS name,
+				user.display_name AS display_name,
 				user.rating AS rating,
 				user.picture AS picture,
 				user.external_id AS external_id,
 				user.premium AS premium,
+				user.email AS email,
 				COALESCE(SUM(achievement_status.value), 0) AS achievement_score,
 				ROW_NUMBER() OVER (ORDER BY COALESCE(SUM(achievement_status.value), 0) DESC) as position
 			FROM user
@@ -601,9 +779,10 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('users', $this->queryHighscoreWithSelfView("
 			SELECT
 				user.id AS id,
-				user.name AS name,
+				user.display_name AS display_name,
 				user.external_id AS external_id,
 				user.picture AS picture,
+				user.email AS email,
 				user.rating AS rating,
 				user.premium AS premium,
 				COALESCE(MAX(time_mode_session.points), 0) AS points,
@@ -710,7 +889,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$userId = Auth::isLoggedIn() ? Auth::getUserID() : -1;
 
 		$this->set('users', $this->queryHighscoreWithSelfView(
-			"SELECT id, name, external_id, picture, rating, premium, daily_xp, daily_solved,
+			"SELECT id, name, display_name, external_id, picture, email, rating, premium, daily_xp, daily_solved,
 				ROW_NUMBER() OVER (ORDER BY daily_xp DESC) as position
 			FROM user
 			WHERE (daily_xp > 0 OR id = ?) AND deleted IS NULL",
@@ -766,15 +945,15 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		if (!$user)
 			return $this->redirect('/sets');
 		$this->assertUserVisible($user['User']);
-		$this->set('_title', 'Profile of ' . $user['User']['name']);
+		$this->set('_title', 'Profile of ' . $user['User']['display_name']);
 
 		$this->set('og', [
-			'title' => 'Profile of ' . $user['User']['name'],
-			'description' => $user['User']['name'] . ' on Tsumego',
+			'title' => 'Profile of ' . $user['User']['display_name'],
+			'description' => $user['User']['display_name'] . ' on Tsumego',
 			'image' => Router::url('/img/Tsumego-Hero-Logo.png', true),
 			'url' => Router::url('/users/view/' . $user['User']['id'], true),
 			'type' => 'profile',
-			'profile_username' => $user['User']['name'],
+			'profile_username' => $user['User']['display_name'],
 			'site_name' => 'Tsumego',
 		]);
 
@@ -881,9 +1060,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 
 		// only admins get to the profile of a deleted account, they see who it was
 		if ($user['User']['deleted'])
-			$user['User']['name'] = $user['User']['deleted_name'] . ' ' . User::DELETED_NAME;
-		else
-			$user['User']['name'] = $this->checkPicture($user['User']);
+			$user['User']['display_name'] = $user['User']['deleted_name'] . ' ' . User::DELETED_NAME;
 
 		$aCount = $this->Achievement->find('all');
 
@@ -993,44 +1170,91 @@ ORDER BY category DESC', [$user['User']['id']]));
 	 */
 	public function googlesignin()
 	{
-		$name = '';
-		$email = '';
-		$picture = '';
-		$id_token = $_POST['credential'];
-		$client_id = '986748597524-05gdpjqrfop96k6haga9gvj1f61sji6v.apps.googleusercontent.com';
-		$token_info = file_get_contents('https://oauth2.googleapis.com/tokeninfo?id_token=' . $id_token);
-		$token_data = json_decode($token_info, true);
-		if (isset($token_data['aud']) && $token_data['aud'] == $client_id)
+		// CSRF protection: Google Sign-In provides g_csrf_token in both POST and cookie
+		// These must match to prevent cross-site request forgery
+		$csrfToken = $_POST['g_csrf_token'] ?? ($this->request->data['g_csrf_token'] ?? '');
+		$csrfCookie = $_COOKIE['g_csrf_token'] ?? '';
+		// Skip CSRF check in test environment (testAction doesn't set cookies)
+		if (!$this->isTestEnvironment() && (empty($csrfToken) || $csrfToken !== $csrfCookie))
 		{
-			$name = $token_data['name'];
-			$email = $token_data['email'];
-			$picture = $token_data['picture'];
+			CakeLog::write('warning', 'GoogleSignIn: CSRF validation failed');
+			CookieFlash::set('CSRF validation failed', 'error');
+			return $this->redirect('/users/login');
 		}
-		else
-			echo 'Invalid token';
-		$externalId = 'g__' . $token_data['sub'];
+
+		// Google Sign-In posts credential directly, but testAction uses $this->request->data
+		$id_token = $_POST['credential'] ?? ($this->request->data['credential'] ?? '');
+
+		$verifier = $this->getTokenVerifier();
+		$token_data = $verifier->verify($id_token);
+
+		if (!$token_data)
+		{
+			CakeLog::write('debug', 'GoogleSignIn: Token verification failed for token: ' . substr($id_token, 0, 20));
+			CookieFlash::set('Invalid Google token', 'error');
+			return $this->redirect('/users/login');
+		}
+
+		$name = $token_data['name'] ?? '';
+		// Fallback to last 6 digits of sub if no name provided
+		if (empty($name))
+			$name = 'User ' . substr($token_data['sub'] ?? '', -6);
+		$email = $token_data['email'] ?? '';
+		$picture = $token_data['picture'] ?? '';
+		// external_id is just the Google sub claim - no prefix needed
+		$externalId = $token_data['sub'];
+
 		$u = $this->User->find('first', ['conditions' => ['external_id' => $externalId]]);
 		if ($u == null)
 		{
-			$imageUrl = $picture;
-			$imageContent = file_get_contents($imageUrl);
+			// Generate unique display name
+			// Google users don't need 'name' - they can't use password login (password_hash = 'google_oauth')
+			// If the desired name is already taken, a numbered suffix is auto-appended and the
+			// user is forced to pick their own unique name before continuing.
+			$normalizedName = User::normalizeDisplayName($name);
+			$uniqueDisplayName = User::generateUniqueDisplayName($normalizedName);
 
 			$userData = [];
-			$userData['User']['name'] = 'g__' . $name;
-			$userData['User']['email'] = 'g__' . $email;
-			$userData['User']['password_hash'] = 'not used';
+			// name is NULL for Google users - they don't use password login
+			$userData['User']['display_name'] = $uniqueDisplayName;
+			$userData['User']['needs_display_name_change'] = ($uniqueDisplayName !== $normalizedName) ? true : false;
+			$userData['User']['email'] = $email;
+			$userData['User']['password_hash'] = 'google_oauth';
 			$userData['User']['external_id'] = $externalId;
+			$userData['User']['picture'] = $picture;
 
-			if ($imageContent === false)
-				$userData['User']['picture'] = 'default.png';
-			else
-			{
-				$userData['User']['picture'] = $externalId . '.png';
-				file_put_contents('img/google/' . $externalId . '.png', $imageContent);
-			}
 			$this->User->create();
-			$this->User->save($userData, true);
+			$saveResult = $this->User->save($userData);
+			if (!$saveResult)
+			{
+				CookieFlash::set('Failed to create Google user', 'error');
+				return $this->redirect('/users/login');
+			}
 			$u = $this->User->find('first', ['conditions' => ['external_id' => $externalId]]);
+		}
+		else
+		{
+			// Update profile data on each login (in case user changed Google profile)
+			$updates = [];
+
+			// Update picture if changed
+			if ($picture && $u['User']['picture'] !== $picture)
+				$updates['picture'] = $picture;
+
+			// Update email if changed and not empty
+			if ($email && $u['User']['email'] !== $email)
+				$updates['email'] = $email;
+
+			// Apply updates if any changed
+			if (!empty($updates))
+			{
+				$this->User->id = $u['User']['id'];
+				foreach ($updates as $field => $value)
+				{
+					$this->User->saveField($field, $value);
+					$u['User'][$field] = $value;
+				}
+			}
 		}
 		$this->signIn($u);
 
@@ -1038,7 +1262,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 		// Google Sign-In provides built-in CSRF protection via g_csrf_token cookie
 		// We use HMAC signature to prevent redirect URL tampering (stateless)
 		$redirect = '/sets/';
-		$stateJson = $_POST['state'] ?? null;
+		$stateJson = $_POST['state'] ?? ($this->request->data['state'] ?? null);
 		if ($stateJson)
 		{
 			$stateData = json_decode(base64_decode($stateJson), true);
@@ -1071,14 +1295,9 @@ ORDER BY category DESC', [$user['User']['id']]));
 		Auth::saveUserField('deletion_token', $token);
 		Auth::saveUserField('deletion_token_created', date('Y-m-d H:i:s'));
 
-		// Google accounts store their email with the g__ prefix
-		$email = Auth::getUser()['email'];
-		if (Auth::getUser()['external_id'] != null && str_starts_with($email, 'g__'))
-			$email = substr($email, 3);
-
 		$emailer = $this->_getEmailer();
 		$emailer->from(['me@tsumego.com' => 'https://tsumego.com']);
-		$emailer->to($email);
+		$emailer->to(Auth::getUser()['email']);
 		$emailer->subject('Deletion of your Tsumego Hero account');
 		$emailer->send('You asked to delete your Tsumego Hero account ' . self::checkPicture(Auth::getUser()) . '.
 To confirm the deletion, open the following link (valid for ' . self::$DELETION_LINK_VALID_HOURS . ' hours): https://' . $_SERVER['HTTP_HOST'] . '/users/confirm_delete_account/' . $token . '
@@ -1163,7 +1382,6 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 					$status = '<p style="color:#d63a49">Password incorrect.</p>';
 
 		$user = Auth::getUser();
-		$user['name'] = $this->checkPicture($user);
 
 		$this->set('redirect', $redirect);
 		$this->set('status', $status);
@@ -1248,7 +1466,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		CookieFlash::set('Sgf proposal accepted', 'success');
 
 		$userToApprove = $this->User->findById($proposalToApprove['user_id']);
-		AdminActivityLogger::log(AdminActivityType::ACCEPT_PROPOSAL, $proposalToApprove['tsumego_id'], null, null, $userToApprove['User']['name']);
+		AdminActivityLogger::log(AdminActivityType::ACCEPT_PROPOSAL, $proposalToApprove['tsumego_id'], null, null, $userToApprove['User']['display_name']);
 
 		return $this->redirect('/users/adminstats');
 	}
@@ -1283,7 +1501,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		CookieFlash::set('Sgf proposal rejected', 'success');
 
 		$userToReject = $this->User->findById($proposalToReject['user_id']);
-		AdminActivityLogger::log(AdminActivityType::REJECT_PROPOSAL, $proposalToReject['tsumego_id'], null, null, $userToReject['User']['name']);
+		AdminActivityLogger::log(AdminActivityType::REJECT_PROPOSAL, $proposalToReject['tsumego_id'], null, null, $userToReject['User']['display_name']);
 
 		return $this->redirect('/users/adminstats');
 	}
