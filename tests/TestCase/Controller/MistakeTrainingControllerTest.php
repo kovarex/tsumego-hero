@@ -1,6 +1,7 @@
 <?php
 
 App::uses('Constants', 'Utility');
+App::uses('MistakeTraining', 'Utility');
 
 class MistakeTrainingControllerTest extends TestCaseWithAuth
 {
@@ -19,7 +20,7 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		$this->assertStringContainsString('All caught up', $this->view);
 	}
 
-	public function testRedirectsToNextDueProblem()
+	public function testRendersNextDueProblem()
 	{
 		$context = new ContextPreparator([
 			'user' => ['name' => 'testuser'],
@@ -29,11 +30,11 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 			],
 		]);
 
-		$this->testAction('/mistake-training');
-		// Should redirect to the tsumego's set connection
-		$redirectUrl = $this->headers['Location'] ?? ($this->controller->response->header()['Location'] ?? '');
-		$setConnectionId = $context->tsumegos[0]['set-connections'][0]['id'];
-		$this->assertStringContainsString('/' . $setConnectionId, $redirectUrl);
+		$this->testAction('/mistake-training', ['return' => 'contents']);
+		// Renders the next due problem's play page directly (no redirect), and
+		// puts the user into mistake-training mode.
+		$this->assertStringContainsString('Mistake Training', $this->view);
+		$this->assertTrue(Auth::isInMistakeTrainingMode());
 	}
 
 	public function testSkipsDeletedTsumegos()
@@ -64,15 +65,12 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 			],
 		]);
 
-		$this->testAction('/mistake-training');
-		// Soft-deleted tsumego should be skipped (redirect to pick the next one)
-		$redirectUrl = $this->headers['Location'] ?? ($this->controller->response->header()['Location'] ?? '');
-		$this->assertStringContainsString('/mistake-training', $redirectUrl);
+		$this->testAction('/mistake-training', ['return' => 'contents']);
+		// Soft-deleted tsumego should be skipped, and with nothing else due it
+		// shows "All caught up".
+		$this->assertStringContainsString('All caught up', $this->view);
 
-		// And its mistake_training_due should be cleared so it drops out of the queue
-		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
-		]);
-		$this->assertNull($status['TsumegoStatus']['mistake_training_due']);
+		// And it should be removed from the pool so it drops out of the queue
+		$this->assertNull(MistakeTraining::getPoolRow($context->user['id'], (int) $context->tsumegos[0]['id']));
 	}
 }
