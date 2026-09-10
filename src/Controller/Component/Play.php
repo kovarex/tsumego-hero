@@ -218,10 +218,10 @@ class Play
 			($this->setFunction)('multipleChoiceTriangles', count(Util::getFollowingSgfCoordinates($sgf['Sgf']['sgf'], strpos($sgf['Sgf']['sgf'], 'TR') + 2)));
 			($this->setFunction)('multipleChoiceSquares', count(Util::getFollowingSgfCoordinates($sgf['Sgf']['sgf'], strpos($sgf['Sgf']['sgf'], 'SQ') + 2)));
 		}
-		if ($tsumegoFilters->query == 'topics')($this->setFunction)('_title', $set['Set']['title'] . ' ' . $currentSetConnection['SetConnection']['num'] . '/' . $highestTsumegoOrder . ' on Tsumego Hero');
-		else
-		($this->setFunction)('_title', ($_COOKIE['lastSet'] ?? 'Tsumego') . ' ' . $currentSetConnection['SetConnection']['num'] . '/' . $highestTsumegoOrder . ' on Tsumego Hero');
 
+		// The page title is set per mode below: level mode derives it from
+		// TsumegoButtons, mistake training from its own queue, and rating/time
+		// mode fall back to the generic title.
 		if (Auth::isInMistakeTrainingMode() && !MistakeTraining::getPoolRow(Auth::getUserID(), $id))
 			Auth::saveUserField('mode', Constants::$LEVEL_MODE);
 
