@@ -39,6 +39,73 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		$this->assertTrue(Auth::isInMistakeTrainingMode());
 	}
 
+	public function testQueueLinksStayOnTheTrainingRoute()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumego' => [
+				'set_order' => 1,
+				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
+			],
+		]);
+		$scId = (int) $context->tsumegos[0]['set-connections'][0]['id'];
+
+		$this->testAction('/mistake-training', ['return' => 'contents']);
+
+		$this->assertStringContainsString('href="/mistake-training/play/' . $scId . '"', $this->view,
+			'Queue navigation must go through the training route, which owns the mode');
+	}
+
+	public function testTrainingRouteKeepsTrainingMode()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumego' => [
+				'set_order' => 1,
+				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
+			],
+		]);
+		$scId = (int) $context->tsumegos[0]['set-connections'][0]['id'];
+		Auth::saveUserField('mode', Constants::$LEVEL_MODE);
+
+		$this->testAction('/mistake-training/play/' . $scId, ['return' => 'contents']);
+
+		$this->assertTrue(Auth::isInMistakeTrainingMode(), 'The training route asserts the training mode');
+		$this->assertStringContainsString('Mistake Training', $this->view);
+	}
+
+	public function testTrainingRouteRedirectsForAProblemOutsideThePool()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumego' => ['set_order' => 1, 'status' => 'V'],
+		]);
+		$scId = (int) $context->tsumegos[0]['set-connections'][0]['id'];
+
+		$this->testAction('/mistake-training/play/' . $scId);
+
+		$this->assertStringEndsWith('/mistake-training', $this->headers['Location'] ?? '',
+			'A problem outside the pool falls back to the queue');
+	}
+
+	public function testPlainProblemLinkLeavesTrainingMode()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumego' => [
+				'set_order' => 1,
+				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
+			],
+		]);
+		$scId = (int) $context->tsumegos[0]['set-connections'][0]['id'];
+		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+
+		$this->testAction('/' . $scId, ['return' => 'contents']);
+
+		$this->assertFalse(Auth::isInMistakeTrainingMode(),
+			'A plain problem link means normal play, like it does for the other modes');
+	}
+
 	public function testSolvingAlreadySolvedProblemClimbsTheLadder()
 	{
 		$context = new ContextPreparator([

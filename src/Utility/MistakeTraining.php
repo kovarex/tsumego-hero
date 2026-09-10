@@ -28,6 +28,16 @@ class MistakeTraining
 	private static array $LADDER = [1, 3, 7, 14, 30, 60];
 
 	/**
+	 * Route prefix for queue links. Every one of them re-asserts training mode.
+	 */
+	public static string $PLAY_LINK_PREFIX = '/mistake-training/play/';
+
+	/**
+	 * Landing page of the training queue.
+	 */
+	public static string $QUEUE_LINK = '/mistake-training';
+
+	/**
 	 * Apply a play result to the training pool. Graduation (a clean solve at the
 	 * top rung) only removes the problem from the pool; the tsumego status is
 	 * never touched, it belongs to the normal modes.
@@ -147,12 +157,15 @@ class MistakeTraining
 	/**
 	 * Build the navigation buttons for the current training queue.
 	 * One button per tsumego, preferring the set connection the user is on,
-	 * ordered by next_due (most overdue first).
+	 * ordered by next_due (most overdue first). Links stay on the training route,
+	 * which owns the mode.
 	 */
 	public static function buildQueueButtons(int $currentSetConnectionID): TsumegoButtons
 	{
 		$rows = Util::query(self::queueSql(), [$currentSetConnectionID, Auth::getUserID()]);
-		return TsumegoButtons::fromRows($rows, $currentSetConnectionID, 200);
+		$buttons = TsumegoButtons::fromRows($rows, $currentSetConnectionID, 200);
+		$buttons->setLinkPrefix(self::$PLAY_LINK_PREFIX);
+		return $buttons;
 	}
 
 	/**

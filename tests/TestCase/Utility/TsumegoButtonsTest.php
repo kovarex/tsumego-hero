@@ -123,6 +123,27 @@ class TsumegoButtonsTest extends TestCaseWithAuth
 		$buttons->exportCurrentAndPreviousLink($setFunction, null, $scId, null, '/mistake-training');
 
 		$this->assertSame('/mistake-training', $links['previousLink'], 'Previous at the start of the queue should go to the queue landing');
-		$this->assertSame('/' . $context->tsumegos[1]['set-connections'][0]['id'], $links['nextLink']);
+		$this->assertSame('/mistake-training/play/' . $context->tsumegos[1]['set-connections'][0]['id'], $links['nextLink'],
+			'Queue navigation must stay on the training route, so the route can re-assert the mode');
+	}
+
+	public function testMistakeTrainingQueueButtonsStayOnTheTrainingRoute(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumego' => [
+				'set_order' => 1,
+				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
+			],
+		]);
+		$scId = (int) $context->tsumegos[0]['set-connections'][0]['id'];
+
+		$buttons = MistakeTraining::buildQueueButtons($scId);
+		ob_start();
+		$buttons[0]->render(0, false);
+		$html = ob_get_clean();
+
+		$this->assertStringContainsString('href="/mistake-training/play/' . $scId . '"', $html,
+			'Challenge buttons in the training queue must link back to the training route');
 	}
 }
