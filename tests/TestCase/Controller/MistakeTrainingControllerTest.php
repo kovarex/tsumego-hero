@@ -39,6 +39,26 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		$this->assertTrue(Auth::isInMistakeTrainingMode());
 	}
 
+	public function testAllCaughtUpShowsUpcomingDayCounts()
+	{
+		$dueTomorrow = date('Y-m-d H:i:s', strtotime('+1 day'));
+		new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumegos' => [
+				['set_order' => 1, 'status' => ['name' => 'V', 'mistake_training_due' => $dueTomorrow]],
+				['set_order' => 2, 'status' => ['name' => 'V', 'mistake_training_due' => $dueTomorrow]],
+			],
+		]);
+
+		$this->testAction('/mistake-training', ['return' => 'contents']);
+
+		$text = preg_replace('/\s+/', ' ', $this->view);
+		$this->assertStringContainsString('All caught up', $text);
+		$this->assertStringContainsString('2 problems in training.', $text);
+		$this->assertStringContainsString('Coming up', $text);
+		$this->assertStringContainsString('2 reviews tomorrow', $text, 'The day count must cover every problem due that day');
+	}
+
 	public function testQueueLinksStayOnTheTrainingRoute()
 	{
 		$context = new ContextPreparator([

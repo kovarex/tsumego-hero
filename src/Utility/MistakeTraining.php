@@ -136,22 +136,48 @@ class MistakeTraining
 	}
 
 	/**
-	 * Upcoming reviews grouped by day, for the "all caught up" view.
+	 * Upcoming reviews per day, for the "all caught up" view: the next $maxDays
+	 * days that have reviews, how many further days are scheduled, and the last
+	 * of them.
+	 *
+	 * Counts are aggregated over the whole pool, so a day is never cut off
+	 * halfway through by a row limit.
+	 *
+	 * @return array{days: array<string, int>, furtherDays: int, lastDay: ?string}
 	 */
-	public static function upcomingByDay(int $userId): array
+	public static function upcomingByDay(int $userId, int $maxDays = 7): array
 	{
-		$rows = ClassRegistry::init('MistakeTrainingPool')->find('all', [
-			'conditions' => ['user_id' => $userId, 'next_due >' => date('Y-m-d H:i:s')],
-			'order' => 'next_due ASC',
-			'limit' => 30,
-		]);
-		$byDay = [];
+		$rows = Util::query(
+			'SELECT DATE(next_due) AS day, COUNT(*) AS day_count FROM mistake_training_pool'
+			. ' WHERE user_id = ? AND next_due > NOW() GROUP BY DATE(next_due) ORDER BY day',
+			[$userId]
+		);
+		$countsByDay = [];
 		foreach ($rows as $row)
-		{
-			$day = date('Y-m-d', strtotime($row['MistakeTrainingPool']['next_due']));
-			$byDay[$day] = ($byDay[$day] ?? 0) + 1;
-		}
-		return $byDay;
+			$countsByDay[$row['day']] = (int) $row['day_count'];
+
+		return [
+			'days' => array_slice($countsByDay, 0, $maxDays, true),
+			'furtherDays' => max(0, count($countsByDay) - $maxDays),
+			'lastDay' => $countsByDay ? array_key_last($countsByDay) : null,
+		];
+	}
+
+	/**
+	 * How a review day is named for the player: "today", "tomorrow", a weekday
+	 * within the coming week, a date beyond that.
+	 */
+	public static function describeDay(string $day, ?string $today = null): string
+	{
+		$today = $today ?: date('Y-m-d');
+		$daysAhead = (new DateTime($today))->diff(new DateTime($day))->days;
+		if ($daysAhead <= 0)
+			return 'today';
+		if ($daysAhead == 1)
+			return 'tomorrow';
+		if ($daysAhead <= 6)
+			return date('l', strtotime($day));
+		return date('M j', strtotime($day));
 	}
 
 	/**

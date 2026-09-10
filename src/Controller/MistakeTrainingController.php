@@ -30,8 +30,11 @@ class MistakeTrainingController extends AppController
 			{
 				$this->set('_page', 'mistake-training');
 				$this->set('_title', 'Tsumego Hero - Mistake Training');
+				$upcoming = MistakeTraining::upcomingByDay($userId);
 				$this->set('totalInTraining', MistakeTraining::totalInTraining($userId));
-				$this->set('upcomingByDay', MistakeTraining::upcomingByDay($userId));
+				$this->set('upcomingDays', $upcoming['days']);
+				$this->set('furtherDays', $upcoming['furtherDays']);
+				$this->set('lastUpcomingDay', $upcoming['lastDay']);
 				$this->render('/Tsumegos/mistake_training');
 				return null;
 			}
