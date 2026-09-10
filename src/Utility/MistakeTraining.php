@@ -90,6 +90,15 @@ class MistakeTraining
 	}
 
 	/**
+	 * Whether a problem is in the pool and scheduled for review right now.
+	 */
+	public static function isDue(int $userId, int $tsumegoId): bool
+	{
+		$row = self::getPoolRow($userId, $tsumegoId);
+		return $row !== null && $row['next_due'] <= date('Y-m-d H:i:s');
+	}
+
+	/**
 	 * Number of tsumegos currently due for review.
 	 */
 	public static function dueCount(int $userId): int

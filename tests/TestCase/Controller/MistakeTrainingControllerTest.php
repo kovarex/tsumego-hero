@@ -88,6 +88,23 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 			'A problem outside the pool falls back to the queue');
 	}
 
+	public function testTrainingRouteRedirectsForAProblemThatIsNotDueYet()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumego' => [
+				'set_order' => 1,
+				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('+3 days'))],
+			],
+		]);
+		$scId = (int) $context->tsumegos[0]['set-connections'][0]['id'];
+
+		$this->testAction('/mistake-training/play/' . $scId);
+
+		$this->assertStringEndsWith('/mistake-training', $this->headers['Location'] ?? '',
+			'A problem that is scheduled for later is not part of today\'s queue');
+	}
+
 	public function testPlainProblemLinkLeavesTrainingMode()
 	{
 		$context = new ContextPreparator([
