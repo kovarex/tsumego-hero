@@ -58,7 +58,7 @@ class TsumegoButton
 		$status = $this->status ?: 'N';
 		$label = TsumegoStatus::label($status);
 		$description = TsumegoStatus::description($status);
-		echo '<a class="tooltip" href="/' . $this->setConnectionID . '"'
+		echo '<a class="tooltip" href="' . $this->linkPrefix . $this->setConnectionID . '"'
 			. ' data-tsumego-id="' . $this->tsumegoID . '"'
 			. $sgfAttr . '>'
 			. $num . $num2 . $num3
@@ -89,6 +89,7 @@ class TsumegoButton
 
 	public int $tsumegoID;
 	public int $setConnectionID;
+	public string $linkPrefix = '/';
 	public int $order;
 	public string $status;
 	public ?float $rating;

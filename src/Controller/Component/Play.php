@@ -219,12 +219,6 @@ class Play
 			($this->setFunction)('multipleChoiceSquares', count(Util::getFollowingSgfCoordinates($sgf['Sgf']['sgf'], strpos($sgf['Sgf']['sgf'], 'SQ') + 2)));
 		}
 
-		// The page title is set per mode below: level mode derives it from
-		// TsumegoButtons, mistake training from its own queue, and rating/time
-		// mode fall back to the generic title.
-		if (Auth::isInMistakeTrainingMode() && !MistakeTraining::getPoolRow(Auth::getUserID(), $id))
-			Auth::saveUserField('mode', Constants::$LEVEL_MODE);
-
 		if (Auth::isInLevelMode())
 		{
 			$tsumegoButtons = new TsumegoButtons($tsumegoFilters, $currentSetConnection['SetConnection']['id'], null, $set['Set']['id']);

@@ -69,7 +69,7 @@ class TsumegosController extends AppController
 
 	public function play($id = null, $setConnectionID = null)
 	{
-		if (Auth::isLoggedIn() && !Auth::isInLevelMode() && !Auth::isInMistakeTrainingMode())
+		if (Auth::isLoggedIn() && !Auth::isInLevelMode())
 			Auth::saveUserField('mode', Constants::$LEVEL_MODE);
 
 		if ($setConnectionID)
@@ -100,17 +100,6 @@ class TsumegosController extends AppController
 		return new Play(function ($name, $value) {
 			$this->set($name, $value);
 		})->play($setConnection['SetConnection']['id'], $this->params, $this->data);
-	}
-
-	public static function inArrayX($x, $newArray)
-	{
-		$newArrayCount = count($newArray);
-
-		for ($i = 0; $i < $newArrayCount; $i++)
-			if ($x['TagConnection']['tag_id'] == $newArray[$i]['TagConnection']['tag_id'] && $x['TagConnection']['approved'] == 1)
-				return true;
-
-		return false;
 	}
 
 	public function duplicatesearch($setConnectionID): mixed

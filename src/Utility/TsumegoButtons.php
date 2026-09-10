@@ -66,6 +66,7 @@ class TsumegoButtons extends ArrayObject
 		$result->partition = $other->partition;
 		$result->isPartitioned = $other->isPartitioned;
 		$result->currentOrder = $other->currentOrder;
+		$result->linkPrefix = $other->linkPrefix;
 		return $result;
 	}
 
@@ -175,11 +176,22 @@ class TsumegoButtons extends ArrayObject
 
 		if (isset($indexOfCurrent) && $indexOfCurrent > 0)
 			$previousSetConnectionID = $this[$indexOfCurrent - 1]->setConnectionID;
-		$setFunction('previousLink', isset($previousSetConnectionID) ? '/' . $previousSetConnectionID : $edgeLink);
+		$setFunction('previousLink', isset($previousSetConnectionID) ? $this->linkPrefix . $previousSetConnectionID : $edgeLink);
 
 		if (isset($indexOfCurrent) && count($this) > $indexOfCurrent + 1)
 			$nextSetConnectionID = $this[$indexOfCurrent + 1]->setConnectionID;
-		$setFunction('nextLink', isset($nextSetConnectionID) ? '/' . $nextSetConnectionID : $edgeLink);
+		$setFunction('nextLink', isset($nextSetConnectionID) ? $this->linkPrefix . $nextSetConnectionID : $edgeLink);
+	}
+
+	/**
+	 * Point every problem link at a route prefix instead of the plain problem
+	 * URL, so a queue can keep navigation (and its mode) on its own route.
+	 */
+	public function setLinkPrefix(string $linkPrefix): void
+	{
+		$this->linkPrefix = $linkPrefix;
+		foreach ($this as $tsumegoButton)
+			$tsumegoButton->linkPrefix = $linkPrefix;
 	}
 
 	public function getProblemsSolvedPercent(): float
@@ -203,6 +215,7 @@ class TsumegoButtons extends ArrayObject
 
 	public int $partition = 0;
 	public bool $isPartitioned = false;
+	public string $linkPrefix = '/';
 	public int $highestTsumegoOrder = -1;
 	public ?int $currentOrder = -1;
 	public ?string $description = null;
