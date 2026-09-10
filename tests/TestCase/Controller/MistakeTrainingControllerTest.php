@@ -1,5 +1,7 @@
 <?php
 
+use Facebook\WebDriver\WebDriverBy;
+
 App::uses('Constants', 'Utility');
 App::uses('MistakeTraining', 'Utility');
 
@@ -35,6 +37,34 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		// puts the user into mistake-training mode.
 		$this->assertStringContainsString('Mistake Training', $this->view);
 		$this->assertTrue(Auth::isInMistakeTrainingMode());
+	}
+
+	public function testSolvingAlreadySolvedProblemClimbsTheLadder()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumego' => [
+				'set_order' => 1,
+				'status' => ['name' => 'S', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
+			],
+		]);
+		$tsumegoId = (int) $context->tsumegos[0]['id'];
+		$rungBefore = (int) MistakeTraining::getPoolRow($context->user['id'], $tsumegoId)['rung'];
+
+		$browser = Browser::instance();
+		$browser->get('mistake-training');
+
+		// A problem the player already solved is still a fresh challenge here, so
+		// it must not open in review mode.
+		$this->assertSame(0, count($browser->driver->findElements(WebDriverBy::cssSelector('#besogo-review-button'))),
+			'Training must not open an already solved problem in review mode.');
+
+		$browser->playWithResult('S');
+
+		// Solving must reach the server, otherwise the ladder never advances and
+		// the same problem is served forever.
+		$this->assertGreaterThan($rungBefore, (int) MistakeTraining::getPoolRow($context->user['id'], $tsumegoId)['rung'],
+			'Solving in training must record the result and climb the ladder.');
 	}
 
 	public function testSkipsDeletedTsumegos()
