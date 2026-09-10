@@ -88,9 +88,8 @@ class MistakeTrainingTest extends TestCaseWithAuth
 		MistakeTraining::recordResult($userId, $tsumegoId, true, null);
 		MistakeTraining::recordResult($userId, $tsumegoId, true, null);
 		MistakeTraining::recordResult($userId, $tsumegoId, true, null);
-		$graduated = MistakeTraining::recordResult($userId, $tsumegoId, true, null);
+		MistakeTraining::recordResult($userId, $tsumegoId, true, null);
 
-		$this->assertTrue($graduated);
 		$this->assertNull($this->poolRow($userId, $tsumegoId));
 	}
 

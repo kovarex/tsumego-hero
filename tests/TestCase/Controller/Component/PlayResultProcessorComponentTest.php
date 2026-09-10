@@ -862,29 +862,26 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$this->assertSame(0, (int) $row['rung'], 'A training lapse keeps the problem at the daily rung');
 	}
 
-	public function testTrainingGraduationMarksProblemSolved(): void
+	public function testTrainingGraduationRemovesProblemFromPool(): void
 	{
-		// A never-solved (V) problem graduates when a clean solve lands on the top
-		// rung of the review ladder: it leaves the pool and is marked solved.
-		$context = new ContextPreparator(['tsumego' => 1]);
+		// A clean solve at the top rung of the review ladder ends training: the
+		// problem leaves the pool, but its status stays exactly as the normal
+		// modes left it, since training is a consequence-free mode.
+		$context = new ContextPreparator(['tsumego' => ['status' => 'V']]);
 		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
 
 		$beforeSolved = (int) Auth::getUser()['solved'];
 
 		$this->failResult($context);
-		for ($i = 0; $i < 5; $i++)
+		for ($i = 0; $i < 6; $i++)
 			$this->solve($context);
-		$this->solve($context);
 
 		$this->assertNull(
 			MistakeTraining::getPoolRow($context->user['id'], (int) $context->tsumegos[0]['id']),
 			'Graduation should remove the problem from the pool'
 		);
-		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
-		]);
-		$this->assertSame('S', $status['TsumegoStatus']['status'], 'Graduation should mark the problem solved');
-		$this->assertSame($beforeSolved + 1, (int) Auth::getUser()['solved'], 'Graduation should bump the solved counter');
+		$this->assertSame('V', $this->statusOf($context), 'Graduation should leave the status untouched');
+		$this->assertSame($beforeSolved, (int) Auth::getUser()['solved'], 'Graduation should not bump the solved counter');
 	}
 
 	public function testPoolProblemStaysRegardlessOfStatus(): void

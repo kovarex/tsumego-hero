@@ -15,7 +15,9 @@ App::uses('Auth', 'Utility');
  * (user, tsumego) tracking the review-ladder rung and the next review date.
  * A clean solve climbs a rung; a fail drops one; a clean solve at the top
  * graduates (removed from the pool). Training results are never written to
- * tsumego_attempt, since it is a separate, consequence-free mode like time mode.
+ * tsumego_attempt, since it is a separate, consequence-free mode like time mode,
+ * and training never writes tsumego_status either: graduation only removes the
+ * problem from the pool.
  */
 class MistakeTraining
 {
@@ -26,11 +28,11 @@ class MistakeTraining
 	private static array $LADDER = [1, 3, 7, 14, 30, 60];
 
 	/**
-	 * Apply a play result to the training pool.
-	 *
-	 * @return bool true if the problem graduated (removed from the pool)
+	 * Apply a play result to the training pool. Graduation (a clean solve at the
+	 * top rung) only removes the problem from the pool; the tsumego status is
+	 * never touched, it belongs to the normal modes.
 	 */
-	public static function recordResult(int $userId, int $tsumegoId, bool $solved, ?string $oldStatus): bool
+	public static function recordResult(int $userId, int $tsumegoId, bool $solved, ?string $oldStatus): void
 	{
 		$pool = self::getPoolRow($userId, $tsumegoId);
 
@@ -39,11 +41,11 @@ class MistakeTraining
 			// Entry: a fail on a problem the user has not solved yet (a
 			// first-encounter mistake). A clean solve never enters the pool.
 			if ($solved)
-				return false;
+				return;
 			if ($oldStatus !== null && TsumegoUtil::isSolvedStatus($oldStatus))
-				return false;
+				return;
 			self::enterPool($userId, $tsumegoId);
-			return false;
+			return;
 		}
 
 		$top = count(self::$LADDER) - 1;
@@ -54,15 +56,14 @@ class MistakeTraining
 			if ((int) $pool['rung'] >= $top)
 			{
 				self::graduate($userId, $tsumegoId);
-				return true;
+				return;
 			}
 			self::setRung($userId, $tsumegoId, (int) $pool['rung'] + 1);
-			return false;
+			return;
 		}
 
 		// Fail: drop a rung, never below the daily rung.
 		self::setRung($userId, $tsumegoId, max((int) $pool['rung'] - 1, 0));
-		return false;
 	}
 
 	/**
@@ -135,8 +136,8 @@ class MistakeTraining
 	}
 
 	/**
-	 * Remove a problem from the pool (e.g. when the tsumego is deleted or has no
-	 * set connection).
+	 * Remove a problem from the pool: when the tsumego is deleted or has no set
+	 * connection. Graduation goes through graduate().
 	 */
 	public static function removeFromPool(int $userId, int $tsumegoId): void
 	{
@@ -188,11 +189,13 @@ class MistakeTraining
 	}
 
 	/**
-	 * Remove a problem from the pool after graduating.
+	 * A clean solve at the top rung ends training: the problem leaves the pool for
+	 * good, with its status left alone (it belongs to the normal modes). Delegates
+	 * the removal, so graduation and the housekeeping paths stay in sync.
 	 */
 	private static function graduate(int $userId, int $tsumegoId): void
 	{
-		ClassRegistry::init('MistakeTrainingPool')->deleteAll(['user_id' => $userId, 'tsumego_id' => $tsumegoId]);
+		self::removeFromPool($userId, $tsumegoId);
 	}
 
 	/**

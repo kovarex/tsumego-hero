@@ -47,12 +47,9 @@ class PlayResultProcessorComponent extends Component
 			$result['potion_triggered'] = $this->processPotion();
 		$this->processXpChange($tsumego, $result, $previousStatusValue, $originalTsumegoRating);
 		$this->updateTsumegoAttempt($tsumego, $result, $previousStatusValue, $seconds);
-		// Graduation is known only after the attempt is recorded, and
-		// updateTsumegoStatus already ran before XP for the XP multiplier, so apply
-		// it with a second call (it re-reads the current status itself).
-		$graduated = $this->updateMistakeTraining($tsumego, $result, $tsumegoStatus);
-		if ($graduated)
-			$newStatus = $this->updateTsumegoStatus($tsumego, $result, $tsumegoStatus, true);
+		// The pool is fed from every mode: a first-encounter fail starts the review
+		// ladder, a later clean solve climbs it.
+		MistakeTraining::recordResult(Auth::getUserID(), $tsumegoId, $solved, $previousStatusValue);
 		$this->processErrorAchievement($result, $previousStatusValue, $tsumegoId);
 		$this->processUnsortedStuff($tsumego, $result, $previousStatusValue);
 
@@ -155,14 +152,10 @@ class PlayResultProcessorComponent extends Component
 		return $currentStatus;
 	}
 
-	private function updateTsumegoStatus(array $previousTsumego, array &$result, ?array $previousTsumegoStatus, bool $trainingGraduation = false): string
+	private function updateTsumegoStatus(array $previousTsumego, array &$result, ?array $previousTsumegoStatus): string
 	{
-		// On graduation the caller's row predates the pool removal, so re-read
-		// the current one instead of saving a stale status.
-		if ($trainingGraduation)
-			$previousTsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', [
-				'conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $previousTsumego['Tsumego']['id']],
-			]);
+		if (Auth::isInMistakeTrainingMode())
+			return $previousTsumegoStatus['TsumegoStatus']['status'] ?? TsumegoStatus::$NOT_VISITED;
 
 		if ($previousTsumegoStatus == null)
 		{
@@ -172,20 +165,7 @@ class PlayResultProcessorComponent extends Component
 			$previousTsumegoStatus['TsumegoStatus']['status'] = TsumegoStatus::$VISITED;
 		}
 
-		// Training freezes status; the only exception is graduation, which marks a
-		// still-unsolved (V/N) problem solved. That is a narrow transition, not a
-		// normal play result, so it deliberately skips getNewStatus.
-		if (Auth::isInMistakeTrainingMode())
-		{
-			$status = $previousTsumegoStatus['TsumegoStatus']['status'];
-			if (!$trainingGraduation || ($status !== TsumegoStatus::$VISITED && $status !== TsumegoStatus::$NOT_VISITED))
-				return $status;
-			$newStatus = TsumegoStatus::$SOLVED;
-			// NOTE: consider a small XP reward here via $result['xp-gained'] (a
-			// "solved via training" bonus), like getNewStatus sets the XP modifier.
-		}
-		else
-			$newStatus = $this->getNewStatus($result['solved'], $previousTsumegoStatus['TsumegoStatus']['status'], $result);
+		$newStatus = $this->getNewStatus($result['solved'], $previousTsumegoStatus['TsumegoStatus']['status'], $result);
 
 		if (TsumegoUtil::isSolvedStatus($newStatus) && !TsumegoUtil::isSolvedStatus($previousTsumegoStatus['TsumegoStatus']['status']))
 			Auth::incrementUserField('solved', 1);
@@ -234,25 +214,6 @@ class PlayResultProcessorComponent extends Component
 			$tsumegoAttempt['TsumegoAttempt']['misplays'] = (int) $tsumegoAttempt['TsumegoAttempt']['misplays'] + 1;
 		$tsumegoAttempt['TsumegoAttempt']['created'] = date('Y-m-d H:i:s');
 		ClassRegistry::init('TsumegoAttempt')->save($tsumegoAttempt);
-	}
-
-	/**
-	 * Keep the training pool in sync and report whether the review ladder
-	 * graduated (a clean solve at the top rung), so the caller can mark the
-	 * problem solved through updateTsumegoStatus, which is the only status writer.
-	 *
-	 * Entry: a fail on a problem the user has not solved yet (a first-encounter
-	 * mistake). Only graduation removes a problem from the pool.
-	 */
-	private function updateMistakeTraining(array $tsumego, array $result, ?array $tsumegoStatus): bool
-	{
-		if (!Auth::isLoggedIn())
-			return false;
-
-		$tsumegoId = (int) $tsumego['Tsumego']['id'];
-		$oldStatus = $tsumegoStatus ? $tsumegoStatus['TsumegoStatus']['status'] : null;
-
-		return MistakeTraining::recordResult(Auth::getUserID(), $tsumegoId, (bool) $result['solved'], $oldStatus);
 	}
 
 	private static function processRatingChangeStep(float &$userRating, float &$tsumegoRating, bool $isWin): void
