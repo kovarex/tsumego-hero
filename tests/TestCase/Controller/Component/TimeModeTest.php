@@ -251,6 +251,34 @@ class TimeModeTest extends TestCaseWithAuth
 		);
 	}
 
+	public function testTimeModeSolveEnablesReviewAndRevealsComments()
+	{
+		$contextParameters = [];
+		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
+		$contextParameters['time-mode-ranks'] = ['5k'];
+		$contextParameters['tsumegos'][] = ['set_order' => 0, 'status' => 'S'];
+		$context = new ContextPreparator($contextParameters);
+
+		$browser = Browser::instance();
+		$browser->get('timeMode/start'
+			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
+			. '&rankID=' . $context->timeModeRanks[0]['id']);
+
+		$commentDisplay = fn() => $browser->driver->executeScript(
+			"var el = document.getElementById('commentSpace'); return el ? getComputedStyle(el).display : 'missing';"
+		);
+
+		// A previously solved problem starts fresh in time mode: no review, comments hidden.
+		$this->assertSame(0, count($browser->driver->findElements(WebDriverBy::cssSelector('#besogo-review-button'))));
+		$this->assertSame('none', $commentDisplay());
+
+		$browser->playWithResult('S');
+
+		// Solving enables review and reveals the comments.
+		$this->assertGreaterThan(0, count($browser->driver->findElements(WebDriverBy::cssSelector('#besogo-review-button'))));
+		$this->assertSame('block', $commentDisplay());
+	}
+
 	public function testTimeModeRefreshDoesntRefreshTime()
 	{
 		$contextParameters = [];

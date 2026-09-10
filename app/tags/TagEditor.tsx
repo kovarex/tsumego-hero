@@ -23,6 +23,7 @@ export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags
 	const [query, setQuery] = useState('');
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	const [open, setOpen] = useState(false);
+	const [solvedInSession, setSolvedInSession] = useState(false);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -52,7 +53,7 @@ export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags
 	// Listen for problem-solved event from legacy JS
 	useEffect(() =>
 	{
-		const handler = () => setTags(prev => prev.map(t => ({ ...t, isHint: false })));
+		const handler = () => setSolvedInSession(true);
 		window.addEventListener('tag-editor-solved', handler);
 		return () => window.removeEventListener('tag-editor-solved', handler);
 	}, []);
@@ -118,15 +119,16 @@ export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags
 		return () => document.removeEventListener('mousedown', handler);
 	}, []);
 
+	const solved = problemSolved || solvedInSession;
+
 	const addedTags = tags.filter(t =>
 		t.isAdded && (t.isApproved || t.isMine) &&
-		(isTimeMode ? t.isMine : (t.isMine || problemSolved || !t.isHint))
+		(t.isMine || solved || (!isTimeMode && !t.isHint))
 	);
 
-	const hiddenCount = isTimeMode
+	const hiddenCount = solved ? 0 : isTimeMode
 		? tags.filter(t => t.isAdded && !t.isMine && (t.isApproved || t.isMine)).length
-		: problemSolved ? 0
-			: tags.filter(t => t.isAdded && t.isHint && !t.isMine && (t.isApproved || t.isMine)).length;
+		: tags.filter(t => t.isAdded && t.isHint && !t.isMine && (t.isApproved || t.isMine)).length;
 
 	const tagList = (addedTags.length > 0 || hiddenCount > 0) && (
 		<div style={{ marginBottom: 8 }} data-testid="tag-list">
