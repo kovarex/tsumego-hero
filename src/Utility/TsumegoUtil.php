@@ -51,11 +51,14 @@ class TsumegoUtil
 		return $tsx;
 	}
 
-	// Whether the problem is solved for the current mode. In time mode every
-	// problem is presented fresh, so this is false at page load until solved.
+	// Whether the problem is solved for the current mode. Time mode and mistake
+	// training always present the problem as a fresh challenge, so this stays
+	// false at page load even for a problem the player has already solved.
 	public static function isSolvedForCurrentMode($tsumego)
 	{
-		return !Auth::isInTimeMode() && TsumegoUtil::isRecentlySolved($tsumego['Tsumego']['status']);
+		return !Auth::isInTimeMode()
+			&& !Auth::isInMistakeTrainingMode()
+			&& TsumegoUtil::isRecentlySolved($tsumego['Tsumego']['status']);
 	}
 
 	public static function isRecentlySolved($status)

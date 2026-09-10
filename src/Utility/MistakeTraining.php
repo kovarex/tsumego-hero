@@ -1,0 +1,284 @@
+<?php
+
+App::uses('Constants', 'Utility');
+App::uses('TsumegoButtons', 'Utility');
+App::uses('TsumegoStatus', 'Model');
+App::uses('TsumegoUtil', 'Utility');
+App::uses('Util', 'Utility');
+App::uses('Auth', 'Utility');
+
+/**
+ * Mistake training: spaced repetition for tsumegos you did not solve on the
+ * first attempt.
+ *
+ * The pool (mistake_training_pool) is the single source of truth: one row per
+ * (user, tsumego) tracking the review-ladder rung and the next review date.
+ * A clean solve climbs a rung; a fail drops one; a clean solve at the top
+ * graduates (removed from the pool). Training results are never written to
+ * tsumego_attempt, since it is a separate, consequence-free mode like time mode,
+ * and training never writes tsumego_status either: graduation only removes the
+ * problem from the pool.
+ */
+class MistakeTraining
+{
+	/**
+	 * Review ladder: days until the next review at each rung. A clean solve
+	 * climbs a rung; a lapse drops a rung; a clean solve at the top graduates.
+	 */
+	private static array $LADDER = [1, 3, 7, 14, 30, 60];
+
+	/**
+	 * Route prefix for queue links. Every one of them re-asserts training mode.
+	 */
+	public static string $PLAY_LINK_PREFIX = '/mistake-training/play/';
+
+	/**
+	 * Landing page of the training queue.
+	 */
+	public static string $QUEUE_LINK = '/mistake-training';
+
+	/**
+	 * Apply a play result to the training pool. Graduation (a clean solve at the
+	 * top rung) only removes the problem from the pool; the tsumego status is
+	 * never touched, it belongs to the normal modes.
+	 */
+	public static function recordResult(int $userId, int $tsumegoId, bool $solved, ?string $oldStatus): void
+	{
+		$pool = self::getPoolRow($userId, $tsumegoId);
+
+		if ($pool === null)
+		{
+			// Entry: a fail on a problem the user has not solved yet (a
+			// first-encounter mistake). A clean solve never enters the pool.
+			if ($solved)
+				return;
+			if ($oldStatus !== null && TsumegoUtil::isSolvedStatus($oldStatus))
+				return;
+			self::enterPool($userId, $tsumegoId);
+			return;
+		}
+
+		$top = count(self::$LADDER) - 1;
+
+		if ($solved)
+		{
+			// Clean solve: climb a rung, or graduate at the top.
+			if ((int) $pool['rung'] >= $top)
+			{
+				self::graduate($userId, $tsumegoId);
+				return;
+			}
+			self::setRung($userId, $tsumegoId, (int) $pool['rung'] + 1);
+			return;
+		}
+
+		// Fail: drop a rung, never below the daily rung.
+		self::setRung($userId, $tsumegoId, max((int) $pool['rung'] - 1, 0));
+	}
+
+	/**
+	 * The pool row for a user+tsumego, or null if not in training.
+	 *
+	 * @return array|null
+	 */
+	public static function getPoolRow(int $userId, int $tsumegoId): ?array
+	{
+		$row = ClassRegistry::init('MistakeTrainingPool')->find('first', [
+			'conditions' => ['user_id' => $userId, 'tsumego_id' => $tsumegoId],
+		]);
+		return empty($row['MistakeTrainingPool']) ? null : $row['MistakeTrainingPool'];
+	}
+
+	/**
+	 * Whether a problem is in the pool and scheduled for review right now.
+	 */
+	public static function isDue(int $userId, int $tsumegoId): bool
+	{
+		$row = self::getPoolRow($userId, $tsumegoId);
+		return $row !== null && $row['next_due'] <= date('Y-m-d H:i:s');
+	}
+
+	/**
+	 * Number of tsumegos currently due for review.
+	 */
+	public static function dueCount(int $userId): int
+	{
+		return (int) ClassRegistry::init('MistakeTrainingPool')->find('count', [
+			'conditions' => [
+				'user_id' => $userId,
+				'next_due <=' => date('Y-m-d H:i:s'),
+			],
+		]);
+	}
+
+	/**
+	 * The next pool row due for review, or null if none.
+	 *
+	 * @return array|null
+	 */
+	public static function nextDue(int $userId): ?array
+	{
+		$row = ClassRegistry::init('MistakeTrainingPool')->find('first', [
+			'conditions' => ['user_id' => $userId, 'next_due <=' => date('Y-m-d H:i:s')],
+			'order' => 'next_due ASC',
+		]);
+		return empty($row['MistakeTrainingPool']) ? null : $row['MistakeTrainingPool'];
+	}
+
+	/**
+	 * Total number of problems in the training pool.
+	 */
+	public static function totalInTraining(int $userId): int
+	{
+		return (int) ClassRegistry::init('MistakeTrainingPool')->find('count', [
+			'conditions' => ['user_id' => $userId],
+		]);
+	}
+
+	/**
+	 * Upcoming reviews per day, for the "all caught up" view: the next $maxDays
+	 * days that have reviews, how many further days are scheduled, and the last
+	 * of them.
+	 *
+	 * Counts are aggregated over the whole pool, so a day is never cut off
+	 * halfway through by a row limit.
+	 *
+	 * @return array{days: array<string, int>, furtherDays: int, lastDay: ?string}
+	 */
+	public static function upcomingByDay(int $userId, int $maxDays = 7): array
+	{
+		$rows = Util::query(
+			'SELECT DATE(next_due) AS day, COUNT(*) AS day_count FROM mistake_training_pool'
+			. ' WHERE user_id = ? AND next_due > NOW() GROUP BY DATE(next_due) ORDER BY day',
+			[$userId]
+		);
+		$countsByDay = [];
+		foreach ($rows as $row)
+			$countsByDay[$row['day']] = (int) $row['day_count'];
+
+		return [
+			'days' => array_slice($countsByDay, 0, $maxDays, true),
+			'furtherDays' => max(0, count($countsByDay) - $maxDays),
+			'lastDay' => $countsByDay ? array_key_last($countsByDay) : null,
+		];
+	}
+
+	/**
+	 * How a review day is named for the player: "today", "tomorrow", a weekday
+	 * within the coming week, a date beyond that.
+	 */
+	public static function describeDay(string $day, ?string $today = null): string
+	{
+		$today = $today ?: date('Y-m-d');
+		$daysAhead = (new DateTime($today))->diff(new DateTime($day))->days;
+		if ($daysAhead <= 0)
+			return 'today';
+		if ($daysAhead == 1)
+			return 'tomorrow';
+		if ($daysAhead <= 6)
+			return date('l', strtotime($day));
+		return date('M j', strtotime($day));
+	}
+
+	/**
+	 * Remove a problem from the pool: when the tsumego is deleted or has no set
+	 * connection. Graduation goes through graduate().
+	 */
+	public static function removeFromPool(int $userId, int $tsumegoId): void
+	{
+		ClassRegistry::init('MistakeTrainingPool')->deleteAll(['user_id' => $userId, 'tsumego_id' => $tsumegoId]);
+	}
+
+	/**
+	 * Build the navigation buttons for the current training queue.
+	 * One button per tsumego, preferring the set connection the user is on,
+	 * ordered by next_due (most overdue first). Links stay on the training route,
+	 * which owns the mode.
+	 */
+	public static function buildQueueButtons(int $currentSetConnectionID): TsumegoButtons
+	{
+		$rows = Util::query(self::queueSql(), [$currentSetConnectionID, Auth::getUserID()]);
+		$buttons = TsumegoButtons::fromRows($rows, $currentSetConnectionID, 200);
+		$buttons->setLinkPrefix(self::$PLAY_LINK_PREFIX);
+		return $buttons;
+	}
+
+	/**
+	 * Add a problem to the pool on a first-encounter fail.
+	 */
+	private static function enterPool(int $userId, int $tsumegoId): void
+	{
+		$now = date('Y-m-d H:i:s');
+		$Model = ClassRegistry::init('MistakeTrainingPool');
+		$Model->create();
+		$Model->save([
+			'user_id' => $userId,
+			'tsumego_id' => $tsumegoId,
+			'rung' => 0,
+			'next_due' => date('Y-m-d H:i:s', strtotime($now . ' +' . self::$LADDER[0] . ' days')),
+		]);
+	}
+
+	/**
+	 * Move a pool row to a new rung and recompute its next review date.
+	 */
+	private static function setRung(int $userId, int $tsumegoId, int $rung): void
+	{
+		$now = date('Y-m-d H:i:s');
+		$nextDue = date('Y-m-d H:i:s', strtotime($now . ' +' . self::$LADDER[$rung] . ' days'));
+
+		$sql = 'UPDATE mistake_training_pool SET rung = ?, next_due = ?, modified = ?';
+		$params = [$rung, $nextDue, $now];
+		$sql .= ' WHERE user_id = ? AND tsumego_id = ?';
+		$params[] = $userId;
+		$params[] = $tsumegoId;
+
+		Util::execute($sql, $params);
+	}
+
+	/**
+	 * A clean solve at the top rung ends training: the problem leaves the pool for
+	 * good, with its status left alone (it belongs to the normal modes). Delegates
+	 * the removal, so graduation and the housekeeping paths stay in sync.
+	 */
+	private static function graduate(int $userId, int $tsumegoId): void
+	{
+		self::removeFromPool($userId, $tsumegoId);
+	}
+
+	/**
+	 * The training queue: pool rows that are due for review. Deduplicates in SQL
+	 * (one row per tsumego via ROW_NUMBER), preferring the current set connection
+	 * so navigation stays on the connection the user is on.
+	 */
+	private static function queueSql(): string
+	{
+		return "
+			SELECT tsumego_id, set_connection_id, num, status, rating, sgf
+			FROM (
+				SELECT
+					p.tsumego_id,
+					sc.id AS set_connection_id,
+					sc.num,
+					ts.status,
+					t.rating,
+					p.next_due,
+					COALESCE(sgf.sgf, '') AS sgf,
+					ROW_NUMBER() OVER (
+						PARTITION BY p.tsumego_id
+						ORDER BY CASE WHEN sc.id = ? THEN 0 ELSE 1 END, sc.id
+					) AS rn
+				FROM mistake_training_pool p
+				JOIN set_connection sc ON sc.tsumego_id = p.tsumego_id
+				JOIN tsumego t ON t.id = p.tsumego_id
+				LEFT JOIN tsumego_status ts ON ts.user_id = p.user_id AND ts.tsumego_id = p.tsumego_id
+				LEFT JOIN sgf ON sgf.id = (SELECT MAX(s2.id) FROM sgf s2 WHERE s2.tsumego_id = p.tsumego_id)
+				WHERE p.user_id = ?
+				  AND p.next_due <= NOW()
+				  AND t.deleted IS NULL
+			) x
+			WHERE rn = 1
+			ORDER BY next_due ASC
+		";
+	}
+}
