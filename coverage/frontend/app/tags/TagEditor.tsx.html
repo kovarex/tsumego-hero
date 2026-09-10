@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">71.11% </span>
+                <span class="strong">72.22% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>64/90</span>
+                <span class='fraction'>65/90</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">55.42% </span>
+                <span class="strong">56.47% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>46/83</span>
+                <span class='fraction'>48/85</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">67.56% </span>
+                <span class="strong">68.57% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>25/37</span>
+                <span class='fraction'>24/35</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">74.66% </span>
+                <span class="strong">75.32% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>56/75</span>
+                <span class='fraction'>58/77</span>
             </div>
         
             
@@ -287,7 +287,10 @@
 <a name='L222'></a><a href='#L222'>222</a>
 <a name='L223'></a><a href='#L223'>223</a>
 <a name='L224'></a><a href='#L224'>224</a>
-<a name='L225'></a><a href='#L225'>225</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L225'></a><a href='#L225'>225</a>
+<a name='L226'></a><a href='#L226'>226</a>
+<a name='L227'></a><a href='#L227'>227</a>
+<a name='L228'></a><a href='#L228'>228</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -307,6 +310,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">88x</span>
 <span class="cline-any cline-yes">88x</span>
 <span class="cline-any cline-yes">88x</span>
 <span class="cline-any cline-yes">88x</span>
@@ -406,6 +410,8 @@
 <span class="cline-any cline-yes">58x</span>
 <span class="cline-any cline-yes">58x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">88x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">88x</span>
 <span class="cline-any cline-yes">20x</span>
@@ -536,6 +542,7 @@ export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags
 	const [query, setQuery] = useState('');
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	const [open, setOpen] = useState(false);
+	const [solvedInSession, setSolvedInSession] = useState(false);
 	const inputRef = useRef&lt;HTMLInputElement&gt;(null);
 	const dropdownRef = useRef&lt;HTMLDivElement&gt;(null);
 &nbsp;
@@ -565,7 +572,7 @@ export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags
 	// Listen for problem-solved event from legacy JS
 	useEffect(() =&gt;
 	{
-		const handler = () =&gt; setTags(prev =&gt; prev.map(<span class="fstat-no" title="function not covered" >t =&gt; (<span class="cstat-no" title="statement not covered" >{</span> ...t, isHint: false }))</span>);
+		const handler = () =&gt; setSolvedInSession(true);
 		window.addEventListener('tag-editor-solved', handler);
 		return <span class="fstat-no" title="function not covered" >() =&gt; <span class="cstat-no" title="statement not covered" >w</span>indow.removeEventListener('tag-editor-solved', handler);</span>
 	}, []);
@@ -631,12 +638,14 @@ export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags
 		return <span class="fstat-no" title="function not covered" >() =&gt; <span class="cstat-no" title="statement not covered" >d</span>ocument.removeEventListener('mousedown', handler);</span>
 	}, []);
 &nbsp;
+	const solved = problemSolved || solvedInSession;
+&nbsp;
 	const addedTags = tags.filter(t =&gt;
 		t.isAdded &amp;&amp; (t.isApproved || t.isMine) &amp;&amp;
-		(t.isMine || <span class="branch-4 cbranch-no" title="branch not covered" >problemSolved || (<span class="branch-5 cbranch-no" title="branch not covered" >!</span>isTimeMode &amp;&amp; <span class="branch-6 cbranch-no" title="branch not covered" >!</span>t.isHint))</span>
+		(t.isMine || <span class="branch-4 cbranch-no" title="branch not covered" >solved || (<span class="branch-5 cbranch-no" title="branch not covered" >!</span>isTimeMode &amp;&amp; <span class="branch-6 cbranch-no" title="branch not covered" >!</span>t.isHint))</span>
 	);
 &nbsp;
-	const hiddenCount = problemSolved ? 0 : isTimeMode
+	const hiddenCount = solved ? 0 : isTimeMode
 		? tags.filter(t =&gt; t.isAdded &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >!t.isMine &amp;&amp; (<span class="branch-2 cbranch-no" title="branch not covered" >t</span>.isApproved || <span class="branch-3 cbranch-no" title="branch not covered" >t</span>.isMine))</span>.length
 		: tags.filter(t =&gt; t.isAdded &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >t.isHint &amp;&amp; <span class="branch-2 cbranch-no" title="branch not covered" >!</span>t.isMine &amp;&amp; (<span class="branch-3 cbranch-no" title="branch not covered" >t</span>.isApproved || <span class="branch-4 cbranch-no" title="branch not covered" >t</span>.isMine))</span>.length;
 &nbsp;
@@ -742,7 +751,7 @@ export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-09-09T14:48:01.486Z
+                at 2026-09-10T02:50:08.911Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
