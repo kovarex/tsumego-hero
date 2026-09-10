@@ -24,29 +24,47 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 
 <div>
 	<div class="profile-header">
-		<p class="profile-username"><?php echo h($user['User']['name']); ?> <?php User::renderPremium($user['User']); ?></p>
+		<p class="profile-username"><?php
+			$avatarUrl = User::getAvatarUrl($user['User'], 48);
+			echo '<img src="' . h($avatarUrl) . '" alt="" class="user-avatar" style="width:48px;height:48px;border-radius:50%;vertical-align:middle;margin-right:8px;">';
+			echo h($user['User']['display_name']);
+			echo ' ';
+			User::renderPremium($user['User']);
+		?></p>
 		<?php echo $this->element('user_subnav', ['userID' => $user['User']['id'], 'activeTab' => 'profile']); ?>
 	</div>
 <?php if (Auth::getUserID() == $user['User']['id']): ?>
 <div class="cluster">
 	<div class="card card--green">
-		<div class="card__title">Email</div>
+		<div class="card__title">Account</div>
 		<table class="stat" id="name-and-email-table">
 			<tr>
-				<td><?php echo h($user['User']['email']); ?></td>
+				<td><strong>Email:</strong> <?php echo h($user['User']['email']); ?></td>
 				<td><a id="show" class="link">change</a></td>
 			</tr>
 			<tr>
 				<td colspan="2">
-					<div id="msg2">
+					<div id="msg2" style="display:none;margin-top:3px;">
 						<?php
 						echo $this->Form->create('User');
-						echo $this->Form->input('email', array('label' => '', 'type' => 'text', 'placeholder' => 'E-Mail'));
+						echo $this->Form->input('email', array('label' => '', 'type' => 'text', 'placeholder' => 'E-Mail', 'style' => 'width:150px;'));
 						echo '<div class="submit"><input class="btn" value="Submit" type="submit"></div>';
 						?>
 					</div>
 				</td>
 			</tr>
+			<?php if (!User::isGoogleUser($user['User'])): ?>
+			<tr>
+				<td><strong>Username:</strong> <?php echo h($user['User']['name'] ?? ''); ?></td>
+				<td></td>
+			</tr>
+			<?php endif; ?>
+			<?php if (User::isUsingGravatar($user['User'])): ?>
+			<tr>
+				<td><strong>Avatar:</strong> Gravatar</td>
+				<td><a class="link" href="https://gravatar.com/" target="_blank" rel="noopener noreferrer">change</a></td>
+			</tr>
+			<?php endif; ?>
 		</table>
 	</div>
 	<div class="card card--green">

@@ -14,8 +14,11 @@ SELECT
 	tsumego_attempt.misplays as misplays,
 	tsumego_attempt.tsumego_rating as tsumego_rating,
 	tsumego_attempt.created as created,
-	user.name as user_name,
+	user.display_name AS user_display_name,
 	user.id as user_id,
+	user.picture AS user_picture,
+	user.external_id AS user_external_id,
+	user.email AS user_email,
 	user.rating as user_rating
 FROM
 	tsumego_attempt

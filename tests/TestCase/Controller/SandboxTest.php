@@ -80,7 +80,7 @@ class SandboxTest extends ControllerTestCase
 		$this->testAction('/sets/sandbox', ['method' => 'get', 'return' => 'vars']);
 
 		$this->assertArrayHasKey('admins', $this->vars);
-		$this->assertContains('kovarex', $this->vars['admins']);
+		$this->assertContains('DN_kovarex', $this->vars['admins']);
 	}
 
 	public function testCreateRequiresLogin(): void

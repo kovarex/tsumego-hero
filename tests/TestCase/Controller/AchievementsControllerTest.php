@@ -148,8 +148,8 @@ class AchievementsControllerTest extends TestCaseWithAuth
 
 		$result = $this->testAction('/achievements/view/98', ['return' => 'view']);
 
-		$this->assertStringContainsString('Alice', $result, 'Alice should appear as a completer');
-		$this->assertStringContainsString('Bob', $result, 'Bob should appear as a completer');
+		$this->assertStringContainsString('DN_Alice', $result, 'Alice should appear as a completer');
+		$this->assertStringContainsString('DN_Bob', $result, 'Bob should appear as a completer');
 	}
 
 	public function testViewAchievementShowsOnlyTenMostRecentCompleterNames(): void
@@ -166,9 +166,10 @@ class AchievementsControllerTest extends TestCaseWithAuth
 
 		// The total is implied by the shown completers + "and X others"
 		$this->assertStringNotContainsString('users completed this achievement', $result);
-		// Newest completer is rendered as a link to their profile
+		// Newest completer is rendered as a link to their profile (avatar + display_name + rank)
 		$newestUser = $context->otherUsers[count($context->otherUsers) - 1];
-		$this->assertStringContainsString('<a href="/users/view/' . $newestUser['id'] . '">User12', $result);
+		$this->assertStringContainsString('<a href="/users/view/' . $newestUser['id'] . '"', $result);
+		$this->assertStringContainsString('DN_User12', $result);
 		$this->assertStringContainsString('and 2 others.', $result);
 	}
 

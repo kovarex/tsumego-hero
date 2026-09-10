@@ -29,7 +29,7 @@ endif;
 ?>
 
 <div align="center">
-	<p class="profile-username"><?php echo h($viewedUser['name']); ?></p>
+	<p class="profile-username"><?php echo h($viewedUser['display_name']); ?></p>
 	<?php echo $this->element('user_subnav', ['userID' => $viewedUser['id'], 'activeTab' => 'contributions']); ?>
 	<?php echo PaginationHelper::render($pageIndex, (int) ceil($count / $pageSize), 'page'); ?>
 	<table class="data-table">

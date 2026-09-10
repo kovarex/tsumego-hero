@@ -33,7 +33,7 @@ class SandboxSgfUploadTest extends TestCaseWithAuth
 		// Verify tsumego was created
 		$tsumego = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC']);
 		$this->assertNotEmpty($tsumego, 'Tsumego should be created');
-		$this->assertEquals('kovarex', $tsumego['Tsumego']['author']);
+		$this->assertEquals('DN_kovarex', $tsumego['Tsumego']['author']);
 
 		// Verify set connection was created with correct num
 		$setConnection = ClassRegistry::init('SetConnection')->find('first', [

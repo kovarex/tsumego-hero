@@ -12,8 +12,11 @@ class TagProposalsRenderer extends DataTableRenderer
 SELECT
 	tag.id as tag_id,
 	tag.name as tag_name,
-	user.name as user_name,
+	user.display_name AS user_display_name,
 	user.id as user_id,
+	user.picture AS user_picture,
+	user.external_id AS user_external_id,
+	user.email AS user_email,
 	user.rating as user_rating
 FROM
 	tag
