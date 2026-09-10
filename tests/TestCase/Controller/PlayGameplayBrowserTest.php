@@ -29,6 +29,14 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 		$browser->waitUntilJs('typeof besogo !== "undefined" && besogo.editor && typeof besogo.editor.getCurrent === "function"');
 	}
 
+	private function commentSpaceDisplay(Browser $browser): string
+	{
+		$display = $browser->driver->executeScript(
+			"var el = document.getElementById('commentSpace'); return el ? getComputedStyle(el).display : 'missing';"
+		);
+		return is_string($display) ? $display : 'missing';
+	}
+
 	/**
 	 * Read the current node's stones as [x, y, color] triplets in *logical*
 	 * board coordinates. Child nodes inherit getStone/getSize via
@@ -409,6 +417,43 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 		$this->assertTrue($browser->driver->executeScript('return window.failAlreadyReported;'));
 		$this->assertSame(1, $browser->driver->executeScript('return window.misplays;'));
 		$this->assertSame(1, $context->reloadUser()['damage']);
+	}
+
+	public function testSolveEnablesReviewAndRevealsComments(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+		$browser = Browser::instance();
+		$browser->get($this->playUrl($context));
+		$this->waitForBoard($browser);
+
+		$this->assertSame(0, count($browser->driver->findElements(WebDriverBy::cssSelector('#besogo-review-button'))),
+			'A fresh problem must not enable review before it is solved.');
+		$this->assertSame('none', $this->commentSpaceDisplay($browser),
+			'Comments must be hidden on a fresh problem.');
+
+		$browser->playWithResult('S');
+
+		$this->assertGreaterThan(0, count($browser->driver->findElements(WebDriverBy::cssSelector('#besogo-review-button'))),
+			'Solving must enable the review button.');
+		$this->assertSame(0, count($browser->driver->findElements(WebDriverBy::cssSelector('#besogo-review-button-inactive'))),
+			'Solving must remove the inactive review button.');
+		$this->assertSame('block', $this->commentSpaceDisplay($browser),
+			'Solving must reveal the comment section.');
+	}
+
+	public function testFailDoesNotEnableReviewOrRevealComments(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+		$browser = Browser::instance();
+		$browser->get($this->playUrl($context));
+		$this->waitForBoard($browser);
+
+		$browser->playWithResult('F');
+
+		$this->assertSame(0, count($browser->driver->findElements(WebDriverBy::cssSelector('#besogo-review-button'))),
+			'An incorrect answer must not enable review.');
+		$this->assertSame('none', $this->commentSpaceDisplay($browser),
+			'An incorrect answer must not reveal comments.');
 	}
 
 	public function testRunOutOfHeartsShowsLockedMessage(): void

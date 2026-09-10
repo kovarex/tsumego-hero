@@ -193,6 +193,92 @@ class TimeModeTest extends TestCaseWithAuth
 		$this->assertTrue($session['TimeModeSession']['time_mode_session_status_id'] == TimeModeUtil::$SESSION_STATUS_SOLVED);
 	}
 
+	public function testTimeModeTreatsPreviouslySolvedProblemAsFresh()
+	{
+		$contextParameters = [];
+		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
+		$contextParameters['time-mode-ranks'] = ['5k'];
+		// A few tsumegos the player already solved in normal mode (status S), so
+		// whatever the session serves first is a previously solved problem.
+		for ($i = 0; $i < 3; ++$i)
+			$contextParameters['tsumegos'] [] = ['set_order' => $i, 'status' => 'S'];
+		$context = new ContextPreparator($contextParameters);
+
+		$browser = Browser::instance();
+		$browser->get('timeMode/start'
+			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
+			. '&rankID=' . $context->timeModeRanks[0]['id']);
+
+		$session = ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => [
+			'user_id' => Auth::getUserID(),
+			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]]);
+		Auth::init();
+		$this->assertTrue(Auth::isInTimeMode());
+
+		// In time mode a previously solved problem is a fresh challenge, so it
+		// must not open in review mode before the player solves it.
+		$this->assertSame(
+			count($browser->driver->findElements(WebDriverBy::cssSelector('#besogo-review-button'))),
+			0,
+			'A time mode problem the player already solved must not open in review mode.'
+		);
+
+		// Solving it correctly records the attempt as solved, which lets the
+		// session move on to the next problem.
+		$tsumegoID = (int) $browser->driver->executeScript('return window.tsumegoID;');
+		$browser->playWithResult('S');
+		$attempt = ClassRegistry::init('TimeModeAttempt')->find('first', ['conditions' => [
+			'time_mode_session_id' => $session['TimeModeSession']['id'],
+			'tsumego_id' => $tsumegoID]]);
+		$this->assertSame(
+			$attempt['TimeModeAttempt']['time_mode_attempt_status_id'],
+			TimeModeUtil::$ATTEMPT_RESULT_SOLVED,
+			'Solving a previously solved time mode problem must record the attempt as solved.'
+		);
+
+		// The session must move on to a different problem, not re-serve the one
+		// just solved.
+		$nextButton = $browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'));
+		$nextButton->click();
+		$browser->driver->wait(10)->until(WebDriverExpectedCondition::stalenessOf($nextButton));
+		$browser->driver->wait(10)->until(function ($driver) {
+			return is_numeric($driver->executeScript('return window.tsumegoID;'));
+		});
+		$this->assertNotSame(
+			(int) $browser->driver->executeScript('return window.tsumegoID;'),
+			(int) $tsumegoID,
+			'Solving a previously solved time mode problem must advance to a different problem.'
+		);
+	}
+
+	public function testTimeModeSolveEnablesReviewAndRevealsComments()
+	{
+		$contextParameters = [];
+		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
+		$contextParameters['time-mode-ranks'] = ['5k'];
+		$contextParameters['tsumegos'][] = ['set_order' => 0, 'status' => 'S'];
+		$context = new ContextPreparator($contextParameters);
+
+		$browser = Browser::instance();
+		$browser->get('timeMode/start'
+			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
+			. '&rankID=' . $context->timeModeRanks[0]['id']);
+
+		$commentDisplay = fn() => $browser->driver->executeScript(
+			"var el = document.getElementById('commentSpace'); return el ? getComputedStyle(el).display : 'missing';"
+		);
+
+		// A previously solved problem starts fresh in time mode: no review, comments hidden.
+		$this->assertSame(0, count($browser->driver->findElements(WebDriverBy::cssSelector('#besogo-review-button'))));
+		$this->assertSame('none', $commentDisplay());
+
+		$browser->playWithResult('S');
+
+		// Solving enables review and reveals the comments.
+		$this->assertGreaterThan(0, count($browser->driver->findElements(WebDriverBy::cssSelector('#besogo-review-button'))));
+		$this->assertSame('block', $commentDisplay());
+	}
+
 	public function testTimeModeRefreshDoesntRefreshTime()
 	{
 		$contextParameters = [];

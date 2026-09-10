@@ -4,6 +4,7 @@ use Facebook\WebDriver\WebDriverKeys;
 use PHPUnitRetry\RetryTrait;
 
 App::uses('ForbiddenException', 'Routing/Error');
+App::uses('TimeModeUtil', 'Utility');
 
 /**
  * Tag editor tests — React component with data-testid selectors.
@@ -815,5 +816,63 @@ class TagTest extends ControllerTestCase
 			'method' => 'post',
 			'data' => ['Tag' => ['delete' => $tagId]],
 		]);
+	}
+
+	public function testCommunityHintTagHiddenUntilProblemSolved()
+	{
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
+			'other-users' => [['name' => 'other', 'rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE]],
+			'tsumegos' => [['set_order' => 1, 'tags' => [
+				['name' => 'commontag', 'approved' => 1, 'is_hint' => 0, 'user' => 'other'],
+				['name' => 'hinttag', 'approved' => 1, 'is_hint' => 1, 'user' => 'other'],
+			]]],
+		]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->waitUntilCssSelectorExists('[data-testid="tag-list"]');
+
+		// A hint tag is a spoiler and stays hidden until the player solves the problem.
+		$this->assertCount(1, $browser->getCssSelect('[data-testid="tag-commontag"]'),
+			'A non-hint community tag is visible before the problem is solved.');
+		$this->assertCount(0, $browser->getCssSelect('[data-testid="tag-hinttag"]'),
+			'A hint tag stays hidden until the problem is solved.');
+
+		$browser->playWithResult('S');
+
+		$this->assertCount(1, $browser->getCssSelect('[data-testid="tag-hinttag"]'),
+			'Solving reveals the hint tag.');
+	}
+
+	public function testTimeModeCommunityTagsHiddenUntilSolved()
+	{
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
+			'other-users' => [['name' => 'other', 'rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE]],
+			'time-mode-ranks' => ['5k'],
+			'tsumegos' => [['set_order' => 0, 'status' => 'S', 'tags' => [
+				['name' => 'commontag', 'approved' => 1, 'is_hint' => 0, 'user' => 'other'],
+				['name' => 'mytag', 'approved' => 1],
+			]]],
+		]);
+		$browser = Browser::instance();
+		$browser->get('timeMode/start'
+			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
+			. '&rankID=' . $context->timeModeRanks[0]['id']);
+		$browser->waitUntilCssSelectorExists('[data-testid="tag-editor"]');
+
+		// Even though the problem was solved before, time mode treats it as fresh, so
+		// community tags stay hidden (the player's own tag is always visible).
+		$this->assertCount(1, $browser->getCssSelect('[data-testid="tag-mytag"]'),
+			'The player\'s own tag is visible in time mode.');
+		$this->assertCount(0, $browser->getCssSelect('[data-testid="tag-commontag"]'),
+			'A community tag must not be revealed until the problem is solved.');
+
+		$browser->playWithResult('S');
+
+		// Solving reveals the community tags.
+		$browser->waitUntilCssSelectorExists('[data-testid="tag-commontag"]');
+		$this->assertCount(1, $browser->getCssSelect('[data-testid="tag-commontag"]'),
+			'Solving reveals the community tags in time mode.');
 	}
 }
