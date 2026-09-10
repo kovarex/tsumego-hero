@@ -51,17 +51,11 @@ class TsumegoUtil
 		return $tsx;
 	}
 
-	public static function hasStateAllowingInspection($tsumego)
+	// Whether the problem is solved for the current mode. In time mode every
+	// problem is presented fresh, so this is false at page load until solved.
+	public static function isSolvedForCurrentMode($tsumego)
 	{
-		return TsumegoUtil::isRecentlySolved($tsumego['Tsumego']['status']);
-	}
-
-	// Whether the problem is in a solved/inspectable state for the current mode.
-	// In time mode every problem is presented fresh, so this is always false at
-	// page load (the solved state is tracked per-session and flips client-side).
-	public static function hasStateAllowingInspectionForCurrentMode($tsumego)
-	{
-		return !Auth::isInTimeMode() && TsumegoUtil::hasStateAllowingInspection($tsumego);
+		return !Auth::isInTimeMode() && TsumegoUtil::isRecentlySolved($tsumego['Tsumego']['status']);
 	}
 
 	public static function isRecentlySolved($status)

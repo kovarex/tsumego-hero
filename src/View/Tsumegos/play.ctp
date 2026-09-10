@@ -107,6 +107,10 @@
 		foreach (['answer1', 'answer2', 'answer3', 'answer4'] as $answerKey)
 			if (isset($displayAnswers[$answerKey]))
 				$displayAnswers[$answerKey] = $swapColorWords($displayAnswers[$answerKey]);
+
+	// Whether the problem is solved for the current mode. In time mode every
+	// problem is presented fresh, so this stays false until it is solved.
+	$solved = TsumegoUtil::isSolvedForCurrentMode($t);
 	if ($nothingInRange != false)
 		echo '<div align="center" class="status-message">'.$nothingInRange.'</div>';
 	?>
@@ -296,7 +300,7 @@
 			'isAdmin' => Auth::isAdmin(),
 			'tsumegoId' => (int) $t['Tsumego']['id'],
 			'isTimeMode' => Auth::isInTimeMode(),
-			'problemSolved' => TsumegoUtil::hasStateAllowingInspectionForCurrentMode($t),
+			'problemSolved' => $solved,
 			'canAddMoreTags' => $canAddMoreTags,
 			'isAllowedToContribute' => $isAllowedToContribute,
 			'initialTags' => array_map(fn($row) => [
@@ -527,7 +531,7 @@
 		<tr>
 				<td><?php echo $this->element('TsumegoComments/section', [
 						'tsumegoId' => $t['Tsumego']['id'],
-						't' => $t,
+						'solved' => $solved,
 					]); ?></td>
 					</tr>
 					</table>
@@ -654,7 +658,7 @@
 	var disableAutoplay = false;
 	var besogoNoLogin = false;
 	var sprintSeconds = <?php echo Constants::$SPRINT_SECONDS; ?>;
-	var problemSolved = <?php echo Util::boolString(TsumegoUtil::hasStateAllowingInspectionForCurrentMode($t)); ?>;
+	var problemSolved = <?php echo Util::boolString($solved); ?>;
 	var playerRatingCalculationModifier = <?php echo Constants::$PLAYER_RATING_CALCULATION_MODIFIER; ?>;
 	let multipleChoiceLibertiesB = 0;
 	let multipleChoiceLibertiesW = 0;
@@ -1011,8 +1015,6 @@
 		echo '$("#account-bar-user > a").css({color:"#ca6658"});';
 	}
 
-	$showComments = TsumegoUtil::hasStateAllowingInspection($t) || Auth::isAdmin();
-	echo 'var showCommentSpace = ' . Util::boolString($showComments) . ';';
 			if(Auth::isAdmin())
 		echo '$("#show5").css("display", "inline-block");';
 
@@ -1063,7 +1065,7 @@
 	}
 
 		$reviewEnabled = false;
-		if(TsumegoUtil::hasStateAllowingInspectionForCurrentMode($t)){
+		if($solved){
 			$reviewEnabled = true;
 			echo 'reviewEnabled = true;';
 	}
@@ -1220,7 +1222,7 @@
 	}
 		});
 		let solutionRequest = true;
-		<?php if(TsumegoUtil::hasStateAllowingInspection($t) || $isSandbox) { ?>
+		<?php if($solved || $isSandbox) { ?>
 			displaySettings();
 			solutionRequest = false;
 		<?php } ?>
