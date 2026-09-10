@@ -93,6 +93,28 @@ class MistakeTrainingTest extends TestCaseWithAuth
 		$this->assertNull($this->poolRow($userId, $tsumegoId));
 	}
 
+	public function testIsDueOnlyForPoolProblemsScheduledForNow(): void
+	{
+		$context = new ContextPreparator([
+			'tsumego' => [
+				'set_order' => 1,
+				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
+			],
+			'tsumegos' => [
+				[
+					'set_order' => 2,
+					'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('+3 days'))],
+				],
+			],
+		]);
+		$userId = $context->user['id'];
+
+		$this->assertTrue(MistakeTraining::isDue($userId, (int) $context->tsumegos[0]['id']));
+		$this->assertFalse(MistakeTraining::isDue($userId, (int) $context->tsumegos[1]['id']),
+			'A problem scheduled for later is not due');
+		$this->assertFalse(MistakeTraining::isDue($userId, 999999), 'A problem outside the pool is never due');
+	}
+
 	public function testDueCount(): void
 	{
 		$context = new ContextPreparator(['tsumego' => 1]);

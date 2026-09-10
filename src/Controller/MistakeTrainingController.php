@@ -52,13 +52,13 @@ class MistakeTrainingController extends AppController
 	}
 
 	/**
-	 * Render the shared play page for a problem the user has in the pool.
+	 * Render the shared play page for a problem that is due for review.
 	 */
 	private function playSetConnection(int $setConnectionID): mixed
 	{
 		$setConnection = ClassRegistry::init('SetConnection')->findById($setConnectionID);
 		$tsumegoId = $setConnection ? (int) $setConnection['SetConnection']['tsumego_id'] : 0;
-		if (!$tsumegoId || !MistakeTraining::getPoolRow((int) Auth::getUserID(), $tsumegoId))
+		if (!$tsumegoId || !MistakeTraining::isDue((int) Auth::getUserID(), $tsumegoId))
 			return $this->redirect(MistakeTraining::$QUEUE_LINK);
 
 		$play = new Play(function ($name, $value) {
