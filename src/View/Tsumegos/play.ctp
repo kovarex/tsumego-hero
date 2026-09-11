@@ -1810,9 +1810,13 @@
 	besogo.editor.setAutoPlay(true);
 	besogo.editor.registerAddTimeForMovePlayed(addTimeForMovePlayed);
 	besogo.editor.registerDisplayResult(displayResult);
-	besogo.editor.registerBoardClick(function ()
+	besogo.editor.addListener(function (changes)
 	{
-		if (timeToFirstClick === null)
+		// the clock starts with the first move the player really plays
+		if (timeToFirstClick !== null || !changes || !changes.navChange)
+			return;
+		let current = besogo.editor.getCurrent();
+		if (current.move && current.move.color === besogo.editor.getRoot().firstMove)
 			timeToFirstClick = elapsedSeconds();
 	});
 
