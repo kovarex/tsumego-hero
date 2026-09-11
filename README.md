@@ -135,6 +135,15 @@ TLDR; The local configuration should have xdebug already setup, all you should n
 
 After this, it should just work.
 
+### Test Accounts
+
+After `ddev start`, two test accounts are seeded automatically (via `scripts/seed-test-accounts.sh`):
+
+| Account | Password | Role |
+|---------|----------|------|
+| `admin` | `admin` | Admin |
+| `testuser` | `admin` | Regular user |
+
 ## Database Migrations
 
 This project uses [Phinx](https://phinx.org/) for database migrations.
