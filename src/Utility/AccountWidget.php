@@ -11,7 +11,7 @@ class AccountWidget
 		if (Auth::isInTimeMode())
 		{
 			$barClassname = 'xp-bar-fill-c3';
-			$barRatio = Util::getRatio($timeMode->currentOrder - 1, $timeMode->overallCount);
+			$barRatio = Util::getRatio($timeMode->currentPosition() - 1, $timeMode->overallCount);
 			$accountBarClassname = '';
 			$barText = 'Time mode ' . $timeMode->getCurrentRank();
 			$textBarInMenu = 'Level bar';

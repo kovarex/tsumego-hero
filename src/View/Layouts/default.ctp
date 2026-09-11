@@ -414,7 +414,7 @@ echo ViteManifest::legacyScript('legacy');
 	{
 		$popupData = array_map(['AchievementChecker', 'toPopupData'], array_values($achievementUpdates));
 		echo 'var achievementUpdates = ' . json_encode($popupData, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) . ';';
-		echo 'achievementUpdates.forEach(showAchievementPopup);';
+		echo 'if (typeof showAchievementPopup === "function") achievementUpdates.forEach(showAchievementPopup);';
 	}
 	?>
 	let light = <?php echo Util::boolString($lightDark !== 'dark'); ?>;

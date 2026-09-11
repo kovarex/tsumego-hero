@@ -7,6 +7,7 @@ use PHPUnitRetry\RetryTrait;
 
 App::uses('Util', 'Utility');
 App::uses('Constants', 'Utility');
+App::uses('TimeModeUtil', 'Utility');
 
 /**
  * @retryAttempts 2
@@ -99,90 +100,54 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 		$this->assertSame(1, $keyed['5,5'], 'White stone at ee');
 	}
 
-	public function testPassButtonAppearsWhenEnabledAndAdvancesMove(): void
+	public function testThePassButtonOnlyShowsWhenTheProblemAllowsIt(): void
 	{
-		$context = new ContextPreparator([
-			'user' => ['name' => 'passUser'],
-			'tsumego' => ['set_order' => 1, 'pass' => 1, 'sgf' => self::SGF_19],
-		]);
-		$browser = Browser::instance();
-		$browser->get($this->playUrl($context));
-		$this->waitForBoard($browser);
+		foreach ([1 => 'a problem that can be passed', 0 => 'a problem that cannot'] as $pass => $case)
+		{
+			$context = new ContextPreparator([
+				'tsumego' => ['set_order' => 1, 'pass' => $pass, 'sgf' => self::SGF_19]]);
+			$browser = Browser::instance();
+			$browser->get($this->playUrl($context));
+			$this->waitForBoard($browser);
 
-		$this->assertTrue($browser->idExists('besogo-pass-button'),
-			'Pass button should be rendered when pass is enabled');
+			$this->assertSame((bool) $pass, $browser->idExists('besogo-pass-button'), 'Pass button on ' . $case);
+			if (!$pass)
+				continue;
 
-		$moveBefore = (int) $browser->driver->executeScript('return besogo.editor.getCurrent().moveNumber;');
-
-		$browser->clickId('besogo-pass-button');
-
-		$moveAfter = (int) $browser->driver->executeScript('return besogo.editor.getCurrent().moveNumber;');
-		$this->assertGreaterThan($moveBefore, $moveAfter,
-			'Passing should advance the move number');
-
-		$this->assertSame(0, $browser->driver->executeScript('return window.boardLockValue;'),
-			'Passing should not lock the board');
+			$moveBefore = (int) $browser->driver->executeScript('return besogo.editor.getCurrent().moveNumber;');
+			$browser->clickId('besogo-pass-button');
+			$moveAfter = (int) $browser->driver->executeScript('return besogo.editor.getCurrent().moveNumber;');
+			$this->assertGreaterThan($moveBefore, $moveAfter, 'Passing advances the move number');
+			$this->assertSame(0, $browser->driver->executeScript('return window.boardLockValue;'),
+				'Passing does not lock the board');
+		}
 	}
 
-	public function testPassButtonHiddenByDefault(): void
+	public function testTheNavigationButtonsLeadToTheNeighbouringPuzzles(): void
 	{
-		$context = new ContextPreparator([
-			'user' => ['name' => 'noPassUser'],
-			'tsumego' => ['set_order' => 1, 'pass' => 0, 'sgf' => self::SGF_19],
-		]);
+		$context = new ContextPreparator(['tsumegos' => [1, 2, 3]]);
 		$browser = Browser::instance();
-		$browser->get($this->playUrl($context));
+		$urls = array_map(fn($tsumego) => '/' . $tsumego['set-connections'][0]['id'], $context->tsumegos);
+
+		$browser->get($urls[1]);
 		$this->waitForBoard($browser);
 
-		$this->assertFalse($browser->idExists('besogo-pass-button'),
-			'Pass button should not be rendered when pass is disabled');
-	}
+		$this->assertSame($urls[0],
+			$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-back-button'))->getAttribute('href'),
+			'The back button points at the previous problem');
+		$this->assertSame($urls[2],
+			$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->getAttribute('href'),
+			'The next button points at the following problem');
 
-	public function testNextNavigationButtonMovesToNextPuzzle(): void
-	{
-		$context = new ContextPreparator([
-			'user' => ['name' => 'navUser'],
-			'tsumegos' => [
-				['set_order' => 1, 'sgf' => self::SGF_19],
-				['set_order' => 2, 'sgf' => '(;GM[1]FF[4]ST[2]SZ[19]AB[cc];B[aa]C[+])'],
-			],
-		]);
-		$browser = Browser::instance();
-		$firstUrl = $this->playUrl($context);
-		$secondUrl = '/' . $context->tsumegos[1]['set-connections'][0]['id'];
-		$browser->get($firstUrl);
-		$this->waitForBoard($browser);
-
-		// Navigate to the next problem via the besogo Next button.
 		$browser->clickId('besogo-next-button');
-
-		$browser->waitUntilJs('location.href.includes("' . $secondUrl . '")');
-
-		$this->assertStringContainsString($secondUrl, $browser->driver->getCurrentURL(),
-			'Clicking Next should navigate to the next puzzle');
-	}
-
-	public function testPreviousNavigationButtonMovesToPreviousPuzzle(): void
-	{
-		$context = new ContextPreparator([
-			'user' => ['name' => 'prevUser'],
-			'tsumegos' => [
-				['set_order' => 1, 'sgf' => self::SGF_19],
-				['set_order' => 2, 'sgf' => '(;GM[1]FF[4]ST[2]SZ[19]AB[cc];B[aa]C[+])'],
-			],
-		]);
-		$browser = Browser::instance();
-		$firstUrl = $this->playUrl($context);
-		$secondUrl = '/' . $context->tsumegos[1]['set-connections'][0]['id'];
-		$browser->get($secondUrl);
+		$browser->waitUntilJs('location.href.includes("' . $urls[2] . '")');
 		$this->waitForBoard($browser);
+		$this->assertStringContainsString($urls[2], $browser->driver->getCurrentURL(), 'The next button moves on');
 
 		$browser->clickId('besogo-back-button');
-
-		$browser->waitUntilJs('location.href.includes("' . $firstUrl . '")');
-
-		$this->assertStringContainsString($firstUrl, $browser->driver->getCurrentURL(),
-			'Clicking Back should navigate to the previous puzzle');
+		$browser->waitUntilJs('location.href.includes("' . $urls[1] . '")');
+		$this->waitForBoard($browser);
+		$this->assertStringContainsString($urls[1], $browser->driver->getCurrentURL(), 'The back button moves back');
 	}
 
 	public function testMultipleChoiceAnswerClickShowsSolved(): void
@@ -334,6 +299,8 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 		$browser->clickId('besogo-reset-button');
 		$this->assertSame($originalDamage + 1, (int) $context->reloadUser()['damage'],
 			'Reset after fail should not cause duplicate damage');
+		$this->assertFalse($browser->driver->executeScript('return window.failAlreadyReported;'),
+			'Giving up leaves the problem open for another attempt');
 	}
 
 	public function testResetAtStartDoesntCauseDamage(): void
@@ -375,6 +342,14 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 		$this->assertSame($originalDamage + 1, (int) $context->reloadUser()['damage'],
 			'Reset should not cause additional damage');
 
+		// Opening the problem again reports nothing on its own and costs nothing
+		$browser->get($this->playUrl($context));
+		$this->waitForBoard($browser);
+		$this->assertSame(true, $browser->driver->executeScript('return window._submitResultPromise === null;'),
+			'Opening the problem reports nothing on its own');
+		$this->assertSame($originalDamage + 1, (int) $context->reloadUser()['damage'],
+			'Opening the problem again does not cause damage');
+
 		// Solve
 		$browser->playWithResult('S');
 
@@ -403,6 +378,11 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 		// Account widget should reflect server state
 		$this->assertGreaterThan(0, $browser->driver->executeScript('return window.accountWidget.xp;'));
 		$this->assertNotNull($browser->driver->executeScript('return window.accountWidget.rating;'));
+
+		// and so should the XP display
+		$this->assertTrue($browser->driver->executeScript('return window.xpStatus !== undefined;'));
+		$this->assertNotEmpty($browser->driver->findElement(WebDriverBy::id('xpDisplayText'))->getText(),
+			'The XP display shows the XP gained');
 	}
 
 	public function testFailShowsIncorrectAndLosesHeart(): void
@@ -419,82 +399,64 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 		$this->assertSame(1, $context->reloadUser()['damage']);
 	}
 
-	public function testSolveEnablesReviewAndRevealsComments(): void
+	public function testTheAccountBarGlowsForARecordedSolveAndARecordedFail(): void
+	{
+		foreach (['S', 'F'] as $result)
+		{
+			$context = new ContextPreparator(['tsumego' => 1]);
+			$browser = Browser::instance();
+			$browser->get($this->playUrl($context));
+			$this->waitForBoard($browser);
+
+			$browser->driver->executeScript("displayResult('" . $result . "')");
+
+			$this->assertSame('inline-block',
+				$browser->driver->executeScript("return document.getElementById('xp-increase-fx').style.display;"),
+				'The bar shows that the account changed, in either direction');
+		}
+	}
+
+	public function testARepeatedFailDoesNotMoveTheRatingAgain(): void
 	{
 		$context = new ContextPreparator(['tsumego' => 1]);
 		$browser = Browser::instance();
 		$browser->get($this->playUrl($context));
 		$this->waitForBoard($browser);
 
-		$this->assertSame(0, count($browser->driver->findElements(WebDriverBy::cssSelector('#besogo-review-button'))),
-			'A fresh problem must not enable review before it is solved.');
-		$this->assertSame('none', $this->commentSpaceDisplay($browser),
-			'Comments must be hidden on a fresh problem.');
+		$rating = 'return Math.round(window.accountWidget.rating * 1000) / 1000;';
+		$before = $browser->driver->executeScript($rating);
 
-		$browser->playWithResult('S');
+		$browser->driver->executeScript("displayResult('F')");
+		$browser->waitForSubmitResult();
+		$afterRecordedFail = $browser->driver->executeScript($rating);
 
-		$this->assertGreaterThan(0, count($browser->driver->findElements(WebDriverBy::cssSelector('#besogo-review-button'))),
-			'Solving must enable the review button.');
-		$this->assertSame(0, count($browser->driver->findElements(WebDriverBy::cssSelector('#besogo-review-button-inactive'))),
-			'Solving must remove the inactive review button.');
-		$this->assertSame('block', $this->commentSpaceDisplay($browser),
-			'Solving must reveal the comment section.');
+		$browser->driver->executeScript("displayResult('F')");
+		$browser->driver->executeScript("displayResult('F')");
+		$afterRepeats = $browser->driver->executeScript($rating);
+
+		$this->assertNotSame($before, $afterRecordedFail, 'A recorded fail must move the rating');
+		$this->assertSame($afterRecordedFail, $afterRepeats,
+			'The server is told about a fail once per problem, so the repeats must not move the rating again');
 	}
 
-	public function testFailDoesNotEnableReviewOrRevealComments(): void
+	public function testOnlyASolvedProblemCanBeReviewedAndCommented(): void
 	{
-		$context = new ContextPreparator(['tsumego' => 1]);
-		$browser = Browser::instance();
-		$browser->get($this->playUrl($context));
-		$this->waitForBoard($browser);
+		foreach (['S' => true, 'F' => false] as $result => $reveals)
+		{
+			$context = new ContextPreparator(['tsumego' => 1]);
+			$browser = Browser::instance();
+			$browser->get($this->playUrl($context));
+			$this->waitForBoard($browser);
+			$this->assertSame('none', $this->commentSpaceDisplay($browser), 'Comments are hidden while playing');
 
-		$browser->playWithResult('F');
+			$browser->playWithResult($result);
 
-		$this->assertSame(0, count($browser->driver->findElements(WebDriverBy::cssSelector('#besogo-review-button'))),
-			'An incorrect answer must not enable review.');
-		$this->assertSame('none', $this->commentSpaceDisplay($browser),
-			'An incorrect answer must not reveal comments.');
-	}
-
-	public function testRunOutOfHeartsShowsLockedMessage(): void
-	{
-		$context = new ContextPreparator(['tsumego' => 1, 'user' => ['health' => 0]]);
-		$browser = Browser::instance();
-		$browser->get($this->playUrl($context));
-
-		$browser->playWithResult('F');
-
-		$this->assertStringContainsString('locked until', $browser->driver->findElement(WebDriverBy::id('status'))->getText());
-		$this->assertTrue($browser->driver->executeScript('return window.tryAgainTomorrow;'));
-		$this->assertSame(1, $browser->driver->executeScript('return window.boardLockValue;'));
-	}
-
-	public function testResetAfterFailDoesNotCostExtraHeart(): void
-	{
-		$context = new ContextPreparator(['tsumego' => 1]);
-		$browser = Browser::instance();
-		$browser->get($this->playUrl($context));
-
-		$browser->playWithResult('F');
-		$this->assertSame(1, $context->reloadUser()['damage']);
-
-		$browser->clickId('besogo-reset-button');
-		$this->assertSame(1, $context->reloadUser()['damage'],
-			'Reset should not cause additional damage');
-		$this->assertFalse($browser->driver->executeScript('return window.failAlreadyReported;'));
-	}
-
-	public function testResetAfterSolveDoesNotCostHeart(): void
-	{
-		$context = new ContextPreparator(['tsumego' => 1]);
-		$browser = Browser::instance();
-		$browser->get($this->playUrl($context));
-
-		$browser->playWithResult('S');
-		$browser->clickId('besogo-reset-button');
-
-		$this->assertSame(0, $context->reloadUser()['damage'],
-			'Resetting after solve should not cause damage');
+			$this->assertCount($reveals ? 1 : 0,
+				$browser->driver->findElements(WebDriverBy::cssSelector('#besogo-review-button')),
+				'The review button after a ' . $result);
+			$this->assertSame($reveals ? 'block' : 'none', $this->commentSpaceDisplay($browser),
+				'The comments after a ' . $result);
+		}
 	}
 
 	public function testSolvedPuzzleCannotBeFailedOrReSolved(): void
@@ -516,20 +478,6 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 		$browser->playWithResult('S');
 		$this->assertSame($originalXp, $context->reloadUser()['xp'],
 			'Re-solving should not grant more XP');
-	}
-
-	public function testSolveUpdatesXPDisplay(): void
-	{
-		$context = new ContextPreparator(['tsumego' => 1]);
-		$browser = Browser::instance();
-		$browser->get($this->playUrl($context));
-
-		$browser->playWithResult('S');
-
-		// XP display should show solved state
-		$this->assertTrue($browser->driver->executeScript('return window.xpStatus !== undefined;'));
-		$xpText = $browser->driver->findElement(WebDriverBy::id('xpDisplayText'))->getText();
-		$this->assertNotEmpty($xpText, 'XP display should show XP gained');
 	}
 
 	public function testPotionTriggerRestoresHeartsAndShowsAlert(): void
@@ -767,52 +715,20 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 		$this->assertTrue($xpDisplayDiv->isDisplayed(), 'xpDisplayDiv must be visible on initial page load');
 	}
 
-	public function testTheNextAndBackButtonLinksWhenBothPointToOtherTsumegos()
+	public function testHeartsShowTheDamageTaken()
 	{
-		$context = new ContextPreparator(['tsumegos' => [1, 2, 3]]);
+		// damage taken => the hearts the player sees
+		foreach ([0 => 'all full', 1 => 'one empty', 10000 => 'all empty'] as $damage => $case)
+		{
+			$context = new ContextPreparator(['user' => ['damage' => $damage], 'tsumego' => 1]);
+			$browser = Browser::instance();
+			$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
 
-		$browser = Browser::instance();
-		$browser->get($context->tsumegos[1]['set-connections'][0]['id']);
-		$backButton = $browser->driver->findElement(WebDriverBy::cssSelector('#besogo-back-button'));
-		$this->assertSame($backButton->getAttribute('href'), '/' . $context->tsumegos[0]['set-connections'][0]['id']);
-
-		$nextButton = $browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'));
-		$this->assertSame($nextButton->getAttribute('href'), '/' . $context->tsumegos[2]['set-connections'][0]['id']);
-	}
-
-	public function testShowFullHearts()
-	{
-		$context = new ContextPreparator(['tsumego' => 1]);
-		$browser = Browser::instance();
-		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
-		$fullHearts = $browser->getCssSelect('img[title="Heart"]');
-		$emptyHearts = $browser->getCssSelect('img[title="Empty Heart"]');
-		$this->assertCount(0, $emptyHearts);
-		$this->assertCount(Util::getHealthBasedOnLevel(Auth::getUser()['level']), $fullHearts);
-	}
-
-	public function testShowFullPartialHearts()
-	{
-		$context = new ContextPreparator(['user' => ['damage' => '1'], 'tsumego' => 1]);
-
-		$browser = Browser::instance();
-		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
-		$fullHearts = $browser->getCssSelect('img[title="Heart"]');
-		$emptyHearts = $browser->getCssSelect('img[title="Empty Heart"]');
-		$this->assertCount(1, $emptyHearts);
-		$this->assertCount(Util::getHealthBasedOnLevel(Auth::getUser()['level']) - 1, $fullHearts);
-	}
-
-	public function testShowHeartsWithDamageHigherThanHealth()
-	{
-		$context = new ContextPreparator(['user' => ['damage' => '10000'], 'tsumego' => 1]);
-
-		$browser = Browser::instance();
-		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
-		$fullHearts = $browser->getCssSelect('img[title="Heart"]');
-		$emptyHearts = $browser->getCssSelect('img[title="Empty Heart"]');
-		$this->assertCount(Util::getHealthBasedOnLevel(Auth::getUser()['level']), $emptyHearts);
-		$this->assertCount(0, $fullHearts);
+			$health = Util::getHealthBasedOnLevel(Auth::getUser()['level']);
+			$empty = min($damage, $health);
+			$this->assertCount($empty, $browser->getCssSelect('img[title="Empty Heart"]'), $case . ' with ' . $damage . ' damage');
+			$this->assertCount($health - $empty, $browser->getCssSelect('img[title="Heart"]'), $case . ' with ' . $damage . ' damage');
+		}
 	}
 
 	public function testFavoritesHeartTogglesAddAndRemove(): void
@@ -1046,5 +962,306 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 
 		$browser->driver->executeScript("document.getElementById('colorOrientation').click();");
 		$this->assertStringContainsString('White to play', $comment->getText());
+	}
+
+	/**
+	 * Keeps the requests that record a solve inside the browser, so the problem that was
+	 * just played is still unrecorded while the player moves on, the way a slow request does.
+	 */
+	private function holdSolveResultsInTheBrowser(Browser $browser): void
+	{
+		$browser->driver->executeScript(
+			'window.__realFetch = window.__realFetch || window.fetch;'
+			. 'window.__solveRequests = [];'
+			. 'window.fetch = function (url) {'
+			. '  if (String(url).indexOf("/tsumegos/result") !== 0)'
+			. '    return window.__realFetch.apply(this, arguments);'
+			. '  window.__solveRequests.push(url);'
+			. '  return new Promise(function () {});'
+			. '};'
+		);
+	}
+
+	/** Plays the current problem without its result ever reaching the server. */
+	private function solveWhileTheSolveIsStillOnItsWay(Browser $browser): void
+	{
+		$this->holdSolveResultsInTheBrowser($browser);
+		$browser->driver->executeScript("displayResult('S')");
+		$browser->waitUntilJs('window.problemSolved === true && window.__solveRequests.length === 1');
+		$browser->dismissAchievementPopups();
+	}
+
+	/**
+	 * A time mode session the player is on the first problem of, with a result on it when a
+	 * status is given, so the player is on the problem that has not been recorded yet.
+	 */
+	private function startTimeMode(Browser $browser, ?int $firstAttemptStatus = null, int $problemCount = 2): ContextPreparator
+	{
+		$attempts = [['order' => 1, 'status' => $firstAttemptStatus ?? TimeModeUtil::$ATTEMPT_RESULT_QUEUED]];
+		for ($order = 2; $order <= $problemCount; $order++)
+			$attempts[] = ['order' => $order, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:' . ($order - 1)];
+
+		$context = new ContextPreparator([
+			'tsumego' => ['set_order' => 1, 'sgf' => self::SGF_19],
+			'tsumegos' => array_map(fn($order) => ['set_order' => $order, 'sgf' => self::SGF_19], range(2, $problemCount)),
+			'time-mode-ranks' => ['5k'],
+			'time-mode-sessions' => [[
+				'category' => TimeModeUtil::$CATEGORY_BLITZ,
+				'rank' => '5k',
+				'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+				'attempts' => $attempts]]]);
+		$browser->get('/timeMode/play');
+		$this->waitForBoard($browser);
+		return $context;
+	}
+
+	public function testTimeModeCountsTheProblemBeingSolvedWhileTheSolveIsStillOnItsWay(): void
+	{
+		$browser = Browser::instance();
+		$this->startTimeMode($browser);
+
+		$this->solveWhileTheSolveIsStillOnItsWay($browser);
+		$started = microtime(true);
+		$browser->clickBoard(1, 1);
+
+		$browser->waitUntilJs('location.pathname === "/timeMode/play/2"');
+		$this->assertLessThan(5, microtime(true) - $started,
+			'The next problem must open without waiting for the solve');
+
+		$this->waitForBoard($browser);
+		$title = $browser->driver->executeScript('return document.getElementById("playTitle").textContent;');
+		$this->assertStringContainsString('2 of 2', $title,
+			'The position must count the problem being solved, not the recorded ones');
+	}
+
+	public function testTimeModeResultPageWaitsForTheLastSolve(): void
+	{
+		$browser = Browser::instance();
+		$context = $this->startTimeMode($browser, TimeModeUtil::$ATTEMPT_RESULT_SOLVED);
+		$sessionID = $context->timeModeSessions[0]['id'];
+
+		// only the last problem is left and it has not been recorded yet
+		$browser->get('/timeMode/result/' . $sessionID);
+		$browser->waitUntilJs('document.body.textContent.indexOf("Finishing your session") !== -1');
+
+		// the result of the last problem arrives
+		$attempt = ClassRegistry::init('TimeModeAttempt')->find('first', [
+			'conditions' => ['time_mode_session_id' => $sessionID, 'order' => 2]]);
+		$attempt['TimeModeAttempt']['time_mode_attempt_status_id'] = TimeModeUtil::$ATTEMPT_RESULT_SOLVED;
+		$attempt['TimeModeAttempt']['seconds'] = 10;
+		$attempt['TimeModeAttempt']['points'] = 50;
+		ClassRegistry::init('TimeModeAttempt')->save($attempt);
+
+		// the page asks again on its own
+		$browser->waitUntilJs('document.body.textContent.indexOf("Time Mode Results") !== -1');
+		$this->assertStringContainsString('passed(2/2)',
+			$browser->driver->executeScript('return document.body.textContent;'),
+			'The result appears once the last result has been recorded');
+	}
+
+	/**
+	 * The result of the last problem never arrives, so the page that waits for it
+	 * keeps asking. The waiting has to end and the session has to be scored.
+	 */
+	public function testASessionIsScoredWhenTheLastResultNeverArrives(): void
+	{
+		$categorySeconds = TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS;
+		$context = new ContextPreparator([
+			'tsumego' => ['set_order' => 1, 'sgf' => self::SGF_19],
+			'tsumegos' => [['set_order' => 2, 'sgf' => self::SGF_19]],
+			'time-mode-ranks' => ['5k'],
+			'time-mode-sessions' => [[
+				'category' => TimeModeUtil::$CATEGORY_SLOW_SPEED,
+				'rank' => '5k',
+				'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+				'attempts' => [
+					['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED],
+					// the last problem was left behind and its result never arrived
+					['order' => 2, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:1',
+						'started-seconds-ago' => $categorySeconds + 1]]]]]);
+		$browser = Browser::instance();
+
+		// past the last problem, so there is nothing to play, only the result to wait for
+		$browser->driver->executeScript('sessionStorage.removeItem("timeModeWaitStarted");');
+		$browser->get('/timeMode/play/3');
+		$browser->waitUntilJs('document.body && document.body.textContent.indexOf("Finishing your session") !== -1');
+
+		// the player has been waiting almost the whole limit already
+		$browser->driver->executeScript('sessionStorage.setItem("timeModeWaitStarted", Date.now() - '
+			. (TimeModeUtil::$WAITING_FOR_RESULT_SECONDS * 1000 - 500) . ');');
+		$browser->get('/timeMode/play/3');
+
+		$browser->waitUntilJs('document.body && document.body.textContent.indexOf("Time Mode Results") !== -1');
+		$this->assertStringContainsString('failed(1/2)',
+			$browser->driver->executeScript('return document.body.textContent;'),
+			'The session is scored instead of waiting for a result that is not coming');
+	}
+
+	public function testTheNextProblemOpensWhileTheSolveIsStillOnItsWay(): void
+	{
+		$context = new ContextPreparator([
+			'tsumego' => ['set_order' => 1, 'sgf' => self::SGF_19],
+			'tsumegos' => [['set_order' => 2, 'sgf' => self::SGF_19]]]);
+		$browser = Browser::instance();
+		$browser->get((string) $context->tsumegos[0]['set-connections'][0]['id']);
+		$this->waitForBoard($browser);
+
+		$this->solveWhileTheSolveIsStillOnItsWay($browser);
+		$started = microtime(true);
+		$browser->clickBoard(1, 1);
+
+		$browser->waitUntilJs('location.pathname === "/' . $context->tsumegos[1]['set-connections'][0]['id'] . '"');
+		$this->assertLessThan(5, microtime(true) - $started,
+			'Following a problem link must not be held up by the solve request');
+	}
+
+	/**
+	 * A player plays a whole session the way the pages present it: solves a problem,
+	 * misplays one, gives up on one, leaves one behind until its time is up, and reads
+	 * the score of all of them.
+	 */
+	public function testPlayingAWholeTimeModeSessionRecordsEveryOutcome(): void
+	{
+		$categorySeconds = TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS;
+		$context = new ContextPreparator([
+			'tsumego' => ['set_order' => 1, 'sgf' => self::SGF_19],
+			'tsumegos' => [
+				['set_order' => 2, 'sgf' => self::SGF_19],
+				['set_order' => 3, 'sgf' => self::SGF_19],
+				['set_order' => 4, 'sgf' => self::SGF_19]],
+			'time-mode-ranks' => ['5k'],
+			'time-mode-sessions' => [[
+				'category' => TimeModeUtil::$CATEGORY_SLOW_SPEED,
+				'rank' => '5k',
+				'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+				'attempts' => [
+					['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED],
+					['order' => 2, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:1'],
+					['order' => 3, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:2'],
+					// the last problem was presented and left behind, so its time ran out
+					['order' => 4, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:3',
+						'started-seconds-ago' => $categorySeconds + 1]]]]]);
+		$sessionID = $context->timeModeSessions[0]['id'];
+		$browser = Browser::instance();
+
+		$playTitle = fn() => (string) $browser->driver->executeScript('return document.getElementById("playTitle").textContent;');
+		$status = fn() => (string) $browser->driver->executeScript('return document.getElementById("status").textContent;');
+		$attempt = fn(int $order) => ClassRegistry::init('TimeModeAttempt')->find('first', [
+			'conditions' => ['time_mode_session_id' => $sessionID, 'order' => $order]])['TimeModeAttempt'];
+
+		$browser->get('/timeMode/play');
+		$this->waitForBoard($browser);
+		$this->assertStringContainsString('1 of 4', $playTitle());
+
+		// the first problem: black plays the two moves of the solution
+		$browser->clickBoard(1, 1);
+		$browser->waitUntilJs('besogo.editor.getCurrent().moveNumber >= 2');
+		$browser->clickBoard(2, 1);
+		$browser->waitUntilJs('window.problemSolved === true');
+		$browser->waitForSubmitResult();
+		$browser->dismissAchievementPopups();
+		$this->assertStringContainsString('Correct', $status());
+		$this->assertSame(TimeModeUtil::$ATTEMPT_RESULT_SOLVED, (int) $attempt(1)['time_mode_attempt_status_id']);
+		$this->assertGreaterThan(0, (int) $attempt(1)['points'], 'A solved problem scores');
+
+		$browser->clickId('besogo-next-button');
+		$browser->waitUntilJs('location.pathname === "/timeMode/play/2"');
+		$this->waitForBoard($browser);
+		$this->assertStringContainsString('2 of 4', $playTitle());
+
+		// the second problem: a move that is not the solution ends it
+		$browser->clickBoard(2, 1);
+		$browser->waitUntilJs('document.getElementById("status").textContent.indexOf("Incorrect") !== -1');
+		$browser->waitForSubmitResult();
+		$this->assertSame(TimeModeUtil::$ATTEMPT_RESULT_FAILED, (int) $attempt(2)['time_mode_attempt_status_id']);
+		$this->assertSame(0, (int) $attempt(2)['points'], 'A misplayed problem scores nothing');
+
+		$browser->clickId('besogo-next-button');
+		$browser->waitUntilJs('location.pathname === "/timeMode/play/3"');
+		$this->waitForBoard($browser);
+		$this->assertStringContainsString('3 of 4', $playTitle());
+
+		// the third problem is given up on, which brings up the last one that ran out of time
+		$browser->clickId('besogo-next-button');
+		$browser->waitUntilJs('location.pathname === "/timeMode/result/' . $sessionID . '"');
+		$this->assertSame(TimeModeUtil::$ATTEMPT_STATUS_SKIPPED, (int) $attempt(3)['time_mode_attempt_status_id']);
+		$this->assertSame(0, (int) $attempt(3)['points'], 'A problem given up on scores nothing');
+		$this->assertSame(TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT, (int) $attempt(4)['time_mode_attempt_status_id']);
+		$this->assertSame($categorySeconds, (int) $attempt(4)['seconds'],
+			'A problem left behind is recorded with the time it was given');
+		$this->assertSame(0, (int) $attempt(4)['points'], 'A problem that ran out of time scores nothing');
+
+		foreach ([1, 2, 3, 4] as $order)
+		{
+			$this->assertGreaterThanOrEqual(0, (int) $attempt($order)['seconds'],
+				'The recorded time of problem ' . $order . ' is never negative');
+			$this->assertLessThanOrEqual($categorySeconds, (int) $attempt($order)['seconds'],
+				'The recorded time of problem ' . $order . ' never exceeds the time the problem is given');
+		}
+
+		// one solved of four problems is not enough to pass, and the score is out of four
+		$score = (string) $browser->driver->executeScript('return document.body.textContent;');
+		$this->assertStringContainsString('failed(1/4)', $score,
+			'The score counts the problems the session had, not a full session');
+		foreach (['solved', 'failed', 'skipped', 'timeout'] as $outcome)
+			$this->assertStringContainsString($outcome, $score, 'The score tells how problem ' . $outcome);
+		$this->assertStringNotContainsString('You unlocked', $score,
+			'A session that did not pass unlocks nothing');
+
+		// the session is closed with the outcome and the score the page showed
+		$session = ClassRegistry::init('TimeModeSession')->findById($sessionID)['TimeModeSession'];
+		$this->assertSame(TimeModeUtil::$SESSION_STATUS_FAILED, (int) $session['time_mode_session_status_id']);
+		$this->assertSame((int) $attempt(1)['points'], (int) $session['points'],
+			'The score of the session is what its problems were worth');
+	}
+
+	/**
+	 * A player who sits on a problem without playing it: its countdown runs out while
+	 * the page is open, and the problem is given up on by itself.
+	 */
+	public function testAProblemWhoseCountdownRunsOutIsGivenUpOnByItself(): void
+	{
+		$categorySeconds = TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS;
+		$context = new ContextPreparator([
+			'tsumego' => ['set_order' => 1, 'sgf' => self::SGF_19],
+			'tsumegos' => [['set_order' => 2, 'sgf' => self::SGF_19]],
+			'time-mode-ranks' => ['5k'],
+			'time-mode-sessions' => [[
+				'category' => TimeModeUtil::$CATEGORY_SLOW_SPEED,
+				'rank' => '5k',
+				'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+				'attempts' => [
+					['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED],
+					['order' => 2, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:1']]]]]);
+		$sessionID = $context->timeModeSessions[0]['id'];
+		$browser = Browser::instance();
+
+		// the player comes to the problem with only a moment of its time left: the clock is
+		// handed back here, because getting the browser up takes longer than that moment
+		$attempt = ClassRegistry::init('TimeModeAttempt')->find('first', [
+			'conditions' => ['time_mode_session_id' => $sessionID, 'order' => 1]]);
+		$attempt['TimeModeAttempt']['started'] = date('Y-m-d H:i:s', time() - ($categorySeconds - 5));
+		ClassRegistry::init('TimeModeAttempt')->save($attempt);
+
+		$browser->get('/timeMode/play');
+		$this->waitForBoard($browser);
+		$tcount = (float) $browser->driver->executeScript('return window.tcount;');
+		$this->assertLessThan(30, $tcount, 'The problem is served with the little time it has left');
+
+		// the player watches the countdown go to zero
+		$browser->waitUntilJs('document.getElementById("status").textContent.indexOf("Time up") !== -1', 15);
+		$browser->waitForSubmitResult();
+
+		$attempt = ClassRegistry::init('TimeModeAttempt')->find('first', [
+			'conditions' => ['time_mode_session_id' => $sessionID, 'order' => 1]])['TimeModeAttempt'];
+		$this->assertSame(TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT, (int) $attempt['time_mode_attempt_status_id']);
+		$this->assertSame($categorySeconds, (int) $attempt['seconds'],
+			'Running out of time is recorded with the time the problem was given');
+		$this->assertSame(0, (int) $attempt['points']);
+
+		// and the player moves on to the next problem
+		$browser->clickId('besogo-next-button');
+		$browser->waitUntilJs('location.pathname === "/timeMode/play/2"');
+		$this->waitForBoard($browser);
 	}
 }

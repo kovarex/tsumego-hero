@@ -445,7 +445,7 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 	public static function renderTitle($setConnection, $set, $tsumegoFilters, $tsumegoButtons, $amountOfOtherCollection, $difficulty, $timeMode, $queryTitle, $t)
 	{
 		if (Auth::isInTimeMode())
-			return '<font size="5px">' . $timeMode->currentOrder . ' of ' . $timeMode->overallCount . '</font>';
+			return '<font size="5px">' . $timeMode->currentPosition() . ' of ' . $timeMode->overallCount . '</font>';
 
 		if (Auth::isInRatingMode())
 			return '<div class="slidecontainer">

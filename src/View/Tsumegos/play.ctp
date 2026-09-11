@@ -1509,6 +1509,8 @@
 	{
 		if (besogoNoLogin)
 			return;
+		if (typeof accountWidget !== 'undefined' && accountWidget)
+			accountWidget.animate(solved);
 		let data = {
 			tsumego_id: tsumegoID,
 			seconds: secs,
@@ -1542,8 +1544,9 @@
 				redrawHearts();
 				$("#potionAlerts").fadeIn(500);
 			}
-			if (result.achievement_updates && result.achievement_updates.length)
-				result.achievement_updates.forEach(showAchievementPopup);
+			if (result.achievement_updates && result.achievement_updates.length
+				&& typeof showAchievementPopup === 'function')
+					result.achievement_updates.forEach(showAchievementPopup);
 		}).catch(err => {
 			console.error('submitResult failed:', err);
 		});
@@ -1556,8 +1559,6 @@
 		if (timeModeTimer)
 			timeModeTimer.stop();
 
-		if (accountWidget)
-			accountWidget.animate(success);
 		if (success)
 		{
 			if (!problemSolved)
@@ -1709,8 +1710,6 @@
 		{
 			misplays++;
 			redrawHearts();
-			if (typeof accountWidget !== 'undefined' && accountWidget)
-				accountWidget.animate(false);
 			submitResult(false, seconds);
 		}
 		failAlreadyReported = false;

@@ -657,6 +657,9 @@ class ContextPreparator
 		$attempt['tsumego_id'] = ContextPreparator::loadTsumegoID(Util::extractWithDefault('tsumego_id', $attemptsInput, $this->tsumegos[0]['id']));
 		$attempt['order'] = Util::extract('order', $attemptsInput);
 		$attempt['time_mode_attempt_status_id'] = Util::extract('status', $attemptsInput);
+		$startedSecondsAgo = Util::extractWithDefault('started-seconds-ago', $attemptsInput, null);
+		if ($startedSecondsAgo !== null)
+			$attempt['started'] = date('Y-m-d H:i:s', time() - $startedSecondsAgo);
 		$this->checkOptionsConsumed($attemptsInput);
 		ClassRegistry::init('TimeModeAttempt')->create($attempt);
 		ClassRegistry::init('TimeModeAttempt')->save($attempt);
