@@ -18,9 +18,18 @@ class PlayResultProcessorComponent extends Component
 	 */
 	public function processResult(int $tsumegoId, bool $solved, float $seconds, bool $timeout): array
 	{
+		$seconds = max(0.01, $seconds);
+
 		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoId);
 		if (!$tsumego)
 			return ['error' => 'Tsumego not found'];
+
+		if (Auth::isInTimeMode())
+		{
+			$timeMode = new TimeMode();
+			$playResult = ['solved' => $solved];
+			$timeMode->processPlayResult($tsumego, $playResult, $seconds, $timeout);
+		}
 
 		$result = [];
 		$result['solved'] = $solved;
@@ -48,13 +57,6 @@ class PlayResultProcessorComponent extends Component
 		$this->updateTsumegoAttempt($tsumego, $result, $previousStatusValue, $seconds);
 		$this->processErrorAchievement($result, $previousStatusValue, $tsumegoId);
 		$this->processUnsortedStuff($tsumego, $result, $previousStatusValue);
-
-		if (Auth::isInTimeMode())
-		{
-			$timeMode = new TimeMode();
-			$playResult = ['solved' => $solved];
-			$timeMode->processPlayResult($tsumego, $playResult, $seconds, $timeout);
-		}
 
 		// Check solve-dependent achievements right away (not only on the next page
 		// load) so the user sees the popup immediately after solving.

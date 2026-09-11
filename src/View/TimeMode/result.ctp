@@ -31,11 +31,13 @@
 	} ?>
 	<table class="timeModeTable" border="0">
 	<?php
+if (!function_exists('showSession'))
+{
 		function showSession($session, $isCurrent) {
 			echo '<tr>';
 			echo '<td colspan="5">';
 			$color = $session['status'] == 'passed' ? 'var(--color-green)' : 'var(--feedback-error)';
-			echo '<h4 style="color:'.$color.';">'.($isCurrent ? 'Result' : 'Best').': '.$session['status'].'('.$session['solvedCount'].'/'.TimeModeUtil::$PROBLEM_COUNT.')';
+			echo '<h4 style="color:'.$color.';">'.($isCurrent ? 'Result' : 'Best').': '.$session['status'].'('.$session['solvedCount'].'/'.count($session['attempts']).')';
 			if ($isCurrent) {
 				echo '- '.$session['points'].' points';
 			}
@@ -53,7 +55,10 @@
 					echo '</tr>';
 				}
 		}
+} // function_exists
 
+if (!function_exists('showRank'))
+{
 		function showRank($session, $dataForView) {
 			$containsCurrent = isset($session['current']);
 			$headerSession = isset($session['best']) ? $session['best'] : $session['current'];
@@ -90,6 +95,7 @@
 			echo '</table>';
 			echo '</div>';
 		}
+} // function_exists
 
 		foreach ($sessionsToShow as $categoryToShow) {
 			foreach ($categoryToShow as $rankToShow) {

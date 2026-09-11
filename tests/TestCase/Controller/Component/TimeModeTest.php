@@ -360,7 +360,8 @@ class TimeModeTest extends TestCaseWithAuth
 			$text = $driver->findElement(WebDriverBy::cssSelector('#time-mode-countdown'))->getText();
 			return preg_match('/\d+:[0-5]\d\.\d/', $text) === 1;
 		});
-		$browser->driver->executeScript("window['tcount'] = 0.1;");
+		$openForTooLong = (TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS + 1) * 1000;
+		$browser->driver->executeScript("window.clockStart -= {$openForTooLong};");
 		// Wait for countdown to show 0:00.0
 		$wait->until(function ($driver) {
 			$text = $driver->findElement(WebDriverBy::cssSelector('#time-mode-countdown'))->getText();

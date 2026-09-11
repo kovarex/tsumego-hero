@@ -21,7 +21,7 @@ class TimeModeController extends AppController
 		return $this->redirect("/timeMode/play");
 	}
 
-	public function play(): mixed
+	public function play($position = null): mixed
 	{
 		if (!Auth::isLoggedIn())
 			return $this->redirect('/users/login');
@@ -34,18 +34,26 @@ class TimeModeController extends AppController
 		if (!$timeMode->currentSession)
 			return $this->redirect('/timeMode/overview');
 
-		$tsumegoID = $timeMode->prepareNextToSolve();
+		$tsumegoID = $position === null
+			? $timeMode->prepareWhateverIsLeft()
+			: $timeMode->prepareToSolve((int) $position);
 		if ($timeModeSessionID = $timeMode->checkFinishSession())
 			return $this->redirect("/timeMode/result/" . $timeModeSessionID);
-		assert($tsumegoID != null);
+
+		// Nothing left to play, but the session cannot be scored yet because a result is
+		// still on its way.
+		if ($tsumegoID == null)
+			return $this->renderWaitingForTheResult();
 
 		$setConnection = ClassRegistry::init('SetConnection')->findDisplaySetConnection($tsumegoID);
 		if (!$setConnection)
 			throw new Exception('Time mode session contains tsumego without a set connection.');
 
 		$this->set('timeMode', $timeMode);
-		$this->set('nextLink', '/timeMode/skip/');
-		$this->set('noSkipNextLink', $timeMode->currentWillBeLast() ? '/timeMode/result/' . $timeMode->currentSession['TimeModeSession']['id'] : '/timeMode/play');
+		$this->set('nextLink', '/timeMode/skip/' . $timeMode->servedOrder);
+		$this->set('noSkipNextLink', $timeMode->currentWillBeLast()
+			? '/timeMode/result/' . $timeMode->currentSession['TimeModeSession']['id']
+			: '/timeMode/play/' . ($timeMode->servedOrder + 1));
 		$play  = new Play(function ($name, $value) {
 			$this->set($name, $value);
 		});
@@ -54,11 +62,15 @@ class TimeModeController extends AppController
 		return null;
 	}
 
-	public function skip(): mixed
+	public function skip($position = null): mixed
 	{
+		if (!$position)
+			return $this->redirect('/timeMode/play');
+
 		$timeMode = new TimeMode();
-		$timeMode->skip();
-		return $this->play();
+		$timeMode->skip((int) $position);
+
+		return $this->redirect('/timeMode/play/' . ((int) $position + 1));
 	}
 
 	private function getRanksWithTsumegoCount()
@@ -238,6 +250,17 @@ ORDER BY MIN(rating);");
 		return $unlock;
 	}
 
+	/**
+	 * A session that is still being played has no score yet, so there is nothing to show
+	 */
+	private function renderWaitingForTheResult(): mixed
+	{
+		$this->set('_title', 'Time Mode - Result');
+		$this->set('_page', 'time mode');
+		$this->render('waiting');
+		return null;
+	}
+
 	private function deduceFinishedSession($passedSessionID, TimeMode $timeMode): ?array
 	{
 		if ($finishedSessionID = $timeMode->checkFinishSession())
@@ -257,6 +280,9 @@ ORDER BY MIN(rating);");
 			return $this->redirect("/users/login");
 
 		$timeMode = new TimeMode();
+		if ($timeModeSessionID && $timeMode->hasNoResultYet((int) $timeModeSessionID))
+			return $this->renderWaitingForTheResult();
+
 		$finishedSession = $this->deduceFinishedSession($timeModeSessionID, $timeMode);
 
 		$this->loadModel('Tsumego');
