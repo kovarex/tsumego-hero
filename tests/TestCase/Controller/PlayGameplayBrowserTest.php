@@ -1034,6 +1034,59 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 			'The position must count the problem being solved, not the recorded ones');
 	}
 
+	/**
+	 * The bonus seconds of the moves played must not eat the time the player spent before
+	 * their first move, otherwise a quick solve would always score the maximum.
+	 */
+	public function testTheTimeBeforeTheFirstMoveIsNotEatenByTheBonusSeconds(): void
+	{
+		$browser = Browser::instance();
+		$context = $this->startTimeMode($browser);
+
+		// a move can be played before the player does anything, which is what the bonus is for
+		$browser->driver->executeScript('addTimeForMovePlayed();');
+
+		$browser->waitUntilJs('elapsedSeconds() >= 2');
+		$browser->clickBoard(1, 1);
+		$browser->waitUntilJs('window.besogo && besogo.editor.getCurrent().moveNumber >= 2');
+
+		$browser->driver->executeScript('addTimeForMovePlayed(); addTimeForMovePlayed();');
+		$browser->clickBoard(2, 1);
+		$browser->waitUntilJs('window.problemSolved === true');
+		$browser->waitForSubmitResult();
+
+		$attempt = ClassRegistry::init('TimeModeAttempt')->find('first', [
+			'conditions' => ['time_mode_session_id' => $context->timeModeSessions[0]['id'], 'order' => 1]]);
+		$this->assertGreaterThanOrEqual(2, (float) $attempt['TimeModeAttempt']['seconds'],
+			'A solve is worth at least the time it took to play the first move');
+		$this->assertLessThan(99, (float) $attempt['TimeModeAttempt']['points'],
+			'The bonus seconds cannot buy the maximum score');
+	}
+
+	/**
+	 * The measured time comes from the clock, not from the timer that draws the countdown, so a
+	 * tab in the background that hardly ever ticks cannot slow the game down.
+	 */
+	public function testTheRecordedTimeDoesNotDependOnTheTimer(): void
+	{
+		$browser = Browser::instance();
+		$context = $this->startTimeMode($browser);
+
+		// A throttled tab gets far fewer ticks, here none at all
+		$browser->driver->executeScript('clearInterval(timeModeTimer.timeModeTimer);');
+		$browser->waitUntilJs('elapsedSeconds() >= 2');
+		$browser->clickBoard(1, 1);
+		$browser->waitUntilJs('window.besogo && besogo.editor.getCurrent().moveNumber >= 2');
+		$browser->clickBoard(2, 1);
+		$browser->waitUntilJs('window.problemSolved === true');
+		$browser->waitForSubmitResult();
+
+		$attempt = ClassRegistry::init('TimeModeAttempt')->find('first', [
+			'conditions' => ['time_mode_session_id' => $context->timeModeSessions[0]['id'], 'order' => 1]]);
+		$this->assertGreaterThanOrEqual(2, (float) $attempt['TimeModeAttempt']['seconds'],
+			'The two seconds without a single tick are part of the recorded time');
+	}
+
 	public function testTimeModeResultPageWaitsForTheLastSolve(): void
 	{
 		$browser = Browser::instance();
@@ -1245,11 +1298,11 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 
 		$browser->get('/timeMode/play');
 		$this->waitForBoard($browser);
-		$tcount = (float) $browser->driver->executeScript('return window.tcount;');
+		$tcount = (float) $browser->driver->executeScript('return timeModeTimer.remaining;');
 		$this->assertLessThan(30, $tcount, 'The problem is served with the little time it has left');
 
 		// the player watches the countdown go to zero
-		$browser->waitUntilJs('document.getElementById("status").textContent.indexOf("Time up") !== -1', 15);
+		$browser->waitUntilJs('document.getElementById("status").textContent.indexOf("Time\'s up!") !== -1', 15);
 		$browser->waitForSubmitResult();
 
 		$attempt = ClassRegistry::init('TimeModeAttempt')->find('first', [

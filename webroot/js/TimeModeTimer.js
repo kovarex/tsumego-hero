@@ -1,31 +1,37 @@
 class TimeModeTimer
 {
-	constructor()
+	constructor(secondsToSolve)
 	{
+		this.secondsToSolve = secondsToSolve;
+		this.remaining = secondsToSolve;
+		this.timeModeTimer = null;
 		this.updateTimeModeCaption(); // first initial update on page load
+	}
+
+	start()
+	{
 		this.timeModeTimer = setInterval(() => this.timeModeUpdate(), 100);
 	}
 
 	updateTimeModeCaption()
 	{
-		$("#time-mode-countdown").html(`${Math.floor(tcount/60)}:${(tcount%60).toFixed(1).padStart(4,"0")}`);
+		$("#time-mode-countdown").html(`${Math.floor(this.remaining/60)}:${(this.remaining%60).toFixed(1).padStart(4,"0")}`);
 	}
 
 	timeModeUpdate()
 	{
-		tcount = Math.max(0, tcount - 0.1);
+		this.remaining = Math.max(0, this.secondsToSolve + bonusSeconds - elapsedSeconds());
 		this.updateTimeModeCaption();
 
-		if (tcount == 0)
+		if (this.remaining == 0)
 		{
-			timeUp = true;
 			locked = true;
 			tryAgainTomorrow = true;
-			submitResult(false, seconds, true);
+			submitResult(false, true);
 
-			$("#time-mode-countdown").css("color","#e03c4b");
-			document.getElementById("status").style.color = "#e03c4b";
-			document.getElementById("status").innerHTML = "<h2>Time up</h2>";
+			$("#time-mode-countdown").css("color","var(--feedback-error)");
+			document.getElementById("status").style.color = "var(--feedback-error)";
+			document.getElementById("status").innerHTML = "<h2>Time's up!</h2>";
 			this.stop();
 			toggleBoardLock(true);
 		}

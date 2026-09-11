@@ -626,13 +626,14 @@
 	var msgMCselected = false;
 	var msgSEselected = false;
 	var playedWrong = false;
-	var seconds = 0;
+	var clockStart = 0;
+	var bonusSeconds = 0;
+	var timeToFirstClick = null;
 	var freePlayMode = false;
 	var reviewEnabled = false;
 	var theComment = "";
 	var mode = <?php echo Auth::getWithDefault('mode', 1); ?>;
 	var timeModeEnabled = true;
-	var timeUp = false;
 	var authorProblem = false;
 	var tsumegoID = <?php echo $t['Tsumego']['id'] ?>;
 	var playGreenColor = '<?php echo $playGreenColor; ?>';
@@ -640,12 +641,11 @@
 	var failAlreadyReported = false;
 	window._submitResultPromise = null;
 
-	var tcount = <?php echo $timeMode->secondsToSolve; ?>;
 	var userXP = <?php echo Auth::getWithDefault('xp', 0); ?>;
 	var previousButtonLink = "<?php echo $previousLink; ?>";
 	var nextButtonLink = "<?php echo $nextLink; ?>";
 	var noSkipNextButtonLink = "<?php echo $noSkipNextLink; ?>";
-	var timeModeTimer = (mode == 3 ? new TimeModeTimer() : null);
+	var timeModeTimer = (mode == 3 ? new TimeModeTimer(<?php echo $timeMode->secondsToSolve; ?>) : null);
 	var setID = <?php echo $set['Set']['id'] ?>;
 	var isMutable = true;
 	var deleteNextMoveGroup = false;
@@ -775,27 +775,22 @@
 	if($requestSolution)
 		echo 'authorProblem = true;';
 	if(Auth::isInTimeMode())
-	{
-		echo 'seconds = 0.0;';
 		echo 'var besogoMode3Next = 0;'; // probably whatever, the id doesn't matter in time mode
-	}
 	?>
 
 
 
-	<?php if(!Auth::isInTimeMode()){ ?>
-
-		function incrementSeconds(){
-			seconds += 1;
+	function elapsedSeconds()
+	{
+		return (performance.now() - clockStart) / 1000;
 	}
-		var secondsx = setInterval(incrementSeconds, 1000);
-	<?php }else{ ?>
 
-		function incrementSeconds(){
-			seconds += 0.1;
+	function startClock()
+	{
+		clockStart = performance.now();
+		if (timeModeTimer)
+			timeModeTimer.start();
 	}
-		var secondsx = setInterval(incrementSeconds, 100);
-	<?php } ?>
 	$(".adminCommentPanel").hide();
 	$(".tsumegoNavi-middle2").hide();
 	$(".tsumegoNavi-middle2").hide();
@@ -1052,7 +1047,7 @@
 		echo '
 				document.getElementById("status").innerHTML = \'<b class="message--locked">This problem is locked until \' + heartResetTime + \'</b>\';
 				tryAgainTomorrow = true;
-				document.getElementById("status").style.color = "#e03c4b";
+				document.getElementById("status").style.color = "var(--feedback-error)";
 				$(".besogo-board").addClass("besogo-board-red-glow");
 				var resetBtn = document.getElementById("besogo-reset-button");
 				if (resetBtn) { resetBtn.id = "besogo-reset-button-inactive"; }';
@@ -1500,12 +1495,10 @@
 
 	function addTimeForMovePlayed(multiplier = 1)
 	{
-		let timeToAdd = <?php echo TimeModeUtil::$SECONDS_ADDED_PER_MOVE_PLAYED; ?> * multiplier;
-		tcount += timeToAdd;
-		seconds -= timeToAdd;
+		bonusSeconds += <?php echo TimeModeUtil::$SECONDS_ADDED_PER_MOVE_PLAYED; ?> * multiplier;
 	}
 
-	function submitResult(solved, secs, timeout)
+	function submitResult(solved, timeout)
 	{
 		if (besogoNoLogin)
 			return;
@@ -1513,7 +1506,7 @@
 			accountWidget.animate(solved);
 		let data = {
 			tsumego_id: tsumegoID,
-			seconds: secs,
+			seconds: Math.max(elapsedSeconds() - bonusSeconds, timeToFirstClick || 0, 0.01),
 			solved: solved,
 		};
 		if (timeout)
@@ -1567,7 +1560,7 @@
 				window.dispatchEvent(new Event('tag-editor-solved'));
 				if (typeof xpStatus !== "undefined" && xpStatus)
 					xpStatus.set('solved', true);
-				submitResult(true, seconds);
+				submitResult(true);
 			}
 			updateCurrentNavigationButton('S');
 			document.getElementById("status").innerHTML = "<h2>Correct!</h2>";
@@ -1606,19 +1599,19 @@
 			{
 				failAlreadyReported = true;
 				misplays++;
-				submitResult(false, seconds);
+				submitResult(false);
 			}
 			// Don't lock board - let user keep trying
 			if (mode != 2)
 			{
 				branch = "no";
-				document.getElementById("status").style.color = "#e03c4b";
-				document.getElementById("status").innerHTML = "<h2>Incorrect</h2>";
+				document.getElementById("status").style.color = "var(--feedback-error)";
+				document.getElementById("status").innerHTML = "<h2>Incorrect!</h2>";
 				$(".besogo-board").addClass("besogo-board-red-glow");
 				if (mode==3)
 				{
 					timeModeEnabled = false;
-					$("#time-mode-countdown").css("color","#e45663");
+					$("#time-mode-countdown").css("color","var(--feedback-error)");
 					toggleBoardLock(true);
 				}
 				noLastMark = true;
@@ -1653,8 +1646,8 @@
 			else
 			{//mode 2 incorrect
 				branch = "no";
-				document.getElementById("status").style.color = "#e03c4b";
-				document.getElementById("status").innerHTML = "<h2>Incorrect</h2>";
+				document.getElementById("status").style.color = "var(--feedback-error)";
+				document.getElementById("status").innerHTML = "<h2>Incorrect!</h2>";
 				noLastMark = true;
 				besogoMode2Solved = true;
 				$(".besogo-board").addClass("besogo-board-red-glow");
@@ -1710,7 +1703,7 @@
 		{
 			misplays++;
 			redrawHearts();
-			submitResult(false, seconds);
+			submitResult(false);
 		}
 		failAlreadyReported = false;
 	}
@@ -1817,6 +1810,13 @@
 	besogo.editor.setAutoPlay(true);
 	besogo.editor.registerAddTimeForMovePlayed(addTimeForMovePlayed);
 	besogo.editor.registerDisplayResult(displayResult);
+	besogo.editor.registerBoardClick(function ()
+	{
+		if (timeToFirstClick === null)
+			timeToFirstClick = elapsedSeconds();
+	});
+
+	startClock();
 	var showComment = function(commentText)
 		{
 			$("#theComment").css("display", commentText.length == 0 ? "none" : "block");

@@ -18,9 +18,7 @@ class PlayResultProcessorComponent extends Component
 	 */
 	public function processResult(int $tsumegoId, bool $solved, float $seconds, bool $timeout): array
 	{
-		// The client sends the time spent minus the bonus seconds of the moves it played,
-		// so a solve that comes right after a move arrives negative
-		$seconds = max(0, $seconds);
+		$seconds = max(0.01, $seconds);
 
 		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoId);
 		if (!$tsumego)

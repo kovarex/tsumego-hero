@@ -41,7 +41,8 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     commentParamList = [],
     displayResult = null,
     showComment = null,
-    addTimeForMovePlayed = null;
+    addTimeForMovePlayed = null,
+    boardClick = null;
 
   return {
     addListener: addListener,
@@ -87,6 +88,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     setSoundEnabled: setSoundEnabled,
     registerDisplayResult: registerDisplayResult,
     registerAddTimeForMovePlayed: registerAddTimeForMovePlayed,
+    registerBoardClick: registerBoardClick,
     resetToStart: resetToStart,
     registerShowComment: registerShowComment,
     displayHoverCoord: displayHoverCoord,
@@ -384,6 +386,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
 
   // Handle click with application of selected tool
   function click(i, j, ctrlKey, shiftKey) {
+    if (boardClick) boardClick(i, j);
     if (!besogo.isEmbedded) boardLockValue = 0;
     if (boardLockValue == 0) {
       if (performingAutoPlay) return;
@@ -793,6 +796,11 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
 	function registerAddTimeForMovePlayed(value)
 	{
 		addTimeForMovePlayed = value;
+	}
+
+	function registerBoardClick(value)
+	{
+		boardClick = value;
 	}
 
   function addToRequired(node, cameFrom) {

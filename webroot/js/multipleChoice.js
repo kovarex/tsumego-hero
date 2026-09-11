@@ -534,7 +534,7 @@ function displayMultipleChoiceResult(num) {
       multipleChoiceEnabled = false;
       //$(".alertBanner").css("background-color", "linear-gradient(rgba(214,70,74,1), rgba(201,95,105,1))");
       $(".toast__banner").addClass("toast__banner--error");
-      $(".toast__banner").html('Incorrect<span class="toast__close">x</span>');
+      $(".toast__banner").html('Incorrect!<span class="toast__close">x</span>');
     }
     $("#multipleChoiceText").html(mText);
     $("#multipleChoiceAlerts").fadeIn(500);

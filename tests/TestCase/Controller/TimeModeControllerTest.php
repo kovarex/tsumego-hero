@@ -110,10 +110,10 @@ class TimeModeControllerTest extends ControllerTestCase
 
 	public function testSolvingAProblemInTimeModeRecordsTheTimeItTook()
 	{
-		// the time the client reports is kept between nothing and the time the problem is given
+		// the time the client reports is kept between a hundredth of a second and the time the problem is given
 		foreach ([
 			['category' => TimeModeUtil::$CATEGORY_BLITZ, 'seconds' => 5, 'recordedSeconds' => 5],
-			['category' => TimeModeUtil::$CATEGORY_BLITZ, 'seconds' => -3, 'recordedSeconds' => 0],
+			['category' => TimeModeUtil::$CATEGORY_BLITZ, 'seconds' => -3, 'recordedSeconds' => 0.01],
 			['category' => TimeModeUtil::$CATEGORY_SLOW_SPEED,
 				'seconds' => TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS * 5,
 				'recordedSeconds' => TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS]] as $reported)
@@ -144,8 +144,8 @@ class TimeModeControllerTest extends ControllerTestCase
 				TimeModeUtil::$ATTEMPT_RESULT_SOLVED,
 				(int) $attempt['TimeModeAttempt']['time_mode_attempt_status_id']);
 			$this->assertSame(
-				$reported['recordedSeconds'],
-				(int) $attempt['TimeModeAttempt']['seconds']);
+				(float) $reported['recordedSeconds'],
+				(float) $attempt['TimeModeAttempt']['seconds']);
 		}
 	}
 
