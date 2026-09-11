@@ -1,6 +1,7 @@
 <?php
 
 App::uses('ForbiddenException', 'Routing/Error');
+App::uses('ScheduleController', 'Controller');
 
 class CronController extends AppController
 {
@@ -20,7 +21,7 @@ class CronController extends AppController
 		$this->dailyTsumegoStatusReset();
 		$this->dailyStalingSolvedTsumegoStatuses();
 		self::createDayRecord();
-		self::publish();
+		ScheduleController::publish();
 		$this->dailyUsersReset();
 		$this->dailyPotionConditionReset();
 		$this->updateSolvedCounts();
@@ -156,61 +157,6 @@ WHERE
 		$achievementCondition['AchievementCondition']['category'] = 'uotd';
 		$achievementCondition['AchievementCondition']['value'] = 1;
 		ClassRegistry::init('AchievementCondition')->save($achievementCondition);
-	}
-
-	public static function publish()
-	{
-		$date = date('Y-m-d', strtotime('today'));
-		$todaysSchedule = ClassRegistry::init('Schedule')->find('all', ['conditions' => ['date' => $date, 'published' => 0]]) ?: [];
-		foreach ($todaysSchedule as $item)
-		{
-			self::publishSingle($item['Schedule']['tsumego_id'], $item['Schedule']['set_id'], $item['Schedule']['date']);
-			$item['Schedule']['published'] = 1;
-			ClassRegistry::init('Schedule')->save($item);
-		}
-	}
-
-	protected static function publishSingle($tsumegoID = null, $to = null, $date = null): void
-	{
-		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID);
-		if (!$tsumego)
-			return;
-		$setConnection = ClassRegistry::init('SetConnection')->findDisplaySetConnection($tsumegoID);
-		if (!$setConnection)
-			return;
-
-		if ($setConnection['SetConnection']['set_id'] != $to)
-		{
-			// UNIQUE(set_id, tsumego_id): moving into a set that already contains
-			// this tsumego would fail, so drop this connection instead.
-			$alreadyInTarget = ClassRegistry::init('SetConnection')->find('first', [
-				'conditions' => ['set_id' => $to, 'tsumego_id' => $tsumegoID],
-			]);
-			if ($alreadyInTarget)
-				ClassRegistry::init('SetConnection')->delete($setConnection['SetConnection']['id']);
-			else
-			{
-				$setConnection['SetConnection']['set_id'] = $to;
-				ClassRegistry::init('SetConnection')->save($setConnection);
-			}
-		}
-
-		// delete tsumego stats
-		$tsumego['Tsumego']['created'] = $date . ' 22:00:00';
-		$tsumego['Tsumego']['solved'] = 0;
-		$tsumego['Tsumego']['failed'] = 0;
-		$tsumego['Tsumego']['userWin'] = 0;
-		$tsumego['Tsumego']['userLoss'] = 0;
-		ClassRegistry::init('Tsumego')->save($tsumego);
-
-		// delete any status made on the tsumego when it was in the sandbox
-		ClassRegistry::init('TsumegoStatus')->deleteAll(['tsumego_id' => $tsumego['Tsumego']['id']]);
-
-		$x = [];
-		$x['PublishDate']['date'] = $date . ' 22:00:00';
-		$x['PublishDate']['tsumego_id'] = $tsumegoID;
-		ClassRegistry::init('PublishDate')->create();
-		ClassRegistry::init('PublishDate')->save($x);
 	}
 
 	private static function updateSolvedCounts()

@@ -53,4 +53,8 @@ class AdminActivityType extends AppModel
 
 	// Delete user
 	public const DELETE_USER = 26;
+
+	// Schedule
+	public const ADD_TO_SCHEDULE = 31;
+	public const CANCEL_SCHEDULE = 32;
 }

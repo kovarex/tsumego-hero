@@ -32,7 +32,7 @@ class PolicyTest extends CakeTestCase
 	public function testAdminPolicyAllowsOnlyAdmins()
 	{
 		$policy = new AdminPolicy();
-		foreach (['canAdminstats', 'canUploads', 'canUserstats', 'canUserstats3', 'canShowPublishSchedule', 'canData'] as $method)
+		foreach (['canAdminstats', 'canUploads', 'canUserstats', 'canUserstats3', 'canData'] as $method)
 		{
 			$this->assertTrue($policy->{$method}($this->identity(true)), $method . ' allows admin');
 			$this->assertFalse($policy->{$method}($this->identity(false)), $method . ' blocks regular user');
