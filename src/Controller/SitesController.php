@@ -10,10 +10,9 @@ class SitesController extends AppController
 	public $helpers = ['Html', 'Form'];
 
 	/**
-	 * @param string|null $var Variable parameter
 	 * @return void
 	 */
-	public function index(?string $var = null)
+	public function index(): void
 	{
 		$this->set('_page', 'home');
 		$this->set('_title', 'Tsumego Hero');
@@ -136,7 +135,7 @@ class SitesController extends AppController
 	 * @param string|null $id
 	 * @return void
 	 */
-	public function view(?string $id = null)
+	public function view(?string $id = null): void
 	{
 		$news = $this->Site->find('all');
 		$this->set('news', $news[$id]);
@@ -145,7 +144,7 @@ class SitesController extends AppController
 	/**
 	 * @return void
 	 */
-	public function impressum()
+	public function impressum(): void
 	{
 		$this->set('_page', 'about');
 		$this->set('_title', 'Tsumego Hero - Legal Notice');
@@ -154,7 +153,7 @@ class SitesController extends AppController
 	/**
 	 * @return void
 	 */
-	public function websitefunctions()
+	public function websitefunctions(): void
 	{
 		$this->set('_page', 'websitefunctions');
 		$this->set('_title', 'Tsumego Hero - Website Functions');
@@ -163,7 +162,7 @@ class SitesController extends AppController
 	/**
 	 * @return void
 	 */
-	public function gotutorial()
+	public function gotutorial(): void
 	{
 		$this->set('_page', 'gotutorial');
 		$this->set('_title', 'Tsumego Hero - Go Tutorial');
@@ -172,7 +171,7 @@ class SitesController extends AppController
 	/**
 	 * @return void
 	 */
-	public function privacypolicy()
+	public function privacypolicy(): void
 	{
 		$this->set('_page', 'privacypolicy');
 		$this->set('_title', 'Tsumego Hero - Privacy Policy');
@@ -181,7 +180,7 @@ class SitesController extends AppController
 	/**
 	 * @return void
 	 */
-	public function about()
+	public function about(): void
 	{
 		$this->set('_page', 'about');
 		$this->set('_title', 'Tsumego Hero - About');
@@ -193,7 +192,7 @@ class SitesController extends AppController
 	 *
 	 * @return void
 	 */
-	public function blank()
+	public function blank(): void
 	{
 		$this->set('_page', 'blank');
 		$this->set('_title', 'Tsumego Hero');

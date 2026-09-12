@@ -11,7 +11,7 @@ class ChangelogController extends AppController
 	 *
 	 * @return void
 	 */
-	public function index()
+	public function index(): void
 	{
 		$this->set('_page', 'changelog');
 		$this->set('_title', 'Changelog');

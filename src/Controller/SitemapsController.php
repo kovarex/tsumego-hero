@@ -24,7 +24,7 @@ class SitemapsController extends AppController
 	 *
 	 * @return void
 	 */
-	public function index()
+	public function index(): void
 	{
 		$cacheKey = 'sitemap_xml';
 		$xml = Cache::read($cacheKey, 'long');

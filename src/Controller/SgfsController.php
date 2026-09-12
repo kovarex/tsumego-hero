@@ -8,7 +8,7 @@ class SgfsController extends AppController
 	 * @param string|null $id
 	 * @return void
 	 */
-	public function view(?string $id = null)
+	public function view(?string $id = null): void
 	{
 		$this->Authorization->authorize('Sgf');
 		$this->set('_page', 'play');

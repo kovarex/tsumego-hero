@@ -44,7 +44,7 @@ class UsersController extends AppController
 	/**
 	 * @return void
 	 */
-	public function resetpassword()
+	public function resetpassword(): void
 	{
 		$this->set('_page', 'user');
 		$this->set('_title', 'Tsumego Hero - Sign In');
@@ -107,7 +107,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	 * @param string|null $uid User ID
 	 * @return void
 	 */
-	public function userstats(?string $uid = null)
+	public function userstats(?string $uid = null): void
 	{
 		$this->Authorization->authorize('Admin');
 		$this->set('_page', 'user');
@@ -160,7 +160,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	 * @param string|null $sid Set ID
 	 * @return void
 	 */
-	public function userstats3(?string $sid = null)
+	public function userstats3(?string $sid = null): void
 	{
 		$this->Authorization->authorize('Admin');
 		$this->set('_page', 'user');
@@ -211,7 +211,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	/**
 	 * @return void
 	 */
-	public function uploads()
+	public function uploads(): void
 	{
 		$this->Authorization->authorize('Admin');
 		$this->set('_page', 'set');
@@ -474,7 +474,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	/**
 	 * @return void
 	 */
-	public function highscore()
+	public function highscore(): void
 	{
 		$this->set('_page', 'levelHighscore');
 		$this->set('_title', 'Tsumego Hero - Highscore');
@@ -510,7 +510,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	/**
 	 * @return void
 	 */
-	public function added_tags()
+	public function added_tags(): void
 	{
 		$this->set('_page', 'tagHighscore');
 		$this->set('_title', 'Tsumego Hero - Added Tags');
@@ -568,7 +568,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	/**
 	 * @return void
 	 */
-	public function time_mode()
+	public function time_mode(): void
 	{
 		$this->set('_page', 'timeHighscore');
 		$this->set('_title', 'Tsumego Hero - Time Highscore');
@@ -716,7 +716,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	/**
 	 * @return void
 	 */
-	public function leaderboard()
+	public function leaderboard(): void
 	{
 		$this->set('_page', 'dailyHighscore');
 		$this->set('_title', 'Tsumego Hero - Daily Highscore');
@@ -912,7 +912,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 	/**
 	 * @return void
 	 */
-	public function authors()
+	public function authors(): void
 	{
 		$this->loadModel('User');
 		$this->loadModel('Tsumego');
@@ -988,7 +988,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 	/**
 	 * @return void
 	 */
-	public function logout()
+	public function logout(): void
 	{
 		Auth::logout();
 	}
@@ -1117,11 +1117,11 @@ ORDER BY category DESC', [$user['User']['id']]));
 		$this->set('u', ['User' => $user]);
 	}
 
-	public function solveHistory(string $userID)
+	public function solveHistory(string $userID): void
 	{
 		$userName = Util::query("SELECT name FROM user WHERE id = ?", [$userID])[0]['name'] ?? 'Unknown';
 		$PAGE_SIZE = 500;
-		$pageIndex = isset($this->params->query['page']) ? max(1, (int) $this->params->query['page']) : 1;
+		$pageIndex = isset($this->request->query['page']) ? max(1, (int) $this->request->query['page']) : 1;
 		$count = Util::query("SELECT COUNT(*) FROM tsumego_attempt where user_id = ?", [$userID])[0]['COUNT(*)'];
 		$offset = ($pageIndex - 1) * $PAGE_SIZE;
 

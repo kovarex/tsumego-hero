@@ -50,10 +50,10 @@ class TsumegosController extends AppController
 
 	private function deduceRelevantSetConnection(array $setConnections): array
 	{
-		if (!isset($this->params->query['sid']))
+		if (!isset($this->request->query['sid']))
 			return $setConnections[0];
 		foreach ($setConnections as $setConnection)
-			if ($setConnection['SetConnection']['set_id'] == $this->params->query['sid'])
+			if ($setConnection['SetConnection']['set_id'] == $this->request->query['sid'])
 				return $setConnection;
 		throw new NotFoundException("Problem doesn't exist in the specified set");
 	}
@@ -327,7 +327,7 @@ class TsumegosController extends AppController
 	}
 
 	#[HttpPost]
-	public function performMerge()
+	public function performMerge(): void
 	{
 		$this->Authorization->authorize('Tsumego');
 		$merger = new TsumegoMerger($this->request->data['master-tsumego-id'], $this->request->data['slave-tsumego-id']);

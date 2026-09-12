@@ -11,7 +11,6 @@ use App\Utility\Preferences;
 use App\Utility\Rating;
 use App\Utility\SetImage;
 use App\Utility\SetsSelector;
-use App\Utility\TsumegoButton;
 use App\Utility\TsumegoButtons;
 use App\Utility\TsumegoFilters;
 use App\Utility\TsumegoUtil;
@@ -25,7 +24,7 @@ class SetsController extends AppController
 	/**
 	 * @return void
 	 */
-	public function sandbox()
+	public function sandbox(): void
 	{
 		$this->Authorization->authorize('Set');
 
@@ -117,7 +116,7 @@ class SetsController extends AppController
 		$this->_showUserSets(Auth::getUserID());
 	}
 
-	public function userSets(string $userId)
+	public function userSets(string $userId): void
 	{
 		$this->_showUserSets((int) $userId);
 	}
@@ -173,7 +172,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 		$this->render('user_sets');
 	}
 
-	public function create()
+	public function create(): void
 	{
 		$this->Authorization->authorize('Set', 'create');
 
@@ -462,7 +461,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 	}
 
 	#[HttpPost]
-	public function delete(?string $id = null)
+	public function delete(?string $id = null): void
 	{
 		$setID = $id ?? ($this->data['Set']['id'] ?? null);
 		if (!$setID)

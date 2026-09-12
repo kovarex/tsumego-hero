@@ -10,7 +10,7 @@ class AchievementsController extends AppController
 	/**
 	 * @return void
 	 */
-	public function index()
+	public function index(): void
 	{
 		$this->renderAchievementsPage(Auth::isLoggedIn() ? Auth::getUser() : null);
 	}
@@ -19,7 +19,7 @@ class AchievementsController extends AppController
 	 * @param string $userId
 	 * @return void
 	 */
-	public function user(string $userId)
+	public function user(string $userId): void
 	{
 		$user = $this->User->findById($userId);
 		if (!$user)
@@ -80,7 +80,7 @@ class AchievementsController extends AppController
 	 * @param string|null $id
 	 * @return void
 	 */
-	public function view(?string $id = null)
+	public function view(?string $id = null): void
 	{
 		$this->set('_page', 'user');
 		$this->set('_title', 'Tsumego Hero - Achievements');

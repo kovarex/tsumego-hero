@@ -61,7 +61,7 @@ class TsumegoIssuesController extends AppController
 	 *
 	 * @return void
 	 */
-	public function index()
+	public function index(): void
 	{
 		$this->set('_title', 'Tsumego Hero - Issues');
 		$this->set('_page', 'issues');

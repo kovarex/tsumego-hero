@@ -9,7 +9,7 @@ use App\Attribute\HttpPost;
 
 class TagsController extends AppController
 {
-	public function add()
+	public function add(): void
 	{
 		$this->Authorization->authorize('Tag', 'add');
 		$allTags = $this->getAllTags();
@@ -59,7 +59,7 @@ class TagsController extends AppController
 	 * @param string|null $id
 	 * @return void
 	 */
-	public function view(?string $id = null)
+	public function view(?string $id = null): void
 	{
 		$tn = $this->Tag->findById($id);
 		if (!$tn)
@@ -77,7 +77,7 @@ class TagsController extends AppController
 	 * @param string $id User ID
 	 * @return void
 	 */
-	public function user(string $id)
+	public function user(string $id): void
 	{
 		$u = $this->User->findById($id);
 		if (!$u)
@@ -194,7 +194,7 @@ class TagsController extends AppController
 	 * @return void
 	 */
 	#[HttpPost]
-	public function delete(string $id)
+	public function delete(string $id): void
 	{
 		$this->Authorization->authorize('Tag');
 		$this->loadModel('Tag');
@@ -218,7 +218,7 @@ class TagsController extends AppController
 		$this->set('tn', $tn);
 	}
 
-	public function index() {}
+	public function index(): void {}
 
 	public function acceptTagProposal(string $tagID): CakeResponse
 	{
