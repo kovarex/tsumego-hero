@@ -18,7 +18,7 @@ use App\Utility\ValueGraphRenderer;
  * @var array $dailyResults
  * @var int $deletedTsumegoStatusCount
  * @var int $levelBar
- * @var string $timeGraph
+ * @var array $timeGraph
  * @var array $timeModeRanks
  * @var int $tsumegoCount
  * @var string $tsumegoStatusToRestCount

@@ -6,7 +6,7 @@ use DateTime;
 
 class TimeGraphRenderer
 {
-	public static function render($caption, $id, $input, $value)
+	public static function render(string $caption, string $id, array $input, string $value): void
 	{
 		echo '<div id="' . $id . '" class="timeGraph"></div>';
 		echo '<script>';

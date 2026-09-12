@@ -7,14 +7,14 @@ use SetConnection;
 
 class CommentsRenderer
 {
-	public function __construct(string $name, ?int $userID, $urlParams)
+	public function __construct(string $name, ?int $userID, array $urlParams)
 	{
 		$this->name = $name;
 		$this->userID = $userID;
 		$this->params = $urlParams;
 	}
 
-	private function renderComment($comment, $index)
+	private function renderComment(array $comment, int $index): void
 	{
 		echo '<div class="sandboxComment">';
 		$commentColor = $comment['from_admin'] ? 'admin-text' : '';

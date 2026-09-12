@@ -4,7 +4,7 @@ namespace App\Utility;
 
 class SetEditRenderer
 {
-	public static function renderAddProblemForm($setId, $highestOrder)
+	public static function renderAddProblemForm(int $setId, int $highestOrder): void
 	{
 		echo '<h2 class="set-edit__heading">Add Problem</h2>';
 		echo '<form id="TsumegoViewForm" method="post" action="/sets/createAndAddTsumego/' . $setId . '" enctype="multipart/form-data">';

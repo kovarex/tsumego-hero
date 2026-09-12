@@ -5,7 +5,7 @@
  * @var array $set
  * @var array $setConnection
  * @var array $dailyResults
- * @var bool $urlParams
+ * @var array $urlParams
  */
 
 ?>

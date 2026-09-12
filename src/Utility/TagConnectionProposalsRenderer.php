@@ -8,7 +8,7 @@ use User;
 
 class TagConnectionProposalsRenderer extends DataTableRenderer
 {
-	public function __construct($urlParams)
+	public function __construct(array $urlParams)
 	{
 		$this->count = ClassRegistry::init('TagConnection')->find('count', ['conditions' => ['approved' => 0]]);
 		parent::__construct($urlParams, 'tag_connection_proposals_page', 'New Tags');

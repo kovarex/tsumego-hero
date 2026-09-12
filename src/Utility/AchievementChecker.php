@@ -33,7 +33,7 @@ class AchievementChecker
 		];
 	}
 
-	public function gained($achievementID): void
+	public function gained(int $achievementID): void
 	{
 		if ($this->existingStatuses[$achievementID])
 			return;
@@ -57,7 +57,7 @@ class AchievementChecker
 			$this->existingStatuses[$achievementStatus['AchievementStatus']['achievement_id']] = true;
 	}
 
-	public function unlocked($achievementID): bool
+	public function unlocked(int $achievementID): bool
 	{
 		return isset($this->existingStatuses[$achievementID]);
 	}
@@ -368,7 +368,7 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 		return $this;
 	}
 
-	public function setAchievementSpecial($s = null): AchievementChecker
+	public function setAchievementSpecial(?string $s = null): AchievementChecker
 	{
 		$tsIds = [];
 		$completed = '';
@@ -503,7 +503,7 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 		return $this;
 	}
 
-	public function checkSetAchievements($sid = null, $setRating = 0): AchievementChecker
+	public function checkSetAchievements(int $sid = 0, float|int $setRating = 0): AchievementChecker
 	{
 		$tNum = count(TsumegoUtil::collectTsumegosFromSet($sid));
 		$acA = ClassRegistry::init('AchievementCondition')->find('first', [

@@ -4,7 +4,7 @@ namespace App\Utility;
 
 class SetNavigationButtonsInput
 {
-	public function __construct($setFunction)
+	public function __construct(callable $setFunction)
 	{
 		$this->setFunction = $setFunction;
 	}

@@ -8,7 +8,7 @@ use User;
 
 class AdminActivityRenderer extends DataTableRenderer
 {
-	public function __construct($urlParams)
+	public function __construct(array $urlParams)
 	{
 		$this->count = Util::query("SELECT COUNT(*) as total FROM admin_activity")[0]['total'];
 		parent::__construct($urlParams, 'activity_page', 'Admin Activity');

@@ -6,7 +6,7 @@ use User;
 
 class TsumegoAttemptsRenderer extends DataTableRenderer
 {
-	public function __construct($urlParams, int $tsumegoID)
+	public function __construct(array $urlParams, int $tsumegoID)
 	{
 		$this->count = Util::query("SELECT COUNT(*) as total FROM tsumego_attempt WHERE tsumego_id = ?", [$tsumegoID])[0]['total'];
 		parent::__construct($urlParams, 'tsumego_attempts_page', 'Tsumego attempts');

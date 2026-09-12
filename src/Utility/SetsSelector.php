@@ -4,7 +4,7 @@ namespace App\Utility;
 
 class SetsSelector
 {
-	public function __construct($tsumegoFilters)
+	public function __construct(TsumegoFilters $tsumegoFilters)
 	{
 		$this->tsumegoFilters = $tsumegoFilters;
 		if ($this->tsumegoFilters->query == 'tags')
@@ -58,7 +58,7 @@ class SetsSelector
 		}
 	}
 
-	private static function getTagColor($pos)
+	private static function getTagColor(int $pos)
 	{
 		$c = [];
 		$c[0] = 'rgba(217, 135, 135, [o])';

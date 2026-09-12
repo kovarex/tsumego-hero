@@ -6,7 +6,7 @@ use PaginationHelper;
 
 abstract class DataTableRenderer
 {
-	public function __construct($urlParams, $name, $caption)
+	public function __construct(array $urlParams, string $name, string $caption)
 	{
 		$this->name = $name;
 		$this->caption = $caption;
