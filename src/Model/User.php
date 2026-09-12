@@ -9,7 +9,7 @@ class User extends AppModel
 	public const PREF_BOARD_ORIENTATION_RANDOM = 0;
 	public const PREF_BOARD_ORIENTATION_ORIGINAL = 1;
 
-	public function __construct($id = false, $table = null, $ds = null)
+	public function __construct(mixed $id = false, ?string $table = null, ?string $ds = null)
 	{
 		$id['table'] =  'user';
 		parent::__construct($id, $table, $ds);
@@ -53,7 +53,7 @@ class User extends AppModel
 		],
 	];
 
-	public static function renderPremium($user): string
+	public static function renderPremium(array $user): string
 	{
 		$premium = $user['premium'] ?? 0;
 		if ($premium == 2 || $premium == 1)
@@ -61,7 +61,7 @@ class User extends AppModel
 		return '';
 	}
 
-	public static function getHighestRating($user): float
+	public static function getHighestRating(array $user): float
 	{
 		$highestTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('first', [
 			'conditions' => ['user_id' => $user['id']],
@@ -71,7 +71,7 @@ class User extends AppModel
 		return $user['rating'];
 	}
 
-	public static function renderLink($id, $name = null, $externalID = null, $picture = null, $rating = null)
+	public static function renderLink(array|int|string $id, $name = null, $externalID = null, $picture = null, $rating = null)
 	{
 		if (is_array($id))
 		{
@@ -82,7 +82,7 @@ class User extends AppModel
 		return User::renderLinkWithOptionalRank($id, Rating::getReadableRankFromRating($rating), $name, $externalID, $picture);
 	}
 
-	public static function renderLinkWithOptionalRank($id, $rank = '', $name = null, $externalID = null, $picture = null)
+	public static function renderLinkWithOptionalRank(array|int|string $id, $rank = '', $name = null, $externalID = null, $picture = null)
 	{
 		if (is_array($id))
 		{

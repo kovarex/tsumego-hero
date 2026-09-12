@@ -11,19 +11,19 @@ class TsumegoStatus extends AppModel
 	public static string $FORGOTTEN = 'X';
 	public static string $GOLDEN = 'G';
 
-	public function __construct($id = false, $table = null, $ds = null)
+	public function __construct(mixed $id = false, ?string $table = null, ?string $ds = null)
 	{
 		$id['table'] =  'tsumego_status';
 		parent::__construct($id, $table, $ds);
 	}
 
 	// when two statuses are to be merged, we need to decide which one is more valuable to keep for the user
-	public static function less($status1, $status2)
+	public static function less(string $status1, string $status2): bool
 	{
 		return self::value($status1) < self::value($status2);
 	}
 
-	private static function value($status): int
+	private static function value(string $status): int
 	{
 		switch ($status)
 		{

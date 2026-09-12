@@ -18,7 +18,7 @@ class AdminActivity extends AppModel
 		]
 	];
 
-	public static function renderChange($adminActivity)
+	public static function renderChange(array $adminActivity): string
 	{
 		switch ($adminActivity['type'])
 		{

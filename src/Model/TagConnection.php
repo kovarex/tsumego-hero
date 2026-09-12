@@ -5,7 +5,7 @@ use App\Utility\Constants;
 
 class TagConnection extends AppModel
 {
-	public function __construct($id = false, $table = null, $ds = null)
+	public function __construct(mixed $id = false, ?string $table = null, ?string $ds = null)
 	{
 		$id['table'] =  'tag_connection';
 		parent::__construct($id, $table, $ds);

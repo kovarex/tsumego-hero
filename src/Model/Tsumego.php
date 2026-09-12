@@ -4,7 +4,7 @@ use App\Utility\Util;
 
 class Tsumego extends AppModel
 {
-	public function __construct($id = false, $table = null, $ds = null)
+	public function __construct(mixed $id = false, ?string $table = null, ?string $ds = null)
 	{
 		$id['table'] = 'tsumego';
 		parent::__construct($id, $table, $ds);
