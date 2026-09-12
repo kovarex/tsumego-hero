@@ -12,7 +12,7 @@ class SgfParser
 	 * @param string $sgf
 	 * @return SgfBoard
 	 */
-	public static function process(string $sgf, $correctMoves = []): SgfBoard
+	public static function process(string $sgf, array $correctMoves = []): SgfBoard
 	{
 		$boardSize = self::detectBoardSize($sgf);
 		$sgfArr = str_split($sgf);

@@ -11,7 +11,7 @@ class SgfBoard
 	 * @param array{int,int} $info
 	 * @param int $size
 	 */
-	public function __construct(array $stones, array $info, int $size, $correctMoves = [])
+	public function __construct(array $stones, array $info, int $size, array $correctMoves = [])
 	{
 		$this->stones = $stones;
 		$this->correctMoves = $correctMoves;
@@ -19,7 +19,7 @@ class SgfBoard
 		$this->size = $size;
 	}
 
-	public function filterStonesPositions($color): array
+	public function filterStonesPositions(int $color): array
 	{
 		$result = [];
 		foreach ($this->stones as $position => $stone)

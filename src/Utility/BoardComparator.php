@@ -225,7 +225,7 @@ class BoardComparator
 		return new BoardComparisonResult($smallestDiff, SgfBoard::getDifferentStones($aShiftedMirroredColorSwitched, $bStones));
 	}
 
-	public static function compareWithoutCorrectMoves($aStones, $bStones): ?BoardComparisonResult
+	public static function compareWithoutCorrectMoves(array $aStones, array $bStones): ?BoardComparisonResult
 	{
 		$aLowest = SgfBoard::getLowestPosition($aStones);
 		$bLowest = SgfBoard::getLowestPosition($bStones);
