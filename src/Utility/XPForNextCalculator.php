@@ -4,14 +4,14 @@ namespace App\Utility;
 
 class XPForNextCalculator
 {
-	public function __construct($level)
+	public function __construct(int $level)
 	{
 		foreach (Level::getSections() as $section)
 			if ($this->section($level, $section[0], $section[1]))
 				return;
 	}
 
-	public function section($level, $to, $jump): bool
+	public function section(int $level, int $to, int $jump): bool
 	{
 		$steps = min($to, $level) - $this->from;
 		$this->result += $steps * $jump;

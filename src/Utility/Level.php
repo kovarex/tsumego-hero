@@ -19,12 +19,12 @@ class Level
 		return $sections;
 	}
 
-	public static function getXPForNext($level): int
+	public static function getXPForNext(int $level): int
 	{
 		return new XPForNextCalculator($level)->result;
 	}
 
-	private static function sectionSum($level, &$from, $to, $jump, &$result, &$xpIncrease): bool
+	private static function sectionSum(int $level, int &$from, int $to, int $jump, int|float &$result, int &$xpIncrease): bool
 	{
 		$steps = min($to, $level) - $from;
 		$result += $steps * $xpIncrease;
@@ -35,7 +35,7 @@ class Level
 		return $level <= $to;
 	}
 
-	public static function getXpSumToGetLevel($level): int
+	public static function getXpSumToGetLevel(int $level): int
 	{
 		$result = 0;
 		$from = 1;
@@ -47,12 +47,12 @@ class Level
 		return $result;
 	}
 
-	public static function XPAndRatingIsGainedInTsumegoStatus($status)
+	public static function XPAndRatingIsGainedInTsumegoStatus(string $status): bool
 	{
 		return $status != 'S' && $status  != 'C'; // solved or doulbe solved is already rewarded, otherwise ok
 	}
 
-	public static function getOverallXPGained($user)
+	public static function getOverallXPGained(array $user): int
 	{
 		return Level::getXpSumToGetLevel($user['level']) + $user['xp'];
 	}

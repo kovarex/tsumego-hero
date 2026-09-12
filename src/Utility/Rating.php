@@ -89,12 +89,12 @@ class Rating
 		return Rating::getRankMiddleRatingFromRank(Rating::getRankFromReadableRank($readableRank));
 	}
 
-	private static function beta($rating)
+	private static function beta(float $rating): float
 	{
 		return -7 * log(3300 - $rating);
 	}
 
-	public static function calculateRatingChange($rating, $opponentRating, $result, $modifier)
+	public static function calculateRatingChange(float $rating, float $opponentRating, float $result, float $modifier): float
 	{
 		$Se = 1.0 / (1.0 + exp(self::beta($opponentRating) - self::beta($rating)));
 		$con = pow(((3300 - $rating) / 200), 1.6);
@@ -105,7 +105,6 @@ class Rating
 	// changes should be reflected in util.js
 	public static function ratingToXP(float $rating, float $multiplier): int
 	{
-		$bla = intval(ceil(Rating::ratingToXPFloat($rating) * $multiplier));
 		return intval(ceil(Rating::ratingToXPFloat($rating) * $multiplier));
 	}
 
@@ -133,7 +132,7 @@ class Rating
 		return self::getRankMiddleRatingFromReadableRank($input);
 	}
 
-	public static function isReasonableRating(float $rating)
+	public static function isReasonableRating(float $rating): bool
 	{
 		return $rating >= -950 // 30k
 				&& $rating < 3200; // the formula stops working at 3300

@@ -55,7 +55,7 @@ class Preferences
 	 * @param mixed $default Default value if not set
 	 * @return mixed The preference value
 	 */
-	public static function get(string $key, $default = null)
+	public static function get(string $key, mixed $default = null): mixed
 	{
 		self::validateKey($key);
 
@@ -87,7 +87,7 @@ class Preferences
 	 * @param string $key The preference key
 	 * @param mixed $value The value to set
 	 */
-	public static function set(string $key, $value): void
+	public static function set(string $key, mixed $value): void
 	{
 		self::validateKey($key);
 
@@ -127,7 +127,7 @@ class Preferences
 	/**
 	 * Check if a value equals the database default for a key
 	 */
-	private static function isDefaultValue(string $key, $value): bool
+	private static function isDefaultValue(string $key, mixed $value): bool
 	{
 		if (!isset(self::$dbDefaults[$key]))
 			return false;
@@ -151,7 +151,7 @@ class Preferences
 	/**
 	 * Get preference from database (for logged-in users)
 	 */
-	private static function getFromDatabase(string $key, $default = null)
+	private static function getFromDatabase(string $key, mixed $default = null): mixed
 	{
 		$userContribution = ClassRegistry::init('UserContribution')->find('first', [
 			'conditions' => ['user_id' => Auth::getUserID()],
@@ -167,7 +167,7 @@ class Preferences
 	/**
 	 * Set preference in database (for logged-in users)
 	 */
-	private static function setInDatabase(string $key, $value): void
+	private static function setInDatabase(string $key, mixed $value): void
 	{
 		$userId = Auth::getUserID();
 		$userContribution = ClassRegistry::init('UserContribution')->find('first', ['conditions' => ['user_id' => $userId]]);
@@ -190,7 +190,7 @@ class Preferences
 	/**
 	 * Get preference from guest storage (cookies or test memory)
 	 */
-	private static function getFromGuestStorage(string $key, $default = null)
+	private static function getFromGuestStorage(string $key, mixed $default = null): mixed
 	{
 		// In unit tests, use memory storage
 		if (self::isInUnitTest())
@@ -204,7 +204,7 @@ class Preferences
 	/**
 	 * Set preference in guest storage (cookies or test memory)
 	 */
-	private static function setInGuestStorage(string $key, $value): void
+	private static function setInGuestStorage(string $key, mixed $value): void
 	{
 		// In unit tests, use memory storage
 		if (self::isInUnitTest())
