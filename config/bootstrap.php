@@ -38,13 +38,6 @@ if (empty($_SERVER['REQUEST_URI']) && !empty($_SERVER['REDIRECT_URL']))
  */
 require 'functions.php';
 
-// Load custom error handler
-
-// Authorization policies live in src/Policy/
-App::build(['Policy' => [APP . 'Policy' . DS]], App::APPEND);
-
-// Load custom AppView class
-
 // Setup a 'default' cache configuration for use in the application.
 Cache::config('default', ['engine' => 'File']);
 
