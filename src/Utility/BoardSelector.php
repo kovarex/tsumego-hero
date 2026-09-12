@@ -62,7 +62,7 @@ class BoardSelector
 			['name' => 'Grandmaster', 'index' => 30, 'texture' => 'texture55', 'black' => 'blackGalaxy.png', 'white' => 'whiteGalaxy.png']
 		];
 
-	public static $GOLDEN_BOARD = ['name' => 'Golden', 'texture' => 'textureGolden', 'black' => 'black34.png', 'white' => 'white34.png'];
+	public static array $GOLDEN_BOARD = ['name' => 'Golden', 'texture' => 'textureGolden', 'black' => 'black34.png', 'white' => 'white34.png'];
 
 	public static function filterValidBits(int $boardsSelection): int
 	{
@@ -101,5 +101,5 @@ class BoardSelector
 		return self::getBoardInfo($indexes[array_rand($indexes)]);
 	}
 
-	public static $DEFAULT_BOARDS_BITMASK = 0b11111111;
+	public static int $DEFAULT_BOARDS_BITMASK = 0b11111111;
 }

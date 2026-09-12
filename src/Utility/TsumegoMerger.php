@@ -30,7 +30,7 @@ class TsumegoMerger
 		return null;
 	}
 
-	private function mergeSlaveSetConnections()
+	private function mergeSlaveSetConnections(): void
 	{
 		$slaveSetConnectionBrothers = ClassRegistry::init('SetConnection')->find('all', ['conditions' => ['tsumego_id' => $this->slaveTsumegoID]]);
 		foreach ($slaveSetConnectionBrothers as $slaveTsumegoBrother)
@@ -72,7 +72,7 @@ class TsumegoMerger
 		ClassRegistry::init('TsumegoStatus')->save($masterStatus);
 	}
 
-	private function mergeStatuses()
+	private function mergeStatuses(): void
 	{
 		$statusMergeSources = Util::query("
 SELECT
@@ -90,7 +90,7 @@ HAVING
 			$this->mergeStatus($statusMergeSource['tsumego_status_id_1'], $statusMergeSource['tsumego_status_id_2']);
 	}
 
-	private function mergeTsumegoAttempts()
+	private function mergeTsumegoAttempts(): void
 	{
 		$slaveAttempts = ClassRegistry::init('TsumegoAttempt')->find('all', ['conditions' => ['tsumego_id' => $this->slaveTsumegoID]]);
 		foreach ($slaveAttempts as $slaveAttempt)
@@ -100,7 +100,7 @@ HAVING
 		}
 	}
 
-	private function mergeComments()
+	private function mergeComments(): void
 	{
 		$slaveComments = ClassRegistry::init('TsumegoComment')->find('all', ['conditions' => ['tsumego_id' => $this->slaveTsumegoID]]);
 		foreach ($slaveComments as $slaveComment)
@@ -110,7 +110,7 @@ HAVING
 		}
 	}
 
-	private function mergeTagConnections()
+	private function mergeTagConnections(): void
 	{
 		$tagMergeSources = Util::query("
 SELECT
@@ -141,13 +141,13 @@ HAVING
 		}
 	}
 
-	public function mergeTimeModeAttempts()
+	public function mergeTimeModeAttempts(): void
 	{
 		Util::query('UPDATE time_mode_attempt SET tsumego_id = :master_tsumego_id WHERE tsumego_id = :slave_tsumego_id',
 			[':master_tsumego_id' => $this->masterTsumegoID, ':slave_tsumego_id' => $this->slaveTsumegoID]);
 	}
 
-	public function mergeIssues()
+	public function mergeIssues(): void
 	{
 		Util::query('UPDATE tsumego_issue SET tsumego_id = :master_tsumego_id WHERE tsumego_id = :slave_tsumego_id',
 			[':master_tsumego_id' => $this->masterTsumegoID, ':slave_tsumego_id' => $this->slaveTsumegoID]);
@@ -200,6 +200,6 @@ HAVING
 		}
 	}
 
-	private $masterTsumegoID;
-	private $slaveTsumegoID;
+	private int $masterTsumegoID;
+	private int $slaveTsumegoID;
 }

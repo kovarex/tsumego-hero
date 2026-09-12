@@ -34,7 +34,7 @@ class TsumegoButtons extends ArrayObject
 			$this->partitionByParameter($partition, $tsumegoFilters->collectionSize);
 	}
 
-	public static function deriveFrom(TsumegoButtons $other)
+	public static function deriveFrom(TsumegoButtons $other): TsumegoButtons
 	{
 		$result = new TsumegoButtons();
 		$result->highestTsumegoOrder = $other->highestTsumegoOrder;
@@ -44,7 +44,7 @@ class TsumegoButtons extends ArrayObject
 		return $result;
 	}
 
-	public function fill(string $condition, TsumegoFilters $tsumegoFilters, string|int|null $id)
+	public function fill(string $condition, TsumegoFilters $tsumegoFilters, string|int|null $id): void
 	{
 		$queryBuilder = new TsumegoButtonsQueryBuilder($tsumegoFilters, $id);
 		$result = Util::query($queryBuilder->query->str());
@@ -113,7 +113,7 @@ class TsumegoButtons extends ArrayObject
 		});
 	}
 
-	private function updateHighestTsumegoOrder()
+	private function updateHighestTsumegoOrder(): void
 	{
 		$this->highestTsumegoOrder = -1;
 		$this->currentOrder = -1;
@@ -139,7 +139,7 @@ class TsumegoButtons extends ArrayObject
 		return ' #' . ($this->partition + 1);
 	}
 
-	public function exportCurrentAndPreviousLink(callable $setFunction, TsumegoFilters $tsumegoFilters, int $setConnectionID, array $set)
+	public function exportCurrentAndPreviousLink(callable $setFunction, TsumegoFilters $tsumegoFilters, int $setConnectionID, array $set): void
 	{
 		$indexOfCurrent = array_find_key((array) $this, function ($tsumegoButton) use ($setConnectionID) {
 			return $tsumegoButton->setConnectionID == $setConnectionID;

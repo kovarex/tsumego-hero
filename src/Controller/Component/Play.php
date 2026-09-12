@@ -470,5 +470,6 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		return $corners[array_rand($corners)];
 	}
 
+	/** @var callable */
 	private $setFunction;
 }

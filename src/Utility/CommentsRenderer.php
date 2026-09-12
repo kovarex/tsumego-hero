@@ -51,7 +51,7 @@ class CommentsRenderer
 		echo '</div>';
 	}
 
-	public function render()
+	public function render(): void
 	{
 		$parameters = [];
 		$parameters[] = Auth::getUserID();

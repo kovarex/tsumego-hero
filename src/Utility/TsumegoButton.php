@@ -16,7 +16,7 @@ class TsumegoButton
 		$this->sgf = $sgf;
 	}
 
-	public function render()
+	public function render(): void
 	{
 		$num = '<div class="problem-nav__number"' . ($this->isCurrentlyOpened ? ' id="currentNavigationButton"' : '') . '>' . $this->order . '</div>';
 

@@ -4,7 +4,7 @@ namespace App\Utility;
 
 class SimilarSearchResult
 {
-	public $title = '';
-	public $items = [];
-	public $elapsed; // how long the search took in seconds
+	public string $title = '';
+	public array $items = [];
+	public ?float $elapsed = null; // how long the search took in seconds
 }

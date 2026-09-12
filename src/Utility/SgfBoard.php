@@ -81,7 +81,7 @@ class SgfBoard
 		return $result;
 	}
 
-	public static function getStonesFlipedX(array $positions, int $size)
+	public static function getStonesFlipedX(array $positions, int $size): array
 	{
 		$result = [];
 		foreach ($positions as $position => $color)
@@ -89,7 +89,7 @@ class SgfBoard
 		return $result;
 	}
 
-	public static function getStonesFlipedY(array $positions, int $size)
+	public static function getStonesFlipedY(array $positions, int $size): array
 	{
 		$result = [];
 		foreach ($positions as $position => $color)

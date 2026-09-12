@@ -300,7 +300,7 @@ class TsumegoImagesController extends AppController
 	 * @param float $radius Stone radius in pixels
 	 * @param bool $isBlack True for black stone, false for white
 	 */
-	private function _drawStone(\GdImage $img, int $cx, int $cy, float $radius, bool $isBlack)
+	private function _drawStone(\GdImage $img, int $cx, int $cy, float $radius, bool $isBlack): void
 	{
 		// Shadow (slightly offset, darkened board color)
 		$shadowOffset = max(2, (int) ($radius * 0.08));

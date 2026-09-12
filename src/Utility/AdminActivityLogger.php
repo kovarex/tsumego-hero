@@ -42,7 +42,7 @@ class AdminActivityLogger
 	 *   // Simple action without values
 	 *   AdminActivityLogger::log(AdminActivityType::PROBLEM_DELETE, $tsumegoId, $setId);
 	 */
-	public static function log(int $type, string|int|null $tsumegoId = null, string|int|null $setId = null, string|int|float|null $oldValue = null, string|int|float|null $newValue = null)
+	public static function log(int $type, string|int|null $tsumegoId = null, string|int|null $setId = null, string|int|float|null $oldValue = null, string|int|float|null $newValue = null): bool
 	{
 		$userId = Auth::getUserID();
 		if (!$userId)

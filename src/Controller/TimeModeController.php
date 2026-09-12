@@ -76,7 +76,7 @@ class TimeModeController extends AppController
 		return $this->redirect('/timeMode/play/' . ((int) $position + 1));
 	}
 
-	private function getRanksWithTsumegoCount()
+	private function getRanksWithTsumegoCount(): ?array
 	{
 		$ranks = ClassRegistry::init('TimeModeRank')->find('all', ['order' => 'id']);
 		$rankPartOfQuery = '';

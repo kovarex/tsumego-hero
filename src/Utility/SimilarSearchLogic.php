@@ -33,7 +33,7 @@ class SimilarSearchLogic
 		$this->result->title = $set['title'];
 	}
 
-	public function execute()
+	public function execute(): void
 	{
 		$start = microtime(true);
 		$candidates = Util::query("
@@ -119,16 +119,16 @@ LEFT JOIN sgf
 		$this->result->items[] = $item;
 	}
 
-	public $sourceTsumegoID;
+	public int|string $sourceTsumegoID;
 	/** @var TsumegoRow|null */
 	public $sourceTsumego = null;
 	/** @var SetConnectionRow */
 	public $setConnection;
-	public $maxDifference = 5;
-	public $sourceBoard;
-	public $sourceFirstMoveColor;
+	public int $maxDifference = 5;
+	public SgfBoard $sourceBoard;
+	public string $sourceFirstMoveColor;
 	public int $sourceMoveCount;
-	public $sourceStoneCount;
+	public int $sourceStoneCount;
 	public SimilarSearchResult $result;
 	public ?string $sourceSgf = null;
 }

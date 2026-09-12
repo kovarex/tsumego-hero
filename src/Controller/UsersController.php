@@ -67,6 +67,9 @@ class UsersController extends AppController
 then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/' . $randomString);
 	}
 
+	/**
+	 * @return CakeEmail
+	 */
 	public function _getEmailer()
 	{
 		return new CakeEmail();
@@ -326,7 +329,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('tagConnectionProposalsRenderer', new TagConnectionProposalsRenderer($this->params['url']));
 	}
 
-	private function getUserFromNameOrEmail()
+	private function getUserFromNameOrEmail(): ?array
 	{
 		$input = $this->data['username'];
 		if (empty($input))

@@ -63,7 +63,7 @@ class TsumegoFilters
 	 * @param string|null $newValue Optional new value to set
 	 * @return mixed The processed value
 	 */
-	private static function processItem(string $name, mixed $default, ?callable $processToResult = null, ?string $newValue = null)
+	private static function processItem(string $name, mixed $default, ?callable $processToResult = null, ?string $newValue = null): mixed
 	{
 		// Get current value from Preferences (handles both logged-in and guest storage)
 		$stringResult = Preferences::get($name, '');

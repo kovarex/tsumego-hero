@@ -49,7 +49,7 @@ class SitemapsController extends AppController
 	 *
 	 * @return string[]
 	 */
-	private function _generateUrls()
+	private function _generateUrls(): array
 	{
 		$urls = [];
 

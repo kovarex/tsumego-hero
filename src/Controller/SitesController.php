@@ -123,7 +123,7 @@ class SitesController extends AppController
 	 *
 	 * @return void
 	 */
-	public function recentAchievements()
+	public function recentAchievements(): void
 	{
 		$this->autoRender = false;
 		$this->loadModel('AchievementStatus');

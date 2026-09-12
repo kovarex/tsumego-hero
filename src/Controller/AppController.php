@@ -499,5 +499,5 @@ class AppController extends Controller
 		$this->set('changelogTimestamps', ChangelogController::changelogTimestamps());
 	}
 
-	public function afterFilter() {}
+	public function afterFilter(): void {}
 }

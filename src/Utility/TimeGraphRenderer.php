@@ -69,7 +69,7 @@ window.__apexCharts.push(chart);";
 
 	// this is weird, why do we include 3rd party js, we should just put the js on our site
 	// instead of depending on availability of theirs
-	public static function renderScriptInclude()
+	public static function renderScriptInclude(): void
 	{
 		echo '
 <script>

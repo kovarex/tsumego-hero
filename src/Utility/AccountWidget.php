@@ -81,7 +81,7 @@ class AccountWidget
 			<div id="modeSelector" class="' . $modeSelectorClass . '" onclick="accountWidget.switchBarInMenu();"></div>';
 	}
 
-	private static function whatToShow()
+	private static function whatToShow(): string
 	{
 		if (Auth::isInTimeMode())
 			return 'time';

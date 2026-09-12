@@ -6,7 +6,7 @@ class UrlRoute extends CakeRoute
 	 * @param mixed $url
 	 * @return array|false
 	 */
-	public function parse(mixed $url)
+	public function parse(mixed $url): array|false
 	{
 		$params = parent::parse($url);
 		$numberCandidate = substr($url, 1);

@@ -395,11 +395,11 @@ class TimeMode
 
 	public $currentSession;
 	public $rank;
-	public $secondsToSolve = 0; // remaining time
+	public int $secondsToSolve = 0; // remaining time
 	public $overallSecondsToSolve; // the time to solve the problem
-	public $successCount = 0;
-	public $failCount = 0;
-	public $overallCount = 0;
+	public int $successCount = 0;
+	public int $failCount = 0;
+	public int $overallCount = 0;
 	public ?int $currentOrder = null;
 	public ?int $servedOrder = null;
 }
