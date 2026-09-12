@@ -8,7 +8,7 @@ use User;
 
 class Auth
 {
-	public static function init($user = null): void
+	public static function init(?array $user = null): void
 	{
 
 		// a hack to inject login in test environment
@@ -65,7 +65,7 @@ class Auth
 		return Auth::$user ? Auth::$user['id'] : 0;
 	}
 
-	public static function &getUser()
+	public static function &getUser(): array
 	{
 		if (!Auth::$user)
 			throw new Exception("Accessing user for writing when null");
@@ -103,7 +103,7 @@ class Auth
 			throw new Exception("Cannot write unknown user column '{$field}' - it does not exist in the user table schema.");
 	}
 
-	public static function saveUserField(string $field, $value): void
+	public static function saveUserField(string $field, mixed $value): void
 	{
 		assert(Auth::isLoggedIn());
 		self::assertUserFieldExists($field);
@@ -130,7 +130,7 @@ class Auth
 		]);
 	}
 
-	public static function incrementUserField(string $field, $delta): void
+	public static function incrementUserField(string $field, int $delta): void
 	{
 		assert(Auth::isLoggedIn());
 		self::assertUserFieldExists($field);
@@ -150,7 +150,7 @@ class Auth
 	 *
 	 * @return bool Whether the increment was applied (condition still held).
 	 */
-	public static function incrementUserFieldIf(string $field, $delta, array $conditions): bool
+	public static function incrementUserFieldIf(string $field, int $delta, array $conditions): bool
 	{
 		assert(Auth::isLoggedIn());
 		self::assertUserFieldExists($field);
@@ -173,7 +173,7 @@ class Auth
 		Auth::$user = null;
 	}
 
-	public static function getWithDefault($key, $default)
+	public static function getWithDefault(string $key, mixed $default): mixed
 	{
 		if (!Auth::isLoggedIn())
 			return $default;
@@ -200,28 +200,28 @@ class Auth
 		return Auth::getMode() == Constants::$TIME_MODE;
 	}
 
-	public static function XPisGainedInCurrentMode()
+	public static function XPisGainedInCurrentMode(): bool
 	{
 		if (!Auth::isLoggedIn())
 			return false;
 		return Auth::isInLevelMode() || Auth::isInRatingMode();
 	}
 
-	public static function ratingisGainedInCurrentMode()
+	public static function ratingisGainedInCurrentMode(): bool
 	{
 		if (!Auth::isLoggedIn())
 			return false;
 		return Auth::isInLevelMode() || Auth::isInRatingMode();
 	}
 
-	public static function getRemainingHealth()
+	public static function getRemainingHealth(): int
 	{
 		if (!Auth::isLoggedIn())
 			return 1000;
 		return Util::getHealthBasedOnLevel(Auth::getUser()['level']) - Auth::getUser()['damage'];
 	}
 
-	public static function lightMode()
+	public static function lightMode(): int
 	{
 		if (Auth::isLoggedIn())
 			return (Auth::getUser()['lastLight'] == 0) ? self::$LIGHT_MODE : self::$DARK_MODE;
@@ -231,7 +231,7 @@ class Auth
 		return self::$LIGHT_MODE;
 	}
 
-	private static $user = null;
+	private static ?array $user = null;
 	public static int $LIGHT_MODE = 1;
 	public static int $DARK_MODE = 2;
 }

@@ -57,20 +57,20 @@ class Level
 		return Level::getXpSumToGetLevel($user['level']) + $user['xp'];
 	}
 
-	public static function addXP(&$user, $value)
+	public static function addXP(array &$user, int|float $value): void
 	{
 		$user['xp'] += $value;
 		Level::checkLevelUp($user);
 	}
 
-	public static function addXPAsResultOfTsumegoSolving(&$user, $value)
+	public static function addXPAsResultOfTsumegoSolving(array &$user, int|float $value): void
 	{
 		Level::addXP($user, $value);
 		$user['daily_xp'] += $value;
 		$user['daily_solved']++;
 	}
 
-	public static function oldXPSumCode($level): int
+	public static function oldXPSumCode(int $level): int
 	{
 		$startxp = 50;
 		$sumx = 0;
@@ -98,7 +98,7 @@ class Level
 		return $sumx;
 	}
 
-	public static function checkLevelUp(&$user)
+	public static function checkLevelUp(array &$user): void
 	{
 		while (true)
 		{

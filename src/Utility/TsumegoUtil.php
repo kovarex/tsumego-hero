@@ -28,7 +28,7 @@ class TsumegoUtil
 		])], $rows);
 	}
 
-	public static function collectTsumegosFromSet(int $setID, ?array $tsumegoConditions = null)
+	public static function collectTsumegosFromSet(int $setID, ?array $tsumegoConditions = null): array
 	{
 		$scIds = [];
 		$scMap = [];
@@ -56,17 +56,17 @@ class TsumegoUtil
 
 	// Whether the problem is solved for the current mode. In time mode every
 	// problem is presented fresh, so this is false at page load until solved.
-	public static function isSolvedForCurrentMode($tsumego)
+	public static function isSolvedForCurrentMode(array $tsumego): bool
 	{
 		return !Auth::isInTimeMode() && TsumegoUtil::isRecentlySolved($tsumego['Tsumego']['status']);
 	}
 
-	public static function isRecentlySolved($status)
+	public static function isRecentlySolved(?string $status): bool
 	{
 		return $status == TsumegoStatus::$SOLVED || $status == TsumegoStatus::$MASTERED;
 	}
 
-	public static function isSolvedStatus($status)
+	public static function isSolvedStatus(?string $status): bool
 	{
 		return $status == TsumegoStatus::$SOLVED || $status == TsumegoStatus::$MASTERED || $status == TsumegoStatus::$REVIEW;
 	}
