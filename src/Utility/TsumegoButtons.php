@@ -98,9 +98,9 @@ class TsumegoButtons extends ArrayObject
 		$this->filterByPartition($collectionSize);
 	}
 
-	public function partitionByCurrentOne(int $currentIndex, int $collectionSize): void
+	public function partitionByCurrentOne(?int $currentIndex, int $collectionSize): void
 	{
-		$this->partition = (int) floor($currentIndex / $collectionSize);
+		$this->partition = $currentIndex === null ? 0 : (int) floor($currentIndex / $collectionSize);
 
 		if ($collectionSize < count($this))
 			$this->filterByPartition($collectionSize);
