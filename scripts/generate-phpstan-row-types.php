@@ -13,6 +13,13 @@
  *
  * Both PHPStan and Intelephense understand @phpstan-type/@phpstan-import-type.
  *
+ * Column type mapping: int types emit `int|string`, decimal/float/double emit `int|float|string`,
+ * everything else `string`, plus `|null` for nullable columns. The unions are intentional sound
+ * supersets - actual runtime types on PHP 8.4 + mysqlnd are int for integer columns, float for
+ * float/double and string for decimal/text/date types (verify with
+ * scripts/check-pdo-column-types.php). Every column is marked optional (`?:`) because queries
+ * frequently select subsets of columns.
+ *
  * Forum (phpbb_*) tables, phinxlog and cake_sessions are skipped - they are not
  * queried from the application code.
  */
