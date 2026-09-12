@@ -1,7 +1,9 @@
 <?php
 
-App::uses('ClassRegistry', 'Utility');
-App::uses('Auth', 'Utility');
+namespace App\Utility;
+
+use AdminActivityType;
+use ClassRegistry;
 
 /**
  * AdminActivityLogger

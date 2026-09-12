@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\Util;
+
 class Set extends AppModel
 {
 	public function __construct($id = false, $table = null, $ds = null)

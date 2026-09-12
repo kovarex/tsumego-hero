@@ -1,7 +1,9 @@
 <?php
 
-App::uses('Auth', 'Utility');
-App::uses('Util', 'Utility');
+namespace App\Utility;
+
+use ClassRegistry;
+use InvalidArgumentException;
 
 /**
  * Unified Preferences storage class.

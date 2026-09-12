@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Utility;
+
 class BoardComparisonResult
 {
 	public function __construct(int $difference, string $diff)

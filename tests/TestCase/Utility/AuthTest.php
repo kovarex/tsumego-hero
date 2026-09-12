@@ -1,11 +1,12 @@
 <?php
 
-App::uses('Auth', 'Utility');
 
 /**
  * Auth::saveUserField() / saveUserFields() persist only the changed fields,
  * so a single user write cannot clobber other columns.
  */
+use App\Utility\Auth;
+
 class AuthTest extends CakeTestCase
 {
 	public function testSaveUserFieldPersistsOnlyThatField()

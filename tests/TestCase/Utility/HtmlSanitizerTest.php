@@ -1,6 +1,7 @@
 <?php
 
-App::uses('HtmlSanitizer', 'Utility');
+
+use App\Utility\HtmlSanitizer;
 
 class HtmlSanitizerTest extends CakeTestCase
 {

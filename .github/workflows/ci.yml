@@ -77,7 +77,7 @@ jobs:
           restore-keys: ${{ runner.os }}-composer-
 
       - name: Composer install
-        run: composer install --prefer-dist --no-interaction
+        run: composer install --prefer-dist --optimize-autoloader --no-interaction
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
@@ -250,7 +250,7 @@ jobs:
           restore-keys: ${{ runner.os }}-composer-
 
       - name: Composer install
-        run: composer install --prefer-dist --no-interaction
+        run: composer install --prefer-dist --optimize-autoloader --no-interaction
 
       - name: Run PHPStan
         run: composer stan -- --error-format=github

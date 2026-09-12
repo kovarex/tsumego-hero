@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\Auth;
+
 /**
  * React Issues List Mount Point
  *

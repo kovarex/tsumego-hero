@@ -1,6 +1,5 @@
 <?php
 
-use Facebook\WebDriver\WebDriverBy;
 
 class SandboxSgfUploadTest extends TestCaseWithAuth
 {

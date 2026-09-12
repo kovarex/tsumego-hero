@@ -1,10 +1,7 @@
 <?php
 
-App::uses('Achievement', 'Model');
-App::uses('AppController', 'Controller');
-App::uses('HeroPowers', 'Utility');
-App::uses('AchievementTestCase', 'TestCase/Achievement');
-App::uses('ContextPreparator', 'Test');
+use App\Utility\AchievementChecker;
+use App\Utility\HeroPowers;
 
 class SprintMiscAchievementTest extends AchievementTestCase
 {

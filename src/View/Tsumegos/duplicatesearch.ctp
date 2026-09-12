@@ -1,5 +1,9 @@
 <?php
 
+use App\Utility\Auth;
+use App\Utility\SimilarSearchResult;
+use App\Utility\TsumegoButton;
+
 /**
  * @var View $this
  * @var SimilarSearchResult $result

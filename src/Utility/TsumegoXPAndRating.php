@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Utility;
+
 class TsumegoXPAndRating
 {
 	public function __construct(array $tsumego, string $status)

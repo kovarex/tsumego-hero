@@ -1,11 +1,12 @@
 <?php
 
 use PHPUnitRetry\RetryTrait;
-
 /**
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
+use App\Utility\Util;
+
 class JavaScriptErrorTrackingTest extends CakeTestCase
 {
 	use RetryTrait;

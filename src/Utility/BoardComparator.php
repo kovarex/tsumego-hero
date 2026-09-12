@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/BoardComparisonResult.php';
+namespace App\Utility;
 
 class BoardComparator
 {

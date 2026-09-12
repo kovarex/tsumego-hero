@@ -1,7 +1,5 @@
 <?php
 
-App::uses('BasePolicy', 'Policy');
-
 /**
  * Tsumego-level authorization. All tsumego management actions are admin-only.
  */

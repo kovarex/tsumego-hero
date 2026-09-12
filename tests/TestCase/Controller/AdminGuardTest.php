@@ -1,12 +1,10 @@
 <?php
 
-App::uses('ForbiddenException', 'Routing/Error');
-App::uses('UnauthorizedException', 'Routing/Error');
-App::uses('Constants', 'Utility');
-
 /**
  * Server-side auth guards: anonymous -> 401, logged-in-without-permission -> 403.
  */
+use App\Utility\Constants;
+
 class AdminGuardTest extends ControllerTestCase
 {
 	// ── UsersController admin pages ──

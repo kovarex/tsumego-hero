@@ -1,9 +1,5 @@
 <?php
 
-App::uses('ForbiddenException', 'Routing/Error');
-App::uses('UnauthorizedException', 'Routing/Error');
-App::uses('NotFoundException', 'Routing/Error');
-
 class SgfControllerFetchTest extends ControllerTestCase
 {
 	public function testFetchRequiresLogin()

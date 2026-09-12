@@ -2,9 +2,7 @@
 
 declare(strict_types=1);
 
-require_once(__DIR__ . "/BoardBounds.php");
-require_once(__DIR__ . "/BoardPosition.php");
-require_once(__DIR__ . "/SgfBoard.php");
+namespace App\Utility;
 
 class SgfParser
 {

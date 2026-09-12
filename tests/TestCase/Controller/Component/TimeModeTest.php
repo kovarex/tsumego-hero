@@ -1,10 +1,11 @@
 <?php
 
-App::uses('Auth', 'Utility');
-App::uses('TimeModeUtil', 'Utility');
-App::uses('RatingBounds', 'Utility');
-App::uses('TimeMode', 'Utility');
-
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\Rating;
+use App\Utility\TimeMode;
+use App\Utility\TimeModeUtil;
+use App\Utility\Util;
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverExpectedCondition;
 

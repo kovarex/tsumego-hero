@@ -1,7 +1,5 @@
 <?php
 
-App::uses('BasePolicy', 'Policy');
-
 /**
  * Comment deletion: the author or an admin may delete a comment.
  */

@@ -1,7 +1,5 @@
 <?php
 
-App::uses('AppHelper', 'View/Helper');
-
 /**
  * HighscoreHelper - Renders highscore tables with standardized layout.
  *
@@ -10,6 +8,8 @@ App::uses('AppHelper', 'View/Helper');
  *
  * Gap rows (⋮) and self-view highlighting are handled automatically.
  */
+use App\Utility\Auth;
+
 class HighscoreHelper extends AppHelper
 {
 	/**

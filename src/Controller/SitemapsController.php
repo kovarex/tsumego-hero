@@ -7,6 +7,8 @@
  *
  * @link https://www.sitemaps.org/protocol.html
  */
+use App\Utility\Util;
+
 class SitemapsController extends AppController
 {
 	/**

@@ -1,7 +1,5 @@
 <?php
 
-App::uses('Achievement', 'Model');
-
 class SolvedCountAchievementTest extends AchievementTestCase
 {
 	public function testAchievement1UnlocksAt1000Solved()

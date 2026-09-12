@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Utility;
+
 class TimeModeUtil
 {
 	public static int $PROBLEM_COUNT = 10;

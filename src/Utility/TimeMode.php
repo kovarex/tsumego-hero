@@ -1,10 +1,12 @@
 <?php
 
-App::uses('TimeModeUtil', 'Utility');
-App::uses('RatingBounds', 'Utility');
-App::uses('ForbiddenException', 'Routing/Error');
-App::uses('InternalErrorException', 'Routing/Error');
-App::uses('NotFoundException', 'Routing/Error');
+namespace App\Utility;
+
+use ClassRegistry;
+use DateTime;
+use ForbiddenException;
+use InternalErrorException;
+use NotFoundException;
 
 class TimeMode
 {

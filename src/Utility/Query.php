@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Utility;
+
 class Query
 {
 	public function __construct($query)

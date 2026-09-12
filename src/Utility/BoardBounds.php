@@ -1,6 +1,6 @@
 <?php
 
-require_once(__DIR__ . "/IntegerBounds.php");
+namespace App\Utility;
 
 class BoardBounds
 {

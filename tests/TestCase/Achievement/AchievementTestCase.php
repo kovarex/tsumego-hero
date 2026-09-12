@@ -1,13 +1,16 @@
 <?php
 
 use PHPUnitRetry\RetryTrait;
-
 /**
  * Base class for all achievement tests.
  *
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
+use App\Utility\AchievementChecker;
+use App\Utility\Auth;
+use App\Utility\TsumegoUtil;
+
 abstract class AchievementTestCase extends ControllerTestCase
 {
 	use RetryTrait;

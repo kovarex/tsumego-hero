@@ -1,7 +1,5 @@
 <?php
 
-App::uses('BasePolicy', 'Policy');
-
 /**
  * Admin-only actions. "Only admin" is one method per action, like CakePHP 5.
  */

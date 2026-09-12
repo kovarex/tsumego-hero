@@ -1,6 +1,6 @@
 <?php
 
-App::uses('NotFoundException', 'Routing/Error');
+use App\Utility\Auth;
 
 class AchievementsController extends AppController
 {

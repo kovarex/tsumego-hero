@@ -1,5 +1,8 @@
 <?php
 
+use App\Utility\Auth;
+use App\Utility\CookieFlash;
+
 /**
  * @var View $this
  * @var bool $sent

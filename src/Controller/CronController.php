@@ -1,6 +1,6 @@
 <?php
 
-App::uses('ForbiddenException', 'Routing/Error');
+use App\Utility\Util;
 
 class CronController extends AppController
 {

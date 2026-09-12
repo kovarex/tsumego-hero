@@ -1,6 +1,8 @@
 <?php
 
-App::uses('DataTableRenderer', 'Utility');
+namespace App\Utility;
+
+use User;
 
 class TagProposalsRenderer extends DataTableRenderer
 {

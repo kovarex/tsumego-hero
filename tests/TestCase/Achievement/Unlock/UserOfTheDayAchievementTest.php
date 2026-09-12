@@ -1,10 +1,5 @@
 <?php
 
-App::uses('Achievement', 'Model');
-App::uses('AppController', 'Controller');
-App::uses('AchievementTestCase', 'TestCase/Achievement');
-App::uses('ContextPreparator', 'Test');
-
 /**
  * Test Achievement::USER_OF_THE_DAY
  *

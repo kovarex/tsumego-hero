@@ -1,7 +1,5 @@
 <?php
 
-App::uses('ExceptionRenderer', 'Error');
-
 class AppErrorHandler extends ExceptionRenderer
 {
 	private function renderError($error)

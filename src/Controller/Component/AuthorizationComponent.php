@@ -1,9 +1,5 @@
 <?php
 
-App::uses('Component', 'Controller');
-App::uses('ForbiddenException', 'Routing/Error');
-App::uses('UnauthorizedException', 'Routing/Error');
-
 /**
  * Shim of CakePHP 5's AuthorizationComponent. The call site is identical:
  * $this->Authorization->authorize('Admin') -> AdminPolicy::canAdminstats.
@@ -16,6 +12,8 @@ App::uses('UnauthorizedException', 'Routing/Error');
  * - Not logged in        -> UnauthorizedException (401)
  * - Logged in, no grant  -> ForbiddenException (403)
  */
+use App\Utility\Auth;
+
 class AuthorizationComponent extends Component
 {
 	public function authorize($resource, $action = null): void
@@ -47,7 +45,6 @@ class AuthorizationComponent extends Component
 			$entity = null;
 		}
 		$method = 'can' . ucfirst($action); // action is already camelCase, no Inflector
-		App::uses($class, 'Policy');
 		if (!method_exists($class, $method))
 			throw new RuntimeException("Missing policy method {$class}::{$method}");
 		$identity = Auth::getIdentity();

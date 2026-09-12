@@ -1,6 +1,8 @@
 <?php
 
-App::uses('TsumegoMerger', 'Utility');
+
+use App\Utility\Constants;
+use App\Utility\TsumegoMerger;
 
 class FavoritesViewTest extends TestCaseWithAuth
 {

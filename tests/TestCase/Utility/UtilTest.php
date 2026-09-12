@@ -1,6 +1,7 @@
 <?php
 
-App::uses('Util', 'Utility');
+
+use App\Utility\Util;
 
 class UtilTest extends CakeTestCase
 {

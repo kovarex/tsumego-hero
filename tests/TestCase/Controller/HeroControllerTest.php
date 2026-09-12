@@ -1,7 +1,5 @@
 <?php
 
-App::uses('ForbiddenException', 'Routing/Error');
-
 class HeroControllerTest extends ControllerTestCase
 {
 	public function testSprintRequiresLevel()

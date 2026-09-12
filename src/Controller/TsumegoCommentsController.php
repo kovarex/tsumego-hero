@@ -1,12 +1,8 @@
 <?php
 
-App::uses('ForbiddenException', 'Routing/Error');
-App::uses('NotFoundException', 'Routing/Error');
-App::uses('UnprocessableEntityException', 'Lib/Error');
-
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
-
+use App\Lib\Error\UnprocessableEntityException;
 /**
  * Controller for managing tsumego comments (CRUD operations).
  *
@@ -14,6 +10,9 @@ use App\Attribute\HttpPost;
  * Comments can be standalone or associated with a TsumegoIssue.
 
  */
+use App\Utility\Auth;
+use App\Utility\Util;
+
 class TsumegoCommentsController extends AppController
 {
 	/**

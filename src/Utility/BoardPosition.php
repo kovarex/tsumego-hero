@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Utility;
+
 // the current range of board position is -31 to +31
 // the negative values is to support different transformations related to board comparisons
 class BoardPosition

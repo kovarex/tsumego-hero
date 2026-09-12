@@ -1,5 +1,11 @@
 <?php
 
+namespace App\Utility;
+
+use ClassRegistry;
+use Exception;
+use PDO;
+
 class Util
 {
 	public static function setCookie($name, $value)

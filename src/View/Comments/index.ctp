@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\CommentsRenderer;
+
 /**
  * @var View $this
  * @var CommentsRenderer $allComments

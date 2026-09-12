@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Utility;
+
 class ValueGraphRenderer
 {
 	public static function render($caption, $id, $structure, $input, $categoryName, $reverseOrder = false)

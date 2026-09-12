@@ -1,18 +1,16 @@
 <?php
 
-App::uses('SetNavigationButtonsInput', 'Utility');
-App::uses('TsumegoButton', 'Utility');
-App::uses('TsumegoButtons', 'Utility');
-App::uses('TsumegoXPAndRating', 'Utility');
-App::uses('ForbiddenException', 'Routing/Error');
-App::uses('BasePolicy', 'Policy');
-App::uses('SetPolicy', 'Policy');
-App::uses('TsumegoPolicy', 'Policy');
-App::uses('AdminActivityLogger', 'Utility');
-App::uses('AdminActivityType', 'Model');
-App::uses('User', 'Model');
-App::uses('SgfParser', 'Utility');
-App::uses('NotFoundException', 'Routing/Error');
+use App\Utility\AdminActivityLogger;
+use App\Utility\Auth;
+use App\Utility\BoardSelector;
+use App\Utility\Constants;
+use App\Utility\SetNavigationButtonsInput;
+use App\Utility\SgfParser;
+use App\Utility\TsumegoButtons;
+use App\Utility\TsumegoFilters;
+use App\Utility\TsumegoUtil;
+use App\Utility\TsumegoXPAndRating;
+use App\Utility\Util;
 
 class Play
 {

@@ -7,6 +7,8 @@
  * Mirrors CakePHP 5's policy shape: methods receive ($user, $resource = null),
  * $user is null for anonymous users.
  */
+use App\Utility\Constants;
+
 abstract class BasePolicy
 {
 	/**

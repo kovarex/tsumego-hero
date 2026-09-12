@@ -1,19 +1,17 @@
 <?php
 
-App::uses('TsumegoIssue', 'Model');
-App::uses('BadRequestException', 'Routing/Error');
-App::uses('ForbiddenException', 'Routing/Error');
-App::uses('NotFoundException', 'Routing/Error');
-App::uses('UnprocessableEntityException', 'Lib/Error');
-
 use App\Attribute\HttpPost;
-
+use App\Lib\Error\UnprocessableEntityException;
 /**
  * Controller for managing tsumego issues.
  *
  * Issues are reports about problems with tsumego solutions (missing moves, wrong answers, etc.).
  * Each issue contains one or more comments discussing the problem.
  */
+use App\Utility\Auth;
+use App\Utility\Query;
+use App\Utility\Util;
+
 class TsumegoIssuesController extends AppController
 {
 	/**

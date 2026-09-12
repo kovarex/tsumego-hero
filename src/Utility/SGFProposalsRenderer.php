@@ -1,7 +1,9 @@
 <?php
 
-App::uses('DataTableRenderer', 'Utility');
-App::uses('SetConnection', 'Model');
+namespace App\Utility;
+
+use SetConnection;
+use User;
 
 class SGFProposalsRenderer extends DataTableRenderer
 {

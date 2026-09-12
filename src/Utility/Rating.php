@@ -1,8 +1,6 @@
 <?php
 
-use function PHPUnit\Framework\isNull;
-
-App::uses('RatingParseException', 'Utility');
+namespace App\Utility;
 
 class Rating
 {

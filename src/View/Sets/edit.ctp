@@ -1,5 +1,9 @@
 <?php
 
+use App\Utility\Rating;
+use App\Utility\SetEditRenderer;
+use App\Utility\TsumegoButtons;
+
 /**
  * @var View $this
  * @var bool $allArActive

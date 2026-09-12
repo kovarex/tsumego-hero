@@ -1,6 +1,7 @@
 <?php
 
-App::uses('RatingBounds', 'Utility');
+
+use App\Utility\RatingBounds;
 
 class RatingBoundsTest extends CakeTestCase
 {

@@ -1,7 +1,5 @@
 <?php
 
-App::uses('View', 'View');
-
 /**
  * Tests for the generic Open Graph meta element renderer.
  */

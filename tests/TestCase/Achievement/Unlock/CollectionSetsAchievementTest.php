@@ -1,9 +1,5 @@
 <?php
 
-App::uses('Achievement', 'Model');
-App::uses('AchievementTestCase', 'TestCase/Achievement');
-App::uses('ContextPreparator', 'TestCase');
-
 /**
  * Test Collection Sets Achievements (IDs 47-52)
  *

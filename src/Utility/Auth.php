@@ -1,7 +1,10 @@
 <?php
 
-App::uses('Constants', 'Utility');
-App::uses('JwtAuth', 'Utility');
+namespace App\Utility;
+
+use ClassRegistry;
+use Exception;
+use User;
 
 class Auth
 {

@@ -1,8 +1,5 @@
 <?php
 
-require_once(__DIR__ . '/TestCaseWithAuth.php');
-require_once(__DIR__ . '/../../ContextPreparator.php');
-
 class RecentAchievementsTest extends TestCaseWithAuth
 {
 	public function testGetRecentReturnsResults(): void

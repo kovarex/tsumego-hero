@@ -1,5 +1,12 @@
 <?php
 
+use App\Utility\Auth;
+use App\Utility\HtmlSanitizer;
+use App\Utility\Rating;
+use App\Utility\TsumegoButton;
+use App\Utility\TsumegoButtons;
+use App\Utility\TsumegoFilters;
+
 /**
  * @var View $this
  * @var array $acA

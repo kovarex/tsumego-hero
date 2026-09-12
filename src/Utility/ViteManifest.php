@@ -1,5 +1,9 @@
 <?php
 
+namespace App\Utility;
+
+use RuntimeException;
+
 /**
  * ViteManifest
  *

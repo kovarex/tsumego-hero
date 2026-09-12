@@ -1,13 +1,10 @@
 <?php
 
 use Facebook\WebDriver\WebDriverBy;
-use Facebook\WebDriver\WebDriverKeys;
-use Facebook\WebDriver\WebDriverWait;
-use Facebook\WebDriver\Exception\TimeoutException;
-
-App::uses('NotFoundException', 'Routing/Error');
-App::uses('User', 'Model');
-App::uses('Constants', 'Utility');
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\TsumegoUtil;
+use App\Utility\Util;
 
 class TsumegosControllerTest extends TestCaseWithAuth
 {

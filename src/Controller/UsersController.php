@@ -1,22 +1,17 @@
 <?php
 
-App::uses('CakeEmail', 'Network/Email');
-App::uses('Constants', 'Utility');
-App::uses('Validation', 'Utility');
-App::uses('SgfParser', 'Utility');
-App::uses('AdminActivityLogger', 'Utility');
-App::uses('SGFProposalsRenderer', 'Utility');
-App::uses('TagConnectionProposalsRenderer', 'Utility');
-App::uses('AdminActivityRenderer', 'Utility');
-App::uses('SGFProposalsRenderer', 'Utility');
-App::uses('TagProposalsRenderer', 'Utility');
-App::uses('AdminActivityType', 'Model');
-App::uses('NotFoundException', 'Routing/Error');
-App::uses('CookieFlash', 'Utility');
-
+use App\Utility\AdminActivityLogger;
+use App\Utility\AdminActivityRenderer;
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\CookieFlash;
+use App\Utility\SGFProposalsRenderer;
+use App\Utility\TagConnectionProposalsRenderer;
+use App\Utility\TagProposalsRenderer;
+use App\Utility\TimeModeUtil;
+use App\Utility\TsumegoUtil;
+use App\Utility\Util;
 use App\Attribute\HttpPost;
-
-App::uses('SetConnection', 'Model');
 
 class UsersController extends AppController
 {

@@ -1,6 +1,6 @@
 <?php
 
-App::uses('AppController', 'Controller');
+use App\Utility\Util;
 
 class AchievementStatus extends AppModel
 {

@@ -1,6 +1,9 @@
 <?php
 
-App::uses('SetConnection', 'Model');
+namespace App\Utility;
+
+use PaginationHelper;
+use SetConnection;
 
 class CommentsRenderer
 {

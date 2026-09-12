@@ -1,16 +1,14 @@
 <?php
 
-use Facebook\WebDriver\Exception\WebDriverException;
 use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Facebook\WebDriver\Firefox\FirefoxOptions;
 use Facebook\WebDriver\Chrome\ChromeOptions;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
 use Facebook\WebDriver\WebDriverBy;
-use Facebook\WebDriver\WebDriverExpectedCondition;
 use Facebook\WebDriver\WebDriverWait;
 use Facebook\WebDriver\Interactions\WebDriverActions;
-
-App::uses('Util', 'Utility');
+use App\Utility\Auth;
+use App\Utility\Util;
 
 class Browser
 {

@@ -1,6 +1,9 @@
 <?php
 
-App::uses('TsumegoButtonsQueryBuilder', 'Utility');
+namespace App\Utility;
+
+use ArrayObject;
+use TsumegosController;
 
 class TsumegoButtons extends ArrayObject
 {

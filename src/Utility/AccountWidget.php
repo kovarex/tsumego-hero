@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Utility;
+
 class AccountWidget
 {
 	// to avoid flickering, I need to setup the original values also directly in the html

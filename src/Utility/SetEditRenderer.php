@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Utility;
+
 class SetEditRenderer
 {
 	public static function renderAddProblemForm($setId, $highestOrder)

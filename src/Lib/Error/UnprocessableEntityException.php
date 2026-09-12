@@ -1,5 +1,9 @@
 <?php
 
+namespace App\Lib\Error;
+
+use HttpException;
+
 /**
  * Represents an HTTP 422 error.
  */

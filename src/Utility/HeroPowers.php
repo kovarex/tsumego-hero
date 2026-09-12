@@ -1,5 +1,10 @@
 <?php
 
+namespace App\Utility;
+
+use ClassRegistry;
+use DateTime;
+
 class HeroPowers
 {
 	public static $SPRINT_MINIMUM_LEVEL = 20;

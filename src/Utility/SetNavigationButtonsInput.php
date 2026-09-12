@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Utility;
+
 class SetNavigationButtonsInput
 {
 	public function __construct($setFunction)

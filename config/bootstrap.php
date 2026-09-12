@@ -1,6 +1,8 @@
 <?php
 
-App::uses('Util', 'Utility');
+use App\Utility\Auth;
+use App\Utility\Util;
+
 if (Util::isInGithubCI())
 	Configure::write('App.fullBaseUrl', 'https://host.docker.internal:8443');
 
@@ -37,13 +39,11 @@ if (empty($_SERVER['REQUEST_URI']) && !empty($_SERVER['REDIRECT_URL']))
 require 'functions.php';
 
 // Load custom error handler
-App::uses('AppErrorHandler', 'Lib/Error');
 
 // Authorization policies live in src/Policy/
 App::build(['Policy' => [APP . 'Policy' . DS]], App::APPEND);
 
 // Load custom AppView class
-App::uses('AppView', 'View');
 
 // Setup a 'default' cache configuration for use in the application.
 Cache::config('default', ['engine' => 'File']);

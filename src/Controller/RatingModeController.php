@@ -1,5 +1,11 @@
 <?php
 
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\CookieFlash;
+use App\Utility\RatingBounds;
+use App\Utility\Util;
+
 class RatingModeController extends AppController
 {
 	public static function ratingAdjustment($difficultySetting)

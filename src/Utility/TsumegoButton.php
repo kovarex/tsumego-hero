@@ -1,6 +1,8 @@
 <?php
 
-App::uses('TsumegoStatus', 'Model');
+namespace App\Utility;
+
+use TsumegoStatus;
 
 class TsumegoButton
 {

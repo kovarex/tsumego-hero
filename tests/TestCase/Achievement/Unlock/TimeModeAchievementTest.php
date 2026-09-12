@@ -1,7 +1,5 @@
 <?php
 
-App::uses('Achievement', 'Model');
-
 /**
  * Time Mode Achievement Test
  *
@@ -9,6 +7,9 @@ App::uses('Achievement', 'Model');
  * - Rank achievements (70-87): Pass ranks in Slow/Fast/Blitz modes
  * - Precision achievements (88-91): Score thresholds at specific ranks
  */
+use App\Utility\AchievementChecker;
+use App\Utility\TimeModeUtil;
+
 class TimeModeAchievementTest extends AchievementTestCase
 {
 	// I need just one of time tests to use browser based test to check the integration

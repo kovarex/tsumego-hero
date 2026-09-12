@@ -1,6 +1,9 @@
 <?php
 
-App::uses('SgfParser', 'Utility');
+use App\Utility\Constants;
+use App\Utility\TsumegoButtons;
+use App\Utility\TsumegoFilters;
+use App\Utility\Util;
 
 class SitesController extends AppController
 {

@@ -1,5 +1,9 @@
 <?php
 
+namespace App\Utility;
+
+use PaginationHelper;
+
 abstract class DataTableRenderer
 {
 	public function __construct($urlParams, $name, $caption)

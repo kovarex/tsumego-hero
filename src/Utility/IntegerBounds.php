@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Utility;
+
 class IntegerBounds
 {
 	public function add(int $value): void

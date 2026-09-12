@@ -1,12 +1,12 @@
 <?php
 
-App::uses('User', 'Model');
-
 /**
  * Tests that the pref_player_color user preference drives the
  * player color and description on the puzzle page.
  * "Original" means the player color matches the SGF's first move.
  */
+use App\Utility\Auth;
+
 class DefaultPlayerColorTest extends TestCaseWithAuth
 {
 	public function testOriginalUsesSgfColor(): void

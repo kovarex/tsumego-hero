@@ -1,5 +1,10 @@
 <?php
 
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\TimeModeUtil;
+use App\Utility\Util;
+
 class TimeModeControllerTest extends ControllerTestCase
 {
 	public function testStartTimeModeWithoutSpecifyingCategoryIDThrowsException()

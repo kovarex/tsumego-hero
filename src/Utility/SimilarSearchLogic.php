@@ -1,9 +1,10 @@
 <?php
 
-App::uses('BoardComparator', 'Utility');
-App::uses('SetConnection', 'Model');
-require_once __DIR__ . '/BoardComparator.php';
-require_once __DIR__ . '/SimilarSearchResult.php';
+namespace App\Utility;
+
+use ClassRegistry;
+use NotFoundException;
+use SetConnection;
 
 class SimilarSearchLogic
 {

@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\CookieFlash;
+
 /**
  * @var View $this
  * @var string $redirectSignature

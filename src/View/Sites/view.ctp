@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\HtmlSanitizer;
+
 /**
  * @var View $this
  * @var array $news

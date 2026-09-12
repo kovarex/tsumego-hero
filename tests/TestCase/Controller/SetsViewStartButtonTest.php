@@ -2,7 +2,6 @@
 
 use Facebook\WebDriver\WebDriverBy;
 use PHPUnitRetry\RetryTrait;
-
 /**
  * Tests the Start button on set view pages.
  *
@@ -12,6 +11,8 @@ use PHPUnitRetry\RetryTrait;
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
+use App\Utility\Util;
+
 class SetsViewStartButtonTest extends ControllerTestCase
 {
 	use RetryTrait;

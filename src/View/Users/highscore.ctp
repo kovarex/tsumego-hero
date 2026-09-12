@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\Level;
+
 /**
  * @var View $this
  * @var int $totalUsers

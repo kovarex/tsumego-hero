@@ -1,6 +1,7 @@
 <?php
 
 use Facebook\WebDriver\WebDriverBy;
+use App\Utility\Constants;
 
 class UploadSgfTest extends TestCaseWithAuth
 {

@@ -1,7 +1,5 @@
 <?php
 
-App::uses('View', 'View');
-
 /**
  * Application View
  *

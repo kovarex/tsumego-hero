@@ -1,7 +1,9 @@
 <?php
 
-App::uses('Query', 'Utility');
-App::uses('SetConnection', 'Model');
+namespace App\Utility;
+
+use ClassRegistry;
+use SetConnection;
 
 class TsumegoButtonsQueryBuilder
 {

@@ -7,6 +7,8 @@
  * The user data stored in Auth should never be modified except through
  * explicit Auth methods like saveUser() with intentional changes.
  */
+use App\Utility\Auth;
+
 class AuthUserPersistenceTest extends ControllerTestCase
 {
 	/**

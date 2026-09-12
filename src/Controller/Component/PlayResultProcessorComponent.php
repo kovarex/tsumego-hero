@@ -1,13 +1,15 @@
 <?php
 
-App::uses('TsumegoStatus', 'Model');
-App::uses('Rating', 'Utility');
-App::uses('Util', 'Utility');
-App::uses('HeroPowers', 'Utility');
-App::uses('AchievementChecker', 'Utility');
-App::uses('TsumegoXPAndRating', 'Utility');
-App::uses('Level', 'Utility');
-App::uses('TimeMode', 'Utility');
+use App\Utility\AchievementChecker;
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\HeroPowers;
+use App\Utility\Level;
+use App\Utility\Rating;
+use App\Utility\TimeMode;
+use App\Utility\TsumegoUtil;
+use App\Utility\TsumegoXPAndRating;
+use App\Utility\Util;
 
 class PlayResultProcessorComponent extends Component
 {

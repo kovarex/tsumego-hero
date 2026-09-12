@@ -1,7 +1,5 @@
 <?php
 
-App::uses('BasePolicy', 'Policy');
-
 /**
  * SGF viewing (the SGF admin review page) is admin-only.
  */

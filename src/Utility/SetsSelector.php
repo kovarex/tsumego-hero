@@ -1,6 +1,6 @@
 <?php
 
-App::uses('Query', 'Utility');
+namespace App\Utility;
 
 class SetsSelector
 {

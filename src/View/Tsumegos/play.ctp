@@ -1,5 +1,19 @@
 <?php
 
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\HeroPowers;
+use App\Utility\Rating;
+use App\Utility\TimeMode;
+use App\Utility\TimeModeUtil;
+use App\Utility\TsumegoButton;
+use App\Utility\TsumegoButtons;
+use App\Utility\TsumegoFilters;
+use App\Utility\TsumegoUtil;
+use App\Utility\TsumegoXPAndRating;
+use App\Utility\Util;
+use App\Utility\ViteManifest;
+
 /**
  * @var View $this
  * @var bool $alternative_response
@@ -55,7 +69,6 @@
  * @var string $userSetsJson
  */
 
-	App::uses('ViteManifest', 'Utility');
 
 	$this->start('css');
 	echo ViteManifest::css('besogo-css');

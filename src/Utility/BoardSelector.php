@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Utility;
+
 class BoardSelector
 {
 	// Note: this data is duplicated in BoardSelector.js

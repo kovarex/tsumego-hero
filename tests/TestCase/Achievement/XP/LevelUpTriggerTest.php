@@ -1,9 +1,8 @@
 <?php
 
-App::uses('Achievement', 'Model');
-App::uses('Level', 'Utility');
-App::uses('AchievementChecker', 'Utility');
-App::uses('AchievementTestCase', 'TestCase/Achievement');
+use App\Utility\AchievementChecker;
+use App\Utility\Auth;
+use App\Utility\Level;
 
 /**
  * Level-Up Trigger Tests

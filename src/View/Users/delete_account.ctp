@@ -1,4 +1,7 @@
 <?php
+
+use App\Utility\Auth;
+
 /**
  * @var View $this
  * @var string $status

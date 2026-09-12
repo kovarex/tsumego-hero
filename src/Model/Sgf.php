@@ -1,8 +1,5 @@
 <?php
 
-App::uses('BadRequestException', 'Routing/Error');
-App::uses('InternalErrorException', 'Routing/Error');
-
 class Sgf extends AppModel
 {
 	public $validate = [

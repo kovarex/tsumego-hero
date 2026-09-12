@@ -1,9 +1,6 @@
 <?php
 
-App::uses('Achievement', 'Model');
-App::uses('AppController', 'Controller');
-App::uses('AchievementTestCase', 'TestCase/Achievement');
-App::uses('ContextPreparator', 'Test');
+use App\Utility\AchievementChecker;
 
 class SpecialSetAchievementTest extends AchievementTestCase
 {

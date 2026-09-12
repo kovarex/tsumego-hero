@@ -1,7 +1,5 @@
 <?php
 
-App::uses('AppHelper', 'View/Helper');
-
 /**
  * PaginationHelper - Generates pagination controls
  *
@@ -9,6 +7,8 @@ App::uses('AppHelper', 'View/Helper');
  * and ellipsis for large page counts. Automatically preserves query
  * parameters and generates anchor links for smooth scrolling.
  */
+use App\Utility\Query;
+
 class PaginationHelper extends AppHelper
 {
 	/**

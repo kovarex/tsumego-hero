@@ -1,5 +1,14 @@
 <?php
 
+namespace App\Utility;
+
+use Achievement;
+use Cache;
+use ClassRegistry;
+use TimeModeCategory;
+use TimeModeRank;
+use TimeModeSessionStatus;
+
 class AchievementChecker
 {
 	public function __construct()

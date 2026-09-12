@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\Rating;
+
 class User extends AppModel
 {
 	public const PREF_PLAYER_COLOR_RANDOM = 0;

@@ -1,10 +1,9 @@
 <?php
 
-App::uses('Preferences', 'Utility');
-App::uses('Query', 'Utility');
-App::uses('Rating', 'Utility');
-App::uses('Constants', 'Utility');
-App::uses('SetsController', 'Controller');
+namespace App\Utility;
+
+use ClassRegistry;
+use Exception;
 
 class TsumegoFilters
 {

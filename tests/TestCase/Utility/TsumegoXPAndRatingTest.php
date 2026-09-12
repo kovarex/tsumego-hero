@@ -1,7 +1,10 @@
 <?php
 
-App::uses('TsumegoXPAndRating', 'Utility');
-App::uses('Level', 'Utility');
+use App\Utility\Constants;
+use App\Utility\Level;
+use App\Utility\Rating;
+use App\Utility\TsumegoUtil;
+use App\Utility\TsumegoXPAndRating;
 use Facebook\WebDriver\WebDriverBy;
 
 class TsumegoXPAndRatingTest extends TestCaseWithAuth

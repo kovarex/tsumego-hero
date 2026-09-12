@@ -1,24 +1,21 @@
 <?php
 
-App::uses('SgfParser', 'Utility');
-App::uses('TsumegoUtil', 'Utility');
-App::uses('NotFoundException', 'Routing/Error');
-App::uses('BadRequestException', 'Routing/Error');
-App::uses('UnauthorizedException', 'Routing/Error');
-App::uses('ForbiddenException', 'Routing/Error');
-App::uses('ConflictException', 'Lib/Error');
-App::uses('TsumegoButton', 'Utility');
-App::uses('TsumegoButtons', 'Utility');
-App::uses('SetsSelector', 'Utility');
-App::uses('AdminActivityLogger', 'Utility');
-App::uses('AdminActivityType', 'Model');
-App::uses('Progress', 'Utility');
-App::uses('SetEditRenderer', 'Utility');
-App::uses('SetImage', 'Utility');
-App::uses('HtmlSanitizer', 'Utility');
-App::uses('Constants', 'Utility');
-App::uses('SetConnection', 'Model');
-
+use App\Lib\Error\ConflictException;
+use App\Utility\AchievementChecker;
+use App\Utility\AdminActivityLogger;
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\CookieFlash;
+use App\Utility\HtmlSanitizer;
+use App\Utility\Preferences;
+use App\Utility\Rating;
+use App\Utility\SetImage;
+use App\Utility\SetsSelector;
+use App\Utility\TsumegoButton;
+use App\Utility\TsumegoButtons;
+use App\Utility\TsumegoFilters;
+use App\Utility\TsumegoUtil;
+use App\Utility\Util;
 use App\Attribute\HttpPost;
 
 class SetsController extends AppController

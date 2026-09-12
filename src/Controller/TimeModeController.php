@@ -1,9 +1,12 @@
 <?php
 
-App::uses('TimeModeUtil', 'Utility');
-App::uses('NotFoundException', 'Routing/Error');
-App::uses('BadRequestException', 'Routing/Error');
-App::uses('Play', 'Controller/Component');
+use App\Utility\AchievementChecker;
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\Rating;
+use App\Utility\TimeMode;
+use App\Utility\TimeModeUtil;
+use App\Utility\Util;
 
 class TimeModeController extends AppController
 {

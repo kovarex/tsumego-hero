@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Utility;
+
 class SimilarSearchResult
 {
 	public $title = '';

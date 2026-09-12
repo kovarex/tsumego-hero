@@ -1,10 +1,12 @@
 <?php
 
+use App\Utility\Constants;
+use App\Utility\Rating;
+use App\Utility\TsumegoFilters;
+use App\Utility\Util;
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverWait;
 use Facebook\WebDriver\WebDriverKeys;
-
-App::uses('TsumegoFilters', 'Utility');
 
 class SetsControllerTest extends TestCaseWithAuth
 {

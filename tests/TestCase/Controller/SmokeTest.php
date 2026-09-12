@@ -1,10 +1,6 @@
 <?php
 
 use PHPUnitRetry\RetryTrait;
-use Selenium\Keys;
-
-App::uses('TimeModeUtil', 'Utility');
-
 /**
  * Smoke tests - visit all major pages and verify:
  * - No JavaScript errors
@@ -14,6 +10,10 @@ App::uses('TimeModeUtil', 'Utility');
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
+use App\Utility\Auth;
+use App\Utility\TimeModeUtil;
+use App\Utility\Util;
+
 class SmokeTest extends ControllerTestCase
 {
 	use RetryTrait;

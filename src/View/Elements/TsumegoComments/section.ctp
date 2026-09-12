@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\Auth;
+
 /**
  * React Comments Section - Mount point for the React comments component.
  *

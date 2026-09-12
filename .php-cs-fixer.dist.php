@@ -7,8 +7,7 @@ $finder = (new PhpCsFixer\Finder())
 return (new PhpCsFixer\Config())
 	->setRules(
 		[
-			'@PER-CS' => true,
-			'no_unneeded_braces' => false,
+			'@PER-CS' => true,		'no_unused_imports' => true,			'no_unneeded_braces' => false,
 			'single_space_around_construct' => false,
 			'no_blank_lines_after_class_opening' => true,
 			'CleanCodeStyle/remove_bracers_around_blocks_with_one_command' => true,

@@ -1,6 +1,8 @@
 <?php
 
-require_once __DIR__ . './../../../src/Utility/BoardComparator.php';
+use App\Utility\BoardComparator;
+use App\Utility\SgfBoard;
+use App\Utility\SgfParser;
 
 class BoardComparatorTest extends CakeTestCase
 {

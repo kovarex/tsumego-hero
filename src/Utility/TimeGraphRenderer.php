@@ -1,5 +1,9 @@
 <?php
 
+namespace App\Utility;
+
+use DateTime;
+
 class TimeGraphRenderer
 {
 	public static function render($caption, $id, $input, $value)

@@ -1,9 +1,10 @@
 <?php
 
-App::uses('NotFoundException', 'Routing/Error');
-App::uses('HtmlSanitizer', 'Utility');
-App::uses('SetConnection', 'Model');
-
+use App\Utility\Auth;
+use App\Utility\ContributionRow;
+use App\Utility\CookieFlash;
+use App\Utility\HtmlSanitizer;
+use App\Utility\Util;
 use App\Attribute\HttpPost;
 
 class TagsController extends AppController

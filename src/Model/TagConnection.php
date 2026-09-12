@@ -1,5 +1,8 @@
 <?php
 
+use App\Utility\Auth;
+use App\Utility\Constants;
+
 class TagConnection extends AppModel
 {
 	public function __construct($id = false, $table = null, $ds = null)

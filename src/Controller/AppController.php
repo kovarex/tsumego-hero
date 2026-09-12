@@ -1,12 +1,13 @@
 <?php
 
-App::uses('Auth', 'Utility');
-App::uses('BoardSelector', 'Utility');
-App::uses('TsumegoFilters', 'Utility');
-App::uses('AchievementChecker', 'Utility');
-App::uses('HeroPowers', 'Utility');
-App::uses('TimeMode', 'Utility');
-App::uses('ChangelogController', 'Controller');
+use App\Utility\AchievementChecker;
+use App\Utility\Auth;
+use App\Utility\BoardSelector;
+use App\Utility\Constants;
+use App\Utility\HeroPowers;
+use App\Utility\TimeMode;
+use App\Utility\TsumegoFilters;
+use App\Utility\Util;
 
 class AppController extends Controller
 {

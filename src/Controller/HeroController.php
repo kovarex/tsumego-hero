@@ -1,6 +1,9 @@
 <?php
 
-App::uses('ForbiddenException', 'Routing/Error');
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\HeroPowers;
+use App\Utility\Util;
 
 class HeroController extends AppController
 {

@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\TimeModeUtil;
+
 /**
  * @var View $this
  */

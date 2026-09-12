@@ -1,6 +1,6 @@
 <?php
 
-App::uses('HeroPowers', 'Utility');
+use App\Utility\HeroPowers;
 
 class Achievement extends AppModel
 {

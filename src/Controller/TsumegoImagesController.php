@@ -1,7 +1,6 @@
 <?php
 
-App::uses('AppController', 'Controller');
-App::uses('Constants', 'Utility');
+use App\Utility\Constants;
 
 /**
  * TsumegoImagesController

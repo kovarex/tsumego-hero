@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\Auth;
+
 class SetConnection extends AppModel
 {
 	public function __construct($id = false, $table = null, $ds = null)

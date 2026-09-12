@@ -1,8 +1,8 @@
 <?php
 
-App::uses('ForbiddenException', 'Routing/Error');
-
 use App\Attribute\HttpPost;
+use App\Utility\AdminActivityLogger;
+use App\Utility\Auth;
 
 class TagConnectionController extends AppController
 {

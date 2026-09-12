@@ -1,7 +1,10 @@
 <?php
 
-App::uses('DataTableRenderer', 'Utility');
-App::uses('SetConnection', 'Model');
+namespace App\Utility;
+
+use AdminActivity;
+use SetConnection;
+use User;
 
 class AdminActivityRenderer extends DataTableRenderer
 {

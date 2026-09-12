@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\Rating;
+use App\Utility\TimeModeUtil;
 use Facebook\WebDriver\WebDriverBy;
 use PHPUnitRetry\RetryTrait;
 

@@ -1,21 +1,18 @@
 <?php
 
-App::uses('SgfParser', 'Utility');
-App::uses('TsumegoUtil', 'Utility');
-App::uses('AdminActivityUtil', 'Utility');
-App::uses('TsumegoButton', 'Utility');
-App::uses('CookieFlash', 'Utility');
-App::uses('TsumegoMerger', 'Utility');
-App::uses('SimilarSearchResultItem', 'Utility');
-App::uses('SimilarSearchLogic', 'Utility');
-App::uses('AchievementChecker', 'Utility');
-App::uses('NotFoundException', 'Routing/Error');
-App::uses('BadRequestException', 'Routing/Error');
-App::uses('ForbiddenException', 'Routing/Error');
-
 use App\Attribute\HttpPost;
-
-require_once(__DIR__ . "/Component/Play.php");
+use App\Utility\AchievementChecker;
+use App\Utility\AdminActivityLogger;
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\CookieFlash;
+use App\Utility\Rating;
+use App\Utility\RatingParseException;
+use App\Utility\SimilarSearchLogic;
+use App\Utility\TsumegoButton;
+use App\Utility\TsumegoMerger;
+use App\Utility\TsumegoUtil;
+use App\Utility\Util;
 
 class TsumegosController extends AppController
 {
@@ -43,7 +40,7 @@ class TsumegosController extends AppController
 		// Keep the response as pure data; the client renders the popup from the
 		// fields it needs (see webroot/js/AchievementAlerts.js).
 		if (!empty($result['achievement_updates']))
-			$result['achievement_updates'] = array_map(['AchievementChecker', 'toPopupData'], $result['achievement_updates']);
+			$result['achievement_updates'] = array_map([AchievementChecker::class, 'toPopupData'], $result['achievement_updates']);
 
 		$this->response->body(json_encode($result));
 

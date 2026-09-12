@@ -1,7 +1,5 @@
 <?php
 
-App::uses('ChangelogController', 'Controller');
-
 class ChangelogControllerTest extends ControllerTestCase
 {
 	/**

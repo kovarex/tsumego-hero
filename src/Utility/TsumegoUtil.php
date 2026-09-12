@@ -1,7 +1,10 @@
 <?php
 
-App::uses('SetConnection', 'Model');
-App::uses('TsumegoStatus', 'Model');
+namespace App\Utility;
+
+use ClassRegistry;
+use SetConnection;
+use TsumegoStatus;
 
 class TsumegoUtil
 {

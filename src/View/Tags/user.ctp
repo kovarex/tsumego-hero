@@ -1,5 +1,8 @@
 <?php
 
+use App\Utility\ContributionRow;
+use App\Utility\Util;
+
 /**
  * @var View $this
  * @var array $viewedUser

@@ -1,5 +1,12 @@
 <?php
 
+namespace App\Utility;
+
+use AdminActivityType;
+use ClassRegistry;
+use Exception;
+use TsumegoStatus;
+
 class TsumegoMerger
 {
 	public function __construct($masterTsumegoID, $slaveTsumegoID)
