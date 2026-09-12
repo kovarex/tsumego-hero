@@ -6,6 +6,9 @@ use ClassRegistry;
 use SetConnection;
 use TsumegoStatus;
 
+/**
+ * @phpstan-import-type TsumegoRow from \App\Utility\RowTypes
+ */
 class TsumegoUtil
 {
 	public static function getSetConnectionsWithTitles(int $tsumegoID): array
@@ -71,11 +74,17 @@ class TsumegoUtil
 		return $status == TsumegoStatus::$SOLVED || $status == TsumegoStatus::$MASTERED || $status == TsumegoStatus::$REVIEW;
 	}
 
+	/**
+	 * @param TsumegoRow $tsumego
+	 */
 	public static function getXpValue(array $tsumego, float $multiplier = 1.0): int
 	{
 		return Rating::ratingToXP($tsumego['rating'], $multiplier);
 	}
 
+	/**
+	 * @param TsumegoRow $tsumego
+	 */
 	public static function getProgressDeletionCount(array $tsumego): int
 	{
 		$result = ClassRegistry::init('ProgressDeletion')->query('

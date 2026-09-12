@@ -6,6 +6,9 @@ use ClassRegistry;
 use Exception;
 use User;
 
+/**
+ * @phpstan-import-type UserRow from \App\Utility\RowTypes
+ */
 class Auth
 {
 	public static function init(?array $user = null): void
@@ -54,6 +57,8 @@ class Auth
 	/**
 	 * Returns the identity (user array), or null when not logged in.
 	 * Matches CakePHP 5's $request->getAttribute('identity') contract.
+	 *
+	 * @return UserRow|null
 	 */
 	public static function getIdentity(): ?array
 	{
@@ -65,6 +70,9 @@ class Auth
 		return Auth::$user ? Auth::$user['id'] : 0;
 	}
 
+	/**
+	 * @return UserRow
+	 */
 	public static function &getUser(): array
 	{
 		if (!Auth::$user)

@@ -6,8 +6,15 @@ use ClassRegistry;
 use NotFoundException;
 use SetConnection;
 
+/**
+ * @phpstan-import-type SetConnectionRow from \App\Utility\RowTypes
+ * @phpstan-import-type TsumegoRow from \App\Utility\RowTypes
+ */
 class SimilarSearchLogic
 {
+	/**
+	 * @param SetConnectionRow $setConnection
+	 */
 	public function __construct(array $setConnection)
 	{
 		$this->setConnection = $setConnection;
@@ -113,7 +120,9 @@ LEFT JOIN sgf
 	}
 
 	public $sourceTsumegoID;
+	/** @var TsumegoRow|null */
 	public $sourceTsumego = null;
+	/** @var SetConnectionRow */
 	public $setConnection;
 	public $maxDifference = 5;
 	public $sourceBoard;

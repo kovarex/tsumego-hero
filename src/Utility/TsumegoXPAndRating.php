@@ -2,8 +2,14 @@
 
 namespace App\Utility;
 
+/**
+ * @phpstan-import-type TsumegoRow from \App\Utility\RowTypes
+ */
 class TsumegoXPAndRating
 {
+	/**
+	 * @param TsumegoRow $tsumego
+	 */
 	public function __construct(array $tsumego, string $status)
 	{
 		if ($status == 'G')

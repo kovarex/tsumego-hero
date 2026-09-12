@@ -4,9 +4,15 @@
  * Set-level authorization. Sandbox access is allowed for admins and premium
  * users (premium can no longer be purchased, but existing premium users keep
  * the sandbox benefit).
+ *
+ * @phpstan-import-type UserRow from \App\Utility\RowTypes
+ * @phpstan-import-type SetRow from \App\Utility\RowTypes
  */
 class SetPolicy extends BasePolicy
 {
+	/**
+	 * @param UserRow|null $user
+	 */
 	public static function canSandbox(?array $user): bool
 	{
 		return static::hasSandbox($user);
@@ -15,6 +21,9 @@ class SetPolicy extends BasePolicy
 	/**
 	 * Viewing a set: private sets require login (sandbox is an admin/premium
 	 * workspace; user-owned private sets are also login-only for now).
+	 *
+	 * @param UserRow|null $user
+	 * @param SetRow $set
 	 */
 	public static function canView(?array $user, array $set): bool
 	{
@@ -29,6 +38,9 @@ class SetPolicy extends BasePolicy
 
 	/**
 	 * Solving a problem: sandbox sets require the sandbox permission.
+	 *
+	 * @param UserRow|null $user
+	 * @param SetRow $set
 	 */
 	public static function canPlay(?array $user, array $set): bool
 	{
@@ -39,6 +51,9 @@ class SetPolicy extends BasePolicy
 
 	/**
 	 * Editing a set (add/remove/reorder tsumegos): admin or set owner.
+	 *
+	 * @param UserRow|null $user
+	 * @param SetRow $set
 	 */
 	public static function canEdit(?array $user, array $set): bool
 	{
@@ -51,6 +66,9 @@ class SetPolicy extends BasePolicy
 
 	/**
 	 * Deleting a set: owner can delete their own; admin can delete sandbox sets.
+	 *
+	 * @param UserRow|null $user
+	 * @param SetRow $set
 	 */
 	public static function canDelete(?array $user, array $set): bool
 	{
@@ -65,6 +83,8 @@ class SetPolicy extends BasePolicy
 
 	/**
 	 * Creating a set: any logged-in user.
+	 *
+	 * @param UserRow|null $user
 	 */
 	public static function canCreate(?array $user): bool
 	{
@@ -73,6 +93,8 @@ class SetPolicy extends BasePolicy
 
 	/**
 	 * Creating a sandbox set: admin only.
+	 *
+	 * @param UserRow|null $user
 	 */
 	public static function canCreateSandbox(?array $user): bool
 	{
@@ -81,6 +103,8 @@ class SetPolicy extends BasePolicy
 
 	/**
 	 * Editing set-level settings (re-rate, alternative response, pass mode): admin only.
+	 *
+	 * @param UserRow|null $user
 	 */
 	public static function canEditSettings(?array $user): bool
 	{
@@ -89,6 +113,8 @@ class SetPolicy extends BasePolicy
 
 	/**
 	 * Creating and adding a tsumego to a set: admin only.
+	 *
+	 * @param UserRow|null $user
 	 */
 	public static function canCreateAndAddTsumego(?array $user): bool
 	{
@@ -97,6 +123,9 @@ class SetPolicy extends BasePolicy
 
 	/**
 	 * Adding a tsumego to a set: admin or set owner.
+	 *
+	 * @param UserRow|null $user
+	 * @param SetRow $set
 	 */
 	public static function canAddTsumego(?array $user, array $set): bool
 	{
@@ -105,6 +134,9 @@ class SetPolicy extends BasePolicy
 
 	/**
 	 * Removing a tsumego from a set: admin or set owner.
+	 *
+	 * @param UserRow|null $user
+	 * @param SetRow $set
 	 */
 	public static function canRemoveTsumego(?array $user, array $set): bool
 	{
@@ -113,6 +145,9 @@ class SetPolicy extends BasePolicy
 
 	/**
 	 * Reordering tsumegos in a set: admin or set owner.
+	 *
+	 * @param UserRow|null $user
+	 * @param SetRow $set
 	 */
 	public static function canReorderTsumego(?array $user, array $set): bool
 	{

@@ -9,6 +9,9 @@ use TimeModeCategory;
 use TimeModeRank;
 use TimeModeSessionStatus;
 
+/**
+ * @phpstan-import-type AchievementRow from \App\Utility\RowTypes
+ */
 class AchievementChecker
 {
 	public function __construct()
@@ -20,6 +23,8 @@ class AchievementChecker
 	 * The fields the client needs to render an achievement popup from data.
 	 * Both the /tsumegos/result response and the page-load embed use this, so
 	 * the popup payload stays pure data and the client renders the markup.
+	 *
+	 * @param AchievementRow $achievement
 	 */
 	public static function toPopupData(array $achievement): array
 	{
