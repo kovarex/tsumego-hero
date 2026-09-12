@@ -10,10 +10,10 @@ class SitesController extends AppController
 	public $helpers = ['Html', 'Form'];
 
 	/**
-	 * @param mixed $var Variable parameter
+	 * @param string|null $var Variable parameter
 	 * @return void
 	 */
-	public function index($var = null)
+	public function index(?string $var = null)
 	{
 		$this->set('_page', 'home');
 		$this->set('_title', 'Tsumego Hero');
@@ -133,10 +133,10 @@ class SitesController extends AppController
 	}
 
 	/**
-	 * @param string|int|null $id
+	 * @param string|null $id
 	 * @return void
 	 */
-	public function view($id = null)
+	public function view(?string $id = null)
 	{
 		$news = $this->Site->find('all');
 		$this->set('news', $news[$id]);

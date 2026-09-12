@@ -10,6 +10,7 @@ use App\Utility\Rating;
 use App\Utility\RatingParseException;
 use App\Utility\SimilarSearchLogic;
 use App\Utility\TsumegoButton;
+use App\Utility\TsumegoFilters;
 use App\Utility\TsumegoMerger;
 use App\Utility\TsumegoUtil;
 use App\Utility\Util;
@@ -57,14 +58,14 @@ class TsumegosController extends AppController
 		throw new NotFoundException("Problem doesn't exist in the specified set");
 	}
 
-	public static function tsumegoOrSetLink($tsumegoFilters, ?int $setConnectionID, string $setID): string
+	public static function tsumegoOrSetLink(TsumegoFilters $tsumegoFilters, ?int $setConnectionID, string $setID): string
 	{
 		if ($setConnectionID)
 			return '/' . $setConnectionID;
 		return '/sets/view/' . $setID; // edge of the set (last or first), so we return to the set
 	}
 
-	public function play($id = null, $setConnectionID = null)
+	public function play(?string $id = null, ?string $setConnectionID = null)
 	{
 		if (Auth::isLoggedIn() && !Auth::isInLevelMode())
 			Auth::saveUserField('mode', Constants::$LEVEL_MODE);
@@ -77,7 +78,7 @@ class TsumegosController extends AppController
 				if ($sc)
 					$this->PlayResultProcessor->markAsVisited((int) $sc['SetConnection']['tsumego_id']);
 			}
-			return new Play(function ($name, $value) { $this->set($name, $value); })->play($setConnectionID, $this->params, $this->data);
+			return new Play(function ($name, $value) { $this->set($name, $value); })->play((int) $setConnectionID, $this->request, $this->data);
 		}
 
 		if (!$id)
@@ -90,16 +91,16 @@ class TsumegosController extends AppController
 		if (Auth::isLoggedIn())
 			$this->PlayResultProcessor->markAsVisited((int) $id);
 
-		$setConnections = TsumegoUtil::getSetConnectionsWithTitles($id);
+		$setConnections = TsumegoUtil::getSetConnectionsWithTitles((int) $id);
 		if (!$setConnections)
 			throw new NotFoundException("Problem not found in any set");
 		$setConnection = $this->deduceRelevantSetConnection($setConnections);
 		return new Play(function ($name, $value) {
 			$this->set($name, $value);
-		})->play($setConnection['SetConnection']['id'], $this->params, $this->data);
+		})->play($setConnection['SetConnection']['id'], $this->request, $this->data);
 	}
 
-	public function duplicatesearch($setConnectionID): mixed
+	public function duplicatesearch(string $setConnectionID): mixed
 	{
 		$this->loadModel('Sgf');
 		$this->loadModel('Set');
@@ -124,7 +125,7 @@ class TsumegosController extends AppController
 			'sourceTsumegoButton',
 			new TsumegoButton(
 				$similarSearchLogic->sourceTsumego['id'],
-				$setConnectionID,
+				(int) $setConnectionID,
 				$similarSearchLogic->setConnection['num'],
 				$tsumegoStatus ?: 'N', 0, $similarSearchLogic->sourceSgf));
 		$this->set('sourceSetName', ClassRegistry::init('Set')->findById($setConnection['SetConnection']['set_id'])['Set']['title']);
@@ -132,7 +133,7 @@ class TsumegosController extends AppController
 		return null;
 	}
 
-	public function edit($tsumegoID)
+	public function edit(string $tsumegoID)
 	{
 		$this->Authorization->authorize('Tsumego');
 		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID);
@@ -352,7 +353,7 @@ class TsumegosController extends AppController
 		return null;
 	}
 
-	public function setupSgfStep2($sgfID, $firstMoveColor, $correctMoves = null)
+	public function setupSgfStep2(string $sgfID, string $firstMoveColor, ?string $correctMoves = null)
 	{
 		$this->Authorization->authorize('Tsumego');
 		$sgf = ClassRegistry::init("Sgf")->findById($sgfID);
@@ -404,7 +405,7 @@ class TsumegosController extends AppController
 		return $this->redirect('/' . $setConnectionID);
 	}
 
-	public function history($setConnectionID)
+	public function history(string $setConnectionID)
 	{
 		$setConnection = ClassRegistry::init("SetConnection")->findById($setConnectionID);
 		if (!$setConnection)

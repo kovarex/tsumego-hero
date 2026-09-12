@@ -23,7 +23,7 @@ use App\Utility\ViteManifest;
  * @var string $playerColor 'black' or 'white'
  * @var string $corner
  * @var bool $swapColors
- * @var array $difficulty
+ * @var float|int|string|null $difficulty
  * @var string $emptyHeart
  * @var bool $fav
  * @var string $file

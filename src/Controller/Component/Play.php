@@ -6,6 +6,7 @@ use App\Utility\BoardSelector;
 use App\Utility\Constants;
 use App\Utility\SetNavigationButtonsInput;
 use App\Utility\SgfParser;
+use App\Utility\TimeMode;
 use App\Utility\TsumegoButtons;
 use App\Utility\TsumegoFilters;
 use App\Utility\TsumegoUtil;
@@ -14,7 +15,7 @@ use App\Utility\Util;
 
 class Play
 {
-	public function __construct($setFunction)
+	public function __construct(callable $setFunction)
 	{
 		$this->setFunction = $setFunction;
 	}
@@ -33,7 +34,7 @@ class Play
 		return 'V';
 	}
 
-	public function play(int $setConnectionID, $params, $data): mixed
+	public function play(int $setConnectionID, CakeRequest $params, array $data): mixed
 	{
 		($this->setFunction)('page', 'play');
 
@@ -440,10 +441,10 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		return null;
 	}
 
-	public static function renderTitle($setConnection, $set, $tsumegoFilters, $tsumegoButtons, $amountOfOtherCollection, $difficulty, $timeMode, $queryTitle, $t)
+	public static function renderTitle(array $setConnection, array $set, TsumegoFilters $tsumegoFilters, ?TsumegoButtons $tsumegoButtons, int $amountOfOtherCollection, int|float|string|null $difficulty, ?TimeMode $timeMode, string $queryTitle, array $t): string
 	{
 		if (Auth::isInTimeMode())
-			return '<font size="5px">' . $timeMode->currentPosition() . ' of ' . $timeMode->overallCount . '</font>';
+			return '<font size="5px">' . $timeMode?->currentPosition() . ' of ' . $timeMode?->overallCount . '</font>';
 
 		if (Auth::isInRatingMode())
 			return '<div class="slidecontainer">
@@ -454,13 +455,13 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 
 		$order = $setConnection['SetConnection']['num'];
 		if ($tsumegoFilters->query == 'difficulty' || $tsumegoFilters->query == 'tags')
-			return '<a id="playTitleA" href="/sets/view/' . $tsumegoFilters->getSetID($set) . $tsumegoButtons->getPartitionLinkSuffix() . '">' . $queryTitle . '</a><br>
+			return '<a id="playTitleA" href="/sets/view/' . $tsumegoFilters->getSetID($set) . $tsumegoButtons?->getPartitionLinkSuffix() . '">' . $queryTitle . '</a><br>
 							<font style="font-weight:400;" color="grey">
 											<a style="color:grey;" id="playTitleA" href="/sets/view/' . $set['Set']['id'] . '">
 												(' . $set['Set']['title'] . ' ' . $order . '/' . $amountOfOtherCollection . ')
 											</a>
 										</font>';
-		return '<a id="playTitleA" href="/sets/view/' . $set['Set']['id'] . $tsumegoButtons->getPartitionLinkSuffix() . '">' . $set['Set']['title'] . ' ' . $tsumegoButtons->getPartitionTitleSuffix() . ' ' . $order . '/' . $tsumegoButtons->highestTsumegoOrder . '</a>';
+		return '<a id="playTitleA" href="/sets/view/' . $set['Set']['id'] . $tsumegoButtons?->getPartitionLinkSuffix() . '">' . $set['Set']['title'] . ' ' . $tsumegoButtons?->getPartitionTitleSuffix() . ' ' . $order . '/' . $tsumegoButtons?->highestTsumegoOrder . '</a>';
 	}
 
 	private static function randomCorner(): string

@@ -91,7 +91,7 @@ class HeroController extends AppController
 		return $this->response;
 	}
 
-	public function revelation($tsumegoID)
+	public function revelation(string $tsumegoID)
 	{
 		if (!Auth::isLoggedIn())
 			throw new ForbiddenException('Not logged in.');

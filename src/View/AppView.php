@@ -18,7 +18,7 @@ class AppView extends View
 	 * @param array $dataForView Data to include in rendered view.
 	 * @return string Rendered output
 	 */
-	protected function _evaluate($viewFile, $dataForView)
+	protected function _evaluate(mixed $viewFile, mixed $dataForView): string
 	{
 		$__viewFile = $viewFile;
 		extract($dataForView);

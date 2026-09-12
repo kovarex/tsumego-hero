@@ -27,7 +27,7 @@ class SgfController extends AppController
 	}
 
 	#[HttpPost]
-	public function upload($setConnectionID)
+	public function upload(string $setConnectionID)
 	{
 		$this->Authorization->authorize('Sgf', 'propose');
 

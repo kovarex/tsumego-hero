@@ -2,7 +2,7 @@
 
 class AppErrorHandler extends ExceptionRenderer
 {
-	private function renderError($error)
+	private function renderError(Throwable $error): void
 	{
 		$code = $error->getCode();
 		// Plain Exception has code 0, MissingController/Action have non-HTTP codes
@@ -33,52 +33,52 @@ class AppErrorHandler extends ExceptionRenderer
 		$this->_outputMessage('error');
 	}
 
-	public function error400($error)
+	public function error400(mixed $error): void
 	{
 		$this->renderError($error);
 	}
 
-	public function error404($error)
+	public function error404(Throwable $error): void
 	{
 		$this->renderError($error);
 	}
 
-	public function error500($error)
+	public function error500(mixed $error): void
 	{
 		$this->renderError($error);
 	}
 
-	public function notFound($error)
+	public function notFound(Throwable $error): void
 	{
 		$this->renderError($error);
 	}
 
-	public function missingController($error)
+	public function missingController(Throwable $error): void
 	{
 		$this->renderError($error);
 	}
 
-	public function missingAction($error)
+	public function missingAction(Throwable $error): void
 	{
 		$this->renderError($error);
 	}
 
-	public function badRequest($error)
+	public function badRequest(Throwable $error): void
 	{
 		$this->renderError($error);
 	}
 
-	public function forbidden($error)
+	public function forbidden(Throwable $error): void
 	{
 		$this->renderError($error);
 	}
 
-	public function methodNotAllowed($error)
+	public function methodNotAllowed(Throwable $error): void
 	{
 		$this->renderError($error);
 	}
 
-	public function internalError($error)
+	public function internalError(Throwable $error): void
 	{
 		$this->renderError($error);
 	}

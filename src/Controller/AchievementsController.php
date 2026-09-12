@@ -2,6 +2,9 @@
 
 use App\Utility\Auth;
 
+/**
+ * @phpstan-import-type UserRow from \App\Utility\RowTypes
+ */
 class AchievementsController extends AppController
 {
 	/**
@@ -13,10 +16,10 @@ class AchievementsController extends AppController
 	}
 
 	/**
-	 * @param string|int $userId
+	 * @param string $userId
 	 * @return void
 	 */
-	public function user($userId)
+	public function user(string $userId)
 	{
 		$user = $this->User->findById($userId);
 		if (!$user)
@@ -27,10 +30,10 @@ class AchievementsController extends AppController
 	}
 
 	/**
-	 * @param array|null $viewedUser
+	 * @param UserRow|null $viewedUser
 	 * @return void
 	 */
-	private function renderAchievementsPage($viewedUser)
+	private function renderAchievementsPage(?array $viewedUser): void
 	{
 		$this->set('_page', 'user');
 		$this->set('_title', 'Tsumego Hero - Achievements');
@@ -74,10 +77,10 @@ class AchievementsController extends AppController
 	}
 
 	/**
-	 * @param string|int|null $id
+	 * @param string|null $id
 	 * @return void
 	 */
-	public function view($id = null)
+	public function view(?string $id = null)
 	{
 		$this->set('_page', 'user');
 		$this->set('_title', 'Tsumego Hero - Achievements');

@@ -117,7 +117,7 @@ class SetsController extends AppController
 		$this->_showUserSets(Auth::getUserID());
 	}
 
-	public function userSets($userId)
+	public function userSets(string $userId)
 	{
 		$this->_showUserSets((int) $userId);
 	}
@@ -237,7 +237,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 	 * Edit a set: details, problems and (for admins) re-rate and solve-mode
 	 * settings. Owner or admin only.
 	 */
-	public function edit($id = null)
+	public function edit(?string $id = null)
 	{
 		$this->loadModel('Tsumego');
 		$this->loadModel('SetConnection');
@@ -462,7 +462,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 	}
 
 	#[HttpPost]
-	public function delete($id = null)
+	public function delete(?string $id = null)
 	{
 		$setID = $id ?? ($this->data['Set']['id'] ?? null);
 		if (!$setID)
@@ -588,10 +588,8 @@ ORDER BY sc.num ASC", [(int) $id]);
 	 * @param TsumegoButtons $tsumegoButtons Iterator of TsumegoButton objects
 	 * @return int|null The setConnectionID of the first unsolved button, or first button if all solved, or null if empty
 	 */
-	private function getFirstUnsolvedSetConnectionId($tsumegoButtons)
+	private function getFirstUnsolvedSetConnectionId(TsumegoButtons $tsumegoButtons): ?int
 	{
-		if (empty($tsumegoButtons))
-			return null;
 		if ($firstUnsolvedButton = array_find((array) $tsumegoButtons, function ($tsumegoButton) {
 			return !TsumegoUtil::isSolvedStatus($tsumegoButton->status);
 		}))
@@ -603,7 +601,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		return $tsumegoButtons[0]->setConnectionID;
 	}
 
-	private function decodeQueryType($input)
+	private function decodeQueryType(string $input): string
 	{
 		if (is_numeric($input))
 			return 'topics';
@@ -619,7 +617,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 	}
 
 	#[HttpPost]
-	public function addTsumego($setID)
+	public function addTsumego(string $setID)
 	{
 		if ($setID === 'favorites')
 		{
@@ -686,7 +684,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 	 * Create a new tsumego and add it to a set. Admin only.
 	 */
 	#[HttpPost]
-	public function createAndAddTsumego($setID)
+	public function createAndAddTsumego(string $setID)
 	{
 		$this->Authorization->authorize('Set');
 
@@ -771,7 +769,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 	 * Remove a tsumego from a set.
 	 */
 	#[HttpPost]
-	public function removeTsumego($setID)
+	public function removeTsumego(string $setID)
 	{
 		$set = ClassRegistry::init('Set')->findById($setID);
 		if (!$set)
@@ -804,7 +802,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 	 * Swap the order of two adjacent set_connections.
 	 */
 	#[HttpPost]
-	public function reorderTsumego($setID)
+	public function reorderTsumego(string $setID)
 	{
 		$set = ClassRegistry::init('Set')->findById($setID);
 		if (!$set)
@@ -1171,7 +1169,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 	 * @param float $accuracy Accuracy percentage
 	 * @return void
 	 */
-	private function updateAchievementConditions($sid, $avgTime, $accuracy)
+	private function updateAchievementConditions(int $sid, int|float $avgTime, int|float $accuracy): void
 	{
 		$uid = Auth::getUserID();
 		$acS = $this->AchievementCondition->find('first', ['order' => 'value ASC', 'conditions' => ['set_id' => $sid, 'user_id' => $uid, 'category' => 's']]);

@@ -56,10 +56,10 @@ class TagsController extends AppController
 	}
 
 	/**
-	 * @param string|int|null $id
+	 * @param string|null $id
 	 * @return void
 	 */
-	public function view($id = null)
+	public function view(?string $id = null)
 	{
 		$tn = $this->Tag->findById($id);
 		if (!$tn)
@@ -74,10 +74,10 @@ class TagsController extends AppController
 	}
 
 	/**
-	 * @param string|int|null $id User ID
+	 * @param string $id User ID
 	 * @return void
 	 */
-	public function user($id)
+	public function user(string $id)
 	{
 		$u = $this->User->findById($id);
 		if (!$u)
@@ -146,7 +146,7 @@ class TagsController extends AppController
 		$this->set('pageSize', $pageSize);
 	}
 
-	public function edit($tagID): ?CakeResponse
+	public function edit(string $tagID): ?CakeResponse
 	{
 		$this->Authorization->authorize('Tag');
 		$tag = ClassRegistry::init('Tag')->findById($tagID);
@@ -163,7 +163,7 @@ class TagsController extends AppController
 	}
 
 	#[HttpPost]
-	public function editAction($tagID)
+	public function editAction(string $tagID)
 	{
 		$this->Authorization->authorize('Tag', 'editAction');
 		$tag = ClassRegistry::init('Tag')->findById($tagID);
@@ -190,11 +190,11 @@ class TagsController extends AppController
 	}
 
 	/**
-	 * @param string|int $id Tag name ID
+	 * @param string $id Tag name ID
 	 * @return void
 	 */
 	#[HttpPost]
-	public function delete($id)
+	public function delete(string $id)
 	{
 		$this->Authorization->authorize('Tag');
 		$this->loadModel('Tag');
@@ -220,7 +220,7 @@ class TagsController extends AppController
 
 	public function index() {}
 
-	public function acceptTagProposal($tagID): CakeResponse
+	public function acceptTagProposal(string $tagID): CakeResponse
 	{
 		$this->Authorization->authorize('Tag');
 
@@ -247,7 +247,7 @@ class TagsController extends AppController
 		return $this->redirect('/users/adminstats');
 	}
 
-	public function rejectTagProposal($tagID): CakeResponse
+	public function rejectTagProposal(string $tagID): CakeResponse
 	{
 		$this->Authorization->authorize('Tag');
 

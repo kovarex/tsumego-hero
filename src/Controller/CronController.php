@@ -5,7 +5,7 @@ use App\Utility\Util;
 class CronController extends AppController
 {
 	/* Supposed to be ran daily to reset hearts and hero powers */
-	public function daily($secret)
+	public function daily(string $secret)
 	{
 		if ($secret != CRON_SECRET)
 			throw new ForbiddenException('Wrong cron secret.');
@@ -170,7 +170,7 @@ WHERE
 		}
 	}
 
-	protected static function publishSingle($tsumegoID = null, $to = null, $date = null): void
+	protected static function publishSingle(int|string|null $tsumegoID = null, int|string|null $to = null, ?string $date = null): void
 	{
 		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID);
 		if (!$tsumego)

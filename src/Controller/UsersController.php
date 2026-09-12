@@ -73,7 +73,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	}
 
 	// @param string|null $checksum Password reset checksum
-	public function newpassword($checksum = null): mixed
+	public function newpassword(?string $checksum = null): mixed
 	{
 		$this->set('_page', 'user');
 		$this->set('_title', 'Tsumego Hero - Sign In');
@@ -101,10 +101,10 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	}
 
 	/**
-	 * @param string|int|null $uid User ID
+	 * @param string|null $uid User ID
 	 * @return void
 	 */
-	public function userstats($uid = null)
+	public function userstats(?string $uid = null)
 	{
 		$this->Authorization->authorize('Admin');
 		$this->set('_page', 'user');
@@ -154,10 +154,10 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	}
 
 	/**
-	 * @param string|int|null $sid Set ID
+	 * @param string|null $sid Set ID
 	 * @return void
 	 */
-	public function userstats3($sid = null)
+	public function userstats3(?string $sid = null)
 	{
 		$this->Authorization->authorize('Admin');
 		$this->set('_page', 'user');
@@ -171,7 +171,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			$ur = $this->TsumegoAttempt->find('all', ['limit' => 500, 'order' => 'created DESC']);
 		else
 		{
-			$ts = TsumegoUtil::collectTsumegosFromSet($sid);
+			$ts = TsumegoUtil::collectTsumegosFromSet((int) $sid);
 			$ids = [];
 			$tsCount = count($ts);
 			for ($i = 0; $i < $tsCount; $i++)
@@ -758,7 +758,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->redirect('/tags/user/' . Auth::getUserID());
 	}
 
-	public function view($id = null): mixed
+	public function view(?string $id = null): mixed
 	{
 		$this->set('_page', 'user');
 		$this->loadModel('TsumegoStatus');
@@ -990,7 +990,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 		Auth::logout();
 	}
 
-	private function validateLogin($data, $user): bool
+	private function validateLogin(array $data, array $user): bool
 	{
 		if (!$user)
 			return false;
@@ -1114,7 +1114,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 		$this->set('u', ['User' => $user]);
 	}
 
-	public function solveHistory($userID)
+	public function solveHistory(string $userID)
 	{
 		$userName = Util::query("SELECT name FROM user WHERE id = ?", [$userID])[0]['name'] ?? 'Unknown';
 		$PAGE_SIZE = 500;
@@ -1164,7 +1164,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		$this->set('attempts', $attempts);
 	}
 
-	public function acceptSGFProposal($sgfID)
+	public function acceptSGFProposal(string $sgfID)
 	{
 		$this->Authorization->authorize('Admin');
 
@@ -1194,7 +1194,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		return $this->redirect('/users/adminstats');
 	}
 
-	public function rejectSGFProposal($sgfID)
+	public function rejectSGFProposal(string $sgfID)
 	{
 		$this->Authorization->authorize('Admin');
 
@@ -1229,7 +1229,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		return $this->redirect('/users/adminstats');
 	}
 
-	public function acceptTagConnectionProposal($tagConnectionID)
+	public function acceptTagConnectionProposal(string $tagConnectionID)
 	{
 		$this->Authorization->authorize('Admin');
 
@@ -1256,7 +1256,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		return $this->redirect('/users/adminstats');
 	}
 
-	public function rejectTagConnectionProposal($tagConnectionID)
+	public function rejectTagConnectionProposal(string $tagConnectionID)
 	{
 		$this->Authorization->authorize('Admin');
 

@@ -8,7 +8,7 @@ use App\Utility\Util;
 
 class RatingModeController extends AppController
 {
-	public static function ratingAdjustment($difficultySetting)
+	public static function ratingAdjustment(int|string $difficultySetting): int
 	{
 		$adjustments = [
 			1 => -Constants::$RATING_MODE_DIFFERENCE_SETTING_3,
@@ -63,7 +63,7 @@ WHERE " . $queryCondition;
 		$play  = new Play(function ($name, $value) {
 			$this->set($name, $value);
 		});
-		$play->play($relatedTsumegos[0]['id'], $this->params, $this->data);
+		$play->play($relatedTsumegos[0]['id'], $this->request, $this->data);
 		$this->render('/Tsumegos/play');
 		return null;
 	}
