@@ -301,12 +301,21 @@ class Browser
 
 	public function waitUntilCssSelectorExists(string $selector, int $timeout = 10): void
 	{
-		new WebDriverWait($this->driver, $timeout, 500)->until(
-			function () use ($selector) {
-				$elements = $this->driver->findElements(WebDriverBy::cssSelector($selector));
-				return count($elements) > 0;
-			}
-		);
+		try
+		{
+			new WebDriverWait($this->driver, $timeout, 500)->until(
+				function () use ($selector) {
+					$elements = $this->driver->findElements(WebDriverBy::cssSelector($selector));
+					return count($elements) > 0;
+				}
+			);
+		}
+		catch (\Facebook\WebDriver\Exception\TimeoutException $e)
+		{
+			$file = ROOT . '/tmp/browser-timeout-' . date('Ymd-His') . '.html';
+			file_put_contents($file, "URL: " . $this->driver->getCurrentURL() . "\n\n" . $this->driver->getPageSource());
+			throw $e;
+		}
 	}
 
 	public function waitUntilCssSelectorExistsWithText(string $selector, $text, int $timeout = 10): void
