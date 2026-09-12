@@ -8,7 +8,7 @@ use SetConnection;
 
 class SimilarSearchLogic
 {
-	public function __construct($setConnection)
+	public function __construct(array $setConnection)
 	{
 		$this->setConnection = $setConnection;
 		$this->result = new SimilarSearchResult();
@@ -64,7 +64,7 @@ LEFT JOIN sgf
 		$this->result->elapsed = microtime(true) - $start;
 	}
 
-	private function checkCandidate($candidate): void
+	private function checkCandidate(array $candidate): void
 	{
 		$correctMoves = SgfBoard::decodePositionString($candidate['correct_moves'] ?? '');
 		if (count($this->sourceBoard->correctMoves) != count($correctMoves))
@@ -87,7 +87,7 @@ LEFT JOIN sgf
 		$this->addCandidateToResult($candidate, $comparisonResult);
 	}
 
-	private function addCandidateToResult($candidate, BoardComparisonResult $comparisonResult): void
+	private function addCandidateToResult(array $candidate, BoardComparisonResult $comparisonResult): void
 	{
 		$setConnection = ClassRegistry::init('SetConnection')->findById($candidate['set_connection_id'])['SetConnection'];
 		// not so many should match, so I get the sql additional data manually instead in the original select, which is big

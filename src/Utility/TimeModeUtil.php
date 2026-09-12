@@ -25,7 +25,7 @@ class TimeModeUtil
 	public static int $ATTEMPT_STATUS_TIMEOUT = 4;
 	public static int $ATTEMPT_STATUS_SKIPPED = 5;
 
-	public static function attemptStatusName($statusID): string
+	public static function attemptStatusName(int $statusID): string
 	{
 		switch ($statusID)
 		{

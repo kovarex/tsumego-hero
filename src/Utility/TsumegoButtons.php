@@ -44,7 +44,7 @@ class TsumegoButtons extends ArrayObject
 		return $result;
 	}
 
-	public function fill(string $condition, TsumegoFilters $tsumegoFilters, $id)
+	public function fill(string $condition, TsumegoFilters $tsumegoFilters, string|int|null $id)
 	{
 		$queryBuilder = new TsumegoButtonsQueryBuilder($tsumegoFilters, $id);
 		$result = Util::query($queryBuilder->query->str());
@@ -78,7 +78,7 @@ class TsumegoButtons extends ArrayObject
 		$this->updateHighestTsumegoOrder();
 	}
 
-	private function filterByPartition($collectionSize): void
+	private function filterByPartition(int $collectionSize): void
 	{
 		$from = $this->partition * $collectionSize;
 		$to = ($this->partition + 1) * $collectionSize - 1;
@@ -92,13 +92,13 @@ class TsumegoButtons extends ArrayObject
 		)));
 	}
 
-	public function partitionByParameter($partition, $collectionSize): void
+	public function partitionByParameter(int $partition, int $collectionSize): void
 	{
 		$this->partition = $partition;
 		$this->filterByPartition($collectionSize);
 	}
 
-	public function partitionByCurrentOne($currentIndex, $collectionSize): void
+	public function partitionByCurrentOne(int $currentIndex, int $collectionSize): void
 	{
 		$this->partition = (int) floor($currentIndex / $collectionSize);
 
@@ -106,7 +106,7 @@ class TsumegoButtons extends ArrayObject
 			$this->filterByPartition($collectionSize);
 	}
 
-	private function deduceCurrentIndex($currentSetConnectionID): ?int
+	private function deduceCurrentIndex(int $currentSetConnectionID): ?int
 	{
 		return array_find_key((array) $this, function ($tsumegoButton) use ($currentSetConnectionID) {
 			return $tsumegoButton->setConnectionID === $currentSetConnectionID;
@@ -139,7 +139,7 @@ class TsumegoButtons extends ArrayObject
 		return ' #' . ($this->partition + 1);
 	}
 
-	public function exportCurrentAndPreviousLink($setFunction, $tsumegoFilters, $setConnectionID, $set)
+	public function exportCurrentAndPreviousLink(callable $setFunction, TsumegoFilters $tsumegoFilters, int $setConnectionID, array $set)
 	{
 		$indexOfCurrent = array_find_key((array) $this, function ($tsumegoButton) use ($setConnectionID) {
 			return $tsumegoButton->setConnectionID == $setConnectionID;

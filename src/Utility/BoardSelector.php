@@ -64,7 +64,7 @@ class BoardSelector
 
 	public static $GOLDEN_BOARD = ['name' => 'Golden', 'texture' => 'textureGolden', 'black' => 'black34.png', 'white' => 'white34.png'];
 
-	public static function filterValidBits($boardsSelection)
+	public static function filterValidBits(int $boardsSelection): int
 	{
 		$allowedBits = 0;
 		// linear search, but we search once per refresh, so w/e
@@ -73,7 +73,7 @@ class BoardSelector
 		return $boardsSelection & $allowedBits;
 	}
 
-	public static function getBoardInfo($index)
+	public static function getBoardInfo(int $index): array
 	{
 		// linear search, but we search once per refresh, so w/e
 		foreach (self::$boards as $board)
@@ -82,7 +82,7 @@ class BoardSelector
 		return self::$boards[0];
 	}
 
-	public static function selectBoard($boardsBitmask, $goldenTsumego, $setPreference)
+	public static function selectBoard(int $boardsBitmask, bool $goldenTsumego, ?int $setPreference): array
 	{
 		if (!is_null($setPreference))
 			return self::getBoardInfo($setPreference);

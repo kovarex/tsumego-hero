@@ -9,7 +9,7 @@ use TsumegoStatus;
 
 class TsumegoMerger
 {
-	public function __construct($masterTsumegoID, $slaveTsumegoID)
+	public function __construct(int $masterTsumegoID, int $slaveTsumegoID)
 	{
 		$this->masterTsumegoID = $masterTsumegoID;
 		$this->slaveTsumegoID = $slaveTsumegoID;

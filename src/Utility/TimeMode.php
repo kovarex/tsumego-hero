@@ -128,7 +128,7 @@ class TimeMode
 		return Util::query($query);
 	}
 
-	private function createSessionAttempts(array $currentTimeSession, $relevantTsumegos): void
+	private function createSessionAttempts(array $currentTimeSession, array $relevantTsumegos): void
 	{
 		shuffle($relevantTsumegos);
 		$relevantTsumegosCount = count($relevantTsumegos);
@@ -144,7 +144,7 @@ class TimeMode
 		}
 	}
 
-	private static function deduceAttemptStatus($result, $timeout)
+	private static function deduceAttemptStatus(array $result, bool $timeout): int
 	{
 		if ($timeout)
 			return TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT;
@@ -153,7 +153,7 @@ class TimeMode
 		return TimeModeUtil::$ATTEMPT_RESULT_SOLVED;
 	}
 
-	public function processPlayResult($previousTsumego, $result, float $seconds = 0, bool $timeout = false): void
+	public function processPlayResult(array $previousTsumego, array $result, float $seconds = 0, bool $timeout = false): void
 	{
 		if (!$this->currentSession)
 			return;

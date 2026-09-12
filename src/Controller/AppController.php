@@ -468,7 +468,7 @@ class AppController extends Controller
 		if (!is_null($boardsBitmask = Util::clearCookie('boards_bitmask')))
 		{
 			if (Auth::isLoggedIn())
-				Auth::saveUserField('boards_bitmask', BoardSelector::filterValidBits($boardsBitmask));
+				Auth::saveUserField('boards_bitmask', BoardSelector::filterValidBits((int) $boardsBitmask));
 		}
 		else
 			$boardsBitmask = BoardSelector::filterValidBits(Auth::isLoggedIn() ? Auth::getUser()['boards_bitmask'] : BoardSelector::$DEFAULT_BOARDS_BITMASK);

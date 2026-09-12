@@ -11,7 +11,7 @@ class TsumegoButtonsQueryBuilder
 	public string $description = '';
 	private TsumegoFilters $tsumegoFilters;
 
-	public function __construct($tsumegoFilters, $id)
+	public function __construct(TsumegoFilters $tsumegoFilters, string|int|null $id)
 	{
 		$this->query = new Query('FROM tsumego');
 		if ($tsumegoFilters->query != 'topics')
@@ -132,7 +132,7 @@ class TsumegoButtonsQueryBuilder
 		$this->query->conditions[] = 'tag_connection.tag_id=' . $tag['Tag']['id'];
 	}
 
-	private function querySet($id)
+	private function querySet(string|int|null $id): void
 	{
 		if ($this->tsumegoFilters->query != 'topics')
 			return;
