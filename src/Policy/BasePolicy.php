@@ -14,7 +14,7 @@ abstract class BasePolicy
 	/**
 	 * Whether the identity is an admin (false for anonymous).
 	 */
-	protected static function isAdmin($user): bool
+	protected static function isAdmin(?array $user): bool
 	{
 		return $user !== null && (bool) $user['isAdmin'];
 	}
@@ -22,7 +22,7 @@ abstract class BasePolicy
 	/**
 	 * Whether the identity has sandbox access: admin or premium.
 	 */
-	protected static function hasSandbox($user): bool
+	protected static function hasSandbox(?array $user): bool
 	{
 		if ($user === null)
 			return false;
@@ -33,7 +33,7 @@ abstract class BasePolicy
 	 * Whether the identity may propose SGF edits or tag connections.
 	 * Cross-cutting: used by both SgfPolicy and TagConnectionPolicy.
 	 */
-	public static function canPropose($user): bool
+	public static function canPropose(?array $user): bool
 	{
 		if ($user === null)
 			return false;

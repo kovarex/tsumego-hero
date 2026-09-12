@@ -6,17 +6,17 @@
  */
 class TagPolicy extends BasePolicy
 {
-	public static function canAdd($user): bool
+	public static function canAdd(?array $user): bool
 	{
 		return static::canPropose($user);
 	}
 
-	public static function canEdit($user): bool
+	public static function canEdit(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
 
-	public static function canEditAction($user): bool
+	public static function canEditAction(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
@@ -28,17 +28,17 @@ class TagPolicy extends BasePolicy
 	 * TODO: replace the hardcoded user id 72 with a dedicated role above admin
 	 * (e.g. "superadmin" / "site owner")
 	 */
-	public static function canDelete($user): bool
+	public static function canDelete(?array $user): bool
 	{
 		return static::isAdmin($user) && (int) $user['id'] === 72;
 	}
 
-	public static function canAcceptTagProposal($user): bool
+	public static function canAcceptTagProposal(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
 
-	public static function canRejectTagProposal($user): bool
+	public static function canRejectTagProposal(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}

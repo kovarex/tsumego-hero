@@ -8,7 +8,7 @@
  */
 class UserPolicy extends BasePolicy
 {
-	public static function canEditPreferences($user): bool
+	public static function canEditPreferences(?array $user): bool
 	{
 		return $user !== null;
 	}

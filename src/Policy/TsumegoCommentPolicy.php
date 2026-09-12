@@ -5,12 +5,12 @@
  */
 class TsumegoCommentPolicy extends BasePolicy
 {
-	public static function canAdd($user): bool
+	public static function canAdd(?array $user): bool
 	{
 		return $user !== null;
 	}
 
-	public static function canDelete($user, $comment): bool
+	public static function canDelete(?array $user, array $comment): bool
 	{
 		if (static::isAdmin($user))
 			return true;

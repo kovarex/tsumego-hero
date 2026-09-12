@@ -5,52 +5,52 @@
  */
 class AdminPolicy extends BasePolicy
 {
-	public static function canAdminstats($user): bool
+	public static function canAdminstats(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
 
-	public static function canUploads($user): bool
+	public static function canUploads(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
 
-	public static function canUserstats($user): bool
+	public static function canUserstats(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
 
-	public static function canUserstats3($user): bool
+	public static function canUserstats3(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
 
-	public static function canAcceptSGFProposal($user): bool
+	public static function canAcceptSGFProposal(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
 
-	public static function canRejectSGFProposal($user): bool
+	public static function canRejectSGFProposal(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
 
-	public static function canAcceptTagConnectionProposal($user): bool
+	public static function canAcceptTagConnectionProposal(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
 
-	public static function canRejectTagConnectionProposal($user): bool
+	public static function canRejectTagConnectionProposal(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
 
-	public static function canShowPublishSchedule($user): bool
+	public static function canShowPublishSchedule(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
 
-	public static function canData($user): bool
+	public static function canData(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}

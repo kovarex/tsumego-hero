@@ -7,7 +7,7 @@
  */
 class SetPolicy extends BasePolicy
 {
-	public static function canSandbox($user): bool
+	public static function canSandbox(?array $user): bool
 	{
 		return static::hasSandbox($user);
 	}
@@ -16,7 +16,7 @@ class SetPolicy extends BasePolicy
 	 * Viewing a set: private sets require login (sandbox is an admin/premium
 	 * workspace; user-owned private sets are also login-only for now).
 	 */
-	public static function canView($user, $set): bool
+	public static function canView(?array $user, array $set): bool
 	{
 		if ($set['public'] != 0)
 			return true;
@@ -30,7 +30,7 @@ class SetPolicy extends BasePolicy
 	/**
 	 * Solving a problem: sandbox sets require the sandbox permission.
 	 */
-	public static function canPlay($user, $set): bool
+	public static function canPlay(?array $user, array $set): bool
 	{
 		if (!($set['public'] == 0 && $set['user_id'] === null))
 			return true;
@@ -40,7 +40,7 @@ class SetPolicy extends BasePolicy
 	/**
 	 * Editing a set (add/remove/reorder tsumegos): admin or set owner.
 	 */
-	public static function canEdit($user, $set): bool
+	public static function canEdit(?array $user, array $set): bool
 	{
 		if (static::isAdmin($user))
 			return true;
@@ -52,7 +52,7 @@ class SetPolicy extends BasePolicy
 	/**
 	 * Deleting a set: owner can delete their own; admin can delete sandbox sets.
 	 */
-	public static function canDelete($user, $set): bool
+	public static function canDelete(?array $user, array $set): bool
 	{
 		if ($user === null)
 			return false;
@@ -66,7 +66,7 @@ class SetPolicy extends BasePolicy
 	/**
 	 * Creating a set: any logged-in user.
 	 */
-	public static function canCreate($user): bool
+	public static function canCreate(?array $user): bool
 	{
 		return $user !== null;
 	}
@@ -74,7 +74,7 @@ class SetPolicy extends BasePolicy
 	/**
 	 * Creating a sandbox set: admin only.
 	 */
-	public static function canCreateSandbox($user): bool
+	public static function canCreateSandbox(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
@@ -82,7 +82,7 @@ class SetPolicy extends BasePolicy
 	/**
 	 * Editing set-level settings (re-rate, alternative response, pass mode): admin only.
 	 */
-	public static function canEditSettings($user): bool
+	public static function canEditSettings(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
@@ -90,7 +90,7 @@ class SetPolicy extends BasePolicy
 	/**
 	 * Creating and adding a tsumego to a set: admin only.
 	 */
-	public static function canCreateAndAddTsumego($user): bool
+	public static function canCreateAndAddTsumego(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
@@ -98,7 +98,7 @@ class SetPolicy extends BasePolicy
 	/**
 	 * Adding a tsumego to a set: admin or set owner.
 	 */
-	public static function canAddTsumego($user, $set): bool
+	public static function canAddTsumego(?array $user, array $set): bool
 	{
 		return static::canEdit($user, $set);
 	}
@@ -106,7 +106,7 @@ class SetPolicy extends BasePolicy
 	/**
 	 * Removing a tsumego from a set: admin or set owner.
 	 */
-	public static function canRemoveTsumego($user, $set): bool
+	public static function canRemoveTsumego(?array $user, array $set): bool
 	{
 		return static::canEdit($user, $set);
 	}
@@ -114,7 +114,7 @@ class SetPolicy extends BasePolicy
 	/**
 	 * Reordering tsumegos in a set: admin or set owner.
 	 */
-	public static function canReorderTsumego($user, $set): bool
+	public static function canReorderTsumego(?array $user, array $set): bool
 	{
 		return static::canEdit($user, $set);
 	}

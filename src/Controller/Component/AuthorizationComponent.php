@@ -16,7 +16,7 @@ use App\Utility\Auth;
 
 class AuthorizationComponent extends Component
 {
-	public function authorize($resource, $action = null): void
+	public function authorize(string|array|object $resource, ?string $action = null): void
 	{
 		if (!$this->can($resource, $action))
 		{
@@ -26,7 +26,7 @@ class AuthorizationComponent extends Component
 		}
 	}
 
-	public function can($resource, $action = null): bool
+	public function can(string|array|object $resource, ?string $action = null): bool
 	{
 		$action = $action ?: $this->_Collection->getController()->request->params['action'];
 		if (is_array($resource))

@@ -6,12 +6,12 @@
  */
 class TsumegoIssuePolicy extends BasePolicy
 {
-	public static function canCreate($user): bool
+	public static function canCreate(?array $user): bool
 	{
 		return $user !== null;
 	}
 
-	public static function canClose($user, $issue): bool
+	public static function canClose(?array $user, array $issue): bool
 	{
 		if (static::isAdmin($user))
 			return true;
@@ -20,7 +20,7 @@ class TsumegoIssuePolicy extends BasePolicy
 		return (int) $issue['user_id'] === $user['id'];
 	}
 
-	public static function canReopen($user, $issue): bool
+	public static function canReopen(?array $user, array $issue): bool
 	{
 		if (static::isAdmin($user))
 			return true;
@@ -29,7 +29,7 @@ class TsumegoIssuePolicy extends BasePolicy
 		return (int) $issue['user_id'] === $user['id'];
 	}
 
-	public static function canMoveComment($user): bool
+	public static function canMoveComment(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}

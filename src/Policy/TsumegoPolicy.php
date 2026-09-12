@@ -5,37 +5,37 @@
  */
 class TsumegoPolicy extends BasePolicy
 {
-	public static function canEdit($user): bool
+	public static function canEdit(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
 
-	public static function canEditSettings($user): bool
+	public static function canEditSettings(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
 
-	public static function canMergeForm($user): bool
+	public static function canMergeForm(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
 
-	public static function canMergeFinalForm($user): bool
+	public static function canMergeFinalForm(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
 
-	public static function canSetupSgf($user): bool
+	public static function canSetupSgf(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
 
-	public static function canSetupSgfStep2($user): bool
+	public static function canSetupSgfStep2(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
 
-	public static function canPerformMerge($user): bool
+	public static function canPerformMerge(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}

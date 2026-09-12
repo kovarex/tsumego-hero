@@ -115,7 +115,7 @@ class PlayResultProcessorComponent extends Component
 		return false;
 	}
 
-	private function getNewStatus($solved, $currentStatus, &$result)
+	private function getNewStatus(bool $solved, string $currentStatus, array &$result): string
 	{
 		if ($solved)
 		{
@@ -169,7 +169,7 @@ class PlayResultProcessorComponent extends Component
 		return $previousTsumegoStatus['TsumegoStatus']['status'];
 	}
 
-	private function updateTsumegoAttempt(array $previousTsumego, array $result, $previousTsumegoStatus, float $seconds): void
+	private function updateTsumegoAttempt(array $previousTsumego, array $result, string $previousTsumegoStatus, float $seconds): void
 	{
 		if (Auth::isInTimeMode())
 			return;
@@ -241,7 +241,7 @@ class PlayResultProcessorComponent extends Component
 		ClassRegistry::init('Tsumego')->save($previousTsumego);
 	}
 
-	private function processDamage(array $result, $previousStatusValue): void
+	private function processDamage(array $result, string $previousStatusValue): void
 	{
 		if ($result['solved'])
 			return;
@@ -252,7 +252,7 @@ class PlayResultProcessorComponent extends Component
 		Auth::incrementUserField('damage', 1);
 	}
 
-	private function processXpChange(array $previousTsumego, array &$result, string $previousTsumegoStatus, $originalTsumegoRating): void
+	private function processXpChange(array $previousTsumego, array &$result, string $previousTsumegoStatus, int|float|string $originalTsumegoRating): void
 	{
 		if (!Auth::XPisGainedInCurrentMode())
 			return;
@@ -276,7 +276,7 @@ class PlayResultProcessorComponent extends Component
 		]);
 	}
 
-	private function processErrorAchievement(array $result, $previousTsumegoStatus, int $tsumegoID): void
+	private function processErrorAchievement(array $result, string $previousTsumegoStatus, int $tsumegoID): void
 	{
 		if (!Auth::XPisGainedInCurrentMode())
 			return;

@@ -6,12 +6,12 @@
  */
 class TagConnectionPolicy extends BasePolicy
 {
-	public static function canAdd($user): bool
+	public static function canAdd(?array $user): bool
 	{
 		return static::canPropose($user);
 	}
 
-	public static function canRemove($user, $tagConnection): bool
+	public static function canRemove(?array $user, array $tagConnection): bool
 	{
 		if (static::isAdmin($user))
 			return true;
