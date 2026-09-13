@@ -13,12 +13,12 @@
  *
  * Both PHPStan and Intelephense understand @phpstan-type/@phpstan-import-type.
  *
- * Column type mapping: int types emit `int|string`, decimal/float/double emit `int|float|string`,
- * everything else `string`, plus `|null` for nullable columns. The unions are intentional sound
- * supersets - actual runtime types on PHP 8.4 + mysqlnd are int for integer columns, float for
- * float/double and string for decimal/text/date types (verify with
- * scripts/check-pdo-column-types.php). Every column is marked optional (`?:`) because queries
- * frequently select subsets of columns.
+ * Column type mapping matches the verified runtime behavior (PHP 8.1+ with mysqlnd, checked via
+ * scripts/check-pdo-column-types.php on PHP 8.4 + MariaDB 11.4): int types emit `int`, float and
+ * double emit `float`, decimal and all date/text types emit `string` (PDO returns decimal as
+ * string by design to preserve precision; date types have no native PDO mapping). All target
+ * environments (dev ddev, CI, production NFSN) run PHP 8.4 with mysqlnd.
+ * Every column is marked optional (`?:`) because queries frequently select subsets of columns.
  *
  * Forum (phpbb_*) tables, phinxlog and cake_sessions are skipped - they are not
  * queried from the application code.
@@ -43,7 +43,7 @@ foreach ($pdo->query($sql) as $row)
 	$tables[$row['t']][] = $row;
 
 $intTypes = ['int', 'bigint', 'mediumint', 'smallint', 'tinyint', 'year'];
-$floatTypes = ['decimal', 'float', 'double'];
+$floatTypes = ['float', 'double'];
 
 $aliases = [];
 foreach ($tables as $table => $columns)
@@ -58,9 +58,9 @@ foreach ($tables as $table => $columns)
 	{
 		$type = 'string';
 		if (in_array($column['d'], $intTypes, true))
-			$type = 'int|string';
+			$type = 'int';
 		elseif (in_array($column['d'], $floatTypes, true))
-			$type = 'int|float|string';
+			$type = 'float';
 		if ($column['n'] === 'YES')
 			$type .= '|null';
 		$shape[] = $column['c'] . '?: ' . $type;

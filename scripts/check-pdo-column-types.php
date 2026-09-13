@@ -3,7 +3,7 @@
 /**
  * Verifies which PHP types the application's PDO connection returns for each column type
  * present in the database schema. Companion to scripts/generate-phpstan-row-types.php -
- * documents why the generated row aliases use the unions they use.
+ * documents the runtime types the generated row aliases are based on.
  *
  * Usage (inside ddev): ddev exec php scripts/check-pdo-column-types.php
  *
@@ -16,9 +16,8 @@
  *   - decimal -> string (exact text representation, e.g. '94.00')
  *   - float/double -> double
  *   - date/datetime/timestamp and all text types -> string
- * The aliases in src/Utility/RowTypes.php intentionally use unions (int|string,
- * int|float|string) as sound supersets that stay correct even on PDO configurations
- * that stringify all values (e.g. PDO::ATTR_EMULATE_PREPARES with libmysqlclient).
+ * The type aliases in src/Utility/RowTypes.php use these exact types: `int` for integer
+ * columns, `float` for float/double, `string` for decimal and date/text types.
  */
 $pdo = new PDO(
 	'mysql:host=db;dbname=db;charset=utf8',
