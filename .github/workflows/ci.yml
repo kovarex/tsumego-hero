@@ -194,6 +194,14 @@ jobs:
           mkdir -p /tmp/coverage
           vendor/bin/phpunit --exclude-group apache-only,disabled ${{ github.ref == 'refs/heads/master' && '--coverage-clover /tmp/coverage/clover.xml --coverage-php /tmp/coverage/phpunit.cov' || '' }}
 
+      - name: Upload browser timeout dumps
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-timeout-dumps
+          path: tmp/browser-timeout-*.html
+          if-no-files-found: ignore
+
       - name: Merge coverage files
         if: github.ref == 'refs/heads/master'
         run: php .github/ci/merge-coverage.php
