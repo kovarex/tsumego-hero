@@ -20,7 +20,7 @@ class TagsController extends AppController
 	public function addAction(): CakeResponse
 	{
 		$this->Authorization->authorize('Tag', 'add');
-		$tagName = $this->data['tag_name'];
+		$tagName = $this->request->data['tag_name'];
 		if (empty($tagName))
 		{
 			CookieFlash::set('Tag name not provided', 'error');
@@ -34,7 +34,7 @@ class TagsController extends AppController
 			return $this->redirect('/tags/add');
 		}
 
-		$tagDescription = $this->data['tag_description'];
+		$tagDescription = $this->request->data['tag_description'];
 		if (empty($tagDescription))
 		{
 			CookieFlash::set('Tag description not provided', 'error');
@@ -44,8 +44,8 @@ class TagsController extends AppController
 		$tag = [];
 		$tag['name'] = $tagName;
 		$tag['description'] = HtmlSanitizer::sanitize((string) $tagDescription);
-		$tag['hint'] = (int) $this->data['tag_hint'];
-		$tag['link'] = trim((string) ($this->data['tag_reference'] ?? ''));
+		$tag['hint'] = (int) $this->request->data['tag_hint'];
+		$tag['link'] = trim((string) ($this->request->data['tag_reference'] ?? ''));
 		$tag['user_id'] = Auth::getUserID();
 		$tag['approved'] = Auth::isAdmin() ? 1 : 0;
 		ClassRegistry::init('Tag')->save($tag);
@@ -175,7 +175,7 @@ class TagsController extends AppController
 
 		$tag = $tag['Tag'];
 
-		$tagDescription = $this->data['tag_description'];
+		$tagDescription = $this->request->data['tag_description'];
 		if (empty($tagDescription))
 		{
 			CookieFlash::set('Tag description not provided', 'error');
@@ -183,8 +183,8 @@ class TagsController extends AppController
 		}
 
 		$tag['description'] = HtmlSanitizer::sanitize((string) $tagDescription);
-		$tag['hint'] = (int) ($this->data['tag_hint']);
-		$tag['link'] = trim((string) ($this->data['tag_link'] ?? ''));
+		$tag['hint'] = (int) ($this->request->data['tag_hint']);
+		$tag['link'] = trim((string) ($this->request->data['tag_link'] ?? ''));
 		ClassRegistry::init('Tag')->save($tag);
 		return $this->redirect('/tags/view/' . $tagID);
 	}
@@ -203,8 +203,8 @@ class TagsController extends AppController
 		if (!$tn)
 			throw new NotFoundException('Tag not found');
 
-		if (isset($this->data['Tag']))
-			if ($this->data['Tag']['delete'] == $id)
+		if (isset($this->request->data['Tag']))
+			if ($this->request->data['Tag']['delete'] == $id)
 			{
 				$tags = $this->TagConnection->find('all', ['conditions' => ['tag_id' => $id]]);
 				if (!$tags)

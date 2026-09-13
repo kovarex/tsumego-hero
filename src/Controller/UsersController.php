@@ -48,11 +48,11 @@ class UsersController extends AppController
 	{
 		$this->set('_page', 'user');
 		$this->set('_title', 'Tsumego Hero - Sign In');
-		$this->set('sent', !empty($this->data));
-		if (empty($this->data))
+		$this->set('sent', !empty($this->request->data));
+		if (empty($this->request->data))
 			return;
 
-		$user = $this->User->findByEmail($this->data['User']['email']);
+		$user = $this->User->findByEmail($this->request->data['User']['email']);
 		if (!$user)
 			return;
 		$randomString = Util::generateRandomString(20);
@@ -61,7 +61,7 @@ class UsersController extends AppController
 
 		$email = $this->_getEmailer();
 		$email->from(['me@tsumego.com' => 'https://tsumego.com']);
-		$email->to($this->data['User']['email']);
+		$email->to($this->request->data['User']['email']);
 		$email->subject('Password reset for your Tsumego Hero account');
 		$email->send('Click the following button to reset your password. If you have not requested the password reset,
 then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/' . $randomString);
@@ -88,10 +88,10 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		if (!$user)
 			return null;
 
-		if ($this->data['User']['password'])
+		if ($this->request->data['User']['password'])
 		{
 			$user['User']['passwordreset'] = null;
-			$user['User']['password_hash'] = password_hash($this->data['User']['password'], PASSWORD_DEFAULT);
+			$user['User']['password_hash'] = password_hash($this->request->data['User']['password'], PASSWORD_DEFAULT);
 			$this->User->save($user);
 			CookieFlash::set("Password changed", 'success');
 			return $this->redirect("/users/login");
@@ -331,7 +331,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 	private function getUserFromNameOrEmail(): ?array
 	{
-		$input = $this->data['username'];
+		$input = $this->request->data['username'];
 		if (empty($input))
 			return null;
 		if ($user = $this->User->findByName($input))
@@ -362,7 +362,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			return null;
 		}
 
-		if (!$this->data['username'])
+		if (!$this->request->data['username'])
 			return null;
 		$user = $this->getUserFromNameOrEmail();
 		if (!$user)
@@ -371,7 +371,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			return null;
 		}
 
-		if (!$this->validateLogin($this->data, $user))
+		if (!$this->validateLogin($this->request->data, $user))
 		{
 			CookieFlash::set('Incorrect password', 'error');
 			return null;
@@ -438,19 +438,19 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('redirectUrl', $redirectUrl);
 		$this->set('redirectSignature', $signature);
 
-		if (empty($this->data))
+		if (empty($this->request->data))
 			return;
 
-		if ($this->data['User']['password1'] != $this->data['User']['password2'])
+		if ($this->request->data['User']['password1'] != $this->request->data['User']['password2'])
 		{
 			CookieFlash::set('passwords don\'t match', 'error');
 			return;
 		}
 
-		$userData = $this->data;
-		$userData['User']['password_hash'] = password_hash($this->data['User']['password1'], PASSWORD_DEFAULT);
-		$userData['User']['name'] = $this->data['User']['name'];
-		$userData['User']['email'] = $this->data['User']['email'];
+		$userData = $this->request->data;
+		$userData['User']['password_hash'] = password_hash($this->request->data['User']['password1'], PASSWORD_DEFAULT);
+		$userData['User']['name'] = $this->request->data['User']['name'];
+		$userData['User']['email'] = $this->request->data['User']['email'];
 
 		$this->User->create();
 		try
@@ -795,10 +795,10 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		// TODO: should be its own action
 		if ($id == Auth::getUserID())
 		{
-			if (!empty($this->data))
-				if (isset($this->data['User']['email']))
-					if (Validation::email($this->data['User']['email']))
-						Auth::saveUserField('email', $this->data['User']['email']);
+			if (!empty($this->request->data))
+				if (isset($this->request->data['User']['email']))
+					if (Validation::email($this->request->data['User']['email']))
+						Auth::saveUserField('email', $this->request->data['User']['email']);
 			if (isset($this->params['url']['undo']))
 				if ($this->params['url']['undo'] / 1111 == $id)
 					Auth::saveUserField('dbstorage', 1);
@@ -1072,9 +1072,9 @@ ORDER BY category DESC', [$user['User']['id']]));
 		$redirect = false;
 		$status = '';
 
-		if (!empty($this->data))
-			if (isset($this->data['User']['delete']))
-				if (password_verify($this->data['User']['delete'], Auth::getUser()['password_hash']))
+		if (!empty($this->request->data))
+			if (isset($this->request->data['User']['delete']))
+				if (password_verify($this->request->data['User']['delete'], Auth::getUser()['password_hash']))
 				{
 					Auth::saveUserField('dbstorage', 1111);
 					$redirect = true;
@@ -1099,9 +1099,9 @@ ORDER BY category DESC', [$user['User']['id']]));
 		if (!Auth::isLoggedIn())
 			return $this->redirect('/users/login');
 
-		if (!empty($this->data))
-			if (isset($this->data['User']['demote']))
-				if (password_verify($this->data['User']['demote'], Auth::getUser()['password_hash']))
+		if (!empty($this->request->data))
+			if (isset($this->request->data['User']['demote']))
+				if (password_verify($this->request->data['User']['demote'], Auth::getUser()['password_hash']))
 				{
 					Auth::saveUserField('isAdmin', 0);
 					$redirect = true;

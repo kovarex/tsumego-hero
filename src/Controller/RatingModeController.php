@@ -63,7 +63,7 @@ WHERE " . $queryCondition;
 		$play  = new Play(function ($name, $value) {
 			$this->set($name, $value);
 		});
-		$play->play($relatedTsumegos[0]['id'], $this->request, $this->data);
+		$play->play($relatedTsumegos[0]['id'], $this->request, $this->request->data);
 		$this->render('/Tsumegos/play');
 		return null;
 	}

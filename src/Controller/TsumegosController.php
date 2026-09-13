@@ -78,7 +78,7 @@ class TsumegosController extends AppController
 				if ($sc)
 					$this->PlayResultProcessor->markAsVisited((int) $sc['SetConnection']['tsumego_id']);
 			}
-			return new Play(function ($name, $value) { $this->set($name, $value); })->play((int) $setConnectionID, $this->request, $this->data);
+			return new Play(function ($name, $value) { $this->set($name, $value); })->play((int) $setConnectionID, $this->request, $this->request->data);
 		}
 
 		if (!$id)
@@ -97,7 +97,7 @@ class TsumegosController extends AppController
 		$setConnection = $this->deduceRelevantSetConnection($setConnections);
 		return new Play(function ($name, $value) {
 			$this->set($name, $value);
-		})->play($setConnection['SetConnection']['id'], $this->request, $this->data);
+		})->play($setConnection['SetConnection']['id'], $this->request, $this->request->data);
 	}
 
 	public function duplicatesearch(string $setConnectionID): mixed
@@ -144,7 +144,7 @@ class TsumegosController extends AppController
 		}
 		$tsumego = $tsumego['Tsumego'];
 
-		if ($this->data['delete'] == 'delete')
+		if ($this->request->data['delete'] == 'delete')
 		{
 			$tsumego['deleted'] = date('Y-m-d H:i:s');
 			ClassRegistry::init('Tsumego')->save($tsumego);
@@ -154,39 +154,39 @@ class TsumegosController extends AppController
 
 		try
 		{
-			$rating = Rating::parseRatingOrReadableRank($this->data['rating']);
+			$rating = Rating::parseRatingOrReadableRank($this->request->data['rating']);
 		}
 		catch (RatingParseException $e)
 		{
 			CookieFlash::set("Rating parse error:" . $e->getMessage(), 'error');
-			return $this->redirect($this->data['redirect']);
+			return $this->redirect($this->request->data['redirect']);
 		}
 
 		$minimumRating = null;
-		if (!empty($this->data['minimum-rating']))
+		if (!empty($this->request->data['minimum-rating']))
 		{
 			try
 			{
-				$minimumRating = Rating::parseRatingOrReadableRank($this->data['minimum-rating']);
+				$minimumRating = Rating::parseRatingOrReadableRank($this->request->data['minimum-rating']);
 			}
 			catch (RatingParseException $e)
 			{
 				CookieFlash::set("Minimum rating parse error:" . $e->getMessage(), 'error');
-				return $this->redirect($this->data['redirect']);
+				return $this->redirect($this->request->data['redirect']);
 			}
 		}
 
 		$maximumRating = null;
-		if (!empty($this->data['maximum-rating']))
+		if (!empty($this->request->data['maximum-rating']))
 		{
 			try
 			{
-				$maximumRating = Rating::parseRatingOrReadableRank($this->data['maximum-rating']);
+				$maximumRating = Rating::parseRatingOrReadableRank($this->request->data['maximum-rating']);
 			}
 			catch (RatingParseException $e)
 			{
 				CookieFlash::set("Maximum rating parse error:" . $e->getMessage(), 'error');
-				return $this->redirect($this->data['redirect']);
+				return $this->redirect($this->request->data['redirect']);
 			}
 		}
 
@@ -195,12 +195,12 @@ class TsumegosController extends AppController
 			&& $minimumRating > $maximumRating)
 		{
 			CookieFlash::set("Minimum rating can't be bigger than maximum", 'error');
-			return $this->redirect($this->data['redirect']);
+			return $this->redirect($this->request->data['redirect']);
 		}
 
 		// Normalize description: the edit form shows the display version (with colors swapped for visual context)
-		$newDescription = $this->data['description'];
-		if (!empty($this->data['color_swapped']))
+		$newDescription = $this->request->data['description'];
+		if (!empty($this->request->data['color_swapped']))
 			$newDescription = preg_replace_callback(
 				'/\b(Black|black|White|white)\b/',
 				fn($m) => ['Black' => 'White', 'black' => 'white', 'White' => 'Black', 'white' => 'black'][$m[1]],
@@ -213,15 +213,15 @@ class TsumegosController extends AppController
 			$tsumego['description'] = $newDescription;
 		}
 
-		if ($tsumego['hint'] != $this->data['hint'])
+		if ($tsumego['hint'] != $this->request->data['hint'])
 		{
-			AdminActivityLogger::log(AdminActivityType::HINT_EDIT, $tsumegoID, null, $tsumego['hint'], $this->data['hint']);
-			$tsumego['hint'] = $this->data['hint'];
+			AdminActivityLogger::log(AdminActivityType::HINT_EDIT, $tsumegoID, null, $tsumego['hint'], $this->request->data['hint']);
+			$tsumego['hint'] = $this->request->data['hint'];
 		}
-		if ($tsumego['author'] != $this->data['author'])
+		if ($tsumego['author'] != $this->request->data['author'])
 		{
-			AdminActivityLogger::log(AdminActivityType::AUTHOR_EDIT, $tsumegoID, null, $tsumego['author'], $this->data['author']);
-			$tsumego['author'] = $this->data['author'];
+			AdminActivityLogger::log(AdminActivityType::AUTHOR_EDIT, $tsumegoID, null, $tsumego['author'], $this->request->data['author']);
+			$tsumego['author'] = $this->request->data['author'];
 		}
 		if ($tsumego['minimum_rating'] != $minimumRating)
 		{
@@ -241,7 +241,7 @@ class TsumegosController extends AppController
 		$tsumego['rating'] = Util::clampOptional($rating, $minimumRating, $maximumRating);
 
 		ClassRegistry::init('Tsumego')->save($tsumego);
-		return $this->redirect($this->data['redirect']);
+		return $this->redirect($this->request->data['redirect']);
 	}
 
 	public function mergeForm(): mixed
@@ -375,16 +375,16 @@ class TsumegosController extends AppController
 	{
 		$this->Authorization->authorize('Sgf', 'propose');
 
-		$setConnectionID = $this->data["setConnectionID"];
+		$setConnectionID = $this->request->data["setConnectionID"];
 
 		$setConnection = ClassRegistry::init("SetConnection")->findById($setConnectionID);
 		if (!$setConnection)
 			return;
 		$tsumegoID = $setConnection['SetConnection']['tsumego_id'];
 
-		$sgfData = $this->data['sgf'];
-		$firstMoveColor = $this->data['firstMoveColor'];
-		$correctMoves = $this->data['correctMoves'];
+		$sgfData = $this->request->data['sgf'];
+		$firstMoveColor = $this->request->data['firstMoveColor'];
+		$correctMoves = $this->request->data['correctMoves'];
 
 		SgfController::validateSgfFormat($sgfData);
 
