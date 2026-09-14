@@ -317,15 +317,6 @@ class Browser
 		}
 	}
 
-	/**
-	 * Best effort page source dump for a wait timeout.
-	 *
-	 * The context and the timestamp are written even when the browser session is
-	 * already dead: URL and page source are fetched one by one, and a failing call
-	 * only records why it failed instead of throwing the whole dump away. That is
-	 * what tells a dead session apart from a page that simply never showed the
-	 * element. Never hides the original timeout.
-	 */
 	private function dumpPageSourceOnTimeout(string $context): void
 	{
 		self::$timeoutDumpCounter++;
@@ -339,7 +330,7 @@ class Browser
 		}
 		catch (Throwable)
 		{
-			// tmp/ may be missing or read only - the timeout itself is what matters
+			// Ignore file write errors, we don't want to mask the original timeout exception
 		}
 	}
 
