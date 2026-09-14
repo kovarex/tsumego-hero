@@ -346,7 +346,7 @@ class User extends AppModel
 	/**
 	 * Check if user is using Gravatar (not Google picture).
 	 *
-	 * @param array $user User data array
+	 * @param UserRow $user
 	 * @return bool True if user avatar comes from Gravatar
 	 */
 	public static function isUsingGravatar(array $user): bool
@@ -360,7 +360,7 @@ class User extends AppModel
 	/**
 	 * Check if user is a Google user (has external_id).
 	 *
-	 * @param array $user User data array
+	 * @param UserRow $user
 	 * @return bool True if user is a Google user
 	 */
 	public static function isGoogleUser(array $user): bool
@@ -389,7 +389,7 @@ class User extends AppModel
 	/**
 	 * Get the avatar URL for a user with priority: Google picture > Gravatar > default.
 	 *
-	 * @param array $user User data array (must have 'external_id', 'picture', 'email')
+	 * @param UserRow $user
 	 * @param int $size Desired avatar size in pixels (default 40)
 	 * @return string Avatar URL
 	 */
