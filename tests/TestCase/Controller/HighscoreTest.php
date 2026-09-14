@@ -24,9 +24,9 @@ class HighscoreTest extends TestCaseWithAuth
 
 		// Row 0 = header, rows 1-3 = users
 		$this->assertGreaterThanOrEqual(4, count($rows));
-		$this->assertRowContains($rows[1], '#1', 'TopPlayer', '2,800');
-		$this->assertRowContains($rows[2], '#2', 'MidPlayer', '2,200');
-		$this->assertRowContains($rows[3], '#3', 'LowPlayer', '1,500');
+		$this->assertRowContains($rows[1], '#1', 'DN_TopPlayer', '2,800');
+		$this->assertRowContains($rows[2], '#2', 'DN_MidPlayer', '2,200');
+		$this->assertRowContains($rows[3], '#3', 'DN_LowPlayer', '1,500');
 	}
 
 	/**
@@ -68,11 +68,11 @@ class HighscoreTest extends TestCaseWithAuth
 
 		// Header + 4 user rows
 		$this->assertGreaterThanOrEqual(5, count($rows));
-		$this->assertRowContains($rows[1], '#1', 'HighLevel');
+		$this->assertRowContains($rows[1], '#1', 'DN_HighLevel');
 		$this->assertRowContains($rows[1], '#1', '50');
-		$this->assertRowContains($rows[2], '#2', 'SameLevelMoreXP');
-		$this->assertRowContains($rows[3], '#3', 'SameLevelLessXP');
-		$this->assertRowContains($rows[4], '#4', 'LowLevel');
+		$this->assertRowContains($rows[2], '#2', 'DN_SameLevelMoreXP');
+		$this->assertRowContains($rows[3], '#3', 'DN_SameLevelLessXP');
+		$this->assertRowContains($rows[4], '#4', 'DN_LowLevel');
 	}
 
 	/**
@@ -91,8 +91,8 @@ class HighscoreTest extends TestCaseWithAuth
 		$dom = $this->getStringDom();
 		$rows = $dom->querySelectorAll('.data-table tr');
 
-		$this->assertRowContains($rows[1], '#1', 'HighLevel');
-		$this->assertRowContains($rows[2], '#2', 'kovarex');
+		$this->assertRowContains($rows[1], '#1', 'DN_HighLevel');
+		$this->assertRowContains($rows[2], '#2', 'DN_kovarex');
 	}
 
 	/**
@@ -130,8 +130,8 @@ class HighscoreTest extends TestCaseWithAuth
 
 		// Header row + 2 user rows
 		$this->assertGreaterThanOrEqual(3, count($rows));
-		$this->assertRowContains($rows[1], '1', 'TagMaster', '3');
-		$this->assertRowContains($rows[2], '2', 'TagNovice', '1');
+		$this->assertRowContains($rows[1], '1', 'DN_TagMaster', '3');
+		$this->assertRowContains($rows[2], '2', 'DN_TagNovice', '1');
 	}
 
 	/**
@@ -166,8 +166,8 @@ class HighscoreTest extends TestCaseWithAuth
 
 		// AchieverB has higher total (1+8=9) vs AchieverA (1+5=6)
 		$this->assertGreaterThanOrEqual(3, count($rows));
-		$this->assertRowContains($rows[1], '#1', 'AchieverB');
-		$this->assertRowContains($rows[2], '#2', 'AchieverA');
+		$this->assertRowContains($rows[1], '#1', 'DN_AchieverB');
+		$this->assertRowContains($rows[2], '#2', 'DN_AchieverA');
 	}
 
 	/**
@@ -211,8 +211,8 @@ class HighscoreTest extends TestCaseWithAuth
 		$this->testAction('users/time_mode', ['return' => 'view']);
 		$source = $this->view;
 		// FastPlayer should be before SlowPlayer
-		$fastPos = strpos($source, 'FastPlayer');
-		$slowPos = strpos($source, 'SlowPlayer');
+		$fastPos = strpos($source, 'DN_FastPlayer');
+		$slowPos = strpos($source, 'DN_SlowPlayer');
 		$this->assertNotFalse($fastPos);
 		$this->assertNotFalse($slowPos);
 		$this->assertLessThan($slowPos, $fastPos, 'FastPlayer (900pts) should appear before SlowPlayer (600pts)');
@@ -249,7 +249,7 @@ class HighscoreTest extends TestCaseWithAuth
 
 		$this->testAction('users/time_mode', ['return' => 'view']);
 		// Should only appear once with best score
-		$this->assertSame(1, substr_count($this->view, 'MultiPlayer'));
+		$this->assertSame(1, substr_count($this->view, 'DN_MultiPlayer'));
 		$this->assertTextContains('950', $this->view);
 	}
 
@@ -271,7 +271,7 @@ class HighscoreTest extends TestCaseWithAuth
 		foreach (['users/rating', 'users/highscore'] as $url)
 		{
 			$this->testAction($url, ['return' => 'view']);
-			$this->assertTextContains('kovarex', $this->view);
+			$this->assertTextContains('DN_kovarex', $this->view);
 			$this->assertTextContains('⋮', $this->view);
 			$this->assertTextContains('data-table__row--self', $this->view);
 			$this->assertTextContains('#111', $this->view);
@@ -291,7 +291,7 @@ class HighscoreTest extends TestCaseWithAuth
 		]);
 
 		$this->testAction('users/rating', ['return' => 'view']);
-		$this->assertTextContains('kovarex', $this->view);
+		$this->assertTextContains('DN_kovarex', $this->view);
 		// No gap separator when both users are within top 100
 		$this->assertTextNotContains('⋮', $this->view);
 	}
@@ -309,8 +309,8 @@ class HighscoreTest extends TestCaseWithAuth
 		]);
 
 		$this->testAction('users/rating', ['return' => 'view']);
-		$this->assertTextContains('TopPlayer', $this->view);
-		$this->assertTextContains('SecondPlayer', $this->view);
+		$this->assertTextContains('DN_TopPlayer', $this->view);
+		$this->assertTextContains('DN_SecondPlayer', $this->view);
 		$this->assertTextNotContains('data-table__row--self', $this->view);
 		$this->assertTextNotContains('⋮', $this->view);
 	}
@@ -331,9 +331,9 @@ class HighscoreTest extends TestCaseWithAuth
 		]);
 
 		$this->testAction('users/achievements', ['return' => 'view']);
-		$this->assertTextContains('AchPlayer', $this->view);
+		$this->assertTextContains('DN_AchPlayer', $this->view);
 		// kovarex has no achievements but still appears via self-view with 0
-		$this->assertTextContains('kovarex', $this->view);
+		$this->assertTextContains('DN_kovarex', $this->view);
 		$this->assertTextContains('0/' . Achievement::COUNT, $this->view);
 	}
 
@@ -354,9 +354,9 @@ class HighscoreTest extends TestCaseWithAuth
 		]);
 
 		$this->testAction('users/added_tags', ['return' => 'view']);
-		$this->assertTextContains('Tagger', $this->view);
+		$this->assertTextContains('DN_Tagger', $this->view);
 		// kovarex has no tags but appears via self-view
-		$this->assertTextContains('kovarex', $this->view);
+		$this->assertTextContains('DN_kovarex', $this->view);
 	}
 
 	/**
