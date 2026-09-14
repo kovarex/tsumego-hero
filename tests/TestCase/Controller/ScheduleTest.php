@@ -1,7 +1,5 @@
 <?php
 
-App::uses('ScheduleController', 'Controller');
-
 class ScheduleTest extends TestCaseWithAuth
 {
 	private function _sandboxAndTarget(array $sandboxNums, int $publicCount = 1): array

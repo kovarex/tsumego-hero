@@ -1,11 +1,13 @@
 <?php
+
+use App\Utility\TsumegoButton;
+
 /**
  * @var View $this
  * @var array $p
  * @var array $sandboxSets
  * @var array $publicSets
  */
-App::uses('TsumegoButton', 'Utility');
 $tomorrow = date('Y-m-d', strtotime('tomorrow'));
 ?>
 <div class="homeCenter2">

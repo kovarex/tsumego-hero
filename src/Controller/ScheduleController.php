@@ -1,12 +1,11 @@
 <?php
 
-App::uses('AdminActivityLogger', 'Utility');
-App::uses('AdminActivityType', 'Model');
-App::uses('NotFoundException', 'Routing/Error');
-App::uses('BadRequestException', 'Routing/Error');
-App::uses('CookieFlash', 'Utility');
-
 use App\Attribute\HttpPost;
+use App\Utility\AdminActivityLogger;
+use App\Utility\Auth;
+use App\Utility\CookieFlash;
+use App\Utility\TsumegoButton;
+use App\Utility\Util;
 
 class ScheduleController extends AppController
 {
@@ -76,11 +75,11 @@ ORDER BY schedule.date ASC");
 	{
 		$this->Authorization->authorize('Schedule');
 
-		$setIdFrom = (int) ($this->data['set_id_from'] ?? 0);
-		$targetSetId = (int) ($this->data['set_id_to'] ?? 0);
-		$num = (int) ($this->data['num'] ?? 0);
-		$count = (int) ($this->data['count'] ?? 1);
-		$startDate = (string) ($this->data['start_date'] ?? '');
+		$setIdFrom = (int) ($this->request->data['set_id_from'] ?? 0);
+		$targetSetId = (int) ($this->request->data['set_id_to'] ?? 0);
+		$num = (int) ($this->request->data['num'] ?? 0);
+		$count = (int) ($this->request->data['count'] ?? 1);
+		$startDate = (string) ($this->request->data['start_date'] ?? '');
 
 		if ($setIdFrom <= 0 || $targetSetId <= 0)
 			throw new BadRequestException('Invalid set ids.');
@@ -146,10 +145,10 @@ LIMIT {$count}");
 		$this->Authorization->authorize('Schedule');
 		$this->autoRender = false;
 
-		$setIdFrom = (int) ($this->params['url']['set_id_from'] ?? 0);
-		$targetSetId = (int) ($this->params['url']['set_id_to'] ?? 0);
-		$num = (int) ($this->params['url']['num'] ?? 0);
-		$count = (int) ($this->params['url']['count'] ?? 1);
+		$setIdFrom = (int) ($this->request->query['set_id_from'] ?? 0);
+		$targetSetId = (int) ($this->request->query['set_id_to'] ?? 0);
+		$num = (int) ($this->request->query['num'] ?? 0);
+		$count = (int) ($this->request->query['count'] ?? 1);
 
 		if ($setIdFrom <= 0 || $targetSetId <= 0 || $count < 1 || $count > 100)
 		{
@@ -172,7 +171,6 @@ ORDER BY sc.num ASC
 LIMIT {$count}");
 
 		// Pre-parse SGF to preview data so the client doesn't need to
-		App::uses('TsumegoButton', 'Utility');
 		$existingNums = ClassRegistry::init('SetConnection')->find('list', [
 			'fields' => ['num', 'num'],
 			'conditions' => ['set_id' => $targetSetId],
@@ -193,7 +191,7 @@ LIMIT {$count}");
 	 * Cancel a pending schedule entry. Admin only.
 	 */
 	#[HttpPost]
-	public function cancel($id): void
+	public function cancel(?string $id = null): void
 	{
 		$this->Authorization->authorize('Schedule');
 
@@ -240,7 +238,7 @@ LIMIT {$count}");
 	 * public set (to preserve solve history for existing public problems).
 	 * Returns false if the tsumego has no sandbox source to move from.
 	 */
-	public static function publishSingle($tsumegoID, $to): bool
+	public static function publishSingle(int|string|null $tsumegoID = null, int|string|null $to = null): bool
 	{
 		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID);
 		if (!$tsumego)
