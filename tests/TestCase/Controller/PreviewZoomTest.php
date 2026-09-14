@@ -23,7 +23,9 @@ class PreviewZoomTest extends ControllerTestCase
 
 		// Initially not zoomed
 		$zoomed = $browser->driver->executeScript(
-			'return document.documentElement.classList.contains("preview-zoomed")');
+			'var el = document.querySelector(".preview-zoom-toggle");'
+			. 'var c = el.closest(".set-view-main") || document.documentElement;'
+			. 'return c.classList.contains("preview-zoomed")');
 		$this->assertFalse($zoomed);
 
 		// Enable previews
@@ -31,7 +33,9 @@ class PreviewZoomTest extends ControllerTestCase
 			'var t = document.querySelector(".preview-zoom-toggle"); t.checked = true;'
 			. 't.dispatchEvent(new Event("change", {bubbles: true}));');
 		$zoomed = $browser->driver->executeScript(
-			'return document.documentElement.classList.contains("preview-zoomed")');
+			'var el = document.querySelector(".preview-zoom-toggle");'
+			. 'var c = el.closest(".set-view-main") || document.documentElement;'
+			. 'return c.classList.contains("preview-zoomed")');
 		$this->assertTrue($zoomed);
 	}
 }
