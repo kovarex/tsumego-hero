@@ -95,6 +95,19 @@ Router::connect(
 );
 
 /**
+ * Mistake Training
+ */
+Router::connect(
+	'/mistake-training/play/:setConnectionID',
+	['controller' => 'MistakeTraining', 'action' => 'play'],
+	['pass' => ['setConnectionID'], 'setConnectionID' => '[0-9]+']
+);
+Router::connect(
+	'/mistake-training',
+	['controller' => 'MistakeTraining', 'action' => 'play']
+);
+
+/**
  * Tsumego image generation for Open Graph / social sharing
  */
 Router::connect(
