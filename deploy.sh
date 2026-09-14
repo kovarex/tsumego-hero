@@ -1,6 +1,10 @@
 #!/bin/bash
 
-git pull
+if [ -z "$DEPLOY_REEXEC" ]; then
+    git pull || exit 1
+    exec env DEPLOY_REEXEC=1 bash "$0" "$@"
+fi
+
 set -e
 
 ROOT_DIR="$(cd "$(dirname "$0")"; pwd)"
