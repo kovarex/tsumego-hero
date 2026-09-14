@@ -1,17 +1,19 @@
 <?php
 
+namespace App\Utility;
+
 // the current range of board position is -31 to +31
 // the negative values is to support different transformations related to board comparisons
 class BoardPosition
 {
 	public const ZERO = (32 << 6) + 32;
 
-	public static function pack($x, $y): int
+	public static function pack(int $x, int $y): int
 	{
 		return ($x + 32) << 6 | ($y + 32);
 	}
 
-	public static function fromLetters($x, $y): int
+	public static function fromLetters(string $x, string $y): int
 	{
 		return BoardPosition::pack(ord($x) - ord('a'), ord($y) - ord('a'));
 	}
@@ -40,7 +42,7 @@ class BoardPosition
 		return self::pack(self::unpackX($packed), $size - 1 - self::unpackY($packed));
 	}
 
-	public static function mirrorAround(int $packed, $pivot): int
+	public static function mirrorAround(int $packed, int $pivot): int
 	{
 		$pivotX = self::unpackX($pivot);
 		$pivotY = self::unpackY($pivot);
@@ -49,14 +51,14 @@ class BoardPosition
 		return BoardPosition::pack($y, $x);
 	}
 
-	public static function horizontallyMirroredAround(int $packed, $pivot): int
+	public static function horizontallyMirroredAround(int $packed, int $pivot): int
 	{
 		$pivotX = self::unpackX($pivot);
 		$x = $pivotX + $pivotX - BoardPosition::unpackX($packed);
 		return BoardPosition::pack($x, BoardPosition::unpackY($packed));
 	}
 
-	public static function verticallyMirroredAround(int $packed, $pivot): int
+	public static function verticallyMirroredAround(int $packed, int $pivot): int
 	{
 		$pivotY = self::unpackY($pivot);
 		$y = $pivotY + $pivotY - BoardPosition::unpackY($packed);

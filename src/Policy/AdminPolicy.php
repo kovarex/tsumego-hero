@@ -1,58 +1,90 @@
 <?php
 
-App::uses('BasePolicy', 'Policy');
+namespace App\Policy;
 
 /**
  * Admin-only actions. "Only admin" is one method per action, like CakePHP 5.
+ *
+ * @phpstan-import-type UserRow from \App\Utility\RowTypes
  */
 class AdminPolicy extends BasePolicy
 {
-	public static function canAdminstats($user): bool
+	/**
+	 * @param UserRow|null $user
+	 */
+	public static function canAdminstats(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
 
-	public static function canUploads($user): bool
+	/**
+	 * @param UserRow|null $user
+	 */
+	public static function canUploads(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
 
-	public static function canUserstats($user): bool
+	/**
+	 * @param UserRow|null $user
+	 */
+	public static function canUserstats(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
 
-	public static function canUserstats3($user): bool
+	/**
+	 * @param UserRow|null $user
+	 */
+	public static function canUserstats3(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
 
-	public static function canAcceptSGFProposal($user): bool
+	/**
+	 * @param UserRow|null $user
+	 */
+	public static function canAcceptSGFProposal(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
 
-	public static function canRejectSGFProposal($user): bool
+	/**
+	 * @param UserRow|null $user
+	 */
+	public static function canRejectSGFProposal(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
 
-	public static function canAcceptTagConnectionProposal($user): bool
+	/**
+	 * @param UserRow|null $user
+	 */
+	public static function canAcceptTagConnectionProposal(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
 
-	public static function canRejectTagConnectionProposal($user): bool
+	/**
+	 * @param UserRow|null $user
+	 */
+	public static function canRejectTagConnectionProposal(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
 
-	public static function canShowPublishSchedule($user): bool
+	/**
+	 * @param UserRow|null $user
+	 */
+	public static function canShowPublishSchedule(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
 
-	public static function canData($user): bool
+	/**
+	 * @param UserRow|null $user
+	 */
+	public static function canData(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}

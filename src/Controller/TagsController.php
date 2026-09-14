@@ -1,14 +1,15 @@
 <?php
 
-App::uses('NotFoundException', 'Routing/Error');
-App::uses('HtmlSanitizer', 'Utility');
-App::uses('SetConnection', 'Model');
-
+use App\Utility\Auth;
+use App\Utility\ContributionRow;
+use App\Utility\CookieFlash;
+use App\Utility\HtmlSanitizer;
+use App\Utility\Util;
 use App\Attribute\HttpPost;
 
 class TagsController extends AppController
 {
-	public function add()
+	public function add(): void
 	{
 		$this->Authorization->authorize('Tag', 'add');
 		$allTags = $this->getAllTags();
@@ -19,7 +20,7 @@ class TagsController extends AppController
 	public function addAction(): CakeResponse
 	{
 		$this->Authorization->authorize('Tag', 'add');
-		$tagName = $this->data['tag_name'];
+		$tagName = $this->request->data['tag_name'];
 		if (empty($tagName))
 		{
 			CookieFlash::set('Tag name not provided', 'error');
@@ -33,7 +34,7 @@ class TagsController extends AppController
 			return $this->redirect('/tags/add');
 		}
 
-		$tagDescription = $this->data['tag_description'];
+		$tagDescription = $this->request->data['tag_description'];
 		if (empty($tagDescription))
 		{
 			CookieFlash::set('Tag description not provided', 'error');
@@ -43,8 +44,8 @@ class TagsController extends AppController
 		$tag = [];
 		$tag['name'] = $tagName;
 		$tag['description'] = HtmlSanitizer::sanitize((string) $tagDescription);
-		$tag['hint'] = (int) $this->data['tag_hint'];
-		$tag['link'] = trim((string) ($this->data['tag_reference'] ?? ''));
+		$tag['hint'] = (int) $this->request->data['tag_hint'];
+		$tag['link'] = trim((string) ($this->request->data['tag_reference'] ?? ''));
 		$tag['user_id'] = Auth::getUserID();
 		$tag['approved'] = Auth::isAdmin() ? 1 : 0;
 		ClassRegistry::init('Tag')->save($tag);
@@ -55,10 +56,10 @@ class TagsController extends AppController
 	}
 
 	/**
-	 * @param string|int|null $id
+	 * @param string|null $id
 	 * @return void
 	 */
-	public function view($id = null)
+	public function view(?string $id = null): void
 	{
 		$tn = $this->Tag->findById($id);
 		if (!$tn)
@@ -73,10 +74,10 @@ class TagsController extends AppController
 	}
 
 	/**
-	 * @param string|int|null $id User ID
+	 * @param string $id User ID
 	 * @return void
 	 */
-	public function user($id)
+	public function user(string $id): void
 	{
 		$u = $this->User->findById($id);
 		if (!$u)
@@ -145,7 +146,7 @@ class TagsController extends AppController
 		$this->set('pageSize', $pageSize);
 	}
 
-	public function edit($tagID): ?CakeResponse
+	public function edit(string $tagID): ?CakeResponse
 	{
 		$this->Authorization->authorize('Tag');
 		$tag = ClassRegistry::init('Tag')->findById($tagID);
@@ -162,7 +163,7 @@ class TagsController extends AppController
 	}
 
 	#[HttpPost]
-	public function editAction($tagID)
+	public function editAction(string $tagID)
 	{
 		$this->Authorization->authorize('Tag', 'editAction');
 		$tag = ClassRegistry::init('Tag')->findById($tagID);
@@ -174,7 +175,7 @@ class TagsController extends AppController
 
 		$tag = $tag['Tag'];
 
-		$tagDescription = $this->data['tag_description'];
+		$tagDescription = $this->request->data['tag_description'];
 		if (empty($tagDescription))
 		{
 			CookieFlash::set('Tag description not provided', 'error');
@@ -182,18 +183,18 @@ class TagsController extends AppController
 		}
 
 		$tag['description'] = HtmlSanitizer::sanitize((string) $tagDescription);
-		$tag['hint'] = (int) ($this->data['tag_hint']);
-		$tag['link'] = trim((string) ($this->data['tag_link'] ?? ''));
+		$tag['hint'] = (int) ($this->request->data['tag_hint']);
+		$tag['link'] = trim((string) ($this->request->data['tag_link'] ?? ''));
 		ClassRegistry::init('Tag')->save($tag);
 		return $this->redirect('/tags/view/' . $tagID);
 	}
 
 	/**
-	 * @param string|int $id Tag name ID
+	 * @param string $id Tag name ID
 	 * @return void
 	 */
 	#[HttpPost]
-	public function delete($id)
+	public function delete(string $id): void
 	{
 		$this->Authorization->authorize('Tag');
 		$this->loadModel('Tag');
@@ -202,8 +203,8 @@ class TagsController extends AppController
 		if (!$tn)
 			throw new NotFoundException('Tag not found');
 
-		if (isset($this->data['Tag']))
-			if ($this->data['Tag']['delete'] == $id)
+		if (isset($this->request->data['Tag']))
+			if ($this->request->data['Tag']['delete'] == $id)
 			{
 				$tags = $this->TagConnection->find('all', ['conditions' => ['tag_id' => $id]]);
 				if (!$tags)
@@ -217,9 +218,9 @@ class TagsController extends AppController
 		$this->set('tn', $tn);
 	}
 
-	public function index() {}
+	public function index(): void {}
 
-	public function acceptTagProposal($tagID): CakeResponse
+	public function acceptTagProposal(string $tagID): CakeResponse
 	{
 		$this->Authorization->authorize('Tag');
 
@@ -246,7 +247,7 @@ class TagsController extends AppController
 		return $this->redirect('/users/adminstats');
 	}
 
-	public function rejectTagProposal($tagID): CakeResponse
+	public function rejectTagProposal(string $tagID): CakeResponse
 	{
 		$this->Authorization->authorize('Tag');
 

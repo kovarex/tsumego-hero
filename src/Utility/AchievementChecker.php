@@ -1,5 +1,17 @@
 <?php
 
+namespace App\Utility;
+
+use Achievement;
+use Cache;
+use ClassRegistry;
+use TimeModeCategory;
+use TimeModeRank;
+use TimeModeSessionStatus;
+
+/**
+ * @phpstan-import-type AchievementRow from \App\Utility\RowTypes
+ */
 class AchievementChecker
 {
 	public function __construct()
@@ -11,6 +23,8 @@ class AchievementChecker
 	 * The fields the client needs to render an achievement popup from data.
 	 * Both the /tsumegos/result response and the page-load embed use this, so
 	 * the popup payload stays pure data and the client renders the markup.
+	 *
+	 * @param AchievementRow $achievement
 	 */
 	public static function toPopupData(array $achievement): array
 	{
@@ -24,7 +38,7 @@ class AchievementChecker
 		];
 	}
 
-	public function gained($achievementID): void
+	public function gained(int $achievementID): void
 	{
 		if ($this->existingStatuses[$achievementID])
 			return;
@@ -48,7 +62,7 @@ class AchievementChecker
 			$this->existingStatuses[$achievementStatus['AchievementStatus']['achievement_id']] = true;
 	}
 
-	public function unlocked($achievementID): bool
+	public function unlocked(int $achievementID): bool
 	{
 		return isset($this->existingStatuses[$achievementID]);
 	}
@@ -359,7 +373,7 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 		return $this;
 	}
 
-	public function setAchievementSpecial($s = null): AchievementChecker
+	public function setAchievementSpecial(?string $s = null): AchievementChecker
 	{
 		$tsIds = [];
 		$completed = '';
@@ -494,7 +508,7 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 		return $this;
 	}
 
-	public function checkSetAchievements($sid = null, $setRating = 0): AchievementChecker
+	public function checkSetAchievements(int $sid = 0, float|int $setRating = 0): AchievementChecker
 	{
 		$tNum = count(TsumegoUtil::collectTsumegosFromSet($sid));
 		$acA = ClassRegistry::init('AchievementCondition')->find('first', [

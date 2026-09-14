@@ -1,14 +1,10 @@
 <?php
 
-App::uses('AdminActivityLogger', 'Utility');
-App::uses('AdminActivityType', 'Model');
-App::uses('SgfParser', 'Utility');
-App::uses('NotFoundException', 'Routing/Error');
-App::uses('BadRequestException', 'Routing/Error');
-App::uses('ForbiddenException', 'Routing/Error');
-App::uses('UnauthorizedException', 'Routing/Error');
-
 use App\Attribute\HttpPost;
+use App\Utility\AdminActivityLogger;
+use App\Utility\Auth;
+use App\Utility\SgfParser;
+use App\Utility\TsumegoUtil;
 
 class SgfController extends AppController
 {
@@ -31,7 +27,7 @@ class SgfController extends AppController
 	}
 
 	#[HttpPost]
-	public function upload($setConnectionID)
+	public function upload(string $setConnectionID): void
 	{
 		$this->Authorization->authorize('Sgf', 'propose');
 
@@ -41,7 +37,7 @@ class SgfController extends AppController
 
 		// Use besogo textarea if provided, otherwise use file upload
 		$fileUpload = isset($_FILES['adminUpload']) && $_FILES['adminUpload']['error'] === UPLOAD_ERR_OK ? $_FILES['adminUpload'] : null;
-		$sgfDataOrFile = $this->data['sgfForBesogo'] ?? file_get_contents($fileUpload['tmp_name']);
+		$sgfDataOrFile = $this->request->data['sgfForBesogo'] ?? file_get_contents($fileUpload['tmp_name']);
 
 		if (!$sgfDataOrFile)
 			throw new BadRequestException('No SGF data provided.');

@@ -2,9 +2,7 @@
 
 declare(strict_types=1);
 
-require_once(__DIR__ . "/BoardBounds.php");
-require_once(__DIR__ . "/BoardPosition.php");
-require_once(__DIR__ . "/SgfBoard.php");
+namespace App\Utility;
 
 class SgfParser
 {
@@ -14,7 +12,7 @@ class SgfParser
 	 * @param string $sgf
 	 * @return SgfBoard
 	 */
-	public static function process(string $sgf, $correctMoves = []): SgfBoard
+	public static function process(string $sgf, array $correctMoves = []): SgfBoard
 	{
 		$boardSize = self::detectBoardSize($sgf);
 		$sgfArr = str_split($sgf);

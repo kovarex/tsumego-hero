@@ -1,5 +1,10 @@
 <?php
 
+namespace App\Utility;
+
+use Exception;
+use InvalidArgumentException;
+
 class SetImage
 {
 	public const MAX_EDGE = 1600;

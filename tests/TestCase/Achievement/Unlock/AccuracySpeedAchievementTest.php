@@ -1,7 +1,5 @@
 <?php
 
-App::uses('Achievement', 'Model');
-
 class AccuracySpeedAchievementTest extends AchievementTestCase
 {
 	// Test Achievement::Accuracy_I: Finish 11k or lower with 75%+ accuracy

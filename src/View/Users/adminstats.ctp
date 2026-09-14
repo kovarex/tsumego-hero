@@ -1,5 +1,10 @@
 <?php
 
+use App\Utility\AdminActivityRenderer;
+use App\Utility\SGFProposalsRenderer;
+use App\Utility\TagConnectionProposalsRenderer;
+use App\Utility\TagProposalsRenderer;
+
 /**
  * @var View $this
  * @var AdminActivityRenderer $adminActivityRenderer

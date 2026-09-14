@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Utility;
+
 class BoardSelector
 {
 	// Note: this data is duplicated in BoardSelector.js
@@ -60,9 +62,9 @@ class BoardSelector
 			['name' => 'Grandmaster', 'index' => 30, 'texture' => 'texture55', 'black' => 'blackGalaxy.png', 'white' => 'whiteGalaxy.png']
 		];
 
-	public static $GOLDEN_BOARD = ['name' => 'Golden', 'texture' => 'textureGolden', 'black' => 'black34.png', 'white' => 'white34.png'];
+	public static array $GOLDEN_BOARD = ['name' => 'Golden', 'texture' => 'textureGolden', 'black' => 'black34.png', 'white' => 'white34.png'];
 
-	public static function filterValidBits($boardsSelection)
+	public static function filterValidBits(int $boardsSelection): int
 	{
 		$allowedBits = 0;
 		// linear search, but we search once per refresh, so w/e
@@ -71,7 +73,7 @@ class BoardSelector
 		return $boardsSelection & $allowedBits;
 	}
 
-	public static function getBoardInfo($index)
+	public static function getBoardInfo(int $index): array
 	{
 		// linear search, but we search once per refresh, so w/e
 		foreach (self::$boards as $board)
@@ -80,7 +82,7 @@ class BoardSelector
 		return self::$boards[0];
 	}
 
-	public static function selectBoard($boardsBitmask, $goldenTsumego, $setPreference)
+	public static function selectBoard(int $boardsBitmask, bool $goldenTsumego, ?int $setPreference): array
 	{
 		if (!is_null($setPreference))
 			return self::getBoardInfo($setPreference);
@@ -99,5 +101,5 @@ class BoardSelector
 		return self::getBoardInfo($indexes[array_rand($indexes)]);
 	}
 
-	public static $DEFAULT_BOARDS_BITMASK = 0b11111111;
+	public static int $DEFAULT_BOARDS_BITMASK = 0b11111111;
 }

@@ -1,13 +1,15 @@
 <?php
 
+namespace App\Utility;
+
 class Query
 {
-	public function __construct($query)
+	public function __construct(string $query)
 	{
 		$this->query = $query;
 	}
 
-	public function str()
+	public function str(): string
 	{
 		$result = $this->prefix;
 		$result .= 'SELECT ';
@@ -25,11 +27,11 @@ class Query
 		return $result;
 	}
 
-	public $selects = [];
-	public $query = '';
-	public $conditions = [];
-	public $orderBy = [];
-	public $groupBy = [];
-	public $prefix;
-	public $suffix;
+	public array $selects = [];
+	public string $query = '';
+	public array $conditions = [];
+	public array $orderBy = [];
+	public array $groupBy = [];
+	public ?string $prefix = null;
+	public ?string $suffix = null;
 }

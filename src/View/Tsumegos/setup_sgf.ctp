@@ -6,7 +6,7 @@
  * @var string $sgfID
  */
 
-App::uses('ViteManifest', 'Utility');
+use App\Utility\ViteManifest;
 $this->start('script');
 echo ViteManifest::legacyScript('besogo');
 $this->end();

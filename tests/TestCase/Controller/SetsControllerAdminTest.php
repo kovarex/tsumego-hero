@@ -2,10 +2,6 @@
 
 use PHPUnitRetry\RetryTrait;
 
-App::uses('ControllerTestCase', 'TestSuite');
-App::uses('Browser', 'TestSuite');
-App::uses('ContextPreparator', 'TestSuite');
-
 /**
  * Tests for SetsController admin functions (create set/tsumego)
  *

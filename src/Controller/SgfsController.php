@@ -1,14 +1,14 @@
 <?php
 
-App::uses('NotFoundException', 'Routing/Error');
+use App\Utility\Auth;
 
 class SgfsController extends AppController
 {
 	/**
-	 * @param string|int|null $id
+	 * @param string|null $id
 	 * @return void
 	 */
-	public function view($id = null)
+	public function view(?string $id = null): void
 	{
 		$this->Authorization->authorize('Sgf');
 		$this->set('_page', 'play');

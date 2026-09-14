@@ -1,10 +1,12 @@
 <?php
 
-App::uses('DataTableRenderer', 'Utility');
+namespace App\Utility;
+
+use User;
 
 class TagProposalsRenderer extends DataTableRenderer
 {
-	public function __construct($urlParams)
+	public function __construct(array $urlParams)
 	{
 		$this->count = Util::query("SELECT COUNT(DISTINCT tsumego_id) as total FROM sgf WHERE accepted = false")[0]['total'];
 		parent::__construct($urlParams, 'tag_proposals_page', 'Tag proposals');

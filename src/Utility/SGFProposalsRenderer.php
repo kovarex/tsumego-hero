@@ -1,11 +1,13 @@
 <?php
 
-App::uses('DataTableRenderer', 'Utility');
-App::uses('SetConnection', 'Model');
+namespace App\Utility;
+
+use SetConnection;
+use User;
 
 class SGFProposalsRenderer extends DataTableRenderer
 {
-	public function __construct($urlParams)
+	public function __construct(array $urlParams)
 	{
 		$this->count = Util::query("SELECT COUNT(*) AS total FROM sgf p WHERE p.accepted = false AND EXISTS (SELECT 1 FROM set_connection sc WHERE sc.tsumego_id = p.tsumego_id)")[0]['total'];
 		parent::__construct($urlParams, 'sgf_proposals_page', 'SGF Proposals');

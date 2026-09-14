@@ -1,22 +1,17 @@
 <?php
 
-App::uses('CakeEmail', 'Network/Email');
-App::uses('Constants', 'Utility');
-App::uses('Validation', 'Utility');
-App::uses('SgfParser', 'Utility');
-App::uses('AdminActivityLogger', 'Utility');
-App::uses('SGFProposalsRenderer', 'Utility');
-App::uses('TagConnectionProposalsRenderer', 'Utility');
-App::uses('AdminActivityRenderer', 'Utility');
-App::uses('SGFProposalsRenderer', 'Utility');
-App::uses('TagProposalsRenderer', 'Utility');
-App::uses('AdminActivityType', 'Model');
-App::uses('NotFoundException', 'Routing/Error');
-App::uses('CookieFlash', 'Utility');
-
+use App\Utility\AdminActivityLogger;
+use App\Utility\AdminActivityRenderer;
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\CookieFlash;
+use App\Utility\SGFProposalsRenderer;
+use App\Utility\TagConnectionProposalsRenderer;
+use App\Utility\TagProposalsRenderer;
+use App\Utility\TimeModeUtil;
+use App\Utility\TsumegoUtil;
+use App\Utility\Util;
 use App\Attribute\HttpPost;
-
-App::uses('SetConnection', 'Model');
 
 class UsersController extends AppController
 {
@@ -49,15 +44,15 @@ class UsersController extends AppController
 	/**
 	 * @return void
 	 */
-	public function resetpassword()
+	public function resetpassword(): void
 	{
 		$this->set('_page', 'user');
 		$this->set('_title', 'Tsumego Hero - Sign In');
-		$this->set('sent', !empty($this->data));
-		if (empty($this->data))
+		$this->set('sent', !empty($this->request->data));
+		if (empty($this->request->data))
 			return;
 
-		$user = $this->User->findByEmail($this->data['User']['email']);
+		$user = $this->User->findByEmail($this->request->data['User']['email']);
 		if (!$user)
 			return;
 		$randomString = Util::generateRandomString(20);
@@ -66,19 +61,22 @@ class UsersController extends AppController
 
 		$email = $this->_getEmailer();
 		$email->from(['me@tsumego.com' => 'https://tsumego.com']);
-		$email->to($this->data['User']['email']);
+		$email->to($this->request->data['User']['email']);
 		$email->subject('Password reset for your Tsumego Hero account');
 		$email->send('Click the following button to reset your password. If you have not requested the password reset,
 then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/' . $randomString);
 	}
 
+	/**
+	 * @return CakeEmail
+	 */
 	public function _getEmailer()
 	{
 		return new CakeEmail();
 	}
 
 	// @param string|null $checksum Password reset checksum
-	public function newpassword($checksum = null): mixed
+	public function newpassword(?string $checksum = null): mixed
 	{
 		$this->set('_page', 'user');
 		$this->set('_title', 'Tsumego Hero - Sign In');
@@ -90,10 +88,10 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		if (!$user)
 			return null;
 
-		if ($this->data['User']['password'])
+		if ($this->request->data['User']['password'])
 		{
 			$user['User']['passwordreset'] = null;
-			$user['User']['password_hash'] = password_hash($this->data['User']['password'], PASSWORD_DEFAULT);
+			$user['User']['password_hash'] = password_hash($this->request->data['User']['password'], PASSWORD_DEFAULT);
 			$this->User->save($user);
 			CookieFlash::set("Password changed", 'success');
 			return $this->redirect("/users/login");
@@ -106,10 +104,10 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	}
 
 	/**
-	 * @param string|int|null $uid User ID
+	 * @param string|null $uid User ID
 	 * @return void
 	 */
-	public function userstats($uid = null)
+	public function userstats(?string $uid = null): void
 	{
 		$this->Authorization->authorize('Admin');
 		$this->set('_page', 'user');
@@ -159,10 +157,10 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	}
 
 	/**
-	 * @param string|int|null $sid Set ID
+	 * @param string|null $sid Set ID
 	 * @return void
 	 */
-	public function userstats3($sid = null)
+	public function userstats3(?string $sid = null): void
 	{
 		$this->Authorization->authorize('Admin');
 		$this->set('_page', 'user');
@@ -176,7 +174,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			$ur = $this->TsumegoAttempt->find('all', ['limit' => 500, 'order' => 'created DESC']);
 		else
 		{
-			$ts = TsumegoUtil::collectTsumegosFromSet($sid);
+			$ts = TsumegoUtil::collectTsumegosFromSet((int) $sid);
 			$ids = [];
 			$tsCount = count($ts);
 			for ($i = 0; $i < $tsCount; $i++)
@@ -213,7 +211,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	/**
 	 * @return void
 	 */
-	public function uploads()
+	public function uploads(): void
 	{
 		$this->Authorization->authorize('Admin');
 		$this->set('_page', 'set');
@@ -331,9 +329,9 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('tagConnectionProposalsRenderer', new TagConnectionProposalsRenderer($this->params['url']));
 	}
 
-	private function getUserFromNameOrEmail()
+	private function getUserFromNameOrEmail(): ?array
 	{
-		$input = $this->data['username'];
+		$input = $this->request->data['username'];
 		if (empty($input))
 			return null;
 		if ($user = $this->User->findByName($input))
@@ -364,7 +362,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			return null;
 		}
 
-		if (!$this->data['username'])
+		if (!$this->request->data['username'])
 			return null;
 		$user = $this->getUserFromNameOrEmail();
 		if (!$user)
@@ -373,7 +371,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			return null;
 		}
 
-		if (!$this->validateLogin($this->data, $user))
+		if (!$this->validateLogin($this->request->data, $user))
 		{
 			CookieFlash::set('Incorrect password', 'error');
 			return null;
@@ -440,19 +438,19 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('redirectUrl', $redirectUrl);
 		$this->set('redirectSignature', $signature);
 
-		if (empty($this->data))
+		if (empty($this->request->data))
 			return;
 
-		if ($this->data['User']['password1'] != $this->data['User']['password2'])
+		if ($this->request->data['User']['password1'] != $this->request->data['User']['password2'])
 		{
 			CookieFlash::set('passwords don\'t match', 'error');
 			return;
 		}
 
-		$userData = $this->data;
-		$userData['User']['password_hash'] = password_hash($this->data['User']['password1'], PASSWORD_DEFAULT);
-		$userData['User']['name'] = $this->data['User']['name'];
-		$userData['User']['email'] = $this->data['User']['email'];
+		$userData = $this->request->data;
+		$userData['User']['password_hash'] = password_hash($this->request->data['User']['password1'], PASSWORD_DEFAULT);
+		$userData['User']['name'] = $this->request->data['User']['name'];
+		$userData['User']['email'] = $this->request->data['User']['email'];
 
 		$this->User->create();
 		try
@@ -476,7 +474,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	/**
 	 * @return void
 	 */
-	public function highscore()
+	public function highscore(): void
 	{
 		$this->set('_page', 'levelHighscore');
 		$this->set('_title', 'Tsumego Hero - Highscore');
@@ -512,7 +510,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	/**
 	 * @return void
 	 */
-	public function added_tags()
+	public function added_tags(): void
 	{
 		$this->set('_page', 'tagHighscore');
 		$this->set('_title', 'Tsumego Hero - Added Tags');
@@ -570,7 +568,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	/**
 	 * @return void
 	 */
-	public function time_mode()
+	public function time_mode(): void
 	{
 		$this->set('_page', 'timeHighscore');
 		$this->set('_title', 'Tsumego Hero - Time Highscore');
@@ -718,7 +716,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	/**
 	 * @return void
 	 */
-	public function leaderboard()
+	public function leaderboard(): void
 	{
 		$this->set('_page', 'dailyHighscore');
 		$this->set('_title', 'Tsumego Hero - Daily Highscore');
@@ -763,7 +761,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->redirect('/tags/user/' . Auth::getUserID());
 	}
 
-	public function view($id = null): mixed
+	public function view(?string $id = null): mixed
 	{
 		$this->set('_page', 'user');
 		$this->loadModel('TsumegoStatus');
@@ -797,10 +795,10 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		// TODO: should be its own action
 		if ($id == Auth::getUserID())
 		{
-			if (!empty($this->data))
-				if (isset($this->data['User']['email']))
-					if (Validation::email($this->data['User']['email']))
-						Auth::saveUserField('email', $this->data['User']['email']);
+			if (!empty($this->request->data))
+				if (isset($this->request->data['User']['email']))
+					if (Validation::email($this->request->data['User']['email']))
+						Auth::saveUserField('email', $this->request->data['User']['email']);
 			if (isset($this->params['url']['undo']))
 				if ($this->params['url']['undo'] / 1111 == $id)
 					Auth::saveUserField('dbstorage', 1);
@@ -914,7 +912,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 	/**
 	 * @return void
 	 */
-	public function authors()
+	public function authors(): void
 	{
 		$this->loadModel('User');
 		$this->loadModel('Tsumego');
@@ -990,12 +988,12 @@ ORDER BY category DESC', [$user['User']['id']]));
 	/**
 	 * @return void
 	 */
-	public function logout()
+	public function logout(): void
 	{
 		Auth::logout();
 	}
 
-	private function validateLogin($data, $user): bool
+	private function validateLogin(array $data, array $user): bool
 	{
 		if (!$user)
 			return false;
@@ -1074,9 +1072,9 @@ ORDER BY category DESC', [$user['User']['id']]));
 		$redirect = false;
 		$status = '';
 
-		if (!empty($this->data))
-			if (isset($this->data['User']['delete']))
-				if (password_verify($this->data['User']['delete'], Auth::getUser()['password_hash']))
+		if (!empty($this->request->data))
+			if (isset($this->request->data['User']['delete']))
+				if (password_verify($this->request->data['User']['delete'], Auth::getUser()['password_hash']))
 				{
 					Auth::saveUserField('dbstorage', 1111);
 					$redirect = true;
@@ -1101,9 +1099,9 @@ ORDER BY category DESC', [$user['User']['id']]));
 		if (!Auth::isLoggedIn())
 			return $this->redirect('/users/login');
 
-		if (!empty($this->data))
-			if (isset($this->data['User']['demote']))
-				if (password_verify($this->data['User']['demote'], Auth::getUser()['password_hash']))
+		if (!empty($this->request->data))
+			if (isset($this->request->data['User']['demote']))
+				if (password_verify($this->request->data['User']['demote'], Auth::getUser()['password_hash']))
 				{
 					Auth::saveUserField('isAdmin', 0);
 					$redirect = true;
@@ -1119,11 +1117,11 @@ ORDER BY category DESC', [$user['User']['id']]));
 		$this->set('u', ['User' => $user]);
 	}
 
-	public function solveHistory($userID)
+	public function solveHistory(string $userID): void
 	{
 		$userName = Util::query("SELECT name FROM user WHERE id = ?", [$userID])[0]['name'] ?? 'Unknown';
 		$PAGE_SIZE = 500;
-		$pageIndex = isset($this->params->query['page']) ? max(1, (int) $this->params->query['page']) : 1;
+		$pageIndex = isset($this->request->query['page']) ? max(1, (int) $this->request->query['page']) : 1;
 		$count = Util::query("SELECT COUNT(*) FROM tsumego_attempt where user_id = ?", [$userID])[0]['COUNT(*)'];
 		$offset = ($pageIndex - 1) * $PAGE_SIZE;
 
@@ -1169,7 +1167,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		$this->set('attempts', $attempts);
 	}
 
-	public function acceptSGFProposal($sgfID)
+	public function acceptSGFProposal(string $sgfID)
 	{
 		$this->Authorization->authorize('Admin');
 
@@ -1199,7 +1197,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		return $this->redirect('/users/adminstats');
 	}
 
-	public function rejectSGFProposal($sgfID)
+	public function rejectSGFProposal(string $sgfID)
 	{
 		$this->Authorization->authorize('Admin');
 
@@ -1234,7 +1232,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		return $this->redirect('/users/adminstats');
 	}
 
-	public function acceptTagConnectionProposal($tagConnectionID)
+	public function acceptTagConnectionProposal(string $tagConnectionID)
 	{
 		$this->Authorization->authorize('Admin');
 
@@ -1261,7 +1259,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		return $this->redirect('/users/adminstats');
 	}
 
-	public function rejectTagConnectionProposal($tagConnectionID)
+	public function rejectTagConnectionProposal(string $tagConnectionID)
 	{
 		$this->Authorization->authorize('Admin');
 

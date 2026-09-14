@@ -1,6 +1,8 @@
 <?php
 
-App::uses('TsumegoUtil', 'Utility');
+
+use App\Utility\Auth;
+use App\Utility\Constants;
 
 class CronControllerTest extends TestCaseWithAuth
 {

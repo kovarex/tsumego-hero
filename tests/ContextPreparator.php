@@ -1,8 +1,14 @@
 <?php
 
-App::uses('BoardSelector', 'Utility');
-App::uses('SgfParser', 'Utility');
-App::uses('User', 'Model');
+use App\Utility\AchievementChecker;
+use App\Utility\AdminActivityLogger;
+use App\Utility\Auth;
+use App\Utility\BoardSelector;
+use App\Utility\Constants;
+use App\Utility\HeroPowers;
+use App\Utility\Level;
+use App\Utility\SgfParser;
+use App\Utility\Util;
 
 class ContextPreparator
 {
@@ -325,7 +331,6 @@ class ContextPreparator
 
 	private function prepareTsumegoIssue(array $issueInput, $tsumego): void
 	{
-		App::uses('TsumegoIssue', 'Model');
 
 		// Create the issue
 		ClassRegistry::init('TsumegoIssue')->create();
@@ -591,7 +596,6 @@ class ContextPreparator
 
 	private function prepareTimeModeRanks($timeModeRanks): void
 	{
-		App::uses('TimeModeRank', 'Model');
 		$allRanks = [
 			'15k' => TimeModeRank::RANK_15K, '14k' => TimeModeRank::RANK_14K,
 			'13k' => TimeModeRank::RANK_13K, '12k' => TimeModeRank::RANK_12K,
@@ -770,8 +774,6 @@ class ContextPreparator
 	 */
 	private function ensureAdminActivityTypes(): void
 	{
-		App::uses('AdminActivityLogger', 'Utility');
-		App::uses('AdminActivityType', 'Model');
 
 		// Define all activity types with their correct IDs from AdminActivityLogger constants
 		$types = [

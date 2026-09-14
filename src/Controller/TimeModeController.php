@@ -1,9 +1,12 @@
 <?php
 
-App::uses('TimeModeUtil', 'Utility');
-App::uses('NotFoundException', 'Routing/Error');
-App::uses('BadRequestException', 'Routing/Error');
-App::uses('Play', 'Controller/Component');
+use App\Utility\AchievementChecker;
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\Rating;
+use App\Utility\TimeMode;
+use App\Utility\TimeModeUtil;
+use App\Utility\Util;
 
 class TimeModeController extends AppController
 {
@@ -21,7 +24,7 @@ class TimeModeController extends AppController
 		return $this->redirect("/timeMode/play");
 	}
 
-	public function play($position = null): mixed
+	public function play(?string $position = null): mixed
 	{
 		if (!Auth::isLoggedIn())
 			return $this->redirect('/users/login');
@@ -57,12 +60,12 @@ class TimeModeController extends AppController
 		$play  = new Play(function ($name, $value) {
 			$this->set($name, $value);
 		});
-		$play->play($setConnection['SetConnection']['id'], $this->params, $this->data);
+		$play->play($setConnection['SetConnection']['id'], $this->request, $this->request->data);
 		$this->render('/Tsumegos/play');
 		return null;
 	}
 
-	public function skip($position = null): mixed
+	public function skip(?string $position = null): mixed
 	{
 		if (!$position)
 			return $this->redirect('/timeMode/play');
@@ -73,7 +76,7 @@ class TimeModeController extends AppController
 		return $this->redirect('/timeMode/play/' . ((int) $position + 1));
 	}
 
-	private function getRanksWithTsumegoCount()
+	private function getRanksWithTsumegoCount(): ?array
 	{
 		$ranks = ClassRegistry::init('TimeModeRank')->find('all', ['order' => 'id']);
 		$rankPartOfQuery = '';
@@ -178,7 +181,7 @@ ORDER BY MIN(rating);");
 		return null;
 	}
 
-	public function exportSessionToShow($session, $timeModeCategory, $timeModeRank): array
+	public function exportSessionToShow(array $session, array $timeModeCategory, array $timeModeRank): array
 	{
 		$result = [];
 		$result['id'] = $session['TimeModeSession']['id'];
@@ -261,7 +264,7 @@ ORDER BY MIN(rating);");
 		return null;
 	}
 
-	private function deduceFinishedSession($passedSessionID, TimeMode $timeMode): ?array
+	private function deduceFinishedSession(int|string|null $passedSessionID, TimeMode $timeMode): ?array
 	{
 		if ($finishedSessionID = $timeMode->checkFinishSession())
 			return ClassRegistry::init('TimeModeSession')->findById($finishedSessionID);
@@ -274,7 +277,7 @@ ORDER BY MIN(rating);");
 		return null;
 	}
 
-	public function result($timeModeSessionID = null): mixed
+	public function result(?string $timeModeSessionID = null): mixed
 	{
 		if (!Auth::isLoggedIn())
 			return $this->redirect("/users/login");

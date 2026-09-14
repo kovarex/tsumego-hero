@@ -1,7 +1,6 @@
 <?php
 
-App::uses('AppController', 'Controller');
-App::uses('Constants', 'Utility');
+use App\Utility\Constants;
 
 /**
  * TsumegoImagesController
@@ -16,10 +15,10 @@ class TsumegoImagesController extends AppController
 	/**
 	 * Generate a PNG image for a tsumego puzzle for Open Graph sharing
 	 *
-	 * @param int|null $setConnectionId The SetConnection ID (same as /id route)
+	 * @param string|null $setConnectionId The SetConnection ID (same as /id route)
 	 * @return CakeResponse PNG image with caching headers
 	 */
-	public function tsumegoImage($setConnectionId = null)
+	public function tsumegoImage(?string $setConnectionId = null)
 	{
 		if (!$setConnectionId || !is_numeric($setConnectionId))
 			throw new NotFoundException('Invalid set connection ID');
@@ -67,7 +66,7 @@ class TsumegoImagesController extends AppController
 	 * @param string $description Problem description (e.g., "[b] to live.")
 	 * @return string PNG image data
 	 */
-	private function _generatePuzzleImage($sgfString, $setTitle, $description)
+	private function _generatePuzzleImage(string $sgfString, string $setTitle, string $description): string
 	{
 		// Parse board size from SGF (default 19)
 		$boardSize = 19;
@@ -301,7 +300,7 @@ class TsumegoImagesController extends AppController
 	 * @param float $radius Stone radius in pixels
 	 * @param bool $isBlack True for black stone, false for white
 	 */
-	private function _drawStone(\GdImage $img, int $cx, int $cy, float $radius, bool $isBlack)
+	private function _drawStone(\GdImage $img, int $cx, int $cy, float $radius, bool $isBlack): void
 	{
 		// Shadow (slightly offset, darkened board color)
 		$shadowOffset = max(2, (int) ($radius * 0.08));
@@ -366,7 +365,7 @@ class TsumegoImagesController extends AppController
 	 * @param int $size Board size (9, 13, or 19)
 	 * @return array Array of [x, y] coordinates
 	 */
-	private function _getStarPoints($size)
+	private function _getStarPoints(int $size): array
 	{
 		if ($size === 19)
 		{
@@ -406,7 +405,7 @@ class TsumegoImagesController extends AppController
 	 * @param string $sgf SGF string
 	 * @return array Array of ['x' => int, 'y' => int, 'color' => 'B'|'W']
 	 */
-	private function _parseSgfStones($sgf)
+	private function _parseSgfStones(string $sgf): array
 	{
 		$stones = [];
 
@@ -439,7 +438,7 @@ class TsumegoImagesController extends AppController
 	 * @param string $coord Two-letter SGF coordinate
 	 * @return array ['x' => int, 'y' => int]
 	 */
-	private function _sgfCoordToXY($coord)
+	private function _sgfCoordToXY(string $coord): array
 	{
 		if (strlen($coord) !== 2)
 			return ['x' => 0, 'y' => 0];

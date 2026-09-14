@@ -1,5 +1,9 @@
 <?php
 
+use App\Utility\Auth;
+use App\Utility\HtmlSanitizer;
+use App\Utility\Util;
+
 /**
  * @var View $this
  * @var array $allTags

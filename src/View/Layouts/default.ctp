@@ -1,5 +1,13 @@
 <?php
 
+use App\Utility\AccountWidget;
+use App\Utility\AchievementChecker;
+use App\Utility\Auth;
+use App\Utility\CookieFlash;
+use App\Utility\TimeMode;
+use App\Utility\Util;
+use App\Utility\ViteManifest;
+
 /**
  * @var View $this
  * @var string $lightDark
@@ -18,11 +26,6 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="<?php echo $lightDark === 'dark' ? 'dark' : 'light'; ?>">
 <?php
-App::uses('Level', 'Utility');
-App::uses('CookieFlash', 'Utility');
-App::uses('ViteManifest', 'Utility');
-App::uses('AchievementChecker', 'Utility');
-require_once __DIR__ . '/../../Utility/AccountWidget.php';
 if (Configure::read('debug')) { ?>
 <script>
 	(function () {
@@ -412,7 +415,7 @@ echo ViteManifest::legacyScript('legacy');
 	<?php
 	if (Auth::isLoggedIn() && !$_COOKIE['disable-achievements'] && !empty($achievementUpdates))
 	{
-		$popupData = array_map(['AchievementChecker', 'toPopupData'], array_values($achievementUpdates));
+			$popupData = array_map([AchievementChecker::class, 'toPopupData'], array_values($achievementUpdates));
 		echo 'var achievementUpdates = ' . json_encode($popupData, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) . ';';
 		echo 'if (typeof showAchievementPopup === "function") achievementUpdates.forEach(showAchievementPopup);';
 	}

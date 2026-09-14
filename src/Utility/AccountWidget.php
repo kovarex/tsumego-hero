@@ -1,10 +1,12 @@
 <?php
 
+namespace App\Utility;
+
 class AccountWidget
 {
 	// to avoid flickering, I need to setup the original values also directly in the html
 	// as the javascript update is too late and it would "flicker" when the page is begin loaded
-	public static function render($timeMode)
+	public static function render(TimeMode $timeMode): void
 	{
 		if(!Auth::isLoggedIn())
 			return;
@@ -79,7 +81,7 @@ class AccountWidget
 			<div id="modeSelector" class="' . $modeSelectorClass . '" onclick="accountWidget.switchBarInMenu();"></div>';
 	}
 
-	private static function whatToShow()
+	private static function whatToShow(): string
 	{
 		if (Auth::isInTimeMode())
 			return 'time';
@@ -88,7 +90,7 @@ class AccountWidget
 		return 'level';
 	}
 
-	public static function renderJS($timeMode)
+	public static function renderJS(TimeMode $timeMode): void
 	{
 		echo "var accountWidget =";
 		if (Auth::isLoggedIn())

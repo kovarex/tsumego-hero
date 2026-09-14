@@ -1,10 +1,10 @@
 <?php
 
-App::uses('HeroPowers', 'Utility');
+use App\Utility\HeroPowers;
 
 class Achievement extends AppModel
 {
-	public function __construct($id = false, $table = null, $ds = null)
+	public function __construct(mixed $id = false, ?string $table = null, ?string $ds = null)
 	{
 		$id['table'] = 'achievement';
 		parent::__construct($id, $table, $ds);

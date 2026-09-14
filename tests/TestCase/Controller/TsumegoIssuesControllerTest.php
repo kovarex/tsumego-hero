@@ -3,8 +3,6 @@
 use Facebook\WebDriver\WebDriverBy;
 use PHPUnitRetry\RetryTrait;
 
-App::uses('TsumegoIssue', 'Model');
-
 /**
  * Tests for TsumegoIssuesController - specifically the global issues index page.
  *

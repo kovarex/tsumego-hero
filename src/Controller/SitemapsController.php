@@ -7,6 +7,8 @@
  *
  * @link https://www.sitemaps.org/protocol.html
  */
+use App\Utility\Util;
+
 class SitemapsController extends AppController
 {
 	/**
@@ -22,7 +24,7 @@ class SitemapsController extends AppController
 	 *
 	 * @return void
 	 */
-	public function index()
+	public function index(): void
 	{
 		$cacheKey = 'sitemap_xml';
 		$xml = Cache::read($cacheKey, 'long');
@@ -47,7 +49,7 @@ class SitemapsController extends AppController
 	 *
 	 * @return string[]
 	 */
-	private function _generateUrls()
+	private function _generateUrls(): array
 	{
 		$urls = [];
 

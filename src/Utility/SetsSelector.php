@@ -1,10 +1,10 @@
 <?php
 
-App::uses('Query', 'Utility');
+namespace App\Utility;
 
 class SetsSelector
 {
-	public function __construct($tsumegoFilters)
+	public function __construct(TsumegoFilters $tsumegoFilters)
 	{
 		$this->tsumegoFilters = $tsumegoFilters;
 		if ($this->tsumegoFilters->query == 'tags')
@@ -16,7 +16,7 @@ class SetsSelector
 		$this->problemsFound = $this->tsumegoFilters->calculateCount();
 	}
 
-	private function selectByTags()
+	private function selectByTags(): void
 	{
 		$query = new Query('FROM tag_connection tc');
 		$query->selects[] = 'tag.id AS tag_id';
@@ -58,7 +58,7 @@ class SetsSelector
 		}
 	}
 
-	private static function getTagColor($pos)
+	private static function getTagColor(int $pos): string
 	{
 		$c = [];
 		$c[0] = 'rgba(217, 135, 135, [o])';
@@ -90,7 +90,7 @@ class SetsSelector
 		return $c[$pos];
 	}
 
-	private function selectByTopics()
+	private function selectByTopics(): void
 	{
 		$query = new Query('FROM `set` s');
 		$query->selects[] = 's.`order` AS set_order';
@@ -142,7 +142,7 @@ class SetsSelector
 		}
 	}
 
-	private function selectByDifficulty()
+	private function selectByDifficulty(): void
 	{
 		$ranks = Rating::ranks();
 
@@ -382,6 +382,6 @@ class SetsSelector
 	}
 
 	public TsumegoFilters $tsumegoFilters;
-	public $sets = [];
+	public array $sets = [];
 	public int $problemsFound = 0;
 }

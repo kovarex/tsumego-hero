@@ -16,7 +16,8 @@
  * @group apache-only
  */
 
-App::uses('Util', 'Utility');
+
+use App\Utility\Util;
 
 class WebPServingTest extends CakeTestCase
 {

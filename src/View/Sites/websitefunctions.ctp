@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @var View $this
  */

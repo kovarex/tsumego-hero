@@ -1,7 +1,5 @@
 <?php
 
-App::uses('Tsumego', 'Model');
-
 class TsumegoTest extends CakeTestCase
 {
 	public function testCountPublicProblems(): void

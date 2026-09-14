@@ -1,11 +1,13 @@
 <?php
 
 use PHPUnitRetry\RetryTrait;
-
 /**
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
+use App\Utility\TimeModeUtil;
+use App\Utility\Util;
+
 class TsumegoMergeTest extends ControllerTestCase
 {
 	use RetryTrait;

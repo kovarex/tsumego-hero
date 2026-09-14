@@ -1,6 +1,10 @@
 <?php
 
-App::uses('Preferences', 'Utility');
+
+use App\Utility\Auth;
+use App\Utility\Preferences;
+use App\Utility\TsumegoFilters;
+use App\Utility\Util;
 
 class PreferencesTest extends CakeTestCase
 {

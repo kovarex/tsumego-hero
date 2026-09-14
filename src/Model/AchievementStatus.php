@@ -1,10 +1,10 @@
 <?php
 
-App::uses('AppController', 'Controller');
+use App\Utility\Util;
 
 class AchievementStatus extends AppModel
 {
-	public function __construct($id = false, $table = null, $ds = null)
+	public function __construct(mixed $id = false, ?string $table = null, ?string $ds = null)
 	{
 		$id['table'] =  'achievement_status';
 		parent::__construct($id, $table, $ds);

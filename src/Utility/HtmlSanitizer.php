@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Utility;
+
 class HtmlSanitizer
 {
 	/** @var string HTMLPurifier HTML.Allowed whitelist (tag[attr] list). */

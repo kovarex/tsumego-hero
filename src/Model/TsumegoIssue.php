@@ -1,10 +1,5 @@
 <?php
 
-App::uses('TsumegoComment', 'Model');
-App::uses('User', 'Model');
-App::uses('TsumegosController', 'Controller');
-App::uses('SetConnection', 'Model');
-
 /**
  * TsumegoIssue Model
  *
@@ -24,6 +19,8 @@ App::uses('SetConnection', 'Model');
  *   - 2 = closed
  *
  */
+use App\Utility\Util;
+
 class TsumegoIssue extends AppModel
 {
 	public $useTable = 'tsumego_issue';

@@ -1,12 +1,8 @@
 <?php
 
-App::uses('ForbiddenException', 'Routing/Error');
-App::uses('NotFoundException', 'Routing/Error');
-App::uses('UnprocessableEntityException', 'Lib/Error');
-
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
-
+use App\Lib\Error\UnprocessableEntityException;
 /**
  * Controller for managing tsumego comments (CRUD operations).
  *
@@ -14,6 +10,9 @@ use App\Attribute\HttpPost;
  * Comments can be standalone or associated with a TsumegoIssue.
 
  */
+use App\Utility\Auth;
+use App\Utility\Util;
+
 class TsumegoCommentsController extends AppController
 {
 	/**
@@ -76,11 +75,11 @@ class TsumegoCommentsController extends AppController
 	 * Only the comment author or an admin can delete a comment.
 	 * If this was the last comment in an issue, the issue is also deleted.
 	 *
-	 * @param int $id Comment ID to delete
+	 * @param string $id Comment ID to delete
 	 * @return CakeResponse|null
 	 */
 	#[HttpPost]
-	public function delete($id)
+	public function delete(string $id)
 	{
 		$TsumegoComment = ClassRegistry::init('TsumegoComment');
 		$comment = $TsumegoComment->findById($id);
@@ -117,11 +116,11 @@ class TsumegoCommentsController extends AppController
 	 *
 	 * Returns issues and standalone comments in the same format as initial SSR data.
 	 *
-	 * @param int $tsumegoId The tsumego ID
+	 * @param string $tsumegoId The tsumego ID
 	 * @return CakeResponse
 	 */
 	#[HttpGet]
-	public function index($tsumegoId)
+	public function index(string $tsumegoId)
 	{
 		$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
 
@@ -198,7 +197,7 @@ class TsumegoCommentsController extends AppController
 				'position' => $comment['TsumegoComment']['position'],
 			];
 
-		$counts = $TsumegoIssue->getCommentSectionCounts($tsumegoId);
+		$counts = $TsumegoIssue->getCommentSectionCounts((int) $tsumegoId);
 
 		$this->response->type('json');
 		$this->response->body(json_encode([

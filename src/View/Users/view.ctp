@@ -1,5 +1,14 @@
 <?php
 
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\HeroPowers;
+use App\Utility\Level;
+use App\Utility\Rating;
+use App\Utility\TimeGraphRenderer;
+use App\Utility\Util;
+use App\Utility\ValueGraphRenderer;
+
 /**
  * @var View $this
  * @var array $aCount
@@ -9,15 +18,12 @@
  * @var array $dailyResults
  * @var int $deletedTsumegoStatusCount
  * @var int $levelBar
- * @var string $timeGraph
+ * @var array $timeGraph
  * @var array $timeModeRanks
  * @var int $tsumegoCount
  * @var string $tsumegoStatusToRestCount
  * @var array $user
  */
-
-require_once __DIR__ . "/../../Utility/ValueGraphRenderer.php";
-require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 ?>
 
 <?php TimeGraphRenderer::renderScriptInclude(); ?>

@@ -1,5 +1,10 @@
 <?php
 
+use App\Utility\Rating;
+
+/**
+ * @phpstan-import-type UserRow from \App\Utility\RowTypes
+ */
 class User extends AppModel
 {
 	public const PREF_PLAYER_COLOR_RANDOM = 0;
@@ -7,7 +12,7 @@ class User extends AppModel
 	public const PREF_BOARD_ORIENTATION_RANDOM = 0;
 	public const PREF_BOARD_ORIENTATION_ORIGINAL = 1;
 
-	public function __construct($id = false, $table = null, $ds = null)
+	public function __construct(mixed $id = false, ?string $table = null, ?string $ds = null)
 	{
 		$id['table'] =  'user';
 		parent::__construct($id, $table, $ds);
@@ -51,7 +56,10 @@ class User extends AppModel
 		],
 	];
 
-	public static function renderPremium($user): string
+	/**
+	 * @param UserRow $user
+	 */
+	public static function renderPremium(array $user): string
 	{
 		$premium = $user['premium'] ?? 0;
 		if ($premium == 2 || $premium == 1)
@@ -59,7 +67,10 @@ class User extends AppModel
 		return '';
 	}
 
-	public static function getHighestRating($user): float
+	/**
+	 * @param UserRow $user
+	 */
+	public static function getHighestRating(array $user): float
 	{
 		$highestTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('first', [
 			'conditions' => ['user_id' => $user['id']],
@@ -69,7 +80,7 @@ class User extends AppModel
 		return $user['rating'];
 	}
 
-	public static function renderLink($id, $name = null, $externalID = null, $picture = null, $rating = null)
+	public static function renderLink(array|int|string $id, ?string $name = null, ?string $externalID = null, ?string $picture = null, int|float|string|null $rating = null): string
 	{
 		if (is_array($id))
 		{
@@ -77,10 +88,10 @@ class User extends AppModel
 				return self::renderLink($id['user_id'], $id['user_name'], $id['user_external_id'], $id['user_picture'], $id['user_rating']);
 			return self::renderLink($id['id'], $id['name'], $id['external_id'], $id['picture'], $id['rating']);
 		}
-		return User::renderLinkWithOptionalRank($id, Rating::getReadableRankFromRating($rating), $name, $externalID, $picture);
+		return User::renderLinkWithOptionalRank($id, $rating === null ? '' : Rating::getReadableRankFromRating((float) $rating), $name, $externalID, $picture);
 	}
 
-	public static function renderLinkWithOptionalRank($id, $rank = '', $name = null, $externalID = null, $picture = null)
+	public static function renderLinkWithOptionalRank(array|int|string $id, string $rank = '', ?string $name = null, ?string $externalID = null, ?string $picture = null): string
 	{
 		if (is_array($id))
 		{
@@ -90,8 +101,8 @@ class User extends AppModel
 		}
 
 		$image = '';
-		if (str_starts_with($name, 'g__') && $externalID != null)
-			$name = substr($name, 3);
+		if (str_starts_with((string) $name, 'g__') && $externalID != null)
+			$name = substr((string) $name, 3);
 		return '<a href="/users/view/' . $id . '">' . $image . h($name) . (empty($rank) ? '' : ' ' . $rank) . '</a>';
 	}
 }

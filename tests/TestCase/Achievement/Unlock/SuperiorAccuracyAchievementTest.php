@@ -1,13 +1,10 @@
 <?php
 
-App::uses('Achievement', 'Model');
-App::uses('AppController', 'Controller');
-App::uses('AchievementTestCase', 'TestCase/Achievement');
-App::uses('ContextPreparator', 'Test');
-
 /* Test Achievement::SUPERIOR_ACCURACY
  * "Finish a collection with 100% accuracy"
  * Requires: set with 100+ tsumegos, 100% accuracy (acA.value >= 100) */
+use App\Utility\AchievementChecker;
+
 class SuperiorAccuracyAchievementTest extends AchievementTestCase
 {
 	public function testSuperiorAccuracyAchievement()

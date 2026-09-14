@@ -1,6 +1,6 @@
 <?php
 
-App::uses('Rating', 'Utility');
+use App\Utility\Rating;
 
 class RatingTest extends CakeTestCase
 {

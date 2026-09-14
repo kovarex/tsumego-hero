@@ -1,4 +1,10 @@
 <?php
+
+use App\Utility\Constants;
+use App\Utility\Rating;
+use App\Utility\SetsSelector;
+use App\Utility\TsumegoFilters;
+
 /**
  * @var View $this  
  * @var array $setTiles

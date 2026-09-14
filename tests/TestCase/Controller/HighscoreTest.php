@@ -1,5 +1,8 @@
 <?php
 
+use App\Utility\Level;
+use App\Utility\Rating;
+
 class HighscoreTest extends TestCaseWithAuth
 {
 	/**

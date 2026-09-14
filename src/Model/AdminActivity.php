@@ -1,5 +1,10 @@
 <?php
 
+use App\Utility\BoardComparator;
+use App\Utility\SgfBoard;
+use App\Utility\SgfParser;
+use App\Utility\TsumegoButton;
+
 class AdminActivity extends AppModel
 {
 	public $useTable = 'admin_activity';
@@ -13,7 +18,7 @@ class AdminActivity extends AppModel
 		]
 	];
 
-	public static function renderChange($adminActivity)
+	public static function renderChange(array $adminActivity): string
 	{
 		switch ($adminActivity['type'])
 		{

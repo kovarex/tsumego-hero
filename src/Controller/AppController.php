@@ -1,13 +1,17 @@
 <?php
 
-App::uses('Auth', 'Utility');
-App::uses('BoardSelector', 'Utility');
-App::uses('TsumegoFilters', 'Utility');
-App::uses('AchievementChecker', 'Utility');
-App::uses('HeroPowers', 'Utility');
-App::uses('TimeMode', 'Utility');
-App::uses('ChangelogController', 'Controller');
+use App\Utility\AchievementChecker;
+use App\Utility\Auth;
+use App\Utility\BoardSelector;
+use App\Utility\Constants;
+use App\Utility\HeroPowers;
+use App\Utility\TimeMode;
+use App\Utility\TsumegoFilters;
+use App\Utility\Util;
 
+/**
+ * @phpstan-import-type UserRow from \App\Utility\RowTypes
+ */
 class AppController extends Controller
 {
 	public $viewClass = 'App';
@@ -26,7 +30,7 @@ class AppController extends Controller
 	 *
 	 * @return void
 	 */
-	public static function handleContribution($uid, $action)
+	public static function handleContribution(int $uid, string $action): void
 	{
 		$uc = ClassRegistry::init('UserContribution')->find('first', ['conditions' => ['user_id' => $uid]]);
 		if ($uc == null)
@@ -47,19 +51,22 @@ class AppController extends Controller
 		ClassRegistry::init('UserContribution')->save($uc);
 	}
 
-	public static function getAllTags()
+	public static function getAllTags(): array
 	{
 		return Util::query("SELECT * from tag WHERE approved = 1 ORDER BY tag.name");
 	}
 
-	protected function checkPictureLarge($u)
+	protected function checkPictureLarge(array $u): string
 	{
 		if (substr($u['User']['name'], 0, 3) == 'g__' && $u['User']['external_id'] != null)
 			return substr($u['User']['name'], 3);
 
 		return $u['User']['name'];
 	}
-	public static function checkPicture($user)
+	/**
+	 * @param UserRow $user
+	 */
+	public static function checkPicture(array $user): string
 	{
 		if (substr($user['name'], 0, 3) == 'g__' && $user['external_id'] != null)
 			return substr($user['name'], 3);
@@ -67,7 +74,7 @@ class AppController extends Controller
 		return $user['name'];
 	}
 
-	public static function saveDanSolveCondition($solvedTsumegoRank, $tId): void
+	public static function saveDanSolveCondition(string $solvedTsumegoRank, int $tId): void
 	{
 		if ($solvedTsumegoRank == '1d' || $solvedTsumegoRank == '2d' || $solvedTsumegoRank == '3d' || $solvedTsumegoRank == '4d' || $solvedTsumegoRank == '5d')
 		{
@@ -290,7 +297,7 @@ class AppController extends Controller
 	 * @param int $uid User ID
 	 * @return void
 	 */
-	protected function handleSearchSettings($uid)
+	protected function handleSearchSettings(int $uid): void
 	{
 		$this->loadModel('UserContribution');
 		$uc = $this->UserContribution->find('first', ['conditions' => ['user_id' => $uid]]);
@@ -467,7 +474,7 @@ class AppController extends Controller
 		if (!is_null($boardsBitmask = Util::clearCookie('boards_bitmask')))
 		{
 			if (Auth::isLoggedIn())
-				Auth::saveUserField('boards_bitmask', BoardSelector::filterValidBits($boardsBitmask));
+				Auth::saveUserField('boards_bitmask', BoardSelector::filterValidBits((int) $boardsBitmask));
 		}
 		else
 			$boardsBitmask = BoardSelector::filterValidBits(Auth::isLoggedIn() ? Auth::getUser()['boards_bitmask'] : BoardSelector::$DEFAULT_BOARDS_BITMASK);
@@ -492,5 +499,5 @@ class AppController extends Controller
 		$this->set('changelogTimestamps', ChangelogController::changelogTimestamps());
 	}
 
-	public function afterFilter() {}
+	public function afterFilter(): void {}
 }

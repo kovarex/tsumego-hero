@@ -1,6 +1,6 @@
 <?php
 
-require_once(__DIR__ . "/IntegerBounds.php");
+namespace App\Utility;
 
 class BoardBounds
 {
@@ -10,7 +10,7 @@ class BoardBounds
 		$this->y = new IntegerBounds();
 	}
 
-	public function add(int $packed)
+	public function add(int $packed): void
 	{
 		$this->x->add(BoardPosition::unpackX($packed));
 		$this->y->add(BoardPosition::unpackY($packed));

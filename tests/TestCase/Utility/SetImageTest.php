@@ -1,6 +1,7 @@
 <?php
 
-App::uses('SetImage', 'Utility');
+
+use App\Utility\SetImage;
 
 class SetImageTest extends CakeTestCase
 {

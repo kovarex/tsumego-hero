@@ -1,8 +1,14 @@
 <?php
 
-App::uses('SetConnection', 'Model');
-App::uses('TsumegoStatus', 'Model');
+namespace App\Utility;
 
+use ClassRegistry;
+use SetConnection;
+use TsumegoStatus;
+
+/**
+ * @phpstan-import-type TsumegoRow from \App\Utility\RowTypes
+ */
 class TsumegoUtil
 {
 	public static function getSetConnectionsWithTitles(int $tsumegoID): array
@@ -25,7 +31,7 @@ class TsumegoUtil
 		])], $rows);
 	}
 
-	public static function collectTsumegosFromSet(int $setID, ?array $tsumegoConditions = null)
+	public static function collectTsumegosFromSet(int $setID, ?array $tsumegoConditions = null): array
 	{
 		$scIds = [];
 		$scMap = [];
@@ -53,26 +59,32 @@ class TsumegoUtil
 
 	// Whether the problem is solved for the current mode. In time mode every
 	// problem is presented fresh, so this is false at page load until solved.
-	public static function isSolvedForCurrentMode($tsumego)
+	public static function isSolvedForCurrentMode(array $tsumego): bool
 	{
 		return !Auth::isInTimeMode() && TsumegoUtil::isRecentlySolved($tsumego['Tsumego']['status']);
 	}
 
-	public static function isRecentlySolved($status)
+	public static function isRecentlySolved(?string $status): bool
 	{
 		return $status == TsumegoStatus::$SOLVED || $status == TsumegoStatus::$MASTERED;
 	}
 
-	public static function isSolvedStatus($status)
+	public static function isSolvedStatus(?string $status): bool
 	{
 		return $status == TsumegoStatus::$SOLVED || $status == TsumegoStatus::$MASTERED || $status == TsumegoStatus::$REVIEW;
 	}
 
+	/**
+	 * @param TsumegoRow $tsumego
+	 */
 	public static function getXpValue(array $tsumego, float $multiplier = 1.0): int
 	{
 		return Rating::ratingToXP($tsumego['rating'], $multiplier);
 	}
 
+	/**
+	 * @param TsumegoRow $tsumego
+	 */
 	public static function getProgressDeletionCount(array $tsumego): int
 	{
 		$result = ClassRegistry::init('ProgressDeletion')->query('

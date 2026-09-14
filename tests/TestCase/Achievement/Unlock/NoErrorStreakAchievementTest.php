@@ -1,7 +1,7 @@
 <?php
 
-App::uses('Achievement', 'Model');
-App::uses('AchievementChecker', 'Utility');
+use App\Utility\AchievementChecker;
+use App\Utility\Auth;
 
 /**
  * No Error Streak Achievement Test

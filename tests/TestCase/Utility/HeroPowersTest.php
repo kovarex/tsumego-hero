@@ -1,9 +1,13 @@
 <?php
 
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\HeroPowers;
+use App\Utility\Rating;
+use App\Utility\TsumegoUtil;
+use App\Utility\Util;
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverExpectedCondition;
-
-App::uses('HeroPowers', 'Utility');
 
 class HeroPowersTest extends TestCaseWithAuth
 {

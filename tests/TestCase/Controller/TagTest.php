@@ -2,16 +2,17 @@
 
 use Facebook\WebDriver\WebDriverKeys;
 use PHPUnitRetry\RetryTrait;
-
-App::uses('ForbiddenException', 'Routing/Error');
-App::uses('TimeModeUtil', 'Utility');
-
 /**
  * Tag editor tests — React component with data-testid selectors.
  *
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\TimeModeUtil;
+use App\Utility\Util;
+
 class TagTest extends ControllerTestCase
 {
 	use RetryTrait;

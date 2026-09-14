@@ -1,10 +1,9 @@
 <?php
 
-App::uses('Preferences', 'Utility');
-App::uses('Query', 'Utility');
-App::uses('Rating', 'Utility');
-App::uses('Constants', 'Utility');
-App::uses('SetsController', 'Controller');
+namespace App\Utility;
+
+use ClassRegistry;
+use Exception;
 
 class TsumegoFilters
 {
@@ -64,7 +63,7 @@ class TsumegoFilters
 	 * @param string|null $newValue Optional new value to set
 	 * @return mixed The processed value
 	 */
-	private static function processItem(string $name, mixed $default, $processToResult = null, ?string $newValue = null)
+	private static function processItem(string $name, mixed $default, ?callable $processToResult = null, ?string $newValue = null): mixed
 	{
 		// Get current value from Preferences (handles both logged-in and guest storage)
 		$stringResult = Preferences::get($name, '');
@@ -101,7 +100,7 @@ class TsumegoFilters
 		return $processToResult ? $processToResult($stringResult) : $stringResult;
 	}
 
-	public function getSetTitle($set): string
+	public function getSetTitle(array $set): string
 	{
 		if ($this->query == 'topics')
 			return $set['Set']['title'];
@@ -113,7 +112,7 @@ class TsumegoFilters
 		throw new Exception('Unknown query: ""' . $this->query);
 	}
 
-	public function getSetID($set): string
+	public function getSetID(array $set): string
 	{
 		if ($this->query == 'topics')
 			return $set['Set']['id'];

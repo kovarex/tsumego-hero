@@ -1,15 +1,13 @@
 <?php
 
-App::uses('ControllerTestCase', 'TestSuite');
-App::uses('ContextPreparator', 'TestSuite');
-App::uses('Util', 'Utility');
-
 /**
  * Sandbox functionality tests.
  *
  * Covers access control, CRUD operations, and edge cases for the sandbox
  * (admin/premium problem curation workspace).
  */
+use App\Utility\Constants;
+
 class SandboxTest extends ControllerTestCase
 {
 	public function testSandboxRequiresLogin(): void

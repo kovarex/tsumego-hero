@@ -1,9 +1,12 @@
 <?php
 
-App::uses('Constants', 'Utility');
-App::uses('HeroPowers', 'Utility');
-App::uses('AchievementChecker', 'Utility');
-App::uses('Achievement', 'Model');
+use App\Utility\AchievementChecker;
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\HeroPowers;
+use App\Utility\Rating;
+use App\Utility\TsumegoUtil;
+use App\Utility\Util;
 
 class PlayResultProcessorComponentTest extends TestCaseWithAuth
 {

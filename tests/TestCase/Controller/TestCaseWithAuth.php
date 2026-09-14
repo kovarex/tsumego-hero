@@ -3,11 +3,12 @@
 use DOM\HTMLDocument as DOMDocument;
 use Facebook\WebDriver\WebDriverBy;
 use PHPUnitRetry\RetryTrait;
-
 /**
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
+use App\Utility\Auth;
+
 class TestCaseWithAuth extends ControllerTestCase
 {
 	use RetryTrait;

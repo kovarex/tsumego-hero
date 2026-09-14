@@ -2,11 +2,12 @@
 
 use Facebook\WebDriver\WebDriverBy;
 use PHPUnitRetry\RetryTrait;
-
 /**
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
+use App\Utility\Constants;
+
 class SitesControllerTest extends ControllerTestCase
 {
 	use RetryTrait;

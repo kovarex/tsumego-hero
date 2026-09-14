@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Utility;
+
 class RatingBounds
 {
 	public function __construct(?float $min = null, ?float $max = null)

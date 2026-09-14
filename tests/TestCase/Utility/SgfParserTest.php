@@ -1,8 +1,7 @@
 <?php
 
-App::uses('SgfParser', 'Utility');
-App::uses('SgfResult', 'Utility');
-App::uses('SgfBoard', 'Utility');
+use App\Utility\SgfBoard;
+use App\Utility\SgfParser;
 
 class SgfParserTest extends CakeTestCase
 {
@@ -11,7 +10,7 @@ class SgfParserTest extends CakeTestCase
 		$sgf = '(;GM[1]FF[4]CA[UTF-8]AP[CGoban:3]ST[2]RU[Japanese]SZ[19]KM[0.00]PW[White]PB[Black]AB[pd][dp]AW[pp][dd])';
 		$result = SgfParser::process($sgf);
 
-		$this->assertInstanceOf('SgfBoard', $result);
+		$this->assertInstanceOf(SgfBoard::class, $result);
 		$this->assertEquals(19, $result->size);
 		$this->assertIsArray($result->stones);
 		$this->assertIsArray($result->info);

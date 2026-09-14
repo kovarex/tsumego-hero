@@ -1,10 +1,8 @@
 <?php
 
-use Facebook\WebDriver\WebDriverBy;
 use PHPUnitRetry\RetryTrait;
-
-App::uses('AdminActivityLogger', 'Utility');
-App::uses('AdminActivityType', 'Model');
+use App\Utility\Constants;
+use App\Utility\Util;
 
 /**
  * AdminStatsControllerTest
@@ -64,8 +62,6 @@ class AdminStatsControllerTest extends ControllerTestCase
 	 */
 	public function testSetLevelActivities()
 	{
-		App::uses('AdminActivityLogger', 'Utility');
-		App::uses('AdminActivityType', 'Model');
 
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
@@ -94,8 +90,6 @@ class AdminStatsControllerTest extends ControllerTestCase
 	 */
 	public function testActivityPagination()
 	{
-		App::uses('AdminActivityLogger', 'Utility');
-		App::uses('AdminActivityType', 'Model');
 
 		// Build activities array programmatically
 		$activities = [];
@@ -136,8 +130,6 @@ class AdminStatsControllerTest extends ControllerTestCase
 
 	public function testMultiplePaginationsIndependent()
 	{
-		App::uses('AdminActivityLogger', 'Utility');
-		App::uses('AdminActivityType', 'Model');
 
 		// Build activities array programmatically
 		$activities = [];
@@ -187,8 +179,6 @@ class AdminStatsControllerTest extends ControllerTestCase
 	 */
 	public function testAllActivityTypesDisplay()
 	{
-		App::uses('AdminActivityLogger', 'Utility');
-		App::uses('AdminActivityType', 'Model');
 
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],

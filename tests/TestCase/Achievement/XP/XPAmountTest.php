@@ -1,7 +1,6 @@
 <?php
 
-App::uses('Achievement', 'Model');
-App::uses('Level', 'Utility');
+use App\Utility\AchievementChecker;
 
 /**
  * Achievement XP Amount Tests

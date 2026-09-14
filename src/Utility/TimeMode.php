@@ -1,10 +1,12 @@
 <?php
 
-App::uses('TimeModeUtil', 'Utility');
-App::uses('RatingBounds', 'Utility');
-App::uses('ForbiddenException', 'Routing/Error');
-App::uses('InternalErrorException', 'Routing/Error');
-App::uses('NotFoundException', 'Routing/Error');
+namespace App\Utility;
+
+use ClassRegistry;
+use DateTime;
+use ForbiddenException;
+use InternalErrorException;
+use NotFoundException;
 
 class TimeMode
 {
@@ -126,7 +128,7 @@ class TimeMode
 		return Util::query($query);
 	}
 
-	private function createSessionAttempts(array $currentTimeSession, $relevantTsumegos): void
+	private function createSessionAttempts(array $currentTimeSession, array $relevantTsumegos): void
 	{
 		shuffle($relevantTsumegos);
 		$relevantTsumegosCount = count($relevantTsumegos);
@@ -142,7 +144,7 @@ class TimeMode
 		}
 	}
 
-	private static function deduceAttemptStatus($result, $timeout)
+	private static function deduceAttemptStatus(array $result, bool $timeout): int
 	{
 		if ($timeout)
 			return TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT;
@@ -151,7 +153,7 @@ class TimeMode
 		return TimeModeUtil::$ATTEMPT_RESULT_SOLVED;
 	}
 
-	public function processPlayResult($previousTsumego, $result, float $seconds = 0, bool $timeout = false): void
+	public function processPlayResult(array $previousTsumego, array $result, float $seconds = 0, bool $timeout = false): void
 	{
 		if (!$this->currentSession)
 			return;
@@ -393,11 +395,11 @@ class TimeMode
 
 	public $currentSession;
 	public $rank;
-	public $secondsToSolve = 0; // remaining time
+	public int $secondsToSolve = 0; // remaining time
 	public $overallSecondsToSolve; // the time to solve the problem
-	public $successCount = 0;
-	public $failCount = 0;
-	public $overallCount = 0;
+	public int $successCount = 0;
+	public int $failCount = 0;
+	public int $overallCount = 0;
 	public ?int $currentOrder = null;
 	public ?int $servedOrder = null;
 }

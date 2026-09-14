@@ -1,8 +1,6 @@
 <?php
 
-App::uses('Achievement', 'Model');
-App::uses('AchievementTestCase', 'TestCase/Achievement');
-App::uses('ContextPreparator', 'TestCase');
+use App\Utility\Rating;
 
 /* These achievements unlock when user reaches specific rating thresholds:
  * - Achievement::RATING_6_KYU

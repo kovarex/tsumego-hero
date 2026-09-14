@@ -1,6 +1,9 @@
 <?php
 
-App::uses('TsumegoButtonsQueryBuilder', 'Utility');
+namespace App\Utility;
+
+use ArrayObject;
+use TsumegosController;
 
 class TsumegoButtons extends ArrayObject
 {
@@ -31,7 +34,7 @@ class TsumegoButtons extends ArrayObject
 			$this->partitionByParameter($partition, $tsumegoFilters->collectionSize);
 	}
 
-	public static function deriveFrom(TsumegoButtons $other)
+	public static function deriveFrom(TsumegoButtons $other): TsumegoButtons
 	{
 		$result = new TsumegoButtons();
 		$result->highestTsumegoOrder = $other->highestTsumegoOrder;
@@ -41,7 +44,7 @@ class TsumegoButtons extends ArrayObject
 		return $result;
 	}
 
-	public function fill(string $condition, TsumegoFilters $tsumegoFilters, $id)
+	public function fill(string $condition, TsumegoFilters $tsumegoFilters, string|int|null $id): void
 	{
 		$queryBuilder = new TsumegoButtonsQueryBuilder($tsumegoFilters, $id);
 		$result = Util::query($queryBuilder->query->str());
@@ -75,7 +78,7 @@ class TsumegoButtons extends ArrayObject
 		$this->updateHighestTsumegoOrder();
 	}
 
-	private function filterByPartition($collectionSize): void
+	private function filterByPartition(int $collectionSize): void
 	{
 		$from = $this->partition * $collectionSize;
 		$to = ($this->partition + 1) * $collectionSize - 1;
@@ -89,28 +92,28 @@ class TsumegoButtons extends ArrayObject
 		)));
 	}
 
-	public function partitionByParameter($partition, $collectionSize): void
+	public function partitionByParameter(int $partition, int $collectionSize): void
 	{
 		$this->partition = $partition;
 		$this->filterByPartition($collectionSize);
 	}
 
-	public function partitionByCurrentOne($currentIndex, $collectionSize): void
+	public function partitionByCurrentOne(?int $currentIndex, int $collectionSize): void
 	{
-		$this->partition = (int) floor($currentIndex / $collectionSize);
+		$this->partition = $currentIndex === null ? 0 : (int) floor($currentIndex / $collectionSize);
 
 		if ($collectionSize < count($this))
 			$this->filterByPartition($collectionSize);
 	}
 
-	private function deduceCurrentIndex($currentSetConnectionID): ?int
+	private function deduceCurrentIndex(int $currentSetConnectionID): ?int
 	{
 		return array_find_key((array) $this, function ($tsumegoButton) use ($currentSetConnectionID) {
 			return $tsumegoButton->setConnectionID === $currentSetConnectionID;
 		});
 	}
 
-	private function updateHighestTsumegoOrder()
+	private function updateHighestTsumegoOrder(): void
 	{
 		$this->highestTsumegoOrder = -1;
 		$this->currentOrder = -1;
@@ -136,7 +139,7 @@ class TsumegoButtons extends ArrayObject
 		return ' #' . ($this->partition + 1);
 	}
 
-	public function exportCurrentAndPreviousLink($setFunction, $tsumegoFilters, $setConnectionID, $set)
+	public function exportCurrentAndPreviousLink(callable $setFunction, TsumegoFilters $tsumegoFilters, int $setConnectionID, array $set): void
 	{
 		$indexOfCurrent = array_find_key((array) $this, function ($tsumegoButton) use ($setConnectionID) {
 			return $tsumegoButton->setConnectionID == $setConnectionID;

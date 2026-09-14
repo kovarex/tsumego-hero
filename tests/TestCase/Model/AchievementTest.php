@@ -1,7 +1,5 @@
 <?php
 
-App::uses('Achievement', 'Model');
-
 class AchievementTest extends CakeTestCase
 {
 	/**

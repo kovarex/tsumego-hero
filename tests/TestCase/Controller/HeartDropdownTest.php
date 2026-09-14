@@ -1,7 +1,6 @@
 <?php
 
 use Facebook\WebDriver\WebDriverBy;
-
 /**
  * Heart button and set dropdown on the play page.
  *
@@ -10,6 +9,8 @@ use Facebook\WebDriver\WebDriverBy;
  *
  * @group browser
  */
+use App\Utility\Constants;
+
 class HeartDropdownTest extends TestCaseWithAuth
 {
 	public function testHeartButtonShowsWithoutDropdownWhenUserHasNoSets(): void

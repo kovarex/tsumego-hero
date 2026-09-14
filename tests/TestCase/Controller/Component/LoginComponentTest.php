@@ -1,8 +1,11 @@
 <?php
 
 use Facebook\WebDriver\WebDriverBy;
-
 // this is hack until nicer solution in newer cake is possible to be used
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\Util;
+
 class TestEmailer
 {
 	public function __construct()

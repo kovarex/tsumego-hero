@@ -1,24 +1,20 @@
 <?php
 
-App::uses('SgfParser', 'Utility');
-App::uses('TsumegoUtil', 'Utility');
-App::uses('NotFoundException', 'Routing/Error');
-App::uses('BadRequestException', 'Routing/Error');
-App::uses('UnauthorizedException', 'Routing/Error');
-App::uses('ForbiddenException', 'Routing/Error');
-App::uses('ConflictException', 'Lib/Error');
-App::uses('TsumegoButton', 'Utility');
-App::uses('TsumegoButtons', 'Utility');
-App::uses('SetsSelector', 'Utility');
-App::uses('AdminActivityLogger', 'Utility');
-App::uses('AdminActivityType', 'Model');
-App::uses('Progress', 'Utility');
-App::uses('SetEditRenderer', 'Utility');
-App::uses('SetImage', 'Utility');
-App::uses('HtmlSanitizer', 'Utility');
-App::uses('Constants', 'Utility');
-App::uses('SetConnection', 'Model');
-
+use App\Lib\Error\ConflictException;
+use App\Utility\AchievementChecker;
+use App\Utility\AdminActivityLogger;
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\CookieFlash;
+use App\Utility\HtmlSanitizer;
+use App\Utility\Preferences;
+use App\Utility\Rating;
+use App\Utility\SetImage;
+use App\Utility\SetsSelector;
+use App\Utility\TsumegoButtons;
+use App\Utility\TsumegoFilters;
+use App\Utility\TsumegoUtil;
+use App\Utility\Util;
 use App\Attribute\HttpPost;
 
 class SetsController extends AppController
@@ -28,7 +24,7 @@ class SetsController extends AppController
 	/**
 	 * @return void
 	 */
-	public function sandbox()
+	public function sandbox(): void
 	{
 		$this->Authorization->authorize('Set');
 
@@ -120,7 +116,7 @@ class SetsController extends AppController
 		$this->_showUserSets(Auth::getUserID());
 	}
 
-	public function userSets($userId)
+	public function userSets(string $userId): void
 	{
 		$this->_showUserSets((int) $userId);
 	}
@@ -176,7 +172,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 		$this->render('user_sets');
 	}
 
-	public function create()
+	public function create(): void
 	{
 		$this->Authorization->authorize('Set', 'create');
 
@@ -185,17 +181,17 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 		$redirect = false;
 		$t = [];
 
-		if (isset($this->data['Set']))
+		if (isset($this->request->data['Set']))
 		{
 			$isSandbox = isset($this->params['url']['sandbox']) && $this->Authorization->can('Set', 'createSandbox');
 
 			$set = [];
-			$set['Set']['title'] = $this->data['Set']['title'];
+			$set['Set']['title'] = $this->request->data['Set']['title'];
 			$set['Set']['public'] = 0;
-			if (isset($this->data['Set']['description']))
-				$set['Set']['description'] = HtmlSanitizer::sanitize((string) $this->data['Set']['description']);
-			if (isset($this->data['Set']['color']) && $this->data['Set']['color'] !== '')
-				$set['Set']['color'] = $this->data['Set']['color'];
+			if (isset($this->request->data['Set']['description']))
+				$set['Set']['description'] = HtmlSanitizer::sanitize((string) $this->request->data['Set']['description']);
+			if (isset($this->request->data['Set']['color']) && $this->request->data['Set']['color'] !== '')
+				$set['Set']['color'] = $this->request->data['Set']['color'];
 			else
 				$set['Set']['color'] = '#5b9bd5';
 
@@ -240,7 +236,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 	 * Edit a set: details, problems and (for admins) re-rate and solve-mode
 	 * settings. Owner or admin only.
 	 */
-	public function edit($id = null)
+	public function edit(?string $id = null)
 	{
 		$this->loadModel('Tsumego');
 		$this->loadModel('SetConnection');
@@ -265,19 +261,19 @@ ORDER BY sc.num ASC", [(int) $id]);
 		// Tsumego buttons (status colors, tooltips, board previews) for the problem list
 		$tsumegoButtons = new TsumegoButtons(new TsumegoFilters('topics'), null, null, (int) $id);
 
-		if (isset($this->data['Set']))
+		if (isset($this->request->data['Set']))
 		{
 			$changeSet = $set;
-			if (array_key_exists('title', $this->data['Set']))
-				$changeSet['Set']['title'] = $this->data['Set']['title'];
-			if (array_key_exists('title2', $this->data['Set']))
-				$changeSet['Set']['title2'] = $this->data['Set']['title2'];
-			if (array_key_exists('description', $this->data['Set']))
-				$changeSet['Set']['description'] = HtmlSanitizer::sanitize((string) $this->data['Set']['description']);
-			if (array_key_exists('color', $this->data['Set']) && $this->data['Set']['color'] !== '')
-				$changeSet['Set']['color'] = $this->data['Set']['color'];
-			if (array_key_exists('order', $this->data['Set']) && $this->data['Set']['order'] !== '')
-				$changeSet['Set']['order'] = (int) $this->data['Set']['order'];
+			if (array_key_exists('title', $this->request->data['Set']))
+				$changeSet['Set']['title'] = $this->request->data['Set']['title'];
+			if (array_key_exists('title2', $this->request->data['Set']))
+				$changeSet['Set']['title2'] = $this->request->data['Set']['title2'];
+			if (array_key_exists('description', $this->request->data['Set']))
+				$changeSet['Set']['description'] = HtmlSanitizer::sanitize((string) $this->request->data['Set']['description']);
+			if (array_key_exists('color', $this->request->data['Set']) && $this->request->data['Set']['color'] !== '')
+				$changeSet['Set']['color'] = $this->request->data['Set']['color'];
+			if (array_key_exists('order', $this->request->data['Set']) && $this->request->data['Set']['order'] !== '')
+				$changeSet['Set']['order'] = (int) $this->request->data['Set']['order'];
 
 			$this->Set->create();
 			$this->Set->save($changeSet, true);
@@ -303,15 +299,15 @@ ORDER BY sc.num ASC", [(int) $id]);
 		}
 
 		// Re-rate every problem in this set (admin only)
-		if ($canEditSettings && isset($this->data['Set']['setDifficulty']))
-			if ($this->data['Set']['setDifficulty'] != 1200 && $this->data['Set']['setDifficulty'] >= 900 && $this->data['Set']['setDifficulty'] <= 2900)
+		if ($canEditSettings && isset($this->request->data['Set']['setDifficulty']))
+			if ($this->request->data['Set']['setDifficulty'] != 1200 && $this->request->data['Set']['setDifficulty'] >= 900 && $this->request->data['Set']['setDifficulty'] <= 2900)
 			{
 				foreach ($problems as $problem)
 				{
 					$tsumego = ClassRegistry::init('Tsumego')->findById($problem['tsumego_id']);
 					$tsumego['Tsumego']['rating']
 						= Util::clampOptional(
-							$this->data['Set']['setDifficulty'],
+							$this->request->data['Set']['setDifficulty'],
 							$tsumego['Tsumego']['minimum_rating'],
 							$tsumego['Tsumego']['maximum_rating']);
 					$this->Tsumego->save($tsumego);
@@ -320,9 +316,9 @@ ORDER BY sc.num ASC", [(int) $id]);
 			}
 
 		// Alternative response / pass mode for all problems (admin only)
-		if ($canEditSettings && isset($this->data['Settings']))
+		if ($canEditSettings && isset($this->request->data['Settings']))
 		{
-			if ($this->data['Settings']['r39'] == 'on')
+			if ($this->request->data['Settings']['r39'] == 'on')
 			{
 				foreach ($problems as $problem)
 				{
@@ -332,7 +328,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 				}
 				AdminActivityLogger::log(AdminActivityType::SET_ALTERNATIVE_RESPONSE, null, (int) $id, null, '1');
 			}
-			if ($this->data['Settings']['r39'] == 'off')
+			if ($this->request->data['Settings']['r39'] == 'off')
 			{
 				foreach ($problems as $problem)
 				{
@@ -342,7 +338,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 				}
 				AdminActivityLogger::log(AdminActivityType::SET_ALTERNATIVE_RESPONSE, null, (int) $id, null, '0');
 			}
-			if ($this->data['Settings']['r43'] == 'yes')
+			if ($this->request->data['Settings']['r43'] == 'yes')
 			{
 				foreach ($problems as $problem)
 				{
@@ -352,7 +348,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 				}
 				AdminActivityLogger::log(AdminActivityType::SET_PASS_MODE, null, (int) $id, null, '1');
 			}
-			if ($this->data['Settings']['r43'] == 'no')
+			if ($this->request->data['Settings']['r43'] == 'no')
 			{
 				foreach ($problems as $problem)
 				{
@@ -365,7 +361,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		}
 
 		// Handle image removal
-		if (!empty($this->data['Set']['remove_image']))
+		if (!empty($this->request->data['Set']['remove_image']))
 		{
 			$oldImage = $set['Set']['image'];
 			if ($oldImage && str_starts_with($oldImage, 'sets/'))
@@ -425,7 +421,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 			}
 		}
 
-		if (isset($this->data['Set']) || isset($this->data['Settings']))
+		if (isset($this->request->data['Set']) || isset($this->request->data['Settings']))
 			return $this->redirect('/sets/edit/' . (int) $id);
 
 		// Solve-mode states for the admin settings panel
@@ -465,9 +461,9 @@ ORDER BY sc.num ASC", [(int) $id]);
 	}
 
 	#[HttpPost]
-	public function delete($id = null)
+	public function delete(?string $id = null): void
 	{
-		$setID = $id ?? ($this->data['Set']['id'] ?? null);
+		$setID = $id ?? ($this->request->data['Set']['id'] ?? null);
 		if (!$setID)
 			throw new BadRequestException();
 
@@ -591,10 +587,8 @@ ORDER BY sc.num ASC", [(int) $id]);
 	 * @param TsumegoButtons $tsumegoButtons Iterator of TsumegoButton objects
 	 * @return int|null The setConnectionID of the first unsolved button, or first button if all solved, or null if empty
 	 */
-	private function getFirstUnsolvedSetConnectionId($tsumegoButtons)
+	private function getFirstUnsolvedSetConnectionId(TsumegoButtons $tsumegoButtons): ?int
 	{
-		if (empty($tsumegoButtons))
-			return null;
 		if ($firstUnsolvedButton = array_find((array) $tsumegoButtons, function ($tsumegoButton) {
 			return !TsumegoUtil::isSolvedStatus($tsumegoButton->status);
 		}))
@@ -606,7 +600,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		return $tsumegoButtons[0]->setConnectionID;
 	}
 
-	private function decodeQueryType($input)
+	private function decodeQueryType(string $input): string
 	{
 		if (is_numeric($input))
 			return 'topics';
@@ -622,7 +616,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 	}
 
 	#[HttpPost]
-	public function addTsumego($setID)
+	public function addTsumego(string $setID)
 	{
 		if ($setID === 'favorites')
 		{
@@ -638,7 +632,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 
 		$this->Authorization->authorize($set);
 
-		$tsumegoId = (int) ($this->data['tsumego_id'] ?? 0);
+		$tsumegoId = (int) ($this->request->data['tsumego_id'] ?? 0);
 		if (!$tsumegoId)
 			throw new BadRequestException();
 		if (!ClassRegistry::init('Tsumego')->findById($tsumegoId))
@@ -689,7 +683,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 	 * Create a new tsumego and add it to a set. Admin only.
 	 */
 	#[HttpPost]
-	public function createAndAddTsumego($setID)
+	public function createAndAddTsumego(string $setID)
 	{
 		$this->Authorization->authorize('Set');
 
@@ -697,7 +691,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		if (!$set)
 			throw new NotFoundException('Set not found');
 
-		if (!isset($this->data['order']))
+		if (!isset($this->request->data['order']))
 			throw new BadRequestException();
 
 		$tsumegoModel = ClassRegistry::init('Tsumego');
@@ -706,7 +700,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		try
 		{
 			$tsumego = [];
-			$tsumego['num'] = $this->data['order'];
+			$tsumego['num'] = $this->request->data['order'];
 			$tsumego['author'] = Auth::getUser()['name'];
 			$tsumegoModel->create();
 			$tsumegoModel->save($tsumego);
@@ -715,12 +709,12 @@ ORDER BY sc.num ASC", [(int) $id]);
 			$setConnection = [];
 			$setConnection['set_id'] = $setID;
 			$setConnection['tsumego_id'] = $tsumego['id'];
-			$setConnection['num'] = $this->data['order'];
+			$setConnection['num'] = $this->request->data['order'];
 			ClassRegistry::init('SetConnection')->create();
 			ClassRegistry::init('SetConnection')->save($setConnection);
 
 			$fileUpload = isset($_FILES['adminUpload']) && $_FILES['adminUpload']['error'] === UPLOAD_ERR_OK ? $_FILES['adminUpload'] : null;
-			$sgfDataOrFile = $this->data['sgf'] ?? $fileUpload;
+			$sgfDataOrFile = $this->request->data['sgf'] ?? $fileUpload;
 
 			if ($sgfDataOrFile)
 				ClassRegistry::init('Sgf')->uploadSgf($sgfDataOrFile, $tsumego['id'], Auth::getUserID(), Auth::isAdmin());
@@ -774,7 +768,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 	 * Remove a tsumego from a set.
 	 */
 	#[HttpPost]
-	public function removeTsumego($setID)
+	public function removeTsumego(string $setID)
 	{
 		$set = ClassRegistry::init('Set')->findById($setID);
 		if (!$set)
@@ -782,7 +776,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 
 		$this->Authorization->authorize($set);
 
-		$tsumegoId = $this->data['tsumego_id'] ?? null;
+		$tsumegoId = $this->request->data['tsumego_id'] ?? null;
 		if (!$tsumegoId)
 			throw new BadRequestException();
 
@@ -807,15 +801,15 @@ ORDER BY sc.num ASC", [(int) $id]);
 	 * Swap the order of two adjacent set_connections.
 	 */
 	#[HttpPost]
-	public function reorderTsumego($setID)
+	public function reorderTsumego(string $setID)
 	{
 		$set = ClassRegistry::init('Set')->findById($setID);
 		if (!$set)
 			throw new NotFoundException('Set not found');
 		$this->Authorization->authorize($set);
 
-		$tsumegoId = $_GET['tsumego_id'] ?? $this->data['tsumego_id'] ?? null;
-		$dir = $_GET['dir'] ?? $this->data['dir'] ?? null;
+		$tsumegoId = $_GET['tsumego_id'] ?? $this->request->data['tsumego_id'] ?? null;
+		$dir = $_GET['dir'] ?? $this->request->data['dir'] ?? null;
 
 		if (!$tsumegoId || !in_array($dir, ['up', 'down']))
 			throw new BadRequestException();
@@ -1174,7 +1168,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 	 * @param float $accuracy Accuracy percentage
 	 * @return void
 	 */
-	private function updateAchievementConditions($sid, $avgTime, $accuracy)
+	private function updateAchievementConditions(int $sid, int|float $avgTime, int|float $accuracy): void
 	{
 		$uid = Auth::getUserID();
 		$acS = $this->AchievementCondition->find('first', ['order' => 'value ASC', 'conditions' => ['set_id' => $sid, 'user_id' => $uid, 'category' => 's']]);
@@ -1220,7 +1214,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		if (!Auth::isLoggedIn())
 			return $this->redirect($redirectUrl);
 
-		if ($this->data['reset-check'] != 'reset')
+		if ($this->request->data['reset-check'] != 'reset')
 		{
 			CookieFlash::set('Reset check wasn\'t correctly typed', 'error');
 			return $this->redirect($redirectUrl);
@@ -1254,7 +1248,7 @@ WHERE tsumego_status.user_id = ? AND tsumego_status.tsumego_id IN(" . implode(',
 
 	public function changeCollectionSize(): mixed
 	{
-		$collectionSize = $this->data['collection_size'] ?? null;
+		$collectionSize = $this->request->data['collection_size'] ?? null;
 		if ($collectionSize === null || $collectionSize === '')
 		{
 			CookieFlash::set('Collection size to change not provided', 'error');

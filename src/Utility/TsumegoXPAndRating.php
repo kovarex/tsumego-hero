@@ -1,7 +1,15 @@
 <?php
 
+namespace App\Utility;
+
+/**
+ * @phpstan-import-type TsumegoRow from \App\Utility\RowTypes
+ */
 class TsumegoXPAndRating
 {
+	/**
+	 * @param TsumegoRow $tsumego
+	 */
 	public function __construct(array $tsumego, string $status)
 	{
 		if ($status == 'G')
@@ -14,7 +22,7 @@ class TsumegoXPAndRating
 		$this->progressDeletionCount = TsumegoUtil::getProgressDeletionCount($tsumego);
 	}
 
-	public function render()
+	public function render(): void
 	{
 		echo '<div align="center" id="xpDisplayDiv">
 		<table class="xpDisplayTable" border="0" width="70%">
@@ -45,7 +53,7 @@ class TsumegoXPAndRating
 	</div>';
 	}
 
-	public function renderJavascript()
+	public function renderJavascript(): void
 	{
 		if (!Auth::isLoggedIn())
 			return;
@@ -70,7 +78,7 @@ class TsumegoXPAndRating
 	}
 
 	// changes here must be reflected in the same method in util.js
-	public static function getProgressDeletionMultiplier($progressDeletionCount): float
+	public static function getProgressDeletionMultiplier(int $progressDeletionCount): float
 	{
 		if ($progressDeletionCount == 0)
 			return 1;

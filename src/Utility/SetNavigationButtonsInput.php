@@ -1,8 +1,10 @@
 <?php
 
+namespace App\Utility;
+
 class SetNavigationButtonsInput
 {
-	public function __construct($setFunction)
+	public function __construct(callable $setFunction)
 	{
 		$this->setFunction = $setFunction;
 	}
@@ -40,6 +42,7 @@ class SetNavigationButtonsInput
 		return $result;
 	}
 
-	private static $NEIGHBOUR_COUNT_TO_SHOW_ON_EACH_SIDE = 5;
+	private static int $NEIGHBOUR_COUNT_TO_SHOW_ON_EACH_SIDE = 5;
+	/** @var callable */
 	private $setFunction;
 }

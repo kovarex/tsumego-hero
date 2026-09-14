@@ -1,7 +1,9 @@
 <?php
 
-App::uses('Query', 'Utility');
-App::uses('SetConnection', 'Model');
+namespace App\Utility;
+
+use ClassRegistry;
+use SetConnection;
 
 class TsumegoButtonsQueryBuilder
 {
@@ -9,7 +11,7 @@ class TsumegoButtonsQueryBuilder
 	public string $description = '';
 	private TsumegoFilters $tsumegoFilters;
 
-	public function __construct($tsumegoFilters, $id)
+	public function __construct(TsumegoFilters $tsumegoFilters, string|int|null $id)
 	{
 		$this->query = new Query('FROM tsumego');
 		if ($tsumegoFilters->query != 'topics')
@@ -71,21 +73,21 @@ class TsumegoButtonsQueryBuilder
 		$this->tsumegoFilters->filterRanks($this->query);
 	}
 
-	private function filterSets()
+	private function filterSets(): void
 	{
 		if ($this->tsumegoFilters->query == 'topics') // we filter by sets unless we query a specific set
 			return;
 		$this->tsumegoFilters->filterSets($this->query);
 	}
 
-	private function filterTags()
+	private function filterTags(): void
 	{
 		if ($this->tsumegoFilters->query == 'tags') // we filter by tags unless we query a specific tag
 			return;
 		$this->tsumegoFilters->filterTags($this->query);
 	}
 
-	private function queryRank()
+	private function queryRank(): void
 	{
 		if ($this->tsumegoFilters->query != 'difficulty')
 			return;
@@ -108,7 +110,7 @@ class TsumegoButtonsQueryBuilder
 		}
 	}
 
-	private function queryTag()
+	private function queryTag(): void
 	{
 		if ($this->tsumegoFilters->query != 'tags')
 			return;
@@ -130,14 +132,14 @@ class TsumegoButtonsQueryBuilder
 		$this->query->conditions[] = 'tag_connection.tag_id=' . $tag['Tag']['id'];
 	}
 
-	private function querySet($id)
+	private function querySet(string|int|null $id): void
 	{
 		if ($this->tsumegoFilters->query != 'topics')
 			return;
 		$this->query->conditions[] = '`set`.id=' . $id;
 	}
 
-	private function queryPublished()
+	private function queryPublished(): void
 	{
 		if ($this->tsumegoFilters->query != 'published')
 			return;

@@ -1,13 +1,13 @@
 <?php
 
-App::uses('ForbiddenException', 'Routing/Error');
-
 use App\Attribute\HttpPost;
+use App\Utility\AdminActivityLogger;
+use App\Utility\Auth;
 
 class TagConnectionController extends AppController
 {
 	#[HttpPost]
-	public function add($tsumegoID, $tagName)
+	public function add(string $tsumegoID, string $tagName)
 	{
 		$this->Authorization->authorize('TagConnection', 'add');
 		if (!ClassRegistry::init('TagConnection')::canCurrentUserAddTag())
@@ -44,7 +44,7 @@ class TagConnectionController extends AppController
 	}
 
 	#[HttpPost]
-	public function remove($tsumegoID, $tagName)
+	public function remove(string $tsumegoID, string $tagName)
 	{
 		$tag = ClassRegistry::init('Tag')->findByName($tagName);
 		if (!$tag)

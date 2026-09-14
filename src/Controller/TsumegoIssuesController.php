@@ -1,19 +1,17 @@
 <?php
 
-App::uses('TsumegoIssue', 'Model');
-App::uses('BadRequestException', 'Routing/Error');
-App::uses('ForbiddenException', 'Routing/Error');
-App::uses('NotFoundException', 'Routing/Error');
-App::uses('UnprocessableEntityException', 'Lib/Error');
-
 use App\Attribute\HttpPost;
-
+use App\Lib\Error\UnprocessableEntityException;
 /**
  * Controller for managing tsumego issues.
  *
  * Issues are reports about problems with tsumego solutions (missing moves, wrong answers, etc.).
  * Each issue contains one or more comments discussing the problem.
  */
+use App\Utility\Auth;
+use App\Utility\Query;
+use App\Utility\Util;
+
 class TsumegoIssuesController extends AppController
 {
 	/**
@@ -63,7 +61,7 @@ class TsumegoIssuesController extends AppController
 	 *
 	 * @return void
 	 */
-	public function index()
+	public function index(): void
 	{
 		$this->set('_title', 'Tsumego Hero - Issues');
 		$this->set('_page', 'issues');
@@ -172,11 +170,11 @@ class TsumegoIssuesController extends AppController
 	 * Only admin or issue author can close.
 	 * Optionally add a closing comment.
 	 *
-	 * @param int $id Issue ID
+	 * @param string $id Issue ID
 	 * @return CakeResponse|null
 	 */
 	#[HttpPost]
-	public function close($id)
+	public function close(string $id)
 	{
 		$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
 		$issue = $TsumegoIssue->findById($id);
@@ -216,11 +214,11 @@ class TsumegoIssuesController extends AppController
 	 *
 	 * Admin only.
 	 *
-	 * @param int $id Issue ID
+	 * @param string $id Issue ID
 	 * @return CakeResponse|null
 	 */
 	#[HttpPost]
-	public function reopen($id)
+	public function reopen(string $id)
 	{
 		$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
 		$issue = $TsumegoIssue->findById($id);
@@ -247,11 +245,11 @@ class TsumegoIssuesController extends AppController
 	 * POST data:
 	 * - Comment.tsumego_issue_id: 'standalone' | 'new' | int (issue ID)
 	 *
-	 * @param int $commentId Comment ID to move
+	 * @param string $commentId Comment ID to move
 	 * @return CakeResponse|null
 	 */
 	#[HttpPost]
-	public function moveComment($commentId)
+	public function moveComment(string $commentId)
 	{
 		$this->Authorization->authorize('TsumegoIssue', 'moveComment');
 

@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace App\Utility;
+
 class SgfBoard
 {
 	/**
@@ -9,7 +11,7 @@ class SgfBoard
 	 * @param array{int,int} $info
 	 * @param int $size
 	 */
-	public function __construct(array $stones, array $info, int $size, $correctMoves = [])
+	public function __construct(array $stones, array $info, int $size, array $correctMoves = [])
 	{
 		$this->stones = $stones;
 		$this->correctMoves = $correctMoves;
@@ -17,7 +19,7 @@ class SgfBoard
 		$this->size = $size;
 	}
 
-	public function filterStonesPositions($color): array
+	public function filterStonesPositions(int $color): array
 	{
 		$result = [];
 		foreach ($this->stones as $position => $stone)
@@ -79,7 +81,7 @@ class SgfBoard
 		return $result;
 	}
 
-	public static function getStonesFlipedX(array $positions, int $size)
+	public static function getStonesFlipedX(array $positions, int $size): array
 	{
 		$result = [];
 		foreach ($positions as $position => $color)
@@ -87,7 +89,7 @@ class SgfBoard
 		return $result;
 	}
 
-	public static function getStonesFlipedY(array $positions, int $size)
+	public static function getStonesFlipedY(array $positions, int $size): array
 	{
 		$result = [];
 		foreach ($positions as $position => $color)

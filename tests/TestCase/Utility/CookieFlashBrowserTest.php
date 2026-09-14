@@ -1,11 +1,7 @@
 <?php
 
-App::uses('Browser', '.');
-App::uses('CookieFlash', 'Utility');
-
 use Facebook\WebDriver\WebDriverBy;
 use PHPUnitRetry\RetryTrait;
-
 /**
  * Browser tests for CookieFlash functionality.
  *
@@ -14,6 +10,8 @@ use PHPUnitRetry\RetryTrait;
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
+use App\Utility\CookieFlash;
+
 class CookieFlashBrowserTest extends CakeTestCase
 {
 	use RetryTrait;

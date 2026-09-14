@@ -1,5 +1,10 @@
 <?php
 
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\TsumegoButton;
+use App\Utility\TsumegoButtons;
+
 /**
  * @var View $this
  * @var array $chartData

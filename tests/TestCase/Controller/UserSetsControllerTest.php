@@ -1,10 +1,8 @@
 <?php
 
 use Facebook\WebDriver\WebDriverBy;
-
-App::uses('TestCaseWithAuth', 'TestSuite');
-App::uses('ContextPreparator', 'TestSuite');
-App::uses('ForbiddenException', 'Routing/Error');
+use App\Lib\Error\ConflictException;
+use App\Utility\Constants;
 
 class UserSetsControllerTest extends TestCaseWithAuth
 {

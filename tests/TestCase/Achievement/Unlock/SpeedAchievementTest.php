@@ -1,10 +1,5 @@
 <?php
 
-App::uses('Achievement', 'Model');
-App::uses('AppController', 'Controller');
-App::uses('AchievementTestCase', 'TestCase/Achievement');
-App::uses('ContextPreparator', 'Test');
-
 /* Test all 12 Speed achievements (IDs 24-35)
  *
  * Structure: 3 tiers (speed) × 4 difficulty ranges (11k, 5k, 10k, 1d)

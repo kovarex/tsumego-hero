@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Utility;
+
 /**
  * Cookie-based flash messages for stateless operation.
  *

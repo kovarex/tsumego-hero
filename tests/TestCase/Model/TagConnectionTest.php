@@ -1,7 +1,7 @@
 <?php
 
-App::uses('TagConnection', 'Model');
-App::uses('Constants', 'Utility');
+use App\Utility\Auth;
+use App\Utility\Constants;
 
 class TagConnectionTest extends CakeTestCase
 {

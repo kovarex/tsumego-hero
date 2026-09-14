@@ -1,6 +1,6 @@
 <?php
 
-App::uses('AdminActivityType', 'Model');
+use App\Utility\Auth;
 
 class SgfControllerUploadTest extends TestCaseWithAuth
 {

@@ -1,11 +1,11 @@
 <?php
 
-App::uses('ForbiddenException', 'Routing/Error');
+use App\Utility\Util;
 
 class CronController extends AppController
 {
 	/* Supposed to be ran daily to reset hearts and hero powers */
-	public function daily($secret)
+	public function daily(string $secret)
 	{
 		if ($secret != CRON_SECRET)
 			throw new ForbiddenException('Wrong cron secret.');
@@ -29,7 +29,7 @@ class CronController extends AppController
 		return $this->response;
 	}
 
-	private function dailyUsersReset()
+	private function dailyUsersReset(): void
 	{
 		$query = 'UPDATE user SET';
 		$query .= ' used_refinement=0';
@@ -46,19 +46,19 @@ class CronController extends AppController
 		ClassRegistry::init('User')->query($query);
 	}
 
-	private function dailyPotionConditionReset()
+	private function dailyPotionConditionReset(): void
 	{
 		ClassRegistry::init('AchievementCondition')->query(
 			"UPDATE achievement_condition SET value=0 WHERE category='potion'");
 	}
 
-	private function dailyTsumegoStatusReset()
+	private function dailyTsumegoStatusReset(): void
 	{
 		ClassRegistry::init('TsumegoStatus')->query("UPDATE tsumego_status SET status='V' where status='F'");
 		ClassRegistry::init('TsumegoStatus')->query("UPDATE tsumego_status SET status='W' where status='X'");
 	}
 
-	private function dailyStalingSolvedTsumegoStatuses()
+	private function dailyStalingSolvedTsumegoStatuses(): void
 	{
 		ClassRegistry::init('TsumegoStatus')->query("
 UPDATE tsumego_status
@@ -100,7 +100,7 @@ WHERE
 		throw new Exception("Quote couldn't be generated");
 	}
 
-	private function createDayRecord()
+	private function createDayRecord(): void
 	{
 		$today = date('Y-m-d');
 		if (ClassRegistry::init('DayRecord')->find('count', ['conditions' => ['date' => $today]]) > 0)
@@ -158,7 +158,7 @@ WHERE
 		ClassRegistry::init('AchievementCondition')->save($achievementCondition);
 	}
 
-	public static function publish()
+	public static function publish(): void
 	{
 		$date = date('Y-m-d', strtotime('today'));
 		$todaysSchedule = ClassRegistry::init('Schedule')->find('all', ['conditions' => ['date' => $date, 'published' => 0]]) ?: [];
@@ -170,7 +170,7 @@ WHERE
 		}
 	}
 
-	protected static function publishSingle($tsumegoID = null, $to = null, $date = null): void
+	protected static function publishSingle(int|string|null $tsumegoID = null, int|string|null $to = null, ?string $date = null): void
 	{
 		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID);
 		if (!$tsumego)
@@ -213,7 +213,7 @@ WHERE
 		ClassRegistry::init('PublishDate')->save($x);
 	}
 
-	private static function updateSolvedCounts()
+	private static function updateSolvedCounts(): void
 	{
 		Util::query("UPDATE user u
 LEFT JOIN (

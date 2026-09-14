@@ -1,9 +1,5 @@
 <?php
 
-App::uses('Achievement', 'Model');
-App::uses('AchievementTestCase', 'TestCase/Achievement');
-App::uses('ContextPreparator', 'TestCase');
-
 /* These achievements unlock when solving dan-level problems:
  * - Achievement::SOLVE_1D: Solve 1 x 1d problem
  * - Achievement::SOLVE_2D: Solve 1 x 2d problem
@@ -15,6 +11,8 @@ App::uses('ContextPreparator', 'TestCase');
  * - Achievement::SOLVE_10_3D: Solve 10 x 3d problems
  * - Achievement::SOLVE_10_4D: Solve 10 x 4d problems
  * - Achievement::SOLVE_10_5D: Solve 10 x 5d problems */
+use App\Utility\AchievementChecker;
+
 class DanSolveAchievementTest extends AchievementTestCase
 {
 	public function testSingleDanSolveAchievements()

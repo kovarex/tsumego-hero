@@ -1,10 +1,5 @@
 <?php
 
-App::uses('Achievement', 'Model');
-App::uses('AppController', 'Controller');
-App::uses('AchievementTestCase', 'TestCase/Achievement');
-App::uses('ContextPreparator', 'Test');
-
 /**
  * Test all 12 Accuracy achievements (IDs 12-23)
  *

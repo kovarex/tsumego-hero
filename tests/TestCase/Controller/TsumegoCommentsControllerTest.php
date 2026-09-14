@@ -1,9 +1,5 @@
 <?php
 
-App::uses('ForbiddenException', 'Routing/Error');
-App::uses('NotFoundException', 'Routing/Error');
-App::uses('UnauthorizedException', 'Routing/Error');
-
 class TsumegoCommentsControllerTest extends ControllerTestCase
 {
 	public function testAddRequiresLogin()

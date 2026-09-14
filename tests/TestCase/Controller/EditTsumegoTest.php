@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\Auth;
+use App\Utility\Rating;
 use Facebook\WebDriver\WebDriverKeys;
 use PHPUnitRetry\RetryTrait;
 

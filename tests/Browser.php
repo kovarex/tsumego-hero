@@ -1,16 +1,15 @@
 <?php
 
-use Facebook\WebDriver\Exception\WebDriverException;
 use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Facebook\WebDriver\Firefox\FirefoxOptions;
 use Facebook\WebDriver\Chrome\ChromeOptions;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
+use Facebook\WebDriver\Exception\TimeoutException;
 use Facebook\WebDriver\WebDriverBy;
-use Facebook\WebDriver\WebDriverExpectedCondition;
 use Facebook\WebDriver\WebDriverWait;
 use Facebook\WebDriver\Interactions\WebDriverActions;
-
-App::uses('Util', 'Utility');
+use App\Utility\Auth;
+use App\Utility\Util;
 
 class Browser
 {
@@ -18,6 +17,9 @@ class Browser
 
 	// Counter for per-page JS coverage snapshots written to /tmp/coverage/js-raw-*.json
 	private static int $jsCoverageCounter = 0;
+
+	// Counter for page source dumps written to tmp/browser-timeout-*.html on wait timeouts
+	private static int $timeoutDumpCounter = 0;
 
 	public function __construct()
 	{
@@ -294,50 +296,115 @@ class Browser
 		return !empty($this->driver-> findElements(WebDriverBy::id($id)));
 	}
 
+	/**
+	 * Run a WebDriverWait condition, dumping the page source to tmp/ when it times out.
+	 *
+	 * @param callable $condition Condition passed to WebDriverWait::until()
+	 * @param int $timeout Timeout in seconds
+	 * @param int $interval Polling interval in milliseconds
+	 * @param string $context Human readable description of what is being waited for
+	 */
+	private function waitAndDumpOnTimeout(callable $condition, int $timeout, int $interval, string $context): mixed
+	{
+		try
+		{
+			return new WebDriverWait($this->driver, $timeout, $interval)->until($condition);
+		}
+		catch (TimeoutException $e)
+		{
+			$this->dumpPageSourceOnTimeout($context);
+			throw $e;
+		}
+	}
+
+	private function dumpPageSourceOnTimeout(string $context): void
+	{
+		self::$timeoutDumpCounter++;
+		$file = ROOT . '/tmp/browser-timeout-' . date('Ymd-His') . '-' . self::$timeoutDumpCounter . '.html';
+		$parts = ["WAIT: " . $context];
+		$parts[] = "URL: " . $this->driverDump(fn() => $this->driver->getCurrentURL());
+		$parts[] = $this->driverDump(fn() => $this->driver->getPageSource());
+		try
+		{
+			file_put_contents($file, implode("\n\n", $parts));
+		}
+		catch (Throwable)
+		{
+			// Ignore file write errors, we don't want to mask the original timeout exception
+		}
+	}
+
+	/**
+	 * Single driver call for the timeout dump: the value, or the reason it failed.
+	 */
+	private function driverDump(callable $call): string
+	{
+		try
+		{
+			return (string) $call();
+		}
+		catch (Throwable $e)
+		{
+			return '<unavailable: ' . get_class($e) . ': ' . $e->getMessage() . '>';
+		}
+	}
+
 	public function waitUntilIDExists($id)
 	{
-		new WebDriverWait($this->driver, 5, 500)->until(function () use ($id) {
+		$this->waitAndDumpOnTimeout(function () use ($id) {
 			return $this->idExists($id);
-		});
+		}, 5, 500, 'id exists: ' . $id);
 	}
 
 	public function waitUntilCssSelectorExists(string $selector, int $timeout = 10): void
 	{
-		new WebDriverWait($this->driver, $timeout, 500)->until(
+		$this->waitAndDumpOnTimeout(
 			function () use ($selector) {
 				$elements = $this->driver->findElements(WebDriverBy::cssSelector($selector));
 				return count($elements) > 0;
-			}
+			},
+			$timeout,
+			500,
+			'css selector exists: ' . $selector
 		);
 	}
 
 	public function waitUntilCssSelectorExistsWithText(string $selector, $text, int $timeout = 10): void
 	{
-		new WebDriverWait($this->driver, $timeout, 500)->until(
+		$this->waitAndDumpOnTimeout(
 			function () use ($selector, $text) {
 				$elements = $this->driver->findElements(WebDriverBy::cssSelector($selector));
 				return count($elements) > 0 && $elements[0]->getText() === $text;
-			}
+			},
+			$timeout,
+			500,
+			'css selector exists with text: ' . $selector . ' = ' . $text
 		);
 	}
 
 	public function waitUntilCssSelectorDisplayed(string $selector, int $timeout = 10): void
 	{
-		new WebDriverWait($this->driver, $timeout, 500)->until(
+		$this->waitAndDumpOnTimeout(
 			function () use ($selector) {
 				$elements = $this->driver->findElements(WebDriverBy::cssSelector($selector));
 				return count($elements) > 0 && $elements[0]->isDisplayed();
-			}
+			},
+			$timeout,
+			500,
+			'css selector displayed: ' . $selector
 		);
 	}
 
 	public function waitUntilCssSelectorDoesntExist(string $selector, int $timeout = 10): void
 	{
-		new WebDriverWait($this->driver, $timeout, 500)->until(
+		$this->waitAndDumpOnTimeout(
 			function () use ($selector) {
 				$elements = $this->driver->findElements(WebDriverBy::cssSelector($selector));
 				return count($elements) == 0;
-			}
+			},
+			$timeout,
+			500,
+			'css selector gone: ' . $selector
 		);
 	}
 
@@ -350,7 +417,7 @@ class Browser
 	 */
 	public function waitUntilAnyCssSelectorExists(array $selectors, int $timeout = 10): void
 	{
-		new WebDriverWait($this->driver, $timeout, 500)->until(
+		$this->waitAndDumpOnTimeout(
 			function () use ($selectors) {
 				foreach ($selectors as $selector)
 				{
@@ -359,7 +426,10 @@ class Browser
 						return true;
 				}
 				return false;
-			}
+			},
+			$timeout,
+			500,
+			'any css selector exists: ' . implode(', ', $selectors)
 		);
 	}
 
@@ -372,10 +442,13 @@ class Browser
 	 */
 	public function waitUntilJs(string $expression, int $timeout = 10): void
 	{
-		new WebDriverWait($this->driver, $timeout, 200)->until(
+		$this->waitAndDumpOnTimeout(
 			function () use ($expression) {
 				return $this->driver->executeScript('return (' . $expression . ');');
-			}
+			},
+			$timeout,
+			200,
+			'js: ' . $expression
 		);
 	}
 
@@ -514,10 +587,9 @@ class Browser
 
 	public function playWithResult(string $result): void
 	{
-		$wait = new WebDriverWait($this->driver, 10, 200);
-		$wait->until(function ($driver) {
+		$this->waitAndDumpOnTimeout(function ($driver) {
 			return $driver->executeScript('return typeof displayResult === "function";');
-		});
+		}, 10, 200, 'displayResult function');
 		$this->driver->executeScript("displayResult('" . $result . "')");
 		$this->waitForSubmitResult();
 		$this->assertNoErrors();
@@ -535,13 +607,12 @@ class Browser
 
 	public function waitForSubmitResult(): void
 	{
-		$wait = new WebDriverWait($this->driver, 10, 200);
-		$wait->until(function ($driver) {
+		$this->waitAndDumpOnTimeout(function ($driver) {
 			return $driver->executeScript(
 				'if (!window._submitResultPromise) return true;'
 				. 'return window._submitResultPromise.then(function() { return true; }, function() { return true; });'
 			);
-		});
+		}, 10, 200, 'submit result promise');
 	}
 
 	public function getAlertText()
@@ -574,14 +645,13 @@ class Browser
 
 	public function waitForBoard(): int
 	{
-		$wait = new WebDriverWait($this->driver, 10, 200);
-		return $wait->until(function ($driver) {
+		return (int) $this->waitAndDumpOnTimeout(function ($driver) {
 			$size = $driver->executeScript('return typeof besogo !== "undefined" && besogo.scaleParameters ? besogo.scaleParameters.boardCoordSize : null;');
 			if (!$size)
 				return false;
 			$rects = $driver->findElements(WebDriverBy::cssSelector('rect'));
 			return count($rects) >= $size * $size + 1 ? $size : false;
-		});
+		}, 10, 200, 'board rendered');
 	}
 
 	public function clickBoard($x, $y)
@@ -619,10 +689,9 @@ class Browser
 		$this->driver->findElement(WebDriverBy::id($id))->click();
 
 		// Wait for the AJAX response to trigger the captured alert
-		$wait = new WebDriverWait($this->driver, 5, 200);
-		$alertText = $wait->until(function () {
+		$alertText = $this->waitAndDumpOnTimeout(function () {
 			return $this->driver->executeScript("return window.__capturedAlertText;");
-		});
+		}, 5, 200, 'captured alert text');
 
 		// Restore original alert function
 		$this->driver->executeScript("
@@ -659,8 +728,7 @@ class Browser
 			document.body.appendChild(form);
 			form.submit();");
 
-		$wait = new WebDriverWait($this->driver, $timeout, 100);
-		$wait->until(function () use ($markerId) {
+		$this->waitAndDumpOnTimeout(function () use ($markerId) {
 			$markerExists = $this->driver->executeScript(
 				"return document.getElementById('" . $markerId . "') !== null;"
 			);
@@ -668,7 +736,7 @@ class Browser
 				return false;
 			$readyState = $this->driver->executeScript('return document.readyState');
 			return $readyState === 'complete';
-		});
+		}, $timeout, 100, 'post navigation finished');
 	}
 
 	public function logoff()
@@ -687,7 +755,7 @@ class Browser
 	{
 		return $this->waitUntil(function ($driver) use ($expectedTitle) {
 			return str_contains($driver->getTitle(), $expectedTitle);
-		}, $timeout);
+		}, $timeout, 'title contains: ' . $expectedTitle);
 	}
 
 	/**
@@ -700,7 +768,7 @@ class Browser
 	{
 		return $this->waitUntil(function ($driver) use ($id) {
 			return $driver->findElement(WebDriverBy::id($id));
-		}, $timeout);
+		}, $timeout, 'id: ' . $id);
 	}
 
 	/**
@@ -713,7 +781,7 @@ class Browser
 	{
 		return $this->waitUntil(function ($driver) use ($selector) {
 			return $driver->findElement(WebDriverBy::cssSelector($selector));
-		}, $timeout);
+		}, $timeout, 'css selector: ' . $selector);
 	}
 
 	/**
@@ -722,10 +790,9 @@ class Browser
 	 * @param int $timeout Maximum wait time in seconds
 	 * @return mixed The result of the condition function
 	 */
-	private function waitUntil(callable $condition, int $timeout = 10)
+	private function waitUntil(callable $condition, int $timeout = 10, string $context = 'condition')
 	{
-		$wait = new WebDriverWait($this->driver, $timeout, 500);
-		return $wait->until(function ($driver) use ($condition) {
+		return $this->waitAndDumpOnTimeout(function ($driver) use ($condition) {
 			try
 			{
 				$result = $condition($driver);
@@ -735,7 +802,7 @@ class Browser
 			{
 				return null;
 			}
-		});
+		}, $timeout, 500, $context);
 	}
 
 	/**

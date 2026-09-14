@@ -24,7 +24,7 @@ class TimeModeRank extends AppModel
 	public const RANK_4D = 19;
 	public const RANK_5D = 20;
 
-	public function __construct($id = false, $table = null, $ds = null)
+	public function __construct(mixed $id = false, ?string $table = null, ?string $ds = null)
 	{
 		$id['table'] = 'time_mode_rank';
 		parent::__construct($id, $table, $ds);
