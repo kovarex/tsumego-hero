@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Policy;
+
 /**
  * Set-level authorization. Sandbox access is allowed for admins and premium
  * users (premium can no longer be purchased, but existing premium users keep

@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Policy;
+
 /**
  * Issue lifecycle: authors close their own issues; reopening and moving
  * comments are admin-only.

@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Policy;
+
 /**
  * Tsumego-level authorization. All tsumego management actions are admin-only.
  *

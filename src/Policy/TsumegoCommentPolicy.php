@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Policy;
+
 /**
  * Comment deletion: the author or an admin may delete a comment.
  *

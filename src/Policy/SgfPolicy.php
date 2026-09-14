@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Policy;
+
 /**
  * SGF viewing (the SGF admin review page) is admin-only.
  *

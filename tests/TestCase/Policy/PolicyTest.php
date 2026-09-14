@@ -4,6 +4,14 @@
  * Authorization policies decide whether an identity may perform an action.
  * They read only the computed `permissions` list attached by Auth::getIdentity().
  */
+use App\Policy\AdminPolicy;
+use App\Policy\SgfPolicy;
+use App\Policy\SetPolicy;
+use App\Policy\TagConnectionPolicy;
+use App\Policy\TagPolicy;
+use App\Policy\TsumegoCommentPolicy;
+use App\Policy\TsumegoIssuePolicy;
+use App\Policy\TsumegoPolicy;
 use App\Utility\Auth;
 use App\Utility\Constants;
 

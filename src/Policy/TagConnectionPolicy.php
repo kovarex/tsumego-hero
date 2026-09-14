@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Policy;
+
 /**
  * Tag connections: proposing a tag requires the canPropose capability;
  * removing one is allowed for admins or the proposer (unapproved proposals only).

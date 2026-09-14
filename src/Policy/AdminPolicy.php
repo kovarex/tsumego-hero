@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Policy;
+
 /**
  * Admin-only actions. "Only admin" is one method per action, like CakePHP 5.
  *

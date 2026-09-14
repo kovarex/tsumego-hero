@@ -1,5 +1,8 @@
 <?php
 
+use App\Policy\BasePolicy;
+use App\Policy\SetPolicy;
+use App\Policy\TsumegoPolicy;
 use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
 use App\Utility\BoardSelector;

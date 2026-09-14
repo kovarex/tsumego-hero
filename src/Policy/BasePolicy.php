@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Policy;
+
 use App\Utility\Constants;
 
 /**
