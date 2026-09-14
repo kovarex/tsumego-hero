@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1789338037">
-  <project timestamp="1789338037">
+<coverage generated="1789358419">
+  <project timestamp="1789358419">
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Attribute/HttpDelete.php">
       <class name="App\Attribute\HttpDelete" namespace="global">
         <metrics complexity="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
@@ -1159,27 +1159,27 @@
       <line num="114" type="stmt" count="8"/>
       <line num="116" type="stmt" count="8"/>
       <line num="117" type="stmt" count="8"/>
-      <line num="118" type="stmt" count="3"/>
-      <line num="119" type="stmt" count="6"/>
-      <line num="120" type="stmt" count="5"/>
+      <line num="118" type="stmt" count="6"/>
+      <line num="119" type="stmt" count="3"/>
+      <line num="120" type="stmt" count="2"/>
       <line num="121" type="stmt" count="2"/>
       <line num="122" type="stmt" count="2"/>
       <line num="123" type="stmt" count="8"/>
       <line num="124" type="stmt" count="8"/>
       <line num="125" type="stmt" count="8"/>
-      <line num="126" type="stmt" count="2"/>
-      <line num="127" type="stmt" count="7"/>
-      <line num="128" type="stmt" count="4"/>
-      <line num="129" type="stmt" count="4"/>
-      <line num="130" type="stmt" count="4"/>
+      <line num="126" type="stmt" count="5"/>
+      <line num="127" type="stmt" count="4"/>
+      <line num="128" type="stmt" count="2"/>
+      <line num="129" type="stmt" count="3"/>
+      <line num="130" type="stmt" count="3"/>
       <line num="131" type="stmt" count="8"/>
       <line num="132" type="stmt" count="8"/>
       <line num="133" type="stmt" count="8"/>
-      <line num="134" type="stmt" count="3"/>
-      <line num="135" type="stmt" count="6"/>
+      <line num="134" type="stmt" count="4"/>
+      <line num="135" type="stmt" count="5"/>
       <line num="136" type="stmt" count="4"/>
-      <line num="137" type="stmt" count="3"/>
-      <line num="138" type="stmt" count="3"/>
+      <line num="137" type="stmt" count="2"/>
+      <line num="138" type="stmt" count="2"/>
       <line num="139" type="stmt" count="8"/>
       <line num="141" type="stmt" count="8"/>
       <line num="142" type="stmt" count="8"/>
@@ -3566,7 +3566,7 @@
     </file>
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Controller/TsumegosController.php">
       <class name="TsumegosController" namespace="global">
-        <metrics complexity="66" methods="13" coveredmethods="6" conditionals="0" coveredconditionals="0" statements="255" coveredstatements="242" elements="268" coveredelements="248"/>
+        <metrics complexity="66" methods="13" coveredmethods="6" conditionals="0" coveredconditionals="0" statements="255" coveredstatements="241" elements="268" coveredelements="247"/>
       </class>
       <line num="3" type="stmt" count="2"/>
       <line num="4" type="stmt" count="2"/>
@@ -3581,10 +3581,10 @@
       <line num="13" type="stmt" count="2"/>
       <line num="14" type="stmt" count="2"/>
       <line num="18" type="stmt" count="2"/>
-      <line num="24" type="method" name="result" visibility="public" complexity="6" crap="6.01" count="49"/>
+      <line num="24" type="method" name="result" visibility="public" complexity="6" crap="6.07" count="49"/>
       <line num="27" type="stmt" count="49"/>
       <line num="29" type="stmt" count="49"/>
-      <line num="30" type="stmt" count="1"/>
+      <line num="30" type="stmt" count="0"/>
       <line num="32" type="stmt" count="49"/>
       <line num="33" type="stmt" count="49"/>
       <line num="34" type="stmt" count="0"/>
@@ -3849,7 +3849,7 @@
       <line num="432" type="stmt" count="1"/>
       <line num="433" type="stmt" count="1"/>
       <line num="434" type="stmt" count="1"/>
-      <metrics loc="437" ncloc="433" classes="1" methods="13" coveredmethods="6" conditionals="0" coveredconditionals="0" statements="268" coveredstatements="255" elements="281" coveredelements="261"/>
+      <metrics loc="437" ncloc="433" classes="1" methods="13" coveredmethods="6" conditionals="0" coveredconditionals="0" statements="268" coveredstatements="254" elements="281" coveredelements="260"/>
     </file>
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Controller/UsersController.php">
       <class name="UsersController" namespace="global">
@@ -7143,9 +7143,9 @@
       <line num="173" type="stmt" count="328"/>
       <line num="176" type="stmt" count="325"/>
       <line num="177" type="stmt" count="325"/>
-      <line num="182" type="stmt" count="6"/>
-      <line num="183" type="stmt" count="6"/>
-      <line num="184" type="stmt" count="6"/>
+      <line num="182" type="stmt" count="5"/>
+      <line num="183" type="stmt" count="5"/>
+      <line num="184" type="stmt" count="5"/>
       <line num="191" type="method" name="getFromGuestStorage" visibility="private" complexity="2" crap="2.06" count="6"/>
       <line num="194" type="stmt" count="6"/>
       <line num="195" type="stmt" count="0"/>
@@ -9407,6 +9407,6 @@
       <line num="71" type="stmt" count="1"/>
       <metrics loc="74" ncloc="52" classes="1" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="32" coveredstatements="30" elements="33" coveredelements="30"/>
     </file>
-    <metrics files="129" loc="16469" ncloc="14754" classes="118" methods="655" coveredmethods="465" conditionals="0" coveredconditionals="0" statements="7974" coveredstatements="7295" elements="8629" coveredelements="7760"/>
+    <metrics files="129" loc="16469" ncloc="14754" classes="118" methods="655" coveredmethods="465" conditionals="0" coveredconditionals="0" statements="7974" coveredstatements="7294" elements="8629" coveredelements="7759"/>
   </project>
 </coverage>
