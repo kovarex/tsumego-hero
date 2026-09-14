@@ -1,5 +1,6 @@
 <?php
 
+use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\MistakeTraining;
 use Facebook\WebDriver\WebDriverBy;

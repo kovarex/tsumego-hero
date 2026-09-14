@@ -1528,7 +1528,7 @@ use App\Utility\ViteManifest;
 	{
 		if (besogoNoLogin)
 			return;
-		if (typeof accountWidget !== 'undefined' && accountWidget)
+		if (typeof accountWidget !== 'undefined' && accountWidget && typeof xpStatus !== 'undefined')
 			accountWidget.animate(solved);
 		let data = {
 			tsumego_id: tsumegoID,
