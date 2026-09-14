@@ -1,7 +1,6 @@
 <?php
 
-App::uses('TsumegoButtons', 'Utility');
-App::uses('MistakeTraining', 'Utility');
+use App\Utility\MistakeTraining;
 
 class TsumegoButtonsTest extends TestCaseWithAuth
 {

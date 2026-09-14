@@ -1,6 +1,6 @@
 <?php
 
-App::uses('MistakeTraining', 'Utility');
+use App\Utility\MistakeTraining;
 
 class MistakeTrainingTest extends TestCaseWithAuth
 {

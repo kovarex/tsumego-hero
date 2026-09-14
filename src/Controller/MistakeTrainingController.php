@@ -1,7 +1,8 @@
 <?php
 
-App::uses('MistakeTraining', 'Utility');
-App::uses('Play', 'Controller/Component');
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\MistakeTraining;
 
 class MistakeTrainingController extends AppController
 {
@@ -12,7 +13,7 @@ class MistakeTrainingController extends AppController
 	 * plain problem URL always means normal play, just like it does for the other
 	 * modes.
 	 */
-	public function play($setConnectionID = null): mixed
+	public function play(?string $setConnectionID = null): mixed
 	{
 		if (!Auth::isLoggedIn())
 			return $this->redirect('/users/login');
@@ -67,7 +68,7 @@ class MistakeTrainingController extends AppController
 		$play = new Play(function ($name, $value) {
 			$this->set($name, $value);
 		});
-		$play->play($setConnectionID, $this->params, $this->data);
+		$play->play($setConnectionID, $this->request, $this->request->data);
 		$this->render('/Tsumegos/play');
 		return null;
 	}

@@ -1,9 +1,8 @@
 <?php
 
+use App\Utility\Constants;
+use App\Utility\MistakeTraining;
 use Facebook\WebDriver\WebDriverBy;
-
-App::uses('Constants', 'Utility');
-App::uses('MistakeTraining', 'Utility');
 
 class MistakeTrainingControllerTest extends TestCaseWithAuth
 {

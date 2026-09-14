@@ -168,7 +168,7 @@ class TsumegoButtons extends ArrayObject
 		return ' #' . ($this->partition + 1);
 	}
 
-		public function exportCurrentAndPreviousLink(callable $setFunction, TsumegoFilters $tsumegoFilters, int $setConnectionID, array $set, ?string $edgeLink = null): void
+	public function exportCurrentAndPreviousLink(callable $setFunction, TsumegoFilters $tsumegoFilters, int $setConnectionID, array $set, ?string $edgeLink = null): void
 	{
 		$indexOfCurrent = array_find_key((array) $this, function ($tsumegoButton) use ($setConnectionID) {
 			return $tsumegoButton->setConnectionID == $setConnectionID;

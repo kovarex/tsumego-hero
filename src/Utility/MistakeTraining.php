@@ -1,11 +1,9 @@
 <?php
 
-App::uses('Constants', 'Utility');
-App::uses('TsumegoButtons', 'Utility');
-App::uses('TsumegoStatus', 'Model');
-App::uses('TsumegoUtil', 'Utility');
-App::uses('Util', 'Utility');
-App::uses('Auth', 'Utility');
+namespace App\Utility;
+
+use ClassRegistry;
+use DateTime;
 
 /**
  * Mistake training: spaced repetition for tsumegos you did not solve on the

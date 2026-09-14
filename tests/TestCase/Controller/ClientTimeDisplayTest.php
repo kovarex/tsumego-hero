@@ -1,8 +1,7 @@
 <?php
 
+use App\Utility\Constants;
 use Facebook\WebDriver\WebDriverBy;
-
-App::uses('Constants', 'Utility');
 
 class ClientTimeDisplayTest extends TestCaseWithAuth
 {

@@ -1,4 +1,7 @@
 <?php
+
+use App\Utility\MistakeTraining;
+
 /**
  * Mistake Training - "All caught up" view
  * Shown when no tsumegos are due for review.

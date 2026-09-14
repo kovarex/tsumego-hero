@@ -1,6 +1,5 @@
 <?php
 
-use App\Utility\Constants;
 use App\Utility\Rating;
 
 /**
