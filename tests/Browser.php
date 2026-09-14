@@ -312,10 +312,29 @@ class Browser
 		}
 		catch (TimeoutException $e)
 		{
+			$this->dumpPageSourceOnTimeout($context);
+			throw $e;
+		}
+	}
+
+	/**
+	 * Best effort page source dump for a wait timeout.
+	 *
+	 * Never hides the original timeout: the browser session may already be dead
+	 * and tmp/ may be missing, both of which would throw from in here.
+	 */
+	private function dumpPageSourceOnTimeout(string $context): void
+	{
+		try
+		{
 			self::$timeoutDumpCounter++;
 			$file = ROOT . '/tmp/browser-timeout-' . date('Ymd-His') . '-' . self::$timeoutDumpCounter . '.html';
-			file_put_contents($file, "WAIT: " . $context . "\nURL: " . $this->driver->getCurrentURL() . "\n\n" . $this->driver->getPageSource());
-			throw $e;
+			$dump = "WAIT: " . $context . "\nURL: " . $this->driver->getCurrentURL() . "\n\n" . $this->driver->getPageSource();
+			file_put_contents($file, $dump);
+		}
+		catch (Throwable)
+		{
+			// diagnostics only - the timeout itself is what matters
 		}
 	}
 
