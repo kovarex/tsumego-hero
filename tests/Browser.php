@@ -320,21 +320,41 @@ class Browser
 	/**
 	 * Best effort page source dump for a wait timeout.
 	 *
-	 * Never hides the original timeout: the browser session may already be dead
-	 * and tmp/ may be missing, both of which would throw from in here.
+	 * The context and the timestamp are written even when the browser session is
+	 * already dead: URL and page source are fetched one by one, and a failing call
+	 * only records why it failed instead of throwing the whole dump away. That is
+	 * what tells a dead session apart from a page that simply never showed the
+	 * element. Never hides the original timeout.
 	 */
 	private function dumpPageSourceOnTimeout(string $context): void
 	{
+		self::$timeoutDumpCounter++;
+		$file = ROOT . '/tmp/browser-timeout-' . date('Ymd-His') . '-' . self::$timeoutDumpCounter . '.html';
+		$parts = ["WAIT: " . $context];
+		$parts[] = "URL: " . $this->driverDump(fn() => $this->driver->getCurrentURL());
+		$parts[] = $this->driverDump(fn() => $this->driver->getPageSource());
 		try
 		{
-			self::$timeoutDumpCounter++;
-			$file = ROOT . '/tmp/browser-timeout-' . date('Ymd-His') . '-' . self::$timeoutDumpCounter . '.html';
-			$dump = "WAIT: " . $context . "\nURL: " . $this->driver->getCurrentURL() . "\n\n" . $this->driver->getPageSource();
-			file_put_contents($file, $dump);
+			file_put_contents($file, implode("\n\n", $parts));
 		}
 		catch (Throwable)
 		{
-			// diagnostics only - the timeout itself is what matters
+			// tmp/ may be missing or read only - the timeout itself is what matters
+		}
+	}
+
+	/**
+	 * Single driver call for the timeout dump: the value, or the reason it failed.
+	 */
+	private function driverDump(callable $call): string
+	{
+		try
+		{
+			return (string) $call();
+		}
+		catch (Throwable $e)
+		{
+			return '<unavailable: ' . get_class($e) . ': ' . $e->getMessage() . '>';
 		}
 	}
 
