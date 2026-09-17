@@ -63,9 +63,9 @@ class OpenGraphSharingTest extends TestCaseWithAuth
 
 		$body = $this->testAction('users/view/' . $userId, ['return' => 'contents']);
 
-		$this->assertStringContainsString('<meta property="og:title" content="Profile of alice">', $body);
+		$this->assertStringContainsString('<meta property="og:title" content="Profile of DN_alice">', $body);
 		$this->assertStringContainsString('<meta property="og:type" content="profile">', $body);
-		$this->assertStringContainsString('<meta property="profile:username" content="alice">', $body);
+		$this->assertStringContainsString('<meta property="profile:username" content="DN_alice">', $body);
 		$this->assertStringContainsString('property="og:url" content="', $body);
 		$this->assertStringContainsString('/users/view/' . $userId, $body);
 	}
