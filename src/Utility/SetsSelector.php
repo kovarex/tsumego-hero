@@ -363,7 +363,7 @@ class SetsSelector
 	 */
 	private function tagMembershipCondition(string $tsumegoRef): string
 	{
-		return 'EXISTS (SELECT 1 FROM tag_connection tc2 WHERE tc2.tsumego_id = ' . $tsumegoRef . ' AND tc2.tag_id IN (' . implode(',', $this->tsumegoFilters->tagIDs) . '))';
+		return 'EXISTS (SELECT 1 FROM tag_connection tc2 WHERE tc2.tsumego_id = ' . $tsumegoRef . ' AND tc2.approved = 1 AND tc2.tag_id IN (' . implode(',', $this->tsumegoFilters->tagIDs) . '))';
 	}
 
 	/**

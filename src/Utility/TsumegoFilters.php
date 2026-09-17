@@ -145,6 +145,7 @@ class TsumegoFilters
 			return;
 		$query->conditions[] = 'EXISTS (SELECT 1 FROM tag_connection tc
 			WHERE tc.tsumego_id = tsumego.id
+			AND tc.approved = 1
 			AND tc.tag_id IN (' . implode(',', $this->tagIDs) . '))';
 	}
 
@@ -181,7 +182,7 @@ class TsumegoFilters
 		// Count only the problems the active mode actually displays
 		if ($this->query == 'tags' && empty($this->tagIDs))
 			// tags mode shows only tagged problems unless a specific tag is filtered
-				$query->conditions[] = 'EXISTS (SELECT 1 FROM tag_connection tc WHERE tc.tsumego_id = tsumego.id)';
+				$query->conditions[] = 'EXISTS (SELECT 1 FROM tag_connection tc WHERE tc.tsumego_id = tsumego.id AND tc.approved = 1)';
 
 		if ($this->query == 'difficulty')
 		{
