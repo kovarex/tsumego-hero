@@ -308,8 +308,8 @@ class Util
 	public static function calculateLibertyStatus(
 		int $multipleChoiceSquares,
 		int $multipleChoiceTriangles,
-		int $minLiberties,
-		int $maxLiberties,
+		?int $minLiberties,
+		?int $maxLiberties,
 		int $libertyCount,
 		int $variance): array
 	{
