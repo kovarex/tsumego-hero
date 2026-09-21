@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1789630405">
-  <project timestamp="1789630405">
+<coverage generated="1789990017">
+  <project timestamp="1789990017">
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Attribute/HttpDelete.php">
       <class name="App\Attribute\HttpDelete" namespace="global">
         <metrics complexity="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
@@ -1129,27 +1129,27 @@
       <line num="114" type="stmt" count="8"/>
       <line num="116" type="stmt" count="8"/>
       <line num="117" type="stmt" count="8"/>
-      <line num="118" type="stmt" count="4"/>
-      <line num="119" type="stmt" count="5"/>
+      <line num="118" type="stmt" count="5"/>
+      <line num="119" type="stmt" count="4"/>
       <line num="120" type="stmt" count="3"/>
-      <line num="121" type="stmt" count="3"/>
-      <line num="122" type="stmt" count="3"/>
+      <line num="121" type="stmt" count="2"/>
+      <line num="122" type="stmt" count="2"/>
       <line num="123" type="stmt" count="8"/>
       <line num="124" type="stmt" count="8"/>
       <line num="125" type="stmt" count="8"/>
       <line num="126" type="stmt" count="1"/>
       <line num="127" type="stmt" count="8"/>
-      <line num="128" type="stmt" count="4"/>
-      <line num="129" type="stmt" count="4"/>
-      <line num="130" type="stmt" count="4"/>
+      <line num="128" type="stmt" count="3"/>
+      <line num="129" type="stmt" count="6"/>
+      <line num="130" type="stmt" count="6"/>
       <line num="131" type="stmt" count="8"/>
       <line num="132" type="stmt" count="8"/>
       <line num="133" type="stmt" count="8"/>
-      <line num="134" type="stmt" count="2"/>
-      <line num="135" type="stmt" count="7"/>
-      <line num="136" type="stmt" count="3"/>
-      <line num="137" type="stmt" count="5"/>
-      <line num="138" type="stmt" count="5"/>
+      <line num="134" type="stmt" count="1"/>
+      <line num="135" type="stmt" count="8"/>
+      <line num="136" type="stmt" count="6"/>
+      <line num="137" type="stmt" count="3"/>
+      <line num="138" type="stmt" count="3"/>
       <line num="139" type="stmt" count="8"/>
       <line num="141" type="stmt" count="8"/>
       <line num="142" type="stmt" count="8"/>
@@ -7979,7 +7979,7 @@
     </file>
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Utility/TimeMode.php">
       <class name="App\Utility\TimeMode" namespace="global">
-        <metrics complexity="68" methods="24" coveredmethods="16" conditionals="0" coveredconditionals="0" statements="207" coveredstatements="195" elements="231" coveredelements="211"/>
+        <metrics complexity="68" methods="24" coveredmethods="15" conditionals="0" coveredconditionals="0" statements="207" coveredstatements="194" elements="231" coveredelements="209"/>
       </class>
       <line num="13" type="method" name="__construct" visibility="public" complexity="9" crap="9.03" count="376"/>
       <line num="15" type="stmt" count="376"/>
@@ -8072,9 +8072,9 @@
       <line num="151" type="stmt" count="2"/>
       <line num="152" type="stmt" count="1"/>
       <line num="153" type="stmt" count="2"/>
-      <line num="156" type="method" name="processPlayResult" visibility="public" complexity="5" crap="5" count="3"/>
+      <line num="156" type="method" name="processPlayResult" visibility="public" complexity="5" crap="5.00" count="3"/>
       <line num="158" type="stmt" count="3"/>
-      <line num="159" type="stmt" count="1"/>
+      <line num="159" type="stmt" count="0"/>
       <line num="160" type="stmt" count="3"/>
       <line num="161" type="stmt" count="3"/>
       <line num="162" type="stmt" count="3"/>
@@ -8212,7 +8212,7 @@
       <line num="391" type="stmt" count="10"/>
       <line num="392" type="stmt" count="1"/>
       <line num="393" type="stmt" count="10"/>
-      <metrics loc="406" ncloc="369" classes="1" methods="24" coveredmethods="16" conditionals="0" coveredconditionals="0" statements="207" coveredstatements="195" elements="231" coveredelements="211"/>
+      <metrics loc="406" ncloc="369" classes="1" methods="24" coveredmethods="15" conditionals="0" coveredconditionals="0" statements="207" coveredstatements="194" elements="231" coveredelements="209"/>
     </file>
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Utility/TimeModeUtil.php">
       <class name="App\Utility\TimeModeUtil" namespace="global">
@@ -9245,6 +9245,6 @@
       <line num="70" type="stmt" count="1"/>
       <metrics loc="73" ncloc="51" classes="1" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="30" coveredstatements="28" elements="31" coveredelements="28"/>
     </file>
-    <metrics files="131" loc="16921" ncloc="14913" classes="118" methods="656" coveredmethods="467" conditionals="0" coveredconditionals="0" statements="7802" coveredstatements="7123" elements="8458" coveredelements="7590"/>
+    <metrics files="131" loc="16921" ncloc="14913" classes="118" methods="656" coveredmethods="466" conditionals="0" coveredconditionals="0" statements="7802" coveredstatements="7122" elements="8458" coveredelements="7588"/>
   </project>
 </coverage>
