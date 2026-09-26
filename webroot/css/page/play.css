@@ -92,7 +92,6 @@
   top: 9px;
 }
 .author-notice {
-  font-family: Georgia;
   font-size: 12px;
   color: var(--text-softer-color);
   padding: 5px 0 0 5px;
@@ -106,7 +105,6 @@
 #multipleChoice2,
 #multipleChoice3,
 #multipleChoice4 {
-  font-family: Georgia, sans-serif;
   padding: 10px 13px;
   font-size: 18px;
   font-style: normal;
@@ -209,7 +207,6 @@
   vertical-align: text-top;
 }
 h1 {
-  font-family: Georgia;
   letter-spacing: 1px;
   font-size: 18px;
   font-style: normal;
@@ -256,7 +253,6 @@ h1 {
   display: none;
   background-color: var(--color-gray);
   padding: 3px 0px 1px 29px;
-  font-family: Georgia;
   letter-spacing: 1px;
   font-size: 24px;
   font-weight: 700;
@@ -331,7 +327,6 @@ h1 {
 }
 .besogo-tsumegoPlayTool input[type="button"],
 .besogo-file input[type="button"] {
-  font-family: Times New Roman, verdana, helvetica, arial, sans-serif;
   font-size: 16px;
   font-style: normal;
   font-variant: normal;
@@ -363,7 +358,6 @@ h1 {
 #besogo-next-button,
 #besogo-back-button,
 #history-button {
-  font-family: Times New Roman, verdana, helvetica, arial, sans-serif;
   font-size: 16px;
   font-style: normal;
   font-variant: normal;
@@ -401,7 +395,6 @@ h1 {
 
 #besogo-se-more,
 #besogo-se-less {
-  font-family: Times New Roman, verdana, helvetica, arial, sans-serif;
   font-size: 16px;
   font-style: normal;
   font-variant: normal;
@@ -433,7 +426,6 @@ h1 {
 }
 #se-result-text {
   width:145px;
-  font-family: Times New Roman, verdana, helvetica, arial, sans-serif;
   font-size: 17px;
   font-style: normal;
   font-variant: normal;
@@ -480,7 +472,6 @@ h1 {
   padding-right: 8px;
 }
 #submitScoreEstimatingSE, #submitScoreEstimatingBlackWins, #submitScoreEstimatingWhiteWins, #submitScoreEstimatingJigo {
-  font-family: Times New Roman, verdana, helvetica, arial, sans-serif;
   font-size: 16px;
   font-style: normal;
   font-variant: normal;
@@ -622,7 +613,6 @@ h1 {
 }
 #author-notice {
   position: absolute;
-  font-family: Georgia;
   font-size: 12px;
   color: var(--text-softer-color);
   right: 207px;
@@ -637,7 +627,6 @@ h1 {
 #besogo-back-button-inactive {
   background-color: var(--surface-button-inactive);
   cursor: context-menu;
-  font-family: Times New Roman, verdana, helvetica, arial, sans-serif;
   font-size: 16px;
   font-style: normal;
   font-variant: normal;
@@ -667,7 +656,6 @@ h1 {
 #besogo-pass-button {
   background-color: var(--color-purple-deep);
   cursor: context-menu;
-  font-family: Times New Roman, verdana, helvetica, arial, sans-serif;
   font-size: 16px;
   font-style: normal;
   font-variant: normal;
