@@ -187,7 +187,6 @@
 .btn
 {
 	display: inline-block;
-	font-family: "Times New Roman", Times, serif;
 	font-size: 16px;
 	font-weight: 800;
 	text-decoration: none;
@@ -1025,7 +1024,6 @@
 	line-height: 1.8;
 	border-radius: 8px;
 	cursor: pointer;
-	font-family: sans-serif;
 	font-weight: 400;
 	display: none;
 	z-index: 9999;

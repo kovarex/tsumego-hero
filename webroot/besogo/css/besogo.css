@@ -1,6 +1,7 @@
 .besogo-container {
     outline: none;
     display: flex;
+    font-family: system-ui, sans-serif;
 }
 
 .besogo-container * {
@@ -9,6 +10,7 @@
 
 .besogo-container button {
     height: 30px;
+    font-family: inherit;
     width: 30px;
     padding: 0px;
     background: #d8dcd6;
@@ -16,6 +18,7 @@
 }
 
 .besogo-container input {
+    font-family: inherit;
     font-size: 12pt;
 }
 
@@ -68,7 +71,6 @@
 
 .besogo-playerInfo {
     display: flex;
-    font-family: Tahoma, Geneva, sans-serif;
     white-space: pre-wrap;
 }
 
@@ -97,7 +99,6 @@
 }
 
 .besogo-comment {
-    font-family: Georgia, serif;
     font-size: 12pt;
     white-space: pre-wrap;
 

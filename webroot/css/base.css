@@ -18,6 +18,18 @@
 		text-size-adjust: 100%;
 	}
 
+	button,
+	input,
+	select,
+	textarea,
+	pre,
+	code,
+	kbd,
+	samp
+	{
+		font-family: inherit;
+	}
+
 	a
 	{
 		color: var(--link-color);

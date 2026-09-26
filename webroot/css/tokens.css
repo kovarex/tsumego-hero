@@ -223,6 +223,7 @@
 		--radius-full: 999px;
 
 		/* ── Typography ── */
+		--font-family-base: system-ui, sans-serif;
 		/* Fluid type scale: the viewport-relative term grows the size on wide
 		   screens; the clamp() caps keep the minimum (mobile) size readable
 		   without the text ballooning on very large monitors. */
