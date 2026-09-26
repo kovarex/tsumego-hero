@@ -1,7 +1,7 @@
 body {
     background: #876e4b;
     margin: 15px 0;
-    font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+    font-family: system-ui, sans-serif;
     text-align: center;
 }
 

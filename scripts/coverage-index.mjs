@@ -76,7 +76,7 @@ const html = `<!DOCTYPE html>
 <title>Tsumego Hero Coverage</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <style>
- body { font-family: -apple-system, Segoe UI, Roboto, sans-serif; margin: 2rem; color: #222; }
+ body { font-family: system-ui, sans-serif; margin: 2rem; color: #222; }
  h1 { margin-bottom: .25rem; }
  .summary { display:flex; gap:2rem; margin:1.5rem 0; }
  .card { border:1px solid #ddd; border-radius:8px; padding:1rem 1.5rem; min-width:140px; }
