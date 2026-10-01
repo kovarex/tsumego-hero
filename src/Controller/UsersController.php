@@ -482,7 +482,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('users', $this->queryHighscoreWithSelfView(
 			"SELECT id, name, external_id, picture, rating, premium, level, xp, solved,
 				ROW_NUMBER() OVER (ORDER BY level DESC, xp DESC) as position
-			FROM user"
+			FROM user",
+			topRows: 1000
 		));
 		$this->set('totalUsers', $this->User->find('count'));
 	}
@@ -666,19 +667,19 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	}
 
 	/**
-	 * Run a single CTE query that returns the top N + neighbor rows around the current user.
-	 * The $rankedQuery must be a SELECT that produces a `position` column via ROW_NUMBER().
-	 * Returns flat associative arrays with a `position` column. Gaps between top-N and
-	 * the self-view section are visible as jumps in position numbers.
+	 * Run a single CTE query that returns the top ranked rows plus the rows around
+	 * the current user. The $rankedQuery must be a SELECT that produces a `position`
+	 * column via ROW_NUMBER().
 	 *
 	 * @param string $rankedQuery SQL SELECT with ROW_NUMBER() ... as position
 	 * @param string $idColumn Column name used to identify the current user (default: 'id')
+	 * @param array<int, mixed> $extraParams Extra bound parameters for the ranked query
+	 * @param int $topRows How many top rows are always listed
 	 * @return array<int, array<string, mixed>>
 	 */
-	private function queryHighscoreWithSelfView(string $rankedQuery, string $idColumn = 'id', array $extraParams = []): array
+	private function queryHighscoreWithSelfView(string $rankedQuery, string $idColumn = 'id', array $extraParams = [], int $topRows = 30): array
 	{
 		$userId = Auth::isLoggedIn() ? Auth::getUserID() : -1;
-		$topN = 30;
 		$neighborRadius = 3;
 
 		$sql = "
@@ -687,7 +688,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			SELECT r.*
 			FROM ranked r
 			LEFT JOIN self_pos sp ON 1=1
-			WHERE r.position <= {$topN}
+			WHERE r.position <= {$topRows}
 			   OR (sp.position IS NOT NULL
 			       AND r.position BETWEEN sp.position - ? AND sp.position + ?)
 			ORDER BY r.position";
