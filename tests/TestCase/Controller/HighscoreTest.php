@@ -254,28 +254,52 @@ class HighscoreTest extends TestCaseWithAuth
 	}
 
 	/**
-	 * Self-view with gap works for multiple highscore pages (rating, level).
-	 * User outside top 30 should appear with gap separator and data-table__row--self class.
+	 * Self-view with gap: a user outside the top 30 appears with a gap separator
+	 * and the data-table__row--self class.
 	 */
-	public function testSelfViewWithGap()
+	public function testRatingSelfViewWithGap()
 	{
 		$otherUsers = [];
 		for ($i = 0; $i < 110; $i++)
-			$otherUsers[] = ['name' => 'player' . $i, 'rating' => 2000 + $i, 'level' => 50 + $i];
+			$otherUsers[] = ['name' => 'player' . $i, 'rating' => 2000 + $i];
 
 		new ContextPreparator([
-			'user' => ['name' => 'kovarex', 'rating' => 500, 'level' => 1],
+			'user' => ['name' => 'kovarex', 'rating' => 500],
 			'other-users' => $otherUsers,
 		]);
 
-		foreach (['users/rating', 'users/highscore'] as $url)
-		{
-			$this->testAction($url, ['return' => 'view']);
-			$this->assertTextContains('kovarex', $this->view);
-			$this->assertTextContains('⋮', $this->view);
-			$this->assertTextContains('data-table__row--self', $this->view);
-			$this->assertTextContains('#111', $this->view);
-		}
+		$this->testAction('users/rating', ['return' => 'view']);
+		$this->assertTextContains('kovarex', $this->view);
+		$this->assertTextContains('⋮', $this->view);
+		$this->assertTextContains('data-table__row--self', $this->view);
+		$this->assertTextContains('#111', $this->view);
+	}
+
+	/**
+	 * The level highscore lists the top 1000 players, and a player ranked below
+	 * 1000 is still shown with a gap separator.
+	 */
+	public function testLevelHighscoreListsTop1000()
+	{
+		$otherUsers = [];
+		for ($i = 0; $i < 1005; $i++)
+			$otherUsers[] = ['name' => 'player' . $i, 'level' => 50 + $i];
+
+		new ContextPreparator([
+			'user' => ['name' => 'kovarex', 'level' => 1],
+			'other-users' => $otherUsers,
+		]);
+
+		$this->testAction('users/highscore', ['return' => 'view']);
+
+		// The 1000th ranked player is listed ...
+		$this->assertTextContains('#1000', $this->view);
+		// ... and the 1001st is not.
+		$this->assertTextNotContains('#1001', $this->view);
+		// kovarex (rank 1006) still appears below the top 1000, marked as self-view.
+		$this->assertTextContains('#1006', $this->view);
+		$this->assertTextContains('data-table__row--self', $this->view);
+		$this->assertTextContains('⋮', $this->view);
 	}
 
 	/**
