@@ -47,12 +47,45 @@ class AchievementChecker
 		$achievementStatus['user_id'] = Auth::getUserID();
 		ClassRegistry::init('AchievementStatus')->create();
 		ClassRegistry::init('AchievementStatus')->save($achievementStatus);
+		$this->existingStatuses[$achievementID] = true;
 
 		// Invalidate recent achievements cache so the new achievement appears immediately.
 		Cache::delete('recent_achievements_7', 'default');
 
 		$achievement = ClassRegistry::init('Achievement')->findById($achievementID);
 		$this->updated [] = $achievement['Achievement'];
+	}
+
+	/**
+	 * Counts completions that happened while playing. Their condition counter resets
+	 * (a sprint ends, a golden run breaks, the potion counter is zeroed every night), so
+	 * how often they were completed cannot be derived later and has to be counted when
+	 * the run is finished. The first completion grants like any other achievement
+	 * (XP + popup), the later ones only raise the count.
+	 *
+	 * @param array<int> $achievementIDs
+	 */
+	public function countCompletions(array $achievementIDs): void
+	{
+		foreach ($achievementIDs as $achievementID)
+			$this->gainedAgain($achievementID);
+	}
+
+	private function gainedAgain(int $achievementID): void
+	{
+		$wasGainedBefore = $this->unlocked($achievementID);
+		$this->gained($achievementID);
+		if (!$wasGainedBefore)
+			return;
+
+		$achievementStatus = ClassRegistry::init('AchievementStatus')->find('first', [
+			'conditions' => ['user_id' => Auth::getUserID(), 'achievement_id' => $achievementID]]);
+		if (!$achievementStatus)
+			return;
+
+		$achievementStatus['AchievementStatus']['value'] = (int) $achievementStatus['AchievementStatus']['value'] + 1;
+		ClassRegistry::init('AchievementStatus')->save($achievementStatus);
+		Cache::delete('recent_achievements_7', 'default');
 	}
 
 	/**
@@ -533,7 +566,6 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 
 	public function checkSetAchievements(int $sid = 0, float|int $setRating = 0): AchievementChecker
 	{
-		$tNum = count(TsumegoUtil::collectTsumegosFromSet($sid));
 		$acA = ClassRegistry::init('AchievementCondition')->find('first', [
 			'order' => 'value DESC',
 			'conditions' => [
@@ -542,15 +574,14 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 				'category' => '%']]);
 		if (!$acA)
 			return $this;
+		if (TsumegoUtil::countTsumegosFromSet($sid) < 100)
+			return $this;
 		$acS = ClassRegistry::init('AchievementCondition')->find('first', [
 			'order' => 'value ASC',
 			'conditions' => [
 				'set_id' => $sid,
 				'user_id' => Auth::getUserID(),
 				'category' => 's']]);
-
-		if ($tNum < 100)
-			return $this;
 
 		if ($setRating < 1300)
 		{
@@ -615,18 +646,31 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 
 		if ($acA['AchievementCondition']['value'] >= 100)
 		{
-			$ac100 = ClassRegistry::init('AchievementCondition')->find('all', ['conditions' => ['user_id' => Auth::getUserID(), 'category' => '%', 'value >=' => 100]]) ?: [];
-			$ac100counter = 0;
-			$ac100Count = count($ac100);
-			for ($j = 0; $j < $ac100Count; $j++)
-				if (count(TsumegoUtil::collectTsumegosFromSet($ac100[$j]['AchievementCondition']['set_id'])) >= 100)
-					$ac100counter++;
-
 			// Repeatable: one perfect collection of 100+ problems per count. The first
 			// one pays out like any other achievement, further ones only raise the count.
-			$this->gainedTimes(Achievement::SUPERIOR_ACCURACY, $ac100counter);
+			$this->gainedTimes(Achievement::SUPERIOR_ACCURACY, $this->countPerfectCollections(100));
 		}
 		return $this;
+	}
+
+	/**
+	 * How many collections the player finished at 100% accuracy on a set of at least
+	 * $minimumSize problems. One query, because loading every set's problems just to count
+	 * them was the slowest thing this checker did.
+	 */
+	private function countPerfectCollections(int $minimumSize): int
+	{
+		$rows = Util::query(
+			'SELECT COUNT(*) AS total FROM achievement_condition ac '
+			. 'WHERE ac.user_id = ? AND ac.category = ? AND ac.value >= ? '
+			. 'AND ac.set_id IN ('
+			. 'SELECT sc.set_id FROM set_connection sc '
+			. 'JOIN tsumego t ON t.id = sc.tsumego_id '
+			. 'GROUP BY sc.set_id HAVING COUNT(*) >= ?)',
+			[Auth::getUserID(), '%', 100, $minimumSize]
+		);
+
+		return (int) $rows[0]['total'];
 	}
 
 	public function checkFavoritesAchievement(int $setId): AchievementChecker

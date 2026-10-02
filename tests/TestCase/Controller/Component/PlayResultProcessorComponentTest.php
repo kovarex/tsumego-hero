@@ -60,6 +60,110 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		])['TsumegoStatus']['status'];
 	}
 
+	private function achievementValue(ContextPreparator $context, int $achievementID): int
+	{
+		$status = ClassRegistry::init('AchievementStatus')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'achievement_id' => $achievementID]]);
+		return $status ? (int) $status['AchievementStatus']['value'] : 0;
+	}
+
+	/**
+	 * Plays failures until the potion has rolled (and missed) the given number of times.
+	 * The damage is reset to exactly the last heart before every fail, so the potion
+	 * chance stays at its minimum and never triggers, which keeps the test deterministic.
+	 */
+	private function failUntilPotionMisses(ContextPreparator &$context, int $damage, int $misses): void
+	{
+		for ($i = 0; $i < $misses; $i++)
+		{
+			Auth::saveUserField('damage', $damage);
+			$this->failResult($context);
+		}
+	}
+
+	/**
+	 * Puts a run one solve away from its goal: the counter is started over and set to
+	 * the value just below the goal, and the problem is put back into the state the run
+	 * needs (untried for a sprint, golden for the golden run).
+	 */
+	private function prepareRun(ContextPreparator $context, string $category, string $tsumegoStatus, int $value): void
+	{
+		if ($category === 'sprint')
+		{
+			Auth::saveUserField('sprint_start', date('Y-m-d H:i:s'));
+			AppController::updateSprintCondition();
+		}
+		else
+			AppController::updateGoldenCondition();
+
+		Util::execute('UPDATE achievement_condition SET value = ? WHERE user_id = ? AND category = ?',
+			[$value, $context->user['id'], $category]);
+		Util::execute('UPDATE tsumego_status SET status = ? WHERE user_id = ? AND tsumego_id = ?',
+			[$tsumegoStatus, $context->user['id'], $context->tsumegos[0]['id']]);
+	}
+
+	/**
+	 * "Solve 30 problems within a sprint" is counted the moment the sprint's counter
+	 * reaches 30, so completing another sprint raises the count.
+	 */
+	public function testThatEscalatedQuicklyCountsEveryCompletedSprint(): void
+	{
+		$context = new ContextPreparator(['user' => ['sprint_start' => date('Y-m-d H:i:s')], 'tsumego' => 1]);
+
+		$this->prepareRun($context, 'sprint', TsumegoStatus::$VISITED, Achievement::SPRINT_COUNT - 1);
+		$this->solve($context);
+		$this->assertSame(1, $this->achievementValue($context, Achievement::SPRINT),
+			'the 30th solve of a sprint should earn That escalated quickly!');
+
+		$this->prepareRun($context, 'sprint', TsumegoStatus::$VISITED, Achievement::SPRINT_COUNT - 1);
+		$this->solve($context);
+		$this->assertSame(2, $this->achievementValue($context, Achievement::SPRINT),
+			'another completed sprint should raise the count');
+	}
+
+	/**
+	 * "Don't fail 10 times in a row on a golden tsumego" is counted when the golden run
+	 * reaches 10, so finishing another run raises the count.
+	 */
+	public function testGoldDiggerCountsEveryCompletedGoldenRun(): void
+	{
+		$context = new ContextPreparator(['tsumego' => ['status' => 'G', 'set_order' => 1]]);
+
+		$this->prepareRun($context, 'golden', TsumegoStatus::$GOLDEN, Achievement::GOLD_DIGGER_COUNT - 1);
+		$this->solve($context);
+		$this->assertSame(1, $this->achievementValue($context, Achievement::GOLD_DIGGER),
+			'the 10th golden solve in a row should earn Gold Digger');
+
+		$this->prepareRun($context, 'golden', TsumegoStatus::$GOLDEN, Achievement::GOLD_DIGGER_COUNT - 1);
+		$this->solve($context);
+		$this->assertSame(2, $this->achievementValue($context, Achievement::GOLD_DIGGER),
+			'another completed golden run should raise the count');
+	}
+
+	/**
+	 * The passive potion counts every roll that failed to trigger. Fifteen of them in one
+	 * day is Bad Potion, and every later unlucky day adds one to the count.
+	 */
+	public function testBadPotionCountsEachUnluckyDay(): void
+	{
+		// level 60: the passive potion needs POTION_MINIMUM_LEVEL to roll at all
+		$context = new ContextPreparator(['user' => ['level' => 60, 'health' => 0], 'tsumego' => 1]);
+		$lastHeart = Util::getHealthBasedOnLevel(60);
+
+		$this->failUntilPotionMisses($context, $lastHeart, HeroPowers::$BAD_POTION_THRESHOLD);
+
+		$this->assertSame(1, $this->achievementValue($context, Achievement::BAD_POTION),
+			'15 missed potion rolls in one day should earn Bad Potion');
+
+		// the nightly cron zeroes the day counter, so the next day starts from zero
+		ClassRegistry::init('AchievementCondition')
+			->query("UPDATE achievement_condition SET value = 0 WHERE category = 'potion'");
+		$this->failUntilPotionMisses($context, $lastHeart, HeroPowers::$BAD_POTION_THRESHOLD);
+
+		$this->assertSame(2, $this->achievementValue($context, Achievement::BAD_POTION),
+			'a second unlucky day should raise the count');
+	}
+
 	private function attemptsOf(ContextPreparator $context): array
 	{
 		return ClassRegistry::init('TsumegoAttempt')->find('all', [

@@ -14,6 +14,15 @@ use App\Utility\Util;
 class PlayResultProcessorComponent extends Component
 {
 	/**
+	 * Achievements whose run or day goal this play completed. They are reported to the
+	 * checker, which counts them: their condition counters reset, so how often they were
+	 * completed cannot be derived from stored data afterwards.
+	 *
+	 * @var array<int>
+	 */
+	private array $completedAchievements = [];
+
+	/**
 	 * Process a play result submitted via AJAX. Takes explicit values, no cookies.
 	 *
 	 * @return array Result with xp_gained, rating_change, new_rating, etc.
@@ -21,6 +30,7 @@ class PlayResultProcessorComponent extends Component
 	public function processResult(int $tsumegoId, bool $solved, float $seconds, bool $timeout): array
 	{
 		$seconds = max(0.01, $seconds);
+		$this->completedAchievements = [];
 
 		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoId);
 		if (!$tsumego)
@@ -63,6 +73,7 @@ class PlayResultProcessorComponent extends Component
 		// Check solve-dependent achievements right away (not only on the next page
 		// load) so the user sees the popup immediately after solving.
 		$achievementChecker = new AchievementChecker();
+		$achievementChecker->countCompletions($this->completedAchievements);
 		$achievementChecker->checkStandardAchievements()->finalize();
 
 		$response = [
@@ -111,7 +122,9 @@ class PlayResultProcessorComponent extends Component
 			return true;
 		}
 
-		AppController::updatePotionCondition();
+		if (AppController::updatePotionCondition())
+			$this->completedAchievements[] = Achievement::BAD_POTION;
+
 		return false;
 	}
 
@@ -327,10 +340,13 @@ class PlayResultProcessorComponent extends Component
 		// Sprint state is server-authoritative (user.sprint_start). A solve only
 		// counts toward the sprint achievement while a sprint is actually active.
 		if (HeroPowers::getSprintRemainingSeconds() > 0)
-			AppController::updateSprintCondition(true);
+		{
+			if (AppController::updateSprintCondition(true))
+				$this->completedAchievements[] = Achievement::SPRINT;
+		}
 		else
 			AppController::updateSprintCondition();
-		if ($previousTsumegoStatus == TsumegoStatus::$GOLDEN)
-			AppController::updateGoldenCondition(true);
+		if ($previousTsumegoStatus == TsumegoStatus::$GOLDEN && AppController::updateGoldenCondition(true))
+			$this->completedAchievements[] = Achievement::GOLD_DIGGER;
 	}
 }

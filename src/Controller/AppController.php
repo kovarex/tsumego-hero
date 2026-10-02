@@ -100,34 +100,45 @@ class AppController extends Controller
 		}
 	}
 
-	public static function updateSprintCondition(bool $trigger = false): void
+	/**
+	 * @return bool Whether this solve was the 30th of the sprint, i.e. the run just
+	 *              earned That escalated quickly!. The counter resets when a sprint
+	 *              ends, so how many runs were completed cannot be derived later.
+	 */
+	public static function updateSprintCondition(bool $trigger = false): bool
 	{
-		if (Auth::isLoggedIn())
+		if (!Auth::isLoggedIn())
+			return false;
+
+		$sprintCondition = ClassRegistry::init('AchievementCondition')->find('first', [
+			'order' => 'value DESC',
+			'conditions' => [
+				'user_id' => Auth::getUserID(),
+				'category' => 'sprint',
+			],
+		]);
+		if (!$sprintCondition)
 		{
-			$sprintCondition = ClassRegistry::init('AchievementCondition')->find('first', [
-				'order' => 'value DESC',
-				'conditions' => [
-					'user_id' => Auth::getUserID(),
-					'category' => 'sprint',
-				],
-			]);
-			if (!$sprintCondition)
-			{
-				$sprintCondition = [];
-				$sprintCondition['AchievementCondition']['value'] = 0;
-				ClassRegistry::init('AchievementCondition')->create();
-			}
-			$sprintCondition['AchievementCondition']['category'] = 'sprint';
-			$sprintCondition['AchievementCondition']['user_id'] = Auth::getUserID();
-			if ($trigger)
-				$sprintCondition['AchievementCondition']['value']++;
-			else
-				$sprintCondition['AchievementCondition']['value'] = 0;
-			ClassRegistry::init('AchievementCondition')->save($sprintCondition);
+			$sprintCondition = [];
+			$sprintCondition['AchievementCondition']['value'] = 0;
+			ClassRegistry::init('AchievementCondition')->create();
 		}
+		$sprintCondition['AchievementCondition']['category'] = 'sprint';
+		$sprintCondition['AchievementCondition']['user_id'] = Auth::getUserID();
+		if ($trigger)
+			$sprintCondition['AchievementCondition']['value']++;
+		else
+			$sprintCondition['AchievementCondition']['value'] = 0;
+		ClassRegistry::init('AchievementCondition')->save($sprintCondition);
+		return $trigger && (int) $sprintCondition['AchievementCondition']['value'] === Achievement::SPRINT_COUNT;
 	}
 
-	public static function updateGoldenCondition(bool $trigger = false): void
+	/**
+	 * @return bool Whether this solve was the 10th golden one in a row, i.e. the run
+	 *              just earned Gold Digger. The counter resets when the run breaks, so
+	 *              how many runs were completed cannot be derived later.
+	 */
+	public static function updateGoldenCondition(bool $trigger = false): bool
 	{
 		$goldenCondition = ClassRegistry::init('AchievementCondition')->find('first', [
 			'order' => 'value DESC',
@@ -149,9 +160,17 @@ class AppController extends Controller
 		else
 			$goldenCondition['AchievementCondition']['value'] = 0;
 		ClassRegistry::init('AchievementCondition')->save($goldenCondition);
+		return $trigger && (int) $goldenCondition['AchievementCondition']['value'] === Achievement::GOLD_DIGGER_COUNT;
 	}
 
-	public static function updatePotionCondition(): void
+	/**
+	 * Counts a potion roll that failed to trigger.
+	 *
+	 * @return bool Whether this roll was the day's fifteenth miss, i.e. the day just
+	 *              earned Bad Potion. The counter is zeroed by the nightly cron, so how
+	 *              many such days a player had cannot be derived later.
+	 */
+	public static function updatePotionCondition(): bool
 	{
 		$potionCondition = ClassRegistry::init('AchievementCondition')->find('first', [
 			'conditions' => [
@@ -169,6 +188,7 @@ class AppController extends Controller
 		$potionCondition['AchievementCondition']['user_id'] = Auth::getUserID();
 		$potionCondition['AchievementCondition']['value']++;
 		ClassRegistry::init('AchievementCondition')->save($potionCondition);
+		return (int) $potionCondition['AchievementCondition']['value'] === HeroPowers::$BAD_POTION_THRESHOLD;
 	}
 
 	public static function updateGems(string $rank): void

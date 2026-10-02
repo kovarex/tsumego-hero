@@ -93,11 +93,45 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 	}
 
 	/**
+	 * A collection of fewer than 100 problems does not count, however perfectly it was
+	 * finished: the achievement is for finishing a big collection.
+	 */
+	public function testSuperiorAccuracyIgnoresACollectionSmallerThanTheSetRequirement()
+	{
+		$context = new ContextPreparator();
+
+		$setId = $this->createFinishedCollection($context->user['id'], 99);
+
+		new AchievementChecker()->checkSetAchievements($setId)->finalize();
+		$this->assertAchievementNotUnlocked(Achievement::SUPERIOR_ACCURACY);
+	}
+
+	/**
+	 * Only collections of 100+ problems are counted, so a small perfect collection does
+	 * not raise the count of a player who already has a big one.
+	 */
+	public function testOnlyLargeCollectionsRaiseTheCount()
+	{
+		$context = new ContextPreparator();
+
+		$largeSet = $this->createFinishedCollection($context->user['id']);
+		new AchievementChecker()->checkSetAchievements($largeSet)->finalize();
+
+		$smallSet = $this->createFinishedCollection($context->user['id'], 99);
+		new AchievementChecker()->checkSetAchievements($smallSet)->finalize();
+
+		$status = ClassRegistry::init('AchievementStatus')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'achievement_id' => Achievement::SUPERIOR_ACCURACY]]);
+		$this->assertSame(1, (int) $status['AchievementStatus']['value'],
+			'the small collection should not be counted');
+	}
+
+	/**
 	 * A collection of 100+ problems finished at 100% accuracy.
 	 */
-	private function createFinishedCollection(int $userId): int
+	private function createFinishedCollection(int $userId, int $problemCount = 100): int
 	{
-		$setId = $this->createSetWithTsumegosAndConnections(1200, 100);
+		$setId = $this->createSetWithTsumegosAndConnections(1200, $problemCount);
 
 		$AchievementCondition = ClassRegistry::init('AchievementCondition');
 		$AchievementCondition->create();
