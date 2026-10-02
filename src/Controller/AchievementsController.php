@@ -39,7 +39,6 @@ class AchievementsController extends AppController
 		$this->set('_title', 'Tsumego Hero - Achievements');
 		$this->loadModel('AchievementStatus');
 		$existingAs = [];
-		$unlockedCounter2 = 0;
 
 		$a = $this->Achievement->find('all', ['order' => 'order ASC']);
 		if (!$a)
@@ -63,17 +62,14 @@ class AchievementsController extends AppController
 			$a[$i]['Achievement']['unlocked_at'] = null;
 			if (isset($existingAs[$a[$i]['Achievement']['id']]))
 			{
-				if ($a[$i]['Achievement']['id'] == 46)
-				{
-					$a[$i]['Achievement']['a46value'] = $existingAs[$a[$i]['Achievement']['id']]['AchievementStatus']['value'];
-					$unlockedCounter2 = $existingAs[$a[$i]['Achievement']['id']]['AchievementStatus']['value'] - 1;
-				}
+				// Repeatable achievements are earned more than once: they show how often,
+				// but still count as a single completed achievement.
+				$a[$i]['Achievement']['earned_count'] = (int) $existingAs[$a[$i]['Achievement']['id']]['AchievementStatus']['value'];
 				$a[$i]['Achievement']['unlocked'] = true;
 				$a[$i]['Achievement']['unlocked_at'] = $existingAs[$a[$i]['Achievement']['id']]['AchievementStatus']['created'];
 			}
 		}
 		$this->set('a', $a);
-		$this->set('unlockedCounter2', $unlockedCounter2);
 	}
 
 	/**

@@ -169,7 +169,7 @@ class AppControllerTest extends TestCaseWithAuth
 		AppController::updateGems('15k');
 
 		// Counter STAYS at 499 (doesn't increment when user already has achievement)
-		// This preserves old behavior: increment 499→500, find achievement, decrement 500→499
+		// This preserves old behavior: increment 499to500, find achievement, decrement 500to499
 		$dayRecord = ClassRegistry::init('DayRecord')->find('first', ['conditions' => ['date' => date('Y-m-d')]]);
 		$this->assertSame(499, (int) $dayRecord['DayRecord']['gemCounter1'], 'Counter should stay at 499 to allow other users to unlock');
 	}

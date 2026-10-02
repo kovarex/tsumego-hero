@@ -57,6 +57,22 @@ class TsumegoUtil
 		return $tsx;
 	}
 
+	/**
+	 * How many problems the set has. The same number as count(collectTsumegosFromSet()),
+	 * but the database counts them, so no tsumego rows are loaded into PHP.
+	 */
+	public static function countTsumegosFromSet(int $setID): int
+	{
+		$rows = Util::query(
+			'SELECT COUNT(*) AS total FROM set_connection sc '
+			. 'JOIN tsumego t ON t.id = sc.tsumego_id '
+			. 'WHERE sc.set_id = ?',
+			[$setID]
+		);
+
+		return (int) $rows[0]['total'];
+	}
+
 	// Whether the problem is solved for the current mode. In time mode every
 	// problem is presented fresh, so this is false at page load until solved.
 	public static function isSolvedForCurrentMode(array $tsumego): bool

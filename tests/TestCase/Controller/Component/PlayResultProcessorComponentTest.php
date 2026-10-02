@@ -60,6 +60,197 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		])['TsumegoStatus']['status'];
 	}
 
+	private function achievementValue(ContextPreparator $context, int $achievementID): int
+	{
+		$status = ClassRegistry::init('AchievementStatus')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'achievement_id' => $achievementID]]);
+		return $status ? (int) $status['AchievementStatus']['value'] : 0;
+	}
+
+	/**
+	 * Plays failures until the potion has rolled (and missed) the given number of times.
+	 * The damage is reset to exactly the last heart before every fail, so the potion
+	 * chance stays at its minimum and never triggers, which keeps the test deterministic.
+	 */
+	private function failUntilPotionMisses(ContextPreparator &$context, int $damage, int $misses): void
+	{
+		for ($i = 0; $i < $misses; $i++)
+		{
+			Auth::saveUserField('damage', $damage);
+			$this->failResult($context);
+		}
+	}
+
+	/**
+	 * Puts a problem into the state a run needs (untried for a sprint, golden for the
+	 * golden run), which is all a fresh problem would start with.
+	 */
+	private function setProblemStatus(ContextPreparator $context, string $status): void
+	{
+		Util::execute(
+			'INSERT INTO tsumego_status (user_id, tsumego_id, status) VALUES (?, ?, ?) '
+			. 'ON DUPLICATE KEY UPDATE status = VALUES(status)',
+			[$context->user['id'], $context->tsumegos[0]['id'], $status]);
+	}
+
+	/**
+	 * The value the run's counter sits at.
+	 */
+	private function conditionValue(ContextPreparator $context, string $category): int
+	{
+		$condition = ClassRegistry::init('AchievementCondition')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'category' => $category]]);
+		return $condition ? (int) $condition['AchievementCondition']['value'] : 0;
+	}
+
+	/**
+	 * Steps the run's counter up through the same updater the play processing uses.
+	 */
+	private function stepCounter(ContextPreparator &$context, string $category, int $steps): void
+	{
+		$this->loginAs($context);
+		for ($step = 0; $step < $steps; $step++)
+		{
+			if ($category === 'sprint')
+				AppController::updateSprintCondition(true);
+			else
+				AppController::updateGoldenCondition(true);
+		}
+	}
+
+	private function startSprint(ContextPreparator &$context): void
+	{
+		$this->loginAs($context);
+		Auth::saveUserField('sprint_start', date('Y-m-d H:i:s'));
+	}
+
+	/**
+	 * Lets the sprint run out, so the next solve happens outside of it.
+	 */
+	private function endSprint(ContextPreparator &$context): void
+	{
+		$this->loginAs($context);
+		Auth::saveUserField('sprint_start', date('Y-m-d H:i:s', time() - Constants::$SPRINT_SECONDS - 1));
+	}
+
+	/**
+	 * "Solve 30 problems within a sprint" is counted when the sprint's counter reaches
+	 * 30, and the counter starts over when a solve happens outside a sprint, so every
+	 * completed sprint raises the count.
+	 */
+	public function testThatEscalatedQuicklyCountsEveryCompletedSprint(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'testuser'], 'tsumego' => 1]);
+
+		$this->startSprint($context);
+		$this->stepCounter($context, 'sprint', Achievement::SPRINT_COUNT - 1);
+		$this->setProblemStatus($context, TsumegoStatus::$VISITED);
+		$this->solve($context);
+		$this->assertSame(1, $this->achievementValue($context, Achievement::SPRINT),
+			'the 30th solve of a sprint should earn That escalated quickly!');
+
+		// the sprint ran out, so the next solve happens outside of it and starts the
+		// counter over
+		$this->endSprint($context);
+		$this->setProblemStatus($context, TsumegoStatus::$VISITED);
+		$this->solve($context);
+		$this->assertSame(0, $this->conditionValue($context, 'sprint'),
+			'a solve outside a sprint should start the sprint counter over');
+
+		// so the next 30 solves are a new completed sprint
+		$this->startSprint($context);
+		$this->stepCounter($context, 'sprint', Achievement::SPRINT_COUNT - 1);
+		$this->setProblemStatus($context, TsumegoStatus::$VISITED);
+		$this->solve($context);
+		$this->assertSame(2, $this->achievementValue($context, Achievement::SPRINT),
+			'another completed sprint should raise the count');
+	}
+
+	/**
+	 * "Don't fail 10 times in a row on a golden tsumego" is counted when the golden run
+	 * reaches 10, and a misplay on a golden problem starts the run over, so every
+	 * completed run raises the count.
+	 */
+	public function testGoldDiggerCountsEveryCompletedGoldenRun(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'testuser'], 'tsumego' => 1]);
+
+		$this->stepCounter($context, 'golden', Achievement::GOLD_DIGGER_COUNT - 1);
+		$this->setProblemStatus($context, TsumegoStatus::$GOLDEN);
+		$this->solve($context);
+		$this->assertSame(1, $this->achievementValue($context, Achievement::GOLD_DIGGER),
+			'the 10th golden solve in a row should earn Gold Digger');
+
+		// a misplay on a golden problem breaks the run
+		$this->setProblemStatus($context, TsumegoStatus::$GOLDEN);
+		$this->failResult($context);
+		$this->assertSame(0, $this->conditionValue($context, 'golden'),
+			'a misplay on a golden problem should start the golden run over');
+
+		// so the next ten golden solves are a new completed run
+		$this->stepCounter($context, 'golden', Achievement::GOLD_DIGGER_COUNT - 1);
+		$this->setProblemStatus($context, TsumegoStatus::$GOLDEN);
+		$this->solve($context);
+		$this->assertSame(2, $this->achievementValue($context, Achievement::GOLD_DIGGER),
+			'another completed golden run should raise the count');
+	}
+
+	/**
+	 * A misplay on a golden problem breaks the golden run, so a later run starts from
+	 * zero instead of carrying the old one on.
+	 */
+	public function testFailingAGoldenProblemRestartsTheGoldenRun(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'testuser'], 'tsumego' => 1]);
+
+		$this->stepCounter($context, 'golden', 5);
+		$this->setProblemStatus($context, TsumegoStatus::$GOLDEN);
+		$this->failResult($context);
+
+		$this->assertSame(0, $this->conditionValue($context, 'golden'),
+			'a misplay on a golden problem should restart the golden run');
+	}
+
+	/**
+	 * A misplay outside a golden problem leaves the golden run alone: the run counts
+	 * golden problems, not clean play in general.
+	 */
+	public function testAMisplayOutsideAGoldenProblemKeepsTheGoldenRun(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'testuser'], 'tsumego' => 1]);
+
+		$this->stepCounter($context, 'golden', 5);
+		$this->setProblemStatus($context, TsumegoStatus::$VISITED);
+		$this->failResult($context);
+
+		$this->assertSame(5, $this->conditionValue($context, 'golden'),
+			'a misplay outside a golden problem should not touch the golden run');
+	}
+
+	/**
+	 * The passive potion counts every roll that failed to trigger. Fifteen of them in one
+	 * day is Bad Potion, and every later unlucky day adds one to the count.
+	 */
+	public function testBadPotionCountsEachUnluckyDay(): void
+	{
+		// level 60: the passive potion needs POTION_MINIMUM_LEVEL to roll at all
+		$context = new ContextPreparator(['user' => ['level' => 60, 'health' => 0], 'tsumego' => 1]);
+		$lastHeart = Util::getHealthBasedOnLevel(60);
+
+		$this->failUntilPotionMisses($context, $lastHeart, HeroPowers::$BAD_POTION_THRESHOLD);
+
+		$this->assertSame(1, $this->achievementValue($context, Achievement::BAD_POTION),
+			'15 missed potion rolls in one day should earn Bad Potion');
+
+		// the nightly cron zeroes the day counter, so the next day starts from zero
+		ClassRegistry::init('AchievementCondition')
+			->query("UPDATE achievement_condition SET value = 0 WHERE category = 'potion'");
+		$this->failUntilPotionMisses($context, $lastHeart, HeroPowers::$BAD_POTION_THRESHOLD);
+
+		$this->assertSame(2, $this->achievementValue($context, Achievement::BAD_POTION),
+			'a second unlucky day should raise the count');
+	}
+
 	private function attemptsOf(ContextPreparator $context): array
 	{
 		return ClassRegistry::init('TsumegoAttempt')->find('all', [
