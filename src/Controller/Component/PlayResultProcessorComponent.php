@@ -331,8 +331,14 @@ class PlayResultProcessorComponent extends Component
 	{
 		if (!Level::XPAndRatingIsGainedInTsumegoStatus($previousTsumegoStatus))
 			return;
+		// A golden run advances on a golden solve and starts over when a golden problem is
+		// failed, so Gold Digger counts runs of ten and not ten golden solves ever.
 		if (!$result['solved'])
+		{
+			if ($previousTsumegoStatus == TsumegoStatus::$GOLDEN)
+				AppController::updateGoldenCondition();
 			return;
+		}
 
 		$solvedTsumegoRank = Rating::getReadableRankFromRating($previousTsumego['Tsumego']['rating']);
 		AppController::saveDanSolveCondition($solvedTsumegoRank, $previousTsumego['Tsumego']['id']);
