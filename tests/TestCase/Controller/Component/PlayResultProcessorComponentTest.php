@@ -27,12 +27,13 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		return json_decode($this->controller->response->body(), true) ?? [];
 	}
 
-	private function solve(ContextPreparator &$context): array
+	private function solve(ContextPreparator &$context, int $misplays = 0): array
 	{
 		return $this->postResult($context, [
 			'tsumego_id' => $context->tsumegos[0]['id'],
 			'seconds' => 0,
 			'solved' => true,
+			'misplays' => $misplays,
 		]);
 	}
 
@@ -50,7 +51,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		// Each misplay is its own fail call before the final solve
 		for ($i = 0; $i < $misplays; $i++)
 			$this->failResult($context);
-		return $this->solve($context);
+		return $this->solve($context, $misplays);
 	}
 
 	private function statusOf(ContextPreparator $context): string
@@ -463,6 +464,37 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		]);
 		$this->assertSame(10, (int) $errCondition['AchievementCondition']['value'],
 			'No-error streak should increment when solving without misplays');
+	}
+
+	/**
+	 * The streak counts the problems solved since the last error, so a problem that was
+	 * misplayed in an earlier session counts once the player finally solves it.
+	 */
+	public function testSolvingAProblemMisplayedEarlierCountsTowardsTheNoErrorStreak(): void
+	{
+		$context = new ContextPreparator([
+			'tsumego' => 1,
+			'achievement-conditions' => [['category' => 'err', 'value' => 0]],
+		]);
+
+		// An earlier session on this problem ended in a misplay (which broke the streak then)
+		$this->failResult($context);
+
+		// ... and the player solved 40 problems without an error since
+		$errCondition = ClassRegistry::init('AchievementCondition')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'category' => 'err'],
+		]);
+		$errCondition['AchievementCondition']['value'] = 40;
+		ClassRegistry::init('AchievementCondition')->save($errCondition);
+
+		// Finally solving that problem is a clean solve of this play
+		$this->solve($context);
+
+		$errCondition = ClassRegistry::init('AchievementCondition')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'category' => 'err'],
+		]);
+		$this->assertSame(41, (int) $errCondition['AchievementCondition']['value'],
+			'A clean solve should extend the streak even when the problem was misplayed earlier');
 	}
 
 	public function testMisplayOnAlreadySolvedProblemIsHarmless(): void

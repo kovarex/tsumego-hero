@@ -346,7 +346,7 @@ class HeroPowersTest extends TestCaseWithAuth
 		});
 
 		$maxHealth = Util::getHealthBasedOnLevel(Auth::getUser()['level']);
-		$this->assertSame(0, $browser->driver->executeScript('return remainingHealth - misplays;'));
+		$this->assertSame(0, $browser->driver->executeScript('return currentHealth;'));
 		$this->assertSame(0, $browser->driver->executeScript('return boardLockValue;'));
 
 		// Lose the last heart to trigger lock message
@@ -378,7 +378,7 @@ class HeroPowersTest extends TestCaseWithAuth
 		$this->assertStringNotContainsString('This problem is locked until', $statusText);
 		$this->assertSame(0, $browser->driver->executeScript('return boardLockValue;'));
 		$this->assertFalse($browser->driver->executeScript('return tryAgainTomorrow;'));
-		$this->assertSame($maxHealth, $browser->driver->executeScript('return remainingHealth;'));
+		$this->assertSame($maxHealth, $browser->driver->executeScript('return currentHealth;'));
 		for ($i = 0; $i < $maxHealth; $i++)
 		{
 			$heartSrc = $browser->driver->findElement(WebDriverBy::id('heart' . $i))->getAttribute('src');

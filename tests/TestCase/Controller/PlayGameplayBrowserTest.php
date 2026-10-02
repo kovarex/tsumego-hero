@@ -492,11 +492,11 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 
 		$browser->playWithResult('F');
 
-		// Potion should trigger: hearts restored, alert visible
-		$this->assertSame(0, $browser->driver->executeScript('return window.misplays;'),
-			'Potion should reset misplays to 0');
-		$this->assertSame($maxHealth, $browser->driver->executeScript('return window.remainingHealth;'),
-			'Potion should restore remainingHealth to max');
+		// Potion should trigger: hearts restored, alert visible, but the mistake stays
+		$this->assertSame(1, $browser->driver->executeScript('return window.misplays;'),
+			'Potion should not undo the misplay');
+		$this->assertSame($maxHealth, $browser->driver->executeScript('return window.currentHealth;'),
+			'Potion should refill the hearts');
 		$this->assertTrue($browser->driver->executeScript(
 			'return document.getElementById("potionAlerts").style.display !== "none";'),
 			'Potion alert should be visible');

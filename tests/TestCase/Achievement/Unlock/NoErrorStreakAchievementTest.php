@@ -2,6 +2,7 @@
 
 use App\Utility\AchievementChecker;
 use App\Utility\Auth;
+use App\Utility\HeroPowers;
 
 /**
  * No Error Streak Achievement Test
@@ -59,6 +60,68 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 				'category' => 'err']]);
 		$this->assertNotNull($achievementCondition);
 		$this->assertEquals($achievementCondition['AchievementCondition']['value'], 0);
+	}
+
+	/**
+	 * A problem solved only after a mistake in the same play is not an error-free
+	 * solve: the streak stays at 0 instead of counting this solve.
+	 */
+	public function testSolveAfterMisplayInTheSamePlayKeepsTheStreakAtZero()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'achievement-conditions' => [['category' => 'err', 'value' => 9]],
+			'tsumego' => 1]);
+
+		$browser->get('/' . $context->setConnections[0]['id']);
+		$browser->playWithResult('F');
+		$browser->playWithResult('S'); // the same play, no reload in between
+
+		$this->assertSame(0, $this->noErrorStreak(), 'A solve that followed a misplay of the same play must not count');
+	}
+
+	/**
+	 * A problem misplayed in an earlier play is solved cleanly today: the mistake
+	 * already broke the streak back then, so this solve extends the new run.
+	 */
+	public function testSolvingAProblemMisplayedInAnEarlierPlayExtendsTheStreak()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'achievement-conditions' => [['category' => 'err', 'value' => 9]],
+			'tsumego' => 1]);
+		$link = '/' . $context->setConnections[0]['id'];
+
+		$browser->get($link);
+		$browser->playWithResult('F');
+		$browser->get($link); // a new play of the same problem
+		$browser->playWithResult('S');
+
+		$this->assertSame(1, $this->noErrorStreak(), 'The clean solve should start a new run');
+	}
+
+	/**
+	 * A rejuvenation restores hearts, not the mistake: a solve that follows one in
+	 * the same play is still not an error-free solve.
+	 */
+	public function testRejuvenationDoesNotUndoTheMisplayForTheStreak()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['level' => HeroPowers::$REJUVENATION_MINIMUM_LEVEL, 'health' => 0],
+			'achievement-conditions' => [['category' => 'err', 'value' => 9]],
+			'tsumego' => 1]);
+		$context->changeUserSoRejuvenationCanBeUsed();
+		$browser->get('/' . $context->setConnections[0]['id']);
+
+		$browser->playWithResult('F');
+		$browser->clickId('rejuvenation');
+		$browser->driver->wait(10, 500)->until(function () use ($context) {
+			return $context->reloadUser()['damage'] == 0;
+		});
+		$browser->playWithResult('S');
+
+		$this->assertSame(0, $this->noErrorStreak(), 'A healed misplay is still a misplay');
 	}
 
 	public function testNoErrorStreakDoesntGetAffectedOnSolvedTsumego()
@@ -146,5 +209,14 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 			new AchievementChecker()->checkNoErrorAchievements();
 			$this->assertAchievementUnlocked($achievementId, "Achievement $achievementId should unlock at err=$errValue");
 		}
+	}
+
+	private function noErrorStreak(): int
+	{
+		$condition = ClassRegistry::init('AchievementCondition')->find('first',
+			['conditions' => [
+				'user_id' => Auth::getUserID(),
+				'category' => 'err']]);
+		return (int) $condition['AchievementCondition']['value'];
 	}
 }

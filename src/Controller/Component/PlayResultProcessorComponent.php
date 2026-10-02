@@ -18,7 +18,7 @@ class PlayResultProcessorComponent extends Component
 	 *
 	 * @return array Result with xp_gained, rating_change, new_rating, etc.
 	 */
-	public function processResult(int $tsumegoId, bool $solved, float $seconds, bool $timeout): array
+	public function processResult(int $tsumegoId, bool $solved, float $seconds, bool $timeout, int $misplays = 0): array
 	{
 		$seconds = max(0.01, $seconds);
 
@@ -57,7 +57,7 @@ class PlayResultProcessorComponent extends Component
 			$result['potion_triggered'] = $this->processPotion();
 		$this->processXpChange($tsumego, $result, $previousStatusValue, $originalTsumegoRating);
 		$this->updateTsumegoAttempt($tsumego, $result, $previousStatusValue, $seconds);
-		$this->processErrorAchievement($result, $previousStatusValue, $tsumegoId);
+		$this->processErrorAchievement($result, $previousStatusValue, $misplays);
 		$this->processUnsortedStuff($tsumego, $result, $previousStatusValue);
 
 		// Check solve-dependent achievements right away (not only on the next page
@@ -276,7 +276,7 @@ class PlayResultProcessorComponent extends Component
 		]);
 	}
 
-	private function processErrorAchievement(array $result, string $previousTsumegoStatus, int $tsumegoID): void
+	private function processErrorAchievement(array $result, string $previousTsumegoStatus, int $misplays): void
 	{
 		if (!Auth::XPisGainedInCurrentMode())
 			return;
@@ -294,24 +294,13 @@ class PlayResultProcessorComponent extends Component
 			$achievementCondition['AchievementCondition']['user_id'] = Auth::getUserID();
 			ClassRegistry::init('AchievementCondition')->create();
 		}
-		$solvedWithoutErrors = $result['solved'] && !$this->hadMisplaysBeforeSolve($tsumegoID);
-		if ($solvedWithoutErrors)
-			$achievementCondition['AchievementCondition']['value']++;
-		else
-			$achievementCondition['AchievementCondition']['value'] = 0;
+		// The streak counts the problems solved since the last error: only a solve that had
+		// no misplay of its own extends it, anything else (a misplay, or a solve that came
+		// after one) starts it over.
+		$streak = (int) ($achievementCondition['AchievementCondition']['value'] ?? 0);
+		$cleanSolve = $result['solved'] && $misplays === 0;
+		$achievementCondition['AchievementCondition']['value'] = $cleanSolve ? $streak + 1 : 0;
 		ClassRegistry::init('AchievementCondition')->save($achievementCondition);
-	}
-
-	private function hadMisplaysBeforeSolve(int $tsumegoID): bool
-	{
-		$attempt = ClassRegistry::init('TsumegoAttempt')->find('first', [
-			'conditions' => [
-				'user_id' => Auth::getUserID(),
-				'tsumego_id' => $tsumegoID,
-			],
-			'order' => 'id DESC',
-		]);
-		return $attempt && (int) $attempt['TsumegoAttempt']['misplays'] > 0;
 	}
 
 	private function processUnsortedStuff(array $previousTsumego, array $result, string $previousTsumegoStatus): void
