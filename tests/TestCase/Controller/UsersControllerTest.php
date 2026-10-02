@@ -298,6 +298,75 @@ class UsersControllerTest extends ControllerTestCase
 		$this->assertStringContainsString('1000 Weiqi problems 2nd half', $this->view);
 	}
 
+	/**
+	 * The profile counts each unlocked achievement once, even when the repeatable
+	 * one was earned several times.
+	 */
+	public function testProfileAchievementCountCountsEachAchievementOnce(): void
+	{
+		$context = new ContextPreparator([
+			'user' => [
+				'name' => 'repeater',
+				'achievement-statuses' => [
+					['id' => Achievement::PROBLEMS_1000],
+					['id' => Achievement::PROBLEMS_2000],
+					['id' => Achievement::SUPERIOR_ACCURACY, 'value' => 3],
+				],
+			],
+		]);
+
+		$browser = Browser::instance();
+		$browser->get('users/view/' . $context->user['id']);
+
+		// three achievements unlocked, one of them earned three times -> two repeats
+		$browser->checkTable('#final-info-table', $this, [
+			3 => ['Achievements:', '3 of ' . Achievement::COUNT . ' +2'],
+		]);
+	}
+
+	/**
+	 * The profile achievement line shows no repetitions for a user who earned
+	 * every achievement exactly once.
+	 */
+	public function testProfileWithoutRepeatedAchievementsHasPlainCount(): void
+	{
+		$context = new ContextPreparator([
+			'user' => [
+				'name' => 'collector',
+				'achievement-statuses' => [
+					['id' => Achievement::PROBLEMS_1000],
+					['id' => Achievement::SUPERIOR_ACCURACY],
+				],
+			],
+		]);
+
+		$browser = Browser::instance();
+		$browser->get('users/view/' . $context->user['id']);
+
+		$browser->checkTable('#final-info-table', $this, [
+			3 => ['Achievements:', '2 of ' . Achievement::COUNT],
+		]);
+	}
+
+	/**
+	 * The profile achievement card shows how often a repeatable achievement was earned.
+	 */
+	public function testProfileAchievementCardShowsNumberOfEarnings(): void
+	{
+		$context = new ContextPreparator([
+			'user' => [
+				'name' => 'repeater',
+				'achievement-statuses' => [
+					['id' => Achievement::SUPERIOR_ACCURACY, 'value' => 3],
+				],
+			],
+		]);
+
+		$this->testAction('users/view/' . $context->user['id'], ['return' => 'view']);
+
+		$this->assertStringContainsString('title="Earned 3 times"', $this->view);
+	}
+
 	public function testSolveHistoryShowsOnlyViewableSets(): void
 	{
 		$context = new ContextPreparator([

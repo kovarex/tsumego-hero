@@ -36,6 +36,75 @@ class AchievementsControllerTest extends TestCaseWithAuth
 		$this->assertStringContainsString('achievementColorGray', $result);
 	}
 
+	/**
+	 * Every achievement has exactly one card, so the completion total counts each
+	 * unlocked achievement once - earning the repeatable one again does not change
+	 * how many achievements are completed.
+	 */
+	public function testRepeatedAchievementsCountOnceInCompletionTotal()
+	{
+		new ContextPreparator([
+			'user' => [
+				'name' => 'repeater',
+				'achievement-statuses' => [
+					['id' => Achievement::PROBLEMS_1000],
+					['id' => Achievement::PROBLEMS_2000],
+					['id' => Achievement::SUPERIOR_ACCURACY, 'value' => 3],
+				],
+			],
+		]);
+		$this->login('repeater');
+
+		$result = $this->testAction('/achievements', ['return' => 'view']);
+
+		$this->assertMatchesRegularExpression('/You completed 3 of/', $result);
+		// ... the number of repetitions is still shown on the card itself
+		$this->assertStringContainsString('title="Earned 3 times"', $result);
+		$this->assertStringContainsString('>3x<', $result);
+	}
+
+	/**
+	 * The achievement detail page explains the extra completions by showing how
+	 * often the repeatable achievement was earned.
+	 */
+	public function testAchievementDetailShowsNumberOfEarnings()
+	{
+		new ContextPreparator([
+			'user' => [
+				'name' => 'repeater',
+				'achievement-statuses' => [
+					['id' => Achievement::SUPERIOR_ACCURACY, 'value' => 3],
+				],
+			],
+		]);
+		$this->login('repeater');
+
+		$result = $this->testAction('/achievements/view/' . Achievement::SUPERIOR_ACCURACY, ['return' => 'view']);
+
+		$this->assertStringContainsString('title="Earned 3 times"', $result);
+		$this->assertStringContainsString('>3x<', $result);
+	}
+
+	/**
+	 * An achievement earned once shows no repeat indicator.
+	 */
+	public function testAchievementEarnedOnceHasNoRepeatIndicator()
+	{
+		new ContextPreparator([
+			'user' => [
+				'name' => 'single',
+				'achievement-statuses' => [
+					['id' => Achievement::PROBLEMS_1000],
+				],
+			],
+		]);
+		$this->login('single');
+
+		$result = $this->testAction('/achievements/view/' . Achievement::PROBLEMS_1000, ['return' => 'view']);
+
+		$this->assertStringNotContainsString('title="Earned', $result);
+	}
+
 	public function testViewOtherUserShowsTheirName()
 	{
 		$context = new ContextPreparator([

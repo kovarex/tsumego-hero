@@ -271,6 +271,7 @@
 }
 .acImg {
   height: 70px;
+  position: relative;
 }
 .acImg img {
   width: 70px;
@@ -282,13 +283,20 @@
   top: -8px;
   font-size: 13px;
 }
-.acImgXp2 {
-  position: relative;
-  font-size: 14px;
-  color: var(--color-gray-dark);
-  top: -51px;
-  left: -1px;
-  font-weight: 800;
+.achievementEarnedCount {
+  position: absolute;
+  top: 2px;
+  left: calc(50% + 18px);
+  padding: 1px 7px;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-heavy);
+  color: var(--color-white);
+  background: var(--color-gray-dark);
+}
+.achievementRepeats {
+  vertical-align: super;
+  font-size: var(--font-size-md);
 }
 .acDesc {
   padding: 15px 5px;

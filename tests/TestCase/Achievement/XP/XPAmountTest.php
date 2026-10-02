@@ -92,4 +92,34 @@ class XPAmountTest extends AchievementTestCase
 		$this->assertEquals(4000, $user['User']['xp'], 'Existing XP should be preserved! Expected 4000 (3000 existing + 1000 from achievement), but updateXP() overwrites with = instead of +=');
 		$this->assertEquals(69, $user['User']['level'], 'User should remain at level 69');
 	}
+
+	/**
+	 * A repeatable achievement pays out its XP and popup on the first win only;
+	 * winning again just raises the count.
+	 */
+	public function testUserOfTheDayPaysOutOnlyOnTheFirstWin()
+	{
+		$context = new ContextPreparator([
+			'user' => [
+				'achievement-statuses' => [
+					['id' => Achievement::USER_OF_THE_DAY, 'value' => 1, 'created' => '2020-05-05 12:00:00'],
+				],
+			],
+			'day-records' => [
+				['date' => '2026-01-01'],
+				['date' => '2026-01-02'],
+				['date' => '2026-01-03'],
+			],
+		]);
+
+		$checker = new AchievementChecker();
+		$checker->checkProblemNumberAchievements()->finalize();
+
+		$status = ClassRegistry::init('AchievementStatus')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'achievement_id' => Achievement::USER_OF_THE_DAY]]);
+		$this->assertSame(3, (int) $status['AchievementStatus']['value'], 'Two further wins should raise the count to 3');
+
+		$this->assertSame([], $checker->updated, 'A repeat should not queue a popup');
+		$this->assertSame(0, $context->XPGained(), 'A repeat should not grant XP');
+	}
 }

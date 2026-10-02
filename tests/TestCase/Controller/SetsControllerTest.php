@@ -33,6 +33,42 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertTextNotContains("Problems found 0", $this->view);
 	}
 
+	/**
+	 * Finishing the last problem of a set unlocks achievements on the set page, and
+	 * those achievements pop up for the player.
+	 */
+	public function testSetPagePopsUpAchievementsUnlockedByTheSet(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'setViewer']]);
+		foreach ([50, 52, 53, 54] as $setId)
+			$this->createFullySolvedSet($setId, $context->user['id']);
+		$_COOKIE['disable-achievements'] = false;
+
+		$this->testAction('sets/view/50', ['return' => 'contents']);
+
+		$popups = array_column($this->controller->viewVars['achievementUpdates'], 'id');
+		$this->assertContains(Achievement::LIFE_DEATH_ELEMENTARY, $popups, 'The set page hands the achievements it unlocked to the layout');
+		$this->assertTextContains('"id":' . Achievement::LIFE_DEATH_ELEMENTARY, $this->contents, 'The layout renders the achievements the set page unlocked');
+	}
+
+	/**
+	 * Create a public set with a single problem that the given user solved.
+	 */
+	private function createFullySolvedSet(int $setId, int $userId): void
+	{
+		ClassRegistry::init('Set')->create();
+		ClassRegistry::init('Set')->save(['id' => $setId, 'public' => 1, 'title' => 'set ' . $setId]);
+		ClassRegistry::init('Tsumego')->create();
+		ClassRegistry::init('Tsumego')->save(['rating' => 1000]);
+		$tsumegoId = ClassRegistry::init('Tsumego')->getInsertID();
+		ClassRegistry::init('SetConnection')->create();
+		ClassRegistry::init('SetConnection')->save(['set_id' => $setId, 'tsumego_id' => $tsumegoId, 'num' => 1]);
+		ClassRegistry::init('Sgf')->create();
+		ClassRegistry::init('Sgf')->save(['tsumego_id' => $tsumegoId, 'sgf' => '(;GM[1]FF[4]SZ[19])', 'user_id' => $userId, 'accepted' => 1]);
+		ClassRegistry::init('TsumegoStatus')->create();
+		ClassRegistry::init('TsumegoStatus')->save(['tsumego_id' => $tsumegoId, 'status' => 'S', 'user_id' => $userId]);
+	}
+
 	public function testIndexRankBased(): void
 	{
 		$contextParams = [];

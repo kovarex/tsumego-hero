@@ -23,6 +23,7 @@ use App\Utility\Util;
 	if (!empty($currentUserStatus))
 		$aColor = $achievement['Achievement']['color'];
 	else $aColor = 'achievementColorGray';
+	$earnedCount = !empty($currentUserStatus) ? (int) $currentUserStatus['AchievementStatus']['value'] : 0;
 ?>
 	<p class="title <?php echo $aColor; ?>2">
 				<br>Achievement: <?php echo h($achievement['Achievement']['name']); ?>
@@ -56,17 +57,8 @@ if (empty($currentUserStatus))
 		</div>
 		<div class="acImg">
 			<img src="/img/<?php echo $displayImage; ?>.png">
-			<?php
-		$a46style = '';
-if(!empty($currentUserStatus) && $achievement['Achievement']['id'] == 46)
-{
-	$a46style = ' style="top:-22px;"';
-	?>
-			<div class="acImgXp2">
-				<?php echo $currentUserStatus['AchievementStatus']['value']; ?>
-			</div>
-			<?php } ?>
-			<div class="acImgXp"<?php echo $a46style; ?>>
+			<?php echo AchievementHelper::renderEarnedBadge($earnedCount); ?>
+			<div class="acImgXp">
 			<?php echo $achievement['Achievement']['xp']; ?> XP
 			</div>
 		</div>

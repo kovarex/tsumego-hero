@@ -55,6 +55,27 @@ class AchievementChecker
 		$this->updated [] = $achievement['Achievement'];
 	}
 
+	/**
+	 * Unlocks a repeatable achievement and records how often it was earned. Earning
+	 * it the first time grants the XP and the popup, later ones only raise the count.
+	 */
+	private function gainedTimes(int $achievementID, int $times): void
+	{
+		if ($times < 1)
+			return;
+		$this->gained($achievementID);
+
+		$AchievementStatus = ClassRegistry::init('AchievementStatus');
+		$status = $AchievementStatus->find('first', [
+			'conditions' => ['user_id' => Auth::getUserID(), 'achievement_id' => $achievementID]]);
+		if (!$status || (int) $status['AchievementStatus']['value'] === $times)
+			return;
+
+		$status['AchievementStatus']['value'] = $times;
+		$AchievementStatus->save($status);
+		Cache::delete('recent_achievements_7', 'default');
+	}
+
 	private function fillExistingStatuses(): void
 	{
 		$achievementStatuses = ClassRegistry::init('AchievementStatus')->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]) ?: [];
@@ -91,8 +112,10 @@ class AchievementChecker
 		if ($solvedCount >= 10000)
 			$this->gained(Achievement::PROBLEMS_10000);
 
-		if (ClassRegistry::init('AchievementCondition')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'category' => 'uotd']]))
-			$this->gained(Achievement::USER_OF_THE_DAY);
+		// User of the Day is repeatable: the cron writes a day_record for every win,
+		// so the number of wins is the achievement value.
+		$this->gainedTimes(Achievement::USER_OF_THE_DAY, ClassRegistry::init('DayRecord')->find('count', [
+			'conditions' => ['user_id' => Auth::getUserID()]]));
 		return $this;
 	}
 
@@ -590,7 +613,6 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 				$this->gained(Achievement::SPEED_XII);
 		}
 
-		$achievementId = 46;
 		if ($acA['AchievementCondition']['value'] >= 100)
 		{
 			$ac100 = ClassRegistry::init('AchievementCondition')->find('all', ['conditions' => ['user_id' => Auth::getUserID(), 'category' => '%', 'value >=' => 100]]) ?: [];
@@ -599,21 +621,10 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 			for ($j = 0; $j < $ac100Count; $j++)
 				if (count(TsumegoUtil::collectTsumegosFromSet($ac100[$j]['AchievementCondition']['set_id'])) >= 100)
 					$ac100counter++;
-			$as100 = ClassRegistry::init('AchievementStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'achievement_id' => $achievementId]]);
-			if ($as100 == null)
-			{
-				$as100 = [];
-				$as100['AchievementStatus']['user_id'] = Auth::getUserID();
-				$as100['AchievementStatus']['achievement_id'] = $achievementId;
-				$as100['AchievementStatus']['value'] = 0;
-				ClassRegistry::init('AchievementStatus')->create();
-			}
-			if ($as100['AchievementStatus']['value'] != $ac100counter)
-			{
-				$as100['AchievementStatus']['value'] = $ac100counter;
-				ClassRegistry::init('AchievementStatus')->save($as100);
-				Cache::delete('recent_achievements_7', 'default');
-			}
+
+			// Repeatable: one perfect collection of 100+ problems per count. The first
+			// one pays out like any other achievement, further ones only raise the count.
+			$this->gainedTimes(Achievement::SUPERIOR_ACCURACY, $ac100counter);
 		}
 		return $this;
 	}

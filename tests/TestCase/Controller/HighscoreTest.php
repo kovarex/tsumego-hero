@@ -135,7 +135,9 @@ class HighscoreTest extends TestCaseWithAuth
 	}
 
 	/**
-	 * Achievements highscore orders by total achievement score descending.
+	 * Achievements highscore orders by the number of unlocked achievements. Players
+	 * with the same number are separated by how often they earned the repeatable
+	 * achievement, which does not add to the completed count itself.
 	 */
 	public function testAchievementsHighscoreOrdering()
 	{
@@ -164,10 +166,17 @@ class HighscoreTest extends TestCaseWithAuth
 		$dom = $this->getStringDom();
 		$rows = $dom->querySelectorAll('.data-table tr');
 
-		// AchieverB has higher total (1+8=9) vs AchieverA (1+5=6)
+		// Both unlocked 2 achievements; the repetitions of Superior Accuracy only
+		// separate them, they don't count as further completed achievements.
 		$this->assertGreaterThanOrEqual(3, count($rows));
-		$this->assertRowContains($rows[1], '#1', 'AchieverB');
-		$this->assertRowContains($rows[2], '#2', 'AchieverA');
+		// both unlocked 2 achievements; the repeats of Superior Accuracy only break
+		// the tie, they are not counted as further completed achievements
+		$this->assertRowContains($rows[1], '#1', 'AchieverB', '2/' . Achievement::COUNT . ' +7');
+		$this->assertRowContains($rows[2], '#2', 'AchieverA', '2/' . Achievement::COUNT . ' +4');
+		// the tiebreaker rides along in the score cell, it gets no column of its own
+		$this->assertRowContains($rows[0], 'Place', 'Name', 'Premium', 'Completed');
+		$this->assertStringNotContainsString('Repeats', $rows[0]->textContent);
+		$this->assertStringContainsString('Extra completions of repeatable achievements', $this->view);
 	}
 
 	/**
@@ -335,6 +344,44 @@ class HighscoreTest extends TestCaseWithAuth
 		// kovarex has no achievements but still appears via self-view with 0
 		$this->assertTextContains('kovarex', $this->view);
 		$this->assertTextContains('0/' . Achievement::COUNT, $this->view);
+	}
+
+	/**
+	 * Achievement highscore counts each unlocked achievement once: earning the
+	 * repeatable achievement again does not raise the score.
+	 */
+	public function testAchievementsHighscoreCountsEachAchievementOnce()
+	{
+		new ContextPreparator([
+			'other-users' => [
+				[
+					'name' => 'Repeater',
+					'achievement-statuses' => [
+						['id' => Achievement::PROBLEMS_1000],
+						['id' => Achievement::PROBLEMS_2000],
+						['id' => Achievement::SUPERIOR_ACCURACY, 'value' => 5],
+					],
+				],
+				[
+					'name' => 'Collector',
+					'achievement-statuses' => [
+						['id' => Achievement::PROBLEMS_3000],
+						['id' => Achievement::PROBLEMS_4000],
+						['id' => Achievement::PROBLEMS_5000],
+					],
+				],
+			],
+		]);
+
+		$this->testAction('users/achievements', ['return' => 'view']);
+		$dom = $this->getStringDom();
+		$rows = $dom->querySelectorAll('.data-table tr');
+
+		// both unlocked three achievements, the repetitions of Superior Accuracy excluded
+		$this->assertRowContains($rows[1], 'Repeater', '3/' . Achievement::COUNT . ' +4');
+		$this->assertRowContains($rows[2], 'Collector', '3/' . Achievement::COUNT);
+		// the collector earned both exactly once, so nothing is added to his score
+		$this->assertStringNotContainsString('+', $rows[2]->textContent);
 	}
 
 	/**

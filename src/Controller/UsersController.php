@@ -556,8 +556,11 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 				user.picture AS picture,
 				user.external_id AS external_id,
 				user.premium AS premium,
-				COALESCE(SUM(achievement_status.value), 0) AS achievement_score,
-				ROW_NUMBER() OVER (ORDER BY COALESCE(SUM(achievement_status.value), 0) DESC) as position
+				COUNT(DISTINCT achievement_status.achievement_id) AS achievement_score,
+				COALESCE(SUM(achievement_status.value) - COUNT(DISTINCT achievement_status.achievement_id), 0) AS achievement_repeats,
+				ROW_NUMBER() OVER (
+					ORDER BY COUNT(DISTINCT achievement_status.achievement_id) DESC,
+						COALESCE(SUM(achievement_status.value), 0) DESC) as position
 			FROM user
 			LEFT JOIN achievement_status
 				ON achievement_status.user_id = user.id
@@ -885,16 +888,20 @@ ORDER BY category DESC', [$user['User']['id']]));
 			$item['AchievementStatus']['a_color'] = $achievement['color'];
 			$item['AchievementStatus']['a_id'] = $achievement['id'];
 			$item['AchievementStatus']['a_xp'] = $achievement['xp'];
+			$item['AchievementStatus']['a_earned_count'] = (int) $item['AchievementStatus']['value'];
 			$asList[] = $item;
 		}
 		$as = $asList;
 
-		$aNum = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $id]]);
-		$asx = $this->AchievementStatus->find('first', ['conditions' => ['user_id' => $id, 'achievement_id' => 46]]);
-		$aNumx = count($aNum);
-		if ($asx != null)
-			$aNumx = $aNumx + $asx['AchievementStatus']['value'] - 1;
-
+		$counts = Util::query(
+			'SELECT COUNT(DISTINCT achievement_status.achievement_id) AS completed,
+				COALESCE(SUM(achievement_status.value) - COUNT(DISTINCT achievement_status.achievement_id), 0) AS repeats
+			FROM achievement_status
+			WHERE achievement_status.user_id = ?',
+			[$id]
+		)[0];
+		$aNumx = (int) $counts['completed'];
+		$aRepeats = (int) $counts['repeats'];
 		$user['User']['name'] = $this->checkPicture($user['User']);
 
 		$aCount = $this->Achievement->find('all');
@@ -904,6 +911,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 		$this->set('tsumegoCount', $tsumegoCount);
 		$this->set('as', $as);
 		$this->set('aNum', $aNumx);
+		$this->set('aRepeats', $aRepeats);
 		$this->set('aCount', $aCount);
 		$this->set('canResetOldTsumegoStatuses', $canResetOldTsumegoStatuses);
 		return null;
