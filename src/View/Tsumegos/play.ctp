@@ -622,7 +622,7 @@ use App\Utility\ViteManifest;
 	var misplays = 0;
 	var hoverLocked = false;
 	var tryAgainTomorrow = false;
-	var remainingHealth = <?php echo Auth::getRemainingHealth(); ?>;
+	var currentHealth = <?php echo Auth::getRemainingHealth(); ?>;
 	var maxHealth = <?php echo $maxHealth; ?>;
 	var fullHeart = '<?php echo $fullHeart; ?>';
 	var emptyHeart = '<?php echo $emptyHeart; ?>';
@@ -1332,7 +1332,6 @@ use App\Utility\ViteManifest;
 	{
 		if (!document.getElementById("heart0"))
 			return;
-		var currentHealth = remainingHealth - misplays;
 		for (var i = 0; i < maxHealth; i++)
 		{
 			var full = i < currentHealth;
@@ -1376,8 +1375,7 @@ use App\Utility\ViteManifest;
 				url: '/hero/rejuvenation',
 				type: 'POST',
 			success: function(response) {
-					misplays = 0;
-					remainingHealth = maxHealth;
+					currentHealth = maxHealth;
 					redrawHearts();
 					disableRejuvenation();
 					enableIntuition();
@@ -1521,6 +1519,7 @@ use App\Utility\ViteManifest;
 			tsumego_id: tsumegoID,
 			seconds: Math.max(elapsedSeconds() - bonusSeconds, timeToFirstClick || 0, 0.01),
 			solved: solved,
+			misplays: misplays,
 		};
 		if (timeout)
 			data.timeout = true;
@@ -1545,8 +1544,7 @@ use App\Utility\ViteManifest;
 			}
 			if (result.potion_triggered)
 			{
-				misplays = 0;
-				remainingHealth = maxHealth;
+				currentHealth = maxHealth;
 				redrawHearts();
 				$("#potionAlerts").fadeIn(500);
 			}
@@ -1612,6 +1610,7 @@ use App\Utility\ViteManifest;
 			{
 				failAlreadyReported = true;
 				misplays++;
+				currentHealth--;
 				submitResult(false);
 			}
 			// Don't lock board - let user keep trying
@@ -1639,7 +1638,7 @@ use App\Utility\ViteManifest;
 					freePlayMode = true;
 					if (mode == 1)
 					{
-						if(remainingHealth - misplays < 0)
+						if (currentHealth < 0)
 						{
 							updateCurrentNavigationButton('F');
 							document.getElementById("status").innerHTML = '<b class="message--locked">This problem is locked until ' + heartResetTime + '</b>';
@@ -1715,6 +1714,7 @@ use App\Utility\ViteManifest;
 		if (heartLoss)
 		{
 			misplays++;
+			currentHealth--;
 			redrawHearts();
 			submitResult(false);
 		}

@@ -35,7 +35,8 @@ class TsumegosController extends AppController
 			(int) $data['tsumego_id'],
 			!empty($data['solved']),
 			(float) ($data['seconds'] ?? 0),
-			!empty($data['timeout'])
+			!empty($data['timeout']),
+			(int) ($data['misplays'] ?? 0)
 		);
 
 		// Keep the response as pure data; the client renders the popup from the

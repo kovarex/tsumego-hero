@@ -154,6 +154,39 @@ class TimeModeControllerTest extends ControllerTestCase
 		}
 	}
 
+	/**
+	 * Time mode is not part of the no-error streak: playing there neither breaks
+	 * it nor extends it.
+	 */
+	public function testTimeModeLeavesTheNoErrorStreakAlone()
+	{
+		$context = new ContextPreparator([
+			'tsumego' => 1,
+			'achievement-conditions' => [['category' => 'err', 'value' => 7]],
+			'time-mode-ranks' => ['5k'],
+			'time-mode-sessions' => [[
+				'category' => TimeModeUtil::$CATEGORY_BLITZ,
+				'rank' => '5k',
+				'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+				'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]]]]);
+
+		// the player opens the play page, which is what puts the account into time mode
+		$this->testAction('/timeMode/play');
+
+		Auth::init();
+		$this->testAction('/tsumegos/result', [
+			'method' => 'POST',
+			'data' => [
+				'tsumego_id' => $context->tsumegos[0]['id'],
+				'seconds' => 5,
+				'solved' => false]]);
+
+		$errCondition = ClassRegistry::init('AchievementCondition')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'category' => 'err']]);
+		$this->assertSame(7, (int) $errCondition['AchievementCondition']['value'],
+			'A misplay in time mode should not break the no-error streak');
+	}
+
 	public function testAProblemThatWasGivenUpOnStaysGivenUpOn()
 	{
 		$context = new ContextPreparator([
