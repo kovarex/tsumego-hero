@@ -55,6 +55,27 @@ class AchievementChecker
 		$this->updated [] = $achievement['Achievement'];
 	}
 
+	/**
+	 * Unlocks a repeatable achievement and records how often it was earned. Earning
+	 * it the first time grants the XP and the popup, later ones only raise the count.
+	 */
+	private function gainedTimes(int $achievementID, int $times): void
+	{
+		if ($times < 1)
+			return;
+		$this->gained($achievementID);
+
+		$AchievementStatus = ClassRegistry::init('AchievementStatus');
+		$status = $AchievementStatus->find('first', [
+			'conditions' => ['user_id' => Auth::getUserID(), 'achievement_id' => $achievementID]]);
+		if (!$status || (int) $status['AchievementStatus']['value'] === $times)
+			return;
+
+		$status['AchievementStatus']['value'] = $times;
+		$AchievementStatus->save($status);
+		Cache::delete('recent_achievements_7', 'default');
+	}
+
 	private function fillExistingStatuses(): void
 	{
 		$achievementStatuses = ClassRegistry::init('AchievementStatus')->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]) ?: [];
@@ -510,7 +531,6 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 
 	public function checkSetAchievements(int $sid = 0, float|int $setRating = 0): AchievementChecker
 	{
-		$tNum = count(TsumegoUtil::collectTsumegosFromSet($sid));
 		$acA = ClassRegistry::init('AchievementCondition')->find('first', [
 			'order' => 'value DESC',
 			'conditions' => [
@@ -519,15 +539,14 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 				'category' => '%']]);
 		if (!$acA)
 			return $this;
+		if (TsumegoUtil::countTsumegosFromSet($sid) < 100)
+			return $this;
 		$acS = ClassRegistry::init('AchievementCondition')->find('first', [
 			'order' => 'value ASC',
 			'conditions' => [
 				'set_id' => $sid,
 				'user_id' => Auth::getUserID(),
 				'category' => 's']]);
-
-		if ($tNum < 100)
-			return $this;
 
 		if ($setRating < 1300)
 		{
@@ -590,32 +609,33 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 				$this->gained(Achievement::SPEED_XII);
 		}
 
-		$achievementId = 46;
 		if ($acA['AchievementCondition']['value'] >= 100)
 		{
-			$ac100 = ClassRegistry::init('AchievementCondition')->find('all', ['conditions' => ['user_id' => Auth::getUserID(), 'category' => '%', 'value >=' => 100]]) ?: [];
-			$ac100counter = 0;
-			$ac100Count = count($ac100);
-			for ($j = 0; $j < $ac100Count; $j++)
-				if (count(TsumegoUtil::collectTsumegosFromSet($ac100[$j]['AchievementCondition']['set_id'])) >= 100)
-					$ac100counter++;
-			$as100 = ClassRegistry::init('AchievementStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'achievement_id' => $achievementId]]);
-			if ($as100 == null)
-			{
-				$as100 = [];
-				$as100['AchievementStatus']['user_id'] = Auth::getUserID();
-				$as100['AchievementStatus']['achievement_id'] = $achievementId;
-				$as100['AchievementStatus']['value'] = 0;
-				ClassRegistry::init('AchievementStatus')->create();
-			}
-			if ($as100['AchievementStatus']['value'] != $ac100counter)
-			{
-				$as100['AchievementStatus']['value'] = $ac100counter;
-				ClassRegistry::init('AchievementStatus')->save($as100);
-				Cache::delete('recent_achievements_7', 'default');
-			}
+			// Repeatable: one perfect collection of 100+ problems per count. The first
+			// one pays out like any other achievement, further ones only raise the count.
+			$this->gainedTimes(Achievement::SUPERIOR_ACCURACY, $this->countPerfectCollections(100));
 		}
 		return $this;
+	}
+
+	/**
+	 * How many collections the player finished at 100% accuracy on a set of at least
+	 * $minimumSize problems. One query, because loading every set's problems just to count
+	 * them was the slowest thing this checker did.
+	 */
+	private function countPerfectCollections(int $minimumSize): int
+	{
+		$rows = Util::query(
+			'SELECT COUNT(*) AS total FROM achievement_condition ac '
+			. 'WHERE ac.user_id = ? AND ac.category = ? AND ac.value >= ? '
+			. 'AND ac.set_id IN ('
+			. 'SELECT sc.set_id FROM set_connection sc '
+			. 'JOIN tsumego t ON t.id = sc.tsumego_id '
+			. 'GROUP BY sc.set_id HAVING COUNT(*) >= ?)',
+			[Auth::getUserID(), '%', 100, $minimumSize]
+		);
+
+		return (int) $rows[0]['total'];
 	}
 
 	public function checkFavoritesAchievement(int $setId): AchievementChecker

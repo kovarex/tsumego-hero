@@ -1103,7 +1103,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 				elseif ($id == 216)
 					$achievementChecker->setAchievementSpecial('1000w2');
 				$achievementChecker->finalize();
-				$this->set('achievementUpdate', $achievementChecker->updated);
+				$this->set('achievementUpdates', $achievementChecker->updated);
 			}
 
 			$acS = $this->AchievementCondition->find('first', [

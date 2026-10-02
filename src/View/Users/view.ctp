@@ -13,6 +13,7 @@ use App\Utility\ValueGraphRenderer;
  * @var View $this
  * @var array $aCount
  * @var int $aNum
+ * @var int $aRepeats
  * @var array $as
  * @var bool $canResetOldTsumegoStatuses
  * @var array $dailyResults
@@ -248,7 +249,7 @@ use App\Utility\ValueGraphRenderer;
 			</tr>
 			<tr>
 				<td>Achievements:</td>
-				<td><?php echo $aNum . ' of ' . count($aCount); ?></td>
+				<td><?php echo $aNum . ' of ' . count($aCount) . AchievementHelper::renderRepeatCount($aRepeats); ?></td>
 			</tr>
 			<tr>
 				<td colspan="2">
@@ -367,6 +368,7 @@ function showStatistics($side, $as, $user, $dailyResults)
 		if (strlen($as[$i]['AchievementStatus']['a_title']) > 30)
 			$adjust = 'style="font-weight:normal;font-size:17px;"';
 		else $adjust = '';
+		$earnedCount = (int) ($as[$i]['AchievementStatus']['a_earned_count'] ?? 1);
 	?>
 		<a href="/achievements/view/<?php echo $as[$i]['AchievementStatus']['a_id']; ?>">
 		<div align="center" class="achievementSmall <?php echo $as[$i]['AchievementStatus']['a_color']; ?>">
@@ -375,6 +377,7 @@ function showStatistics($side, $as, $user, $dailyResults)
 			</div>
 			<div class="acImg">
 				<img src="/img/<?php echo h($as[$i]['AchievementStatus']['a_image']); ?>.png" title="<?php echo h($as[$i]['AchievementStatus']['a_description']); ?>">
+				<?php echo AchievementHelper::renderEarnedBadge($earnedCount); ?>
 				<div class="acImgXp">
 				<?php echo $as[$i]['AchievementStatus']['a_xp']; ?> XP
 				</div>
