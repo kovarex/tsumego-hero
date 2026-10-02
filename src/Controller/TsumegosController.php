@@ -36,6 +36,7 @@ class TsumegosController extends AppController
 			!empty($data['solved']),
 			(float) ($data['seconds'] ?? 0),
 			!empty($data['timeout']),
+			(int) ($data['misplays'] ?? 0),
 			isset($data['set_connection_id']) ? (int) $data['set_connection_id'] : null
 		);
 
