@@ -1,28 +1,14 @@
-# tsumego: restart from tsumego-hero
+# Tsumego Hero
 
-## The goal
-To improve the source code of tsumego hero so:
-- The page can be moved to a modern server with php 8.4 functionality
-- The code is better structured, readable and easily modifiable.
-- The functionality of the site is fully covered by automated tests, so it doesn't just "randomly break"
-- Current test coverage status can be checked here: https://kovarex.github.io/tsumego-hero/coverage/
+Source code of [tsumego.com](https://tsumego.com), a site for practicing tsumego (Go problems).
 
-## The plan
-### Things get broken for a while
-There were some breaking changes done
-- Clearing obsolete table columns (tsumego.set_id, tsumego.num and similar)
-- Changing the table data structure around time mode
-- (and more)
-These changes just had to be done, so the data structure we are working on is clean.
-### Database changes
-- There are a lot of database structure changes, mainly related to data normalisation, foreign key usage on all relevant places, and proper index selections.
-### Code refactoring
-- The rest of the code refactoring should ideally not break stuff, but when the state of the code is taken into consideration, it is really hard to be sure.
-- We try to mainly cover the parts to refactor by tests and check the behaviour on tsumego-hero to understand what are we doing.
-- It is inevitable part of the plan to refactor the whole code, but not necessary before day D
-### Day D
-`Day D` is the day where we migrate the tsumego-hero site database into tsumego.com and make it the official new home of the site.
-`Day D` can become once the core functionality of the site is covered by tests, and we do some public testing on test.tsumego.com
+- Live site: https://tsumego.com
+- Testing site: https://test.tsumego.com
+
+## Development principles
+- The code should be well structured, readable and easy to modify.
+- The site's functionality should be covered by automated tests, so it doesn't "randomly break".
+- Current test coverage: https://kovarex.github.io/tsumego-hero/coverage/
 
 ## Local Setup (part 1)
 
