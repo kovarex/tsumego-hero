@@ -7,7 +7,6 @@ import './composition.css';
 import './utilities.css';
 import './components.css';
 // Page layer: page-specific rules split by feature.
-import './page/fonts.css';
 import './page/site.css';
 import './page/play.css';
 import './page/home.css';
