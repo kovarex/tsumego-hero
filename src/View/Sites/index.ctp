@@ -247,7 +247,7 @@ echo '</div>';
 				It always finds many similar problems in any search now and is very fast. <br>
 				<div align="center">
 				<img src="/img/example-search.png" title="search-example" alt="search-example" width="350px"><br>
-				Example: <a href="/tsumegos/duplicatesearch/2897">Life & Death - Elementary 745</a><br>
+				Example: <a href="/tsumegos/duplicatesearch/2189">Life & Death - Elementary 745</a><br>
 				<i>In this example, it finds 30 similar problems almost instantly.</i><br><br>
 				</div>
 				</div>
@@ -321,19 +321,41 @@ else
 				</div>
 				With this update, Tsumego attempts in any mode affect the user rating.<br>
 				<?php
-$link1 = '';
-$link2 = '';
-$link3 = '';
-if(Auth::isLoggedIn())
+$modeLinks = [
+	[
+		'url' => '/tsumegos/play/' . $lastVisit . '?mode=1',
+		'class' => 'mode-link--level',
+		'label' => 'Level mode',
+		'description' => 'problems affect level and user rating.',
+		'requiresLogin' => false,
+	],
+	[
+		'url' => '/ratingMode',
+		'class' => 'mode-link--rating',
+		'label' => 'Rating mode',
+		'description' => 'is the same as before, but all formulas for user and tsumego rating calculation have been improved.',
+		'requiresLogin' => true,
+	],
+	[
+		'url' => '/timeMode/overview',
+		'class' => 'mode-link--time',
+		'label' => 'Time mode',
+		'description' => 'also affects the user rating.',
+		'requiresLogin' => true,
+	],
+];
+foreach ($modeLinks as $modeLink)
 {
-	$link1 = '/tsumegos/play/' . (int) ($_COOKIE['lastVisit'] ?? 15352) . '?mode=1';
-	$link2 = '/ratingMode';
-	$link3 = '/timeMode/overview';
+	$canOpenMode = !$modeLink['requiresLogin'] || $loggedIn;
+	echo '• ';
+	if ($canOpenMode)
+		echo '<a href="' . h($modeLink['url']) . '" class="' . $modeLink['class'] . '">' . $modeLink['label'] . '</a>';
+	else
+		echo '<span class="' . $modeLink['class'] . '">' . $modeLink['label'] . '</span>';
+	echo ' ' . $modeLink['description'] . '<br>';
 }
 ?>
-				• <a href="<?php echo $link1; ?>" class="mode-link--level">Level mode</a> problems affect level and user rating.<br>
-				• <a href="<?php echo $link2; ?>" class="mode-link--rating">Rating mode</a> is the same as before, but all formulas for user and tsumego rating calculation have been improved.<br>
-				• <a href="<?php echo $link3; ?>" class="mode-link--time">Time mode</a> also affects the user rating.<br><br>
+				<br>
 
 				<b>Rewards:</b> Every Sunday, the 3 highest rated users that have no premium account get a premium upgrade. Next prize giving: 03.03.24. To give everyone a fresh start, all user ratings have been reset.<br><br>
 
@@ -635,18 +657,6 @@ else
 						<div align="center"><img width="95%" src="/img/directionofplay-info.png" alt="New Collection: Direction of the Play" title="New Collection: Direction of the Play">
 
 						<a class="btn main-page" href="/sets/view/236">Play</a><br><br></div>
-					</div>
-				</div>
-
-				<div class="news-article">
-					<p class="title4">New Collection: Techniques of TsumeGo | 04.07.2024</p>
-					<div class="new1">
-						In the game of Go, to solve crucial situations, one has to master the different techniques that the game presents. Those techniques,
-						also known as Tesuji, are presented in this collection.
-						The first topics and the first Tesuji techniques to master are ladders (Shicho) and nets (Geta).<br><br>
-						<i>Kageyama says "If you want to capture stones, hold up two fingers and say to yourself: 'Can I capture with the net?' and 'Can I capture with the ladder?'"</i><br><br>
-						<div align="center"><img width="95%" src="/img/techniques.png" alt="New Collection: Techniques of TsumeGo" title="New Collection: Techniques of TsumeGo">
-						<a class="btn main-page" href="/sets/view/235">Play</a><br><br></div>
 					</div>
 				</div>
 
