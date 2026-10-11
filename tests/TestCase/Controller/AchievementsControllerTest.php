@@ -36,6 +36,35 @@ class AchievementsControllerTest extends TestCaseWithAuth
 		$this->assertStringContainsString('achievementColorGray', $result);
 	}
 
+	public function testCardsShowProgressOfLockedSetAchievements()
+	{
+		new ContextPreparator([
+			'user' => ['name' => 'achiever', 'achievement-statuses' => [['id' => Achievement::COMPLETE_SETS_I]]],
+			'achievement-conditions' => [
+				['category' => 'set', 'value' => 27],
+				['category' => 'golden', 'value' => 7],
+			],
+		]);
+		$this->login('achiever');
+
+		$result = $this->testAction('/achievements', ['return' => 'view']);
+
+		$this->assertStringContainsString('27/' . Achievement::COMPLETE_SETS_III_SETS_COUNT, $result);
+		$this->assertStringContainsString('27/' . Achievement::COMPLETE_SETS_V_SETS_COUNT, $result);
+		$this->assertStringNotContainsString(Achievement::COMPLETE_SETS_I_SETS_COUNT . '/' . Achievement::COMPLETE_SETS_I_SETS_COUNT, $result, 'Unlocked achievements show their date, not progress');
+		$this->assertStringNotContainsString('7/' . Achievement::GOLD_DIGGER_COUNT, $result, 'Only the set achievements show progress on the cards so far');
+	}
+
+	public function testAnonymousSeesNoProgressOnCards()
+	{
+		new ContextPreparator([]);
+		$this->logout();
+
+		$result = $this->testAction('/achievements', ['return' => 'view']);
+
+		$this->assertStringNotContainsString('progress__fill', $result);
+	}
+
 	public function testViewOtherUserShowsTheirName()
 	{
 		$context = new ContextPreparator([

@@ -6,6 +6,7 @@ use App\Utility\Constants;
 use App\Utility\HeroPowers;
 use App\Utility\Level;
 use App\Utility\Rating;
+use App\Utility\SetCompletionCounter;
 use App\Utility\TimeMode;
 use App\Utility\TsumegoUtil;
 use App\Utility\TsumegoXPAndRating;
@@ -46,6 +47,8 @@ class PlayResultProcessorComponent extends Component
 		$previousStatusValue = $tsumegoStatus ? $tsumegoStatus['TsumegoStatus']['status'] : TsumegoStatus::$NOT_VISITED;
 		$this->processDamage($result, $previousStatusValue);
 		$newStatus = $this->updateTsumegoStatus($tsumego, $result, $tsumegoStatus);
+		if (TsumegoUtil::isSolvedStatus($newStatus) && !TsumegoUtil::isSolvedStatus($previousStatusValue))
+			SetCompletionCounter::updateAfterSolve((int) Auth::getUserID(), $tsumegoId);
 
 		if (HeroPowers::getSprintRemainingSeconds() > 0)
 			$result['xp-modifier'] = ($result['xp-modifier'] ?: 1) * Constants::$SPRINT_MULTIPLIER;

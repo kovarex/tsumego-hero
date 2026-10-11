@@ -507,9 +507,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$sets = [];
 		$tagList = [];
 
-		$overallCounter = 0;
 		$problemsCount = 0;
-		$achievementUpdate = [];
 
 		$tsumegoFilters = new TsumegoFilters();
 		//setTiles
@@ -536,23 +534,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 			$tagTiles[] = $tag['Tag']['name'];
 
 		$setsSelector = new SetsSelector($tsumegoFilters);
-
-		if (Auth::isLoggedIn())
-		{
-			$aCondition = $this->AchievementCondition->find('first', [
-				'order' => 'value DESC',
-				'conditions' => [
-					'user_id' => Auth::getUserID(),
-					'category' => 'set']]) ?: [];
-			$aCondition['AchievementCondition']['category'] = 'set';
-			$aCondition['AchievementCondition']['user_id'] = Auth::getUserID();
-			$aCondition['AchievementCondition']['value'] = $overallCounter;
-			ClassRegistry::init('AchievementCondition')->save($aCondition);
-			$achievementChecker = new AchievementChecker();
-			$achievementChecker->checkSetCompletedAchievements();
-			$achievementChecker->finalize();
-			$this->set('achievementUpdate', $achievementChecker->updated);
-		}
 
 		$ranksArray = [];
 		foreach (Rating::ranks() as $rank)

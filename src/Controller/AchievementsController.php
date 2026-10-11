@@ -1,6 +1,7 @@
 <?php
 
 use App\Utility\Auth;
+use App\Utility\SetCompletionCounter;
 
 /**
  * @phpstan-import-type UserRow from \App\Utility\RowTypes
@@ -72,8 +73,47 @@ class AchievementsController extends AppController
 				$a[$i]['Achievement']['unlocked_at'] = $existingAs[$a[$i]['Achievement']['id']]['AchievementStatus']['created'];
 			}
 		}
+		if ($viewedUser)
+			$this->fillProgress($a, (int) $viewedUser['id']);
 		$this->set('a', $a);
 		$this->set('unlockedCounter2', $unlockedCounter2);
+	}
+
+	/**
+	 * Adds progress and progress_goal to the locked set completion achievements, so their cards
+	 * can show how far the user got.
+	 *
+	 * @param array $achievements
+	 * @param int $userID
+	 * @return void
+	 */
+	private function fillProgress(array &$achievements, int $userID): void
+	{
+		$definitions = [];
+		foreach ($achievements as $index => $achievement)
+			if (!$achievement['Achievement']['unlocked'])
+				if ($definition = Achievement::progressDefinition((int) $achievement['Achievement']['id']))
+					if ($definition['category'] == SetCompletionCounter::$CATEGORY)
+						$definitions[$index] = $definition;
+		if (!$definitions)
+			return;
+
+		$this->loadModel('AchievementCondition');
+		$conditions = $this->AchievementCondition->find('all', ['conditions' => [
+			'user_id' => $userID,
+			'category' => array_values(array_unique(array_column($definitions, 'category')))]]) ?: [];
+		$values = [];
+		foreach ($conditions as $condition)
+		{
+			$category = $condition['AchievementCondition']['category'];
+			$values[$category] = max($values[$category] ?? 0, (int) $condition['AchievementCondition']['value']);
+		}
+
+		foreach ($definitions as $index => $definition)
+		{
+			$achievements[$index]['Achievement']['progress'] = min($values[$definition['category']] ?? 0, $definition['goal']);
+			$achievements[$index]['Achievement']['progress_goal'] = $definition['goal'];
+		}
 	}
 
 	/**

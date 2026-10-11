@@ -5,6 +5,7 @@ use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\HeroPowers;
 use App\Utility\Rating;
+use App\Utility\SetCompletionCounter;
 use App\Utility\TsumegoUtil;
 use App\Utility\Util;
 
@@ -733,6 +734,101 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 			$this->assertArrayNotHasKey('html', $achievementUpdate, 'The response should be pure data, not pre-rendered HTML');
 			foreach (['name', 'description', 'xp', 'image', 'color'] as $field)
 				$this->assertArrayHasKey($field, $achievementUpdate, "Each update should carry '$field' for client-side rendering");
+		}
+	}
+
+	private function completedSetsCondition(ContextPreparator $context): ?int
+	{
+		$condition = ClassRegistry::init('AchievementCondition')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'category' => 'set']]);
+		return $condition ? (int) $condition['AchievementCondition']['value'] : null;
+	}
+
+	public function testSolveCompletingSetPartUpdatesCompletedSetsCount(): void
+	{
+		$originalPartitionSize = SetCompletionCounter::$PARTITION_SIZE;
+		SetCompletionCounter::$PARTITION_SIZE = 2;
+		try
+		{
+			$context = new ContextPreparator([
+				'tsumego' => ['sets' => [['name' => 'big set', 'num' => 1]]],
+				'tsumegos' => [
+					['sets' => [['name' => 'big set', 'num' => 2]], 'status' => 'S'],
+					['sets' => [['name' => 'big set', 'num' => 3]]],
+				],
+			]);
+			$this->solve($context);
+			$this->assertSame(1, $this->completedSetsCondition($context));
+		}
+		finally
+		{
+			SetCompletionCounter::$PARTITION_SIZE = $originalPartitionSize;
+		}
+	}
+
+	public function testSolveCompletingNonOfficialSetDoesNotCount(): void
+	{
+		$originalPartitionSize = SetCompletionCounter::$PARTITION_SIZE;
+		SetCompletionCounter::$PARTITION_SIZE = 2;
+		try
+		{
+			foreach ([['public' => 0], ['public' => 0, 'user_id' => 'self'], ['public' => 1, 'user_id' => 'self']] as $set)
+			{
+				$context = new ContextPreparator([
+					'tsumego' => ['sets' => [array_merge(['name' => 'other set', 'num' => 1], $set)]],
+					'tsumegos' => [['sets' => [array_merge(['name' => 'other set', 'num' => 2], $set)], 'status' => 'S']],
+				]);
+				$this->solve($context);
+				$this->assertSame('S', $this->statusOf($context));
+				$this->assertNull($this->completedSetsCondition($context), 'Completing a set that is not an official public one must not count: ' . json_encode($set));
+			}
+		}
+		finally
+		{
+			SetCompletionCounter::$PARTITION_SIZE = $originalPartitionSize;
+		}
+	}
+
+	public function testSolveNotCompletingSetPartDoesNotRecount(): void
+	{
+		$originalPartitionSize = SetCompletionCounter::$PARTITION_SIZE;
+		SetCompletionCounter::$PARTITION_SIZE = 2;
+		try
+		{
+			$context = new ContextPreparator([
+				'tsumego' => ['sets' => [['name' => 'big set', 'num' => 1]]],
+				'tsumegos' => [['sets' => [['name' => 'big set', 'num' => 2]]]],
+				'achievement-conditions' => [['category' => 'set', 'value' => 7]],
+			]);
+			$this->solve($context);
+			$this->assertSame(7, $this->completedSetsCondition($context), 'The stored count is only recomputed when a part gets completed');
+		}
+		finally
+		{
+			SetCompletionCounter::$PARTITION_SIZE = $originalPartitionSize;
+		}
+	}
+
+	public function testSolveCompletingTenthSetUnlocksAchievement(): void
+	{
+		$originalPartitionSize = SetCompletionCounter::$PARTITION_SIZE;
+		SetCompletionCounter::$PARTITION_SIZE = 1;
+		try
+		{
+			$solvedProblems = [];
+			for ($num = 2; $num <= Achievement::COMPLETE_SETS_I_SETS_COUNT; $num++)
+				$solvedProblems[] = ['sets' => [['name' => 'big set', 'num' => $num]], 'status' => 'S'];
+			$context = new ContextPreparator([
+				'tsumego' => ['sets' => [['name' => 'big set', 'num' => 1]]],
+				'tsumegos' => $solvedProblems,
+			]);
+			$body = $this->solve($context);
+			$this->assertSame(Achievement::COMPLETE_SETS_I_SETS_COUNT, $this->completedSetsCondition($context));
+			$this->assertContains(Achievement::COMPLETE_SETS_I, array_column($body['achievement_updates'] ?? [], 'id'));
+		}
+		finally
+		{
+			SetCompletionCounter::$PARTITION_SIZE = $originalPartitionSize;
 		}
 	}
 }

@@ -353,7 +353,7 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 			'order' => 'value DESC',
 			'conditions' => [
 				'user_id' => Auth::getUserID(),
-				'category' => 'set']]);
+				'category' => SetCompletionCounter::$CATEGORY]]);
 
 		if (!$achievementCondition)
 			return $this;
@@ -650,6 +650,7 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 		$this->checkRatingAchievements();
 		$this->checkDanSolveAchievements();
 		$this->checkNoErrorAchievements();
+		$this->checkSetCompletedAchievements();
 		return $this;
 	}
 
@@ -660,6 +661,7 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 		$this->checkRatingAchievements();
 		$this->checkDanSolveAchievements();
 		$this->checkNoErrorAchievements();
+		$this->checkSetCompletedAchievements();
 		$this->checkTimeModeAchievements();
 	}
 

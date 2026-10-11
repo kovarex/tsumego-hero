@@ -10,7 +10,7 @@ use App\Utility\Util;
  */
 
 ?>
-	
+
 	<div align="center">
 	<p class="profile-username">
 		<?php echo isset($viewedUser) ? htmlspecialchars($viewedUser['name']) : 'Achievements'; ?>
@@ -39,9 +39,9 @@ use App\Utility\Util;
 						</div>
 						<div class="acImg">
 							<img src="/img/<?php echo $isActive; ?>.png"><br>
-							<?php 
+							<?php
 							$a46style = '';
-							if($a[$i]['Achievement']['id']==46 && $a[$i]['Achievement']['unlocked']){ 
+							if($a[$i]['Achievement']['id']==46 && $a[$i]['Achievement']['unlocked']){
 								$a46style = ' style="top:-22px;"';
 							?>
 							<div class="acImgXp2">
@@ -57,19 +57,28 @@ use App\Utility\Util;
 						</div>
 						<?php if ($a[$i]['Achievement']['unlocked']) { ?>
 						<div class="acDate">
-							<?php 
+							<?php
 							echo '<time datetime="' . Util::toIso8601($a[$i]['Achievement']['unlocked_at']) . '" data-format="datetime">' . $a[$i]['Achievement']['unlocked_at'] . '</time>';
 							?>
+						</div>
+						<?php } elseif (isset($a[$i]['Achievement']['progress']) && $a[$i]['Achievement']['progress_goal'] > 0) {
+							$progressPercent = (int) round($a[$i]['Achievement']['progress'] / $a[$i]['Achievement']['progress_goal'] * 100);
+						?>
+						<div class="acDate">
+							<div class="progress" style="margin:0 20px;">
+								<div class="progress__fill progress__fill--tonal" style="--percent:<?php echo $progressPercent; ?>;width:<?php echo $progressPercent; ?>%"></div>
+								<div class="progress__label"><?php echo $a[$i]['Achievement']['progress']; ?>/<?php echo $a[$i]['Achievement']['progress_goal']; ?></div>
+							</div>
 						</div>
 						<?php } ?>
 					</div>
 					</a>
-				
+
 				<?php
 				}
 				?>
-				
-				<div style="clear:both;"></div> 
+
+				<div style="clear:both;"></div>
 			</div>
 			<br>
 			<br>
@@ -79,10 +88,10 @@ use App\Utility\Util;
 			endif; ?>
 			<br>
 			<br>
-			
-			
-			
-			
+
+
+
+
 	</div>
 	<script>
 	 let trueBoardHeight = $("#achievementWrapper").height();
