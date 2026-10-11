@@ -458,28 +458,27 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$this->assertSame(null, $adminActivities[0]['AdminActivity']['new_value']);
 	}
 
-	public function testDeleteUser()
+	public function testRestoreDeletedUser()
 	{
 		$browser = Browser::instance();
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
-			'other-users' => [['dbstorage' => 1111, 'name' => 'TwT']]
+			'other-users' => [['deleted' => true, 'name' => 'TwT', 'email' => 'twt@example.com']]
 		]);
+		$deletedUserID = $context->otherUsers[0]['id'];
 		$browser->get('/users/adminstats');
-		//click deleted user button
-		$browser->clickIdAndAcceptAlert('delete-user-1');
-		// Wait for the server-side deletion to be committed before asserting DB state
-		$browser->waitUntilCssSelectorDoesntExist('#delete-user-1');
-		// User should be deleted - page stays on adminstats
+		$this->assertTextContains('Deleted Accounts (1)', $browser->driver->getPageSource());
+		$browser->clickIdAndAcceptAlert('restore-user-' . $deletedUserID);
+		// Wait for the server-side restore to be committed before asserting DB state
+		$browser->waitUntilCssSelectorDoesntExist('#restore-user-' . $deletedUserID);
 		$this->assertStringContainsString('/users/adminstats', $browser->driver->getCurrentURL());
-		// user should be deleted so this should return null
-		$this->assertEmpty(ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'TwT']]));
+		$this->assertNull(ClassRegistry::init('User')->findById($deletedUserID)['User']['deleted']);
 
-		// user delete is saved in admin activities
+		// the restore is saved in admin activities
 		$adminActivities = ClassRegistry::init('AdminActivity')->find('all');
 		$this->assertCount(1, $adminActivities);
-		$this->assertSame($adminActivities[0]['AdminActivity']['type'], AdminActivityType::DELETE_USER);
-		$this->assertSame('TwT', $adminActivities[0]['AdminActivity']['old_value']);
-		$this->assertSame(null, $adminActivities[0]['AdminActivity']['new_value']);
+		$this->assertSame($adminActivities[0]['AdminActivity']['type'], AdminActivityType::RESTORE_USER);
+		$this->assertSame(null, $adminActivities[0]['AdminActivity']['old_value']);
+		$this->assertSame('TwT', $adminActivities[0]['AdminActivity']['new_value']);
 	}
 }

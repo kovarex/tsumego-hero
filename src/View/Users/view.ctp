@@ -110,12 +110,7 @@ use App\Utility\ValueGraphRenderer;
 	<div class="card card--green">
 		<div class="card__title">Account</div>
 		<div class="stack">
-			<?php if ($user['User']['dbstorage'] != 1111): ?>
-				<a class="btn btn--danger" href="/users/delete_account">Request account deletion</a>
-			<?php else: ?>
-				<span class="hint hint--danger">Account deletion requested.&nbsp;</span>
-				<a class="btn" href="/users/view/<?php echo $user['User']['id']; ?>?undo=<?php echo ($user['User']['id'] * 1111); ?>">Undo</a>
-			<?php endif; ?>
+			<a class="btn btn--danger" href="/users/delete_account">Delete account</a>
 			<?php if (Auth::isAdmin()): ?>
 				<a class="btn btn--danger" href="/users/demote_admin">Remove admin status</a>
 			<?php endif; ?>

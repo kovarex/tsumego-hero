@@ -83,7 +83,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$done = false;
 		if ($checksum == null)
 			$checksum = 1;
-		$user = $this->User->find('first', ['conditions' => ['passwordreset' => $checksum]]);
+		$user = $this->User->find('first', ['conditions' => ['passwordreset' => $checksum, 'deleted IS NULL']]);
 		$valid = ($user != null);
 		if (!$user)
 			return null;
@@ -268,28 +268,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->loadModel('Tag');
 		$this->loadModel('AdminActivityType');
 
-		// Delete user
-		if (Auth::isAdmin())
-			if (isset($this->params['url']['delete']) && isset($this->params['url']['hash']))
-			{
-				$toDelete = $this->User->findById($this->params['url']['delete'] / 1111);
-				if (!$toDelete)
-					throw new NotFoundException('User to delete not found');
-				$del1 = $this->TsumegoStatus->find('all', ['conditions' => ['user_id' => $toDelete['User']['id']]]);
-				$del2 = $this->TsumegoAttempt->find('all', ['conditions' => ['user_id' => $toDelete['User']['id']]]);
-				if (md5($toDelete['User']['name']) == $this->params['url']['hash'])
-				{
-					foreach ($del1 as $item)
-						$this->TsumegoStatus->delete($item['TsumegoStatus']['id']);
-					foreach ($del2 as $item)
-						$this->TsumegoAttempt->delete($item['TsumegoAttempt']['id']);
-					$this->User->delete($toDelete['User']['id']);
-					AdminActivityLogger::log(
-						AdminActivityType::DELETE_USER, null, null, $toDelete['User']['name'], null
-					);
-				}
-			}
-
 		// Pagination setup
 		$perPage = 100;
 		$tagNamesPage = isset($this->params['url']['tagnames_page']) ? max(1, (int) $this->params['url']['tagnames_page']) : 1;
@@ -317,9 +295,9 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			$tags[$i]['Tag']['user'] = $this->checkPicture($au['User']);
 		}
 
-		$requestDeletion = $this->User->find('all', ['conditions' => ['dbstorage' => 1111]]);
-
-		$this->set('requestDeletion', $requestDeletion);
+		$this->set('deletedUsers', $this->User->find('all', [
+			'conditions' => ['deleted IS NOT NULL'],
+			'order' => 'deleted DESC']) ?: []);
 		$this->set('tagNames', $tags);
 
 		// Pagination data
@@ -482,9 +460,10 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('users', $this->queryHighscoreWithSelfView(
 			"SELECT id, name, external_id, picture, rating, premium, level, xp, solved,
 				ROW_NUMBER() OVER (ORDER BY level DESC, xp DESC) as position
-			FROM user"
+			FROM user
+			WHERE deleted IS NULL"
 		));
-		$this->set('totalUsers', $this->User->find('count'));
+		$this->set('totalUsers', $this->countActiveUsers());
 	}
 
 	public function rating(): void
@@ -502,9 +481,10 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('users', $this->queryHighscoreWithSelfView(
 			"SELECT id, name, external_id, picture, rating, premium,
 				ROW_NUMBER() OVER (ORDER BY rating DESC) as position
-			FROM user"
+			FROM user
+			WHERE deleted IS NULL"
 		));
-		$this->set('totalUsers', $this->User->find('count'));
+		$this->set('totalUsers', $this->countActiveUsers());
 	}
 
 	/**
@@ -529,9 +509,9 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 				ROW_NUMBER() OVER (ORDER BY COUNT(tag_connection.id) DESC) as position
 			FROM user
 			LEFT JOIN tag_connection ON tag_connection.user_id = user.id AND tag_connection.approved = true
-			WHERE tag_connection.id IS NOT NULL OR user.id = ?
+			WHERE (tag_connection.id IS NOT NULL OR user.id = ?) AND user.deleted IS NULL
 			GROUP BY user.id", 'id', [$userId]));
-		$this->set('totalUsers', $this->User->find('count'));
+		$this->set('totalUsers', $this->countActiveUsers());
 	}
 
 	public function achievements(): void
@@ -561,7 +541,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			FROM user
 			LEFT JOIN achievement_status
 				ON achievement_status.user_id = user.id
-			WHERE achievement_status.id IS NOT NULL OR user.id = ?
+			WHERE (achievement_status.id IS NOT NULL OR user.id = ?) AND user.deleted IS NULL
 			GROUP BY user.id", 'id', [$userId]));
 	}
 
@@ -631,9 +611,9 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			LEFT JOIN time_mode_session ON time_mode_session.user_id = user.id
 				AND time_mode_session.time_mode_category_id = " . intval($categoryId) . "
 				AND time_mode_session.time_mode_rank_id = " . intval($rankId) . "
-			WHERE time_mode_session.id IS NOT NULL OR user.id = ?
+			WHERE (time_mode_session.id IS NOT NULL OR user.id = ?) AND user.deleted IS NULL
 			GROUP BY user.id", 'id', [$userId]));
-		$this->set('totalUsers', $this->User->find('count'));
+		$this->set('totalUsers', $this->countActiveUsers());
 
 		// Build rank buttons: single query replaces 60+ individual lookups
 		$existingSessions = Util::query("
@@ -663,6 +643,11 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('params2', $params2);
 		$this->set('modes', $modes);
 		$this->set('modes2', $modes2);
+	}
+
+	private function countActiveUsers(): int
+	{
+		return $this->User->find('count', ['conditions' => ['deleted IS NULL']]);
 	}
 
 	/**
@@ -727,12 +712,12 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			"SELECT id, name, external_id, picture, rating, premium, daily_xp, daily_solved,
 				ROW_NUMBER() OVER (ORDER BY daily_xp DESC) as position
 			FROM user
-			WHERE daily_xp > 0 OR id = ?",
+			WHERE (daily_xp > 0 OR id = ?) AND deleted IS NULL",
 			'id',
 			[$userId]
 		));
 
-		$this->set('totalUsers', Util::query("SELECT COUNT(*) as cnt FROM user WHERE daily_xp > 0")[0]['cnt']);
+		$this->set('totalUsers', Util::query("SELECT COUNT(*) as cnt FROM user WHERE daily_xp > 0 AND deleted IS NULL")[0]['cnt']);
 	}
 
 	/**
@@ -779,6 +764,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$user = $this->User->findById($id);
 		if (!$user)
 			return $this->redirect('/sets');
+		$this->assertUserVisible($user['User']);
 		$this->set('_title', 'Profile of ' . $user['User']['name']);
 
 		$this->set('og', [
@@ -799,9 +785,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 				if (isset($this->request->data['User']['email']))
 					if (Validation::email($this->request->data['User']['email']))
 						Auth::saveUserField('email', $this->request->data['User']['email']);
-			if (isset($this->params['url']['undo']))
-				if ($this->params['url']['undo'] / 1111 == $id)
-					Auth::saveUserField('dbstorage', 1);
 		}
 
 		$tsumegoStatusToRestCount = Util::query("
@@ -895,7 +878,11 @@ ORDER BY category DESC', [$user['User']['id']]));
 		if ($asx != null)
 			$aNumx = $aNumx + $asx['AchievementStatus']['value'] - 1;
 
-		$user['User']['name'] = $this->checkPicture($user['User']);
+		// only admins get to the profile of a deleted account, they see who it was
+		if ($user['User']['deleted'])
+			$user['User']['name'] = $user['User']['deleted_name'] . ' ' . User::DELETED_NAME;
+		else
+			$user['User']['name'] = $this->checkPicture($user['User']);
 
 		$aCount = $this->Achievement->find('all');
 
@@ -1063,31 +1050,96 @@ ORDER BY category DESC', [$user['User']['id']]));
 		return $this->redirect($redirect);
 	}
 
+	private static int $DELETION_LINK_VALID_HOURS = 24;
+
 	/**
+	 * First step of deleting the account of the logged-in user: emails a link confirming the deletion
+	 * (confirm_delete_account).
 	 */
 	public function delete_account()
 	{
 		if (!Auth::isLoggedIn())
 			return $this->redirect('/');
-		$redirect = false;
-		$status = '';
+		$this->set('_page', 'user');
+		$this->set('_title', 'Tsumego Hero - Delete account');
+		$this->set('sent', false);
+		if (!$this->request->is('post'))
+			return null;
 
-		if (!empty($this->request->data))
-			if (isset($this->request->data['User']['delete']))
-				if (password_verify($this->request->data['User']['delete'], Auth::getUser()['password_hash']))
-				{
-					Auth::saveUserField('dbstorage', 1111);
-					$redirect = true;
-				}
-				else
-					$status = '<p style="color:#d63a49">Password incorrect.</p>';
+		$token = bin2hex(random_bytes(32));
+		Auth::saveUserField('deletion_token', $token);
+		Auth::saveUserField('deletion_token_created', date('Y-m-d H:i:s'));
 
-		$user = Auth::getUser();
-		$user['name'] = $this->checkPicture($user);
+		// Google accounts store their email with the g__ prefix
+		$email = Auth::getUser()['email'];
+		if (Auth::getUser()['external_id'] != null && str_starts_with($email, 'g__'))
+			$email = substr($email, 3);
 
-		$this->set('redirect', $redirect);
-		$this->set('status', $status);
-		$this->set('u', $user);
+		$emailer = $this->_getEmailer();
+		$emailer->from(['me@tsumego.com' => 'https://tsumego.com']);
+		$emailer->to($email);
+		$emailer->subject('Deletion of your Tsumego Hero account');
+		$emailer->send('You asked to delete your Tsumego Hero account ' . self::checkPicture(Auth::getUser()) . '.
+To confirm the deletion, open the following link (valid for ' . self::$DELETION_LINK_VALID_HOURS . ' hours): https://' . $_SERVER['HTTP_HOST'] . '/users/confirm_delete_account/' . $token . '
+If you have not asked for this, ignore this email, your account stays as it is.');
+		$this->set('sent', true);
+		return null;
+	}
+
+	/**
+	 * Second step of deleting an account, opened from the emailed link. It works without being
+	 * signed in, like the password reset. GET only shows the confirmation button (email scanners open
+	 * links), the deletion happens on POST.
+	 *
+	 * The account is only marked as deleted: everything it created stays (shown as DELETED_NAME),
+	 * it can't sign in anymore, and an admin can restore it.
+	 */
+	public function confirm_delete_account(?string $token = null)
+	{
+		$this->set('_page', 'user');
+		$this->set('_title', 'Tsumego Hero - Delete account');
+		$user = $token ? $this->User->find('first', ['conditions' => [
+			'deletion_token' => $token,
+			'deleted IS NULL',
+			'deletion_token_created >' => date('Y-m-d H:i:s', strtotime('-' . self::$DELETION_LINK_VALID_HOURS . ' hours'))]]) : null;
+		$this->set('valid', (bool) $user);
+		$this->set('token', $token);
+		if (!$user || !$this->request->is('post'))
+			return null;
+
+		$userID = (int) $user['User']['id'];
+		AdminActivityLogger::log(AdminActivityType::DELETE_USER, null, null, $user['User']['name'], null, $userID);
+		User::deleteAccount($userID);
+		Cache::delete('recent_achievements_7', 'default');
+		if (Auth::getUserID() == $userID)
+			Auth::logout();
+		CookieFlash::set('Your account has been deleted', 'success');
+		return $this->redirect('/');
+	}
+
+	/**
+	 * Restores a deleted account (admin only).
+	 */
+	public function restore_account(?string $id = null)
+	{
+		if (!Auth::isAdmin())
+			throw new ForbiddenException();
+		if (!$this->request->is('post'))
+			throw new MethodNotAllowedException();
+		$user = $this->User->findById($id);
+		if (!$user)
+			throw new NotFoundException('User not found');
+
+		$name = $user['User']['deleted_name'];
+		if ($error = User::restoreAccount((int) $user['User']['id']))
+		{
+			CookieFlash::set('Account ' . $name . ' can\'t be restored: ' . $error, 'error');
+			return $this->redirect('/users/adminstats');
+		}
+		AdminActivityLogger::log(AdminActivityType::RESTORE_USER, null, null, null, $name);
+		Cache::delete('recent_achievements_7', 'default');
+		CookieFlash::set('Account ' . $name . ' restored', 'success');
+		return $this->redirect('/users/adminstats');
 	}
 
 	/**
@@ -1119,7 +1171,10 @@ ORDER BY category DESC', [$user['User']['id']]));
 
 	public function solveHistory(string $userID): void
 	{
-		$userName = Util::query("SELECT name FROM user WHERE id = ?", [$userID])[0]['name'] ?? 'Unknown';
+		$profileUser = Util::query("SELECT name, deleted FROM user WHERE id = ?", [$userID])[0] ?? null;
+		if ($profileUser)
+			$this->assertUserVisible($profileUser);
+		$userName = $profileUser['name'] ?? 'Unknown';
 		$PAGE_SIZE = 500;
 		$pageIndex = isset($this->request->query['page']) ? max(1, (int) $this->request->query['page']) : 1;
 		$count = Util::query("SELECT COUNT(*) FROM tsumego_attempt where user_id = ?", [$userID])[0]['COUNT(*)'];

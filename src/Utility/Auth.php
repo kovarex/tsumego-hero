@@ -18,14 +18,14 @@ class Auth
 		if (Util::isInTestEnvironment() && !empty($_COOKIE["hackedLoggedInUserID"]))
 		{
 			$userData = ClassRegistry::init('User')->findById((int) $_COOKIE["hackedLoggedInUserID"]);
-			if ($userData)
+			if ($userData && empty($userData['User']['deleted']))
 			{
 				Auth::$user = $userData['User'];
 				return;
 			}
 		}
 
-		if ($user)
+		if ($user && empty($user['User']['deleted']))
 		{
 			Auth::$user = $user['User'];
 			// Set JWT cookie for stateless auth
@@ -38,11 +38,13 @@ class Auth
 		if ($userIdFromJwt)
 		{
 			$userData = ClassRegistry::init('User')->findById($userIdFromJwt);
-			if ($userData)
+			if ($userData && empty($userData['User']['deleted']))
 			{
 				Auth::$user = $userData['User'];
 				return;
 			}
+			// the account was deleted (or doesn't exist anymore), which also ends its existing sessions
+			JwtAuth::clearAuthCookie();
 		}
 
 		// Not logged in

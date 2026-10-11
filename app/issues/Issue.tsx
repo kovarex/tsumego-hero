@@ -37,7 +37,7 @@ export function Issue({
 
 	// Use provided comments/author or fall back to issue data
 	const displayComments = comments ?? issue.comments ?? [];
-	const authorName = author?.name ?? issue.user_name ?? '[deleted user]';
+	const authorName = author?.name ?? issue.user_name ?? '[account deleted]';
 
 	const handleCloseReopen = async () =>
 	{
@@ -54,7 +54,7 @@ export function Issue({
 
 	const handleSubmitReply = async (text: string, position?: string) =>
 	{
-		if (!onReply) 
+		if (!onReply)
 			return;
 		setReply(r => ({ ...r, submitting: true }));
 		try

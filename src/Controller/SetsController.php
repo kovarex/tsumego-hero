@@ -127,6 +127,8 @@ class SetsController extends AppController
 
 		$isOwn = ($userId === Auth::getUserID());
 		$profileUser = $this->User->findById($userId);
+		if ($profileUser)
+			$this->assertUserVisible($profileUser['User']);
 		$pageTitle = $isOwn ? 'My Sets' : h($profileUser['User']['name']) . "'s Sets";
 		$this->set('_title', 'Tsumego Hero - ' . $pageTitle);
 		$this->set('profileUser', $profileUser ? $profileUser['User'] : null);

@@ -169,16 +169,14 @@ class TsumegoIssue extends AppModel
 						'tsumego_issue_status_id' => $statusId,
 						'tsumego_id' => $row['ti']['tsumego_id'],
 						'user_id' => $row['ti']['issue_user_id'],
-						'user_name' => $row['u']['issue_author_name'],
+						'user_name' => User::nameOrNull($row['ti']['issue_user_id'], $row['u']['issue_author_name']),
 						'user_rating' => $row['u']['issue_author_rating'] ?? null,
 						'user_external_id' => $row['u']['issue_author_external_id'] ?? null,
 						'user_picture' => $row['u']['issue_author_picture'] ?? null,
 						'created' => Util::toIso8601($row['ti']['issue_created']),
 					],
 					'comments' => [],
-					'author' => $row['u']['issue_author_name']
-						? ['name' => $row['u']['issue_author_name']]
-						: ['name' => '[deleted user]'],
+					'author' => ['name' => User::nameOrNull($row['ti']['issue_user_id'], $row['u']['issue_author_name']) ?? User::DELETED_NAME],
 					'tsumegoId' => $row['ti']['tsumego_id'],
 					'Set' => $row['s']['set_id'] ? [
 						'id' => $row['s']['set_id'],
@@ -196,7 +194,7 @@ class TsumegoIssue extends AppModel
 					'text' => $row['tc']['comment_text'],
 					'created' => Util::toIso8601($row['tc']['comment_created']),
 					'user_id' => $row['tc']['comment_user_id'],
-					'user_name' => $row['cu']['comment_author_name'] ?? '[deleted user]',
+					'user_name' => User::nameOrNull($row['tc']['comment_user_id'], $row['cu']['comment_author_name'] ?? null),
 					'user_external_id' => $row['cu']['comment_author_external_id'],
 					'user_picture' => $row['cu']['comment_author_picture'],
 					'user_rating' => $row['cu']['comment_author_rating'],

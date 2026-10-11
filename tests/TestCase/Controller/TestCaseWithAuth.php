@@ -32,6 +32,17 @@ class TestCaseWithAuth extends ControllerTestCase
 		unset($_COOKIE['hackedLoggedInUserID']);
 	}
 
+	// The next testAction on the users controller sends its emails to TestEmailer::$lastEmail.
+	public function registerTestEmailer()
+	{
+		$controller = $this->generate('Users', ['methods' => ['_getEmailer']]);
+		$emailer = new TestEmailer();
+		$controller
+			->expects($this->any())
+			->method('_getEmailer')
+			->will($this->returnValue($emailer));
+	}
+
 	public function setLoggedIn(bool $loggedIn)
 	{
 		if ($loggedIn)

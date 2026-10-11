@@ -30,6 +30,7 @@ class ContextPreparator
 		] as $table)
 			$pdo->exec("DELETE FROM `$table`");
 		$pdo->exec('SET FOREIGN_KEY_CHECKS = 1');
+		User::clearDeletedCache();
 
 		if (!array_key_exists('user', $options) && !array_key_exists('other-users', $options))
 			$this->prepareThisUser(['name' => 'kovarex']);
@@ -92,7 +93,7 @@ class ContextPreparator
 		$user['isAdmin'] = Util::extract('admin', $userInput) ?? false;
 		$user['rating'] = Util::extract('rating', $userInput) ?: self::$DEFAULT_USER_RATING;
 		$user['premium'] = Util::extract('premium', $userInput) ?: 0;
-		$user['dbstorage'] = Util::extract('dbstorage', $userInput) ?: 0;
+		$deleted = Util::extract('deleted', $userInput) ?: false;
 		$user['solved'] = Util::extract('solved', $userInput) ?: 0;
 		$user['xp'] = Util::extract('xp', $userInput) ?: 0;
 		$user['daily_xp'] = Util::extract('daily_xp', $userInput) ?: 0;
@@ -147,6 +148,11 @@ class ContextPreparator
 			ClassRegistry::init('UserContribution')->save($userContribution);
 		}
 		$this->prepareAchievementStatuses($user, Util::extract('achievement-statuses', $userInput));
+		if ($deleted)
+		{
+			User::deleteAccount($user['id']);
+			$user = ClassRegistry::init('User')->findById($user['id'])['User'];
+		}
 		$this->checkOptionsConsumed($userInput);
 		return $user;
 	}
@@ -804,7 +810,8 @@ class ContextPreparator
 			AdminActivityType::ACCEPT_PROPOSAL => 'Accept Proposal',
 			AdminActivityType::REJECT_PROPOSAL => 'Reject Proposal',
 			AdminActivityType::TSUMEGO_MERGE => 'Tsumego Merge',
-			AdminActivityType::DELETE_USER => 'Delete User'];
+			AdminActivityType::DELETE_USER => 'Delete User',
+			AdminActivityType::RESTORE_USER => 'Restore User'];
 
 		$adminActivityType = ClassRegistry::init('AdminActivityType');
 
