@@ -69,3 +69,4 @@ webroot/js/dist/
 webroot/dist/
 package-lock.json
 .pnpm-store/
+vite.config.*.timestamp-*
