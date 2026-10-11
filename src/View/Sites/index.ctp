@@ -17,9 +17,6 @@ use App\Utility\TsumegoButtons;
  * @var bool $userOfTheDay
  */
 
-$highestLeft = 19;
-$highestRight = 17;
-
 $this->start('script');
 ?>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -178,7 +175,8 @@ echo '</div>';
 				</div>
 
 				<!-- LEFT NEWS -->
-				<div id="news-left-18">
+				<div id="news-list-left" class="news-list" data-initial-visible="4">
+				<div class="news-article">
 					<p class="title4">Update 29.11.2024</p>
 					<div class="new1">
 						<b>Customizable collection index page</b><br><br>
@@ -195,7 +193,7 @@ echo '</div>';
 					</div>
 				</div>
 
-				<div id="news-left-17">
+				<div class="news-article">
 				<p class="title4">Update 26.10.2024</p>
 				<div class="new1">
 					<b>Tags, proposals and rewards</b><br><br>
@@ -218,7 +216,7 @@ echo '</div>';
 				</div>
 
 
-				<div id="news-left-16">
+				<div class="news-article">
 				<p class="title4">Update 13.10.2024</p>
 				<div class="new1">
 					<b>Account management</b><br><br>
@@ -229,7 +227,7 @@ echo '</div>';
 				</div>
 
 
-				<div id="news-left-15">
+				<div class="news-article">
 				<p class="title4">Bugfix 01.05.2024</p>
 				<div class="new1">
 				Longer sessions were not working properly, so this feature is reverted. If there are still any issues, such as log-outs, try to delete the cookies.<br><br>
@@ -237,7 +235,7 @@ echo '</div>';
 				</div>
 
 
-				<div id="news-left-14">
+				<div class="news-article">
 				<p class="title4">Update 30.04.2024</p>
 				<div class="new1">
 				<b>Improved search, ratings and board views</b><br><br>
@@ -256,7 +254,7 @@ echo '</div>';
 				</div>
 
 
-				<div id="news-left-13">
+				<div class="news-article">
 				<p class="title4">Update 03.04.2024</p>
 				<div class="new1">
 				<b>Improvements of rank display and score mechanics</b><br><br>
@@ -275,7 +273,7 @@ echo '</div>';
 				</div>
 
 
-				<div id="news-left-12">
+				<div class="news-article">
 				<p class="title4">17.03.2024</p>
 				<div class="new1">
 				<b>Prizes</b><br><br>
@@ -284,7 +282,7 @@ echo '</div>';
 				</div>
 
 
-				<div id="news-left-11">
+				<div class="news-article">
 				<p class="title4">10.03.2024</p>
 				<div class="new1">
 				<b>Prizes</b><br><br>
@@ -293,7 +291,7 @@ echo '</div>';
 				</div>
 
 
-				<div id="news-left-10">
+				<div class="news-article">
 				<p class="title4">03.03.2024</p>
 				<div class="new1">
 				<b>Prizes</b><br><br>
@@ -303,11 +301,11 @@ echo '</div>';
 				</div>
 
 
-				<div id="news-left-9">
+				<div class="news-article">
 				<p class="title4">Update 25.02.2024</p>
 				<div class="new1">
 				<b>Overall rating</b><br><br>
-				<div id="progressBarInLevelMode">
+				<div id="progressBarInLevelMode" class="<?php echo Auth::isLoggedIn() ? '' : 'progress-bar--guest-hidden'; ?>">
 				Progress bar in level mode:<br>
 				<?php
 					$levelBarDisplayChecked1 = '';
@@ -356,7 +354,7 @@ else
 				</div>
 
 
-				<div id="news-left-8">
+				<div class="news-article">
 				<p class="title4">Update 01.02.2024</p>
 				<div class="new1">
 				<b>Explanation for the duplicate update on 01.02.2024</b><br><br>
@@ -372,7 +370,7 @@ else
 				</div>
 
 
-				<div id="news-left-7">
+				<div class="news-article">
 				<p class="title4">Update 11.01.2024</p>
 				<div class="new1">
 				<b>Similar problem search</b><br><br>
@@ -389,7 +387,7 @@ else
 				</div>
 
 
-				<div id="news-left-6">
+				<div class="news-article">
 					<p class="title4">Update 28.12.2023</p>
 					<div class="new1">
 					<b>Board previews and more achievements</b><br><br>
@@ -404,7 +402,7 @@ else
 					</div>
 				</div>
 
-				<div id="news-left-5">
+				<div class="news-article">
 					<p class="title4">Update 23.11.2023</p>
 					<div class="new1">
 					<br>
@@ -419,7 +417,7 @@ else
 					</div>
 				</div>
 
-				<div id="news-left-4">
+				<div class="news-article">
 					<p class="title4">Update 06.11.2023</p>
 					<div class="new1">
 						<b>More achievements</b><br><br>
@@ -432,7 +430,7 @@ else
 					</div>
 				</div>
 
-				<div id="news-left-3">
+				<div class="news-article">
 					<p class="title4">Update 27.10.2023</p>
 					<div class="new1">
 						<b>Achievements!</b><br><br>
@@ -446,7 +444,7 @@ else
 					</div>
 				</div>
 
-				<div id="news-left-2">
+				<div class="news-article">
 					<p class="title4">Update 14.10.2023</p>
 					<div class="new1">
 						<b>Improved comments</b><br><br>
@@ -467,7 +465,7 @@ else
 				</div>
 
 
-				<div id="news-left-1">
+				<div class="news-article">
 					<p class="title4">Update 20.07.2023</p>
 					<div class="new1">
 						<b>New board viewer: BesoGo</b><br><br>
@@ -485,6 +483,7 @@ else
 				</div>
 				<div id="show-more-left" class="show-more" align="center">
 					<a >Show more</a>
+				</div>
 				</div>
 
 
@@ -523,7 +522,8 @@ else
 				</div>
 
 				<!-- RIGHT NEWS -->
-				 <div id="news-right-17">
+				<div id="news-list-right" class="news-list" data-initial-visible="6">
+				 <div class="news-article">
 					<p class="title4">New Collection: Level Evaluation Set: Beginner | 21.08.2025</p>
 					<div class="new1">
 					The Level Evaluation Set is designed to assess and improve the reader’s strength in the game of Go through a focused collection of Tsumego and Tesuji problems. The first part is titled Beginner and covers problems around the double digit kyu ranks.
@@ -533,7 +533,7 @@ else
 						</div>
 					</div>
 				</div>
-				<div id="news-right-16">
+				<div class="news-article">
 					<p class="title4">New Collection: The J Group | 28.05.2025</p>
 					<div class="new1">
 					The J group is next to the L group another common shape that can happen in the corner. It is defended with a hanging connection, so it forms a J.
@@ -544,7 +544,7 @@ else
 						</div>
 					</div>
 				</div>
-				<div id="news-right-15">
+				<div class="news-article">
 					<p class="title4">New Collection: Boundless Sky | 01.05.2025</p>
 					<div class="new1">
 					The Goban is just like a boundless sky with unlimited possibilities. The only limit is your imagination. Expand your imagination with this set of problems that contain extraordinary shapes and solutions.
@@ -554,7 +554,7 @@ else
 					</div>
 				</div>
 
-				<div id="news-right-13">
+				<div class="news-article">
 					<p class="title4">New Collection: The L Group | 12.03.2025</p>
 					<div class="new1">
 					Basic knowledge of the L group to boost double digit kyu player's confidence ! A diligent study is worth it. The L group is a corner shape that
@@ -565,7 +565,7 @@ else
 					</div>
 				</div>
 
-				<div id="news-right-11">
+				<div class="news-article">
 					<p class="title4">New Collection: Weiqi Life&Death Drills | 05.02.2025</p>
 					<div class="new1">
 					A game of go is a life-and-death struggle, with attacking and defending from beginning to end. The ability to kill and make life is the most fundamental manifestation
@@ -577,7 +577,7 @@ else
 					</div>
 				</div>
 
-				<div id="news-right-10">
+				<div class="news-article">
 					<p class="title4">New Collection: Segoe Tesuji Dictionary | 22.01.2025</p>
 					<div class="new1">
 					Segoe Tesuji Dictionary is a three volume tesuji problem book-set, written by Segoe Kensaku and Go Seigen.
@@ -588,7 +588,7 @@ else
 				</div>
 
 
-				<div id="news-right-9">
+				<div class="news-article">
 					<p class="title4">New Collection: Attack Hero | 30.12.2024</p>
 					<div class="new1">
 						In the game of Go, attacks can be used to get an advantage on the board. When attacking a group, killing is not the first objective.
@@ -601,7 +601,7 @@ else
 				</div>
 
 
-				<div id="news-right-8">
+				<div class="news-article">
 					<p class="title4">New Collection: Igo Hatsuyoron | 13.12.2024</p>
 					<div class="new1">
 					Igo Hatsuyoron (literally: Production of Yang in the Game of Go) is a collection of 183 go problems mostly
@@ -613,7 +613,7 @@ else
 				</div>
 
 
-				<div id="news-right-7">
+				<div class="news-article">
 					<p class="title4">New: Diabolical - the whole book | 19.08.2024</p>
 					<div class="new1">
 						Today we start publishing all problems from the Diabolical Vol. 1 book. That is 100 boards with each containing 4 or more problems.
@@ -627,7 +627,7 @@ else
 					</div>
 				</div>
 
-				<div id="news-right-6">
+				<div class="news-article">
 					<p class="title4">New Collection: Direction of the Play  | 28.07.2024</p>
 					<div class="new1">
 						This collection covers full board positions, mostly from professional games.
@@ -638,7 +638,7 @@ else
 					</div>
 				</div>
 
-				<div id="news-right-5">
+				<div class="news-article">
 					<p class="title4">New Collection: Techniques of TsumeGo | 04.07.2024</p>
 					<div class="new1">
 						In the game of Go, to solve crucial situations, one has to master the different techniques that the game presents. Those techniques,
@@ -650,7 +650,7 @@ else
 					</div>
 				</div>
 
-				<div id="news-right-4">
+				<div class="news-article">
 					<p class="title4">New Collection: Kano Yoshinori | 31.12.2023</p>
 					<div class="new1">
 								This series written by Kano Yoshinori in 1985 covers a large range of fundamental topics.
@@ -660,7 +660,7 @@ else
 					</div>
 				</div>
 
-				<div id="news-right-3">
+				<div class="news-article">
 					<p class="title4">New Collection: 9x9 Endgame Problems</p>
 					<div class="new1">
 						There's a saying in Go that your overall strength is limited by your endgame strength. Even if you are leading a lot in the opening and middle game, mistakes in endgame can still lose you the game. This collection allows you to practice and level-up your endgame in a small 9x9 board with real-game examples.
@@ -670,7 +670,7 @@ else
 					</div>
 				</div>
 
-				<div id="news-right-2">
+				<div class="news-article">
 					<p class="title4">New Collection: Sacrifical Tsumego</p>
 					<div class="new1">
 						Sometimes sacrifices are necessary in order to kill, but how many stones can you sacrifice before killing?
@@ -681,7 +681,7 @@ else
 					</div>
 				</div>
 
-				<div id="news-right-1">
+				<div class="news-article">
 					<p class="title4">New Collection: Yi Kuo</p>
 					<div class="new1">
 						Yi Kuo is a classical kifu and tsumego book written by Huang Longshi (1651-1700). It was posthumously published in 1710.
@@ -694,6 +694,7 @@ else
 
 				<div id="show-more-right" class="show-more" align="center">
 					<a>Show more</a>
+				</div>
 				</div>
 
 					<?php
@@ -729,28 +730,25 @@ if(Auth::isLoggedIn())
 		<div class="clearfix"></div>
 
 	<script>
-		let highestLeft = <?php echo $highestLeft; ?>;
-		let highestRight = <?php echo $highestRight; ?>;
+		function showNextNews(side){
+			const hiddenArticles = $("#news-list-" + side + " > .news-article[hidden]");
+			hiddenArticles.slice(0, 2).removeAttr("hidden").hide().fadeIn(250);
+			if(hiddenArticles.length <= 2)
+				$("#show-more-" + side).hide();
+		}
 
-		let currentLeft = highestLeft - 4;
-		let currentRight = highestRight - 5;
-
-		$("#show-more-left").click(function(){
-			currentLeft -= 3;
-			for(let i=highestLeft;i>currentLeft;i--)
-				if(i>1)
-					$("#news-left-"+i).fadeIn(250);
-				else
-					$("#show-more-left").hide();
-		});
-
-		$("#show-more-right").click(function(){
-			currentRight -= 3;
-			for(let i=highestRight;i>currentRight;i--)
-				if(i>1)
-					$("#news-right-"+i).fadeIn(250);
-				else
-					$("#show-more-right").hide();
+		["left", "right"].forEach(function(side){
+			const list = $("#news-list-" + side);
+			const initialVisible = Number(list.attr("data-initial-visible"));
+			const articles = list.children(".news-article");
+			articles.each(function(index){
+				this.hidden = index >= initialVisible;
+			});
+			$("#show-more-" + side).on("click", function(){
+				showNextNews(side);
+			});
+			if(initialVisible >= articles.length)
+				$("#show-more-" + side).hide();
 		});
 
 		function sandboxY(){
@@ -766,42 +764,3 @@ if(Auth::isLoggedIn())
 			document.getElementById("sandboxVolunteers").style = "display:none;";
 		}
 	</script>
-	<?php
-	if(!Auth::isLoggedIn())
-		echo '<style>
-			#progressBarInLevelMode{
-				display:none;
-			}
-		</style>';
-?>
-
-	<style>
-		<?php
-		$left = $highestLeft;
-while($left > 0)
-{
-	if($left < $highestLeft - 4)
-		echo '#news-left-' . $left . '{display:none;}';
-	$left--;
-}
-$right = $highestRight;
-while($right > 0)
-{
-	if($right < $highestRight - 7)
-		echo '#news-right-' . $right . '{display:none;}';
-	$right--;
-}
-?>
-	</style>
-	<style>
-		.show-more{
-			padding:10px;
-		}
-		.show-more a{
-			text-decoration:underline;
-			cursor:pointer;
-		}
-		.show-more a:hover{
-			text-decoration:none;
-		}
-	</style>
