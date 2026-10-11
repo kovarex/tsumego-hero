@@ -12,18 +12,22 @@ use Phinx\Migration\AbstractMigration;
  * again (see SetCompletionCounter), this brings the stored counts of existing users in line.
  *
  * The achievements themselves are unlocked by the regular check on the user's next page load.
+ *
+ * Phinx runs the whole migration in one transaction, so the order matters for the live site:
+ * the slow recount is a plain SELECT, which doesn't lock anything (an INSERT ... SELECT would lock
+ * every row it reads and block solves until the end). Only the quick delete and inserts at the
+ * end take locks, and those are held just until the commit right after them.
  */
 final class RecountCompletedSets extends AbstractMigration
 {
+	private const int INSERT_BATCH_SIZE = 1000;
+
 	public function up(): void
 	{
-		$this->execute("DELETE FROM achievement_condition WHERE category = 'set'");
-
 		// Same partitioning as SetCompletionCounter::$PARTITION_SIZE, hardcoded so the migration
 		// does not depend on application code.
-		$this->execute("
-			INSERT INTO achievement_condition (user_id, category, value)
-			SELECT completed.user_id, 'set', COUNT(*)
+		$counts = $this->fetchAll("
+			SELECT completed.user_id, COUNT(*) AS completed_sets
 			FROM (
 				SELECT ts.user_id
 				FROM (
@@ -49,6 +53,15 @@ final class RecountCompletedSets extends AbstractMigration
 			) completed
 			GROUP BY completed.user_id
 		");
+
+		$this->execute("DELETE FROM achievement_condition WHERE category = 'set'");
+		$rows = array_map(fn($count) => [
+			'user_id' => (int) $count['user_id'],
+			'category' => 'set',
+			'value' => (int) $count['completed_sets'],
+		], $counts);
+		foreach (array_chunk($rows, self::INSERT_BATCH_SIZE) as $batch)
+			$this->table('achievement_condition')->insert($batch)->saveData();
 	}
 
 	public function down(): void
