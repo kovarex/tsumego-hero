@@ -218,6 +218,53 @@ class SitesControllerTest extends ControllerTestCase
 		$this->assertTrue($browser->idExists('totd') || true); // Page loaded successfully
 	}
 
+	public function testNewsColumnsRevealMoreArticlesUntilAllAreVisible()
+	{
+		$browser = Browser::instance();
+		new ContextPreparator();
+		$browser->get('sites/index');
+
+		$initialArticleCounts = ['left' => 4, 'right' => 6];
+		foreach ($initialArticleCounts as $side => $expectedInitialCount)
+		{
+			$selector = '#news-list-' . $side . ' > .news-article';
+			$visibleCount = $browser->driver->executeScript(
+				'return Array.from(document.querySelectorAll(' . json_encode($selector) . '))
+					.filter(article => getComputedStyle(article).display !== "none").length;'
+			);
+			$hiddenCount = $browser->driver->executeScript(
+				'return Array.from(document.querySelectorAll(' . json_encode($selector) . '))
+					.filter(article => getComputedStyle(article).display === "none").length;'
+			);
+			$this->assertSame($expectedInitialCount, $visibleCount, 'The ' . $side . ' news column should initially show the configured number of articles');
+			$this->assertGreaterThan(0, $hiddenCount, 'The ' . $side . ' news column should have hidden articles');
+
+			while ($hiddenCount > 0)
+			{
+				$expectedVisibleCount = $visibleCount + min(3, $hiddenCount);
+				$browser->clickId('show-more-' . $side);
+				$browser->waitUntilJs(
+					'Array.from(document.querySelectorAll(' . json_encode($selector) . '))
+						.filter(article => getComputedStyle(article).display !== "none").length >= ' . $expectedVisibleCount
+				);
+
+				$newHiddenCount = $browser->driver->executeScript(
+					'return Array.from(document.querySelectorAll(' . json_encode($selector) . '))
+						.filter(article => getComputedStyle(article).display === "none").length;'
+				);
+				$this->assertLessThan($hiddenCount, $newHiddenCount, 'Show more should reveal articles in the ' . $side . ' column');
+				$this->assertSame($expectedVisibleCount, $visibleCount + ($hiddenCount - $newHiddenCount));
+				$visibleCount = $expectedVisibleCount;
+				$hiddenCount = $newHiddenCount;
+			}
+
+			$this->assertFalse(
+				$browser->find('#show-more-' . $side)->isDisplayed(),
+				'Show more should disappear after all ' . $side . ' articles are visible'
+			);
+		}
+	}
+
 	public function testPlayButtonsWorkWithoutLastVisitSession()
 	{
 		$browser = Browser::instance();
