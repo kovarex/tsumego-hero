@@ -241,7 +241,7 @@ class SitesControllerTest extends ControllerTestCase
 
 			while ($hiddenCount > 0)
 			{
-				$expectedVisibleCount = $visibleCount + min(2, $hiddenCount);
+				$expectedVisibleCount = $visibleCount + min(3, $hiddenCount);
 				$browser->clickId('show-more-' . $side);
 				$browser->waitUntilJs(
 					'Array.from(document.querySelectorAll(' . json_encode($selector) . '))

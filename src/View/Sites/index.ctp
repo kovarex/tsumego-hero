@@ -732,8 +732,8 @@ if(Auth::isLoggedIn())
 	<script>
 		function showNextNews(side){
 			const hiddenArticles = $("#news-list-" + side + " > .news-article[hidden]");
-			hiddenArticles.slice(0, 2).removeAttr("hidden").hide().fadeIn(250);
-			if(hiddenArticles.length <= 2)
+			hiddenArticles.slice(0, 3).removeAttr("hidden").hide().fadeIn(250);
+			if(hiddenArticles.length <= 3)
 				$("#show-more-" + side).hide();
 		}
 
