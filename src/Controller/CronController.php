@@ -76,7 +76,7 @@ WHERE
 		foreach ($lastDayRecords as $lastDayRecord)
 			$excludedUsers[$lastDayRecord['DayRecord']['user_id']] = true;
 
-		$topUsers = ClassRegistry::init('User')->find('all', ['limit' => '8', 'order' => 'daily_xp DESC']) ?: [];
+		$topUsers = ClassRegistry::init('User')->find('all', ['conditions' => ['deleted IS NULL'], 'limit' => '8', 'order' => 'daily_xp DESC']) ?: [];
 		foreach ($topUsers as $user)
 			if (!isset($excludedUsers[$user['User']['id']]))
 				return $user;

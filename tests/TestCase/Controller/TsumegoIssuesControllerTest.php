@@ -193,32 +193,34 @@ class TsumegoIssuesControllerTest extends ControllerTestCase
 	}
 
 	/**
-	 * Test that deleted users show as [deleted user] on the issues list.
+	 * Test that deleted accounts show as [account deleted] on the issues list.
 	 */
 	public function testDeletedUserShowsPlaceholder()
 	{
 		$browser = Browser::instance();
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
-			'other-users' => [['name' => 'doomed_user']],
+			'other-users' => [['name' => 'doomed_user', 'deleted' => true]],
 			'tsumego' => ['set_order' => 1, 'issues' => [['message' => 'Issue by deleted user']]]]);
 
-		// Reassign issue to other user, then delete them (with FK checks disabled)
+		// Reassign the issue and its comment to the deleted user
 		$otherUserId = $context->otherUsers[0]['id'];
-		$issueModel = ClassRegistry::init('TsumegoIssue');
-		$issueModel->updateAll(
+		ClassRegistry::init('TsumegoIssue')->updateAll(
 			['TsumegoIssue.user_id' => $otherUserId],
 			['TsumegoIssue.id' => $context->issues[0]['id']]
 		);
-		$issueModel->query('SET FOREIGN_KEY_CHECKS = 0');
-		ClassRegistry::init('User')->deleteAll(['User.id' => $otherUserId]);
-		$issueModel->query('SET FOREIGN_KEY_CHECKS = 1');
+		ClassRegistry::init('TsumegoComment')->updateAll(
+			['TsumegoComment.user_id' => $otherUserId],
+			['TsumegoComment.tsumego_issue_id' => $context->issues[0]['id']]
+		);
 
 		$browser->get('tsumego-issues');
 		$this->waitForReactIssuesList($browser);
 		$pageSource = $browser->driver->getPageSource();
 
-		$this->assertTextContains('[deleted user]', $pageSource);
+		$this->assertTextContains('Issue by deleted user', $pageSource);
+		$this->assertTextContains('[account deleted]', $pageSource);
+		$this->assertTextNotContains('doomed_user', $pageSource);
 	}
 
 	/**

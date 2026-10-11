@@ -1,40 +1,32 @@
 <?php
 
-use App\Utility\Auth;
-
 /**
  * @var View $this
- * @var string $status
- * @var bool $redirect
+ * @var bool $sent
  */
 ?>
 <div align="center">
 <p class="title">
-	Request account deletion
+	Delete account
 	<br>
 </p>
 
-<br><br>
-
-<?php
-	if(Auth::getUser()['external_id']==null){
-		echo 'Confirm deletion request by entering your password.<br><br>';
-		echo $this->Form->create('User');
-		echo $this->Form->input('delete', array('value' => '', 'label' => '', 'type' => 'password', 'placeholder' => 'password'));
-		echo '<br>';
-	}else{
-		echo 'Submit your deletion request.<br><br>';
-		echo $this->Form->create('User');
-		echo $this->Form->input('delete', array('value' => 'o474w544a4n4q5g4y2', 'label' => '', 'type' => 'hidden'));
-	}
-
-	echo $this->Form->end('Submit');
-	echo '<br>';
-	echo $status;
-?>
+<br>
+<?php if ($sent): ?>
+	<p id="deletion-email-sent">
+		We sent you an email with a link to confirm the deletion.<br>
+		Your account is deleted only after you confirm it there.
+	</p>
+<?php else: ?>
+	<p>
+		When your account is deleted, you are signed out and can't sign in with it anymore.<br>
+		Your sets, comments and tags stay on the site, shown as <?php echo h(User::DELETED_NAME); ?>.<br>
+		If you change your mind later, contact us and we can restore your account.
+	</p>
+	<p>To make sure it's you, we'll send you an email with a link to confirm the deletion.</p>
+	<br>
+	<form method="post" action="/users/delete_account">
+		<button type="submit" class="btn btn--danger" id="send-deletion-email-button">Send confirmation email</button>
+	</form>
+<?php endif; ?>
 </div>
-<?php
-	if($redirect){
-		echo '<script type="text/javascript">window.location.href = "/users/view/'.Auth::getUserID().'";</script>';
-	}
-?>

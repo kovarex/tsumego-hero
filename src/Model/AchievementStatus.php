@@ -42,6 +42,7 @@ class AchievementStatus extends AppModel
 				'AchievementStatus.id', 'AchievementStatus.created', 'Achievement.id', 'Achievement.name', 'Achievement.image',
 				'User.id', 'User.name', 'User.external_id',
 			],
+			'conditions' => ['User.deleted IS NULL'],
 			'limit' => $limit,
 			'order' => 'AchievementStatus.created DESC',
 		]) ?: [];

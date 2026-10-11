@@ -56,22 +56,28 @@ class AppController extends Controller
 		return Util::query("SELECT * from tag WHERE approved = 1 ORDER BY tag.name");
 	}
 
+	/**
+	 * The pages of a deleted account (profile, its sets, tags, solve history...) are gone for
+	 * everyone but the admins.
+	 *
+	 * @param UserRow $user
+	 */
+	protected function assertUserVisible(array $user): void
+	{
+		if (!empty($user['deleted']) && !Auth::isAdmin())
+			throw new NotFoundException('User not found');
+	}
+
 	protected function checkPictureLarge(array $u): string
 	{
-		if (substr($u['User']['name'], 0, 3) == 'g__' && $u['User']['external_id'] != null)
-			return substr($u['User']['name'], 3);
-
-		return $u['User']['name'];
+		return self::checkPicture($u['User']);
 	}
 	/**
 	 * @param UserRow $user
 	 */
 	public static function checkPicture(array $user): string
 	{
-		if (substr($user['name'], 0, 3) == 'g__' && $user['external_id'] != null)
-			return substr($user['name'], 3);
-
-		return $user['name'];
+		return User::displayName($user['id'] ?? null, $user['name'], $user['external_id']);
 	}
 
 	public static function saveDanSolveCondition(string $solvedTsumegoRank, int $tId): void

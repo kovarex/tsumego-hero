@@ -14,7 +14,7 @@ interface UserLinkProps
 
 function getReadableRankFromRating(rating: number | null): string
 {
-	if (rating == null) 
+	if (rating == null)
 		return '';
 	const rank = getRankFromRating(rating);
 	return getReadableRank(rank);
@@ -22,22 +22,22 @@ function getReadableRankFromRating(rating: number | null): string
 
 function getRankFromRating(rating: number): number
 {
-	if (rating < 2750) 
+	if (rating < 2750)
 		return Math.floor(Math.max((rating + 1050) / 100, 1));
 	return Math.floor((rating - 2750) / 30) + 38;
 }
 
 function getReadableRank(rank: number): string
 {
-	if (rank <= 30) 
+	if (rank <= 30)
 		return `${31 - rank}k`;
 	return `${rank - 30}d`;
 }
 
 export function UserLink({ userId, name, externalId, picture, rating }: UserLinkProps)
 {
-	if (!name) 
-		return <span>[deleted user]</span>;
+	if (!name)
+		return <span>[account deleted]</span>;
 
 	const rank = getReadableRankFromRating(rating);
 

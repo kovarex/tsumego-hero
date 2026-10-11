@@ -1,39 +1,9 @@
 <?php
 
 use Facebook\WebDriver\WebDriverBy;
-// this is hack until nicer solution in newer cake is possible to be used
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\Util;
-
-class TestEmailer
-{
-	public function __construct()
-	{
-		self::$lastEmail = [];
-	}
-
-	public function from($from)
-	{
-		self::$lastEmail['from'] = $from;
-	}
-
-	public function to($to)
-	{
-		self::$lastEmail['to'] = $to;
-	}
-
-	public function subject($subject)
-	{
-		self::$lastEmail['subject'] = $subject;
-	}
-
-	public function send($body)
-	{
-		self::$lastEmail['body'] = $body;
-	}
-	public static $lastEmail = null;
-};
 
 class LoginComponentTestWithAuth extends TestCaseWithAuth
 {
@@ -152,16 +122,6 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 
 		$newUser = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => $newUsername]]);
 		$this->assertSame($userCount, count(ClassRegistry::init('User')->find('all'))); // no user was added
-	}
-
-	public function registerTestEmailer()
-	{
-		$controller = $this->generate('Users', ['methods' => ['_getEmailer']]);
-		$emailer = new TestEmailer();
-		$controller
-			->expects($this->any())
-			->method('_getEmailer')
-			->will($this->returnValue($emailer));
 	}
 
 	public function testResetPassword(): void

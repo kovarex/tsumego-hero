@@ -25,6 +25,7 @@ class AchievementsController extends AppController
 		$user = $this->User->findById($userId);
 		if (!$user)
 			throw new NotFoundException('User not found');
+		$this->assertUserVisible($user['User']);
 
 		$this->renderAchievementsPage($user['User']);
 		$this->render('index');
@@ -132,10 +133,13 @@ class AchievementsController extends AppController
 			throw new NotFoundException('Achievement not found');
 
 		$currentUserStatus = [];
-		$completerCount = $this->AchievementStatus->find('count', ['conditions' => ['achievement_id' => $id]]);
+		$completerConditions = [
+			'achievement_id' => $id,
+			'AchievementStatus.user_id NOT IN (SELECT id FROM user WHERE deleted IS NOT NULL)'];
+		$completerCount = $this->AchievementStatus->find('count', ['conditions' => $completerConditions]);
 		$completers = $this->AchievementStatus->find('all', [
 			'order' => 'created DESC, AchievementStatus.id DESC',
-			'conditions' => ['achievement_id' => $id],
+			'conditions' => $completerConditions,
 			'limit' => 10]);
 		if (!$completers)
 			$completers = [];
@@ -149,7 +153,7 @@ class AchievementsController extends AppController
 		foreach ($completers as &$item)
 			$item['AchievementStatus']['user'] = $usersById[$item['AchievementStatus']['user_id']] ?? null;
 		unset($item);
-		$userCount = $this->User->find('count');
+		$userCount = $this->User->find('count', ['conditions' => ['deleted IS NULL']]);
 		$completionPercent = $userCount > 0 ? round($completerCount / $userCount * 100, 1) : 0;
 		$rarity = Achievement::getRarityLabel($completionPercent);
 
