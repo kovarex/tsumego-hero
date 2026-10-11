@@ -13,10 +13,9 @@ use Phinx\Migration\AbstractMigration;
  *
  * The achievements themselves are unlocked by the regular check on the user's next page load.
  *
- * Phinx runs the whole migration in one transaction, so the order matters for the live site:
- * the slow recount is a plain SELECT, which doesn't lock anything (an INSERT ... SELECT would lock
+ * The slow recount is a plain SELECT, which doesn't lock anything (an INSERT ... SELECT would lock
  * every row it reads and block solves until the end). Only the quick delete and inserts at the
- * end take locks, and those are held just until the commit right after them.
+ * end take locks, in their own short transaction.
  */
 final class RecountCompletedSets extends AbstractMigration
 {
@@ -53,6 +52,12 @@ final class RecountCompletedSets extends AbstractMigration
 			) completed
 			GROUP BY completed.user_id
 		");
+
+		// End the transaction of the long read and write in a fresh one. With innodb_snapshot_isolation
+		// (on by default since MariaDB 11.6), writing to rows that players changed during the read would
+		// fail with "Record has changed since last read". Phinx commits the new transaction at the end.
+		$this->getAdapter()->commitTransaction();
+		$this->getAdapter()->beginTransaction();
 
 		$this->execute("DELETE FROM achievement_condition WHERE category = 'set'");
 		$rows = array_map(fn($count) => [
