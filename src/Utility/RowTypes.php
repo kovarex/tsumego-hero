@@ -14,7 +14,7 @@ namespace App\Utility;
  * @phpstan-type AdminActivityTypeRow array{id?: int, name?: string|null, ...}
  * @phpstan-type AnswerRow array{id?: int, user_id?: int, comment_id?: int, message?: string, dismissed?: int, created?: string, ...}
  * @phpstan-type DayRecordRow array{id?: int, user_id?: int|null, date?: string|null, quote?: string|null, gems?: string, gemCounter1?: int, gemCounter2?: int, gemCounter3?: int, ...}
- * @phpstan-type ProgressDeletionRow array{id?: int, user_id?: int, set_id?: int, created?: string, ...}
+ * @phpstan-type ProgressDeletionRow array{id?: int, user_id?: int, set_id?: int, set_partition?: int|null, created?: string, ...}
  * @phpstan-type PublishDateRow array{id?: int, tsumego_id?: int|null, date?: string|null, ...}
  * @phpstan-type RejectRow array{id?: int, type?: string|null, text?: string|null, tsumego_id?: int, user_id?: int, created?: string, ...}
  * @phpstan-type ScheduleRow array{id?: int, date?: string, tsumego_id?: int|null, set_id?: int|null, published?: int, ...}

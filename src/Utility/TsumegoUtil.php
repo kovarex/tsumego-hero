@@ -81,20 +81,4 @@ class TsumegoUtil
 	{
 		return Rating::ratingToXP($tsumego['rating'], $multiplier);
 	}
-
-	/**
-	 * @param TsumegoRow $tsumego
-	 */
-	public static function getProgressDeletionCount(array $tsumego): int
-	{
-		$result = ClassRegistry::init('ProgressDeletion')->query('
-SELECT COUNT(*) AS deletions_count
-FROM (
-    SELECT DISTINCT progress_deletion.id
-    FROM progress_deletion
-    JOIN set_connection ON set_connection.set_id = progress_deletion.set_id
-    WHERE set_connection.tsumego_id = ' . $tsumego['id'] . ' AND progress_deletion.user_id=' . Auth::getUserID() . ' AND progress_deletion.created >= NOW() - INTERVAL 1 MONTH
-) AS unique_deletions');
-		return $result[0][0]['deletions_count'];
-	}
 }

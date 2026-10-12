@@ -1519,6 +1519,8 @@ use App\Utility\ViteManifest;
 			accountWidget.animate(solved);
 		let data = {
 			tsumego_id: tsumegoID,
+			// the part of the set the problem is played from decides the XP reduction of its resets
+			set_connection_id: <?php echo (int) $setConnection['SetConnection']['id']; ?>,
 			seconds: Math.max(elapsedSeconds() - bonusSeconds, timeToFirstClick || 0, 0.01),
 			solved: solved,
 		};

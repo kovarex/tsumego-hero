@@ -1040,19 +1040,8 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$scoring = true;
 		if (Auth::isLoggedIn() && $tsumegoFilters->query == 'topics')
 		{
-			$pd = $this->ProgressDeletion->find('all', [
-				'conditions' => [
-					'user_id' => Auth::getUserID(),
-					'set_id' => $id]]) ?: [];
-			$pdCounter = 0;
-			$pdCount = count($pd);
-			for ($i = 0; $i < $pdCount; $i++)
-			{
-				$date = date_create($pd[$i]['ProgressDeletion']['created']);
-				$pd[$i]['ProgressDeletion']['d'] = $date->format('Y') . '-' . $date->format('m');
-				if (date('Y-m') == $pd[$i]['ProgressDeletion']['d'])
-					$pdCounter++;
-			}
+			// the resets of this part of the set, the same count that reduces the XP of its problems
+			$pdCounter = ProgressDeletion::countRecent(Auth::getUserID(), (int) $id, $partition);
 			$urSecCounter = 0;
 			$urSecAvg = 0;
 			$pSsum = 0;
@@ -1189,6 +1178,12 @@ ORDER BY sc.num ASC", [(int) $id]);
 		}
 	}
 
+	// Rank and tag filters change which problems a part of a set has, which a reset can't allow.
+	public static function hasProblemFilters(TsumegoFilters $tsumegoFilters): bool
+	{
+		return !empty($tsumegoFilters->ranks) || !empty($tsumegoFilters->tagIDs);
+	}
+
 	#[HttpPost]
 	public function resetProgress(int $setID, int $partition): mixed
 	{
@@ -1203,12 +1198,20 @@ ORDER BY sc.num ASC", [(int) $id]);
 			return $this->redirect($redirectUrl);
 		}
 
+		// a reset clears one part of the set, the same for everybody (see ProgressDeletion::$PARTITION_SIZE)
 		$tsumegoFilters = new TsumegoFilters();
-		if ($tsumegoFilters->collectionSize != 200)
+		if ($tsumegoFilters->collectionSize != ProgressDeletion::$PARTITION_SIZE)
 		{
-			CookieFlash::set('Reset is only possible for collection size 200', 'error');
+			CookieFlash::set('Reset is only possible for collection size ' . ProgressDeletion::$PARTITION_SIZE, 'error');
 			return $this->redirect($redirectUrl);
 		}
+		if (self::hasProblemFilters($tsumegoFilters))
+		{
+			CookieFlash::set('Reset is only possible without rank and tag filters', 'error');
+			return $this->redirect($redirectUrl);
+		}
+		if ($partition < 1)
+			return $this->redirect($redirectUrl);
 		$tsumegoFilters->query = 'topics';
 		$tsumegoButtons = new TsumegoButtons($tsumegoFilters, null, $partition - 1, $setID);
 		$tsumegoIDToClear = [];
@@ -1224,6 +1227,7 @@ WHERE tsumego_status.user_id = ? AND tsumego_status.tsumego_id IN(" . implode(',
 		$progresDeletion = [];
 		$progresDeletion['user_id'] = Auth::getUserID();
 		$progresDeletion['set_id'] = $setID;
+		$progresDeletion['set_partition'] = $partition - 1;
 		ClassRegistry::init('ProgressDeletion')->create();
 		ClassRegistry::init('ProgressDeletion')->save($progresDeletion);
 		return $this->redirect($redirectUrl);

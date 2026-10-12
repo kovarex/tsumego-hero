@@ -19,7 +19,7 @@ class PlayResultProcessorComponent extends Component
 	 *
 	 * @return array Result with xp_gained, rating_change, new_rating, etc.
 	 */
-	public function processResult(int $tsumegoId, bool $solved, float $seconds, bool $timeout): array
+	public function processResult(int $tsumegoId, bool $solved, float $seconds, bool $timeout, ?int $setConnectionID = null): array
 	{
 		$seconds = max(0.01, $seconds);
 
@@ -58,7 +58,7 @@ class PlayResultProcessorComponent extends Component
 		$this->processRatingChange($tsumego, $result, $previousStatusValue);
 		if (!$result['solved'])
 			$result['potion_triggered'] = $this->processPotion();
-		$this->processXpChange($tsumego, $result, $previousStatusValue, $originalTsumegoRating);
+		$this->processXpChange($tsumego, $result, $previousStatusValue, $originalTsumegoRating, $setConnectionID);
 		$this->updateTsumegoAttempt($tsumego, $result, $previousStatusValue, $seconds);
 		$this->processErrorAchievement($result, $previousStatusValue, $tsumegoId);
 		$this->processUnsortedStuff($tsumego, $result, $previousStatusValue);
@@ -255,7 +255,7 @@ class PlayResultProcessorComponent extends Component
 		Auth::incrementUserField('damage', 1);
 	}
 
-	private function processXpChange(array $previousTsumego, array &$result, string $previousTsumegoStatus, int|float|string $originalTsumegoRating): void
+	private function processXpChange(array $previousTsumego, array &$result, string $previousTsumegoStatus, int|float|string $originalTsumegoRating, ?int $setConnectionID): void
 	{
 		if (!Auth::XPisGainedInCurrentMode())
 			return;
@@ -266,7 +266,8 @@ class PlayResultProcessorComponent extends Component
 
 		$multiplier = ($result['xp-modifier'] ?: 1);
 		if ($previousTsumegoStatus != TsumegoStatus::$GOLDEN)
-			$multiplier *= TsumegoXPAndRating::getProgressDeletionMultiplier(TsumegoUtil::getProgressDeletionCount($previousTsumego['Tsumego']));
+			$multiplier *= TsumegoXPAndRating::getProgressDeletionMultiplier(
+				ProgressDeletion::countRecentForProblem(Auth::getUserID(), (int) $previousTsumego['Tsumego']['id'], $setConnectionID));
 
 		$user = & Auth::getUser();
 		$result['xp-gained'] = Rating::ratingToXP($originalTsumegoRating, $multiplier);
