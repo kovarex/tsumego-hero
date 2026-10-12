@@ -3,6 +3,7 @@
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\HeroPowers;
+use App\Utility\PlayOutcome;
 use App\Utility\Rating;
 use App\Utility\TimeMode;
 use App\Utility\TimeModeUtil;
@@ -619,10 +620,10 @@ use App\Utility\ViteManifest;
 		lastY = -1;
 	var move = 0;
 	var branch = "";
-	var misplays = 0;
+	var hadMisplay = false;
 	var hoverLocked = false;
 	var tryAgainTomorrow = false;
-	var remainingHealth = <?php echo Auth::getRemainingHealth(); ?>;
+	var currentHealth = <?php echo Auth::getRemainingHealth(); ?>;
 	var maxHealth = <?php echo $maxHealth; ?>;
 	var fullHeart = '<?php echo $fullHeart; ?>';
 	var emptyHeart = '<?php echo $emptyHeart; ?>';
@@ -1332,7 +1333,6 @@ use App\Utility\ViteManifest;
 	{
 		if (!document.getElementById("heart0"))
 			return;
-		var currentHealth = remainingHealth - misplays;
 		for (var i = 0; i < maxHealth; i++)
 		{
 			var full = i < currentHealth;
@@ -1376,8 +1376,7 @@ use App\Utility\ViteManifest;
 				url: '/hero/rejuvenation',
 				type: 'POST',
 			success: function(response) {
-					misplays = 0;
-					remainingHealth = maxHealth;
+					currentHealth = maxHealth;
 					redrawHearts();
 					disableRejuvenation();
 					enableIntuition();
@@ -1511,21 +1510,27 @@ use App\Utility\ViteManifest;
 		bonusSeconds += <?php echo TimeModeUtil::$SECONDS_ADDED_PER_MOVE_PLAYED; ?> * multiplier;
 	}
 
-	function submitResult(solved, timeout)
+	// The outcome values come from the App\Utility\PlayOutcome enum
+	var playOutcome = {
+		solvedClean: '<?php echo PlayOutcome::SolvedClean->value; ?>',
+		solvedAfterMistake: '<?php echo PlayOutcome::SolvedAfterMistake->value; ?>',
+		failed: '<?php echo PlayOutcome::Failed->value; ?>',
+		timedOut: '<?php echo PlayOutcome::TimedOut->value; ?>',
+	};
+
+	function submitResult(outcome)
 	{
 		if (besogoNoLogin)
 			return;
 		if (typeof accountWidget !== 'undefined' && accountWidget)
-			accountWidget.animate(solved);
+			accountWidget.animate(outcome === playOutcome.solvedClean || outcome === playOutcome.solvedAfterMistake);
 		let data = {
 			tsumego_id: tsumegoID,
 			// the part of the set the problem is played from decides the XP reduction of its resets
 			set_connection_id: <?php echo (int) $setConnection['SetConnection']['id']; ?>,
 			seconds: Math.max(elapsedSeconds() - bonusSeconds, timeToFirstClick || 0, 0.01),
-			solved: solved,
+			outcome: outcome,
 		};
-		if (timeout)
-			data.timeout = true;
 
 		window._submitResultPromise = fetch('/tsumegos/result', {
 			method: 'POST',
@@ -1547,8 +1552,7 @@ use App\Utility\ViteManifest;
 			}
 			if (result.potion_triggered)
 			{
-				misplays = 0;
-				remainingHealth = maxHealth;
+				currentHealth = maxHealth;
 				redrawHearts();
 				$("#potionAlerts").fadeIn(500);
 			}
@@ -1575,7 +1579,7 @@ use App\Utility\ViteManifest;
 				window.dispatchEvent(new Event('tag-editor-solved'));
 				if (typeof xpStatus !== "undefined" && xpStatus)
 					xpStatus.set('solved', true);
-				submitResult(true);
+				submitResult(hadMisplay ? playOutcome.solvedAfterMistake : playOutcome.solvedClean);
 			}
 			updateCurrentNavigationButton('S');
 			document.getElementById("status").innerHTML = "<h2>Correct!</h2>";
@@ -1613,8 +1617,9 @@ use App\Utility\ViteManifest;
 			if (!failAlreadyReported && !problemSolved)
 			{
 				failAlreadyReported = true;
-				misplays++;
-				submitResult(false);
+				hadMisplay = true;
+				currentHealth--;
+				submitResult(playOutcome.failed);
 			}
 			// Don't lock board - let user keep trying
 			if (mode != 2)
@@ -1641,7 +1646,7 @@ use App\Utility\ViteManifest;
 					freePlayMode = true;
 					if (mode == 1)
 					{
-						if(remainingHealth - misplays < 0)
+						if (currentHealth < 0)
 						{
 							updateCurrentNavigationButton('F');
 							document.getElementById("status").innerHTML = '<b class="message--locked">This problem is locked until ' + heartResetTime + '</b>';
@@ -1716,9 +1721,10 @@ use App\Utility\ViteManifest;
 		freePlayMode = false;
 		if (heartLoss)
 		{
-			misplays++;
+			hadMisplay = true;
+			currentHealth--;
 			redrawHearts();
-			submitResult(false);
+			submitResult(playOutcome.failed);
 		}
 		failAlreadyReported = false;
 	}
