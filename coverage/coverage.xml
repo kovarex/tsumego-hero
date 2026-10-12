@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1791766436">
-  <project timestamp="1791766436">
+<coverage generated="1791799496">
+  <project timestamp="1791799496">
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Attribute/HttpDelete.php">
       <class name="App\Attribute\HttpDelete" namespace="global">
         <metrics complexity="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
@@ -1158,27 +1158,27 @@
       <line num="114" type="stmt" count="8"/>
       <line num="116" type="stmt" count="8"/>
       <line num="117" type="stmt" count="8"/>
-      <line num="118" type="stmt" count="3"/>
-      <line num="119" type="stmt" count="6"/>
-      <line num="120" type="stmt" count="2"/>
-      <line num="121" type="stmt" count="5"/>
-      <line num="122" type="stmt" count="5"/>
+      <line num="118" type="stmt" count="4"/>
+      <line num="119" type="stmt" count="5"/>
+      <line num="120" type="stmt" count="4"/>
+      <line num="121" type="stmt" count="2"/>
+      <line num="122" type="stmt" count="2"/>
       <line num="123" type="stmt" count="8"/>
       <line num="124" type="stmt" count="8"/>
       <line num="125" type="stmt" count="8"/>
-      <line num="126" type="stmt" count="1"/>
-      <line num="127" type="stmt" count="8"/>
-      <line num="128" type="stmt" count="6"/>
+      <line num="126" type="stmt" count="4"/>
+      <line num="127" type="stmt" count="5"/>
+      <line num="128" type="stmt" count="2"/>
       <line num="129" type="stmt" count="3"/>
       <line num="130" type="stmt" count="3"/>
       <line num="131" type="stmt" count="8"/>
       <line num="132" type="stmt" count="8"/>
       <line num="133" type="stmt" count="8"/>
-      <line num="134" type="stmt" count="4"/>
-      <line num="135" type="stmt" count="5"/>
+      <line num="134" type="stmt" count="5"/>
+      <line num="135" type="stmt" count="4"/>
       <line num="136" type="stmt" count="2"/>
-      <line num="137" type="stmt" count="4"/>
-      <line num="138" type="stmt" count="4"/>
+      <line num="137" type="stmt" count="3"/>
+      <line num="138" type="stmt" count="3"/>
       <line num="139" type="stmt" count="8"/>
       <line num="141" type="stmt" count="8"/>
       <line num="142" type="stmt" count="8"/>
@@ -6221,9 +6221,9 @@
     </file>
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Utility/Auth.php">
       <class name="App\Utility\Auth" namespace="global">
-        <metrics complexity="55" methods="24" coveredmethods="19" conditionals="0" coveredconditionals="0" statements="88" coveredstatements="83" elements="112" coveredelements="102"/>
+        <metrics complexity="55" methods="24" coveredmethods="20" conditionals="0" coveredconditionals="0" statements="88" coveredstatements="84" elements="112" coveredelements="104"/>
       </class>
-      <line num="14" type="method" name="init" visibility="public" complexity="10" crap="10.02" count="842"/>
+      <line num="14" type="method" name="init" visibility="public" complexity="10" crap="10" count="842"/>
       <line num="18" type="stmt" count="842"/>
       <line num="20" type="stmt" count="786"/>
       <line num="21" type="stmt" count="786"/>
@@ -6239,7 +6239,7 @@
       <line num="41" type="stmt" count="1"/>
       <line num="43" type="stmt" count="1"/>
       <line num="44" type="stmt" count="1"/>
-      <line num="47" type="stmt" count="0"/>
+      <line num="47" type="stmt" count="1"/>
       <line num="51" type="stmt" count="64"/>
       <line num="54" type="method" name="isLoggedIn" visibility="public" complexity="1" crap="1" count="761"/>
       <line num="56" type="stmt" count="761"/>
@@ -6335,7 +6335,7 @@
       <line num="239" type="stmt" count="1"/>
       <line num="240" type="stmt" count="0"/>
       <line num="241" type="stmt" count="2"/>
-      <metrics loc="248" ncloc="217" classes="1" methods="24" coveredmethods="19" conditionals="0" coveredconditionals="0" statements="88" coveredstatements="83" elements="112" coveredelements="102"/>
+      <metrics loc="248" ncloc="217" classes="1" methods="24" coveredmethods="20" conditionals="0" coveredconditionals="0" statements="88" coveredstatements="84" elements="112" coveredelements="104"/>
     </file>
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Utility/BoardBounds.php">
       <class name="App\Utility\BoardBounds" namespace="global">
@@ -6919,7 +6919,7 @@
     </file>
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Utility/JwtAuth.php">
       <class name="App\Utility\JwtAuth" namespace="global">
-        <metrics complexity="13" methods="7" coveredmethods="4" conditionals="0" coveredconditionals="0" statements="40" coveredstatements="37" elements="47" coveredelements="41"/>
+        <metrics complexity="13" methods="7" coveredmethods="5" conditionals="0" coveredconditionals="0" statements="40" coveredstatements="38" elements="47" coveredelements="43"/>
       </class>
       <line num="39" type="method" name="createToken" visibility="public" complexity="1" crap="1" count="9"/>
       <line num="41" type="stmt" count="9"/>
@@ -6934,9 +6934,9 @@
       <line num="63" type="stmt" count="4"/>
       <line num="65" type="stmt" count="3"/>
       <line num="67" type="stmt" count="3"/>
-      <line num="76" type="method" name="getUserIdFromCookie" visibility="public" complexity="4" crap="4.07" count="66"/>
+      <line num="76" type="method" name="getUserIdFromCookie" visibility="public" complexity="4" crap="4" count="66"/>
       <line num="78" type="stmt" count="66"/>
-      <line num="79" type="stmt" count="0"/>
+      <line num="79" type="stmt" count="1"/>
       <line num="81" type="stmt" count="66"/>
       <line num="82" type="stmt" count="65"/>
       <line num="84" type="stmt" count="2"/>
@@ -6955,10 +6955,10 @@
       <line num="106" type="stmt" count="4"/>
       <line num="107" type="stmt" count="4"/>
       <line num="108" type="stmt" count="4"/>
-      <line num="114" type="method" name="clearAuthCookie" visibility="public" complexity="1" crap="1" count="77"/>
-      <line num="116" type="stmt" count="77"/>
-      <line num="117" type="stmt" count="77"/>
-      <line num="118" type="stmt" count="77"/>
+      <line num="114" type="method" name="clearAuthCookie" visibility="public" complexity="1" crap="1" count="78"/>
+      <line num="116" type="stmt" count="78"/>
+      <line num="117" type="stmt" count="78"/>
+      <line num="118" type="stmt" count="78"/>
       <line num="124" type="method" name="clearCache" visibility="public" complexity="1" crap="2" count="0"/>
       <line num="126" type="stmt" count="0"/>
       <line num="132" type="method" name="getSecret" visibility="private" complexity="3" crap="3.04" count="10"/>
@@ -6968,7 +6968,7 @@
       <line num="140" type="stmt" count="10"/>
       <line num="141" type="stmt" count="0"/>
       <line num="143" type="stmt" count="10"/>
-      <metrics loc="146" ncloc="96" classes="1" methods="7" coveredmethods="4" conditionals="0" coveredconditionals="0" statements="40" coveredstatements="37" elements="47" coveredelements="41"/>
+      <metrics loc="146" ncloc="96" classes="1" methods="7" coveredmethods="5" conditionals="0" coveredconditionals="0" statements="40" coveredstatements="38" elements="47" coveredelements="43"/>
     </file>
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Utility/Level.php">
       <class name="App\Utility\Level" namespace="global">
@@ -9375,6 +9375,6 @@
       <line num="70" type="stmt" count="1"/>
       <metrics loc="73" ncloc="51" classes="1" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="30" coveredstatements="28" elements="31" coveredelements="28"/>
     </file>
-    <metrics files="132" loc="17277" ncloc="15165" classes="119" methods="675" coveredmethods="484" conditionals="0" coveredconditionals="0" statements="7907" coveredstatements="7237" elements="8582" coveredelements="7721"/>
+    <metrics files="132" loc="17277" ncloc="15165" classes="119" methods="675" coveredmethods="486" conditionals="0" coveredconditionals="0" statements="7907" coveredstatements="7239" elements="8582" coveredelements="7725"/>
   </project>
 </coverage>
