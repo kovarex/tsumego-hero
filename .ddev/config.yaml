@@ -32,6 +32,7 @@ hooks:
     - exec: corepack enable
     - exec: nohup bash /var/www/html/scripts/cron-daily.sh &
     - exec: pnpm install
+    - exec: bash /var/www/html/scripts/seed-test-accounts.sh || echo "Seed skipped (DB not ready)"
 
 # Key features of DDEV's config.yaml:
 
