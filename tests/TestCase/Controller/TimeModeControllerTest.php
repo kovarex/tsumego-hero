@@ -2,6 +2,7 @@
 
 use App\Utility\Auth;
 use App\Utility\Constants;
+use App\Utility\PlayOutcome;
 use App\Utility\TimeModeUtil;
 use App\Utility\Util;
 
@@ -141,7 +142,7 @@ class TimeModeControllerTest extends ControllerTestCase
 				'data' => [
 					'tsumego_id' => $context->tsumegos[0]['id'],
 					'seconds' => $reported['seconds'],
-					'solved' => true]]);
+					'outcome' => PlayOutcome::SolvedClean->value]]);
 
 			$attempt = ClassRegistry::init('TimeModeAttempt')->find('first', [
 				'conditions' => ['time_mode_session_id' => $context->timeModeSessions[0]['id']]]);
@@ -179,12 +180,12 @@ class TimeModeControllerTest extends ControllerTestCase
 			'data' => [
 				'tsumego_id' => $context->tsumegos[0]['id'],
 				'seconds' => 5,
-				'solved' => false]]);
+				'outcome' => PlayOutcome::Failed->value]]);
 
 		$errCondition = ClassRegistry::init('AchievementCondition')->find('first', [
 			'conditions' => ['user_id' => $context->user['id'], 'category' => 'err']]);
 		$this->assertSame(7, (int) $errCondition['AchievementCondition']['value'],
-			'A misplay in time mode should not break the no-error streak');
+			'Time mode does not move the streak');
 	}
 
 	public function testAProblemThatWasGivenUpOnStaysGivenUpOn()
@@ -210,7 +211,7 @@ class TimeModeControllerTest extends ControllerTestCase
 			'data' => [
 				'tsumego_id' => $context->tsumegos[0]['id'],
 				'seconds' => 5,
-				'solved' => true]]);
+				'outcome' => PlayOutcome::SolvedClean->value]]);
 
 		$attempt = ClassRegistry::init('TimeModeAttempt')->find('first', [
 			'conditions' => ['time_mode_session_id' => $context->timeModeSessions[0]['id'], 'order' => 1]]);
@@ -246,6 +247,43 @@ class TimeModeControllerTest extends ControllerTestCase
 			(int) $attempt['TimeModeAttempt']['time_mode_attempt_status_id']);
 		$this->assertSame(TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS, (int) $attempt['TimeModeAttempt']['seconds']);
 		$this->assertSame(0, (int) $attempt['TimeModeAttempt']['points']);
+	}
+
+	/**
+	 * Running out of time in time mode is recorded as a timeout with the full time
+	 * of the category.
+	 */
+	public function testTimeModeSubmittingATimeoutIsRecordedWithTheFullTime()
+	{
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$TIME_MODE],
+			'tsumego' => 1,
+			'time-mode-ranks' => ['5k'],
+			'time-mode-sessions' => [[
+				'category' => TimeModeUtil::$CATEGORY_SLOW_SPEED,
+				'rank' => '5k',
+				'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+				'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]]]]);
+
+		$this->testAction('/timeMode/play');
+
+		Auth::init();
+		$this->testAction('/tsumegos/result', [
+			'method' => 'POST',
+			'data' => [
+				'tsumego_id' => $context->tsumegos[0]['id'],
+				'seconds' => 5,
+				'outcome' => PlayOutcome::TimedOut->value]]);
+
+		$attempt = ClassRegistry::init('TimeModeAttempt')->find('first', [
+			'conditions' => ['time_mode_session_id' => $context->timeModeSessions[0]['id'], 'order' => 1]]);
+		$this->assertSame(
+			TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT,
+			(int) $attempt['TimeModeAttempt']['time_mode_attempt_status_id']);
+		$this->assertSame(
+			TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS,
+			(int) $attempt['TimeModeAttempt']['seconds'],
+			'Running out of time costs the full time of the category');
 	}
 
 	public function testTimeModeServesTheProblemAtTheRequestedPosition()

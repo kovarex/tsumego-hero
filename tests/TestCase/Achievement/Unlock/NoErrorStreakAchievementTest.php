@@ -64,7 +64,7 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 
 	/**
 	 * A problem solved only after a mistake in the same play is not an error-free
-	 * solve: the streak stays at 0 instead of counting this solve.
+	 * solve.
 	 */
 	public function testSolveAfterMisplayInTheSamePlayKeepsTheStreakAtZero()
 	{
@@ -75,14 +75,14 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 
 		$browser->get('/' . $context->setConnections[0]['id']);
 		$browser->playWithResult('F');
-		$browser->playWithResult('S'); // the same play, no reload in between
+		$browser->playWithResult('S'); // the same play
 
-		$this->assertSame(0, $this->noErrorStreak(), 'A solve that followed a misplay of the same play must not count');
+		$this->assertSame(0, $this->noErrorStreak(), 'A solve after a mistake in the same play does not extend the streak');
 	}
 
 	/**
-	 * A problem misplayed in an earlier play is solved cleanly today: the mistake
-	 * already broke the streak back then, so this solve extends the new run.
+	 * A problem misplayed in an earlier play still counts when it is solved
+	 * cleanly later.
 	 */
 	public function testSolvingAProblemMisplayedInAnEarlierPlayExtendsTheStreak()
 	{
@@ -97,14 +97,14 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 		$browser->get($link); // a new play of the same problem
 		$browser->playWithResult('S');
 
-		$this->assertSame(1, $this->noErrorStreak(), 'The clean solve should start a new run');
+		$this->assertSame(1, $this->noErrorStreak(), 'A clean solve extends the streak');
 	}
 
 	/**
-	 * A rejuvenation restores hearts, not the mistake: a solve that follows one in
-	 * the same play is still not an error-free solve.
+	 * A rejuvenation restores hearts only: a solve that follows a mistake in the
+	 * same play is not an error-free solve.
 	 */
-	public function testRejuvenationDoesNotUndoTheMisplayForTheStreak()
+	public function testRejuvenationKeepsTheMisplayForTheStreak()
 	{
 		$browser = Browser::instance();
 		$context = new ContextPreparator([
@@ -121,7 +121,7 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 		});
 		$browser->playWithResult('S');
 
-		$this->assertSame(0, $this->noErrorStreak(), 'A healed misplay is still a misplay');
+		$this->assertSame(0, $this->noErrorStreak(), 'A rejuvenated play still counts as a play with a mistake');
 	}
 
 	public function testNoErrorStreakDoesntGetAffectedOnSolvedTsumego()

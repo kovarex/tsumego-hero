@@ -2,6 +2,7 @@
 
 use App\Utility\Auth;
 use App\Utility\CookieFlash;
+use App\Utility\PlayOutcome;
 use App\Utility\TsumegoUtil;
 use App\Utility\TsumegoXPAndRating;
 
@@ -39,12 +40,7 @@ class ProgressDeletionTest extends TestCaseWithAuth
 
 	private function solve(int $tsumegoID, int $setConnectionID): array
 	{
-		$this->testAction('/tsumegos/result', ['method' => 'POST', 'data' => [
-			'tsumego_id' => $tsumegoID,
-			'seconds' => 1,
-			'solved' => true,
-			'set_connection_id' => $setConnectionID]]);
-		return json_decode($this->controller->response->body(), true);
+		return $this->postOutcome($tsumegoID, $setConnectionID, PlayOutcome::SolvedClean);
 	}
 
 	private function resetPart(int $setID, int $part): void
@@ -120,12 +116,12 @@ class ProgressDeletionTest extends TestCaseWithAuth
 		$this->assertSame(TsumegoUtil::getXpValue($tsumego, TsumegoXPAndRating::getProgressDeletionMultiplier(2)), (int) $response['xp_gained']);
 	}
 
-	private function result(int $tsumegoID, int $setConnectionID, bool $solved): array
+	private function postOutcome(int $tsumegoID, int $setConnectionID, PlayOutcome $outcome): array
 	{
 		$this->testAction('/tsumegos/result', ['method' => 'POST', 'data' => [
 			'tsumego_id' => $tsumegoID,
 			'seconds' => 1,
-			'solved' => $solved,
+			'outcome' => $outcome->value,
 			'set_connection_id' => $setConnectionID]]);
 		return json_decode($this->controller->response->body(), true);
 	}
@@ -139,7 +135,7 @@ class ProgressDeletionTest extends TestCaseWithAuth
 
 	public function testRatingsDontChangeOnProblemOfRecentlyResetPart(): void
 	{
-		foreach ([true, false] as $solved)
+		foreach ([PlayOutcome::SolvedClean, PlayOutcome::Failed] as $outcome)
 		{
 			$context = new ContextPreparator([
 				'user' => ['rating' => 1000],
@@ -147,9 +143,9 @@ class ProgressDeletionTest extends TestCaseWithAuth
 				'progress-deletions' => [['set' => 'set A', 'partition' => 0, 'created' => self::now()]]]);
 			$ratingsBefore = $this->ratingsOf($context);
 
-			$response = $this->result($context->tsumegos[0]['id'], $context->tsumegos[0]['set-connections'][0]['id'], $solved);
-			$this->assertSame($ratingsBefore, $this->ratingsOf($context), $solved ? 'solve' : 'misplay');
-			if ($solved)
+			$response = $this->postOutcome($context->tsumegos[0]['id'], $context->tsumegos[0]['set-connections'][0]['id'], $outcome);
+			$this->assertSame($ratingsBefore, $this->ratingsOf($context), $outcome->value);
+			if ($outcome === PlayOutcome::SolvedClean)
 				$this->assertSame(TsumegoUtil::getXpValue($context->tsumegos[0], TsumegoXPAndRating::getProgressDeletionMultiplier(1)), (int) $response['xp_gained'], 'XP is still gained, reduced');
 		}
 	}
@@ -164,7 +160,7 @@ class ProgressDeletionTest extends TestCaseWithAuth
 				['set' => 'set B', 'partition' => 1, 'created' => self::now()]]]);
 		$ratingsBefore = $this->ratingsOf($context);
 
-		$this->result($context->tsumegos[0]['id'], $context->tsumegos[0]['set-connections'][1]['id'], true);
+		$this->solve($context->tsumegos[0]['id'], $context->tsumegos[0]['set-connections'][1]['id']);
 		$ratingsAfter = $this->ratingsOf($context);
 		$this->assertGreaterThan($ratingsBefore['user'], $ratingsAfter['user']);
 		$this->assertLessThan($ratingsBefore['tsumego'], $ratingsAfter['tsumego']);

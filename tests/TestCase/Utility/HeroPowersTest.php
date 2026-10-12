@@ -390,7 +390,7 @@ class HeroPowersTest extends TestCaseWithAuth
 
 		$browser->driver->executeScript("displayResult('F')");
 		$browser->driver->wait(10, 200)->until(function ($driver) {
-			return $driver->executeScript('return window.misplays > 0;');
+			return $driver->executeScript('return window.hadMisplay;');
 		});
 		$lastHeartSrc = $browser->driver->findElement(WebDriverBy::id('heart' . ($maxHealth - 1)))->getAttribute('src');
 		$this->assertStringContainsString('heart2small', $lastHeartSrc, "last heart should be lost after failing post-rejuvenation");

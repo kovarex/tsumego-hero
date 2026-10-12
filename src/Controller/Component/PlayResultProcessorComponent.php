@@ -5,6 +5,7 @@ use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\HeroPowers;
 use App\Utility\Level;
+use App\Utility\PlayOutcome;
 use App\Utility\Rating;
 use App\Utility\SetCompletionCounter;
 use App\Utility\TimeMode;
@@ -17,13 +18,18 @@ class PlayResultProcessorComponent extends Component
 	/**
 	 * Process a play result submitted via AJAX. Takes explicit values, no cookies.
 	 *
-	 * @return array Result with xp_gained, rating_change, new_rating, etc.
+	 * @param float $seconds Time spent on the problem, in seconds.
+	 * @param int|null $setConnectionID Part of the set the problem is played from; null means
+	 *   the display set connection is deduced instead.
+	 * @return array Result with xp_gained, new_rating, new_xp, new_level, new_damage, status,
+	 *   potion_triggered and achievement_updates.
 	 */
-	public function processResult(int $tsumegoId, bool $solved, float $seconds, bool $timeout, int $misplays, ?int $setConnectionID = null): array
+	public function processResult(int $tsumegoID, PlayOutcome $outcome, float $seconds, ?int $setConnectionID = null): array
 	{
 		$seconds = max(0.01, $seconds);
+		$solved = $outcome === PlayOutcome::SolvedClean || $outcome === PlayOutcome::SolvedAfterMistake;
 
-		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoId);
+		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID);
 		if (!$tsumego)
 			return ['error' => 'Tsumego not found'];
 
@@ -31,7 +37,7 @@ class PlayResultProcessorComponent extends Component
 		{
 			$timeMode = new TimeMode();
 			$playResult = ['solved' => $solved];
-			$timeMode->processPlayResult($tsumego, $playResult, $seconds, $timeout);
+			$timeMode->processPlayResult($tsumego, $playResult, $seconds, $outcome === PlayOutcome::TimedOut);
 		}
 
 		$result = [];
@@ -39,7 +45,7 @@ class PlayResultProcessorComponent extends Component
 
 		$tsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', [
 			'conditions' => [
-				'tsumego_id' => $tsumegoId,
+				'tsumego_id' => $tsumegoID,
 				'user_id' => (int) Auth::getUserID(),
 			],
 		]);
@@ -48,7 +54,7 @@ class PlayResultProcessorComponent extends Component
 		$this->processDamage($result, $previousStatusValue);
 		$newStatus = $this->updateTsumegoStatus($tsumego, $result, $tsumegoStatus);
 		if (TsumegoUtil::isSolvedStatus($newStatus) && !TsumegoUtil::isSolvedStatus($previousStatusValue))
-			SetCompletionCounter::updateAfterSolve((int) Auth::getUserID(), $tsumegoId);
+			SetCompletionCounter::updateAfterSolve((int) Auth::getUserID(), $tsumegoID);
 
 		if (HeroPowers::getSprintRemainingSeconds() > 0)
 			$result['xp-modifier'] = ($result['xp-modifier'] ?: 1) * Constants::$SPRINT_MULTIPLIER;
@@ -56,14 +62,14 @@ class PlayResultProcessorComponent extends Component
 		$originalTsumegoRating = $tsumego['Tsumego']['rating'];
 
 		// the resets of the part of the set the problem is played from, in the last month
-		$progressDeletionCount = ProgressDeletion::countRecentForProblem(Auth::getUserID(), $tsumegoId, $setConnectionID);
+		$progressDeletionCount = ProgressDeletion::countRecentForProblem(Auth::getUserID(), $tsumegoID, $setConnectionID);
 
 		$this->processRatingChange($tsumego, $result, $previousStatusValue, $progressDeletionCount);
 		if (!$result['solved'])
 			$result['potion_triggered'] = $this->processPotion();
 		$this->processXpChange($tsumego, $result, $previousStatusValue, $originalTsumegoRating, $progressDeletionCount);
 		$this->updateTsumegoAttempt($tsumego, $result, $previousStatusValue, $seconds);
-		$this->processErrorAchievement($result, $previousStatusValue, $misplays);
+		$this->processErrorAchievement($result, $previousStatusValue, $outcome);
 		$this->processUnsortedStuff($tsumego, $result, $previousStatusValue);
 
 		// Check solve-dependent achievements right away (not only on the next page
@@ -288,7 +294,7 @@ class PlayResultProcessorComponent extends Component
 		]);
 	}
 
-	private function processErrorAchievement(array $result, string $previousTsumegoStatus, int $misplays): void
+	private function processErrorAchievement(array $result, string $previousTsumegoStatus, PlayOutcome $outcome): void
 	{
 		if (!Auth::XPisGainedInCurrentMode())
 			return;
@@ -306,11 +312,10 @@ class PlayResultProcessorComponent extends Component
 			$achievementCondition['AchievementCondition']['user_id'] = Auth::getUserID();
 			ClassRegistry::init('AchievementCondition')->create();
 		}
-		// The streak counts the problems solved since the last error: only a solve that had
-		// no misplay of its own extends it, anything else (a misplay, or a solve that came
-		// after one) starts it over.
+		// The streak counts the problems solved since the last error: only a clean solve
+		// extends it, anything else resets it.
 		$streak = (int) ($achievementCondition['AchievementCondition']['value'] ?? 0);
-		$cleanSolve = $result['solved'] && $misplays === 0;
+		$cleanSolve = $outcome === PlayOutcome::SolvedClean;
 		$achievementCondition['AchievementCondition']['value'] = $cleanSolve ? $streak + 1 : 0;
 		ClassRegistry::init('AchievementCondition')->save($achievementCondition);
 	}

@@ -396,7 +396,7 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 
 		$this->assertStringContainsString('Incorrect', $browser->driver->findElement(WebDriverBy::id('status'))->getText());
 		$this->assertTrue($browser->driver->executeScript('return window.failAlreadyReported;'));
-		$this->assertSame(1, $browser->driver->executeScript('return window.misplays;'));
+		$this->assertTrue($browser->driver->executeScript('return window.hadMisplay;'));
 		$this->assertSame(1, $context->reloadUser()['damage']);
 	}
 
@@ -493,8 +493,8 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 		$browser->playWithResult('F');
 
 		// Potion should trigger: hearts restored, alert visible, but the mistake stays
-		$this->assertSame(1, $browser->driver->executeScript('return window.misplays;'),
-			'Potion should not undo the misplay');
+		$this->assertTrue($browser->driver->executeScript('return window.hadMisplay;'),
+			'The potion refills the hearts and keeps the mistake');
 		$this->assertSame($maxHealth, $browser->driver->executeScript('return window.currentHealth;'),
 			'Potion should refill the hearts');
 		$this->assertTrue($browser->driver->executeScript(
@@ -996,9 +996,9 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 	 * A time mode session the player is on the first problem of, with a result on it when a
 	 * status is given, so the player is on the problem that has not been recorded yet.
 	 */
-	private function startTimeMode(Browser $browser, ?int $firstAttemptStatus = null, int $problemCount = 2): ContextPreparator
+	private function startTimeMode(Browser $browser, ?int $firstAttemptStatus = null, int $problemCount = 2, array $firstAttemptFields = []): ContextPreparator
 	{
-		$attempts = [['order' => 1, 'status' => $firstAttemptStatus ?? TimeModeUtil::$ATTEMPT_RESULT_QUEUED]];
+		$attempts = [array_merge(['order' => 1, 'status' => $firstAttemptStatus ?? TimeModeUtil::$ATTEMPT_RESULT_QUEUED], $firstAttemptFields)];
 		for ($order = 2; $order <= $problemCount; $order++)
 			$attempts[] = ['order' => $order, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:' . ($order - 1)];
 
@@ -1014,6 +1014,28 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 		$browser->get('/timeMode/play');
 		$this->waitForBoard($browser);
 		return $context;
+	}
+
+	/**
+	 * The page submits a timeout when its clock runs out.
+	 */
+	public function testTimeModeTimerSubmitsATimeoutWhenTheClockRunsOut(): void
+	{
+		$browser = Browser::instance();
+		$blitzSeconds = (int) ClassRegistry::init('TimeModeCategory')->findById(TimeModeUtil::$CATEGORY_BLITZ)['TimeModeCategory']['seconds'];
+		// the attempt has been running for all but the last seconds of Blitz
+		$context = $this->startTimeMode($browser, null, 2, ['started-seconds-ago' => $blitzSeconds - 3]);
+
+		// watch the request the page makes when its clock runs out
+		$browser->driver->executeScript('window._sent = []; var orig = window.fetch; window.fetch = function (url) { if (String(url).indexOf("/tsumegos/result") !== -1) window._sent.push(JSON.parse(arguments[1].body)); return orig.apply(window, arguments); };');
+		$browser->waitUntilJs('window._sent.length > 0');
+
+		$this->assertSame('timed_out', $browser->driver->executeScript('return window._sent[0].outcome;'));
+		$this->assertSame("Time's up!", trim($browser->driver->findElement(WebDriverBy::id('status'))->getText()));
+		$this->assertSame(
+			TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT,
+			(int) ClassRegistry::init('TimeModeAttempt')->find('first', [
+				'conditions' => ['time_mode_session_id' => $context->timeModeSessions[0]['id'], 'order' => 1]])['TimeModeAttempt']['time_mode_attempt_status_id']);
 	}
 
 	public function testTimeModeCountsTheProblemBeingSolvedWhileTheSolveIsStillOnItsWay(): void

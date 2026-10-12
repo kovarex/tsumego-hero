@@ -6,6 +6,7 @@ use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\CookieFlash;
+use App\Utility\PlayOutcome;
 use App\Utility\Rating;
 use App\Utility\RatingParseException;
 use App\Utility\SimilarSearchLogic;
@@ -31,13 +32,15 @@ class TsumegosController extends AppController
 		if (!$data || empty($data['tsumego_id']))
 			throw new BadRequestException('Missing tsumego_id');
 
+		$outcome = PlayOutcome::tryFrom((string) ($data['outcome'] ?? ''));
+		if (!$outcome)
+			throw new BadRequestException('Unknown play outcome');
+
 		$result = $this->PlayResultProcessor->processResult(
-			(int) $data['tsumego_id'],
-			!empty($data['solved']),
-			(float) ($data['seconds'] ?? 0),
-			!empty($data['timeout']),
-			(int) ($data['misplays'] ?? 0),
-			isset($data['set_connection_id']) ? (int) $data['set_connection_id'] : null
+			tsumegoID: (int) $data['tsumego_id'],
+			outcome: $outcome,
+			seconds: (float) ($data['seconds'] ?? 0),
+			setConnectionID: isset($data['set_connection_id']) ? (int) $data['set_connection_id'] : null
 		);
 
 		// Keep the response as pure data; the client renders the popup from the

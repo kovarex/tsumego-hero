@@ -4,6 +4,7 @@ use App\Utility\AchievementChecker;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\HeroPowers;
+use App\Utility\PlayOutcome;
 use App\Utility\Rating;
 use App\Utility\SetCompletionCounter;
 use App\Utility\TsumegoUtil;
@@ -28,31 +29,28 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		return json_decode($this->controller->response->body(), true) ?? [];
 	}
 
-	private function solve(ContextPreparator &$context, int $misplays = 0): array
+	private function postOutcome(ContextPreparator &$context, PlayOutcome $outcome): array
 	{
 		return $this->postResult($context, [
 			'tsumego_id' => $context->tsumegos[0]['id'],
 			'seconds' => 0,
-			'solved' => true,
-			'misplays' => $misplays,
+			'outcome' => $outcome->value,
 		]);
+	}
+
+	private function solve(ContextPreparator &$context): array
+	{
+		return $this->postOutcome($context, PlayOutcome::SolvedClean);
+	}
+
+	private function solveAfterMistake(ContextPreparator &$context): array
+	{
+		return $this->postOutcome($context, PlayOutcome::SolvedAfterMistake);
 	}
 
 	private function failResult(ContextPreparator &$context): array
 	{
-		return $this->postResult($context, [
-			'tsumego_id' => $context->tsumegos[0]['id'],
-			'seconds' => 0,
-			'solved' => false,
-		]);
-	}
-
-	private function solveWithMisplays(ContextPreparator &$context, int $misplays = 1): array
-	{
-		// Each misplay is its own fail call before the final solve
-		for ($i = 0; $i < $misplays; $i++)
-			$this->failResult($context);
-		return $this->solve($context, $misplays);
+		return $this->postOutcome($context, PlayOutcome::Failed);
 	}
 
 	private function statusOf(ContextPreparator $context): string
@@ -258,7 +256,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$params = [
 			'tsumego_id' => $context->tsumegos[0]['id'],
 			'seconds' => 0,
-			'solved' => true,
+			'outcome' => PlayOutcome::SolvedClean->value,
 		];
 		$this->postResult($context, $params);
 		$this->postResult($context, $params);
@@ -401,7 +399,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		// Fail is processed immediately via AJAX
 		$this->assertLessThan($originalRating, (float) $context->reloadUser()['rating']);
 
-		$this->solve($context, 1);
+		$this->solveAfterMistake($context);
 
 		// player has 500 more rating than the problem, so loss + win should lose rating
 		$this->assertLessThan($originalRating, (float) $context->reloadUser()['rating']);
@@ -422,7 +420,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 		$this->failResult($context);
 		$this->failResult($context);
-		$this->solve($context, 2);
+		$this->solveAfterMistake($context);
 
 		$expectedRatingChangeForOneLoss = Rating::calculateRatingChange(1000, 1000, 0, Constants::$PLAYER_RATING_CALCULATION_MODIFIER);
 		$ratingChange = (float) $context->reloadUser()['rating'] - $originalRating;
@@ -440,7 +438,8 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 			'achievement-conditions' => [['category' => 'err', 'value' => 9]],  // One away from NO_ERROR_STREAK_I
 		]);
 
-		$this->solveWithMisplays($context);
+		$this->failResult($context);
+		$this->solveAfterMistake($context);
 
 		// The err counter should be reset to 0, not incremented to 10
 		$errCondition = ClassRegistry::init('AchievementCondition')->find('first', [
@@ -468,34 +467,27 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 	}
 
 	/**
-	 * The streak counts the problems solved since the last error, so a problem that was
-	 * misplayed in an earlier session counts once the player finally solves it.
+	 * The streak counts the problems solved since the last error, so a problem
+	 * misplayed in an earlier play counts once the player solves it cleanly.
 	 */
-	public function testSolvingAProblemMisplayedEarlierCountsTowardsTheNoErrorStreak(): void
+	public function testStreakCountsASolveOfAProblemMisplayedInAnEarlierPlay(): void
 	{
 		$context = new ContextPreparator([
 			'tsumego' => 1,
 			'achievement-conditions' => [['category' => 'err', 'value' => 0]],
 		]);
 
-		// An earlier session on this problem ended in a misplay (which broke the streak then)
+		// An earlier play of this problem ended in a mistake, which broke the streak then
 		$this->failResult($context);
 
-		// ... and the player solved 40 problems without an error since
-		$errCondition = ClassRegistry::init('AchievementCondition')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'category' => 'err'],
-		]);
-		$errCondition['AchievementCondition']['value'] = 40;
-		ClassRegistry::init('AchievementCondition')->save($errCondition);
-
-		// Finally solving that problem is a clean solve of this play
+		// Solving it in a later play is a clean solve
 		$this->solve($context);
 
 		$errCondition = ClassRegistry::init('AchievementCondition')->find('first', [
 			'conditions' => ['user_id' => $context->user['id'], 'category' => 'err'],
 		]);
-		$this->assertSame(41, (int) $errCondition['AchievementCondition']['value'],
-			'A clean solve should extend the streak even when the problem was misplayed earlier');
+		$this->assertSame(1, (int) $errCondition['AchievementCondition']['value'],
+			'A clean solve extends the streak');
 	}
 
 	public function testMisplayOnAlreadySolvedProblemIsHarmless(): void
@@ -654,7 +646,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 			$this->postResult($context, [
 				'tsumego_id' => $tsumego['id'],
 				'seconds' => 0,
-				'solved' => true,
+				'outcome' => PlayOutcome::SolvedClean->value,
 			]);
 		$this->assertSame(2, $this->sprintConditionValue($context));
 	}
@@ -756,7 +748,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$body = $this->postResult($context, [
 			'tsumego_id' => $context->tsumegos[0]['id'],
 			'seconds' => 0,
-			'solved' => true,
+			'outcome' => PlayOutcome::SolvedClean->value,
 		]);
 		$this->assertNotEmpty($body['achievement_updates'] ?? [], 'Response should include newly unlocked achievements');
 		$unlocked = array_column($body['achievement_updates'], 'id');
