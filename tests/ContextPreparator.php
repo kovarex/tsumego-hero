@@ -823,7 +823,8 @@ class ContextPreparator
 			AdminActivityType::REJECT_PROPOSAL => 'Reject Proposal',
 			AdminActivityType::TSUMEGO_MERGE => 'Tsumego Merge',
 			AdminActivityType::DELETE_USER => 'Delete User',
-			AdminActivityType::RESTORE_USER => 'Restore User'];
+			AdminActivityType::RESTORE_USER => 'Restore User',
+			AdminActivityType::DISPLAY_NAME_CHANGE => 'Display Name Change'];
 
 		$adminActivityType = ClassRegistry::init('AdminActivityType');
 

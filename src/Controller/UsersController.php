@@ -617,6 +617,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		// Update display_name (including forum sync)
 		User::updateDisplayName($userId, $newDisplayName);
 
+		AdminActivityLogger::log(AdminActivityType::DISPLAY_NAME_CHANGE, null, null, $user['User']['display_name'], $newDisplayName, $userId);
+
 		// Clear the forced flag and update the session
 		Auth::saveUserField('display_name', $newDisplayName);
 		Auth::saveUserField('needs_display_name_change', false);

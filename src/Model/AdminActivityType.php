@@ -54,4 +54,7 @@ class AdminActivityType extends AppModel
 	// Delete user
 	public const DELETE_USER = 26;
 	public const RESTORE_USER = 31;
+
+	// Display name
+	public const DISPLAY_NAME_CHANGE = 32;
 }

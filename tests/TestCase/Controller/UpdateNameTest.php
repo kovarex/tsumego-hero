@@ -207,4 +207,60 @@ class UpdateNameTest extends ControllerTestCase
 		$result = $this->testAction('/users/changename', ['method' => 'get', 'return' => 'view']);
 		$this->assertStringContainsString('Choose your display name', $result);
 	}
+
+	/**
+	 * Test that a forced rename is recorded in the activity trail.
+	 */
+	public function testRenamingIsRecordedInTheActivityTrail(): void
+	{
+		$context = new ContextPreparator([
+			'user' => [
+				'display_name' => 'Name From Migration',
+				'email' => 'renamed@example.com',
+				'needs_display_name_change' => true,
+			],
+		]);
+
+		$this->testAction('/users/updatename', [
+			'method' => 'post',
+			'data' => ['User' => ['display_name' => 'My Chosen Name']],
+			'return' => 'result',
+		]);
+
+		$activities = ClassRegistry::init('AdminActivity')->find('all');
+		$this->assertCount(1, $activities);
+		$this->assertEquals(AdminActivityType::DISPLAY_NAME_CHANGE, $activities[0]['AdminActivity']['type']);
+		$this->assertEquals('Name From Migration', $activities[0]['AdminActivity']['old_value']);
+		$this->assertEquals('My Chosen Name', $activities[0]['AdminActivity']['new_value']);
+		$this->assertEquals($context->user['id'], $activities[0]['AdminActivity']['user_id']);
+	}
+
+	/**
+	 * Test that a rejected rename is not recorded in the activity trail.
+	 */
+	public function testRejectedRenameIsNotRecorded(): void
+	{
+		new ContextPreparator([
+			'user' => [
+				'display_name' => 'My Name',
+				'email' => 'rejectedrename@example.com',
+				'needs_display_name_change' => true,
+			],
+			'other-users' => [
+				[
+					'name' => 'OtherUser',
+					'display_name' => 'Taken Name',
+					'email' => 'takenname@example.com',
+				],
+			],
+		]);
+
+		$this->testAction('/users/updatename', [
+			'method' => 'post',
+			'data' => ['User' => ['display_name' => 'Taken Name']],
+			'return' => 'result',
+		]);
+
+		$this->assertCount(0, ClassRegistry::init('AdminActivity')->find('all'));
+	}
 }
