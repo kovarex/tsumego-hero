@@ -120,6 +120,66 @@ class ProgressDeletionTest extends TestCaseWithAuth
 		$this->assertSame(TsumegoUtil::getXpValue($tsumego, TsumegoXPAndRating::getProgressDeletionMultiplier(2)), (int) $response['xp_gained']);
 	}
 
+	private function result(int $tsumegoID, int $setConnectionID, bool $solved): array
+	{
+		$this->testAction('/tsumegos/result', ['method' => 'POST', 'data' => [
+			'tsumego_id' => $tsumegoID,
+			'seconds' => 1,
+			'solved' => $solved,
+			'set_connection_id' => $setConnectionID]]);
+		return json_decode($this->controller->response->body(), true);
+	}
+
+	private function ratingsOf(ContextPreparator $context): array
+	{
+		return [
+			'user' => (float) ClassRegistry::init('User')->findById($context->user['id'])['User']['rating'],
+			'tsumego' => (float) ClassRegistry::init('Tsumego')->findById($context->tsumegos[0]['id'])['Tsumego']['rating']];
+	}
+
+	public function testRatingsDontChangeOnProblemOfRecentlyResetPart(): void
+	{
+		foreach ([true, false] as $solved)
+		{
+			$context = new ContextPreparator([
+				'user' => ['rating' => 1000],
+				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set A', 'num' => 1]]],
+				'progress-deletions' => [['set' => 'set A', 'partition' => 0, 'created' => self::now()]]]);
+			$ratingsBefore = $this->ratingsOf($context);
+
+			$response = $this->result($context->tsumegos[0]['id'], $context->tsumegos[0]['set-connections'][0]['id'], $solved);
+			$this->assertSame($ratingsBefore, $this->ratingsOf($context), $solved ? 'solve' : 'misplay');
+			if ($solved)
+				$this->assertSame(TsumegoUtil::getXpValue($context->tsumegos[0], TsumegoXPAndRating::getProgressDeletionMultiplier(1)), (int) $response['xp_gained'], 'XP is still gained, reduced');
+		}
+	}
+
+	public function testRatingsChangeWhenPlayedFromPartThatWasntReset(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['rating' => 1000],
+			'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set A', 'num' => 1], ['name' => 'set B', 'num' => 1]]],
+			'progress-deletions' => [
+				['set' => 'set A', 'partition' => 0, 'created' => self::now()],
+				['set' => 'set B', 'partition' => 1, 'created' => self::now()]]]);
+		$ratingsBefore = $this->ratingsOf($context);
+
+		$this->result($context->tsumegos[0]['id'], $context->tsumegos[0]['set-connections'][1]['id'], true);
+		$ratingsAfter = $this->ratingsOf($context);
+		$this->assertGreaterThan($ratingsBefore['user'], $ratingsAfter['user']);
+		$this->assertLessThan($ratingsBefore['tsumego'], $ratingsAfter['tsumego']);
+	}
+
+	public function testPlayPageShowsRatingUnaffectedAfterReset(): void
+	{
+		$context = new ContextPreparator([
+			'tsumego' => ['sets' => [['name' => 'set A', 'num' => 1]]],
+			'progress-deletions' => [['set' => 'set A', 'partition' => 0, 'created' => self::now()]]]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$this->assertTextContains('unaffected (reset)', $browser->driver->findElement(Facebook\WebDriver\WebDriverBy::cssSelector('#xpDisplay'))->getText());
+	}
+
 	public function testXpShownOnThePlayPageCountsTheResetsOfThePart(): void
 	{
 		$context = new ContextPreparator([
