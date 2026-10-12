@@ -2,6 +2,8 @@
 
 namespace App\Utility;
 
+use ProgressDeletion;
+
 /**
  * @phpstan-import-type TsumegoRow from \App\Utility\RowTypes
  */
@@ -10,7 +12,7 @@ class TsumegoXPAndRating
 	/**
 	 * @param TsumegoRow $tsumego
 	 */
-	public function __construct(array $tsumego, string $status)
+	public function __construct(array $tsumego, string $status, ?int $setConnectionID = null)
 	{
 		if ($status == 'G')
 			$this->goldenTsumego = true;
@@ -19,7 +21,8 @@ class TsumegoXPAndRating
 		elseif ($status == 'W')
 			$this->resolving = true;
 		$this->tsumegoRating = $tsumego['rating'];
-		$this->progressDeletionCount = TsumegoUtil::getProgressDeletionCount($tsumego);
+		// the resets of the part of the set the problem is played from
+		$this->progressDeletionCount = Auth::isLoggedIn() ? ProgressDeletion::countRecentForProblem(Auth::getUserID(), (int) $tsumego['id'], $setConnectionID) : 0;
 	}
 
 	public function render(): void

@@ -439,7 +439,7 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		($this->setFunction)('tsumegoFilters', $tsumegoFilters);
 		($this->setFunction)('queryTitle', $queryTitle);
 		($this->setFunction)('amountOfOtherCollection', $amountOfOtherCollection);
-		($this->setFunction)('tsumegoXPAndRating', new TsumegoXPAndRating($t['Tsumego'], $tsumegoStatus));
+		($this->setFunction)('tsumegoXPAndRating', new TsumegoXPAndRating($t['Tsumego'], $tsumegoStatus, (int) $currentSetConnection['SetConnection']['id']));
 
 		return null;
 	}
