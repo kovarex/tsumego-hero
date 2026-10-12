@@ -79,6 +79,18 @@ class XPStatus
 
 	updateRatingPart()
 	{
+		// after a reset of its part in the last month the problem is known, so the rating doesn't change
+		if (this.progressDeletionCount > 0)
+		{
+			this.ratingHeader.textContent = 'Rating: ';
+			this.ratingGainShort.textContent = 'unaffected (reset)';
+			this.ratingGainLong.textContent = 'Problems of a part you reset in the last month don\'t change your rating.';
+			this.ratingSeparator.textContent = '';
+			this.ratingLossShort.textContent = '';
+			this.ratingLossLong.textContent = '';
+			return;
+		}
+
 		let ratingGain = calculateRatingChange(this.userRating, this.tsumegoRating, 1, playerRatingCalculationModifier);
 		this.ratingGainShort.textContent = '+' + showRatingShort(ratingGain);
 		this.ratingGainLong.textContent = '+' + showRatingLong(ratingGain);

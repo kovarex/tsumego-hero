@@ -55,10 +55,13 @@ class PlayResultProcessorComponent extends Component
 
 		$originalTsumegoRating = $tsumego['Tsumego']['rating'];
 
-		$this->processRatingChange($tsumego, $result, $previousStatusValue);
+		// the resets of the part of the set the problem is played from, in the last month
+		$progressDeletionCount = ProgressDeletion::countRecentForProblem(Auth::getUserID(), $tsumegoId, $setConnectionID);
+
+		$this->processRatingChange($tsumego, $result, $previousStatusValue, $progressDeletionCount);
 		if (!$result['solved'])
 			$result['potion_triggered'] = $this->processPotion();
-		$this->processXpChange($tsumego, $result, $previousStatusValue, $originalTsumegoRating, $setConnectionID);
+		$this->processXpChange($tsumego, $result, $previousStatusValue, $originalTsumegoRating, $progressDeletionCount);
 		$this->updateTsumegoAttempt($tsumego, $result, $previousStatusValue, $seconds);
 		$this->processErrorAchievement($result, $previousStatusValue, $tsumegoId);
 		$this->processUnsortedStuff($tsumego, $result, $previousStatusValue);
@@ -221,25 +224,31 @@ class PlayResultProcessorComponent extends Component
 		$tsumegoRating += $tsumegoRatingDelta;
 	}
 
-	private function processRatingChange(array &$previousTsumego, array $result, string $previousTsumegoStatus): void
+	private function processRatingChange(array &$previousTsumego, array $result, string $previousTsumegoStatus, int $progressDeletionCount): void
 	{
 		if (!Auth::ratingisGainedInCurrentMode())
 			return;
 		if (!Level::XPAndRatingIsGainedInTsumegoStatus($previousTsumegoStatus))
 			return;
-		$userRating = (float) Auth::getUser()['rating'];
-		$tsumegoRating = (float) $previousTsumego['Tsumego']['rating'];
 
-		// Each AJAX call is a single atomic event: fail or solve, never both.
-		// Prior misplays were already processed by their own AJAX calls.
-		self::processRatingChangeStep($userRating, $tsumegoRating, $result['solved']);
+		// After a reset of its part in the last month the problem is known, solving it again says little
+		// about the player or the problem, so neither rating changes.
+		if ($progressDeletionCount == 0)
+		{
+			$userRating = (float) Auth::getUser()['rating'];
+			$tsumegoRating = (float) $previousTsumego['Tsumego']['rating'];
 
-		Auth::saveUserField('rating', $userRating);
+			// Each AJAX call is a single atomic event: fail or solve, never both.
+			// Prior misplays were already processed by their own AJAX calls.
+			self::processRatingChangeStep($userRating, $tsumegoRating, $result['solved']);
 
-		$previousTsumego['Tsumego']['rating'] = Util::clampOptional(
-			$tsumegoRating,
-			$previousTsumego['Tsumego']['minimum_rating'],
-			$previousTsumego['Tsumego']['maximum_rating']);
+			Auth::saveUserField('rating', $userRating);
+
+			$previousTsumego['Tsumego']['rating'] = Util::clampOptional(
+				$tsumegoRating,
+				$previousTsumego['Tsumego']['minimum_rating'],
+				$previousTsumego['Tsumego']['maximum_rating']);
+		}
 		$previousTsumego['Tsumego']['activity_value']++;
 		ClassRegistry::init('Tsumego')->save($previousTsumego);
 	}
@@ -255,7 +264,7 @@ class PlayResultProcessorComponent extends Component
 		Auth::incrementUserField('damage', 1);
 	}
 
-	private function processXpChange(array $previousTsumego, array &$result, string $previousTsumegoStatus, int|float|string $originalTsumegoRating, ?int $setConnectionID): void
+	private function processXpChange(array $previousTsumego, array &$result, string $previousTsumegoStatus, int|float|string $originalTsumegoRating, int $progressDeletionCount): void
 	{
 		if (!Auth::XPisGainedInCurrentMode())
 			return;
@@ -266,8 +275,7 @@ class PlayResultProcessorComponent extends Component
 
 		$multiplier = ($result['xp-modifier'] ?: 1);
 		if ($previousTsumegoStatus != TsumegoStatus::$GOLDEN)
-			$multiplier *= TsumegoXPAndRating::getProgressDeletionMultiplier(
-				ProgressDeletion::countRecentForProblem(Auth::getUserID(), (int) $previousTsumego['Tsumego']['id'], $setConnectionID));
+			$multiplier *= TsumegoXPAndRating::getProgressDeletionMultiplier($progressDeletionCount);
 
 		$user = & Auth::getUser();
 		$result['xp-gained'] = Rating::ratingToXP($originalTsumegoRating, $multiplier);
