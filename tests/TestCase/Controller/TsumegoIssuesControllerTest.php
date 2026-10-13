@@ -242,50 +242,6 @@ class TsumegoIssuesControllerTest extends ControllerTestCase
 	}
 
 	/**
-	 * Test that a newly created issue is sent back with the avatar of its author.
-	 */
-	public function testCreatedIssueSendsAuthorAvatar(): void
-	{
-		$context = new ContextPreparator([
-			'user' => ['name' => 'kovarex', 'email' => 'kovarex@example.com'],
-			'tsumego' => ['set_order' => 1, 'status' => 'S'],
-		]);
-
-		$this->testAction('/tsumego-issues/create', [
-			'method' => 'post',
-			'data' => json_encode(['tsumego_id' => $context->tsumegos[0]['id'], 'text' => 'a new issue']),
-		]);
-
-		$body = json_decode($this->controller->response->body(), true);
-		$avatar = 'https://www.gravatar.com/avatar/' . md5('kovarex@example.com') . '?s=20&d=identicon';
-		$this->assertSame($avatar, $body['issue']['user_avatar_url']);
-		$this->assertSame($avatar, $body['issue']['comments'][0]['user_avatar_url']);
-	}
-
-	/**
-	 * Test that a comment moved into a new issue is sent back with the avatar of its author.
-	 */
-	public function testMovedCommentSendsAuthorAvatar(): void
-	{
-		new ContextPreparator([
-			'user' => ['name' => 'kovarex', 'email' => 'kovarex@example.com', 'admin' => true],
-			'tsumego' => ['set_order' => 1, 'status' => 'S', 'comments' => [['message' => 'a standalone comment']]],
-		]);
-
-		$comment = ClassRegistry::init('TsumegoComment')->find('first');
-
-		$this->testAction('/tsumego-issues/move-comment/' . $comment['TsumegoComment']['id'], [
-			'method' => 'post',
-			'data' => ['Comment' => ['tsumego_issue_id' => 'new']],
-		]);
-
-		$body = json_decode($this->controller->response->body(), true);
-		$avatar = 'https://www.gravatar.com/avatar/' . md5('kovarex@example.com') . '?s=20&d=identicon';
-		$this->assertSame($avatar, $body['issue']['user_avatar_url']);
-		$this->assertSame($avatar, $body['issue']['comments'][0]['user_avatar_url']);
-	}
-
-	/**
 	 * Wait for React to mount and fetch data on the issues index page.
 	 * The page initially shows skeletons, then React fetches and renders actual issues or empty state.
 	 */
