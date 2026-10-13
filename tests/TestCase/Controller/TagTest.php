@@ -554,6 +554,18 @@ class TagTest extends ControllerTestCase
 		$this->assertEmpty(ClassRegistry::init('Tag')->find('all'));
 	}
 
+	/**
+	 * Test that the tag page links its author.
+	 */
+	public function testTagViewLinksTheAuthor(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'tagauthor'], 'tags' => [['name' => 'snapback']]]);
+		$result = $this->testAction('/tags/view/' . $context->tags[0]['id'], ['return' => 'view']);
+
+		$this->assertStringContainsString('<a href="/users/view/' . $context->tags[0]['user_id'] . '"', $result);
+		$this->assertStringContainsString($context->user['display_name'], $result);
+	}
+
 	public function testApproveNewTag()
 	{
 		$browser = Browser::instance();
