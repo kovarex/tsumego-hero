@@ -115,12 +115,12 @@ class UserTest extends CakeTestCase
 	public function testRenderLinkHandlesDeletedUser()
 	{
 		$html = User::renderLink(null);
-		$this->assertStringContainsString('[deleted user]', $html);
+		$this->assertStringContainsString('[account deleted]', $html);
 		$this->assertStringNotContainsString('<a href', $html);
 
 		// Test with empty array
 		$html = User::renderLink(['id' => null, 'display_name' => 'Ghost']);
-		$this->assertStringContainsString('[deleted user]', $html);
+		$this->assertStringContainsString('[account deleted]', $html);
 	}
 
 	/**

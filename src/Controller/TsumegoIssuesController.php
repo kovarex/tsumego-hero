@@ -305,7 +305,6 @@ class TsumegoIssuesController extends AppController
 			$TsumegoComment->id = $commentId;
 			$TsumegoComment->saveField('tsumego_issue_id', $targetIssueId);
 
-			$issueUser = $User->findById($comment['TsumegoComment']['user_id']);
 			$commentUser = $User->findById($comment['TsumegoComment']['user_id']);
 
 			$issueData = [
@@ -313,16 +312,16 @@ class TsumegoIssuesController extends AppController
 				'status' => 'open',
 				'created' => date('Y-m-d H:i:s'),
 				'user_id' => $comment['TsumegoComment']['user_id'],
-				'user_name' => User::nameOrNull($comment['TsumegoComment']['user_id'], $issueUser['User']['display_name']),
-				'user_avatar_url' => User::getAvatarUrl($issueUser['User'], 20),
-				'user_rating' => $issueUser['User']['rating'],
-				'isAdmin' => ($issueUser['User']['isAdmin'] == 1),
+				'user_name' => User::nameOrNull($commentUser['User']),
+				'user_avatar_url' => User::avatarOrNull($commentUser['User'], 20),
+				'user_rating' => $commentUser['User']['rating'],
+				'isAdmin' => ($commentUser['User']['isAdmin'] == 1),
 				'comments' => [[
 					'id' => $commentId,
 					'text' => $comment['TsumegoComment']['message'],
 					'user_id' => $comment['TsumegoComment']['user_id'],
-					'user_name' => User::nameOrNull($comment['TsumegoComment']['user_id'], $commentUser['User']['display_name']),
-					'user_avatar_url' => User::getAvatarUrl($commentUser['User'], 20),
+					'user_name' => User::nameOrNull($commentUser['User']),
+					'user_avatar_url' => User::avatarOrNull($commentUser['User'], 20),
 					'user_rating' => $commentUser['User']['rating'],
 					'isAdmin' => ($commentUser['User']['isAdmin'] == 1),
 					'created' => Util::toIso8601($comment['TsumegoComment']['created']),

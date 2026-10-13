@@ -14,7 +14,7 @@ class User extends AppModel
 	public const PREF_BOARD_ORIENTATION_RANDOM = 0;
 	public const PREF_BOARD_ORIENTATION_ORIGINAL = 1;
 
-	// Shown instead of the name of a deleted account.
+	// Shown instead of the name of a user whose account is not there anymore.
 	public const DELETED_NAME = '[account deleted]';
 
 	public function __construct(mixed $id = false, ?string $table = null, ?string $ds = null)
@@ -124,48 +124,83 @@ class User extends AppModel
 	}
 
 	/**
-	 * Ids of the deleted accounts, loaded once per request. There are few of them, so one small
-	 * query lets every place showing a name check it without joining on user.deleted.
+	 * Ids of the deleted accounts, loaded once per request. It answers the callers that have nothing
+	 * but an id (the payloads read the name as a plain string out of a raw query); a caller that has a
+	 * row reads the deleted column of that row instead, so a stale cache can't name a deleted account.
 	 *
 	 * @var array<int, true>|null
 	 */
 	private static ?array $deletedIDs = null;
 
-	// To be called after an account was deleted or restored.
+	// To be called after an account was deleted or restored, otherwise the callers that pass a bare id
+	// keep the old answer. A caller that passes a row is not affected.
 	public static function clearDeletedCache(): void
 	{
 		self::$deletedIDs = null;
 	}
 
-	public static function isDeletedID(int|string|null $userID): bool
+	/**
+	 * Whether the account of a user is not there anymore. A row answers from its own deleted column,
+	 * which every find() and contain('User') already loads; a bare id is looked up in the ids loaded
+	 * once per request. A row that carries neither an id nor the column is treated as gone, the same
+	 * way renderLink treats it.
+	 *
+	 * @param UserRow|array<string, mixed>|int|string|null $user
+	 */
+	public static function isDeleted(array|int|string|null $user): bool
 	{
-		if ($userID === null)
-			return false;
+		if (is_array($user))
+		{
+			if (array_key_exists('deleted', $user) || array_key_exists('user_deleted', $user))
+				return !empty($user['deleted']) || !empty($user['user_deleted']);
+			$user = $user['id'] ?? $user['user_id'] ?? null;
+			if ($user === null)
+				return true;
+		}
 		if (self::$deletedIDs === null)
 		{
 			self::$deletedIDs = [];
 			foreach (Util::query('SELECT id FROM user WHERE deleted IS NOT NULL') as $row)
 				self::$deletedIDs[(int) $row['id']] = true;
 		}
-		return isset(self::$deletedIDs[(int) $userID]);
+		return isset(self::$deletedIDs[(int) $user]);
 	}
 
 	/**
-	 * The name to show for a user: DELETED_NAME for a deleted account, otherwise the display name.
+	 * The name of a user, null when there is no name to show: the account is not there anymore, or the
+	 * row the caller passed carries no name. This is what the frontend gets, it renders DELETED_NAME
+	 * itself. Pass a user row, folded or built from a raw query, nothing else.
+	 *
+	 * @param UserRow|array<string, mixed>|null $user
 	 */
-	public static function displayName(int|string|null $userID, ?string $name): string
+	public static function nameOrNull(?array $user): ?string
 	{
-		if (self::isDeletedID($userID))
-			return self::DELETED_NAME;
-		return (string) $name;
+		if ($user === null || self::isDeleted($user))
+			return null;
+		return $user['display_name'] ?? $user['user_display_name'] ?? $user['name'] ?? $user['user_name'] ?? null;
 	}
 
 	/**
-	 * The name to send to the frontend, null for a deleted account (UserLink then shows DELETED_NAME).
+	 * The same rule as nameOrNull() for the places that print the name instead of sending it to the
+	 * frontend: a user whose account is not there anymore is shown as DELETED_NAME.
+	 *
+	 * @param UserRow|array<string, mixed>|null $user
 	 */
-	public static function nameOrNull(int|string|null $userID, ?string $name): ?string
+	public static function displayName(?array $user): string
 	{
-		return self::isDeletedID($userID) ? null : $name;
+		return self::nameOrNull($user) ?? self::DELETED_NAME;
+	}
+
+	/**
+	 * The avatar to send to the frontend, null when the account is not there anymore. The Gravatar URL
+	 * is derived from the e-mail, which a deleted account keeps, so sending it would keep publishing
+	 * the hash of the address of someone who asked to be forgotten.
+	 *
+	 * @param UserRow|array<string, mixed> $user Row with the id, external_id, picture and email
+	 */
+	public static function avatarOrNull(array $user, int $size = 20): ?string
+	{
+		return self::isDeleted($user) ? null : self::getAvatarUrl($user, $size);
 	}
 
 	/**
@@ -186,8 +221,8 @@ class User extends AppModel
 		if (!is_array($id))
 		{
 			if ($id === null)
-				return '<span class="deleted-user">[deleted user]</span>';
-			if (self::isDeletedID($id))
+				return '<span>' . h(self::DELETED_NAME) . '</span>';
+			if (self::isDeleted($id))
 				return h(self::DELETED_NAME);
 			$rank = $rating !== null ? Rating::getReadableRankFromRating((float) $rating) : '';
 			return '<a href="/users/view/' . $id . '">' . h((string) $name) . ($rank === '' ? '' : ' ' . $rank) . '</a>';
@@ -197,10 +232,10 @@ class User extends AppModel
 
 		// A row without an id means the account is gone
 		if (empty($user['id']) && empty($user['user_id']))
-			return '<span class="deleted-user">[deleted user]</span>';
+			return '<span>' . h(self::DELETED_NAME) . '</span>';
 
 		// A deleted account is shown as a placeholder, never linked or named
-		if (self::isDeletedID($user['id'] ?? $user['user_id'] ?? null))
+		if (self::isDeleted($user))
 			return h(self::DELETED_NAME);
 
 		// Prefixed format (from raw queries): user_id, user_display_name, etc.

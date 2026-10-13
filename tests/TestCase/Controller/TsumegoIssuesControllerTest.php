@@ -242,6 +242,38 @@ class TsumegoIssuesControllerTest extends ControllerTestCase
 	}
 
 	/**
+	 * Test that the issues API leaves out the avatar of a deleted author: the avatar URL is derived
+	 * from the e-mail, which a deleted account keeps.
+	 */
+	public function testIssuesApiLeavesOutTheAvatarOfADeletedAuthor(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'kovarex', 'email' => 'kovarex@example.com'],
+			'other-users' => [['name' => 'doomed_user', 'email' => 'doomed@example.com', 'deleted' => true]],
+			'tsumego' => ['set_order' => 1, 'issues' => [['message' => 'Issue by a deleted author']]],
+		]);
+
+		$otherUserId = $context->otherUsers[0]['id'];
+		ClassRegistry::init('TsumegoIssue')->updateAll(
+			['TsumegoIssue.user_id' => $otherUserId],
+			['TsumegoIssue.id' => $context->issues[0]['id']]
+		);
+		ClassRegistry::init('TsumegoComment')->updateAll(
+			['TsumegoComment.user_id' => $otherUserId],
+			['TsumegoComment.tsumego_issue_id' => $context->issues[0]['id']]
+		);
+
+		$this->testAction('/tsumego-issues/api', ['method' => 'get']);
+
+		$body = $this->controller->response->body();
+		$issues = json_decode($body, true)['issues'];
+		$this->assertNull($issues[0]['issue']['user_name']);
+		$this->assertNull($issues[0]['issue']['user_avatar_url']);
+		$this->assertNull($issues[0]['comments'][0]['user_avatar_url']);
+		$this->assertStringNotContainsString(md5('doomed@example.com'), $body);
+	}
+
+	/**
 	 * Wait for React to mount and fetch data on the issues index page.
 	 * The page initially shows skeletons, then React fetches and renders actual issues or empty state.
 	 */

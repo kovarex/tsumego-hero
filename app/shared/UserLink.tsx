@@ -1,6 +1,6 @@
 /**
  * User link component with optional avatar and rank display
- * Replaces renderUserLink() HTML string builder
+ * Replaces renderLink() HTML string builder
  */
 
 interface UserLinkProps

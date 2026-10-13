@@ -68,19 +68,6 @@ class AppController extends Controller
 			throw new NotFoundException('User not found');
 	}
 
-	protected function checkPictureLarge(array $u): string
-	{
-		return self::checkPicture($u['User']);
-	}
-
-	/**
-	 * @param UserRow $user
-	 */
-	public static function checkPicture(array $user): string
-	{
-		return User::displayName($user['id'] ?? null, $user['display_name']);
-	}
-
 	public static function saveDanSolveCondition(string $solvedTsumegoRank, int $tId): void
 	{
 		if ($solvedTsumegoRank == '1d' || $solvedTsumegoRank == '2d' || $solvedTsumegoRank == '3d' || $solvedTsumegoRank == '4d' || $solvedTsumegoRank == '5d')

@@ -347,7 +347,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		for ($i = 0; $i < $tagNamesCount; $i++)
 		{
 			$au = $this->User->findById($tags[$i]['Tag']['user_id']);
-			$tags[$i]['Tag']['user'] = $this->checkPicture($au['User']);
+			$tags[$i]['Tag']['user'] = User::displayName($au['User']);
 		}
 
 		$this->set('deletedUsers', $this->User->find('all', [
@@ -1302,7 +1302,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 		$emailer->from(['me@tsumego.com' => 'https://tsumego.com']);
 		$emailer->to(Auth::getUser()['email']);
 		$emailer->subject('Deletion of your Tsumego Hero account');
-		$emailer->send('You asked to delete your Tsumego Hero account ' . self::checkPicture(Auth::getUser()) . '.
+		$emailer->send('You asked to delete your Tsumego Hero account ' . User::displayName(Auth::getUser()) . '.
 To confirm the deletion, open the following link (valid for ' . self::$DELETION_LINK_VALID_HOURS . ' hours): https://' . $_SERVER['HTTP_HOST'] . '/users/confirm_delete_account/' . $token . '
 If you have not asked for this, ignore this email, your account stays as it is.');
 		$this->set('sent', true);

@@ -171,9 +171,10 @@ class TsumegoIssue extends AppModel
 						'tsumego_issue_status_id' => $statusId,
 						'tsumego_id' => $row['ti']['tsumego_id'],
 						'user_id' => $row['ti']['issue_user_id'],
-						'user_name' => User::nameOrNull($row['ti']['issue_user_id'], $row['u']['issue_author_name']),
+						'user_name' => User::nameOrNull(['id' => $row['ti']['issue_user_id'], 'display_name' => $row['u']['issue_author_name']]),
 						'user_rating' => $row['u']['issue_author_rating'] ?? null,
-						'user_avatar_url' => User::getAvatarUrl([
+						'user_avatar_url' => User::avatarOrNull([
+							'id' => $row['ti']['issue_user_id'],
 							'external_id' => $row['u']['issue_author_external_id'] ?? null,
 							'picture' => $row['u']['issue_author_picture'] ?? null,
 							'email' => $row['u']['issue_author_email'] ?? null,
@@ -181,7 +182,7 @@ class TsumegoIssue extends AppModel
 						'created' => Util::toIso8601($row['ti']['issue_created']),
 					],
 					'comments' => [],
-					'author' => ['name' => User::nameOrNull($row['ti']['issue_user_id'], $row['u']['issue_author_name']) ?? User::DELETED_NAME],
+					'author' => ['name' => User::displayName(['id' => $row['ti']['issue_user_id'], 'display_name' => $row['u']['issue_author_name']])],
 					'tsumegoId' => $row['ti']['tsumego_id'],
 					'Set' => $row['s']['set_id'] ? [
 						'id' => $row['s']['set_id'],
@@ -199,9 +200,10 @@ class TsumegoIssue extends AppModel
 					'text' => $row['tc']['comment_text'],
 					'created' => Util::toIso8601($row['tc']['comment_created']),
 					'user_id' => $row['tc']['comment_user_id'],
-					'user_name' => User::nameOrNull($row['tc']['comment_user_id'], $row['cu']['comment_author_name'] ?? null),
+					'user_name' => User::nameOrNull(['id' => $row['tc']['comment_user_id'], 'display_name' => $row['cu']['comment_author_name'] ?? null]),
 					'user_rating' => $row['cu']['comment_author_rating'],
-					'user_avatar_url' => User::getAvatarUrl([
+					'user_avatar_url' => User::avatarOrNull([
+						'id' => $row['tc']['comment_user_id'],
 						'external_id' => $row['cu']['comment_author_external_id'] ?? null,
 						'picture' => $row['cu']['comment_author_picture'] ?? null,
 						'email' => $row['cu']['comment_author_email'] ?? null,

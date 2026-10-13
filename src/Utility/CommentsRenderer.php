@@ -30,7 +30,7 @@ class CommentsRenderer
 
 		echo '<br></div>';
 		echo '<div class="' . $commentColor . '">';
-		echo h(\User::displayName($comment['from_id'], $comment['from_name'])) . ':<br>';
+		echo h(\User::displayName(['id' => $comment['from_id'], 'display_name' => $comment['from_name']])) . ':<br>';
 		echo '</div>';
 		echo '<div ';
 		if($comment['from_admin'])

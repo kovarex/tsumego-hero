@@ -149,10 +149,10 @@ class AccountDeletionTest extends TestCaseWithAuth
 		$alive = $context->otherUsers[1];
 
 		$this->assertSame(h(User::DELETED_NAME), User::renderLink($ghost));
-		$this->assertSame(User::DELETED_NAME, AppController::checkPicture($ghost));
-		$this->assertNull(User::nameOrNull($ghost['id'], 'ghost'));
+		$this->assertSame(User::DELETED_NAME, User::displayName($ghost));
+		$this->assertNull(User::nameOrNull($ghost));
 		$this->assertStringContainsString('alive', User::renderLink($alive));
-		$this->assertSame($alive['display_name'], AppController::checkPicture($alive));
+		$this->assertSame($alive['display_name'], User::displayName($alive));
 	}
 
 	public function testCommentOfDeletedAccountShowsPlaceholder(): void
