@@ -14,17 +14,20 @@ use Phinx\Migration\AbstractMigration;
  *
  * Changes (in order):
  * 1. Add author_user_id FK column to tsumego table FIRST
+ * 1b. Link problems stored under a known author alias (real name vs nickname of
+ *     the same account) to that account, without touching the author string
  * 2. Populate author_user_id by matching tsumego.author to user.name (both still have g__ prefix)
  * 3. Clear old picture filenames (they pointed to non-deployed local files)
  * 4. Add display_name column
  * 5. Strip g__ prefix from email column (duplicates allowed)
  * 6. Strip g__ prefix from external_id column
  * 7. Strip g__ prefix from tsumego.author column
- * 8. Update tsumego.author to match user.display_name for tracked authors
- * 9. Make name column nullable and set to NULL for Google users
+ * 8. Make name column nullable and set to NULL for Google users
  *
  * Key insight: author_user_id matching must happen BEFORE any g__ stripping
  * so "g__John Smith" in tsumego.author matches "g__John Smith" in user.name.
+ * The alias map in 1b also runs while user.name is untouched, before step 8 clears
+ * the name of the Google accounts.
  *
  * Google users (external_id IS NOT NULL) will have name=NULL because:
  * - They can't use password login (password_hash = 'google_oauth')
@@ -77,6 +80,25 @@ final class AddDisplayName extends AbstractMigration
 	private const SAME_PERSON_MAX_EDIT_DISTANCE = 2;
 	private const SAME_PERSON_FUZZY_MIN_CHARS = 8;
 
+	/**
+	 * Author strings that were stored in `tsumego.author` while the account itself
+	 * uses a different name (a real name against a nickname, or the other way round).
+	 * Key = the value in `tsumego.author`, value = `user.name` of the account that
+	 * created those problems. Taken from the site's own authors page and from the
+	 * e-mail of the account (see the authors page in src/View/Users/authors.ctp).
+	 */
+	private const AUTHOR_ALIASES = [
+		'Joschka Zimdars' => 'd4rkm4tter',
+		'Stepan Trubitsin' => 'Stepan',
+		'Jérôme Hubert' => 'jhubert',
+		'Kaan Malçok' => 'posetcay',
+		'Innokentiy Zabirov' => 'Neri',
+		'Bradford Malbon' => 'Bradford',
+		'David Ulbricht' => 'GoDave89',
+		'Timo Kreuzer' => 'Mito',
+		'Dennis Olevanov' => 'theCrane',
+	];
+
 	public function up(): void
 	{
 		// Disable FK checks for faster ALTER operations
@@ -100,6 +122,26 @@ final class AddDisplayName extends AbstractMigration
 				])
 				->addIndex('author_user_id')
 				->update();
+
+			// Step 1b: Link problems whose author string is a known alias of an account
+			// (a real name where the account uses a nickname, or the other way round).
+			// This runs before step 2, so the g__ fallback in 2b cannot take these rows for
+			// an abandoned duplicate account of the same name, and while user.name is still
+			// untouched. The author string itself is left alone, so a problem keeps showing
+			// the name a player already knows instead of the account's nickname.
+			foreach (self::AUTHOR_ALIASES as $authorString => $accountName)
+			{
+				$connection = $this->getAdapter()->getConnection();
+				$quotedAuthor = $connection->quote($authorString);
+				$quotedAccount = $connection->quote($accountName);
+				$this->execute("
+					UPDATE tsumego t
+					JOIN user u ON u.name = $quotedAccount
+					SET t.author_user_id = u.id
+					WHERE t.author = $quotedAuthor
+					AND t.author_user_id IS NULL
+				");
+			}
 
 			// Step 2: Populate author_user_id by matching tsumego.author to user.name
 			// Both still have original values (including g__ prefixes for Google users)
@@ -253,15 +295,7 @@ final class AddDisplayName extends AbstractMigration
 				WHERE author LIKE 'g\\_\\_%' ESCAPE '\\\\'
 			");
 
-			// Step 8: Update tsumego.author to match user's display_name for tracked authors
-			// This ensures author string stays in sync with the user's chosen display name
-			$this->execute("
-				UPDATE tsumego t
-				JOIN user u ON t.author_user_id = u.id
-				SET t.author = u.display_name
-			");
-
-			// Step 9: Make name nullable and set to NULL for Google users
+			// Step 8: Make name nullable and set to NULL for Google users
 			// Google users can't use password login, so they don't need a name for login
 			$this->execute("ALTER TABLE user MODIFY name VARCHAR(50) NULL");
 			$this->execute("UPDATE user SET name = NULL WHERE external_id IS NOT NULL");

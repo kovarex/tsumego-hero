@@ -78,16 +78,6 @@ use App\Utility\ViteManifest;
 	echo ViteManifest::legacyScript('besogo');
 	$this->end();
 
-	$authorx = $t['Tsumego']['author'];
-	if ($authorx == 'Stepan')
-		$authorx = 'Stepan Trubitsin';
-	if ($authorx == 'Joschka Zimdars')
-		$authorx = 'd4rkm4tter';
-	else if ($authorx == 'Jérôme Hubert')
-		$authorx = 'jhubert';
-	else if($authorx=='Stepan Trubitsin')
-		$authorx = 'Stepan';
-
 	if ($lightDark == 'dark')
 	{
 		$playGreenColor = '#0cbb0c';
@@ -783,6 +773,7 @@ use App\Utility\ViteManifest;
 		echo 'besogoNoLogin = true;';
 	}
 
+	// Author mode is decided by the account link, the author string can be a legacy alias.
 	$authorUserId = $t['Tsumego']['author_user_id'] ?? null;
 	if ($authorUserId !== null && $authorUserId == Auth::getUserID())
 		echo 'authorProblem = true;';
