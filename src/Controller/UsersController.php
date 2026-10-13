@@ -368,7 +368,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		if (empty($input))
 			return null;
 
-		// findByName won't find Google users (they have name=NULL after migration)
+		// A local account is found by its login name, a Google account has none
 		if ($user = $this->User->findByName($input))
 			return $user;
 
@@ -552,9 +552,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	}
 
 	/**
-	 * Update user's display name. Only allowed when the user is forced to
-	 * (needs_display_name_change = 1), e.g. after a migration rename or a
-	 * duplicate Google name. Clears the flag on success.
+	 * Update user's display name. Only allowed while the account is flagged for it
+	 * (needs_display_name_change = 1). Clears the flag on success.
 	 *
 	 * @return mixed
 	 */
@@ -575,8 +574,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			return $this->redirect('/');
 		}
 
-		// Display names can only be changed when the user is forced to (migration
-		// rename or a duplicate Google name). Free renaming is intentionally disabled.
+		// Free renaming is intentionally disabled: this only serves an account that is
+		// flagged for a rename.
 		if (empty($user['User']['needs_display_name_change']))
 		{
 			CookieFlash::set(__('You can only change your display name when asked to.'), 'error');
@@ -1207,21 +1206,19 @@ ORDER BY category DESC', [$user['User']['id']]));
 			$name = 'User ' . substr($token_data['sub'] ?? '', -6);
 		$email = $token_data['email'] ?? '';
 		$picture = $token_data['picture'] ?? '';
-		// external_id is just the Google sub claim - no prefix needed
+		// 'sub' is the Google account id, it identifies the player on their next sign in
 		$externalId = $token_data['sub'];
 
 		$u = $this->User->find('first', ['conditions' => ['external_id' => $externalId]]);
 		if ($u == null)
 		{
-			// Generate unique display name
-			// Google users don't need 'name' - they can't use password login (password_hash = 'google_oauth')
-			// If the desired name is already taken, a numbered suffix is auto-appended and the
-			// user is forced to pick their own unique name before continuing.
+			// A Google account gets no login name, it can't sign in with a password. A
+			// taken display name gets a numbered suffix and the player is asked to choose
+			// their own name before continuing.
 			$normalizedName = User::normalizeDisplayName($name);
 			$uniqueDisplayName = User::generateUniqueDisplayName($normalizedName);
 
 			$userData = [];
-			// name is NULL for Google users - they don't use password login
 			$userData['User']['display_name'] = $uniqueDisplayName;
 			$userData['User']['needs_display_name_change'] = ($uniqueDisplayName !== $normalizedName) ? true : false;
 			$userData['User']['email'] = $email;
