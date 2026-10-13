@@ -504,7 +504,12 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$userData = $this->request->data;
 		$userData['User']['password_hash'] = password_hash($this->request->data['User']['password1'], PASSWORD_DEFAULT);
 		$userData['User']['name'] = $this->request->data['User']['name'];
-		$userData['User']['display_name'] = User::generateUniqueDisplayName($this->request->data['User']['name']);
+		$normalizedName = User::normalizeDisplayName($this->request->data['User']['name']);
+		$uniqueDisplayName = User::generateUniqueDisplayName($normalizedName);
+		$userData['User']['display_name'] = $uniqueDisplayName;
+		// A taken display name gets a numbered suffix, which is not the name the player chose,
+		// so they are asked to pick their own before continuing (the same as the Google path).
+		$userData['User']['needs_display_name_change'] = $uniqueDisplayName !== $normalizedName;
 		$userData['User']['email'] = $this->request->data['User']['email'];
 
 		$this->User->create();

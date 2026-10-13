@@ -181,6 +181,10 @@ class RegistrationEmailTest extends ControllerTestCase
 		// Display name should be unique, so it should have a suffix
 		$this->assertEquals('ConflictName (2)', $newUser['User']['display_name'],
 			"display_name should be unique with suffix");
+		// A suffixed display name is not the one the player chose, so they have to
+		// pick their own before continuing (the same way a Google account is asked)
+		$this->assertEquals(true, $newUser['User']['needs_display_name_change'],
+			"a suffixed display name should send the player to the rename page");
 
 		// Google account should still hold its display name
 		$googleUser = $userModel->find('first', [
