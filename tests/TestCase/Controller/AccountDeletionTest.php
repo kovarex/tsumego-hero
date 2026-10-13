@@ -70,7 +70,7 @@ class AccountDeletionTest extends TestCaseWithAuth
 		$adminActivity = ClassRegistry::init('AdminActivity')->find('first');
 		$this->assertSame(AdminActivityType::DELETE_USER, $adminActivity['AdminActivity']['type']);
 		$this->assertSame($context->user['id'], $adminActivity['AdminActivity']['user_id']);
-		$this->assertSame('kovarex', $adminActivity['AdminActivity']['old_value']);
+		$this->assertSame('DN_kovarex', $adminActivity['AdminActivity']['old_value'], 'The activity log names the account the way players see it');
 	}
 
 	public function testEmailedLinkWorksWithoutBeingSignedIn(): void
