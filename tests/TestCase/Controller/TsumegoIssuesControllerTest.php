@@ -224,6 +224,24 @@ class TsumegoIssuesControllerTest extends ControllerTestCase
 	}
 
 	/**
+	 * Test that the issues API sends the avatar of the author.
+	 */
+	public function testIssuesApiSendsAuthorAvatars(): void
+	{
+		new ContextPreparator([
+			'user' => ['name' => 'kovarex', 'email' => 'kovarex@example.com'],
+			'tsumego' => ['set_order' => 1, 'issues' => [['message' => 'Issue with an avatar']]],
+		]);
+
+		$this->testAction('/tsumego-issues/api', ['method' => 'get']);
+
+		$body = json_decode($this->controller->response->body(), true);
+		$avatar = 'https://www.gravatar.com/avatar/' . md5('kovarex@example.com') . '?s=20&d=identicon';
+		$this->assertSame($avatar, $body['issues'][0]['issue']['user_avatar_url']);
+		$this->assertSame($avatar, $body['issues'][0]['comments'][0]['user_avatar_url']);
+	}
+
+	/**
 	 * Wait for React to mount and fetch data on the issues index page.
 	 * The page initially shows skeletons, then React fetches and renders actual issues or empty state.
 	 */
