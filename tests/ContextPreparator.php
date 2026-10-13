@@ -26,7 +26,7 @@ class ContextPreparator
 			'achievement_condition', 'achievement_status', 'set_connection',
 			'tsumego_attempt', 'tsumego_status', 'user_contribution', 'signature',
 			'tsumego_variant', 'reject', 'publish_date', 'user', 'time_mode_rank',
-			'tsumego', 'set',
+			'tsumego', 'set', 'phpbb_users', 'phpbb_topics',
 		] as $table)
 			$pdo->exec("DELETE FROM `$table`");
 		$pdo->exec('SET FOREIGN_KEY_CHECKS = 1');

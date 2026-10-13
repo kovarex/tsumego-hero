@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Utility\PhpbbNames;
 use Phinx\Migration\AbstractMigration;
 
 /**
@@ -23,6 +24,8 @@ use Phinx\Migration\AbstractMigration;
  * 6. Strip g__ prefix from external_id column
  * 7. Strip g__ prefix from tsumego.author column
  * 8. Make name column nullable and set to NULL for Google users
+ * 9. Sync the phpBB forum names (username, username_clean and the poster names cached in the
+ *    topics and forums) with the display names
  *
  * Key insight: author_user_id matching must happen BEFORE any g__ stripping
  * so "g__John Smith" in tsumego.author matches "g__John Smith" in user.name.
@@ -300,6 +303,33 @@ final class AddDisplayName extends AbstractMigration
 			// Google users can't use password login, so they don't need a name for login
 			$this->execute("ALTER TABLE user MODIFY name VARCHAR(50) NULL");
 			$this->execute("UPDATE user SET name = NULL WHERE external_id IS NOT NULL");
+
+			// Step 9: Sync the phpBB forum tables. The forum shares this database, its single sign-on
+			// reads the user table directly and looks a player up by the username_clean key, so the
+			// names there have to follow the display names - including the poster names phpBB caches
+			// in the topics and forums.
+			if ($this->hasTable('phpbb_users'))
+			{
+				/** @phpstan-ignore-next-line */
+				$connection = $this->getAdapter()->getConnection();
+				$rows = $this->fetchAll("
+					SELECT u.id, u.display_name
+					FROM user u
+					WHERE EXISTS (
+							SELECT 1 FROM phpbb_users pu
+							WHERE pu.external_id = u.id AND pu.username <> u.display_name)
+						OR EXISTS (
+							SELECT 1 FROM phpbb_topics t
+							WHERE (t.topic_poster = u.id AND t.topic_first_poster_name <> u.display_name)
+								OR (t.topic_last_poster_id = u.id AND t.topic_last_poster_name <> u.display_name))
+						OR EXISTS (
+							SELECT 1 FROM phpbb_forums f
+							WHERE f.forum_last_poster_id = u.id AND f.forum_last_poster_name <> u.display_name)
+				");
+
+				foreach ($rows as $row)
+					PhpbbNames::sync($connection, (int) $row['id'], $row['display_name']);
+			}
 		}
 		finally
 		{

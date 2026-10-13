@@ -240,6 +240,47 @@ class jwtauth implements provider_interface
 	}
 
 	/**
+	 * Renames a forum account that did not follow a display name change.
+	 *
+	 * Renaming happens in the main application; this repairs an account that missed it (a failed
+	 * sync, or a rename while the forum was unreachable). It does what phpBB's own ACP does for a
+	 * rename: update the account, then let user_update_name() fix the names cached in the topics,
+	 * forums, posts and the moderator cache.
+	 *
+	 * @param array  $user_row     Row of the forum account
+	 * @param string $display_name Display name from the main application
+	 * @return array The forum account row
+	 */
+	protected function sync_rename(array $user_row, string $display_name): array
+	{
+		if ($user_row['username'] === $display_name)
+			return $user_row;
+
+		include_once($this->phpbb_root_path . 'includes/functions_user.' . $this->php_ext);
+
+		// phpBB decides whether the name may be used at all (its characters, its uniqueness).
+		if (validate_username($display_name, $user_row['username']) !== false)
+			return $user_row;
+
+		$clean = utf8_clean_string($display_name);
+
+		$sql = 'UPDATE ' . USERS_TABLE . '
+			SET ' . $this->db->sql_build_array('UPDATE', [
+				'username'       => $display_name,
+				'username_clean' => $clean,
+			]) . '
+			WHERE user_id = ' . (int) $user_row['user_id'];
+		$this->db->sql_query($sql);
+
+		user_update_name($user_row['username'], $display_name);
+
+		$user_row['username'] = $display_name;
+		$user_row['username_clean'] = $clean;
+
+		return $user_row;
+	}
+
+	/**
 	 * Get or create phpBB user from external user data
 	 */
 	protected function get_or_create_bb_user($ext)
@@ -251,13 +292,23 @@ class jwtauth implements provider_interface
 		$this->db->sql_freeresult($result);
 
 		if ($user_row)
+		{
+			try
+			{
+				$user_row = $this->sync_rename($user_row, $ext['name']);
+			}
+			catch (\Throwable $exception)
+			{
+				// A rename must never keep the player out of the forum; the next login tries again.
+			}
+
 			return $user_row;
+		}
 
 		include_once($this->phpbb_root_path . 'includes/functions_user.' . $this->php_ext);
 
 		$user_row = [
 			'username'         => $ext['name'],
-			'username_clean'   => strtolower($ext['name']),
 			'user_email'       => $ext['email'],
 			'group_id'         => 2,
 			'user_type'        => USER_NORMAL,

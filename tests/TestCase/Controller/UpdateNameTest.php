@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\Util;
+
 /**
  * Tests for the forced display-name change flow.
  *
@@ -313,5 +315,98 @@ class UpdateNameTest extends ControllerTestCase
 		]);
 
 		$this->assertCount(0, ClassRegistry::init('AdminActivity')->find('all'));
+	}
+
+	/**
+	 * Test that renaming updates the linked phpBB forum user.
+	 */
+	public function testRenamingKeepsTheForumUsernameInSync(): void
+	{
+		$context = new ContextPreparator([
+			'user' => [
+				'display_name' => 'Old Forum Name',
+				'email' => 'forumsync@example.com',
+				'needs_display_name_change' => true,
+			],
+		]);
+
+		Util::execute(
+			"INSERT INTO phpbb_users (user_id, username, username_clean, user_permissions, user_sig, external_id)"
+			. " VALUES (?, ?, ?, '', '', ?)",
+			[700001, 'Old Forum Name', 'old forum name', $context->user['id']]
+		);
+
+		$this->testAction('/users/updatename', [
+			'method' => 'post',
+			'data' => ['User' => ['display_name' => 'New Forum Name']],
+			'return' => 'result',
+		]);
+
+		$forumUser = Util::query("SELECT username, username_clean FROM phpbb_users WHERE user_id = ?", [700001]);
+		$this->assertEquals('New Forum Name', $forumUser[0]['username']);
+		$this->assertEquals('new forum name', $forumUser[0]['username_clean']);
+	}
+
+	/**
+	 * Test that renaming updates the poster names cached in the forum topics.
+	 */
+	public function testRenamingKeepsForumTopicNamesInSync(): void
+	{
+		$context = new ContextPreparator([
+			'user' => [
+				'display_name' => 'Old Poster',
+				'email' => 'postersync@example.com',
+				'needs_display_name_change' => true,
+			],
+		]);
+
+		Util::execute(
+			"INSERT INTO phpbb_topics (topic_id, topic_poster, topic_first_poster_name, topic_last_poster_id,"
+			. " topic_last_poster_name) VALUES (?, ?, ?, ?, ?)",
+			[700002, $context->user['id'], 'Old Poster', $context->user['id'], 'Old Poster']
+		);
+
+		$this->testAction('/users/updatename', [
+			'method' => 'post',
+			'data' => ['User' => ['display_name' => 'New Poster']],
+			'return' => 'result',
+		]);
+
+		$topic = Util::query(
+			"SELECT topic_first_poster_name, topic_last_poster_name FROM phpbb_topics WHERE topic_id = ?",
+			[700002]
+		);
+		$this->assertEquals('New Poster', $topic[0]['topic_first_poster_name']);
+		$this->assertEquals('New Poster', $topic[0]['topic_last_poster_name']);
+	}
+
+	/**
+	 * Test that the forum username key is the one phpBB computes for the display name.
+	 */
+	public function testForumUsernameKeyUsesPhpbbCleaning(): void
+	{
+		$context = new ContextPreparator([
+			'user' => [
+				'display_name' => 'Old Key Name',
+				'email' => 'cleankey@example.com',
+				'needs_display_name_change' => true,
+			],
+		]);
+
+		Util::execute(
+			"INSERT INTO phpbb_users (user_id, username, username_clean, user_permissions, user_sig, external_id)"
+			. " VALUES (?, ?, ?, '', '', ?)",
+			[700003, 'Old Key Name', 'old key name', $context->user['id']]
+		);
+
+		$this->testAction('/users/updatename', [
+			'method' => 'post',
+			'data' => ['User' => ['display_name' => 'Yiğit Aydın']],
+			'return' => 'result',
+		]);
+
+		$forumUser = Util::query("SELECT username, username_clean FROM phpbb_users WHERE user_id = ?", [700003]);
+		$this->assertEquals('Yiğit Aydın', $forumUser[0]['username']);
+		$this->assertEquals('yiğit aydin', $forumUser[0]['username_clean']);
 	}
 }

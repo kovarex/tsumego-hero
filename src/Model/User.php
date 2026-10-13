@@ -1,5 +1,6 @@
 <?php
 
+use App\Utility\PhpbbNames;
 use App\Utility\Rating;
 use App\Utility\Util;
 
@@ -320,27 +321,17 @@ class User extends AppModel
 	}
 
 	/**
-	 * Syncs a user's display name to the phpBB forum database.
+	 * Syncs a user's display name to the phpBB forum tables.
+	 *
+	 * The forum shares the application database and its single sign-on reads the user table
+	 * directly, so the phpbb_* rows are written through the default connection.
 	 *
 	 * @param int $userId The user ID (maps to external_id in phpBB)
 	 * @param string $displayName The display name to sync
 	 */
 	private static function syncToForum(int $userId, string $displayName): void
 	{
-		try
-		{
-			$forumDb = ConnectionManager::getDataSource('forum');
-			/** @phpstan-ignore-next-line */
-			$stmt = $forumDb->getConnection()->prepare(
-				"UPDATE phpbb_users SET username = ?, username_clean = ? WHERE external_id = ?"
-			);
-			$stmt->execute([$displayName, strtolower($displayName), $userId]);
-		}
-		catch (Exception $e)
-		{
-			// Forum DB might not be available in all environments (dev, test)
-			CakeLog::write('warning', "Forum sync failed for user $userId: " . $e->getMessage());
-		}
+		PhpbbNames::sync(Util::connection(), $userId, $displayName);
 	}
 
 	/**
