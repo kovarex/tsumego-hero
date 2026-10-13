@@ -31,6 +31,28 @@ class TsumegoCommentsControllerTest extends ControllerTestCase
 		$this->assertSame('my comment', $body['text']);
 	}
 
+	public function testCommentByGoogleUserShowsDisplayName()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'GoogleCommenter'],
+			'tsumego' => ['set_order' => 1, 'status' => 'S'],
+		]);
+
+		// Google accounts have no login name, only a display name
+		$user = ClassRegistry::init('User');
+		$user->id = $context->user['id'];
+		$user->saveField('name', null);
+		$user->saveField('external_id', '123456789012345678901');
+
+		$this->testAction('/tsumego-comments/add', [
+			'method' => 'post',
+			'data' => json_encode(['tsumego_id' => $context->tsumegos[0]['id'], 'text' => 'from a google account']),
+		]);
+
+		$body = json_decode($this->controller->response->body(), true);
+		$this->assertSame('DN_GoogleCommenter', $body['user_name']);
+	}
+
 	public function testDeleteNotFound()
 	{
 		new ContextPreparator(['user' => ['name' => 'kovarex']]);

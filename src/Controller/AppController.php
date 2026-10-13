@@ -78,7 +78,7 @@ class AppController extends Controller
 	 */
 	public static function checkPicture(array $user): string
 	{
-		return User::displayName($user['id'] ?? null, $user['display_name'] ?? $user['name'] ?? null);
+		return User::displayName($user['id'] ?? null, $user['display_name']);
 	}
 
 	public static function saveDanSolveCondition(string $solvedTsumegoRank, int $tId): void

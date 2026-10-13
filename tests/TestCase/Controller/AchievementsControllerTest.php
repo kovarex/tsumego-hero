@@ -88,6 +88,26 @@ class AchievementsControllerTest extends TestCaseWithAuth
 		$this->assertStringNotContainsString('You completed', $result);
 	}
 
+	public function testViewGoogleUserShowsTheirDisplayName()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'viewer'],
+			'other-users' => [['name' => 'Google Player']],
+		]);
+		$this->login('viewer');
+		$targetUser = $context->otherUsers[0];
+
+		// Google accounts have no login name, only a display name
+		$user = ClassRegistry::init('User');
+		$user->id = $targetUser['id'];
+		$user->saveField('name', null);
+		$user->saveField('external_id', '987654321098765432109');
+
+		$result = $this->testAction('/achievements/user/' . $targetUser['id'], ['return' => 'view']);
+
+		$this->assertStringContainsString('DN_Google Player', $result);
+	}
+
 	public function testViewOtherUserShowsTheirUnlocksNotViewers()
 	{
 		$context = new ContextPreparator([

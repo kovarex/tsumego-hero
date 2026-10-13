@@ -63,7 +63,7 @@ class AchievementStatus extends AppModel
 				'name' => $row['Achievement']['name'],
 				'image' => $row['Achievement']['image'],
 				'user_id' => (int) $row['User']['id'],
-				'user_name' => $row['User']['display_name'] ?: $row['User']['name'],
+				'user_name' => $row['User']['display_name'],
 				'user_avatar_url' => User::getAvatarUrl($userData, 20),
 				'user_rank' => $rating > 0 ? Rating::getReadableRankFromRating($rating) : '',
 				'created' => Util::toIso8601($row['AchievementStatus']['created']),
