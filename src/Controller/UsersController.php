@@ -591,10 +591,18 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			return $this->redirect(['action' => 'changename']);
 		}
 
-		// Validate display name length
-		if (strlen($newDisplayName) < 3 || strlen($newDisplayName) > 50)
+		// Validate display name length in characters, not bytes: the column holds 50
+		// characters, and a name in another alphabet takes several bytes per character.
+		$displayNameLength = mb_strlen($newDisplayName);
+		if ($displayNameLength < 3 || $displayNameLength > 50)
 		{
 			CookieFlash::set(__('Display name must be between 3 and 50 characters.'), 'error');
+			return $this->redirect(['action' => 'changename']);
+		}
+
+		if ($newDisplayName === $user['User']['display_name'])
+		{
+			CookieFlash::set(__('Please choose a different display name.'), 'error');
 			return $this->redirect(['action' => 'changename']);
 		}
 

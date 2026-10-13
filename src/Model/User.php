@@ -274,10 +274,10 @@ class User extends AppModel
 		{
 			$suffixStr = " ($suffix)";
 			$maxLength = 50;
-			$baseLength = $maxLength - strlen($suffixStr);
+			$baseLength = $maxLength - mb_strlen($suffixStr);
 
 			// Truncate base value if needed to fit suffix
-			$truncatedBase = $baseLength < strlen($name) ? substr($name, 0, $baseLength) : $name;
+			$truncatedBase = $baseLength < mb_strlen($name) ? mb_substr($name, 0, $baseLength) : $name;
 			$candidate = $truncatedBase . $suffixStr;
 
 			$exists = $userModel->find('count', ['conditions' => ['display_name' => $candidate]]);

@@ -130,6 +130,57 @@ class UpdateNameTest extends ControllerTestCase
 	}
 
 	/**
+	 * Test that an unchanged display name is rejected even when forced.
+	 */
+	public function testUnchangedNameIsRejected(): void
+	{
+		$context = new ContextPreparator([
+			'user' => [
+				'display_name' => 'Andrey (2)',
+				'email' => 'andrey@example.com',
+				'needs_display_name_change' => true,
+			],
+		]);
+
+		$this->testAction('/users/updatename', [
+			'method' => 'post',
+			'data' => ['User' => ['display_name' => 'Andrey (2)']],
+			'return' => 'result',
+		]);
+
+		$updatedUser = ClassRegistry::init('User')->findById($context->user['id']);
+		$this->assertEquals('Andrey (2)', $updatedUser['User']['display_name']);
+		$this->assertEquals(true, $updatedUser['User']['needs_display_name_change']);
+	}
+
+	/**
+	 * Test that the length limit counts characters, not bytes.
+	 */
+	public function testNameLengthIsCountedInCharacters(): void
+	{
+		$context = new ContextPreparator([
+			'user' => [
+				'display_name' => 'Natalya (2)',
+				'email' => 'natalya@example.com',
+				'needs_display_name_change' => true,
+			],
+		]);
+
+		// 26 cyrillic characters, which is 52 bytes
+		$newName = str_repeat("\u{042F}", 26);
+
+		$this->testAction('/users/updatename', [
+			'method' => 'post',
+			'data' => ['User' => ['display_name' => $newName]],
+			'return' => 'result',
+		]);
+
+		$updatedUser = ClassRegistry::init('User')->findById($context->user['id']);
+		$this->assertEquals($newName, $updatedUser['User']['display_name']);
+		$this->assertEquals(false, $updatedUser['User']['needs_display_name_change']);
+	}
+
+	/**
 	 * Test that display name must be at least 3 characters even when forced.
 	 */
 	public function testNameMinimumLength(): void

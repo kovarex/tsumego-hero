@@ -241,19 +241,20 @@ final class AddDisplayName extends AbstractMigration
 				foreach ($renameIds as $id)
 				{
 					// Use (N) suffix format: "John Doe (2)", "John Doe (3)", etc.
-					// Truncate the base so the result never exceeds VARCHAR(50).
+					// Truncate the base so the result never exceeds VARCHAR(50), which
+					// holds 50 characters, not bytes.
 					$maxLength = 50;
 					$suffixStr = ' (' . $suffix . ')';
-					$baseLength = $maxLength - strlen($suffixStr);
-					$truncatedBase = $baseLength < strlen($displayName) ? substr($displayName, 0, $baseLength) : $displayName;
+					$baseLength = $maxLength - mb_strlen($suffixStr);
+					$truncatedBase = $baseLength < mb_strlen($displayName) ? mb_substr($displayName, 0, $baseLength) : $displayName;
 					$newName = $truncatedBase . $suffixStr;
 
 					while ($this->fetchRow("SELECT id FROM user WHERE display_name = " . $this->getAdapter()->getConnection()->quote($newName)))
 					{
 						$suffix++;
 						$suffixStr = ' (' . $suffix . ')';
-						$baseLength = $maxLength - strlen($suffixStr);
-						$truncatedBase = $baseLength < strlen($displayName) ? substr($displayName, 0, $baseLength) : $displayName;
+						$baseLength = $maxLength - mb_strlen($suffixStr);
+						$truncatedBase = $baseLength < mb_strlen($displayName) ? mb_substr($displayName, 0, $baseLength) : $displayName;
 						$newName = $truncatedBase . $suffixStr;
 					}
 
