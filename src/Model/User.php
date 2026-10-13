@@ -177,7 +177,9 @@ class User extends AppModel
 	{
 		if ($user === null || self::isDeleted($user))
 			return null;
-		return $user['display_name'] ?? $user['user_display_name'] ?? $user['name'] ?? $user['user_name'] ?? null;
+
+		$name = $user['display_name'] ?? $user['user_display_name'] ?? null;
+		return $name === null || $name === '' ? null : $name;
 	}
 
 	/**
@@ -241,14 +243,19 @@ class User extends AppModel
 		// Prefixed format (from raw queries): user_id, user_display_name, etc.
 		if (isset($user['user_id']))
 		{
-			$displayName = $user['user_display_name'] ?: ($user['user_name'] ?? 'Unknown');
+			$displayName = (string) ($user['user_display_name'] ?? '');
+			if ($displayName === '')
+				return '<span>' . h(self::DELETED_NAME) . '</span>';
 			$rating = $user['user_rating'] ?? null;
 			$rank = $rating !== null ? Rating::getReadableRankFromRating((float) $rating) : '';
 			return self::renderLinkInternal($user['user_id'], $displayName, $user['user_external_id'] ?? null, $user['user_picture'] ?? null, $user['user_email'] ?? null, $rank);
 		}
 
-		// Standard format: id, display_name, etc.
-		$displayName = $user['display_name'] ?: ($user['name'] ?? 'Unknown');
+		// Standard format: id, display_name, etc. A row without a display name gets the same
+		// placeholder as a gone account, never the login name
+		$displayName = (string) ($user['display_name'] ?? '');
+		if ($displayName === '')
+			return '<span>' . h(self::DELETED_NAME) . '</span>';
 		$rating = $user['rating'] ?? null;
 		$rank = $rating !== null ? Rating::getReadableRankFromRating((float) $rating) : '';
 		return self::renderLinkInternal($user['id'], $displayName, $user['external_id'] ?? null, $user['picture'] ?? null, $user['email'] ?? null, $rank);
