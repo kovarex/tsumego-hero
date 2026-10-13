@@ -535,9 +535,10 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	#[HttpGet]
 	public function changename()
 	{
-		$user = Auth::getUser();
-		if (!$user)
+		if (!Auth::isLoggedIn())
 			return $this->redirect('/users/login');
+
+		$user = Auth::getUser();
 
 		if (empty($user['needs_display_name_change']))
 		{

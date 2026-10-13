@@ -245,6 +245,17 @@ class UpdateNameTest extends ControllerTestCase
 	}
 
 	/**
+	 * Test that a visitor who is not signed in gets sent to the login page.
+	 */
+	public function testChangenamePageSendsAnonymousToLogin(): void
+	{
+		new ContextPreparator(['user' => null]);
+
+		$this->testAction('/users/changename', ['method' => 'get', 'return' => 'result']);
+		$this->assertStringContainsString('/users/login', $this->headers['Location']);
+	}
+
+	/**
 	 * Test that the changename page renders for a forced user.
 	 */
 	public function testChangenamePageRendersForForcedUser(): void
