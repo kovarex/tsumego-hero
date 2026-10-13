@@ -80,8 +80,7 @@ export function Issue({
 					<UserLink
 						userId={issue.user_id}
 						name={authorName}
-						externalId={issue.user_external_id}
-						picture={issue.user_picture}
+						avatarUrl={issue.user_avatar_url}
 						rating={issue.user_rating}
 					/>{' '}
 					•<span className="tsumego-issue__date">{new Date(issue.created).toLocaleDateString()}</span>

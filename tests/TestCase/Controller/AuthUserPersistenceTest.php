@@ -51,7 +51,7 @@ class AuthUserPersistenceTest extends ControllerTestCase
 	 */
 	public function testGoogleUserFieldsPreservedInDatabase()
 	{
-		// Arrange: Create a Google OAuth user (name=NULL, display_name set)
+		// Arrange: Create a Google account (no login name, display_name set)
 		$context = new ContextPreparator([
 			'user' => [
 				'display_name' => 'OAuthUser',

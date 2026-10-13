@@ -53,6 +53,44 @@ class TsumegoCommentsControllerTest extends ControllerTestCase
 		$this->assertSame('DN_GoogleCommenter', $body['user_name']);
 	}
 
+	public function testCommentsIndexSendsAuthorAvatars()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'kovarex', 'email' => 'kovarex@example.com'],
+			'tsumego' => ['set_order' => 1, 'status' => 'S', 'issues' => [['message' => 'an issue']], 'comments' => [['message' => 'a comment']]],
+		]);
+
+		$this->testAction('/tsumego-comments/index/' . $context->tsumegos[0]['id'], ['method' => 'get']);
+
+		$body = json_decode($this->controller->response->body(), true);
+		$avatar = 'https://www.gravatar.com/avatar/' . md5('kovarex@example.com') . '?s=20&d=identicon';
+		$this->assertSame($avatar, $body['issues'][0]['user_avatar_url']);
+		$this->assertSame($avatar, $body['issues'][0]['comments'][0]['user_avatar_url']);
+		$this->assertSame($avatar, $body['standalone'][0]['user_avatar_url']);
+	}
+
+	public function testCommentByGoogleUserShowsTheirGooglePicture()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'GoogleCommenter'],
+			'tsumego' => ['set_order' => 1, 'status' => 'S'],
+		]);
+
+		// Google accounts show the picture of their Google profile
+		$user = ClassRegistry::init('User');
+		$user->id = $context->user['id'];
+		$user->saveField('external_id', '123456789012345678901');
+		$user->saveField('picture', 'https://lh3.googleusercontent.com/a/abc123');
+
+		$this->testAction('/tsumego-comments/add', [
+			'method' => 'post',
+			'data' => json_encode(['tsumego_id' => $context->tsumegos[0]['id'], 'text' => 'from a google account']),
+		]);
+
+		$body = json_decode($this->controller->response->body(), true);
+		$this->assertSame('https://lh3.googleusercontent.com/a/abc123=s20', $body['user_avatar_url']);
+	}
+
 	public function testDeleteNotFound()
 	{
 		new ContextPreparator(['user' => ['name' => 'kovarex']]);

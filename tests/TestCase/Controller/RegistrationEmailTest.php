@@ -136,32 +136,33 @@ class RegistrationEmailTest extends ControllerTestCase
 	}
 
 	/**
-	 * Test that registration handles display_name conflicts with Google users.
+	 * Test that registration handles display_name conflicts with Google accounts.
 	 *
-	 * Scenario: Google user has name="g__John" but display_name="John".
-	 * New user registers with name="John" (unique), but display_name would conflict.
-	 * Registration should succeed with unique display_name like "John (2)".
+	 * Scenario: a Google account has no login name and holds the display name
+	 * "ConflictName". A new player registers with the login name "ConflictName",
+	 * which is free, so registration succeeds with the display name "ConflictName (2)".
 	 */
 	public function testRegistrationHandlesDisplayNameConflictWithGoogleUser()
 	{
-		// Create a Google user with display_name="ConflictName"
+		// Create a Google account that holds the display name
 		$context = new ContextPreparator(['user' => null]);
 
 		$userModel = ClassRegistry::init('User');
 		$userModel->create();
 		$userModel->save([
-			'name' => 'g__ConflictName',  // Google user naming pattern
+			'name' => null,
 			'display_name' => 'ConflictName',  // This is the conflict point
 			'email' => 'google@gmail.com',
 			'password_hash' => 'google_oauth',
 			'external_id' => '123456789',
 		], false);
 
-		// New regular user registers with name="ConflictName" (unique from "g__ConflictName")
+		// The new player wants the login name "ConflictName", which the Google account
+		// does not use
 		$this->testAction('users/add', [
 			'data' => [
 				'User' => [
-					'name' => 'ConflictName',  // Different from g__ConflictName
+					'name' => 'ConflictName',
 					'email' => 'newuser@example.com',
 					'password1' => 'password123',
 					'password2' => 'password123',
@@ -181,7 +182,7 @@ class RegistrationEmailTest extends ControllerTestCase
 		$this->assertEquals('ConflictName (2)', $newUser['User']['display_name'],
 			"display_name should be unique with suffix");
 
-		// Google user should still have their display_name
+		// Google account should still hold its display name
 		$googleUser = $userModel->find('first', [
 			'conditions' => ['external_id' => '123456789']
 		]);

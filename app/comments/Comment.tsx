@@ -117,9 +117,8 @@ export function Comment({
 									<UserLink
 										userId={comment.user_id}
 										name={comment.user_name}
+										avatarUrl={comment.user_avatar_url}
 										rating={comment.user_rating}
-										externalId={comment.user_external_id}
-										picture={comment.user_picture}
 									/>
 									:
 								</span>

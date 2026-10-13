@@ -134,6 +134,36 @@ class GoogleSignInTest extends ControllerTestCase
 	}
 
 	/**
+	 * Test that the picture from a Google sign-in ends up in the comments of that player.
+	 */
+	public function testCommentBySignedInGoogleUserShowsTheirGooglePicture(): void
+	{
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 1, 'status' => 'S']]);
+
+		$this->fakeVerifier->addToken('commenters_token', [
+			'sub' => '123456789012345678901',
+			'email' => 'commenter@gmail.com',
+			'name' => 'Google Commenter',
+			'picture' => 'https://lh3.googleusercontent.com/a/photo',
+		]);
+		$this->googleSignIn('commenters_token');
+
+		// The test auth cookie decides who is logged in, so point it at the account
+		// the sign-in just created, like the session would in production
+		$googleUser = ClassRegistry::init('User')->find('first', ['conditions' => ['external_id' => '123456789012345678901']]);
+		$_COOKIE['hackedLoggedInUserID'] = $googleUser['User']['id'];
+
+		$this->testAction('/tsumego-comments/add', [
+			'method' => 'post',
+			'data' => json_encode(['tsumego_id' => $context->tsumegos[0]['id'], 'text' => 'from a google account']),
+		]);
+
+		$body = json_decode($this->controller->response->body(), true);
+		$this->assertSame('Google Commenter', $body['user_name']);
+		$this->assertSame('https://lh3.googleusercontent.com/a/photo=s20', $body['user_avatar_url']);
+	}
+
+	/**
 	 * Test that email is updated on login if changed in Google.
 	 */
 	public function testEmailUpdatedOnLogin(): void

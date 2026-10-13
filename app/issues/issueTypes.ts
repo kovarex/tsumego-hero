@@ -26,9 +26,8 @@ export interface Issue
 	created: string;
 	user_id: number;
 	user_name: string | null;
-	user_picture: string | null;
+	user_avatar_url: string | null;
 	user_rating: number | null;
-	user_external_id: string | null;
 	isAdmin: boolean;
 	comments: Comment[];
 }
