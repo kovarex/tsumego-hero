@@ -10,6 +10,8 @@ use App\Utility\FakeGoogleTokenVerifier;
  */
 class GoogleSignInTest extends ControllerTestCase
 {
+	private const CSRF_TOKEN = 'test-csrf-token';
+
 	private FakeGoogleTokenVerifier $fakeVerifier;
 
 	public function setUp(): void
@@ -26,6 +28,22 @@ class GoogleSignInTest extends ControllerTestCase
 		UsersController::setTestTokenVerifier(null);
 		$this->fakeVerifier->reset();
 		parent::tearDown();
+	}
+
+	/**
+	 * Run the sign-in action with a credential and the g_csrf_token cookie and
+	 * post field that Google Sign-In sends and the CSRF check compares.
+	 *
+	 * @param string $credential The credential token to post
+	 * @param string $csrfCookie The value of the g_csrf_token cookie
+	 */
+	private function googleSignIn(string $credential, string $csrfCookie = self::CSRF_TOKEN): void
+	{
+		$_COOKIE['g_csrf_token'] = $csrfCookie;
+		$this->testAction('/users/googlesignin', [
+			'data' => ['credential' => $credential, 'g_csrf_token' => self::CSRF_TOKEN],
+			'method' => 'post',
+		]);
 	}
 
 	/**
@@ -62,10 +80,7 @@ class GoogleSignInTest extends ControllerTestCase
 			'picture' => 'https://lh3.googleusercontent.com/photo.jpg',
 		]);
 
-		$this->testAction('/users/googlesignin', [
-			'data' => ['credential' => 'valid_token_123'],
-			'method' => 'post',
-		]);
+		$this->googleSignIn('valid_token_123');
 
 		// Verify user was created with correct data
 		$User = ClassRegistry::init('User');
@@ -104,10 +119,7 @@ class GoogleSignInTest extends ControllerTestCase
 			'picture' => 'https://new-picture.jpg',
 		]);
 
-		$this->testAction('/users/googlesignin', [
-			'data' => ['credential' => 'janes_token'],
-			'method' => 'post',
-		]);
+		$this->googleSignIn('janes_token');
 
 		// Verify no duplicate user was created
 		$User = ClassRegistry::init('User');
@@ -142,10 +154,7 @@ class GoogleSignInTest extends ControllerTestCase
 			'picture' => null,
 		]);
 
-		$this->testAction('/users/googlesignin', [
-			'data' => ['credential' => 'email_update_token'],
-			'method' => 'post',
-		]);
+		$this->googleSignIn('email_update_token');
 
 		$User = ClassRegistry::init('User');
 		$updatedUser = $User->findById($existingUser['id']);
@@ -177,10 +186,7 @@ class GoogleSignInTest extends ControllerTestCase
 			'picture' => 'https://photo.jpg',
 		]);
 
-		$this->testAction('/users/googlesignin', [
-			'data' => ['credential' => 'collision_token'],
-			'method' => 'post',
-		]);
+		$this->googleSignIn('collision_token');
 
 		// Verify new user has unique name with suffix
 		$newUser = $User->find('first', [
@@ -209,10 +215,7 @@ class GoogleSignInTest extends ControllerTestCase
 
 		// Don't add any valid tokens - fakeVerifier will return null
 
-		$this->testAction('/users/googlesignin', [
-			'data' => ['credential' => 'invalid_token'],
-			'method' => 'post',
-		]);
+		$this->googleSignIn('invalid_token');
 
 		// Verify token was attempted
 		$this->assertTrue($this->fakeVerifier->wasVerified('invalid_token'));
@@ -241,10 +244,7 @@ class GoogleSignInTest extends ControllerTestCase
 			'picture' => $googlePictureUrl,
 		]);
 
-		$this->testAction('/users/googlesignin', [
-			'data' => ['credential' => 'pic_token'],
-			'method' => 'post',
-		]);
+		$this->googleSignIn('pic_token');
 
 		$User = ClassRegistry::init('User');
 		$user = $User->find('first', [
@@ -270,10 +270,7 @@ class GoogleSignInTest extends ControllerTestCase
 			// No picture field
 		]);
 
-		$this->testAction('/users/googlesignin', [
-			'data' => ['credential' => 'no_pic_token'],
-			'method' => 'post',
-		]);
+		$this->googleSignIn('no_pic_token');
 
 		$User = ClassRegistry::init('User');
 		$user = $User->find('first', [
@@ -303,10 +300,7 @@ class GoogleSignInTest extends ControllerTestCase
 			'picture' => null,
 		]);
 
-		$this->testAction('/users/googlesignin', [
-			'data' => ['credential' => 'no_name_token'],
-			'method' => 'post',
-		]);
+		$this->googleSignIn('no_name_token');
 
 		$User = ClassRegistry::init('User');
 		$user = $User->find('first', [
@@ -333,10 +327,7 @@ class GoogleSignInTest extends ControllerTestCase
 			'picture' => null,
 		]);
 
-		$this->testAction('/users/googlesignin', [
-			'data' => ['credential' => 'empty_name_token'],
-			'method' => 'post',
-		]);
+		$this->googleSignIn('empty_name_token');
 
 		$User = ClassRegistry::init('User');
 		$user = $User->find('first', [
@@ -346,5 +337,30 @@ class GoogleSignInTest extends ControllerTestCase
 		$this->assertNotEmpty($user, 'User should be created even with empty name');
 		$this->assertNull($user['User']['name'], 'Google users should have NULL name');
 		$this->assertEquals('User 555555', $user['User']['display_name'], 'Should use last 6 digits of sub');
+	}
+
+	/**
+	 * Test that a request whose g_csrf_token cookie does not match the posted
+	 * one is rejected and creates no account.
+	 */
+	public function testMismatchingCsrfTokenCreatesNoUser(): void
+	{
+		// Clean DB state
+		new ContextPreparator(['user' => null]);
+
+		$this->fakeVerifier->addToken('csrf_token', [
+			'sub' => '66666666666666666666',
+			'email' => 'csrf@gmail.com',
+			'name' => 'Csrf User',
+		]);
+
+		$this->googleSignIn('csrf_token', 'a-different-token');
+
+		$User = ClassRegistry::init('User');
+		$user = $User->find('first', [
+			'conditions' => ['external_id' => '66666666666666666666'],
+		]);
+
+		$this->assertEmpty($user, 'No account should be created for a mismatching CSRF token');
 	}
 }

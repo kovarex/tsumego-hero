@@ -373,6 +373,9 @@ class User extends AppModel
 	 * Local users have external_id = NULL and use password authentication.
 	 * Use this for password login and password reset to exclude Google users.
 	 *
+	 * The address is not unique in the database, so the order makes the result of
+	 * several matching accounts deterministic (the oldest account wins).
+	 *
 	 * @param string $email Email to search for
 	 * @return array|null User data or null if not found
 	 */
@@ -383,13 +386,17 @@ class User extends AppModel
 				'email' => $email,
 				'external_id IS NULL',
 			],
+			'order' => ['id ASC'],
 		]) ?: null;
 	}
 
 	/**
 	 * Get the avatar URL for a user with priority: Google picture > Gravatar > default.
 	 *
-	 * @param UserRow $user
+	 * Only the avatar fields are needed, the callers pass either a full user row or
+	 * just these three values.
+	 *
+	 * @param array{external_id?: string|null, picture?: string|null, email?: string|null} $user
 	 * @param int $size Desired avatar size in pixels (default 40)
 	 * @return string Avatar URL
 	 */

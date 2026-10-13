@@ -23,7 +23,8 @@ class UsersController extends AppController
 	protected ?GoogleTokenVerifierInterface $tokenVerifier = null;
 
 	/**
-	 * Static test verifier (used by tests to inject FakeGoogleTokenVerifier)
+	 * Static test verifier (used by tests to inject FakeGoogleTokenVerifier).
+	 * Only honored on a dev/CI instance, so it can never take effect in production.
 	 */
 	private static ?GoogleTokenVerifierInterface $testVerifier = null;
 
@@ -32,15 +33,7 @@ class UsersController extends AppController
 	 */
 	public static function setTestTokenVerifier(?GoogleTokenVerifierInterface $verifier): void
 	{
-		self::$testVerifier = $verifier;
-	}
-
-	/**
-	 * Check if running in test environment (test verifier is set)
-	 */
-	private function isTestEnvironment(): bool
-	{
-		return self::$testVerifier !== null;
+		self::$testVerifier = Util::isInTestEnvironment() ? $verifier : null;
 	}
 
 	/**
@@ -379,10 +372,9 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		if ($user = $this->User->findByName($input))
 			return $user;
 
-		// findByEmail could find Google users, which we'll handle in login()
-		if ($user = $this->User->findByEmail($input))
-			return $user;
-		return null;
+		// Only a local account can be signed in with a password, so an address that is
+		// also used by a Google account must not shadow it.
+		return $this->User->findLocalUserByEmail($input);
 	}
 
 	public function login()
@@ -411,7 +403,12 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$user = $this->getUserFromNameOrEmail();
 		if (!$user)
 		{
-			CookieFlash::set('Unknown user', 'error');
+			// The address may belong to a Google account only, which can't log in here
+			$googleUser = $this->User->findByEmail($this->request->data['username']);
+			if ($googleUser && User::isGoogleUser($googleUser['User']))
+				CookieFlash::set('This account uses Google Sign-In. Please use the "Sign in with Google" button.', 'info');
+			else
+				CookieFlash::set('Unknown user', 'error');
 			return null;
 		}
 
@@ -1176,8 +1173,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 		// These must match to prevent cross-site request forgery
 		$csrfToken = $_POST['g_csrf_token'] ?? ($this->request->data['g_csrf_token'] ?? '');
 		$csrfCookie = $_COOKIE['g_csrf_token'] ?? '';
-		// Skip CSRF check in test environment (testAction doesn't set cookies)
-		if (!$this->isTestEnvironment() && (empty($csrfToken) || $csrfToken !== $csrfCookie))
+		if (empty($csrfToken) || $csrfToken !== $csrfCookie)
 		{
 			CakeLog::write('warning', 'GoogleSignIn: CSRF validation failed');
 			CookieFlash::set('CSRF validation failed', 'error');
@@ -1192,7 +1188,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 
 		if (!$token_data)
 		{
-			CakeLog::write('debug', 'GoogleSignIn: Token verification failed for token: ' . substr($id_token, 0, 20));
+			CakeLog::write('debug', 'GoogleSignIn: Token verification failed');
 			CookieFlash::set('Invalid Google token', 'error');
 			return $this->redirect('/users/login');
 		}
@@ -1330,7 +1326,7 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 			return null;
 
 		$userID = (int) $user['User']['id'];
-		AdminActivityLogger::log(AdminActivityType::DELETE_USER, null, null, $user['User']['name'], null, $userID);
+		AdminActivityLogger::log(AdminActivityType::DELETE_USER, null, null, $user['User']['display_name'], null, $userID);
 		User::deleteAccount($userID);
 		Cache::delete('recent_achievements_7', 'default');
 		if (Auth::getUserID() == $userID)
@@ -1392,10 +1388,10 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 
 	public function solveHistory(string $userID): void
 	{
-		$profileUser = Util::query("SELECT name, deleted FROM user WHERE id = ?", [$userID])[0] ?? null;
+		$profileUser = Util::query("SELECT display_name, name, deleted FROM user WHERE id = ?", [$userID])[0] ?? null;
 		if ($profileUser)
 			$this->assertUserVisible($profileUser);
-		$userName = $profileUser['name'] ?? 'Unknown';
+		$userName = $profileUser['display_name'] ?? 'Unknown';
 		$PAGE_SIZE = 500;
 		$pageIndex = isset($this->request->query['page']) ? max(1, (int) $this->request->query['page']) : 1;
 		$count = Util::query("SELECT COUNT(*) FROM tsumego_attempt where user_id = ?", [$userID])[0]['COUNT(*)'];

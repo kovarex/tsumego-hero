@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\Auth;
+
 /**
  * Tests for email login behavior with Google/non-Google users.
  *
@@ -71,6 +73,85 @@ class EmailLoginTest extends ControllerTestCase
 		// Should NOT redirect (failed login - user not found by email)
 		// The getUserFromNameOrEmail excludes Google users from email lookup
 		$this->assertEquals(200, $this->controller->response->statusCode());
+	}
+
+	/**
+	 * Test: An address shared with a Google account logs into the local account.
+	 */
+	public function testSharedEmailLogsIntoTheLocalAccount(): void
+	{
+		new ContextPreparator(['user' => null]);
+
+		// The Google account is older, so a lookup by address alone would pick it
+		$User = ClassRegistry::init('User');
+		$User->create();
+		$User->save([
+			'name' => null,
+			'display_name' => 'Google First',
+			'email' => 'shared@example.com',
+			'password_hash' => 'google_oauth',
+			'external_id' => '987654321',
+		], false);
+
+		$context = new ContextPreparator([
+			'other-users' => [
+				[
+					'name' => 'LocalOwner',
+					'display_name' => 'Local Owner',
+					'email' => 'shared@example.com',
+				],
+			],
+		]);
+
+		$this->testAction('/users/login', [
+			'method' => 'post',
+			'data' => [
+				'username' => 'shared@example.com',
+				'password' => self::TEST_PASSWORD,
+			],
+		]);
+
+		$this->assertContains($this->controller->response->statusCode(), [301, 302]);
+		$this->assertEquals($context->otherUsers[0]['id'], Auth::getUserID());
+	}
+
+	/**
+	 * Test: A Google account with the same address does not block the local account.
+	 */
+	public function testSharedEmailDoesNotBlockLoginByName(): void
+	{
+		new ContextPreparator(['user' => null]);
+
+		$User = ClassRegistry::init('User');
+		$User->create();
+		$User->save([
+			'name' => null,
+			'display_name' => 'Google First',
+			'email' => 'shared@example.com',
+			'password_hash' => 'google_oauth',
+			'external_id' => '987654321',
+		], false);
+
+		$context = new ContextPreparator([
+			'other-users' => [
+				[
+					'name' => 'LocalOwner',
+					'display_name' => 'Local Owner',
+					'email' => 'shared@example.com',
+				],
+			],
+		]);
+
+		$this->testAction('/users/login', [
+			'method' => 'post',
+			'data' => [
+				'username' => 'LocalOwner',
+				'password' => self::TEST_PASSWORD,
+			],
+		]);
+
+		$this->assertContains($this->controller->response->statusCode(), [301, 302]);
+		$this->assertEquals($context->otherUsers[0]['id'], Auth::getUserID());
 	}
 
 	/**
