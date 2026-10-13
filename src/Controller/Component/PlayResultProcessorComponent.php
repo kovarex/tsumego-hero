@@ -5,6 +5,7 @@ use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\HeroPowers;
 use App\Utility\Level;
+use App\Utility\MistakeTraining;
 use App\Utility\PlayOutcome;
 use App\Utility\Rating;
 use App\Utility\SetCompletionCounter;
@@ -69,6 +70,9 @@ class PlayResultProcessorComponent extends Component
 			$result['potion_triggered'] = $this->processPotion();
 		$this->processXpChange($tsumego, $result, $previousStatusValue, $originalTsumegoRating, $progressDeletionCount);
 		$this->updateTsumegoAttempt($tsumego, $result, $previousStatusValue, $seconds);
+		// The pool is fed from every mode: a first-encounter fail starts the review
+		// ladder, a later clean solve climbs it.
+		MistakeTraining::recordResult(Auth::getUserID(), $tsumegoID, $solved, $previousStatusValue);
 		$this->processErrorAchievement($result, $previousStatusValue, $outcome);
 		$this->processUnsortedStuff($tsumego, $result, $previousStatusValue);
 
@@ -108,6 +112,8 @@ class PlayResultProcessorComponent extends Component
 	 */
 	public function processPotion(): bool
 	{
+		if (Auth::isInMistakeTrainingMode())
+			return false;
 		if (!HeroPowers::canPotionTrigger())
 			return false;
 
@@ -164,6 +170,9 @@ class PlayResultProcessorComponent extends Component
 
 	private function updateTsumegoStatus(array $previousTsumego, array &$result, ?array $previousTsumegoStatus): string
 	{
+		if (Auth::isInMistakeTrainingMode())
+			return $previousTsumegoStatus['TsumegoStatus']['status'] ?? TsumegoStatus::$NOT_VISITED;
+
 		if ($previousTsumegoStatus == null)
 		{
 			$previousTsumegoStatus['TsumegoStatus'] = [];
@@ -173,17 +182,18 @@ class PlayResultProcessorComponent extends Component
 		}
 
 		$newStatus = $this->getNewStatus($result['solved'], $previousTsumegoStatus['TsumegoStatus']['status'], $result);
+
 		if (TsumegoUtil::isSolvedStatus($newStatus) && !TsumegoUtil::isSolvedStatus($previousTsumegoStatus['TsumegoStatus']['status']))
 			Auth::incrementUserField('solved', 1);
 		$previousTsumegoStatus['TsumegoStatus']['status'] = $newStatus;
 		$previousTsumegoStatus['TsumegoStatus']['created'] = date('Y-m-d H:i:s');
 		ClassRegistry::init('TsumegoStatus')->save($previousTsumegoStatus);
-		return $previousTsumegoStatus['TsumegoStatus']['status'];
+		return $newStatus;
 	}
 
 	private function updateTsumegoAttempt(array $previousTsumego, array $result, string $previousTsumegoStatus, float $seconds): void
 	{
-		if (Auth::isInTimeMode())
+		if (Auth::isInTimeMode() || Auth::isInMistakeTrainingMode())
 			return;
 		if (TsumegoUtil::isRecentlySolved($previousTsumegoStatus))
 			return;
@@ -322,6 +332,8 @@ class PlayResultProcessorComponent extends Component
 
 	private function processUnsortedStuff(array $previousTsumego, array $result, string $previousTsumegoStatus): void
 	{
+		if (Auth::isInMistakeTrainingMode())
+			return;
 		if (!Level::XPAndRatingIsGainedInTsumegoStatus($previousTsumegoStatus))
 			return;
 		if (!$result['solved'])
