@@ -17,6 +17,25 @@ class SitemapsController extends AppController
 	public $uses = ['Set', 'Tag'];
 
 	/**
+	 * Pages a visitor can browse without signing in. Each one is resolved
+	 * through the router before it is listed.
+	 */
+	private const PUBLIC_PAGES = [
+		['controller' => 'achievements', 'action' => 'index'],
+		['controller' => 'changelog', 'action' => 'index'],
+		['controller' => 'sets', 'action' => 'index'],
+		['controller' => 'sites', 'action' => 'about'],
+		['controller' => 'sites', 'action' => 'gotutorial'],
+		['controller' => 'sites', 'action' => 'websitefunctions'],
+		['controller' => 'users', 'action' => 'achievements'],
+		['controller' => 'users', 'action' => 'added_tags'],
+		['controller' => 'users', 'action' => 'highscore'],
+		['controller' => 'users', 'action' => 'leaderboard'],
+		['controller' => 'users', 'action' => 'rating'],
+		['controller' => 'users', 'action' => 'time_mode'],
+	];
+
+	/**
 	 * Generate XML sitemap
 	 *
 	 * Outputs sitemap.xml with all public URLs.
@@ -64,25 +83,20 @@ class SitemapsController extends AppController
 		]);
 
 		foreach ($sets as $set)
-			$urls[] = Router::url(['controller' => 'sets', 'action' => 'view', $set['Set']['id']], true);
+			$urls[] = self::_urlOf(['controller' => 'sets', 'action' => 'view', $set['Set']['id']]);
 
-		// All tags
+		// All approved tags, on the page that serves tags
 		$tags = $this->Tag->find('all', [
-			'fields' => ['Tag.name'],
+			'conditions' => ['Tag.approved' => 1],
+			'fields' => ['Tag.id'],
 			'order' => ['Tag.name' => 'ASC']
 		]);
 
 		foreach ($tags as $tag)
-			$urls[] = Router::url(['controller' => 'sets', 'action' => 'tag', $tag['Tag']['name']], true);
+			$urls[] = self::_urlOf(['controller' => 'tags', 'action' => 'view', $tag['Tag']['id']]);
 
-		// Static pages
-		$staticPages = [
-			['controller' => 'hero', 'action' => 'index'],
-			['controller' => 'time_mode', 'action' => 'play'],
-		];
-
-		foreach ($staticPages as $page)
-			$urls[] = Router::url(['controller' => $page['controller'], 'action' => $page['action']], true);
+		foreach (self::PUBLIC_PAGES as $page)
+			$urls[] = self::_urlOf($page);
 
 		// All individual puzzles in public sets
 		$baseUrl = Router::url('/', true);
@@ -96,7 +110,37 @@ ORDER BY set_connection.id ASC");
 		foreach ($puzzleIds as $row)
 			$urls[] = $baseUrl . $row['id'];
 
-		return $urls;
+		return array_values(array_filter($urls));
+	}
+
+	/**
+	 * URL for a route, or null when no controller serves it, so the sitemap
+	 * only ever lists pages that answer.
+	 *
+	 * @param array<int|string, mixed> $route
+	 */
+	public static function _urlOf(array $route): ?string
+	{
+		$controller = (string) $route['controller'];
+		$action = (string) $route['action'];
+		if (!self::_controllerServesAction($controller, $action))
+		{
+			CakeLog::warning('Sitemap: ' . $controller . '::' . $action . '() does not exist, leaving it out');
+			return null;
+		}
+		return Router::url($route, true);
+	}
+
+	/**
+	 * Whether an action a URL would point at can actually be requested. The
+	 * leading underscore keeps these helpers out of the router
+	 * (Controller::_isPrivateAction).
+	 */
+	public static function _controllerServesAction(string $controller, string $action): bool
+	{
+		$class = Inflector::camelize($controller) . 'Controller';
+		App::uses($class, 'Controller');
+		return class_exists($class) && method_exists($class, $action);
 	}
 
 	/**

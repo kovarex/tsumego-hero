@@ -30,9 +30,9 @@ class SitemapsControllerTest extends ControllerTestCase
 	}
 
 	/**
-	 * Test sitemap includes tags
+	 * A tag in the sitemap has to point at the page that serves tags
 	 */
-	public function testSitemapIncludesTags()
+	public function testSitemapTagUrlsOpenTheTagPage()
 	{
 		$context = new ContextPreparator([
 			'tags' => [['name' => 'Test Tag']],
@@ -46,13 +46,40 @@ class SitemapsControllerTest extends ControllerTestCase
 			'return' => 'contents'
 		]);
 
-		$this->assertStringContainsString('/sets/tag/Test%20Tag', $result);
+		$this->assertStringContainsString('/tags/view/' . $context->tags[0]['id'], $result);
+		$this->assertStringNotContainsString('/sets/tag/', $result);
 	}
 
 	/**
-	 * Test sitemap includes static pages
+	 * Only approved tags are published
 	 */
-	public function testSitemapIncludesStaticPages()
+	public function testSitemapListsOnlyApprovedTags()
+	{
+		$context = new ContextPreparator([
+			'tags' => [
+				['name' => 'Approved Tag'],
+				['name' => 'Pending Tag', 'approved' => 0]
+			]
+		]);
+
+		Cache::delete('sitemap_xml', 'long');
+
+		$result = $this->testAction('/sitemap.xml', [
+			'method' => 'get',
+			'return' => 'contents'
+		]);
+
+		$approved = self::tagIdByName('Approved Tag');
+		$pending = self::tagIdByName('Pending Tag');
+
+		$this->assertStringContainsString('/tags/view/' . $approved, $result);
+		$this->assertStringNotContainsString('/tags/view/' . $pending, $result);
+	}
+
+	/**
+	 * The home page is listed
+	 */
+	public function testSitemapIncludesTheHomePage()
 	{
 		Cache::delete('sitemap_xml', 'long');
 
@@ -61,8 +88,136 @@ class SitemapsControllerTest extends ControllerTestCase
 			'return' => 'contents'
 		]);
 
-		$this->assertStringContainsString('/hero', $result);
-		$this->assertStringContainsString('/time_mode/play', $result);
+		$this->assertStringContainsString('<loc>' . self::baseUrl() . '/</loc>', $result);
+	}
+
+	/**
+	 * Every page the site offers to a visitor is in the sitemap
+	 */
+	public function testSitemapCoversThePagesTheSiteLinksTo()
+	{
+		Cache::delete('sitemap_xml', 'long');
+
+		$home = $this->testAction('/', [
+			'method' => 'get',
+			'return' => 'contents'
+		]);
+		$sitemap = $this->testAction('/sitemap.xml', [
+			'method' => 'get',
+			'return' => 'contents'
+		]);
+
+		// Linked by the site but kept out of the sitemap: they need a sign-in,
+		// belong to one player, or are a tool rather than content.
+		$staysOut = [
+			'/forums',
+			'/sites/impressum',
+			'/tsumegos/duplicatesearch/',
+			'/tsumegos/play/',
+			'/users/login',
+			'/users/view/'
+		];
+
+		$pages = [];
+		preg_match_all('~href="(/[^"#?]*)"~', (string) $home, $matches);
+		foreach (array_unique($matches[1]) as $link)
+		{
+			if ($link === '/' || str_contains(basename($link), '.'))
+				continue;
+			if (preg_match('#^/(\d+|sets/view/\d+|tags/view/\d+)$#', $link))
+				continue;
+			foreach ($staysOut as $prefix)
+				if (str_starts_with($link, $prefix))
+					continue 2;
+			$pages[] = $link;
+		}
+
+		$this->assertNotEmpty($pages);
+		foreach ($pages as $page)
+			$this->assertStringContainsString('<loc>' . self::baseUrl() . $page . '</loc>', $sitemap);
+	}
+
+	/**
+	 * Every page in the sitemap opens without signing in
+	 */
+	public function testEveryPageInTheSitemapOpensForAVisitor()
+	{
+		Cache::delete('sitemap_xml', 'long');
+
+		$result = $this->testAction('/sitemap.xml', [
+			'method' => 'get',
+			'return' => 'contents'
+		]);
+
+		preg_match_all('#<loc>([^<]+)</loc>#', (string) $result, $matches);
+		$this->assertNotEmpty($matches[1]);
+
+		foreach ($matches[1] as $url)
+		{
+			$this->testAction((string) parse_url($url, PHP_URL_PATH), ['method' => 'get']);
+			$this->assertSame(200, $this->controller->response->statusCode(), $url);
+		}
+	}
+
+	/**
+	 * Every listed URL is served by a controller and an action
+	 */
+	public function testSitemapListsOnlyUrlsThatExist()
+	{
+		$context = new ContextPreparator([
+			'set' => ['public' => 1],
+			'tags' => [['name' => 'Test Tag']],
+			'tsumego' => ['sgf' => '(;GM[1]FF[4]CA[UTF-8]SZ[19];B[aa];W[ab])']
+		]);
+
+		Cache::delete('sitemap_xml', 'long');
+
+		$result = $this->testAction('/sitemap.xml', [
+			'method' => 'get',
+			'return' => 'contents'
+		]);
+
+		preg_match_all('#<loc>([^<]+)</loc>#', $result, $matches);
+		$this->assertNotEmpty($matches[1]);
+
+		foreach ($matches[1] as $url)
+		{
+			$route = Router::parse((string) parse_url($url, PHP_URL_PATH));
+			$this->assertTrue(
+				self::controllerServesAction($route['controller'], $route['action']),
+				$url . ' has no ' . $route['controller'] . '::' . $route['action'] . '() to serve it'
+			);
+		}
+	}
+
+	/**
+	 * A route becomes a URL only when an action serves it
+	 */
+	public function testSitemapPublishesOnlyUrlsWithAnAction()
+	{
+		$this->assertNull(SitemapsController::_urlOf(['controller' => 'sets', 'action' => 'tag', 'Ladder']));
+		$this->assertNull(SitemapsController::_urlOf(['controller' => 'hero', 'action' => 'index']));
+		$this->assertSame(
+			'/tags/view/1',
+			parse_url((string) SitemapsController::_urlOf(['controller' => 'tags', 'action' => 'view', 1]), PHP_URL_PATH)
+		);
+	}
+
+	private static function controllerServesAction(string $controller, string $action): bool
+	{
+		$class = Inflector::camelize($controller) . 'Controller';
+		App::uses($class, 'Controller');
+		return class_exists($class) && method_exists($class, $action);
+	}
+
+	private static function tagIdByName(string $name): int
+	{
+		return (int) ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => $name]])['Tag']['id'];
+	}
+
+	private static function baseUrl(): string
+	{
+		return rtrim(Router::url('/', true), '/');
 	}
 
 	/**
