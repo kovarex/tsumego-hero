@@ -89,6 +89,11 @@ class UserTest extends CakeTestCase
 		$this->assertStringContainsString('<img', $html);
 		$this->assertStringContainsString('user-avatar', $html);
 		$this->assertStringContainsString('gravatar.com/avatar/', $html);
+		// A page shows up to a thousand of these, so they load lazily, decode off
+		// the main thread and do not tell Gravatar which page the visitor is on.
+		$this->assertStringContainsString('loading="lazy"', $html);
+		$this->assertStringContainsString('decoding="async"', $html);
+		$this->assertStringContainsString('referrerpolicy="no-referrer"', $html);
 	}
 
 	/**
@@ -246,7 +251,7 @@ class UserTest extends CakeTestCase
 	// NOTE: The User model's checkUnique validation does NOT work because
 	// the email column has no UNIQUE constraint in the database. Email
 	// uniqueness is enforced at the CONTROLLER level (UsersController::add).
-	// See tests/TestCase/Controller/RegistrationEmailTest.php for those tests.
+	// See tests/TestCase/Controller/RegistrationTest.php for those tests.
 
 	// =====================================================================
 	// isGoogleUser Tests
@@ -314,5 +319,32 @@ class UserTest extends CakeTestCase
 			'email' => 'test@example.com',
 		];
 		$this->assertTrue(User::isUsingGravatar($user));
+	}
+
+	/**
+	 * Test that a display name can not be empty.
+	 */
+	public function testDisplayNameCannotBeBlank()
+	{
+		$Model = ClassRegistry::init('User');
+		$Model->create();
+		$Model->set([
+			'name' => 'SomeLoginName',
+			'display_name' => '',
+			'email' => 'blank@example.com',
+		]);
+		$this->assertFalse($Model->validates());
+	}
+
+	/**
+	 * Test that a generated display name fits the column.
+	 */
+	public function testGenerateUniqueDisplayNameFitsTheColumn()
+	{
+		new ContextPreparator(['user' => null]);
+
+		$generated = User::generateUniqueDisplayName(str_repeat('A', 70));
+
+		$this->assertSame(str_repeat('A', 50), $generated);
 	}
 }

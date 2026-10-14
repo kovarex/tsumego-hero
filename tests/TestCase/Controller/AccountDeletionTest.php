@@ -150,7 +150,7 @@ class AccountDeletionTest extends TestCaseWithAuth
 
 		$this->assertSame(h(User::DELETED_NAME), User::renderLink($ghost));
 		$this->assertSame(User::DELETED_NAME, User::displayName($ghost));
-		$this->assertNull(User::nameOrNull($ghost));
+		$this->assertNull(User::displayNameOrNull($ghost));
 		$this->assertStringContainsString('alive', User::renderLink($alive));
 		$this->assertSame($alive['display_name'], User::displayName($alive));
 	}

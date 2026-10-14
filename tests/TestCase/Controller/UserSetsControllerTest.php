@@ -553,7 +553,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 	public function testUserSetsShowsOthersPublicSets(): void
 	{
 		$context = new ContextPreparator([
-			'user' => ['name' => 'alice'],
+			'user' => ['name' => 'alice', 'display_name' => 'Alice Name'],
 			'other-users' => [['name' => 'bob']],
 		]);
 		$aliceId = $context->user['id'];
@@ -562,7 +562,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$this->login('bob');
 
 		$this->testAction("/sets/user/{$aliceId}", ['return' => 'view']);
-		$this->assertTextContains("alice's Sets", $this->view);
+		$this->assertTextContains("Alice Name's Sets", $this->view);
 		$this->assertTextContains('Alice Public Set', $this->view);
 		$this->assertTextNotContains('Alice Private Set', $this->view);
 	}

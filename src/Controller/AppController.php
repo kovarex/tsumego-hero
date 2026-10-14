@@ -386,7 +386,18 @@ class AppController extends Controller
 			{
 				$controller = $this->request->params['controller'];
 				$action = $this->request->params['action'];
-				$allowedChangeActions = ['users/changename', 'users/updatename', 'users/logout', 'users/login'];
+				// The links that arrive by e-mail and the ways out of the account stay
+				// reachable: asking for a password reset or for deletion must not
+				// require picking a name first.
+				$allowedChangeActions = [
+					'users/changename',
+					'users/updatename',
+					'users/logout',
+					'users/login',
+					'users/newpassword',
+					'users/confirm_delete_account',
+					'users/delete_account',
+				];
 				if (!in_array($controller . '/' . $action, $allowedChangeActions, true))
 				{
 					$this->redirect(['controller' => 'users', 'action' => 'changename']);

@@ -116,7 +116,7 @@ export function Comment({
 								<span className="tsumego-comment__author">
 									<UserLink
 										userId={comment.user_id}
-										name={comment.user_name}
+										name={comment.user_display_name}
 										avatarUrl={comment.user_avatar_url}
 										rating={comment.user_rating}
 									/>

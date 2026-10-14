@@ -66,6 +66,28 @@ class GoogleSignInTest extends ControllerTestCase
 	}
 
 	/**
+	 * Test that a Google name longer than the column is shortened and the player
+	 * is asked to pick their own name.
+	 */
+	public function testNameLongerThanTheColumnIsShortened(): void
+	{
+		new ContextPreparator(['user' => null]);
+		$this->fakeVerifier->addToken('long-name-token', [
+			'sub' => '123456789',
+			'email' => 'longname@gmail.com',
+			'name' => str_repeat('B', 70),
+			'picture' => 'https://lh3.googleusercontent.com/a/longname',
+		]);
+
+		$this->googleSignIn('long-name-token');
+
+		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['external_id' => '123456789']]);
+		$this->assertNotEmpty($user, 'The Google sign in must create the account');
+		$this->assertSame(str_repeat('B', 50), $user['User']['display_name']);
+		$this->assertEquals(true, $user['User']['needs_display_name_change']);
+	}
+
+	/**
 	 * Test that new Google user is created with correct data.
 	 */
 	public function testNewGoogleUserCreated(): void
@@ -159,7 +181,7 @@ class GoogleSignInTest extends ControllerTestCase
 		]);
 
 		$body = json_decode($this->controller->response->body(), true);
-		$this->assertSame('Google Commenter', $body['user_name']);
+		$this->assertSame('Google Commenter', $body['user_display_name']);
 		$this->assertSame('https://lh3.googleusercontent.com/a/photo=s20', $body['user_avatar_url']);
 	}
 

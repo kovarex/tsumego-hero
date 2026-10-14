@@ -420,4 +420,108 @@ class UpdateNameTest extends ControllerTestCase
 		$this->assertEquals('Yiğit Aydın', $forumUser[0]['username']);
 		$this->assertEquals('yiğit aydin', $forumUser[0]['username_clean']);
 	}
+
+	/**
+	 * Test that a flagged user browsing the site is sent to the rename page.
+	 */
+	public function testForcedUserIsSentToTheRenamePage(): void
+	{
+		new ContextPreparator([
+			'user' => [
+				'display_name' => 'Forced Name',
+				'email' => 'forced@example.com',
+				'needs_display_name_change' => true,
+			],
+		]);
+
+		$this->testAction('/sets/index', ['method' => 'get', 'return' => 'result']);
+		$this->assertStringContainsString('/users/changename', $this->headers['Location'] ?? '');
+	}
+
+	/**
+	 * Test that a flagged user can open the password reset link from the e-mail.
+	 */
+	public function testForcedUserCanOpenThePasswordResetLink(): void
+	{
+		$context = new ContextPreparator([
+			'user' => [
+				'display_name' => 'Forced Name',
+				'email' => 'forced@example.com',
+				'needs_display_name_change' => true,
+			],
+		]);
+		Util::execute("UPDATE user SET passwordreset = ? WHERE id = ?", ['reset-checksum', $context->user['id']]);
+
+		$this->testAction('/users/newpassword/reset-checksum', ['method' => 'get', 'return' => 'result']);
+		$this->assertStringNotContainsString('/users/changename', $this->headers['Location'] ?? '');
+	}
+
+	/**
+	 * Test that the link in the account deletion e-mail is not sent to the rename
+	 * page.
+	 */
+	public function testForcedUserCanConfirmTheAccountDeletion(): void
+	{
+		$context = new ContextPreparator([
+			'user' => [
+				'display_name' => 'Forced Name',
+				'email' => 'forced@example.com',
+				'needs_display_name_change' => true,
+			],
+		]);
+		Util::execute("UPDATE user SET deletion_token = ? WHERE id = ?", ['delete-token', $context->user['id']]);
+
+		$this->testAction('/users/confirm_delete_account/delete-token', ['method' => 'post', 'return' => 'result']);
+		$this->assertStringNotContainsString('/users/changename', $this->headers['Location'] ?? '');
+	}
+
+	/**
+	 * Test that a flagged user can open the page that starts the account deletion.
+	 */
+	public function testForcedUserCanOpenTheDeleteAccountPage(): void
+	{
+		new ContextPreparator([
+			'user' => [
+				'display_name' => 'Forced Name',
+				'email' => 'forced@example.com',
+				'needs_display_name_change' => true,
+			],
+		]);
+
+		$this->testAction('/users/delete_account', ['method' => 'get', 'return' => 'result']);
+		$this->assertStringNotContainsString('/users/changename', $this->headers['Location'] ?? '');
+	}
+
+	/**
+	 * Test that a forum which can not be written to does not fail the rename. The
+	 * next forum sign in repairs the name (jwtauth::sync_rename).
+	 */
+	public function testRenameSurvivesAForumFailure(): void
+	{
+		$context = new ContextPreparator([
+			'user' => [
+				'display_name' => 'Old Forum Name',
+				'email' => 'forumfail@example.com',
+				'needs_display_name_change' => true,
+			],
+		]);
+
+		Util::execute('RENAME TABLE phpbb_users TO phpbb_users_unreachable');
+		try
+		{
+			$this->testAction('/users/updatename', [
+				'method' => 'post',
+				'data' => ['User' => ['display_name' => 'New Forum Name']],
+				'return' => 'result',
+			]);
+		}
+		finally
+		{
+			Util::execute('RENAME TABLE phpbb_users_unreachable TO phpbb_users');
+		}
+
+		$user = ClassRegistry::init('User')->findById($context->user['id']);
+		$this->assertEquals('New Forum Name', $user['User']['display_name']);
+		$this->assertEquals(false, $user['User']['needs_display_name_change']);
+	}
 }

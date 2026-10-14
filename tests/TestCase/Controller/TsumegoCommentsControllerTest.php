@@ -50,7 +50,7 @@ class TsumegoCommentsControllerTest extends ControllerTestCase
 		]);
 
 		$body = json_decode($this->controller->response->body(), true);
-		$this->assertSame('DN_GoogleCommenter', $body['user_name']);
+		$this->assertSame('DN_GoogleCommenter', $body['user_display_name']);
 	}
 
 	public function testCommentsIndexSendsAuthorAvatars()

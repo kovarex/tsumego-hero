@@ -17,6 +17,9 @@ class User extends AppModel
 	// Shown instead of the name of a user whose account is not there anymore.
 	public const DELETED_NAME = '[account deleted]';
 
+	// The user table stores a display name in this many characters.
+	public const DISPLAY_NAME_MAX_LENGTH = 50;
+
 	public function __construct(mixed $id = false, ?string $table = null, ?string $ds = null)
 	{
 		$id['table'] =  'user';
@@ -48,6 +51,21 @@ class User extends AppModel
 			'email' => [
 				'rule' => ['email', false],
 				'message' => 'Enter a valid email-address',
+			],
+		],
+
+		// A display name is required: every page shows it and only a flagged
+		// account may change it. The login name above stays optional because a
+		// Google account does not have one.
+		'display_name' => [
+			'notempty' => [
+				'rule' => 'notBlank',
+				'message' => 'Insert Display Name',
+			],
+
+			'maxlength' => [
+				'rule' => ['maxLength', self::DISPLAY_NAME_MAX_LENGTH],
+				'message' => 'The display name must not be longer than 50 characters',
 			],
 		],
 	];
@@ -167,30 +185,30 @@ class User extends AppModel
 	}
 
 	/**
-	 * The name of a user, null when there is no name to show: the account is not there anymore, or the
-	 * row the caller passed carries no name. This is what the frontend gets, it renders DELETED_NAME
-	 * itself. Pass a user row, folded or built from a raw query, nothing else.
+	 * The display name of a user, null when there is none to show: the account is not there anymore,
+	 * or the row the caller passed carries no name. This is what the frontend gets, it renders
+	 * DELETED_NAME itself. Pass a user row, folded or built from a raw query, nothing else.
 	 *
 	 * @param UserRow|array<string, mixed>|null $user
 	 */
-	public static function nameOrNull(?array $user): ?string
+	public static function displayNameOrNull(?array $user): ?string
 	{
 		if ($user === null || self::isDeleted($user))
 			return null;
 
-		$name = $user['display_name'] ?? $user['user_display_name'] ?? null;
-		return $name === null || $name === '' ? null : $name;
+		$displayName = $user['display_name'] ?? $user['user_display_name'] ?? null;
+		return $displayName === null || $displayName === '' ? null : $displayName;
 	}
 
 	/**
-	 * The same rule as nameOrNull() for the places that print the name instead of sending it to the
-	 * frontend: a user whose account is not there anymore is shown as DELETED_NAME.
+	 * The same rule as displayNameOrNull() for the places that print the name instead of sending it
+	 * to the frontend: a user whose account is not there anymore is shown as DELETED_NAME.
 	 *
 	 * @param UserRow|array<string, mixed>|null $user
 	 */
 	public static function displayName(?array $user): string
 	{
-		return self::nameOrNull($user) ?? self::DELETED_NAME;
+		return self::displayNameOrNull($user) ?? self::DELETED_NAME;
 	}
 
 	/**
@@ -210,13 +228,13 @@ class User extends AppModel
 	 *
 	 * @param array|int|string|null $id User row (with display_name, external_id, picture, rating,
 	 *                                  email), a bare user id, or null for a gone account
-	 * @param string|null $name Display name, used when $id is a bare id
+	 * @param string|null $displayName Display name, used when $id is a bare id
 	 * @param string|null $externalID
 	 * @param string|null $picture
 	 * @param int|float|string|null $rating
 	 * @return string HTML link (or plain text for a deleted account)
 	 */
-	public static function renderLink(array|int|string|null $id, ?string $name = null, ?string $externalID = null, ?string $picture = null, int|float|string|null $rating = null): string
+	public static function renderLink(array|int|string|null $id, ?string $displayName = null, ?string $externalID = null, ?string $picture = null, int|float|string|null $rating = null): string
 	{
 		// A bare id (or null for a gone account): the renderers pass whole rows, this is for the
 		// handful of callers that only have an id.
@@ -227,7 +245,7 @@ class User extends AppModel
 			if (self::isDeleted($id))
 				return h(self::DELETED_NAME);
 			$rank = $rating !== null ? Rating::getReadableRankFromRating((float) $rating) : '';
-			return '<a href="/users/view/' . $id . '">' . h((string) $name) . ($rank === '' ? '' : ' ' . $rank) . '</a>';
+			return '<a href="/users/view/' . $id . '">' . h((string) $displayName) . ($rank === '' ? '' : ' ' . $rank) . '</a>';
 		}
 
 		$user = $id;
@@ -274,7 +292,7 @@ class User extends AppModel
 			'picture' => $picture,
 			'email' => $email,
 		], 20);
-		$image = '<img src="' . h((string) $avatarUrl) . '" alt="" class="user-avatar" style="width:20px;height:20px;border-radius:50%;vertical-align:middle;margin-right:4px;">';
+		$image = '<img src="' . h((string) $avatarUrl) . '" alt="" class="user-avatar" loading="lazy" decoding="async" referrerpolicy="no-referrer" style="width:20px;height:20px;border-radius:50%;vertical-align:middle;margin-right:4px;">';
 
 		return '<a href="/users/view/' . $id . '">' . $image . h((string) $displayName) . ($rank === '' ? '' : ' ' . $rank) . '</a>';
 	}
@@ -304,6 +322,12 @@ class User extends AppModel
 	public static function generateUniqueDisplayName(string $name): string
 	{
 		$name = self::normalizeDisplayName($name);
+
+		// The column holds 50 characters and a Google name is not length limited,
+		// so a longer name is shortened before the uniqueness check.
+		if (mb_strlen($name) > self::DISPLAY_NAME_MAX_LENGTH)
+			$name = mb_substr($name, 0, self::DISPLAY_NAME_MAX_LENGTH);
+
 		$userModel = ClassRegistry::init('User');
 
 		// Check if base value is available
@@ -316,7 +340,7 @@ class User extends AppModel
 		while (true)
 		{
 			$suffixStr = " ($suffix)";
-			$maxLength = 50;
+			$maxLength = self::DISPLAY_NAME_MAX_LENGTH;
 			$baseLength = $maxLength - mb_strlen($suffixStr);
 
 			// Truncate base value if needed to fit suffix
@@ -344,20 +368,40 @@ class User extends AppModel
 	 */
 	public static function updateDisplayName(int $userId, string $newDisplayName): bool
 	{
-		// 1. Update display_name in main app user table
-		Util::query(
-			"UPDATE user SET display_name = ? WHERE id = ?",
-			[$newDisplayName, $userId]
-		);
+		$connection = Util::connection();
+		$connection->beginTransaction();
+		try
+		{
+			// 1. Update display_name in main app user table
+			Util::query(
+				"UPDATE user SET display_name = ? WHERE id = ?",
+				[$newDisplayName, $userId]
+			);
 
-		// 2. Update tsumego author strings for problems created by this user
-		Util::query(
-			"UPDATE tsumego SET author = ? WHERE author_user_id = ?",
-			[$newDisplayName, $userId]
-		);
+			// 2. Update tsumego author strings for problems created by this user
+			Util::query(
+				"UPDATE tsumego SET author = ? WHERE author_user_id = ?",
+				[$newDisplayName, $userId]
+			);
+			$connection->commit();
+		}
+		catch (Throwable $exception)
+		{
+			$connection->rollBack();
+			throw $exception;
+		}
 
-		// 3. Sync to phpBB forum
-		self::syncToForum($userId, $newDisplayName);
+		// 3. Sync to phpBB forum. The forum name is a copy of this one and the next
+		// forum sign in repairs it (jwtauth::sync_rename), so a forum that can not
+		// be written to right now must not fail the rename itself.
+		try
+		{
+			self::syncToForum($userId, $newDisplayName);
+		}
+		catch (Throwable $exception)
+		{
+			CakeLog::write('warning', 'Forum name not synced for user ' . $userId . ': ' . $exception->getMessage());
+		}
 
 		return true;
 	}

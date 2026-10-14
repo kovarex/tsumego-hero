@@ -30,7 +30,7 @@ class CommentsRenderer
 
 		echo '<br></div>';
 		echo '<div class="' . $commentColor . '">';
-		echo h(\User::displayName(['id' => $comment['from_id'], 'display_name' => $comment['from_name']])) . ':<br>';
+		echo h(\User::displayName(['id' => $comment['from_id'], 'display_name' => $comment['from_display_name']])) . ':<br>';
 		echo '</div>';
 		echo '<div ';
 		if($comment['from_admin'])
@@ -67,7 +67,7 @@ SELECT
 	tsumego_comment.created AS created,
 	tsumego_status.status AS status,
 	user.isAdmin AS from_admin,
-	user.display_name as from_name,
+	user.display_name as from_display_name,
 	user.id as from_id,
 	tsumego_comment.id as id,
 	set_connection.id AS set_connection_id,

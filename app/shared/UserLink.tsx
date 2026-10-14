@@ -42,7 +42,7 @@ export function UserLink({ userId, name, avatarUrl, rating }: UserLinkProps)
 
 	return (
 		<a href={`/users/view/${userId}`}>
-			{avatarUrl && <img src={avatarUrl} alt="" className="user-avatar" style={{width: 20, height: 20, borderRadius: '50%', verticalAlign: 'middle', marginRight: 4}} />}
+			{avatarUrl && <img src={avatarUrl} alt="" className="user-avatar" loading="lazy" decoding="async" referrerPolicy="no-referrer" style={{width: 20, height: 20, borderRadius: '50%', verticalAlign: 'middle', marginRight: 4}} />}
 			{name}
 			{rank && ` ${rank}`}
 		</a>

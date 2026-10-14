@@ -5,7 +5,7 @@ export interface Comment
 	id: number;
 	text: string;
 	user_id: number;
-	user_name: string | null;
+	user_display_name: string | null;
 	user_avatar_url: string | null;
 	user_rating: number | null;
 	isAdmin: boolean;

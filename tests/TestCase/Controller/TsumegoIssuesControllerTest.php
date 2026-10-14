@@ -267,7 +267,7 @@ class TsumegoIssuesControllerTest extends ControllerTestCase
 
 		$body = $this->controller->response->body();
 		$issues = json_decode($body, true)['issues'];
-		$this->assertNull($issues[0]['issue']['user_name']);
+		$this->assertNull($issues[0]['issue']['user_display_name']);
 		$this->assertNull($issues[0]['issue']['user_avatar_url']);
 		$this->assertNull($issues[0]['comments'][0]['user_avatar_url']);
 		$this->assertStringNotContainsString(md5('doomed@example.com'), $body);

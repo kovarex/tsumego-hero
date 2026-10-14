@@ -7,7 +7,7 @@
  * @var bool $isOwn
  */
 
-$pageTitle = $isOwn ? 'My Sets' : h($profileUser['name']) . "'s Sets";
+$pageTitle = $isOwn ? 'My Sets' : h($profileUser['display_name']) . "'s Sets";
 ?>
 <div align="center" class="display1" style="padding:var(--space-5) var(--space-4)">
 	<h4><?= $pageTitle ?></h4>
