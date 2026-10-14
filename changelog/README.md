@@ -61,7 +61,7 @@ Examples:
 | Sets in correct order. | The sets a problem belongs to now always appear in the same order. |
 
 **Reveal:** what players can do, what changed, what got faster or more reliable.
-**Don't reveal:** internal refactors, tests/CI, dependency bumps, commit/PR hashes, or implementation details that don't change what a player sees.
+**Don't reveal:** internal refactors, tests/CI, dependency bumps, commit/PR hashes, machine-facing plumbing (sitemaps, `robots.txt`, caches, cron jobs), or implementation details that don't change what a player sees.
 
 ## Rules
 
