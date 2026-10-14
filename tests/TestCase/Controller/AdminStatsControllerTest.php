@@ -162,15 +162,22 @@ class AdminStatsControllerTest extends ControllerTestCase
 			]);
 		}
 
-		// Navigate with both pagination parameters
+		// Navigate to the second page of the activities, from a page that also
+		// carries another parameter
 		$browser = Browser::instance();
 		$browser->get('users/adminstats?activity_page=2&tagnames_page=2');
 
 		$pageSource = $browser->driver->getPageSource();
+		$this->assertStringContainsString('Page 2 of 2', $pageSource);
 
-		// Both paginations should preserve their state
-		$this->assertStringContainsString('activity_page=2', $pageSource);
-		$this->assertStringContainsString('tagnames_page=2', $pageSource);
+		// Paging the activities keeps what the visitor asked for elsewhere
+		preg_match_all('~href="\?([^"#]+)~', $pageSource, $matches);
+		$this->assertNotEmpty($matches[1]);
+
+		$previousPages = array_filter($matches[1], fn($query) => str_contains($query, 'activity_page=1'));
+		$this->assertNotEmpty($previousPages);
+		foreach ($previousPages as $query)
+			$this->assertStringContainsString('tagnames_page=2', $query);
 	}
 
 	/**
