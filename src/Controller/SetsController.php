@@ -828,6 +828,10 @@ ORDER BY sc.num ASC", [(int) $id]);
 		// transferring from 1 indexed for humans to 0 indexed for us programmers.
 		$partition = $partition - 1;
 
+		// The first page of a set is the set itself.
+		if ($partition == 0 && count($this->request->params['pass']) > 1)
+			$this->set('canonicalPath', preg_replace('~/1$~', '', strtok($this->request->here, '?')));
+
 		// Redirect old /sets/view/favorites to user's default set
 		if ($id === 'favorites')
 		{
@@ -965,7 +969,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$og = [
 			'title' => $displayTitle,
 			'description' => $ogDescription,
-			'url' => Router::url('/sets/view/' . $set['Set']['id'], true),
 			'type' => 'website',
 			'site_name' => 'Tsumego',
 		];

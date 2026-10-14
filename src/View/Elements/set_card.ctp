@@ -19,7 +19,7 @@ if ($partition == -1)
 else
 {
 	$partitionText = ' #' . ($partition + 1);
-	$partitionLink = '/' . ($partition + 1);
+	$partitionLink = $partition > 0 ? '/' . ($partition + 1) : '';
 }
 $backgroundImage = $backgroundImage ?? 'linear-gradient(rgba(169, 169, 169, 0.30), rgba(0, 0, 0, 0.35))';
 ?>

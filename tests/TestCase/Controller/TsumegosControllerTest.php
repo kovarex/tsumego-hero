@@ -27,6 +27,25 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		}
 	}
 
+	public function testProblemKeepsOneAddressInBothUrlShapes()
+	{
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 666]]);
+		$setConnectionID = $context->tsumegos[0]['set-connections'][0]['id'];
+		$address = Router::url('/' . $setConnectionID, true);
+		$urls = [
+			'/' . $setConnectionID,
+			'/' . $setConnectionID . '?mode=2',
+			'tsumegos/play/' . $context->tsumegos[0]['id']
+		];
+
+		foreach ($urls as $url)
+		{
+			$contents = (string) $this->testAction($url, ['method' => 'get', 'return' => 'contents']);
+			$this->assertStringContainsString('<link rel="canonical" href="' . $address . '">', $contents, $url);
+			$this->assertStringContainsString('<meta property="og:url" content="' . $address . '">', $contents, $url);
+		}
+	}
+
 	public function testPageTitleShowsRealSetCount()
 	{
 		$context = new ContextPreparator([
