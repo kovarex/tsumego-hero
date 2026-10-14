@@ -26,16 +26,17 @@ class CanonicalUrlTest extends ControllerTestCase
 	}
 
 	/**
-	 * A later page holds items the first one does not
+	 * Asking a listing for a page does not move it
 	 */
-	public function testLaterPageIsItsOwnAddress(): void
+	public function testPagingIsNotPartOfTheAddress(): void
 	{
 		$context = new ContextPreparator();
 
 		foreach (['/tags/user/', '/users/solveHistory/'] as $listing)
 		{
 			$url = $listing . $context->user['id'];
-			$this->assertContains(Router::url($url, true) . '?page=2', $this->canonicalAddresses($url . '?page=2'), $url);
+			foreach (['?page=2', '?activity_page=2'] as $askedFor)
+				$this->assertContains(Router::url($url, true), $this->canonicalAddresses($url . $askedFor), $url . $askedFor);
 		}
 	}
 

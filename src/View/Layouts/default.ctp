@@ -106,11 +106,7 @@ echo $this->Html->charset();
 <meta name="apple-mobile-web-app-title" content="Tsumego">
 <link rel="apple-touch-icon" href="/pwa/icon-192.png">
 <?php
-// A later page of a listing holds its own items, the first page is the listing.
-$page = (int) $this->request->query('page');
 $canonicalUrl = Router::url($canonicalPath ?? '/' . trim(strtok($this->request->here, '?'), '/'), true);
-if ($canonicalPath === null && $page > 1)
-	$canonicalUrl .= '?page=' . $page;
 ?>
 <link rel="canonical" href="<?php echo h($canonicalUrl); ?>">
 <?php
