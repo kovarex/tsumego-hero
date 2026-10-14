@@ -30,15 +30,15 @@ class UsersControllerTest extends ControllerTestCase
 		$this->assertStringContainsString('Highscore', $browser->driver->getPageSource());
 
 		// Click login link from the page (this sets proper referer and stores in session)
-		$browser->driver->findElement(WebDriverBy::id('signInMenu'))->click();
+		$browser->findById('signInMenu')->click();
 		// Wait for login form to appear
 		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
 		$wait->until(\Facebook\WebDriver\WebDriverExpectedCondition::presenceOfElementLocated(WebDriverBy::id('UserName')));
 
 		// Fill in login form
-		$browser->driver->findElement(WebDriverBy::id('UserName'))->sendKeys('testuser');
-		$browser->driver->findElement(WebDriverBy::id('password'))->sendKeys('test');
-		$browser->driver->findElement(WebDriverBy::cssSelector('input[type="submit"]'))->click();
+		$browser->findById('UserName')->sendKeys('testuser');
+		$browser->findById('password')->sendKeys('test');
+		$browser->find('input[type="submit"]')->click();
 
 		// Should be redirected back to highscore page
 		$wait->until(function ($driver) {
@@ -400,7 +400,7 @@ class UsersControllerTest extends ControllerTestCase
 		$browser->get('users/view/' . $context->user['id']);
 
 		$browser->driver->executeScript("window.confirm = function() { return true; }");
-		$browser->driver->findElement(WebDriverBy::id('reset-statuses-button'))->click();
+		$browser->findById('reset-statuses-button')->click();
 
 		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
 		$wait->until(fn($d) => str_contains($d->getPageSource(), 'Deleted progress on 1 problems'));
@@ -432,7 +432,7 @@ class UsersControllerTest extends ControllerTestCase
 		$browser->get('users/view/' . $context->user['id']);
 
 		$browser->driver->executeScript("window.confirm = function() { return true; }");
-		$browser->driver->findElement(WebDriverBy::id('reset-statuses-button'))->click();
+		$browser->findById('reset-statuses-button')->click();
 
 		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
 		$wait->until(fn($d) => str_contains($d->getPageSource(), 'Deleted progress on 1 problems'));
@@ -559,8 +559,8 @@ class UsersControllerTest extends ControllerTestCase
 
 		$browser->get('users/demote_admin');
 
-		$browser->driver->findElement(WebDriverBy::id('UserDemote'))->sendKeys('test');
-		$browser->driver->findElement(WebDriverBy::cssSelector('input[type="submit"]'))->click();
+		$browser->findById('UserDemote')->sendKeys('test');
+		$browser->find('input[type="submit"]')->click();
 
 		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
 		$wait->until(fn($d) => str_contains($d->getCurrentURL(), '/users/view/' . $context->user['id']));

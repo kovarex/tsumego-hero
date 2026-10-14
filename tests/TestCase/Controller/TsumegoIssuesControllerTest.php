@@ -175,8 +175,7 @@ class TsumegoIssuesControllerTest extends ControllerTestCase
 		$this->assertTextContains('Issue to close from list', $pageSource);
 
 		// Wait for and click close button
-		$browser->waitUntilCssSelectorExists('.tsumego-issue button.btn--success', 10);
-		$closeButton = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-issue button.btn--success'));
+		$closeButton = $browser->find('.tsumego-issue button.btn--success', 10);
 		$closeButton->click();
 
 		// Wait for issue to disappear from opened list (the page re-fetches open issues)

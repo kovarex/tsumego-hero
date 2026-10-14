@@ -1,6 +1,5 @@
 <?php
 
-use Facebook\WebDriver\WebDriverBy;
 
 class SetViewFilterTest extends TestCaseWithAuth
 {
@@ -14,7 +13,7 @@ class SetViewFilterTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->getAnonymous('sets/view/' . $setId);
 
-		$parent = $browser->driver->findElement(WebDriverBy::cssSelector('.showFilters'));
+		$parent = $browser->find('.showFilters');
 		$this->assertSame('none', $parent->getCssValue('display'));
 	}
 
@@ -31,7 +30,7 @@ class SetViewFilterTest extends TestCaseWithAuth
 		$browser->driver->manage()->addCookie(['name' => 'filtered_ranks', 'value' => '15k']);
 		$browser->getAnonymous('sets/view/' . $setId);
 
-		$parent = $browser->driver->findElement(WebDriverBy::cssSelector('.showFilters'));
+		$parent = $browser->find('.showFilters');
 		$this->assertSame('inline-block', $parent->getCssValue('display'));
 	}
 
@@ -48,7 +47,7 @@ class SetViewFilterTest extends TestCaseWithAuth
 		$browser->driver->manage()->addCookie(['name' => 'filtered_sets', 'value' => 'Filter Test Set']);
 		$browser->getAnonymous('sets/view/' . $setId);
 
-		$parent = $browser->driver->findElement(WebDriverBy::cssSelector('.showFilters'));
+		$parent = $browser->find('.showFilters');
 		$this->assertSame('inline-block', $parent->getCssValue('display'));
 	}
 
@@ -63,17 +62,17 @@ class SetViewFilterTest extends TestCaseWithAuth
 		$browser->getAnonymous('sets/view/' . $setId);
 		$browser->driver->manage()->deleteAllCookies();
 		$browser->getAnonymous('sets/view/' . $setId);
-		$parent = $browser->driver->findElement(WebDriverBy::cssSelector('.showFilters'));
+		$parent = $browser->find('.showFilters');
 		$this->assertSame('none', $parent->getCssValue('display'));
 
 		$browser->driver->manage()->addCookie(['name' => 'filtered_ranks', 'value' => '15k']);
 		$browser->getAnonymous('sets/view/' . $setId);
-		$parent = $browser->driver->findElement(WebDriverBy::cssSelector('.showFilters'));
+		$parent = $browser->find('.showFilters');
 		$this->assertSame('inline-block', $parent->getCssValue('display'));
 
 		$browser->driver->manage()->deleteAllCookies();
 		$browser->getAnonymous('sets/view/' . $setId);
-		$parent = $browser->driver->findElement(WebDriverBy::cssSelector('.showFilters'));
+		$parent = $browser->find('.showFilters');
 		$this->assertSame('none', $parent->getCssValue('display'));
 	}
 
@@ -87,7 +86,7 @@ class SetViewFilterTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->getAnonymous('sets/view/' . $setId);
 
-		$toggle = $browser->driver->findElement(WebDriverBy::cssSelector('.preview-zoom-toggle'));
+		$toggle = $browser->find('.preview-zoom-toggle');
 		$this->assertTrue($toggle->isDisplayed());
 	}
 }

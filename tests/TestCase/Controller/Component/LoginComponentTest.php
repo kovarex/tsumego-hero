@@ -31,9 +31,9 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		$browser->driver->getKeyboard()->sendKeys('kovarex@example.com');
 		$browser->clickId('password');
 		$browser->driver->getKeyboard()->sendKeys('test');
-		$sumbitButton = $browser->driver->findElement(WebDriverBy::cssSelector('#UserLoginForm input[type="submit"]'));
+		$sumbitButton = $browser->find('#UserLoginForm input[type="submit"]');
 		$sumbitButton->click();
-		$this->assertSame($browser->driver->findElement(WebDriverBy::cssSelector(".account-bar-user-class"))->getText(), 'DN_kovarex');
+		$this->assertSame($browser->find('.account-bar-user-class')->getText(), 'DN_kovarex');
 	}
 
 	public function testLoginWithWrongPassword(): void
@@ -67,13 +67,13 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		$browser->get('users/add');
 
 		// Fill in the signup form
-		$browser->driver->findElement(WebDriverBy::name('data[User][name]'))->sendKeys($newUsername);
-		$browser->driver->findElement(WebDriverBy::name('data[User][email]'))->sendKeys($newUsername . '@email.com');
-		$browser->driver->findElement(WebDriverBy::name('data[User][password1]'))->sendKeys('hello123');
-		$browser->driver->findElement(WebDriverBy::name('data[User][password2]'))->sendKeys('hello123');
+		$browser->findBy(WebDriverBy::name('data[User][name]'))->sendKeys($newUsername);
+		$browser->findBy(WebDriverBy::name('data[User][email]'))->sendKeys($newUsername . '@email.com');
+		$browser->findBy(WebDriverBy::name('data[User][password1]'))->sendKeys('hello123');
+		$browser->findBy(WebDriverBy::name('data[User][password2]'))->sendKeys('hello123');
 
 		// Submit the form
-		$browser->driver->findElement(WebDriverBy::cssSelector('.signin input[type="submit"]'))->click();
+		$browser->find('.signin input[type="submit"]')->click();
 
 		// Wait for form submission to process and redirect away from signup page
 		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 500);
@@ -156,7 +156,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		$browser->clickId("password");
 		$newPassword = Util::generateRandomString(20);
 		$browser->driver->getKeyboard()->sendKeys($newPassword);
-		$sumbitButton = $browser->driver->findElement(WebDriverBy::cssSelector('#UserNewpasswordForm input[type="submit"]'));
+		$sumbitButton = $browser->find('#UserNewpasswordForm input[type="submit"]');
 		$sumbitButton->click();
 
 		// Wait for form submission to redirect to login page
@@ -187,7 +187,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		$this->assertTrue(Auth::isInRatingMode());
 		$browser = Browser::instance();
 		$browser->get('sets');
-		$div = $browser->driver->findElement(WebDriverBy::cssSelector('.account-bar-user-class'));
+		$div = $browser->find('.account-bar-user-class');
 		$links = $div->findElements(WebDriverBy::tagName('a')) ?: [];
 		$this->assertSame(count($links), 1);
 		$this->assertTextContains($context->user['name'], $links[0]->getText());

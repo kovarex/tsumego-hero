@@ -35,8 +35,8 @@ class SetsControllerAdminTest extends ControllerTestCase
 		$initialTsumegoCount = $tsumegoModel->find('count');
 
 		// Create new set by submitting form
-		$browser->byId('SetTitle')->sendKeys('Test Auto-Increment Set');
-		$browser->byCssSelector('form input[type="submit"]')->click();
+		$browser->findById('SetTitle')->sendKeys('Test Auto-Increment Set');
+		$browser->find('form input[type="submit"]')->click();
 
 		// Wait for redirect to the newly created set's view page
 		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);

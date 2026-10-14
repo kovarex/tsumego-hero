@@ -1,6 +1,5 @@
 <?php
 
-use Facebook\WebDriver\WebDriverBy;
 use PHPUnitRetry\RetryTrait;
 /**
  * Browser tests for CookieFlash functionality.
@@ -26,9 +25,9 @@ class CookieFlashBrowserTest extends CakeTestCase
 		$browser->get('users/login');
 
 		// Submit login form with invalid credentials
-		$browser->driver->findElement(WebDriverBy::id('UserName'))->sendKeys('nonexistent_user');
-		$browser->driver->findElement(WebDriverBy::id('password'))->sendKeys('wrong_password');
-		$browser->driver->findElement(WebDriverBy::cssSelector('input[type="submit"]'))->click();
+		$browser->findById('UserName')->sendKeys('nonexistent_user');
+		$browser->findById('password')->sendKeys('wrong_password');
+		$browser->find('input[type="submit"]')->click();
 
 		// Wait for page to load
 		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
@@ -51,9 +50,9 @@ class CookieFlashBrowserTest extends CakeTestCase
 
 		// Navigate to login page and submit invalid credentials
 		$browser->get('users/login');
-		$browser->driver->findElement(WebDriverBy::id('UserName'))->sendKeys('test');
-		$browser->driver->findElement(WebDriverBy::id('password'))->sendKeys('test');
-		$browser->driver->findElement(WebDriverBy::cssSelector('input[type="submit"]'))->click();
+		$browser->findById('UserName')->sendKeys('test');
+		$browser->findById('password')->sendKeys('test');
+		$browser->find('input[type="submit"]')->click();
 		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
 		$wait->until(function ($driver) {
 			return str_contains($driver->getPageSource(), 'alert');
@@ -81,9 +80,9 @@ class CookieFlashBrowserTest extends CakeTestCase
 
 		$browser = Browser::instance();
 		$browser->get('users/login');
-		$browser->driver->findElement(WebDriverBy::id('UserName'))->sendKeys('test');
-		$browser->driver->findElement(WebDriverBy::id('password'))->sendKeys('wrong');
-		$browser->driver->findElement(WebDriverBy::cssSelector('input[type="submit"]'))->click();
+		$browser->findById('UserName')->sendKeys('test');
+		$browser->findById('password')->sendKeys('wrong');
+		$browser->find('input[type="submit"]')->click();
 		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
 		$wait->until(function ($driver) {
 			return str_contains($driver->getPageSource(), 'alert-error');

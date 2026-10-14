@@ -29,7 +29,7 @@ class ClientTimeDisplayTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get('users/solveHistory/' . $context->user['id']);
 
-		$timeElements = $browser->driver->findElements(WebDriverBy::tagName('time'));
+		$timeElements = $browser->getAllBy(WebDriverBy::tagName('time'));
 		$this->assertGreaterThan(0, count($timeElements));
 
 		$time = $timeElements[0];

@@ -1,6 +1,5 @@
 <?php
 
-use Facebook\WebDriver\WebDriverBy;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\TsumegoUtil;
@@ -336,9 +335,9 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$browser->getAnonymous('/tsumegos/play/' . $tsumegoId);
 
 		// open the filters panel so the active tiles (and clear button) are visible
-		$browser->driver->findElement(WebDriverBy::cssSelector('#showFilters'))->click();
+		$browser->find('#showFilters')->click();
 		$browser->waitUntilCssSelectorDisplayed('#unselect-active-tiles');
-		$browser->driver->findElement(WebDriverBy::cssSelector('#unselect-active-tiles'))->click();
+		$browser->find('#unselect-active-tiles')->click();
 
 		$this->assertSame(Util::getMyAddress() . '/tsumegos/play/' . $tsumegoId, $browser->driver->getCurrentURL());
 		$this->assertFalse($browser->idExists('unselect-active-tiles'));
@@ -353,7 +352,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 
 		$browser = Browser::instance();
 		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
-		$href = $browser->driver->findElement(WebDriverBy::cssSelector('#playTitleA'));
+		$href = $browser->find('#playTitleA');
 		$this->assertTextContains('set 1', $href->getText());
 		$this->assertTextContains('666', $href->getText());
 	}
@@ -554,7 +553,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 	}
 
 	/**
-	 * OG description uses true-color convention — no swap needed.
+	 * OG description uses true-color convention - no swap needed.
 	 * The OG image renders actual SGF colors, and descriptions match the board.
 	 */
 	public function testOgDescriptionUsesTrueColor(): void

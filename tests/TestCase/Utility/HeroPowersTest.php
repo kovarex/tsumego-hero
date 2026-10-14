@@ -87,7 +87,7 @@ class HeroPowersTest extends TestCaseWithAuth
 		});
 
 		// Grabbing this just to detect page reload later
-		$oldBodyElement = $browser->driver->findElement(WebDriverBy::cssSelector('body'));
+		$oldBodyElement = $browser->find('body');
 		$browser->driver->executeScript("displayResult('F')"); // fail the problem
 		// the display result should refresh the page
 		$browser->driver->wait(10)->until(WebDriverExpectedCondition::stalenessOf($oldBodyElement));
@@ -150,7 +150,7 @@ class HeroPowersTest extends TestCaseWithAuth
 		// clicking next after solving, sprint is still visible:
 		$browser->clickId('besogo-next-button');
 		$this->assertSame($context->XPGained(), Constants::$SPRINT_MULTIPLIER * $originalTsumego0XPValue);
-		$this->assertTextContains('Sprint', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
+		$this->assertTextContains('Sprint', $browser->find('#xpDisplay')->getText());
 		$browser->playWithResult('S'); // solve the problem
 
 		// clicking next after solving again, sprint is applied on xp still
@@ -160,7 +160,7 @@ class HeroPowersTest extends TestCaseWithAuth
 
 	private function checkPowerIsInactive($browser, $name)
 	{
-		$element = $browser->driver->findElement(WebDriverBy::cssSelector('#' . $name));
+		$element = $browser->find('#' . $name);
 		$this->assertNull($browser->driver->executeScript("return document.getElementById('$name').onclick;"));
 		$this->assertNull($browser->driver->executeScript("return document.getElementById('$name').onmouseover;"));
 		$this->assertNull($browser->driver->executeScript("return document.getElementById('$name').onmouseout;"));
@@ -169,7 +169,7 @@ class HeroPowersTest extends TestCaseWithAuth
 
 	private function checkPowerIsActive($browser, $name)
 	{
-		$element = $browser->driver->findElement(WebDriverBy::cssSelector('#' . $name));
+		$element = $browser->find('#' . $name);
 		$this->assertNotNull($browser->driver->executeScript("return document.getElementById('$name').onclick;"));
 		$this->assertNotNull($browser->driver->executeScript("return document.getElementById('$name').onmouseover;"));
 		$this->assertNotNull($browser->driver->executeScript("return document.getElementById('$name').onmouseout;"));
@@ -355,12 +355,12 @@ class HeroPowersTest extends TestCaseWithAuth
 			return $driver->executeScript('return window.tryAgainTomorrow === true;');
 		});
 
-		$statusText = $browser->driver->findElement(WebDriverBy::id('status'))->getText();
+		$statusText = $browser->findById('status')->getText();
 		$this->assertStringContainsString('This problem is locked until', $statusText);
 		$this->assertSame(1, $browser->driver->executeScript('return boardLockValue;'));
 		for ($i = 0; $i < $maxHealth; $i++)
 		{
-			$heartSrc = $browser->driver->findElement(WebDriverBy::id('heart' . $i))->getAttribute('src');
+			$heartSrc = $browser->findById('heart' . $i)->getAttribute('src');
 			$this->assertStringContainsString('heart2small', $heartSrc, "heart$i should be empty after losing the last heart");
 		}
 
@@ -374,14 +374,14 @@ class HeroPowersTest extends TestCaseWithAuth
 			return $browser->find('#rejuvenation')->getCssValue('cursor') === 'auto';
 		});
 
-		$statusText = $browser->driver->findElement(WebDriverBy::id('status'))->getText();
+		$statusText = $browser->findById('status')->getText();
 		$this->assertStringNotContainsString('This problem is locked until', $statusText);
 		$this->assertSame(0, $browser->driver->executeScript('return boardLockValue;'));
 		$this->assertFalse($browser->driver->executeScript('return tryAgainTomorrow;'));
 		$this->assertSame($maxHealth, $browser->driver->executeScript('return currentHealth;'));
 		for ($i = 0; $i < $maxHealth; $i++)
 		{
-			$heartSrc = $browser->driver->findElement(WebDriverBy::id('heart' . $i))->getAttribute('src');
+			$heartSrc = $browser->findById('heart' . $i)->getAttribute('src');
 			$this->assertStringContainsString('heart1small', $heartSrc, "heart$i should be a full heart after rejuvenation");
 		}
 
@@ -392,7 +392,7 @@ class HeroPowersTest extends TestCaseWithAuth
 		$browser->driver->wait(10, 200)->until(function ($driver) {
 			return $driver->executeScript('return window.hadMisplay;');
 		});
-		$lastHeartSrc = $browser->driver->findElement(WebDriverBy::id('heart' . ($maxHealth - 1)))->getAttribute('src');
+		$lastHeartSrc = $browser->findById('heart' . ($maxHealth - 1))->getAttribute('src');
 		$this->assertStringContainsString('heart2small', $lastHeartSrc, "last heart should be lost after failing post-rejuvenation");
 	}
 

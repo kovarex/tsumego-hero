@@ -164,8 +164,8 @@ class EditTsumegoTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$browser->clickId("modify-description");
-		$this->assertSame($browser->getCssSelect("#rating")[0]->getAttribute("value"), "10k");
-		$this->assertSame($browser->getCssSelect("#minimum-rating")[0]->getAttribute("value"), "5k");
-		$this->assertSame($browser->getCssSelect("#maximum-rating")[0]->getAttribute("value"), "15k");
+		$this->assertSame($browser->getElements("#rating")[0]->getAttribute("value"), "10k");
+		$this->assertSame($browser->getElements("#minimum-rating")[0]->getAttribute("value"), "5k");
+		$this->assertSame($browser->getElements("#maximum-rating")[0]->getAttribute("value"), "15k");
 	}
 }

@@ -1,6 +1,5 @@
 <?php
 
-use Facebook\WebDriver\WebDriverBy;
 
 class BoardTextureTest extends TestCaseWithAuth
 {
@@ -22,7 +21,7 @@ class BoardTextureTest extends TestCaseWithAuth
 		// In default.ctp, there is a loop creating #newCheck1 to #newCheck51
 
 		// Check board 9 (newCheck9). It is '1' (unchecked) by default.
-		$checkbox9 = $browser->driver->findElement(WebDriverBy::id('newCheck9'));
+		$checkbox9 = $browser->findById('newCheck9');
 		$this->assertFalse($checkbox9->isSelected(), "Board 9 should be unchecked by default.");
 
 		$browser->driver->executeScript("arguments[0].click();", [$checkbox9]);
@@ -34,7 +33,7 @@ class BoardTextureTest extends TestCaseWithAuth
 
 		$browser->get('sites/blank');
 
-		$checkbox9 = $browser->driver->findElement(WebDriverBy::id('newCheck9'));
+		$checkbox9 = $browser->findById('newCheck9');
 		$this->assertTrue($checkbox9->isSelected(), "Board 9 should be selected after click and reload.");
 
 		$user = ClassRegistry::init('User')->findById($context->user['id']);

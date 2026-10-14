@@ -5,7 +5,6 @@ use App\Utility\Constants;
 use App\Utility\Rating;
 use App\Utility\TimeModeUtil;
 use App\Utility\Util;
-use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverWait;
 use Facebook\WebDriver\Exception\TimeoutException;
 use PHPUnitRetry\RetryTrait;
@@ -134,10 +133,10 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 		$this->waitForBoard($browser);
 
 		$this->assertSame($urls[0],
-			$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-back-button'))->getAttribute('href'),
+			$browser->find('#besogo-back-button')->getAttribute('href'),
 			'The back button points at the previous problem');
 		$this->assertSame($urls[2],
-			$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->getAttribute('href'),
+			$browser->find('#besogo-next-button')->getAttribute('href'),
 			'The next button points at the following problem');
 
 		$browser->clickId('besogo-next-button');
@@ -371,7 +370,7 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 
 		$browser->playWithResult('S');
 
-		$this->assertStringContainsString('Correct!', $browser->driver->findElement(WebDriverBy::id('status'))->getText());
+		$this->assertStringContainsString('Correct!', $browser->findById('status')->getText());
 		$this->assertTrue($browser->driver->executeScript('return window.problemSolved;'));
 		$this->assertTrue($browser->driver->executeScript('return window.noXP;'));
 		$this->assertSame(1, $browser->driver->executeScript('return window.boardLockValue;'));
@@ -382,7 +381,7 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 
 		// and so should the XP display
 		$this->assertTrue($browser->driver->executeScript('return window.xpStatus !== undefined;'));
-		$this->assertNotEmpty($browser->driver->findElement(WebDriverBy::id('xpDisplayText'))->getText(),
+		$this->assertNotEmpty($browser->findById('xpDisplayText')->getText(),
 			'The XP display shows the XP gained');
 	}
 
@@ -394,7 +393,7 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 
 		$browser->playWithResult('F');
 
-		$this->assertStringContainsString('Incorrect', $browser->driver->findElement(WebDriverBy::id('status'))->getText());
+		$this->assertStringContainsString('Incorrect', $browser->findById('status')->getText());
 		$this->assertTrue($browser->driver->executeScript('return window.failAlreadyReported;'));
 		$this->assertTrue($browser->driver->executeScript('return window.hadMisplay;'));
 		$this->assertSame(1, $context->reloadUser()['damage']);
@@ -453,7 +452,7 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 			$browser->playWithResult($result);
 
 			$this->assertCount($reveals ? 1 : 0,
-				$browser->driver->findElements(WebDriverBy::cssSelector('#besogo-review-button')),
+				$browser->getElements('#besogo-review-button'),
 				'The review button after a ' . $result);
 			$this->assertSame($reveals ? 'block' : 'none', $this->commentSpaceDisplay($browser),
 				'The comments after a ' . $result);
@@ -692,7 +691,7 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->setCookie('lastSet', 'nonexistent-tag');
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$playTitle = $browser->driver->findElements(WebDriverBy::cssSelector('#playTitle'));
+		$playTitle = $browser->getElements('#playTitle');
 		$this->assertCount(1, $playTitle, 'Play page should render with playTitle element');
 	}
 
@@ -708,11 +707,11 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 		]);
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
-		$theComment = $browser->driver->findElement(WebDriverBy::id('theComment'));
+		$theComment = $browser->findById('theComment');
 		$this->assertSame('Go Seigen 4p vs Kubomatsu 6p', $theComment->getText());
 		$this->assertTrue($theComment->isDisplayed(), 'Root comment should be visible on initial page load');
 
-		$xpDisplayDiv = $browser->driver->findElement(WebDriverBy::id('xpDisplayDiv'));
+		$xpDisplayDiv = $browser->findById('xpDisplayDiv');
 		$this->assertTrue($xpDisplayDiv->isDisplayed(), 'xpDisplayDiv must be visible on initial page load');
 	}
 
@@ -727,8 +726,8 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 
 			$health = Util::getHealthBasedOnLevel(Auth::getUser()['level']);
 			$empty = min($damage, $health);
-			$this->assertCount($empty, $browser->getCssSelect('img[title="Empty Heart"]'), $case . ' with ' . $damage . ' damage');
-			$this->assertCount($health - $empty, $browser->getCssSelect('img[title="Heart"]'), $case . ' with ' . $damage . ' damage');
+			$this->assertCount($empty, $browser->getElements('img[title="Empty Heart"]'), $case . ' with ' . $damage . ' damage');
+			$this->assertCount($health - $empty, $browser->getElements('img[title="Heart"]'), $case . ' with ' . $damage . ' damage');
 		}
 	}
 
@@ -1031,7 +1030,7 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 		$browser->waitUntilJs('window._sent.length > 0');
 
 		$this->assertSame('timed_out', $browser->driver->executeScript('return window._sent[0].outcome;'));
-		$this->assertSame("Time's up!", trim($browser->driver->findElement(WebDriverBy::id('status'))->getText()));
+		$this->assertSame("Time's up!", trim($browser->findById('status')->getText()));
 		$this->assertSame(
 			TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT,
 			(int) ClassRegistry::init('TimeModeAttempt')->find('first', [

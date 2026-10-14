@@ -23,7 +23,7 @@ class HeartDropdownTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
-		$browser->byId('favButton');
+		$browser->findById('favButton');
 		$this->assertFalse($browser->idExists('favDropdownArrow'), 'Dropdown arrow should be hidden when the user has no sets');
 	}
 
@@ -37,7 +37,7 @@ class HeartDropdownTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
-		$browser->byId('favButton');
+		$browser->findById('favButton');
 		$this->assertFalse($browser->idExists('favDropdownArrow'), 'Dropdown arrow should be hidden when the user has only one set');
 	}
 
@@ -54,7 +54,7 @@ class HeartDropdownTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
-		$browser->byId('favButton');
+		$browser->findById('favButton');
 		$this->assertTrue($browser->idExists('favDropdownArrow'), 'Dropdown arrow should show when the user has multiple sets');
 	}
 
@@ -71,10 +71,9 @@ class HeartDropdownTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
-		$browser->byId('favDropdownArrow')->click();
-		$browser->waitUntilCssSelectorExists('#fav-dropdown');
+		$browser->findById('favDropdownArrow')->click();
 
-		$dropdownText = $browser->driver->findElement(WebDriverBy::id('fav-dropdown'))->getText();
+		$dropdownText = $browser->findById('fav-dropdown')->getText();
 		$this->assertStringContainsString('First Set', $dropdownText);
 		$this->assertStringContainsString('Second Set', $dropdownText);
 	}
@@ -106,10 +105,10 @@ class HeartDropdownTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
-		$browser->byId('favDropdownArrow')->click();
-		$browser->waitUntilCssSelectorExists('#fav-dropdown');
+		$browser->findById('favDropdownArrow')->click();
+		$browser->find('#fav-dropdown');
 
-		$targetRow = $browser->driver->findElement(WebDriverBy::xpath("//div[@id='fav-dropdown']//*[input and contains(., 'Target Set')]"));
+		$targetRow = $browser->findBy(WebDriverBy::xpath("//div[@id='fav-dropdown']//*[input and contains(., 'Target Set')]"));
 		$targetRow->findElement(WebDriverBy::cssSelector('input'))->click();
 		$browser->waitUntilCssSelectorExistsWithText('#favButton', '❤️');
 
