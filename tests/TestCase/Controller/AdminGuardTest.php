@@ -195,6 +195,44 @@ class AdminGuardTest extends ControllerTestCase
 		]);
 	}
 
+	// ── TsumegosController::play ?requestSolution ──
+
+	public function testRequestSolutionRequiresLogin()
+	{
+		$context = new ContextPreparator(['user' => null, 'tsumego' => ['set_order' => 1]]);
+
+		$this->expectException(UnauthorizedException::class);
+
+		$this->testAction('/' . $context->tsumegos[0]['set-connections'][0]['id'] . '?requestSolution=1', ['method' => 'get']);
+	}
+
+	public function testRequestSolutionRequiresAdmin()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'regular', 'admin' => false],
+			'tsumego' => ['set_order' => 1],
+		]);
+
+		$this->expectException(ForbiddenException::class);
+
+		$this->testAction('/' . $context->tsumegos[0]['set-connections'][0]['id'] . '?requestSolution=1', ['method' => 'get']);
+	}
+
+	public function testRequestSolutionAllowsAdmin()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'admin', 'admin' => true],
+			'tsumego' => ['set_order' => 1],
+		]);
+		$adminActivity = ClassRegistry::init('AdminActivity');
+		$before = $adminActivity->find('count');
+
+		$this->testAction('/' . $context->tsumegos[0]['set-connections'][0]['id'] . '?requestSolution=1', ['method' => 'get']);
+
+		$this->assertSame(200, $this->controller->response->statusCode());
+		$this->assertSame($before + 1, $adminActivity->find('count'));
+	}
+
 	// ── UsersController::showPublishSchedule ──
 
 	public function testShowPublishScheduleRequiresAdmin()
