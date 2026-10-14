@@ -25,8 +25,7 @@ class TsumegosController extends AppController
 	{
 		$this->response->type('application/json');
 
-		if (!Auth::isLoggedIn())
-			throw new ForbiddenException('Login required');
+		$this->Authorization->authorize('User', 'reportResult');
 
 		$data = json_decode($this->request->input(), true) ?: $this->request->data;
 		if (!$data || empty($data['tsumego_id']))

@@ -12,6 +12,8 @@ class TimeModeController extends AppController
 {
 	public function start(): mixed
 	{
+		$this->Authorization->authorize('User', 'startTimeMode');
+
 		$timeMode = new TimeMode();
 		$categoryID = (int) $this->params['url']['categoryID'];
 		if (!$categoryID)

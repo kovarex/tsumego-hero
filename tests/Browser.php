@@ -248,6 +248,26 @@ class Browser
 		$this->assertNoErrors();
 	}
 
+	/**
+	 * Posts to a URL from the page the browser is on, the way a form on it does.
+	 */
+	public function post(string $url): void
+	{
+		$this->captureJsCoverage();
+
+		$this->driver->executeScript(
+			'window.__postPending = true;'
+			. 'var form = document.createElement("form");'
+			. 'form.method = "post";'
+			. 'form.action = ' . json_encode('/' . ltrim($url, '/')) . ';'
+			. 'document.body.appendChild(form);'
+			. 'form.submit();'
+		);
+		// The response can land on the same URL, so wait for the document to be
+		// replaced instead of for the address to change.
+		$this->waitUntilJs('window.__postPending === undefined && document.readyState === "complete"');
+	}
+
 	public function clickId($id)
 	{
 		$this->findById($id)->click();

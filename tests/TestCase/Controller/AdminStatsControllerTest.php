@@ -143,29 +143,16 @@ class AdminStatsControllerTest extends ControllerTestCase
 			];
 		}
 
-		$context = new ContextPreparator([
+		new ContextPreparator([
 			'user' => ['admin' => true],
 			'tsumego' => [],
 			'admin-activities' => $activities
 		]);
 
-		// Create unapproved tags
-		for ($i = 1; $i <= 105; $i++)
-		{
-			$tagName = ClassRegistry::init('Tag');
-			$tagName->create();
-			$tagName->save([
-				'name' => "Test Tag $i",
-				'description' => '',
-				'user_id' => $context->user['id'],
-				'approved' => 0
-			]);
-		}
-
 		// Navigate to the second page of the activities, from a page that also
 		// carries another parameter
 		$browser = Browser::instance();
-		$browser->get('users/adminstats?activity_page=2&tagnames_page=2');
+		$browser->get('users/adminstats?activity_page=2&sgf_proposals_page=2');
 
 		$pageSource = $browser->driver->getPageSource();
 		$this->assertStringContainsString('Page 2 of 2', $pageSource);
@@ -177,7 +164,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$previousPages = array_filter($matches[1], fn($query) => str_contains($query, 'activity_page=1'));
 		$this->assertNotEmpty($previousPages);
 		foreach ($previousPages as $query)
-			$this->assertStringContainsString('tagnames_page=2', $query);
+			$this->assertStringContainsString('sgf_proposals_page=2', $query);
 	}
 
 	/**

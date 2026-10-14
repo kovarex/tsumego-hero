@@ -221,6 +221,7 @@ class TagsController extends AppController
 
 	public function index(): void {}
 
+	#[HttpPost]
 	public function acceptTagProposal(string $tagID): CakeResponse
 	{
 		$this->Authorization->authorize('Tag');
@@ -248,6 +249,7 @@ class TagsController extends AppController
 		return $this->redirect('/users/adminstats');
 	}
 
+	#[HttpPost]
 	public function rejectTagProposal(string $tagID): CakeResponse
 	{
 		$this->Authorization->authorize('Tag');

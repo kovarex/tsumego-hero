@@ -18,6 +18,65 @@ class AdminGuardTest extends ControllerTestCase
 		$this->testAction('/users/adminstats', ['method' => 'get']);
 	}
 
+	public function testPreferenceActionsRequireLogin()
+	{
+		new ContextPreparator(['user' => null]);
+
+		foreach (['/users/playerColorPreference', '/users/boardOrientationPreference'] as $url)
+		{
+			try
+			{
+				$this->testAction($url, ['method' => 'post', 'data' => ['color' => 1, 'orientation' => 1]]);
+				$this->fail($url . ' let a guest through');
+			}
+			catch (UnauthorizedException $e)
+			{
+				$this->addToAssertionCount(1);
+			}
+		}
+	}
+
+	public function testTagProposalActionsRequirePost()
+	{
+		new ContextPreparator(['user' => ['admin' => true]]);
+
+		foreach (['/tags/acceptTagProposal/1', '/tags/rejectTagProposal/1'] as $url)
+		{
+			try
+			{
+				$this->testAction($url, ['method' => 'get']);
+				$this->fail($url . ' accepted a GET');
+			}
+			catch (MethodNotAllowedException $e)
+			{
+				$this->addToAssertionCount(1);
+			}
+		}
+	}
+
+	public function testUserProposalActionsRequirePost()
+	{
+		new ContextPreparator(['user' => ['admin' => true]]);
+
+		foreach ([
+			'/users/acceptSGFProposal/1',
+			'/users/rejectSGFProposal/1',
+			'/users/acceptTagConnectionProposal/1',
+			'/users/rejectTagConnectionProposal/1',
+		] as $url)
+		{
+			try
+			{
+				$this->testAction($url, ['method' => 'get']);
+				$this->fail($url . ' accepted a GET');
+			}
+			catch (MethodNotAllowedException $e)
+			{
+				$this->addToAssertionCount(1);
+			}
+		}
+	}
+
 	public function testAdminstatsRequiresAdmin()
 	{
 		new ContextPreparator(['user' => ['name' => 'regular', 'admin' => false]]);

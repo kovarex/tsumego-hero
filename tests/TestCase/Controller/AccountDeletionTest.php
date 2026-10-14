@@ -204,10 +204,23 @@ class AccountDeletionTest extends TestCaseWithAuth
 		$this->assertNull($this->deletedOf($context->otherUsers[0]['id']));
 	}
 
-	public function testOnlyAdminCanRestoreAccount(): void
+	public function testAGuestCannotRestoreAccount(): void
 	{
 		$context = new ContextPreparator(['other-users' => [['name' => 'ghost', 'deleted' => true]]]);
+
+		$this->expectException(UnauthorizedException::class);
+
+		$this->testAction('/users/restore_account/' . $context->otherUsers[0]['id'], ['method' => 'POST']);
+	}
+
+	public function testOnlyAdminCanRestoreAccount(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => false],
+			'other-users' => [['name' => 'ghost', 'deleted' => true]]]);
+
 		$this->expectException(ForbiddenException::class);
+
 		$this->testAction('/users/restore_account/' . $context->otherUsers[0]['id'], ['method' => 'POST']);
 	}
 

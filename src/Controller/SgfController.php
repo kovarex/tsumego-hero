@@ -2,24 +2,17 @@
 
 use App\Attribute\HttpPost;
 use App\Utility\AdminActivityLogger;
-use App\Utility\Auth;
 use App\Utility\SgfParser;
-use App\Utility\TsumegoUtil;
 
 class SgfController extends AppController
 {
 	public function fetch(int $sgfID)
 	{
-		if (!Auth::isLoggedIn())
-			throw new UnauthorizedException('User not logged in.');
-
 		$sgf = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['id' => $sgfID], 'order' => 'id DESC']);
 		if (!$sgf)
 			throw new NotFoundException('Sgf not found.');
 
-		$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['tsumego_id' => $sgf['Sgf']['tsumego_id'], 'user_id' => Auth::getUserID()]]);
-		if (!Auth::isAdmin() && (!$status || !TsumegoUtil::isRecentlySolved($status['TsumegoStatus']['status'])))
-			throw new ForbiddenException('Related tsumego is not in a solved state for the user ' . Auth::getUser()['display_name']);
+		$this->Authorization->authorize($sgf, 'fetch');
 
 		$this->response->statusCode(200);
 		$this->response->body($sgf['Sgf']['sgf']);

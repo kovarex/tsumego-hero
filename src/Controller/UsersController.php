@@ -320,40 +320,11 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->loadModel('DayRecord');
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
-		$this->loadModel('Tag');
 		$this->loadModel('AdminActivityType');
-
-		// Pagination setup
-		$perPage = 100;
-		$tagNamesPage = isset($this->params['url']['tagnames_page']) ? max(1, (int) $this->params['url']['tagnames_page']) : 1;
-
-		$tagNamesOffset = ($tagNamesPage - 1) * $perPage;
-
-		// Get total counts
-		$tags = $this->Tag->find('all', [
-			'conditions' => ['approved' => 0],
-			'limit' => $perPage,
-			'offset' => $tagNamesOffset,
-			'order' => 'created DESC'
-		]);
-
-		$tagsByKey = $this->Tag->find('all');
-		$tKeys = [];
-		$tagsByKeyCount = count($tagsByKey);
-		for ($i = 0; $i < $tagsByKeyCount; $i++)
-			$tKeys[$tagsByKey[$i]['Tag']['id']] = $tagsByKey[$i]['Tag']['name'];
-
-		$tagNamesCount = count($tags);
-		for ($i = 0; $i < $tagNamesCount; $i++)
-		{
-			$au = $this->User->findById($tags[$i]['Tag']['user_id']);
-			$tags[$i]['Tag']['user'] = User::displayName($au['User']);
-		}
 
 		$this->set('deletedUsers', $this->User->find('all', [
 			'conditions' => ['deleted IS NOT NULL'],
 			'order' => 'deleted DESC']) ?: []);
-		$this->set('tagNames', $tags);
 
 		// Pagination data
 		$this->set('sgfProposalsRenderer', new SGFProposalsRenderer($this->params['url']));
@@ -1182,6 +1153,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 	/**
 	 * @return CakeResponse|null
 	 */
+	#[HttpPost]
 	public function googlesignin()
 	{
 		// CSRF protection: Google Sign-In provides g_csrf_token in both POST and cookie
@@ -1361,12 +1333,10 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 	/**
 	 * Restores a deleted account (admin only).
 	 */
+	#[HttpPost]
 	public function restore_account(?string $id = null)
 	{
-		if (!Auth::isAdmin())
-			throw new ForbiddenException();
-		if (!$this->request->is('post'))
-			throw new MethodNotAllowedException();
+		$this->Authorization->authorize('Admin', 'restoreAccount');
 		$user = $this->User->findById($id);
 		if (!$user)
 			throw new NotFoundException('User not found');
@@ -1462,6 +1432,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		$this->set('attempts', $attempts);
 	}
 
+	#[HttpPost]
 	public function acceptSGFProposal(string $sgfID)
 	{
 		$this->Authorization->authorize('Admin');
@@ -1492,6 +1463,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		return $this->redirect('/users/adminstats');
 	}
 
+	#[HttpPost]
 	public function rejectSGFProposal(string $sgfID)
 	{
 		$this->Authorization->authorize('Admin');
@@ -1527,6 +1499,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		return $this->redirect('/users/adminstats');
 	}
 
+	#[HttpPost]
 	public function acceptTagConnectionProposal(string $tagConnectionID)
 	{
 		$this->Authorization->authorize('Admin');
@@ -1554,6 +1527,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		return $this->redirect('/users/adminstats');
 	}
 
+	#[HttpPost]
 	public function rejectTagConnectionProposal(string $tagConnectionID)
 	{
 		$this->Authorization->authorize('Admin');

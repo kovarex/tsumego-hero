@@ -26,6 +26,15 @@ class TimeModeControllerTest extends ControllerTestCase
 		$this->testAction('/timeMode/start?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED);
 	}
 
+	public function testStartTimeModeRequiresLogin()
+	{
+		$context = new ContextPreparator(['user' => null, 'time-mode-ranks' => ['5k']]);
+
+		$this->expectException(UnauthorizedException::class);
+
+		$this->testAction('/timeMode/start?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED . '&rankID=' . $context->timeModeRanks[0]['id']);
+	}
+
 	public function testTimeModePlayWithoutBeingLoggedInRedirectsToLogin()
 	{
 		foreach (['/timeMode/play', '/timeMode/overview', '/timeMode/result'] as $page)
