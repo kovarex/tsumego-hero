@@ -1,5 +1,6 @@
 <?php
 
+use App\Policy\AdminPolicy;
 use App\Policy\BasePolicy;
 use App\Policy\SetPolicy;
 use App\Policy\TsumegoPolicy;
@@ -434,7 +435,14 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		($this->setFunction)('passEnabled', $t['Tsumego']['pass']);
 		($this->setFunction)('setConnection', $currentSetConnection);
 		($this->setFunction)('setConnections', $setConnections);
-		if (isset($params['url']['requestSolution']))($this->setFunction)('requestSolution', AdminActivityLogger::log(AdminActivityType::SOLUTION_REQUEST, $id));
+		if (isset($params['url']['requestSolution']))
+		{
+			if (Auth::getIdentity() === null)
+				throw new UnauthorizedException();
+			if (!AdminPolicy::canRequestSolution(Auth::getIdentity()))
+				throw new ForbiddenException();
+			($this->setFunction)('requestSolution', AdminActivityLogger::log(AdminActivityType::SOLUTION_REQUEST, $id));
+		}
 		($this->setFunction)('tv', $tsumegoVariant);
 		($this->setFunction)('tsumegoFilters', $tsumegoFilters);
 		($this->setFunction)('queryTitle', $queryTitle);

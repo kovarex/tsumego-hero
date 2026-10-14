@@ -88,4 +88,14 @@ class AdminPolicy extends BasePolicy
 	{
 		return static::isAdmin($user);
 	}
+
+	/**
+	 * Asking the author of a set for a solution to one of its problems
+	 *
+	 * @param UserRow|null $user
+	 */
+	public static function canRequestSolution(?array $user): bool
+	{
+		return static::isAdmin($user);
+	}
 }

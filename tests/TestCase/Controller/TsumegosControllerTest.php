@@ -45,6 +45,59 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		}
 	}
 
+	/**
+	 * Asking the author for a solution is an admin action
+	 */
+	public function testAPlayerIsNotOfferedTheSolutionRequest()
+	{
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 666]]);
+		$setConnectionID = $context->tsumegos[0]['set-connections'][0]['id'];
+		$adminActivity = ClassRegistry::init('AdminActivity');
+		$before = $adminActivity->find('count');
+
+		$page = (string) $this->testAction('/' . $setConnectionID, ['method' => 'get', 'return' => 'contents']);
+		$this->assertStringNotContainsString('?requestSolution=', $page);
+
+		try
+		{
+			$this->testAction('/' . $setConnectionID . '?requestSolution=1', ['method' => 'get']);
+			$this->fail('A player must not be able to ask for a solution');
+		}
+		catch (ForbiddenException $e)
+		{
+			$this->assertSame($before, $adminActivity->find('count'));
+		}
+	}
+
+	/**
+	 * A visitor who is not signed in is not a player either
+	 */
+	public function testAGuestCannotAskForASolution()
+	{
+		$context = new ContextPreparator(['user' => null, 'tsumego' => ['set_order' => 666]]);
+
+		$this->expectException(UnauthorizedException::class);
+
+		$this->testAction('/' . $context->tsumegos[0]['set-connections'][0]['id'] . '?requestSolution=1', ['method' => 'get']);
+	}
+
+	/**
+	 * An admin gets the button and the request is recorded
+	 */
+	public function testAnAdminCanAskTheAuthorForASolution()
+	{
+		$context = new ContextPreparator(['user' => ['admin' => true], 'tsumego' => ['set_order' => 666]]);
+		$setConnectionID = $context->tsumegos[0]['set-connections'][0]['id'];
+		$adminActivity = ClassRegistry::init('AdminActivity');
+		$before = $adminActivity->find('count');
+
+		$page = (string) $this->testAction('/' . $setConnectionID, ['method' => 'get', 'return' => 'contents']);
+		$this->assertStringContainsString('?requestSolution=', $page);
+
+		$this->testAction('/' . $setConnectionID . '?requestSolution=1', ['method' => 'get']);
+		$this->assertSame($before + 1, $adminActivity->find('count'));
+	}
+
 	public function testPageTitleShowsRealSetCount()
 	{
 		$context = new ContextPreparator([
