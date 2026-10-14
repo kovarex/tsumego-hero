@@ -90,7 +90,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$boxLinks = $dom->querySelectorAll('.set-card__link');
 		$setId = $context->tsumegos[0]['sets'][0]['id'];
-		$this->assertSame('/sets/view/' . $setId . '/1', $boxLinks[0]->getAttribute('href'));
+		$this->assertSame('/sets/view/' . $setId, $boxLinks[0]->getAttribute('href'));
 		$this->assertSame('/sets/view/' . $setId . '/2', $boxLinks[1]->getAttribute('href'));
 	}
 
@@ -581,7 +581,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame($collectionTopDivs[0]->getText(), 'test set #1');
 		$this->assertSame($collectionTopDivs[1]->getText(), 'test set #2');
 		$collectionTopDivs[0]->click();
-		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->tsumegos[0]['sets'][0]['id'] . '/1', $browser->driver->getCurrentURL());
+		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->tsumegos[0]['sets'][0]['id'], $browser->driver->getCurrentURL());
 
 		// now we are viewing the 'test set' and checking the buttons
 
