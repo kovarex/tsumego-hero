@@ -20,6 +20,8 @@ use App\Utility\ViteManifest;
  * @var string $lastProfileRight
  * @var string $nextDay
  * @var string $boardsBitmask
+ * @var string|null $canonicalPath Path a page with more than one address wants to be known by
+ * @var array|null $og
  */
 
 ?>
@@ -104,20 +106,28 @@ echo $this->Html->charset();
 <meta name="apple-mobile-web-app-title" content="Tsumego">
 <link rel="apple-touch-icon" href="/pwa/icon-192.png">
 <?php
-// Open Graph meta tags. Controllers may set a richer $og array
-// (see src/View/Elements/open_graph_meta.ctp); otherwise a generic default is used.
-if (empty($og))
-{
-	$og = [
-		'title' => $_title ?? 'Tsumego',
-		'description' => 'Interactive tsumego database. Solve go problems, get stronger, level up, have fun.',
-		'image' => Router::url('/img/Tsumego-Hero-Logo.png', true),
-		'url' => Router::url(null, true),
-		'type' => 'website',
-		'site_name' => 'Tsumego',
-		'locale' => 'en_US',
-	];
-}
+// A later page of a listing holds its own items, the first page is the listing.
+$page = (int) $this->request->query('page');
+$canonicalUrl = Router::url($canonicalPath ?? '/' . trim(strtok($this->request->here, '?'), '/'), true);
+if ($canonicalPath === null && $page > 1)
+	$canonicalUrl .= '?page=' . $page;
+?>
+<link rel="canonical" href="<?php echo h($canonicalUrl); ?>">
+<?php
+// Controllers can describe the page themselves; what they set wins, everything
+// else comes from here.
+$og = ($og ?? []) + [
+	'title' => $_title ?? 'Tsumego',
+	'description' => 'Interactive tsumego database. Solve go problems, get stronger, level up, have fun.',
+	'image' => Router::url('/img/Tsumego-Hero-Logo.png', true),
+	'type' => 'website',
+	'site_name' => 'Tsumego',
+	'locale' => 'en_US',
+];
+
+// The address of the page is decided here and nowhere else, so the canonical
+// link and what gets shared can never point at two different addresses.
+$og['url'] = $canonicalUrl;
 $this->element('open_graph_meta', ['og' => $og]);
 echo $this->fetch('og_meta');
 ?>
@@ -344,7 +354,7 @@ echo ViteManifest::legacyScript('legacy');
 									<table id="dropdowntable" border="0"></table>
 									<br>
 									<div id="dropdowntable2" align="center">
-										<a class="btn btn--primary" href="<?php echo h($_SERVER['REQUEST_URI']); ?>">Save</a>
+											<a class="btn btn--primary" href="<?php echo h($_SERVER['REQUEST_URI']); ?>">Save</a>
 										<br><br>
 									</div>
 									</div>

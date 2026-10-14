@@ -83,6 +83,7 @@ class TsumegosController extends AppController
 				if ($sc)
 					$this->PlayResultProcessor->markAsVisited((int) $sc['SetConnection']['tsumego_id']);
 			}
+			$this->set('canonicalPath', '/' . (int) $setConnectionID);
 			return new Play(function ($name, $value) { $this->set($name, $value); })->play((int) $setConnectionID, $this->request, $this->request->data);
 		}
 
@@ -100,6 +101,8 @@ class TsumegosController extends AppController
 		if (!$setConnections)
 			throw new NotFoundException("Problem not found in any set");
 		$setConnection = $this->deduceRelevantSetConnection($setConnections);
+
+		$this->set('canonicalPath', '/' . $setConnections[0]['SetConnection']['id']);
 		return new Play(function ($name, $value) {
 			$this->set($name, $value);
 		})->play($setConnection['SetConnection']['id'], $this->request, $this->request->data);

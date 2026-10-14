@@ -772,7 +772,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			'title' => 'Profile of ' . $user['User']['name'],
 			'description' => $user['User']['name'] . ' on Tsumego',
 			'image' => Router::url('/img/Tsumego-Hero-Logo.png', true),
-			'url' => Router::url('/users/view/' . $user['User']['id'], true),
 			'type' => 'profile',
 			'profile_username' => $user['User']['name'],
 			'site_name' => 'Tsumego',
