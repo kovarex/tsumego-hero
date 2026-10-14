@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\Constants;
+
 /**
  * SitemapsController Test
  *
@@ -239,6 +241,48 @@ class SitemapsControllerTest extends ControllerTestCase
 
 		// Verify individual puzzle URL is in sitemap (uses set_connection ID)
 		$this->assertStringContainsString('/' . $context->setConnections[0]['id'] . '</loc>', $result);
+	}
+
+	/**
+	 * A set longer than one page of problems is listed page by page
+	 */
+	public function testSitemapIncludesLaterPagesOfALongSet()
+	{
+		$tsumegos = [];
+		for ($i = 1; $i <= Constants::$DEFAULT_COLLECTION_SIZE + 1; $i++)
+			$tsumegos[] = ['sets' => [['name' => 'long set', 'num' => (string) $i, 'public' => 1]]];
+
+		$context = new ContextPreparator(['tsumegos' => $tsumegos]);
+		$setID = $context->tsumegos[0]['set-connections'][0]['set_id'];
+
+		Cache::delete('sitemap_xml', 'long');
+
+		$result = (string) $this->testAction('/sitemap.xml', [
+			'method' => 'get',
+			'return' => 'contents'
+		]);
+
+		$this->assertStringContainsString('<loc>' . self::baseUrl() . '/sets/view/' . $setID . '</loc>', $result);
+		$this->assertStringContainsString('<loc>' . self::baseUrl() . '/sets/view/' . $setID . '/2</loc>', $result);
+		$this->assertStringNotContainsString('/sets/view/' . $setID . '/1</loc>', $result);
+		$this->assertStringNotContainsString('/sets/view/' . $setID . '/3</loc>', $result);
+	}
+
+	/**
+	 * Every achievement has its own page, and the sitemap lists them all
+	 */
+	public function testSitemapIncludesEveryAchievementPage()
+	{
+		Cache::delete('sitemap_xml', 'long');
+
+		$index = (string) $this->testAction('/achievements', ['method' => 'get', 'return' => 'contents']);
+		$sitemap = (string) $this->testAction('/sitemap.xml', ['method' => 'get', 'return' => 'contents']);
+
+		preg_match_all('~href="(/achievements/view/\d+)"~', $index, $matches);
+		$this->assertNotEmpty($matches[1]);
+
+		foreach (array_unique($matches[1]) as $page)
+			$this->assertStringContainsString('<loc>' . self::baseUrl() . $page . '</loc>', $sitemap);
 	}
 
 	public function tearDown(): void

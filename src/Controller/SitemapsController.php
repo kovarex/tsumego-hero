@@ -7,6 +7,7 @@
  *
  * @link https://www.sitemaps.org/protocol.html
  */
+use App\Utility\Constants;
 use App\Utility\Util;
 
 class SitemapsController extends AppController
@@ -14,7 +15,7 @@ class SitemapsController extends AppController
 	/**
 	 * Models
 	 */
-	public $uses = ['Set', 'Tag'];
+	public $uses = ['Achievement', 'Set', 'Tag'];
 
 	/**
 	 * Pages a visitor can browse without signing in. Each one is resolved
@@ -75,7 +76,16 @@ class SitemapsController extends AppController
 		// Homepage
 		$urls[] = Router::url('/', true);
 
-		// All public puzzle sets
+		// All public puzzle sets, one URL per page of the listing
+		$setProblemCounts = [];
+		foreach (Util::query("
+SELECT set_id, COUNT(*) AS problems
+FROM set_connection
+	JOIN `set` ON set_connection.set_id = `set`.id
+WHERE `set`.public = 1
+GROUP BY set_id") as $row)
+			$setProblemCounts[$row['set_id']] = (int) $row['problems'];
+
 		$sets = $this->Set->find('all', [
 			'conditions' => ['Set.public' => 1],
 			'fields' => ['Set.id'],
@@ -83,7 +93,24 @@ class SitemapsController extends AppController
 		]);
 
 		foreach ($sets as $set)
-			$urls[] = self::_urlOf(['controller' => 'sets', 'action' => 'view', $set['Set']['id']]);
+		{
+			$setID = $set['Set']['id'];
+			$urls[] = self::_urlOf(['controller' => 'sets', 'action' => 'view', $setID]);
+
+			// A visitor sees the default number of problems per page.
+			$pages = (int) ceil(($setProblemCounts[$setID] ?? 0) / Constants::$DEFAULT_COLLECTION_SIZE);
+			for ($page = 2; $page <= $pages; $page++)
+				$urls[] = self::_urlOf(['controller' => 'sets', 'action' => 'view', $setID, $page]);
+		}
+
+		// All achievements, each with its own page
+		$achievements = $this->Achievement->find('all', [
+			'fields' => ['Achievement.id'],
+			'order' => ['Achievement.order' => 'ASC']
+		]);
+
+		foreach ($achievements as $achievement)
+			$urls[] = self::_urlOf(['controller' => 'achievements', 'action' => 'view', $achievement['Achievement']['id']]);
 
 		// All approved tags, on the page that serves tags
 		$tags = $this->Tag->find('all', [
