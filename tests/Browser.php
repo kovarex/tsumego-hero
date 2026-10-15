@@ -352,6 +352,13 @@ class Browser
 	/**
 	 * Run a WebDriverWait condition, dumping the page source to tmp/ when it times out.
 	 *
+	 * Transient driver errors keep the wait going instead of ending it: while a page is
+	 * navigating or a script is re-rendering the DOM, document.body can be missing, the
+	 * execution context can be destroyed and an element reference can go stale. Those all
+	 * mean "not ready yet". WebDriverWait on its own tolerates only NoSuchElementException,
+	 * so everything else is handled here, and the last error is added to the dump context
+	 * to keep a real failure diagnosable. A dead session is not transient and still throws.
+	 *
 	 * @param callable $condition Condition passed to WebDriverWait::until()
 	 * @param int $timeout Timeout in seconds
 	 * @param int $interval Polling interval in milliseconds
@@ -359,13 +366,33 @@ class Browser
 	 */
 	private function waitAndDumpOnTimeout(callable $condition, int $timeout, int $interval, string $context): mixed
 	{
+		$lastTransientError = null;
+
 		try
 		{
-			return new WebDriverWait($this->driver, $timeout, $interval)->until($condition);
+			return new WebDriverWait($this->driver, $timeout, $interval)->until(
+				function ($driver) use ($condition, &$lastTransientError) {
+					try
+					{
+						return $condition($driver);
+					}
+					catch (\Facebook\WebDriver\Exception\InvalidSessionIdException $e)
+					{
+						throw $e; // the browser is gone, waiting cannot bring it back
+					}
+					catch (\Facebook\WebDriver\Exception\WebDriverException $e)
+					{
+						$lastTransientError = get_class($e) . ': ' . $e->getMessage();
+						return null;
+					}
+				}
+			);
 		}
 		catch (TimeoutException $e)
 		{
-			$this->dumpPageSourceOnTimeout($context);
+			$this->dumpPageSourceOnTimeout(
+				$context . ($lastTransientError === null ? '' : ' (last transient error: ' . $lastTransientError . ')')
+			);
 			throw $e;
 		}
 	}
