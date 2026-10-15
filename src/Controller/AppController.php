@@ -358,6 +358,11 @@ class AppController extends Controller
 	public function beforeFilter(): void
 	{
 		$this->enforceHttpMethodAttribute();
+
+		if (strtolower((string) ($this->request->params['controller'] ?? '')) === 'avatars'
+			&& strtolower((string) ($this->request->params['action'] ?? '')) === 'image')
+				return;
+
 		$this->loadModel('User');
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
@@ -386,9 +391,10 @@ class AppController extends Controller
 			{
 				$controller = $this->request->params['controller'];
 				$action = $this->request->params['action'];
-				// The links that arrive by e-mail and the ways out of the account stay
-				// reachable: asking for a password reset or for deletion must not
-				// require picking a name first.
+				// The links that arrive by e-mail, the ways out of the account and the
+				// images the rename page itself shows stay reachable: asking for a
+				// password reset or for deletion must not require picking a name first,
+				// and a missing avatar is a broken page.
 				$allowedChangeActions = [
 					'users/changename',
 					'users/updatename',
@@ -397,8 +403,10 @@ class AppController extends Controller
 					'users/newpassword',
 					'users/confirm_delete_account',
 					'users/delete_account',
+					'avatars/image',
 				];
-				if (!in_array($controller . '/' . $action, $allowedChangeActions, true))
+
+				if (!in_array(strtolower($controller . '/' . $action), $allowedChangeActions, true))
 				{
 					$this->redirect(['controller' => 'users', 'action' => 'changename']);
 					return;

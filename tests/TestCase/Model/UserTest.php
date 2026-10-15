@@ -12,6 +12,7 @@ class UserTest extends CakeTestCase
 	public function testGetAvatarUrlReturnsGooglePictureForGoogleUser()
 	{
 		$user = [
+			'pref_avatar' => User::AVATAR_GOOGLE,
 			'external_id' => '123456789',
 			'picture' => 'https://lh3.googleusercontent.com/a/abc123',
 			'email' => 'test@gmail.com',
@@ -23,49 +24,184 @@ class UserTest extends CakeTestCase
 	}
 
 	/**
-	 * Test that non-Google users get Gravatar URL.
+	 * Everyone without a Google picture gets the board the site draws for them, so
+	 * no request leaves for an avatar host.
 	 */
-	public function testGetAvatarUrlReturnsGravatarForRegularUser()
+	public function testGetAvatarUrlReturnsTheBoardForAPlayerWithoutAPicture()
 	{
 		$user = [
+			'id' => 4242,
 			'external_id' => null,
 			'picture' => null,
 			'email' => 'test@example.com',
 		];
 
-		$url = User::getAvatarUrl($user, 40);
-		$this->assertStringContainsString('gravatar.com/avatar/', $url);
-		$this->assertStringContainsString('s=40', $url);
+		$this->assertSame('/avatar/4242', User::getAvatarUrl($user, 20));
 	}
 
 	/**
-	 * Test that Google user without picture falls back to Gravatar.
+	 * A Google account that has no picture to show gets a board too.
 	 */
-	public function testGetAvatarUrlFallsBackToGravatarWhenNoPicture()
+	public function testGetAvatarUrlReturnsTheBoardWhenAGoogleAccountHasNoPicture()
 	{
 		$user = [
+			'id' => 77,
 			'external_id' => '123456789',
 			'picture' => null,
 			'email' => 'test@gmail.com',
 		];
 
-		$url = User::getAvatarUrl($user, 40);
-		$this->assertStringContainsString('gravatar.com/avatar/', $url);
+		$this->assertSame('/avatar/77', User::getAvatarUrl($user, 20));
+	}
+
+	public function testTheGooglePictureIsAskedForInTheSizeTheAvatarIsDrawnIn()
+	{
+		foreach (['', '=s96', '=s96-c', '=s96-c-rw', '=w100-h100'] as $suffix)
+		{
+			$user = [
+				'id' => 1,
+				'external_id' => '123',
+				'picture' => 'https://lh3.googleusercontent.com/a/x' . $suffix,
+				'pref_avatar' => User::AVATAR_GOOGLE,
+			];
+
+			$this->assertSame(
+				'https://lh3.googleusercontent.com/a/x=s128',
+				User::getAvatarUrl($user, 128),
+				'The picture with the suffix ' . $suffix . ' was not asked for in 128 pixels'
+			);
+		}
 	}
 
 	/**
-	 * Test that avatar size can be customized.
+	 * A picture url that carries its own parameters is served as it is, so its
+	 * signature or query can not be broken by a size that is appended to it.
 	 */
-	public function testGetAvatarUrlCustomSize()
+	public function testAGooglePictureWithItsOwnParametersIsLeftAlone()
 	{
 		$user = [
-			'external_id' => null,
-			'picture' => null,
-			'email' => 'test@example.com',
+			'id' => 1,
+			'external_id' => '123',
+			'picture' => 'https://lh3.googleusercontent.com/a/x?sz=50',
+			'pref_avatar' => User::AVATAR_GOOGLE,
 		];
 
-		$url = User::getAvatarUrl($user, 80);
-		$this->assertStringContainsString('s=80', $url);
+		$this->assertSame('https://lh3.googleusercontent.com/a/x?sz=50', User::getAvatarUrl($user, 128));
+	}
+
+	/**
+	 * A picture of another host is served as it is as well.
+	 */
+	public function testAPictureOfAnotherHostIsLeftAlone()
+	{
+		$user = [
+			'id' => 1,
+			'external_id' => '123',
+			'picture' => 'https://example.com/photo.png',
+			'pref_avatar' => User::AVATAR_GOOGLE,
+		];
+
+		$this->assertSame('https://example.com/photo.png', User::getAvatarUrl($user, 128));
+	}
+
+	public function testAnAvatarFromAnotherHostFallsBackToTheBoardOfTheAccount()
+	{
+		$withPicture = User::renderLink([
+			'id' => 4242,
+			'display_name' => 'Pic',
+			'external_id' => '123',
+			'picture' => 'https://lh3.googleusercontent.com/a/x',
+			'pref_avatar' => User::AVATAR_GOOGLE,
+		]);
+		$this->assertStringContainsString(
+			"onerror=\"this.onerror=null;this.classList.add('user-avatar--board');this.src='/avatar/4242'\"",
+			$withPicture
+		);
+
+		$withBoard = User::renderLink(['id' => 4242, 'display_name' => 'Pic', 'email' => 'pic@example.com']);
+		$this->assertStringNotContainsString('onerror', $withBoard, 'A board avatar never fails, so it needs no fallback');
+	}
+
+	/**
+	 * One svg covers every size, so the board url does not change with it.
+	 */
+	public function testTheBoardUrlIsTheSameForEverySize()
+	{
+		$user = ['id' => 4242, 'external_id' => null, 'picture' => null, 'email' => 'test@example.com'];
+
+		$this->assertSame(User::getAvatarUrl($user, 20), User::getAvatarUrl($user, 48));
+	}
+
+	/**
+	 * Every account starts on the board, a Google picture is only shown once the
+	 * player picks it.
+	 */
+	public function testTheBoardIsTheDefaultForAGoogleAccount()
+	{
+		$user = ['id' => 1, 'external_id' => '123', 'picture' => 'https://lh3.googleusercontent.com/a/x'];
+
+		$this->assertSame('/avatar/1', User::getAvatarUrl($user, 24));
+	}
+
+	public function testChoosingTheBoardHidesTheGooglePicture()
+	{
+		$user = [
+			'id' => 1,
+			'pref_avatar' => User::AVATAR_BOARD,
+			'external_id' => '123',
+			'picture' => 'https://lh3.googleusercontent.com/a/x',
+		];
+
+		$this->assertSame('/avatar/1', User::getAvatarUrl($user, 24));
+	}
+
+	public function testChoosingTheGooglePictureUsesIt()
+	{
+		$user = [
+			'id' => 1,
+			'pref_avatar' => User::AVATAR_GOOGLE,
+			'external_id' => '123',
+			'picture' => 'https://lh3.googleusercontent.com/a/x',
+		];
+
+		$this->assertSame('https://lh3.googleusercontent.com/a/x=s24', User::getAvatarUrl($user, 24));
+	}
+
+	public function testAGoogleChoiceWithoutAPictureFallsBackToTheBoard()
+	{
+		$user = ['id' => 7, 'pref_avatar' => User::AVATAR_GOOGLE, 'external_id' => '123', 'picture' => null];
+
+		$this->assertSame('/avatar/7', User::getAvatarUrl($user, 24));
+	}
+
+	public function testChoosingGravatarUsesTheSha256OfTheEmail()
+	{
+		$user = ['id' => 1, 'pref_avatar' => User::AVATAR_GRAVATAR, 'email' => ' MyEmailAddress@example.com '];
+
+		$this->assertSame(
+			'https://www.gravatar.com/avatar/84059b07d4be67b806386c0aad8070a23f18836bbaae342275dc0a83414c32ee?s=24&d=identicon',
+			User::getAvatarUrl($user, 24)
+		);
+	}
+
+	/**
+	 * The hash is the one from the Gravatar documentation, so a change back to the
+	 * older md5 fails here.
+	 */
+	public function testTheGravatarHashIsNotMd5()
+	{
+		$this->assertSame(
+			'84059b07d4be67b806386c0aad8070a23f18836bbaae342275dc0a83414c32ee',
+			User::gravatarHash(' MyEmailAddress@example.com ')
+		);
+		$this->assertNotSame(md5('myemailaddress@example.com'), User::gravatarHash('myemailaddress@example.com'));
+	}
+
+	public function testAnUnknownChoiceFallsBackToTheBoard()
+	{
+		$user = ['id' => 8, 'pref_avatar' => 99, 'email' => 'test@example.com'];
+
+		$this->assertSame('/avatar/8', User::getAvatarUrl($user, 24));
 	}
 
 	// =====================================================================
@@ -87,10 +223,11 @@ class UserTest extends CakeTestCase
 		]);
 
 		$this->assertStringContainsString('<img', $html);
-		$this->assertStringContainsString('user-avatar', $html);
-		$this->assertStringContainsString('gravatar.com/avatar/', $html);
-		// A page shows up to a thousand of these, so they load lazily, decode off
-		// the main thread and do not tell Gravatar which page the visitor is on.
+		$this->assertStringContainsString('src="/avatar/123"', $html);
+		// A board is a picture of a thing, so it keeps its corners.
+		$this->assertStringContainsString('class="user-avatar user-avatar--board"', $html);
+		// A page shows up to a thousand of these, so they load lazily and decode
+		// off the main thread.
 		$this->assertStringContainsString('loading="lazy"', $html);
 		$this->assertStringContainsString('decoding="async"', $html);
 		$this->assertStringContainsString('referrerpolicy="no-referrer"', $html);
@@ -104,6 +241,7 @@ class UserTest extends CakeTestCase
 		$html = User::renderLink([
 			'id' => 123,
 			'display_name' => 'GoogleUser',
+			'pref_avatar' => User::AVATAR_GOOGLE,
 			'external_id' => 'google_ext_123',
 			'picture' => 'https://lh3.googleusercontent.com/a/abc123',
 			'rating' => 1500.0,
@@ -111,7 +249,10 @@ class UserTest extends CakeTestCase
 		]);
 
 		$this->assertStringContainsString('lh3.googleusercontent.com', $html);
-		$this->assertStringContainsString('s20', $html); // 20px size
+		// The list shows 24px of it, so twice that is requested for a sharp screen.
+		$this->assertStringContainsString('s48', $html);
+		// A picture of a face is round, which is how its owner sees it in Google.
+		$this->assertStringContainsString('class="user-avatar"', $html);
 	}
 
 	/**
@@ -147,7 +288,7 @@ class UserTest extends CakeTestCase
 		$this->assertStringContainsString('/users/view/456', $html);
 		$this->assertStringContainsString('ArrayUser', $html);
 		$this->assertStringContainsString('<img', $html);
-		$this->assertStringContainsString('gravatar.com/avatar/', $html);
+		$this->assertStringContainsString('src="/avatar/456"', $html);
 	}
 
 	/**
@@ -251,7 +392,7 @@ class UserTest extends CakeTestCase
 	// NOTE: The User model's checkUnique validation does NOT work because
 	// the email column has no UNIQUE constraint in the database. Email
 	// uniqueness is enforced at the CONTROLLER level (UsersController::add).
-	// See tests/TestCase/Controller/RegistrationTest.php for those tests.
+	// See tests/TestCase/Controller/RegistrationEmailTest.php for those tests.
 
 	// =====================================================================
 	// isGoogleUser Tests
@@ -276,49 +417,6 @@ class UserTest extends CakeTestCase
 
 		$user2 = ['external_id' => '', 'email' => 'test@example.com'];
 		$this->assertFalse(User::isGoogleUser($user2));
-	}
-
-	// =====================================================================
-	// isUsingGravatar Tests
-	// =====================================================================
-
-	/**
-	 * Test isUsingGravatar returns false for Google users with pictures.
-	 */
-	public function testIsUsingGravatarReturnsFalseForGoogleUserWithPicture()
-	{
-		$user = [
-			'external_id' => 'google123',
-			'picture' => 'https://lh3.googleusercontent.com/a/test',
-			'email' => 'test@gmail.com',
-		];
-		$this->assertFalse(User::isUsingGravatar($user));
-	}
-
-	/**
-	 * Test isUsingGravatar returns true for Google users without pictures.
-	 */
-	public function testIsUsingGravatarReturnsTrueForGoogleUserWithoutPicture()
-	{
-		$user = [
-			'external_id' => 'google123',
-			'picture' => null,
-			'email' => 'test@gmail.com',
-		];
-		$this->assertTrue(User::isUsingGravatar($user));
-	}
-
-	/**
-	 * Test isUsingGravatar returns true for regular users.
-	 */
-	public function testIsUsingGravatarReturnsTrueForRegularUser()
-	{
-		$user = [
-			'external_id' => null,
-			'picture' => null,
-			'email' => 'test@example.com',
-		];
-		$this->assertTrue(User::isUsingGravatar($user));
 	}
 
 	/**

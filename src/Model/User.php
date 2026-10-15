@@ -20,6 +20,24 @@ class User extends AppModel
 	// The user table stores a display name in this many characters.
 	public const DISPLAY_NAME_MAX_LENGTH = 50;
 
+	/** The avatar a player picked: the board the site draws. */
+	public const AVATAR_BOARD = 0;
+
+	/** The avatar a player picked: their Gravatar. */
+	public const AVATAR_GRAVATAR = 1;
+
+	/** The avatar a player picked: the picture of their Google account. */
+	public const AVATAR_GOOGLE = 2;
+
+	/**
+	 * The pixels asked of an avatar host for the avatar in a list: twice the 24px
+	 * the list shows (--avatar-size in tokens.css), so a sharp screen has enough.
+	 */
+	public const AVATAR_PIXELS_INLINE = 48;
+
+	/** Twice the 64px a profile shows (--avatar-size-lg in tokens.css). */
+	public const AVATAR_PIXELS_PROFILE = 128;
+
 	public function __construct(mixed $id = false, ?string $table = null, ?string $ds = null)
 	{
 		$id['table'] =  'user';
@@ -212,13 +230,13 @@ class User extends AppModel
 	}
 
 	/**
-	 * The avatar to send to the frontend, null when the account is not there anymore. The Gravatar URL
-	 * is derived from the e-mail, which a deleted account keeps, so sending it would keep publishing
-	 * the hash of the address of someone who asked to be forgotten.
+	 * The avatar to send to the frontend, null when the account is not there anymore. A deleted
+	 * account keeps the row that the drawing is made from, so it would keep showing a board of
+	 * someone who asked to be forgotten.
 	 *
 	 * @param UserRow|array<string, mixed> $user Row with the id, external_id, picture and email
 	 */
-	public static function avatarOrNull(array $user, int $size = 20): ?string
+	public static function avatarOrNull(array $user, int $size = self::AVATAR_PIXELS_INLINE): ?string
 	{
 		return self::isDeleted($user) ? null : self::getAvatarUrl($user, $size);
 	}
@@ -266,7 +284,7 @@ class User extends AppModel
 				return '<span>' . h(self::DELETED_NAME) . '</span>';
 			$rating = $user['user_rating'] ?? null;
 			$rank = $rating !== null ? Rating::getReadableRankFromRating((float) $rating) : '';
-			return self::renderLinkInternal($user['user_id'], $displayName, $user['user_external_id'] ?? null, $user['user_picture'] ?? null, $user['user_email'] ?? null, $rank);
+			return self::renderLinkInternal($user['user_id'], $displayName, $user['user_external_id'] ?? null, $user['user_picture'] ?? null, $user['user_email'] ?? null, $user['user_pref_avatar'] ?? null, $rank);
 		}
 
 		// Standard format: id, display_name, etc. A row without a display name gets the same
@@ -276,23 +294,25 @@ class User extends AppModel
 			return '<span>' . h(self::DELETED_NAME) . '</span>';
 		$rating = $user['rating'] ?? null;
 		$rank = $rating !== null ? Rating::getReadableRankFromRating((float) $rating) : '';
-		return self::renderLinkInternal($user['id'], $displayName, $user['external_id'] ?? null, $user['picture'] ?? null, $user['email'] ?? null, $rank);
+		return self::renderLinkInternal($user['id'], $displayName, $user['external_id'] ?? null, $user['picture'] ?? null, $user['email'] ?? null, $user['pref_avatar'] ?? null, $rank);
 	}
 
 	/**
 	 * Internal function to render user link HTML.
 	 */
-	private static function renderLinkInternal(int $id, string $displayName, ?string $externalID, ?string $picture, ?string $email, string $rank): string
+	private static function renderLinkInternal(int $id, string $displayName, ?string $externalID, ?string $picture, ?string $email, ?int $prefAvatar, string $rank): string
 	{
 		assert(($externalID !== null && $picture !== null) || $email !== null, 'Must have either (externalID + picture) or email for avatar');
 
 		// Generate avatar HTML
 		$avatarUrl = self::getAvatarUrl([
+			'id' => $id,
+			'pref_avatar' => $prefAvatar,
 			'external_id' => $externalID,
 			'picture' => $picture,
 			'email' => $email,
-		], 20);
-		$image = '<img src="' . h((string) $avatarUrl) . '" alt="" class="user-avatar" loading="lazy" decoding="async" referrerpolicy="no-referrer" style="width:20px;height:20px;border-radius:50%;vertical-align:middle;margin-right:4px;">';
+		]);
+		$image = self::avatarImage($avatarUrl, '', true, '/avatar/' . $id);
 
 		return '<a href="/users/view/' . $id . '">' . $image . h((string) $displayName) . ($rank === '' ? '' : ' ' . $rank) . '</a>';
 	}
@@ -421,20 +441,6 @@ class User extends AppModel
 	}
 
 	/**
-	 * Check if user is using Gravatar (not Google picture).
-	 *
-	 * @param UserRow $user
-	 * @return bool True if user avatar comes from Gravatar
-	 */
-	public static function isUsingGravatar(array $user): bool
-	{
-		// Google users with pictures don't use Gravatar
-		if (!empty($user['external_id']) && !empty($user['picture']))
-			return false;
-		return true;
-	}
-
-	/**
 	 * Check if user is a Google user (has external_id).
 	 *
 	 * @param UserRow $user
@@ -468,36 +474,137 @@ class User extends AppModel
 	}
 
 	/**
-	 * Get the avatar URL for a user with priority: Google picture > Gravatar > default.
+	 * True when the account has a picture from Google to show.
+	 *
+	 * @param array<string, mixed> $user
+	 * @return bool
+	 */
+	public static function hasGooglePicture(array $user): bool
+	{
+		return !empty($user['external_id']) && !empty($user['picture']);
+	}
+
+	/**
+	 * The avatars a player can pick, as value => label. The Google picture is only
+	 * offered to an account that has one.
+	 *
+	 * @param array<string, mixed> $user
+	 * @return array<int, string>
+	 */
+	public static function avatarChoices(array $user): array
+	{
+		$choices = [
+			self::AVATAR_BOARD => 'Go board',
+			self::AVATAR_GRAVATAR => 'Gravatar',
+		];
+		if (self::hasGooglePicture($user))
+			$choices[self::AVATAR_GOOGLE] = 'Google picture';
+		return $choices;
+	}
+
+	/**
+	 * The avatar an account shows. Without a stored choice it is the board, and a
+	 * stored choice that is not on offer (the Google picture of an account that lost
+	 * it) falls back to the board too.
+	 *
+	 * @param array<string, mixed> $user
+	 * @return int
+	 */
+	public static function avatarChoice(array $user): int
+	{
+		$stored = (int) ($user['pref_avatar'] ?? self::AVATAR_BOARD);
+		return array_key_exists($stored, self::avatarChoices($user)) ? $stored : self::AVATAR_BOARD;
+	}
+
+	/**
+	 * The Gravatar identifier of an e-mail address: the sha256 of the trimmed lower
+	 * case address, which is what Gravatar documents. The older md5 is not used.
+	 *
+	 * @param string $email
+	 * @return string
+	 */
+	public static function gravatarHash(string $email): string
+	{
+		return hash('sha256', strtolower(trim($email)));
+	}
+
+	/**
+	 * Get the avatar URL for a user: the avatar the player picked, which is the
+	 * picture of a Google account, their Gravatar or the board the site draws.
 	 *
 	 * Only the avatar fields are needed, the callers pass either a full user row or
-	 * just these three values.
+	 * just these values.
 	 *
-	 * @param array{external_id?: string|null, picture?: string|null, email?: string|null} $user
-	 * @param int $size Desired avatar size in pixels (default 40)
+	 * @param array{id?: int, pref_avatar?: int|null, external_id?: string|null, picture?: string|null, email?: string|null} $user
+	 * @param int $size Pixels to ask an avatar host for, the board ignores it
 	 * @return string Avatar URL
 	 */
-	public static function getAvatarUrl(array $user, int $size = 40): string
+	public static function getAvatarUrl(array $user, int $size = self::AVATAR_PIXELS_INLINE): string
 	{
-		// Priority 1: Google picture (if Google user with picture)
-		if (!empty($user['external_id']) && !empty($user['picture']))
+		$choice = self::avatarChoice($user);
+
+		if ($choice === self::AVATAR_GOOGLE)
 		{
 			$picture = $user['picture'];
-			// Google CDN (lh3.googleusercontent.com) supports =s{SIZE} parameter for resizing
-			// Only apply Google-style sizing to Google CDN URLs
-			if (str_contains($picture, 'googleusercontent.com'))
+			// The Google CDN answers with the size its url asks for, so the suffix the sign
+			// in stored ("=s96-c", "=w100-h100") is exchanged for the size the avatar is
+			// drawn in. A url that carries its own parameters is left alone.
+			if (str_contains($picture, 'googleusercontent.com') && !str_contains($picture, '?'))
 			{
-				// Remove existing size parameter if present and add new one
-				$picture = preg_replace('/=s\d+(-c)?/', '', $picture);
-				return $picture . '=s' . $size;
+				$base = preg_replace('/=[a-z0-9\-]+$/', '', $picture);
+				return $base . '=s' . $size;
 			}
-			// For non-Google URLs, return as-is (don't mangle the URL)
 			return $picture;
 		}
 
-		// Priority 2: Gravatar
-		$email = $user['email'] ?? '';
-		$hash = md5(strtolower(trim($email)));
-		return "https://www.gravatar.com/avatar/{$hash}?s={$size}&d=identicon";
+		if ($choice === self::AVATAR_GRAVATAR)
+			return 'https://www.gravatar.com/avatar/' . self::gravatarHash((string) ($user['email'] ?? ''))
+				. '?s=' . $size . '&d=identicon';
+
+		// The board the site draws for this account. The drawing comes from the
+		// id, so no request leaves for an avatar host and one url serves every size.
+		assert(!empty($user['id']), 'A board avatar needs the id of the account');
+		return '/avatar/' . (int) $user['id'];
+	}
+
+	/**
+	 * The classes of the avatar element. A board keeps its corners, a picture of a
+	 * face is round, and the size of both lives in components.css.
+	 *
+	 * @param string|null $avatarUrl
+	 * @return string
+	 */
+	public static function avatarClass(?string $avatarUrl): string
+	{
+		return $avatarUrl !== null && str_starts_with($avatarUrl, '/avatar/')
+			? 'user-avatar user-avatar--board'
+			: 'user-avatar';
+	}
+
+	/**
+	 * The avatar element of a player, ready to be dropped next to a name or into the
+	 * profile header. Every place that shows an avatar goes through here, so the class,
+	 * the lazy loading and the referrer policy stay the same everywhere.
+	 *
+	 * @param string|null $avatarUrl Avatar from getAvatarUrl(), null for a deleted account
+	 * @param string $extraClass Additional class, e.g. the larger avatar of the profile
+	 * @param bool $lazy False for an avatar that is on screen right away (the profile header)
+	 * @param string|null $fallbackUrl Board of the account, shown when the picture is gone
+	 * @return string
+	 */
+	public static function avatarImage(?string $avatarUrl, string $extraClass = '', bool $lazy = true, ?string $fallbackUrl = null): string
+	{
+		if ($avatarUrl === null)
+			return '';
+		$class = self::avatarClass($avatarUrl) . ($extraClass === '' ? '' : ' ' . $extraClass);
+		$loading = $lazy ? ' loading="lazy"' : '';
+		// A picture of another host can stop working (a player who removes the photo of
+		// their Google account), which the browser draws as a broken image. The board of
+		// the account is always there, so it takes over, with the square corners the
+		// board class gives it.
+		$fallback = $fallbackUrl === null || str_starts_with($avatarUrl, '/avatar/')
+			? ''
+			: ' onerror="this.onerror=null;this.classList.add(\'user-avatar--board\');this.src=\'' . h($fallbackUrl) . '\'"';
+		return '<img src="' . h($avatarUrl) . '" alt="" class="' . $class . '"' . $loading . $fallback . ' decoding="async" referrerpolicy="no-referrer">';
 	}
 }

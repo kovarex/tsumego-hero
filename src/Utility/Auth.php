@@ -103,6 +103,15 @@ class Auth
 	}
 
 	/**
+	 * The avatar the logged in player picked, which is the board for a visitor who
+	 * is not logged in at all.
+	 */
+	public static function getPrefAvatar(): int
+	{
+		return Auth::isLoggedIn() ? User::avatarChoice(Auth::getUser()) : User::AVATAR_BOARD;
+	}
+
+	/**
 	 * Throws when $field is not an existing column on the user table, so a typo
 	 * or schema mismatch fails loudly instead of being silently dropped.
 	 */

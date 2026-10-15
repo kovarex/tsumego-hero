@@ -41,7 +41,7 @@ class AchievementStatus extends AppModel
 			],
 			'fields' => [
 				'AchievementStatus.id', 'AchievementStatus.created', 'Achievement.id', 'Achievement.name', 'Achievement.image',
-				'User.id', 'User.display_name', 'User.name', 'User.external_id', 'User.picture', 'User.email', 'User.rating',
+				'User.id', 'User.display_name', 'User.name', 'User.external_id', 'User.picture', 'User.pref_avatar', 'User.email', 'User.rating',
 			],
 			'conditions' => ['User.deleted IS NULL'],
 			'limit' => $limit,
@@ -52,8 +52,10 @@ class AchievementStatus extends AppModel
 		foreach ($rows as $row)
 		{
 			$userData = [
+				'id' => (int) $row['User']['id'],
 				'external_id' => $row['User']['external_id'],
 				'picture' => $row['User']['picture'],
+				'pref_avatar' => $row['User']['pref_avatar'],
 				'email' => $row['User']['email'],
 			];
 			$rating = (float) $row['User']['rating'];
@@ -64,7 +66,7 @@ class AchievementStatus extends AppModel
 				'image' => $row['Achievement']['image'],
 				'user_id' => (int) $row['User']['id'],
 				'user_display_name' => $row['User']['display_name'],
-				'user_avatar_url' => User::getAvatarUrl($userData, 20),
+				'user_avatar_url' => User::getAvatarUrl($userData),
 				'user_rank' => $rating > 0 ? Rating::getReadableRankFromRating($rating) : '',
 				'created' => Util::toIso8601($row['AchievementStatus']['created']),
 			];

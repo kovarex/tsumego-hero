@@ -31,8 +31,8 @@ use App\Utility\ValueGraphRenderer;
 <div>
 	<div class="profile-header">
 		<p class="profile-username"><?php
-			$avatarUrl = User::getAvatarUrl($user['User'], 48);
-			echo '<img src="' . h($avatarUrl) . '" alt="" class="user-avatar" decoding="async" referrerpolicy="no-referrer" style="width:48px;height:48px;border-radius:50%;vertical-align:middle;margin-right:8px;">';
+			$avatarUrl = User::getAvatarUrl($user['User'], User::AVATAR_PIXELS_PROFILE);
+			echo User::avatarImage($avatarUrl, 'user-avatar--lg', false, '/avatar/' . (int) $user['User']['id']);
 			echo h($user['User']['display_name']);
 			echo ' ';
 			User::renderPremium($user['User']);
@@ -65,12 +65,21 @@ use App\Utility\ValueGraphRenderer;
 				<td></td>
 			</tr>
 			<?php endif; ?>
-			<?php if (User::isUsingGravatar($user['User'])): ?>
 			<tr>
-				<td><strong>Avatar:</strong> Gravatar</td>
-				<td><a class="link" href="https://gravatar.com/" target="_blank" rel="noopener noreferrer">change</a></td>
+				<td><strong>Avatar:</strong></td>
+				<td>
+					<?php
+					$chosenAvatar = User::avatarChoice($user['User']);
+					foreach (User::avatarChoices($user['User']) as $avatarValue => $avatarLabel)
+					{
+						$avatarChecked = $chosenAvatar === $avatarValue ? 'checked="checked"' : '';
+						echo '<label class="field__option"><input type="radio" name="avatar" value="' . $avatarValue . '" onclick="avatarPreference(this.value);" ' . $avatarChecked . '> ' . h($avatarLabel) . '</label>';
+					}
+					if ($chosenAvatar === User::AVATAR_GRAVATAR)
+						echo '<div class="hint">Change it at <a href="https://gravatar.com" target="_blank" rel="noopener">gravatar.com</a></div>';
+					?>
+				</td>
 			</tr>
-			<?php endif; ?>
 		</table>
 	</div>
 	<div class="card card--green">
@@ -473,6 +482,17 @@ function boardOrientationPreference(orientation) {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
 		body: 'orientation=' + encodeURIComponent(orientation)
+	});
+}
+function avatarPreference(avatar) {
+	fetch('/users/avatarPreference', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+		body: 'avatar=' + encodeURIComponent(avatar)
+	}).then(function(response) {
+		// The profile header draws the avatar on the server, so reload it to show the new one
+		if (response.ok)
+			location.reload();
 	});
 }
 </script>

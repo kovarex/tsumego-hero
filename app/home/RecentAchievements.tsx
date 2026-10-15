@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { get } from '../shared/api';
+import { Avatar } from '../shared/Avatar';
 
 dayjs.extend(relativeTime);
 
@@ -49,7 +50,7 @@ export function RecentAchievements({ initialAchievements }: RecentAchievementsPr
 					<div className="recent-achievement-body">
 						<div className="recent-achievement-message">
 							<a className="recent-achievement-user-link" href={`/users/view/${achievement.user_id}`}>
-								<img src={achievement.user_avatar_url} alt="" className="user-avatar" loading="lazy" decoding="async" referrerPolicy="no-referrer" style={{width: 20, height: 20, borderRadius: '50%', verticalAlign: 'middle', marginRight: 4}} />
+								<Avatar url={achievement.user_avatar_url} fallbackUrl={`/avatar/${achievement.user_id}`} />
 								{achievement.user_display_name}{achievement.user_rank ? ` ${achievement.user_rank}` : ''}
 							</a> earned&nbsp;
 							<a className="recent-achievement-achievement-link" href={`/achievements/view/${achievement.id}`}>

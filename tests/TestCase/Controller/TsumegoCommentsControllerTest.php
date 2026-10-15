@@ -63,7 +63,7 @@ class TsumegoCommentsControllerTest extends ControllerTestCase
 		$this->testAction('/tsumego-comments/index/' . $context->tsumegos[0]['id'], ['method' => 'get']);
 
 		$body = json_decode($this->controller->response->body(), true);
-		$avatar = 'https://www.gravatar.com/avatar/' . md5('kovarex@example.com') . '?s=20&d=identicon';
+		$avatar = '/avatar/' . $context->user['id'];
 		$this->assertSame($avatar, $body['issues'][0]['user_avatar_url']);
 		$this->assertSame($avatar, $body['issues'][0]['comments'][0]['user_avatar_url']);
 		$this->assertSame($avatar, $body['standalone'][0]['user_avatar_url']);
@@ -76,11 +76,12 @@ class TsumegoCommentsControllerTest extends ControllerTestCase
 			'tsumego' => ['set_order' => 1, 'status' => 'S'],
 		]);
 
-		// Google accounts show the picture of their Google profile
+		// Google accounts show the picture of their Google profile once they pick it
 		$user = ClassRegistry::init('User');
 		$user->id = $context->user['id'];
 		$user->saveField('external_id', '123456789012345678901');
 		$user->saveField('picture', 'https://lh3.googleusercontent.com/a/abc123');
+		$user->saveField('pref_avatar', User::AVATAR_GOOGLE);
 
 		$this->testAction('/tsumego-comments/add', [
 			'method' => 'post',
@@ -88,7 +89,7 @@ class TsumegoCommentsControllerTest extends ControllerTestCase
 		]);
 
 		$body = json_decode($this->controller->response->body(), true);
-		$this->assertSame('https://lh3.googleusercontent.com/a/abc123=s20', $body['user_avatar_url']);
+		$this->assertSame('https://lh3.googleusercontent.com/a/abc123=s48', $body['user_avatar_url']);
 	}
 
 	public function testDeleteNotFound()

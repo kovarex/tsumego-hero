@@ -228,7 +228,7 @@ class TsumegoIssuesControllerTest extends ControllerTestCase
 	 */
 	public function testIssuesApiSendsAuthorAvatars(): void
 	{
-		new ContextPreparator([
+		$context = new ContextPreparator([
 			'user' => ['name' => 'kovarex', 'email' => 'kovarex@example.com'],
 			'tsumego' => ['set_order' => 1, 'issues' => [['message' => 'Issue with an avatar']]],
 		]);
@@ -236,14 +236,13 @@ class TsumegoIssuesControllerTest extends ControllerTestCase
 		$this->testAction('/tsumego-issues/api', ['method' => 'get']);
 
 		$body = json_decode($this->controller->response->body(), true);
-		$avatar = 'https://www.gravatar.com/avatar/' . md5('kovarex@example.com') . '?s=20&d=identicon';
+		$avatar = '/avatar/' . $context->user['id'];
 		$this->assertSame($avatar, $body['issues'][0]['issue']['user_avatar_url']);
 		$this->assertSame($avatar, $body['issues'][0]['comments'][0]['user_avatar_url']);
 	}
 
 	/**
-	 * Test that the issues API leaves out the avatar of a deleted author: the avatar URL is derived
-	 * from the e-mail, which a deleted account keeps.
+	 * Test that the issues API leaves out the avatar of a deleted author.
 	 */
 	public function testIssuesApiLeavesOutTheAvatarOfADeletedAuthor(): void
 	{

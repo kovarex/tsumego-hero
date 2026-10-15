@@ -646,7 +646,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('_title', 'Tsumego Hero - Highscore');
 
 		$this->set('users', $this->queryHighscoreWithSelfView(
-			"SELECT id, display_name, external_id, picture, email, rating, premium, level, xp, solved,
+			"SELECT id, display_name, external_id, picture, pref_avatar, email, rating, premium, level, xp, solved,
 				ROW_NUMBER() OVER (ORDER BY level DESC, xp DESC) as position
 			FROM user
 			WHERE deleted IS NULL",
@@ -668,7 +668,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		}
 
 		$this->set('users', $this->queryHighscoreWithSelfView(
-			"SELECT id, display_name, external_id, picture, email, rating, premium,
+			"SELECT id, display_name, external_id, picture, pref_avatar, email, rating, premium,
 				ROW_NUMBER() OVER (ORDER BY rating DESC) as position
 			FROM user
 			WHERE deleted IS NULL"
@@ -692,6 +692,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 				user.display_name as display_name,
 				user.external_id as external_id,
 				user.picture as picture,
+				user.pref_avatar as pref_avatar,
 				user.email as email,
 				user.rating as rating,
 				user.premium as premium,
@@ -724,6 +725,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 				user.display_name AS display_name,
 				user.rating AS rating,
 				user.picture AS picture,
+				user.pref_avatar AS pref_avatar,
 				user.external_id AS external_id,
 				user.premium AS premium,
 				user.email AS email,
@@ -794,6 +796,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 				user.display_name AS display_name,
 				user.external_id AS external_id,
 				user.picture AS picture,
+				user.pref_avatar AS pref_avatar,
 				user.email AS email,
 				user.rating AS rating,
 				user.premium AS premium,
@@ -901,7 +904,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$userId = Auth::isLoggedIn() ? Auth::getUserID() : -1;
 
 		$this->set('users', $this->queryHighscoreWithSelfView(
-			"SELECT id, name, display_name, external_id, picture, email, rating, premium, daily_xp, daily_solved,
+			"SELECT id, name, display_name, external_id, picture, pref_avatar, email, rating, premium, daily_xp, daily_solved,
 				ROW_NUMBER() OVER (ORDER BY daily_xp DESC) as position
 			FROM user
 			WHERE (daily_xp > 0 OR id = ?) AND deleted IS NULL",
@@ -1231,6 +1234,10 @@ ORDER BY category DESC', [$user['User']['id']]));
 			$userData['User']['password_hash'] = 'google_oauth';
 			$userData['User']['external_id'] = $externalId;
 			$userData['User']['picture'] = $picture;
+			// A Google account shows the picture of its Google profile until the player
+			// picks another avatar on the profile page.
+			if ($picture)
+				$userData['User']['pref_avatar'] = User::AVATAR_GOOGLE;
 
 			$this->User->create();
 			$saveResult = $this->User->save($userData);
@@ -1249,6 +1256,12 @@ ORDER BY category DESC', [$user['User']['id']]));
 			// Update picture if changed
 			if ($picture && $u['User']['picture'] !== $picture)
 				$updates['picture'] = $picture;
+
+			// An account with no picture starts showing the Google one as soon as a sign
+			// in brings the first picture. A picture that only changed keeps the avatar
+			// the player picked.
+			if ($picture && empty($u['User']['picture']))
+				$updates['pref_avatar'] = User::AVATAR_GOOGLE;
 
 			// Update email if changed and not empty
 			if ($email && $u['User']['email'] !== $email)
@@ -1632,6 +1645,26 @@ WHERE user.id = ?", [$userId, $userId]);
 			$orientation = User::PREF_BOARD_ORIENTATION_RANDOM;
 
 		Auth::saveUserField('pref_board_orientation', $orientation);
+
+		$this->response->statusCode(200);
+		$this->response->type('application/json');
+		$this->response->body(json_encode(['status' => 'ok']));
+	}
+
+	/**
+	 * Store the avatar a player picked. A choice that is not on offer for this
+	 * account (a Google picture it does not have) is ignored, the same way the other
+	 * preferences ignore a value they can not store.
+	 */
+	#[HttpPost]
+	public function avatarPreference(): void
+	{
+		$this->autoRender = false;
+		$this->Authorization->authorize('User', 'editPreferences');
+
+		$choice = (int) ($this->request->data['avatar'] ?? User::AVATAR_BOARD);
+		if (array_key_exists($choice, User::avatarChoices(Auth::getUser())))
+			Auth::saveUserField('pref_avatar', $choice);
 
 		$this->response->statusCode(200);
 		$this->response->type('application/json');

@@ -116,6 +116,65 @@ class GoogleSignInTest extends ControllerTestCase
 		$this->assertEquals('john.doe@gmail.com', $user['User']['email']);
 		$this->assertEquals('https://lh3.googleusercontent.com/photo.jpg', $user['User']['picture']);
 		$this->assertEquals('12345678901234567890', $user['User']['external_id']);
+		$this->assertSame(User::AVATAR_GOOGLE, (int) $user['User']['pref_avatar']);
+	}
+
+	/**
+	 * A sign in that brings the first picture to an account that has none makes it the
+	 * avatar of that account.
+	 */
+	public function testSignInWithAPictureStartsShowingIt(): void
+	{
+		new ContextPreparator(['user' => null]);
+
+		$existingUser = $this->createGoogleUser([
+			'display_name' => 'No Picture Yet',
+			'email' => 'nopicture@gmail.com',
+			'external_id' => '11111111111111111111',
+			'picture' => null,
+		]);
+
+		$this->fakeVerifier->addToken('nopicture_token', [
+			'sub' => '11111111111111111111',
+			'email' => 'nopicture@gmail.com',
+			'name' => 'No Picture Yet',
+			'picture' => 'https://lh3.googleusercontent.com/a/late-photo',
+		]);
+
+		$this->googleSignIn('nopicture_token');
+
+		$user = ClassRegistry::init('User')->findById($existingUser['id']);
+		$this->assertSame('https://lh3.googleusercontent.com/a/late-photo', $user['User']['picture']);
+		$this->assertSame(User::AVATAR_GOOGLE, (int) $user['User']['pref_avatar']);
+	}
+
+	/**
+	 * A picture that only changed leaves the avatar the player picked alone.
+	 */
+	public function testSignInWithAChangedPictureKeepsThePickedAvatar(): void
+	{
+		new ContextPreparator(['user' => null]);
+
+		$existingUser = $this->createGoogleUser([
+			'display_name' => 'Picked Gravatar',
+			'email' => 'picked@gmail.com',
+			'external_id' => '22222222222222222222',
+			'picture' => 'https://lh3.googleusercontent.com/a/old-photo',
+			'pref_avatar' => User::AVATAR_GRAVATAR,
+		]);
+
+		$this->fakeVerifier->addToken('picked_token', [
+			'sub' => '22222222222222222222',
+			'email' => 'picked@gmail.com',
+			'name' => 'Picked Gravatar',
+			'picture' => 'https://lh3.googleusercontent.com/a/new-photo',
+		]);
+
+		$this->googleSignIn('picked_token');
+
+		$user = ClassRegistry::init('User')->findById($existingUser['id']);
+		$this->assertSame('https://lh3.googleusercontent.com/a/new-photo', $user['User']['picture']);
+		$this->assertSame(User::AVATAR_GRAVATAR, (int) $user['User']['pref_avatar']);
 	}
 
 	/**
@@ -174,6 +233,9 @@ class GoogleSignInTest extends ControllerTestCase
 		// the sign-in just created, like the session would in production
 		$googleUser = ClassRegistry::init('User')->find('first', ['conditions' => ['external_id' => '123456789012345678901']]);
 		$_COOKIE['hackedLoggedInUserID'] = $googleUser['User']['id'];
+		$googleUserModel = ClassRegistry::init('User');
+		$googleUserModel->id = $googleUser['User']['id'];
+		$googleUserModel->saveField('pref_avatar', User::AVATAR_GOOGLE);
 
 		$this->testAction('/tsumego-comments/add', [
 			'method' => 'post',
@@ -182,7 +244,7 @@ class GoogleSignInTest extends ControllerTestCase
 
 		$body = json_decode($this->controller->response->body(), true);
 		$this->assertSame('Google Commenter', $body['user_display_name']);
-		$this->assertSame('https://lh3.googleusercontent.com/a/photo=s20', $body['user_avatar_url']);
+		$this->assertSame('https://lh3.googleusercontent.com/a/photo=s48', $body['user_avatar_url']);
 	}
 
 	/**
