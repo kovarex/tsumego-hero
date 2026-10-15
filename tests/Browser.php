@@ -753,6 +753,19 @@ class Browser
 	}
 
 	/**
+	 * The text of the page, waiting for the document to have a body first.
+	 *
+	 * A navigation can commit before the new document is parsed, and a plain read of
+	 * document.body at that moment throws instead of returning the page.
+	 */
+	public function pageText(): string
+	{
+		$this->waitUntilJs('document.body !== null');
+
+		return (string) $this->driver->executeScript('return document.body.textContent;');
+	}
+
+	/**
 	 * Wait until a condition on the PHP side becomes true, e.g. a row that only the
 	 * server round trip creates. For conditions about the page use the DOM and JS
 	 * helpers instead. Dumps the page when it gives up, like every other wait.

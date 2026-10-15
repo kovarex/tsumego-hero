@@ -1128,8 +1128,7 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 
 		// the page asks again on its own
 		$browser->waitUntilJs('document.body.textContent.indexOf("Time Mode Results") !== -1');
-		$this->assertStringContainsString('passed(2/2)',
-			$browser->driver->executeScript('return document.body.textContent;'),
+		$this->assertStringContainsString('passed(2/2)', $browser->pageText(),
 			'The result appears once the last result has been recorded');
 	}
 
@@ -1166,8 +1165,7 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 		$browser->get('/timeMode/play/3');
 
 		$browser->waitUntilJs('document.body && document.body.textContent.indexOf("Time Mode Results") !== -1');
-		$this->assertStringContainsString('failed(1/2)',
-			$browser->driver->executeScript('return document.body.textContent;'),
+		$this->assertStringContainsString('failed(1/2)', $browser->pageText(),
 			'The session is scored instead of waiting for a result that is not coming');
 	}
 
@@ -1274,7 +1272,7 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 		}
 
 		// one solved of four problems is not enough to pass, and the score is out of four
-		$score = (string) $browser->driver->executeScript('return document.body.textContent;');
+		$score = $browser->pageText();
 		$this->assertStringContainsString('failed(1/4)', $score,
 			'The score counts the problems the session had, not a full session');
 		foreach (['solved', 'failed', 'skipped', 'timeout'] as $outcome)
