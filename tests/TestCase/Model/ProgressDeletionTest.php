@@ -173,7 +173,7 @@ class ProgressDeletionTest extends TestCaseWithAuth
 			'progress-deletions' => [['set' => 'set A', 'partition' => 0, 'created' => self::now()]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$this->assertTextContains('unaffected (reset)', $browser->driver->findElement(Facebook\WebDriver\WebDriverBy::cssSelector('#xpDisplay'))->getText());
+		$this->assertTextContains('unaffected (reset)', $browser->find('#xpDisplay')->getText());
 	}
 
 	public function testXpShownOnThePlayPageCountsTheResetsOfThePart(): void

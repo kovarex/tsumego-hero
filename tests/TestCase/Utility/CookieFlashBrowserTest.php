@@ -1,6 +1,5 @@
 <?php
 
-use Facebook\WebDriver\WebDriverBy;
 use PHPUnitRetry\RetryTrait;
 /**
  * Browser tests for CookieFlash functionality.
@@ -26,15 +25,12 @@ class CookieFlashBrowserTest extends CakeTestCase
 		$browser->get('users/login');
 
 		// Submit login form with invalid credentials
-		$browser->driver->findElement(WebDriverBy::id('UserName'))->sendKeys('nonexistent_user');
-		$browser->driver->findElement(WebDriverBy::id('password'))->sendKeys('wrong_password');
-		$browser->driver->findElement(WebDriverBy::cssSelector('input[type="submit"]'))->click();
+		$browser->findById('UserName')->sendKeys('nonexistent_user');
+		$browser->findById('password')->sendKeys('wrong_password');
+		$browser->find('input[type="submit"]')->click();
 
 		// Wait for page to load
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			return str_contains($driver->getPageSource(), 'Unknown user');
-		});
+		$browser->waitUntilJs('document.documentElement.outerHTML.includes("Unknown user")');
 
 		// Check for flash message in page source
 		$pageSource = $browser->driver->getPageSource();
@@ -51,13 +47,10 @@ class CookieFlashBrowserTest extends CakeTestCase
 
 		// Navigate to login page and submit invalid credentials
 		$browser->get('users/login');
-		$browser->driver->findElement(WebDriverBy::id('UserName'))->sendKeys('test');
-		$browser->driver->findElement(WebDriverBy::id('password'))->sendKeys('test');
-		$browser->driver->findElement(WebDriverBy::cssSelector('input[type="submit"]'))->click();
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			return str_contains($driver->getPageSource(), 'alert');
-		});
+		$browser->findById('UserName')->sendKeys('test');
+		$browser->findById('password')->sendKeys('test');
+		$browser->find('input[type="submit"]')->click();
+		$browser->waitUntilJs('document.documentElement.outerHTML.includes("alert")');
 
 		// Flash message should be present on first view
 		$pageSource1 = $browser->driver->getPageSource();
@@ -81,13 +74,10 @@ class CookieFlashBrowserTest extends CakeTestCase
 
 		$browser = Browser::instance();
 		$browser->get('users/login');
-		$browser->driver->findElement(WebDriverBy::id('UserName'))->sendKeys('test');
-		$browser->driver->findElement(WebDriverBy::id('password'))->sendKeys('wrong');
-		$browser->driver->findElement(WebDriverBy::cssSelector('input[type="submit"]'))->click();
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			return str_contains($driver->getPageSource(), 'alert-error');
-		});
+		$browser->findById('UserName')->sendKeys('test');
+		$browser->findById('password')->sendKeys('wrong');
+		$browser->find('input[type="submit"]')->click();
+		$browser->waitUntilJs('document.documentElement.outerHTML.includes("alert-error")');
 
 		$pageSource = $browser->driver->getPageSource();
 

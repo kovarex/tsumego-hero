@@ -1,6 +1,5 @@
 <?php
 
-use Facebook\WebDriver\WebDriverBy;
 use App\Lib\Error\ConflictException;
 use App\Utility\Constants;
 
@@ -604,7 +603,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$browser->get('sets/mine');
 
 		// The colored fill must actually be visible (not a 0px transparent div)
-		$fill = $browser->driver->findElement(WebDriverBy::cssSelector('.progress__fill'));
+		$fill = $browser->find('.progress__fill');
 		$this->assertSame('5px', $fill->getCSSValue('height'));
 		$this->assertTextContains('width: 100%', $fill->getAttribute('style'));
 	}

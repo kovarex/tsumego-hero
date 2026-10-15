@@ -3,7 +3,7 @@
 use Facebook\WebDriver\WebDriverKeys;
 use PHPUnitRetry\RetryTrait;
 /**
- * Tag editor tests — React component with data-testid selectors.
+ * Tag editor tests - React component with data-testid selectors.
  *
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
@@ -33,17 +33,17 @@ class TagTest extends ControllerTestCase
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
 		// Wait for React tag editor to mount
-		$browser->waitUntilCssSelectorExists('[data-testid="tag-editor"]');
+		$browser->find('[data-testid="tag-editor"]');
 
 		$this->openEditorAndType($browser, 'snap');
-		$browser->waitUntilCssSelectorExists('[role="option"]');
+		$browser->find('[role="option"]');
 		$browser->clickId('tag-snapback');
-		$browser->waitUntilCssSelectorExists('[data-testid="tag-snapback"]');
+		$browser->find('[data-testid="tag-snapback"]');
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
 		$tagConnection = ClassRegistry::init('TagConnection')->find('first', []);
 		$this->assertNotNull($tagConnection);
-		$this->assertCount(1, $browser->getCssSelect('[data-testid="tag-snapback"]'));
+		$this->assertCount(1, $browser->getElements('[data-testid="tag-snapback"]'));
 	}
 
 	public function testAddTagDoesntOfferAlreadyExistingTag()
@@ -55,9 +55,9 @@ class TagTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
-		// atari is already added — shouldn't show in suggestions
+		// atari is already added - shouldn't show in suggestions
 		$this->openEditorAndType($browser, 'ata');
-		$this->assertCount(0, $browser->getCssSelect('[data-testid="tag-editor"] [role="option"]'));
+		$this->assertCount(0, $browser->getElements('[data-testid="tag-editor"] [role="option"]'));
 	}
 
 	public function testTagEditorHiddenForUsersWhoCannotContribute()
@@ -68,8 +68,8 @@ class TagTest extends ControllerTestCase
 			'tsumego' => ['set_order' => 1, 'status' => 'S', 'tags' => [['name' => 'snapback', 'approved' => 1]]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $contextNormal->tsumegos[0]['set-connections'][0]['id']);
-		$browser->waitUntilCssSelectorExists('[data-testid="tag-editor"]');
-		$this->assertGreaterThanOrEqual(1, $browser->getCssSelect('[data-testid="tag-search-input"]'),
+		$browser->find('[data-testid="tag-editor"]');
+		$this->assertGreaterThanOrEqual(1, $browser->getElements('[data-testid="tag-search-input"]'),
 			'Contributor sees the tag search input');
 
 		// Now verify it's hidden for a non-contributor
@@ -78,10 +78,10 @@ class TagTest extends ControllerTestCase
 			'tsumego' => ['set_order' => 1, 'status' => 'S', 'tags' => [['name' => 'ko', 'approved' => 1]]]]);
 		$browser2 = Browser::instance();
 		$browser2->get('/' . $contextLow->tsumegos[0]['set-connections'][0]['id']);
-		$browser2->waitUntilCssSelectorExists('[data-testid="tag-editor"]');
+		$browser2->find('[data-testid="tag-editor"]');
 
-		$this->assertCount(1, $browser2->getCssSelect('[data-testid="tag-ko"]'));
-		$this->assertCount(0, $browser2->getCssSelect('[data-testid="tag-search-input"]'),
+		$this->assertCount(1, $browser2->getElements('[data-testid="tag-ko"]'));
+		$this->assertCount(0, $browser2->getElements('[data-testid="tag-search-input"]'),
 			'Non-contributor should not see the tag search input');
 	}
 
@@ -94,9 +94,9 @@ class TagTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
-		$this->assertCount(1, $browser->getCssSelect('[data-testid="tag-atari"]'));
+		$this->assertCount(1, $browser->getElements('[data-testid="tag-atari"]'));
 		$this->openEditorAndType($browser, 'ata');
-		$this->assertCount(0, $browser->getCssSelect('[data-testid="tag-editor"] [role="option"]'));
+		$this->assertCount(0, $browser->getElements('[data-testid="tag-editor"] [role="option"]'));
 	}
 
 	public function testDontShowOthersApprovedTagsInAddTags()
@@ -112,13 +112,9 @@ class TagTest extends ControllerTestCase
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
 		$this->openEditorAndType($browser, 'snap');
-		$this->assertCount(1, $browser->getCssSelect('[data-testid="tag-editor"] [role="option"]'));
+		$this->assertCount(1, $browser->getElements('[data-testid="tag-editor"] [role="option"]'));
 		$browser->clickId('tag-snapback');
-
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 5, 200);
-		$wait->until(function () use ($browser) {
-			return count($browser->getCssSelect('[data-testid="tag-snapback"]')) === 1;
-		});
+		$browser->find('[data-testid="tag-snapback"]');
 	}
 
 	public function testShowOthersUnapprovedTagsInAddTagsButNotClickable()
@@ -133,10 +129,21 @@ class TagTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
-		$this->assertCount(0, $browser->getCssSelect('[data-testid="tag-atari"]'));
+		$this->assertCount(0, $browser->getElements('[data-testid="tag-atari"]'));
+
 		$this->openEditorAndType($browser, 'ata');
-		$this->assertCount(0, $browser->getCssSelect('[data-testid="tag-editor"] [role="option"]'));
-		$this->assertStringContainsString('already proposed', $browser->driver->getPageSource());
+
+		// The dropdown renders the note and the clickable options in one pass, so the note is the
+		// signal that the list is done: a clickable option would be there at the same moment.
+		$suggestion = $browser->find('[data-testid="tag-nonaddable-atari"]');
+		$this->assertStringContainsString('already proposed', $suggestion->getText());
+		$this->assertCount(0, $browser->getElements('[data-testid="tag-editor"] [role="option"]'));
+
+		// clicking the note does not add the tag
+		$browser->startRecordingRequests();
+		$suggestion->click();
+		$this->assertSame([], $browser->requestsTo('/tagConnection/'),
+			'A tag proposed by someone else must not be addable');
 	}
 
 	public function testEnterOnNonAddableTagDoesNotSubmit()
@@ -150,11 +157,17 @@ class TagTest extends ControllerTestCase
 			'tags' => [['name' => 'snapback']]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$browser->waitUntilCssSelectorExists('[data-testid="tag-editor"]');
+		$browser->find('[data-testid="tag-editor"]');
 
 		$this->openEditorAndType($browser, 'atari');
+		$browser->startRecordingRequests();
 		$browser->driver->getKeyboard()->sendKeys(WebDriverKeys::ENTER);
-		usleep(500000);
+
+		// Enter on a tag that is already added but not approved does nothing, so the tag
+		// never shows up in the list and nothing is sent to the server.
+		$this->assertCount(0, $browser->getElements('[data-testid="tag-atari"]'));
+		$this->assertSame([], $browser->requestsTo('/tagConnection/'),
+			'Enter on a non-addable tag must not send a request');
 
 		$connectionCount = ClassRegistry::init('TagConnection')->find('count', [
 			'conditions' => [
@@ -174,7 +187,7 @@ class TagTest extends ControllerTestCase
 
 	private function tagListContains(Browser $browser, string $tagName): bool
 	{
-		return count($browser->getCssSelect('[data-testid="tag-' . $tagName . '"]')) > 0;
+		return count($browser->getElements('[data-testid="tag-' . $tagName . '"]')) > 0;
 	}
 
 	// --- Hint visibility ---
@@ -189,7 +202,7 @@ class TagTest extends ControllerTestCase
 			]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$browser->waitUntilCssSelectorExists('[data-testid="tag-editor"]');
+		$browser->find('[data-testid="tag-editor"]');
 
 		$this->assertFalse($this->tagListContains($browser, 'snapback'));
 		$this->assertStringContainsString('1 hidden', $this->getTagListText($browser));
@@ -205,7 +218,7 @@ class TagTest extends ControllerTestCase
 			]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$browser->waitUntilCssSelectorExists('[data-testid="tag-editor"]');
+		$browser->find('[data-testid="tag-editor"]');
 
 		$this->assertTrue($this->tagListContains($browser, 'snapback'));
 		$this->assertStringNotContainsString('hidden', $this->getTagListText($browser));
@@ -220,7 +233,7 @@ class TagTest extends ControllerTestCase
 			]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$browser->waitUntilCssSelectorExists('[data-testid="tag-editor"]');
+		$browser->find('[data-testid="tag-editor"]');
 
 		$this->assertTrue($this->tagListContains($browser, 'snapback'));
 		$this->assertStringNotContainsString('hidden', $this->getTagListText($browser));
@@ -238,7 +251,7 @@ class TagTest extends ControllerTestCase
 			]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$browser->waitUntilCssSelectorExists('[data-testid="tag-editor"]');
+		$browser->find('[data-testid="tag-editor"]');
 
 		$this->assertTrue($this->tagListContains($browser, 'atari'));
 		$this->assertFalse($this->tagListContains($browser, 'snapback'));
@@ -256,7 +269,7 @@ class TagTest extends ControllerTestCase
 			]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$browser->waitUntilCssSelectorExists('[data-testid="tag-editor"]');
+		$browser->find('[data-testid="tag-editor"]');
 
 		$this->assertTrue($this->tagListContains($browser, 'atari'));
 		$this->assertTrue($this->tagListContains($browser, 'snapback'));
@@ -274,7 +287,7 @@ class TagTest extends ControllerTestCase
 			]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$browser->waitUntilCssSelectorExists('[data-testid="tag-editor"]');
+		$browser->find('[data-testid="tag-editor"]');
 
 		// My hint (ko) is visible, other's hint (snapback) is hidden
 		$this->assertTrue($this->tagListContains($browser, 'ko'));
@@ -291,10 +304,9 @@ class TagTest extends ControllerTestCase
 			'tags' => [['name' => 'snapback', 'is_hint' => 1]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$browser->waitUntilCssSelectorExists('[data-testid="tag-editor"]');
+		$browser->find('[data-testid="tag-editor"]');
 
 		$this->openEditorAndType($browser, 'snap');
-		$browser->waitUntilCssSelectorExists('[role="option"]');
 
 		$option = $browser->find('[role="option"]');
 		$this->assertStringContainsString('(hint)', $option->getText());
@@ -303,7 +315,7 @@ class TagTest extends ControllerTestCase
 	private function clickAndWaitForError(Browser $browser, string $selector): void
 	{
 		$browser->find($selector)->click();
-		$browser->waitUntilCssSelectorExists('[data-testid="tag-error"]');
+		$browser->find('[data-testid="tag-error"]');
 	}
 
 	// --- Error handling (AJAX backend, same as before) ---
@@ -382,12 +394,12 @@ class TagTest extends ControllerTestCase
 			'tsumego' => ['set_order' => 1, 'tags' => [['name' => 'atari', 'approved' => 0]]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$this->assertCount(1, $browser->getCssSelect('[data-testid="tag-atari"]'));
+		$this->assertCount(1, $browser->getElements('[data-testid="tag-atari"]'));
 		$this->assertNotEmpty(ClassRegistry::init('TagConnection')->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]]));
 
 		$browser->clickId("remove-atari");
 		$browser->waitUntilCssSelectorDoesntExist('[data-testid="tag-atari"]');
-		$this->assertCount(0, $browser->getCssSelect('[data-testid="tag-atari"]'));
+		$this->assertCount(0, $browser->getElements('[data-testid="tag-atari"]'));
 		$this->assertEmpty(ClassRegistry::init('TagConnection')->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]]));
 	}
 
@@ -450,7 +462,7 @@ class TagTest extends ControllerTestCase
 			'tsumego' => ['set_order' => 1, 'tags' => [['name' => 'snapback', 'user' => 'kovarex', 'approved' => 1]]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$browser->waitUntilCssSelectorExists('[data-testid="tag-snapback"]');
+		$browser->find('[data-testid="tag-snapback"]');
 
 		$this->assertFalse($browser->idExists('remove-snapback'));
 	}
@@ -465,7 +477,7 @@ class TagTest extends ControllerTestCase
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
 		// Others' unapproved tags are not visible in the tag list
-		$this->assertCount(0, $browser->getCssSelect('[data-testid="tag-snapback"]'));
+		$this->assertCount(0, $browser->getElements('[data-testid="tag-snapback"]'));
 	}
 
 	public function testAddNewTagAsAdmin()
@@ -490,10 +502,7 @@ class TagTest extends ControllerTestCase
 				$browser->clickId('tag_hint_false');
 			$browser->clickId('submit_tag');
 
-			$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-			$wait->until(function () use ($browser) {
-				return strpos($browser->driver->getCurrentURL(), '/tags/view/') !== false;
-			});
+			$browser->waitUntilJs('location.href.includes("/tags/view/")');
 
 			$tagAdded = ClassRegistry::init('Tag')->find('first')['Tag'];
 			$this->assertSame(Util::getMyAddress() . '/tags/view/' . $tagAdded['id'], $browser->driver->getCurrentURL());
@@ -522,10 +531,7 @@ class TagTest extends ControllerTestCase
 		$browser->driver->getKeyboard()->sendKeys('A self-atari is a move that puts your own stones into atari.');
 		$browser->clickId('submit_tag');
 
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function () use ($browser) {
-			return strpos($browser->driver->getCurrentURL(), '/tags/view/') !== false;
-		});
+		$browser->waitUntilJs('location.href.includes("/tags/view/")');
 
 		$tagAdded = ClassRegistry::init('Tag')->find('first')['Tag'];
 		$this->assertSame(Util::getMyAddress() . '/tags/view/' . $tagAdded['id'], $browser->driver->getCurrentURL());
@@ -543,10 +549,7 @@ class TagTest extends ControllerTestCase
 		$browser->driver->getKeyboard()->sendKeys('test tag no description');
 		$browser->clickId('submit_tag');
 
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function () use ($browser) {
-			return str_contains($browser->driver->getPageSource(), 'alert-error');
-		});
+		$browser->waitUntilJs('document.documentElement.outerHTML.includes("alert-error")');
 
 		$pageSource = $browser->driver->getPageSource();
 		$this->assertStringContainsString('description', strtolower($pageSource));
@@ -658,10 +661,7 @@ class TagTest extends ControllerTestCase
 		$descField->clear();
 		$browser->clickId('submit_tag');
 
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function () use ($browser) {
-			return str_contains($browser->driver->getPageSource(), 'alert-error');
-		});
+		$browser->waitUntilJs('document.documentElement.outerHTML.includes("alert-error")');
 
 		$this->assertStringContainsString('/tags/edit/', $browser->driver->getCurrentURL());
 		$this->assertSame('Hello', ClassRegistry::init('Tag')->find('first')['Tag']['description']);
@@ -869,17 +869,17 @@ class TagTest extends ControllerTestCase
 		]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$browser->waitUntilCssSelectorExists('[data-testid="tag-list"]');
+		$browser->find('[data-testid="tag-list"]');
 
 		// A hint tag is a spoiler and stays hidden until the player solves the problem.
-		$this->assertCount(1, $browser->getCssSelect('[data-testid="tag-commontag"]'),
+		$this->assertCount(1, $browser->getElements('[data-testid="tag-commontag"]'),
 			'A non-hint community tag is visible before the problem is solved.');
-		$this->assertCount(0, $browser->getCssSelect('[data-testid="tag-hinttag"]'),
+		$this->assertCount(0, $browser->getElements('[data-testid="tag-hinttag"]'),
 			'A hint tag stays hidden until the problem is solved.');
 
 		$browser->playWithResult('S');
 
-		$this->assertCount(1, $browser->getCssSelect('[data-testid="tag-hinttag"]'),
+		$this->assertCount(1, $browser->getElements('[data-testid="tag-hinttag"]'),
 			'Solving reveals the hint tag.');
 	}
 
@@ -898,20 +898,20 @@ class TagTest extends ControllerTestCase
 		$browser->get('timeMode/start'
 			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
 			. '&rankID=' . $context->timeModeRanks[0]['id']);
-		$browser->waitUntilCssSelectorExists('[data-testid="tag-editor"]');
+		$browser->find('[data-testid="tag-editor"]');
 
 		// Even though the problem was solved before, time mode treats it as fresh, so
 		// community tags stay hidden (the player's own tag is always visible).
-		$this->assertCount(1, $browser->getCssSelect('[data-testid="tag-mytag"]'),
+		$this->assertCount(1, $browser->getElements('[data-testid="tag-mytag"]'),
 			'The player\'s own tag is visible in time mode.');
-		$this->assertCount(0, $browser->getCssSelect('[data-testid="tag-commontag"]'),
+		$this->assertCount(0, $browser->getElements('[data-testid="tag-commontag"]'),
 			'A community tag must not be revealed until the problem is solved.');
 
 		$browser->playWithResult('S');
 
 		// Solving reveals the community tags.
-		$browser->waitUntilCssSelectorExists('[data-testid="tag-commontag"]');
-		$this->assertCount(1, $browser->getCssSelect('[data-testid="tag-commontag"]'),
+		$browser->find('[data-testid="tag-commontag"]');
+		$this->assertCount(1, $browser->getElements('[data-testid="tag-commontag"]'),
 			'Solving reveals the community tags in time mode.');
 	}
 }

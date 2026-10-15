@@ -193,7 +193,7 @@ export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags
 						{
 							const label = tag.isMine ? 'pending' : 'already proposed';
 							return (
-								<div key={tag.id} style={{ ...tagStyle, color: tag.isMine ? 'var(--text-softer-color)' : 'var(--feedback-error)', cursor: 'default' }}>
+								<div key={tag.id} data-testid={makeIdValidName('nonaddable ' + tag.name)} style={{ ...tagStyle, color: tag.isMine ? 'var(--text-softer-color)' : 'var(--feedback-error)', cursor: 'default' }}>
 									{tag.name} <span style={{ color: 'var(--text-softer-color)', fontSize: 12 }}>({label})</span>
 								</div>
 							);

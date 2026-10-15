@@ -105,11 +105,8 @@ class TsumegoMergeTest extends ControllerTestCase
 			$this->assertSame(Util::getMyAddress() . '/tsumegos/mergeFinalForm', $browser->driver->getCurrentURL());
 			$browser->clickId('submit');
 
-			// Wait for merge to complete — page navigates away from mergeFinalForm
-			$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-			$wait->until(function () use ($browser) {
-				return strpos($browser->driver->getCurrentURL(), 'mergeFinalForm') === false;
-			});
+			// Wait for merge to complete, the page navigates away from mergeFinalForm
+			$browser->waitUntilJs('!location.href.includes("mergeFinalForm")');
 
 			// the tsumegos were merged
 			$this->assertSame($context->tsumegos[0]['set-connections'][0]['tsumego_id'], $context->tsumegos[0]['set-connections'][1]['tsumego_id']);

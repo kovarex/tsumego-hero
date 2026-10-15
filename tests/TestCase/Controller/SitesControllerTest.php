@@ -65,12 +65,12 @@ class SitesControllerTest extends ControllerTestCase
 		$this->assertStringContainsString('Latest additions', $source);
 		$this->assertStringContainsString('<time datetime="' . $today . '"', $source);
 
-		$buttons = $browser->getCssSelect('.problem-nav__number');
+		$buttons = $browser->getElements('.problem-nav__number');
 		$this->assertCount(1, $buttons);
 		$this->assertSame('564', $buttons[0]->getText());
 
 		// Published tsumego buttons should have preview data
-		$previewLinks = $browser->getCssSelect('.new-tsumego-box a[data-sgf-preview]');
+		$previewLinks = $browser->getElements('.new-tsumego-box a[data-sgf-preview]');
 		$this->assertNotEmpty($previewLinks);
 	}
 
@@ -94,7 +94,7 @@ class SitesControllerTest extends ControllerTestCase
 		$this->assertStringContainsString('Latest additions', $source);
 		$this->assertStringContainsString('<time datetime="' . $pastDate . '"', $source);
 
-		$buttons = $browser->getCssSelect('.problem-nav__number');
+		$buttons = $browser->getElements('.problem-nav__number');
 		$this->assertCount(1, $buttons);
 		$this->assertSame('564', $buttons[0]->getText());
 	}
@@ -188,7 +188,7 @@ class SitesControllerTest extends ControllerTestCase
 		$this->assertStringContainsString('Level Evaluation', $source);
 		$this->assertStringContainsString('Set Beginner', $source);
 		$this->assertSame(2, substr_count($source, 'class="scheduleTsumego"'));
-		$this->assertCount(2, $browser->getCssSelect('.problem-nav__number'));
+		$this->assertCount(2, $browser->getElements('.problem-nav__number'));
 	}
 
 	/**
@@ -206,8 +206,9 @@ class SitesControllerTest extends ControllerTestCase
 		// Act: Load the index page
 		$browser->get('sites/index');
 
-		// Assert: Check that page loaded successfully (no exceptions thrown by assertNoErrors)
-		$this->assertTrue($browser->idExists('totd') || true); // Page loaded successfully
+		// Assert: the index page rendered with a clean JS console
+		$this->assertTrue($browser->titleContains('Tsumego Hero'), 'The index page rendered');
+		$browser->assertNoJsErrors();
 	}
 
 	public function testIndexPageLoadsWithoutDayRecord()
@@ -215,7 +216,8 @@ class SitesControllerTest extends ControllerTestCase
 		$browser = Browser::instance();
 		new ContextPreparator();
 		$browser->get('sites/index');
-		$this->assertTrue($browser->idExists('totd') || true); // Page loaded successfully
+		$this->assertTrue($browser->titleContains('Tsumego Hero'), 'The index page rendered');
+		$browser->assertNoJsErrors();
 	}
 
 	public function testNewsColumnsRevealMoreArticlesUntilAllAreVisible()
@@ -426,7 +428,7 @@ class SitesControllerTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$browser->get('sites/index');
 
-		$rows = $browser->driver->findElements(WebDriverBy::cssSelector('.recent-achievement-row'));
+		$rows = $browser->getElements('.recent-achievement-row');
 		$this->assertCount(7, $rows, 'Should show at most 7 achievements');
 
 		// Most recent first: Bob's 10000 Problems (Jan 10)

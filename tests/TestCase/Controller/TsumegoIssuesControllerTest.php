@@ -1,6 +1,5 @@
 <?php
 
-use Facebook\WebDriver\WebDriverBy;
 use PHPUnitRetry\RetryTrait;
 
 /**
@@ -175,17 +174,11 @@ class TsumegoIssuesControllerTest extends ControllerTestCase
 		$this->assertTextContains('Issue to close from list', $pageSource);
 
 		// Wait for and click close button
-		$browser->waitUntilCssSelectorExists('.tsumego-issue button.btn--success', 10);
-		$closeButton = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-issue button.btn--success'));
+		$closeButton = $browser->find('.tsumego-issue button.btn--success', 10);
 		$closeButton->click();
 
-		// Wait for issue to disappear from opened list (the page re-fetches open issues)
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			// After closing, the issue disappears from open list, showing empty state
-			$issues = $driver->findElements(WebDriverBy::cssSelector('.tsumego-issue:not(.skeleton-wrapper)'));
-			return count($issues) === 0;
-		});
+		// After closing, the issue disappears from the open list, which then shows the empty state
+		$browser->waitUntilCssSelectorDoesntExist('.tsumego-issue:not(.skeleton-wrapper)', 10);
 
 		$pageSource = $browser->driver->getPageSource();
 		// Should show no open issues or empty state
