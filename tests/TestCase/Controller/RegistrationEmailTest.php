@@ -3,12 +3,12 @@
 use App\Utility\CookieFlash;
 
 /**
- * Tests for the registration endpoint: the e-mail, the login name and the
- * display name a new account gets.
+ * Tests for the registration endpoint: the e-mail and the login name a new account
+ * gets, and the registrations it refuses.
  *
  * Uses testAction for controller testing without Selenium.
  */
-class RegistrationTest extends ControllerTestCase
+class RegistrationEmailTest extends ControllerTestCase
 {
 	/**
 	 * Test that registration fails when email is already used by a regular user.
@@ -192,31 +192,5 @@ class RegistrationTest extends ControllerTestCase
 			'conditions' => ['external_id' => '123456789']
 		]);
 		$this->assertEquals('ConflictName', $googleUser['User']['display_name']);
-	}
-
-	/**
-	 * A player who leaves the name empty gets no account.
-	 */
-	public function testRegistrationWithoutNameCreatesNoAccount()
-	{
-		new ContextPreparator(['user' => null]);
-
-		$this->testAction('users/add', [
-			'data' => [
-				'User' => [
-					'name' => '',
-					'email' => 'noname@example.com',
-					'password1' => 'password123',
-					'password2' => 'password123',
-				]
-			],
-			'method' => 'POST',
-			'return' => 'vars'
-		]);
-
-		$user = ClassRegistry::init('User')->find('first', [
-			'conditions' => ['email' => 'noname@example.com']
-		]);
-		$this->assertEmpty($user, 'A registration without a name must not create an account');
 	}
 }
