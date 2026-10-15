@@ -130,9 +130,20 @@ class TagTest extends ControllerTestCase
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
 		$this->assertCount(0, $browser->getElements('[data-testid="tag-atari"]'));
+
 		$this->openEditorAndType($browser, 'ata');
+
+		// The dropdown renders the note and the clickable options in one pass, so the note is the
+		// signal that the list is done: a clickable option would be there at the same moment.
+		$suggestion = $browser->find('[data-testid="tag-nonaddable-atari"]');
+		$this->assertStringContainsString('already proposed', $suggestion->getText());
 		$this->assertCount(0, $browser->getElements('[data-testid="tag-editor"] [role="option"]'));
-		$this->assertStringContainsString('already proposed', $browser->driver->getPageSource());
+
+		// clicking the note does not add the tag
+		$browser->startRecordingRequests();
+		$suggestion->click();
+		$this->assertSame([], $browser->requestsTo('/tagConnection/'),
+			'A tag proposed by someone else must not be addable');
 	}
 
 	public function testEnterOnNonAddableTagDoesNotSubmit()

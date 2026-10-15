@@ -227,6 +227,7 @@ class CommentsControllerTest extends ControllerTestCase
 
 		// Verify comment is no longer visible (reload to confirm it's deleted)
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->expandComments();
 		$pageSource = $browser->driver->getPageSource();
 		$this->assertTextNotContains('Comment to delete', $pageSource);
 	}
