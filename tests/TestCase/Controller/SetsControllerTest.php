@@ -1787,7 +1787,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertTextContains('Reset is only possible when collection size is set to 200', $browser->driver->getPageSource());
 
 		// we try to force it on the server anyway - redirect back to same partition
-		$browser->getWithPostData('/sets/resetProgress/' . $context->sets[0]['id'] . '/1', ['reset-check' => 'reset']);
+		$browser->post('/sets/resetProgress/' . $context->sets[0]['id'] . '/1', ['reset-check' => 'reset']);
 		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->sets[0]['id'] . '/1', $browser->driver->getCurrentURL());
 		$this->assertSame(400, count(ClassRegistry::init('TsumegoStatus')->find('all', ['order' => 'id'])));
 	}

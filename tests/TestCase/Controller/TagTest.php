@@ -1,7 +1,6 @@
 <?php
 
 use Facebook\WebDriver\WebDriverKeys;
-use Facebook\WebDriver\WebDriverWait;
 use PHPUnitRetry\RetryTrait;
 /**
  * Tag editor tests - React component with data-testid selectors.
@@ -746,18 +745,7 @@ class TagTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$browser->get('/users/adminstats');
 		$browser->clickId('tag-accept-' . $tagId);
-
-		$wait = new WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			try
-			{
-				return str_contains($driver->getPageSource(), 'was approved');
-			}
-			catch (Exception $e)
-			{
-				return false;
-			}
-		});
+		$browser->waitUntilJs('document.documentElement.outerHTML.includes("was approved")');
 
 		$this->assertStringEndsWith('/users/adminstats', $browser->driver->getCurrentURL());
 		$this->assertSame(1, ClassRegistry::init('Tag')->findById($tagId)['Tag']['approved']);
