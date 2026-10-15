@@ -225,6 +225,15 @@ class Util
 	}
 
 	/**
+	 * The connection of the default database.
+	 */
+	public static function connection(): PDO
+	{
+		/** @phpstan-ignore-next-line */
+		return ClassRegistry::init('Tsumego')->getDataSource()->getConnection();
+	}
+
+	/**
 	 * Execute a non-SELECT SQL statement (INSERT, UPDATE, DELETE) and return the number of affected rows.
 	 */
 	public static function execute(string $sql, array $params = []): int

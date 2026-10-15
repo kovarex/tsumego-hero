@@ -21,6 +21,40 @@
 
 @layer components
 {
+/* ── Avatar ── */
+.user-avatar
+{
+	width: var(--avatar-size);
+	height: var(--avatar-size);
+	border-radius: var(--radius-full);
+	vertical-align: middle;
+	margin-right: var(--space-1);
+	object-fit: cover;
+}
+
+/* A board is a picture of a thing, not of a face, so it keeps its corners square.
+   The hairline keeps the sharp edge from reading as a broken crop of a round
+   photo. */
+.user-avatar--board
+{
+	border-radius: 0;
+	box-shadow: 0 0 0 1px var(--avatar-board-edge);
+}
+
+.user-avatar--lg
+{
+	width: var(--avatar-size-lg);
+	height: var(--avatar-size-lg);
+	margin-right: var(--space-2);
+}
+
+/* The score tables run a larger type size, so the avatar grows with them. */
+.data-table .user-avatar
+{
+	width: var(--avatar-size-table);
+	height: var(--avatar-size-table);
+}
+
 /* ── Card ── */
 .card
 {

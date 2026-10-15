@@ -52,9 +52,9 @@ class AccountDeletionTest extends TestCaseWithAuth
 		$this->assertTextContains('https://' . $_SERVER['HTTP_HOST'] . '/users/confirm_delete_account/' . $user['deletion_token'], TestEmailer::$lastEmail['body']);
 	}
 
-	public function testGoogleAccountGetsEmailWithoutPrefix(): void
+	public function testDeletionEmailGoesToTheUsersEmail(): void
 	{
-		new ContextPreparator(['user' => ['name' => 'g__Google User', 'email' => 'g__google@example.com', 'external_id' => 'g__123']]);
+		new ContextPreparator(['user' => ['name' => 'Google User', 'email' => 'google@example.com', 'external_id' => '123']]);
 		$this->requestDeletion();
 		$this->assertSame('google@example.com', TestEmailer::$lastEmail['to']);
 	}
@@ -70,7 +70,7 @@ class AccountDeletionTest extends TestCaseWithAuth
 		$adminActivity = ClassRegistry::init('AdminActivity')->find('first');
 		$this->assertSame(AdminActivityType::DELETE_USER, $adminActivity['AdminActivity']['type']);
 		$this->assertSame($context->user['id'], $adminActivity['AdminActivity']['user_id']);
-		$this->assertSame('kovarex', $adminActivity['AdminActivity']['old_value']);
+		$this->assertSame('DN_kovarex', $adminActivity['AdminActivity']['old_value'], 'The activity log names the account the way players see it');
 	}
 
 	public function testEmailedLinkWorksWithoutBeingSignedIn(): void
@@ -149,10 +149,10 @@ class AccountDeletionTest extends TestCaseWithAuth
 		$alive = $context->otherUsers[1];
 
 		$this->assertSame(h(User::DELETED_NAME), User::renderLink($ghost));
-		$this->assertSame(User::DELETED_NAME, AppController::checkPicture($ghost));
-		$this->assertNull(User::nameOrNull($ghost['id'], 'ghost'));
+		$this->assertSame(User::DELETED_NAME, User::displayName($ghost));
+		$this->assertNull(User::displayNameOrNull($ghost));
 		$this->assertStringContainsString('alive', User::renderLink($alive));
-		$this->assertSame('alive', AppController::checkPicture($alive));
+		$this->assertSame($alive['display_name'], User::displayName($alive));
 	}
 
 	public function testCommentOfDeletedAccountShowsPlaceholder(): void
@@ -213,18 +213,26 @@ class AccountDeletionTest extends TestCaseWithAuth
 
 	public function testDeletingFreesNameAndGoogleAccount(): void
 	{
-		$context = new ContextPreparator(['user' => ['name' => 'kovarex', 'email' => 'kovarex@example.com', 'external_id' => 'g__123']]);
+		$context = new ContextPreparator(['user' => ['name' => 'kovarex', 'email' => 'kovarex@example.com', 'external_id' => '123']]);
 		$this->deleteOwnAccount();
 
 		$user = $this->userRow($context->user['id']);
 		$this->assertSame('[deleted ' . $context->user['id'] . ']', $user['name']);
-		$this->assertSame('kovarex@example.com', $user['email'], 'Emails don\'t need to be unique, so the email stays');
+		$this->assertSame('kovarex@example.com', $user['email'], 'The email of a deleted account stays');
 		$this->assertNull($user['external_id']);
-		$this->assertSame('kovarex', $user['deleted_name']);
-		$this->assertSame('g__123', $user['deleted_external_id']);
+		$this->assertNull($user['deleted_name'], 'A Google account has no login name to keep');
+		$this->assertSame('123', $user['deleted_external_id']);
 	}
 
-	public function testNewAccountCanTakeNameAndEmailOfDeletedOneWhichThenCantBeRestored(): void
+	public function testDeletingKeepsTheLoginNameForRestoring(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'kovarex', 'email' => 'kovarex@example.com']]);
+		$this->deleteOwnAccount();
+
+		$this->assertSame('kovarex', $this->userRow($context->user['id'])['deleted_name']);
+	}
+
+	public function testNewAccountCanTakeNameOfDeletedOneWhichThenCantBeRestored(): void
 	{
 		$context = new ContextPreparator([
 			'user' => ['name' => 'kovarex', 'email' => 'kovarex@example.com'],
@@ -232,11 +240,11 @@ class AccountDeletionTest extends TestCaseWithAuth
 		$oldAccountID = $context->user['id'];
 		$this->deleteOwnAccount();
 
-		// a new account with the same name and email
+		// a new account can take the name; the email stays with the deleted account
 		$this->logout();
 		$this->testAction('/users/add', ['data' => ['User' => [
 			'name' => 'kovarex',
-			'email' => 'kovarex@example.com',
+			'email' => 'newkovarex@example.com',
 			'password1' => 'secret',
 			'password2' => 'secret']], 'method' => 'POST']);
 		$newAccount = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
@@ -265,10 +273,10 @@ class AccountDeletionTest extends TestCaseWithAuth
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
 			'other-users' => [
-				['name' => 'g__Google User', 'email' => 'g__google@example.com', 'external_id' => 'g__123', 'deleted' => true],
-				['name' => 'g__Google User 2', 'email' => 'other@example.com']]]);
+				['display_name' => 'Google User', 'email' => 'google@example.com', 'external_id' => '123', 'deleted' => true],
+				['display_name' => 'Google User 2', 'external_id' => '456', 'email' => 'other@example.com']]]);
 		// signing in with the same Google account created a new account
-		ClassRegistry::init('User')->save(['User' => ['id' => $context->otherUsers[1]['id'], 'external_id' => 'g__123']], false);
+		ClassRegistry::init('User')->save(['User' => ['id' => $context->otherUsers[1]['id'], 'external_id' => '123']], false);
 
 		$this->restoreAccount($context->otherUsers[0]['id']);
 		$this->assertNotNull($this->deletedOf($context->otherUsers[0]['id']));

@@ -26,7 +26,7 @@ class ContextPreparator
 			'achievement_condition', 'achievement_status', 'set_connection',
 			'tsumego_attempt', 'tsumego_status', 'user_contribution', 'signature',
 			'tsumego_variant', 'reject', 'publish_date', 'user', 'time_mode_rank',
-			'tsumego', 'set',
+			'tsumego', 'set', 'phpbb_users', 'phpbb_topics',
 		] as $table)
 			$pdo->exec("DELETE FROM `$table`");
 		$pdo->exec('SET FOREIGN_KEY_CHECKS = 1');
@@ -84,9 +84,16 @@ class ContextPreparator
 	private function prepareUser(?array $userInput): array
 	{
 		$user = [];
-		$user['name'] = Util::extract('name', $userInput) ?: 'kovarex';
+		// Extract external_id first (used for multiple checks)
+		$externalId = Util::extract('external_id', $userInput);
+		$isGoogleUser = !empty($externalId);
+		// Google users have NULL name (they can't use password login)
+		// We still extract 'name' to consume it from the input array (prevents "Option not recognized" error)
+		$inputName = Util::extract('name', $userInput);
+		$user['name'] = $isGoogleUser ? null : ($inputName ?: 'kovarex');
+		$user['display_name'] = Util::extract('display_name', $userInput) ?: ($isGoogleUser ? 'DN_G_' . substr($externalId, -6) : 'DN_' . $user['name']);
 		$user['email'] = Util::extract('email', $userInput) ?: 'test@example.com';
-		$user['password_hash'] = '$2y$10$5.F2n794IrgFcLRBnE.rju1ZoJheRr1fVc4SYq5ICeaJG0C800TRG'; // hash of test
+		$user['password_hash'] = $isGoogleUser ? 'google_oauth' : '$2y$10$5.F2n794IrgFcLRBnE.rju1ZoJheRr1fVc4SYq5ICeaJG0C800TRG'; // hash of test
 		$id = Util::extract('id', $userInput);
 		if ($id)
 			$user['id'] = (int) $id;
@@ -100,6 +107,10 @@ class ContextPreparator
 		$user['daily_solved'] = Util::extract('daily_solved', $userInput) ?: 0;
 		$user['external_id'] = Util::extract('external_id', $userInput) ?: null;
 		$user['boards_bitmask'] = Util::extract('boards_bitmask', $userInput) ?: BoardSelector::$DEFAULT_BOARDS_BITMASK;
+		// Google Sign-In fields
+		$user['external_id'] = $externalId ?: null;
+		$user['picture'] = Util::extract('picture', $userInput) ?: null;
+		$user['needs_display_name_change'] = Util::extract('needs_display_name_change', $userInput) ?: false;
 		foreach ([
 			'used_refinement',
 			'used_sprint',
@@ -129,7 +140,8 @@ class ContextPreparator
 		$saveResult = $Model->save($user);
 		if (!$saveResult)
 			throw new Exception("Failed to save user: " . print_r($Model->validationErrors, true));
-		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => $user['name']]])['User'];
+		// Find by display_name (works for both regular and Google users)
+		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['display_name' => $user['display_name']]])['User'];
 
 		if (isset($userInput['query'])
 			|| isset($userInput['filtered_sets'])
@@ -811,7 +823,8 @@ class ContextPreparator
 			AdminActivityType::REJECT_PROPOSAL => 'Reject Proposal',
 			AdminActivityType::TSUMEGO_MERGE => 'Tsumego Merge',
 			AdminActivityType::DELETE_USER => 'Delete User',
-			AdminActivityType::RESTORE_USER => 'Restore User'];
+			AdminActivityType::RESTORE_USER => 'Restore User',
+			AdminActivityType::DISPLAY_NAME_CHANGE => 'Display Name Change'];
 
 		$adminActivityType = ClassRegistry::init('AdminActivityType');
 

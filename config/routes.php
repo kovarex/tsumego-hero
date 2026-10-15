@@ -104,6 +104,16 @@ Router::connect(
 );
 
 /**
+ * Board avatars. The drawing comes from the user id alone, so one url serves the
+ * avatar in a list and the one on a profile.
+ */
+Router::connect(
+	'/avatar/:id',
+	['controller' => 'Avatars', 'action' => 'image'],
+	['pass' => ['id'], 'id' => '[0-9]+'] // ID of the user
+);
+
+/**
  * User Sets routes
  */
 Router::connect(
@@ -152,6 +162,10 @@ Router::connect(
 Router::connect(
 	'/users/boardOrientationPreference',
 	['controller' => 'Users', 'action' => 'boardOrientationPreference']
+);
+Router::connect(
+	'/users/avatarPreference',
+	['controller' => 'Users', 'action' => 'avatarPreference']
 );
 Router::connect(
 	'/profile',

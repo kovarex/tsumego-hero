@@ -1,14 +1,15 @@
 /**
  * User link component with optional avatar and rank display
- * Replaces renderUserLink() HTML string builder
+ * Replaces renderLink() HTML string builder
  */
+
+import { Avatar } from './Avatar';
 
 interface UserLinkProps
 {
 	userId: number;
 	name: string | null;
-	externalId: string | null;
-	picture: string | null;
+	avatarUrl: string | null;
 	rating: number | null;
 }
 
@@ -34,21 +35,17 @@ function getReadableRank(rank: number): string
 	return `${rank - 30}d`;
 }
 
-export function UserLink({ userId, name, externalId, picture, rating }: UserLinkProps)
+export function UserLink({ userId, name, avatarUrl, rating }: UserLinkProps)
 {
 	if (!name)
 		return <span>[account deleted]</span>;
 
 	const rank = getReadableRankFromRating(rating);
 
-	// Google users have 'g__' prefix and show profile pictures
-	const isGoogleUser = name.startsWith('g__') && externalId && picture;
-	const displayName = isGoogleUser ? name.substring(3) : name;
-
 	return (
 		<a href={`/users/view/${userId}`}>
-			{isGoogleUser && <img className="google-profile-image" src={`/img/google/${picture}`} alt="" />}
-			{displayName}
+			<Avatar url={avatarUrl} fallbackUrl={`/avatar/${userId}`} />
+			{name}
 			{rank && ` ${rank}`}
 		</a>
 	);

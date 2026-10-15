@@ -1,5 +1,6 @@
 <?php
 
+use App\Utility\PhpbbNames;
 use App\Utility\Rating;
 use App\Utility\Util;
 
@@ -13,8 +14,29 @@ class User extends AppModel
 	public const PREF_BOARD_ORIENTATION_RANDOM = 0;
 	public const PREF_BOARD_ORIENTATION_ORIGINAL = 1;
 
-	// Shown instead of the name of a deleted account.
+	// Shown instead of the name of a user whose account is not there anymore.
 	public const DELETED_NAME = '[account deleted]';
+
+	// The user table stores a display name in this many characters.
+	public const DISPLAY_NAME_MAX_LENGTH = 50;
+
+	/** The avatar a player picked: the board the site draws. */
+	public const AVATAR_BOARD = 0;
+
+	/** The avatar a player picked: their Gravatar. */
+	public const AVATAR_GRAVATAR = 1;
+
+	/** The avatar a player picked: the picture of their Google account. */
+	public const AVATAR_GOOGLE = 2;
+
+	/**
+	 * The pixels asked of an avatar host for the avatar in a list: twice the 24px
+	 * the list shows (--avatar-size in tokens.css), so a sharp screen has enough.
+	 */
+	public const AVATAR_PIXELS_INLINE = 48;
+
+	/** Twice the 64px a profile shows (--avatar-size-lg in tokens.css). */
+	public const AVATAR_PIXELS_PROFILE = 128;
 
 	public function __construct(mixed $id = false, ?string $table = null, ?string $ds = null)
 	{
@@ -27,18 +49,14 @@ class User extends AppModel
 
 			'notempty' => [
 				'rule' => 'notBlank',
-				'required' => true,
+				'allowEmpty' => true,
 				'message' => 'Please Insert Name',
 			],
 
 			'minmax' => [
 				'rule' => ['between', 3, 30],
+				'allowEmpty' => true,
 				'message' => 'The length of the name should have at least 3 characters',
-			],
-
-			'checkUnique' => [
-				'rule' => ['checkUnique', 'name'],
-				'message' => 'Name already exists',
 			],
 		],
 
@@ -52,10 +70,20 @@ class User extends AppModel
 				'rule' => ['email', false],
 				'message' => 'Enter a valid email-address',
 			],
+		],
 
-			'checkUnique' => [
-				'rule' => ['checkUnique', 'email'],
-				'message' => 'Email already exists',
+		// A display name is required: every page shows it and only a flagged
+		// account may change it. The login name above stays optional because a
+		// Google account does not have one.
+		'display_name' => [
+			'notempty' => [
+				'rule' => 'notBlank',
+				'message' => 'Insert Display Name',
+			],
+
+			'maxlength' => [
+				'rule' => ['maxLength', self::DISPLAY_NAME_MAX_LENGTH],
+				'message' => 'The display name must not be longer than 50 characters',
 			],
 		],
 	];
@@ -132,80 +160,451 @@ class User extends AppModel
 	}
 
 	/**
-	 * Ids of the deleted accounts, loaded once per request. There are few of them, so one small
-	 * query lets every place showing a name check it without joining on user.deleted.
+	 * Ids of the deleted accounts, loaded once per request. It answers the callers that have nothing
+	 * but an id (the payloads read the name as a plain string out of a raw query); a caller that has a
+	 * row reads the deleted column of that row instead, so a stale cache can't name a deleted account.
 	 *
 	 * @var array<int, true>|null
 	 */
 	private static ?array $deletedIDs = null;
 
-	// To be called after an account was deleted or restored.
+	// To be called after an account was deleted or restored, otherwise the callers that pass a bare id
+	// keep the old answer. A caller that passes a row is not affected.
 	public static function clearDeletedCache(): void
 	{
 		self::$deletedIDs = null;
 	}
 
-	public static function isDeletedID(int|string|null $userID): bool
+	/**
+	 * Whether the account of a user is not there anymore. A row answers from its own deleted column,
+	 * which every find() and contain('User') already loads; a bare id is looked up in the ids loaded
+	 * once per request. A row that carries neither an id nor the column is treated as gone, the same
+	 * way renderLink treats it.
+	 *
+	 * @param UserRow|array<string, mixed>|int|string|null $user
+	 */
+	public static function isDeleted(array|int|string|null $user): bool
 	{
-		if ($userID === null)
-			return false;
+		if (is_array($user))
+		{
+			if (array_key_exists('deleted', $user) || array_key_exists('user_deleted', $user))
+				return !empty($user['deleted']) || !empty($user['user_deleted']);
+			$user = $user['id'] ?? $user['user_id'] ?? null;
+			if ($user === null)
+				return true;
+		}
 		if (self::$deletedIDs === null)
 		{
 			self::$deletedIDs = [];
 			foreach (Util::query('SELECT id FROM user WHERE deleted IS NOT NULL') as $row)
 				self::$deletedIDs[(int) $row['id']] = true;
 		}
-		return isset(self::$deletedIDs[(int) $userID]);
-	}
-
-	private static function stripGooglePrefix(?string $name, ?string $externalID): string
-	{
-		if (str_starts_with((string) $name, 'g__') && $externalID != null)
-			return substr((string) $name, 3);
-		return (string) $name;
+		return isset(self::$deletedIDs[(int) $user]);
 	}
 
 	/**
-	 * The name to show for a user: DELETED_NAME for a deleted account, otherwise the name without
-	 * the g__ prefix of Google accounts.
+	 * The display name of a user, null when there is none to show: the account is not there anymore,
+	 * or the row the caller passed carries no name. This is what the frontend gets, it renders
+	 * DELETED_NAME itself. Pass a user row, folded or built from a raw query, nothing else.
+	 *
+	 * @param UserRow|array<string, mixed>|null $user
 	 */
-	public static function displayName(int|string|null $userID, ?string $name, ?string $externalID = null): string
+	public static function displayNameOrNull(?array $user): ?string
 	{
-		if (self::isDeletedID($userID))
-			return self::DELETED_NAME;
-		return self::stripGooglePrefix($name, $externalID);
+		if ($user === null || self::isDeleted($user))
+			return null;
+
+		$displayName = $user['display_name'] ?? $user['user_display_name'] ?? null;
+		return $displayName === null || $displayName === '' ? null : $displayName;
 	}
 
 	/**
-	 * The name to send to the frontend, null for a deleted account (UserLink then shows DELETED_NAME).
+	 * The same rule as displayNameOrNull() for the places that print the name instead of sending it
+	 * to the frontend: a user whose account is not there anymore is shown as DELETED_NAME.
+	 *
+	 * @param UserRow|array<string, mixed>|null $user
 	 */
-	public static function nameOrNull(int|string|null $userID, ?string $name): ?string
+	public static function displayName(?array $user): string
 	{
-		return self::isDeletedID($userID) ? null : $name;
+		return self::displayNameOrNull($user) ?? self::DELETED_NAME;
 	}
 
-	public static function renderLink(array|int|string $id, ?string $name = null, ?string $externalID = null, ?string $picture = null, int|float|string|null $rating = null): string
+	/**
+	 * The avatar to send to the frontend, null when the account is not there anymore. A deleted
+	 * account keeps the row that the drawing is made from, so it would keep showing a board of
+	 * someone who asked to be forgotten.
+	 *
+	 * @param UserRow|array<string, mixed> $user Row with the id, external_id, picture and email
+	 */
+	public static function avatarOrNull(array $user, int $size = self::AVATAR_PIXELS_INLINE): ?string
 	{
-		if (is_array($id))
-		{
-			if (isset($id['user_id']))
-				return self::renderLink($id['user_id'], $id['user_name'], $id['user_external_id'], $id['user_picture'], $id['user_rating']);
-			return self::renderLink($id['id'], $id['name'], $id['external_id'], $id['picture'], $id['rating']);
-		}
-		return User::renderLinkWithOptionalRank($id, $rating === null ? '' : Rating::getReadableRankFromRating((float) $rating), $name, $externalID, $picture);
+		return self::isDeleted($user) ? null : self::getAvatarUrl($user, $size);
 	}
 
-	public static function renderLinkWithOptionalRank(array|int|string $id, string $rank = '', ?string $name = null, ?string $externalID = null, ?string $picture = null): string
+	/**
+	 * Render a user link with avatar and rank calculated from rating.
+	 *
+	 * @param array|int|string|null $id User row (with display_name, external_id, picture, rating,
+	 *                                  email), a bare user id, or null for a gone account
+	 * @param string|null $displayName Display name, used when $id is a bare id
+	 * @param string|null $externalID
+	 * @param string|null $picture
+	 * @param int|float|string|null $rating
+	 * @return string HTML link (or plain text for a deleted account)
+	 */
+	public static function renderLink(array|int|string|null $id, ?string $displayName = null, ?string $externalID = null, ?string $picture = null, int|float|string|null $rating = null): string
 	{
-		if (is_array($id))
+		// A bare id (or null for a gone account): the renderers pass whole rows, this is for the
+		// handful of callers that only have an id.
+		if (!is_array($id))
 		{
-			if (isset($id['user_id']))
-				return self::renderLinkWithOptionalRank($id['user_id'], $rank, $id['user_name'], $id['user_external_id'], $id['user_picture']);
-			return self::renderLinkWithOptionalRank($id['id'], $rank, $id['name'], $id['external_id'], $id['picture']);
+			if ($id === null)
+				return '<span>' . h(self::DELETED_NAME) . '</span>';
+			if (self::isDeleted($id))
+				return h(self::DELETED_NAME);
+			$rank = $rating !== null ? Rating::getReadableRankFromRating((float) $rating) : '';
+			return '<a href="/users/view/' . $id . '">' . h((string) $displayName) . ($rank === '' ? '' : ' ' . $rank) . '</a>';
 		}
 
-		if (self::isDeletedID($id))
+		$user = $id;
+
+		// A row without an id means the account is gone
+		if (empty($user['id']) && empty($user['user_id']))
+			return '<span>' . h(self::DELETED_NAME) . '</span>';
+
+		// A deleted account is shown as a placeholder, never linked or named
+		if (self::isDeleted($user))
 			return h(self::DELETED_NAME);
-		return '<a href="/users/view/' . $id . '">' . h(self::stripGooglePrefix($name, $externalID)) . (empty($rank) ? '' : ' ' . $rank) . '</a>';
+
+		// Prefixed format (from raw queries): user_id, user_display_name, etc.
+		if (isset($user['user_id']))
+		{
+			$displayName = (string) ($user['user_display_name'] ?? '');
+			if ($displayName === '')
+				return '<span>' . h(self::DELETED_NAME) . '</span>';
+			$rating = $user['user_rating'] ?? null;
+			$rank = $rating !== null ? Rating::getReadableRankFromRating((float) $rating) : '';
+			return self::renderLinkInternal($user['user_id'], $displayName, $user['user_external_id'] ?? null, $user['user_picture'] ?? null, $user['user_email'] ?? null, $user['user_pref_avatar'] ?? null, $rank);
+		}
+
+		// Standard format: id, display_name, etc. A row without a display name gets the same
+		// placeholder as a gone account, never the login name
+		$displayName = (string) ($user['display_name'] ?? '');
+		if ($displayName === '')
+			return '<span>' . h(self::DELETED_NAME) . '</span>';
+		$rating = $user['rating'] ?? null;
+		$rank = $rating !== null ? Rating::getReadableRankFromRating((float) $rating) : '';
+		return self::renderLinkInternal($user['id'], $displayName, $user['external_id'] ?? null, $user['picture'] ?? null, $user['email'] ?? null, $user['pref_avatar'] ?? null, $rank);
+	}
+
+	/**
+	 * Internal function to render user link HTML.
+	 */
+	private static function renderLinkInternal(int $id, string $displayName, ?string $externalID, ?string $picture, ?string $email, ?int $prefAvatar, string $rank): string
+	{
+		assert(($externalID !== null && $picture !== null) || $email !== null, 'Must have either (externalID + picture) or email for avatar');
+
+		// Generate avatar HTML
+		$avatarUrl = self::getAvatarUrl([
+			'id' => $id,
+			'pref_avatar' => $prefAvatar,
+			'external_id' => $externalID,
+			'picture' => $picture,
+			'email' => $email,
+		]);
+		$image = self::avatarImage($avatarUrl, '', true, '/avatar/' . $id);
+
+		return '<a href="/users/view/' . $id . '">' . $image . h((string) $displayName) . ($rank === '' ? '' : ' ' . $rank) . '</a>';
+	}
+
+	/**
+	 * Normalize a display name: trim surrounding whitespace and collapse any
+	 * internal runs of whitespace (including newlines/tabs) into single spaces.
+	 * This prevents lookalike names (" admin ", "admin  name") and keeps the
+	 * uniqueness check meaningful.
+	 *
+	 * @param string $name The raw display name input
+	 * @return string The normalized display name
+	 */
+	public static function normalizeDisplayName(string $name): string
+	{
+		$name = trim($name);
+		$name = preg_replace('/\s+/u', ' ', $name);
+		return $name;
+	}
+
+	/**
+	 * Generates a unique display name by adding (2), (3), etc. suffix if display_name already exists.
+	 *
+	 * @param string $name The desired base display name
+	 * @return string A unique display_name (either the original or with numbered suffix)
+	 */
+	public static function generateUniqueDisplayName(string $name): string
+	{
+		$name = self::normalizeDisplayName($name);
+
+		// The column holds 50 characters and a Google name is not length limited,
+		// so a longer name is shortened before the uniqueness check.
+		if (mb_strlen($name) > self::DISPLAY_NAME_MAX_LENGTH)
+			$name = mb_substr($name, 0, self::DISPLAY_NAME_MAX_LENGTH);
+
+		$userModel = ClassRegistry::init('User');
+
+		// Check if base value is available
+		$exists = $userModel->find('count', ['conditions' => ['display_name' => $name]]);
+		if ($exists == 0)
+			return $name;
+
+		// Find next available suffix (2), (3), etc.
+		$suffix = 2;
+		while (true)
+		{
+			$suffixStr = " ($suffix)";
+			$maxLength = self::DISPLAY_NAME_MAX_LENGTH;
+			$baseLength = $maxLength - mb_strlen($suffixStr);
+
+			// Truncate base value if needed to fit suffix
+			$truncatedBase = $baseLength < mb_strlen($name) ? mb_substr($name, 0, $baseLength) : $name;
+			$candidate = $truncatedBase . $suffixStr;
+
+			$exists = $userModel->find('count', ['conditions' => ['display_name' => $candidate]]);
+			if ($exists == 0)
+				return $candidate;
+
+			$suffix++;
+
+			// Safety limit to prevent infinite loop
+			if ($suffix > 1000)
+				throw new RuntimeException("Unable to generate unique display_name for: $name");
+		}
+	}
+
+	/**
+	 * Updates a user's display_name in the main database and syncs to phpBB forum.
+	 *
+	 * @param int $userId The user ID
+	 * @param string $newDisplayName The new display name to set
+	 * @return bool True on success
+	 */
+	public static function updateDisplayName(int $userId, string $newDisplayName): bool
+	{
+		$connection = Util::connection();
+		$connection->beginTransaction();
+		try
+		{
+			// 1. Update display_name in main app user table
+			Util::query(
+				"UPDATE user SET display_name = ? WHERE id = ?",
+				[$newDisplayName, $userId]
+			);
+
+			// 2. Update tsumego author strings for problems created by this user
+			Util::query(
+				"UPDATE tsumego SET author = ? WHERE author_user_id = ?",
+				[$newDisplayName, $userId]
+			);
+			$connection->commit();
+		}
+		catch (Throwable $exception)
+		{
+			$connection->rollBack();
+			throw $exception;
+		}
+
+		// 3. Sync to phpBB forum. The forum name is a copy of this one and the next
+		// forum sign in repairs it (jwtauth::sync_rename), so a forum that can not
+		// be written to right now must not fail the rename itself.
+		try
+		{
+			self::syncToForum($userId, $newDisplayName);
+		}
+		catch (Throwable $exception)
+		{
+			CakeLog::write('warning', 'Forum name not synced for user ' . $userId . ': ' . $exception->getMessage());
+		}
+
+		return true;
+	}
+
+	/**
+	 * Syncs a user's display name to the phpBB forum tables.
+	 *
+	 * The forum shares the application database and its single sign-on reads the user table
+	 * directly, so the phpbb_* rows are written through the default connection.
+	 *
+	 * @param int $userId The user ID (maps to external_id in phpBB)
+	 * @param string $displayName The display name to sync
+	 */
+	private static function syncToForum(int $userId, string $displayName): void
+	{
+		PhpbbNames::sync(Util::connection(), $userId, $displayName);
+	}
+
+	/**
+	 * Check if user is a Google user (has external_id).
+	 *
+	 * @param UserRow $user
+	 * @return bool True if user is a Google user
+	 */
+	public static function isGoogleUser(array $user): bool
+	{
+		return !empty($user['external_id']);
+	}
+
+	/**
+	 * Find a local (non-Google) user by email.
+	 * Local users have external_id = NULL and use password authentication.
+	 * Use this for password login and password reset to exclude Google users.
+	 *
+	 * The address is not unique in the database, so the order makes the result of
+	 * several matching accounts deterministic (the oldest account wins).
+	 *
+	 * @param string $email Email to search for
+	 * @return array|null User data or null if not found
+	 */
+	public function findLocalUserByEmail(string $email): ?array
+	{
+		return $this->find('first', [
+			'conditions' => [
+				'email' => $email,
+				'external_id IS NULL',
+			],
+			'order' => ['id ASC'],
+		]) ?: null;
+	}
+
+	/**
+	 * True when the account has a picture from Google to show.
+	 *
+	 * @param array<string, mixed> $user
+	 * @return bool
+	 */
+	public static function hasGooglePicture(array $user): bool
+	{
+		return !empty($user['external_id']) && !empty($user['picture']);
+	}
+
+	/**
+	 * The avatars a player can pick, as value => label. The Google picture is only
+	 * offered to an account that has one.
+	 *
+	 * @param array<string, mixed> $user
+	 * @return array<int, string>
+	 */
+	public static function avatarChoices(array $user): array
+	{
+		$choices = [
+			self::AVATAR_BOARD => 'Go board',
+			self::AVATAR_GRAVATAR => 'Gravatar',
+		];
+		if (self::hasGooglePicture($user))
+			$choices[self::AVATAR_GOOGLE] = 'Google picture';
+		return $choices;
+	}
+
+	/**
+	 * The avatar an account shows. Without a stored choice it is the board, and a
+	 * stored choice that is not on offer (the Google picture of an account that lost
+	 * it) falls back to the board too.
+	 *
+	 * @param array<string, mixed> $user
+	 * @return int
+	 */
+	public static function avatarChoice(array $user): int
+	{
+		$stored = (int) ($user['pref_avatar'] ?? self::AVATAR_BOARD);
+		return array_key_exists($stored, self::avatarChoices($user)) ? $stored : self::AVATAR_BOARD;
+	}
+
+	/**
+	 * The Gravatar identifier of an e-mail address: the sha256 of the trimmed lower
+	 * case address, which is what Gravatar documents. The older md5 is not used.
+	 *
+	 * @param string $email
+	 * @return string
+	 */
+	public static function gravatarHash(string $email): string
+	{
+		return hash('sha256', strtolower(trim($email)));
+	}
+
+	/**
+	 * Get the avatar URL for a user: the avatar the player picked, which is the
+	 * picture of a Google account, their Gravatar or the board the site draws.
+	 *
+	 * Only the avatar fields are needed, the callers pass either a full user row or
+	 * just these values.
+	 *
+	 * @param array{id?: int, pref_avatar?: int|null, external_id?: string|null, picture?: string|null, email?: string|null} $user
+	 * @param int $size Pixels to ask an avatar host for, the board ignores it
+	 * @return string Avatar URL
+	 */
+	public static function getAvatarUrl(array $user, int $size = self::AVATAR_PIXELS_INLINE): string
+	{
+		$choice = self::avatarChoice($user);
+
+		if ($choice === self::AVATAR_GOOGLE)
+		{
+			$picture = $user['picture'];
+			// The Google CDN answers with the size its url asks for, so the suffix the sign
+			// in stored ("=s96-c", "=w100-h100") is exchanged for the size the avatar is
+			// drawn in. A url that carries its own parameters is left alone.
+			if (str_contains($picture, 'googleusercontent.com') && !str_contains($picture, '?'))
+			{
+				$base = preg_replace('/=[a-z0-9\-]+$/', '', $picture);
+				return $base . '=s' . $size;
+			}
+			return $picture;
+		}
+
+		if ($choice === self::AVATAR_GRAVATAR)
+			return 'https://www.gravatar.com/avatar/' . self::gravatarHash((string) ($user['email'] ?? ''))
+				. '?s=' . $size . '&d=identicon';
+
+		// The board the site draws for this account. The drawing comes from the
+		// id, so no request leaves for an avatar host and one url serves every size.
+		assert(!empty($user['id']), 'A board avatar needs the id of the account');
+		return '/avatar/' . (int) $user['id'];
+	}
+
+	/**
+	 * The classes of the avatar element. A board keeps its corners, a picture of a
+	 * face is round, and the size of both lives in components.css.
+	 *
+	 * @param string|null $avatarUrl
+	 * @return string
+	 */
+	public static function avatarClass(?string $avatarUrl): string
+	{
+		return $avatarUrl !== null && str_starts_with($avatarUrl, '/avatar/')
+			? 'user-avatar user-avatar--board'
+			: 'user-avatar';
+	}
+
+	/**
+	 * The avatar element of a player, ready to be dropped next to a name or into the
+	 * profile header. Every place that shows an avatar goes through here, so the class,
+	 * the lazy loading and the referrer policy stay the same everywhere.
+	 *
+	 * @param string|null $avatarUrl Avatar from getAvatarUrl(), null for a deleted account
+	 * @param string $extraClass Additional class, e.g. the larger avatar of the profile
+	 * @param bool $lazy False for an avatar that is on screen right away (the profile header)
+	 * @param string|null $fallbackUrl Board of the account, shown when the picture is gone
+	 * @return string
+	 */
+	public static function avatarImage(?string $avatarUrl, string $extraClass = '', bool $lazy = true, ?string $fallbackUrl = null): string
+	{
+		if ($avatarUrl === null)
+			return '';
+		$class = self::avatarClass($avatarUrl) . ($extraClass === '' ? '' : ' ' . $extraClass);
+		$loading = $lazy ? ' loading="lazy"' : '';
+		// A picture of another host can stop working (a player who removes the photo of
+		// their Google account), which the browser draws as a broken image. The board of
+		// the account is always there, so it takes over, with the square corners the
+		// board class gives it.
+		$fallback = $fallbackUrl === null || str_starts_with($avatarUrl, '/avatar/')
+			? ''
+			: ' onerror="this.onerror=null;this.classList.add(\'user-avatar--board\');this.src=\'' . h($fallbackUrl) . '\'"';
+		return '<img src="' . h($avatarUrl) . '" alt="" class="' . $class . '"' . $loading . $fallback . ' decoding="async" referrerpolicy="no-referrer">';
 	}
 }

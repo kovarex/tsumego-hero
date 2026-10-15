@@ -13,7 +13,7 @@ use App\Utility\Util;
 
 	<div align="center">
 	<p class="profile-username">
-		<?php echo isset($viewedUser) ? htmlspecialchars($viewedUser['name']) : 'Achievements'; ?>
+		<?php echo isset($viewedUser) ? htmlspecialchars($viewedUser['display_name']) : 'Achievements'; ?>
 	</p>
 	<?php if (isset($viewedUser))
 		echo $this->element('user_subnav', ['userID' => $viewedUser['id'], 'activeTab' => 'achievements']);
@@ -83,8 +83,8 @@ use App\Utility\Util;
 			<br>
 			<br>
 			<?php if (isset($viewedUser)):
-				$name = $viewedUser['id'] != Auth::getUserID() ? htmlspecialchars($viewedUser['name']) : 'You';
-				echo $name . ' completed ' . ($unlockedCounter + $unlockedCounter2) . ' of ' . count($a) . ' achievements.';
+				$displayName = $viewedUser['id'] != Auth::getUserID() ? htmlspecialchars($viewedUser['display_name']) : 'You';
+				echo $displayName . ' completed ' . ($unlockedCounter + $unlockedCounter2) . ' of ' . count($a) . ' achievements.';
 			endif; ?>
 			<br>
 			<br>

@@ -68,18 +68,6 @@ class AppController extends Controller
 			throw new NotFoundException('User not found');
 	}
 
-	protected function checkPictureLarge(array $u): string
-	{
-		return self::checkPicture($u['User']);
-	}
-	/**
-	 * @param UserRow $user
-	 */
-	public static function checkPicture(array $user): string
-	{
-		return User::displayName($user['id'] ?? null, $user['name'], $user['external_id']);
-	}
-
 	public static function saveDanSolveCondition(string $solvedTsumegoRank, int $tId): void
 	{
 		if ($solvedTsumegoRank == '1d' || $solvedTsumegoRank == '2d' || $solvedTsumegoRank == '3d' || $solvedTsumegoRank == '4d' || $solvedTsumegoRank == '5d')
@@ -370,6 +358,11 @@ class AppController extends Controller
 	public function beforeFilter(): void
 	{
 		$this->enforceHttpMethodAttribute();
+
+		if (strtolower((string) ($this->request->params['controller'] ?? '')) === 'avatars'
+			&& strtolower((string) ($this->request->params['action'] ?? '')) === 'image')
+				return;
+
 		$this->loadModel('User');
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
@@ -394,6 +387,32 @@ class AppController extends Controller
 
 		if (Auth::isLoggedIn())
 		{
+			if (!empty(Auth::getUser()['needs_display_name_change']))
+			{
+				$controller = $this->request->params['controller'];
+				$action = $this->request->params['action'];
+				// The links that arrive by e-mail, the ways out of the account and the
+				// images the rename page itself shows stay reachable: asking for a
+				// password reset or for deletion must not require picking a name first,
+				// and a missing avatar is a broken page.
+				$allowedChangeActions = [
+					'users/changename',
+					'users/updatename',
+					'users/logout',
+					'users/login',
+					'users/newpassword',
+					'users/confirm_delete_account',
+					'users/delete_account',
+					'avatars/image',
+				];
+
+				if (!in_array(strtolower($controller . '/' . $action), $allowedChangeActions, true))
+				{
+					$this->redirect(['controller' => 'users', 'action' => 'changename']);
+					return;
+				}
+			}
+
 			if ($lastTimeModeCategoryID = Util::clearCookie('lastTimeModeCategoryID'))
 				Auth::saveUserField('last_time_mode_category_id', $lastTimeModeCategoryID);
 			if (Auth::getUser()['lastHighscore'] == Constants::$HIGHSCORE_LEVEL)
@@ -489,12 +508,7 @@ class AppController extends Controller
 
 		$nextDay = new DateTime('tomorrow');
 		if (Auth::isLoggedIn())
-		{
-			$user = Auth::getUser();
-			$displayUser = $user;
-			$displayUser['name'] = $this->checkPicture($user);
-			$this->set('user', $displayUser);
-		}
+			$this->set('user', Auth::getUser());
 		$this->set('nextDay', $nextDay->format('m/d/Y'));
 		$this->set('highscoreLink', $highscoreLink);
 		$this->set('lightDark', $lightDark);

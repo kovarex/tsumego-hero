@@ -233,6 +233,9 @@ class AdminStatsControllerTest extends ControllerTestCase
 				// Delete user
 				['type' => AdminActivityType::DELETE_USER, 'old_value' => 'banned_spammer'],
 
+				// Display name change
+				['type' => AdminActivityType::DISPLAY_NAME_CHANGE, 'old_value' => 'Old Name', 'new_value' => 'New Name'],
+
 				// SGF edit
 				['type' => AdminActivityType::SGF_EDIT, 'tsumego_id' => true, 'old_value' => 'old sgf', 'new_value' => 'new sgf'],
 
@@ -272,6 +275,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$this->assertTextContains('Set Pass Mode', $pageSource);
 		$this->assertTextContains('Merged tsumego ' . $context->tsumegos[0]['id'], $pageSource);
 		$this->assertTextContains('Deleted user banned_spammer', $pageSource);
+		$this->assertTextContains('Display Name Change: Old Name → New Name', $pageSource);
 
 		// Verify formatted messages with old/new values appear in HTML
 

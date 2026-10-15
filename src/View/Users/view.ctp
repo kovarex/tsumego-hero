@@ -30,27 +30,54 @@ use App\Utility\ValueGraphRenderer;
 
 <div>
 	<div class="profile-header">
-		<p class="profile-username"><?php echo h($user['User']['name']); ?> <?php User::renderPremium($user['User']); ?></p>
+		<p class="profile-username"><?php
+			$avatarUrl = User::getAvatarUrl($user['User'], User::AVATAR_PIXELS_PROFILE);
+			echo User::avatarImage($avatarUrl, 'user-avatar--lg', false, '/avatar/' . (int) $user['User']['id']);
+			echo h($user['User']['display_name']);
+			echo ' ';
+			User::renderPremium($user['User']);
+		?></p>
 		<?php echo $this->element('user_subnav', ['userID' => $user['User']['id'], 'activeTab' => 'profile']); ?>
 	</div>
 <?php if (Auth::getUserID() == $user['User']['id']): ?>
 <div class="cluster">
 	<div class="card card--green">
-		<div class="card__title">Email</div>
+		<div class="card__title">Account</div>
 		<table class="stat" id="name-and-email-table">
 			<tr>
-				<td><?php echo h($user['User']['email']); ?></td>
+				<td><strong>Email:</strong> <?php echo h($user['User']['email']); ?></td>
 				<td><a id="show" class="link">change</a></td>
 			</tr>
 			<tr>
 				<td colspan="2">
-					<div id="msg2">
+					<div id="msg2" style="display:none;margin-top:3px;">
 						<?php
 						echo $this->Form->create('User');
-						echo $this->Form->input('email', array('label' => '', 'type' => 'text', 'placeholder' => 'E-Mail'));
+						echo $this->Form->input('email', array('label' => '', 'type' => 'text', 'placeholder' => 'E-Mail', 'style' => 'width:150px;'));
 						echo '<div class="submit"><input class="btn" value="Submit" type="submit"></div>';
 						?>
 					</div>
+				</td>
+			</tr>
+			<?php if (!User::isGoogleUser($user['User'])): ?>
+			<tr>
+				<td><strong>Username:</strong> <?php echo h($user['User']['name'] ?? ''); ?></td>
+				<td></td>
+			</tr>
+			<?php endif; ?>
+			<tr>
+				<td><strong>Avatar:</strong></td>
+				<td>
+					<?php
+					$chosenAvatar = User::avatarChoice($user['User']);
+					foreach (User::avatarChoices($user['User']) as $avatarValue => $avatarLabel)
+					{
+						$avatarChecked = $chosenAvatar === $avatarValue ? 'checked="checked"' : '';
+						echo '<label class="field__option"><input type="radio" name="avatar" value="' . $avatarValue . '" onclick="avatarPreference(this.value);" ' . $avatarChecked . '> ' . h($avatarLabel) . '</label>';
+					}
+					if ($chosenAvatar === User::AVATAR_GRAVATAR)
+						echo '<div class="hint">Change it at <a href="https://gravatar.com" target="_blank" rel="noopener">gravatar.com</a></div>';
+					?>
 				</td>
 			</tr>
 		</table>
@@ -455,6 +482,17 @@ function boardOrientationPreference(orientation) {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
 		body: 'orientation=' + encodeURIComponent(orientation)
+	});
+}
+function avatarPreference(avatar) {
+	fetch('/users/avatarPreference', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+		body: 'avatar=' + encodeURIComponent(avatar)
+	}).then(function(response) {
+		// The profile header draws the avatar on the server, so reload it to show the new one
+		if (response.ok)
+			location.reload();
 	});
 }
 </script>

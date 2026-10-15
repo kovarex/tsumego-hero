@@ -222,6 +222,12 @@
 		--radius-md: 8px;
 		--radius-full: 999px;
 
+		/* Avatar sizes: the default in lists, the score tables and a profile. */
+		--avatar-size: 24px;
+		--avatar-size-table: 28px;
+		--avatar-size-lg: 64px;
+		--avatar-board-edge: rgba(0, 0, 0, 0.15);
+
 		/* ── Typography ── */
 		/* Fluid type scale: the viewport-relative term grows the size on wide
 		   screens; the clamp() caps keep the minimum (mobile) size readable
