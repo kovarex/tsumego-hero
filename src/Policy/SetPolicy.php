@@ -21,6 +21,16 @@ class SetPolicy extends BasePolicy
 	}
 
 	/**
+	 * Creating a sandbox set: admin only.
+	 *
+	 * @param UserRow|null $user
+	 */
+	public static function canCreateSandbox(?array $user): bool
+	{
+		return static::isAdmin($user);
+	}
+
+	/**
 	 * Viewing a set: private sets require login (sandbox is an admin/premium
 	 * workspace; user-owned private sets are also login-only for now).
 	 *
@@ -91,16 +101,6 @@ class SetPolicy extends BasePolicy
 	public static function canCreate(?array $user): bool
 	{
 		return $user !== null;
-	}
-
-	/**
-	 * Creating a sandbox set: admin only.
-	 *
-	 * @param UserRow|null $user
-	 */
-	public static function canCreateSandbox(?array $user): bool
-	{
-		return static::isAdmin($user);
 	}
 
 	/**

@@ -248,6 +248,36 @@ class Browser
 		$this->assertNoErrors();
 	}
 
+	/**
+	 * Posts to a URL from the page the browser is on, the way a form on it does.
+	 *
+	 * @param array<string, string|int> $postData Fields to submit; empty for a form without fields
+	 */
+	public function post(string $url, array $postData = []): void
+	{
+		$this->captureJsCoverage();
+
+		$this->driver->executeScript(
+			'window.__postPending = true;'
+			. 'var form = document.createElement("form");'
+			. 'form.method = "post";'
+			. 'form.action = ' . json_encode('/' . ltrim($url, '/')) . ';'
+			. 'var data = ' . json_encode($postData) . ';'
+			. 'for (var key in data) {'
+			. 'var input = document.createElement("input");'
+			. 'input.type = "hidden";'
+			. 'input.name = key;'
+			. 'input.value = data[key];'
+			. 'form.appendChild(input);'
+			. '}'
+			. 'document.body.appendChild(form);'
+			. 'form.submit();'
+		);
+		// The response can land on the same URL, so wait for the document to be
+		// replaced instead of for the address to change.
+		$this->waitUntilJs('window.__postPending === undefined && document.readyState === "complete"');
+	}
+
 	public function clickId($id)
 	{
 		$this->findById($id)->click();
@@ -693,44 +723,6 @@ class Browser
 			throw new Exception("Unexpected board coords count: " . count($clickableRects));
 		$clickableRects[1 + $boardSize * ($x - 1) + ($y - 1)]->click();
 		$this->assertNoErrors();
-	}
-
-	public function getWithPostData($url, $postData, int $timeout = 10)
-	{
-		$markerId = 'selenium-navigation-marker-' . uniqid();
-		$this->driver->executeScript("
-			var marker = document.createElement('div');
-			marker.id = '" . $markerId . "';
-			marker.style.display = 'none';
-			document.body.appendChild(marker);
-		");
-
-		$this->driver->executeScript("
-			var form = document.createElement('form');
-			form.method = 'POST';
-			form.action = '" . $url . "';
-
-			var data = " . json_encode($postData) . ";
-			for (var key in data)
-			{
-				var input = document.createElement('input');
-				input.type = 'hidden';
-				input.name = key;
-				input.value = data[key];
-				form.appendChild(input);
-			}
-			document.body.appendChild(form);
-			form.submit();");
-
-		$this->waitAndDumpOnTimeout(function () use ($markerId) {
-			$markerExists = $this->driver->executeScript(
-				"return document.getElementById('" . $markerId . "') !== null;"
-			);
-			if ($markerExists)
-				return false;
-			$readyState = $this->driver->executeScript('return document.readyState');
-			return $readyState === 'complete';
-		}, $timeout, 100, 'post navigation finished');
 	}
 
 	public function logoff()

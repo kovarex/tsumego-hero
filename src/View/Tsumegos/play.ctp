@@ -1229,7 +1229,7 @@ use App\Utility\ViteManifest;
 		<?php } ?>
 		if(authorProblem)
 			displaySettings();
-		<?php if (Auth::isAdmin()) {
+		<?php if (\App\Policy\AdminPolicy::canRequestSolution(Auth::getIdentity())) {
 			if (!$requestSolution) { ?>
 			if(solutionRequest)
 				displaySolutionRequest();

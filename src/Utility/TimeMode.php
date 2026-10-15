@@ -4,7 +4,6 @@ namespace App\Utility;
 
 use ClassRegistry;
 use DateTime;
-use ForbiddenException;
 use InternalErrorException;
 use NotFoundException;
 
@@ -56,9 +55,6 @@ class TimeMode
 
 	public function startTimeMode(int $categoryID, int $rankID): void
 	{
-		if (!Auth::isLoggedIn())
-			throw new ForbiddenException('Not logged in.');
-
 		ClassRegistry::init('TimeModeSession')->deleteAll(['user_id' => Auth::getUserID(), 'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]);
 
 		$relevantTsumegos = $this->getRelevantTsumegos($rankID);

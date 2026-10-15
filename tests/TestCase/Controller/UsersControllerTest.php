@@ -521,6 +521,24 @@ class UsersControllerTest extends ControllerTestCase
 		}
 	}
 
+	public function testColorPreferenceSavesTheChoice()
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'prefs']]);
+
+		$this->testAction('/users/playerColorPreference', ['method' => 'post', 'data' => ['color' => 1]]);
+
+		$this->assertSame(1, (int) $context->reloadUser()['pref_player_color']);
+	}
+
+	public function testBoardOrientationPreferenceSavesTheChoice()
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'prefs']]);
+
+		$this->testAction('/users/boardOrientationPreference', ['method' => 'post', 'data' => ['orientation' => 1]]);
+
+		$this->assertSame(1, (int) $context->reloadUser()['pref_board_orientation']);
+	}
+
 	public function testDemoteAdminRedirectsAnonymousToLogin()
 	{
 		new ContextPreparator(['user' => null]);

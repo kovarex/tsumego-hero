@@ -1,5 +1,6 @@
 <?php
 
+use App\Policy\AdminPolicy;
 use App\Policy\BasePolicy;
 use App\Policy\SetPolicy;
 use App\Policy\TsumegoPolicy;
@@ -155,11 +156,7 @@ class Play
 
 		$isSandbox = ($set['Set']['public'] == 0 && $set['Set']['user_id'] === null);
 
-		// TODO: Direct policy call because Play is a component, not a controller —
-		// can't use AuthorizationComponent here. Revisit with CakePHP 5 where
-		// authorization middleware can handle this at the controller level.
-		if (!SetPolicy::canPlay(Auth::getIdentity(), $set['Set']))
-			throw new ForbiddenException();
+		AuthorizationComponent::require(SetPolicy::canPlay(Auth::getIdentity(), $set['Set']));
 
 		$tsumegoStatus = Play::getTsumegoStatus($t);
 
@@ -434,7 +431,11 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		($this->setFunction)('passEnabled', $t['Tsumego']['pass']);
 		($this->setFunction)('setConnection', $currentSetConnection);
 		($this->setFunction)('setConnections', $setConnections);
-		if (isset($params['url']['requestSolution']))($this->setFunction)('requestSolution', AdminActivityLogger::log(AdminActivityType::SOLUTION_REQUEST, $id));
+		if (isset($params['url']['requestSolution']))
+		{
+			AuthorizationComponent::require(AdminPolicy::canRequestSolution(Auth::getIdentity()));
+			($this->setFunction)('requestSolution', AdminActivityLogger::log(AdminActivityType::SOLUTION_REQUEST, $id));
+		}
 		($this->setFunction)('tv', $tsumegoVariant);
 		($this->setFunction)('tsumegoFilters', $tsumegoFilters);
 		($this->setFunction)('queryTitle', $queryTitle);

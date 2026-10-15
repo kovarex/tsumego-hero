@@ -45,6 +45,20 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		}
 	}
 
+	/**
+	 * The "ask the author for a solution" button is offered to the admins the policy allows
+	 */
+	public function testTheSolutionRequestButtonIsOfferedToAdminsOnly()
+	{
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 666]]);
+		$url = '/' . $context->tsumegos[0]['set-connections'][0]['id'];
+		$this->assertStringNotContainsString('?requestSolution=', (string) $this->testAction($url, ['method' => 'get', 'return' => 'contents']));
+
+		$adminContext = new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true], 'tsumego' => ['set_order' => 666]]);
+		$adminUrl = '/' . $adminContext->tsumegos[0]['set-connections'][0]['id'];
+		$this->assertStringContainsString('?requestSolution=', (string) $this->testAction($adminUrl, ['method' => 'get', 'return' => 'contents']));
+	}
+
 	public function testPageTitleShowsRealSetCount()
 	{
 		$context = new ContextPreparator([

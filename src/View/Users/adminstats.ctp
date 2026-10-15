@@ -9,12 +9,9 @@ use App\Utility\Util;
 /**
  * @var View $this
  * @var AdminActivityRenderer $adminActivityRenderer
- * @var bool $refreshView
  * @var array $deletedUsers
- * @var array $set
  * @var SGFProposalsRenderer $sgfProposalsRenderer
  * @var TagConnectionProposalsRenderer $tagConnectionProposalsRenderer
- * @var array $tagNames
  * @var TagProposalsRenderer $tagProposalsRenderer
  */
 
@@ -51,28 +48,4 @@ use App\Utility\Util;
 
 <script>
 	var tooltipSgfs = window.tooltipSgfs || [];
-	let tagList = "null";
-	let proposalList = "null";
-	let submitCount = 0;
-
-	<?php if($refreshView) echo 'window.location.href = "/sets/view/'.$set['Set']['id'].'";'; ?>
-
-	<?php
-		for($h=0; $h<count($tagNames); $h++){
-			echo '$("#tagname-accept'.$h.'").click(function() {
-				$("#tagname-submit'.$h.'").show();
-				$("#tagname-accept'.$h.'").hide();
-				$("#tagname-reject'.$h.'").hide();
-				submitCount++;
-				$(".tag-submit-button").html("Submit ("+submitCount+")");
-			});';
-			echo '$("#tagname-reject'.$h.'").click(function() {
-				$("#tagname-submit'.$h.'").show();
-				$("#tagname-accept'.$h.'").hide();
-				$("#tagname-reject'.$h.'").hide();
-				submitCount++;
-				$(".tag-submit-button").html("Submit ("+submitCount+")");
-			});';
-		}
-	?>
 </script>

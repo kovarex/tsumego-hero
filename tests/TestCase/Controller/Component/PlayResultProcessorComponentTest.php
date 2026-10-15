@@ -38,6 +38,22 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		]);
 	}
 
+	public function testAGuestCannotReportAResult(): void
+	{
+		$context = new ContextPreparator(['user' => null, 'tsumego' => 1]);
+
+		$this->expectException(UnauthorizedException::class);
+
+		$this->testAction('/tsumegos/result', [
+			'method' => 'POST',
+			'data' => [
+				'tsumego_id' => $context->tsumegos[0]['id'],
+				'seconds' => 0,
+				'outcome' => 'solved',
+			],
+		]);
+	}
+
 	private function solve(ContextPreparator &$context): array
 	{
 		return $this->postOutcome($context, PlayOutcome::SolvedClean);

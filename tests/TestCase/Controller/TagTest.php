@@ -743,11 +743,12 @@ class TagTest extends ControllerTestCase
 		$this->assertSame(0, ClassRegistry::init('Tag')->findById($tagId)['Tag']['approved']);
 
 		$browser = Browser::instance();
-		$browser->get('/tags/acceptTagProposal/' . $tagId);
+		$browser->get('/users/adminstats');
+		$browser->clickId('tag-accept-' . $tagId);
+		$browser->waitUntilJs('document.documentElement.outerHTML.includes("was approved")');
 
 		$this->assertStringEndsWith('/users/adminstats', $browser->driver->getCurrentURL());
 		$this->assertSame(1, ClassRegistry::init('Tag')->findById($tagId)['Tag']['approved']);
-		$this->assertStringContainsString('was approved', $browser->driver->getPageSource());
 
 		$contrib = ClassRegistry::init('UserContribution')->find('first', [
 			'conditions' => ['user_id' => $context->otherUsers[0]['id']]]);
@@ -773,7 +774,8 @@ class TagTest extends ControllerTestCase
 		$tagId = $tag->id;
 
 		$browser = Browser::instance();
-		$browser->get('/tags/acceptTagProposal/' . $tagId);
+		$browser->get('/users/adminstats');
+		$browser->post('/tags/acceptTagProposal/' . $tagId);
 
 		$this->assertStringEndsWith('/users/adminstats', $browser->driver->getCurrentURL());
 		$this->assertStringContainsString('already approved', $browser->driver->getPageSource());
@@ -798,7 +800,8 @@ class TagTest extends ControllerTestCase
 		$tagId = $tag->id;
 
 		$browser = Browser::instance();
-		$browser->get('/tags/acceptTagProposal/' . $tagId);
+		$browser->get('/users/view/' . $context->user['id']);
+		$browser->post('/tags/acceptTagProposal/' . $tagId);
 
 		$this->assertStringNotContainsString('adminstats', $browser->driver->getCurrentURL());
 		$this->assertSame(0, ClassRegistry::init('Tag')->findById($tagId)['Tag']['approved']);
@@ -818,7 +821,8 @@ class TagTest extends ControllerTestCase
 		$browser->get('/users/added_tags');
 		$this->assertStringNotContainsString('proposer', $browser->driver->getPageSource());
 
-		$browser->get('/users/acceptTagConnectionProposal/' . $tagConnectionId);
+		$browser->get('/users/adminstats');
+		$browser->post('/users/acceptTagConnectionProposal/' . $tagConnectionId);
 
 		$browser->get('/users/added_tags');
 		$this->assertStringContainsString('proposer', $browser->driver->getPageSource());

@@ -82,9 +82,21 @@ class AdminPolicy extends BasePolicy
 	}
 
 	/**
+	 * Asking the author of a set for a solution to one of its problems
+	 *
 	 * @param UserRow|null $user
 	 */
-	public static function canData(?array $user): bool
+	public static function canRequestSolution(?array $user): bool
+	{
+		return static::isAdmin($user);
+	}
+
+	/**
+	 * Restoring a deleted account
+	 *
+	 * @param UserRow|null $user
+	 */
+	public static function canRestoreAccount(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
