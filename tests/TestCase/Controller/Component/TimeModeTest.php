@@ -7,7 +7,6 @@ use App\Utility\TimeMode;
 use App\Utility\TimeModeUtil;
 use App\Utility\Util;
 use Facebook\WebDriver\WebDriverBy;
-use Facebook\WebDriver\WebDriverExpectedCondition;
 
 class TimeModeTest extends TestCaseWithAuth
 {
@@ -182,7 +181,7 @@ class TimeModeTest extends TestCaseWithAuth
 			$this->assertSame($nextButton->getTagName(), "input");
 			$this->assertSame($nextButton->getAttribute('value'), 'Next');
 			$nextButton->click();
-			$browser->driver->wait(10)->until(WebDriverExpectedCondition::stalenessOf($nextButton));
+			$browser->waitUntilStale($nextButton);
 		}
 
 		$this->assertEmpty(ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => [
@@ -241,10 +240,8 @@ class TimeModeTest extends TestCaseWithAuth
 		// just solved.
 		$nextButton = $browser->find('#besogo-next-button');
 		$nextButton->click();
-		$browser->driver->wait(10)->until(WebDriverExpectedCondition::stalenessOf($nextButton));
-		$browser->driver->wait(10)->until(function ($driver) {
-			return is_numeric($driver->executeScript('return window.tsumegoID;'));
-		});
+		$browser->waitUntilStale($nextButton);
+		$browser->waitUntilJs('window.tsumegoID != null && !isNaN(window.tsumegoID)');
 		$this->assertNotSame(
 			(int) $browser->driver->executeScript('return window.tsumegoID;'),
 			(int) $tsumegoID,
@@ -299,11 +296,7 @@ class TimeModeTest extends TestCaseWithAuth
 		$this->assertTrue(Auth::isInTimeMode());
 
 		// Wait for countdown JS to initialize
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			$text = $driver->findElement(WebDriverBy::cssSelector('#time-mode-countdown'))->getText();
-			return preg_match('/\d+:[0-5]\d\.\d/', $text) === 1;
-		});
+		$browser->waitUntilJs('/\d+:[0-5]\d\.\d/.test(document.querySelector("#time-mode-countdown").textContent)');
 		$result = $this->getTimeModeReportedTime($browser);
 		$resultTotal = $result['minutes'] * 60 + $result['seconds'] + $result['decimals'] * 0.1;
 		$this->assertTrue($resultTotal > 200 && $resultTotal <= TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS,
@@ -311,10 +304,7 @@ class TimeModeTest extends TestCaseWithAuth
 
 		// refresh
 		$browser->get('timeMode/play');
-		$wait->until(function ($driver) {
-			$text = $driver->findElement(WebDriverBy::cssSelector('#time-mode-countdown'))->getText();
-			return preg_match('/\d+:[0-5]\d\.\d/', $text) === 1;
-		});
+		$browser->waitUntilJs('/\d+:[0-5]\d\.\d/.test(document.querySelector("#time-mode-countdown").textContent)');
 		$timeModeSessionID = ClassRegistry::init('TimeModeSession')->find('first')['TimeModeSession']['id'];
 		$queuedAttempts = ClassRegistry::init('TimeModeAttempt')->find('all', ['conditions' => [
 			'time_mode_session_id' => $timeModeSessionID,
@@ -356,18 +346,11 @@ class TimeModeTest extends TestCaseWithAuth
 		$this->assertTrue(Auth::isInTimeMode());
 
 		// Wait for countdown JS to be ready
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			$text = $driver->findElement(WebDriverBy::cssSelector('#time-mode-countdown'))->getText();
-			return preg_match('/\d+:[0-5]\d\.\d/', $text) === 1;
-		});
+		$browser->waitUntilJs('/\d+:[0-5]\d\.\d/.test(document.querySelector("#time-mode-countdown").textContent)');
 		$openForTooLong = (TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS + 1) * 1000;
 		$browser->driver->executeScript("window.clockStart -= {$openForTooLong};");
 		// Wait for countdown to show 0:00.0
-		$wait->until(function ($driver) {
-			$text = $driver->findElement(WebDriverBy::cssSelector('#time-mode-countdown'))->getText();
-			return preg_match('/0:00\.0/', $text) === 1;
-		});
+		$browser->waitUntilJs('document.querySelector("#time-mode-countdown").textContent.includes("0:00.0")');
 		$browser->assertNoJsErrors();
 		$newResult = $this->getTimeModeReportedTime($browser);
 		$this->assertSame($newResult['minutes'], 0);
@@ -647,15 +630,15 @@ class TimeModeTest extends TestCaseWithAuth
 
 		// hovering shows hovered image
 		$browser->hover($div5k);
-		$browser->driver->wait(10, 50)->until(function () use ($imgs5k) {
+		$browser->waitUntil(function () use ($imgs5k) {
 			return $imgs5k[0]->getAttribute('src') == "/img/rankButton5khover.png";
-		});
+		}, 10, 'rank button 5k to show its hovered image');
 
 		// hovering something else shows unhovered image
 		$browser->hover($div1d);
-		$browser->driver->wait(10, 50)->until(function () use ($imgs5k) {
+		$browser->waitUntil(function () use ($imgs5k) {
 			return $imgs5k[0]->getAttribute('src') == "/img/rankButton5k.png";
-		});
+		}, 10, 'rank button 5k to stop showing its hovered image');
 
 		// locked rank shows inactive image
 		$this->assertSame(count($links1d), 0);
@@ -753,11 +736,7 @@ class TimeModeTest extends TestCaseWithAuth
 		$this->assertTrue(Auth::isInTimeMode());
 
 		// Wait for countdown JS to initialize
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			$text = $driver->findElement(WebDriverBy::cssSelector('#time-mode-countdown'))->getText();
-			return preg_match('/\d+:[0-5]\d\.\d/', $text) === 1;
-		});
+		$browser->waitUntilJs('/\d+:[0-5]\d\.\d/.test(document.querySelector("#time-mode-countdown").textContent)');
 		$browser->assertNoJsErrors();
 		$beforePlayResult = $this->getTimeModeReportedTime($browser);
 		$beforePlayResultSeconds = $beforePlayResult['seconds'] + $beforePlayResult['minutes'] * 60;

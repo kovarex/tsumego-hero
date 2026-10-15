@@ -5,7 +5,6 @@ use App\Utility\Rating;
 use App\Utility\TsumegoFilters;
 use App\Utility\Util;
 use Facebook\WebDriver\WebDriverBy;
-use Facebook\WebDriver\WebDriverWait;
 use Facebook\WebDriver\WebDriverKeys;
 
 class SetsControllerTest extends TestCaseWithAuth
@@ -1244,10 +1243,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get("sets");
 
-		$wait = new WebDriverWait($browser->driver, 10, 500); // (driver, timeout, polling interval)
-		$wait->until(function () use ($browser) {
-			return $browser->getElements('.progress__label')[4]->getText() == '100%';
-		});
+		$browser->waitUntilJs('document.querySelectorAll(".progress__label")[4]?.textContent.trim() === "100%"');
 
 		$collectionTopDivs = $browser->getElements('.set-card__top');
 		$this->assertCount(5, $collectionTopDivs);
@@ -1277,10 +1273,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		new ContextPreparator($contextParams);
 		$browser->get("sets");
 
-		$wait = new WebDriverWait($browser->driver, 10, 50); // (driver, timeout, polling interval)
-		$wait->until(function () use ($browser) {
-			return $browser->getElements('.progress__label')[0]->getText() == '33%';
-		});
+		$browser->waitUntilJs('document.querySelectorAll(".progress__label")[0]?.textContent.trim() === "33%"');
 
 		$collectionTopDivs = $browser->getElements('.set-card__top');
 		$this->assertCount(2, $collectionTopDivs);
@@ -1312,10 +1305,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get("sets");
 
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 500); // (driver, timeout, polling interval)
-		$wait->until(function () use ($browser) {
-			return $browser->getElements('.progress__label')[4]->getText() == '100%';
-		});
+		$browser->waitUntilJs('document.querySelectorAll(".progress__label")[4]?.textContent.trim() === "100%"');
 
 		$collectionTopDivs = $browser->getElements('.set-card__top');
 		$this->assertCount(5, $collectionTopDivs);
@@ -1349,10 +1339,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get("sets");
 
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 500); // (driver, timeout, polling interval)
-		$wait->until(function () use ($browser) {
-			return $browser->getElements('.progress__label')[4]->getText() == '100%';
-		});
+		$browser->waitUntilJs('document.querySelectorAll(".progress__label")[4]?.textContent.trim() === "100%"');
 
 		$collectionTopDivs = $browser->getElements('.set-card__top');
 		$this->assertCount(5, $collectionTopDivs);
@@ -1416,10 +1403,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$browser->clickCssSelect('#TsumegoViewForm input[type="submit"]');
 
 		// Wait for the page to reload with the new problem
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function () use ($browser) {
-			return count($browser->getElements('.problem-nav__number')) == 2;
-		});
+		$browser->waitUntilJs('document.querySelectorAll(".problem-nav__number").length === 2');
 
 		$problemButtons = $browser->getElements('.problem-nav__number');
 		$this->assertCount(2, $problemButtons);
@@ -1542,11 +1526,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$accuracyTab = $browser->findBy(WebDriverBy::xpath("//a[contains(text(), 'Accuracy')]"));
 		$accuracyTab->click();
 		// Wait for accuracy buttons to be visible
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			$buttons = $driver->findElements(WebDriverBy::cssSelector('.problem-nav__ratio'));
-			return count($buttons) > 0 && $buttons[0]->isDisplayed();
-		});
+		$browser->waitUntilCssSelectorDisplayed('.problem-nav__ratio');
 
 		// Check accuracy buttons are visible
 		$accuracyButtons = $browser->getElements('.problem-nav__ratio');
@@ -1593,11 +1573,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$accuracyTab = $browser->findBy(WebDriverBy::xpath("//a[contains(text(), 'Accuracy')]"));
 		$accuracyTab->click();
 		// Wait for accuracy buttons to be visible
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			$buttons = $driver->findElements(WebDriverBy::cssSelector('.problem-nav__ratio'));
-			return count($buttons) > 0 && $buttons[0]->isDisplayed();
-		});
+		$browser->waitUntilCssSelectorDisplayed('.problem-nav__ratio');
 
 		$accuracyButtons = $browser->getElements('.problem-nav__ratio');
 		$this->assertSame('2/5', trim($accuracyButtons[0]->getText()), 'Two solved attempts (3 + 2 misplays) should show 2/5');
@@ -1637,11 +1613,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		// Switch to Time tab
 		$browser->findById('timeButton')->click();
 		// Wait for time buttons to be visible
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			$buttons = $driver->findElements(WebDriverBy::cssSelector('.problem-nav__time'));
-			return count($buttons) > 0 && $buttons[0]->isDisplayed();
-		});
+		$browser->waitUntilCssSelectorDisplayed('.problem-nav__time');
 
 		// Check time buttons are visible
 		$timeButtons = $browser->getElements('.problem-nav__time');

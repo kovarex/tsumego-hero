@@ -67,10 +67,7 @@ class LevelAchievementTest extends AchievementTestCase
 		Auth::saveUserField('rating', Rating::getRankMiddleRatingFromReadableRank('1d'));
 
 		$browser->clickId('sprint');
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 5, 100);
-		$wait->until(function () use ($browser) {
-			return $browser->driver->executeScript('return window.xpStatus.isSprintActive();');
-		});
+		$browser->waitUntilJs('window.xpStatus.isSprintActive()', 5);
 
 		// 1d achievement wasn't unlocked by the ajax event
 		$this->assertAchievementNotUnlocked(Achievement::RATING_1_DAN);

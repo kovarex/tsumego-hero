@@ -2,7 +2,6 @@
 
 use App\Utility\Rating;
 use App\Utility\TimeModeUtil;
-use Facebook\WebDriver\WebDriverBy;
 use PHPUnitRetry\RetryTrait;
 
 /**
@@ -32,8 +31,7 @@ class UsersControllerTest extends ControllerTestCase
 		// Click login link from the page (this sets proper referer and stores in session)
 		$browser->findById('signInMenu')->click();
 		// Wait for login form to appear
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(\Facebook\WebDriver\WebDriverExpectedCondition::presenceOfElementLocated(WebDriverBy::id('UserName')));
+		$browser->findById('UserName');
 
 		// Fill in login form
 		$browser->findById('UserName')->sendKeys('testuser');
@@ -41,9 +39,7 @@ class UsersControllerTest extends ControllerTestCase
 		$browser->find('input[type="submit"]')->click();
 
 		// Should be redirected back to highscore page
-		$wait->until(function ($driver) {
-			return str_contains($driver->getCurrentURL(), 'highscore');
-		});
+		$browser->waitUntilJs('location.href.includes("highscore")');
 		$currentUrl = $browser->driver->getCurrentURL();
 		$this->assertStringContainsString('highscore', $currentUrl, "Expected to redirect back to highscore page, but was at: $currentUrl");
 	}
@@ -402,8 +398,7 @@ class UsersControllerTest extends ControllerTestCase
 		$browser->driver->executeScript("window.confirm = function() { return true; }");
 		$browser->findById('reset-statuses-button')->click();
 
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(fn($d) => str_contains($d->getPageSource(), 'Deleted progress on 1 problems'));
+		$browser->waitUntilJs('document.documentElement.outerHTML.includes("Deleted progress on 1 problems")');
 
 		$remaining = ClassRegistry::init('TsumegoStatus')->find('count', [
 			'conditions' => ['user_id' => $context->user['id']],
@@ -434,8 +429,7 @@ class UsersControllerTest extends ControllerTestCase
 		$browser->driver->executeScript("window.confirm = function() { return true; }");
 		$browser->findById('reset-statuses-button')->click();
 
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(fn($d) => str_contains($d->getPageSource(), 'Deleted progress on 1 problems'));
+		$browser->waitUntilJs('document.documentElement.outerHTML.includes("Deleted progress on 1 problems")');
 
 		$aliceRemaining = ClassRegistry::init('TsumegoStatus')->find('count', [
 			'conditions' => ['user_id' => $context->user['id']],
@@ -562,8 +556,7 @@ class UsersControllerTest extends ControllerTestCase
 		$browser->findById('UserDemote')->sendKeys('test');
 		$browser->find('input[type="submit"]')->click();
 
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(fn($d) => str_contains($d->getCurrentURL(), '/users/view/' . $context->user['id']));
+		$browser->waitUntilJs('location.href.includes("/users/view/' . $context->user['id'] . '")');
 
 		$user = ClassRegistry::init('User')->findById($context->user['id']);
 		$this->assertSame(0, (int) $user['User']['isAdmin']);

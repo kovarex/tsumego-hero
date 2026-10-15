@@ -442,6 +442,24 @@ class Browser
 	}
 
 	/**
+	 * Wait until the selector matches nothing that is displayed. Covers both ways an
+	 * element can stop being visible: it was hidden, or it was removed. Use
+	 * waitUntilCssSelectorDoesntExist() when the page must really drop it from the DOM.
+	 */
+	public function waitUntilCssSelectorNotDisplayed(string $selector, int $timeout = 10): void
+	{
+		$this->waitAndDumpOnTimeout(
+			function () use ($selector) {
+				$elements = $this->driver->findElements(WebDriverBy::cssSelector($selector));
+				return count($elements) == 0 || !$elements[0]->isDisplayed();
+			},
+			$timeout,
+			500,
+			'css selector not displayed: ' . $selector
+		);
+	}
+
+	/**
 	 * Wait until ANY of the given selectors exist (OR logic).
 	 * Useful for waiting for React components that can render either content or empty state.
 	 *
@@ -483,6 +501,48 @@ class Browser
 			200,
 			'js: ' . $expression
 		);
+	}
+
+	/**
+	 * Start recording outgoing requests (fetch and XMLHttpRequest) on the current page.
+	 * Call it right before the action and assert with requestsTo(); anything recorded
+	 * earlier is dropped, so the recording covers exactly the action under test.
+	 *
+	 * The recorder is installed into the page, so it has to be called after the page
+	 * loaded, and a navigation clears it.
+	 */
+	public function startRecordingRequests(): void
+	{
+		$this->driver->executeScript(<<<'JS'
+			window.__testRequests = [];
+			if (!window.__testRequestsInstalled) {
+				window.__testRequestsInstalled = true;
+				window.__testRecordRequest = function (url) { window.__testRequests.push(String(url)); };
+				var xhrOpen = XMLHttpRequest.prototype.open;
+				XMLHttpRequest.prototype.open = function (method, url) {
+					window.__testRecordRequest(url);
+					return xhrOpen.apply(this, arguments);
+				};
+				var originalFetch = window.fetch;
+				window.fetch = function (input, init) {
+					window.__testRecordRequest(typeof input === 'string' ? input : input.url);
+					return originalFetch.apply(window, arguments);
+				};
+			}
+			JS);
+	}
+
+	/**
+	 * The recorded request URLs containing the given fragment, in the order they were sent.
+	 * An empty result means the action sent nothing to that endpoint.
+	 */
+	public function requestsTo(string $fragment): array
+	{
+		$requests = $this->driver->executeScript('return window.__testRequests || [];');
+
+		return array_values(array_filter($requests, function ($url) use ($fragment) {
+			return str_contains($url, $fragment);
+		}));
 	}
 
 	private static function recover(): void
@@ -666,12 +726,15 @@ class Browser
 	}
 
 	/**
-	 * Wait until a condition is met or timeout
+	 * Wait until a condition on the PHP side becomes true, e.g. a row that only the
+	 * server round trip creates. For conditions about the page use the DOM and JS
+	 * helpers instead. Dumps the page when it gives up, like every other wait.
+	 *
 	 * @param callable $condition Function that returns truthy value when condition met
 	 * @param int $timeout Maximum wait time in seconds
-	 * @return mixed The result of the condition function
+	 * @param string $context Human readable description, shown in the timeout dump
 	 */
-	private function waitUntil(callable $condition, int $timeout = 10, string $context = 'condition')
+	public function waitUntil(callable $condition, int $timeout = 10, string $context = 'condition')
 	{
 		return $this->waitAndDumpOnTimeout(function ($driver) use ($condition) {
 			try
@@ -684,6 +747,29 @@ class Browser
 				return null;
 			}
 		}, $timeout, 500, $context);
+	}
+
+	/**
+	 * Wait until an element reference goes stale, i.e. the page replaced or removed it.
+	 * That is how a test knows a click navigated or a script re-rendered the element.
+	 */
+	public function waitUntilStale($element, int $timeout = 10): void
+	{
+		$this->waitUntil(function () use ($element) {
+			try
+			{
+				$element->isDisplayed();
+				return false;
+			}
+			catch (\Facebook\WebDriver\Exception\StaleElementReferenceException $e)
+			{
+				return true;
+			}
+			catch (\Facebook\WebDriver\Exception\NoSuchElementException $e)
+			{
+				return true;
+			}
+		}, $timeout, 'element went stale');
 	}
 
 	/**

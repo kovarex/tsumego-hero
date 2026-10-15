@@ -26,10 +26,7 @@ class UploadSgfTest extends TestCaseWithAuth
 		$saveButton->click();
 
 		// Wait for the form submit to complete (page navigates away from editor)
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function () use ($browser) {
-			return strpos($browser->driver->getCurrentURL(), '/editor/') === false;
-		});
+		$browser->waitUntilJs('!location.href.includes("/editor/")');
 
 		$sgf = ClassRegistry::init('Sgf')->find('all', [
 			'conditions' => ['tsumego_id' => $context->tsumegos[0]['id']],

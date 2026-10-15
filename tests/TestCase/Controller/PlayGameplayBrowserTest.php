@@ -5,7 +5,6 @@ use App\Utility\Constants;
 use App\Utility\Rating;
 use App\Utility\TimeModeUtil;
 use App\Utility\Util;
-use Facebook\WebDriver\WebDriverWait;
 use Facebook\WebDriver\Exception\TimeoutException;
 use PHPUnitRetry\RetryTrait;
 
@@ -779,11 +778,11 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 	{
 		try
 		{
-			new WebDriverWait($browser->driver, 5, 200)->until(function () use ($setId, $tsumegoId, $expected) {
+			$browser->waitUntil(function () use ($setId, $tsumegoId, $expected) {
 				return ClassRegistry::init('SetConnection')->find('count', [
 					'conditions' => ['set_id' => $setId, 'tsumego_id' => $tsumegoId],
 				]) === $expected;
-			});
+			}, 5, $message);
 		}
 		catch (TimeoutException $e)
 		{

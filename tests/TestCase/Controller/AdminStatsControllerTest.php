@@ -336,19 +336,13 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$browser->assertNoErrors();
 
 		// Wait for editor to be ready
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			return $driver->executeScript('return typeof besogo !== "undefined";');
-		});
+		$browser->waitUntilJs('typeof besogo !== "undefined"');
 		$browser->clickBoard(4, 4);
 		$browser->clickId('makeCorrectButton');
 		$browser->clickId('saveSGFButton');
 
 		// Wait for redirect after saving SGF
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function () use ($browser) {
-			return strpos($browser->driver->getCurrentURL(), '/editor/') === false;
-		});
+		$browser->waitUntilJs('!location.href.includes("/editor/")');
 
 		// checking that the non-accepted sgf is not used for the problem
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL());

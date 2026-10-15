@@ -116,9 +116,9 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 
 		$browser->playWithResult('F');
 		$browser->clickId('rejuvenation');
-		$browser->driver->wait(10, 500)->until(function () use ($context) {
+		$browser->waitUntil(function () use ($context) {
 			return $context->reloadUser()['damage'] == 0;
-		});
+		}, 10, 'rejuvenation to restore the damage');
 		$browser->playWithResult('S');
 
 		$this->assertSame(0, $this->noErrorStreak(), 'A rejuvenated play still counts as a play with a mistake');

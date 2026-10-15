@@ -1,7 +1,6 @@
 <?php
 
 use Facebook\WebDriver\WebDriverBy;
-use Facebook\WebDriver\WebDriverExpectedCondition;
 use PHPUnitRetry\RetryTrait;
 
 /**
@@ -30,12 +29,7 @@ class CommentsControllerTest extends ControllerTestCase
 		$submitButton->click();
 
 		// Wait for React to process the comment submission
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			// Comment form should be cleared after successful submission
-			$textarea = $driver->findElement(WebDriverBy::cssSelector('.tsumego-comments__form textarea'));
-			return $textarea->getAttribute('value') === '';
-		});
+		$browser->waitUntilJs('document.querySelector(".tsumego-comments__form textarea").value === ""');
 
 		// Verify comment appears in the comments list
 		$browser->get('comments');
@@ -58,10 +52,7 @@ class CommentsControllerTest extends ControllerTestCase
 		$this->assertFalse($browser->getElements('#commentSpace')[0]->isDisplayed());
 		$browser->playWithResult('S');
 		// Wait for comment space to become visible after solving
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			return $driver->findElement(WebDriverBy::id('commentSpace'))->isDisplayed();
-		});
+		$browser->waitUntilCssSelectorDisplayed('#commentSpace');
 		$this->assertTrue($browser->getElements('#commentSpace')[0]->isDisplayed());
 	}
 
@@ -122,14 +113,13 @@ class CommentsControllerTest extends ControllerTestCase
 		// Click COMMENTS tab to EXPAND
 		$commentsTab = $browser->find('.tsumego-comments__tab[data-filter="open"]');
 		$commentsTab->click();
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 5, 200);
-		$wait->until(WebDriverExpectedCondition::visibilityOf($content));
+		$browser->waitUntilCssSelectorDisplayed('#msg2x');
 		$this->assertTrue($content->isDisplayed(), 'Comments should be visible after clicking COMMENTS tab');
 		$this->assertTrue($commentsTab->getAttribute('class') === 'tsumego-comments__tab active' || strpos($commentsTab->getAttribute('class'), 'active') !== false, 'COMMENTS tab should be active');
 
 		// Click same tab again to COLLAPSE
 		$commentsTab->click();
-		$wait->until(WebDriverExpectedCondition::invisibilityOfElementLocated(WebDriverBy::id('msg2x')));
+		$browser->waitUntilCssSelectorNotDisplayed('#msg2x');
 		$this->assertFalse($content->isDisplayed(), 'Comments should be hidden after clicking COMMENTS tab again');
 	}
 
@@ -152,10 +142,7 @@ class CommentsControllerTest extends ControllerTestCase
 
 		// Wait for React to render the issue content
 		$issueId = $context->issues[0]['id'];
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) use ($issueId) {
-			return str_contains($driver->getPageSource(), 'Issue #' . $issueId);
-		});
+		$browser->waitUntilJs('document.documentElement.outerHTML.includes("Issue #' . $issueId . '")');
 
 		// Issue should be displayed with database ID
 		$issueId = $context->issues[0]['id'];
@@ -193,11 +180,7 @@ class CommentsControllerTest extends ControllerTestCase
 		$replyButton = $browser->find('.tsumego-issue__reply-btn');
 		$replyButton->click();
 		// Wait for reply form to appear
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 5, 200);
-		$wait->until(function ($driver) {
-			$forms = $driver->findElements(WebDriverBy::cssSelector('.tsumego-issue__reply-form textarea'));
-			return count($forms) > 0 && $forms[0]->isDisplayed();
-		});
+		$browser->waitUntilCssSelectorDisplayed('.tsumego-issue__reply-form textarea');
 
 		// Fill in the reply
 		$replyField = $browser->find('.tsumego-issue__reply-form textarea');
@@ -208,9 +191,7 @@ class CommentsControllerTest extends ControllerTestCase
 		$submitButton->click();
 
 		// Wait for response - reply should appear in page source
-		$wait->until(function ($driver) {
-			return str_contains($driver->getPageSource(), 'My reply to this issue');
-		});
+		$browser->waitUntilJs('document.documentElement.outerHTML.includes("My reply to this issue")');
 
 		// Verify reply appears on the page after reload
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
@@ -364,10 +345,7 @@ class CommentsControllerTest extends ControllerTestCase
 		$closeButton->click();
 
 		// Wait for issue to become closed
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			return str_contains($driver->getPageSource(), '1 CLOSED ISSUE');
-		});
+		$browser->waitUntilJs('document.documentElement.outerHTML.includes("1 CLOSED ISSUE")');
 
 		// Verify counts updated: 0 comments, 0 open issues in COMMENTS, 1 in CLOSED ISSUES
 		$pageSource = $browser->driver->getPageSource();
@@ -624,11 +602,7 @@ class CommentsControllerTest extends ControllerTestCase
 		$replyButton = $browser->find('.tsumego-issue--opened .tsumego-issue__reply-btn');
 		$replyButton->click();
 		// Wait for reply form to appear
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 5, 200);
-		$wait->until(function ($driver) {
-			$forms = $driver->findElements(WebDriverBy::cssSelector('.tsumego-issue--opened .tsumego-issue__reply-form textarea'));
-			return count($forms) > 0 && $forms[0]->isDisplayed();
-		});
+		$browser->waitUntilCssSelectorDisplayed('.tsumego-issue--opened .tsumego-issue__reply-form textarea');
 
 		// Fill in and submit the reply
 		$replyField = $browser->find('.tsumego-issue--opened .tsumego-issue__reply-form textarea');
@@ -636,10 +610,7 @@ class CommentsControllerTest extends ControllerTestCase
 		$submitButton = $browser->find('.tsumego-issue--opened .tsumego-issue__reply-form button[type="submit"]');
 		$submitButton->click();
 		// Wait for reply to appear in page source
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			return str_contains($driver->getPageSource(), 'Reply to open issue');
-		});
+		$browser->waitUntilJs('document.documentElement.outerHTML.includes("Reply to open issue")');
 
 		// After React re-render: Closed issue should STILL be hidden
 		$closedIssuesAfter = $browser->getElements('.tsumego-issue--closed');
@@ -688,11 +659,7 @@ class CommentsControllerTest extends ControllerTestCase
 		$submitButton = $browser->findById('submitBtn-tsumegoCommentForm');
 		$submitButton->click();
 		// Wait for the new standalone comment to be rendered by React (mutation + refetch cycle)
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			$standalones = $driver->findElements(WebDriverBy::cssSelector('.tsumego-comment--standalone'));
-			return count($standalones) >= 2;
-		});
+		$browser->waitUntilJs('document.querySelectorAll(".tsumego-comment--standalone").length >= 2');
 
 		// After React re-render: Closed issue should STILL be hidden
 		$closedIssuesAfter = $browser->getElements('.tsumego-issue--closed');
@@ -729,21 +696,13 @@ class CommentsControllerTest extends ControllerTestCase
 		$replyButton = $browser->find('.tsumego-issue--opened .tsumego-issue__reply-btn');
 		$replyButton->click();
 		// Wait for reply form
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 5, 200);
-		$wait->until(function ($driver) {
-			$forms = $driver->findElements(WebDriverBy::cssSelector('.tsumego-issue--opened .tsumego-issue__reply-form textarea'));
-			return count($forms) > 0 && $forms[0]->isDisplayed();
-		});
+		$browser->waitUntilCssSelectorDisplayed('.tsumego-issue--opened .tsumego-issue__reply-form textarea');
 		$replyField = $browser->find('.tsumego-issue--opened .tsumego-issue__reply-form textarea');
 		$replyField->sendKeys("Extra comment to delete");
 		$submitButton = $browser->find('.tsumego-issue--opened .tsumego-issue__reply-form button[type="submit"]');
 		$submitButton->click();
 		// Wait for the reply to be rendered by React (mutation + refetch cycle)
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			$comments = $driver->findElements(WebDriverBy::cssSelector('.tsumego-issue--opened .tsumego-comment'));
-			return count($comments) >= 2;
-		});
+		$browser->waitUntilJs('document.querySelectorAll(".tsumego-issue--opened .tsumego-comment").length >= 2');
 
 		// Verify: Closed issue is NOT visible (filtered out)
 		$closedIssues = $browser->getElements('.tsumego-issue--closed');
@@ -759,11 +718,7 @@ class CommentsControllerTest extends ControllerTestCase
 		$this->assertGreaterThan(0, $deleteCountBefore, 'Should have delete buttons in open issue');
 		$deleteButtons[0]->click();
 		// Wait for delete to process (comment count should decrease)
-		$wait2 = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait2->until(function ($driver) use ($deleteCountBefore) {
-			$buttons = $driver->findElements(WebDriverBy::cssSelector('.tsumego-issue--opened .deleteComment'));
-			return count($buttons) < $deleteCountBefore;
-		});
+		$browser->waitUntilJs('document.querySelectorAll(".tsumego-issue--opened .deleteComment").length < ' . $deleteCountBefore);
 
 		// After React re-render: Closed issue should STILL be hidden
 		$closedIssuesAfter = $browser->getElements('.tsumego-issue--closed');
@@ -802,21 +757,13 @@ class CommentsControllerTest extends ControllerTestCase
 		$replyButton = $browser->find('.tsumego-issue--opened .tsumego-issue__reply-btn');
 		$replyButton->click();
 		// Wait for reply form
-		$waitForm = new \Facebook\WebDriver\WebDriverWait($browser->driver, 5, 200);
-		$waitForm->until(function ($driver) {
-			$forms = $driver->findElements(WebDriverBy::cssSelector('.tsumego-issue--opened .tsumego-issue__reply-form textarea'));
-			return count($forms) > 0 && $forms[0]->isDisplayed();
-		});
+		$browser->waitUntilCssSelectorDisplayed('.tsumego-issue--opened .tsumego-issue__reply-form textarea');
 		$replyField = $browser->find('.tsumego-issue--opened .tsumego-issue__reply-form textarea');
 		$replyField->sendKeys("Comment to move");
 		$submitButton = $browser->find('.tsumego-issue--opened .tsumego-issue__reply-form button[type="submit"]');
 		$submitButton->click();
 		// Wait for the reply to be rendered by React (mutation + refetch cycle)
-		$waitReply = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$waitReply->until(function ($driver) {
-			$comments = $driver->findElements(WebDriverBy::cssSelector('.tsumego-issue--opened .tsumego-comment'));
-			return count($comments) >= 2;
-		});
+		$browser->waitUntilJs('document.querySelectorAll(".tsumego-issue--opened .tsumego-comment").length >= 2');
 
 		// Get the comment ID to move
 		$commentElements = $browser->getElements('.tsumego-issue--opened .tsumego-comment');
@@ -844,11 +791,7 @@ class CommentsControllerTest extends ControllerTestCase
 			});
 		");
 		// Wait for React to refetch and re-render - moved comment appears as standalone
-		$waitMove = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$waitMove->until(function ($driver) {
-			$standalones = $driver->findElements(WebDriverBy::cssSelector('.tsumego-comment--standalone'));
-			return count($standalones) > 0;
-		});
+		$browser->waitUntilJs('document.querySelectorAll(".tsumego-comment--standalone").length > 0');
 
 		// After React re-render: Closed issue should STILL be hidden
 		$closedIssuesAfter = $browser->getElements('.tsumego-issue--closed');
@@ -875,8 +818,7 @@ class CommentsControllerTest extends ControllerTestCase
 		$commentsTab = $browser->find('.tsumego-comments__tab[data-filter="open"]');
 		$commentsTab->click();
 		// Wait for form to become visible
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 5, 200);
-		$wait->until(WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::id('tsumegoCommentForm')));
+		$browser->waitUntilCssSelectorDisplayed('#tsumegoCommentForm');
 
 		$form = $browser->findById('tsumegoCommentForm');
 		$formWrapper = $form->findElement(WebDriverBy::xpath('./..'));
@@ -885,13 +827,13 @@ class CommentsControllerTest extends ControllerTestCase
 		// Click CLOSED ISSUES tab - form should be hidden
 		$closedTab = $browser->find('.tsumego-comments__tab[data-filter="closed"]');
 		$closedTab->click();
-		$wait->until(WebDriverExpectedCondition::invisibilityOfElementLocated(WebDriverBy::id('tsumegoCommentForm')));
+		$browser->waitUntilCssSelectorNotDisplayed('#tsumegoCommentForm');
 
 		$this->assertFalse($formWrapper->isDisplayed(), 'Comment form should be hidden on CLOSED ISSUES tab');
 
 		// Click COMMENTS tab again - form should be visible again
 		$commentsTab->click();
-		$wait->until(WebDriverExpectedCondition::visibilityOfElementLocated(WebDriverBy::id('tsumegoCommentForm')));
+		$browser->waitUntilCssSelectorDisplayed('#tsumegoCommentForm');
 
 		$this->assertTrue($formWrapper->isDisplayed(), 'Comment form should be visible when back on COMMENTS tab');
 	}
@@ -1024,10 +966,7 @@ class CommentsControllerTest extends ControllerTestCase
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$browser->expandComments();
 
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			return str_contains($driver->getPageSource(), 'Issue to check rank');
-		});
+		$browser->waitUntilJs('document.documentElement.outerHTML.includes("Issue to check rank")');
 
 		$pageSource = $browser->driver->getPageSource();
 		// Rating 1500 should display as 6k rank
@@ -1051,19 +990,14 @@ class CommentsControllerTest extends ControllerTestCase
 		// Click CLOSED ISSUES tab to see the closed issue
 		$browser->find('.tsumego-comments__tab[data-filter="closed"]', 5)->click();
 
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			return str_contains($driver->getPageSource(), 'Issue to reopen');
-		});
+		$browser->waitUntilJs('document.documentElement.outerHTML.includes("Issue to reopen")');
 
 		// Click Reopen button
 		$reopenButton = $browser->find('.tsumego-issue button.btn--warning');
 		$reopenButton->click();
 
 		// Wait for status to change to Open
-		$wait->until(function ($driver) {
-			return str_contains($driver->getPageSource(), 'Opened');
-		});
+		$browser->waitUntilJs('document.documentElement.outerHTML.includes("Opened")');
 
 		$pageSource = $browser->driver->getPageSource();
 		$this->assertTextContains('Opened', $pageSource);

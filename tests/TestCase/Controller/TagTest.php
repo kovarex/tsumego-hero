@@ -114,11 +114,7 @@ class TagTest extends ControllerTestCase
 		$this->openEditorAndType($browser, 'snap');
 		$this->assertCount(1, $browser->getElements('[data-testid="tag-editor"] [role="option"]'));
 		$browser->clickId('tag-snapback');
-
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 5, 200);
-		$wait->until(function () use ($browser) {
-			return count($browser->getElements('[data-testid="tag-snapback"]')) === 1;
-		});
+		$browser->find('[data-testid="tag-snapback"]');
 	}
 
 	public function testShowOthersUnapprovedTagsInAddTagsButNotClickable()
@@ -153,8 +149,14 @@ class TagTest extends ControllerTestCase
 		$browser->find('[data-testid="tag-editor"]');
 
 		$this->openEditorAndType($browser, 'atari');
+		$browser->startRecordingRequests();
 		$browser->driver->getKeyboard()->sendKeys(WebDriverKeys::ENTER);
-		usleep(500000);
+
+		// Enter on a tag that is already added but not approved does nothing, so the tag
+		// never shows up in the list and nothing is sent to the server.
+		$this->assertCount(0, $browser->getElements('[data-testid="tag-atari"]'));
+		$this->assertSame([], $browser->requestsTo('/tagConnection/'),
+			'Enter on a non-addable tag must not send a request');
 
 		$connectionCount = ClassRegistry::init('TagConnection')->find('count', [
 			'conditions' => [
@@ -489,10 +491,7 @@ class TagTest extends ControllerTestCase
 				$browser->clickId('tag_hint_false');
 			$browser->clickId('submit_tag');
 
-			$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-			$wait->until(function () use ($browser) {
-				return strpos($browser->driver->getCurrentURL(), '/tags/view/') !== false;
-			});
+			$browser->waitUntilJs('location.href.includes("/tags/view/")');
 
 			$tagAdded = ClassRegistry::init('Tag')->find('first')['Tag'];
 			$this->assertSame(Util::getMyAddress() . '/tags/view/' . $tagAdded['id'], $browser->driver->getCurrentURL());
@@ -521,10 +520,7 @@ class TagTest extends ControllerTestCase
 		$browser->driver->getKeyboard()->sendKeys('A self-atari is a move that puts your own stones into atari.');
 		$browser->clickId('submit_tag');
 
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function () use ($browser) {
-			return strpos($browser->driver->getCurrentURL(), '/tags/view/') !== false;
-		});
+		$browser->waitUntilJs('location.href.includes("/tags/view/")');
 
 		$tagAdded = ClassRegistry::init('Tag')->find('first')['Tag'];
 		$this->assertSame(Util::getMyAddress() . '/tags/view/' . $tagAdded['id'], $browser->driver->getCurrentURL());
@@ -542,10 +538,7 @@ class TagTest extends ControllerTestCase
 		$browser->driver->getKeyboard()->sendKeys('test tag no description');
 		$browser->clickId('submit_tag');
 
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function () use ($browser) {
-			return str_contains($browser->driver->getPageSource(), 'alert-error');
-		});
+		$browser->waitUntilJs('document.documentElement.outerHTML.includes("alert-error")');
 
 		$pageSource = $browser->driver->getPageSource();
 		$this->assertStringContainsString('description', strtolower($pageSource));
@@ -657,10 +650,7 @@ class TagTest extends ControllerTestCase
 		$descField->clear();
 		$browser->clickId('submit_tag');
 
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function () use ($browser) {
-			return str_contains($browser->driver->getPageSource(), 'alert-error');
-		});
+		$browser->waitUntilJs('document.documentElement.outerHTML.includes("alert-error")');
 
 		$this->assertStringContainsString('/tags/edit/', $browser->driver->getCurrentURL());
 		$this->assertSame('Hello', ClassRegistry::init('Tag')->find('first')['Tag']['description']);

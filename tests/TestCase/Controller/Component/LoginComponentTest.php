@@ -76,10 +76,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		$browser->find('.signin input[type="submit"]')->click();
 
 		// Wait for form submission to process and redirect away from signup page
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 500);
-		$wait->until(function () use ($browser) {
-			return strpos($browser->driver->getCurrentURL(), 'users/add') === false;
-		});
+		$browser->waitUntilJs('!location.href.includes("users/add")');
 
 		// Check if user was created successfully
 		$userCountAfter = count(ClassRegistry::init('User')->find('all'));
@@ -160,10 +157,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		$sumbitButton->click();
 
 		// Wait for form submission to redirect to login page
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 500);
-		$wait->until(function () use ($browser) {
-			return strpos($browser->driver->getCurrentURL(), 'users/login') !== false;
-		});
+		$browser->waitUntilJs('location.href.includes("users/login")');
 
 		$this->assertSame(Util::getMyAddress() . '/users/login', $browser->driver->getCurrentURL());
 		$this->assertTextContains("Password changed", $browser->driver->getPageSource());

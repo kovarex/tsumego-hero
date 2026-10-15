@@ -206,8 +206,9 @@ class SitesControllerTest extends ControllerTestCase
 		// Act: Load the index page
 		$browser->get('sites/index');
 
-		// Assert: Check that page loaded successfully (no exceptions thrown by assertNoErrors)
-		$this->assertTrue($browser->idExists('totd') || true); // Page loaded successfully
+		// Assert: the index page rendered with a clean JS console
+		$this->assertTrue($browser->titleContains('Tsumego Hero'), 'The index page rendered');
+		$browser->assertNoJsErrors();
 	}
 
 	public function testIndexPageLoadsWithoutDayRecord()
@@ -215,7 +216,8 @@ class SitesControllerTest extends ControllerTestCase
 		$browser = Browser::instance();
 		new ContextPreparator();
 		$browser->get('sites/index');
-		$this->assertTrue($browser->idExists('totd') || true); // Page loaded successfully
+		$this->assertTrue($browser->titleContains('Tsumego Hero'), 'The index page rendered');
+		$browser->assertNoJsErrors();
 	}
 
 	public function testNewsColumnsRevealMoreArticlesUntilAllAreVisible()

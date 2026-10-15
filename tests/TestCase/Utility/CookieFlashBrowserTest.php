@@ -30,10 +30,7 @@ class CookieFlashBrowserTest extends CakeTestCase
 		$browser->find('input[type="submit"]')->click();
 
 		// Wait for page to load
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			return str_contains($driver->getPageSource(), 'Unknown user');
-		});
+		$browser->waitUntilJs('document.documentElement.outerHTML.includes("Unknown user")');
 
 		// Check for flash message in page source
 		$pageSource = $browser->driver->getPageSource();
@@ -53,10 +50,7 @@ class CookieFlashBrowserTest extends CakeTestCase
 		$browser->findById('UserName')->sendKeys('test');
 		$browser->findById('password')->sendKeys('test');
 		$browser->find('input[type="submit"]')->click();
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			return str_contains($driver->getPageSource(), 'alert');
-		});
+		$browser->waitUntilJs('document.documentElement.outerHTML.includes("alert")');
 
 		// Flash message should be present on first view
 		$pageSource1 = $browser->driver->getPageSource();
@@ -83,10 +77,7 @@ class CookieFlashBrowserTest extends CakeTestCase
 		$browser->findById('UserName')->sendKeys('test');
 		$browser->findById('password')->sendKeys('wrong');
 		$browser->find('input[type="submit"]')->click();
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			return str_contains($driver->getPageSource(), 'alert-error');
-		});
+		$browser->waitUntilJs('document.documentElement.outerHTML.includes("alert-error")');
 
 		$pageSource = $browser->driver->getPageSource();
 

@@ -5,7 +5,6 @@ use App\Utility\Level;
 use App\Utility\Rating;
 use App\Utility\TsumegoUtil;
 use App\Utility\TsumegoXPAndRating;
-use Facebook\WebDriver\WebDriverBy;
 
 class TsumegoXPAndRatingTest extends TestCaseWithAuth
 {
@@ -99,11 +98,8 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth
 		// the reported xp is normal
 		$this->assertTextStartsNotWith($browser->find('#xpDisplay')->getText(), strval(TsumegoUtil::getXpValue($context->tsumegos[0])) . ' XP');
 		$browser->clickId('sprint');
-		$browser->driver->wait(10, 500)->until(function () use ($browser, $context) {
-			$xpDisplayText = $browser->find('#xpDisplay')->getText();
-			$xpText = strval(TsumegoUtil::getXpValue($context->tsumegos[0], Constants::$SPRINT_MULTIPLIER)) . ' XP';
-			return str_contains($xpDisplayText, $xpText);
-		});
+		$xpText = strval(TsumegoUtil::getXpValue($context->tsumegos[0], Constants::$SPRINT_MULTIPLIER)) . ' XP';
+		$browser->waitUntilJs('document.querySelector("#xpDisplay").textContent.includes("' . $xpText . '")');
 		$this->checkSprintInXpAndTimeInStatus2($browser);
 	}
 
@@ -133,11 +129,8 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth
 
 		// only one progress deletion affects this, one is too old, and one is from other user
 		$originalTsumegoXpValue = TsumegoUtil::getXpValue($context->tsumegos[0], TsumegoXPAndRating::getProgressDeletionMultiplier(1));
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) use ($originalTsumegoXpValue) {
-			$text = $driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText();
-			return str_contains($text, strval($originalTsumegoXpValue) . ' XP');
-		});
+		$browser->waitUntilJs('document.querySelector("#xpDisplay") !== null && document.querySelector("#xpDisplay").textContent.includes("'
+			. $originalTsumegoXpValue . ' XP")');
 		$this->assertTextContains(strval($originalTsumegoXpValue) . ' XP', $browser->find('#xpDisplay')->getText());
 
 		$browser->driver->executeScript("displayResult('S')"); // solve the problem

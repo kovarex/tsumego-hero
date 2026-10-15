@@ -26,10 +26,7 @@ class BoardTextureTest extends TestCaseWithAuth
 
 		$browser->driver->executeScript("arguments[0].click();", [$checkbox9]);
 		// Wait for AJAX to save the board texture preference
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 5, 200);
-		$wait->until(function ($driver) {
-			return $driver->executeScript('return document.getElementById("newCheck9").checked;');
-		});
+		$browser->waitUntilJs('document.getElementById("newCheck9").checked');
 
 		$browser->get('sites/blank');
 

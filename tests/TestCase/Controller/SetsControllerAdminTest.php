@@ -39,10 +39,6 @@ class SetsControllerAdminTest extends ControllerTestCase
 		$browser->find('form input[type="submit"]')->click();
 
 		// Wait for redirect to the newly created set's view page
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			return str_contains($driver->getTitle(), 'Test Auto-Increment Set');
-		});
 		$this->assertTrue($browser->titleContains('Test Auto-Increment Set'), 'Should redirect to the new set view after creating set');
 
 		// Verify set was created
