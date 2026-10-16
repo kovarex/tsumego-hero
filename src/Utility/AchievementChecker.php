@@ -58,6 +58,8 @@ class AchievementChecker
 	/**
 	 * Unlocks a repeatable achievement and records how often it was earned. Earning
 	 * it the first time grants the XP and the popup, later ones only raise the count.
+	 * The count records what the player earned, so a collection it can no longer
+	 * recount does not lower it.
 	 */
 	private function gainedTimes(int $achievementID, int $times): void
 	{
@@ -68,7 +70,7 @@ class AchievementChecker
 		$AchievementStatus = ClassRegistry::init('AchievementStatus');
 		$status = $AchievementStatus->find('first', [
 			'conditions' => ['user_id' => Auth::getUserID(), 'achievement_id' => $achievementID]]);
-		if (!$status || (int) $status['AchievementStatus']['value'] === $times)
+		if (!$status || (int) $status['AchievementStatus']['value'] >= $times)
 			return;
 
 		$status['AchievementStatus']['value'] = $times;
@@ -620,13 +622,14 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 
 	/**
 	 * How many collections the player finished at 100% accuracy on a set of at least
-	 * $minimumSize problems. One query, because loading every set's problems just to count
-	 * them was the slowest thing this checker did.
+	 * $minimumSize problems. Counts collections and not accuracy rows, so a set whose
+	 * row was written twice still counts once. One query instead of loading every
+	 * set's problems.
 	 */
 	private function countPerfectCollections(int $minimumSize): int
 	{
 		$rows = Util::query(
-			'SELECT COUNT(*) AS total FROM achievement_condition ac '
+			'SELECT COUNT(DISTINCT ac.set_id) AS total FROM achievement_condition ac '
 			. 'WHERE ac.user_id = ? AND ac.category = ? AND ac.value >= ? '
 			. 'AND ac.set_id IN ('
 			. 'SELECT sc.set_id FROM set_connection sc '

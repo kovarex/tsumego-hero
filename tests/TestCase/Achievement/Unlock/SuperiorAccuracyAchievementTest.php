@@ -127,6 +127,50 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 	}
 
 	/**
+	 * The count follows collections, not condition rows: a set whose accuracy row was
+	 * written twice is still a single collection.
+	 */
+	public function testDuplicateAccuracyRowsCountAsOneCollection()
+	{
+		$context = new ContextPreparator();
+
+		$setId = $this->createFinishedCollection($context->user['id']);
+
+		$AchievementCondition = ClassRegistry::init('AchievementCondition');
+		$AchievementCondition->create();
+		$AchievementCondition->save([
+			'user_id' => $context->user['id'],
+			'set_id' => $setId,
+			'category' => '%',
+			'value' => 100]);
+
+		new AchievementChecker()->checkSetAchievements($setId);
+
+		$status = ClassRegistry::init('AchievementStatus')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'achievement_id' => Achievement::SUPERIOR_ACCURACY]]);
+		$this->assertSame(1, (int) $status['AchievementStatus']['value'],
+			'two accuracy rows for one set are one collection');
+	}
+
+	/**
+	 * The stored count records what the player earned: it survives collections that can
+	 * no longer be recounted (removed sets, collections finished before the count existed).
+	 */
+	public function testEarnedCountIsNotLoweredByALaterCollection()
+	{
+		$context = new ContextPreparator(['user' => ['achievement-statuses' => [
+			['id' => Achievement::SUPERIOR_ACCURACY, 'value' => 5]]]]);
+
+		$setId = $this->createFinishedCollection($context->user['id']);
+		new AchievementChecker()->checkSetAchievements($setId);
+
+		$status = ClassRegistry::init('AchievementStatus')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'achievement_id' => Achievement::SUPERIOR_ACCURACY]]);
+		$this->assertSame(5, (int) $status['AchievementStatus']['value'],
+			'a later collection does not lower an earned count');
+	}
+
+	/**
 	 * A collection of 100+ problems finished at 100% accuracy.
 	 */
 	private function createFinishedCollection(int $userId, int $problemCount = 100): int
