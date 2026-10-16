@@ -1,5 +1,6 @@
 <?php
 
+use App\Utility\SchedulePublisher;
 use App\Utility\Util;
 
 class CronController extends AppController
@@ -20,7 +21,7 @@ class CronController extends AppController
 		$this->dailyTsumegoStatusReset();
 		$this->dailyStalingSolvedTsumegoStatuses();
 		self::createDayRecord();
-		ScheduleController::publish();
+		SchedulePublisher::publishDue();
 		$this->dailyUsersReset();
 		$this->dailyPotionConditionReset();
 		$this->updateSolvedCounts();

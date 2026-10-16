@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\SchedulePublisher;
+
 class ScheduleTest extends TestCaseWithAuth
 {
 	private function _sandboxAndTarget(array $sandboxNums, int $publicCount = 1): array
@@ -36,6 +38,7 @@ class ScheduleTest extends TestCaseWithAuth
 				'set_id_from' => $sandboxSetId,
 				'set_id_to' => $targetSetId,
 				'count' => 2,
+				'per_day' => 1,
 				'start_date' => self::futureDate(),
 			],
 			'method' => 'POST',
@@ -339,7 +342,7 @@ class ScheduleTest extends TestCaseWithAuth
 		]);
 		$this->login('admin');
 
-		ScheduleController::publish();
+		SchedulePublisher::publishDue();
 
 		$tsumego = ClassRegistry::init('Tsumego')->findById($context->tsumegos[0]['id']);
 		$this->assertSame(42, (int) $tsumego['Tsumego']['solved']);
@@ -364,7 +367,7 @@ class ScheduleTest extends TestCaseWithAuth
 
 		$targetSetId = $context->tsumegos[0]['set-connections'][1]['set_id'];
 
-		ScheduleController::publish();
+		SchedulePublisher::publishDue();
 
 		$count = ClassRegistry::init('SetConnection')->find('count', [
 			'conditions' => ['set_id' => $targetSetId, 'tsumego_id' => $context->tsumegos[0]['id']],
@@ -403,7 +406,7 @@ class ScheduleTest extends TestCaseWithAuth
 		]);
 		$this->assertCount(2, $sandboxBefore, 'Tsumego should be in 2 sandbox sets before publish');
 
-		ScheduleController::publish();
+		SchedulePublisher::publishDue();
 
 		$targetCount = ClassRegistry::init('SetConnection')->find('count', [
 			'conditions' => ['set_id' => $targetSetId, 'tsumego_id' => $tsumego['id']],
@@ -444,7 +447,7 @@ class ScheduleTest extends TestCaseWithAuth
 		]);
 		$this->login('admin');
 
-		ScheduleController::publish();
+		SchedulePublisher::publishDue();
 
 		// Stats should be preserved because tsumego is already in another public set
 		$tsumego = ClassRegistry::init('Tsumego')->findById($context->tsumegos[0]['id']);
@@ -468,7 +471,7 @@ class ScheduleTest extends TestCaseWithAuth
 		]);
 		$this->login('admin');
 
-		ScheduleController::publish();
+		SchedulePublisher::publishDue();
 
 		// The tsumego has no sandbox source to move from, so the entry stays pending
 		$schedule = ClassRegistry::init('Schedule')->find('first', [
@@ -493,7 +496,7 @@ class ScheduleTest extends TestCaseWithAuth
 
 		$targetSetId = $context->tsumegos[1]['set-connections'][0]['set_id'];
 
-		ScheduleController::publish();
+		SchedulePublisher::publishDue();
 
 		$nums = ClassRegistry::init('SetConnection')->find('list', [
 			'fields' => ['num', 'num'],
@@ -532,5 +535,163 @@ class ScheduleTest extends TestCaseWithAuth
 		$this->assertCount(2, $body);
 		$this->assertTrue($body[0]['num_collision'], 'num 5 collides with the target set');
 		$this->assertFalse($body[1]['num_collision'], 'num 6 is free in the target set');
+	}
+
+	public function testAddToScheduleGroupsProblemsPerDay(): void
+	{
+		[, $sandboxSetId, $targetSetId] = $this->_sandboxAndTarget([1, 2, 3, 4, 5, 6, 7]);
+
+		$this->testAction('/schedule/add', [
+			'data' => [
+				'set_id_from' => $sandboxSetId,
+				'set_id_to' => $targetSetId,
+				'count' => 7,
+				'per_day' => 5,
+				'start_date' => self::futureDate(),
+			],
+			'method' => 'POST',
+		]);
+
+		$dates = array_map(function ($row) {
+			return $row['Schedule']['date'];
+		}, ClassRegistry::init('Schedule')->find('all', ['order' => 'id ASC']));
+		$perDate = array_count_values($dates);
+		$this->assertSame(5, $perDate[self::futureDate()]);
+		$this->assertSame(2, $perDate[self::futureDate(3)]);
+	}
+
+	public function testAddToSchedulePublishesFivePerDayByDefault(): void
+	{
+		[, $sandboxSetId, $targetSetId] = $this->_sandboxAndTarget([1, 2, 3, 4, 5, 6]);
+
+		$this->testAction('/schedule/add', [
+			'data' => [
+				'set_id_from' => $sandboxSetId,
+				'set_id_to' => $targetSetId,
+				'count' => 6,
+				'start_date' => self::futureDate(),
+			],
+			'method' => 'POST',
+		]);
+
+		$dates = array_map(function ($row) {
+			return $row['Schedule']['date'];
+		}, ClassRegistry::init('Schedule')->find('all', ['order' => 'id ASC']));
+		$perDate = array_count_values($dates);
+		$this->assertSame(5, $perDate[self::futureDate()]);
+		$this->assertSame(1, $perDate[self::futureDate(3)]);
+	}
+
+	public function testAddToScheduleStartingTodayPublishesRightAway(): void
+	{
+		[$context, $sandboxSetId, $targetSetId] = $this->_sandboxAndTarget([1]);
+
+		$this->testAction('/schedule/add', [
+			'data' => [
+				'set_id_from' => $sandboxSetId,
+				'set_id_to' => $targetSetId,
+				'start_date' => date('Y-m-d'),
+			],
+			'method' => 'POST',
+		]);
+
+		$schedule = ClassRegistry::init('Schedule')->find('first', ['order' => 'id DESC']);
+		$this->assertSame(1, (int) $schedule['Schedule']['published']);
+		$this->assertSame(1, ClassRegistry::init('SetConnection')->find('count', [
+			'conditions' => ['set_id' => $targetSetId, 'tsumego_id' => $context->tsumegos[0]['id']],
+		]));
+	}
+
+	public function testPublishingTwiceKeepsThePublishResult(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'admin', 'admin' => true],
+			'tsumegos' => [
+				['sets' => [['name' => 'sandbox set', 'num' => 5, 'public' => 0]]],
+				['sets' => [['name' => 'target set', 'num' => 1]]],
+			],
+			'schedule' => [
+				['tsumego' => 0, 'set' => 'target set', 'date' => date('Y-m-d')],
+			],
+		]);
+		$this->login('admin');
+
+		$tsumegoId = $context->tsumegos[0]['id'];
+		$targetSetId = $context->tsumegos[1]['set-connections'][0]['set_id'];
+
+		SchedulePublisher::publishDue();
+
+		$moved = ClassRegistry::init('SetConnection')->find('first', [
+			'conditions' => ['set_id' => $targetSetId, 'tsumego_id' => $tsumegoId],
+		]);
+		ClassRegistry::init('TsumegoStatus')->create();
+		ClassRegistry::init('TsumegoStatus')->save(['TsumegoStatus' => [
+			'user_id' => $context->user['id'],
+			'tsumego_id' => $tsumegoId,
+			'status' => 'S',
+		]]);
+
+		SchedulePublisher::publishDue();
+
+		$movedAgain = ClassRegistry::init('SetConnection')->find('first', [
+			'conditions' => ['set_id' => $targetSetId, 'tsumego_id' => $tsumegoId],
+		]);
+		$this->assertSame((int) $moved['SetConnection']['num'], (int) $movedAgain['SetConnection']['num']);
+		$this->assertSame(1, ClassRegistry::init('SetConnection')->find('count', [
+			'conditions' => ['set_id' => $targetSetId, 'tsumego_id' => $tsumegoId],
+		]));
+		$this->assertSame(1, ClassRegistry::init('TsumegoStatus')->find('count', [
+			'conditions' => ['tsumego_id' => $tsumegoId],
+		]));
+	}
+
+	public function testPublishCatchesUpAnEntryOfAMissedDay(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'admin', 'admin' => true],
+			'tsumegos' => [
+				['sets' => [['name' => 'sandbox set', 'num' => 5, 'public' => 0]]],
+				['sets' => [['name' => 'target set', 'num' => 1]]],
+			],
+			'schedule' => [
+				['tsumego' => 0, 'set' => 'target set', 'date' => date('Y-m-d', strtotime('-3 days'))],
+			],
+		]);
+		$this->login('admin');
+
+		$tsumegoId = $context->tsumegos[0]['id'];
+		$targetSetId = $context->tsumegos[1]['set-connections'][0]['set_id'];
+
+		SchedulePublisher::publishDue();
+
+		$schedule = ClassRegistry::init('Schedule')->find('first', ['order' => 'id DESC']);
+		$this->assertSame(1, (int) $schedule['Schedule']['published']);
+		$this->assertSame(1, ClassRegistry::init('SetConnection')->find('count', [
+			'conditions' => ['set_id' => $targetSetId, 'tsumego_id' => $tsumegoId],
+		]));
+	}
+
+	public function testScheduleIndexListsRecentlyPublished(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'admin', 'admin' => true],
+			'tsumegos' => [
+				['sets' => [['name' => 'target set', 'num' => 1]]],
+				['sets' => [['name' => 'target set', 'num' => 2]]],
+			],
+			'schedule' => [
+				['tsumego' => 0, 'set' => 'target set', 'date' => date('Y-m-d'), 'published' => 1],
+				['tsumego' => 1, 'set' => 'target set', 'date' => date('Y-m-d', strtotime('-30 days')), 'published' => 1],
+			],
+		]);
+		$this->login('admin');
+
+		$this->testAction('/schedule');
+
+		$recentlyPublished = $this->vars['recentlyPublished'];
+		$this->assertCount(1, $recentlyPublished);
+		$this->assertSame($context->tsumegos[0]['id'], (int) $recentlyPublished[0]['tsumego_id']);
+		$this->assertSame(1, (int) $recentlyPublished[0]['num']);
+		$this->assertEmpty($this->vars['p']);
 	}
 }

@@ -4,6 +4,7 @@ use App\Attribute\HttpPost;
 use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
 use App\Utility\CookieFlash;
+use App\Utility\SchedulePublisher;
 use App\Utility\TsumegoButton;
 use App\Utility\Util;
 
@@ -55,6 +56,25 @@ WHERE schedule.published = 0
 ORDER BY schedule.date ASC");
 
 		$this->set('p', $p);
+
+		$recentlyPublished = Util::query("
+SELECT
+	schedule.id AS id,
+	schedule.date AS date,
+	schedule.tsumego_id AS tsumego_id,
+	schedule.set_id AS set_id,
+	target_sc.num AS num,
+	target_set.title AS target_set_title
+FROM schedule
+LEFT JOIN set_connection target_sc
+	ON target_sc.tsumego_id = schedule.tsumego_id
+	AND target_sc.set_id = schedule.set_id
+LEFT JOIN `set` target_set ON target_set.id = schedule.set_id
+WHERE schedule.published = 1
+	AND schedule.date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+ORDER BY schedule.date DESC, schedule.id DESC");
+		$this->set('recentlyPublished', $recentlyPublished);
+
 		$this->set('sandboxSets', $this->Set->find('all', [
 			'order' => ['Set.order'],
 			'conditions' => ['public' => 0, 'user_id IS NULL'],
@@ -68,7 +88,9 @@ ORDER BY schedule.date ASC");
 	/**
 	 * Schedule sandbox problems for publishing. Admin only.
 	 * Schedules the next `count` unscheduled problems of the source set that are
-	 * not already in the target set, optionally starting from position `num`.
+	 * not already in the target set, optionally starting from position `num`,
+	 * `per_day` of them on each day. A schedule starting today is published right
+	 * away, because the daily cron only publishes the day it runs on.
 	 */
 	#[HttpPost]
 	public function add(): void
@@ -79,16 +101,19 @@ ORDER BY schedule.date ASC");
 		$targetSetId = (int) ($this->request->data['set_id_to'] ?? 0);
 		$num = (int) ($this->request->data['num'] ?? 0);
 		$count = (int) ($this->request->data['count'] ?? 1);
+		$perDay = (int) ($this->request->data['per_day'] ?? 5);
 		$startDate = (string) ($this->request->data['start_date'] ?? '');
 
 		if ($setIdFrom <= 0 || $targetSetId <= 0)
 			throw new BadRequestException('Invalid set ids.');
 		if ($count < 1 || $count > 100)
 			throw new BadRequestException('Count must be between 1 and 100.');
+		if ($perDay < 1 || $perDay > 50)
+			throw new BadRequestException('Problems per day must be between 1 and 50.');
 		if (!strtotime($startDate))
 			throw new BadRequestException('Invalid start date.');
-		if (strtotime($startDate) < strtotime('tomorrow'))
-			throw new BadRequestException('Start date must be tomorrow or later.');
+		if (strtotime($startDate) < strtotime('today'))
+			throw new BadRequestException('Start date must be today or later.');
 
 		$sourceSet = ClassRegistry::init('Set')->find('first', [
 			'conditions' => ['id' => $setIdFrom, 'public' => 0, 'user_id IS NULL'],
@@ -118,7 +143,8 @@ LIMIT {$count}");
 		$userId = Auth::getUserID();
 		foreach ($candidates as $candidate)
 		{
-			$date = date('Y-m-d', strtotime($startDate . ' +' . $scheduled . ' days'));
+			$day = intdiv($scheduled, $perDay);
+			$date = date('Y-m-d', strtotime($startDate . ' +' . $day . ' days'));
 			$scheduleModel->create();
 			$scheduleModel->save([
 				'Schedule' => [
@@ -133,7 +159,11 @@ LIMIT {$count}");
 			$scheduled++;
 		}
 
-		CookieFlash::set($scheduled . ' problems scheduled.', 'success');
+		$startsToday = date('Y-m-d', strtotime($startDate)) === date('Y-m-d');
+		if ($startsToday)
+			SchedulePublisher::publishDue();
+
+		CookieFlash::set($scheduled . ($startsToday ? ' problems published.' : ' problems scheduled.'), 'success');
 		$this->redirect('/schedule');
 	}
 
@@ -207,113 +237,5 @@ LIMIT {$count}");
 
 		CookieFlash::set('Schedule entry cancelled.', 'success');
 		$this->redirect('/schedule');
-	}
-
-	/**
-	 * Publish all due schedule entries. Called by the daily cron.
-	 */
-	public static function publish(): void
-	{
-		$date = date('Y-m-d', strtotime('today'));
-		$todaysSchedule = ClassRegistry::init('Schedule')->find('all', ['conditions' => ['date' => $date, 'published' => 0]]) ?: [];
-		foreach ($todaysSchedule as $item)
-			if (self::publishSingle($item['Schedule']['tsumego_id'], $item['Schedule']['set_id']))
-			{
-				$item['Schedule']['published'] = 1;
-				ClassRegistry::init('Schedule')->save($item);
-			}
-			else
-				CakeLog::warning(sprintf(
-					'Schedule publish failed: entry %d (tsumego %d -> set %d) has no sandbox source',
-					$item['Schedule']['id'],
-					$item['Schedule']['tsumego_id'],
-					$item['Schedule']['set_id']
-				));
-	}
-
-	/**
-	 * Publish a single tsumego from sandbox to the target public set.
-	 * Always moves the tsumego to the target set. Only resets stats and
-	 * wipes tsumego_status if the tsumego is not already in any other
-	 * public set (to preserve solve history for existing public problems).
-	 * Returns false if the tsumego has no sandbox source to move from.
-	 */
-	public static function publishSingle(int|string|null $tsumegoID = null, int|string|null $to = null): bool
-	{
-		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID);
-		if (!$tsumego)
-			return false;
-
-		// A tsumego lives in at most one official sandbox set, but be robust to
-		// several: publishing moves it out of every sandbox set into the target.
-		$sandboxConnections = ClassRegistry::init('SetConnection')->find('all', [
-			'joins' => [[
-				'table' => 'set',
-				'alias' => 'S',
-				'type' => 'INNER',
-				'conditions' => ['S.id = SetConnection.set_id', 'S.public' => 0, 'S.user_id IS NULL'],
-			]],
-			'conditions' => ['SetConnection.tsumego_id' => $tsumegoID],
-		]) ?: [];
-
-		$targetConnection = ClassRegistry::init('SetConnection')->find('first', [
-			'conditions' => ['tsumego_id' => $tsumegoID, 'set_id' => $to],
-		]);
-
-		// Check before the move: is this tsumego already in any public set?
-		// If so, users have solve history we must preserve.
-		$alreadyPublic = ClassRegistry::init('SetConnection')->find('first', [
-			'joins' => [[
-				'table' => 'set',
-				'alias' => 'S',
-				'type' => 'INNER',
-				'conditions' => ['S.id = SetConnection.set_id', 'S.public' => 1],
-			]],
-			'conditions' => ['SetConnection.tsumego_id' => $tsumegoID],
-		]);
-
-		if ($targetConnection)
-		{
-			// Already in the target set: drop every sandbox copy, keep the target one.
-			foreach ($sandboxConnections as $sandboxConnection)
-				ClassRegistry::init('SetConnection')->delete($sandboxConnection['SetConnection']['id']);
-		}
-		elseif ($sandboxConnections)
-		{
-			// Move the canonical sandbox copy (lowest num, then lowest id) to the
-			// target, preserving its number, and drop the remaining copies.
-			usort($sandboxConnections, function ($a, $b) {
-				return [(int) $a['SetConnection']['num'], (int) $a['SetConnection']['id']] <=> [(int) $b['SetConnection']['num'], (int) $b['SetConnection']['id']];
-			});
-			$keep = array_shift($sandboxConnections);
-			$keep['SetConnection']['set_id'] = $to;
-			// Renumber to the next free slot if the sandbox num is already taken in the target
-			$existingNums = ClassRegistry::init('SetConnection')->find('list', [
-				'fields' => ['num', 'num'],
-				'conditions' => ['set_id' => $to],
-			]);
-			$num = (int) $keep['SetConnection']['num'];
-			while (isset($existingNums[$num]))
-				$num++;
-			$keep['SetConnection']['num'] = $num;
-			ClassRegistry::init('SetConnection')->save($keep);
-			foreach ($sandboxConnections as $sandboxConnection)
-				ClassRegistry::init('SetConnection')->delete($sandboxConnection['SetConnection']['id']);
-		}
-		else
-			return false;
-
-		if (!$alreadyPublic)
-		{
-			$tsumego['Tsumego']['solved'] = 0;
-			$tsumego['Tsumego']['failed'] = 0;
-			$tsumego['Tsumego']['userWin'] = 0;
-			$tsumego['Tsumego']['userLoss'] = 0;
-			ClassRegistry::init('Tsumego')->save($tsumego);
-
-			ClassRegistry::init('TsumegoStatus')->deleteAll(['tsumego_id' => $tsumego['Tsumego']['id']]);
-		}
-
-		return true;
 	}
 }
