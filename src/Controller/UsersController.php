@@ -700,8 +700,11 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 				user.external_id AS external_id,
 				user.premium AS premium,
 				user.email AS email,
-				COALESCE(SUM(achievement_status.value), 0) AS achievement_score,
-				ROW_NUMBER() OVER (ORDER BY COALESCE(SUM(achievement_status.value), 0) DESC) as position
+				COUNT(DISTINCT achievement_status.achievement_id) AS achievement_score,
+				COALESCE(SUM(CASE WHEN achievement_status.value > 1 THEN achievement_status.value ELSE 0 END), 0) AS achievement_earned_times,
+				ROW_NUMBER() OVER (
+					ORDER BY COUNT(DISTINCT achievement_status.achievement_id) DESC,
+						COALESCE(SUM(achievement_status.value), 0) DESC) as position
 			FROM user
 			LEFT JOIN achievement_status
 				ON achievement_status.user_id = user.id
@@ -1033,15 +1036,20 @@ ORDER BY category DESC', [$user['User']['id']]));
 			$item['AchievementStatus']['a_color'] = $achievement['color'];
 			$item['AchievementStatus']['a_id'] = $achievement['id'];
 			$item['AchievementStatus']['a_xp'] = $achievement['xp'];
+			$item['AchievementStatus']['a_earned_count'] = (int) $item['AchievementStatus']['value'];
 			$asList[] = $item;
 		}
 		$as = $asList;
 
-		$aNum = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $id]]);
-		$asx = $this->AchievementStatus->find('first', ['conditions' => ['user_id' => $id, 'achievement_id' => 46]]);
-		$aNumx = count($aNum);
-		if ($asx != null)
-			$aNumx = $aNumx + $asx['AchievementStatus']['value'] - 1;
+		$counts = Util::query(
+			'SELECT COUNT(DISTINCT achievement_status.achievement_id) AS completed,
+				COALESCE(SUM(CASE WHEN achievement_status.value > 1 THEN achievement_status.value ELSE 0 END), 0) AS earned_times
+			FROM achievement_status
+			WHERE achievement_status.user_id = ?',
+			[$id]
+		)[0];
+		$aNumx = (int) $counts['completed'];
+		$aEarnedTimes = (int) $counts['earned_times'];
 
 		// only admins get to the profile of a deleted account, they see who it was
 		if ($user['User']['deleted'])
@@ -1054,6 +1062,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 		$this->set('tsumegoCount', $tsumegoCount);
 		$this->set('as', $as);
 		$this->set('aNum', $aNumx);
+		$this->set('aEarnedTimes', $aEarnedTimes);
 		$this->set('aCount', $aCount);
 		$this->set('canResetOldTsumegoStatuses', $canResetOldTsumegoStatuses);
 		return null;

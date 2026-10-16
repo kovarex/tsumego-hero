@@ -113,9 +113,10 @@ abstract class AchievementTestCase extends ControllerTestCase
 	 *
 	 * @param int $rating Set difficulty rating
 	 * @param int $count Number of tsumegos to create
+	 * @param int $public Set visibility (1 = public)
 	 * @return int Created set ID
 	 */
-	protected function createSetWithTsumegosAndConnections($rating, $count)
+	protected function createSetWithTsumegosAndConnections($rating, $count, int $public = 1)
 	{
 		$Set = ClassRegistry::init('Set');
 		$Tsumego = ClassRegistry::init('Tsumego');
@@ -124,7 +125,7 @@ abstract class AchievementTestCase extends ControllerTestCase
 		// Create Set (use auto-increment ID to avoid collisions)
 		$Set->create();
 		$Set->save([
-			'public' => 1,
+			'public' => $public,
 			'title' => "Test Set (rating $rating)"]);
 		$setId = $Set->getInsertID();
 

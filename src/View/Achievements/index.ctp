@@ -6,7 +6,7 @@ use App\Utility\Util;
 /**
  * @var View $this
  * @var array $a
- * @var int $unlockedCounter2
+ * @var array|null $viewedUser
  */
 
 ?>
@@ -31,24 +31,17 @@ use App\Utility\Util;
 					}else $displayColor = 'achievementColorGray';
 					if(strlen($a[$i]['Achievement']['name'])>30) $adjust = 'style="font-weight:normal;font-size:17px;"';
 					else $adjust = '';
+					$earnedCount = (int) ($a[$i]['Achievement']['earned_count'] ?? 0);
 					?>
-					<a href="/achievements/view/<?php echo $a[$i]['Achievement']['id']; ?>">
+					<a href="/achievements/view/<?php echo $a[$i]['Achievement']['id'] . (isset($viewedUser) ? '/' . $viewedUser['id'] : ''); ?>">
 					<div align="center" class="achievement1 <?php echo $displayColor; ?>">
 						<div class="acTitle">
 							<h1 <?php echo $adjust; ?>><?php echo h($a[$i]['Achievement']['name']); ?></h1>
 						</div>
 						<div class="acImg">
 							<img src="/img/<?php echo $isActive; ?>.png"><br>
-							<?php
-							$a46style = '';
-							if($a[$i]['Achievement']['id']==46 && $a[$i]['Achievement']['unlocked']){
-								$a46style = ' style="top:-22px;"';
-							?>
-							<div class="acImgXp2">
-								<?php echo $a[$i]['Achievement']['a46value']; ?>
-							</div>
-							<?php } ?>
-							<div class="acImgXp"<?php echo $a46style; ?>>
+						<?php echo AchievementHelper::renderEarnedBadge($earnedCount); ?>
+							<div class="acImgXp">
 							<?php echo $a[$i]['Achievement']['xp']; ?> XP
 							</div>
 						</div>
@@ -84,7 +77,7 @@ use App\Utility\Util;
 			<br>
 			<?php if (isset($viewedUser)):
 				$displayName = $viewedUser['id'] != Auth::getUserID() ? htmlspecialchars($viewedUser['display_name']) : 'You';
-				echo $displayName . ' completed ' . ($unlockedCounter + $unlockedCounter2) . ' of ' . count($a) . ' achievements.';
+				echo $displayName . ' completed ' . $unlockedCounter . ' of ' . count($a) . ' achievements.';
 			endif; ?>
 			<br>
 			<br>

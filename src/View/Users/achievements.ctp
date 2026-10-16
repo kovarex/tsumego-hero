@@ -14,7 +14,11 @@
 	'Achievement Highscore',
 	$users,
 	[
-		['label' => 'Completed', 'render' => fn($user) => $user['achievement_score'] . '/' . Achievement::COUNT],
+		[
+			'label' => 'Completed',
+			'render' => fn($user) => $user['achievement_score'] . '/' . Achievement::COUNT
+				. AchievementHelper::renderEarnedTimes((int) $user['achievement_earned_times']),
+		],
 	],
 	$totalUsers,
 ); ?>
