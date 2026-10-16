@@ -19,9 +19,9 @@
 <body>
 <h1>Tsumego Hero Code Coverage</h1>
 <div class="summary">
- <div class="card"><div class="big">72%</div><div class="label">Combined (PHP + JS)</div></div>
- <div class="card"><div class="big">92.2%</div><div class="label">PHP (7679/8330 lines)</div></div>
- <div class="card"><div class="big">44.8%</div><div class="label">JS/TS (2761/6162 lines)</div></div>
+ <div class="card"><div class="big">72.1%</div><div class="label">Combined (PHP + JS)</div></div>
+ <div class="card"><div class="big">92.2%</div><div class="label">PHP (7680/8331 lines)</div></div>
+ <div class="card"><div class="big">45%</div><div class="label">JS/TS (2774/6162 lines)</div></div>
 </div>
 <div class="links">
  <a href="./php/">PHP report</a> |
@@ -30,7 +30,7 @@
 <h2>Coverage history</h2>
 <canvas id="chart"></canvas>
 <script>
- const history = [{"x":"2026-09-03","php":89.9,"js":45,"combined":70.2},{"x":"2026-09-05","php":89.8,"js":45,"combined":70.1},{"x":"2026-09-06","php":91.3,"js":44.9,"combined":71},{"x":"2026-09-07","php":91.5,"js":44.7,"combined":71},{"x":"2026-09-08","php":91.4,"js":44.9,"combined":71},{"x":"2026-09-09","php":91.3,"js":45,"combined":71.1},{"x":"2026-09-10","php":91.3,"js":45,"combined":71.1},{"x":"2026-09-11","php":91.5,"js":45,"combined":71.3},{"x":"2026-09-13","php":91.5,"js":45,"combined":71.2},{"x":"2026-09-14","php":91.3,"js":45.1,"combined":70.9},{"x":"2026-09-17","php":91.3,"js":45.1,"combined":70.9},{"x":"2026-09-21","php":91.3,"js":45,"combined":70.9},{"x":"2026-10-07","php":91.3,"js":45.1,"combined":70.9},{"x":"2026-10-11","php":91.5,"js":44.9,"combined":71.1},{"x":"2026-10-12","php":91.5,"js":44.9,"combined":71.1},{"x":"2026-10-14","php":91.6,"js":45,"combined":71.2},{"x":"2026-10-15","php":92,"js":45,"combined":71.9},{"x":"2026-10-16","php":92.2,"js":44.8,"combined":72}];
+ const history = [{"x":"2026-09-03","php":89.9,"js":45,"combined":70.2},{"x":"2026-09-05","php":89.8,"js":45,"combined":70.1},{"x":"2026-09-06","php":91.3,"js":44.9,"combined":71},{"x":"2026-09-07","php":91.5,"js":44.7,"combined":71},{"x":"2026-09-08","php":91.4,"js":44.9,"combined":71},{"x":"2026-09-09","php":91.3,"js":45,"combined":71.1},{"x":"2026-09-10","php":91.3,"js":45,"combined":71.1},{"x":"2026-09-11","php":91.5,"js":45,"combined":71.3},{"x":"2026-09-13","php":91.5,"js":45,"combined":71.2},{"x":"2026-09-14","php":91.3,"js":45.1,"combined":70.9},{"x":"2026-09-17","php":91.3,"js":45.1,"combined":70.9},{"x":"2026-09-21","php":91.3,"js":45,"combined":70.9},{"x":"2026-10-07","php":91.3,"js":45.1,"combined":70.9},{"x":"2026-10-11","php":91.5,"js":44.9,"combined":71.1},{"x":"2026-10-12","php":91.5,"js":44.9,"combined":71.1},{"x":"2026-10-14","php":91.6,"js":45,"combined":71.2},{"x":"2026-10-15","php":92,"js":45,"combined":71.9},{"x":"2026-10-16","php":92.2,"js":45,"combined":72.1}];
  const ctx = document.getElementById('chart');
  new Chart(ctx, {
   type: 'line',
