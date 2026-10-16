@@ -1,5 +1,6 @@
 <?php
 
+use App\Utility\AchievementId;
 use App\Utility\Auth;
 use App\Utility\SetCompletionCounter;
 use App\Utility\Util;
@@ -210,7 +211,7 @@ class AchievementsController extends AppController
 	 */
 	private function fillEarningCollections(array $achievement, ?int $userID): array
 	{
-		if ((int) $achievement['Achievement']['id'] !== Achievement::SUPERIOR_ACCURACY)
+		if ((int) $achievement['Achievement']['id'] !== AchievementId::SUPERIOR_ACCURACY->value)
 			return [];
 
 		$rows = Util::query(

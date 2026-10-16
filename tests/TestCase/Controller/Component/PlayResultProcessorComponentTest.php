@@ -1,5 +1,6 @@
 <?php
 
+use App\Utility\AchievementId;
 use App\Utility\AchievementChecker;
 use App\Utility\Auth;
 use App\Utility\Constants;
@@ -700,7 +701,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$this->loginAs($context);
 		new AchievementChecker()->checkDanSolveAchievements();
 		$unlocked = ClassRegistry::init('AchievementStatus')->find('count', [
-			'conditions' => ['user_id' => $context->user['id'], 'achievement_id' => Achievement::SPRINT],
+			'conditions' => ['user_id' => $context->user['id'], 'achievement_id' => AchievementId::SPRINT->value],
 		]);
 		$this->assertGreaterThan(0, $unlocked, 'Sprint achievement should unlock at 30 solves within a sprint');
 	}
@@ -768,7 +769,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		]);
 		$this->assertNotEmpty($body['achievement_updates'] ?? [], 'Response should include newly unlocked achievements');
 		$unlocked = array_column($body['achievement_updates'], 'id');
-		$this->assertContains(Achievement::PROBLEMS_1000, $unlocked, 'Solving the 1000th problem should return PROBLEMS_1000 in the response');
+		$this->assertContains(AchievementId::PROBLEMS_1000->value, $unlocked, 'Solving the 1000th problem should return PROBLEMS_1000 in the response');
 		foreach ($body['achievement_updates'] as $achievementUpdate)
 		{
 			$this->assertArrayNotHasKey('html', $achievementUpdate, 'The response should be pure data, not pre-rendered HTML');
@@ -864,7 +865,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 			]);
 			$body = $this->solve($context);
 			$this->assertSame(Achievement::COMPLETE_SETS_I_SETS_COUNT, $this->completedSetsCondition($context));
-			$this->assertContains(Achievement::COMPLETE_SETS_I, array_column($body['achievement_updates'] ?? [], 'id'));
+			$this->assertContains(AchievementId::COMPLETE_SETS_I->value, array_column($body['achievement_updates'] ?? [], 'id'));
 		}
 		finally
 		{

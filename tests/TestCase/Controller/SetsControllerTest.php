@@ -1,5 +1,6 @@
 <?php
 
+use App\Utility\AchievementId;
 use App\Utility\Constants;
 use App\Utility\Rating;
 use App\Utility\TsumegoFilters;
@@ -46,8 +47,8 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->testAction('sets/view/50', ['return' => 'contents']);
 
 		$popups = array_column($this->controller->viewVars['achievementUpdates'], 'id');
-		$this->assertContains(Achievement::LIFE_DEATH_ELEMENTARY, $popups, 'The set page hands the achievements it unlocked to the layout');
-		$this->assertTextContains('"id":' . Achievement::LIFE_DEATH_ELEMENTARY, $this->contents, 'The layout renders the achievements the set page unlocked');
+		$this->assertContains(AchievementId::LIFE_DEATH_ELEMENTARY->value, $popups, 'The set page hands the achievements it unlocked to the layout');
+		$this->assertTextContains('"id":' . AchievementId::LIFE_DEATH_ELEMENTARY->value, $this->contents, 'The layout renders the achievements the set page unlocked');
 	}
 
 	/**

@@ -1,6 +1,7 @@
 <?php
 
-/* Test Achievement::SUPERIOR_ACCURACY
+use App\Utility\AchievementId;
+/* Test AchievementId::SUPERIOR_ACCURACY
  * "Finish a collection with 100% accuracy"
  * Requires: set with 100+ tsumegos, 100% accuracy (acA.value >= 100) */
 use App\Utility\AchievementChecker;
@@ -24,7 +25,7 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 			'value' => 100]);
 
 		new AchievementChecker()->checkSetAchievements($setId);
-		$this->assertAchievementUnlocked(Achievement::SUPERIOR_ACCURACY, 'Superior Accuracy (100%) should unlock');
+		$this->assertAchievementUnlocked(AchievementId::SUPERIOR_ACCURACY, 'Superior Accuracy (100%) should unlock');
 	}
 
 	public function testSuperiorAccuracyDoesNotUnlockBelow100Percent()
@@ -44,7 +45,7 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 			'value' => 99]);
 
 		new AchievementChecker()->checkSetAchievements($setId);
-		$this->assertAchievementNotUnlocked(Achievement::SUPERIOR_ACCURACY);
+		$this->assertAchievementNotUnlocked(AchievementId::SUPERIOR_ACCURACY);
 	}
 
 	/**
@@ -60,7 +61,7 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$checker->checkSetAchievements($setId)->finalize();
 
 		$this->assertContains(
-			Achievement::SUPERIOR_ACCURACY,
+			AchievementId::SUPERIOR_ACCURACY->value,
 			array_column($checker->updated, 'id'),
 			'Superior Accuracy should be among the achievements unlocked by the first perfect collection');
 
@@ -85,7 +86,7 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$repeat->checkSetAchievements($secondSet)->finalize();
 
 		$status = ClassRegistry::init('AchievementStatus')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'achievement_id' => Achievement::SUPERIOR_ACCURACY]]);
+			'conditions' => ['user_id' => $context->user['id'], 'achievement_id' => AchievementId::SUPERIOR_ACCURACY->value]]);
 		$this->assertSame(2, (int) $status['AchievementStatus']['value'], 'The second collection should raise the count to 2');
 
 		$this->assertSame([], $repeat->updated, 'A further collection should not queue a popup');
@@ -103,7 +104,7 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$setId = $this->createFinishedCollection($context->user['id'], 99);
 
 		new AchievementChecker()->checkSetAchievements($setId)->finalize();
-		$this->assertAchievementNotUnlocked(Achievement::SUPERIOR_ACCURACY);
+		$this->assertAchievementNotUnlocked(AchievementId::SUPERIOR_ACCURACY);
 	}
 
 	/**
@@ -121,7 +122,7 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		new AchievementChecker()->checkSetAchievements($smallSet)->finalize();
 
 		$status = ClassRegistry::init('AchievementStatus')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'achievement_id' => Achievement::SUPERIOR_ACCURACY]]);
+			'conditions' => ['user_id' => $context->user['id'], 'achievement_id' => AchievementId::SUPERIOR_ACCURACY->value]]);
 		$this->assertSame(1, (int) $status['AchievementStatus']['value'],
 			'the small collection should not be counted');
 	}
@@ -147,7 +148,7 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		new AchievementChecker()->checkSetAchievements($setId);
 
 		$status = ClassRegistry::init('AchievementStatus')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'achievement_id' => Achievement::SUPERIOR_ACCURACY]]);
+			'conditions' => ['user_id' => $context->user['id'], 'achievement_id' => AchievementId::SUPERIOR_ACCURACY->value]]);
 		$this->assertSame(1, (int) $status['AchievementStatus']['value'],
 			'two accuracy rows for one set are one collection');
 	}
@@ -159,13 +160,13 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 	public function testEarnedCountIsNotLoweredByALaterCollection()
 	{
 		$context = new ContextPreparator(['user' => ['achievement-statuses' => [
-			['id' => Achievement::SUPERIOR_ACCURACY, 'value' => 5]]]]);
+			['id' => AchievementId::SUPERIOR_ACCURACY->value, 'value' => 5]]]]);
 
 		$setId = $this->createFinishedCollection($context->user['id']);
 		new AchievementChecker()->checkSetAchievements($setId);
 
 		$status = ClassRegistry::init('AchievementStatus')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'achievement_id' => Achievement::SUPERIOR_ACCURACY]]);
+			'conditions' => ['user_id' => $context->user['id'], 'achievement_id' => AchievementId::SUPERIOR_ACCURACY->value]]);
 		$this->assertSame(5, (int) $status['AchievementStatus']['value'],
 			'a later collection does not lower an earned count');
 	}
@@ -181,7 +182,7 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$setId = $this->createFinishedCollection($context->user['id'], 100, 0);
 		new AchievementChecker()->checkSetAchievements($setId);
 
-		$this->assertAchievementNotUnlocked(Achievement::SUPERIOR_ACCURACY);
+		$this->assertAchievementNotUnlocked(AchievementId::SUPERIOR_ACCURACY);
 	}
 
 	/**
@@ -199,7 +200,7 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 
 		new AchievementChecker()->checkSetAchievements($setId);
 
-		$this->assertAchievementNotUnlocked(Achievement::SUPERIOR_ACCURACY);
+		$this->assertAchievementNotUnlocked(AchievementId::SUPERIOR_ACCURACY);
 	}
 
 	/**
@@ -214,7 +215,7 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$plainSetId = $this->createSetWithTsumegosAndConnections(1200, 100);
 		$personalSetId = $this->createFinishedCollection($context->user['id'], 100, 0);
 
-		$page = $this->testAction('/achievements/view/' . Achievement::SUPERIOR_ACCURACY, ['return' => 'view']);
+		$page = $this->testAction('/achievements/view/' . AchievementId::SUPERIOR_ACCURACY->value, ['return' => 'view']);
 
 		$this->assertStringContainsString('href="/sets/view/' . $earnedSetId . '" class="acCollections__link acCollections__link--earned"', $page,
 			'the collection finished at 100% accuracy is marked as earned');
@@ -245,7 +246,7 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$finishedSetId = $this->createFinishedCollection($context->user['id']);
 		$untouchedSetId = $this->createSetWithTsumegosAndConnections(1200, 100);
 
-		$page = $this->testAction('/achievements/view/' . Achievement::SUPERIOR_ACCURACY, ['return' => 'view']);
+		$page = $this->testAction('/achievements/view/' . AchievementId::SUPERIOR_ACCURACY->value, ['return' => 'view']);
 
 		$this->assertStringContainsString(
 			'href="/sets/view/' . $closeSetId . '" class="acCollections__link">Test Set (rating 1200)<span class="acCollections__percent">96.5%</span></a>',
@@ -268,10 +269,10 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 	public function testAchievementPageExplainsACountWithoutMarkedCollections()
 	{
 		$context = new ContextPreparator(['user' => ['achievement-statuses' => [
-			['id' => Achievement::SUPERIOR_ACCURACY, 'value' => 14]]]]);
+			['id' => AchievementId::SUPERIOR_ACCURACY->value, 'value' => 14]]]]);
 		$this->createSetWithTsumegosAndConnections(1200, 100);
 
-		$page = $this->testAction('/achievements/view/' . Achievement::SUPERIOR_ACCURACY, ['return' => 'view']);
+		$page = $this->testAction('/achievements/view/' . AchievementId::SUPERIOR_ACCURACY->value, ['return' => 'view']);
 
 		$this->assertStringContainsString('14 of the collections it was earned on no longer count', $page,
 			'a count without marked collections is explained');
@@ -290,7 +291,7 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$mySetId = $this->createFinishedCollection($context->user['id']);
 		$theirSetId = $this->createFinishedCollection($otherUserId);
 
-		$page = $this->testAction('/achievements/view/' . Achievement::SUPERIOR_ACCURACY . '/' . $otherUserId, ['return' => 'view']);
+		$page = $this->testAction('/achievements/view/' . AchievementId::SUPERIOR_ACCURACY->value . '/' . $otherUserId, ['return' => 'view']);
 
 		$this->assertStringContainsString('href="/sets/view/' . $theirSetId . '" class="acCollections__link acCollections__link--earned"', $page,
 			'the viewed player\'s perfect collection is marked');
@@ -316,7 +317,7 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$page = $this->testAction('/achievements/user/' . $otherUserId, ['return' => 'view']);
 
 		$this->assertStringContainsString(
-			'href="/achievements/view/' . Achievement::SUPERIOR_ACCURACY . '/' . $otherUserId . '"', $page,
+			'href="/achievements/view/' . AchievementId::SUPERIOR_ACCURACY->value . '/' . $otherUserId . '"', $page,
 			'a card of another player links to their achievement');
 	}
 

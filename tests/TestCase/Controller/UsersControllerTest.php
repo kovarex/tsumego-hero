@@ -1,5 +1,6 @@
 <?php
 
+use App\Utility\AchievementId;
 use App\Utility\Rating;
 use App\Utility\TimeModeUtil;
 use PHPUnitRetry\RetryTrait;
@@ -307,9 +308,9 @@ class UsersControllerTest extends ControllerTestCase
 			'user' => [
 				'name' => 'repeater',
 				'achievement-statuses' => [
-					['id' => Achievement::PROBLEMS_1000],
-					['id' => Achievement::PROBLEMS_2000],
-					['id' => Achievement::SUPERIOR_ACCURACY, 'value' => 3],
+					['id' => AchievementId::PROBLEMS_1000->value],
+					['id' => AchievementId::PROBLEMS_2000->value],
+					['id' => AchievementId::SUPERIOR_ACCURACY->value, 'value' => 3],
 				],
 			],
 		]);
@@ -319,7 +320,7 @@ class UsersControllerTest extends ControllerTestCase
 
 		// three achievements unlocked, one of them earned three times
 		$browser->checkTable('#final-info-table', $this, [
-			3 => ['Achievements:', '3 of ' . Achievement::COUNT . ' +3'],
+			3 => ['Achievements:', '3 of ' . AchievementId::count() . ' +3'],
 		]);
 	}
 
@@ -333,8 +334,8 @@ class UsersControllerTest extends ControllerTestCase
 			'user' => [
 				'name' => 'collector',
 				'achievement-statuses' => [
-					['id' => Achievement::PROBLEMS_1000],
-					['id' => Achievement::SUPERIOR_ACCURACY],
+					['id' => AchievementId::PROBLEMS_1000->value],
+					['id' => AchievementId::SUPERIOR_ACCURACY->value],
 				],
 			],
 		]);
@@ -343,7 +344,7 @@ class UsersControllerTest extends ControllerTestCase
 		$browser->get('users/view/' . $context->user['id']);
 
 		$browser->checkTable('#final-info-table', $this, [
-			3 => ['Achievements:', '2 of ' . Achievement::COUNT],
+			3 => ['Achievements:', '2 of ' . AchievementId::count()],
 		]);
 	}
 
@@ -356,7 +357,7 @@ class UsersControllerTest extends ControllerTestCase
 			'user' => [
 				'name' => 'repeater',
 				'achievement-statuses' => [
-					['id' => Achievement::SUPERIOR_ACCURACY, 'value' => 3],
+					['id' => AchievementId::SUPERIOR_ACCURACY->value, 'value' => 3],
 				],
 			],
 		]);
@@ -376,7 +377,7 @@ class UsersControllerTest extends ControllerTestCase
 			'user' => [
 				'name' => 'repeater',
 				'achievement-statuses' => [
-					['id' => Achievement::SUPERIOR_ACCURACY, 'value' => 3],
+					['id' => AchievementId::SUPERIOR_ACCURACY->value, 'value' => 3],
 				],
 			],
 		]);
@@ -384,7 +385,7 @@ class UsersControllerTest extends ControllerTestCase
 		$this->testAction('users/view/' . $context->user['id'], ['return' => 'view']);
 
 		$this->assertStringContainsString(
-			'1 of ' . Achievement::COUNT . ' <span class="achievementEarnedTimes" title="Earned 3 times">+3</span>',
+			'1 of ' . AchievementId::count() . ' <span class="achievementEarnedTimes" title="Earned 3 times">+3</span>',
 			$this->view,
 			'the count of completed achievements carries how often the repeatable one was earned');
 	}

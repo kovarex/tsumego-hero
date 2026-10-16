@@ -1,4 +1,5 @@
 <?php
+use App\Utility\AchievementId;
 
 /**
  * @var View $this
@@ -16,7 +17,7 @@
 	[
 		[
 			'label' => 'Completed',
-			'render' => fn($user) => $user['achievement_score'] . '/' . Achievement::COUNT
+			'render' => fn($user) => $user['achievement_score'] . '/' . AchievementId::count()
 				. AchievementHelper::renderEarnedTimes((int) $user['achievement_earned_times']),
 		],
 	],

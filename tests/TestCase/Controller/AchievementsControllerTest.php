@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\AchievementId;
+
 class AchievementsControllerTest extends TestCaseWithAuth
 {
 	public function testAnonymousSeesAchievementsGrid()
@@ -39,7 +41,7 @@ class AchievementsControllerTest extends TestCaseWithAuth
 	public function testCardsShowProgressOfLockedSetAchievements()
 	{
 		new ContextPreparator([
-			'user' => ['name' => 'achiever', 'achievement-statuses' => [['id' => Achievement::COMPLETE_SETS_I]]],
+			'user' => ['name' => 'achiever', 'achievement-statuses' => [['id' => AchievementId::COMPLETE_SETS_I->value]]],
 			'achievement-conditions' => [
 				['category' => 'set', 'value' => 27],
 				['category' => 'golden', 'value' => 7],
@@ -76,9 +78,9 @@ class AchievementsControllerTest extends TestCaseWithAuth
 			'user' => [
 				'name' => 'repeater',
 				'achievement-statuses' => [
-					['id' => Achievement::PROBLEMS_1000],
-					['id' => Achievement::PROBLEMS_2000],
-					['id' => Achievement::SUPERIOR_ACCURACY, 'value' => 3],
+					['id' => AchievementId::PROBLEMS_1000->value],
+					['id' => AchievementId::PROBLEMS_2000->value],
+					['id' => AchievementId::SUPERIOR_ACCURACY->value, 'value' => 3],
 				],
 			],
 		]);
@@ -102,13 +104,13 @@ class AchievementsControllerTest extends TestCaseWithAuth
 			'user' => [
 				'name' => 'repeater',
 				'achievement-statuses' => [
-					['id' => Achievement::SUPERIOR_ACCURACY, 'value' => 3],
+					['id' => AchievementId::SUPERIOR_ACCURACY->value, 'value' => 3],
 				],
 			],
 		]);
 		$this->login('repeater');
 
-		$result = $this->testAction('/achievements/view/' . Achievement::SUPERIOR_ACCURACY, ['return' => 'view']);
+		$result = $this->testAction('/achievements/view/' . AchievementId::SUPERIOR_ACCURACY->value, ['return' => 'view']);
 
 		$this->assertStringContainsString('title="Earned 3 times"', $result);
 		$this->assertStringContainsString('>3x<', $result);
@@ -123,13 +125,13 @@ class AchievementsControllerTest extends TestCaseWithAuth
 			'user' => [
 				'name' => 'single',
 				'achievement-statuses' => [
-					['id' => Achievement::PROBLEMS_1000],
+					['id' => AchievementId::PROBLEMS_1000->value],
 				],
 			],
 		]);
 		$this->login('single');
 
-		$result = $this->testAction('/achievements/view/' . Achievement::PROBLEMS_1000, ['return' => 'view']);
+		$result = $this->testAction('/achievements/view/' . AchievementId::PROBLEMS_1000->value, ['return' => 'view']);
 
 		$this->assertStringNotContainsString('title="Earned', $result);
 	}
@@ -343,32 +345,32 @@ class AchievementsControllerTest extends TestCaseWithAuth
 			],
 		]);
 
-		$goldDigger = $this->testAction('/achievements/view/' . Achievement::GOLD_DIGGER, ['return' => 'view']);
+		$goldDigger = $this->testAction('/achievements/view/' . AchievementId::GOLD_DIGGER->value, ['return' => 'view']);
 		$this->assertStringContainsString('class="progress"', $goldDigger);
 		$this->assertStringContainsString('progress__fill', $goldDigger);
 		$this->assertStringContainsString('--percent:70', $goldDigger);
 		$this->assertStringContainsString('width:70%', $goldDigger);
 		$this->assertStringContainsString('7/10', $goldDigger);
 
-		$badPotion = $this->testAction('/achievements/view/' . Achievement::BAD_POTION, ['return' => 'view']);
+		$badPotion = $this->testAction('/achievements/view/' . AchievementId::BAD_POTION->value, ['return' => 'view']);
 		$this->assertStringContainsString('class="progress"', $badPotion);
 		$this->assertStringContainsString('width:20%', $badPotion);
 		$this->assertStringContainsString('3/15', $badPotion);
 
-		$completeSets = $this->testAction('/achievements/view/' . Achievement::COMPLETE_SETS_III, ['return' => 'view']);
+		$completeSets = $this->testAction('/achievements/view/' . AchievementId::COMPLETE_SETS_III->value, ['return' => 'view']);
 		$this->assertStringContainsString('class="progress"', $completeSets);
 		$this->assertStringContainsString('width:80%', $completeSets);
 		$this->assertStringContainsString('24/30', $completeSets);
 
-		$errorStreak = $this->testAction('/achievements/view/' . Achievement::NO_ERROR_STREAK_IV, ['return' => 'view']);
+		$errorStreak = $this->testAction('/achievements/view/' . AchievementId::NO_ERROR_STREAK_IV->value, ['return' => 'view']);
 		$this->assertStringContainsString('class="progress"', $errorStreak);
 		$this->assertStringContainsString('41/50', $errorStreak);
 
-		$danSolve = $this->testAction('/achievements/view/' . Achievement::SOLVE_10_2D, ['return' => 'view']);
+		$danSolve = $this->testAction('/achievements/view/' . AchievementId::SOLVE_10_2D->value, ['return' => 'view']);
 		$this->assertStringContainsString('class="progress"', $danSolve);
 		$this->assertStringContainsString('7/10', $danSolve);
 
-		$sprint = $this->testAction('/achievements/view/' . Achievement::SPRINT, ['return' => 'view']);
+		$sprint = $this->testAction('/achievements/view/' . AchievementId::SPRINT->value, ['return' => 'view']);
 		$this->assertStringContainsString('class="progress"', $sprint);
 	}
 
