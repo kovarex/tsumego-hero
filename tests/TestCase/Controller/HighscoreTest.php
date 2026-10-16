@@ -1,5 +1,6 @@
 <?php
 
+use App\Utility\AchievementId;
 use App\Utility\Level;
 use App\Utility\Rating;
 
@@ -147,16 +148,16 @@ class HighscoreTest extends TestCaseWithAuth
 					'name' => 'AchieverA',
 					'rating' => 2200,
 					'achievement-statuses' => [
-						['id' => Achievement::PROBLEMS_1000],
-						['id' => Achievement::SUPERIOR_ACCURACY, 'value' => 5],
+						['id' => AchievementId::PROBLEMS_1000->value],
+						['id' => AchievementId::SUPERIOR_ACCURACY->value, 'value' => 5],
 					],
 				],
 				[
 					'name' => 'AchieverB',
 					'rating' => 1800,
 					'achievement-statuses' => [
-						['id' => Achievement::PROBLEMS_1000],
-						['id' => Achievement::SUPERIOR_ACCURACY, 'value' => 8],
+						['id' => AchievementId::PROBLEMS_1000->value],
+						['id' => AchievementId::SUPERIOR_ACCURACY->value, 'value' => 8],
 					],
 				],
 			],
@@ -169,8 +170,8 @@ class HighscoreTest extends TestCaseWithAuth
 		// Both unlocked 2 achievements; the repetitions of Superior Accuracy only
 		// separate them, they don't count as further completed achievements.
 		$this->assertGreaterThanOrEqual(3, count($rows));
-		$this->assertRowContains($rows[1], '#1', 'DN_AchieverB', '2/' . Achievement::COUNT . ' +8');
-		$this->assertRowContains($rows[2], '#2', 'DN_AchieverA', '2/' . Achievement::COUNT . ' +5');
+		$this->assertRowContains($rows[1], '#1', 'DN_AchieverB', '2/' . AchievementId::count() . ' +8');
+		$this->assertRowContains($rows[2], '#2', 'DN_AchieverA', '2/' . AchievementId::count() . ' +5');
 		// the tiebreaker rides along in the score cell, it gets no column of its own
 		$this->assertRowContains($rows[0], 'Place', 'Name', 'Premium', 'Completed');
 		$this->assertStringNotContainsString('Repeats', $rows[0]->textContent);
@@ -356,7 +357,7 @@ class HighscoreTest extends TestCaseWithAuth
 			'other-users' => [
 				[
 					'name' => 'AchPlayer',
-					'achievement-statuses' => [['id' => Achievement::PROBLEMS_1000]],
+					'achievement-statuses' => [['id' => AchievementId::PROBLEMS_1000->value]],
 				],
 			],
 		]);
@@ -365,7 +366,7 @@ class HighscoreTest extends TestCaseWithAuth
 		$this->assertTextContains('DN_AchPlayer', $this->view);
 		// kovarex has no achievements but still appears via self-view with 0
 		$this->assertTextContains('DN_kovarex', $this->view);
-		$this->assertTextContains('0/' . Achievement::COUNT, $this->view);
+		$this->assertTextContains('0/' . AchievementId::count(), $this->view);
 	}
 
 	/**
@@ -379,17 +380,17 @@ class HighscoreTest extends TestCaseWithAuth
 				[
 					'name' => 'Repeater',
 					'achievement-statuses' => [
-						['id' => Achievement::PROBLEMS_1000],
-						['id' => Achievement::PROBLEMS_2000],
-						['id' => Achievement::SUPERIOR_ACCURACY, 'value' => 5],
+						['id' => AchievementId::PROBLEMS_1000->value],
+						['id' => AchievementId::PROBLEMS_2000->value],
+						['id' => AchievementId::SUPERIOR_ACCURACY->value, 'value' => 5],
 					],
 				],
 				[
 					'name' => 'Collector',
 					'achievement-statuses' => [
-						['id' => Achievement::PROBLEMS_3000],
-						['id' => Achievement::PROBLEMS_4000],
-						['id' => Achievement::PROBLEMS_5000],
+						['id' => AchievementId::PROBLEMS_3000->value],
+						['id' => AchievementId::PROBLEMS_4000->value],
+						['id' => AchievementId::PROBLEMS_5000->value],
 					],
 				],
 			],
@@ -400,8 +401,8 @@ class HighscoreTest extends TestCaseWithAuth
 		$rows = $dom->querySelectorAll('.data-table tr');
 
 		// both unlocked three achievements, the repetitions of Superior Accuracy excluded
-		$this->assertRowContains($rows[1], 'Repeater', '3/' . Achievement::COUNT . ' +5');
-		$this->assertRowContains($rows[2], 'Collector', '3/' . Achievement::COUNT);
+		$this->assertRowContains($rows[1], 'Repeater', '3/' . AchievementId::count() . ' +5');
+		$this->assertRowContains($rows[2], 'Collector', '3/' . AchievementId::count());
 		// the collector earned both exactly once, so nothing is added to his score
 		$this->assertStringNotContainsString('+', $rows[2]->textContent);
 	}
