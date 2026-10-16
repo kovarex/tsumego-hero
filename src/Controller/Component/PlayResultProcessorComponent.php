@@ -325,7 +325,12 @@ class PlayResultProcessorComponent extends Component
 		if (!Level::XPAndRatingIsGainedInTsumegoStatus($previousTsumegoStatus))
 			return;
 		if (!$result['solved'])
+		{
+			// A golden tsumego is a single attempt, so failing one ends the run.
+			if ($previousTsumegoStatus == TsumegoStatus::$GOLDEN)
+				AppController::updateGoldenCondition(false);
 			return;
+		}
 
 		$solvedTsumegoRank = Rating::getReadableRankFromRating($previousTsumego['Tsumego']['rating']);
 		AppController::saveDanSolveCondition($solvedTsumegoRank, $previousTsumego['Tsumego']['id']);
@@ -336,6 +341,7 @@ class PlayResultProcessorComponent extends Component
 			AppController::updateSprintCondition(true);
 		else
 			AppController::updateSprintCondition();
+		// A solved golden tsumego moves the run one further.
 		if ($previousTsumegoStatus == TsumegoStatus::$GOLDEN)
 			AppController::updateGoldenCondition(true);
 	}
