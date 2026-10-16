@@ -216,8 +216,7 @@ class AchievementsController extends AppController
 		$rows = Util::query(
 			'SELECT s.id, s.title FROM `set` s WHERE s.id IN ('
 			. SetConnection::publicCollectionsWithMinimumProblemsSql() . ') '
-			. 'ORDER BY ' . SetConnection::displayOrderForSetSql('s'),
-			[Achievement::COLLECTION_MINIMUM_PROBLEMS]
+			. 'ORDER BY ' . SetConnection::displayOrderForSetSql('s')
 		);
 
 		$bestAccuracy = [];

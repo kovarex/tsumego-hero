@@ -36,10 +36,14 @@ class SetConnection extends AppModel
 		return self::displayOrderForSetSql($setAlias) . ", $connectionAlias.id ASC";
 	}
 
+	/** The problems a collection needs before it can earn the collection achievements. */
+	public const int ACHIEVEMENT_MINIMUM_PROBLEMS = 100;
+
 	/**
 	 * Subquery for the collections that can earn the collection achievements: collections
-	 * built by the site itself, with at least the bound number of problems. Collections a
-	 * player assembled are personal and do not count, not even when they are public.
+	 * built by the site itself, with at least self::ACHIEVEMENT_MINIMUM_PROBLEMS problems.
+	 * Collections a player assembled are personal and do not count, not even when they are
+	 * public.
 	 */
 	public static function publicCollectionsWithMinimumProblemsSql(): string
 	{
@@ -47,7 +51,7 @@ class SetConnection extends AppModel
 			. ' JOIN tsumego t ON t.id = sc.tsumego_id'
 			. ' JOIN `set` st ON st.id = sc.set_id'
 			. ' WHERE st.public = 1 AND st.user_id IS NULL'
-			. ' GROUP BY sc.set_id HAVING COUNT(*) >= ?';
+			. ' GROUP BY sc.set_id HAVING COUNT(*) >= ' . self::ACHIEVEMENT_MINIMUM_PROBLEMS;
 	}
 
 	/**
