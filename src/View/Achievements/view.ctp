@@ -102,7 +102,7 @@ if ($achievement['Achievement']['additionalDescription'] != null)
 		<?php endif; ?>
 		<div class="acCollections__list">
 			<?php foreach ($collections as $collection): ?>
-				<a href="/sets/view/<?= (int) $collection['id'] ?>" class="acCollections__link<?= $collection['earned'] ? ' acCollections__link--earned' : '' ?>"<?= $collection['accuracy'] > 0 ? ' title="Your best accuracy: ' . h($collection['accuracy']) . '%"' : '' ?>><?= h($collection['title']) ?></a>
+				<a href="/sets/view/<?= (int) $collection['id'] ?>" class="acCollections__link<?= $collection['earned'] ? ' acCollections__link--earned' : '' ?>"><?= h($collection['title']) ?><?php if (!$collection['earned'] && $collection['accuracy'] > 0): ?><span class="acCollections__percent"><?= h($collection['accuracy']) ?>%</span><?php endif; ?></a>
 			<?php endforeach; ?>
 		</div>
 	</div>

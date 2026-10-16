@@ -307,7 +307,7 @@
   color: var(--color-white);
   background: var(--color-gray-dark);
 }
-.achievementRepeats {
+.achievementEarnedTimes {
   vertical-align: super;
   font-size: var(--font-size-md);
 }
@@ -432,6 +432,10 @@
 .acCollections__link--earned {
 	color: inherit;
 	font-weight: var(--font-weight-heavy);
+}
+.acCollections__percent {
+	margin-left: 0.4em;
+	font-size: var(--font-size-sm);
 }
 .acOwner {
 	margin: 0;

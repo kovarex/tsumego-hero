@@ -227,6 +227,41 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 	}
 
 	/**
+	 * The collections that did not earn it yet say how much accuracy the player reached on
+	 * them, so the list shows how far each collection is.
+	 */
+	public function testAchievementPageShowsTheAccuracyReachedOnTheRemainingCollections()
+	{
+		$context = new ContextPreparator();
+
+		$closeSetId = $this->createSetWithTsumegosAndConnections(1200, 100);
+		$AchievementCondition = ClassRegistry::init('AchievementCondition');
+		$AchievementCondition->create();
+		$AchievementCondition->save([
+			'user_id' => $context->user['id'],
+			'set_id' => $closeSetId,
+			'category' => '%',
+			'value' => 96.5]);
+		$finishedSetId = $this->createFinishedCollection($context->user['id']);
+		$untouchedSetId = $this->createSetWithTsumegosAndConnections(1200, 100);
+
+		$page = $this->testAction('/achievements/view/' . Achievement::SUPERIOR_ACCURACY, ['return' => 'view']);
+
+		$this->assertStringContainsString(
+			'href="/sets/view/' . $closeSetId . '" class="acCollections__link">Test Set (rating 1200)<span class="acCollections__percent">96.5%</span></a>',
+			$page,
+			'a collection the player got close on shows the accuracy reached on it');
+		$this->assertStringContainsString(
+			'href="/sets/view/' . $finishedSetId . '" class="acCollections__link acCollections__link--earned">Test Set (rating 1200)</a>',
+			$page,
+			'a finished collection carries the mark instead of a number');
+		$this->assertStringContainsString(
+			'href="/sets/view/' . $untouchedSetId . '" class="acCollections__link">Test Set (rating 1200)</a>',
+			$page,
+			'a collection the player never opened shows no accuracy');
+	}
+
+	/**
 	 * A count earned on collections that no longer count is explained, so the marked
 	 * collections never look like they contradict the number next to them.
 	 */
