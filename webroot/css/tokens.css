@@ -229,6 +229,7 @@
 		--avatar-board-edge: rgba(0, 0, 0, 0.15);
 
 		/* ── Typography ── */
+		--font-family-base: system-ui, sans-serif;
 		/* Fluid type scale: the viewport-relative term grows the size on wide
 		   screens; the clamp() caps keep the minimum (mobile) size readable
 		   without the text ballooning on very large monitors. */

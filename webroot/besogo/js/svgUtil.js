@@ -247,7 +247,7 @@ besogo.svgLabel = function(x, y, color, label, size = null) {
         dy: ".65ex", // Seems to work for vertically centering these fonts
         "font-size": size,
         "text-anchor": "middle", // Horizontal centering
-        "font-family": "Helvetica, Arial, sans-serif",
+        "font-family": "system-ui, sans-serif",
         fill: color
     });
     element.appendChild( document.createTextNode(label) );

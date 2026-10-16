@@ -88,7 +88,7 @@ $this->set('title_for_layout', $errorTitle);
 			<?php if (method_exists($error, 'getTrace')): ?>
 				<div style="margin-top: 20px;">
 					<strong style="color: var(--text-color, #333); display: block; padding: 10px; background: rgba(0, 0, 0, 0.03); border-radius: 4px;">Stack Trace</strong>
-					<pre style="overflow: auto; max-height: 500px; background: rgba(0, 0, 0, 0.8); color: var(--color-white); padding: 20px; border-radius: 5px; font-size: 13px; line-height: 1.6; margin-top: 10px; font-family: 'Consolas', 'Monaco', monospace;"><?php
+					<pre style="overflow: auto; max-height: 500px; background: rgba(0, 0, 0, 0.8); color: var(--color-white); padding: 20px; border-radius: 5px; font-size: 13px; line-height: 1.6; margin-top: 10px;"><?php
 						// Build trace with #-1 throw location
 						$traceLines = [];
 						$traceLines[] = '#-1 ' . h($error->getFile()) . '(' . h($error->getLine()) . ')';

@@ -1,7 +1,7 @@
 @layer page
 {
 body {
-	font-family: Times New Roman, verdana, helvetica, arial, sans-serif;
+	font-family: var(--font-family-base);
 	font-size: clamp(15px, 0.9rem + 0.5vw, 16px);
 	margin: 0;
 	text-align: justify;
@@ -113,7 +113,6 @@ body {
   display: none;
 }
 li a.menuLi {
-  font-family: Georgia;
   letter-spacing: 1px;
   padding: 7px 9px 10px 9px;
   margin: 13px 6px 0 6px;
@@ -147,11 +146,10 @@ li a.menuLi.nav__link--active {
 }
 /* The sign-in link lives in a <div class="site-nav__signin">, not an <li>, so the
    `li a.menuLi` rule doesn't reach it. Apply the same top-level menu look here so
-   it matches the nav items (purple, Georgia, no underline) instead of defaulting
+   it matches the nav items (purple, bold, no underline) instead of defaulting
    to a browser-blue underlined link. */
 .site-nav__signin a.menuLi,
 .site-nav__signin #signInMenu {
-  font-family: Georgia;
   letter-spacing: 1px;
   font-size: 24px;
   font-weight: 700;
@@ -282,7 +280,6 @@ li a.menuLi.nav__link--active {
   height: 26px;
   margin: 0px 0px 0px 15px;
   color: var(--color-white);
-  font-family: "Arial Black", verdana, helvetica, arial, sans-serif;
   font-size: 14px;
   font-style: normal;
   font-variant: normal;
@@ -307,7 +304,6 @@ li a.menuLi.nav__link--active {
   position: relative;
   margin: 3px 0px 0px 0px;
   color: var(--color-white);
-  font-family: "Arial Black", verdana, helvetica, arial, sans-serif;
   font-size: 14px;
   font-style: normal;
   font-variant: normal;
@@ -320,7 +316,6 @@ li a.menuLi.nav__link--active {
 }
 #account-bar-user,
 #account-bar-user2 {
-  font-family: "Arial Black", verdana, helvetica, arial, sans-serif;
   letter-spacing: 1px;
   position: absolute;
   top: 36px;
@@ -441,7 +436,6 @@ h2 {
   line-height: 1.2;
 }
 h3 {
-  font-family: Times New Roman, verdana, helvetica, arial, sans-serif;
   font-size: clamp(16px, 0.9rem + 0.6vw, 20px);
   font-style: normal;
   font-variant: normal;
@@ -504,7 +498,6 @@ h4 {
   background-color: var(--color-gray);
 }.board-picker {
   display: inline-block;
-  font-family: Georgia;
   letter-spacing: 1px;
   color: var(--color-purple-bright);
   font-size: 16px;
@@ -526,14 +519,12 @@ input.newCheck {
 }
 #dropdowntable {
   width: 700px;
-  font-family: Times New Roman;
   color: var(--color-green);
   padding: 5px;
   display: none;
 }
 #dropdowntable2 {
   width: 700px;
-  font-family: Times New Roman;
   color: var(--color-green);
   padding: 5px;
   display: none;
@@ -560,7 +551,6 @@ input.newCheck {
   top: 54px;
   background: var(--color-hero-gradient);
   padding: 1px 10px;
-  font-family: Georgia;
   letter-spacing: 1px;
   font-size: 14px;
   font-weight: 600;
@@ -581,7 +571,6 @@ input.newCheck {
   top: 82px;
   background: var(--color-hero-gradient);
   padding: 1px 10px;
-  font-family: Georgia;
   letter-spacing: 1px;
   font-size: 14px;
   font-weight: 600;
@@ -602,7 +591,6 @@ input.newCheck {
   top: 110px;
   background: var(--color-hero-gradient);
   padding: 1px 10px;
-  font-family: Georgia;
   letter-spacing: 1px;
   font-size: 14px;
   font-weight: 600;
@@ -623,7 +611,6 @@ input.newCheck {
   top: 138px;
   background: var(--color-hero-gradient);
   padding: 1px 10px;
-  font-family: Georgia;
   letter-spacing: 1px;
   font-size: 14px;
   font-weight: 600;
@@ -647,7 +634,6 @@ input.newCheck {
   display: none;
   background-color: var(--color-gray);
   padding: 3px 0px 1px 5px;
-  font-family: Georgia;
   letter-spacing: 1px;
   font-size: 24px;
   font-weight: 400;
@@ -693,7 +679,6 @@ pre {
 }
 #newMenu {
   display: inline-block;
-  font-family: Verdana;
 }
 nav ul {
   padding: 0;
