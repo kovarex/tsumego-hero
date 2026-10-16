@@ -701,7 +701,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 				user.premium AS premium,
 				user.email AS email,
 				COUNT(DISTINCT achievement_status.achievement_id) AS achievement_score,
-				COALESCE(SUM(achievement_status.value) - COUNT(DISTINCT achievement_status.achievement_id), 0) AS achievement_repeats,
+				COALESCE(SUM(CASE WHEN achievement_status.value > 1 THEN achievement_status.value ELSE 0 END), 0) AS achievement_earned_times,
 				ROW_NUMBER() OVER (
 					ORDER BY COUNT(DISTINCT achievement_status.achievement_id) DESC,
 						COALESCE(SUM(achievement_status.value), 0) DESC) as position
@@ -1043,13 +1043,13 @@ ORDER BY category DESC', [$user['User']['id']]));
 
 		$counts = Util::query(
 			'SELECT COUNT(DISTINCT achievement_status.achievement_id) AS completed,
-				COALESCE(SUM(achievement_status.value) - COUNT(DISTINCT achievement_status.achievement_id), 0) AS repeats
+				COALESCE(SUM(CASE WHEN achievement_status.value > 1 THEN achievement_status.value ELSE 0 END), 0) AS earned_times
 			FROM achievement_status
 			WHERE achievement_status.user_id = ?',
 			[$id]
 		)[0];
 		$aNumx = (int) $counts['completed'];
-		$aRepeats = (int) $counts['repeats'];
+		$aEarnedTimes = (int) $counts['earned_times'];
 
 		// only admins get to the profile of a deleted account, they see who it was
 		if ($user['User']['deleted'])
@@ -1062,7 +1062,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 		$this->set('tsumegoCount', $tsumegoCount);
 		$this->set('as', $as);
 		$this->set('aNum', $aNumx);
-		$this->set('aRepeats', $aRepeats);
+		$this->set('aEarnedTimes', $aEarnedTimes);
 		$this->set('aCount', $aCount);
 		$this->set('canResetOldTsumegoStatuses', $canResetOldTsumegoStatuses);
 		return null;

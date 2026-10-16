@@ -17,7 +17,7 @@
 		[
 			'label' => 'Completed',
 			'render' => fn($user) => $user['achievement_score'] . '/' . Achievement::COUNT
-				. AchievementHelper::renderRepeatCount((int) $user['achievement_repeats']),
+				. AchievementHelper::renderEarnedTimes((int) $user['achievement_earned_times']),
 		],
 	],
 	$totalUsers,

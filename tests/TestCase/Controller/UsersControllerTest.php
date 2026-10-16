@@ -317,9 +317,9 @@ class UsersControllerTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$browser->get('users/view/' . $context->user['id']);
 
-		// three achievements unlocked, one of them earned three times -> two repeats
+		// three achievements unlocked, one of them earned three times
 		$browser->checkTable('#final-info-table', $this, [
-			3 => ['Achievements:', '3 of ' . Achievement::COUNT . ' +2'],
+			3 => ['Achievements:', '3 of ' . Achievement::COUNT . ' +3'],
 		]);
 	}
 
@@ -364,6 +364,29 @@ class UsersControllerTest extends ControllerTestCase
 		$this->testAction('users/view/' . $context->user['id'], ['return' => 'view']);
 
 		$this->assertStringContainsString('title="Earned 3 times"', $this->view);
+	}
+
+	/**
+	 * The achievement count on the profile carries the number of times the repeatable
+	 * achievement was earned, the same number the achievement itself shows.
+	 */
+	public function testProfileCountCarriesNumberOfEarnings(): void
+	{
+		$context = new ContextPreparator([
+			'user' => [
+				'name' => 'repeater',
+				'achievement-statuses' => [
+					['id' => Achievement::SUPERIOR_ACCURACY, 'value' => 3],
+				],
+			],
+		]);
+
+		$this->testAction('users/view/' . $context->user['id'], ['return' => 'view']);
+
+		$this->assertStringContainsString(
+			'1 of ' . Achievement::COUNT . ' <span class="achievementEarnedTimes" title="Earned 3 times">+3</span>',
+			$this->view,
+			'the count of completed achievements carries how often the repeatable one was earned');
 	}
 
 	public function testSolveHistoryShowsOnlyViewableSets(): void

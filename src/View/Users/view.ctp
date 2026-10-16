@@ -13,7 +13,7 @@ use App\Utility\ValueGraphRenderer;
  * @var View $this
  * @var array $aCount
  * @var int $aNum
- * @var int $aRepeats
+ * @var int $aEarnedTimes
  * @var array $as
  * @var bool $canResetOldTsumegoStatuses
  * @var array $dailyResults
@@ -249,7 +249,7 @@ use App\Utility\ValueGraphRenderer;
 			</tr>
 			<tr>
 				<td>Achievements:</td>
-				<td><?php echo $aNum . ' of ' . count($aCount) . AchievementHelper::renderRepeatCount($aRepeats); ?></td>
+				<td><?php echo $aNum . ' of ' . count($aCount) . AchievementHelper::renderEarnedTimes($aEarnedTimes); ?></td>
 			</tr>
 			<tr>
 				<td colspan="2">

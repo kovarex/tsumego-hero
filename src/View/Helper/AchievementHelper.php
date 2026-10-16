@@ -11,17 +11,19 @@
 class AchievementHelper extends AppHelper
 {
 	/**
-	 * Repeat count of a repeatable achievement, shown as a superscript next to a
-	 * completion count, e.g. "110/114 +7". Empty when it was never repeated.
+	 * How often the repeatable achievements were earned, as a superscript next to a
+	 * completion count, e.g. "110/114 +2". The sign and the number stay apart on
+	 * purpose: the summary is not about one achievement, so it does not read "2x".
+	 * Empty while nothing was earned twice.
 	 *
-	 * @param int $repeats How often the achievement was earned on top of the first time.
+	 * @param int $earnedTimes How often the achievements that can be earned repeatedly were earned.
 	 */
-	public static function renderRepeatCount(int $repeats): string
+	public static function renderEarnedTimes(int $earnedTimes): string
 	{
-		if ($repeats < 1)
+		if ($earnedTimes < 2)
 			return '';
-		return ' <span class="achievementRepeats" title="Extra completions of repeatable achievements">+'
-			. $repeats . '</span>';
+		return ' <span class="achievementEarnedTimes" title="Earned ' . $earnedTimes . ' times">+'
+			. $earnedTimes . '</span>';
 	}
 
 	/**

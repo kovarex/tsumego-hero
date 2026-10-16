@@ -169,12 +169,12 @@ class HighscoreTest extends TestCaseWithAuth
 		// Both unlocked 2 achievements; the repetitions of Superior Accuracy only
 		// separate them, they don't count as further completed achievements.
 		$this->assertGreaterThanOrEqual(3, count($rows));
-		$this->assertRowContains($rows[1], '#1', 'DN_AchieverB', '2/' . Achievement::COUNT . ' +7');
-		$this->assertRowContains($rows[2], '#2', 'DN_AchieverA', '2/' . Achievement::COUNT . ' +4');
+		$this->assertRowContains($rows[1], '#1', 'DN_AchieverB', '2/' . Achievement::COUNT . ' +8');
+		$this->assertRowContains($rows[2], '#2', 'DN_AchieverA', '2/' . Achievement::COUNT . ' +5');
 		// the tiebreaker rides along in the score cell, it gets no column of its own
 		$this->assertRowContains($rows[0], 'Place', 'Name', 'Premium', 'Completed');
 		$this->assertStringNotContainsString('Repeats', $rows[0]->textContent);
-		$this->assertStringContainsString('Extra completions of repeatable achievements', $this->view);
+		$this->assertStringContainsString('Earned 8 times', $this->view);
 	}
 
 	/**
@@ -400,7 +400,7 @@ class HighscoreTest extends TestCaseWithAuth
 		$rows = $dom->querySelectorAll('.data-table tr');
 
 		// both unlocked three achievements, the repetitions of Superior Accuracy excluded
-		$this->assertRowContains($rows[1], 'Repeater', '3/' . Achievement::COUNT . ' +4');
+		$this->assertRowContains($rows[1], 'Repeater', '3/' . Achievement::COUNT . ' +5');
 		$this->assertRowContains($rows[2], 'Collector', '3/' . Achievement::COUNT);
 		// the collector earned both exactly once, so nothing is added to his score
 		$this->assertStringNotContainsString('+', $rows[2]->textContent);
