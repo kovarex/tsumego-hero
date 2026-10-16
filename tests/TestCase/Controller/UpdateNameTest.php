@@ -494,8 +494,9 @@ class UpdateNameTest extends ControllerTestCase
 	}
 
 	/**
-	 * The rename page shows the board of the player, so the avatar image itself
-	 * must not be sent to the rename page either.
+	 * The rename page shows the board of the player, so the board itself must not be sent
+	 * to the rename page either. The request has to be a real one: a controller test runs
+	 * the action even when the gate redirected it, so it cannot tell the two apart.
 	 */
 	public function testForcedUserStillGetsTheirAvatarImage(): void
 	{
@@ -506,11 +507,32 @@ class UpdateNameTest extends ControllerTestCase
 				'needs_display_name_change' => true,
 			],
 		]);
+		$browser = Browser::instance();
+		$browser->get(ltrim(Avatar::url($context->user['display_name']), '/'));
 
-		$contents = $this->testAction(Avatar::url($context->user['display_name']), ['method' => 'get', 'return' => 'contents']);
+		$this->assertStringContainsString(Avatar::url($context->user['display_name']), $browser->driver->getCurrentURL());
+		$this->assertStringContainsString('<svg', $browser->driver->getPageSource());
+	}
 
-		$this->assertStringNotContainsString('/users/changename', $this->headers['Location'] ?? '');
-		$this->assertStringStartsWith('<svg', $contents);
+	/**
+	 * A list falls back on the board of an account when the picture of an avatar is gone,
+	 * so the board has to be answered while the player still has to pick a name too. The
+	 * gate would otherwise send that request to the rename page and leave the list with a
+	 * broken image.
+	 */
+	public function testForcedUserStillGetsTheirBoardByUserId(): void
+	{
+		$context = new ContextPreparator([
+			'user' => [
+				'display_name' => 'Forced Name',
+				'email' => 'forced@example.com',
+				'needs_display_name_change' => true,
+			],
+		]);
+		$browser = Browser::instance();
+		$browser->get('avatar/' . $context->user['id']);
+
+		$this->assertStringContainsString(Avatar::url('Forced Name'), $browser->driver->getCurrentURL());
 	}
 
 	/**

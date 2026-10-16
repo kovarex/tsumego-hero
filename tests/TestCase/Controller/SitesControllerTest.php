@@ -6,6 +6,7 @@ use PHPUnitRetry\RetryTrait;
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
+use App\Utility\Avatar;
 use App\Utility\Constants;
 
 class SitesControllerTest extends ControllerTestCase
@@ -437,6 +438,12 @@ class SitesControllerTest extends ControllerTestCase
 		$link = $rows[0]->findElement(WebDriverBy::cssSelector('.recent-achievement-achievement-link'));
 		$this->assertStringContainsString('/achievements/view/10', $link->getAttribute('href'));
 
+		// The row shows the board the site draws for the account, which keeps the square
+		// corners of a board instead of the circle of a picture
+		$avatar = $rows[0]->findElement(WebDriverBy::cssSelector('.recent-achievement-user-link img.user-avatar'));
+		$this->assertStringContainsString('/board/', $avatar->getAttribute('src'));
+		$this->assertStringContainsString('user-avatar--board', $avatar->getAttribute('class'));
+
 		// Second: Alice's 9000 Problems (Jan 9)
 		$this->assertStringContainsString('9000 Problems', $rows[1]->getText());
 		$this->assertStringContainsString('DN_Alice', $rows[1]->getText());
@@ -457,6 +464,44 @@ class SitesControllerTest extends ControllerTestCase
 		$this->assertStringContainsString('DN_Alice', $allText);
 		$this->assertStringContainsString('DN_Bob', $allText);
 		$this->assertStringContainsString('DN_Charlie', $allText);
+	}
+
+	/**
+	 * A picture of another host can stop working, which the browser draws as a broken image.
+	 * The board of the account takes over, so the row keeps its square avatar.
+	 *
+	 * The picture is broken by the test instead of by the fixture: a page that loads with a
+	 * failing image records it as an error, and every navigation asserts that there are none.
+	 */
+	public function testAnAvatarWhosePictureIsGoneShowsTheBoardOfTheAccount(): void
+	{
+		$context = new ContextPreparator([
+			'other-users' => [[
+				'name' => 'Alice',
+				'external_id' => '123456789012345678901',
+				'picture' => '/img/ac036.png',
+				'pref_avatar' => User::AVATAR_GOOGLE,
+				'achievement-statuses' => [['id' => 1, 'created' => '2026-01-01 12:00:00']],
+			]],
+		]);
+		$userId = $context->otherUsers[0]['id'];
+		$browser = Browser::instance();
+		$browser->get('sites/index');
+
+		$avatar = '.recent-achievement-user-link img.user-avatar';
+		$before = $browser->driver->executeScript("const img = document.querySelector('{$avatar}'); return img.getAttribute('src') + ' | ' + img.className;");
+		$this->assertStringContainsString('/img/ac036.png', $before, 'The row shows the picture the player picked');
+		$this->assertStringNotContainsString('user-avatar--board', $before);
+
+		$browser->driver->executeScript("document.querySelector('{$avatar}').src = '/img/no-such-picture.png';");
+		$browser->waitUntilJs("document.querySelector('{$avatar}').src.endsWith('/avatar/{$userId}')");
+
+		$after = $browser->driver->executeScript("return document.querySelector('{$avatar}').className;");
+		$this->assertStringContainsString('user-avatar--board', $after);
+
+		// The page records the broken picture the test asked for as an error, so the record
+		// is dropped: a later check on this page would otherwise assert on it.
+		$browser->driver->executeScript('window.__jsErrors = [];');
 	}
 
 	/**

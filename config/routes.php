@@ -115,6 +115,18 @@ Router::connect(
 );
 
 /**
+ * The board of an account, addressed by the id of the user. The lists that React
+ * draws know the id of every player they show but not the display name the
+ * drawing is made of, so this is how an avatar reaches its board when a picture
+ * of another host is gone.
+ */
+Router::connect(
+	'/avatar/:id',
+	['controller' => 'Avatars', 'action' => 'boardOfUser'],
+	['pass' => ['id'], 'id' => '[0-9]+'] // Id of a user
+);
+
+/**
  * User Sets routes
  */
 Router::connect(
