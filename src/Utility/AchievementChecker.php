@@ -5,6 +5,7 @@ namespace App\Utility;
 use Achievement;
 use Cache;
 use ClassRegistry;
+use SetConnection;
 use TimeModeCategory;
 use TimeModeRank;
 use TimeModeSessionStatus;
@@ -615,15 +616,15 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 		{
 			// Repeatable: one perfect collection of 100+ problems per count. The first
 			// one pays out like any other achievement, further ones only raise the count.
-			$this->gainedTimes(Achievement::SUPERIOR_ACCURACY, $this->countPerfectCollections(100));
+			$this->gainedTimes(Achievement::SUPERIOR_ACCURACY, $this->countPerfectCollections(Achievement::COLLECTION_MINIMUM_PROBLEMS));
 		}
 		return $this;
 	}
 
 	/**
-	 * How many collections the player finished at 100% accuracy on a set of at least
-	 * $minimumSize problems. Counts collections and not accuracy rows, so a set whose
-	 * row was written twice still counts once. One query instead of loading every
+	 * How many public collections the player finished at 100% accuracy on a set of at
+	 * least $minimumSize problems. Counts collections and not accuracy rows, so a set
+	 * whose row was written twice still counts once. One query instead of loading every
 	 * set's problems.
 	 */
 	private function countPerfectCollections(int $minimumSize): int
@@ -631,10 +632,7 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 		$rows = Util::query(
 			'SELECT COUNT(DISTINCT ac.set_id) AS total FROM achievement_condition ac '
 			. 'WHERE ac.user_id = ? AND ac.category = ? AND ac.value >= ? '
-			. 'AND ac.set_id IN ('
-			. 'SELECT sc.set_id FROM set_connection sc '
-			. 'JOIN tsumego t ON t.id = sc.tsumego_id '
-			. 'GROUP BY sc.set_id HAVING COUNT(*) >= ?)',
+			. 'AND ac.set_id IN (' . SetConnection::publicCollectionsWithMinimumProblemsSql() . ')',
 			[Auth::getUserID(), '%', 100, $minimumSize]
 		);
 

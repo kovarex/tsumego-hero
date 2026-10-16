@@ -6,6 +6,7 @@ use App\Utility\Util;
 /**
  * @var View $this
  * @var array $a
+ * @var array|null $viewedUser
  */
 
 ?>
@@ -32,7 +33,7 @@ use App\Utility\Util;
 					else $adjust = '';
 					$earnedCount = (int) ($a[$i]['Achievement']['earned_count'] ?? 0);
 					?>
-					<a href="/achievements/view/<?php echo $a[$i]['Achievement']['id']; ?>">
+					<a href="/achievements/view/<?php echo $a[$i]['Achievement']['id'] . (isset($viewedUser) ? '/' . $viewedUser['id'] : ''); ?>">
 					<div align="center" class="achievement1 <?php echo $displayColor; ?>">
 						<div class="acTitle">
 							<h1 <?php echo $adjust; ?>><?php echo h($a[$i]['Achievement']['name']); ?></h1>

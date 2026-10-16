@@ -1,16 +1,29 @@
 @layer page
 {
+.acHeader {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-3);
+  padding-top: 38px;
+}
 .achievemetProfileLink {
-  position: absolute;
-  float: right;
-  top: 38px;
-  right: 38px;
+  justify-self: end;
+  padding-right: 38px;
 }
 .achievemetIndexLink {
-  position: absolute;
-  float: left;
-  top: 38px;
-  left: 28px;
+  justify-self: start;
+  padding-left: 28px;
+}
+@media (width < 40rem) {
+  .acHeader {
+    grid-template-columns: 1fr;
+  }
+  .achievemetProfileLink,
+  .achievemetIndexLink {
+    justify-self: center;
+    padding: 0;
+  }
 }
 .achievement {
   float: left;
@@ -313,6 +326,9 @@
   margin: 20px 8px;
 }
 /* ── Rarity badge ── */
+.acRarity {
+	margin: var(--space-3) 0 0 0;
+}
 .rarity {
 	display: inline-block;
 	padding: 2px 8px;
@@ -321,7 +337,6 @@
 	font-weight: var(--font-weight-heavy);
 	text-transform: uppercase;
 	letter-spacing: 0.5px;
-	margin-left: var(--space-2);
 }
 .rarity--common {
 	color: var(--color-green-dark);
@@ -387,5 +402,44 @@
 [data-theme="dark"] .achievementColorRating2,
 [data-theme="dark"] .achievementColorTime2 {
 	color: var(--color-white);
+}
+.acCollections {
+	margin: var(--space-4) auto 0 auto;
+	max-width: 46rem;
+}
+.acCollections__title {
+	margin: 0 0 var(--space-1) 0;
+	font-size: var(--font-size-lg);
+}
+.acCollections__hint {
+	margin: 0 0 var(--space-2) 0;
+	font-size: var(--font-size-base);
+	color: var(--text-softer-color);
+}
+.acCollections__list {
+	columns: 3;
+	column-gap: var(--space-4);
+	text-align: left;
+}
+.acCollections__link {
+	display: block;
+	padding: 2px 0;
+	font-size: var(--font-size-md);
+	color: var(--text-softer-color);
+	text-decoration: none;
+	break-inside: avoid;
+}
+.acCollections__link--earned {
+	color: inherit;
+	font-weight: var(--font-weight-heavy);
+}
+.acOwner {
+	margin: 0;
+	font-size: var(--font-size-md);
+}
+@media (width < 40rem) {
+	.acCollections__list {
+		columns: 1;
+	}
 }
 }

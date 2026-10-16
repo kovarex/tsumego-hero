@@ -124,6 +124,9 @@ class Achievement extends AppModel
 	// Superior Accuracy
 	public const int SUPERIOR_ACCURACY = 46; // 100% accuracy on 100+ tsumegos
 
+	/** Problems a collection needs before it can earn Superior Accuracy. */
+	public const int COLLECTION_MINIMUM_PROBLEMS = 100;
+
 	// Complete Sets Achievements
 	public const int COMPLETE_SETS_I = 47;
 	public const int COMPLETE_SETS_I_SETS_COUNT = 10;

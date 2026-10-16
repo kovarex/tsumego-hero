@@ -307,8 +307,8 @@ class AchievementsControllerTest extends TestCaseWithAuth
 		// 2 of 4 users (50%) completed it - Common rarity, shown as a badge with a tooltip
 		$this->assertStringContainsString('rarity rarity--common', $result);
 		$this->assertStringContainsString('title="50% of all users"', $result);
-		// Rarity badge belongs near the achievement title, not next to the completion count
-		$this->assertLessThan(
+		// Rarity badge belongs below the achievement card, not above it
+		$this->assertGreaterThan(
 			strpos($result, 'achievementWrapper'),
 			strpos($result, 'rarity')
 		);

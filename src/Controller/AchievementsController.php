@@ -2,6 +2,8 @@
 
 use App\Utility\Auth;
 use App\Utility\SetCompletionCounter;
+use App\Utility\Util;
+use SetConnection;
 
 /**
  * @phpstan-import-type UserRow from \App\Utility\RowTypes
@@ -115,9 +117,10 @@ class AchievementsController extends AppController
 
 	/**
 	 * @param string|null $id
+	 * @param string|null $userId
 	 * @return void
 	 */
-	public function view(?string $id = null): void
+	public function view(?string $id = null, ?string $userId = null): void
 	{
 		$this->set('_page', 'user');
 		$this->set('_title', 'Tsumego Hero - Achievements');
@@ -127,6 +130,17 @@ class AchievementsController extends AppController
 		$achievement = $this->Achievement->findById($id);
 		if (!$achievement)
 			throw new NotFoundException('Achievement not found');
+
+		$viewedUser = null;
+		if ($userId !== null)
+		{
+			$user = $this->User->findById($userId);
+			if (!$user)
+				throw new NotFoundException('User not found');
+			$this->assertUserVisible($user['User']);
+			$viewedUser = $user['User'];
+		}
+		$statusUserId = $viewedUser ? (int) $viewedUser['id'] : (Auth::isLoggedIn() ? Auth::getUserID() : null);
 
 		$currentUserStatus = [];
 		$completerConditions = [
@@ -139,8 +153,8 @@ class AchievementsController extends AppController
 			'limit' => 10]);
 		if (!$completers)
 			$completers = [];
-		if (Auth::isLoggedIn())
-			$currentUserStatus = $this->AchievementStatus->find('first', ['conditions' => ['achievement_id' => $id, 'user_id' => Auth::getUserID()]]);
+		if ($statusUserId)
+			$currentUserStatus = $this->AchievementStatus->find('first', ['conditions' => ['achievement_id' => $id, 'user_id' => $statusUserId]]);
 		$userIds = array_map(fn($item) => $item['AchievementStatus']['user_id'], $completers);
 		$usersById = [];
 		if ($userIds)
@@ -155,14 +169,14 @@ class AchievementsController extends AppController
 
 		$progress = null;
 		$progressGoal = null;
-		if (Auth::isLoggedIn())
+		if ($statusUserId)
 		{
 			$progressDefinition = Achievement::progressDefinition((int) $achievement['Achievement']['id']);
 			if ($progressDefinition)
 			{
 				$condition = $this->AchievementCondition->find('first', [
 					'order' => 'value DESC',
-					'conditions' => ['user_id' => Auth::getUserID(), 'category' => $progressDefinition['category']],
+					'conditions' => ['user_id' => $statusUserId, 'category' => $progressDefinition['category']],
 				]);
 				$progress = $condition ? (int) $condition['AchievementCondition']['value'] : 0;
 				$progressGoal = $progressDefinition['goal'];
@@ -173,6 +187,8 @@ class AchievementsController extends AppController
 		}
 
 		$this->set('achievement', $achievement);
+		$this->set('viewedUser', $viewedUser);
+		$this->set('collections', $this->fillEarningCollections($achievement, $statusUserId));
 		$this->set('currentUserStatus', $currentUserStatus);
 		$this->set('completers', $completers);
 		$this->set('completerCount', $completerCount);
@@ -181,6 +197,49 @@ class AchievementsController extends AppController
 		$this->set('rarity', $rarity);
 		$this->set('progress', $progress);
 		$this->set('progressGoal', $progressGoal);
+	}
+
+	/**
+	 * The public collections that can earn a repeatable collection achievement, with the
+	 * best accuracy the player reached on each of them. The achievement page lists them so
+	 * a player can see which collections are still left to finish.
+	 *
+	 * @param array $achievement
+	 * @param int|null $userID
+	 * @return array
+	 */
+	private function fillEarningCollections(array $achievement, ?int $userID): array
+	{
+		if ((int) $achievement['Achievement']['id'] !== Achievement::SUPERIOR_ACCURACY)
+			return [];
+
+		$rows = Util::query(
+			'SELECT s.id, s.title FROM `set` s WHERE s.id IN ('
+			. SetConnection::publicCollectionsWithMinimumProblemsSql() . ') '
+			. 'ORDER BY ' . SetConnection::displayOrderForSetSql('s'),
+			[Achievement::COLLECTION_MINIMUM_PROBLEMS]
+		);
+
+		$bestAccuracy = [];
+		if ($userID)
+			foreach (Util::query(
+				'SELECT ac.set_id, MAX(ac.value) AS accuracy FROM achievement_condition ac '
+				. 'WHERE ac.user_id = ? AND ac.category = ? GROUP BY ac.set_id',
+				[$userID, '%']) as $row)
+					$bestAccuracy[(int) $row['set_id']] = (float) $row['accuracy'];
+
+		$collections = [];
+		foreach ($rows as $row)
+		{
+			$accuracy = $bestAccuracy[(int) $row['id']] ?? 0;
+			$collections[] = [
+				'id' => (int) $row['id'],
+				'title' => $row['title'],
+				'accuracy' => $accuracy,
+				'earned' => $accuracy >= 100,
+			];
+		}
+		return $collections;
 	}
 
 }

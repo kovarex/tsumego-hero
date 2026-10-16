@@ -370,7 +370,7 @@ function showStatistics($side, $as, $user, $dailyResults)
 		else $adjust = '';
 		$earnedCount = (int) ($as[$i]['AchievementStatus']['a_earned_count'] ?? 1);
 	?>
-		<a href="/achievements/view/<?php echo $as[$i]['AchievementStatus']['a_id']; ?>">
+		<a href="/achievements/view/<?php echo $as[$i]['AchievementStatus']['a_id'] . '/' . $user['User']['id']; ?>">
 		<div align="center" class="achievementSmall <?php echo $as[$i]['AchievementStatus']['a_color']; ?>">
 			<div class="acTitle2">
 				<b <?php echo $adjust; ?>><?php echo h($as[$i]['AchievementStatus']['a_title']); ?></b>

@@ -292,6 +292,8 @@ class UsersControllerTest extends ControllerTestCase
 		$this->testAction('users/view/' . $context->user['id'], ['return' => 'view']);
 
 		$this->assertStringContainsString('/achievements/view/115', $this->view);
+		$this->assertStringContainsString('/achievements/view/115/' . $context->user['id'], $this->view,
+			'the achievement link keeps the profile it was opened from');
 		$this->assertStringContainsString('1000 Weiqi problems 2nd half', $this->view);
 	}
 
