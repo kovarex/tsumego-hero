@@ -1,5 +1,6 @@
 <?php
 
+use App\Utility\Avatar;
 use App\Utility\Util;
 
 /**
@@ -506,7 +507,7 @@ class UpdateNameTest extends ControllerTestCase
 			],
 		]);
 
-		$contents = $this->testAction('/avatar/' . $context->user['id'], ['method' => 'get', 'return' => 'contents']);
+		$contents = $this->testAction(Avatar::url($context->user['display_name']), ['method' => 'get', 'return' => 'contents']);
 
 		$this->assertStringNotContainsString('/users/changename', $this->headers['Location'] ?? '');
 		$this->assertStringStartsWith('<svg', $contents);

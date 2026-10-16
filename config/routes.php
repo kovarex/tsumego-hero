@@ -104,13 +104,14 @@ Router::connect(
 );
 
 /**
- * Board avatars. The drawing comes from the user id alone, so one url serves the
- * avatar in a list and the one on a profile.
+ * Board avatars. The url carries the key of the display name, which is what the
+ * drawing is made of, so one url serves the avatar in a list and the one on a
+ * profile.
  */
 Router::connect(
-	'/avatar/:id',
+	'/board/:key',
 	['controller' => 'Avatars', 'action' => 'image'],
-	['pass' => ['id'], 'id' => '[0-9]+'] // ID of the user
+	['pass' => ['key'], 'key' => '[0-9a-f]{12}'] // Key of a display name
 );
 
 /**

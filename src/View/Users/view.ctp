@@ -32,7 +32,7 @@ use App\Utility\ValueGraphRenderer;
 	<div class="profile-header">
 		<p class="profile-username"><?php
 			$avatarUrl = User::getAvatarUrl($user['User'], User::AVATAR_PIXELS_PROFILE);
-			echo User::avatarImage($avatarUrl, 'user-avatar--lg', false, '/avatar/' . (int) $user['User']['id']);
+			echo User::avatarImage($avatarUrl, 'user-avatar--lg', false, User::boardUrl($user['User']));
 			echo h($user['User']['display_name']);
 			echo ' ';
 			User::renderPremium($user['User']);

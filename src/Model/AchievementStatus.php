@@ -53,6 +53,7 @@ class AchievementStatus extends AppModel
 		{
 			$userData = [
 				'id' => (int) $row['User']['id'],
+				'display_name' => $row['User']['display_name'],
 				'external_id' => $row['User']['external_id'],
 				'picture' => $row['User']['picture'],
 				'pref_avatar' => $row['User']['pref_avatar'],

@@ -10,52 +10,62 @@ class AvatarTest extends CakeTestCase
 	 */
 	public function testPatternIsAWholeBoard()
 	{
-		foreach ([1, 2, 4242, 30142] as $userId)
-			$this->assertMatchesRegularExpression('/^[012]{25}$/', Avatar::pattern($userId));
+		foreach (['Anna', 'kovarex', 'Gonuzul', 'a name with spaces'] as $name)
+			$this->assertMatchesRegularExpression('/^[012]{25}$/', Avatar::pattern(Avatar::key($name)));
 	}
 
 	public function testPatternIsMirroredDownTheMiddle()
 	{
-		foreach (range(1, 50) as $userId)
+		foreach (range(1, 50) as $i)
 		{
-			$pattern = Avatar::pattern($userId);
+			$pattern = Avatar::pattern(Avatar::key('player ' . $i));
 			for ($row = 0; $row < 5; $row++)
 				for ($column = 0; $column < 5; $column++)
 					$this->assertSame(
 						$pattern[$row * 5 + $column],
 						$pattern[$row * 5 + 4 - $column],
-						'Row ' . $row . ' of account ' . $userId . ' is not mirrored'
+						'Row ' . $row . ' of player ' . $i . ' is not mirrored'
 					);
 		}
 	}
 
 	/**
-	 * A player recognises an account by this drawing, so it must not change when
-	 * the code that computes it is refactored: a different drawing here redraws
-	 * the avatar of every account that ever played.
+	 * A player recognises a name by the board it draws, so the drawing must not
+	 * change when the code that computes it is refactored: another drawing here
+	 * repaints the avatar of every name in this list.
 	 */
-	public function testDrawingForAnAccountNeverChanges()
+	public function testTheDrawingOfANameNeverChanges()
 	{
-		$this->assertSame('1000100100022201000112121', Avatar::pattern(1));
-		$this->assertSame('2222211111011102202211211', Avatar::pattern(2));
-		$this->assertSame('0222001210100010212011211', Avatar::pattern(4242));
+		$this->assertSame('0212010101012102202221112', Avatar::pattern(Avatar::key('Anna')));
+		$this->assertSame('2111202020220221010102020', Avatar::pattern(Avatar::key('kovarex')));
+		$this->assertSame('2111221012210122121220102', Avatar::pattern(Avatar::key('Gonuzul')));
 	}
 
-	public function testDifferentAccountsGetDifferentBoards()
+	/**
+	 * A name is whatever the player typed, up to 50 characters of it, so the key
+	 * of that name has to survive being a url segment: hex and short.
+	 */
+	public function testTheKeyOfANameSurvivesBeingAUrl()
+	{
+		foreach (['Anna', 'a name with spaces', 'Šíleně žluťoučký', '名字', str_repeat('x', 50)] as $name)
+			$this->assertMatchesRegularExpression('/^[0-9a-f]{12}$/', Avatar::key($name));
+	}
+
+	public function testDifferentNamesGetDifferentBoards()
 	{
 		$boards = [];
-		foreach (range(1, 500) as $userId)
-			$boards[Avatar::pattern($userId)] = true;
+		foreach (range(1, 500) as $i)
+			$boards[Avatar::pattern(Avatar::key('player ' . $i))] = true;
 
-		$this->assertSame(500, count($boards), 'Some of the 500 accounts share a board');
+		$this->assertSame(500, count($boards), 'Some of the 500 names share a board');
 	}
 
 	public function testBoardsUseBothStoneColours()
 	{
 		$black = 0;
 		$white = 0;
-		foreach (range(1, 100) as $userId)
-			foreach (str_split(Avatar::pattern($userId)) as $cell)
+		foreach (range(1, 100) as $i)
+			foreach (str_split(Avatar::pattern(Avatar::key('player ' . $i))) as $cell)
 			{
 				if ($cell === '1')
 					$black++;
@@ -69,7 +79,7 @@ class AvatarTest extends CakeTestCase
 
 	public function testSvgIsOneBoard()
 	{
-		$svg = Avatar::svg(7);
+		$svg = Avatar::svg(Avatar::key('player 7'));
 
 		$this->assertStringStartsWith('<svg', $svg);
 		$this->assertStringEndsWith('</svg>', $svg);
@@ -85,34 +95,36 @@ class AvatarTest extends CakeTestCase
 
 	public function testSvgDrawsAStonePerFilledCell()
 	{
-		foreach ([1, 7, 123, 4242] as $userId)
+		foreach (['Anna', 'player 7', 'player 123', 'Gonuzul'] as $name)
 		{
-			$pattern = Avatar::pattern($userId);
+			$key = Avatar::key($name);
+			$pattern = Avatar::pattern($key);
 			$stones = substr_count($pattern, '1') + substr_count($pattern, '2');
 			$this->assertSame(
 				$stones,
-				substr_count(Avatar::svg($userId), 'fill="url(#stone'),
-				'Account ' . $userId . ' did not get one stone per filled cell'
+				substr_count(Avatar::svg($key), 'fill="url(#stone'),
+				'Name ' . $name . ' did not get one stone per filled cell'
 			);
 		}
 	}
 
 	public function testSvgColoursTheStonesTheWayThePatternSays()
 	{
-		foreach ([1, 7, 123, 4242] as $userId)
+		foreach (['Anna', 'player 7', 'player 123', 'Gonuzul'] as $name)
 		{
-			$pattern = Avatar::pattern($userId);
-			$svg = Avatar::svg($userId);
+			$key = Avatar::key($name);
+			$pattern = Avatar::pattern($key);
+			$svg = Avatar::svg($key);
 
 			$this->assertSame(
 				substr_count($pattern, '1'),
 				substr_count($svg, 'fill="url(#stoneb)"'),
-				'Wrong number of black stones for account ' . $userId
+				'Wrong number of black stones for ' . $name
 			);
 			$this->assertSame(
 				substr_count($pattern, '2'),
 				substr_count($svg, 'fill="url(#stonew)"'),
-				'Wrong number of white stones for account ' . $userId
+				'Wrong number of white stones for ' . $name
 			);
 		}
 	}

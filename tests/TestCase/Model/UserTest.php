@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\Avatar;
+
 class UserTest extends CakeTestCase
 {
 	// =====================================================================
@@ -31,12 +33,29 @@ class UserTest extends CakeTestCase
 	{
 		$user = [
 			'id' => 4242,
+			'display_name' => 'Anna',
 			'external_id' => null,
 			'picture' => null,
 			'email' => 'test@example.com',
 		];
 
-		$this->assertSame('/avatar/4242', User::getAvatarUrl($user, 20));
+		$this->assertSame(Avatar::url('Anna'), User::getAvatarUrl($user, 20));
+	}
+
+	/**
+	 * A board belongs to a name: the same name always draws the same board, a rename
+	 * draws another one, and the account behind it does not come into it.
+	 */
+	public function testTheBoardFollowsTheNameAndNotTheAccount()
+	{
+		$board = fn(string $name, int $id) => User::getAvatarUrl([
+			'id' => $id,
+			'display_name' => $name,
+			'email' => 'board@example.com',
+		]);
+
+		$this->assertSame($board('Anna', 1), $board('Anna', 4242));
+		$this->assertNotSame($board('Anna', 1), $board('Anna (2)', 1));
 	}
 
 	/**
@@ -46,12 +65,13 @@ class UserTest extends CakeTestCase
 	{
 		$user = [
 			'id' => 77,
+			'display_name' => 'Somebody',
 			'external_id' => '123456789',
 			'picture' => null,
 			'email' => 'test@gmail.com',
 		];
 
-		$this->assertSame('/avatar/77', User::getAvatarUrl($user, 20));
+		$this->assertSame(Avatar::url('Somebody'), User::getAvatarUrl($user, 20));
 	}
 
 	public function testTheGooglePictureIsAskedForInTheSizeTheAvatarIsDrawnIn()
@@ -114,7 +134,7 @@ class UserTest extends CakeTestCase
 			'pref_avatar' => User::AVATAR_GOOGLE,
 		]);
 		$this->assertStringContainsString(
-			"onerror=\"this.onerror=null;this.classList.add('user-avatar--board');this.src='/avatar/4242'\"",
+			"onerror=\"this.onerror=null;this.classList.add('user-avatar--board');this.src='" . Avatar::url('Pic') . "'\"",
 			$withPicture
 		);
 
@@ -127,7 +147,7 @@ class UserTest extends CakeTestCase
 	 */
 	public function testTheBoardUrlIsTheSameForEverySize()
 	{
-		$user = ['id' => 4242, 'external_id' => null, 'picture' => null, 'email' => 'test@example.com'];
+		$user = ['id' => 4242, 'display_name' => 'Anna', 'external_id' => null, 'picture' => null, 'email' => 'test@example.com'];
 
 		$this->assertSame(User::getAvatarUrl($user, 20), User::getAvatarUrl($user, 48));
 	}
@@ -138,21 +158,22 @@ class UserTest extends CakeTestCase
 	 */
 	public function testTheBoardIsTheDefaultForAGoogleAccount()
 	{
-		$user = ['id' => 1, 'external_id' => '123', 'picture' => 'https://lh3.googleusercontent.com/a/x'];
+		$user = ['id' => 1, 'display_name' => 'Anna', 'external_id' => '123', 'picture' => 'https://lh3.googleusercontent.com/a/x'];
 
-		$this->assertSame('/avatar/1', User::getAvatarUrl($user, 24));
+		$this->assertSame(Avatar::url('Anna'), User::getAvatarUrl($user, 24));
 	}
 
 	public function testChoosingTheBoardHidesTheGooglePicture()
 	{
 		$user = [
 			'id' => 1,
+			'display_name' => 'Anna',
 			'pref_avatar' => User::AVATAR_BOARD,
 			'external_id' => '123',
 			'picture' => 'https://lh3.googleusercontent.com/a/x',
 		];
 
-		$this->assertSame('/avatar/1', User::getAvatarUrl($user, 24));
+		$this->assertSame(Avatar::url('Anna'), User::getAvatarUrl($user, 24));
 	}
 
 	public function testChoosingTheGooglePictureUsesIt()
@@ -169,9 +190,9 @@ class UserTest extends CakeTestCase
 
 	public function testAGoogleChoiceWithoutAPictureFallsBackToTheBoard()
 	{
-		$user = ['id' => 7, 'pref_avatar' => User::AVATAR_GOOGLE, 'external_id' => '123', 'picture' => null];
+		$user = ['id' => 7, 'display_name' => 'Anna', 'pref_avatar' => User::AVATAR_GOOGLE, 'external_id' => '123', 'picture' => null];
 
-		$this->assertSame('/avatar/7', User::getAvatarUrl($user, 24));
+		$this->assertSame(Avatar::url('Anna'), User::getAvatarUrl($user, 24));
 	}
 
 	public function testChoosingGravatarUsesTheSha256OfTheEmail()
@@ -199,9 +220,9 @@ class UserTest extends CakeTestCase
 
 	public function testAnUnknownChoiceFallsBackToTheBoard()
 	{
-		$user = ['id' => 8, 'pref_avatar' => 99, 'email' => 'test@example.com'];
+		$user = ['id' => 8, 'display_name' => 'Anna', 'pref_avatar' => 99, 'email' => 'test@example.com'];
 
-		$this->assertSame('/avatar/8', User::getAvatarUrl($user, 24));
+		$this->assertSame(Avatar::url('Anna'), User::getAvatarUrl($user, 24));
 	}
 
 	// =====================================================================
@@ -223,7 +244,7 @@ class UserTest extends CakeTestCase
 		]);
 
 		$this->assertStringContainsString('<img', $html);
-		$this->assertStringContainsString('src="/avatar/123"', $html);
+		$this->assertStringContainsString('src="' . Avatar::url('TestUser') . '"', $html);
 		// A board is a picture of a thing, so it keeps its corners.
 		$this->assertStringContainsString('class="user-avatar user-avatar--board"', $html);
 		// A page shows up to a thousand of these, so they load lazily and decode
@@ -288,7 +309,7 @@ class UserTest extends CakeTestCase
 		$this->assertStringContainsString('/users/view/456', $html);
 		$this->assertStringContainsString('ArrayUser', $html);
 		$this->assertStringContainsString('<img', $html);
-		$this->assertStringContainsString('src="/avatar/456"', $html);
+		$this->assertStringContainsString('src="' . Avatar::url('ArrayUser') . '"', $html);
 	}
 
 	/**

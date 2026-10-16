@@ -1,29 +1,53 @@
 <?php
 
+use App\Utility\Avatar;
+
 class AvatarsControllerTest extends ControllerTestCase
 {
 	public function testImageIsAnSvg()
 	{
-		$result = $this->testAction('/avatar/4242', ['return' => 'contents']);
+		$result = $this->testAction('/board/' . Avatar::key('Anna'), ['return' => 'contents']);
 
 		$this->assertStringStartsWith('<svg', $result);
 		$this->assertEquals('image/svg+xml', $this->controller->response->type());
 	}
 
-	public function testTheSameAccountAlwaysGetsTheSameImage()
+	/**
+	 * The url carries the key the drawing is made of, so the board of a name is
+	 * the drawing of the key in its url and nothing else.
+	 */
+	public function testTheImageIsTheDrawingOfTheKeyInTheUrl()
 	{
-		$first = $this->testAction('/avatar/4242', ['return' => 'contents']);
-		$second = $this->testAction('/avatar/4242', ['return' => 'contents']);
+		$key = Avatar::key('Anna');
+
+		$this->assertSame(Avatar::svg($key), $this->testAction('/board/' . $key, ['return' => 'contents']));
+	}
+
+	public function testTheSameNameAlwaysGetsTheSameImage()
+	{
+		$first = $this->testAction('/board/' . Avatar::key('Anna'), ['return' => 'contents']);
+		$second = $this->testAction('/board/' . Avatar::key('Anna'), ['return' => 'contents']);
 
 		$this->assertSame($first, $second);
 	}
 
-	public function testDifferentAccountsGetDifferentImages()
+	public function testDifferentNamesGetDifferentImages()
 	{
-		$first = $this->testAction('/avatar/1', ['return' => 'contents']);
-		$second = $this->testAction('/avatar/2', ['return' => 'contents']);
+		$first = $this->testAction('/board/' . Avatar::key('Anna'), ['return' => 'contents']);
+		$second = $this->testAction('/board/' . Avatar::key('kovarex'), ['return' => 'contents']);
 
 		$this->assertNotSame($first, $second);
+	}
+
+	/**
+	 * The endpoint is a function of its url and not of an account, so a board is
+	 * drawn for any key: a page does not need a row to show a board of a name.
+	 */
+	public function testABoardIsDrawnWithoutAnAccountBehindIt()
+	{
+		$key = Avatar::key('a name no account has');
+
+		$this->assertStringStartsWith('<svg', $this->testAction('/board/' . $key, ['return' => 'contents']));
 	}
 
 	/**
@@ -32,7 +56,7 @@ class AvatarsControllerTest extends ControllerTestCase
 	 */
 	public function testImageIsCachedForALongTime()
 	{
-		$this->testAction('/avatar/4242', ['return' => 'contents']);
+		$this->testAction('/board/' . Avatar::key('Anna'), ['return' => 'contents']);
 
 		$headers = $this->controller->response->header();
 		$this->assertNotEmpty($headers['Etag']);
@@ -45,15 +69,25 @@ class AvatarsControllerTest extends ControllerTestCase
 	 */
 	public function testImageLoadsForAVisitorWhoIsNotLoggedIn()
 	{
-		$result = $this->testAction('/avatar/4242', ['return' => 'contents']);
+		$result = $this->testAction('/board/' . Avatar::key('Anna'), ['return' => 'contents']);
 
 		$this->assertStringStartsWith('<svg', $result);
 	}
 
-	public function testAnIdThatIsNotANumberIsNotFound()
+	public function testAKeyThatIsNotADrawingIsNotFound()
 	{
-		$this->expectException(NotFoundException::class);
-
-		$this->testAction('/avatars/image/not-a-number', ['return' => 'contents']);
+		foreach (['not-a-hex-key', '123', 'ABCDEFABCDEF', 'abcdefabcdef0'] as $key)
+		{
+			$notFound = false;
+			try
+			{
+				$this->testAction('/avatars/image/' . $key, ['return' => 'contents']);
+			}
+			catch (NotFoundException $e)
+			{
+				$notFound = true;
+			}
+			$this->assertTrue($notFound, 'The key ' . $key . ' was served as a board');
+		}
 	}
 }
