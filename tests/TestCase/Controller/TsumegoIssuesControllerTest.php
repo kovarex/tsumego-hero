@@ -1,5 +1,6 @@
 <?php
 
+use App\Utility\Avatar;
 use PHPUnitRetry\RetryTrait;
 
 /**
@@ -229,7 +230,7 @@ class TsumegoIssuesControllerTest extends ControllerTestCase
 		$this->testAction('/tsumego-issues/api', ['method' => 'get']);
 
 		$body = json_decode($this->controller->response->body(), true);
-		$avatar = '/avatar/' . $context->user['id'];
+		$avatar = Avatar::url($context->user['display_name']);
 		$this->assertSame($avatar, $body['issues'][0]['issue']['user_avatar_url']);
 		$this->assertSame($avatar, $body['issues'][0]['comments'][0]['user_avatar_url']);
 	}

@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\Avatar;
+
 class TsumegoCommentsControllerTest extends ControllerTestCase
 {
 	public function testAddRequiresLogin()
@@ -63,7 +65,7 @@ class TsumegoCommentsControllerTest extends ControllerTestCase
 		$this->testAction('/tsumego-comments/index/' . $context->tsumegos[0]['id'], ['method' => 'get']);
 
 		$body = json_decode($this->controller->response->body(), true);
-		$avatar = '/avatar/' . $context->user['id'];
+		$avatar = Avatar::url($context->user['display_name']);
 		$this->assertSame($avatar, $body['issues'][0]['user_avatar_url']);
 		$this->assertSame($avatar, $body['issues'][0]['comments'][0]['user_avatar_url']);
 		$this->assertSame($avatar, $body['standalone'][0]['user_avatar_url']);

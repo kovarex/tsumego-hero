@@ -1,5 +1,6 @@
 <?php
 
+use App\Utility\Avatar;
 use App\Utility\PhpbbNames;
 use App\Utility\Rating;
 use App\Utility\Util;
@@ -231,8 +232,8 @@ class User extends AppModel
 
 	/**
 	 * The avatar to send to the frontend, null when the account is not there anymore. A deleted
-	 * account keeps the row that the drawing is made from, so it would keep showing a board of
-	 * someone who asked to be forgotten.
+	 * account keeps its row, and a board can be drawn from any name, so without this it would keep
+	 * showing a board of someone who asked to be forgotten.
 	 *
 	 * @param UserRow|array<string, mixed> $user Row with the id, external_id, picture and email
 	 */
@@ -307,12 +308,13 @@ class User extends AppModel
 		// Generate avatar HTML
 		$avatarUrl = self::getAvatarUrl([
 			'id' => $id,
+			'display_name' => $displayName,
 			'pref_avatar' => $prefAvatar,
 			'external_id' => $externalID,
 			'picture' => $picture,
 			'email' => $email,
 		]);
-		$image = self::avatarImage($avatarUrl, '', true, '/avatar/' . $id);
+		$image = self::avatarImage($avatarUrl, '', true, self::boardUrl(['display_name' => $displayName]));
 
 		return '<a href="/users/view/' . $id . '">' . $image . h((string) $displayName) . ($rank === '' ? '' : ' ' . $rank) . '</a>';
 	}
@@ -535,7 +537,7 @@ class User extends AppModel
 	 * Only the avatar fields are needed, the callers pass either a full user row or
 	 * just these values.
 	 *
-	 * @param array{id?: int, pref_avatar?: int|null, external_id?: string|null, picture?: string|null, email?: string|null} $user
+	 * @param array{id?: int, display_name?: string|null, pref_avatar?: int|null, external_id?: string|null, picture?: string|null, email?: string|null} $user
 	 * @param int $size Pixels to ask an avatar host for, the board ignores it
 	 * @return string Avatar URL
 	 */
@@ -561,10 +563,23 @@ class User extends AppModel
 			return 'https://www.gravatar.com/avatar/' . self::gravatarHash((string) ($user['email'] ?? ''))
 				. '?s=' . $size . '&d=identicon';
 
-		// The board the site draws for this account. The drawing comes from the
-		// id, so no request leaves for an avatar host and one url serves every size.
-		assert(!empty($user['id']), 'A board avatar needs the id of the account');
-		return '/avatar/' . (int) $user['id'];
+		// The board the site draws for this account, from the name the player picked.
+		// No request leaves for an avatar host and one url serves every size.
+		assert(!empty($user['display_name']), 'A board avatar needs the display name of the account');
+		return self::boardUrl($user);
+	}
+
+	/**
+	 * The board of an account, which is what an avatar of another host falls back to.
+	 * The drawing comes from the display name, so the account shows the same board
+	 * wherever its name is shown.
+	 *
+	 * @param array{display_name?: string|null} $user
+	 * @return string
+	 */
+	public static function boardUrl(array $user): string
+	{
+		return Avatar::url((string) ($user['display_name'] ?? ''));
 	}
 
 	/**
@@ -576,7 +591,7 @@ class User extends AppModel
 	 */
 	public static function avatarClass(?string $avatarUrl): string
 	{
-		return $avatarUrl !== null && str_starts_with($avatarUrl, '/avatar/')
+		return $avatarUrl !== null && str_starts_with($avatarUrl, Avatar::URL_PREFIX)
 			? 'user-avatar user-avatar--board'
 			: 'user-avatar';
 	}
@@ -602,7 +617,7 @@ class User extends AppModel
 		// their Google account), which the browser draws as a broken image. The board of
 		// the account is always there, so it takes over, with the square corners the
 		// board class gives it.
-		$fallback = $fallbackUrl === null || str_starts_with($avatarUrl, '/avatar/')
+		$fallback = $fallbackUrl === null || str_starts_with($avatarUrl, Avatar::URL_PREFIX)
 			? ''
 			: ' onerror="this.onerror=null;this.classList.add(\'user-avatar--board\');this.src=\'' . h($fallbackUrl) . '\'"';
 		return '<img src="' . h($avatarUrl) . '" alt="" class="' . $class . '"' . $loading . $fallback . ' decoding="async" referrerpolicy="no-referrer">';

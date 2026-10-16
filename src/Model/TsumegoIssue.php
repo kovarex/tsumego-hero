@@ -177,6 +177,7 @@ class TsumegoIssue extends AppModel
 						'user_rating' => $row['u']['issue_author_rating'] ?? null,
 						'user_avatar_url' => User::avatarOrNull([
 							'id' => $row['ti']['issue_user_id'],
+							'display_name' => $row['u']['issue_author_name'] ?? null,
 							'external_id' => $row['u']['issue_author_external_id'] ?? null,
 							'picture' => $row['u']['issue_author_picture'] ?? null,
 							'pref_avatar' => $row['u']['issue_author_pref_avatar'] ?? null,
@@ -207,6 +208,7 @@ class TsumegoIssue extends AppModel
 					'user_rating' => $row['cu']['comment_author_rating'],
 					'user_avatar_url' => User::avatarOrNull([
 						'id' => $row['tc']['comment_user_id'],
+						'display_name' => $row['cu']['comment_author_name'] ?? null,
 						'external_id' => $row['cu']['comment_author_external_id'] ?? null,
 						'picture' => $row['cu']['comment_author_picture'] ?? null,
 						'pref_avatar' => $row['cu']['comment_author_pref_avatar'] ?? null,

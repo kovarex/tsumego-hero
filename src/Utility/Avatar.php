@@ -11,17 +11,26 @@ namespace App\Utility;
  * would otherwise throw away: a mirrored board with black stones only has 2^15
  * drawings, which 60% of the players would end up sharing with someone.
  *
- * The drawing is a function of the account id alone, and it is served from
- * /avatar/<id>, so one url covers the 24px avatar in a list and the 64px one on
- * a profile.
+ * The drawing is a function of the display name of the account: the name is
+ * hashed, and the first bytes of that hash are both the number the board is
+ * drawn from and the url segment it is served from (/board/<key>). So one url
+ * covers the 24px avatar in a list and the 64px one on a profile, and the
+ * endpoint behind it needs no row and no name.
  */
 class Avatar
 {
 	/**
-	 * Bump this when the drawing changes. Browsers hold the old image for a
-	 * year, so a change also needs the version in the url (User::getAvatarUrl).
+	 * The version of the drawing: part of the etag of a board, so a browser that
+	 * asks again gets the new drawing. A browser that keeps the image for a year
+	 * without asking needs another url as well, which means another key of a name.
 	 */
 	public const VERSION = 1;
+
+	/** The path a board is served from, followed by the key of a name. */
+	public const URL_PREFIX = '/board/';
+
+	/** The hex characters of the sha256 of a name that the board is drawn from. */
+	public const KEY_LENGTH = 12;
 
 	public const GRID_SIZE = 5;
 
@@ -42,16 +51,39 @@ class Avatar
 	private const RIM = 2;
 
 	/**
-	 * The stones of the board, row by row, as 25 characters: 0 empty, 1 black,
-	 * 2 white. The same account always gets the same board.
+	 * The key of a name: the first bytes of its sha256, in hex. Whatever the name
+	 * is, up to 50 characters of anything the player could type, its key is short
+	 * and url safe, and it is the whole input of the drawing.
 	 *
-	 * @param int $userId
+	 * @param string $displayName
 	 * @return string
 	 */
-	public static function pattern(int $userId): string
+	public static function key(string $displayName): string
 	{
-		$hash = hash('sha256', (string) $userId);
-		$number = hexdec(substr($hash, 0, 12)) % self::PATTERN_COUNT;
+		return substr(hash('sha256', $displayName), 0, self::KEY_LENGTH);
+	}
+
+	/**
+	 * The url of the board of a name.
+	 *
+	 * @param string $displayName
+	 * @return string
+	 */
+	public static function url(string $displayName): string
+	{
+		return self::URL_PREFIX . self::key($displayName);
+	}
+
+	/**
+	 * The stones of the board, row by row, as 25 characters: 0 empty, 1 black,
+	 * 2 white. The same key always gets the same board.
+	 *
+	 * @param string $key Key of a name (self::key)
+	 * @return string
+	 */
+	public static function pattern(string $key): string
+	{
+		$number = hexdec($key) % self::PATTERN_COUNT;
 
 		$cells = array_fill(0, self::GRID_SIZE * self::GRID_SIZE, '0');
 		$freeColumns = intdiv(self::GRID_SIZE + 1, 2);
@@ -71,12 +103,12 @@ class Avatar
 	/**
 	 * The board as an svg that scales to whatever size the caller shows it in.
 	 *
-	 * @param int $userId
+	 * @param string $key Key of a name (self::key)
 	 * @return string
 	 */
-	public static function svg(int $userId): string
+	public static function svg(string $key): string
 	{
-		$pattern = self::pattern($userId);
+		$pattern = self::pattern($key);
 		$surface = self::CANVAS - 2 * self::RIM;
 		$cell = $surface / self::GRID_SIZE;
 
