@@ -5,10 +5,11 @@ use App\Utility\TsumegoButton;
 /**
  * @var View $this
  * @var array $p
+ * @var array $recentlyPublished
  * @var array $sandboxSets
  * @var array $publicSets
  */
-$tomorrow = date('Y-m-d', strtotime('tomorrow'));
+$today = date('Y-m-d');
 ?>
 <div class="homeCenter2">
 <div class="profile-header">
@@ -83,6 +84,38 @@ $tomorrow = date('Y-m-d', strtotime('tomorrow'));
 		<?php endif; ?>
 	</div>
 
+	<div class="card">
+		<h2 class="card__title">Recently published</h2>
+		<?php if (empty($recentlyPublished)): ?>
+			<p class="hint">Nothing published in the last 7 days.</p>
+		<?php else: ?>
+		<table class="data-table" style="width:100%">
+			<thead>
+				<tr>
+					<th>Publish date</th>
+					<th>Problem</th>
+					<th>Published in</th>
+				</tr>
+			</thead>
+			<tbody>
+			<?php foreach ($recentlyPublished as $row): ?>
+				<tr>
+					<td><time datetime="<?php echo h($row['date']); ?>" data-format="date"><?php echo h($row['date']); ?></time></td>
+					<td><a href="/tsumegos/play/<?php echo (int) $row['tsumego_id']; ?>">Problem <?php echo (int) $row['num']; ?></a></td>
+					<td>
+						<?php if ($row['target_set_title']): ?>
+							<a href="/sets/view/<?php echo (int) $row['set_id']; ?>"><?php echo h($row['target_set_title']); ?></a>
+						<?php else: ?>
+							-
+						<?php endif; ?>
+					</td>
+				</tr>
+			<?php endforeach; ?>
+			</tbody>
+		</table>
+		<?php endif; ?>
+	</div>
+
 	<div class="card card--green" style="max-width:500px">
 		<h2 class="card__title">Schedule problems</h2>
 		<form method="post" action="/schedule/add" style="text-align:left" id="schedule-form">
@@ -111,9 +144,14 @@ $tomorrow = date('Y-m-d', strtotime('tomorrow'));
 				<input class="form-field__control" type="number" id="schedule-num" name="num" min="1" placeholder="Leave empty for first unscheduled">
 			</div>
 			<div class="form-field">
+				<label class="form-field__label" for="schedule-per-day">Problems per day</label>
+				<input class="form-field__control" type="number" id="schedule-per-day" name="per_day" value="5" min="1" max="50" required>
+				<span class="hint">Problems are published on consecutive days, this many each day.</span>
+			</div>
+			<div class="form-field">
 				<label class="form-field__label" for="schedule-date">First publish date</label>
-				<input class="form-field__control" type="date" id="schedule-date" name="start_date" value="<?php echo $tomorrow; ?>" min="<?php echo $tomorrow; ?>" required>
-				<span class="hint">Each problem is published on a consecutive day.</span>
+				<input class="form-field__control" type="date" id="schedule-date" name="start_date" value="<?php echo $today; ?>" min="<?php echo $today; ?>" required>
+				<span class="hint">Starting today publishes right away.</span>
 			</div>
 			<button class="btn" type="submit">Schedule</button>
 		</form>
