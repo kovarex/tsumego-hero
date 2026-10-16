@@ -90,4 +90,35 @@ class AvatarsControllerTest extends ControllerTestCase
 			$this->assertTrue($notFound, 'The key ' . $key . ' was served as a board');
 		}
 	}
+
+	/**
+	 * A list knows the id of every player it shows but not the display name the drawing is
+	 * made of, so the board of an account is reachable by its id as well. That is what an
+	 * avatar falls back on when a picture of another host is gone.
+	 */
+	public function testTheBoardOfAnAccountIsReachableByTheUserId()
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'Anna']]);
+
+		$this->testAction('/avatar/' . $context->user['id'], ['method' => 'get']);
+
+		$this->assertStringContainsString(Avatar::url('DN_Anna'), (string) $this->headers['Location']);
+	}
+
+	/**
+	 * A deleted account asked to be forgotten, so its board is not drawn, not even by id.
+	 */
+	public function testADeletedAccountHasNoBoard()
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'Anna', 'deleted' => true]]);
+
+		$this->expectException(NotFoundException::class);
+		$this->testAction('/avatar/' . $context->user['id'], ['method' => 'get']);
+	}
+
+	public function testAnUnknownUserIdHasNoBoard()
+	{
+		$this->expectException(NotFoundException::class);
+		$this->testAction('/avatar/999999999', ['method' => 'get']);
+	}
 }

@@ -110,6 +110,7 @@ class ContextPreparator
 		// Google Sign-In fields
 		$user['external_id'] = $externalId ?: null;
 		$user['picture'] = Util::extract('picture', $userInput) ?: null;
+		$user['pref_avatar'] = Util::extract('pref_avatar', $userInput) ?: User::AVATAR_BOARD;
 		$user['needs_display_name_change'] = Util::extract('needs_display_name_change', $userInput) ?: false;
 		foreach ([
 			'used_refinement',
