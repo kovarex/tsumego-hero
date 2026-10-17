@@ -88,6 +88,21 @@ class PersonalCollectionContentTest extends TestCaseWithAuth
 		$this->assertNotContains($playerTsumegoId, $attemptTsumegoIds);
 	}
 
+	public function testRatingModeNeverPicksAProblemFromAPlayerCollection(): void
+	{
+		new ContextPreparator([
+			'user' => ['name' => 'alice', 'rating' => 1000],
+			'tsumego' => ['rating' => 1000, 'sets' => [
+				['name' => 'Player Collection', 'num' => 1, 'public' => 1, 'user_id' => 'self']]],
+		]);
+		$this->login('alice');
+
+		$this->testAction('/ratingMode');
+
+		$this->assertStringEndsWith('/sets', $this->headers['Location'] ?? '',
+			'with no problem of the site to offer, rating mode sends the player back');
+	}
+
 	public function testSolvedProgressCountsOnlyTheProblemsOfTheSite(): void
 	{
 		$context = new ContextPreparator([
