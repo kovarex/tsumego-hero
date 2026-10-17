@@ -58,6 +58,7 @@
 /* Changelog feed (page-specific, single-use; lives in the page layer). */
 .changelog
 {
+	--changelog-label-column: 6rem;
 	display: flex;
 	flex-direction: column;
 	gap: var(--space-6);
@@ -87,13 +88,18 @@
 
 .changelog__date
 {
-	font-size: var(--font-size-md);
+	position: sticky;
+	top: 0;
+	z-index: 1;
+	font-size: 18px;
 	font-weight: var(--font-weight-bold);
 	color: var(--text-color);
-	text-transform: uppercase;
 	letter-spacing: 0.02em;
+	/* The heading is painted over the entries, so it needs its own opaque fill to
+	   hide the lines scrolling under it. Same colour as the panel (.whitebox2). */
+	background: var(--info-box-background);
 	margin: 0 0 var(--space-3);
-	padding-bottom: var(--space-2);
+	padding: var(--space-2) 0;
 	border-bottom: 1px solid var(--current-border-color);
 }
 
@@ -126,19 +132,18 @@ a[href="/changelog"]
 	display: inline-block;
 }
 
-.changelog__group
-{
-	margin: 0 0 var(--space-3);
-}
-
 .changelog__category
 {
+	/* Right-aligned, so a short label sits against the entry text instead of leaving
+	   a gap. */
+	flex: none;
+	width: var(--changelog-label-column);
+	text-align: right;
 	font-size: var(--font-size-sm);
 	font-weight: var(--font-weight-bold);
 	text-transform: uppercase;
 	color: var(--color-gray);
 	letter-spacing: 0.04em;
-	margin: 0 0 var(--space-1);
 }
 
 .changelog__category--added
@@ -176,15 +181,27 @@ a[href="/changelog"]
 	gap: var(--space-2);
 }
 
+.changelog__list li
+{
+	display: flex;
+	align-items: baseline;
+	gap: var(--space-2);
+}
+
 .changelog__text
 {
-	font-size: var(--font-size-md);
+	flex: 1 1 auto;
+	min-width: 0;
+	font-size: inherit;
 	color: var(--text-color);
 	line-height: 1.5;
 }
 
 .changelog__paragraph
 {
+	/* Markdown wraps an entry in a paragraph; inline keeps it on the same line as
+	   the category label. */
+	display: inline;
 	margin: 0;
 }
 
