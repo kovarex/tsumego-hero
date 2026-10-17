@@ -24,6 +24,7 @@
 
 require_once(__DIR__ . "/../src/UrlRoute.php");
 require_once(__DIR__ . "/../src/ParseOnlyRoute.php");
+require_once(__DIR__ . "/../src/SetViewRoute.php");
 
 use App\Utility\Avatar;
 
@@ -204,7 +205,8 @@ Router::connect(
 	['pass' => ['id'], 'id' => '[0-9]+']
 );
 // A single-segment /sets/<action> route has to sit above the /sets/:id catch-alls, which would
-// otherwise read the action as the id of a collection.
+// otherwise read the action as the id of a collection. The catch-alls below decline an id that
+// names an action, so only the actions spelled out here need a route of their own.
 Router::connect(
 	'/sets/sandbox',
 	['controller' => 'sets', 'action' => 'sandbox']
@@ -230,12 +232,12 @@ Router::connect(
 Router::connect(
 	'/sets/:id',
 	['controller' => 'sets', 'action' => 'view'],
-	['pass' => ['id'], 'id' => '[^/]+']
+	['pass' => ['id'], 'id' => '[^/]+', 'routeClass' => 'SetViewRoute']
 );
 Router::connect(
 	'/sets/:id/:partition',
 	['controller' => 'sets', 'action' => 'view'],
-	['pass' => ['id', 'partition'], 'id' => '[^/]+', 'partition' => '[0-9]+']
+	['pass' => ['id', 'partition'], 'id' => '[^/]+', 'partition' => '[0-9]+', 'routeClass' => 'SetViewRoute']
 );
 Router::connect(
 	'/users/playerColorPreference',
