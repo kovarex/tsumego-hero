@@ -522,7 +522,7 @@ else
 			$publishedBySet[$tsumegoButton->setID][] = $tsumegoButton;
 		foreach ($publishedBySet as $setID => $setButtons)
 		{
-			echo '<a class="scheduleTsumego" href="/sets/view/' . $setID . '"><b>'
+					echo '<a class="scheduleTsumego" href="' . Set::url((int) $setID) . '"><b>'
 				. $setButtons[0]->setTitle . ' - ' . count($setButtons) . ' problems</b></a><br>';
 			echo '<div class="problem-nav__buttons">';
 			foreach ($setButtons as $index => $tsumegoButton)
@@ -551,7 +551,7 @@ else
 					The Level Evaluation Set is designed to assess and improve the reader’s strength in the game of Go through a focused collection of Tsumego and Tesuji problems. The first part is titled Beginner and covers problems around the double digit kyu ranks.
 					  <br><br>
 						<div align="center"><img width="90%" src="/img/level-evaluation-set-promo.png" alt="Level Evaluation Set: Beginner" title="Level Evaluation Set: Beginner"><br><br>
-						<a class="btn main-page" href="/sets/view/263">Play</a><br><br>
+						<a class="btn main-page" href="/sets/263">Play</a><br><br>
 						</div>
 					</div>
 				</div>
@@ -562,7 +562,7 @@ else
 					The status of the J group on its own is unsettled. Learn the details about this shape to improve your game, as you will certainly see it again.
 					  <br><br>
 						<div align="center"><img width="60%" src="/img/j-group-promo.png" alt="New Collection: The J Group" title="New Collection: The J Group"><br><br>
-						<a class="btn main-page" href="/sets/view/255">Play</a><br><br>
+						<a class="btn main-page" href="/sets/255">Play</a><br><br>
 						</div>
 					</div>
 				</div>
@@ -571,7 +571,7 @@ else
 					<div class="new1">
 					The Goban is just like a boundless sky with unlimited possibilities. The only limit is your imagination. Expand your imagination with this set of problems that contain extraordinary shapes and solutions.
 						<div align="center"><img width="68%" src="/img/boundless-sky-promo.png" alt="New Collection: Boundless Sky" title="New Collection: Boundless Sky"><br><br>
-							<a class="btn main-page" href="/sets/view/254">Play</a><br><br>
+							<a class="btn main-page" href="/sets/254">Play</a><br><br>
 						</div>
 					</div>
 				</div>
@@ -582,7 +582,7 @@ else
 					Basic knowledge of the L group to boost double digit kyu player's confidence ! A diligent study is worth it. The L group is a corner shape that
 					will appear again and again in your game.  <br><br>
 						<div align="center"><img width="60%" src="/img/promo-lgroup.png" alt="New Collection: The L Group" title="New Collection: The L Group"><br><br>
-						<a class="btn main-page" href="/sets/view/252">Play</a><br><br>
+						<a class="btn main-page" href="/sets/252">Play</a><br><br>
 						</div>
 					</div>
 				</div>
@@ -595,7 +595,7 @@ else
 					as enclosing, surrounding, placement, under the stones, as well as survival skills like increasing eyespace, connecting and sacrificing. <br><br>
 					<div align="center"><img width="80%" src="/img/wldpromo.png" alt="New Collection: Weiqi Life&Death Drills" title="New Collection: Weiqi Life&Death Drills">
 					<br><br>
-					<a class="btn main-page" href="/sets/view/250">Play</a><br><br></div>
+					<a class="btn main-page" href="/sets/250">Play</a><br><br></div>
 					</div>
 				</div>
 
@@ -605,7 +605,7 @@ else
 					Segoe Tesuji Dictionary is a three volume tesuji problem book-set, written by Segoe Kensaku and Go Seigen.
 					It is divided into sections according to the kind of move needed for the tesuji (e.g., tsuke or geta).<br><br>
 					<div align="center"><img width="95%" src="/img/segoe1-promo.png" alt="New Collection: Segoe Tesuji Dictionary" title="New Collection: Segoe Tesuji Dictionary">
-					<a class="btn main-page" href="/sets/view/248">Play</a><br><br></div>
+					<a class="btn main-page" href="/sets/248">Play</a><br><br></div>
 					</div>
 				</div>
 
@@ -617,7 +617,7 @@ else
 						Instead of that a group can be attacked to gain influence, gain territory, stabilize their own group, create thickness or many other reasons.
 						This collection teaches the best ways to attack groups to get an advantage on the board.<br><br>
 						<div align="center"><img width="60%" src="/img/attack-hero-promo.png" alt="New Collection: Attack Hero" title="New Collection: Attack Hero"><br><br>
-							<a class="btn main-page" href="/sets/view/246">Play</a><br><br>
+							<a class="btn main-page" href="/sets/246">Play</a><br><br>
 						</div>
 					</div>
 				</div>
@@ -630,7 +630,7 @@ else
 					life and death problems, compiled in 1713 by the Japanese go master Inoue Dosetsu Inseki. The problems in this collection
 					have a very high difficulty, so discussion of solutions might not always be possible.<br><br>
 					<div align="center"><img width="95%" src="/img/igo-hatzuyoron.png" alt="New Collection: Igo Hatsuyoron" title="New Collection: Igo Hatsuyoron">
-					<a class="btn main-page" href="/sets/view/242">Play</a><br><br></div>
+					<a class="btn main-page" href="/sets/242">Play</a><br><br></div>
 					</div>
 				</div>
 
@@ -645,7 +645,7 @@ else
 						<a href="https://australiango.asn.au/aga-books" target="_blank">australiango.asn.au/aga-books</a>
 						<br><br>
 						<div align="center"><img width="95%" src="/img/diabolical-new-promo.png" alt="New: Diabolical - the whole book" title="New: Diabolical - the whole book">
-						<a class="btn main-page" href="/sets/view/237">Play</a><br><br></div>
+						<a class="btn main-page" href="/sets/237">Play</a><br><br></div>
 					</div>
 				</div>
 
@@ -656,7 +656,7 @@ else
 						The task is to choose the best move from the given options. The problems were checked with AI for correctness. <br><br>
 						<div align="center"><img width="95%" src="/img/directionofplay-info.png" alt="New Collection: Direction of the Play" title="New Collection: Direction of the Play">
 
-						<a class="btn main-page" href="/sets/view/236">Play</a><br><br></div>
+						<a class="btn main-page" href="/sets/236">Play</a><br><br></div>
 					</div>
 				</div>
 
@@ -666,7 +666,7 @@ else
 								This series written by Kano Yoshinori in 1985 covers a large range of fundamental topics.
 						Volume 1 contains problems about recognizing atari, ladders, snapbacks and basic life and death problems. Created for Tsumego Hero by Stepan Trubitsin.
 						<div align="center"><img width="95%" src="/img/kano-yoshinori-promo.png" alt="New Collection: Kano Yoshinori" title="New Collection: Kano Yoshinori">
-						<a class="btn main-page" href="/sets/view/214">Play</a><br><br></div>
+						<a class="btn main-page" href="/sets/214">Play</a><br><br></div>
 					</div>
 				</div>
 
@@ -676,7 +676,7 @@ else
 						There's a saying in Go that your overall strength is limited by your endgame strength. Even if you are leading a lot in the opening and middle game, mistakes in endgame can still lose you the game. This collection allows you to practice and level-up your endgame in a small 9x9 board with real-game examples.
 						<div align="center"><img width="95%" src="/img/9x9-startpage.png">
 
-						<a class="btn main-page" href="/sets/view/207">Play</a><br><br></div>
+						<a class="btn main-page" href="/sets/207">Play</a><br><br></div>
 					</div>
 				</div>
 
@@ -687,7 +687,7 @@ else
 						That's the question this collection aims to answer.
 						<div align="center"><img width="95%" src="/img/sacrifical-tsumego-home.png">
 
-						<a class="btn main-page" href="/sets/view/197">Play</a><br><br></div>
+						<a class="btn main-page" href="/sets/197">Play</a><br><br></div>
 					</div>
 				</div>
 
@@ -698,7 +698,7 @@ else
 						Go Seigen once commented that Longshi's fighting skill
 						was of 13-dan strength. The problems in this collection are focused mainly on endgame tesujis.
 						<div align="center"><img width="95%" src="/img/yi-kuo-home.png">
-						<a class="btn main-page" href="/sets/view/195">Play</a><br><br></div>
+						<a class="btn main-page" href="/sets/195">Play</a><br><br></div>
 					</div>
 				</div>
 

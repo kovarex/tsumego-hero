@@ -31,16 +31,7 @@ use App\Utility\ValueGraphRenderer;
 <?php TimeGraphRenderer::renderScriptInclude(); ?>
 
 <div>
-	<div class="profile-header">
-		<p class="profile-username"><?php
-			$avatarUrl = User::getAvatarUrl($user['User'], User::AVATAR_PIXELS_PROFILE);
-			echo User::avatarImage($avatarUrl, 'user-avatar--lg', false, User::boardUrl($user['User']));
-			echo h($user['User']['display_name']);
-			echo ' ';
-			User::renderPremium($user['User']);
-		?></p>
-		<?php echo $this->element('user_subnav', ['userID' => $user['User']['id'], 'activeTab' => 'profile']); ?>
-	</div>
+	<?php echo $this->element('user_header', ['user' => $user['User'], 'activeTab' => 'profile']); ?>
 <?php if (Auth::getUserID() == $user['User']['id']): ?>
 <div class="cluster">
 	<div class="card card--green">

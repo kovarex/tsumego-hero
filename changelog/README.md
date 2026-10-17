@@ -68,7 +68,6 @@ Examples:
 | Burst animation on favorite. | Favoriting a problem now plays a burst animation. |
 | Count misplays on solved attempts. | Set accuracy no longer counts misplays on problems you've already solved. |
 | Sets in correct order. | The sets a problem belongs to now always appear in the same order. |
-| Friends can open a link to your set; it stays off the Collections page. | You can send a friend a link to one of your collections, so they can open it and play its problems. |
 
 **Reveal:** what players can do, what changed, what got faster or more reliable.
 **Don't reveal:** internal refactors, tests/CI, dependency bumps, commit/PR hashes, machine-facing plumbing (sitemaps, `robots.txt`, caches, cron jobs), admin/mod-only tools, cosmetic tweaks, or implementation details that don't change what a player sees.

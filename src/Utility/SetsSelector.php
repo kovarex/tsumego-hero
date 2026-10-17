@@ -249,7 +249,7 @@ class SetsSelector
 	 *
 	 * Items are sorted within each collection by the $itemSortKeys row fields (e.g.
 	 * num, tsumego_id) so partitions always hold consecutive problems in the canonical
-	 * order (the same order the /sets/view page uses), regardless of the row order the
+	 * order (the same order a collection page uses), regardless of the row order the
 	 * database returns.
 	 *
 	 * @param array $rows Query rows, each with $idField, $nameField, $colorField, tsumego_id and rating.

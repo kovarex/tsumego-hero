@@ -27,8 +27,38 @@ class Set extends AppModel
 		return (int) $set['public'] === 1 && ($set['user_id'] ?? null) === null;
 	}
 
+	/**
+	 * The address of a collection. The pages of a long collection are numbered from one and its
+	 * first page is the collection itself, so a link to page one carries no number.
+	 *
+	 * @param int|string $id Collection id, or the readable address of a rank or tag page
+	 * @param int $partition Page of the collection, counting from one
+	 * @param bool $full Prefix the address with the site's own domain
+	 */
+	public static function url(int|string $id, int $partition = 1, bool $full = false): string
+	{
+		$url = ['controller' => 'sets', 'action' => 'view', 'id' => $id];
+		if ($partition > 1)
+			$url['partition'] = $partition;
+		return Router::url($url, $full);
+	}
+
 	public static function getProblemCount(int $setID): int
 	{
 		return Util::query("SELECT COUNT(*) AS total FROM set_connection WHERE set_connection.set_id = ?", [$setID])[0]["total"];
+	}
+
+	/**
+	 * How many collections of a player a viewer may open: the shared ones, and all of them for the
+	 * player whose collections they are. A player who has none is not offered a page that would be
+	 * empty.
+	 *
+	 * @param bool $includePrivate The viewer is the owner or an admin
+	 */
+	public static function countVisibleTo(int $userId, bool $includePrivate): int
+	{
+		$condition = $includePrivate ? '' : ' AND public = 1';
+		$rows = Util::query("SELECT COUNT(*) AS total FROM `set` WHERE user_id = ?$condition", [$userId]);
+		return (int) $rows[0]['total'];
 	}
 }

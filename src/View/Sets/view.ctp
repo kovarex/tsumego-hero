@@ -23,6 +23,7 @@ use App\Utility\TsumegoFilters;
  * @var int $saNum
  * @var bool $scoring
  * @var array $set
+ * @var array|null $setAuthor
  * @var int $setRating
  * @var string $setTitle
  * @var bool $startingSetConnectionID
@@ -41,7 +42,11 @@ if($set['Set']['id'] == 11969 || $set['Set']['id'] == 29156 || $set['Set']['id']
 </script>
 	<div class="split">
 		<div>
-		<?php echo '<p class="title4 set-view-title">' . h($setTitle) . '</p>';?>
+		<?php
+		$ownerNote = $setAuthor && (int) $setAuthor['id'] !== Auth::getUserID()
+			? ' <span class="set-view__owner">by ' . User::renderLink($setAuthor) . '</span>'
+			: '';
+		echo '<p class="title4 set-view-title">' . h($setTitle) . $ownerNote . '</p>';?>
 		<div class="new1">
 		<table border="0" width="100%">
 		<tr>
@@ -236,9 +241,41 @@ if ($tsumegoFilters->query != 'topics')
 								</label>
 								<noscript><button type="submit" class="btn">Save sharing</button></noscript>
 								<?php if ($set['Set']['public'] == 1): ?>
-									<input class="form-field__control set-view__share-link" type="text" id="SetShareLink" readonly value="<?php echo h(Router::url('/sets/view/' . (int) $set['Set']['id'], true)); ?>" onclick="this.select()">
+									<span class="set-view__share-link-row">
+										<input class="form-field__control set-view__share-link" type="text" id="SetShareLink" readonly value="<?php echo h(Set::url((int) $set['Set']['id'], 1, true)); ?>" onclick="this.select()">
+										<button type="button" class="btn set-view__share-copy" id="SetShareCopy" aria-label="Copy the link to this collection">Copy</button>
+									</span>
+									<span class="set-view__share-status" id="SetShareStatus" role="status" aria-live="polite"></span>
 								<?php endif; ?>
 							</form>
+							<?php if ($set['Set']['public'] == 1): ?>
+								<script>
+									(function () {
+										const button = document.getElementById('SetShareCopy');
+										const field = document.getElementById('SetShareLink');
+										const status = document.getElementById('SetShareStatus');
+										if (!button || !field)
+											return;
+										button.addEventListener('click', () => {
+											const copied = navigator.clipboard && window.isSecureContext
+												? navigator.clipboard.writeText(field.value)
+												: Promise.reject(new Error('no clipboard'));
+											copied.then(() => {
+												button.textContent = 'Copied';
+												status.textContent = 'The link is in your clipboard.';
+												setTimeout(() => {
+													button.textContent = 'Copy';
+													status.textContent = '';
+												}, 2000);
+											}).catch(() => {
+												// The browser refused, so leave the address selected for a manual copy.
+												field.select();
+												status.textContent = 'Press Ctrl+C to copy the address.';
+											});
+										});
+									}());
+								</script>
+							<?php endif; ?>
 						<?php endif; ?>
 					</td>
 				</tr>
@@ -309,7 +346,7 @@ if ($totalPages > 1):
 <?php if ($p === $currentPage): ?>
 		<strong><?php echo $p; ?></strong>
 <?php else: ?>
-		<a href="/sets/view/<?php echo $set['Set']['id'] . ($p > 1 ? '/' . $p : ''); ?>"><?php echo $p; ?></a>
+			<a href="<?php echo Set::url($set['Set']['id'], $p); ?>"><?php echo $p; ?></a>
 <?php endif; ?>
 <?php endfor; ?>
 	</div>
@@ -427,7 +464,7 @@ if ($totalPages > 1):
 
 		<?php
 if($refreshView)
-	echo 'window.location.href = "/sets/view/' . $set['Set']['id'] . '";';
+	echo 'window.location.href = "' . Set::url($set['Set']['id']) . '";';
 ?>
 	</script>
 	<style>

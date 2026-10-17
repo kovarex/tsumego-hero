@@ -1,1 +1,1 @@
-Added: You can send a friend a link to one of your collections, so they can open it and play its problems ([discussion](/forums/viewtopic.php?t=164)).
+Added: You can send a friend a link to one of your collections, and their shared collections are on the Sets tab of their profile ([discussion](/forums/viewtopic.php?t=164)).
