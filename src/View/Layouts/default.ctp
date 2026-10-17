@@ -109,6 +109,9 @@ echo $this->Html->charset();
 $canonicalUrl = Router::url($canonicalPath ?? '/' . trim(strtok($this->request->here, '?'), '/'), true);
 ?>
 <link rel="canonical" href="<?php echo h($canonicalUrl); ?>">
+<?php if (!empty($noIndex)): ?>
+<meta name="robots" content="noindex">
+<?php endif; ?>
 <?php
 // Controllers can describe the page themselves; what they set wins, everything
 // else comes from here.
