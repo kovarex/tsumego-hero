@@ -99,7 +99,8 @@ FROM
 	JOIN `set` ON set_connection.set_id=`set`.id
 WHERE
 	`set`.`included_in_time_mode` = 1 AND
-	`set`.public = 1");
+	`set`.public = 1 AND
+	`set`.user_id IS NULL");
 
 			$rank['tsumego_count'] = $count[0]['count'];
 			$result[] = $rank;
@@ -121,7 +122,8 @@ FROM
 	JOIN `set` ON set_connection.set_id=`set`.id
 WHERE
 	`set`.`included_in_time_mode` = 1 AND
-	`set`.public = 1
+	`set`.public = 1 AND
+	`set`.user_id IS NULL
 GROUP BY bucket
 ORDER BY MIN(rating);");
 

@@ -102,7 +102,7 @@ class SetsSelector
 		$query->selects[] = 'tsumego.rating';
 		$query->query .= ' JOIN set_connection sc ON sc.set_id = s.id';
 		$query->query .= ' JOIN tsumego ON tsumego.id = sc.tsumego_id';
-		$query->conditions[] = 's.public = 1';
+		$query->conditions[] = 's.public = 1 AND s.user_id IS NULL';
 		$query->conditions[] = 'tsumego.deleted IS NULL';
 		if (!empty($this->tsumegoFilters->setIDs))
 			$query->conditions[] = 's.id IN (' . implode(',', $this->tsumegoFilters->setIDs) . ')';
@@ -369,7 +369,7 @@ class SetsSelector
 	 */
 	private function publicMembershipCondition(string $tsumegoRef): string
 	{
-		$setCondition = '`set`.public = 1';
+		$setCondition = '`set`.public = 1 AND `set`.user_id IS NULL';
 		if (!empty($this->tsumegoFilters->setIDs))
 			$setCondition .= ' AND `set`.id IN (' . implode(',', $this->tsumegoFilters->setIDs) . ')';
 		return 'EXISTS (SELECT 1 FROM set_connection sc JOIN `set` ON `set`.id = sc.set_id AND ' . $setCondition . ' WHERE sc.tsumego_id = ' . $tsumegoRef . ')';
