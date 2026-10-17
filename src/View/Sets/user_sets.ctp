@@ -3,14 +3,12 @@
 /**
  * @var View $this
  * @var array $setsNew
- * @var array|null $profileUser
+ * @var array $profileUser
  * @var bool $isOwn
  */
 ?>
 <div align="center" class="display1">
-	<?php if ($profileUser): ?>
-		<?= $this->element('user_header', ['user' => $profileUser, 'activeTab' => 'sets']) ?>
-	<?php endif; ?>
+	<?= $this->element('user_header', ['user' => $profileUser, 'activeTab' => 'sets']) ?>
 
 	<?php if ($isOwn): ?>
 		<div class="set-index-intro">

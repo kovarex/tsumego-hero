@@ -9,7 +9,7 @@ use App\Utility\Util;
  * @var array $attempts
  * @var int $count
  * @var int $pageIndex
- * @var array|null $profileUser
+ * @var array $profileUser
  * @var int $userID
  */
 

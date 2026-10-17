@@ -428,6 +428,14 @@ class UsersControllerTest extends ControllerTestCase
 		$this->assertStringNotContainsString('alice favorites', $this->view);
 	}
 
+	public function testSolveHistoryOfAnUnknownUserIsNotFound(): void
+	{
+		new ContextPreparator(['user' => ['name' => 'viewer']]);
+
+		$this->expectException(NotFoundException::class);
+		$this->testAction('users/solveHistory/99999999', ['method' => 'get']);
+	}
+
 	public function testProgressBarPreferenceOnlyOnOwnProfile(): void
 	{
 		$context = new ContextPreparator([

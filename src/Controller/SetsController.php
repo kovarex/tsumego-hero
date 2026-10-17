@@ -127,11 +127,12 @@ class SetsController extends AppController
 
 		$isOwn = ($userId === Auth::getUserID());
 		$profileUser = $this->User->findById($userId);
-		if ($profileUser)
-			$this->assertUserVisible($profileUser['User']);
+		if (!$profileUser)
+			throw new NotFoundException('User not found');
+		$this->assertUserVisible($profileUser['User']);
 		$pageTitle = $isOwn ? 'My Sets' : h($profileUser['User']['display_name']) . "'s Sets";
 		$this->set('_title', 'Tsumego Hero - ' . $pageTitle);
-		$this->set('profileUser', $profileUser ? $profileUser['User'] : null);
+		$this->set('profileUser', $profileUser['User']);
 		$this->set('isOwn', $isOwn);
 
 		// Own sets (or an admin browsing) show all sets; others only see public ones
@@ -888,8 +889,8 @@ ORDER BY sc.num ASC", [(int) $id]);
 			return;
 		}
 
-		// A collection has one address whatever path led here; the partition says which page of it
-		// the link pointed at, and the first page is the collection itself.
+		// A collection, a rank and a tag have one address whatever path led here; the partition says
+		// which page of it the link pointed at, and the first page is the collection itself.
 		$this->set('canonicalPath', Set::url($id, $partition + 1));
 
 		if ($id != '1')
