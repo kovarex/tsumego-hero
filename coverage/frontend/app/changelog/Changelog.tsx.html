@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">5.88% </span>
+                <span class="strong">6.45% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>2/34</span>
+                <span class='fraction'>2/31</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/11</span>
+                <span class='fraction'>0/12</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">6.25% </span>
+                <span class="strong">6.89% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>2/32</span>
+                <span class='fraction'>2/29</span>
             </div>
         
             
@@ -169,8 +169,7 @@
 <a name='L104'></a><a href='#L104'>104</a>
 <a name='L105'></a><a href='#L105'>105</a>
 <a name='L106'></a><a href='#L106'>106</a>
-<a name='L107'></a><a href='#L107'>107</a>
-<a name='L108'></a><a href='#L108'>108</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L107'></a><a href='#L107'>107</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -182,22 +181,26 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">213x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -205,14 +208,10 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -223,7 +222,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -289,31 +287,34 @@ const markdownComponents: Components = {
 	p: <span class="fstat-no" title="function not covered" >({</span> node: _node, ...props }) =&gt; <span class="cstat-no" title="statement not covered" >&lt;p className="changelog__paragraph" {...props} /&gt;</span>
 };
 &nbsp;
-const CATEGORY_ORDER = ['Added', 'Fixed', 'Changed', 'Performance', 'Removed'];
+// Display order within a day: what a player can do now comes before what they
+// already use and behaves differently, and maintenance comes last. Affects the
+// rendering order only, never the dates or the timestamps behind them.
+const CATEGORY_ORDER = ['Added', 'Changed', 'Performance', 'Removed', 'Fixed'];
 &nbsp;
-// Group entries by day, then category (newest-first order preserved within each).
-function <span class="fstat-no" title="function not covered" >groupByDay(e</span>ntries: ChangelogEntry[]): { date: string; categories: [string, ChangelogEntry[]][] }[]
+function <span class="fstat-no" title="function not covered" >categoryRank(c</span>ategory: string): number
 {
-	const days = <span class="cstat-no" title="statement not covered" >new Map&lt;string, Map&lt;string, ChangelogEntry[]&gt;&gt;();</span>
+	const rank = <span class="cstat-no" title="statement not covered" >CATEGORY_ORDER.indexOf(category);</span>
+<span class="cstat-no" title="statement not covered" >	return rank === -1 ? CATEGORY_ORDER.length : rank;</span>
+}
+&nbsp;
+// Entries grouped by day, each day ordered by category (stable, so entries of the
+// same category keep the order they shipped in).
+function <span class="fstat-no" title="function not covered" >groupByDay(e</span>ntries: ChangelogEntry[]): { date: string; entries: ChangelogEntry[] }[]
+{
+	const days = <span class="cstat-no" title="statement not covered" >new Map&lt;string, ChangelogEntry[]&gt;();</span>
 <span class="cstat-no" title="statement not covered" >	for (const e of entries)</span>
 	{
-		let cats = <span class="cstat-no" title="statement not covered" >days.get(e.date);</span>
-<span class="cstat-no" title="statement not covered" >		<span class="missing-if-branch" title="if path not taken" >I</span>if (!cats)</span>
-		{
-<span class="cstat-no" title="statement not covered" >			cats = new Map();</span>
-<span class="cstat-no" title="statement not covered" >			days.set(e.date, cats);</span>
-		}
-		const list = <span class="cstat-no" title="statement not covered" >cats.get(e.category);</span>
+		const list = <span class="cstat-no" title="statement not covered" >days.get(e.date);</span>
 <span class="cstat-no" title="statement not covered" >		if (list)</span>
 <span class="cstat-no" title="statement not covered" >			list.push(e);</span>
 		else
-<span class="cstat-no" title="statement not covered" >			cats.set(e.category, [e]);</span>
+<span class="cstat-no" title="statement not covered" >			days.set(e.date, [e]);</span>
 	}
 &nbsp;
-<span class="cstat-no" title="statement not covered" >	return Array.from(days.entries()).map(<span class="fstat-no" title="function not covered" >([</span>date, cats]) =&gt; (<span class="cstat-no" title="statement not covered" >{</span></span>
+<span class="cstat-no" title="statement not covered" >	return Array.from(days.entries()).map(<span class="fstat-no" title="function not covered" >([</span>date, dayEntries]) =&gt; (<span class="cstat-no" title="statement not covered" >{</span></span>
 		date,
-		categories: Array.from(cats.entries())
-			.sort(<span class="fstat-no" title="function not covered" >(a</span>, b) =&gt; <span class="cstat-no" title="statement not covered" >CATEGORY_ORDER.indexOf(a[0]) - CATEGORY_ORDER.indexOf(b[0]))</span>
+		entries: dayEntries.slice().sort(<span class="fstat-no" title="function not covered" >(a</span>, b) =&gt; <span class="cstat-no" title="statement not covered" >categoryRank(a.category) - categoryRank(b.category))</span>
 	}));
 }
 &nbsp;
@@ -321,23 +322,19 @@ function <span class="fstat-no" title="function not covered" >Feed({</span> entr
 {
 <span class="cstat-no" title="statement not covered" >	return (</span>
 		&lt;&gt;
-			{groupByDay(entries).map(<span class="fstat-no" title="function not covered" >({</span> date, categories }) =&gt; (
+			{groupByDay(entries).map(<span class="fstat-no" title="function not covered" >({</span> date, entries: dayEntries }) =&gt; (
 <span class="cstat-no" title="statement not covered" >				&lt;section key={date}&gt;</span>
 					&lt;h2 className="changelog__date"&gt;{date}&lt;/h2&gt;
-					{categories.map(<span class="fstat-no" title="function not covered" >([</span>category, list]) =&gt; (
-<span class="cstat-no" title="statement not covered" >						&lt;div className="changelog__group" key={category}&gt;</span>
-							&lt;h3 className={`changelog__category changelog__category--${category.toLowerCase()}`}&gt;{category}&lt;/h3&gt;
-							&lt;ul className="changelog__list"&gt;
-								{list.map(<span class="fstat-no" title="function not covered" >(e</span>, index) =&gt; (
-<span class="cstat-no" title="statement not covered" >									&lt;li key={`${e.file}-${index}`}&gt;</span>
-										&lt;div className="changelog__text"&gt;
-											&lt;ReactMarkdown components={markdownComponents}&gt;{e.text}&lt;/ReactMarkdown&gt;
-										&lt;/div&gt;
-									&lt;/li&gt;
-								))}
-							&lt;/ul&gt;
-						&lt;/div&gt;
-					))}
+					&lt;ul className="changelog__list"&gt;
+						{dayEntries.map(<span class="fstat-no" title="function not covered" >(e</span>, index) =&gt; (
+<span class="cstat-no" title="statement not covered" >							&lt;li key={`${e.file}-${index}`}&gt;</span>
+								&lt;span className={`changelog__category changelog__category--${e.category.toLowerCase()}`}&gt;{e.category}&lt;/span&gt;
+								&lt;span className="changelog__text"&gt;
+									&lt;ReactMarkdown components={markdownComponents}&gt;{e.text}&lt;/ReactMarkdown&gt;
+								&lt;/span&gt;
+							&lt;/li&gt;
+						))}
+					&lt;/ul&gt;
 				&lt;/section&gt;
 			))}
 		&lt;/&gt;
@@ -391,7 +388,7 @@ export function <span class="fstat-no" title="function not covered" >Changelog({
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-10-16T10:57:32.926Z
+                at 2026-10-17T02:00:20.459Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
