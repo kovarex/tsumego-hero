@@ -475,10 +475,12 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$this->Authorization->authorize($set, 'share');
 
 		$shared = !empty($this->request->data['shared']);
-		$save = $set;
-		$save['Set']['public'] = $shared ? 1 : 0;
-		$this->Set->create();
-		$this->Set->save($save, true);
+		$this->Set->id = (int) $id;
+		if (!$this->Set->saveField('public', $shared ? 1 : 0))
+		{
+			CookieFlash::set('Sharing could not be saved', 'error');
+			return $this->redirect('/sets/view/' . (int) $id);
+		}
 
 		CookieFlash::set($shared
 			? 'Anyone with the link can open this collection now'
@@ -970,7 +972,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 			if ($set['Set']['public'] == 0 && $set['Set']['user_id'] === null)
 				$this->set('_page', 'sandbox');
 			// Collections a player assembled are pages of their own, not the site's content.
-			$this->set('noIndex', !Set::isOfficial($set['Set']));
+			$this->set('robotsNoIndex', !Set::isOfficial($set['Set']));
 			$this->set('isFav', false);
 			$this->set('canEdit', $this->Authorization->can($set, 'edit'));
 			$this->set('canShare', $this->Authorization->can($set, 'share'));

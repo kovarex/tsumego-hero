@@ -21,6 +21,7 @@ use App\Utility\ViteManifest;
  * @var string $nextDay
  * @var string $boardsBitmask
  * @var string|null $canonicalPath Path a page with more than one address wants to be known by
+ * @var bool $robotsNoIndex The page is reachable but must stay out of search results
  * @var array|null $og
  */
 
@@ -109,7 +110,7 @@ echo $this->Html->charset();
 $canonicalUrl = Router::url($canonicalPath ?? '/' . trim(strtok($this->request->here, '?'), '/'), true);
 ?>
 <link rel="canonical" href="<?php echo h($canonicalUrl); ?>">
-<?php if (!empty($noIndex)): ?>
+<?php if (!empty($robotsNoIndex)): ?>
 <meta name="robots" content="noindex">
 <?php endif; ?>
 <?php
