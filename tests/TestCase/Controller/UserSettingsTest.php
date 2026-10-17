@@ -1,5 +1,6 @@
 <?php
 
+use App\Utility\ReadingStones;
 use App\Utility\Util;
 use Facebook\WebDriver\WebDriverKeys;
 use PHPUnitRetry\RetryTrait;
@@ -205,6 +206,50 @@ class UserSettingsTest extends ControllerTestCase
 		$browser->get('users/settings');
 		$browser->find('input[name="dateFormat"][value="' . User::DATE_FORMAT_DAY_MONTH_YEAR . '"]')->click();
 		$this->waitForUserField($context, 'date_format_id', (string) User::DATE_FORMAT_DAY_MONTH_YEAR);
+	}
+
+	public function testReadingTrainerDefaultsToYourStonesLeaving(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'readingDefault']]);
+		$browser = Browser::instance();
+
+		$browser->get('users/settings');
+
+		$this->assertTrue($browser->find('input[name="readingPlayed"][value="' . ReadingStones::Hidden->value . '"]')->isSelected(),
+			'The stones the player plays leave by default');
+		$this->assertTrue($browser->find('input[name="readingSetup"][value="' . ReadingStones::Normal->value . '"]')->isSelected(),
+			'The stones of the problem stay by default');
+
+		$user = $context->reloadUser();
+		$this->assertSame(ReadingStones::Hidden->value, (int) $user['pref_reading_played']);
+		$this->assertSame(ReadingStones::Normal->value, (int) $user['pref_reading_setup']);
+	}
+
+	public function testBothSidesCannotStayVisible(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'readingBoth']]);
+		$browser = Browser::instance();
+
+		$browser->get('users/settings');
+
+		// The default keeps the stones of the problem. Picking Normal for the other
+		// side would show the whole board, so that side of the pair turns Hidden.
+		$browser->find('input[name="readingPlayed"][value="' . ReadingStones::Normal->value . '"]')->click();
+
+		$deadline = microtime(true) + 5;
+		do
+		{
+			$user = $context->reloadUser();
+			if ((int) $user['pref_reading_setup'] === ReadingStones::Hidden->value)
+				break;
+			usleep(100000);
+		}
+		while (microtime(true) < $deadline);
+
+		$this->assertSame(ReadingStones::Normal->value, (int) $user['pref_reading_played'], 'The side the player picked keeps the value it got');
+		$this->assertSame(ReadingStones::Hidden->value, (int) $user['pref_reading_setup'], 'The side that was left alone turns Hidden');
+		$this->assertTrue($browser->find('input[name="readingSetup"][value="' . ReadingStones::Hidden->value . '"]')->isSelected(),
+			'The page shows the side that was switched');
 	}
 
 	public function testOnlyAnAdminCanStepDown(): void

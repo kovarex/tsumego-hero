@@ -1,0 +1,1 @@
+Added: An eye under the board starts a reading trainer that hides the stones until the problem is solved, and [Settings](/users/settings) picks how much of them stays visible ([discussion](/forums/viewtopic.php?t=150)).

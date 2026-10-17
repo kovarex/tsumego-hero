@@ -69,6 +69,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     promote: promote,
     demote: demote,
     getRoot: getRoot,
+    getPlayedPoints: getPlayedPoints, // Board points occupied by a move on the path
     loadRoot: loadRoot, // Loads new game state
     wasEdited: wasEdited,
     resetEdited: resetEdited,
@@ -742,6 +743,21 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
 
   function setAutoPlay(value) {
     autoPlay = value;
+  }
+
+  /**
+   * Points filled by an actual move on the path to `node`, keyed as "x-y": the
+   * stones the player read out, not the position the problem starts with.
+   */
+  function getPlayedPoints(node) {
+    var points = {};
+    var walk = node;
+    while (walk) {
+      if (walk.move && walk.move.x > 0 && walk.move.y > 0)
+        points[walk.move.x + "-" + walk.move.y] = true;
+      walk = walk.parent;
+    }
+    return points;
   }
 
   function getReviewMode() {

@@ -345,6 +345,8 @@ besogo.makeToolPanel = function (container, editor) {
 			function ()
 			{
 				resetParameters(besogo.editor.getCurrent().parent === null);
+				// Reset starts a new attempt, so the reading trainer hides the stones again.
+				besogo.editor.READING_REVEAL = false;
 				besogo.editor.resetToStart();
 				toggleBoardLock(false);
 				besogo.editor.setReviewMode(false);
@@ -832,6 +834,33 @@ besogo.makeToolPanel = function (container, editor) {
         container.appendChild(arrow[0]);
       }
     }
+
+    // Reading trainer: the eye turns the trainer on and off. What it looks like is
+    // set once in the settings, so a click never changes the preference. Off is the
+    // quiet state and says so only in the tooltip, so the corner under the board
+    // stays free.
+    if (besogo.editor && besogo.editor.READING_ENABLED) {
+      let readingToggle = $('<span id="readingToggle" style="cursor:pointer;display:inline-flex;align-items:center;height:25px;line-height:1;vertical-align:middle;margin:12px 0 0 7px;user-select:none;white-space:nowrap"><span style="font-size:16px;line-height:1">&#128065;</span></span>');
+
+      let renderReadingToggle = function () {
+        let on = !!besogo.editor.READING_ON,
+          label = on ? "Reading trainer is on, click to turn it off" : "Reading trainer is off, click to turn it on";
+        readingToggle.attr("title", label);
+        readingToggle.attr("aria-label", label);
+        readingToggle.attr("aria-pressed", on ? "true" : "false");
+        readingToggle.css("opacity", on ? 1 : 0.45);
+      };
+
+      readingToggle.on("click", function (e) {
+        e.preventDefault();
+        besogo.editor.setReadingOn(!besogo.editor.READING_ON);
+        renderReadingToggle();
+      });
+
+      renderReadingToggle();
+      container.appendChild(readingToggle[0]);
+    }
+
     if (besogo.scaleParameters["orientation"] !== "full-board")
       makeBlankSpace(2);
     makeAuthorText("author-notice");

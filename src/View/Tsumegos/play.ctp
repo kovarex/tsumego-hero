@@ -1656,6 +1656,12 @@ use App\Utility\ViteManifest;
 				$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(0, 0, 0, 0.2)");
 			else
 				$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(80, 255, 0, 0.2)");
+			// The trainer is a solving aid, so the finished attempt is shown whole.
+			if (besogo.editor.READING_ENABLED)
+			{
+				besogo.editor.READING_REVEAL = true;
+				besogo.editor.notifyListeners({ navChange: true });
+			}
 			besogo.editor.setReviewEnabled(true);
 			besogo.editor.setControlButtonLock(false);
 			noLastMark = true;
@@ -1879,6 +1885,10 @@ use App\Utility\ViteManifest;
 		}
 	?>
 		options.corner = "<?php echo $corner; ?>";
+		<?php if (isset($readingPlayed, $readingSetup)): ?>
+		options.readingPlayed = <?php echo (int) $readingPlayed; ?>;
+		options.readingSetup = <?php echo (int) $readingSetup; ?>;
+		<?php endif; ?>
 		options.playerColor = "<?php echo $playerColor; ?>";
 		options.swapColors = <?php echo $swapColors ? 'true' : 'false'; ?>;
 		options.rootPath = '/besogo/';

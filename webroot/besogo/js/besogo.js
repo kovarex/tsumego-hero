@@ -14,6 +14,20 @@
   besogo.boardCanvasSvg = null;
   besogo.intuitionActive = false;
   besogo.playerColor = "black";
+  // The reading trainer draws the board the way it is remembered instead of the
+  // way it is. Each group of stones can look like one of these three: 0 is the
+  // ordinary board, 1 replaces both colours with one glass stone (the point reads
+  // as taken, not as whose), 2 leaves the point empty. The numbers are what
+  // App\Utility\ReadingStones stores as the preference.
+  besogo.READING_NORMAL = 0;
+  besogo.READING_GLASS = 1;
+  besogo.READING_HIDDEN = 2;
+  // A move the player just played keeps its real look for READING_GRACE_MS, long
+  // enough to see where it landed and short enough that the position has to be
+  // held in the head. A stone leaves with a READING_FADE_MS fade, so the eye can
+  // follow what went away.
+  besogo.READING_GRACE_MS = 2000;
+  besogo.READING_FADE_MS = 400;
   // Shared helper: convert true-color text (Black/White) to the player's view by
   // swapping the color words. Used when the board is color-inverted.
   besogo.swapColorWords = function (text) {
@@ -361,6 +375,23 @@
     if (options.tsumegoPlayTool) besogo.editor.setTool(options.tsumegoPlayTool);
     if (options.fullEditor) besogo.editor.setFullEditor(true);
     besogo.editor.setCoordStyle(options.coord);
+    // A problem page says how the trainer draws the stones the player plays and the
+    // stones the problem starts with; any other board (an editor, a viewer) says
+    // nothing and gets no trainer. Whether the trainer is on is remembered per
+    // device, like the sound and the theme.
+    besogo.editor.READING_ENABLED = (typeof options.readingPlayed === "number");
+    besogo.editor.READING_LOOK_PLAYED = options.readingPlayed || besogo.READING_NORMAL;
+    besogo.editor.READING_LOOK_SETUP = options.readingSetup || besogo.READING_NORMAL;
+    besogo.editor.setReadingOn = function (on)
+    {
+      besogo.editor.READING_ON = !!on;
+      besogo.setCookie("readingTrainer", on ? "on" : "off");
+      besogo.editor.notifyListeners({ navChange: true });
+    };
+    besogo.editor.setReadingOn(besogo.getCookie("readingTrainer") === "on");
+    // A solved problem is shown whole, a retry hides the stones again.
+    besogo.editor.READING_REVEAL = false;
+    besogo.editor.GLASS_STONE = options.glassStone || "glass.png";
     if (options.realstones) {
       // Using realistic stones
       besogo.editor.REAL_STONES = true;
