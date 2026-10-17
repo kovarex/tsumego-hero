@@ -127,11 +127,12 @@ class SetsController extends AppController
 
 		$isOwn = ($userId === Auth::getUserID());
 		$profileUser = $this->User->findById($userId);
-		if ($profileUser)
-			$this->assertUserVisible($profileUser['User']);
+		if (!$profileUser)
+			throw new NotFoundException('User not found');
+		$this->assertUserVisible($profileUser['User']);
 		$pageTitle = $isOwn ? 'My Sets' : h($profileUser['User']['display_name']) . "'s Sets";
 		$this->set('_title', 'Tsumego Hero - ' . $pageTitle);
-		$this->set('profileUser', $profileUser ? $profileUser['User'] : null);
+		$this->set('profileUser', $profileUser['User']);
 		$this->set('isOwn', $isOwn);
 
 		// Own sets (or an admin browsing) show all sets; others only see public ones
@@ -463,6 +464,31 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$this->set('setRating', $setRating);
 	}
 
+	/**
+	 * Open or close the link sharing of a collection a player assembled.
+	 */
+	#[HttpPost]
+	public function share(?string $id = null): mixed
+	{
+		$set = $this->Set->findById((int) $id);
+		if (!$set)
+			throw new NotFoundException('Set not found');
+		$this->Authorization->authorize($set, 'share');
+
+		$shared = !empty($this->request->data['shared']);
+		$this->Set->id = (int) $id;
+		if (!$this->Set->saveField('public', $shared ? 1 : 0))
+		{
+			CookieFlash::set('Sharing could not be saved', 'error');
+			return $this->redirect(Set::url((int) $id));
+		}
+
+		CookieFlash::set($shared
+			? 'Anyone with the link can open this collection now'
+			: 'Only you can open this collection now', 'success');
+		return $this->redirect(Set::url((int) $id));
+	}
+
 	#[HttpPost]
 	public function delete(?string $id = null): void
 	{
@@ -516,7 +542,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		//setTiles
 		$setsRaw = $this->Set->find('all', [
 			'order' => array_map('trim', explode(',', SetConnection::displayOrderForSetSql('Set'))),
-			'conditions' => ['public' => 1],
+			'conditions' => ['public' => 1, 'user_id IS NULL'],
 		]) ?: [];
 		foreach ($setsRaw as $set)
 			$setTiles[] = $set['Set']['title'];
@@ -830,11 +856,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		// transferring from 1 indexed for humans to 0 indexed for us programmers.
 		$partition = $partition - 1;
 
-		// The first page of a set is the set itself.
-		if ($partition == 0 && count($this->request->params['pass']) > 1)
-			$this->set('canonicalPath', preg_replace('~/1$~', '', strtok($this->request->here, '?')));
-
-		// Redirect old /sets/view/favorites to user's default set
+		// Favorites is a shortcut to the player's default collection.
 		if ($id === 'favorites')
 		{
 			if (!Auth::isLoggedIn())
@@ -843,7 +865,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 				return;
 			}
 			$defaultSet = $this->_getOrCreateDefaultFavoritesSet();
-			$this->redirect('/sets/view/' . $defaultSet['Set']['id']);
+			$this->redirect(Set::url((int) $defaultSet['Set']['id']));
 			return;
 		}
 
@@ -867,6 +889,10 @@ ORDER BY sc.num ASC", [(int) $id]);
 			return;
 		}
 
+		// A collection, a rank and a tag have one address whatever path led here; the partition says
+		// which page of it the link pointed at, and the first page is the collection itself.
+		$this->set('canonicalPath', Set::url($id, $partition + 1));
+
 		if ($id != '1')
 			$this->set('_page', 'set');
 		else
@@ -879,7 +905,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$acS = null;
 		$acA = null;
 		$this->set('canEdit', false);
-
 		$queryType = self::decodeQueryType($id);
 
 		if ($queryType == 'topics' && is_numeric($id))
@@ -946,11 +971,22 @@ ORDER BY sc.num ASC", [(int) $id]);
 				$tsIds [] = $tsumegoButton->tsumegoID;
 			if ($set['Set']['public'] == 0 && $set['Set']['user_id'] === null)
 				$this->set('_page', 'sandbox');
+			// Search engines are kept out of what a player assembled.
+			$this->set('robotsNoIndex', !Set::isOfficial($set['Set']));
 			$this->set('isFav', false);
 			$this->set('canEdit', $this->Authorization->can($set, 'edit'));
+			$this->set('canShare', $this->Authorization->can($set, 'share'));
 		}
 		else
 			throw new BadRequestException('Unknown query type: ' . $tsumegoFilters->query);
+
+		$setAuthor = null;
+		if (!empty($set['Set']['user_id']))
+		{
+			$foundUser = $this->User->findById($set['Set']['user_id']);
+			$setAuthor = $foundUser['User'] ?? null;
+		}
+		$this->set('setAuthor', $setAuthor);
 
 		if ($tsumegoButtons->description)
 			$set['Set']['description'] = $tsumegoButtons->description;
@@ -961,15 +997,20 @@ ORDER BY sc.num ASC", [(int) $id]);
 
 		$ogDescription = trim(strip_tags($set['Set']['description'] ?? ''));
 		if ($ogDescription === '')
-		{
 			if ($tsumegoFilters->query === 'topics')
+			{
 				$ogDescription = $this->Set->getProblemCount($set['Set']['id']) . ' go problems';
+				if ($setAuthor !== null)
+					$ogDescription .= ' collected by ' . (string) $setAuthor['display_name'];
+			}
 			else
 				$ogDescription = 'Interactive go problems';
-		}
 
+		// A shared link names the player even when they are the one who opened it.
 		$og = [
-			'title' => $displayTitle,
+			'title' => $setAuthor === null
+				? $displayTitle
+				: $displayTitle . ' by ' . (string) $setAuthor['display_name'],
 			'description' => $ogDescription,
 			'type' => 'website',
 			'site_name' => 'Tsumego',
@@ -1147,6 +1188,12 @@ ORDER BY sc.num ASC", [(int) $id]);
 	 */
 	private function updateAchievementConditions(int $sid, int|float $avgTime, int|float $accuracy): void
 	{
+		// Set achievements belong to the site's collections only, so nothing is recorded for a
+		// collection a player assembled, however complete it is.
+		$set = $this->Set->findById($sid);
+		if (!$set || !Set::isOfficial($set['Set']))
+			return;
+
 		$uid = Auth::getUserID();
 		$acS = $this->AchievementCondition->find('first', ['order' => 'value ASC', 'conditions' => ['set_id' => $sid, 'user_id' => $uid, 'category' => 's']]);
 		$acA = $this->AchievementCondition->find('first', ['order' => 'value DESC', 'conditions' => ['set_id' => $sid, 'user_id' => $uid, 'category' => '%']]);
@@ -1192,7 +1239,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 	#[HttpPost]
 	public function resetProgress(int $setID, int $partition): mixed
 	{
-		$redirectUrl = '/sets/view/' . $setID . '/' . $partition;
+		$redirectUrl = Set::url($setID, $partition);
 
 		if (!Auth::isLoggedIn())
 			return $this->redirect($redirectUrl);

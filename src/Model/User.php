@@ -220,6 +220,23 @@ class User extends AppModel
 	}
 
 	/**
+	 * Whether a player ever proposed a tag, tagged a problem, uploaded a solution or had a proposal
+	 * rejected. A player who never did any of that has no contributions page worth opening.
+	 */
+	public static function hasContributions(int $userId): bool
+	{
+		$rows = Util::query(
+			'SELECT
+				EXISTS(SELECT 1 FROM tag WHERE user_id = ?)
+				OR EXISTS(SELECT 1 FROM tag_connection WHERE user_id = ?)
+				OR EXISTS(SELECT 1 FROM sgf WHERE user_id = ?)
+				OR EXISTS(SELECT 1 FROM reject WHERE user_id = ? AND (tsumego_id = 0
+					OR EXISTS(SELECT 1 FROM set_connection WHERE tsumego_id = reject.tsumego_id))) AS found',
+			[$userId, $userId, $userId, $userId]);
+		return (bool) $rows[0]['found'];
+	}
+
+	/**
 	 * The same rule as displayNameOrNull() for the places that print the name instead of sending it
 	 * to the frontend: a user whose account is not there anymore is shown as DELETED_NAME.
 	 *

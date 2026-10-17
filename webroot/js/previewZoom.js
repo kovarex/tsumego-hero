@@ -2,9 +2,10 @@
  * Preview toggle - switches between pill buttons and inline board previews.
  * Persists preference to localStorage.
  *
- * Any checkbox with class="preview-zoom-toggle" will toggle the
- * "preview-zoomed" class on its nearest .set-view-main ancestor,
- * falling back to <html> if there is no such ancestor.
+ * Any checkbox with class="preview-zoom-toggle" switches its own container between the two modes:
+ * the element it names in data-target, else the block of boards it sits in, else the whole page.
+ * A page can carry several of them, one per table. The mode the page opens in is applied through
+ * the same container as a click, so the two can never disagree about where the class lives.
  */
 (function () {
 	'use strict';
@@ -12,35 +13,33 @@
 	var STORAGE_KEY = 'preview-mode';
 	var ZOOM_CLASS = 'preview-zoomed';
 
-	function findContainer(toggle) {
+	function containerOf(toggle) {
 		if (toggle.dataset.target)
 			return document.querySelector(toggle.dataset.target);
 		return toggle.closest('.set-view-main') || toggle.closest('table') || document.documentElement;
+	}
+
+	function setMode(toggle, on) {
+		var container = containerOf(toggle) || document.documentElement;
+		container.classList.toggle(ZOOM_CLASS, on);
+		if (on)
+			renderPreviewsIn(container);
+		else
+			container.querySelectorAll('a[data-sgf-preview] svg').forEach(function (svg) { svg.remove(); });
 	}
 
 	function init() {
 		var toggles = document.querySelectorAll('.preview-zoom-toggle');
 		if (!toggles.length) return;
 
-		var saved = localStorage.getItem(STORAGE_KEY);
-		if (saved === '1') {
-			document.documentElement.classList.add(ZOOM_CLASS);
-			renderAllPreviews();
-			toggles.forEach(function (t) { t.checked = true; });
-		}
-
+		var on = localStorage.getItem(STORAGE_KEY) === '1';
 		toggles.forEach(function (toggle) {
+			toggle.checked = on;
+			if (on)
+				setMode(toggle, true);
 			toggle.addEventListener('change', function () {
-				var container = findContainer(toggle);
-				if (this.checked) {
-					container.classList.add(ZOOM_CLASS);
-					renderPreviewsIn(container);
-					localStorage.setItem(STORAGE_KEY, '1');
-				} else {
-					container.classList.remove(ZOOM_CLASS);
-					container.querySelectorAll('a[data-sgf-preview] svg').forEach(function (svg) { svg.remove(); });
-					localStorage.setItem(STORAGE_KEY, '0');
-				}
+				setMode(toggle, this.checked);
+				localStorage.setItem(STORAGE_KEY, this.checked ? '1' : '0');
 			});
 		});
 	}

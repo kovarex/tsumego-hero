@@ -4,6 +4,7 @@ namespace App\Utility;
 
 use ClassRegistry;
 use Exception;
+use Set;
 
 class TsumegoFilters
 {
@@ -26,7 +27,7 @@ class TsumegoFilters
 
 		foreach ($rawSets as $set)
 		{
-			$found = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $set, 'public' => 1]]);
+			$found = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $set, 'public' => 1, 'user_id IS NULL']]);
 			if ($found)
 			{
 				$this->sets[] = $set;
@@ -165,7 +166,7 @@ class TsumegoFilters
 	 */
 	private function publicMembershipCondition(): string
 	{
-		$setCondition = '`set`.public = 1';
+		$setCondition = Set::officialCondition();
 		if (!empty($this->setIDs))
 			$setCondition .= ' AND `set`.id IN (' . implode(',', $this->setIDs) . ')';
 		return 'EXISTS (SELECT 1 FROM set_connection sc JOIN `set` ON `set`.id = sc.set_id AND ' . $setCondition . ' WHERE sc.tsumego_id = tsumego.id)';

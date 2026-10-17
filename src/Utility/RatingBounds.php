@@ -37,14 +37,20 @@ class RatingBounds
 			$query->conditions[] = 'tsumego.rating < ' . $this->max;
 	}
 
+	/**
+	 * How the range reads inside a sentence: "from 800 to 650", "up to 650" when nothing is below
+	 * it, "from 800" when nothing is above it, and nothing at all when it covers everything.
+	 * The leading space belongs to the phrase, the sentence around it just joins the parts.
+	 */
 	public function textualDescription(): string
 	{
-		$result = '';
-		if ($this->min)
-			$result .= ' from ' . $this->min;
+		if ($this->min && $this->max)
+			return ' from ' . $this->min . ' to ' . $this->max;
 		if ($this->max)
-			$result .= ' to ' . $this->max;
-		return $result;
+			return ' up to ' . $this->max;
+		if ($this->min)
+			return ' from ' . $this->min;
+		return '';
 	}
 
 	public static function coverRank(string $rank, ?string $minimalRank = null): RatingBounds

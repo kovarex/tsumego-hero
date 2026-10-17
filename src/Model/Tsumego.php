@@ -20,17 +20,32 @@ class Tsumego extends AppModel
 	];
 
 	/**
-	 * Count problems that belong to at least one public set and are not deleted.
+	 * The problems of the site and how many of them the player solved.
+	 *
+	 * Both numbers are counted over the same set of problems, so the second one can never
+	 * pass the first: a solve of a problem that does not belong to a collection of the site
+	 * (a sandbox build, an upload, a player collection) counts on neither side.
+	 *
+	 * @return array{total: int, solved: int}
 	 */
-	public static function countPublicProblems(): int
+	public static function publicProblemProgress(int $userId): array
 	{
-		return Util::query(
-			"SELECT COUNT(DISTINCT tsumego.id) AS total "
-			. "FROM tsumego "
-			. "WHERE EXISTS (SELECT 1 FROM set_connection sc "
-			. "JOIN `set` ON `set`.id = sc.set_id AND `set`.public = 1 "
-			. "WHERE sc.tsumego_id = tsumego.id) "
-			. "AND tsumego.deleted IS NULL"
-		)[0]["total"];
+		$inOfficialSet = fn(string $tsumegoRef): string
+			=> 'EXISTS (SELECT 1 FROM set_connection sc JOIN `set` ON `set`.id = sc.set_id'
+				. ' AND ' . Set::officialCondition() . ' WHERE sc.tsumego_id = ' . $tsumegoRef . ')';
+
+		$row = Util::query(
+			'SELECT '
+			. '(SELECT COUNT(*) FROM tsumego t WHERE t.deleted IS NULL AND ' . $inOfficialSet('t.id') . ') AS total, '
+			// The solved side only walks the statuses of that one player, which is what keeps this
+			// from joining every problem of the site.
+			. '(SELECT COUNT(DISTINCT ts.tsumego_id) FROM tsumego_status ts'
+			. ' JOIN tsumego t ON t.id = ts.tsumego_id AND t.deleted IS NULL'
+			. " WHERE ts.user_id = ? AND ts.status IN ('S', 'C', 'W')"
+			. ' AND ' . $inOfficialSet('ts.tsumego_id') . ') AS solved',
+			[$userId]
+		)[0];
+
+		return ['total' => (int) $row['total'], 'solved' => (int) $row['solved']];
 	}
 }

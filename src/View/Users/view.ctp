@@ -19,6 +19,7 @@ use App\Utility\ValueGraphRenderer;
  * @var array $dailyResults
  * @var int $deletedTsumegoStatusCount
  * @var int $levelBar
+ * @var int $solvedProblemCount
  * @var array $timeGraph
  * @var array $timeModeRanks
  * @var int $tsumegoCount
@@ -30,16 +31,7 @@ use App\Utility\ValueGraphRenderer;
 <?php TimeGraphRenderer::renderScriptInclude(); ?>
 
 <div>
-	<div class="profile-header">
-		<p class="profile-username"><?php
-			$avatarUrl = User::getAvatarUrl($user['User'], User::AVATAR_PIXELS_PROFILE);
-			echo User::avatarImage($avatarUrl, 'user-avatar--lg', false, User::boardUrl($user['User']));
-			echo h($user['User']['display_name']);
-			echo ' ';
-			User::renderPremium($user['User']);
-		?></p>
-		<?php echo $this->element('user_subnav', ['userID' => $user['User']['id'], 'activeTab' => 'profile']); ?>
-	</div>
+	<?php echo $this->element('user_header', ['user' => $user['User'], 'activeTab' => 'profile']); ?>
 <?php if (Auth::getUserID() == $user['User']['id']): ?>
 <div class="cluster">
 	<div class="card card--green">
@@ -236,11 +228,11 @@ use App\Utility\ValueGraphRenderer;
 			<?php endif; ?>
 			<tr>
 				<td>Completed:</td>
-				<td><?php echo $user['User']['solved'] . ' of ' . $tsumegoCount; ?></td>
+				<td><?php echo $solvedProblemCount . ' of ' . $tsumegoCount; ?></td>
 			</tr>
 			<tr>
 				<td colspan="2">
-					<?php $completedPercent = Util::getPercentButAvoid100UntilComplete($user['User']['solved'], $tsumegoCount); ?>
+					<?php $completedPercent = Util::getPercentButAvoid100UntilComplete($solvedProblemCount, $tsumegoCount); ?>
 					<div class="progress">
 						<div class="progress__fill" style="width:<?php echo $completedPercent; ?>%"></div>
 						<div class="progress__label"><?php echo $completedPercent; ?>%</div>

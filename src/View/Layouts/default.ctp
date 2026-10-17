@@ -21,6 +21,7 @@ use App\Utility\ViteManifest;
  * @var string $nextDay
  * @var string $boardsBitmask
  * @var string|null $canonicalPath Path a page with more than one address wants to be known by
+ * @var bool $robotsNoIndex The page is reachable but must stay out of search results
  * @var array|null $og
  */
 
@@ -109,6 +110,9 @@ echo $this->Html->charset();
 $canonicalUrl = Router::url($canonicalPath ?? '/' . trim(strtok($this->request->here, '?'), '/'), true);
 ?>
 <link rel="canonical" href="<?php echo h($canonicalUrl); ?>">
+<?php if (!empty($robotsNoIndex)): ?>
+<meta name="robots" content="noindex">
+<?php endif; ?>
 <?php
 // Controllers can describe the page themselves; what they set wins, everything
 // else comes from here.
@@ -286,7 +290,7 @@ echo ViteManifest::legacyScript('legacy');
 						if(Auth::isLoggedIn()){
 							echo '<ul class="newMenuLi2">';
 							echo '<li><a href="/sets/mine">My Sets</a></li>';
-							echo '<li><a class="'.$refreshLinkToFavs.'" href="/sets/view/favorites">Favorites</a></li>';
+							echo '<li><a class="'.$refreshLinkToFavs.'" href="'.Set::url('favorites').'">Favorites</a></li>';
 							if(Auth::hasPremium() || Auth::isAdmin())
 								echo '<li><a '.$refreshLinkToSandbox.' class="'.$sandboxA.'" href="/sets/sandbox">Sandbox</a></li>';
 							if(Auth::isAdmin()){
@@ -585,33 +589,32 @@ echo ViteManifest::legacyScript('legacy');
 		if(getCookie("sound")=="off")
 		{
 			document.getElementById("soundButtonImage").src="/img/sound-icon1.png";
-			document.cookie = "sound=on;path=/";
-			document.cookie = "sound=on;path=/sets/view";
-			document.cookie = "sound=on;path=/tsumegos/play";
-			document.cookie = "sound=on;path=/users";
-			document.cookie = "sound=on;path=/users/view";
+			setSound("on");
 			updateSoundValue(true);
 		}
 		else if(getCookie("sound")=="on")
 		{
 			document.getElementById("soundButtonImage").src="/img/sound-icon2.png";
-			document.cookie = "sound=off;path=/";
-			document.cookie = "sound=off;path=/sets/view";
-			document.cookie = "sound=off;path=/tsumegos/play";
-			document.cookie = "sound=off;path=/users";
-			document.cookie = "sound=off;path=/users/view";
+			setSound("off");
 			updateSoundValue(false);
 		}
 		else
 		{
 			document.getElementById("soundButtonImage").src="/img/sound-icon2.png";
-			document.cookie = "sound=off;path=/";
-			document.cookie = "sound=off;path=/sets/view";
-			document.cookie = "sound=off;path=/tsumegos/play";
-			document.cookie = "sound=off;path=/users";
-			document.cookie = "sound=off;path=/users/view";
+			setSound("off");
 			updateSoundValue(false);
 		}
+	}
+
+	// One cookie for the whole site. Older visitors still carry copies written for single page
+	// paths, and a narrower path outranks the root one, so those are expired here.
+	function setSound(value)
+	{
+		document.cookie = "sound=" + value + ";path=/";
+		["/users", "/users/view", "/sets/view", "/tsumegos/play"].forEach(function (page)
+		{
+			document.cookie = "sound=;path=" + page + ";max-age=0";
+		});
 	}
 
 	function getCookie(cname){

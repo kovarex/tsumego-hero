@@ -1016,8 +1016,10 @@ WHERE time_mode_session.user_id = ?
 GROUP BY DATE(time_mode_session.created)
 ORDER BY category DESC', [$user['User']['id']]));
 
-		$tsumegoCount = ClassRegistry::init('Tsumego')->countPublicProblems();
-		$canResetOldTsumegoStatuses = Util::getPercent($user['User']['solved'], $tsumegoCount) >= Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED;
+		$progress = ClassRegistry::init('Tsumego')->publicProblemProgress((int) $user['User']['id']);
+		$tsumegoCount = $progress['total'];
+		$this->set('solvedProblemCount', $progress['solved']);
+		$canResetOldTsumegoStatuses = Util::getPercent($progress['solved'], $tsumegoCount) >= Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED;
 
 		$achievementById = [];
 		foreach ($ach as $achievement)
@@ -1101,43 +1103,43 @@ ORDER BY category DESC', [$user['User']['id']]));
 
 		$count = [];
 		$count[0]['author'] = 'Innokentiy Zabirov';
-		$count[0]['collections'] = 's: <a href="/sets/view/41">Life & Death - Intermediate</a> and <a href="/sets/view/122">Gokyo Shumyo 1-4</a>';
+		$count[0]['collections'] = 's: <a href="' . Set::url(41) . '">Life & Death - Intermediate</a> and <a href="' . Set::url(122) . '">Gokyo Shumyo 1-4</a>';
 		$count[0]['count'] = 0;
 		$count[1]['author'] = 'Alexandre Dinerchtein';
-		$count[1]['collections'] = ': <a href="/sets/view/109">Problems from Professional Games</a>';
+		$count[1]['collections'] = ': <a href="' . Set::url(109) . '">Problems from Professional Games</a>';
 		$count[1]['count'] = 0;
 		$count[2]['author'] = 'David Ulbricht';
-		$count[2]['collections'] = ': <a href="/sets/view/41">Life & Death - Intermediate</a>';
+		$count[2]['collections'] = ': <a href="' . Set::url(41) . '">Life & Death - Intermediate</a>';
 		$count[2]['count'] = 0;
 		$count[3]['author'] = 'Bradford Malbon';
-		$count[3]['collections'] = 's: <a href="/sets/view/104">Easy Life</a> and <a href="/sets/view/105">Easy Kill</a>';
+		$count[3]['collections'] = 's: <a href="' . Set::url(104) . '">Easy Life</a> and <a href="' . Set::url(105) . '">Easy Kill</a>';
 		$count[3]['count'] = 0;
 		$count[4]['author'] = 'Ryan Smith';
-		$count[4]['collections'] = 's: <a href="/sets/view/67">Korean Problem Academy 1-4</a>';
+		$count[4]['collections'] = 's: <a href="' . Set::url(67) . '">Korean Problem Academy 1-4</a>';
 		$count[4]['count'] = 0;
 		$count[5]['author'] = 'Fupfv';
-		$count[5]['collections'] = ': <a href="/sets/view/139">Gokyo Shumyo 4</a>';
+		$count[5]['collections'] = ': <a href="' . Set::url(139) . '">Gokyo Shumyo 4</a>';
 		$count[5]['count'] = 0;
 		$count[6]['author'] = 'саша черных';
-		$count[6]['collections'] = ': <a href="/sets/view/137">Tsumego Master</a>';
+		$count[6]['collections'] = ': <a href="' . Set::url(137) . '">Tsumego Master</a>';
 		$count[6]['count'] = 0;
 		$count[7]['author'] = 'Timo Kreuzer';
-		$count[7]['collections'] = ': <a href="/sets/view/137">Tsumego Master</a>';
+		$count[7]['collections'] = ': <a href="' . Set::url(137) . '">Tsumego Master</a>';
 		$count[7]['count'] = 0;
 		$count[8]['author'] = 'David Mitchell';
-		$count[8]['collections'] = ': <a href="/sets/view/143">Diabolical</a>';
+		$count[8]['collections'] = ': <a href="' . Set::url(143) . '">Diabolical</a>';
 		$count[8]['count'] = 10;
 		$count[9]['author'] = 'Omicron';
-		$count[9]['collections'] = ': <a href="/sets/view/145">Tesujis in Real Board Positions</a>';
+		$count[9]['collections'] = ': <a href="' . Set::url(145) . '">Tesujis in Real Board Positions</a>';
 		$count[9]['count'] = 0;
 		$count[10]['author'] = 'Sadaharu';
-		$count[10]['collections'] = ': <a href="/sets/view/146">Tsumego of Fortitude</a>, <a href="/sets/view/166">Secret Tsumego from Hong Dojo</a>, <a href="/sets/view/158">Beautiful Tsumego</a> and more.';
+		$count[10]['collections'] = ': <a href="' . Set::url(146) . '">Tsumego of Fortitude</a>, <a href="' . Set::url(166) . '">Secret Tsumego from Hong Dojo</a>, <a href="' . Set::url(158) . '">Beautiful Tsumego</a> and more.';
 		$count[10]['count'] = 0;
 		$count[11]['author'] = 'Jérôme Hubert';
-		$count[11]['collections'] = ': <a href="/sets/view/150">Kanzufu</a> and more.';
+		$count[11]['collections'] = ': <a href="' . Set::url(150) . '">Kanzufu</a> and more.';
 		$count[11]['count'] = 0;
 		$count[12]['author'] = 'Kaan Malçok';
-		$count[12]['collections'] = ': <a href="/sets/view/163">Xuanxuan Qijing</a>';
+		$count[12]['collections'] = ': <a href="' . Set::url(163) . '">Xuanxuan Qijing</a>';
 		$count[12]['count'] = 0;
 
 		$this->set('count', $count);
@@ -1390,10 +1392,11 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 
 	public function solveHistory(string $userID): void
 	{
-		$profileUser = Util::query("SELECT display_name, name, deleted FROM user WHERE id = ?", [$userID])[0] ?? null;
-		if ($profileUser)
-			$this->assertUserVisible($profileUser);
-		$userName = $profileUser['display_name'] ?? 'Unknown';
+		$profileUser = $this->User->findById($userID)['User'] ?? null;
+		if (!$profileUser)
+			throw new NotFoundException('User not found');
+		$this->assertUserVisible($profileUser);
+		$userName = $profileUser['display_name'];
 		$PAGE_SIZE = 500;
 		$pageIndex = isset($this->request->query['page']) ? max(1, (int) $this->request->query['page']) : 1;
 		$count = Util::query("SELECT COUNT(*) FROM tsumego_attempt where user_id = ?", [$userID])[0]['COUNT(*)'];
@@ -1434,7 +1437,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		$this->set('_page', 'solveHistory');
 		$this->set('_title', $userName . '\'s Solve History');
 		$this->set('userID', $userID);
-		$this->set('userName', $userName);
+		$this->set('profileUser', $profileUser);
 		$this->set('count', $count);
 		$this->set('pageIndex', $pageIndex);
 		$this->set('PAGE_SIZE', $PAGE_SIZE);
@@ -1579,8 +1582,8 @@ OFFSET " . $offset, [$userID, $userID]);
 			return $this->redirect('/sets');
 
 		$userId = Auth::getUserID();
-		$tsumegoCount = ClassRegistry::init('Tsumego')->countPublicProblems();
-		if (Util::getPercent(Auth::getUser()['solved'], $tsumegoCount) < Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED)
+		$progress = ClassRegistry::init('Tsumego')->publicProblemProgress($userId);
+		if (Util::getPercent($progress['solved'], $progress['total']) < Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED)
 			return $this->redirect('/users/view/' . $userId);
 
 		$deleted = Util::execute("DELETE FROM tsumego_status WHERE user_id = ? AND tsumego_status.updated <= NOW() - INTERVAL 1 YEAR", [$userId]);

@@ -23,6 +23,8 @@
 
 
 require_once(__DIR__ . "/../src/UrlRoute.php");
+require_once(__DIR__ . "/../src/ParseOnlyRoute.php");
+require_once(__DIR__ . "/../src/SetViewRoute.php");
 
 // XML Sitemap for search engines
 Router::connect('/sitemap.xml', [
@@ -149,6 +151,11 @@ Router::connect(
 	['pass' => ['id'], 'id' => '[0-9]+']
 );
 Router::connect(
+	'/sets/share/:id',
+	['controller' => 'sets', 'action' => 'share'],
+	['pass' => ['id'], 'id' => '[0-9]+']
+);
+Router::connect(
 	'/sets/addTsumego/:id',
 	['controller' => 'sets', 'action' => 'addTsumego'],
 	['pass' => ['id'], 'id' => '[0-9]+|favorites']
@@ -167,6 +174,41 @@ Router::connect(
 	'/sets/reorderTsumego/:id',
 	['controller' => 'sets', 'action' => 'reorderTsumego'],
 	['pass' => ['id'], 'id' => '[0-9]+']
+);
+// A single-segment /sets/<action> route has to sit above the /sets/:id catch-alls, which would
+// otherwise read the action as the id of a collection. The catch-alls below decline an id that
+// names an action, so only the actions spelled out here need a route of their own.
+Router::connect(
+	'/sets/sandbox',
+	['controller' => 'sets', 'action' => 'sandbox']
+);
+Router::connect(
+	'/sets/create',
+	['controller' => 'sets', 'action' => 'create']
+);
+Router::connect(
+	'/sets/changeCollectionSize',
+	['controller' => 'sets', 'action' => 'changeCollectionSize']
+);
+Router::connect(
+	'/sets/view/:id',
+	['controller' => 'sets', 'action' => 'view'],
+	['pass' => ['id'], 'id' => '[^/]+', 'routeClass' => 'ParseOnlyRoute']
+);
+Router::connect(
+	'/sets/view/:id/:partition',
+	['controller' => 'sets', 'action' => 'view'],
+	['pass' => ['id', 'partition'], 'id' => '[^/]+', 'partition' => '[0-9]+', 'routeClass' => 'ParseOnlyRoute']
+);
+Router::connect(
+	'/sets/:id',
+	['controller' => 'sets', 'action' => 'view'],
+	['pass' => ['id'], 'id' => '[^/]+', 'routeClass' => 'SetViewRoute']
+);
+Router::connect(
+	'/sets/:id/:partition',
+	['controller' => 'sets', 'action' => 'view'],
+	['pass' => ['id', 'partition'], 'id' => '[^/]+', 'partition' => '[0-9]+', 'routeClass' => 'SetViewRoute']
 );
 Router::connect(
 	'/users/playerColorPreference',

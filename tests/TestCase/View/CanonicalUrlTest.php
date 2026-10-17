@@ -17,7 +17,7 @@ class CanonicalUrlTest extends ControllerTestCase
 		$userID = $context->user['id'];
 		$cases = [
 			'/sets/' => '/sets',
-			'/sets/view/' . $setID . '/1' => '/sets/view/' . $setID,
+			'/sets/view/' . $setID . '/1' => '/sets/' . $setID,
 			'/tags/user/' . $userID . '?page=1' => '/tags/user/' . $userID
 		];
 
