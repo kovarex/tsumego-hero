@@ -250,6 +250,22 @@
   max-width: 1228px;
   box-sizing: border-box;
 }
+
+/* What a player can do with their own collections, above the cards. */
+.set-index-intro
+{
+  max-width: 1228px;
+  margin: var(--space-3) auto var(--space-2);
+  padding: 0 var(--space-4);
+  text-align: left;
+}
+
+.set-index-empty
+{
+  width: 100%;
+  padding: var(--space-4) 0;
+  text-align: center;
+}
 #dropdown-topics {
   display: none;
   position: absolute;
@@ -443,6 +459,12 @@
 	padding-top: 8px;
 }
 
+.set-view__owner
+{
+	font-size: smaller;
+	color: var(--text-softer-color);
+}
+
 .set-view__share
 {
 	display: block;
@@ -461,6 +483,34 @@
 	margin: 8px auto 0;
 	width: 420px;
 	max-width: 100%;
+}
+
+.set-view__share-link-row
+{
+	display: flex;
+	gap: 6px;
+	align-items: center;
+	justify-content: center;
+	margin-top: 8px;
+}
+
+.set-view__share-link-row .set-view__share-link
+{
+	margin: 0;
+	flex: 1 1 auto;
+}
+
+.set-view__share-copy
+{
+	min-width: 92px;
+}
+
+.set-view__share-status
+{
+	display: block;
+	min-height: 1.2em;
+	margin-top: 4px;
+	color: var(--text-softer-color);
 }
 
 .set-image-zoom--rank

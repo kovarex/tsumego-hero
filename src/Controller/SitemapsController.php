@@ -95,12 +95,12 @@ GROUP BY set_id") as $row)
 		foreach ($sets as $set)
 		{
 			$setID = $set['Set']['id'];
-			$urls[] = self::_urlOf(['controller' => 'sets', 'action' => 'view', $setID]);
+			$urls[] = Set::url($setID, 1, true);
 
 			// A visitor sees the default number of problems per page.
 			$pages = (int) ceil(($setProblemCounts[$setID] ?? 0) / Constants::$DEFAULT_COLLECTION_SIZE);
 			for ($page = 2; $page <= $pages; $page++)
-				$urls[] = self::_urlOf(['controller' => 'sets', 'action' => 'view', $setID, $page]);
+				$urls[] = Set::url($setID, $page, true);
 		}
 
 		// All achievements, each with its own page

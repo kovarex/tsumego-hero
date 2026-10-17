@@ -26,7 +26,8 @@ class SitemapsControllerTest extends ControllerTestCase
 			'return' => 'contents'
 		]);
 
-		$this->assertStringContainsString('/sets/view/' . $context->set['id'], $result);
+		$this->assertStringContainsString('/sets/' . $context->set['id'] . '</loc>', $result);
+		$this->assertStringNotContainsString('/sets/view/', $result);
 		$this->assertStringContainsString('<urlset', $result);
 		$this->assertStringContainsString('<loc>', $result);
 	}
@@ -126,7 +127,7 @@ class SitemapsControllerTest extends ControllerTestCase
 		{
 			if ($link === '/' || str_contains(basename($link), '.'))
 				continue;
-			if (preg_match('#^/(\d+|sets/view/\d+|tags/view/\d+)$#', $link))
+			if (preg_match('#^/(\d+|sets/[^/]+|tags/view/\d+)$#', $link))
 				continue;
 			foreach ($staysOut as $prefix)
 				if (str_starts_with($link, $prefix))
@@ -262,10 +263,10 @@ class SitemapsControllerTest extends ControllerTestCase
 			'return' => 'contents'
 		]);
 
-		$this->assertStringContainsString('<loc>' . self::baseUrl() . '/sets/view/' . $setID . '</loc>', $result);
-		$this->assertStringContainsString('<loc>' . self::baseUrl() . '/sets/view/' . $setID . '/2</loc>', $result);
-		$this->assertStringNotContainsString('/sets/view/' . $setID . '/1</loc>', $result);
-		$this->assertStringNotContainsString('/sets/view/' . $setID . '/3</loc>', $result);
+		$this->assertStringContainsString('<loc>' . self::baseUrl() . '/sets/' . $setID . '</loc>', $result);
+		$this->assertStringContainsString('<loc>' . self::baseUrl() . '/sets/' . $setID . '/2</loc>', $result);
+		$this->assertStringNotContainsString('/sets/' . $setID . '/1</loc>', $result);
+		$this->assertStringNotContainsString('/sets/' . $setID . '/3</loc>', $result);
 	}
 
 	/**

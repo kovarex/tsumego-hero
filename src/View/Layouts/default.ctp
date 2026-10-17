@@ -291,7 +291,7 @@ echo ViteManifest::legacyScript('legacy');
 						if(Auth::isLoggedIn()){
 							echo '<ul class="newMenuLi2">';
 							echo '<li><a href="/sets/mine">My Sets</a></li>';
-							echo '<li><a class="'.$refreshLinkToFavs.'" href="/sets/view/favorites">Favorites</a></li>';
+							echo '<li><a class="'.$refreshLinkToFavs.'" href="'.Set::url('favorites').'">Favorites</a></li>';
 							if(Auth::hasPremium() || Auth::isAdmin())
 								echo '<li><a '.$refreshLinkToSandbox.' class="'.$sandboxA.'" href="/sets/sandbox">Sandbox</a></li>';
 							if(Auth::isAdmin()){
@@ -582,8 +582,13 @@ echo ViteManifest::legacyScript('legacy');
 
 	function setSoundCookie(value)
 	{
-		// One cookie for the whole site, written for path / so every page sees it.
+		// One cookie for the whole site, written for path /. Copies written earlier for single
+		// page paths would still outrank it, so those are expired here.
 		document.cookie = "sound=" + value + ";path=/";
+		["/users", "/users/view", "/sets/view", "/tsumegos/play"].forEach(function (page)
+		{
+			document.cookie = "sound=;path=" + page + ";max-age=0";
+		});
 	}
 
 	function changeSound()

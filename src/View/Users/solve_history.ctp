@@ -24,7 +24,7 @@ foreach ($attempts as $attempt)
 	echo '<tr>';
 	if ($attempt['set_connection_id'])
 	{
-		echo '<td><a href="/sets/view/' . (int) $attempt['set_id'] . '">' . h($attempt['set_title']) . '</a></td>';
+			echo '<td><a href="' . Set::url((int) $attempt['set_id']) . '">' . h($attempt['set_title']) . '</a></td>';
 		echo '<td>';
 		new TsumegoButton($attempt['tsumego_id'], $attempt['set_connection_id'], $attempt['num'], $attempt['status'] ?: 'N', 0, $attempt['sgf'])->render();
 		echo '</td>';

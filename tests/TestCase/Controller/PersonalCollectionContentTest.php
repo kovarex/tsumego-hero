@@ -41,20 +41,21 @@ class PersonalCollectionContentTest extends TestCaseWithAuth
 
 		$sitemap = $this->testAction('/sitemap.xml', ['method' => 'get', 'return' => 'contents']);
 
-		$this->assertStringContainsString('/sets/view/' . $siteSetId, $sitemap);
-		$this->assertStringNotContainsString('/sets/view/' . $playerSetId, $sitemap);
+		$this->assertStringContainsString('/sets/' . $siteSetId . '<', $sitemap);
+		$this->assertStringNotContainsString('/sets/' . $playerSetId . '<', $sitemap);
 	}
 
 	public function testPublicProblemCountDoesNotCountPlayerProblems(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'alice']]);
-		$before = Tsumego::countPublicProblems();
+		$total = fn(): int => Tsumego::publicProblemProgress($context->user['id'])['total'];
+		$before = $total();
 
 		$this->_createCollection('Site Collection', null, 1);
-		$withSiteCollection = Tsumego::countPublicProblems();
+		$withSiteCollection = $total();
 
 		$this->_createCollection('Player Collection', $context->user['id'], 1);
-		$withPlayerCollection = Tsumego::countPublicProblems();
+		$withPlayerCollection = $total();
 
 		$this->assertSame($before + 1, $withSiteCollection);
 		$this->assertSame($withSiteCollection, $withPlayerCollection);
@@ -121,6 +122,44 @@ class PersonalCollectionContentTest extends TestCaseWithAuth
 			$counts = array_map(fn($rank) => (int) $rank['tsumego_count'], $vars['timeModeRanks']);
 			$this->assertSame(1, array_sum($counts));
 		}
+	}
+
+	/**
+	 * Set achievements belong to the site's collections, so a completed collection a player
+	 * assembled records nothing for them.
+	 */
+	public function testCompletedPlayerCollectionRecordsNoSetAchievementCondition(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'alice'],
+			'tsumego' => ['status' => 'S', 'sets' => [
+				['name' => 'Player Collection', 'num' => 1, 'public' => 0, 'user_id' => 'self']]],
+		]);
+		$playerSetId = (int) $context->tsumegos[0]['sets'][0]['id'];
+		$this->login('alice');
+
+		$this->testAction('/sets/' . $playerSetId, ['return' => 'view']);
+
+		$this->assertSame(0, ClassRegistry::init('AchievementCondition')->find('count', [
+			'conditions' => ['set_id' => $playerSetId],
+		]));
+	}
+
+	public function testCompletedSiteCollectionRecordsItsSetAchievementCondition(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'alice'],
+			'tsumego' => ['status' => 'S', 'sets' => [
+				['name' => 'Site Collection', 'num' => 1, 'public' => 1]]],
+		]);
+		$siteSetId = (int) $context->tsumegos[0]['sets'][0]['id'];
+		$this->login('alice');
+
+		$this->testAction('/sets/' . $siteSetId, ['return' => 'view']);
+
+		$this->assertSame(1, ClassRegistry::init('AchievementCondition')->find('count', [
+			'conditions' => ['set_id' => $siteSetId, 'category' => 's'],
+		]));
 	}
 
 	/**
