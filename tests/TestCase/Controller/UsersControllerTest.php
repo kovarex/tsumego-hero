@@ -324,6 +324,20 @@ class UsersControllerTest extends ControllerTestCase
 		$this->assertStringContainsString('1000 Weiqi problems 2nd half', $this->view);
 	}
 
+	public function testProfileCountsOnlyTheProblemsOfTheSite(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'solver', 'solved' => 2],
+			'tsumego' => ['status' => 'S', 'sets' => [['name' => 'Site Collection', 'num' => 1]]],
+			'tsumegos' => [['status' => 'S', 'sets' => [
+				['name' => 'Player Collection', 'num' => 1, 'public' => 1, 'user_id' => 'self']]]],
+		]);
+
+		$this->testAction('users/view/' . $context->user['id'], ['return' => 'view']);
+
+		$this->assertMatchesRegularExpression('#Completed:</td>\s*<td>1 of 1</td>#', $this->view);
+	}
+
 	/**
 	 * The profile counts each unlocked achievement once, even when the repeatable
 	 * one was earned several times.

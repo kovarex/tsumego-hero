@@ -651,15 +651,15 @@ class User extends AppModel
 	}
 
 	/**
-	 * Whether the account solved enough of the public problems to throw away the progress
-	 * it has not touched for years.
+	 * Whether the account solved enough of the problems of the site to throw away the
+	 * progress it has not touched for years.
 	 *
 	 * @param UserRow $user
 	 */
 	public static function canResetOldProgress(array $user): bool
 	{
-		$publicProblems = ClassRegistry::init('Tsumego')->countPublicProblems();
-		return Util::getPercent($user['solved'], $publicProblems)
+		$progress = ClassRegistry::init('Tsumego')->publicProblemProgress((int) $user['id']);
+		return Util::getPercent($progress['solved'], $progress['total'])
 			>= Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED;
 	}
 }

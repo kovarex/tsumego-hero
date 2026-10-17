@@ -87,6 +87,20 @@ class PersonalCollectionContentTest extends TestCaseWithAuth
 		$this->assertNotContains($playerTsumegoId, $attemptTsumegoIds);
 	}
 
+	public function testSolvedProgressCountsOnlyTheProblemsOfTheSite(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'alice'],
+			'tsumego' => ['status' => 'S', 'sets' => [['name' => 'Site Collection', 'num' => 1]]],
+			'tsumegos' => [['status' => 'S', 'sets' => [
+				['name' => 'Player Collection', 'num' => 1, 'public' => 1, 'user_id' => 'self']]]],
+		]);
+
+		$this->assertSame(
+			['total' => 1, 'solved' => 1],
+			Tsumego::publicProblemProgress($context->user['id']));
+	}
+
 	public function testTimeModeRankCountsDoNotCountPlayerProblems(): void
 	{
 		foreach ([['5k'], ['5k', '1k']] as $ranks)

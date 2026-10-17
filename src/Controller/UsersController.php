@@ -1168,7 +1168,9 @@ WHERE time_mode_session.user_id = ?
 GROUP BY DATE(time_mode_session.created)
 ORDER BY category DESC', [$user['User']['id']]));
 
-		$tsumegoCount = ClassRegistry::init('Tsumego')->countPublicProblems();
+		$progress = ClassRegistry::init('Tsumego')->publicProblemProgress((int) $user['User']['id']);
+		$tsumegoCount = $progress['total'];
+		$this->set('solvedProblemCount', $progress['solved']);
 
 		$achievementById = [];
 		foreach ($ach as $achievement)
