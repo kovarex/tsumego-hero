@@ -149,6 +149,11 @@ Router::connect(
 	['pass' => ['id'], 'id' => '[0-9]+']
 );
 Router::connect(
+	'/sets/share/:id',
+	['controller' => 'sets', 'action' => 'share'],
+	['pass' => ['id'], 'id' => '[0-9]+']
+);
+Router::connect(
 	'/sets/addTsumego/:id',
 	['controller' => 'sets', 'action' => 'addTsumego'],
 	['pass' => ['id'], 'id' => '[0-9]+|favorites']

@@ -364,6 +364,26 @@
 	padding-top: 8px;
 }
 
+.set-view__share
+{
+	display: block;
+	margin-top: 12px;
+}
+
+.set-view__share-toggle
+{
+	cursor: pointer;
+	display: inline-block;
+}
+
+.set-view__share-link
+{
+	display: block;
+	margin: 8px auto 0;
+	width: 420px;
+	max-width: 100%;
+}
+
 .set-image-zoom--rank
 {
 	background: var(--surface-rank-bg);

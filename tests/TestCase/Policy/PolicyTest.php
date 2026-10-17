@@ -118,6 +118,23 @@ class PolicyTest extends CakeTestCase
 		$this->assertTrue($policy->canView($this->identity(false), $sharedSet));
 	}
 
+	public function testSetPolicyLetsOnlyTheOwnerDecideOnSharing()
+	{
+		$policy = new SetPolicy();
+		$playerSet = ['public' => 0, 'user_id' => 7];
+		$siteSet = ['public' => 1, 'user_id' => null];
+		$owner = $this->identity(false);
+		$owner['id'] = 7;
+		$other = $this->identity(false);
+		$other['id'] = 8;
+
+		$this->assertTrue($policy->canShare($owner, $playerSet), 'the owner decides');
+		$this->assertFalse($policy->canShare($other, $playerSet), 'another player cannot share it');
+		$this->assertFalse($policy->canShare($this->identity(true), $playerSet), 'not even an admin decides for the owner');
+		$this->assertFalse($policy->canShare($this->identity(null), $playerSet), 'anonymous blocked');
+		$this->assertFalse($policy->canShare($this->identity(true), $siteSet), 'site collections are public already');
+	}
+
 	public function testSetPolicyAllowsPlayingSandboxOnlyWithPermission()
 	{
 		$policy = new SetPolicy();

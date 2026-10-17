@@ -129,29 +129,6 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 		</div>
 	</div>
 
-	<?php if ($set['Set']['user_id'] !== null): ?>
-		<div class="card card--green set-edit__section">
-			<h2 class="set-edit__heading">Sharing</h2>
-			<form method="post" action="/sets/edit/<?php echo $setId; ?>">
-				<div class="form-field">
-					<label class="form-field__label">
-						<input type="hidden" name="data[Set][public]" value="0">
-						<input type="checkbox" name="data[Set][public]" value="1"<?php echo $set['Set']['public'] == 1 ? ' checked' : ''; ?>>
-						Anyone with the link can open this collection
-					</label>
-					<p class="hint">Only people you send the link to can find it.</p>
-				</div>
-				<?php if ($set['Set']['public'] == 1): ?>
-					<div class="form-field">
-						<label class="form-field__label" for="SetShareLink">Send this address to your friends</label>
-						<input class="form-field__control" type="text" id="SetShareLink" readonly value="<?php echo h(Router::url('/sets/view/' . $setId, true)); ?>" onclick="this.select()">
-					</div>
-				<?php endif; ?>
-				<input type="submit" class="btn" value="Save sharing">
-			</form>
-		</div>
-	<?php endif; ?>
-
 	<?php if ($canEditSettings): ?>
 		<div class="card card--purple set-edit__section">
 			<h2 class="set-edit__heading">Admin</h2>

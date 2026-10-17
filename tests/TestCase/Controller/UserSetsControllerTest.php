@@ -871,7 +871,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = $this->_createSet('Alice Collection', $context->user['id'], 0);
 		$this->login('alice');
 
-		$this->testAction("/sets/edit/{$setId}", ['data' => ['Set' => ['public' => '1']], 'method' => 'POST']);
+		$this->testAction("/sets/share/{$setId}", ['data' => ['shared' => '1'], 'method' => 'POST']);
 
 		$this->assertEquals(1, ClassRegistry::init('Set')->findById($setId)['Set']['public']);
 	}
@@ -882,48 +882,107 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = $this->_createSet('Alice Collection', $context->user['id'], 1);
 		$this->login('alice');
 
-		$this->testAction("/sets/edit/{$setId}", ['data' => ['Set' => ['public' => '0']], 'method' => 'POST']);
+		$this->testAction("/sets/share/{$setId}", ['data' => ['shared' => '0'], 'method' => 'POST']);
 
 		$this->assertEquals(0, ClassRegistry::init('Set')->findById($setId)['Set']['public']);
 	}
 
-	public function testEditFormNeverChangesTheVisibilityOfASiteCollection(): void
+	public function testChangingSharingReturnsToTheCollection(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'alice']]);
+		$setId = $this->_createSet('Alice Collection', $context->user['id'], 0);
+		$this->login('alice');
+
+		$this->testAction("/sets/share/{$setId}", ['data' => ['shared' => '1'], 'method' => 'POST']);
+
+		$this->assertStringContainsString("/sets/view/{$setId}", $this->headers['Location']);
+	}
+
+	public function testAnotherPlayerCannotChangeSharing(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'alice'],
+			'other-users' => [['name' => 'bob']],
+		]);
+		$setId = $this->_createSet('Alice Collection', $context->user['id'], 0);
+		$this->login('bob');
+
+		$this->expectException(ForbiddenException::class);
+
+		$this->testAction("/sets/share/{$setId}", ['data' => ['shared' => '1'], 'method' => 'POST']);
+	}
+
+	public function testGuestCannotChangeSharing(): void
+	{
+		$context = new ContextPreparator(['user' => null, 'other-users' => [['name' => 'owner']]]);
+		$setId = $this->_createSet('Owner Collection', $context->otherUsers[0]['id'], 0);
+		$this->logout();
+
+		$this->expectException(UnauthorizedException::class);
+
+		$this->testAction("/sets/share/{$setId}", ['data' => ['shared' => '1'], 'method' => 'POST']);
+	}
+
+	public function testTheSiteKeepsTheVisibilityOfItsOwnCollections(): void
 	{
 		new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
 		$setId = $this->_createSet('Site Collection', null, 1);
 		$this->login('admin');
 
-		$this->testAction("/sets/edit/{$setId}", ['data' => ['Set' => ['public' => '0']], 'method' => 'POST']);
+		try
+		{
+			$this->testAction("/sets/share/{$setId}", ['data' => ['shared' => '0'], 'method' => 'POST']);
+			$this->assertTrue(true, 'a site collection has no sharing to change');
+		}
+		catch (ForbiddenException $e)
+		{
+			// Expected: the site's collections are not the player's to share
+		}
 
 		$this->assertEquals(1, ClassRegistry::init('Set')->findById($setId)['Set']['public']);
 	}
 
-	public function testEditPageOffersSharingOnlyForPlayerCollections(): void
+	public function testEditFormNeverChangesTheVisibility(): void
 	{
-		$context = new ContextPreparator([
-			'user' => ['name' => 'admin', 'admin' => true],
-			'other-users' => [['name' => 'alice']],
-		]);
-		$personalSetId = $this->_createSet('Alice Collection', $context->otherUsers[0]['id'], 0);
-		$siteSetId = $this->_createSet('Site Collection', null, 1);
-		$this->login('admin');
+		$context = new ContextPreparator(['user' => ['name' => 'alice']]);
+		$setId = $this->_createSet('Alice Collection', $context->user['id'], 1);
+		$this->login('alice');
 
-		$personalPage = $this->testAction("/sets/edit/{$personalSetId}", ['return' => 'view']);
-		$sitePage = $this->testAction("/sets/edit/{$siteSetId}", ['return' => 'view']);
+		$this->testAction("/sets/edit/{$setId}", ['data' => ['Set' => ['public' => '0']], 'method' => 'POST']);
 
-		$this->assertTextContains('Anyone with the link can open this collection', $personalPage);
-		$this->assertTextNotContains('Anyone with the link can open this collection', $sitePage);
+		$this->assertEquals(1, ClassRegistry::init('Set')->findById($setId)['Set']['public'],
+			'sharing is decided on the collection page, not by the edit form');
 	}
 
-	public function testEditPageShowsTheAddressOfASharedCollection(): void
+	public function testCollectionPageOffersSharingToItsOwner(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'alice'],
+			'other-users' => [['name' => 'bob']],
+		]);
+		$ownSetId = $this->_createSet('Alice Collection', $context->user['id'], 0);
+		$otherSetId = $this->_createSet('Bob Collection', $context->otherUsers[0]['id'], 1);
+		$siteSetId = $this->_createSet('Site Collection', null, 1);
+		$this->login('alice');
+
+		$ownPage = $this->testAction("/sets/view/{$ownSetId}", ['return' => 'contents']);
+		$otherPage = $this->testAction("/sets/view/{$otherSetId}", ['return' => 'contents']);
+		$sitePage = $this->testAction("/sets/view/{$siteSetId}", ['return' => 'contents']);
+
+		$this->assertStringContainsString('Anyone with the link can open this collection', $ownPage);
+		$this->assertStringNotContainsString('Anyone with the link can open this collection', $otherPage);
+		$this->assertStringNotContainsString('Anyone with the link can open this collection', $sitePage);
+	}
+
+	public function testCollectionPageShowsTheAddressOfASharedCollection(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'alice']]);
 		$sharedSetId = $this->_createSet('Shared Collection', $context->user['id'], 1);
 		$privateSetId = $this->_createSet('Private Collection', $context->user['id'], 0);
 		$this->login('alice');
 
-		$sharedPage = $this->testAction("/sets/edit/{$sharedSetId}", ['return' => 'contents']);
-		$privatePage = $this->testAction("/sets/edit/{$privateSetId}", ['return' => 'contents']);
+		$sharedPage = $this->testAction("/sets/view/{$sharedSetId}", ['return' => 'contents']);
+		$privatePage = $this->testAction("/sets/view/{$privateSetId}", ['return' => 'contents']);
 
 		$this->assertMatchesRegularExpression(
 			'#<input[^>]*id="SetShareLink"[^>]*value="https?://[^"]*/sets/view/' . $sharedSetId . '"#',

@@ -277,10 +277,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 				$changeSet['Set']['color'] = $this->request->data['Set']['color'];
 			if (array_key_exists('order', $this->request->data['Set']) && $this->request->data['Set']['order'] !== '')
 				$changeSet['Set']['order'] = (int) $this->request->data['Set']['order'];
-			// A collection a player assembled can be opened by anyone with the link. An official
-			// collection is the site's, so this form never changes its visibility.
-			if ($set['Set']['user_id'] !== null && array_key_exists('public', $this->request->data['Set']))
-				$changeSet['Set']['public'] = $this->request->data['Set']['public'] ? 1 : 0;
 
 			$this->Set->create();
 			$this->Set->save($changeSet, true);
@@ -465,6 +461,29 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$this->set('allPassActive', $allPassActive);
 		$this->set('allPassInactive', $allPassInactive);
 		$this->set('setRating', $setRating);
+	}
+
+	/**
+	 * Open or close the link sharing of a collection a player assembled.
+	 */
+	#[HttpPost]
+	public function share(?string $id = null): mixed
+	{
+		$set = $this->Set->findById((int) $id);
+		if (!$set)
+			throw new NotFoundException('Set not found');
+		$this->Authorization->authorize($set, 'share');
+
+		$shared = !empty($this->request->data['shared']);
+		$save = $set;
+		$save['Set']['public'] = $shared ? 1 : 0;
+		$this->Set->create();
+		$this->Set->save($save, true);
+
+		CookieFlash::set($shared
+			? 'Anyone with the link can open this collection now'
+			: 'Only you can open this collection now', 'success');
+		return $this->redirect('/sets/view/' . (int) $id);
 	}
 
 	#[HttpPost]
@@ -954,6 +973,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 			$this->set('noIndex', !Set::isOfficial($set['Set']));
 			$this->set('isFav', false);
 			$this->set('canEdit', $this->Authorization->can($set, 'edit'));
+			$this->set('canShare', $this->Authorization->can($set, 'share'));
 		}
 		else
 			throw new BadRequestException('Unknown query type: ' . $tsumegoFilters->query);

@@ -15,6 +15,7 @@ use App\Utility\TsumegoFilters;
  * @var float $avgTime
  * @var bool $isFav
  * @var string $lightDark
+ * @var bool $canShare
  * @var int $partition
  * @var int $pdCounter
  * @var int $problemSolvedPercent
@@ -222,12 +223,26 @@ if ($tsumegoFilters->query != 'topics')
 			} ?>
 			</td>
 			</tr>
-			<?php
-			if (isset($canEdit) && $canEdit)
-				echo '<tr><td colspan="2" class="set-view__edit-row">
-					<a class="btn btn--primary" href="/sets/edit/' . $set['Set']['id'] . '">Edit Set</a>
-					</td></tr>';
-			?>
+			<?php if (isset($canEdit) && $canEdit): ?>
+				<tr>
+					<td colspan="2" class="set-view__edit-row">
+						<a class="btn btn--primary" href="/sets/edit/<?php echo (int) $set['Set']['id']; ?>">Edit Set</a>
+						<?php if (!empty($canShare)): ?>
+							<form method="post" action="/sets/share/<?php echo (int) $set['Set']['id']; ?>" class="set-view__share">
+								<label class="set-view__share-toggle">
+									<input type="hidden" name="shared" value="0">
+									<input type="checkbox" name="shared" value="1"<?php echo $set['Set']['public'] == 1 ? ' checked' : ''; ?> onchange="this.form.submit()">
+									Anyone with the link can open this collection
+								</label>
+								<noscript><button type="submit" class="btn">Save sharing</button></noscript>
+								<?php if ($set['Set']['public'] == 1): ?>
+									<input class="form-field__control set-view__share-link" type="text" id="SetShareLink" readonly value="<?php echo h(Router::url('/sets/view/' . (int) $set['Set']['id'], true)); ?>" onclick="this.select()">
+								<?php endif; ?>
+							</form>
+						<?php endif; ?>
+					</td>
+				</tr>
+			<?php endif; ?>
 			</tr>
 		<?php } ?>
 
@@ -247,30 +262,24 @@ if ($tsumegoFilters->query != 'topics')
 <?php
 $hasActiveTiles = false;
 if ($tsumegoFilters->query != 'topics')
-{
 	foreach ($tsumegoFilters->sets as $i => $setName)
 	{
 		$hasActiveTiles = true;
 		echo '<div class="dropdown__tile dropdown__tile--green dropdown__tile--context" id="active-set-element' . $i . '" onclick="removeActiveTopic(' . $i . ')">' . h($setName) . '</div>';
 	}
-}
 if ($tsumegoFilters->query != 'difficulty')
-{
 	foreach ($tsumegoFilters->ranks as $i => $rank)
 	{
 		$hasActiveTiles = true;
 		echo '<div class="dropdown__tile dropdown__tile--difficulty dropdown__tile--context" style="--rank-color:var(--rank-' . h($rank) . ')" id="active-rank-element' . $i . '" onclick="removeActiveDifficulty(' . $i . ')">' . h($rank) . '</div>';
 	}
-}
 if ($tsumegoFilters->query != 'tags')
-{
 	foreach ($tsumegoFilters->tags as $i => $tag)
 	{
 		$hasActiveTiles = true;
 		$color = (int) ($tsumegoFilters->tagColors[$tag] ?? 24);
 		echo '<div class="dropdown__tile dropdown__tile--tag dropdown__tile--context" style="--tag-color:var(--tag-palette-' . $color . ')" id="active-tag-element' . $i . '" onclick="removeActiveTag(' . $i . ')">' . h($tag) . '</div>';
 	}
-}
 if ($hasActiveTiles)
 	echo '<a class="dropdown__tile dropdown__tile--muted" id="unselect-active-tiles" href="">clear</a><div class="clearfix"></div>';
 ?>
