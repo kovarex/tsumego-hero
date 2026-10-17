@@ -74,14 +74,6 @@ class AdminPolicy extends BasePolicy
 	}
 
 	/**
-	 * @param UserRow|null $user
-	 */
-	public static function canShowPublishSchedule(?array $user): bool
-	{
-		return static::isAdmin($user);
-	}
-
-	/**
 	 * Asking the author of a set for a solution to one of its problems
 	 *
 	 * @param UserRow|null $user
