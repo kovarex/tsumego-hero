@@ -48,7 +48,7 @@ JOIN set_connection sc_best ON sc_best.id = (
     SELECT sc2.id
     FROM set_connection sc2
     JOIN `set` s2 ON s2.id = sc2.set_id
-    WHERE sc2.tsumego_id = tsumego.id AND s2.public = 1
+    WHERE sc2.tsumego_id = tsumego.id AND s2.public = 1 AND s2.user_id IS NULL
     ORDER BY " . SetConnection::displayOrderSql('s2', 'sc2') . "
     LIMIT 1
 )

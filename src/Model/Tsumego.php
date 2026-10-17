@@ -28,7 +28,7 @@ class Tsumego extends AppModel
 			"SELECT COUNT(DISTINCT tsumego.id) AS total "
 			. "FROM tsumego "
 			. "WHERE EXISTS (SELECT 1 FROM set_connection sc "
-			. "JOIN `set` ON `set`.id = sc.set_id AND `set`.public = 1 "
+			. "JOIN `set` ON `set`.id = sc.set_id AND `set`.public = 1 AND `set`.user_id IS NULL "
 			. "WHERE sc.tsumego_id = tsumego.id) "
 			. "AND tsumego.deleted IS NULL"
 		)[0]["total"];

@@ -82,12 +82,12 @@ class SitemapsController extends AppController
 SELECT set_id, COUNT(*) AS problems
 FROM set_connection
 	JOIN `set` ON set_connection.set_id = `set`.id
-WHERE `set`.public = 1
+WHERE `set`.public = 1 AND `set`.user_id IS NULL
 GROUP BY set_id") as $row)
 			$setProblemCounts[$row['set_id']] = (int) $row['problems'];
 
 		$sets = $this->Set->find('all', [
-			'conditions' => ['Set.public' => 1],
+			'conditions' => ['Set.public' => 1, 'Set.user_id IS NULL'],
 			'fields' => ['Set.id'],
 			'order' => ['Set.id' => 'ASC']
 		]);
@@ -131,7 +131,7 @@ GROUP BY set_id") as $row)
 SELECT set_connection.id
 FROM set_connection
 	JOIN `set` ON set_connection.set_id = `set`.id
-WHERE `set`.public = 1
+WHERE `set`.public = 1 AND `set`.user_id IS NULL
 ORDER BY set_connection.id ASC");
 
 		foreach ($puzzleIds as $row)

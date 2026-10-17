@@ -336,6 +336,7 @@ class Play
 			$requestSignature = 'true';
 		else
 			$requestSignature = 'false';
+		// A signature describes the problem itself, so a public collection qualifies whatever owns it.
 		if (isset($_COOKIE['signatures']) && $set['Set']['public'] == 1)
 		{
 			$signature = explode('/', $_COOKIE['signatures']);

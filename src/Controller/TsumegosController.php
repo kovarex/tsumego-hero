@@ -293,7 +293,7 @@ class TsumegosController extends AppController
 				'type' => 'INNER',
 				'conditions' => ['S.id = SetConnection.set_id'],
 			]],
-			'conditions' => ['SetConnection.tsumego_id' => $masterSetConnection['tsumego_id'], 'S.public' => 1],
+			'conditions' => ['SetConnection.tsumego_id' => $masterSetConnection['tsumego_id'], 'S.public' => 1, 'S.user_id IS NULL'],
 		]);
 		$slaveSetConnectionBrothers = ClassRegistry::init('SetConnection')->find('all', [
 			'joins' => [[
@@ -302,7 +302,7 @@ class TsumegosController extends AppController
 				'type' => 'INNER',
 				'conditions' => ['S.id = SetConnection.set_id'],
 			]],
-			'conditions' => ['SetConnection.tsumego_id' => $slaveSetConnection['tsumego_id'], 'S.public' => 1],
+			'conditions' => ['SetConnection.tsumego_id' => $slaveSetConnection['tsumego_id'], 'S.public' => 1, 'S.user_id IS NULL'],
 		]);
 		$masterTsumego = ClassRegistry::init('Tsumego')->findById($masterSetConnection['tsumego_id']);
 		$slaveTsumego = ClassRegistry::init('Tsumego')->findById($slaveSetConnection['tsumego_id']);
