@@ -26,6 +26,16 @@ if command -v ddev >/dev/null 2>&1; then
     echo "DDEV environment detected."
 fi
 
+### Changelog manifest + revision (before anything that touches the site)
+### The generator aborts when a fragment's ship date is not in git, and a bad
+### fragment must not end up half-deployed.
+echo "=== Generating changelog manifest + revision ==="
+if [[ "$IS_DDEV" = true ]]; then
+    ddev exec CI=true npx pnpm@10 run changelog:gen
+else
+    CI=true npx pnpm@10 run changelog:gen
+fi
+
 ### Select MySQL client (local or DDEV)
 if [[ "$IS_DDEV" = true ]]; then
     MYSQL="ddev mysql"
@@ -187,15 +197,6 @@ if [[ "$IS_DDEV" = true ]]; then
 else
     CI=true npx pnpm@10 install --frozen-lockfile
     CI=true npx pnpm@10 run build
-fi
-
-
-# Generate changelog manifest (changelog/index.json) + record deployed revision
-echo "=== Generating changelog manifest + revision ==="
-if [[ "$IS_DDEV" = true ]]; then
-    ddev exec CI=true npx pnpm@10 run changelog:gen
-else
-    CI=true npx pnpm@10 run changelog:gen
 fi
 
 
