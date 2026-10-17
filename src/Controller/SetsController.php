@@ -277,6 +277,10 @@ ORDER BY sc.num ASC", [(int) $id]);
 				$changeSet['Set']['color'] = $this->request->data['Set']['color'];
 			if (array_key_exists('order', $this->request->data['Set']) && $this->request->data['Set']['order'] !== '')
 				$changeSet['Set']['order'] = (int) $this->request->data['Set']['order'];
+			// A collection a player assembled can be opened by anyone with the link. An official
+			// collection is the site's, so this form never changes its visibility.
+			if ($set['Set']['user_id'] !== null && array_key_exists('public', $this->request->data['Set']))
+				$changeSet['Set']['public'] = $this->request->data['Set']['public'] ? 1 : 0;
 
 			$this->Set->create();
 			$this->Set->save($changeSet, true);
@@ -490,7 +494,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		//setTiles
 		$setsRaw = $this->Set->find('all', [
 			'order' => array_map('trim', explode(',', SetConnection::displayOrderForSetSql('Set'))),
-			'conditions' => ['public' => 1],
+			'conditions' => ['public' => 1, 'user_id IS NULL'],
 		]) ?: [];
 		foreach ($setsRaw as $set)
 			$setTiles[] = $set['Set']['title'];
@@ -925,6 +929,8 @@ ORDER BY sc.num ASC", [(int) $id]);
 				$tsIds [] = $tsumegoButton->tsumegoID;
 			if ($set['Set']['public'] == 0 && $set['Set']['user_id'] === null)
 				$this->set('_page', 'sandbox');
+			// Collections a player assembled are pages of their own, not the site's content.
+			$this->set('noIndex', !Set::isOfficial($set['Set']));
 			$this->set('isFav', false);
 			$this->set('canEdit', $this->Authorization->can($set, 'edit'));
 		}

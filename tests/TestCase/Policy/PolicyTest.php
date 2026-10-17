@@ -109,6 +109,15 @@ class PolicyTest extends CakeTestCase
 		$this->assertFalse($policy->canView($this->identity(null), $privateSet), 'anonymous blocked');
 	}
 
+	public function testSetPolicyAllowsViewingSharedPlayerCollections()
+	{
+		$policy = new SetPolicy();
+		$sharedSet = ['public' => 1, 'user_id' => 7];
+
+		$this->assertTrue($policy->canView($this->identity(null), $sharedSet), 'anyone with the link');
+		$this->assertTrue($policy->canView($this->identity(false), $sharedSet));
+	}
+
 	public function testSetPolicyAllowsPlayingSandboxOnlyWithPermission()
 	{
 		$policy = new SetPolicy();
