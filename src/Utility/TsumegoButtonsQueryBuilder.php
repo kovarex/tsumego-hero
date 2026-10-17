@@ -3,6 +3,7 @@
 namespace App\Utility;
 
 use ClassRegistry;
+use Set;
 use SetConnection;
 
 class TsumegoButtonsQueryBuilder
@@ -51,7 +52,7 @@ class TsumegoButtonsQueryBuilder
 		// It means I explicitelly want to view that.
 		// In all other cases, private set is not included.
 		if ($tsumegoFilters->query != 'topics')
-			$this->query->conditions [] = '`set`.public = 1 AND `set`.user_id IS NULL';
+			$this->query->conditions [] = Set::officialCondition();
 
 		$this->query->query .= " JOIN `set` ON `set`.id=set_connection.set_id";
 		if (Auth::isLoggedIn())

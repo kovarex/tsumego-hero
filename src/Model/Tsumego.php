@@ -32,7 +32,7 @@ class Tsumego extends AppModel
 	{
 		$inOfficialSet = fn(string $tsumegoRef): string
 			=> 'EXISTS (SELECT 1 FROM set_connection sc JOIN `set` ON `set`.id = sc.set_id'
-				. ' AND `set`.public = 1 AND `set`.user_id IS NULL WHERE sc.tsumego_id = ' . $tsumegoRef . ')';
+				. ' AND ' . Set::officialCondition() . ' WHERE sc.tsumego_id = ' . $tsumegoRef . ')';
 
 		$row = Util::query(
 			'SELECT '
