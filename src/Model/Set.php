@@ -28,6 +28,16 @@ class Set extends AppModel
 	}
 
 	/**
+	 * The same rule as isOfficial() for a hand-written query, on the given table alias. Cake's array
+	 * conditions spell it as 'user_id IS NULL' next to 'public' => 1, so a query over collections
+	 * picks one of the two and never a bare public flag.
+	 */
+	public static function officialCondition(string $alias = 'set'): string
+	{
+		return '`' . $alias . '`.public = 1 AND `' . $alias . '`.user_id IS NULL';
+	}
+
+	/**
 	 * The address of a collection. The pages of a long collection are numbered from one and its
 	 * first page is the collection itself, so a link to page one carries no number.
 	 *
