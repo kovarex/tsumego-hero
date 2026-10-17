@@ -19,6 +19,7 @@ use App\Utility\ValueGraphRenderer;
  * @var array $dailyResults
  * @var int $deletedTsumegoStatusCount
  * @var int $levelBar
+ * @var int $solvedProblemCount
  * @var array $timeGraph
  * @var array $timeModeRanks
  * @var int $tsumegoCount
@@ -236,11 +237,11 @@ use App\Utility\ValueGraphRenderer;
 			<?php endif; ?>
 			<tr>
 				<td>Completed:</td>
-				<td><?php echo $user['User']['solved'] . ' of ' . $tsumegoCount; ?></td>
+				<td><?php echo $solvedProblemCount . ' of ' . $tsumegoCount; ?></td>
 			</tr>
 			<tr>
 				<td colspan="2">
-					<?php $completedPercent = Util::getPercentButAvoid100UntilComplete($user['User']['solved'], $tsumegoCount); ?>
+					<?php $completedPercent = Util::getPercentButAvoid100UntilComplete($solvedProblemCount, $tsumegoCount); ?>
 					<div class="progress">
 						<div class="progress__fill" style="width:<?php echo $completedPercent; ?>%"></div>
 						<div class="progress__label"><?php echo $completedPercent; ?>%</div>

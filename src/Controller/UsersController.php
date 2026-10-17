@@ -1016,8 +1016,10 @@ WHERE time_mode_session.user_id = ?
 GROUP BY DATE(time_mode_session.created)
 ORDER BY category DESC', [$user['User']['id']]));
 
-		$tsumegoCount = ClassRegistry::init('Tsumego')->countPublicProblems();
-		$canResetOldTsumegoStatuses = Util::getPercent($user['User']['solved'], $tsumegoCount) >= Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED;
+		$progress = ClassRegistry::init('Tsumego')->publicProblemProgress((int) $user['User']['id']);
+		$tsumegoCount = $progress['total'];
+		$this->set('solvedProblemCount', $progress['solved']);
+		$canResetOldTsumegoStatuses = Util::getPercent($progress['solved'], $tsumegoCount) >= Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED;
 
 		$achievementById = [];
 		foreach ($ach as $achievement)
@@ -1579,8 +1581,8 @@ OFFSET " . $offset, [$userID, $userID]);
 			return $this->redirect('/sets');
 
 		$userId = Auth::getUserID();
-		$tsumegoCount = ClassRegistry::init('Tsumego')->countPublicProblems();
-		if (Util::getPercent(Auth::getUser()['solved'], $tsumegoCount) < Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED)
+		$progress = ClassRegistry::init('Tsumego')->publicProblemProgress($userId);
+		if (Util::getPercent($progress['solved'], $progress['total']) < Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED)
 			return $this->redirect('/users/view/' . $userId);
 
 		$deleted = Util::execute("DELETE FROM tsumego_status WHERE user_id = ? AND tsumego_status.updated <= NOW() - INTERVAL 1 YEAR", [$userId]);
