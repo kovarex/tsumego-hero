@@ -231,8 +231,7 @@ class MistakeTraining
 	public static function buildQueueButtons(int $currentSetConnectionID): TsumegoButtons
 	{
 		$rows = Util::query(self::queueSql(), [$currentSetConnectionID, Auth::getUserID(), date('Y-m-d H:i:s')]);
-		$buttons = TsumegoButtons::fromRows($rows, $currentSetConnectionID, 200);
-		$buttons->setLinkPrefix(self::$PLAY_LINK_PREFIX);
+		$buttons = TsumegoButtons::fromRows($rows, $currentSetConnectionID, 200, self::$PLAY_LINK_PREFIX);
 		return $buttons;
 	}
 

@@ -22,12 +22,17 @@ class TsumegoButtons extends ArrayObject
 	/**
 	 * Build buttons directly from a row set, used by dynamic queues such as mistake training.
 	 * Rows must expose tsumego_id, set_connection_id, num, status, rating and sgf.
+	 *
+	 * $linkPrefix points every problem link at the route that owns the queue, so
+	 * following the queue does not drop the player back into plain play.
 	 */
-	public static function fromRows(array $rows, ?int $currentSetConnectionID = null, int $collectionSize = 200): TsumegoButtons
+	public static function fromRows(array $rows, ?int $currentSetConnectionID = null, int $collectionSize = 200, string $linkPrefix = '/'): TsumegoButtons
 	{
 		$result = new TsumegoButtons();
+		$result->linkPrefix = $linkPrefix;
 		foreach ($rows as $row)
-			$result[] = new TsumegoButton(
+		{
+			$button = new TsumegoButton(
 				(int) $row['tsumego_id'],
 				(int) $row['set_connection_id'],
 				(int) $row['num'],
@@ -35,6 +40,9 @@ class TsumegoButtons extends ArrayObject
 				isset($row['rating']) ? (float) $row['rating'] : 0,
 				$row['sgf'] ?? ''
 			);
+			$button->linkPrefix = $linkPrefix;
+			$result[] = $button;
+		}
 		$result->finalize($currentSetConnectionID, null, $collectionSize, true);
 		return $result;
 	}
@@ -184,17 +192,6 @@ class TsumegoButtons extends ArrayObject
 		if (isset($indexOfCurrent) && count($this) > $indexOfCurrent + 1)
 			$nextSetConnectionID = $this[$indexOfCurrent + 1]->setConnectionID;
 		$setFunction('nextLink', isset($nextSetConnectionID) ? $this->linkPrefix . $nextSetConnectionID : $edgeLink);
-	}
-
-	/**
-	 * Point every problem link at a route prefix instead of the plain problem
-	 * URL, so a queue can keep navigation (and its mode) on its own route.
-	 */
-	public function setLinkPrefix(string $linkPrefix): void
-	{
-		$this->linkPrefix = $linkPrefix;
-		foreach ($this as $tsumegoButton)
-			$tsumegoButton->linkPrefix = $linkPrefix;
 	}
 
 	public function getProblemsSolvedPercent(): float
