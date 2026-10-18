@@ -26,16 +26,6 @@ if command -v ddev >/dev/null 2>&1; then
     echo "DDEV environment detected."
 fi
 
-### Changelog manifest + revision (before anything that touches the site)
-### The generator aborts when a fragment's ship date is not in git, and a bad
-### fragment must not end up half-deployed.
-echo "=== Generating changelog manifest + revision ==="
-if [[ "$IS_DDEV" = true ]]; then
-    ddev exec CI=true npx pnpm@10 run changelog:gen
-else
-    CI=true npx pnpm@10 run changelog:gen
-fi
-
 ### Select MySQL client (local or DDEV)
 if [[ "$IS_DDEV" = true ]]; then
     MYSQL="ddev mysql"
@@ -179,6 +169,17 @@ if [[ "$IS_DDEV" = true ]]; then
     ddev exec vendor/bin/phinx migrate -e test
 else
     vendor/bin/phinx migrate
+fi
+
+### Changelog manifest + revision, after the migrations
+### A fragment that names a feature flag must not go public before the flag row
+### exists, so the manifest is written once the schema is in place. Until then the
+### previous manifest stays live, which is what the deploy started from.
+echo "=== Generating changelog manifest + revision ==="
+if [[ "$IS_DDEV" = true ]]; then
+    ddev exec CI=true npx pnpm@10 run changelog:gen
+else
+    CI=true npx pnpm@10 run changelog:gen
 fi
 
 # Clear all caches before rebuilding assets
