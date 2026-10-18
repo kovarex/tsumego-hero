@@ -27,8 +27,11 @@ final class AddFeatureFlags extends AbstractMigration
 			->addIndex(['flag_key'], ['unique' => true, 'name' => 'idx_flag_key'])
 			->create();
 
-		// The training ships usable for the admins only; releasing it to players is
-		// one UPDATE away.
+		// The training ships open to the admins only. The state is changed in place,
+		// without a deploy, and `modified` maintains itself:
+		//   UPDATE feature_flags SET state = 'off'      WHERE flag_key = 'mistake-training';
+		//   UPDATE feature_flags SET state = 'admins'   WHERE flag_key = 'mistake-training';
+		//   UPDATE feature_flags SET state = 'everyone' WHERE flag_key = 'mistake-training';
 		$this->execute(
 			"INSERT INTO feature_flags (flag_key, state) VALUES ('mistake-training', 'admins')"
 		);
