@@ -73,6 +73,20 @@ class Feature
 		return FeatureKey::tryFrom(self::key($flag)) !== null;
 	}
 
+	/**
+	 * Point a flag at a state. The control surface is the database, so the only caller
+	 * is the admin toolbox; a feature in production is switched with one statement.
+	 */
+	public static function set(FeatureKey|string $flag, string $state): void
+	{
+		Util::execute(
+			'INSERT INTO feature_flags (flag_key, state) VALUES (?, ?)'
+			. ' ON DUPLICATE KEY UPDATE state = VALUES(state)',
+			[self::key($flag), $state]
+		);
+		self::reset();
+	}
+
 	private static function key(FeatureKey|string $flag): string
 	{
 		return $flag instanceof FeatureKey ? $flag->value : $flag;

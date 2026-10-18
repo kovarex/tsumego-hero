@@ -177,12 +177,11 @@
 		<?php if (!empty($mistakeTrainingEnabled)): ?>
 		<p class="title4">Mistake Training</p>
 		<div class="new1">
-			Whenever you fail a problem on the first try, it goes to the mistake training. Each problem comes back for another
-			try, and the wait gets longer every time: a day, three days, a week, two weeks, a month, two months. When you have
-			solved a problem without a mistake six times, it disappears from the training.
+			A problem goes to the mistake training when you solve it but had made a mistake first.
 			<br><br>
-			Only solving it without a mistake counts. If you make a mistake, the problem comes back the next day and you lose
-			a step of progress. A problem that goes wrong again and again comes back every few days instead of every day.
+			Every clean solve pushes the next review further away: a day, three days, a week, two weeks, a month, two months.
+			Six clean solves and the problem leaves the training. A mistake sends it back to the bottom and it comes back the
+			next day, however far it had got.
 			<br><br>
 			The training does not give XP or rating, it does not cost hearts and it does not use hero powers. It does not change
 			the status of a problem either: a problem you solved in the level mode stays solved. You get one attempt at each
@@ -196,8 +195,11 @@
 			<b>All caught up</b><br><br>
 			<img src="/img/mf-mistake.png" width="100%">
 			<br><br>
-			When nothing is due, the page shows when the problems in the training come back, so you know when there is work
-			for you again.
+			When nothing is due, the page shows when the problems in the training come back.
+			<br><br>
+			<b>Past mistakes</b><br><br>
+			Problems you solved with a mistake before the training existed did not enter it by themselves. Whenever nothing is
+			due, the page offers the twenty most recent of them, ready to play straight away.
 			<br><br>
 		</div>
 		<?php endif; ?>

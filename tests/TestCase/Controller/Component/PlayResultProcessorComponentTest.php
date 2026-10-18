@@ -72,10 +72,11 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 	private function solveWithMisplays(ContextPreparator &$context, int $misplays = 1): array
 	{
-		// Each misplay is its own fail call before the final solve
+		// The play page reports every misplay as its own failure and the final solve as
+		// solved after a mistake
 		for ($i = 0; $i < $misplays; $i++)
 			$this->failResult($context);
-		return $this->solve($context);
+		return $this->solveAfterMistake($context);
 	}
 
 	private function solve(ContextPreparator &$context): array
@@ -898,13 +899,13 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 	// ==================== Mistake Training Entry Hook ====================
 
-	public function testMisplayOnFirstEncounterEntersPool(): void
+	public function testMisplayOnFirstEncounterDoesNotEnterPool(): void
 	{
 		$context = new ContextPreparator(['tsumego' => 1]);
 		$this->failResult($context);
-		$this->assertNotNull(
+		$this->assertNull(
 			MistakeTraining::getPoolRow($context->user['id'], (int) $context->tsumegos[0]['id']),
-			'Misplay on first encounter should enter the training pool'
+			'A problem that was not solved belongs to practice, not to the training pool'
 		);
 	}
 
@@ -943,13 +944,13 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 	{
 		$context = new ContextPreparator(['tsumego' => 1]);
 
-		$this->failResult($context);
+		$this->solveWithMisplays($context);
 		$row = MistakeTraining::getPoolRow($context->user['id'], (int) $context->tsumegos[0]['id']);
-		$this->assertNotNull($row, 'Should be in the pool after first misplay');
+		$this->assertNotNull($row, 'Should be in the pool after solving with misplays');
 
 		$this->failResult($context);
 		$row = MistakeTraining::getPoolRow($context->user['id'], (int) $context->tsumegos[0]['id']);
-		$this->assertNotNull($row, 'Should still be in the pool after second fail');
+		$this->assertNotNull($row, 'Should still be in the pool after a fail');
 		$this->assertGreaterThan(
 			date('Y-m-d H:i:s'),
 			$row['next_due'],
@@ -961,7 +962,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 	{
 		$context = new ContextPreparator(['tsumego' => 1]);
 
-		$this->failResult($context);
+		$this->solveWithMisplays($context);
 		$this->solve($context);
 
 		$row = MistakeTraining::getPoolRow($context->user['id'], (int) $context->tsumegos[0]['id']);
@@ -975,7 +976,11 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 	public function testTrainingDoesNotRecordAttempt(): void
 	{
-		$context = new ContextPreparator(['tsumego' => 1]);
+		$context = new ContextPreparator([
+			'tsumego' => [
+				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
+			],
+		]);
 		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
 		$this->failResult($context);
 
@@ -985,7 +990,11 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 	public function testTrainingUpdatesPoolNotAttempts(): void
 	{
-		$context = new ContextPreparator(['tsumego' => 1]);
+		$context = new ContextPreparator([
+			'tsumego' => [
+				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
+			],
+		]);
 		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
 
 		$this->failResult($context);
@@ -1015,24 +1024,25 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$this->assertSame(0, (int) $row['rung'], 'A training lapse keeps the problem at the daily rung');
 	}
 
-	public function testTrainingGraduationRemovesProblemFromPool(): void
+	public function testTrainingGraduationStopsSchedulingTheProblem(): void
 	{
 		// A clean solve at the top rung of the review ladder ends training: the
-		// problem leaves the pool, but its status stays exactly as the normal
+		// problem is no longer scheduled, but its status stays exactly as the normal
 		// modes left it, since training is a consequence-free mode.
-		$context = new ContextPreparator(['tsumego' => ['status' => 'V']]);
+		$context = new ContextPreparator([
+			'tsumego' => [
+				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
+			],
+		]);
 		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
 
 		$beforeSolved = (int) Auth::getUser()['solved'];
 
-		$this->failResult($context);
 		for ($i = 0; $i < 6; $i++)
 			$this->solve($context);
 
-		$this->assertNull(
-			MistakeTraining::getPoolRow($context->user['id'], (int) $context->tsumegos[0]['id']),
-			'Graduation should remove the problem from the pool'
-		);
+		$this->assertSame(0, MistakeTraining::totalInTraining($context->user['id']),
+			'Graduation takes the problem out of the training');
 		$this->assertSame('V', $this->statusOf($context), 'Graduation should leave the status untouched');
 		$this->assertSame($beforeSolved, (int) Auth::getUser()['solved'], 'Graduation should not bump the solved counter');
 	}
@@ -1041,9 +1051,12 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 	{
 		// A problem already in the pool stays there even after it gets solved
 		// elsewhere. Only graduation removes it from the pool.
-		$context = new ContextPreparator(['tsumego' => 1]);
+		$context = new ContextPreparator([
+			'tsumego' => [
+				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
+			],
+		]);
 
-		$this->failResult($context);
 		$this->solve($context);
 
 		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
@@ -1181,8 +1194,8 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 	/**
 	 * A play outside the training reports its first mistake and then the solve, so
-	 * the pool sees both outcomes. The failure takes the rung back and the solve
-	 * that needed a retry must not earn it again.
+	 * the pool sees both outcomes. The failure takes the problem back to the bottom
+	 * and the solve that needed a retry must not earn a rung.
 	 */
 	public function testARetryAfterAFailureLeavesTheLadderWhereTheFailurePutIt(): void
 	{
@@ -1190,9 +1203,9 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$userId = $context->user['id'];
 		$tsumegoId = (int) $context->tsumegos[0]['id'];
 
-		$this->failResult($context);
+		$this->solveAfterMistake($context);
 		$this->assertSame(0, (int) MistakeTraining::getPoolRow($userId, $tsumegoId)['rung'],
-			'A first mistake enters the ladder at the bottom');
+			'A solve after a mistake enters the ladder at the bottom');
 
 		$this->solve($context);
 		$this->assertSame(1, (int) MistakeTraining::getPoolRow($userId, $tsumegoId)['rung'],

@@ -7,6 +7,9 @@ use App\Utility\MistakeTraining;
  * Shown when no tsumegos are due for review.
  *
  * @var int $totalInTraining
+ * @var int $importCandidates
+ * @var int $importLimit
+ * @var bool $showDebugLink
  * @var array $upcomingDays
  * @var int $furtherDays
  * @var string|null $lastUpcomingDay
@@ -42,7 +45,22 @@ use App\Utility\MistakeTraining;
 	</div>
 	<?php endif; ?>
 	<?php else: ?>
-	<p class="hint">No problems in training yet. Miss a problem while solving and it comes back here for review.</p>
+	<p class="hint">No problems in training yet. Solve a problem with a mistake and it comes back here for review.</p>
+	<?php endif; ?>
+	<?php if (!empty($importCandidates)): ?>
+	<p class="hint" style="margin-top: var(--space-3);">
+		Before the training existed you solved <?php echo $importCandidates; ?> problem<?php echo $importCandidates == 1 ? '' : 's'; ?>
+		with a mistake. Bring in the <?php echo min($importLimit, $importCandidates); ?> most recent, and the rest will be
+		here whenever you have nothing to review.
+	</p>
+	<form method="post" action="<?php echo MistakeTraining::$IMPORT_LINK; ?>">
+		<button type="submit" class="btn">Bring <?php echo min($importLimit, $importCandidates); ?> in</button>
+	</form>
+	<?php endif; ?>
+	<?php if (!empty($showDebugLink)): ?>
+	<p class="hint" style="margin-top: var(--space-3);">
+		<a href="<?php echo MistakeTraining::$DEBUG_LINK; ?>">Toolbox</a> (admins, debug mode only)
+	</p>
 	<?php endif; ?>
 </div>
 

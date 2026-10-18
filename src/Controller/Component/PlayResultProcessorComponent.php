@@ -72,9 +72,9 @@ class PlayResultProcessorComponent extends Component
 			$result['potion_triggered'] = $this->processPotion();
 		$this->processXpChange($tsumego, $result, $previousStatusValue, $originalTsumegoRating, $progressDeletionCount);
 		$this->updateTsumegoAttempt($tsumego, $result, $previousStatusValue, $seconds);
-		// The pool is fed from every mode: a mistake starts the review ladder, a
-		// clean solve climbs it. Players outside the rollout write nothing, so
-		// releasing the feature does not hand them a backlog of old mistakes.
+		// The pool is fed from every mode: a solved problem that goes wrong enters the
+		// review ladder, a clean solve climbs it. Players outside the rollout write
+		// nothing, so releasing the feature does not hand them a backlog of old mistakes.
 		if (Feature::enabled(FeatureKey::MistakeTraining))
 			MistakeTraining::recordResult(Auth::getUserID(), $tsumegoID, $outcome, $previousStatusValue);
 		$this->processErrorAchievement($result, $previousStatusValue, $outcome);

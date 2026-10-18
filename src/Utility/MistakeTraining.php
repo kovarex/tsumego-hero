@@ -5,6 +5,7 @@ namespace App\Utility;
 use ClassRegistry;
 use DateTime;
 use SetConnection;
+use TsumegoStatus;
 
 /**
  * Mistake training: spaced repetition for tsumegos you did not solve on the
@@ -12,12 +13,12 @@ use SetConnection;
  *
  * The pool (mistake_training_pool) is the single source of truth: one row per
  * (user, tsumego) tracking the review-ladder rung and the next review day. Only
- * a clean solve advances the rung; a solve that needed a retry keeps it and a
- * lapse gives one back, both coming back tomorrow. A clean solve at the top rung
- * graduates, removing the problem from the pool. Training results are never
- * written to tsumego_attempt, since it is a separate, consequence-free mode like
- * time mode, and training never writes tsumego_status either: graduation only
- * removes the problem from the pool.
+ * a clean solve advances the rung; a solve that needed a retry keeps it, and a
+ * mistake takes the problem back to the bottom. Either comes back tomorrow. A
+ * clean solve at the top rung graduates, removing the problem from the pool.
+ * Training results are never written to tsumego_attempt, since it is a separate,
+ * consequence-free mode like time mode, and training never writes
+ * tsumego_status either: graduation only removes the problem from the pool.
  *
  * Reviews are counted in days, not in hours: the next review of a problem is the
  * start of a day, so a mistake made in the evening is not due tomorrow morning
@@ -40,6 +41,12 @@ class MistakeTraining
 	public static int $DAY_START_HOUR = 4;
 
 	/**
+	 * How many past mistakes one import brings in. A player with years of history has
+	 * thousands, and putting them all in the queue at once would drown the training.
+	 */
+	public const IMPORT_LIMIT = 20;
+
+	/**
 	 * Route prefix for queue links. Every one of them re-asserts training mode.
 	 */
 	public static string $PLAY_LINK_PREFIX = '/mistake-training/play/';
@@ -48,6 +55,16 @@ class MistakeTraining
 	 * Landing page of the training queue.
 	 */
 	public static string $QUEUE_LINK = '/mistake-training';
+
+	/**
+	 * Where the "bring past mistakes in" button posts.
+	 */
+	public static string $IMPORT_LINK = '/mistake-training/import';
+
+	/**
+	 * Admin toolbox for trying the training without waiting between reviews.
+	 */
+	public static string $DEBUG_LINK = '/mistake-training/debug';
 
 	/**
 	 * Apply a play result to the training pool. Only a clean solve advances the
@@ -59,7 +76,8 @@ class MistakeTraining
 	 * training play gives one attempt, therefore it sends either Failed (the board
 	 * locks on the first mistake) or SolvedClean. A play outside the training can
 	 * send Failed and then SolvedAfterMistake for the same problem: the first call
-	 * takes a rung back, the second must not earn one for the retry.
+	 * takes the problem back to the bottom, the second must not earn a rung for the
+	 * retry.
 	 */
 	public static function recordResult(int $userId, int $tsumegoId, PlayOutcome $outcome, ?string $oldStatus): void
 	{
@@ -68,13 +86,13 @@ class MistakeTraining
 
 		if ($pool === null)
 		{
-			// Entry: a mistake on a problem the player has not solved. Solved problems
-			// belong to the review flow, which handles forgetting on its own; only
-			// X (a failed review) is admitted, since that is the clearest sign that
-			// the problem is not known any more. A clean solve never enters.
-			if ($clean)
-				return;
-			if (TsumegoUtil::isSolvedStatus($oldStatus))
+			// Entry: a problem that was solved and still went wrong. Solved now after a
+			// mistake, or solved once and failed now. A problem the player has never
+			// solved belongs to practice instead of review, so it stays out however
+			// often it is failed.
+			$solvedAfterMistake = $outcome === PlayOutcome::SolvedAfterMistake;
+			$lapsed = $outcome === PlayOutcome::Failed && $oldStatus === TsumegoStatus::$FORGOTTEN;
+			if (!$solvedAfterMistake && !$lapsed)
 				return;
 			self::enterPool($userId, $tsumegoId);
 			return;
@@ -82,20 +100,11 @@ class MistakeTraining
 
 		if (!$clean)
 		{
-			// Not a solve from memory, so the problem comes back tomorrow. A retry earns
-			// nothing, and a lapse gives one back: the ladder says how well the problem
-			// is known. When the same play already reported its failure, that call took
-			// the rung back and this one keeps what is left.
-			$rung = $outcome === PlayOutcome::SolvedAfterMistake
-				? (int) $pool['rung']
-				: max((int) $pool['rung'] - 1, 0);
-			// A solved problem comes back tomorrow, even when the rung could not go
-			// lower. Only a failure at the bottom gets a cool-off: the problem was not
-			// solved at all, so scheduling it every day would own a slot in the queue
-			// for nothing.
-			$bottomRung = $outcome === PlayOutcome::Failed && (int) $pool['rung'] === 0;
-			$daysAhead = $bottomRung ? self::$LADDER[1] : self::$LADDER[0];
-			self::setRung($userId, $tsumegoId, $rung, $daysAhead);
+			// A problem that was missed is not known, however far up the ladder it had
+			// climbed, so it starts over at the bottom and comes back tomorrow. A solve
+			// that needed a retry earns nothing but costs nothing either.
+			$rung = $outcome === PlayOutcome::SolvedAfterMistake ? (int) $pool['rung'] : 0;
+			self::setRung($userId, $tsumegoId, $rung, self::$LADDER[0]);
 			return;
 		}
 
@@ -122,12 +131,13 @@ class MistakeTraining
 	}
 
 	/**
-	 * Whether a problem is in the pool and scheduled for review right now.
+	 * Whether a problem is in the pool and scheduled for review right now. A graduated
+	 * problem has no next review, and null would otherwise read as older than today.
 	 */
 	public static function isDue(int $userId, int $tsumegoId): bool
 	{
 		$row = self::getPoolRow($userId, $tsumegoId);
-		return $row !== null && $row['next_due'] <= date('Y-m-d H:i:s');
+		return $row !== null && $row['next_due'] !== null && $row['next_due'] <= date('Y-m-d H:i:s');
 	}
 
 	/**
@@ -159,7 +169,8 @@ class MistakeTraining
 
 	/**
 	 * Total number of problems in the training pool. Counts only what the queue can
-	 * serve, so a problem that is gone (deleted, or in no set) is not announced.
+	 * serve, so a problem that is gone (deleted, or in no set) is not announced, and a
+	 * graduated problem (no next review) is not in the training any more.
 	 */
 	public static function totalInTraining(int $userId): int
 	{
@@ -167,11 +178,155 @@ class MistakeTraining
 			'SELECT COUNT(DISTINCT p.id) AS total FROM mistake_training_pool p'
 			. ' JOIN tsumego t ON t.id = p.tsumego_id'
 			. ' JOIN set_connection sc ON sc.tsumego_id = p.tsumego_id'
-			. ' WHERE p.user_id = ? AND t.deleted IS NULL',
+			. ' WHERE p.user_id = ? AND p.next_due IS NOT NULL AND t.deleted IS NULL',
 			[$userId]
 		);
 
 		return (int) $rows[0]['total'];
+	}
+
+	/**
+	 * How many past mistakes are not in the training yet. An attempt that was solved
+	 * with misplays is a problem the player solved but not on the first try; one that
+	 * was never solved is practice rather than review, so it does not count.
+	 */
+	public static function importCandidates(int $userId): int
+	{
+		$rows = Util::query('SELECT COUNT(DISTINCT a.tsumego_id) AS total' . self::pastMistakesSql(), [$userId]);
+		return (int) $rows[0]['total'];
+	}
+
+	/**
+	 * Bring the player's past mistakes into the training, newest first. They are due
+	 * at once, because they are old rather than scheduled. A problem already in the
+	 * pool keeps its rung and its next review, so the import can be run again.
+	 *
+	 * @return int How many problems the training gained.
+	 */
+	public static function importPastMistakes(int $userId, int $limit = self::IMPORT_LIMIT): int
+	{
+		$rows = Util::query(
+			'SELECT a.tsumego_id, MAX(a.created) AS last_mistake' . self::pastMistakesSql()
+			. ' GROUP BY a.tsumego_id ORDER BY last_mistake DESC LIMIT ' . (int) $limit,
+			[$userId]
+		);
+
+		$now = date('Y-m-d H:i:s');
+		foreach ($rows as $row)
+			self::addProblem($userId, (int) $row['tsumego_id'], $now);
+
+		return count($rows);
+	}
+
+	/**
+	 * The ladder intervals, oldest rung first, for screens that explain the wait.
+	 *
+	 * @return int[]
+	 */
+	public static function ladder(): array
+	{
+		return self::$LADDER;
+	}
+
+	/**
+	 * The pool of one player, soonest review first, for the admin toolbox.
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
+	public static function poolRows(int $userId): array
+	{
+		return Util::query(
+			'SELECT p.tsumego_id, p.rung, p.next_due,'
+			. ' (SELECT sc.id FROM set_connection sc WHERE sc.tsumego_id = p.tsumego_id ORDER BY sc.id LIMIT 1) AS set_connection_id'
+			. ' FROM mistake_training_pool p WHERE p.user_id = ?'
+			. ' ORDER BY p.next_due ASC, p.id ASC LIMIT 50',
+			[$userId]
+		);
+	}
+
+	/**
+	 * Move every review of a player by $days days, so a three week wait becomes a
+	 * click. Only the date moves: the rung says how well the problem is known.
+	 *
+	 * @return int How many rows moved.
+	 */
+	public static function shiftReviews(int $userId, int $days): int
+	{
+		return Util::execute(
+			'UPDATE mistake_training_pool SET next_due = DATE_ADD(next_due, INTERVAL ? DAY) WHERE user_id = ?',
+			[$days, $userId]
+		);
+	}
+
+	/**
+	 * Put one problem on a rung and make it due now, which is how the toolbox jumps
+	 * to a late review instead of playing the ladder up to it.
+	 */
+	public static function moveToRung(int $userId, int $tsumegoId, int $rung): void
+	{
+		$rung = max(0, min($rung, count(self::$LADDER) - 1));
+		self::setRung($userId, $tsumegoId, $rung, 0);
+	}
+
+	/**
+	 * Schedule a problem for right now, so the toolbox can open it in the training
+	 * without waiting for its review day.
+	 */
+	public static function makeDueNow(int $userId, int $tsumegoId): void
+	{
+		Util::execute(
+			'UPDATE mistake_training_pool SET next_due = ? WHERE user_id = ? AND tsumego_id = ?',
+			[date('Y-m-d H:i:s'), $userId, $tsumegoId]
+		);
+	}
+
+	/**
+	 * Take a problem to the top rung and graduate it, so the toolbox can see the exit
+	 * without six reviews.
+	 */
+	public static function graduateNow(int $userId, int $tsumegoId): void
+	{
+		self::setRung($userId, $tsumegoId, count(self::$LADDER) - 1, 0);
+		self::graduate($userId, $tsumegoId);
+	}
+
+	/**
+	 * Add one problem to the pool as due now, whether or not it was a mistake. For
+	 * the toolbox, and the import of past mistakes.
+	 */
+	public static function addProblem(int $userId, int $tsumegoId, ?string $due = null): void
+	{
+		$now = date('Y-m-d H:i:s');
+		Util::execute(
+			'INSERT INTO mistake_training_pool (user_id, tsumego_id, rung, next_due, created, modified)'
+			. ' VALUES (?, ?, 0, ?, ?, ?)'
+			. ' ON DUPLICATE KEY UPDATE user_id = user_id',
+			[$userId, $tsumegoId, $due ?? $now, $now, $now]
+		);
+	}
+
+	/**
+	 * Empty the pool of one player.
+	 *
+	 * @return int How many rows were removed.
+	 */
+	public static function clearPool(int $userId): int
+	{
+		return Util::execute('DELETE FROM mistake_training_pool WHERE user_id = ?', [$userId]);
+	}
+
+	/**
+	 * The attempts that are past mistakes and are not in the training yet: a problem
+	 * the player solved with misplays, still alive, still reachable from a set.
+	 */
+	private static function pastMistakesSql(): string
+	{
+		return ' FROM tsumego_attempt a'
+			. ' JOIN tsumego t ON t.id = a.tsumego_id AND t.deleted IS NULL'
+			. ' WHERE a.user_id = ? AND a.solved = 1 AND a.misplays > 0'
+			. ' AND EXISTS (SELECT 1 FROM set_connection sc WHERE sc.tsumego_id = a.tsumego_id)'
+			. ' AND NOT EXISTS (SELECT 1 FROM mistake_training_pool p'
+			. ' WHERE p.user_id = a.user_id AND p.tsumego_id = a.tsumego_id)';
 	}
 
 	/**
@@ -245,7 +400,7 @@ class MistakeTraining
 	}
 
 	/**
-	 * Add a problem to the pool on a first-encounter fail.
+	 * Add a problem to the pool at the bottom rung, due on the next training day.
 	 */
 	private static function enterPool(int $userId, int $tsumegoId): void
 	{
@@ -302,13 +457,17 @@ class MistakeTraining
 	}
 
 	/**
-	 * A clean solve at the top rung ends training: the problem leaves the pool for
-	 * good, with its status left alone (it belongs to the normal modes). Delegates
-	 * the removal, so graduation and the housekeeping paths stay in sync.
+	 * A clean solve at the top rung ends training: the problem stops being scheduled
+	 * and its status is left alone, it belongs to the normal modes. The row stays with
+	 * no next review, because it remembers that the training already knows the problem;
+	 * without it a mastered problem would come back as a past mistake to import.
 	 */
 	private static function graduate(int $userId, int $tsumegoId): void
 	{
-		self::removeFromPool($userId, $tsumegoId);
+		Util::execute(
+			'UPDATE mistake_training_pool SET next_due = NULL, modified = ? WHERE user_id = ? AND tsumego_id = ?',
+			[date('Y-m-d H:i:s'), $userId, $tsumegoId]
+		);
 	}
 
 	/**
