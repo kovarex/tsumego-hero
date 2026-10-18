@@ -11,13 +11,18 @@ use SetConnection;
  * first attempt.
  *
  * The pool (mistake_training_pool) is the single source of truth: one row per
- * (user, tsumego) tracking the review-ladder rung and the next review date. Only
+ * (user, tsumego) tracking the review-ladder rung and the next review day. Only
  * a clean solve advances the rung; a solve that needed a retry keeps it and a
  * lapse gives one back, both coming back tomorrow. A clean solve at the top rung
  * graduates, removing the problem from the pool. Training results are never
  * written to tsumego_attempt, since it is a separate, consequence-free mode like
  * time mode, and training never writes tsumego_status either: graduation only
  * removes the problem from the pool.
+ *
+ * Reviews are counted in days, not in hours: the next review of a problem is the
+ * start of a day, so a mistake made in the evening is not due tomorrow morning
+ * minus an hour. See $DAY_START_HOUR for the boundary that keeps a session after
+ * midnight on the day it started.
  */
 class MistakeTraining
 {
@@ -26,6 +31,13 @@ class MistakeTraining
 	 * climbs a rung; anything else is due again the next day.
 	 */
 	private static array $LADDER = [1, 3, 7, 14, 30, 60];
+
+	/**
+	 * Hour at which a new day starts for the training. Reviews are counted in days,
+	 * so a problem due tomorrow is there at this hour, not 24 hours after the
+	 * mistake. The boundary keeps a session after midnight on the previous day.
+	 */
+	public static int $DAY_START_HOUR = 4;
 
 	/**
 	 * Route prefix for queue links. Every one of them re-asserts training mode.
@@ -50,11 +62,13 @@ class MistakeTraining
 
 		if ($pool === null)
 		{
-			// Entry: a mistake on a problem the user has not solved yet (a
-			// first-encounter mistake). A clean solve never enters the pool.
+			// Entry: a mistake on a problem the player has not solved. Solved problems
+			// belong to the review flow, which handles forgetting on its own; only
+			// X (a failed review) is admitted, since that is the clearest sign that
+			// the problem is not known any more. A clean solve never enters.
 			if ($clean)
 				return;
-			if ($oldStatus !== null && TsumegoUtil::isSolvedStatus($oldStatus))
+			if (TsumegoUtil::isSolvedStatus($oldStatus))
 				return;
 			self::enterPool($userId, $tsumegoId);
 			return;
@@ -188,7 +202,7 @@ class MistakeTraining
 	 */
 	public static function describeDay(string $day, ?string $today = null): string
 	{
-		$today = $today ?: date('Y-m-d');
+		$today = $today ?: self::today();
 		$daysAhead = (new DateTime($today))->diff(new DateTime($day))->days;
 		if ($daysAhead <= 0)
 			return 'today';
@@ -234,10 +248,29 @@ class MistakeTraining
 			'user_id' => $userId,
 			'tsumego_id' => $tsumegoId,
 			'rung' => 0,
-			'next_due' => date('Y-m-d H:i:s', strtotime($now . ' +' . self::$LADDER[0] . ' days')),
+			'next_due' => self::dueDate(self::$LADDER[0]),
 			'created' => $now,
 			'modified' => $now,
 		]);
+	}
+
+	/**
+	 * The current training day. A session that runs past midnight still belongs to
+	 * the day it started on, until the day boundary passes.
+	 */
+	public static function today(): string
+	{
+		return date('Y-m-d', strtotime('-' . self::$DAY_START_HOUR . ' hours'));
+	}
+
+	/**
+	 * The moment a review scheduled $daysAhead days out becomes due: the start of
+	 * that day, never "now plus the interval".
+	 */
+	private static function dueDate(int $daysAhead): string
+	{
+		$day = date('Y-m-d', strtotime(self::today() . ' +' . $daysAhead . ' days'));
+		return $day . ' ' . str_pad((string) self::$DAY_START_HOUR, 2, '0', STR_PAD_LEFT) . ':00:00';
 	}
 
 	/**
@@ -249,7 +282,7 @@ class MistakeTraining
 	{
 		$now = date('Y-m-d H:i:s');
 		$daysAhead = $daysAhead ?? self::$LADDER[$rung];
-		$nextDue = date('Y-m-d H:i:s', strtotime($now . ' +' . $daysAhead . ' days'));
+		$nextDue = self::dueDate($daysAhead);
 
 		$sql = 'UPDATE mistake_training_pool SET rung = ?, next_due = ?, modified = ?';
 		$params = [$rung, $nextDue, $now];

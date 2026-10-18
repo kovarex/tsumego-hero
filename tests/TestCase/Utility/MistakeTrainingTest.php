@@ -35,15 +35,44 @@ class MistakeTrainingTest extends TestCaseWithAuth
 		$this->assertNotNull($row['next_due']);
 	}
 
-	public function testSolvedProblemDoesNotEnterOnFail(): void
+	public function testOnlyUnsolvedProblemsEnterOnFail(): void
+	{
+		foreach (['S', 'W', 'C'] as $status)
+		{
+			$context = new ContextPreparator(['tsumego' => 1]);
+			$userId = $context->user['id'];
+			$tsumegoId = $context->tsumegos[0]['id'];
+
+			MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::Failed, $status);
+
+			$this->assertNull($this->poolRow($userId, $tsumegoId), "A problem in status $status is not a mistake");
+		}
+	}
+
+	public function testForgottenProblemEntersOnFail(): void
 	{
 		$context = new ContextPreparator(['tsumego' => 1]);
 		$userId = $context->user['id'];
 		$tsumegoId = $context->tsumegos[0]['id'];
 
-		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::Failed, 'S');
+		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::Failed, 'X');
 
-		$this->assertNull($this->poolRow($userId, $tsumegoId));
+		$this->assertNotNull($this->poolRow($userId, $tsumegoId),
+			'A failed review is a sign of forgetting, so the problem comes back to the training');
+	}
+
+	public function testEntryWaitsForTheStartOfTheNextDay(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+		$userId = $context->user['id'];
+		$tsumegoId = $context->tsumegos[0]['id'];
+
+		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::Failed, null);
+
+		$boundaryHour = str_pad((string) MistakeTraining::$DAY_START_HOUR, 2, '0', STR_PAD_LEFT) . ':00:00';
+		$expected = date('Y-m-d', strtotime(MistakeTraining::today() . ' +1 day')) . ' ' . $boundaryHour;
+		$this->assertSame($expected, $this->poolRow($userId, $tsumegoId)['next_due'],
+			'A review is a day, so it is due from the start of that day');
 	}
 
 	public function testCleanSolveClimbsRung(): void
@@ -154,8 +183,8 @@ class MistakeTrainingTest extends TestCaseWithAuth
 
 	private function assertDaysAhead(int $expectedDays, array $row, string $message): void
 	{
-		$daysAhead = (int) round((strtotime($row['next_due']) - time()) / 86400);
-		$this->assertSame($expectedDays, $daysAhead, $message);
+		$expectedDay = date('Y-m-d', strtotime(MistakeTraining::today() . ' +' . $expectedDays . ' days'));
+		$this->assertSame($expectedDay, date('Y-m-d', strtotime($row['next_due'])), $message);
 	}
 
 	public function testGraduationAtTopRung(): void
