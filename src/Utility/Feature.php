@@ -6,15 +6,13 @@ use ClassRegistry;
 use Exception;
 
 /**
- * Feature flags: the switch that lets either of us take a shipped feature out of
- * the site, or keep it to the admins, without a deploy.
+ * Feature flags: a shipped feature can be switched off, or kept to the admins,
+ * without a deploy.
  *
  * One row per feature in feature_flags, state being off, admins or everyone. A
  * missing row counts as off, because a flag has to be seeded before a feature
- * appears.
- *
- * The states avoid SQL keywords on purpose: `all` and `on` are reserved, and a raw
- * query writing `state = all` is a syntax error.
+ * appears. The values are not SQL keywords, so a hand-written
+ * `SET state = everyone` needs no quoting.
  *
  * The check belongs at the entry points (menu, controller, the one write that
  * must not happen), never in the model: while a flag is on, everything behind it

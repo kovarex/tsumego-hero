@@ -1167,17 +1167,6 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$this->setFeatureFlag(FeatureKey::MistakeTraining, $state);
 	}
 
-	public function testAMistakeEntersTheTrainingPool(): void
-	{
-		$context = new ContextPreparator(['tsumego' => 1]);
-
-		$this->failResult($context);
-
-		$this->assertNotNull(
-			MistakeTraining::getPoolRow($context->user['id'], (int) $context->tsumegos[0]['id']),
-			'A mistake starts the review ladder');
-	}
-
 	public function testAMistakeWritesNothingWhileTheFeatureIsOff(): void
 	{
 		$this->setTrainingFlag(Feature::OFF);

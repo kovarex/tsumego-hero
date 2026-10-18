@@ -17,8 +17,8 @@ class MistakeTrainingController extends AppController
 	 */
 	public function play(?string $setConnectionID = null): mixed
 	{
-		// The feature is invisible to players outside the rollout, including the ones
-		// who guess the address.
+		// Players outside the rollout get the same 404 a guest would, and never a
+		// login redirect: the route does not exist for them.
 		if (!Feature::enabled(FeatureKey::MistakeTraining))
 			throw new NotFoundException('Not found');
 

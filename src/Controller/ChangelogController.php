@@ -61,15 +61,11 @@ class ChangelogController extends AppController
 
 	/**
 	 * The entries the current visitor may see. An entry behind a flag is not
-	 * announced while that flag is off, and the timestamps have to be filtered the
+	 * announced while that flag is off, so the timestamps have to be filtered the
 	 * same way or the badge would point at an entry that is not rendered.
 	 *
 	 * A flag row is deleted when its feature becomes permanent, so a fragment that
-	 * names a deleted flag announces something that shipped long ago and is shown
-	 * to everybody. Deleting the row is thus the whole release step, and the
-	 * entries of a switched-off feature stay quiet for as long as they should.
-	 *
-	 * Admins see every entry, so the changelog stays a complete record for them.
+	 * names a deleted flag is shown to everybody. Admins see every entry.
 	 *
 	 * @param array<int, array<string, mixed>> $entries
 	 * @return array<int, array<string, mixed>>
