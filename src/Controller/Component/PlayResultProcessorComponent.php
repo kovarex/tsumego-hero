@@ -70,9 +70,9 @@ class PlayResultProcessorComponent extends Component
 			$result['potion_triggered'] = $this->processPotion();
 		$this->processXpChange($tsumego, $result, $previousStatusValue, $originalTsumegoRating, $progressDeletionCount);
 		$this->updateTsumegoAttempt($tsumego, $result, $previousStatusValue, $seconds);
-		// The pool is fed from every mode: a first-encounter fail starts the review
-		// ladder, a later clean solve climbs it.
-		MistakeTraining::recordResult(Auth::getUserID(), $tsumegoID, $solved, $previousStatusValue);
+		// The pool is fed from every mode: a mistake starts the review ladder, a
+		// clean solve climbs it.
+		MistakeTraining::recordResult(Auth::getUserID(), $tsumegoID, $outcome, $previousStatusValue);
 		$this->processErrorAchievement($result, $previousStatusValue, $outcome);
 		$this->processUnsortedStuff($tsumego, $result, $previousStatusValue);
 

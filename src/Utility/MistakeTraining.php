@@ -11,18 +11,19 @@ use SetConnection;
  * first attempt.
  *
  * The pool (mistake_training_pool) is the single source of truth: one row per
- * (user, tsumego) tracking the review-ladder rung and the next review date.
- * A clean solve climbs a rung; a fail drops one; a clean solve at the top
- * graduates (removed from the pool). Training results are never written to
- * tsumego_attempt, since it is a separate, consequence-free mode like time mode,
- * and training never writes tsumego_status either: graduation only removes the
- * problem from the pool.
+ * (user, tsumego) tracking the review-ladder rung and the next review date. Only
+ * a clean solve advances the rung; a solve that needed a retry keeps it and a
+ * lapse gives one back, both coming back tomorrow. A clean solve at the top rung
+ * graduates, removing the problem from the pool. Training results are never
+ * written to tsumego_attempt, since it is a separate, consequence-free mode like
+ * time mode, and training never writes tsumego_status either: graduation only
+ * removes the problem from the pool.
  */
 class MistakeTraining
 {
 	/**
-	 * Review ladder: days until the next review at each rung. A clean solve
-	 * climbs a rung; a lapse drops a rung; a clean solve at the top graduates.
+	 * Review ladder: days until the next review at each rung. Only a clean solve
+	 * climbs a rung; anything else is due again the next day.
 	 */
 	private static array $LADDER = [1, 3, 7, 14, 30, 60];
 
@@ -37,19 +38,21 @@ class MistakeTraining
 	public static string $QUEUE_LINK = '/mistake-training';
 
 	/**
-	 * Apply a play result to the training pool. Graduation (a clean solve at the
-	 * top rung) only removes the problem from the pool; the tsumego status is
-	 * never touched, it belongs to the normal modes.
+	 * Apply a play result to the training pool. Only a clean solve advances the
+	 * ladder; graduation (a clean solve at the top rung) only removes the problem
+	 * from the pool, and the tsumego status is never touched, it belongs to the
+	 * normal modes.
 	 */
-	public static function recordResult(int $userId, int $tsumegoId, bool $solved, ?string $oldStatus): void
+	public static function recordResult(int $userId, int $tsumegoId, PlayOutcome $outcome, ?string $oldStatus): void
 	{
+		$clean = $outcome === PlayOutcome::SolvedClean;
 		$pool = self::getPoolRow($userId, $tsumegoId);
 
 		if ($pool === null)
 		{
-			// Entry: a fail on a problem the user has not solved yet (a
+			// Entry: a mistake on a problem the user has not solved yet (a
 			// first-encounter mistake). A clean solve never enters the pool.
-			if ($solved)
+			if ($clean)
 				return;
 			if ($oldStatus !== null && TsumegoUtil::isSolvedStatus($oldStatus))
 				return;
@@ -57,22 +60,29 @@ class MistakeTraining
 			return;
 		}
 
-		$top = count(self::$LADDER) - 1;
-
-		if ($solved)
+		if (!$clean)
 		{
-			// Clean solve: climb a rung, or graduate at the top.
-			if ((int) $pool['rung'] >= $top)
-			{
-				self::graduate($userId, $tsumegoId);
-				return;
-			}
-			self::setRung($userId, $tsumegoId, (int) $pool['rung'] + 1);
+			// Not a solve from memory yet, so the problem comes back tomorrow. A
+			// solve that needed a retry keeps the rung it earned, a lapse gives one
+			// back: the ladder says how well the problem is known.
+			$rung = $outcome === PlayOutcome::SolvedAfterMistake
+				? (int) $pool['rung']
+				: max((int) $pool['rung'] - 1, 0);
+			// There is no rung left to give back at the bottom, so a problem the
+			// player cannot solve yet gets a cool-off instead of owning a slot in
+			// the queue every day.
+			$daysAhead = (int) $pool['rung'] > 0 ? self::$LADDER[0] : self::$LADDER[1];
+			self::setRung($userId, $tsumegoId, $rung, $daysAhead);
 			return;
 		}
 
-		// Fail: drop a rung, never below the daily rung.
-		self::setRung($userId, $tsumegoId, max((int) $pool['rung'] - 1, 0));
+		// Clean solve: climb a rung, or graduate at the top.
+		if ((int) $pool['rung'] >= count(self::$LADDER) - 1)
+		{
+			self::graduate($userId, $tsumegoId);
+			return;
+		}
+		self::setRung($userId, $tsumegoId, (int) $pool['rung'] + 1);
 	}
 
 	/**
@@ -231,12 +241,15 @@ class MistakeTraining
 	}
 
 	/**
-	 * Move a pool row to a new rung and recompute its next review date.
+	 * Move a pool row to a new rung and set its next review. The review waits out
+	 * the rung's interval unless $daysAhead names the wait explicitly (a retry is
+	 * due tomorrow whatever rung the problem sits on).
 	 */
-	private static function setRung(int $userId, int $tsumegoId, int $rung): void
+	private static function setRung(int $userId, int $tsumegoId, int $rung, ?int $daysAhead = null): void
 	{
 		$now = date('Y-m-d H:i:s');
-		$nextDue = date('Y-m-d H:i:s', strtotime($now . ' +' . self::$LADDER[$rung] . ' days'));
+		$daysAhead = $daysAhead ?? self::$LADDER[$rung];
+		$nextDue = date('Y-m-d H:i:s', strtotime($now . ' +' . $daysAhead . ' days'));
 
 		$sql = 'UPDATE mistake_training_pool SET rung = ?, next_due = ?, modified = ?';
 		$params = [$rung, $nextDue, $now];
