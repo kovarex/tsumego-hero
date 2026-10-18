@@ -220,9 +220,53 @@
 	display: none;
 }
 
+/* Mistake training: the number sits over a badge with the rung of the review
+   ladder, in a colour of its own per rung, so the row tells a fresh mistake from
+   a late review. The badge stays inside the button, clear of the current-item
+   outline, and its border keeps it apart from the grey and the green items. */
+.problem-nav__rung-link
+{
+	flex-direction: column;
+	gap: 1px;
+}
+
+.problem-nav__rung-link .problem-nav__number
+{
+	font-size: var(--font-size-md);
+	line-height: 1;
+}
+
+.problem-nav__rung
+{
+	min-width: 24px;
+	padding: 0 3px;
+	box-sizing: border-box;
+	border: 1px solid var(--rung-border);
+	border-radius: var(--radius-full);
+	font-family: verdana, helvetica, arial, sans-serif;
+	font-size: var(--font-size-xs);
+	font-weight: var(--font-weight-bold);
+	line-height: 1.2;
+	color: var(--rung-ink);
+}
+
+.problem-nav__rung--0 { background-color: var(--rung-0-color); }
+.problem-nav__rung--1 { background-color: var(--rung-1-color); }
+.problem-nav__rung--2 { background-color: var(--rung-2-color); }
+.problem-nav__rung--3 { background-color: var(--rung-3-color); }
+.problem-nav__rung--4 { background-color: var(--rung-4-color); }
+.problem-nav__rung--5 { background-color: var(--rung-5-color); }
+
+.problem-nav__rung--graduated
+{
+	background: linear-gradient(135deg, var(--status-g-color), var(--status-g-highlight), var(--status-g-color));
+	color: var(--gold-ink);
+}
+
 .preview-zoomed .problem-nav__number,
 .preview-zoomed .problem-nav__ratio,
 .preview-zoomed .problem-nav__time,
+.preview-zoomed .problem-nav__rung,
 .preview-zoomed .tooltip-label,
 .preview-zoomed .tooltip-desc
 {

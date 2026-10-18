@@ -56,19 +56,37 @@ class TsumegoButton
 			}
 		}
 
+		// In the mistake training the ratio and the time are always empty, so the button
+		// shows the rung of the review ladder under the number instead.
+		$details = $this->rung === null ? $num2 . $num3 : $this->renderRungBadge();
+
 		echo '<li class="problem-nav__item problem-nav__item--' . ($this->status ?: 'N') . ($this->isCurrentlyOpened ? ' problem-nav__item--current' : '') . '">';
 		$status = $this->status ?: 'N';
-		$label = TsumegoStatus::label($status);
-		$description = TsumegoStatus::description($status);
-		echo '<a class="tooltip" href="' . $this->linkPrefix . $this->setConnectionID . '"'
+		$label = $this->label ?? TsumegoStatus::label($status);
+		$description = $this->description ?? TsumegoStatus::description($status);
+		echo '<a class="tooltip' . ($this->rung === null ? '' : ' problem-nav__rung-link') . '" href="' . $this->linkPrefix . $this->setConnectionID . '"'
 			. ' data-tsumego-id="' . $this->tsumegoID . '"'
 			. $sgfAttr . '>'
-			. $num . $num2 . $num3
+			. $num . $details
 			. '<span class="tooltip-box">'
 			. '<div class="tooltip-label status' . $status . '">' . h($label) . '</div>'
 			. '<div class="tooltip-desc">' . h($description) . '</div>'
 			. '</span></a>';
 		echo '</li>';
+	}
+
+	/**
+	 * The badge of a training button: a colour of its own for every rung, from a
+	 * fresh mistake to the last review before graduation, with the wait of the rung,
+	 * so the row tells a new mistake from a late review at a glance. The play page
+	 * swaps it in once a result moves the rung.
+	 */
+	public function renderRungBadge(): string
+	{
+		if ($this->graduated)
+			return '<div class="problem-nav__rung problem-nav__rung--graduated">&#9733;</div>';
+		return '<div class="problem-nav__rung problem-nav__rung--' . $this->rung . '">'
+			. MistakeTraining::ladder()[$this->rung] . 'd</div>';
 	}
 
 	/**
@@ -102,4 +120,20 @@ class TsumegoButton
 	public ?string $diff = null;
 	public ?int $setID = null;
 	public ?string $setTitle = null;
+
+	/**
+	 * Rung of the mistake training ladder, shown as a badge under the number. Null
+	 * outside the training, where the button shows its usual lines.
+	 */
+	public ?int $rung = null;
+
+	/** Graduated from the training today, which has a badge of its own. */
+	public bool $graduated = false;
+
+	/**
+	 * Tooltip texts in place of the ones of the status, for a row whose colours mean
+	 * something other than the tsumego status.
+	 */
+	public ?string $label = null;
+	public ?string $description = null;
 }

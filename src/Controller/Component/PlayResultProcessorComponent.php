@@ -25,7 +25,8 @@ class PlayResultProcessorComponent extends Component
 	 * @param int|null $setConnectionID Part of the set the problem is played from; null means
 	 *   the display set connection is deduced instead.
 	 * @return array Result with xp_gained, new_rating, new_xp, new_level, new_damage, status,
-	 *   potion_triggered and achievement_updates.
+	 *   potion_triggered and achievement_updates, and in the mistake training
+	 *   mistake_training_button.
 	 */
 	public function processResult(int $tsumegoID, PlayOutcome $outcome, float $seconds, ?int $setConnectionID = null): array
 	{
@@ -75,8 +76,9 @@ class PlayResultProcessorComponent extends Component
 		// The pool is fed from every mode: a solved problem that goes wrong enters the
 		// review ladder, a clean solve climbs it. Players outside the rollout write
 		// nothing, so releasing the feature does not hand them a backlog of old mistakes.
+		// The training says it is the one playing, since a replay there counts for nothing.
 		if (Feature::enabled(FeatureKey::MistakeTraining))
-			MistakeTraining::recordResult(Auth::getUserID(), $tsumegoID, $outcome, $previousStatusValue);
+			MistakeTraining::recordResult(Auth::getUserID(), $tsumegoID, $outcome, $previousStatusValue, Auth::isInMistakeTrainingMode());
 		$this->processErrorAchievement($result, $previousStatusValue, $outcome);
 		$this->processUnsortedStuff($tsumego, $result, $previousStatusValue);
 
@@ -96,6 +98,10 @@ class PlayResultProcessorComponent extends Component
 		];
 		if (!empty($achievementChecker->updated))
 			$response['achievement_updates'] = $achievementChecker->updated;
+		// The training row shows what today did with the problem, and this result just
+		// changed it, so the page redraws the button from the review as it was stored.
+		if (Feature::enabled(FeatureKey::MistakeTraining) && Auth::isInMistakeTrainingMode())
+			$response['mistake_training_button'] = MistakeTraining::describeTodaysReview(Auth::getUserID(), $tsumegoID);
 
 		return $response;
 	}

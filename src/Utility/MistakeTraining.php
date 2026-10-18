@@ -12,13 +12,20 @@ use TsumegoStatus;
  * first attempt.
  *
  * The pool (mistake_training_pool) is the single source of truth: one row per
- * (user, tsumego) tracking the review-ladder rung and the next review day. Only
- * a clean solve advances the rung; a solve that needed a retry keeps it, and a
- * mistake takes the problem back to the bottom. Either comes back tomorrow. A
- * clean solve at the top rung graduates, removing the problem from the pool.
- * Training results are never written to tsumego_attempt, since it is a separate,
+ * (user, tsumego) tracking the review-ladder rung, the next review day, and the
+ * day and result of the last review. Only a clean solve advances the rung, and a
+ * clean solve at the top rung graduates, removing the problem from the schedule.
+ * A mistake on a problem that is due takes it back to the bottom but keeps it
+ * due: it waits in today's training until it is solved, and that solve, like any
+ * solve that needed a retry, earns nothing and brings it back tomorrow. Training
+ * results are never written to tsumego_attempt, since it is a separate,
  * consequence-free mode like time mode, and training never writes
- * tsumego_status either: graduation only removes the problem from the pool.
+ * tsumego_status either: graduation only removes the problem from the schedule.
+ *
+ * A training day is a fixed list: the problems due today and the ones solved
+ * today, in the order they came into the pool. A problem solved today stays in it
+ * as done, so the row of buttons and the numbering hold still the whole day, and
+ * playing it again from there is a replay that counts for nothing.
  *
  * Reviews are counted in days, not in hours: the next review of a problem is the
  * start of a day, so a mistake made in the evening is not due tomorrow morning
@@ -29,9 +36,18 @@ class MistakeTraining
 {
 	/**
 	 * Review ladder: days until the next review at each rung. Only a clean solve
-	 * climbs a rung; anything else is due again the next day.
+	 * climbs a rung; any other solve is due again the next day.
 	 */
 	private static array $LADDER = [1, 3, 7, 14, 30, 60];
+
+	/**
+	 * What the last review did, stored with its day in last_review_result. A miss
+	 * keeps the problem due until it is solved; the other two mark it done for the
+	 * day.
+	 */
+	public const REVIEW_SOLVED = 'S';
+	public const REVIEW_MISSED = 'F';
+	public const REVIEW_GRADUATED = 'G';
 
 	/**
 	 * Hour at which a new day starts for the training. Reviews are counted in days,
@@ -68,20 +84,23 @@ class MistakeTraining
 
 	/**
 	 * Apply a play result to the training pool. Only a clean solve advances the
-	 * ladder; graduation (a clean solve at the top rung) only removes the problem
-	 * from the pool, and the tsumego status is never touched, it belongs to the
-	 * normal modes.
+	 * ladder; graduation (a clean solve at the top rung) only stops the schedule,
+	 * and the tsumego status is never touched, it belongs to the normal modes.
 	 *
-	 * Every mode reports here, so the outcomes differ by where the play happened. A
-	 * training play gives one attempt, therefore it sends either Failed (the board
-	 * locks on the first mistake) or SolvedClean. A play outside the training can
-	 * send Failed and then SolvedAfterMistake for the same problem: the first call
-	 * takes the problem back to the bottom, the second must not earn a rung for the
-	 * retry.
+	 * Every mode reports here. A result on a problem that is due is its review,
+	 * wherever it was played: a mistake takes the problem to the bottom and keeps it
+	 * due, so it stays in today's training until it is solved. A solve after a
+	 * mistake of the same day, in the same play (Failed, then SolvedAfterMistake) or
+	 * in a later one, is a retry: it earns no rung and comes back tomorrow.
+	 *
+	 * A problem that is not due was reviewed already or waits for a later day. In
+	 * the training ($inTraining) that is a replay of a problem solved today, which
+	 * counts for nothing. Outside the training the result still moves the ladder: a
+	 * clean solve climbs, a solve after a mistake keeps the rung, a mistake goes back
+	 * to the bottom, and the problem is due tomorrow unless it climbed.
 	 */
-	public static function recordResult(int $userId, int $tsumegoId, PlayOutcome $outcome, ?string $oldStatus): void
+	public static function recordResult(int $userId, int $tsumegoId, PlayOutcome $outcome, ?string $oldStatus, bool $inTraining = false): void
 	{
-		$clean = $outcome === PlayOutcome::SolvedClean;
 		$pool = self::getPoolRow($userId, $tsumegoId);
 
 		if ($pool === null)
@@ -98,23 +117,46 @@ class MistakeTraining
 			return;
 		}
 
-		if (!$clean)
+		$due = self::isRowDue($pool);
+
+		// Played again from today's row after it was solved: nothing to review.
+		if (!$due && $inTraining)
+			return;
+
+		$rung = (int) $pool['rung'];
+		$solved = $outcome === PlayOutcome::SolvedClean || $outcome === PlayOutcome::SolvedAfterMistake;
+		if (!$solved)
 		{
 			// A problem that was missed is not known, however far up the ladder it had
-			// climbed, so it starts over at the bottom and comes back tomorrow. A solve
-			// that needed a retry earns nothing but costs nothing either.
-			$rung = $outcome === PlayOutcome::SolvedAfterMistake ? (int) $pool['rung'] : 0;
-			self::setRung($userId, $tsumegoId, $rung, self::$LADDER[0]);
+			// climbed, so it starts over at the bottom. One that is due stays due: it
+			// waits in today's training until it is solved instead of disappearing until
+			// tomorrow. Any other one comes back tomorrow.
+			if ($due)
+				self::markReview($userId, $tsumegoId, self::REVIEW_MISSED, 0);
+			else
+				self::setRung($userId, $tsumegoId, 0, self::$LADDER[0]);
 			return;
 		}
 
-		// Clean solve: climb a rung, or graduate at the top.
-		if ((int) $pool['rung'] >= count(self::$LADDER) - 1)
+		// A solve that needed a retry earns nothing but costs nothing either, and the
+		// problem comes back tomorrow. On a problem that is due, a mistake earlier today
+		// makes a clean solve of a later play a retry too. Any other clean solve climbs a
+		// rung, or graduates at the top.
+		$review = self::REVIEW_SOLVED;
+		if ($outcome === PlayOutcome::SolvedAfterMistake || ($due && self::wasMissedToday($pool)))
+			self::setRung($userId, $tsumegoId, $rung, self::$LADDER[0]);
+		elseif ($rung < count(self::$LADDER) - 1)
+			self::setRung($userId, $tsumegoId, $rung + 1);
+		else
 		{
 			self::graduate($userId, $tsumegoId);
-			return;
+			$review = self::REVIEW_GRADUATED;
 		}
-		self::setRung($userId, $tsumegoId, (int) $pool['rung'] + 1);
+
+		// The review of a problem that is due is today's, and keeps it in today's list
+		// as done.
+		if ($due)
+			self::markReview($userId, $tsumegoId, $review);
 	}
 
 	/**
@@ -131,13 +173,49 @@ class MistakeTraining
 	}
 
 	/**
-	 * Whether a problem is in the pool and scheduled for review right now. A graduated
-	 * problem has no next review, and null would otherwise read as older than today.
+	 * Whether a problem is in the pool and scheduled for review right now. This is the
+	 * schedule only: what the training can open is isInTodaysTraining(), which also
+	 * holds the problems solved today.
 	 */
 	public static function isDue(int $userId, int $tsumegoId): bool
 	{
 		$row = self::getPoolRow($userId, $tsumegoId);
-		return $row !== null && $row['next_due'] !== null && $row['next_due'] <= date('Y-m-d H:i:s');
+		return $row !== null && self::isRowDue($row);
+	}
+
+	/**
+	 * Whether a pool row is scheduled for review right now. A graduated problem has
+	 * no next review, and null would otherwise read as older than today.
+	 */
+	public static function isRowDue(array $row): bool
+	{
+		return $row['next_due'] !== null && $row['next_due'] <= date('Y-m-d H:i:s');
+	}
+
+	/**
+	 * Whether a pool row was solved, or graduated, on the current training day, which
+	 * keeps it in today's list as done.
+	 */
+	public static function wasSolvedToday(array $row): bool
+	{
+		return ($row['last_review_day'] ?? null) === self::today()
+			&& in_array($row['last_review_result'] ?? null, [self::REVIEW_SOLVED, self::REVIEW_GRADUATED], true);
+	}
+
+	/**
+	 * Whether a pool row was missed on the current training day and not solved since.
+	 */
+	public static function wasMissedToday(array $row): bool
+	{
+		return ($row['last_review_day'] ?? null) === self::today() && ($row['last_review_result'] ?? null) === self::REVIEW_MISSED;
+	}
+
+	/**
+	 * Whether a problem belongs to today's training: due now, or solved today.
+	 */
+	public static function isInTodaysTraining(array $row): bool
+	{
+		return self::isRowDue($row) || self::wasSolvedToday($row);
 	}
 
 	/**
@@ -154,17 +232,35 @@ class MistakeTraining
 	}
 
 	/**
-	 * The next pool row due for review, or null if none.
+	 * The next pool row due for review, or null if none: the first due problem in
+	 * today's order, which is the order the problems came into the pool. The due date
+	 * does not order it, because an import brings many problems due at the same
+	 * moment. A problem missed earlier today waits until the untried ones are done,
+	 * so one hard problem does not hold up the day.
 	 *
 	 * @return array|null
 	 */
 	public static function nextDue(int $userId): ?array
 	{
-		$row = ClassRegistry::init('MistakeTrainingPool')->find('first', [
-			'conditions' => ['user_id' => $userId, 'next_due <=' => date('Y-m-d H:i:s')],
-			'order' => 'next_due ASC',
-		]);
-		return empty($row['MistakeTrainingPool']) ? null : $row['MistakeTrainingPool'];
+		$rows = Util::query(
+			'SELECT * FROM mistake_training_pool'
+			. ' WHERE user_id = ? AND next_due IS NOT NULL AND next_due <= ?'
+			. ' ORDER BY (last_review_day IS NOT NULL AND last_review_day = ?) ASC, id ASC LIMIT 1',
+			[$userId, date('Y-m-d H:i:s'), self::today()]
+		);
+		return $rows[0] ?? null;
+	}
+
+	/**
+	 * Today's training of a player, one row per problem: the problems due now and the
+	 * ones solved today, in the order they came into the pool. $preferredSetConnectionID
+	 * picks the set connection of a problem that is in several sets.
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
+	public static function todaysTraining(int $userId, int $preferredSetConnectionID = 0): array
+	{
+		return Util::query(self::queueSql(), [$preferredSetConnectionID, $userId, date('Y-m-d H:i:s'), self::today()]);
 	}
 
 	/**
@@ -236,7 +332,7 @@ class MistakeTraining
 	public static function poolRows(int $userId): array
 	{
 		return Util::query(
-			'SELECT p.tsumego_id, p.rung, p.next_due,'
+			'SELECT p.tsumego_id, p.rung, p.next_due, p.last_review_day, p.last_review_result,'
 			. ' (SELECT sc.id FROM set_connection sc WHERE sc.tsumego_id = p.tsumego_id ORDER BY sc.id LIMIT 1) AS set_connection_id'
 			. ' FROM mistake_training_pool p WHERE p.user_id = ?'
 			. ' ORDER BY p.next_due ASC, p.id ASC LIMIT 50',
@@ -246,15 +342,18 @@ class MistakeTraining
 
 	/**
 	 * Move every review of a player by $days days, so a three week wait becomes a
-	 * click. Only the date moves: the rung says how well the problem is known.
+	 * click. The day of the last review moves with it, so a day back also closes
+	 * today's training: what was solved today belongs to yesterday. Only the dates
+	 * move: the rung says how well the problem is known.
 	 *
 	 * @return int How many rows moved.
 	 */
 	public static function shiftReviews(int $userId, int $days): int
 	{
 		return Util::execute(
-			'UPDATE mistake_training_pool SET next_due = DATE_ADD(next_due, INTERVAL ? DAY) WHERE user_id = ?',
-			[$days, $userId]
+			'UPDATE mistake_training_pool SET next_due = DATE_ADD(next_due, INTERVAL ? DAY),'
+			. ' last_review_day = DATE_ADD(last_review_day, INTERVAL ? DAY) WHERE user_id = ?',
+			[$days, $days, $userId]
 		);
 	}
 
@@ -379,7 +478,7 @@ class MistakeTraining
 
 	/**
 	 * Remove a problem from the pool: when the tsumego is deleted or has no set
-	 * connection. Graduation goes through graduate().
+	 * connection. Graduation keeps the row, see graduate().
 	 */
 	public static function removeFromPool(int $userId, int $tsumegoId): void
 	{
@@ -387,16 +486,117 @@ class MistakeTraining
 	}
 
 	/**
-	 * Build the navigation buttons for the current training queue.
-	 * One button per tsumego, preferring the set connection the user is on,
-	 * ordered by next_due (most overdue first). Links stay on the training route,
-	 * which owns the mode.
+	 * Build the navigation buttons for today's training. One button per tsumego,
+	 * preferring the set connection the user is on, in today's order, so the row and
+	 * the numbering hold still while the day is played. The colour says what today
+	 * did and never the tsumego status: grey is still due, green is solved today.
+	 * Links stay on the training route, which owns the mode.
 	 */
 	public static function buildQueueButtons(int $currentSetConnectionID): TsumegoButtons
 	{
-		$rows = Util::query(self::queueSql(), [$currentSetConnectionID, Auth::getUserID(), date('Y-m-d H:i:s')]);
+		$rows = self::todaysTraining((int) Auth::getUserID(), $currentSetConnectionID);
+		foreach ($rows as $index => $row)
+			$rows[$index]['status'] = self::buttonStatus($row);
+
 		$buttons = TsumegoButtons::fromRows($rows, $currentSetConnectionID, 200, self::$PLAY_LINK_PREFIX);
+		$rowsByTsumego = array_column($rows, null, 'tsumego_id');
+		foreach ($buttons as $button)
+			self::describeButton($button, $rowsByTsumego[$button->tsumegoID]);
 		return $buttons;
+	}
+
+	/**
+	 * Where "Next" leads in the training: the next problem of today's list that is
+	 * still due, after the current one and around to the start, so a problem solved
+	 * today is not served again. With nothing else due it is the queue page, which
+	 * serves the current problem again while it is due, or says the day is done.
+	 */
+	public static function nextLink(TsumegoButtons $buttons, int $currentSetConnectionID): string
+	{
+		$list = (array) $buttons;
+		$currentIndex = array_find_key($list, fn(TsumegoButton $button) => $button->setConnectionID === $currentSetConnectionID);
+		$others = $currentIndex === null
+			? $list
+			: array_merge(array_slice($list, $currentIndex + 1), array_slice($list, 0, $currentIndex));
+
+		// A grey button is a problem that is still due.
+		$next = array_find($others, fn(TsumegoButton $button) => $button->status === 'N');
+		return $next ? self::$PLAY_LINK_PREFIX . $next->setConnectionID : self::$QUEUE_LINK;
+	}
+
+	/**
+	 * What the training button of a problem shows now, for the play page to redraw the
+	 * button of the open problem once its result is stored, instead of keeping what
+	 * the page was loaded with. Null when the problem is not in today's training.
+	 *
+	 * @return array{status: string, label: string, description: string, badge: string}|null
+	 */
+	public static function describeTodaysReview(int $userId, int $tsumegoId): ?array
+	{
+		$row = self::getPoolRow($userId, $tsumegoId);
+		if ($row === null || !self::isInTodaysTraining($row))
+			return null;
+
+		$button = new TsumegoButton($tsumegoId, 0, 0, self::buttonStatus($row), null, '');
+		self::describeButton($button, $row);
+		return [
+			'status' => $button->status,
+			'label' => (string) $button->label,
+			'description' => (string) $button->description,
+			'badge' => $button->renderRungBadge(),
+		];
+	}
+
+	/**
+	 * The colour of a training button: grey while the problem is due, green once
+	 * today solved it.
+	 */
+	private static function buttonStatus(array $row): string
+	{
+		return self::isRowDue($row) ? 'N' : 'S';
+	}
+
+	/**
+	 * Put the ladder on a training button: the rung badge, and a tooltip that says
+	 * what the colour means today instead of naming a tsumego status.
+	 */
+	private static function describeButton(TsumegoButton $button, array $row): void
+	{
+		$rung = (int) $row['rung'];
+		$rungText = 'Rung ' . ($rung + 1) . ' of ' . count(self::$LADDER);
+		$button->rung = $rung;
+
+		if (self::isRowDue($row))
+		{
+			if (self::wasMissedToday($row))
+			{
+				$button->label = 'Missed today, try again';
+				$button->description = $rungText . '. Solve it today and it comes back tomorrow.';
+			}
+			else
+			{
+				$button->label = 'Due today';
+				$button->description = $rungText . '. '
+					. ($rung >= count(self::$LADDER) - 1
+						? 'A clean solve graduates it.'
+						: 'A clean solve brings it back in ' . self::$LADDER[$rung + 1] . ' days.');
+			}
+			return;
+		}
+
+		// Not due, so solved today. The next review tells a graduation from a solve
+		// rather than the stored result, because a play outside the training can still
+		// move the problem afterwards: a clean solve there graduates it, a mistake puts
+		// it back on the ladder.
+		if ($row['next_due'] === null)
+		{
+			$button->graduated = true;
+			$button->label = 'Graduated today';
+			$button->description = 'Solved cleanly on every rung, it has no more reviews.';
+			return;
+		}
+		$button->label = 'Solved today';
+		$button->description = $rungText . ', next review ' . self::describeDay(date('Y-m-d', strtotime($row['next_due']))) . '.';
 	}
 
 	/**
@@ -437,6 +637,28 @@ class MistakeTraining
 	}
 
 	/**
+	 * Remember what today's review did with a problem that was due, which decides its
+	 * place in today's list. A miss also takes the problem to the bottom ($rung)
+	 * without moving its review, because it stays due until it is solved; a solve has
+	 * moved the ladder already.
+	 */
+	private static function markReview(int $userId, int $tsumegoId, string $result, ?int $rung = null): void
+	{
+		$sql = 'UPDATE mistake_training_pool SET last_review_day = ?, last_review_result = ?, modified = ?';
+		$params = [self::today(), $result, date('Y-m-d H:i:s')];
+		if ($rung !== null)
+		{
+			$sql .= ', rung = ?';
+			$params[] = $rung;
+		}
+		$sql .= ' WHERE user_id = ? AND tsumego_id = ?';
+		$params[] = $userId;
+		$params[] = $tsumegoId;
+
+		Util::execute($sql, $params);
+	}
+
+	/**
 	 * Move a pool row to a new rung and set its next review. The review waits out
 	 * the rung's interval unless $daysAhead names the wait explicitly (a retry is
 	 * due tomorrow whatever rung the problem sits on).
@@ -457,10 +679,12 @@ class MistakeTraining
 	}
 
 	/**
-	 * A clean solve at the top rung ends training: the problem stops being scheduled
-	 * and its status is left alone, it belongs to the normal modes. The row stays with
-	 * no next review, because it remembers that the training already knows the problem;
-	 * without it a mastered problem would come back as a past mistake to import.
+	 * A clean solve at the top rung ends training, wherever it was played, and so does
+	 * the toolbox's graduateNow(); every graduation goes through here. The problem
+	 * stops being scheduled and its status is left alone, it belongs to the normal
+	 * modes. The row stays with no next review, because it remembers that the training
+	 * already knows the problem; without it a mastered problem would come back as a
+	 * past mistake to import.
 	 */
 	private static function graduate(int $userId, int $tsumegoId): void
 	{
@@ -471,25 +695,31 @@ class MistakeTraining
 	}
 
 	/**
-	 * The training queue: pool rows that are due for review. Deduplicates in SQL
-	 * (one row per tsumego via ROW_NUMBER), preferring the current set connection
-	 * so navigation stays on the connection the user is on, then the set display
-	 * order every other screen uses.
+	 * Today's training: pool rows that are due now or were solved today. Deduplicates
+	 * in SQL (one row per tsumego via ROW_NUMBER), preferring the current set
+	 * connection so navigation stays on the connection the user is on, then the set
+	 * display order every other screen uses. Ordered by the pool row, which is the
+	 * order the problems came in: a list sorted by due date would reshuffle whenever
+	 * a review moves a problem, and an import brings many problems due at the same
+	 * moment. The tsumego status is not read, the training row does not show it.
 	 */
 	private static function queueSql(): string
 	{
 		$displayOrder = SetConnection::displayOrderForSetSql('st');
 
 		return "
-			SELECT tsumego_id, set_connection_id, num, status, rating, sgf
+			SELECT id, tsumego_id, set_connection_id, num, rating, sgf, rung, next_due, last_review_day, last_review_result
 			FROM (
 				SELECT
+					p.id,
 					p.tsumego_id,
 					sc.id AS set_connection_id,
 					sc.num,
-					ts.status,
 					t.rating,
+					p.rung,
 					p.next_due,
+					p.last_review_day,
+					p.last_review_result,
 					COALESCE(sgf.sgf, '') AS sgf,
 					ROW_NUMBER() OVER (
 						PARTITION BY p.tsumego_id
@@ -499,14 +729,16 @@ class MistakeTraining
 				JOIN set_connection sc ON sc.tsumego_id = p.tsumego_id
 				JOIN `set` st ON st.id = sc.set_id
 				JOIN tsumego t ON t.id = p.tsumego_id
-				LEFT JOIN tsumego_status ts ON ts.user_id = p.user_id AND ts.tsumego_id = p.tsumego_id
 				LEFT JOIN sgf ON sgf.id = (SELECT MAX(s2.id) FROM sgf s2 WHERE s2.tsumego_id = p.tsumego_id)
 				WHERE p.user_id = ?
-				  AND p.next_due <= ?
 				  AND t.deleted IS NULL
+				  AND (
+					(p.next_due IS NOT NULL AND p.next_due <= ?)
+					OR (p.last_review_day = ? AND p.last_review_result IN ('" . self::REVIEW_SOLVED . "', '" . self::REVIEW_GRADUATED . "'))
+				  )
 			) x
 			WHERE rn = 1
-			ORDER BY next_due ASC
+			ORDER BY id ASC
 		";
 	}
 }

@@ -13,12 +13,20 @@ use App\Utility\MistakeTraining;
  * @var array $upcomingDays
  * @var int $furtherDays
  * @var string|null $lastUpcomingDay
+ * @var int $solvedToday
+ * @var string|null $todaysTrainingLink
  */
 ?>
 <div class="info-box info-box--empty">
 	<h2 style="margin-bottom: var(--space-4);">Mistake Training</h2>
 	<p class="info-box__icon" aria-hidden="true">✓</p>
 	<p class="info-box__title">All caught up!</p>
+	<?php if ($solvedToday > 0): ?>
+	<p class="hint" style="margin-bottom: var(--space-3);">
+		Today you solved <?php echo $solvedToday; ?> problem<?php echo $solvedToday == 1 ? '' : 's'; ?>.
+		<a href="<?php echo htmlspecialchars((string) $todaysTrainingLink, ENT_QUOTES, 'UTF-8'); ?>">Look at today's training</a>
+	</p>
+	<?php endif; ?>
 	<?php if ($totalInTraining > 0): ?>
 	<p class="hint" style="margin-bottom: var(--space-3);">
 		<?php echo $totalInTraining; ?> problem<?php echo $totalInTraining == 1 ? '' : 's'; ?> in training.
@@ -44,7 +52,7 @@ use App\Utility\MistakeTraining;
 		<?php endif; ?>
 	</div>
 	<?php endif; ?>
-	<?php else: ?>
+	<?php elseif ($solvedToday == 0): ?>
 	<p class="hint">No problems in training yet. Solve a problem with a mistake and it comes back here for review.</p>
 	<?php endif; ?>
 	<?php if (!empty($importCandidates)): ?>

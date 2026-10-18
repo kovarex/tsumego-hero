@@ -388,6 +388,17 @@ besogo.makeToolPanel = function (container, editor) {
 			"besogo-reset-button"
 			);
 	  }
+	  else if (mode == 5)
+	  {
+		// A training try ends at the first mistake. Reset opens the problem again, so
+		// the next try is a fresh one and the server counts it as such.
+		makeButtonText(
+		  "Reset",
+		  "try the problem again",
+		  function () { window.location.href = resetButtonLink; },
+		  "besogo-reset-button"
+		);
+	  }
 	  if (mode == 1 || mode == 2 || mode == 5)
 	  {
 		makeHyperlinkText("Next", "next problem", nextButtonLink, "besogo-next-button");

@@ -3,6 +3,7 @@
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\HeroPowers;
+use App\Utility\MistakeTraining;
 use App\Utility\PlayOutcome;
 use App\Utility\Rating;
 use App\Utility\TimeMode;
@@ -40,6 +41,7 @@ use App\Utility\ViteManifest;
  * @var bool $isSemeai
  * @var string $lightDark
  * @var int $maxHealth
+ * @var bool $mistakeTrainingReplay Set by the training route: the problem was solved today already
  * @var int $multipleChoiceSquares
  * @var int $multipleChoiceTriangles
  * @var string $nextLink
@@ -115,6 +117,9 @@ use App\Utility\ViteManifest;
 	// Whether the problem is solved for the current mode. In time mode every
 	// problem is presented fresh, so this stays false until it is solved.
 	$solved = TsumegoUtil::isSolvedForCurrentMode($t);
+	// Reset opens the problem again on the route it is played from, so a retry in the
+	// training stays in the training
+	$resetLink = (Auth::isInMistakeTrainingMode() ? MistakeTraining::$PLAY_LINK_PREFIX : '/') . (int) $setConnection['SetConnection']['id'];
 	if ($nothingInRange != false)
 		echo '<div align="center" class="status-message">'.$nothingInRange.'</div>';
 	?>
@@ -226,6 +231,9 @@ use App\Utility\ViteManifest;
 	<?php if (!Auth::isInMistakeTrainingMode()): ?>
 		<?php $tsumegoXPAndRating->render(); ?>
 	<?php else: ?>
+		<?php if (!empty($mistakeTrainingReplay)): ?>
+		<p class="hint" align="center">Already solved today. This try does not count.</p>
+		<?php endif; ?>
 		<div align="center"><div id="status" align="center"></div></div>
 	<?php endif; ?>
 	<div align="center">
@@ -238,7 +246,7 @@ use App\Utility\ViteManifest;
 	<?php if(!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0 || ($tv!=null && $tv['TsumegoVariant']['type']=='multiple_choice')){ ?>
 	<div align="center">
 	<br>
-		<a href="/<?php echo $setConnection['SetConnection']['id']; ?>" title="reset problem" id="besogo-next-button">Reset</a>
+		<a href="<?php echo $resetLink; ?>" title="reset problem" id="besogo-next-button">Reset</a>
 		<br><br>
 	</div>
 	<?php }else if($tv!=null && $tv['TsumegoVariant']['type'] == 'score_estimating'){ ?>
@@ -251,7 +259,7 @@ use App\Utility\ViteManifest;
 			<?php } ?>
 			<a id="submitScoreEstimatingWhiteWins" href="#"><?php echo $swapColors ? 'Black wins' : 'White wins'; ?></a>
 		<?php }else{ ?>
-			<a href="/<?php echo $setConnection['SetConnection']['id']; ?>" title="reset problem" id="besogo-next-button">Reset</a>
+			<a href="<?php echo $resetLink; ?>" title="reset problem" id="besogo-next-button">Reset</a>
 			<input value="0" placeholder="Score" type="text" id="ScoreEstimatingSE">
 			<a id="submitScoreEstimatingSE" href="#">Submit</a>
 		<?php } ?>
@@ -657,6 +665,8 @@ use App\Utility\ViteManifest;
 	var userXP = <?php echo Auth::getWithDefault('xp', 0); ?>;
 	var previousButtonLink = "<?php echo $previousLink; ?>";
 	var nextButtonLink = "<?php echo $nextLink; ?>";
+	// A training try ends at the first mistake, Reset opens the problem again for the next one
+	var resetButtonLink = "<?php echo $resetLink; ?>";
 	var noSkipNextButtonLink = "<?php echo $noSkipNextLink; ?>";
 	var timeModeTimer = (mode == 3 ? new TimeModeTimer(<?php echo $timeMode->secondsToSolve; ?>) : null);
 	var setID = <?php echo $set['Set']['id'] ?>;
@@ -699,6 +709,24 @@ use App\Utility\ViteManifest;
 		if (!current)
 			return;
 		current.parentElement.parentElement.className = 'problem-nav__item problem-nav__item--' + status + ' problem-nav__item--current';
+	}
+
+	// The mistake training button of the open problem as the server stored its result:
+	// the colour, the rung badge and the tooltip that explains them
+	function updateMistakeTrainingButton(button)
+	{
+		let current = document.getElementById("currentNavigationButton");
+		if (!current)
+			return;
+		updateCurrentNavigationButton(button.status);
+		let link = current.parentElement;
+		let badge = link.querySelector(".problem-nav__rung");
+		if (badge)
+			badge.outerHTML = button.badge;
+		let label = link.querySelector(".tooltip-label");
+		label.className = "tooltip-label status" + button.status;
+		label.textContent = button.label;
+		link.querySelector(".tooltip-desc").textContent = button.description;
 	}
 
 	<?php
@@ -1562,6 +1590,9 @@ use App\Utility\ViteManifest;
 			if (result.achievement_updates && result.achievement_updates.length
 				&& typeof showAchievementPopup === 'function')
 					result.achievement_updates.forEach(showAchievementPopup);
+			// The training row says what today did with the problem, which this result changed
+			if (result.mistake_training_button)
+				updateMistakeTrainingButton(result.mistake_training_button);
 		}).catch(err => {
 			console.error('submitResult failed:', err);
 		});
@@ -1639,7 +1670,11 @@ use App\Utility\ViteManifest;
 				}
 				if (mode==<?php echo Constants::$MISTAKE_TRAINING_MODE; ?>)
 				{
+					// The board locks, but the problem stays in today's training until it is solved
 					toggleBoardLock(true);
+					document.getElementById("status").innerHTML = <?php echo json_encode('<h2>Incorrect!</h2>'
+						. (empty($mistakeTrainingReplay) ? 'It stays in today\'s training until you solve it. ' : '')
+						. 'Press Reset to try again.'); ?>;
 				}
 				noLastMark = true;
 				if (!noXP)

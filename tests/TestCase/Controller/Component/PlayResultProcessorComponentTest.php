@@ -1038,13 +1038,144 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 		$beforeSolved = (int) Auth::getUser()['solved'];
 
+		// Six reviews, each on its own day: a second solve on the day of a review is a
+		// replay that counts for nothing.
 		for ($i = 0; $i < 6; $i++)
+		{
+			MistakeTraining::makeDueNow($context->user['id'], (int) $context->tsumegos[0]['id']);
 			$this->solve($context);
+		}
 
 		$this->assertSame(0, MistakeTraining::totalInTraining($context->user['id']),
 			'Graduation takes the problem out of the training');
 		$this->assertSame('V', $this->statusOf($context), 'Graduation should leave the status untouched');
 		$this->assertSame($beforeSolved, (int) Auth::getUser()['solved'], 'Graduation should not bump the solved counter');
+	}
+
+	/**
+	 * The board locks on a training mistake, but the problem is not gone for the day:
+	 * it stays due, grey in the row, until a later try solves it.
+	 */
+	public function testATrainingMistakeKeepsTheProblemDueUntilItIsSolved(): void
+	{
+		$context = new ContextPreparator([
+			'tsumego' => [
+				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day')), 'mistake_training_rung' => 3],
+			],
+		]);
+		$userId = $context->user['id'];
+		$tsumegoId = (int) $context->tsumegos[0]['id'];
+		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+
+		$this->failResult($context);
+
+		$this->assertTrue(MistakeTraining::isDue($userId, $tsumegoId), 'A mistake keeps the problem in today\'s training');
+		$this->assertSame(0, (int) MistakeTraining::getPoolRow($userId, $tsumegoId)['rung']);
+
+		$this->solve($context);
+
+		$row = MistakeTraining::getPoolRow($userId, $tsumegoId);
+		$this->assertFalse(MistakeTraining::isRowDue($row), 'Solving it ends the review for today');
+		$this->assertSame(0, (int) $row['rung'], 'A solve after a mistake of the same day earns no rung');
+		$this->assertSame(
+			date('Y-m-d', strtotime(MistakeTraining::today() . ' +1 day')),
+			date('Y-m-d', strtotime($row['next_due'])),
+			'And the problem comes back tomorrow');
+	}
+
+	/**
+	 * The play page is not reloaded after a result, so the result tells it what the
+	 * button of the problem shows now: a mistake takes the rung badge to the bottom
+	 * and keeps the button grey, the solve that follows turns it green.
+	 */
+	public function testATrainingResultSaysWhatTheButtonOfTheProblemShowsNow(): void
+	{
+		$context = new ContextPreparator([
+			'tsumego' => [
+				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day')), 'mistake_training_rung' => 3],
+			],
+		]);
+		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+
+		$button = $this->failResult($context)['mistake_training_button'];
+		$this->assertSame('N', $button['status'], 'A miss stays grey until it is solved');
+		$this->assertSame('Missed today, try again', $button['label']);
+		$this->assertStringContainsString('problem-nav__rung--0', $button['badge'], 'The mistake took the problem to the bottom rung');
+
+		$button = $this->solve($context)['mistake_training_button'];
+		$this->assertSame('S', $button['status']);
+		$this->assertSame('Solved today', $button['label']);
+		$this->assertStringContainsString('next review tomorrow', $button['description']);
+		$this->assertStringContainsString('problem-nav__rung--0', $button['badge'], 'The retry earned no rung');
+	}
+
+	public function testAResultOutsideTheTrainingSaysNothingAboutItsButtons(): void
+	{
+		$context = new ContextPreparator([
+			'tsumego' => [
+				'status' => ['name' => 'S', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
+			],
+		]);
+
+		$this->assertArrayNotHasKey('mistake_training_button', $this->failResult($context),
+			'The buttons of the level mode are not the training row');
+	}
+
+	/**
+	 * A problem solved today stays in the training row and can be opened from it, but
+	 * whatever happens on that replay must not touch the review the day already did.
+	 */
+	public function testATrainingReplayOfAProblemSolvedTodayCountsForNothing(): void
+	{
+		$context = new ContextPreparator([
+			'tsumego' => [
+				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day')), 'mistake_training_rung' => 1],
+			],
+		]);
+		$userId = $context->user['id'];
+		$tsumegoId = (int) $context->tsumegos[0]['id'];
+		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+
+		$this->solve($context);
+		$reviewed = MistakeTraining::getPoolRow($userId, $tsumegoId);
+		$this->assertSame(2, (int) $reviewed['rung']);
+
+		$this->failResult($context);
+		$this->solve($context);
+
+		$row = MistakeTraining::getPoolRow($userId, $tsumegoId);
+		$this->assertSame(2, (int) $row['rung'], 'A replay neither takes the problem down nor up');
+		$this->assertSame($reviewed['next_due'], $row['next_due']);
+		$this->assertSame(MistakeTraining::REVIEW_SOLVED, $row['last_review_result']);
+	}
+
+	/**
+	 * A problem that is due is reviewed wherever it is played, so a mistake in the
+	 * level mode keeps it in today's training too.
+	 */
+	public function testALevelMistakeOnADueProblemKeepsItDueToday(): void
+	{
+		$context = new ContextPreparator([
+			'tsumego' => [
+				'status' => ['name' => 'S', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day')), 'mistake_training_rung' => 2],
+			],
+		]);
+		$userId = $context->user['id'];
+		$tsumegoId = (int) $context->tsumegos[0]['id'];
+
+		$this->failResult($context);
+
+		$row = MistakeTraining::getPoolRow($userId, $tsumegoId);
+		$this->assertSame(0, (int) $row['rung']);
+		$this->assertTrue(MistakeTraining::isRowDue($row), 'The problem waits in today\'s training until it is solved');
+		$this->assertSame(MistakeTraining::REVIEW_MISSED, $row['last_review_result']);
+
+		$this->solveAfterMistake($context);
+
+		$row = MistakeTraining::getPoolRow($userId, $tsumegoId);
+		$this->assertFalse(MistakeTraining::isRowDue($row), 'The solve of the same play ends the review for today');
+		$this->assertSame(0, (int) $row['rung']);
+		$this->assertSame(MistakeTraining::REVIEW_SOLVED, $row['last_review_result']);
 	}
 
 	public function testPoolProblemStaysRegardlessOfStatus(): void

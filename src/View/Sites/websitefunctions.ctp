@@ -180,22 +180,27 @@
 			A problem goes to the mistake training when you solve it but had made a mistake first.
 			<br><br>
 			Every clean solve pushes the next review further away: a day, three days, a week, two weeks, a month, two months.
-			Six clean solves and the problem leaves the training. A mistake sends it back to the bottom and it comes back the
-			next day, however far it had got.
+			Six clean solves and the problem leaves the training. A mistake sends it back to the bottom, however far it had got,
+			and it stays in today's training until you solve it. That solve earns nothing and the problem comes back the next day.
 			<br><br>
 			The training does not give XP or rating, it does not cost hearts and it does not use hero powers. It does not change
-			the status of a problem either: a problem you solved in the level mode stays solved. You get one attempt at each
-			problem, so a mistake ends it for today.
+			the status of a problem either: a problem you solved in the level mode stays solved. A mistake locks the board, and
+			Reset gives you the next try.
 			<br><br>
 			<b>Problem page</b><br><br>
 			The number next to the mistake training entry in the play menu is the number of problems waiting today. A problem
 			is played as training only when you open it from there. Opened from a collection, it is played normally, with XP
 			and hearts.
 			<br><br>
+			The buttons under the board are today's training, and they keep their order the whole day. A grey button is still
+			waiting, a green one is solved today. The badge under the number is the rung of the problem, from a fresh mistake
+			(1d, red) to the last review before graduation (60d), and a star marks a problem that graduated today. Next skips
+			what you solved already, and a solved problem played again from the row does not count.
+			<br><br>
 			<b>All caught up</b><br><br>
 			<img src="/img/mf-mistake.png" width="100%">
 			<br><br>
-			When nothing is due, the page shows when the problems in the training come back.
+			When nothing is due, the page shows what you solved today and when the problems in the training come back.
 			<br><br>
 			<b>Past mistakes</b><br><br>
 			Problems you solved with a mistake before the training existed did not enter it by themselves. Whenever nothing is

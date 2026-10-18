@@ -404,7 +404,7 @@ class ContextPreparator
 	private function prepareTsumegoStatus($tsumegoStatus, $tsumego): void
 	{
 		$statusValue = $tsumegoStatus ? (is_string($tsumegoStatus) ? $tsumegoStatus : $tsumegoStatus['name']) : null;
-		$updated = $tsumegoStatus ? (is_string($tsumegoStatus) ? null : $tsumegoStatus['updated']) : null;
+		$updated = $tsumegoStatus ? (is_string($tsumegoStatus) ? null : ($tsumegoStatus['updated'] ?? null)) : null;
 		$mistakeTrainingDue = $tsumegoStatus ? (is_string($tsumegoStatus) ? null : ($tsumegoStatus['mistake_training_due'] ?? null)) : null;
 		$userID = $tsumegoStatus
 			? (is_string($tsumegoStatus)
@@ -441,20 +441,24 @@ class ContextPreparator
 		}
 
 		// A status fixture with mistake_training_due now marks the problem as in
-		// the training pool (the due column moved to mistake_training_pool).
+		// the training pool (the due column moved to mistake_training_pool), on the
+		// rung (mistake_training_rung) and with the last review
+		// (mistake_training_review_day, mistake_training_review_result) it names.
 		if ($mistakeTrainingDue !== null)
-			$this->prepareMistakeTrainingPoolEntry($userID, (int) $tsumego['id'], $mistakeTrainingDue);
+			$this->prepareMistakeTrainingPoolEntry($userID, (int) $tsumego['id'], $mistakeTrainingDue, $tsumegoStatus);
 	}
 
-	private function prepareMistakeTrainingPoolEntry(int $userId, int $tsumegoId, $mistakeTrainingDue): void
+	private function prepareMistakeTrainingPoolEntry(int $userId, int $tsumegoId, $mistakeTrainingDue, array $tsumegoStatus): void
 	{
 		$pool = ClassRegistry::init('MistakeTrainingPool');
 		$existing = $pool->find('first', ['conditions' => ['user_id' => $userId, 'tsumego_id' => $tsumegoId]]);
 		$data = [
 			'user_id' => $userId,
 			'tsumego_id' => $tsumegoId,
-			'rung' => 0,
+			'rung' => $tsumegoStatus['mistake_training_rung'] ?? 0,
 			'next_due' => $mistakeTrainingDue,
+			'last_review_day' => $tsumegoStatus['mistake_training_review_day'] ?? null,
+			'last_review_result' => $tsumegoStatus['mistake_training_review_result'] ?? null,
 		];
 		if ($existing)
 		{

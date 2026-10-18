@@ -433,4 +433,306 @@ class MistakeTrainingTest extends TestCaseWithAuth
 		$this->assertSame($due, $this->poolRow($userId, $tsumegoId)['next_due'],
 			'An import never moves a review that is already scheduled');
 	}
+
+	// ==================== Today's training ====================
+
+	/**
+	 * Problems in the training, in the order they came in. Each entry is added to the
+	 * status fixture of its problem; by default a problem is due, every one at the same
+	 * moment the way an import brings them, on the bottom rung and untried today.
+	 */
+	private function prepareTraining(array ...$problems): ContextPreparator
+	{
+		$due = date('Y-m-d H:i:s', strtotime('-1 hour'));
+		$tsumegos = [];
+		foreach ($problems as $index => $problem)
+			$tsumegos[] = ['set_order' => $index + 1, 'status' => $problem + ['name' => 'V', 'mistake_training_due' => $due]];
+		return new ContextPreparator(['user' => ['name' => 'testuser'], 'tsumegos' => $tsumegos]);
+	}
+
+	/**
+	 * A problem solved in the training today, waiting for its next review.
+	 */
+	private static function solvedToday(int $rung = 1): array
+	{
+		return [
+			'mistake_training_due' => date('Y-m-d H:i:s', strtotime('+3 days')),
+			'mistake_training_rung' => $rung,
+			'mistake_training_review_day' => MistakeTraining::today(),
+			'mistake_training_review_result' => MistakeTraining::REVIEW_SOLVED,
+		];
+	}
+
+	private function tsumegoId(ContextPreparator $context, int $index): int
+	{
+		return (int) $context->tsumegos[$index]['id'];
+	}
+
+	private function setConnectionId(ContextPreparator $context, int $index): int
+	{
+		return (int) $context->tsumegos[$index]['set-connections'][0]['id'];
+	}
+
+	/**
+	 * A result of a play in the training, the way the play page reports it.
+	 */
+	private function playInTraining(ContextPreparator $context, int $index, PlayOutcome $outcome): void
+	{
+		MistakeTraining::recordResult($context->user['id'], $this->tsumegoId($context, $index), $outcome, null, true);
+	}
+
+	/**
+	 * The training row the play page shows with the problem at $currentIndex open,
+	 * keyed by tsumego.
+	 *
+	 * @return array<int, \App\Utility\TsumegoButton>
+	 */
+	private function trainingButtons(ContextPreparator $context, int $currentIndex = 0): array
+	{
+		$buttons = MistakeTraining::buildQueueButtons($this->setConnectionId($context, $currentIndex));
+		return array_column((array) $buttons, null, 'tsumegoID');
+	}
+
+	private function trainingRow(ContextPreparator $context, int $index): array
+	{
+		return $this->poolRow($context->user['id'], $this->tsumegoId($context, $index));
+	}
+
+	/**
+	 * An import brings many problems due at the same moment, newest mistake first, so
+	 * neither the due date nor the order of the problems in their set can order the
+	 * day: problems that tie on the date would come out in a different order on every
+	 * query, and the training would open at 15/20. The problems come in here in an
+	 * order that is neither theirs nor its reverse.
+	 */
+	public function testTodaysTrainingKeepsTheOrderTheProblemsCameIn(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumegos' => [['set_order' => 1], ['set_order' => 2], ['set_order' => 3], ['set_order' => 4]],
+		]);
+		$userId = $context->user['id'];
+		$due = date('Y-m-d H:i:s', strtotime('-1 hour'));
+		foreach ([2, 0, 3] as $index)
+			MistakeTraining::addProblem($userId, $this->tsumegoId($context, $index), $due);
+		$order = fn(int ...$indexes) => array_map(fn($index) => $this->tsumegoId($context, $index), $indexes);
+		$buttonOrder = fn($buttons) => array_map(fn($button) => $button->tsumegoID, (array) $buttons);
+
+		$this->assertSame($this->tsumegoId($context, 2), (int) MistakeTraining::nextDue($userId)['tsumego_id'],
+			'The training starts with the first problem that came in');
+		$buttons = MistakeTraining::buildQueueButtons($this->setConnectionId($context, 2));
+		$this->assertSame($order(2, 0, 3), $buttonOrder($buttons));
+		$this->assertSame(1, $buttons->currentOrder, 'The problem the training starts with is 1/3');
+		$this->assertSame(3, $buttons->highestTsumegoOrder);
+
+		MistakeTraining::addProblem($userId, $this->tsumegoId($context, 1), $due);
+
+		$buttons = MistakeTraining::buildQueueButtons($this->setConnectionId($context, 0));
+		$this->assertSame($order(2, 0, 3, 1), $buttonOrder($buttons), 'A problem that comes in during the day goes to the end');
+		$this->assertSame(2, $buttons->currentOrder, 'And the others keep their numbers');
+	}
+
+	public function testTodaysTrainingIsNotOrderedByTheDueDate(): void
+	{
+		$context = $this->prepareTraining([], ['mistake_training_due' => date('Y-m-d H:i:s', strtotime('-2 days'))]);
+
+		$buttons = MistakeTraining::buildQueueButtons($this->setConnectionId($context, 0));
+
+		$this->assertSame($this->tsumegoId($context, 0), $buttons[0]->tsumegoID,
+			'A review moving its date must not reshuffle the row');
+		$this->assertSame($this->tsumegoId($context, 0), (int) MistakeTraining::nextDue($context->user['id'])['tsumego_id']);
+	}
+
+	public function testAMistakeKeepsTheProblemDueToday(): void
+	{
+		$context = $this->prepareTraining(['mistake_training_rung' => 2]);
+
+		$this->playInTraining($context, 0, PlayOutcome::Failed);
+
+		$row = $this->trainingRow($context, 0);
+		$this->assertSame(0, (int) $row['rung'], 'A mistake still takes back everything the problem had climbed');
+		$this->assertTrue(MistakeTraining::isRowDue($row), 'A mistake must not make the problem disappear from today');
+		$this->assertSame(MistakeTraining::today(), $row['last_review_day']);
+		$this->assertSame(MistakeTraining::REVIEW_MISSED, $row['last_review_result']);
+
+		$button = $this->trainingButtons($context)[$this->tsumegoId($context, 0)];
+		$this->assertSame('N', $button->status, 'A problem missed today is grey until it is solved');
+		$this->assertSame(0, $button->rung);
+		$this->assertSame('Missed today, try again', $button->label);
+		$this->assertSame('Rung 1 of 6. Solve it today and it comes back tomorrow.', $button->description,
+			'The tooltip of a miss must not read as if it was solved');
+	}
+
+	public function testASecondMistakeTheSameDayKeepsItDue(): void
+	{
+		$context = $this->prepareTraining([]);
+
+		$this->playInTraining($context, 0, PlayOutcome::Failed);
+		$this->playInTraining($context, 0, PlayOutcome::Failed);
+
+		$row = $this->trainingRow($context, 0);
+		$this->assertSame(0, (int) $row['rung']);
+		$this->assertTrue(MistakeTraining::isRowDue($row), 'Every try that fails keeps the problem in today\'s training');
+		$this->assertSame(MistakeTraining::REVIEW_MISSED, $row['last_review_result']);
+	}
+
+	public function testASolveAfterAMistakeTheSameDayEarnsNothing(): void
+	{
+		$context = $this->prepareTraining(['mistake_training_rung' => 2]);
+
+		$this->playInTraining($context, 0, PlayOutcome::Failed);
+		$this->playInTraining($context, 0, PlayOutcome::SolvedClean);
+
+		$row = $this->trainingRow($context, 0);
+		$this->assertSame(0, (int) $row['rung'], 'A clean try after a mistake of the same day is a retry, it climbs nothing');
+		$this->assertDaysAhead(1, $row, 'A problem solved on a retry comes back tomorrow');
+		$this->assertSame(MistakeTraining::REVIEW_SOLVED, $row['last_review_result']);
+
+		$button = $this->trainingButtons($context)[$this->tsumegoId($context, 0)];
+		$this->assertSame('S', $button->status, 'Solved today is green');
+		$this->assertSame('Solved today', $button->label);
+	}
+
+	public function testAMistakeAtTheTopRungThenASolveTheSameDayComesBackTomorrow(): void
+	{
+		$context = $this->prepareTraining(['mistake_training_rung' => 5]);
+
+		$this->playInTraining($context, 0, PlayOutcome::Failed);
+		$this->playInTraining($context, 0, PlayOutcome::SolvedClean);
+
+		$row = $this->trainingRow($context, 0);
+		$this->assertSame(0, (int) $row['rung'], 'The retry does not graduate what the mistake took to the bottom');
+		$this->assertDaysAhead(1, $row, 'And it is reviewed tomorrow');
+		$this->assertSame(1, MistakeTraining::totalInTraining($context->user['id']));
+	}
+
+	public function testACleanReviewClimbsAndIsDoneForTheDay(): void
+	{
+		$context = $this->prepareTraining(['mistake_training_rung' => 1]);
+
+		$this->playInTraining($context, 0, PlayOutcome::SolvedClean);
+
+		$row = $this->trainingRow($context, 0);
+		$this->assertSame(2, (int) $row['rung']);
+		$this->assertDaysAhead(7, $row, 'A clean solve at rung 2 waits 7 days');
+		$this->assertSame(MistakeTraining::today(), $row['last_review_day']);
+		$this->assertSame(MistakeTraining::REVIEW_SOLVED, $row['last_review_result']);
+		$this->assertCount(1, MistakeTraining::todaysTraining($context->user['id']),
+			'A problem solved today stays in today\'s training, so the row holds still');
+		$this->assertNull(MistakeTraining::nextDue($context->user['id']), 'But it is not served again');
+	}
+
+	public function testUntriedProblemsAreServedBeforeMissedOnes(): void
+	{
+		$context = $this->prepareTraining([], [], []);
+		$userId = $context->user['id'];
+
+		$this->playInTraining($context, 0, PlayOutcome::Failed);
+		$this->assertSame($this->tsumegoId($context, 1), (int) MistakeTraining::nextDue($userId)['tsumego_id'],
+			'A problem missed today waits until the untried ones are done');
+
+		$this->playInTraining($context, 1, PlayOutcome::Failed);
+		$this->playInTraining($context, 2, PlayOutcome::Failed);
+		$this->assertSame($this->tsumegoId($context, 0), (int) MistakeTraining::nextDue($userId)['tsumego_id'],
+			'With only misses left, the first of them comes back');
+	}
+
+	public function testTheRowShowsWhatTodayDidAndNotTheStatus(): void
+	{
+		$context = $this->prepareTraining(
+			['name' => 'S'],
+			['name' => 'F'],
+			['name' => 'C'],
+			['name' => 'F'] + self::solvedToday(),
+		);
+
+		$buttons = $this->trainingButtons($context);
+
+		foreach ([0, 1, 2] as $index)
+			$this->assertSame('N', $buttons[$this->tsumegoId($context, $index)]->status,
+				'A problem not solved today is grey whatever its status is');
+		$this->assertSame('S', $buttons[$this->tsumegoId($context, 3)]->status,
+			'A problem solved today is green whatever its status is');
+		$this->assertSame('Due today', $buttons[$this->tsumegoId($context, 0)]->label,
+			'The tooltip says what the colour means, not the name of the status');
+	}
+
+	public function testAReplayOfAProblemSolvedTodayCountsForNothing(): void
+	{
+		$context = $this->prepareTraining(['mistake_training_rung' => 1]);
+		$this->playInTraining($context, 0, PlayOutcome::SolvedClean);
+		$solved = $this->trainingRow($context, 0);
+
+		$this->playInTraining($context, 0, PlayOutcome::Failed);
+		$this->playInTraining($context, 0, PlayOutcome::SolvedClean);
+
+		$row = $this->trainingRow($context, 0);
+		$this->assertSame((int) $solved['rung'], (int) $row['rung'], 'A replay neither climbs nor falls');
+		$this->assertSame($solved['next_due'], $row['next_due'], 'A replay does not move the review');
+		$this->assertSame(MistakeTraining::REVIEW_SOLVED, $row['last_review_result'], 'A replay leaves the day solved');
+	}
+
+	public function testNextSkipsWhatTodaySolvedAndWrapsAround(): void
+	{
+		$context = $this->prepareTraining([], self::solvedToday(), [], []);
+		$link = fn(int $currentIndex) => MistakeTraining::nextLink(
+			MistakeTraining::buildQueueButtons($this->setConnectionId($context, $currentIndex)),
+			$this->setConnectionId($context, $currentIndex));
+
+		$this->assertSame(MistakeTraining::$PLAY_LINK_PREFIX . $this->setConnectionId($context, 2), $link(0),
+			'Next skips a problem solved today');
+		$this->assertSame(MistakeTraining::$PLAY_LINK_PREFIX . $this->setConnectionId($context, 3), $link(2));
+		$this->assertSame(MistakeTraining::$PLAY_LINK_PREFIX . $this->setConnectionId($context, 0), $link(3),
+			'After the last problem, Next goes around to the first one still due');
+	}
+
+	public function testNextGoesToTheQueueWhenNothingElseIsDue(): void
+	{
+		$context = $this->prepareTraining([], self::solvedToday());
+		$scId = $this->setConnectionId($context, 0);
+
+		$this->assertSame(MistakeTraining::$QUEUE_LINK, MistakeTraining::nextLink(MistakeTraining::buildQueueButtons($scId), $scId),
+			'The current problem is never its own next one, the queue decides what is left');
+	}
+
+	public function testAProblemGraduatedTodayStaysInTheRowAsSolved(): void
+	{
+		$context = $this->prepareTraining(['mistake_training_rung' => 5]);
+
+		$this->playInTraining($context, 0, PlayOutcome::SolvedClean);
+
+		$row = $this->trainingRow($context, 0);
+		$this->assertNull($row['next_due'], 'A clean solve at the top rung graduates');
+		$this->assertSame(MistakeTraining::REVIEW_GRADUATED, $row['last_review_result']);
+		$this->assertSame(0, MistakeTraining::totalInTraining($context->user['id']));
+
+		$button = $this->trainingButtons($context)[$this->tsumegoId($context, 0)];
+		$this->assertSame('S', $button->status, 'A graduation is today\'s solve, so it is green');
+		$this->assertTrue($button->graduated);
+		$this->assertSame('Graduated today', $button->label);
+	}
+
+	public function testANewDayKeepsOnlyTheMissesThatWereNotSolved(): void
+	{
+		$context = $this->prepareTraining([], []);
+		$userId = $context->user['id'];
+		$this->playInTraining($context, 0, PlayOutcome::SolvedClean);
+		$this->playInTraining($context, 1, PlayOutcome::Failed);
+
+		// The toolbox shift moves the reviews and their day together, which is the day
+		// boundary passing.
+		MistakeTraining::shiftReviews($userId, -1);
+
+		$training = MistakeTraining::todaysTraining($userId);
+		$this->assertSame([$this->tsumegoId($context, 1)], array_map(fn($row) => (int) $row['tsumego_id'], $training),
+			'Yesterday\'s solves leave the list, a miss that was never solved is still due');
+
+		$button = $this->trainingButtons($context, 1)[$this->tsumegoId($context, 1)];
+		$this->assertSame('N', $button->status);
+		$this->assertSame('Due today', $button->label, 'Yesterday\'s miss is a review like any other today');
+
+		$this->playInTraining($context, 1, PlayOutcome::SolvedClean);
+		$this->assertSame(1, (int) $this->trainingRow($context, 1)['rung'],
+			'A clean solve on a new day climbs, the retry was yesterday');
+	}
 }

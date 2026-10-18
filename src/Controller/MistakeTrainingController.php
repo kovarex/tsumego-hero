@@ -11,7 +11,9 @@ use App\Utility\PlayOutcome;
 class MistakeTrainingController extends AppController
 {
 	/**
-	 * Show a training problem: the one the link names, or the next due one.
+	 * Show a training problem: the one the link names, or the next due one, which is
+	 * the first of today's list not tried yet, and once only misses are left, the
+	 * first of those.
 	 *
 	 * This route owns the training mode. Every queue link comes back here, so a
 	 * plain problem URL always means normal play, just like it does for the other
@@ -51,6 +53,12 @@ class MistakeTrainingController extends AppController
 				$this->set('upcomingDays', $upcoming['days']);
 				$this->set('furtherDays', $upcoming['furtherDays']);
 				$this->set('lastUpcomingDay', $upcoming['lastDay']);
+				// Nothing is due, so whatever today's training still lists was solved today.
+				$todaysTraining = MistakeTraining::todaysTraining($userId);
+				$this->set('solvedToday', count($todaysTraining));
+				$this->set('todaysTrainingLink', $todaysTraining
+					? MistakeTraining::$PLAY_LINK_PREFIX . $todaysTraining[0]['set_connection_id']
+					: null);
 				$this->render('/Tsumegos/mistake_training');
 				return null;
 			}
@@ -259,17 +267,26 @@ class MistakeTrainingController extends AppController
 		if (!$row || $row['next_due'] === null)
 			return $prefix . ' graduated and left the training.';
 
+		// A mistake on a problem that is due does not move its review: it waits in
+		// today's training until it is solved.
+		if (MistakeTraining::isRowDue($row))
+			return $prefix . ' is on rung ' . (int) $row['rung'] . ' and stays due today until it is solved.';
+
 		return $prefix . ' is on rung ' . (int) $row['rung'] . ', next review ' . $row['next_due'] . '.';
 	}
 
 	/**
-	 * Render the shared play page for a problem that is due for review.
+	 * Render the shared play page for a problem of today's training. A problem that
+	 * is due is its review, also when it was missed earlier today. One solved today
+	 * stays in the row, so it can be opened again, but only as a replay that counts
+	 * for nothing, and the page says so.
 	 */
 	private function playSetConnection(int $setConnectionID): mixed
 	{
 		$setConnection = ClassRegistry::init('SetConnection')->findById($setConnectionID);
 		$tsumegoId = $setConnection ? (int) $setConnection['SetConnection']['tsumego_id'] : 0;
-		if (!$tsumegoId || !MistakeTraining::isDue((int) Auth::getUserID(), $tsumegoId))
+		$pool = $tsumegoId ? MistakeTraining::getPoolRow((int) Auth::getUserID(), $tsumegoId) : null;
+		if (!$pool || !MistakeTraining::isInTodaysTraining($pool))
 			return $this->redirect(MistakeTraining::$QUEUE_LINK);
 
 		$play = new Play(function ($name, $value) {
@@ -278,6 +295,7 @@ class MistakeTrainingController extends AppController
 		// Same problem, same address for search engines, whichever route got here.
 		$this->set('canonicalPath', '/' . $setConnectionID);
 		$this->set('_page', 'mistake-training');
+		$this->set('mistakeTrainingReplay', !MistakeTraining::isRowDue($pool));
 		$play->play($setConnectionID, $this->request, $this->request->data);
 		$this->render('/Tsumegos/play');
 		return null;

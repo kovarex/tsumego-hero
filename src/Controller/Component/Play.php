@@ -405,7 +405,12 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		if (Auth::isInLevelMode() && isset($tsumegoButtons))
 			$tsumegoButtons->exportCurrentAndPreviousLink($this->setFunction, $tsumegoFilters, $setConnectionID, $set);
 		elseif (Auth::isInMistakeTrainingMode() && isset($mistakeTrainingButtons))
-			$mistakeTrainingButtons->exportCurrentAndPreviousLink($this->setFunction, $tsumegoFilters, $setConnectionID, $set, '/mistake-training');
+		{
+			$mistakeTrainingButtons->exportCurrentAndPreviousLink($this->setFunction, $tsumegoFilters, $setConnectionID, $set, MistakeTraining::$QUEUE_LINK);
+			// The row keeps what today already solved, so "Next" skips it instead of
+			// serving the neighbour.
+			($this->setFunction)('nextLink', MistakeTraining::nextLink($mistakeTrainingButtons, $setConnectionID));
+		}
 
 		($this->setFunction)('isAllowedToContribute', $isAllowedToContribute);
 		($this->setFunction)('canAddMoreTags', $canAddMoreTags);

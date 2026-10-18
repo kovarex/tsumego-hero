@@ -5,6 +5,7 @@ use App\Utility\Constants;
 use App\Utility\Feature;
 use App\Utility\FeatureKey;
 use App\Utility\MistakeTraining;
+use App\Utility\PlayOutcome;
 use Facebook\WebDriver\WebDriverBy;
 
 class MistakeTrainingControllerTest extends TestCaseWithAuth
@@ -138,6 +139,160 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 			'A problem that is scheduled for later is not part of today\'s queue');
 	}
 
+	/**
+	 * Problems in the training, in the order they came in. Each entry is added to the
+	 * status fixture of its problem; by default a problem is due, every one at the same
+	 * moment the way an import brings them, and untried today.
+	 */
+	private function prepareTraining(array ...$problems): ContextPreparator
+	{
+		$due = date('Y-m-d H:i:s', strtotime('-1 hour'));
+		$tsumegos = [];
+		foreach ($problems as $index => $problem)
+			$tsumegos[] = ['set_order' => $index + 1, 'status' => $problem + ['name' => 'V', 'mistake_training_due' => $due]];
+		return new ContextPreparator(['user' => ['name' => 'testuser'], 'tsumegos' => $tsumegos]);
+	}
+
+	private static function reviewedToday(string $result): array
+	{
+		return [
+			'mistake_training_due' => $result === MistakeTraining::REVIEW_MISSED
+				? date('Y-m-d H:i:s', strtotime('-1 hour'))
+				: date('Y-m-d H:i:s', strtotime('+3 days')),
+			'mistake_training_review_day' => MistakeTraining::today(),
+			'mistake_training_review_result' => $result,
+		];
+	}
+
+	private static function setConnectionId(ContextPreparator $context, int $index): int
+	{
+		return (int) $context->tsumegos[$index]['set-connections'][0]['id'];
+	}
+
+	/**
+	 * Twenty problems imported at once are due at the same moment, and they come in
+	 * newest mistake first, not in the order of their set. The training must still
+	 * open at the first of them, not wherever an unordered query lands.
+	 */
+	public function testEnteringTheTrainingOpensTheFirstProblemOfTheDay()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumegos' => [['set_order' => 1], ['set_order' => 2], ['set_order' => 3]],
+		]);
+		$due = date('Y-m-d H:i:s', strtotime('-1 hour'));
+		foreach ([1, 2, 0] as $index)
+			MistakeTraining::addProblem($context->user['id'], (int) $context->tsumegos[$index]['id'], $due);
+
+		$this->testAction('/mistake-training', ['return' => 'contents']);
+
+		$this->assertStringContainsString('var tsumegoID = ' . $context->tsumegos[1]['id'] . ';', $this->view,
+			'The training opens the problem that came in first');
+		$this->assertStringContainsString('Mistake Training 1/3', $this->view);
+	}
+
+	public function testEnteringTheTrainingOpensTheFirstProblemNotTriedToday()
+	{
+		$this->prepareTraining(self::reviewedToday(MistakeTraining::REVIEW_SOLVED), self::reviewedToday(MistakeTraining::REVIEW_MISSED), []);
+
+		$this->testAction('/mistake-training', ['return' => 'contents']);
+
+		$this->assertStringContainsString('Mistake Training 3/3', $this->view,
+			'A problem solved today keeps its place in the row, a problem missed today waits for the untried ones');
+	}
+
+	public function testAProblemMissedTodayCanBeTriedAgain()
+	{
+		$context = $this->prepareTraining(self::reviewedToday(MistakeTraining::REVIEW_MISSED));
+
+		$this->testAction('/mistake-training/play/' . self::setConnectionId($context, 0), ['return' => 'contents']);
+
+		$this->assertStringContainsString('Mistake Training 1/1', $this->view, 'A miss stays in today\'s training');
+		$this->assertStringNotContainsString('This try does not count', $this->view, 'Trying a missed problem again is its review');
+		$this->assertStringContainsString('problem-nav__item--N', $this->view, 'It stays grey until it is solved');
+	}
+
+	public function testAProblemSolvedTodayOpensAsAReplay()
+	{
+		$context = $this->prepareTraining([], self::reviewedToday(MistakeTraining::REVIEW_SOLVED));
+
+		$this->testAction('/mistake-training/play/' . self::setConnectionId($context, 1), ['return' => 'contents']);
+
+		$this->assertStringContainsString('Mistake Training 2/2', $this->view, 'A problem solved today keeps its place in the row');
+		$this->assertStringContainsString('Already solved today. This try does not count.', $this->view);
+	}
+
+	/**
+	 * The colour of the row comes from what today did, so a problem missed and then
+	 * solved on a retry is green when the page is drawn again, whatever its status.
+	 */
+	public function testAProblemSolvedOnARetryIsGreenInTheRow()
+	{
+		$context = $this->prepareTraining(['name' => 'F', 'mistake_training_rung' => 3]);
+		$userId = (int) $context->user['id'];
+		$tsumegoId = (int) $context->tsumegos[0]['id'];
+		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::Failed, null, true);
+		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null, true);
+
+		$this->testAction('/mistake-training/play/' . self::setConnectionId($context, 0), ['return' => 'contents']);
+
+		$this->assertStringContainsString('problem-nav__item problem-nav__item--S problem-nav__item--current', $this->view);
+		$this->assertStringContainsString('<div class="problem-nav__rung problem-nav__rung--0">', $this->view,
+			'The retry earned no rung back');
+		$this->assertStringContainsString('Already solved today. This try does not count.', $this->view);
+	}
+
+	public function testTrainingRouteRedirectsForAProblemSolvedOnAnEarlierDay()
+	{
+		$context = $this->prepareTraining([
+			'mistake_training_due' => date('Y-m-d H:i:s', strtotime('+2 days')),
+			'mistake_training_review_day' => date('Y-m-d', strtotime(MistakeTraining::today() . ' -1 day')),
+			'mistake_training_review_result' => MistakeTraining::REVIEW_SOLVED,
+		]);
+
+		$this->testAction('/mistake-training/play/' . self::setConnectionId($context, 0));
+
+		$this->assertStringEndsWith('/mistake-training', $this->headers['Location'] ?? '',
+			'Yesterday\'s solve is not part of today\'s training');
+	}
+
+	public function testTheNextLinkSkipsWhatTodaySolved()
+	{
+		$context = $this->prepareTraining([], self::reviewedToday(MistakeTraining::REVIEW_SOLVED), []);
+
+		$this->testAction('/mistake-training/play/' . self::setConnectionId($context, 0), ['return' => 'contents']);
+
+		$this->assertStringContainsString(
+			'var nextButtonLink = "' . MistakeTraining::$PLAY_LINK_PREFIX . self::setConnectionId($context, 2) . '"', $this->view);
+		$this->assertStringContainsString('var previousButtonLink = "' . MistakeTraining::$QUEUE_LINK . '"', $this->view,
+			'Previous at the start of the row goes to the queue page');
+	}
+
+	public function testAllCaughtUpSaysWhatTodaySolved()
+	{
+		$context = $this->prepareTraining(self::reviewedToday(MistakeTraining::REVIEW_SOLVED), self::reviewedToday(MistakeTraining::REVIEW_SOLVED));
+
+		$this->testAction('/mistake-training', ['return' => 'contents']);
+
+		$text = preg_replace('/\s+/', ' ', $this->view);
+		$this->assertStringContainsString('All caught up', $text);
+		$this->assertStringContainsString('Today you solved 2 problems.', $text);
+		$this->assertStringContainsString('href="' . MistakeTraining::$PLAY_LINK_PREFIX . self::setConnectionId($context, 0) . '"', $text,
+			'The page offers to look at today\'s training again, from its first problem');
+	}
+
+	public function testAllCaughtUpSaysNothingAboutTodayBeforeAnythingWasSolved()
+	{
+		new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumego' => ['set_order' => 1, 'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('+2 days'))]],
+		]);
+
+		$this->testAction('/mistake-training', ['return' => 'contents']);
+
+		$this->assertStringNotContainsString('Today you solved', $this->view);
+	}
+
 	public function testPlainProblemLinkLeavesTrainingMode()
 	{
 		$context = new ContextPreparator([
@@ -182,6 +337,56 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		// the same problem is served forever.
 		$this->assertGreaterThan($rungBefore, (int) MistakeTraining::getPoolRow($context->user['id'], $tsumegoId)['rung'],
 			'Solving in training must record the result and climb the ladder.');
+	}
+
+	/**
+	 * A mistake locks the board, but the problem stays in today's training, so Reset
+	 * must open a fresh try of it. The solve that follows is the retry: it earns no
+	 * rung, and the button turns green because today is done with the problem. The
+	 * page is not reloaded after a result, so the result itself redraws the button.
+	 */
+	public function testAMistakeInTheTrainingCanBeTriedAgainWithReset()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumego' => [
+				'set_order' => 1,
+				'status' => ['name' => 'S', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day')), 'mistake_training_rung' => 3],
+			],
+		]);
+		$userId = (int) $context->user['id'];
+		$tsumegoId = (int) $context->tsumegos[0]['id'];
+
+		$browser = Browser::instance();
+		$browser->get('mistake-training');
+		$browser->playWithResult('F');
+
+		$this->assertStringContainsString('Press Reset to try again', $browser->find('#status')->getText());
+		$this->assertSame(0, (int) MistakeTraining::getPoolRow($userId, $tsumegoId)['rung'], 'A mistake goes back to the bottom');
+		$this->assertTrue(MistakeTraining::isDue($userId, $tsumegoId), 'A mistake keeps the problem due today');
+		$this->assertStringContainsString('problem-nav__rung--0',
+			$browser->find('.problem-nav__item--current .problem-nav__rung')->getAttribute('class'),
+			'The button shows the bottom rung the mistake took the problem to');
+
+		$status = $browser->find('#status');
+		$browser->clickId('besogo-reset-button');
+		$browser->waitUntilStale($status);
+		$this->assertStringEndsWith(MistakeTraining::$PLAY_LINK_PREFIX . $context->tsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL(),
+			'Reset opens the problem again on the training route');
+		$this->assertStringNotContainsString('Incorrect', $browser->find('#status')->getText(), 'Reset opens a fresh try');
+
+		$browser->playWithResult('S');
+
+		$row = MistakeTraining::getPoolRow($userId, $tsumegoId);
+		$this->assertSame(0, (int) $row['rung'], 'The solve after a mistake of the same day earns no rung');
+		$this->assertSame(MistakeTraining::REVIEW_SOLVED, $row['last_review_result']);
+		$this->assertFalse(MistakeTraining::isDue($userId, $tsumegoId), 'The problem is done for today');
+
+		// The colour the server draws, not the one the page set on the solve.
+		$browser->get(MistakeTraining::$PLAY_LINK_PREFIX . $context->tsumegos[0]['set-connections'][0]['id']);
+		$this->assertStringContainsString('problem-nav__item--S', $browser->find('.problem-nav__item--current')->getAttribute('class'),
+			'Solved today shows green');
+		$this->assertStringContainsString('Already solved today', $browser->pageText(), 'Opened again, it is only a replay');
 	}
 
 	public function testSkipsDeletedTsumegos()
@@ -473,6 +678,28 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 			date('Y-m-d', strtotime(MistakeTraining::today() . ' +1 day')),
 			date('Y-m-d', strtotime($row['next_due']))
 		);
+	}
+
+	public function testTheToolboxMistakeOnADueProblemKeepsItDue()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'admin', 'admin' => true],
+			'tsumego' => [
+				'set_order' => 1,
+				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day')), 'mistake_training_rung' => 3],
+			],
+		]);
+		$userId = $context->user['id'];
+		$tsumegoId = (int) $context->tsumegos[0]['id'];
+
+		$this->testAction(MistakeTraining::$DEBUG_LINK, [
+			'method' => 'post',
+			'data' => ['command' => 'fail', 'tsumego_id' => $tsumegoId],
+		]);
+
+		$this->assertSame(0, (int) MistakeTraining::getPoolRow($userId, $tsumegoId)['rung']);
+		$this->assertTrue(MistakeTraining::isDue($userId, $tsumegoId), 'A mistake on a due problem keeps it due today');
+		$this->assertStringContainsString('stays due today until it is solved', urldecode((string) ($this->headers['Location'] ?? '')));
 	}
 
 	public function testTheToolboxGraduatesAProblem()

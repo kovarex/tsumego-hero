@@ -14,6 +14,11 @@ use App\Utility\MistakeTraining;
  * @var string $notice
  * @var int[] $ladder
  */
+$reviewResults = [
+	MistakeTraining::REVIEW_SOLVED => 'solved',
+	MistakeTraining::REVIEW_MISSED => 'missed, still due',
+	MistakeTraining::REVIEW_GRADUATED => 'graduated',
+];
 $stats = [
 	['Flag', $flagState],
 	['In training', (string) $totalInTraining],
@@ -41,7 +46,8 @@ $stats = [
 		<?php endforeach; ?>
 	</div>
 	<p class="hint">
-		The wait until the next review at each rung. A clean solve climbs one rung, a mistake goes back to 0.
+		The wait until the next review at each rung. A clean solve climbs one rung, a mistake goes back to 0 and keeps a
+		due problem due until it is solved.
 	</p>
 	<p class="hint">
 		<a href="<?php echo MistakeTraining::$QUEUE_LINK; ?>">Back to the training</a>
@@ -113,7 +119,7 @@ $stats = [
 	<p class="hint">Nothing in training.</p>
 	<?php else: ?>
 	<table>
-		<tr><th>Problem</th><th>Rung</th><th>Next review</th><th>Simulate</th></tr>
+		<tr><th>Problem</th><th>Rung</th><th>Next review</th><th>Last review</th><th>Simulate</th></tr>
 		<?php foreach ($poolRows as $row): ?>
 		<?php $graduated = $row['next_due'] === null; ?>
 		<tr>
@@ -129,6 +135,7 @@ $stats = [
 			</td>
 			<td><?php echo (int) $row['rung']; ?></td>
 			<td><?php echo $graduated ? 'graduated' : htmlspecialchars((string) $row['next_due'], ENT_QUOTES, 'UTF-8'); ?></td>
+			<td><?php echo htmlspecialchars(trim($row['last_review_day'] . ' ' . ($reviewResults[(string) $row['last_review_result']] ?? '')), ENT_QUOTES, 'UTF-8'); ?></td>
 			<td>
 				<?php if ($graduated): ?>
 				<form method="post" action="<?php echo MistakeTraining::$DEBUG_LINK; ?>">
