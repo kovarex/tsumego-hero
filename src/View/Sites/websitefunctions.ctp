@@ -12,15 +12,15 @@
 		<p class="title4">Level Mode</p>
 		<div class="new1">
 		The level mode is the default mode for selecting collections and problems. Based on the difficulty of the problem, a certain amount of
-		expierience points (XP) is the reward. The users start at level 1 and reach higher levels by gaining XP. There are several rewards upon reaching
-		higher levels. The number of hearts increase. Hero powers, secret areas and the sandbox can be unlocked.
+			experience points (XP) is the reward. The users start at level 1 and reach higher levels by gaining XP. There are several rewards upon reaching
+			higher levels. The number of hearts increases. Hero powers, secret areas and the sandbox can be unlocked.
 		<br><br>
 			<b>Problem page</b><br><br>
 			<img src="/img/mf-level2.png" width="100%">
 			<br><br>
 
 			<b>(1) Hearts</b><br><br>
-			The hearts are your lifes that you have for trying to solve the problems. Each time you fail at solving a problem, you lose a heart.
+					The hearts are your lives that you have for trying to solve the problems. Each time you fail at solving a problem, you lose a heart.
 			When you have no hearts left and fail at a problem, the problem is locked until the next day. Hearts increase with your level.<br><br>
 			<b>(2) Hero Powers</b><br><br>
 		<table class="sitesTable" >
@@ -74,7 +74,7 @@
 		<br>
 
 		<b>(3) Player color and board orientation</b><br><br>
-		The icons show the current player color and board orientation. You can also select your preferrec color and orientation.
+			The icons show the current player color and board orientation. You can also select your preferred color and orientation.
 		<br><br>
 		<b>(4) Mark as favorite</b><br><br>
 		By selecting the gray circle, the problem is marked as favorite. It can be found in the favorite collection that shows up at the beginning
@@ -113,16 +113,16 @@
 			<img src="/img/mf-rating3.png" width="100%">
 			<br><br>
 
-			<b>(1) Horizintal bar</b><br><br>
-			The horizontal bar that reaches from very easy to very difficult influences the difficulty or the problems that you get.
-			Very easy gives you problems that are below your rating, very difficult gives you problems that have higher rating.
+			<b>(1) Horizontal bar</b><br><br>
+			The horizontal bar that reaches from very easy to very difficult influences the difficulty of the problems that you get.
+			Very easy gives you problems that are below your rating, very difficult gives you problems that have a higher rating.
 			<br><br>
 			<b>(2) History button</b><br><br>
 			The history button leads you to the page that shows your most recent attempts in the rating mode.
 			<br><br>
 			<b>(3) Skip button</b><br><br>
 			The skip button lets you skip the problem
-			without trying to solve them. It can be used 30 times per day.
+			without trying to solve it. It can be used 30 times per day.
 			<br><br>
 			<b>Rating mode history page</b><br><br>
 			<img src="/img/mf-rating4.png" width="100%">
@@ -171,6 +171,32 @@
 
 			On the results page, you have your attempts listed. For each rank in each category, your best
 			attempt is shown. The possible range of points for each problem is 0 to 100. A faster solving time gets more points and a failed attempt always gives 0 points.
+			<br><br>
+		</div>
+
+		<p class="title4">Mistake Training</p>
+		<div class="new1">
+			Whenever you fail a problem on the first try, it goes to the mistake training. Each problem comes back for another
+			try, and the wait gets longer every time: a day, three days, a week, two weeks, a month, two months. When you have
+			solved a problem without a mistake six times, it disappears from the training.
+			<br><br>
+			Only solving it without a mistake counts. If you make a mistake, the problem comes back the next day and you lose
+			a step of progress. A problem that goes wrong again and again comes back every few days instead of every day.
+			<br><br>
+			The training does not give XP or rating, it does not cost hearts and it does not use hero powers. It does not change
+			the status of a problem either: a problem you solved in the level mode stays solved. You get one attempt at each
+			problem, so a mistake ends it for today.
+			<br><br>
+			<b>Problem page</b><br><br>
+			The number next to the mistake training entry in the play menu is the number of problems waiting today. A problem
+			is played as training only when you open it from there. Opened from a collection, it is played normally, with XP
+			and hearts.
+			<br><br>
+			<b>All caught up</b><br><br>
+			<img src="/img/mf-mistake.png" width="100%">
+			<br><br>
+			When nothing is due, the page shows when the problems in the training come back, so you know when there is work
+			for you again.
 			<br><br>
 		</div>
 	</div>
