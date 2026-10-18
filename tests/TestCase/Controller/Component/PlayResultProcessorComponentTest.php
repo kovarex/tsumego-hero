@@ -1178,4 +1178,34 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 			MistakeTraining::getPoolRow($context->user['id'], (int) $context->tsumegos[0]['id']),
 			'A player outside the rollout does not accumulate a backlog');
 	}
+
+	/**
+	 * A play outside the training reports its first mistake and then the solve, so
+	 * the pool sees both outcomes. The failure takes the rung back and the solve
+	 * that needed a retry must not earn it again.
+	 */
+	public function testARetryAfterAFailureLeavesTheLadderWhereTheFailurePutIt(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+		$userId = $context->user['id'];
+		$tsumegoId = (int) $context->tsumegos[0]['id'];
+
+		$this->failResult($context);
+		$this->assertSame(0, (int) MistakeTraining::getPoolRow($userId, $tsumegoId)['rung'],
+			'A first mistake enters the ladder at the bottom');
+
+		$this->solve($context);
+		$this->assertSame(1, (int) MistakeTraining::getPoolRow($userId, $tsumegoId)['rung'],
+			'A clean solve climbs one rung');
+
+		$this->failResult($context);
+		$this->solveAfterMistake($context);
+
+		$row = MistakeTraining::getPoolRow($userId, $tsumegoId);
+		$this->assertSame(0, (int) $row['rung'], 'The retry earns no rung the failure already took back');
+		$this->assertSame(
+			date('Y-m-d', strtotime(MistakeTraining::today() . ' +1 day')),
+			date('Y-m-d', strtotime($row['next_due'])),
+			'A problem solved after a mistake comes back tomorrow');
+	}
 }

@@ -54,6 +54,12 @@ class MistakeTraining
 	 * ladder; graduation (a clean solve at the top rung) only removes the problem
 	 * from the pool, and the tsumego status is never touched, it belongs to the
 	 * normal modes.
+	 *
+	 * Every mode reports here, so the outcomes differ by where the play happened. A
+	 * training play gives one attempt, therefore it sends either Failed (the board
+	 * locks on the first mistake) or SolvedClean. A play outside the training can
+	 * send Failed and then SolvedAfterMistake for the same problem: the first call
+	 * takes a rung back, the second must not earn one for the retry.
 	 */
 	public static function recordResult(int $userId, int $tsumegoId, PlayOutcome $outcome, ?string $oldStatus): void
 	{
@@ -76,16 +82,19 @@ class MistakeTraining
 
 		if (!$clean)
 		{
-			// Not a solve from memory yet, so the problem comes back tomorrow. A
-			// solve that needed a retry keeps the rung it earned, a lapse gives one
-			// back: the ladder says how well the problem is known.
+			// Not a solve from memory, so the problem comes back tomorrow. A retry earns
+			// nothing, and a lapse gives one back: the ladder says how well the problem
+			// is known. When the same play already reported its failure, that call took
+			// the rung back and this one keeps what is left.
 			$rung = $outcome === PlayOutcome::SolvedAfterMistake
 				? (int) $pool['rung']
 				: max((int) $pool['rung'] - 1, 0);
-			// There is no rung left to give back at the bottom, so a problem the
-			// player cannot solve yet gets a cool-off instead of owning a slot in
-			// the queue every day.
-			$daysAhead = (int) $pool['rung'] > 0 ? self::$LADDER[0] : self::$LADDER[1];
+			// A solved problem comes back tomorrow, even when the rung could not go
+			// lower. Only a failure at the bottom gets a cool-off: the problem was not
+			// solved at all, so scheduling it every day would own a slot in the queue
+			// for nothing.
+			$bottomRung = $outcome === PlayOutcome::Failed && (int) $pool['rung'] === 0;
+			$daysAhead = $bottomRung ? self::$LADDER[1] : self::$LADDER[0];
 			self::setRung($userId, $tsumegoId, $rung, $daysAhead);
 			return;
 		}
