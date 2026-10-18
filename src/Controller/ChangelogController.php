@@ -1,5 +1,8 @@
 <?php
 
+use App\Utility\Auth;
+use App\Utility\Feature;
+
 class ChangelogController extends AppController
 {
 	public $helpers = ['Html', 'Form'];
@@ -22,7 +25,7 @@ class ChangelogController extends AppController
 		if (file_exists($file))
 		{
 			$data = json_decode((string) file_get_contents($file), true) ?: [];
-			$entries = $data['entries'] ?? [];
+			$entries = self::visibleEntries($data['entries'] ?? []);
 			$revision = $data['revision'] ?? null;
 		}
 
@@ -45,7 +48,7 @@ class ChangelogController extends AppController
 			return [];
 
 		$data = json_decode((string) file_get_contents($file), true) ?: [];
-		$entries = $data['entries'] ?? [];
+		$entries = self::visibleEntries($data['entries'] ?? []);
 
 		$ts = [];
 		foreach ($entries as $entry)
@@ -54,5 +57,31 @@ class ChangelogController extends AppController
 
 		rsort($ts);
 		return $ts;
+	}
+
+	/**
+	 * The entries the current visitor may see. An entry behind a flag is not
+	 * announced while that flag is off, and the timestamps have to be filtered the
+	 * same way or the badge would point at an entry that is not rendered.
+	 *
+	 * A flag row is deleted when its feature becomes permanent, so a fragment that
+	 * names a deleted flag announces something that shipped long ago and is shown
+	 * to everybody. Deleting the row is thus the whole release step, and the
+	 * entries of a switched-off feature stay quiet for as long as they should.
+	 *
+	 * Admins see every entry, so the changelog stays a complete record for them.
+	 *
+	 * @param array<int, array<string, mixed>> $entries
+	 * @return array<int, array<string, mixed>>
+	 */
+	private static function visibleEntries(array $entries): array
+	{
+		if (Auth::isAdmin())
+			return $entries;
+
+		return array_values(array_filter($entries, function ($entry) {
+			$flag = $entry['flag'] ?? null;
+			return $flag === null || $flag === '' || !Feature::exists((string) $flag) || Feature::enabled((string) $flag);
+		}));
 	}
 }

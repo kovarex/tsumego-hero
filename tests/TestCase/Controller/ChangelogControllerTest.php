@@ -1,7 +1,16 @@
 <?php
 
-class ChangelogControllerTest extends ControllerTestCase
+use App\Utility\Feature;
+
+class ChangelogControllerTest extends TestCaseWithAuth
 {
+	public function tearDown(): void
+	{
+		ClassRegistry::init('FeatureFlag')->deleteAll(['flag_key' => 'probe']);
+		Feature::reset();
+		parent::tearDown();
+	}
+
 	/**
 	 * The public changelog page renders its shell and mounts the React feed.
 	 */
@@ -86,5 +95,46 @@ class ChangelogControllerTest extends ControllerTestCase
 
 		$this->assertArrayHasKey('changelogTimestamps', $this->vars);
 		$this->assertIsArray($this->vars['changelogTimestamps']);
+	}
+
+	private function fixtureWithFlaggedEntry(): string
+	{
+		return $this->fixture(json_encode([
+			'entries' => [
+				['ts' => 100, 'text' => 'plain entry'],
+				['ts' => 200, 'text' => 'flagged entry', 'flag' => 'probe'],
+			],
+		]));
+	}
+
+	public function testEntriesBehindAnOffFlagAreNotCountedAsNew()
+	{
+		$this->setFeatureFlag('probe', Feature::OFF);
+
+		$this->assertSame([100], ChangelogController::changelogTimestamps($this->fixtureWithFlaggedEntry()));
+	}
+
+	public function testEntriesBehindAReleasedFlagAreCountedAsNew()
+	{
+		$this->setFeatureFlag('probe', Feature::EVERYONE);
+
+		$this->assertSame([200, 100], ChangelogController::changelogTimestamps($this->fixtureWithFlaggedEntry()));
+	}
+
+	/**
+	 * Deleting the flag row is what makes a feature permanent, so the entry stops
+	 * being held back without a second edit.
+	 */
+	public function testEntriesBehindADeletedFlagAreCountedAsNew()
+	{
+		$this->assertSame([200, 100], ChangelogController::changelogTimestamps($this->fixtureWithFlaggedEntry()));
+	}
+
+	public function testAdminsStillSeeEntriesBehindAnOffFlag()
+	{
+		new ContextPreparator(['user' => ['admin' => true]]);
+		$this->setFeatureFlag('probe', Feature::OFF);
+
+		$this->assertSame([200, 100], ChangelogController::changelogTimestamps($this->fixtureWithFlaggedEntry()));
 	}
 }

@@ -157,11 +157,14 @@ function commitShipStamp(commit) {
 function parseFragment(content) {
 	let body = content.trim();
 	let commit = null;
+	let flag = null;
 	const fm = body.match(/^---\n([\s\S]*?)\n---\n?/);
 	if (fm) {
 		for (const row of fm[1].split('\n')) {
 			const m = row.match(/^commit:\s*(\S+)\s*$/i);
 			if (m) commit = m[1];
+			const f = row.match(/^flag:\s*(\S+)\s*$/i);
+			if (f) flag = f[1];
 		}
 		body = body.slice(fm[0].length).trim();
 	}
@@ -186,7 +189,7 @@ function parseFragment(content) {
 			// The body stays markdown so the UI can render the links in it.
 			return { category, text: rest.trim(), known, number };
 		});
-	return { entries, commit };
+	return { entries, commit, flag };
 }
 
 function isoDate(ts) {
@@ -215,6 +218,7 @@ const entries = files.flatMap(file => {
 		text: e.text,
 		file,
 		...(parsed.commit ? { commit: parsed.commit } : {}),
+		...(parsed.flag ? { flag: parsed.flag } : {}),
 	}));
 });
 
