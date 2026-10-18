@@ -68,6 +68,9 @@ class MistakeTrainingController extends AppController
 		$play = new Play(function ($name, $value) {
 			$this->set($name, $value);
 		});
+		// Same problem, same address for search engines, whichever route got here.
+		$this->set('canonicalPath', '/' . $setConnectionID);
+		$this->set('_page', 'mistake-training');
 		$play->play($setConnectionID, $this->request, $this->request->data);
 		$this->render('/Tsumegos/play');
 		return null;

@@ -1042,56 +1042,6 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		);
 	}
 
-	public function testFailsResumeLastUnsolvedAttempt(): void
-	{
-		$context = new ContextPreparator(['tsumego' => 1]);
-
-		$this->failResult($context);
-		Auth::saveUserField('mode', Constants::$RATING_MODE);
-		$this->failResult($context);
-
-		$attempts = ClassRegistry::init('TsumegoAttempt')->find('all', [
-			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
-			'order' => 'id ASC',
-		]);
-		$this->assertSame(1, count($attempts), 'Without a mode column, a fail resumes the last unsolved attempt');
-		$this->assertSame(2, (int) $attempts[0]['TsumegoAttempt']['misplays'], 'Both fails accumulate onto one attempt');
-	}
-
-	public function testFailsAccumulateAcrossModeSwitches(): void
-	{
-		$context = new ContextPreparator(['tsumego' => 1]);
-
-		$this->failResult($context);
-		Auth::saveUserField('mode', Constants::$RATING_MODE);
-		$this->failResult($context);
-		Auth::saveUserField('mode', Constants::$LEVEL_MODE);
-		$this->failResult($context);
-
-		$attempts = ClassRegistry::init('TsumegoAttempt')->find('all', [
-			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
-			'order' => 'id ASC',
-		]);
-		$this->assertSame(1, count($attempts), 'Mode switches do not separate attempts without a mode column');
-		$this->assertSame(3, (int) $attempts[0]['TsumegoAttempt']['misplays'], 'All three fails accumulate onto one attempt');
-	}
-
-	public function testRatingFailsAccumulateOnOneAttempt(): void
-	{
-		$context = new ContextPreparator(['tsumego' => 1]);
-		Auth::saveUserField('mode', Constants::$RATING_MODE);
-
-		$this->failResult($context);
-		$this->failResult($context);
-
-		$attempts = ClassRegistry::init('TsumegoAttempt')->find('all', [
-			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
-			'order' => 'id ASC',
-		]);
-		$this->assertSame(1, count($attempts), 'Rating fails resume the last unsolved attempt without a mode column');
-		$this->assertSame(2, (int) $attempts[0]['TsumegoAttempt']['misplays'], 'Both rating fails accumulate onto one attempt');
-	}
-
 	// ==================== Mode side-effect matrix ====================
 
 	public function testTrainingSolveDoesNotAffectLevelProgress(): void

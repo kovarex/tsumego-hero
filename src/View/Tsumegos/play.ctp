@@ -121,11 +121,7 @@ use App\Utility\ViteManifest;
 	<table width="100%" border="0" class="play-header-table">
 	<tr>
 	<td align="center" width="29%">
-		<?php if (Auth::isInMistakeTrainingMode()): ?>
-		<div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; padding: 6px 12px; font-size: 13px; color: #856404; display: inline-block;">
-			Mistake Training
-		</div>
-		<?php else: ?>
+		<?php if (!Auth::isInMistakeTrainingMode()): ?>
 		<div id="health">
 			<?php
 			if (Auth::isLoggedIn())

@@ -1,1 +1,1 @@
-Added: Missed problems now return for review in Mistake Training until you solve them cleanly ([discussion](/forums/viewtopic.php?t=3)).
+Added: Missed problems return for review in Mistake Training at growing intervals until they are mastered ([discussion](/forums/viewtopic.php?t=3)).

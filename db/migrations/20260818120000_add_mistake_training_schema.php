@@ -1,8 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 use Phinx\Migration\AbstractMigration;
 
-class AddMistakeTrainingSchema extends AbstractMigration
+/**
+ * The mistake training pool: one row per (user, tsumego) being reviewed, with
+ * its position on the review ladder and the next review date.
+ */
+final class AddMistakeTrainingSchema extends AbstractMigration
 {
 	public function up(): void
 	{

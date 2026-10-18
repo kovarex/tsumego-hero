@@ -4,6 +4,7 @@ namespace App\Utility;
 
 use ClassRegistry;
 use DateTime;
+use SetConnection;
 
 /**
  * Mistake training: spaced repetition for tsumegos you did not solve on the
@@ -124,13 +125,20 @@ class MistakeTraining
 	}
 
 	/**
-	 * Total number of problems in the training pool.
+	 * Total number of problems in the training pool. Counts only what the queue can
+	 * serve, so a problem that is gone (deleted, or in no set) is not announced.
 	 */
 	public static function totalInTraining(int $userId): int
 	{
-		return (int) ClassRegistry::init('MistakeTrainingPool')->find('count', [
-			'conditions' => ['user_id' => $userId],
-		]);
+		$rows = Util::query(
+			'SELECT COUNT(DISTINCT p.id) AS total FROM mistake_training_pool p'
+			. ' JOIN tsumego t ON t.id = p.tsumego_id'
+			. ' JOIN set_connection sc ON sc.tsumego_id = p.tsumego_id'
+			. ' WHERE p.user_id = ? AND t.deleted IS NULL',
+			[$userId]
+		);
+
+		return (int) $rows[0]['total'];
 	}
 
 	/**
@@ -146,9 +154,12 @@ class MistakeTraining
 	public static function upcomingByDay(int $userId, int $maxDays = 7): array
 	{
 		$rows = Util::query(
-			'SELECT DATE(next_due) AS day, COUNT(*) AS day_count FROM mistake_training_pool'
-			. ' WHERE user_id = ? AND next_due > NOW() GROUP BY DATE(next_due) ORDER BY day',
-			[$userId]
+			'SELECT DATE(p.next_due) AS day, COUNT(DISTINCT p.id) AS day_count FROM mistake_training_pool p'
+			. ' JOIN tsumego t ON t.id = p.tsumego_id'
+			. ' JOIN set_connection sc ON sc.tsumego_id = p.tsumego_id'
+			. ' WHERE p.user_id = ? AND p.next_due > ? AND t.deleted IS NULL'
+			. ' GROUP BY DATE(p.next_due) ORDER BY day',
+			[$userId, date('Y-m-d H:i:s')]
 		);
 		$countsByDay = [];
 		foreach ($rows as $row)
@@ -195,7 +206,7 @@ class MistakeTraining
 	 */
 	public static function buildQueueButtons(int $currentSetConnectionID): TsumegoButtons
 	{
-		$rows = Util::query(self::queueSql(), [$currentSetConnectionID, Auth::getUserID()]);
+		$rows = Util::query(self::queueSql(), [$currentSetConnectionID, Auth::getUserID(), date('Y-m-d H:i:s')]);
 		$buttons = TsumegoButtons::fromRows($rows, $currentSetConnectionID, 200);
 		$buttons->setLinkPrefix(self::$PLAY_LINK_PREFIX);
 		return $buttons;
@@ -214,6 +225,8 @@ class MistakeTraining
 			'tsumego_id' => $tsumegoId,
 			'rung' => 0,
 			'next_due' => date('Y-m-d H:i:s', strtotime($now . ' +' . self::$LADDER[0] . ' days')),
+			'created' => $now,
+			'modified' => $now,
 		]);
 	}
 
@@ -247,10 +260,13 @@ class MistakeTraining
 	/**
 	 * The training queue: pool rows that are due for review. Deduplicates in SQL
 	 * (one row per tsumego via ROW_NUMBER), preferring the current set connection
-	 * so navigation stays on the connection the user is on.
+	 * so navigation stays on the connection the user is on, then the set display
+	 * order every other screen uses.
 	 */
 	private static function queueSql(): string
 	{
+		$displayOrder = SetConnection::displayOrderForSetSql('st');
+
 		return "
 			SELECT tsumego_id, set_connection_id, num, status, rating, sgf
 			FROM (
@@ -264,15 +280,16 @@ class MistakeTraining
 					COALESCE(sgf.sgf, '') AS sgf,
 					ROW_NUMBER() OVER (
 						PARTITION BY p.tsumego_id
-						ORDER BY CASE WHEN sc.id = ? THEN 0 ELSE 1 END, sc.id
+						ORDER BY CASE WHEN sc.id = ? THEN 0 ELSE 1 END, $displayOrder, sc.id
 					) AS rn
 				FROM mistake_training_pool p
 				JOIN set_connection sc ON sc.tsumego_id = p.tsumego_id
+				JOIN `set` st ON st.id = sc.set_id
 				JOIN tsumego t ON t.id = p.tsumego_id
 				LEFT JOIN tsumego_status ts ON ts.user_id = p.user_id AND ts.tsumego_id = p.tsumego_id
 				LEFT JOIN sgf ON sgf.id = (SELECT MAX(s2.id) FROM sgf s2 WHERE s2.tsumego_id = p.tsumego_id)
 				WHERE p.user_id = ?
-				  AND p.next_due <= NOW()
+				  AND p.next_due <= ?
 				  AND t.deleted IS NULL
 			) x
 			WHERE rn = 1

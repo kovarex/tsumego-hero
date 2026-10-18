@@ -13,7 +13,6 @@ class TsumegoButtonsQueryBuilder
 
 	public function __construct(TsumegoFilters $tsumegoFilters, string|int|null $id)
 	{
-		$this->tsumegoFilters = $tsumegoFilters;
 		$this->query = new Query('FROM tsumego');
 		if ($tsumegoFilters->query != 'topics')
 		{
