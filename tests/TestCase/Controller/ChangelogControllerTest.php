@@ -1,13 +1,14 @@
 <?php
 
 use App\Utility\Feature;
+use App\Utility\FeatureKey;
 
 class ChangelogControllerTest extends TestCaseWithAuth
 {
 	public function tearDown(): void
 	{
 		ClassRegistry::init('FeatureFlag')->deleteAll(['flag_key' => 'probe']);
-		Feature::reset();
+		$this->setFeatureFlag(FeatureKey::MistakeTraining, Feature::ADMINS);
 		parent::tearDown();
 	}
 
@@ -97,43 +98,57 @@ class ChangelogControllerTest extends TestCaseWithAuth
 		$this->assertIsArray($this->vars['changelogTimestamps']);
 	}
 
-	private function fixtureWithFlaggedEntry(): string
+	private function fixtureWithFlaggedEntry(string $flag = 'mistake-training'): string
 	{
 		return $this->fixture(json_encode([
 			'entries' => [
 				['ts' => 100, 'text' => 'plain entry'],
-				['ts' => 200, 'text' => 'flagged entry', 'flag' => 'probe'],
+				['ts' => 200, 'text' => 'flagged entry', 'flag' => $flag],
 			],
 		]));
 	}
 
 	public function testEntriesBehindAnOffFlagAreNotCountedAsNew()
 	{
-		$this->setFeatureFlag('probe', Feature::OFF);
+		$this->setFeatureFlag(FeatureKey::MistakeTraining, Feature::OFF);
 
 		$this->assertSame([100], ChangelogController::changelogTimestamps($this->fixtureWithFlaggedEntry()));
 	}
 
 	public function testEntriesBehindAReleasedFlagAreCountedAsNew()
 	{
-		$this->setFeatureFlag('probe', Feature::EVERYONE);
+		$this->setFeatureFlag(FeatureKey::MistakeTraining, Feature::EVERYONE);
 
 		$this->assertSame([200, 100], ChangelogController::changelogTimestamps($this->fixtureWithFlaggedEntry()));
 	}
 
 	/**
-	 * Deleting the flag row is what makes a feature permanent, so the entry stops
-	 * being held back without a second edit.
+	 * A flag whose row was deleted is a feature that shipped for good, so the entry
+	 * stops being held back without a second edit.
 	 */
 	public function testEntriesBehindADeletedFlagAreCountedAsNew()
 	{
+		ClassRegistry::init('FeatureFlag')->deleteAll(['flag_key' => 'mistake-training']);
+		Feature::reset();
+
 		$this->assertSame([200, 100], ChangelogController::changelogTimestamps($this->fixtureWithFlaggedEntry()));
+	}
+
+	/**
+	 * A key that FeatureKey no longer names also means the feature shipped for good,
+	 * even while a leftover row is still switched off.
+	 */
+	public function testEntriesBehindAnUndeclaredFlagAreCountedAsNew()
+	{
+		$this->setFeatureFlag('probe', Feature::OFF);
+
+		$this->assertSame([200, 100], ChangelogController::changelogTimestamps($this->fixtureWithFlaggedEntry('probe')));
 	}
 
 	public function testAdminsStillSeeEntriesBehindAnOffFlag()
 	{
 		new ContextPreparator(['user' => ['admin' => true]]);
-		$this->setFeatureFlag('probe', Feature::OFF);
+		$this->setFeatureFlag(FeatureKey::MistakeTraining, Feature::OFF);
 
 		$this->assertSame([200, 100], ChangelogController::changelogTimestamps($this->fixtureWithFlaggedEntry()));
 	}

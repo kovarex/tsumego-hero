@@ -63,6 +63,16 @@ class Feature
 		return array_key_exists(self::key($flag), self::states());
 	}
 
+	/**
+	 * Whether FeatureKey still names the flag. A feature is removed from the code as a
+	 * whole, so a key that is no longer declared belongs to something that shipped for
+	 * good, and a row left behind by it is only a leftover.
+	 */
+	public static function known(FeatureKey|string $flag): bool
+	{
+		return FeatureKey::tryFrom(self::key($flag)) !== null;
+	}
+
 	private static function key(FeatureKey|string $flag): string
 	{
 		return $flag instanceof FeatureKey ? $flag->value : $flag;

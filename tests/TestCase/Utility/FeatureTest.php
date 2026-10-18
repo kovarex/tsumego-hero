@@ -1,6 +1,7 @@
 <?php
 
 use App\Utility\Feature;
+use App\Utility\FeatureKey;
 
 class FeatureTest extends TestCaseWithAuth
 {
@@ -60,6 +61,19 @@ class FeatureTest extends TestCaseWithAuth
 
 		$this->assertTrue(Feature::exists('probe'), 'A flag that is switched off still has a row');
 		$this->assertFalse(Feature::exists('never-seeded'), 'A feature whose flag was deleted is permanent');
+	}
+
+	/**
+	 * FeatureKey is the list of flags that can still be switched; a row alone does not
+	 * make one.
+	 */
+	public function testAKeyIsDeclaredOnlyWhileFeatureKeyNamesIt(): void
+	{
+		$this->setFakeFlag(Feature::OFF);
+
+		$this->assertTrue(Feature::known(FeatureKey::MistakeTraining));
+		$this->assertTrue(Feature::known('mistake-training'));
+		$this->assertFalse(Feature::known('probe'), 'A row whose key FeatureKey does not name belongs to a retired flag');
 	}
 
 	public function testStateIsReadPerRequestAndResettable(): void

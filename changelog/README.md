@@ -40,7 +40,7 @@ Added: Dedicated set editing page.
 
 The `commit` SHA is resolved through git and its committer date becomes the entry's ship timestamp. Omit it when the fragment is committed together with its change.
 
-A fragment may also name the flag that gates its feature. The flag is a row in the `feature_flags` table, and the key must be a `FeatureKey` case. While the flag is not open to everybody, the entry stays off the page and off the "What's new" badge, and admins see it meanwhile. Deleting the row publishes the entry, and a key that matches no row counts as released, so the line needs no cleanup:
+A fragment may also name the flag that gates its feature. The flag is a row in the `feature_flags` table, and the key has to be a `FeatureKey` case, because `FeatureKey` is the list of flags that can still be switched. While the flag is not open to everybody, the entry stays off the page and off the "What's new" badge, and admins see it meanwhile. A flag that `FeatureKey` no longer names, or whose row is gone, belongs to a feature that shipped for good, so its entry is public and the line needs no cleanup:
 
 ```markdown
 ---

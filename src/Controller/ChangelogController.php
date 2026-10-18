@@ -61,11 +61,13 @@ class ChangelogController extends AppController
 
 	/**
 	 * The entries the current visitor may see. An entry behind a flag is not
-	 * announced while that flag is off, so the timestamps have to be filtered the
-	 * same way or the badge would point at an entry that is not rendered.
+	 * announced while that flag is live and off, so the timestamps have to be
+	 * filtered the same way or the badge would point at an entry that is not
+	 * rendered.
 	 *
-	 * A flag row is deleted when its feature becomes permanent, so a fragment that
-	 * names a deleted flag is shown to everybody. Admins see every entry.
+	 * A feature is held back only while its flag is declared in FeatureKey and has a
+	 * row; deleting the row, or dropping the key from the enum with the feature, is
+	 * what makes the entry public. Admins see every entry.
 	 *
 	 * @param array<int, array<string, mixed>> $entries
 	 * @return array<int, array<string, mixed>>
@@ -76,8 +78,8 @@ class ChangelogController extends AppController
 			return $entries;
 
 		return array_values(array_filter($entries, function ($entry) {
-			$flag = $entry['flag'] ?? null;
-			return $flag === null || $flag === '' || !Feature::exists((string) $flag) || Feature::enabled((string) $flag);
+			$flag = (string) ($entry['flag'] ?? '');
+			return $flag === '' || !Feature::known($flag) || !Feature::exists($flag) || Feature::enabled($flag);
 		}));
 	}
 }
