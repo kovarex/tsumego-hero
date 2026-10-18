@@ -4,6 +4,8 @@ use App\Utility\AchievementId;
 use App\Utility\AchievementChecker;
 use App\Utility\Auth;
 use App\Utility\Constants;
+use App\Utility\Feature;
+use App\Utility\FeatureKey;
 use App\Utility\HeroPowers;
 use App\Utility\MistakeTraining;
 use App\Utility\PlayOutcome;
@@ -14,6 +16,18 @@ use App\Utility\Util;
 
 class PlayResultProcessorComponentTest extends TestCaseWithAuth
 {
+	public function setUp(): void
+	{
+		parent::setUp();
+		$this->setTrainingFlag(Feature::EVERYONE);
+	}
+
+	public function tearDown(): void
+	{
+		$this->setTrainingFlag(Feature::ADMINS);
+		parent::tearDown();
+	}
+
 	private function loginAs(ContextPreparator &$context): void
 	{
 		$_COOKIE['hackedLoggedInUserID'] = $context->user['id'];
@@ -1146,5 +1160,33 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 			'order' => 'id DESC',
 		]);
 		$this->assertSame(false, (bool) $attempt['TsumegoAttempt']['solved'], 'Level fail should record an unsolved attempt');
+	}
+
+	private function setTrainingFlag(string $state): void
+	{
+		$this->setFeatureFlag(FeatureKey::MistakeTraining, $state);
+	}
+
+	public function testAMistakeEntersTheTrainingPool(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+
+		$this->failResult($context);
+
+		$this->assertNotNull(
+			MistakeTraining::getPoolRow($context->user['id'], (int) $context->tsumegos[0]['id']),
+			'A mistake starts the review ladder');
+	}
+
+	public function testAMistakeWritesNothingWhileTheFeatureIsOff(): void
+	{
+		$this->setTrainingFlag(Feature::OFF);
+		$context = new ContextPreparator(['tsumego' => 1]);
+
+		$this->failResult($context);
+
+		$this->assertNull(
+			MistakeTraining::getPoolRow($context->user['id'], (int) $context->tsumegos[0]['id']),
+			'A player outside the rollout does not accumulate a backlog');
 	}
 }

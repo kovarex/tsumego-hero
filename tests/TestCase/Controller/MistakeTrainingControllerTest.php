@@ -2,11 +2,24 @@
 
 use App\Utility\Auth;
 use App\Utility\Constants;
+use App\Utility\Feature;
+use App\Utility\FeatureKey;
 use App\Utility\MistakeTraining;
 use Facebook\WebDriver\WebDriverBy;
 
 class MistakeTrainingControllerTest extends TestCaseWithAuth
 {
+	public function setUp(): void
+	{
+		parent::setUp();
+		$this->setFeatureFlag(FeatureKey::MistakeTraining, Feature::EVERYONE);
+	}
+
+	public function tearDown(): void
+	{
+		$this->setFeatureFlag(FeatureKey::MistakeTraining, Feature::ADMINS);
+		parent::tearDown();
+	}
 	public function testRequiresLogin()
 	{
 		new ContextPreparator(['user' => null]);
@@ -206,5 +219,88 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 
 		// And it should be removed from the pool so it drops out of the queue
 		$this->assertNull(MistakeTraining::getPoolRow($context->user['id'], (int) $context->tsumegos[0]['id']));
+	}
+
+	public function testTrainingIsNotFoundWhenTheFlagIsOff()
+	{
+		$this->setFeatureFlag(FeatureKey::MistakeTraining, Feature::OFF);
+		new ContextPreparator(['user' => ['name' => 'testuser']]);
+
+		$this->expectException(NotFoundException::class);
+
+		$this->testAction('/mistake-training');
+	}
+
+	public function testTrainingIsNotFoundForAPlayerWhileItIsOpenToAdmins()
+	{
+		$this->setFeatureFlag(FeatureKey::MistakeTraining, Feature::ADMINS);
+		new ContextPreparator(['user' => ['name' => 'testuser']]);
+
+		$this->expectException(NotFoundException::class);
+
+		$this->testAction('/mistake-training');
+	}
+
+	public function testAGuestIsNotFoundWhileTheFlagIsOff()
+	{
+		$this->setFeatureFlag(FeatureKey::MistakeTraining, Feature::OFF);
+
+		$this->expectException(NotFoundException::class);
+
+		$this->testAction('/mistake-training');
+	}
+
+	public function testTrainingIsAvailableToAnAdminWhileItIsOpenToAdmins()
+	{
+		$this->setFeatureFlag(FeatureKey::MistakeTraining, Feature::ADMINS);
+		new ContextPreparator(['user' => ['admin' => true]]);
+
+		$this->testAction('/mistake-training', ['return' => 'contents']);
+
+		$this->assertStringContainsString('All caught up', $this->view);
+	}
+
+	public function testMenuHidesTheTrainingWhenTheFlagIsOff()
+	{
+		$this->setFeatureFlag(FeatureKey::MistakeTraining, Feature::OFF);
+		new ContextPreparator(['user' => ['name' => 'testuser']]);
+
+		$html = $this->testAction('/sites/index', ['return' => 'contents']);
+
+		$this->assertStringNotContainsString('/mistake-training', (string) $html);
+	}
+
+	public function testMenuShowsTheTrainingWhenItIsOpenToPlayers()
+	{
+		new ContextPreparator(['user' => ['name' => 'testuser']]);
+
+		$html = $this->testAction('/sites/index', ['return' => 'contents']);
+
+		$this->assertStringContainsString('/mistake-training', (string) $html);
+	}
+
+	public function testHelpPageDescribesTheTrainingOnlyWhileItIsOpen()
+	{
+		$this->setFeatureFlag(FeatureKey::MistakeTraining, Feature::OFF);
+
+		$html = (string) $this->testAction('/sites/websitefunctions', ['return' => 'contents']);
+		$this->assertStringNotContainsString('Whenever you fail a problem on the first try', $html);
+
+		$this->setFeatureFlag(FeatureKey::MistakeTraining, Feature::EVERYONE);
+
+		$html = (string) $this->testAction('/sites/websitefunctions', ['return' => 'contents']);
+		$this->assertStringContainsString('Whenever you fail a problem on the first try', $html);
+	}
+
+	public function testAStoredTrainingModeFallsBackToLevelModeWhenTheFlagIsOff()
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'testuser']]);
+		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+		$this->setFeatureFlag(FeatureKey::MistakeTraining, Feature::OFF);
+		$this->login($context->user['name']);
+
+		$this->assertFalse(Auth::isInMistakeTrainingMode(),
+			'A player left in training mode plays normally once the feature is off');
+		$this->assertTrue(Auth::isInLevelMode());
 	}
 }

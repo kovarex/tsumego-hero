@@ -4,6 +4,8 @@ use App\Utility\AchievementChecker;
 use App\Utility\Auth;
 use App\Utility\BoardSelector;
 use App\Utility\Constants;
+use App\Utility\Feature;
+use App\Utility\FeatureKey;
 use App\Utility\HeroPowers;
 use App\Utility\MistakeTraining;
 use App\Utility\TimeMode;
@@ -517,7 +519,9 @@ class AppController extends Controller
 		$this->set('lastProfileRight', $lastProfileRight);
 		$this->set('timeMode', $timeMode);
 		$this->set('changelogTimestamps', ChangelogController::changelogTimestamps());
-		$this->set('mistakeTrainingDueCount', Auth::isLoggedIn() ? MistakeTraining::dueCount((int) Auth::getUserID()) : 0);
+		$mistakeTrainingEnabled = Feature::enabled(FeatureKey::MistakeTraining);
+		$this->set('mistakeTrainingEnabled', $mistakeTrainingEnabled);
+		$this->set('mistakeTrainingDueCount', $mistakeTrainingEnabled && Auth::isLoggedIn() ? MistakeTraining::dueCount((int) Auth::getUserID()) : 0);
 	}
 
 	public function afterFilter(): void {}

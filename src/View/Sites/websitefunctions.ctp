@@ -174,6 +174,7 @@
 			<br><br>
 		</div>
 
+		<?php if (!empty($mistakeTrainingEnabled)): ?>
 		<p class="title4">Mistake Training</p>
 		<div class="new1">
 			Whenever you fail a problem on the first try, it goes to the mistake training. Each problem comes back for another
@@ -199,6 +200,7 @@
 			for you again.
 			<br><br>
 		</div>
+		<?php endif; ?>
 	</div>
 	</div>
 

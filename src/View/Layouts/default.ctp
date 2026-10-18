@@ -313,6 +313,7 @@ echo ViteManifest::legacyScript('legacy');
 							echo '<li><a class="'.$ratingModeA.'" href="/ratingMode">Rating</a></li>';
 							echo '<li><a class="'.$timeModeA.'" href="/timeMode/overview">Time</a></li>';
 							$mistakeTrainingLabel = 'Mistake<br>Training' . (!empty($mistakeTrainingDueCount) ? ' (' . $mistakeTrainingDueCount . ')' : '');
+							if (!empty($mistakeTrainingEnabled))
 							echo '<li><a class="'.$mistakeTrainingA.'" href="/mistake-training">' . $mistakeTrainingLabel . '</a></li>';
 						}
 								echo '</ul>';

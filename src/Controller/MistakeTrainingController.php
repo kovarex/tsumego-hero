@@ -2,6 +2,8 @@
 
 use App\Utility\Auth;
 use App\Utility\Constants;
+use App\Utility\Feature;
+use App\Utility\FeatureKey;
 use App\Utility\MistakeTraining;
 
 class MistakeTrainingController extends AppController
@@ -15,6 +17,11 @@ class MistakeTrainingController extends AppController
 	 */
 	public function play(?string $setConnectionID = null): mixed
 	{
+		// The feature is invisible to players outside the rollout, including the ones
+		// who guess the address.
+		if (!Feature::enabled(FeatureKey::MistakeTraining))
+			throw new NotFoundException('Not found');
+
 		if (!Auth::isLoggedIn())
 			return $this->redirect('/users/login');
 

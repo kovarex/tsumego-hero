@@ -644,7 +644,8 @@ use App\Utility\ViteManifest;
 	var freePlayMode = false;
 	var reviewEnabled = false;
 	var theComment = "";
-	var mode = <?php echo Auth::getWithDefault('mode', 1); ?>;
+	// The effective mode the server plays by, so the board cannot disagree with it.
+	var mode = <?php echo Auth::getMode(); ?>;
 	var timeModeEnabled = true;
 	var authorProblem = false;
 	var tsumegoID = <?php echo $t['Tsumego']['id'] ?>;

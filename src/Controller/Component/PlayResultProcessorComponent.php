@@ -3,6 +3,8 @@
 use App\Utility\AchievementChecker;
 use App\Utility\Auth;
 use App\Utility\Constants;
+use App\Utility\Feature;
+use App\Utility\FeatureKey;
 use App\Utility\HeroPowers;
 use App\Utility\Level;
 use App\Utility\MistakeTraining;
@@ -71,8 +73,10 @@ class PlayResultProcessorComponent extends Component
 		$this->processXpChange($tsumego, $result, $previousStatusValue, $originalTsumegoRating, $progressDeletionCount);
 		$this->updateTsumegoAttempt($tsumego, $result, $previousStatusValue, $seconds);
 		// The pool is fed from every mode: a mistake starts the review ladder, a
-		// clean solve climbs it.
-		MistakeTraining::recordResult(Auth::getUserID(), $tsumegoID, $outcome, $previousStatusValue);
+		// clean solve climbs it. Players outside the rollout write nothing, so
+		// releasing the feature does not hand them a backlog of old mistakes.
+		if (Feature::enabled(FeatureKey::MistakeTraining))
+			MistakeTraining::recordResult(Auth::getUserID(), $tsumegoID, $outcome, $previousStatusValue);
 		$this->processErrorAchievement($result, $previousStatusValue, $outcome);
 		$this->processUnsortedStuff($tsumego, $result, $previousStatusValue);
 
