@@ -121,9 +121,10 @@ class PlayResultProcessorComponent extends Component
 		// The pool is fed from every mode: a solved problem that goes wrong enters the
 		// review ladder, a clean solve climbs it. Players outside the rollout write
 		// nothing, so releasing the feature does not hand them a backlog of old mistakes.
-		// The training says it is the one playing, since a replay there counts for nothing.
+		// The training says it is the one playing, since a replay there counts for nothing,
+		// and so does the time mode, the one mode where a solved problem is not free play.
 		if (Feature::enabled(FeatureKey::MistakeTraining))
-			MistakeTraining::recordResult(Auth::getUserID(), $tsumegoID, $outcome, $previousStatusValue, Auth::isInMistakeTrainingMode());
+			MistakeTraining::recordResult(Auth::getUserID(), $tsumegoID, $outcome, $previousStatusValue, Auth::isInMistakeTrainingMode(), Auth::isInTimeMode());
 		$this->processErrorAchievement($result, $previousStatusValue, $outcome);
 		$this->processUnsortedStuff($tsumego, $result, $previousStatusValue);
 

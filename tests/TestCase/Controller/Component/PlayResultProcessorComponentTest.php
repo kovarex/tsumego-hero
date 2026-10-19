@@ -1432,8 +1432,9 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 	/**
 	 * A play outside the training reports its first mistake and then the solve, so
-	 * the pool sees both outcomes. The failure takes the problem back to the bottom
-	 * and the solve that needed a retry must not earn a rung.
+	 * the pool sees both outcomes. On a problem waiting for its review the failure
+	 * takes it back to the bottom and the solve that needed a retry must not earn a
+	 * rung.
 	 */
 	public function testARetryAfterAFailureLeavesTheLadderWhereTheFailurePutIt(): void
 	{
@@ -1450,6 +1451,8 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$this->assertSame(1, (int) MistakeTraining::getPoolRow($userId, $tsumegoId)['rung'],
 			'A clean solve on the review day climbs one rung');
 
+		Util::execute('UPDATE tsumego_status SET status = ? WHERE user_id = ? AND tsumego_id = ?',
+			[TsumegoStatus::$REVIEW, $userId, $tsumegoId]);
 		$this->failResult($context);
 		$this->solveAfterMistake($context);
 
@@ -1459,5 +1462,20 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 			date('Y-m-d', strtotime(MistakeTraining::today() . ' +1 day')),
 			date('Y-m-d', strtotime($row['next_due'])),
 			'A problem solved after a mistake comes back tomorrow');
+	}
+
+	/**
+	 * A solved problem is the player's to play with freely in the level mode, so a
+	 * mistake on it neither brings it into the training nor takes it down there.
+	 */
+	public function testAMistakeOnASolvedProblemInTheLevelModeIsFreePlay(): void
+	{
+		$context = new ContextPreparator(['tsumego' => ['status' => 'S']]);
+		$userId = $context->user['id'];
+		$tsumegoId = (int) $context->tsumegos[0]['id'];
+
+		$this->solveWithMisplays($context);
+
+		$this->assertNull(MistakeTraining::getPoolRow($userId, $tsumegoId));
 	}
 }

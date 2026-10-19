@@ -178,7 +178,9 @@
 		<p class="title4">Mistake Training</p>
 		<div class="new1">
 			A problem goes to the mistake training when you solve it but had made a mistake first, or when you make a mistake on
-			a problem you had solved before.
+			a problem you had solved before and that is waiting for its review or forgotten. A problem you solved is yours to
+			play with freely in the level and rating modes: nothing you do on it there changes the training, unless it is due
+			for review that day. In the time mode it is played against the clock like any other, so a mistake there counts.
 			<br><br>
 			Every clean solve pushes the next review further away: a day, then two, four, eight and fifteen days, then a month,
 			two months and four months. Eight clean solves and the problem leaves the training. A mistake sends it back to the
@@ -197,7 +199,7 @@
 			The number next to the mistake training entry in the play menu is the number of problems waiting today. A problem
 			is played as training only when you open it from there. Opened from a collection, it is played normally, with XP
 			and hearts. Played that way before its review day, a clean solve does not move it up the training, but a mistake
-			still sends it back to the bottom.
+			on a problem waiting for its review or forgotten still sends it back to the bottom.
 			<br><br>
 			The buttons under the board are today's training, and they keep their order the whole day. A grey button is still
 			waiting, a green one is solved today. The badge under the number is the rung of the problem, like a military rank:

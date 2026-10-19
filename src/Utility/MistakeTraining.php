@@ -122,22 +122,31 @@ class MistakeTraining
 	 * does not climb: playing a problem again before its review is won by short-term
 	 * memory, and Reset and solve again would graduate it in a minute.
 	 *
-	 * Running out of time says nothing about whether a problem is known, so a
-	 * timeout is ignored.
+	 * A problem the player solved (S) or mastered (C) is free play in the level and
+	 * rating modes: the player tries things on it, so nothing played there brings it
+	 * in or moves it, unless it is due. The time mode ($inTimeMode) plays it against
+	 * the clock like any other problem, so a mistake there counts. Running out of time
+	 * says nothing about whether a problem is known, so a timeout is ignored.
 	 */
-	public static function recordResult(int $userId, int $tsumegoId, PlayOutcome $outcome, ?string $oldStatus, bool $inTraining = false): void
+	public static function recordResult(int $userId, int $tsumegoId, PlayOutcome $outcome, ?string $oldStatus, bool $inTraining = false, bool $inTimeMode = false): void
 	{
 		if ($outcome === PlayOutcome::TimedOut)
 			return;
+
+		$freePlay = !$inTraining && !$inTimeMode
+			&& ($oldStatus === TsumegoStatus::$SOLVED || $oldStatus === TsumegoStatus::$MASTERED);
 
 		$pool = self::getPoolRow($userId, $tsumegoId);
 
 		if ($pool === null)
 		{
 			// Entry: a problem that was solved and still went wrong. Solved now after a
-			// mistake, or solved once (forgotten counts, it was solved before) and failed
-			// now. A problem the player has never solved belongs to practice instead of
-			// review, so it stays out however often it is failed.
+			// mistake, or solved once and failed now: waiting for its review (W),
+			// forgotten (X), or solved in the time mode. A problem the player has never
+			// solved belongs to practice instead of review, so it stays out however
+			// often it is failed.
+			if ($freePlay)
+				return;
 			$solvedAfterMistake = $outcome === PlayOutcome::SolvedAfterMistake;
 			$lapsed = $outcome === PlayOutcome::Failed
 				&& (TsumegoUtil::isSolvedStatus($oldStatus) || $oldStatus === TsumegoStatus::$FORGOTTEN);
@@ -149,8 +158,9 @@ class MistakeTraining
 
 		$due = self::isRowDue($pool);
 
-		// Played again from today's row after it was solved: nothing to review.
-		if (!$due && $inTraining)
+		// Played again from today's row after it was solved: nothing to review. Free
+		// play leaves the schedule alone too; only a review counts wherever it is played.
+		if (!$due && ($inTraining || $freePlay))
 			return;
 
 		$rung = (int) $pool['rung'];
