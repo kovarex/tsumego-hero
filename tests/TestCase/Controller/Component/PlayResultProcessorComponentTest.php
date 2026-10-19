@@ -1110,14 +1110,15 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$button = $this->failResult($context)['mistake_training_button'];
 		$this->assertSame('N', $button['status'], 'A miss stays grey until it is solved');
 		$this->assertSame('Missed today, try again', $button['label']);
-		$this->assertSame('<div class="problem-nav__rung problem-nav__rung--chevron" data-rung="0" role="img" aria-label="Rung 1 of 8">'
-			. RungInsignia::render(RungInsignia::CHEVRON, 1) . '</div>', $button['badge'], 'The mistake took the problem to the bottom rung, one chevron');
+		$this->assertSame('<div class="problem-nav__rung problem-nav__rung--chevron problem-nav__rung--missed" data-rung="0" role="img" aria-label="Rung 1 of 8, missed today">'
+			. RungInsignia::render(RungInsignia::CHEVRON, 1) . '</div>', $button['badge'], 'The mistake took the problem to the bottom rung, one chevron, ringed red for the miss');
 
 		$button = $this->solve($context)['mistake_training_button'];
 		$this->assertSame('S', $button['status']);
 		$this->assertSame('Solved today', $button['label']);
 		$this->assertStringContainsString('next review tomorrow', $button['description']);
 		$this->assertStringContainsString('data-rung="0" role="img" aria-label="Rung 1 of 8"', $button['badge'], 'The retry earned no rung');
+		$this->assertStringNotContainsString('problem-nav__rung--missed', $button['badge'], 'And solving it takes the red ring away');
 	}
 
 	public static function cleanSolveBadgeProvider(): array

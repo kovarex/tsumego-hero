@@ -672,6 +672,7 @@ class MistakeTraining
 		{
 			if (self::wasMissedToday($row))
 			{
+				$button->missedToday = true;
 				$button->label = 'Missed today, try again';
 				$button->description = $rungText . '. Solve it today and it comes back tomorrow.';
 			}

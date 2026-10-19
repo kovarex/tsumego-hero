@@ -257,6 +257,13 @@
 	color: var(--status-g-highlight);
 }
 
+/* Missed today: the item stays grey, a red ring around its insignia tells it from
+   one not tried yet */
+.problem-nav__rung--missed
+{
+	box-shadow: 0 0 0 2px var(--feedback-error);
+}
+
 .preview-zoomed .problem-nav__number,
 .preview-zoomed .problem-nav__ratio,
 .preview-zoomed .problem-nav__time,

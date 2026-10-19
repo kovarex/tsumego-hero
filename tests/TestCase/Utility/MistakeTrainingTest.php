@@ -677,7 +677,7 @@ class MistakeTrainingTest extends TestCaseWithAuth
 
 	public function testAMistakeKeepsTheProblemDueToday(): void
 	{
-		$context = $this->prepareTraining(['mistake_training_rung' => 2]);
+		$context = $this->prepareTraining(['mistake_training_rung' => 2], []);
 
 		$this->playInTraining($context, 0, PlayOutcome::Failed);
 
@@ -693,6 +693,10 @@ class MistakeTrainingTest extends TestCaseWithAuth
 		$this->assertSame('Missed today, try again', $button->label);
 		$this->assertSame('Rung 1 of 8. Solve it today and it comes back tomorrow.', $button->description,
 			'The tooltip of a miss must not read as if it was solved');
+		$this->assertStringContainsString('problem-nav__rung--missed', $button->renderRungBadge(),
+			'A red ring tells it from a problem not tried yet');
+		$this->assertStringNotContainsString('problem-nav__rung--missed',
+			$this->trainingButtons($context)[$this->tsumegoId($context, 1)]->renderRungBadge());
 	}
 
 	public function testASecondMistakeTheSameDayKeepsItDue(): void

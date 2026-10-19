@@ -90,8 +90,9 @@ class TsumegoButton
 			return '<div class="problem-nav__rung problem-nav__rung--graduated" role="img" aria-label="Graduated">'
 				. RungInsignia::renderCrown() . '</div>';
 		[$kind, $count] = RungInsignia::of($this->rung, count(MistakeTraining::ladder()));
-		return '<div class="problem-nav__rung problem-nav__rung--' . $kind . '" data-rung="' . $this->rung . '"'
-			. ' role="img" aria-label="' . MistakeTraining::rungName($this->rung) . '">'
+		return '<div class="problem-nav__rung problem-nav__rung--' . $kind . ($this->missedToday ? ' problem-nav__rung--missed' : '') . '"'
+			. ' data-rung="' . $this->rung . '"'
+			. ' role="img" aria-label="' . MistakeTraining::rungName($this->rung) . ($this->missedToday ? ', missed today' : '') . '">'
 			. RungInsignia::render($kind, $count) . '</div>';
 	}
 
@@ -135,6 +136,9 @@ class TsumegoButton
 
 	/** Graduated from the training today, which has a badge of its own. */
 	public bool $graduated = false;
+
+	/** Missed in the training today and not solved yet: still grey, with a red ring on its badge. */
+	public bool $missedToday = false;
 
 	/**
 	 * Tooltip texts in place of the ones of the status, for a row whose colours mean
