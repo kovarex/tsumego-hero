@@ -712,7 +712,7 @@ use App\Utility\ViteManifest;
 
 	// The mistake training button of the open problem as the server stored its result:
 	// the colour, the rung badge and the tooltip that explains them
-	function updateMistakeTrainingButton(button)
+	function updateMistakeTrainingButton(button, xp)
 	{
 		let current = document.getElementById("currentNavigationButton");
 		if (!current)
@@ -729,15 +729,22 @@ use App\Utility\ViteManifest;
 
 		// A solve says under "Correct!" what it did to the problem: its next review, or its graduation
 		let status = document.getElementById("status");
-		let outcome = status.querySelector(".mistake-training-outcome");
-		if (outcome)
-			outcome.remove();
+		status.querySelectorAll(".mistake-training-outcome").forEach(old => old.remove());
+		let outcome;
 		if (button.status === 'S' && problemSolved)
 		{
 			outcome = document.createElement("p");
 			outcome.className = "mistake-training-outcome";
-			outcome.textContent = button.description;
+			let earned = xp ? xp.review + xp.graduation : 0;
+			outcome.textContent = (earned > 0 ? "+" + earned + " XP \u00b7 " : "") + button.description;
 			status.appendChild(outcome);
+			if (xp && xp.clear > 0)
+			{
+				let clear = document.createElement("p");
+				clear.className = "mistake-training-outcome mistake-training-outcome--clear";
+				clear.textContent = "All clear today: +" + xp.clear + " XP";
+				outcome.after(clear);
+			}
 
 			// The last problem of the day is solved, so Next leads to the end of the training
 			if (!nextButtonLink)
@@ -1620,7 +1627,7 @@ use App\Utility\ViteManifest;
 					result.achievement_updates.forEach(showAchievementPopup);
 			// The training row says what today did with the problem, which this result changed
 			if (result.mistake_training_button)
-				updateMistakeTrainingButton(result.mistake_training_button);
+				updateMistakeTrainingButton(result.mistake_training_button, result.mistake_training_xp);
 		}).catch(err => {
 			console.error('submitResult failed:', err);
 		});

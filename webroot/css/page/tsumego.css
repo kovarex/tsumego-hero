@@ -441,6 +441,12 @@ a[data-tsumego-id]:hover .tooltip-desc
 	white-space: normal;
 }
 
+/* The bonus for clearing the day, under the outcome */
+.mistake-training-outcome--clear
+{
+	font-weight: var(--font-weight-bold);
+}
+
 /* Mistake training: the status keeps room for its two lines, so the board does not
    move when a result shows, and stays clear of the board */
 .play-status--training #xpDisplayDiv
