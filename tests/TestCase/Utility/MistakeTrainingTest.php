@@ -2,6 +2,7 @@
 
 use App\Utility\MistakeTraining;
 use App\Utility\PlayOutcome;
+use App\Utility\Util;
 
 class MistakeTrainingTest extends TestCaseWithAuth
 {
@@ -17,6 +18,19 @@ class MistakeTrainingTest extends TestCaseWithAuth
 	private function enterTraining(int $userId, int $tsumegoId): void
 	{
 		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedAfterMistake, null);
+	}
+
+	/**
+	 * The review day of a problem comes and it is solved cleanly, which is how it
+	 * climbs: a clean solve before that day does not count.
+	 */
+	private function reviewCleanly(int $userId, int $tsumegoId): void
+	{
+		Util::execute(
+			'UPDATE mistake_training_pool SET next_due = ?, last_review_day = NULL, last_review_result = NULL WHERE user_id = ? AND tsumego_id = ?',
+			[date('Y-m-d H:i:s', strtotime('-1 minute')), $userId, $tsumegoId]
+		);
+		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null);
 	}
 
 	public function testCleanSolveDoesNotEnterTraining(): void
@@ -73,7 +87,7 @@ class MistakeTrainingTest extends TestCaseWithAuth
 		}
 	}
 
-	public function testAFailOnASolvedProblemDoesNotEnter(): void
+	public function testAFailOnASolvedProblemEntersTraining(): void
 	{
 		foreach (['S', 'W', 'C'] as $status)
 		{
@@ -83,9 +97,31 @@ class MistakeTrainingTest extends TestCaseWithAuth
 
 			MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::Failed, $status);
 
-			$this->assertNull($this->poolRow($userId, $tsumegoId),
-				"A problem in status $status is handled by the review flow, not by the training");
+			$row = $this->poolRow($userId, $tsumegoId);
+			$this->assertNotNull($row, "A problem in status $status was solved before, so a mistake on it is one to review");
+			$this->assertSame(0, (int) $row['rung']);
+			$this->assertDaysAhead(1, $row, 'It is reviewed tomorrow like any new training problem');
 		}
+	}
+
+	public function testATimeoutIsNotAMistake(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+		$userId = $context->user['id'];
+		$tsumegoId = $context->tsumegos[0]['id'];
+
+		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::TimedOut, 'S');
+		$this->assertNull($this->poolRow($userId, $tsumegoId), 'Running out of time does not bring a solved problem in');
+
+		$this->enterTraining($userId, $tsumegoId);
+		$this->reviewCleanly($userId, $tsumegoId);
+		$before = $this->poolRow($userId, $tsumegoId);
+		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::TimedOut, 'S');
+
+		$row = $this->poolRow($userId, $tsumegoId);
+		$this->assertSame(1, (int) $row['rung'], 'Running out of time says nothing about whether the problem is known');
+		$this->assertSame(0, (int) $row['lapses']);
+		$this->assertSame($before['next_due'], $row['next_due']);
 	}
 
 	public function testForgottenProblemEntersOnFail(): void
@@ -121,10 +157,30 @@ class MistakeTrainingTest extends TestCaseWithAuth
 		$tsumegoId = $context->tsumegos[0]['id'];
 
 		$this->enterTraining($userId, $tsumegoId);
-		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null);
+		$this->reviewCleanly($userId, $tsumegoId);
 
 		$row = $this->poolRow($userId, $tsumegoId);
 		$this->assertSame(1, (int) $row['rung']);
+	}
+
+	/**
+	 * Playing a problem again before its review, in the level mode, is won by the
+	 * short-term memory: Reset and solve again would otherwise graduate it in a minute.
+	 */
+	public function testACleanSolveBeforeTheReviewDayDoesNotClimb(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+		$userId = $context->user['id'];
+		$tsumegoId = $context->tsumegos[0]['id'];
+
+		$this->enterTraining($userId, $tsumegoId);
+		$before = $this->poolRow($userId, $tsumegoId);
+		for ($i = 0; $i < 8; $i++)
+			MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, 'S');
+
+		$row = $this->poolRow($userId, $tsumegoId);
+		$this->assertSame(0, (int) $row['rung'], 'Clean solves before the review day do not climb');
+		$this->assertSame($before['next_due'], $row['next_due'], 'And they do not move the review');
 	}
 
 	public function testSolveWithMistakeKeepsTheRung(): void
@@ -134,8 +190,8 @@ class MistakeTrainingTest extends TestCaseWithAuth
 		$tsumegoId = $context->tsumegos[0]['id'];
 
 		$this->enterTraining($userId, $tsumegoId);
-		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null);
-		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null);
+		$this->reviewCleanly($userId, $tsumegoId);
+		$this->reviewCleanly($userId, $tsumegoId);
 		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedAfterMistake, null);
 
 		$row = $this->poolRow($userId, $tsumegoId);
@@ -150,8 +206,8 @@ class MistakeTrainingTest extends TestCaseWithAuth
 		$tsumegoId = $context->tsumegos[0]['id'];
 
 		$this->enterTraining($userId, $tsumegoId);
-		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null);
-		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null);
+		$this->reviewCleanly($userId, $tsumegoId);
+		$this->reviewCleanly($userId, $tsumegoId);
 		$this->assertSame(2, (int) $this->poolRow($userId, $tsumegoId)['rung']);
 
 		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::Failed, null);
@@ -189,7 +245,7 @@ class MistakeTrainingTest extends TestCaseWithAuth
 
 		foreach ([1 => 2, 2 => 4, 3 => 8, 4 => 15, 5 => 30, 6 => 60, 7 => 120] as $rung => $days)
 		{
-			MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null);
+			$this->reviewCleanly($userId, $tsumegoId);
 			$row = $this->poolRow($userId, $tsumegoId);
 			$this->assertSame($rung, (int) $row['rung']);
 			$this->assertDaysAhead($days, $row, "A clean solve at rung $rung waits $days days");
@@ -205,7 +261,7 @@ class MistakeTrainingTest extends TestCaseWithAuth
 
 		$this->enterTraining($userId, $tsumegoId);
 		for ($i = 0; $i < 7; $i++)
-			MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null);
+			$this->reviewCleanly($userId, $tsumegoId);
 		$this->assertSame(7, (int) $this->poolRow($userId, $tsumegoId)['rung']);
 
 		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::Failed, null);
@@ -228,14 +284,14 @@ class MistakeTrainingTest extends TestCaseWithAuth
 		$tsumegoId = $context->tsumegos[0]['id'];
 
 		$this->enterTraining($userId, $tsumegoId);
-		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null);
-		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null);
-		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null);
-		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null);
-		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null);
-		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null);
-		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null);
-		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null);
+		$this->reviewCleanly($userId, $tsumegoId);
+		$this->reviewCleanly($userId, $tsumegoId);
+		$this->reviewCleanly($userId, $tsumegoId);
+		$this->reviewCleanly($userId, $tsumegoId);
+		$this->reviewCleanly($userId, $tsumegoId);
+		$this->reviewCleanly($userId, $tsumegoId);
+		$this->reviewCleanly($userId, $tsumegoId);
+		$this->reviewCleanly($userId, $tsumegoId);
 
 		$row = $this->poolRow($userId, $tsumegoId);
 		$this->assertNotNull($row, 'The row stays, as the memory that the training knows the problem');
@@ -251,7 +307,7 @@ class MistakeTrainingTest extends TestCaseWithAuth
 
 		$this->enterTraining($userId, $tsumegoId);
 		for ($i = 0; $i < 8; $i++)
-			MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null);
+			$this->reviewCleanly($userId, $tsumegoId);
 
 		$this->assertSame(0, MistakeTraining::importCandidates($userId),
 			'A problem the training mastered is not a past mistake to import again');
@@ -265,7 +321,7 @@ class MistakeTrainingTest extends TestCaseWithAuth
 
 		$this->enterTraining($userId, $tsumegoId);
 		for ($i = 0; $i < 8; $i++)
-			MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null);
+			$this->reviewCleanly($userId, $tsumegoId);
 
 		$this->assertFalse(MistakeTraining::isDue($userId, $tsumegoId),
 			'A graduated problem has no review to be due for');
@@ -279,7 +335,7 @@ class MistakeTrainingTest extends TestCaseWithAuth
 
 		$this->enterTraining($userId, $tsumegoId);
 		for ($i = 0; $i < 8; $i++)
-			MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null);
+			$this->reviewCleanly($userId, $tsumegoId);
 
 		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::Failed, null);
 
@@ -803,7 +859,7 @@ class MistakeTrainingTest extends TestCaseWithAuth
 		$userId = $context->user['id'];
 		$tsumegoId = $context->tsumegos[0]['id'];
 		$this->enterTraining($userId, $tsumegoId);
-		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null);
+		$this->reviewCleanly($userId, $tsumegoId);
 
 		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::Failed, 'S');
 
@@ -819,7 +875,7 @@ class MistakeTrainingTest extends TestCaseWithAuth
 		$userId = $context->user['id'];
 		$tsumegoId = $context->tsumegos[0]['id'];
 		$this->enterTraining($userId, $tsumegoId);
-		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null);
+		$this->reviewCleanly($userId, $tsumegoId);
 
 		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::Failed, 'S');
 		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::Failed, 'F');

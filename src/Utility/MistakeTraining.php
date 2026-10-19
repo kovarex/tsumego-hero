@@ -13,9 +13,9 @@ use TsumegoStatus;
  *
  * The pool (mistake_training_pool) is the single source of truth: one row per
  * (user, tsumego) tracking the review-ladder rung, the number of lapses, the next
- * review day, and the day and result of the last review. Only a clean solve
- * advances the rung, and a clean solve at the top rung graduates, removing the
- * problem from the schedule.
+ * review day, and the day and result of the last review. Only a clean solve of a
+ * problem that is due advances the rung, and a clean solve at the top rung
+ * graduates, removing the problem from the schedule.
  * A mistake on a problem that is due takes it back to the bottom but keeps it
  * due: it waits in today's training until it is solved, and that solve, like any
  * solve that needed a retry, earns nothing and brings it back tomorrow. Training
@@ -117,22 +117,30 @@ class MistakeTraining
 	 *
 	 * A problem that is not due was reviewed already or waits for a later day. In
 	 * the training ($inTraining) that is a replay of a problem solved today, which
-	 * counts for nothing. Outside the training the result still moves the ladder: a
-	 * clean solve climbs, a solve after a mistake keeps the rung, a mistake goes back
-	 * to the bottom, and the problem is due tomorrow unless it climbed.
+	 * counts for nothing. Outside the training a mistake still takes it to the bottom
+	 * and a solve after a mistake keeps the rung, both due tomorrow, but a clean solve
+	 * does not climb: playing a problem again before its review is won by short-term
+	 * memory, and Reset and solve again would graduate it in a minute.
+	 *
+	 * Running out of time says nothing about whether a problem is known, so a
+	 * timeout is ignored.
 	 */
 	public static function recordResult(int $userId, int $tsumegoId, PlayOutcome $outcome, ?string $oldStatus, bool $inTraining = false): void
 	{
+		if ($outcome === PlayOutcome::TimedOut)
+			return;
+
 		$pool = self::getPoolRow($userId, $tsumegoId);
 
 		if ($pool === null)
 		{
 			// Entry: a problem that was solved and still went wrong. Solved now after a
-			// mistake, or solved once and failed now. A problem the player has never
-			// solved belongs to practice instead of review, so it stays out however
-			// often it is failed.
+			// mistake, or solved once (forgotten counts, it was solved before) and failed
+			// now. A problem the player has never solved belongs to practice instead of
+			// review, so it stays out however often it is failed.
 			$solvedAfterMistake = $outcome === PlayOutcome::SolvedAfterMistake;
-			$lapsed = $outcome === PlayOutcome::Failed && $oldStatus === TsumegoStatus::$FORGOTTEN;
+			$lapsed = $outcome === PlayOutcome::Failed
+				&& (TsumegoUtil::isSolvedStatus($oldStatus) || $oldStatus === TsumegoStatus::$FORGOTTEN);
 			if (!$solvedAfterMistake && !$lapsed)
 				return;
 			self::enterPool($userId, $tsumegoId);
@@ -165,6 +173,10 @@ class MistakeTraining
 				self::setRung($userId, $tsumegoId, 0, self::$LADDER[0]);
 			return;
 		}
+
+		// A clean solve before the review is an early replay, see above.
+		if (!$due && $outcome === PlayOutcome::SolvedClean)
+			return;
 
 		// A solve that needed a retry earns nothing but costs nothing either, and the
 		// problem comes back tomorrow. On a problem that is due, a mistake earlier today

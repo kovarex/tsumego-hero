@@ -963,11 +963,20 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 	{
 		$context = new ContextPreparator(['tsumego' => 1]);
 
+		$userId = $context->user['id'];
+		$tsumegoId = (int) $context->tsumegos[0]['id'];
 		$this->solveWithMisplays($context);
+
+		// Reset and solve again in the level mode, before the review day
+		$this->solve($context);
+		$this->assertSame(0, (int) MistakeTraining::getPoolRow($userId, $tsumegoId)['rung'],
+			'A clean replay before the review day is won by short-term memory and does not climb');
+
+		MistakeTraining::makeDueNow($userId, $tsumegoId);
 		$this->solve($context);
 
-		$row = MistakeTraining::getPoolRow($context->user['id'], (int) $context->tsumegos[0]['id']);
-		$this->assertSame(1, (int) $row['rung'], 'Clean solve after entering training should climb one rung');
+		$row = MistakeTraining::getPoolRow($userId, $tsumegoId);
+		$this->assertSame(1, (int) $row['rung'], 'A clean solve on the review day climbs one rung');
 		$this->assertGreaterThan(
 			date('Y-m-d H:i:s'),
 			$row['next_due'],
@@ -1370,9 +1379,10 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$this->assertSame(0, (int) MistakeTraining::getPoolRow($userId, $tsumegoId)['rung'],
 			'A solve after a mistake enters the ladder at the bottom');
 
+		MistakeTraining::makeDueNow($userId, $tsumegoId);
 		$this->solve($context);
 		$this->assertSame(1, (int) MistakeTraining::getPoolRow($userId, $tsumegoId)['rung'],
-			'A clean solve climbs one rung');
+			'A clean solve on the review day climbs one rung');
 
 		$this->failResult($context);
 		$this->solveAfterMistake($context);
