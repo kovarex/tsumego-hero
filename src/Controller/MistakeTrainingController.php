@@ -46,8 +46,6 @@ class MistakeTrainingController extends AppController
 				$totalInTraining = MistakeTraining::totalInTraining($userId);
 				$this->set('totalInTraining', $totalInTraining);
 				$this->set('everTrained', MistakeTraining::hasEverTrained($userId));
-				// Back to the level mode on the problem the player was on, like the homepage
-				$this->set('continueLink', '/tsumegos/play/' . (int) ($_COOKIE['lastVisit'] ?? Constants::$DEFAULT_TSUMEGO_ID) . '?mode=' . Constants::$LEVEL_MODE);
 				// Offered on every visit that finds nothing due, so a player can keep pulling
 				// old mistakes in as the training empties, and never more than a day at once.
 				$this->set('importCandidates', MistakeTraining::importCandidates($userId));
@@ -136,9 +134,9 @@ class MistakeTrainingController extends AppController
 			{
 				case 'shift':
 					// Days of time passing: the reviews come that much closer, so they move back.
-					$days = (int) ($this->request->data['days'] ?? 1);
+					$days = max(1, (int) ($this->request->data['days'] ?? 1));
 					$moved = MistakeTraining::shiftReviews($userId, -$days);
-					$notice = abs($days) . ' day' . (abs($days) == 1 ? '' : 's') . ($days >= 0 ? ' passed' : ' went back') . ' for ' . $moved . ' problem' . ($moved == 1 ? '' : 's') . '.';
+					$notice = $days . ' day' . ($days == 1 ? '' : 's') . ' passed for ' . $moved . ' problem' . ($moved == 1 ? '' : 's') . '.';
 					break;
 				case 'rung':
 					$rung = (int) ($this->request->data['rung'] ?? 0);
