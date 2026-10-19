@@ -193,9 +193,10 @@
 			and hearts.
 			<br><br>
 			The buttons under the board are today's training, and they keep their order the whole day. A grey button is still
-			waiting, a green one is solved today. The badge under the number is the rung of the problem, from a fresh mistake
-			(1d, red) to the last review before graduation (60d), and a star marks a problem that graduated today. Next skips
-			what you solved already, and a solved problem played again from the row does not count.
+			waiting, a green one is solved today. The badge under the number is the rung of the problem, like a military rank:
+			chevrons for a fresh mistake and the first reviews, stars for the last reviews before graduation, and a crown marks
+			a problem that graduated today. The tooltip of a button names the rung and says when the problem comes back. Next
+			skips what you solved already, and a solved problem played again from the row does not count.
 			<br><br>
 			<b>All caught up</b><br><br>
 			<img src="/img/mf-mistake.png" width="100%">

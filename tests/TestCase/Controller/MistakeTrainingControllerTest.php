@@ -237,7 +237,7 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		$this->testAction('/mistake-training/play/' . self::setConnectionId($context, 0), ['return' => 'contents']);
 
 		$this->assertStringContainsString('problem-nav__item problem-nav__item--S problem-nav__item--current', $this->view);
-		$this->assertStringContainsString('<div class="problem-nav__rung problem-nav__rung--0">', $this->view,
+		$this->assertStringContainsString('<div class="problem-nav__rung problem-nav__rung--chevron" data-rung="0" role="img" aria-label="Rung 1 of 6">', $this->view,
 			'The retry earned no rung back');
 		$this->assertStringContainsString('Already solved today. This try does not count.', $this->view);
 	}
@@ -364,8 +364,8 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		$this->assertStringContainsString('Press Reset to try again', $browser->find('#status')->getText());
 		$this->assertSame(0, (int) MistakeTraining::getPoolRow($userId, $tsumegoId)['rung'], 'A mistake goes back to the bottom');
 		$this->assertTrue(MistakeTraining::isDue($userId, $tsumegoId), 'A mistake keeps the problem due today');
-		$this->assertStringContainsString('problem-nav__rung--0',
-			$browser->find('.problem-nav__item--current .problem-nav__rung')->getAttribute('class'),
+		$this->assertSame('Rung 1 of 6',
+			$browser->find('.problem-nav__item--current .problem-nav__rung')->getAttribute('aria-label'),
 			'The button shows the bottom rung the mistake took the problem to');
 
 		$status = $browser->find('#status');

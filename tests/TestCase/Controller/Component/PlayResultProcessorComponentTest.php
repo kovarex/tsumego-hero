@@ -10,6 +10,7 @@ use App\Utility\HeroPowers;
 use App\Utility\MistakeTraining;
 use App\Utility\PlayOutcome;
 use App\Utility\Rating;
+use App\Utility\RungInsignia;
 use App\Utility\SetCompletionCounter;
 use App\Utility\TsumegoUtil;
 use App\Utility\Util;
@@ -1100,13 +1101,43 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$button = $this->failResult($context)['mistake_training_button'];
 		$this->assertSame('N', $button['status'], 'A miss stays grey until it is solved');
 		$this->assertSame('Missed today, try again', $button['label']);
-		$this->assertStringContainsString('problem-nav__rung--0', $button['badge'], 'The mistake took the problem to the bottom rung');
+		$this->assertSame('<div class="problem-nav__rung problem-nav__rung--chevron" data-rung="0" role="img" aria-label="Rung 1 of 6">'
+			. RungInsignia::render(RungInsignia::CHEVRON, 1) . '</div>', $button['badge'], 'The mistake took the problem to the bottom rung, one chevron');
 
 		$button = $this->solve($context)['mistake_training_button'];
 		$this->assertSame('S', $button['status']);
 		$this->assertSame('Solved today', $button['label']);
 		$this->assertStringContainsString('next review tomorrow', $button['description']);
-		$this->assertStringContainsString('problem-nav__rung--0', $button['badge'], 'The retry earned no rung');
+		$this->assertStringContainsString('data-rung="0" role="img" aria-label="Rung 1 of 6"', $button['badge'], 'The retry earned no rung');
+	}
+
+	public static function cleanSolveBadgeProvider(): array
+	{
+		return [
+			'the first star climbs to the second' => [3, 'data-rung="4" role="img" aria-label="Rung 5 of 6">' . RungInsignia::render(RungInsignia::STAR, 2)],
+			'the last star graduates to the crown' => [5, 'problem-nav__rung--graduated" role="img" aria-label="Graduated">' . RungInsignia::renderCrown()],
+		];
+	}
+
+	/**
+	 * A clean solve climbs a rung, and the badge the result redraws the button with
+	 * shows the rank it climbed to.
+	 *
+	 * @dataProvider cleanSolveBadgeProvider
+	 */
+	public function testACleanSolveInTheTrainingRedrawsTheBadgeOneRankUp(int $rung, string $badge): void
+	{
+		$context = new ContextPreparator([
+			'tsumego' => [
+				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day')), 'mistake_training_rung' => $rung],
+			],
+		]);
+		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+
+		$button = $this->solve($context)['mistake_training_button'];
+
+		$this->assertSame('S', $button['status']);
+		$this->assertStringEndsWith($badge . '</div>', $button['badge']);
 	}
 
 	public function testAResultOutsideTheTrainingSaysNothingAboutItsButtons(): void

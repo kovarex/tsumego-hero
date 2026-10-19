@@ -325,6 +325,15 @@ class MistakeTraining
 	}
 
 	/**
+	 * The rung as a player reads it, counted from one, for the tooltip and the
+	 * accessible name of the badge.
+	 */
+	public static function rungName(int $rung): string
+	{
+		return 'Rung ' . ($rung + 1) . ' of ' . count(self::$LADDER);
+	}
+
+	/**
 	 * The pool of one player, soonest review first, for the admin toolbox.
 	 *
 	 * @return array<int, array<string, mixed>>
@@ -563,7 +572,7 @@ class MistakeTraining
 	private static function describeButton(TsumegoButton $button, array $row): void
 	{
 		$rung = (int) $row['rung'];
-		$rungText = 'Rung ' . ($rung + 1) . ' of ' . count(self::$LADDER);
+		$rungText = self::rungName($rung);
 		$button->rung = $rung;
 
 		if (self::isRowDue($row))

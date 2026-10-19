@@ -76,17 +76,23 @@ class TsumegoButton
 	}
 
 	/**
-	 * The badge of a training button: a colour of its own for every rung, from a
-	 * fresh mistake to the last review before graduation, with the wait of the rung,
-	 * so the row tells a new mistake from a late review at a glance. The play page
-	 * swaps it in once a result moves the rung.
+	 * The badge of a training button: the rank insignia of the rung (see
+	 * RungInsignia), chevrons for the first rungs and stars for the last reviews
+	 * before graduation, and a crown for a graduation of today, so the row tells a
+	 * fresh mistake from a late review at a glance. It shows no wait, since "1d" reads
+	 * as one dan in Go; the tooltip says when the problem comes back. The name is an
+	 * aria-label rather than a title, which would pop a second tooltip over the one
+	 * of the button. The play page swaps the badge in once a result moves the rung.
 	 */
 	public function renderRungBadge(): string
 	{
 		if ($this->graduated)
-			return '<div class="problem-nav__rung problem-nav__rung--graduated">&#9733;</div>';
-		return '<div class="problem-nav__rung problem-nav__rung--' . $this->rung . '">'
-			. MistakeTraining::ladder()[$this->rung] . 'd</div>';
+			return '<div class="problem-nav__rung problem-nav__rung--graduated" role="img" aria-label="Graduated">'
+				. RungInsignia::renderCrown() . '</div>';
+		[$kind, $count] = RungInsignia::of($this->rung, count(MistakeTraining::ladder()));
+		return '<div class="problem-nav__rung problem-nav__rung--' . $kind . '" data-rung="' . $this->rung . '"'
+			. ' role="img" aria-label="' . MistakeTraining::rungName($this->rung) . '">'
+			. RungInsignia::render($kind, $count) . '</div>';
 	}
 
 	/**

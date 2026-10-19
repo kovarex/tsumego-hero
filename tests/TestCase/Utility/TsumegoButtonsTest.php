@@ -2,6 +2,7 @@
 
 use App\Utility\MistakeTraining;
 use App\Utility\PlayOutcome;
+use App\Utility\RungInsignia;
 use App\Utility\TsumegoButton;
 
 class TsumegoButtonsTest extends TestCaseWithAuth
@@ -165,11 +166,21 @@ class TsumegoButtonsTest extends TestCaseWithAuth
 
 		$buttons = MistakeTraining::buildQueueButtons((int) $context->tsumegos[0]['set-connections'][0]['id']);
 
+		// one, two and three chevrons, then one, two and three stars, like military ranks
+		$expected = [['chevron', 1], ['chevron', 2], ['chevron', 3], ['star', 1], ['star', 2], ['star', 3]];
 		foreach (MistakeTraining::ladder() as $rung => $days)
 		{
 			$html = $this->renderButton($buttons[$rung]);
-			$this->assertStringContainsString('<div class="problem-nav__rung problem-nav__rung--' . $rung . '">' . $days . 'd</div>', $html,
-				"The button of a problem on rung $rung shows its own badge with the wait of the rung");
+			[$kind, $count] = $expected[$rung];
+			$badge = self::badge($html);
+			$this->assertStringStartsWith('<div class="problem-nav__rung problem-nav__rung--' . $kind . '" data-rung="' . $rung . '"'
+				. ' role="img" aria-label="Rung ' . ($rung + 1) . ' of 6">', $badge,
+				"The button of a problem on rung $rung shows its insignia, named for readers");
+			$this->assertSame(RungInsignia::render($kind, $count), substr($badge, strpos($badge, '<svg'), -strlen('</div>')),
+				"Rung $rung is drawn as $count $kind symbols");
+			$this->assertDoesNotMatchRegularExpression('/\d+d</', $badge, 'The badge shows no wait, "1d" reads as one dan');
+			$this->assertStringContainsString('Rung ' . ($rung + 1) . ' of 6', strip_tags(substr($html, strpos($html, 'tooltip-box'))),
+				'The tooltip still names the rung');
 			$this->assertStringNotContainsString('problem-nav__ratio', $html, 'The training has no ratio to show');
 			$this->assertStringContainsString('problem-nav__item--N', $html, 'A problem due today is grey, whatever its status');
 		}
@@ -189,7 +200,8 @@ class TsumegoButtonsTest extends TestCaseWithAuth
 
 		$html = $this->renderButton(MistakeTraining::buildQueueButtons($scId)[0]);
 
-		$this->assertStringContainsString('problem-nav__rung--graduated', $html);
+		$this->assertSame('<div class="problem-nav__rung problem-nav__rung--graduated" role="img" aria-label="Graduated">'
+			. RungInsignia::renderCrown() . '</div>', self::badge($html), 'A graduation of today wears the crown');
 		$this->assertStringContainsString('problem-nav__item--S', $html, 'A graduation is solved today, so it is green');
 		$this->assertStringContainsString('Graduated today', $html);
 	}
@@ -212,5 +224,12 @@ class TsumegoButtonsTest extends TestCaseWithAuth
 		ob_start();
 		$button->render();
 		return ob_get_clean();
+	}
+
+	/** The rung badge of a rendered button. */
+	private static function badge(string $html): string
+	{
+		preg_match('~<div class="problem-nav__rung.*?</svg></div>~', $html, $match);
+		return $match[0] ?? '';
 	}
 }

@@ -271,16 +271,10 @@
 		--status-n-color: #7f8287;
 		--status-g-color: #daa520;
 		--status-g-highlight: #f5e080;
-		/* Mistake training rung badges: warm for a fresh mistake, cool for the last
-		   reviews before graduation. Dark ink reads on every one of them. */
-		--rung-0-color: #e5533d;
-		--rung-1-color: #f08a24;
-		--rung-2-color: #f2c230;
-		--rung-3-color: #4cc3e0;
-		--rung-4-color: #6a8ff0;
-		--rung-5-color: #a77ff0;
-		--rung-ink: #1b1b1b;
-		--rung-border: rgba(0, 0, 0, 0.45);
+		/* Patch under the mistake training rung insignia: dark enough for white
+		   symbols on the light green of a solve, see-through so the item colour
+		   still shows. */
+		--rung-patch-color: rgba(0, 0, 0, 0.35);
 		--paginator-button-text-color: #333;
 		--active-paginator-button-background-color: #333;
 		--active-paginator-button-text-color: #fff;
@@ -318,14 +312,7 @@
 		--status-n-color: #444;
 		--status-g-color: #b8860b;
 		--status-g-highlight: #e8c840;
-		--rung-0-color: #d24a35;
-		--rung-1-color: #d97b1f;
-		--rung-2-color: #d9ad2b;
-		--rung-3-color: #3eaecb;
-		--rung-4-color: #5b7fdc;
-		--rung-5-color: #9570dc;
-		--rung-ink: #111;
-		--rung-border: rgba(0, 0, 0, 0.6);
+		--rung-patch-color: rgba(0, 0, 0, 0.45);
 		--paginator-button-text-color: #ccc;
 		--active-paginator-button-background-color: #ccc;
 		--active-paginator-button-text-color: #000;
