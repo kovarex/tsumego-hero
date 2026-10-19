@@ -135,9 +135,10 @@ class MistakeTrainingController extends AppController
 			switch ($command)
 			{
 				case 'shift':
+					// Days of time passing: the reviews come that much closer, so they move back.
 					$days = (int) ($this->request->data['days'] ?? 1);
-					$moved = MistakeTraining::shiftReviews($userId, $days);
-					$notice = 'Moved ' . $moved . ' review' . ($moved == 1 ? '' : 's') . ' by ' . $days . ' day' . (abs($days) == 1 ? '' : 's') . '.';
+					$moved = MistakeTraining::shiftReviews($userId, -$days);
+					$notice = abs($days) . ' day' . (abs($days) == 1 ? '' : 's') . ($days >= 0 ? ' passed' : ' went back') . ' for ' . $moved . ' problem' . ($moved == 1 ? '' : 's') . '.';
 					break;
 				case 'rung':
 					$rung = (int) ($this->request->data['rung'] ?? 0);

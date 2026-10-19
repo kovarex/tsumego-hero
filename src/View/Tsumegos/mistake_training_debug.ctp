@@ -94,9 +94,9 @@ for ($lapses = 0; ; $lapses++)
 		<?php endforeach; ?>
 	</form>
 
-	<h3 style="margin-top: var(--space-4);">Move the reviews</h3>
-	<p class="hint">Shifts the next review of every problem below by whole days. Rungs stay, so this is a shortcut for time passing, not for how well a problem is known.</p>
-	<?php foreach ([[-1, 'One day back'], [1, 'Tomorrow'], [7, 'A week ahead'], [-7, 'A week back']] as [$days, $label]): ?>
+	<h3 style="margin-top: var(--space-4);">Let time pass</h3>
+	<p class="hint">Acts as if whole days passed: every review below comes that many days closer, and what was solved today belongs to an earlier day. Rungs stay, so this is a shortcut for time passing, not for how well a problem is known. Going back undoes it.</p>
+	<?php foreach ([[1, 'Next day'], [7, 'A week later'], [-1, 'One day back'], [-7, 'A week back']] as [$days, $label]): ?>
 	<form method="post" action="<?php echo MistakeTraining::$DEBUG_LINK; ?>" style="display: inline-block; margin-right: var(--space-2);">
 		<input type="hidden" name="command" value="shift">
 		<input type="hidden" name="days" value="<?php echo $days; ?>">

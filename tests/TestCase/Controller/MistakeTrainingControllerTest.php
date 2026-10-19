@@ -928,7 +928,7 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		}
 	}
 
-	public function testTheToolboxMovesTheReviewsByDays()
+	public function testTheToolboxLetsDaysPass()
 	{
 		$context = new ContextPreparator([
 			'user' => ['name' => 'admin', 'admin' => true],
@@ -946,10 +946,42 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		]);
 
 		$this->assertSame(
-			date('Y-m-d', strtotime('+7 days')),
+			date('Y-m-d', strtotime('-1 day')),
 			date('Y-m-d', strtotime(MistakeTraining::getPoolRow($userId, $tsumegoId)['next_due'])),
-			'A shift moves the date and nothing else'
+			'Four days passing bring a review three days away one day overdue'
 		);
+		$this->assertTrue(MistakeTraining::isDue($userId, $tsumegoId));
+	}
+
+	/**
+	 * The way the toolbox is tried: of three imported problems one is solved and one
+	 * missed today, the third is left alone. The next day the untouched one and the
+	 * missed one are still to do, and the solved one comes back after its two days.
+	 */
+	public function testANextDayKeepsWhatWasNotSolvedAndBringsBackTheSolvedOneOnTime()
+	{
+		$now = date('Y-m-d H:i:s');
+		$today = MistakeTraining::today();
+		$context = new ContextPreparator([
+			'user' => ['name' => 'admin', 'admin' => true],
+			'tsumegos' => [
+				['set_order' => 1, 'status' => ['name' => 'S', 'mistake_training_due' => $now]],
+				['set_order' => 2, 'status' => ['name' => 'S', 'mistake_training_due' => $now, 'mistake_training_review_day' => $today, 'mistake_training_review_result' => 'F']],
+				['set_order' => 3, 'status' => ['name' => 'S', 'mistake_training_rung' => 1, 'mistake_training_due' => date('Y-m-d', strtotime($today . ' +2 days')) . ' 00:00:00', 'mistake_training_review_day' => $today, 'mistake_training_review_result' => 'S']],
+			],
+		]);
+		$userId = $context->user['id'];
+		$inTraining = fn() => array_map(fn($row) => (int) $row['tsumego_id'], MistakeTraining::todaysTraining($userId));
+		$untouched = (int) $context->tsumegos[0]['id'];
+		$missed = (int) $context->tsumegos[1]['id'];
+		$solved = (int) $context->tsumegos[2]['id'];
+		$this->assertSame([$untouched, $missed, $solved], $inTraining());
+
+		$nextDay = fn() => $this->testAction(MistakeTraining::$DEBUG_LINK, ['method' => 'post', 'data' => ['command' => 'shift', 'days' => 1]]);
+		$nextDay();
+		$this->assertSame([$untouched, $missed], $inTraining(), 'The next day the problems not solved are still there');
+		$nextDay();
+		$this->assertSame([$untouched, $missed, $solved], $inTraining(), 'Two days later the solved one is back');
 	}
 
 	public function testTheToolboxAddsAProblemAndJumpsToARung()
