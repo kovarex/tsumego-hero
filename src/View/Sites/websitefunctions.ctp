@@ -231,7 +231,7 @@ $percent = fn(float $share): string => round($share * 100) . '%';
 			<br><br>
 			<b>Past mistakes</b><br><br>
 			Problems you solved with a mistake before the training existed did not enter it by themselves. Whenever nothing is
-			due, the page offers the twenty most recent of them, ready to play straight away.
+			due, the page offers the <?php echo MistakeTraining::IMPORT_LIMIT; ?> most recent of them, ready to play straight away.
 			<br><br>
 		</div>
 		<?php endif; ?>

@@ -125,7 +125,7 @@ for ($lapses = 0; ; $lapses++)
 	<p class="hint">The newest solved-with-mistakes attempts of this account, skipping what is already in training, all due at once.</p>
 	<form method="post" action="<?php echo MistakeTraining::$DEBUG_LINK; ?>">
 		<input type="hidden" name="command" value="import">
-		<label>How many <input type="number" name="limit" value="20" min="1" style="width: 6em;"></label>
+		<label>How many <input type="number" name="limit" value="<?php echo MistakeTraining::IMPORT_LIMIT; ?>" min="1" style="width: 6em;"></label>
 		<button type="submit" class="btn btn--small">Import</button>
 	</form>
 

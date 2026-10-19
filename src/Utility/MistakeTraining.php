@@ -90,7 +90,7 @@ class MistakeTraining
 	 * How many past mistakes one import brings in. A player with years of history has
 	 * thousands, and putting them all in the queue at once would drown the training.
 	 */
-	public const IMPORT_LIMIT = 20;
+	public const IMPORT_LIMIT = 10;
 
 	/**
 	 * Where the count of past mistakes left to import stops; the page says "or more".

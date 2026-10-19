@@ -178,7 +178,7 @@ class MistakeTrainingController extends AppController
 						$notice = self::noProblemNotice($problemInput);
 					break;
 				case 'import':
-					$imported = MistakeTraining::importPastMistakes($userId, (int) ($this->request->data['limit'] ?? 20));
+					$imported = MistakeTraining::importPastMistakes($userId, (int) ($this->request->data['limit'] ?? MistakeTraining::IMPORT_LIMIT));
 					$notice = $imported
 						? 'Imported ' . $imported . ' past mistake' . ($imported == 1 ? '' : 's') . '.'
 						: 'Nothing left to import.';
