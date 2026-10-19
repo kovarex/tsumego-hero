@@ -580,6 +580,17 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		$this->assertStringContainsString('A problem goes to the mistake training', $html);
 	}
 
+	public function testHelpPageGivesTheXpOfTheTraining()
+	{
+		$html = (string) $this->testAction('/sites/websitefunctions', ['return' => 'contents']);
+		$text = preg_replace('/\s+/', ' ', strip_tags($html));
+
+		$this->assertStringContainsString('earns ' . round(MistakeTraining::REVIEW_XP_SHARE * 100) . '% of the XP the problem gives', $text);
+		$this->assertStringContainsString('graduating it another ' . round(MistakeTraining::GRADUATION_XP_SHARE * 100) . '%', $text);
+		$this->assertStringContainsString('at least ' . MistakeTraining::CLEAR_DAY_MIN_PROBLEMS . ' problems', $text);
+		$this->assertStringContainsString('a bonus of ' . round(MistakeTraining::CLEAR_DAY_XP_SHARE * 100) . '%', $text);
+	}
+
 	public function testAStoredTrainingModeFallsBackToLevelModeWhenTheFlagIsOff()
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'testuser']]);

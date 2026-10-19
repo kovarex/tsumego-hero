@@ -231,7 +231,7 @@ use App\Utility\ViteManifest;
 	<?php if (Auth::isInMistakeTrainingMode() && !empty($mistakeTrainingReplay)): ?>
 		<div class="alert alert-info mistake-training-replay" role="status">Already solved today. This try does not count.</div>
 	<?php endif; ?>
-	<?php // The training gives no XP, so its column stays empty, but the rank of the problem shows as in the level mode ?>
+	<?php // The XP of the training shows under "Correct!", so its column stays empty, but the rank of the problem shows as in the level mode ?>
 	<div<?php echo Auth::isInMistakeTrainingMode() ? ' class="play-status--training"' : ''; ?>>
 		<?php $tsumegoXPAndRating->render(); ?>
 	</div>

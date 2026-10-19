@@ -1,8 +1,12 @@
 <?php
 
+use App\Utility\MistakeTraining;
+
 /**
  * @var View $this
  */
+
+$percent = fn(float $share): string => round($share * 100) . '%';
 ?>
 	<div align="center">
 	<h2>Functions and Modes</h2>
@@ -191,9 +195,20 @@
 			slowly: after one mistake the waits are a quarter shorter, and every further mistake shortens them again, down to
 			half of the waits above. While a problem is due, the tries that fail before you solve it count as one mistake.
 			<br><br>
-			The training does not give XP or rating, it does not cost hearts and it does not use hero powers. It does not change
-			the status of a problem either: a problem you solved in the level mode stays solved. A mistake locks the board, and
-			Reset gives you the next try.
+			<b>XP</b><br><br>
+			A clean solve of a problem that is due earns <?php echo $percent(MistakeTraining::REVIEW_XP_SHARE); ?> of the XP the
+			problem gives in the level mode, and graduating it another <?php echo $percent(MistakeTraining::GRADUATION_XP_SHARE); ?>.
+			Solving the last problem due clears the day, and when the day's training held at least
+			<?php echo MistakeTraining::CLEAR_DAY_MIN_PROBLEMS; ?> problems that earns a bonus of
+			<?php echo $percent(MistakeTraining::CLEAR_DAY_XP_SHARE); ?> of what the day's reviews earned, once a day. A solve
+			after a mistake, a replay of a problem you solved today and a problem that is not due earn nothing, so a mistake
+			made on purpose does not pay. The XP of the training counts only when you play from the training, and hero powers
+			and the sprint do not multiply it. Your profile shows the training days of the last half a year and your streak of
+			cleared days.
+			<br><br>
+			The training does not change your rating, it does not cost hearts and it does not use hero powers. It does not
+			change the status of a problem either: a problem you solved in the level mode stays solved. A mistake locks the
+			board, and Reset gives you the next try.
 			<br><br>
 			<b>Problem page</b><br><br>
 			The Mistake Training card on the homepage says how many problems wait for review today and opens the training. A
