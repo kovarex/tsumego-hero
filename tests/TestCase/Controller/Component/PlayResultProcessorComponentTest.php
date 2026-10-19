@@ -1330,6 +1330,72 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$this->assertSame(true, (bool) $attempt['TsumegoAttempt']['solved'], 'Level solve should record a solved attempt');
 	}
 
+	// ==================== The mode of the page ====================
+
+	private function postOutcomeFromPage(ContextPreparator &$context, PlayOutcome $outcome, int $pageMode): array
+	{
+		return $this->postResult($context, [
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'seconds' => 0,
+			'outcome' => $outcome->value,
+			'mode' => $pageMode,
+		]);
+	}
+
+	/**
+	 * The stored mode is the training because another tab opened it, but the problem
+	 * was played on a level page that was still open.
+	 */
+	public function testALevelPageCountsInTheLevelModeWhileAnotherTabIsInTheTraining(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+		$beforeXp = Auth::getUser()['xp'];
+
+		$this->postOutcomeFromPage($context, PlayOutcome::SolvedClean, Constants::$LEVEL_MODE);
+
+		$this->assertGreaterThan($beforeXp, Auth::getUser()['xp'], 'The level page gives its XP');
+		$this->assertSame('S', $this->statusOf($context), 'And marks the problem solved');
+		$this->assertCount(1, $this->attemptsOf($context));
+		$this->assertSame(Constants::$MISTAKE_TRAINING_MODE, Auth::getMode(), 'The other tab stays in the training');
+	}
+
+	/**
+	 * The stored mode is the level mode because another tab opened a problem there,
+	 * but this one was played on the training page.
+	 */
+	public function testATrainingPageCountsAsTrainingAfterAnotherTabOpenedTheLevelMode(): void
+	{
+		$context = new ContextPreparator([
+			'tsumego' => [
+				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
+			],
+		]);
+		$beforeXp = Auth::getUser()['xp'];
+		$beforeDamage = Auth::getUser()['damage'];
+
+		$response = $this->postOutcomeFromPage($context, PlayOutcome::Failed, Constants::$MISTAKE_TRAINING_MODE);
+
+		$this->assertSame($beforeXp, Auth::getUser()['xp']);
+		$this->assertSame($beforeDamage, Auth::getUser()['damage'], 'A training mistake costs no heart');
+		$this->assertSame('V', $this->statusOf($context));
+		$this->assertCount(0, $this->attemptsOf($context));
+		$this->assertArrayHasKey('mistake_training_button', $response, 'The training page redraws its row');
+		$row = MistakeTraining::getPoolRow($context->user['id'], (int) $context->tsumegos[0]['id']);
+		$this->assertSame(MistakeTraining::REVIEW_MISSED, $row['last_review_result']);
+	}
+
+	public function testClaimingTheTrainingForAProblemOutsideItSparesNoHeart(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+		$beforeDamage = Auth::getUser()['damage'];
+
+		$this->postOutcomeFromPage($context, PlayOutcome::Failed, Constants::$MISTAKE_TRAINING_MODE);
+
+		$this->assertGreaterThan($beforeDamage, Auth::getUser()['damage'],
+			'Only a problem in today\'s training is played as training');
+	}
+
 	public function testLevelFailAddsDamage(): void
 	{
 		$context = new ContextPreparator(['tsumego' => 1]);

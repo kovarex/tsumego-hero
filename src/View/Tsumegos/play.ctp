@@ -1561,6 +1561,8 @@ use App\Utility\ViteManifest;
 			set_connection_id: <?php echo (int) $setConnection['SetConnection']['id']; ?>,
 			seconds: Math.max(elapsedSeconds() - bonusSeconds, timeToFirstClick || 0, 0.01),
 			outcome: outcome,
+			// another tab may have switched the stored mode since this page was opened
+			mode: mode,
 		};
 
 		window._submitResultPromise = fetch('/tsumegos/result', {

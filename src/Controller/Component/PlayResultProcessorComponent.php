@@ -24,11 +24,56 @@ class PlayResultProcessorComponent extends Component
 	 * @param float $seconds Time spent on the problem, in seconds.
 	 * @param int|null $setConnectionID Part of the set the problem is played from; null means
 	 *   the display set connection is deduced instead.
+	 * @param int|null $pageMode Mode of the page the problem was played on, see playMode();
+	 *   null means the stored mode.
 	 * @return array Result with xp_gained, new_rating, new_xp, new_level, new_damage, status,
 	 *   potion_triggered and achievement_updates, and in the mistake training
 	 *   mistake_training_button.
 	 */
-	public function processResult(int $tsumegoID, PlayOutcome $outcome, float $seconds, ?int $setConnectionID = null): array
+	public function processResult(int $tsumegoID, PlayOutcome $outcome, float $seconds, ?int $setConnectionID = null, ?int $pageMode = null): array
+	{
+		Auth::overrideMode($this->playMode($tsumegoID, $pageMode));
+		try
+		{
+			return $this->processResultInPlayMode($tsumegoID, $outcome, $seconds, $setConnectionID);
+		}
+		finally
+		{
+			Auth::overrideMode(null);
+		}
+	}
+
+	/**
+	 * The mode a result counts in, when it is not the stored one. The mode is stored on
+	 * the player, and opening another mode in another tab, or going back to a page in
+	 * the browser history, switches it under a page that is still open, so the page says
+	 * which mode it was played in. A page of the training counts as training only while
+	 * the problem is in today's training, so claiming it spares no hearts on any other
+	 * problem. A page of a normal mode counts in its own mode when the stored one is the
+	 * training, which is what the other tab switched to. Any other disagreement keeps
+	 * the stored mode.
+	 */
+	private function playMode(int $tsumegoID, ?int $pageMode): ?int
+	{
+		$storedMode = Auth::getMode();
+		if ($pageMode === null || $pageMode === $storedMode)
+			return null;
+
+		if ($pageMode === Constants::$MISTAKE_TRAINING_MODE)
+		{
+			if (!Feature::enabled(FeatureKey::MistakeTraining))
+				return null;
+			$row = MistakeTraining::getPoolRow((int) Auth::getUserID(), $tsumegoID);
+			return $row !== null && MistakeTraining::isInTodaysTraining($row) ? $pageMode : null;
+		}
+
+		$normalModes = [Constants::$LEVEL_MODE, Constants::$RATING_MODE, Constants::$TIME_MODE];
+		if ($storedMode === Constants::$MISTAKE_TRAINING_MODE && in_array($pageMode, $normalModes, true))
+			return $pageMode;
+		return null;
+	}
+
+	private function processResultInPlayMode(int $tsumegoID, PlayOutcome $outcome, float $seconds, ?int $setConnectionID): array
 	{
 		$seconds = max(0.01, $seconds);
 		$solved = $outcome === PlayOutcome::SolvedClean || $outcome === PlayOutcome::SolvedAfterMistake;

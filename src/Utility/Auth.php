@@ -201,6 +201,9 @@ class Auth
 
 	public static function getMode(): int
 	{
+		if (Auth::$modeOverride !== null)
+			return Auth::$modeOverride;
+
 		$mode = Auth::isLoggedIn() ? (int) Auth::getUser()['mode'] : Constants::$LEVEL_MODE;
 
 		// A player who was in the training when it was open keeps normal play when it
@@ -209,6 +212,16 @@ class Auth
 			return Constants::$LEVEL_MODE;
 
 		return $mode;
+	}
+
+	/**
+	 * Play by $mode instead of the stored one until it is cleared with null: a result
+	 * counts in the mode of the page it was played on, which another tab may have
+	 * switched away from since. See PlayResultProcessorComponent::playMode().
+	 */
+	public static function overrideMode(?int $mode): void
+	{
+		Auth::$modeOverride = $mode;
 	}
 
 	public static function isInLevelMode(): bool
@@ -263,6 +276,7 @@ class Auth
 	}
 
 	private static ?array $user = null;
+	private static ?int $modeOverride = null;
 	public static int $LIGHT_MODE = 1;
 	public static int $DARK_MODE = 2;
 }
