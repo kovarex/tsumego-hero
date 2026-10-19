@@ -6,13 +6,14 @@ use App\Utility\RungInsignia;
 /**
  * The mistake training of a player on the profile: a calendar of the training days
  * of the last half a year, a column a week like the contribution calendar of
- * GitHub (cleared days in green, days trained but not cleared in light green), the
- * problems in the training now by rung, and the streaks of cleared days.
+ * GitHub (cleared days in green, days trained but not cleared in light green, days
+ * missed with a red edge), the problems in the training now by rung, and the
+ * streaks of cleared days.
  *
  * Usage: $this->element('mistake_training_profile', ['training' => MistakeTraining::profile(...)])
  *
  * @var View $this
- * @var array{days: array<string, array{reviewed: int, cleared: bool}>, rungs: list<int>, graduated: int, streak: int, best_streak: int} $training
+ * @var array{days: array<string, array{reviewed: int, cleared: bool, missed: bool}>, rungs: list<int>, graduated: int, streak: int, best_streak: int} $training
  */
 
 $today = MistakeTraining::today();
@@ -48,7 +49,7 @@ if (!isset($months[0]) && (empty($months) || min(array_keys($months)) >= 3))
 		</div>
 		<div class="training-overview__stat">
 			<span class="training-overview__value" id="mistake-training-streak"><?php echo $describeStreak($training['streak']); ?></span>
-			<span class="training-overview__label">Current streak</span>
+			<span class="training-overview__label" title="Cleared days in a row. A day with nothing to review keeps the streak.">Current streak</span>
 		</div>
 		<div class="training-overview__stat">
 			<span class="training-overview__value" id="mistake-training-best-streak"><?php echo $describeStreak($training['best_streak']); ?></span>
@@ -85,8 +86,12 @@ if (!isset($months[0]) && (empty($months) || min(array_keys($months)) >= 3))
 					[$state, $description] = ['', 'no training'];
 				elseif ($trained['cleared'])
 					[$state, $description] = [' training-calendar__day--cleared', $trained['reviewed'] . ' reviewed, cleared'];
+				elseif ($trained['reviewed'] > 0)
+					[$state, $description] = [' training-calendar__day--trained' . ($trained['missed'] ? ' training-calendar__day--missed' : ''), $trained['reviewed'] . ' reviewed, not cleared'];
+				elseif ($trained['missed'])
+					[$state, $description] = [' training-calendar__day--missed', 'missed'];
 				else
-					[$state, $description] = [' training-calendar__day--trained', $trained['reviewed'] . ' reviewed, not cleared'];
+					[$state, $description] = ['', 'no training'];
 			?>
 			<span class="training-calendar__day<?php echo $state; ?>" style="grid-column: <?php echo intdiv($index, 7) + 2; ?>; grid-row: <?php echo $index % 7 + 2; ?>" data-day="<?php echo $day; ?>" title="<?php echo date('M j, Y', strtotime($day)) . ': ' . $description; ?>"></span>
 			<?php endfor; ?>
@@ -99,6 +104,7 @@ if (!isset($months[0]) && (empty($months) || min(array_keys($months)) >= 3))
 	<div class="training-calendar__legend">
 		<span class="training-calendar__key"><span class="training-calendar__day training-calendar__day--cleared"></span>Cleared</span>
 		<span class="training-calendar__key"><span class="training-calendar__day training-calendar__day--trained"></span>Trained, not cleared</span>
+		<span class="training-calendar__key"><span class="training-calendar__day training-calendar__day--missed"></span>Missed</span>
 		<span class="training-calendar__key"><span class="training-calendar__day"></span>No training</span>
 	</div>
 </section>

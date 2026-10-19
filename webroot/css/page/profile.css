@@ -345,6 +345,13 @@
 	background-color: var(--training-day-cleared);
 }
 
+/* A missed day keeps its fill and gets an edge, so a day tried and not cleared
+   still shows it was trained */
+.training-calendar__day--missed
+{
+	box-shadow: inset 0 0 0 1.5px var(--training-day-missed);
+}
+
 .training-calendar__legend
 {
 	display: flex;

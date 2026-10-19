@@ -204,7 +204,8 @@ $percent = fn(float $share): string => round($share * 100) . '%';
 			after a mistake, a replay of a problem you solved today and a problem that is not due earn nothing, so a mistake
 			made on purpose does not pay. The XP of the training counts only when you play from the training, and hero powers
 			and the sprint do not multiply it. Your profile shows the training days of the last half a year and your streak of
-			cleared days.
+			cleared days. A day with problems due that you do not clear ends the streak; a day with nothing due keeps it,
+			without adding to it.
 			<br><br>
 			The training does not change your rating, it does not cost hearts and it does not use hero powers. It does not
 			change the status of a problem either: a problem you solved in the level mode stays solved. A mistake locks the

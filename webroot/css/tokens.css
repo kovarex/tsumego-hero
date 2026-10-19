@@ -279,6 +279,7 @@
 		--training-day-empty: #ebedf0;
 		--training-day-trained: #b3e29b;
 		--training-day-cleared: #3b9b2a;
+		--training-day-missed: #d1242f;
 		--paginator-button-text-color: #333;
 		--active-paginator-button-background-color: #333;
 		--active-paginator-button-text-color: #fff;
@@ -320,6 +321,7 @@
 		--training-day-empty: #2d2d2d;
 		--training-day-trained: #2c5a22;
 		--training-day-cleared: #5cc23d;
+		--training-day-missed: #f85149;
 		--paginator-button-text-color: #ccc;
 		--active-paginator-button-background-color: #ccc;
 		--active-paginator-button-text-color: #000;

@@ -1209,33 +1209,125 @@ class MistakeTrainingTest extends TestCaseWithAuth
 			);
 	}
 
-	public function testTheStreaksCountClearedDaysInARow(): void
+	/**
+	 * Days a player trained and did not clear, $reviewed problems each: a review
+	 * that was left due.
+	 */
+	private function missedDays(int $userId, array $daysAgo, int $reviewed = 1): void
+	{
+		foreach ($daysAgo as $days)
+			Util::execute(
+				'INSERT INTO mistake_training_day (user_id, day, due, reviewed, cleared) VALUES (?, ?, 5, ?, 0)',
+				[$userId, date('Y-m-d', strtotime(MistakeTraining::today() . ' -' . $days . ' days')), $reviewed]
+			);
+	}
+
+	private function streaks(int $userId): array
+	{
+		$profile = MistakeTraining::profile($userId, MistakeTraining::profileStart());
+		return [$profile['streak'], $profile['best_streak']];
+	}
+
+	public function testTheStreaksCountClearedDays(): void
 	{
 		$context = new ContextPreparator(['tsumego' => 1]);
 		$userId = $context->user['id'];
 		$this->enterTraining($userId, (int) $context->tsumegos[0]['id']);
 		$this->clearedDays($userId, [400, 399, 398, 397, 20, 19, 18, 2, 1]);
+		$this->missedDays($userId, [200, 10]);
 
 		$profile = MistakeTraining::profile($userId, MistakeTraining::profileStart());
 
 		$this->assertSame(2, $profile['streak'], 'Today is still to do, so the streak holds');
 		$this->assertSame(4, $profile['best_streak'], 'The best streak looks back further than the calendar');
-		$this->assertCount(5, $profile['days'], 'The calendar holds the last half a year');
+		$this->assertCount(6, $profile['days'], 'The calendar holds the last half a year');
+		$this->assertTrue($profile['days'][date('Y-m-d', strtotime(MistakeTraining::today() . ' -10 days'))]['missed']);
 		$this->assertSame([1, 0, 0, 0, 0, 0, 0, 0], $profile['rungs']);
 		$this->assertSame(0, $profile['graduated']);
 	}
 
-	public function testAStreakEndsWithADayNotCleared(): void
+	public function testADayWithNothingDueKeepsTheStreakWithoutAddingToIt(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+		$userId = $context->user['id'];
+		$this->enterTraining($userId, (int) $context->tsumegos[0]['id']);
+		$this->clearedDays($userId, [9, 8, 2]);
+
+		$this->assertSame([3, 3], $this->streaks($userId), 'Nothing was due in between, so the three days are one streak');
+	}
+
+	public function testAStreakEndsWithADayTriedAndNotCleared(): void
 	{
 		$context = new ContextPreparator(['tsumego' => 1]);
 		$userId = $context->user['id'];
 		$this->enterTraining($userId, (int) $context->tsumegos[0]['id']);
 		$this->clearedDays($userId, [3, 2]);
+		$this->missedDays($userId, [1]);
 
-		$this->assertSame(0, MistakeTraining::profile($userId, MistakeTraining::profileStart())['streak']);
+		$this->assertSame([0, 2], $this->streaks($userId));
 
-		$this->clearedDays($userId, [1, 0]);
-		$this->assertSame(4, MistakeTraining::profile($userId, MistakeTraining::profileStart())['streak']);
+		$this->clearedDays($userId, [0]);
+		$this->assertSame([1, 2], $this->streaks($userId));
+	}
+
+	public function testTodayTriedAndNotClearedYetKeepsTheStreak(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+		$userId = $context->user['id'];
+		$this->enterTraining($userId, (int) $context->tsumegos[0]['id']);
+		$this->clearedDays($userId, [2, 1]);
+		$this->missedDays($userId, [0]);
+
+		$this->assertSame([2, 2], $this->streaks($userId));
+	}
+
+	public function testAProblemLeftDueEndsTheStreakAndItsReviewWritesTheMissedDaysDown(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+		$userId = $context->user['id'];
+		$tsumegoId = (int) $context->tsumegos[0]['id'];
+		$this->enterTraining($userId, $tsumegoId);
+		$this->clearedDays($userId, [3]);
+		$twoDaysAgo = date('Y-m-d', strtotime(MistakeTraining::today() . ' -2 days'));
+		Util::execute('UPDATE mistake_training_pool SET next_due = ? WHERE user_id = ? AND tsumego_id = ?', [$twoDaysAgo . ' 00:00:00', $userId, $tsumegoId]);
+
+		$profile = MistakeTraining::profile($userId, MistakeTraining::profileStart());
+		$this->assertSame(0, $profile['streak'], 'The problem waited two days for its review');
+		$this->assertTrue($profile['days'][$twoDaysAgo]['missed']);
+		$this->assertSame(0, $profile['days'][$twoDaysAgo]['reviewed']);
+
+		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, 'V', true);
+
+		$days = Util::query('SELECT day, cleared FROM mistake_training_day WHERE user_id = ? ORDER BY day', [$userId]);
+		$this->assertSame([[$twoDaysAgo, 0], [date('Y-m-d', strtotime(MistakeTraining::today() . ' -1 day')), 0], [MistakeTraining::today(), 1]],
+			array_map(fn($day) => [$day['day'], (int) $day['cleared']], array_slice($days, 1)),
+			'The review moved the date of the problem, so the days it waited for are written down');
+		$this->assertSame([1, 1], $this->streaks($userId), 'Clearing today starts a new streak');
+	}
+
+	public function testTheToolboxMovesTheHistoryWithTheReviews(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+		$userId = $context->user['id'];
+		$tsumegoId = (int) $context->tsumegos[0]['id'];
+		$this->enterTraining($userId, $tsumegoId);
+		MistakeTraining::makeDueNow($userId, $tsumegoId);
+		$this->clearedDays($userId, [1]);
+		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, 'V', true);
+		$this->assertSame([2, 2], $this->streaks($userId));
+
+		MistakeTraining::shiftReviews($userId, -1);
+
+		$this->assertSame(
+			[date('Y-m-d', strtotime(MistakeTraining::today() . ' -2 days')), date('Y-m-d', strtotime(MistakeTraining::today() . ' -1 day'))],
+			array_column(Util::query('SELECT day FROM mistake_training_day WHERE user_id = ? ORDER BY day', [$userId]), 'day'),
+			'A day passed for the history too'
+		);
+		$this->assertSame(
+			[date('Y-m-d', strtotime(MistakeTraining::today() . ' -1 day'))],
+			array_column(Util::query('SELECT day FROM mistake_training_review WHERE user_id = ?', [$userId]), 'day')
+		);
+		$this->assertSame([2, 2], $this->streaks($userId), 'Today has nothing due yet, so the streak holds');
 	}
 
 	public function testNoProfileForAPlayerWhoNeverTrained(): void

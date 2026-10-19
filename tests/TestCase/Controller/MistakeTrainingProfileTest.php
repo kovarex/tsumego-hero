@@ -37,7 +37,8 @@ class MistakeTrainingProfileTest extends TestCaseWithAuth
 
 	/**
 	 * A player with three problems in the training, at the first and the fourth
-	 * rung and graduated, who cleared today and yesterday and trained three days ago.
+	 * rung and graduated, who cleared today and yesterday, trained three days ago
+	 * without clearing, and missed the day five days ago.
 	 */
 	private function playerWhoTrained(bool $viewedByAnother = false): ContextPreparator
 	{
@@ -55,6 +56,7 @@ class MistakeTrainingProfileTest extends TestCaseWithAuth
 		$this->addDay($userId, 0, 6, true);
 		$this->addDay($userId, 1, 5, true);
 		$this->addDay($userId, 3, 2, false);
+		$this->addDay($userId, 5, 0, false);
 		return $context;
 	}
 
@@ -78,7 +80,8 @@ class MistakeTrainingProfileTest extends TestCaseWithAuth
 		$this->assertStringContainsString('title="' . MistakeTraining::rungName(3) . ': 1"', $html);
 
 		$this->assertDay($html, 0, 'training-calendar__day training-calendar__day--cleared', '6 reviewed, cleared');
-		$this->assertDay($html, 3, 'training-calendar__day training-calendar__day--trained', '2 reviewed, not cleared');
+		$this->assertDay($html, 3, 'training-calendar__day training-calendar__day--trained training-calendar__day--missed', '2 reviewed, not cleared');
+		$this->assertDay($html, 5, 'training-calendar__day training-calendar__day--missed', 'missed');
 		$this->assertDay($html, 2, 'training-calendar__day', 'no training');
 		$this->assertStringNotContainsString('data-day="' . date('Y-m-d', strtotime(MistakeTraining::today() . ' +1 day')) . '"', $html,
 			'The calendar ends today');

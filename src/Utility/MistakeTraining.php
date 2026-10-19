@@ -189,6 +189,12 @@ class MistakeTraining
 		if (!$due && ($inTraining || $freePlay))
 			return null;
 
+		// A review that comes late tells which days were missed: the problem waited
+		// for them, and the review is about to move its date, so they are written down
+		// before the evidence is gone.
+		if ($due)
+			self::recordMissedDays($userId, $pool['next_due']);
+
 		$rung = (int) $pool['rung'];
 		$solved = $outcome === PlayOutcome::SolvedClean || $outcome === PlayOutcome::SolvedAfterMistake;
 		if (!$solved)
@@ -298,6 +304,26 @@ class MistakeTraining
 			'cleared' => $cleared,
 			'clear_bonus' => $clearBonus,
 		];
+	}
+
+	/**
+	 * Write down the days a review waited for since it was due at $dueSince: each day
+	 * before today gets a row in mistake_training_day that is not cleared, which ends
+	 * a streak (see profile()). A day that has its row already keeps it, so a day that
+	 * was cleared before an import made more problems due stays cleared.
+	 */
+	private static function recordMissedDays(int $userId, string $dueSince): void
+	{
+		$days = [];
+		for ($day = substr($dueSince, 0, 10); $day < self::today(); $day = date('Y-m-d', strtotime($day . ' +1 day')))
+			$days[] = $day;
+		if (empty($days))
+			return;
+		Util::execute(
+			'INSERT INTO mistake_training_day (user_id, day) VALUES ' . implode(', ', array_fill(0, count($days), '(?, ?)'))
+			. ' ON DUPLICATE KEY UPDATE user_id = user_id',
+			array_merge(...array_map(fn(string $day) => [$userId, $day], $days))
+		);
 	}
 
 	/**
@@ -505,13 +531,17 @@ class MistakeTraining
 
 	/**
 	 * What the profile shows of the training of a player, or null when there is
-	 * nothing to show: the training days since $since (reviewed problems, and whether
-	 * the day was cleared), the problems in the training now by rung, the graduated
-	 * ones, and the streaks of cleared days. A day that was not cleared ends a
-	 * streak, but today counts only once it is cleared, so the current streak holds
-	 * while today's training is still to do.
+	 * nothing to show: the training days since $since (reviewed problems, whether the
+	 * day was cleared, and whether it was missed), the problems in the training now by
+	 * rung, the graduated ones, and the streaks of cleared days.
 	 *
-	 * @return array{days: array<string, array{reviewed: int, cleared: bool}>, rungs: list<int>, graduated: int, streak: int, best_streak: int}|null
+	 * A cleared day adds to a streak, and a missed day ends it: one that had problems
+	 * due and was not cleared, whether they were tried or not. A day with nothing due
+	 * neither ends a streak nor adds to it, so a player who has nothing to review does
+	 * not lose the streak, and does not grow it either. Today is missed only once it
+	 * is over, so the current streak holds while today's training is still to do.
+	 *
+	 * @return array{days: array<string, array{reviewed: int, cleared: bool, missed: bool}>, rungs: list<int>, graduated: int, streak: int, best_streak: int}|null
 	 */
 	public static function profile(int $userId, string $since): ?array
 	{
@@ -528,30 +558,38 @@ class MistakeTraining
 			else
 				$rungs[min((int) $row['rung'], count(self::$LADDER) - 1)] += (int) $row['total'];
 
-		$days = [];
-		$rows = Util::query(
-			'SELECT day, reviewed, cleared FROM mistake_training_day WHERE user_id = ? AND day >= ? ORDER BY day',
-			[$userId, $since]
-		);
-		foreach ($rows as $row)
-			$days[$row['day']] = ['reviewed' => (int) $row['reviewed'], 'cleared' => (bool) $row['cleared']];
+		$today = self::today();
+		$history = [];
+		foreach (Util::query('SELECT day, reviewed, cleared FROM mistake_training_day WHERE user_id = ? ORDER BY day', [$userId]) as $row)
+			$history[$row['day']] = [
+				'reviewed' => (int) $row['reviewed'],
+				'cleared' => (bool) $row['cleared'],
+				'missed' => !$row['cleared'] && $row['day'] < $today,
+			];
 
+		// The days a problem that is still due has been waiting for are missed too;
+		// recordMissedDays() writes them down only once it is reviewed.
+		$overdueSince = Util::query(
+			'SELECT MIN(p.next_due) AS since FROM mistake_training_pool p' . self::servableSql()
+			. ' AND p.next_due IS NOT NULL AND p.next_due < ?',
+			[$userId, $today . ' 00:00:00']
+		)[0]['since'] ?? null;
+		if ($overdueSince !== null)
+			for ($day = substr($overdueSince, 0, 10); $day < $today; $day = date('Y-m-d', strtotime($day . ' +1 day')))
+				$history[$day] ??= ['reviewed' => 0, 'cleared' => false, 'missed' => true];
+		ksort($history);
+
+		$days = array_filter($history, fn(string $day) => $day >= $since, ARRAY_FILTER_USE_KEY);
 		if (empty($days) && !self::hasEverTrained($userId))
 			return null;
 
 		$streak = 0;
 		$bestStreak = 0;
-		$lastDay = null;
-		$cleared = Util::query('SELECT day FROM mistake_training_day WHERE user_id = ? AND cleared = 1 ORDER BY day', [$userId]);
-		foreach (array_column($cleared, 'day') as $day)
-		{
-			$streak = $lastDay !== null && $day === date('Y-m-d', strtotime($lastDay . ' +1 day')) ? $streak + 1 : 1;
-			$bestStreak = max($bestStreak, $streak);
-			$lastDay = $day;
-		}
-		$yesterday = date('Y-m-d', strtotime(self::today() . ' -1 day'));
-		if ($lastDay !== self::today() && $lastDay !== $yesterday)
-			$streak = 0;
+		foreach ($history as $day)
+			if ($day['cleared'])
+				$bestStreak = max($bestStreak, ++$streak);
+			elseif ($day['missed'])
+				$streak = 0;
 
 		return ['days' => $days, 'rungs' => $rungs, 'graduated' => $graduated, 'streak' => $streak, 'best_streak' => $bestStreak];
 	}
@@ -654,6 +692,12 @@ class MistakeTraining
 	 */
 	public static function shiftReviews(int $userId, int $days): int
 	{
+		// The history moves along, so the days trained so far stay where they were
+		// against the reviews; a day key is unique, so the rows move in the order that
+		// never lands one on another.
+		$order = $days < 0 ? 'ASC' : 'DESC';
+		Util::execute('UPDATE mistake_training_day SET day = DATE_ADD(day, INTERVAL ? DAY) WHERE user_id = ? ORDER BY day ' . $order, [$days, $userId]);
+		Util::execute('UPDATE mistake_training_review SET day = DATE_ADD(day, INTERVAL ? DAY) WHERE user_id = ?', [$days, $userId]);
 		return Util::execute(
 			'UPDATE mistake_training_pool SET next_due = DATE_ADD(next_due, INTERVAL ? DAY),'
 			. ' last_review_day = DATE_ADD(last_review_day, INTERVAL ? DAY) WHERE user_id = ?',
