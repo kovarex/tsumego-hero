@@ -228,14 +228,11 @@ use App\Utility\ViteManifest;
 	</td>
 	</tr>
 	</table>
-	<?php if (!Auth::isInMistakeTrainingMode()): ?>
-		<?php $tsumegoXPAndRating->render(); ?>
-	<?php else: ?>
-		<?php if (!empty($mistakeTrainingReplay)): ?>
+	<?php if (Auth::isInMistakeTrainingMode() && !empty($mistakeTrainingReplay)): ?>
 		<p class="hint" align="center">Already solved today. This try does not count.</p>
-		<?php endif; ?>
-		<div align="center"><div id="status" align="center"></div></div>
 	<?php endif; ?>
+	<?php // The training gives no XP, so its column stays empty, but the rank of the problem shows as in the level mode ?>
+	<?php $tsumegoXPAndRating->render(); ?>
 	<div align="center">
 		<div id="theComment"></div>
 	</div>

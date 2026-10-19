@@ -6,6 +6,7 @@ use App\Utility\Feature;
 use App\Utility\FeatureKey;
 use App\Utility\MistakeTraining;
 use App\Utility\PlayOutcome;
+use App\Utility\Rating;
 use Facebook\WebDriver\WebDriverBy;
 
 class MistakeTrainingControllerTest extends TestCaseWithAuth
@@ -40,6 +41,24 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		$this->assertStringNotContainsString('All caught up', $this->view);
 		$this->assertStringContainsString('href="/tsumegos/play/1234?mode=1">Continue playing</a>', $this->view,
 			'The way back to playing is the problem the player was on, in the level mode');
+	}
+
+	public function testTheTrainingShowsTheRankOfTheProblemButNoXP()
+	{
+		new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumego' => [
+				'set_order' => 1,
+				'rating' => 1500,
+				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
+			],
+		]);
+
+		$this->testAction('/mistake-training', ['return' => 'contents']);
+
+		$this->assertMatchesRegularExpression('/<div id="status2" align="center">\s*<font size="4">\s*' . preg_quote(Rating::getReadableRankFromRating(1500), '/') . ' /',
+			$this->view, 'The rank shows as in the level mode');
+		$this->assertStringNotContainsString('new XPStatus(', $this->view, 'The training gives no XP');
 	}
 
 	public function testAllCaughtUpWhenNoDueProblems()
