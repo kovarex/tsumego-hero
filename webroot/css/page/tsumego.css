@@ -423,3 +423,11 @@ a[data-tsumego-id]:hover .tooltip-desc
 	}
 }
 }
+
+/* Mistake training: under "Correct!", what the solve did to the problem */
+.mistake-training-outcome
+{
+	margin: var(--space-1) 0 0;
+	font-size: var(--font-size-md);
+	white-space: normal;
+}

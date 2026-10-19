@@ -727,6 +727,19 @@ use App\Utility\ViteManifest;
 		label.className = "tooltip-label status" + button.status;
 		label.textContent = button.label;
 		link.querySelector(".tooltip-desc").textContent = button.description;
+
+		// A solve says under "Correct!" what it did to the problem: its next review, or its graduation
+		let status = document.getElementById("status");
+		let outcome = status.querySelector(".mistake-training-outcome");
+		if (outcome)
+			outcome.remove();
+		if (button.status === 'S' && problemSolved)
+		{
+			outcome = document.createElement("p");
+			outcome.className = "mistake-training-outcome";
+			outcome.textContent = button.description;
+			status.appendChild(outcome);
+		}
 	}
 
 	<?php
