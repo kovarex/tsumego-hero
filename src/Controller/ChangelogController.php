@@ -65,9 +65,10 @@ class ChangelogController extends AppController
 	 * filtered the same way or the badge would point at an entry that is not
 	 * rendered.
 	 *
-	 * A feature is held back only while its flag is declared in FeatureKey and has a
-	 * row; deleting the row, or dropping the key from the enum with the feature, is
-	 * what makes the entry public. Admins see every entry.
+	 * An entry behind a flag is public only while that flag is open to everybody: a
+	 * missing row is off, like everywhere else. A feature that ships for good drops
+	 * the flag line of its fragment together with its FeatureKey case, and the
+	 * generator refuses a flag that FeatureKey does not name. Admins see every entry.
 	 *
 	 * @param array<int, array<string, mixed>> $entries
 	 * @return array<int, array<string, mixed>>
@@ -79,7 +80,7 @@ class ChangelogController extends AppController
 
 		return array_values(array_filter($entries, function ($entry) {
 			$flag = (string) ($entry['flag'] ?? '');
-			return $flag === '' || !Feature::known($flag) || !Feature::exists($flag) || Feature::enabled($flag);
+			return $flag === '' || Feature::enabled($flag);
 		}));
 	}
 }

@@ -55,25 +55,6 @@ class Feature
 	}
 
 	/**
-	 * Whether a flag still has a row. A flag is deleted when its feature becomes
-	 * permanent, so a missing row also means "this shipped long ago".
-	 */
-	public static function exists(FeatureKey|string $flag): bool
-	{
-		return array_key_exists(self::key($flag), self::states());
-	}
-
-	/**
-	 * Whether FeatureKey still names the flag. A feature is removed from the code as a
-	 * whole, so a key that is no longer declared belongs to something that shipped for
-	 * good, and a row left behind by it is only a leftover.
-	 */
-	public static function known(FeatureKey|string $flag): bool
-	{
-		return FeatureKey::tryFrom(self::key($flag)) !== null;
-	}
-
-	/**
 	 * Point a flag at a state. The control surface is the database, so the only caller
 	 * is the admin toolbox; a feature in production is switched with one statement.
 	 */

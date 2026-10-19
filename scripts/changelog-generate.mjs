@@ -26,6 +26,12 @@ const OUT = join(DIR, 'index.json');
 
 const CATEGORIES = ['Added', 'Fixed', 'Changed', 'Performance', 'Removed'];
 
+// The flags a fragment may name: the cases of FeatureKey. An entry behind a flag the
+// site does not know would never be shown, so a mistyped key stops the run instead.
+const FLAGS = [...readFileSync(join(ROOT, 'src/Utility/FeatureKey.php'), 'utf8')
+	.matchAll(/^\s*case\s+\w+\s*=\s*'([^']+)'\s*;/gm)].map(m => m[1]);
+const unknownFlags = [];
+
 // Every git call fails quietly: a checkout without a repository is not an error here
 // but a missing date, and reportDates() is the one that reports it. stderr is dropped
 // so git's own wording cannot pass for that report.
@@ -204,6 +210,9 @@ const entries = files.flatMap(file => {
 		if (!entry.known)
 			console.warn(`${file}:${entry.number}: no known category prefix, published as "Changed": ${entry.line}`);
 
+	if (parsed.flag && !FLAGS.includes(parsed.flag))
+		unknownFlags.push({ file, flag: parsed.flag });
+
 	const resolved = resolveShipStamp(file, parsed.commit);
 	if (resolved.problem)
 		undated.push({ file, problem: resolved.problem });
@@ -247,6 +256,13 @@ function reportDates() {
 		console.error(`changelog:   note: ${env.join(', ')}`);
 	console.error('changelog:   ship dates only come from git; a made-up date would move an entry in the feed');
 	console.error('changelog:   commit the fragment (or pin a commit in its front-matter) and run this again');
+	process.exit(1);
+}
+
+if (unknownFlags.length) {
+	for (const { file, flag } of unknownFlags)
+		console.error(`changelog: ERROR: ${file} names the flag "${flag}", which is not a FeatureKey case (${FLAGS.join(', ') || 'none'})`);
+	console.error('changelog:   fix the key, or remove the flag: line when its feature shipped for good');
 	process.exit(1);
 }
 

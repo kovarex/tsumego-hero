@@ -123,26 +123,15 @@ class ChangelogControllerTest extends TestCaseWithAuth
 	}
 
 	/**
-	 * A flag whose row was deleted is a feature that shipped for good, so the entry
-	 * stops being held back without a second edit.
+	 * A flag without a row is off, like everywhere else, so deleting the row while the
+	 * code still checks the flag does not announce the feature it switches off.
 	 */
-	public function testEntriesBehindADeletedFlagAreCountedAsNew()
+	public function testEntriesBehindAFlagWithoutARowAreHidden()
 	{
 		ClassRegistry::init('FeatureFlag')->deleteAll(['flag_key' => 'mistake-training']);
 		Feature::reset();
 
-		$this->assertSame([200, 100], ChangelogController::changelogTimestamps($this->fixtureWithFlaggedEntry()));
-	}
-
-	/**
-	 * A key that FeatureKey no longer names also means the feature shipped for good,
-	 * even while a leftover row is still switched off.
-	 */
-	public function testEntriesBehindAnUndeclaredFlagAreCountedAsNew()
-	{
-		$this->setFeatureFlag('probe', Feature::OFF);
-
-		$this->assertSame([200, 100], ChangelogController::changelogTimestamps($this->fixtureWithFlaggedEntry('probe')));
+		$this->assertSame([100], ChangelogController::changelogTimestamps($this->fixtureWithFlaggedEntry()));
 	}
 
 	public function testAdminsStillSeeEntriesBehindAnOffFlag()
