@@ -166,20 +166,20 @@ class TsumegoButtonsTest extends TestCaseWithAuth
 
 		$buttons = MistakeTraining::buildQueueButtons((int) $context->tsumegos[0]['set-connections'][0]['id']);
 
-		// one, two and three chevrons, then one, two and three stars, like military ranks
-		$expected = [['chevron', 1], ['chevron', 2], ['chevron', 3], ['star', 1], ['star', 2], ['star', 3]];
+		// one to four chevrons, then one to four stars, like military ranks
+		$expected = [['chevron', 1], ['chevron', 2], ['chevron', 3], ['chevron', 4], ['star', 1], ['star', 2], ['star', 3], ['star', 4]];
 		foreach (MistakeTraining::ladder() as $rung => $days)
 		{
 			$html = $this->renderButton($buttons[$rung]);
 			[$kind, $count] = $expected[$rung];
 			$badge = self::badge($html);
 			$this->assertStringStartsWith('<div class="problem-nav__rung problem-nav__rung--' . $kind . '" data-rung="' . $rung . '"'
-				. ' role="img" aria-label="Rung ' . ($rung + 1) . ' of 6">', $badge,
+				. ' role="img" aria-label="Rung ' . ($rung + 1) . ' of 8">', $badge,
 				"The button of a problem on rung $rung shows its insignia, named for readers");
 			$this->assertSame(RungInsignia::render($kind, $count), substr($badge, strpos($badge, '<svg'), -strlen('</div>')),
 				"Rung $rung is drawn as $count $kind symbols");
 			$this->assertDoesNotMatchRegularExpression('/\d+d</', $badge, 'The badge shows no wait, "1d" reads as one dan');
-			$this->assertStringContainsString('Rung ' . ($rung + 1) . ' of 6', strip_tags(substr($html, strpos($html, 'tooltip-box'))),
+			$this->assertStringContainsString('Rung ' . ($rung + 1) . ' of 8', strip_tags(substr($html, strpos($html, 'tooltip-box'))),
 				'The tooltip still names the rung');
 			$this->assertStringNotContainsString('problem-nav__ratio', $html, 'The training has no ratio to show');
 			$this->assertStringContainsString('problem-nav__item--N', $html, 'A problem due today is grey, whatever its status');
@@ -192,7 +192,7 @@ class TsumegoButtonsTest extends TestCaseWithAuth
 			'user' => ['name' => 'testuser'],
 			'tsumego' => [
 				'set_order' => 1,
-				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day')), 'mistake_training_rung' => 5],
+				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day')), 'mistake_training_rung' => 7],
 			],
 		]);
 		$scId = (int) $context->tsumegos[0]['set-connections'][0]['id'];

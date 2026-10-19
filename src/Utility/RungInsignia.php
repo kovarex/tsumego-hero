@@ -7,18 +7,17 @@ namespace App\Utility;
  * place of the wait of the rung: "1d" reads as one dan in Go, a rank does not.
  *
  * The ladder climbs like military ranks: the first half of the rungs (the larger
- * half of an odd ladder) are one, two and three chevrons, the rest one, two and
- * three stars, and a crown marks a problem that graduated today. With the ladder
- * of six rungs that is three chevrons and three stars.
+ * half of an odd ladder) are one, two, three and four chevrons, the rest one, two,
+ * three and four stars, and a crown marks a problem that graduated today. With the
+ * ladder of eight rungs that is four chevrons and four stars.
  *
  * The insignia follow the length of the ladder, so changing the intervals needs no
- * change here. Three of a kind is what can be counted at a glance at this size, so
- * a ladder of seven to nine rungs gets a third kind between the two, bars (chevrons,
- * bars and stars, like the enlisted, the lieutenants and the generals), and the
- * rungs are shared out evenly, the lower kinds taking the remainder. A ladder of
- * more than nine rungs keeps the three kinds and draws more of each, up to
- * MAX_SYMBOLS, which is what fits the button; past twelve rungs the top rungs of a
- * kind share its last badge. The tooltip names the rung exactly in every case.
+ * change here. Four of a kind is what fits the button (MAX_SYMBOLS), so the two
+ * kinds take a ladder of up to eight rungs, and a longer one gets a third kind
+ * between them, bars (chevrons, bars and stars, like the enlisted, the lieutenants
+ * and the generals), with the rungs shared out evenly, the lower kinds taking the
+ * remainder. Past twelve rungs the top rungs of a kind share its last badge. The
+ * tooltip names the rung exactly in every case.
  */
 class RungInsignia
 {
@@ -26,13 +25,10 @@ class RungInsignia
 	public const BAR = 'bar';
 	public const STAR = 'star';
 
-	/** How many symbols of a kind can be counted at a glance. */
-	public const MAX_OF_A_KIND = 3;
-
 	/**
-	 * How many symbols fit the button at all, for a ladder too long for three kinds of
-	 * three: four chevrons or stars are 46px wide, which with the padding of the badge
-	 * just fits the 58px button, and a fifth would stick out of it.
+	 * How many symbols of a kind fit the button: four chevrons or stars are 46px wide,
+	 * which with the padding of the badge just fits the 58px button, and a fifth would
+	 * stick out of it.
 	 */
 	public const MAX_SYMBOLS = 4;
 
@@ -45,7 +41,7 @@ class RungInsignia
 	 */
 	public static function of(int $rung, int $rungCount): array
 	{
-		$kinds = $rungCount > 2 * self::MAX_OF_A_KIND ? [self::CHEVRON, self::BAR, self::STAR] : [self::CHEVRON, self::STAR];
+		$kinds = $rungCount > 2 * self::MAX_SYMBOLS ? [self::CHEVRON, self::BAR, self::STAR] : [self::CHEVRON, self::STAR];
 		$rung = max(0, min($rung, $rungCount - 1));
 		foreach ($kinds as $index => $kind)
 		{

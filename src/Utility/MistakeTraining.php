@@ -12,15 +12,22 @@ use TsumegoStatus;
  * first attempt.
  *
  * The pool (mistake_training_pool) is the single source of truth: one row per
- * (user, tsumego) tracking the review-ladder rung, the next review day, and the
- * day and result of the last review. Only a clean solve advances the rung, and a
- * clean solve at the top rung graduates, removing the problem from the schedule.
+ * (user, tsumego) tracking the review-ladder rung, the number of lapses, the next
+ * review day, and the day and result of the last review. Only a clean solve
+ * advances the rung, and a clean solve at the top rung graduates, removing the
+ * problem from the schedule.
  * A mistake on a problem that is due takes it back to the bottom but keeps it
  * due: it waits in today's training until it is solved, and that solve, like any
  * solve that needed a retry, earns nothing and brings it back tomorrow. Training
  * results are never written to tsumego_attempt, since it is a separate,
  * consequence-free mode like time mode, and training never writes
  * tsumego_status either: graduation only removes the problem from the schedule.
+ *
+ * A mistake on a problem in the pool is a lapse, and every lapse makes the waits
+ * of that problem grow more slowly from then on, the way SM-2, Anki and FSRS lower
+ * the ease of a card that was forgotten: a problem that keeps going wrong is hard
+ * for this player, and on the same ladder as the easy ones it is only solved about
+ * three times out of four. See wait().
  *
  * A training day is a fixed list: the problems due today and the ones solved
  * today, in the order they came into the pool. A problem solved today stays in it
@@ -35,10 +42,25 @@ use TsumegoStatus;
 class MistakeTraining
 {
 	/**
-	 * Review ladder: days until the next review at each rung. Only a clean solve
-	 * climbs a rung; any other solve is due again the next day.
+	 * Review ladder: days until the next review at each rung, for a problem that
+	 * never lapsed. Only a clean solve climbs a rung; any other solve is due again the
+	 * next day. Lapses shorten the waits, see wait().
 	 */
-	private static array $LADDER = [1, 3, 7, 14, 30, 60];
+	private static array $LADDER = [1, 2, 4, 8, 15, 30, 60, 120];
+
+	/**
+	 * How much of the waits of the ladder each lapse keeps: one lapse makes them
+	 * 1, 2, 3, 6, 11, 23, 45 and 90 days. The shortening compounds, so a problem that
+	 * keeps lapsing comes back more often with every lapse, down to MIN_GROWTH.
+	 */
+	public const LAPSE_SLOWDOWN = 0.75;
+
+	/**
+	 * The shortest the waits get however often a problem lapsed: half of the ladder,
+	 * 1, 1, 2, 4, 8, 15, 30 and 60 days, which three lapses reach. Without a floor a
+	 * problem that was hard once would never get far from the bottom again.
+	 */
+	public const MIN_GROWTH = 0.5;
 
 	/**
 	 * What the last review did, stored with its day in last_review_result. A miss
@@ -128,9 +150,15 @@ class MistakeTraining
 		if (!$solved)
 		{
 			// A problem that was missed is not known, however far up the ladder it had
-			// climbed, so it starts over at the bottom. One that is due stays due: it
-			// waits in today's training until it is solved instead of disappearing until
-			// tomorrow. Any other one comes back tomorrow.
+			// climbed, so it starts over at the bottom, and it lapsed, so it climbs more
+			// slowly from now on. One that is due stays due: it waits in today's training
+			// until it is solved instead of disappearing until tomorrow, and the tries
+			// that fail again before that are the same lapse, so only the first miss of
+			// the day counts. Any other one comes back tomorrow, and counts only if it
+			// had climbed: one already at the bottom was missed recently and has
+			// nothing left to lose, so failing it again in another mode is that lapse.
+			if ($due ? !self::wasMissedToday($pool) : $rung > 0)
+				self::countLapse($userId, $tsumegoId);
 			if ($due)
 				self::markReview($userId, $tsumegoId, self::REVIEW_MISSED, 0);
 			else
@@ -316,12 +344,26 @@ class MistakeTraining
 
 	/**
 	 * The ladder intervals, oldest rung first, for screens that explain the wait.
+	 * These are the waits of a problem that never lapsed, see wait().
 	 *
 	 * @return int[]
 	 */
 	public static function ladder(): array
 	{
 		return self::$LADDER;
+	}
+
+	/**
+	 * Days until the next review of a problem that climbed to $rung after $lapses
+	 * lapses: the wait of the ladder shortened by LAPSE_SLOWDOWN for every lapse,
+	 * never below MIN_GROWTH of it, and never below a day. The rung does not depend
+	 * on the lapses, so the badges and graduation are the same for every problem; a
+	 * hard one only waits less between its reviews.
+	 */
+	public static function wait(int $rung, int $lapses = 0): int
+	{
+		$growth = max(self::MIN_GROWTH, self::LAPSE_SLOWDOWN ** $lapses);
+		return max(1, (int) round(self::$LADDER[$rung] * $growth));
 	}
 
 	/**
@@ -341,7 +383,7 @@ class MistakeTraining
 	public static function poolRows(int $userId): array
 	{
 		return Util::query(
-			'SELECT p.tsumego_id, p.rung, p.next_due, p.last_review_day, p.last_review_result,'
+			'SELECT p.tsumego_id, p.rung, p.lapses, p.next_due, p.last_review_day, p.last_review_result,'
 			. ' (SELECT sc.id FROM set_connection sc WHERE sc.tsumego_id = p.tsumego_id ORDER BY sc.id LIMIT 1) AS set_connection_id'
 			. ' FROM mistake_training_pool p WHERE p.user_id = ?'
 			. ' ORDER BY p.next_due ASC, p.id ASC LIMIT 50',
@@ -368,7 +410,8 @@ class MistakeTraining
 
 	/**
 	 * Put one problem on a rung and make it due now, which is how the toolbox jumps
-	 * to a late review instead of playing the ladder up to it.
+	 * to a late review instead of playing the ladder up to it. The lapses stay: the
+	 * jump is a shortcut through time, not a new history of the problem.
 	 */
 	public static function moveToRung(int $userId, int $tsumegoId, int $rung): void
 	{
@@ -390,7 +433,7 @@ class MistakeTraining
 
 	/**
 	 * Take a problem to the top rung and graduate it, so the toolbox can see the exit
-	 * without six reviews.
+	 * without climbing the whole ladder. The lapses stay, like in moveToRung().
 	 */
 	public static function graduateNow(int $userId, int $tsumegoId): void
 	{
@@ -400,7 +443,9 @@ class MistakeTraining
 
 	/**
 	 * Add one problem to the pool as due now, whether or not it was a mistake. For
-	 * the toolbox, and the import of past mistakes.
+	 * the toolbox, and the import of past mistakes. A new problem has no lapses, the
+	 * mistake that brought it in is what the training is for; one already in the
+	 * pool keeps its rung, its review and its lapses.
 	 */
 	public static function addProblem(int $userId, int $tsumegoId, ?string $due = null): void
 	{
@@ -585,10 +630,7 @@ class MistakeTraining
 			else
 			{
 				$button->label = 'Due today';
-				$button->description = $rungText . '. '
-					. ($rung >= count(self::$LADDER) - 1
-						? 'A clean solve graduates it.'
-						: 'A clean solve brings it back in ' . self::$LADDER[$rung + 1] . ' days.');
+				$button->description = $rungText . '. ' . self::cleanSolveOutlook($rung, (int) $row['lapses']);
 			}
 			return;
 		}
@@ -609,7 +651,22 @@ class MistakeTraining
 	}
 
 	/**
+	 * What a clean solve of a due problem would do, for its tooltip: graduate it at
+	 * the top rung, or bring it back after the wait of the next rung, which the lapses
+	 * of the problem shorten, down to a day for a problem that lapsed often.
+	 */
+	private static function cleanSolveOutlook(int $rung, int $lapses): string
+	{
+		if ($rung >= count(self::$LADDER) - 1)
+			return 'A clean solve graduates it.';
+		$days = self::wait($rung + 1, $lapses);
+		return 'A clean solve brings it back ' . ($days == 1 ? 'tomorrow' : 'in ' . $days . ' days') . '.';
+	}
+
+	/**
 	 * Add a problem to the pool at the bottom rung, due on the next training day.
+	 * Entering is not a lapse: the mistake that brought the problem in is the reason
+	 * it is reviewed, not a sign that the reviews are too far apart.
 	 */
 	private static function enterPool(int $userId, int $tsumegoId): void
 	{
@@ -668,14 +725,28 @@ class MistakeTraining
 	}
 
 	/**
+	 * Count a lapse of a problem in the pool: a mistake on it, which slows the growth
+	 * of its waits for good. The count never goes down, a problem that was hard stays
+	 * suspect however well it goes later.
+	 */
+	private static function countLapse(int $userId, int $tsumegoId): void
+	{
+		Util::execute(
+			'UPDATE mistake_training_pool SET lapses = lapses + 1 WHERE user_id = ? AND tsumego_id = ?',
+			[$userId, $tsumegoId]
+		);
+	}
+
+	/**
 	 * Move a pool row to a new rung and set its next review. The review waits out
-	 * the rung's interval unless $daysAhead names the wait explicitly (a retry is
-	 * due tomorrow whatever rung the problem sits on).
+	 * the rung's interval, shortened by the lapses of the problem (see wait()), unless
+	 * $daysAhead names the wait explicitly (a retry is due tomorrow whatever rung the
+	 * problem sits on, and the toolbox makes a jump due now).
 	 */
 	private static function setRung(int $userId, int $tsumegoId, int $rung, ?int $daysAhead = null): void
 	{
 		$now = date('Y-m-d H:i:s');
-		$daysAhead = $daysAhead ?? self::$LADDER[$rung];
+		$daysAhead = $daysAhead ?? self::wait($rung, (int) (self::getPoolRow($userId, $tsumegoId)['lapses'] ?? 0));
 		$nextDue = self::dueDate($daysAhead);
 
 		$sql = 'UPDATE mistake_training_pool SET rung = ?, next_due = ?, modified = ?';
@@ -717,7 +788,7 @@ class MistakeTraining
 		$displayOrder = SetConnection::displayOrderForSetSql('st');
 
 		return "
-			SELECT id, tsumego_id, set_connection_id, num, rating, sgf, rung, next_due, last_review_day, last_review_result
+			SELECT id, tsumego_id, set_connection_id, num, rating, sgf, rung, lapses, next_due, last_review_day, last_review_result
 			FROM (
 				SELECT
 					p.id,
@@ -726,6 +797,7 @@ class MistakeTraining
 					sc.num,
 					t.rating,
 					p.rung,
+					p.lapses,
 					p.next_due,
 					p.last_review_day,
 					p.last_review_result,

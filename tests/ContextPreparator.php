@@ -442,8 +442,9 @@ class ContextPreparator
 
 		// A status fixture with mistake_training_due now marks the problem as in
 		// the training pool (the due column moved to mistake_training_pool), on the
-		// rung (mistake_training_rung) and with the last review
-		// (mistake_training_review_day, mistake_training_review_result) it names.
+		// rung (mistake_training_rung), with the lapses (mistake_training_lapses) and
+		// with the last review (mistake_training_review_day,
+		// mistake_training_review_result) it names.
 		if ($mistakeTrainingDue !== null)
 			$this->prepareMistakeTrainingPoolEntry($userID, (int) $tsumego['id'], $mistakeTrainingDue, $tsumegoStatus);
 	}
@@ -456,6 +457,7 @@ class ContextPreparator
 			'user_id' => $userId,
 			'tsumego_id' => $tsumegoId,
 			'rung' => $tsumegoStatus['mistake_training_rung'] ?? 0,
+			'lapses' => $tsumegoStatus['mistake_training_lapses'] ?? 0,
 			'next_due' => $mistakeTrainingDue,
 			'last_review_day' => $tsumegoStatus['mistake_training_review_day'] ?? null,
 			'last_review_result' => $tsumegoStatus['mistake_training_review_result'] ?? null,

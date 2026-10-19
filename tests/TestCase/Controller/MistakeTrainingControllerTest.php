@@ -55,7 +55,9 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 
 	public function testAllCaughtUpShowsUpcomingDayCounts()
 	{
-		$dueTomorrow = date('Y-m-d H:i:s', strtotime('+1 day'));
+		// Tomorrow of the training day, which is still yesterday's day before the day
+		// boundary, so the test does not depend on the hour it runs at.
+		$dueTomorrow = date('Y-m-d', strtotime(MistakeTraining::today() . ' +1 day')) . ' 12:00:00';
 		new ContextPreparator([
 			'user' => ['name' => 'testuser'],
 			'tsumegos' => [
@@ -237,7 +239,7 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		$this->testAction('/mistake-training/play/' . self::setConnectionId($context, 0), ['return' => 'contents']);
 
 		$this->assertStringContainsString('problem-nav__item problem-nav__item--S problem-nav__item--current', $this->view);
-		$this->assertStringContainsString('<div class="problem-nav__rung problem-nav__rung--chevron" data-rung="0" role="img" aria-label="Rung 1 of 6">', $this->view,
+		$this->assertStringContainsString('<div class="problem-nav__rung problem-nav__rung--chevron" data-rung="0" role="img" aria-label="Rung 1 of 8">', $this->view,
 			'The retry earned no rung back');
 		$this->assertStringContainsString('Already solved today. This try does not count.', $this->view);
 	}
@@ -364,7 +366,7 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		$this->assertStringContainsString('Press Reset to try again', $browser->find('#status')->getText());
 		$this->assertSame(0, (int) MistakeTraining::getPoolRow($userId, $tsumegoId)['rung'], 'A mistake goes back to the bottom');
 		$this->assertTrue(MistakeTraining::isDue($userId, $tsumegoId), 'A mistake keeps the problem due today');
-		$this->assertSame('Rung 1 of 6',
+		$this->assertSame('Rung 1 of 8',
 			$browser->find('.problem-nav__item--current .problem-nav__rung')->getAttribute('aria-label'),
 			'The button shows the bottom rung the mistake took the problem to');
 
@@ -793,13 +795,51 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 			'user' => ['name' => 'admin', 'admin' => true],
 			'tsumego' => [
 				'set_order' => 1,
-				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('+2 days'))],
+				'status' => [
+					'name' => 'V',
+					'mistake_training_due' => date('Y-m-d H:i:s', strtotime('+2 days')),
+					'mistake_training_rung' => 3,
+					'mistake_training_lapses' => 2,
+				],
 			],
 		]);
 
 		$this->testAction(MistakeTraining::$DEBUG_LINK, ['return' => 'contents']);
 
 		$this->assertStringContainsString('Mistake Training toolbox', (string) $this->view);
+		$this->assertStringContainsString('<th>Rung</th><th>Lapses</th>', (string) $this->view);
+		$this->assertMatchesRegularExpression('~<td>3</td>\s*<td>2</td>~', (string) $this->view, 'The row shows the rung and the lapses');
+		$this->assertStringContainsString('<td>1, 2, 3, 6, 11, 23, 45, 90</td>', (string) $this->view, 'The waits after one lapse');
+		$this->assertMatchesRegularExpression('~<td>3 or more</td>\s*<td>1, 1, 2, 4, 8, 15, 30, 60</td>~', (string) $this->view,
+			'The last row is the floor, which every further lapse keeps');
+	}
+
+	/**
+	 * The toolbox jumps through time, it does not rewrite the history of a problem, so
+	 * the lapses stay whatever it does with the rung.
+	 */
+	public function testTheToolboxKeepsTheLapses()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'admin', 'admin' => true],
+			'tsumego' => [
+				'set_order' => 1,
+				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('+2 days')), 'mistake_training_lapses' => 2],
+			],
+		]);
+		$userId = $context->user['id'];
+		$tsumegoId = (int) $context->tsumegos[0]['id'];
+		$lapses = fn() => (int) MistakeTraining::getPoolRow($userId, $tsumegoId)['lapses'];
+
+		foreach ([['command' => 'rung', 'rung' => 5], ['command' => 'add'], ['command' => 'graduate']] as $data)
+		{
+			$this->login($context->user['name']);
+			$this->testAction(MistakeTraining::$DEBUG_LINK, [
+				'method' => 'post',
+				'data' => $data + ['tsumego_id' => $tsumegoId, 'problem' => $context->tsumegos[0]['set-connections'][0]['id']],
+			]);
+			$this->assertSame(2, $lapses(), 'The ' . $data['command'] . ' command keeps the lapses');
+		}
 	}
 
 	public function testTheToolboxMovesTheReviewsByDays()

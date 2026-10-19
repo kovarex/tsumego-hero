@@ -1039,9 +1039,9 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 		$beforeSolved = (int) Auth::getUser()['solved'];
 
-		// Six reviews, each on its own day: a second solve on the day of a review is a
+		// Eight reviews, each on its own day: a second solve on the day of a review is a
 		// replay that counts for nothing.
-		for ($i = 0; $i < 6; $i++)
+		for ($i = 0; $i < 8; $i++)
 		{
 			MistakeTraining::makeDueNow($context->user['id'], (int) $context->tsumegos[0]['id']);
 			$this->solve($context);
@@ -1101,21 +1101,22 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$button = $this->failResult($context)['mistake_training_button'];
 		$this->assertSame('N', $button['status'], 'A miss stays grey until it is solved');
 		$this->assertSame('Missed today, try again', $button['label']);
-		$this->assertSame('<div class="problem-nav__rung problem-nav__rung--chevron" data-rung="0" role="img" aria-label="Rung 1 of 6">'
+		$this->assertSame('<div class="problem-nav__rung problem-nav__rung--chevron" data-rung="0" role="img" aria-label="Rung 1 of 8">'
 			. RungInsignia::render(RungInsignia::CHEVRON, 1) . '</div>', $button['badge'], 'The mistake took the problem to the bottom rung, one chevron');
 
 		$button = $this->solve($context)['mistake_training_button'];
 		$this->assertSame('S', $button['status']);
 		$this->assertSame('Solved today', $button['label']);
 		$this->assertStringContainsString('next review tomorrow', $button['description']);
-		$this->assertStringContainsString('data-rung="0" role="img" aria-label="Rung 1 of 6"', $button['badge'], 'The retry earned no rung');
+		$this->assertStringContainsString('data-rung="0" role="img" aria-label="Rung 1 of 8"', $button['badge'], 'The retry earned no rung');
 	}
 
 	public static function cleanSolveBadgeProvider(): array
 	{
 		return [
-			'the first star climbs to the second' => [3, 'data-rung="4" role="img" aria-label="Rung 5 of 6">' . RungInsignia::render(RungInsignia::STAR, 2)],
-			'the last star graduates to the crown' => [5, 'problem-nav__rung--graduated" role="img" aria-label="Graduated">' . RungInsignia::renderCrown()],
+			'the fourth chevron climbs to the first star' => [3, 'data-rung="4" role="img" aria-label="Rung 5 of 8">' . RungInsignia::render(RungInsignia::STAR, 1)],
+			'the first star climbs to the second' => [4, 'data-rung="5" role="img" aria-label="Rung 6 of 8">' . RungInsignia::render(RungInsignia::STAR, 2)],
+			'the last star graduates to the crown' => [7, 'problem-nav__rung--graduated" role="img" aria-label="Graduated">' . RungInsignia::renderCrown()],
 		];
 	}
 

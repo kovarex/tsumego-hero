@@ -187,12 +187,13 @@ class MistakeTrainingTest extends TestCaseWithAuth
 		$this->enterTraining($userId, $tsumegoId);
 		$this->assertDaysAhead(1, $this->poolRow($userId, $tsumegoId), 'Entering training waits one day');
 
-		foreach ([1 => 3, 2 => 7, 3 => 14, 4 => 30, 5 => 60] as $rung => $days)
+		foreach ([1 => 2, 2 => 4, 3 => 8, 4 => 15, 5 => 30, 6 => 60, 7 => 120] as $rung => $days)
 		{
 			MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null);
 			$row = $this->poolRow($userId, $tsumegoId);
 			$this->assertSame($rung, (int) $row['rung']);
 			$this->assertDaysAhead($days, $row, "A clean solve at rung $rung waits $days days");
+			$this->assertSame(0, (int) $row['lapses'], 'Clean solves are no lapses, so the waits are the ladder');
 		}
 	}
 
@@ -203,15 +204,15 @@ class MistakeTrainingTest extends TestCaseWithAuth
 		$tsumegoId = $context->tsumegos[0]['id'];
 
 		$this->enterTraining($userId, $tsumegoId);
-		for ($i = 0; $i < 5; $i++)
+		for ($i = 0; $i < 7; $i++)
 			MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null);
-		$this->assertSame(5, (int) $this->poolRow($userId, $tsumegoId)['rung']);
+		$this->assertSame(7, (int) $this->poolRow($userId, $tsumegoId)['rung']);
 
 		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::Failed, null);
 
 		$row = $this->poolRow($userId, $tsumegoId);
 		$this->assertSame(0, (int) $row['rung'], 'A mistake at the top rung takes the problem back to the bottom');
-		$this->assertDaysAhead(1, $row, 'A mistake at the top rung comes back tomorrow, not after two months');
+		$this->assertDaysAhead(1, $row, 'A mistake at the top rung comes back tomorrow, not after four months');
 	}
 
 	private function assertDaysAhead(int $expectedDays, array $row, string $message): void
@@ -233,6 +234,8 @@ class MistakeTrainingTest extends TestCaseWithAuth
 		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null);
 		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null);
 		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null);
+		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null);
+		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null);
 
 		$row = $this->poolRow($userId, $tsumegoId);
 		$this->assertNotNull($row, 'The row stays, as the memory that the training knows the problem');
@@ -247,7 +250,7 @@ class MistakeTrainingTest extends TestCaseWithAuth
 		$tsumegoId = (int) $context->tsumegos[0]['id'];
 
 		$this->enterTraining($userId, $tsumegoId);
-		for ($i = 0; $i < 6; $i++)
+		for ($i = 0; $i < 8; $i++)
 			MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null);
 
 		$this->assertSame(0, MistakeTraining::importCandidates($userId),
@@ -261,7 +264,7 @@ class MistakeTrainingTest extends TestCaseWithAuth
 		$tsumegoId = $context->tsumegos[0]['id'];
 
 		$this->enterTraining($userId, $tsumegoId);
-		for ($i = 0; $i < 6; $i++)
+		for ($i = 0; $i < 8; $i++)
 			MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null);
 
 		$this->assertFalse(MistakeTraining::isDue($userId, $tsumegoId),
@@ -275,7 +278,7 @@ class MistakeTrainingTest extends TestCaseWithAuth
 		$tsumegoId = $context->tsumegos[0]['id'];
 
 		$this->enterTraining($userId, $tsumegoId);
-		for ($i = 0; $i < 6; $i++)
+		for ($i = 0; $i < 8; $i++)
 			MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null);
 
 		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::Failed, null);
@@ -559,7 +562,7 @@ class MistakeTrainingTest extends TestCaseWithAuth
 		$this->assertSame('N', $button->status, 'A problem missed today is grey until it is solved');
 		$this->assertSame(0, $button->rung);
 		$this->assertSame('Missed today, try again', $button->label);
-		$this->assertSame('Rung 1 of 6. Solve it today and it comes back tomorrow.', $button->description,
+		$this->assertSame('Rung 1 of 8. Solve it today and it comes back tomorrow.', $button->description,
 			'The tooltip of a miss must not read as if it was solved');
 	}
 
@@ -595,7 +598,7 @@ class MistakeTrainingTest extends TestCaseWithAuth
 
 	public function testAMistakeAtTheTopRungThenASolveTheSameDayComesBackTomorrow(): void
 	{
-		$context = $this->prepareTraining(['mistake_training_rung' => 5]);
+		$context = $this->prepareTraining(['mistake_training_rung' => 7]);
 
 		$this->playInTraining($context, 0, PlayOutcome::Failed);
 		$this->playInTraining($context, 0, PlayOutcome::SolvedClean);
@@ -614,7 +617,7 @@ class MistakeTrainingTest extends TestCaseWithAuth
 
 		$row = $this->trainingRow($context, 0);
 		$this->assertSame(2, (int) $row['rung']);
-		$this->assertDaysAhead(7, $row, 'A clean solve at rung 2 waits 7 days');
+		$this->assertDaysAhead(4, $row, 'A clean solve at rung 2 waits 4 days');
 		$this->assertSame(MistakeTraining::today(), $row['last_review_day']);
 		$this->assertSame(MistakeTraining::REVIEW_SOLVED, $row['last_review_result']);
 		$this->assertCount(1, MistakeTraining::todaysTraining($context->user['id']),
@@ -697,7 +700,7 @@ class MistakeTrainingTest extends TestCaseWithAuth
 
 	public function testAProblemGraduatedTodayStaysInTheRowAsSolved(): void
 	{
-		$context = $this->prepareTraining(['mistake_training_rung' => 5]);
+		$context = $this->prepareTraining(['mistake_training_rung' => 7]);
 
 		$this->playInTraining($context, 0, PlayOutcome::SolvedClean);
 
@@ -734,5 +737,165 @@ class MistakeTrainingTest extends TestCaseWithAuth
 		$this->playInTraining($context, 1, PlayOutcome::SolvedClean);
 		$this->assertSame(1, (int) $this->trainingRow($context, 1)['rung'],
 			'A clean solve on a new day climbs, the retry was yesterday');
+	}
+
+	// ==================== Lapses ====================
+
+	private function lapses(ContextPreparator $context, int $index): int
+	{
+		return (int) $this->trainingRow($context, $index)['lapses'];
+	}
+
+	public function testEnteringTheTrainingIsNotALapse(): void
+	{
+		$context = new ContextPreparator([
+			'tsumegos' => [['set_order' => 1], ['set_order' => 2, 'attempt' => ['solved' => true, 'misplays' => 1]]],
+		]);
+		$userId = $context->user['id'];
+
+		$this->enterTraining($userId, $this->tsumegoId($context, 0));
+		MistakeTraining::importPastMistakes($userId);
+
+		$this->assertSame(0, $this->lapses($context, 0), 'The mistake that brings a problem in is what the training is for');
+		$this->assertSame(0, $this->lapses($context, 1), 'An imported past mistake comes in without lapses too');
+	}
+
+	public function testTheFirstMissOfADueProblemIsALapse(): void
+	{
+		$context = $this->prepareTraining([]);
+
+		$this->playInTraining($context, 0, PlayOutcome::Failed);
+
+		$this->assertSame(1, $this->lapses($context, 0));
+	}
+
+	/**
+	 * A missed problem stays due until it is solved, and every try before that fails
+	 * on what the first miss showed already, so the day counts one lapse, also when
+	 * the problem is tried again outside the training.
+	 */
+	public function testAMissAgainTheSameDayIsTheSameLapse(): void
+	{
+		$context = $this->prepareTraining([]);
+
+		$this->playInTraining($context, 0, PlayOutcome::Failed);
+		$this->playInTraining($context, 0, PlayOutcome::Failed);
+		MistakeTraining::recordResult($context->user['id'], $this->tsumegoId($context, 0), PlayOutcome::Failed, 'V');
+
+		$this->assertSame(1, $this->lapses($context, 0), 'The tries that fail before the solve are one lapse');
+	}
+
+	public function testAMissOnAnotherDayIsAnotherLapse(): void
+	{
+		$context = $this->prepareTraining([]);
+		$this->playInTraining($context, 0, PlayOutcome::Failed);
+
+		// The day boundary passes with the problem still due and unsolved.
+		MistakeTraining::shiftReviews($context->user['id'], -1);
+		$this->playInTraining($context, 0, PlayOutcome::Failed);
+
+		$this->assertSame(2, $this->lapses($context, 0), 'Missing it again on a new day shows it is still not known');
+	}
+
+	public function testAMissOutsideTheTrainingOnAProblemThatIsNotDueIsALapse(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+		$userId = $context->user['id'];
+		$tsumegoId = $context->tsumegos[0]['id'];
+		$this->enterTraining($userId, $tsumegoId);
+		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null);
+
+		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::Failed, 'S');
+
+		$row = $this->poolRow($userId, $tsumegoId);
+		$this->assertSame(1, (int) $row['lapses'], 'A mistake in the level mode shows the problem is not known either');
+		$this->assertSame(0, (int) $row['rung']);
+		$this->assertDaysAhead(1, $row, 'And it comes back tomorrow like after any mistake');
+	}
+
+	public function testMissingAProblemAtTheBottomAgainOutsideTheTrainingIsTheSameLapse(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+		$userId = $context->user['id'];
+		$tsumegoId = $context->tsumegos[0]['id'];
+		$this->enterTraining($userId, $tsumegoId);
+		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null);
+
+		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::Failed, 'S');
+		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::Failed, 'F');
+		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::Failed, 'F');
+
+		$this->assertSame(1, (int) $this->poolRow($userId, $tsumegoId)['lapses'],
+			'A problem the first mistake took to the bottom has nothing left to lose, so failing it again is the same lapse');
+	}
+
+	public function testASolveIsNeverALapse(): void
+	{
+		$context = $this->prepareTraining(['mistake_training_rung' => 2, 'mistake_training_lapses' => 1]);
+
+		$this->playInTraining($context, 0, PlayOutcome::SolvedClean);
+		$this->playInTraining($context, 0, PlayOutcome::Failed);
+		MistakeTraining::shiftReviews($context->user['id'], -10);
+		$this->playInTraining($context, 0, PlayOutcome::SolvedAfterMistake);
+
+		$this->assertSame(1, $this->lapses($context, 0),
+			'A replay counts for nothing, and a solve after a mistake was counted by the mistake already');
+	}
+
+	public function testLapsesSlowTheGrowthOfTheWaitsDownToHalfOfTheLadder(): void
+	{
+		$waits = fn(int $lapses) => array_map(fn(int $rung) => MistakeTraining::wait($rung, $lapses), array_keys(MistakeTraining::ladder()));
+
+		$this->assertSame(MistakeTraining::ladder(), $waits(0), 'A problem that never lapsed waits the ladder');
+		$this->assertSame([1, 2, 3, 6, 11, 23, 45, 90], $waits(1), 'A lapse takes a quarter off every wait');
+		$this->assertSame([1, 1, 2, 5, 8, 17, 34, 68], $waits(2), 'And every further lapse a quarter of what is left');
+		$this->assertSame([1, 1, 2, 4, 8, 15, 30, 60], $waits(3), 'Three lapses reach the floor, half of the ladder');
+		$this->assertSame($waits(3), $waits(20), 'A problem that keeps lapsing never waits less than the floor');
+	}
+
+	public function testACleanSolveWaitsTheIntervalTheLapsesLeft(): void
+	{
+		$context = $this->prepareTraining(
+			['mistake_training_rung' => 3, 'mistake_training_lapses' => 1],
+			['mistake_training_rung' => 4, 'mistake_training_lapses' => 2],
+			['mistake_training_rung' => 6, 'mistake_training_lapses' => 5],
+		);
+
+		foreach ([0, 1, 2] as $index)
+			$this->playInTraining($context, $index, PlayOutcome::SolvedClean);
+
+		$this->assertDaysAhead(11, $this->trainingRow($context, 0), 'Rung 4 waits 11 days instead of 15 after a lapse');
+		$this->assertDaysAhead(17, $this->trainingRow($context, 1), 'Rung 5 waits 17 days instead of 30 after two lapses');
+		$this->assertDaysAhead(60, $this->trainingRow($context, 2), 'The top rung waits no less than half of its 120 days');
+		foreach ([0, 1, 2] as $index)
+			$this->assertSame([4, 5, 7][$index], (int) $this->trainingRow($context, $index)['rung'],
+				'The lapses slow the waits, a clean solve still climbs one rung');
+	}
+
+	public function testALapsedProblemStillGraduatesAtTheTopRung(): void
+	{
+		$context = $this->prepareTraining(['mistake_training_rung' => 7, 'mistake_training_lapses' => 4]);
+
+		$this->playInTraining($context, 0, PlayOutcome::SolvedClean);
+
+		$this->assertNull($this->trainingRow($context, 0)['next_due'], 'Lapses change the waits, not the way out');
+		$this->assertSame(4, $this->lapses($context, 0));
+	}
+
+	public function testTheTooltipOfADueProblemSaysTheWaitTheLapsesLeft(): void
+	{
+		$context = $this->prepareTraining(
+			['mistake_training_rung' => 3],
+			['mistake_training_rung' => 3, 'mistake_training_lapses' => 1],
+			['mistake_training_rung' => 0, 'mistake_training_lapses' => 3],
+		);
+
+		$buttons = $this->trainingButtons($context);
+
+		$this->assertSame('Rung 4 of 8. A clean solve brings it back in 15 days.', $buttons[$this->tsumegoId($context, 0)]->description);
+		$this->assertSame('Rung 4 of 8. A clean solve brings it back in 11 days.', $buttons[$this->tsumegoId($context, 1)]->description,
+			'The tooltip promises the wait the problem will get, not the one of the ladder');
+		$this->assertSame('Rung 1 of 8. A clean solve brings it back tomorrow.', $buttons[$this->tsumegoId($context, 2)]->description,
+			'A wait of one day is tomorrow');
 	}
 }

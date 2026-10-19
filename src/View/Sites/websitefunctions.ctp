@@ -179,9 +179,14 @@
 		<div class="new1">
 			A problem goes to the mistake training when you solve it but had made a mistake first.
 			<br><br>
-			Every clean solve pushes the next review further away: a day, three days, a week, two weeks, a month, two months.
-			Six clean solves and the problem leaves the training. A mistake sends it back to the bottom, however far it had got,
-			and it stays in today's training until you solve it. That solve earns nothing and the problem comes back the next day.
+			Every clean solve pushes the next review further away: a day, then two, four, eight and fifteen days, then a month,
+			two months and four months. Eight clean solves and the problem leaves the training. A mistake sends it back to the
+			bottom, however far it had got, and it stays in today's training until you solve it. That solve earns nothing and
+			the problem comes back the next day.
+			<br><br>
+			A mistake also tells the training that the problem is hard for you, so from then on its reviews move away more
+			slowly: after one mistake the waits are a quarter shorter, and every further mistake shortens them again, down to
+			half of the waits above. While a problem is due, the tries that fail before you solve it count as one mistake.
 			<br><br>
 			The training does not give XP or rating, it does not cost hearts and it does not use hero powers. It does not change
 			the status of a problem either: a problem you solved in the level mode stays solved. A mistake locks the board, and
@@ -194,8 +199,8 @@
 			<br><br>
 			The buttons under the board are today's training, and they keep their order the whole day. A grey button is still
 			waiting, a green one is solved today. The badge under the number is the rung of the problem, like a military rank:
-			chevrons for a fresh mistake and the first reviews, stars for the last reviews before graduation, and a crown marks
-			a problem that graduated today. The tooltip of a button names the rung and says when the problem comes back. Next
+			one to four chevrons for a fresh mistake and the first reviews, one to four stars for the last reviews before
+			graduation, and a crown marks a problem that graduated today. The tooltip of a button names the rung and says when the problem comes back. Next
 			skips what you solved already, and a solved problem played again from the row does not count.
 			<br><br>
 			<b>All caught up</b><br><br>

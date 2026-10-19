@@ -24,6 +24,16 @@ $stats = [
 	['In training', (string) $totalInTraining],
 	['Not imported', (string) $importCandidates],
 ];
+// The waits of the ladder after each number of lapses, until the floor stops them
+// shrinking: the last row holds for every count from there on.
+$waitsByLapses = [];
+for ($lapses = 0; ; $lapses++)
+{
+	$waits = array_map(fn(int $rung) => MistakeTraining::wait($rung, $lapses), array_keys($ladder));
+	if ($lapses > 0 && $waits === end($waitsByLapses))
+		break;
+	$waitsByLapses[$lapses] = $waits;
+}
 ?>
 <div class="info-box">
 	<h2 style="margin-bottom: var(--space-4);">Mistake Training toolbox</h2>
@@ -49,6 +59,19 @@ $stats = [
 		The wait until the next review at each rung. A clean solve climbs one rung, a mistake goes back to 0 and keeps a
 		due problem due until it is solved.
 	</p>
+	<p class="hint">
+		Every mistake on a problem in the training is also a lapse, at most one a day while the problem is due, and the
+		lapses shorten its waits for good:
+	</p>
+	<table style="margin-bottom: var(--space-3);">
+		<tr><th>Lapses</th><th>Waits in days, rung 0 first</th></tr>
+		<?php foreach ($waitsByLapses as $lapses => $waits): ?>
+		<tr>
+			<td><?php echo $lapses; ?><?php echo $lapses === array_key_last($waitsByLapses) ? ' or more' : ''; ?></td>
+			<td><?php echo implode(', ', $waits); ?></td>
+		</tr>
+		<?php endforeach; ?>
+	</table>
 	<p class="hint">
 		<a href="<?php echo MistakeTraining::$QUEUE_LINK; ?>">Back to the training</a>
 	</p>
@@ -82,7 +105,7 @@ $stats = [
 	<?php endforeach; ?>
 
 	<h3 style="margin-top: var(--space-4);">Add a problem</h3>
-	<p class="hint">Arrives due now at the bottom rung. A problem already in training keeps its rung.</p>
+	<p class="hint">Arrives due now at the bottom rung, with no lapses. A problem already in training keeps its rung and its lapses.</p>
 	<form method="post" action="<?php echo MistakeTraining::$DEBUG_LINK; ?>">
 		<input type="hidden" name="command" value="add">
 		<label>Problem <input type="text" name="problem" placeholder="https://tsumego.com/29358" style="width: 18em;"></label>
@@ -90,7 +113,7 @@ $stats = [
 	</form>
 
 	<h3 style="margin-top: var(--space-4);">Jump to a rung</h3>
-	<p class="hint">Puts the problem on that rung and makes it due now, so a 60 day review can be played without waiting for it.</p>
+	<p class="hint">Puts the problem on that rung and makes it due now, so a review months away can be played without waiting for it. Its lapses stay.</p>
 	<form method="post" action="<?php echo MistakeTraining::$DEBUG_LINK; ?>">
 		<input type="hidden" name="command" value="rung">
 		<label>Problem <input type="text" name="problem" placeholder="https://tsumego.com/29358" style="width: 18em;"></label>
@@ -119,7 +142,7 @@ $stats = [
 	<p class="hint">Nothing in training.</p>
 	<?php else: ?>
 	<table>
-		<tr><th>Problem</th><th>Rung</th><th>Next review</th><th>Last review</th><th>Simulate</th></tr>
+		<tr><th>Problem</th><th>Rung</th><th>Lapses</th><th>Next review</th><th>Last review</th><th>Simulate</th></tr>
 		<?php foreach ($poolRows as $row): ?>
 		<?php $graduated = $row['next_due'] === null; ?>
 		<tr>
@@ -134,6 +157,7 @@ $stats = [
 				<?php endif; ?>
 			</td>
 			<td><?php echo (int) $row['rung']; ?></td>
+			<td><?php echo (int) $row['lapses']; ?></td>
 			<td><?php echo $graduated ? 'graduated' : htmlspecialchars((string) $row['next_due'], ENT_QUOTES, 'UTF-8'); ?></td>
 			<td><?php echo htmlspecialchars(trim($row['last_review_day'] . ' ' . ($reviewResults[(string) $row['last_review_result']] ?? '')), ENT_QUOTES, 'UTF-8'); ?></td>
 			<td>
