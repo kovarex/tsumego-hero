@@ -146,7 +146,7 @@ class MistakeTraining
 	 * review, be it a climb, a graduation or a retry. Those are returned, for the
 	 * XP of the training (awardXp()); anything else returns null.
 	 *
-	 * @return array{id: int, result: string, rung_before: int, rung_after: int, climbed: bool, cleared: bool}|null
+	 * @return array{id: int, result: string, rung_before: int, rung_after: int, climbed: bool, cleared: bool, clear_bonus: bool}|null
 	 */
 	public static function recordResult(int $userId, int $tsumegoId, PlayOutcome $outcome, ?string $oldStatus, bool $inTraining = false, bool $inTimeMode = false): ?array
 	{
@@ -244,11 +244,11 @@ class MistakeTraining
 	/**
 	 * Write a review into the history: a row of mistake_training_review, and the sums
 	 * of the day in mistake_training_day (how many problems the day's training held,
-	 * how many were reviewed). A solve that leaves nothing due clears the day, when
-	 * the day held at least CLEAR_DAY_MIN_PROBLEMS problems; only the first one does,
-	 * so its bonus is paid once.
+	 * how many were reviewed). A solve that leaves nothing due clears the day; only
+	 * the first one does, so the bonus of the day is paid once, and only for a day
+	 * of at least CLEAR_DAY_MIN_PROBLEMS problems (clear_bonus).
 	 *
-	 * @return array{id: int, result: string, rung_before: int, rung_after: int, climbed: bool, cleared: bool}
+	 * @return array{id: int, result: string, rung_before: int, rung_after: int, climbed: bool, cleared: bool, clear_bonus: bool}
 	 */
 	private static function logReview(int $userId, int $tsumegoId, string $result, int $rungBefore, int $rungAfter, bool $climbed): array
 	{
@@ -271,12 +271,17 @@ class MistakeTraining
 		);
 
 		$cleared = false;
+		$clearBonus = false;
 		if ($result !== self::REVIEW_MISSED && self::dueCount($userId) == 0)
 			$cleared = Util::execute(
-				'UPDATE mistake_training_day SET cleared = 1, cleared_at = ?'
-				. ' WHERE user_id = ? AND day = ? AND cleared = 0 AND due >= ?',
-				[$now, $userId, $today, self::CLEAR_DAY_MIN_PROBLEMS]
+				'UPDATE mistake_training_day SET cleared = 1, cleared_at = ? WHERE user_id = ? AND day = ? AND cleared = 0',
+				[$now, $userId, $today]
 			) > 0;
+		if ($cleared)
+			$clearBonus = (int) Util::query(
+				'SELECT due FROM mistake_training_day WHERE user_id = ? AND day = ?',
+				[$userId, $today]
+			)[0]['due'] >= self::CLEAR_DAY_MIN_PROBLEMS;
 
 		return [
 			'id' => $reviewId,
@@ -285,6 +290,7 @@ class MistakeTraining
 			'rung_after' => $rungAfter,
 			'climbed' => $climbed,
 			'cleared' => $cleared,
+			'clear_bonus' => $clearBonus,
 		];
 	}
 
@@ -293,7 +299,7 @@ class MistakeTraining
 	 * day's sum: see REVIEW_XP_SHARE. $problemRating is the rating of the problem
 	 * before this play changed it.
 	 *
-	 * @param array{id: int, result: string, climbed: bool, cleared: bool} $review what recordResult() returned
+	 * @param array{id: int, result: string, climbed: bool, clear_bonus: bool} $review what recordResult() returned
 	 * @return array{review: int, graduation: int, clear: int}
 	 */
 	public static function awardXp(int $userId, array $review, float $problemRating): array
@@ -308,7 +314,7 @@ class MistakeTraining
 		$earned = $xp['review'] + $xp['graduation'];
 		if ($earned > 0)
 			Util::execute('UPDATE mistake_training_review SET xp = ? WHERE id = ?', [$earned, $review['id']]);
-		if ($review['cleared'])
+		if ($review['clear_bonus'])
 		{
 			$dayXp = (int) Util::query(
 				'SELECT COALESCE(SUM(xp), 0) AS total FROM mistake_training_review WHERE user_id = ? AND day = ?',

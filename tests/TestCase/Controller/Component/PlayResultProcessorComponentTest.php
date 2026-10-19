@@ -1614,7 +1614,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 			$response = $this->playInTraining($context, PlayOutcome::SolvedClean, $i);
 
 		$this->assertSame(0, $response['mistake_training_xp']['clear']);
-		$this->assertSame(0, (int) $this->trainingDay($context)['cleared']);
+		$this->assertSame(1, (int) $this->trainingDay($context)['cleared'], 'The day is cleared all the same');
 	}
 
 	public function testADayIsClearedOnlyWhenNothingIsLeftDue(): void

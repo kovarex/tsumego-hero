@@ -1082,7 +1082,7 @@ class MistakeTrainingTest extends TestCaseWithAuth
 
 		$review = MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, 'V', true);
 
-		$this->assertSame(['result' => 'S', 'rung_before' => 2, 'rung_after' => 3, 'climbed' => true, 'cleared' => false],
+		$this->assertSame(['result' => 'S', 'rung_before' => 2, 'rung_after' => 3, 'climbed' => true, 'cleared' => false, 'clear_bonus' => false],
 			array_diff_key($review, ['id' => 0]));
 		$rows = $this->reviews($userId);
 		$this->assertCount(1, $rows);
@@ -1168,9 +1168,12 @@ class MistakeTrainingTest extends TestCaseWithAuth
 
 		$cleared = [];
 		foreach ($context->tsumegos as $tsumego)
-			$cleared[] = MistakeTraining::recordResult($userId, (int) $tsumego['id'], PlayOutcome::SolvedClean, 'V', true)['cleared'];
+		{
+			$review = MistakeTraining::recordResult($userId, (int) $tsumego['id'], PlayOutcome::SolvedClean, 'V', true);
+			$cleared[] = [$review['cleared'], $review['clear_bonus']];
+		}
 
-		$this->assertSame([false, false, false, false, true], $cleared);
+		$this->assertSame([[false, false], [false, false], [false, false], [false, false], [true, true]], $cleared);
 		$day = $this->trainingDay($userId);
 		$this->assertSame(MistakeTraining::CLEAR_DAY_MIN_PROBLEMS, (int) $day['due']);
 		$this->assertSame(MistakeTraining::CLEAR_DAY_MIN_PROBLEMS, (int) $day['reviewed']);
@@ -1179,8 +1182,20 @@ class MistakeTrainingTest extends TestCaseWithAuth
 		$tsumegoId = (int) $context->tsumegos[0]['id'];
 		MistakeTraining::makeDueNow($userId, $tsumegoId);
 		Util::execute('UPDATE mistake_training_pool SET last_review_day = NULL WHERE user_id = ? AND tsumego_id = ?', [$userId, $tsumegoId]);
-		$this->assertFalse(MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, 'V', true)['cleared'],
+		$this->assertFalse(MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, 'V', true)['clear_bonus'],
 			'A day is cleared once');
+	}
+
+	public function testASmallDayIsClearedWithoutTheBonus(): void
+	{
+		$context = new ContextPreparator(['tsumego' => $this->dueProblem(1)]);
+		$userId = $context->user['id'];
+
+		$review = MistakeTraining::recordResult($userId, (int) $context->tsumegos[0]['id'], PlayOutcome::SolvedClean, 'V', true);
+
+		$this->assertTrue($review['cleared'], 'The calendar shows the day cleared');
+		$this->assertFalse($review['clear_bonus'], 'But a day of one problem earns no bonus');
+		$this->assertSame(1, (int) $this->trainingDay($userId)['cleared']);
 	}
 
 	public function testTheHistoryTablesAreStrict(): void

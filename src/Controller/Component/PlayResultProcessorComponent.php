@@ -165,7 +165,7 @@ class PlayResultProcessorComponent extends Component
 	 * counts like the XP of a solve, for the level and the day's XP; the bonus for
 	 * clearing the day is not a solve, so it leaves the day's solved count alone.
 	 *
-	 * @param array{id: int, result: string, climbed: bool, cleared: bool} $review
+	 * @param array{id: int, result: string, climbed: bool, clear_bonus: bool} $review
 	 * @return array{review: int, graduation: int, clear: int}
 	 */
 	private function processTrainingXp(array $review, float $problemRating): array
