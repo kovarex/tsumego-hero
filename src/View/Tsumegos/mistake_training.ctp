@@ -57,8 +57,8 @@ use App\Utility\MistakeTraining;
 	<?php endif; ?>
 	<?php if (!empty($importCandidates)): ?>
 	<p class="hint" style="margin-top: var(--space-3);">
-		Before the training existed you solved <?php echo $importCandidates; ?> problem<?php echo $importCandidates == 1 ? '' : 's'; ?>
-		with a mistake. Bring in the <?php echo min($importLimit, $importCandidates); ?> most recent, and the rest will be
+		Before the training existed you solved <?php echo $importCandidates; ?><?php echo $importCandidates >= MistakeTraining::IMPORT_COUNT_CAP ? ' or more' : ''; ?>
+		problem<?php echo $importCandidates == 1 ? '' : 's'; ?> with a mistake. Bring in the <?php echo min($importLimit, $importCandidates); ?> most recent, and the rest will be
 		here whenever you have nothing to review.
 	</p>
 	<form method="post" action="<?php echo MistakeTraining::$IMPORT_LINK; ?>">

@@ -78,6 +78,11 @@ class MistakeTraining
 	public const IMPORT_LIMIT = 20;
 
 	/**
+	 * Where the count of past mistakes left to import stops; the page says "or more".
+	 */
+	public const IMPORT_COUNT_CAP = 1000;
+
+	/**
 	 * Route prefix for queue links. Every one of them re-asserts training mode.
 	 */
 	public static string $PLAY_LINK_PREFIX = '/mistake-training/play/';
@@ -340,11 +345,17 @@ class MistakeTraining
 	/**
 	 * How many past mistakes are not in the training yet. An attempt that was solved
 	 * with misplays is a problem the player solved but not on the first try; one that
-	 * was never solved is practice rather than review, so it does not count.
+	 * was never solved is practice rather than review, so it does not count. The page
+	 * asks on every visit that finds nothing due, and the history of a player can be
+	 * long, so the count stops at IMPORT_COUNT_CAP.
 	 */
 	public static function importCandidates(int $userId): int
 	{
-		$rows = Util::query('SELECT COUNT(DISTINCT a.tsumego_id) AS total' . self::pastMistakesSql(), [$userId]);
+		$rows = Util::query(
+			'SELECT COUNT(*) AS total FROM (SELECT DISTINCT a.tsumego_id' . self::pastMistakesSql()
+			. ' LIMIT ' . self::IMPORT_COUNT_CAP . ') candidates',
+			[$userId]
+		);
 		return (int) $rows[0]['total'];
 	}
 
