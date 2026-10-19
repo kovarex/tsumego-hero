@@ -229,10 +229,12 @@ use App\Utility\ViteManifest;
 	</tr>
 	</table>
 	<?php if (Auth::isInMistakeTrainingMode() && !empty($mistakeTrainingReplay)): ?>
-		<p class="hint" align="center">Already solved today. This try does not count.</p>
+		<div class="alert alert-info mistake-training-replay" role="status">Already solved today. This try does not count.</div>
 	<?php endif; ?>
 	<?php // The training gives no XP, so its column stays empty, but the rank of the problem shows as in the level mode ?>
-	<?php $tsumegoXPAndRating->render(); ?>
+	<div<?php echo Auth::isInMistakeTrainingMode() ? ' class="play-status--training"' : ''; ?>>
+		<?php $tsumegoXPAndRating->render(); ?>
+	</div>
 	<div align="center">
 		<div id="theComment"></div>
 	</div>
@@ -1698,9 +1700,7 @@ use App\Utility\ViteManifest;
 				{
 					// The board locks, but the problem stays in today's training until it is solved
 					toggleBoardLock(true);
-					document.getElementById("status").innerHTML = <?php echo json_encode('<h2>Incorrect!</h2>'
-						. (empty($mistakeTrainingReplay) ? 'It stays in today\'s training until you solve it. ' : '')
-						. 'Press Reset to try again.'); ?>;
+					document.getElementById("status").innerHTML = '<h2>Incorrect!</h2><p class="mistake-training-note">Press Reset to try again.</p>';
 				}
 				noLastMark = true;
 				if (!noXP)

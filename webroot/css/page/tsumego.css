@@ -431,10 +431,33 @@ a[data-tsumego-id]:hover .tooltip-desc
 }
 }
 
-/* Mistake training: under "Correct!", what the solve did to the problem */
-.mistake-training-outcome
+/* Mistake training: the line under "Correct!" (what the solve did to the problem)
+   or under "Incorrect!" */
+.mistake-training-outcome,
+.mistake-training-note
 {
 	margin: var(--space-1) 0 0;
-	font-size: var(--font-size-md);
+	font-size: var(--font-size-lg);
 	white-space: normal;
+}
+
+/* Mistake training: the status keeps room for its two lines, so the board does not
+   move when a result shows, and stays clear of the board */
+.play-status--training #xpDisplayDiv
+{
+	height: auto;
+}
+
+.play-status--training #status
+{
+	min-height: 72px;
+	padding-bottom: var(--space-2);
+}
+
+.mistake-training-replay
+{
+	max-width: 480px;
+	margin: 0 auto var(--space-3);
+	text-align: center;
+	font-size: var(--font-size-md);
 }
