@@ -194,7 +194,7 @@ class MistakeTraining
 		if ($outcome === PlayOutcome::SolvedAfterMistake || ($due && self::wasMissedToday($pool)))
 			self::setRung($userId, $tsumegoId, $rung, self::$LADDER[0]);
 		elseif ($rung < count(self::$LADDER) - 1)
-			self::setRung($userId, $tsumegoId, $rung + 1);
+			self::setRung($userId, $tsumegoId, $rung + 1, null, (int) $pool['lapses']);
 		else
 		{
 			self::graduate($userId, $tsumegoId);
@@ -709,17 +709,14 @@ class MistakeTraining
 	 */
 	private static function enterPool(int $userId, int $tsumegoId): void
 	{
+		// Two results of the same play can arrive together, so the row may be there already
 		$now = date('Y-m-d H:i:s');
-		$Model = ClassRegistry::init('MistakeTrainingPool');
-		$Model->create();
-		$Model->save([
-			'user_id' => $userId,
-			'tsumego_id' => $tsumegoId,
-			'rung' => 0,
-			'next_due' => self::dueDate(self::$LADDER[0]),
-			'created' => $now,
-			'modified' => $now,
-		]);
+		Util::execute(
+			'INSERT INTO mistake_training_pool (user_id, tsumego_id, rung, next_due, created, modified)'
+			. ' VALUES (?, ?, 0, ?, ?, ?)'
+			. ' ON DUPLICATE KEY UPDATE user_id = user_id',
+			[$userId, $tsumegoId, self::dueDate(self::$LADDER[0]), $now, $now]
+		);
 	}
 
 	/**
@@ -780,12 +777,13 @@ class MistakeTraining
 	 * Move a pool row to a new rung and set its next review. The review waits out
 	 * the rung's interval, shortened by the lapses of the problem (see wait()), unless
 	 * $daysAhead names the wait explicitly (a retry is due tomorrow whatever rung the
-	 * problem sits on, and the toolbox makes a jump due now).
+	 * problem sits on, and the toolbox makes a jump due now). $lapses saves reading
+	 * them again when the caller has the row.
 	 */
-	private static function setRung(int $userId, int $tsumegoId, int $rung, ?int $daysAhead = null): void
+	private static function setRung(int $userId, int $tsumegoId, int $rung, ?int $daysAhead = null, ?int $lapses = null): void
 	{
 		$now = date('Y-m-d H:i:s');
-		$daysAhead = $daysAhead ?? self::wait($rung, (int) (self::getPoolRow($userId, $tsumegoId)['lapses'] ?? 0));
+		$daysAhead ??= self::wait($rung, $lapses ?? (int) (self::getPoolRow($userId, $tsumegoId)['lapses'] ?? 0));
 		$nextDue = self::dueDate($daysAhead);
 
 		$sql = 'UPDATE mistake_training_pool SET rung = ?, next_due = ?, modified = ?';
