@@ -221,7 +221,6 @@ echo ViteManifest::legacyScript('legacy');
 			$levelModeA = '';
 			$ratingModeA = '';
 			$timeModeA = '';
-			$mistakeTrainingA = '';
 			$websitefunctionsA = '';
 			$gotutorialA = '';
 			$aboutA = '';
@@ -240,8 +239,7 @@ echo ViteManifest::legacyScript('legacy');
 				if($_page == 'level mode') $levelModeA = 'nav__link--active';
 				else if($_page == 'rating mode') $ratingModeA = 'nav__link--active';
 				else if($_page == 'time mode') $timeModeA = 'nav__link--active';
-				} else if ($_page == 'mistake-training') $mistakeTrainingA = 'nav__link--active';
-			else if ($_page == 'highscore') $highscoreA = 'nav__link--active';
+				} else if ($_page == 'highscore') $highscoreA = 'nav__link--active';
 			else if($_page == 'discuss') $discussA = 'nav__link--active';
 			else if($_page == 'sandbox') $sandboxA = 'nav__link--active';
 			else if($_page == 'leaderboard') $leaderboardA = 'nav__link--active';
@@ -312,9 +310,6 @@ echo ViteManifest::legacyScript('legacy');
 						if(Auth::isLoggedIn()){
 							echo '<li><a class="'.$ratingModeA.'" href="/ratingMode">Rating</a></li>';
 							echo '<li><a class="'.$timeModeA.'" href="/timeMode/overview">Time</a></li>';
-							$mistakeTrainingLabel = 'Mistake<br>Training' . (!empty($mistakeTrainingDueCount) ? ' (' . $mistakeTrainingDueCount . ')' : '');
-							if (!empty($mistakeTrainingEnabled))
-							echo '<li><a class="'.$mistakeTrainingA.'" href="/mistake-training">' . $mistakeTrainingLabel . '</a></li>';
 						}
 								echo '</ul>';
 						echo '<li><a '.$refreshLinkToHighscore.' class="'.$highscoreA.'" href="/users/'.$highscoreLink.'">Highscore</a>';

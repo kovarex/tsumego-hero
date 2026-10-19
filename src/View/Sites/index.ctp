@@ -2,6 +2,7 @@
 
 use App\Utility\Auth;
 use App\Utility\Constants;
+use App\Utility\MistakeTraining;
 use App\Utility\TsumegoButton;
 use App\Utility\TsumegoButtons;
 
@@ -15,6 +16,8 @@ use App\Utility\TsumegoButtons;
  * @var TsumegoButton $tsumegoButton
  * @var TsumegoButtons $tsumegoButtonsOfPublishedTsumegos
  * @var array|null $userOfTheDay
+ * @var int|null $mistakeTrainingDue Problems due in the mistake training, null when it is not offered
+ * @var int $mistakeTrainingImportable Past mistakes the training would bring in now
  */
 
 $this->start('script');
@@ -48,6 +51,21 @@ foreach ($modes as $mode)
 }
 ?>
 				</div>
+				<?php if (isset($mistakeTrainingDue)): ?>
+				<a class="mistake-training-card" href="<?php echo MistakeTraining::$QUEUE_LINK; ?>">
+					<span class="mistake-training-card__title">Mistake Training</span>
+					<span class="mistake-training-card__text">
+					<?php if ($mistakeTrainingDue > 0): ?>
+						<b><?php echo $mistakeTrainingDue; ?></b> problem<?php echo $mistakeTrainingDue == 1 ? '' : 's'; ?> to review today
+					<?php elseif (!empty($mistakeTrainingImportable)): ?>
+						Nothing to review today. <?php echo $mistakeTrainingImportable; ?> past mistake<?php echo $mistakeTrainingImportable == 1 ? ' is' : 's are'; ?> ready to add.
+					<?php else: ?>
+						Nothing to review today
+					<?php endif; ?>
+					</span>
+					<span class="mistake-training-card__go" aria-hidden="true">&rsaquo;</span>
+				</a>
+				<?php endif; ?>
 				<?php
 	$achievementsProps = json_encode(['initialAchievements' => $recentAchievements], JSON_HEX_QUOT | JSON_HEX_APOS);
 echo '<div class="achievements-panel">';

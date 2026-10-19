@@ -1,6 +1,10 @@
 <?php
 
+use App\Utility\Auth;
 use App\Utility\Constants;
+use App\Utility\Feature;
+use App\Utility\FeatureKey;
+use App\Utility\MistakeTraining;
 use App\Utility\TsumegoButtons;
 use App\Utility\TsumegoFilters;
 use App\Utility\Util;
@@ -66,6 +70,16 @@ class SitesController extends AppController
 		$this->loadModel('AchievementStatus');
 		$recentAchievements = $this->AchievementStatus->getRecent();
 		$this->set('recentAchievements', $recentAchievements);
+
+		// The way into the mistake training: what is due today, or else how many past
+		// mistakes are ready to come in.
+		if (Auth::isLoggedIn() && Feature::enabled(FeatureKey::MistakeTraining))
+		{
+			$userId = (int) Auth::getUserID();
+			$due = MistakeTraining::dueCount($userId);
+			$this->set('mistakeTrainingDue', $due);
+			$this->set('mistakeTrainingImportable', $due > 0 ? 0 : min(MistakeTraining::IMPORT_LIMIT, MistakeTraining::importCandidates($userId)));
+		}
 	}
 
 	private function buildChartData(): array

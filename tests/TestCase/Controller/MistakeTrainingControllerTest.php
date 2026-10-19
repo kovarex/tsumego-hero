@@ -469,7 +469,7 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		$this->assertStringContainsString('All caught up', $this->view);
 	}
 
-	public function testMenuHidesTheTrainingWhenTheFlagIsOff()
+	public function testTheHomepageHidesTheTrainingWhenTheFlagIsOff()
 	{
 		$this->setFeatureFlag(FeatureKey::MistakeTraining, Feature::OFF);
 		new ContextPreparator(['user' => ['name' => 'testuser']]);
@@ -479,13 +479,42 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		$this->assertStringNotContainsString('/mistake-training', (string) $html);
 	}
 
-	public function testMenuShowsTheTrainingWhenItIsOpenToPlayers()
+	public function testTheHomepageShowsWhatTheTrainingHasToday()
 	{
-		new ContextPreparator(['user' => ['name' => 'testuser']]);
+		new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumegos' => [
+				['set_order' => 1, 'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 hour'))]],
+				['set_order' => 2, 'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 hour'))]],
+			],
+		]);
 
-		$html = $this->testAction('/sites/index', ['return' => 'contents']);
+		$html = (string) $this->testAction('/sites/index', ['return' => 'contents']);
 
-		$this->assertStringContainsString('/mistake-training', (string) $html);
+		$this->assertStringContainsString('class="mistake-training-card" href="/mistake-training"', $html);
+		$this->assertMatchesRegularExpression('/<b>2<\/b> problems to review today/', $html);
+		$this->assertStringNotContainsString('Mistake<br>Training', $html, 'The training is on the homepage, not in the Play menu');
+	}
+
+	public function testTheHomepageOffersPastMistakesWhenNothingIsDue()
+	{
+		new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumego' => ['set_order' => 1, 'attempt' => ['solved' => true, 'misplays' => 1]],
+		]);
+
+		$html = (string) $this->testAction('/sites/index', ['return' => 'contents']);
+
+		$this->assertStringContainsString('Nothing to review today. 1 past mistake is ready to add.', $html);
+	}
+
+	public function testAGuestSeesNoTrainingOnTheHomepage()
+	{
+		new ContextPreparator(['user' => null]);
+
+		$html = (string) $this->testAction('/sites/index', ['return' => 'contents']);
+
+		$this->assertStringNotContainsString('mistake-training-card', $html);
 	}
 
 	public function testHelpPageDescribesTheTrainingOnlyWhileItIsOpen()

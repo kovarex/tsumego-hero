@@ -7,7 +7,6 @@ use App\Utility\Constants;
 use App\Utility\Feature;
 use App\Utility\FeatureKey;
 use App\Utility\HeroPowers;
-use App\Utility\MistakeTraining;
 use App\Utility\TimeMode;
 use App\Utility\TsumegoFilters;
 use App\Utility\Util;
@@ -519,9 +518,7 @@ class AppController extends Controller
 		$this->set('lastProfileRight', $lastProfileRight);
 		$this->set('timeMode', $timeMode);
 		$this->set('changelogTimestamps', ChangelogController::changelogTimestamps());
-		$mistakeTrainingEnabled = Feature::enabled(FeatureKey::MistakeTraining);
-		$this->set('mistakeTrainingEnabled', $mistakeTrainingEnabled);
-		$this->set('mistakeTrainingDueCount', $mistakeTrainingEnabled && Auth::isLoggedIn() ? MistakeTraining::dueCount((int) Auth::getUserID()) : 0);
+		$this->set('mistakeTrainingEnabled', Feature::enabled(FeatureKey::MistakeTraining));
 	}
 
 	public function afterFilter(): void {}
