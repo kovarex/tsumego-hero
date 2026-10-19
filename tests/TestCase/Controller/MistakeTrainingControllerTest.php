@@ -49,7 +49,9 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		$this->testAction('/mistake-training', ['return' => 'contents']);
 		// Renders the next due problem's play page directly (no redirect), and
 		// puts the user into mistake-training mode.
-		$this->assertStringContainsString('Mistake Training', $this->view);
+		$this->assertStringContainsString('var tsumegoID = ' . $context->tsumegos[0]['id'] . ';', $this->view,
+			'The play page of the due problem is rendered');
+		$this->assertStringContainsString('problem-nav__rung', $this->view, 'With the training row under the board');
 		$this->assertTrue(Auth::isInMistakeTrainingMode());
 	}
 
