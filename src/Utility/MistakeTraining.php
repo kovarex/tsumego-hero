@@ -343,6 +343,15 @@ class MistakeTraining
 	}
 
 	/**
+	 * Whether the player ever had a problem in the training, graduated ones included,
+	 * which tells an empty training from a finished one.
+	 */
+	public static function hasEverTrained(int $userId): bool
+	{
+		return !empty(Util::query('SELECT 1 FROM mistake_training_pool WHERE user_id = ? LIMIT 1', [$userId]));
+	}
+
+	/**
 	 * How many past mistakes are not in the training yet. An attempt that was solved
 	 * with misplays is a problem the player solved but not on the first try; one that
 	 * was never solved is practice rather than review, so it does not count. The page

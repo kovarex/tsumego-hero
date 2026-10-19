@@ -29,11 +29,28 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 			'Should redirect to login');
 	}
 
-	public function testAllCaughtUpWhenNoDueProblems()
+	public function testNothingToReviewYetForAPlayerWhoNeverTrained()
 	{
 		new ContextPreparator(['user' => ['name' => 'testuser']]);
+		$_COOKIE['lastVisit'] = 1234;
+		$this->testAction('/mistake-training', ['return' => 'contents']);
+		unset($_COOKIE['lastVisit']);
+
+		$this->assertStringContainsString('Nothing to review yet', $this->view);
+		$this->assertStringNotContainsString('All caught up', $this->view);
+		$this->assertStringContainsString('href="/tsumegos/play/1234?mode=1">Continue playing</a>', $this->view,
+			'The way back to playing is the problem the player was on, in the level mode');
+	}
+
+	public function testAllCaughtUpWhenNoDueProblems()
+	{
+		new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumego' => ['set_order' => 1, 'status' => ['name' => 'S', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('+3 days'))]],
+		]);
 		$this->testAction('/mistake-training', ['return' => 'contents']);
 		$this->assertStringContainsString('All caught up', $this->view);
+		$this->assertStringContainsString('Continue playing', $this->view, 'A finished day leads back to playing too');
 	}
 
 	public function testRendersNextDueProblem()
@@ -406,8 +423,8 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		ClassRegistry::init('Tsumego')->delete($context->tsumegos[0]['id']);
 
 		$this->testAction('/mistake-training', ['return' => 'contents']);
-		// Should show "all caught up" since the tsumego was deleted
-		$this->assertStringContainsString('All caught up', $this->view);
+		// The row went with the problem, so the training is empty
+		$this->assertStringContainsString('Nothing to review yet', $this->view);
 	}
 
 	public function testSkipsSoftDeletedTsumegos()
@@ -466,7 +483,7 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 
 		$this->testAction('/mistake-training', ['return' => 'contents']);
 
-		$this->assertStringContainsString('All caught up', $this->view);
+		$this->assertStringContainsString('Nothing to review yet', $this->view);
 	}
 
 	public function testTheHomepageHidesTheTrainingWhenTheFlagIsOff()

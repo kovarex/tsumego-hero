@@ -4,8 +4,11 @@ use App\Utility\MistakeTraining;
 
 /**
  * Mistake Training - "All caught up" view
- * Shown when no tsumegos are due for review.
+ * Shown when no tsumegos are due for review, and as "Nothing to review yet" to a
+ * player who never had a problem in the training.
  *
+ * @var bool $everTrained
+ * @var string $continueLink
  * @var int $totalInTraining
  * @var int $importCandidates
  * @var int $importLimit
@@ -19,8 +22,16 @@ use App\Utility\MistakeTraining;
 ?>
 <div class="info-box info-box--empty">
 	<h2 style="margin-bottom: var(--space-4);">Mistake Training</h2>
+	<?php if (!$everTrained): ?>
+	<p class="info-box__title">Nothing to review yet</p>
+	<p class="hint" style="margin-bottom: var(--space-3);">
+		When you solve a problem but make a mistake first, it comes here. You review it the next day, and then at
+		growing intervals until you know it.
+	</p>
+	<?php else: ?>
 	<p class="info-box__icon" aria-hidden="true">✓</p>
 	<p class="info-box__title">All caught up!</p>
+	<?php endif; ?>
 	<?php if ($solvedToday > 0): ?>
 	<p class="hint" style="margin-bottom: var(--space-3);">
 		Today you solved <?php echo $solvedToday; ?> problem<?php echo $solvedToday == 1 ? '' : 's'; ?>.
@@ -52,8 +63,8 @@ use App\Utility\MistakeTraining;
 		<?php endif; ?>
 	</div>
 	<?php endif; ?>
-	<?php elseif ($solvedToday == 0): ?>
-	<p class="hint">No problems in training yet. Solve a problem with a mistake and it comes back here for review.</p>
+	<?php elseif ($everTrained && $solvedToday == 0): ?>
+	<p class="hint">Every problem you trained has graduated.</p>
 	<?php endif; ?>
 	<?php if (!empty($importCandidates)): ?>
 	<p class="hint" style="margin-top: var(--space-3);">
@@ -65,6 +76,9 @@ use App\Utility\MistakeTraining;
 		<button type="submit" class="btn">Bring <?php echo min($importLimit, $importCandidates); ?> in</button>
 	</form>
 	<?php endif; ?>
+	<p style="margin-top: var(--space-4);">
+		<a class="btn" href="<?php echo h($continueLink); ?>">Continue playing</a>
+	</p>
 	<?php if (!empty($showDebugLink)): ?>
 	<p class="hint" style="margin-top: var(--space-3);">
 		<a href="<?php echo MistakeTraining::$DEBUG_LINK; ?>">Toolbox</a> (admins, debug mode only)

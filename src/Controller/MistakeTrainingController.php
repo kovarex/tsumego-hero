@@ -45,6 +45,9 @@ class MistakeTrainingController extends AppController
 				$upcoming = MistakeTraining::upcomingByDay($userId);
 				$totalInTraining = MistakeTraining::totalInTraining($userId);
 				$this->set('totalInTraining', $totalInTraining);
+				$this->set('everTrained', MistakeTraining::hasEverTrained($userId));
+				// Back to the level mode on the problem the player was on, like the homepage
+				$this->set('continueLink', '/tsumegos/play/' . (int) ($_COOKIE['lastVisit'] ?? Constants::$DEFAULT_TSUMEGO_ID) . '?mode=' . Constants::$LEVEL_MODE);
 				// Offered on every visit that finds nothing due, so a player can keep pulling
 				// old mistakes in as the training empties, and never more than a day at once.
 				$this->set('importCandidates', MistakeTraining::importCandidates($userId));
