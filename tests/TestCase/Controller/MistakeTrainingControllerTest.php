@@ -415,9 +415,9 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		$this->assertStringContainsString('Press Reset to try again', $browser->find('#status')->getText());
 		$this->assertSame(0, (int) MistakeTraining::getPoolRow($userId, $tsumegoId)['rung'], 'A mistake goes back to the bottom');
 		$this->assertTrue(MistakeTraining::isDue($userId, $tsumegoId), 'A mistake keeps the problem due today');
-		$this->assertSame('Rung 1 of 8',
+		$this->assertSame('Rung 1 of 8, missed today',
 			$browser->find('.problem-nav__item--current .problem-nav__rung')->getAttribute('aria-label'),
-			'The button shows the bottom rung the mistake took the problem to');
+			'The button shows the bottom rung the mistake took the problem to, ringed as missed');
 
 		$status = $browser->find('#status');
 		$browser->clickId('besogo-reset-button');
@@ -425,8 +425,16 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		$this->assertStringEndsWith(MistakeTraining::$PLAY_LINK_PREFIX . $context->tsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL(),
 			'Reset opens the problem again on the training route');
 		$this->assertStringNotContainsString('Incorrect', $browser->find('#status')->getText(), 'Reset opens a fresh try');
+		$this->assertCount(1, $browser->driver->findElements(WebDriverBy::id('besogo-back-button-inactive')),
+			'The only problem of the day has nothing before it');
+		$this->assertCount(1, $browser->driver->findElements(WebDriverBy::id('besogo-next-button-inactive')),
+			'Nor anything after it until it is solved');
 
 		$browser->playWithResult('S');
+		$browser->driver->wait(5)->until(fn() => count($browser->driver->findElements(WebDriverBy::id('besogo-next-button'))) === 1);
+		$this->assertStringEndsWith(MistakeTraining::$QUEUE_LINK, (string) $browser->find('#besogo-next-button')->getAttribute('href'),
+			'The solve turns Next on, to the page that says the day is done');
+		$this->assertNotEmpty($browser->find('#status .mistake-training-outcome')->getText(), 'And says what it did to the problem');
 
 		$row = MistakeTraining::getPoolRow($userId, $tsumegoId);
 		$this->assertSame(0, (int) $row['rung'], 'The solve after a mistake of the same day earns no rung');
