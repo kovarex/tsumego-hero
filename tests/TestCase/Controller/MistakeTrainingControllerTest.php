@@ -547,7 +547,7 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		$html = (string) $this->testAction('/sites/index', ['return' => 'contents']);
 
 		$this->assertStringContainsString('class="mistake-training-card" href="/mistake-training"', $html);
-		$this->assertMatchesRegularExpression('/<b>2<\/b> problems to review today/', $html);
+		$this->assertStringContainsString('class="mistake-training-card__count" role="img" title="2 problems to review today" aria-label="2 problems to review today">2</span>', $html);
 		$this->assertStringNotContainsString('Mistake<br>Training', $html, 'The training is on the homepage, not in the Play menu');
 	}
 

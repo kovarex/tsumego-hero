@@ -54,15 +54,18 @@ foreach ($modes as $mode)
 				<?php if (isset($mistakeTrainingDue)): ?>
 				<a class="mistake-training-card" href="<?php echo MistakeTraining::$QUEUE_LINK; ?>">
 					<span class="mistake-training-card__title">Mistake Training</span>
-					<span class="mistake-training-card__text">
 					<?php if ($mistakeTrainingDue > 0): ?>
-						<b><?php echo $mistakeTrainingDue; ?></b> problem<?php echo $mistakeTrainingDue == 1 ? '' : 's'; ?> to review today
-					<?php elseif (!empty($mistakeTrainingImportable)): ?>
+					<?php $mistakeTrainingDueLabel = $mistakeTrainingDue . ' problem' . ($mistakeTrainingDue == 1 ? '' : 's') . ' to review today'; ?>
+					<span class="mistake-training-card__count" role="img" title="<?php echo $mistakeTrainingDueLabel; ?>" aria-label="<?php echo $mistakeTrainingDueLabel; ?>"><?php echo $mistakeTrainingDue; ?></span>
+					<?php else: ?>
+					<span class="mistake-training-card__text">
+					<?php if (!empty($mistakeTrainingImportable)): ?>
 						Nothing to review today. <?php echo $mistakeTrainingImportable; ?> past mistake<?php echo $mistakeTrainingImportable == 1 ? ' is' : 's are'; ?> ready to add.
 					<?php else: ?>
 						Nothing to review today
 					<?php endif; ?>
 					</span>
+					<?php endif; ?>
 					<span class="mistake-training-card__go" aria-hidden="true">&rsaquo;</span>
 				</a>
 				<?php endif; ?>

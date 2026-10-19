@@ -90,7 +90,23 @@
   flex: 1;
   font-size: var(--font-size-md);
 }
+.mistake-training-card__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 7px;
+  box-sizing: border-box;
+  border-radius: 13px;
+  background: var(--color-red);
+  color: var(--color-white);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+}
 .mistake-training-card__go {
+  margin-left: auto;
   font-size: 24px;
   line-height: 1;
 }
