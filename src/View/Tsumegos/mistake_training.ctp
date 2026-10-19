@@ -69,11 +69,11 @@ use App\Utility\MistakeTraining;
 	<?php if (!empty($importCandidates)): ?>
 	<p class="hint" style="margin-top: var(--space-3);">
 		Before the training existed you solved <?php echo $importCandidates; ?><?php echo $importCandidates >= MistakeTraining::IMPORT_COUNT_CAP ? ' or more' : ''; ?>
-		problem<?php echo $importCandidates == 1 ? '' : 's'; ?> with a mistake. Bring in the <?php echo min($importLimit, $importCandidates); ?> most recent, and the rest will be
+		problem<?php echo $importCandidates == 1 ? '' : 's'; ?> with a mistake. Add the <?php echo min($importLimit, $importCandidates); ?> most recent, and the rest will be
 		here whenever you have nothing to review.
 	</p>
 	<form method="post" action="<?php echo MistakeTraining::$IMPORT_LINK; ?>">
-		<button type="submit" class="btn">Bring <?php echo min($importLimit, $importCandidates); ?> in</button>
+		<button type="submit" class="btn">Add <?php echo min($importLimit, $importCandidates); ?> to training</button>
 	</form>
 	<?php endif; ?>
 	<p style="margin-top: var(--space-4);">
