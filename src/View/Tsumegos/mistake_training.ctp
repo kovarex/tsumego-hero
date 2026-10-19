@@ -8,7 +8,6 @@ use App\Utility\MistakeTraining;
  * player who never had a problem in the training.
  *
  * @var bool $everTrained
- * @var string $continueLink
  * @var int $totalInTraining
  * @var int $importCandidates
  * @var int $importLimit
@@ -76,9 +75,6 @@ use App\Utility\MistakeTraining;
 		<button type="submit" class="btn">Add <?php echo min($importLimit, $importCandidates); ?> to training</button>
 	</form>
 	<?php endif; ?>
-	<p style="margin-top: var(--space-4);">
-		<a class="btn" href="<?php echo h($continueLink); ?>">Continue playing</a>
-	</p>
 	<?php if (!empty($showDebugLink)): ?>
 	<p class="hint" style="margin-top: var(--space-3);">
 		<a href="<?php echo MistakeTraining::$DEBUG_LINK; ?>">Toolbox</a> (admins, debug mode only)

@@ -33,14 +33,10 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 	public function testNothingToReviewYetForAPlayerWhoNeverTrained()
 	{
 		new ContextPreparator(['user' => ['name' => 'testuser']]);
-		$_COOKIE['lastVisit'] = 1234;
 		$this->testAction('/mistake-training', ['return' => 'contents']);
-		unset($_COOKIE['lastVisit']);
 
 		$this->assertStringContainsString('Nothing to review yet', $this->view);
 		$this->assertStringNotContainsString('All caught up', $this->view);
-		$this->assertStringContainsString('href="/tsumegos/play/1234?mode=1">Continue playing</a>', $this->view,
-			'The way back to playing is the problem the player was on, in the level mode');
 	}
 
 	public function testTheTrainingShowsTheRankOfTheProblemButNoXP()
@@ -69,7 +65,6 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		]);
 		$this->testAction('/mistake-training', ['return' => 'contents']);
 		$this->assertStringContainsString('All caught up', $this->view);
-		$this->assertStringContainsString('Continue playing', $this->view, 'A finished day leads back to playing too');
 	}
 
 	public function testRendersNextDueProblem()
