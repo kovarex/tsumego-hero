@@ -196,8 +196,8 @@
 			Reset gives you the next try.
 			<br><br>
 			<b>Problem page</b><br><br>
-			The number next to the mistake training entry in the play menu is the number of problems waiting today. A problem
-			is played as training only when you open it from there. Opened from a collection, it is played normally, with XP
+			The Mistake Training card on the homepage says how many problems wait for review today and opens the training. A
+			problem is played as training only when you open it from there. Opened from a collection, it is played normally, with XP
 			and hearts. Played that way before its review day, a clean solve does not move it up the training, but a mistake
 			on a problem waiting for its review or forgotten still sends it back to the bottom.
 			<br><br>
@@ -205,7 +205,8 @@
 			waiting, a green one is solved today. The badge under the number is the rung of the problem, like a military rank:
 			one to four chevrons for a fresh mistake and the first reviews, one to four stars for the last reviews before
 			graduation, and a crown marks a problem that graduated today. The tooltip of a button names the rung and says when the problem comes back. Next
-			skips what you solved already, and a solved problem played again from the row does not count.
+			skips what you solved already and, after the last problem of the day, leads to the page that says you are done. A
+			solved problem played again from the row does not count.
 			<br><br>
 			<b>All caught up</b><br><br>
 			<img src="/img/mf-mistake.png" width="100%">
