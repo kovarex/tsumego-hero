@@ -1281,6 +1281,24 @@ class MistakeTrainingTest extends TestCaseWithAuth
 		$this->assertSame([2, 2], $this->streaks($userId));
 	}
 
+	private function day(int $daysAgo): string
+	{
+		return date('Y-m-d', strtotime(MistakeTraining::today() . ' -' . $daysAgo . ' days'));
+	}
+
+	private function makeDueSince(int $userId, int $tsumegoId, int $daysAgo): void
+	{
+		Util::execute('UPDATE mistake_training_pool SET next_due = ? WHERE user_id = ? AND tsumego_id = ?', [$this->day($daysAgo) . ' 00:00:00', $userId, $tsumegoId]);
+	}
+
+	private function historyRows(int $userId): array
+	{
+		return array_map(
+			fn($day) => [$day['day'], (int) $day['cleared'], (int) $day['missed_days']],
+			Util::query('SELECT day, cleared, missed_days FROM mistake_training_day WHERE user_id = ? ORDER BY day', [$userId])
+		);
+	}
+
 	public function testAProblemLeftDueEndsTheStreakAndItsReviewWritesTheMissedDaysDown(): void
 	{
 		$context = new ContextPreparator(['tsumego' => 1]);
@@ -1288,21 +1306,60 @@ class MistakeTrainingTest extends TestCaseWithAuth
 		$tsumegoId = (int) $context->tsumegos[0]['id'];
 		$this->enterTraining($userId, $tsumegoId);
 		$this->clearedDays($userId, [3]);
-		$twoDaysAgo = date('Y-m-d', strtotime(MistakeTraining::today() . ' -2 days'));
-		Util::execute('UPDATE mistake_training_pool SET next_due = ? WHERE user_id = ? AND tsumego_id = ?', [$twoDaysAgo . ' 00:00:00', $userId, $tsumegoId]);
+		$this->makeDueSince($userId, $tsumegoId, 2);
 
 		$profile = MistakeTraining::profile($userId, MistakeTraining::profileStart());
 		$this->assertSame(0, $profile['streak'], 'The problem waited two days for its review');
-		$this->assertTrue($profile['days'][$twoDaysAgo]['missed']);
-		$this->assertSame(0, $profile['days'][$twoDaysAgo]['reviewed']);
+		$this->assertTrue($profile['days'][$this->day(2)]['missed']);
+		$this->assertTrue($profile['days'][$this->day(1)]['missed']);
+		$this->assertSame(0, $profile['days'][$this->day(2)]['reviewed']);
+		$this->assertSame([[$this->day(3), 1, 0]], $this->historyRows($userId), 'Nothing is written while the player is away');
 
 		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, 'V', true);
 
-		$days = Util::query('SELECT day, cleared FROM mistake_training_day WHERE user_id = ? ORDER BY day', [$userId]);
-		$this->assertSame([[$twoDaysAgo, 0], [date('Y-m-d', strtotime(MistakeTraining::today() . ' -1 day')), 0], [MistakeTraining::today(), 1]],
-			array_map(fn($day) => [$day['day'], (int) $day['cleared']], array_slice($days, 1)),
-			'The review moved the date of the problem, so the days it waited for are written down');
-		$this->assertSame([1, 1], $this->streaks($userId), 'Clearing today starts a new streak');
+		$this->assertSame([[$this->day(3), 1, 0], [$this->day(2), 0, 2], [MistakeTraining::today(), 1, 0]], $this->historyRows($userId),
+			'The review moved the date of the problem, so the run of days it waited for is written down, as one row');
+		$profile = MistakeTraining::profile($userId, MistakeTraining::profileStart());
+		$this->assertTrue($profile['days'][$this->day(1)]['missed'], 'The calendar still shows each day of the run');
+		$this->assertSame([1, 1], [$profile['streak'], $profile['best_streak']], 'Clearing today starts a new streak');
+	}
+
+	public function testALongAbsenceIsOneRow(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1, 'tsumegos' => [1]]);
+		$userId = $context->user['id'];
+		foreach ($context->tsumegos as $index => $tsumego)
+		{
+			$this->enterTraining($userId, (int) $tsumego['id']);
+			$this->makeDueSince($userId, (int) $tsumego['id'], [300, 200][$index]);
+		}
+
+		foreach ($context->tsumegos as $tsumego)
+			MistakeTraining::recordResult($userId, (int) $tsumego['id'], PlayOutcome::SolvedClean, 'V', true);
+
+		$this->assertSame([[$this->day(300), 0, 300], [MistakeTraining::today(), 1, 0]], $this->historyRows($userId),
+			'The run of the later problem lies within the first one');
+		$this->assertCount(MistakeTraining::PROFILE_DAYS, array_filter(
+			MistakeTraining::profile($userId, $this->day(MistakeTraining::PROFILE_DAYS))['days'],
+			fn($day) => $day['missed']
+		));
+	}
+
+	public function testTheDaysBeforeAProblemWasDueAreNotMissed(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+		$userId = $context->user['id'];
+		$tsumegoId = (int) $context->tsumegos[0]['id'];
+		$this->enterTraining($userId, $tsumegoId);
+		$this->clearedDays($userId, [6]);
+		$this->makeDueSince($userId, $tsumegoId, 3);
+
+		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, 'V', true);
+
+		$days = MistakeTraining::profile($userId, MistakeTraining::profileStart())['days'];
+		$this->assertArrayNotHasKey($this->day(5), $days, 'Nothing was due until three days ago');
+		$this->assertArrayNotHasKey($this->day(4), $days);
+		$this->assertTrue($days[$this->day(3)]['missed']);
 	}
 
 	public function testTheToolboxMovesTheHistoryWithTheReviews(): void

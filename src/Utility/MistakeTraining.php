@@ -307,22 +307,30 @@ class MistakeTraining
 	}
 
 	/**
-	 * Write down the days a review waited for since it was due at $dueSince: each day
-	 * before today gets a row in mistake_training_day that is not cleared, which ends
-	 * a streak (see profile()). A day that has its row already keeps it, so a day that
-	 * was cleared before an import made more problems due stays cleared.
+	 * Write down the days a review waited for since it was due at $dueSince, up to
+	 * yesterday: one row of mistake_training_day on the first of them, whose
+	 * missed_days says how long the run lasted, which ends a streak (see profile()).
+	 * A run that an earlier one covers already is not written again. A day of the run
+	 * that has its own row keeps it, so a day that was cleared before an import made
+	 * more problems due stays cleared.
 	 */
 	private static function recordMissedDays(int $userId, string $dueSince): void
 	{
-		$days = [];
-		for ($day = substr($dueSince, 0, 10); $day < self::today(); $day = date('Y-m-d', strtotime($day . ' +1 day')))
-			$days[] = $day;
-		if (empty($days))
+		$first = substr($dueSince, 0, 10);
+		$today = self::today();
+		if ($first >= $today)
 			return;
+		$covered = Util::query(
+			'SELECT 1 FROM mistake_training_day WHERE user_id = ? AND day <= ? AND DATE_ADD(day, INTERVAL missed_days DAY) >= ? LIMIT 1',
+			[$userId, $first, $today]
+		);
+		if ($covered)
+			return;
+		$missedDays = (int) round((strtotime($today) - strtotime($first)) / 86400);
 		Util::execute(
-			'INSERT INTO mistake_training_day (user_id, day) VALUES ' . implode(', ', array_fill(0, count($days), '(?, ?)'))
-			. ' ON DUPLICATE KEY UPDATE user_id = user_id',
-			array_merge(...array_map(fn(string $day) => [$userId, $day], $days))
+			'INSERT INTO mistake_training_day (user_id, day, missed_days) VALUES (?, ?, ?)'
+			. ' ON DUPLICATE KEY UPDATE missed_days = GREATEST(missed_days, VALUES(missed_days))',
+			[$userId, $first, $missedDays]
 		);
 	}
 
@@ -560,22 +568,32 @@ class MistakeTraining
 
 		$today = self::today();
 		$history = [];
-		foreach (Util::query('SELECT day, reviewed, cleared FROM mistake_training_day WHERE user_id = ? ORDER BY day', [$userId]) as $row)
+		$runs = [];
+		foreach (Util::query('SELECT day, reviewed, cleared, missed_days FROM mistake_training_day WHERE user_id = ? ORDER BY day', [$userId]) as $row)
+		{
 			$history[$row['day']] = [
 				'reviewed' => (int) $row['reviewed'],
 				'cleared' => (bool) $row['cleared'],
 				'missed' => !$row['cleared'] && $row['day'] < $today,
 			];
+			if ($row['missed_days'] > 0)
+				$runs[] = [$row['day'], (int) $row['missed_days']];
+		}
 
-		// The days a problem that is still due has been waiting for are missed too;
-		// recordMissedDays() writes them down only once it is reviewed.
+		// The days a problem that is still due has been waiting for are a run of
+		// missed days too; recordMissedDays() writes it down only once it is reviewed.
 		$overdueSince = Util::query(
 			'SELECT MIN(p.next_due) AS since FROM mistake_training_pool p' . self::servableSql()
 			. ' AND p.next_due IS NOT NULL AND p.next_due < ?',
 			[$userId, $today . ' 00:00:00']
 		)[0]['since'] ?? null;
 		if ($overdueSince !== null)
-			for ($day = substr($overdueSince, 0, 10); $day < $today; $day = date('Y-m-d', strtotime($day . ' +1 day')))
+			$runs[] = [substr($overdueSince, 0, 10), PHP_INT_MAX];
+
+		// A run is missed on each of its days that has no row of its own; a day with
+		// one says itself whether it was cleared.
+		foreach ($runs as [$first, $length])
+			for ($day = $first, $i = 0; $i < $length && $day < $today; $day = date('Y-m-d', strtotime($day . ' +1 day')), $i++)
 				$history[$day] ??= ['reviewed' => 0, 'cleared' => false, 'missed' => true];
 		ksort($history);
 
