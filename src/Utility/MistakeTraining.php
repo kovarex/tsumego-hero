@@ -72,6 +72,21 @@ class MistakeTraining
 	public const REVIEW_GRADUATED = 'G';
 
 	/**
+	 * XP of the training, as shares of what the problem gives in the level mode
+	 * (Rating::ratingToXP of its rating). A review that climbs earns a fifth, a
+	 * graduation half on top, and clearing a day of at least CLEAR_DAY_MIN_PROBLEMS
+	 * problems half of what the day's reviews earned. A retry, a replay and a problem
+	 * that is not due earn nothing. Over its eight reviews a problem gives about three
+	 * times its XP, but spread over half a year: per play that is about a third of
+	 * a new problem, so making a mistake on purpose to get a problem in does not pay.
+	 * Hero powers do not multiply it, the training has none.
+	 */
+	public const REVIEW_XP_SHARE = 0.2;
+	public const GRADUATION_XP_SHARE = 0.5;
+	public const CLEAR_DAY_XP_SHARE = 0.5;
+	public const CLEAR_DAY_MIN_PROBLEMS = 5;
+
+	/**
 	 * How many past mistakes one import brings in. A player with years of history has
 	 * thousands, and putting them all in the queue at once would drown the training.
 	 */
@@ -125,11 +140,18 @@ class MistakeTraining
 	 * in or moves it, unless it is due. The time mode ($inTimeMode) plays it against
 	 * the clock like any other problem, so a mistake there counts. Running out of time
 	 * says nothing about whether a problem is known, so a timeout is ignored.
+	 *
+	 * A result on a problem that is due is a review, and goes in the history (see
+	 * logReview()): the first miss of the day, and the solve that ends the day's
+	 * review, be it a climb, a graduation or a retry. Those are returned, for the
+	 * XP of the training (awardXp()); anything else returns null.
+	 *
+	 * @return array{id: int, result: string, rung_before: int, rung_after: int, climbed: bool, cleared: bool}|null
 	 */
-	public static function recordResult(int $userId, int $tsumegoId, PlayOutcome $outcome, ?string $oldStatus, bool $inTraining = false, bool $inTimeMode = false): void
+	public static function recordResult(int $userId, int $tsumegoId, PlayOutcome $outcome, ?string $oldStatus, bool $inTraining = false, bool $inTimeMode = false): ?array
 	{
 		if ($outcome === PlayOutcome::TimedOut)
-			return;
+			return null;
 
 		$freePlay = !$inTraining && !$inTimeMode
 			&& ($oldStatus === TsumegoStatus::$SOLVED || $oldStatus === TsumegoStatus::$MASTERED);
@@ -144,14 +166,14 @@ class MistakeTraining
 			// solved belongs to practice instead of review, so it stays out however
 			// often it is failed.
 			if ($freePlay)
-				return;
+				return null;
 			$solvedAfterMistake = $outcome === PlayOutcome::SolvedAfterMistake;
 			$lapsed = $outcome === PlayOutcome::Failed
 				&& (TsumegoUtil::isSolvedStatus($oldStatus) || $oldStatus === TsumegoStatus::$FORGOTTEN);
 			if (!$solvedAfterMistake && !$lapsed)
-				return;
+				return null;
 			self::enterPool($userId, $tsumegoId);
-			return;
+			return null;
 		}
 
 		$due = self::isRowDue($pool);
@@ -159,7 +181,7 @@ class MistakeTraining
 		// Played again from today's row after it was solved: nothing to review. Free
 		// play leaves the schedule alone too; only a review counts wherever it is played.
 		if (!$due && ($inTraining || $freePlay))
-			return;
+			return null;
 
 		$rung = (int) $pool['rung'];
 		$solved = $outcome === PlayOutcome::SolvedClean || $outcome === PlayOutcome::SolvedAfterMistake;
@@ -173,38 +195,146 @@ class MistakeTraining
 			// the day counts. Any other one comes back tomorrow, and counts only if it
 			// had climbed: one already at the bottom was missed recently and has
 			// nothing left to lose, so failing it again in another mode is that lapse.
-			if ($due ? !self::wasMissedToday($pool) : $rung > 0)
+			$firstMissToday = $due && !self::wasMissedToday($pool);
+			if ($due ? $firstMissToday : $rung > 0)
 				self::countLapse($userId, $tsumegoId);
-			if ($due)
-				self::markReview($userId, $tsumegoId, self::REVIEW_MISSED, 0);
-			else
+			if (!$due)
+			{
 				self::setRung($userId, $tsumegoId, 0, self::$LADDER[0]);
-			return;
+				return null;
+			}
+			self::markReview($userId, $tsumegoId, self::REVIEW_MISSED, 0);
+			return $firstMissToday ? self::logReview($userId, $tsumegoId, self::REVIEW_MISSED, $rung, 0, false) : null;
 		}
 
 		// A clean solve before the review is an early replay, see above.
 		if (!$due && $outcome === PlayOutcome::SolvedClean)
-			return;
+			return null;
 
 		// A solve that needed a retry earns nothing but costs nothing either, and the
 		// problem comes back tomorrow. On a problem that is due, a mistake earlier today
 		// makes a clean solve of a later play a retry too. Any other clean solve climbs a
 		// rung, or graduates at the top.
 		$review = self::REVIEW_SOLVED;
+		$newRung = $rung;
+		$climbed = false;
 		if ($outcome === PlayOutcome::SolvedAfterMistake || ($due && self::wasMissedToday($pool)))
 			self::setRung($userId, $tsumegoId, $rung, self::$LADDER[0]);
 		elseif ($rung < count(self::$LADDER) - 1)
-			self::setRung($userId, $tsumegoId, $rung + 1, null, (int) $pool['lapses']);
+		{
+			$newRung = $rung + 1;
+			$climbed = true;
+			self::setRung($userId, $tsumegoId, $newRung, null, (int) $pool['lapses']);
+		}
 		else
 		{
 			self::graduate($userId, $tsumegoId);
 			$review = self::REVIEW_GRADUATED;
+			$climbed = true;
 		}
 
 		// The review of a problem that is due is today's, and keeps it in today's list
 		// as done.
-		if ($due)
-			self::markReview($userId, $tsumegoId, $review);
+		if (!$due)
+			return null;
+		self::markReview($userId, $tsumegoId, $review);
+		return self::logReview($userId, $tsumegoId, $review, $rung, $newRung, $climbed);
+	}
+
+	/**
+	 * Write a review into the history: a row of mistake_training_review, and the sums
+	 * of the day in mistake_training_day (how many problems the day's training held,
+	 * how many were reviewed). A solve that leaves nothing due clears the day, when
+	 * the day held at least CLEAR_DAY_MIN_PROBLEMS problems; only the first one does,
+	 * so its bonus is paid once.
+	 *
+	 * @return array{id: int, result: string, rung_before: int, rung_after: int, climbed: bool, cleared: bool}
+	 */
+	private static function logReview(int $userId, int $tsumegoId, string $result, int $rungBefore, int $rungAfter, bool $climbed): array
+	{
+		$now = date('Y-m-d H:i:s');
+		$today = self::today();
+		Util::execute(
+			'INSERT INTO mistake_training_review (user_id, tsumego_id, day, result, rung_before, rung_after, xp, created)'
+			. ' VALUES (?, ?, ?, ?, ?, ?, 0, ?)',
+			[$userId, $tsumegoId, $today, $result, $rungBefore, $rungAfter, $now]
+		);
+		$reviewId = (int) Util::query('SELECT LAST_INSERT_ID() AS id')[0]['id'];
+
+		$inTraining = self::countTodaysTraining($userId);
+		Util::execute(
+			'INSERT INTO mistake_training_day (user_id, day, due, reviewed)'
+			. ' VALUES (?, ?, ?, 1)'
+			. ' ON DUPLICATE KEY UPDATE due = GREATEST(due, VALUES(due)),'
+			. ' reviewed = (SELECT COUNT(DISTINCT r.tsumego_id) FROM mistake_training_review r WHERE r.user_id = ? AND r.day = ?)',
+			[$userId, $today, $inTraining, $userId, $today]
+		);
+
+		$cleared = false;
+		if ($result !== self::REVIEW_MISSED && self::dueCount($userId) == 0)
+			$cleared = Util::execute(
+				'UPDATE mistake_training_day SET cleared = 1, cleared_at = ?'
+				. ' WHERE user_id = ? AND day = ? AND cleared = 0 AND due >= ?',
+				[$now, $userId, $today, self::CLEAR_DAY_MIN_PROBLEMS]
+			) > 0;
+
+		return [
+			'id' => $reviewId,
+			'result' => $result,
+			'rung_before' => $rungBefore,
+			'rung_after' => $rungAfter,
+			'climbed' => $climbed,
+			'cleared' => $cleared,
+		];
+	}
+
+	/**
+	 * The XP a review of the training earns, written into its history row and the
+	 * day's sum: see REVIEW_XP_SHARE. $problemRating is the rating of the problem
+	 * before this play changed it.
+	 *
+	 * @param array{id: int, result: string, climbed: bool, cleared: bool} $review what recordResult() returned
+	 * @return array{review: int, graduation: int, clear: int}
+	 */
+	public static function awardXp(int $userId, array $review, float $problemRating): array
+	{
+		$xp = ['review' => 0, 'graduation' => 0, 'clear' => 0];
+		if ($review['climbed'])
+			$xp['review'] = max(1, Rating::ratingToXP($problemRating, self::REVIEW_XP_SHARE));
+		if ($review['result'] === self::REVIEW_GRADUATED)
+			$xp['graduation'] = max(1, Rating::ratingToXP($problemRating, self::GRADUATION_XP_SHARE));
+
+		$today = self::today();
+		$earned = $xp['review'] + $xp['graduation'];
+		if ($earned > 0)
+			Util::execute('UPDATE mistake_training_review SET xp = ? WHERE id = ?', [$earned, $review['id']]);
+		if ($review['cleared'])
+		{
+			$dayXp = (int) Util::query(
+				'SELECT COALESCE(SUM(xp), 0) AS total FROM mistake_training_review WHERE user_id = ? AND day = ?',
+				[$userId, $today]
+			)[0]['total'];
+			$xp['clear'] = (int) ceil($dayXp * self::CLEAR_DAY_XP_SHARE);
+		}
+		$total = array_sum($xp);
+		if ($total > 0)
+			Util::execute('UPDATE mistake_training_day SET xp = xp + ? WHERE user_id = ? AND day = ?', [$total, $userId, $today]);
+		return $xp;
+	}
+
+	/**
+	 * How many problems today's training holds: due now or solved today, of the ones
+	 * it can serve, like todaysTraining() without fetching them.
+	 */
+	public static function countTodaysTraining(int $userId): int
+	{
+		$rows = Util::query(
+			'SELECT COUNT(*) AS total FROM mistake_training_pool p' . self::servableSql()
+			. ' AND ((p.next_due IS NOT NULL AND p.next_due <= ?)'
+			. " OR (p.last_review_day = ? AND p.last_review_result IN ('" . self::REVIEW_SOLVED . "', '" . self::REVIEW_GRADUATED . "')))",
+			[$userId, date('Y-m-d H:i:s'), self::today()]
+		);
+		return (int) $rows[0]['total'];
 	}
 
 	/**

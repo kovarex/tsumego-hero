@@ -123,8 +123,13 @@ class PlayResultProcessorComponent extends Component
 		// nothing, so releasing the feature does not hand them a backlog of old mistakes.
 		// The training says it is the one playing, since a replay there counts for nothing,
 		// and so does the time mode, the one mode where a solved problem is not free play.
+		$trainingXp = null;
 		if (Feature::enabled(FeatureKey::MistakeTraining))
-			MistakeTraining::recordResult(Auth::getUserID(), $tsumegoID, $outcome, $previousStatusValue, Auth::isInMistakeTrainingMode(), Auth::isInTimeMode());
+		{
+			$review = MistakeTraining::recordResult(Auth::getUserID(), $tsumegoID, $outcome, $previousStatusValue, Auth::isInMistakeTrainingMode(), Auth::isInTimeMode());
+			if ($review !== null && Auth::isInMistakeTrainingMode())
+				$trainingXp = $this->processTrainingXp($review, (float) $originalTsumegoRating);
+		}
 		$this->processErrorAchievement($result, $previousStatusValue, $outcome);
 		$this->processUnsortedStuff($tsumego, $result, $previousStatusValue);
 
@@ -134,7 +139,7 @@ class PlayResultProcessorComponent extends Component
 		$achievementChecker->checkStandardAchievements()->finalize();
 
 		$response = [
-			'xp_gained' => $result['xp-gained'] ?? 0,
+			'xp_gained' => $trainingXp !== null ? array_sum($trainingXp) : ($result['xp-gained'] ?? 0),
 			'new_rating' => Auth::getUser()['rating'],
 			'new_xp' => Auth::getUser()['xp'],
 			'new_level' => Auth::getUser()['level'],
@@ -147,9 +152,43 @@ class PlayResultProcessorComponent extends Component
 		// The training row shows what today did with the problem, and this result just
 		// changed it, so the page redraws the button from the review as it was stored.
 		if (Feature::enabled(FeatureKey::MistakeTraining) && Auth::isInMistakeTrainingMode())
+		{
 			$response['mistake_training_button'] = MistakeTraining::describeTodaysReview(Auth::getUserID(), $tsumegoID);
+			$response['mistake_training_xp'] = $trainingXp ?? ['review' => 0, 'graduation' => 0, 'clear' => 0];
+		}
 
 		return $response;
+	}
+
+	/**
+	 * The XP of a review in the training (see MistakeTraining::REVIEW_XP_SHARE). It
+	 * counts like the XP of a solve, for the level and the day's XP; the bonus for
+	 * clearing the day is not a solve, so it leaves the day's solved count alone.
+	 *
+	 * @param array{id: int, result: string, climbed: bool, cleared: bool} $review
+	 * @return array{review: int, graduation: int, clear: int}
+	 */
+	private function processTrainingXp(array $review, float $problemRating): array
+	{
+		$xp = MistakeTraining::awardXp((int) Auth::getUserID(), $review, $problemRating);
+		if (array_sum($xp) == 0)
+			return $xp;
+
+		$user = & Auth::getUser();
+		if ($xp['review'] + $xp['graduation'] > 0)
+			Level::addXPAsResultOfTsumegoSolving($user, $xp['review'] + $xp['graduation']);
+		if ($xp['clear'] > 0)
+		{
+			Level::addXP($user, $xp['clear']);
+			$user['daily_xp'] += $xp['clear'];
+		}
+		Auth::saveUserFields([
+			'xp' => $user['xp'],
+			'level' => $user['level'],
+			'daily_xp' => $user['daily_xp'],
+			'daily_solved' => $user['daily_solved'],
+		]);
+		return $xp;
 	}
 
 	/**

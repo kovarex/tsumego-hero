@@ -24,7 +24,7 @@ class ContextPreparator
 			'day_record', 'sgf', 'time_mode_attempt', 'time_mode_session',
 			'tsumego_comment', 'tsumego_issue', 'admin_activity',
 			'achievement_condition', 'achievement_status', 'set_connection',
-			'tsumego_attempt', 'tsumego_status', 'mistake_training_pool', 'user_contribution', 'signature',
+			'tsumego_attempt', 'tsumego_status', 'mistake_training_review', 'mistake_training_day', 'mistake_training_pool', 'user_contribution', 'signature',
 			'tsumego_variant', 'reject', 'publish_date', 'user', 'time_mode_rank',
 			'tsumego', 'set', 'phpbb_users', 'phpbb_topics',
 		] as $table)

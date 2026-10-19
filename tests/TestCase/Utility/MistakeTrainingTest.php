@@ -1053,4 +1053,154 @@ class MistakeTrainingTest extends TestCaseWithAuth
 		$this->assertNotNull($this->poolRow($userId, $this->tsumegoId($context, 0)),
 			'And keeps its row, in case the problem comes back');
 	}
+
+	// ==================== The history ====================
+
+	private function reviews(int $userId): array
+	{
+		return Util::query('SELECT * FROM mistake_training_review WHERE user_id = ? ORDER BY id', [$userId]);
+	}
+
+	private function trainingDay(int $userId): ?array
+	{
+		return Util::query('SELECT * FROM mistake_training_day WHERE user_id = ? AND day = ?', [$userId, MistakeTraining::today()])[0] ?? null;
+	}
+
+	private function dueProblem(int $rung, int $setOrder = 1): array
+	{
+		return [
+			'set_order' => $setOrder,
+			'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day')), 'mistake_training_rung' => $rung],
+		];
+	}
+
+	public function testAReviewGoesInTheHistory(): void
+	{
+		$context = new ContextPreparator(['tsumego' => $this->dueProblem(2), 'tsumegos' => [$this->dueProblem(4, 2)]]);
+		$userId = $context->user['id'];
+		$tsumegoId = (int) $context->tsumegos[0]['id'];
+
+		$review = MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, 'V', true);
+
+		$this->assertSame(['result' => 'S', 'rung_before' => 2, 'rung_after' => 3, 'climbed' => true, 'cleared' => false],
+			array_diff_key($review, ['id' => 0]));
+		$rows = $this->reviews($userId);
+		$this->assertCount(1, $rows);
+		$this->assertSame($review['id'], (int) $rows[0]['id']);
+		$this->assertSame($tsumegoId, (int) $rows[0]['tsumego_id']);
+		$this->assertSame(MistakeTraining::today(), $rows[0]['day']);
+		$this->assertSame('S', $rows[0]['result']);
+		$this->assertSame(0, (int) $rows[0]['xp'], 'The XP is the training\'s to award');
+
+		$day = $this->trainingDay($userId);
+		$this->assertSame(2, (int) $day['due'], 'The day holds both problems');
+		$this->assertSame(1, (int) $day['reviewed']);
+		$this->assertSame(0, (int) $day['cleared']);
+		$this->assertNull($day['cleared_at']);
+	}
+
+	public function testAMissIsLoggedOnceAndTheRetryEndsTheReview(): void
+	{
+		$context = new ContextPreparator(['tsumego' => $this->dueProblem(3)]);
+		$userId = $context->user['id'];
+		$tsumegoId = (int) $context->tsumegos[0]['id'];
+
+		$miss = MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::Failed, 'V', true);
+		$this->assertNull(MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::Failed, 'V', true),
+			'Missing it again the same day is the same miss');
+		$retry = MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedAfterMistake, 'V', true);
+
+		$this->assertSame('F', $miss['result']);
+		$this->assertSame([3, 0], [$miss['rung_before'], $miss['rung_after']]);
+		$this->assertFalse($miss['climbed']);
+		$this->assertSame('S', $retry['result']);
+		$this->assertFalse($retry['climbed'], 'A retry earns nothing');
+		$this->assertSame(['F', 'S'], array_column($this->reviews($userId), 'result'));
+		$this->assertSame(1, (int) $this->trainingDay($userId)['reviewed'], 'One problem was reviewed');
+	}
+
+	public function testAGraduationIsLoggedAsSuch(): void
+	{
+		$context = new ContextPreparator(['tsumego' => $this->dueProblem(count(MistakeTraining::ladder()) - 1)]);
+		$userId = $context->user['id'];
+
+		$review = MistakeTraining::recordResult($userId, (int) $context->tsumegos[0]['id'], PlayOutcome::SolvedClean, 'V', true);
+
+		$this->assertSame(MistakeTraining::REVIEW_GRADUATED, $review['result']);
+		$this->assertTrue($review['climbed']);
+		$this->assertSame(MistakeTraining::REVIEW_GRADUATED, $this->reviews($userId)[0]['result']);
+	}
+
+	public function testAProblemThatIsNotDueIsNoReview(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+		$userId = $context->user['id'];
+		$tsumegoId = (int) $context->tsumegos[0]['id'];
+		$this->enterTraining($userId, $tsumegoId);
+
+		foreach ([[true, PlayOutcome::SolvedClean], [false, PlayOutcome::SolvedClean], [false, PlayOutcome::Failed]] as [$inTraining, $outcome])
+			$this->assertNull(MistakeTraining::recordResult($userId, $tsumegoId, $outcome, 'V', $inTraining));
+
+		$this->assertSame([], $this->reviews($userId));
+		$this->assertNull($this->trainingDay($userId));
+	}
+
+	public function testAReplayOfAProblemSolvedTodayIsNoReview(): void
+	{
+		$context = new ContextPreparator(['tsumego' => $this->dueProblem(1)]);
+		$userId = $context->user['id'];
+		$tsumegoId = (int) $context->tsumegos[0]['id'];
+
+		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, 'V', true);
+		$this->assertNull(MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, 'V', true));
+		$this->assertNull(MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::Failed, 'V', true));
+
+		$this->assertCount(1, $this->reviews($userId));
+	}
+
+	public function testTheDayIsClearedOnceWhenItsLastProblemIsSolved(): void
+	{
+		$tsumegos = [];
+		for ($i = 2; $i <= MistakeTraining::CLEAR_DAY_MIN_PROBLEMS; $i++)
+			$tsumegos[] = $this->dueProblem(1, $i);
+		$context = new ContextPreparator(['tsumego' => $this->dueProblem(1), 'tsumegos' => $tsumegos]);
+		$userId = $context->user['id'];
+
+		$cleared = [];
+		foreach ($context->tsumegos as $tsumego)
+			$cleared[] = MistakeTraining::recordResult($userId, (int) $tsumego['id'], PlayOutcome::SolvedClean, 'V', true)['cleared'];
+
+		$this->assertSame([false, false, false, false, true], $cleared);
+		$day = $this->trainingDay($userId);
+		$this->assertSame(MistakeTraining::CLEAR_DAY_MIN_PROBLEMS, (int) $day['due']);
+		$this->assertSame(MistakeTraining::CLEAR_DAY_MIN_PROBLEMS, (int) $day['reviewed']);
+		$this->assertSame(1, (int) $day['cleared']);
+
+		$tsumegoId = (int) $context->tsumegos[0]['id'];
+		MistakeTraining::makeDueNow($userId, $tsumegoId);
+		Util::execute('UPDATE mistake_training_pool SET last_review_day = NULL WHERE user_id = ? AND tsumego_id = ?', [$userId, $tsumegoId]);
+		$this->assertFalse(MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, 'V', true)['cleared'],
+			'A day is cleared once');
+	}
+
+	public function testTheHistoryTablesAreStrict(): void
+	{
+		$columns = Util::query(
+			'SELECT TABLE_NAME, COLUMN_NAME, IS_NULLABLE FROM information_schema.COLUMNS'
+			. " WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME IN ('mistake_training_review', 'mistake_training_day')"
+		);
+		foreach ($columns as $column)
+			$this->assertSame($column['COLUMN_NAME'] === 'cleared_at' ? 'YES' : 'NO', $column['IS_NULLABLE'],
+				$column['TABLE_NAME'] . '.' . $column['COLUMN_NAME']);
+
+		$keys = Util::query(
+			'SELECT CONSTRAINT_NAME, DELETE_RULE FROM information_schema.REFERENTIAL_CONSTRAINTS'
+			. " WHERE CONSTRAINT_SCHEMA = DATABASE() AND TABLE_NAME IN ('mistake_training_review', 'mistake_training_day') ORDER BY CONSTRAINT_NAME"
+		);
+		$this->assertSame([
+			['CONSTRAINT_NAME' => 'mistake_training_day_user_id', 'DELETE_RULE' => 'CASCADE'],
+			['CONSTRAINT_NAME' => 'mistake_training_review_tsumego_id', 'DELETE_RULE' => 'CASCADE'],
+			['CONSTRAINT_NAME' => 'mistake_training_review_user_id', 'DELETE_RULE' => 'CASCADE'],
+		], $keys);
+	}
 }

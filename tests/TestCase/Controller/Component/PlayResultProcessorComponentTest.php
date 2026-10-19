@@ -1244,7 +1244,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 	// ==================== Mode side-effect matrix ====================
 
-	public function testTrainingSolveDoesNotAffectLevelProgress(): void
+	public function testTrainingSolveGivesOnlyTheTrainingXp(): void
 	{
 		$context = new ContextPreparator([
 			'tsumego' => [
@@ -1259,14 +1259,15 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$beforeDamage = Auth::getUser()['damage'];
 		$beforeDailySolved = Auth::getUser()['daily_solved'];
 		$beforeDailyXp = Auth::getUser()['daily_xp'];
+		$xp = max(1, Rating::ratingToXP($this->tsumegoRating($context), MistakeTraining::REVIEW_XP_SHARE));
 
 		$this->solve($context);
 
-		$this->assertSame($beforeXp, Auth::getUser()['xp'], 'Training solve should not grant XP');
+		$this->assertSame($beforeXp + $xp, Auth::getUser()['xp'], 'Training solve grants the training XP only');
 		$this->assertSame($beforeRating, Auth::getUser()['rating'], 'Training solve should not change rating');
 		$this->assertSame($beforeDamage, Auth::getUser()['damage'], 'Training solve should not change damage');
-		$this->assertSame($beforeDailySolved, Auth::getUser()['daily_solved'], 'Training solve should not bump daily solves');
-		$this->assertSame($beforeDailyXp, Auth::getUser()['daily_xp'], 'Training solve should not bump daily XP');
+		$this->assertSame($beforeDailySolved + 1, Auth::getUser()['daily_solved'], 'A review counts as a solve of the day');
+		$this->assertSame($beforeDailyXp + $xp, Auth::getUser()['daily_xp'], 'And its XP as XP of the day');
 
 		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
 			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
@@ -1478,5 +1479,157 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$this->solveWithMisplays($context);
 
 		$this->assertNull(MistakeTraining::getPoolRow($userId, $tsumegoId));
+	}
+
+	// ==================== The XP of the training ====================
+
+	/**
+	 * A problem rated 1500 gives 45 XP in the level mode (Rating::ratingToXP), so a
+	 * review in the training earns 9 and a graduation 23 on top.
+	 */
+	private function dueInTraining(int $rung = 0, int $setOrder = 1): array
+	{
+		return [
+			'rating' => 1500,
+			'set_order' => $setOrder,
+			'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day')), 'mistake_training_rung' => $rung],
+		];
+	}
+
+	private function playInTraining(ContextPreparator &$context, PlayOutcome $outcome, int $index = 0): array
+	{
+		return $this->postResult($context, [
+			'tsumego_id' => $context->tsumegos[$index]['id'],
+			'seconds' => 0,
+			'outcome' => $outcome->value,
+			'mode' => Constants::$MISTAKE_TRAINING_MODE,
+		]);
+	}
+
+	private function trainingDay(ContextPreparator $context): ?array
+	{
+		$rows = Util::query('SELECT * FROM mistake_training_day WHERE user_id = ? AND day = ?', [$context->user['id'], MistakeTraining::today()]);
+		return $rows[0] ?? null;
+	}
+
+	public function testACleanReviewEarnsAFifthOfTheXpOfTheProblem(): void
+	{
+		$context = new ContextPreparator(['tsumego' => $this->dueInTraining(3)]);
+		$beforeXp = (int) Auth::getUser()['xp'];
+
+		$response = $this->playInTraining($context, PlayOutcome::SolvedClean);
+
+		$this->assertSame(['review' => 9, 'graduation' => 0, 'clear' => 0], $response['mistake_training_xp']);
+		$this->assertSame(9, (int) $response['xp_gained']);
+		$this->assertSame($beforeXp + 9, (int) Auth::getUser()['xp']);
+	}
+
+	public function testAMissAndTheRetryAfterItEarnNoXp(): void
+	{
+		$context = new ContextPreparator(['tsumego' => $this->dueInTraining(3)]);
+		$beforeXp = (int) Auth::getUser()['xp'];
+
+		$missed = $this->playInTraining($context, PlayOutcome::Failed);
+		$retried = $this->playInTraining($context, PlayOutcome::SolvedAfterMistake);
+		$cleanLater = $this->playInTraining($context, PlayOutcome::SolvedClean);
+
+		foreach ([$missed, $retried, $cleanLater] as $response)
+			$this->assertSame(0, array_sum($response['mistake_training_xp']));
+		$this->assertSame($beforeXp, (int) Auth::getUser()['xp'],
+			'Making a mistake on purpose to come back to the problem earns nothing');
+	}
+
+	public function testAReplayOfAProblemSolvedTodayEarnsNoXp(): void
+	{
+		$context = new ContextPreparator(['tsumego' => $this->dueInTraining(3)]);
+		$beforeXp = (int) Auth::getUser()['xp'];
+
+		$this->playInTraining($context, PlayOutcome::SolvedClean);
+		$replay = $this->playInTraining($context, PlayOutcome::SolvedClean);
+
+		$this->assertSame(0, array_sum($replay['mistake_training_xp']));
+		$this->assertSame($beforeXp + 9, (int) Auth::getUser()['xp'], 'Only the review counts');
+	}
+
+	public function testAReviewInTheLevelModeEarnsNoTrainingXp(): void
+	{
+		$context = new ContextPreparator(['tsumego' => $this->dueInTraining(3)]);
+
+		$response = $this->solve($context);
+
+		$this->assertArrayNotHasKey('mistake_training_xp', $response, 'The level mode gives its own XP');
+		$this->assertSame('0', (string) Util::query('SELECT xp FROM mistake_training_review WHERE user_id = ?', [$context->user['id']])[0]['xp']);
+	}
+
+	public function testAGraduationEarnsHalfTheXpOfTheProblemOnTop(): void
+	{
+		$context = new ContextPreparator(['tsumego' => $this->dueInTraining(count(MistakeTraining::ladder()) - 1)]);
+
+		$response = $this->playInTraining($context, PlayOutcome::SolvedClean);
+
+		$this->assertSame(['review' => 9, 'graduation' => 23, 'clear' => 0], $response['mistake_training_xp']);
+		$this->assertSame(32, (int) $response['xp_gained']);
+	}
+
+	private function trainingOf(int $problems): ContextPreparator
+	{
+		$tsumegos = [];
+		for ($i = 1; $i < $problems; $i++)
+			$tsumegos[] = $this->dueInTraining(3, $i + 1);
+		return new ContextPreparator(['tsumego' => $this->dueInTraining(3), 'tsumegos' => $tsumegos]);
+	}
+
+	public function testClearingTheDayEarnsHalfOfTheXpOfItsReviewsOnce(): void
+	{
+		$context = $this->trainingOf(MistakeTraining::CLEAR_DAY_MIN_PROBLEMS);
+		$beforeDailyXp = (int) Auth::getUser()['daily_xp'];
+		$beforeDailySolved = (int) Auth::getUser()['daily_solved'];
+
+		for ($i = 0; $i < MistakeTraining::CLEAR_DAY_MIN_PROBLEMS - 1; $i++)
+			$this->assertSame(0, $this->playInTraining($context, PlayOutcome::SolvedClean, $i)['mistake_training_xp']['clear']);
+		$last = $this->playInTraining($context, PlayOutcome::SolvedClean, MistakeTraining::CLEAR_DAY_MIN_PROBLEMS - 1);
+
+		$this->assertSame(['review' => 9, 'graduation' => 0, 'clear' => 23], $last['mistake_training_xp'], 'Half of the 45 the five reviews earned');
+		$this->assertSame($beforeDailyXp + 45 + 23, (int) Auth::getUser()['daily_xp'], 'The bonus is XP of the day');
+		$this->assertSame($beforeDailySolved + 5, (int) Auth::getUser()['daily_solved'], 'The bonus is not a solve');
+		$day = $this->trainingDay($context);
+		$this->assertSame(1, (int) $day['cleared']);
+		$this->assertNotNull($day['cleared_at']);
+		$this->assertSame(68, (int) $day['xp']);
+
+		// A problem that comes due again later in the day is reviewed, but the day
+		// was already cleared.
+		MistakeTraining::makeDueNow($context->user['id'], (int) $context->tsumegos[0]['id']);
+		Util::execute('UPDATE mistake_training_pool SET last_review_day = NULL, last_review_result = NULL WHERE user_id = ? AND tsumego_id = ?',
+			[$context->user['id'], $context->tsumegos[0]['id']]);
+		$again = $this->playInTraining($context, PlayOutcome::SolvedClean);
+		$this->assertSame(['review' => 9, 'graduation' => 0, 'clear' => 0], $again['mistake_training_xp']);
+	}
+
+	public function testASmallTrainingDayEarnsNoClearBonus(): void
+	{
+		$context = $this->trainingOf(MistakeTraining::CLEAR_DAY_MIN_PROBLEMS - 1);
+
+		for ($i = 0; $i < MistakeTraining::CLEAR_DAY_MIN_PROBLEMS - 1; $i++)
+			$response = $this->playInTraining($context, PlayOutcome::SolvedClean, $i);
+
+		$this->assertSame(0, $response['mistake_training_xp']['clear']);
+		$this->assertSame(0, (int) $this->trainingDay($context)['cleared']);
+	}
+
+	public function testADayIsClearedOnlyWhenNothingIsLeftDue(): void
+	{
+		$context = $this->trainingOf(MistakeTraining::CLEAR_DAY_MIN_PROBLEMS);
+
+		$this->playInTraining($context, PlayOutcome::Failed, 0);
+		for ($i = 1; $i < MistakeTraining::CLEAR_DAY_MIN_PROBLEMS; $i++)
+			$this->playInTraining($context, PlayOutcome::SolvedClean, $i);
+		$this->assertSame(0, (int) $this->trainingDay($context)['cleared'], 'The missed problem is still due');
+
+		$retry = $this->playInTraining($context, PlayOutcome::SolvedAfterMistake, 0);
+
+		$this->assertSame(['review' => 0, 'graduation' => 0, 'clear' => 18], $retry['mistake_training_xp'],
+			'Half of the 36 the four clean reviews earned');
+		$this->assertSame(1, (int) $this->trainingDay($context)['cleared']);
 	}
 }
