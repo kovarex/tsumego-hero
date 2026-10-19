@@ -262,16 +262,28 @@ class MistakeTraining
 	}
 
 	/**
-	 * Number of tsumegos currently due for review.
+	 * Number of tsumegos currently due for review. Counts only what the training can
+	 * serve, like todaysTraining(): a problem that is deleted or in no set is left out.
 	 */
 	public static function dueCount(int $userId): int
 	{
-		return (int) ClassRegistry::init('MistakeTrainingPool')->find('count', [
-			'conditions' => [
-				'user_id' => $userId,
-				'next_due <=' => date('Y-m-d H:i:s'),
-			],
-		]);
+		$rows = Util::query(
+			'SELECT COUNT(*) AS total FROM mistake_training_pool p' . self::servableSql()
+			. ' AND p.next_due IS NOT NULL AND p.next_due <= ?',
+			[$userId, date('Y-m-d H:i:s')]
+		);
+		return (int) $rows[0]['total'];
+	}
+
+	/**
+	 * The join and conditions that keep the pool rows of player ? the training can
+	 * serve: the problem is not deleted and is in a set.
+	 */
+	private static function servableSql(): string
+	{
+		return ' JOIN tsumego t ON t.id = p.tsumego_id AND t.deleted IS NULL'
+			. ' WHERE p.user_id = ?'
+			. ' AND EXISTS (SELECT 1 FROM set_connection sc WHERE sc.tsumego_id = p.tsumego_id)';
 	}
 
 	/**
@@ -279,16 +291,17 @@ class MistakeTraining
 	 * today's order, which is the order the problems came into the pool. The due date
 	 * does not order it, because an import brings many problems due at the same
 	 * moment. A problem missed earlier today waits until the untried ones are done,
-	 * so one hard problem does not hold up the day.
+	 * so one hard problem does not hold up the day. A problem the training cannot
+	 * serve (deleted, or in no set) is skipped, so it keeps its row for when it is back.
 	 *
 	 * @return array|null
 	 */
 	public static function nextDue(int $userId): ?array
 	{
 		$rows = Util::query(
-			'SELECT * FROM mistake_training_pool'
-			. ' WHERE user_id = ? AND next_due IS NOT NULL AND next_due <= ?'
-			. ' ORDER BY (last_review_day IS NOT NULL AND last_review_day = ?) ASC, id ASC LIMIT 1',
+			'SELECT p.* FROM mistake_training_pool p' . self::servableSql()
+			. ' AND p.next_due IS NOT NULL AND p.next_due <= ?'
+			. ' ORDER BY (p.last_review_day IS NOT NULL AND p.last_review_day = ?) ASC, p.id ASC LIMIT 1',
 			[$userId, date('Y-m-d H:i:s'), self::today()]
 		);
 		return $rows[0] ?? null;

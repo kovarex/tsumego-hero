@@ -426,8 +426,8 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		// shows "All caught up".
 		$this->assertStringContainsString('All caught up', $this->view);
 
-		// And it should be removed from the pool so it drops out of the queue
-		$this->assertNull(MistakeTraining::getPoolRow($context->user['id'], (int) $context->tsumegos[0]['id']));
+		// It keeps its row, so a problem that is restored comes back with its history
+		$this->assertNotNull(MistakeTraining::getPoolRow($context->user['id'], (int) $context->tsumegos[0]['id']));
 	}
 
 	public function testTrainingIsNotFoundWhenTheFlagIsOff()

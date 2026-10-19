@@ -1027,4 +1027,17 @@ class MistakeTrainingTest extends TestCaseWithAuth
 		$this->assertSame('Rung 1 of 8. A clean solve brings it back tomorrow.', $buttons[$this->tsumegoId($context, 2)]->description,
 			'A wait of one day is tomorrow');
 	}
+
+	public function testADeletedProblemIsNotDue(): void
+	{
+		$context = $this->prepareTraining([], []);
+		$userId = $context->user['id'];
+		Util::execute('UPDATE tsumego SET deleted = ? WHERE id = ?', [date('Y-m-d H:i:s'), $this->tsumegoId($context, 0)]);
+
+		$this->assertSame(1, MistakeTraining::dueCount($userId), 'The menu does not count a problem the training cannot serve');
+		$this->assertSame($this->tsumegoId($context, 1), (int) MistakeTraining::nextDue($userId)['tsumego_id'],
+			'The training skips it');
+		$this->assertNotNull($this->poolRow($userId, $this->tsumegoId($context, 0)),
+			'And keeps its row, in case the problem comes back');
+	}
 }
