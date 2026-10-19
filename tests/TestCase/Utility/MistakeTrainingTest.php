@@ -822,13 +822,22 @@ class MistakeTrainingTest extends TestCaseWithAuth
 			'After the last problem, Next goes around to the first one still due');
 	}
 
-	public function testNextGoesToTheQueueWhenNothingElseIsDue(): void
+	public function testNextHasNowhereToGoWhileTheLastProblemIsNotSolved(): void
 	{
 		$context = $this->prepareTraining([], self::solvedToday());
 		$scId = $this->setConnectionId($context, 0);
 
+		$this->assertSame('', MistakeTraining::nextLink(MistakeTraining::buildQueueButtons($scId), $scId),
+			'The current problem is never its own next one, and the queue page would serve it again');
+	}
+
+	public function testNextEndsTheDayOnceEverythingIsSolved(): void
+	{
+		$context = $this->prepareTraining(self::solvedToday(), self::solvedToday());
+		$scId = $this->setConnectionId($context, 1);
+
 		$this->assertSame(MistakeTraining::$QUEUE_LINK, MistakeTraining::nextLink(MistakeTraining::buildQueueButtons($scId), $scId),
-			'The current problem is never its own next one, the queue decides what is left');
+			'With the day done, Next leads to the page that says so');
 	}
 
 	public function testAProblemGraduatedTodayStaysInTheRowAsSolved(): void

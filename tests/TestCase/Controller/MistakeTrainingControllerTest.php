@@ -304,8 +304,19 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 
 		$this->assertStringContainsString(
 			'var nextButtonLink = "' . MistakeTraining::$PLAY_LINK_PREFIX . self::setConnectionId($context, 2) . '"', $this->view);
-		$this->assertStringContainsString('var previousButtonLink = "' . MistakeTraining::$QUEUE_LINK . '"', $this->view,
-			'Previous at the start of the row goes to the queue page');
+		$this->assertStringContainsString('var previousButtonLink = ""', $this->view,
+			'Back at the start of the row has nowhere to go, so the page turns it off');
+	}
+
+	public function testTheLastDueProblemHasNoNextUntilItIsSolved()
+	{
+		$context = $this->prepareTraining(self::reviewedToday(MistakeTraining::REVIEW_SOLVED), []);
+
+		$this->testAction('/mistake-training/play/' . self::setConnectionId($context, 1), ['return' => 'contents']);
+
+		$this->assertStringContainsString('var nextButtonLink = ""', $this->view,
+			'The queue page would only serve the same problem again; the solve turns Next on');
+		$this->assertStringContainsString('var previousButtonLink = "' . MistakeTraining::$PLAY_LINK_PREFIX . self::setConnectionId($context, 0) . '"', $this->view);
 	}
 
 	public function testAllCaughtUpSaysWhatTodaySolved()

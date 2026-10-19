@@ -406,7 +406,8 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 			$tsumegoButtons->exportCurrentAndPreviousLink($this->setFunction, $tsumegoFilters, $setConnectionID, $set);
 		elseif (Auth::isInMistakeTrainingMode() && isset($mistakeTrainingButtons))
 		{
-			$mistakeTrainingButtons->exportCurrentAndPreviousLink($this->setFunction, $tsumegoFilters, $setConnectionID, $set, MistakeTraining::$QUEUE_LINK);
+			// No link before the first problem: the queue page would serve the first due one again
+			$mistakeTrainingButtons->exportCurrentAndPreviousLink($this->setFunction, $tsumegoFilters, $setConnectionID, $set, '');
 			// The row keeps what today already solved, so "Next" skips it instead of
 			// serving the neighbour.
 			($this->setFunction)('nextLink', MistakeTraining::nextLink($mistakeTrainingButtons, $setConnectionID));

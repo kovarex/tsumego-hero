@@ -316,10 +316,11 @@ besogo.makeToolPanel = function (container, editor) {
         );
       }
       if (mode == 1 || mode == 5) {
-        let prevButtonId;
-        prevButtonId = "besogo-back-button";
-
-        makeHyperlinkText("Back","previous problem", previousButtonLink, prevButtonId);
+        // The first problem of the training has nothing before it
+        if (previousButtonLink)
+          makeHyperlinkText("Back","previous problem", previousButtonLink, "besogo-back-button");
+        else
+          makeHyperlinkText("Back","no previous problem", 0, "besogo-back-button-inactive");
       } else if (mode == 2) {
         makeHyperlinkText(
           "History",
@@ -401,7 +402,11 @@ besogo.makeToolPanel = function (container, editor) {
 	  }
 	  if (mode == 1 || mode == 2 || mode == 5)
 	  {
-		makeHyperlinkText("Next", "next problem", nextButtonLink, "besogo-next-button");
+		// The training has nowhere to go while its last problem is not solved
+		if (nextButtonLink)
+		  makeHyperlinkText("Next", "next problem", nextButtonLink, "besogo-next-button");
+		else
+		  makeHyperlinkText("Next", "solve this problem first", 0, "besogo-next-button-inactive");
 	  }
       let reviewButtonId;
       if (editor.getReviewEnabled()) reviewButtonId = "besogo-review-button";

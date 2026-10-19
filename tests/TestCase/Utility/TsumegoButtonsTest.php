@@ -123,9 +123,9 @@ class TsumegoButtonsTest extends TestCaseWithAuth
 		$setFunction = function ($name, $value) use (&$links) {
 			$links[$name] = $value;
 		};
-		$buttons->exportCurrentAndPreviousLink($setFunction, null, $scId, null, '/mistake-training');
+		$buttons->exportCurrentAndPreviousLink($setFunction, null, $scId, null, '');
 
-		$this->assertSame('/mistake-training', $links['previousLink'], 'Previous at the start of the queue should go to the queue landing');
+		$this->assertSame('', $links['previousLink'], 'Back at the start of the training has nowhere to go');
 		$this->assertSame('/mistake-training/play/' . $context->tsumegos[1]['set-connections'][0]['id'], $links['nextLink'],
 			'Queue navigation must stay on the training route, so the route can re-assert the mode');
 	}

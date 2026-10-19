@@ -611,7 +611,9 @@ class MistakeTraining
 	 * Where "Next" leads in the training: the next problem of today's list that is
 	 * still due, after the current one and around to the start, so a problem solved
 	 * today is not served again. With nothing else due it is the queue page, which
-	 * serves the current problem again while it is due, or says the day is done.
+	 * says the day is done, once the current problem is solved; until then there is
+	 * nowhere to go (an empty link), since the queue page would serve it again. The
+	 * play page turns Next on when the solve comes in.
 	 */
 	public static function nextLink(TsumegoButtons $buttons, int $currentSetConnectionID): string
 	{
@@ -623,7 +625,10 @@ class MistakeTraining
 
 		// A grey button is a problem that is still due.
 		$next = array_find($others, fn(TsumegoButton $button) => $button->status === 'N');
-		return $next ? self::$PLAY_LINK_PREFIX . $next->setConnectionID : self::$QUEUE_LINK;
+		if ($next)
+			return self::$PLAY_LINK_PREFIX . $next->setConnectionID;
+		$currentIsDue = $currentIndex !== null && $list[$currentIndex]->status === 'N';
+		return $currentIsDue ? '' : self::$QUEUE_LINK;
 	}
 
 	/**

@@ -736,6 +736,19 @@ use App\Utility\ViteManifest;
 			outcome.className = "mistake-training-outcome";
 			outcome.textContent = button.description;
 			status.appendChild(outcome);
+
+			// The last problem of the day is solved, so Next leads to the end of the training
+			if (!nextButtonLink)
+			{
+				nextButtonLink = <?php echo json_encode(MistakeTraining::$QUEUE_LINK); ?>;
+				let next = document.getElementById("besogo-next-button-inactive");
+				if (next)
+				{
+					next.id = "besogo-next-button";
+					next.href = nextButtonLink;
+					next.title = "next problem";
+				}
+			}
 		}
 	}
 
@@ -1133,7 +1146,7 @@ use App\Utility\ViteManifest;
 	?>
 
 		$('.besogo-board').click(function(e){
-			if(locked)
+			if(locked && nextButtonLink)
 				window.location = nextButtonLink;
 	});
 
@@ -1439,9 +1452,10 @@ use App\Utility\ViteManifest;
 				var activeElement = document.activeElement;
 				var isTextInput = activeElement && (activeElement.tagName === 'TEXTAREA' || (activeElement.tagName === 'INPUT' && activeElement.type === 'text'));
 				if (!isTextInput) {
-					if(keycode == '37') {
+					// an empty link is a training edge with nowhere to go
+					if(keycode == '37' && previousButtonLink) {
 						window.location.href = previousButtonLink;
-					}else if(keycode == '39'){
+					}else if(keycode == '39' && nextButtonLink){
 						window.location.href =  nextButtonLink;
 					}
 				}
