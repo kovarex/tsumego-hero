@@ -1700,7 +1700,8 @@ use App\Utility\ViteManifest;
 							if (resetBtn) { resetBtn.id = "besogo-reset-button-inactive"; }
 						}
 					}
-					if (goldenTsumego)
+					// leaving for the plain problem page would drop the player out of the training
+					if (goldenTsumego && mode != <?php echo Constants::$MISTAKE_TRAINING_MODE; ?>)
 					{
 						window.location.href = '/' + '<?php echo $setConnection['SetConnection']['id']; ?>';
 						return;
