@@ -35,9 +35,9 @@ use TsumegoStatus;
  * playing it again from there is a replay that counts for nothing.
  *
  * Reviews are counted in days, not in hours: the next review of a problem is the
- * start of a day, so a mistake made in the evening is not due tomorrow morning
- * minus an hour. See $DAY_START_HOUR for the boundary that keeps a session after
- * midnight on the day it started.
+ * start of a day, so a mistake made in the evening is not due tomorrow evening.
+ * The day is the one of the daily cron (CronController::daily), which also gives
+ * back the hearts, so the whole site turns to a new day at the same moment.
  */
 class MistakeTraining
 {
@@ -70,13 +70,6 @@ class MistakeTraining
 	public const REVIEW_SOLVED = 'S';
 	public const REVIEW_MISSED = 'F';
 	public const REVIEW_GRADUATED = 'G';
-
-	/**
-	 * Hour at which a new day starts for the training. Reviews are counted in days,
-	 * so a problem due tomorrow is there at this hour, not 24 hours after the
-	 * mistake. The boundary keeps a session after midnight on the previous day.
-	 */
-	public static int $DAY_START_HOUR = 4;
 
 	/**
 	 * How many past mistakes one import brings in. A player with years of history has
@@ -706,12 +699,13 @@ class MistakeTraining
 	}
 
 	/**
-	 * The current training day. A session that runs past midnight still belongs to
-	 * the day it started on, until the day boundary passes.
+	 * The current training day: the day of the daily cron (CronController::daily),
+	 * in the timezone of the server, so the training turns to a new day together
+	 * with the hearts and the rest of the site.
 	 */
 	public static function today(): string
 	{
-		return date('Y-m-d', strtotime('-' . self::$DAY_START_HOUR . ' hours'));
+		return date('Y-m-d');
 	}
 
 	/**
@@ -720,8 +714,7 @@ class MistakeTraining
 	 */
 	private static function dueDate(int $daysAhead): string
 	{
-		$day = date('Y-m-d', strtotime(self::today() . ' +' . $daysAhead . ' days'));
-		return $day . ' ' . str_pad((string) self::$DAY_START_HOUR, 2, '0', STR_PAD_LEFT) . ':00:00';
+		return date('Y-m-d', strtotime(self::today() . ' +' . $daysAhead . ' days')) . ' 00:00:00';
 	}
 
 	/**

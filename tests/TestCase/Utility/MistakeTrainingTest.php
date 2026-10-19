@@ -218,8 +218,7 @@ class MistakeTrainingTest extends TestCaseWithAuth
 
 		$this->enterTraining($userId, $tsumegoId);
 
-		$boundaryHour = str_pad((string) MistakeTraining::$DAY_START_HOUR, 2, '0', STR_PAD_LEFT) . ':00:00';
-		$expected = date('Y-m-d', strtotime(MistakeTraining::today() . ' +1 day')) . ' ' . $boundaryHour;
+		$expected = date('Y-m-d', strtotime(MistakeTraining::today() . ' +1 day')) . ' 00:00:00';
 		$this->assertSame($expected, $this->poolRow($userId, $tsumegoId)['next_due'],
 			'A review is a day, so it is due from the start of that day');
 	}
