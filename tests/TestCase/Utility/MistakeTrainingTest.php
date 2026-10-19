@@ -1198,6 +1198,63 @@ class MistakeTrainingTest extends TestCaseWithAuth
 		$this->assertSame(1, (int) $this->trainingDay($userId)['cleared']);
 	}
 
+	// ==================== The profile ====================
+
+	private function clearedDays(int $userId, array $daysAgo): void
+	{
+		foreach ($daysAgo as $days)
+			Util::execute(
+				'INSERT INTO mistake_training_day (user_id, day, due, reviewed, cleared) VALUES (?, ?, 5, 5, 1)',
+				[$userId, date('Y-m-d', strtotime(MistakeTraining::today() . ' -' . $days . ' days'))]
+			);
+	}
+
+	public function testTheStreaksCountClearedDaysInARow(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+		$userId = $context->user['id'];
+		$this->enterTraining($userId, (int) $context->tsumegos[0]['id']);
+		$this->clearedDays($userId, [400, 399, 398, 397, 20, 19, 18, 2, 1]);
+
+		$profile = MistakeTraining::profile($userId, MistakeTraining::profileStart());
+
+		$this->assertSame(2, $profile['streak'], 'Today is still to do, so the streak holds');
+		$this->assertSame(4, $profile['best_streak'], 'The best streak looks back further than the calendar');
+		$this->assertCount(5, $profile['days'], 'The calendar holds the last half a year');
+		$this->assertSame([1, 0, 0, 0, 0, 0, 0, 0], $profile['rungs']);
+		$this->assertSame(0, $profile['graduated']);
+	}
+
+	public function testAStreakEndsWithADayNotCleared(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+		$userId = $context->user['id'];
+		$this->enterTraining($userId, (int) $context->tsumegos[0]['id']);
+		$this->clearedDays($userId, [3, 2]);
+
+		$this->assertSame(0, MistakeTraining::profile($userId, MistakeTraining::profileStart())['streak']);
+
+		$this->clearedDays($userId, [1, 0]);
+		$this->assertSame(4, MistakeTraining::profile($userId, MistakeTraining::profileStart())['streak']);
+	}
+
+	public function testNoProfileForAPlayerWhoNeverTrained(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+
+		$this->assertNull(MistakeTraining::profile($context->user['id'], MistakeTraining::profileStart()));
+	}
+
+	public function testTheCalendarStartsOnAMondayHalfAYearAgo(): void
+	{
+		$start = MistakeTraining::profileStart();
+		$days = (strtotime(MistakeTraining::today()) - strtotime($start)) / 86400;
+
+		$this->assertSame('1', date('N', strtotime($start)));
+		$this->assertGreaterThanOrEqual(MistakeTraining::PROFILE_DAYS - 1, round($days));
+		$this->assertLessThan(MistakeTraining::PROFILE_DAYS - 1 + 7, round($days));
+	}
+
 	public function testTheHistoryTablesAreStrict(): void
 	{
 		$columns = Util::query(

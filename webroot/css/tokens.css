@@ -275,6 +275,10 @@
 		   symbols on the light green of a solve, see-through so the item colour
 		   still shows. */
 		--rung-patch-color: rgba(0, 0, 0, 0.35);
+		/* Days of the mistake training calendar on the profile */
+		--training-day-empty: #ebedf0;
+		--training-day-trained: #b3e29b;
+		--training-day-cleared: #3b9b2a;
 		--paginator-button-text-color: #333;
 		--active-paginator-button-background-color: #333;
 		--active-paginator-button-text-color: #fff;
@@ -313,6 +317,9 @@
 		--status-g-color: #b8860b;
 		--status-g-highlight: #e8c840;
 		--rung-patch-color: rgba(0, 0, 0, 0.45);
+		--training-day-empty: #2d2d2d;
+		--training-day-trained: #2c5a22;
+		--training-day-cleared: #5cc23d;
 		--paginator-button-text-color: #ccc;
 		--active-paginator-button-background-color: #ccc;
 		--active-paginator-button-text-color: #000;

@@ -98,6 +98,12 @@ class MistakeTraining
 	public const IMPORT_COUNT_CAP = 1000;
 
 	/**
+	 * How far back the calendar of the profile goes: half a year, like the graphs of
+	 * the profile.
+	 */
+	public const PROFILE_DAYS = 183;
+
+	/**
 	 * Route prefix for queue links. Every one of them re-asserts training mode.
 	 */
 	public static string $PLAY_LINK_PREFIX = '/mistake-training/play/';
@@ -485,6 +491,69 @@ class MistakeTraining
 	public static function hasEverTrained(int $userId): bool
 	{
 		return !empty(Util::query('SELECT 1 FROM mistake_training_pool WHERE user_id = ? LIMIT 1', [$userId]));
+	}
+
+	/**
+	 * The first day of the calendar of the profile: the Monday of the week PROFILE_DAYS
+	 * ago, so the calendar starts with a whole week.
+	 */
+	public static function profileStart(): string
+	{
+		$first = strtotime(self::today() . ' -' . (self::PROFILE_DAYS - 1) . ' days');
+		return date('Y-m-d', strtotime('-' . (((int) date('N', $first)) - 1) . ' days', $first));
+	}
+
+	/**
+	 * What the profile shows of the training of a player, or null when there is
+	 * nothing to show: the training days since $since (reviewed problems, and whether
+	 * the day was cleared), the problems in the training now by rung, the graduated
+	 * ones, and the streaks of cleared days. A day that was not cleared ends a
+	 * streak, but today counts only once it is cleared, so the current streak holds
+	 * while today's training is still to do.
+	 *
+	 * @return array{days: array<string, array{reviewed: int, cleared: bool}>, rungs: list<int>, graduated: int, streak: int, best_streak: int}|null
+	 */
+	public static function profile(int $userId, string $since): ?array
+	{
+		$rungs = array_fill(0, count(self::$LADDER), 0);
+		$graduated = 0;
+		$rows = Util::query(
+			'SELECT p.rung, p.next_due IS NULL AS graduated, COUNT(*) AS total FROM mistake_training_pool p' . self::servableSql()
+			. ' GROUP BY p.rung, p.next_due IS NULL',
+			[$userId]
+		);
+		foreach ($rows as $row)
+			if ($row['graduated'])
+				$graduated += (int) $row['total'];
+			else
+				$rungs[min((int) $row['rung'], count(self::$LADDER) - 1)] += (int) $row['total'];
+
+		$days = [];
+		$rows = Util::query(
+			'SELECT day, reviewed, cleared FROM mistake_training_day WHERE user_id = ? AND day >= ? ORDER BY day',
+			[$userId, $since]
+		);
+		foreach ($rows as $row)
+			$days[$row['day']] = ['reviewed' => (int) $row['reviewed'], 'cleared' => (bool) $row['cleared']];
+
+		if (empty($days) && !self::hasEverTrained($userId))
+			return null;
+
+		$streak = 0;
+		$bestStreak = 0;
+		$lastDay = null;
+		$cleared = Util::query('SELECT day FROM mistake_training_day WHERE user_id = ? AND cleared = 1 ORDER BY day', [$userId]);
+		foreach (array_column($cleared, 'day') as $day)
+		{
+			$streak = $lastDay !== null && $day === date('Y-m-d', strtotime($lastDay . ' +1 day')) ? $streak + 1 : 1;
+			$bestStreak = max($bestStreak, $streak);
+			$lastDay = $day;
+		}
+		$yesterday = date('Y-m-d', strtotime(self::today() . ' -1 day'));
+		if ($lastDay !== self::today() && $lastDay !== $yesterday)
+			$streak = 0;
+
+		return ['days' => $days, 'rungs' => $rungs, 'graduated' => $graduated, 'streak' => $streak, 'best_streak' => $bestStreak];
 	}
 
 	/**

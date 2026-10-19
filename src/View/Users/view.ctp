@@ -19,6 +19,7 @@ use App\Utility\ValueGraphRenderer;
  * @var array $dailyResults
  * @var int $deletedTsumegoStatusCount
  * @var int $levelBar
+ * @var array|null $mistakeTraining
  * @var array $timeGraph
  * @var array $timeModeRanks
  * @var int $tsumegoCount
@@ -299,6 +300,8 @@ foreach ($heroPowers as $power)
 		<?php endforeach; ?>
 	</div>
 </div>
+<?php if ($mistakeTraining !== null)
+	echo $this->element('mistake_training_profile', ['training' => $mistakeTraining]); ?>
 <?php
 	$size = count($dailyResults);
 	if ($size < 10)
