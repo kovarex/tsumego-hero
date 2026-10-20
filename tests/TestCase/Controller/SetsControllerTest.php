@@ -7,6 +7,7 @@ use App\Utility\TsumegoFilters;
 use App\Utility\Util;
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverKeys;
+use Facebook\WebDriver\WebDriverSelect;
 
 class SetsControllerTest extends TestCaseWithAuth
 {
@@ -102,6 +103,166 @@ class SetsControllerTest extends TestCaseWithAuth
 		$collectionTopDivs = $dom->querySelectorAll('.set-card__top');
 		$this->assertCount(1, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->textContent, '10k');
+	}
+
+	public function testDifficultyIndexGivesEveryRankItsOwnBox(): void
+	{
+		$ranks = ['30k', '25k', '20k', '17k', '16k', '15k', '10k'];
+		$contextParams = ['user' => ['query' => 'difficulty']];
+		$contextParams['tsumegos'] = [];
+		foreach ($ranks as $rank)
+			$contextParams['tsumegos'][] = [
+				'rating' => Rating::getRankMiddleRatingFromReadableRank($rank),
+				'sets' => [['name' => 'set ' . $rank, 'num' => '1']]];
+		new ContextPreparator($contextParams);
+		$this->testAction('sets', ['return' => 'view']);
+
+		$boxTitles = [];
+		foreach ($this->getStringDom()->querySelectorAll('.set-card__top') as $boxTitle)
+			$boxTitles[] = $boxTitle->textContent;
+
+		$this->assertSame($ranks, $boxTitles);
+	}
+
+	public function testDifficultyIndexGroupsProblemsBelowThirtyKyuInTheThirtyKyuBox(): void
+	{
+		$contextParams = ['user' => ['query' => 'difficulty']];
+		$contextParams['tsumegos'] = [
+			['rating' => -1200, 'sets' => [['name' => 'beginner set', 'num' => '1']]]];
+		new ContextPreparator($contextParams);
+		$this->testAction('sets', ['return' => 'view']);
+
+		$boxTitles = [];
+		foreach ($this->getStringDom()->querySelectorAll('.set-card__top') as $boxTitle)
+			$boxTitles[] = $boxTitle->textContent;
+
+		$this->assertSame(['30k'], $boxTitles);
+	}
+
+	public function testDifficultyIndexRankFilterShowsOnlyThatRank(): void
+	{
+		$contextParams['tsumegos'] = [
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('16k'), 'sets' => [['name' => 'set 1', 'num' => '1']]],
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('15k'), 'sets' => [['name' => 'set 2', 'num' => '1']]]];
+		new ContextPreparator($contextParams);
+		$_COOKIE['query'] = 'difficulty';
+		$_COOKIE['filtered_ranks'] = '15k';
+		$this->testAction('sets', ['return' => 'view']);
+
+		$this->assertTextContains('Problems found: 1', $this->view);
+		$dom = $this->getStringDom();
+		$collectionTopDivs = $dom->querySelectorAll('.set-card__top');
+		$this->assertCount(1, $collectionTopDivs);
+		$this->assertSame('15k', $collectionTopDivs[0]->textContent);
+		$this->assertSame('1 problem', $dom->querySelectorAll('.set-card__middle-left')[0]->textContent);
+	}
+
+	public function testDifficultyIndexShowsTheOnlyPickedRankInTheRangeSelects(): void
+	{
+		$contextParams['tsumegos'] = [
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('5k'), 'sets' => [['name' => 'set 1', 'num' => '1']]]];
+		new ContextPreparator($contextParams);
+		$_COOKIE['query'] = 'difficulty';
+		$_COOKIE['filtered_ranks'] = '5k';
+		$this->testAction('sets', ['return' => 'view']);
+
+		$dom = $this->getStringDom();
+		$this->assertSame('5k', $dom->querySelector('#difficulty-from option[selected]')->getAttribute('value'));
+		$this->assertSame('5k', $dom->querySelector('#difficulty-to option[selected]')->getAttribute('value'));
+	}
+
+	public function testDifficultyIndexLeavesTheRangeSelectsOpenForSeveralPickedRanks(): void
+	{
+		$contextParams['tsumegos'] = [
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('17k'), 'sets' => [['name' => 'set 1', 'num' => '1']]],
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('15k'), 'sets' => [['name' => 'set 2', 'num' => '1']]]];
+		new ContextPreparator($contextParams);
+		$_COOKIE['query'] = 'difficulty';
+		$_COOKIE['filtered_ranks'] = '17k@15k';
+		$this->testAction('sets', ['return' => 'view']);
+
+		$dom = $this->getStringDom();
+		$this->assertCount(0, $dom->querySelectorAll('#difficulty-from option[selected]'));
+		$this->assertCount(0, $dom->querySelectorAll('#difficulty-to option[selected]'));
+	}
+
+	public function testDifficultyIndexKeepsPickedRanksInTheirOwnBoxes(): void
+	{
+		$contextParams['tsumegos'] = [
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('17k'), 'sets' => [['name' => 'set 1', 'num' => '1']]],
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('16k'), 'sets' => [['name' => 'set 2', 'num' => '1']]],
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('15k'), 'sets' => [['name' => 'set 3', 'num' => '1']]]];
+		new ContextPreparator($contextParams);
+		$_COOKIE['query'] = 'difficulty';
+		$_COOKIE['filtered_ranks'] = '17k@16k';
+		$this->testAction('sets', ['return' => 'view']);
+
+		$this->assertTextContains('Problems found: 2', $this->view);
+		$dom = $this->getStringDom();
+		$boxTitles = [];
+		foreach ($dom->querySelectorAll('.set-card__top') as $boxTitle)
+			$boxTitles[] = $boxTitle->textContent;
+
+		$this->assertSame(['17k', '16k'], $boxTitles);
+	}
+
+	public function testDifficultyIndexShowsAPickedRangeAsOneBox(): void
+	{
+		$contextParams['tsumegos'] = [
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('17k'), 'sets' => [['name' => 'set 1', 'num' => '1']]],
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('16k'), 'sets' => [['name' => 'set 2', 'num' => '1']]],
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('15k'), 'sets' => [['name' => 'set 3', 'num' => '1']]]];
+		new ContextPreparator($contextParams);
+		$_COOKIE['query'] = 'difficulty';
+		$_COOKIE['filtered_ranks'] = '17k-16k';
+		$this->testAction('sets', ['return' => 'view']);
+
+		$this->assertTextContains('Problems found: 2', $this->view);
+		$dom = $this->getStringDom();
+		$boxTitles = [];
+		foreach ($dom->querySelectorAll('.set-card__top') as $boxTitle)
+			$boxTitles[] = $boxTitle->textContent;
+
+		$this->assertSame(['17k-16k'], $boxTitles);
+		$this->assertSame('2 problems', $dom->querySelectorAll('.set-card__middle-left')[0]->textContent);
+	}
+
+	public function testDifficultyIndexCombinesPickedRanksWithAPickedRange(): void
+	{
+		$contextParams['tsumegos'] = [
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('20k'), 'sets' => [['name' => 'set 1', 'num' => '1']]],
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('10k'), 'sets' => [['name' => 'set 2', 'num' => '1']]],
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('9k'), 'sets' => [['name' => 'set 3', 'num' => '1']]],
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('5k'), 'sets' => [['name' => 'set 4', 'num' => '1']]]];
+		new ContextPreparator($contextParams);
+		$_COOKIE['query'] = 'difficulty';
+		$_COOKIE['filtered_ranks'] = '20k@10k-9k';
+		$this->testAction('sets', ['return' => 'view']);
+
+		$this->assertTextContains('Problems found: 3', $this->view);
+		$boxTitles = [];
+		foreach ($this->getStringDom()->querySelectorAll('.set-card__top') as $boxTitle)
+			$boxTitles[] = $boxTitle->textContent;
+
+		$this->assertSame(['20k', '10k-9k'], $boxTitles);
+	}
+
+	public function testDifficultyIndexKeepsSeparateRunsOfTheRankFilterApart(): void
+	{
+		$contextParams['tsumegos'] = [
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('17k'), 'sets' => [['name' => 'set 1', 'num' => '1']]],
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('15k'), 'sets' => [['name' => 'set 2', 'num' => '1']]],
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('10k'), 'sets' => [['name' => 'set 3', 'num' => '1']]]];
+		new ContextPreparator($contextParams);
+		$_COOKIE['query'] = 'difficulty';
+		$_COOKIE['filtered_ranks'] = '17k@10k';
+		$this->testAction('sets', ['return' => 'view']);
+
+		$boxTitles = [];
+		foreach ($this->getStringDom()->querySelectorAll('.set-card__top') as $boxTitle)
+			$boxTitles[] = $boxTitle->textContent;
+
+		$this->assertSame(['17k', '10k'], $boxTitles);
 	}
 
 	public function testTopicsIndexSplitsCollectionIntoPartitionBoxes(): void
@@ -413,6 +574,36 @@ class SetsControllerTest extends TestCaseWithAuth
 			$result->saveHTML());
 	}
 
+	public function testDifficultySetViewShowsMergedRankRange(): void
+	{
+		$contextParams = [];
+		$contextParams['tsumegos'] = [];
+		foreach (['20k', '17k', '15k'] as $rank)
+			$contextParams['tsumegos'][] = [
+				'rating' => Rating::getRankMiddleRatingFromReadableRank($rank),
+				'sets' => [['name' => 'set ' . $rank, 'num' => '1']]];
+		$context = new ContextPreparator($contextParams);
+
+		$this->testAction('sets/view/20k-16k', ['return' => 'view']);
+		$dom = $this->getStringDom();
+		$setTitle = $dom->querySelectorAll('.set-view-title');
+		$this->assertCount(1, $setTitle);
+		$this->assertSame('20k-16k', $setTitle[0]->textContent);
+
+		$problemButtons = $dom->querySelectorAll('.problem-nav__number');
+		$this->assertCount(2, $problemButtons);
+
+		$problemLinks = [];
+		foreach ($dom->querySelectorAll('.tooltip') as $problemLink)
+			$problemLinks[] = $problemLink->getAttribute('href');
+		sort($problemLinks);
+		$expectedLinks = [
+			'/' . $context->tsumegos[0]['set-connections'][0]['id'],
+			'/' . $context->tsumegos[1]['set-connections'][0]['id']];
+		sort($expectedLinks);
+		$this->assertSame($expectedLinks, $problemLinks);
+	}
+
 	public function testSetViewSetBased(): void
 	{
 		$contextParams = [];
@@ -510,6 +701,51 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertTextStartsWith($title, $collectionTopDivs[0]->getText());
 	}
 
+	public function testDifficultyRangeSelectionShowsOneMergedBox(): void
+	{
+		$contextParams['tsumegos'] = [];
+		foreach (['17k', '16k', '15k'] as $rank)
+			$contextParams['tsumegos'][] = [
+				'rating' => Rating::getRankMiddleRatingFromReadableRank($rank),
+				'sets' => [['name' => 'set ' . $rank, 'num' => '1']]];
+		new ContextPreparator($contextParams);
+
+		$browser = Browser::instance();
+		$browser->get('sets');
+		$browser->findById('difficulty-button')->click();
+		(new WebDriverSelect($browser->findById('difficulty-from')))->selectByValue('17k');
+		(new WebDriverSelect($browser->findById('difficulty-to')))->selectByValue('16k');
+		$browser->findById('tile-difficulty-submit')->click();
+
+		$this->assertSame('17k-16k', urldecode($browser->driver->manage()->getCookieNamed('filtered_ranks')->getValue()));
+		$boxes = $browser->getElements('.set-card__top');
+		$this->assertCount(1, $boxes);
+		$this->assertSame('17k-16k', $boxes[0]->getText());
+	}
+
+	public function testDifficultyPillsSelectSeparateBoxes(): void
+	{
+		$contextParams['tsumegos'] = [];
+		foreach (['17k', '16k', '15k'] as $rank)
+			$contextParams['tsumegos'][] = [
+				'rating' => Rating::getRankMiddleRatingFromReadableRank($rank),
+				'sets' => [['name' => 'set ' . $rank, 'num' => '1']]];
+		new ContextPreparator($contextParams);
+
+		$browser = Browser::instance();
+		$browser->get('sets');
+		$browser->findById('difficulty-button')->click();
+		$browser->findById('tile-difficulty' . array_search('17k', Rating::ranks()))->click();
+		$browser->findById('tile-difficulty' . array_search('16k', Rating::ranks()))->click();
+		$browser->findById('tile-difficulty-submit')->click();
+
+		$this->assertSame('17k@16k', urldecode($browser->driver->manage()->getCookieNamed('filtered_ranks')->getValue()));
+		$boxes = $browser->getElements('.set-card__top');
+		$this->assertCount(2, $boxes);
+		$this->assertSame('17k', $boxes[0]->getText());
+		$this->assertSame('16k', $boxes[1]->getText());
+	}
+
 	public function testFullProcessOfDifficultyBasedSelectionAndSolving(): void
 	{
 		$contextParams = ['user' => ['mode' => Constants::$LEVEL_MODE]];
@@ -546,9 +782,8 @@ class SetsControllerTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get("sets");
 		$browser->findById('difficulty-button')->click();
-		$difficulty15kSelector = $browser->findById('tile-difficulty0');
-		$this->assertSame($difficulty15kSelector->getText(), '15k');
-		$difficulty15kSelector->click();
+		(new WebDriverSelect($browser->findById('difficulty-from')))->selectByValue('15k');
+		(new WebDriverSelect($browser->findById('difficulty-to')))->selectByValue('15k');
 		$browser->findById('tile-difficulty-submit')->click();
 
 		// difficulty selected

@@ -14,7 +14,9 @@ use App\Utility\TsumegoFilters;
  * @var SetsSelector $setsSelector
  * @var string $lightDark
  * @var bool $queryRefresh
- * @var array $ranksArray
+ * @var string $rankFrom
+ * @var string $rankTo
+ * @var array $rankFilterLabels
  * @var array $tagList
  */
 ?>
@@ -61,11 +63,35 @@ use App\Utility\TsumegoFilters;
 								echo '<div class="dropdown__tile dropdown__tile--difficulty" id="tile-difficulty'.$i.'" style="--rank-color:'.Rating::rankColorVar($difficultyTiles[$i]).'">'.h($difficultyTiles[$i]).'</div>';
 						}
 					?>
+					<div class="difficulty-range">
+						<div class="difficulty-range__scale" id="difficulty-range-scale" title="Click to show everything up to a rank, or drag to pick a range">
+							<div class="difficulty-range__scale-track">
+								<div class="difficulty-range__scale-fill" id="difficulty-range-fill"></div>
+							</div>
+						</div>
+						<div class="difficulty-range__controls">
+							<span class="difficulty-range__caption">Add a range</span>
+							<label class="difficulty-range__label" for="difficulty-from">from</label>
+							<select id="difficulty-from" class="difficulty-range__select">
+								<option value="">Any</option>
+								<?php
+									foreach ($difficultyTiles as $rank)
+										echo '<option value="' . h($rank) . '" style="color:' . Rating::rankColorVar($rank) . '"' . ($rank === $rankFrom ? ' selected' : '') . '>' . h($rank) . '</option>';
+								?>
+							</select>
+							<label class="difficulty-range__label" for="difficulty-to">to</label>
+							<select id="difficulty-to" class="difficulty-range__select">
+								<option value="">Any</option>
+								<?php
+									foreach ($difficultyTiles as $rank)
+										echo '<option value="' . h($rank) . '" style="color:' . Rating::rankColorVar($rank) . '"' . ($rank === $rankTo ? ' selected' : '') . '>' . h($rank) . '</option>';
+								?>
+							</select>
+						</div>
+					</div>
 					<div class="dropdown__tile-actions">
-						<div class="dropdown__tile dropdown__tile-actions__select" id="tile-difficulty-select-all">Select all</div>
-						<?php if($tsumegoFilters->query){ ?>
-							<a class="dropdown__tile dropdown__tile-actions__submit" id="tile-difficulty-submit" href="">Search</a>
-						<?php } ?>
+						<div class="dropdown__tile dropdown__tile-actions__select" id="tile-difficulty-reset">Reset</div>
+						<a class="dropdown__tile dropdown__tile-actions__submit" id="tile-difficulty-submit" href="">Search</a>
 					</div>
 				</div>
 			</div>
@@ -143,13 +169,11 @@ use App\Utility\TsumegoFilters;
 		let query = <?php echo json_encode($tsumegoFilters->query, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 		let queryRefresh = <?php echo json_encode($queryRefresh, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 		let filteredSets = [];
-		let filteredRanks = [];
 		let filteredTags = [];
 		let searchText1 = "";
 		let searchText2 = "";
 		let searchText3 = "";
 		let initialTopicTiles = [];
-		let initialDifficultyTiles = [];
 		let initialTagTiles = [];
 		let topicsToggle = false;
 		let difficultyToggle = false;
@@ -160,12 +184,12 @@ use App\Utility\TsumegoFilters;
 		let activeTopicIds = [];
 		let allTopicIds = [];
 		let allTopicNames = [];
-		let tileDifficultyBool = [];
-		let activeDifficultyTiles = [];
-		let allDifficultyTiles = [];
-		let activeDifficultyIds = [];
-		let allDifficultyIds = [];
-		let allDifficultyNames = [];
+		let allRanks = [];
+		let activeRankTiles = [];
+		let activeRankRange = null;
+		let serverRankLabels = [];
+		let rankDragStart = null;
+		let rankDragMoved = false;
 		let tileTagsBool = [];
 		let activeTagTiles = [];
 		let allTagTiles = [];
@@ -202,37 +226,6 @@ use App\Utility\TsumegoFilters;
 							for(let i=0;i<allTopicNames.length;i++){
 								if(allTopicNames[i] === name){
 									unselectTopic(allTopicIds[i]);
-									break;
-								}
-							}
-						}
-					}
-					drawActiveCollections();
-					drawActiveTiles();
-				};';
-
-		echo 'function toggleRank(index, name, e) {
-			e.stopPropagation();
-					if(!tileDifficultyBool[index]){
-						handleTiles(name, "difficulty", true);
-						activeDifficultyTiles.push(name);
-						if(query === "difficulty"){
-							for(let i=0;i<allDifficultyNames.length;i++)
-								if(allDifficultyNames[i] === name)
-									activeDifficultyIds.push(allDifficultyIds[i]);
-						}
-					}else{
-						handleTiles(name, "difficulty", false);
-						let newActiveDifficultyTiles = [];
-						for(let i=0;i<activeDifficultyTiles.length;i++){
-							if(activeDifficultyTiles[i] !== name)
-								newActiveDifficultyTiles.push(activeDifficultyTiles[i]);
-						}
-						activeDifficultyTiles = newActiveDifficultyTiles;
-						if(query === "difficulty"){
-							for(let i=0;i<allDifficultyNames.length;i++){
-								if(allDifficultyNames[i] === name){
-									unselectDifficulty(allDifficultyIds[i]);
 									break;
 								}
 							}
@@ -280,15 +273,11 @@ use App\Utility\TsumegoFilters;
 				echo '$("#tile-topics'.$index.'").click(function(e){ toggleTopic('.$index.', '.$jsName.', e); });';
 			}
 
-			foreach ($ranksArray as $rank) {
-				echo 'allDifficultyIds.push("'.$rank['id'].'");';
-				echo 'allDifficultyNames.push('.json_encode($rank['name'], $jsFlags).');';
-			}
+			echo 'allRanks = ' . json_encode($difficultyTiles, $jsFlags) . ';';
+			echo 'serverRankLabels = ' . json_encode(array_values($rankFilterLabels), $jsFlags) . ';';
 
 			foreach ($difficultyTiles as $index => $rankName) {
 				$jsRankName = json_encode($rankName, $jsFlags);
-				echo 'allDifficultyTiles.push('.$jsRankName.');';
-				echo 'tileDifficultyBool.push(false);';
 				echo '$("#tile-difficulty'.$index.'").click(function(e){ toggleRank('.$index.', '.$jsRankName.', e); });';
 			}
 
@@ -310,12 +299,6 @@ use App\Utility\TsumegoFilters;
 				echo 'activeTopicTiles.push('.$jsSet.');';
 				echo 'handleTiles('.$jsSet.', "topics", true);';
 			}
-			foreach ($tsumegoFilters->ranks as $rank) {
-				$jsRank = json_encode($rank, $jsFlags);
-				echo 'filteredRanks.push('.$jsRank.');';
-				echo 'activeDifficultyTiles.push('.$jsRank.');';
-				echo 'handleTiles('.$jsRank.', "difficulty", true);';
-			}
 			foreach ($tsumegoFilters->tags as $tag) {
 				$jsTag = json_encode($tag, $jsFlags);
 				echo 'filteredTags.push('.$jsTag.');';
@@ -326,8 +309,9 @@ use App\Utility\TsumegoFilters;
 		$(document).ready(function(){
 			setCookie("query", query);
 			$("#tile-topics-select-all").html(selectAllTopics ? "Unselect all" : "Select all");
-			$("#tile-difficulty-select-all").html(selectAllDifficulty ? "Unselect all" : "Select all");
 			$("#tile-tags-select-all").html(selectAllTags ? "Unselect all" : "Select all");
+			initRankFilter();
+			colorRankSelects();
 			drawActiveCollections();
 			drawActiveTiles(true);
 		});
@@ -336,8 +320,6 @@ use App\Utility\TsumegoFilters;
 			if(select){
 				if(query === "topics"){
 					color = "var(--color-tile-green)";
-				}else if(query === "difficulty"){
-					color = "var(--color-tile-purple)";
 				}else if(query === "tags"){
 					color = "var(--color-tile-brown)";
 				}
@@ -349,12 +331,6 @@ use App\Utility\TsumegoFilters;
 						position = i;
 				$("#tile-"+query+position).css("background", color);
 				tileTopicsBool[position] = select;
-			}else if(query === "difficulty"){
-				for(let i=0;i<allDifficultyTiles.length;i++)
-					if(name === allDifficultyTiles[i])
-						position = i;
-				$("#tile-"+query+position).toggleClass("is-selected", select);
-				tileDifficultyBool[position] = select;
 			}else if(query === "tags"){
 				for(let i=0;i<allTagTiles.length;i++)
 					if(name === allTagTiles[i])
@@ -392,35 +368,6 @@ use App\Utility\TsumegoFilters;
 							tileTopicsBool[i] = true;
 					for(let i=0;i<activeTopicIds.length;i++)
 						$(".topic-box"+activeTopicIds[i]).fadeIn(250);
-				}
-			<?php }else if ($tsumegoFilters->query == 'difficulty') { ?>
-				if(activeDifficultyIds.length<1){
-					for(let i=0;i<allDifficultyIds.length;i++)
-						$(".difficulty-box"+allDifficultyIds[i]).css("display", "grid");
-				}else{
-					for(let i=0;i<allDifficultyIds.length;i++)
-						if(!activeDifficultyIds.includes(allDifficultyIds[i]))
-							$(".difficulty-box"+allDifficultyIds[i]).css("display", "none");
-					let pos = [];
-					let posX = [];
-					for(let i=0;i<activeDifficultyIds.length;i++){
-						for(let j=0;j<allDifficultyIds.length;j++){
-							if(activeDifficultyIds[i] === allDifficultyIds[j] && !posX.includes(allDifficultyIds[j])){
-								posX.push(allDifficultyIds[j]);
-								pos.push(j);
-							}
-						}
-					}
-					let posXX = [];
-					for(let i=0;i<pos.length;i++)
-						posXX.push(allDifficultyNames[pos[i]]);
-					for(let i=0;i<tileDifficultyBool.length;i++)
-					tileDifficultyBool[i] = false;
-					for(let i=0;i<allDifficultyTiles.length;i++)
-						if(posXX.includes(allDifficultyTiles[i]))
-							tileDifficultyBool[i] = true;
-					for(let i=0;i<activeDifficultyIds.length;i++)
-						$(".difficulty-box"+activeDifficultyIds[i]).fadeIn(250);
 				}
 			<?php }else if ( $tsumegoFilters->query == 'tags'){ ?>
 				if(activeTagIds.length<1){
@@ -462,10 +409,7 @@ use App\Utility\TsumegoFilters;
 					initialTopicTiles.push(activeTopicTiles[i]);
 					initialDrawCounter++;
 				}
-				for(let i=0;i<activeDifficultyTiles.length;i++){
-					initialDifficultyTiles.push(activeDifficultyTiles[i]);
-					initialDrawCounter++;
-				}
+				initialDrawCounter += rankChips().length;
 				for(let i=0;i<activeTagTiles.length;i++){
 					initialTagTiles.push(activeTagTiles[i]);
 					initialDrawCounter++;
@@ -479,13 +423,12 @@ use App\Utility\TsumegoFilters;
 				if(query == "topics" || initialTile)
 					$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--green" id="active-tiles-element'+i+'" onclick="removeActiveTopic('+i+')">'+activeTopicTiles[i]+'</div>');
 			}
-			for(let i=0;i<activeDifficultyTiles.length;i++){
-				let initialTile = false;
-				for(let j=0;j<initialDifficultyTiles.length;j++)
-					if(activeDifficultyTiles[i] === initialDifficultyTiles[j])
-						initialTile = true;
-				if(query == "difficulty" || initialTile)
-					$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--difficulty" style="--rank-color:var(--rank-'+activeDifficultyTiles[i]+')" id="active-tiles-element'+i+'" onclick="removeActiveDifficulty('+i+')">'+activeDifficultyTiles[i]+'</div>');
+			if(query == "difficulty" || initialDraw){
+				for(let i=0;i<activeRankTiles.length;i++)
+					if(!rankInRange(activeRankTiles[i]))
+						$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--difficulty" style="--rank-color:var(--rank-'+activeRankTiles[i]+')" id="active-tiles-rank'+i+'" onclick="removeRankTile('+i+')">'+activeRankTiles[i]+'</div>');
+				if(activeRankRange)
+					$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--purple" id="active-tiles-difficulty" onclick="clearRankRange()">'+rangeLabel(activeRankRange)+'</div>');
 			}
 			for(let i=0;i<activeTagTiles.length;i++){
 				let initialTile = false;
@@ -496,10 +439,9 @@ use App\Utility\TsumegoFilters;
 					$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--brown" id="active-tiles-element'+i+'" onclick="removeActiveTag('+i+')">'+activeTagTiles[i]+'</div>');
 			}
 			setCookie("filtered_sets", activeTopicTiles.length == 0 ? 'clear' : activeTopicTiles.join('@'));
-			setCookie("filtered_ranks", activeDifficultyTiles.length == 0 ? 'clear' : activeDifficultyTiles.join("@"));
 			setCookie("filtered_tags", activeTagTiles.length == 0 ? 'clear' : activeTagTiles.join('@'));
 			if(query=="topics" && activeTopicTiles.length > 0
-			|| query=="difficulty" && activeDifficultyTiles.length > 0
+			|| query=="difficulty" && (activeRankRange !== null || activeRankTiles.length > 0)
 			|| query=="tags" && activeTagTiles.length > 0
 			|| initialDraw && initialDrawCounter>0)
 				$(".active-tiles-container").append('<a class="dropdown__tile dropdown__tile--muted" href="" id="unselect-active-tiles">clear</a>');
@@ -543,33 +485,140 @@ use App\Utility\TsumegoFilters;
 				window.location.href = "/sets";
 		}
 
-		function removeActiveDifficulty(index){
-			let removeMap = 0;
-			for(let i=0;i<allDifficultyTiles.length;i++){
-				if(allDifficultyTiles[i] === activeDifficultyTiles[index])
-					removeMap = i;
-			}
-			for(let i=0;i<allDifficultyNames.length;i++){
-				if(allDifficultyNames[i] === allDifficultyTiles[removeMap]){
-					unselectDifficulty(allDifficultyIds[i]);
-					break;
-				}
-			}
-			for(let i=0;i<allDifficultyTiles.length;i++){
-				if(allDifficultyTiles[i] === activeDifficultyTiles[index])
-					$("#tile-difficulty"+i).toggleClass("is-selected", false);
-			}
-			let newTiles = [];
-			for(let i=0;i<activeDifficultyTiles.length;i++){
-				if(i !== index)
-					newTiles.push(activeDifficultyTiles[i]);
-			}
-			activeDifficultyTiles = newTiles;
+		function clearRankRange(){
+			activeRankRange = null;
+			$("#difficulty-from").val("");
+			$("#difficulty-to").val("");
+			setCookie("filtered_ranks", selectedRankCookieValue());
+			window.location.href = "/sets";
+		}
 
-			drawActiveCollections();
+		function initRankFilter(){
+			for(let i=0;i<serverRankLabels.length;i++){
+				let label = serverRankLabels[i];
+				if(label.includes("-")){
+					if(activeRankRange === null){
+						let parts = label.split("-");
+						activeRankRange = { from: parts[0], to: parts[1] };
+					}
+				}else
+					activeRankTiles.push(label);
+			}
+			activeRankTiles.sort(function(a, b){ return allRanks.indexOf(a) - allRanks.indexOf(b); });
+			paintRankTiles();
+		}
+
+		function rankInRange(rank){
+			if(!activeRankRange)
+				return false;
+			let rangeFrom = allRanks.indexOf(activeRankRange.from);
+			let rangeTo = allRanks.indexOf(activeRankRange.to);
+			if(rangeFrom > rangeTo){
+				let swap = rangeFrom;
+				rangeFrom = rangeTo;
+				rangeTo = swap;
+			}
+			let index = allRanks.indexOf(rank);
+			return index >= rangeFrom && index <= rangeTo;
+		}
+
+		function rankChips(){
+			let chips = [];
+			for(let i=0;i<activeRankTiles.length;i++)
+				if(!rankInRange(activeRankTiles[i]))
+					chips.push(activeRankTiles[i]);
+			if(activeRankRange)
+				chips.push(rangeLabel(activeRankRange));
+			chips.sort(function(a, b){ return allRanks.indexOf(a.split("-")[0]) - allRanks.indexOf(b.split("-")[0]); });
+			return chips;
+		}
+
+		function paintRankTiles(){
+			for(let i=0;i<allRanks.length;i++){
+				let selected = activeRankTiles.indexOf(allRanks[i]) !== -1 || rankInRange(allRanks[i]);
+				$("#tile-difficulty"+i).toggleClass("is-selected", selected);
+			}
+			updateRangeScale();
+		}
+
+		function updateRangeScale(){
+			let fill = document.getElementById("difficulty-range-fill");
+			if(!fill)
+				return;
+			let range = activeRankRange;
+			if(!range && activeRankTiles.length === 1)
+				range = { from: activeRankTiles[0], to: activeRankTiles[0] };
+			if(!range){
+				fill.style.clipPath = "inset(0 100% 0 0)";
+				return;
+			}
+			let from = allRanks.indexOf(range.from);
+			let to = allRanks.indexOf(range.to);
+			if(from > to){
+				let swap = from;
+				from = to;
+				to = swap;
+			}
+			let left = from / allRanks.length * 100;
+			let right = (to + 1) / allRanks.length * 100;
+			fill.style.clipPath = "inset(0 " + (100 - right) + "% 0 " + left + "%)";
+		}
+
+		function syncRangeSelects(){
+			if(activeRankRange)
+				return;
+			if(activeRankTiles.length === 1){
+				$("#difficulty-from").val(activeRankTiles[0]);
+				$("#difficulty-to").val(activeRankTiles[0]);
+			}else{
+				$("#difficulty-from").val("");
+				$("#difficulty-to").val("");
+			}
+			colorRankSelects();
+		}
+
+		function colorRankSelects(){
+			["difficulty-from", "difficulty-to"].forEach(function(id){
+				let select = document.getElementById(id);
+				let rank = select.value;
+				select.style.color = rank ? "var(--rank-" + rank + ")" : "";
+			});
+		}
+
+		function toggleRank(index, name, e){
+			e.stopPropagation();
+			if(rankInRange(name)){
+				// A range is one filter of its own; picking one of its ranks switches
+				// back to separate ranks so the pick is visible.
+				activeRankRange = null;
+				$("#difficulty-from").val("");
+				$("#difficulty-to").val("");
+				activeRankTiles = activeRankTiles.filter(function(rank){ return rank !== name; });
+			}
+			let position = activeRankTiles.indexOf(name);
+			if(position === -1)
+				activeRankTiles.push(name);
+			else
+				activeRankTiles.splice(position, 1);
+			activeRankTiles.sort(function(a, b){ return allRanks.indexOf(a) - allRanks.indexOf(b); });
+			syncRangeSelects();
+			paintRankTiles();
 			drawActiveTiles();
-			if(query !== "difficulty" || queryRefresh)
-				window.location.href = "/sets";
+		}
+
+		function rangeLabel(range){
+			return range.from === range.to ? range.from : range.from + "-" + range.to;
+		}
+
+		function selectedRankCookieValue(){
+			let chips = rankChips();
+			return chips.length === 0 ? "clear" : chips.join("@");
+		}
+
+		function removeRankTile(index){
+			activeRankTiles.splice(index, 1);
+			setCookie("filtered_ranks", selectedRankCookieValue());
+			window.location.href = "/sets";
 		}
 
 		function removeActiveTag(index){
@@ -609,15 +658,6 @@ use App\Utility\TsumegoFilters;
 				}
 			}
 			activeTopicIds = newActiveIds;
-		}
-		function unselectDifficulty(id){
-			let newActiveIds = [];
-			for(let i=0;i<activeDifficultyIds.length;i++){
-				if(activeDifficultyIds[i] !== id){
-					newActiveIds.push(activeDifficultyIds[i]);
-				}
-			}
-			activeDifficultyIds = newActiveIds;
 		}
 		function unselectTag(id){
 			let newActiveIds = [];
@@ -718,9 +758,171 @@ use App\Utility\TsumegoFilters;
 			window.location.href = "/sets";
 		});
 		$("#tile-difficulty-submit").click(function(e){
+			e.preventDefault();
 			setCookie("query", "difficulty");
+			setCookie("filtered_ranks", selectedRankCookieValue());
 			window.location.href = "/sets";
 		});
+		$("#tile-difficulty-reset").click(function(e){
+			e.stopPropagation();
+			activeRankTiles = [];
+			activeRankRange = null;
+			$("#difficulty-from").val("");
+			$("#difficulty-to").val("");
+			paintRankTiles();
+			drawActiveTiles();
+			setCookie("filtered_ranks", "clear");
+			window.location.href = "/sets";
+		});
+		$("#difficulty-from, #difficulty-to").change(function(e){
+			e.stopPropagation();
+			let from = $("#difficulty-from").val();
+			let to = $("#difficulty-to").val();
+			activeRankRange = null;
+			if(from || to){
+				let fromIndex = from ? allRanks.indexOf(from) : 0;
+				let toIndex = to ? allRanks.indexOf(to) : allRanks.length - 1;
+				if(fromIndex > toIndex){
+					let swap = fromIndex;
+					fromIndex = toIndex;
+					toIndex = swap;
+				}
+				activeRankRange = { from: allRanks[fromIndex], to: allRanks[toIndex] };
+			}
+			colorRankSelects();
+			paintRankTiles();
+			drawActiveTiles();
+		});
+
+		function rankIndexFromPointer(event){
+			let track = document.querySelector(".difficulty-range__scale-track");
+			let rect = track.getBoundingClientRect();
+			let ratio = (event.clientX - rect.left) / rect.width;
+			let index = Math.floor(ratio * allRanks.length);
+			return Math.max(0, Math.min(allRanks.length - 1, index));
+		}
+
+		function setRangeCaption(text){
+			$(".difficulty-range__caption").text(text);
+		}
+
+		function affectedSelectId(index){
+			if(!activeRankRange)
+				return "difficulty-to";
+			let from = allRanks.indexOf(activeRankRange.from);
+			let to = allRanks.indexOf(activeRankRange.to);
+			if(from > to){
+				let swap = from;
+				from = to;
+				to = swap;
+			}
+			if(index <= from)
+				return "difficulty-from";
+			if(index >= to)
+				return "difficulty-to";
+			return index - from <= to - index ? "difficulty-from" : "difficulty-to";
+		}
+
+		function previewRangeSelect(index){
+			restoreRangeSelects();
+			let select = document.getElementById(affectedSelectId(index));
+			select.value = allRanks[index];
+			select.style.color = "var(--rank-" + allRanks[index] + ")";
+		}
+
+		function restoreRangeSelects(){
+			if(activeRankRange){
+				$("#difficulty-from").val(activeRankRange.from === allRanks[0] ? "" : activeRankRange.from);
+				$("#difficulty-to").val(activeRankRange.to);
+				colorRankSelects();
+			}else
+				syncRangeSelects();
+		}
+
+		function applyRankRange(fromIndex, toIndex){
+			let from = Math.min(fromIndex, toIndex);
+			let to = Math.max(fromIndex, toIndex);
+			activeRankRange = { from: allRanks[from], to: allRanks[to] };
+			$("#difficulty-from").val(from === 0 ? "" : activeRankRange.from);
+			$("#difficulty-to").val(activeRankRange.to);
+			colorRankSelects();
+			paintRankTiles();
+			drawActiveTiles();
+		}
+
+		function applyNearestRangeEnd(index){
+			if(!activeRankRange){
+				// Nothing picked yet: clicking the scale means "everything up to here".
+				applyRankRange(0, index);
+				return;
+			}
+			let from = allRanks.indexOf(activeRankRange.from);
+			let to = allRanks.indexOf(activeRankRange.to);
+			if(from > to){
+				let swap = from;
+				from = to;
+				to = swap;
+			}
+			if(index <= from)
+				applyRankRange(index, to);
+			else if(index >= to)
+				applyRankRange(from, index);
+			else if(index - from <= to - index)
+				applyRankRange(index, to);
+			else
+				applyRankRange(from, index);
+		}
+
+		$("#difficulty-range-scale")
+			.on("pointerdown", function(e){
+				e.stopPropagation();
+				rankDragStart = rankIndexFromPointer(e);
+				rankDragMoved = false;
+				try {
+					this.setPointerCapture(e.pointerId);
+				} catch (error) {
+					// capture only keeps the drag alive outside the track
+				}
+			})
+			.on("pointermove", function(e){
+				let index = rankIndexFromPointer(e);
+				if(rankDragStart === null){
+					previewRangeSelect(index);
+					return;
+				}
+				if(index !== rankDragStart)
+					rankDragMoved = true;
+				if(rankDragMoved){
+					let from = Math.min(rankDragStart, index);
+					let to = Math.max(rankDragStart, index);
+					setRangeCaption(allRanks[from] + " - " + allRanks[to]);
+					applyRankRange(rankDragStart, index);
+				}
+			})
+			.on("pointerup", function(e){
+				e.stopPropagation();
+				if(rankDragStart === null)
+					return;
+				let start = rankDragStart;
+				let index = rankIndexFromPointer(e);
+				let moved = rankDragMoved;
+				rankDragStart = null;
+				rankDragMoved = false;
+				if(moved || start !== index)
+					applyRankRange(start, index);
+				else
+					applyNearestRangeEnd(start);
+				setRangeCaption("Add a range");
+			})
+			.on("pointerleave", function(){
+				if(rankDragStart === null)
+					restoreRangeSelects();
+			})
+			.on("pointercancel", function(){
+				rankDragStart = null;
+				rankDragMoved = false;
+				restoreRangeSelects();
+			});
 		$("#tile-tags-submit").click(function(e){
 			setCookie("query", "tags");
 			window.location.href = "/sets";
@@ -730,7 +932,6 @@ use App\Utility\TsumegoFilters;
 			return all.length > 0 && all.every(function(t){ return active.indexOf(t) !== -1; });
 		}
 		let selectAllTopics = isAllSelected(activeTopicTiles, allTopicTiles);
-		let selectAllDifficulty = isAllSelected(activeDifficultyTiles, allDifficultyTiles);
 		let selectAllTags = isAllSelected(activeTagTiles, allTagTiles);
 
 		$("#tile-topics-select-all").click(function(e){
@@ -753,29 +954,6 @@ use App\Utility\TsumegoFilters;
 					tileTopicsBool[i] = true;
 			}
 			selectAllTopics = !selectAllTopics;
-			drawActiveTiles();
-			drawActiveCollections();
-		});
-		$("#tile-difficulty-select-all").click(function(e){
-			e.stopPropagation();
-			if(selectAllDifficulty){
-				$("#tile-difficulty-select-all").html("Select all");
-				activeDifficultyTiles = [];
-				activeDifficultyIds = allDifficultyIds;
-				for(let i=0;i<allDifficultyTiles.length;i++)
-					$("#tile-difficulty"+i).toggleClass("is-selected", false);
-				for(let i=0;i<tileDifficultyBool.length;i++)
-					tileDifficultyBool[i] = false;
-			}else{
-				$("#tile-difficulty-select-all").html("Unselect all");
-				activeDifficultyTiles = allDifficultyTiles;
-				activeDifficultyIds = allDifficultyIds;
-				for(let i=0;i<allDifficultyTiles.length;i++)
-					$("#tile-difficulty"+i).toggleClass("is-selected", true);
-				for(let i=0;i<tileDifficultyBool.length;i++)
-					tileDifficultyBool[i] = true;
-			}
-			selectAllDifficulty = !selectAllDifficulty;
 			drawActiveTiles();
 			drawActiveCollections();
 		});

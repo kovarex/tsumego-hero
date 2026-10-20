@@ -79,7 +79,7 @@ if (!$noImage && $tsumegoFilters->query == 'topics' && $set['Set']['image'])
 elseif (!$noImage && $tsumegoFilters->query == 'difficulty')
 	echo '<td width="195px" class="valign-top"><div class="set-image-zoom set-image-zoom--rank" align="center">
 						<a href="/' . $startingSetConnectionID . '">
-						<span class="rank-icon rank-icon-large">' . h($set['Set']['id']) . '</span>
+						<span class="rank-icon rank-icon-large' . (str_contains($set['Set']['id'], '-') ? ' rank-icon-large--range' : '') . '">' . h($set['Set']['id']) . '</span>
 						</a></div></td>';
 else
 	echo '<td width="195px" class="valign-top"><div align="center"></div></td>';
@@ -246,6 +246,7 @@ if ($tsumegoFilters->query != 'topics')
 			<div class="active-tiles-container tiles-view">
 <?php
 $hasActiveTiles = false;
+$rankLabels = $tsumegoFilters->query != 'difficulty' ? $tsumegoFilters->rankFilterLabels() : [];
 if ($tsumegoFilters->query != 'topics')
 {
 	foreach ($tsumegoFilters->sets as $i => $setName)
@@ -256,10 +257,14 @@ if ($tsumegoFilters->query != 'topics')
 }
 if ($tsumegoFilters->query != 'difficulty')
 {
-	foreach ($tsumegoFilters->ranks as $i => $rank)
+	foreach ($rankLabels as $i => $rankLabel)
 	{
 		$hasActiveTiles = true;
-		echo '<div class="dropdown__tile dropdown__tile--difficulty dropdown__tile--context" style="--rank-color:var(--rank-' . h($rank) . ')" id="active-rank-element' . $i . '" onclick="removeActiveDifficulty(' . $i . ')">' . h($rank) . '</div>';
+		$isRange = str_contains($rankLabel, '-');
+		echo '<div class="dropdown__tile ' . ($isRange ? 'dropdown__tile--purple' : 'dropdown__tile--difficulty')
+			. ' dropdown__tile--context"'
+			. ($isRange ? '' : ' style="--rank-color:var(--rank-' . h($rankLabel) . ')"')
+			. ' id="active-rank-element' . $i . '" onclick="removeActiveDifficulty(' . $i . ')">' . h($rankLabel) . '</div>';
 	}
 }
 if ($tsumegoFilters->query != 'tags')
@@ -312,7 +317,7 @@ if ($totalPages > 1):
 
 	<script>
 	const activeSets = <?php echo json_encode($tsumegoFilters->query != 'topics' ? array_values($tsumegoFilters->sets) : [], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
-	const activeRanks = <?php echo json_encode($tsumegoFilters->query != 'difficulty' ? array_values($tsumegoFilters->ranks) : [], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
+	const activeRanks = <?php echo json_encode($rankLabels, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 	const activeTags = <?php echo json_encode($tsumegoFilters->query != 'tags' ? array_values($tsumegoFilters->tags) : [], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 
 	$(".active-tiles-container").on("click", "#unselect-active-tiles", function(e){

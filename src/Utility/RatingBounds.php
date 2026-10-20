@@ -56,6 +56,24 @@ class RatingBounds
 		return $result;
 	}
 
+	/**
+	 * Bounds of a single rank or of a range label such as "20k-16k".
+	 * Inputs that are not a range fall through to coverRank, which throws
+	 * RatingParseException for invalid ranks.
+	 */
+	public static function coverRankSpec(string $spec, ?string $minimalRank = null): RatingBounds
+	{
+		$range = Rating::parseReadableRankRange($spec);
+		if ($range === null)
+			return self::coverRank($spec, $minimalRank);
+		[$weakest, $strongest] = $range;
+		$result = new RatingBounds();
+		if ($weakest != $minimalRank)
+			$result->min = Rating::getRankMinimalRatingFromReadableRank($weakest);
+		$result->max = Rating::getRankMinimalRating(Rating::getRankFromReadableRank($strongest) + 1);
+		return $result;
+	}
+
 	public ?float $min = null;
 	public ?float $max = null;
 }
