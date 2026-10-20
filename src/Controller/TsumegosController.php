@@ -39,7 +39,8 @@ class TsumegosController extends AppController
 			tsumegoID: (int) $data['tsumego_id'],
 			outcome: $outcome,
 			seconds: (float) ($data['seconds'] ?? 0),
-			setConnectionID: isset($data['set_connection_id']) ? (int) $data['set_connection_id'] : null
+			setConnectionID: isset($data['set_connection_id']) ? (int) $data['set_connection_id'] : null,
+			pageMode: isset($data['mode']) ? (int) $data['mode'] : null
 		);
 
 		// Keep the response as pure data; the client renders the popup from the

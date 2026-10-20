@@ -148,4 +148,5 @@ class TsumegoButtonsQueryBuilder
 		$this->query->conditions[] = "`schedule`.date = '" . $date . "'";
 		$this->query->conditions[] = '`schedule`.published = 1';
 	}
+
 }

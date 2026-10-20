@@ -7,6 +7,7 @@ use App\Utility\Constants;
 use App\Utility\CookieFlash;
 use App\Utility\GoogleTokenVerifier;
 use App\Utility\GoogleTokenVerifierInterface;
+use App\Utility\MistakeTraining;
 use App\Utility\SGFProposalsRenderer;
 use App\Utility\TagConnectionProposalsRenderer;
 use App\Utility\TagProposalsRenderer;
@@ -1056,6 +1057,9 @@ ORDER BY category DESC', [$user['User']['id']]));
 			$user['User']['display_name'] = $user['User']['deleted_name'] . ' ' . User::DELETED_NAME;
 
 		$aCount = $this->Achievement->find('all');
+
+		// The section of the training shows only for a player who trained.
+		$this->set('mistakeTraining', MistakeTraining::profile((int) $user['User']['id'], MistakeTraining::profileStart()));
 
 		$this->set('dailyResults', $dailyResults);
 		$this->set('user', $user);

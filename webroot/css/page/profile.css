@@ -190,6 +190,185 @@
 	color: var(--color-blue);
 }
 
+/* ── Mistake training ── */
+.training-overview
+{
+	margin: 0 4px 16px;
+	border: 3px solid var(--color-green);
+	box-sizing: border-box;
+	padding: 12px 16px;
+	min-width: 0;
+	color: var(--text-color);
+}
+
+.training-overview__title
+{
+	margin: 0 0 10px;
+	font-size: 14px;
+	font-weight: 800;
+	color: var(--color-green-dark);
+}
+
+[data-theme="dark"] .training-overview__title
+{
+	color: var(--color-green);
+}
+
+.training-overview__stats
+{
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--space-2) var(--space-5);
+	margin-bottom: var(--space-3);
+}
+
+.training-overview__stat
+{
+	display: flex;
+	flex-direction: column;
+}
+
+.training-overview__value
+{
+	font-size: var(--font-size-lg);
+	font-weight: var(--font-weight-bold);
+}
+
+.training-overview__label
+{
+	font-size: var(--font-size-sm);
+	color: var(--text-softer-color);
+}
+
+.training-overview__rungs
+{
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--space-2);
+	margin: 0 0 var(--space-3);
+	padding: 0;
+	list-style: none;
+}
+
+.training-overview__rung
+{
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 2px;
+	min-width: 34px;
+}
+
+.training-overview__insignia
+{
+	display: flex;
+	padding: 2px 5px;
+	border-radius: var(--radius-full);
+	background-color: var(--status-v-color);
+	color: var(--color-white);
+}
+
+.training-overview__insignia--star
+{
+	background-color: var(--status-c-color);
+}
+
+.training-overview__insignia--graduated
+{
+	background-color: var(--status-g-color);
+}
+
+.training-overview__insignia svg
+{
+	display: block;
+}
+
+.training-overview__count
+{
+	font-size: var(--font-size-md);
+	font-weight: var(--font-weight-bold);
+}
+
+/* The calendar scrolls in its own box on a narrow screen, never the page */
+.training-calendar
+{
+	max-width: 100%;
+	overflow-x: auto;
+	padding-bottom: 4px;
+}
+
+.training-calendar__grid
+{
+	display: grid;
+	grid-template-columns: auto repeat(var(--weeks), 11px);
+	grid-template-rows: auto repeat(7, 11px);
+	gap: 3px;
+	width: max-content;
+}
+
+.training-calendar__month,
+.training-calendar__weekday
+{
+	font-size: 10px;
+	line-height: 11px;
+	color: var(--text-softer-color);
+	white-space: nowrap;
+}
+
+.training-calendar__month
+{
+	grid-row: 1;
+}
+
+.training-calendar__weekday
+{
+	grid-column: 1;
+	padding-right: 4px;
+}
+
+.training-calendar__day
+{
+	display: block;
+	width: 11px;
+	height: 11px;
+	border-radius: 2px;
+	background-color: var(--training-day-empty);
+}
+
+.training-calendar__day--trained
+{
+	background-color: var(--training-day-trained);
+}
+
+.training-calendar__day--cleared
+{
+	background-color: var(--training-day-cleared);
+}
+
+/* A missed day keeps its fill and gets an edge, so a day tried and not cleared
+   still shows it was trained */
+.training-calendar__day--missed
+{
+	box-shadow: inset 0 0 0 1.5px var(--training-day-missed);
+}
+
+.training-calendar__legend
+{
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--space-1) var(--space-4);
+	margin-top: var(--space-2);
+	font-size: var(--font-size-sm);
+	color: var(--text-softer-color);
+}
+
+.training-calendar__key
+{
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-1);
+}
+
 /* Dark overrides */
 [data-theme="dark"] .h1profile h1,
 [data-theme="dark"] .profileTable2 a {

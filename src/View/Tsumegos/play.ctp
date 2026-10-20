@@ -3,6 +3,7 @@
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\HeroPowers;
+use App\Utility\MistakeTraining;
 use App\Utility\PlayOutcome;
 use App\Utility\Rating;
 use App\Utility\TimeMode;
@@ -40,6 +41,7 @@ use App\Utility\ViteManifest;
  * @var bool $isSemeai
  * @var string $lightDark
  * @var int $maxHealth
+ * @var bool $mistakeTrainingReplay Set by the training route: the problem was solved today already
  * @var int $multipleChoiceSquares
  * @var int $multipleChoiceTriangles
  * @var string $nextLink
@@ -115,12 +117,16 @@ use App\Utility\ViteManifest;
 	// Whether the problem is solved for the current mode. In time mode every
 	// problem is presented fresh, so this stays false until it is solved.
 	$solved = TsumegoUtil::isSolvedForCurrentMode($t);
+	// Reset opens the problem again on the route it is played from, so a retry in the
+	// training stays in the training
+	$resetLink = (Auth::isInMistakeTrainingMode() ? MistakeTraining::$PLAY_LINK_PREFIX : '/') . (int) $setConnection['SetConnection']['id'];
 	if ($nothingInRange != false)
 		echo '<div align="center" class="status-message">'.$nothingInRange.'</div>';
 	?>
 	<table width="100%" border="0" class="play-header-table">
 	<tr>
 	<td align="center" width="29%">
+		<?php if (!Auth::isInMistakeTrainingMode()): ?>
 		<div id="health">
 			<?php
 			if (Auth::isLoggedIn())
@@ -131,6 +137,7 @@ use App\Utility\ViteManifest;
 			}
 			?>
 		</div>
+		<?php endif; ?>
 	</td>
 	<td align="center" width="42%">
 	<table>
@@ -149,6 +156,8 @@ use App\Utility\ViteManifest;
 			echo '<div id="titleDescription" class="titleDescription1">';
 		elseif (Auth::isInRatingMode()|| Auth::isInTimeMode())
 			echo '<div id="titleDescription" class="titleDescription2">';
+		else
+			echo '<div id="titleDescription" class="titleDescription1">';
 		echo '<a id="descriptionText">'.h($displayDescription).'</a> ';
 		if (isset($t['Tsumego']['hint']) && $t['Tsumego']['hint']!='')
 			echo '<span class="hint italic">('.h($t['Tsumego']['hint']).')</span>';
@@ -215,11 +224,17 @@ use App\Utility\ViteManifest;
 	</table>
 	</td>
 	<td align="center" width="29%">
-		<?php HeroPowers::render(); ?>
+		<?php if (!Auth::isInMistakeTrainingMode()) HeroPowers::render(); ?>
 	</td>
 	</tr>
 	</table>
-	<?php $tsumegoXPAndRating->render(); ?>
+	<?php if (Auth::isInMistakeTrainingMode() && !empty($mistakeTrainingReplay)): ?>
+		<div class="alert alert-info mistake-training-replay" role="status">Already solved today. This try does not count.</div>
+	<?php endif; ?>
+	<?php // The XP of the training shows under "Correct!", so its column stays empty, but the rank of the problem shows as in the level mode ?>
+	<div<?php echo Auth::isInMistakeTrainingMode() ? ' class="play-status--training"' : ''; ?>>
+		<?php $tsumegoXPAndRating->render(); ?>
+	</div>
 	<div align="center">
 		<div id="theComment"></div>
 	</div>
@@ -230,7 +245,7 @@ use App\Utility\ViteManifest;
 	<?php if(!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0 || ($tv!=null && $tv['TsumegoVariant']['type']=='multiple_choice')){ ?>
 	<div align="center">
 	<br>
-		<a href="/<?php echo $setConnection['SetConnection']['id']; ?>" title="reset problem" id="besogo-next-button">Reset</a>
+		<a href="<?php echo $resetLink; ?>" title="reset problem" id="besogo-next-button">Reset</a>
 		<br><br>
 	</div>
 	<?php }else if($tv!=null && $tv['TsumegoVariant']['type'] == 'score_estimating'){ ?>
@@ -243,7 +258,7 @@ use App\Utility\ViteManifest;
 			<?php } ?>
 			<a id="submitScoreEstimatingWhiteWins" href="#"><?php echo $swapColors ? 'Black wins' : 'White wins'; ?></a>
 		<?php }else{ ?>
-			<a href="/<?php echo $setConnection['SetConnection']['id']; ?>" title="reset problem" id="besogo-next-button">Reset</a>
+			<a href="<?php echo $resetLink; ?>" title="reset problem" id="besogo-next-button">Reset</a>
 			<input value="0" placeholder="Score" type="text" id="ScoreEstimatingSE">
 			<a id="submitScoreEstimatingSE" href="#">Submit</a>
 		<?php } ?>
@@ -636,7 +651,8 @@ use App\Utility\ViteManifest;
 	var freePlayMode = false;
 	var reviewEnabled = false;
 	var theComment = "";
-	var mode = <?php echo Auth::getWithDefault('mode', 1); ?>;
+	// The effective mode the server plays by, so the board cannot disagree with it.
+	var mode = <?php echo Auth::getMode(); ?>;
 	var timeModeEnabled = true;
 	var authorProblem = false;
 	var tsumegoID = <?php echo $t['Tsumego']['id'] ?>;
@@ -648,6 +664,8 @@ use App\Utility\ViteManifest;
 	var userXP = <?php echo Auth::getWithDefault('xp', 0); ?>;
 	var previousButtonLink = "<?php echo $previousLink; ?>";
 	var nextButtonLink = "<?php echo $nextLink; ?>";
+	// A training try ends at the first mistake, Reset opens the problem again for the next one
+	var resetButtonLink = "<?php echo $resetLink; ?>";
 	var noSkipNextButtonLink = "<?php echo $noSkipNextLink; ?>";
 	var timeModeTimer = (mode == 3 ? new TimeModeTimer(<?php echo $timeMode->secondsToSolve; ?>) : null);
 	var setID = <?php echo $set['Set']['id'] ?>;
@@ -692,9 +710,61 @@ use App\Utility\ViteManifest;
 		current.parentElement.parentElement.className = 'problem-nav__item problem-nav__item--' + status + ' problem-nav__item--current';
 	}
 
+	// The mistake training button of the open problem as the server stored its result:
+	// the colour, the rung badge and the tooltip that explains them
+	function updateMistakeTrainingButton(button, xp)
+	{
+		let current = document.getElementById("currentNavigationButton");
+		if (!current)
+			return;
+		updateCurrentNavigationButton(button.status);
+		let link = current.parentElement;
+		let badge = link.querySelector(".problem-nav__rung");
+		if (badge)
+			badge.outerHTML = button.badge;
+		let label = link.querySelector(".tooltip-label");
+		label.className = "tooltip-label status" + button.status;
+		label.textContent = button.label;
+		link.querySelector(".tooltip-desc").textContent = button.description;
+
+		// A solve says under "Correct!" what it did to the problem: its next review, or its graduation
+		let status = document.getElementById("status");
+		status.querySelectorAll(".mistake-training-outcome").forEach(old => old.remove());
+		let outcome;
+		if (button.status === 'S' && problemSolved)
+		{
+			outcome = document.createElement("p");
+			outcome.className = "mistake-training-outcome";
+			let earned = xp ? xp.review + xp.graduation : 0;
+			outcome.textContent = (earned > 0 ? "+" + earned + " XP \u00b7 " : "") + button.description;
+			status.appendChild(outcome);
+			if (xp && xp.clear > 0)
+			{
+				let clear = document.createElement("p");
+				clear.className = "mistake-training-outcome mistake-training-outcome--clear";
+				clear.textContent = "All clear today: +" + xp.clear + " XP";
+				outcome.after(clear);
+			}
+
+			// The last problem of the day is solved, so Next leads to the end of the training
+			if (!nextButtonLink)
+			{
+				nextButtonLink = <?php echo json_encode(MistakeTraining::$QUEUE_LINK); ?>;
+				let next = document.getElementById("besogo-next-button-inactive");
+				if (next)
+				{
+					next.id = "besogo-next-button";
+					next.href = nextButtonLink;
+					next.title = "next problem";
+				}
+			}
+		}
+	}
+
 	<?php
 		$tsumegoXPAndRating->renderJavascript();
-		HeroPowers::renderJavascript();
+		if (!Auth::isInMistakeTrainingMode())
+			HeroPowers::renderJavascript();
 	?>
 	$("#showFilters").click(function(){
 		if(!msgFilterSelected){
@@ -1021,7 +1091,7 @@ use App\Utility\ViteManifest;
 
 	echo 'var goldenTsumego = '.Util::boolString($goldenTsumego).';';
 
-	if ($t['Tsumego']['status'] == 'F' || $t['Tsumego']['status'] == 'X') {
+	if (!Auth::isInMistakeTrainingMode() && ($t['Tsumego']['status'] == 'F' || $t['Tsumego']['status'] == 'X')) {
 		echo 'var locked=true; tryAgainTomorrow = true;';
 		echo 'toggleBoardLock(true);';
 	} else echo 'var locked=false;';
@@ -1049,7 +1119,7 @@ use App\Utility\ViteManifest;
 			echo 'notMode3 = false;';
 	?>
 	<?php
-		if (!Auth::isInTimeMode() && ($t['Tsumego']['status'] == 'F' || $t['Tsumego']['status'] == 'X')){
+		if (!Auth::isInTimeMode() && !Auth::isInMistakeTrainingMode() && ($t['Tsumego']['status'] == 'F' || $t['Tsumego']['status'] == 'X')){
 		echo '
 				document.getElementById("status").innerHTML = \'<b class="message--locked">This problem is locked until \' + heartResetTime + \'</b>\';
 				tryAgainTomorrow = true;
@@ -1085,7 +1155,7 @@ use App\Utility\ViteManifest;
 	?>
 
 		$('.besogo-board').click(function(e){
-			if(locked)
+			if(locked && nextButtonLink)
 				window.location = nextButtonLink;
 	});
 
@@ -1391,9 +1461,10 @@ use App\Utility\ViteManifest;
 				var activeElement = document.activeElement;
 				var isTextInput = activeElement && (activeElement.tagName === 'TEXTAREA' || (activeElement.tagName === 'INPUT' && activeElement.type === 'text'));
 				if (!isTextInput) {
-					if(keycode == '37') {
+					// an empty link is a training edge with nowhere to go
+					if(keycode == '37' && previousButtonLink) {
 						window.location.href = previousButtonLink;
-					}else if(keycode == '39'){
+					}else if(keycode == '39' && nextButtonLink){
 						window.location.href =  nextButtonLink;
 					}
 				}
@@ -1514,7 +1585,8 @@ use App\Utility\ViteManifest;
 	{
 		if (besogoNoLogin)
 			return;
-		if (typeof accountWidget !== 'undefined' && accountWidget)
+		// xpStatus is not rendered in mistake training, the widget has nothing to animate there
+		if (typeof accountWidget !== 'undefined' && accountWidget && typeof xpStatus !== 'undefined')
 			accountWidget.animate(outcome === playOutcome.solvedClean || outcome === playOutcome.solvedAfterMistake);
 		let data = {
 			tsumego_id: tsumegoID,
@@ -1522,6 +1594,8 @@ use App\Utility\ViteManifest;
 			set_connection_id: <?php echo (int) $setConnection['SetConnection']['id']; ?>,
 			seconds: Math.max(elapsedSeconds() - bonusSeconds, timeToFirstClick || 0, 0.01),
 			outcome: outcome,
+			// another tab may have switched the stored mode since this page was opened
+			mode: mode,
 		};
 
 		window._submitResultPromise = fetch('/tsumegos/result', {
@@ -1551,6 +1625,9 @@ use App\Utility\ViteManifest;
 			if (result.achievement_updates && result.achievement_updates.length
 				&& typeof showAchievementPopup === 'function')
 					result.achievement_updates.forEach(showAchievementPopup);
+			// The training row says what today did with the problem, which this result changed
+			if (result.mistake_training_button)
+				updateMistakeTrainingButton(result.mistake_training_button, result.mistake_training_xp);
 		}).catch(err => {
 			console.error('submitResult failed:', err);
 		});
@@ -1626,6 +1703,12 @@ use App\Utility\ViteManifest;
 					$("#time-mode-countdown").css("color","var(--feedback-error)");
 					toggleBoardLock(true);
 				}
+				if (mode==<?php echo Constants::$MISTAKE_TRAINING_MODE; ?>)
+				{
+					// The board locks, but the problem stays in today's training until it is solved
+					toggleBoardLock(true);
+					document.getElementById("status").innerHTML = '<h2>Incorrect!</h2><p class="mistake-training-note">Press Reset to try again.</p>';
+				}
 				noLastMark = true;
 				if (!noXP)
 				{
@@ -1648,7 +1731,8 @@ use App\Utility\ViteManifest;
 							if (resetBtn) { resetBtn.id = "besogo-reset-button-inactive"; }
 						}
 					}
-					if (goldenTsumego)
+					// leaving for the plain problem page would drop the player out of the training
+					if (goldenTsumego && mode != <?php echo Constants::$MISTAKE_TRAINING_MODE; ?>)
 					{
 						window.location.href = '/' + '<?php echo $setConnection['SetConnection']['id']; ?>';
 						return;

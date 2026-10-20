@@ -315,11 +315,12 @@ besogo.makeToolPanel = function (container, editor) {
           "besogo-pass-button"
         );
       }
-      if (mode == 1) {
-        let prevButtonId;
-        prevButtonId = "besogo-back-button";
-
-        makeHyperlinkText("Back","previous problem", previousButtonLink, prevButtonId);
+      if (mode == 1 || mode == 5) {
+        // The first problem of the training has nothing before it
+        if (previousButtonLink)
+          makeHyperlinkText("Back","previous problem", previousButtonLink, "besogo-back-button");
+        else
+          makeHyperlinkText("Back","no previous problem", 0, "besogo-back-button-inactive");
       } else if (mode == 2) {
         makeHyperlinkText(
           "History",
@@ -387,8 +388,26 @@ besogo.makeToolPanel = function (container, editor) {
 			  },
 			"besogo-reset-button"
 			);
-		makeHyperlinkText("Next", "next problem", nextButtonLink, "besogo-next-button");
-	}
+	  }
+	  else if (mode == 5)
+	  {
+		// A training try ends at the first mistake. Reset opens the problem again, so
+		// the next try is a fresh one and the server counts it as such.
+		makeButtonText(
+		  "Reset",
+		  "try the problem again",
+		  function () { window.location.href = resetButtonLink; },
+		  "besogo-reset-button"
+		);
+	  }
+	  if (mode == 1 || mode == 2 || mode == 5)
+	  {
+		// The training has nowhere to go while its last problem is not solved
+		if (nextButtonLink)
+		  makeHyperlinkText("Next", "next problem", nextButtonLink, "besogo-next-button");
+		else
+		  makeHyperlinkText("Next", "solve this problem first", 0, "besogo-next-button-inactive");
+	  }
       let reviewButtonId;
       if (editor.getReviewEnabled()) reviewButtonId = "besogo-review-button";
       else reviewButtonId = "besogo-review-button-inactive";
