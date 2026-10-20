@@ -366,13 +366,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		// Handle image removal
 		if (!empty($this->request->data['Set']['remove_image']))
 		{
-			$oldImage = $set['Set']['image'];
-			if ($oldImage && str_starts_with($oldImage, 'sets/'))
-			{
-				$oldPath = WWW_ROOT . 'img' . DS . str_replace('/', DS, $oldImage);
-				if (file_exists($oldPath))
-					unlink($oldPath);
-			}
+			SetImage::remove($set['Set']['image']);
 			$this->Set->id = (int) $id;
 			$this->Set->saveField('image', '');
 			$set['Set']['image'] = '';
@@ -390,34 +384,19 @@ ORDER BY sc.num ASC", [(int) $id]);
 				CookieFlash::set('The file is too large (max 2MB).', 'error');
 			else
 			{
-				$setId = (int) $id;
 				$oldImage = $set['Set']['image'];
 
 				try
 				{
 					$processed = SetImage::process($_FILES['image']['tmp_name'], $file_ext);
+					$filename = SetImage::store((int) $id, $processed);
 
-					// The cover lives in a directory the web server has to be able to
-					// write to, which deploy sets up. When it cannot write, the player
-					// has to hear about it instead of keeping a picture that is not there.
-					$setDir = WWW_ROOT . 'img' . DS . 'sets' . DS . $setId;
-					if (!is_dir($setDir) && !@mkdir($setDir, 0775, true) && !is_dir($setDir))
-						throw new Exception('The image could not be stored.');
+					// The name of a cover carries the hash of its picture, so an upload is a
+					// new file and the cover it replaces is removed here.
+					if ($oldImage !== $filename)
+						SetImage::remove($oldImage);
 
-					$filename = 'sets/' . $setId . '/' . substr($processed['hash'], 0, 16) . '.webp';
-					$uploadPath = WWW_ROOT . 'img' . DS . str_replace('/', DS, $filename);
-					if (@file_put_contents($uploadPath, $processed['data']) === false)
-						throw new Exception('The image could not be stored.');
-
-					// Only delete user-uploaded images (inside sets/), never shared assets
-					if ($oldImage && str_starts_with($oldImage, 'sets/') && $oldImage !== $filename)
-					{
-						$oldPath = WWW_ROOT . 'img' . DS . str_replace('/', DS, $oldImage);
-						if (file_exists($oldPath))
-							unlink($oldPath);
-					}
-
-					$this->Set->id = $setId;
+					$this->Set->id = (int) $id;
 					$this->Set->saveField('image', $filename);
 					CookieFlash::set('Image uploaded', 'success');
 				}
@@ -481,16 +460,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$this->Authorization->authorize($s);
 
 		$this->Set->delete($setID);
-
-		// Remove the set's uploaded image folder
-		$setImageDir = WWW_ROOT . 'img' . DS . 'sets' . DS . $setID;
-		if (is_dir($setImageDir))
-		{
-			foreach (glob($setImageDir . DS . '*') ?: [] as $file)
-				if (is_file($file))
-					unlink($file);
-			@rmdir($setImageDir);
-		}
+		SetImage::removeFolder((int) $setID);
 
 		if (Auth::isAdmin())
 			$this->redirect('/sets/sandbox');
