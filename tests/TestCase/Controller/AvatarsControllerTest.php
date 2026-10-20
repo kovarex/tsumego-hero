@@ -135,8 +135,8 @@ class AvatarsControllerTest extends ControllerTestCase
 
 		$this->assertSame("\x89PNG\r\n\x1a\n", substr($result, 0, 8));
 		$this->assertEquals('image/png', $this->controller->response->type());
-		$this->assertSame(Avatar::PNG_SIZE, $size[0]);
-		$this->assertSame(Avatar::PNG_SIZE, $size[1]);
+		$this->assertSame(Avatar::SHARE_SIZE, $size[0]);
+		$this->assertSame(Avatar::SHARE_SIZE, $size[1]);
 	}
 
 	public function testThePngOfAKeyIsCachedForALongTime()

@@ -83,10 +83,10 @@ class OpenGraphSharingTest extends TestCaseWithAuth
 
 		$body = $this->testAction('users/view/' . $userId, ['return' => 'contents']);
 
-		$this->assertStringContainsString('/board/' . Avatar::key('DN_alice') . '.png"', $body);
+		$this->assertStringContainsString(Avatar::pngUrl('DN_alice') . '"', $body);
 		$this->assertStringContainsString('<meta property="og:image:type" content="image/png">', $body);
-		$this->assertStringContainsString('<meta property="og:image:width" content="' . Avatar::PNG_SIZE . '">', $body);
-		$this->assertStringContainsString('<meta property="og:image:height" content="' . Avatar::PNG_SIZE . '">', $body);
+		$this->assertStringContainsString('<meta property="og:image:width" content="' . Avatar::SHARE_SIZE . '">', $body);
+		$this->assertStringContainsString('<meta property="og:image:height" content="' . Avatar::SHARE_SIZE . '">', $body);
 		$this->assertStringNotContainsString('Tsumego-Hero-Logo.png', $body);
 	}
 
@@ -103,7 +103,9 @@ class OpenGraphSharingTest extends TestCaseWithAuth
 
 		$body = $this->testAction('users/view/' . $context->otherUsers[0]['id'], ['return' => 'contents']);
 
-		$this->assertStringContainsString('og:image" content="https://www.gravatar.com/avatar/' . User::gravatarHash('alice@example.com'), $body);
+		$this->assertStringContainsString('og:image" content="https://www.gravatar.com/avatar/' . User::gravatarHash('alice@example.com'), $body);			// Gravatar is told which size to send, so the size of the preview is known.
+		$this->assertStringContainsString('<meta property="og:image:width" content="' . Avatar::SHARE_SIZE . '">', $body);
+		$this->assertStringNotContainsString('og:image:type', $body);
 		$this->assertStringNotContainsString('Tsumego-Hero-Logo.png', $body);
 	}
 
@@ -119,7 +121,9 @@ class OpenGraphSharingTest extends TestCaseWithAuth
 
 		$body = $this->testAction('users/view/' . $context->otherUsers[0]['id'], ['return' => 'contents']);
 
-		$this->assertStringContainsString('og:image" content="https://lh3.googleusercontent.com/a/abc=s' . Avatar::PNG_SIZE . '"', $body);
+		$this->assertStringContainsString('og:image" content="https://lh3.googleusercontent.com/a/abc=s' . Avatar::SHARE_SIZE . '"', $body);
+		// The format of a picture of another host is not known, so it is not claimed.
+		$this->assertStringNotContainsString('og:image:type', $body);
 		$this->assertStringNotContainsString('Tsumego-Hero-Logo.png', $body);
 	}
 }

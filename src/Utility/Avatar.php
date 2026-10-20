@@ -26,7 +26,8 @@ class Avatar
 	/**
 	 * The version of the drawing: part of the etag of a board, so a browser that
 	 * asks again gets the new drawing. A browser that keeps the image for a year
-	 * without asking needs another url as well, which means another key of a name.
+	 * without asking needs another url as well, so a drawing that has to reach
+	 * everybody at once changes the url and not only this number.
 	 */
 	public const VERSION = 1;
 
@@ -36,8 +37,8 @@ class Avatar
 	/** The hex characters of the sha256 of a name that the board is drawn from. */
 	public const KEY_LENGTH = 12;
 
-	/** The side of a board picture that a page shares, in pixels. */
-	public const PNG_SIZE = 512;
+	/** The side of the avatar a page shares, in pixels. */
+	public const SHARE_SIZE = 512;
 
 	public const GRID_SIZE = 5;
 
@@ -95,12 +96,37 @@ class Avatar
 	}
 
 	/**
-	 * The url of the board of a name.
+	 * The url of the board of a name, as the svg a page shows.
 	 *
 	 * @param string $displayName
 	 * @return string
 	 */
 	public static function url(string $displayName): string
+	{
+		return self::boardPath($displayName);
+	}
+
+	/**
+	 * The url of the same board as the png a page shares. Sharing a preview is the
+	 * one place where the picture cannot be an svg, so the picture is asked for by
+	 * its url and not by a header.
+	 *
+	 * @param string $displayName
+	 * @return string
+	 */
+	public static function pngUrl(string $displayName): string
+	{
+		return self::boardPath($displayName) . '.png';
+	}
+
+	/**
+	 * The path of a board, which the two urls extend: one with the svg the page
+	 * shows, one with the png a share preview takes.
+	 *
+	 * @param string $displayName
+	 * @return string
+	 */
+	private static function boardPath(string $displayName): string
 	{
 		return self::URL_PREFIX . self::key($displayName);
 	}
@@ -240,7 +266,7 @@ class Avatar
 	 * @param int $size Side of the picture in pixels
 	 * @return string PNG data
 	 */
-	public static function png(string $key, int $size = self::PNG_SIZE): string
+	public static function png(string $key, int $size = self::SHARE_SIZE): string
 	{
 		assert($size > 0, 'A board picture needs a size');
 

@@ -14,7 +14,7 @@ class SvgCanvas implements Canvas
 	private string $definitions = '';
 	private string $body = '';
 
-	/** @var array<string, true> Shadings already defined, by name */
+	/** @var array<string, string> Shadings already defined, by name */
 	private array $defined = [];
 
 	public function __construct(float $side)
@@ -65,7 +65,9 @@ class SvgCanvas implements Canvas
 
 	/**
 	 * A shading is written once however many shapes use it, so a board of 25
-	 * stones carries two stone shadings and not 25 copies of one.
+	 * stones carries two stone shadings and not 25 copies of one. One name has to
+	 * mean one shading: shapes of one name and different colours would otherwise
+	 * quietly share the first of them.
 	 *
 	 * @param string $name
 	 * @param string $markup
@@ -74,9 +76,12 @@ class SvgCanvas implements Canvas
 	private function define(string $name, string $markup): void
 	{
 		if (isset($this->defined[$name]))
+		{
+			assert($this->defined[$name] === $markup, 'One shading name cannot describe two shadings');
 			return;
+		}
 
-		$this->defined[$name] = true;
+		$this->defined[$name] = $markup;
 		$this->definitions .= $markup;
 	}
 

@@ -100,6 +100,7 @@ class GdCanvas implements Canvas
 	/**
 	 * The drawing as png data of the requested size. The picture is painted at
 	 * twice that size and sampled down here, which is the whole of its smoothing.
+	 * The canvas is spent afterwards: a second picture needs a second drawing.
 	 *
 	 * @param int $size Side of the picture in pixels
 	 * @return string PNG data
