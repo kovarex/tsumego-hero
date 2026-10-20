@@ -1,7 +1,5 @@
 <?php
 
-use App\Utility\Feature;
-use App\Utility\FeatureKey;
 use App\Utility\MistakeTraining;
 use App\Utility\Util;
 
@@ -10,18 +8,6 @@ use App\Utility\Util;
  */
 class MistakeTrainingProfileTest extends TestCaseWithAuth
 {
-	public function setUp(): void
-	{
-		parent::setUp();
-		$this->setFeatureFlag(FeatureKey::MistakeTraining, Feature::EVERYONE);
-	}
-
-	public function tearDown(): void
-	{
-		$this->setFeatureFlag(FeatureKey::MistakeTraining, Feature::ADMINS);
-		parent::tearDown();
-	}
-
 	private function daysAgo(int $days): string
 	{
 		return date('Y-m-d', strtotime(MistakeTraining::today() . ' -' . $days . ' days'));
@@ -114,11 +100,4 @@ class MistakeTrainingProfileTest extends TestCaseWithAuth
 		$this->assertStringNotContainsString('mistake-training-overview', $this->profileOf($context->user['id']));
 	}
 
-	public function testNoSectionForAViewerWithoutTheTraining(): void
-	{
-		$context = $this->playerWhoTrained();
-		$this->setFeatureFlag(FeatureKey::MistakeTraining, Feature::ADMINS);
-
-		$this->assertStringNotContainsString('mistake-training-overview', $this->profileOf($context->user['id']));
-	}
 }

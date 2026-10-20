@@ -8,8 +8,6 @@ use PHPUnitRetry\RetryTrait;
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
 use App\Utility\Auth;
-use App\Utility\Feature;
-use App\Utility\FeatureKey;
 
 class TestCaseWithAuth extends ControllerTestCase
 {
@@ -32,20 +30,6 @@ class TestCaseWithAuth extends ControllerTestCase
 	{
 		Auth::logout();
 		unset($_COOKIE['hackedLoggedInUserID']);
-	}
-
-	/**
-	 * Set a feature flag for the duration of one test. Flags live in a table the
-	 * context preparator does not clear, so a test that changes one restores it in
-	 * tearDown.
-	 */
-	protected function setFeatureFlag(FeatureKey|string $flag, string $state): void
-	{
-		$key = $flag instanceof FeatureKey ? $flag->value : $flag;
-		$Model = ClassRegistry::init('FeatureFlag');
-		$Model->deleteAll(['flag_key' => $key]);
-		$Model->save(['flag_key' => $key, 'state' => $state, 'modified' => date('Y-m-d H:i:s')]);
-		Feature::reset();
 	}
 
 	// The next testAction on the users controller sends its emails to TestEmailer::$lastEmail.

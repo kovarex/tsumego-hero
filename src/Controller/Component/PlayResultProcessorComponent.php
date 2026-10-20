@@ -3,8 +3,6 @@
 use App\Utility\AchievementChecker;
 use App\Utility\Auth;
 use App\Utility\Constants;
-use App\Utility\Feature;
-use App\Utility\FeatureKey;
 use App\Utility\HeroPowers;
 use App\Utility\Level;
 use App\Utility\MistakeTraining;
@@ -61,8 +59,6 @@ class PlayResultProcessorComponent extends Component
 
 		if ($pageMode === Constants::$MISTAKE_TRAINING_MODE)
 		{
-			if (!Feature::enabled(FeatureKey::MistakeTraining))
-				return null;
 			$row = MistakeTraining::getPoolRow((int) Auth::getUserID(), $tsumegoID);
 			return $row !== null && MistakeTraining::isInTodaysTraining($row) ? $pageMode : null;
 		}
@@ -119,17 +115,12 @@ class PlayResultProcessorComponent extends Component
 		$this->processXpChange($tsumego, $result, $previousStatusValue, $originalTsumegoRating, $progressDeletionCount);
 		$this->updateTsumegoAttempt($tsumego, $result, $previousStatusValue, $seconds);
 		// The pool is fed from every mode: a solved problem that goes wrong enters the
-		// review ladder, a clean solve climbs it. Players outside the rollout write
-		// nothing, so releasing the feature does not hand them a backlog of old mistakes.
-		// The training says it is the one playing, since a replay there counts for nothing,
+		// review ladder, a clean solve climbs it. The training says it is the one playing, since a replay there counts for nothing,
 		// and so does the time mode, the one mode where a solved problem is not free play.
 		$trainingXp = null;
-		if (Feature::enabled(FeatureKey::MistakeTraining))
-		{
-			$review = MistakeTraining::recordResult(Auth::getUserID(), $tsumegoID, $outcome, $previousStatusValue, Auth::isInMistakeTrainingMode(), Auth::isInTimeMode());
-			if ($review !== null && Auth::isInMistakeTrainingMode())
-				$trainingXp = $this->processTrainingXp($review, (float) $originalTsumegoRating);
-		}
+		$review = MistakeTraining::recordResult(Auth::getUserID(), $tsumegoID, $outcome, $previousStatusValue, Auth::isInMistakeTrainingMode(), Auth::isInTimeMode());
+		if ($review !== null && Auth::isInMistakeTrainingMode())
+			$trainingXp = $this->processTrainingXp($review, (float) $originalTsumegoRating);
 		$this->processErrorAchievement($result, $previousStatusValue, $outcome);
 		$this->processUnsortedStuff($tsumego, $result, $previousStatusValue);
 
@@ -151,7 +142,7 @@ class PlayResultProcessorComponent extends Component
 			$response['achievement_updates'] = $achievementChecker->updated;
 		// The training row shows what today did with the problem, and this result just
 		// changed it, so the page redraws the button from the review as it was stored.
-		if (Feature::enabled(FeatureKey::MistakeTraining) && Auth::isInMistakeTrainingMode())
+		if (Auth::isInMistakeTrainingMode())
 		{
 			$response['mistake_training_button'] = MistakeTraining::describeTodaysReview(Auth::getUserID(), $tsumegoID);
 			$response['mistake_training_xp'] = $trainingXp ?? ['review' => 0, 'graduation' => 0, 'clear' => 0];

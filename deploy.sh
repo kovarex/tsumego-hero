@@ -27,8 +27,8 @@ if command -v ddev >/dev/null 2>&1; then
 fi
 
 ### Changelog manifest + revision (before anything that touches the site)
-### The generator aborts when a fragment's ship date is not in git, or its flag is
-### not a FeatureKey case, and a bad fragment must not end up half-deployed.
+### The generator aborts when a fragment's ship date is not in git, and a bad
+### fragment must not end up half-deployed.
 echo "=== Generating changelog manifest + revision ==="
 if [[ "$IS_DDEV" = true ]]; then
     ddev exec CI=true npx pnpm@10 run changelog:gen

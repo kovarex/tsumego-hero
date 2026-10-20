@@ -111,10 +111,6 @@ Router::connect(
 	['controller' => 'MistakeTraining', 'action' => 'import']
 );
 Router::connect(
-	'/mistake-training/debug',
-	['controller' => 'MistakeTraining', 'action' => 'debug']
-);
-Router::connect(
 	'/mistake-training',
 	['controller' => 'MistakeTraining', 'action' => 'play']
 );

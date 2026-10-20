@@ -26,12 +26,6 @@ const OUT = join(DIR, 'index.json');
 
 const CATEGORIES = ['Added', 'Fixed', 'Changed', 'Performance', 'Removed'];
 
-// The flags a fragment may name: the cases of FeatureKey. An entry behind a flag the
-// site does not know would never be shown, so a mistyped key stops the run instead.
-const FLAGS = [...readFileSync(join(ROOT, 'src/Utility/FeatureKey.php'), 'utf8')
-	.matchAll(/^\s*case\s+\w+\s*=\s*'([^']+)'\s*;/gm)].map(m => m[1]);
-const unknownFlags = [];
-
 // Every git call fails quietly: a checkout without a repository is not an error here
 // but a missing date, and reportDates() is the one that reports it. stderr is dropped
 // so git's own wording cannot pass for that report.
@@ -163,14 +157,11 @@ function commitShipStamp(commit) {
 function parseFragment(content) {
 	let body = content.trim();
 	let commit = null;
-	let flag = null;
 	const fm = body.match(/^---\n([\s\S]*?)\n---\n?/);
 	if (fm) {
 		for (const row of fm[1].split('\n')) {
 			const m = row.match(/^commit:\s*(\S+)\s*$/i);
 			if (m) commit = m[1];
-			const f = row.match(/^flag:\s*(\S+)\s*$/i);
-			if (f) flag = f[1];
 		}
 		body = body.slice(fm[0].length).trim();
 	}
@@ -195,7 +186,7 @@ function parseFragment(content) {
 			// The body stays markdown so the UI can render the links in it.
 			return { category, text: rest.trim(), known, number };
 		});
-	return { entries, commit, flag };
+	return { entries, commit };
 }
 
 function isoDate(ts) {
@@ -209,9 +200,6 @@ const entries = files.flatMap(file => {
 	for (const entry of parsed.entries)
 		if (!entry.known)
 			console.warn(`${file}:${entry.number}: no known category prefix, published as "Changed": ${entry.line}`);
-
-	if (parsed.flag && !FLAGS.includes(parsed.flag))
-		unknownFlags.push({ file, flag: parsed.flag });
 
 	const resolved = resolveShipStamp(file, parsed.commit);
 	if (resolved.problem)
@@ -227,7 +215,6 @@ const entries = files.flatMap(file => {
 		text: e.text,
 		file,
 		...(parsed.commit ? { commit: parsed.commit } : {}),
-		...(parsed.flag ? { flag: parsed.flag } : {}),
 	}));
 });
 
@@ -256,13 +243,6 @@ function reportDates() {
 		console.error(`changelog:   note: ${env.join(', ')}`);
 	console.error('changelog:   ship dates only come from git; a made-up date would move an entry in the feed');
 	console.error('changelog:   commit the fragment (or pin a commit in its front-matter) and run this again');
-	process.exit(1);
-}
-
-if (unknownFlags.length) {
-	for (const { file, flag } of unknownFlags)
-		console.error(`changelog: ERROR: ${file} names the flag "${flag}", which is not a FeatureKey case (${FLAGS.join(', ') || 'none'})`);
-	console.error('changelog:   fix the key, or remove the flag: line when its feature shipped for good');
 	process.exit(1);
 }
 

@@ -40,15 +40,6 @@ Added: Dedicated set editing page.
 
 The `commit` SHA is resolved through git and its committer date becomes the entry's ship timestamp. Omit it when the fragment is committed together with its change.
 
-A fragment may also name the flag that gates its feature. The flag is a row in the `feature_flags` table, and the key has to be a `FeatureKey` case: the generator stops on any other key, so a typo cannot publish an entry early. While the flag is not open to everybody, or has no row, the entry stays off the page and off the "What's new" badge, and admins see it meanwhile. When the feature ships for good, remove the `flag:` line in the same change that removes the `FeatureKey` case:
-
-```markdown
----
-flag: mistake-training
----
-Added: A problem you solved with a mistake comes back for review in Mistake Training at growing intervals.
-```
-
 Categories:
 
 - `Added:` new user-facing feature

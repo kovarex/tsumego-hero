@@ -204,14 +204,7 @@ class Auth
 		if (Auth::$modeOverride !== null)
 			return Auth::$modeOverride;
 
-		$mode = Auth::isLoggedIn() ? (int) Auth::getUser()['mode'] : Constants::$LEVEL_MODE;
-
-		// A player who was in the training when it was open keeps normal play when it
-		// is switched off, instead of sitting in a mode that gives no XP.
-		if ($mode == Constants::$MISTAKE_TRAINING_MODE && !Feature::enabled(FeatureKey::MistakeTraining))
-			return Constants::$LEVEL_MODE;
-
-		return $mode;
+		return Auth::isLoggedIn() ? (int) Auth::getUser()['mode'] : Constants::$LEVEL_MODE;
 	}
 
 	/**

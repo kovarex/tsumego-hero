@@ -3,8 +3,6 @@
 use App\Attribute\HttpPost;
 use App\Utility\Auth;
 use App\Utility\Constants;
-use App\Utility\Feature;
-use App\Utility\FeatureKey;
 use App\Utility\MistakeTraining;
 
 class MistakeTrainingController extends AppController
@@ -20,11 +18,6 @@ class MistakeTrainingController extends AppController
 	 */
 	public function play(?string $setConnectionID = null): mixed
 	{
-		// Players outside the rollout get the same 404 a guest would, and never a
-		// login redirect: the route does not exist for them.
-		if (!Feature::enabled(FeatureKey::MistakeTraining))
-			throw new NotFoundException('Not found');
-
 		if (!Auth::isLoggedIn())
 			return $this->redirect('/users/login');
 
@@ -62,9 +55,6 @@ class MistakeTrainingController extends AppController
 	 */
 	public function overview(): mixed
 	{
-		if (!Feature::enabled(FeatureKey::MistakeTraining))
-			throw new NotFoundException('Not found');
-
 		if (!Auth::isLoggedIn())
 			return $this->redirect('/users/login');
 
@@ -89,7 +79,6 @@ class MistakeTrainingController extends AppController
 		// old mistakes in as the training empties, and never more than a day at once.
 		$this->set('importCandidates', $dueToday > 0 ? 0 : MistakeTraining::importCandidates($userId));
 		$this->set('importLimit', MistakeTraining::IMPORT_LIMIT);
-		$this->set('showDebugLink', Auth::isAdmin() && Configure::read('debug'));
 		$this->set('upcomingDays', $upcoming['days']);
 		$this->set('furtherDays', $upcoming['furtherDays']);
 		$this->set('lastUpcomingDay', $upcoming['lastDay']);
@@ -113,67 +102,12 @@ class MistakeTrainingController extends AppController
 	#[HttpPost]
 	public function import(): mixed
 	{
-		if (!Feature::enabled(FeatureKey::MistakeTraining))
-			throw new NotFoundException('Not found');
-
 		if (!Auth::isLoggedIn())
 			return $this->redirect('/users/login');
 
 		MistakeTraining::importPastMistakes((int) Auth::getUserID());
 
 		return $this->redirect(MistakeTraining::$QUEUE_LINK);
-	}
-
-	/**
-	 * The admin toolbox: the state of the flag and the switch for it, and the ladder
-	 * with its waits after lapses. It exists only in debug mode and only for admins,
-	 * so production never serves it. It changes nothing in anyone's training: the
-	 * shortcuts through time it once had were too easy to misuse on a real account.
-	 *
-	 * The guard deliberately ignores the flag: switching the training off must not
-	 * take away the page that switches it back on.
-	 */
-	public function debug(): mixed
-	{
-		$this->assertToolboxAllowed();
-
-		if (!Auth::isLoggedIn())
-			return $this->redirect('/users/login');
-
-		if ($this->request->is('post') && ($this->request->data['command'] ?? '') === 'flag')
-		{
-			$state = (string) ($this->request->data['state'] ?? '');
-			if (in_array($state, [Feature::OFF, Feature::ADMINS, Feature::EVERYONE], true))
-			{
-				Feature::set(FeatureKey::MistakeTraining, $state);
-				$notice = 'The training is now ' . $state . '.';
-			}
-			else
-				$notice = 'Unknown state, nothing was changed.';
-			return $this->redirect(MistakeTraining::$DEBUG_LINK . '?notice=' . urlencode($notice));
-		}
-
-		$userId = (int) Auth::getUserID();
-		$this->set('notice', (string) ($this->request->query['notice'] ?? ''));
-		$this->set('_page', 'mistake-training');
-		$this->set('_title', 'Tsumego Hero - Mistake Training Debug');
-		$this->set('totalInTraining', MistakeTraining::totalInTraining($userId));
-		$this->set('importCandidates', MistakeTraining::importCandidates($userId));
-		$this->set('flagState', Feature::state(FeatureKey::MistakeTraining));
-		$this->set('ladder', MistakeTraining::ladder());
-		$this->render('/Tsumegos/mistake_training_debug');
-		return null;
-	}
-
-	/**
-	 * The toolbox is for admins, and only with debug mode on, so production never
-	 * serves it. It ignores the flag on purpose: switching the training off must not
-	 * take away the page that switches it back on.
-	 */
-	private function assertToolboxAllowed(): void
-	{
-		if (!Auth::isAdmin() || !Configure::read('debug'))
-			throw new NotFoundException('Not found');
 	}
 
 	/**

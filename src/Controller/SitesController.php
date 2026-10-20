@@ -2,8 +2,6 @@
 
 use App\Utility\Auth;
 use App\Utility\Constants;
-use App\Utility\Feature;
-use App\Utility\FeatureKey;
 use App\Utility\MistakeTraining;
 use App\Utility\TsumegoButtons;
 use App\Utility\TsumegoFilters;
@@ -73,7 +71,7 @@ class SitesController extends AppController
 
 		// The way into the mistake training: what is due today, or else how many past
 		// mistakes are ready to come in.
-		if (Auth::isLoggedIn() && Feature::enabled(FeatureKey::MistakeTraining))
+		if (Auth::isLoggedIn())
 		{
 			$userId = (int) Auth::getUserID();
 			$due = MistakeTraining::dueCount($userId);

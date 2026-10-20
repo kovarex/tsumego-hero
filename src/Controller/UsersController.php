@@ -5,8 +5,6 @@ use App\Utility\AdminActivityRenderer;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\CookieFlash;
-use App\Utility\Feature;
-use App\Utility\FeatureKey;
 use App\Utility\GoogleTokenVerifier;
 use App\Utility\GoogleTokenVerifierInterface;
 use App\Utility\MistakeTraining;
@@ -1060,11 +1058,8 @@ ORDER BY category DESC', [$user['User']['id']]));
 
 		$aCount = $this->Achievement->find('all');
 
-		// The section of the training shows only to a viewer who has the feature, and
-		// only for a player who trained.
-		$this->set('mistakeTraining', Feature::enabled(FeatureKey::MistakeTraining)
-			? MistakeTraining::profile((int) $user['User']['id'], MistakeTraining::profileStart())
-			: null);
+		// The section of the training shows only for a player who trained.
+		$this->set('mistakeTraining', MistakeTraining::profile((int) $user['User']['id'], MistakeTraining::profileStart()));
 
 		$this->set('dailyResults', $dailyResults);
 		$this->set('user', $user);

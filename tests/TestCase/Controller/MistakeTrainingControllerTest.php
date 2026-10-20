@@ -2,8 +2,6 @@
 
 use App\Utility\Auth;
 use App\Utility\Constants;
-use App\Utility\Feature;
-use App\Utility\FeatureKey;
 use App\Utility\MistakeTraining;
 use App\Utility\PlayOutcome;
 use App\Utility\Rating;
@@ -11,17 +9,6 @@ use Facebook\WebDriver\WebDriverBy;
 
 class MistakeTrainingControllerTest extends TestCaseWithAuth
 {
-	public function setUp(): void
-	{
-		parent::setUp();
-		$this->setFeatureFlag(FeatureKey::MistakeTraining, Feature::EVERYONE);
-	}
-
-	public function tearDown(): void
-	{
-		$this->setFeatureFlag(FeatureKey::MistakeTraining, Feature::ADMINS);
-		parent::tearDown();
-	}
 	public function testRequiresLogin()
 	{
 		new ContextPreparator(['user' => null]);
@@ -480,55 +467,6 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		$this->assertNotNull(MistakeTraining::getPoolRow($context->user['id'], (int) $context->tsumegos[0]['id']));
 	}
 
-	public function testTrainingIsNotFoundWhenTheFlagIsOff()
-	{
-		$this->setFeatureFlag(FeatureKey::MistakeTraining, Feature::OFF);
-		new ContextPreparator(['user' => ['name' => 'testuser']]);
-
-		$this->expectException(NotFoundException::class);
-
-		$this->testAction('/mistake-training');
-	}
-
-	public function testTrainingIsNotFoundForAPlayerWhileItIsOpenToAdmins()
-	{
-		$this->setFeatureFlag(FeatureKey::MistakeTraining, Feature::ADMINS);
-		new ContextPreparator(['user' => ['name' => 'testuser']]);
-
-		$this->expectException(NotFoundException::class);
-
-		$this->testAction('/mistake-training');
-	}
-
-	public function testAGuestIsNotFoundWhileTheFlagIsOff()
-	{
-		$this->setFeatureFlag(FeatureKey::MistakeTraining, Feature::OFF);
-
-		$this->expectException(NotFoundException::class);
-
-		$this->testAction('/mistake-training');
-	}
-
-	public function testTrainingIsAvailableToAnAdminWhileItIsOpenToAdmins()
-	{
-		$this->setFeatureFlag(FeatureKey::MistakeTraining, Feature::ADMINS);
-		new ContextPreparator(['user' => ['admin' => true]]);
-
-		$this->testAction('/mistake-training', ['return' => 'contents']);
-
-		$this->assertStringContainsString('Nothing to review yet', $this->view);
-	}
-
-	public function testTheHomepageHidesTheTrainingWhenTheFlagIsOff()
-	{
-		$this->setFeatureFlag(FeatureKey::MistakeTraining, Feature::OFF);
-		new ContextPreparator(['user' => ['name' => 'testuser']]);
-
-		$html = $this->testAction('/sites/index', ['return' => 'contents']);
-
-		$this->assertStringNotContainsString('/mistake-training', (string) $html);
-	}
-
 	public function testTheHomepageShowsWhatTheTrainingHasToday()
 	{
 		new ContextPreparator([
@@ -631,15 +569,8 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		$this->assertStringNotContainsString('mistake-training-card', $html);
 	}
 
-	public function testHelpPageDescribesTheTrainingOnlyWhileItIsOpen()
+	public function testHelpPageDescribesTheTraining()
 	{
-		$this->setFeatureFlag(FeatureKey::MistakeTraining, Feature::OFF);
-
-		$html = (string) $this->testAction('/sites/websitefunctions', ['return' => 'contents']);
-		$this->assertStringNotContainsString('A problem goes to the mistake training', $html);
-
-		$this->setFeatureFlag(FeatureKey::MistakeTraining, Feature::EVERYONE);
-
 		$html = (string) $this->testAction('/sites/websitefunctions', ['return' => 'contents']);
 		$this->assertStringContainsString('A problem goes to the mistake training', $html);
 	}
@@ -653,18 +584,6 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		$this->assertStringContainsString('graduating it another ' . round(MistakeTraining::GRADUATION_XP_SHARE * 100) . '%', $text);
 		$this->assertStringContainsString('at least ' . MistakeTraining::CLEAR_DAY_MIN_PROBLEMS . ' problems', $text);
 		$this->assertStringContainsString('a bonus of ' . round(MistakeTraining::CLEAR_DAY_XP_SHARE * 100) . '%', $text);
-	}
-
-	public function testAStoredTrainingModeFallsBackToLevelModeWhenTheFlagIsOff()
-	{
-		$context = new ContextPreparator(['user' => ['name' => 'testuser']]);
-		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
-		$this->setFeatureFlag(FeatureKey::MistakeTraining, Feature::OFF);
-		$this->login($context->user['name']);
-
-		$this->assertFalse(Auth::isInMistakeTrainingMode(),
-			'A player left in training mode plays normally once the feature is off');
-		$this->assertTrue(Auth::isInLevelMode());
 	}
 
 	public function testAnEmptyTrainingOffersToImportPastMistakes()
@@ -721,111 +640,6 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 			'The import brings the problem into the training'
 		);
 		$this->assertStringContainsString(MistakeTraining::$QUEUE_LINK, (string) ($this->headers['Location'] ?? ''));
-	}
-
-	public function testImportIsNotAvailableWhileTheFeatureIsClosed()
-	{
-		$this->setFeatureFlag(FeatureKey::MistakeTraining, Feature::OFF);
-		new ContextPreparator([
-			'user' => ['name' => 'testuser'],
-			'tsumego' => ['set_order' => 1, 'attempt' => ['solved' => true, 'misplays' => 1]],
-		]);
-
-		$this->expectException(NotFoundException::class);
-		$this->testAction(MistakeTraining::$IMPORT_LINK, ['method' => 'post']);
-	}
-
-	public function testTheToolboxIsClosedToPlayers()
-	{
-		new ContextPreparator(['user' => ['name' => 'testuser']]);
-
-		$this->expectException(NotFoundException::class);
-		$this->testAction(MistakeTraining::$DEBUG_LINK);
-	}
-
-	public function testTheToolboxIsNotServedOutsideDebugMode()
-	{
-		new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
-		$debug = Configure::read('debug');
-		Configure::write('debug', 0);
-
-		try
-		{
-			$this->expectException(NotFoundException::class);
-			$this->testAction(MistakeTraining::$DEBUG_LINK);
-		}
-		finally
-		{
-			Configure::write('debug', $debug);
-		}
-	}
-
-	/**
-	 * Switching the training off must not take away the page that switches it back
-	 * on, so the toolbox ignores the flag it controls.
-	 */
-	public function testTheToolboxStaysOpenWhileTheTrainingIsOff()
-	{
-		new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
-		$this->setFeatureFlag(FeatureKey::MistakeTraining, Feature::OFF);
-
-		$this->testAction(MistakeTraining::$DEBUG_LINK, ['return' => 'contents']);
-
-		$this->assertStringContainsString('Mistake Training toolbox', (string) $this->view);
-	}
-
-	public function testTheToolboxSwitchesTheFlag()
-	{
-		$context = new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
-		$this->setFeatureFlag(FeatureKey::MistakeTraining, Feature::EVERYONE);
-		$this->login($context->user['name']);
-
-		$this->testAction(MistakeTraining::$DEBUG_LINK, [
-			'method' => 'post',
-			'data' => ['command' => 'flag', 'state' => Feature::OFF],
-		]);
-
-		$this->assertSame(Feature::OFF, Feature::state(FeatureKey::MistakeTraining),
-			'The toolbox turns the training off');
-	}
-
-	public function testTheToolboxIgnoresAnUnknownFlagState()
-	{
-		$context = new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
-		$this->setFeatureFlag(FeatureKey::MistakeTraining, Feature::ADMINS);
-		$this->login($context->user['name']);
-
-		$this->testAction(MistakeTraining::$DEBUG_LINK, [
-			'method' => 'post',
-			'data' => ['command' => 'flag', 'state' => 'both'],
-		]);
-
-		$this->assertSame(Feature::ADMINS, Feature::state(FeatureKey::MistakeTraining));
-	}
-
-	public function testTheToolboxShowsTheLadder()
-	{
-		new ContextPreparator([
-			'user' => ['name' => 'admin', 'admin' => true],
-			'tsumego' => [
-				'set_order' => 1,
-				'status' => [
-					'name' => 'V',
-					'mistake_training_due' => date('Y-m-d H:i:s', strtotime('+2 days')),
-					'mistake_training_rung' => 3,
-					'mistake_training_lapses' => 2,
-				],
-			],
-		]);
-
-		$this->testAction(MistakeTraining::$DEBUG_LINK, ['return' => 'contents']);
-
-		$this->assertStringContainsString('Mistake Training toolbox', (string) $this->view);
-		$this->assertStringNotContainsString('Let time pass', (string) $this->view, 'The toolbox changes no training');
-		$this->assertStringNotContainsString('name="command" value="shift"', (string) $this->view);
-		$this->assertStringContainsString('<td>1, 2, 3, 6, 11, 23, 45, 90</td>', (string) $this->view, 'The waits after one lapse');
-		$this->assertMatchesRegularExpression('~<td>3 or more</td>\s*<td>1, 1, 2, 4, 8, 15, 30, 60</td>~', (string) $this->view,
-			'The last row is the floor, which every further lapse keeps');
 	}
 
 	/**

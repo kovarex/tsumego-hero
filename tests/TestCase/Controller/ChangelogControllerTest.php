@@ -1,17 +1,7 @@
 <?php
 
-use App\Utility\Feature;
-use App\Utility\FeatureKey;
-
-class ChangelogControllerTest extends TestCaseWithAuth
+class ChangelogControllerTest extends ControllerTestCase
 {
-	public function tearDown(): void
-	{
-		ClassRegistry::init('FeatureFlag')->deleteAll(['flag_key' => 'probe']);
-		$this->setFeatureFlag(FeatureKey::MistakeTraining, Feature::ADMINS);
-		parent::tearDown();
-	}
-
 	/**
 	 * The public changelog page renders its shell and mounts the React feed.
 	 */
@@ -96,49 +86,5 @@ class ChangelogControllerTest extends TestCaseWithAuth
 
 		$this->assertArrayHasKey('changelogTimestamps', $this->vars);
 		$this->assertIsArray($this->vars['changelogTimestamps']);
-	}
-
-	private function fixtureWithFlaggedEntry(string $flag = 'mistake-training'): string
-	{
-		return $this->fixture(json_encode([
-			'entries' => [
-				['ts' => 100, 'text' => 'plain entry'],
-				['ts' => 200, 'text' => 'flagged entry', 'flag' => $flag],
-			],
-		]));
-	}
-
-	public function testEntriesBehindAnOffFlagAreNotCountedAsNew()
-	{
-		$this->setFeatureFlag(FeatureKey::MistakeTraining, Feature::OFF);
-
-		$this->assertSame([100], ChangelogController::changelogTimestamps($this->fixtureWithFlaggedEntry()));
-	}
-
-	public function testEntriesBehindAReleasedFlagAreCountedAsNew()
-	{
-		$this->setFeatureFlag(FeatureKey::MistakeTraining, Feature::EVERYONE);
-
-		$this->assertSame([200, 100], ChangelogController::changelogTimestamps($this->fixtureWithFlaggedEntry()));
-	}
-
-	/**
-	 * A flag without a row is off, like everywhere else, so deleting the row while the
-	 * code still checks the flag does not announce the feature it switches off.
-	 */
-	public function testEntriesBehindAFlagWithoutARowAreHidden()
-	{
-		ClassRegistry::init('FeatureFlag')->deleteAll(['flag_key' => 'mistake-training']);
-		Feature::reset();
-
-		$this->assertSame([100], ChangelogController::changelogTimestamps($this->fixtureWithFlaggedEntry()));
-	}
-
-	public function testAdminsStillSeeEntriesBehindAnOffFlag()
-	{
-		new ContextPreparator(['user' => ['admin' => true]]);
-		$this->setFeatureFlag(FeatureKey::MistakeTraining, Feature::OFF);
-
-		$this->assertSame([200, 100], ChangelogController::changelogTimestamps($this->fixtureWithFlaggedEntry()));
 	}
 }

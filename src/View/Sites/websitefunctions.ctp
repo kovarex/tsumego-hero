@@ -178,7 +178,6 @@ $percent = fn(float $share): string => round($share * 100) . '%';
 			<br><br>
 		</div>
 
-		<?php if (!empty($mistakeTrainingEnabled)): ?>
 		<p class="title4">Mistake Training</p>
 		<div class="new1">
 			A problem goes to the mistake training when you solve it but had made a mistake first, or when you make a mistake on
@@ -234,7 +233,6 @@ $percent = fn(float $share): string => round($share * 100) . '%';
 			due, the page offers the <?php echo MistakeTraining::IMPORT_LIMIT; ?> most recent of them, ready to play straight away.
 			<br><br>
 		</div>
-		<?php endif; ?>
 	</div>
 	</div>
 

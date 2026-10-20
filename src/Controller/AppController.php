@@ -4,8 +4,6 @@ use App\Utility\AchievementChecker;
 use App\Utility\Auth;
 use App\Utility\BoardSelector;
 use App\Utility\Constants;
-use App\Utility\Feature;
-use App\Utility\FeatureKey;
 use App\Utility\HeroPowers;
 use App\Utility\TimeMode;
 use App\Utility\TsumegoFilters;
@@ -518,7 +516,6 @@ class AppController extends Controller
 		$this->set('lastProfileRight', $lastProfileRight);
 		$this->set('timeMode', $timeMode);
 		$this->set('changelogTimestamps', ChangelogController::changelogTimestamps());
-		$this->set('mistakeTrainingEnabled', Feature::enabled(FeatureKey::MistakeTraining));
 	}
 
 	public function afterFilter(): void {}

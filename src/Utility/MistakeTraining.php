@@ -126,11 +126,6 @@ class MistakeTraining
 	public static string $IMPORT_LINK = '/mistake-training/import';
 
 	/**
-	 * Admin toolbox: the flag of the training and its ladder.
-	 */
-	public static string $DEBUG_LINK = '/mistake-training/debug';
-
-	/**
 	 * Apply a play result to the training pool. Only a clean solve advances the
 	 * ladder; graduation (a clean solve at the top rung) only stops the schedule,
 	 * and the tsumego status is never touched, it belongs to the normal modes.
@@ -1070,7 +1065,7 @@ class MistakeTraining
 	 * Move a pool row to a new rung and set its next review. The review waits out
 	 * the rung's interval, shortened by the lapses of the problem (see wait()), unless
 	 * $daysAhead names the wait explicitly (a retry is due tomorrow whatever rung the
-	 * problem sits on, and the toolbox makes a jump due now). $lapses saves reading
+	 * problem sits on, and moveToRung() makes a jump due now). $lapses saves reading
 	 * them again when the caller has the row.
 	 */
 	private static function setRung(int $userId, int $tsumegoId, int $rung, ?int $daysAhead = null, ?int $lapses = null): void
@@ -1090,7 +1085,7 @@ class MistakeTraining
 
 	/**
 	 * A clean solve at the top rung ends training, wherever it was played, and so does
-	 * the toolbox's graduateNow(); every graduation goes through here. The problem
+	 * graduateNow(); every graduation goes through here. The problem
 	 * stops being scheduled and its status is left alone, it belongs to the normal
 	 * modes. The row stays with no next review, because it remembers that the training
 	 * already knows the problem; without it a mastered problem would come back as a

@@ -17,7 +17,6 @@ use App\Utility\RungInsignia;
  * @var int $totalInTraining
  * @var int $importCandidates
  * @var int $importLimit
- * @var bool $showDebugLink
  * @var array $upcomingDays
  * @var int $furtherDays
  * @var string|null $lastUpcomingDay
@@ -119,11 +118,6 @@ use App\Utility\RungInsignia;
 			<?php endforeach; ?>
 		</table>
 	</details>
-	<?php endif; ?>
-	<?php if (!empty($showDebugLink)): ?>
-	<p class="hint" style="margin-top: var(--space-3);">
-		<a href="<?php echo MistakeTraining::$DEBUG_LINK; ?>">Toolbox</a> (admins, debug mode only)
-	</p>
 	<?php endif; ?>
 </div>
 
