@@ -397,13 +397,17 @@ ORDER BY sc.num ASC", [(int) $id]);
 				{
 					$processed = SetImage::process($_FILES['image']['tmp_name'], $file_ext);
 
+					// The cover lives in a directory the web server has to be able to
+					// write to, which deploy sets up. When it cannot write, the player
+					// has to hear about it instead of keeping a picture that is not there.
 					$setDir = WWW_ROOT . 'img' . DS . 'sets' . DS . $setId;
-					if (!is_dir($setDir))
-						mkdir($setDir, 0775, true);
+					if (!is_dir($setDir) && !@mkdir($setDir, 0775, true) && !is_dir($setDir))
+						throw new Exception('The image could not be stored.');
 
 					$filename = 'sets/' . $setId . '/' . substr($processed['hash'], 0, 16) . '.webp';
 					$uploadPath = WWW_ROOT . 'img' . DS . str_replace('/', DS, $filename);
-					file_put_contents($uploadPath, $processed['data']);
+					if (@file_put_contents($uploadPath, $processed['data']) === false)
+						throw new Exception('The image could not be stored.');
 
 					// Only delete user-uploaded images (inside sets/), never shared assets
 					if ($oldImage && str_starts_with($oldImage, 'sets/') && $oldImage !== $filename)

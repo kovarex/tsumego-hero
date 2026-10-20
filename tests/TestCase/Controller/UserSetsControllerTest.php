@@ -2,6 +2,7 @@
 
 use App\Lib\Error\ConflictException;
 use App\Utility\Constants;
+use App\Utility\CookieFlash;
 
 class UserSetsControllerTest extends TestCaseWithAuth
 {
@@ -892,6 +893,43 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		@unlink($tmp);
 		@unlink($path);
 		@rmdir(WWW_ROOT . 'img' . DS . 'sets' . DS . $setId);
+	}
+
+	/**
+	 * The cover lives in a directory the web server has to be able to write to.
+	 * When it cannot, the player is told the upload failed and no image is saved.
+	 */
+	public function testUploadSetImageReportsWhenTheFileCannotBeWritten(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'alice']]);
+		$setId = $this->_createSet('My Set', $context->user['id'], 0);
+		$this->login('alice');
+
+		$tmp = $this->_createTempImage(400, 200);
+		$_FILES['image'] = [
+			'name' => 'cover.png',
+			'type' => 'image/png',
+			'tmp_name' => $tmp,
+			'error' => UPLOAD_ERR_OK,
+			'size' => filesize($tmp),
+		];
+
+		$setsDir = WWW_ROOT . 'img' . DS . 'sets';
+		$permissions = fileperms($setsDir) & 0777;
+		chmod($setsDir, 0555);
+		try
+		{
+			$this->testAction("/sets/edit/{$setId}", ['method' => 'POST']);
+		}
+		finally
+		{
+			chmod($setsDir, $permissions);
+			@unlink($tmp);
+		}
+
+		$set = ClassRegistry::init('Set')->findById($setId);
+		$this->assertEmpty($set['Set']['image'], 'An image was saved although its file could not be written');
+		$this->assertStringContainsString('could not', (string) CookieFlash::get());
 	}
 
 	public function testDeleteSetRemovesImageFolder(): void
