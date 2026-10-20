@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\Avatar;
+
 /**
  * End-to-end tests for Open Graph social sharing tags.
  */
@@ -68,5 +70,56 @@ class OpenGraphSharingTest extends TestCaseWithAuth
 		$this->assertStringContainsString('<meta property="profile:username" content="DN_alice">', $body);
 		$this->assertStringContainsString('property="og:url" content="', $body);
 		$this->assertStringContainsString('/users/view/' . $userId, $body);
+	}
+
+	/**
+	 * A profile is shared with the picture of the player, which is the board the
+	 * site draws for the name. A share preview takes a png and not an svg.
+	 */
+	public function testUserProfileSharesTheBoardAvatar(): void
+	{
+		$context = new ContextPreparator(['other-users' => [['name' => 'alice']]]);
+		$userId = $context->otherUsers[0]['id'];
+
+		$body = $this->testAction('users/view/' . $userId, ['return' => 'contents']);
+
+		$this->assertStringContainsString('/board/' . Avatar::key('DN_alice') . '.png"', $body);
+		$this->assertStringContainsString('<meta property="og:image:type" content="image/png">', $body);
+		$this->assertStringContainsString('<meta property="og:image:width" content="' . Avatar::PNG_SIZE . '">', $body);
+		$this->assertStringContainsString('<meta property="og:image:height" content="' . Avatar::PNG_SIZE . '">', $body);
+		$this->assertStringNotContainsString('Tsumego-Hero-Logo.png', $body);
+	}
+
+	/**
+	 * A picture of another host is already a picture, so it is shared as it is.
+	 */
+	public function testUserProfileSharesThePickedGravatar(): void
+	{
+		$context = new ContextPreparator(['other-users' => [[
+			'name' => 'alice',
+			'email' => 'alice@example.com',
+			'pref_avatar' => User::AVATAR_GRAVATAR,
+		]]]);
+
+		$body = $this->testAction('users/view/' . $context->otherUsers[0]['id'], ['return' => 'contents']);
+
+		$this->assertStringContainsString('og:image" content="https://www.gravatar.com/avatar/' . User::gravatarHash('alice@example.com'), $body);
+		$this->assertStringNotContainsString('Tsumego-Hero-Logo.png', $body);
+	}
+
+	public function testUserProfileSharesThePickedGooglePicture(): void
+	{
+		$context = new ContextPreparator(['other-users' => [[
+			'name' => 'alice',
+			'email' => 'alice@example.com',
+			'external_id' => '1234567890',
+			'pref_avatar' => User::AVATAR_GOOGLE,
+			'picture' => 'https://lh3.googleusercontent.com/a/abc=s96-c',
+		]]]);
+
+		$body = $this->testAction('users/view/' . $context->otherUsers[0]['id'], ['return' => 'contents']);
+
+		$this->assertStringContainsString('og:image" content="https://lh3.googleusercontent.com/a/abc=s' . Avatar::PNG_SIZE . '"', $body);
+		$this->assertStringNotContainsString('Tsumego-Hero-Logo.png', $body);
 	}
 }

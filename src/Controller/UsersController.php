@@ -3,6 +3,7 @@
 use App\Utility\AdminActivityLogger;
 use App\Utility\AdminActivityRenderer;
 use App\Utility\Auth;
+use App\Utility\Avatar;
 use App\Utility\Constants;
 use App\Utility\CookieFlash;
 use App\Utility\GoogleTokenVerifier;
@@ -936,14 +937,27 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->assertUserVisible($user['User']);
 		$this->set('_title', 'Profile of ' . $user['User']['display_name']);
 
-		$this->set('og', [
+		// The profile is shared with the avatar the player picked. A picture of another
+		// host is already a picture; the board the site draws is shared as its png.
+		$avatarChoice = User::avatarChoice($user['User']);
+		$og = [
 			'title' => 'Profile of ' . $user['User']['display_name'],
 			'description' => $user['User']['display_name'] . ' on Tsumego',
-			'image' => Router::url('/img/Tsumego-Hero-Logo.png', true),
+			'image_alt' => 'Avatar of ' . $user['User']['display_name'],
 			'type' => 'profile',
 			'profile_username' => $user['User']['display_name'],
 			'site_name' => 'Tsumego',
-		]);
+		];
+		if ($avatarChoice === User::AVATAR_BOARD)
+		{
+			$og['image'] = Router::url('/board/' . Avatar::key($user['User']['display_name']) . '.png', true);
+			$og['image_type'] = 'image/png';
+			$og['image_width'] = Avatar::PNG_SIZE;
+			$og['image_height'] = Avatar::PNG_SIZE;
+		}
+		else
+			$og['image'] = User::getAvatarUrl($user['User'], Avatar::PNG_SIZE);
+		$this->set('og', $og);
 
 		// user edit
 		// TODO: should be its own action

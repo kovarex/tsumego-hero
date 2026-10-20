@@ -106,8 +106,13 @@ Router::connect(
 /**
  * Board avatars. The url carries the key of the display name, which is what the
  * drawing is made of, so one url serves the avatar in a list and the one on a
- * profile.
+ * profile. The png is the same drawing for the pages that share it.
  */
+Router::connect(
+	'/board/:key.png',
+	['controller' => 'Avatars', 'action' => 'imagePng'],
+	['pass' => ['key'], 'key' => '[0-9a-f]{12}'] // Key of a display name
+);
 Router::connect(
 	'/board/:key',
 	['controller' => 'Avatars', 'action' => 'image'],

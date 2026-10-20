@@ -2,6 +2,10 @@
 
 namespace App\Utility;
 
+use App\Utility\Drawing\Canvas;
+use App\Utility\Drawing\GdCanvas;
+use App\Utility\Drawing\SvgCanvas;
+
 /**
  * Draws the board avatar of a player.
  *
@@ -32,6 +36,9 @@ class Avatar
 	/** The hex characters of the sha256 of a name that the board is drawn from. */
 	public const KEY_LENGTH = 12;
 
+	/** The side of a board picture that a page shares, in pixels. */
+	public const PNG_SIZE = 512;
+
 	public const GRID_SIZE = 5;
 
 	/** The free cells of a mirrored board, three states each. */
@@ -44,11 +51,35 @@ class Avatar
 	public const STONE_OUTLINE = '#8a7350';
 	public const GRID_COLOR = '#6b4a10';
 
+	/** The shading of the wood, top to bottom. */
+	private const WOOD_STOPS = [[0.0, '#e6c179'], [0.5, self::WOOD_COLOR], [1.0, '#cfa445']];
+
+	/** The shading of the frame around the playing surface. */
+	private const RIM_STOPS = [[0.0, '#b98536'], [0.6, self::RIM_COLOR], [1.0, '#96682a']];
+
+	/** The shading across a black stone, from the light to the dark side. */
+	private const BLACK_STONE_STOPS = [[0.0, '#4a4a4a'], [0.55, self::BLACK_STONE], [1.0, '#0d0d0d']];
+
+	/** The shading across a white stone, from the light to the dark side. */
+	private const WHITE_STONE_STOPS = [[0.0, '#ffffff'], [0.7, self::WHITE_STONE], [1.0, '#ddd6c8']];
+
+	/** How much of the bright spot of the reflection a black stone keeps. */
+	private const STONE_HIGHLIGHT_OPACITY = 0.22;
+
+	private const HIGHLIGHT_COLOR = '#ffffff';
+
+	/** The width of the outline a white stone needs to stand out from pale wood. */
+	private const STONE_OUTLINE_WIDTH = 1.0;
+
+	/** The grid is drawn thin and faint, so it reads as a guide and not as a board. */
+	private const GRID_WIDTH = 1.5;
+	private const GRID_OPACITY = 0.32;
+
 	/** The side of the drawing, in svg user units. */
-	private const CANVAS = 100;
+	public const CANVAS = 100;
 
 	/** The width of the frame around the playing surface. */
-	private const RIM = 2;
+	public const RIM = 2;
 
 	/**
 	 * The key of a name: the first bytes of its sha256, in hex. Whatever the name
@@ -101,6 +132,93 @@ class Avatar
 	}
 
 	/**
+	 * The middle line of every row and column of the board, in the units of the
+	 * drawing. Both renditions draw the grid from here.
+	 *
+	 * @return array<int, float>
+	 */
+	private static function gridPositions(): array
+	{
+		$cell = (self::CANVAS - 2 * self::RIM) / self::GRID_SIZE;
+		$positions = [];
+		for ($i = 0; $i < self::GRID_SIZE; $i++)
+			$positions[] = self::RIM + $cell / 2 + $i * $cell;
+
+		return $positions;
+	}
+
+	/**
+	 * The stones of a board, in the units of the drawing. Both renditions place
+	 * them here, so a stone cannot move in one picture and not in the other.
+	 *
+	 * @param string $key Key of a name (self::key)
+	 * @return array<int, array{0: float, 1: float, 2: float, 3: bool}> x, y, radius, white
+	 */
+	private static function stones(string $key): array
+	{
+		$pattern = self::pattern($key);
+		$cell = (self::CANVAS - 2 * self::RIM) / self::GRID_SIZE;
+
+		$stones = [];
+		for ($i = 0; $i < self::GRID_SIZE * self::GRID_SIZE; $i++)
+		{
+			if ($pattern[$i] === '0')
+				continue;
+
+			$stones[] = [
+				self::RIM + ($i % self::GRID_SIZE) * $cell + $cell / 2,
+				self::RIM + intdiv($i, self::GRID_SIZE) * $cell + $cell / 2,
+				$cell * 0.34,
+				$pattern[$i] === '2',
+			];
+		}
+
+		return $stones;
+	}
+
+	/**
+	 * The drawing of a board, written once against a canvas. The svg a page shows
+	 * and the png a share preview takes are two canvases of this one drawing, so
+	 * a stone, a line or a colour cannot be in one rendition and not the other.
+	 *
+	 * @param \App\Utility\Drawing\Canvas $canvas
+	 * @param string $key Key of a name (self::key)
+	 * @return void
+	 */
+	public static function draw(Canvas $canvas, string $key): void
+	{
+		// The frame is what makes a sharp outer edge look like the edge of a board
+		// rather than a misplaced crop of one. Both it and the playing surface are
+		// shaded, so a board reads as a piece of wood and not as a flat sticker.
+		$surface = self::CANVAS - 2 * self::RIM;
+		$canvas->gradientRect(0, 0, self::CANVAS, self::CANVAS, self::RIM_STOPS, 'rim');
+		$canvas->gradientRect(self::RIM, self::RIM, $surface, $surface, self::WOOD_STOPS, 'wood');
+
+		foreach (self::gridPositions() as $position)
+		{
+			$canvas->line($position, self::RIM, $position, self::CANVAS - self::RIM, self::GRID_COLOR, self::GRID_WIDTH, self::GRID_OPACITY);
+			$canvas->line(self::RIM, $position, self::CANVAS - self::RIM, $position, self::GRID_COLOR, self::GRID_WIDTH, self::GRID_OPACITY);
+		}
+
+		foreach (self::stones($key) as [$centerX, $centerY, $radius, $white])
+		{
+			// A stone of a real board carries the light of the room: a shading across the
+			// stone and, on a black one, the small bright spot of the reflection.
+			$canvas->gradientCircle(
+				$centerX,
+				$centerY,
+				$radius,
+				$white ? self::WHITE_STONE_STOPS : self::BLACK_STONE_STOPS,
+				$white ? 'stonew' : 'stoneb',
+				$white ? self::STONE_OUTLINE : '',
+				$white ? self::STONE_OUTLINE_WIDTH : 0.0
+			);
+			if (!$white)
+				$canvas->circle($centerX - $radius * 0.3, $centerY - $radius * 0.35, $radius * 0.26, self::HIGHLIGHT_COLOR, self::STONE_HIGHLIGHT_OPACITY);
+		}
+	}
+
+	/**
 	 * The board as an svg that scales to whatever size the caller shows it in.
 	 *
 	 * @param string $key Key of a name (self::key)
@@ -108,59 +226,29 @@ class Avatar
 	 */
 	public static function svg(string $key): string
 	{
-		$pattern = self::pattern($key);
-		$surface = self::CANVAS - 2 * self::RIM;
-		$cell = $surface / self::GRID_SIZE;
+		$canvas = new SvgCanvas(self::CANVAS);
+		self::draw($canvas, $key);
 
-		$lines = '';
-		for ($i = 0; $i < self::GRID_SIZE; $i++)
-		{
-			$position = self::RIM + $cell / 2 + $i * $cell;
-			$lines .= '<line x1="' . $position . '" y1="' . self::RIM . '" x2="' . $position . '" y2="' . (self::CANVAS - self::RIM) . '"/>';
-			$lines .= '<line x1="' . self::RIM . '" y1="' . $position . '" x2="' . (self::CANVAS - self::RIM) . '" y2="' . $position . '"/>';
-		}
+		return $canvas->picture();
+	}
 
-		$stones = '';
-		for ($i = 0; $i < self::GRID_SIZE * self::GRID_SIZE; $i++)
-		{
-			$state = $pattern[$i];
-			if ($state === '0')
-				continue;
+	/**
+	 * The board as a png. A share preview of several networks takes a picture and
+	 * not an svg, so a page shares this drawing and shows the svg in its own pages.
+	 *
+	 * @param string $key Key of a name (self::key)
+	 * @param int $size Side of the picture in pixels
+	 * @return string PNG data
+	 */
+	public static function png(string $key, int $size = self::PNG_SIZE): string
+	{
+		assert($size > 0, 'A board picture needs a size');
 
-			$centerX = self::RIM + ($i % self::GRID_SIZE) * $cell + $cell / 2;
-			$centerY = self::RIM + intdiv($i, self::GRID_SIZE) * $cell + $cell / 2;
-			$radius = $cell * 0.34;
-			$white = $state === '2';
-			// A stone of a real board carries the light of the room: a gradient across the
-			// stone and, on a black one, the small bright spot of the reflection.
-			$stones .= '<circle cx="' . $centerX . '" cy="' . $centerY . '" r="' . $radius . '" fill="url(#stone' . ($white ? 'w' : 'b') . ')"'
-				. ($white ? ' stroke="' . self::STONE_OUTLINE . '" stroke-width="1"' : '') . '/>';
-			if (!$white)
-				$stones .= '<circle cx="' . ($centerX - $radius * 0.3) . '" cy="' . ($centerY - $radius * 0.35) . '" r="' . $radius * 0.26 . '" fill="#ffffff" opacity="0.22"/>';
-		}
+		// The picture is painted at twice the size it is served at; sampling it down
+		// is what gives the stones and the grid their smooth edges.
+		$canvas = new GdCanvas($size * 2, self::CANVAS);
+		self::draw($canvas, $key);
 
-		// The frame is what makes a sharp outer edge look like the edge of a board
-		// rather than a misplaced crop of one. Both it and the playing surface are
-		// shaded, so a board reads as a piece of wood and not as a flat sticker.
-		return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' . self::CANVAS . ' ' . self::CANVAS . '">'
-			. '<defs>'
-			. '<linearGradient id="wood" x1="0" y1="0" x2="1" y2="1">'
-			. '<stop offset="0" stop-color="#e6c179"/><stop offset="0.5" stop-color="' . self::WOOD_COLOR . '"/><stop offset="1" stop-color="#cfa445"/>'
-			. '</linearGradient>'
-			. '<linearGradient id="rim" x1="0" y1="0" x2="0" y2="1">'
-			. '<stop offset="0" stop-color="#b98536"/><stop offset="0.6" stop-color="' . self::RIM_COLOR . '"/><stop offset="1" stop-color="#96682a"/>'
-			. '</linearGradient>'
-			. '<radialGradient id="stoneb" cx="0.35" cy="0.3" r="0.85">'
-			. '<stop offset="0" stop-color="#4a4a4a"/><stop offset="0.55" stop-color="' . self::BLACK_STONE . '"/><stop offset="1" stop-color="#0d0d0d"/>'
-			. '</radialGradient>'
-			. '<radialGradient id="stonew" cx="0.35" cy="0.3" r="0.9">'
-			. '<stop offset="0" stop-color="#ffffff"/><stop offset="0.7" stop-color="' . self::WHITE_STONE . '"/><stop offset="1" stop-color="#ddd6c8"/>'
-			. '</radialGradient>'
-			. '</defs>'
-			. '<rect width="' . self::CANVAS . '" height="' . self::CANVAS . '" fill="url(#rim)"/>'
-			. '<rect x="' . self::RIM . '" y="' . self::RIM . '" width="' . $surface . '" height="' . $surface . '" fill="url(#wood)"/>'
-			. '<g stroke="' . self::GRID_COLOR . '" stroke-opacity="0.32" stroke-width="1.5">' . $lines . '</g>'
-			. $stones
-			. '</svg>';
+		return $canvas->png($size);
 	}
 }
