@@ -802,10 +802,6 @@ use App\Utility\TsumegoFilters;
 			return Math.max(0, Math.min(allRanks.length - 1, index));
 		}
 
-		function setRangeCaption(text){
-			$(".difficulty-range__caption").text(text);
-		}
-
 		function affectedSelectId(index){
 			if(!activeRankRange)
 				return "difficulty-to";
@@ -892,12 +888,8 @@ use App\Utility\TsumegoFilters;
 				}
 				if(index !== rankDragStart)
 					rankDragMoved = true;
-				if(rankDragMoved){
-					let from = Math.min(rankDragStart, index);
-					let to = Math.max(rankDragStart, index);
-					setRangeCaption(allRanks[from] + " - " + allRanks[to]);
+				if(rankDragMoved)
 					applyRankRange(rankDragStart, index);
-				}
 			})
 			.on("pointerup", function(e){
 				e.stopPropagation();
@@ -912,7 +904,6 @@ use App\Utility\TsumegoFilters;
 					applyRankRange(start, index);
 				else
 					applyNearestRangeEnd(start);
-				setRangeCaption("Add a range");
 			})
 			.on("pointerleave", function(){
 				if(rankDragStart === null)
