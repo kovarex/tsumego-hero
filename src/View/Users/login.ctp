@@ -16,7 +16,7 @@ use App\Utility\CookieFlash;
 	<div id="login-box" class="users form">
 		<div class="left signin">
 			<?php echo CookieFlash::render(); ?>
-			 <h1>Sign in</h1>
+			<h1>Sign in</h1>
 			<?php echo $this->Form->create('User', ['action' => 'login']); ?>
 			<input type="hidden" name="redirect" value="<?php echo h($redirectUrl); ?>"/>
 			<input type="hidden" name="redirect_signature" value="<?php echo h($redirectSignature); ?>"/>
@@ -36,6 +36,7 @@ use App\Utility\CookieFlash;
 			Forgot password?<br>
 			<a href="/users/resetpassword">Reset</a>
 			<br><br>
+			<p id="google-sign-in-hint">Signed up with Google? Use the button below.</p>
 
 			<?php
 			// Encode redirect URL + signature in state for Google Sign-In (stateless)

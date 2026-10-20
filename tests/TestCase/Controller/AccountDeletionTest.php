@@ -59,6 +59,31 @@ class AccountDeletionTest extends TestCaseWithAuth
 		$this->assertSame('google@example.com', TestEmailer::$lastEmail['to']);
 	}
 
+	/**
+	 * The deletion happens through the mailed link, so a mail that never left leaves no
+	 * token behind and the request can be repeated.
+	 */
+	public function testNoLinkIsKeptWhenTheMailCannotBeSent(): void
+	{
+		$context = new ContextPreparator();
+		$this->registerTestEmailer();
+
+		try
+		{
+			TestEmailer::$unreachable = true;
+			$this->testAction('/users/delete_account', ['method' => 'POST']);
+		}
+		finally
+		{
+			TestEmailer::$unreachable = false;
+		}
+
+		$this->assertNull($this->userRow($context->user['id'])['deletion_token']);
+
+		$this->requestDeletion();
+		$this->assertNotEmpty($this->userRow($context->user['id'])['deletion_token']);
+	}
+
 	public function testConfirmingEmailedLinkDeletesAccount(): void
 	{
 		$context = new ContextPreparator();
@@ -258,8 +283,8 @@ class AccountDeletionTest extends TestCaseWithAuth
 		$this->testAction('/users/add', ['data' => ['User' => [
 			'name' => 'kovarex',
 			'email' => 'newkovarex@example.com',
-			'password1' => 'secret',
-			'password2' => 'secret']], 'method' => 'POST']);
+			'password1' => 'secretChest42',
+			'password2' => 'secretChest42']], 'method' => 'POST']);
 		$newAccount = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
 		$this->assertNotEmpty($newAccount);
 		$this->assertNotEquals($oldAccountID, $newAccount['User']['id']);

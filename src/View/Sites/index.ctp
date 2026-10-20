@@ -331,7 +331,7 @@ echo '</div>';
 				<?php
 					$levelBarDisplayChecked1 = '';
 $levelBarDisplayChecked2 = '';
-if($levelBar == 1)
+if($levelBar == User::LEVEL_BAR_LEVEL)
 	$levelBarDisplayChecked1 = 'checked="checked"';
 else
 	$levelBarDisplayChecked2 = 'checked="checked"';

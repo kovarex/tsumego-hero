@@ -15,15 +15,11 @@ use App\Utility\ValueGraphRenderer;
  * @var int $aNum
  * @var int $aEarnedTimes
  * @var array $as
- * @var bool $canResetOldTsumegoStatuses
  * @var array $dailyResults
- * @var int $deletedTsumegoStatusCount
- * @var int $levelBar
  * @var array|null $mistakeTraining
  * @var array $timeGraph
  * @var array $timeModeRanks
  * @var int $tsumegoCount
- * @var string $tsumegoStatusToRestCount
  * @var array $user
  */
 ?>
@@ -31,122 +27,7 @@ use App\Utility\ValueGraphRenderer;
 <?php TimeGraphRenderer::renderScriptInclude(); ?>
 
 <div>
-	<div class="profile-header">
-		<p class="profile-username"><?php
-			$avatarUrl = User::getAvatarUrl($user['User'], User::AVATAR_PIXELS_PROFILE);
-			echo User::avatarImage($avatarUrl, 'user-avatar--lg', false, User::boardUrl($user['User']));
-			echo h($user['User']['display_name']);
-			echo ' ';
-			User::renderPremium($user['User']);
-		?></p>
-		<?php echo $this->element('user_subnav', ['userID' => $user['User']['id'], 'activeTab' => 'profile']); ?>
-	</div>
-<?php if (Auth::getUserID() == $user['User']['id']): ?>
-<div class="cluster">
-	<div class="card card--green">
-		<div class="card__title">Account</div>
-		<table class="stat" id="name-and-email-table">
-			<tr>
-				<td><strong>Email:</strong> <?php echo h($user['User']['email']); ?></td>
-				<td><a id="show" class="link">change</a></td>
-			</tr>
-			<tr>
-				<td colspan="2">
-					<div id="msg2" style="display:none;margin-top:3px;">
-						<?php
-						echo $this->Form->create('User');
-						echo $this->Form->input('email', array('label' => '', 'type' => 'text', 'placeholder' => 'E-Mail', 'style' => 'width:150px;'));
-						echo '<div class="submit"><input class="btn" value="Submit" type="submit"></div>';
-						?>
-					</div>
-				</td>
-			</tr>
-			<?php if (!User::isGoogleUser($user['User'])): ?>
-			<tr>
-				<td><strong>Username:</strong> <?php echo h($user['User']['name'] ?? ''); ?></td>
-				<td></td>
-			</tr>
-			<?php endif; ?>
-			<tr>
-				<td><strong>Avatar:</strong></td>
-				<td>
-					<?php
-					$chosenAvatar = User::avatarChoice($user['User']);
-					foreach (User::avatarChoices($user['User']) as $avatarValue => $avatarLabel)
-					{
-						$avatarChecked = $chosenAvatar === $avatarValue ? 'checked="checked"' : '';
-						echo '<label class="field__option"><input type="radio" name="avatar" value="' . $avatarValue . '" onclick="avatarPreference(this.value);" ' . $avatarChecked . '> ' . h($avatarLabel) . '</label>';
-					}
-					if ($chosenAvatar === User::AVATAR_GRAVATAR)
-						echo '<div class="hint">Change it at <a href="https://gravatar.com" target="_blank" rel="noopener">gravatar.com</a></div>';
-					?>
-				</td>
-			</tr>
-		</table>
-	</div>
-	<div class="card card--green">
-		<div class="card__title">Preferences</div>
-		<div class="stack">
-			<div class="field">
-				<span class="field__label">Progress bar</span>
-				<?php
-				$levelBarDisplayChecked1 = '';
-				$levelBarDisplayChecked2 = '';
-				if ($levelBar == 1)
-					$levelBarDisplayChecked1 = 'checked="checked"';
-				else
-					$levelBarDisplayChecked2 = 'checked="checked"';
-				?>
-				<label class="field__option"><input type="radio" id="levelBarDisplay1" name="levelBarDisplay" value="1" onclick="levelBarChange(1);" <?php echo $levelBarDisplayChecked1; ?>> Level</label>
-				<label class="field__option"><input type="radio" id="levelBarDisplay2" name="levelBarDisplay" value="2" onclick="levelBarChange(2);" <?php echo $levelBarDisplayChecked2; ?>> Rating</label>
-			</div>
-			<div class="field">
-				<span class="field__label">Player color</span>
-				<?php
-				$playerColor = Auth::getPrefPlayerColor();
-				$playerColorRandomChecked = $playerColor === User::PREF_PLAYER_COLOR_RANDOM ? 'checked="checked"' : '';
-					$playerColorOriginalChecked = $playerColor === User::PREF_PLAYER_COLOR_ORIGINAL ? 'checked="checked"' : '';
-					?>
-					<label class="field__option"><input type="radio" name="playerColor" value="<?php echo User::PREF_PLAYER_COLOR_RANDOM; ?>" onclick="playerColorPreference(this.value);" <?php echo $playerColorRandomChecked; ?>> Random</label>
-					<label class="field__option"><input type="radio" name="playerColor" value="<?php echo User::PREF_PLAYER_COLOR_ORIGINAL; ?>" onclick="playerColorPreference(this.value);" <?php echo $playerColorOriginalChecked; ?>> Original</label>
-			</div>
-			<div class="field">
-				<span class="field__label">Board orientation</span>
-				<?php
-				$boardOrientation = Auth::getPrefBoardOrientation();
-				$boardOrientationRandomChecked = $boardOrientation === User::PREF_BOARD_ORIENTATION_RANDOM ? 'checked="checked"' : '';
-					$boardOrientationOriginalChecked = $boardOrientation === User::PREF_BOARD_ORIENTATION_ORIGINAL ? 'checked="checked"' : '';
-					?>
-					<label class="field__option"><input type="radio" name="boardOrientation" value="<?php echo User::PREF_BOARD_ORIENTATION_RANDOM; ?>" onclick="boardOrientationPreference(this.value);" <?php echo $boardOrientationRandomChecked; ?>> Random</label>
-					<label class="field__option"><input type="radio" name="boardOrientation" value="<?php echo User::PREF_BOARD_ORIENTATION_ORIGINAL; ?>" onclick="boardOrientationPreference(this.value);" <?php echo $boardOrientationOriginalChecked; ?>> Original</label>
-			</div>
-		</div>
-	</div>
-	<div class="card card--green">
-		<div class="card__title">Reset progress</div>
-		<div class="stack">
-			<?php if ($canResetOldTsumegoStatuses): ?>
-				<a class="btn" href="#" onclick="delUts(); return false;" id="reset-statuses-button">Reset old progress (<?php echo $tsumegoStatusToRestCount; ?>)</a>
-			<?php else: ?>
-				<a class="btn btn--disabled" href="#" id="reset-statuses-button">Reset old progress (<?php echo $tsumegoStatusToRestCount; ?>)</a>
-				<span class="hint">Available after <?php echo Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED; ?>% completion</span>
-			<?php endif; ?>
-			<?php if ($deletedTsumegoStatusCount > 0): ?>
-				<span class="hint">Progress of <?php echo $deletedTsumegoStatusCount; ?> problems has been deleted.</span>
-			<?php endif; ?>
-		</div>
-	</div>
-	<div class="card card--green">
-		<div class="card__title">Account</div>
-		<div class="stack">
-			<a class="btn btn--danger" href="/users/delete_account">Delete account</a>
-			<?php if (Auth::isAdmin()): ?>
-				<a class="btn btn--danger" href="/users/demote_admin">Remove admin status</a>
-			<?php endif; ?>
-		</div>
-	</div>
-</div>
-<?php endif; ?>
+	<?php echo $this->element('user_header', ['user' => $user['User'], 'activeTab' => 'profile']); ?>
 
 <div class="cluster cluster--stretch">
 	<div class="card card--purple">
@@ -405,11 +286,6 @@ showStatistics('Right', $as, $user, $dailyResults); ?>
 activateSelection(getCookie('lastProfileLeft'), 'Left');
 activateSelection(getCookie('lastProfileRight'), 'Right');
 
-$("#msg2").hide();
-$("#show").click(function(){
-	$("#msg2").show();
-});
-
 function updateButtonActivity(id, side, active)
 {
 	$("#" + id + 'Button' + side).toggleClass("btn--inactive", !active);
@@ -436,18 +312,6 @@ function activateSelection(selection, side)
 	updateButtonActivity('userShowAchievements', side, selection == 'achievement');
 }
 
-function delUts(){
-	var dNum = "<?php echo $tsumegoStatusToRestCount; ?>";
-	var confirmed = confirm("Are you sure that you want to delete your progress on "+dNum+" problems?");
-	if (confirmed)
-	{
-		var form = document.createElement('form');
-		form.method = 'POST';
-		form.action = '/users/deleteOldTsumegoStatuses';
-		document.body.appendChild(form);
-		form.submit();
-	}
-}
 </script>
 <script>
 <?php
@@ -474,31 +338,4 @@ function delUts(){
 			'category');
 	}
 	?>
-</script>
-<script>
-function playerColorPreference(color) {
-	fetch('/users/playerColorPreference', {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-		body: 'color=' + encodeURIComponent(color)
-	});
-}
-function boardOrientationPreference(orientation) {
-	fetch('/users/boardOrientationPreference', {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-		body: 'orientation=' + encodeURIComponent(orientation)
-	});
-}
-function avatarPreference(avatar) {
-	fetch('/users/avatarPreference', {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-		body: 'avatar=' + encodeURIComponent(avatar)
-	}).then(function(response) {
-		// The profile header draws the avatar on the server, so reload it to show the new one
-		if (response.ok)
-			location.reload();
-	});
-}
 </script>

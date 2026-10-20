@@ -30,13 +30,24 @@ class JwtAuth
 	private static ?int $cachedUserId = null;
 
 	/**
+	 * @var string|null Cached password claim of the token in the cookie
+	 */
+	private static ?string $cachedPasswordClaim = null;
+
+	/**
+	 * @var bool Whether the cookie was looked at already in this request
+	 */
+	private static bool $cookieRead = false;
+
+	/**
 	 * Create a JWT token for the given user ID.
 	 *
 	 * @param int $userId The user ID to encode
 	 * @param int|null $expirySeconds Seconds until expiration (null = default 30 days)
+	 * @param string|null $passwordHash The password the session is opened with
 	 * @return string The JWT token
 	 */
-	public static function createToken(int $userId, ?int $expirySeconds = null): string
+	public static function createToken(int $userId, ?int $expirySeconds = null, ?string $passwordHash = null): string
 	{
 		$expiry = $expirySeconds ?? self::DEFAULT_EXPIRY_SECONDS;
 
@@ -45,8 +56,28 @@ class JwtAuth
 			'iat' => time(),
 			'exp' => time() + $expiry,
 		];
+		if ($passwordHash !== null)
+			$payload['pwd'] = self::passwordClaim($passwordHash);
 
 		return JWT::encode($payload, self::getSecret(), self::ALGORITHM);
+	}
+
+	/**
+	 * The claim a token gets from the password it is issued with. A password change
+	 * changes the hash, so tokens of the old password no longer fit the account.
+	 */
+	public static function claimOf(?string $passwordHash): ?string
+	{
+		return $passwordHash === null ? null : self::passwordClaim($passwordHash);
+	}
+
+	/**
+	 * The password claim of the token in the cookie, or null when it has none.
+	 */
+	public static function getPasswordClaimFromCookie(): ?string
+	{
+		self::readCookie();
+		return self::$cachedPasswordClaim;
 	}
 
 	/**
@@ -57,15 +88,8 @@ class JwtAuth
 	 */
 	public static function validateToken(string $token): ?int
 	{
-		try
-		{
-			$decoded = JWT::decode($token, new Key(self::getSecret(), self::ALGORITHM));
-			return (int) $decoded->sub;
-		}
-		catch (\Exception $e)
-		{
-			return null;
-		}
+		$payload = self::decodePayload($token);
+		return $payload === null ? null : (int) $payload->sub;
 	}
 
 	/**
@@ -75,25 +99,61 @@ class JwtAuth
 	 */
 	public static function getUserIdFromCookie(): ?int
 	{
-		if (self::$cachedUserId !== null)
-			return self::$cachedUserId;
-
-		if (!isset($_COOKIE[self::COOKIE_NAME]) || empty($_COOKIE[self::COOKIE_NAME]))
-			return null;
-
-		self::$cachedUserId = self::validateToken($_COOKIE[self::COOKIE_NAME]);
+		self::readCookie();
 		return self::$cachedUserId;
+	}
+
+	/**
+	 * Read the token in the cookie once per request and keep what it says.
+	 */
+	private static function readCookie(): void
+	{
+		if (self::$cookieRead)
+			return;
+		self::$cookieRead = true;
+
+		if (empty($_COOKIE[self::COOKIE_NAME]))
+			return;
+
+		$payload = self::decodePayload($_COOKIE[self::COOKIE_NAME]);
+		if ($payload === null)
+			return;
+
+		self::$cachedUserId = (int) $payload->sub;
+		self::$cachedPasswordClaim = $payload->pwd ?? null;
+	}
+
+	/**
+	 * Check the signature and the expiry of a token, the one place that does it.
+	 * A token that does not check out is null for every caller.
+	 */
+	private static function decodePayload(string $token): ?object
+	{
+		try
+		{
+			return JWT::decode($token, new Key(self::getSecret(), self::ALGORITHM));
+		}
+		catch (\Exception $e)
+		{
+			return null;
+		}
+	}
+
+	private static function passwordClaim(string $passwordHash): string
+	{
+		return substr(hash('sha256', $passwordHash), 0, 16);
 	}
 
 	/**
 	 * Set auth cookie with JWT token for the given user ID.
 	 *
 	 * @param int $userId The user ID
+	 * @param string|null $passwordHash The password the session is opened with
 	 * @return string The token that was set
 	 */
-	public static function setAuthCookie(int $userId): string
+	public static function setAuthCookie(int $userId, ?string $passwordHash = null): string
 	{
-		$token = self::createToken($userId);
+		$token = self::createToken($userId, null, $passwordHash);
 		$_COOKIE[self::COOKIE_NAME] = $token;
 		setcookie(
 			self::COOKIE_NAME,
@@ -105,6 +165,8 @@ class JwtAuth
 			true  // httpOnly
 		);
 		self::$cachedUserId = $userId;
+		self::$cachedPasswordClaim = self::claimOf($passwordHash);
+		self::$cookieRead = true;
 		return $token;
 	}
 
@@ -116,6 +178,8 @@ class JwtAuth
 		unset($_COOKIE[self::COOKIE_NAME]);
 		setcookie(self::COOKIE_NAME, '', time() - 3600, '/');
 		self::$cachedUserId = null;
+		self::$cachedPasswordClaim = null;
+		self::$cookieRead = true;
 	}
 
 	/**
@@ -124,6 +188,8 @@ class JwtAuth
 	public static function clearCache(): void
 	{
 		self::$cachedUserId = null;
+		self::$cachedPasswordClaim = null;
+		self::$cookieRead = false;
 	}
 
 	/**

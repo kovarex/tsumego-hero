@@ -22,11 +22,12 @@ class AdminGuardTest extends ControllerTestCase
 	{
 		new ContextPreparator(['user' => null]);
 
-		foreach (['/users/playerColorPreference', '/users/boardOrientationPreference'] as $url)
+		// The avatar endpoint is guarded the same way, see AvatarPreferenceTest::testRequiresLogin
+		foreach (['/users/playerColorPreference', '/users/boardOrientationPreference', '/users/emailPreference'] as $url)
 		{
 			try
 			{
-				$this->testAction($url, ['method' => 'post', 'data' => ['color' => 1, 'orientation' => 1]]);
+				$this->testAction($url, ['method' => 'post', 'data' => ['color' => 1, 'orientation' => 1, 'User' => ['email' => 'guest@example.com']]]);
 				$this->fail($url . ' let a guest through');
 			}
 			catch (UnauthorizedException $e)

@@ -30,12 +30,12 @@ class CookieFlashBrowserTest extends CakeTestCase
 		$browser->find('input[type="submit"]')->click();
 
 		// Wait for page to load
-		$browser->waitUntilJs('document.documentElement.outerHTML.includes("Unknown user")');
+		$browser->waitUntilJs('document.documentElement.outerHTML.includes("Wrong username or password.")');
 
 		// Check for flash message in page source
 		$pageSource = $browser->driver->getPageSource();
 		$this->assertStringContainsString('alert', $pageSource, 'Flash message alert div should be present');
-		$this->assertStringContainsString('Unknown user', $pageSource, 'Flash message should contain error text');
+		$this->assertStringContainsString('Wrong username or password.', $pageSource, 'Flash message should contain error text');
 	}
 
 	/**
@@ -61,7 +61,7 @@ class CookieFlashBrowserTest extends CakeTestCase
 
 		// Flash message should NOT be present on subsequent page
 		$pageSource2 = $browser->driver->getPageSource();
-		$this->assertStringNotContainsString('Unknown user', $pageSource2, 'Flash message should not persist to next page');
+		$this->assertStringNotContainsString('Wrong username or password.', $pageSource2, 'Flash message should not persist to next page');
 	}
 
 	/**

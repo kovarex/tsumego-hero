@@ -382,7 +382,7 @@ class AppController extends Controller
 
 		$highscoreLink = 'highscore';
 		$lightDark = 'light';
-		$levelBar = 1;
+		$levelBar = User::LEVEL_BAR_LEVEL;
 		$lastProfileLeft = 1;
 		$lastProfileRight = 2;
 
@@ -425,7 +425,8 @@ class AppController extends Controller
 
 			if (isset($_COOKIE['sound']) && $_COOKIE['sound'] != '0')
 			{
-				Auth::saveUserField('sound', $_COOKIE['sound']);
+				// The cookie says 'on' or 'off', the column holds 1 or 0
+				Auth::saveUserField('sound', $_COOKIE['sound'] === 'on' ? User::SOUND_ON : User::SOUND_OFF);
 				unset($_COOKIE['sound']);
 			}
 			$this->set('user', Auth::getUser());
@@ -435,32 +436,21 @@ class AppController extends Controller
 		{
 			$lightDark = $_COOKIE['lightDark'];
 			if (Auth::isLoggedIn())
-			{
-				// Convert string to integer for database storage
-				$lightDarkInt = ($lightDark === 'light') ? 0 : 2;
-				Auth::saveUserField('lastLight', $lightDarkInt);
-			}
+				Auth::saveUserField('lastLight', $lightDark === 'dark' ? User::THEME_DARK : User::THEME_LIGHT);
 		}
 		elseif (Auth::isLoggedIn())
-			if (Auth::getUser()['lastLight'] == 0
-			|| Auth::getUser()['lastLight'] == 1)
-				$lightDark = 'light';
-			else
-				$lightDark = 'dark';
+			$lightDark = (Auth::getUser()['lastLight'] == User::THEME_DARK) ? 'dark' : 'light';
 
 		if (Auth::isLoggedIn())
 		{
 			$this->handleSearchSettings(Auth::getUserID());
 			if (isset($_COOKIE['levelBar']) && $_COOKIE['levelBar'] != '0')
 			{
-				$levelBar = $_COOKIE['levelBar'];
+				$levelBar = ((int) $_COOKIE['levelBar']) === User::LEVEL_BAR_RATING ? User::LEVEL_BAR_RATING : User::LEVEL_BAR_LEVEL;
 				Auth::saveUserField('levelBar', $levelBar);
 			}
-			elseif (Auth::getUser()['levelBar'] == 0
-		  || Auth::getUser()['levelBar'] == 'level')
-		  	$levelBar = 1;
 			else
-				$levelBar = 2;
+				$levelBar = ((int) Auth::getUser()['levelBar']) === User::LEVEL_BAR_RATING ? User::LEVEL_BAR_RATING : User::LEVEL_BAR_LEVEL;
 
 			if (isset($_COOKIE['lastProfileLeft']) && $_COOKIE['lastProfileLeft'] != '0')
 			{

@@ -1,6 +1,7 @@
 <?php
 
 use App\Utility\Avatar;
+use App\Utility\Constants;
 use App\Utility\PhpbbNames;
 use App\Utility\Rating;
 use App\Utility\Util;
@@ -14,6 +15,21 @@ class User extends AppModel
 	public const PREF_PLAYER_COLOR_ORIGINAL = 1;
 	public const PREF_BOARD_ORIENTATION_RANDOM = 0;
 	public const PREF_BOARD_ORIENTATION_ORIGINAL = 1;
+
+	/** Whether the player wants sound. The cookie spells them 'on' and 'off'. */
+	public const SOUND_OFF = 0;
+	public const SOUND_ON = 1;
+
+	/** The theme the player picked. */
+	public const THEME_LIGHT = 0;
+	public const THEME_DARK = 1;
+
+	/**
+	 * What the bar in the header shows. There is no 0 because the cookie that carries
+	 * the choice reads 0 as "nothing picked yet".
+	 */
+	public const LEVEL_BAR_LEVEL = 1;
+	public const LEVEL_BAR_RATING = 2;
 
 	// Shown instead of the name of a user whose account is not there anymore.
 	public const DELETED_NAME = '[account deleted]';
@@ -487,6 +503,17 @@ class User extends AppModel
 	}
 
 	/**
+	 * Whether the account wants sound.
+	 *
+	 * @param array<string, mixed> $user
+	 * @return bool
+	 */
+	public static function soundIsOn(array $user): bool
+	{
+		return (int) ($user['sound'] ?? self::SOUND_OFF) === self::SOUND_ON;
+	}
+
+	/**
 	 * The avatars a player can pick, as value => label. The Google picture is only
 	 * offered to an account that has one.
 	 *
@@ -621,5 +648,18 @@ class User extends AppModel
 			? ''
 			: ' onerror="this.onerror=null;this.classList.add(\'user-avatar--board\');this.src=\'' . h($fallbackUrl) . '\'"';
 		return '<img src="' . h($avatarUrl) . '" alt="" class="' . $class . '"' . $loading . $fallback . ' decoding="async" referrerpolicy="no-referrer">';
+	}
+
+	/**
+	 * Whether the account solved enough of the public problems to throw away the progress
+	 * it has not touched for years.
+	 *
+	 * @param UserRow $user
+	 */
+	public static function canResetOldProgress(array $user): bool
+	{
+		$publicProblems = ClassRegistry::init('Tsumego')->countPublicProblems();
+		return Util::getPercent($user['solved'], $publicProblems)
+			>= Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED;
 	}
 }

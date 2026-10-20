@@ -146,16 +146,17 @@ class UsersControllerTest extends ControllerTestCase
 		$this->assertTextContains('DN_Ivan Detkov', $browser->driver->getPageSource());
 	}
 
-	public function testUserProfilePageEmailOnlyVisibleToCurrentUser()
+	public function testEmailIsOnlyOnOwnSettingsPage()
 	{
 		$context = new ContextPreparator([
 			'user' => ['email' => 'current@example.com'],
 			'other-users' => [['name' => 'Ivan Detkov', 'rating' => 2600, 'email' => 'detkov@example.com']]]);
 
 		$browser = Browser::instance();
-		// View own profile - email should be visible
-		$browser->get('users/view/' . $context->user['id']);
+		$browser->get('users/settings');
 		$this->assertTextContains('current@example.com', $browser->getTableCell('#name-and-email-table', 0, 0)->getText());
+
+		// The profile of another player never shows their address
 		$browser->get('users/view/' . $context->otherUsers[0]['id']);
 		$this->assertTextNotContains('detkov@example.com', $browser->driver->getPageSource());
 	}
@@ -218,6 +219,7 @@ class UsersControllerTest extends ControllerTestCase
 			['Completed:', '2 of 2'], // one problem in two sets still counted as one
 			['100%']]);
 
+		$browser->get('users/settings');
 		$this->assertSame('RESET OLD PROGRESS (1)', $browser->find('#reset-statuses-button')->getText());
 
 		// clicking reset removes the status
@@ -229,6 +231,30 @@ class UsersControllerTest extends ControllerTestCase
 
 		$this->assertEmpty(ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[1]['id']]]));
 		$this->assertSame($context->reloadUser()['solved'], 1);
+	}
+
+	/**
+	 * A golden problem waits for its one attempt, which is not progress left behind, so
+	 * the reset keeps it while it removes what nobody touched for a year.
+	 */
+	public function testResetKeepsAGoldenProblemInProgress(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'resetGolden', 'solved' => 2],
+			'tsumegos' => [
+				['status' => ['name' => 'S', 'updated' => '2000-01-01 00:00:00'], 'sets' => [['name' => 'reset-1', 'num' => 1]]],
+				['status' => ['name' => 'G', 'updated' => '2000-01-01 00:00:00'], 'sets' => [['name' => 'reset-2', 'num' => 1]]]]]);
+		$browser = Browser::instance();
+
+		$browser->get('users/settings');
+		$this->assertSame('RESET OLD PROGRESS (1)', $browser->find('#reset-statuses-button')->getText());
+
+		$browser->driver->executeScript("window.confirm = function(msg) {return true;};");
+		$browser->clickId('reset-statuses-button');
+
+		$tsumegoStatus = ClassRegistry::init('TsumegoStatus');
+		$this->assertEmpty($tsumegoStatus->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]]));
+		$this->assertNotEmpty($tsumegoStatus->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[1]['id']]]));
 	}
 
 	public function testProfileShowsRank(): void
@@ -414,7 +440,7 @@ class UsersControllerTest extends ControllerTestCase
 		$this->assertStringNotContainsString('alice favorites', $this->view);
 	}
 
-	public function testProgressBarPreferenceOnlyOnOwnProfile(): void
+	public function testProgressBarPreferenceOnlyOnOwnSettingsPage(): void
 	{
 		$context = new ContextPreparator([
 			'user' => ['name' => 'viewer'],
@@ -424,11 +450,10 @@ class UsersControllerTest extends ControllerTestCase
 
 		$browser = Browser::instance();
 
-		// Own profile: progress bar preference is visible
-		$browser->get('users/view/' . $context->user['id']);
+		$browser->get('users/settings');
 		$this->assertStringContainsString('id="levelBarDisplay1"', $browser->driver->getPageSource());
 
-		// Other user's profile: progress bar preference is hidden
+		// A profile shows the numbers only, never the preferences behind them
 		$browser->get('users/view/' . $target['id']);
 		$this->assertStringNotContainsString('id="levelBarDisplay1"', $browser->driver->getPageSource());
 	}
@@ -488,7 +513,7 @@ class UsersControllerTest extends ControllerTestCase
 		]);
 
 		$browser = Browser::instance();
-		$browser->get('users/view/' . $context->user['id']);
+		$browser->get('users/settings');
 
 		$browser->driver->executeScript("window.confirm = function() { return true; }");
 		$browser->findById('reset-statuses-button')->click();
@@ -519,7 +544,7 @@ class UsersControllerTest extends ControllerTestCase
 		$bobId = ContextPreparator::getUserIdFromName('bob');
 
 		$browser = Browser::instance();
-		$browser->get('users/view/' . $context->user['id']);
+		$browser->get('users/settings');
 
 		$browser->driver->executeScript("window.confirm = function() { return true; }");
 		$browser->findById('reset-statuses-button')->click();
@@ -614,24 +639,6 @@ class UsersControllerTest extends ControllerTestCase
 			// Rank button links should contain the current category
 			$this->assertTextContains("category={$catId}&rank=", $this->view);
 		}
-	}
-
-	public function testColorPreferenceSavesTheChoice()
-	{
-		$context = new ContextPreparator(['user' => ['name' => 'prefs']]);
-
-		$this->testAction('/users/playerColorPreference', ['method' => 'post', 'data' => ['color' => 1]]);
-
-		$this->assertSame(1, (int) $context->reloadUser()['pref_player_color']);
-	}
-
-	public function testBoardOrientationPreferenceSavesTheChoice()
-	{
-		$context = new ContextPreparator(['user' => ['name' => 'prefs']]);
-
-		$this->testAction('/users/boardOrientationPreference', ['method' => 'post', 'data' => ['orientation' => 1]]);
-
-		$this->assertSame(1, (int) $context->reloadUser()['pref_board_orientation']);
 	}
 
 	public function testDemoteAdminRedirectsAnonymousToLogin()

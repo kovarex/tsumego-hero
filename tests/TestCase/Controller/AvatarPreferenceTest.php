@@ -103,27 +103,27 @@ class AvatarPreferenceTest extends TestCaseWithAuth
 		]);
 	}
 
-	public function testTheProfileOffersTheAvatarsTheAccountCanUse(): void
+	public function testTheSettingsPageOffersTheAvatarsTheAccountCanUse(): void
 	{
 		Auth::logout();
 		$context = new ContextPreparator(['user' => ['name' => 'avatarOffers']]);
 		$this->login('avatarOffers');
 
-		$html = $this->testAction('/users/view/' . $context->user['id'], ['return' => 'contents']);
+		$html = $this->testAction('/users/settings', ['return' => 'contents']);
 
 		$this->assertStringContainsString('name="avatar" value="' . User::AVATAR_BOARD . '"', $html);
 		$this->assertStringContainsString('name="avatar" value="' . User::AVATAR_GRAVATAR . '"', $html);
 		$this->assertStringNotContainsString('name="avatar" value="' . User::AVATAR_GOOGLE . '"', $html);
 	}
 
-	public function testTheProfileOffersTheGooglePictureToAnAccountWithOne(): void
+	public function testTheSettingsPageOffersTheGooglePictureToAnAccountWithOne(): void
 	{
 		Auth::logout();
 		$context = new ContextPreparator(['user' => ['name' => 'avatarOffersGoogle']]);
 		$this->storeGooglePicture($context->user['id']);
 		$this->login('avatarOffersGoogle');
 
-		$html = $this->testAction('/users/view/' . $context->user['id'], ['return' => 'contents']);
+		$html = $this->testAction('/users/settings', ['return' => 'contents']);
 
 		$this->assertStringContainsString('name="avatar" value="' . User::AVATAR_GOOGLE . '"', $html);
 	}

@@ -24,9 +24,25 @@ class CronController extends AppController
 		$this->dailyUsersReset();
 		$this->dailyPotionConditionReset();
 		$this->updateSolvedCounts();
+		self::dropExpiredAddressChanges();
 
 		$this->response->statusCode(200);
 		return $this->response;
+	}
+
+	/**
+	 * Forgets address changes whose links no longer work, so a change that was never
+	 * confirmed does not stay on the account. The lifetime is the one the links were
+	 * sent with, so a change stays exactly as long as its links work.
+	 */
+	private static function dropExpiredAddressChanges(): void
+	{
+		Util::execute('UPDATE user
+			SET unconfirmed_email = NULL, unconfirmed_email_token = NULL,
+				unconfirmed_email_cancel_token = NULL, unconfirmed_email_created = NULL
+			WHERE unconfirmed_email IS NOT NULL
+				AND unconfirmed_email_created <= NOW() - INTERVAL ? HOUR',
+			[UsersController::$EMAIL_CHANGE_LINK_VALID_HOURS]);
 	}
 
 	private function dailyUsersReset(): void

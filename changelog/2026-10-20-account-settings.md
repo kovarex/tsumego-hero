@@ -1,0 +1,1 @@
+Changed: Your email, avatar, theme, sound, playing preferences and old progress moved from your profile to their own [Settings tab](/users/settings).

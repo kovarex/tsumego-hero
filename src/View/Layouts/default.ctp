@@ -163,7 +163,7 @@ echo ViteManifest::legacyScript('legacy');
 		<div class="site-nav">
 			<?php
 			// Account access at the top of the drawer (logged-in). The username
-			// links to the profile; only Sign Out is listed as a separate action.
+			// links to the profile; Settings and Sign Out are listed as separate actions.
 			if (Auth::isLoggedIn()):
 			?>
 			<div class="site-nav__account">
@@ -172,6 +172,7 @@ echo ViteManifest::legacyScript('legacy');
 				</div>
 				<nav class="site-nav__account-links">
 					<ul>
+						<li><a href="/users/settings">Settings</a></li>
 						<li><a href="/users/logout">Sign Out</a></li>
 					</ul>
 				</nav>
@@ -326,14 +327,9 @@ echo ViteManifest::legacyScript('legacy');
 						else
 							echo '<li class="discuss-disabled"><a style="color:var(--surface-muted-text);">Discuss</a></li>';
 						if(Auth::isLoggedIn())
-							if(Auth::getUser()['sound'] == 'off')
-								$soundButtonImageValue = 'sound-icon2.png';
-							else if(Auth::getUser()['sound'] == 'on')
-								$soundButtonImageValue = 'sound-icon1.png';
+							$soundButtonImageValue = User::soundIsOn(Auth::getUser()) ? 'sound-icon1.png' : 'sound-icon2.png';
 						else
-								$soundButtonImageValue = 'sound-icon1.png';
-						else
-								$soundButtonImageValue = 'sound-icon1.png';
+							$soundButtonImageValue = 'sound-icon1.png';
 
 						echo '<li class="menuIcons1">
 						<a href="#" id="soundButton" onclick="changeSound(); return false;"><img id="soundButtonImage" src="/img/'.$soundButtonImageValue.'" width="25px"></a>
@@ -446,7 +442,7 @@ echo ViteManifest::legacyScript('legacy');
 
 	<?php if(Auth::isLoggedIn()){ ?>
 	var soundValue = 0;
-	<?php echo 'soundValue = "'.Auth::getUser()['sound'].'";';
+	<?php echo 'soundValue = "'.(User::soundIsOn(Auth::getUser()) ? 'on' : 'off').'";';
 	}else{
 	?>
 	soundValue = getCookie("sound");
@@ -580,38 +576,20 @@ echo ViteManifest::legacyScript('legacy');
 		e.stopPropagation();
 	});
 
+	function setSoundCookie(value)
+	{
+		// One cookie for the whole site, written for path / so every page sees it.
+		document.cookie = "sound=" + value + ";path=/";
+	}
+
 	function changeSound()
 	{
-		if(getCookie("sound")=="off")
-		{
-			document.getElementById("soundButtonImage").src="/img/sound-icon1.png";
-			document.cookie = "sound=on;path=/";
-			document.cookie = "sound=on;path=/sets/view";
-			document.cookie = "sound=on;path=/tsumegos/play";
-			document.cookie = "sound=on;path=/users";
-			document.cookie = "sound=on;path=/users/view";
-			updateSoundValue(true);
-		}
-		else if(getCookie("sound")=="on")
-		{
-			document.getElementById("soundButtonImage").src="/img/sound-icon2.png";
-			document.cookie = "sound=off;path=/";
-			document.cookie = "sound=off;path=/sets/view";
-			document.cookie = "sound=off;path=/tsumegos/play";
-			document.cookie = "sound=off;path=/users";
-			document.cookie = "sound=off;path=/users/view";
-			updateSoundValue(false);
-		}
-		else
-		{
-			document.getElementById("soundButtonImage").src="/img/sound-icon2.png";
-			document.cookie = "sound=off;path=/";
-			document.cookie = "sound=off;path=/sets/view";
-			document.cookie = "sound=off;path=/tsumegos/play";
-			document.cookie = "sound=off;path=/users";
-			document.cookie = "sound=off;path=/users/view";
-			updateSoundValue(false);
-		}
+		// A visitor who has not picked anything hears sound: only an explicit "off" is
+		// silent.
+		var soundIsOn = getCookie("sound") != "off";
+		document.getElementById("soundButtonImage").src = soundIsOn ? "/img/sound-icon2.png" : "/img/sound-icon1.png";
+		setSoundCookie(soundIsOn ? "off" : "on");
+		updateSoundValue(!soundIsOn);
 	}
 
 	function getCookie(cname){
