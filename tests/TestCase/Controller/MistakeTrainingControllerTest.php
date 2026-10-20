@@ -541,9 +541,73 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 
 		$html = (string) $this->testAction('/sites/index', ['return' => 'contents']);
 
-		$this->assertStringContainsString('class="mistake-training-card" href="/mistake-training"', $html);
+		$this->assertStringContainsString('class="mistake-training-card" href="' . MistakeTraining::$OVERVIEW_LINK . '"', $html,
+			'The homepage opens the overview, which leads into the training');
 		$this->assertStringContainsString('class="mistake-training-card__count" role="img" title="2 problems to review today" aria-label="2 problems to review today">2</span>', $html);
 		$this->assertStringNotContainsString('Mistake<br>Training', $html, 'The training is on the homepage, not in the Play menu');
+	}
+
+	public function testTheOverviewShowsWhatIsDueAndLeadsIntoTheTraining()
+	{
+		new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumegos' => [
+				['set_order' => 1, 'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 hour'))]],
+				['set_order' => 2, 'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 hour'))]],
+			],
+		]);
+
+		$html = (string) $this->testAction(MistakeTraining::$OVERVIEW_LINK, ['return' => 'contents']);
+
+		$this->assertStringContainsString('id="mistake-training-due">2 problems to review today</p>', $html);
+		$this->assertStringContainsString('id="mistake-training-start" href="' . MistakeTraining::$QUEUE_LINK . '">Start training</a>', $html);
+		$this->assertStringContainsString('id="mistake-training-overview-title">Your progress</h2>', $html, 'With the calendar and streak of the profile');
+		$this->assertStringNotContainsString('All caught up', $html);
+		$this->assertStringNotContainsString('id="board"', $html, 'The overview opens no problem');
+	}
+
+	public function testTheOverviewListsTheProblemsInTraining()
+	{
+		new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumegos' => [
+				['set_order' => 7, 'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 hour'))]],
+				['set_order' => 3, 'status' => ['name' => 'V', 'mistake_training_rung' => 4, 'mistake_training_due' => date('Y-m-d', strtotime(MistakeTraining::today() . ' +10 days')) . ' 00:00:00']],
+			],
+		]);
+
+		$html = (string) $this->testAction(MistakeTraining::$OVERVIEW_LINK, ['return' => 'contents']);
+
+		$this->assertStringContainsString('<summary>Problems in training (2)</summary>', $html);
+		$this->assertMatchesRegularExpression('~#7</td>\s*<td><span class="training-overview__insignia training-overview__insignia--chevron" role="img" aria-label="' . MistakeTraining::rungName(0) . '"~', $html);
+		$this->assertMatchesRegularExpression('~title="' . MistakeTraining::rungName(4) . '">.*?</span></td>\s*<td>'
+			. date('M j', strtotime(MistakeTraining::today() . ' +10 days')) . '</td>~s', $html, 'With the rung as insignia and the day of the next review');
+		$this->assertLessThan(strpos($html, '#3</td>'), strpos($html, '#7</td>'), 'Soonest review first');
+	}
+
+	public function testTheOverviewIsAllCaughtUpOnceNothingIsDue()
+	{
+		new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumego' => ['set_order' => 1, 'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('+2 days'))]],
+		]);
+
+		$html = (string) $this->testAction(MistakeTraining::$OVERVIEW_LINK, ['return' => 'contents']);
+
+		$this->assertStringContainsString('All caught up!', $html);
+		$this->assertStringNotContainsString('mistake-training-start', $html);
+	}
+
+	public function testTheTitleOfATrainingProblemLinksToTheOverview()
+	{
+		new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumego' => ['set_order' => 1, 'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 hour'))]],
+		]);
+
+		$html = (string) $this->testAction('/mistake-training', ['return' => 'contents']);
+
+		$this->assertStringContainsString('<a id="playTitleA" href="' . MistakeTraining::$OVERVIEW_LINK . '">Mistake Training 1/1</a>', $html);
 	}
 
 	public function testTheHomepageOffersPastMistakesWhenNothingIsDue()
@@ -725,148 +789,6 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 			'The toolbox turns the training off');
 	}
 
-	public function testTheToolboxAcceptsAPastedProblemAddress()
-	{
-		$context = new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true], 'tsumego' => 1]);
-		$userId = $context->user['id'];
-		$tsumegoId = (int) $context->tsumegos[0]['id'];
-		$connectionID = (int) $context->tsumegos[0]['set-connections'][0]['id'];
-
-		$this->testAction(MistakeTraining::$DEBUG_LINK, [
-			'method' => 'post',
-			'data' => ['command' => 'add', 'problem' => 'https://tsumego.ddev.site:33003/' . $connectionID . '?sid=7'],
-		]);
-
-		$this->assertNotNull(MistakeTraining::getPoolRow($userId, $tsumegoId),
-			'The port and the query are not mistaken for the problem');
-	}
-
-	public function testTheToolboxSimulatesASolveAndAMistake()
-	{
-		$context = new ContextPreparator([
-			'user' => ['name' => 'admin', 'admin' => true],
-			'tsumego' => [
-				'set_order' => 1,
-				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
-			],
-		]);
-		$userId = $context->user['id'];
-		$tsumegoId = (int) $context->tsumegos[0]['id'];
-
-		$this->testAction(MistakeTraining::$DEBUG_LINK, [
-			'method' => 'post',
-			'data' => ['command' => 'solve', 'tsumego_id' => $tsumegoId],
-		]);
-		$this->assertSame(1, (int) MistakeTraining::getPoolRow($userId, $tsumegoId)['rung'],
-			'A simulated clean solve climbs the ladder');
-
-		$this->login($context->user['name']);
-		$this->testAction(MistakeTraining::$DEBUG_LINK, [
-			'method' => 'post',
-			'data' => ['command' => 'fail', 'tsumego_id' => $tsumegoId],
-		]);
-
-		$row = MistakeTraining::getPoolRow($userId, $tsumegoId);
-		$this->assertSame(0, (int) $row['rung'], 'A simulated mistake takes the problem back to the bottom');
-		$this->assertSame(
-			date('Y-m-d', strtotime(MistakeTraining::today() . ' +1 day')),
-			date('Y-m-d', strtotime($row['next_due']))
-		);
-	}
-
-	public function testTheToolboxMistakeOnADueProblemKeepsItDue()
-	{
-		$context = new ContextPreparator([
-			'user' => ['name' => 'admin', 'admin' => true],
-			'tsumego' => [
-				'set_order' => 1,
-				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day')), 'mistake_training_rung' => 3],
-			],
-		]);
-		$userId = $context->user['id'];
-		$tsumegoId = (int) $context->tsumegos[0]['id'];
-
-		$this->testAction(MistakeTraining::$DEBUG_LINK, [
-			'method' => 'post',
-			'data' => ['command' => 'fail', 'tsumego_id' => $tsumegoId],
-		]);
-
-		$this->assertSame(0, (int) MistakeTraining::getPoolRow($userId, $tsumegoId)['rung']);
-		$this->assertTrue(MistakeTraining::isDue($userId, $tsumegoId), 'A mistake on a due problem keeps it due today');
-		$this->assertStringContainsString('stays due today until it is solved', urldecode((string) ($this->headers['Location'] ?? '')));
-	}
-
-	public function testTheToolboxGraduatesAProblem()
-	{
-		$context = new ContextPreparator([
-			'user' => ['name' => 'admin', 'admin' => true],
-			'tsumego' => [
-				'set_order' => 1,
-				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
-			],
-		]);
-		$userId = $context->user['id'];
-		$tsumegoId = (int) $context->tsumegos[0]['id'];
-
-		$this->testAction(MistakeTraining::$DEBUG_LINK, [
-			'method' => 'post',
-			'data' => ['command' => 'graduate', 'tsumego_id' => $tsumegoId],
-		]);
-
-		$this->assertSame(0, MistakeTraining::totalInTraining($userId), 'A graduated problem leaves the training');
-		$this->assertNull(MistakeTraining::getPoolRow($userId, $tsumegoId)['next_due']);
-	}
-
-	public function testTheToolboxMakesAProblemDueNow()
-	{
-		$context = new ContextPreparator([
-			'user' => ['name' => 'admin', 'admin' => true],
-			'tsumego' => [
-				'set_order' => 1,
-				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('+5 days'))],
-			],
-		]);
-		$userId = $context->user['id'];
-		$tsumegoId = (int) $context->tsumegos[0]['id'];
-		$connectionID = (int) $context->tsumegos[0]['set-connections'][0]['id'];
-
-		$this->assertFalse(MistakeTraining::isDue($userId, $tsumegoId));
-
-		$this->testAction(MistakeTraining::$DEBUG_LINK . '/play/' . $connectionID);
-
-		$this->assertTrue(MistakeTraining::isDue($userId, $tsumegoId),
-			'Opening it schedules the problem for today');
-		$this->assertSame(0, (int) MistakeTraining::getPoolRow($userId, $tsumegoId)['rung'],
-			'And it does not change how well the problem is known');
-		$this->assertStringContainsString(
-			MistakeTraining::$PLAY_LINK_PREFIX . $connectionID,
-			(string) ($this->headers['Location'] ?? '')
-		);
-	}
-
-	public function testTheToolboxProblemLinkIsClosedToPlayers()
-	{
-		$context = new ContextPreparator(['user' => ['name' => 'testuser'], 'tsumego' => ['set_order' => 1]]);
-		$connectionID = (int) $context->tsumegos[0]['set-connections'][0]['id'];
-
-		$this->expectException(NotFoundException::class);
-		$this->testAction(MistakeTraining::$DEBUG_LINK . '/play/' . $connectionID);
-	}
-
-	public function testTheToolboxIgnoresAProblemThatDoesNotExist()
-	{
-		$context = new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true], 'tsumego' => 1]);
-		$userId = $context->user['id'];
-
-		$this->testAction(MistakeTraining::$DEBUG_LINK, [
-			'method' => 'post',
-			'data' => ['command' => 'add', 'problem' => 'https://tsumego.com/999999'],
-		]);
-
-		$this->assertSame(0, MistakeTraining::totalInTraining($userId));
-		$this->assertStringContainsString('No problem for', urldecode((string) ($this->headers['Location'] ?? '')));
-	}
-
 	public function testTheToolboxIgnoresAnUnknownFlagState()
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
@@ -881,7 +803,7 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		$this->assertSame(Feature::ADMINS, Feature::state(FeatureKey::MistakeTraining));
 	}
 
-	public function testTheToolboxShowsThePool()
+	public function testTheToolboxShowsTheLadder()
 	{
 		new ContextPreparator([
 			'user' => ['name' => 'admin', 'admin' => true],
@@ -899,68 +821,15 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		$this->testAction(MistakeTraining::$DEBUG_LINK, ['return' => 'contents']);
 
 		$this->assertStringContainsString('Mistake Training toolbox', (string) $this->view);
-		$this->assertStringContainsString('<th>Rung</th><th>Lapses</th>', (string) $this->view);
-		$this->assertMatchesRegularExpression('~<td>3</td>\s*<td>2</td>~', (string) $this->view, 'The row shows the rung and the lapses');
+		$this->assertStringNotContainsString('Let time pass', (string) $this->view, 'The toolbox changes no training');
+		$this->assertStringNotContainsString('name="command" value="shift"', (string) $this->view);
 		$this->assertStringContainsString('<td>1, 2, 3, 6, 11, 23, 45, 90</td>', (string) $this->view, 'The waits after one lapse');
 		$this->assertMatchesRegularExpression('~<td>3 or more</td>\s*<td>1, 1, 2, 4, 8, 15, 30, 60</td>~', (string) $this->view,
 			'The last row is the floor, which every further lapse keeps');
 	}
 
 	/**
-	 * The toolbox jumps through time, it does not rewrite the history of a problem, so
-	 * the lapses stay whatever it does with the rung.
-	 */
-	public function testTheToolboxKeepsTheLapses()
-	{
-		$context = new ContextPreparator([
-			'user' => ['name' => 'admin', 'admin' => true],
-			'tsumego' => [
-				'set_order' => 1,
-				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('+2 days')), 'mistake_training_lapses' => 2],
-			],
-		]);
-		$userId = $context->user['id'];
-		$tsumegoId = (int) $context->tsumegos[0]['id'];
-		$lapses = fn() => (int) MistakeTraining::getPoolRow($userId, $tsumegoId)['lapses'];
-
-		foreach ([['command' => 'rung', 'rung' => 5], ['command' => 'add'], ['command' => 'graduate']] as $data)
-		{
-			$this->login($context->user['name']);
-			$this->testAction(MistakeTraining::$DEBUG_LINK, [
-				'method' => 'post',
-				'data' => $data + ['tsumego_id' => $tsumegoId, 'problem' => $context->tsumegos[0]['set-connections'][0]['id']],
-			]);
-			$this->assertSame(2, $lapses(), 'The ' . $data['command'] . ' command keeps the lapses');
-		}
-	}
-
-	public function testTheToolboxLetsDaysPass()
-	{
-		$context = new ContextPreparator([
-			'user' => ['name' => 'admin', 'admin' => true],
-			'tsumego' => [
-				'set_order' => 1,
-				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('+3 days'))],
-			],
-		]);
-		$userId = $context->user['id'];
-		$tsumegoId = (int) $context->tsumegos[0]['id'];
-
-		$this->testAction(MistakeTraining::$DEBUG_LINK, [
-			'method' => 'post',
-			'data' => ['command' => 'shift', 'days' => 4],
-		]);
-
-		$this->assertSame(
-			date('Y-m-d', strtotime('-1 day')),
-			date('Y-m-d', strtotime(MistakeTraining::getPoolRow($userId, $tsumegoId)['next_due'])),
-			'Four days passing bring a review three days away one day overdue'
-		);
-		$this->assertTrue(MistakeTraining::isDue($userId, $tsumegoId));
-	}
-
-	/**
-	 * The way the toolbox is tried: of three imported problems one is solved and one
+	 * The way the training was tried on the test server: of three imported problems one is solved and one
 	 * missed today, the third is left alone. The next day the untouched one and the
 	 * missed one are still to do, and the solved one comes back after its two days.
 	 */
@@ -983,77 +852,11 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		$solved = (int) $context->tsumegos[2]['id'];
 		$this->assertSame([$untouched, $missed, $solved], $inTraining());
 
-		$nextDay = fn() => $this->testAction(MistakeTraining::$DEBUG_LINK, ['method' => 'post', 'data' => ['command' => 'shift', 'days' => 1]]);
+		$nextDay = fn() => MistakeTraining::shiftReviews($userId, -1);
 		$nextDay();
 		$this->assertSame([$untouched, $missed], $inTraining(), 'The next day the problems not solved are still there');
 		$nextDay();
 		$this->assertSame([$untouched, $missed, $solved], $inTraining(), 'Two days later the solved one is back');
 	}
 
-	public function testTheToolboxAddsAProblemAndJumpsToARung()
-	{
-		$context = new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true], 'tsumego' => 1]);
-		$userId = $context->user['id'];
-		$tsumegoId = (int) $context->tsumegos[0]['id'];
-
-		$this->testAction(MistakeTraining::$DEBUG_LINK, [
-			'method' => 'post',
-			'data' => ['command' => 'add', 'problem' => $context->tsumegos[0]['set-connections'][0]['id']],
-		]);
-		$this->assertTrue(MistakeTraining::isDue($userId, $tsumegoId), 'An added problem is due at once');
-
-		$this->login($context->user['name']);
-		$this->testAction(MistakeTraining::$DEBUG_LINK, [
-			'method' => 'post',
-			'data' => ['command' => 'rung', 'problem' => $context->tsumegos[0]['set-connections'][0]['id'], 'rung' => 5],
-		]);
-
-		$row = MistakeTraining::getPoolRow($userId, $tsumegoId);
-		$this->assertSame(5, (int) $row['rung']);
-		$this->assertTrue(MistakeTraining::isDue($userId, $tsumegoId), 'A jumped problem is due at once');
-	}
-
-	public function testTheToolboxEmptiesTheTraining()
-	{
-		$context = new ContextPreparator([
-			'user' => ['name' => 'admin', 'admin' => true],
-			'tsumego' => [
-				'set_order' => 1,
-				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
-			],
-		]);
-		$userId = $context->user['id'];
-		$tsumegoId = (int) $context->tsumegos[0]['id'];
-
-		$this->testAction(MistakeTraining::$DEBUG_LINK, [
-			'method' => 'post',
-			'data' => ['command' => 'reset'],
-		]);
-
-		$this->assertNull(MistakeTraining::getPoolRow($userId, $tsumegoId));
-	}
-
-	public function testTheToolboxImportsAsManyAsAsked()
-	{
-		$context = new ContextPreparator([
-			'user' => ['name' => 'admin', 'admin' => true],
-			'tsumego' => [
-				'set_order' => 1,
-				'attempt' => ['solved' => true, 'misplays' => 1, 'created' => date('Y-m-d H:i:s', strtotime('-1 year'))],
-			],
-			'tsumegos' => [
-				['set_order' => 2, 'attempt' => ['solved' => true, 'misplays' => 1]],
-			],
-		]);
-		$userId = $context->user['id'];
-
-		$this->testAction(MistakeTraining::$DEBUG_LINK, [
-			'method' => 'post',
-			'data' => ['command' => 'import', 'limit' => 1],
-		]);
-
-		$this->assertSame(1, MistakeTraining::totalInTraining($userId));
-		$this->assertNotNull(MistakeTraining::getPoolRow($userId, (int) $context->tsumegos[1]['id']),
-			'The newest mistake comes first');
-	}
 }

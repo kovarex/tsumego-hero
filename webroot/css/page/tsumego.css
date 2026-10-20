@@ -467,3 +467,48 @@ a[data-tsumego-id]:hover .tooltip-desc
 	text-align: center;
 	font-size: var(--font-size-md);
 }
+
+/* The calendar and streak of the profile under the overview of the training */
+.mistake-training-progress
+{
+	margin-top: var(--space-5);
+	text-align: left;
+}
+
+.mistake-training-progress .training-overview
+{
+	margin: 0;
+}
+
+/* The problems in the training, on the overview */
+.mistake-training-pool
+{
+	margin-top: var(--space-5);
+	text-align: left;
+}
+
+.mistake-training-pool summary
+{
+	cursor: pointer;
+	font-weight: var(--font-weight-bold);
+	margin-bottom: var(--space-2);
+}
+
+.mistake-training-pool__table
+{
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.mistake-training-pool__table th,
+.mistake-training-pool__table td
+{
+	padding: var(--space-1) var(--space-2);
+	border-bottom: 1px solid var(--current-border-color);
+	text-align: left;
+}
+
+.mistake-training-pool__table .training-overview__insignia
+{
+	display: inline-flex;
+}

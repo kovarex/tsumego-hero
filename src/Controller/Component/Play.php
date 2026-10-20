@@ -474,7 +474,7 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 						<a id="playTitleA" href=""></a>';
 
 		if (Auth::isInMistakeTrainingMode())
-			return '<a id="playTitleA" href="/mistake-training">Mistake Training ' . ($tsumegoButtons->currentOrder ?? 0) . '/' . ($tsumegoButtons->highestTsumegoOrder ?? 0) . '</a>';
+			return '<a id="playTitleA" href="' . MistakeTraining::$OVERVIEW_LINK . '">Mistake Training ' . ($tsumegoButtons->currentOrder ?? 0) . '/' . ($tsumegoButtons->highestTsumegoOrder ?? 0) . '</a>';
 
 		$order = $setConnection['SetConnection']['num'];
 		if ($tsumegoFilters->query == 'difficulty' || $tsumegoFilters->query == 'tags')

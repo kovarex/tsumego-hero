@@ -114,12 +114,19 @@ class MistakeTraining
 	public static string $QUEUE_LINK = '/mistake-training';
 
 	/**
+	 * The overview of the training: what is due today, what comes next, and the
+	 * player's calendar and streak. The way in from the homepage and the title of
+	 * a training problem.
+	 */
+	public static string $OVERVIEW_LINK = '/mistake-training/overview';
+
+	/**
 	 * Where the "bring past mistakes in" button posts.
 	 */
 	public static string $IMPORT_LINK = '/mistake-training/import';
 
 	/**
-	 * Admin toolbox for trying the training without waiting between reviews.
+	 * Admin toolbox: the flag of the training and its ladder.
 	 */
 	public static string $DEBUG_LINK = '/mistake-training/debug';
 
@@ -685,24 +692,38 @@ class MistakeTraining
 	}
 
 	/**
-	 * The pool of one player, soonest review first, for the admin toolbox.
+	 * The problems of a player in the training, soonest review first, for the list on
+	 * the overview: each with its set and number, its rung and its next review. A
+	 * graduated problem has left the training, and one the training cannot serve is
+	 * not shown, like in todaysTraining().
 	 *
-	 * @return array<int, array<string, mixed>>
+	 * @return list<array{tsumego_id: int, set_title: string, num: int, rung: int, next_due: string, missed_today: bool}>
 	 */
 	public static function poolRows(int $userId): array
 	{
-		return Util::query(
-			'SELECT p.tsumego_id, p.rung, p.lapses, p.next_due, p.last_review_day, p.last_review_result,'
-			. ' (SELECT sc.id FROM set_connection sc WHERE sc.tsumego_id = p.tsumego_id ORDER BY sc.id LIMIT 1) AS set_connection_id'
-			. ' FROM mistake_training_pool p WHERE p.user_id = ?'
-			. ' ORDER BY p.next_due ASC, p.id ASC LIMIT 50',
+		$rows = Util::query(
+			'SELECT p.tsumego_id, p.rung, p.next_due, p.last_review_day, p.last_review_result, st.title AS set_title, sc.num'
+			. ' FROM mistake_training_pool p'
+			. ' JOIN set_connection sc ON sc.id = (SELECT MIN(sc2.id) FROM set_connection sc2 WHERE sc2.tsumego_id = p.tsumego_id)'
+			. ' JOIN `set` st ON st.id = sc.set_id'
+			. self::servableSql()
+			. ' AND p.next_due IS NOT NULL'
+			. ' ORDER BY p.next_due ASC, p.id ASC',
 			[$userId]
 		);
+		return array_map(fn(array $row) => [
+			'tsumego_id' => (int) $row['tsumego_id'],
+			'set_title' => (string) $row['set_title'],
+			'num' => (int) $row['num'],
+			'rung' => (int) $row['rung'],
+			'next_due' => (string) $row['next_due'],
+			'missed_today' => self::wasMissedToday($row),
+		], $rows);
 	}
 
 	/**
-	 * Move every review of a player by $days days, so a three week wait becomes a
-	 * click. The day of the last review moves with it, so a day back also closes
+	 * Move every review of a player by $days days, so a test can let weeks pass.
+	 * The day of the last review moves with it, so a day back also closes
 	 * today's training: what was solved today belongs to yesterday. Only the dates
 	 * move: the rung says how well the problem is known.
 	 *
@@ -724,8 +745,8 @@ class MistakeTraining
 	}
 
 	/**
-	 * Put one problem on a rung and make it due now, which is how the toolbox jumps
-	 * to a late review instead of playing the ladder up to it. The lapses stay: the
+	 * Put one problem on a rung and make it due now, so a test jumps to a late review
+	 * instead of playing the ladder up to it. The lapses stay: the
 	 * jump is a shortcut through time, not a new history of the problem.
 	 */
 	public static function moveToRung(int $userId, int $tsumegoId, int $rung): void
@@ -735,8 +756,8 @@ class MistakeTraining
 	}
 
 	/**
-	 * Schedule a problem for right now, so the toolbox can open it in the training
-	 * without waiting for its review day.
+	 * Schedule a problem for right now, so a test can play it in the training without
+	 * waiting for its review day.
 	 */
 	public static function makeDueNow(int $userId, int $tsumegoId): void
 	{
@@ -747,7 +768,7 @@ class MistakeTraining
 	}
 
 	/**
-	 * Take a problem to the top rung and graduate it, so the toolbox can see the exit
+	 * Take a problem to the top rung and graduate it, so a test can see the exit
 	 * without climbing the whole ladder. The lapses stay, like in moveToRung().
 	 */
 	public static function graduateNow(int $userId, int $tsumegoId): void
@@ -758,7 +779,7 @@ class MistakeTraining
 
 	/**
 	 * Add one problem to the pool as due now, whether or not it was a mistake. For
-	 * the toolbox, and the import of past mistakes. A new problem has no lapses, the
+	 * the import of past mistakes, and tests. A new problem has no lapses, the
 	 * mistake that brought it in is what the training is for; one already in the
 	 * pool keeps its rung, its review and its lapses.
 	 */
@@ -771,16 +792,6 @@ class MistakeTraining
 			. ' ON DUPLICATE KEY UPDATE user_id = user_id',
 			[$userId, $tsumegoId, $due ?? $now, $now, $now]
 		);
-	}
-
-	/**
-	 * Empty the pool of one player.
-	 *
-	 * @return int How many rows were removed.
-	 */
-	public static function clearPool(int $userId): int
-	{
-		return Util::execute('DELETE FROM mistake_training_pool WHERE user_id = ?', [$userId]);
 	}
 
 	/**

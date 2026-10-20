@@ -52,7 +52,7 @@ foreach ($modes as $mode)
 ?>
 				</div>
 				<?php if (isset($mistakeTrainingDue)): ?>
-				<a class="mistake-training-card" href="<?php echo MistakeTraining::$QUEUE_LINK; ?>">
+				<a class="mistake-training-card" href="<?php echo MistakeTraining::$OVERVIEW_LINK; ?>">
 					<span class="mistake-training-card__title">Mistake Training</span>
 					<?php if ($mistakeTrainingDue > 0): ?>
 					<?php $mistakeTrainingDueLabel = $mistakeTrainingDue . ' problem' . ($mistakeTrainingDue == 1 ? '' : 's') . ' to review today'; ?>

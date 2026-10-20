@@ -103,17 +103,16 @@ Router::connect(
 	['pass' => ['setConnectionID'], 'setConnectionID' => '[0-9]+']
 );
 Router::connect(
+	'/mistake-training/overview',
+	['controller' => 'MistakeTraining', 'action' => 'overview']
+);
+Router::connect(
 	'/mistake-training/import',
 	['controller' => 'MistakeTraining', 'action' => 'import']
 );
 Router::connect(
 	'/mistake-training/debug',
 	['controller' => 'MistakeTraining', 'action' => 'debug']
-);
-Router::connect(
-	'/mistake-training/debug/play/:setConnectionID',
-	['controller' => 'MistakeTraining', 'action' => 'debugPlay'],
-	['pass' => ['setConnectionID'], 'setConnectionID' => '[0-9]+']
 );
 Router::connect(
 	'/mistake-training',

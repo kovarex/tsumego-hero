@@ -6,7 +6,6 @@ use App\Utility\Constants;
 use App\Utility\Feature;
 use App\Utility\FeatureKey;
 use App\Utility\MistakeTraining;
-use App\Utility\PlayOutcome;
 
 class MistakeTrainingController extends AppController
 {
@@ -39,30 +38,7 @@ class MistakeTrainingController extends AppController
 		{
 			$next = MistakeTraining::nextDue($userId);
 			if (!$next)
-			{
-				$this->set('_page', 'mistake-training');
-				$this->set('_title', 'Tsumego Hero - Mistake Training');
-				$upcoming = MistakeTraining::upcomingByDay($userId);
-				$totalInTraining = MistakeTraining::totalInTraining($userId);
-				$this->set('totalInTraining', $totalInTraining);
-				$this->set('everTrained', MistakeTraining::hasEverTrained($userId));
-				// Offered on every visit that finds nothing due, so a player can keep pulling
-				// old mistakes in as the training empties, and never more than a day at once.
-				$this->set('importCandidates', MistakeTraining::importCandidates($userId));
-				$this->set('importLimit', MistakeTraining::IMPORT_LIMIT);
-				$this->set('showDebugLink', Auth::isAdmin() && Configure::read('debug'));
-				$this->set('upcomingDays', $upcoming['days']);
-				$this->set('furtherDays', $upcoming['furtherDays']);
-				$this->set('lastUpcomingDay', $upcoming['lastDay']);
-				// Nothing is due, so whatever today's training still lists was solved today.
-				$todaysTraining = MistakeTraining::todaysTraining($userId);
-				$this->set('solvedToday', count($todaysTraining));
-				$this->set('todaysTrainingLink', $todaysTraining
-					? MistakeTraining::$PLAY_LINK_PREFIX . $todaysTraining[0]['set_connection_id']
-					: null);
-				$this->render('/Tsumegos/mistake_training');
-				return null;
-			}
+				return $this->renderOverview($userId);
 
 			$tsumegoId = (int) $next['tsumego_id'];
 			$tsumego = ClassRegistry::init('Tsumego')->find('first', [
@@ -77,6 +53,56 @@ class MistakeTrainingController extends AppController
 
 			return $this->playSetConnection((int) $setConnection['SetConnection']['id']);
 		}
+	}
+
+	/**
+	 * The overview of the training, whatever is due: the training itself opens it only
+	 * once nothing is left, so the homepage and the title of a training problem link
+	 * here.
+	 */
+	public function overview(): mixed
+	{
+		if (!Feature::enabled(FeatureKey::MistakeTraining))
+			throw new NotFoundException('Not found');
+
+		if (!Auth::isLoggedIn())
+			return $this->redirect('/users/login');
+
+		return $this->renderOverview((int) Auth::getUserID());
+	}
+
+	/**
+	 * Today's training (what is due, with the way in, or that it is all done), what
+	 * comes up in the next days, the past mistakes to add when nothing is due, and the
+	 * calendar and streak the profile shows.
+	 */
+	private function renderOverview(int $userId): null
+	{
+		$this->set('_page', 'mistake-training');
+		$this->set('_title', 'Tsumego Hero - Mistake Training');
+		$dueToday = MistakeTraining::dueCount($userId);
+		$this->set('dueToday', $dueToday);
+		$upcoming = MistakeTraining::upcomingByDay($userId);
+		$this->set('totalInTraining', MistakeTraining::totalInTraining($userId));
+		$this->set('everTrained', MistakeTraining::hasEverTrained($userId));
+		// Offered on every visit that finds nothing due, so a player can keep pulling
+		// old mistakes in as the training empties, and never more than a day at once.
+		$this->set('importCandidates', $dueToday > 0 ? 0 : MistakeTraining::importCandidates($userId));
+		$this->set('importLimit', MistakeTraining::IMPORT_LIMIT);
+		$this->set('showDebugLink', Auth::isAdmin() && Configure::read('debug'));
+		$this->set('upcomingDays', $upcoming['days']);
+		$this->set('furtherDays', $upcoming['furtherDays']);
+		$this->set('lastUpcomingDay', $upcoming['lastDay']);
+		$todaysTraining = MistakeTraining::todaysTraining($userId);
+		$solvedToday = count(array_filter($todaysTraining, fn(array $row) => MistakeTraining::wasSolvedToday($row)));
+		$this->set('solvedToday', $solvedToday);
+		$this->set('todaysTrainingLink', $todaysTraining
+			? MistakeTraining::$PLAY_LINK_PREFIX . $todaysTraining[0]['set_connection_id']
+			: null);
+		$this->set('training', MistakeTraining::profile($userId, MistakeTraining::profileStart()));
+		$this->set('poolRows', MistakeTraining::poolRows($userId));
+		$this->render('/Tsumegos/mistake_training');
+		return null;
 	}
 
 	/**
@@ -99,9 +125,10 @@ class MistakeTrainingController extends AppController
 	}
 
 	/**
-	 * The admin toolbox: look at the pool, move it in time, add problems, import, empty
-	 * it, and switch the flag itself. It exists only in debug mode and only for
-	 * admins, so production never serves it.
+	 * The admin toolbox: the state of the flag and the switch for it, and the ladder
+	 * with its waits after lapses. It exists only in debug mode and only for admins,
+	 * so production never serves it. It changes nothing in anyone's training: the
+	 * shortcuts through time it once had were too easy to misuse on a real account.
 	 *
 	 * The guard deliberately ignores the flag: switching the training off must not
 	 * take away the page that switches it back on.
@@ -113,121 +140,29 @@ class MistakeTrainingController extends AppController
 		if (!Auth::isLoggedIn())
 			return $this->redirect('/users/login');
 
-		$userId = (int) Auth::getUserID();
-		$command = (string) ($this->request->data['command'] ?? '');
-		if ($this->request->is('post') && $command !== '')
+		if ($this->request->is('post') && ($this->request->data['command'] ?? '') === 'flag')
 		{
-			$problemInput = (string) ($this->request->data['problem'] ?? '');
-			// The rows of the pool post the set connection id, the forms above post the
-			// address the user pasted.
-			$setConnectionID = (int) ($this->request->data['set_connection_id'] ?? 0)
-				?: self::setConnectionIDFromInput($problemInput);
-			$tsumegoId = (int) ($this->request->data['tsumego_id'] ?? 0);
-			if (!$tsumegoId && $setConnectionID)
+			$state = (string) ($this->request->data['state'] ?? '');
+			if (in_array($state, [Feature::OFF, Feature::ADMINS, Feature::EVERYONE], true))
 			{
-				$setConnection = ClassRegistry::init('SetConnection')->findById($setConnectionID);
-				$tsumegoId = $setConnection ? (int) $setConnection['SetConnection']['tsumego_id'] : 0;
+				Feature::set(FeatureKey::MistakeTraining, $state);
+				$notice = 'The training is now ' . $state . '.';
 			}
-
-			$notice = '';
-			switch ($command)
-			{
-				case 'shift':
-					// Days of time passing: the reviews come that much closer, so they move back.
-					$days = max(1, (int) ($this->request->data['days'] ?? 1));
-					$moved = MistakeTraining::shiftReviews($userId, -$days);
-					$notice = $days . ' day' . ($days == 1 ? '' : 's') . ' passed for ' . $moved . ' problem' . ($moved == 1 ? '' : 's') . '.';
-					break;
-				case 'rung':
-					$rung = (int) ($this->request->data['rung'] ?? 0);
-					if ($tsumegoId)
-					{
-						MistakeTraining::moveToRung($userId, $tsumegoId, $rung);
-						$notice = 'Problem ' . $tsumegoId . ' sits on rung ' . $rung . ' and is due now.';
-					}
-					else
-						$notice = self::noProblemNotice($problemInput);
-					break;
-				case 'add':
-					if ($tsumegoId)
-					{
-						MistakeTraining::addProblem($userId, $tsumegoId);
-						$notice = 'Problem ' . $tsumegoId . ' is in the training, due now.';
-					}
-					else
-						$notice = self::noProblemNotice($problemInput);
-					break;
-				case 'solve':
-				case 'fail':
-					if ($tsumegoId)
-					{
-						MistakeTraining::recordResult($userId, $tsumegoId,
-							$command === 'solve' ? PlayOutcome::SolvedClean : PlayOutcome::Failed, null);
-						$notice = self::poolNotice($userId, $tsumegoId, 'Problem ' . $tsumegoId);
-					}
-					else
-						$notice = self::noProblemNotice($problemInput);
-					break;
-				case 'graduate':
-					if ($tsumegoId)
-					{
-						MistakeTraining::graduateNow($userId, $tsumegoId);
-						$notice = 'Problem ' . $tsumegoId . ' graduated and left the training.';
-					}
-					else
-						$notice = self::noProblemNotice($problemInput);
-					break;
-				case 'import':
-					$imported = MistakeTraining::importPastMistakes($userId, (int) ($this->request->data['limit'] ?? MistakeTraining::IMPORT_LIMIT));
-					$notice = $imported
-						? 'Imported ' . $imported . ' past mistake' . ($imported == 1 ? '' : 's') . '.'
-						: 'Nothing left to import.';
-					break;
-				case 'reset':
-					$removed = MistakeTraining::clearPool($userId);
-					$notice = 'Removed ' . $removed . ' problem' . ($removed == 1 ? '' : 's') . ' from the training.';
-					break;
-				case 'flag':
-					$state = (string) ($this->request->data['state'] ?? '');
-					if (in_array($state, [Feature::OFF, Feature::ADMINS, Feature::EVERYONE], true))
-					{
-						Feature::set(FeatureKey::MistakeTraining, $state);
-						$notice = 'The training is now ' . $state . '.';
-					}
-					else
-						$notice = 'Unknown state, nothing was changed.';
-					break;
-			}
-
+			else
+				$notice = 'Unknown state, nothing was changed.';
 			return $this->redirect(MistakeTraining::$DEBUG_LINK . '?notice=' . urlencode($notice));
 		}
 
+		$userId = (int) Auth::getUserID();
 		$this->set('notice', (string) ($this->request->query['notice'] ?? ''));
 		$this->set('_page', 'mistake-training');
 		$this->set('_title', 'Tsumego Hero - Mistake Training Debug');
-		$this->set('poolRows', MistakeTraining::poolRows($userId));
 		$this->set('totalInTraining', MistakeTraining::totalInTraining($userId));
 		$this->set('importCandidates', MistakeTraining::importCandidates($userId));
 		$this->set('flagState', Feature::state(FeatureKey::MistakeTraining));
 		$this->set('ladder', MistakeTraining::ladder());
 		$this->render('/Tsumegos/mistake_training_debug');
 		return null;
-	}
-
-	/**
-	 * Open one of the pool rows in the training from the number in the table: the
-	 * problem is scheduled for now, so a review weeks away can be played today.
-	 */
-	public function debugPlay(int $setConnectionID): mixed
-	{
-		$this->assertToolboxAllowed();
-
-		$setConnection = ClassRegistry::init('SetConnection')->findById($setConnectionID);
-		$tsumegoId = $setConnection ? (int) $setConnection['SetConnection']['tsumego_id'] : 0;
-		if ($tsumegoId)
-			MistakeTraining::makeDueNow((int) Auth::getUserID(), $tsumegoId);
-
-		return $this->redirect(MistakeTraining::$PLAY_LINK_PREFIX . $setConnectionID);
 	}
 
 	/**
@@ -239,42 +174,6 @@ class MistakeTrainingController extends AppController
 	{
 		if (!Auth::isAdmin() || !Configure::read('debug'))
 			throw new NotFoundException('Not found');
-	}
-
-	/**
-	 * The problem a person meant: the set connection id at the end of the path, so a
-	 * pasted address (`https://tsumego.com/29358?sid=5`), a path or a bare number all
-	 * work. The last number of the path is the problem, which keeps a scheme, a port
-	 * or a query from being mistaken for it.
-	 */
-	private static function setConnectionIDFromInput(string $input): int
-	{
-		$path = (string) (parse_url($input, PHP_URL_PATH) ?: $input);
-		if (!preg_match_all('/(\d+)/', $path, $matches))
-			return 0;
-		return (int) end($matches[1]);
-	}
-
-	private static function noProblemNotice(string $input): string
-	{
-		return 'No problem for "' . $input . '". Open the problem and copy its address.';
-	}
-
-	/**
-	 * What a simulated result did, read back from the pool row.
-	 */
-	private static function poolNotice(int $userId, int $tsumegoId, string $prefix): string
-	{
-		$row = MistakeTraining::getPoolRow($userId, $tsumegoId);
-		if (!$row || $row['next_due'] === null)
-			return $prefix . ' graduated and left the training.';
-
-		// A mistake on a problem that is due does not move its review: it waits in
-		// today's training until it is solved.
-		if (MistakeTraining::isRowDue($row))
-			return $prefix . ' is on rung ' . (int) $row['rung'] . ' and stays due today until it is solved.';
-
-		return $prefix . ' is on rung ' . (int) $row['rung'] . ', next review ' . $row['next_due'] . '.';
 	}
 
 	/**

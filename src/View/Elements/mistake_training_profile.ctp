@@ -11,8 +11,10 @@ use App\Utility\RungInsignia;
  * streaks of cleared days.
  *
  * Usage: $this->element('mistake_training_profile', ['training' => MistakeTraining::profile(...)])
+ * and 'title' for a heading other than "Mistake Training".
  *
  * @var View $this
+ * @var string|null $title
  * @var array{days: array<string, array{reviewed: int, cleared: bool, missed: bool}>, rungs: list<int>, graduated: int, streak: int, best_streak: int} $training
  */
 
@@ -37,7 +39,7 @@ if (!isset($months[0]) && (empty($months) || min(array_keys($months)) >= 3))
 	$months = [0 => date('M', strtotime($start))] + $months;
 ?>
 <section class="training-overview" id="mistake-training-overview" aria-labelledby="mistake-training-overview-title">
-	<h2 class="training-overview__title" id="mistake-training-overview-title">Mistake Training</h2>
+	<h2 class="training-overview__title" id="mistake-training-overview-title"><?php echo htmlspecialchars($title ?? 'Mistake Training', ENT_QUOTES, 'UTF-8'); ?></h2>
 	<div class="training-overview__stats">
 		<div class="training-overview__stat">
 			<span class="training-overview__value" id="mistake-training-in-training"><?php echo $inTraining; ?></span>
