@@ -53,6 +53,16 @@ webroot/forums/vendor
 /.buildpath
 /.settings/
 
+# Editor and manual backup leftovers #
+#######################################
+*.bak
+*.orig
+*.save
+*.swp
+*~
+# phpBB ships its disabled installer as install.bak, keep it tracked
+!/webroot/forums/install.bak/
+
 # OS generated files #
 ######################
 .DS_Store
