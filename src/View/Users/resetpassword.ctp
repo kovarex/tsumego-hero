@@ -23,6 +23,7 @@ use App\Utility\CookieFlash;
 			<label for="UserEmail"></label>
 			<input name="data[User][email]" maxlength="50" placeholder="E-Mail" type="text" id="UserEmail" required="required"/>
 		</div>
+		<p class="hint">Signed up with Google? Sign in with the Google button on the <a href="/users/login">sign-in page</a>.</p>
 		<?php echo $this->Form->end('Submit'); ?>
 	</div>
 	<div class="right">

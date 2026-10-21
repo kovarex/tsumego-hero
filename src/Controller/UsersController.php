@@ -174,13 +174,9 @@ class UsersController extends AppController
 		$user = $this->User->findLocalUserByEmail($userEmail);
 		if (!$user)
 		{
-			// A Google account is told so, even though that says the address is taken:
-			// people otherwise sign up again with the same address by mistake. Accounts
-			// that do not exist get the generic answer.
-			$googleUser = $this->User->findByEmail($userEmail);
-			if ($googleUser && User::isGoogleUser($googleUser['User']))
-				CookieFlash::set('This account uses Google Sign-In. Please sign in with Google.', 'info');
-			// For non-existent emails, don't reveal this - just show generic sent message
+			// An address that can not get a link is answered like one that has no account,
+			// so the form says nothing about which addresses are taken. The sign-in page
+			// points Google accounts to their button before they submit this form.
 			return;
 		}
 

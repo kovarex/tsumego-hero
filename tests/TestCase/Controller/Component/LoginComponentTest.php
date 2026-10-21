@@ -328,11 +328,12 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 	}
 
 	/**
-	 * Test that password reset for Google users shows helpful message.
+	 * The reset form answers the same for a Google address and for an address without an
+	 * account, so it can not be asked which addresses have one.
 	 */
-	public function testResetPasswordShowsMessageForGoogleUser(): void
+	public function testTheResetFormAnswersGoogleAndUnknownAddressesAlike(): void
 	{
-		$context = new ContextPreparator([
+		new ContextPreparator([
 			'user' => null,
 			'other-users' => [[
 				'display_name' => 'Google User',
@@ -342,10 +343,15 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		]);
 
 		$this->registerTestEmailer();
-		$this->testAction('users/resetpassword/', ['data' => ['User' => ['email' => 'googleuser@gmail.com']], 'method' => 'POST']);
+		$google = $this->testAction('users/resetpassword/', [
+			'data' => ['User' => ['email' => 'googleuser@gmail.com']],
+			'method' => 'POST', 'return' => 'contents']);
+		$unknown = $this->testAction('users/resetpassword/', [
+			'data' => ['User' => ['email' => 'nobodyhere@example.com']],
+			'method' => 'POST', 'return' => 'contents']);
 
-		// Should NOT send email (Google users can't reset password)
-		// registerTestEmailer initializes lastEmail to empty array [], not null
+		$this->assertSame($unknown, $google);
+		$this->assertStringNotContainsString('Google Sign-In', $google);
 		$this->assertEmpty(TestEmailer::$lastEmail['body'] ?? null, 'Email should not be sent for Google users');
 	}
 
