@@ -50,12 +50,15 @@ read_db_config() {
 # The migrations only go forward, so after a PR with a new migration the test DB
 # is ahead of the next PR's schema. Phinx reports such a migration as missing.
 reset_db_if_ahead() {
-	if ! vendor/bin/phinx status | grep -q 'MISSING MIGRATION FILE'; then
+	missing=$(vendor/bin/phinx status | grep 'MISSING MIGRATION FILE' || true)
+	if [ -z "$missing" ]; then
 		return 0
 	fi
+	echo "The test DB has migrations this commit doesn't have:"
+	echo "$missing"
 	if [ ! -f "$DB_SNAPSHOT" ]; then
-		echo "The test DB has migrations this commit doesn't have, and there is no $DB_SNAPSHOT to restore."
-		return 1
+		echo "There is no $DB_SNAPSHOT to restore, so the DB stays as it is."
+		return 0
 	fi
 	echo "=== Restoring the test DB from $DB_SNAPSHOT ==="
 	read_db_config | {
