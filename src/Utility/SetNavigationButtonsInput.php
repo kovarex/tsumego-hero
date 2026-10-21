@@ -22,8 +22,9 @@ class SetNavigationButtonsInput
 			return $tsumegoButton->setConnectionID === (int) $currentSetConnection['SetConnection']['id'];
 		});
 
-		// mark the problem we are going to visit as already visited
-		if ($tsumegoButtons[$currentIndex]->status == 'N')
+		// mark the problem we are going to visit as already visited, except in the mistake
+		// training, whose colours say what today did and opening a problem does nothing
+		if ($tsumegoButtons[$currentIndex]->status == 'N' && $tsumegoButtons[$currentIndex]->rung === null)
 			$tsumegoButtons[$currentIndex]->status = 'V';
 
 		if (count($tsumegoButtons) <= self::$NEIGHBOUR_COUNT_TO_SHOW_ON_EACH_SIDE * 2 + 3)

@@ -770,7 +770,11 @@ nav ul ul ul li {
   width: 169px;
 }
 .newMenuLi3 li {
-  width: 118px;
+  width: 159px;
+}
+.newMenuLi3 a {
+  font-weight: 400;
+  font-size: 19px;
 }
 .newMenuLi4 li {
   width: 159px;

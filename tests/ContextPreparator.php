@@ -24,7 +24,7 @@ class ContextPreparator
 			'day_record', 'sgf', 'time_mode_attempt', 'time_mode_session',
 			'tsumego_comment', 'tsumego_issue', 'admin_activity',
 			'achievement_condition', 'achievement_status', 'set_connection',
-			'tsumego_attempt', 'tsumego_status', 'user_contribution', 'signature',
+			'tsumego_attempt', 'tsumego_status', 'mistake_training_review', 'mistake_training_day', 'mistake_training_pool', 'user_contribution', 'signature',
 			'tsumego_variant', 'reject', 'publish_date', 'user', 'time_mode_rank',
 			'tsumego', 'set', 'phpbb_users', 'phpbb_topics',
 		] as $table)
@@ -404,7 +404,8 @@ class ContextPreparator
 	private function prepareTsumegoStatus($tsumegoStatus, $tsumego): void
 	{
 		$statusValue = $tsumegoStatus ? (is_string($tsumegoStatus) ? $tsumegoStatus : $tsumegoStatus['name']) : null;
-		$updated = $tsumegoStatus ? (is_string($tsumegoStatus) ? null : $tsumegoStatus['updated']) : null;
+		$updated = $tsumegoStatus ? (is_string($tsumegoStatus) ? null : ($tsumegoStatus['updated'] ?? null)) : null;
+		$mistakeTrainingDue = $tsumegoStatus ? (is_string($tsumegoStatus) ? null : ($tsumegoStatus['mistake_training_due'] ?? null)) : null;
 		$userID = $tsumegoStatus
 			? (is_string($tsumegoStatus)
 				? $this->user['id']
@@ -433,13 +434,43 @@ class ContextPreparator
 			$originalTsumegoStatus['TsumegoStatus']['status'] = $statusValue;
 			if ($updated)
 				$originalTsumegoStatus['TsumegoStatus']['updated'] = $updated;
-			$originalTsumegoStatus['TsumegoStatus']['status'] = $statusValue;
 			$originalTsumegoStatus['TsumegoStatus']['user_id'] = $userID;
 			$originalTsumegoStatus['TsumegoStatus']['tsumego_id'] = $tsumego['id'];
-			if ($updated)
-				$originalTsumegoStatus['TsumegoStatus']['updated'] = $updated;
 			ClassRegistry::init('TsumegoStatus')->create($originalTsumegoStatus);
 			ClassRegistry::init('TsumegoStatus')->save($originalTsumegoStatus);
+		}
+
+		// A status fixture with mistake_training_due now marks the problem as in
+		// the training pool (the due column moved to mistake_training_pool), on the
+		// rung (mistake_training_rung), with the lapses (mistake_training_lapses) and
+		// with the last review (mistake_training_review_day,
+		// mistake_training_review_result) it names.
+		if ($mistakeTrainingDue !== null)
+			$this->prepareMistakeTrainingPoolEntry($userID, (int) $tsumego['id'], $mistakeTrainingDue, $tsumegoStatus);
+	}
+
+	private function prepareMistakeTrainingPoolEntry(int $userId, int $tsumegoId, $mistakeTrainingDue, array $tsumegoStatus): void
+	{
+		$pool = ClassRegistry::init('MistakeTrainingPool');
+		$existing = $pool->find('first', ['conditions' => ['user_id' => $userId, 'tsumego_id' => $tsumegoId]]);
+		$data = [
+			'user_id' => $userId,
+			'tsumego_id' => $tsumegoId,
+			'rung' => $tsumegoStatus['mistake_training_rung'] ?? 0,
+			'lapses' => $tsumegoStatus['mistake_training_lapses'] ?? 0,
+			'next_due' => $mistakeTrainingDue,
+			'last_review_day' => $tsumegoStatus['mistake_training_review_day'] ?? null,
+			'last_review_result' => $tsumegoStatus['mistake_training_review_result'] ?? null,
+		];
+		if ($existing)
+		{
+			$existing['MistakeTrainingPool']['next_due'] = $mistakeTrainingDue;
+			$pool->save($existing['MistakeTrainingPool']);
+		}
+		else
+		{
+			$pool->create();
+			$pool->save($data);
 		}
 	}
 

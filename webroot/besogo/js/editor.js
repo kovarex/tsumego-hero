@@ -424,7 +424,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
           break;
       }
     }
-	else if (boardLockValue == 1 && window.problemSolved)
+	else if (boardLockValue == 1 && window.problemSolved && nextButtonLink)
         window.location.href = nextButtonLink; // Problem is solved, clicking navigates to next puzzle
   }
 
