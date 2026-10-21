@@ -52,7 +52,6 @@ class ClientTimeDisplayTest extends TestCaseWithAuth
 			'user' => ['pref_date_format' => $dateFormat],
 			'tsumego' => ['sets' => [['name' => 'Time Test Set', 'num' => '1']]],
 		]);
-		$this->login($context->user['User']['name']);
 
 		// Record an attempt so solve history has data
 		ClassRegistry::init('TsumegoAttempt')->create();
