@@ -45,10 +45,7 @@ class ClientTimeDisplayTest extends TestCaseWithAuth
 		);
 		$this->assertSame(14, $localHour, '12:00 UTC must render as hour 14 in the Europe/Prague browser');
 
-		// The DOM text is the converted local-time rendering, not the raw UTC string.
-		$displayed = $time->getText();
-		$this->assertNotEmpty($displayed);
-		$this->assertStringNotContainsString('2026-08-15 12:00:00', $displayed,
-			'Displayed time should be converted from UTC to local timezone');
+		// The DOM text is the local time in the site's ISO format, whatever the browser locale.
+		$this->assertSame('2026-08-15 14:00', $time->getText());
 	}
 }

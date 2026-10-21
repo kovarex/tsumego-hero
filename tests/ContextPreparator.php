@@ -337,6 +337,9 @@ class ContextPreparator
 		$comment['user_id'] = $this->user['id'];
 		if ($issueId !== null)
 			$comment['tsumego_issue_id'] = $issueId;
+		$created = Util::extract('created', $commentInput);
+		if ($created)
+			$comment['created'] = $created;
 		ClassRegistry::init('TsumegoComment')->save($comment);
 		$this->checkOptionsConsumed($commentInput);
 	}
@@ -358,6 +361,9 @@ class ContextPreparator
 		$issue['tsumego_id'] = $tsumego['id'];
 		$issue['user_id'] = $this->user['id'];
 		$issue['tsumego_issue_status_id'] = Util::extract('status', $issueInput) ?: TsumegoIssue::$OPENED_STATUS;
+		$created = Util::extract('created', $issueInput);
+		if ($created)
+			$issue['created'] = $created;
 		$issueModel = ClassRegistry::init('TsumegoIssue');
 		$issueModel->save($issue);
 
@@ -370,7 +376,7 @@ class ContextPreparator
 		// Create initial comment for the issue
 		$message = Util::extract('message', $issueInput);
 		if ($message)
-			$this->prepareTsumegoComment(['message' => $message], $tsumego, $issueId);
+			$this->prepareTsumegoComment(['message' => $message, 'created' => $created], $tsumego, $issueId);
 
 		$this->checkOptionsConsumed($issueInput);
 	}
