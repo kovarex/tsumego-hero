@@ -99,7 +99,7 @@ class TsumegoButtonsQueryBuilder
 		}
 		try
 		{
-			$ratingBounds = RatingBounds::coverRank($_COOKIE['lastSet'], '15k');
+			$ratingBounds = RatingBounds::coverRankSpec($_COOKIE['lastSet'], Rating::weakestRank());
 			$ratingBounds->addQueryConditions($this->query);
 			$this->description = $_COOKIE['lastSet'] . ' are problems that have a rating ' . $ratingBounds->textualDescription() . '.';
 		}

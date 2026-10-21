@@ -51,6 +51,10 @@
 	font-size: 100px;
 	line-height: 252px;
 }
+.rank-icon-large--range {
+	font-size: 40px;
+	letter-spacing: -2px;
+}
 /* ══════════════════════════════════════════════════════
    Profile page styles
    Page-specific blocks only. Shared tokens and components

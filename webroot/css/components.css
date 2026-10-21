@@ -749,7 +749,21 @@
 
 .dropdown__tile--difficulty
 {
-	background-color: var(--rank-color, var(--surface-translucent));
+	background-color: rgba(0, 0, 0, 0.35);
+	background-image: none;
+	color: var(--rank-color, var(--color-white));
+	color: color-mix(in srgb, var(--rank-color, var(--color-white)) 70%, #fff);
+	border: 1px solid var(--rank-color, transparent);
+	font-weight: 700;
+	box-shadow: none;
+	text-shadow: none;
+	transition: background-color 0.12s ease, transform 0.12s ease;
+}
+
+.dropdown__tile--difficulty:hover
+{
+	background-color: rgba(255, 255, 255, 0.14);
+	transform: translateY(-1px);
 }
 
 .dropdown__tile--tag
@@ -759,7 +773,11 @@
 
 .dropdown__tile--difficulty.is-selected
 {
-	outline: 2px solid var(--color-white);
+	background-color: var(--rank-color);
+	border-color: var(--color-white);
+	color: #101010;
+	box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.4);
+	transform: translateY(-1px);
 }
 
 .dropdown__tile--muted

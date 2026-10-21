@@ -144,22 +144,15 @@ class SetsSelector
 
 	private function selectByDifficulty(): void
 	{
-		$ranks = Rating::ranks();
-
-		if (!empty($this->tsumegoFilters->ranks))
-			$ranks = array_values(array_filter($ranks, function ($r) {
-				return in_array($r, $this->tsumegoFilters->ranks);
-			}));
-
-		// assign each tsumego to a rank band using the same bounds RatingBounds::coverRank uses
+		// assign each tsumego to a rank band using the same bounds RatingBounds uses
 		$bands = [];
 		$rankOrder = 0;
-		foreach ($ranks as $rank)
+		foreach ($this->rankBands() as [$weakest, $strongest])
 		{
-			$bounds = RatingBounds::coverRank($rank, '15k');
+			$bounds = RatingBounds::coverRankSpec($weakest . '-' . $strongest, Rating::weakestRank());
 			$bands[] = [
-				'name' => $rank,
-				'color' => Rating::rankColorVar($rank),
+				'name' => $weakest === $strongest ? $weakest : $weakest . '-' . $strongest,
+				'color' => Rating::rankColorVar($strongest),
 				'order' => $rankOrder,
 				'min' => $bounds->min,
 				'max' => $bounds->max,
@@ -175,8 +168,8 @@ class SetsSelector
 		if (!empty($this->tsumegoFilters->tagIDs))
 			$query->conditions[] = $this->tagMembershipCondition('tsumego.id');
 		// restrict to the rating range covered by the bands, so rows that would
-		// never match a band are not transferred; safe because bands are contiguous
-		// and any band left open (min or max null) leaves that side unbounded.
+		// never match a band are not transferred; rows falling into a gap between
+		// two bands are dropped by the assignment loop below.
 		$hasOpenLower = false;
 		$hasOpenUpper = false;
 		$minRating = null;
@@ -241,6 +234,30 @@ class SetsSelector
 				'difficulty' => Rating::getReadableRankFromRating($set['rating_sum'] / $set['usage_count']),
 			];
 		}
+	}
+
+	/**
+	 * Rank bands to display, weakest first, as [weakest, strongest] pairs.
+	 * Without a rank filter every rank is its own band. Each rank filter is one
+	 * band: separately picked ranks stay separate boxes, and a picked range
+	 * becomes one box spanning it.
+	 *
+	 * @return array<int, array{0: string, 1: string}>
+	 */
+	private function rankBands(): array
+	{
+		if (empty($this->tsumegoFilters->rankSpecs))
+			return array_map(function ($rank) {
+				return [$rank, $rank];
+			}, Rating::ranks());
+
+		$bands = [];
+		foreach ($this->tsumegoFilters->rankSpecs as $spec)
+			$bands[] = Rating::parseReadableRankRange($spec) ?? [$spec, $spec];
+		usort($bands, function ($a, $b) {
+			return Rating::getRankFromReadableRank($a[0]) <=> Rating::getRankFromReadableRank($b[0]);
+		});
+		return $bands;
 	}
 
 	/**
@@ -372,10 +389,10 @@ class SetsSelector
 	private function rankCondition(): string
 	{
 		$rankConditions = '';
-		foreach ($this->tsumegoFilters->ranks as $rankFilter)
+		foreach ($this->tsumegoFilters->rankSpecs as $rankFilter)
 		{
 			$rankCondition = '';
-			RatingBounds::coverRank($rankFilter, '15k')->addSqlConditions($rankCondition);
+			RatingBounds::coverRankSpec($rankFilter, Rating::weakestRank())->addSqlConditions($rankCondition);
 			Util::addSqlOrCondition($rankConditions, $rankCondition);
 		}
 		return $rankConditions;

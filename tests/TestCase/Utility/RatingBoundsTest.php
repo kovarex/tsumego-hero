@@ -35,6 +35,27 @@ class RatingBoundsTest extends CakeTestCase
 		$this->assertSame($bounds->max, 1650.0);
 	}
 
+	public function testCoverRankSpecForSingleRank()
+	{
+		$bounds = RatingBounds::coverRankSpec('5k');
+		$this->assertSame($bounds->min, 1550.0);
+		$this->assertSame($bounds->max, 1650.0);
+	}
+
+	public function testCoverRankSpecForRange()
+	{
+		$bounds = RatingBounds::coverRankSpec('20k-16k');
+		$this->assertSame($bounds->min, 50.0);
+		$this->assertSame($bounds->max, 550.0);
+	}
+
+	public function testCoverRankSpecKeepsTheWeakestRangeOpenBelow()
+	{
+		$bounds = RatingBounds::coverRankSpec('30k-16k', '30k');
+		$this->assertNull($bounds->min);
+		$this->assertSame($bounds->max, 550.0);
+	}
+
 	public function testCreateSqlConditionFromEmpty()
 	{
 		$condition = '';

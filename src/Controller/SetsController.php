@@ -512,9 +512,10 @@ ORDER BY sc.num ASC", [(int) $id]);
 
 		$setsSelector = new SetsSelector($tsumegoFilters);
 
-		$ranksArray = [];
-		foreach (Rating::ranks() as $rank)
-			$ranksArray[] = ['id' => $rank, 'name' => $rank];
+		[$rankFrom, $rankTo] = $tsumegoFilters->rankRange();
+		// The weakest rank is the same as leaving the lower end open.
+		if ($rankFrom === Rating::weakestRank())
+			$rankFrom = '';
 
 		if ($tsumegoFilters->query == 'topics' && empty($tsumegoFilters->sets))
 			$queryRefresh = false;
@@ -528,7 +529,9 @@ ORDER BY sc.num ASC", [(int) $id]);
 
 
 		$this->set('setsSelector', $setsSelector);
-		$this->set('ranksArray', $ranksArray);
+		$this->set('rankFrom', $rankFrom);
+		$this->set('rankTo', $rankTo);
+		$this->set('rankFilterLabels', $tsumegoFilters->rankFilterLabels());
 		$this->set('tagList', $tagList);
 		$this->set('setTiles', $setTiles);
 		$this->set('difficultyTiles', $difficultyTiles);
@@ -564,7 +567,8 @@ ORDER BY sc.num ASC", [(int) $id]);
 			return 'topics';
 		try
 		{
-			Rating::getRankFromReadableRank($input);
+			if (Rating::parseReadableRankRange($input) === null)
+				Rating::getRankFromReadableRank($input);
 			return 'difficulty';
 		}
 		catch (Exception $e)
@@ -894,7 +898,8 @@ ORDER BY sc.num ASC", [(int) $id]);
 			$set['Set']['title'] = $id;
 			$set['Set']['multiplier'] = 1;
 			$set['Set']['public'] = 1;
-			$elo = Rating::getRankMinimalRatingFromReadableRank($id);
+			$rankRange = Rating::parseReadableRankRange($id);
+			$elo = Rating::getRankMinimalRatingFromReadableRank($rankRange === null ? $id : $rankRange[1]);
 			$set['Set']['difficulty'] = $elo;
 		}
 		elseif ($tsumegoFilters->query == 'tags')

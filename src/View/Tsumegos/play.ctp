@@ -784,8 +784,8 @@ use App\Utility\ViteManifest;
 			foreach ($tsumegoFilters->sets as $setName)
 				echo 'activeTopicTiles.push('.json_encode($setName, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');';
 		if($tsumegoFilters->query != 'difficulty')
-			foreach ($tsumegoFilters->ranks as $rank)
-				echo 'activeDifficultyTiles.push('.json_encode($rank, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');';
+			foreach ($tsumegoFilters->rankFilterLabels() as $rankLabel)
+				echo 'activeDifficultyTiles.push('.json_encode($rankLabel, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');';
 		if($tsumegoFilters->query != 'tags')
 			foreach ($tsumegoFilters->tags as $tag)
 				echo 'activeTagTiles.push('.json_encode($tag, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');';

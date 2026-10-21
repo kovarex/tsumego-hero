@@ -63,7 +63,26 @@
 		--color-purple-btn-gradient: linear-gradient(#bd73d9, #9d31be);
 		--color-gold: #9a7b00;
 
-		/* Rank colors: difficulty filter bands (15k weakest, 9d strongest) */
+		/* Rank colors: difficulty filter bands, weakest (30k) to strongest (9d).
+		   The scale is a linear HSL hue ramp of 7 degrees per rank: 30k = 72.8deg,
+		   20k = 142.8deg, 15k = 177.8deg. Ranks 30k-11k use the muted palette
+		   (S 56%, L 52%), 10k-9d the vivid one (S 88%, L 65%); the last five dan
+		   ranks use wider hue steps so the ramp lands on red at 9d. */
+		--rank-30k: #acc93f;
+		--rank-29k: #9cc93f;
+		--rank-28k: #8bc93f;
+		--rank-27k: #7bc93f;
+		--rank-26k: #6bc93f;
+		--rank-25k: #5bc93f;
+		--rank-24k: #4bc93f;
+		--rank-23k: #3fc943;
+		--rank-22k: #3fc953;
+		--rank-21k: #3fc963;
+		--rank-20k: #3fc974;
+		--rank-19k: #3fc984;
+		--rank-18k: #3fc994;
+		--rank-17k: #3fc9a4;
+		--rank-16k: #3fc9b4;
 		--rank-15k: #3fc9c4;
 		--rank-14k: #3fbec9;
 		--rank-13k: #3fadc9;

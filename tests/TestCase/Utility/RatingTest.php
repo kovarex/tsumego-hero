@@ -36,6 +36,16 @@ class RatingTest extends CakeTestCase
 		$this->assertSame(Rating::getRankMinimalRatingFromReadableRank("10d"), 2810.0);
 	}
 
+	public function testParseReadableRankRange(): void
+	{
+		$this->assertSame(['20k', '16k'], Rating::parseReadableRankRange('20k-16k'));
+		$this->assertSame(['5k', '5k'], Rating::parseReadableRankRange('5k-5k'));
+		$this->assertNull(Rating::parseReadableRankRange('16k-20k'));
+		$this->assertNull(Rating::parseReadableRankRange('15k'));
+		$this->assertNull(Rating::parseReadableRankRange('deleted'));
+		$this->assertNull(Rating::parseReadableRankRange('30k-16k-10k'));
+	}
+
 	public function testIsValidReadableRank(): void
 	{
 		$this->assertTrue(Rating::isValidReadableRank('15k'));
