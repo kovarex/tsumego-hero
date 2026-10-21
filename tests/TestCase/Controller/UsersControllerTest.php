@@ -240,10 +240,13 @@ class UsersControllerTest extends ControllerTestCase
 	public function testResetKeepsAGoldenProblemInProgress(): void
 	{
 		$context = new ContextPreparator([
-			'user' => ['name' => 'resetGolden', 'solved' => 2],
+			'user' => ['name' => 'resetGolden'],
 			'tsumegos' => [
 				['status' => ['name' => 'S', 'updated' => '2000-01-01 00:00:00'], 'sets' => [['name' => 'reset-1', 'num' => 1]]],
-				['status' => ['name' => 'G', 'updated' => '2000-01-01 00:00:00'], 'sets' => [['name' => 'reset-2', 'num' => 1]]]]]);
+				['status' => ['name' => 'G', 'updated' => '2000-01-01 00:00:00'], 'sets' => [['name' => 'reset-2', 'num' => 1]]],
+				['status' => ['name' => 'S'], 'sets' => [['name' => 'reset-2', 'num' => 2]]],
+				['status' => ['name' => 'S'], 'sets' => [['name' => 'reset-2', 'num' => 3]]],
+				['status' => ['name' => 'S'], 'sets' => [['name' => 'reset-2', 'num' => 4]]]]]);
 		$browser = Browser::instance();
 
 		$browser->get('users/settings');
