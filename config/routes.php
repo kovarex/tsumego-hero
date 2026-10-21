@@ -204,21 +204,8 @@ Router::connect(
 	['controller' => 'sets', 'action' => 'reorderTsumego'],
 	['pass' => ['id'], 'id' => '[0-9]+']
 );
-// A single-segment /sets/<action> route has to sit above the /sets/:id catch-alls, which would
-// otherwise read the action as the id of a collection. The catch-alls below decline an id that
-// names an action, so only the actions spelled out here need a route of their own.
-Router::connect(
-	'/sets/sandbox',
-	['controller' => 'sets', 'action' => 'sandbox']
-);
-Router::connect(
-	'/sets/create',
-	['controller' => 'sets', 'action' => 'create']
-);
-Router::connect(
-	'/sets/changeCollectionSize',
-	['controller' => 'sets', 'action' => 'changeCollectionSize']
-);
+// The old /sets/view/<id> addresses keep answering for links written before the short ones, and the
+// short /sets/<id> ones decline an id that names an action, which the default routes then serve.
 Router::connect(
 	'/sets/view/:id',
 	['controller' => 'sets', 'action' => 'view'],
