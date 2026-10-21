@@ -11,7 +11,11 @@ class CronController extends AppController
 		if ($secret != CRON_SECRET)
 			throw new ForbiddenException('Wrong cron secret.');
 
-		// Already ran today - nothing to do
+		// Publishing takes only the entries that are still pending, so it repeats on
+		// every call and catches up the days the cron did not run on.
+		SchedulePublisher::publishDue();
+
+		// Already ran today - the rest of the work is done once a day
 		if (ClassRegistry::init('DayRecord')->find('count', ['conditions' => ['date' => date('Y-m-d')]]) > 0)
 		{
 			$this->response->statusCode(200);
@@ -21,7 +25,6 @@ class CronController extends AppController
 		$this->dailyTsumegoStatusReset();
 		$this->dailyStalingSolvedTsumegoStatuses();
 		self::createDayRecord();
-		SchedulePublisher::publishDue();
 		$this->dailyUsersReset();
 		$this->dailyPotionConditionReset();
 		$this->updateSolvedCounts();

@@ -154,6 +154,28 @@ class CronControllerTest extends TestCaseWithAuth
 		$this->assertSame($newSetConnection['SetConnection']['set_id'], $publicSetID);
 	}
 
+	/**
+	 * The other daily work runs once a day, but publishing repeats on every call
+	 * and only takes what is still pending, so a due entry is never left behind by
+	 * a day that is already recorded as done.
+	 */
+	public function testPublishRunsWhenTheDayIsAlreadyRecorded()
+	{
+		new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'day-records' => [['date' => date('Y-m-d')]],
+			'tsumegos' => [
+				['sets' => [['name' => 'sandbox set', 'num' => 5, 'public' => 0]]],
+				['sets' => [['name' => 'set 1', 'num' => 3]]]],
+			'schedule' => [
+				['tsumego' => 0, 'set' => 'set 1', 'date' => date('Y-m-d', strtotime('-2 days'))]]]);
+
+		$this->testAction('/cron/daily/' . CRON_SECRET);
+
+		$schedule = ClassRegistry::init('Schedule')->find('first', ['order' => 'id ASC']);
+		$this->assertSame(1, (int) $schedule['Schedule']['published']);
+	}
+
 	public function testUpdateSolved()
 	{
 		$context = new ContextPreparator([

@@ -645,6 +645,39 @@ class ScheduleTest extends TestCaseWithAuth
 		]));
 	}
 
+	/**
+	 * Publishing moves the problem, so two entries for the same problem both end up
+	 * resolved with a single connection in the target set and none left in the sandbox.
+	 */
+	public function testPublishingTheSameProblemTwiceKeepsOneConnection(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'admin', 'admin' => true],
+			'tsumegos' => [
+				['sets' => [['name' => 'sandbox set', 'num' => 5, 'public' => 0]]],
+				['sets' => [['name' => 'target set', 'num' => 1]]],
+			],
+			'schedule' => [
+				['tsumego' => 0, 'set' => 'target set', 'date' => date('Y-m-d', strtotime('-1 day'))],
+				['tsumego' => 0, 'set' => 'target set', 'date' => date('Y-m-d')],
+			],
+		]);
+		$this->login('admin');
+
+		$tsumegoId = $context->tsumegos[0]['id'];
+		$targetSetId = $context->tsumegos[1]['set-connections'][0]['set_id'];
+		$sandboxSetId = $context->tsumegos[0]['set-connections'][0]['set_id'];
+
+		SchedulePublisher::publishDue();
+
+		$this->assertSame(1, ClassRegistry::init('SetConnection')->find('count', [
+			'conditions' => ['set_id' => $targetSetId, 'tsumego_id' => $tsumegoId],
+		]));
+		$this->assertSame(0, ClassRegistry::init('SetConnection')->find('count', [
+			'conditions' => ['set_id' => $sandboxSetId, 'tsumego_id' => $tsumegoId],
+		]));
+	}
+
 	public function testPublishCatchesUpAnEntryOfAMissedDay(): void
 	{
 		$context = new ContextPreparator([
