@@ -27,7 +27,7 @@ class TsumegoFilters
 
 		foreach ($rawSets as $set)
 		{
-			$found = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $set, 'public' => 1, 'user_id IS NULL']]);
+			$found = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $set, Set::officialCondition('Set')]]);
 			if ($found)
 			{
 				$this->sets[] = $set;

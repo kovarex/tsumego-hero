@@ -28,9 +28,9 @@ class Set extends AppModel
 	}
 
 	/**
-	 * The same rule as isOfficial() for a hand-written query, on the given table alias. Cake's array
-	 * conditions spell it as 'user_id IS NULL' next to 'public' => 1, so a query over collections
-	 * picks one of the two and never a bare public flag.
+	 * The same rule as isOfficial() as an SQL condition on the given table alias, for hand-written
+	 * queries and Cake's find conditions alike. A query over the site's collections uses this, never
+	 * a bare public flag, which a shared player collection carries too.
 	 */
 	public static function officialCondition(string $alias = 'set'): string
 	{

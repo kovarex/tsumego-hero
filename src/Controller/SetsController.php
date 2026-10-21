@@ -518,7 +518,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		//setTiles
 		$setsRaw = $this->Set->find('all', [
 			'order' => array_map('trim', explode(',', SetConnection::displayOrderForSetSql('Set'))),
-			'conditions' => ['public' => 1, 'user_id IS NULL'],
+			'conditions' => [Set::officialCondition('Set')],
 		]) ?: [];
 		foreach ($setsRaw as $set)
 			$setTiles[] = $set['Set']['title'];
