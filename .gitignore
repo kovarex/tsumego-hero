@@ -70,3 +70,6 @@ webroot/dist/
 package-lock.json
 .pnpm-store/
 vite.config.*.timestamp-*
+
+# Test site deploy hook, installed by hand from scripts/deploy-test-hook.cgi
+/webroot/deploy-hook.cgi

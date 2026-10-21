@@ -1,0 +1,99 @@
+name: Deploy to test
+
+# Deploys a pull request to https://test.tsumego.com, so it can be tried before merging.
+# The test site does the deploy itself (scripts/deploy-test-hook.cgi); this only asks for it
+# and shows the log. Production is never touched.
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: 'Pull request number (0 = master)'
+        required: true
+        type: number
+      allow_fork:
+        description: 'Allow a pull request from a fork (its code runs on the test site)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: deploy-test
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment: test
+
+    env:
+      PR: ${{ inputs.pr }}
+      HOOK_URL: ${{ vars.TEST_DEPLOY_URL || 'https://test.tsumego.com/deploy-hook.cgi' }}
+      DEPLOY_TOKEN: ${{ secrets.TEST_DEPLOY_TOKEN }}
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Check the pull request
+        if: inputs.pr != 0
+        env:
+          ALLOW_FORK: ${{ inputs.allow_fork }}
+        run: |
+          fork=$(gh pr view "$PR" --repo "$GITHUB_REPOSITORY" --json isCrossRepository --jq .isCrossRepository)
+          if [ "$fork" = true ] && [ "$ALLOW_FORK" != true ]; then
+            echo "::error::PR #$PR comes from a fork; rerun with allow_fork to deploy it anyway."
+            exit 1
+          fi
+
+      - name: Request the deploy
+        id: request
+        run: |
+          id=$(curl -sS --fail-with-body -X POST -H "X-Deploy-Token: $DEPLOY_TOKEN" "$HOOK_URL?pr=$PR")
+          echo "Deploy $id started."
+          echo "id=$id" >> "$GITHUB_OUTPUT"
+
+      - name: Follow the deploy
+        id: deploy
+        env:
+          DEPLOY_ID: ${{ steps.request.outputs.id }}
+        run: |
+          shown=0
+          while true; do
+            sleep 5
+            body=$(curl -fsS -H "X-Deploy-Token: $DEPLOY_TOKEN" "$HOOK_URL") || continue
+            status=$(printf '%s\n' "$body" | sed '/^---$/,$d')
+            if [ "$(printf '%s\n' "$status" | sed -n 's/^id=//p')" != "$DEPLOY_ID" ]; then
+              echo "::error::Another deploy replaced this one."
+              exit 1
+            fi
+            printf '%s\n' "$body" | sed '1,/^---$/d' > deploy.log
+            tail -n +$((shown + 1)) deploy.log
+            shown=$(wc -l < deploy.log)
+            state=$(printf '%s\n' "$status" | sed -n 's/^state=//p')
+            commit=$(printf '%s\n' "$status" | sed -n 's/^commit=//p')
+            case "$state" in
+              ok | failed)
+                echo "state=$state" >> "$GITHUB_OUTPUT"
+                echo "commit=$commit" >> "$GITHUB_OUTPUT"
+                [ "$state" = ok ]
+                exit
+                ;;
+            esac
+          done
+
+      - name: Comment on the pull request
+        if: always() && inputs.pr != 0 && steps.deploy.outputs.state != ''
+        env:
+          STATE: ${{ steps.deploy.outputs.state }}
+          COMMIT: ${{ steps.deploy.outputs.commit }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ "$STATE" = ok ]; then
+            body="Deployed $COMMIT to https://test.tsumego.com ([log]($RUN_URL))."
+          else
+            body="Deploying $COMMIT to https://test.tsumego.com failed ([log]($RUN_URL))."
+          fi
+          gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body "$body"
