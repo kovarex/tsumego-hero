@@ -93,11 +93,6 @@ class MistakeTraining
 	public const IMPORT_LIMIT = 10;
 
 	/**
-	 * Where the count of past mistakes left to import stops; the page says "or more".
-	 */
-	public const IMPORT_COUNT_CAP = 1000;
-
-	/**
 	 * How far back the calendar of the profile goes: half a year, like the graphs of
 	 * the profile.
 	 */
@@ -615,26 +610,12 @@ class MistakeTraining
 	}
 
 	/**
-	 * How many past mistakes are not in the training yet. An attempt that was solved
-	 * with misplays is a problem the player solved but not on the first try; one that
-	 * was never solved is practice rather than review, so it does not count. The page
-	 * asks on every visit that finds nothing due, and the history of a player can be
-	 * long, so the count stops at IMPORT_COUNT_CAP.
-	 */
-	public static function importCandidates(int $userId): int
-	{
-		$rows = Util::query(
-			'SELECT COUNT(*) AS total FROM (SELECT DISTINCT a.tsumego_id' . self::pastMistakesSql()
-			. ' LIMIT ' . self::IMPORT_COUNT_CAP . ') candidates',
-			[$userId]
-		);
-		return (int) $rows[0]['total'];
-	}
-
-	/**
 	 * Bring the player's past mistakes into the training, newest first. They are due
 	 * at once, because they are old rather than scheduled. A problem already in the
 	 * pool keeps its rung and its next review, so the import can be run again.
+	 *
+	 * This is the only reader of the attempt history: it runs when the player asks for
+	 * the import, so a page never pays for counting what is left.
 	 *
 	 * @return int How many problems the training gained.
 	 */
@@ -792,6 +773,11 @@ class MistakeTraining
 	/**
 	 * The attempts that are past mistakes and are not in the training yet: a problem
 	 * the player solved with misplays, still alive, still reachable from a set.
+	 *
+	 * This is the longest thing the training reads: the whole attempt history of the
+	 * player, seconds of work on a cold cache once it holds tens of thousands of
+	 * attempts. Only the import itself uses it, so no page view pays for it. Counting
+	 * it for a page would need the attempts indexed for it first.
 	 */
 	private static function pastMistakesSql(): string
 	{

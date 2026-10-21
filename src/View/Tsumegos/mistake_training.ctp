@@ -15,8 +15,6 @@ use App\Utility\RungInsignia;
  * @var array $poolRows What MistakeTraining::poolRows() returned
  * @var bool $everTrained
  * @var int $totalInTraining
- * @var int $importCandidates
- * @var int $importLimit
  * @var array $upcomingDays
  * @var int $furtherDays
  * @var string|null $lastUpcomingDay
@@ -77,14 +75,13 @@ use App\Utility\RungInsignia;
 	<?php elseif ($everTrained && $solvedToday == 0 && $dueToday == 0): ?>
 	<p class="hint">Every problem you trained has graduated.</p>
 	<?php endif; ?>
-	<?php if (!empty($importCandidates)): ?>
+	<?php if ($dueToday == 0): ?>
 	<p class="hint" style="margin-top: var(--space-3);">
-		Before the training existed you solved <?php echo $importCandidates; ?><?php echo $importCandidates >= MistakeTraining::IMPORT_COUNT_CAP ? ' or more' : ''; ?>
-		problem<?php echo $importCandidates == 1 ? '' : 's'; ?> with a mistake. Add the <?php echo min($importLimit, $importCandidates); ?> most recent, and the rest will be
-		here whenever you have nothing to review.
+		Problems you solved with a mistake before the training started can be brought in
+		<?php echo MistakeTraining::IMPORT_LIMIT; ?> at a time, and reviewed like the rest.
 	</p>
 	<form method="post" action="<?php echo MistakeTraining::$IMPORT_LINK; ?>">
-		<button type="submit" class="btn">Add <?php echo min($importLimit, $importCandidates); ?> to training</button>
+		<button type="submit" class="btn">Add past mistakes to training</button>
 	</form>
 	<?php endif; ?>
 	<?php if ($training !== null): ?>

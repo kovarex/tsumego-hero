@@ -2,6 +2,7 @@
 
 use App\Utility\Auth;
 use App\Utility\Constants;
+use App\Utility\CookieFlash;
 use App\Utility\MistakeTraining;
 use App\Utility\PlayOutcome;
 use App\Utility\Rating;
@@ -548,16 +549,13 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		$this->assertStringContainsString('<a id="playTitleA" href="' . MistakeTraining::$OVERVIEW_LINK . '">Mistake Training 1/1</a>', $html);
 	}
 
-	public function testTheHomepageOffersPastMistakesWhenNothingIsDue()
+	public function testTheHomepageOffersPastMistakesEvenWithNothingToImport()
 	{
-		new ContextPreparator([
-			'user' => ['name' => 'testuser'],
-			'tsumego' => ['set_order' => 1, 'attempt' => ['solved' => true, 'misplays' => 1]],
-		]);
+		new ContextPreparator(['user' => ['name' => 'testuser']]);
 
 		$html = (string) $this->testAction('/sites/index', ['return' => 'contents']);
 
-		$this->assertStringContainsString('Nothing to review today. 1 past mistake is ready to add.', $html);
+		$this->assertStringContainsString('Nothing to review today. Add past mistakes to training.', $html);
 	}
 
 	public function testAGuestSeesNoTrainingOnTheHomepage()
@@ -596,16 +594,17 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		$this->testAction('/mistake-training', ['return' => 'contents']);
 
 		$this->assertStringContainsString(MistakeTraining::$IMPORT_LINK, (string) $this->view);
+		$this->assertStringContainsString('Add past mistakes to training', (string) $this->view);
 	}
 
-	public function testATrainingWithProblemsDoesNotOfferAnImport()
+	public function testATrainingThatHasWorkTodayDoesNotOfferAnImport()
 	{
 		new ContextPreparator([
 			'user' => ['name' => 'testuser'],
 			'tsumego' => [
 				'set_order' => 1,
 				'attempt' => ['solved' => true, 'misplays' => 1],
-				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('+2 days'))],
+				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 hour'))],
 			],
 		]);
 
@@ -614,16 +613,37 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		$this->assertStringNotContainsString(MistakeTraining::$IMPORT_LINK, (string) $this->view);
 	}
 
-	public function testATrainingWithoutCandidatesDoesNotOfferAnImport()
+	public function testTheImportIsOfferedWithoutACount()
 	{
 		new ContextPreparator([
 			'user' => ['name' => 'testuser'],
-			'tsumego' => ['set_order' => 1, 'attempt' => ['solved' => true, 'misplays' => 0]],
+			'tsumego' => ['set_order' => 1, 'attempt' => ['solved' => true, 'misplays' => 1]],
 		]);
 
 		$this->testAction('/mistake-training', ['return' => 'contents']);
 
-		$this->assertStringNotContainsString(MistakeTraining::$IMPORT_LINK, (string) $this->view);
+		$this->assertStringNotContainsString('Before the training existed', (string) $this->view, 'The page does not count what is left to import');
+	}
+
+	public function testTheImportSaysHowManyProblemsItAdded()
+	{
+		new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumego' => ['set_order' => 1, 'attempt' => ['solved' => true, 'misplays' => 1]],
+		]);
+
+		$this->testAction(MistakeTraining::$IMPORT_LINK, ['method' => 'post']);
+
+		$this->assertSame('Added 1 past mistake to the training.', CookieFlash::get());
+	}
+
+	public function testTheImportSaysWhenThereIsNothingLeftToAdd()
+	{
+		new ContextPreparator(['user' => ['name' => 'testuser']]);
+
+		$this->testAction(MistakeTraining::$IMPORT_LINK, ['method' => 'post']);
+
+		$this->assertSame('Nothing left to add, every past mistake is already in the training.', CookieFlash::get());
 	}
 
 	public function testImportFillsTheTrainingAndReturnsToTheQueue()
