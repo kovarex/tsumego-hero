@@ -61,7 +61,8 @@ function showRatingLong(rating)
 function updateSprintStatus(seconds)
 {
 	document.getElementById("status2").innerHTML = Math.floor(seconds / 60) + ":" + String(seconds % 60).padStart(2,'0');
-	document.getElementById("status2").style.color = 'blue';
+	document.getElementById("status2").style.color = 'gray';
+	document.getElementById("status2").style.fontWeight = 800;
 }
 
 function updateSprint(seconds)
@@ -138,9 +139,11 @@ function revelation()
 	if (isStatusAllowingInspection(tStatus))
 		return;
 
-	makeAjaxCall('/hero/revelation/' + this.tsumegoID,
+	makeAjaxCall('/hero/revelation/' + tsumegoID,
 		(response) =>
 		{
+			tryAgainTomorrow = false;
+			locked = false;
 			document.getElementById("status").style.color = playGreenColor;
 			document.getElementById("status").innerHTML = "<h2>Correct!</h2>";
 			if (light)
@@ -154,7 +157,6 @@ function revelation()
 			$("#commentSpace").show();
 			updateCurrentNavigationButton('S');
 			displaySettings();
-			setCookie("revelation", "1");
 			revelationUseCount--;
 			disableRevelation();
 		});

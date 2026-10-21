@@ -1,13 +1,22 @@
 <?php
 
+use App\Utility\Constants;
+use App\Utility\Rating;
+use PHPUnitRetry\RetryTrait;
+
+/**
+ * @retryAttempts 2
+ * @retryIfException Facebook\WebDriver\Exception\WebDriverException
+ */
 class AccountWidgetTest extends ControllerTestCase
 {
+	use RetryTrait;
 	// by default we show level
 	public function testShowLevelInAccountWidget()
 	{
 		$browser = Browser::instance();
 		$context = new ContextPreparator(['user' => ['xp' => 13, 'level' => 5]]);
-		$browser->get('/');
+		$browser->get('sites/blank');
 		$this->assertSame('Level 5', $browser->find('#account-bar-xp')->getText());
 		$browser->hover($browser->find('#account-bar-xp'));
 		$this->assertSame('13/90', $browser->find('#account-bar-xp')->getText());
@@ -41,7 +50,7 @@ class AccountWidgetTest extends ControllerTestCase
 		$browser = Browser::instance();
 		new ContextPreparator(['user' => ['rating' => 2075]]);
 		$browser->setCookie('showInAccountWidget', 'rating');
-		$browser->get('/');
+		$browser->get('sites/blank');
 		$this->assertSame('1d', $browser->find('#account-bar-xp')->getText());
 		$browser->hover($browser->find('#account-bar-xp'));
 		$this->assertSame('2075', $browser->find('#account-bar-xp')->getText());
@@ -130,5 +139,56 @@ class AccountWidgetTest extends ControllerTestCase
 			$browser->hover($browser->find('#account-bar-xp'));
 			$this->assertSame(strval(round(2050 + $expectedChange)), $browser->find('#account-bar-xp')->getText());
 		}
+	}
+
+	public function testSettingsLevelRadioSwitchesWidgetToLevel()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator(['user' => ['rating' => 2075]]);
+		$browser->setCookie('showInAccountWidget', 'rating');
+		$browser->get('users/settings');
+
+		// AccountWidget starts in rating mode (shows a rank, not "Level")
+		$ratingText = $browser->find('#account-bar-xp')->getText();
+		$this->assertStringStartsNotWith('Level', $ratingText);
+
+		// Click "Level" radio button on the settings page
+		$browser->clickId('levelBarDisplay1');
+		$browser->hover($browser->find('body'));
+
+		// AccountWidget should now show level
+		$this->assertStringStartsWith('Level', $browser->find('#account-bar-xp')->getText());
+	}
+
+	public function testSettingsRatingRadioSwitchesWidgetToRating()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator(['user' => ['rating' => 2075]]);
+		$browser->get('users/settings');
+
+		// AccountWidget starts in level mode by default
+		$this->assertStringStartsWith('Level', $browser->find('#account-bar-xp')->getText());
+
+		// Click "Rating" radio button on the settings page
+		$browser->clickId('levelBarDisplay2');
+		$browser->hover($browser->find('body'));
+
+		// AccountWidget should now show rating (a rank, not "Level")
+		$ratingText = $browser->find('#account-bar-xp')->getText();
+		$this->assertStringStartsNotWith('Level', $ratingText);
+	}
+
+	public function testSettingsRatingRadioPersistsAcrossPageLoad()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator(['user' => ['rating' => 2075]]);
+		$browser->get('users/settings');
+
+		$browser->clickId('levelBarDisplay2');
+		$browser->hover($browser->find('body'));
+
+		// Reload the page - preference should persist
+		$browser->get('users/settings');
+		$this->assertStringStartsNotWith('Level', $browser->find('#account-bar-xp')->getText());
 	}
 }

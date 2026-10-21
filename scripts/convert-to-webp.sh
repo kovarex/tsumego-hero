@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # Convert all PNG and JPEG images to WebP format
 # Usage: composer images:webp
 # 
@@ -26,7 +26,7 @@ echo "Converting PNG and JPEG images to WebP..."
 echo ""
 
 # Check if ImageMagick/convert is available
-if ! command -v convert &> /dev/null; then
+if ! command -v convert > /dev/null 2>&1; then
     echo "Error: ImageMagick 'convert' command not found"
     echo "Install with: apt-get install imagemagick"
     exit 1
@@ -37,7 +37,10 @@ skipped=0
 failed=0
 
 echo "=== Processing images ==="
-while IFS= read -r -d '' src_file; do
+list_file=$(mktemp)
+find "$IMG_DIR" \( -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' \) -type f | sort > "$list_file"
+
+while IFS= read -r src_file; do
     # Determine extension and output file
     ext="${src_file##*.}"
     webp_file="${src_file%.$ext}.webp"
@@ -45,7 +48,7 @@ while IFS= read -r -d '' src_file; do
     # Skip if WebP exists and is NOT older than source
     # Note: Using ! -ot instead of -nt to handle equal timestamps (e.g., after git checkout)
     if [ -f "$webp_file" ] && ! [ "$webp_file" -ot "$src_file" ]; then
-        ((skipped++)) || true
+        skipped=$((skipped + 1))
         continue
     fi
     
@@ -57,15 +60,16 @@ while IFS= read -r -d '' src_file; do
         if [ "$src_size" -gt 0 ]; then
             savings=$((100 - (webp_size * 100 / src_size)))
             rel_path="${src_file#$IMG_DIR/}"
-            echo "✓ $rel_path ($savings% smaller)"
+            echo "  ok: $rel_path ($savings% smaller)"
         fi
-        ((converted++)) || true
+        converted=$((converted + 1))
     else
         rel_path="${src_file#$IMG_DIR/}"
-        echo "✗ Failed: $rel_path"
-        ((failed++)) || true
+        echo "  failed: $rel_path"
+        failed=$((failed + 1))
     fi
-done < <(find "$IMG_DIR" \( -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' \) -type f -print0 | sort -z)
+done < "$list_file"
+rm -f "$list_file"
 
 echo ""
 echo "========================================="

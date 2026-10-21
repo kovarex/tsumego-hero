@@ -1,9 +1,19 @@
-	<div class="teuber">
-		<div class="homeLeft2">
-			<?php echo $news['Site']['body']; ?>
+<?php
+
+use App\Utility\HtmlSanitizer;
+
+/**
+ * @var View $this
+ * @var array $news
+ */
+
+?>
+	<div class="split">
+		<div>
+			<?php echo HtmlSanitizer::sanitize((string) ($news['Site']['body'] ?? '')); ?>
 			<br><br><br><br><br><br><br><br><br><br><br>
 		</div>
-		<div class="homeRight2">
-			<?php echo $news['Site']['title']; ?>
+		<div>
+			<?php echo h($news['Site']['title']); ?>
 		</div>
 	</div>

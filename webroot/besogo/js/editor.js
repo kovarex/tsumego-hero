@@ -102,6 +102,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     displayError: displayError,
     compareFoundCommentMoves: compareFoundCommentMoves,
     createSignatures: createSignatures,
+    applyRotation: applyRotation,
   };
 
   // Returns the active tool
@@ -423,7 +424,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
           break;
       }
     }
-	else if (boardLockValue == 1 && window.problemSolved)
+	else if (boardLockValue == 1 && window.problemSolved && nextButtonLink)
         window.location.href = nextButtonLink; // Problem is solved, clicking navigates to next puzzle
   }
 
@@ -459,34 +460,32 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
       navigateToRemainingRequiredIfNeeded(timer)
     )
       return;
-    setTimeout(function () {
-      let success = !node.localEdit && node.correct == CORRECT_GOOD;
+    let success = !node.localEdit && node.correct == CORRECT_GOOD;
+    if (
+      !node.localEdit &&
+      !success &&
+      node.status &&
+      showComment &&
+      node.comment == ""
+    ) {
+      let root = node.getRoot();
       if (
-        !node.localEdit &&
-        !success &&
-        node.status &&
-        showComment &&
-        node.comment == ""
-      ) {
-        let root = node.getRoot();
-        if (
-          root.goal != GOAL_NONE &&
-          node.status.blackFirst.type != STATUS_ALIVE && // when the current is clearly dead or alive, we don't say the obvious
-          node.status.blackFirst.type != STATUS_DEAD
-        )
-          displayMessage(
-            transformTextColors(
-              root,
-              "It is " +
-                node.status.strLong() +
-                ", but it should be: " +
-                root.status.strLong()
-            ),
-            "Not the best solution"
-          );
-      }
-      displayResult(success ? "S" : "F");
-    }, 240);
+        root.goal != GOAL_NONE &&
+        node.status.blackFirst.type != STATUS_ALIVE && // when the current is clearly dead or alive, we don't say the obvious
+        node.status.blackFirst.type != STATUS_DEAD
+      )
+        displayMessage(
+          transformTextColors(
+            root,
+            "It is " +
+              node.status.strLong() +
+              ", but it should be: " +
+              root.status.strLong()
+          ),
+          "Not the best solution"
+        );
+    }
+    displayResult(success ? "S" : "F");
   }
 
   function navigateToNode(node, byClicking = false) {
@@ -1256,7 +1255,6 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
       signatures +
       tsumegoFileLink +
       ";SameSite=Lax";
-    //if(idForSignature!==-1) window.location.href = "/tsumegos/play/"+idForSignature+"?idForTheThing="+idForSignature2;
   }
 
   function createSignature(a) {
@@ -1333,5 +1331,266 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     console.log(str.substring(0, 3));
     console.log(str.substring(3, 6));
     console.log(str.substring(6, 9));
+  }
+
+  //determine which rotation should be applied
+  function applyRotation(clockwise = false) {
+    if (besogo.scaleParameters["orientation"] !== "full-board") {
+      if(!clockwise){
+          if (
+            besogo.scaleParameters["boardCanvasSize"] !==
+              "horizontal half board" &&
+            besogo.scaleParameters["boardCanvasSize"] !== "vertical half board"
+          ) {
+            if (besogo.scaleParameters["rotation"] === -1) {
+              if (besogo.boardParameters["corner"] === "top-left")
+                rotateViewBox(1);
+              else if (besogo.boardParameters["corner"] === "top-right")
+                rotateViewBox(0);
+              else if (besogo.boardParameters["corner"] === "bottom-right")
+                rotateViewBox(3);
+              else if (besogo.boardParameters["corner"] === "bottom-left")
+                rotateViewBox(2);
+            } else {
+              let rotationDivider =
+                besogo.boardParameters["corner"] === "top-left" ||
+                besogo.boardParameters["corner"] === "bottom-right"
+                  ? 1
+                  : 0;
+              let currentRotation =
+                besogo.scaleParameters["rotation"] !== 3
+                  ? besogo.scaleParameters["rotation"] + 1
+                  : 0;
+              rotateViewBox(
+                currentRotation,
+                besogo.scaleParameters["rotation"] % 2 === rotationDivider
+              );
+            }
+          } else {
+            changeRotationWidth(
+              besogo.scaleParameters["boardCanvasSize"],
+              besogo.boardParameters["corner"],
+              besogo.scaleParameters["rotation"]
+            );
+            if (besogo.scaleParameters["rotation"] === -1) {
+              if (besogo.boardParameters["corner"] === "top-left")
+                rotateViewBox(1);
+              else if (besogo.boardParameters["corner"] === "top-right")
+                rotateViewBox(0);
+              else if (besogo.boardParameters["corner"] === "bottom-right")
+                rotateViewBox(3);
+              else if (besogo.boardParameters["corner"] === "bottom-left")
+                rotateViewBox(2);
+            } else {
+              let rotationDivider =
+                besogo.boardParameters["corner"] === "top-left" ||
+                besogo.boardParameters["corner"] === "bottom-right"
+                  ? 1
+                  : 0;
+              let currentRotation =
+                besogo.scaleParameters["rotation"] !== 3
+                  ? besogo.scaleParameters["rotation"] + 1
+                  : 0;
+              rotateViewBox(
+                currentRotation,
+                besogo.scaleParameters["rotation"] % 2 === rotationDivider
+              );
+            }
+          }
+      }else{
+          if (
+            besogo.scaleParameters["boardCanvasSize"] !==
+              "horizontal half board" &&
+            besogo.scaleParameters["boardCanvasSize"] !== "vertical half board"
+          ) {
+            if (besogo.scaleParameters["rotation"] === -1) {
+              if (besogo.boardParameters["corner"] === "top-left")
+                rotateViewBox(3);
+              else if (besogo.boardParameters["corner"] === "top-right")
+                rotateViewBox(2);
+              else if (besogo.boardParameters["corner"] === "bottom-right")
+                rotateViewBox(1);
+              else if (besogo.boardParameters["corner"] === "bottom-left")
+                rotateViewBox(0);
+            } else {
+              let rotationDivider =
+                besogo.boardParameters["corner"] === "top-left" ||
+                besogo.boardParameters["corner"] === "bottom-right"
+                  ? 1
+                  : 0;
+              let currentRotation =
+                besogo.scaleParameters["rotation"] !== 0
+                  ? besogo.scaleParameters["rotation"] - 1
+                  : 3;
+              rotateViewBox(
+                currentRotation,
+                besogo.scaleParameters["rotation"] % 2 === rotationDivider
+              );
+            }
+          } else {
+            changeRotationWidth(
+              besogo.scaleParameters["boardCanvasSize"],
+              besogo.boardParameters["corner"],
+              besogo.scaleParameters["rotation"]
+            );
+            if (besogo.scaleParameters["rotation"] === -1) {
+              if (besogo.boardParameters["corner"] === "top-left")
+                rotateViewBox(3);
+              else if (besogo.boardParameters["corner"] === "top-right")
+                rotateViewBox(2);
+              else if (besogo.boardParameters["corner"] === "bottom-right")
+                rotateViewBox(1);
+              else if (besogo.boardParameters["corner"] === "bottom-left")
+                rotateViewBox(0);
+            } else {
+              let rotationDivider =
+                besogo.boardParameters["corner"] === "top-left" ||
+                besogo.boardParameters["corner"] === "bottom-right"
+                  ? 1
+                  : 0;
+              let currentRotation =
+                besogo.scaleParameters["rotation"] !== 0
+                  ? besogo.scaleParameters["rotation"] - 1
+                  : 3;
+              rotateViewBox(
+                currentRotation,
+                besogo.scaleParameters["rotation"] % 2 === rotationDivider
+              );
+            }
+          }
+        
+      }
+    }
+  }
+
+  //adjust the viewBox to the rotation
+  function rotateViewBox(type = 0, swap = false) {
+    if (type === 0) {
+      let boardHeight = "boardHeight";
+      let boardWidth = "boardWidth";
+      if (swap) {
+        boardHeight = "boardWidth";
+        boardWidth = "boardHeight";
+      }
+      besogo.boardCanvasSvg.setAttribute(
+        "viewBox",
+        "0 0 " +
+          besogo.boardParameters[boardHeight] +
+          " " +
+          besogo.boardParameters[boardWidth]
+      );
+    } else if (type === 1) {
+      let boardWidth2 = "boardWidth2";
+      let boardHeight3 = "boardHeight3";
+      let boardWidth3 = "boardWidth3";
+      if (swap) {
+        boardWidth2 = "boardHeight2";
+        boardHeight3 = "boardWidth3";
+        boardWidth3 = "boardHeight3";
+      }
+      besogo.boardCanvasSvg.setAttribute(
+        "viewBox",
+        0 +
+          " " +
+          besogo.boardParameters[boardWidth2] +
+          " " +
+          besogo.boardParameters[boardHeight3] +
+          " " +
+          besogo.boardParameters[boardWidth3]
+      );
+    } else if (type === 2) {
+      let boardHeight2 = "boardHeight2";
+      let boardWidth2 = "boardWidth2";
+      let boardHeight3 = "boardHeight3";
+      let boardWidth3 = "boardWidth3";
+      if (swap) {
+        boardHeight2 = "boardWidth2";
+        boardWidth2 = "boardHeight2";
+        boardHeight3 = "boardWidth3";
+        boardWidth3 = "boardHeight3";
+      }
+      besogo.boardCanvasSvg.setAttribute(
+        "viewBox",
+        besogo.boardParameters[boardHeight2] +
+          " " +
+          besogo.boardParameters[boardWidth2] +
+          " " +
+          besogo.boardParameters[boardHeight3] +
+          " " +
+          besogo.boardParameters[boardWidth3]
+      );
+    } else {
+      let boardHeight2 = "boardHeight2";
+      let boardHeight3 = "boardHeight3";
+      let boardWidth3 = "boardWidth3";
+      if (swap) {
+        boardHeight2 = "boardWidth2";
+        boardHeight3 = "boardWidth3";
+        boardWidth3 = "boardHeight3";
+      }
+      besogo.boardCanvasSvg.setAttribute(
+        "viewBox",
+        besogo.boardParameters[boardHeight2] +
+          " " +
+          0 +
+          " " +
+          besogo.boardParameters[boardHeight3] +
+          " " +
+          besogo.boardParameters[boardWidth3]
+      );
+    }
+    besogo.scaleParameters["rotation"] = type;
+    besogoRotation = type;
+  }
+
+  //the board with should adjust with the rotation sometimes
+  function changeRotationWidth(canvas, corner, rotation) {
+    if (canvas === "vertical half board") {
+      if (rotation === -1) {
+        $(".besogo-board").css("width", "78%");
+        $(".besogo-board").css("margin", "0 138px");
+      } else {
+        if (corner === "top-left") {
+          if (rotation === 1 || rotation === 3) {
+            $(".besogo-board").css("width", "30%");
+            $(".besogo-board").css("margin", "0 443px");
+          } else {
+            $(".besogo-board").css("width", "78%");
+            $(".besogo-board").css("margin", "0 138px");
+          }
+        } else if (corner === "top-right") {
+          if (rotation === 0 || rotation === 2) {
+            $(".besogo-board").css("width", "30%");
+            $(".besogo-board").css("margin", "0 443px");
+          } else {
+            $(".besogo-board").css("width", "78%");
+            $(".besogo-board").css("margin", "0 138px");
+          }
+        }
+      }
+    } else if (canvas === "horizontal half board") {
+      if (rotation === -1) {
+        $(".besogo-board").css("width", "30%");
+        $(".besogo-board").css("margin", "0 443px");
+      } else {
+        if (corner === "top-left") {
+          if (rotation === 1 || rotation === 3) {
+            $(".besogo-board").css("width", "78%");
+            $(".besogo-board").css("margin", "0 138px");
+          } else {
+            $(".besogo-board").css("width", "30%");
+            $(".besogo-board").css("margin", "0 443px");
+          }
+        } else if (corner === "bottom-left") {
+          if (rotation === 0 || rotation === 2) {
+            $(".besogo-board").css("width", "78%");
+            $(".besogo-board").css("margin", "0 138px");
+          } else {
+            $(".besogo-board").css("width", "30%");
+            $(".besogo-board").css("margin", "0 443px");
+          }
+        }
+      }
+    }
   }
 };

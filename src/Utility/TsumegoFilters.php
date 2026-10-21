@@ -1,14 +1,15 @@
 <?php
 
-App::uses('Preferences', 'Utility');
-App::uses('Query', 'Utility');
+namespace App\Utility;
+
+use ClassRegistry;
+use Exception;
 
 class TsumegoFilters
 {
-	public function __construct(?string $newQuery = null, bool $empty = false)
+	public function __construct(?string $newQuery = null, ?string $publishedDate = null)
 	{
-		if ($empty)
-			return;
+		$this->publishedDate = $publishedDate;
 		if ($newQuery == 'published')
 		{
 			$this->query = $newQuery;
@@ -16,23 +17,57 @@ class TsumegoFilters
 		}
 
 		$this->query = self::processItem('query', 'topics', null, $newQuery);
-		$this->collectionSize = (int) self::processItem('collection_size', '200');
-		$this->sets = self::processItem('filtered_sets', [], function ($input) { return array_values(array_filter(explode('@', $input))); });
+		if (!in_array($this->query, ['topics', 'difficulty', 'tags'], true))
+			$this->query = 'topics';
+		$this->collectionSize = max(Constants::$MIN_COLLECTION_SIZE, min(Constants::$MAX_COLLECTION_SIZE, (int) self::processItem('collection_size', (string) Constants::$DEFAULT_COLLECTION_SIZE)));
+		$rawSets = self::processItem('filtered_sets', [], function ($input) {
+			return array_values(array_filter(explode('@', $input)));
+		});
 
-		foreach ($this->sets as $set)
-			$this->setIDs[] = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $set, 'public' => 1]])['Set']['id'];
+		foreach ($rawSets as $set)
+		{
+			$found = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $set, 'public' => 1]]);
+			if ($found)
+			{
+				$this->sets[] = $set;
+				$this->setIDs[] = $found['Set']['id'];
+			}
+		}
 
-		$this->ranks = self::processItem('filtered_ranks', [], function ($input) { return array_values(array_filter(explode('@', $input))); });
-		$this->tags = self::processItem('filtered_tags', [], function ($input) { return array_values(array_filter(explode('@', $input))); });
+		$rawRanks = self::processItem('filtered_ranks', [], function ($input) {
+			return array_values(array_filter(explode('@', $input)));
+		});
+		foreach ($rawRanks as $spec)
+		{
+			$range = Rating::parseReadableRankRange($spec);
+			if ($range !== null)
+			{
+				$this->rankSpecs[] = $range[0] . '-' . $range[1];
+				foreach (Rating::ranksBetween($range[0], $range[1]) as $rank)
+					$this->ranks[] = $rank;
+			}
+			elseif (Rating::isValidReadableRank($spec))
+			{
+				$this->rankSpecs[] = $spec;
+				$this->ranks[] = $spec;
+			}
+		}
+		$rawTags = self::processItem('filtered_tags', [], function ($input) {
+			return array_values(array_filter(explode('@', $input)));
+		});
 
-		foreach ($this->tags as $tag)
-			$this->tagIDs[] = ClassRegistry::init('Tag')->findByName($tag)['Tag']['id'];
+		foreach ($rawTags as $tag)
+		{
+			$found = ClassRegistry::init('Tag')->findByName($tag);
+			if ($found)
+			{
+				$this->tags[] = $tag;
+				$this->tagIDs[] = $found['Tag']['id'];
+				$this->tagColors[$tag] = (int) $found['Tag']['color'];
+			}
+		}
 	}
 
-	public static function empty()
-	{
-		return new TsumegoFilters(null, true);
-	}
 
 	/**
 	 * Process a preference item with optional transformation and new value override.
@@ -43,7 +78,7 @@ class TsumegoFilters
 	 * @param string|null $newValue Optional new value to set
 	 * @return mixed The processed value
 	 */
-	private static function processItem(string $name, mixed $default, $processToResult = null, ?string $newValue = null)
+	private static function processItem(string $name, mixed $default, ?callable $processToResult = null, ?string $newValue = null): mixed
 	{
 		// Get current value from Preferences (handles both logged-in and guest storage)
 		$stringResult = Preferences::get($name, '');
@@ -61,7 +96,13 @@ class TsumegoFilters
 
 		// Apply new value if provided
 		if ($newValue)
+		{
 			$stringResult = $newValue;
+			// Clear the cookie override so subsequent requests
+			// read from preferences instead of stale cookie value.
+			if (!empty($_COOKIE[$name]))
+				Util::clearCookie($name);
+		}
 
 		// Save back to preferences if value changed or was overridden
 		Preferences::set($name, $stringResult);
@@ -74,7 +115,7 @@ class TsumegoFilters
 		return $processToResult ? $processToResult($stringResult) : $stringResult;
 	}
 
-	public function getSetTitle($set): string
+	public function getSetTitle(array $set): string
 	{
 		if ($this->query == 'topics')
 			return $set['Set']['title'];
@@ -83,12 +124,10 @@ class TsumegoFilters
 		if ($this->query == 'tags')
 			return $_COOKIE['lastSet'] ?? 'Tsumego';
 
-		if ($this->query == 'favorites')
-			return 'Favorites';
 		throw new Exception('Unknown query: ""' . $this->query);
 	}
 
-	public function getSetID($set): string
+	public function getSetID(array $set): string
 	{
 		if ($this->query == 'topics')
 			return $set['Set']['id'];
@@ -97,38 +136,65 @@ class TsumegoFilters
 		if ($this->query == 'tags')
 			return $_COOKIE['lastSet'] ?? 'favorites';
 
-		if ($this->query == 'favorites')
-			return 'favorites';
 		return "Unsupported yet";
-	}
-
-	public function setQuery($query)
-	{
-		$this->query = self::processItem('query', 'topics', null, $query);
 	}
 
 	public function filterRanks(Query $query): void
 	{
-		if (empty($this->ranks))
+		if (empty($this->rankSpecs))
 			return;
 
 		$rankConditions = '';
-		foreach ($this->ranks as $rankFilter)
+		foreach ($this->rankSpecs as $rankFilter)
 		{
 			$rankCondition = '';
-			RatingBounds::coverRank($rankFilter, '15k')->addSqlConditions($rankCondition);
+			RatingBounds::coverRankSpec($rankFilter, Rating::weakestRank())->addSqlConditions($rankCondition);
 			Util::addSqlOrCondition($rankConditions, $rankCondition);
 		}
 		$query->conditions[] = $rankConditions;
+	}
+
+	/**
+	 * The ranks the From/To selects should show: the picked range, or the one
+	 * picked rank when it fits both ends. A filter of several separate ranks
+	 * cannot be shown in the two selects, so it reports ['', ''].
+	 *
+	 * @return array{0: string, 1: string}
+	 */
+	public function rankRange(): array
+	{
+		$singleRanks = [];
+		foreach ($this->rankSpecs as $spec)
+		{
+			$range = Rating::parseReadableRankRange($spec);
+			if ($range !== null)
+				return $range;
+			$singleRanks[] = $spec;
+		}
+		if (count($singleRanks) === 1)
+			return [$singleRanks[0], $singleRanks[0]];
+		return ['', ''];
+	}
+
+	/**
+	 * The rank filter labels as the user picked them: single ranks stay single,
+	 * a range stays one label such as "20k-16k".
+	 *
+	 * @return string[]
+	 */
+	public function rankFilterLabels(): array
+	{
+		return $this->rankSpecs;
 	}
 
 	public function filterTags(Query $query): void
 	{
 		if (empty($this->tagIDs))
 			return;
-		if (!str_contains($query->query, 'JOIN tag_connection'))
-			$query->query .= ' JOIN tag_connection ON tag_connection.tsumego_id = tsumego.id';
-		$query->conditions[] = 'tag_connection.tag_id IN (' . implode(',', $this->tagIDs) . ')';
+		$query->conditions[] = 'EXISTS (SELECT 1 FROM tag_connection tc
+			WHERE tc.tsumego_id = tsumego.id
+			AND tc.approved = 1
+			AND tc.tag_id IN (' . implode(',', $this->tagIDs) . '))';
 	}
 
 	public function filterSets(Query $query): void
@@ -136,37 +202,61 @@ class TsumegoFilters
 		if (empty($this->setIDs))
 			return;
 		if (!str_contains($query->query, 'JOIN set_connection'))
-			$query->query .= ' JOIN set_connection ON set_connection.tsumego.id = tsumego.id';
+			$query->query .= ' JOIN set_connection ON set_connection.tsumego_id = tsumego.id';
 		if (!str_contains($query->query, 'JOIN `set`'))
 			$query->query .= ' JOIN `set` ON `set`.id = set_connection.set_id';
 		$query->conditions[] = '`set`.id IN (' . implode(',', $this->setIDs) . ')';
 	}
 
-	public function addConditionsToQuery(Query $query): void
+	/**
+	 * EXISTS condition for a tsumego belonging to at least one public set (optionally limited to filtered sets).
+	 */
+	private function publicMembershipCondition(): string
 	{
-		$query->query .= ' JOIN set_connection on set_connection.tsumego_id = tsumego.id';
-		$query->query .= ' JOIN `set` on `set`.id = set_connection.set_id';
-		$query->conditions[] = '`set`.public = 1';
+		$setCondition = '`set`.public = 1';
 		if (!empty($this->setIDs))
-			$query->conditions[] = '`set`.id IN (' . implode(',', $this->setIDs) . ')';
-		$this->filterTags($query);
-		$this->filterRanks($query);
-		$this->filterSets($query);
+			$setCondition .= ' AND `set`.id IN (' . implode(',', $this->setIDs) . ')';
+		return 'EXISTS (SELECT 1 FROM set_connection sc JOIN `set` ON `set`.id = sc.set_id AND ' . $setCondition . ' WHERE sc.tsumego_id = tsumego.id)';
 	}
 
 	public function calculateCount(): int
 	{
 		$query = new Query('FROM tsumego');
 		$query->selects[] = 'COUNT(DISTINCT tsumego.id) AS total';
-		$this->addConditionsToQuery($query);
+		$query->conditions[] = $this->publicMembershipCondition();
+		$query->conditions[] = 'tsumego.deleted IS NULL';
+		$this->filterTags($query);
+
+		// Count only the problems the active mode actually displays
+		if ($this->query == 'tags' && empty($this->tagIDs))
+			// tags mode shows only tagged problems unless a specific tag is filtered
+				$query->conditions[] = 'EXISTS (SELECT 1 FROM tag_connection tc WHERE tc.tsumego_id = tsumego.id AND tc.approved = 1)';
+
+		if ($this->query == 'difficulty')
+		{
+			// difficulty mode shows no band above 9d, so higher ratings are not reachable
+			if (empty($this->ranks))
+			{
+				$ranks = Rating::ranks();
+				$query->conditions[] = 'tsumego.rating < ' . RatingBounds::coverRank(end($ranks), Rating::weakestRank())->max;
+			}
+			else
+				$this->filterRanks($query);
+		}
+		else
+			$this->filterRanks($query);
+
 		return Util::query($query->str())[0]['total'];
 	}
 
-	public string $query;
+	public ?string $publishedDate = null;
+	public string $query = '';
 	public int $collectionSize = 0;
 	public array $sets = [];
 	public array $setIDs = [];
 	public array $ranks = [];
+	public array $rankSpecs = [];
 	public array $tags = [];
 	public array $tagIDs = [];
+	public array $tagColors = [];
 }

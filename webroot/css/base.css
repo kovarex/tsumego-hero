@@ -1,0 +1,123 @@
+/* ══════════════════════════════════════════════════════
+   Base layer — element defaults scoped to the app
+   (body, a, headings, lists, tables, inputs, focus styles).
+   Layer: base (see layers.css for the cascade contract).
+
+   Keep tiny; never style classes here — only elements.
+   ══════════════════════════════════════════════════════ */
+
+@layer base
+{
+	/* Element defaults. Moved out of the legacy page CSS so that
+	   components (components layer) can override them cleanly. */
+	html
+	{
+		/* Prevent iOS Safari from auto-inflating text when rotating;
+		   keeps layout/typography consistent on phones. */
+		-webkit-text-size-adjust: 100%;
+		text-size-adjust: 100%;
+	}
+
+	a
+	{
+		color: var(--link-color);
+	}
+
+	a:hover
+	{
+		text-decoration: none;
+	}
+
+	/* Fluid media: never let an image/video overflow the viewport.
+	   height:auto keeps the aspect ratio when the width shrinks (prevents CLS
+	   when explicit dimensions are set elsewhere). */
+	img,
+	picture,
+	video
+	{
+		max-width: 100%;
+		height: auto;
+	}
+
+	th
+	{
+		padding: 11px;
+	}
+
+	td
+	{
+		padding: 3px;
+	}
+
+	li a
+	{
+		display: block;
+		color: white;
+		text-align: center;
+		padding: 5px 5px;
+		text-decoration: none;
+	}
+
+ul
+{
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+}
+
+	/* FormHelper (CakePHP) element defaults. The design-system form styling
+	   uses the .form-field component; these raw-element defaults cover forms
+	   that emit stock FormHelper markup (login, add-user, create/edit set). */
+	fieldset
+	{
+		border: 1px solid var(--current-border-color);
+		border-radius: var(--radius-sm);
+		padding: var(--space-3);
+		margin-bottom: var(--space-4);
+	}
+
+	legend
+	{
+		font-weight: var(--font-weight-bold);
+		padding: 0 var(--space-1);
+		color: var(--text-color);
+	}
+
+	label
+	{
+		display: block;
+		font-weight: var(--font-weight-bold);
+		margin-bottom: var(--space-1);
+		color: var(--text-color);
+	}
+
+	input[type="text"],
+	input[type="password"],
+	input[type="email"],
+	input[type="number"],
+	input[type="url"],
+	textarea,
+	select
+	{
+		width: 100%;
+		box-sizing: border-box;
+		background: var(--surface-bar);
+		color: var(--text-color);
+		border: 1px solid var(--current-border-color);
+		border-radius: var(--radius-sm);
+		padding: var(--space-2);
+		font: inherit;
+	}
+
+	form .error
+	{
+		color: var(--feedback-error);
+		font-size: var(--font-size-sm);
+	}
+
+	form .required label::after
+	{
+		content: " *";
+		color: var(--feedback-error);
+	}
+}

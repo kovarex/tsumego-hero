@@ -1,60 +1,51 @@
 <?php
-	if(!Auth::isLoggedIn() || !Auth::isAdmin())
-		echo '<script type="text/javascript">window.location.href = "/";</script>';
 
-	echo '<div class="homeRight" style="width:40%">';
-	$adminActivityRenderer->render();
-	echo '</div>';
+use App\Utility\AdminActivityRenderer;
+use App\Utility\SGFProposalsRenderer;
+use App\Utility\TagConnectionProposalsRenderer;
+use App\Utility\TagProposalsRenderer;
+use App\Utility\Util;
 
-	echo '<div class="homeLeft" style="text-align:left;border-right:1px solid #a0a0a0;width:60%">';
+/**
+ * @var View $this
+ * @var AdminActivityRenderer $adminActivityRenderer
+ * @var array $deletedUsers
+ * @var SGFProposalsRenderer $sgfProposalsRenderer
+ * @var TagConnectionProposalsRenderer $tagConnectionProposalsRenderer
+ * @var TagProposalsRenderer $tagProposalsRenderer
+ */
+
+	echo '<div class="split">';
+	echo '<div style="text-align:left;flex:3 1 0;min-width:min-content">';
+
 		$sgfProposalsRenderer->render();
+		echo '<hr>';
 		$tagProposalsRenderer->render();
-		if($requestDeletion!=null){
-			echo '<table border="0">';
-			for($i=0; $i<count($requestDeletion); $i++){
+		echo '<hr>';
+		if ($deletedUsers) {
+			echo '<table class="data-table data-table--compact">';
+			echo '<caption>Deleted Accounts (' . count($deletedUsers) . ')</caption>';
+			foreach ($deletedUsers as $deletedUser) {
 				echo '<tr>';
-				echo '<td>'.$requestDeletion[$i]['User']['name'].' has requested account deletion.</td>';
-				echo '<td><a class="new-button-default2" href="/users/adminstats?delete='.($requestDeletion[$i]['User']['id']*1111)
-				.'&hash='.md5($requestDeletion[$i]['User']['name']).'">Delete Account</a></td>';
+				echo '<td><a href="/users/view/' . $deletedUser['User']['id'] . '">' . h($deletedUser['User']['deleted_name']) . '</a></td>';
+				echo '<td><time datetime="' . Util::toIso8601($deletedUser['User']['deleted']) . '" data-format="datetime">' . $deletedUser['User']['deleted'] . '</time></td>';
+				echo '<td><form method="post" action="/users/restore_account/' . $deletedUser['User']['id'] . '" onsubmit="return confirm(\'Restore this account?\');">'
+					. '<button type="submit" class="btn btn--small" id="restore-user-' . $deletedUser['User']['id'] . '">Restore</button></form></td>';
 				echo '</tr>';
 			}
-			echo '</table><hr>';
+			echo '</table>';
+			echo '<hr>';
 		}
 		$tagConnectionProposalsRenderer->render();
-
 	echo '</div>';
-	echo '<div style="clear:both;"></div>';
+
+	echo '<div style="flex:2 1 0;min-width:min-content">';
+
+	$adminActivityRenderer->render();
+	echo '</div>';
+	echo '</div>';
 ?>
 
 <script>
 	var tooltipSgfs = window.tooltipSgfs || [];
-	let tagList = "null";
-	let tagNameList = "null";
-	let proposalList = "null";
-	let submitCount = 0;
-
-	<?php if($refreshView) echo 'window.location.href = "/sets/view/'.$set['Set']['id'].'";'; ?>
-
-	<?php
-		for($h=0; $h<count($tagNames); $h++){
-			echo '$("#tagname-accept'.$h.'").click(function() {
-				$("#tagname-submit'.$h.'").show();
-				$("#tagname-accept'.$h.'").hide();
-				$("#tagname-reject'.$h.'").hide();
-				tagNameList = tagNameList + "-" + "a'.$tagNames[$h]['Tag']['id'].'";
-				setCookie("tagNameList", tagNameList);
-				submitCount++;
-				$(".tag-submit-button").html("Submit ("+submitCount+")");
-			});';
-			echo '$("#tagname-reject'.$h.'").click(function() {
-				$("#tagname-submit'.$h.'").show();
-				$("#tagname-accept'.$h.'").hide();
-				$("#tagname-reject'.$h.'").hide();
-				tagNameList = tagNameList + "-" + "r'.$tagNames[$h]['Tag']['id'].'";
-				setCookie("tagNameList", tagNameList);
-				submitCount++;
-				$(".tag-submit-button").html("Submit ("+submitCount+")");
-			});';
-		}
-	?>
 </script>

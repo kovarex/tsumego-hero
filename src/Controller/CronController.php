@@ -1,31 +1,51 @@
 <?php
 
-App::uses('TsumegoUtil', 'Util');
+use App\Utility\Util;
 
 class CronController extends AppController
 {
 	/* Supposed to be ran daily to reset hearts and hero powers */
-	public function daily($secret)
+	public function daily(string $secret)
 	{
 		if ($secret != CRON_SECRET)
+			throw new ForbiddenException('Wrong cron secret.');
+
+		// Already ran today - nothing to do
+		if (ClassRegistry::init('DayRecord')->find('count', ['conditions' => ['date' => date('Y-m-d')]]) > 0)
 		{
-			$this->response->statusCode(403);
-			$this->response->body('Wrong cron secret.');
+			$this->response->statusCode(200);
 			return $this->response;
 		}
+
 		$this->dailyTsumegoStatusReset();
 		$this->dailyStalingSolvedTsumegoStatuses();
 		self::createDayRecord();
 		self::publish();
 		$this->dailyUsersReset();
-		$this->updatePopularTags();
+		$this->dailyPotionConditionReset();
 		$this->updateSolvedCounts();
+		self::dropExpiredAddressChanges();
 
 		$this->response->statusCode(200);
 		return $this->response;
 	}
 
-	private function dailyUsersReset()
+	/**
+	 * Forgets address changes whose links no longer work, so a change that was never
+	 * confirmed does not stay on the account. The lifetime is the one the links were
+	 * sent with, so a change stays exactly as long as its links work.
+	 */
+	private static function dropExpiredAddressChanges(): void
+	{
+		Util::execute('UPDATE user
+			SET unconfirmed_email = NULL, unconfirmed_email_token = NULL,
+				unconfirmed_email_cancel_token = NULL, unconfirmed_email_created = NULL
+			WHERE unconfirmed_email IS NOT NULL
+				AND unconfirmed_email_created <= NOW() - INTERVAL ? HOUR',
+			[UsersController::$EMAIL_CHANGE_LINK_VALID_HOURS]);
+	}
+
+	private function dailyUsersReset(): void
 	{
 		$query = 'UPDATE user SET';
 		$query .= ' used_refinement=0';
@@ -42,13 +62,19 @@ class CronController extends AppController
 		ClassRegistry::init('User')->query($query);
 	}
 
-	private function dailyTsumegoStatusReset()
+	private function dailyPotionConditionReset(): void
+	{
+		ClassRegistry::init('AchievementCondition')->query(
+			"UPDATE achievement_condition SET value=0 WHERE category='potion'");
+	}
+
+	private function dailyTsumegoStatusReset(): void
 	{
 		ClassRegistry::init('TsumegoStatus')->query("UPDATE tsumego_status SET status='V' where status='F'");
 		ClassRegistry::init('TsumegoStatus')->query("UPDATE tsumego_status SET status='W' where status='X'");
 	}
 
-	private function dailyStalingSolvedTsumegoStatuses()
+	private function dailyStalingSolvedTsumegoStatuses(): void
 	{
 		ClassRegistry::init('TsumegoStatus')->query("
 UPDATE tsumego_status
@@ -66,7 +92,7 @@ WHERE
 		foreach ($lastDayRecords as $lastDayRecord)
 			$excludedUsers[$lastDayRecord['DayRecord']['user_id']] = true;
 
-		$topUsers = ClassRegistry::init('User')->find('all', ['limit' => '8', 'order' => 'daily_xp DESC']) ?: [];
+		$topUsers = ClassRegistry::init('User')->find('all', ['conditions' => ['deleted IS NULL'], 'limit' => '8', 'order' => 'daily_xp DESC']) ?: [];
 		foreach ($topUsers as $user)
 			if (!isset($excludedUsers[$user['User']['id']]))
 				return $user;
@@ -90,23 +116,15 @@ WHERE
 		throw new Exception("Quote couldn't be generated");
 	}
 
-	private function createDayRecord()
+	private function createDayRecord(): void
 	{
+		$today = date('Y-m-d');
+		if (ClassRegistry::init('DayRecord')->find('count', ['conditions' => ['date' => $today]]) > 0)
+			return;
+
 		$userOfTheDay = self::deduceUserOfTheDay();
 		$currentQuote = self::deduceQuoteToUse();
-		$today = date('Y-m-d');
-		$activity = $this->TsumegoAttempt->find('all', ['limit' => 40000, 'conditions' => ['created' => date('Y-m-d', strtotime('yesterday'))]]) ?: [];
-		$visitedProblems = count($activity);
 
-		//how many users today
-		$usersNum = [];
-		$activities = $this->User->find('all', ['limit' => 400, 'order' => 'created DESC']) ?: [];
-		foreach ($activities as $activity)
-		{
-			$a = new DateTime($activity['User']['created']);
-			if ($a->format('Y-m-d') == $today)
-				array_push($usersNum, $activity['User']);
-		}
 		$gemRand1 = rand(0, 2);
 		$gemRand2 = rand(0, 2);
 		$gemRand3 = rand(0, 2);
@@ -140,15 +158,11 @@ WHERE
 		$dayRecord = [];
 		$dayRecord['DayRecord']['user_id'] = $userOfTheDay['User']['id'];
 		$dayRecord['DayRecord']['date'] = $today;
-		$dayRecord['DayRecord']['solved'] = $userOfTheDay['User']['daily_solved'];
 		$dayRecord['DayRecord']['quote'] = $currentQuote;
-		$dayRecord['DayRecord']['usercount'] = count($usersNum);
-		$dayRecord['DayRecord']['visitedproblems'] = $visitedProblems;
 		$dayRecord['DayRecord']['gems'] = $gemRand1 . '-' . $gemRand2 . '-' . $gemRand3;
 		$dayRecord['DayRecord']['gemCounter1'] = 0;
 		$dayRecord['DayRecord']['gemCounter2'] = 0;
 		$dayRecord['DayRecord']['gemCounter3'] = 0;
-		$dayRecord['DayRecord']['tsumego_count'] = TsumegoUtil::currentTsumegoCount();
 		ClassRegistry::init('DayRecord')->save($dayRecord);
 
 		ClassRegistry::init('AchievementCondition')->create();
@@ -160,10 +174,10 @@ WHERE
 		ClassRegistry::init('AchievementCondition')->save($achievementCondition);
 	}
 
-	public static function publish()
+	public static function publish(): void
 	{
 		$date = date('Y-m-d', strtotime('today'));
-		$todaysSchedule = ClassRegistry::init('Schedule')->find('all', ['conditions' => ['date' => $date]]) ?: [];
+		$todaysSchedule = ClassRegistry::init('Schedule')->find('all', ['conditions' => ['date' => $date, 'published' => 0]]) ?: [];
 		foreach ($todaysSchedule as $item)
 		{
 			self::publishSingle($item['Schedule']['tsumego_id'], $item['Schedule']['set_id'], $item['Schedule']['date']);
@@ -172,16 +186,30 @@ WHERE
 		}
 	}
 
-	protected static function publishSingle($tsumegoID = null, $to = null, $date = null): void
+	protected static function publishSingle(int|string|null $tsumegoID = null, int|string|null $to = null, ?string $date = null): void
 	{
 		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID);
 		if (!$tsumego)
 			return;
-		$setConnection = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $tsumegoID]]);
+		$setConnection = ClassRegistry::init('SetConnection')->findDisplaySetConnection($tsumegoID);
 		if (!$setConnection)
 			return;
-		$setConnection['SetConnection']['set_id'] = $to;
-		ClassRegistry::init('SetConnection')->save($setConnection);
+
+		if ($setConnection['SetConnection']['set_id'] != $to)
+		{
+			// UNIQUE(set_id, tsumego_id): moving into a set that already contains
+			// this tsumego would fail, so drop this connection instead.
+			$alreadyInTarget = ClassRegistry::init('SetConnection')->find('first', [
+				'conditions' => ['set_id' => $to, 'tsumego_id' => $tsumegoID],
+			]);
+			if ($alreadyInTarget)
+				ClassRegistry::init('SetConnection')->delete($setConnection['SetConnection']['id']);
+			else
+			{
+				$setConnection['SetConnection']['set_id'] = $to;
+				ClassRegistry::init('SetConnection')->save($setConnection);
+			}
+		}
 
 		// delete tsumego stats
 		$tsumego['Tsumego']['created'] = $date . ' 22:00:00';
@@ -201,21 +229,7 @@ WHERE
 		ClassRegistry::init('PublishDate')->save($x);
 	}
 
-	private static function updatePopularTags()
-	{
-		ClassRegistry::init('Tag')->query("
-UPDATE tag
-JOIN (
-    SELECT tag_id
-    FROM tag_connection
-    GROUP BY tag_id
-    ORDER BY COUNT(*) DESC
-    LIMIT " . Tag::$POPULAR_COUNT . "
-) AS top_tags ON tag.id = top_tags.tag_id
-SET tag.popular = 1;");
-	}
-
-	private static function updateSolvedCounts()
+	private static function updateSolvedCounts(): void
 	{
 		Util::query("UPDATE user u
 LEFT JOIN (

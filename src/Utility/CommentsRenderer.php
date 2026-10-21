@@ -1,15 +1,20 @@
 <?php
 
+namespace App\Utility;
+
+use PaginationHelper;
+use SetConnection;
+
 class CommentsRenderer
 {
-	public function __construct(string $name, ?int $userID, $urlParams)
+	public function __construct(string $name, ?int $userID, array $urlParams)
 	{
 		$this->name = $name;
 		$this->userID = $userID;
 		$this->params = $urlParams;
 	}
 
-	private function renderComment($comment, $index)
+	private function renderComment(array $comment, int $index): void
 	{
 		echo '<div class="sandboxComment">';
 		$commentColor = $comment['from_admin'] ? 'admin-text' : '';
@@ -17,34 +22,36 @@ class CommentsRenderer
 		echo '<tr><td width="73%"><div style="padding-bottom:7px;"><b>#' . ($index + 1) . '</b> | ';
 		if ($comment['set_connection_id'])
 		{
-			echo '<a href="/' . $comment['set_connection_id'] . '?search=topics">';
-			echo $comment['set_title'] . ' - ' . $comment['set_num'] . '</a><br>';
+			echo '<a href="/' . (int) $comment['set_connection_id'] . '?search=topics">';
+			echo h($comment['set_title']) . ' - ' . h($comment['set_num']) . '</a><br>';
 		}
 		else
-			echo '<i>Problem (id=' . $comment['tsumego_id'] . 'doesn\'t have set connection.</i>';
+			echo '<i>Problem (id=' . (int) $comment['tsumego_id'] . ' doesn\'t have set connection.</i>';
 
 		echo '<br></div>';
 		echo '<div class="' . $commentColor . '">';
-		echo $comment['from_name'] . ':<br>';
+		echo h(\User::displayName(['id' => $comment['from_id'], 'display_name' => $comment['from_display_name']])) . ':<br>';
 		echo '</div>';
-		echo '<div id="comment_' . $comment['id'] . '"';
+		echo '<div ';
+		if($comment['from_admin'])
+			echo 'class="commentBox2" ';
+		echo 'id="comment_' . $comment['id'] . '"';
 		if (TsumegoUtil::isSolvedStatus($comment['status']) || Auth::isAdmin())
-			echo '>' . $comment['message'] . '</div>';
+			echo '>' . nl2br(h($comment['message'])) . '</div>';
 		else
-			echo ' class="grey-text">[You need to solve this problem to see the comment]</div>';
-		$date = new DateTime($comment['created']);
-		echo '</td><td class="sandboxTable2time" align="right">' . $date->format('Y-m-d') . '<br>' . $date->format('H:i') . '</td>';
+			echo ' class="text-muted">[You need to solve this problem to see the comment]</div>';
+		echo '</td><td class="sandboxTable2time" align="right"><time datetime="' . Util::toIso8601($comment['created']) . '" data-format="date">' . h($comment['created']) . '</time><br><time datetime="' . Util::toIso8601($comment['created']) . '" data-format="time">' . h($comment['created']) . '</time></td>';
 		echo '</tr>';
 		echo '<tr><td colspan="2"><div width="100%"><div align="center">';
 
 		if ($comment['set_connection_id'])
-			new TsumegoButton($comment['tsumego_id'], $comment['set_connection_id'], $comment['set_num'], $comment['status'])->render();
+			new TsumegoButton($comment['tsumego_id'], $comment['set_connection_id'], $comment['set_num'], $comment['status'] ?: 'N', 0, $comment['sgf'])->render();
 		echo '</div></td></tr>';
 		echo '</table>';
 		echo '</div>';
 	}
 
-	public function render()
+	public function render(): void
 	{
 		$parameters = [];
 		$parameters[] = Auth::getUserID();
@@ -60,18 +67,27 @@ SELECT
 	tsumego_comment.created AS created,
 	tsumego_status.status AS status,
 	user.isAdmin AS from_admin,
-	user.name as from_name,
+	user.display_name as from_display_name,
+	user.id as from_id,
 	tsumego_comment.id as id,
 	set_connection.id AS set_connection_id,
 	CONCAT(`set`.title, ' ', `set`.title2) as set_title,
-	set_connection.num as set_num";
+	set_connection.num as set_num,
+	COALESCE(sgf.sgf, '') AS sgf";
 		$queryFrom = "
 FROM
 	tsumego_comment
 	JOIN tsumego ON tsumego_comment.tsumego_id = tsumego.id
+    LEFT JOIN sgf ON sgf.id = (SELECT MAX(s2.id) FROM sgf s2 WHERE s2.tsumego_id = tsumego.id)
 	JOIN user ON tsumego_comment.user_id = user.id
 	LEFT JOIN tsumego_status ON tsumego_status.tsumego_id = tsumego.id AND tsumego_status.user_id = ?
-    LEFT JOIN set_connection ON set_connection.tsumego_id = tsumego.id
+    LEFT JOIN set_connection ON set_connection.id = (
+        SELECT sc.id
+        FROM set_connection sc
+        JOIN `set` s ON s.id = sc.set_id
+        WHERE sc.tsumego_id = tsumego.id AND " . SetConnection::visibilitySql('s') . "
+        ORDER BY " . SetConnection::displayOrderSql('s', 'sc') . "
+        LIMIT 1)
     LEFT JOIN `set` ON set_connection.set_id = `set`.id";
 
 		if (!empty($queryCondition))

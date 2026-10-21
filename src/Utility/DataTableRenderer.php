@@ -1,8 +1,12 @@
 <?php
 
+namespace App\Utility;
+
+use PaginationHelper;
+
 abstract class DataTableRenderer
 {
-	public function __construct($urlParams, $name, $caption)
+	public function __construct(array $urlParams, string $name, string $caption)
 	{
 		$this->name = $name;
 		$this->caption = $caption;
@@ -11,11 +15,11 @@ abstract class DataTableRenderer
 		$this->offset = ($this->page - 1) * self::$PAGE_SIZE;
 	}
 
-	public function render()
+	public function render(): void
 	{
-		echo '<h3 id="' . $this->name . '_header">' . $this->caption . ' (' . $this->count . ')</h3>';
 		echo PaginationHelper::render($this->page, $this->pageCount, $this->name);
-		echo '<table border="0" class="statsTable" style="border-collapse:collapse;">';
+		echo '<table border="0" class="data-table data-table--compact" style="border-collapse:collapse;">';
+		echo '<caption id="' . $this->name . '_header">' . $this->caption . ' (' . $this->count . ')</caption>';
 		$this->renderHeader();
 		foreach ($this->data as $index => $item)
 		{
@@ -32,7 +36,7 @@ abstract class DataTableRenderer
 
 	protected string $name;
 	protected string $caption;
-	protected static $PAGE_SIZE = 100;
+	protected static int $PAGE_SIZE = 100;
 
 	protected array $data = [];
 	protected int $page;

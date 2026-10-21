@@ -41,6 +41,13 @@ $user->session_begin();
 $auth->acl($user->data);
 $user->setup('ucp');
 
+if (empty($user->data['user_id']) || $user->data['user_id'] == ANONYMOUS)
+{
+    echo "You must be logged in to see anything here.";
+    http_response_code(403);
+    exit;
+}
+
 // Setting a variable to let the style designer know where he is...
 $template->assign_var('S_IN_UCP', true);
 

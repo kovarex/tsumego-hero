@@ -1,6 +1,6 @@
 <?php
 
-use Facebook\WebDriver\Remote\LocalFileDetector;
+use App\Utility\Auth;
 
 class SgfControllerUploadTest extends TestCaseWithAuth
 {
@@ -25,12 +25,14 @@ class SgfControllerUploadTest extends TestCaseWithAuth
 		$this->assertTrue($openLink->isDisplayed());
 		$this->assertSame($openLink->getText(), "Open");
 		$openLink->click();
-		$browser->waitUntilIDExists('#sgfCommentButton');
 		$browser->clickId('sgfCommentButton');
 		$browser->clickId('commentEditField');
 		$browser->driver->getKeyboard()->sendKeys("Hello from test");
 		$browser->clickId('sgfCommentButton');
 		$browser->clickId('saveSGFButton');
+
+		// Wait for redirect after saving SGF
+		$browser->waitUntilJs('!location.href.includes("/editor/")');
 
 		// Upload new SGF via besogo (uses 'sgfForBesogo' field)
 		$newSgfContent = '(;FF[4]GM[1]SZ[19]ST[2]AB[dd]AW[dc]C[Hello from test];B[cd];W[cc]C[+])';
@@ -45,6 +47,18 @@ class SgfControllerUploadTest extends TestCaseWithAuth
 		$this->assertEquals(1, $sgfs[0]['Sgf']['accepted'], 'Admin uploads should be auto-accepted');
 		$this->assertSame('B', $sgfs[0]['Sgf']['first_move_color']);
 		$this->assertSame('cd', $sgfs[0]['Sgf']['correct_moves']);
+
+		// Verify admin activity was logged
+		$activity = ClassRegistry::init('AdminActivity')->find('first', [
+			'conditions' => [
+				'type' => AdminActivityType::SGF_EDIT,
+				'tsumego_id' => $context->tsumegos[0]['id'],
+				'user_id' => Auth::getUserID(),
+			],
+			'order' => 'id DESC',
+		]);
+		$this->assertNotFalse($activity, 'Admin activity should be logged after besogo SGF upload');
+		$this->assertEquals($context->tsumegos[0]['set-connections'][0]['set_id'], $activity['AdminActivity']['set_id']);
 	}
 
 	public function testUploadSgfViaFileUpload()
@@ -57,14 +71,17 @@ class SgfControllerUploadTest extends TestCaseWithAuth
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$browser->clickId('show4');
 
-		// Create temporary SGF file
+		// Set file content via JavaScript (avoids LocalFileDetector issues with geckodriver in Docker)
 		$newSgfContent = '(;FF[4]GM[1]SZ[19]ST[2]AB[dd][pd][dp]AW[dc][oc][oq];B[cd];W[cc]C[+From file])';
-		$tmpFile = tempnam(sys_get_temp_dir(), 'sgf');
-		file_put_contents($tmpFile, $newSgfContent);
-
-		$uploadButton = $browser->find('#admin-upload-button');
-		$uploadButton->setFileDetector(new LocalFileDetector());
-		$uploadButton->sendKeys($tmpFile);
+		$browser->driver->executeScript("
+			var content = arguments[0];
+			var input = document.getElementById('admin-upload-button');
+			var file = new File([content], 'test.sgf', {type: 'application/x-sgf'});
+			var dt = new DataTransfer();
+			dt.items.add(file);
+			input.files = dt.files;
+			input.dispatchEvent(new Event('change', { bubbles: true }));
+		", [$newSgfContent]);
 		$browser->clickId('admin-upload-submit');
 
 		// Verify new SGF was added
@@ -75,6 +92,17 @@ class SgfControllerUploadTest extends TestCaseWithAuth
 		$this->assertEquals($newSgfContent, $sgfs[0]['Sgf']['sgf']);
 		$this->assertEquals('B', $sgfs[0]['Sgf']['first_move_color']);
 		$this->assertEquals('cd', $sgfs[0]['Sgf']['correct_moves']);
-		unlink($tmpFile);
+
+		// Verify admin activity was logged
+		$activity = ClassRegistry::init('AdminActivity')->find('first', [
+			'conditions' => [
+				'type' => AdminActivityType::SGF_EDIT,
+				'tsumego_id' => $context->tsumegos[0]['id'],
+				'user_id' => Auth::getUserID(),
+			],
+			'order' => 'id DESC',
+		]);
+		$this->assertNotFalse($activity, 'Admin activity should be logged after file SGF upload');
+		$this->assertEquals($context->tsumegos[0]['set-connections'][0]['set_id'], $activity['AdminActivity']['set_id']);
 	}
 }

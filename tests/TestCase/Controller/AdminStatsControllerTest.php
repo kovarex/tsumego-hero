@@ -1,9 +1,8 @@
 <?php
 
-use Facebook\WebDriver\WebDriverBy;
-
-App::uses('AdminActivityLogger', 'Utility');
-App::uses('AdminActivityType', 'Model');
+use PHPUnitRetry\RetryTrait;
+use App\Utility\Constants;
+use App\Utility\Util;
 
 /**
  * AdminStatsControllerTest
@@ -13,9 +12,13 @@ App::uses('AdminActivityType', 'Model');
  * - Tests filtering out non-admin SGF uploads
  * - Tests pagination with multiple sections (activity, proposals, tags, tagnames)
  * - Tests all 18 activity types display correctly with formatted messages
+ *
+ * @retryAttempts 2
+ * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
 class AdminStatsControllerTest extends ControllerTestCase
 {
+	use RetryTrait;
 	/**
 	 * Test adminstats page displays in browser
 	 */
@@ -43,12 +46,15 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$this->assertTextContains('Description Edit', $pageSource);
 	}
 
-	public function testAdminStatsRedirectsNonAdmin()
+	public function testAdminStatsBlocksNonAdmin()
 	{
 		$browser = Browser::instance();
-		new ContextPreparator();
+		new ContextPreparator(['user' => ['name' => 'regular', 'admin' => false]]);
 		$browser->get('users/adminstats');
-		$this->assertStringContainsString('/', $browser->driver->getCurrentURL()); // Should redirect to home page
+
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertTextContains('Forbidden', $pageSource);
+		$this->assertTextNotContains('Admin Activity', $pageSource);
 	}
 
 	/**
@@ -56,8 +62,6 @@ class AdminStatsControllerTest extends ControllerTestCase
 	 */
 	public function testSetLevelActivities()
 	{
-		App::uses('AdminActivityLogger', 'Utility');
-		App::uses('AdminActivityType', 'Model');
 
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
@@ -86,8 +90,6 @@ class AdminStatsControllerTest extends ControllerTestCase
 	 */
 	public function testActivityPagination()
 	{
-		App::uses('AdminActivityLogger', 'Utility');
-		App::uses('AdminActivityType', 'Model');
 
 		// Build activities array programmatically
 		$activities = [];
@@ -128,8 +130,6 @@ class AdminStatsControllerTest extends ControllerTestCase
 
 	public function testMultiplePaginationsIndependent()
 	{
-		App::uses('AdminActivityLogger', 'Utility');
-		App::uses('AdminActivityType', 'Model');
 
 		// Build activities array programmatically
 		$activities = [];
@@ -143,33 +143,28 @@ class AdminStatsControllerTest extends ControllerTestCase
 			];
 		}
 
-		$context = new ContextPreparator([
+		new ContextPreparator([
 			'user' => ['admin' => true],
 			'tsumego' => [],
 			'admin-activities' => $activities
 		]);
 
-		// Create unapproved tags
-		for ($i = 1; $i <= 105; $i++)
-		{
-			$tagName = ClassRegistry::init('Tag');
-			$tagName->create();
-			$tagName->save([
-				'name' => "Test Tag $i",
-				'user_id' => $context->user['id'],
-				'approved' => 0
-			]);
-		}
-
-		// Navigate with both pagination parameters
+		// Navigate to the second page of the activities, from a page that also
+		// carries another parameter
 		$browser = Browser::instance();
-		$browser->get('users/adminstats?activity_page=2&tagnames_page=2');
+		$browser->get('users/adminstats?activity_page=2&sgf_proposals_page=2');
 
 		$pageSource = $browser->driver->getPageSource();
+		$this->assertStringContainsString('Page 2 of 2', $pageSource);
 
-		// Both paginations should preserve their state
-		$this->assertStringContainsString('activity_page=2', $pageSource);
-		$this->assertStringContainsString('tagnames_page=2', $pageSource);
+		// Paging the activities keeps what the visitor asked for elsewhere
+		preg_match_all('~href="\?([^"#]+)~', $pageSource, $matches);
+		$this->assertNotEmpty($matches[1]);
+
+		$previousPages = array_filter($matches[1], fn($query) => str_contains($query, 'activity_page=1'));
+		$this->assertNotEmpty($previousPages);
+		foreach ($previousPages as $query)
+			$this->assertStringContainsString('sgf_proposals_page=2', $query);
 	}
 
 	/**
@@ -178,8 +173,6 @@ class AdminStatsControllerTest extends ControllerTestCase
 	 */
 	public function testAllActivityTypesDisplay()
 	{
-		App::uses('AdminActivityLogger', 'Utility');
-		App::uses('AdminActivityType', 'Model');
 
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
@@ -223,6 +216,22 @@ class AdminStatsControllerTest extends ControllerTestCase
 
 				// tsumego merge
 				['type' => AdminActivityType::TSUMEGO_MERGE, 'tsumego_id' => true, 'old_value' => 'other:0'],
+
+				// Delete user
+				['type' => AdminActivityType::DELETE_USER, 'old_value' => 'banned_spammer'],
+
+				// Display name change
+				['type' => AdminActivityType::DISPLAY_NAME_CHANGE, 'old_value' => 'Old Name', 'new_value' => 'New Name'],
+
+				// SGF edit
+				['type' => AdminActivityType::SGF_EDIT, 'tsumego_id' => true, 'old_value' => 'old sgf', 'new_value' => 'new sgf'],
+
+				// Tag management
+				['type' => AdminActivityType::ADD_TAG, 'tsumego_id' => true, 'new_value' => 'tesuji'],
+
+				// Proposal management
+				['type' => AdminActivityType::ACCEPT_PROPOSAL, 'tsumego_id' => true, 'new_value' => 'proposer1'],
+				['type' => AdminActivityType::REJECT_PROPOSAL, 'tsumego_id' => true, 'new_value' => 'proposer2'],
 			]
 		]);
 
@@ -230,7 +239,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$browser->get('users/adminstats');
 		$pageSource = $browser->driver->getPageSource();
 
-		// Verify all 19 activity type names appear in HTML
+		// Verify all activity type names appear in HTML
 		$this->assertTextContains('Description Edit', $pageSource);
 		$this->assertTextContains('Hint Edit', $pageSource);
 		$this->assertTextContains('Author Edit', $pageSource);
@@ -251,7 +260,9 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$this->assertTextContains('Problem Add', $pageSource);
 		$this->assertTextContains('Set Alternative Response', $pageSource);
 		$this->assertTextContains('Set Pass Mode', $pageSource);
-		$this->assertTextContains('Merged tsumego', $pageSource);
+		$this->assertTextContains('Merged tsumego ' . $context->tsumegos[0]['id'], $pageSource);
+		$this->assertTextContains('Deleted user banned_spammer', $pageSource);
+		$this->assertTextContains('Display Name Change: Old Name → New Name', $pageSource);
 
 		// Verify formatted messages with old/new values appear in HTML
 
@@ -285,6 +296,10 @@ class AdminStatsControllerTest extends ControllerTestCase
 
 		$this->assertTextContains('Accepted tag snapback', $pageSource);
 		$this->assertTextContains('Rejected tag atari', $pageSource);
+		$this->assertTextContains('SGF Edit: old sgf → new sgf', $pageSource);
+		$this->assertTextContains('Added tag tesuji', $pageSource);
+		$this->assertTextContains('Accepted proposal by proposer1', $pageSource);
+		$this->assertTextContains('Rejected proposal by proposer2', $pageSource);
 	}
 
 	public function testProposeSGF()
@@ -307,10 +322,14 @@ class AdminStatsControllerTest extends ControllerTestCase
 			$browser->driver->getCurrentURL());
 		$browser->assertNoErrors();
 
-		usleep(200 * 1000);
+		// Wait for editor to be ready
+		$browser->waitUntilJs('typeof besogo !== "undefined"');
 		$browser->clickBoard(4, 4);
 		$browser->clickId('makeCorrectButton');
 		$browser->clickId('saveSGFButton');
+
+		// Wait for redirect after saving SGF
+		$browser->waitUntilJs('!location.href.includes("/editor/")');
 
 		// checking that the non-accepted sgf is not used for the problem
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
@@ -367,6 +386,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 
 		// click the accept proposal button
 		$browser->clickId('reject-' . $context->tsumegos[0]['sgfs'][1]['id']);
+		$browser->waitUntilCssSelectorExistsWithText('#sgf_proposals_page_header', 'SGF Proposals (0)');
 
 		// we got redirected back to adminstats, the proposal shouldn't be visible anymore
 		$this->assertSame(Util::getMyAddress() . '/users/adminstats', $browser->driver->getCurrentURL());
@@ -387,6 +407,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 
 		// click the accept proposal button
 		$browser->clickId('tag-connection-accept-' . $context->tsumegos[0]['tag-connections'][0]['id']);
+		$browser->waitUntilCssSelectorExistsWithText('#tag_connection_proposals_page_header', 'New Tags (0)');
 
 		// we got redirected back to adminstats, the proposal shouldn't be visible anymore
 		$this->assertSame(Util::getMyAddress() . '/users/adminstats', $browser->driver->getCurrentURL());
@@ -412,6 +433,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 
 		// click the accept proposal button
 		$browser->clickId('tag-connection-reject-' . $context->tsumegos[0]['tag-connections'][0]['id']);
+		$browser->waitUntilCssSelectorExistsWithText('#tag_connection_proposals_page_header', 'New Tags (0)');
 
 		// we got redirected back to adminstats, the proposal shouldn't be visible anymore
 		$this->assertSame(Util::getMyAddress() . '/users/adminstats', $browser->driver->getCurrentURL());
@@ -426,5 +448,29 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$this->assertSame($adminActivities[0]['AdminActivity']['type'], AdminActivityType::REJECT_TAG);
 		$this->assertSame('snapback', $adminActivities[0]['AdminActivity']['old_value']);
 		$this->assertSame(null, $adminActivities[0]['AdminActivity']['new_value']);
+	}
+
+	public function testRestoreDeletedUser()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'other-users' => [['deleted' => true, 'name' => 'TwT', 'email' => 'twt@example.com']]
+		]);
+		$deletedUserID = $context->otherUsers[0]['id'];
+		$browser->get('/users/adminstats');
+		$this->assertTextContains('Deleted Accounts (1)', $browser->driver->getPageSource());
+		$browser->clickIdAndAcceptAlert('restore-user-' . $deletedUserID);
+		// Wait for the server-side restore to be committed before asserting DB state
+		$browser->waitUntilCssSelectorDoesntExist('#restore-user-' . $deletedUserID);
+		$this->assertStringContainsString('/users/adminstats', $browser->driver->getCurrentURL());
+		$this->assertNull(ClassRegistry::init('User')->findById($deletedUserID)['User']['deleted']);
+
+		// the restore is saved in admin activities
+		$adminActivities = ClassRegistry::init('AdminActivity')->find('all');
+		$this->assertCount(1, $adminActivities);
+		$this->assertSame($adminActivities[0]['AdminActivity']['type'], AdminActivityType::RESTORE_USER);
+		$this->assertSame(null, $adminActivities[0]['AdminActivity']['old_value']);
+		$this->assertSame('TwT', $adminActivities[0]['AdminActivity']['new_value']);
 	}
 }

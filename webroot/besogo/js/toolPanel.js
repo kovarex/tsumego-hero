@@ -11,6 +11,7 @@ besogo.makeToolPanel = function (container, editor) {
   var blIcon = null;
   var brIcon = null;
   var spinIcon = null;
+  var favButtonLit = false;
 
   if (container.className == "besogo-tsumegoPlayTool")
     makeReviewToolButtons(container, editor);
@@ -265,69 +266,7 @@ besogo.makeToolPanel = function (container, editor) {
         let transformation = besogo.makeTransformation();
         transformation.rotateCounterClockwise = true;
         besogo.editor.applyTransformation(transformation);
-
-        if (besogo.scaleParameters["orientation"] !== "full-board") {
-          if (
-            besogo.scaleParameters["boardCanvasSize"] !==
-              "horizontal half board" &&
-            besogo.scaleParameters["boardCanvasSize"] !== "vertical half board"
-          ) {
-            if (besogo.scaleParameters["rotation"] === -1) {
-              if (besogo.boardParameters["corner"] === "top-left")
-                rotationView(1);
-              else if (besogo.boardParameters["corner"] === "top-right")
-                rotationView(0);
-              else if (besogo.boardParameters["corner"] === "bottom-right")
-                rotationView(3);
-              else if (besogo.boardParameters["corner"] === "bottom-left")
-                rotationView(2);
-            } else {
-              let rotationDivider =
-                besogo.boardParameters["corner"] === "top-left" ||
-                besogo.boardParameters["corner"] === "bottom-right"
-                  ? 1
-                  : 0;
-              let currentRotation =
-                besogo.scaleParameters["rotation"] !== 3
-                  ? besogo.scaleParameters["rotation"] + 1
-                  : 0;
-              rotationView(
-                currentRotation,
-                besogo.scaleParameters["rotation"] % 2 === rotationDivider
-              );
-            }
-          } else {
-            changeRotationWidth(
-              besogo.scaleParameters["boardCanvasSize"],
-              besogo.boardParameters["corner"],
-              besogo.scaleParameters["rotation"]
-            );
-            if (besogo.scaleParameters["rotation"] === -1) {
-              if (besogo.boardParameters["corner"] === "top-left")
-                rotationView(1);
-              else if (besogo.boardParameters["corner"] === "top-right")
-                rotationView(0);
-              else if (besogo.boardParameters["corner"] === "bottom-right")
-                rotationView(3);
-              else if (besogo.boardParameters["corner"] === "bottom-left")
-                rotationView(2);
-            } else {
-              let rotationDivider =
-                besogo.boardParameters["corner"] === "top-left" ||
-                besogo.boardParameters["corner"] === "bottom-right"
-                  ? 1
-                  : 0;
-              let currentRotation =
-                besogo.scaleParameters["rotation"] !== 3
-                  ? besogo.scaleParameters["rotation"] + 1
-                  : 0;
-              rotationView(
-                currentRotation,
-                besogo.scaleParameters["rotation"] % 2 === rotationDivider
-              );
-            }
-          }
-        }
+        besogo.editor.applyRotation(false);
         $("#boardSpinCounterClockwise").css("opacity", "1");
         $("#boardSpinClockwise").css("opacity", ".62");
         $("#boardOrientationTL").css("opacity", ".62");
@@ -336,6 +275,7 @@ besogo.makeToolPanel = function (container, editor) {
         $("#boardOrientationBR").css("opacity", ".62");
       }
     );
+
     spinIcon = "boardSpinClockwise";
     makeImageButton(
       "/img/" + spinIcon + ".png",
@@ -345,69 +285,7 @@ besogo.makeToolPanel = function (container, editor) {
         let transformation = besogo.makeTransformation();
         transformation.rotateClockwise = true;
         besogo.editor.applyTransformation(transformation);
-
-        if (besogo.scaleParameters["orientation"] !== "full-board") {
-          if (
-            besogo.scaleParameters["boardCanvasSize"] !==
-              "horizontal half board" &&
-            besogo.scaleParameters["boardCanvasSize"] !== "vertical half board"
-          ) {
-            if (besogo.scaleParameters["rotation"] === -1) {
-              if (besogo.boardParameters["corner"] === "top-left")
-                rotationView(3);
-              else if (besogo.boardParameters["corner"] === "top-right")
-                rotationView(2);
-              else if (besogo.boardParameters["corner"] === "bottom-right")
-                rotationView(1);
-              else if (besogo.boardParameters["corner"] === "bottom-left")
-                rotationView(0);
-            } else {
-              let rotationDivider =
-                besogo.boardParameters["corner"] === "top-left" ||
-                besogo.boardParameters["corner"] === "bottom-right"
-                  ? 1
-                  : 0;
-              let currentRotation =
-                besogo.scaleParameters["rotation"] !== 0
-                  ? besogo.scaleParameters["rotation"] - 1
-                  : 3;
-              rotationView(
-                currentRotation,
-                besogo.scaleParameters["rotation"] % 2 === rotationDivider
-              );
-            }
-          } else {
-            changeRotationWidth(
-              besogo.scaleParameters["boardCanvasSize"],
-              besogo.boardParameters["corner"],
-              besogo.scaleParameters["rotation"]
-            );
-            if (besogo.scaleParameters["rotation"] === -1) {
-              if (besogo.boardParameters["corner"] === "top-left")
-                rotationView(3);
-              else if (besogo.boardParameters["corner"] === "top-right")
-                rotationView(2);
-              else if (besogo.boardParameters["corner"] === "bottom-right")
-                rotationView(1);
-              else if (besogo.boardParameters["corner"] === "bottom-left")
-                rotationView(0);
-            } else {
-              let rotationDivider =
-                besogo.boardParameters["corner"] === "top-left" ||
-                besogo.boardParameters["corner"] === "bottom-right"
-                  ? 1
-                  : 0;
-              let currentRotation =
-                besogo.scaleParameters["rotation"] !== 0
-                  ? besogo.scaleParameters["rotation"] - 1
-                  : 3;
-              rotationView(
-                currentRotation,
-                besogo.scaleParameters["rotation"] % 2 === rotationDivider
-              );
-            }
-          }
-        }
+        besogo.editor.applyRotation(true);
         $("#boardSpinClockwise").css("opacity", "1");
         $("#boardSpinCounterClockwise").css("opacity", ".62");
         $("#boardOrientationTL").css("opacity", ".62");
@@ -437,11 +315,12 @@ besogo.makeToolPanel = function (container, editor) {
           "besogo-pass-button"
         );
       }
-      if (mode == 1) {
-        let prevButtonId;
-        prevButtonId = "besogo-back-button";
-
-        makeHyperlinkText("Back","previous problem", previousButtonLink, prevButtonId);
+      if (mode == 1 || mode == 5) {
+        // The first problem of the training has nothing before it
+        if (previousButtonLink)
+          makeHyperlinkText("Back","previous problem", previousButtonLink, "besogo-back-button");
+        else
+          makeHyperlinkText("Back","no previous problem", 0, "besogo-back-button-inactive");
       } else if (mode == 2) {
         makeHyperlinkText(
           "History",
@@ -472,6 +351,7 @@ besogo.makeToolPanel = function (container, editor) {
 				document.getElementById("status").innerHTML = "";
 				document.getElementById("theComment").style.cssText = "display:none;";
 				$("#customAlerts").fadeOut(500);
+				$(".besogo-board").removeClass("besogo-board-red-glow");
 				$(".besogo-panels").css("display", "none");
 				if (besogo.scaleParameters["boardCanvasSize"] === "full board")
 				{
@@ -508,8 +388,26 @@ besogo.makeToolPanel = function (container, editor) {
 			  },
 			"besogo-reset-button"
 			);
-		makeHyperlinkText("Next", "next problem", nextButtonLink, "besogo-next-button");
-	}
+	  }
+	  else if (mode == 5)
+	  {
+		// A training try ends at the first mistake. Reset opens the problem again, so
+		// the next try is a fresh one and the server counts it as such.
+		makeButtonText(
+		  "Reset",
+		  "try the problem again",
+		  function () { window.location.href = resetButtonLink; },
+		  "besogo-reset-button"
+		);
+	  }
+	  if (mode == 1 || mode == 2 || mode == 5)
+	  {
+		// The training has nowhere to go while its last problem is not solved
+		if (nextButtonLink)
+		  makeHyperlinkText("Next", "next problem", nextButtonLink, "besogo-next-button");
+		else
+		  makeHyperlinkText("Next", "solve this problem first", 0, "besogo-next-button-inactive");
+	  }
       let reviewButtonId;
       if (editor.getReviewEnabled()) reviewButtonId = "besogo-review-button";
       else reviewButtonId = "besogo-review-button-inactive";
@@ -738,7 +636,7 @@ besogo.makeToolPanel = function (container, editor) {
       if (setID != 262)
       {
         makeButtonText(
-          "Black wins",
+          besogo.boardInverted ? "White wins" : "Black wins",
           "",
           function () {
             displayScoreEstimatingResult("b");
@@ -747,7 +645,7 @@ besogo.makeToolPanel = function (container, editor) {
         );
 
         makeButtonText(
-          "White wins",
+          besogo.boardInverted ? "Black wins" : "White wins",
           "",
           function () {
             displayScoreEstimatingResult("w");
@@ -782,7 +680,7 @@ besogo.makeToolPanel = function (container, editor) {
       makeHyperlinkText("Back","previous problem", previousButtonLink, prevButtonId);
 
       makeButtonText(
-        "Black is dead",
+        besogo.boardInverted ? "White is dead" : "Black is dead",
         "",
         function () {
           displayMultipleChoiceResult(1);
@@ -791,7 +689,7 @@ besogo.makeToolPanel = function (container, editor) {
       );
 
       makeButtonText(
-        "White is dead",
+        besogo.boardInverted ? "Black is dead" : "White is dead",
         "",
         function () {
           displayMultipleChoiceResult(2);
@@ -825,30 +723,114 @@ besogo.makeToolPanel = function (container, editor) {
       "change the color of your stones",
       "colorOrientation",
       function () {
+        besogo.boardInverted = !besogo.boardInverted;
+        let swapColorWords = besogo.swapColorWords;
         let transformation = besogo.makeTransformation();
         transformation.invertColors = true;
-        let descriptionText = $("#descriptionText").text();
-        if (descriptionText.includes("Black"))
-          descriptionText = descriptionText.replaceAll("Black", "White");
-        else if (descriptionText.includes("White"))
-          descriptionText = descriptionText.replaceAll("White", "Black");
-        $("#descriptionText").text(descriptionText);
+        // Any true-color text shown to the player must follow the board's colors.
+        let desc = $("#descriptionText");
+        if (desc.length) desc.text(swapColorWords(desc.text()));
+        let theComment = $("#theComment");
+        if (theComment.length) theComment.text(swapColorWords(theComment.text()));
+        // Multiple-choice answers (custom multiple-choice and semeai share these ids).
+        ["besogo-multipleChoice1", "besogo-multipleChoice2", "besogo-multipleChoice3", "besogo-multipleChoice4"].forEach(function (id) {
+          let el = $("#" + id);
+          if (el.length) el.val(swapColorWords(el.val()));
+        });
+        // Score-estimating result buttons and summary labels.
+        ["besogo-se-black", "besogo-se-white"].forEach(function (id) {
+          let el = $("#" + id);
+          if (el.length) el.val(swapColorWords(el.val()));
+        });
+        let scoreLabels = $("#scoreEstimatingLabels");
+        if (scoreLabels.length) scoreLabels.text(swapColorWords(scoreLabels.text()));
         besogo.editor.applyTransformation(transformation);
       }
     );
 
     if (!besogoNoLogin) {
-      let favImage = favorite ? "/img/favButtonActive.png" : "/img/favButton.png";
-      makeImageButton(favImage, "mark as favorite", "favButton", function () {
-        if (favImage == "/img/favButton.png") {
-          favImage = "/img/favButtonActive.png";
-          setCookie("add_favorite", tsumegoFileLink);
+      favButtonLit = window.userSets && window.userSets.some(s => s.contains);
+      let heart = $('<span id="favButton" class="fav-heart" style="cursor:pointer;font-size:18px;margin:12px 0 0 1px;user-select:none" title="mark as favorite">' + (favButtonLit ? '❤️' : '🤍') + '</span>');
+      heart.on("click", function () {
+        let anyContain = window.userSets && window.userSets.some(s => s.contains);
+        if (anyContain) {
+          // Remove from ALL sets
+          let promises = [];
+          window.userSets.forEach(s => {
+            if (s.contains) {
+              s.contains = false;
+              promises.push(
+                fetch("/sets/removeTsumego/" + s.id, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/x-www-form-urlencoded", "X-Requested-With": "XMLHttpRequest" },
+                  body: "tsumego_id=" + tsumegoFileLink
+                })
+                .then(r => {
+                  if (!r.ok)
+                    throw new Error("Remove from favorites failed: " + r.status);
+                  return r.json();
+                })
+                .then(data => {
+                  if (data && data.contains !== undefined)
+                    s.contains = data.contains;
+                })
+                .catch(err => {
+                  s.contains = true;
+                  throw err;
+                })
+              );
+            }
+          });
+          updateFavButton(false);
+          Promise.all(promises)
+            .then(() => updateFavButton(window.userSets.some(x => x.contains)))
+            .catch(err => {
+              console.error('Failed to update favorites', err);
+              updateFavButton(window.userSets.some(x => x.contains));
+            });
         } else {
-          favImage = "/img/favButton.png";
-          setCookie("remove_favorite", tsumegoFileLink);
+          // Add to Favorites set
+          let fav = window.userSets && window.userSets.find(s => s.title === "Favorites");
+          if (fav)
+            fav.contains = true;
+          updateFavButton(true);
+
+          fetch("/sets/addTsumego/favorites", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded", "X-Requested-With": "XMLHttpRequest" },
+            body: "tsumego_id=" + tsumegoFileLink
+          })
+          .then(r => {
+            if (!r.ok)
+              throw new Error("Add to favorites failed: " + r.status);
+            return r.json();
+          })
+          .then(data => {
+            if (!data)
+              return;
+            if (fav)
+              fav.contains = true;
+            else if (Array.isArray(window.userSets) && data.set_id)
+              window.userSets.push({ id: data.set_id, title: data.title || "Favorites", contains: true });
+            updateFavButton(window.userSets.some(x => x.contains));
+          })
+          .catch(err => {
+            console.error('Failed to update favorites', err);
+
+            if (fav)
+              fav.contains = false;
+            updateFavButton(window.userSets.some(x => x.contains));
+          });
         }
-        $("#favButton").attr("src", favImage);
       });
+      container.appendChild(heart[0]);
+
+      // Dropdown arrow, only if user has more than one set to choose from
+      if (userSets && userSets.length > 1) {
+        let arrow = $('<span id="favDropdownArrow" style="cursor:pointer;font-size:18px;margin:15px 5px 0 0;vertical-align:middle;user-select:none" title="save to set">▼</span>');
+        arrow.on("click", function () { showFavDropdown(); });
+        container.appendChild(arrow[0]);
+      }
     }
     if (besogo.scaleParameters["orientation"] !== "full-board")
       makeBlankSpace(2);
@@ -982,86 +964,6 @@ besogo.makeToolPanel = function (container, editor) {
     //removed buttons - the other editor should be used
   }
 
-  //adjust the viewBox to the rotation
-  function rotationView(type = 0, swap = false) {
-    if (type === 0) {
-      let boardHeight = "boardHeight";
-      let boardWidth = "boardWidth";
-      if (swap) {
-        boardHeight = "boardWidth";
-        boardWidth = "boardHeight";
-      }
-      besogo.boardCanvasSvg.setAttribute(
-        "viewBox",
-        "0 0 " +
-          besogo.boardParameters[boardHeight] +
-          " " +
-          besogo.boardParameters[boardWidth]
-      );
-    } else if (type === 1) {
-      let boardWidth2 = "boardWidth2";
-      let boardHeight3 = "boardHeight3";
-      let boardWidth3 = "boardWidth3";
-      if (swap) {
-        boardWidth2 = "boardHeight2";
-        boardHeight3 = "boardWidth3";
-        boardWidth3 = "boardHeight3";
-      }
-      besogo.boardCanvasSvg.setAttribute(
-        "viewBox",
-        0 +
-          " " +
-          besogo.boardParameters[boardWidth2] +
-          " " +
-          besogo.boardParameters[boardHeight3] +
-          " " +
-          besogo.boardParameters[boardWidth3]
-      );
-    } else if (type === 2) {
-      let boardHeight2 = "boardHeight2";
-      let boardWidth2 = "boardWidth2";
-      let boardHeight3 = "boardHeight3";
-      let boardWidth3 = "boardWidth3";
-      if (swap) {
-        boardHeight2 = "boardWidth2";
-        boardWidth2 = "boardHeight2";
-        boardHeight3 = "boardWidth3";
-        boardWidth3 = "boardHeight3";
-      }
-      besogo.boardCanvasSvg.setAttribute(
-        "viewBox",
-        besogo.boardParameters[boardHeight2] +
-          " " +
-          besogo.boardParameters[boardWidth2] +
-          " " +
-          besogo.boardParameters[boardHeight3] +
-          " " +
-          besogo.boardParameters[boardWidth3]
-      );
-    } else {
-      let boardHeight2 = "boardHeight2";
-      let boardHeight3 = "boardHeight3";
-      let boardWidth3 = "boardWidth3";
-      if (swap) {
-        boardHeight2 = "boardWidth2";
-        boardHeight3 = "boardWidth3";
-        boardWidth3 = "boardHeight3";
-      }
-      besogo.boardCanvasSvg.setAttribute(
-        "viewBox",
-        besogo.boardParameters[boardHeight2] +
-          " " +
-          0 +
-          " " +
-          besogo.boardParameters[boardHeight3] +
-          " " +
-          besogo.boardParameters[boardWidth3]
-      );
-    }
-    besogo.scaleParameters["rotation"] = type;
-    besogoRotation = type;
-  }
-
   //remove all rotations when another transformation is clicked
   function revertRotations(corner, rotation = 0) {
     if (rotation === -1) return null;
@@ -1102,57 +1004,6 @@ besogo.makeToolPanel = function (container, editor) {
     }
     besogo.scaleParameters["rotation"] = -1;
     besogoRotation = -1;
-  }
-
-  //the board with should adjust with the rotation sometimes
-  function changeRotationWidth(canvas, corner, rotation) {
-    if (canvas === "vertical half board") {
-      if (rotation === -1) {
-        $(".besogo-board").css("width", "78%");
-        $(".besogo-board").css("margin", "0 138px");
-      } else {
-        if (corner === "top-left") {
-          if (rotation === 1 || rotation === 3) {
-            $(".besogo-board").css("width", "30%");
-            $(".besogo-board").css("margin", "0 443px");
-          } else {
-            $(".besogo-board").css("width", "78%");
-            $(".besogo-board").css("margin", "0 138px");
-          }
-        } else if (corner === "top-right") {
-          if (rotation === 0 || rotation === 2) {
-            $(".besogo-board").css("width", "30%");
-            $(".besogo-board").css("margin", "0 443px");
-          } else {
-            $(".besogo-board").css("width", "78%");
-            $(".besogo-board").css("margin", "0 138px");
-          }
-        }
-      }
-    } else if (canvas === "horizontal half board") {
-      if (rotation === -1) {
-        $(".besogo-board").css("width", "30%");
-        $(".besogo-board").css("margin", "0 443px");
-      } else {
-        if (corner === "top-left") {
-          if (rotation === 1 || rotation === 3) {
-            $(".besogo-board").css("width", "78%");
-            $(".besogo-board").css("margin", "0 138px");
-          } else {
-            $(".besogo-board").css("width", "30%");
-            $(".besogo-board").css("margin", "0 443px");
-          }
-        } else if (corner === "bottom-left") {
-          if (rotation === 0 || rotation === 2) {
-            $(".besogo-board").css("width", "78%");
-            $(".besogo-board").css("margin", "0 138px");
-          } else {
-            $(".besogo-board").css("width", "30%");
-            $(".besogo-board").css("margin", "0 443px");
-          }
-        }
-      }
-    }
   }
 
   // Creates a button holding an SVG image
@@ -1353,5 +1204,116 @@ besogo.makeToolPanel = function (container, editor) {
       besogo.coordArea["highestYconverted"] =
         convertedCoords.y[besogo.coordArea["highestY"] + 1];
     }
+  }
+
+  // Heart dropdown: show popover with all user sets
+  function showFavDropdown() {
+    let existing = document.getElementById("fav-dropdown");
+    if (existing) { existing.remove(); return; }
+
+    let arrow = $("#favDropdownArrow");
+    let offset = arrow.offset();
+    let div = $('<div id="fav-dropdown" class="dropdown"></div>');
+    div.css({top: offset.top + 22, left: offset.left - 150});
+    $("body").append(div);
+
+    if (!window.userSets || window.userSets.length === 0) {
+      div.append('<div class="dropdown__empty">No sets yet.</div>');
+    } else {
+      window.userSets.forEach(function (s) {
+        let row = $('<label class="dropdown__row"></label>');
+        let cb = $('<input type="checkbox" style="margin-right:4px">');
+        cb.prop("checked", s.contains);
+        cb.on("change", function () {
+          let url = this.checked
+            ? "/sets/addTsumego/" + s.id
+            : "/sets/removeTsumego/" + s.id;
+          fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded", "X-Requested-With": "XMLHttpRequest" },
+            body: "tsumego_id=" + tsumegoFileLink
+          }).then(r => r.json()).then(data => {
+            if (data.contains !== undefined) {
+              s.contains = data.contains;
+              // Heart lit if ANY set still contains this tsumego
+              let anyContain = window.userSets.some(x => x.contains);
+              updateFavButton(anyContain);
+            }
+          });
+        });
+        row.append(cb).append(s.title);
+        div.append(row);
+      });
+    }
+
+    $(document).on("click.favDropdown", function (e) {
+      if (!$(e.target).closest("#fav-dropdown, #favDropdownArrow").length) {
+        $("#fav-dropdown").remove();
+        $(document).off("click.favDropdown");
+      }
+    });
+  }
+
+  // Update the heart button state and fire the like-burst on a fresh like
+  function updateFavButton(liked) {
+    var btn = $("#favButton");
+    if (!btn.length)
+      return;
+    btn.text(liked ? '❤️' : '🤍');
+    if (liked && !favButtonLit) {
+      btn.removeClass('pop');
+      void btn[0].offsetWidth; // restart the pop animation
+      btn.addClass('pop');
+      burstLikeAnimation(btn[0]);
+    }
+    favButtonLit = liked;
+  }
+
+  // Rewarding burst: particles + shockwave ring from the heart
+  function burstLikeAnimation(button) {
+    var rect = button.getBoundingClientRect();
+    var cx = rect.left + rect.width / 2;
+    var cy = rect.top + rect.height / 2;
+    var colors = ['#ff4466', '#ff8fab', '#ffd166', '#c77dff', '#4cc9f0', '#80ed99'];
+    var count = 16;
+    for (var i = 0; i < count; i++) {
+      var p = document.createElement('span');
+      var angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.6;
+      var dist = 34 + Math.random() * 44;
+      p.className = 'fav-burst-particle';
+      p.style.left = cx + 'px';
+      p.style.top = cy + 'px';
+      p.style.setProperty('--dx', (Math.cos(angle) * dist).toFixed(1) + 'px');
+      p.style.setProperty('--dy', (Math.sin(angle) * dist).toFixed(1) + 'px');
+
+      var kind = i % 4;
+      if (kind === 0) {
+        // Emoji heart, no rotation so it stays sharp
+        p.classList.add('fav-burst-particle--heart');
+        p.textContent = '❤';
+        p.style.fontSize = '16px';
+      } else if (kind === 2) {
+        // Colored sparkle glyph for a bit of the earlier sparkle feel
+        p.classList.add('fav-burst-particle--sparkle');
+        p.textContent = '✦';
+        p.style.color = colors[i % colors.length];
+        p.style.fontSize = '14px';
+      } else {
+        // Solid shapes render sharp (text glyphs looked soft when scaled)
+        p.classList.add(kind === 1 ? 'fav-burst-particle--round' : 'fav-burst-particle--shape');
+        var size = (6 + Math.random() * 6).toFixed(0);
+        p.style.width = size + 'px';
+        p.style.height = size + 'px';
+        p.style.background = colors[i % colors.length];
+      }
+      document.body.appendChild(p);
+      (function (node) { setTimeout(function () { node.remove(); }, 600); })(p);
+    }
+    var ring = document.createElement('span');
+    ring.className = 'fav-burst-ring';
+    ring.style.left = cx + 'px';
+    ring.style.top = cy + 'px';
+    document.body.appendChild(ring);
+    setTimeout(function () { ring.remove(); }, 550);
   }
 };

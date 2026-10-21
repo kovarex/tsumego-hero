@@ -24,33 +24,32 @@
 
 require_once(__DIR__ . "/../src/UrlRoute.php");
 
-// AssetCompress routes for dynamically serving built assets
-Router::connect('/cache_css/:name', [
-	'plugin' => 'AssetCompress',
-	'controller' => 'AssetCompress',
-	'action' => 'get'
-], ['name' => '[a-z0-9\-\.]+']);
+use App\Utility\Avatar;
 
-Router::connect('/cache_js/:name', [
-	'plugin' => 'AssetCompress',
-	'controller' => 'AssetCompress',
-	'action' => 'get'
-], ['name' => '[a-z0-9\-\.]+']);
+// XML Sitemap for search engines
+Router::connect('/sitemap.xml', [
+	'controller' => 'Sitemaps',
+	'action' => 'index'
+]);
 
 /**
- * Here, we are connecting '/' (base path) to controller called 'Pages',
- * its action called 'display', and we pass a param to select the view file
- * to use (in this case, /app/View/Pages/home.ctp)...
+ * Connect '/' (base path) to the sites index.
  */
 Router::connect('/', ['controller' => 'sites', 'action' => 'index'], ['routeClass' => 'UrlRoute']);
+
 /**
- * ...and connect the rest of 'Pages' controller's URLs.
+ * Public changelog / "what's new" page
  */
-Router::connect('/pages/*', ['controller' => 'pages', 'action' => 'display']);
+Router::connect('/changelog', ['controller' => 'changelog', 'action' => 'index']);
 
 /**
  * TsumegoComments routes - for managing comments on tsumego problems
  */
+Router::connect(
+	'/tsumego-comments/index/:tsumegoId',
+	['controller' => 'TsumegoComments', 'action' => 'index'],
+	['pass' => ['tsumegoId'], 'tsumegoId' => '[0-9]+']
+);
 Router::connect(
 	'/tsumego-comments/add',
 	['controller' => 'TsumegoComments', 'action' => 'add']
@@ -69,6 +68,10 @@ Router::connect(
 /**
  * TsumegoIssues routes - for managing issues on tsumego problems
  */
+Router::connect(
+	'/tsumego-issues/api',
+	['controller' => 'TsumegoIssues', 'action' => 'api']
+);
 Router::connect(
 	'/tsumego-issues',
 	['controller' => 'TsumegoIssues', 'action' => 'index']
@@ -93,13 +96,137 @@ Router::connect(
 	['pass' => ['id'], 'id' => '[0-9]+']
 );
 
-//Router::connect('/*', ['routeClass' => 'UrlRoute']);
+/**
+ * Mistake Training
+ */
+Router::connect(
+	'/mistake-training/play/:setConnectionID',
+	['controller' => 'MistakeTraining', 'action' => 'play'],
+	['pass' => ['setConnectionID'], 'setConnectionID' => '[0-9]+']
+);
+Router::connect(
+	'/mistake-training/overview',
+	['controller' => 'MistakeTraining', 'action' => 'overview']
+);
+Router::connect(
+	'/mistake-training/import',
+	['controller' => 'MistakeTraining', 'action' => 'import']
+);
+Router::connect(
+	'/mistake-training',
+	['controller' => 'MistakeTraining', 'action' => 'play']
+);
 
 /**
- * Load all plugin routes. See the CakePlugin documentation on
- * how to customize the loading of plugin routes.
+ * Tsumego image generation for Open Graph / social sharing
  */
-CakePlugin::routes();
+Router::connect(
+	'/tsumego-image/:id',
+	['controller' => 'TsumegoImages', 'action' => 'tsumegoImage'],
+	['pass' => ['id'], 'id' => '[0-9]+'] // ID of the SetConnection
+);
+
+/**
+ * Board avatars. The url carries the key of the display name, which is what the
+ * drawing is made of, so one url serves the avatar in a list and the one on a
+ * profile. The png is the same drawing for the pages that share it.
+ */
+$boardKey = '[0-9a-f]{' . Avatar::KEY_LENGTH . '}';
+Router::connect(
+	'/board/:key.png',
+	['controller' => 'Avatars', 'action' => 'imagePng'],
+	['pass' => ['key'], 'key' => $boardKey] // Key of a display name
+);
+Router::connect(
+	'/board/:key',
+	['controller' => 'Avatars', 'action' => 'image'],
+	['pass' => ['key'], 'key' => $boardKey] // Key of a display name
+);
+
+/**
+ * The board of an account, addressed by the id of the user. The lists that React
+ * draws know the id of every player they show but not the display name the
+ * drawing is made of, so this is how an avatar reaches its board when a picture
+ * of another host is gone.
+ */
+Router::connect(
+	'/avatar/:id',
+	['controller' => 'Avatars', 'action' => 'boardOfUser'],
+	['pass' => ['id'], 'id' => '[0-9]+'] // Id of a user
+);
+
+/**
+ * User Sets routes
+ */
+Router::connect(
+	'/sets/mine',
+	['controller' => 'sets', 'action' => 'mine']
+);
+Router::connect(
+	'/sets/user/:userId',
+	['controller' => 'sets', 'action' => 'userSets'],
+	['pass' => ['userId']]
+);
+Router::connect(
+	'/sets/delete/:id',
+	['controller' => 'sets', 'action' => 'delete'],
+	['pass' => ['id'], 'id' => '[0-9]+']
+);
+Router::connect(
+	'/sets/edit/:id',
+	['controller' => 'sets', 'action' => 'edit'],
+	['pass' => ['id'], 'id' => '[0-9]+']
+);
+Router::connect(
+	'/sets/addTsumego/:id',
+	['controller' => 'sets', 'action' => 'addTsumego'],
+	['pass' => ['id'], 'id' => '[0-9]+|favorites']
+);
+Router::connect(
+	'/sets/createAndAddTsumego/:id',
+	['controller' => 'sets', 'action' => 'createAndAddTsumego'],
+	['pass' => ['id'], 'id' => '[0-9]+']
+);
+Router::connect(
+	'/sets/removeTsumego/:id',
+	['controller' => 'sets', 'action' => 'removeTsumego'],
+	['pass' => ['id'], 'id' => '[0-9]+|favorites']
+);
+Router::connect(
+	'/sets/reorderTsumego/:id',
+	['controller' => 'sets', 'action' => 'reorderTsumego'],
+	['pass' => ['id'], 'id' => '[0-9]+']
+);
+Router::connect(
+	'/users/playerColorPreference',
+	['controller' => 'Users', 'action' => 'playerColorPreference']
+);
+Router::connect(
+	'/users/boardOrientationPreference',
+	['controller' => 'Users', 'action' => 'boardOrientationPreference']
+);
+Router::connect(
+	'/users/avatarPreference',
+	['controller' => 'Users', 'action' => 'avatarPreference']
+);
+Router::connect(
+	'/profile',
+	['controller' => 'Users', 'action' => 'profile']
+);
+Router::connect(
+	'/me',
+	['controller' => 'Users', 'action' => 'profile']
+);
+Router::connect(
+	'/me/solve-history',
+	['controller' => 'Users', 'action' => 'meSolveHistory']
+);
+Router::connect(
+	'/me/contributions',
+	['controller' => 'Users', 'action' => 'meContributions']
+);
+
+//Router::connect('/*', ['routeClass' => 'UrlRoute']);
 
 /**
  * Load the CakePHP default routes. Only remove this if you do not want to use

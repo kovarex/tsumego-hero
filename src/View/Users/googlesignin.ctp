@@ -1,7 +1,15 @@
+<?php
+
+/**
+ * @var View $this
+ * @var string $email
+ * @var string $name
+ */
+
+?>
 
 
 	<div align="left">
-		<p><?php echo $name ?> </p>
-		<p><?php echo $email ?> </p>
-		<p><img class="google-profile-image" src="<?php echo $picture ?>" /> </p>
+		<p><?php echo h($name) ?> </p>
+		<p><?php echo h($email) ?> </p>
 	</div>

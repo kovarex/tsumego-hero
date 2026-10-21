@@ -29,6 +29,7 @@ class AccountWidget
 	heroProfile;
 	heroBar;
 	heroAchievements;
+	heroSettings;
 	heroLogout;
 	timeMode;
 
@@ -48,6 +49,7 @@ class AccountWidget
 		this.heroProfile = document.getElementById("heroProfile");
 		this.heroBar = document.getElementById("heroBar");
 		this.heroAchievements = document.getElementById("heroAchievements");
+		this.heroSettings = document.getElementById("heroSettings");
 		this.heroLogout = document.getElementById("heroLogout");
 
 		this.bar.style.boxShadow = "";
@@ -114,6 +116,7 @@ class AccountWidget
 		if (this.heroBar)
 			this.heroBar.style.display = "inline-block";
 		this.heroAchievements.style.display = "inline-block";
+		this.heroSettings.style.display = "inline-block";
 		this.heroLogout.style.display = "inline-block";
 	}
 
@@ -125,6 +128,7 @@ class AccountWidget
 		if (this.heroBar)
 			this.heroBar.style.display = "none";
 		this.heroAchievements.style.display = "none";
+		this.heroSettings.style.display = "none";
 		this.heroLogout.style.display = "none";
 	}
 
@@ -156,8 +160,6 @@ class AccountWidget
 			this.showTimeMode();
 			return;
 		}
-		if (xpStatus.solved)
-			return;
 		this.bar.style.webkitTransition = "all 1s ease";
 		this.rating += calculateRatingChange(this.rating, xpStatus.tsumegoRating, increase, 0.5);
 		if  (increase)
@@ -178,4 +180,23 @@ class AccountWidget
 		this.xp -= xpForNextLevel;
 		return true;
 	}
+}
+
+function levelBarChange(num)
+{
+	if (typeof accountWidget === 'undefined')
+		return;
+
+	if (num === 1)
+	{
+		accountWidget.show = 'level';
+		accountWidget.showLevel();
+	}
+	else
+	{
+		accountWidget.show = 'rating';
+		accountWidget.showRating();
+	}
+	setCookie('showInAccountWidget', accountWidget.show);
+	setCookie('levelBar', num);
 }

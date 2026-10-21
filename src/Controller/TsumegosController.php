@@ -1,80 +1,114 @@
 <?php
 
-App::uses('SgfParser', 'Utility');
-App::uses('TsumegoUtil', 'Utility');
-App::uses('AdminActivityUtil', 'Utility');
-App::uses('TsumegoButton', 'Utility');
-App::uses('AppException', 'Utility');
-App::uses('CookieFlash', 'Utility');
-App::uses('TsumegoMerger', 'Utility');
-App::uses('SimilarSearchResultItem', 'Utility');
-App::uses('SimilarSearchLogic', 'Utility');
-require_once(__DIR__ . "/Component/Play.php");
+use App\Attribute\HttpPost;
+use App\Utility\AchievementChecker;
+use App\Utility\AdminActivityLogger;
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\CookieFlash;
+use App\Utility\PlayOutcome;
+use App\Utility\Rating;
+use App\Utility\RatingParseException;
+use App\Utility\SimilarSearchLogic;
+use App\Utility\TsumegoButton;
+use App\Utility\TsumegoFilters;
+use App\Utility\TsumegoMerger;
+use App\Utility\TsumegoUtil;
+use App\Utility\Util;
 
 class TsumegosController extends AppController
 {
 	public $helpers = ['Html', 'Form'];
 
+	#[HttpPost]
+	public function result()
+	{
+		$this->response->type('application/json');
+
+		$this->Authorization->authorize('User', 'reportResult');
+
+		$data = json_decode($this->request->input(), true) ?: $this->request->data;
+		if (!$data || empty($data['tsumego_id']))
+			throw new BadRequestException('Missing tsumego_id');
+
+		$outcome = PlayOutcome::tryFrom((string) ($data['outcome'] ?? ''));
+		if (!$outcome)
+			throw new BadRequestException('Unknown play outcome');
+
+		$result = $this->PlayResultProcessor->processResult(
+			tsumegoID: (int) $data['tsumego_id'],
+			outcome: $outcome,
+			seconds: (float) ($data['seconds'] ?? 0),
+			setConnectionID: isset($data['set_connection_id']) ? (int) $data['set_connection_id'] : null,
+			pageMode: isset($data['mode']) ? (int) $data['mode'] : null
+		);
+
+		// Keep the response as pure data; the client renders the popup from the
+		// fields it needs (see webroot/js/AchievementAlerts.js).
+		if (!empty($result['achievement_updates']))
+			$result['achievement_updates'] = array_map([AchievementChecker::class, 'toPopupData'], $result['achievement_updates']);
+
+		$this->response->body(json_encode($result));
+
+		return $this->response;
+	}
+
 	private function deduceRelevantSetConnection(array $setConnections): array
 	{
-		if (!isset($this->params->query['sid']))
+		if (!isset($this->request->query['sid']))
 			return $setConnections[0];
 		foreach ($setConnections as $setConnection)
-			if ($setConnection['SetConnection']['set_id'] == $this->params->query['sid'])
+			if ($setConnection['SetConnection']['set_id'] == $this->request->query['sid'])
 				return $setConnection;
-		throw new AppException("Problem doesn't exist in the specified set");
+		throw new NotFoundException("Problem doesn't exist in the specified set");
 	}
 
-	public static function getMatchingSetConnectionOfOtherTsumego(int $tsumegoID, int $currentSetID): ?int
-	{
-		if ($setConnections = ClassRegistry::init('SetConnection')->find('all', ['conditions' => ['tsumego_id' => $tsumegoID]]))
-			if ($result = array_find($setConnections, function (array $setConnection) use (&$currentSetID): bool {
-				return $setConnection['SetConnection']['set_id'] == $currentSetID;
-			}))
-				return $result['SetConnection']['id'];
-		return null;
-	}
-
-	public static function tsumegoOrSetLink($tsumegoFilters, ?int $setConnectionID, string $setID): string
+	public static function tsumegoOrSetLink(TsumegoFilters $tsumegoFilters, ?int $setConnectionID, string $setID): string
 	{
 		if ($setConnectionID)
 			return '/' . $setConnectionID;
 		return '/sets/view/' . $setID; // edge of the set (last or first), so we return to the set
 	}
 
-	public function play($id = null, $setConnectionID = null)
+	public function play(?string $id = null, ?string $setConnectionID = null)
 	{
 		if (Auth::isLoggedIn() && !Auth::isInLevelMode())
-		{
-			Auth::getUser()['mode'] = Constants::$LEVEL_MODE;
-			Auth::saveUser();
-		}
+			Auth::saveUserField('mode', Constants::$LEVEL_MODE);
 
 		if ($setConnectionID)
-			return new Play(function ($name, $value) { $this->set($name, $value); })->play($setConnectionID, $this->params, $this->data);
+		{
+			if (Auth::isLoggedIn())
+			{
+				$sc = ClassRegistry::init('SetConnection')->findById($setConnectionID);
+				if ($sc)
+					$this->PlayResultProcessor->markAsVisited((int) $sc['SetConnection']['tsumego_id']);
+			}
+			$this->set('canonicalPath', '/' . (int) $setConnectionID);
+			return new Play(function ($name, $value) { $this->set($name, $value); })->play((int) $setConnectionID, $this->request, $this->request->data);
+		}
 
 		if (!$id)
-			throw new AppException("Tsumego id not provided");
+			throw new NotFoundException("Tsumego id not provided");
 
-		$setConnections = TsumegoUtil::getSetConnectionsWithTitles($id);
+		$tsumego = ClassRegistry::init('Tsumego')->findById($id);
+		if (!$tsumego)
+			throw new NotFoundException("Tsumego not found");
+
+		if (Auth::isLoggedIn())
+			$this->PlayResultProcessor->markAsVisited((int) $id);
+
+		$setConnections = TsumegoUtil::getSetConnectionsWithTitles((int) $id);
 		if (!$setConnections)
-			throw new AppException("Problem without any set connection"); // some redirect/nicer message ?
+			throw new NotFoundException("Problem not found in any set");
 		$setConnection = $this->deduceRelevantSetConnection($setConnections);
-		return new Play(function ($name, $value) { $this->set($name, $value); })->play($setConnection['SetConnection']['id'], $this->params, $this->data);
+
+		$this->set('canonicalPath', '/' . $setConnections[0]['SetConnection']['id']);
+		return new Play(function ($name, $value) {
+			$this->set($name, $value);
+		})->play($setConnection['SetConnection']['id'], $this->request, $this->request->data);
 	}
 
-	public static function inArrayX($x, $newArray)
-	{
-		$newArrayCount = count($newArray);
-
-		for ($i = 0; $i < $newArrayCount; $i++)
-			if ($x['TagConnection']['tag_id'] == $newArray[$i]['TagConnection']['tag_id'] && $x['TagConnection']['approved'] == 1)
-				return true;
-
-		return false;
-	}
-
-	public function duplicatesearch($setConnectionID): mixed
+	public function duplicatesearch(string $setConnectionID): mixed
 	{
 		$this->loadModel('Sgf');
 		$this->loadModel('Set');
@@ -90,264 +124,26 @@ class TsumegosController extends AppController
 		$similarSearchLogic->execute();
 
 		$this->set('result', $similarSearchLogic->result);
-		$tsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', [
+		$tsumegoStatusResult = ClassRegistry::init('TsumegoStatus')->find('first', [
 			'conditions' => [
 				'user_id' => Auth::getUserID(),
-				'tsumego_id' => $similarSearchLogic->sourceTsumego['id']]])['TsumegoStatus'];
+				'tsumego_id' => $similarSearchLogic->sourceTsumego['id']]]);
+		$tsumegoStatus = $tsumegoStatusResult ? $tsumegoStatusResult['TsumegoStatus']['status'] : null;
 		$this->set(
 			'sourceTsumegoButton',
 			new TsumegoButton(
 				$similarSearchLogic->sourceTsumego['id'],
-				$setConnectionID,
+				(int) $setConnectionID,
 				$similarSearchLogic->setConnection['num'],
-				$tsumegoStatus['status'],
-				$similarSearchLogic->sourceTsumego['rating']));
+				$tsumegoStatus ?: 'N', 0, $similarSearchLogic->sourceSgf));
 		$this->set('sourceSetName', ClassRegistry::init('Set')->findById($setConnection['SetConnection']['set_id'])['Set']['title']);
 		$this->set('sourceMoveCount', $similarSearchLogic->sourceMoveCount);
 		return null;
 	}
 
-	public static function getTheIdForTheThing($num)
+	public function edit(string $tsumegoID)
 	{
-		$t = [];
-		$s = ClassRegistry::init('Set')->find('all', ['order' => 'id ASC', 'conditions' => ['public' => 1]]) ?: [];
-		$sCount = count($s);
-
-		for ($i = 0; $i < $sCount; $i++)
-		{
-			$sc = ClassRegistry::init('SetConnection')->find('all', ['order' => 'tsumego_id ASC', 'conditions' => ['set_id' => $s[$i]['Set']['id']]]) ?: [];
-			$scCount = count($sc);
-
-			for ($j = 0; $j < $scCount; $j++)
-				array_push($t, $sc[$j]['SetConnection']['tsumego_id']);
-		}
-		if ($num >= count($t))
-			return -1;
-
-		return $t[$num];
-	}
-
-	public static function getStartingPlayer($sgf)
-	{
-		$bStart = strpos($sgf, ';B');
-		$wStart = strpos($sgf, ';W');
-		if ($wStart == 0)
-			return 0;
-		if ($bStart == 0)
-			return 1;
-		if ($bStart <= $wStart)
-			return 0;
-
-		return 1;
-	}
-
-	public static function findUt($id = null, $utsMap = null)
-	{
-		if (!isset($utsMap[$id]))
-			return null;
-		$ut = [];
-		$ut['TsumegoStatus']['tsumego_id'] = $id;
-		$ut['TsumegoStatus']['user_id'] = Auth::getUserID();
-		$ut['TsumegoStatus']['status'] = $utsMap[$id];
-		$ut['TsumegoStatus']['created'] = date('Y-m-d H:i:s');
-
-		return $ut;
-	}
-
-	public static function commentCoordinates($c = null, $counter = null, $noSyntax = null)
-	{
-		if (!is_string($c))
-			return [$c, ''];
-		$m = str_split($c);
-		$n = '';
-		$n2 = '';
-		$hasLink = false;
-		$mCount = count($m);
-
-		for ($i = 0; $i < $mCount; $i++)
-		{
-			if (isset($m[$i + 1]))
-				if (preg_match('/[a-tA-T]/', $m[$i]) && is_numeric($m[$i + 1]))
-					if (!preg_match('/[a-tA-T]/', $m[$i - 1]) && !is_numeric($m[$i - 1]))
-						if (is_numeric($m[$i + 2]))
-						{
-							if (!preg_match('/[a-tA-T]/', $m[$i + 3]) && !is_numeric($m[$i + 3]))
-							{
-								$n .= $m[$i] . $m[$i + 1] . $m[$i + 2] . ' ';
-								$n2 .= $i . '/' . ($i + 2) . ' ';
-							}
-						}
-						elseif (!preg_match('/[a-tA-T]/', $m[$i + 2]))
-						{
-							$n .= $m[$i] . $m[$i + 1] . ' ';
-							$n2 .= $i . '/' . ($i + 1) . ' ';
-						}
-
-			if ($m[$i] == '<' && $m[$i + 1] == '/' && $m[$i + 2] == 'a' && $m[$i + 3] == '>')
-				$hasLink = true;
-		}
-		if (substr($n, -1) == ' ')
-			$n = substr($n, 0, -1);
-		if (substr($n2, -1) == ' ')
-			$n2 = substr($n2, 0, -1);
-
-		if ($hasLink)
-			$n2 = [];
-		$coordForBesogo = [];
-
-		if (is_string($n2) && strlen($n2) > 1)
-		{
-			$n2x = explode(' ', $n2);
-			$fn = 1;
-			$n2xCount = count($n2x);
-			for ($i = $n2xCount - 1; $i >= 0; $i--)
-			{
-				$n2xx = explode('/', $n2x[$i]);
-				$a = substr($c, 0, (int) $n2xx[0]);
-				$cx = substr($c, (int) $n2xx[0], (int) $n2xx[1] - (int) $n2xx[0] + 1);
-				if ($noSyntax)
-					$b = '<span class="go-coord" title="Hover to highlight on board" id="ccIn' . $counter . $fn . '" onmouseover="ccIn' . $counter . $fn . '(event)" onmouseout="ccOut' . $counter . $fn . '()">';
-				else
-					$b = '<span class=\"go-coord\" title="Hover to highlight on board" id="ccIn' . $counter . $fn . '" onmouseover=\"ccIn' . $counter . $fn . '(event)\" onmouseout=\"ccOut' . $counter . $fn . '()\">';
-
-				$d = '</span>';
-				$e = substr($c, $n2xx[1] + 1, strlen($c) - 1);
-				$coordForBesogo[$i] = $cx;
-				$c = $a . $b . $cx . $d . $e;
-				$fn++;
-			}
-		}
-
-		$xx = explode(' ', $n);
-		$coord1 = 0;
-		$finalCoord = '';
-		$xxCount = count($xx);
-
-		for ($i = 0; $i < $xxCount; $i++)
-			if (strlen($xx[$i]) > 1)
-			{
-				$xxxx = [];
-				$xxx = str_split($xx[$i]);
-				$xxxCount = count($xxx);
-
-				for ($j = 0; $j < $xxxCount; $j++)
-				{
-					if (preg_match('/[0-9]/', $xxx[$j]))
-						array_push($xxxx, $xxx[$j]);
-					if (preg_match('/[a-tA-T]/', $xxx[$j]))
-						$coord1 = TsumegosController::convertCoord($xxx[$j]);
-				}
-				$coord2 = TsumegosController::convertCoord2(implode('', $xxxx));
-				if ($coord1 != -1 && $coord2 != -1)
-					$finalCoord .= $coord1 . '-' . $coord2 . '-' . $coordForBesogo[$i] . ' ';
-			}
-		if (substr($finalCoord, -1) == ' ')
-			$finalCoord = substr($finalCoord, 0, -1);
-
-		$array = [];
-		array_push($array, $c);
-		array_push($array, $finalCoord);
-
-		return $array;
-	}
-
-	public static function convertCoord($l = null)
-	{
-		switch (strtolower($l))
-		{
-			case 'a':
-				return 0;
-			case 'b':
-				return 1;
-			case 'c':
-				return 2;
-			case 'd':
-				return 3;
-			case 'e':
-				return 4;
-			case 'f':
-				return 5;
-			case 'g':
-				return 6;
-			case 'h':
-				return 7;
-			case 'j':
-				return 8;
-			case 'k':
-				return 9;
-			case 'l':
-				return 10;
-			case 'm':
-				return 11;
-			case 'n':
-				return 12;
-			case 'o':
-				return 13;
-			case 'p':
-				return 14;
-			case 'q':
-				return 15;
-			case 'r':
-				return 16;
-			case 's':
-				return 17;
-			case 't':
-				return 18;
-		}
-
-		return 0;
-	}
-	public static function convertCoord2($n = null)
-	{
-		switch ($n)
-		{
-			case '0':
-				return 19;
-			case '1':
-				return 18;
-			case '2':
-				return 17;
-			case '3':
-				return 16;
-			case '4':
-				return 15;
-			case '5':
-				return 14;
-			case '6':
-				return 13;
-			case '7':
-				return 12;
-			case '8':
-				return 11;
-			case '9':
-				return 10;
-			case '10':
-				return 9;
-			case '11':
-				return 8;
-			case '12':
-				return 7;
-			case '13':
-				return 6;
-			case '14':
-				return 5;
-			case '15':
-				return 4;
-			case '16':
-				return 3;
-			case '17':
-				return 2;
-			case '18':
-				return 1;
-		}
-
-		return 0;
-	}
-
-	public function edit($tsumegoID)
-	{
-		if (!Auth::isAdmin())
-			return $this->redirect($this->data['redirect']);
+		$this->Authorization->authorize('Tsumego');
 		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID);
 		if (!$tsumego)
 		{
@@ -356,7 +152,7 @@ class TsumegosController extends AppController
 		}
 		$tsumego = $tsumego['Tsumego'];
 
-		if ($this->data['delete'] == 'delete')
+		if ($this->request->data['delete'] == 'delete')
 		{
 			$tsumego['deleted'] = date('Y-m-d H:i:s');
 			ClassRegistry::init('Tsumego')->save($tsumego);
@@ -366,39 +162,39 @@ class TsumegosController extends AppController
 
 		try
 		{
-			$rating = Rating::parseRatingOrReadableRank($this->data['rating']);
+			$rating = Rating::parseRatingOrReadableRank($this->request->data['rating']);
 		}
 		catch (RatingParseException $e)
 		{
 			CookieFlash::set("Rating parse error:" . $e->getMessage(), 'error');
-			return $this->redirect($this->data['redirect']);
+			return $this->redirect($this->request->data['redirect']);
 		}
 
 		$minimumRating = null;
-		if (!empty($this->data['minimum-rating']))
+		if (!empty($this->request->data['minimum-rating']))
 		{
 			try
 			{
-				$minimumRating = Rating::parseRatingOrReadableRank($this->data['minimum-rating']);
+				$minimumRating = Rating::parseRatingOrReadableRank($this->request->data['minimum-rating']);
 			}
 			catch (RatingParseException $e)
 			{
 				CookieFlash::set("Minimum rating parse error:" . $e->getMessage(), 'error');
-				return $this->redirect($this->data['redirect']);
+				return $this->redirect($this->request->data['redirect']);
 			}
 		}
 
 		$maximumRating = null;
-		if (!empty($this->data['maximum-rating']))
+		if (!empty($this->request->data['maximum-rating']))
 		{
 			try
 			{
-				$maximumRating = Rating::parseRatingOrReadableRank($this->data['maximum-rating']);
+				$maximumRating = Rating::parseRatingOrReadableRank($this->request->data['maximum-rating']);
 			}
 			catch (RatingParseException $e)
 			{
 				CookieFlash::set("Maximum rating parse error:" . $e->getMessage(), 'error');
-				return $this->redirect($this->data['redirect']);
+				return $this->redirect($this->request->data['redirect']);
 			}
 		}
 
@@ -407,24 +203,33 @@ class TsumegosController extends AppController
 			&& $minimumRating > $maximumRating)
 		{
 			CookieFlash::set("Minimum rating can't be bigger than maximum", 'error');
-			return $this->redirect($this->data['redirect']);
+			return $this->redirect($this->request->data['redirect']);
 		}
 
-		if ($tsumego['description'] != $this->data['description'])
+		// Normalize description: the edit form shows the display version (with colors swapped for visual context)
+		$newDescription = $this->request->data['description'];
+		if (!empty($this->request->data['color_swapped']))
+			$newDescription = preg_replace_callback(
+				'/\b(Black|black|White|white)\b/',
+				fn($m) => ['Black' => 'White', 'black' => 'white', 'White' => 'Black', 'white' => 'black'][$m[1]],
+				$newDescription
+			);
+
+		if ($tsumego['description'] != $newDescription)
 		{
-			AdminActivityLogger::log(AdminActivityType::DESCRIPTION_EDIT, $tsumegoID, null, $tsumego['description'], $this->data['description']);
-			$tsumego['description'] = $this->data['description'];
+			AdminActivityLogger::log(AdminActivityType::DESCRIPTION_EDIT, $tsumegoID, null, $tsumego['description'], $newDescription);
+			$tsumego['description'] = $newDescription;
 		}
 
-		if ($tsumego['hint'] != $this->data['hint'])
+		if ($tsumego['hint'] != $this->request->data['hint'])
 		{
-			AdminActivityLogger::log(AdminActivityType::HINT_EDIT, $tsumegoID, null, $tsumego['hint'], $this->data['hint']);
-			$tsumego['hint'] = $this->data['hint'];
+			AdminActivityLogger::log(AdminActivityType::HINT_EDIT, $tsumegoID, null, $tsumego['hint'], $this->request->data['hint']);
+			$tsumego['hint'] = $this->request->data['hint'];
 		}
-		if ($tsumego['author'] != $this->data['author'])
+		if ($tsumego['author'] != $this->request->data['author'])
 		{
-			AdminActivityLogger::log(AdminActivityType::AUTHOR_EDIT, $tsumegoID, null, $tsumego['author'], $this->data['author']);
-			$tsumego['author'] = $this->data['author'];
+			AdminActivityLogger::log(AdminActivityType::AUTHOR_EDIT, $tsumegoID, null, $tsumego['author'], $this->request->data['author']);
+			$tsumego['author'] = $this->request->data['author'];
 		}
 		if ($tsumego['minimum_rating'] != $minimumRating)
 		{
@@ -444,25 +249,21 @@ class TsumegosController extends AppController
 		$tsumego['rating'] = Util::clampOptional($rating, $minimumRating, $maximumRating);
 
 		ClassRegistry::init('Tsumego')->save($tsumego);
-		return $this->redirect($this->data['redirect']);
+		return $this->redirect($this->request->data['redirect']);
 	}
 
 	public function mergeForm(): mixed
 	{
-		if (!Auth::isAdmin())
-		{
-			CookieFlash::set('error', 'You are not authorized to access this page.');
-			return $this->redirect('/');
-		}
+		$this->Authorization->authorize('Tsumego');
 		$this->set('_page', 'sandbox');
 		$this->set('_title', 'Merge Duplicates');
 		return null;
 	}
 
+	#[HttpPost]
 	public function mergeFinalForm(): mixed
 	{
-		if (!Auth::isAdmin())
-			return $this->redirect('/');
+		$this->Authorization->authorize('Tsumego');
 		$masterSetConnectionID = $this->request->data['master-id'];
 		$slaveSetConnectionID = $this->request->data['slave-id'];
 		$masterSetConnection = ClassRegistry::init('SetConnection')->findById($masterSetConnectionID);
@@ -486,27 +287,57 @@ class TsumegosController extends AppController
 			CookieFlash::set('These are already merged.', 'error');
 			$this->redirect('/tsumegos/mergeForm');
 		}
-		$masterSetConnectionBrothers = ClassRegistry::init('SetConnection')->find('all', ['conditions' => ['tsumego_id' => $masterSetConnection['tsumego_id']]]);
-		$slaveSetConnectionBrothers = ClassRegistry::init('SetConnection')->find('all', ['conditions' => ['tsumego_id' => $slaveSetConnection['tsumego_id']]]);
+		$masterSetConnectionBrothers = ClassRegistry::init('SetConnection')->find('all', [
+			'joins' => [[
+				'table' => 'set',
+				'alias' => 'S',
+				'type' => 'INNER',
+				'conditions' => ['S.id = SetConnection.set_id'],
+			]],
+			'conditions' => ['SetConnection.tsumego_id' => $masterSetConnection['tsumego_id'], 'S.public' => 1],
+		]);
+		$slaveSetConnectionBrothers = ClassRegistry::init('SetConnection')->find('all', [
+			'joins' => [[
+				'table' => 'set',
+				'alias' => 'S',
+				'type' => 'INNER',
+				'conditions' => ['S.id = SetConnection.set_id'],
+			]],
+			'conditions' => ['SetConnection.tsumego_id' => $slaveSetConnection['tsumego_id'], 'S.public' => 1],
+		]);
 		$masterTsumego = ClassRegistry::init('Tsumego')->findById($masterSetConnection['tsumego_id']);
 		$slaveTsumego = ClassRegistry::init('Tsumego')->findById($slaveSetConnection['tsumego_id']);
 
+		$sgfs = [];
+		$ids = array_unique(array_merge(
+			Hash::extract($masterSetConnectionBrothers, '{n}.SetConnection.tsumego_id'),
+			Hash::extract($slaveSetConnectionBrothers, '{n}.SetConnection.tsumego_id'),
+		));
+		if ($ids)
+			foreach (ClassRegistry::init('Sgf')->find('all', [
+				'fields' => ['tsumego_id', 'sgf'],
+				'conditions' => ['tsumego_id' => $ids, 'id IN (SELECT MAX(id) FROM sgf GROUP BY tsumego_id)'],
+			]) as $s)
+				$sgfs[$s['Sgf']['tsumego_id']] = $s['Sgf']['sgf'];
+
 		$masterSetConnectionBrothersButtons = [];
 		foreach ($masterSetConnectionBrothers as $masterSetConnectionBrother)
-			$masterSetConnectionBrothersButtons [] = TsumegoButton::createFromSetConnection($masterSetConnectionBrother['SetConnection']);
+			$masterSetConnectionBrothersButtons [] = new TsumegoButton($masterSetConnectionBrother['SetConnection']['tsumego_id'], $masterSetConnectionBrother['SetConnection']['id'], $masterSetConnectionBrother['SetConnection']['num'], 'N', 0, $sgfs[$masterSetConnectionBrother['SetConnection']['tsumego_id']] ?? '');
 		$this->set('masterTsumegoButtons', $masterSetConnectionBrothersButtons);
 		$this->set('masterTsumegoID', $masterSetConnection['tsumego_id']);
 
 		$slaveSetConnectionBrothersButtons = [];
 		foreach ($slaveSetConnectionBrothers as $slaveSetConnectionBrother)
-			$slaveSetConnectionBrothersButtons [] = TsumegoButton::createFromSetConnection($slaveSetConnectionBrother['SetConnection']);
+			$slaveSetConnectionBrothersButtons [] = new TsumegoButton($slaveSetConnectionBrother['SetConnection']['tsumego_id'], $slaveSetConnectionBrother['SetConnection']['id'], $slaveSetConnectionBrother['SetConnection']['num'], 'N', 0, $sgfs[$slaveSetConnectionBrother['SetConnection']['tsumego_id']] ?? '');
 		$this->set('slaveTsumegoButtons', $slaveSetConnectionBrothersButtons);
 		$this->set('slaveTsumegoID', $slaveSetConnection['tsumego_id']);
 		return null;
 	}
 
-	public function performMerge()
+	#[HttpPost]
+	public function performMerge(): void
 	{
+		$this->Authorization->authorize('Tsumego');
 		$merger = new TsumegoMerger($this->request->data['master-tsumego-id'], $this->request->data['slave-tsumego-id']);
 		$flash = $merger->execute();
 		if ($flash)
@@ -516,11 +347,7 @@ class TsumegosController extends AppController
 
 	public function setupSgf(): mixed
 	{
-		if (!Auth::isAdmin())
-		{
-			CookieFlash::set('No rights to call this', 'error');
-			return $this->redirect('/sets');
-		}
+		$this->Authorization->authorize('Tsumego');
 
 		$sgf = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['OR' => ['first_move_color' => null, 'correct_moves' => null]]]);
 		if (!$sgf)
@@ -534,10 +361,9 @@ class TsumegosController extends AppController
 		return null;
 	}
 
-	public function setupSgfStep2($sgfID, $firstMoveColor, $correctMoves = null)
+	public function setupSgfStep2(string $sgfID, string $firstMoveColor, ?string $correctMoves = null)
 	{
-		if (!Auth::isAdmin())
-			return;
+		$this->Authorization->authorize('Tsumego');
 		$sgf = ClassRegistry::init("Sgf")->findById($sgfID);
 		if (!$sgf)
 			return;
@@ -555,19 +381,20 @@ class TsumegosController extends AppController
 
 	public function setupNewSgfStep2()
 	{
-		if (!Auth::isLoggedIn())
-			return;
+		$this->Authorization->authorize('Sgf', 'propose');
 
-		$setConnectionID = $this->data["setConnectionID"];
+		$setConnectionID = $this->request->data["setConnectionID"];
 
 		$setConnection = ClassRegistry::init("SetConnection")->findById($setConnectionID);
 		if (!$setConnection)
 			return;
 		$tsumegoID = $setConnection['SetConnection']['tsumego_id'];
 
-		$sgfData = $this->data['sgf'];
-		$firstMoveColor = $this->data['firstMoveColor'];
-		$correctMoves = $this->data['correctMoves'];
+		$sgfData = $this->request->data['sgf'];
+		$firstMoveColor = $this->request->data['firstMoveColor'];
+		$correctMoves = $this->request->data['correctMoves'];
+
+		SgfController::validateSgfFormat($sgfData);
 
 		$tsumego = ClassRegistry::init("Tsumego")->findById($tsumegoID);
 		if (!$tsumego)
@@ -586,7 +413,7 @@ class TsumegosController extends AppController
 		return $this->redirect('/' . $setConnectionID);
 	}
 
-	public function history($setConnectionID)
+	public function history(string $setConnectionID)
 	{
 		$setConnection = ClassRegistry::init("SetConnection")->findById($setConnectionID);
 		if (!$setConnection)

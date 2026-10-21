@@ -1,18 +1,27 @@
 <?php
 
-App::uses('Query', 'Utility');
+namespace App\Utility;
+
+use ClassRegistry;
+use SetConnection;
 
 class TsumegoButtonsQueryBuilder
 {
-	public function __construct($tsumegoFilters, $id)
+	public Query $query;
+	public string $description = '';
+	private TsumegoFilters $tsumegoFilters;
+
+	public function __construct(TsumegoFilters $tsumegoFilters, string|int|null $id)
 	{
 		$this->query = new Query('FROM tsumego');
 		if ($tsumegoFilters->query != 'topics')
 		{
-			$this->query->selects[] = "ROW_NUMBER() OVER (PARTITION BY tsumego.id ORDER BY tsumego.id) AS rn";
-			$this->query->prefix = "SELECT tsumego_id, set_connection_id, num, rating";
+			$this->query->selects[] = "ROW_NUMBER() OVER (PARTITION BY tsumego.id ORDER BY " . SetConnection::displayOrderSql('`set`', 'set_connection') . ") AS rn";
+			$this->query->prefix = "SELECT tsumego_id, set_connection_id, num, rating, sgf";
 			if (Auth::isLoggedIn())
 				$this->query->prefix .= ", status";
+			if ($tsumegoFilters->query == 'published')
+				$this->query->prefix .= ", set_id, set_title";
 			$this->query->prefix .= " FROM (";
 			$this->query->suffix = ") x WHERE rn = 1 ORDER BY tsumego_id";
 			$this->query->orderBy[] = 'tsumego.id';
@@ -25,10 +34,17 @@ class TsumegoButtonsQueryBuilder
 		$this->query->selects[] = 'tsumego.rating as rating';
 		$this->query->selects[] = 'set_connection.id as set_connection_id';
 		$this->query->selects[] = 'set_connection.num as num';
+		$this->query->selects[] = 'COALESCE(sgf.sgf, \'\') as sgf';
+		if ($tsumegoFilters->query == 'published')
+		{
+			$this->query->selects[] = 'set_connection.set_id as set_id';
+			$this->query->selects[] = '`set`.title as set_title';
+		}
 		if (Auth::isLoggedIn())
 			$this->query->selects[] = 'tsumego_status.status as status';
 
 		$this->query->query .= " JOIN set_connection ON set_connection.tsumego_id = tsumego.id";
+		$this->query->query .= " LEFT JOIN sgf ON sgf.id = (SELECT MAX(s2.id) FROM sgf s2 WHERE s2.tsumego_id = tsumego.id)";
 		$this->query->conditions[] = 'tsumego.deleted is NULL';
 
 		// when I'm quering by topics (which means sets), and I'm viewing private set
@@ -41,14 +57,12 @@ class TsumegoButtonsQueryBuilder
 		if (Auth::isLoggedIn())
 			$this->query->query .= ' LEFT JOIN tsumego_status ON tsumego_status.user_id = ' . Auth::getUserID() . ' AND tsumego_status.tsumego_id = tsumego.id';
 
-
 		$this->filterRanks();
 		$this->filterSets();
 		$this->filterTags();
 		$this->queryRank();
 		$this->queryTag();
 		$this->querySet($id);
-		$this->queryFavorites();
 		$this->queryPublished();
 	}
 
@@ -59,29 +73,33 @@ class TsumegoButtonsQueryBuilder
 		$this->tsumegoFilters->filterRanks($this->query);
 	}
 
-	private function filterSets()
+	private function filterSets(): void
 	{
 		if ($this->tsumegoFilters->query == 'topics') // we filter by sets unless we query a specific set
 			return;
 		$this->tsumegoFilters->filterSets($this->query);
 	}
 
-	private function filterTags()
+	private function filterTags(): void
 	{
 		if ($this->tsumegoFilters->query == 'tags') // we filter by tags unless we query a specific tag
 			return;
 		$this->tsumegoFilters->filterTags($this->query);
 	}
 
-	private function queryRank()
+	private function queryRank(): void
 	{
 		if ($this->tsumegoFilters->query != 'difficulty')
 			return;
 		if (empty($_COOKIE['lastSet']))
+		{
+			// when we don't have lastSet, we fallback to showing by topics (the set of current tsumego)
+			$this->tsumegoFilters->query = 'topics';
 			return;
+		}
 		try
 		{
-			$ratingBounds = RatingBounds::coverRank($_COOKIE['lastSet'], '15k');
+			$ratingBounds = RatingBounds::coverRankSpec($_COOKIE['lastSet'], Rating::weakestRank());
 			$ratingBounds->addQueryConditions($this->query);
 			$this->description = $_COOKIE['lastSet'] . ' are problems that have a rating ' . $ratingBounds->textualDescription() . '.';
 		}
@@ -92,43 +110,43 @@ class TsumegoButtonsQueryBuilder
 		}
 	}
 
-	private function queryTag()
+	private function queryTag(): void
 	{
 		if ($this->tsumegoFilters->query != 'tags')
 			return;
 
 		$currentTag = $_COOKIE['lastSet'] ?? '';
+		if (empty($currentTag))
+		{
+			$this->tsumegoFilters->query = 'topics';
+			return;
+		}
+
 		$tag = ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => $currentTag]]);
 		if (!$tag)
-			throw new Exception("The tag selected to view ('.$currentTag.') couldn't be found");
+		{
+			$this->tsumegoFilters->query = 'topics';
+			return;
+		}
 		$this->query->query .= ' LEFT JOIN tag_connection ON tag_connection.tsumego_id=tsumego.id';
 		$this->query->conditions[] = 'tag_connection.tag_id=' . $tag['Tag']['id'];
 	}
 
-	private function querySet($id)
+	private function querySet(string|int|null $id): void
 	{
 		if ($this->tsumegoFilters->query != 'topics')
 			return;
 		$this->query->conditions[] = '`set`.id=' . $id;
 	}
 
-	private function queryFavorites()
-	{
-		if ($this->tsumegoFilters->query != 'favorites')
-			return;
-		$this->query->query .= ' JOIN favorite ON `favorite`.user_id =' . Auth::getUserID() . ' AND favorite.tsumego_id = tsumego.id';
-		$this->query->orderBy = ['favorite.id ASC'];
-	}
-
-	private function queryPublished()
+	private function queryPublished(): void
 	{
 		if ($this->tsumegoFilters->query != 'published')
 			return;
 		$this->query->query .= ' JOIN schedule ON `schedule`.tsumego_id = tsumego.id AND schedule.set_id = `set`.id';
-		$this->query->conditions[] = "`schedule`.date = '" . date('Y-m-d') . "'";
+		$date = $this->tsumegoFilters->publishedDate ?: date('Y-m-d');
+		$this->query->conditions[] = "`schedule`.date = '" . $date . "'";
+		$this->query->conditions[] = '`schedule`.published = 1';
 	}
 
-	private TsumegoFilters $tsumegoFilters;
-	public Query $query;
-	public string $description = "";
 }

@@ -1,0 +1,6 @@
+/* Layered entry for the besogo board-vendor CSS bundle.
+   Wraps the besogo vendor rules in the `besogo` cascade layer so the theme's
+   layered rules (tokens -> base -> ... -> page) override them by layer order,
+   instead of the unlayered vendored CSS always beating the layered theme. */
+@import url('./besogo.css') layer(besogo);
+@import url('./board-flat.css') layer(besogo);

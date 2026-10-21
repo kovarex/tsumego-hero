@@ -1,5 +1,8 @@
 <?php 
-//echo '<pre>';print_r($c);echo '</pre>'; 
+
+/**
+ * @var View $this
+ */
 ?><br>
 <div align="center">
 <h2><p class="title">Privacy Policy</p></h2>

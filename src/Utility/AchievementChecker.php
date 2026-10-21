@@ -1,5 +1,18 @@
 <?php
 
+namespace App\Utility;
+
+use Achievement;
+use Cache;
+use ClassRegistry;
+use SetConnection;
+use TimeModeCategory;
+use TimeModeRank;
+use TimeModeSessionStatus;
+
+/**
+ * @phpstan-import-type AchievementRow from \App\Utility\RowTypes
+ */
 class AchievementChecker
 {
 	public function __construct()
@@ -7,18 +20,63 @@ class AchievementChecker
 		$this->fillExistingStatuses();
 	}
 
-	public function gained($achievementID): void
+	/**
+	 * The fields the client needs to render an achievement popup from data.
+	 * Both the /tsumegos/result response and the page-load embed use this, so
+	 * the popup payload stays pure data and the client renders the markup.
+	 *
+	 * @param AchievementRow $achievement
+	 */
+	public static function toPopupData(array $achievement): array
 	{
-		if ($this->existingStatuses[$achievementID])
+		return [
+			'id' => (int) $achievement['id'],
+			'name' => $achievement['name'],
+			'description' => $achievement['description'],
+			'xp' => (int) $achievement['xp'],
+			'image' => $achievement['image'],
+			'color' => $achievement['color'],
+		];
+	}
+
+	public function gained(AchievementId $achievementID): void
+	{
+		if ($this->existingStatuses[$achievementID->value])
 			return;
 		$achievementStatus = [];
-		$achievementStatus['achievement_id'] = $achievementID;
+		$achievementStatus['achievement_id'] = $achievementID->value;
 		$achievementStatus['user_id'] = Auth::getUserID();
 		ClassRegistry::init('AchievementStatus')->create();
 		ClassRegistry::init('AchievementStatus')->save($achievementStatus);
 
-		$achievement = ClassRegistry::init('Achievement')->findById($achievementID);
+		// Invalidate recent achievements cache so the new achievement appears immediately.
+		Cache::delete('recent_achievements_7', 'default');
+
+		$achievement = ClassRegistry::init('Achievement')->findById($achievementID->value);
 		$this->updated [] = $achievement['Achievement'];
+	}
+
+	/**
+	 * Unlocks a repeatable achievement and records how often it was earned. Earning
+	 * it the first time grants the XP and the popup, later ones only raise the count.
+	 * The count records what the player earned, so a collection it can no longer
+	 * recount does not lower it.
+	 */
+	private function gainedTimes(AchievementId $achievementID, int $times): void
+	{
+		if ($times < 1)
+			return;
+		$this->gained($achievementID);
+
+		$AchievementStatus = ClassRegistry::init('AchievementStatus');
+		$status = $AchievementStatus->find('first', [
+			'conditions' => ['user_id' => Auth::getUserID(), 'achievement_id' => $achievementID->value]]);
+		if (!$status || (int) $status['AchievementStatus']['value'] >= $times)
+			return;
+
+		$status['AchievementStatus']['value'] = $times;
+		$AchievementStatus->save($status);
+		Cache::delete('recent_achievements_7', 'default');
 	}
 
 	private function fillExistingStatuses(): void
@@ -28,37 +86,37 @@ class AchievementChecker
 			$this->existingStatuses[$achievementStatus['AchievementStatus']['achievement_id']] = true;
 	}
 
-	public function unlocked($achievementID): bool
+	public function unlocked(AchievementId $achievementID): bool
 	{
-		return isset($this->existingStatuses[$achievementID]);
+		return isset($this->existingStatuses[$achievementID->value]);
 	}
 
 	public function checkProblemNumberAchievements(): AchievementChecker
 	{
 		$solvedCount = Auth::getUser()['solved'];
 		if ($solvedCount >= 1000)
-			$this->gained(Achievement::PROBLEMS_1000);
+			$this->gained(AchievementId::PROBLEMS_1000);
 		if ($solvedCount >= 2000)
-			$this->gained(Achievement::PROBLEMS_2000);
+			$this->gained(AchievementId::PROBLEMS_2000);
 		if ($solvedCount >= 3000)
-			$this->gained(Achievement::PROBLEMS_3000);
+			$this->gained(AchievementId::PROBLEMS_3000);
 		if ($solvedCount >= 4000)
-			$this->gained(Achievement::PROBLEMS_4000);
+			$this->gained(AchievementId::PROBLEMS_4000);
 		if ($solvedCount >= 5000)
-			$this->gained(Achievement::PROBLEMS_5000);
+			$this->gained(AchievementId::PROBLEMS_5000);
 		if ($solvedCount >= 6000)
-			$this->gained(Achievement::PROBLEMS_6000);
+			$this->gained(AchievementId::PROBLEMS_6000);
 		if ($solvedCount >= 7000)
-			$this->gained(Achievement::PROBLEMS_7000);
+			$this->gained(AchievementId::PROBLEMS_7000);
 		if ($solvedCount >= 8000)
-			$this->gained(Achievement::PROBLEMS_8000);
+			$this->gained(AchievementId::PROBLEMS_8000);
 		if ($solvedCount >= 9000)
-			$this->gained(Achievement::PROBLEMS_9000);
+			$this->gained(AchievementId::PROBLEMS_9000);
 		if ($solvedCount >= 10000)
-			$this->gained(Achievement::PROBLEMS_10000);
+			$this->gained(AchievementId::PROBLEMS_10000);
 
 		if (ClassRegistry::init('AchievementCondition')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'category' => 'uotd']]))
-			$this->gained(Achievement::USER_OF_THE_DAY);
+			$this->gained(AchievementId::USER_OF_THE_DAY);
 		return $this;
 	}
 
@@ -109,42 +167,42 @@ class AchievementChecker
 				$ac1['potion'] = $achievementCondition['AchievementCondition']['value'];
 
 		if ($ac1['1d'] > 0)
-			$this->gained(Achievement::SOLVE_1D);
+			$this->gained(AchievementId::SOLVE_1D);
 		if ($ac1['2d'] > 0)
-			$this->gained(Achievement::SOLVE_2D);
+			$this->gained(AchievementId::SOLVE_2D);
 		if ($ac1['3d'] > 0)
-			$this->gained(Achievement::SOLVE_3D);
+			$this->gained(AchievementId::SOLVE_3D);
 		if ($ac1['4d'] > 0)
-			$this->gained(Achievement::SOLVE_4D);
+			$this->gained(AchievementId::SOLVE_4D);
 		if ($ac1['5d'] > 0)
-			$this->gained(Achievement::SOLVE_5D);
-		if ($ac1['1d'] >= 10)
-			$this->gained(Achievement::SOLVE_10_1D);
-		if ($ac1['2d'] >= 10)
-			$this->gained(Achievement::SOLVE_10_2D);
-		if ($ac1['3d'] >= 10)
-			$this->gained(Achievement::SOLVE_10_3D);
-		if ($ac1['4d'] >= 10)
-			$this->gained(Achievement::SOLVE_10_4D);
-		if ($ac1['5d'] >= 10)
-			$this->gained(Achievement::SOLVE_10_5D);
+			$this->gained(AchievementId::SOLVE_5D);
+		if ($ac1['1d'] >= Achievement::SOLVE_10_COUNT)
+			$this->gained(AchievementId::SOLVE_10_1D);
+		if ($ac1['2d'] >= Achievement::SOLVE_10_COUNT)
+			$this->gained(AchievementId::SOLVE_10_2D);
+		if ($ac1['3d'] >= Achievement::SOLVE_10_COUNT)
+			$this->gained(AchievementId::SOLVE_10_3D);
+		if ($ac1['4d'] >= Achievement::SOLVE_10_COUNT)
+			$this->gained(AchievementId::SOLVE_10_4D);
+		if ($ac1['5d'] >= Achievement::SOLVE_10_COUNT)
+			$this->gained(AchievementId::SOLVE_10_5D);
 		if (isset($ac1['emerald']) && $ac1['emerald'] == 1)
-			$this->gained(Achievement::EMERALD);
+			$this->gained(AchievementId::EMERALD);
 		if (isset($ac1['sapphire']) && $ac1['sapphire'] == 1)
-			$this->gained(Achievement::SAPPHIRE);
+			$this->gained(AchievementId::SAPPHIRE);
 		if (isset($ac1['ruby']) && $ac1['ruby'] == 1)
-			$this->gained(Achievement::RUBY);
+			$this->gained(AchievementId::RUBY);
 
-		if ($this->unlocked(Achievement::EMERALD)
-			&& $this->unlocked(Achievement::SAPPHIRE)
-			&& $this->unlocked(Achievement::RUBY))
-				$this->gained(Achievement::DIAMOND);
-		if ($ac1['sprint'] >= 30)
-			$this->gained(Achievement::SPRINT);
-		if ($ac1['golden'] >= 10)
-			$this->gained(Achievement::GOLD_DIGGER);
-		if ($ac1['potion'] >= 1)
-			$this->gained(Achievement::BAD_POTION);
+		if ($this->unlocked(AchievementId::EMERALD)
+			&& $this->unlocked(AchievementId::SAPPHIRE)
+			&& $this->unlocked(AchievementId::RUBY))
+				$this->gained(AchievementId::DIAMOND);
+		if ($ac1['sprint'] >= Achievement::SPRINT_COUNT)
+			$this->gained(AchievementId::SPRINT);
+		if ($ac1['golden'] >= Achievement::GOLD_DIGGER_COUNT)
+			$this->gained(AchievementId::GOLD_DIGGER);
+		if ($ac1['potion'] >= HeroPowers::$BAD_POTION_THRESHOLD)
+			$this->gained(AchievementId::BAD_POTION);
 	}
 
 	public function checkNoErrorAchievements(): void
@@ -153,17 +211,17 @@ class AchievementChecker
 			'order' => 'value DESC',
 			'conditions' => ['user_id' => Auth::getUserID(), 'category' => 'err']]);
 		if ($ac['AchievementCondition']['value'] >= Achievement::NO_ERROR_STREAK_I_STREAK_COUNT)
-			$this->gained(Achievement::NO_ERROR_STREAK_I);
+			$this->gained(AchievementId::NO_ERROR_STREAK_I);
 		if ($ac['AchievementCondition']['value'] >= Achievement::NO_ERROR_STREAK_II_STREAK_COUNT)
-			$this->gained(Achievement::NO_ERROR_STREAK_II);
+			$this->gained(AchievementId::NO_ERROR_STREAK_II);
 		if ($ac['AchievementCondition']['value'] >= Achievement::NO_ERROR_STREAK_III_STREAK_COUNT)
-			$this->gained(Achievement::NO_ERROR_STREAK_III);
+			$this->gained(AchievementId::NO_ERROR_STREAK_III);
 		if ($ac['AchievementCondition']['value'] >= Achievement::NO_ERROR_STREAK_IV_STREAK_COUNT)
-			$this->gained(Achievement::NO_ERROR_STREAK_IV);
+			$this->gained(AchievementId::NO_ERROR_STREAK_IV);
 		if ($ac['AchievementCondition']['value'] >= Achievement::NO_ERROR_STREAK_V_STREAK_COUNT)
-			$this->gained(Achievement::NO_ERROR_STREAK_V);
+			$this->gained(AchievementId::NO_ERROR_STREAK_V);
 		if ($ac['AchievementCondition']['value'] >= Achievement::NO_ERROR_STREAK_VI_STREAK_COUNT)
-			$this->gained(Achievement::NO_ERROR_STREAK_VI);
+			$this->gained(AchievementId::NO_ERROR_STREAK_VI);
 	}
 
 	public function checkTimeModeAchievements(): AchievementChecker
@@ -194,67 +252,67 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 				if ($rankId == TimeModeRank::RANK_5K)
 				{
 					if ($categoryId == TimeModeCategory::SLOW)
-						$this->gained(Achievement::TIME_MODE_APPRENTICE_SLOW);
+						$this->gained(AchievementId::TIME_MODE_APPRENTICE_SLOW);
 					elseif ($categoryId == TimeModeCategory::FAST)
-						$this->gained(Achievement::TIME_MODE_APPRENTICE_FAST);
+						$this->gained(AchievementId::TIME_MODE_APPRENTICE_FAST);
 					elseif ($categoryId == TimeModeCategory::BLITZ)
-						$this->gained(Achievement::TIME_MODE_APPRENTICE_BLITZ);
+						$this->gained(AchievementId::TIME_MODE_APPRENTICE_BLITZ);
 				}
 				elseif ($rankId == TimeModeRank::RANK_4K)
 				{
 					if ($categoryId == TimeModeCategory::SLOW)
-						$this->gained(Achievement::TIME_MODE_SCHOLAR_SLOW);
+						$this->gained(AchievementId::TIME_MODE_SCHOLAR_SLOW);
 					elseif ($categoryId == TimeModeCategory::FAST)
-						$this->gained(Achievement::TIME_MODE_SCHOLAR_FAST);
+						$this->gained(AchievementId::TIME_MODE_SCHOLAR_FAST);
 					elseif ($categoryId == TimeModeCategory::BLITZ)
-						$this->gained(Achievement::TIME_MODE_SCHOLAR_BLITZ);
+						$this->gained(AchievementId::TIME_MODE_SCHOLAR_BLITZ);
 
 				}
 				elseif ($rankId == TimeModeRank::RANK_3K)
 				{
 					if ($categoryId == TimeModeCategory::SLOW)
-						$this->gained(Achievement::TIME_MODE_LABOURER_SLOW);
+						$this->gained(AchievementId::TIME_MODE_LABOURER_SLOW);
 					elseif ($categoryId == TimeModeCategory::FAST)
-						$this->gained(Achievement::TIME_MODE_LABOURER_FAST);
+						$this->gained(AchievementId::TIME_MODE_LABOURER_FAST);
 					elseif ($categoryId == TimeModeCategory::BLITZ)
-						$this->gained(Achievement::TIME_MODE_LABOURER_BLITZ);
+						$this->gained(AchievementId::TIME_MODE_LABOURER_BLITZ);
 				}
 				elseif ($rankId == TimeModeRank::RANK_2K)
 				{
 					if ($categoryId == TimeModeCategory::SLOW)
-						$this->gained(Achievement::TIME_MODE_ADEPT_SLOW);
+						$this->gained(AchievementId::TIME_MODE_ADEPT_SLOW);
 					elseif ($categoryId == TimeModeCategory::FAST)
-						$this->gained(Achievement::TIME_MODE_ADEPT_FAST);
+						$this->gained(AchievementId::TIME_MODE_ADEPT_FAST);
 					elseif ($categoryId == TimeModeCategory::BLITZ)
-						$this->gained(Achievement::TIME_MODE_ADEPT_BLITZ);
+						$this->gained(AchievementId::TIME_MODE_ADEPT_BLITZ);
 				}
 				elseif ($rankId == TimeModeRank::RANK_1K)
 				{
 					if ($categoryId == TimeModeCategory::SLOW)
-						$this->gained(Achievement::TIME_MODE_EXPERT_SLOW);
+						$this->gained(AchievementId::TIME_MODE_EXPERT_SLOW);
 					elseif ($categoryId == TimeModeCategory::FAST)
-						$this->gained(Achievement::TIME_MODE_EXPERT_FAST);
+						$this->gained(AchievementId::TIME_MODE_EXPERT_FAST);
 					elseif ($categoryId == TimeModeCategory::BLITZ)
-						$this->gained(Achievement::TIME_MODE_EXPERT_BLITZ);
+						$this->gained(AchievementId::TIME_MODE_EXPERT_BLITZ);
 				}
 				elseif ($rankId == TimeModeRank::RANK_1D)
 					if ($categoryId == TimeModeCategory::SLOW)
-						$this->gained(Achievement::TIME_MODE_MASTER_SLOW);
+						$this->gained(AchievementId::TIME_MODE_MASTER_SLOW);
 					elseif ($categoryId == TimeModeCategory::FAST)
-						$this->gained(Achievement::TIME_MODE_MASTER_FAST);
+						$this->gained(AchievementId::TIME_MODE_MASTER_FAST);
 					elseif ($categoryId == TimeModeCategory::BLITZ)
-						$this->gained(Achievement::TIME_MODE_MASTER_BLITZ);
+						$this->gained(AchievementId::TIME_MODE_MASTER_BLITZ);
 
 			// Precision achievements based on points and rank
 			$points = isset($timeModeSession['points']) ? $timeModeSession['points'] : 0;
 			if ($points >= 850 && $rankId >= TimeModeRank::RANK_4K)
-				$this->gained(Achievement::TIME_MODE_PRECISION_IV);
+				$this->gained(AchievementId::TIME_MODE_PRECISION_IV);
 			if ($points >= 875 && $rankId >= TimeModeRank::RANK_6K)
-				$this->gained(Achievement::TIME_MODE_PRECISION_III);
+				$this->gained(AchievementId::TIME_MODE_PRECISION_III);
 			if ($points >= 900 && $rankId >= TimeModeRank::RANK_8K)
-				$this->gained(Achievement::TIME_MODE_PRECISION_II);
+				$this->gained(AchievementId::TIME_MODE_PRECISION_II);
 			if ($points >= 950 && $rankId >= TimeModeRank::RANK_10K)
-				$this->gained(Achievement::TIME_MODE_PRECISION_I);
+				$this->gained(AchievementId::TIME_MODE_PRECISION_I);
 		}
 		return $this;
 	}
@@ -263,27 +321,27 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 	{
 		$rating = Auth::getUser()['rating'];
 		if ($rating >= Rating::getRankMinimalRatingFromReadableRank('6k'))
-			$this->gained(Achievement::RATING_6_KYU);
+			$this->gained(AchievementId::RATING_6_KYU);
 		if ($rating >= Rating::getRankMinimalRatingFromReadableRank('5k'))
-			$this->gained(Achievement::RATING_5_KYU);
+			$this->gained(AchievementId::RATING_5_KYU);
 		if ($rating >= Rating::getRankMinimalRatingFromReadableRank('4k'))
-			$this->gained(Achievement::RATING_4_KYU);
+			$this->gained(AchievementId::RATING_4_KYU);
 		if ($rating >= Rating::getRankMinimalRatingFromReadableRank('3k'))
-			$this->gained(Achievement::RATING_3_KYU);
+			$this->gained(AchievementId::RATING_3_KYU);
 		if ($rating >= Rating::getRankMinimalRatingFromReadableRank('2k'))
-			$this->gained(Achievement::RATING_2_KYU);
+			$this->gained(AchievementId::RATING_2_KYU);
 		if ($rating >= Rating::getRankMinimalRatingFromReadableRank('1k'))
-			$this->gained(Achievement::RATING_1_KYU);
+			$this->gained(AchievementId::RATING_1_KYU);
 		if ($rating >= Rating::getRankMinimalRatingFromReadableRank('1d'))
-			$this->gained(Achievement::RATING_1_DAN);
+			$this->gained(AchievementId::RATING_1_DAN);
 		if ($rating >= Rating::getRankMinimalRatingFromReadableRank('2d'))
-			$this->gained(Achievement::RATING_2_DAN);
+			$this->gained(AchievementId::RATING_2_DAN);
 		if ($rating >= Rating::getRankMinimalRatingFromReadableRank('3d'))
-			$this->gained(Achievement::RATING_3_DAN);
+			$this->gained(AchievementId::RATING_3_DAN);
 		if ($rating >= Rating::getRankMinimalRatingFromReadableRank('4d'))
-			$this->gained(Achievement::RATING_4_DAN);
+			$this->gained(AchievementId::RATING_4_DAN);
 		if ($rating >= Rating::getRankMinimalRatingFromReadableRank('5d'))
-			$this->gained(Achievement::RATING_5_DAN);
+			$this->gained(AchievementId::RATING_5_DAN);
 		return $this;
 	}
 
@@ -291,25 +349,25 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 	{
 		$userLevel = Auth::getUser()['level'];
 		if ($userLevel >= 10)
-			$this->gained(Achievement::LEVEL_UP);
+			$this->gained(AchievementId::LEVEL_UP);
 		if ($userLevel >= 20)
-			$this->gained(Achievement::FIRST_HERO_POWER);
+			$this->gained(AchievementId::FIRST_HERO_POWER);
 		if ($userLevel >= 30)
-			$this->gained(Achievement::UPGRADED_INTUITION);
+			$this->gained(AchievementId::UPGRADED_INTUITION);
 		if ($userLevel >= 40)
-			$this->gained(Achievement::MORE_POWER);
+			$this->gained(AchievementId::MORE_POWER);
 		if ($userLevel >= 50)
-			$this->gained(Achievement::HALF_WAY_TO_TOP);
+			$this->gained(AchievementId::HALF_WAY_TO_TOP);
 		if ($userLevel >= 60)
-			$this->gained(Achievement::CONGRATS_MORE_PROBLEMS);
+			$this->gained(AchievementId::CONGRATS_MORE_PROBLEMS);
 		if ($userLevel >= 70)
-			$this->gained(Achievement::NICE_LEVEL);
+			$this->gained(AchievementId::NICE_LEVEL);
 		if ($userLevel >= 80)
-			$this->gained(Achievement::DID_LOT_OF_TSUMEGO);
+			$this->gained(AchievementId::DID_LOT_OF_TSUMEGO);
 		if ($userLevel >= 90)
-			$this->gained(Achievement::STILL_DOING_TSUMEGO);
+			$this->gained(AchievementId::STILL_DOING_TSUMEGO);
 		if ($userLevel >= 100)
-			$this->gained(Achievement::THE_TOP);
+			$this->gained(AchievementId::THE_TOP);
 		return $this;
 	}
 
@@ -319,27 +377,27 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 			'order' => 'value DESC',
 			'conditions' => [
 				'user_id' => Auth::getUserID(),
-				'category' => 'set']]);
+				'category' => SetCompletionCounter::$CATEGORY]]);
 
 		if (!$achievementCondition)
 			return $this;
 		$achievementCondition = $achievementCondition['AchievementCondition'];
 		if ($achievementCondition['value'] >= Achievement::COMPLETE_SETS_I_SETS_COUNT)
-			$this->gained(Achievement::COMPLETE_SETS_I);
+			$this->gained(AchievementId::COMPLETE_SETS_I);
 		if ($achievementCondition['value'] >= Achievement::COMPLETE_SETS_II_SETS_COUNT)
-			$this->gained(Achievement::COMPLETE_SETS_II);
+			$this->gained(AchievementId::COMPLETE_SETS_II);
 		if ($achievementCondition['value'] >= Achievement::COMPLETE_SETS_III_SETS_COUNT)
-			$this->gained(Achievement::COMPLETE_SETS_III);
+			$this->gained(AchievementId::COMPLETE_SETS_III);
 		if ($achievementCondition['value'] >= Achievement::COMPLETE_SETS_IV_SETS_COUNT)
-			$this->gained(Achievement::COMPLETE_SETS_IV);
+			$this->gained(AchievementId::COMPLETE_SETS_IV);
 		if ($achievementCondition['value'] >= Achievement::COMPLETE_SETS_V_SETS_COUNT)
-			$this->gained(Achievement::COMPLETE_SETS_V);
+			$this->gained(AchievementId::COMPLETE_SETS_V);
 		if ($achievementCondition['value'] >= Achievement::COMPLETE_SETS_VI_SETS_COUNT)
-			$this->gained(Achievement::COMPLETE_SETS_VI);
+			$this->gained(AchievementId::COMPLETE_SETS_VI);
 		return $this;
 	}
 
-	public function setAchievementSpecial($s = null): AchievementChecker
+	public function setAchievementSpecial(?string $s = null): AchievementChecker
 	{
 		$tsIds = [];
 		$completed = '';
@@ -462,27 +520,20 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 		}
 
 		if ($completed == 'cc1')
-			$this->gained(Achievement::LIFE_DEATH_ELEMENTARY);
+			$this->gained(AchievementId::LIFE_DEATH_ELEMENTARY);
 		if ($completed == 'cc2')
-			$this->gained(Achievement::LIFE_DEATH_INTERMEDIATE);
+			$this->gained(AchievementId::LIFE_DEATH_INTERMEDIATE);
 		if ($completed == 'cc3')
-			$this->gained(Achievement::LIFE_DEATH_ADVANCED);
+			$this->gained(AchievementId::LIFE_DEATH_ADVANCED);
 		if ($completed == '1000w1')
-			$this->gained(Achievement::WEIQI_1000_FIRST_HALF);
+			$this->gained(AchievementId::WEIQI_1000_FIRST_HALF);
 		if ($completed == '1000w2')
-			$this->gained(Achievement::WEIQI_1000_SECOND_HALF);
+			$this->gained(AchievementId::WEIQI_1000_SECOND_HALF);
 		return $this;
 	}
 
-	public function checkSetAchievements($sid = null, $setRating = 0): AchievementChecker
+	public function checkSetAchievements(int $sid = 0, float|int $setRating = 0): AchievementChecker
 	{
-		if ($sid == -1)
-		{
-			$this->gained(Achievement::FAVORITES);
-			return $this;
-		}
-
-		$tNum = count(TsumegoUtil::collectTsumegosFromSet($sid));
 		$acA = ClassRegistry::init('AchievementCondition')->find('first', [
 			'order' => 'value DESC',
 			'conditions' => [
@@ -491,6 +542,8 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 				'category' => '%']]);
 		if (!$acA)
 			return $this;
+		if (TsumegoUtil::countTsumegosFromSet($sid) < 100)
+			return $this;
 		$acS = ClassRegistry::init('AchievementCondition')->find('first', [
 			'order' => 'value ASC',
 			'conditions' => [
@@ -498,94 +551,127 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 				'user_id' => Auth::getUserID(),
 				'category' => 's']]);
 
-		if ($tNum < 100)
-			return $this;
-
 		if ($setRating < 1300)
 		{
 			if ($acA['AchievementCondition']['value'] >= 75)
-				$this->gained(Achievement::ACCURACY_I);
+				$this->gained(AchievementId::ACCURACY_I);
 			if  ($acA['AchievementCondition']['value'] >= 85)
-				$this->gained(Achievement::ACCURACY_II);
+				$this->gained(AchievementId::ACCURACY_II);
 			if ($acA['AchievementCondition']['value'] >= 95)
-				$this->gained(Achievement::ACCURACY_III);
+				$this->gained(AchievementId::ACCURACY_III);
 			if ($acS['AchievementCondition']['value'] < 15)
-				$this->gained(Achievement::SPEED_I);
+				$this->gained(AchievementId::SPEED_I);
 			if ($acS['AchievementCondition']['value'] < 10)
-				$this->gained(Achievement::SPEED_II);
+				$this->gained(AchievementId::SPEED_II);
 			if ($acS['AchievementCondition']['value'] < 5)
-				$this->gained(Achievement::SPEED_III);
+				$this->gained(AchievementId::SPEED_III);
 		}
 		elseif ($setRating >= 1300 && $setRating < 1500)
 		{
 			if ($acA['AchievementCondition']['value'] >= 75)
-				$this->gained(Achievement::ACCURACY_IV);
+				$this->gained(AchievementId::ACCURACY_IV);
 			if ($acA['AchievementCondition']['value'] >= 85)
-				$this->gained(Achievement::ACCURACY_V);
+				$this->gained(AchievementId::ACCURACY_V);
 			if ($acA['AchievementCondition']['value'] >= 95)
-				$this->gained(Achievement::ACCURACY_VI);
+				$this->gained(AchievementId::ACCURACY_VI);
 			if ($acS['AchievementCondition']['value'] < 18)
-				$this->gained(Achievement::SPEED_IV);
+				$this->gained(AchievementId::SPEED_IV);
 			if ($acS['AchievementCondition']['value'] < 13)
-				$this->gained(Achievement::SPEED_V);
+				$this->gained(AchievementId::SPEED_V);
 			if ($acS['AchievementCondition']['value'] < 8)
-				$this->gained(Achievement::SPEED_VI);
+				$this->gained(AchievementId::SPEED_VI);
 		}
 		elseif ($setRating >= 1500 && $setRating < 1700)
 		{
 			if ($acA['AchievementCondition']['value'] >= 75)
-				$this->gained(Achievement::ACCURACY_VII);
+				$this->gained(AchievementId::ACCURACY_VII);
 			if ($acA['AchievementCondition']['value'] >= 85)
-				$this->gained(Achievement::ACCURACY_VIII);
+				$this->gained(AchievementId::ACCURACY_VIII);
 			if ($acA['AchievementCondition']['value'] >= 95)
-				$this->gained(Achievement::ACCURACY_IX);
+				$this->gained(AchievementId::ACCURACY_IX);
 			if ($acS['AchievementCondition']['value'] < 30)
-				$this->gained(Achievement::SPEED_VII);
+				$this->gained(AchievementId::SPEED_VII);
 			if ($acS['AchievementCondition']['value'] < 20)
-				$this->gained(Achievement::SPEED_VIII);
+				$this->gained(AchievementId::SPEED_VIII);
 			if ($acS['AchievementCondition']['value'] < 10)
-				$this->gained(Achievement::SPEED_IX);
+				$this->gained(AchievementId::SPEED_IX);
 		}
 		else
 		{
 			if ($acA['AchievementCondition']['value'] >= 75)
-				$this->gained(Achievement::ACCURACY_X);
+				$this->gained(AchievementId::ACCURACY_X);
 			if ($acA['AchievementCondition']['value'] >= 85)
-				$this->gained(Achievement::ACCURACY_XI);
+				$this->gained(AchievementId::ACCURACY_XI);
 			if ($acA['AchievementCondition']['value'] >= 95)
-				$this->gained(Achievement::ACCURACY_XII);
+				$this->gained(AchievementId::ACCURACY_XII);
 			if ($acS['AchievementCondition']['value'] < 30)
-				$this->gained(Achievement::SPEED_X);
+				$this->gained(AchievementId::SPEED_X);
 			if ($acS['AchievementCondition']['value'] < 20)
-				$this->gained(Achievement::SPEED_XI);
+				$this->gained(AchievementId::SPEED_XI);
 			if ($acS['AchievementCondition']['value'] < 10)
-				$this->gained(Achievement::SPEED_XII);
+				$this->gained(AchievementId::SPEED_XII);
 		}
 
-		$achievementId = 46;
 		if ($acA['AchievementCondition']['value'] >= 100)
 		{
-			$ac100 = ClassRegistry::init('AchievementCondition')->find('all', ['conditions' => ['user_id' => Auth::getUserID(), 'category' => '%', 'value >=' => 100]]) ?: [];
-			$ac100counter = 0;
-			$ac100Count = count($ac100);
-			for ($j = 0; $j < $ac100Count; $j++)
-				if (count(TsumegoUtil::collectTsumegosFromSet($ac100[$j]['AchievementCondition']['set_id'])) >= 100)
-					$ac100counter++;
-			$as100 = ClassRegistry::init('AchievementStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'achievement_id' => $achievementId]]);
-			if ($as100 == null)
-			{
-				$as100 = [];
-				$as100['AchievementStatus']['user_id'] = Auth::getUserID();
-				$as100['AchievementStatus']['achievement_id'] = $achievementId;
-				$as100['AchievementStatus']['value'] = 0;
-				ClassRegistry::init('AchievementStatus')->create();
-			}
-			if ($as100['AchievementStatus']['value'] != $ac100counter)
-			{
-				$as100['AchievementStatus']['value'] = $ac100counter;
-				ClassRegistry::init('AchievementStatus')->save($as100);
-			}
+			// Repeatable: one perfect collection of 100+ problems per count. The first
+			// one pays out like any other achievement, further ones only raise the count.
+			$this->gainedTimes(AchievementId::SUPERIOR_ACCURACY, $this->countPerfectCollections());
 		}
+		return $this;
+	}
+
+	/**
+	 * How many public collections the player finished at 100% accuracy, on a set of at
+	 * least the problems a collection achievement asks for. Counts collections and not
+	 * accuracy rows, so a set whose row was written twice still counts once. One query
+	 * instead of loading every set's problems.
+	 */
+	private function countPerfectCollections(): int
+	{
+		$rows = Util::query(
+			'SELECT COUNT(DISTINCT ac.set_id) AS total FROM achievement_condition ac '
+			. 'WHERE ac.user_id = ? AND ac.category = ? AND ac.value >= ? '
+			. 'AND ac.set_id IN (' . SetConnection::publicCollectionsWithMinimumProblemsSql() . ')',
+			[Auth::getUserID(), '%', 100]
+		);
+
+		return (int) $rows[0]['total'];
+	}
+
+	public function checkFavoritesAchievement(int $setId): AchievementChecker
+	{
+		if ($this->unlocked(AchievementId::FAVORITES))
+			return $this;
+
+		$user = ClassRegistry::init('User')->findById(Auth::getUserID());
+		if (!$user || empty($user['User']['default_set_id']) || $setId !== (int) $user['User']['default_set_id'])
+			return $this;
+
+		$count = ClassRegistry::init('SetConnection')->find('count', ['conditions' => ['set_id' => $setId]]);
+		if ($count > 0)
+			$this->gained(AchievementId::FAVORITES);
+
+		return $this;
+	}
+
+	/**
+	 * Run the standard solve/progress-dependent achievement checks.
+	 *
+	 * This is the canonical set that runs after a solve (PlayResultProcessor) and
+	 * on each page load (AppController::beforeFilter). Add new solve- or
+	 * progress-dependent checks here so both call sites stay in sync.
+	 * (checkTimeModeAchievements is intentionally separate - it runs on the time
+	 * mode result page via TimeModeController.)
+	 */
+	public function checkStandardAchievements(): AchievementChecker
+	{
+		$this->checkLevelAchievements();
+		$this->checkProblemNumberAchievements();
+		$this->checkRatingAchievements();
+		$this->checkDanSolveAchievements();
+		$this->checkNoErrorAchievements();
+		$this->checkSetCompletedAchievements();
 		return $this;
 	}
 
@@ -596,6 +682,7 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 		$this->checkRatingAchievements();
 		$this->checkDanSolveAchievements();
 		$this->checkNoErrorAchievements();
+		$this->checkSetCompletedAchievements();
 		$this->checkTimeModeAchievements();
 	}
 
@@ -612,7 +699,10 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 
 		$user = &Auth::getUser();
 		Level::addXP($user, $xpBonus);
-		Auth::saveUser();
+		Auth::saveUserFields([
+			'xp' => $user['xp'],
+			'level' => $user['level'],
+		]);
 		return $this;
 	}
 

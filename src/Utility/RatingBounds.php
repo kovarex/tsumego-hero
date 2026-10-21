@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Utility;
+
 class RatingBounds
 {
 	public function __construct(?float $min = null, ?float $max = null)
@@ -54,16 +56,22 @@ class RatingBounds
 		return $result;
 	}
 
-	public static function fromRanks(string $readableMin, string $readableMax): RatingBounds
+	/**
+	 * Bounds of a single rank or of a range label such as "20k-16k".
+	 * Inputs that are not a range fall through to coverRank, which throws
+	 * RatingParseException for invalid ranks.
+	 */
+	public static function coverRankSpec(string $spec, ?string $minimalRank = null): RatingBounds
 	{
-		return new RatingBounds(
-			Rating::getRankMinimalRatingFromReadableRank($readableMin),
-			Rating::getRankMinimalRatingFromReadableRank($readableMax));
-	}
-
-	public function containsRating(float $rating)
-	{
-		return $rating >= $this->min && $rating < $this->max;
+		$range = Rating::parseReadableRankRange($spec);
+		if ($range === null)
+			return self::coverRank($spec, $minimalRank);
+		[$weakest, $strongest] = $range;
+		$result = new RatingBounds();
+		if ($weakest != $minimalRank)
+			$result->min = Rating::getRankMinimalRatingFromReadableRank($weakest);
+		$result->max = Rating::getRankMinimalRating(Rating::getRankFromReadableRank($strongest) + 1);
+		return $result;
 	}
 
 	public ?float $min = null;

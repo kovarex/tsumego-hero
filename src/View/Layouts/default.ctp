@@ -1,9 +1,33 @@
-﻿<!DOCTYPE html>
-<html lang="en">
 <?php
-App::uses('Level', 'Utility');
-App::uses('CookieFlash', 'Utility');
-require_once __DIR__ . '/../../Utility/AccountWidget.php';
+
+use App\Utility\AccountWidget;
+use App\Utility\AchievementChecker;
+use App\Utility\Auth;
+use App\Utility\CookieFlash;
+use App\Utility\TimeMode;
+use App\Utility\Util;
+use App\Utility\ViteManifest;
+
+/**
+ * @var View $this
+ * @var string $lightDark
+ * @var string $lightDark
+ * @var string $highscoreLink
+ * @var string $discussFilter
+ * @var TimeMode $timeMode
+ * @var bool $achievementUpdate
+ * @var string $lastProfileLeft
+ * @var string $lastProfileRight
+ * @var string $nextDay
+ * @var string $boardsBitmask
+ * @var string|null $canonicalPath Path a page with more than one address wants to be known by
+ * @var array|null $og
+ */
+
+?>
+<!DOCTYPE html>
+<html lang="en" data-theme="<?php echo $lightDark === 'dark' ? 'dark' : 'light'; ?>">
+<?php
 if (Configure::read('debug')) { ?>
 <script>
 	(function () {
@@ -66,51 +90,61 @@ $cakeDescription = __d('cake_dev', 'CakePHP: the rapid development php framework
 $cakeVersion = __d('cake_dev', 'CakePHP %s', Configure::version());
 ?>
 <?php
-// Check redirect cookie and handle loading page redirect
-if (isset($_COOKIE['redirect']) && $_COOKIE['redirect'] == 'loading')
-{
-	Util::clearCookie('redirect');
-	Util::setCookie('initialLoading', 'true');
-	echo '<script type="text/javascript">window.location.href = "/users/loading";</script>';
-}
 echo $this->Html->charset();
 ?>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>
 <?php echo $_title ?? 'Tsumego Hero'; ?>
 </title>
 <meta name="description" content="Interactive tsumego database. Solve go problems, get stronger, level up, have fun.">
 <meta name="keywords" content="tsumego, problems, puzzles, baduk, weiqi, tesuji, life and death, solve, solving, hero, go, in-seong, level" >
 <meta name="Author" content="Joschka Zimdars">
-<meta property="og:title" content="Tsumego Hero">
+<meta name="theme-color" content="#282828">
+<link rel="manifest" href="/manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tsumego">
+<link rel="apple-touch-icon" href="/pwa/icon-192.png">
 <?php
-// Main app CSS bundle
-echo $this->AssetCompress->css('app');
+$canonicalUrl = Router::url($canonicalPath ?? '/' . trim(strtok($this->request->here, '?'), '/'), true);
+?>
+<link rel="canonical" href="<?php echo h($canonicalUrl); ?>">
+<?php
+// Controllers can describe the page themselves; what they set wins, everything
+// else comes from here.
+$og = ($og ?? []) + [
+	'title' => $_title ?? 'Tsumego',
+	'description' => 'Interactive tsumego database. Solve go problems, get stronger, level up, have fun.',
+	'image' => Router::url('/img/Tsumego-Hero-Logo.png', true),
+	'type' => 'website',
+	'site_name' => 'Tsumego',
+	'locale' => 'en_US',
+];
 
-// Load both theme CSS bundles for JavaScript-based theme switching
-// Initial state: one enabled, one disabled based on cookie
-echo '<link rel="stylesheet" id="dark-theme-css" href="' .
-	$this->AssetCompress->url('dark-theme.css') . '"' .
-	($lightDark === 'dark' ? '' : ' disabled') . ' />';
-echo '<link rel="stylesheet" id="light-theme-css" href="' .
-	$this->AssetCompress->url('light-theme.css') . '"' .
-	($lightDark === 'light' ? '' : ' disabled') . ' />';
+// The address of the page is decided here and nowhere else, so the canonical
+// link and what gets shared can never point at two different addresses.
+$og['url'] = $canonicalUrl;
+$this->element('open_graph_meta', ['og' => $og]);
+echo $this->fetch('og_meta');
+?>
+<?php
+echo ViteManifest::css('app-theme');
 
 echo $this->Html->meta('icon');
-echo $this->fetch('meta');
 echo $this->fetch('css');
 echo $this->fetch('script');
 ?>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js" integrity="sha384-/TgkGk7p307TH7EXJDuUlgG3Ce1UVolAOFopFekQkkXihi5u/6OCvVKyz1W+idaz" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/idiomorph@0.3.0/dist/idiomorph-ext.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
 <?php
-echo $this->AssetCompress->script('app');
+// Legacy app.js bundle (global-scope scripts — served as plain <script>, not type="module")
+echo ViteManifest::legacyScript('legacy');
 ?>
+<script>
+	window.__CHANGELOG_TS = <?php echo json_encode($changelogTimestamps ?? []); ?>;
+</script>
 </head>
 
-<body class="<?php echo $lightDark === 'dark' ? 'dark-theme' : 'light-theme'; ?>">
+<body>
 <div id="container" align="center">
 	<div width="100%" class="whitebox1">
 		<div align="left">
@@ -119,12 +153,39 @@ echo $this->AssetCompress->script('app');
 				$logo = 'tsumegoHero1';
 				$logoH = 'tsumegoHero2';
 ?>
-				<img id="logo1" alt="Tsumego Hero" title="Tsumego Hero" src="/img/tsumegoHero1.png" onmouseover="logoHover(this)" onmouseout="logoNoHover(this)" height="55px">
+				<img id="logo1" alt="Tsumego Hero" title="Tsumego Hero" src="/img/tsumegoHero1.png" onmouseover="typeof logoHover==='function'&&logoHover(this)" onmouseout="typeof logoNoHover==='function'&&logoNoHover(this)" height="55px">
 			</a>
 		</div>
-		<div class="outerMenu1">
+		<input type="checkbox" id="nav-toggle" class="nav-toggle" aria-hidden="true">
+		<label for="nav-toggle" class="nav-toggle-btn" aria-label="Menu">
+			<span></span><span></span><span></span>
+		</label>
+		<div class="site-nav">
+			<?php
+			// Account access at the top of the drawer (logged-in). The username
+			// links to the profile; Settings and Sign Out are listed as separate actions.
+			if (Auth::isLoggedIn()):
+			?>
+			<div class="site-nav__account">
+				<div class="site-nav__account-user">
+					<a href="/users/view/<?php echo Auth::getUserID(); ?>"><?php echo h(Auth::getUser()['display_name']); ?></a>
+				</div>
+				<nav class="site-nav__account-links">
+					<ul>
+						<li><a href="/users/settings">Settings</a></li>
+						<li><a href="/users/logout">Sign Out</a></li>
+					</ul>
+				</nav>
+			</div>
+			<?php else: ?>
+			<div class="site-nav__account site-nav__signin-drawer">
+				<div class="site-nav__account-user">
+					<a href="/users/login">Sign In</a>
+				</div>
+			</div>
+			<?php endif; ?>
 				<?php
-			$lv = $_COOKIE['lastVisit'] ?? '15352';
+			$lv = (int)($_COOKIE['lastVisit'] ?? 15352);
 
 			if(Auth::isLoggedIn()){
 				if(Auth::hasPremium()) $sand = 'onmouseover="sandboxHover()" onmouseout="sandboxNoHover()"';
@@ -157,16 +218,18 @@ echo $this->AssetCompress->script('app');
 			$timeHighscoreA = '';
 			$achievementHighscoreA = '';
 			$dailyHighscoreA = '';
+			$tagHighscoreA = '';
 			$levelModeA = '';
 			$ratingModeA = '';
 			$timeModeA = '';
 			$websitefunctionsA = '';
 			$gotutorialA = '';
 			$aboutA = '';
+			$changelogA = '';
 
 			$_page = $_page ?? '';
-			if($_page == 'home') $homeA = 'style="color:#74d14c;"';
-			else if($_page == 'set') $collectionsA = 'style="color:#74d14c;"';
+			if($_page == 'home') $homeA = 'nav__link--active';
+			else if($_page == 'set') $collectionsA = 'nav__link--active';
 			else if($_page=='play' || $_page=='level mode' || $_page=='rating mode' || $_page=='time mode'){
 				$refreshLinkToStart = 'id="refreshLinkToStart"';
 				$refreshLinkToSets = 'id="refreshLinkToSets"';
@@ -174,22 +237,24 @@ echo $this->AssetCompress->script('app');
 				$refreshLinkToLeaderboard = 'id="refreshLinkToLeaderboard"';
 				$refreshLinkToSandbox = 'id="refreshLinkToSandbox"';
 				$refreshLinkToDiscuss = 'id="refreshLinkToDiscuss"';
-				if($_page == 'level mode') $levelModeA = 'style="color:#74d14c;"';
-				else if($_page == 'rating mode') $ratingModeA = 'style="color:#74d14c;"';
-				else if($_page == 'time mode') $timeModeA = 'style="color:#74d14c;"';
-				} else if ($_page == 'highscore') $highscoreA = 'style="color:#74d14c;"';
-			else if($_page == 'discuss') $discussA = 'style="color:#74d14c;"';
-			else if($_page == 'sandbox') $sandboxA = 'style="color:#74d14c;"';
-			else if($_page == 'leaderboard') $leaderboardA = 'style="color:#74d14c;"';
-			else if($_page == 'websitefunctions') $websitefunctionsA = 'style="color:#74d14c;"';
-			else if($_page == 'gotutorial') $gotutorialA = 'style="color:#74d14c;"';
-			else if($_page == 'about') $aboutA = 'style="color:#74d14c;"';
-			else if($_page == 'levelHighscore') $levelHighscoreA = 'style="color:#74d14c;"';
-			else if($_page == 'ratingHighscore') $ratingHighscoreA = 'style="color:#74d14c;"';
-			else if($_page == 'achievementHighscore') $achievementHighscoreA = 'style="color:#74d14c;"';
-			else if($_page == 'timeHighscore') $timeHighscoreA = 'style="color:#74d14c;"';
-			else if($_page == 'dailyHighscore') $dailyHighscoreA = 'style="color:#74d14c;"';
-			else if($_page == 'favs') $refreshLinkToFavs = 'style="color:#74d14c;"';
+				if($_page == 'level mode') $levelModeA = 'nav__link--active';
+				else if($_page == 'rating mode') $ratingModeA = 'nav__link--active';
+				else if($_page == 'time mode') $timeModeA = 'nav__link--active';
+				} else if ($_page == 'highscore') $highscoreA = 'nav__link--active';
+			else if($_page == 'discuss') $discussA = 'nav__link--active';
+			else if($_page == 'sandbox') $sandboxA = 'nav__link--active';
+			else if($_page == 'leaderboard') $leaderboardA = 'nav__link--active';
+			else if($_page == 'websitefunctions') $websitefunctionsA = 'nav__link--active';
+			else if($_page == 'gotutorial') $gotutorialA = 'nav__link--active';
+			else if($_page == 'about') $aboutA = 'nav__link--active';
+			else if($_page == 'changelog') $changelogA = 'nav__link--active';
+			else if($_page == 'levelHighscore') $levelHighscoreA = 'nav__link--active';
+			else if($_page == 'ratingHighscore') $ratingHighscoreA = 'nav__link--active';
+			else if($_page == 'achievementHighscore') $achievementHighscoreA = 'nav__link--active';
+			else if($_page == 'timeHighscore') $timeHighscoreA = 'nav__link--active';
+			else if($_page == 'dailyHighscore') $dailyHighscoreA = 'nav__link--active';
+			else if($_page == 'tagHighscore') $tagHighscoreA = 'nav__link--active';
+			else if($_page == 'favs') $refreshLinkToFavs = 'nav__link--active';
 
 			if(Auth::isLoggedIn()){
 				if(!Auth::isAdmin())
@@ -209,83 +274,79 @@ echo $this->AssetCompress->script('app');
 			<div id="newMenu">
 				<nav>
 					<ul>
-						<?php echo '<li><a class="homeMenuLink" href="/" '.$refreshLinkToStart.' '.$homeA.'>Home</a>';
+						<?php echo '<li><a class="homeMenuLink '.$homeA.'" href="/" '.$refreshLinkToStart.'>Home</a>';
 						echo '<ul class="newMenuLi1">';
-						echo '<li><a id="tutorialLink" href="/sites/websitefunctions" '.$websitefunctionsA.'>Functions & Modes</a></li>';
-						echo '<li><a id="tutorialLink" href="/sites/gotutorial" '.$gotutorialA.'>Go Rules</a></li>';
-						echo '<li><a id="forumLink" href="/forums">Forums</a></li>';
-						echo '<li><a href="/users/authors" '.$aboutA.'>About</a></li>';
+						echo '<li><a class="'.$websitefunctionsA.'" href="/sites/websitefunctions">Functions & Modes</a></li>';
+						echo '<li><a class="'.$gotutorialA.'" href="/sites/gotutorial">Go Rules</a></li>';
+						echo '<li class="newMenuLi1-forum"><a id="forumLink" href="/forums">Forums</a></li>';
+						echo '<li><a class="'.$changelogA.'" href="/changelog">What\'s new<span class="nav__new-badge"></span></a></li>';
+						echo '<li><a class="'.$aboutA.'" href="/sites/about">About</a></li>';
 						echo '</ul>';
 						echo '</li>';
-						echo '<li><a '.$refreshLinkToSets.' '.$collectionsA.' href="/sets">Collections</a>';
+						echo '<li><a '.$refreshLinkToSets.' class="'.$collectionsA.'" href="/sets">Collections</a>';
 						if(Auth::isLoggedIn()){
-							if(Auth::hasPremium() || Auth::isAdmin() || $hasFavs){
-								echo '<ul class="newMenuLi2">';
-								if(Auth::hasPremium() || Auth::isAdmin())
-									echo '<li><a '.$refreshLinkToSandbox.' '.$sandboxA.' href="/sets/sandbox">Sandbox</a></li>';
-								echo '<li><a '.$refreshLinkToFavs.' href="/sets/view/favorites">Favorites</a></li>';
-								if(Auth::isAdmin()){
-									echo '<li><a class="adminLink" href="/users/adminstats">Activities</a></li>';
-										echo '<li><a class="adminLink" href="/tsumego-issues">Issues</a></li>';
-									echo '<li class="additional-adminLink2"><a id="adminLink-more" class="adminLink adminLink3"><i>more</i></a></li>';
-									echo '<li class="additional-adminLink"><a class="adminLink" href="/users/uploads">Uploads</a></li>';
-									echo '<li class="additional-adminLink"><a class="adminLink" href="/tsumegos/mergeForm">Merge Duplicates</a></li>';
-									echo '<li class="additional-adminLink"><a class="adminLink" href="/sets/duplicatesearch">Duplicate Search Results</a></li>';
-									echo '<li class="additional-adminLink"><a class="adminLink" href="/users/showPublishSchedule">Publish Schedule</a></li>';
-									echo '<li class="additional-adminLink"><a class="adminLink" href="/app/webroot/editor">Editor</a></li>';
-									echo '<li class="additional-adminLink"><a class="adminLink" href="/users/userstats">User Activities</a></li>';
-								}
-								echo '</ul>';
-								}
-								}
-						$sessionLastVisit = $_COOKIE['lastVisit'] ?? 15352;
+							echo '<ul class="newMenuLi2">';
+							echo '<li><a href="/sets/mine">My Sets</a></li>';
+							echo '<li><a class="'.$refreshLinkToFavs.'" href="/sets/view/favorites">Favorites</a></li>';
+							if(Auth::hasPremium() || Auth::isAdmin())
+								echo '<li><a '.$refreshLinkToSandbox.' class="'.$sandboxA.'" href="/sets/sandbox">Sandbox</a></li>';
+							if(Auth::isAdmin()){
+								echo '<li><a class="adminLink" href="/users/adminstats">Activities</a></li>';
+									echo '<li><a class="adminLink" href="/tsumego-issues">Issues</a></li>';
+								echo '<li class="additional-adminLink2"><a id="adminLink-more" class="adminLink adminLink3"><i>more</i></a></li>';
+								echo '<li class="additional-adminLink"><a class="adminLink" href="/users/uploads">Uploads</a></li>';
+								echo '<li class="additional-adminLink"><a class="adminLink" href="/tsumegos/mergeForm">Merge Duplicates</a></li>';
+								echo '<li class="additional-adminLink"><a class="adminLink" href="/sets/duplicatesearch">Duplicate Search Results</a></li>';
+								echo '<li class="additional-adminLink"><a class="adminLink" href="/users/showPublishSchedule">Publish Schedule</a></li>';
+								echo '<li class="additional-adminLink"><a class="adminLink" href="/app/webroot/editor">Editor</a></li>';
+								echo '<li class="additional-adminLink"><a class="adminLink" href="/users/userstats">User Activities</a></li>';
+							}
+							echo '</ul>';
+						}
+						$sessionLastVisit = (int)($_COOKIE['lastVisit'] ?? 15352);
 						echo '</li>';
-						echo '<li><a class="homeMenuLink" '.$playA.' href="/tsumegos/play/'.$lv.'">Play</a>';
+						echo '<li><a class="homeMenuLink '.$playA.'" href="/tsumegos/play/'.$lv.'">Play</a>';
 						echo '<ul class="newMenuLi3">';
-						echo '<li><a href="/tsumegos/play/'.$sessionLastVisit.'?mode=1" '.$levelModeA.'>Level</a></li>';
+						echo '<li><a class="'.$levelModeA.'" href="/tsumegos/play/'.$sessionLastVisit.'?mode=1">Level</a></li>';
 						if(Auth::isLoggedIn()){
-							echo '<li><a href="/ratingMode" '.$ratingModeA.'>Rating</a></li>';
-							echo '<li><a href="/timeMode/overview" '.$timeModeA.'>Time</a></li>';
+							echo '<li><a class="'.$ratingModeA.'" href="/ratingMode">Rating</a></li>';
+							echo '<li><a class="'.$timeModeA.'" href="/timeMode/overview">Time</a></li>';
 						}
 								echo '</ul>';
-						echo '<li><a '.$refreshLinkToHighscore.' '.$highscoreA.' href="/users/'.$highscoreLink.'">Highscore</a>';
+						echo '<li><a '.$refreshLinkToHighscore.' class="'.$highscoreA.'" href="/users/'.$highscoreLink.'">Highscore</a>';
 						echo '<ul class="newMenuLi4">';
-						echo '<li><a id="tutorialLink" href="/users/highscore" '.$levelHighscoreA.'>Level Highscore</a></li>';
-						echo '<li><a id="tutorialLink" href="/users/rating" '.$ratingHighscoreA.'>Rating Highscore</a></li>';
-						echo '<li><a id="tutorialLink" href="/users/achievements" '.$achievementHighscoreA.'>Achievement Highscore</a></li>';
-						echo '<li><a id="tutorialLink" href="/users/added_tags" '.$timeHighscoreA.'>Tag Highscore</a></li>';
-						echo '<li><a id="tutorialLink" href="/users/leaderboard" '.$dailyHighscoreA.'>Daily Highscore</a></li>';
+						echo '<li><a id="tutorialLink" class="'.$levelHighscoreA.'" href="/users/highscore">Level Highscore</a></li>';
+						echo '<li><a id="tutorialLink" class="'.$ratingHighscoreA.'" href="/users/rating">Rating Highscore</a></li>';
+						echo '<li><a id="tutorialLink" class="'.$achievementHighscoreA.'" href="/users/achievements">Achievement Highscore</a></li>';
+						echo '<li><a id="tutorialLink" class="'.$tagHighscoreA.'" href="/users/added_tags">Tag Highscore</a></li>';
+						echo '<li><a id="tutorialLink" class="'.$dailyHighscoreA.'" href="/users/leaderboard">Daily Highscore</a></li>';
+						echo '<li><a id="tutorialLink" class="'.$timeHighscoreA.'" href="/users/time_mode">Time Mode Highscore</a></li>';
 						echo '</ul>';
 						if(Auth::isLoggedIn())
-							echo '<li><a  '.$refreshLinkToDiscuss.'  '.$discussA.'href="/comments'.$discussFilter.'">Discuss</a></li>';
+							echo '<li><a  '.$refreshLinkToDiscuss.'  class="'.$discussA.'" href="/comments'.$discussFilter.'">Discuss</a></li>';
 						else
-							echo '<li><a style="color:#aaa;">Discuss</a></li>';
+							echo '<li class="discuss-disabled"><a style="color:var(--surface-muted-text);">Discuss</a></li>';
 						if(Auth::isLoggedIn())
-							if(Auth::getUser()['sound'] == 'off')
-								$soundButtonImageValue = 'sound-icon2.png';
-							else if(Auth::getUser()['sound'] == 'on')
-								$soundButtonImageValue = 'sound-icon1.png';
+							$soundButtonImageValue = User::soundIsOn(Auth::getUser()) ? 'sound-icon1.png' : 'sound-icon2.png';
 						else
-								$soundButtonImageValue = 'sound-icon1.png';
-						else
-								$soundButtonImageValue = 'sound-icon1.png';
+							$soundButtonImageValue = 'sound-icon1.png';
 
 						echo '<li class="menuIcons1">
 						<a href="#" id="soundButton" onclick="changeSound(); return false;"><img id="soundButtonImage" src="/img/'.$soundButtonImageValue.'" width="25px"></a>
 					</li>';
 						?>
 						<li class="menuIcons1">
-							<div class="dropdown" id="check3">
-								<label for="dropdown-1" id="boardsInMenu" class="dropdown-button">
+								<div class="board-picker" id="check3">
+								<label for="dropdown-1" id="boardsInMenu" class="dropdown__trigger">
 									<img id="boardsButtonImage" src="/img/boards-icon1.png" width="25px">
 								</label>
-								<input class="dropdown-open" type="checkbox" id="dropdown-1" style="display:none;" onchange="check1()">
-								<label for="dropdown-1" class="dropdown-overlay"></label>
-								<div class="dropdown-inner" id="dropdown-inner-propagation">
+								<input class="dropdown__open" type="checkbox" id="dropdown-1" style="display:none;" onchange="check1()">
+								<label for="dropdown-1" class="dropdown__overlay"></label>
+								<div class="dropdown__menu" id="dropdown-inner-propagation">
 									<table id="dropdowntable" border="0"></table>
 									<br>
 									<div id="dropdowntable2" align="center">
-										<a class="new-button" href="<?php echo $_SERVER['REQUEST_URI']; ?>">Save</a>
+											<a class="btn btn--primary" href="<?php echo h($_SERVER['REQUEST_URI']); ?>">Save</a>
 										<br><br>
 									</div>
 									</div>
@@ -297,20 +358,14 @@ echo $this->AssetCompress->script('app');
 					</ul>
 				</nav>
 			</div>
-			</div>
-		<div class="outerMenu2">
-			<li><a></a></li>
-			</div>
-		<div class="outerMenu3">
-			<?php
-			$currentPage = '';
-			if($_page == 'user')
-				$currentPage = 'style="color:#74d14c;" ';
-			if(!Auth::isLoggedIn())
-				echo '<li><a class="menuLi" id="signInMenu" '.$currentPage.'href="/users/login">Sign In</a></li>';
-			?>
 		</div>
-
+		<?php
+		$currentPage = '';
+		if($_page == 'login')
+			$currentPage = 'nav__link--active ';
+		if(!Auth::isLoggedIn())
+			echo '<div class="site-nav__signin"><a class="menuLi '.$currentPage.'" id="signInMenu" href="/users/login">Sign In</a></div>';
+		?>
 		</div>
 			<?php AccountWidget::render($timeMode); ?>
 	<div width="100%" align="left" class="whitebox2">
@@ -329,7 +384,6 @@ echo $this->AssetCompress->script('app');
 	</div>
 <div id="footer" class="footerLinks">
 	<div class="footer-space"></div>
-
 	<div class="footer-space"></div>
 		<div class="footer-element">
 		Supported by Wube Software
@@ -341,68 +395,34 @@ echo $this->AssetCompress->script('app');
 		</div>
 	<div class="footer-space"></div>
 		<div class="footer-element">
-			Tsumego Hero ┬⌐ <?php echo date('Y'); ?>
+			Tsumego Hero © <?php echo date('Y'); ?>
 	</div>
 		<div class="footer-element">
-		<a href="mailto:joschka.zimdars@googlemail.com">joschka.zimdars@googlemail.com</a>
+		<a href="mailto:kovarex@gmail.com">kovarex@gmail.com</a>
 	</div>
 		<div class="footer-element">
 		<a href="/sites/impressum">Legal notice</a>
 	</div>
 		<div class="footer-element">
-		<a href="/users/authors">About</a>
+		<a href="/sites/about">About</a>
 	</div>
 	<br><br><br>
 	</div>
 <?php
-if (Auth::isLoggedIn() && !$_COOKIE['disable-achievements'] && isset($achievementUpdates))
-{
-	$xpBonus = 0;
-	foreach ($achievementUpdates as $i => $achievementUpdate)
-	{
-		echo '
-			<label>
-		    <input type="checkbox" class="alertCheckbox1" id="alertCheckbox' . $i . '" autocomplete="off" />
-		    <div class="alertBox alertInfo '.$achievementUpdate['color'].'3" id="achievementAlerts' . $i . '">
-			<div class="alertBanner" align="center">
-			Achievement Completed
-			<span class="alertClose">x</span>
-			</div>
-			<span class="alertText"><img id="hpIcon1" src="/img/'.$achievementUpdate['image'].'.png">
-			<b>'.$achievementUpdate['name'].' - ' . $achievementUpdate['description'] . '</b>&nbsp; ('.$achievementUpdate['xp'].' XP)&nbsp; <a href="/achievements/view/'.$achievementUpdate['id'].'">view</a>
-			<br>
-			<br class="clear1"/></span>
-			</div>
-			</label>
-			';
-		$xpBonus += $achievementUpdate['xp'];
-	}
-}
+// Achievement popups are rendered client-side by the shared renderer in
+// webroot/js/AchievementAlerts.js; here we only hand it the pure data.
 ?>
 <script type="text/javascript">
 	<?php AccountWidget::renderJS($timeMode); ?>
-	var lifetime = new Date();
-
-	lifetime.setTime(lifetime.getTime()+8*24*60*60*1000);
-	lifetime = lifetime.toUTCString()+"";
 	<?php
-	if(isset($removeCookie))
-		echo 'setCookie("'.$removeCookie.'", "0");';
-	if($_page!='level mode' && $_page!='rating mode' && $_page!='time mode')
-		echo 'setCookie("mode", 1);';
-
-	$count = is_array($achievementUpdate)?count($achievementUpdate):$achievementUpdate;
-
-	for ($i = 0; $i < $count; $i++)
+	if (Auth::isLoggedIn() && !$_COOKIE['disable-achievements'] && !empty($achievementUpdates))
 	{
-		echo '$("#achievementAlerts'.$i.'").fadeIn(600);';
-		echo '
-		$("#alertCheckbox'.$i.'").change(function(){
-			$("#achievementAlerts'.$i.'").fadeOut(500);
-		});';
+			$popupData = array_map([AchievementChecker::class, 'toPopupData'], array_values($achievementUpdates));
+		echo 'var achievementUpdates = ' . json_encode($popupData, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) . ';';
+		echo 'if (typeof showAchievementPopup === "function") achievementUpdates.forEach(showAchievementPopup);';
 	}
 	?>
-	let light = <?php echo Util::boolString($lightDark == 'light'); ?>;
+	let light = <?php echo Util::boolString($lightDark !== 'dark'); ?>;
 	function updateSoundValue(value)
 	{
 		if (typeof besogo !== 'undefined')
@@ -414,21 +434,15 @@ if (Auth::isLoggedIn() && !$_COOKIE['disable-achievements'] && isset($achievemen
 		soundsEnabled = value;
 	}
 
-	setCookie("lightDark", "<?php echo $lightDark; ?>");
-	setCookie("lastProfileLeft", "<?php echo $lastProfileLeft; ?>");
-	setCookie("lastProfileRight", "<?php echo $lastProfileRight; ?>");
-	setCookie("type", "0");
-	setCookie("texture", "0");
-		<?php
-	if(isset($textureCookies))
-		echo 'document.cookie = "texture="+"'.$textureCookies.'"+";SameSite=Lax;expires="+lifetime+";path=/";';
-	?>
+	setCookie("lightDark", <?php echo json_encode($lightDark, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>);
+	setCookie("lastProfileLeft", <?php echo json_encode($lastProfileLeft, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>);
+	setCookie("lastProfileRight", <?php echo json_encode($lastProfileRight, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>);
 	var soundsEnabled = true;
 	var notMode3 = true;
 
 	<?php if(Auth::isLoggedIn()){ ?>
 	var soundValue = 0;
-	<?php echo 'soundValue = "'.Auth::getUser()['sound'].'";';
+	<?php echo 'soundValue = "'.(User::soundIsOn(Auth::getUser()) ? 'on' : 'off').'";';
 	}else{
 	?>
 	soundValue = getCookie("sound");
@@ -507,10 +521,6 @@ if (Auth::isLoggedIn() && !$_COOKIE['disable-achievements'] && isset($achievemen
 			}
 		}
 		<?php } ?>
-		<?php if($resetCookies){ ?>
-		setCookie("score", 0);
-		setCookie("seconds", 0);
-		<?php } ?>
 	});
 
 	function updateCookie(c1,c2)
@@ -529,12 +539,12 @@ if (Auth::isLoggedIn() && !$_COOKIE['disable-achievements'] && isset($achievemen
 	}
 
 	function boardsHover(){
-		document.getElementById("boardsInMenu").style.color = "#74D14C";
-		document.getElementById("boardsInMenu").style.backgroundColor = "grey";
+		document.getElementById("boardsInMenu").style.color = "var(--color-green)";
+		document.getElementById("boardsInMenu").style.backgroundColor = "var(--color-gray)";
 	}
 
 	function boardsNoHover(){
-		document.getElementById("boardsInMenu").style.color = "#d19fe4";
+		document.getElementById("boardsInMenu").style.color = "var(--color-purple-bright)";
 		document.getElementById("boardsInMenu").style.backgroundColor = "transparent";
 	}
 
@@ -542,14 +552,14 @@ if (Auth::isLoggedIn() && !$_COOKIE['disable-achievements'] && isset($achievemen
 		if(document.getElementById("dropdown-1").checked == true){
 			document.getElementById("dropdowntable").style.display = "inline-block";
 			document.getElementById("dropdowntable2").style.display = "inline-block";
-			$(".dropdown-inner").css("opacity", "1");
-			$(".dropdown-inner").css("display", "inline-block");
+			$(".dropdown__menu").css("opacity", "1");
+			$(".dropdown__menu").css("display", "inline-block");
 	}
 		if(document.getElementById("dropdown-1").checked == false){
 			document.getElementById("dropdowntable").style.display = "none";
 			document.getElementById("dropdowntable2").style.display = "none";
-			$(".dropdown-inner").css("opacity", "0");
-			$(".dropdown-inner").css("display", "none");
+			$(".dropdown__menu").css("opacity", "0");
+			$(".dropdown__menu").css("display", "none");
 	}
 	}
 	$("#check3").click(function(e){
@@ -566,38 +576,20 @@ if (Auth::isLoggedIn() && !$_COOKIE['disable-achievements'] && isset($achievemen
 		e.stopPropagation();
 	});
 
+	function setSoundCookie(value)
+	{
+		// One cookie for the whole site, written for path / so every page sees it.
+		document.cookie = "sound=" + value + ";path=/";
+	}
+
 	function changeSound()
 	{
-		if(getCookie("sound")=="off")
-		{
-			document.getElementById("soundButtonImage").src="/img/sound-icon1.png";
-			document.cookie = "sound=on;path=/";
-			document.cookie = "sound=on;path=/sets/view";
-			document.cookie = "sound=on;path=/tsumegos/play";
-			document.cookie = "sound=on;path=/users";
-			document.cookie = "sound=on;path=/users/view";
-			updateSoundValue(true);
-		}
-		else if(getCookie("sound")=="on")
-		{
-			document.getElementById("soundButtonImage").src="/img/sound-icon2.png";
-			document.cookie = "sound=off;path=/";
-			document.cookie = "sound=off;path=/sets/view";
-			document.cookie = "sound=off;path=/tsumegos/play";
-			document.cookie = "sound=off;path=/users";
-			document.cookie = "sound=off;path=/users/view";
-			updateSoundValue(false);
-		}
-		else
-		{
-			document.getElementById("soundButtonImage").src="/img/sound-icon2.png";
-			document.cookie = "sound=off;path=/";
-			document.cookie = "sound=off;path=/sets/view";
-			document.cookie = "sound=off;path=/tsumegos/play";
-			document.cookie = "sound=off;path=/users";
-			document.cookie = "sound=off;path=/users/view";
-			updateSoundValue(false);
-		}
+		// A visitor who has not picked anything hears sound: only an explicit "off" is
+		// silent.
+		var soundIsOn = getCookie("sound") != "off";
+		document.getElementById("soundButtonImage").src = soundIsOn ? "/img/sound-icon2.png" : "/img/sound-icon1.png";
+		setSoundCookie(soundIsOn ? "off" : "on");
+		updateSoundValue(!soundIsOn);
 	}
 
 	function getCookie(cname){
@@ -618,42 +610,26 @@ if (Auth::isLoggedIn() && !$_COOKIE['disable-achievements'] && isset($achievemen
 
 	function sandboxHover(){
 		if(document.getElementById("sandboxLink")) document.getElementById("sandboxLink").style.display = "inline-block";
-		if(document.getElementById("collectionsInMenu")) document.getElementById("collectionsInMenu").style.color = "#74d14c";
-		if(document.getElementById("collectionsInMenu")) document.getElementById("collectionsInMenu").style.backgroundColor = "grey";
+		if(document.getElementById("collectionsInMenu")) document.getElementById("collectionsInMenu").style.color = "var(--color-green)";
+		if(document.getElementById("collectionsInMenu")) document.getElementById("collectionsInMenu").style.backgroundColor = "var(--color-gray)";
 	}
 
 	function sandboxNoHover(){
 		if(document.getElementById("sandboxLink")) document.getElementById("sandboxLink").style.display = "none";
 		if(document.getElementById("collectionsInMenu")) document.getElementById("collectionsInMenu").style.backgroundColor = "rgba(0,0,0,0)";
-		if(document.getElementById("collectionsInMenu")) document.getElementById("collectionsInMenu").style.color = "#d19fe4";
+		if(document.getElementById("collectionsInMenu")) document.getElementById("collectionsInMenu").style.color = "var(--color-purple-bright)";
 	}
 
 	function leaderboardHover(){
 		if(document.getElementById("leaderboardLink")) document.getElementById("leaderboardLink").style.display = "inline-block";
-		if(document.getElementById("highscoreInMenu")) document.getElementById("highscoreInMenu").style.color = "#74d14c";
-		if(document.getElementById("highscoreInMenu")) document.getElementById("highscoreInMenu").style.backgroundColor = "grey";
+		if(document.getElementById("highscoreInMenu")) document.getElementById("highscoreInMenu").style.color = "var(--color-green)";
+		if(document.getElementById("highscoreInMenu")) document.getElementById("highscoreInMenu").style.backgroundColor = "var(--color-gray)";
 	}
 
 	function leaderboardNoHover(){
 		if(document.getElementById("leaderboardLink")) document.getElementById("leaderboardLink").style.display = "none";
 		if(document.getElementById("highscoreInMenu")) document.getElementById("highscoreInMenu").style.backgroundColor = "rgba(0,0,0,0)";
-		if(document.getElementById("highscoreInMenu")) document.getElementById("highscoreInMenu").style.color = "#d19fe4";
-	}
-
-	function upgradeHover2(){
-		document.getElementById("donateH2").src = '/img/upgradeButton1h.png';
-	}
-
-	function upgradeNoHover2(){
-		document.getElementById("donateH2").src = "/img/upgradeButton1.png";
-	}
-
-	function donateHover2(){
-		document.getElementById("donateH2").src = '/img/donateButton1h.png';
-	}
-
-	function donateNoHover2(){
-		document.getElementById("donateH2").src = "/img/donateButton1.png";
+		if(document.getElementById("highscoreInMenu")) document.getElementById("highscoreInMenu").style.color = "var(--color-purple-bright)";
 	}
 
 	function deleteAllCookies()
@@ -670,13 +646,30 @@ if (Auth::isLoggedIn() && !$_COOKIE['disable-achievements'] && isset($achievemen
 	}
 
 	boardSelector = new BoardSelector(<?php echo $boardsBitmask . 'n';?>);
+
+	// Localize <time datetime="..."> elements.
+	//
+	// Convention:
+	// - Timestamps (full ISO 8601, e.g. 2026-08-15T12:00:00+00:00) are instants:
+	//   render them in the user's local timezone, where the day may cross over.
+	// - Calendar dates (date-only YYYY-MM-DD) are timezone-free: anchor them at
+	//   UTC so the day never changes across timezones.
+	document.querySelectorAll('time[datetime]').forEach(function(el) {
+		var raw = el.getAttribute('datetime');
+		var dateOnly = raw.indexOf('T') === -1;
+		var d = new Date(dateOnly ? raw + 'T00:00:00Z' : raw);
+		if (isNaN(d)) return;
+		var fmt = el.getAttribute('data-format') || 'datetime';
+		if (fmt === 'date') el.textContent = d.toLocaleDateString(undefined, dateOnly ? { timeZone: 'UTC' } : undefined);
+		else if (fmt === 'month-day') el.textContent = d.toLocaleDateString(undefined, dateOnly ? { timeZone: 'UTC', month: 'short', day: 'numeric' } : { month: 'short', day: 'numeric' });
+		else if (fmt === 'time') el.textContent = d.toLocaleTimeString([], { timeStyle: 'short' });
+		else el.textContent = d.toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
+	});
 </script>
-		<?php
-if(!Auth::isLoggedIn())
-	echo '<style>.outerMenu1{left: 224px;}</style>';
-	?>
+
+<?php
+// React app bundle
+echo ViteManifest::script('app');
+?>
 </body>
-
 </html>
-
-<head>

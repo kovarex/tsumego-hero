@@ -27,6 +27,12 @@ include($phpbb_root_path . 'includes/message_parser.' . $phpEx);
 $user->session_begin();
 $auth->acl($user->data);
 
+if (empty($user->data['user_id']) || $user->data['user_id'] == ANONYMOUS)
+{
+    echo "You must be logged in to see anything here.";
+    http_response_code(403);
+    exit;
+}
 
 // Grab only parameters needed here
 $draft_id	= $request->variable('d', 0);

@@ -1,13 +1,16 @@
 <?php
 
+use App\Attribute\HttpPost;
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\HeroPowers;
+use App\Utility\Util;
+
 class HeroController extends AppController
 {
 	public function refinement()
 	{
-		if (!Auth::isLoggedIn())
-			return $this->redirect('/users/login');
-		if (Auth::getUser()['used_refinement'])
-			throw new AppException("Refinment is already used up.");
+		$this->Authorization->authorize('Hero');
 
 		$queryWithoutRankLimit = "SELECT "
 				. "set_connection.id as set_connection_id, tsumego.id as tsumego_id "
@@ -44,49 +47,40 @@ class HeroController extends AppController
 		$tsumegoStatus['created'] = date('Y-m-d H:i:s');
 		$tsumegoStatus['status'] = 'G';
 		ClassRegistry::init('TsumegoStatus')->save($tsumegoStatus);
-		Auth::getUser()['used_refinement'] = 1;
-		Auth::saveUser();
+		Auth::saveUserField('used_refinement', 1);
 		return $this->redirect('/' . $setConnection['set_connection_id']);
 	}
 
+	#[HttpPost]
 	public function sprint()
 	{
-		if (!HeroPowers::canUseSprint())
-		{
-			$this->response->statusCode(403);
-			return $this->response;
-		}
-		Auth::getUser()['sprint_start'] = date('Y-m-d H:i:s');
-		Auth::getUser()['used_sprint'] = 1;
-		Auth::saveUser();
+		$this->Authorization->authorize('Hero');
+		Auth::saveUserFields([
+			'sprint_start' => date('Y-m-d H:i:s'),
+			'used_sprint' => 1,
+		]);
 		$this->response->statusCode(200);
 		return $this->response;
 	}
 
+	#[HttpPost]
 	public function intuition()
 	{
-		if (!HeroPowers::canUseIntuition())
-		{
-			$this->response->statusCode(403);
-			return $this->response;
-		}
-		Auth::getUser()['used_intuition'] = 1;
-		Auth::saveUser();
+		$this->Authorization->authorize('Hero');
+		Auth::saveUserField('used_intuition', 1);
 		$this->response->statusCode(200);
 		return $this->response;
 	}
 
+	#[HttpPost]
 	public function rejuvenation()
 	{
-		if (!HeroPowers::canUseRejuvanation())
-		{
-			$this->response->statusCode(403);
-			return $this->response;
-		}
-		Auth::getUser()['used_rejuvenation'] = 1;
-		Auth::getUser()['used_intuition'] = 0;
-		Auth::getUser()['damage'] = 0;
-		Auth::saveUser();
+		$this->Authorization->authorize('Hero');
+		Auth::saveUserFields([
+			'used_rejuvenation' => 1,
+			'used_intuition' => 0,
+			'damage' => 0,
+		]);
 
 		ClassRegistry::init('TsumegoStatus')->query("UPDATE tsumego_status SET status='V' WHERE status='F' AND user_id=" . Auth::getUserID());
 		ClassRegistry::init('TsumegoStatus')->query("UPDATE tsumego_status SET status='W' WHERE status='X' AND user_id=" . Auth::getUserID());
@@ -95,27 +89,20 @@ class HeroController extends AppController
 		return $this->response;
 	}
 
-	public function revelation($tsumegoID)
+	#[HttpPost]
+	public function revelation(string $tsumegoID)
 	{
-		if (!Auth::isLoggedIn())
-		{
-			$this->response->body('Not logged in.');
-			$this->response->statusCode(403);
-			return $this->response;
-		}
+		$this->Authorization->authorize('Hero');
 
-		if (!HeroPowers::canUseRevelation())
-		{
-			$this->response->body('Revelation is used up today.');
-			$this->response->statusCode(403);
-			return $this->response;
-		}
+		// used_revelation is bounded by getRevelationUseCount(). Enforce the bound
+		// in the database with a conditional atomic increment so two concurrent
+		// requests that both pass canUseRevelation() cannot push it past the limit.
+		if (!Auth::incrementUserFieldIf('used_revelation', 1, ['used_revelation <' => HeroPowers::getRevelationUseCount()]))
+			throw new ForbiddenException('Revelation is used up today.');
+
 		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID);
 		if (!$tsumego)
-		{
-			$this->response->statusCode(403);
-			return $this->response;
-		}
+			throw new ForbiddenException();
 
 		$previousTsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $tsumegoID]]);
 		if (!$previousTsumegoStatus)
@@ -132,7 +119,7 @@ class HeroController extends AppController
 		$previousTsumegoStatus['status'] = 'S';
 		ClassRegistry::init('TsumegoStatus')->save($previousTsumegoStatus);
 
-		Auth::getUser()['used_revelation']++;
-		Auth::saveUser();
+		$this->response->statusCode(200);
+		return $this->response;
 	}
 }

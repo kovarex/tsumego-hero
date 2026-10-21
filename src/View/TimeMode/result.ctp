@@ -1,18 +1,30 @@
+<?php
+
+use App\Utility\Util;
+
+/**
+ * @var View $this
+ * @var array $dataForView
+ * @var array $sessionsToShow
+ * @var array $unlock
+ */
+
+?>
 	<div align="center">
 	<h2>Time Mode Results</h2>
 	<br>
 	<div align="center">
-		<a class="new-button" href="/timeMode/overview">Select</a>
-		<a class="new-button-inactive" href="#">Results</a>
+		<a class="btn btn--primary" href="/timeMode/overview">Select</a>
+		<a class="btn btn--inactive" href="#">Results</a>
 	</div>
 	<br><br>
 	<?php if($unlock) { ?>
 		<label>
-		<input type="checkbox" class="alertCheckbox1" id="alertCheckbox" autocomplete="off">
-		<div class="alertBox alertInfo" id="time-rank-unlock-alert">
-			<div class="alertBanner" align="center">Unlocked<span class="alertClose">x</span></div>
-			<span class="alertText">
-		<a style="color:black;text-decoration:none;" href="/timeMode/overview"><img id="hpIcon1" src="/img/rankButton<?php echo $unlock['rank']; ?>.png">
+		<input type="checkbox" class="toast__toggle" id="alertCheckbox" autocomplete="off">
+		<div class="toast" id="time-rank-unlock-alert">
+			<div class="toast__banner" align="center">Unlocked<span class="toast__close">x</span></div>
+			<span class="toast__body">
+		<a style="color:var(--color-black);text-decoration:none;" href="/timeMode/overview"><img id="hpIcon1" src="/img/rankButton<?php echo $unlock['rank']; ?>.png">
 		  You unlocked the <?php echo $unlock['rank'];?> <?php echo $unlock['category']; ?> rank.
 		</a><br>
 		<br class="clear1"/></span>
@@ -21,11 +33,13 @@
 	} ?>
 	<table class="timeModeTable" border="0">
 	<?php
+if (!function_exists('showSession'))
+{
 		function showSession($session, $isCurrent) {
 			echo '<tr>';
 			echo '<td colspan="5">';
-			$color = $session['status'] == 'passed' ? 'green' : '#e03c4b';
-			echo '<h4 style="color:'.$color.';">'.($isCurrent ? 'Result' : 'Best').': '.$session['status'].'('.$session['solvedCount'].'/'.TimeModeUtil::$PROBLEM_COUNT.')';
+			$color = $session['status'] == 'passed' ? 'var(--color-green)' : 'var(--feedback-error)';
+			echo '<h4 style="color:'.$color.';">'.($isCurrent ? 'Result' : 'Best').': '.$session['status'].'('.$session['solvedCount'].'/'.count($session['attempts']).')';
 			if ($isCurrent) {
 				echo '- '.$session['points'].' points';
 			}
@@ -36,14 +50,17 @@
 					echo '<tr>';
 					echo '<td width="9%">#'.$attempt['order'].'</td>';
 					echo '<td width="46%"><a href="/tsumegos/play/'.$attempt['tsumego_id'].'">'.$attempt['set'].' - '.$attempt['set_order'].'</a></td>';
-					$color = $attempt['status'] == 'solved' ? 'green' : '#e03c4b';
+					$color = $attempt['status'] == 'solved' ? 'var(--color-green)' : 'var(--feedback-error)';
 					echo '<td width="7%" style="color:'.$color.';">'.$attempt['status'].'</td>';
 					echo '<td width="8%" style="color:'.$color.';">'.$attempt['seconds'].'</td>';
 					echo '<td>'.$attempt['points'].' points</td>';
 					echo '</tr>';
 				}
 		}
+} // function_exists
 
+if (!function_exists('showRank'))
+{
 		function showRank($session, $dataForView) {
 			$containsCurrent = isset($session['current']);
 			$headerSession = isset($session['best']) ? $session['best'] : $session['current'];
@@ -63,7 +80,7 @@
 			echo '<td width="46%">'.$headerSession['rank'].'</td>';
 			echo '<td width="15%"><b>'.$headerSession['status'].'</b></td>';
 			echo '<td width="13%">'.$headerSession['points'].' points</td>';
-			echo '<td class="timeModeTable2td">'.$headerSession['created'].'</td>';
+			echo '<td class="timeModeTable2td"><time datetime="' . Util::toIso8601($headerSession['created']) . '" data-format="datetime">' . $headerSession['created'] . '</time></td>';
 			echo '<td width="3%" class="timeModeTable2td"><img class="rankArrow" src="'.($containsCurrent ? $dataForView['rankArrowOpened'] : $dataForView['rankArrowClosed']).'"></td>';
 			echo '</tr>';
 			echo '</table>';
@@ -80,6 +97,7 @@
 			echo '</table>';
 			echo '</div>';
 		}
+} // function_exists
 
 		foreach ($sessionsToShow as $categoryToShow) {
 			foreach ($categoryToShow as $rankToShow) {
@@ -121,12 +139,12 @@
 			$("#xp-bar-fill").css("width", barPercent);
 
 			<?php if($unlock){ ?>
-			$(".alertBox").fadeIn(500);
+			$(".toast").fadeIn(500);
 			<?php } ?>
 		});
 
 		$("#alertCheckbox").change(function() {
-			$(".alertBox").fadeOut(500);
+			$(".toast").fadeOut(500);
 		});
 
 	</script>

@@ -1,7 +1,7 @@
 <?php
 
-App::uses('SgfParser', 'Utility');
-App::uses('CommentsRenderer', 'Utility');
+use App\Utility\Auth;
+use App\Utility\CommentsRenderer;
 
 class CommentsController extends AppController
 {

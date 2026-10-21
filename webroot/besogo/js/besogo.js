@@ -14,6 +14,16 @@
   besogo.boardCanvasSvg = null;
   besogo.intuitionActive = false;
   besogo.playerColor = "black";
+  // Shared helper: convert true-color text (Black/White) to the player's view by
+  // swapping the color words. Used when the board is color-inverted.
+  besogo.swapColorWords = function (text) {
+    return String(text).replace(/\b(Black|black|White|white)\b/g, function (m) {
+      return { Black: "White", black: "white", White: "Black", white: "black" }[m];
+    });
+  };
+  // Whether the board is currently color-inverted (true-color = stored values).
+  // Initialised from the server's swapColors and toggled by the orientation button.
+  besogo.boardInverted = false;
   besogo.soundsEnabled = false;
   besogo.controlButtonLock = true;
   besogo.theme = "";
@@ -23,6 +33,7 @@
   besogo.multipleChoiceSetup = []; //multiple choice random stone placement
   besogo.multipleChoiceCustom = false;
   besogo.multipleChoiceCustomSetup = null;
+  besogo.verticalHalfBoardRotationWidthToken = false;
   let corner;
 
   function getMakers() {
@@ -245,8 +256,14 @@
       } else if (
         besogo.scaleParameters["boardCanvasSize"] === "vertical half board"
       ) {
-        $(".besogo-board").css("width", "30%");
-        $(".besogo-board").css("margin", "0 443px");
+        if(!besogo.verticalHalfBoardRotationWidthToken){
+          $(".besogo-board").css("width", "30%");
+          $(".besogo-board").css("margin", "0 443px");
+        }else{
+          $(".besogo-board").css("width", "78%");
+          $(".besogo-board").css("margin", "0 138px");
+        }
+       
       } else {
         $(".besogo-board").css("width", "50%");
         $(".besogo-board").css("margin", "0 315px");
@@ -314,6 +331,8 @@
     options.coord = options.coord || "none";
     options.tool = options.tsumegoPlayTool || "auto";
     besogo.playerColor = options.playerColor;
+    besogo.swapColors = !!options.swapColors;
+    besogo.boardInverted = besogo.swapColors;
     if (options.tsumegoPlayTool)
       options.tsumegoPlayTool = options.tsumegoPlayTool || "auto";
     if (options.panels === "") options.panels = [];
@@ -666,7 +685,7 @@
     besogo.coordArea["highestYconverted"] =
       convertedCoords.y[besogo.coordArea["highestY"] + 1];
 
-    if (besogo.playerColor === "white") {
+    if (besogo.swapColors) {
       let transformation = besogo.makeTransformation();
       transformation.invertColors = true;
       besogo.editor.applyTransformation(transformation);

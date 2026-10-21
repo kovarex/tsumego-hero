@@ -1,7 +1,9 @@
 <?php
 
-App::uses('ClassRegistry', 'Utility');
-App::uses('Auth', 'Utility');
+namespace App\Utility;
+
+use AdminActivityType;
+use ClassRegistry;
 
 /**
  * AdminActivityLogger
@@ -31,6 +33,7 @@ class AdminActivityLogger
 	 * @param int|null $setId Set ID (null for problem-only activities)
 	 * @param string|null $oldValue Old value for state changes/edits (null if not applicable)
 	 * @param string|null $newValue New value for state changes/edits (null if not applicable)
+	 * @param int|null $userId Who did it, when not the logged-in user (null for the logged-in user)
 	 * @return bool True if saved successfully
 	 *
 	 * Examples:
@@ -40,9 +43,9 @@ class AdminActivityLogger
 	 *   // Simple action without values
 	 *   AdminActivityLogger::log(AdminActivityType::PROBLEM_DELETE, $tsumegoId, $setId);
 	 */
-	public static function log($type, $tsumegoId = null, $setId = null, $oldValue = null, $newValue = null)
+	public static function log(int $type, string|int|null $tsumegoId = null, string|int|null $setId = null, string|int|float|null $oldValue = null, string|int|float|null $newValue = null, ?int $userId = null): bool
 	{
-		$userId = Auth::getUserID();
+		$userId ??= Auth::getUserID();
 		if (!$userId)
 			return false; // Only logged-in users
 

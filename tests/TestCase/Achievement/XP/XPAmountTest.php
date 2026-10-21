@@ -1,7 +1,7 @@
 <?php
 
-App::uses('Achievement', 'Model');
-App::uses('Level', 'Utility');
+use App\Utility\AchievementId;
+use App\Utility\AchievementChecker;
 
 /**
  * Achievement XP Amount Tests
@@ -15,8 +15,8 @@ class XPAmountTest extends AchievementTestCase
 		$browser = Browser::instance();
 		// Arrange: User with 500 existing XP at level 69 (won't level up from 1000 XP - needs 4350 for next level)
 		$context = new ContextPreparator(['user' => ['solved' => 1000]]);
-		$browser->get('/');
-		$this->assertAchievementUnlocked(Achievement::PROBLEMS_1000, 'Achievement #1 should unlock at 1000 solved');
+		$browser->get('sites/blank');
+		$this->assertAchievementUnlocked(AchievementId::PROBLEMS_1000, 'Achievement #1 should unlock at 1000 solved');
 		$this->assertEquals(1000, $context->XPGained());
 	}
 
@@ -32,8 +32,8 @@ class XPAmountTest extends AchievementTestCase
 		new AchievementChecker()->checkProblemNumberAchievements()->finalize();
 
 		// Assert: Both achievements #1 and #2 unlock (1000 solved + 2000 solved)
-		$this->assertAchievementUnlocked(Achievement::PROBLEMS_1000);
-		$this->assertAchievementUnlocked(Achievement::PROBLEMS_2000);
+		$this->assertAchievementUnlocked(AchievementId::PROBLEMS_1000);
+		$this->assertAchievementUnlocked(AchievementId::PROBLEMS_2000);
 
 		// Assert: User XP is 3000 (0 + 1000 from #1 + 2000 from #2)
 		$user = ClassRegistry::init('User')->findById($context->user['id']);
@@ -45,8 +45,8 @@ class XPAmountTest extends AchievementTestCase
 	{
 		$browser = Browser::instance();
 		$context = new ContextPreparator(['user' => ['xp' => 0, 'level' => 10]]);
-		$browser->get('/');
-		$this->assertAchievementUnlocked(Achievement::LEVEL_UP);
+		$browser->get('sites/blank');
+		$this->assertAchievementUnlocked(AchievementId::LEVEL_UP);
 
 		$this->assertEquals(100, $context->XPGained(), '100 XP from level achievement');
 		$this->assertEquals(10, $context->reloadUser()['level'], 'Level 10 (needs 175 to reach 11, only has 100)');
@@ -64,8 +64,8 @@ class XPAmountTest extends AchievementTestCase
 		new AchievementChecker()->checkProblemNumberAchievements()->finalize();
 
 		// Assert: Both achievements unlocked
-		$this->assertAchievementUnlocked(Achievement::PROBLEMS_1000);
-		$this->assertAchievementUnlocked(Achievement::PROBLEMS_2000);
+		$this->assertAchievementUnlocked(AchievementId::PROBLEMS_1000);
+		$this->assertAchievementUnlocked(AchievementId::PROBLEMS_2000);
 
 		// Assert: User XP is 3100 (100 existing + 1000 from #1 + 2000 from #2)
 		$user = ClassRegistry::init('User')->findById($context->user['id']);
@@ -86,7 +86,7 @@ class XPAmountTest extends AchievementTestCase
 		new AchievementChecker()->checkProblemNumberAchievements()->finalize();
 
 		// Assert: Achievement unlocked
-		$this->assertAchievementUnlocked(Achievement::PROBLEMS_1000);
+		$this->assertAchievementUnlocked(AchievementId::PROBLEMS_1000);
 
 		// Assert: Existing XP is NOT overwritten - should be 4000 (3000 + 1000)
 		$user = ClassRegistry::init('User')->findById($context->user['id']);

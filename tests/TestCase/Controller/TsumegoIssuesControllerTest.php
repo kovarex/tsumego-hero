@@ -1,12 +1,18 @@
 <?php
 
-use Facebook\WebDriver\WebDriverBy;
+use App\Utility\Avatar;
+use PHPUnitRetry\RetryTrait;
 
-App::uses('TsumegoIssue', 'Model');
-
-// Tests for TsumegoIssuesController - specifically the global issues index page.
+/**
+ * Tests for TsumegoIssuesController - specifically the global issues index page.
+ *
+ * @retryAttempts 2
+ * @retryIfException Facebook\WebDriver\Exception\WebDriverException
+ */
 class TsumegoIssuesControllerTest extends ControllerTestCase
 {
+	use RetryTrait;
+
 	public function testIssuesIndexPageLoads()
 	{
 		$browser = Browser::instance();
@@ -14,6 +20,7 @@ class TsumegoIssuesControllerTest extends ControllerTestCase
 			'user' => ['admin' => true],
 			'tsumego' => ['set_order' => 1, 'issues' => [['message' => 'Test issue for index page']]]]);
 		$browser->get('tsumego-issues');
+		$this->waitForReactIssuesList($browser);
 		$pageSource = $browser->driver->getPageSource();
 
 		// Verify page loads with correct title
@@ -22,8 +29,8 @@ class TsumegoIssuesControllerTest extends ControllerTestCase
 		// Verify issue is displayed
 		$this->assertTextContains('Test issue for index page', $pageSource);
 
-		// Verify tabs are present
-		$this->assertTextContains('Opened', $pageSource);
+		// Verify filter tabs are present
+		$this->assertTextContains('Open', $pageSource);
 		$this->assertTextContains('Closed', $pageSource);
 	}
 
@@ -32,6 +39,7 @@ class TsumegoIssuesControllerTest extends ControllerTestCase
 		$browser = Browser::instance();
 		new ContextPreparator(['user' => ['admin' => true], 'tsumego' => ['set_order' => 1, 'issues' => [['message' => 'Open issue']]]]);
 		$browser->get('tsumego-issues?status=opened');
+		$this->waitForReactIssuesList($browser);
 		$pageSource = $browser->driver->getPageSource();
 		$this->assertTextContains('Open issue', $pageSource);
 	}
@@ -44,6 +52,7 @@ class TsumegoIssuesControllerTest extends ControllerTestCase
 
 		$browser = Browser::instance();
 		$browser->get('tsumego-issues?status=closed');
+		$this->waitForReactIssuesList($browser);
 
 		$pageSource = $browser->driver->getPageSource();
 		$this->assertTextContains('Closed issue', $pageSource);
@@ -56,6 +65,7 @@ class TsumegoIssuesControllerTest extends ControllerTestCase
 			'user' => ['admin' => true],
 			'tsumego' => ['set_order' => 1, 'issues' => [['message' => 'Issue with link']]]]);
 		$browser->get('tsumego-issues');
+		$this->waitForReactIssuesList($browser);
 		$pageSource = $browser->driver->getPageSource();
 
 		// Should show the issue with its comment
@@ -69,6 +79,7 @@ class TsumegoIssuesControllerTest extends ControllerTestCase
 		$browser = Browser::instance();
 		new ContextPreparator(['user' => ['admin' => true]]);
 		$browser->get('tsumego-issues');
+		$this->waitForReactIssuesList($browser);
 		$pageSource = $browser->driver->getPageSource();
 
 		// Should show some indication that there are no issues
@@ -87,12 +98,13 @@ class TsumegoIssuesControllerTest extends ControllerTestCase
 
 		$browser = Browser::instance();
 		$browser->get('tsumego-issues?status=opened');
+		$this->waitForReactIssuesList($browser);
 
 		$pageSource = $browser->driver->getPageSource();
 
 		// Verify pagination links appear
 		$this->assertTextContains('Next', $pageSource);
-		$this->assertTextContains('class="pagination-link', $pageSource);
+		$this->assertTextContains('issues-page__pagination', $pageSource);
 
 		// Issues are sorted by created DESC (newest first)
 		// So page 1 shows issues 25, 24, 23, ... 6 (20 issues)
@@ -113,6 +125,7 @@ class TsumegoIssuesControllerTest extends ControllerTestCase
 
 		new ContextPreparator(['user' => ['admin' => true], 'tsumego' => ['set_order' => 1, 'issues' => $issues]]);
 		$browser->get('tsumego-issues?status=opened&page=2');
+		$this->waitForReactIssuesList($browser);
 		$pageSource = $browser->driver->getPageSource();
 
 		// Issues are sorted by created DESC (newest first)
@@ -128,77 +141,140 @@ class TsumegoIssuesControllerTest extends ControllerTestCase
 		$this->assertTextContains('Prev', $pageSource);
 	}
 
-	public function testMoveCommentReturnsHtmlForHtmxRequest()
+	/**
+	 * Test that issue author's Go rank is displayed correctly on the issues list.
+	 */
+	public function testIssueAuthorRankDisplayedCorrectly()
 	{
-		// Create tsumego with a standalone comment
+		$browser = Browser::instance();
 		new ContextPreparator([
-			'user' => ['admin' => true],
-			'tsumego' => ['set_order' => 1, 'comments' => [['message' => 'Comment to move into issue']]]]);
+			'user' => ['admin' => true, 'rating' => 1500],
+			'tsumego' => ['set_order' => 1, 'issues' => [['message' => 'Issue with author rank']]]]);
+		$browser->get('tsumego-issues');
+		$this->waitForReactIssuesList($browser);
+		$pageSource = $browser->driver->getPageSource();
 
-		// Get the comment ID
-		$TsumegoComment = ClassRegistry::init('TsumegoComment');
-		$comment = $TsumegoComment->find('first', ['conditions' => ['message' => 'Comment to move into issue']]);
-		$commentId = $comment['TsumegoComment']['id'];
-		$tsumegoId = $comment['TsumegoComment']['tsumego_id'];
-
-		// Make htmx POST request to move to new issue
-		$this->testAction(
-			'/tsumego-issues/move-comment/' . $commentId,
-			[
-				'method' => 'post',
-				'data' => [
-					'Comment' => [
-						'tsumego_issue_id' => 'new',
-						'htmx' => '1',
-					],
-				],
-				'return' => 'contents',
-			]
-		);
-
-		// Should return HTML, not a redirect
-		$response = $this->contents;
-
-		// Verify it returns the section-content HTML
-		$this->assertTextContains('comments-section-' . $tsumegoId, $response);
-		$this->assertTextContains('Comment to move into issue', $response);
-		// Should now be in an issue
-		$this->assertTextContains('Issue #', $response);
+		// Rating 1500 should display as 6k rank
+		$this->assertTextContains('6k', $pageSource);
 	}
 
-	public function testMoveCommentToStandaloneReturnsHtmlForHtmx()
+	/**
+	 * Test closing an issue from the issues list page.
+	 */
+	public function testCloseIssueFromListPage()
 	{
+		$browser = Browser::instance();
 		new ContextPreparator([
 			'user' => ['admin' => true],
-			'tsumego' => ['set_order' => 1, 'issues' => [['message' => 'Comment inside issue']]]]);
+			'tsumego' => ['set_order' => 1, 'issues' => [['message' => 'Issue to close from list']]]]);
+		$browser->get('tsumego-issues?status=opened');
+		$this->waitForReactIssuesList($browser);
 
-		// Get the comment ID
-		$TsumegoComment = ClassRegistry::init('TsumegoComment');
-		$comment = $TsumegoComment->find('first', ['conditions' => ['message' => 'Comment inside issue']]);
-		$commentId = $comment['TsumegoComment']['id'];
-		$tsumegoId = $comment['TsumegoComment']['tsumego_id'];
+		// Verify issue shows as open
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertTextContains('Issue to close from list', $pageSource);
 
-		// Make htmx POST request to make standalone
-		$this->testAction(
-			'/tsumego-issues/move-comment/' . $commentId,
-			[
-				'method' => 'post',
-				'data' => [
-					'Comment' => [
-						'tsumego_issue_id' => 'standalone',
-						'htmx' => '1',
-					],
-				],
-				'return' => 'contents',
-			]
+		// Wait for and click close button
+		$closeButton = $browser->find('.tsumego-issue button.btn--success', 10);
+		$closeButton->click();
+
+		// After closing, the issue disappears from the open list, which then shows the empty state
+		$browser->waitUntilCssSelectorDoesntExist('.tsumego-issue:not(.skeleton-wrapper)', 10);
+
+		$pageSource = $browser->driver->getPageSource();
+		// Should show no open issues or empty state
+		$this->assertTextNotContains('Issue to close from list', $pageSource);
+	}
+
+	/**
+	 * Test that deleted accounts show as [account deleted] on the issues list.
+	 */
+	public function testDeletedUserShowsPlaceholder()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'other-users' => [['name' => 'doomed_user', 'deleted' => true]],
+			'tsumego' => ['set_order' => 1, 'issues' => [['message' => 'Issue by deleted user']]]]);
+
+		// Reassign the issue and its comment to the deleted user
+		$otherUserId = $context->otherUsers[0]['id'];
+		ClassRegistry::init('TsumegoIssue')->updateAll(
+			['TsumegoIssue.user_id' => $otherUserId],
+			['TsumegoIssue.id' => $context->issues[0]['id']]
+		);
+		ClassRegistry::init('TsumegoComment')->updateAll(
+			['TsumegoComment.user_id' => $otherUserId],
+			['TsumegoComment.tsumego_issue_id' => $context->issues[0]['id']]
 		);
 
-		$response = $this->contents;
+		$browser->get('tsumego-issues');
+		$this->waitForReactIssuesList($browser);
+		$pageSource = $browser->driver->getPageSource();
 
-		// Should return the section HTML
-		$this->assertTextContains('comments-section-' . $tsumegoId, $response);
-		$this->assertTextContains('Comment inside issue', $response);
-		// Comment should be standalone now (in tsumego-comment--standalone wrapper)
-		$this->assertTextContains('tsumego-comment--standalone', $response);
+		$this->assertTextContains('Issue by deleted user', $pageSource);
+		$this->assertTextContains('[account deleted]', $pageSource);
+		$this->assertTextNotContains('doomed_user', $pageSource);
+	}
+
+	/**
+	 * Test that the issues API sends the avatar of the author.
+	 */
+	public function testIssuesApiSendsAuthorAvatars(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'kovarex', 'email' => 'kovarex@example.com'],
+			'tsumego' => ['set_order' => 1, 'issues' => [['message' => 'Issue with an avatar']]],
+		]);
+
+		$this->testAction('/tsumego-issues/api', ['method' => 'get']);
+
+		$body = json_decode($this->controller->response->body(), true);
+		$avatar = Avatar::url($context->user['display_name']);
+		$this->assertSame($avatar, $body['issues'][0]['issue']['user_avatar_url']);
+		$this->assertSame($avatar, $body['issues'][0]['comments'][0]['user_avatar_url']);
+	}
+
+	/**
+	 * Test that the issues API leaves out the avatar of a deleted author.
+	 */
+	public function testIssuesApiLeavesOutTheAvatarOfADeletedAuthor(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'kovarex', 'email' => 'kovarex@example.com'],
+			'other-users' => [['name' => 'doomed_user', 'email' => 'doomed@example.com', 'deleted' => true]],
+			'tsumego' => ['set_order' => 1, 'issues' => [['message' => 'Issue by a deleted author']]],
+		]);
+
+		$otherUserId = $context->otherUsers[0]['id'];
+		ClassRegistry::init('TsumegoIssue')->updateAll(
+			['TsumegoIssue.user_id' => $otherUserId],
+			['TsumegoIssue.id' => $context->issues[0]['id']]
+		);
+		ClassRegistry::init('TsumegoComment')->updateAll(
+			['TsumegoComment.user_id' => $otherUserId],
+			['TsumegoComment.tsumego_issue_id' => $context->issues[0]['id']]
+		);
+
+		$this->testAction('/tsumego-issues/api', ['method' => 'get']);
+
+		$body = $this->controller->response->body();
+		$issues = json_decode($body, true)['issues'];
+		$this->assertNull($issues[0]['issue']['user_display_name']);
+		$this->assertNull($issues[0]['issue']['user_avatar_url']);
+		$this->assertNull($issues[0]['comments'][0]['user_avatar_url']);
+		$this->assertStringNotContainsString(md5('doomed@example.com'), $body);
+	}
+
+	/**
+	 * Wait for React to mount and fetch data on the issues index page.
+	 * The page initially shows skeletons, then React fetches and renders actual issues or empty state.
+	 */
+	private function waitForReactIssuesList($browser)
+	{
+		// Wait for skeleton to disappear and real content to appear
+		// - .issues-list__empty = no issues message (actual content, never skeleton)
+		// - .tsumego-issue:not(.skeleton-wrapper) = real issue (not a skeleton placeholder)
+		$browser->waitUntilAnyCssSelectorExists(['.issues-list__empty', '.tsumego-issue:not(.skeleton-wrapper)']);
 	}
 }

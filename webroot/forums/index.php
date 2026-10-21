@@ -21,6 +21,7 @@ define('IN_PHPBB', true);
 $phpbb_root_path = (defined('PHPBB_ROOT_PATH')) ? PHPBB_ROOT_PATH : './';
 $phpEx = substr(strrchr(__FILE__, '.'), 1);
 include($phpbb_root_path . 'common.' . $phpEx);
+
 include($phpbb_root_path . 'includes/functions_display.' . $phpEx);
 
 // Start session management
@@ -243,6 +244,13 @@ $page_title = ($config['board_index_text'] !== '') ? $config['board_index_text']
 */
 $vars = array('page_title');
 extract($phpbb_dispatcher->trigger_event('core.index_modify_page_title', compact($vars)));
+
+if (empty($user->data['user_id']) || $user->data['user_id'] == ANONYMOUS)
+{
+    echo "You must be logged in to see anything here.";
+    http_response_code(403);
+    exit;
+}
 
 // Output page
 page_header($page_title, true);

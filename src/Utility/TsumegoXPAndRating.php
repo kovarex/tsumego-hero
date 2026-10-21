@@ -1,8 +1,18 @@
 <?php
 
+namespace App\Utility;
+
+use ProgressDeletion;
+
+/**
+ * @phpstan-import-type TsumegoRow from \App\Utility\RowTypes
+ */
 class TsumegoXPAndRating
 {
-	public function __construct(array $tsumego, string $status)
+	/**
+	 * @param TsumegoRow $tsumego
+	 */
+	public function __construct(array $tsumego, string $status, ?int $setConnectionID = null)
 	{
 		if ($status == 'G')
 			$this->goldenTsumego = true;
@@ -11,10 +21,11 @@ class TsumegoXPAndRating
 		elseif ($status == 'W')
 			$this->resolving = true;
 		$this->tsumegoRating = $tsumego['rating'];
-		$this->progressDeletionCount = TsumegoUtil::getProgressDeletionCount($tsumego);
+		// the resets of the part of the set the problem is played from
+		$this->progressDeletionCount = Auth::isLoggedIn() ? ProgressDeletion::countRecentForProblem(Auth::getUserID(), (int) $tsumego['id'], $setConnectionID) : 0;
 	}
 
-	public function render()
+	public function render(): void
 	{
 		echo '<div align="center" id="xpDisplayDiv">
 		<table class="xpDisplayTable" border="0" width="70%">
@@ -31,10 +42,10 @@ class TsumegoXPAndRating
 			echo '<div id="time-mode-countdown">10.0</div><div id="plus2">+2</div>';
 		echo '</td>
 			<td style="width:33%;">
-				<div id="status" align="center" style="color:black;"></div>
+				<div id="status" align="center"></div>
 			</td>
 			<td style="width:33%;">
-				<div id="status2" align="center" style="color:black;">
+				<div id="status2" align="center">
 				<font size="4">
 				' . Rating::getReadableRankFromRating($this->tsumegoRating) . ' <font color="grey">(' . $this->tsumegoRating . ')</font>
 				</font>
@@ -45,7 +56,7 @@ class TsumegoXPAndRating
 	</div>';
 	}
 
-	public function renderJavascript()
+	public function renderJavascript(): void
 	{
 		if (!Auth::isLoggedIn())
 			return;
@@ -70,7 +81,7 @@ class TsumegoXPAndRating
 	}
 
 	// changes here must be reflected in the same method in util.js
-	public static function getProgressDeletionMultiplier($progressDeletionCount): float
+	public static function getProgressDeletionMultiplier(int $progressDeletionCount): float
 	{
 		if ($progressDeletionCount == 0)
 			return 1;

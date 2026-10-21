@@ -1,9 +1,5 @@
 <?php
 
-App::uses('TsumegoComment', 'Model');
-App::uses('User', 'Model');
-App::uses('TsumegosController', 'Controller');
-
 /**
  * TsumegoIssue Model
  *
@@ -23,6 +19,8 @@ App::uses('TsumegosController', 'Controller');
  *   - 2 = closed
  *
  */
+use App\Utility\Util;
+
 class TsumegoIssue extends AppModel
 {
 	public $useTable = 'tsumego_issue';
@@ -43,21 +41,6 @@ class TsumegoIssue extends AppModel
 	public static int $OPENED_STATUS = 1;
 	public static int $CLOSED_STATUS = 2;
 
-	/**
-	 * Get the human-readable name for a status.
-	 *
-	 * @param int $status The status ID
-	 * @return string The status name
-	 * @throws \Exception If the status is invalid
-	 */
-	public static function statusName(int $status): string
-	{
-		if ($status === self::$OPENED_STATUS)
-			return 'Opened';
-		if ($status === self::$CLOSED_STATUS)
-			return 'Closed';
-		throw new \Exception("Invalid issue status: $status");
-	}
 
 	/**
 	 * Delete an issue if it has no non-deleted comments.
@@ -133,15 +116,22 @@ class TsumegoIssue extends AppModel
 				ti.tsumego_id,
 				ti.user_id AS issue_user_id,
 				ti.created AS issue_created,
-				u.name AS issue_author_name,
+				u.display_name AS issue_author_name,
+				u.rating AS issue_author_rating,
+				u.external_id AS issue_author_external_id,
+				u.picture AS issue_author_picture,
+				u.pref_avatar AS issue_author_pref_avatar,
+				u.email AS issue_author_email,
 				tc.id AS comment_id,
 				tc.message AS comment_text,
 				tc.created AS comment_created,
 				tc.user_id AS comment_user_id,
 				cu.id AS comment_author_id,
-				cu.name AS comment_author_name,
+				cu.display_name AS comment_author_name,
 				cu.external_id AS comment_author_external_id,
 				cu.picture AS comment_author_picture,
+				cu.pref_avatar AS comment_author_pref_avatar,
+				cu.email AS comment_author_email,
 				cu.rating AS comment_author_rating,
 				cu.isAdmin AS comment_author_isAdmin,
 				s.id AS set_id,
@@ -151,15 +141,14 @@ class TsumegoIssue extends AppModel
 			LEFT JOIN user u ON u.id = ti.user_id
 			LEFT JOIN tsumego_comment tc ON tc.tsumego_issue_id = ti.id AND tc.deleted = 0
 			LEFT JOIN user cu ON cu.id = tc.user_id
-			LEFT JOIN (
-				SELECT sc1.tsumego_id, sc1.num, sc1.set_id
-				FROM set_connection sc1
-				INNER JOIN (
-					SELECT tsumego_id, MIN(id) as min_id
-					FROM set_connection
-					GROUP BY tsumego_id
-				) sc2 ON sc1.id = sc2.min_id
-			) sc ON sc.tsumego_id = ti.tsumego_id
+			LEFT JOIN set_connection sc ON sc.id = (
+				SELECT sc2.id
+				FROM set_connection sc2
+				JOIN `set` s2 ON s2.id = sc2.set_id
+				WHERE sc2.tsumego_id = ti.tsumego_id
+				ORDER BY " . SetConnection::displayOrderSql('s2', 'sc2') . "
+				LIMIT 1
+			)
 			LEFT JOIN `set` s ON s.id = sc.set_id
 			WHERE ti.id IN ({$issueIdsStr})
 			ORDER BY ti.created DESC, ti.id DESC, tc.created ASC
@@ -176,18 +165,28 @@ class TsumegoIssue extends AppModel
 
 			if (!isset($issuesMap[$issueId]))
 			{
+				$statusId = $row['ti']['tsumego_issue_status_id'];
+
 				$issuesMap[$issueId] = [
 					'issue' => [
 						'id' => $issueId,
-						'tsumego_issue_status_id' => $row['ti']['tsumego_issue_status_id'],
+						'tsumego_issue_status_id' => $statusId,
 						'tsumego_id' => $row['ti']['tsumego_id'],
 						'user_id' => $row['ti']['issue_user_id'],
-						'created' => $row['ti']['issue_created'],
+						'user_display_name' => User::displayNameOrNull(['id' => $row['ti']['issue_user_id'], 'display_name' => $row['u']['issue_author_name']]),
+						'user_rating' => $row['u']['issue_author_rating'] ?? null,
+						'user_avatar_url' => User::avatarOrNull([
+							'id' => $row['ti']['issue_user_id'],
+							'display_name' => $row['u']['issue_author_name'] ?? null,
+							'external_id' => $row['u']['issue_author_external_id'] ?? null,
+							'picture' => $row['u']['issue_author_picture'] ?? null,
+							'pref_avatar' => $row['u']['issue_author_pref_avatar'] ?? null,
+							'email' => $row['u']['issue_author_email'] ?? null,
+						]),
+						'created' => Util::toIso8601($row['ti']['issue_created']),
 					],
 					'comments' => [],
-					'author' => $row['u']['issue_author_name']
-						? ['name' => $row['u']['issue_author_name']]
-						: ['name' => '[deleted user]'],
+					'author' => ['name' => User::displayName(['id' => $row['ti']['issue_user_id'], 'display_name' => $row['u']['issue_author_name']])],
 					'tsumegoId' => $row['ti']['tsumego_id'],
 					'Set' => $row['s']['set_id'] ? [
 						'id' => $row['s']['set_id'],
@@ -202,19 +201,20 @@ class TsumegoIssue extends AppModel
 			{
 				$issuesMap[$issueId]['comments'][] = [
 					'id' => $row['tc']['comment_id'],
-					'message' => $row['tc']['comment_text'],
-					'created' => $row['tc']['comment_created'],
+					'text' => $row['tc']['comment_text'],
+					'created' => Util::toIso8601($row['tc']['comment_created']),
 					'user_id' => $row['tc']['comment_user_id'],
-					'user' => $row['cu']['comment_author_name']
-						? [
-							'id' => $row['cu']['comment_author_id'],
-							'name' => $row['cu']['comment_author_name'],
-							'external_id' => $row['cu']['comment_author_external_id'],
-							'picture' => $row['cu']['comment_author_picture'],
-							'rating' => $row['cu']['comment_author_rating'],
-							'isAdmin' => $row['cu']['comment_author_isAdmin'],
-						]
-						: ['name' => '[deleted user]', 'isAdmin' => 0],
+					'user_display_name' => User::displayNameOrNull(['id' => $row['tc']['comment_user_id'], 'display_name' => $row['cu']['comment_author_name'] ?? null]),
+					'user_rating' => $row['cu']['comment_author_rating'],
+					'user_avatar_url' => User::avatarOrNull([
+						'id' => $row['tc']['comment_user_id'],
+						'display_name' => $row['cu']['comment_author_name'] ?? null,
+						'external_id' => $row['cu']['comment_author_external_id'] ?? null,
+						'picture' => $row['cu']['comment_author_picture'] ?? null,
+						'pref_avatar' => $row['cu']['comment_author_pref_avatar'] ?? null,
+						'email' => $row['cu']['comment_author_email'] ?? null,
+					]),
+					'isAdmin' => (bool) ($row['cu']['comment_author_isAdmin'] ?? false),
 				];
 			}
 		}
@@ -258,7 +258,7 @@ class TsumegoIssue extends AppModel
 	/**
 	 * Get comment section counts for a specific tsumego.
 	 *
-	 * Used for updating the comment tabs (ALL/COMMENTS/ISSUES) via htmx OOB.
+	 * Used for updating the comment tabs (ALL/COMMENTS/ISSUES).
 	 *
 	 * @param int $tsumegoId The tsumego ID
 	 * @return array{total: int, comments: int, issues: int, openIssues: int}

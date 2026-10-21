@@ -1,8 +1,15 @@
 <?php
 
+namespace App\Utility;
+
 class Constants
 {
 	public static int $MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED = 75;
+
+	// Long enough to make guessing pointless, short enough to stay typeable. It is asked
+	// only when a password is chosen, not when one is typed to sign in.
+	public static int $MINIMUM_PASSWORD_LENGTH = 8;
+
 	public static string $SGF_PLACEHOLDER = '(;GM[1]FF[4]CA[UTF-8]ST[2]RU[Japanese]SZ[19]PW[White]PB[Black])';
 
 	// Default tsumego ID for first-time visitors
@@ -10,9 +17,21 @@ class Constants
 
 	public static int $DEFAULT_SET_ORDER = 999;
 
+	public static int $DEFAULT_COLLECTION_SIZE = 200;
+	public static int $MIN_COLLECTION_SIZE = 10;
+	public static int $MAX_COLLECTION_SIZE = 1000;
+	public static int $COLLECTION_SIZE_STEP = 10;
+
 	public static int $LEVEL_MODE = 1;
 	public static int $RATING_MODE = 2;
 	public static int $TIME_MODE = 3;
+	public static int $MISTAKE_TRAINING_MODE = 5;
+
+	// Highscore page identifiers (stored in user.lastHighscore)
+	public static int $HIGHSCORE_LEVEL = 1;
+	public static int $HIGHSCORE_RATING = 2;
+	public static int $HIGHSCORE_DAILY = 3;
+	public static int $HIGHSCORE_TIME_MODE = 4;
 
 	public static int $GOLDEN_TSUMEGO_XP_MULTIPLIER = 8;
 	public static int $GOLDEN_TSUMEGO_LOWER_RELATIVE_RATING_LIMIT = 0;
@@ -31,5 +50,12 @@ class Constants
 	public static float $RATING_MODE_DIFFERENCE_SETTING_3 = 450;
 
 	public static float $MINIMUM_RATING_TO_CONTRIBUTE = 1500;
+	public static int $DAILY_TAG_LIMIT = 20;
+
+	/** Bump when tsumego image rendering algorithm changes to invalidate cached OG images */
+	public static int $TSUMEGO_IMAGE_VERSION = 1;
+	// Open Graph standard (1.91:1 aspect ratio)
+	public static int $OG_IMAGE_WIDTH = 1200;
+	public static int $OG_IMAGE_HEIGHT = 630;
 
 }

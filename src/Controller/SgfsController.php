@@ -1,27 +1,16 @@
 <?php
 
+use App\Utility\Auth;
+
 class SgfsController extends AppController
 {
 	/**
+	 * @param string|null $id
 	 * @return void
 	 */
-	public function index()
+	public function view(?string $id = null): void
 	{
-		$this->set('_title', 'Tsumego Hero');
-		$this->set('_page', 'play');
-		$sgfs = $this->Sgf->find('all');
-		if (!$sgfs)
-			$sgfs = [];
-
-		$this->set('sgfs', $sgfs);
-	}
-
-	/**
-	 * @param string|int|null $id
-	 * @return void
-	 */
-	public function view($id = null)
-	{
+		$this->Authorization->authorize('Sgf');
 		$this->set('_page', 'play');
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
@@ -35,7 +24,7 @@ class SgfsController extends AppController
 		if (isset($this->params['url']['delete']))
 		{
 			$sDel = $this->Sgf->findById($this->params['url']['delete']);
-			if (Auth::getUserID() == $sDel['Sgf']['user_id'])
+			if ($sDel && Auth::getUserID() == $sDel['Sgf']['user_id'])
 				$this->Sgf->delete($sDel['Sgf']['id']);
 		}
 
@@ -45,18 +34,30 @@ class SgfsController extends AppController
 			foreach ($newDuplicates as $duplicateId)
 			{
 				$dupl = $this->Tsumego->findById($duplicateId);
-				$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $dupl['Tsumego']['id']]]);
+				if (!$dupl)
+					continue;
+				$scT = $this->SetConnection->findDisplaySetConnection($dupl['Tsumego']['id']);
+				if (!$scT)
+					continue;
 				$dupl['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 				$dSet = $this->Set->findById($dupl['Tsumego']['set_id']);
+				if (!$dSet)
+					continue;
 				$dId[] = $dupl['Tsumego']['id'];
 				$dTitle[] = $dSet['Set']['title'] . ' - ' . $dupl['Tsumego']['num'];
 			}
 		}
 
 		$t = $this->Tsumego->findById($id);
-		$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id']]]);
+		if (!$t)
+			throw new NotFoundException('Tsumego not found');
+		$scT = $this->SetConnection->findDisplaySetConnection($t['Tsumego']['id']);
+		if (!$scT)
+			throw new NotFoundException('Tsumego not found in any set');
 		$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 		$set = $this->Set->findById($t['Tsumego']['set_id']);
+		if (!$set)
+			throw new NotFoundException('Set not found');
 		$name = $set['Set']['title'] . ' ' . $set['Set']['title2'] . ' ' . $scT['SetConnection']['num'];
 		$this->set('_title', 'Upload History of ' . $name);
 
@@ -81,22 +82,29 @@ class SgfsController extends AppController
 				$s = [];
 		}
 
+		//to display the correct version
+		$versionCounter = [];
+
 		$sCount = count($s);
 		for ($i = 0; $i < $sCount; $i++)
 		{
-			$s[$i]['Sgf']['sgf'] = str_replace("\r", '', $s[$i]['Sgf']['sgf']);
-			$s[$i]['Sgf']['sgf'] = str_replace("\n", '"+"\n"+"', $s[$i]['Sgf']['sgf']);
+
 
 			$u = $this->User->findById($s[$i]['Sgf']['user_id']);
-			$s[$i]['Sgf']['user'] = $u['User']['name'];
-			$ux = $u['User']['name'];
+			$ux = $u ? User::displayName($u['User']) : '';
+			$s[$i]['Sgf']['user'] = $ux;
 			$t = $this->Tsumego->findById($s[$i]['Sgf']['tsumego_id']);
-			$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id']]]);
+			$scT = $this->SetConnection->findDisplaySetConnection($t['Tsumego']['id']);
 			$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 			$set = $this->Set->findById($t['Tsumego']['set_id']);
-			$s[$i]['Sgf']['title'] = $set['Set']['title'] . ' ' . $set['Set']['title2'] . ' #' . $t['Tsumego']['num'];
+			$s[$i]['Sgf']['title'] = $set['Set']['title'] . ' ' . $set['Set']['title2'] . ' #' . $scT['SetConnection']['num'];
+			$s[$i]['Sgf']['num'] = $scT['SetConnection']['num'];
 
-			$s[$i]['Sgf']['num'] = $t['Tsumego']['num'];
+			if(isset($versionCounter[$scT['SetConnection']['tsumego_id']]))
+				$versionCounter[$scT['SetConnection']['tsumego_id']]++;
+			else
+				$versionCounter[$scT['SetConnection']['tsumego_id']] = 0;
+			$s[$i]['Sgf']['version'] = count($this->Sgf->find('all', ['conditions' => ['tsumego_id' => $scT['SetConnection']['tsumego_id']]])) - $versionCounter[$scT['SetConnection']['tsumego_id']];
 
 			if ($s[$i]['Sgf']['user'] == 'noUser')
 				$s[$i]['Sgf']['user'] = 'automatically generated';
@@ -120,7 +128,6 @@ class SgfsController extends AppController
 		$this->set('name', $name);
 		$this->set('s', $s);
 		$this->set('id', $id);
-		$this->set('tNum', $t['Tsumego']['num']);
 		$this->set('dId', $dId);
 		$this->set('dTitle', $dTitle);
 	}

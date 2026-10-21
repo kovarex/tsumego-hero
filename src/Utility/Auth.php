@@ -1,41 +1,35 @@
 <?php
 
-App::uses('Constants', 'Utility');
-App::uses('JwtAuth', 'Utility');
+namespace App\Utility;
 
+use ClassRegistry;
+use Exception;
+use User;
+
+/**
+ * @phpstan-import-type UserRow from \App\Utility\RowTypes
+ */
 class Auth
 {
-	/**
-	 * Generate random login token for phpBB2 forum SSO
-	 * The forum reads this cookie to authenticate users automatically
-	 */
-	private static function generateLoginToken(int $user_id): void
+	public static function init(?array $user = null): void
 	{
-		$token = Util::generateRandomString(50);
-		Auth::getUser()['login_token'] = $token;
-		Auth::saveUser();
-		Util::setCookie('login_token', $token);
-	}
 
-	public static function init($user = null): void
-	{
 		// a hack to inject login in test environment
 		if (Util::isInTestEnvironment() && !empty($_COOKIE["hackedLoggedInUserID"]))
 		{
 			$userData = ClassRegistry::init('User')->findById((int) $_COOKIE["hackedLoggedInUserID"]);
-			if ($userData)
+			if ($userData && empty($userData['User']['deleted']))
 			{
 				Auth::$user = $userData['User'];
 				return;
 			}
 		}
 
-		if ($user)
+		if ($user && empty($user['User']['deleted']))
 		{
 			Auth::$user = $user['User'];
 			// Set JWT cookie for stateless auth
-			JwtAuth::setAuthCookie(Auth::getUserID());
-			self::generateLoginToken(Auth::getUserID()); // For phpBB2 forum SSO
+			JwtAuth::setAuthCookie(Auth::getUserID(), $user['User']['password_hash'] ?? null);
 			return;
 		}
 
@@ -44,15 +38,30 @@ class Auth
 		if ($userIdFromJwt)
 		{
 			$userData = ClassRegistry::init('User')->findById($userIdFromJwt);
-			if ($userData)
+			if ($userData && empty($userData['User']['deleted']) && self::tokenFitsTheAccount($userData['User']))
 			{
 				Auth::$user = $userData['User'];
 				return;
 			}
+			// the account was deleted (or doesn't exist anymore), which also ends its existing sessions
+			JwtAuth::clearAuthCookie();
 		}
 
 		// Not logged in
 		Auth::$user = null;
+	}
+
+	/**
+	 * A token is issued with the password the session was opened with, so changing the
+	 * password ends the sessions that were opened with the old one. A token without the
+	 * claim is taken at face value.
+	 *
+	 * @param UserRow $user
+	 */
+	private static function tokenFitsTheAccount(array $user): bool
+	{
+		$claim = JwtAuth::getPasswordClaimFromCookie();
+		return $claim === null || $claim === JwtAuth::claimOf($user['password_hash'] ?? null);
 	}
 
 	public static function isLoggedIn(): bool
@@ -60,12 +69,26 @@ class Auth
 		return (bool) Auth::$user;
 	}
 
+	/**
+	 * Returns the identity (user array), or null when not logged in.
+	 * Matches CakePHP 5's $request->getAttribute('identity') contract.
+	 *
+	 * @return UserRow|null
+	 */
+	public static function getIdentity(): ?array
+	{
+		return Auth::$user;
+	}
+
 	public static function getUserID(): int
 	{
 		return Auth::$user ? Auth::$user['id'] : 0;
 	}
 
-	public static function &getUser()
+	/**
+	 * @return UserRow
+	 */
+	public static function &getUser(): array
 	{
 		if (!Auth::$user)
 			throw new Exception("Accessing user for writing when null");
@@ -82,26 +105,107 @@ class Auth
 		return Auth::isLoggedIn() && Auth::getUser()['premium'];
 	}
 
-	public static function premiumLevel(): int
+	public static function getPrefPlayerColor(): int
 	{
-		return Auth::isLoggedIn() ? Auth::getUser()['premium'] : 0;
+		return Auth::isLoggedIn() ? (int) Auth::getUser()['pref_player_color'] : User::PREF_PLAYER_COLOR_RANDOM;
 	}
 
-	public static function saveUser(): void
+	public static function getPrefBoardOrientation(): int
+	{
+		return Auth::isLoggedIn() ? (int) Auth::getUser()['pref_board_orientation'] : User::PREF_BOARD_ORIENTATION_RANDOM;
+	}
+
+	/**
+	 * The avatar the logged in player picked, which is the board for a visitor who
+	 * is not logged in at all.
+	 */
+	public static function getPrefAvatar(): int
+	{
+		return Auth::isLoggedIn() ? User::avatarChoice(Auth::getUser()) : User::AVATAR_BOARD;
+	}
+
+	/**
+	 * Throws when $field is not an existing column on the user table, so a typo
+	 * or schema mismatch fails loudly instead of being silently dropped.
+	 */
+	private static function assertUserFieldExists(string $field): void
+	{
+		$schema = ClassRegistry::init('User')->schema();
+		if (!array_key_exists($field, $schema))
+			throw new Exception("Cannot write unknown user column '{$field}' - it does not exist in the user table schema.");
+	}
+
+	public static function saveUserField(string $field, mixed $value): void
 	{
 		assert(Auth::isLoggedIn());
-		ClassRegistry::init('User')->save(Auth::getUser());
+		self::assertUserFieldExists($field);
+		Auth::$user[$field] = $value;
+		ClassRegistry::init('User')->save(
+			['User' => ['id' => Auth::getUserID(), $field => $value]],
+			['validate' => false, 'fieldList' => [$field]]
+		);
+	}
+
+	public static function saveUserFields(array $fieldValues): void
+	{
+		assert(Auth::isLoggedIn());
+		foreach ($fieldValues as $field => $value)
+			self::assertUserFieldExists($field);
+		foreach ($fieldValues as $field => $value)
+			Auth::$user[$field] = $value;
+		$data = ['User' => ['id' => Auth::getUserID()]];
+		foreach ($fieldValues as $field => $value)
+			$data['User'][$field] = $value;
+		ClassRegistry::init('User')->save($data, [
+			'validate' => false,
+			'fieldList' => array_keys($fieldValues),
+		]);
+	}
+
+	public static function incrementUserField(string $field, int $delta): void
+	{
+		assert(Auth::isLoggedIn());
+		self::assertUserFieldExists($field);
+		Auth::$user[$field] = Auth::getUser()[$field] + $delta;
+		ClassRegistry::init('User')->updateAll(
+			[$field => $field . ' + ' . $delta],
+			['id' => Auth::getUserID()]
+		);
+	}
+
+	/**
+	 * Atomically increments a field only while the row satisfies $conditions.
+	 * Used for bounded counters (e.g. used_revelation) where the bound must be
+	 * enforced by the database, not only by a PHP check that can race.
+	 *
+	 * Bypasses callbacks/validation/timestamps, like incrementUserField().
+	 *
+	 * @return bool Whether the increment was applied (condition still held).
+	 */
+	public static function incrementUserFieldIf(string $field, int $delta, array $conditions): bool
+	{
+		assert(Auth::isLoggedIn());
+		self::assertUserFieldExists($field);
+		$conditions['id'] = Auth::getUserID();
+		$model = ClassRegistry::init('User');
+		$model->updateAll(
+			[$field => $field . ' + ' . $delta],
+			$conditions
+		);
+		$affected = $model->getDataSource()->lastAffected();
+		if ($affected)
+			Auth::$user[$field] = Auth::getUser()[$field] + $delta;
+		return $affected > 0;
 	}
 
 	public static function logout(): void
 	{
-		// Clear JWT cookie and phpBB2 SSO token
+		// Clear JWT auth cookie
 		JwtAuth::clearAuthCookie();
-		Util::clearCookie('login_token');
 		Auth::$user = null;
 	}
 
-	public static function getWithDefault($key, $default)
+	public static function getWithDefault(string $key, mixed $default): mixed
 	{
 		if (!Auth::isLoggedIn())
 			return $default;
@@ -110,7 +214,20 @@ class Auth
 
 	public static function getMode(): int
 	{
+		if (Auth::$modeOverride !== null)
+			return Auth::$modeOverride;
+
 		return Auth::isLoggedIn() ? (int) Auth::getUser()['mode'] : Constants::$LEVEL_MODE;
+	}
+
+	/**
+	 * Play by $mode instead of the stored one until it is cleared with null: a result
+	 * counts in the mode of the page it was played on, which another tab may have
+	 * switched away from since. See PlayResultProcessorComponent::playMode().
+	 */
+	public static function overrideMode(?int $mode): void
+	{
+		Auth::$modeOverride = $mode;
 	}
 
 	public static function isInLevelMode(): bool
@@ -128,44 +245,44 @@ class Auth
 		return Auth::getMode() == Constants::$TIME_MODE;
 	}
 
-	public static function addSuspicion(): void
+	public static function isInMistakeTrainingMode(): bool
 	{
-		Auth::getUser()['penalty'] += 1;
-		Auth::saveUser();
+		return Auth::getMode() == Constants::$MISTAKE_TRAINING_MODE;
 	}
 
-	public static function XPisGainedInCurrentMode()
-	{
-		if (!Auth::isLoggedIn())
-			return false;
-		return Auth::isInLevelMode() || Auth::isInRatingMode();
-	}
-
-	public static function ratingisGainedInCurrentMode()
+	public static function XPisGainedInCurrentMode(): bool
 	{
 		if (!Auth::isLoggedIn())
 			return false;
 		return Auth::isInLevelMode() || Auth::isInRatingMode();
 	}
 
-	public static function getRemainingHealth()
+	public static function ratingisGainedInCurrentMode(): bool
+	{
+		if (!Auth::isLoggedIn())
+			return false;
+		return Auth::isInLevelMode() || Auth::isInRatingMode();
+	}
+
+	public static function getRemainingHealth(): int
 	{
 		if (!Auth::isLoggedIn())
 			return 1000;
 		return Util::getHealthBasedOnLevel(Auth::getUser()['level']) - Auth::getUser()['damage'];
 	}
 
-	public static function lightMode()
+	public static function lightMode(): int
 	{
 		if (Auth::isLoggedIn())
-			return (Auth::getUser()['lastLight'] == 0 || Auth::getUser()['lastLight'] == 2) ? self::$LIGHT_MODE : self::$DARK_MODE;
+			return (Auth::getUser()['lastLight'] == User::THEME_DARK) ? self::$DARK_MODE : self::$LIGHT_MODE;
 		if  (!empty($_COOKIE['lightDark']))
 			if ($_COOKIE['lightDark'] == 'dark')
 				return self::$DARK_MODE;
 		return self::$LIGHT_MODE;
 	}
 
-	private static $user = null;
+	private static ?array $user = null;
+	private static ?int $modeOverride = null;
 	public static int $LIGHT_MODE = 1;
 	public static int $DARK_MODE = 2;
 }

@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\BoardPosition;
+
 class BoardPositionTest extends CakeTestCase
 {
 	public function testBoardPositionPackAndUnpack()

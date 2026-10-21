@@ -11,36 +11,38 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  validation:
+  tests:
     runs-on: ubuntu-24.04
-    strategy:
-      fail-fast: false
-      matrix:
-        php-version:
-          - '8.4'
+    timeout-minutes: 60
 
     services:
       mysql:
-        image: mysql:8.0
+        image: mariadb:10.11
         env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: test
+          MARIADB_ROOT_PASSWORD: root
+          MARIADB_DATABASE: test
         ports:
           - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+        options: --health-cmd="mariadb-admin ping -h localhost -u root -proot" --health-interval=10s --health-timeout=5s --health-retries=3
 
       selenium-firefox:
-        image: seleniarm/standalone-firefox:109.0-geckodriver-0.32
+        image: selenium/standalone-firefox:latest
+        env:
+          TZ: Europe/Prague
         ports:
-          - 4444
+          - 4444:4444
         volumes:
           - ".:/mnt/ddev_config"
         options: >-
           --add-host=host.docker.internal:host-gateway
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0  # Required for git-restore-mtime to access full history
 
@@ -50,15 +52,16 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php-version }}
+          php-version: '8.4'
           extensions: mbstring, intl, xdebug
           coverage: xdebug
 
       - name: Configure Xdebug for coverage
+        if: github.ref == 'refs/heads/master'
         run: |
             echo "zend_extension=$(php -i | grep -i xdebug | grep extension_dir | awk '{print $3}')/xdebug.so" >> $GITHUB_ENV
-            echo "xdebug.mode=coverage" | sudo tee -a /etc/php/${{ matrix.php-version }}/cli/conf.d/99-xdebug.ini
-            echo "xdebug.start_with_request=yes" | sudo tee -a /etc/php/${{ matrix.php-version }}/cli/conf.d/99-xdebug.ini
+            echo "xdebug.mode=coverage" | sudo tee -a /etc/php/8.4/cli/conf.d/99-xdebug.ini
+            echo "xdebug.start_with_request=yes" | sudo tee -a /etc/php/8.4/cli/conf.d/99-xdebug.ini
             php -v
             php -m | grep xdebug || (echo "Xdebug not found!" && exit 1)
 
@@ -67,24 +70,41 @@ jobs:
         run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
       - name: Cache dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
 
       - name: Composer install
-        run: composer install --prefer-dist --no-interaction
+        run: composer install --prefer-dist --optimize-autoloader --no-interaction
 
-      - name: Install ImageMagick for WebP conversion
-        run: sudo apt-get install -y imagemagick
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install pnpm dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build React app
+        run: ${{ github.ref == 'refs/heads/master' && 'pnpm run build:coverage' || 'pnpm run build' }}
 
       - name: Generate WebP images
-        run: composer images:webp
+        timeout-minutes: 10
+        run: |
+          docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
+            -v "$PWD:/w" -w /w \
+            minidocks/imagemagick:latest@sha256:9f4bc19b65901db910d249c2c097a3ec37a56ae7df41df9fb1b04b99789822ff \
+            sh scripts/convert-to-webp.sh
 
       - name: Commit generated WebP files
-        uses: stefanzweifel/git-auto-commit-action@v5
-        if: github.event_name == 'push'
+        uses: stefanzweifel/git-auto-commit-action@v7
+        if: github.ref == 'refs/heads/master'
         with:
           commit_message: "chore: auto-generate WebP images"
           file_pattern: "webroot/img/*.webp webroot/img/**/*.webp"
@@ -93,14 +113,7 @@ jobs:
       - name: Setup tmp directories
         run: |
           mkdir -p tmp/cache/models tmp/cache/persistent tmp/cache/views tmp/logs tmp/sessions tmp/tests
-          mkdir -p webroot/cache_css webroot/cache_js
-          chmod -R 777 tmp webroot/cache_css webroot/cache_js
-
-      - name: Build AssetCompress assets
-        run: |
-          ./bin/cake AssetCompress.AssetCompress build
-          echo "Built AssetCompress assets:"
-          ls -lh webroot/cache_css/ webroot/cache_js/ | head -20
+          chmod -R 777 tmp
 
       - name: Setup database config
         run: |
@@ -137,17 +150,22 @@ jobs:
           }
           EOF
           cp .github/ci/core.local.php config/core.local.php
-          cp .github/ci/asset_compress.local.ini src/Config/asset_compress.local.ini
 
       - name: Import database schema
         run: |
           ./vendor/bin/phinx migrate -e test
 
       - name: Start built-in PHP server
+        env:
+          TZ: UTC
         run: |
           mkdir -p /tmp/coverage
-          # Use router script to handle AssetCompress dispatcher filter routes
-          nohup php -d xdebug.mode=coverage  -d xdebug.start_with_request=yes -d auto_prepend_file=/home/runner/work/tsumego-hero/tsumego-hero/.github/ci/xdebug-prepend.php -S 0.0.0.0:8080 -t webroot .github/ci/router.php > server.log 2>&1 &
+          # Use router script to handle CakePHP dispatcher filter routes
+          if [ "${{ github.ref }}" = "refs/heads/master" ]; then
+            nohup php -d xdebug.mode=coverage -d xdebug.start_with_request=yes -d auto_prepend_file=/home/runner/work/tsumego-hero/tsumego-hero/.github/ci/xdebug-prepend.php -S 0.0.0.0:8080 -t webroot .github/ci/router.php > server.log 2>&1 &
+          else
+            nohup php -S 0.0.0.0:8080 -t webroot .github/ci/router.php > server.log 2>&1 &
+          fi
           sleep 3
 
       - name: Start Caddy HTTPS reverse proxy
@@ -163,26 +181,82 @@ jobs:
           echo "Caddy log:"
           cat caddy.log || true
 
-      - name: Run tests with coverage
+      - name: Run tests
         env:
+          TZ: UTC
           SELENIUM_URL: http://localhost:4444
+          SELENIUM_BROWSER: firefox
           TEST_APP_URL: https://host.docker.internal:8443
           TEST_ENVIRONMENT: github-ci
         run: |
           mkdir -p /tmp/coverage
-          # Run all tests (excluding apache-only and disabled groups) with coverage in both formats
-          vendor/bin/phpunit --exclude-group apache-only,disabled --coverage-clover /tmp/coverage/clover.xml --coverage-php /tmp/coverage/phpunit.cov
+          vendor/bin/phpunit --exclude-group apache-only,disabled ${{ github.ref == 'refs/heads/master' && '--coverage-clover /tmp/coverage/clover.xml --coverage-php /tmp/coverage/phpunit.cov' || '' }}
+
+      - name: Upload browser timeout dumps
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-timeout-dumps
+          path: tmp/browser-timeout-*.html
+          if-no-files-found: ignore
 
       - name: Merge coverage files
+        if: github.ref == 'refs/heads/master'
         run: php .github/ci/merge-coverage.php
 
+      - name: Generate JS coverage report
+        if: github.ref == 'refs/heads/master'
+        run: pnpm run coverage:js
+
+      - name: Restore coverage history
+        if: github.ref == 'refs/heads/master'
+        run: |
+          git fetch --depth=1 origin gh-pages || true
+          mkdir -p coverage
+          if git cat-file -e origin/gh-pages:coverage/coverage-history.json 2>/dev/null; then
+            git show origin/gh-pages:coverage/coverage-history.json > coverage/coverage-history.json
+          else
+            echo '[]' > coverage/coverage-history.json
+          fi
+
+      - name: Generate combined coverage index
+        if: github.ref == 'refs/heads/master'
+        run: pnpm run coverage:index
+
       - name: Deploy coverage to GitHub Pages
-        if: github.ref == 'refs/heads/master'   # only on master/main
+        if: github.ref == 'refs/heads/master'
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./coverage
           destination_dir: coverage
+
+  static-analysis:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, intl
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache dependencies
+        uses: actions/cache@v6
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Composer install
+        run: composer install --prefer-dist --optimize-autoloader --no-interaction
 
       - name: Run PHPStan
         run: composer stan -- --error-format=github

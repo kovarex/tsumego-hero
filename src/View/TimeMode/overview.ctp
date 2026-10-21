@@ -1,10 +1,22 @@
+<?php
+
+/**
+ * @var View $this
+ * @var bool $hasFinishedSesssion
+ * @var string $lastTimeModeCategoryID
+ * @var array $solvedMap
+ * @var array $timeModeCategories
+ * @var array $timeModeRanks
+ */
+
+?>
 <div align="center">
 	<h2>Time Mode Select</h2>
 </div>
 <br>
 <div align="center">
-	<a class="new-button-inactive" href="#">Select</a>
-	<?php echo '<a class="new-button'.($hasFinishedSesssion ? '' : '-inactive').'" href="'.($hasFinishedSesssion ? '/timeMode/result' : '#').'">Results</a>'; ?>
+	<a class="btn btn--inactive" href="#">Select</a>
+	<?php echo '<a class="btn'.($hasFinishedSesssion ? ' btn--primary' : ' btn--inactive').'" href="'.($hasFinishedSesssion ? '/timeMode/result' : '#').'">Results</a>'; ?>
 </div>
 <br><br>
 <div align="center">

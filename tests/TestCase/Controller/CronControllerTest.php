@@ -1,6 +1,9 @@
 <?php
 
-App::uses('TsumegoUtil', 'Utility');
+
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\Util;
 
 class CronControllerTest extends TestCaseWithAuth
 {
@@ -26,8 +29,32 @@ class CronControllerTest extends TestCaseWithAuth
 	{
 		$context = new ContextPreparator(['user' => ['mode' => Constants::$LEVEL_MODE, 'used_refinement' => 1]]);
 		$this->assertSame($context->reloadUser()['used_refinement'], 1);
+
+		$this->expectException(ForbiddenException::class);
+
 		$this->testAction('/cron/daily/wrongsecret');
-		$this->assertSame($context->reloadUser()['used_refinement'], 1); // nothing happened
+	}
+
+	/**
+	 * An address change whose links have expired is forgotten overnight, so it does
+	 * not sit on the account waiting for a confirmation that can no longer come.
+	 */
+	public function testCronForgetsAnAddressChangeNobodyConfirmed()
+	{
+		$context = new ContextPreparator(['user' => ['mode' => Constants::$LEVEL_MODE]]);
+		Util::execute('UPDATE user SET unconfirmed_email = ?, unconfirmed_email_token = ?,
+			unconfirmed_email_cancel_token = ?, unconfirmed_email_created = ?
+			WHERE id = ?', [
+			'new@example.com', 'confirm_token', 'cancel_token',
+			date('Y-m-d H:i:s', strtotime('-2 days')), $context->user['id']]);
+
+		$this->testAction('/cron/daily/' . CRON_SECRET);
+
+		$user = $context->reloadUser();
+		$this->assertNull($user['unconfirmed_email']);
+		$this->assertNull($user['unconfirmed_email_token']);
+		$this->assertNull($user['unconfirmed_email_cancel_token']);
+		$this->assertNull($user['unconfirmed_email_created']);
 	}
 
 
@@ -87,6 +114,19 @@ class CronControllerTest extends TestCaseWithAuth
 		$this->assertSame($dayRecords[0]['DayRecord']['user_id'], $context->otherUsers[0]['id']);
 	}
 
+	public function testDailyCronCreatesSingleDayRecord()
+	{
+		new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'daily_xp' => 5, 'daily_solved' => 1]]);
+
+		$this->testAction('/cron/daily/' . CRON_SECRET);
+		$this->testAction('/cron/daily/' . CRON_SECRET);
+
+		$this->assertSame(1, ClassRegistry::init('DayRecord')->find('count'));
+		$this->assertSame(1, ClassRegistry::init('AchievementCondition')->find('count', [
+			'conditions' => ['category' => 'uotd']]));
+	}
+
 	public function testPublish()
 	{
 		$context = new ContextPreparator([
@@ -114,35 +154,64 @@ class CronControllerTest extends TestCaseWithAuth
 		$this->assertSame($newSetConnection['SetConnection']['set_id'], $publicSetID);
 	}
 
-	public function testTsumegoStatisticsInDayRecord()
+	public function testPublishSkipsAlreadyPublishedTsumego()
 	{
-		new ContextPreparator([
+		$context = new ContextPreparator([
 			'tsumegos' => [
-				['sets' => [['name' => 'sandbox set', 'num' => 5, 'public' => 0]]], // in sandbox
-				['sets' => [['name' => 'set 1', 'num' => 3]]], // normal
-				['sets' => [['name' => 'set 1', 'num' => 4], ['name' => 'set 2', 'num' => 5]]], // two set occurances counted as one
-				['sets' => [['name' => 'set 1', 'num' => 4]], 'deleted' => '2025-05-05 00:00:00']]]); // deleted
+				['sets' => [['name' => 'sandbox set', 'num' => 5, 'public' => 0]]],
+				['sets' => [['name' => 'set 1', 'num' => 3]]]]]);
 
-		// 1 is in private set, one is deleted, only 2 remaining normal ones.
-		$this->assertSame(TsumegoUtil::currentTsumegoCount(), 2);
-		$this->testAction('/cron/daily/' . CRON_SECRET);
-		$dayRecord = ClassRegistry::init('DayRecord')->find('first', ['order' => 'id DESC']);
-		$this->assertSame($dayRecord['DayRecord']['tsumego_count'], 2);
+		$tsumegoToMigrate = $context->tsumegos[0];
+		$publicSetID = $context->tsumegos[1]['set-connections'][0]['set_id'];
+
+		ClassRegistry::init('Schedule')->create();
+		$scheduleItem = [];
+		$scheduleItem['tsumego_id'] = $tsumegoToMigrate['id'];
+		$scheduleItem['set_id'] = $publicSetID;
+		$scheduleItem['date'] = date('Y-m-d');
+		$scheduleItem['published'] = 1;
+		ClassRegistry::init('Schedule')->save($scheduleItem);
+
+		ClassRegistry::init('Tsumego')->updateAll(
+			['solved' => 42, 'failed' => 7],
+			['id' => $tsumegoToMigrate['id']]);
+
+		CronController::publish();
+
+		$this->assertSame(0, ClassRegistry::init('PublishDate')->find('count', [
+			'conditions' => ['tsumego_id' => $tsumegoToMigrate['id']]]));
+		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoToMigrate['id']);
+		$this->assertSame(42, (int) $tsumego['Tsumego']['solved']);
+		$this->assertSame(7, (int) $tsumego['Tsumego']['failed']);
 	}
 
-	public function testPopularTagsUpdate()
+	public function testPublishWhenAlreadyInTargetSetKeepsOneConnection(): void
 	{
-		$contextInput = [];
-		$contextInput['tsumegos'] = [];
-		for ($i = 0; $i < Tag::$POPULAR_COUNT; $i++)
-			$contextInput['tsumegos'][] = ['tags' => [['name' => 'tag-' . $i]]];
-		$contextInput['tags'][] = ['name' => 'unpopular-tag'];
-		$context = new ContextPreparator($contextInput);
-		$this->testAction('/cron/daily/' . CRON_SECRET);
-		$popularCount = ClassRegistry::init('Tag')->find('count', ['conditions' => ['popular' => 1]]);
-		$this->assertSame($popularCount, Tag::$POPULAR_COUNT);
-		$unpopularTag = ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => 'unpopular-tag']]);
-		$this->assertSame($unpopularTag['Tag']['popular'], false);
+		$context = new ContextPreparator([
+			'tsumegos' => [
+				['sets' => [
+					['name' => 'sandbox set', 'num' => 5, 'public' => 0],
+					['name' => 'set 1', 'num' => 3],
+				]],
+			]]);
+
+		$tsumegoToMigrate = $context->tsumegos[0];
+		$targetSetId = $tsumegoToMigrate['set-connections'][1]['set_id'];
+
+		ClassRegistry::init('Schedule')->create();
+		$scheduleItem = [];
+		$scheduleItem['tsumego_id'] = $tsumegoToMigrate['id'];
+		$scheduleItem['set_id'] = $targetSetId;
+		$scheduleItem['date'] = date('Y-m-d');
+		$scheduleItem['published'] = 0;
+		ClassRegistry::init('Schedule')->save($scheduleItem);
+
+		CronController::publish();
+
+		$count = ClassRegistry::init('SetConnection')->find('count', [
+			'conditions' => ['set_id' => $targetSetId, 'tsumego_id' => $tsumegoToMigrate['id']],
+		]);
+		$this->assertSame(1, $count);
 	}
 
 	public function testUpdateSolved()

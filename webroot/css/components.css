@@ -1,0 +1,1223 @@
+/* ══════════════════════════════════════════════════════
+   Design-system UI components
+   Imported globally via app-theme.js.
+
+   Cascade (layers.css, order = priority, last wins):
+   tokens -> base -> composition -> utilities -> components -> page
+
+   Philosophy:
+   - Raw values (colors, spacing, radii, type) live ONLY in tokens.css.
+   - base = element defaults; composition = layout objects;
+     utilities = 1-rule helpers; page = page-specific rules.
+     THIS FILE = semantic, reusable components (used 2-5×),
+     where modifiers encode state/variant, not visual values.
+   - BEM naming: block__element--modifier (see getbem.com).
+     Exception: structural HTML elements (td, th, tr, li)
+     scoped to a block may use element selectors.
+   - IDs are JS hooks only, never styled.
+   - Before adding a class, ask "Can an existing component or modifier
+     handle this?" If not, add it to the owning layer above.
+   ══════════════════════════════════════════════════════ */
+
+@layer components
+{
+/* ── Avatar ── */
+.user-avatar
+{
+	width: var(--avatar-size);
+	height: var(--avatar-size);
+	border-radius: var(--radius-full);
+	vertical-align: middle;
+	margin-right: var(--space-1);
+	object-fit: cover;
+}
+
+/* A board is a picture of a thing, not of a face, so it keeps its corners square.
+   The hairline keeps the sharp edge from reading as a broken crop of a round
+   photo. */
+.user-avatar--board
+{
+	border-radius: 0;
+	box-shadow: 0 0 0 1px var(--avatar-board-edge);
+}
+
+.user-avatar--lg
+{
+	width: var(--avatar-size-lg);
+	height: var(--avatar-size-lg);
+	margin-right: var(--space-2);
+}
+
+/* The score tables run a larger type size, so the avatar grows with them. */
+.data-table .user-avatar
+{
+	width: var(--avatar-size-table);
+	height: var(--avatar-size-table);
+}
+
+/* ── Card ── */
+.card
+{
+	border: 3px solid var(--current-border-color);
+	box-sizing: border-box;
+	padding: var(--space-2);
+}
+
+.card--green
+{
+	border-color: var(--color-green);
+}
+
+.card--purple
+{
+	border-color: var(--color-purple);
+}
+
+.card__title
+{
+	font-weight: var(--font-weight-heavy);
+	color: var(--text-softer-color);
+	text-transform: uppercase;
+	font-size: var(--font-size-base);
+	letter-spacing: 0.05em;
+	margin-bottom: var(--space-3);
+}
+
+/* ── Info box (muted callout / empty-state container) ── */
+.info-box
+{
+	background: var(--info-box-background);
+	border: 1px solid var(--current-border-color);
+	border-radius: var(--radius-md);
+	padding: var(--space-6);
+}
+
+.info-box--empty
+{
+	max-width: 600px;
+	margin: 100px auto;
+	text-align: center;
+}
+
+/* On a phone the box keeps a gutter and does not start half a screen down */
+@media (width < 40rem)
+{
+	.info-box--empty
+	{
+		margin: var(--space-5) var(--space-4);
+		padding: var(--space-5) var(--space-4);
+	}
+}
+
+.info-box__icon
+{
+	font-size: 48px;
+	line-height: 1;
+	margin: 0 0 var(--space-4);
+}
+
+.info-box__title
+{
+	font-size: 18px;
+	font-weight: var(--font-weight-bold);
+	margin: 0 0 var(--space-2);
+}
+
+/* ── Stat list ── */
+.stat
+{
+	width: 100%;
+}
+
+.stat td
+{
+	vertical-align: top;
+	padding: var(--space-2);
+	text-align: left;
+	width: 50%;
+}
+
+/* ── Progress bar ── */
+.progress
+{
+	height: 18px;
+	background: var(--surface-bar);
+	border-radius: var(--radius-full);
+	overflow: hidden;
+	margin-top: var(--space-1);
+	position: relative;
+	text-align: left;
+}
+
+.progress__fill
+{
+	height: 100%;
+	background: linear-gradient(var(--color-green-light), var(--color-green-dark));
+	border-radius: var(--radius-full);
+	min-width: 2px;
+}
+
+/* Fill whose color reflects the amount: red at 0%, yellow at 50%, green at 100%.
+   Two parallel tracks (light/dark) so the gradient matches the regular bars. */
+.progress__fill--tonal
+{
+	--percent: 0;
+	/* Light track (top): red-fill → yellow → green-light */
+	--_a: color-mix(in srgb, var(--color-red-fill) calc((1 - var(--percent) / 50) * 100%), var(--color-yellow));
+	--_b: color-mix(in srgb, var(--color-yellow) calc(((100 - var(--percent)) / 50) * 100%), var(--color-green-light));
+	--_light: color-mix(in srgb, var(--_a) calc((1 - var(--percent) / 100) * 100%), var(--_b));
+	/* Dark track (bottom): red-fill-dark → yellow-dark → green-dark */
+	--_c: color-mix(in srgb, var(--color-red-fill-dark) calc((1 - var(--percent) / 50) * 100%), var(--color-yellow-dark));
+	--_d: color-mix(in srgb, var(--color-yellow-dark) calc(((100 - var(--percent)) / 50) * 100%), var(--color-green-dark));
+	--_dark: color-mix(in srgb, var(--_c) calc((1 - var(--percent) / 100) * 100%), var(--_d));
+	background: linear-gradient(var(--_light), var(--_dark));
+}
+
+.progress__label
+{
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: var(--font-size-sm);
+	font-weight: var(--font-weight-heavy);
+	color: var(--color-white);
+	text-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
+	pointer-events: none;
+}
+
+/* Thin variant: small track with the label above (set cards) */
+.progress--thin
+{
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	height: auto;
+	background: transparent;
+	border-radius: 0;
+	overflow: visible;
+	margin: 0;
+}
+
+.progress--thin .progress__label
+{
+	position: static;
+	font-size: 14px;
+	font-weight: 600;
+	animation: progress-number-in 0.6s ease-out;
+}
+
+.progress--thin .progress__track
+{
+	position: relative;
+	width: 100%;
+	height: 5px;
+	border-radius: 3px;
+	background: rgba(0, 0, 0, 0.15);
+}
+
+.progress--thin .progress__fill
+{
+	position: absolute;
+	top: 0;
+	left: 0;
+	height: 100%;
+	min-width: 0;
+	border-radius: 3px;
+	background-color: var(--progress-thin-fill);
+	background-image: var(--progress-thin-gradient);
+	animation: progress-grow 0.6s ease-out;
+}
+
+.progress--thin.progress--complete .progress__fill
+{
+	animation: progress-grow 0.6s ease-out, progress-glow 0.5s ease-out 0.6s;
+}
+
+@keyframes progress-grow
+{
+	from { width: 0; }
+}
+
+@keyframes progress-glow
+{
+	0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+	35% { box-shadow: 0 0 16px 4px rgba(255, 255, 255, 0.95); }
+	100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+}
+
+@keyframes progress-number-in
+{
+	from { opacity: 0; }
+}
+
+/* ── Button ── */
+/* Unified on the site's dominant button look (the green-text grey box that was
+   new-button-time) so the whole site has ONE button style. */
+.btn
+{
+	display: inline-block;
+	font-family: "Times New Roman", Times, serif;
+	font-size: 16px;
+	font-weight: 800;
+	text-decoration: none;
+	text-transform: uppercase;
+	background-color: var(--surface-button);
+	color: var(--color-green);
+	padding: 8px 10px;
+	margin: 2px;
+	border: 1px solid var(--surface-border-strong);
+	border-top-color: var(--surface-border-light);
+	border-left-color: var(--surface-border-light);
+	border-radius: 9px;
+	cursor: pointer;
+	transition: background 0.2s;
+}
+
+.btn:hover
+{
+	background-color: var(--surface-button-hover);
+	color: var(--color-white);
+	cursor: pointer;
+}
+
+.btn--disabled
+{
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.btn--disabled:hover
+{
+	background-color: var(--surface-button);
+	cursor: not-allowed;
+}
+
+.btn--inactive
+{
+	background-color: var(--surface-button-inactive);
+	background-image: none;
+	color: var(--text-button-inactive);
+}
+
+.btn--inactive:hover
+{
+	background-color: var(--surface-button-inactive);
+	background-image: none;
+	color: var(--text-button-inactive);
+}
+
+.btn--danger
+{
+	border-color: var(--color-red-dark);
+	color: var(--color-red-muted);
+}
+
+.btn--danger:hover
+{
+	background: var(--color-red-darker);
+	color: var(--color-red-light);
+}
+
+.btn--small
+{
+	padding: 3px 8px;
+	font-size: 11px;
+}
+
+.btn--success
+{
+	background: var(--color-green-dark);
+	border-color: var(--color-green-dark);
+	color: var(--color-white);
+}
+
+.btn--success:hover
+{
+	background: var(--color-green);
+	color: var(--color-white);
+}
+
+.btn--warning
+{
+	background: var(--feedback-warning);
+	border-color: var(--feedback-warning);
+	color: var(--color-white);
+}
+
+.btn--warning:hover
+{
+	background: var(--feedback-warning);
+	color: var(--color-white);
+}
+
+/* Grey box + white text + wider padding: the pre-refactor .new-button look. */
+.btn--primary
+{
+	color: var(--color-white);
+	padding: 10px 13px;
+	margin: 5px;
+}
+
+.btn--primary:hover
+{
+	color: var(--color-white);
+}
+
+/* Neutral grey-gradient button: pre-refactor .new-button-default look. */
+.btn--neutral
+{
+	background: var(--new1-gradient);
+	color: var(--text-color);
+	border: 1px solid var(--color-black);
+	border-radius: 5px;
+}
+
+.btn--neutral:hover
+{
+	background: var(--color-gray-dark);
+	color: var(--color-white);
+}
+
+/* ── Sub-navigation ── */
+.subnav
+{
+	display: flex;
+	gap: 0;
+	justify-content: center;
+	border-bottom: 2px solid var(--current-border-color);
+}
+
+.subnav__link
+{
+	padding: var(--space-3) var(--space-5);
+	color: var(--text-softer-color);
+	text-decoration: none;
+	font-weight: var(--font-weight-bold);
+	font-size: var(--font-size-lg);
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+	border-bottom: 3px solid transparent;
+	margin-bottom: -2px;
+	transition: color 0.2s, border-color 0.2s;
+}
+
+.subnav__link:hover
+{
+	color: var(--color-green);
+	border-bottom-color: var(--color-green);
+}
+
+.subnav__link--active
+{
+	color: var(--text-color);
+	border-bottom-color: var(--color-green);
+}
+
+/* ── Badge ── */
+.badge
+{
+	display: inline-block;
+	margin-top: var(--space-1);
+	padding: 1px var(--space-1);
+	font-size: var(--font-size-xs);
+	font-weight: var(--font-weight-bold);
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	border: 1px solid var(--current-border-color);
+	border-radius: var(--radius-full);
+	color: var(--text-softer-color);
+}
+
+.badge--active
+{
+	color: var(--color-white);
+	background: var(--color-blue-dark);
+	border-color: var(--color-blue-dark);
+}
+
+/* Status badges (problem status colors, from the --status-*-color tokens) */
+.badge--status-N, .badge--status-V, .badge--status-S, .badge--status-C,
+.badge--status-W, .badge--status-F, .badge--status-X, .badge--status-G
+{
+	padding: 4px 14px;
+	font-size: 14px;
+	font-weight: 800;
+	border-radius: 4px;
+	text-align: center;
+	min-width: 100px;
+	text-transform: none;
+	letter-spacing: normal;
+	border: none;
+	margin-top: 0;
+}
+
+.badge--status-N { background-color: var(--status-n-color); color: var(--color-white); }
+.badge--status-V { background-color: var(--status-v-color); color: var(--color-white); }
+.badge--status-S { background-color: var(--status-s-color); color: var(--color-white); }
+.badge--status-C { background-color: var(--status-c-color); color: var(--color-white); }
+.badge--status-W { background-color: var(--status-w-color); color: var(--color-white); }
+.badge--status-F { background-color: var(--status-f-color); color: var(--color-white); }
+.badge--status-X { background-color: var(--status-x-color); color: var(--color-white); }
+
+.badge--status-G
+{
+	background: linear-gradient(135deg, var(--status-g-color), var(--status-g-highlight), var(--status-g-color));
+	color: var(--gold-ink);
+	box-shadow: 0 1px 4px rgba(218, 165, 32, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+	border: 1px solid rgba(180, 140, 30, 0.4);
+	position: relative;
+	overflow: hidden;
+}
+
+.badge--status-G::after
+{
+	content: "";
+	position: absolute;
+	top: -50%;
+	left: -75%;
+	width: 40%;
+	height: 200%;
+	background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+	transform: skewX(-25deg);
+	animation: goldenShine 3s ease-in-out infinite;
+	pointer-events: none;
+}
+
+/* ── Tag pill (tag chips; replaces inline-styled React tag pills) ── */
+.tag-pill
+{
+	display: inline-block;
+	margin: 0 6px 4px 0;
+	padding: 2px 8px;
+	border-radius: 12px;
+	font-size: 13px;
+	background: var(--info-box-background);
+	color: var(--text-color);
+	border: 1px solid var(--current-border-color);
+}
+
+.tag-pill a
+{
+	color: var(--link-color);
+	text-decoration: none;
+}
+
+.tag-pill__remove
+{
+	margin-left: var(--space-1);
+	padding: 0;
+	background: none;
+	border: none;
+	color: var(--text-softer-color);
+	cursor: pointer;
+	font-size: var(--font-size-md);
+}
+
+/* ── Field (inline group of controls) ── */
+.field
+{
+	display: flex;
+	align-items: center;
+	gap: var(--space-3);
+	flex-wrap: wrap;
+}
+
+.field__option
+{
+	color: var(--text-color);
+	font-size: var(--font-size-md);
+	cursor: pointer;
+}
+
+.field__option input[type="radio"]
+{
+	margin-right: var(--space-1);
+}
+
+.field__label
+{
+	font-weight: var(--font-weight-bold);
+	color: var(--text-color);
+}
+
+/* When a field has a group label (e.g. a preference heading), the label sits
+   on its own line and the options flow in a row beneath it, following the
+   WAI/MDN pattern for radio/checkbox groups. */
+.field > .field__label
+{
+	flex-basis: 100%;
+}
+
+/* ── Form field (stacked label + control) ── */
+.form-field
+{
+	margin-bottom: var(--space-4);
+}
+
+.form-field__label
+{
+	display: block;
+	font-weight: var(--font-weight-bold);
+	margin-bottom: var(--space-1);
+	color: var(--text-color);
+}
+
+.form-field__control
+{
+	width: 100%;
+	box-sizing: border-box;
+	background: var(--surface-bar);
+	color: var(--text-color);
+	border: 1px solid var(--current-border-color);
+	border-radius: var(--radius-sm);
+	padding: var(--space-2);
+}
+
+/* ── Color input (raw <input type="color">, set color picker) ── */
+.color-input
+{
+	width: 24px;
+	height: 24px;
+	padding: 0;
+	border: 2px solid var(--current-border-color);
+	border-radius: var(--radius-full);
+	cursor: pointer;
+	background: none;
+}
+
+/* ── Preview toggle (label + checkbox that shows/hides a panel) ── */
+.preview-toggle
+{
+	cursor: pointer;
+	font-size: var(--font-size-sm);
+	color: var(--text-softer-color);
+	margin-left: var(--space-3);
+	vertical-align: middle;
+}
+
+.preview-toggle input
+{
+	vertical-align: middle;
+	margin-right: 2px;
+}
+
+/* ── Color swatches (preset color picker) ── */
+.swatches
+{
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+	flex-wrap: wrap;
+}
+
+.swatch
+{
+	display: inline-block;
+	width: 24px;
+	height: 24px;
+	border-radius: var(--radius-full);
+	border: 2px solid var(--current-border-color);
+	cursor: pointer;
+	background: var(--swatch-color);
+}
+
+.swatch:hover
+{
+	border-color: var(--color-white);
+	box-shadow: 0 0 0 2px var(--color-blue);
+}
+
+/* ── Dropdown popover (set picker, menus) ── */
+.dropdown
+{
+	position: absolute;
+	z-index: 1000;
+	background: var(--surface-bar);
+	border: 1px solid var(--current-border-color);
+	color: var(--text-color);
+	padding: var(--space-2);
+	max-height: 300px;
+	overflow-y: auto;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+	min-width: 160px;
+}
+
+.dropdown__row
+{
+	display: block;
+	padding: var(--space-1);
+	cursor: pointer;
+	white-space: nowrap;
+	color: var(--text-color);
+}
+
+.dropdown__empty
+{
+	padding: var(--space-1);
+	color: var(--text-softer-color);
+}
+
+/* ── Dropdown trigger / overlay / menu (checkbox-hack + JS toggled popover) ── */
+.dropdown__trigger
+{
+	cursor: pointer;
+}
+
+.dropdown__overlay
+{
+	display: none;
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+}
+
+.dropdown__menu
+{
+	background: var(--surface-bar);
+	border: var(--current-border-color) solid 1px;
+	border-radius: 3px;
+	position: absolute;
+	opacity: 0;
+	display: none;
+	transition: opacity 0.3s, visibility 0.3s;
+}
+
+.dropdown__open:checked ~ .dropdown__menu
+{
+	opacity: 1;
+	visibility: visible;
+}
+
+.dropdown__open:checked ~ .dropdown__overlay
+{
+	display: block;
+}
+
+/* Filter-tile panel (set picker: sets index/view, play) */
+.dropdown__menu--filters
+{
+	background: var(--surface-ink);
+	color: var(--color-white);
+	padding: 10px;
+	border-radius: 5px;
+	max-width: 380px;
+	border: 1px solid var(--color-black);
+	opacity: 1;
+	transition: none;
+}
+
+.dropdown__tile
+{
+	background-color: var(--surface-translucent);
+	color: var(--color-white);
+	border-radius: 50px;
+	padding: 4px 8px;
+	margin: 4px;
+	float: left;
+	white-space: nowrap;
+	cursor: pointer;
+	text-decoration: none;
+	background-image: linear-gradient(rgba(200, 200, 200, 0.15), rgba(33, 33, 33, 0.2));
+}
+
+.dropdown__tile:hover
+{
+	background-image: linear-gradient(rgba(200, 200, 200, 0.35), rgba(33, 33, 33, 0.4));
+}
+
+.dropdown__tile--green
+{
+	background-color: var(--color-tile-green);
+}
+
+.dropdown__tile--purple
+{
+	background-color: var(--color-tile-purple);
+}
+
+.dropdown__tile--brown
+{
+	background-color: var(--color-tile-brown);
+}
+
+.dropdown__tile--difficulty
+{
+	background-color: rgba(0, 0, 0, 0.35);
+	background-image: none;
+	color: var(--rank-color, var(--color-white));
+	color: color-mix(in srgb, var(--rank-color, var(--color-white)) 70%, #fff);
+	border: 1px solid var(--rank-color, transparent);
+	font-weight: 700;
+	box-shadow: none;
+	text-shadow: none;
+	transition: background-color 0.12s ease, transform 0.12s ease;
+}
+
+.dropdown__tile--difficulty:hover
+{
+	background-color: rgba(255, 255, 255, 0.14);
+	transform: translateY(-1px);
+}
+
+.dropdown__tile--tag
+{
+	background-color: var(--tag-color, var(--surface-translucent));
+}
+
+.dropdown__tile--difficulty.is-selected
+{
+	background-color: var(--rank-color);
+	border-color: var(--color-white);
+	color: #101010;
+	box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.4);
+	transform: translateY(-1px);
+}
+
+.dropdown__tile--muted
+{
+	background-color: #33333388;
+}
+
+.dropdown__tile--context
+{
+	cursor: context-menu;
+}
+
+[data-theme=dark] .dropdown__tile--muted
+{
+	background-color: var(--surface-translucent);
+}
+
+.dropdown__tile-actions
+{
+	float: left;
+	width: 100%;
+}
+
+.dropdown__tile-actions__select
+{
+	float: left;
+	font-weight: 800;
+	padding: 5px 9px;
+}
+
+.dropdown__tile-actions__submit
+{
+	float: right;
+	font-weight: 800;
+	padding: 5px 9px;
+	color: var(--color-white);
+}
+
+/* ── Hint (muted helper text) ── */
+.hint
+{
+	font-size: var(--font-size-base);
+	color: var(--text-softer-color);
+}
+
+.hint--danger
+{
+	color: var(--color-red);
+}
+
+/* ── Link (green text link) ── */
+.link
+{
+	color: var(--color-green);
+	cursor: pointer;
+	background: none;
+	border: 0;
+	padding: 0;
+	font: inherit;
+}
+
+/* ── Pagination ── */
+.pagination
+{
+	margin: 15px 0;
+	text-align: center;
+}
+
+.pagination__link
+{
+	display: inline-block;
+	margin: 0 2px;
+	padding: 5px 10px;
+	border: 1px solid var(--current-border-color);
+	text-decoration: none;
+	color: var(--paginator-button-text-color);
+	border-radius: 3px;
+}
+
+.pagination__link:hover
+{
+	text-decoration: underline;
+}
+
+.pagination__link--active
+{
+	display: inline-block;
+	margin: 0 2px;
+	padding: 5px 10px;
+	background: var(--active-paginator-button-background-color);
+	color: var(--active-paginator-button-text-color);
+	border: 1px solid var(--surface-border-strong);
+	border-radius: 3px;
+}
+
+.pagination__info
+{
+	color: var(--paginator-info-text-color);
+	margin-right: 10px;
+}
+
+.pagination__ellipsis
+{
+	margin: 0 5px;
+	color: var(--paginator-info-text-color);
+}
+
+/* ── Data table ── */
+.data-table
+{
+	table-layout: auto;
+}
+
+.data-table th
+{
+	color: var(--text-softer-color);
+	position: sticky;
+	top: 0;
+	background: var(--info-box-background);
+	z-index: 1;
+}
+
+.data-table td
+{
+	padding: 15px;
+	border-top: 1px solid var(--current-border-color);
+	border-bottom: 1px solid var(--current-border-color);
+	background: var(--info-box-background);
+	color: var(--text-color);
+	font-weight: normal;
+}
+
+.data-table td:first-child
+{
+	border-radius: 12px 0 0 12px;
+	border-left: 1px solid var(--current-border-color);
+}
+
+.data-table td:last-child
+{
+	border-radius: 0 12px 12px 0;
+	border-right: 1px solid var(--current-border-color);
+}
+
+.data-table tr:nth-child(even) td
+{
+	background: var(--surface-bar);
+}
+
+.data-table--compact td
+{
+	padding: 6px;
+}
+
+.data-table a
+{
+	color: inherit;
+	text-decoration: none;
+}
+
+.data-table a:hover
+{
+	text-decoration: underline;
+}
+
+/* Highscore row states */
+.data-table__row--separator td
+{
+	font-size: 24px;
+	color: var(--text-softer-color);
+	padding: 4px 0;
+	border: none;
+	background: transparent;
+}
+
+.data-table__row--self td
+{
+	font-weight: bold;
+}
+
+.data-table__row--self td:first-child
+{
+	border-left: 8px solid var(--color-blue);
+	border-radius: 12px 0 0 12px;
+	color: var(--color-blue);
+	white-space: nowrap;
+}
+
+.data-table__row--medal-gold td
+{
+	background: var(--medal-gold-gradient) !important;
+	color: var(--medal-gold-fg);
+}
+
+.data-table__row--medal-silver td
+{
+	background: var(--medal-silver-gradient) !important;
+	color: var(--medal-silver-fg);
+}
+
+.data-table__row--medal-bronze td
+{
+	background: var(--medal-bronze-gradient) !important;
+	color: var(--medal-bronze-fg);
+}
+
+/* ── Feedback (spinner, skeleton, error) ── */
+.spinner
+{
+	display: inline-block;
+	width: 14px;
+	height: 14px;
+	border: 2px solid rgba(255, 255, 255, 0.3);
+	border-top-color: var(--color-white);
+	border-radius: 50%;
+	animation: spin 0.6s linear infinite;
+	margin-right: 6px;
+	vertical-align: middle;
+}
+
+@keyframes spin
+{
+	to { transform: rotate(360deg); }
+}
+
+.skeleton-wrapper
+{
+	animation: skeleton-fade-in 0.2s ease-in;
+}
+
+@keyframes skeleton-fade-in
+{
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
+.skeleton-element
+{
+	background: linear-gradient(
+		90deg,
+		var(--surface-hover) 25%,
+		var(--surface-hover-strong) 50%,
+		var(--surface-hover) 75%
+	);
+	background-size: 200% 100%;
+	animation: skeleton-shimmer 1.5s infinite;
+	display: inline-block;
+}
+
+@keyframes skeleton-shimmer
+{
+	0% { background-position: 200% 0; }
+	100% { background-position: -200% 0; }
+}
+
+.error-message
+{
+	padding: 20px;
+	margin: 20px 14px;
+	background: var(--surface-danger);
+	border: 2px solid var(--feedback-error);
+	border-radius: 8px;
+	text-align: center;
+}
+
+.error-message p
+{
+	margin: 0 0 15px 0;
+	color: var(--feedback-error);
+	font-size: 14px;
+}
+
+.error-boundary
+{
+	padding: 30px;
+	margin: 20px 14px;
+	background: var(--surface-danger);
+	border: 3px solid var(--feedback-error);
+	border-radius: 8px;
+	text-align: center;
+}
+
+.error-boundary__content h3
+{
+	margin: 0 0 10px 0;
+	color: var(--feedback-error);
+	font-size: 18px;
+}
+
+.error-boundary__content p
+{
+	margin: 0 0 20px 0;
+	color: var(--text-softer-color);
+	font-size: 14px;
+}
+
+.error-boundary__details
+{
+	margin-top: 20px;
+	text-align: left;
+	padding: 10px;
+	background: var(--color-white);
+	border: 1px solid var(--surface-hover-strong);
+	border-radius: 4px;
+}
+
+.error-boundary__details summary
+{
+	cursor: pointer;
+	color: var(--text-softer-color);
+	font-size: 12px;
+	padding: 5px;
+}
+
+.error-boundary__details pre
+{
+	margin: 10px 0 0 0;
+	padding: 10px;
+	background: var(--surface-bar);
+	border: 1px solid var(--surface-hover-strong);
+	border-radius: 4px;
+	overflow-x: auto;
+	font-size: 11px;
+	color: var(--feedback-error);
+}
+
+.loading
+{
+	color: var(--text-softer-color);
+	font-size: var(--font-size-md);
+}
+
+/* ── Toast (dismissible bottom notification) ── */
+.toast
+{
+	position: fixed;
+	width: 1000px;
+	bottom: 1%;
+	left: 50%;
+	margin-left: -500px;
+	line-height: 1.8;
+	border-radius: 8px;
+	cursor: pointer;
+	font-family: sans-serif;
+	font-weight: 400;
+	display: none;
+	z-index: 9999;
+	background: linear-gradient(
+		180deg,
+		rgb(99.608% 99.608% 99.608%) 0%,
+		rgb(99.607% 99.607% 99.607%) 6.25%,
+		rgb(99.6% 99.6% 99.6%) 12.5%,
+		rgb(99.571% 99.571% 99.571%) 18.75%,
+		rgb(99.49% 99.49% 99.49%) 25%,
+		rgb(99.32% 99.32% 99.32%) 31.25%,
+		rgb(99.011% 99.011% 99.011%) 37.5%,
+		rgb(98.502% 98.502% 98.502%) 43.75%,
+		rgb(97.721% 97.721% 97.721%) 50%,
+		rgb(96.585% 96.585% 96.585%) 56.25%,
+		rgb(95% 95% 95%) 62.5%,
+		rgb(92.862% 92.862% 92.862%) 68.75%,
+		rgb(90.054% 90.054% 90.054%) 75%,
+		rgb(86.448% 86.448% 86.448%) 81.25%,
+		rgb(81.907% 81.907% 81.907%) 87.5%,
+		rgb(76.282% 76.282% 76.282%) 93.75%,
+		rgb(69.412% 69.412% 69.412%) 100%
+	);
+	border: 1px solid var(--color-black);
+}
+
+/* Hidden checkbox that dismisses the toast when checked (label wraps both). */
+.toast__toggle
+{
+	display: none;
+}
+
+:checked + .toast
+{
+	display: none;
+}
+
+.toast__banner
+{
+	border-top-left-radius: 8px;
+	border-top-right-radius: 8px;
+	background: linear-gradient(rgb(100, 100, 100), rgb(36, 36, 36));
+	color: white;
+	height: 31px;
+	width: 100%;
+	font-weight: 800;
+}
+
+.toast__banner--error
+{
+	background: linear-gradient(rgb(217, 109, 112), rgb(202, 63, 76)) !important;
+}
+
+.toast__banner--success
+{
+	background: linear-gradient(rgb(26, 181, 88), rgb(18, 121, 59)) !important;
+}
+
+.toast__close
+{
+	float: right;
+	padding: 1px 5px 5px 5px;
+	font-size: 12px;
+}
+
+.toast__body
+{
+	display: table;
+	margin: 10px;
+	width: 100%;
+	text-align: center;
+	font-size: 16px;
+}
+
+.toast__body--left
+{
+	text-align: left;
+}
+
+.toast__body--wide
+{
+	width: 550px;
+	margin: 20px 10px;
+	text-align: center;
+}
+
+/* Achievement-completed popup (built by AchievementAlerts.js). Reuses the
+   .toast base; the color-3 text variants live in page/achievements.css. */
+.toast--achievement #hpIcon1
+{
+	top: 15px;
+	position: relative;
+	width: 40px;
+}
+
+[data-theme="dark"] .toast__body {
+	color: var(--color-black);
+}
+} /* end @layer components */

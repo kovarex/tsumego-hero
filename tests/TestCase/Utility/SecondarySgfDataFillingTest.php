@@ -1,7 +1,15 @@
 <?php
 
+use PHPUnitRetry\RetryTrait;
+
+/**
+ * @retryAttempts 2
+ * @retryIfException Facebook\WebDriver\Exception\WebDriverException
+ */
 class SecondarySgfDataFillingTest extends CakeTestCase
 {
+	use RetryTrait;
+
 	public function testFillFirstAndCorrectMoves()
 	{
 		$browser = Browser::instance();
@@ -41,7 +49,7 @@ class SecondarySgfDataFillingTest extends CakeTestCase
 					'correct_moves' => 'gghh']],
 				['set_order' => 2, 'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19](;W[cd])(;W[jj];B[ba]C[+])(;W[kk]C[+]))']]]);
 		$browser->get('tsumegos/setupSgf');
-		$sgfs = ClassRegistry::init('sgf')->find('all');
+		$sgfs = ClassRegistry::init('sgf')->find('all', ['order' => 'Sgf.id ASC']);
 		$this->assertSame(2, count($sgfs));
 		$this->assertSame('W', $sgfs[1]['Sgf']['first_move_color']);
 		$this->assertSame('jjkk', $sgfs[1]['Sgf']['correct_moves']);

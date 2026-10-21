@@ -1,13 +1,12 @@
 <?php
 
-App::uses('CakeTestCase', 'TestSuite');
-App::uses('JwtAuth', 'Utility');
-
 /**
  * Tests for JwtAuth utility class.
  *
  * JwtAuth provides stateless authentication using signed JWT tokens.
  */
+use App\Utility\JwtAuth;
+
 class JwtAuthTest extends CakeTestCase
 {
 	private const TEST_SECRET = 'test-secret-key-for-unit-tests-only';
@@ -15,16 +14,7 @@ class JwtAuthTest extends CakeTestCase
 	public function setUp(): void
 	{
 		parent::setUp();
-		// Override the secret for testing
 		Configure::write('Security.jwtSecret', self::TEST_SECRET);
-	}
-
-	public function tearDown(): void
-	{
-		parent::tearDown();
-		// Clear any cookies
-		unset($_COOKIE['auth_token']);
-		JwtAuth::clearCache();
 	}
 
 	public function testCreateTokenReturnsValidJwt(): void

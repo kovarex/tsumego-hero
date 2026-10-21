@@ -1,6 +1,6 @@
 <?php
 
-App::uses('Rating', 'Utility');
+use App\Utility\Rating;
 
 class RatingTest extends CakeTestCase
 {
@@ -34,5 +34,34 @@ class RatingTest extends CakeTestCase
 		$this->assertSame(Rating::getRankMinimalRatingFromReadableRank("8d"), 2750.0);
 		$this->assertSame(Rating::getRankMinimalRatingFromReadableRank("9d"), 2780.0);
 		$this->assertSame(Rating::getRankMinimalRatingFromReadableRank("10d"), 2810.0);
+	}
+
+	public function testParseReadableRankRange(): void
+	{
+		$this->assertSame(['20k', '16k'], Rating::parseReadableRankRange('20k-16k'));
+		$this->assertSame(['5k', '5k'], Rating::parseReadableRankRange('5k-5k'));
+		$this->assertNull(Rating::parseReadableRankRange('16k-20k'));
+		$this->assertNull(Rating::parseReadableRankRange('15k'));
+		$this->assertNull(Rating::parseReadableRankRange('deleted'));
+		$this->assertNull(Rating::parseReadableRankRange('30k-16k-10k'));
+	}
+
+	public function testIsValidReadableRank(): void
+	{
+		$this->assertTrue(Rating::isValidReadableRank('15k'));
+		$this->assertTrue(Rating::isValidReadableRank('1k'));
+		$this->assertTrue(Rating::isValidReadableRank('30k'));
+		$this->assertTrue(Rating::isValidReadableRank('1d'));
+		$this->assertTrue(Rating::isValidReadableRank('9d'));
+		$this->assertTrue(Rating::isValidReadableRank('10d'));
+
+		$this->assertFalse(Rating::isValidReadableRank('deleted'));
+		$this->assertFalse(Rating::isValidReadableRank(''));
+		$this->assertFalse(Rating::isValidReadableRank('abc'));
+		$this->assertFalse(Rating::isValidReadableRank('k'));
+		$this->assertFalse(Rating::isValidReadableRank('0k'));
+		$this->assertFalse(Rating::isValidReadableRank('31k'));
+		$this->assertFalse(Rating::isValidReadableRank('1.5k'));
+		$this->assertFalse(Rating::isValidReadableRank('2.0d'));
 	}
 }

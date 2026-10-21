@@ -1,67 +1,84 @@
 <?php
 
-App::uses('TimeModeUtil', 'Utility');
-App::uses('AppException', 'Utility');
-App::uses('Play', 'Controller/Component');
+use App\Utility\AchievementChecker;
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\Rating;
+use App\Utility\TimeMode;
+use App\Utility\TimeModeUtil;
+use App\Utility\Util;
 
 class TimeModeController extends AppController
 {
 	public function start(): mixed
 	{
+		$this->Authorization->authorize('User', 'startTimeMode');
+
 		$timeMode = new TimeMode();
 		$categoryID = (int) $this->params['url']['categoryID'];
 		if (!$categoryID)
-			throw new AppException('Time mode category not specified.');
+			throw new BadRequestException('Time mode category not specified.');
 		$rankID = (int) $this->params['url']['rankID'];
 		if (!$rankID)
-			throw new AppException('Time mode rank not specified.');
+			throw new BadRequestException('Time mode rank not specified.');
 
 		$timeMode->startTimeMode($categoryID, $rankID);
 		return $this->redirect("/timeMode/play");
 	}
 
-	public function play(): mixed
+	public function play(?string $position = null): mixed
 	{
 		if (!Auth::isLoggedIn())
 			return $this->redirect('/users/login');
 
 		if (!Auth::isInTimeMode())
-		{
-			Auth::getUser()['mode'] = Constants::$TIME_MODE;
-			Auth::saveUser();
-		}
+			Auth::saveUserField('mode', Constants::$TIME_MODE);
 
 		$timeMode = new TimeMode();
 
 		if (!$timeMode->currentSession)
 			return $this->redirect('/timeMode/overview');
 
-		$tsumegoID = $timeMode->prepareNextToSolve();
+		$tsumegoID = $position === null
+			? $timeMode->prepareWhateverIsLeft()
+			: $timeMode->prepareToSolve((int) $position);
 		if ($timeModeSessionID = $timeMode->checkFinishSession())
 			return $this->redirect("/timeMode/result/" . $timeModeSessionID);
-		assert($tsumegoID != null);
 
-		$setConnection = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $tsumegoID]]);
+		// Nothing left to play, but the session cannot be scored yet because a result is
+		// still on its way.
+		if ($tsumegoID == null)
+			return $this->renderWaitingForTheResult();
+
+		$setConnection = ClassRegistry::init('SetConnection')->findDisplaySetConnection($tsumegoID);
 		if (!$setConnection)
 			throw new Exception('Time mode session contains tsumego without a set connection.');
 
 		$this->set('timeMode', $timeMode);
-		$this->set('nextLink', '/timeMode/skip/');
-		$this->set('noSkipNextLink', $timeMode->currentWillBeLast() ? '/timeMode/result/' . $timeMode->currentSession['TimeModeSession']['id'] : '/timeMode/play');
-		$play  = new Play(function ($name, $value) { $this->set($name, $value); });
-		$play->play($setConnection['SetConnection']['id'], $this->params, $this->data);
+		$this->set('nextLink', '/timeMode/skip/' . $timeMode->servedOrder);
+		$this->set('noSkipNextLink', $timeMode->currentWillBeLast()
+			? '/timeMode/result/' . $timeMode->currentSession['TimeModeSession']['id']
+			: '/timeMode/play/' . ($timeMode->servedOrder + 1));
+		$play  = new Play(function ($name, $value) {
+			$this->set($name, $value);
+		});
+		$play->play($setConnection['SetConnection']['id'], $this->request, $this->request->data);
 		$this->render('/Tsumegos/play');
 		return null;
 	}
 
-	public function skip(): mixed
+	public function skip(?string $position = null): mixed
 	{
+		if (!$position)
+			return $this->redirect('/timeMode/play');
+
 		$timeMode = new TimeMode();
-		$timeMode->skip();
-		return $this->play();
+		$timeMode->skip((int) $position);
+
+		return $this->redirect('/timeMode/play/' . ((int) $position + 1));
 	}
 
-	private function getRanksWithTsumegoCount()
+	private function getRanksWithTsumegoCount(): ?array
 	{
 		$ranks = ClassRegistry::init('TimeModeRank')->find('all', ['order' => 'id']);
 		$rankPartOfQuery = '';
@@ -75,7 +92,7 @@ class TimeModeController extends AppController
 
 			$count = Util::query("
 SELECT
-    COUNT(*) AS count
+    COUNT(DISTINCT tsumego.id) AS count
 FROM
 	tsumego
 	JOIN set_connection ON set_connection.tsumego_id=tsumego.id
@@ -97,7 +114,7 @@ WHERE
 SELECT
     CASE " . $rankPartOfQuery . "
     END AS bucket,
-    COUNT(*) AS count
+    COUNT(DISTINCT tsumego.id) AS count
 FROM
 	tsumego
 	JOIN set_connection ON set_connection.tsumego_id=tsumego.id
@@ -166,7 +183,7 @@ ORDER BY MIN(rating);");
 		return null;
 	}
 
-	public function exportSessionToShow($session, $timeModeCategory, $timeModeRank): array
+	public function exportSessionToShow(array $session, array $timeModeCategory, array $timeModeRank): array
 	{
 		$result = [];
 		$result['id'] = $session['TimeModeSession']['id'];
@@ -174,8 +191,7 @@ ORDER BY MIN(rating);");
 		$result['category'] = $timeModeCategory['TimeModeCategory']['name'];
 		$result['points'] = $session['TimeModeSession']['points'];
 		$result['rank'] = $timeModeRank['TimeModeRank']['name'];
-		$date = new DateTime($session['TimeModeSession']['created']);
-		$result['created'] = $date->format('H:i d.m.Y');
+		$result['created'] = $session['TimeModeSession']['created'];
 		$timeModeAttempts = ClassRegistry::init('TimeModeAttempt')->find('all', ['conditions' => ['time_mode_session_id' => $session['TimeModeSession']['id']]]) ?: [];
 		$result['attempts'] = [];
 		$solvedCount = 0;
@@ -184,7 +200,7 @@ ORDER BY MIN(rating);");
 			if ($timeModeAttempt['TimeModeAttempt']['time_mode_attempt_status_id'] == TimeModeUtil::$ATTEMPT_RESULT_SOLVED)
 				$solvedCount++;
 			$attempt = [];
-			$setConnection = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $timeModeAttempt['TimeModeAttempt']['tsumego_id']]]);
+			$setConnection = ClassRegistry::init('SetConnection')->findDisplaySetConnection($timeModeAttempt['TimeModeAttempt']['tsumego_id']);
 			$set = ClassRegistry::init('Set')->findById($setConnection['SetConnection']['set_id']);
 			$attempt['tsumego_id'] = $timeModeAttempt['TimeModeAttempt']['tsumego_id'];
 			$attempt['set'] = $set['Set']['title'] . ' ' . $set['Set']['title2'];
@@ -220,7 +236,9 @@ ORDER BY MIN(rating);");
 				'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_SOLVED]]) != 1)
 					return null;
 
-		$rankIndex = array_find_key($timeModeRanks, function ($timeModeRank) use ($finishedSession) { return $timeModeRank['TimeModeRank']['id'] == $finishedSession['TimeModeSession']['time_mode_rank_id']; });
+		$rankIndex = array_find_key($timeModeRanks, function ($timeModeRank) use ($finishedSession) {
+			return $timeModeRank['TimeModeRank']['id'] == $finishedSession['TimeModeSession']['time_mode_rank_id'];
+		});
 
 		if ($rankIndex == 0)
 		{
@@ -230,12 +248,25 @@ ORDER BY MIN(rating);");
 		$unlock = [];
 		$unlock['rank'] = $timeModeRanks[$rankIndex - 1]['TimeModeRank']['name'];
 
-		$categoryIndex = array_find_key($timeModeCategories, function ($timeModeCategory) use ($finishedSession) { return $timeModeCategory['TimeModeCategory']['id'] == $finishedSession['TimeModeSession']['time_mode_category_id']; });
+		$categoryIndex = array_find_key($timeModeCategories, function ($timeModeCategory) use ($finishedSession) {
+			return $timeModeCategory['TimeModeCategory']['id'] == $finishedSession['TimeModeSession']['time_mode_category_id'];
+		});
 		$unlock['category'] = $timeModeCategories[$categoryIndex]['TimeModeCategory']['name'];
 		return $unlock;
 	}
 
-	private function deduceFinishedSession($passedSessionID, TimeMode $timeMode): ?array
+	/**
+	 * A session that is still being played has no score yet, so there is nothing to show
+	 */
+	private function renderWaitingForTheResult(): mixed
+	{
+		$this->set('_title', 'Time Mode - Result');
+		$this->set('_page', 'time mode');
+		$this->render('waiting');
+		return null;
+	}
+
+	private function deduceFinishedSession(int|string|null $passedSessionID, TimeMode $timeMode): ?array
 	{
 		if ($finishedSessionID = $timeMode->checkFinishSession())
 			return ClassRegistry::init('TimeModeSession')->findById($finishedSessionID);
@@ -244,16 +275,19 @@ ORDER BY MIN(rating);");
 			if ($result = ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => ['id' => $passedSessionID]]))
 				return $result;
 			else
-				throw new AppException('Time Mode Session not found.');
+				throw new NotFoundException('Time Mode Session not found.');
 		return null;
 	}
 
-	public function result($timeModeSessionID = null): mixed
+	public function result(?string $timeModeSessionID = null): mixed
 	{
 		if (!Auth::isLoggedIn())
 			return $this->redirect("/users/login");
 
 		$timeMode = new TimeMode();
+		if ($timeModeSessionID && $timeMode->hasNoResultYet((int) $timeModeSessionID))
+			return $this->renderWaitingForTheResult();
+
 		$finishedSession = $this->deduceFinishedSession($timeModeSessionID, $timeMode);
 
 		$this->loadModel('Tsumego');
@@ -288,7 +322,6 @@ ORDER BY MIN(rating);");
 			}
 
 		$this->set('sessionsToShow', $sessionsToShow);
-		$this->set('finishedSession', $finishedSession);
 		$this->set('rankArrowClosed', '/img/greyArrow1.png');
 		$this->set('rankArrowOpened', '/img/greyArrow2.png');
 		$this->set('unlock', self::deduceUnlock($finishedSession, $timeModeRanks, $timeModeCategories));

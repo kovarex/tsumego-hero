@@ -1,24 +1,25 @@
 <?php
 
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\CookieFlash;
+use App\Utility\RatingBounds;
+use App\Utility\Util;
+
 class RatingModeController extends AppController
 {
-	public static function ratingAdjustment($difficultySetting)
+	public static function ratingAdjustment(int|string $difficultySetting): int
 	{
-		if ($difficultySetting == 1)
-			return -Constants::$RATING_MODE_DIFFERENCE_SETTING_3;
-		if ($difficultySetting == 2)
-			return -Constants::$RATING_MODE_DIFFERENCE_SETTING_2;
-		if ($difficultySetting == 3)
-			return -Constants::$RATING_MODE_DIFFERENCE_SETTING_1;
-		if ($difficultySetting == 4)
-			return 0;
-		if ($difficultySetting == 5)
-			return Constants::$RATING_MODE_DIFFERENCE_SETTING_1;
-		if ($difficultySetting == 6)
-			return Constants::$RATING_MODE_DIFFERENCE_SETTING_2;
-		if ($difficultySetting == 7)
-			return Constants::$RATING_MODE_DIFFERENCE_SETTING_3;
-		return 0;
+		$adjustments = [
+			1 => -Constants::$RATING_MODE_DIFFERENCE_SETTING_3,
+			2 => -Constants::$RATING_MODE_DIFFERENCE_SETTING_2,
+			3 => -Constants::$RATING_MODE_DIFFERENCE_SETTING_1,
+			4 => 0,
+			5 => Constants::$RATING_MODE_DIFFERENCE_SETTING_1,
+			6 => Constants::$RATING_MODE_DIFFERENCE_SETTING_2,
+			7 => Constants::$RATING_MODE_DIFFERENCE_SETTING_3,
+		];
+		return $adjustments[$difficultySetting] ?? 0;
 	}
 
 	public function index(): mixed
@@ -27,10 +28,9 @@ class RatingModeController extends AppController
 			return $this->redirect('/users/login');
 
 		if (!Auth::isInRatingMode())
-			Auth::getUser()['mode'] = Constants::$RATING_MODE;
+			Auth::saveUserField('mode', Constants::$RATING_MODE);
 		if ($difficultyChange = Util::clearCookie('difficulty'))
-			Auth::getUser()['t_glicko'] = $difficultyChange;
-		Auth::saveUser();
+			Auth::saveUserField('t_glicko', $difficultyChange);
 
 		$adjustedRating =  Auth::getUser()['rating'] + self::ratingAdjustment(Auth::getUser()['t_glicko']);
 		$ratingBounds = new RatingBounds(
@@ -60,8 +60,10 @@ WHERE " . $queryCondition;
 		$this->set('nextLink', '/ratingMode');
 		$this->set('difficulty', Auth::getUser()['t_glicko']);
 
-		$play  = new Play(function ($name, $value) { $this->set($name, $value); });
-		$play->play($relatedTsumegos[0]['id'], $this->params, $this->data);
+		$play  = new Play(function ($name, $value) {
+			$this->set($name, $value);
+		});
+		$play->play($relatedTsumegos[0]['id'], $this->request, $this->request->data);
 		$this->render('/Tsumegos/play');
 		return null;
 	}

@@ -1,8 +1,10 @@
 <?php
 
+namespace App\Utility;
+
 class SetNavigationButtonsInput
 {
-	public function __construct($setFunction)
+	public function __construct(callable $setFunction)
 	{
 		$this->setFunction = $setFunction;
 	}
@@ -16,10 +18,13 @@ class SetNavigationButtonsInput
 	private function collectFromSetConnections(TsumegoButtons $tsumegoButtons, array $currentSetConnection): TsumegoButtons
 	{
 		$result = TsumegoButtons::deriveFrom($tsumegoButtons);
-		$currentIndex = array_find_key((array) $tsumegoButtons, function ($tsumegoButton) use ($currentSetConnection) { return $tsumegoButton->setConnectionID === $currentSetConnection['SetConnection']['id']; });
+		$currentIndex = array_find_key((array) $tsumegoButtons, function ($tsumegoButton) use ($currentSetConnection) {
+			return $tsumegoButton->setConnectionID === (int) $currentSetConnection['SetConnection']['id'];
+		});
 
-		// mark the problem we are going to visit as already visited
-		if ($tsumegoButtons[$currentIndex]->status == 'N')
+		// mark the problem we are going to visit as already visited, except in the mistake
+		// training, whose colours say what today did and opening a problem does nothing
+		if ($tsumegoButtons[$currentIndex]->status == 'N' && $tsumegoButtons[$currentIndex]->rung === null)
 			$tsumegoButtons[$currentIndex]->status = 'V';
 
 		if (count($tsumegoButtons) <= self::$NEIGHBOUR_COUNT_TO_SHOW_ON_EACH_SIDE * 2 + 3)
@@ -38,6 +43,7 @@ class SetNavigationButtonsInput
 		return $result;
 	}
 
-	private static $NEIGHBOUR_COUNT_TO_SHOW_ON_EACH_SIDE = 5;
+	private static int $NEIGHBOUR_COUNT_TO_SHOW_ON_EACH_SIDE = 5;
+	/** @var callable */
 	private $setFunction;
 }

@@ -1,10 +1,16 @@
+<?php
+/**
+ * @var View $this
+ * @var array $p
+ */
+?>
 <div align="center">
 <p class="title">
 					<br> Publish Schedule
 				<br><br>
 				</p>
 <div align="left"><a href="/sets/sandbox">back</a></div>
-	<table class="highscoreTable" border="0">
+	<table class="data-table" border="0">
 	<tbody>
 	<tr>
 		<th width="60px">Date</th>

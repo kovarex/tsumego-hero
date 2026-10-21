@@ -1,0 +1,21 @@
+includes:
+	- vendor/pieceofcake2/phpstan-cakephp2/extension.neon
+	- phpstan-views-baseline.neon
+
+parameters:
+	level: 5
+	paths:
+		- src/View/
+	fileExtensions:
+		- php
+		- ctp
+	bootstrapFiles:
+		- config/phpstan-bootstrap.php
+	treatPhpDocTypesAsCertain: true
+	reportUnmatchedIgnoredErrors: false
+	excludePaths:
+		- src/View/Emails/*
+		- src/View/Errors/*
+		- src/View/Helper/*
+		- src/View/Layouts/rss/*
+		- src/View/Layouts/xml/*

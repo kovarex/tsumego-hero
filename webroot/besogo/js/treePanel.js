@@ -238,7 +238,8 @@ besogo.makeTreePanel = function(container, editor)
         d: path,
         stroke: color,
         "stroke-width": 8,
-        fill: "none"
+        fill: "none",
+        "class": "besogo-tree-line"
     });
     return element;
   }

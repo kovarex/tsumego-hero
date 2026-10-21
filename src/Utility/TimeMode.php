@@ -1,7 +1,11 @@
 <?php
 
-App::uses('TimeModeUtil', 'Utility');
-App::uses('RatingBounds', 'Utility');
+namespace App\Utility;
+
+use ClassRegistry;
+use DateTime;
+use InternalErrorException;
+use NotFoundException;
 
 class TimeMode
 {
@@ -51,14 +55,11 @@ class TimeMode
 
 	public function startTimeMode(int $categoryID, int $rankID): void
 	{
-		if (!Auth::isLoggedIn())
-			throw new AppException('Not logged in.');
-
 		ClassRegistry::init('TimeModeSession')->deleteAll(['user_id' => Auth::getUserID(), 'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]);
 
 		$relevantTsumegos = $this->getRelevantTsumegos($rankID);
 		if (empty($relevantTsumegos))
-			throw new AppException('No relevant tsumegos.');
+			throw new InternalErrorException('No relevant tsumegos.');
 		$currentTimeSession = $this->createNewSession($categoryID, $rankID);
 		$this->createSessionAttempts($currentTimeSession, $relevantTsumegos);
 	}
@@ -72,14 +73,13 @@ class TimeMode
 	{
 		$timeModeCategory = ClassRegistry::init('TimeModeCategory')->findById($categoryID);
 		if (!$timeModeCategory)
-			throw new AppException("Time mode session category with id=" . $categoryID . " not found");
+			throw new NotFoundException("Time mode session category with id=" . $categoryID . " not found");
 
 		$timeModeRank = ClassRegistry::init('TimeModeRank')->findById($rankID);
 		if (!$timeModeRank)
-			throw new AppException("Time mode rank category with id=" . $rankID . " not found");
+			throw new NotFoundException("Time mode rank category with id=" . $rankID . " not found");
 
-		Auth::getUser()['mode'] = Constants::$TIME_MODE;
-		Auth::saveUser();
+		Auth::saveUserField('mode', Constants::$TIME_MODE);
 		$currentTimeSession = [];
 		$currentTimeSession['user_id'] = Auth::getUserID();
 		$currentTimeSession['time_mode_session_status_id'] = TimeModeUtil::$SESSION_STATUS_IN_PROGRESS;
@@ -116,7 +116,7 @@ class TimeMode
 	private function getRelevantTsumegos(int $timeModeRankID): array
 	{
 		$ratingBounds = $this->getRatingBounds($timeModeRankID);
-		$query = "SELECT tsumego.id as id FROM tsumego JOIN set_connection ON set_connection.tsumego_id = tsumego.id JOIN `set` ON set.id = set_connection.set_id WHERE `set`.included_in_time_mode = TRUE AND `set`.public = 1";
+		$query = "SELECT DISTINCT tsumego.id as id FROM tsumego JOIN set_connection ON set_connection.tsumego_id = tsumego.id JOIN `set` ON set.id = set_connection.set_id WHERE `set`.included_in_time_mode = TRUE AND `set`.public = 1";
 		if ($ratingBounds->min)
 			$query .= " AND rating >= " . $ratingBounds->min;
 		if ($ratingBounds->max)
@@ -124,7 +124,7 @@ class TimeMode
 		return Util::query($query);
 	}
 
-	private function createSessionAttempts(array $currentTimeSession, $relevantTsumegos): void
+	private function createSessionAttempts(array $currentTimeSession, array $relevantTsumegos): void
 	{
 		shuffle($relevantTsumegos);
 		$relevantTsumegosCount = count($relevantTsumegos);
@@ -140,7 +140,7 @@ class TimeMode
 		}
 	}
 
-	private static function deduceAttemptStatus($result, $timeout)
+	private static function deduceAttemptStatus(array $result, bool $timeout): int
 	{
 		if ($timeout)
 			return TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT;
@@ -149,7 +149,7 @@ class TimeMode
 		return TimeModeUtil::$ATTEMPT_RESULT_SOLVED;
 	}
 
-	public function processPlayResult($previousTsumego, $result): void
+	public function processPlayResult(array $previousTsumego, array $result, float $seconds = 0, bool $timeout = false): void
 	{
 		if (!$this->currentSession)
 			return;
@@ -160,12 +160,12 @@ class TimeMode
 				'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]);
 		if (!$currentAttempt)
 			return; // this tsumego is not related to our time mode session, we ignore it
-		$timeout = Util::clearCookie('timeout');
 		$currentAttempt['TimeModeAttempt']['time_mode_attempt_status_id'] = self::deduceAttemptStatus($result, $timeout);
-		$seconds = $timeout ? $this->overallSecondsToSolve : Decoder::decodeSeconds($previousTsumego);
-		if (is_null($seconds))
-			throw new Exception("Seconds not provided.");
+		if ($timeout)
+			$seconds = $this->overallSecondsToSolve;
 		$timeModeCategory = ClassRegistry::init('TimeModeCategory')->findById($this->currentSession['TimeModeSession']['time_mode_category_id']);
+
+		$seconds = min($seconds, $timeModeCategory['TimeModeCategory']['seconds']);
 
 		$currentAttempt['TimeModeAttempt']['seconds'] = $seconds;
 		$currentAttempt['TimeModeAttempt']['points'] = $result['solved'] ? self::calculatePoints($seconds, $timeModeCategory['TimeModeCategory']['seconds']) : 0;
@@ -173,42 +173,76 @@ class TimeMode
 		$this->currentOrder++;
 	}
 
-	public function skip(): void
+	public function skip(int $position): void
 	{
 		if (!$this->currentSession)
 			return;
-		$currentAttempt = ClassRegistry::init('TimeModeAttempt')->find('first', [
-			'conditions' => [
-				'time_mode_session_id' => $this->currentSession['TimeModeSession']['id'],
-				'started NOT' => null,
-				'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]);
-		if (!$currentAttempt)
+		$attempt = $this->findAttemptToSkip($position);
+		if (!$attempt)
 			return;
-		$currentAttempt['TimeModeAttempt']['time_mode_attempt_status_id'] = TimeModeUtil::$ATTEMPT_STATUS_SKIPPED;
-		$seconds = min($this->overallSecondsToSolve, time() - strtotime($currentAttempt['TimeModeAttempt']['started']));
-		$currentAttempt['TimeModeAttempt']['seconds'] = $seconds;
-		$currentAttempt['TimeModeAttempt']['points'] = 0;
-		ClassRegistry::init('TimeModeAttempt')->save($currentAttempt);
+		$attempt['TimeModeAttempt']['time_mode_attempt_status_id'] = TimeModeUtil::$ATTEMPT_STATUS_SKIPPED;
+		$seconds = min($this->overallSecondsToSolve, time() - strtotime($attempt['TimeModeAttempt']['started']));
+		$attempt['TimeModeAttempt']['seconds'] = $seconds;
+		$attempt['TimeModeAttempt']['points'] = 0;
+		ClassRegistry::init('TimeModeAttempt')->save($attempt);
 		$this->currentOrder++;
 	}
 
-	// @return if not null, new tsumego id to show in the time mode
-	public function prepareNextToSolve(): ?int
+	/** The problem to give up on: the one at the given position, when it is being played. */
+	private function findAttemptToSkip(int $position): ?array
+	{
+		return ClassRegistry::init('TimeModeAttempt')->find('first', [
+			'conditions' => [
+				'time_mode_session_id' => $this->currentSession['TimeModeSession']['id'],
+				'order' => $position,
+				'started NOT' => null,
+				'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED],
+			'order' => 'id DESC']);
+	}
+
+	/**
+	 * The problem to present to the player: the one at this position when it is still open,
+	 * and otherwise the first one that follows it. A problem can stay unrecorded behind the
+	 * player, so when nothing from this position on is open, that is what they get to play.
+	 *
+	 * @return int|null the tsumego id to show, or null when there is nothing to play
+	 */
+	public function prepareToSolve(int $position): ?int
 	{
 		if (!$this->currentSession)
 			return null;
 
-		$this->secondsToSolve = $this->overallSecondsToSolve;
+		// Past the last problem: the session is over, but its score cannot be computed
+		// while a result is still on its way.
+		if ($position > $this->overallCount && $this->hasAResultOnItsWay())
+			return null;
 
-		// first one which doesn't have a status yet
-		$attempt = ClassRegistry::init('TimeModeAttempt')->find('first', [
-			'conditions' => [
-				'time_mode_session_id' => $this->currentSession['TimeModeSession']['id'],
-				'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED],
-			'order' => 'id ASC']);
+		return $this->serve($this->findOpenAttemptFrom($position) ?: $this->findOpenAttempt());
+	}
+
+	/**
+	 * The problem to present when no position was asked for: the first one that is still open.
+	 *
+	 * @return int|null the tsumego id to show, or null when there is nothing to play
+	 */
+	public function prepareWhateverIsLeft(): ?int
+	{
+		if (!$this->currentSession)
+			return null;
+
+		return $this->serve($this->findOpenAttempt());
+	}
+
+	/** Starts the clock on the problem to play, or gives up on it when its time ran out. */
+	private function serve(?array $attempt): ?int
+	{
+		$this->secondsToSolve = $this->overallSecondsToSolve;
+		$this->servedOrder = null;
 		if (!$attempt)
 			return null;
+
 		$attempt = $attempt['TimeModeAttempt'];
+		$this->servedOrder = (int) $attempt['order'];
 
 		if (!$attempt['started'])
 		{
@@ -225,16 +259,80 @@ class TimeMode
 			if ($this->secondsToSolve == 0)
 			{
 				$attempt['time_mode_attempt_status_id'] = TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT;
+				$attempt['seconds'] = $this->overallSecondsToSolve;
+				$attempt['points'] = 0;
 				ClassRegistry::init('TimeModeAttempt')->save($attempt);
-				return $this->prepareNextToSolve();
+				$this->currentOrder++;
+				return $this->prepareWhateverIsLeft();
 			}
 		}
 		return $attempt['tsumego_id'];
 	}
 
+	/** The first problem from this position on that has not been recorded yet. */
+	private function findOpenAttemptFrom(int $position): ?array
+	{
+		return ClassRegistry::init('TimeModeAttempt')->find('first', [
+			'conditions' => [
+				'time_mode_session_id' => $this->currentSession['TimeModeSession']['id'],
+				'order >=' => $position,
+				'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED],
+			'order' => 'TimeModeAttempt.order ASC']);
+	}
+
+	/** The first problem of the session that has not been recorded yet. */
+	private function findOpenAttempt(): ?array
+	{
+		return ClassRegistry::init('TimeModeAttempt')->find('first', [
+			'conditions' => [
+				'time_mode_session_id' => $this->currentSession['TimeModeSession']['id'],
+				'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED],
+			'order' => 'id ASC']);
+	}
+
+	/** True while a problem has been played but its result has not been recorded yet. */
+	private function hasAResultOnItsWay(): bool
+	{
+		return (bool) ClassRegistry::init('TimeModeAttempt')->find('count', [
+			'conditions' => [
+				'time_mode_session_id' => $this->currentSession['TimeModeSession']['id'],
+				'started NOT' => null,
+				'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]);
+	}
+
 	public function currentWillBeLast(): bool
 	{
-		return $this->currentOrder + 1 > $this->overallCount;
+		return $this->servedOrder !== null && $this->servedOrder == $this->overallCount;
+	}
+
+	/**
+	 * The position to show: the problem being presented, or when none is being
+	 * presented the first one that has not been recorded yet.
+	 */
+	public function currentPosition(): ?int
+	{
+		return $this->servedOrder ?? $this->currentOrder;
+	}
+
+	/**
+	 * True while the session is still being played, so it has no score to show yet.
+	 * The score is computed from the recorded attempts, and the recording of a result
+	 * lags behind the play, so a session can be over and still have attempts queued.
+	 */
+	public function hasNoResultYet(int $sessionID): bool
+	{
+		$session = ClassRegistry::init('TimeModeSession')->find('first', [
+			'conditions' => [
+				'id' => $sessionID,
+				'user_id' => Auth::getUserID(),
+				'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]]);
+		if (!$session)
+			return false;
+
+		return (bool) ClassRegistry::init('TimeModeAttempt')->find('count', [
+			'conditions' => [
+				'time_mode_session_id' => $sessionID,
+				'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]);
 	}
 
 	public function checkFinishSession(): ?int
@@ -262,8 +360,7 @@ class TimeMode
 		$this->currentSession['TimeModeSession']['time_mode_session_status_id'] = $sessionSuccessful ? TimeModeUtil::$SESSION_STATUS_SOLVED : TimeModeUtil::$SESSION_STATUS_FAILED;
 		$this->currentSession['TimeModeSession']['points'] = $overallPoints;
 		ClassRegistry::init('TimeModeSession')->save($this->currentSession);
-		Auth::getUser()['mode'] = Constants::$LEVEL_MODE;
-		Auth::saveUser();
+		Auth::saveUserField('mode', Constants::$LEVEL_MODE);
 
 		return $this->currentSession['TimeModeSession']['id'];
 	}
@@ -294,10 +391,11 @@ class TimeMode
 
 	public $currentSession;
 	public $rank;
-	public $secondsToSolve = 0; // remaining time
+	public int $secondsToSolve = 0; // remaining time
 	public $overallSecondsToSolve; // the time to solve the problem
-	public $successCount = 0;
-	public $failCount = 0;
-	public $overallCount = 0;
-	public $currentOrder;
+	public int $successCount = 0;
+	public int $failCount = 0;
+	public int $overallCount = 0;
+	public ?int $currentOrder = null;
+	public ?int $servedOrder = null;
 }

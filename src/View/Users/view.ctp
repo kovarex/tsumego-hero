@@ -1,138 +1,86 @@
 <?php
-require_once __DIR__ . "/../../Utility/ValueGraphRenderer.php";
-require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
+
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\HeroPowers;
+use App\Utility\Level;
+use App\Utility\Rating;
+use App\Utility\TimeGraphRenderer;
+use App\Utility\Util;
+use App\Utility\ValueGraphRenderer;
+
+/**
+ * @var View $this
+ * @var array $aCount
+ * @var int $aNum
+ * @var int $aEarnedTimes
+ * @var array $as
+ * @var array $dailyResults
+ * @var array|null $mistakeTraining
+ * @var array $timeGraph
+ * @var array $timeModeRanks
+ * @var int $tsumegoCount
+ * @var array $user
+ */
 ?>
 
 <?php TimeGraphRenderer::renderScriptInclude(); ?>
 
-<div class="homeCenter2">
-	<div class="user-header-container">
-		<div class="user-header1">
-		<p class="title6">Profile</p>
-		</div>
-	<div class="user-header2">
-		<a href="/tags/user/<?php echo $user['User']['id']; ?>" id="navigate-to-contributions" class="new-button-time">contributions</a>
-	</div>
-</div>
-<div class="userInfoContainerRow1">
-	<div class="userStatsGreen">
-		<table class="userTopTable1" id="name-and-email-table">
-		<tr>
-			<td><?php echo $user['User']['name']; ?></td>
-			<td><?php User::renderPremium($user['User']); ?></td>
-		</tr>
-		<?php
-		if (Auth::getUserID() == $user['User']['id'])
-		{
-			echo '<tr>';
-			echo '<td>'.$user['User']['email'].'</td>';
-			echo '<td><a id="show" style="color:#74d14c;">change</a></td>';
-			echo '</tr>';
-			echo '<tr>';
-			echo '<td colspan=2>';
-			echo '<div id="msg2">';
-			echo $this->Form->create('User');
-			echo $this->Form->input('email', array('label' => '', 'type' => 'text', 'placeholder' => 'E-Mail'));
-			echo '<div class="submit"><input style="margin:0px;" value="Submit" type="submit"></div>';
-			echo '</div>';
-			echo '</td></tr>';
-		}
-		?>
-		</table>
-	</div>
-	<div class="userStatsGreen">
-	<table class="userTopTable1" border="0" width="100%">
-	<tr>
-	<td>
-	<div align="center">
-		Your rank:<br>
-		<?php
-			if (RatingBounds::fromRanks('15k', '9d')->containsRating($user['User']['rating']))
-				echo '<img id="profileRankImage" src="/img/' . Rating::getReadableRankFromRating($user['User']['rating']) . 'Rank.png" width="76px">';
-			else
-				echo Rating::getReadableRankFromRating($user['User']['rating']);
-		?>
-	</div>
-	</td>
-	</tr>
-	</table>
-	</div>
-	<div class="userStatsGreen">
-	<table class="userTopTable1" border="0">
-	<tr>
-	<td>
-		Progress bar preference:<br><br>
-	<?php
-		$levelBarDisplayChecked1 = '';
-		$levelBarDisplayChecked2 = '';
-		if ($levelBar == 1)
-			$levelBarDisplayChecked1 = 'checked="checked"';
-		else
-			$levelBarDisplayChecked2 = 'checked="checked"';
-	?>
-	<input type="radio" id="levelBarDisplay1" name="levelBarDisplay" value="1" onclick="levelBarChange(1);" <?php echo $levelBarDisplayChecked1; ?>> <b id="levelBarDisplay1text">Show level</b><br>
-	<input type="radio" id="levelBarDisplay2" name="levelBarDisplay" value="2" onclick="levelBarChange(2);" <?php echo $levelBarDisplayChecked2; ?>> <b id="levelBarDisplay2text">Show rating</b><br>
-	</td>
-	</tr>
-	</table>
-	</div>
-	<div class="userStatsGreen">
-	<table class="userTopTable1" border="0">
-	<tr>
-	<td>
-		<?php
-		echo '<font style="font-weight:800;color:#74d14c" >' . round(Util::getPercent($user['User']['solved'], $tsumegoCount), 1) . '%. completed</font><br>';
-		if (Auth::getUserID() == $user['User']['id'])
-		{
-			if ($canResetOldTsumegoStatuses)
-				echo '<br><br><a class="new-button" href="#" onclick="delUts(); return false;" id="reset-statuses-button">Reset (' . $tsumegoStatusToRestCount . ')</a><br><br>';
-			else
-			{
-				echo '<br><br><a class="new-button-inactive" href="#" id="reset-statuses-button">Reset (' . $tsumegoStatusToRestCount . ')</a><br><br>';
-				echo 'If you have completed at least '.Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED.'%, you can reset progress older than 1 year.<br>';
-			}
-		}
-		if ($deletedTsumegoStatusCount > 0)
-			echo '<font style="font-weight:800;color:#74d14c" >The progress of '.$deletedTsumegoStatusCount.' problems has been deleted.</font><br>';
-		?>
-	</td>
-	</tr>
-	</table>
-	</div>
-</div>
+<div>
+	<?php echo $this->element('user_header', ['user' => $user['User'], 'activeTab' => 'profile']); ?>
 
-<div class="userInfoContainerRow2">
-	<div class="userStatsPurple">
-		<table class="userTopTable1" id="level-info-table">
+<div class="cluster cluster--stretch">
+	<div class="card card--purple">
+		<table class="stat" id="level-info-table">
 			<tr>
 				<td>Level:</td>
 				<td><?php echo $user['User']['level']; ?></td>
 			</tr>
 			<tr>
-				<td>Level up:</td>
-				<td><?php echo $user['User']['xp'].'/'.Level::getXPForNext($user['User']['level']); ?></td>
+				<td>Next level:</td>
+				<td><?php echo $user['User']['xp'] . '/' . Level::getXPForNext($user['User']['level']) . ' XP'; ?></td>
 			</tr>
 			<tr>
-				<td>XP earned:</td>
-				<td><?php echo Level::getOverallXPGained($user['User']).' XP'; ?></td>
+				<td colspan="2">
+					<?php
+					$xpForNext = Level::getXPForNext($user['User']['level']);
+					$xpPercent = $xpForNext > 0 ? round($user['User']['xp'] / $xpForNext * 100) : 0;
+					?>
+					<div class="progress">
+						<div class="progress__fill" style="width:<?php echo $xpPercent; ?>%"></div>
+						<div class="progress__label"><?php echo $xpPercent; ?>%</div>
+					</div>
+				</td>
 			</tr>
 			<tr>
 				<td>Health:</td>
-				<td><?php echo Util::getHealthBasedOnLevel($user['User']['level']).' HP'; ?></td>
+				<td>
+					<?php
+					$maxHealth = Util::getHealthBasedOnLevel($user['User']['level']);
+					$remainingHealth = max(0, $maxHealth - ($user['User']['damage'] ?? 0));
+					echo $remainingHealth . '/' . $maxHealth . ' HP';
+					?>
+				</td>
 			</tr>
 			<tr>
-				<td>Hero powers:</td>
-				<td><?php echo User::getHeroPowersCount($user['User']); ?></td>
+				<td colspan="2">
+					<?php $healthPercent = $maxHealth > 0 ? round($remainingHealth / $maxHealth * 100) : 0; ?>
+					<div class="progress">
+						<div class="progress__fill progress__fill--tonal" style="--percent:<?php echo $healthPercent; ?>;width:<?php echo $healthPercent; ?>%"></div>
+					</div>
+				</td>
 			</tr>
 		</table>
 	</div>
 
 	<?php $highestRating = User::getHighestRating($user['User']); ?>
-	<div class="userStatsPurple">
-		<table class="userTopTable1" id="rank-info-table">
+	<div class="card card--purple">
+		<table class="stat" id="rank-info-table">
 			<tr>
-				<td>Rank:</td>
-				<td><?php echo Rating::getReadableRankFromRating($user['User']['rating']); ?></td>
+				<td colspan="2" class="rank"><span class="rank__label">Rank</span></td>
+			</tr>
+			<tr>
+				<td colspan="2" class="rank"><span class="rank-icon"><?php echo Rating::getReadableRankFromRating($user['User']['rating']); ?></span></td>
 			</tr>
 			<tr>
 				<td>Rating:</td>
@@ -149,8 +97,8 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 		</table>
 	</div>
 
-	<div class="userStatsPurple">
-		<table class="userTopTable1" id="time-mode-info-table">
+	<div class="card card--purple">
+		<table class="stat" id="time-mode-info-table">
 			<?php
 			foreach ($timeModeRanks as $timeModeRank)
 			{
@@ -160,23 +108,81 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 		</table>
 	</div>
 
-	<div class="userStatsPurple">
-		<table class="userTopTable1" id="final-info-table">
+	<div class="card card--purple">
+		<table class="stat" id="final-info-table">
+			<?php if ($user['User']['created']): ?>
 			<tr>
-				<td>Overall solved:</td>
+				<td>Member since:</td>
+				<td><?php echo date('F Y', strtotime($user['User']['created'])); ?></td>
+			</tr>
+			<?php endif; ?>
+			<tr>
+				<td>Completed:</td>
 				<td><?php echo $user['User']['solved'] . ' of ' . $tsumegoCount; ?></td>
 			</tr>
 			<tr>
-				<td>Overall %:</td>
-				<td><?php echo Util::getPercentButAvoid100UntilComplete($user['User']['solved'], $tsumegoCount) . '%'; ?></td>
+				<td colspan="2">
+					<?php $completedPercent = Util::getPercentButAvoid100UntilComplete($user['User']['solved'], $tsumegoCount); ?>
+					<div class="progress">
+						<div class="progress__fill" style="width:<?php echo $completedPercent; ?>%"></div>
+						<div class="progress__label"><?php echo $completedPercent; ?>%</div>
+					</div>
+				</td>
 			</tr>
 			<tr>
 				<td>Achievements:</td>
-				<td><?php echo $aNum.'/'.count($aCount); ?></td>
+				<td><?php echo $aNum . ' of ' . count($aCount) . AchievementHelper::renderEarnedTimes($aEarnedTimes); ?></td>
+			</tr>
+			<tr>
+				<td colspan="2">
+					<?php $achievementPercent = count($aCount) > 0 ? round($aNum / count($aCount) * 100) : 0; ?>
+					<div class="progress">
+						<div class="progress__fill" style="width:<?php echo $achievementPercent; ?>%"></div>
+						<div class="progress__label"><?php echo $achievementPercent; ?>%</div>
+					</div>
+				</td>
 			</tr>
 		</table>
 	</div>
 </div>
+<?php
+$heroPowers = HeroPowers::getPowers();
+$maxPowerLevel = max(array_column($heroPowers, 'level'));
+$isPremium = HeroPowers::hasPremiumUnlock($user['User']);
+$hasRevelationBonus = HeroPowers::hasContributionRevelationBonus($user['User']);
+$unlockedCount = 0;
+foreach ($heroPowers as $power)
+{
+	if ($user['User']['level'] >= $power['level'])
+		$unlockedCount++;
+}
+?>
+<div class="hero-powers">
+	<div class="hero-powers__title">Hero Powers: <?php echo $unlockedCount . ' of ' . count($heroPowers); ?> unlocked</div>
+	<div class="hero-powers__timeline">
+		<div class="hero-powers__track">
+			<div class="hero-powers__fill" style="width:<?php echo min(100, round($user['User']['level'] / $maxPowerLevel * 100)); ?>%"></div>
+		</div>
+		<?php foreach ($heroPowers as $power):
+			$pos = round($power['level'] / $maxPowerLevel * 100);
+			$isUnlocked = $user['User']['level'] >= $power['level'];
+		?>
+		<div class="hero-powers__marker<?php echo $isUnlocked ? ' hero-powers__marker--unlocked' : ''; ?>" style="left:<?php echo $pos; ?>%" title="<?php echo $power['description']; ?>">
+			<div class="hero-powers__dot"></div>
+			<div class="hero-powers__name"><?php echo $power['name']; ?></div>
+			<div class="hero-powers__level">Lv <?php echo $power['level']; ?></div>
+			<?php if (!empty($power['premium']) && $isPremium): ?>
+				<div class="badge badge--active" title="Unlocked via premium">Premium</div>
+			<?php endif; ?>
+			<?php if (!empty($power['bonus']) && $hasRevelationBonus): ?>
+				<div class="badge badge--active" title="<?php echo $power['bonus']; ?>">+1 use</div>
+			<?php endif; ?>
+		</div>
+		<?php endforeach; ?>
+	</div>
+</div>
+<?php if ($mistakeTraining !== null)
+	echo $this->element('mistake_training_profile', ['training' => $mistakeTraining]); ?>
 <?php
 	$size = count($dailyResults);
 	if ($size < 10)
@@ -193,18 +199,18 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 	<tr>
 	<td width="50%">
 		<div align="center">
-			<a id="userShowLevelButtonLeft" class="new-button-time" onclick="activateSelection('level', 'Left');">Level</a>
-			<a id="userShowRatingButtonLeft" class="new-button-time" onclick="activateSelection('rating', 'Left');">Rating</a>
-			<a id="userShowTimeButtonLeft" class="new-button-time" onclick="activateSelection('time', 'Left');">Time</a>
-			<a id="userShowAchievementsButtonLeft" class="new-button-time" onclick="activateSelection('achievement', 'Left');">Achievements</a>
+			<a id="userShowLevelButtonLeft" class="btn" onclick="activateSelection('level', 'Left');">Level</a>
+			<a id="userShowRatingButtonLeft" class="btn" onclick="activateSelection('rating', 'Left');">Rating</a>
+			<a id="userShowTimeButtonLeft" class="btn" onclick="activateSelection('time', 'Left');">Time</a>
+			<a id="userShowAchievementsButtonLeft" class="btn" onclick="activateSelection('achievement', 'Left');">Achievements</a>
 		</div>
 	</td>
 	<td width="50%">
 		<div align="center">
-			<a id="userShowLevelButtonRight" class="new-button-time" onclick="activateSelection('level', 'Right');">Level</a>
-			<a id="userShowRatingButtonRight" class="new-button-time" onclick="activateSelection('rating', 'Right');">Rating</a>
-			<a id="userShowTimeButtonRight" class="new-button-time" onclick="activateSelection('time', 'Right');">Time</a>
-			<a id="userShowAchievementsButtonRight" class="new-button-time" onclick="activateSelection('achievement', 'Right');">Achievements</a>
+			<a id="userShowLevelButtonRight" class="btn" onclick="activateSelection('level', 'Right');">Level</a>
+			<a id="userShowRatingButtonRight" class="btn" onclick="activateSelection('rating', 'Right');">Rating</a>
+			<a id="userShowTimeButtonRight" class="btn" onclick="activateSelection('time', 'Right');">Time</a>
+			<a id="userShowAchievementsButtonRight" class="btn" onclick="activateSelection('achievement', 'Right');">Achievements</a>
 		</div>
 	</td>
 	</tr>
@@ -213,6 +219,8 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 	<table class="profileTable" width="100%" border="0">
 		<tr>
 			<?php
+if (!function_exists('showStatistics'))
+{
 function showStatistics($side, $as, $user, $dailyResults)
 {
 	echo '
@@ -226,9 +234,6 @@ function showStatistics($side, $as, $user, $dailyResults)
 				<div id="chartContainer">';
 	TimeGraphRenderer::render('Overall rating', 'chart-rating-' . $side, $dailyResults, 'Rating');
 	echo '</div>
-				<div align="center">
-					<a href="/users/solveHistory/' .$user['User']['id'] . '">Show solve history</a>
-				</div>
 			</div>
 			<div id="userShowTime' . $side . '">
 				<div id="chartContainer">
@@ -239,7 +244,7 @@ function showStatistics($side, $as, $user, $dailyResults)
 				<table width="95%" border="0">
 					<tr>
 						<td class="h1profile"><h1 class="h1">Achievements</h1></td>
-						<td style="text-align:right;"><b class="profileTable2"><a href="/achievements">View Achievements</a></b></td>
+						<td style="text-align:right;"><b class="profileTable2"><a href="/achievements/user/' . $user['User']['id'] . '">View Achievements</a></b></td>
 					</tr>
 				</table>';
 	for($i=0; $i<count($as); $i++)
@@ -247,23 +252,22 @@ function showStatistics($side, $as, $user, $dailyResults)
 		if (strlen($as[$i]['AchievementStatus']['a_title']) > 30)
 			$adjust = 'style="font-weight:normal;font-size:17px;"';
 		else $adjust = '';
+		$earnedCount = (int) ($as[$i]['AchievementStatus']['a_earned_count'] ?? 1);
 	?>
-		<a href="/achievements/view/<?php echo $as[$i]['AchievementStatus']['a_id']; ?>">
+		<a href="/achievements/view/<?php echo $as[$i]['AchievementStatus']['a_id'] . '/' . $user['User']['id']; ?>">
 		<div align="center" class="achievementSmall <?php echo $as[$i]['AchievementStatus']['a_color']; ?>">
 			<div class="acTitle2">
-				<b <?php echo $adjust; ?>><?php echo $as[$i]['AchievementStatus']['a_title']; ?></b>
+				<b <?php echo $adjust; ?>><?php echo h($as[$i]['AchievementStatus']['a_title']); ?></b>
 			</div>
 			<div class="acImg">
-				<img src="/img/<?php echo $as[$i]['AchievementStatus']['a_image']; ?>.png" title="<?php echo $as[$i]['AchievementStatus']['a_description']; ?>">
+				<img src="/img/<?php echo h($as[$i]['AchievementStatus']['a_image']); ?>.png" title="<?php echo h($as[$i]['AchievementStatus']['a_description']); ?>">
+				<?php echo AchievementHelper::renderEarnedBadge($earnedCount); ?>
 				<div class="acImgXp">
 				<?php echo $as[$i]['AchievementStatus']['a_xp']; ?> XP
 				</div>
 			</div>
 			<div class="acDate2">
-				<?php
-				$date = date_create($as[$i]['AchievementStatus']['created']);
-				echo date_format($date,"d.m.Y H:i");
-				?>
+				<time datetime="<?php echo Util::toIso8601($as[$i]['AchievementStatus']['created']) ?>" data-format="datetime"><?php echo h($as[$i]['AchievementStatus']['created']) ?></time>
 			</div>
 		</div>
 		</a>
@@ -272,40 +276,19 @@ function showStatistics($side, $as, $user, $dailyResults)
 	</td>
 <?php
 }
+} // function_exists
 showStatistics('Left', $as, $user, $dailyResults);
 showStatistics('Right', $as, $user, $dailyResults); ?>
 	</tr></table>
-	<div width="100%" align="right">
-		<?php
-		if (Auth::getUserID() == $user['User']['id'])
-		{
-			if($user['User']['dbstorage'] != 1111)
-				echo '<div><a style="color:gray;" href="/users/delete_account">Request account deletion</a></div><br>';
-			else
-			{
-				echo '<p style="color:#d63a49;">You have requested account deletion.&nbsp;';
-				echo '<a class="new-button-default" href="/users/view/'.$user['User']['id'].'?undo='.($user['User']['id']*1111).'">Undo</a></p>';
-			}
-			if(Auth::isAdmin())
-				echo '<div><a style="color:gray;" href="/users/demote_admin">Remove admin status</a></div><br>';
-		}
-		?>
-	</div>
 </div>
 
 <script>
 activateSelection(getCookie('lastProfileLeft'), 'Left');
 activateSelection(getCookie('lastProfileRight'), 'Right');
 
-$("#msg2").hide();
-$("#show").click(function(){
-	$("#msg2").show();
-});
-
 function updateButtonActivity(id, side, active)
 {
-	$("#" + id + 'Button' + side).addClass("new-button-time-" + (!active ? 'inactive' : ''));
-	$("#" + id + 'Button' + side).removeClass("new-button-time-" + (active ? 'inactive' : ''));
+	$("#" + id + 'Button' + side).toggleClass("btn--inactive", !active);
 	if (active)
 		$("#" + id + side).fadeIn(250);
 	else
@@ -329,12 +312,6 @@ function activateSelection(selection, side)
 	updateButtonActivity('userShowAchievements', side, selection == 'achievement');
 }
 
-function delUts(){
-	var dNum = "<?php echo $tsumegoStatusToRestCount; ?>";
-	var confirmed = confirm("Are you sure that you want to delete your progress on "+dNum+" problems?");
-	if (confirmed)
-		window.location.href = '/users/deleteOldTsumegoStatuses/<?php echo Auth::getUserID(); ?>';
-}
 </script>
 <script>
 <?php
@@ -362,31 +339,3 @@ function delUts(){
 	}
 	?>
 </script>
-<script>
-</script>
-<style>
-.new-button-time-inactive
-{
-	cursor:pointer;
-}
-
-.userTopTable1 td
-{
-	vertical-align:top;padding:7px;
-	text-align:left;
-	width:50%;
-}
-.user-header-container{
-	width:100%;
-	height:50px;
-}
-.user-header1{
-	width:50%;
-	float:left;
-}
-.user-header2{
-	width:50%;
-	float:left;
-	margin-top: 14px;
-}
-</style>

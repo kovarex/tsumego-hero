@@ -12,6 +12,7 @@ class AdminActivityType extends AppModel
 	public const RATING_EDIT = 20;
 	public const MINIMUM_RATING_EDIT = 21;
 	public const MAXIMUM_RATING_EDIT = 22;
+	public const SGF_EDIT = 27;
 
 	// Problem Settings (multi-state: 0=disabled, 1=enabled)
 	public const ALTERNATIVE_RESPONSE = 4;
@@ -41,7 +42,19 @@ class AdminActivityType extends AppModel
 	// Tags
 	public const ACCEPT_TAG = 23;
 	public const REJECT_TAG = 24;
+	public const ADD_TAG = 28; // An admin adds a tag to a problem. It doesn't need to be accepted.
+
+	// Proposals
+	public const ACCEPT_PROPOSAL = 29;
+	public const REJECT_PROPOSAL = 30;
 
 	// Tsumego merge
 	public const TSUMEGO_MERGE = 25;
+
+	// Delete user
+	public const DELETE_USER = 26;
+	public const RESTORE_USER = 31;
+
+	// Display name
+	public const DISPLAY_NAME_CHANGE = 32;
 }

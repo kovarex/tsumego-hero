@@ -1,13 +1,55 @@
 <?php
 
+namespace App\Utility;
+
+use ClassRegistry;
+use DateTime;
+
+/**
+ * @phpstan-import-type UserRow from \App\Utility\RowTypes
+ */
 class HeroPowers
 {
-	public static $SPRINT_MINIMUM_LEVEL = 20;
-	public static $INTUITION_MINIMUM_LEVEL = 30;
-	public static $REJUVENATION_MINIMUM_LEVEL = 40;
-	public static $POTION_MINIMUM_LEVEL = 50;
-	public static $REVELATION_MINIMUM_LEVEL = 80;
-	public static $REFINEMENT_MINIMUM_LEVEL = 100;
+	public static int $SPRINT_MINIMUM_LEVEL = 20;
+	public static int $INTUITION_MINIMUM_LEVEL = 30;
+	public static int $REJUVENATION_MINIMUM_LEVEL = 40;
+	public static int $POTION_MINIMUM_LEVEL = 50;
+	public static float $POTION_CHANCE_PER_DEATH = 0.5;
+	public static int $BAD_POTION_THRESHOLD = 15;
+	public static int $REVELATION_MINIMUM_LEVEL = 80;
+	public static int $REFINEMENT_MINIMUM_LEVEL = 100;
+
+	public static function getPowers(): array
+	{
+		return [
+			['name' => 'Sprint', 'level' => self::$SPRINT_MINIMUM_LEVEL, 'description' => 'Speed solving'],
+			['name' => 'Intuition', 'level' => self::$INTUITION_MINIMUM_LEVEL, 'description' => 'Shows first correct move'],
+			['name' => 'Rejuvenation', 'level' => self::$REJUVENATION_MINIMUM_LEVEL, 'description' => 'Restores health and locks'],
+			['name' => 'Potion', 'level' => self::$POTION_MINIMUM_LEVEL, 'description' => 'Chance to restore health', 'premium' => true],
+			['name' => 'Revelation', 'level' => self::$REVELATION_MINIMUM_LEVEL, 'description' => 'Solves a problem', 'bonus' => 'Contribution reward grants an additional use'],
+			['name' => 'Refinement', 'level' => self::$REFINEMENT_MINIMUM_LEVEL, 'description' => 'Golden tsumego chance', 'premium' => true],
+		];
+	}
+
+	/**
+	 * @param UserRow $user
+	 */
+	public static function hasPremiumUnlock(array $user): bool
+	{
+		return (int) ($user['premium'] ?? 0) > 0;
+	}
+
+	/**
+	 * @param UserRow $user
+	 */
+	public static function hasContributionRevelationBonus(array $user): bool
+	{
+		$userId = (int) ($user['id'] ?? 0);
+		if ($userId && ($contribution = ClassRegistry::init('UserContribution')->find('first', ['conditions' => ['user_id' => $userId]])))
+			if (!empty($contribution['UserContribution']['reward3']))
+				return true;
+		return false;
+	}
 
 	public static function render(): void
 	{
@@ -31,38 +73,26 @@ class HeroPowers
 		echo self::canUseRefinement() ? "enableRefinement();" : "disableRefinement();";
 	}
 
-	public static function changeUserSoRejuvenationCanBeUsed()
-	{
-		Auth::getUser()['level'] = self::$REJUVENATION_MINIMUM_LEVEL;
-		Auth::saveUser();
-	}
-
-	public static function canUseRejuvanation()
+	public static function canUseRejuvanation(): bool
 	{
 		if (Auth::getWithDefault('level', 0) < self::$REJUVENATION_MINIMUM_LEVEL)
 			return false;
 		return !Auth::getUser()['used_rejuvenation'];
 	}
 
-	public static function renderRejuvenation()
+	public static function renderRejuvenation(): void
 	{
 		echo '<img id="rejuvenation" title="Rejuvenation (Level ' . self::$REJUVENATION_MINIMUM_LEVEL . '): Restores health, Intuition and locks.">';
 	}
 
-	public static function changeUserSoIntuitionCanBeUsed()
-	{
-		Auth::getUser()['level'] = self::$INTUITION_MINIMUM_LEVEL;
-		Auth::saveUser();
-	}
-
-	public static function canUseIntuition()
+	public static function canUseIntuition(): bool
 	{
 		if (Auth::getWithDefault('level', 0) < self::$INTUITION_MINIMUM_LEVEL)
 			return false;
 		return !Auth::getUser()['used_intuition'];
 	}
 
-	public static function renderIntuition()
+	public static function renderIntuition(): void
 	{
 		echo '<img id="intuition" title="Intuition (Level ' . self::$INTUITION_MINIMUM_LEVEL . ') : Shows the first correct move." alt="Intuition">';
 	}
@@ -94,7 +124,7 @@ class HeroPowers
 		return self::getRevelationUseCount() - Auth::getUser()['used_revelation'];
 	}
 
-	public static function renderRevelation()
+	public static function renderRevelation(): void
 	{
 		if (self::getRevelationUseCount() == 0)
 			return;
@@ -113,14 +143,7 @@ class HeroPowers
 		echo ' style="cursor:' . (self::canUseRevelation() ? 'pointer' : 'auto') . '"></a>';
 	}
 
-	public static function changeUserSoSprintCanBeUsed()
-	{
-		Auth::getUser()['level'] = self::$SPRINT_MINIMUM_LEVEL;
-		Auth::getUser()['mode'] = Constants::$LEVEL_MODE;
-		Auth::saveUser();
-	}
-
-	public static function canUseSprint()
+	public static function canUseSprint(): bool
 	{
 		if (Auth::getWithDefault('level', 0) < self::$SPRINT_MINIMUM_LEVEL)
 			return false;
@@ -129,7 +152,7 @@ class HeroPowers
 		return !Auth::getUser()['used_sprint'];
 	}
 
-	public static function getSprintRemainingSeconds()
+	public static function getSprintRemainingSeconds(): int
 	{
 		if (!Auth::isLoggedIn())
 			return 0;
@@ -143,35 +166,39 @@ class HeroPowers
 		return max(0, Constants::$SPRINT_SECONDS - ($now->getTimestamp() - $start->getTimestamp()));
 	}
 
-	public static function renderSprint()
+	public static function renderSprint(): void
 	{
 		echo '<img id="sprint" title="Sprint: Double XP for 2 minutes." alt="Sprint"></a>';
 	}
 
-	public static function isPotionActive()
+	public static function canPotionTrigger(): bool
 	{
+		if (!Auth::isLoggedIn())
+			return false;
 		if (!Auth::hasPremium() && Auth::getUser()['level'] < self::$POTION_MINIMUM_LEVEL)
 			return false;
-		if (!Auth::getUser()['used_potion'])
+		if (Auth::getUser()['used_potion'])
 			return false;
 		return Auth::getUser()['damage'] >= Util::getHealthBasedOnLevel(Auth::getUser()['level']);
 	}
 
-	public static function canUseRefinement()
+	public static function canUseRefinement(): bool
 	{
+		if (!Auth::isLoggedIn())
+			return false;
 		if (!Auth::hasPremium() && Auth::getWithDefault('level', 0) < self::$REFINEMENT_MINIMUM_LEVEL)
 			return false;
 		return !Auth::getUser()['used_refinement'];
 	}
 
-	private static function renderRefinement()
+	private static function renderRefinement(): void
 	{
 		echo '<img id="refinement" title="Refinement (Level ' . self::$REFINEMENT_MINIMUM_LEVEL . '): Gives you a chance to solve a golden tsumego. If you fail, it disappears.">';
 	}
 
-	private static function renderPotion()
+	private static function renderPotion(): void
 	{
-		if (self::isPotionActive())
+		if (self::canPotionTrigger())
 			echo '<img id="potion" title="Potion (Passive): If you misplay and have no hearts left, you have a small chance to restore your health." src="/img/hp5.png">';
 	}
 }

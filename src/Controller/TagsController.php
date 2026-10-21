@@ -1,16 +1,26 @@
 <?php
 
+use App\Utility\Auth;
+use App\Utility\ContributionRow;
+use App\Utility\CookieFlash;
+use App\Utility\HtmlSanitizer;
+use App\Utility\Util;
+use App\Attribute\HttpPost;
+
 class TagsController extends AppController
 {
-	public function add()
+	public function add(): void
 	{
+		$this->Authorization->authorize('Tag', 'add');
 		$allTags = $this->getAllTags();
 		$this->set('allTags', $allTags);
 	}
 
+	#[HttpPost]
 	public function addAction(): CakeResponse
 	{
-		$tagName = $this->data['tag_name'];
+		$this->Authorization->authorize('Tag', 'add');
+		$tagName = $this->request->data['tag_name'];
 		if (empty($tagName))
 		{
 			CookieFlash::set('Tag name not provided', 'error');
@@ -24,11 +34,18 @@ class TagsController extends AppController
 			return $this->redirect('/tags/add');
 		}
 
+		$tagDescription = $this->request->data['tag_description'];
+		if (empty($tagDescription))
+		{
+			CookieFlash::set('Tag description not provided', 'error');
+			return $this->redirect('/tags/add');
+		}
+
 		$tag = [];
 		$tag['name'] = $tagName;
-		$tag['description'] = $this->data['tag_description'];
-		$tag['hint'] = $this->data['tag_hint'];
-		$tag['link'] = $this->data['tag_reference'];
+		$tag['description'] = HtmlSanitizer::sanitize((string) $tagDescription);
+		$tag['hint'] = (int) $this->request->data['tag_hint'];
+		$tag['link'] = trim((string) ($this->request->data['tag_reference'] ?? ''));
 		$tag['user_id'] = Auth::getUserID();
 		$tag['approved'] = Auth::isAdmin() ? 1 : 0;
 		ClassRegistry::init('Tag')->save($tag);
@@ -39,211 +56,100 @@ class TagsController extends AppController
 	}
 
 	/**
-	 * @param string|int|null $id
+	 * @param string|null $id
 	 * @return void
 	 */
-	public function view($id = null)
+	public function view(?string $id = null): void
 	{
 		$tn = $this->Tag->findById($id);
+		if (!$tn)
+			throw new NotFoundException('Tag not found');
 		$allTags = $this->getAllTags();
 		$user = $this->User->findById($tn['Tag']['user_id']);
-		$tn['Tag']['user'] = $user['User']['name'];
+		$tn['Tag']['user'] = $user ? $user['User'] : null;
 		$this->set('allTags', $allTags);
 		$this->set('tn', $tn);
+		$this->set('canAddTag', $this->Authorization->can('Tag', 'add'));
+		$this->set('canDeleteTag', $this->Authorization->can('Tag', 'delete'));
 	}
 
 	/**
-	 * @param string|int|null $id User ID
+	 * @param string $id User ID
 	 * @return void
 	 */
-	public function user($id)
+	public function user(string $id): void
 	{
-		$this->loadModel('Sgf');
-		$this->loadModel('Reject');
-
-		$list = [];
-		$listCreated = [];
-		$listType = [];
-		$listTid = [];
-		$listTsumego = [];
-		$listUser = [];
-		$listStatus = [];
-		$listTag = [];
-
 		$u = $this->User->findById($id);
-		$tagNames = $this->Tag->find('all', ['limit' => 50, 'order' => 'created DESC', 'conditions' => ['user_id' => $id, 'approved' => 1]]);
-		if (!$tagNames)
-			$tagNames = [];
-		$tags = ClassRegistry::init('TagConnection')->find('all', ['limit' => 50, 'order' => 'created DESC', 'conditions' => ['user_id' => $id, 'approved' => 1]]) ?: [];
-		$proposals = $this->Sgf->find('all', [
-			'limit' => 50,
-			'order' => 'created DESC',
-			'conditions' => ['user_id' => $id],
-		]) ?: [];
-		$rejectedProposals = $this->Reject->find('all', ['limit' => 50, 'order' => 'created DESC', 'conditions' => ['user_id' => $id, 'type' => 'proposal']]) ?: [];
-		$rejectedTags = $this->Reject->find('all', ['limit' => 50, 'order' => 'created DESC', 'conditions' => ['user_id' => $id, 'type' => 'tag']]) ?: [];
-		$rejectedTagNames = $this->Reject->find('all', ['limit' => 50, 'order' => 'created DESC', 'conditions' => ['user_id' => $id, 'type' => 'tag name']]) ?: [];
-		$tagNamesCount = count($tagNames);
-		for ($i = 0; $i < $tagNamesCount; $i++)
-		{
-			$ux = $this->User->findById($tagNames[$i]['Tag']['user_id']);
-			$tagNames[$i]['Tag']['status'] = '<b style="color:#047804">accepted</b>';
-			$tagNames[$i]['Tag']['type'] = 'tag name';
-			$tagNames[$i]['Tag']['user'] = $ux['User']['name'];
+		if (!$u)
+			throw new NotFoundException('User not found');
+		$this->assertUserVisible($u['User']);
 
-			$listCreated[] = $tagNames[$i]['Tag']['created'];
-			$listType[] = 'tag name';
-			$listTid[] = '';
-			$listTsumego[] = '';
-			$listUser[] = $tagNames[$i]['Tag']['user'];
-			$listStatus[] = $tagNames[$i]['Tag']['status'];
-			$listTag[] = $tagNames[$i]['Tag']['name'];
-		}
-		$rejectedTagNamesCount = count($rejectedTagNames);
-		for ($i = 0; $i < $rejectedTagNamesCount; $i++)
-		{
-			$ux = $this->User->findById($rejectedTagNames[$i]['Reject']['user_id']);
-			$r = [];
-			$r['Tag']['name'] = $rejectedTagNames[$i]['Reject']['text'];
-			$r['Tag']['type'] = $rejectedTagNames[$i]['Reject']['type'];
-			$r['Tag']['status'] = '<b style="color:#ce3a47">rejected</b>';
-			$r['Tag']['created'] = $rejectedTagNames[$i]['Reject']['created'];
-			$r['Tag']['user'] = $ux['User']['name'];
-			$tagNames[] = $r;
+		$pageSize = 50;
+		$pageIndex = isset($this->request->query['page']) ? max(1, (int) $this->request->query['page']) : 1;
+		$offset = ($pageIndex - 1) * $pageSize;
 
-			$listCreated[] = $r['Tag']['created'];
-			$listType[] = 'tag name';
-			$listTid[] = '';
-			$listTsumego[] = '';
-			$listUser[] = $r['Tag']['user'];
-			$listStatus[] = $r['Tag']['status'];
-			$listTag[] = $r['Tag']['name'];
-		}
+		$rows = Util::query(
+			'SELECT SQL_CALC_FOUND_ROWS type, status, created, tag_id, tag, tsumego_id, tsumego_label, row_id FROM ('
+				// Tag names: accepted + pending
+				. 'SELECT \'tag name\' AS type, IF(t.approved, \'accepted\', \'pending\') AS status, t.created, t.id AS tag_id, t.name AS tag, \'\' AS tsumego_id, \'\' AS tsumego_label, t.id AS row_id '
+				. 'FROM tag t WHERE t.user_id = ? '
+				. 'UNION ALL '
+				// Tag connections: accepted + pending
+				. 'SELECT \'tag\', IF(tc.approved, \'accepted\', \'pending\'), tc.created, t.id, t.name, tc.tsumego_id, CONCAT(s.title, \' - \', sc.num), tc.id '
+				. 'FROM tag_connection tc '
+				. 'JOIN tag t ON t.id = tc.tag_id '
+				. 'JOIN set_connection sc ON sc.id = ('
+					. 'SELECT sc2.id FROM set_connection sc2 '
+					. 'JOIN `set` s2 ON s2.id = sc2.set_id '
+					. 'WHERE sc2.tsumego_id = tc.tsumego_id '
+					. 'ORDER BY ' . SetConnection::displayOrderSql('s2', 'sc2') . ' LIMIT 1) '
+				. 'JOIN `set` s ON s.id = sc.set_id '
+				. 'WHERE tc.user_id = ? '
+				. 'UNION ALL '
+				// Proposals (SGF uploads)
+				. 'SELECT \'proposal\', IF(sg.accepted, \'accepted\', \'pending\'), sg.created, \'\', \'\', sg.tsumego_id, CONCAT(s.title, \' - \', sc.num), sg.id '
+				. 'FROM sgf sg '
+				. 'JOIN set_connection sc ON sc.id = ('
+					. 'SELECT sc2.id FROM set_connection sc2 '
+					. 'JOIN `set` s2 ON s2.id = sc2.set_id '
+					. 'WHERE sc2.tsumego_id = sg.tsumego_id '
+					. 'ORDER BY ' . SetConnection::displayOrderSql('s2', 'sc2') . ' LIMIT 1) '
+				. 'JOIN `set` s ON s.id = sc.set_id '
+				. 'WHERE sg.user_id = ? '
+				. 'UNION ALL '
+				// Rejected items (tag names have tsumego_id = 0, so LEFT JOIN gives empty label)
+				. 'SELECT r.type, \'rejected\', r.created, \'\', r.text, r.tsumego_id, '
+				. 'COALESCE(CONCAT(s.title, \' - \', sc.num), \'\'), r.id '
+				. 'FROM reject r '
+				. 'LEFT JOIN set_connection sc ON sc.id = ('
+					. 'SELECT sc2.id FROM set_connection sc2 '
+					. 'JOIN `set` s2 ON s2.id = sc2.set_id '
+					. 'WHERE sc2.tsumego_id = r.tsumego_id '
+					. 'ORDER BY ' . SetConnection::displayOrderSql('s2', 'sc2') . ' LIMIT 1) '
+				. 'LEFT JOIN `set` s ON s.id = sc.set_id '
+				. 'WHERE r.user_id = ? AND (sc.id IS NOT NULL OR r.tsumego_id = 0) '
+			. ') AS contributions '
+			. "ORDER BY created DESC, row_id DESC "
+			. "LIMIT {$pageSize} OFFSET {$offset}",
+			[$id, $id, $id, $id]
+		);
 
-		$tagsCount = count($tags);
-		for ($i = 0; $i < $tagsCount; $i++)
-		{
-			$tnx = $this->Tag->findById($tags[$i]['TagConnection']['tag_id']);
-			$tx = $this->Tsumego->findById($tags[$i]['TagConnection']['tsumego_id']);
-			$scx = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $tx['Tsumego']['id']]]);
-			if (!$scx)
-				continue;
-			$sx = $this->Set->findById($scx['SetConnection']['set_id']);
-			$ux = $this->User->findById($tags[$i]['TagConnection']['user_id']);
-			if ($tnx['Tag']['name'] == '')
-				$tags[$i]['TagConnection']['tag_name'] = '<i>[not found]</i>';
-			else
-				$tags[$i]['TagConnection']['tag_name'] = $tnx['Tag']['name'];
-			$tags[$i]['TagConnection']['tsumego'] = $sx['Set']['title'] . ' - ' . $scx['SetConnection']['num'];
-			$tags[$i]['TagConnection']['user'] = $ux['User']['name'];
-			$tags[$i]['TagConnection']['type'] = 'tag';
-			$tags[$i]['TagConnection']['status'] = '<b style="color:#047804">accepted</b>';
+		$count = Util::query('SELECT FOUND_ROWS()')[0]['FOUND_ROWS()'];
 
-			$listCreated[] = $tags[$i]['TagConnection']['created'];
-			$listType[] = 'tag';
-			$listTid[] = $tags[$i]['TagConnection']['tsumego_id'];
-			$listTsumego[] = $tags[$i]['TagConnection']['tsumego'];
-			$listUser[] = $tags[$i]['TagConnection']['user'];
-			$listStatus[] = $tags[$i]['TagConnection']['status'];
-			$listTag[] = $tags[$i]['TagConnection']['tag_name'];
-		}
-		$rejectedTagsCount = count($rejectedTags);
-		for ($i = 0; $i < $rejectedTagsCount; $i++)
-		{
-			$tx = $this->Tsumego->findById($rejectedTags[$i]['Reject']['tsumego_id']);
-			$scx = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $tx['Tsumego']['id']]]);
-			if (!$scx)
-				continue;
-			$sx = $this->Set->findById($scx['SetConnection']['set_id']);
-			$ux = $this->User->findById($rejectedTags[$i]['Reject']['user_id']);
-			$r = [];
-			$r['TagConnection']['tsumego_id'] = $rejectedTags[$i]['Reject']['tsumego_id'];
-			$r['TagConnection']['tag_name'] = $rejectedTags[$i]['Reject']['text'];
-			$r['TagConnection']['tsumego'] = $sx['Set']['title'] . ' - ' . $scx['SetConnection']['num'];
-			$r['TagConnection']['user'] = $ux['User']['name'];
-			$r['TagConnection']['type'] = $rejectedTags[$i]['Reject']['type'];
-			$r['TagConnection']['status'] = '<b style="color:#ce3a47">rejected</b>';
-			$r['TagConnection']['created'] = $rejectedTags[$i]['Reject']['created'];
-			$tags[] = $r;
+		$contributions = [];
+		foreach ($rows as $row)
+			$contributions[] = ContributionRow::fromQueryRow($row);
 
-			$listCreated[] = $r['TagConnection']['created'];
-			$listType[] = 'tag';
-			$listTid[] = $r['TagConnection']['tsumego_id'];
-			$listTsumego[] = $r['TagConnection']['tsumego'];
-			$listUser[] = $r['TagConnection']['user'];
-			$listStatus[] = $r['TagConnection']['status'];
-			$listTag[] = $r['TagConnection']['tag_name'];
-		}
-
-		$proposalsCount = count($proposals);
-		for ($i = 0; $i < $proposalsCount; $i++)
-		{
-			$tx = $this->Tsumego->findById($proposals[$i]['Sgf']['tsumego_id']);
-			$scx = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $tx['Tsumego']['id']]]);
-			if (!$scx)
-				continue;
-			$sx = $this->Set->findById($scx['SetConnection']['set_id']);
-			$ux = $this->User->findById($proposals[$i]['Sgf']['user_id']);
-			$proposals[$i]['Sgf']['tsumego'] = $sx['Set']['title'] . ' - ' . $scx['SetConnection']['num'];
-			$proposals[$i]['Sgf']['status'] = '<b style="color:#047804">accepted</b>';
-			$proposals[$i]['Sgf']['user'] = $ux['User']['name'];
-			$proposals[$i]['Sgf']['type'] = 'proposal';
-
-			$listCreated[] = $proposals[$i]['Sgf']['created'];
-			$listType[] = 'proposal';
-			$listTid[] = $proposals[$i]['Sgf']['tsumego_id'];
-			$listTsumego[] = $proposals[$i]['Sgf']['tsumego'];
-			$listUser[] = $proposals[$i]['Sgf']['user'];
-			$listStatus[] = $proposals[$i]['Sgf']['status'];
-			$listTag[] = '';
-		}
-		$rejectedProposalsCount = count($rejectedProposals);
-		for ($i = 0; $i < $rejectedProposalsCount; $i++)
-		{
-			$tx = $this->Tsumego->findById($rejectedProposals[$i]['Reject']['tsumego_id']);
-			$scx = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $tx['Tsumego']['id']]]);
-			if (!$scx)
-				continue;
-			$sx = $this->Set->findById($scx['SetConnection']['set_id']);
-			$ux = $this->User->findById($rejectedProposals[$i]['Reject']['user_id']);
-			$r = [];
-			$r['Sgf']['tsumego_id'] = $rejectedProposals[$i]['Reject']['tsumego_id'];
-			$r['Sgf']['tsumego'] = $sx['Set']['title'] . ' - ' . $scx['SetConnection']['num'];
-			$r['Sgf']['status'] = '<b style="color:#ce3a47">rejected</b>';
-			$r['Sgf']['type'] = $rejectedProposals[$i]['Reject']['type'];
-			$r['Sgf']['user'] = $ux['User']['name'];
-			$r['Sgf']['created'] = $rejectedProposals[$i]['Reject']['created'];
-			$proposals[] = $r;
-
-			$listCreated[] = $r['Sgf']['created'];
-			$listType[] = 'proposal';
-			$listTid[] = $r['Sgf']['tsumego_id'];
-			$listTsumego[] = $r['Sgf']['tsumego'];
-			$listUser[] = $r['Sgf']['user'];
-			$listStatus[] = $r['Sgf']['status'];
-			$listTag[] = '';
-		}
-
-		array_multisort($listCreated, $listType, $listTid, $listTsumego, $listUser, $listStatus, $listTag);
-		$index = 0;
-		$listCreatedCount = count($listCreated);
-		for ($i = $listCreatedCount - 1; $i >= 0; $i--)
-		{
-			$list[$index]['created'] = $listCreated[$i];
-			$list[$index]['type'] = $listType[$i];
-			$list[$index]['tsumego_id'] = $listTid[$i];
-			$list[$index]['tsumego'] = $listTsumego[$i];
-			$list[$index]['user'] = $listUser[$i];
-			$list[$index]['status'] = $listStatus[$i];
-			$list[$index]['tag'] = $listTag[$i];
-			$index++;
-		}
-
-		$this->set('list', $list);
+		$this->set('contributions', $contributions);
+		$this->set('viewedUser', $u['User']);
+		$this->set('count', $count);
+		$this->set('pageIndex', $pageIndex);
+		$this->set('pageSize', $pageSize);
 	}
 
-	public function edit($tagID): ?CakeResponse
+	public function edit(string $tagID): ?CakeResponse
 	{
+		$this->Authorization->authorize('Tag');
 		$tag = ClassRegistry::init('Tag')->findById($tagID);
 		if (!$tag)
 		{
@@ -253,11 +159,14 @@ class TagsController extends AppController
 
 		$this->set('allTags', $this->getAllTags());
 		$this->set('tag', $tag['Tag']);
+		$this->set('canAddTag', $this->Authorization->can('Tag', 'add'));
 		return null;
 	}
 
-	public function editAction($tagID)
+	#[HttpPost]
+	public function editAction(string $tagID)
 	{
+		$this->Authorization->authorize('Tag', 'editAction');
 		$tag = ClassRegistry::init('Tag')->findById($tagID);
 		if (!$tag)
 		{
@@ -267,24 +176,36 @@ class TagsController extends AppController
 
 		$tag = $tag['Tag'];
 
-		$tag['description'] = $this->data['tag_description'];
-		$tag['hint'] = $this->data['tag_hint'];
-		$tag['link'] = $this->data['tag_link'];
+		$tagDescription = $this->request->data['tag_description'];
+		if (empty($tagDescription))
+		{
+			CookieFlash::set('Tag description not provided', 'error');
+			return $this->redirect('/tags/edit/' . $tagID);
+		}
+
+		$tag['description'] = HtmlSanitizer::sanitize((string) $tagDescription);
+		$tag['hint'] = (int) ($this->request->data['tag_hint']);
+		$tag['link'] = trim((string) ($this->request->data['tag_link'] ?? ''));
 		ClassRegistry::init('Tag')->save($tag);
 		return $this->redirect('/tags/view/' . $tagID);
 	}
 
 	/**
-	 * @param string|int $id Tag name ID
+	 * @param string $id Tag name ID
 	 * @return void
 	 */
-	public function delete($id)
+	#[HttpPost]
+	public function delete(string $id): void
 	{
+		$this->Authorization->authorize('Tag');
 		$this->loadModel('Tag');
+		$this->loadModel('TagConnection');
 		$tn = $this->Tag->findById($id);
+		if (!$tn)
+			throw new NotFoundException('Tag not found');
 
-		if (isset($this->data['Tag']))
-			if ($this->data['Tag']['delete'] == $id)
+		if (isset($this->request->data['Tag']))
+			if ($this->request->data['Tag']['delete'] == $id)
 			{
 				$tags = $this->TagConnection->find('all', ['conditions' => ['tag_id' => $id]]);
 				if (!$tags)
@@ -298,12 +219,12 @@ class TagsController extends AppController
 		$this->set('tn', $tn);
 	}
 
-	public function index() {}
+	public function index(): void {}
 
-	public function acceptTagProposal($tagID): CakeResponse
+	#[HttpPost]
+	public function acceptTagProposal(string $tagID): CakeResponse
 	{
-		if (!Auth::isAdmin())
-			return $this->redirect('/');
+		$this->Authorization->authorize('Tag');
 
 		$tagToApprove = ClassRegistry::init('Tag')->findById($tagID);
 		if (!$tagToApprove)
@@ -314,7 +235,7 @@ class TagsController extends AppController
 
 		$tagToApprove = $tagToApprove['Tag'];
 
-		if ($tagToApprove['Tag']['approved'] == 1)
+		if ($tagToApprove['approved'] == 1)
 		{
 			CookieFlash::set('Tag to approve was already approved', 'error');
 			return $this->redirect('/users/adminstats');
@@ -328,10 +249,10 @@ class TagsController extends AppController
 		return $this->redirect('/users/adminstats');
 	}
 
-	public function rejectTagProposal($tagID): CakeResponse
+	#[HttpPost]
+	public function rejectTagProposal(string $tagID): CakeResponse
 	{
-		if (!Auth::isAdmin())
-			return $this->redirect('/');
+		$this->Authorization->authorize('Tag');
 
 		$tagToReject = ClassRegistry::init('Tag')->findById($tagID);
 		if (!$tagToReject)
@@ -342,7 +263,7 @@ class TagsController extends AppController
 
 		$tagToReject = $tagToReject['Tag'];
 
-		if ($tagToReject['Tag']['approved'] == 1)
+		if ($tagToReject['approved'] == 1)
 		{
 			CookieFlash::set('Tag to reject was already approved', 'error');
 			return $this->redirect('/users/adminstats');

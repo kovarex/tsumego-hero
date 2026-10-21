@@ -552,7 +552,7 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
       return false;
     if (thisKo && !otherKo)
       return false;
-    return thisKo.x == otherKo.x || thisKo.y == otherKo.y;
+    return thisKo.x == otherKo.x && thisKo.y == otherKo.y;
   }
 
   root.samePositionAs = function(other)

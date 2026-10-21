@@ -1,16 +1,18 @@
 <?php
 
+use App\Attribute\HttpGet;
+use App\Attribute\HttpPost;
+use App\Lib\Error\UnprocessableEntityException;
 /**
  * Controller for managing tsumego comments (CRUD operations).
  *
  * Handles adding and deleting comments on tsumego problems.
  * Comments can be standalone or associated with a TsumegoIssue.
- *
- * Uses idiomorph for React-like DOM diffing - htmx responses return the full
- * comments section and idiomorph handles efficient DOM updates.
- *
- * This controller is htmx-only - all responses return HTML fragments for htmx.
+
  */
+use App\Utility\Auth;
+use App\Utility\Util;
+
 class TsumegoCommentsController extends AppController
 {
 	/**
@@ -25,40 +27,45 @@ class TsumegoCommentsController extends AppController
 	 *
 	 * @return CakeResponse|null
 	 */
+	#[HttpPost]
 	public function add()
 	{
-		if (!$this->request->is('post'))
-			throw new MethodNotAllowedException();
+		$this->Authorization->authorize('TsumegoComment', 'add');
 
-		if (!Auth::isLoggedIn())
-		{
-			$this->response->statusCode(401);
-			$this->response->body('You must be logged in to comment.');
-			return $this->response;
-		}
+		$input = json_decode($this->request->input(), true);
 
 		$TsumegoComment = ClassRegistry::init('TsumegoComment');
-		$tsumegoId = $this->request->data('Comment.tsumego_id');
 		$comment = [
-			'tsumego_id' => $tsumegoId,
-			'message' => $this->request->data('Comment.message'),
-			'tsumego_issue_id' => $this->request->data('Comment.tsumego_issue_id'),
-			'position' => $this->request->data('Comment.position'),
+			'tsumego_id' => $input['tsumego_id'],
+			'message' => $input['text'],
+			'tsumego_issue_id' => $input['issue_id'] ?? null,
+			'position' => $input['position'] ?? null,
 			'user_id' => Auth::getUserID(),
 		];
 
 		$TsumegoComment->create();
 		if (!$TsumegoComment->save($comment))
-		{
-			$this->response->statusCode(422);
-			$this->layout = false;
-			$this->autoRender = false;
-			$this->response->body('<div class="alert alert--error">Failed to add comment.</div>');
-			return $this->response;
-		}
+			throw new UnprocessableEntityException('Failed to add comment');
 
-		// Return the full comments section (idiomorph handles the diff)
-		return $this->_renderCommentsSection($tsumegoId);
+		// Get saved comment with user data
+		$savedComment = $TsumegoComment->find('first', [
+			'conditions' => ['TsumegoComment.id' => $TsumegoComment->id],
+			'contain' => ['User']
+		]);
+
+		$this->response->type('json');
+		$this->response->body(json_encode([
+			'id' => $savedComment['TsumegoComment']['id'],
+			'text' => $savedComment['TsumegoComment']['message'],
+			'user_id' => $savedComment['TsumegoComment']['user_id'],
+			'user_display_name' => $savedComment['User']['display_name'] ?? null,
+			'user_avatar_url' => User::getAvatarUrl($savedComment['User']),
+			'user_rating' => $savedComment['User']['rating'] ?? null,
+			'isAdmin' => isset($savedComment['User']['isAdmin']) && $savedComment['User']['isAdmin'] ? true : false,
+			'created' => Util::toIso8601($savedComment['TsumegoComment']['created']),
+			'position' => $savedComment['TsumegoComment']['position'],
+		]));
+		return $this->response;
 	}
 
 	/**
@@ -67,45 +74,29 @@ class TsumegoCommentsController extends AppController
 	 * Only the comment author or an admin can delete a comment.
 	 * If this was the last comment in an issue, the issue is also deleted.
 	 *
-	 * @param int $id Comment ID to delete
+	 * @param string $id Comment ID to delete
 	 * @return CakeResponse|null
 	 */
-	public function delete($id)
+	#[HttpPost]
+	public function delete(string $id)
 	{
-		if (!$this->request->is('post'))
-			throw new MethodNotAllowedException();
-
 		$TsumegoComment = ClassRegistry::init('TsumegoComment');
 		$comment = $TsumegoComment->findById($id);
 
 		if (!$comment)
-		{
-			$this->response->statusCode(404);
-			$this->response->body('Comment not found.');
-			return $this->response;
-		}
+			throw new NotFoundException('Comment not found');
 
-		// Only admin or comment author can delete
-		$isOwner = $comment['TsumegoComment']['user_id'] === Auth::getUserID();
-		if (!Auth::isAdmin() && !$isOwner)
-		{
-			$this->response->statusCode(403);
-			$this->response->body('You are not authorized to delete this comment.');
-			return $this->response;
-		}
+		$this->Authorization->authorize($comment, 'delete');
 
-		// Remember the issue ID and tsumego ID before deleting
+		// Remember the issue ID before deleting
 		$issueId = $comment['TsumegoComment']['tsumego_issue_id'];
-		$tsumegoId = $comment['TsumegoComment']['tsumego_id'];
 
 		// Soft delete
 		$TsumegoComment->id = $id;
-		if (!$TsumegoComment->saveField('deleted', true))
-		{
-			$this->response->statusCode(500);
-			$this->response->body('Failed to delete comment.');
-			return $this->response;
-		}
+		$saveResult = $TsumegoComment->saveField('deleted', true);
+
+		if (!$saveResult)
+			throw new InternalErrorException('Failed to delete comment');
 
 		// If comment was part of an issue, check if issue is now empty and delete it
 		if (!empty($issueId))
@@ -114,35 +105,102 @@ class TsumegoCommentsController extends AppController
 			$TsumegoIssue->deleteIfEmpty($issueId);
 		}
 
-		// Return the full comments section (idiomorph handles the diff)
-		return $this->_renderCommentsSection($tsumegoId);
+		$this->response->type('json');
+		$this->response->body(json_encode(['success' => true]));
+		return $this->response;
 	}
 
 	/**
-	 * Render the morphable comments section content for htmx morph responses.
+	 * Get comments data for a tsumego
 	 *
-	 * Loads all comments data and renders just the inner content element.
+	 * Returns issues and standalone comments in the same format as initial SSR data.
 	 *
-	 * @param int $tsumegoId The tsumego ID
+	 * @param string $tsumegoId The tsumego ID
 	 * @return CakeResponse
 	 */
-	protected function _renderCommentsSection(int $tsumegoId): CakeResponse
+	#[HttpGet]
+	public function index(string $tsumegoId)
 	{
-		$Tsumego = ClassRegistry::init('Tsumego');
 		$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
 
-		$commentsData = $Tsumego->loadCommentsData($tsumegoId);
-		$counts = $TsumegoIssue->getCommentSectionCounts($tsumegoId);
+		// Load issues with comments
+		$issues = $TsumegoIssue->find('all', [
+			'conditions' => ['TsumegoIssue.tsumego_id' => $tsumegoId],
+			'contain' => [
+				'TsumegoComment' => [
+					'conditions' => ['TsumegoComment.deleted' => 0],
+					'User'
+				],
+				'User'
+			],
+			'order' => 'TsumegoIssue.created DESC'
+		]);
 
-		$this->set('tsumegoId', $tsumegoId);
-		$this->set('issues', $commentsData['issues']);
-		$this->set('plainComments', $commentsData['plainComments']);
-		$this->set('totalCount', $counts['total']);
-		$this->set('commentCount', $counts['comments']);
-		$this->set('issueCount', $counts['issues']);
-		$this->set('openIssueCount', $counts['openIssues']);
+		// Load standalone comments
+		$TsumegoComment = ClassRegistry::init('TsumegoComment');
+		$plainComments = $TsumegoComment->find('all', [
+			'conditions' => [
+				'TsumegoComment.tsumego_id' => $tsumegoId,
+				'TsumegoComment.tsumego_issue_id' => null,
+				'TsumegoComment.deleted' => 0
+			],
+			'contain' => ['User'],
+			'order' => 'TsumegoComment.created DESC'
+		]);
 
-		$this->layout = false;
-		return $this->render('/Elements/TsumegoComments/section-content');
+		$issuesJson = [];
+		foreach ($issues as $issue)
+		{
+			$comments = [];
+			foreach ($issue['TsumegoComment'] as $comment)
+				$comments[] = [
+					'id' => $comment['id'],
+					'text' => $comment['message'],
+					'user_id' => $comment['user_id'],
+					'user_display_name' => User::displayNameOrNull($comment['User']),
+					'user_avatar_url' => User::avatarOrNull($comment['User']),
+					'user_rating' => $comment['User']['rating'] ?? null,
+					'isAdmin' => isset($comment['User']) && $comment['User']['isAdmin'] ? true : false,
+					'created' => Util::toIso8601($comment['created']),
+					'position' => $comment['position'],
+				];
+
+
+			$issuesJson[] = [
+				'id' => $issue['TsumegoIssue']['id'],
+				'tsumego_issue_status_id' => $issue['TsumegoIssue']['tsumego_issue_status_id'],
+				'created' => Util::toIso8601($issue['TsumegoIssue']['created']),
+				'user_id' => $issue['TsumegoIssue']['user_id'],
+				'user_display_name' => User::displayNameOrNull($issue['User']),
+				'user_avatar_url' => User::avatarOrNull($issue['User']),
+				'user_rating' => $issue['User']['rating'] ?? null,
+				'isAdmin' => isset($issue['User']) && $issue['User']['isAdmin'] ? true : false,
+				'comments' => $comments,
+			];
+		}
+
+		$standaloneJson = [];
+		foreach ($plainComments as $comment)
+			$standaloneJson[] = [
+				'id' => $comment['TsumegoComment']['id'],
+				'text' => $comment['TsumegoComment']['message'],
+				'user_id' => $comment['TsumegoComment']['user_id'],
+				'user_display_name' => User::displayNameOrNull($comment['User']),
+				'user_avatar_url' => User::avatarOrNull($comment['User']),
+				'user_rating' => $comment['User']['rating'] ?? null,
+				'isAdmin' => isset($comment['User']) && $comment['User']['isAdmin'] ? true : false,
+				'created' => Util::toIso8601($comment['TsumegoComment']['created']),
+				'position' => $comment['TsumegoComment']['position'],
+			];
+
+		$counts = $TsumegoIssue->getCommentSectionCounts((int) $tsumegoId);
+
+		$this->response->type('json');
+		$this->response->body(json_encode([
+			'issues' => $issuesJson,
+			'standalone' => $standaloneJson,
+			'counts' => $counts,
+		]));
+		return $this->response;
 	}
 }
