@@ -2,8 +2,11 @@ import { UserLink } from '../shared/UserLink';
 import type { Comment as CommentType } from './commentTypes';
 import { IssueStatus, type IssueStatusId } from '../issues/issueTypes';
 import { useAuth } from '../shared/AuthContext';
+import { useMemo } from 'react';
 import { formatDate } from '../shared/dates';
-import { parseCoordinateReferences } from './coordParser';
+import type { CoordSequence } from '../types/global';
+import { positionMoveNumber } from './boardPosition';
+import { parseCoordinateReferences, type CoordColor } from './coordParser';
 
 interface CommentProps
 {
@@ -18,7 +21,7 @@ interface CommentProps
 // Component for a single Go coordinate span with hover handlers.
 // When the comment is anchored to a board position, the hover preview shows
 // that anchored position so the coordinate is interpreted "from the comment".
-function CoordSpan({ coord, position, color, sequence }: { coord: string; position?: string | null; color?: 'b' | 'w'; sequence?: { coords: string[]; index: number } })
+function CoordSpan({ coord, position, color, sequence }: { coord: string; position?: string | null; color?: CoordColor; sequence?: CoordSequence })
 {
 	const handleMouseEnter = (e: React.MouseEvent) =>
 	{
@@ -80,7 +83,7 @@ function renderCommentText(text: string | null | undefined, position?: string | 
 			return slice.text;
 
 		const { kind, tokens, separators } = slice;
-		const groupClass = ` go-coord-group go-coord-group--${kind}`;
+		const groupClass = `go-coord-group go-coord-group--${kind}`;
 		const children: React.ReactNode[] = [];
 
 		// Transform the authored labels to the displayed board orientation so the
@@ -93,7 +96,7 @@ function renderCommentText(text: string | null | undefined, position?: string | 
 		// F2/G1) have no sequence context.
 		const sequenceCoords = kind === 'sequence' ? boardCoords : undefined;
 		// Per-move explicit colour (w/b) from the comment, or null to alternate.
-		const sequenceColors = kind === 'sequence' ? tokens.map(t => t.color ?? null) : undefined;
+		const sequenceColors = tokens.map(t => t.color ?? null);
 
 		tokens.forEach((token, i) =>
 		{
@@ -107,7 +110,7 @@ function renderCommentText(text: string | null | undefined, position?: string | 
 		});
 
 		return (
-			<span key={`group-${key++}`} className={groupClass.trim()}>
+			<span key={`group-${key++}`} className={groupClass}>
 				{children}
 			</span>
 		);
@@ -138,10 +141,10 @@ export function Comment({
 	// Parse comment text with coordinate highlighting. Pass the comment's anchor
 	// so hovering a coordinate previews the anchored board position, not the
 	// position the user is currently viewing.
-	const commentContent = renderCommentText(displayText, comment.position);
+	// Memoized: re-labelling the coordinates searches the game tree.
+	const commentContent = useMemo(() => renderCommentText(displayText, comment.position), [displayText, comment.position]);
 
-	// Move number of the anchored position (position format: x/y/.../moveNumber/...)
-	const anchoredMoveNumber = comment.position ? parseInt(comment.position.split('/')[6], 10) : null;
+	const anchoredMoveNumber = comment.position ? positionMoveNumber(comment.position) : null;
 
 	// Determine if draggable
 	// Dragging must be explicitly enabled (isDraggingEnabled=true, default on play page)

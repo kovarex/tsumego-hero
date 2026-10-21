@@ -94,7 +94,6 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     displayHoverCoord: displayHoverCoord,
     displayHoverCoordAt: displayHoverCoordAt,
     coordLabelToXY: coordLabelToXY,
-    resolveSequencePath: resolveSequencePath,
     resolveSequenceHover: resolveSequenceHover,
     coordXYToLabel: coordXYToLabel,
     transformCommentCoords: transformCommentCoords,
@@ -1157,7 +1156,6 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     return coords;
   }
 
-  // Finds the deepest child (descending through null-move/setup nodes) whose
   // Finds the direct child (or its continuation through null-move/setup nodes)
   // whose move matches the coordinate. Child moves among siblings are unique in
   // a game tree, so we must only descend along the actual path - NOT search the
@@ -1229,46 +1227,6 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     return out;
   }
 
-  // Resolves a comment coordinate sequence (labels, e.g. ["R19","P19","Q19"])
-  // into internal coordinates in the currently-active tree space. The comment
-  // was authored in some board orientation; because the puzzle tree is sparse,
-  // only one of the four orientations makes the sequence map onto real tree
-  // nodes. We try all four and pick the one whose prefix walks the furthest
-  // down the tree from `startNode` (or the root when startNode is null).
-  //
-  // Returns { coords, matches, orientation } where coords[i] is the resolved
-  // internal position of the i-th label under the winning orientation, matches
-  // is how many consecutive moves from startNode matched real children, and
-  // orientation is the winning orientation index (0..3). matches may be 0 when
-  // no orientation fits the tree at all.
-  function resolveSequencePath(coords, startNode) {
-    var size = getBoardTransformSize();
-    var best = { coords: null, matches: -1, orientation: 0 };
-    var start = startNode || root;
-    for (var orientation = 0; orientation < 4; orientation++) {
-      var resolved = [];
-      var valid = true;
-      for (var i = 0; i < coords.length; i++) {
-        var base = coordLabelToXY(coords[i]);
-        if (!base) { valid = false; break; }
-        resolved.push(orientCoord(base, orientation, size));
-      }
-      if (!valid) continue;
-      var matches = 0;
-      var walk = start;
-      for (var j = 0; j < resolved.length; j++) {
-        var child = findChildByCoord(walk, resolved[j]);
-        if (!child) break;
-        walk = child;
-        matches++;
-      }
-      if (matches > best.matches) {
-        best = { coords: resolved, matches: matches, orientation: orientation };
-      }
-    }
-    return best;
-  }
-
   // Finds the shallowest descendant of `node` (strictly below it) whose move
   // matches `coord`, or null when there is none. Searching for the shallowest
   // keeps the resolved path as close to the sequence as possible (fewest
@@ -1310,10 +1268,8 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
   }
 
   // Resolves a comment coordinate sequence for a hover on `hoverIndex`.
-  // Unlike resolveSequencePath (which requires each coord to be a direct child
-  // of the previous), this treats the sequence as a subsequence: it finds the
-  // tree path that contains the coords in order (allowing intermediate moves),
-  // and returns the node the hovered coordinate lands on plus the node right
+  // The sequence is treated as a subsequence: it finds the tree path that
+  // contains the coords in order (allowing intermediate moves), and returns the node the hovered coordinate lands on plus the node right
   // before it. This lets hovering a move always show the board just before it,
   // even when the comment omits intermediate moves or spans different branches.
   //
@@ -1384,22 +1340,20 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
   // Determines the board orientation (0..3) that maps the most of `coords` onto
   // real tree nodes under `startNode` (or root). This is the orientation the
   // comment was authored in, relative to the currently-displayed board, and is
-  // used to re-label comment coordinates for display.
+  // used to re-label comment coordinates for display. A tie means the tree
+  // can't tell the orientations apart, so the labels are kept as written (0).
   function resolveCoordsOrientation(coords, startNode) {
     var size = getBoardTransformSize();
     var start = startNode || root;
     var bestCount = -1;
     var bestOrientation = 0;
     var ambiguous = false;
-    var counts = [0, 0, 0, 0];
     for (var orientation = 0; orientation < 4; orientation++) {
       var present = 0;
       for (var i = 0; i < coords.length; i++) {
         var base = coordLabelToXY(coords[i]);
-        if (!base) continue;
-        if (findDescendant(start, orientCoord(base, orientation, size))) present++;
+        if (base && findDescendant(start, orientCoord(base, orientation, size))) present++;
       }
-      counts[orientation] = present;
       if (present > bestCount) {
         bestCount = present;
         bestOrientation = orientation;
@@ -1408,30 +1362,23 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
         ambiguous = true;
       }
     }
-    return { orientation: bestOrientation, count: bestCount, ambiguous: ambiguous };
+    return ambiguous ? 0 : bestOrientation;
   }
 
   // Transforms a list of comment coordinate labels (authored in the commenters
   // board orientation) into the labels they map to on the currently-displayed
   // board. Uses the comment anchor (position) or tree-matching to recover the
-  // authors orientation. Returns an array of display labels, falling back to
-  // the original labels when the orientation cannot be determined uniquely.
+  // authors orientation, keeping the original labels when it is not unique.
   function transformCommentCoords(coords, positionString) {
     var size = getBoardTransformSize();
     var startNode = positionString ? findNodeForPosition(positionString) : null;
-    var resolved = resolveCoordsOrientation(coords, startNode);
-    var out = [];
-    for (var i = 0; i < coords.length; i++) {
-      var base = coordLabelToXY(coords[i]);
-      if (!base || (resolved.ambiguous && resolved.count <= 1)) {
-        out.push(coords[i]);
-        continue;
-      }
-      var pos = orientCoord(base, resolved.orientation, size);
-      var label = coordXYToLabel(pos.x, pos.y);
-      out.push(label || coords[i]);
-    }
-    return out;
+    var orientation = resolveCoordsOrientation(coords, startNode);
+    return coords.map(function (coord) {
+      var base = coordLabelToXY(coord);
+      if (!base) return coord;
+      var pos = orientCoord(base, orientation, size);
+      return coordXYToLabel(pos.x, pos.y) || coord;
+    });
   }
 
   // Highlights a single intersection on the main board by its internal (x, y).

@@ -12,6 +12,42 @@ class CommentsControllerTest extends ControllerTestCase
 {
 	use RetryTrait;
 
+	/** SGF of a solved problem with a three move solution line. */
+	private const SOLVED_SGF = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])';
+
+	/** Opens a tsumego the admin has already solved, so its comments and the review mode are available. */
+	private function openSolvedTsumego(array $tsumego = []): ContextPreparator
+	{
+		$context = new ContextPreparator(['user' => ['admin' => true], 'tsumego' => ['set_order' => 1, 'status' => 'S'] + $tsumego]);
+		Browser::instance()->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		return $context;
+	}
+
+	private function enterReviewMode(Browser $browser): void
+	{
+		$browser->driver->executeScript('besogo.editor.setReviewMode(true); besogo.editor.notifyListeners({treeChange: true, navChange: true, stoneChange: true});');
+	}
+
+	/**
+	 * Shows a single comment and returns how its coordinates were rendered.
+	 *
+	 * @return array{colors: array<string, string>, sequences: list<string>, alternatives: list<string>}
+	 * colors maps each coordinate to its colour marker ('' when there is none), sequences and
+	 * alternatives are the texts of the coordinate groups.
+	 */
+	private function renderComment(string $message, int $coordCount): array
+	{
+		$this->openSolvedTsumego(['comments' => [['message' => $message]]]);
+		$browser = Browser::instance();
+		$browser->expandComments();
+		$browser->waitUntilJs('document.querySelectorAll(".go-coord").length >= ' . $coordCount);
+		return $browser->driver->executeScript('
+			var texts = function (selector) { return [].map.call(document.querySelectorAll(selector), function (e) { return e.textContent; }); };
+			var colors = {};
+			document.querySelectorAll(".go-coord").forEach(function (e) { colors[e.dataset.coord] = e.dataset.color; });
+			return {colors: colors, sequences: texts(".go-coord-group--sequence"), alternatives: texts(".go-coord-group--alternative")};');
+	}
+
 	public function testAddCommentToSolvedTsumego()
 	{
 		$browser = Browser::instance();
@@ -46,82 +82,46 @@ class CommentsControllerTest extends ControllerTestCase
 
 	public function testAddCommentWithBoardPositionStoresAnchorWithoutMarker()
 	{
+		$this->openSolvedTsumego(['sgf' => self::SOLVED_SGF]);
 		$browser = Browser::instance();
-		$context = new ContextPreparator([
-			'user' => ['admin' => true],
-			'tsumego' => [
-				'set_order' => 1,
-				'status' => 'S',
-				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])'
-			]
-		]);
-		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$browser->expandComments();
 
 		// Navigate the board to a move so a position can be anchored
 		$browser->clickBoard(1, 1);
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			return $driver->executeScript('return window.besogo && besogo.editor.getCurrent().moveNumber >= 1;');
-		});
+		$browser->waitUntilJs('besogo.editor.getCurrent().moveNumber >= 1');
+		$this->enterReviewMode($browser);
 
-		// Enable review mode so the tree panel rebuilds and shows node badges
-		$browser->driver->executeScript("window.besogo.editor.setReviewMode(true); window.besogo.editor.notifyListeners({treeChange:true, navChange:true, stoneChange:true});");
-
-		// Type a comment and attach the current board position
-		$messageField = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-comments__form textarea'));
+		$messageField = $browser->find('.tsumego-comments__form textarea');
 		$messageField->click();
-		$messageField->sendKeys("Check this move");
-		$positionToggle = $browser->driver->findElement(WebDriverBy::cssSelector('#attachPositionCheckbox-tsumegoCommentForm'));
+		$messageField->sendKeys('Check this move');
+		$positionToggle = $browser->findById('attachPositionCheckbox-tsumegoCommentForm');
 		$positionToggle->click();
 		$this->assertTrue($positionToggle->isSelected(), 'Position toggle should be checked after attaching');
+		$this->assertSame('Check this move', $messageField->getAttribute('value'), 'Attaching the position must not touch the message');
 
-		// The message text must not contain the literal marker (it's now structured data)
-		$this->assertStringNotContainsString('[current position]', $messageField->getAttribute('value'));
+		$browser->find('.tsumego-comments__form button[type="submit"]')->click();
+		$browser->waitUntilJs('document.querySelector(".tsumego-comments__form textarea").value === ""');
 
-		$submitButton = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-comments__form button[type="submit"]'));
-		$submitButton->click();
-
-		// Wait for React to process the submission (form clears)
-		$wait->until(function ($driver) {
-			$textarea = $driver->findElement(WebDriverBy::cssSelector('.tsumego-comments__form textarea'));
-			return $textarea->getAttribute('value') === '';
-		});
-
-		// The stored comment must carry a position but not the marker in the message
+		// The position is structured data, the message has no "[current position]" marker
 		$comment = ClassRegistry::init('TsumegoComment')->find('first', ['order' => 'TsumegoComment.id DESC']);
 		$this->assertNotNull($comment['TsumegoComment']['position']);
 		$this->assertSame('Check this move', $comment['TsumegoComment']['message']);
-		$this->assertStringNotContainsString('[current position]', $comment['TsumegoComment']['message']);
 
-		// The rendered comment shows a "Move N" chip (instead of the marker) ...
-		$browser->waitUntilCssSelectorExists('.tsumego-comment__position-label');
-		// ... and the review tree node is badged for the anchored comment
-		$browser->waitUntilCssSelectorExists('.besogo-tree-comment-badge');
+		// The rendered comment shows a "Move N" chip and the review tree node gets a badge
+		$this->assertStringContainsString('Move', $browser->find('.tsumego-comment__position-label')->getText());
+		$browser->find('.besogo-tree-comment-badge');
 	}
 
 	public function testReviewBadgeShowsWithoutOpeningComments()
 	{
-		$context = new ContextPreparator([
-			'user' => ['admin' => true],
-			'tsumego' => [
-				'set_order' => 1,
-				'status' => 'S',
-				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])',
-				'comments' => [['message' => 'anchored note', 'position' => '1/1/-1/-1/0/0/1/0/full-board|1/1']]
-			]
-		]);
+		$this->openSolvedTsumego([
+			'sgf' => self::SOLVED_SGF,
+			'comments' => [['message' => 'anchored note', 'position' => '1/1/-1/-1/0/0/1/0/full-board|1/1']]]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$this->enterReviewMode($browser);
 
-		// Enable review mode so the review tree renders. The badge is computed
-		// eagerly from the slim SSR positions - no need to open the comments tab.
-		$browser->driver->executeScript("window.besogo.editor.setReviewMode(true); window.besogo.editor.notifyListeners({treeChange:true, navChange:true, stoneChange:true});");
-
-		// The badge for the anchored comment should appear immediately, without
-		// the user having opened the comments tab.
-		$browser->waitUntilCssSelectorExists('.besogo-tree-comment-badge');
-		$this->assertGreaterThan(0, count($browser->getCssSelect('.besogo-tree-comment-badge')));
+		// The badge comes from the positions rendered with the page, the comments tab stays closed
+		$browser->find('.besogo-tree-comment-badge');
 	}
 
 	/**
@@ -131,22 +131,12 @@ class CommentsControllerTest extends ControllerTestCase
 	 */
 	public function testMultipleCommentBadgesOnDifferentNodes()
 	{
-		$context = new ContextPreparator([
-			'user' => ['admin' => true],
-			'tsumego' => [
-				'set_order' => 1,
-				'status' => 'S',
-				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])',
-				'alternative_response' => 0,
-			]
-		]);
+		$context = $this->openSolvedTsumego(['sgf' => self::SOLVED_SGF, 'alternative_response' => 0]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
 		// Capture the board position strings for move 1 and move 2.
 		$positions = $browser->driver->executeScript("
 			var e = window.besogo.editor;
-			var root = e.getRoot();
 			function capture(node) {
 				e.setCurrent(node);
 				var cur = e.getCurrent();
@@ -161,12 +151,9 @@ class CommentsControllerTest extends ControllerTestCase
 				var pY = (cur.parent && cur.parent.move) ? cur.parent.move.y : -1;
 				return cur.move.x + '/' + cur.move.y + '/' + pX + '/' + pY + '/0/0/' + cur.moveNumber + '/0/' + orientation + '|' + p;
 			}
-			if (!root.children || root.children.length === 0) return [];
-			var node1 = root.children[0];
-			if (!node1.children || node1.children.length === 0) return [capture(node1)];
+			var node1 = e.getRoot().children[0];
 			return [capture(node1), capture(node1.children[0])];
 		");
-		$this->assertGreaterThanOrEqual(2, count($positions));
 
 		// Seed one anchored comment on each of the two different nodes.
 		$commentModel = ClassRegistry::init('TsumegoComment');
@@ -181,13 +168,12 @@ class CommentsControllerTest extends ControllerTestCase
 			]);
 		}
 
-		// Reload so the eager SSR positions include both anchored comments.
+		// Reload so the positions rendered with the page include both anchored comments.
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$browser->driver->executeScript("window.besogo.editor.setReviewMode(true); window.besogo.editor.notifyListeners({treeChange:true, navChange:true, stoneChange:true});");
+		$this->enterReviewMode($browser);
 
-		$browser->waitUntilCssSelectorExists('.besogo-tree-comment-badge');
-		$badgeCount = count($browser->getCssSelect('.besogo-tree-comment-badge'));
-		$this->assertGreaterThanOrEqual(2, $badgeCount, 'Two anchored comments on different nodes should produce two badges');
+		$browser->waitUntilJs('document.querySelectorAll(".besogo-tree-comment-badge").length >= 2');
+		$this->assertCount(2, $browser->getElements('.besogo-tree-comment-badge'), 'Two anchored comments on different nodes should produce two badges');
 	}
 
 	/**
@@ -196,84 +182,20 @@ class CommentsControllerTest extends ControllerTestCase
 	 */
 	public function testCommentCoordinatesParseLowercaseSequencesAndAlternatives()
 	{
-		$context = new ContextPreparator([
-			'user' => ['admin' => true],
-			'tsumego' => [
-				'set_order' => 1,
-				'status' => 'S',
-				'comments' => [[
-					'message' => 'r19-p19-q19-q18-t19 works. Alternatively F2/G1. w C1, b E2.'
-				]]
-			]
-		]);
-		$browser = Browser::instance();
-		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$browser->expandComments();
+		$rendered = $this->renderComment('r19-p19-q19-q18-t19 works. Alternatively F2/G1. w C1, b E2.', 9);
 
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			return count($driver->findElements(WebDriverBy::cssSelector('.go-coord'))) >= 7;
-		});
-
-		// Lowercase coordinates should be highlighted (case-insensitive) and
-		// normalized to uppercase internal coordinates.
-		$coords = [];
-		foreach ($browser->driver->findElements(WebDriverBy::cssSelector('.go-coord')) as $gc)
-			$coords[] = $gc->getAttribute('data-coord');
-
-		$this->assertContains('R19', $coords);
-		$this->assertContains('T19', $coords);
-		$this->assertContains('F2', $coords);
-		$this->assertContains('G1', $coords);
-		$this->assertContains('C1', $coords);
-		$this->assertContains('E2', $coords);
-
-		// Color markers are parsed ("w C1" and "b E2").
-		foreach ($browser->driver->findElements(WebDriverBy::cssSelector('.go-coord')) as $gc)
-		{
-			$coord = $gc->getAttribute('data-coord');
-			$color = $gc->getAttribute('data-color');
-			if ($coord === 'C1') $this->assertSame('w', $color);
-			if ($coord === 'E2') $this->assertSame('b', $color);
-		}
-
-		// Dash sequences are grouped, and slash 'either/or' alternatives too.
-		$this->assertGreaterThanOrEqual(1, count($browser->driver->findElements(WebDriverBy::cssSelector('.go-coord-group--sequence'))));
-		$this->assertGreaterThanOrEqual(1, count($browser->driver->findElements(WebDriverBy::cssSelector('.go-coord-group--alternative'))));
+		$this->assertSame(['R19-P19-Q19-Q18-T19', 'C1, b E2'], $rendered['sequences']);
+		$this->assertSame(['F2/G1'], $rendered['alternatives']);
+		$this->assertSame('w', $rendered['colors']['C1']);
+		$this->assertSame('b', $rendered['colors']['E2']);
 	}
 
 	public function testCommentCoordinatesParseArrowsAndOr()
 	{
-		$context = new ContextPreparator([
-			'user' => ['admin' => true],
-			'tsumego' => [
-				'set_order' => 1,
-				'status' => 'S',
-				'comments' => [[
-					'message' => 'After T3->S2->Q2. Alternatively C1 or B3.'
-				]]
-			]
-		]);
-		$browser = Browser::instance();
-		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$browser->expandComments();
+		$rendered = $this->renderComment('After T3->S2->Q2. Alternatively C1 or B3.', 5);
 
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			return count($driver->findElements(WebDriverBy::cssSelector('.go-coord'))) >= 5;
-		});
-
-		$coords = [];
-		foreach ($browser->driver->findElements(WebDriverBy::cssSelector('.go-coord')) as $gc)
-			$coords[] = $gc->getAttribute('data-coord');
-		$this->assertContains('T3', $coords);
-		$this->assertContains('Q2', $coords);
-		$this->assertContains('C1', $coords);
-		$this->assertContains('B3', $coords);
-
-		// Arrow sequences are grouped, and "or" alternatives too.
-		$this->assertGreaterThanOrEqual(1, count($browser->driver->findElements(WebDriverBy::cssSelector('.go-coord-group--sequence'))));
-		$this->assertGreaterThanOrEqual(1, count($browser->driver->findElements(WebDriverBy::cssSelector('.go-coord-group--alternative'))));
+		$this->assertSame(['T3->S2->Q2'], $rendered['sequences']);
+		$this->assertSame(['C1 or B3'], $rendered['alternatives']);
 	}
 
 	/**
@@ -282,73 +204,22 @@ class CommentsControllerTest extends ControllerTestCase
 	 */
 	public function testCommentSingleCoordinateRendersAsSequenceGroup()
 	{
-		$context = new ContextPreparator([
-			'user' => ['admin' => true],
-			'tsumego' => [
-				'set_order' => 1,
-				'status' => 'S',
-				'comments' => [[
-					'message' => 'White lives with R19.'
-				]]
-			]
-		]);
-		$browser = Browser::instance();
-		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$browser->expandComments();
+		$rendered = $this->renderComment('White lives with R19.', 1);
 
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			return count($driver->findElements(WebDriverBy::cssSelector('.go-coord'))) >= 1;
-		});
-
-		// A lone coordinate sits in a sequence group, not bare.
-		$seqGroups = $browser->driver->findElements(WebDriverBy::cssSelector('.go-coord-group--sequence'));
-		$this->assertGreaterThanOrEqual(1, count($seqGroups));
-		$this->assertStringContainsString('R19', $seqGroups[0]->getText());
+		$this->assertSame(['R19'], $rendered['sequences']);
+		$this->assertSame([], $rendered['alternatives']);
 	}
 
 	/**
 	 * A comma followed by the connector word "then" (e.g. "...A16, then A18?")
-	 * is a sequence continuation, not a sentence break, so the trailing move
-	 * stays in the same sequence group rather than splitting off as a single.
+	 * is a sequence continuation, not a sentence break. The connector keeps its
+	 * spaces, so it reads "D17, then A18" rather than "D17, thenA18".
 	 */
 	public function testCommentCoordinatesKeepCommaThenInSequence()
 	{
-		$context = new ContextPreparator([
-			'user' => ['admin' => true],
-			'tsumego' => [
-				'set_order' => 1,
-				'status' => 'S',
-				'comments' => [[
-					'message' => 'F17,B16,D17, then A18?'
-				]]
-			]
-		]);
-		$browser = Browser::instance();
-		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$browser->expandComments();
+		$rendered = $this->renderComment('F17,B16,D17, then A18?', 4);
 
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			return count($driver->findElements(WebDriverBy::cssSelector('.go-coord'))) >= 4;
-		});
-
-		// All four moves must be highlighted.
-		$coords = [];
-		foreach ($browser->driver->findElements(WebDriverBy::cssSelector('.go-coord')) as $gc)
-			$coords[] = $gc->getAttribute('data-coord');
-		$this->assertContains('F17', $coords);
-		$this->assertContains('B16', $coords);
-		$this->assertContains('D17', $coords);
-		$this->assertContains('A18', $coords);
-
-		// The trailing "then A18" must join the same sequence group, not split.
-		$seqGroups = $browser->driver->findElements(WebDriverBy::cssSelector('.go-coord-group--sequence'));
-		$this->assertGreaterThanOrEqual(1, count($seqGroups));
-		$this->assertStringContainsString('A18', $seqGroups[0]->getText());
-		// The connector keeps its surrounding spaces, so it reads "D17, then A18"
-		// rather than the unreadable "D17, thenA18".
-		$this->assertStringContainsString('D17, then A18', $seqGroups[0]->getText());
+		$this->assertSame(['F17,B16,D17, then A18'], $rendered['sequences']);
 	}
 
 	/**
@@ -359,45 +230,10 @@ class CommentsControllerTest extends ControllerTestCase
 	 */
 	public function testCommentCoordinatesGroupColoredMovePhrases()
 	{
-		$context = new ContextPreparator([
-			'user' => ['admin' => true],
-			'tsumego' => [
-				'set_order' => 1,
-				'status' => 'S',
-				'comments' => [[
-					'message' => 'B H19,w K18, b L18, after w J19 B kills with H18!'
-				]]
-			]
-		]);
-		$browser = Browser::instance();
-		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$browser->expandComments();
+		$rendered = $this->renderComment('B H19,w K18, b L18, after w J19 B kills with H18!', 5);
 
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			return count($driver->findElements(WebDriverBy::cssSelector('.go-coord'))) >= 5;
-		});
-
-		// All five moves highlight, and every one is black/white labelled as the
-		// author wrote it.
-		$colors = [];
-		foreach ($browser->driver->findElements(WebDriverBy::cssSelector('.go-coord')) as $gc)
-		{
-			$coord = $gc->getAttribute('data-coord');
-			$color = $gc->getAttribute('data-color');
-			$colors[$coord] = $color;
-		}
-		$this->assertSame('b', $colors['H19'] ?? null);
-		$this->assertSame('w', $colors['K18'] ?? null);
-		$this->assertSame('b', $colors['L18'] ?? null);
-		$this->assertSame('w', $colors['J19'] ?? null);
-		$this->assertSame('b', $colors['H18'] ?? null);
-
-		// One sequence group containing the trailing "kills with H18" move.
-		$seqGroups = $browser->driver->findElements(WebDriverBy::cssSelector('.go-coord-group--sequence'));
-		$this->assertGreaterThanOrEqual(1, count($seqGroups));
-		$this->assertStringContainsString('H19', $seqGroups[0]->getText());
-		$this->assertStringContainsString('H18', $seqGroups[0]->getText());
+		$this->assertSame(['H19,w K18, b L18, after w J19 B kills with H18'], $rendered['sequences']);
+		$this->assertSame(['H19' => 'b', 'K18' => 'w', 'L18' => 'b', 'J19' => 'w', 'H18' => 'b'], $rendered['colors']);
 	}
 
 	/**
@@ -407,19 +243,9 @@ class CommentsControllerTest extends ControllerTestCase
 	 */
 	public function testCoordHoverMapsLabelsToDistinctIntersections()
 	{
-		$context = new ContextPreparator([
-			'user' => ['admin' => true],
-			'tsumego' => [
-				'set_order' => 1,
-				'status' => 'S',
-				'sgf' => '(;GM[1]FF[4]SZ[19]AB[aa]AP[test:1])',
-				'comments' => [['message' => 'R19 vs C19']]
-			]
-		]);
+		$this->openSolvedTsumego(['sgf' => '(;GM[1]FF[4]SZ[19]AB[aa]AP[test:1])']);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$browser->expandComments();
-		$browser->waitForBoard();
+		$browser->waitUntilJs('typeof besogo !== "undefined" && besogo.scaleParameters && besogo.editor');
 
 		$result = $browser->driver->executeScript(
 			'var size = besogo.scaleParameters.boardCoordSize;'

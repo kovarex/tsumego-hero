@@ -149,6 +149,19 @@ interface Besogo
 	};
 }
 
+/**
+ * A coordinate hovered as part of a comment move sequence (e.g. R19-P19-Q19).
+ */
+interface CoordSequence
+{
+	/** All coordinates of the sequence, as displayed */
+	coords: string[];
+	/** Per-move colour marker from the comment ('b' / 'w'), null to alternate */
+	colors?: ('b' | 'w' | null)[];
+	/** Index of the hovered coordinate */
+	index: number;
+}
+
 declare global
 {
 	interface Window
@@ -195,10 +208,9 @@ declare global
 		 * @param sequence Optional sequence context - when the coordinate is part
 		 *   of a dash-joined sequence (e.g. R19-P19-Q19), the preview replays the
 		 *   moves before the hovered coordinate so the board reflects the
-		 *   position righoption t before that move. sequence.coords are the full list of
-		 *   coordinates, sequence.index is the hovered index.
+		 *   position right before that move.
 		 */
-		showCoordPopup(coord: string, event: MouseEvent, position?: string, sequence?: { coords: string[]; colors?: (string | null)[]; index: number }): void;
+		showCoordPopup(coord: string, event: MouseEvent, position?: string, sequence?: CoordSequence): void;
 
 		/**
 		 * Hide coordinate popup.
@@ -208,4 +220,4 @@ declare global
 	}
 }
 
-export type { BesogoNode, BesogoEditor, Besogo };
+export type { BesogoNode, BesogoEditor, Besogo, CoordSequence };

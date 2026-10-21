@@ -1241,57 +1241,6 @@ use App\Utility\ViteManifest;
 				});
 		<?php } ?>
 		<?php } ?>
-		$("#commentPosition").click(function(){
-			let commentContent = $("#CommentMessage").val();
-			let additionalCoords = "";
-			let current = besogo.editor.getCurrent();
-			let besogoOrientation = besogo.editor.getOrientation();
-			if(besogoOrientation[1]=="full-board")
-			besogoOrientation[0] = besogoOrientation[1];
-			let isInTree = besogo.editor.isMoveInTree(current);
-			current = isInTree[0];
-
-			if(isInTree[1]['x'].length>0){
-				for(let i=isInTree[1]['x'].length-1;i>=0;i--)
-				additionalCoords += isInTree[1]['x'][i] + isInTree[1]['y'][i] + " ";
-				additionalCoords = " + " + additionalCoords;
-	}
-			if(commentContent.includes("[current position]")){
-			 commentContent = commentContent.replace('[current position]','');
-	}
-			$("#CommentMessage").val(commentContent + "[current position]" + additionalCoords);
-
-			if(current===null || current.move===null){
-			$("#CommentPosition").val(
-				"-1/-1/0/0/0/0/0/0/0"
-			);
-	}else{
-				pX = -1;
-				pY = -1;
-			if(current.moveNumber>1){
-				pX = current.parent.move.x;
-				pY = current.parent.move.y;
-	}
-			if(current.children.length===0){
-				cX = -1;
-				cY = -1;
-	}else{
-				cX = current.children[0].move.x;
-				cY = current.children[0].move.y;
-	}
-
-			let newP = current.parent;
-			let newPcoords = current.move.x+"/"+current.move.y+"+";
-				while(newP!==null && newP.move!==null){
-					newPcoords += newP.move.x+"/"+newP.move.y+"+"
-					newP = newP.parent;
-	}
-				newPcoords = newPcoords.slice(0, -1);
-			$("#CommentPosition").val(
-				current.move.x+"/"+current.move.y+"/"+pX+"/"+pY+"/"+cX+"/"+cY+"/"+current.moveNumber+"/"+current.children.length+"/"+besogoOrientation[0]+"|"+newPcoords
-			);
-	}
-		});
 		let solutionRequest = true;
 		<?php if($solved || $isSandbox) { ?>
 			displaySettings();
@@ -1512,70 +1461,46 @@ use App\Utility\ViteManifest;
 		return out;
 	}
 
-	// Draws the comment sequence moves onto a cloned board SVG as the boards own
-	// realistic stones, each with its move number, and rings the hovered move in
-	// blue. This shows the commenters line even when it is not a path in the
-	// game tree. Moves are drawn "free" - no tree navigation in this phase.
+	// Draws one numbered realistic stone onto a cloned board SVG, ringed in blue
+	// when it is the hovered move.
+	function drawNumberedStone(svg, x, y, isBlack, moveNumber, hovered) {
+		var px = boardPixel(x);
+		var py = boardPixel(y);
+		svg.appendChild(besogo.realStone(px, py, isBlack ? -1 : 1, 0, besogo.editor.BLACK_STONES || "", besogo.editor.WHITE_STONES || ""));
+		var text = besogo.svgEl("text", {
+			x: px, y: py, dy: ".35ex", "text-anchor": "middle",
+			"font-size": 22, "font-weight": "bold",
+			fill: isBlack ? "white" : "black",
+			"font-family": "Helvetica,Arial,sans-serif"
+		});
+		text.appendChild(document.createTextNode(String(moveNumber)));
+		svg.appendChild(text);
+		if (hovered)
+			svg.appendChild(besogo.svgCircle(px, py, "blue", 44, 4));
+	}
+
+	// Draws the comment sequence moves as written, through to the hovered one.
+	// This shows the commenters line even when it is not a path in the game tree.
+	// An explicit b/w marker is honored, otherwise the colors alternate from the
+	// puzzle first-move colour.
 	function overlaySequenceOnBoard(svg, coords, colors, hoverIndex, firstMove, startMoveNumber) {
-		var blackStone = besogo.editor.BLACK_STONES || "";
-		var whiteStone = besogo.editor.WHITE_STONES || "";
-		var currentColor = firstMove === 1 ? 1 : -1;
-		for (var i = 0; i < coords.length; i++) {
-			if (i > hoverIndex) break; // moves after the hovered one are future
+		var nextIsBlack = firstMove !== 1;
+		for (var i = 0; i <= hoverIndex && i < coords.length; i++) {
 			var xy = besogo.editor.coordLabelToXY(coords[i]);
 			if (!xy) continue;
-			var px = boardPixel(xy.x);
-			var py = boardPixel(xy.y);
-			var moveNumber = startMoveNumber + i + 1;
-			// Honor an explicit b/w marker; otherwise alternate from the puzzle
-			// first-move colour.
-			var isBlack;
-			if (colors && colors[i] === "b") isBlack = true;
-			else if (colors && colors[i] === "w") isBlack = false;
-			else isBlack = currentColor === -1;
-			var stoneColor = isBlack ? -1 : 1;
-			currentColor = -stoneColor;
-			svg.appendChild(besogo.realStone(px, py, stoneColor, 0, blackStone, whiteStone));
-			var text = besogo.svgEl("text", {
-				x: px, y: py, dy: ".35ex", "text-anchor": "middle",
-				"font-size": 22, "font-weight": "bold",
-				fill: isBlack ? "white" : "black",
-				"font-family": "Helvetica,Arial,sans-serif"
-			});
-			text.appendChild(document.createTextNode(String(moveNumber)));
-			svg.appendChild(text);
-			if (i === hoverIndex) {
-				svg.appendChild(besogo.svgCircle(px, py, "blue", 44, 4));
-			}
+			var isBlack = colors && colors[i] ? colors[i] === "b" : nextIsBlack;
+			nextIsBlack = !isBlack;
+			drawNumberedStone(svg, xy.x, xy.y, isBlack, startMoveNumber + i + 1, i === hoverIndex);
 		}
 	}
 
-	// Draws the commenter moves as numbered realistic stones using their actual
-	// resolved tree nodes (with the real game move numbers). The board in tree
-	// mode already shows the line; this labels the commenter moves so the turn
-	// numbers are visible regardless of tree or free-draw mode.
+	// Draws the commenter moves using their resolved tree nodes, with the real game
+	// move numbers.
 	function overlayNodesOnBoard(svg, nodes, hoverIndex) {
-		var blackStone = besogo.editor.BLACK_STONES || "";
-		var whiteStone = besogo.editor.WHITE_STONES || "";
 		for (var i = 0; i <= hoverIndex && i < nodes.length; i++) {
-			var nd = nodes[i];
-			if (!nd || !nd.move) continue;
-			var px = boardPixel(nd.move.x);
-			var py = boardPixel(nd.move.y);
-			var isBlack = nd.move.color === -1;
-			var stoneColor = isBlack ? -1 : 1;
-			svg.appendChild(besogo.realStone(px, py, stoneColor, 0, blackStone, whiteStone));
-			var text = besogo.svgEl("text", {
-				x: px, y: py, dy: ".35ex", "text-anchor": "middle",
-				"font-size": 22, "font-weight": "bold",
-				fill: isBlack ? "white" : "black",
-				"font-family": "Helvetica,Arial,sans-serif"
-			});
-			text.appendChild(document.createTextNode(String(nd.moveNumber)));
-			svg.appendChild(text);
-			if (i === hoverIndex) {
-				svg.appendChild(besogo.svgCircle(px, py, "blue", 44, 4));
-			}
+			var node = nodes[i];
+			if (node && node.move)
+				drawNumberedStone(svg, node.move.x, node.move.y, node.move.color === -1, node.moveNumber, i === hoverIndex);
 		}
 	}
 
@@ -1584,46 +1509,34 @@ use App\Utility\ViteManifest;
 		var mainBoard = document.querySelector(".besogo-board svg");
 		if (!mainBoard) return;
 
-		// If the comment is anchored to a board position, preview the context of
-		// that anchored position so the coordinate is shown from the comment.
-		// A sequence (such as R19-P19-Q19) is shown as the commenter wrote it:
-		// the moves are drawn as stones on the preview board even when that line
-		// is not a path in the game tree. The tree is used only to find the
-		// start position (the anchor, or the root).
+		// The preview board is the main board cloned at the previewed node: the
+		// comment anchor, or for a sequence (such as R19-P19-Q19) the node right
+		// before the hovered move. The current node is restored afterwards.
+		var isSequence = sequence && sequence.coords && sequence.coords.length > 0;
 		var restoreNode = null;
 		var previewNode = null;
-		var treePreview = false;
-		var hoverNode = null;
+		// The sequence resolved along the game tree, null when it is not a tree line
+		var hover = null;
 
-		if (sequence && sequence.coords && sequence.coords.length > 0) {
+		if (isSequence) {
 			restoreNode = besogo.editor.getCurrent();
-			var startNode = null;
-			if (position) startNode = besogo.editor.findNodeForPosition(position);
+			var startNode = position ? besogo.editor.findNodeForPosition(position) : null;
 			// Tree-first: reconstruct the line from the game tree, filling in the
-			// opponents moves the commenter omitted. Fall back to free draw when
-			// the sequence does not match a tree line (e.g. a proposed new line).
-			var hover = besogo.editor.resolveSequenceHover(sequence.coords, sequence.index, startNode, sequence.colors);
-			if (hover.found && hover.beforeNode) {
-				treePreview = true;
-				previewNode = hover.beforeNode;
-				hoverNode = hover.hoverNode;
-				besogo.editor.setCurrent(hover.beforeNode);
-			} else {
-				treePreview = false;
-				previewNode = startNode || besogo.editor.getRoot();
-				besogo.editor.setCurrent(previewNode);
-			}
-		} else if (position) {
-			var anchoredNode = besogo.editor.findNodeForPosition(position);
+			// opponents moves the commenter omitted. Fall back to drawing the moves as
+			// written when the sequence does not match a tree line (e.g. a proposed
+			// new line).
+			var resolved = besogo.editor.resolveSequenceHover(sequence.coords, sequence.index, startNode, sequence.colors);
+			if (resolved.found && resolved.beforeNode)
+				hover = resolved;
+			previewNode = hover ? hover.beforeNode : (startNode || besogo.editor.getRoot());
+			besogo.editor.setCurrent(previewNode);
+		} else {
+			var anchoredNode = position ? besogo.editor.findNodeForPosition(position) : null;
 			if (anchoredNode) {
 				restoreNode = besogo.editor.getCurrent();
 				previewNode = anchoredNode;
 				besogo.editor.setCurrent(anchoredNode);
 			}
-			// Always highlight on main board
-			besogo.editor.displayHoverCoord(coord);
-		} else {
-			// No anchor: show the coordinate intersection directly.
 			besogo.editor.displayHoverCoord(coord);
 		}
 
@@ -1639,23 +1552,16 @@ use App\Utility\ViteManifest;
 		clone.style.height = "400px";
 		coordPopupDiv.innerHTML = "";
 		// Show what is being previewed. In tree mode this is the reconstructed
-		// game line (with the opponents moves filled in); in free-draw mode it is
-		// the commenter moves as written, through to the hovered move.
+		// game line (with the opponents moves filled in), otherwise the commenter
+		// moves as written, through to the hovered move.
 		var caption = coord;
-		if (sequence && sequence.coords && sequence.coords.length > 0) {
-			if (treePreview && previewNode) {
-				var line = pathLabels(previewNode);
-				if (hoverNode && hoverNode.move) {
-					var hl = besogo.editor.coordXYToLabel(hoverNode.move.x, hoverNode.move.y);
-					if (hl) line.push(hl);
-				}
-				if (line.length > 1) caption = line.join(" > ");
-				else if (line.length === 1) caption = line[0];
-			} else {
-				var shown = sequence.coords.slice(0, sequence.index + 1);
-				if (shown.length > 1) caption = shown.join(" > ");
-				else if (shown.length === 1) caption = shown[0];
+		if (isSequence) {
+			var line = hover ? pathLabels(previewNode) : sequence.coords.slice(0, sequence.index + 1);
+			if (hover && hover.hoverNode.move) {
+				var hoverLabel = besogo.editor.coordXYToLabel(hover.hoverNode.move.x, hover.hoverNode.move.y);
+				if (hoverLabel) line.push(hoverLabel);
 			}
+			if (line.length > 0) caption = line.join(" > ");
 		}
 		var label = document.createElement("div");
 		label.id = "coord-popup-label";
@@ -1663,17 +1569,13 @@ use App\Utility\ViteManifest;
 		label.textContent = caption;
 		coordPopupDiv.appendChild(label);
 		// Draw the commenter moves as numbered stones so the turn numbers always
-		// show. In tree-first mode the numbered stones use the real resolved tree
-		// nodes (match the actual game moves); otherwise they are drawn free from
-		// the authored sequence.
-		if (sequence && sequence.coords && sequence.coords.length > 0) {
-			if (treePreview && hover && hover.nodes && hover.nodes.length > 0) {
+		// show: the resolved tree nodes in tree mode, otherwise the moves as written.
+		if (isSequence) {
+			if (hover && hover.nodes.length > 0)
 				overlayNodesOnBoard(clone, hover.nodes, sequence.index);
-			} else {
-				var firstMove = besogo.editor.getRoot().firstMove || -1;
-				var startMoveNumber = previewNode ? (previewNode.moveNumber || 0) : 0;
-				overlaySequenceOnBoard(clone, sequence.coords, sequence.colors, sequence.index, firstMove, startMoveNumber);
-			}
+			else
+				overlaySequenceOnBoard(clone, sequence.coords, sequence.colors, sequence.index,
+					besogo.editor.getRoot().firstMove || -1, previewNode.moveNumber || 0);
 		} else {
 			// Single coordinate: ring the point on the popup board so it matches
 			// the sequence look.

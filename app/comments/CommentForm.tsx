@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { positionMoveNumber } from './boardPosition';
 
 interface CommentFormProps
 {
@@ -103,7 +104,7 @@ export function CommentForm({
 	};
 
 	// Move number of the attached position, for display ("Move 5 attached").
-	const positionMoveNumber = form.position ? parseInt(form.position.split('/')[6], 10) : null;
+	const attachedMoveNumber = form.position ? positionMoveNumber(form.position) : null;
 
 	return (
 		<div className="tsumego-comments__form">
@@ -158,7 +159,7 @@ export function CommentForm({
 						<span aria-hidden="true">📌</span>
 						<span>
 							{form.position
-								? `Move ${positionMoveNumber ?? '?'} attached`
+								? `Move ${attachedMoveNumber} attached`
 								: 'Attach board position'}
 						</span>
 					</label>
