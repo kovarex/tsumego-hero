@@ -91,7 +91,7 @@ use App\Utility\ViteManifest;
 	}
 
 	if(isset($deleteProblem2))
-		echo '<script type="text/javascript">window.location.href = "/sets/'.$t['Tsumego']['set_id'].'";</script>';
+		echo '<script type="text/javascript">window.location.href = "' . Set::url((int) $t['Tsumego']['set_id']) . '";</script>';
 	$swapColorWords = function (string $text): string
 	{
 		return preg_replace_callback(
