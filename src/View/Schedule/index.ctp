@@ -14,6 +14,7 @@ $today = date('Y-m-d');
 <div class="homeCenter2">
 <div class="profile-header">
 	<p class="profile-username">Publish Schedule</p>
+	<p class="hint">Problems are prepared in a sandbox set and scheduled to move into a public set, one day at a time. The daily cron publishes what is due, and a schedule that starts today publishes right away.</p>
 </div>
 
 <div class="stack" style="gap:var(--space-5);align-items:stretch">
@@ -80,6 +81,7 @@ $today = date('Y-m-d');
 			<?php endforeach; ?>
 			</tbody>
 		</table>
+		<p class="hint">Cancelling a row only removes it from the schedule; the problem stays where it is.</p>
 		</div>
 		<?php endif; ?>
 	</div>
@@ -126,6 +128,7 @@ $today = date('Y-m-d');
 						<option value="<?php echo $set['Set']['id']; ?>"><?php echo h($set['Set']['title']); ?></option>
 					<?php endforeach; ?>
 				</select>
+				<span class="hint">Problems are taken from here, in the order the set has them.</span>
 			</div>
 			<div class="form-field">
 				<label class="form-field__label" for="schedule-to">Target public set</label>
@@ -134,14 +137,17 @@ $today = date('Y-m-d');
 						<option value="<?php echo $set['Set']['id']; ?>"><?php echo h($set['Set']['title']); ?></option>
 					<?php endforeach; ?>
 				</select>
+				<span class="hint">Publishing takes the problem out of the sandbox and puts it here; a number that is already taken is renumbered.</span>
 			</div>
 			<div class="form-field">
 				<label class="form-field__label" for="schedule-count">How many problems</label>
 				<input class="form-field__control" type="number" id="schedule-count" name="count" value="1" min="1" max="100" required>
+				<span class="hint">At most this many: a problem already in the target set, or already scheduled, is skipped.</span>
 			</div>
 			<div class="form-field">
 				<label class="form-field__label" for="schedule-num">Start from problem number (optional)</label>
 				<input class="form-field__control" type="number" id="schedule-num" name="num" min="1" placeholder="Leave empty for first unscheduled">
+				<span class="hint">Only problems from this position in the source set on. Leave it empty to start at the first unscheduled one.</span>
 			</div>
 			<div class="form-field">
 				<label class="form-field__label" for="schedule-per-day">Problems per day</label>
