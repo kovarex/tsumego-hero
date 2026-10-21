@@ -471,7 +471,7 @@ h4 {
 	padding: 8px;
 	margin-top: 6px;
 	margin-bottom: 0px;
-	font-size: 24px;
+	font-size: 22px;
 	font-style: normal;
 	font-variant: normal;
 	font-weight: 400;
@@ -733,7 +733,7 @@ nav ul li {
   border-left: 2px solid var(--surface-border-light);
 }
 nav ul .menuIcons1 {
-  height: 41px;
+  height: 40px;
 }
 .menuIcons2 {
   padding: 5px 12px;
@@ -752,6 +752,13 @@ nav a {
   color: var(--color-purple-nav);
   text-align: center;
   text-decoration: none;
+}
+/* The top row of the menu has a fixed height instead of taking the line box of
+   whatever font the platform picks: with `normal` the text sits where the font's
+   own ascent puts it, so a family swap moves it up or down and the bar changes
+   height with it. The submenus keep their own line box. */
+nav > ul > li > a {
+  line-height: 26px;
 }
 nav ul ul {
   display: none;
