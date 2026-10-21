@@ -407,12 +407,11 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		($this->setFunction)('userSetsJson', $userSetsJson);
 
 		if (Auth::isInLevelMode() && isset($tsumegoButtons))
-			$tsumegoButtons->exportCurrentAndPreviousLink($this->setFunction, $setConnectionID,
-				Set::url($tsumegoFilters->getSetID($set), $tsumegoButtons->getPartition()));
+			$tsumegoButtons->exportCurrentAndPreviousLink($this->setFunction, $tsumegoFilters, $setConnectionID, $set);
 		elseif (Auth::isInMistakeTrainingMode() && isset($mistakeTrainingButtons))
 		{
 			// No link before the first problem: the queue page would serve the first due one again
-			$mistakeTrainingButtons->exportCurrentAndPreviousLink($this->setFunction, $setConnectionID, '');
+			$mistakeTrainingButtons->exportCurrentAndPreviousLink($this->setFunction, $tsumegoFilters, $setConnectionID, $set, '');
 			// The row keeps what today already solved, so "Next" skips it instead of
 			// serving the neighbour.
 			($this->setFunction)('nextLink', MistakeTraining::nextLink($mistakeTrainingButtons, $setConnectionID));

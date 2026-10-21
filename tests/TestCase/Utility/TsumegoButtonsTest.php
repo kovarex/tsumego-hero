@@ -5,6 +5,7 @@ use App\Utility\PlayOutcome;
 use App\Utility\RungInsignia;
 use App\Utility\TsumegoButton;
 use App\Utility\TsumegoButtons;
+use App\Utility\TsumegoFilters;
 
 class TsumegoButtonsTest extends TestCaseWithAuth
 {
@@ -124,7 +125,7 @@ class TsumegoButtonsTest extends TestCaseWithAuth
 		$setFunction = function ($name, $value) use (&$links) {
 			$links[$name] = $value;
 		};
-		$buttons->exportCurrentAndPreviousLink($setFunction, $scId, '');
+		$buttons->exportCurrentAndPreviousLink($setFunction, null, $scId, null, '');
 
 		$this->assertSame('', $links['previousLink'], 'Back at the start of the training has nowhere to go');
 		$this->assertSame('/mistake-training/play/' . $context->tsumegos[1]['set-connections'][0]['id'], $links['nextLink'],
@@ -149,12 +150,11 @@ class TsumegoButtonsTest extends TestCaseWithAuth
 			$links[$name] = $value;
 		};
 
-		$buttons->exportCurrentAndPreviousLink($setFunction, (int) $first['id'], '/page');
-
+		$buttons->exportCurrentAndPreviousLink($setFunction, new TsumegoFilters('topics'), (int) $first['id'], ['Set' => ['id' => $first['set_id']]], '/page');
 		$this->assertSame('/page', $links['previousLink'], 'The first problem has the page behind it');
 		$this->assertSame('/' . $second['id'], $links['nextLink']);
 
-		$buttons->exportCurrentAndPreviousLink($setFunction, (int) $second['id'], '/page');
+		$buttons->exportCurrentAndPreviousLink($setFunction, new TsumegoFilters('topics'), (int) $second['id'], ['Set' => ['id' => $second['set_id']]], '/page');
 
 		$this->assertSame('/' . $first['id'], $links['previousLink'], 'The last problem has its neighbour behind it');
 		$this->assertSame('/page', $links['nextLink']);

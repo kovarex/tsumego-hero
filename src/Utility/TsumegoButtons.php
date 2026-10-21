@@ -3,6 +3,7 @@
 namespace App\Utility;
 
 use ArrayObject;
+use Set;
 
 class TsumegoButtons extends ArrayObject
 {
@@ -177,17 +178,14 @@ class TsumegoButtons extends ArrayObject
 		return $this->isPartitioned ? ' #' . $this->getPartition() : '';
 	}
 
-	/**
-	 * Where the arrows at either end of the list lead. A problem in the middle steps to its
-	 * neighbour on the route that owns the list ($linkPrefix); the first and the last one have
-	 * no neighbour, so both point at $edgeLink, which the caller names: the page of the
-	 * collection, or the page of a queue that runs on a route of its own.
-	 */
-	public function exportCurrentAndPreviousLink(callable $setFunction, int $setConnectionID, string $edgeLink): void
+	public function exportCurrentAndPreviousLink(callable $setFunction, ?TsumegoFilters $tsumegoFilters, int $setConnectionID, ?array $set, ?string $edgeLink = null): void
 	{
 		$indexOfCurrent = array_find_key((array) $this, function ($tsumegoButton) use ($setConnectionID) {
 			return $tsumegoButton->setConnectionID == $setConnectionID;
 		});
+
+		if ($edgeLink === null && $tsumegoFilters !== null)
+			$edgeLink = Set::url($tsumegoFilters->getSetID($set ?? []), $this->getPartition());
 
 		if (isset($indexOfCurrent) && $indexOfCurrent > 0)
 			$previousSetConnectionID = $this[$indexOfCurrent - 1]->setConnectionID;
