@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1792621503">
-  <project timestamp="1792621503">
+<coverage generated="1792622277">
+  <project timestamp="1792622277">
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Attribute/HttpDelete.php">
       <class name="App\Attribute\HttpDelete" namespace="global">
         <metrics complexity="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
@@ -1200,7 +1200,7 @@
     </file>
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Controller/CronController.php">
       <class name="CronController" namespace="global">
-        <metrics complexity="40" methods="12" coveredmethods="8" conditionals="0" coveredconditionals="0" statements="141" coveredstatements="133" elements="153" coveredelements="141"/>
+        <metrics complexity="40" methods="12" coveredmethods="8" conditionals="0" coveredconditionals="0" statements="141" coveredstatements="132" elements="153" coveredelements="140"/>
       </class>
       <line num="8" type="method" name="daily" visibility="public" complexity="3" crap="3" count="10"/>
       <line num="10" type="stmt" count="10"/>
@@ -1279,27 +1279,27 @@
       <line num="130" type="stmt" count="9"/>
       <line num="132" type="stmt" count="9"/>
       <line num="133" type="stmt" count="9"/>
-      <line num="134" type="stmt" count="5"/>
-      <line num="135" type="stmt" count="5"/>
-      <line num="136" type="stmt" count="4"/>
+      <line num="134" type="stmt" count="4"/>
+      <line num="135" type="stmt" count="6"/>
+      <line num="136" type="stmt" count="5"/>
       <line num="137" type="stmt" count="1"/>
       <line num="138" type="stmt" count="1"/>
       <line num="139" type="stmt" count="9"/>
       <line num="140" type="stmt" count="9"/>
       <line num="141" type="stmt" count="9"/>
-      <line num="142" type="stmt" count="4"/>
-      <line num="143" type="stmt" count="6"/>
+      <line num="142" type="stmt" count="2"/>
+      <line num="143" type="stmt" count="8"/>
       <line num="144" type="stmt" count="4"/>
-      <line num="145" type="stmt" count="3"/>
-      <line num="146" type="stmt" count="3"/>
+      <line num="145" type="stmt" count="4"/>
+      <line num="146" type="stmt" count="4"/>
       <line num="147" type="stmt" count="9"/>
       <line num="148" type="stmt" count="9"/>
       <line num="149" type="stmt" count="9"/>
-      <line num="150" type="stmt" count="5"/>
-      <line num="151" type="stmt" count="5"/>
-      <line num="152" type="stmt" count="2"/>
-      <line num="153" type="stmt" count="4"/>
-      <line num="154" type="stmt" count="4"/>
+      <line num="150" type="stmt" count="3"/>
+      <line num="151" type="stmt" count="7"/>
+      <line num="152" type="stmt" count="0"/>
+      <line num="153" type="stmt" count="7"/>
+      <line num="154" type="stmt" count="7"/>
       <line num="155" type="stmt" count="9"/>
       <line num="157" type="stmt" count="9"/>
       <line num="158" type="stmt" count="9"/>
@@ -1355,7 +1355,7 @@
       <line num="232" type="method" name="updateSolvedCounts" visibility="private" complexity="1" crap="1" count="9"/>
       <line num="234" type="stmt" count="9"/>
       <line num="241" type="stmt" count="9"/>
-      <metrics loc="244" ncloc="233" classes="1" methods="12" coveredmethods="8" conditionals="0" coveredconditionals="0" statements="141" coveredstatements="133" elements="153" coveredelements="141"/>
+      <metrics loc="244" ncloc="233" classes="1" methods="12" coveredmethods="8" conditionals="0" coveredconditionals="0" statements="141" coveredstatements="132" elements="153" coveredelements="140"/>
     </file>
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Controller/HeroController.php">
       <class name="HeroController" namespace="global">
@@ -11209,6 +11209,6 @@
       <line num="70" type="stmt" count="1"/>
       <metrics loc="73" ncloc="51" classes="1" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="30" coveredstatements="28" elements="31" coveredelements="28"/>
     </file>
-    <metrics files="154" loc="22307" ncloc="18413" classes="136" methods="879" coveredmethods="662" conditionals="0" coveredconditionals="0" statements="9417" coveredstatements="8754" elements="10296" coveredelements="9416"/>
+    <metrics files="154" loc="22307" ncloc="18413" classes="136" methods="879" coveredmethods="662" conditionals="0" coveredconditionals="0" statements="9417" coveredstatements="8753" elements="10296" coveredelements="9415"/>
   </project>
 </coverage>
