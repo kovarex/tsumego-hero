@@ -23,10 +23,12 @@ use App\Utility\CookieFlash;
 		<form action="/users/newpassword/<?php echo urlencode($checksum); ?>" id="UserNewpasswordForm" method="post" accept-charset="utf-8">
 		<div style="display:none;"><input type="hidden" name="_method" value="POST"></div>	
                 <div class="input">
-                        <input name="data[User][password1]" maxlength="50" placeholder="New password" aria-label="New password" type="password" id="password1" autocomplete="new-password" required="required"/>
+                        <label for="password1">New password</label>
+                        <input name="data[User][password1]" maxlength="50" type="password" id="password1" autocomplete="new-password" required="required"/>
                 </div>
                 <div class="input">
-                        <input name="data[User][password2]" maxlength="50" placeholder="New password again" aria-label="New password again" type="password" id="password2" autocomplete="new-password" required="required"/>
+                        <label for="password2">New password again</label>
+                        <input name="data[User][password2]" maxlength="50" type="password" id="password2" autocomplete="new-password" required="required"/>
                 </div>
                 <div class="hint">At least <?php echo Constants::$MINIMUM_PASSWORD_LENGTH; ?> characters.</div>
                 <button type="submit" class="btn" id="newpassword-submit">Submit</button>
