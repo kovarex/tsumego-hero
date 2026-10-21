@@ -1,49 +1,48 @@
 <?php
+use App\Utility\Constants;
+
 /**
  * @var View $this
+ * @var string $lightDark
  * @var string $redirectUrl
  * @var string $redirectSignature
  */
-$this->start('script');
 ?>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-<?php $this->end(); ?>
 <div id="login-box" class="users form">
   <div class="left signin">
 		<h1>Sign up</h1>
 		<?php echo $this->Form->create('User');?>
-		<?php echo $this->Form->input('name', array('label' => '', 'placeholder' => 'Name')); ?>
-		<?php echo $this->Form->input('email', array('label' => '', 'placeholder' => 'E-Mail')); ?>
-		<?php echo $this->Form->input('password1', array('label' => '','type'=>'password', 'placeholder' => 'Password')); ?>
-		<?php echo $this->Form->input('password2', array('label' => '','type'=>'password', 'placeholder' => 'Retype Password')); ?>
-    <?php echo $this->Form->end('Submit');?>
-  	You already have an account?<br>
-		<a href="/users/login">Sign In</a><br><br>
+		<div class="input text required">
+			<label for="UserName">Name</label>
+			<?php echo $this->Form->input('name', ['label' => false, 'div' => false, 'autocomplete' => 'username']); ?>
+		</div>
+		<div class="input text required">
+			<label for="UserEmail">E-Mail</label>
+			<?php echo $this->Form->input('email', ['label' => false, 'div' => false, 'autocomplete' => 'email']); ?>
+		</div>
+		<div class="input password required">
+			<label for="UserPassword1">Password</label>
+			<?php echo $this->Form->input('password1', ['label' => false, 'div' => false, 'type' => 'password', 'autocomplete' => 'new-password']); ?>
+			<button type="button" class="password-toggle" data-target="UserPassword1">Show</button>
+		</div>
+		<div class="input password required">
+			<label for="UserPassword2">Retype Password</label>
+			<?php echo $this->Form->input('password2', ['label' => false, 'div' => false, 'type' => 'password', 'autocomplete' => 'new-password']); ?>
+		</div>
+		<p class="hint">At least <?php echo Constants::$MINIMUM_PASSWORD_LENGTH; ?> characters.</p>
+		<button type="submit" class="btn">Sign up</button>
+		<?php echo $this->Form->end(); ?>
+		<p class="hint">Already have an account? <a href="/users/login">Sign in</a></p>
 
 		<?php
-		// Encode redirect URL + signature in state for Google Sign-In (stateless)
+		// The redirect rides along in the state so it survives the trip through Google
 		$googleState = base64_encode(json_encode([
 			'redirect' => $redirectUrl,
 			'signature' => $redirectSignature,
 		]));
+		echo $this->element('google_signin', ['googleState' => $googleState]);
+		echo $this->element('password_toggle');
 		?>
-		<div
-				id="g_id_onload"
-				data-client_id="986748597524-05gdpjqrfop96k6haga9gvj1f61sji6v.apps.googleusercontent.com"
-				data-context="signin"
-				data-ux_mode="popup"
-				data-login_uri="/users/googlesignin"
-				data-auto_prompt="false"
-			></div>
-			<div
-				class="g_id_signin"
-				data-type="standard"
-				data-shape="rectangular"
-				data-theme="outline"
-				data-text="sign_in_with"
-				data-size="large"
-				data-state="<?php echo h($googleState); ?>"
-			></div>
   </div>
 
   <div class="right">
