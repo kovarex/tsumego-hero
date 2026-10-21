@@ -109,19 +109,31 @@ deploy_steps() {
 	fi
 }
 
+# Called when the deploy's subshell exits, with its exit code.
+finish_deploy() {
+	commit=$(cut -d' ' -f1 "$STATE_DIR/commit")
+	if [ "$1" = 0 ]; then
+		write_status ok "$DEPLOY_ID" "$DEPLOY_PR" "$commit"
+	else
+		write_status failed "$DEPLOY_ID" "$DEPLOY_PR" "$commit"
+	fi
+}
+
 run_deploy() {
+	DEPLOY_PR=$1
+	DEPLOY_ID=$2
 	echo $$ > "$LOCK_DIR/pid"
 	trap 'rm -rf "$LOCK_DIR"' EXIT
 	: > "$STATE_DIR/commit"
-	write_status running "$2" "$1" ""
-	(deploy_steps "$1") > "$LOG_FILE" 2>&1
-	result=$?
-	commit=$(cut -d' ' -f1 "$STATE_DIR/commit")
-	if [ "$result" = 0 ]; then
-		write_status ok "$2" "$1" "$commit"
-	else
-		write_status failed "$2" "$1" "$commit"
-	fi
+	write_status running "$DEPLOY_ID" "$DEPLOY_PR" ""
+	# The subshell doing the work writes the final state itself: on NFS the parent didn't
+	# outlive a long deploy and the state stayed "running" after a finished deploy.
+	# It also takes over the lock, so a second deploy can't start while it still runs.
+	(
+		trap 'finish_deploy $?; rm -rf "$LOCK_DIR"' EXIT
+		sh -c 'echo $PPID' > "$LOCK_DIR/pid"
+		deploy_steps "$DEPLOY_PR"
+	) > "$LOG_FILE" 2>&1
 }
 
 respond() {
