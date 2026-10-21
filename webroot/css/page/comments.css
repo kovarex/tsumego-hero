@@ -153,6 +153,7 @@
 	padding: 8px;
 	border: 1px solid var(--current-border-color);
 	border-radius: 4px;
+	font-family: var(--font-family-body);
 	resize: vertical;
 	font-size: 13px;
 	box-sizing: border-box;
@@ -485,6 +486,7 @@
 	padding: 8px;
 	border: 1px solid var(--current-border-color);
 	border-radius: 4px;
+	font-family: var(--font-family-body);
 	font-size: 13px;
 	resize: vertical;
 	min-height: 50px;

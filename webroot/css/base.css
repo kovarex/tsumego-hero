@@ -21,13 +21,27 @@
 	button,
 	input,
 	select,
-	textarea,
+	textarea
+	{
+		font-family: var(--font-family-ui);
+	}
+
 	pre,
 	code,
 	kbd,
 	samp
 	{
-		font-family: inherit;
+		font-family: var(--font-family-code);
+	}
+
+	h1,
+	h2,
+	h3,
+	h4,
+	h5,
+	h6
+	{
+		font-family: var(--font-family-heading);
 	}
 
 	a

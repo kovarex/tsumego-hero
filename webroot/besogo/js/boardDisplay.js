@@ -298,7 +298,7 @@ besogo.makeBoardDisplay = function(container, editor, corner)
           dy: ".65ex", // Seems to work for vertically centering these fonts
           "font-size": 32,
           "text-anchor": "middle", // Horizontal centering
-          "font-family": "system-ui, sans-serif",
+          "font-family": "Helvetica, Arial, sans-serif",
           fill: color
       });
       element.appendChild( document.createTextNode(label) );

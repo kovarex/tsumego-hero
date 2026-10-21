@@ -248,7 +248,38 @@
 		--avatar-board-edge: rgba(0, 0, 0, 0.15);
 
 		/* ── Typography ── */
-		--font-family-base: system-ui, sans-serif;
+		/* Type: the concrete stacks. No other file names a font family. */
+		--font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+			"Helvetica Neue", "Noto Sans", Arial, sans-serif, "Apple Color Emoji",
+			"Segoe UI Emoji", "Noto Color Emoji";
+		--font-family-serif: Georgia, Cambria, "Times New Roman", Times, serif;
+		--font-family-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+			"Liberation Mono", "Courier New", monospace;
+		/* Narrow display face, for numbers that have to fit a tight box. */
+		--font-family-cond: Impact, "Arial Narrow", "Liberation Sans Narrow",
+			"Nimbus Sans Narrow", sans-serif;
+
+		/* Role: which type goes where. Rules reference these, never the
+		   families above, so a family can be swapped without touching any of
+		   them. */
+
+		/* Normal text: paragraphs, lists, table cells, anything you read as
+		   sentences (p, li, td). This is also the default, so a rule only
+		   names a token when it wants something else. */
+		--font-family-body: var(--font-family-serif);
+
+		/* Titles and nav labels: h1 to h6, nav items, the short words that set
+		   the tone of the page. */
+		--font-family-heading: var(--font-family-serif);
+
+		/* The interface around the text: form fields (input, select), bars,
+		   menus, overlays. Form controls do not follow the page font on their
+		   own, so this is the one role that has to be set explicitly. */
+		--font-family-ui: var(--font-family-sans);
+
+		/* Code: pre, code, file paths and stack traces. */
+		--font-family-code: var(--font-family-mono);
+
 		/* Fluid type scale: the viewport-relative term grows the size on wide
 		   screens; the clamp() caps keep the minimum (mobile) size readable
 		   without the text ballooning on very large monitors. */

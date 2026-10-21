@@ -44,6 +44,7 @@
 	border: none;
 	border-bottom: 1px solid var(--text-softer-color);
 	color: var(--text-color);
+	font-family: var(--font-family-body);
 	font-weight: 400;
 	font-size: 15px;
 	transition: 0.2s ease;

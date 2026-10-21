@@ -299,18 +299,21 @@
   color: var(--color-white) !important;
   left: 316px;
   top: 172px;
+  font-family: Comic Sans MS, Times New Roman, verdana;
 }
 
 .user-pick-q02 {
   color: var(--color-white) !important;
   left: 316px;
   top: 106px;
+  font-family: Impact, Times New Roman, verdana;
 }
 
 .user-pick-q03 {
   color: var(--stat-pink) !important;
   left: 316px;
   top: 89px;
+  font-family: Lucida Console, Times New Roman, verdana;
 }
 
 .user-pick-q04 {
@@ -318,6 +321,7 @@
   left: 316px;
   top: 189px;
   font-weight: bold;
+  font-family: Baskerville, Times New Roman, verdana;
 }
 
 .user-pick-q05 {
@@ -326,6 +330,7 @@
   top: 121px;
   font-size: 22px !important;
   font-weight: bold;
+  font-family: Geneva, Times New Roman, verdana;
 }
 
 .user-pick-q06 {
@@ -333,6 +338,7 @@
   left: 316px;
   top: 151px;
   font-weight: bold;
+  font-family: Comic Sans MS, Times New Roman, verdana;
 }
 
 .user-pick-q07 {
@@ -340,6 +346,7 @@
   left: 342px;
   top: 113px;
   font-weight: bold;
+  font-family: Comic Sans MS, Times New Roman, verdana;
 }
 
 .user-pick-q08 {
@@ -347,12 +354,14 @@
   left: 300px;
   top: 22px;
   font-weight: bold;
+  font-family: Garamond, Times New Roman, verdana;
 }
 
 .user-pick-q09 {
   color: var(--color-white) !important;
   left: 318px;
   top: 53px;
+  font-family: Helvetica, Times New Roman, verdana;
 }
 
 .user-pick-q10 {
@@ -360,6 +369,7 @@
   left: 317px;
   top: 153px;
   font-weight: bold;
+  font-family: Helvetica, Times New Roman, verdana;
 }
 
 .user-pick-q11 {
@@ -367,34 +377,40 @@
   left: 321px;
   top: 125px;
   font-size: 15px;
+  font-family: Helvetica, Times New Roman, verdana;
 }
 
 .user-pick-q12 {
   color: var(--stat-red) !important;
   left: 321px;
   top: 145px;
+  font-family: Helvetica, Times New Roman, verdana;
 }
 
 .user-pick-q13 {
   color: white !important;
   left: 321px;
   top: 118px;
+  font-family: Helvetica, Times New Roman, verdana;
 }
 
 .user-pick-q96 {
   left: 280px;
   top: 130px;
+  font-family: Helvetica, Times New Roman, verdana;
   color: black !important;
 }
 
 .user-pick-q97 {
   left: 321px;
   top: 128px;
+  font-family: Helvetica, Times New Roman, verdana;
 }
 
 .user-pick-q99 {
   left: 321px;
   top: 210px;
+  font-family: Helvetica, Times New Roman, verdana;
 }
 
 /* Anchor the label to the wrapper's right edge rather than the per-quote
