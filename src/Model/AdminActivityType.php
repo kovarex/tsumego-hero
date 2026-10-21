@@ -57,4 +57,8 @@ class AdminActivityType extends AppModel
 
 	// Display name
 	public const DISPLAY_NAME_CHANGE = 32;
+
+	// Schedule
+	public const ADD_TO_SCHEDULE = 33;
+	public const CANCEL_SCHEDULE = 34;
 }
