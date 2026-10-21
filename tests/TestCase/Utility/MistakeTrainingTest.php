@@ -382,7 +382,7 @@ class MistakeTrainingTest extends TestCaseWithAuth
 		for ($i = 0; $i < 8; $i++)
 			$this->reviewCleanly($userId, $tsumegoId);
 
-		$this->assertSame(0, MistakeTraining::importCandidates($userId),
+		$this->assertSame(0, MistakeTraining::importPastMistakes($userId),
 			'A problem the training mastered is not a past mistake to import again');
 	}
 
@@ -487,7 +487,7 @@ class MistakeTrainingTest extends TestCaseWithAuth
 		$this->assertSame(0, MistakeTraining::dueCount($userId));
 	}
 
-	public function testImportCandidatesAreTheProblemsSolvedWithAMistake(): void
+	public function testImportTakesOnlyTheProblemsSolvedWithAMistake(): void
 	{
 		$context = new ContextPreparator([
 			'tsumego' => ['set_order' => 1, 'attempt' => ['solved' => true, 'misplays' => 1]],
@@ -497,7 +497,7 @@ class MistakeTrainingTest extends TestCaseWithAuth
 			],
 		]);
 
-		$this->assertSame(1, MistakeTraining::importCandidates($context->user['id']),
+		$this->assertSame(1, MistakeTraining::importPastMistakes($context->user['id']),
 			'A clean solve and a problem that was never solved are not candidates');
 	}
 
@@ -520,11 +520,8 @@ class MistakeTrainingTest extends TestCaseWithAuth
 		$context = new ContextPreparator(['tsumego' => ['set_order' => 1, 'attempt' => ['solved' => true, 'misplays' => 1]]]);
 		$userId = $context->user['id'];
 
-		$this->assertSame(1, MistakeTraining::importCandidates($userId));
+		$this->assertSame(1, MistakeTraining::importPastMistakes($userId));
 
-		MistakeTraining::importPastMistakes($userId);
-
-		$this->assertSame(0, MistakeTraining::importCandidates($userId));
 		$this->assertSame(0, MistakeTraining::importPastMistakes($userId), 'Running the import again adds nothing');
 	}
 

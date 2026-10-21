@@ -17,7 +17,6 @@ use App\Utility\TsumegoButtons;
  * @var TsumegoButtons $tsumegoButtonsOfPublishedTsumegos
  * @var array|null $userOfTheDay
  * @var int|null $mistakeTrainingDue Problems due in the mistake training, null when it is not offered
- * @var int $mistakeTrainingImportable Past mistakes the training would bring in now
  */
 
 $this->start('script');
@@ -59,11 +58,7 @@ foreach ($modes as $mode)
 					<span class="mistake-training-card__count" role="img" title="<?php echo $mistakeTrainingDueLabel; ?>" aria-label="<?php echo $mistakeTrainingDueLabel; ?>"><?php echo $mistakeTrainingDue; ?></span>
 					<?php else: ?>
 					<span class="mistake-training-card__text">
-					<?php if (!empty($mistakeTrainingImportable)): ?>
-						Nothing to review today. <?php echo $mistakeTrainingImportable; ?> past mistake<?php echo $mistakeTrainingImportable == 1 ? ' is' : 's are'; ?> ready to add.
-					<?php else: ?>
-						Nothing to review today
-					<?php endif; ?>
+						Nothing to review today. Add past mistakes to training.
 					</span>
 					<?php endif; ?>
 					<span class="mistake-training-card__go" aria-hidden="true">&rsaquo;</span>

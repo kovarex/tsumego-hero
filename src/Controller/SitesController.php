@@ -69,14 +69,13 @@ class SitesController extends AppController
 		$recentAchievements = $this->AchievementStatus->getRecent();
 		$this->set('recentAchievements', $recentAchievements);
 
-		// The way into the mistake training: what is due today, or else how many past
-		// mistakes are ready to come in.
+		// The way into the mistake training: what is due today. The offer to bring past
+		// mistakes in is on the card always, without a count: counting them reads the
+		// whole attempt history, far too much for a page this hot.
 		if (Auth::isLoggedIn())
 		{
 			$userId = (int) Auth::getUserID();
-			$due = MistakeTraining::dueCount($userId);
-			$this->set('mistakeTrainingDue', $due);
-			$this->set('mistakeTrainingImportable', $due > 0 ? 0 : min(MistakeTraining::IMPORT_LIMIT, MistakeTraining::importCandidates($userId)));
+			$this->set('mistakeTrainingDue', MistakeTraining::dueCount($userId));
 		}
 	}
 
