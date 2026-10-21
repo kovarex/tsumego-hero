@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">34.21% </span>
+                <span class="strong">40% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>13/38</span>
+                <span class='fraction'>14/35</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">23.52% </span>
+                <span class="strong">19.04% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>4/17</span>
+                <span class='fraction'>4/21</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">37.5% </span>
+                <span class="strong">43.33% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>12/32</span>
+                <span class='fraction'>13/30</span>
             </div>
         
             
@@ -129,50 +129,48 @@
 <a name='L64'></a><a href='#L64'>64</a>
 <a name='L65'></a><a href='#L65'>65</a>
 <a name='L66'></a><a href='#L66'>66</a>
-<a name='L67'></a><a href='#L67'>67</a>
-<a name='L68'></a><a href='#L68'>68</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L67'></a><a href='#L67'>67</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">239x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">239x</span>
-<span class="cline-any cline-yes">239x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">239x</span>
 <span class="cline-any cline-yes">239x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">87x</span>
-<span class="cline-any cline-yes">87x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">87x</span>
-<span class="cline-any cline-yes">97x</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">239x</span>
+<span class="cline-any cline-yes">239x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">88x</span>
+<span class="cline-any cline-yes">88x</span>
+<span class="cline-any cline-yes">98x</span>
+<span class="cline-any cline-yes">98x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">98x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -201,9 +199,10 @@
  * Preview toggle - switches between pill buttons and inline board previews.
  * Persists preference to localStorage.
  *
- * Any checkbox with class="preview-zoom-toggle" will toggle the
- * "preview-zoomed" class on its nearest .set-view-main ancestor,
- * falling back to &lt;html&gt; if there is no such ancestor.
+ * Any checkbox with class="preview-zoom-toggle" switches its own container between the two modes:
+ * the element it names in data-target, else the block of boards it sits in, else the whole page.
+ * A page can carry several of them, one per table. The mode the page opens in is applied through
+ * the same container as a click, so the two can never disagree about where the class lives.
  */
 (function () {
 	'use strict';
@@ -211,35 +210,33 @@
 	var STORAGE_KEY = 'preview-mode';
 	var ZOOM_CLASS = 'preview-zoomed';
 &nbsp;
-	function <span class="fstat-no" title="function not covered" >findContainer(</span>toggle) {
+	function <span class="fstat-no" title="function not covered" >containerOf(</span>toggle) {
 <span class="cstat-no" title="statement not covered" >		if (toggle.dataset.target)</span>
 <span class="cstat-no" title="statement not covered" >			return document.querySelector(toggle.dataset.target);</span>
 <span class="cstat-no" title="statement not covered" >		return toggle.closest('.set-view-main') || toggle.closest('table') || document.documentElement;</span>
+	}
+&nbsp;
+	function <span class="fstat-no" title="function not covered" >setMode(</span>toggle, on) {
+		var container = <span class="cstat-no" title="statement not covered" >containerOf(toggle) || document.documentElement;</span>
+<span class="cstat-no" title="statement not covered" >		container.classList.toggle(ZOOM_CLASS, on);</span>
+<span class="cstat-no" title="statement not covered" >		if (on)</span>
+<span class="cstat-no" title="statement not covered" >			renderPreviewsIn(container);</span>
+		else
+<span class="cstat-no" title="statement not covered" >			container.querySelectorAll('a[data-sgf-preview] svg').forEach(<span class="fstat-no" title="function not covered" >fu</span>nction (svg) { <span class="cstat-no" title="statement not covered" >svg.remove(); </span>});</span>
 	}
 &nbsp;
 	function init() {
 		var toggles = document.querySelectorAll('.preview-zoom-toggle');
 		if (!toggles.length) return;
 &nbsp;
-		var saved = localStorage.getItem(STORAGE_KEY);
-		<span class="missing-if-branch" title="if path not taken" >I</span>if (saved === '1') {
-<span class="cstat-no" title="statement not covered" >			document.documentElement.classList.add(ZOOM_CLASS);</span>
-<span class="cstat-no" title="statement not covered" >			renderAllPreviews();</span>
-<span class="cstat-no" title="statement not covered" >			toggles.forEach(<span class="fstat-no" title="function not covered" >fu</span>nction (t) { <span class="cstat-no" title="statement not covered" >t.checked = true; </span>});</span>
-		}
-&nbsp;
+		var on = localStorage.getItem(STORAGE_KEY) === '1';
 		toggles.forEach(function (toggle) {
+			toggle.checked = on;
+			<span class="missing-if-branch" title="if path not taken" >I</span>if (on)
+<span class="cstat-no" title="statement not covered" >				setMode(toggle, true);</span>
 			toggle.addEventListener('change', <span class="fstat-no" title="function not covered" >fu</span>nction () {
-				var container = <span class="cstat-no" title="statement not covered" >findContainer(toggle);</span>
-<span class="cstat-no" title="statement not covered" >				if (this.checked) {</span>
-<span class="cstat-no" title="statement not covered" >					container.classList.add(ZOOM_CLASS);</span>
-<span class="cstat-no" title="statement not covered" >					renderPreviewsIn(container);</span>
-<span class="cstat-no" title="statement not covered" >					localStorage.setItem(STORAGE_KEY, '1');</span>
-				} else {
-<span class="cstat-no" title="statement not covered" >					container.classList.remove(ZOOM_CLASS);</span>
-<span class="cstat-no" title="statement not covered" >					container.querySelectorAll('a[data-sgf-preview] svg').forEach(<span class="fstat-no" title="function not covered" >fu</span>nction (svg) { <span class="cstat-no" title="statement not covered" >svg.remove(); </span>});</span>
-<span class="cstat-no" title="statement not covered" >					localStorage.setItem(STORAGE_KEY, '0');</span>
-				}
+<span class="cstat-no" title="statement not covered" >				setMode(toggle, this.checked);</span>
+<span class="cstat-no" title="statement not covered" >				localStorage.setItem(STORAGE_KEY, this.checked ? '1' : '0');</span>
 			});
 		});
 	}
@@ -271,7 +268,7 @@
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-10-21T21:23:54.070Z
+                at 2026-10-21T22:25:08.075Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
