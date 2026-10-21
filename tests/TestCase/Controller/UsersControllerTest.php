@@ -37,8 +37,7 @@ class UsersControllerTest extends ControllerTestCase
 		// Fill in login form
 		$browser->findById('UserName')->sendKeys('testuser');
 		$browser->findById('password')->sendKeys('test');
-		$browser->find('input[type="submit"]')->click();
-
+		$browser->find('#UserLoginForm button[type="submit"]')->click();
 		// Should be redirected back to highscore page
 		$browser->waitUntilJs('location.href.includes("highscore")');
 		$currentUrl = $browser->driver->getCurrentURL();
