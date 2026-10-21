@@ -179,7 +179,7 @@ It sends one request to `https://test.tsumego.com/deploy-hook.cgi`; the test sit
 Production is never touched: the workflow only knows a token that the test site accepts.
 
 The checkout on the test site ends up on a detached commit, and local changes to tracked files there are discarded.
-When the test DB has a migration the deployed commit doesn't have (typically after testing a PR with a new migration), the DB is restored from `/home/private/test-snapshot.sql.gz` first; without that file the deploy stops instead.
+When the test DB has a migration the deployed commit doesn't have (typically after testing a PR with a new migration), the DB is restored from `/home/private/test-snapshot.sql.gz` first; without that file the DB stays as it is and the log lists those migrations.
 
 One-time setup on the test site (NearlyFreeSpeech, repo in `/home/public`):
 ```
@@ -197,4 +197,4 @@ mysqldump ... | gzip > /home/private/test-snapshot.sql.gz
 ```
 Then in GitHub: Settings → Environments → `test` → add the secret `TEST_DEPLOY_TOKEN` with the contents of `/home/private/deploy-token`, and limit the environment's deployment branches to `master`.
 If the hook ends up at a different URL, set it as the `TEST_DEPLOY_URL` variable of the environment.
-After changing `scripts/deploy-test-hook.cgi`, copy it to the test site again.
+Deploying master (`0`) also puts the latest `scripts/deploy-test-hook.cgi` in place of the installed hook.

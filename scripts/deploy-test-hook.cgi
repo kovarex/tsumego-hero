@@ -3,8 +3,8 @@
 # "Deploy to test" GitHub workflow asks for it.
 #
 # Installed once on the test site, outside of what git checks out, so deploying
-# an older PR can't remove or change it (see "Deploying a PR to the test site"
-# in README.md):
+# an older PR can't remove or change it; deploying master updates it (see
+# "Deploying a PR to the test site" in README.md):
 #
 #	cp scripts/deploy-test-hook.cgi webroot/deploy-hook.cgi
 #	chmod 4755 webroot/deploy-hook.cgi
@@ -23,7 +23,9 @@ TOKEN_FILE=/home/private/deploy-token
 # Optional; restored whenever the test DB has a migration the deployed commit doesn't know.
 DB_SNAPSHOT=/home/private/test-snapshot.sql.gz
 
-PATH=/usr/local/bin:/usr/bin:/bin
+# The same PATH as an ssh session: /home/private/bin holds the site's php 8.4, the
+# system php is older.
+PATH=/home/private/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
 export PATH
 : "${HOME:=/home/private}"
 export HOME
@@ -48,12 +50,15 @@ read_db_config() {
 # The migrations only go forward, so after a PR with a new migration the test DB
 # is ahead of the next PR's schema. Phinx reports such a migration as missing.
 reset_db_if_ahead() {
-	if ! vendor/bin/phinx status | grep -q 'MISSING MIGRATION FILE'; then
+	missing=$(vendor/bin/phinx status | grep 'MISSING MIGRATION FILE' || true)
+	if [ -z "$missing" ]; then
 		return 0
 	fi
+	echo "The test DB has migrations this commit doesn't have:"
+	echo "$missing"
 	if [ ! -f "$DB_SNAPSHOT" ]; then
-		echo "The test DB has migrations this commit doesn't have, and there is no $DB_SNAPSHOT to restore."
-		return 1
+		echo "There is no $DB_SNAPSHOT to restore, so the DB stays as it is."
+		return 0
 	fi
 	echo "=== Restoring the test DB from $DB_SNAPSHOT ==="
 	read_db_config | {
@@ -70,6 +75,18 @@ reset_db_if_ahead() {
 deploy_steps() {
 	set -e
 	echo "=== Deploying PR $1 as $(id -un) ==="
+	# A CGI process gets less memory than an ssh session: raise the soft limits as far as
+	# the hard ones allow, and keep git from mapping its packs in 1 GiB windows. The
+	# GIT_CONFIG_* variables also reach the git calls made by deploy.sh.
+	for limit in d m v; do
+		ulimit -S -$limit "$(ulimit -H -$limit)" 2> /dev/null || true
+	done
+	ulimit -a
+	export GIT_CONFIG_COUNT=4
+	export GIT_CONFIG_KEY_0=core.packedGitWindowSize GIT_CONFIG_VALUE_0=16m
+	export GIT_CONFIG_KEY_1=core.packedGitLimit GIT_CONFIG_VALUE_1=64m
+	export GIT_CONFIG_KEY_2=pack.windowMemory GIT_CONFIG_VALUE_2=64m
+	export GIT_CONFIG_KEY_3=pack.threads GIT_CONFIG_VALUE_3=1
 	cd "$REPO_DIR"
 	if [ "$1" = 0 ]; then
 		git fetch origin master
@@ -82,21 +99,41 @@ deploy_steps() {
 	reset_db_if_ahead
 	# DEPLOY_REEXEC makes deploy.sh skip its git pull, which can't work on a detached commit.
 	DEPLOY_REEXEC=1 bash ./deploy.sh
+	# Deploying master brings the hook's own latest version. It replaces this file by a
+	# new one, so the copy running now isn't changed under it.
+	if [ "$1" = 0 ] && ! cmp -s scripts/deploy-test-hook.cgi "$HOOK_FILE"; then
+		cp scripts/deploy-test-hook.cgi "$HOOK_FILE.new"
+		chmod 4755 "$HOOK_FILE.new"
+		mv "$HOOK_FILE.new" "$HOOK_FILE"
+		echo "=== Updated $HOOK_FILE ==="
+	fi
+}
+
+# Called when the deploy's subshell exits, with its exit code.
+finish_deploy() {
+	commit=$(cut -d' ' -f1 "$STATE_DIR/commit")
+	if [ "$1" = 0 ]; then
+		write_status ok "$DEPLOY_ID" "$DEPLOY_PR" "$commit"
+	else
+		write_status failed "$DEPLOY_ID" "$DEPLOY_PR" "$commit"
+	fi
 }
 
 run_deploy() {
+	DEPLOY_PR=$1
+	DEPLOY_ID=$2
 	echo $$ > "$LOCK_DIR/pid"
 	trap 'rm -rf "$LOCK_DIR"' EXIT
 	: > "$STATE_DIR/commit"
-	write_status running "$2" "$1" ""
-	(deploy_steps "$1") > "$LOG_FILE" 2>&1
-	result=$?
-	commit=$(cut -d' ' -f1 "$STATE_DIR/commit")
-	if [ "$result" = 0 ]; then
-		write_status ok "$2" "$1" "$commit"
-	else
-		write_status failed "$2" "$1" "$commit"
-	fi
+	write_status running "$DEPLOY_ID" "$DEPLOY_PR" ""
+	# The subshell doing the work writes the final state itself: on NFS the parent didn't
+	# outlive a long deploy and the state stayed "running" after a finished deploy.
+	# It also takes over the lock, so a second deploy can't start while it still runs.
+	(
+		trap 'finish_deploy $?; rm -rf "$LOCK_DIR"' EXIT
+		sh -c 'echo $PPID' > "$LOCK_DIR/pid"
+		deploy_steps "$DEPLOY_PR"
+	) > "$LOG_FILE" 2>&1
 }
 
 respond() {
@@ -122,6 +159,7 @@ lock() {
 }
 
 if [ "$1" = __run ]; then
+	HOOK_FILE=$0
 	run_deploy "$2" "$3"
 	exit 0
 fi
