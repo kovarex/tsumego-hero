@@ -138,7 +138,7 @@ class TsumegoIssuesController extends AppController
 		$issueData = [
 			'id' => $issueId,
 			'tsumego_issue_status_id' => TsumegoIssue::$OPENED_STATUS,
-			'created' => date('Y-m-d H:i:s'),
+			'created' => date('c'),
 			'user_id' => Auth::getUserID(),
 			'user_display_name' => $user['User']['display_name'],
 			'user_avatar_url' => User::getAvatarUrl($user['User']),
@@ -152,7 +152,7 @@ class TsumegoIssuesController extends AppController
 				'user_avatar_url' => User::getAvatarUrl($user['User']),
 				'user_rating' => $user['User']['rating'],
 				'isAdmin' => Auth::isAdmin(),
-				'created' => date('Y-m-d H:i:s'),
+				'created' => date('c'),
 				'position' => $position,
 			]],
 		];
@@ -310,7 +310,7 @@ class TsumegoIssuesController extends AppController
 			$issueData = [
 				'id' => $targetIssueId,
 				'status' => 'open',
-				'created' => date('Y-m-d H:i:s'),
+				'created' => date('c'),
 				'user_id' => $comment['TsumegoComment']['user_id'],
 				'user_display_name' => User::displayNameOrNull($commentUser['User']),
 				'user_avatar_url' => User::avatarOrNull($commentUser['User']),

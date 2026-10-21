@@ -16,6 +16,12 @@ class User extends AppModel
 	public const PREF_BOARD_ORIENTATION_RANDOM = 0;
 	public const PREF_BOARD_ORIENTATION_ORIGINAL = 1;
 
+	/** The ids of the date_format table, how the dates are written. app/shared/dates.ts has the patterns. */
+	public const DATE_FORMAT_ISO = 1; // 2026-10-21 14:05
+	public const DATE_FORMAT_DAY_MONTH_YEAR = 2; // 21. 10. 2026 14:05, the Czech way
+	public const DATE_FORMAT_MONTH_DAY_YEAR = 3; // 10/21/2026 2:05 PM
+	public const DATE_FORMAT_BROWSER = 4; // whatever the language of the browser uses
+
 	/** Whether the player wants sound. The cookie spells them 'on' and 'off'. */
 	public const SOUND_OFF = 0;
 	public const SOUND_ON = 1;

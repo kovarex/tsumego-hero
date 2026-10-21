@@ -115,6 +115,11 @@ class Auth
 		return Auth::isLoggedIn() ? (int) Auth::getUser()['pref_board_orientation'] : User::PREF_BOARD_ORIENTATION_RANDOM;
 	}
 
+	public static function getDateFormat(): int
+	{
+		return Auth::isLoggedIn() ? (int) Auth::getUser()['date_format_id'] : User::DATE_FORMAT_ISO;
+	}
+
 	/**
 	 * The avatar the logged in player picked, which is the board for a visitor who
 	 * is not logged in at all.

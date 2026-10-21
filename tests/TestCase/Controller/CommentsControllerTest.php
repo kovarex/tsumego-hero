@@ -129,7 +129,7 @@ class CommentsControllerTest extends ControllerTestCase
 			'user' => ['admin' => true],
 			'tsumego' => [
 				'set_order' => 1,
-				'issues' => [['message' => 'Test issue to display']],
+				'issues' => [['message' => 'Test issue to display', 'created' => '2026-08-15 23:30:00']],
 				'status' => 'S']]);
 		$browser = Browser::instance();
 
@@ -149,6 +149,10 @@ class CommentsControllerTest extends ControllerTestCase
 		$pageSource = $browser->driver->getPageSource();
 		$this->assertTextContains('Issue #' . $issueId, $pageSource);
 		$this->assertTextContains('Test issue to display', $pageSource);
+
+		// 23:30 UTC is already the next day in the Europe/Prague browser
+		$this->assertSame('2026-08-16', $browser->find('.tsumego-issue__date')->getText());
+		$this->assertSame('2026-08-16 01:30', $browser->find('.tsumego-issue .tsumego-comment__date')->getText());
 	}
 
 	public function testCoordinateHighlightAreStyledAndHaveProperClass()

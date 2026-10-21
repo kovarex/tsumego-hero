@@ -6,9 +6,11 @@ import { TagEditor } from './tags/TagEditor';
 import { Changelog } from './changelog/Changelog';
 import { syncMenuNewBadge } from './changelog/changelogCount';
 import { queryClient } from './queryClient';
+import { localizeTimeElements } from './shared/dates';
 
 function initializeApp()
 {
+	localizeTimeElements();
 	mountApp('[data-comments-root]', CommentSection);
 	mountApp('[data-issues-root]', IssuesList);
 	mountApp('[data-recent-achievements-root]', RecentAchievements);

@@ -2084,6 +2084,23 @@ OFFSET " . $offset, [$userID, $userID]);
 		$this->response->body(json_encode(['status' => 'ok']));
 	}
 
+	#[HttpPost]
+	public function dateFormatPreference(): void
+	{
+		$this->autoRender = false;
+		$this->Authorization->authorize('User', 'editPreferences');
+
+		$format = (int) ($this->request->data['format'] ?? User::DATE_FORMAT_ISO);
+		if ($format < User::DATE_FORMAT_ISO || $format > User::DATE_FORMAT_BROWSER)
+			$format = User::DATE_FORMAT_ISO;
+
+		Auth::saveUserField('date_format_id', $format);
+
+		$this->response->statusCode(200);
+		$this->response->type('application/json');
+		$this->response->body(json_encode(['status' => 'ok']));
+	}
+
 	/**
 	 * Store the avatar a player picked. A choice that is not on offer for this
 	 * account (a Google picture it does not have) is ignored, the same way the other

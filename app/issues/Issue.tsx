@@ -5,6 +5,7 @@ import { UserLink } from '../shared/UserLink';
 import type { Comment as CommentType } from '../comments/commentTypes';
 import { IssueStatus, type IssueStatusId, type Issue as IssueType } from './issueTypes';
 import { useAuth } from '../shared/AuthContext';
+import { formatDate } from '../shared/dates';
 
 interface IssueProps
 {
@@ -83,7 +84,10 @@ export function Issue({
 						avatarUrl={issue.user_avatar_url}
 						rating={issue.user_rating}
 					/>{' '}
-					•<span className="tsumego-issue__date">{new Date(issue.created).toLocaleDateString()}</span>
+					•
+					<time className="tsumego-issue__date" dateTime={issue.created}>
+						{formatDate(issue.created, 'date')}
+					</time>
 				</span>
 				{canCloseReopen && (
 					<span className="tsumego-issue__actions">

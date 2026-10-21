@@ -197,6 +197,16 @@ class UserSettingsTest extends ControllerTestCase
 		$this->waitForUserField($context, 'pref_board_orientation', (string) User::PREF_BOARD_ORIENTATION_ORIGINAL);
 	}
 
+	public function testDateFormatIsStored(): void
+	{
+		$context = new ContextPreparator(['user' => ['date_format_id' => User::DATE_FORMAT_ISO]]);
+		$browser = Browser::instance();
+
+		$browser->get('users/settings');
+		$browser->find('input[name="dateFormat"][value="' . User::DATE_FORMAT_DAY_MONTH_YEAR . '"]')->click();
+		$this->waitForUserField($context, 'date_format_id', (string) User::DATE_FORMAT_DAY_MONTH_YEAR);
+	}
+
 	public function testOnlyAnAdminCanStepDown(): void
 	{
 		new ContextPreparator(['user' => ['name' => 'plain', 'admin' => false]]);

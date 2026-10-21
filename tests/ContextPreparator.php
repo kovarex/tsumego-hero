@@ -132,6 +132,7 @@ class ContextPreparator
 		$user['mode'] = Util::extract('mode', $userInput) ?: Constants::$LEVEL_MODE;
 		$user['pref_player_color'] = Util::extract('pref_player_color', $userInput) ?? User::PREF_PLAYER_COLOR_RANDOM;
 		$user['pref_board_orientation'] = Util::extract('pref_board_orientation', $userInput) ?? User::PREF_BOARD_ORIENTATION_RANDOM;
+		$user['date_format_id'] = Util::extract('date_format_id', $userInput) ?? User::DATE_FORMAT_ISO;
 		$user['sound'] = Util::extract('sound', $userInput) ?? 0;
 		if ($lastTimeModeCategoryID = Util::extract('last-time-mode-category-id', $userInput))
 			$user['last_time_mode_category_id'] = $lastTimeModeCategoryID;
@@ -337,6 +338,9 @@ class ContextPreparator
 		$comment['user_id'] = $this->user['id'];
 		if ($issueId !== null)
 			$comment['tsumego_issue_id'] = $issueId;
+		$created = Util::extract('created', $commentInput);
+		if ($created)
+			$comment['created'] = $created;
 		ClassRegistry::init('TsumegoComment')->save($comment);
 		$this->checkOptionsConsumed($commentInput);
 	}
@@ -358,6 +362,9 @@ class ContextPreparator
 		$issue['tsumego_id'] = $tsumego['id'];
 		$issue['user_id'] = $this->user['id'];
 		$issue['tsumego_issue_status_id'] = Util::extract('status', $issueInput) ?: TsumegoIssue::$OPENED_STATUS;
+		$created = Util::extract('created', $issueInput);
+		if ($created)
+			$issue['created'] = $created;
 		$issueModel = ClassRegistry::init('TsumegoIssue');
 		$issueModel->save($issue);
 
@@ -370,7 +377,7 @@ class ContextPreparator
 		// Create initial comment for the issue
 		$message = Util::extract('message', $issueInput);
 		if ($message)
-			$this->prepareTsumegoComment(['message' => $message], $tsumego, $issueId);
+			$this->prepareTsumegoComment(['message' => $message, 'created' => $created], $tsumego, $issueId);
 
 		$this->checkOptionsConsumed($issueInput);
 	}
