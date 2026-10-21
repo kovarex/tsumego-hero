@@ -526,6 +526,37 @@ class UsersControllerTest extends ControllerTestCase
 		$this->assertEquals(3, $remaining);
 	}
 
+	/**
+	 * Progress that was only opened is not what the button offers to reset, so it stays
+	 * and the flash repeats the number the button offered.
+	 */
+	public function testResetKeepsProblemsThatWereOnlyOpened(): void
+	{
+		$twoYearsAgo = date('Y-m-d H:i:s', strtotime('-2 years'));
+		$context = new ContextPreparator([
+			'user' => ['name' => 'alice', 'solved' => 4],
+			'tsumegos' => [
+				['set_order' => 1, 'status' => ['name' => 'S', 'updated' => $twoYearsAgo]],
+				['set_order' => 2, 'status' => ['name' => 'V', 'updated' => $twoYearsAgo]],
+				['set_order' => 3, 'status' => 'S'],
+				['set_order' => 4, 'status' => 'S'],
+			],
+		]);
+
+		$browser = Browser::instance();
+		$browser->get('users/settings');
+		$this->assertSame('RESET OLD PROGRESS (1)', $browser->findById('reset-statuses-button')->getText());
+
+		$browser->driver->executeScript("window.confirm = function() { return true; }");
+		$browser->findById('reset-statuses-button')->click();
+
+		$browser->waitUntilJs('document.documentElement.outerHTML.includes("Deleted progress on 1 problems")');
+
+		$tsumegoStatus = ClassRegistry::init('TsumegoStatus');
+		$this->assertEmpty($tsumegoStatus->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]]));
+		$this->assertNotEmpty($tsumegoStatus->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[1]['id']]]));
+	}
+
 	public function testResetOldProgressDoesNotAffectOtherUsers()
 	{
 		$twoYearsAgo = date('Y-m-d H:i:s', strtotime('-2 years'));

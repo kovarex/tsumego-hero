@@ -80,26 +80,36 @@ class TsumegoStatus extends AppModel
 	private static int $OLD_PROGRESS_YEARS = 1;
 
 	/**
-	 * The old progress that is worth something: what the settings page counts and
-	 * offers to reset.
+	 * The statuses that hold solved progress: the same ones the progress of a set is
+	 * counted from. Anything else is a marker (opened, locked), not progress.
+	 *
+	 * @return array<string>
+	 */
+	private static function progressStatuses(): array
+	{
+		return [self::$SOLVED, self::$REVIEW, self::$MASTERED];
+	}
+
+	/**
+	 * The old progress the settings page counts and offers to reset.
 	 */
 	public static function countOldProgress(int $userID): int
 	{
 		return (int) Util::query('SELECT COUNT(*) AS total FROM tsumego_status
 			WHERE user_id = ? AND status IN (?, ?, ?) AND updated <= NOW() - INTERVAL ? YEAR;',
-			[$userID, self::$SOLVED, self::$MASTERED, self::$REVIEW, self::$OLD_PROGRESS_YEARS])[0]['total'];
+			[$userID, ...self::progressStatuses(), self::$OLD_PROGRESS_YEARS])[0]['total'];
 	}
 
 	/**
 	 * Throws away the progress nobody touched for OLD_PROGRESS_YEARS and keeps the solved
-	 * count of the account in step. A golden problem waits for its one attempt, which is
-	 * not progress that was left behind, so it stays.
+	 * count of the account in step. Only solved progress goes: a problem that was opened
+	 * and left is not progress, and a golden problem waits for its one attempt.
 	 */
 	public static function deleteOldProgress(int $userID): int
 	{
 		$deleted = Util::execute('DELETE FROM tsumego_status
-			WHERE user_id = ? AND updated <= NOW() - INTERVAL ? YEAR AND status <> ?;',
-			[$userID, self::$OLD_PROGRESS_YEARS, self::$GOLDEN]);
+			WHERE user_id = ? AND status IN (?, ?, ?) AND updated <= NOW() - INTERVAL ? YEAR;',
+			[$userID, ...self::progressStatuses(), self::$OLD_PROGRESS_YEARS]);
 
 		Util::execute('UPDATE user
 			LEFT JOIN (
