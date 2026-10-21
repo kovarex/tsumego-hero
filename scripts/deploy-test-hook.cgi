@@ -23,7 +23,9 @@ TOKEN_FILE=/home/private/deploy-token
 # Optional; restored whenever the test DB has a migration the deployed commit doesn't know.
 DB_SNAPSHOT=/home/private/test-snapshot.sql.gz
 
-PATH=/usr/local/bin:/usr/bin:/bin
+# The same PATH as an ssh session: /home/private/bin holds the site's php 8.4, the
+# system php is older.
+PATH=/home/private/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
 export PATH
 : "${HOME:=/home/private}"
 export HOME
