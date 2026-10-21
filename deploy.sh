@@ -171,6 +171,12 @@ chmod 777 "$ROOT_DIR/webroot/forums/store"
 chmod 777 "$ROOT_DIR/webroot/forums/files"
 chmod 777 "$ROOT_DIR/webroot/forums/images/avatars/upload"
 
+# Set cover images are uploaded by the web user at runtime, so the directory they
+# land in has to be writable for that user. The directory's .htaccess blocks
+# execution of anything uploaded there.
+mkdir -p "$ROOT_DIR/webroot/img/sets"
+chmod 777 "$ROOT_DIR/webroot/img/sets"
+
 
 ### Run migrations (inside container in dev, locally in production)
 echo "=== Running migrations ==="

@@ -121,4 +121,36 @@ class AvatarsControllerTest extends ControllerTestCase
 		$this->expectException(NotFoundException::class);
 		$this->testAction('/avatar/999999999', ['method' => 'get']);
 	}
+
+	/**
+	 * A share preview takes a picture and not an svg, so the board of a key is served
+	 * as a png on the same drawing. The url says which of the two it wants.
+	 */
+	public function testTheBoardIsAlsoServedAsAPng()
+	{
+		$key = Avatar::key('Anna');
+
+		$result = $this->testAction('/board/' . $key . '.png', ['return' => 'contents']);
+		$size = getimagesizefromstring($result);
+
+		$this->assertSame("\x89PNG\r\n\x1a\n", substr($result, 0, 8));
+		$this->assertEquals('image/png', $this->controller->response->type());
+		$this->assertSame(Avatar::SHARE_SIZE, $size[0]);
+		$this->assertSame(Avatar::SHARE_SIZE, $size[1]);
+	}
+
+	public function testThePngOfAKeyIsCachedForALongTime()
+	{
+		$this->testAction('/board/' . Avatar::key('Anna') . '.png', ['return' => 'contents']);
+
+		$headers = $this->controller->response->header();
+		$this->assertNotEmpty($headers['Etag']);
+		$this->assertStringContainsString('max-age=', $headers['Cache-Control']);
+	}
+
+	public function testAPngKeyThatIsNotADrawingIsNotFound()
+	{
+		$this->expectException(NotFoundException::class);
+		$this->testAction('/avatars/imagePng/not-a-hex-key', ['return' => 'contents']);
+	}
 }

@@ -3,6 +3,7 @@
 use App\Utility\AdminActivityLogger;
 use App\Utility\AdminActivityRenderer;
 use App\Utility\Auth;
+use App\Utility\Avatar;
 use App\Utility\Constants;
 use App\Utility\CookieFlash;
 use App\Utility\GoogleTokenVerifier;
@@ -937,14 +938,38 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->assertUserVisible($user['User']);
 		$this->set('_title', 'Profile of ' . $user['User']['display_name']);
 
-		$this->set('og', [
+		// The profile is shared with the avatar the player picked, at the size a
+		// preview takes. What the site draws is a png of known size and type; an
+		// avatar of another host is shared as its url, and only the size a host is
+		// told to send is known.
+		$avatarChoice = User::avatarChoice($user['User']);
+		$og = [
 			'title' => 'Profile of ' . $user['User']['display_name'],
 			'description' => $user['User']['display_name'] . ' on Tsumego',
-			'image' => Router::url('/img/Tsumego-Hero-Logo.png', true),
+			'image_alt' => 'Avatar of ' . $user['User']['display_name'],
 			'type' => 'profile',
 			'profile_username' => $user['User']['display_name'],
 			'site_name' => 'Tsumego',
-		]);
+		];
+		if ($avatarChoice === User::AVATAR_BOARD)
+		{
+			$og['image'] = Router::url(Avatar::pngUrl($user['User']['display_name']), true);
+			$og['image_type'] = 'image/png';
+			$og['image_width'] = Avatar::SHARE_SIZE;
+			$og['image_height'] = Avatar::SHARE_SIZE;
+		}
+		else
+		{
+			$og['image'] = User::getAvatarUrl($user['User'], Avatar::SHARE_SIZE);
+			if ($avatarChoice === User::AVATAR_GRAVATAR)
+			{
+				// Gravatar answers with the size it is asked for, so the size of the
+				// picture is known even though its format is not.
+				$og['image_width'] = Avatar::SHARE_SIZE;
+				$og['image_height'] = Avatar::SHARE_SIZE;
+			}
+		}
+		$this->set('og', $og);
 
 		// user edit
 		// TODO: should be its own action

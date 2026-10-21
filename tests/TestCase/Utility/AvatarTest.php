@@ -128,4 +128,89 @@ class AvatarTest extends CakeTestCase
 			);
 		}
 	}
+
+	/**
+	 * Several networks drop an svg from a share preview, so the board is drawn as a
+	 * png as well. The drawing stays the same, only the picture of it changes.
+	 */
+	public function testPngIsABoardOfTheRequestedSize()
+	{
+		$png = Avatar::png(Avatar::key('Anna'), 128);
+		$size = getimagesizefromstring($png);
+
+		$this->assertSame("\x89PNG\r\n\x1a\n", substr($png, 0, 8));
+		$this->assertSame(128, $size[0]);
+		$this->assertSame(128, $size[1]);
+		$this->assertSame('image/png', $size['mime']);
+	}
+
+	public function testTheSameKeyGetsTheSamePng()
+	{
+		$this->assertSame(Avatar::png(Avatar::key('Anna')), Avatar::png(Avatar::key('Anna')));
+		$this->assertNotSame(Avatar::png(Avatar::key('Anna')), Avatar::png(Avatar::key('kovarex')));
+	}
+
+	/**
+	 * The two renditions are two pictures of one drawing, so a cell that holds a
+	 * stone in the pattern holds the same stone in the png, in the same place.
+	 */
+	public function testPngDrawsThePatternWhereTheSvgDrawsIt()
+	{
+		$size = 512;
+		$cell = (Avatar::CANVAS - 2 * Avatar::RIM) / Avatar::GRID_SIZE;
+		$scale = $size / Avatar::CANVAS;
+
+		foreach (['Anna', 'kovarex', 'player 7', 'Gonuzul'] as $name)
+		{
+			$key = Avatar::key($name);
+			$pattern = Avatar::pattern($key);
+			$image = imagecreatefromstring(Avatar::png($key, $size));
+			$this->assertNotFalse($image, 'The board of ' . $name . ' is not a picture');
+
+			for ($index = 0; $index < Avatar::GRID_SIZE * Avatar::GRID_SIZE; $index++)
+			{
+				// Down and to the right of the middle of the cell: inside a stone and
+				// clear of the lines of the board, which meet at the middle of a cell.
+				$x = (int) round((Avatar::RIM + ($index % Avatar::GRID_SIZE) * $cell + $cell * 0.7) * $scale);
+				$y = (int) round((Avatar::RIM + intdiv($index, Avatar::GRID_SIZE) * $cell + $cell * 0.7) * $scale);
+				$colour = imagecolorsforindex($image, imagecolorat($image, $x, $y));
+				$light = $colour['red'] + $colour['green'] + $colour['blue'];
+
+				if ($pattern[$index] === '1')
+					$this->assertLessThan(250, $light, 'No black stone at cell ' . $index . ' of ' . $name);
+				elseif ($pattern[$index] === '2')
+					$this->assertGreaterThan(600, $light, 'No white stone at cell ' . $index . ' of ' . $name);
+				else
+				{
+					$this->assertGreaterThan(420, $light, 'Cell ' . $index . ' of ' . $name . ' is not wood');
+					$this->assertLessThan(560, $light, 'Cell ' . $index . ' of ' . $name . ' is not wood');
+				}
+			}
+
+			imagedestroy($image);
+		}
+	}
+
+	/**
+	 * The frame runs all the way round the playing surface. A frame on two sides
+	 * only reads as a mistake at 24px, where nobody sees which side is missing.
+	 */
+	public function testPngFramesTheWholeBoard()
+	{
+		$size = 512;
+		$image = imagecreatefromstring(Avatar::png(Avatar::key('Anna'), $size));
+		$this->assertNotFalse($image);
+
+		$middle = intdiv($size, 2);
+		foreach ([[3, $middle], [$size - 4, $middle], [$middle, 3], [$middle, $size - 4]] as [$x, $y])
+		{
+			$colour = imagecolorsforindex($image, imagecolorat($image, $x, $y));
+			$light = $colour['red'] + $colour['green'] + $colour['blue'];
+
+			$this->assertGreaterThan(280, $light, 'No frame at ' . $x . ',' . $y);
+			$this->assertLessThan(400, $light, 'No frame at ' . $x . ',' . $y);
+		}
+
+		imagedestroy($image);
+	}
 }

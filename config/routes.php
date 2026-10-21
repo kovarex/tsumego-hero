@@ -24,6 +24,8 @@
 
 require_once(__DIR__ . "/../src/UrlRoute.php");
 
+use App\Utility\Avatar;
+
 // XML Sitemap for search engines
 Router::connect('/sitemap.xml', [
 	'controller' => 'Sitemaps',
@@ -127,12 +129,18 @@ Router::connect(
 /**
  * Board avatars. The url carries the key of the display name, which is what the
  * drawing is made of, so one url serves the avatar in a list and the one on a
- * profile.
+ * profile. The png is the same drawing for the pages that share it.
  */
+$boardKey = '[0-9a-f]{' . Avatar::KEY_LENGTH . '}';
+Router::connect(
+	'/board/:key.png',
+	['controller' => 'Avatars', 'action' => 'imagePng'],
+	['pass' => ['key'], 'key' => $boardKey] // Key of a display name
+);
 Router::connect(
 	'/board/:key',
 	['controller' => 'Avatars', 'action' => 'image'],
-	['pass' => ['key'], 'key' => '[0-9a-f]{12}'] // Key of a display name
+	['pass' => ['key'], 'key' => $boardKey] // Key of a display name
 );
 
 /**

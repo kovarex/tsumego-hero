@@ -36,6 +36,27 @@ class AvatarsController extends AppController
 	}
 
 	/**
+	 * The same board as a png, which is what a page shares: several networks drop
+	 * an svg from a share preview. The drawing is a function of the key, so the
+	 * picture is still made without reading a row of the database.
+	 *
+	 * @param string|null $key The key of a display name
+	 * @return CakeResponse png image, cached for a year
+	 */
+	public function imagePng(?string $key = null)
+	{
+		if ($key === null || preg_match('/^[0-9a-f]{' . Avatar::KEY_LENGTH . '}$/', $key) !== 1)
+			throw new NotFoundException('Invalid board key');
+
+		$this->response->type('png');
+		$this->response->header('Cache-Control: public, max-age=31536000, immutable');
+		$this->response->etag(md5(Avatar::VERSION . '|png|' . $key));
+		$this->response->body(Avatar::png($key));
+
+		return $this->response;
+	}
+
+	/**
 	 * The board of an account, addressed by the id of its user. The avatar a player picked
 	 * is never answered here, only the board, which is what a picture that stopped working
 	 * falls back on. The answer is where that board lives, so the drawing stays on the url
