@@ -1,6 +1,7 @@
 <?php
 
-App::uses('SetImage', 'Utility');
+
+use App\Utility\SetImage;
 
 class SetImageTest extends CakeTestCase
 {
@@ -75,5 +76,68 @@ class SetImageTest extends CakeTestCase
 			imagejpeg($img, $path, 90);
 		imagedestroy($img);
 		return $path;
+	}
+
+	/**
+	 * A cover is stored under the set it belongs to, and the name of the file is a
+	 * part of the hash of the picture, so two sets never share one picture by name.
+	 */
+	public function testStoreWritesTheCoverUnderItsSet(): void
+	{
+		$picture = $this->_picture('cover of a set');
+		$image = SetImage::store(9001, $picture);
+
+		$this->assertSame('sets/9001/' . substr($picture['hash'], 0, 16) . '.webp', $image);
+		$this->assertSame($picture['data'], file_get_contents($this->_pathOf($image)));
+		SetImage::removeFolder(9001);
+	}
+
+	public function testTheSamePictureKeepsTheSameName(): void
+	{
+		$picture = $this->_picture('cover of a set');
+
+		$this->assertSame(SetImage::store(9002, $picture), SetImage::store(9002, $picture));
+		SetImage::removeFolder(9002);
+	}
+
+	/**
+	 * Only covers live under sets/, so a shared image of the site is never taken
+	 * with one.
+	 */
+	public function testRemoveTakesOnlyAnUploadedCover(): void
+	{
+		$shared = WWW_ROOT . 'img' . DS . 'shared-test.png';
+		file_put_contents($shared, 'a shared image of the site');
+		SetImage::remove('shared-test.png');
+		$this->assertFileExists($shared);
+		@unlink($shared);
+
+		$image = SetImage::store(9003, $this->_picture('cover of a set'));
+		SetImage::remove($image);
+		$this->assertFileDoesNotExist($this->_pathOf($image));
+		SetImage::removeFolder(9003);
+	}
+
+	public function testRemoveFolderTakesThePicturesWithIt(): void
+	{
+		$image = SetImage::store(9004, $this->_picture('cover of a set'));
+
+		SetImage::removeFolder(9004);
+
+		$this->assertFileDoesNotExist($this->_pathOf($image));
+		$this->assertDirectoryDoesNotExist(WWW_ROOT . 'img' . DS . 'sets' . DS . '9004');
+	}
+
+	/**
+	 * @return array{data: string, hash: string, width: int, height: int}
+	 */
+	private function _picture(string $data): array
+	{
+		return ['data' => $data, 'hash' => hash('sha256', $data), 'width' => 4, 'height' => 4];
+	}
+
+	private function _pathOf(string $image): string
+	{
+		return WWW_ROOT . 'img' . DS . str_replace('/', DS, $image);
 	}
 }

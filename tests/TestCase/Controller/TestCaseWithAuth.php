@@ -3,11 +3,12 @@
 use DOM\HTMLDocument as DOMDocument;
 use Facebook\WebDriver\WebDriverBy;
 use PHPUnitRetry\RetryTrait;
-
 /**
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
+use App\Utility\Auth;
+
 class TestCaseWithAuth extends ControllerTestCase
 {
 	use RetryTrait;
@@ -29,6 +30,17 @@ class TestCaseWithAuth extends ControllerTestCase
 	{
 		Auth::logout();
 		unset($_COOKIE['hackedLoggedInUserID']);
+	}
+
+	// The next testAction on the users controller sends its emails to TestEmailer::$lastEmail.
+	public function registerTestEmailer()
+	{
+		$controller = $this->generate('Users', ['methods' => ['_getEmailer']]);
+		$emailer = new TestEmailer();
+		$controller
+			->expects($this->any())
+			->method('_getEmailer')
+			->will($this->returnValue($emailer));
 	}
 
 	public function setLoggedIn(bool $loggedIn)
@@ -54,7 +66,7 @@ class TestCaseWithAuth extends ControllerTestCase
 
 	protected function checkPlayNavigationButtons($browser, int $count, $context, $indexFunction, $orderFunction, int $currentIndex, string $currentStatus): void
 	{
-		$navigationButtons = $browser->driver->findElements(WebDriverBy::cssSelector('div.problem-nav__inner li'));
+		$navigationButtons = $browser->getElements('div.problem-nav__inner li');
 
 		$this->assertCount($count, $navigationButtons);
 		foreach ($navigationButtons as $key => $button)

@@ -1,9 +1,95 @@
 <?php
 
+namespace App\Utility;
+
+use Exception;
+use InvalidArgumentException;
+use RuntimeException;
+
+/**
+ * The cover image of a collection: its file lives under the set it belongs to,
+ * and every place that reads or writes one asks here where that is.
+ */
 class SetImage
 {
 	public const MAX_EDGE = 1600;
 	public const QUALITY = 80;
+
+	/**
+	 * Store the picture of a set and answer the name it is known by, relative to
+	 * the webroot. The name carries a part of the hash of the picture, so a cover
+	 * never changes under a name that a browser keeps for a year.
+	 *
+	 * @param int $setId Id of the set the cover belongs to
+	 * @param array{data: string, hash: string, width: int, height: int} $processed Picture from process()
+	 * @return string Name of the cover, relative to the webroot
+	 */
+	public static function store(int $setId, array $processed): string
+	{
+		$folder = self::folderOf($setId);
+		if (!is_dir($folder) && !@mkdir($folder, 0775, true) && !is_dir($folder))
+			throw new RuntimeException('The image could not be stored.');
+
+		$image = 'sets/' . $setId . '/' . substr($processed['hash'], 0, 16) . '.webp';
+		if (@file_put_contents(self::pathOf($image), $processed['data']) === false)
+			throw new RuntimeException('The image could not be stored.');
+
+		return $image;
+	}
+
+	/**
+	 * Remove a cover. Anything that is not a cover is left alone: the images of the
+	 * site itself are shared assets and not uploads.
+	 *
+	 * @param string|null $image Name of a cover, relative to the webroot
+	 * @return void
+	 */
+	public static function remove(?string $image): void
+	{
+		if ($image === null || !str_starts_with($image, 'sets/'))
+			return;
+
+		$path = self::pathOf($image);
+		if (is_file($path))
+			unlink($path);
+	}
+
+	/**
+	 * Remove the covers of a set, which is what is left of it after the set itself
+	 * is gone.
+	 *
+	 * @param int $setId Id of the set
+	 * @return void
+	 */
+	public static function removeFolder(int $setId): void
+	{
+		$folder = self::folderOf($setId);
+		if (!is_dir($folder))
+			return;
+
+		foreach (glob($folder . DS . '*') ?: [] as $file)
+			if (is_file($file))
+				unlink($file);
+		@rmdir($folder);
+	}
+
+	/**
+	 * @param int $setId
+	 * @return string The folder of the covers of a set
+	 */
+	private static function folderOf(int $setId): string
+	{
+		return WWW_ROOT . 'img' . DS . 'sets' . DS . $setId;
+	}
+
+	/**
+	 * @param string $image Name of a cover, relative to the webroot
+	 * @return string Where that cover is on disk
+	 */
+	private static function pathOf(string $image): string
+	{
+		return WWW_ROOT . 'img' . DS . str_replace('/', DS, $image);
+	}
 
 	/**
 	 * Resize an uploaded image so its longest edge is at most MAX_EDGE and

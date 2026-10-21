@@ -1,19 +1,17 @@
 <?php
 
-App::uses('TsumegoIssue', 'Model');
-App::uses('BadRequestException', 'Routing/Error');
-App::uses('ForbiddenException', 'Routing/Error');
-App::uses('NotFoundException', 'Routing/Error');
-App::uses('UnprocessableEntityException', 'Lib/Error');
-
 use App\Attribute\HttpPost;
-
+use App\Lib\Error\UnprocessableEntityException;
 /**
  * Controller for managing tsumego issues.
  *
  * Issues are reports about problems with tsumego solutions (missing moves, wrong answers, etc.).
  * Each issue contains one or more comments discussing the problem.
  */
+use App\Utility\Auth;
+use App\Utility\Query;
+use App\Utility\Util;
+
 class TsumegoIssuesController extends AppController
 {
 	/**
@@ -63,7 +61,7 @@ class TsumegoIssuesController extends AppController
 	 *
 	 * @return void
 	 */
-	public function index()
+	public function index(): void
 	{
 		$this->set('_title', 'Tsumego Hero - Issues');
 		$this->set('_page', 'issues');
@@ -140,23 +138,21 @@ class TsumegoIssuesController extends AppController
 		$issueData = [
 			'id' => $issueId,
 			'tsumego_issue_status_id' => TsumegoIssue::$OPENED_STATUS,
-			'created' => date('Y-m-d H:i:s'),
+			'created' => date('c'),
 			'user_id' => Auth::getUserID(),
-			'user_name' => $user['User']['name'],
-			'user_picture' => $user['User']['picture'],
+			'user_display_name' => $user['User']['display_name'],
+			'user_avatar_url' => User::getAvatarUrl($user['User']),
 			'user_rating' => $user['User']['rating'],
-			'user_external_id' => $user['User']['externalId'],
 			'isAdmin' => Auth::isAdmin(),
 			'comments' => [[
 				'id' => $TsumegoComment->getLastInsertID(),
 				'text' => $message,
 				'user_id' => Auth::getUserID(),
-				'user_name' => $user['User']['name'],
-				'user_picture' => $user['User']['picture'],
+				'user_display_name' => $user['User']['display_name'],
+				'user_avatar_url' => User::getAvatarUrl($user['User']),
 				'user_rating' => $user['User']['rating'],
-				'user_external_id' => $user['User']['externalId'],
 				'isAdmin' => Auth::isAdmin(),
-				'created' => date('Y-m-d H:i:s'),
+				'created' => date('c'),
 				'position' => $position,
 			]],
 		];
@@ -172,11 +168,11 @@ class TsumegoIssuesController extends AppController
 	 * Only admin or issue author can close.
 	 * Optionally add a closing comment.
 	 *
-	 * @param int $id Issue ID
+	 * @param string $id Issue ID
 	 * @return CakeResponse|null
 	 */
 	#[HttpPost]
-	public function close($id)
+	public function close(string $id)
 	{
 		$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
 		$issue = $TsumegoIssue->findById($id);
@@ -216,11 +212,11 @@ class TsumegoIssuesController extends AppController
 	 *
 	 * Admin only.
 	 *
-	 * @param int $id Issue ID
+	 * @param string $id Issue ID
 	 * @return CakeResponse|null
 	 */
 	#[HttpPost]
-	public function reopen($id)
+	public function reopen(string $id)
 	{
 		$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
 		$issue = $TsumegoIssue->findById($id);
@@ -247,11 +243,11 @@ class TsumegoIssuesController extends AppController
 	 * POST data:
 	 * - Comment.tsumego_issue_id: 'standalone' | 'new' | int (issue ID)
 	 *
-	 * @param int $commentId Comment ID to move
+	 * @param string $commentId Comment ID to move
 	 * @return CakeResponse|null
 	 */
 	#[HttpPost]
-	public function moveComment($commentId)
+	public function moveComment(string $commentId)
 	{
 		$this->Authorization->authorize('TsumegoIssue', 'moveComment');
 
@@ -309,27 +305,24 @@ class TsumegoIssuesController extends AppController
 			$TsumegoComment->id = $commentId;
 			$TsumegoComment->saveField('tsumego_issue_id', $targetIssueId);
 
-			$issueUser = $User->findById($comment['TsumegoComment']['user_id']);
 			$commentUser = $User->findById($comment['TsumegoComment']['user_id']);
 
 			$issueData = [
 				'id' => $targetIssueId,
 				'status' => 'open',
-				'created' => date('Y-m-d H:i:s'),
+				'created' => date('c'),
 				'user_id' => $comment['TsumegoComment']['user_id'],
-				'user_name' => $issueUser['User']['name'],
-				'user_picture' => $issueUser['User']['picture'],
-				'user_rating' => $issueUser['User']['rating'],
-				'user_external_id' => $issueUser['User']['externalId'],
-				'isAdmin' => ($issueUser['User']['isAdmin'] == 1),
+				'user_display_name' => User::displayNameOrNull($commentUser['User']),
+				'user_avatar_url' => User::avatarOrNull($commentUser['User']),
+				'user_rating' => $commentUser['User']['rating'],
+				'isAdmin' => ($commentUser['User']['isAdmin'] == 1),
 				'comments' => [[
 					'id' => $commentId,
 					'text' => $comment['TsumegoComment']['message'],
 					'user_id' => $comment['TsumegoComment']['user_id'],
-					'user_name' => $commentUser['User']['name'],
-					'user_picture' => $commentUser['User']['picture'],
+					'user_display_name' => User::displayNameOrNull($commentUser['User']),
+					'user_avatar_url' => User::avatarOrNull($commentUser['User']),
 					'user_rating' => $commentUser['User']['rating'],
-					'user_external_id' => $commentUser['User']['externalId'],
 					'isAdmin' => ($commentUser['User']['isAdmin'] == 1),
 					'created' => Util::toIso8601($comment['TsumegoComment']['created']),
 					'position' => $comment['TsumegoComment']['position'],

@@ -1,10 +1,16 @@
 <?php
 
+namespace App\Utility;
+
+use ClassRegistry;
+use Exception;
+use PDO;
+
 class Util
 {
-	public static function setCookie($name, $value)
+	public static function setCookie(string $name, string|int $value): void
 	{
-		setcookie($name, $value, [
+		setcookie($name, (string) $value, [
 			'expires' => time() + 365 * 24 * 60 * 60,
 			'path' => '/',
 			'secure' => true,
@@ -55,18 +61,22 @@ class Util
 		return $result;
 	}
 
-	public static function getCookie(string $name, $default = null)
+	public static function getCookie(string $name, mixed $default = null): mixed
 	{
 		return isset($_COOKIE[$name]) ? $_COOKIE[$name] : $default;
 	}
 
-	public static function generateRandomString($length = 20)
+	/**
+	 * A random string of letters and digits. It is used for tokens that end up in a
+	 * link, so it comes from the cryptographic source and not from rand().
+	 */
+	public static function generateRandomString(int $length = 20): string
 	{
 		$characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 		$charactersLength = strlen($characters);
 		$randomString = '';
 		for ($i = 0; $i < $length; $i++)
-			$randomString .= $characters[rand(0, $charactersLength - 1)];
+			$randomString .= $characters[random_int(0, $charactersLength - 1)];
 		return $randomString;
 	}
 
@@ -99,14 +109,14 @@ class Util
 		return openssl_decrypt(base64_decode($str), self::ENCRYPT_METHOD, $key, 0, $iv);
 	}
 
-	public static function extract(string $name, array &$inputArray)
+	public static function extract(string $name, array &$inputArray): mixed
 	{
 		$result = $inputArray[$name];
 		unset($inputArray[$name]);
 		return $result;
 	}
 
-	public static function extractWithDefault(string $name, array &$inputArray, $default)
+	public static function extractWithDefault(string $name, array &$inputArray, mixed $default): mixed
 	{
 		$result = $inputArray[$name];
 		unset($inputArray[$name]);
@@ -134,7 +144,7 @@ class Util
 		return self::getRatio($amount, $max) * 100;
 	}
 
-	public static function indexByID($array, $prefix1, $prefix2)
+	public static function indexByID(array $array, string $prefix1, string $prefix2): array
 	{
 		$result = [];
 		foreach ($array as $value)
@@ -142,7 +152,7 @@ class Util
 		return $result;
 	}
 
-	public static function isInGithubCI()
+	public static function isInGithubCI(): bool
 	{
 		if ($testEnvironment = @$_SERVER['TEST_ENVIRONMENT'])
 			return $testEnvironment == 'github-ci';
@@ -151,6 +161,11 @@ class Util
 		return false;
 	}
 
+	/**
+	 * Whether this copy of the site is not the one players use, which is what allows a
+	 * test to put a fake in place of a service. It is true for the whole development
+	 * container (both its dev and its test hostname) and for the runner on GitHub.
+	 */
 	public static function isInTestEnvironment(): bool
 	{
 		if (@$_SERVER['DDEV_PRIMARY_URL'] && str_contains($_SERVER['DDEV_PRIMARY_URL'], "tsumego.ddev.site"))
@@ -158,7 +173,22 @@ class Util
 		return Util::isInGithubCI();
 	}
 
-	public static function getMyAddress()
+	/**
+	 * Whether the request is made by the test suite: the test hostname of the same
+	 * container, the runner on GitHub, or the PHPUnit process that dispatches the
+	 * controller tests. The dev site shares its container with the test site, so
+	 * isInTestEnvironment() is true there too and says nothing about this.
+	 */
+	public static function isOnTestSite(): bool
+	{
+		if (Util::isInGithubCI())
+			return true;
+		if (str_contains((string) ($_SERVER['HTTP_HOST'] ?? ''), 'test.tsumego'))
+			return true;
+		return PHP_SAPI === 'cli' && !empty($_SERVER['argv']) && str_contains((string) $_SERVER['argv'][0], 'phpunit');
+	}
+
+	public static function getMyAddress(): string
 	{
 		if (Util::isInGithubCI())
 			return $_SERVER['TEST_APP_URL'];
@@ -167,14 +197,14 @@ class Util
 		return "https://test.tsumego.ddev.site";
 	}
 
-	public static function getInternalAddress()
+	public static function getInternalAddress(): string
 	{
 		if (Util::isInGithubCI())
 			return 'https://host.docker.internal:8443';
 		return 'http://localhost';
 	}
 
-	public static function addSqlCondition(&$existingCondition, $condition): void
+	public static function addSqlCondition(string &$existingCondition, string $condition): void
 	{
 		if (empty($condition))
 			return;
@@ -190,7 +220,7 @@ class Util
 			$existingCondition .= $condition;
 	}
 
-	public static function addSqlOrCondition(&$existingCondition, $condition): void
+	public static function addSqlOrCondition(string &$existingCondition, string $condition): void
 	{
 		if (empty($existingCondition))
 		{
@@ -200,7 +230,7 @@ class Util
 		$existingCondition .= " OR " . $condition;
 	}
 
-	public static function boolString($bool)
+	public static function boolString(bool $bool): string
 	{
 		return $bool ? 'true' : 'false';
 	}
@@ -210,7 +240,7 @@ class Util
 		return intdiv($level, 5) + 10;
 	}
 
-	public static function query($sql, $params = [])
+	public static function query(string $sql, array $params = []): array
 	{
 		/** @phpstan-ignore-next-line */
 		$stmt = ClassRegistry::init('Tsumego')->getDataSource()->getConnection()->prepare($sql);
@@ -219,9 +249,18 @@ class Util
 	}
 
 	/**
+	 * The connection of the default database.
+	 */
+	public static function connection(): PDO
+	{
+		/** @phpstan-ignore-next-line */
+		return ClassRegistry::init('Tsumego')->getDataSource()->getConnection();
+	}
+
+	/**
 	 * Execute a non-SELECT SQL statement (INSERT, UPDATE, DELETE) and return the number of affected rows.
 	 */
-	public static function execute($sql, $params = []): int
+	public static function execute(string $sql, array $params = []): int
 	{
 		/** @phpstan-ignore-next-line */
 		$stmt = ClassRegistry::init('Tsumego')->getDataSource()->getConnection()->prepare($sql);
@@ -229,7 +268,7 @@ class Util
 		return $stmt->rowCount();
 	}
 
-	public static function clampOptional($value, $min, $max)
+	public static function clampOptional(mixed $value, int|float|null $min, int|float|null $max): mixed
 	{
 		$result = $value;
 		if (!is_null($min))
@@ -239,7 +278,7 @@ class Util
 		return $result;
 	}
 
-	public static function strOrNull($input): ?string
+	public static function strOrNull(mixed $input): ?string
 	{
 		if (is_null($input))
 			return null;
@@ -261,12 +300,12 @@ class Util
 		return Auth::lightMode() == Auth::$LIGHT_MODE ? 'light' : 'dark';
 	}
 
-	public static function getValueGraphHeight($input)
+	public static function getValueGraphHeight(array $input): int
 	{
 		return 160 + count($input) * 25;
 	}
 
-	public static function getFollowingSgfCoordinates($string, $position)
+	public static function getFollowingSgfCoordinates(string $string, int $position): array
 	{
 		$result = [];
 		do
@@ -300,12 +339,12 @@ class Util
 	}
 
 	public static function calculateLibertyStatus(
-		$multipleChoiceSquares,
-		$multipleChoiceTriangles,
-		$minLiberties,
-		$maxLiberties,
-		$libertyCount,
-		$variance)
+		int $multipleChoiceSquares,
+		int $multipleChoiceTriangles,
+		?int $minLiberties,
+		?int $maxLiberties,
+		int $libertyCount,
+		int $variance): array
 	{
 		$minLiberties = max(1, $minLiberties);
 		$maxLiberties = $maxLiberties != 0 ? min($maxLiberties, $libertyCount) : $libertyCount;

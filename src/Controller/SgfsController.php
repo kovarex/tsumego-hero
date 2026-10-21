@@ -1,14 +1,14 @@
 <?php
 
-App::uses('NotFoundException', 'Routing/Error');
+use App\Utility\Auth;
 
 class SgfsController extends AppController
 {
 	/**
-	 * @param string|int|null $id
+	 * @param string|null $id
 	 * @return void
 	 */
-	public function view($id = null)
+	public function view(?string $id = null): void
 	{
 		$this->Authorization->authorize('Sgf');
 		$this->set('_page', 'play');
@@ -91,8 +91,8 @@ class SgfsController extends AppController
 
 
 			$u = $this->User->findById($s[$i]['Sgf']['user_id']);
-			$s[$i]['Sgf']['user'] = $u['User']['name'];
-			$ux = $u['User']['name'];
+			$ux = $u ? User::displayName($u['User']) : '';
+			$s[$i]['Sgf']['user'] = $ux;
 			$t = $this->Tsumego->findById($s[$i]['Sgf']['tsumego_id']);
 			$scT = $this->SetConnection->findDisplaySetConnection($t['Tsumego']['id']);
 			$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];

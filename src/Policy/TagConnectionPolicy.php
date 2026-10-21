@@ -1,19 +1,31 @@
 <?php
 
-App::uses('BasePolicy', 'Policy');
+namespace App\Policy;
 
 /**
  * Tag connections: proposing a tag requires the canPropose capability;
  * removing one is allowed for admins or the proposer (unapproved proposals only).
+ *
+ * @phpstan-import-type UserRow from \App\Utility\RowTypes
+ * @phpstan-import-type TagConnectionRow from \App\Utility\RowTypes
  */
 class TagConnectionPolicy extends BasePolicy
 {
-	public static function canAdd($user): bool
+	/**
+	 * @param UserRow|null $user
+	 */
+	public static function canAdd(?array $user): bool
 	{
 		return static::canPropose($user);
 	}
 
-	public static function canRemove($user, $tagConnection): bool
+	/**
+	 * Removing a proposal: admins or the proposer (unapproved only).
+	 *
+	 * @param UserRow|null $user
+	 * @param TagConnectionRow $tagConnection
+	 */
+	public static function canRemove(?array $user, array $tagConnection): bool
 	{
 		if (static::isAdmin($user))
 			return true;

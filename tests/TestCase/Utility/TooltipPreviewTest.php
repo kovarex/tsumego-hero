@@ -29,9 +29,7 @@ class TooltipPreviewTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$browser->get('sets/view/' . $setId);
 
-		$link = $browser->driver->findElement(
-			WebDriverBy::cssSelector('a[data-tsumego-id="' . $context->tsumegos[0]['id'] . '"]')
-		);
+		$link = $browser->find('a[data-tsumego-id="' . $context->tsumegos[0]['id'] . '"]');
 
 		$this->assertNotEmpty($link->getAttribute('data-sgf-preview'),
 			'Button should have inline SGF preview data');
@@ -59,14 +57,12 @@ class TooltipPreviewTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$browser->get('sets/view/' . $setId);
 
-		$link = $browser->driver->findElement(
-			WebDriverBy::cssSelector('a[data-tsumego-id="' . $context->tsumegos[0]['id'] . '"]')
-		);
+		$link = $browser->find('a[data-tsumego-id="' . $context->tsumegos[0]['id'] . '"]');
 
 		$browser->hover($link);
 		$this->assertNotEmpty($link->findElements(WebDriverBy::tagName('svg')));
 
-		$browser->hover($browser->driver->findElement(WebDriverBy::tagName('body')));
+		$browser->hover($browser->findBy(WebDriverBy::tagName('body')));
 		$this->assertCount(1, $link->findElements(WebDriverBy::tagName('svg')),
 			'SVG should persist in DOM after mouse out');
 

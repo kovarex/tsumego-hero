@@ -1,7 +1,5 @@
 <?php
 
-App::uses('TsumegosController', 'Controller');
-
 /**
  * TsumegoComment Model
  *

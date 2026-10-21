@@ -1,43 +1,66 @@
 <?php
 
-App::uses('BasePolicy', 'Policy');
+namespace App\Policy;
 
 /**
  * Tsumego-level authorization. All tsumego management actions are admin-only.
+ *
+ * @phpstan-import-type UserRow from \App\Utility\RowTypes
  */
 class TsumegoPolicy extends BasePolicy
 {
-	public static function canEdit($user): bool
+	/**
+	 * @param UserRow|null $user
+	 */
+	public static function canEdit(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
 
-	public static function canEditSettings($user): bool
+	/**
+	 * @param UserRow|null $user
+	 */
+	public static function canEditSettings(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
 
-	public static function canMergeForm($user): bool
+	/**
+	 * @param UserRow|null $user
+	 */
+	public static function canMergeForm(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
 
-	public static function canMergeFinalForm($user): bool
+	/**
+	 * @param UserRow|null $user
+	 */
+	public static function canMergeFinalForm(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
 
-	public static function canSetupSgf($user): bool
+	/**
+	 * @param UserRow|null $user
+	 */
+	public static function canSetupSgf(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
 
-	public static function canSetupSgfStep2($user): bool
+	/**
+	 * @param UserRow|null $user
+	 */
+	public static function canSetupSgfStep2(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
 
-	public static function canPerformMerge($user): bool
+	/**
+	 * @param UserRow|null $user
+	 */
+	public static function canPerformMerge(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}

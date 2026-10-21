@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\TsumegoButton;
+
 /**
  * @var View $this
  * @var TsumegoButton $masterTsumegoButton

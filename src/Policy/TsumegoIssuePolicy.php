@@ -1,19 +1,29 @@
 <?php
 
-App::uses('BasePolicy', 'Policy');
+namespace App\Policy;
 
 /**
  * Issue lifecycle: authors close their own issues; reopening and moving
  * comments are admin-only.
+ *
+ * @phpstan-import-type UserRow from \App\Utility\RowTypes
+ * @phpstan-import-type TsumegoIssueRow from \App\Utility\RowTypes
  */
 class TsumegoIssuePolicy extends BasePolicy
 {
-	public static function canCreate($user): bool
+	/**
+	 * @param UserRow|null $user
+	 */
+	public static function canCreate(?array $user): bool
 	{
 		return $user !== null;
 	}
 
-	public static function canClose($user, $issue): bool
+	/**
+	 * @param UserRow|null $user
+	 * @param TsumegoIssueRow $issue
+	 */
+	public static function canClose(?array $user, array $issue): bool
 	{
 		if (static::isAdmin($user))
 			return true;
@@ -22,7 +32,11 @@ class TsumegoIssuePolicy extends BasePolicy
 		return (int) $issue['user_id'] === $user['id'];
 	}
 
-	public static function canReopen($user, $issue): bool
+	/**
+	 * @param UserRow|null $user
+	 * @param TsumegoIssueRow $issue
+	 */
+	public static function canReopen(?array $user, array $issue): bool
 	{
 		if (static::isAdmin($user))
 			return true;
@@ -31,7 +45,10 @@ class TsumegoIssuePolicy extends BasePolicy
 		return (int) $issue['user_id'] === $user['id'];
 	}
 
-	public static function canMoveComment($user): bool
+	/**
+	 * @param UserRow|null $user
+	 */
+	public static function canMoveComment(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}

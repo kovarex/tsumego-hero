@@ -315,11 +315,12 @@ besogo.makeToolPanel = function (container, editor) {
           "besogo-pass-button"
         );
       }
-      if (mode == 1) {
-        let prevButtonId;
-        prevButtonId = "besogo-back-button";
-
-        makeHyperlinkText("Back","previous problem", previousButtonLink, prevButtonId);
+      if (mode == 1 || mode == 5) {
+        // The first problem of the training has nothing before it
+        if (previousButtonLink)
+          makeHyperlinkText("Back","previous problem", previousButtonLink, "besogo-back-button");
+        else
+          makeHyperlinkText("Back","no previous problem", 0, "besogo-back-button-inactive");
       } else if (mode == 2) {
         makeHyperlinkText(
           "History",
@@ -387,8 +388,26 @@ besogo.makeToolPanel = function (container, editor) {
 			  },
 			"besogo-reset-button"
 			);
-		makeHyperlinkText("Next", "next problem", nextButtonLink, "besogo-next-button");
-	}
+	  }
+	  else if (mode == 5)
+	  {
+		// A training try ends at the first mistake. Reset opens the problem again, so
+		// the next try is a fresh one and the server counts it as such.
+		makeButtonText(
+		  "Reset",
+		  "try the problem again",
+		  function () { window.location.href = resetButtonLink; },
+		  "besogo-reset-button"
+		);
+	  }
+	  if (mode == 1 || mode == 2 || mode == 5)
+	  {
+		// The training has nowhere to go while its last problem is not solved
+		if (nextButtonLink)
+		  makeHyperlinkText("Next", "next problem", nextButtonLink, "besogo-next-button");
+		else
+		  makeHyperlinkText("Next", "solve this problem first", 0, "besogo-next-button-inactive");
+	  }
       let reviewButtonId;
       if (editor.getReviewEnabled()) reviewButtonId = "besogo-review-button";
       else reviewButtonId = "besogo-review-button-inactive";
@@ -619,7 +638,7 @@ besogo.makeToolPanel = function (container, editor) {
       if (setID != 262)
       {
         makeButtonText(
-          "Black wins",
+          besogo.boardInverted ? "White wins" : "Black wins",
           "",
           function () {
             displayScoreEstimatingResult("b");
@@ -628,7 +647,7 @@ besogo.makeToolPanel = function (container, editor) {
         );
 
         makeButtonText(
-          "White wins",
+          besogo.boardInverted ? "Black wins" : "White wins",
           "",
           function () {
             displayScoreEstimatingResult("w");
@@ -663,7 +682,7 @@ besogo.makeToolPanel = function (container, editor) {
       makeHyperlinkText("Back","previous problem", previousButtonLink, prevButtonId);
 
       makeButtonText(
-        "Black is dead",
+        besogo.boardInverted ? "White is dead" : "Black is dead",
         "",
         function () {
           displayMultipleChoiceResult(1);
@@ -672,7 +691,7 @@ besogo.makeToolPanel = function (container, editor) {
       );
 
       makeButtonText(
-        "White is dead",
+        besogo.boardInverted ? "Black is dead" : "White is dead",
         "",
         function () {
           displayMultipleChoiceResult(2);
@@ -706,14 +725,27 @@ besogo.makeToolPanel = function (container, editor) {
       "change the color of your stones",
       "colorOrientation",
       function () {
+        besogo.boardInverted = !besogo.boardInverted;
+        let swapColorWords = besogo.swapColorWords;
         let transformation = besogo.makeTransformation();
         transformation.invertColors = true;
-        let descriptionText = $("#descriptionText").text();
-        if (descriptionText.includes("Black"))
-          descriptionText = descriptionText.replaceAll("Black", "White");
-        else if (descriptionText.includes("White"))
-          descriptionText = descriptionText.replaceAll("White", "Black");
-        $("#descriptionText").text(descriptionText);
+        // Any true-color text shown to the player must follow the board's colors.
+        let desc = $("#descriptionText");
+        if (desc.length) desc.text(swapColorWords(desc.text()));
+        let theComment = $("#theComment");
+        if (theComment.length) theComment.text(swapColorWords(theComment.text()));
+        // Multiple-choice answers (custom multiple-choice and semeai share these ids).
+        ["besogo-multipleChoice1", "besogo-multipleChoice2", "besogo-multipleChoice3", "besogo-multipleChoice4"].forEach(function (id) {
+          let el = $("#" + id);
+          if (el.length) el.val(swapColorWords(el.val()));
+        });
+        // Score-estimating result buttons and summary labels.
+        ["besogo-se-black", "besogo-se-white"].forEach(function (id) {
+          let el = $("#" + id);
+          if (el.length) el.val(swapColorWords(el.val()));
+        });
+        let scoreLabels = $("#scoreEstimatingLabels");
+        if (scoreLabels.length) scoreLabels.text(swapColorWords(scoreLabels.text()));
         besogo.editor.applyTransformation(transformation);
       }
     );

@@ -1,12 +1,17 @@
 <?php
 
-App::uses('Auth', 'Utility');
-App::uses('BoardSelector', 'Utility');
-App::uses('TsumegoFilters', 'Utility');
-App::uses('AchievementChecker', 'Utility');
-App::uses('HeroPowers', 'Utility');
-App::uses('TimeMode', 'Utility');
+use App\Utility\AchievementChecker;
+use App\Utility\Auth;
+use App\Utility\BoardSelector;
+use App\Utility\Constants;
+use App\Utility\HeroPowers;
+use App\Utility\TimeMode;
+use App\Utility\TsumegoFilters;
+use App\Utility\Util;
 
+/**
+ * @phpstan-import-type UserRow from \App\Utility\RowTypes
+ */
 class AppController extends Controller
 {
 	public $viewClass = 'App';
@@ -25,7 +30,7 @@ class AppController extends Controller
 	 *
 	 * @return void
 	 */
-	public static function handleContribution($uid, $action)
+	public static function handleContribution(int $uid, string $action): void
 	{
 		$uc = ClassRegistry::init('UserContribution')->find('first', ['conditions' => ['user_id' => $uid]]);
 		if ($uc == null)
@@ -46,27 +51,24 @@ class AppController extends Controller
 		ClassRegistry::init('UserContribution')->save($uc);
 	}
 
-	public static function getAllTags()
+	public static function getAllTags(): array
 	{
 		return Util::query("SELECT * from tag WHERE approved = 1 ORDER BY tag.name");
 	}
 
-	protected function checkPictureLarge($u)
+	/**
+	 * The pages of a deleted account (profile, its sets, tags, solve history...) are gone for
+	 * everyone but the admins.
+	 *
+	 * @param UserRow $user
+	 */
+	protected function assertUserVisible(array $user): void
 	{
-		if (substr($u['User']['name'], 0, 3) == 'g__' && $u['User']['external_id'] != null)
-			return substr($u['User']['name'], 3);
-
-		return $u['User']['name'];
-	}
-	public static function checkPicture($user)
-	{
-		if (substr($user['name'], 0, 3) == 'g__' && $user['external_id'] != null)
-			return substr($user['name'], 3);
-
-		return $user['name'];
+		if (!empty($user['deleted']) && !Auth::isAdmin())
+			throw new NotFoundException('User not found');
 	}
 
-	public static function saveDanSolveCondition($solvedTsumegoRank, $tId): void
+	public static function saveDanSolveCondition(string $solvedTsumegoRank, int $tId): void
 	{
 		if ($solvedTsumegoRank == '1d' || $solvedTsumegoRank == '2d' || $solvedTsumegoRank == '3d' || $solvedTsumegoRank == '4d' || $solvedTsumegoRank == '5d')
 		{
@@ -289,7 +291,7 @@ class AppController extends Controller
 	 * @param int $uid User ID
 	 * @return void
 	 */
-	protected function handleSearchSettings($uid)
+	protected function handleSearchSettings(int $uid): void
 	{
 		$this->loadModel('UserContribution');
 		$uc = $this->UserContribution->find('first', ['conditions' => ['user_id' => $uid]]);
@@ -356,6 +358,12 @@ class AppController extends Controller
 	public function beforeFilter(): void
 	{
 		$this->enforceHttpMethodAttribute();
+
+		// Boards are drawn without a session: a list of a thousand players would otherwise
+		// pay for the login of a visitor who is not there.
+		if (strtolower((string) ($this->request->params['controller'] ?? '')) === 'avatars')
+			return;
+
 		$this->loadModel('User');
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
@@ -374,12 +382,36 @@ class AppController extends Controller
 
 		$highscoreLink = 'highscore';
 		$lightDark = 'light';
-		$levelBar = 1;
+		$levelBar = User::LEVEL_BAR_LEVEL;
 		$lastProfileLeft = 1;
 		$lastProfileRight = 2;
 
 		if (Auth::isLoggedIn())
 		{
+			if (!empty(Auth::getUser()['needs_display_name_change']))
+			{
+				$controller = $this->request->params['controller'];
+				$action = $this->request->params['action'];
+				// The links that arrive by e-mail and the ways out of the account stay
+				// reachable: asking for a password reset or for deletion must not require
+				// picking a name first.
+				$allowedChangeActions = [
+					'users/changename',
+					'users/updatename',
+					'users/logout',
+					'users/login',
+					'users/newpassword',
+					'users/confirm_delete_account',
+					'users/delete_account',
+				];
+
+				if (!in_array(strtolower($controller . '/' . $action), $allowedChangeActions, true))
+				{
+					$this->redirect(['controller' => 'users', 'action' => 'changename']);
+					return;
+				}
+			}
+
 			if ($lastTimeModeCategoryID = Util::clearCookie('lastTimeModeCategoryID'))
 				Auth::saveUserField('last_time_mode_category_id', $lastTimeModeCategoryID);
 			if (Auth::getUser()['lastHighscore'] == Constants::$HIGHSCORE_LEVEL)
@@ -393,7 +425,8 @@ class AppController extends Controller
 
 			if (isset($_COOKIE['sound']) && $_COOKIE['sound'] != '0')
 			{
-				Auth::saveUserField('sound', $_COOKIE['sound']);
+				// The cookie says 'on' or 'off', the column holds 1 or 0
+				Auth::saveUserField('sound', $_COOKIE['sound'] === 'on' ? User::SOUND_ON : User::SOUND_OFF);
 				unset($_COOKIE['sound']);
 			}
 			$this->set('user', Auth::getUser());
@@ -403,32 +436,21 @@ class AppController extends Controller
 		{
 			$lightDark = $_COOKIE['lightDark'];
 			if (Auth::isLoggedIn())
-			{
-				// Convert string to integer for database storage
-				$lightDarkInt = ($lightDark === 'light') ? 0 : 2;
-				Auth::saveUserField('lastLight', $lightDarkInt);
-			}
+				Auth::saveUserField('lastLight', $lightDark === 'dark' ? User::THEME_DARK : User::THEME_LIGHT);
 		}
 		elseif (Auth::isLoggedIn())
-			if (Auth::getUser()['lastLight'] == 0
-			|| Auth::getUser()['lastLight'] == 1)
-				$lightDark = 'light';
-			else
-				$lightDark = 'dark';
+			$lightDark = (Auth::getUser()['lastLight'] == User::THEME_DARK) ? 'dark' : 'light';
 
 		if (Auth::isLoggedIn())
 		{
 			$this->handleSearchSettings(Auth::getUserID());
 			if (isset($_COOKIE['levelBar']) && $_COOKIE['levelBar'] != '0')
 			{
-				$levelBar = $_COOKIE['levelBar'];
+				$levelBar = ((int) $_COOKIE['levelBar']) === User::LEVEL_BAR_RATING ? User::LEVEL_BAR_RATING : User::LEVEL_BAR_LEVEL;
 				Auth::saveUserField('levelBar', $levelBar);
 			}
-			elseif (Auth::getUser()['levelBar'] == 0
-		  || Auth::getUser()['levelBar'] == 'level')
-		  	$levelBar = 1;
 			else
-				$levelBar = 2;
+				$levelBar = ((int) Auth::getUser()['levelBar']) === User::LEVEL_BAR_RATING ? User::LEVEL_BAR_RATING : User::LEVEL_BAR_LEVEL;
 
 			if (isset($_COOKIE['lastProfileLeft']) && $_COOKIE['lastProfileLeft'] != '0')
 			{
@@ -466,7 +488,7 @@ class AppController extends Controller
 		if (!is_null($boardsBitmask = Util::clearCookie('boards_bitmask')))
 		{
 			if (Auth::isLoggedIn())
-				Auth::saveUserField('boards_bitmask', BoardSelector::filterValidBits($boardsBitmask));
+				Auth::saveUserField('boards_bitmask', BoardSelector::filterValidBits((int) $boardsBitmask));
 		}
 		else
 			$boardsBitmask = BoardSelector::filterValidBits(Auth::isLoggedIn() ? Auth::getUser()['boards_bitmask'] : BoardSelector::$DEFAULT_BOARDS_BITMASK);
@@ -475,12 +497,7 @@ class AppController extends Controller
 
 		$nextDay = new DateTime('tomorrow');
 		if (Auth::isLoggedIn())
-		{
-			$user = Auth::getUser();
-			$displayUser = $user;
-			$displayUser['name'] = $this->checkPicture($user);
-			$this->set('user', $displayUser);
-		}
+			$this->set('user', Auth::getUser());
 		$this->set('nextDay', $nextDay->format('m/d/Y'));
 		$this->set('highscoreLink', $highscoreLink);
 		$this->set('lightDark', $lightDark);
@@ -488,33 +505,8 @@ class AppController extends Controller
 		$this->set('lastProfileLeft', $lastProfileLeft);
 		$this->set('lastProfileRight', $lastProfileRight);
 		$this->set('timeMode', $timeMode);
-		$this->set('changelogTimestamps', $this->changelogTimestamps());
+		$this->set('changelogTimestamps', ChangelogController::changelogTimestamps());
 	}
 
-	/**
-	 * Timestamps of the changelog entries, newest first. Emitted inline in the
-	 * layout so the "What's new" menu badge can count new items in the client
-	 * without a round trip on every page load.
-	 *
-	 * @return int[]
-	 */
-	private function changelogTimestamps(): array
-	{
-		$file = ROOT . DS . 'changelog' . DS . 'index.json';
-		if (!file_exists($file))
-			return [];
-
-		$data = json_decode((string) file_get_contents($file), true) ?: [];
-		$entries = $data['entries'] ?? [];
-
-		$ts = [];
-		foreach ($entries as $entry)
-			if (isset($entry['ts']) && is_numeric($entry['ts']))
-				$ts[] = (int) $entry['ts'];
-
-		rsort($ts);
-		return $ts;
-	}
-
-	public function afterFilter() {}
+	public function afterFilter(): void {}
 }

@@ -1,19 +1,20 @@
 <?php
 
-App::uses('AdminPolicy', 'Policy');
-App::uses('SgfPolicy', 'Policy');
-App::uses('TagPolicy', 'Policy');
-App::uses('SetPolicy', 'Policy');
-App::uses('TsumegoCommentPolicy', 'Policy');
-App::uses('TsumegoIssuePolicy', 'Policy');
-App::uses('TagConnectionPolicy', 'Policy');
-App::uses('TsumegoPolicy', 'Policy');
-App::uses('Constants', 'Utility');
-
 /**
  * Authorization policies decide whether an identity may perform an action.
  * They read only the computed `permissions` list attached by Auth::getIdentity().
  */
+use App\Policy\AdminPolicy;
+use App\Policy\SgfPolicy;
+use App\Policy\SetPolicy;
+use App\Policy\TagConnectionPolicy;
+use App\Policy\TagPolicy;
+use App\Policy\TsumegoCommentPolicy;
+use App\Policy\TsumegoIssuePolicy;
+use App\Policy\TsumegoPolicy;
+use App\Utility\Auth;
+use App\Utility\Constants;
+
 class PolicyTest extends CakeTestCase
 {
 	/**
@@ -32,7 +33,7 @@ class PolicyTest extends CakeTestCase
 	public function testAdminPolicyAllowsOnlyAdmins()
 	{
 		$policy = new AdminPolicy();
-		foreach (['canAdminstats', 'canUploads', 'canUserstats', 'canUserstats3', 'canShowPublishSchedule', 'canData'] as $method)
+		foreach (['canAdminstats', 'canUploads', 'canUserstats', 'canUserstats3', 'canShowPublishSchedule'] as $method)
 		{
 			$this->assertTrue($policy->{$method}($this->identity(true)), $method . ' allows admin');
 			$this->assertFalse($policy->{$method}($this->identity(false)), $method . ' blocks regular user');
@@ -106,6 +107,32 @@ class PolicyTest extends CakeTestCase
 		$this->assertTrue($policy->canView($this->identity(true), $privateSet), 'admin can view');
 		$this->assertFalse($policy->canView($this->identity(false), $privateSet), 'other user blocked');
 		$this->assertFalse($policy->canView($this->identity(null), $privateSet), 'anonymous blocked');
+	}
+
+	public function testSetPolicyAllowsViewingSharedPlayerCollections()
+	{
+		$policy = new SetPolicy();
+		$sharedSet = ['public' => 1, 'user_id' => 7];
+
+		$this->assertTrue($policy->canView($this->identity(null), $sharedSet), 'anyone with the link');
+		$this->assertTrue($policy->canView($this->identity(false), $sharedSet));
+	}
+
+	public function testSetPolicyLetsOnlyTheOwnerDecideOnSharing()
+	{
+		$policy = new SetPolicy();
+		$playerSet = ['public' => 0, 'user_id' => 7];
+		$siteSet = ['public' => 1, 'user_id' => null];
+		$owner = $this->identity(false);
+		$owner['id'] = 7;
+		$other = $this->identity(false);
+		$other['id'] = 8;
+
+		$this->assertTrue($policy->canShare($owner, $playerSet), 'the owner decides');
+		$this->assertFalse($policy->canShare($other, $playerSet), 'another player cannot share it');
+		$this->assertFalse($policy->canShare($this->identity(true), $playerSet), 'not even an admin decides for the owner');
+		$this->assertFalse($policy->canShare($this->identity(null), $playerSet), 'anonymous blocked');
+		$this->assertFalse($policy->canShare($this->identity(true), $siteSet), 'site collections are public already');
 	}
 
 	public function testSetPolicyAllowsPlayingSandboxOnlyWithPermission()

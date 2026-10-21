@@ -1,8 +1,14 @@
 <?php
 
-App::uses('SetConnection', 'Model');
-App::uses('TsumegoStatus', 'Model');
+namespace App\Utility;
 
+use ClassRegistry;
+use SetConnection;
+use TsumegoStatus;
+
+/**
+ * @phpstan-import-type TsumegoRow from \App\Utility\RowTypes
+ */
 class TsumegoUtil
 {
 	public static function getSetConnectionsWithTitles(int $tsumegoID): array
@@ -25,7 +31,7 @@ class TsumegoUtil
 		])], $rows);
 	}
 
-	public static function collectTsumegosFromSet(int $setID, ?array $tsumegoConditions = null)
+	public static function collectTsumegosFromSet(int $setID, ?array $tsumegoConditions = null): array
 	{
 		$scIds = [];
 		$scMap = [];
@@ -51,36 +57,47 @@ class TsumegoUtil
 		return $tsx;
 	}
 
-	public static function hasStateAllowingInspection($tsumego)
+	/**
+	 * How many problems the set has. The same number as count(collectTsumegosFromSet()),
+	 * but the database counts them, so no tsumego rows are loaded into PHP.
+	 */
+	public static function countTsumegosFromSet(int $setID): int
 	{
-		return TsumegoUtil::isRecentlySolved($tsumego['Tsumego']['status']);
+		$rows = Util::query(
+			'SELECT COUNT(*) AS total FROM set_connection sc '
+			. 'JOIN tsumego t ON t.id = sc.tsumego_id '
+			. 'WHERE sc.set_id = ?',
+			[$setID]
+		);
+
+		return (int) $rows[0]['total'];
 	}
 
-	public static function isRecentlySolved($status)
+	// Whether the problem is solved for the current mode. Time mode and mistake
+	// training always present the problem as a fresh challenge, so this stays
+	// false at page load even for a problem the player has already solved.
+	public static function isSolvedForCurrentMode(array $tsumego): bool
+	{
+		return !Auth::isInTimeMode()
+			&& !Auth::isInMistakeTrainingMode()
+			&& TsumegoUtil::isRecentlySolved($tsumego['Tsumego']['status']);
+	}
+
+	public static function isRecentlySolved(?string $status): bool
 	{
 		return $status == TsumegoStatus::$SOLVED || $status == TsumegoStatus::$MASTERED;
 	}
 
-	public static function isSolvedStatus($status)
+	public static function isSolvedStatus(?string $status): bool
 	{
 		return $status == TsumegoStatus::$SOLVED || $status == TsumegoStatus::$MASTERED || $status == TsumegoStatus::$REVIEW;
 	}
 
+	/**
+	 * @param TsumegoRow $tsumego
+	 */
 	public static function getXpValue(array $tsumego, float $multiplier = 1.0): int
 	{
 		return Rating::ratingToXP($tsumego['rating'], $multiplier);
-	}
-
-	public static function getProgressDeletionCount(array $tsumego): int
-	{
-		$result = ClassRegistry::init('ProgressDeletion')->query('
-SELECT COUNT(*) AS deletions_count
-FROM (
-    SELECT DISTINCT progress_deletion.id
-    FROM progress_deletion
-    JOIN set_connection ON set_connection.set_id = progress_deletion.set_id
-    WHERE set_connection.tsumego_id = ' . $tsumego['id'] . ' AND progress_deletion.user_id=' . Auth::getUserID() . ' AND progress_deletion.created >= NOW() - INTERVAL 1 MONTH
-) AS unique_deletions');
-		return $result[0][0]['deletions_count'];
 	}
 }

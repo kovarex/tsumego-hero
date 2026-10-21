@@ -1,15 +1,13 @@
 <?php
 
-App::uses('ControllerTestCase', 'TestSuite');
-App::uses('ContextPreparator', 'TestSuite');
-App::uses('Util', 'Utility');
-
 /**
  * Sandbox functionality tests.
  *
  * Covers access control, CRUD operations, and edge cases for the sandbox
  * (admin/premium problem curation workspace).
  */
+use App\Utility\Constants;
+
 class SandboxTest extends ControllerTestCase
 {
 	public function testSandboxRequiresLogin(): void
@@ -80,7 +78,7 @@ class SandboxTest extends ControllerTestCase
 		$this->testAction('/sets/sandbox', ['method' => 'get', 'return' => 'vars']);
 
 		$this->assertArrayHasKey('admins', $this->vars);
-		$this->assertContains('kovarex', $this->vars['admins']);
+		$this->assertContains('DN_kovarex', $this->vars['admins']);
 	}
 
 	public function testCreateRequiresLogin(): void

@@ -1,8 +1,10 @@
 <?php
 
+namespace App\Utility;
+
 class ValueGraphRenderer
 {
-	public static function render($caption, $id, $structure, $input, $categoryName, $reverseOrder = false)
+	public static function render(string $caption, string $id, array $structure, array $input, string $categoryName, bool $reverseOrder = false): void
 	{
 		$series = [];
 		foreach ($structure as $node)

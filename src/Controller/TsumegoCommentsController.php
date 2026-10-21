@@ -1,12 +1,8 @@
 <?php
 
-App::uses('ForbiddenException', 'Routing/Error');
-App::uses('NotFoundException', 'Routing/Error');
-App::uses('UnprocessableEntityException', 'Lib/Error');
-
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
-
+use App\Lib\Error\UnprocessableEntityException;
 /**
  * Controller for managing tsumego comments (CRUD operations).
  *
@@ -14,6 +10,9 @@ use App\Attribute\HttpPost;
  * Comments can be standalone or associated with a TsumegoIssue.
 
  */
+use App\Utility\Auth;
+use App\Utility\Util;
+
 class TsumegoCommentsController extends AppController
 {
 	/**
@@ -59,10 +58,9 @@ class TsumegoCommentsController extends AppController
 			'id' => $savedComment['TsumegoComment']['id'],
 			'text' => $savedComment['TsumegoComment']['message'],
 			'user_id' => $savedComment['TsumegoComment']['user_id'],
-			'user_name' => $savedComment['User']['name'] ?? null,
-			'user_picture' => $savedComment['User']['picture'] ?? null,
+			'user_display_name' => $savedComment['User']['display_name'] ?? null,
+			'user_avatar_url' => User::getAvatarUrl($savedComment['User']),
 			'user_rating' => $savedComment['User']['rating'] ?? null,
-			'user_external_id' => $savedComment['User']['external_id'] ?? null,
 			'isAdmin' => isset($savedComment['User']['isAdmin']) && $savedComment['User']['isAdmin'] ? true : false,
 			'created' => Util::toIso8601($savedComment['TsumegoComment']['created']),
 			'position' => $savedComment['TsumegoComment']['position'],
@@ -76,11 +74,11 @@ class TsumegoCommentsController extends AppController
 	 * Only the comment author or an admin can delete a comment.
 	 * If this was the last comment in an issue, the issue is also deleted.
 	 *
-	 * @param int $id Comment ID to delete
+	 * @param string $id Comment ID to delete
 	 * @return CakeResponse|null
 	 */
 	#[HttpPost]
-	public function delete($id)
+	public function delete(string $id)
 	{
 		$TsumegoComment = ClassRegistry::init('TsumegoComment');
 		$comment = $TsumegoComment->findById($id);
@@ -117,11 +115,11 @@ class TsumegoCommentsController extends AppController
 	 *
 	 * Returns issues and standalone comments in the same format as initial SSR data.
 	 *
-	 * @param int $tsumegoId The tsumego ID
+	 * @param string $tsumegoId The tsumego ID
 	 * @return CakeResponse
 	 */
 	#[HttpGet]
-	public function index($tsumegoId)
+	public function index(string $tsumegoId)
 	{
 		$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
 
@@ -159,10 +157,9 @@ class TsumegoCommentsController extends AppController
 					'id' => $comment['id'],
 					'text' => $comment['message'],
 					'user_id' => $comment['user_id'],
-					'user_name' => $comment['User']['name'] ?? null,
-					'user_picture' => $comment['User']['picture'] ?? null,
+					'user_display_name' => User::displayNameOrNull($comment['User']),
+					'user_avatar_url' => User::avatarOrNull($comment['User']),
 					'user_rating' => $comment['User']['rating'] ?? null,
-					'user_external_id' => $comment['User']['externalId'] ?? null,
 					'isAdmin' => isset($comment['User']) && $comment['User']['isAdmin'] ? true : false,
 					'created' => Util::toIso8601($comment['created']),
 					'position' => $comment['position'],
@@ -174,10 +171,9 @@ class TsumegoCommentsController extends AppController
 				'tsumego_issue_status_id' => $issue['TsumegoIssue']['tsumego_issue_status_id'],
 				'created' => Util::toIso8601($issue['TsumegoIssue']['created']),
 				'user_id' => $issue['TsumegoIssue']['user_id'],
-				'user_name' => $issue['User']['name'] ?? null,
-				'user_picture' => $issue['User']['picture'] ?? null,
+				'user_display_name' => User::displayNameOrNull($issue['User']),
+				'user_avatar_url' => User::avatarOrNull($issue['User']),
 				'user_rating' => $issue['User']['rating'] ?? null,
-				'user_external_id' => $issue['User']['externalId'] ?? null,
 				'isAdmin' => isset($issue['User']) && $issue['User']['isAdmin'] ? true : false,
 				'comments' => $comments,
 			];
@@ -189,16 +185,15 @@ class TsumegoCommentsController extends AppController
 				'id' => $comment['TsumegoComment']['id'],
 				'text' => $comment['TsumegoComment']['message'],
 				'user_id' => $comment['TsumegoComment']['user_id'],
-				'user_name' => $comment['User']['name'] ?? null,
-				'user_picture' => $comment['User']['picture'] ?? null,
+				'user_display_name' => User::displayNameOrNull($comment['User']),
+				'user_avatar_url' => User::avatarOrNull($comment['User']),
 				'user_rating' => $comment['User']['rating'] ?? null,
-				'user_external_id' => $comment['User']['externalId'] ?? null,
 				'isAdmin' => isset($comment['User']) && $comment['User']['isAdmin'] ? true : false,
 				'created' => Util::toIso8601($comment['TsumegoComment']['created']),
 				'position' => $comment['TsumegoComment']['position'],
 			];
 
-		$counts = $TsumegoIssue->getCommentSectionCounts($tsumegoId);
+		$counts = $TsumegoIssue->getCommentSectionCounts((int) $tsumegoId);
 
 		$this->response->type('json');
 		$this->response->body(json_encode([

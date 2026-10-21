@@ -1,13 +1,12 @@
 <?php
 
-App::uses('CakeTestCase', 'TestSuite');
-App::uses('CookieFlash', 'Utility');
-
 /**
  * Tests for CookieFlash utility class.
  *
  * CookieFlash provides stateless flash messages using cookies.
  */
+use App\Utility\CookieFlash;
+
 class CookieFlashTest extends CakeTestCase
 {
 	public function testSetStoresMessage(): void

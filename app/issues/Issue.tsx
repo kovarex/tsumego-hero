@@ -5,6 +5,7 @@ import { UserLink } from '../shared/UserLink';
 import type { Comment as CommentType } from '../comments/commentTypes';
 import { IssueStatus, type IssueStatusId, type Issue as IssueType } from './issueTypes';
 import { useAuth } from '../shared/AuthContext';
+import { formatDate } from '../shared/dates';
 
 interface IssueProps
 {
@@ -15,7 +16,7 @@ interface IssueProps
 	// Optional props for list context
 	showReplyForm?: boolean; // Default: true (show reply form)
 	comments?: CommentType[]; // If provided, use these instead of issue.comments
-	author?: { name: string }; // If provided, use this instead of issue.user_name
+	author?: { name: string }; // If provided, use this instead of issue.user_display_name
 	isDraggingEnabled?: boolean; // Default: true (enable dragging on play page)
 }
 
@@ -37,7 +38,7 @@ export function Issue({
 
 	// Use provided comments/author or fall back to issue data
 	const displayComments = comments ?? issue.comments ?? [];
-	const authorName = author?.name ?? issue.user_name ?? '[deleted user]';
+	const authorName = author?.name ?? issue.user_display_name ?? '[account deleted]';
 
 	const handleCloseReopen = async () =>
 	{
@@ -54,7 +55,7 @@ export function Issue({
 
 	const handleSubmitReply = async (text: string, position?: string) =>
 	{
-		if (!onReply) 
+		if (!onReply)
 			return;
 		setReply(r => ({ ...r, submitting: true }));
 		try
@@ -80,11 +81,13 @@ export function Issue({
 					<UserLink
 						userId={issue.user_id}
 						name={authorName}
-						externalId={issue.user_external_id}
-						picture={issue.user_picture}
+						avatarUrl={issue.user_avatar_url}
 						rating={issue.user_rating}
 					/>{' '}
-					•<span className="tsumego-issue__date">{new Date(issue.created).toLocaleDateString()}</span>
+					•
+					<time className="tsumego-issue__date" dateTime={issue.created}>
+						{formatDate(issue.created, 'date')}
+					</time>
 				</span>
 				{canCloseReopen && (
 					<span className="tsumego-issue__actions">

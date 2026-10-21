@@ -1,17 +1,20 @@
 <?php
 
-App::uses('SetConnection', 'Model');
+namespace App\Utility;
+
+use PaginationHelper;
+use SetConnection;
 
 class CommentsRenderer
 {
-	public function __construct(string $name, ?int $userID, $urlParams)
+	public function __construct(string $name, ?int $userID, array $urlParams)
 	{
 		$this->name = $name;
 		$this->userID = $userID;
 		$this->params = $urlParams;
 	}
 
-	private function renderComment($comment, $index)
+	private function renderComment(array $comment, int $index): void
 	{
 		echo '<div class="sandboxComment">';
 		$commentColor = $comment['from_admin'] ? 'admin-text' : '';
@@ -27,7 +30,7 @@ class CommentsRenderer
 
 		echo '<br></div>';
 		echo '<div class="' . $commentColor . '">';
-		echo h($comment['from_name']) . ':<br>';
+		echo h(\User::displayName(['id' => $comment['from_id'], 'display_name' => $comment['from_display_name']])) . ':<br>';
 		echo '</div>';
 		echo '<div ';
 		if($comment['from_admin'])
@@ -48,7 +51,7 @@ class CommentsRenderer
 		echo '</div>';
 	}
 
-	public function render()
+	public function render(): void
 	{
 		$parameters = [];
 		$parameters[] = Auth::getUserID();
@@ -64,7 +67,8 @@ SELECT
 	tsumego_comment.created AS created,
 	tsumego_status.status AS status,
 	user.isAdmin AS from_admin,
-	user.name as from_name,
+	user.display_name as from_display_name,
+	user.id as from_id,
 	tsumego_comment.id as id,
 	set_connection.id AS set_connection_id,
 	CONCAT(`set`.title, ' ', `set`.title2) as set_title,

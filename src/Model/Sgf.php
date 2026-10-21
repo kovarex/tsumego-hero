@@ -1,8 +1,5 @@
 <?php
 
-App::uses('BadRequestException', 'Routing/Error');
-App::uses('InternalErrorException', 'Routing/Error');
-
 class Sgf extends AppModel
 {
 	public $validate = [
@@ -24,7 +21,7 @@ class Sgf extends AppModel
 		],
 	];
 
-	public function __construct($id = false, $table = null, $ds = null)
+	public function __construct(mixed $id = false, ?string $table = null, ?string $ds = null)
 	{
 		$id['table'] =  'sgf';
 		parent::__construct($id, $table, $ds);
@@ -40,7 +37,7 @@ class Sgf extends AppModel
 	 * @return array The saved Sgf record
 	 * @throws BadRequestException|InternalErrorException If validation fails
 	 */
-	public function uploadSgf($sgfDataOrFile, int $tsumegoID, int $userID, bool $accepted): array
+	public function uploadSgf(array|string $sgfDataOrFile, int $tsumegoID, int $userID, bool $accepted): array
 	{
 		// If it's a file upload array, extract the SGF data
 		if (is_array($sgfDataOrFile))

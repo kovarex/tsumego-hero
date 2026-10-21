@@ -1,6 +1,7 @@
 <?php
 
-App::uses('Util', 'Utility');
+
+use App\Utility\Util;
 
 class UtilTest extends CakeTestCase
 {
@@ -180,11 +181,16 @@ class UtilTest extends CakeTestCase
 		$this->assertSame('fallback', Util::getCookie('missing', 'fallback'));
 	}
 
-	public function testGenerateRandomStringIsDeterministicWithSeed()
+	public function testGenerateRandomStringHasTheAskedLength()
 	{
-		srand(1);
-		$this->assertSame('Fp8eBdl3HU', Util::generateRandomString(10));
-		srand(); // reset to random seed
+		$this->assertSame(10, strlen(Util::generateRandomString(10)));
+		$this->assertSame(20, strlen(Util::generateRandomString()));
+	}
+
+	public function testGenerateRandomStringIsNotPredictable()
+	{
+		$this->assertNotSame(Util::generateRandomString(20), Util::generateRandomString(20));
+		$this->assertMatchesRegularExpression('/^[0-9a-zA-Z]+$/', Util::generateRandomString(20));
 	}
 
 	public function testEncryptAndDecryptRoundTrip()

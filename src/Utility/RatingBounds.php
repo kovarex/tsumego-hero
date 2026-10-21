@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Utility;
+
 class RatingBounds
 {
 	public function __construct(?float $min = null, ?float $max = null)
@@ -35,14 +37,20 @@ class RatingBounds
 			$query->conditions[] = 'tsumego.rating < ' . $this->max;
 	}
 
+	/**
+	 * How the range reads inside a sentence: "from 800 to 650", "up to 650" when nothing is below
+	 * it, "from 800" when nothing is above it, and nothing at all when it covers everything.
+	 * The leading space belongs to the phrase, the sentence around it just joins the parts.
+	 */
 	public function textualDescription(): string
 	{
-		$result = '';
-		if ($this->min)
-			$result .= ' from ' . $this->min;
+		if ($this->min && $this->max)
+			return ' from ' . $this->min . ' to ' . $this->max;
 		if ($this->max)
-			$result .= ' to ' . $this->max;
-		return $result;
+			return ' up to ' . $this->max;
+		if ($this->min)
+			return ' from ' . $this->min;
+		return '';
 	}
 
 	public static function coverRank(string $rank, ?string $minimalRank = null): RatingBounds
@@ -51,6 +59,24 @@ class RatingBounds
 		if ($rank != $minimalRank)
 			$result->min = Rating::getRankMinimalRatingFromReadableRank($rank);
 		$result->max = Rating::getRankMinimalRating(Rating::getRankFromReadableRank($rank) + 1);
+		return $result;
+	}
+
+	/**
+	 * Bounds of a single rank or of a range label such as "20k-16k".
+	 * Inputs that are not a range fall through to coverRank, which throws
+	 * RatingParseException for invalid ranks.
+	 */
+	public static function coverRankSpec(string $spec, ?string $minimalRank = null): RatingBounds
+	{
+		$range = Rating::parseReadableRankRange($spec);
+		if ($range === null)
+			return self::coverRank($spec, $minimalRank);
+		[$weakest, $strongest] = $range;
+		$result = new RatingBounds();
+		if ($weakest != $minimalRank)
+			$result->min = Rating::getRankMinimalRatingFromReadableRank($weakest);
+		$result->max = Rating::getRankMinimalRating(Rating::getRankFromReadableRank($strongest) + 1);
 		return $result;
 	}
 

@@ -1,13 +1,22 @@
 <?php
 
-App::uses('BoardComparator', 'Utility');
-App::uses('SetConnection', 'Model');
-require_once __DIR__ . '/BoardComparator.php';
-require_once __DIR__ . '/SimilarSearchResult.php';
+namespace App\Utility;
 
+use ClassRegistry;
+use NotFoundException;
+use Set;
+use SetConnection;
+
+/**
+ * @phpstan-import-type SetConnectionRow from \App\Utility\RowTypes
+ * @phpstan-import-type TsumegoRow from \App\Utility\RowTypes
+ */
 class SimilarSearchLogic
 {
-	public function __construct($setConnection)
+	/**
+	 * @param SetConnectionRow $setConnection
+	 */
+	public function __construct(array $setConnection)
 	{
 		$this->setConnection = $setConnection;
 		$this->result = new SimilarSearchResult();
@@ -25,7 +34,7 @@ class SimilarSearchLogic
 		$this->result->title = $set['title'];
 	}
 
-	public function execute()
+	public function execute(): void
 	{
 		$start = microtime(true);
 		$candidates = Util::query("
@@ -40,7 +49,7 @@ JOIN set_connection sc_best ON sc_best.id = (
     SELECT sc2.id
     FROM set_connection sc2
     JOIN `set` s2 ON s2.id = sc2.set_id
-    WHERE sc2.tsumego_id = tsumego.id AND s2.public = 1
+    WHERE sc2.tsumego_id = tsumego.id AND " . Set::officialCondition('s2') . "
     ORDER BY " . SetConnection::displayOrderSql('s2', 'sc2') . "
     LIMIT 1
 )
@@ -63,7 +72,7 @@ LEFT JOIN sgf
 		$this->result->elapsed = microtime(true) - $start;
 	}
 
-	private function checkCandidate($candidate): void
+	private function checkCandidate(array $candidate): void
 	{
 		$correctMoves = SgfBoard::decodePositionString($candidate['correct_moves'] ?? '');
 		if (count($this->sourceBoard->correctMoves) != count($correctMoves))
@@ -86,7 +95,7 @@ LEFT JOIN sgf
 		$this->addCandidateToResult($candidate, $comparisonResult);
 	}
 
-	private function addCandidateToResult($candidate, BoardComparisonResult $comparisonResult): void
+	private function addCandidateToResult(array $candidate, BoardComparisonResult $comparisonResult): void
 	{
 		$setConnection = ClassRegistry::init('SetConnection')->findById($candidate['set_connection_id'])['SetConnection'];
 		// not so many should match, so I get the sql additional data manually instead in the original select, which is big
@@ -111,14 +120,16 @@ LEFT JOIN sgf
 		$this->result->items[] = $item;
 	}
 
-	public $sourceTsumegoID;
+	public int|string $sourceTsumegoID;
+	/** @var TsumegoRow|null */
 	public $sourceTsumego = null;
+	/** @var SetConnectionRow */
 	public $setConnection;
-	public $maxDifference = 5;
-	public $sourceBoard;
-	public $sourceFirstMoveColor;
+	public int $maxDifference = 5;
+	public SgfBoard $sourceBoard;
+	public string $sourceFirstMoveColor;
 	public int $sourceMoveCount;
-	public $sourceStoneCount;
+	public int $sourceStoneCount;
 	public SimilarSearchResult $result;
 	public ?string $sourceSgf = null;
 }

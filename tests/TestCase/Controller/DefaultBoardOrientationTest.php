@@ -1,7 +1,6 @@
 <?php
 
-App::uses('User', 'Model');
-App::uses('SgfParser', 'Utility');
+use App\Utility\Auth;
 
 /**
  * Tests that the pref_board_orientation user preference drives the

@@ -1,44 +1,45 @@
 <?php
+
+use App\Utility\Auth;
+use App\Utility\Util;
+
 /**
  * @var View $this
  * @var array $achievement
  * @var int $completerCount
  * @var array $completers
+ * @var array $collections
  * @var float $completionPercent
  * @var array $currentUserStatus
  * @var int|null $progress
  * @var int|null $progressGoal
  * @var string $rarity
  * @var int $userCount
+ * @var array|null $viewedUser
  */
+
+// The card is grey until the player completed the achievement, and the badge on
+// it counts the completions.
+$aColor = empty($currentUserStatus) ? 'achievementColorGray' : $achievement['Achievement']['color'];
+$earnedCount = empty($currentUserStatus) ? 0 : (int) $currentUserStatus['AchievementStatus']['value'];
+
+// The player whose page this is: the one being viewed, or the logged in one.
+$profileUserID = $viewedUser['id'] ?? (Auth::isLoggedIn() ? Auth::getUserID() : null);
 
 ?>
 	
 	<div align="center" >
-	<?php
-	if (!empty($currentUserStatus))
-		$aColor = $achievement['Achievement']['color'];
-	else $aColor = 'achievementColorGray';
-?>
-	<p class="title <?php echo $aColor; ?>2">
-				<br>Achievement: <?php echo h($achievement['Achievement']['name']); ?>
-				<br><br> 
-				</p>
-				<?php
-				$rarityClass = strtolower(str_replace(' ', '-', $rarity));
-?>
-				<div style="margin: 8px 0;">
-					<span class="rarity rarity--<?php echo $rarityClass; ?>" title="<?php echo $completionPercent; ?>% of all users"><?php echo h($rarity); ?></span>
-				</div>
-				<div class="achievemetProfileLink">
-					<?php
-						if (Auth::isLoggedIn())
-							echo '<a href="/users/view/' . Auth::getUserID() . '">Profile</a>';
-?>
-				</div>
-				<div class="achievemetIndexLink">
-					<a href="/achievements">View Achievements</a>
-				</div>
+	<div class="acHeader">
+		<div class="achievemetIndexLink">
+			<a href="/achievements<?php echo $viewedUser ? '/user/' . $viewedUser['id'] : ''; ?>">View Achievements</a>
+		</div>
+		<?php if ($viewedUser): ?>
+		<p class="acOwner"><?php echo h($viewedUser['display_name']); ?>'s achievement</p>
+		<?php endif; ?>
+		<div class="achievemetProfileLink">
+			<?php if ($profileUserID) echo '<a href="/users/view/' . $profileUserID . '">Profile</a>'; ?>
+		</div>
+	</div>
 		<div align="center" id="achievementWrapper">
 	<a href="/achievements" style="text-decoration:none;">
 	<div align="center" class="achievement2 <?php
@@ -52,17 +53,8 @@ if (empty($currentUserStatus))
 		</div>
 		<div class="acImg">
 			<img src="/img/<?php echo $displayImage; ?>.png">
-			<?php
-		$a46style = '';
-if(!empty($currentUserStatus) && $achievement['Achievement']['id'] == 46)
-{
-	$a46style = ' style="top:-22px;"';
-	?>
-			<div class="acImgXp2">
-				<?php echo $currentUserStatus['AchievementStatus']['value']; ?>
-			</div>
-			<?php } ?>
-			<div class="acImgXp"<?php echo $a46style; ?>>
+			<?php echo AchievementHelper::renderEarnedBadge($earnedCount); ?>
+			<div class="acImgXp">
 			<?php echo $achievement['Achievement']['xp']; ?> XP
 			</div>
 		</div>
@@ -88,11 +80,33 @@ if ($achievement['Achievement']['additionalDescription'] != null)
 			<div class="progress__label"><?php echo $progress; ?>/<?php echo $progressGoal; ?></div>
 		</div>
 	<?php endif; ?>
+	<div class="acRarity">
+		<span class="rarity rarity--<?php echo strtolower(str_replace(' ', '-', $rarity)); ?>" title="<?php echo $completionPercent; ?>% of all users"><?php echo h($rarity); ?></span>
+	</div>
 	<font color="gray">
 	<?php
 	if ($achievement['Achievement']['additionalDescription'] != null)
 		echo '*' . h($achievement['Achievement']['additionalDescription']);
 ?></font>
+	<?php if ($collections): ?>
+	<div class="acCollections">
+		<p class="acCollections__title">Collections that can earn this</p>
+		<?php
+		$markedCollections = 0;
+		foreach ($collections as $collection)
+			if ($collection['earned'])
+				$markedCollections++;
+		?>
+		<?php if ($earnedCount > $markedCollections): ?>
+		<p class="acCollections__hint"><?= (int) ($earnedCount - $markedCollections) ?> of the collections it was earned on no longer count.</p>
+		<?php endif; ?>
+		<div class="acCollections__list">
+			<?php foreach ($collections as $collection): ?>
+				<a href="<?= Set::url((int) $collection['id']) ?>" class="acCollections__link<?= $collection['earned'] ? ' acCollections__link--earned' : '' ?>"><?= h($collection['title']) ?><?php if (!$collection['earned'] && $collection['accuracy'] > 0): ?><span class="acCollections__percent"><?= h($collection['accuracy']) ?>%</span><?php endif; ?></a>
+			<?php endforeach; ?>
+		</div>
+	</div>
+	<?php endif; ?>
 	<br>
 	<br>
 	<font color="gray">

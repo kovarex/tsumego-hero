@@ -1,4 +1,4 @@
 ---
 commit: 8dcdc6111
 ---
-Fixed: Alert popups no longer get stuck behind other content.
+Fixed: Alert popups no longer get stuck behind other content ([discussion](/forums/viewtopic.php?t=92)).

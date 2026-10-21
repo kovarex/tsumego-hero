@@ -75,6 +75,7 @@
 	align-items: center;
 	justify-content: center;
 	text-decoration: none;
+	color: var(--color-white);
 }
 
 /* The spacer between groups uses flex spacing instead of float. */
@@ -90,7 +91,6 @@
 .problem-nav__item--current
 {
 	position: relative;
-	border: 3px solid var(--current-border-color);
 }
 
 .problem-nav__item--current::before
@@ -99,6 +99,8 @@
 	position: absolute;
 	inset: -5px;
 	border-radius: 9px;
+	border: 3px solid var(--text-color);
+	z-index: 20;
 	pointer-events: none;
 }
 
@@ -218,9 +220,54 @@
 	display: none;
 }
 
+/* Mistake training: the number sits over the rank insignia of the rung of the
+   review ladder (chevrons, then stars, a crown for a graduation of today), so the
+   row tells a fresh mistake from a late review. The insignia are white on a dark
+   see-through patch, which keeps them apart from the grey and the green items
+   in both themes; the patch stays inside the button, clear of the current-item
+   outline. */
+.problem-nav__rung-link
+{
+	flex-direction: column;
+	gap: 1px;
+}
+
+.problem-nav__rung-link .problem-nav__number
+{
+	font-size: var(--font-size-md);
+	line-height: 1;
+}
+
+.problem-nav__rung
+{
+	display: flex;
+	padding: 1px 4px;
+	border-radius: var(--radius-full);
+	background-color: var(--rung-patch-color);
+	color: var(--color-white);
+}
+
+.problem-nav__rung svg
+{
+	display: block;
+}
+
+.problem-nav__rung--graduated
+{
+	color: var(--status-g-highlight);
+}
+
+/* Missed today: the item stays grey, a red ring around its insignia tells it from
+   one not tried yet */
+.problem-nav__rung--missed
+{
+	box-shadow: 0 0 0 2px var(--feedback-error);
+}
+
 .preview-zoomed .problem-nav__number,
 .preview-zoomed .problem-nav__ratio,
 .preview-zoomed .problem-nav__time,
+.preview-zoomed .problem-nav__rung,
 .preview-zoomed .tooltip-label,
 .preview-zoomed .tooltip-desc
 {
@@ -382,4 +429,86 @@ a[data-tsumego-id]:hover .tooltip-desc
 		height: auto;
 	}
 }
+}
+
+/* Mistake training: the line under "Correct!" (what the solve did to the problem)
+   or under "Incorrect!" */
+.mistake-training-outcome,
+.mistake-training-note
+{
+	margin: var(--space-1) 0 0;
+	font-size: var(--font-size-lg);
+	white-space: normal;
+}
+
+/* The bonus for clearing the day, under the outcome */
+.mistake-training-outcome--clear
+{
+	font-weight: var(--font-weight-bold);
+}
+
+/* Mistake training: the status keeps room for its two lines, so the board does not
+   move when a result shows, and stays clear of the board */
+.play-status--training #xpDisplayDiv
+{
+	height: auto;
+}
+
+.play-status--training #status
+{
+	min-height: 72px;
+	padding-bottom: var(--space-2);
+}
+
+.mistake-training-replay
+{
+	max-width: 480px;
+	margin: 0 auto var(--space-3);
+	text-align: center;
+	font-size: var(--font-size-md);
+}
+
+/* The calendar and streak of the profile under the overview of the training */
+.mistake-training-progress
+{
+	margin-top: var(--space-5);
+	text-align: left;
+}
+
+.mistake-training-progress .training-overview
+{
+	margin: 0;
+}
+
+/* The problems in the training, on the overview */
+.mistake-training-pool
+{
+	margin-top: var(--space-5);
+	text-align: left;
+}
+
+.mistake-training-pool summary
+{
+	cursor: pointer;
+	font-weight: var(--font-weight-bold);
+	margin-bottom: var(--space-2);
+}
+
+.mistake-training-pool__table
+{
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.mistake-training-pool__table th,
+.mistake-training-pool__table td
+{
+	padding: var(--space-1) var(--space-2);
+	border-bottom: 1px solid var(--current-border-color);
+	text-align: left;
+}
+
+.mistake-training-pool__table .training-overview__insignia
+{
+	display: inline-flex;
 }

@@ -1,7 +1,5 @@
 <?php
 
-App::uses('SetConnection', 'Model');
-
 class SetConnectionTest extends CakeTestCase
 {
 	public function testDisplayPrefersOfficialOverFavorite()

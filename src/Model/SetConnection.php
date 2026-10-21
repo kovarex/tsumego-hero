@@ -1,8 +1,10 @@
 <?php
 
+use App\Utility\Auth;
+
 class SetConnection extends AppModel
 {
-	public function __construct($id = false, $table = null, $ds = null)
+	public function __construct(mixed $id = false, ?string $table = null, ?string $ds = null)
 	{
 		$id['table'] =  'set_connection';
 		parent::__construct($id, $table, $ds);
@@ -32,6 +34,24 @@ class SetConnection extends AppModel
 	public static function displayOrderSql(string $setAlias, string $connectionAlias): string
 	{
 		return self::displayOrderForSetSql($setAlias) . ", $connectionAlias.id ASC";
+	}
+
+	/** The problems a collection needs before it can earn the collection achievements. */
+	public const int ACHIEVEMENT_MINIMUM_PROBLEMS = 100;
+
+	/**
+	 * Subquery for the collections that can earn the collection achievements: collections
+	 * built by the site itself, with at least self::ACHIEVEMENT_MINIMUM_PROBLEMS problems.
+	 * Collections a player assembled are personal and do not count, not even when they are
+	 * public.
+	 */
+	public static function publicCollectionsWithMinimumProblemsSql(): string
+	{
+		return 'SELECT sc.set_id FROM set_connection sc'
+			. ' JOIN tsumego t ON t.id = sc.tsumego_id'
+			. ' JOIN `set` st ON st.id = sc.set_id'
+			. ' WHERE ' . Set::officialCondition('st')
+			. ' GROUP BY sc.set_id HAVING COUNT(*) >= ' . self::ACHIEVEMENT_MINIMUM_PROBLEMS;
 	}
 
 	/**

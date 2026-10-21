@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\Util;
+
 /**
  * @var View $this
  * @var int $count
@@ -83,7 +85,7 @@
 					echo '<a class="link-plain" href="/users/userstats/'.$ur[$i]['TsumegoAttempt']['user_id'].'">'.$ur[$i]['TsumegoAttempt']['user_id'].'</a>';
 				echo '</td>';
 				echo '<td class="text-center">';
-				echo '<a class="link-plain" href="/users/userstats/'.$ur[$i]['TsumegoAttempt']['user_id'].'">'.h($ur[$i]['TsumegoAttempt']['user_name']).'</a>';
+				echo '<a class="link-plain" href="/users/userstats/'.$ur[$i]['TsumegoAttempt']['user_id'].'">'.h($ur[$i]['TsumegoAttempt']['user_display_name']).'</a>';
 				echo '</td>';
 				echo '<td>';
 					echo 'lvl '. $ur[$i]['TsumegoAttempt']['level'];
@@ -112,7 +114,7 @@
 			echo '</tr>';
 		}
 	}else{
-		echo h($ur[0]['TsumegoAttempt']['user_name']).'<br>';
+		echo h($ur[0]['TsumegoAttempt']['user_display_name']).'<br>';
 		
 		$ids = array();
 		for($i=0; $i<count($ur); $i++){
@@ -142,7 +144,7 @@
 						echo '</td>';
 						echo '<td class="text-center">';
 							echo '<a class="link-plain" 
-						href="/users/userstats/'.$ur[$i]['TsumegoAttempt']['user_id'].'">'.h($ur[$i]['TsumegoAttempt']['user_name']).'</a>';
+						href="/users/userstats/'.$ur[$i]['TsumegoAttempt']['user_id'].'">'.h($ur[$i]['TsumegoAttempt']['user_display_name']).'</a>';
 						echo '</td>';
 						echo '<td>';
 							echo 'lvl '. $ur[$i]['TsumegoAttempt']['level'];

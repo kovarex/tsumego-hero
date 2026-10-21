@@ -1,16 +1,20 @@
 <?php
 
-App::uses('SgfParser', 'Utility');
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\MistakeTraining;
+use App\Utility\TsumegoButtons;
+use App\Utility\TsumegoFilters;
+use App\Utility\Util;
 
 class SitesController extends AppController
 {
 	public $helpers = ['Html', 'Form'];
 
 	/**
-	 * @param mixed $var Variable parameter
 	 * @return void
 	 */
-	public function index($var = null)
+	public function index(): void
 	{
 		$this->set('_page', 'home');
 		$this->set('_title', 'Tsumego Hero');
@@ -45,9 +49,10 @@ class SitesController extends AppController
 		{
 			$currentQuote = $dayRecord['DayRecord']['quote'];
 			$userOfTheDay = $this->User->find('first', ['conditions' => ['id' => $dayRecord['DayRecord']['user_id']]]);
-			$this->set('userOfTheDay', $this->checkPictureLarge($userOfTheDay));
-			$this->set('userOfTheDayId', $userOfTheDay['User']['id']);
+			$this->set('userOfTheDay', $userOfTheDay ? $userOfTheDay['User'] : null);
 		}
+		else
+			$this->set('userOfTheDay', null);
 
 		$this->set('tsumegoButtonsOfPublishedTsumegos', $tsumegoButtonsOfPublishedTsumegos);
 		$chartData = Cache::read('homepage_chart', 'long');
@@ -60,8 +65,18 @@ class SitesController extends AppController
 		$this->set('latestPublishDate', $latestPublishDate);
 		$this->set('quote', $currentQuote);
 
+		$this->loadModel('AchievementStatus');
 		$recentAchievements = $this->AchievementStatus->getRecent();
 		$this->set('recentAchievements', $recentAchievements);
+
+		// The way into the mistake training: what is due today. The offer to bring past
+		// mistakes in is on the card always, without a count: counting them reads the
+		// whole attempt history, far too much for a page this hot.
+		if (Auth::isLoggedIn())
+		{
+			$userId = (int) Auth::getUserID();
+			$this->set('mistakeTrainingDue', MistakeTraining::dueCount($userId));
+		}
 	}
 
 	private function buildChartData(): array
@@ -120,7 +135,7 @@ class SitesController extends AppController
 	 *
 	 * @return void
 	 */
-	public function recentAchievements()
+	public function recentAchievements(): void
 	{
 		$this->autoRender = false;
 		$this->loadModel('AchievementStatus');
@@ -130,10 +145,10 @@ class SitesController extends AppController
 	}
 
 	/**
-	 * @param string|int|null $id
+	 * @param string|null $id
 	 * @return void
 	 */
-	public function view($id = null)
+	public function view(?string $id = null): void
 	{
 		$news = $this->Site->find('all');
 		$this->set('news', $news[$id]);
@@ -142,7 +157,7 @@ class SitesController extends AppController
 	/**
 	 * @return void
 	 */
-	public function impressum()
+	public function impressum(): void
 	{
 		$this->set('_page', 'about');
 		$this->set('_title', 'Tsumego Hero - Legal Notice');
@@ -151,7 +166,7 @@ class SitesController extends AppController
 	/**
 	 * @return void
 	 */
-	public function websitefunctions()
+	public function websitefunctions(): void
 	{
 		$this->set('_page', 'websitefunctions');
 		$this->set('_title', 'Tsumego Hero - Website Functions');
@@ -160,7 +175,7 @@ class SitesController extends AppController
 	/**
 	 * @return void
 	 */
-	public function gotutorial()
+	public function gotutorial(): void
 	{
 		$this->set('_page', 'gotutorial');
 		$this->set('_title', 'Tsumego Hero - Go Tutorial');
@@ -169,7 +184,7 @@ class SitesController extends AppController
 	/**
 	 * @return void
 	 */
-	public function privacypolicy()
+	public function privacypolicy(): void
 	{
 		$this->set('_page', 'privacypolicy');
 		$this->set('_title', 'Tsumego Hero - Privacy Policy');
@@ -178,7 +193,7 @@ class SitesController extends AppController
 	/**
 	 * @return void
 	 */
-	public function about()
+	public function about(): void
 	{
 		$this->set('_page', 'about');
 		$this->set('_title', 'Tsumego Hero - About');
@@ -190,7 +205,7 @@ class SitesController extends AppController
 	 *
 	 * @return void
 	 */
-	public function blank()
+	public function blank(): void
 	{
 		$this->set('_page', 'blank');
 		$this->set('_title', 'Tsumego Hero');

@@ -1,8 +1,15 @@
 <?php
 
+namespace App\Utility;
+
 class Constants
 {
 	public static int $MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED = 75;
+
+	// Long enough to make guessing pointless, short enough to stay typeable. It is asked
+	// only when a password is chosen, not when one is typed to sign in.
+	public static int $MINIMUM_PASSWORD_LENGTH = 8;
+
 	public static string $SGF_PLACEHOLDER = '(;GM[1]FF[4]CA[UTF-8]ST[2]RU[Japanese]SZ[19]PW[White]PB[Black])';
 
 	// Default tsumego ID for first-time visitors
@@ -18,6 +25,7 @@ class Constants
 	public static int $LEVEL_MODE = 1;
 	public static int $RATING_MODE = 2;
 	public static int $TIME_MODE = 3;
+	public static int $MISTAKE_TRAINING_MODE = 5;
 
 	// Highscore page identifiers (stored in user.lastHighscore)
 	public static int $HIGHSCORE_LEVEL = 1;

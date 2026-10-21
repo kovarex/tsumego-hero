@@ -1,8 +1,5 @@
 <?php
 
-require_once(__DIR__ . '/TestCaseWithAuth.php');
-require_once(__DIR__ . '/../../ContextPreparator.php');
-
 class RecentAchievementsTest extends TestCaseWithAuth
 {
 	public function testGetRecentReturnsResults(): void
@@ -46,13 +43,13 @@ class RecentAchievementsTest extends TestCaseWithAuth
 		$this->assertArrayHasKey('name', $item);
 		$this->assertArrayHasKey('image', $item);
 		$this->assertArrayHasKey('user_id', $item);
-		$this->assertArrayHasKey('user_name', $item);
+		$this->assertArrayHasKey('user_display_name', $item);
 		$this->assertArrayHasKey('created', $item);
 
 		// Achievement + User joins filled correctly
 		$this->assertNotEmpty($item['name']);
 		$this->assertNotEmpty($item['image']);
-		$this->assertNotEmpty($item['user_name']);
+		$this->assertNotEmpty($item['user_display_name']);
 
 		// Tests simulate server in UTC. Verifies timezone offset is correct.
 		$this->assertStringEndsWith('+00:00', $item['created'], "Expected UTC, got: {$item['created']}");

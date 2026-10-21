@@ -1,8 +1,10 @@
 <?php
 
-App::uses('TsumegoXPAndRating', 'Utility');
-App::uses('Level', 'Utility');
-use Facebook\WebDriver\WebDriverBy;
+use App\Utility\Constants;
+use App\Utility\Level;
+use App\Utility\Rating;
+use App\Utility\TsumegoUtil;
+use App\Utility\TsumegoXPAndRating;
 
 class TsumegoXPAndRatingTest extends TestCaseWithAuth
 {
@@ -12,7 +14,7 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		// the reported xp is normal
-		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->tsumegos[0])) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
+		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->tsumegos[0])) . ' XP', $browser->find('#xpDisplay')->getText());
 	}
 
 	public function testShowingGoldenXP(): void
@@ -21,8 +23,8 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		// the reported xp is golden
-		$this->assertTextContains(TsumegoUtil::getXpValue($context->tsumegos[0], Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
-		$this->assertTextContains('Golden', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
+		$this->assertTextContains(TsumegoUtil::getXpValue($context->tsumegos[0], Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER) . ' XP', $browser->find('#xpDisplay')->getText());
+		$this->assertTextContains('Golden', $browser->find('#xpDisplay')->getText());
 	}
 
 	public function testProgressDeletionsDontAffectGoldenXPShown(): void
@@ -39,7 +41,7 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		// golden uses the base value, not the progress-deletion reduced value
-		$this->assertTextContains(TsumegoUtil::getXpValue($context->tsumegos[0], Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
+		$this->assertTextContains(TsumegoUtil::getXpValue($context->tsumegos[0], Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER) . ' XP', $browser->find('#xpDisplay')->getText());
 	}
 
 	public function testShowingNormalStatusAndUpdatingToSolved(): void
@@ -48,10 +50,10 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		// the reported xp is normal
-		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->tsumegos[0])) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
+		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->tsumegos[0])) . ' XP', $browser->find('#xpDisplay')->getText());
 		$browser->playWithResult('S'); // solve the problem
-		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->tsumegos[0])) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
-		$this->assertTextContains('Solved', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
+		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->tsumegos[0])) . ' XP', $browser->find('#xpDisplay')->getText());
+		$this->assertTextContains('Solved', $browser->find('#xpDisplay')->getText());
 	}
 
 	public function testShowingSolvedOnOpenedSolvedProblem(): void
@@ -61,8 +63,8 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth
 			'tsumegos' => [['set_order' => 1, 'status' => 'S']]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->tsumegos[0])) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
-		$this->assertTextContains('Solved', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
+		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->tsumegos[0])) . ' XP', $browser->find('#xpDisplay')->getText());
+		$this->assertTextContains('Solved', $browser->find('#xpDisplay')->getText());
 	}
 
 	public function testShowingNormalXPOn30kProblem(): void
@@ -72,17 +74,17 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth
 			'tsumegos' => [['rating' => Rating::getRankMiddleRatingFromReadableRank('30k'), 'set_order' => 1, 'status' => 'S']]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->tsumegos[0])) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
+		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->tsumegos[0])) . ' XP', $browser->find('#xpDisplay')->getText());
 
-		$xpDisplayText = $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText();
+		$xpDisplayText = $browser->find('#xpDisplay')->getText();
 		$this->assertTextContains('Solved', $xpDisplayText);
 		$this->assertTextContains('1 XP', $xpDisplayText);
 	}
 
 	public function checkSprintInXpAndTimeInStatus2($browser)
 	{
-		$this->assertTextContains('Sprint', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
-		$status = $browser->driver->findElement(WebDriverBy::cssSelector('#status2'))->getText();
+		$this->assertTextContains('Sprint', $browser->find('#xpDisplay')->getText());
+		$status = $browser->find('#status2')->getText();
 		$this->assertSame(preg_match('/(\d+):([0-5]\d)/', $status, $m), 1, 'The status should contain time in format m:s, but it wasn\'t found in the string: "' . $status . "'");
 		$this->assertTrue($m > 1);
 	}
@@ -94,13 +96,10 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		// the reported xp is normal
-		$this->assertTextStartsNotWith($browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText(), strval(TsumegoUtil::getXpValue($context->tsumegos[0])) . ' XP');
+		$this->assertTextStartsNotWith($browser->find('#xpDisplay')->getText(), strval(TsumegoUtil::getXpValue($context->tsumegos[0])) . ' XP');
 		$browser->clickId('sprint');
-		$browser->driver->wait(10, 500)->until(function () use ($browser, $context) {
-			$xpDisplayText = $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText();
-			$xpText = strval(TsumegoUtil::getXpValue($context->tsumegos[0], Constants::$SPRINT_MULTIPLIER)) . ' XP';
-			return str_contains($xpDisplayText, $xpText);
-		});
+		$xpText = strval(TsumegoUtil::getXpValue($context->tsumegos[0], Constants::$SPRINT_MULTIPLIER)) . ' XP';
+		$browser->waitUntilJs('document.querySelector("#xpDisplay").textContent.includes("' . $xpText . '")');
 		$this->checkSprintInXpAndTimeInStatus2($browser);
 	}
 
@@ -110,7 +109,7 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		// the sprint is active from the start
-		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->tsumegos[0], Constants::$SPRINT_MULTIPLIER)) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
+		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->tsumegos[0], Constants::$SPRINT_MULTIPLIER)) . ' XP', $browser->find('#xpDisplay')->getText());
 		$this->checkSprintInXpAndTimeInStatus2($browser);
 	}
 
@@ -130,15 +129,12 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth
 
 		// only one progress deletion affects this, one is too old, and one is from other user
 		$originalTsumegoXpValue = TsumegoUtil::getXpValue($context->tsumegos[0], TsumegoXPAndRating::getProgressDeletionMultiplier(1));
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) use ($originalTsumegoXpValue) {
-			$text = $driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText();
-			return str_contains($text, strval($originalTsumegoXpValue) . ' XP');
-		});
-		$this->assertTextContains(strval($originalTsumegoXpValue) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
+		$browser->waitUntilJs('document.querySelector("#xpDisplay") !== null && document.querySelector("#xpDisplay").textContent.includes("'
+			. $originalTsumegoXpValue . ' XP")');
+		$this->assertTextContains(strval($originalTsumegoXpValue) . ' XP', $browser->find('#xpDisplay')->getText());
 
 		$browser->driver->executeScript("displayResult('S')"); // solve the problem
-		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
+		$browser->find('#besogo-next-button')->click();
 		$this->assertSame($context->XPGained(), $originalTsumegoXpValue);
 	}
 

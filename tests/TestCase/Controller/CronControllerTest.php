@@ -1,6 +1,9 @@
 <?php
 
-App::uses('TsumegoUtil', 'Utility');
+
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\Util;
 
 class CronControllerTest extends TestCaseWithAuth
 {
@@ -30,6 +33,28 @@ class CronControllerTest extends TestCaseWithAuth
 		$this->expectException(ForbiddenException::class);
 
 		$this->testAction('/cron/daily/wrongsecret');
+	}
+
+	/**
+	 * An address change whose links have expired is forgotten overnight, so it does
+	 * not sit on the account waiting for a confirmation that can no longer come.
+	 */
+	public function testCronForgetsAnAddressChangeNobodyConfirmed()
+	{
+		$context = new ContextPreparator(['user' => ['mode' => Constants::$LEVEL_MODE]]);
+		Util::execute('UPDATE user SET unconfirmed_email = ?, unconfirmed_email_token = ?,
+			unconfirmed_email_cancel_token = ?, unconfirmed_email_created = ?
+			WHERE id = ?', [
+			'new@example.com', 'confirm_token', 'cancel_token',
+			date('Y-m-d H:i:s', strtotime('-2 days')), $context->user['id']]);
+
+		$this->testAction('/cron/daily/' . CRON_SECRET);
+
+		$user = $context->reloadUser();
+		$this->assertNull($user['unconfirmed_email']);
+		$this->assertNull($user['unconfirmed_email_token']);
+		$this->assertNull($user['unconfirmed_email_cancel_token']);
+		$this->assertNull($user['unconfirmed_email_created']);
 	}
 
 

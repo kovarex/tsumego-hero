@@ -1,7 +1,5 @@
 <?php
 
-App::uses('AppHelper', 'View/Helper');
-
 /**
  * PaginationHelper - Generates pagination controls
  *
@@ -9,6 +7,8 @@ App::uses('AppHelper', 'View/Helper');
  * and ellipsis for large page counts. Automatically preserves query
  * parameters and generates anchor links for smooth scrolling.
  */
+use App\Utility\Query;
+
 class PaginationHelper extends AppHelper
 {
 	/**
@@ -19,7 +19,7 @@ class PaginationHelper extends AppHelper
 	 * @param string $paramName Query parameter name (e.g., 'activity_page')
 	 * @return string HTML pagination controls
 	 */
-	public static function render($currentPage, $totalPages, $paramName)
+	public static function render(int $currentPage, int $totalPages, string $paramName): string
 	{
 		if ($totalPages <= 1)
 			return '';
@@ -45,8 +45,7 @@ class PaginationHelper extends AppHelper
 		$pages[] = 1;
 		for ($i = max(2, $currentPage - 1); $i <= min($totalPages - 1, $currentPage + 1); $i++)
 			$pages[] = $i;
-		if ($totalPages > 1)
-			$pages[] = $totalPages;
+		$pages[] = $totalPages;
 		$pages = array_unique($pages);
 		sort($pages);
 

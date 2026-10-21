@@ -1,5 +1,10 @@
 <?php
 
+use App\Utility\BoardComparator;
+use App\Utility\SgfBoard;
+use App\Utility\SgfParser;
+use App\Utility\TsumegoButton;
+
 class AdminActivity extends AppModel
 {
 	public $useTable = 'admin_activity';
@@ -13,7 +18,7 @@ class AdminActivity extends AppModel
 		]
 	];
 
-	public static function renderChange($adminActivity)
+	public static function renderChange(array $adminActivity): string
 	{
 		switch ($adminActivity['type'])
 		{
@@ -21,6 +26,7 @@ class AdminActivity extends AppModel
 			case AdminActivityType::REJECT_TAG: return 'Rejected tag ' . h($adminActivity['old_value']);
 			case AdminActivityType::ADD_TAG: return 'Added tag ' . h($adminActivity['new_value']);
 			case AdminActivityType::DELETE_USER: return 'Deleted user ' . h($adminActivity['old_value']);
+			case AdminActivityType::RESTORE_USER: return 'Restored user ' . h($adminActivity['new_value']);
 			case AdminActivityType::ACCEPT_PROPOSAL: return 'Accepted proposal by ' . h($adminActivity['new_value']);
 			case AdminActivityType::REJECT_PROPOSAL: return 'Rejected proposal by ' . h($adminActivity['new_value']);
 			case AdminActivityType::TSUMEGO_MERGE:

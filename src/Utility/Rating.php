@@ -1,8 +1,6 @@
 <?php
 
-use function PHPUnit\Framework\isNull;
-
-App::uses('RatingParseException', 'Utility');
+namespace App\Utility;
 
 class Rating
 {
@@ -91,12 +89,12 @@ class Rating
 		return Rating::getRankMiddleRatingFromRank(Rating::getRankFromReadableRank($readableRank));
 	}
 
-	private static function beta($rating)
+	private static function beta(float $rating): float
 	{
 		return -7 * log(3300 - $rating);
 	}
 
-	public static function calculateRatingChange($rating, $opponentRating, $result, $modifier)
+	public static function calculateRatingChange(float $rating, float $opponentRating, float $result, float $modifier): float
 	{
 		$Se = 1.0 / (1.0 + exp(self::beta($opponentRating) - self::beta($rating)));
 		$con = pow(((3300 - $rating) / 200), 1.6);
@@ -107,7 +105,6 @@ class Rating
 	// changes should be reflected in util.js
 	public static function ratingToXP(float $rating, float $multiplier): int
 	{
-		$bla = intval(ceil(Rating::ratingToXPFloat($rating) * $multiplier));
 		return intval(ceil(Rating::ratingToXPFloat($rating) * $multiplier));
 	}
 
@@ -135,7 +132,7 @@ class Rating
 		return self::getRankMiddleRatingFromReadableRank($input);
 	}
 
-	public static function isReasonableRating(float $rating)
+	public static function isReasonableRating(float $rating): bool
 	{
 		return $rating >= -950 // 30k
 				&& $rating < 3200; // the formula stops working at 3300
@@ -152,20 +149,64 @@ class Rating
 	}
 
 	/**
-	 * All rank labels from 15k to 9d, weakest first. Colors are CSS tokens
-	 * (--rank-15k … --rank-9d) in webroot/css/tokens.css.
+	 * All rank labels from 30k to 9d, weakest first. Colors are CSS tokens
+	 * (from --rank-30k to --rank-9d) in webroot/css/tokens.css.
 	 *
 	 * @return string[]
 	 */
 	public static function ranks(): array
 	{
 		return [
+			'30k', '29k', '28k', '27k', '26k',
+			'25k', '24k', '23k', '22k', '21k',
+			'20k', '19k', '18k', '17k', '16k',
 			'15k', '14k', '13k', '12k', '11k',
 			'10k', '9k', '8k', '7k', '6k',
 			'5k', '4k', '3k', '2k', '1k',
 			'1d', '2d', '3d', '4d', '5d',
 			'6d', '7d', '8d', '9d',
 		];
+	}
+
+	/**
+	 * The weakest rank of the rank list. Its band has no lower rating bound,
+	 * so every problem below it belongs to it as well.
+	 */
+	public static function weakestRank(): string
+	{
+		return self::ranks()[0];
+	}
+
+	/**
+	 * Splits a range label such as "20k-16k" into its weakest and strongest rank.
+	 * Returns null when the input is not exactly two valid ranks in that order.
+	 *
+	 * @return array{0: string, 1: string}|null
+	 */
+	public static function parseReadableRankRange(string $input): ?array
+	{
+		$parts = explode('-', $input);
+		if (count($parts) !== 2 || !self::isValidReadableRank($parts[0]) || !self::isValidReadableRank($parts[1]))
+			return null;
+		if (self::getRankFromReadableRank($parts[0]) > self::getRankFromReadableRank($parts[1]))
+			return null;
+		return [$parts[0], $parts[1]];
+	}
+
+	/**
+	 * The rank labels from the weakest to the strongest one, inclusive, in the
+	 * order of ranks().
+	 *
+	 * @return string[]
+	 */
+	public static function ranksBetween(string $weakest, string $strongest): array
+	{
+		$allRanks = self::ranks();
+		$from = array_search($weakest, $allRanks, true);
+		$to = array_search($strongest, $allRanks, true);
+		if ($from === false || $to === false || $from > $to)
+			return [];
+		return array_slice($allRanks, $from, $to - $from + 1);
 	}
 
 	/**

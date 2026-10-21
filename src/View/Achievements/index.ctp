@@ -1,19 +1,22 @@
 <?php
+
+use App\Utility\Auth;
+use App\Utility\Util;
+
 /**
  * @var View $this
  * @var array $a
- * @var int $unlockedCounter2
+ * @var array|null $viewedUser
  */
 
 ?>
-	
+
 	<div align="center">
-	<p class="profile-username">
-		<?php echo isset($viewedUser) ? htmlspecialchars($viewedUser['name']) : 'Achievements'; ?>
-	</p>
-	<?php if (isset($viewedUser))
-		echo $this->element('user_subnav', ['userID' => $viewedUser['id'], 'activeTab' => 'achievements']);
-	?>
+	<?php if (isset($viewedUser)): ?>
+		<?php echo $this->element('user_header', ['user' => $viewedUser, 'activeTab' => 'achievements']); ?>
+	<?php else: ?>
+		<p class="profile-username">Achievements</p>
+	<?php endif; ?>
 		<div align="center" id="achievementWrapper">
 		<?php
 		$unlockedCounter = 0;
@@ -27,24 +30,17 @@
 					}else $displayColor = 'achievementColorGray';
 					if(strlen($a[$i]['Achievement']['name'])>30) $adjust = 'style="font-weight:normal;font-size:17px;"';
 					else $adjust = '';
+					$earnedCount = (int) ($a[$i]['Achievement']['earned_count'] ?? 0);
 					?>
-					<a href="/achievements/view/<?php echo $a[$i]['Achievement']['id']; ?>">
+					<a href="/achievements/view/<?php echo $a[$i]['Achievement']['id'] . (isset($viewedUser) ? '/' . $viewedUser['id'] : ''); ?>">
 					<div align="center" class="achievement1 <?php echo $displayColor; ?>">
 						<div class="acTitle">
 							<h1 <?php echo $adjust; ?>><?php echo h($a[$i]['Achievement']['name']); ?></h1>
 						</div>
 						<div class="acImg">
 							<img src="/img/<?php echo $isActive; ?>.png"><br>
-							<?php 
-							$a46style = '';
-							if($a[$i]['Achievement']['id']==46 && $a[$i]['Achievement']['unlocked']){ 
-								$a46style = ' style="top:-22px;"';
-							?>
-							<div class="acImgXp2">
-								<?php echo $a[$i]['Achievement']['a46value']; ?>
-							</div>
-							<?php } ?>
-							<div class="acImgXp"<?php echo $a46style; ?>>
+						<?php echo AchievementHelper::renderEarnedBadge($earnedCount); ?>
+							<div class="acImgXp">
 							<?php echo $a[$i]['Achievement']['xp']; ?> XP
 							</div>
 						</div>
@@ -53,32 +49,41 @@
 						</div>
 						<?php if ($a[$i]['Achievement']['unlocked']) { ?>
 						<div class="acDate">
-							<?php 
+							<?php
 							echo '<time datetime="' . Util::toIso8601($a[$i]['Achievement']['unlocked_at']) . '" data-format="datetime">' . $a[$i]['Achievement']['unlocked_at'] . '</time>';
 							?>
+						</div>
+						<?php } elseif (isset($a[$i]['Achievement']['progress']) && $a[$i]['Achievement']['progress_goal'] > 0) {
+							$progressPercent = (int) round($a[$i]['Achievement']['progress'] / $a[$i]['Achievement']['progress_goal'] * 100);
+						?>
+						<div class="acDate">
+							<div class="progress" style="margin:0 20px;">
+								<div class="progress__fill progress__fill--tonal" style="--percent:<?php echo $progressPercent; ?>;width:<?php echo $progressPercent; ?>%"></div>
+								<div class="progress__label"><?php echo $a[$i]['Achievement']['progress']; ?>/<?php echo $a[$i]['Achievement']['progress_goal']; ?></div>
+							</div>
 						</div>
 						<?php } ?>
 					</div>
 					</a>
-				
+
 				<?php
 				}
 				?>
-				
-				<div style="clear:both;"></div> 
+
+				<div style="clear:both;"></div>
 			</div>
 			<br>
 			<br>
 			<?php if (isset($viewedUser)):
-				$name = $viewedUser['id'] != Auth::getUserID() ? htmlspecialchars($viewedUser['name']) : 'You';
-				echo $name . ' completed ' . ($unlockedCounter + $unlockedCounter2) . ' of ' . count($a) . ' achievements.';
+				$displayName = $viewedUser['id'] != Auth::getUserID() ? htmlspecialchars($viewedUser['display_name']) : 'You';
+				echo $displayName . ' completed ' . $unlockedCounter . ' of ' . count($a) . ' achievements.';
 			endif; ?>
 			<br>
 			<br>
-			
-			
-			
-			
+
+
+
+
 	</div>
 	<script>
 	 let trueBoardHeight = $("#achievementWrapper").height();

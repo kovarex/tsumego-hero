@@ -1,11 +1,5 @@
 <?php
 
-App::uses('BadRequestException', 'Routing/Error');
-App::uses('ForbiddenException', 'Routing/Error');
-App::uses('NotFoundException', 'Routing/Error');
-App::uses('UnauthorizedException', 'Routing/Error');
-App::uses('TsumegoIssue', 'Model');
-
 /**
  * Controller-level tests for the TsumegoIssuesController JSON API.
  */

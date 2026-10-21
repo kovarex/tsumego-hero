@@ -1,11 +1,11 @@
 <?php
 
-App::uses('ForbiddenException', 'Routing/Error');
+use App\Utility\Util;
 
 class CronController extends AppController
 {
 	/* Supposed to be ran daily to reset hearts and hero powers */
-	public function daily($secret)
+	public function daily(string $secret)
 	{
 		if ($secret != CRON_SECRET)
 			throw new ForbiddenException('Wrong cron secret.');
@@ -24,12 +24,28 @@ class CronController extends AppController
 		$this->dailyUsersReset();
 		$this->dailyPotionConditionReset();
 		$this->updateSolvedCounts();
+		self::dropExpiredAddressChanges();
 
 		$this->response->statusCode(200);
 		return $this->response;
 	}
 
-	private function dailyUsersReset()
+	/**
+	 * Forgets address changes whose links no longer work, so a change that was never
+	 * confirmed does not stay on the account. The lifetime is the one the links were
+	 * sent with, so a change stays exactly as long as its links work.
+	 */
+	private static function dropExpiredAddressChanges(): void
+	{
+		Util::execute('UPDATE user
+			SET unconfirmed_email = NULL, unconfirmed_email_token = NULL,
+				unconfirmed_email_cancel_token = NULL, unconfirmed_email_created = NULL
+			WHERE unconfirmed_email IS NOT NULL
+				AND unconfirmed_email_created <= NOW() - INTERVAL ? HOUR',
+			[UsersController::$EMAIL_CHANGE_LINK_VALID_HOURS]);
+	}
+
+	private function dailyUsersReset(): void
 	{
 		$query = 'UPDATE user SET';
 		$query .= ' used_refinement=0';
@@ -46,19 +62,19 @@ class CronController extends AppController
 		ClassRegistry::init('User')->query($query);
 	}
 
-	private function dailyPotionConditionReset()
+	private function dailyPotionConditionReset(): void
 	{
 		ClassRegistry::init('AchievementCondition')->query(
 			"UPDATE achievement_condition SET value=0 WHERE category='potion'");
 	}
 
-	private function dailyTsumegoStatusReset()
+	private function dailyTsumegoStatusReset(): void
 	{
 		ClassRegistry::init('TsumegoStatus')->query("UPDATE tsumego_status SET status='V' where status='F'");
 		ClassRegistry::init('TsumegoStatus')->query("UPDATE tsumego_status SET status='W' where status='X'");
 	}
 
-	private function dailyStalingSolvedTsumegoStatuses()
+	private function dailyStalingSolvedTsumegoStatuses(): void
 	{
 		ClassRegistry::init('TsumegoStatus')->query("
 UPDATE tsumego_status
@@ -76,7 +92,7 @@ WHERE
 		foreach ($lastDayRecords as $lastDayRecord)
 			$excludedUsers[$lastDayRecord['DayRecord']['user_id']] = true;
 
-		$topUsers = ClassRegistry::init('User')->find('all', ['limit' => '8', 'order' => 'daily_xp DESC']) ?: [];
+		$topUsers = ClassRegistry::init('User')->find('all', ['conditions' => ['deleted IS NULL'], 'limit' => '8', 'order' => 'daily_xp DESC']) ?: [];
 		foreach ($topUsers as $user)
 			if (!isset($excludedUsers[$user['User']['id']]))
 				return $user;
@@ -100,7 +116,7 @@ WHERE
 		throw new Exception("Quote couldn't be generated");
 	}
 
-	private function createDayRecord()
+	private function createDayRecord(): void
 	{
 		$today = date('Y-m-d');
 		if (ClassRegistry::init('DayRecord')->find('count', ['conditions' => ['date' => $today]]) > 0)
@@ -158,7 +174,7 @@ WHERE
 		ClassRegistry::init('AchievementCondition')->save($achievementCondition);
 	}
 
-	public static function publish()
+	public static function publish(): void
 	{
 		$date = date('Y-m-d', strtotime('today'));
 		$todaysSchedule = ClassRegistry::init('Schedule')->find('all', ['conditions' => ['date' => $date, 'published' => 0]]) ?: [];
@@ -170,7 +186,7 @@ WHERE
 		}
 	}
 
-	protected static function publishSingle($tsumegoID = null, $to = null, $date = null): void
+	protected static function publishSingle(int|string|null $tsumegoID = null, int|string|null $to = null, ?string $date = null): void
 	{
 		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID);
 		if (!$tsumego)
@@ -213,7 +229,7 @@ WHERE
 		ClassRegistry::init('PublishDate')->save($x);
 	}
 
-	private static function updateSolvedCounts()
+	private static function updateSolvedCounts(): void
 	{
 		Util::query("UPDATE user u
 LEFT JOIN (

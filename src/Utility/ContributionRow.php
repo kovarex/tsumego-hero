@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Utility;
+
 /**
  * A single row in a user's contributions timeline.
  */

@@ -1,23 +1,33 @@
 <?php
 
-use Facebook\WebDriver\Exception\WebDriverException;
 use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Facebook\WebDriver\Firefox\FirefoxOptions;
 use Facebook\WebDriver\Chrome\ChromeOptions;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
+use Facebook\WebDriver\Exception\TimeoutException;
 use Facebook\WebDriver\WebDriverBy;
-use Facebook\WebDriver\WebDriverExpectedCondition;
 use Facebook\WebDriver\WebDriverWait;
 use Facebook\WebDriver\Interactions\WebDriverActions;
+use App\Utility\Auth;
+use App\Utility\Util;
 
-App::uses('Util', 'Utility');
-
+/**
+ * Selenium wrapper used by every browser test.
+ *
+ * Two families of lookups, pick by whether the page can still change:
+ *   find() / findById()         wait for the element, use these by default
+ *   getElements() / idExists()  look at the page as it is right now, no waiting
+ *
+ * When a wait gives up it writes the page to tmp/browser-timeout-*.html, so a
+ * timeout in CI comes with the HTML that caused it.
+ */
 class Browser
 {
-	private array $ignoredJsErrorPatterns = [];
-
 	// Counter for per-page JS coverage snapshots written to /tmp/coverage/js-raw-*.json
 	private static int $jsCoverageCounter = 0;
+
+	// Counter for page source dumps written to tmp/browser-timeout-*.html on wait timeouts
+	private static int $timeoutDumpCounter = 0;
 
 	public function __construct()
 	{
@@ -171,7 +181,7 @@ class Browser
 		$this->assertNoJsErrors();
 	}
 
-	public function assertNoException(): void
+	private function assertNoException(): void
 	{
 		if (str_contains($this->driver->getPageSource(), "<h2>Exception</h2>"))
 			throw new Exception($this->driver->getPageSource());
@@ -183,12 +193,8 @@ class Browser
 		$console = $this->driver->executeScript("return window.__consoleErrors || [];");
 
 		// on some special pages, like editor, we don't have the included special error reporting
-		if (is_null($errors))
+		if (is_null($errors) || is_null($console))
 			return;
-
-		// Filter out ignored error patterns
-		$errors = array_filter($errors, fn($e) => !$this->isIgnoredError($e));
-		$console = array_filter($console, fn($c) => !$this->isIgnoredConsoleError($c));
 
 		if (!empty($errors) || !empty($console))
 		{
@@ -242,34 +248,107 @@ class Browser
 		$this->assertNoErrors();
 	}
 
-	public function clickId($name)
+	/**
+	 * Posts to a URL from the page the browser is on, the way a form on it does.
+	 *
+	 * @param array<string, string|int> $postData Fields to submit; empty for a form without fields
+	 */
+	public function post(string $url, array $postData = []): void
 	{
-		$this->driver->findElement(WebDriverBy::id($name))->click();
+		$this->captureJsCoverage();
+
+		$this->driver->executeScript(
+			'window.__postPending = true;'
+			. 'var form = document.createElement("form");'
+			. 'form.method = "post";'
+			. 'form.action = ' . json_encode('/' . ltrim($url, '/')) . ';'
+			. 'var data = ' . json_encode($postData) . ';'
+			. 'for (var key in data) {'
+			. 'var input = document.createElement("input");'
+			. 'input.type = "hidden";'
+			. 'input.name = key;'
+			. 'input.value = data[key];'
+			. 'form.appendChild(input);'
+			. '}'
+			. 'document.body.appendChild(form);'
+			. 'form.submit();'
+		);
+		// The response can land on the same URL, so wait for the document to be
+		// replaced instead of for the address to change.
+		$this->waitUntilJs('window.__postPending === undefined && document.readyState === "complete"');
+	}
+
+	public function clickId($id)
+	{
+		$this->findById($id)->click();
 		$this->assertNoErrors();
 	}
 
 	// Click an element and accept any confirm() dialog it opens.
-	public function clickIdAndAcceptAlert($name)
+	public function clickIdAndAcceptAlert($id)
 	{
-		$this->driver->findElement(WebDriverBy::id($name))->click();
+		$this->findById($id)->click();
 		$this->driver->switchTo()->alert()->accept();
 		$this->assertNoErrors();
 	}
 
-	public function clickCssSelect($name)
+	public function clickCssSelect($selector)
 	{
-		$this->driver->findElement(WebDriverBy::cssSelector($name))->click();
+		$this->find($selector)->click();
 		$this->assertNoErrors();
 	}
 
-	public function getCssSelect($name)
+	/**
+	 * Find an element with any lookup strategy, waiting until it shows up.
+	 *
+	 * Prefer find()/findById() where they fit. This is the escape hatch for the
+	 * strategies they do not cover (name, xpath, tag name).
+	 */
+	public function findBy(WebDriverBy $by, int $timeout = 10)
 	{
-		return $this->driver->findElements(WebDriverBy::cssSelector($name));
+		return $this->waitUntil(function ($driver) use ($by) {
+			return $driver->findElement($by);
+		}, $timeout, 'element ' . $by->getMechanism() . ': ' . $by->getValue());
 	}
 
-	public function find($name)
+	/**
+	 * All elements matching a lookup strategy, as they are right now.
+	 *
+	 * Unlike findBy(), this does NOT wait: use it for counting and for asserting
+	 * that something is absent.
+	 */
+	public function getAllBy(WebDriverBy $by)
 	{
-		return $this->driver->findElement(WebDriverBy::cssSelector($name));
+		return $this->driver->findElements($by);
+	}
+
+	/**
+	 * Find an element by CSS selector, waiting until it shows up.
+	 *
+	 * Selenium only waits for readyState when navigating, which does not cover
+	 * elements a script adds or replaces afterwards, so a lookup that does not
+	 * wait races the page and makes the test flaky.
+	 */
+	public function find(string $selector, int $timeout = 10)
+	{
+		return $this->findBy(WebDriverBy::cssSelector($selector), $timeout);
+	}
+
+	/**
+	 * Find an element by id, waiting until it shows up.
+	 */
+	public function findById(string $id, int $timeout = 10)
+	{
+		return $this->findBy(WebDriverBy::id($id), $timeout);
+	}
+
+	/**
+	 * All elements matching a CSS selector, as they are right now.
+	 * Does NOT wait, see getAllBy().
+	 */
+	public function getElements(string $selector)
+	{
+		return $this->getAllBy(WebDriverBy::cssSelector($selector));
 	}
 
 	public function hover($element)
@@ -289,55 +368,151 @@ class Browser
 		}
 	}
 
+	/**
+	 * Whether an element with the given id is on the page right now.
+	 *
+	 * Unlike findById(), this does NOT wait, so it is how a test asserts that
+	 * something is absent.
+	 */
 	public function idExists(string $id): bool
 	{
-		return !empty($this->driver-> findElements(WebDriverBy::id($id)));
+		return !empty($this->driver->findElements(WebDriverBy::id($id)));
 	}
 
-	public function waitUntilIDExists($id)
+	/**
+	 * Run a WebDriverWait condition, dumping the page source to tmp/ when it times out.
+	 *
+	 * Transient driver errors keep the wait going instead of ending it: while a page is
+	 * navigating or a script is re-rendering the DOM, document.body can be missing, the
+	 * execution context can be destroyed and an element reference can go stale. Those all
+	 * mean "not ready yet". WebDriverWait on its own tolerates only NoSuchElementException,
+	 * so everything else is handled here, and the last error is added to the dump context
+	 * to keep a real failure diagnosable. A dead session is not transient and still throws.
+	 *
+	 * @param callable $condition Condition passed to WebDriverWait::until()
+	 * @param int $timeout Timeout in seconds
+	 * @param int $interval Polling interval in milliseconds
+	 * @param string $context Human readable description of what is being waited for
+	 */
+	private function waitAndDumpOnTimeout(callable $condition, int $timeout, int $interval, string $context): mixed
 	{
-		new WebDriverWait($this->driver, 5, 500)->until(function () {
-			return $this->idExists('commentBox');
-		});
+		$lastTransientError = null;
+
+		try
+		{
+			return new WebDriverWait($this->driver, $timeout, $interval)->until(
+				function ($driver) use ($condition, &$lastTransientError) {
+					try
+					{
+						return $condition($driver);
+					}
+					catch (\Facebook\WebDriver\Exception\InvalidSessionIdException $e)
+					{
+						throw $e; // the browser is gone, waiting cannot bring it back
+					}
+					catch (\Facebook\WebDriver\Exception\WebDriverException $e)
+					{
+						$lastTransientError = get_class($e) . ': ' . $e->getMessage();
+						return null;
+					}
+				}
+			);
+		}
+		catch (TimeoutException $e)
+		{
+			$this->dumpPageSourceOnTimeout(
+				$context . ($lastTransientError === null ? '' : ' (last transient error: ' . $lastTransientError . ')')
+			);
+			throw $e;
+		}
 	}
 
-	public function waitUntilCssSelectorExists(string $selector, int $timeout = 10): void
+	private function dumpPageSourceOnTimeout(string $context): void
 	{
-		new WebDriverWait($this->driver, $timeout, 500)->until(
-			function () use ($selector) {
-				$elements = $this->driver->findElements(WebDriverBy::cssSelector($selector));
-				return count($elements) > 0;
-			}
-		);
+		self::$timeoutDumpCounter++;
+		$file = ROOT . '/tmp/browser-timeout-' . date('Ymd-His') . '-' . self::$timeoutDumpCounter . '.html';
+		$parts = ["WAIT: " . $context];
+		$parts[] = "URL: " . $this->driverDump(fn() => $this->driver->getCurrentURL());
+		$parts[] = $this->driverDump(fn() => $this->driver->getPageSource());
+		try
+		{
+			file_put_contents($file, implode("\n\n", $parts));
+		}
+		catch (Throwable)
+		{
+			// Ignore file write errors, we don't want to mask the original timeout exception
+		}
+	}
+
+	/**
+	 * Single driver call for the timeout dump: the value, or the reason it failed.
+	 */
+	private function driverDump(callable $call): string
+	{
+		try
+		{
+			return (string) $call();
+		}
+		catch (Throwable $e)
+		{
+			return '<unavailable: ' . get_class($e) . ': ' . $e->getMessage() . '>';
+		}
 	}
 
 	public function waitUntilCssSelectorExistsWithText(string $selector, $text, int $timeout = 10): void
 	{
-		new WebDriverWait($this->driver, $timeout, 500)->until(
+		$this->waitAndDumpOnTimeout(
 			function () use ($selector, $text) {
 				$elements = $this->driver->findElements(WebDriverBy::cssSelector($selector));
 				return count($elements) > 0 && $elements[0]->getText() === $text;
-			}
+			},
+			$timeout,
+			500,
+			'css selector exists with text: ' . $selector . ' = ' . $text
 		);
 	}
 
 	public function waitUntilCssSelectorDisplayed(string $selector, int $timeout = 10): void
 	{
-		new WebDriverWait($this->driver, $timeout, 500)->until(
+		$this->waitAndDumpOnTimeout(
 			function () use ($selector) {
 				$elements = $this->driver->findElements(WebDriverBy::cssSelector($selector));
 				return count($elements) > 0 && $elements[0]->isDisplayed();
-			}
+			},
+			$timeout,
+			500,
+			'css selector displayed: ' . $selector
 		);
 	}
 
 	public function waitUntilCssSelectorDoesntExist(string $selector, int $timeout = 10): void
 	{
-		new WebDriverWait($this->driver, $timeout, 500)->until(
+		$this->waitAndDumpOnTimeout(
 			function () use ($selector) {
 				$elements = $this->driver->findElements(WebDriverBy::cssSelector($selector));
 				return count($elements) == 0;
-			}
+			},
+			$timeout,
+			500,
+			'css selector gone: ' . $selector
+		);
+	}
+
+	/**
+	 * Wait until the selector matches nothing that is displayed. Covers both ways an
+	 * element can stop being visible: it was hidden, or it was removed. Use
+	 * waitUntilCssSelectorDoesntExist() when the page must really drop it from the DOM.
+	 */
+	public function waitUntilCssSelectorNotDisplayed(string $selector, int $timeout = 10): void
+	{
+		$this->waitAndDumpOnTimeout(
+			function () use ($selector) {
+				$elements = $this->driver->findElements(WebDriverBy::cssSelector($selector));
+				return count($elements) == 0 || !$elements[0]->isDisplayed();
+			},
+			$timeout,
+			500,
+			'css selector not displayed: ' . $selector
 		);
 	}
 
@@ -350,7 +525,7 @@ class Browser
 	 */
 	public function waitUntilAnyCssSelectorExists(array $selectors, int $timeout = 10): void
 	{
-		new WebDriverWait($this->driver, $timeout, 500)->until(
+		$this->waitAndDumpOnTimeout(
 			function () use ($selectors) {
 				foreach ($selectors as $selector)
 				{
@@ -359,101 +534,72 @@ class Browser
 						return true;
 				}
 				return false;
-			}
+			},
+			$timeout,
+			500,
+			'any css selector exists: ' . implode(', ', $selectors)
 		);
 	}
 
 	/**
-	 * Perform a drag-and-drop operation using WebDriverActions.
+	 * Wait until a JavaScript expression evaluates truthy.
+	 * Great for besogo/board state checks that aren't exposed via the DOM.
 	 *
-	 * @param \Facebook\WebDriver\WebDriverElement $source The element to drag
-	 * @param \Facebook\WebDriver\WebDriverElement $target The element to drop onto
+	 * @param string $expression A JS expression (no surrounding `return`).
+	 * @param int $timeout Timeout in seconds
 	 */
-	public function dragAndDrop($source, $target): void
+	public function waitUntilJs(string $expression, int $timeout = 10): void
 	{
-		$actions = new WebDriverActions($this->driver);
-		$actions->dragAndDrop($source, $target)->perform();
+		$this->waitAndDumpOnTimeout(
+			function () use ($expression) {
+				return $this->driver->executeScript('return (' . $expression . ');');
+			},
+			$timeout,
+			200,
+			'js: ' . $expression
+		);
 	}
 
 	/**
-	 * Drag element to target using click-hold-move-release pattern.
-	 * More reliable for some JS frameworks (like SortableJS) than native dragAndDrop.
-	 * Automatically scrolls elements into view before dragging.
+	 * Start recording outgoing requests (fetch and XMLHttpRequest) on the current page.
+	 * Call it right before the action and assert with requestsTo(); anything recorded
+	 * earlier is dropped, so the recording covers exactly the action under test.
 	 *
-	 * @param \Facebook\WebDriver\WebDriverElement $source The element to drag
-	 * @param \Facebook\WebDriver\WebDriverElement $target The element to drop onto
-	 * @param int $holdMs Milliseconds to hold before moving (used for usleep between actions)
+	 * The recorder is installed into the page, so it has to be called after the page
+	 * loaded, and a navigation clears it.
 	 */
-	public function dragAndDropWithHold($source, $target, int $holdMs = 100): void
+	public function startRecordingRequests(): void
 	{
-		// Scroll source element into viewport center
-		$this->driver->executeScript("arguments[0].scrollIntoView({block: 'center'});", [$source]);
-		usleep(100000);
-
-		$actions = new WebDriverActions($this->driver);
-		$actions->clickAndHold($source)->perform();
-
-		usleep($holdMs * 1000);
-
-		// Scroll target into view
-		$this->driver->executeScript("arguments[0].scrollIntoView({block: 'center'});", [$target]);
-		usleep(100000);
-
-		$actions = new WebDriverActions($this->driver);
-		$actions->moveToElement($target)->perform();
-
-		usleep($holdMs * 1000);
-
-		$actions = new WebDriverActions($this->driver);
-		$actions->release()->perform();
+		$this->driver->executeScript(<<<'JS'
+			window.__testRequests = [];
+			if (!window.__testRequestsInstalled) {
+				window.__testRequestsInstalled = true;
+				window.__testRecordRequest = function (url) { window.__testRequests.push(String(url)); };
+				var xhrOpen = XMLHttpRequest.prototype.open;
+				XMLHttpRequest.prototype.open = function (method, url) {
+					window.__testRecordRequest(url);
+					return xhrOpen.apply(this, arguments);
+				};
+				var originalFetch = window.fetch;
+				window.fetch = function (input, init) {
+					window.__testRecordRequest(typeof input === 'string' ? input : input.url);
+					return originalFetch.apply(window, arguments);
+				};
+			}
+			JS);
 	}
 
 	/**
-	 * Press the Escape key to cancel drag operations.
-	 * Uses JavaScript to dispatch keydown event since WebDriverActions.sendKeys needs an element.
+	 * The recorded request URLs containing the given fragment, in the order they were sent.
+	 * An empty result means the action sent nothing to that endpoint.
 	 */
-	public function pressEscape(): void
+	public function requestsTo(string $fragment): array
 	{
-		$this->driver->executeScript("
-			var event = new KeyboardEvent('keydown', {
-				key: 'Escape',
-				code: 'Escape',
-				keyCode: 27,
-				which: 27,
-				bubbles: true,
-				cancelable: true
-			});
-			document.dispatchEvent(event);
-		");
-		$this->assertNoErrors();
-	}
+		$requests = $this->driver->executeScript('return window.__testRequests || [];');
 
-	public function ignoreJsErrorPattern(string $pattern): void
-	{
-		$this->ignoredJsErrorPatterns[] = $pattern;
-	}
-
-	public function clearIgnoredJsErrorPatterns(): void
-	{
-		$this->ignoredJsErrorPatterns = [];
-	}
-
-	private function isIgnoredError(array $error): bool
-	{
-		$message = $error['message'] ?? $error['raw'] ?? '';
-		foreach ($this->ignoredJsErrorPatterns as $pattern)
-			if (str_contains($message, $pattern))
-				return true;
-		return false;
-	}
-
-	private function isIgnoredConsoleError(array $console): bool
-	{
-		$message = implode(" ", $console['args'] ?? []);
-		foreach ($this->ignoredJsErrorPatterns as $pattern)
-			if (str_contains($message, $pattern))
-				return true;
-		return false;
+		return array_values(array_filter($requests, function ($url) use ($fragment) {
+			return str_contains($url, $fragment);
+		}));
 	}
 
 	private static function recover(): void
@@ -490,7 +636,6 @@ class Browser
 			// No alert present, that's fine
 		}
 		self::$browser->driver->manage()->deleteAllCookies();
-		self::$browser->clearIgnoredJsErrorPatterns(); // Reset ignored patterns for each test
 		self::$browser->driver->get(Util::getMyAddress() . '/empty.php');
 		self::$browser->driver->executeScript('window.localStorage.clear(); window.sessionStorage.clear();');
 		return self::$browser;
@@ -498,10 +643,9 @@ class Browser
 
 	public function playWithResult(string $result): void
 	{
-		$wait = new WebDriverWait($this->driver, 10, 200);
-		$wait->until(function ($driver) {
+		$this->waitAndDumpOnTimeout(function ($driver) {
 			return $driver->executeScript('return typeof displayResult === "function";');
-		});
+		}, 10, 200, 'displayResult function');
 		$this->driver->executeScript("displayResult('" . $result . "')");
 		$this->waitForSubmitResult();
 		$this->assertNoErrors();
@@ -519,18 +663,12 @@ class Browser
 
 	public function waitForSubmitResult(): void
 	{
-		$wait = new WebDriverWait($this->driver, 10, 200);
-		$wait->until(function ($driver) {
+		$this->waitAndDumpOnTimeout(function ($driver) {
 			return $driver->executeScript(
 				'if (!window._submitResultPromise) return true;'
 				. 'return window._submitResultPromise.then(function() { return true; }, function() { return true; });'
 			);
-		});
-	}
-
-	public function getAlertText()
-	{
-		return $this->driver->switchTo()->alert()->getText();
+		}, 10, 200, 'submit result promise');
 	}
 
 	public function setCookie($name, $value)
@@ -556,22 +694,26 @@ class Browser
 		}
 	}
 
-	public function waitForBoard(): int
+	/**
+	 * Wait until the board is drawn, and return its size in intersections.
+	 *
+	 * @return int Board size, 19 for a 19x19 board
+	 */
+	private function waitForBoard(): int
 	{
-		$wait = new WebDriverWait($this->driver, 10, 200);
-		return $wait->until(function ($driver) {
+		return (int) $this->waitAndDumpOnTimeout(function ($driver) {
 			$size = $driver->executeScript('return typeof besogo !== "undefined" && besogo.scaleParameters ? besogo.scaleParameters.boardCoordSize : null;');
 			if (!$size)
 				return false;
 			$rects = $driver->findElements(WebDriverBy::cssSelector('rect'));
 			return count($rects) >= $size * $size + 1 ? $size : false;
-		});
+		}, 10, 200, 'board rendered');
 	}
 
 	public function clickBoard($x, $y)
 	{
 		$boardSize = $this->waitForBoard();
-		$clickableRects = $this->getCssSelect('rect');
+		$clickableRects = $this->getElements('rect');
 		$corner = $this->driver->executeScript('return window.besogo.boardParameters["corner"];');
 		if ($corner == 'top-right' || $corner == 'bottom-right')
 			$x = $boardSize - $x + 1;
@@ -581,78 +723,6 @@ class Browser
 			throw new Exception("Unexpected board coords count: " . count($clickableRects));
 		$clickableRects[1 + $boardSize * ($x - 1) + ($y - 1)]->click();
 		$this->assertNoErrors();
-	}
-
-	/**
-	 * Click an element and expect a JavaScript alert to appear.
-	 * Handles both sync alerts (thrown during click, as in Firefox) and
-	 * async alerts (appearing after AJAX response, as in Chrome).
-	 * Returns the alert text.
-	 */
-	public function clickIdExpectingAlert(string $id): string
-	{
-		// Override window.alert to capture the message without showing a real dialog.
-		// This works identically in Chrome and Firefox — no browser-specific alert handling needed.
-		$this->driver->executeScript("
-			window.__capturedAlertText = null;
-			window.__savedAlert = window.__savedAlert || window.alert;
-			window.alert = function(msg) { window.__capturedAlertText = msg; };
-		");
-
-		// Click the element directly (skip assertNoErrors since alert is expected)
-		$this->driver->findElement(WebDriverBy::id($id))->click();
-
-		// Wait for the AJAX response to trigger the captured alert
-		$wait = new WebDriverWait($this->driver, 5, 200);
-		$alertText = $wait->until(function () {
-			return $this->driver->executeScript("return window.__capturedAlertText;");
-		});
-
-		// Restore original alert function
-		$this->driver->executeScript("
-			if (window.__savedAlert) { window.alert = window.__savedAlert; delete window.__savedAlert; }
-		");
-
-		return $alertText;
-	}
-
-	public function getWithPostData($url, $postData, int $timeout = 10)
-	{
-		$markerId = 'selenium-navigation-marker-' . uniqid();
-		$this->driver->executeScript("
-			var marker = document.createElement('div');
-			marker.id = '" . $markerId . "';
-			marker.style.display = 'none';
-			document.body.appendChild(marker);
-		");
-
-		$this->driver->executeScript("
-			var form = document.createElement('form');
-			form.method = 'POST';
-			form.action = '" . $url . "';
-
-			var data = " . json_encode($postData) . ";
-			for (var key in data)
-			{
-				var input = document.createElement('input');
-				input.type = 'hidden';
-				input.name = key;
-				input.value = data[key];
-				form.appendChild(input);
-			}
-			document.body.appendChild(form);
-			form.submit();");
-
-		$wait = new WebDriverWait($this->driver, $timeout, 100);
-		$wait->until(function () use ($markerId) {
-			$markerExists = $this->driver->executeScript(
-				"return document.getElementById('" . $markerId . "') !== null;"
-			);
-			if ($markerExists)
-				return false;
-			$readyState = $this->driver->executeScript('return document.readyState');
-			return $readyState === 'complete';
-		});
 	}
 
 	public function logoff()
@@ -671,45 +741,34 @@ class Browser
 	{
 		return $this->waitUntil(function ($driver) use ($expectedTitle) {
 			return str_contains($driver->getTitle(), $expectedTitle);
-		}, $timeout);
+		}, $timeout, 'title contains: ' . $expectedTitle);
 	}
 
 	/**
-	 * Find element by ID (with implicit wait)
-	 * @param string $id The element ID
-	 * @param int $timeout Maximum wait time in seconds (default 5)
-	 * @return \Facebook\WebDriver\Remote\RemoteWebElement
+	 * The text of the page, waiting for the document to have a body first.
+	 *
+	 * A navigation can commit before the new document is parsed, and a plain read of
+	 * document.body at that moment throws instead of returning the page.
 	 */
-	public function byId(string $id, int $timeout = 10)
+	public function pageText(): string
 	{
-		return $this->waitUntil(function ($driver) use ($id) {
-			return $driver->findElement(WebDriverBy::id($id));
-		}, $timeout);
+		$this->waitUntilJs('document.body !== null');
+
+		return (string) $this->driver->executeScript('return document.body.textContent;');
 	}
 
 	/**
-	 * Find element by CSS selector (with implicit wait)
-	 * @param string $selector The CSS selector
-	 * @param int $timeout Maximum wait time in seconds (default 5)
-	 * @return \Facebook\WebDriver\Remote\RemoteWebElement
-	 */
-	public function byCssSelector(string $selector, int $timeout = 10)
-	{
-		return $this->waitUntil(function ($driver) use ($selector) {
-			return $driver->findElement(WebDriverBy::cssSelector($selector));
-		}, $timeout);
-	}
-
-	/**
-	 * Wait until a condition is met or timeout
+	 * Wait until a condition on the PHP side becomes true, e.g. a row that only the
+	 * server round trip creates. For conditions about the page use the DOM and JS
+	 * helpers instead. Dumps the page when it gives up, like every other wait.
+	 *
 	 * @param callable $condition Function that returns truthy value when condition met
 	 * @param int $timeout Maximum wait time in seconds
-	 * @return mixed The result of the condition function
+	 * @param string $context Human readable description, shown in the timeout dump
 	 */
-	private function waitUntil(callable $condition, int $timeout = 10)
+	public function waitUntil(callable $condition, int $timeout = 10, string $context = 'condition')
 	{
-		$wait = new WebDriverWait($this->driver, $timeout, 500);
-		return $wait->until(function ($driver) use ($condition) {
+		return $this->waitAndDumpOnTimeout(function ($driver) use ($condition) {
 			try
 			{
 				$result = $condition($driver);
@@ -719,20 +778,39 @@ class Browser
 			{
 				return null;
 			}
-		});
+		}, $timeout, 500, $context);
 	}
 
 	/**
-	 * Helper to expand comments section and wait for React to render content.
-	 * Clicks the COMMENTS tab to ensure it's visible, then waits for content.
+	 * Wait until an element reference goes stale, i.e. the page replaced or removed it.
+	 * That is how a test knows a click navigated or a script re-rendered the element.
+	 */
+	public function waitUntilStale($element, int $timeout = 10): void
+	{
+		$this->waitUntil(function () use ($element) {
+			try
+			{
+				$element->isDisplayed();
+				return false;
+			}
+			catch (\Facebook\WebDriver\Exception\StaleElementReferenceException $e)
+			{
+				return true;
+			}
+			catch (\Facebook\WebDriver\Exception\NoSuchElementException $e)
+			{
+				return true;
+			}
+		}, $timeout, 'element went stale');
+	}
+
+	/**
+	 * Expand the comments section and wait for React to render content.
+	 * Clicks the COMMENTS tab once it is there; clicking the already active tab is harmless.
 	 */
 	public function expandComments()
 	{
-		// Wait for React to mount (tabs appear first)
-		$this->waitUntilCssSelectorExists('.tsumego-comments__tab[data-filter="open"]', 5);
-
-		// Click COMMENTS tab to ensure content is visible (clicking active tab is harmless)
-		$this->driver->findElement(WebDriverBy::cssSelector('.tsumego-comments__tab[data-filter="open"]'))->click();
+		$this->find('.tsumego-comments__tab[data-filter="open"]', 5)->click();
 
 		// Wait for actual content (not skeletons) - either comments/issues, form, or login prompt
 		$this->waitUntilAnyCssSelectorExists([

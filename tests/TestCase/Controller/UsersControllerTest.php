@@ -1,6 +1,8 @@
 <?php
 
-use Facebook\WebDriver\WebDriverBy;
+use App\Utility\AchievementId;
+use App\Utility\Rating;
+use App\Utility\TimeModeUtil;
 use PHPUnitRetry\RetryTrait;
 
 /**
@@ -28,20 +30,16 @@ class UsersControllerTest extends ControllerTestCase
 		$this->assertStringContainsString('Highscore', $browser->driver->getPageSource());
 
 		// Click login link from the page (this sets proper referer and stores in session)
-		$browser->driver->findElement(WebDriverBy::id('signInMenu'))->click();
+		$browser->findById('signInMenu')->click();
 		// Wait for login form to appear
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(\Facebook\WebDriver\WebDriverExpectedCondition::presenceOfElementLocated(WebDriverBy::id('UserName')));
+		$browser->findById('UserName');
 
 		// Fill in login form
-		$browser->driver->findElement(WebDriverBy::id('UserName'))->sendKeys('testuser');
-		$browser->driver->findElement(WebDriverBy::id('password'))->sendKeys('test');
-		$browser->driver->findElement(WebDriverBy::cssSelector('input[type="submit"]'))->click();
-
+		$browser->findById('UserName')->sendKeys('testuser');
+		$browser->findById('password')->sendKeys('test');
+		$browser->find('#UserLoginForm button[type="submit"]')->click();
 		// Should be redirected back to highscore page
-		$wait->until(function ($driver) {
-			return str_contains($driver->getCurrentURL(), 'highscore');
-		});
+		$browser->waitUntilJs('location.href.includes("highscore")');
 		$currentUrl = $browser->driver->getCurrentURL();
 		$this->assertStringContainsString('highscore', $currentUrl, "Expected to redirect back to highscore page, but was at: $currentUrl");
 	}
@@ -69,7 +67,7 @@ class UsersControllerTest extends ControllerTestCase
 		$context = new ContextPreparator(['user' => ['name' => 'kovarex']]);
 		$browser = Browser::instance();
 		$browser->get('users/view/' . $context->user['id']);
-		$this->assertTextContains('kovarex', $browser->driver->getPageSource());
+		$this->assertTextContains('DN_kovarex', $browser->driver->getPageSource());
 	}
 
 	public function testProfileRedirectsToOwnProfile()
@@ -121,8 +119,8 @@ class UsersControllerTest extends ControllerTestCase
 		$browser->checkTable('.data-table', $this,
 			[
 				['Place', 'Name', 'Premium', 'Solved', 'XP'],
-				['#1', 'Ivan Detkov ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING), '', '2', '10'],
-				['#2', 'kovarex ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING), '', '0', '0'],
+				['#1', 'DN_Ivan Detkov ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING), '', '2', '10'],
+				['#2', 'DN_kovarex ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING), '', '0', '0'],
 			]);
 
 		// Kovarex solves a problem
@@ -134,8 +132,8 @@ class UsersControllerTest extends ControllerTestCase
 		$browser->checkTable('.data-table', $this,
 			[
 				['Place', 'Name', 'Premium', 'Solved', 'XP'],
-				['#1', 'kovarex ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING), '', '1'],
-				['#2', 'Ivan Detkov ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING), '', '2', '10'],
+				['#1', 'DN_kovarex ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING), '', '1'],
+				['#2', 'DN_Ivan Detkov ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING), '', '2', '10'],
 			]);
 	}
 
@@ -144,18 +142,20 @@ class UsersControllerTest extends ControllerTestCase
 		$context = new ContextPreparator(['other-users' => [['name' => 'Ivan Detkov']]]);
 		$browser = Browser::instance();
 		$browser->get('users/view/' . $context->otherUsers[0]['id']);
-		$this->assertTextContains('Ivan Detkov', $browser->driver->getPageSource());
+		$this->assertTextContains('DN_Ivan Detkov', $browser->driver->getPageSource());
 	}
 
-	public function testUserProfilePageEmailOnlyVisibleToCurrentUser()
+	public function testEmailIsOnlyOnOwnSettingsPage()
 	{
 		$context = new ContextPreparator([
 			'user' => ['email' => 'current@example.com'],
 			'other-users' => [['name' => 'Ivan Detkov', 'rating' => 2600, 'email' => 'detkov@example.com']]]);
 
 		$browser = Browser::instance();
-		$browser->get('users/view/' . $context->user['id']);
+		$browser->get('users/settings');
 		$this->assertTextContains('current@example.com', $browser->getTableCell('#name-and-email-table', 0, 0)->getText());
+
+		// The profile of another player never shows their address
 		$browser->get('users/view/' . $context->otherUsers[0]['id']);
 		$this->assertTextNotContains('detkov@example.com', $browser->driver->getPageSource());
 	}
@@ -218,6 +218,7 @@ class UsersControllerTest extends ControllerTestCase
 			['Completed:', '2 of 2'], // one problem in two sets still counted as one
 			['100%']]);
 
+		$browser->get('users/settings');
 		$this->assertSame('RESET OLD PROGRESS (1)', $browser->find('#reset-statuses-button')->getText());
 
 		// clicking reset removes the status
@@ -229,6 +230,33 @@ class UsersControllerTest extends ControllerTestCase
 
 		$this->assertEmpty(ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[1]['id']]]));
 		$this->assertSame($context->reloadUser()['solved'], 1);
+	}
+
+	/**
+	 * A golden problem waits for its one attempt, which is not progress left behind, so
+	 * the reset keeps it while it removes what nobody touched for a year.
+	 */
+	public function testResetKeepsAGoldenProblemInProgress(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'resetGolden'],
+			'tsumegos' => [
+				['status' => ['name' => 'S', 'updated' => '2000-01-01 00:00:00'], 'sets' => [['name' => 'reset-1', 'num' => 1]]],
+				['status' => ['name' => 'G', 'updated' => '2000-01-01 00:00:00'], 'sets' => [['name' => 'reset-2', 'num' => 1]]],
+				['status' => ['name' => 'S'], 'sets' => [['name' => 'reset-2', 'num' => 2]]],
+				['status' => ['name' => 'S'], 'sets' => [['name' => 'reset-2', 'num' => 3]]],
+				['status' => ['name' => 'S'], 'sets' => [['name' => 'reset-2', 'num' => 4]]]]]);
+		$browser = Browser::instance();
+
+		$browser->get('users/settings');
+		$this->assertSame('RESET OLD PROGRESS (1)', $browser->find('#reset-statuses-button')->getText());
+
+		$browser->driver->executeScript("window.confirm = function(msg) {return true;};");
+		$browser->clickId('reset-statuses-button');
+
+		$tsumegoStatus = ClassRegistry::init('TsumegoStatus');
+		$this->assertEmpty($tsumegoStatus->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]]));
+		$this->assertNotEmpty($tsumegoStatus->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[1]['id']]]));
 	}
 
 	public function testProfileShowsRank(): void
@@ -266,6 +294,144 @@ class UsersControllerTest extends ControllerTestCase
 			'Solve history link should be present on profile');
 	}
 
+	/**
+	 * Test that profile achievements link to the correct achievement id.
+	 *
+	 * Achievement ids are not contiguous (id 100 is missing), so the profile
+	 * must resolve each achievement status to the matching achievement.
+	 */
+	public function testProfileAchievementLinksToCorrectAchievement(): void
+	{
+		// This only breaks because the ids are not contiguous, so pin the
+		// precondition that id 100 is absent from the achievement table.
+		$this->assertEmpty(
+			ClassRegistry::init('Achievement')->findById(100),
+			'Test relies on achievement id 100 being absent'
+		);
+
+		$context = new ContextPreparator([
+			'user' => [
+				'name' => 'achievementuser',
+				'achievement-statuses' => [
+					['id' => 115, 'created' => date('Y-m-d H:i:s')],
+				],
+			],
+		]);
+
+		$this->testAction('users/view/' . $context->user['id'], ['return' => 'view']);
+
+		$this->assertStringContainsString('/achievements/view/115', $this->view);
+		$this->assertStringContainsString('/achievements/view/115/' . $context->user['id'], $this->view,
+			'the achievement link keeps the profile it was opened from');
+		$this->assertStringContainsString('1000 Weiqi problems 2nd half', $this->view);
+	}
+
+	public function testProfileCountsOnlyTheProblemsOfTheSite(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'solver', 'solved' => 2],
+			'tsumego' => ['status' => 'S', 'sets' => [['name' => 'Site Collection', 'num' => 1]]],
+			'tsumegos' => [['status' => 'S', 'sets' => [
+				['name' => 'Player Collection', 'num' => 1, 'public' => 1, 'user_id' => 'self']]]],
+		]);
+
+		$this->testAction('users/view/' . $context->user['id'], ['return' => 'view']);
+
+		$this->assertMatchesRegularExpression('#Completed:</td>\s*<td>1 of 1</td>#', $this->view);
+	}
+
+	/**
+	 * The profile counts each unlocked achievement once, even when the repeatable
+	 * one was earned several times.
+	 */
+	public function testProfileAchievementCountCountsEachAchievementOnce(): void
+	{
+		$context = new ContextPreparator([
+			'user' => [
+				'name' => 'repeater',
+				'achievement-statuses' => [
+					['id' => AchievementId::PROBLEMS_1000->value],
+					['id' => AchievementId::PROBLEMS_2000->value],
+					['id' => AchievementId::SUPERIOR_ACCURACY->value, 'value' => 3],
+				],
+			],
+		]);
+
+		$browser = Browser::instance();
+		$browser->get('users/view/' . $context->user['id']);
+
+		// three achievements unlocked, one of them earned three times
+		$browser->checkTable('#final-info-table', $this, [
+			3 => ['Achievements:', '3 of ' . AchievementId::count() . ' +3'],
+		]);
+	}
+
+	/**
+	 * The profile achievement line shows no repetitions for a user who earned
+	 * every achievement exactly once.
+	 */
+	public function testProfileWithoutRepeatedAchievementsHasPlainCount(): void
+	{
+		$context = new ContextPreparator([
+			'user' => [
+				'name' => 'collector',
+				'achievement-statuses' => [
+					['id' => AchievementId::PROBLEMS_1000->value],
+					['id' => AchievementId::SUPERIOR_ACCURACY->value],
+				],
+			],
+		]);
+
+		$browser = Browser::instance();
+		$browser->get('users/view/' . $context->user['id']);
+
+		$browser->checkTable('#final-info-table', $this, [
+			3 => ['Achievements:', '2 of ' . AchievementId::count()],
+		]);
+	}
+
+	/**
+	 * The profile achievement card shows how often a repeatable achievement was earned.
+	 */
+	public function testProfileAchievementCardShowsNumberOfEarnings(): void
+	{
+		$context = new ContextPreparator([
+			'user' => [
+				'name' => 'repeater',
+				'achievement-statuses' => [
+					['id' => AchievementId::SUPERIOR_ACCURACY->value, 'value' => 3],
+				],
+			],
+		]);
+
+		$this->testAction('users/view/' . $context->user['id'], ['return' => 'view']);
+
+		$this->assertStringContainsString('title="Earned 3 times"', $this->view);
+	}
+
+	/**
+	 * The achievement count on the profile carries the number of times the repeatable
+	 * achievement was earned, the same number the achievement itself shows.
+	 */
+	public function testProfileCountCarriesNumberOfEarnings(): void
+	{
+		$context = new ContextPreparator([
+			'user' => [
+				'name' => 'repeater',
+				'achievement-statuses' => [
+					['id' => AchievementId::SUPERIOR_ACCURACY->value, 'value' => 3],
+				],
+			],
+		]);
+
+		$this->testAction('users/view/' . $context->user['id'], ['return' => 'view']);
+
+		$this->assertStringContainsString(
+			'1 of ' . AchievementId::count() . ' <span class="achievementEarnedTimes" title="Earned 3 times">+3</span>',
+			$this->view,
+			'the count of completed achievements carries how often the repeatable one was earned');
+	}
+
 	public function testSolveHistoryShowsOnlyViewableSets(): void
 	{
 		$context = new ContextPreparator([
@@ -290,7 +456,15 @@ class UsersControllerTest extends ControllerTestCase
 		$this->assertStringNotContainsString('alice favorites', $this->view);
 	}
 
-	public function testProgressBarPreferenceOnlyOnOwnProfile(): void
+	public function testSolveHistoryOfAnUnknownUserIsNotFound(): void
+	{
+		new ContextPreparator(['user' => ['name' => 'viewer']]);
+
+		$this->expectException(NotFoundException::class);
+		$this->testAction('users/solveHistory/99999999', ['method' => 'get']);
+	}
+
+	public function testProgressBarPreferenceOnlyOnOwnSettingsPage(): void
 	{
 		$context = new ContextPreparator([
 			'user' => ['name' => 'viewer'],
@@ -300,11 +474,10 @@ class UsersControllerTest extends ControllerTestCase
 
 		$browser = Browser::instance();
 
-		// Own profile: progress bar preference is visible
-		$browser->get('users/view/' . $context->user['id']);
+		$browser->get('users/settings');
 		$this->assertStringContainsString('id="levelBarDisplay1"', $browser->driver->getPageSource());
 
-		// Other user's profile: progress bar preference is hidden
+		// A profile shows the numbers only, never the preferences behind them
 		$browser->get('users/view/' . $target['id']);
 		$this->assertStringNotContainsString('id="levelBarDisplay1"', $browser->driver->getPageSource());
 	}
@@ -364,18 +537,48 @@ class UsersControllerTest extends ControllerTestCase
 		]);
 
 		$browser = Browser::instance();
-		$browser->get('users/view/' . $context->user['id']);
+		$browser->get('users/settings');
 
 		$browser->driver->executeScript("window.confirm = function() { return true; }");
-		$browser->driver->findElement(WebDriverBy::id('reset-statuses-button'))->click();
+		$browser->findById('reset-statuses-button')->click();
 
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(fn($d) => str_contains($d->getPageSource(), 'Deleted progress on 1 problems'));
+		$browser->waitUntilJs('document.documentElement.outerHTML.includes("Deleted progress on 1 problems")');
 
 		$remaining = ClassRegistry::init('TsumegoStatus')->find('count', [
 			'conditions' => ['user_id' => $context->user['id']],
 		]);
 		$this->assertEquals(3, $remaining);
+	}
+
+	/**
+	 * Progress that was only opened is not what the button offers to reset, so it stays
+	 * and the flash repeats the number the button offered.
+	 */
+	public function testResetKeepsProblemsThatWereOnlyOpened(): void
+	{
+		$twoYearsAgo = date('Y-m-d H:i:s', strtotime('-2 years'));
+		$context = new ContextPreparator([
+			'user' => ['name' => 'alice', 'solved' => 4],
+			'tsumegos' => [
+				['set_order' => 1, 'status' => ['name' => 'S', 'updated' => $twoYearsAgo]],
+				['set_order' => 2, 'status' => ['name' => 'V', 'updated' => $twoYearsAgo]],
+				['set_order' => 3, 'status' => 'S'],
+				['set_order' => 4, 'status' => 'S'],
+			],
+		]);
+
+		$browser = Browser::instance();
+		$browser->get('users/settings');
+		$this->assertSame('RESET OLD PROGRESS (1)', $browser->findById('reset-statuses-button')->getText());
+
+		$browser->driver->executeScript("window.confirm = function() { return true; }");
+		$browser->findById('reset-statuses-button')->click();
+
+		$browser->waitUntilJs('document.documentElement.outerHTML.includes("Deleted progress on 1 problems")');
+
+		$tsumegoStatus = ClassRegistry::init('TsumegoStatus');
+		$this->assertEmpty($tsumegoStatus->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]]));
+		$this->assertNotEmpty($tsumegoStatus->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[1]['id']]]));
 	}
 
 	public function testResetOldProgressDoesNotAffectOtherUsers()
@@ -396,13 +599,12 @@ class UsersControllerTest extends ControllerTestCase
 		$bobId = ContextPreparator::getUserIdFromName('bob');
 
 		$browser = Browser::instance();
-		$browser->get('users/view/' . $context->user['id']);
+		$browser->get('users/settings');
 
 		$browser->driver->executeScript("window.confirm = function() { return true; }");
-		$browser->driver->findElement(WebDriverBy::id('reset-statuses-button'))->click();
+		$browser->findById('reset-statuses-button')->click();
 
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(fn($d) => str_contains($d->getPageSource(), 'Deleted progress on 1 problems'));
+		$browser->waitUntilJs('document.documentElement.outerHTML.includes("Deleted progress on 1 problems")');
 
 		$aliceRemaining = ClassRegistry::init('TsumegoStatus')->find('count', [
 			'conditions' => ['user_id' => $context->user['id']],
@@ -492,5 +694,59 @@ class UsersControllerTest extends ControllerTestCase
 			// Rank button links should contain the current category
 			$this->assertTextContains("category={$catId}&rank=", $this->view);
 		}
+	}
+
+	public function testDemoteAdminRedirectsAnonymousToLogin()
+	{
+		new ContextPreparator(['user' => null]);
+
+		$this->testAction('/users/demote_admin', ['method' => 'get']);
+
+		$this->assertSame(302, $this->controller->response->statusCode());
+	}
+
+	public function testAdminCanDemoteSelf()
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
+
+		$this->testAction('/users/demote_admin', [
+			'data' => ['User' => ['demote' => 'test']],
+			'method' => 'POST',
+			'return' => 'view',
+		]);
+
+		$user = ClassRegistry::init('User')->findById($context->user['id']);
+		$this->assertSame(0, (int) $user['User']['isAdmin']);
+		// The view must redirect to the demoted user's own profile with the id filled in.
+		$this->assertStringContainsString('/users/view/' . $context->user['id'], $this->view);
+	}
+
+	public function testAdminCanDemoteSelfInBrowser()
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
+		$browser = Browser::instance();
+
+		$browser->get('users/demote_admin');
+
+		$browser->findById('UserDemote')->sendKeys('test');
+		$browser->find('input[type="submit"]')->click();
+
+		$browser->waitUntilJs('location.href.includes("/users/view/' . $context->user['id'] . '")');
+
+		$user = ClassRegistry::init('User')->findById($context->user['id']);
+		$this->assertSame(0, (int) $user['User']['isAdmin']);
+	}
+
+	public function testNonAdminDemoteIsNoop()
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'regular', 'admin' => false]]);
+
+		$this->testAction('/users/demote_admin', [
+			'data' => ['User' => ['demote' => 'test']],
+			'method' => 'POST',
+		]);
+
+		$user = ClassRegistry::init('User')->findById($context->user['id']);
+		$this->assertSame(0, (int) $user['User']['isAdmin']);
 	}
 }

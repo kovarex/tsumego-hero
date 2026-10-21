@@ -1,10 +1,8 @@
 <?php
 
-App::uses('Achievement', 'Model');
-App::uses('AppController', 'Controller');
-App::uses('HeroPowers', 'Utility');
-App::uses('AchievementTestCase', 'TestCase/Achievement');
-App::uses('ContextPreparator', 'Test');
+use App\Utility\AchievementId;
+use App\Utility\AchievementChecker;
+use App\Utility\HeroPowers;
 
 class SprintMiscAchievementTest extends AchievementTestCase
 {
@@ -16,14 +14,14 @@ class SprintMiscAchievementTest extends AchievementTestCase
 	{
 		$context = new ContextPreparator(['achievement-conditions' => [['category' => 'sprint', 'value' => 30]]]);
 		new AchievementChecker()->checkDanSolveAchievements();
-		$this->assertAchievementUnlocked(Achievement::SPRINT, 'Sprint achievement should unlock when sprint condition >= 30');
+		$this->assertAchievementUnlocked(AchievementId::SPRINT, 'Sprint achievement should unlock when sprint condition >= 30');
 	}
 
 	public function testSprintDoesNotUnlockBelow30()
 	{
 		$context = new ContextPreparator(['achievement-conditions' => [['category' => 'sprint', 'value' => 29]]]);
 		new AchievementChecker()->checkDanSolveAchievements();
-		$this->assertAchievementNotUnlocked(Achievement::SPRINT);
+		$this->assertAchievementNotUnlocked(AchievementId::SPRINT);
 	}
 
 	/**
@@ -34,7 +32,7 @@ class SprintMiscAchievementTest extends AchievementTestCase
 	{
 		$context = new ContextPreparator(['achievement-conditions' => [['category' => 'golden', 'value' => 10]]]);
 		new AchievementChecker()->checkDanSolveAchievements();
-		$this->assertAchievementUnlocked(Achievement::GOLD_DIGGER, 'Gold Digger achievement should unlock when golden condition >= 10');
+		$this->assertAchievementUnlocked(AchievementId::GOLD_DIGGER, 'Gold Digger achievement should unlock when golden condition >= 10');
 	}
 
 	/**
@@ -50,13 +48,13 @@ class SprintMiscAchievementTest extends AchievementTestCase
 	{
 		$context = new ContextPreparator(['achievement-conditions' => [['category' => 'potion', 'value' => HeroPowers::$BAD_POTION_THRESHOLD]]]);
 		new AchievementChecker()->checkDanSolveAchievements();
-		$this->assertAchievementUnlocked(Achievement::BAD_POTION, 'Bad Potion checker should unlock when potion condition >= ' . HeroPowers::$BAD_POTION_THRESHOLD);
+		$this->assertAchievementUnlocked(AchievementId::BAD_POTION, 'Bad Potion checker should unlock when potion condition >= ' . HeroPowers::$BAD_POTION_THRESHOLD);
 	}
 
 	public function testBadPotionDoesNotUnlockBelow15(): void
 	{
 		$context = new ContextPreparator(['achievement-conditions' => [['category' => 'potion', 'value' => HeroPowers::$BAD_POTION_THRESHOLD - 1]]]);
 		new AchievementChecker()->checkDanSolveAchievements();
-		$this->assertAchievementNotUnlocked(Achievement::BAD_POTION);
+		$this->assertAchievementNotUnlocked(AchievementId::BAD_POTION);
 	}
 }

@@ -1,6 +1,8 @@
 <?php
 
-App::uses('TsumegoMerger', 'Utility');
+
+use App\Utility\Constants;
+use App\Utility\TsumegoMerger;
 
 class FavoritesViewTest extends TestCaseWithAuth
 {
@@ -12,8 +14,7 @@ class FavoritesViewTest extends TestCaseWithAuth
 
 		// Should redirect to the default Favorites set (created lazily)
 		$redirectUrl = $this->headers['Location'] ?? '';
-		$this->assertNotEmpty($redirectUrl);
-		$this->assertStringContainsString('/sets/view/', $redirectUrl);
+		$this->assertMatchesRegularExpression('#/sets/\d+$#', $redirectUrl);
 	}
 
 	// ── Heart flag: lit when in ANY set ──────────────────────────────────

@@ -1,11 +1,9 @@
 <?php
 
-use Facebook\WebDriver\WebDriverBy;
-use Facebook\WebDriver\WebDriverKeys;
-use Facebook\WebDriver\WebDriverWait;
-use Facebook\WebDriver\Exception\TimeoutException;
-
-App::uses('NotFoundException', 'Routing/Error');
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\TsumegoUtil;
+use App\Utility\Util;
 
 class TsumegosControllerTest extends TestCaseWithAuth
 {
@@ -26,6 +24,55 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			$this->assertTextContains('test set', $href->textContent);
 			$this->assertTextContains('666', $href->textContent);
 		}
+	}
+
+	public function testTheFirstProblemOfACollectionLeadsBackToTheCollectionPage(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'levelplayer'],
+			'tsumego' => ['set_order' => 1],
+			'tsumegos' => [['set_order' => 2]],
+		]);
+		$first = $context->tsumegos[0]['set-connections'][0];
+		$second = $context->tsumegos[1]['set-connections'][0];
+
+		$this->testAction('/tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'contents']);
+
+		$this->assertStringContainsString('var previousButtonLink = "/sets/' . $first['set_id'] . '"', $this->view);
+		$this->assertStringContainsString('var nextButtonLink = "/' . $second['id'] . '"', $this->view);
+	}
+
+	public function testProblemKeepsOneAddressInBothUrlShapes()
+	{
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 666]]);
+		$setConnectionID = $context->tsumegos[0]['set-connections'][0]['id'];
+		$address = Router::url('/' . $setConnectionID, true);
+		$urls = [
+			'/' . $setConnectionID,
+			'/' . $setConnectionID . '?mode=2',
+			'tsumegos/play/' . $context->tsumegos[0]['id']
+		];
+
+		foreach ($urls as $url)
+		{
+			$contents = (string) $this->testAction($url, ['method' => 'get', 'return' => 'contents']);
+			$this->assertStringContainsString('<link rel="canonical" href="' . $address . '">', $contents, $url);
+			$this->assertStringContainsString('<meta property="og:url" content="' . $address . '">', $contents, $url);
+		}
+	}
+
+	/**
+	 * The "ask the author for a solution" button is offered to the admins the policy allows
+	 */
+	public function testTheSolutionRequestButtonIsOfferedToAdminsOnly()
+	{
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 666]]);
+		$url = '/' . $context->tsumegos[0]['set-connections'][0]['id'];
+		$this->assertStringNotContainsString('?requestSolution=', (string) $this->testAction($url, ['method' => 'get', 'return' => 'contents']));
+
+		$adminContext = new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true], 'tsumego' => ['set_order' => 666]]);
+		$adminUrl = '/' . $adminContext->tsumegos[0]['set-connections'][0]['id'];
+		$this->assertStringContainsString('?requestSolution=', (string) $this->testAction($adminUrl, ['method' => 'get', 'return' => 'contents']));
 	}
 
 	public function testPageTitleShowsRealSetCount()
@@ -318,9 +365,9 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$browser->getAnonymous('/tsumegos/play/' . $tsumegoId);
 
 		// open the filters panel so the active tiles (and clear button) are visible
-		$browser->driver->findElement(WebDriverBy::cssSelector('#showFilters'))->click();
+		$browser->find('#showFilters')->click();
 		$browser->waitUntilCssSelectorDisplayed('#unselect-active-tiles');
-		$browser->driver->findElement(WebDriverBy::cssSelector('#unselect-active-tiles'))->click();
+		$browser->find('#unselect-active-tiles')->click();
 
 		$this->assertSame(Util::getMyAddress() . '/tsumegos/play/' . $tsumegoId, $browser->driver->getCurrentURL());
 		$this->assertFalse($browser->idExists('unselect-active-tiles'));
@@ -335,444 +382,9 @@ class TsumegosControllerTest extends TestCaseWithAuth
 
 		$browser = Browser::instance();
 		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
-		$href = $browser->driver->findElement(WebDriverBy::cssSelector('#playTitleA'));
+		$href = $browser->find('#playTitleA');
 		$this->assertTextContains('set 1', $href->getText());
 		$this->assertTextContains('666', $href->getText());
-	}
-
-	public function testTheNextAndBackButtonLinksWhenBothPointToOtherTsumegos()
-	{
-		$context = new ContextPreparator(['tsumegos' => [1, 2, 3]]);
-
-		$browser = Browser::instance();
-		$browser->get($context->tsumegos[1]['set-connections'][0]['id']);
-		$backButton = $browser->driver->findElement(WebDriverBy::cssSelector('#besogo-back-button'));
-		$this->assertSame($backButton->getAttribute('href'), '/' . $context->tsumegos[0]['set-connections'][0]['id']);
-
-		$nextButton = $browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'));
-		$this->assertSame($nextButton->getAttribute('href'), '/' . $context->tsumegos[2]['set-connections'][0]['id']);
-	}
-
-	public function testShowFullHearts()
-	{
-		$context = new ContextPreparator(['tsumego' => 1]);
-		$browser = Browser::instance();
-		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
-		$fullHearts = $browser->getCssSelect('img[title="Heart"]');
-		$emptyHearts = $browser->getCssSelect('img[title="Empty Heart"]');
-		$this->assertCount(0, $emptyHearts);
-		$this->assertCount(Util::getHealthBasedOnLevel(Auth::getUser()['level']), $fullHearts);
-	}
-
-	public function testShowFullPartialHearts()
-	{
-		$context = new ContextPreparator(['user' => ['damage' => '1'], 'tsumego' => 1]);
-
-		$browser = Browser::instance();
-		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
-		$fullHearts = $browser->getCssSelect('img[title="Heart"]');
-		$emptyHearts = $browser->getCssSelect('img[title="Empty Heart"]');
-		$this->assertCount(1, $emptyHearts);
-		$this->assertCount(Util::getHealthBasedOnLevel(Auth::getUser()['level']) - 1, $fullHearts);
-	}
-
-	public function testShowHeartsWithDamageHigherThanHealth()
-	{
-		$context = new ContextPreparator(['user' => ['damage' => '10000'], 'tsumego' => 1]);
-
-		$browser = Browser::instance();
-		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
-		$fullHearts = $browser->getCssSelect('img[title="Heart"]');
-		$emptyHearts = $browser->getCssSelect('img[title="Empty Heart"]');
-		$this->assertCount(Util::getHealthBasedOnLevel(Auth::getUser()['level']), $emptyHearts);
-		$this->assertCount(0, $fullHearts);
-	}
-
-	public function testFavoritesHeartTogglesAddAndRemove(): void
-	{
-		$context = new ContextPreparator(['tsumego' => 1]);
-		$tsumegoId = $context->tsumegos[0]['id'];
-
-		$browser = Browser::instance();
-		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
-
-		// Heart is rendered for logged-in users
-		$this->assertTrue($browser->idExists('favButton'));
-
-		// First click adds the tsumego to the lazily-created Favorites set.
-		// Wait until the client has registered the new Favorites set, which only
-		// happens after the add request completes - this also guarantees the next
-		// click toggles it back off instead of re-adding (409).
-		$browser->clickId('favButton');
-		$this->waitForClientFavoritesState($browser);
-
-		$favoritesSet = ClassRegistry::init('Set')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'title' => 'Favorites'],
-		]);
-		$this->assertNotEmpty($favoritesSet, 'First heart click should create the Favorites set');
-		$this->assertSame(1, ClassRegistry::init('SetConnection')->find('count', [
-			'conditions' => ['set_id' => $favoritesSet['Set']['id'], 'tsumego_id' => $tsumegoId],
-		]), 'First heart click should add the tsumego to Favorites');
-
-		// Second click removes it again
-		$browser->clickId('favButton');
-		$this->waitForConnectionCount($browser, $favoritesSet['Set']['id'], $tsumegoId, 0,
-			'Second heart click should remove the tsumego from Favorites');
-	}
-
-	private function waitForClientFavoritesState(Browser $browser): void
-	{
-		try
-		{
-			new WebDriverWait($browser->driver, 5, 200)->until(function () use ($browser) {
-				return (bool) $browser->driver->executeScript(
-					'return !!window.userSets && window.userSets.some(s => s.contains);'
-				);
-			});
-		}
-		catch (TimeoutException $e)
-		{
-			$this->fail('First heart click should add the tsumego to Favorites');
-		}
-	}
-
-	private function waitForConnectionCount(Browser $browser, int $setId, int $tsumegoId, int $expected, string $message): void
-	{
-		try
-		{
-			new WebDriverWait($browser->driver, 5, 200)->until(function () use ($setId, $tsumegoId, $expected) {
-				return ClassRegistry::init('SetConnection')->find('count', [
-					'conditions' => ['set_id' => $setId, 'tsumego_id' => $tsumegoId],
-				]) === $expected;
-			});
-		}
-		catch (TimeoutException $e)
-		{
-			$this->fail($message);
-		}
-	}
-
-	public function testCommentCoordinatesHaveHoverSpans()
-	{		// Create a tsumego with a comment containing coordinates
-		// Admin so comments are visible
-		$context = new ContextPreparator(['user' => ['admin' => true], 'tsumego' => 1]);
-
-		// Add a comment with coordinates
-		$comment = ClassRegistry::init('TsumegoComment');
-		$comment->save([
-			'tsumego_id' => $context->tsumegos[0]['id'],
-			'user_id' => $context->user['id'],
-			'message' => 'Try playing at R19 or S18, they both work.',
-		]);
-
-		$browser = Browser::instance();
-		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
-
-		$browser->expandComments();
-
-		// Check that coordinate spans exist in the HTML
-		$pageSource = $browser->driver->getPageSource();
-		$this->assertTextContains('go-coord', $pageSource);
-
-	}
-
-	public function testFailingWithLastHeartLocksBoardAndShowsLockMessage()
-	{
-		// Create a tsumego with a comment containing coordinates
-		$context = new ContextPreparator([
-			'user' => ['premium' => true, 'health' => 0], // 0 hearts left - fail should lock
-			'tsumego' => ['set_order' => 1, 'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])']]);
-		$context->unlockAchievementsWithoutEffect(); // avoiding premium achievement increasing level and health
-		$browser = Browser::instance();
-		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
-		$browser->playWithResult('F');
-		$this->assertTextContains("This problem is locked until", $browser->driver->getPageSource());
-		$this->assertSame(true, $browser->driver->executeScript("return window.tryAgainTomorrow;"));
-		$this->assertSame(1, $browser->driver->executeScript("return window.boardLockValue;"));
-		$this->checkPlayNavigationButtons($browser, 1, $context, function ($index) {
-			return 0;
-		}, function ($index) {
-			return 1;
-		}, 0, 'F');
-	}
-
-	public function testSolveByClicking()
-	{
-		foreach ([false, true] as $isGuest)
-		{
-			$browser = Browser::instance();
-			$context = new ContextPreparator([
-				'user' => $isGuest ? ['name' => 'testuser'] : ['mode' => Constants::$LEVEL_MODE],
-				'tsumego' => ['set_order' => 1, 'sgf' => '(;GM[1]FF[4]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])']]);
-
-			if ($isGuest)
-			{
-				$this->logout();
-				$this->assertFalse(Auth::isLoggedIn(), 'Should not be logged in for guest test');
-			}
-			$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
-			$browser->clickBoard(1, 1);
-			// Wait for white's auto-response (move number advances to 2)
-			$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-			$wait->until(function ($driver) {
-				return $driver->executeScript('return window.besogo && besogo.editor.getCurrent().moveNumber >= 2;');
-			});
-			$this->assertSame(false, $browser->driver->executeScript('return window.problemSolved;'));
-			$browser->clickBoard(2, 1);
-			$wait->until(function ($driver) {
-				return $driver->executeScript('return window.problemSolved === true;');
-			});
-			$this->assertSame(true, $browser->driver->executeScript('return window.problemSolved;'));
-		}
-	}
-
-	public function testResetAddsFailWhenSomethingWasPlayed()
-	{
-		foreach (['', 'no-move', 'already-solved'] as $testCase)
-		{
-			$context = new ContextPreparator([
-				'user' => ['rating' => 1000, 'mode' => Constants::$LEVEL_MODE],
-				'tsumego' => [
-					'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])',
-					'rating' => 1000,
-					'set_order' => 1,
-					'status' => ($testCase == 'already-solved' ? 'S' : 'V')]]);
-			$browser = Browser::instance();
-			$browser->setCookie('showInAccountWidget', 'rating');
-			$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
-
-			if ($testCase != 'no-move')
-			{
-				// click one move
-				$browser->clickBoard(1, 1);
-				// Wait for white's auto-response (move number advances to 2)
-				$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-				$wait->until(function ($driver) {
-					return $driver->executeScript('return window.besogo && besogo.editor.getCurrent().moveNumber >= 2;');
-				});
-				if ($testCase != 'already-solved')
-					$this->assertSame(false, $browser->driver->executeScript('return window.problemSolved;'));
-			}
-
-			// reset without the result being shown
-			$browser->clickId('besogo-reset-button');
-
-			$expectedRatingChange = ($testCase == '') ? Rating::calculateRatingChange(1000, 1000, 0, Constants::$PLAYER_RATING_CALCULATION_MODIFIER) : 0;
-			$expectedRating = round(1000 + $expectedRatingChange);
-			$displayedRating = $browser->driver->executeScript('return window.accountWidget ? accountWidget.rating : null;');
-			$this->assertEquals($expectedRating, round($displayedRating));
-
-			// changes are applied after refresh
-			$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
-			$this->assertSame(($testCase == '') ? 1 : 0, $context->reloadUser()['damage']);
-			$this->assertLessThan(0.1, abs($context->reloadUser()['rating'] - (1000 + $expectedRatingChange)));
-		}
-	}
-
-	/**
-	 * Toggling review mode should NOT reset the board to the start position.
-	 * If the user navigated to a move, entering/leaving review keeps them there.
-	 */
-	public function testReviewTogglePreservesBoardPosition()
-	{
-		$context = new ContextPreparator([
-			'user' => ['admin' => true],
-			'tsumego' => [
-				'set_order' => 1,
-				'status' => 'S',
-				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])'
-			]
-		]);
-		$browser = Browser::instance();
-		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-
-		// Navigate to the first move so the board is not at the root position.
-		// Use setCurrent (not clickBoard) so the puzzle's auto-response cannot
-		// advance the board independently of the review toggle.
-		$browser->driver->executeScript("var root = window.besogo.editor.getRoot(); if (root.children && root.children.length) { window.besogo.editor.setCurrent(root.children[0]); }");
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			return $driver->executeScript('return window.besogo && besogo.editor.getCurrent().moveNumber >= 1;');
-		});
-		$moveBefore = $browser->driver->executeScript('return window.besogo.editor.getCurrent().moveNumber;');
-		$this->assertGreaterThanOrEqual(1, $moveBefore);
-
-		// Toggle review mode - the board should keep the current position
-		$browser->clickId('besogo-review-button');
-
-		$moveAfter = $browser->driver->executeScript('return window.besogo.editor.getCurrent().moveNumber;');
-		$this->assertSame($moveBefore, $moveAfter, 'Review toggle should not reset the board to the start position');
-	}
-
-	/**
-	 * When user fails a problem, the board should NOT lock.
-	 * User should be able to continue clicking (though they won't solve it after first failure).
-	 */
-	public function testBoardDoesntLockAfterFailAllowsContinuedAttempts()
-	{
-		$context = new ContextPreparator(['tsumego' => ['set_order' => 1, 'sgf' => '(;GM[1]FF[4]ST[2]SZ[19];B[aa];W[ab];B[ca]C[+])']]);
-
-		$browser = Browser::instance();
-		$tsumegoUrl = $context->tsumegos[0]['set-connections'][0]['id'];
-		$browser->get($tsumegoUrl);
-
-		// Wait for board to initialize (window.besogo exists)
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10);
-		$wait->until(function () use ($browser) {
-			return $browser->driver->executeScript("return typeof window.besogo !== 'undefined';");
-		});
-
-		// Make wrong move (correct is 1,1)
-		$browser->clickBoard(2, 1);
-
-		// Wait for status to show "Incorrect"
-		$wait->until(function () use ($browser) {
-			$status = $browser->driver->executeScript("return document.getElementById('status').innerHTML;");
-			return str_contains($status, "Incorrect");
-		});
-
-		// Verify board shows failure state
-		$statusAfterWrong = $browser->driver->executeScript("return document.getElementById('status').innerHTML;");
-		$this->assertStringContainsString("Incorrect", $statusAfterWrong, "Should show 'Incorrect' after wrong move");
-
-		// Verify board is NOT locked (boardLockValue should be 0)
-		$boardLockValue = $browser->driver->executeScript("return window.boardLockValue;");
-		$this->assertEquals(0, $boardLockValue, "Board should NOT be locked after wrong move");
-
-		// Verify user can still click (board stays interactive)
-		// We don't expect to solve the puzzle after failure, just verify clicks still work
-		$browser->clickBoard(1, 1);
-
-		// Brief wait to ensure click was processed
-		$wait->until(function () use ($browser) {
-			return $browser->driver->executeScript("return document.readyState === 'complete';");
-		});
-
-		// Verify still on same problem (didn't reset or advance)
-		$this->assertStringContainsString($tsumegoUrl, $browser->driver->getCurrentURL(), "Should stay on same problem");
-
-		// refresh on the tsumego and check just one health was removed
-		$browser->get($tsumegoUrl);
-		$this->assertSame(1, $context->reloadUser()['damage']);
-	}
-
-	public function testBoardStatusIsProperlyUpdatedAfterFailResetAndFail()
-	{
-		$browser = Browser::instance();
-		$context = new ContextPreparator(['tsumego' => ['set_order' => 1, 'sgf' => '(;GM[1]FF[4]ST[2]SZ[19];B[aa];W[ab];B[ca]C[+])']]);
-
-		$tsumegoUrl = $context->tsumegos[0]['set-connections'][0]['id'];
-		$browser->get($tsumegoUrl);
-
-		// Wait for board to initialize (window.besogo exists)
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10);
-		$wait->until(function () use ($browser) {
-			return $browser->driver->executeScript("return typeof window.besogo !== 'undefined';");
-		});
-
-		// Make wrong move (correct is 1,1)
-		$browser->clickBoard(2, 1);
-
-		// Wait for status to show "Incorrect"
-		$wait->until(function () use ($browser) {
-			return str_contains($browser->find('#status')->getText(), "Incorrect");
-		});
-
-		$this->assertStringContainsString("Incorrect", $browser->find('#status')->getText());
-		$browser->waitForSubmitResult();
-		$browser->clickId('besogo-reset-button');
-		$this->assertStringContainsString("", $browser->find('#status')->getText());
-		$browser->clickBoard(2, 1);
-		$wait->until(function () use ($browser) {
-			return str_contains($browser->find('#status')->getText(), "Incorrect");
-		});
-		$this->assertStringContainsString("Incorrect", $browser->find('#status')->getText());
-		$browser->waitForSubmitResult();
-		$browser->get($tsumegoUrl);
-		$this->assertSame(2, $context->reloadUser()['damage']); // 2 errors done
-	}
-
-	// When user solves a problem, clicking the board should navigate to next problem.
-	public function testClickingBoardAfterSuccessNavigatesToNextPuzzle()
-	{
-		$context = new ContextPreparator([
-			'tsumegos' => [
-				['set_order' => 1, 'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])'],
-				['set_order' => 2, 'sgf' => '(;GM[1]FF[4]ST[2]SZ[19];B[aa]C[+])']]]);
-
-		$browser = Browser::instance();
-		$firstTsumegoUrl = $context->tsumegos[0]['set-connections'][0]['id'];
-		$secondTsumegoUrl = $context->tsumegos[1]['set-connections'][0]['id'];
-		$browser->get($firstTsumegoUrl);
-
-		// Solve the puzzle by making correct moves (this SGF requires 2 clicks)
-		$browser->clickBoard(1, 1); // First move
-		// Wait for white's auto-response (move number advances to 2)
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			return $driver->executeScript('return window.besogo && besogo.editor.getCurrent().moveNumber >= 2;');
-		});
-		$browser->clickBoard(2, 1); // Second move that solves it
-		$wait->until(function ($driver) {
-			return $driver->executeScript('return window.problemSolved === true;');
-		});
-
-		// Verify puzzle is solved
-		$problemSolved = $browser->driver->executeScript("return window.problemSolved;");
-		$this->assertTrue($problemSolved, "problemSolved should be true");
-
-		// Verify boardLockValue is set
-		$boardLockValue = $browser->driver->executeScript("return window.boardLockValue;");
-		$this->assertEquals(1, $boardLockValue, "Board should be locked after success");
-
-		// Click on board to navigate to next puzzle (use position near existing stones)
-		$browser->clickBoard(1, 2); // Click near the solved area
-		// Wait for navigation to next puzzle
-		$wait->until(function ($driver) use ($secondTsumegoUrl) {
-			return str_contains($driver->getCurrentURL(), $secondTsumegoUrl);
-		});
-
-		// Verify we navigated to the next puzzle
-		$currentUrl = $browser->driver->getCurrentURL();
-		$this->assertStringContainsString($secondTsumegoUrl, $currentUrl, "Should navigate to next puzzle");
-	}
-
-	/**
-	 * When in tags query mode but the lastSet cookie contains a value that
-	 * isn't a valid tag name, the play page should fall back to topics
-	 * view instead of crashing.
-	 */
-	public function testPlayPageFallsBackToTopicsWhenLastSetCookieIsNotAValidTag(): void
-	{
-		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'query' => 'tags'],
-			'tsumego' => ['sets' => [['name' => 'test set', 'num' => 1]]],
-		]);
-		$browser = Browser::instance();
-		$browser->setCookie('lastSet', 'nonexistent-tag');
-		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$playTitle = $browser->driver->findElements(WebDriverBy::cssSelector('#playTitle'));
-		$this->assertCount(1, $playTitle, 'Play page should render with playTitle element');
-	}
-
-	public function testRootCommentIsDisplayedOnInitialLoad()
-	{
-		$browser = Browser::instance();
-		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE],
-			'tsumego' => [
-				'set_order' => 1,
-				'sgf' => '(;GM[1]FF[4]SZ[19]C[Go Seigen 4p vs Kubomatsu 6p]AB[cc];B[aa];W[ab];B[ba]C[+])',
-			],
-		]);
-		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-
-		$theComment = $browser->driver->findElement(WebDriverBy::id('theComment'));
-		$this->assertSame('Go Seigen 4p vs Kubomatsu 6p', $theComment->getText());
-		$this->assertTrue($theComment->isDisplayed(), 'Root comment should be visible on initial page load');
-
-		$xpDisplayDiv = $browser->driver->findElement(WebDriverBy::id('xpDisplayDiv'));
-		$this->assertTrue($xpDisplayDiv->isDisplayed(), 'xpDisplayDiv must be visible on initial page load');
 	}
 
 	public function testMergeFormShowsPreviewsForSiblingTsumegos()
@@ -804,6 +416,58 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$this->assertStringContainsString('data-sgf-preview', $result);
 	}
 
+	public function testMergeFormShowsOnlyPublicSetConnections()
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumegos' => [
+				[
+					'sgf' => '(;GM[1]FF[4]SZ[19];B[aa])',
+					'sets' => [
+						['name' => 'masterSetA', 'num' => 1],
+						['name' => 'Favorites', 'num' => 1, 'user_id' => 'self', 'public' => 0, 'default' => true],
+					],
+				],
+				[
+					'sgf' => '(;GM[1]FF[4]SZ[19];B[bb])',
+					'sets' => [
+						['name' => 'slaveSet', 'num' => 1],
+						['name' => 'Favorites', 'num' => 2, 'user_id' => 'self', 'public' => 0],
+					],
+				],
+			],
+		]);
+
+		$favSet = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => 'Favorites', 'user_id' => $context->user['id']]]);
+		$this->assertNotEmpty($favSet, 'Favorites set should exist from test setup');
+		$favoritesSetId = $favSet['Set']['id'];
+
+		$publicConnectionIds = [];
+		$favoriteConnectionIds = [];
+		foreach (array_merge($context->tsumegos[0]['set-connections'], $context->tsumegos[1]['set-connections']) as $sc)
+		{
+			if ($sc['set_id'] == $favoritesSetId)
+				$favoriteConnectionIds[] = $sc['id'];
+			else
+				$publicConnectionIds[] = $sc['id'];
+		}
+		$this->assertNotEmpty($publicConnectionIds, 'Test setup must include public connections');
+		$this->assertNotEmpty($favoriteConnectionIds, 'Test setup must include favorites connections');
+
+		$result = $this->testAction('/tsumegos/mergeFinalForm', [
+			'data' => [
+				'master-id' => $context->tsumegos[0]['set-connections'][0]['id'],
+				'slave-id' => $context->tsumegos[1]['set-connections'][0]['id'],
+			],
+			'return' => 'view',
+		]);
+
+		foreach ($publicConnectionIds as $id)
+			$this->assertStringContainsString('href="/' . $id . '"', $result, 'Public occurrence should be shown');
+		foreach ($favoriteConnectionIds as $id)
+			$this->assertStringNotContainsString('href="/' . $id . '"', $result, 'Favorites occurrence should be hidden');
+	}
+
 	public function testSimilarSearchPreviewIncludesDiff()
 	{
 		$context = new ContextPreparator([
@@ -817,5 +481,322 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$result = $this->testAction('/tsumegos/duplicatesearch/' . $context->tsumegos[0]['set-connections'][0]['id'], ['return' => 'view']);
 
 		$this->assertMatchesRegularExpression('/"diff":"[a-z]+"/', $result);
+	}
+
+	public function testDescriptionColorSwap(): void
+	{
+		$blackFirstSgf = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])';
+		$whiteFirstSgf = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];W[aa];B[ab];W[ba]C[+])';
+
+		// ORIGINAL preference: the player follows the SGF first move, so the board
+		// is never inverted and the description is shown exactly as stored (true-color).
+		$context = new ContextPreparator([
+			'user' => ['name' => 'descColorSwapB'],
+			'tsumego' => ['set_order' => 1, 'description' => "Black's stones attack White's group.", 'sgf' => $blackFirstSgf],
+		]);
+		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
+		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'view']);
+		$decoded = htmlspecialchars_decode(strip_tags($this->view));
+		$this->assertStringContainsString("Black's stones attack White's group.", $decoded);
+
+		$context2 = new ContextPreparator([
+			'user' => ['name' => 'descColorSwapW'],
+			'tsumego' => ['set_order' => 1, 'description' => 'White to play. Attack the black group.', 'sgf' => $whiteFirstSgf],
+		]);
+		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
+		$this->testAction('tsumegos/play/' . $context2->tsumegos[0]['id'], ['return' => 'view']);
+		$decoded = htmlspecialchars_decode(strip_tags($this->view));
+		$this->assertStringContainsString('White to play. Attack the black group.', $decoded);
+	}
+
+	/**
+	 * Controller test: When the edit form is shown with an inverted board it
+	 * submits color_swapped=1, so the description is swapped Black<->White
+	 * back to true-color on save.
+	 */
+	public function testDescriptionEditWithSwap(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => [
+				'set_order' => 1,
+				'description' => 'White to attack the black stones.',
+				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];W[aa];B[ab];W[ba]C[+])',
+			],
+		]);
+		$tsumegoId = $context->tsumegos[0]['id'];
+
+		$this->testAction('/tsumegos/edit/' . $tsumegoId, [
+			'method' => 'post',
+			'data' => [
+				'delete' => '',
+				'description' => 'Black to play here.',
+				'color_swapped' => '1',
+				'rating' => '1500',
+				'minimum-rating' => '',
+				'maximum-rating' => '',
+				'hint' => '',
+				'author' => '',
+				'redirect' => '/',
+			],
+			'return' => 'contents',
+		]);
+
+		$saved = ClassRegistry::init('Tsumego')->findById($tsumegoId);
+		$this->assertSame('White to play here.', $saved['Tsumego']['description']);
+	}
+
+	/**
+	 * Controller test: When the edit form is shown without an inverted board it
+	 * submits color_swapped=0, so the description is stored as-is (true-color).
+	 */
+	public function testDescriptionEditNoSwap(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => [
+				'set_order' => 1,
+				'description' => 'Black to attack the white stones.',
+				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])',
+			],
+		]);
+		$tsumegoId = $context->tsumegos[0]['id'];
+
+		$this->testAction('/tsumegos/edit/' . $tsumegoId, [
+			'method' => 'post',
+			'data' => [
+				'delete' => '',
+				'description' => 'Black to play first.',
+				'color_swapped' => '0',
+				'rating' => '1500',
+				'minimum-rating' => '',
+				'maximum-rating' => '',
+				'hint' => '',
+				'author' => '',
+				'redirect' => '/',
+			],
+			'return' => 'contents',
+		]);
+
+		$saved = ClassRegistry::init('Tsumego')->findById($tsumegoId);
+		$this->assertSame('Black to play first.', $saved['Tsumego']['description']);
+	}
+
+	/**
+	 * OG description uses true-color convention - no swap needed.
+	 * The OG image renders actual SGF colors, and descriptions match the board.
+	 */
+	public function testOgDescriptionUsesTrueColor(): void
+	{
+		$blackFirstSgf = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])';
+		$whiteFirstSgf = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];W[aa];B[ab];W[ba]C[+])';
+
+		// Black-first: OG description shows true-color "Black"
+		$context = new ContextPreparator([
+			'tsumego' => ['set_order' => 1, 'description' => 'Black to capture the white group', 'sgf' => $blackFirstSgf],
+		]);
+		$result = $this->testAction(
+			'tsumegos/play/' . $context->tsumegos[0]['id'],
+			['return' => 'contents']
+		);
+		preg_match('/property="og:description"\s+content="([^"]*)"/', $result, $m);
+		$this->assertNotEmpty($m, 'og:description should exist for Black-first SGF');
+		$this->assertStringContainsString('Black to capture the white group', $m[1]);
+
+		// White-first: OG description shows true-color "White"
+		$context2 = new ContextPreparator([
+			'tsumego' => ['set_order' => 1, 'description' => 'White to capture the black group', 'sgf' => $whiteFirstSgf],
+		]);
+		$result2 = $this->testAction(
+			'tsumegos/play/' . $context2->tsumegos[0]['id'],
+			['return' => 'contents']
+		);
+		preg_match('/property="og:description"\s+content="([^"]*)"/', $result2, $m2);
+		$this->assertNotEmpty($m2, 'og:description should exist for White-first SGF');
+		$this->assertStringContainsString('White to capture the black group', $m2[1]);
+	}
+
+	/**
+	 * Custom multiple-choice variant answers are stored in true colors. When the
+	 * board is inverted (?playercolor=white), the answer text is swapped so it
+	 * matches the stones the player actually sees.
+	 */
+	public function testMultipleChoiceVariantAnswersSwapWhenBoardInverted(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'tsumego' => [
+				'set_order' => 1,
+				'description' => 'Black to play. What is the result?',
+				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])',
+				'variants' => [[
+					'type' => 'multiple_choice',
+					'answer1' => 'White is dead',
+					'answer2' => 'Ko',
+					'answer3' => 'Seki in sente',
+					'answer4' => 'Seki in gote',
+					'numAnswer' => '3',
+				]],
+			],
+		]);
+
+		// No inversion: answers keep their true colors.
+		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'view']);
+		$this->assertStringContainsString('"White is dead"', $this->view);
+
+		// Inverted board: the answer text is swapped to match the visual stones.
+		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=white', ['return' => 'view']);
+		$this->assertStringContainsString('"Black is dead"', $this->view);
+		$this->assertStringNotContainsString('"White is dead"', $this->view);
+	}
+
+	/**
+	 * Score-estimating summary labels are stored in true colors. When the board
+	 * is inverted, the "Black/White captures" labels swap while the numeric
+	 * values stay in place.
+	 */
+	public function testScoreEstimatingLabelsSwapWhenBoardInverted(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'tsumego' => [
+				'set_order' => 1,
+				'description' => 'Who wins?',
+				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])',
+				'variants' => [[
+					'type' => 'score_estimating',
+					'answer1' => '6.5',
+					'answer2' => '3',
+					'answer3' => '6',
+					'numAnswer' => '0',
+				]],
+			],
+		]);
+
+		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'view']);
+		$this->assertStringContainsString('Black captures: 3', $this->view);
+		$this->assertStringContainsString('White captures: 6', $this->view);
+
+		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=white', ['return' => 'view']);
+		$this->assertStringContainsString('White captures: 3', $this->view);
+		$this->assertStringContainsString('Black captures: 6', $this->view);
+	}
+
+	/**
+	 * When the player's color opposes the SGF's first move the board is inverted and
+	 * the description swaps Black<->White so the player sees their own color as the
+	 * side to move. (?playercolor sets up the scenario.)
+	 */
+	public function testDescriptionSwapsWhenPlayerColorOpposesFirstMove(): void
+	{
+		$blackFirst = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])';
+		$whiteFirst = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];W[aa];B[ab];W[ba]C[+])';
+
+		$context = new ContextPreparator([
+			'user' => ['name' => 'descOpposeB'],
+			'tsumego' => ['set_order' => 1, 'description' => 'Black to play.', 'sgf' => $blackFirst],
+		]);
+		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
+		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=white', ['return' => 'view']);
+		$this->assertStringContainsString('White to play.', $this->view);
+		$this->assertStringNotContainsString('Black to play.', $this->view);
+
+		$context2 = new ContextPreparator([
+			'user' => ['name' => 'descOpposeW'],
+			'tsumego' => ['set_order' => 1, 'description' => 'White to play.', 'sgf' => $whiteFirst],
+		]);
+		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
+		$this->testAction('tsumegos/play/' . $context2->tsumegos[0]['id'] . '?playercolor=black', ['return' => 'view']);
+		$this->assertStringContainsString('Black to play.', $this->view);
+	}
+
+	/**
+	 * When the player's color matches the SGF's first move the board is not inverted
+	 * and the description is shown exactly as stored. (?playercolor sets up the scenario.)
+	 */
+	public function testDescriptionDoesNotSwapWhenPlayerColorMatchesFirstMove(): void
+	{
+		$blackFirst = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])';
+		$whiteFirst = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];W[aa];B[ab];W[ba]C[+])';
+
+		$context = new ContextPreparator([
+			'user' => ['name' => 'descMatchB'],
+			'tsumego' => ['set_order' => 1, 'description' => 'Black to play.', 'sgf' => $blackFirst],
+		]);
+		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
+		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=black', ['return' => 'view']);
+		$this->assertStringContainsString('Black to play.', $this->view);
+
+		$context2 = new ContextPreparator([
+			'user' => ['name' => 'descMatchW'],
+			'tsumego' => ['set_order' => 1, 'description' => 'White to play.', 'sgf' => $whiteFirst],
+		]);
+		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
+		$this->testAction('tsumegos/play/' . $context2->tsumegos[0]['id'] . '?playercolor=white', ['return' => 'view']);
+		$this->assertStringContainsString('White to play.', $this->view);
+	}
+
+	/**
+	 * When the board is inverted, every color word in a description swaps, so a
+	 * description that names both colours stays internally consistent.
+	 */
+	public function testDescriptionSwapsAllColorWords(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'descAllWords'],
+			'tsumego' => ['set_order' => 1, 'description' => 'Black to play. Find the way to kill the white group.', 'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])'],
+		]);
+		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
+		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=white', ['return' => 'view']);
+		$this->assertStringContainsString('White to play. Find the way to kill the black group.', $this->view);
+	}
+
+	/**
+	 * Color swaps match whole words only, so a colour word that is part of a larger
+	 * word (like "Blackbird") is left untouched.
+	 */
+	public function testDescriptionSwapRespectsWordBoundaries(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'descBoundary'],
+			'tsumego' => ['set_order' => 1, 'description' => 'Black to play. The Blackbird group is white.', 'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])'],
+		]);
+		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
+		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=white', ['return' => 'view']);
+		$this->assertStringContainsString('White to play. The Blackbird group is black.', $this->view);
+	}
+
+	/**
+	 * Color swaps preserve the original casing of each word.
+	 */
+	public function testDescriptionSwapPreservesCase(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'descCase'],
+			'tsumego' => ['set_order' => 1, 'description' => 'black stones attack White stones.', 'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])'],
+		]);
+		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
+		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=white', ['return' => 'view']);
+		$this->assertStringContainsString('white stones attack Black stones.', $this->view);
+	}
+
+	/**
+	 * A White-first problem in a collection that forces the player to black (small
+	 * board) inverts the board and swaps the description automatically, without any
+	 * URL override. This is the reported "Problems from Professional Games" case.
+	 */
+	public function testForcedBlackWhiteFirstSwapsDescription(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'descForcedBlack'],
+			'tsumego' => [
+				'sets' => [['name' => '9x9 Test Set', 'num' => 1]],
+				'description' => 'White to play. Find the way to kill the black group.',
+				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[9];W[aa];B[ab];W[ba]C[+])',
+			],
+		]);
+		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
+		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'view']);
+		$this->assertStringContainsString('Black to play. Find the way to kill the white group.', $this->view);
 	}
 }

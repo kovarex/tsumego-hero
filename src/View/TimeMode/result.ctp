@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\Util;
+
 /**
  * @var View $this
  * @var array $dataForView
@@ -31,11 +33,13 @@
 	} ?>
 	<table class="timeModeTable" border="0">
 	<?php
+if (!function_exists('showSession'))
+{
 		function showSession($session, $isCurrent) {
 			echo '<tr>';
 			echo '<td colspan="5">';
 			$color = $session['status'] == 'passed' ? 'var(--color-green)' : 'var(--feedback-error)';
-			echo '<h4 style="color:'.$color.';">'.($isCurrent ? 'Result' : 'Best').': '.$session['status'].'('.$session['solvedCount'].'/'.TimeModeUtil::$PROBLEM_COUNT.')';
+			echo '<h4 style="color:'.$color.';">'.($isCurrent ? 'Result' : 'Best').': '.$session['status'].'('.$session['solvedCount'].'/'.count($session['attempts']).')';
 			if ($isCurrent) {
 				echo '- '.$session['points'].' points';
 			}
@@ -53,7 +57,31 @@
 					echo '</tr>';
 				}
 		}
+} // function_exists
 
+if (!function_exists('showHistory'))
+{
+		function showHistory($history, $shownSessionIDs) {
+			echo '<tr>';
+			echo '<td colspan="5">';
+			echo '<h4>History: '.count($history).' runs</h4>';
+			echo '</td>';
+			echo '</tr>';
+			foreach ($history as $index => $run) {
+				$color = $run['status'] == 'passed' ? 'var(--color-green)' : 'var(--feedback-error)';
+				echo '<tr'.(in_array($run['id'], $shownSessionIDs) ? ' style="font-weight:bold;"' : '').'>';
+				echo '<td width="9%">#'.(count($history) - $index).'</td>';
+				echo '<td width="46%"><a href="/timeMode/result/'.$run['id'].'?history=1"><time datetime="' . Util::toIso8601($run['created']) . '" data-format="datetime">' . $run['created'] . '</time></a></td>';
+				echo '<td width="7%" style="color:'.$color.';">'.$run['status'].'</td>';
+				echo '<td width="8%" style="color:'.$color.';">'.$run['solvedCount'].'/'.$run['attemptCount'].'</td>';
+				echo '<td>'.$run['points'].' points</td>';
+				echo '</tr>';
+			}
+		}
+} // function_exists
+
+if (!function_exists('showRank'))
+{
 		function showRank($session, $dataForView) {
 			$containsCurrent = isset($session['current']);
 			$headerSession = isset($session['best']) ? $session['best'] : $session['current'];
@@ -87,9 +115,14 @@
 			if (isset($session['current'])) {
 				showSession($session['current'], true);
 			}
+			if (isset($session['history'])) {
+				$shownSessionIDs = array_map(fn($shownSession) => $shownSession['id'], array_filter([$session['best'] ?? null, $session['current'] ?? null]));
+				showHistory($session['history'], $shownSessionIDs);
+			}
 			echo '</table>';
 			echo '</div>';
 		}
+} // function_exists
 
 		foreach ($sessionsToShow as $categoryToShow) {
 			foreach ($categoryToShow as $rankToShow) {

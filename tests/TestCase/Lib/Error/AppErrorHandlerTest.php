@@ -1,9 +1,6 @@
 <?php
 
-App::uses('AppErrorHandler', 'Lib/Error');
-App::uses('ForbiddenException', 'Routing/Error');
-App::uses('NotFoundException', 'Routing/Error');
-App::uses('UnprocessableEntityException', 'Lib/Error');
+use App\Lib\Error\UnprocessableEntityException;
 
 /**
  * AppErrorHandler renders JSON error bodies for JSON/AJAX requests

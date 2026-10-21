@@ -1,11 +1,14 @@
 <?php
 
-App::uses('DataTableRenderer', 'Utility');
-App::uses('SetConnection', 'Model');
+namespace App\Utility;
+
+use AdminActivity;
+use SetConnection;
+use User;
 
 class AdminActivityRenderer extends DataTableRenderer
 {
-	public function __construct($urlParams)
+	public function __construct(array $urlParams)
 	{
 		$this->count = Util::query("SELECT COUNT(*) as total FROM admin_activity")[0]['total'];
 		parent::__construct($urlParams, 'activity_page', 'Admin Activity');
@@ -19,9 +22,11 @@ SELECT
 	tsumego.id AS tsumego_id,
 	COALESCE(sgf.sgf, '') AS sgf,
 	user.id AS user_id,
-	user.name AS user_name,
+	user.display_name AS user_display_name,
 	user.picture AS user_picture,
+	user.pref_avatar AS user_pref_avatar,
 	user.external_id AS user_external_id,
+	user.email AS user_email,
 	user.rating AS user_rating,
 	set_connection.id AS set_connection_id,
 	set_connection.num AS num,

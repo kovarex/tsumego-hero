@@ -23,6 +23,10 @@
 
 
 require_once(__DIR__ . "/../src/UrlRoute.php");
+require_once(__DIR__ . "/../src/ParseOnlyRoute.php");
+require_once(__DIR__ . "/../src/SetViewRoute.php");
+
+use App\Utility\Avatar;
 
 // XML Sitemap for search engines
 Router::connect('/sitemap.xml', [
@@ -95,12 +99,62 @@ Router::connect(
 );
 
 /**
+ * Mistake Training
+ */
+Router::connect(
+	'/mistake-training/play/:setConnectionID',
+	['controller' => 'MistakeTraining', 'action' => 'play'],
+	['pass' => ['setConnectionID'], 'setConnectionID' => '[0-9]+']
+);
+Router::connect(
+	'/mistake-training/overview',
+	['controller' => 'MistakeTraining', 'action' => 'overview']
+);
+Router::connect(
+	'/mistake-training/import',
+	['controller' => 'MistakeTraining', 'action' => 'import']
+);
+Router::connect(
+	'/mistake-training',
+	['controller' => 'MistakeTraining', 'action' => 'play']
+);
+
+/**
  * Tsumego image generation for Open Graph / social sharing
  */
 Router::connect(
 	'/tsumego-image/:id',
 	['controller' => 'TsumegoImages', 'action' => 'tsumegoImage'],
 	['pass' => ['id'], 'id' => '[0-9]+'] // ID of the SetConnection
+);
+
+/**
+ * Board avatars. The url carries the key of the display name, which is what the
+ * drawing is made of, so one url serves the avatar in a list and the one on a
+ * profile. The png is the same drawing for the pages that share it.
+ */
+$boardKey = '[0-9a-f]{' . Avatar::KEY_LENGTH . '}';
+Router::connect(
+	'/board/:key.png',
+	['controller' => 'Avatars', 'action' => 'imagePng'],
+	['pass' => ['key'], 'key' => $boardKey] // Key of a display name
+);
+Router::connect(
+	'/board/:key',
+	['controller' => 'Avatars', 'action' => 'image'],
+	['pass' => ['key'], 'key' => $boardKey] // Key of a display name
+);
+
+/**
+ * The board of an account, addressed by the id of the user. The lists that React
+ * draws know the id of every player they show but not the display name the
+ * drawing is made of, so this is how an avatar reaches its board when a picture
+ * of another host is gone.
+ */
+Router::connect(
+	'/avatar/:id',
+	['controller' => 'Avatars', 'action' => 'boardOfUser'],
+	['pass' => ['id'], 'id' => '[0-9]+'] // Id of a user
 );
 
 /**
@@ -126,6 +180,11 @@ Router::connect(
 	['pass' => ['id'], 'id' => '[0-9]+']
 );
 Router::connect(
+	'/sets/share/:id',
+	['controller' => 'sets', 'action' => 'share'],
+	['pass' => ['id'], 'id' => '[0-9]+']
+);
+Router::connect(
 	'/sets/addTsumego/:id',
 	['controller' => 'sets', 'action' => 'addTsumego'],
 	['pass' => ['id'], 'id' => '[0-9]+|favorites']
@@ -145,6 +204,28 @@ Router::connect(
 	['controller' => 'sets', 'action' => 'reorderTsumego'],
 	['pass' => ['id'], 'id' => '[0-9]+']
 );
+// The old /sets/view/<id> addresses keep answering for links written before the short ones, and the
+// short /sets/<id> ones decline an id that names an action, which the default routes then serve.
+Router::connect(
+	'/sets/view/:id',
+	['controller' => 'sets', 'action' => 'view'],
+	['pass' => ['id'], 'id' => '[^/]+', 'routeClass' => 'ParseOnlyRoute']
+);
+Router::connect(
+	'/sets/view/:id/:partition',
+	['controller' => 'sets', 'action' => 'view'],
+	['pass' => ['id', 'partition'], 'id' => '[^/]+', 'partition' => '[0-9]+', 'routeClass' => 'ParseOnlyRoute']
+);
+Router::connect(
+	'/sets/:id',
+	['controller' => 'sets', 'action' => 'view'],
+	['pass' => ['id'], 'id' => '[^/]+', 'routeClass' => 'SetViewRoute']
+);
+Router::connect(
+	'/sets/:id/:partition',
+	['controller' => 'sets', 'action' => 'view'],
+	['pass' => ['id', 'partition'], 'id' => '[^/]+', 'partition' => '[0-9]+', 'routeClass' => 'SetViewRoute']
+);
 Router::connect(
 	'/users/playerColorPreference',
 	['controller' => 'Users', 'action' => 'playerColorPreference']
@@ -152,6 +233,14 @@ Router::connect(
 Router::connect(
 	'/users/boardOrientationPreference',
 	['controller' => 'Users', 'action' => 'boardOrientationPreference']
+);
+Router::connect(
+	'/users/dateFormatPreference',
+	['controller' => 'Users', 'action' => 'dateFormatPreference']
+);
+Router::connect(
+	'/users/avatarPreference',
+	['controller' => 'Users', 'action' => 'avatarPreference']
 );
 Router::connect(
 	'/profile',
@@ -171,12 +260,6 @@ Router::connect(
 );
 
 //Router::connect('/*', ['routeClass' => 'UrlRoute']);
-
-/**
- * Load all plugin routes. See the CakePlugin documentation on
- * how to customize the loading of plugin routes.
- */
-CakePlugin::routes();
 
 /**
  * Load the CakePHP default routes. Only remove this if you do not want to use

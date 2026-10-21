@@ -10,31 +10,34 @@ const markdownComponents: Components = {
 	p: ({ node: _node, ...props }) => <p className="changelog__paragraph" {...props} />
 };
 
-const CATEGORY_ORDER = ['Added', 'Fixed', 'Changed', 'Performance', 'Removed'];
+// Display order within a day: what a player can do now comes before what they
+// already use and behaves differently, and maintenance comes last. Affects the
+// rendering order only, never the dates or the timestamps behind them.
+const CATEGORY_ORDER = ['Added', 'Changed', 'Performance', 'Removed', 'Fixed'];
 
-// Group entries by day, then category (newest-first order preserved within each).
-function groupByDay(entries: ChangelogEntry[]): { date: string; categories: [string, ChangelogEntry[]][] }[]
+function categoryRank(category: string): number
 {
-	const days = new Map<string, Map<string, ChangelogEntry[]>>();
+	const rank = CATEGORY_ORDER.indexOf(category);
+	return rank === -1 ? CATEGORY_ORDER.length : rank;
+}
+
+// Entries grouped by day, each day ordered by category (stable, so entries of the
+// same category keep the order they shipped in).
+function groupByDay(entries: ChangelogEntry[]): { date: string; entries: ChangelogEntry[] }[]
+{
+	const days = new Map<string, ChangelogEntry[]>();
 	for (const e of entries)
 	{
-		let cats = days.get(e.date);
-		if (!cats)
-		{
-			cats = new Map();
-			days.set(e.date, cats);
-		}
-		const list = cats.get(e.category);
+		const list = days.get(e.date);
 		if (list)
 			list.push(e);
 		else
-			cats.set(e.category, [e]);
+			days.set(e.date, [e]);
 	}
 
-	return Array.from(days.entries()).map(([date, cats]) => ({
+	return Array.from(days.entries()).map(([date, dayEntries]) => ({
 		date,
-		categories: Array.from(cats.entries())
-			.sort((a, b) => CATEGORY_ORDER.indexOf(a[0]) - CATEGORY_ORDER.indexOf(b[0]))
+		entries: dayEntries.slice().sort((a, b) => categoryRank(a.category) - categoryRank(b.category))
 	}));
 }
 
@@ -42,23 +45,19 @@ function Feed({ entries }: { entries: ChangelogEntry[] })
 {
 	return (
 		<>
-			{groupByDay(entries).map(({ date, categories }) => (
+			{groupByDay(entries).map(({ date, entries: dayEntries }) => (
 				<section key={date}>
 					<h2 className="changelog__date">{date}</h2>
-					{categories.map(([category, list]) => (
-						<div className="changelog__group" key={category}>
-							<h3 className={`changelog__category changelog__category--${category.toLowerCase()}`}>{category}</h3>
-							<ul className="changelog__list">
-								{list.map((e, index) => (
-									<li key={`${e.file}-${index}`}>
-										<div className="changelog__text">
-											<ReactMarkdown components={markdownComponents}>{e.text}</ReactMarkdown>
-										</div>
-									</li>
-								))}
-							</ul>
-						</div>
-					))}
+					<ul className="changelog__list">
+						{dayEntries.map((e, index) => (
+							<li key={`${e.file}-${index}`}>
+								<span className={`changelog__category changelog__category--${e.category.toLowerCase()}`}>{e.category}</span>
+								<span className="changelog__text">
+									<ReactMarkdown components={markdownComponents}>{e.text}</ReactMarkdown>
+								</span>
+							</li>
+						))}
+					</ul>
 				</section>
 			))}
 		</>

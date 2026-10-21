@@ -2,7 +2,6 @@
 
 use Facebook\WebDriver\WebDriverBy;
 use PHPUnitRetry\RetryTrait;
-
 /**
  * Tests the Start button on set view pages.
  *
@@ -12,6 +11,8 @@ use PHPUnitRetry\RetryTrait;
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
+use App\Utility\Util;
+
 class SetsViewStartButtonTest extends ControllerTestCase
 {
 	use RetryTrait;
@@ -42,10 +43,10 @@ class SetsViewStartButtonTest extends ControllerTestCase
 			$this->assertSame(Util::getMyAddress() . '/sets/view/' . $setId, $browser->driver->getCurrentURL());
 
 			// Wait for page to fully load
-			$browser->waitUntilCssSelectorExists('a.btn');
+			$browser->find('a.btn');
 
 			// 3. Find and click the Start button (target by text; the first a.btn may be a hidden nav button)
-			$startButton = $browser->driver->findElement(WebDriverBy::xpath("//a[contains(@class,'btn') and .='Start']"));
+			$startButton = $browser->findBy(WebDriverBy::xpath("//a[contains(@class,'btn') and .='Start']"));
 			$this->assertTrue($startButton->isDisplayed(), 'Start button should be visible');
 			$startButton->click();
 

@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Utility;
+
 /**
  * Cookie-based flash messages for stateless operation.
  *
@@ -140,6 +142,6 @@ class CookieFlash
 			default => 'alert-info',
 		};
 
-		return '<div class="alert ' . $cssClass . '">' . htmlspecialchars($message) . '</div>';
+		return '<div class="alert ' . $cssClass . '" role="alert">' . htmlspecialchars($message) . '</div>';
 	}
 }

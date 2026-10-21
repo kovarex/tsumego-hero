@@ -1,8 +1,6 @@
 <?php
 
-App::uses('ForbiddenException', 'Routing/Error');
-App::uses('UnauthorizedException', 'Routing/Error');
-App::uses('Constants', 'Utility');
+use App\Utility\Constants;
 
 class TagConnectionControllerTest extends ControllerTestCase
 {

@@ -1,5 +1,11 @@
 <?php
 
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\MistakeTraining;
+use App\Utility\TsumegoButton;
+use App\Utility\TsumegoButtons;
+
 /**
  * @var View $this
  * @var array $chartData
@@ -9,11 +15,9 @@
  * @var array $recentAchievements
  * @var TsumegoButton $tsumegoButton
  * @var TsumegoButtons $tsumegoButtonsOfPublishedTsumegos
- * @var bool $userOfTheDay
+ * @var array|null $userOfTheDay
+ * @var int|null $mistakeTrainingDue Problems due in the mistake training, null when it is not offered
  */
-
-$highestLeft = 19;
-$highestRight = 17;
 
 $this->start('script');
 ?>
@@ -46,6 +50,20 @@ foreach ($modes as $mode)
 }
 ?>
 				</div>
+				<?php if (isset($mistakeTrainingDue)): ?>
+				<a class="mistake-training-card" href="<?php echo MistakeTraining::$OVERVIEW_LINK; ?>">
+					<span class="mistake-training-card__title">Mistake Training</span>
+					<?php if ($mistakeTrainingDue > 0): ?>
+					<?php $mistakeTrainingDueLabel = $mistakeTrainingDue . ' problem' . ($mistakeTrainingDue == 1 ? '' : 's') . ' to review today'; ?>
+					<span class="mistake-training-card__count" role="img" title="<?php echo $mistakeTrainingDueLabel; ?>" aria-label="<?php echo $mistakeTrainingDueLabel; ?>"><?php echo $mistakeTrainingDue; ?></span>
+					<?php else: ?>
+					<span class="mistake-training-card__text">
+						Nothing to review today. Add past mistakes to training.
+					</span>
+					<?php endif; ?>
+					<span class="mistake-training-card__go" aria-hidden="true">&rsaquo;</span>
+				</a>
+				<?php endif; ?>
 				<?php
 	$achievementsProps = json_encode(['initialAchievements' => $recentAchievements], JSON_HEX_QUOT | JSON_HEX_APOS);
 echo '<div class="achievements-panel">';
@@ -173,7 +191,8 @@ echo '</div>';
 				</div>
 
 				<!-- LEFT NEWS -->
-				<div id="news-left-18">
+				<div id="news-list-left" class="news-list" data-initial-visible="4">
+				<div class="news-article">
 					<p class="title4">Update 29.11.2024</p>
 					<div class="new1">
 						<b>Customizable collection index page</b><br><br>
@@ -190,7 +209,7 @@ echo '</div>';
 					</div>
 				</div>
 
-				<div id="news-left-17">
+				<div class="news-article">
 				<p class="title4">Update 26.10.2024</p>
 				<div class="new1">
 					<b>Tags, proposals and rewards</b><br><br>
@@ -213,7 +232,7 @@ echo '</div>';
 				</div>
 
 
-				<div id="news-left-16">
+				<div class="news-article">
 				<p class="title4">Update 13.10.2024</p>
 				<div class="new1">
 					<b>Account management</b><br><br>
@@ -224,7 +243,7 @@ echo '</div>';
 				</div>
 
 
-				<div id="news-left-15">
+				<div class="news-article">
 				<p class="title4">Bugfix 01.05.2024</p>
 				<div class="new1">
 				Longer sessions were not working properly, so this feature is reverted. If there are still any issues, such as log-outs, try to delete the cookies.<br><br>
@@ -232,7 +251,7 @@ echo '</div>';
 				</div>
 
 
-				<div id="news-left-14">
+				<div class="news-article">
 				<p class="title4">Update 30.04.2024</p>
 				<div class="new1">
 				<b>Improved search, ratings and board views</b><br><br>
@@ -244,14 +263,14 @@ echo '</div>';
 				It always finds many similar problems in any search now and is very fast. <br>
 				<div align="center">
 				<img src="/img/example-search.png" title="search-example" alt="search-example" width="350px"><br>
-				Example: <a href="/tsumegos/duplicatesearch/2897">Life & Death - Elementary 745</a><br>
+				Example: <a href="/tsumegos/duplicatesearch/2189">Life & Death - Elementary 745</a><br>
 				<i>In this example, it finds 30 similar problems almost instantly.</i><br><br>
 				</div>
 				</div>
 				</div>
 
 
-				<div id="news-left-13">
+				<div class="news-article">
 				<p class="title4">Update 03.04.2024</p>
 				<div class="new1">
 				<b>Improvements of rank display and score mechanics</b><br><br>
@@ -270,7 +289,7 @@ echo '</div>';
 				</div>
 
 
-				<div id="news-left-12">
+				<div class="news-article">
 				<p class="title4">17.03.2024</p>
 				<div class="new1">
 				<b>Prizes</b><br><br>
@@ -279,7 +298,7 @@ echo '</div>';
 				</div>
 
 
-				<div id="news-left-11">
+				<div class="news-article">
 				<p class="title4">10.03.2024</p>
 				<div class="new1">
 				<b>Prizes</b><br><br>
@@ -288,7 +307,7 @@ echo '</div>';
 				</div>
 
 
-				<div id="news-left-10">
+				<div class="news-article">
 				<p class="title4">03.03.2024</p>
 				<div class="new1">
 				<b>Prizes</b><br><br>
@@ -298,16 +317,16 @@ echo '</div>';
 				</div>
 
 
-				<div id="news-left-9">
+				<div class="news-article">
 				<p class="title4">Update 25.02.2024</p>
 				<div class="new1">
 				<b>Overall rating</b><br><br>
-				<div id="progressBarInLevelMode">
+				<div id="progressBarInLevelMode" class="<?php echo Auth::isLoggedIn() ? '' : 'progress-bar--guest-hidden'; ?>">
 				Progress bar in level mode:<br>
 				<?php
 					$levelBarDisplayChecked1 = '';
 $levelBarDisplayChecked2 = '';
-if($levelBar == 1)
+if($levelBar == User::LEVEL_BAR_LEVEL)
 	$levelBarDisplayChecked1 = 'checked="checked"';
 else
 	$levelBarDisplayChecked2 = 'checked="checked"';
@@ -318,19 +337,41 @@ else
 				</div>
 				With this update, Tsumego attempts in any mode affect the user rating.<br>
 				<?php
-$link1 = '';
-$link2 = '';
-$link3 = '';
-if(Auth::isLoggedIn())
+$modeLinks = [
+	[
+		'url' => '/tsumegos/play/' . $lastVisit . '?mode=1',
+		'class' => 'mode-link--level',
+		'label' => 'Level mode',
+		'description' => 'problems affect level and user rating.',
+		'requiresLogin' => false,
+	],
+	[
+		'url' => '/ratingMode',
+		'class' => 'mode-link--rating',
+		'label' => 'Rating mode',
+		'description' => 'is the same as before, but all formulas for user and tsumego rating calculation have been improved.',
+		'requiresLogin' => true,
+	],
+	[
+		'url' => '/timeMode/overview',
+		'class' => 'mode-link--time',
+		'label' => 'Time mode',
+		'description' => 'also affects the user rating.',
+		'requiresLogin' => true,
+	],
+];
+foreach ($modeLinks as $modeLink)
 {
-	$link1 = '/tsumegos/play/' . (int) ($_COOKIE['lastVisit'] ?? 15352) . '?mode=1';
-	$link2 = '/ratingMode';
-	$link3 = '/timeMode/overview';
+	$canOpenMode = !$modeLink['requiresLogin'] || $loggedIn;
+	echo '• ';
+	if ($canOpenMode)
+		echo '<a href="' . h($modeLink['url']) . '" class="' . $modeLink['class'] . '">' . $modeLink['label'] . '</a>';
+	else
+		echo '<span class="' . $modeLink['class'] . '">' . $modeLink['label'] . '</span>';
+	echo ' ' . $modeLink['description'] . '<br>';
 }
 ?>
-				• <a href="<?php echo $link1; ?>" class="mode-link--level">Level mode</a> problems affect level and user rating.<br>
-				• <a href="<?php echo $link2; ?>" class="mode-link--rating">Rating mode</a> is the same as before, but all formulas for user and tsumego rating calculation have been improved.<br>
-				• <a href="<?php echo $link3; ?>" class="mode-link--time">Time mode</a> also affects the user rating.<br><br>
+				<br>
 
 				<b>Rewards:</b> Every Sunday, the 3 highest rated users that have no premium account get a premium upgrade. Next prize giving: 03.03.24. To give everyone a fresh start, all user ratings have been reset.<br><br>
 
@@ -351,7 +392,7 @@ else
 				</div>
 
 
-				<div id="news-left-8">
+				<div class="news-article">
 				<p class="title4">Update 01.02.2024</p>
 				<div class="new1">
 				<b>Explanation for the duplicate update on 01.02.2024</b><br><br>
@@ -367,7 +408,7 @@ else
 				</div>
 
 
-				<div id="news-left-7">
+				<div class="news-article">
 				<p class="title4">Update 11.01.2024</p>
 				<div class="new1">
 				<b>Similar problem search</b><br><br>
@@ -384,7 +425,7 @@ else
 				</div>
 
 
-				<div id="news-left-6">
+				<div class="news-article">
 					<p class="title4">Update 28.12.2023</p>
 					<div class="new1">
 					<b>Board previews and more achievements</b><br><br>
@@ -399,7 +440,7 @@ else
 					</div>
 				</div>
 
-				<div id="news-left-5">
+				<div class="news-article">
 					<p class="title4">Update 23.11.2023</p>
 					<div class="new1">
 					<br>
@@ -414,7 +455,7 @@ else
 					</div>
 				</div>
 
-				<div id="news-left-4">
+				<div class="news-article">
 					<p class="title4">Update 06.11.2023</p>
 					<div class="new1">
 						<b>More achievements</b><br><br>
@@ -427,7 +468,7 @@ else
 					</div>
 				</div>
 
-				<div id="news-left-3">
+				<div class="news-article">
 					<p class="title4">Update 27.10.2023</p>
 					<div class="new1">
 						<b>Achievements!</b><br><br>
@@ -441,7 +482,7 @@ else
 					</div>
 				</div>
 
-				<div id="news-left-2">
+				<div class="news-article">
 					<p class="title4">Update 14.10.2023</p>
 					<div class="new1">
 						<b>Improved comments</b><br><br>
@@ -462,7 +503,7 @@ else
 				</div>
 
 
-				<div id="news-left-1">
+				<div class="news-article">
 					<p class="title4">Update 20.07.2023</p>
 					<div class="new1">
 						<b>New board viewer: BesoGo</b><br><br>
@@ -481,6 +522,7 @@ else
 				<div id="show-more-left" class="show-more" align="center">
 					<a >Show more</a>
 				</div>
+				</div>
 
 
 				</div>
@@ -496,7 +538,7 @@ else
 			$publishedBySet[$tsumegoButton->setID][] = $tsumegoButton;
 		foreach ($publishedBySet as $setID => $setButtons)
 		{
-			echo '<a class="scheduleTsumego" href="/sets/view/' . $setID . '"><b>'
+			echo '<a class="scheduleTsumego" href="' . Set::url((int) $setID) . '"><b>'
 				. $setButtons[0]->setTitle . ' - ' . count($setButtons) . ' problems</b></a><br>';
 			echo '<div class="problem-nav__buttons">';
 			foreach ($setButtons as $index => $tsumegoButton)
@@ -510,57 +552,58 @@ else
 				<div class="quote-pick-wrapper">
 					<img src="/img/new_startpage/<?php echo $quote; ?>.png?v=4.3" class="quote-pick-1" alt="Quote of the Day" title="Quote of the Day">
 					<img src="/img/new_startpage/<?php echo $quote; ?>u.png?v=4.3" class="quote-pick-1" alt="User of the Day" title="User of the Day">
-					<?php if (isset($userOfTheDayId)): ?>
+					<?php if ($userOfTheDay !== null): ?>
 					<div class="user-pick-all user-pick-<?php echo $quote; ?>" align="center">
-						<a href="/users/view/<?php echo $userOfTheDayId; ?>"><?php echo $userOfTheDay; ?></a>
+						<?php echo User::renderLink($userOfTheDay); ?>
 					</div>
 					<?php endif; ?>
 				</div>
 
 				<!-- RIGHT NEWS -->
-				 <div id="news-right-17">
+				<div id="news-list-right" class="news-list" data-initial-visible="6">
+				 <div class="news-article">
 					<p class="title4">New Collection: Level Evaluation Set: Beginner | 21.08.2025</p>
 					<div class="new1">
 					The Level Evaluation Set is designed to assess and improve the reader’s strength in the game of Go through a focused collection of Tsumego and Tesuji problems. The first part is titled Beginner and covers problems around the double digit kyu ranks.
 					  <br><br>
 						<div align="center"><img width="90%" src="/img/level-evaluation-set-promo.png" alt="Level Evaluation Set: Beginner" title="Level Evaluation Set: Beginner"><br><br>
-						<a class="btn main-page" href="/sets/view/263">Play</a><br><br>
+						<a class="btn main-page" href="<?= Set::url(263) ?>">Play</a><br><br>
 						</div>
 					</div>
 				</div>
-				<div id="news-right-16">
+				<div class="news-article">
 					<p class="title4">New Collection: The J Group | 28.05.2025</p>
 					<div class="new1">
 					The J group is next to the L group another common shape that can happen in the corner. It is defended with a hanging connection, so it forms a J.
 					The status of the J group on its own is unsettled. Learn the details about this shape to improve your game, as you will certainly see it again.
 					  <br><br>
 						<div align="center"><img width="60%" src="/img/j-group-promo.png" alt="New Collection: The J Group" title="New Collection: The J Group"><br><br>
-						<a class="btn main-page" href="/sets/view/255">Play</a><br><br>
+						<a class="btn main-page" href="<?= Set::url(255) ?>">Play</a><br><br>
 						</div>
 					</div>
 				</div>
-				<div id="news-right-15">
+				<div class="news-article">
 					<p class="title4">New Collection: Boundless Sky | 01.05.2025</p>
 					<div class="new1">
 					The Goban is just like a boundless sky with unlimited possibilities. The only limit is your imagination. Expand your imagination with this set of problems that contain extraordinary shapes and solutions.
 						<div align="center"><img width="68%" src="/img/boundless-sky-promo.png" alt="New Collection: Boundless Sky" title="New Collection: Boundless Sky"><br><br>
-							<a class="btn main-page" href="/sets/view/254">Play</a><br><br>
+							<a class="btn main-page" href="<?= Set::url(254) ?>">Play</a><br><br>
 						</div>
 					</div>
 				</div>
 
-				<div id="news-right-13">
+				<div class="news-article">
 					<p class="title4">New Collection: The L Group | 12.03.2025</p>
 					<div class="new1">
 					Basic knowledge of the L group to boost double digit kyu player's confidence ! A diligent study is worth it. The L group is a corner shape that
 					will appear again and again in your game.  <br><br>
 						<div align="center"><img width="60%" src="/img/promo-lgroup.png" alt="New Collection: The L Group" title="New Collection: The L Group"><br><br>
-						<a class="btn main-page" href="/sets/view/252">Play</a><br><br>
+						<a class="btn main-page" href="<?= Set::url(252) ?>">Play</a><br><br>
 						</div>
 					</div>
 				</div>
 
-				<div id="news-right-11">
+				<div class="news-article">
 					<p class="title4">New Collection: Weiqi Life&Death Drills | 05.02.2025</p>
 					<div class="new1">
 					A game of go is a life-and-death struggle, with attacking and defending from beginning to end. The ability to kill and make life is the most fundamental manifestation
@@ -568,47 +611,47 @@ else
 					as enclosing, surrounding, placement, under the stones, as well as survival skills like increasing eyespace, connecting and sacrificing. <br><br>
 					<div align="center"><img width="80%" src="/img/wldpromo.png" alt="New Collection: Weiqi Life&Death Drills" title="New Collection: Weiqi Life&Death Drills">
 					<br><br>
-					<a class="btn main-page" href="/sets/view/250">Play</a><br><br></div>
+					<a class="btn main-page" href="<?= Set::url(250) ?>">Play</a><br><br></div>
 					</div>
 				</div>
 
-				<div id="news-right-10">
+				<div class="news-article">
 					<p class="title4">New Collection: Segoe Tesuji Dictionary | 22.01.2025</p>
 					<div class="new1">
 					Segoe Tesuji Dictionary is a three volume tesuji problem book-set, written by Segoe Kensaku and Go Seigen.
 					It is divided into sections according to the kind of move needed for the tesuji (e.g., tsuke or geta).<br><br>
 					<div align="center"><img width="95%" src="/img/segoe1-promo.png" alt="New Collection: Segoe Tesuji Dictionary" title="New Collection: Segoe Tesuji Dictionary">
-					<a class="btn main-page" href="/sets/view/248">Play</a><br><br></div>
+					<a class="btn main-page" href="<?= Set::url(248) ?>">Play</a><br><br></div>
 					</div>
 				</div>
 
 
-				<div id="news-right-9">
+				<div class="news-article">
 					<p class="title4">New Collection: Attack Hero | 30.12.2024</p>
 					<div class="new1">
 						In the game of Go, attacks can be used to get an advantage on the board. When attacking a group, killing is not the first objective.
 						Instead of that a group can be attacked to gain influence, gain territory, stabilize their own group, create thickness or many other reasons.
 						This collection teaches the best ways to attack groups to get an advantage on the board.<br><br>
 						<div align="center"><img width="60%" src="/img/attack-hero-promo.png" alt="New Collection: Attack Hero" title="New Collection: Attack Hero"><br><br>
-							<a class="btn main-page" href="/sets/view/246">Play</a><br><br>
+							<a class="btn main-page" href="<?= Set::url(246) ?>">Play</a><br><br>
 						</div>
 					</div>
 				</div>
 
 
-				<div id="news-right-8">
+				<div class="news-article">
 					<p class="title4">New Collection: Igo Hatsuyoron | 13.12.2024</p>
 					<div class="new1">
 					Igo Hatsuyoron (literally: Production of Yang in the Game of Go) is a collection of 183 go problems mostly
 					life and death problems, compiled in 1713 by the Japanese go master Inoue Dosetsu Inseki. The problems in this collection
 					have a very high difficulty, so discussion of solutions might not always be possible.<br><br>
 					<div align="center"><img width="95%" src="/img/igo-hatzuyoron.png" alt="New Collection: Igo Hatsuyoron" title="New Collection: Igo Hatsuyoron">
-					<a class="btn main-page" href="/sets/view/242">Play</a><br><br></div>
+					<a class="btn main-page" href="<?= Set::url(242) ?>">Play</a><br><br></div>
 					</div>
 				</div>
 
 
-				<div id="news-right-7">
+				<div class="news-article">
 					<p class="title4">New: Diabolical - the whole book | 19.08.2024</p>
 					<div class="new1">
 						Today we start publishing all problems from the Diabolical Vol. 1 book. That is 100 boards with each containing 4 or more problems.
@@ -618,77 +661,66 @@ else
 						<a href="https://australiango.asn.au/aga-books" target="_blank">australiango.asn.au/aga-books</a>
 						<br><br>
 						<div align="center"><img width="95%" src="/img/diabolical-new-promo.png" alt="New: Diabolical - the whole book" title="New: Diabolical - the whole book">
-						<a class="btn main-page" href="/sets/view/237">Play</a><br><br></div>
+						<a class="btn main-page" href="<?= Set::url(237) ?>">Play</a><br><br></div>
 					</div>
 				</div>
 
-				<div id="news-right-6">
+				<div class="news-article">
 					<p class="title4">New Collection: Direction of the Play  | 28.07.2024</p>
 					<div class="new1">
 						This collection covers full board positions, mostly from professional games.
 						The task is to choose the best move from the given options. The problems were checked with AI for correctness. <br><br>
 						<div align="center"><img width="95%" src="/img/directionofplay-info.png" alt="New Collection: Direction of the Play" title="New Collection: Direction of the Play">
 
-						<a class="btn main-page" href="/sets/view/236">Play</a><br><br></div>
+						<a class="btn main-page" href="<?= Set::url(236) ?>">Play</a><br><br></div>
 					</div>
 				</div>
 
-				<div id="news-right-5">
-					<p class="title4">New Collection: Techniques of TsumeGo | 04.07.2024</p>
-					<div class="new1">
-						In the game of Go, to solve crucial situations, one has to master the different techniques that the game presents. Those techniques,
-						also known as Tesuji, are presented in this collection.
-						The first topics and the first Tesuji techniques to master are ladders (Shicho) and nets (Geta).<br><br>
-						<i>Kageyama says "If you want to capture stones, hold up two fingers and say to yourself: 'Can I capture with the net?' and 'Can I capture with the ladder?'"</i><br><br>
-						<div align="center"><img width="95%" src="/img/techniques.png" alt="New Collection: Techniques of TsumeGo" title="New Collection: Techniques of TsumeGo">
-						<a class="btn main-page" href="/sets/view/235">Play</a><br><br></div>
-					</div>
-				</div>
-
-				<div id="news-right-4">
+				<div class="news-article">
 					<p class="title4">New Collection: Kano Yoshinori | 31.12.2023</p>
 					<div class="new1">
 								This series written by Kano Yoshinori in 1985 covers a large range of fundamental topics.
 						Volume 1 contains problems about recognizing atari, ladders, snapbacks and basic life and death problems. Created for Tsumego Hero by Stepan Trubitsin.
 						<div align="center"><img width="95%" src="/img/kano-yoshinori-promo.png" alt="New Collection: Kano Yoshinori" title="New Collection: Kano Yoshinori">
-						<a class="btn main-page" href="/sets/view/214">Play</a><br><br></div>
+						<a class="btn main-page" href="<?= Set::url(214) ?>">Play</a><br><br></div>
 					</div>
 				</div>
 
-				<div id="news-right-3">
+				<div class="news-article">
 					<p class="title4">New Collection: 9x9 Endgame Problems</p>
 					<div class="new1">
 						There's a saying in Go that your overall strength is limited by your endgame strength. Even if you are leading a lot in the opening and middle game, mistakes in endgame can still lose you the game. This collection allows you to practice and level-up your endgame in a small 9x9 board with real-game examples.
 						<div align="center"><img width="95%" src="/img/9x9-startpage.png">
 
-						<a class="btn main-page" href="/sets/view/207">Play</a><br><br></div>
+						<a class="btn main-page" href="<?= Set::url(207) ?>">Play</a><br><br></div>
 					</div>
 				</div>
 
-				<div id="news-right-2">
+				<div class="news-article">
 					<p class="title4">New Collection: Sacrifical Tsumego</p>
 					<div class="new1">
 						Sometimes sacrifices are necessary in order to kill, but how many stones can you sacrifice before killing?
 						That's the question this collection aims to answer.
 						<div align="center"><img width="95%" src="/img/sacrifical-tsumego-home.png">
 
-						<a class="btn main-page" href="/sets/view/197">Play</a><br><br></div>
+						<a class="btn main-page" href="<?= Set::url(197) ?>">Play</a><br><br></div>
 					</div>
 				</div>
 
-				<div id="news-right-1">
+				<div class="news-article">
 					<p class="title4">New Collection: Yi Kuo</p>
 					<div class="new1">
 						Yi Kuo is a classical kifu and tsumego book written by Huang Longshi (1651-1700). It was posthumously published in 1710.
 						Go Seigen once commented that Longshi's fighting skill
 						was of 13-dan strength. The problems in this collection are focused mainly on endgame tesujis.
 						<div align="center"><img width="95%" src="/img/yi-kuo-home.png">
-						<a class="btn main-page" href="/sets/view/195">Play</a><br><br></div>
+						<a class="btn main-page" href="<?= Set::url(195) ?>">Play</a><br><br></div>
 					</div>
 				</div>
 
 				<div id="show-more-right" class="show-more" align="center">
 					<a>Show more</a>
+				</div>
 				</div>
 
 					<?php
@@ -724,28 +756,25 @@ if(Auth::isLoggedIn())
 		<div class="clearfix"></div>
 
 	<script>
-		let highestLeft = <?php echo $highestLeft; ?>;
-		let highestRight = <?php echo $highestRight; ?>;
+		function showNextNews(side){
+			const hiddenArticles = $("#news-list-" + side + " > .news-article[hidden]");
+			hiddenArticles.slice(0, 3).removeAttr("hidden").hide().fadeIn(250);
+			if(hiddenArticles.length <= 3)
+				$("#show-more-" + side).hide();
+		}
 
-		let currentLeft = highestLeft - 4;
-		let currentRight = highestRight - 5;
-
-		$("#show-more-left").click(function(){
-			currentLeft -= 3;
-			for(let i=highestLeft;i>currentLeft;i--)
-				if(i>1)
-					$("#news-left-"+i).fadeIn(250);
-				else
-					$("#show-more-left").hide();
-		});
-
-		$("#show-more-right").click(function(){
-			currentRight -= 3;
-			for(let i=highestRight;i>currentRight;i--)
-				if(i>1)
-					$("#news-right-"+i).fadeIn(250);
-				else
-					$("#show-more-right").hide();
+		["left", "right"].forEach(function(side){
+			const list = $("#news-list-" + side);
+			const initialVisible = Number(list.attr("data-initial-visible"));
+			const articles = list.children(".news-article");
+			articles.each(function(index){
+				this.hidden = index >= initialVisible;
+			});
+			$("#show-more-" + side).on("click", function(){
+				showNextNews(side);
+			});
+			if(initialVisible >= articles.length)
+				$("#show-more-" + side).hide();
 		});
 
 		function sandboxY(){
@@ -761,42 +790,3 @@ if(Auth::isLoggedIn())
 			document.getElementById("sandboxVolunteers").style = "display:none;";
 		}
 	</script>
-	<?php
-	if(!Auth::isLoggedIn())
-		echo '<style>
-			#progressBarInLevelMode{
-				display:none;
-			}
-		</style>';
-?>
-
-	<style>
-		<?php
-		$left = $highestLeft;
-while($left > 0)
-{
-	if($left < $highestLeft - 4)
-		echo '#news-left-' . $left . '{display:none;}';
-	$left--;
-}
-$right = $highestRight;
-while($right > 0)
-{
-	if($right < $highestRight - 7)
-		echo '#news-right-' . $right . '{display:none;}';
-	$right--;
-}
-?>
-	</style>
-	<style>
-		.show-more{
-			padding:10px;
-		}
-		.show-more a{
-			text-decoration:underline;
-			cursor:pointer;
-		}
-		.show-more a:hover{
-			text-decoration:none;
-		}
-	</style>

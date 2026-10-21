@@ -7,7 +7,7 @@ class TimeModeCategory extends AppModel
 	public const FAST = 2;
 	public const SLOW = 3;
 
-	public function __construct($id = false, $table = null, $ds = null)
+	public function __construct(mixed $id = false, ?string $table = null, ?string $ds = null)
 	{
 		$id['table'] = 'time_mode_category';
 		parent::__construct($id, $table, $ds);

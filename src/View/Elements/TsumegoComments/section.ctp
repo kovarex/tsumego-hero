@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\Auth;
+
 /**
  * React Comments Section - Mount point for the React comments component.
  *
@@ -7,11 +9,11 @@
  * @var View $this
  * @var TsumegoIssue $TsumegoIssue
  * @var int $tsumegoId The tsumego ID
- * @var array $t The tsumego data (used to determine if comments should be visible)
+ * @var bool $solved Whether the problem is solved for the current mode
  */
 
 // Determine if comments should be visible (solved, completed, or admin)
-$shouldShowComments = TsumegoUtil::hasStateAllowingInspection($t) || Auth::isAdmin();
+$shouldShowComments = Auth::isAdmin() || $solved;
 $userId = Auth::isLoggedIn() ? Auth::getUserID() : null;
 
 // Calculate counts for tabs (only thing we need from server)

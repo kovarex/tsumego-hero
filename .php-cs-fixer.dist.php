@@ -8,6 +8,7 @@ return (new PhpCsFixer\Config())
 	->setRules(
 		[
 			'@PER-CS' => true,
+			'no_unused_imports' => true,
 			'no_unneeded_braces' => false,
 			'single_space_around_construct' => false,
 			'no_blank_lines_after_class_opening' => true,

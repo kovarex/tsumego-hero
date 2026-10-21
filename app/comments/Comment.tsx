@@ -2,7 +2,7 @@ import { UserLink } from '../shared/UserLink';
 import type { Comment as CommentType } from './commentTypes';
 import { IssueStatus, type IssueStatusId } from '../issues/issueTypes';
 import { useAuth } from '../shared/AuthContext';
-import dayjs from 'dayjs';
+import { formatDate } from '../shared/dates';
 import { parseCoordinateReferences } from './coordParser';
 
 interface CommentProps
@@ -207,10 +207,9 @@ export function Comment({
 								<span className="tsumego-comment__author">
 									<UserLink
 										userId={comment.user_id}
-										name={comment.user_name}
+										name={comment.user_display_name}
+										avatarUrl={comment.user_avatar_url}
 										rating={comment.user_rating}
-										externalId={comment.user_external_id}
-										picture={comment.user_picture}
 									/>
 									:
 								</span>
@@ -219,7 +218,9 @@ export function Comment({
 							</div>
 						</td>
 						<td align="right" className="sandboxTable2time">
-							<span className="tsumego-comment__date">{dayjs(comment.created).format('MMM. D, YYYY HH:mm')}</span>
+							<time className="tsumego-comment__date" dateTime={comment.created}>
+								{formatDate(comment.created)}
+							</time>
 							{comment.position && (
 								<button
 									type="button"

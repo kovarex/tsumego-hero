@@ -1,5 +1,8 @@
 <?php
 
+use App\Utility\ContributionRow;
+use App\Utility\Util;
+
 /**
  * @var View $this
  * @var array $viewedUser
@@ -29,8 +32,7 @@ endif;
 ?>
 
 <div align="center">
-	<p class="profile-username"><?php echo h($viewedUser['name']); ?></p>
-	<?php echo $this->element('user_subnav', ['userID' => $viewedUser['id'], 'activeTab' => 'contributions']); ?>
+	<?php echo $this->element('user_header', ['user' => $viewedUser, 'activeTab' => 'contributions']); ?>
 	<?php echo PaginationHelper::render($pageIndex, (int) ceil($count / $pageSize), 'page'); ?>
 	<table class="data-table">
 		<thead>

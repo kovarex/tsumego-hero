@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\Auth;
+
 class AppControllerTest extends TestCaseWithAuth
 {
 	/**

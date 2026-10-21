@@ -1,6 +1,10 @@
 #!/bin/bash
 
-git pull
+if [ -z "$DEPLOY_REEXEC" ]; then
+    git pull || exit 1
+    exec env DEPLOY_REEXEC=1 bash "$0" "$@"
+fi
+
 set -e
 
 ROOT_DIR="$(cd "$(dirname "$0")"; pwd)"
@@ -20,6 +24,16 @@ IS_DDEV=false
 if command -v ddev >/dev/null 2>&1; then
     IS_DDEV=true
     echo "DDEV environment detected."
+fi
+
+### Changelog manifest + revision (before anything that touches the site)
+### The generator aborts when a fragment's ship date is not in git, and a bad
+### fragment must not end up half-deployed.
+echo "=== Generating changelog manifest + revision ==="
+if [[ "$IS_DDEV" = true ]]; then
+    ddev exec CI=true npx pnpm@10 run changelog:gen
+else
+    CI=true npx pnpm@10 run changelog:gen
 fi
 
 ### Select MySQL client (local or DDEV)
@@ -157,6 +171,12 @@ chmod 777 "$ROOT_DIR/webroot/forums/store"
 chmod 777 "$ROOT_DIR/webroot/forums/files"
 chmod 777 "$ROOT_DIR/webroot/forums/images/avatars/upload"
 
+# Set cover images are uploaded by the web user at runtime, so the directory they
+# land in has to be writable for that user. The directory's .htaccess blocks
+# execution of anything uploaded there.
+mkdir -p "$ROOT_DIR/webroot/img/sets"
+chmod 777 "$ROOT_DIR/webroot/img/sets"
+
 
 ### Run migrations (inside container in dev, locally in production)
 echo "=== Running migrations ==="
@@ -183,15 +203,6 @@ if [[ "$IS_DDEV" = true ]]; then
 else
     CI=true npx pnpm@10 install --frozen-lockfile
     CI=true npx pnpm@10 run build
-fi
-
-
-# Generate changelog manifest (changelog/index.json) + record deployed revision
-echo "=== Generating changelog manifest + revision ==="
-if [[ "$IS_DDEV" = true ]]; then
-    ddev exec CI=true npx pnpm@10 run changelog:gen
-else
-    CI=true npx pnpm@10 run changelog:gen
 fi
 
 

@@ -1,5 +1,12 @@
 <?php
 
+use App\Utility\Auth;
+use App\Utility\HtmlSanitizer;
+use App\Utility\Rating;
+use App\Utility\TsumegoButton;
+use App\Utility\TsumegoButtons;
+use App\Utility\TsumegoFilters;
+
 /**
  * @var View $this
  * @var array $acA
@@ -8,6 +15,7 @@
  * @var float $avgTime
  * @var bool $isFav
  * @var string $lightDark
+ * @var bool $canShare
  * @var int $partition
  * @var int $pdCounter
  * @var int $problemSolvedPercent
@@ -15,6 +23,7 @@
  * @var int $saNum
  * @var bool $scoring
  * @var array $set
+ * @var array|null $setAuthor
  * @var int $setRating
  * @var string $setTitle
  * @var bool $startingSetConnectionID
@@ -33,7 +42,11 @@ if($set['Set']['id'] == 11969 || $set['Set']['id'] == 29156 || $set['Set']['id']
 </script>
 	<div class="split">
 		<div>
-		<?php echo '<p class="title4 set-view-title">' . h($setTitle) . '</p>';?>
+		<?php
+		$ownerNote = $setAuthor && (int) $setAuthor['id'] !== Auth::getUserID()
+			? ' <span class="set-view__owner">by ' . User::renderLink($setAuthor) . '</span>'
+			: '';
+		echo '<p class="title4 set-view-title">' . h($setTitle) . $ownerNote . '</p>';?>
 		<div class="new1">
 		<table border="0" width="100%">
 		<tr>
@@ -72,7 +85,7 @@ if (!$noImage && $tsumegoFilters->query == 'topics' && $set['Set']['image'])
 elseif (!$noImage && $tsumegoFilters->query == 'difficulty')
 	echo '<td width="195px" class="valign-top"><div class="set-image-zoom set-image-zoom--rank" align="center">
 						<a href="/' . $startingSetConnectionID . '">
-						<span class="rank-icon rank-icon-large">' . h($set['Set']['id']) . '</span>
+						<span class="rank-icon rank-icon-large' . (str_contains($set['Set']['id'], '-') ? ' rank-icon-large--range' : '') . '">' . h($set['Set']['id']) . '</span>
 						</a></div></td>';
 else
 	echo '<td width="195px" class="valign-top"><div align="center"></div></td>';
@@ -162,10 +175,12 @@ if ($tsumegoFilters->query != 'topics')
 					else
 						$pdCounterValue = 99;
 
-					echo '<font color="gray">XP reduced by ' . $pdCounterValue . '%. (' . $pdCounter . ' reset' . $plural . ' this month.)</font>';
+					echo '<font color="gray">XP reduced by ' . $pdCounterValue . '%. (' . $pdCounter . ' reset' . $plural . ' in the last month.)</font>';
 				}
-				if ($tsumegoFilters->collectionSize != 200)
-					echo 'Reset is only possible when collection size is set to 200';
+				if ($tsumegoFilters->collectionSize != ProgressDeletion::$PARTITION_SIZE)
+					echo 'Reset is only possible when collection size is set to ' . ProgressDeletion::$PARTITION_SIZE;
+				elseif (SetsController::hasProblemFilters($tsumegoFilters))
+					echo 'Reset is only possible without rank and tag filters';
 				elseif ($problemSolvedPercent < 50)
 					echo '<br><font color="gray">You need to complete 50% to reset.</font>';
 				else
@@ -201,7 +216,7 @@ if ($tsumegoFilters->query != 'topics')
 			</td>
 			<td>
 			<?php
-			if ($problemSolvedPercent >= 50)
+			if ($problemSolvedPercent >= 50 && $tsumegoFilters->collectionSize == ProgressDeletion::$PARTITION_SIZE && !SetsController::hasProblemFilters($tsumegoFilters))
 			{
 				echo '<div id="msg2x">';
 				echo 'Type "reset" to remove all your progress on this collection.<br><br>';
@@ -213,12 +228,58 @@ if ($tsumegoFilters->query != 'topics')
 			} ?>
 			</td>
 			</tr>
-			<?php
-			if (isset($canEdit) && $canEdit)
-				echo '<tr><td colspan="2" class="set-view__edit-row">
-					<a class="btn btn--primary" href="/sets/edit/' . $set['Set']['id'] . '">Edit Set</a>
-					</td></tr>';
-			?>
+			<?php if (isset($canEdit) && $canEdit): ?>
+				<tr>
+					<td colspan="2" class="set-view__edit-row">
+						<a class="btn btn--primary" href="/sets/edit/<?php echo (int) $set['Set']['id']; ?>">Edit Set</a>
+						<?php if (!empty($canShare)): ?>
+							<form method="post" action="/sets/share/<?php echo (int) $set['Set']['id']; ?>" class="set-view__share">
+								<label class="set-view__share-toggle">
+									<input type="hidden" name="shared" value="0">
+									<input type="checkbox" name="shared" value="1"<?php echo $set['Set']['public'] == 1 ? ' checked' : ''; ?> onchange="this.form.submit()">
+									Anyone with the link can open this collection
+								</label>
+								<noscript><button type="submit" class="btn">Save sharing</button></noscript>
+								<?php if ($set['Set']['public'] == 1): ?>
+									<span class="set-view__share-link-row">
+										<input class="form-field__control set-view__share-link" type="text" id="SetShareLink" readonly value="<?php echo h(Set::url((int) $set['Set']['id'], 1, true)); ?>" onclick="this.select()">
+										<button type="button" class="btn set-view__share-copy" id="SetShareCopy" aria-label="Copy the link to this collection">Copy</button>
+									</span>
+									<span class="set-view__share-status" id="SetShareStatus" role="status" aria-live="polite"></span>
+								<?php endif; ?>
+							</form>
+							<?php if ($set['Set']['public'] == 1): ?>
+								<script>
+									(function () {
+										const button = document.getElementById('SetShareCopy');
+										const field = document.getElementById('SetShareLink');
+										const status = document.getElementById('SetShareStatus');
+										if (!button || !field)
+											return;
+										button.addEventListener('click', () => {
+											const copied = navigator.clipboard && window.isSecureContext
+												? navigator.clipboard.writeText(field.value)
+												: Promise.reject(new Error('no clipboard'));
+											copied.then(() => {
+												button.textContent = 'Copied';
+												status.textContent = 'The link is in your clipboard.';
+												setTimeout(() => {
+													button.textContent = 'Copy';
+													status.textContent = '';
+												}, 2000);
+											}).catch(() => {
+												// The browser refused, so leave the address selected for a manual copy.
+												field.select();
+												status.textContent = 'Press Ctrl+C to copy the address.';
+											});
+										});
+									}());
+								</script>
+							<?php endif; ?>
+						<?php endif; ?>
+					</td>
+				</tr>
+			<?php endif; ?>
 			</tr>
 		<?php } ?>
 
@@ -237,31 +298,30 @@ if ($tsumegoFilters->query != 'topics')
 			<div class="active-tiles-container tiles-view">
 <?php
 $hasActiveTiles = false;
+$rankLabels = $tsumegoFilters->query != 'difficulty' ? $tsumegoFilters->rankFilterLabels() : [];
 if ($tsumegoFilters->query != 'topics')
-{
 	foreach ($tsumegoFilters->sets as $i => $setName)
 	{
 		$hasActiveTiles = true;
 		echo '<div class="dropdown__tile dropdown__tile--green dropdown__tile--context" id="active-set-element' . $i . '" onclick="removeActiveTopic(' . $i . ')">' . h($setName) . '</div>';
 	}
-}
 if ($tsumegoFilters->query != 'difficulty')
-{
-	foreach ($tsumegoFilters->ranks as $i => $rank)
+	foreach ($rankLabels as $i => $rankLabel)
 	{
 		$hasActiveTiles = true;
-		echo '<div class="dropdown__tile dropdown__tile--difficulty dropdown__tile--context" style="--rank-color:var(--rank-' . h($rank) . ')" id="active-rank-element' . $i . '" onclick="removeActiveDifficulty(' . $i . ')">' . h($rank) . '</div>';
+		$isRange = str_contains($rankLabel, '-');
+		echo '<div class="dropdown__tile ' . ($isRange ? 'dropdown__tile--purple' : 'dropdown__tile--difficulty')
+			. ' dropdown__tile--context"'
+			. ($isRange ? '' : ' style="--rank-color:var(--rank-' . h($rankLabel) . ')"')
+			. ' id="active-rank-element' . $i . '" onclick="removeActiveDifficulty(' . $i . ')">' . h($rankLabel) . '</div>';
 	}
-}
 if ($tsumegoFilters->query != 'tags')
-{
 	foreach ($tsumegoFilters->tags as $i => $tag)
 	{
 		$hasActiveTiles = true;
 		$color = (int) ($tsumegoFilters->tagColors[$tag] ?? 24);
 		echo '<div class="dropdown__tile dropdown__tile--tag dropdown__tile--context" style="--tag-color:var(--tag-palette-' . $color . ')" id="active-tag-element' . $i . '" onclick="removeActiveTag(' . $i . ')">' . h($tag) . '</div>';
 	}
-}
 if ($hasActiveTiles)
 	echo '<a class="dropdown__tile dropdown__tile--muted" id="unselect-active-tiles" href="">clear</a><div class="clearfix"></div>';
 ?>
@@ -291,7 +351,7 @@ if ($totalPages > 1):
 <?php if ($p === $currentPage): ?>
 		<strong><?php echo $p; ?></strong>
 <?php else: ?>
-		<a href="/sets/view/<?php echo $set['Set']['id'] . ($p > 1 ? '/' . $p : ''); ?>"><?php echo $p; ?></a>
+			<a href="<?php echo Set::url($set['Set']['id'], $p); ?>"><?php echo $p; ?></a>
 <?php endif; ?>
 <?php endfor; ?>
 	</div>
@@ -303,7 +363,7 @@ if ($totalPages > 1):
 
 	<script>
 	const activeSets = <?php echo json_encode($tsumegoFilters->query != 'topics' ? array_values($tsumegoFilters->sets) : [], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
-	const activeRanks = <?php echo json_encode($tsumegoFilters->query != 'difficulty' ? array_values($tsumegoFilters->ranks) : [], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
+	const activeRanks = <?php echo json_encode($rankLabels, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 	const activeTags = <?php echo json_encode($tsumegoFilters->query != 'tags' ? array_values($tsumegoFilters->tags) : [], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 
 	$(".active-tiles-container").on("click", "#unselect-active-tiles", function(e){
@@ -409,7 +469,7 @@ if ($totalPages > 1):
 
 		<?php
 if($refreshView)
-	echo 'window.location.href = "/sets/view/' . $set['Set']['id'] . '";';
+	echo 'window.location.href = "' . Set::url($set['Set']['id']) . '";';
 ?>
 	</script>
 	<style>

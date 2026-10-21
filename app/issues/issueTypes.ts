@@ -25,10 +25,9 @@ export interface Issue
 	tsumego_issue_status_id: IssueStatusId;
 	created: string;
 	user_id: number;
-	user_name: string | null;
-	user_picture: string | null;
+	user_display_name: string | null;
+	user_avatar_url: string | null;
 	user_rating: number | null;
-	user_external_id: string | null;
 	isAdmin: boolean;
 	comments: Comment[];
 }

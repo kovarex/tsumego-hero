@@ -1,8 +1,14 @@
 <?php
 
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\CookieFlash;
+use App\Utility\RatingBounds;
+use App\Utility\Util;
+
 class RatingModeController extends AppController
 {
-	public static function ratingAdjustment($difficultySetting)
+	public static function ratingAdjustment(int|string $difficultySetting): int
 	{
 		$adjustments = [
 			1 => -Constants::$RATING_MODE_DIFFERENCE_SETTING_3,
@@ -32,7 +38,7 @@ class RatingModeController extends AppController
 			$adjustedRating + Constants::$RATING_MODE_SELECTION_INTERVAL / 2);
 
 		$queryCondition = "";
-		Util::addSqlCondition($queryCondition, "`set`.public = true");
+		Util::addSqlCondition($queryCondition, Set::officialCondition());
 		$ratingBounds->addSqlConditions($queryCondition);
 		$query = "
 SELECT
@@ -57,7 +63,7 @@ WHERE " . $queryCondition;
 		$play  = new Play(function ($name, $value) {
 			$this->set($name, $value);
 		});
-		$play->play($relatedTsumegos[0]['id'], $this->params, $this->data);
+		$play->play($relatedTsumegos[0]['id'], $this->request, $this->request->data);
 		$this->render('/Tsumegos/play');
 		return null;
 	}

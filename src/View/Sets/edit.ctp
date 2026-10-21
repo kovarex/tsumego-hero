@@ -1,5 +1,9 @@
 <?php
 
+use App\Utility\Rating;
+use App\Utility\SetEditRenderer;
+use App\Utility\TsumegoButtons;
+
 /**
  * @var View $this
  * @var bool $allArActive
@@ -27,7 +31,7 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 	<div class="set-edit__header">
 		<p class="set-edit__crumb"><a href="/sets/mine">My Sets</a> / Edit Set</p>
 		<h1 class="set-edit-title"><?php echo h($set['Set']['title']); ?></h1>
-		<p><a class="btn" href="/sets/view/<?php echo $setId; ?>">View Set</a></p>
+		<p><a class="btn" href="<?php echo Set::url($setId); ?>">View Set</a></p>
 	</div>
 
 	<div class="set-edit__grid">

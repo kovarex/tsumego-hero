@@ -1,6 +1,8 @@
 <?php
 
-App::uses('TsumegoStatus', 'Model');
+namespace App\Utility;
+
+use TsumegoStatus;
 
 class TsumegoButton
 {
@@ -14,7 +16,7 @@ class TsumegoButton
 		$this->sgf = $sgf;
 	}
 
-	public function render()
+	public function render(): void
 	{
 		$num = '<div class="problem-nav__number"' . ($this->isCurrentlyOpened ? ' id="currentNavigationButton"' : '') . '>' . $this->order . '</div>';
 
@@ -54,19 +56,44 @@ class TsumegoButton
 			}
 		}
 
+		// In the mistake training the ratio and the time are always empty, so the button
+		// shows the rung of the review ladder under the number instead.
+		$details = $this->rung === null ? $num2 . $num3 : $this->renderRungBadge();
+
 		echo '<li class="problem-nav__item problem-nav__item--' . ($this->status ?: 'N') . ($this->isCurrentlyOpened ? ' problem-nav__item--current' : '') . '">';
 		$status = $this->status ?: 'N';
-		$label = TsumegoStatus::label($status);
-		$description = TsumegoStatus::description($status);
-		echo '<a class="tooltip" href="/' . $this->setConnectionID . '"'
+		$label = $this->label ?? TsumegoStatus::label($status);
+		$description = $this->description ?? TsumegoStatus::description($status);
+		echo '<a class="tooltip' . ($this->rung === null ? '' : ' problem-nav__rung-link') . '" href="' . $this->linkPrefix . $this->setConnectionID . '"'
 			. ' data-tsumego-id="' . $this->tsumegoID . '"'
 			. $sgfAttr . '>'
-			. $num . $num2 . $num3
+			. $num . $details
 			. '<span class="tooltip-box">'
 			. '<div class="tooltip-label status' . $status . '">' . h($label) . '</div>'
 			. '<div class="tooltip-desc">' . h($description) . '</div>'
 			. '</span></a>';
 		echo '</li>';
+	}
+
+	/**
+	 * The badge of a training button: the rank insignia of the rung (see
+	 * RungInsignia), chevrons for the first rungs and stars for the last reviews
+	 * before graduation, and a crown for a graduation of today, so the row tells a
+	 * fresh mistake from a late review at a glance. It shows no wait, since "1d" reads
+	 * as one dan in Go; the tooltip says when the problem comes back. The name is an
+	 * aria-label rather than a title, which would pop a second tooltip over the one
+	 * of the button. The play page swaps the badge in once a result moves the rung.
+	 */
+	public function renderRungBadge(): string
+	{
+		if ($this->graduated)
+			return '<div class="problem-nav__rung problem-nav__rung--graduated" role="img" aria-label="Graduated">'
+				. RungInsignia::renderCrown() . '</div>';
+		[$kind, $count] = RungInsignia::of($this->rung, count(MistakeTraining::ladder()));
+		return '<div class="problem-nav__rung problem-nav__rung--' . $kind . ($this->missedToday ? ' problem-nav__rung--missed' : '') . '"'
+			. ' data-rung="' . $this->rung . '"'
+			. ' role="img" aria-label="' . MistakeTraining::rungName($this->rung) . ($this->missedToday ? ', missed today' : '') . '">'
+			. RungInsignia::render($kind, $count) . '</div>';
 	}
 
 	/**
@@ -89,6 +116,7 @@ class TsumegoButton
 
 	public int $tsumegoID;
 	public int $setConnectionID;
+	public string $linkPrefix = '/';
 	public int $order;
 	public string $status;
 	public ?float $rating;
@@ -99,4 +127,23 @@ class TsumegoButton
 	public ?string $diff = null;
 	public ?int $setID = null;
 	public ?string $setTitle = null;
+
+	/**
+	 * Rung of the mistake training ladder, shown as a badge under the number. Null
+	 * outside the training, where the button shows its usual lines.
+	 */
+	public ?int $rung = null;
+
+	/** Graduated from the training today, which has a badge of its own. */
+	public bool $graduated = false;
+
+	/** Missed in the training today and not solved yet: still grey, with a red ring on its badge. */
+	public bool $missedToday = false;
+
+	/**
+	 * Tooltip texts in place of the ones of the status, for a row whose colours mean
+	 * something other than the tsumego status.
+	 */
+	public ?string $label = null;
+	public ?string $description = null;
 }

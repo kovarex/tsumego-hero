@@ -1,14 +1,17 @@
 <?php
 
+use App\Utility\AdminActivityRenderer;
+use App\Utility\SGFProposalsRenderer;
+use App\Utility\TagConnectionProposalsRenderer;
+use App\Utility\TagProposalsRenderer;
+use App\Utility\Util;
+
 /**
  * @var View $this
  * @var AdminActivityRenderer $adminActivityRenderer
- * @var bool $refreshView
- * @var array $requestDeletion
- * @var array $set
+ * @var array $deletedUsers
  * @var SGFProposalsRenderer $sgfProposalsRenderer
  * @var TagConnectionProposalsRenderer $tagConnectionProposalsRenderer
- * @var array $tagNames
  * @var TagProposalsRenderer $tagProposalsRenderer
  */
 
@@ -19,14 +22,15 @@
 		echo '<hr>';
 		$tagProposalsRenderer->render();
 		echo '<hr>';
-		if($requestDeletion!=null){
+		if ($deletedUsers) {
 			echo '<table class="data-table data-table--compact">';
-			echo '<caption>Account Deletion Requests (' . count($requestDeletion) . ')</caption>';
-			for($i=0; $i<count($requestDeletion); $i++){
+			echo '<caption>Deleted Accounts (' . count($deletedUsers) . ')</caption>';
+			foreach ($deletedUsers as $deletedUser) {
 				echo '<tr>';
-				echo '<td>'.h($requestDeletion[$i]['User']['name']).' has requested account deletion.</td>';
-				echo '<td><a class="btn btn--small btn--danger" id="delete-user-'.($i+1).'" href="/users/adminstats?delete='.($requestDeletion[$i]['User']['id']*1111)
-				.'&hash='.md5($requestDeletion[$i]['User']['name']).'" onclick="return confirm(\'Are you sure you want to delete this account?\');">Delete Account</a></td>';
+				echo '<td><a href="/users/view/' . $deletedUser['User']['id'] . '">' . h($deletedUser['User']['deleted_name']) . '</a></td>';
+				echo '<td><time datetime="' . Util::toIso8601($deletedUser['User']['deleted']) . '" data-format="datetime">' . $deletedUser['User']['deleted'] . '</time></td>';
+				echo '<td><form method="post" action="/users/restore_account/' . $deletedUser['User']['id'] . '" onsubmit="return confirm(\'Restore this account?\');">'
+					. '<button type="submit" class="btn btn--small" id="restore-user-' . $deletedUser['User']['id'] . '">Restore</button></form></td>';
 				echo '</tr>';
 			}
 			echo '</table>';
@@ -44,28 +48,4 @@
 
 <script>
 	var tooltipSgfs = window.tooltipSgfs || [];
-	let tagList = "null";
-	let proposalList = "null";
-	let submitCount = 0;
-
-	<?php if($refreshView) echo 'window.location.href = "/sets/view/'.$set['Set']['id'].'";'; ?>
-
-	<?php
-		for($h=0; $h<count($tagNames); $h++){
-			echo '$("#tagname-accept'.$h.'").click(function() {
-				$("#tagname-submit'.$h.'").show();
-				$("#tagname-accept'.$h.'").hide();
-				$("#tagname-reject'.$h.'").hide();
-				submitCount++;
-				$(".tag-submit-button").html("Submit ("+submitCount+")");
-			});';
-			echo '$("#tagname-reject'.$h.'").click(function() {
-				$("#tagname-submit'.$h.'").show();
-				$("#tagname-accept'.$h.'").hide();
-				$("#tagname-reject'.$h.'").hide();
-				submitCount++;
-				$(".tag-submit-button").html("Submit ("+submitCount+")");
-			});';
-		}
-	?>
 </script>

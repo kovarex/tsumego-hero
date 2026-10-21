@@ -1,24 +1,20 @@
 <?php
 
-App::uses('SgfParser', 'Utility');
-App::uses('TsumegoUtil', 'Utility');
-App::uses('NotFoundException', 'Routing/Error');
-App::uses('BadRequestException', 'Routing/Error');
-App::uses('UnauthorizedException', 'Routing/Error');
-App::uses('ForbiddenException', 'Routing/Error');
-App::uses('ConflictException', 'Lib/Error');
-App::uses('TsumegoButton', 'Utility');
-App::uses('TsumegoButtons', 'Utility');
-App::uses('SetsSelector', 'Utility');
-App::uses('AdminActivityLogger', 'Utility');
-App::uses('AdminActivityType', 'Model');
-App::uses('Progress', 'Utility');
-App::uses('SetEditRenderer', 'Utility');
-App::uses('SetImage', 'Utility');
-App::uses('HtmlSanitizer', 'Utility');
-App::uses('Constants', 'Utility');
-App::uses('SetConnection', 'Model');
-
+use App\Lib\Error\ConflictException;
+use App\Utility\AchievementChecker;
+use App\Utility\AdminActivityLogger;
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\CookieFlash;
+use App\Utility\HtmlSanitizer;
+use App\Utility\Preferences;
+use App\Utility\Rating;
+use App\Utility\SetImage;
+use App\Utility\SetsSelector;
+use App\Utility\TsumegoButtons;
+use App\Utility\TsumegoFilters;
+use App\Utility\TsumegoUtil;
+use App\Utility\Util;
 use App\Attribute\HttpPost;
 
 class SetsController extends AppController
@@ -28,7 +24,7 @@ class SetsController extends AppController
 	/**
 	 * @return void
 	 */
-	public function sandbox()
+	public function sandbox(): void
 	{
 		$this->Authorization->authorize('Set');
 
@@ -105,7 +101,7 @@ class SetsController extends AppController
 		$adminsList = $this->User->find('all', ['order' => 'id ASC', 'conditions' => ['isAdmin >' => 0]]) ?: [];
 		$admins = [];
 		foreach ($adminsList as $item)
-			$admins[] = $item['User']['name'];
+			$admins[] = $item['User']['display_name'];
 
 		$this->set('admins', $admins);
 		$this->set('setsNew', $setsNew);
@@ -120,7 +116,7 @@ class SetsController extends AppController
 		$this->_showUserSets(Auth::getUserID());
 	}
 
-	public function userSets($userId)
+	public function userSets(string $userId): void
 	{
 		$this->_showUserSets((int) $userId);
 	}
@@ -131,10 +127,15 @@ class SetsController extends AppController
 
 		$isOwn = ($userId === Auth::getUserID());
 		$profileUser = $this->User->findById($userId);
-		$pageTitle = $isOwn ? 'My Sets' : h($profileUser['User']['name']) . "'s Sets";
+		if (!$profileUser)
+			throw new NotFoundException('User not found');
+		$this->assertUserVisible($profileUser['User']);
+		$pageTitle = $isOwn ? 'My Sets' : h($profileUser['User']['display_name']) . "'s Sets";
 		$this->set('_title', 'Tsumego Hero - ' . $pageTitle);
-		$this->set('profileUser', $profileUser ? $profileUser['User'] : null);
+		$this->set('profileUser', $profileUser['User']);
 		$this->set('isOwn', $isOwn);
+		// /sets/mine is the shortcut to this page, so the page itself is known by the player's address.
+		$this->set('canonicalPath', '/sets/user/' . $userId);
 
 		// Own sets (or an admin browsing) show all sets; others only see public ones
 		$publicFilter = ($isOwn || Auth::isAdmin()) ? '' : 'AND s.public = 1';
@@ -176,7 +177,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 		$this->render('user_sets');
 	}
 
-	public function create()
+	public function create(): void
 	{
 		$this->Authorization->authorize('Set', 'create');
 
@@ -185,17 +186,17 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 		$redirect = false;
 		$t = [];
 
-		if (isset($this->data['Set']))
+		if (isset($this->request->data['Set']))
 		{
 			$isSandbox = isset($this->params['url']['sandbox']) && $this->Authorization->can('Set', 'createSandbox');
 
 			$set = [];
-			$set['Set']['title'] = $this->data['Set']['title'];
+			$set['Set']['title'] = $this->request->data['Set']['title'];
 			$set['Set']['public'] = 0;
-			if (isset($this->data['Set']['description']))
-				$set['Set']['description'] = HtmlSanitizer::sanitize((string) $this->data['Set']['description']);
-			if (isset($this->data['Set']['color']) && $this->data['Set']['color'] !== '')
-				$set['Set']['color'] = $this->data['Set']['color'];
+			if (isset($this->request->data['Set']['description']))
+				$set['Set']['description'] = HtmlSanitizer::sanitize((string) $this->request->data['Set']['description']);
+			if (isset($this->request->data['Set']['color']) && $this->request->data['Set']['color'] !== '')
+				$set['Set']['color'] = $this->request->data['Set']['color'];
 			else
 				$set['Set']['color'] = '#5b9bd5';
 
@@ -218,7 +219,8 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 				$t['Tsumego']['difficulty'] = 4;
 				$t['Tsumego']['variance'] = 100;
 				$t['Tsumego']['description'] = 'b to kill';
-				$t['Tsumego']['author'] = Auth::getUser()['name'];
+				$t['Tsumego']['author'] = Auth::getUser()['display_name'];
+				$t['Tsumego']['author_user_id'] = Auth::getUserID();
 				$this->Tsumego->create();
 				$this->Tsumego->save($t);
 
@@ -240,7 +242,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 	 * Edit a set: details, problems and (for admins) re-rate and solve-mode
 	 * settings. Owner or admin only.
 	 */
-	public function edit($id = null)
+	public function edit(?string $id = null)
 	{
 		$this->loadModel('Tsumego');
 		$this->loadModel('SetConnection');
@@ -265,19 +267,19 @@ ORDER BY sc.num ASC", [(int) $id]);
 		// Tsumego buttons (status colors, tooltips, board previews) for the problem list
 		$tsumegoButtons = new TsumegoButtons(new TsumegoFilters('topics'), null, null, (int) $id);
 
-		if (isset($this->data['Set']))
+		if (isset($this->request->data['Set']))
 		{
 			$changeSet = $set;
-			if (array_key_exists('title', $this->data['Set']))
-				$changeSet['Set']['title'] = $this->data['Set']['title'];
-			if (array_key_exists('title2', $this->data['Set']))
-				$changeSet['Set']['title2'] = $this->data['Set']['title2'];
-			if (array_key_exists('description', $this->data['Set']))
-				$changeSet['Set']['description'] = HtmlSanitizer::sanitize((string) $this->data['Set']['description']);
-			if (array_key_exists('color', $this->data['Set']) && $this->data['Set']['color'] !== '')
-				$changeSet['Set']['color'] = $this->data['Set']['color'];
-			if (array_key_exists('order', $this->data['Set']) && $this->data['Set']['order'] !== '')
-				$changeSet['Set']['order'] = (int) $this->data['Set']['order'];
+			if (array_key_exists('title', $this->request->data['Set']))
+				$changeSet['Set']['title'] = $this->request->data['Set']['title'];
+			if (array_key_exists('title2', $this->request->data['Set']))
+				$changeSet['Set']['title2'] = $this->request->data['Set']['title2'];
+			if (array_key_exists('description', $this->request->data['Set']))
+				$changeSet['Set']['description'] = HtmlSanitizer::sanitize((string) $this->request->data['Set']['description']);
+			if (array_key_exists('color', $this->request->data['Set']) && $this->request->data['Set']['color'] !== '')
+				$changeSet['Set']['color'] = $this->request->data['Set']['color'];
+			if (array_key_exists('order', $this->request->data['Set']) && $this->request->data['Set']['order'] !== '')
+				$changeSet['Set']['order'] = (int) $this->request->data['Set']['order'];
 
 			$this->Set->create();
 			$this->Set->save($changeSet, true);
@@ -303,15 +305,15 @@ ORDER BY sc.num ASC", [(int) $id]);
 		}
 
 		// Re-rate every problem in this set (admin only)
-		if ($canEditSettings && isset($this->data['Set']['setDifficulty']))
-			if ($this->data['Set']['setDifficulty'] != 1200 && $this->data['Set']['setDifficulty'] >= 900 && $this->data['Set']['setDifficulty'] <= 2900)
+		if ($canEditSettings && isset($this->request->data['Set']['setDifficulty']))
+			if ($this->request->data['Set']['setDifficulty'] != 1200 && $this->request->data['Set']['setDifficulty'] >= 900 && $this->request->data['Set']['setDifficulty'] <= 2900)
 			{
 				foreach ($problems as $problem)
 				{
 					$tsumego = ClassRegistry::init('Tsumego')->findById($problem['tsumego_id']);
 					$tsumego['Tsumego']['rating']
 						= Util::clampOptional(
-							$this->data['Set']['setDifficulty'],
+							$this->request->data['Set']['setDifficulty'],
 							$tsumego['Tsumego']['minimum_rating'],
 							$tsumego['Tsumego']['maximum_rating']);
 					$this->Tsumego->save($tsumego);
@@ -320,9 +322,9 @@ ORDER BY sc.num ASC", [(int) $id]);
 			}
 
 		// Alternative response / pass mode for all problems (admin only)
-		if ($canEditSettings && isset($this->data['Settings']))
+		if ($canEditSettings && isset($this->request->data['Settings']))
 		{
-			if ($this->data['Settings']['r39'] == 'on')
+			if ($this->request->data['Settings']['r39'] == 'on')
 			{
 				foreach ($problems as $problem)
 				{
@@ -332,7 +334,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 				}
 				AdminActivityLogger::log(AdminActivityType::SET_ALTERNATIVE_RESPONSE, null, (int) $id, null, '1');
 			}
-			if ($this->data['Settings']['r39'] == 'off')
+			if ($this->request->data['Settings']['r39'] == 'off')
 			{
 				foreach ($problems as $problem)
 				{
@@ -342,7 +344,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 				}
 				AdminActivityLogger::log(AdminActivityType::SET_ALTERNATIVE_RESPONSE, null, (int) $id, null, '0');
 			}
-			if ($this->data['Settings']['r43'] == 'yes')
+			if ($this->request->data['Settings']['r43'] == 'yes')
 			{
 				foreach ($problems as $problem)
 				{
@@ -352,7 +354,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 				}
 				AdminActivityLogger::log(AdminActivityType::SET_PASS_MODE, null, (int) $id, null, '1');
 			}
-			if ($this->data['Settings']['r43'] == 'no')
+			if ($this->request->data['Settings']['r43'] == 'no')
 			{
 				foreach ($problems as $problem)
 				{
@@ -365,15 +367,9 @@ ORDER BY sc.num ASC", [(int) $id]);
 		}
 
 		// Handle image removal
-		if (!empty($this->data['Set']['remove_image']))
+		if (!empty($this->request->data['Set']['remove_image']))
 		{
-			$oldImage = $set['Set']['image'];
-			if ($oldImage && str_starts_with($oldImage, 'sets/'))
-			{
-				$oldPath = WWW_ROOT . 'img' . DS . str_replace('/', DS, $oldImage);
-				if (file_exists($oldPath))
-					unlink($oldPath);
-			}
+			SetImage::remove($set['Set']['image']);
 			$this->Set->id = (int) $id;
 			$this->Set->saveField('image', '');
 			$set['Set']['image'] = '';
@@ -391,30 +387,19 @@ ORDER BY sc.num ASC", [(int) $id]);
 				CookieFlash::set('The file is too large (max 2MB).', 'error');
 			else
 			{
-				$setId = (int) $id;
 				$oldImage = $set['Set']['image'];
 
 				try
 				{
 					$processed = SetImage::process($_FILES['image']['tmp_name'], $file_ext);
+					$filename = SetImage::store((int) $id, $processed);
 
-					$setDir = WWW_ROOT . 'img' . DS . 'sets' . DS . $setId;
-					if (!is_dir($setDir))
-						mkdir($setDir, 0775, true);
+					// The name of a cover carries the hash of its picture, so an upload is a
+					// new file and the cover it replaces is removed here.
+					if ($oldImage !== $filename)
+						SetImage::remove($oldImage);
 
-					$filename = 'sets/' . $setId . '/' . substr($processed['hash'], 0, 16) . '.webp';
-					$uploadPath = WWW_ROOT . 'img' . DS . str_replace('/', DS, $filename);
-					file_put_contents($uploadPath, $processed['data']);
-
-					// Only delete user-uploaded images (inside sets/), never shared assets
-					if ($oldImage && str_starts_with($oldImage, 'sets/') && $oldImage !== $filename)
-					{
-						$oldPath = WWW_ROOT . 'img' . DS . str_replace('/', DS, $oldImage);
-						if (file_exists($oldPath))
-							unlink($oldPath);
-					}
-
-					$this->Set->id = $setId;
+					$this->Set->id = (int) $id;
 					$this->Set->saveField('image', $filename);
 					CookieFlash::set('Image uploaded', 'success');
 				}
@@ -425,7 +410,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 			}
 		}
 
-		if (isset($this->data['Set']) || isset($this->data['Settings']))
+		if (isset($this->request->data['Set']) || isset($this->request->data['Settings']))
 			return $this->redirect('/sets/edit/' . (int) $id);
 
 		// Solve-mode states for the admin settings panel
@@ -464,10 +449,35 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$this->set('setRating', $setRating);
 	}
 
+	/**
+	 * Open or close the link sharing of a collection a player assembled.
+	 */
 	#[HttpPost]
-	public function delete($id = null)
+	public function share(?string $id = null): mixed
 	{
-		$setID = $id ?? ($this->data['Set']['id'] ?? null);
+		$set = $this->Set->findById((int) $id);
+		if (!$set)
+			throw new NotFoundException('Set not found');
+		$this->Authorization->authorize($set, 'share');
+
+		$shared = !empty($this->request->data['shared']);
+		$this->Set->id = (int) $id;
+		if (!$this->Set->saveField('public', $shared ? 1 : 0))
+		{
+			CookieFlash::set('Sharing could not be saved', 'error');
+			return $this->redirect(Set::url((int) $id));
+		}
+
+		CookieFlash::set($shared
+			? 'Anyone with the link can open this collection now'
+			: 'Only you can open this collection now', 'success');
+		return $this->redirect(Set::url((int) $id));
+	}
+
+	#[HttpPost]
+	public function delete(?string $id = null): void
+	{
+		$setID = $id ?? ($this->request->data['Set']['id'] ?? null);
 		if (!$setID)
 			throw new BadRequestException();
 
@@ -478,16 +488,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$this->Authorization->authorize($s);
 
 		$this->Set->delete($setID);
-
-		// Remove the set's uploaded image folder
-		$setImageDir = WWW_ROOT . 'img' . DS . 'sets' . DS . $setID;
-		if (is_dir($setImageDir))
-		{
-			foreach (glob($setImageDir . DS . '*') ?: [] as $file)
-				if (is_file($file))
-					unlink($file);
-			@rmdir($setImageDir);
-		}
+		SetImage::removeFolder((int) $setID);
 
 		if (Auth::isAdmin())
 			$this->redirect('/sets/sandbox');
@@ -511,15 +512,13 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$sets = [];
 		$tagList = [];
 
-		$overallCounter = 0;
 		$problemsCount = 0;
-		$achievementUpdate = [];
 
 		$tsumegoFilters = new TsumegoFilters();
 		//setTiles
 		$setsRaw = $this->Set->find('all', [
 			'order' => array_map('trim', explode(',', SetConnection::displayOrderForSetSql('Set'))),
-			'conditions' => ['public' => 1],
+			'conditions' => [Set::officialCondition('Set')],
 		]) ?: [];
 		foreach ($setsRaw as $set)
 			$setTiles[] = $set['Set']['title'];
@@ -541,26 +540,10 @@ ORDER BY sc.num ASC", [(int) $id]);
 
 		$setsSelector = new SetsSelector($tsumegoFilters);
 
-		if (Auth::isLoggedIn())
-		{
-			$aCondition = $this->AchievementCondition->find('first', [
-				'order' => 'value DESC',
-				'conditions' => [
-					'user_id' => Auth::getUserID(),
-					'category' => 'set']]) ?: [];
-			$aCondition['AchievementCondition']['category'] = 'set';
-			$aCondition['AchievementCondition']['user_id'] = Auth::getUserID();
-			$aCondition['AchievementCondition']['value'] = $overallCounter;
-			ClassRegistry::init('AchievementCondition')->save($aCondition);
-			$achievementChecker = new AchievementChecker();
-			$achievementChecker->checkSetCompletedAchievements();
-			$achievementChecker->finalize();
-			$this->set('achievementUpdate', $achievementChecker->updated);
-		}
-
-		$ranksArray = [];
-		foreach (Rating::ranks() as $rank)
-			$ranksArray[] = ['id' => $rank, 'name' => $rank];
+		[$rankFrom, $rankTo] = $tsumegoFilters->rankRange();
+		// The weakest rank is the same as leaving the lower end open.
+		if ($rankFrom === Rating::weakestRank())
+			$rankFrom = '';
 
 		if ($tsumegoFilters->query == 'topics' && empty($tsumegoFilters->sets))
 			$queryRefresh = false;
@@ -574,7 +557,9 @@ ORDER BY sc.num ASC", [(int) $id]);
 
 
 		$this->set('setsSelector', $setsSelector);
-		$this->set('ranksArray', $ranksArray);
+		$this->set('rankFrom', $rankFrom);
+		$this->set('rankTo', $rankTo);
+		$this->set('rankFilterLabels', $tsumegoFilters->rankFilterLabels());
 		$this->set('tagList', $tagList);
 		$this->set('setTiles', $setTiles);
 		$this->set('difficultyTiles', $difficultyTiles);
@@ -591,10 +576,8 @@ ORDER BY sc.num ASC", [(int) $id]);
 	 * @param TsumegoButtons $tsumegoButtons Iterator of TsumegoButton objects
 	 * @return int|null The setConnectionID of the first unsolved button, or first button if all solved, or null if empty
 	 */
-	private function getFirstUnsolvedSetConnectionId($tsumegoButtons)
+	private function getFirstUnsolvedSetConnectionId(TsumegoButtons $tsumegoButtons): ?int
 	{
-		if (empty($tsumegoButtons))
-			return null;
 		if ($firstUnsolvedButton = array_find((array) $tsumegoButtons, function ($tsumegoButton) {
 			return !TsumegoUtil::isSolvedStatus($tsumegoButton->status);
 		}))
@@ -606,13 +589,14 @@ ORDER BY sc.num ASC", [(int) $id]);
 		return $tsumegoButtons[0]->setConnectionID;
 	}
 
-	private function decodeQueryType($input)
+	private function decodeQueryType(string $input): string
 	{
 		if (is_numeric($input))
 			return 'topics';
 		try
 		{
-			Rating::getRankFromReadableRank($input);
+			if (Rating::parseReadableRankRange($input) === null)
+				Rating::getRankFromReadableRank($input);
 			return 'difficulty';
 		}
 		catch (Exception $e)
@@ -622,7 +606,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 	}
 
 	#[HttpPost]
-	public function addTsumego($setID)
+	public function addTsumego(string $setID)
 	{
 		if ($setID === 'favorites')
 		{
@@ -638,7 +622,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 
 		$this->Authorization->authorize($set);
 
-		$tsumegoId = (int) ($this->data['tsumego_id'] ?? 0);
+		$tsumegoId = (int) ($this->request->data['tsumego_id'] ?? 0);
 		if (!$tsumegoId)
 			throw new BadRequestException();
 		if (!ClassRegistry::init('Tsumego')->findById($tsumegoId))
@@ -689,7 +673,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 	 * Create a new tsumego and add it to a set. Admin only.
 	 */
 	#[HttpPost]
-	public function createAndAddTsumego($setID)
+	public function createAndAddTsumego(string $setID)
 	{
 		$this->Authorization->authorize('Set');
 
@@ -697,7 +681,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		if (!$set)
 			throw new NotFoundException('Set not found');
 
-		if (!isset($this->data['order']))
+		if (!isset($this->request->data['order']))
 			throw new BadRequestException();
 
 		$tsumegoModel = ClassRegistry::init('Tsumego');
@@ -706,8 +690,9 @@ ORDER BY sc.num ASC", [(int) $id]);
 		try
 		{
 			$tsumego = [];
-			$tsumego['num'] = $this->data['order'];
-			$tsumego['author'] = Auth::getUser()['name'];
+			$tsumego['num'] = $this->request->data['order'];
+			$tsumego['author'] = Auth::getUser()['display_name'];
+			$tsumego['author_user_id'] = Auth::getUserID();
 			$tsumegoModel->create();
 			$tsumegoModel->save($tsumego);
 
@@ -715,12 +700,12 @@ ORDER BY sc.num ASC", [(int) $id]);
 			$setConnection = [];
 			$setConnection['set_id'] = $setID;
 			$setConnection['tsumego_id'] = $tsumego['id'];
-			$setConnection['num'] = $this->data['order'];
+			$setConnection['num'] = $this->request->data['order'];
 			ClassRegistry::init('SetConnection')->create();
 			ClassRegistry::init('SetConnection')->save($setConnection);
 
 			$fileUpload = isset($_FILES['adminUpload']) && $_FILES['adminUpload']['error'] === UPLOAD_ERR_OK ? $_FILES['adminUpload'] : null;
-			$sgfDataOrFile = $this->data['sgf'] ?? $fileUpload;
+			$sgfDataOrFile = $this->request->data['sgf'] ?? $fileUpload;
 
 			if ($sgfDataOrFile)
 				ClassRegistry::init('Sgf')->uploadSgf($sgfDataOrFile, $tsumego['id'], Auth::getUserID(), Auth::isAdmin());
@@ -759,7 +744,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 				'title' => 'Favorites',
 				'public' => 0,
 				'image' => null,
-				'author' => Auth::getUser()['name'],
+				'author' => Auth::getUser()['display_name'],
 				'order' => Constants::$DEFAULT_SET_ORDER,
 			],
 		]);
@@ -774,7 +759,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 	 * Remove a tsumego from a set.
 	 */
 	#[HttpPost]
-	public function removeTsumego($setID)
+	public function removeTsumego(string $setID)
 	{
 		$set = ClassRegistry::init('Set')->findById($setID);
 		if (!$set)
@@ -782,7 +767,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 
 		$this->Authorization->authorize($set);
 
-		$tsumegoId = $this->data['tsumego_id'] ?? null;
+		$tsumegoId = $this->request->data['tsumego_id'] ?? null;
 		if (!$tsumegoId)
 			throw new BadRequestException();
 
@@ -807,15 +792,15 @@ ORDER BY sc.num ASC", [(int) $id]);
 	 * Swap the order of two adjacent set_connections.
 	 */
 	#[HttpPost]
-	public function reorderTsumego($setID)
+	public function reorderTsumego(string $setID)
 	{
 		$set = ClassRegistry::init('Set')->findById($setID);
 		if (!$set)
 			throw new NotFoundException('Set not found');
 		$this->Authorization->authorize($set);
 
-		$tsumegoId = $_GET['tsumego_id'] ?? $this->data['tsumego_id'] ?? null;
-		$dir = $_GET['dir'] ?? $this->data['dir'] ?? null;
+		$tsumegoId = $_GET['tsumego_id'] ?? $this->request->data['tsumego_id'] ?? null;
+		$dir = $_GET['dir'] ?? $this->request->data['dir'] ?? null;
 
 		if (!$tsumegoId || !in_array($dir, ['up', 'down']))
 			throw new BadRequestException();
@@ -851,7 +836,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		// transferring from 1 indexed for humans to 0 indexed for us programmers.
 		$partition = $partition - 1;
 
-		// Redirect old /sets/view/favorites to user's default set
+		// Favorites is a shortcut to the player's default collection.
 		if ($id === 'favorites')
 		{
 			if (!Auth::isLoggedIn())
@@ -860,7 +845,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 				return;
 			}
 			$defaultSet = $this->_getOrCreateDefaultFavoritesSet();
-			$this->redirect('/sets/view/' . $defaultSet['Set']['id']);
+			$this->redirect(Set::url((int) $defaultSet['Set']['id']));
 			return;
 		}
 
@@ -884,6 +869,10 @@ ORDER BY sc.num ASC", [(int) $id]);
 			return;
 		}
 
+		// A collection, a rank and a tag have one address whatever path led here; the partition says
+		// which page of it the link pointed at, and the first page is the collection itself.
+		$this->set('canonicalPath', Set::url($id, $partition + 1));
+
 		if ($id != '1')
 			$this->set('_page', 'set');
 		else
@@ -896,7 +885,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$acS = null;
 		$acA = null;
 		$this->set('canEdit', false);
-
 		$queryType = self::decodeQueryType($id);
 
 		if ($queryType == 'topics' && is_numeric($id))
@@ -937,7 +925,8 @@ ORDER BY sc.num ASC", [(int) $id]);
 			$set['Set']['title'] = $id;
 			$set['Set']['multiplier'] = 1;
 			$set['Set']['public'] = 1;
-			$elo = Rating::getRankMinimalRatingFromReadableRank($id);
+			$rankRange = Rating::parseReadableRankRange($id);
+			$elo = Rating::getRankMinimalRatingFromReadableRank($rankRange === null ? $id : $rankRange[1]);
 			$set['Set']['difficulty'] = $elo;
 		}
 		elseif ($tsumegoFilters->query == 'tags')
@@ -963,11 +952,22 @@ ORDER BY sc.num ASC", [(int) $id]);
 				$tsIds [] = $tsumegoButton->tsumegoID;
 			if ($set['Set']['public'] == 0 && $set['Set']['user_id'] === null)
 				$this->set('_page', 'sandbox');
+			// Search engines are kept out of what a player assembled.
+			$this->set('robotsNoIndex', !Set::isOfficial($set['Set']));
 			$this->set('isFav', false);
 			$this->set('canEdit', $this->Authorization->can($set, 'edit'));
+			$this->set('canShare', $this->Authorization->can($set, 'share'));
 		}
 		else
 			throw new BadRequestException('Unknown query type: ' . $tsumegoFilters->query);
+
+		$setAuthor = null;
+		if (!empty($set['Set']['user_id']))
+		{
+			$foundUser = $this->User->findById($set['Set']['user_id']);
+			$setAuthor = $foundUser['User'] ?? null;
+		}
+		$this->set('setAuthor', $setAuthor);
 
 		if ($tsumegoButtons->description)
 			$set['Set']['description'] = $tsumegoButtons->description;
@@ -978,17 +978,21 @@ ORDER BY sc.num ASC", [(int) $id]);
 
 		$ogDescription = trim(strip_tags($set['Set']['description'] ?? ''));
 		if ($ogDescription === '')
-		{
 			if ($tsumegoFilters->query === 'topics')
+			{
 				$ogDescription = $this->Set->getProblemCount($set['Set']['id']) . ' go problems';
+				if ($setAuthor !== null)
+					$ogDescription .= ' collected by ' . User::displayName($setAuthor);
+			}
 			else
 				$ogDescription = 'Interactive go problems';
-		}
 
+		// A shared link names the player even when they are the one who opened it.
 		$og = [
-			'title' => $displayTitle,
+			'title' => $setAuthor === null
+				? $displayTitle
+				: $displayTitle . ' by ' . User::displayName($setAuthor),
 			'description' => $ogDescription,
-			'url' => Router::url('/sets/view/' . $set['Set']['id'], true),
 			'type' => 'website',
 			'site_name' => 'Tsumego',
 		];
@@ -1063,19 +1067,8 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$scoring = true;
 		if (Auth::isLoggedIn() && $tsumegoFilters->query == 'topics')
 		{
-			$pd = $this->ProgressDeletion->find('all', [
-				'conditions' => [
-					'user_id' => Auth::getUserID(),
-					'set_id' => $id]]) ?: [];
-			$pdCounter = 0;
-			$pdCount = count($pd);
-			for ($i = 0; $i < $pdCount; $i++)
-			{
-				$date = date_create($pd[$i]['ProgressDeletion']['created']);
-				$pd[$i]['ProgressDeletion']['d'] = $date->format('Y') . '-' . $date->format('m');
-				if (date('Y-m') == $pd[$i]['ProgressDeletion']['d'])
-					$pdCounter++;
-			}
+			// the resets of this part of the set, the same count that reduces the XP of its problems
+			$pdCounter = ProgressDeletion::countRecent(Auth::getUserID(), (int) $id, $partition);
 			$urSecCounter = 0;
 			$urSecAvg = 0;
 			$pSsum = 0;
@@ -1116,7 +1109,9 @@ ORDER BY sc.num ASC", [(int) $id]);
 			if ($problemSolvedPercent >= 100)
 			{
 				$achievementChecker = new AchievementChecker();
-				if ($set['Set']['id'] != 210)
+				// Set achievements belong to the site's collections only, so nothing is recorded for a
+				// collection a player assembled, however complete it is.
+				if ($set['Set']['id'] != 210 && Set::isOfficial($set['Set']))
 				{
 					$this->updateAchievementConditions($set['Set']['id'], $avgTime2, $accuracy);
 					$achievementChecker->checkSetAchievements($set['Set']['id'], $setRating);
@@ -1132,7 +1127,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 				elseif ($id == 216)
 					$achievementChecker->setAchievementSpecial('1000w2');
 				$achievementChecker->finalize();
-				$this->set('achievementUpdate', $achievementChecker->updated);
+				$this->set('achievementUpdates', $achievementChecker->updated);
 			}
 
 			$acS = $this->AchievementCondition->find('first', [
@@ -1174,7 +1169,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 	 * @param float $accuracy Accuracy percentage
 	 * @return void
 	 */
-	private function updateAchievementConditions($sid, $avgTime, $accuracy)
+	private function updateAchievementConditions(int $sid, int|float $avgTime, int|float $accuracy): void
 	{
 		$uid = Auth::getUserID();
 		$acS = $this->AchievementCondition->find('first', ['order' => 'value ASC', 'conditions' => ['set_id' => $sid, 'user_id' => $uid, 'category' => 's']]);
@@ -1212,26 +1207,40 @@ ORDER BY sc.num ASC", [(int) $id]);
 		}
 	}
 
+	// Rank and tag filters change which problems a part of a set has, which a reset can't allow.
+	public static function hasProblemFilters(TsumegoFilters $tsumegoFilters): bool
+	{
+		return !empty($tsumegoFilters->ranks) || !empty($tsumegoFilters->tagIDs);
+	}
+
 	#[HttpPost]
 	public function resetProgress(int $setID, int $partition): mixed
 	{
-		$redirectUrl = '/sets/view/' . $setID . '/' . $partition;
+		$redirectUrl = Set::url($setID, $partition);
 
 		if (!Auth::isLoggedIn())
 			return $this->redirect($redirectUrl);
 
-		if ($this->data['reset-check'] != 'reset')
+		if ($this->request->data['reset-check'] != 'reset')
 		{
 			CookieFlash::set('Reset check wasn\'t correctly typed', 'error');
 			return $this->redirect($redirectUrl);
 		}
 
+		// a reset clears one part of the set, the same for everybody (see ProgressDeletion::$PARTITION_SIZE)
 		$tsumegoFilters = new TsumegoFilters();
-		if ($tsumegoFilters->collectionSize != 200)
+		if ($tsumegoFilters->collectionSize != ProgressDeletion::$PARTITION_SIZE)
 		{
-			CookieFlash::set('Reset is only possible for collection size 200', 'error');
+			CookieFlash::set('Reset is only possible for collection size ' . ProgressDeletion::$PARTITION_SIZE, 'error');
 			return $this->redirect($redirectUrl);
 		}
+		if (self::hasProblemFilters($tsumegoFilters))
+		{
+			CookieFlash::set('Reset is only possible without rank and tag filters', 'error');
+			return $this->redirect($redirectUrl);
+		}
+		if ($partition < 1)
+			return $this->redirect($redirectUrl);
 		$tsumegoFilters->query = 'topics';
 		$tsumegoButtons = new TsumegoButtons($tsumegoFilters, null, $partition - 1, $setID);
 		$tsumegoIDToClear = [];
@@ -1247,6 +1256,7 @@ WHERE tsumego_status.user_id = ? AND tsumego_status.tsumego_id IN(" . implode(',
 		$progresDeletion = [];
 		$progresDeletion['user_id'] = Auth::getUserID();
 		$progresDeletion['set_id'] = $setID;
+		$progresDeletion['set_partition'] = $partition - 1;
 		ClassRegistry::init('ProgressDeletion')->create();
 		ClassRegistry::init('ProgressDeletion')->save($progresDeletion);
 		return $this->redirect($redirectUrl);
@@ -1254,7 +1264,7 @@ WHERE tsumego_status.user_id = ? AND tsumego_status.tsumego_id IN(" . implode(',
 
 	public function changeCollectionSize(): mixed
 	{
-		$collectionSize = $this->data['collection_size'] ?? null;
+		$collectionSize = $this->request->data['collection_size'] ?? null;
 		if ($collectionSize === null || $collectionSize === '')
 		{
 			CookieFlash::set('Collection size to change not provided', 'error');

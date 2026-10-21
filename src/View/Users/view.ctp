@@ -1,122 +1,34 @@
 <?php
 
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\HeroPowers;
+use App\Utility\Level;
+use App\Utility\Rating;
+use App\Utility\TimeGraphRenderer;
+use App\Utility\Util;
+use App\Utility\ValueGraphRenderer;
+
 /**
  * @var View $this
  * @var array $aCount
  * @var int $aNum
+ * @var int $aEarnedTimes
  * @var array $as
- * @var bool $canResetOldTsumegoStatuses
  * @var array $dailyResults
- * @var int $deletedTsumegoStatusCount
- * @var int $levelBar
- * @var string $timeGraph
+ * @var array|null $mistakeTraining
+ * @var int $solvedProblemCount
+ * @var array $timeGraph
  * @var array $timeModeRanks
  * @var int $tsumegoCount
- * @var string $tsumegoStatusToRestCount
  * @var array $user
  */
-
-require_once __DIR__ . "/../../Utility/ValueGraphRenderer.php";
-require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 ?>
 
 <?php TimeGraphRenderer::renderScriptInclude(); ?>
 
 <div>
-	<div class="profile-header">
-		<p class="profile-username"><?php echo h($user['User']['name']); ?> <?php User::renderPremium($user['User']); ?></p>
-		<?php echo $this->element('user_subnav', ['userID' => $user['User']['id'], 'activeTab' => 'profile']); ?>
-	</div>
-<?php if (Auth::getUserID() == $user['User']['id']): ?>
-<div class="cluster">
-	<div class="card card--green">
-		<div class="card__title">Email</div>
-		<table class="stat" id="name-and-email-table">
-			<tr>
-				<td><?php echo h($user['User']['email']); ?></td>
-				<td><a id="show" class="link">change</a></td>
-			</tr>
-			<tr>
-				<td colspan="2">
-					<div id="msg2">
-						<?php
-						echo $this->Form->create('User');
-						echo $this->Form->input('email', array('label' => '', 'type' => 'text', 'placeholder' => 'E-Mail'));
-						echo '<div class="submit"><input class="btn" value="Submit" type="submit"></div>';
-						?>
-					</div>
-				</td>
-			</tr>
-		</table>
-	</div>
-	<div class="card card--green">
-		<div class="card__title">Preferences</div>
-		<div class="stack">
-			<div class="field">
-				<span class="field__label">Progress bar</span>
-				<?php
-				$levelBarDisplayChecked1 = '';
-				$levelBarDisplayChecked2 = '';
-				if ($levelBar == 1)
-					$levelBarDisplayChecked1 = 'checked="checked"';
-				else
-					$levelBarDisplayChecked2 = 'checked="checked"';
-				?>
-				<label class="field__option"><input type="radio" id="levelBarDisplay1" name="levelBarDisplay" value="1" onclick="levelBarChange(1);" <?php echo $levelBarDisplayChecked1; ?>> Level</label>
-				<label class="field__option"><input type="radio" id="levelBarDisplay2" name="levelBarDisplay" value="2" onclick="levelBarChange(2);" <?php echo $levelBarDisplayChecked2; ?>> Rating</label>
-			</div>
-			<div class="field">
-				<span class="field__label">Player color</span>
-				<?php
-				$playerColor = Auth::getPrefPlayerColor();
-				$playerColorRandomChecked = $playerColor === User::PREF_PLAYER_COLOR_RANDOM ? 'checked="checked"' : '';
-					$playerColorOriginalChecked = $playerColor === User::PREF_PLAYER_COLOR_ORIGINAL ? 'checked="checked"' : '';
-					?>
-					<label class="field__option"><input type="radio" name="playerColor" value="<?php echo User::PREF_PLAYER_COLOR_RANDOM; ?>" onclick="playerColorPreference(this.value);" <?php echo $playerColorRandomChecked; ?>> Random</label>
-					<label class="field__option"><input type="radio" name="playerColor" value="<?php echo User::PREF_PLAYER_COLOR_ORIGINAL; ?>" onclick="playerColorPreference(this.value);" <?php echo $playerColorOriginalChecked; ?>> Original</label>
-			</div>
-			<div class="field">
-				<span class="field__label">Board orientation</span>
-				<?php
-				$boardOrientation = Auth::getPrefBoardOrientation();
-				$boardOrientationRandomChecked = $boardOrientation === User::PREF_BOARD_ORIENTATION_RANDOM ? 'checked="checked"' : '';
-					$boardOrientationOriginalChecked = $boardOrientation === User::PREF_BOARD_ORIENTATION_ORIGINAL ? 'checked="checked"' : '';
-					?>
-					<label class="field__option"><input type="radio" name="boardOrientation" value="<?php echo User::PREF_BOARD_ORIENTATION_RANDOM; ?>" onclick="boardOrientationPreference(this.value);" <?php echo $boardOrientationRandomChecked; ?>> Random</label>
-					<label class="field__option"><input type="radio" name="boardOrientation" value="<?php echo User::PREF_BOARD_ORIENTATION_ORIGINAL; ?>" onclick="boardOrientationPreference(this.value);" <?php echo $boardOrientationOriginalChecked; ?>> Original</label>
-			</div>
-		</div>
-	</div>
-	<div class="card card--green">
-		<div class="card__title">Reset progress</div>
-		<div class="stack">
-			<?php if ($canResetOldTsumegoStatuses): ?>
-				<a class="btn" href="#" onclick="delUts(); return false;" id="reset-statuses-button">Reset old progress (<?php echo $tsumegoStatusToRestCount; ?>)</a>
-			<?php else: ?>
-				<a class="btn btn--disabled" href="#" id="reset-statuses-button">Reset old progress (<?php echo $tsumegoStatusToRestCount; ?>)</a>
-				<span class="hint">Available after <?php echo Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED; ?>% completion</span>
-			<?php endif; ?>
-			<?php if ($deletedTsumegoStatusCount > 0): ?>
-				<span class="hint">Progress of <?php echo $deletedTsumegoStatusCount; ?> problems has been deleted.</span>
-			<?php endif; ?>
-		</div>
-	</div>
-	<div class="card card--green">
-		<div class="card__title">Account</div>
-		<div class="stack">
-			<?php if ($user['User']['dbstorage'] != 1111): ?>
-				<a class="btn btn--danger" href="/users/delete_account">Request account deletion</a>
-			<?php else: ?>
-				<span class="hint hint--danger">Account deletion requested.&nbsp;</span>
-				<a class="btn" href="/users/view/<?php echo $user['User']['id']; ?>?undo=<?php echo ($user['User']['id'] * 1111); ?>">Undo</a>
-			<?php endif; ?>
-			<?php if (Auth::isAdmin()): ?>
-				<a class="btn btn--danger" href="/users/demote_admin">Remove admin status</a>
-			<?php endif; ?>
-		</div>
-	</div>
-</div>
-<?php endif; ?>
+	<?php echo $this->element('user_header', ['user' => $user['User'], 'activeTab' => 'profile']); ?>
 
 <div class="cluster cluster--stretch">
 	<div class="card card--purple">
@@ -207,11 +119,11 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 			<?php endif; ?>
 			<tr>
 				<td>Completed:</td>
-				<td><?php echo $user['User']['solved'] . ' of ' . $tsumegoCount; ?></td>
+				<td><?php echo $solvedProblemCount . ' of ' . $tsumegoCount; ?></td>
 			</tr>
 			<tr>
 				<td colspan="2">
-					<?php $completedPercent = Util::getPercentButAvoid100UntilComplete($user['User']['solved'], $tsumegoCount); ?>
+					<?php $completedPercent = Util::getPercentButAvoid100UntilComplete($solvedProblemCount, $tsumegoCount); ?>
 					<div class="progress">
 						<div class="progress__fill" style="width:<?php echo $completedPercent; ?>%"></div>
 						<div class="progress__label"><?php echo $completedPercent; ?>%</div>
@@ -220,7 +132,7 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 			</tr>
 			<tr>
 				<td>Achievements:</td>
-				<td><?php echo $aNum . ' of ' . count($aCount); ?></td>
+				<td><?php echo $aNum . ' of ' . count($aCount) . AchievementHelper::renderEarnedTimes($aEarnedTimes); ?></td>
 			</tr>
 			<tr>
 				<td colspan="2">
@@ -270,6 +182,8 @@ foreach ($heroPowers as $power)
 		<?php endforeach; ?>
 	</div>
 </div>
+<?php if ($mistakeTraining !== null)
+	echo $this->element('mistake_training_profile', ['training' => $mistakeTraining]); ?>
 <?php
 	$size = count($dailyResults);
 	if ($size < 10)
@@ -339,14 +253,16 @@ function showStatistics($side, $as, $user, $dailyResults)
 		if (strlen($as[$i]['AchievementStatus']['a_title']) > 30)
 			$adjust = 'style="font-weight:normal;font-size:17px;"';
 		else $adjust = '';
+		$earnedCount = (int) ($as[$i]['AchievementStatus']['a_earned_count'] ?? 1);
 	?>
-		<a href="/achievements/view/<?php echo $as[$i]['AchievementStatus']['a_id']; ?>">
+		<a href="/achievements/view/<?php echo $as[$i]['AchievementStatus']['a_id'] . '/' . $user['User']['id']; ?>">
 		<div align="center" class="achievementSmall <?php echo $as[$i]['AchievementStatus']['a_color']; ?>">
 			<div class="acTitle2">
 				<b <?php echo $adjust; ?>><?php echo h($as[$i]['AchievementStatus']['a_title']); ?></b>
 			</div>
 			<div class="acImg">
 				<img src="/img/<?php echo h($as[$i]['AchievementStatus']['a_image']); ?>.png" title="<?php echo h($as[$i]['AchievementStatus']['a_description']); ?>">
+				<?php echo AchievementHelper::renderEarnedBadge($earnedCount); ?>
 				<div class="acImgXp">
 				<?php echo $as[$i]['AchievementStatus']['a_xp']; ?> XP
 				</div>
@@ -370,11 +286,6 @@ showStatistics('Right', $as, $user, $dailyResults); ?>
 <script>
 activateSelection(getCookie('lastProfileLeft'), 'Left');
 activateSelection(getCookie('lastProfileRight'), 'Right');
-
-$("#msg2").hide();
-$("#show").click(function(){
-	$("#msg2").show();
-});
 
 function updateButtonActivity(id, side, active)
 {
@@ -402,18 +313,6 @@ function activateSelection(selection, side)
 	updateButtonActivity('userShowAchievements', side, selection == 'achievement');
 }
 
-function delUts(){
-	var dNum = "<?php echo $tsumegoStatusToRestCount; ?>";
-	var confirmed = confirm("Are you sure that you want to delete your progress on "+dNum+" problems?");
-	if (confirmed)
-	{
-		var form = document.createElement('form');
-		form.method = 'POST';
-		form.action = '/users/deleteOldTsumegoStatuses';
-		document.body.appendChild(form);
-		form.submit();
-	}
-}
 </script>
 <script>
 <?php
@@ -440,20 +339,4 @@ function delUts(){
 			'category');
 	}
 	?>
-</script>
-<script>
-function playerColorPreference(color) {
-	fetch('/users/playerColorPreference', {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-		body: 'color=' + encodeURIComponent(color)
-	});
-}
-function boardOrientationPreference(orientation) {
-	fetch('/users/boardOrientationPreference', {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-		body: 'orientation=' + encodeURIComponent(orientation)
-	});
-}
 </script>

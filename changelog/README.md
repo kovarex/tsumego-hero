@@ -1,6 +1,14 @@
 # Changelog fragments
 
-Each user-visible change gets one small markdown file in this directory. Add the file as part of the PR that introduces the change.
+Each change a **player** can actually notice gets one small markdown file in this directory. Add the file as part of the PR that introduces the change.
+
+## Does it deserve an entry?
+
+Most changes do not. The bar is "would a player notice this on their own, in normal use?", not "is it technically visible somewhere". Ask:
+
+1. **Could a player notice it without being told?** Cosmetic work (colour, wording, typography, a slightly faster page) usually no.
+2. **Does it change what they can do, what happens to their account, or something they were relying on?** Rating, XP, progress, access, saved data: yes.
+3. **Is it reachable by players at all?** Admin/mod-only tools get no entry, however visible they are inside the app.
 
 ## Naming
 
@@ -47,6 +55,7 @@ These entries are written for **players**, so describe the outcome, not the impl
 - **Write a full sentence, not a noun phrase.** Don't copy the commit message, which is terse dev shorthand ("Add burst animation"); tell the player what they get ("Favoriting a problem now plays a burst animation").
 - **Lead with what the player gets**; what's now possible, faster, or different from their point of view.
 - **One sentence per change, short and scannable.**
+- **Stop at what the reader can use.** Leave out what did not change, including where something does not appear; the entry is news, not a specification.
 - **Avoid internal jargon.** Name the feature and the page the way the UI does, and say the exact behavior that changed, not how the code does it.
 - **Stay honest and concrete**; no marketing fluff ("exciting", "amazing") and **no bare qualifiers**. "Correctly", "properly", "the right order", "better" tell players nothing.
 - **Tone:** warm, direct, and specific; like a friendly announcement to players, not a dev changelog. Each line reads as one clear, confident sentence.
@@ -61,12 +70,13 @@ Examples:
 | Sets in correct order. | The sets a problem belongs to now always appear in the same order. |
 
 **Reveal:** what players can do, what changed, what got faster or more reliable.
-**Don't reveal:** internal refactors, tests/CI, dependency bumps, commit/PR hashes, or implementation details that don't change what a player sees.
+**Don't reveal:** internal refactors, tests/CI, dependency bumps, commit/PR hashes, machine-facing plumbing (sitemaps, `robots.txt`, caches, cron jobs), admin/mod-only tools, cosmetic tweaks, or implementation details that don't change what a player sees.
 
 ## Rules
 
-- One file per change is a good default. If several distinct changes shipped together, they can share a file (one entry per line), and all get the same date.
+- **Fewer, bigger entries beat many small ones.** One file per *shipped outcome* is a good default; if several distinct changes shipped together, they can share a file (one entry per line), and all get the same date.
 - Only add an entry for a change that's actually **complete and usable** by players; don't advertise half-finished work. Add the entry when the feature genuinely works.
+- No entries for admin/mod-only tooling, refactors, cosmetic tweaks or internal metrics - see above.
 - Do NOT reference PR numbers or GitHub URLs (those are dev-facing).
 - **Link to a change's own page when it helps** a player go try or read it (e.g. `[about page](/sites/about)`,  `[your profile](/me)`). Use short, stable internal routes; `/me` redirects to the logged-in user's profile (`/me/solve-history`), so they're safe id-agnostic links. Don't link to commit/PR URLs (dev-facing) or unverified forum threads.
 - You may link to a relevant forum thread with `[discussion]` as the link text (`/forums/viewtopic.php?t=N`).

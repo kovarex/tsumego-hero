@@ -1,13 +1,14 @@
 <?php
 
 use Facebook\WebDriver\Interactions\WebDriverActions;
-use PHPUnit\Framework\Constraint\ExceptionMessage;
 use PHPUnitRetry\RetryTrait;
-
 /**
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
+use App\Utility\Auth;
+use App\Utility\Constants;
+
 class RatingModeTest extends ControllerTestCase
 {
 	use RetryTrait;

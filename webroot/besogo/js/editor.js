@@ -435,7 +435,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
           break;
       }
     }
-	else if (boardLockValue == 1 && window.problemSolved)
+	else if (boardLockValue == 1 && window.problemSolved && nextButtonLink)
         window.location.href = nextButtonLink; // Problem is solved, clicking navigates to next puzzle
   }
 
@@ -1630,7 +1630,6 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
       signatures +
       tsumegoFileLink +
       ";SameSite=Lax";
-    //if(idForSignature!==-1) window.location.href = "/tsumegos/play/"+idForSignature+"?idForTheThing="+idForSignature2;
   }
 
   function createSignature(a) {

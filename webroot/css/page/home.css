@@ -31,6 +31,19 @@
 	padding: 8px;
 	color: var(--text-color);
 }
+.show-more {
+	padding: 10px;
+}
+.show-more a {
+	text-decoration: underline;
+	cursor: pointer;
+}
+.show-more a:hover {
+	text-decoration: none;
+}
+.progress-bar--guest-hidden {
+	display: none;
+}
 .new-tsumego-box {
   background-repeat: no-repeat;
   border-radius: 4px;
@@ -50,6 +63,52 @@
   min-height: 175px;
   height: auto;
   display: flow-root;
+}
+/* The way into the mistake training, under the mode buttons */
+.mistake-training-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: 6px;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--surface-border-muted);
+  border-radius: 4px;
+  background: var(--info-box-background);
+  color: var(--text-color);
+  text-decoration: none;
+}
+.mistake-training-card:hover {
+  background: var(--surface-hover);
+  text-decoration: none;
+}
+.mistake-training-card__title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  white-space: nowrap;
+}
+.mistake-training-card__text {
+  flex: 1;
+  font-size: var(--font-size-md);
+}
+.mistake-training-card__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 7px;
+  box-sizing: border-box;
+  border-radius: 13px;
+  background: var(--color-red);
+  color: var(--color-white);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+}
+.mistake-training-card__go {
+  margin-left: auto;
+  font-size: 24px;
+  line-height: 1;
 }
 .achievement-quote-pick {
   width: 100%;
@@ -402,6 +461,10 @@
 	}
 	.mode-select-box {
 		flex-wrap: wrap;
+	}
+	.mistake-training-card {
+		flex-wrap: wrap;
+		gap: var(--space-1) var(--space-3);
 	}
 	/* The achievements stream stays centered over the .achievement-quote-pick
 	   image (the panel is relative). Only the label flows. */

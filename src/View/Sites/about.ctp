@@ -59,7 +59,7 @@
       </div>
       <div class="timeline__event__description">
         <p>
-		Joschka started programming on the project Tsumego Hero. It combined the expierience of multiple smaller Go related websites that were developed in the years before. 
+		Joschka started programming on the project Tsumego Hero. It combined the experience of multiple smaller Go related websites that were developed in the years before. 
     This time though, it would be an all-in effort to create something big.</p>
       </div>
     </div>

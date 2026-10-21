@@ -29,4 +29,62 @@ class ChangelogControllerTest extends ControllerTestCase
 		$this->assertArrayHasKey('entries', $data);
 		$this->assertIsArray($data['entries'], 'entries should be an array');
 	}
+
+	/**
+	 * Write a temp changelog index file and return its path.
+	 */
+	private function fixture(string $json): string
+	{
+		$path = tempnam(sys_get_temp_dir(), 'changelog_') ?: sys_get_temp_dir() . '/changelog_test.json';
+		file_put_contents($path, $json);
+
+		return $path;
+	}
+
+	public function testChangelogTimestampsReturnsEmptyWhenFileMissing()
+	{
+		$this->assertSame([], ChangelogController::changelogTimestamps('/nonexistent/changelog/index.json'));
+	}
+
+	public function testChangelogTimestampsFiltersNonNumericAndSortsDescending()
+	{
+		$path = $this->fixture(json_encode([
+			'entries' => [
+				['ts' => 100],
+				['ts' => 'not-a-number'],
+				['ts' => 300],
+				['ts' => 200],
+				['text' => 'no timestamp'],
+			],
+		]));
+
+		$this->assertSame([300, 200, 100], ChangelogController::changelogTimestamps($path));
+	}
+
+	public function testChangelogTimestampsReturnsEmptyWhenEntriesHaveNoTimestamps()
+	{
+		$path = $this->fixture(json_encode([
+			'entries' => [
+				['text' => 'a'],
+				['date' => '2026-01-01'],
+			],
+		]));
+
+		$this->assertSame([], ChangelogController::changelogTimestamps($path));
+	}
+
+	public function testChangelogTimestampsReturnsEmptyWhenFileIsNotValidJson()
+	{
+		$path = $this->fixture('this is not json');
+
+		$this->assertSame([], ChangelogController::changelogTimestamps($path));
+	}
+
+	public function testBeforeFilterExposesChangelogTimestampsViewVar()
+	{
+		$this->testAction('/changelog', ['method' => 'get', 'return' => 'vars']);
+
+		$this->assertArrayHasKey('changelogTimestamps', $this->vars);
+		$this->assertIsArray($this->vars['changelogTimestamps']);
+	}
 }

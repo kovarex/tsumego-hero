@@ -1,28 +1,18 @@
 <?php
 
-App::uses('AdminActivityLogger', 'Utility');
-App::uses('AdminActivityType', 'Model');
-App::uses('NotFoundException', 'Routing/Error');
-App::uses('BadRequestException', 'Routing/Error');
-App::uses('ForbiddenException', 'Routing/Error');
-App::uses('UnauthorizedException', 'Routing/Error');
-
 use App\Attribute\HttpPost;
+use App\Utility\AdminActivityLogger;
+use App\Utility\SgfParser;
 
 class SgfController extends AppController
 {
 	public function fetch(int $sgfID)
 	{
-		if (!Auth::isLoggedIn())
-			throw new UnauthorizedException('User not logged in.');
-
 		$sgf = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['id' => $sgfID], 'order' => 'id DESC']);
 		if (!$sgf)
 			throw new NotFoundException('Sgf not found.');
 
-		$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['tsumego_id' => $sgf['Sgf']['tsumego_id'], 'user_id' => Auth::getUserID()]]);
-		if (!Auth::isAdmin() && (!$status || !TsumegoUtil::isRecentlySolved($status['TsumegoStatus']['status'])))
-			throw new ForbiddenException('Related tsumego is not in a solved state for the user ' . Auth::getUser()['name']);
+		$this->Authorization->authorize($sgf, 'fetch');
 
 		$this->response->statusCode(200);
 		$this->response->body($sgf['Sgf']['sgf']);
@@ -30,7 +20,7 @@ class SgfController extends AppController
 	}
 
 	#[HttpPost]
-	public function upload($setConnectionID)
+	public function upload(string $setConnectionID): void
 	{
 		$this->Authorization->authorize('Sgf', 'propose');
 
@@ -40,7 +30,7 @@ class SgfController extends AppController
 
 		// Use besogo textarea if provided, otherwise use file upload
 		$fileUpload = isset($_FILES['adminUpload']) && $_FILES['adminUpload']['error'] === UPLOAD_ERR_OK ? $_FILES['adminUpload'] : null;
-		$sgfDataOrFile = $this->data['sgfForBesogo'] ?? file_get_contents($fileUpload['tmp_name']);
+		$sgfDataOrFile = $this->request->data['sgfForBesogo'] ?? file_get_contents($fileUpload['tmp_name']);
 
 		if (!$sgfDataOrFile)
 			throw new BadRequestException('No SGF data provided.');
@@ -60,15 +50,12 @@ class SgfController extends AppController
 
 	public static function validateSgfFormat(string $sgf): void
 	{
-		$maxSize = 1024 * 1024; // 1 MB
-		if (strlen($sgf) > $maxSize)
-			throw new BadRequestException('SGF data exceeds maximum size of 1 MB.');
+		$error = SgfParser::validate($sgf);
+		if ($error !== null)
+			throw new BadRequestException('Invalid SGF format: ' . $error);
 
-		$trimmed = trim($sgf);
-		if (!str_starts_with($trimmed, '(;'))
-			throw new BadRequestException('Invalid SGF format: must start with "(;".');
-
-		if (!str_contains($trimmed, 'GM[1]'))
-			throw new BadRequestException('Invalid SGF format: must contain GM[1] (Go game marker).');
+		$gameError = SgfParser::validateGame($sgf);
+		if ($gameError !== null)
+			throw new BadRequestException('Invalid SGF format: ' . $gameError);
 	}
 }
