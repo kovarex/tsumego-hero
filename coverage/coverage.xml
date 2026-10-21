@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1792614743">
-  <project timestamp="1792614743">
+<coverage generated="1792617829">
+  <project timestamp="1792617829">
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Attribute/HttpDelete.php">
       <class name="App\Attribute\HttpDelete" namespace="global">
         <metrics complexity="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
@@ -1280,25 +1280,25 @@
       <line num="133" type="stmt" count="9"/>
       <line num="134" type="stmt" count="3"/>
       <line num="135" type="stmt" count="7"/>
-      <line num="136" type="stmt" count="4"/>
-      <line num="137" type="stmt" count="4"/>
-      <line num="138" type="stmt" count="4"/>
+      <line num="136" type="stmt" count="5"/>
+      <line num="137" type="stmt" count="3"/>
+      <line num="138" type="stmt" count="3"/>
       <line num="139" type="stmt" count="9"/>
       <line num="140" type="stmt" count="9"/>
       <line num="141" type="stmt" count="9"/>
       <line num="142" type="stmt" count="4"/>
       <line num="143" type="stmt" count="6"/>
-      <line num="144" type="stmt" count="4"/>
-      <line num="145" type="stmt" count="3"/>
-      <line num="146" type="stmt" count="3"/>
+      <line num="144" type="stmt" count="1"/>
+      <line num="145" type="stmt" count="6"/>
+      <line num="146" type="stmt" count="6"/>
       <line num="147" type="stmt" count="9"/>
       <line num="148" type="stmt" count="9"/>
       <line num="149" type="stmt" count="9"/>
-      <line num="150" type="stmt" count="2"/>
-      <line num="151" type="stmt" count="8"/>
-      <line num="152" type="stmt" count="6"/>
-      <line num="153" type="stmt" count="3"/>
-      <line num="154" type="stmt" count="3"/>
+      <line num="150" type="stmt" count="5"/>
+      <line num="151" type="stmt" count="5"/>
+      <line num="152" type="stmt" count="4"/>
+      <line num="153" type="stmt" count="2"/>
+      <line num="154" type="stmt" count="2"/>
       <line num="155" type="stmt" count="9"/>
       <line num="157" type="stmt" count="9"/>
       <line num="158" type="stmt" count="9"/>
@@ -5381,7 +5381,7 @@
       <line num="31" type="stmt" count="138"/>
       <line num="39" type="stmt" count="138"/>
       <line num="40" type="stmt" count="138"/>
-      <line num="41" type="stmt" count="1"/>
+      <line num="41" type="stmt" count="2"/>
       <line num="42" type="stmt" count="138"/>
       <line num="49" type="method" name="countRecent" visibility="public" complexity="1" crap="1" count="147"/>
       <line num="51" type="stmt" count="147"/>
