@@ -746,6 +746,34 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame('16k', $boxes[1]->getText());
 	}
 
+	/**
+	 * A picked rank is shown in the filter bar and survives the next page load,
+	 * before Search is pressed.
+	 */
+	public function testAPickedRankIsKeptAcrossThePageLoad(): void
+	{
+		$contextParams['tsumegos'] = [];
+		foreach (['17k', '16k'] as $rank)
+			$contextParams['tsumegos'][] = [
+				'rating' => Rating::getRankMiddleRatingFromReadableRank($rank),
+				'sets' => [['name' => 'set ' . $rank, 'num' => '1']]];
+		new ContextPreparator($contextParams);
+
+		$browser = Browser::instance();
+		$browser->get('sets');
+		$browser->findById('difficulty-button')->click();
+		$browser->findById('tile-difficulty' . array_search('17k', Rating::ranks()))->click();
+
+		$picked = $browser->getElements('.active-tiles-container .dropdown__tile--difficulty');
+		$this->assertCount(1, $picked);
+		$this->assertSame('17k', $picked[0]->getText());
+
+		$browser->get('sets');
+		$kept = $browser->getElements('.active-tiles-container .dropdown__tile--difficulty');
+		$this->assertCount(1, $kept);
+		$this->assertSame('17k', $kept[0]->getText());
+	}
+
 	public function testFullProcessOfDifficultyBasedSelectionAndSolving(): void
 	{
 		$contextParams = ['user' => ['mode' => Constants::$LEVEL_MODE]];

@@ -402,18 +402,12 @@ use App\Utility\TsumegoFilters;
 		}
 		function drawActiveTiles(initialDraw = false){
 			$(".active-tiles-container").html("");
-			let initialDrawCounter = 0;
 
 			if(initialDraw){
-				for(let i=0;i<activeTopicTiles.length;i++){
+				for(let i=0;i<activeTopicTiles.length;i++)
 					initialTopicTiles.push(activeTopicTiles[i]);
-					initialDrawCounter++;
-				}
-				initialDrawCounter += rankChips().length;
-				for(let i=0;i<activeTagTiles.length;i++){
+				for(let i=0;i<activeTagTiles.length;i++)
 					initialTagTiles.push(activeTagTiles[i]);
-					initialDrawCounter++;
-				}
 			}
 			for(let i=0;i<activeTopicTiles.length;i++){
 				let initialTile = false;
@@ -423,13 +417,13 @@ use App\Utility\TsumegoFilters;
 				if(query == "topics" || initialTile)
 					$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--green" id="active-tiles-element'+i+'" onclick="removeActiveTopic('+i+')">'+activeTopicTiles[i]+'</div>');
 			}
-			if(query == "difficulty" || initialDraw){
-				for(let i=0;i<activeRankTiles.length;i++)
-					if(!rankInRange(activeRankTiles[i]))
-						$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--difficulty" style="--rank-color:var(--rank-'+activeRankTiles[i]+')" id="active-tiles-rank'+i+'" onclick="removeRankTile('+i+')">'+activeRankTiles[i]+'</div>');
-				if(activeRankRange)
-					$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--purple" id="active-tiles-difficulty" onclick="clearRankRange()">'+rangeLabel(activeRankRange)+'</div>');
-			}
+			// Rank picks are kept from every page, so their chips are not bound to the
+			// difficulty query the way the topic and tag chips are.
+			for(let i=0;i<activeRankTiles.length;i++)
+				if(!rankInRange(activeRankTiles[i]))
+					$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--difficulty" style="--rank-color:var(--rank-'+activeRankTiles[i]+')" id="active-tiles-rank'+i+'" onclick="removeRankTile('+i+')">'+activeRankTiles[i]+'</div>');
+			if(activeRankRange)
+				$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--purple" id="active-tiles-difficulty" onclick="clearRankRange()">'+rangeLabel(activeRankRange)+'</div>');
 			for(let i=0;i<activeTagTiles.length;i++){
 				let initialTile = false;
 				for(let j=0;j<initialTagTiles.length;j++)
@@ -439,11 +433,9 @@ use App\Utility\TsumegoFilters;
 					$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--brown" id="active-tiles-element'+i+'" onclick="removeActiveTag('+i+')">'+activeTagTiles[i]+'</div>');
 			}
 			setCookie("filtered_sets", activeTopicTiles.length == 0 ? 'clear' : activeTopicTiles.join('@'));
+			setCookie("filtered_ranks", selectedRankCookieValue());
 			setCookie("filtered_tags", activeTagTiles.length == 0 ? 'clear' : activeTagTiles.join('@'));
-			if(query=="topics" && activeTopicTiles.length > 0
-			|| query=="difficulty" && (activeRankRange !== null || activeRankTiles.length > 0)
-			|| query=="tags" && activeTagTiles.length > 0
-			|| initialDraw && initialDrawCounter>0)
+			if($(".active-tiles-container").children().length > 0)
 				$(".active-tiles-container").append('<a class="dropdown__tile dropdown__tile--muted" href="" id="unselect-active-tiles">clear</a>');
 		}
 
