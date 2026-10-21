@@ -112,6 +112,7 @@ class SmokeTest extends ControllerTestCase
 			['url' => 'users/newpassword/invalid-checksum', 'name' => 'New password form (invalid link)', 'auth' => ['anonymous']],
 
 			// User account pages
+			['url' => 'users/settings', 'name' => 'Settings', 'auth' => $loggedIn],
 			['url' => 'users/delete_account', 'name' => 'Delete account form', 'auth' => $loggedIn],
 
 			// Comments (requires login)

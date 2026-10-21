@@ -75,6 +75,9 @@ class AccountWidget
 			<div id="heroAchievements" onmouseover="accountWidget.hover();" onmouseout="accountWidget.noHover();">
 				<li><a href="/achievements">Achievements</a></li>
 			</div>
+			<div id="heroSettings" onmouseover="accountWidget.hover();" onmouseout="accountWidget.noHover();">
+				<li><a href="/users/settings">Settings</a></li>
+			</div>
 			<div id="heroLogout" onmouseover="accountWidget.hover();" onmouseout="accountWidget.noHover();">
 				<li><a href="/users/logout">Sign Out</a></li>
 			</div>

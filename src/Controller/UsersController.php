@@ -6,9 +6,13 @@ use App\Utility\Auth;
 use App\Utility\Avatar;
 use App\Utility\Constants;
 use App\Utility\CookieFlash;
+use App\Utility\FakePwnedPasswordChecker;
 use App\Utility\GoogleTokenVerifier;
 use App\Utility\GoogleTokenVerifierInterface;
+use App\Utility\JwtAuth;
 use App\Utility\MistakeTraining;
+use App\Utility\PwnedPasswordChecker;
+use App\Utility\PwnedPasswordCheckerInterface;
 use App\Utility\SGFProposalsRenderer;
 use App\Utility\TagConnectionProposalsRenderer;
 use App\Utility\TagProposalsRenderer;
@@ -22,7 +26,74 @@ class UsersController extends AppController
 {
 	public $helpers = ['Html', 'Form', 'Highscore'];
 
+	protected ?PwnedPasswordCheckerInterface $passwordChecker = null;
+
 	protected ?GoogleTokenVerifierInterface $tokenVerifier = null;
+
+	/**
+	 * A password that login alone would never reject, used to spend the same time on a
+	 * name that has no account. It costs what PASSWORD_DEFAULT costs, and
+	 * LoginComponentTest fails when the two drift apart.
+	 */
+	private static string $DUMMY_PASSWORD_HASH = '$2y$12$BZ5TgNGDEJZktTLaEt5Tx.zJfbhdsQxv5/O7wfVeX0QpDwVSdTGg.';
+
+	public static function dummyPasswordHash(): string
+	{
+		return self::$DUMMY_PASSWORD_HASH;
+	}
+
+	/**
+	 * Static test checker, so tests can decide which passwords count as breached.
+	 * Only honored for the test suite, so it can never take effect for players.
+	 */
+	private static ?PwnedPasswordCheckerInterface $testPasswordChecker = null;
+
+	public static function setTestPasswordChecker(?PwnedPasswordCheckerInterface $checker): void
+	{
+		self::$testPasswordChecker = Util::isOnTestSite() ? $checker : null;
+	}
+
+	protected function getPasswordChecker(): PwnedPasswordCheckerInterface
+	{
+		if (self::$testPasswordChecker !== null)
+			return self::$testPasswordChecker;
+
+		if ($this->passwordChecker === null)
+		{
+			// The test suite never asks the public list; every other site does, so the
+			// check can be tried by hand on the dev site too.
+			$this->passwordChecker = Util::isOnTestSite()
+				? new FakePwnedPasswordChecker()
+				: new PwnedPasswordChecker();
+		}
+		return $this->passwordChecker;
+	}
+
+	/**
+	 * Whether the password is one an attacker would try first, because it is already
+	 * in a public breach. Such a password is refused wherever a password is set.
+	 */
+	private function isKnownLeaked(string $password): bool
+	{
+		return $this->getPasswordChecker()->isBreached($password);
+	}
+
+	/**
+	 * The message to show for a password that can not be used, or null when it can.
+	 * Every place that sets a password asks this, so the rules are the same when an
+	 * account is created, when the password is changed and when it is reset. Signing in
+	 * does not ask it, so an account with a shorter password still gets in.
+	 */
+	private function passwordProblem(string $password, string $repeated): ?string
+	{
+		if (mb_strlen($password) < Constants::$MINIMUM_PASSWORD_LENGTH)
+			return 'The password needs at least ' . Constants::$MINIMUM_PASSWORD_LENGTH . ' characters.';
+		if ($password !== $repeated)
+			return 'The new passwords do not match.';
+		if ($this->isKnownLeaked($password))
+			return 'That password appeared in a public data breach, choose another one.';
+		return null;
+	}
 
 	/**
 	 * Static test verifier (used by tests to inject FakeGoogleTokenVerifier).
@@ -104,24 +175,38 @@ class UsersController extends AppController
 		$user = $this->User->findLocalUserByEmail($userEmail);
 		if (!$user)
 		{
-			// Check if it's a Google user - show helpful message
-			$googleUser = $this->User->findByEmail($userEmail);
-			if ($googleUser && User::isGoogleUser($googleUser['User']))
-				CookieFlash::set('This account uses Google Sign-In. Please sign in with Google.', 'info');
-			// For non-existent emails, don't reveal this - just show generic sent message
+			// An address that can not get a link is answered like one that has no account,
+			// so the form says nothing about which addresses are taken. The sign-in page
+			// points Google accounts to their button before they submit this form.
 			return;
 		}
 
+		// Another mail on top of the one just sent only fills the inbox. The answer is
+		// the same either way, so nothing about the account is revealed by skipping it.
+		$askedAt = $user['User']['passwordreset_created'];
+		if ($askedAt && strtotime($askedAt) > strtotime('-' . self::$PASSWORD_RESET_MINUTES_BETWEEN_MAILS . ' minutes'))
+			return;
+
+		$hours = self::$PASSWORD_RESET_LINK_VALID_HOURS;
 		$randomString = Util::generateRandomString(20);
-		$user['User']['passwordreset'] = $randomString;
-		$this->User->save($user);
 
 		$emailer = $this->_getEmailer();
 		$emailer->from(['me@tsumego.com' => 'https://tsumego.com']);
 		$emailer->to($userEmail);
 		$emailer->subject('Password reset for your Tsumego Hero account');
-		$emailer->send('Click the following button to reset your password. If you have not requested the password reset,
-then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/' . $randomString);
+		if (!$this->linkMailWasSent($emailer, 'Click the following button to reset your password (valid for ' . $hours . ' hours). If you have not requested the password reset,
+then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, true)))
+		{
+			$this->set('sent', false);
+			CookieFlash::set('The mail could not be sent. Please try again in a minute.', 'error');
+			return;
+		}
+
+		// The link works with the token alone, so the token is remembered only once the mail
+		// carrying it has left. A mail server that stays quiet holds nothing back.
+		$user['User']['passwordreset'] = $randomString;
+		$user['User']['passwordreset_created'] = date('Y-m-d H:i:s');
+		$this->User->save($user);
 	}
 
 	/**
@@ -129,7 +214,51 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	 */
 	public function _getEmailer()
 	{
-		return new CakeEmail();
+		// A run of the tests must not hand a mail to a mail server that is not there. The
+		// debug transport builds the message and returns it instead of sending it.
+		return Util::isOnTestSite() ? new CakeEmail(['transport' => 'Debug']) : new CakeEmail();
+	}
+
+	/**
+	 * Send the mail that carries a link. The token in it is remembered only when this
+	 * returns true, so a mail server that does not answer leaves nothing behind and the
+	 * user can go through the flow again right away.
+	 *
+	 * @param CakeEmail $emailer The mailer from _getEmailer(), which a test replaces
+	 * @return bool Whether the mail left
+	 */
+	private function linkMailWasSent(mixed $emailer, string $body): bool
+	{
+		try
+		{
+			$emailer->send($body);
+		}
+		catch (Exception $e)
+		{
+			CakeLog::write('error', 'A Tsumego Hero link mail could not be sent: ' . $e->getMessage());
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Send a mail that only tells the account about a change that already happened. It is
+	 * not part of the change, so a mail server that does not answer is logged instead of
+	 * turned into an error page.
+	 *
+	 * @param CakeEmail $emailer The mailer from _getEmailer(), which a test replaces
+	 */
+	private function sendNotification(mixed $emailer, string $body): void
+	{
+		try
+		{
+			$emailer->send($body);
+		}
+		catch (Exception $e)
+		{
+			CakeLog::write('error', 'A Tsumego Hero notification could not be sent: ' . $e->getMessage());
+		}
 	}
 
 	// @param string|null $checksum Password reset checksum
@@ -137,27 +266,37 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	{
 		$this->set('_page', 'user');
 		$this->set('_title', 'Tsumego Hero - Sign In');
-		$done = false;
-		if ($checksum == null)
-			$checksum = 1;
-		$user = $this->User->find('first', ['conditions' => ['passwordreset' => $checksum, 'deleted IS NULL']]);
-		$valid = ($user != null);
+		$this->set('valid', false);
+		$this->set('done', false);
+		$this->set('checksum', (string) $checksum);
+
+		$user = $checksum === null ? null : $this->User->find('first', ['conditions' => [
+			'passwordreset' => $checksum,
+			'deleted IS NULL',
+			'passwordreset_created >' => date('Y-m-d H:i:s', strtotime('-' . self::$PASSWORD_RESET_LINK_VALID_HOURS . ' hours'))]]);
 		if (!$user)
 			return null;
 
-		if ($this->request->data['User']['password'])
+		$this->set('valid', true);
+		$password = (string) ($this->request->data['User']['password1'] ?? '');
+		$repeated = (string) ($this->request->data['User']['password2'] ?? '');
+		if ($password === '')
+			return null;
+
+		$problem = $this->passwordProblem($password, $repeated);
+		if ($problem)
 		{
-			$user['User']['passwordreset'] = null;
-			$user['User']['password_hash'] = password_hash($this->request->data['User']['password'], PASSWORD_DEFAULT);
-			$this->User->save($user);
-			CookieFlash::set("Password changed", 'success');
-			return $this->redirect("/users/login");
+			CookieFlash::set($problem, 'error');
+			return null;
 		}
 
-		$this->set('valid', $valid);
-		$this->set('done', $done);
-		$this->set('checksum', $checksum);
-		return null;
+		$user['User']['passwordreset'] = null;
+		$user['User']['passwordreset_created'] = null;
+		$user['User']['password_hash'] = password_hash($password, PASSWORD_DEFAULT);
+		$this->User->save($user);
+		$this->sendPasswordChangedMail($user['User']['email']);
+		CookieFlash::set('Password changed', 'success');
+		return $this->redirect('/users/login');
 	}
 
 	/**
@@ -376,12 +515,17 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$user = $this->getUserFromNameOrEmail();
 		if (!$user)
 		{
+			// A name without an account is answered the same way as a wrong password, and
+			// the hash is computed either way, so neither the message nor the time it takes
+			// tells whether the account exists.
+			password_verify((string) ($this->request->data['password'] ?? ''), self::$DUMMY_PASSWORD_HASH);
+
 			// The address may belong to a Google account only, which can't log in here
 			$googleUser = $this->User->findByEmail($this->request->data['username']);
 			if ($googleUser && User::isGoogleUser($googleUser['User']))
 				CookieFlash::set('This account uses Google Sign-In. Please use the "Sign in with Google" button.', 'info');
 			else
-				CookieFlash::set('Unknown user', 'error');
+				CookieFlash::set('Wrong username or password.', 'error');
 			return null;
 		}
 
@@ -394,7 +538,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 		if (!$this->validateLogin($this->request->data, $user))
 		{
-			CookieFlash::set('Incorrect password', 'error');
+			CookieFlash::set('Wrong username or password.', 'error');
 			return null;
 		}
 
@@ -462,9 +606,11 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		if (empty($this->request->data))
 			return;
 
-		if ($this->request->data['User']['password1'] != $this->request->data['User']['password2'])
+		$password = (string) ($this->request->data['User']['password1'] ?? '');
+		$problem = $this->passwordProblem($password, (string) ($this->request->data['User']['password2'] ?? ''));
+		if ($problem)
 		{
-			CookieFlash::set('passwords don\'t match', 'error');
+			CookieFlash::set($problem, 'error');
 			return;
 		}
 
@@ -475,7 +621,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		}
 
 		$userData = $this->request->data;
-		$userData['User']['password_hash'] = password_hash($this->request->data['User']['password1'], PASSWORD_DEFAULT);
+		$userData['User']['password_hash'] = password_hash($password, PASSWORD_DEFAULT);
 		$userData['User']['name'] = $this->request->data['User']['name'];
 		$normalizedName = User::normalizeDisplayName($this->request->data['User']['name']);
 		$uniqueDisplayName = User::generateUniqueDisplayName($normalizedName);
@@ -971,26 +1117,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		}
 		$this->set('og', $og);
 
-		// user edit
-		// TODO: should be its own action
-		if ($id == Auth::getUserID())
-		{
-			if (!empty($this->request->data))
-				if (isset($this->request->data['User']['email']))
-					if (Validation::email($this->request->data['User']['email']))
-						Auth::saveUserField('email', $this->request->data['User']['email']);
-		}
-
-		$tsumegoStatusToRestCount = Util::query("
-SELECT
-	COUNT(*) AS total
-FROM tsumego_status
-WHERE
-	user_id = ? AND
-	tsumego_status.status IN ('S', 'C', 'W') AND
-	tsumego_status.updated <= NOW() - INTERVAL 1 YEAR;", [$id])[0]['total'];
-		$this->set('tsumegoStatusToRestCount', $tsumegoStatusToRestCount);
-
 		$oldest = new DateTime(date('Y-m-d', strtotime('-183 days')));
 		$oldest = $oldest->format('Y-m-d');
 
@@ -1043,7 +1169,6 @@ GROUP BY DATE(time_mode_session.created)
 ORDER BY category DESC', [$user['User']['id']]));
 
 		$tsumegoCount = ClassRegistry::init('Tsumego')->countPublicProblems();
-		$canResetOldTsumegoStatuses = Util::getPercent($user['User']['solved'], $tsumegoCount) >= Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED;
 
 		$achievementById = [];
 		foreach ($ach as $achievement)
@@ -1093,8 +1218,45 @@ ORDER BY category DESC', [$user['User']['id']]));
 		$this->set('aNum', $aNumx);
 		$this->set('aEarnedTimes', $aEarnedTimes);
 		$this->set('aCount', $aCount);
-		$this->set('canResetOldTsumegoStatuses', $canResetOldTsumegoStatuses);
 		return null;
+	}
+
+	/**
+	 * How the site behaves for the logged in player: appearance, how a problem is
+	 * dealt and the progress actions. The profile stays the public page, so
+	 * everything that only changes the player's own view lives here. The boards in
+	 * the rotation are picked in the dropdown in the header.
+	 */
+	public function settings(): mixed
+	{
+		if (!Auth::isLoggedIn())
+			return $this->redirect('/users/login');
+
+		$this->set('_page', 'user');
+		$this->set('_title', 'Settings');
+
+		$user = Auth::getUser();
+		$this->set('user', $user);
+		$this->set('tsumegoStatusToRestCount', TsumegoStatus::countOldProgress($user['id']));
+		$this->set('canResetOldTsumegoStatuses', User::canResetOldProgress($user));
+		$this->set('unconfirmedEmail', self::waitingAddress($user));
+
+		return null;
+	}
+
+	/**
+	 * The address an account is waiting for the confirmation of, or null when there is
+	 * none or its link is too old to work.
+	 *
+	 * @param array $user
+	 */
+	private static function waitingAddress(array $user): ?string
+	{
+		if (empty($user['unconfirmed_email']) || empty($user['unconfirmed_email_created']))
+			return null;
+		if (strtotime($user['unconfirmed_email_created']) <= strtotime('-' . self::$EMAIL_CHANGE_LINK_VALID_HOURS . ' hours'))
+			return null;
+		return (string) $user['unconfirmed_email'];
 	}
 
 	/**
@@ -1185,6 +1347,8 @@ ORDER BY category DESC', [$user['User']['id']]));
 	{
 		if (!$user)
 			return false;
+		// The minimum length is not asked here: an account whose password is shorter
+		// still has to sign in.
 		return password_verify($data['password'], $user['User']['password_hash']);
 	}
 
@@ -1309,6 +1473,22 @@ ORDER BY category DESC', [$user['User']['id']]));
 	private static int $DELETION_LINK_VALID_HOURS = 24;
 
 	/**
+	 * How long the two links of an address change work, in hours. The cron forgets a
+	 * change that nobody confirmed, so it reads the same value.
+	 */
+	public static int $EMAIL_CHANGE_LINK_VALID_HOURS = 24;
+
+	/**
+	 * How long the link of a password reset works, in hours.
+	 */
+	private static int $PASSWORD_RESET_LINK_VALID_HOURS = 2;
+
+	/**
+	 * How long to wait before another reset mail is sent for the same account.
+	 */
+	private static int $PASSWORD_RESET_MINUTES_BETWEEN_MAILS = 5;
+
+	/**
 	 * First step of deleting the account of the logged-in user: emails a link confirming the deletion
 	 * (confirm_delete_account).
 	 */
@@ -1323,16 +1503,21 @@ ORDER BY category DESC', [$user['User']['id']]));
 			return null;
 
 		$token = bin2hex(random_bytes(32));
-		Auth::saveUserField('deletion_token', $token);
-		Auth::saveUserField('deletion_token_created', date('Y-m-d H:i:s'));
 
 		$emailer = $this->_getEmailer();
 		$emailer->from(['me@tsumego.com' => 'https://tsumego.com']);
 		$emailer->to(Auth::getUser()['email']);
 		$emailer->subject('Deletion of your Tsumego Hero account');
-		$emailer->send('You asked to delete your Tsumego Hero account ' . User::displayName(Auth::getUser()) . '.
+		if (!$this->linkMailWasSent($emailer, 'You asked to delete your Tsumego Hero account ' . User::displayName(Auth::getUser()) . '.
 To confirm the deletion, open the following link (valid for ' . self::$DELETION_LINK_VALID_HOURS . ' hours): https://' . $_SERVER['HTTP_HOST'] . '/users/confirm_delete_account/' . $token . '
-If you have not asked for this, ignore this email, your account stays as it is.');
+If you have not asked for this, ignore this email, your account stays as it is.'))
+		{
+			CookieFlash::set('The mail could not be sent. Please try again in a minute.', 'error');
+			return null;
+		}
+
+		Auth::saveUserField('deletion_token', $token);
+		Auth::saveUserField('deletion_token_created', date('Y-m-d H:i:s'));
 		$this->set('sent', true);
 		return null;
 	}
@@ -1419,10 +1604,11 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 
 	public function solveHistory(string $userID): void
 	{
-		$profileUser = Util::query("SELECT display_name, name, deleted FROM user WHERE id = ?", [$userID])[0] ?? null;
-		if ($profileUser)
-			$this->assertUserVisible($profileUser);
-		$userName = $profileUser['display_name'] ?? 'Unknown';
+		$profileUser = $this->User->findById($userID)['User'] ?? null;
+		if (!$profileUser)
+			throw new NotFoundException('User not found');
+		$this->assertUserVisible($profileUser);
+		$userName = $profileUser['display_name'];
 		$PAGE_SIZE = 500;
 		$pageIndex = isset($this->request->query['page']) ? max(1, (int) $this->request->query['page']) : 1;
 		$count = Util::query("SELECT COUNT(*) FROM tsumego_attempt where user_id = ?", [$userID])[0]['COUNT(*)'];
@@ -1463,7 +1649,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		$this->set('_page', 'solveHistory');
 		$this->set('_title', $userName . '\'s Solve History');
 		$this->set('userID', $userID);
-		$this->set('userName', $userName);
+		$this->set('profileUser', $profileUser);
 		$this->set('count', $count);
 		$this->set('pageIndex', $pageIndex);
 		$this->set('PAGE_SIZE', $PAGE_SIZE);
@@ -1607,25 +1793,261 @@ OFFSET " . $offset, [$userID, $userID]);
 		if (!Auth::isLoggedIn())
 			return $this->redirect('/sets');
 
-		$userId = Auth::getUserID();
-		$tsumegoCount = ClassRegistry::init('Tsumego')->countPublicProblems();
-		if (Util::getPercent(Auth::getUser()['solved'], $tsumegoCount) < Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED)
-			return $this->redirect('/users/view/' . $userId);
+		$user = Auth::getUser();
+		if (!User::canResetOldProgress($user))
+			return $this->redirect('/users/settings');
 
-		$deleted = Util::execute("DELETE FROM tsumego_status WHERE user_id = ? AND tsumego_status.updated <= NOW() - INTERVAL 1 YEAR", [$userId]);
-
-		Util::execute("UPDATE user
-LEFT JOIN (
-    SELECT user_id, COUNT(*) AS cnt
-    FROM tsumego_status
-    WHERE status IN ('S', 'W', 'C', 'X')
-    AND user_id = ?
-    GROUP BY user_id
-) ts ON ts.user_id = user.id
-SET user.solved = COALESCE(ts.cnt, 0)
-WHERE user.id = ?", [$userId, $userId]);
+		$deleted = TsumegoStatus::deleteOldProgress((int) $user['id']);
 		CookieFlash::set('Deleted progress on ' . $deleted . ' problems', 'success');
-		return $this->redirect('/users/view/' . $userId);
+		return $this->redirect('/users/settings');
+	}
+
+	/**
+	 * Ask for a different e-mail address. The account keeps the address it has until
+	 * the player confirms the new one from the link sent there, so a session left open
+	 * somewhere can not move the account to an address of somebody else.
+	 */
+	#[HttpPost]
+	public function emailPreference(): mixed
+	{
+		$this->Authorization->authorize('User', 'editPreferences');
+
+		$user = Auth::getUser();
+		$email = trim((string) ($this->request->data['User']['email'] ?? ''));
+		$password = (string) ($this->request->data['User']['password'] ?? '');
+
+		if (User::isGoogleUser($user))
+		{
+			CookieFlash::set('This account signs in through Google, so it uses the address of your Google account.', 'error');
+			return $this->redirect('/users/settings');
+		}
+
+		// The column holds 50 characters, a longer address can not be stored
+		if (mb_strlen($email) > 50 || !Validation::email($email))
+		{
+			CookieFlash::set('That is not a valid e-mail address.', 'error');
+			return $this->redirect('/users/settings');
+		}
+
+		if ($email === $user['email'])
+		{
+			CookieFlash::set('This account already uses that address.', 'error');
+			return $this->redirect('/users/settings');
+		}
+
+		if ($this->User->findByEmail($email))
+		{
+			CookieFlash::set('That address belongs to another account.', 'error');
+			return $this->redirect('/users/settings');
+		}
+
+		if (!password_verify($password, $user['password_hash']))
+		{
+			CookieFlash::set('The password is not correct.', 'error');
+			return $this->redirect('/users/settings');
+		}
+
+		$hours = self::$EMAIL_CHANGE_LINK_VALID_HOURS;
+		$token = bin2hex(random_bytes(32));
+		$cancelToken = bin2hex(random_bytes(32));
+
+		$emailer = $this->_getEmailer();
+		$emailer->from(['me@tsumego.com' => 'https://tsumego.com']);
+		$emailer->to($email);
+		$emailer->subject('Confirm your new Tsumego Hero address');
+		$confirmationSent = $this->linkMailWasSent($emailer, 'You asked to use this address for your Tsumego Hero account.'
+			. "\nTo make it the address of the account, open this link (valid for $hours hours): "
+			. Router::url('/users/confirmEmailChange/' . $token, true)
+			. "\nIf you have not asked for this, ignore this email.");
+
+		$emailer->to($user['email']);
+		$emailer->subject('An address change was asked for on your Tsumego Hero account');
+		$warningSent = $confirmationSent && $this->linkMailWasSent($emailer, 'Somebody asked to move your Tsumego Hero account to ' . $email . '.'
+			. "\nIf that was not you, cancel it here (valid for $hours hours): "
+			. Router::url('/users/cancelEmailChange/' . $cancelToken, true));
+		if (!$warningSent)
+		{
+			CookieFlash::set('The mail could not be sent. Please try again in a minute.', 'error');
+			return $this->redirect('/users/settings');
+		}
+
+		Auth::saveUserFields([
+			'unconfirmed_email' => $email,
+			'unconfirmed_email_token' => $token,
+			'unconfirmed_email_cancel_token' => $cancelToken,
+			'unconfirmed_email_created' => date('Y-m-d H:i:s'),
+		]);
+
+		CookieFlash::set('We sent a confirmation link to ' . $email . '. The address changes once you open it.', 'success');
+		return $this->redirect('/users/settings');
+	}
+
+	/**
+	 * Second step of an address change, opened from the link sent to the new address.
+	 * It works without being signed in, like the password reset. GET only shows the
+	 * confirmation button (email scanners open links), the change happens on POST.
+	 */
+	public function confirmEmailChange(?string $token = null)
+	{
+		$this->set('_page', 'user');
+		$this->set('_title', 'Tsumego Hero - Confirm address');
+		$user = $this->findByEmailChangeToken('unconfirmed_email_token', $token);
+		$this->set('valid', (bool) $user);
+		$this->set('address', $user ? (string) $user['User']['unconfirmed_email'] : '');
+		$this->set('token', (string) $token);
+		if (!$user || !$this->request->is('post'))
+			return null;
+
+		$userID = (int) $user['User']['id'];
+		$newAddress = (string) $user['User']['unconfirmed_email'];
+		// The address was free when it was asked for, but the link works for a day, so
+		// another account may have taken it in between.
+		if ($this->User->findByEmail($newAddress))
+		{
+			$this->forgetAddressChange($userID);
+			CookieFlash::set('That address belongs to another account now, so it was not used. Ask for another one in your settings.', 'error');
+			return $this->redirect(Auth::isLoggedIn() && Auth::getUserID() === $userID ? '/users/settings' : '/users/login');
+		}
+
+		$givenUp = (string) $user['User']['email'];
+		$this->User->save(['User' => [
+			'id' => $userID,
+			'email' => $newAddress,
+			'unconfirmed_email' => null,
+			'unconfirmed_email_token' => null,
+			'unconfirmed_email_cancel_token' => null,
+			'unconfirmed_email_created' => null,
+		]], ['validate' => false, 'fieldList' => [
+			'email', 'unconfirmed_email', 'unconfirmed_email_token',
+			'unconfirmed_email_cancel_token', 'unconfirmed_email_created']]);
+
+		$emailer = $this->_getEmailer();
+		$emailer->from(['me@tsumego.com' => 'https://tsumego.com']);
+		$emailer->to($givenUp);
+		$emailer->subject('Your Tsumego Hero address was changed');
+		$this->sendNotification($emailer, 'The address of your Tsumego Hero account was changed to ' . $user['User']['unconfirmed_email'] . '.'
+			. "\nIf you did not ask for this, write to me@tsumego.com.");
+
+		if (Auth::isLoggedIn() && Auth::getUserID() === $userID)
+			Auth::init($this->User->findById($userID));
+
+		CookieFlash::set('Your e-mail address has been changed.', 'success');
+		return $this->redirect(Auth::isLoggedIn() ? '/users/settings' : '/users/login');
+	}
+
+	/**
+	 * Second step of cancelling an address change, opened from the link sent to the
+	 * address that is being given up. GET only shows the button, POST cancels.
+	 */
+	public function cancelEmailChange(?string $token = null)
+	{
+		$this->set('_page', 'user');
+		$this->set('_title', 'Tsumego Hero - Cancel address change');
+		$user = $this->findByEmailChangeToken('unconfirmed_email_cancel_token', $token);
+		$this->set('valid', (bool) $user);
+		$this->set('address', $user ? (string) $user['User']['unconfirmed_email'] : '');
+		$this->set('token', (string) $token);
+		if (!$user || !$this->request->is('post'))
+			return null;
+
+		$userID = (int) $user['User']['id'];
+		$this->forgetAddressChange($userID);
+
+		if (Auth::isLoggedIn() && Auth::getUserID() === $userID)
+			Auth::init($this->User->findById($userID));
+
+		CookieFlash::set('The address change was cancelled.', 'success');
+		return $this->redirect(Auth::isLoggedIn() ? '/users/settings' : '/users/login');
+	}
+
+	/**
+	 * Drop a pending address change, so the links it was sent with stop working.
+	 */
+	private function forgetAddressChange(int $userID): void
+	{
+		$this->User->save(['User' => [
+			'id' => $userID,
+			'unconfirmed_email' => null,
+			'unconfirmed_email_token' => null,
+			'unconfirmed_email_cancel_token' => null,
+			'unconfirmed_email_created' => null,
+		]], ['validate' => false, 'fieldList' => [
+			'unconfirmed_email', 'unconfirmed_email_token',
+			'unconfirmed_email_cancel_token', 'unconfirmed_email_created']]);
+	}
+
+	/**
+	 * The account waiting for the given link, or null when the link is unknown or old.
+	 *
+	 * @return array|null
+	 */
+	private function findByEmailChangeToken(string $field, ?string $token): ?array
+	{
+		if (!$token)
+			return null;
+
+		$user = $this->User->find('first', ['conditions' => [
+			$field => $token,
+			'deleted IS NULL',
+			'unconfirmed_email_created >' => date('Y-m-d H:i:s', strtotime('-' . self::$EMAIL_CHANGE_LINK_VALID_HOURS . ' hours'))]]);
+		return $user ?: null;
+	}
+
+	/**
+	 * Change the password of a local account. The current password is asked for so
+	 * that a session left open on a shared computer is not enough to take the
+	 * account over.
+	 */
+	#[HttpPost]
+	public function passwordPreference(): mixed
+	{
+		$this->Authorization->authorize('User', 'editPreferences');
+
+		$user = Auth::getUser();
+		if (User::isGoogleUser($user))
+		{
+			CookieFlash::set('This account signs in through Google, so it has no password.', 'error');
+			return $this->redirect('/users/settings');
+		}
+
+		$current = (string) ($this->request->data['current'] ?? '');
+		$new = (string) ($this->request->data['new1'] ?? '');
+		$repeated = (string) ($this->request->data['new2'] ?? '');
+
+		if (!password_verify($current, $user['password_hash']))
+		{
+			CookieFlash::set('The current password is not correct.', 'error');
+			return $this->redirect('/users/settings');
+		}
+
+		$problem = $this->passwordProblem($new, $repeated);
+		if ($problem)
+		{
+			CookieFlash::set($problem, 'error');
+			return $this->redirect('/users/settings');
+		}
+
+		$hash = password_hash($new, PASSWORD_DEFAULT);
+		Auth::saveUserField('password_hash', $hash);
+		// The tokens of the other devices were issued with the old password and stop fitting
+		JwtAuth::setAuthCookie((int) Auth::getUserID(), $hash);
+		$this->sendPasswordChangedMail($user['email']);
+		CookieFlash::set('Your password has been changed.', 'success');
+		return $this->redirect('/users/settings');
+	}
+
+	/**
+	 * Tell the account by mail that its password changed, so that a change made by
+	 * somebody else is noticed. The password itself is never part of the mail.
+	 */
+	private function sendPasswordChangedMail(string $email): void
+	{
+		$emailer = $this->_getEmailer();
+		$emailer->from(['me@tsumego.com' => 'https://tsumego.com']);
+		$emailer->to($email);
+		$emailer->subject('Your Tsumego Hero password was changed');
+		$this->sendNotification($emailer, 'The password of your Tsumego Hero account was changed. If you did not change it, set a new one at '
+			. Router::url('/users/resetpassword', true) . ' and write to me@tsumego.com.');
 	}
 
 	#[HttpPost]

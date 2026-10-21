@@ -12,11 +12,10 @@ use App\Utility\Util;
 ?>
 
 	<div align="center">
-	<p class="profile-username">
-		<?php echo isset($viewedUser) ? htmlspecialchars($viewedUser['display_name']) : 'Achievements'; ?>
-	</p>
 	<?php if (isset($viewedUser))
-		echo $this->element('user_subnav', ['userID' => $viewedUser['id'], 'activeTab' => 'achievements']);
+		echo $this->element('user_header', ['user' => $viewedUser, 'activeTab' => 'achievements']);
+	else
+		echo '<p class="profile-username">Achievements</p>';
 	?>
 		<div align="center" id="achievementWrapper">
 		<?php

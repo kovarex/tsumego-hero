@@ -614,13 +614,34 @@ input.newCheck {
 #heroAchievements li a {
   color: var(--color-green);
 }
-#heroLogout {
+#heroSettings {
   color: var(--color-green);
   position: absolute;
   right: 0;
   left: auto;
   width: 144px;
   top: 138px;
+  background: var(--color-hero-gradient);
+  padding: 1px 10px;
+  font-family: Georgia;
+  letter-spacing: 1px;
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 5;
+  border-top: 1px solid var(--surface-ink);
+  cursor: pointer;
+  display: none;
+}
+#heroSettings li a {
+  color: var(--color-green);
+}
+#heroLogout {
+  color: var(--color-green);
+  position: absolute;
+  right: 0;
+  left: auto;
+  width: 144px;
+  top: 166px;
   background: var(--color-hero-gradient);
   padding: 1px 10px;
   font-family: Georgia;
@@ -905,6 +926,10 @@ ul ul {
 		right: 0;
 		left: auto;
 	}
+	#heroSettings {
+		right: 0;
+		left: auto;
+	}
 	#heroLogout {
 		right: 0;
 		left: auto;
@@ -1140,6 +1165,7 @@ ul ul {
 	#heroProfile,
 	#heroBar,
 	#heroAchievements,
+	#heroSettings,
 	#heroLogout,
 	#modeSelector {
 		display: none !important;

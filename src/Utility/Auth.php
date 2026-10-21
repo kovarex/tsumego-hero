@@ -29,7 +29,7 @@ class Auth
 		{
 			Auth::$user = $user['User'];
 			// Set JWT cookie for stateless auth
-			JwtAuth::setAuthCookie(Auth::getUserID());
+			JwtAuth::setAuthCookie(Auth::getUserID(), $user['User']['password_hash'] ?? null);
 			return;
 		}
 
@@ -38,7 +38,7 @@ class Auth
 		if ($userIdFromJwt)
 		{
 			$userData = ClassRegistry::init('User')->findById($userIdFromJwt);
-			if ($userData && empty($userData['User']['deleted']))
+			if ($userData && empty($userData['User']['deleted']) && self::tokenFitsTheAccount($userData['User']))
 			{
 				Auth::$user = $userData['User'];
 				return;
@@ -49,6 +49,19 @@ class Auth
 
 		// Not logged in
 		Auth::$user = null;
+	}
+
+	/**
+	 * A token is issued with the password the session was opened with, so changing the
+	 * password ends the sessions that were opened with the old one. A token without the
+	 * claim is taken at face value.
+	 *
+	 * @param UserRow $user
+	 */
+	private static function tokenFitsTheAccount(array $user): bool
+	{
+		$claim = JwtAuth::getPasswordClaimFromCookie();
+		return $claim === null || $claim === JwtAuth::claimOf($user['password_hash'] ?? null);
 	}
 
 	public static function isLoggedIn(): bool
@@ -261,7 +274,7 @@ class Auth
 	public static function lightMode(): int
 	{
 		if (Auth::isLoggedIn())
-			return (Auth::getUser()['lastLight'] == 0) ? self::$LIGHT_MODE : self::$DARK_MODE;
+			return (Auth::getUser()['lastLight'] == User::THEME_DARK) ? self::$DARK_MODE : self::$LIGHT_MODE;
 		if  (!empty($_COOKIE['lightDark']))
 			if ($_COOKIE['lightDark'] == 'dark')
 				return self::$DARK_MODE;
