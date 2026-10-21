@@ -477,14 +477,6 @@
 	display: inline-block;
 }
 
-.set-view__share-link
-{
-	display: block;
-	margin: 8px auto 0;
-	width: 420px;
-	max-width: 100%;
-}
-
 .set-view__share-link-row
 {
 	display: flex;
@@ -494,10 +486,11 @@
 	margin-top: 8px;
 }
 
-.set-view__share-link-row .set-view__share-link
+.set-view__share-link
 {
-	margin: 0;
 	flex: 1 1 auto;
+	width: 420px;
+	max-width: 100%;
 }
 
 .set-view__share-copy
