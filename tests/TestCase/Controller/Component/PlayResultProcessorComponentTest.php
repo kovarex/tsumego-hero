@@ -88,75 +88,6 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		])['TsumegoStatus']['status'];
 	}
 
-	/**
-	 * Puts a problem into the state a run needs (untried for a sprint, golden for the
-	 * golden run), which is all a fresh problem would start with.
-	 */
-	private function setProblemStatus(ContextPreparator $context, string $status): void
-	{
-		Util::execute(
-			'INSERT INTO tsumego_status (user_id, tsumego_id, status) VALUES (?, ?, ?) '
-			. 'ON DUPLICATE KEY UPDATE status = VALUES(status)',
-			[$context->user['id'], $context->tsumegos[0]['id'], $status]);
-	}
-
-	/**
-	 * The value the run's counter sits at.
-	 */
-	private function conditionValue(ContextPreparator $context, string $category): int
-	{
-		$condition = ClassRegistry::init('AchievementCondition')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'category' => $category]]);
-		return $condition ? (int) $condition['AchievementCondition']['value'] : 0;
-	}
-
-	/**
-	 * Steps the run's counter up through the same updater the play processing uses.
-	 */
-	private function stepCounter(ContextPreparator &$context, string $category, int $steps): void
-	{
-		$this->loginAs($context);
-		for ($step = 0; $step < $steps; $step++)
-		{
-			if ($category === 'sprint')
-				AppController::updateSprintCondition(true);
-			else
-				AppController::updateGoldenCondition(true);
-		}
-	}
-
-	/**
-	 * A misplay on a golden problem breaks the golden run, so a later run starts from
-	 * zero instead of carrying the old one on.
-	 */
-	public function testFailingAGoldenProblemRestartsTheGoldenRun(): void
-	{
-		$context = new ContextPreparator(['user' => ['name' => 'testuser'], 'tsumego' => 1]);
-
-		$this->stepCounter($context, 'golden', 5);
-		$this->setProblemStatus($context, TsumegoStatus::$GOLDEN);
-		$this->failResult($context);
-
-		$this->assertSame(0, $this->conditionValue($context, 'golden'),
-			'a misplay on a golden problem should restart the golden run');
-	}
-
-	/**
-	 * A misplay outside a golden problem leaves the golden run alone: the run counts
-	 * golden problems, not clean play in general.
-	 */
-	public function testAMisplayOutsideAGoldenProblemKeepsTheGoldenRun(): void
-	{
-		$context = new ContextPreparator(['user' => ['name' => 'testuser'], 'tsumego' => 1]);
-
-		$this->stepCounter($context, 'golden', 5);
-		$this->setProblemStatus($context, TsumegoStatus::$VISITED);
-		$this->failResult($context);
-
-		$this->assertSame(5, $this->conditionValue($context, 'golden'),
-			'a misplay outside a golden problem should not touch the golden run');
-	}
-
 	private function attemptsOf(ContextPreparator $context): array
 	{
 		return ClassRegistry::init('TsumegoAttempt')->find('all', [
@@ -364,6 +295,63 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$this->assertNotNull($goldenCondition, 'golden achievement condition must be created');
 		$this->assertSame(1, (int) $goldenCondition['AchievementCondition']['value'],
 			'Solving the same tsumego twice must count the golden solve only once');
+	}
+
+	private function goldenRunOf(ContextPreparator $context): int
+	{
+		$goldenCondition = ClassRegistry::init('AchievementCondition')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'category' => 'golden'],
+		]);
+		return $goldenCondition ? (int) $goldenCondition['AchievementCondition']['value'] : 0;
+	}
+
+	public function testFailingAGoldenTsumegoRestartsTheGoldenRun(): void
+	{
+		$context = new ContextPreparator([
+			'tsumego' => ['status' => 'G'],
+			'achievement-conditions' => [['category' => 'golden', 'value' => 5]],
+		]);
+
+		$this->failResult($context);
+
+		$this->assertSame(0, $this->goldenRunOf($context), 'Failing a golden tsumego must start the golden run over');
+	}
+
+	public function testSolvingAGoldenTsumegoAfterAMistakeDoesNotExtendTheGoldenRun(): void
+	{
+		$context = new ContextPreparator([
+			'tsumego' => ['status' => 'G'],
+			'achievement-conditions' => [['category' => 'golden', 'value' => 5]],
+		]);
+
+		$this->solveWithMisplays($context);
+
+		$this->assertSame(0, $this->goldenRunOf($context), 'The misplay ends the run, the later solve must not count');
+	}
+
+	public function testFailingANormalTsumegoKeepsTheGoldenRun(): void
+	{
+		$context = new ContextPreparator([
+			'tsumego' => ['status' => 'V'],
+			'achievement-conditions' => [['category' => 'golden', 'value' => 5]],
+		]);
+
+		$this->failResult($context);
+
+		$this->assertSame(5, $this->goldenRunOf($context), 'Only a golden tsumego can break the golden run');
+	}
+
+	public function testTenthGoldenTsumegoSolvedInARowUnlocksGoldDigger(): void
+	{
+		$context = new ContextPreparator([
+			'tsumego' => ['status' => 'G'],
+			'achievement-conditions' => [['category' => 'golden', 'value' => Achievement::GOLD_DIGGER_COUNT - 1]],
+		]);
+
+		$response = $this->solve($context);
+
+		$this->assertSame(Achievement::GOLD_DIGGER_COUNT, $this->goldenRunOf($context));
+		$this->assertContains(AchievementId::GOLD_DIGGER->value, array_column($response['achievement_updates'] ?? [], 'id'));
 	}
 
 	public function testSolvingAddsNewTsumegoAttempt(): void

@@ -123,6 +123,7 @@ class PlayResultProcessorComponent extends Component
 			$trainingXp = $this->processTrainingXp($review, (float) $originalTsumegoRating);
 		$this->processErrorAchievement($result, $previousStatusValue, $outcome);
 		$this->processUnsortedStuff($tsumego, $result, $previousStatusValue);
+		$this->processGoldenRun($result, $previousStatusValue);
 
 		// Check solve-dependent achievements right away (not only on the next page
 		// load) so the user sees the popup immediately after solving.
@@ -423,12 +424,7 @@ class PlayResultProcessorComponent extends Component
 		if (!Level::XPAndRatingIsGainedInTsumegoStatus($previousTsumegoStatus))
 			return;
 		if (!$result['solved'])
-		{
-			// A golden tsumego is a single attempt, so failing one ends the run.
-			if ($previousTsumegoStatus == TsumegoStatus::$GOLDEN)
-				AppController::updateGoldenCondition(false);
 			return;
-		}
 
 		$solvedTsumegoRank = Rating::getReadableRankFromRating($previousTsumego['Tsumego']['rating']);
 		AppController::saveDanSolveCondition($solvedTsumegoRank, $previousTsumego['Tsumego']['id']);
@@ -439,8 +435,18 @@ class PlayResultProcessorComponent extends Component
 			AppController::updateSprintCondition(true);
 		else
 			AppController::updateSprintCondition();
-		// A solved golden tsumego moves the run one further.
-		if ($previousTsumegoStatus == TsumegoStatus::$GOLDEN)
-			AppController::updateGoldenCondition(true);
+	}
+
+	/**
+	 * The Gold Digger run counts the golden tsumego solved in a row. A golden tsumego is a
+	 * single attempt, so a solve moves the run one further and a fail starts it over.
+	 */
+	private function processGoldenRun(array $result, string $previousTsumegoStatus): void
+	{
+		if (Auth::isInMistakeTrainingMode())
+			return;
+		if ($previousTsumegoStatus != TsumegoStatus::$GOLDEN)
+			return;
+		AppController::updateGoldenCondition($result['solved']);
 	}
 }
