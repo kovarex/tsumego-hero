@@ -26,7 +26,7 @@ use App\Utility\ViteManifest;
 
 ?>
 <!DOCTYPE html>
-<html lang="en" data-theme="<?php echo $lightDark === 'dark' ? 'dark' : 'light'; ?>">
+<html lang="en" data-theme="<?php echo $lightDark === 'dark' ? 'dark' : 'light'; ?>" data-date-format="<?php echo Auth::getPrefDateFormat(); ?>">
 <?php
 if (Configure::read('debug')) { ?>
 <script>

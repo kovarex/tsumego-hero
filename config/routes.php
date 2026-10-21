@@ -206,6 +206,10 @@ Router::connect(
 	['controller' => 'Users', 'action' => 'boardOrientationPreference']
 );
 Router::connect(
+	'/users/dateFormatPreference',
+	['controller' => 'Users', 'action' => 'dateFormatPreference']
+);
+Router::connect(
 	'/users/avatarPreference',
 	['controller' => 'Users', 'action' => 'avatarPreference']
 );

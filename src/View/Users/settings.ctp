@@ -122,6 +122,21 @@ use App\Utility\Constants;
 				<label class="field__option"><input type="radio" name="sound" value="on" onclick="settingsSound('on');" <?php echo $soundIsOn ? 'checked="checked"' : ''; ?>> On</label>
 				<label class="field__option"><input type="radio" name="sound" value="off" onclick="settingsSound('off');" <?php echo $soundIsOn ? '' : 'checked="checked"'; ?>> Off</label>
 			</div>
+			<div class="field">
+				<span class="field__label">Date format</span>
+				<?php
+				$dateFormat = Auth::getPrefDateFormat();
+				foreach ([
+					User::DATE_FORMAT_ISO => '2026-02-28 14:05',
+					User::DATE_FORMAT_DAY_MONTH_YEAR => '28. 2. 2026 14:05',
+					User::DATE_FORMAT_MONTH_DAY_YEAR => '02/28/2026 2:05 PM',
+					User::DATE_FORMAT_BROWSER => 'Browser language'] as $dateFormatValue => $dateFormatLabel)
+				{
+					$dateFormatChecked = $dateFormat === $dateFormatValue ? 'checked="checked"' : '';
+					echo '<label class="field__option"><input type="radio" name="dateFormat" value="' . $dateFormatValue . '" onclick="dateFormatPreference(this.value);" ' . $dateFormatChecked . '> ' . $dateFormatLabel . '</label>';
+				}
+				?>
+			</div>
 		</div>
 	</div>
 </div>
@@ -244,6 +259,19 @@ function boardOrientationPreference(orientation)
 		method: 'POST',
 		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
 		body: 'orientation=' + encodeURIComponent(orientation)
+	});
+}
+
+function dateFormatPreference(format)
+{
+	fetch('/users/dateFormatPreference', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+		body: 'format=' + encodeURIComponent(format)
+	}).then(function(response) {
+		// The dates are written when the page loads, so it is reloaded to show them in the new format
+		if (response.ok)
+			location.reload();
 	});
 }
 

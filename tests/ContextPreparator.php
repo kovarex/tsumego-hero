@@ -132,6 +132,7 @@ class ContextPreparator
 		$user['mode'] = Util::extract('mode', $userInput) ?: Constants::$LEVEL_MODE;
 		$user['pref_player_color'] = Util::extract('pref_player_color', $userInput) ?? User::PREF_PLAYER_COLOR_RANDOM;
 		$user['pref_board_orientation'] = Util::extract('pref_board_orientation', $userInput) ?? User::PREF_BOARD_ORIENTATION_RANDOM;
+		$user['pref_date_format'] = Util::extract('pref_date_format', $userInput) ?? User::DATE_FORMAT_ISO;
 		$user['sound'] = Util::extract('sound', $userInput) ?? 0;
 		if ($lastTimeModeCategoryID = Util::extract('last-time-mode-category-id', $userInput))
 			$user['last_time_mode_category_id'] = $lastTimeModeCategoryID;
