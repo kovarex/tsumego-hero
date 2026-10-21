@@ -5,7 +5,6 @@ namespace App\Utility;
 use Achievement;
 use Cache;
 use ClassRegistry;
-use Set;
 use SetConnection;
 use TimeModeCategory;
 use TimeModeRank;
@@ -535,9 +534,6 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 
 	public function checkSetAchievements(int $sid = 0, float|int $setRating = 0): AchievementChecker
 	{
-		$set = ClassRegistry::init('Set')->findById($sid);
-		if (!$set || !Set::isOfficial($set['Set']))
-			return $this;
 		$acA = ClassRegistry::init('AchievementCondition')->find('first', [
 			'order' => 'value DESC',
 			'conditions' => [

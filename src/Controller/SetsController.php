@@ -1109,7 +1109,9 @@ ORDER BY sc.num ASC", [(int) $id]);
 			if ($problemSolvedPercent >= 100)
 			{
 				$achievementChecker = new AchievementChecker();
-				if ($set['Set']['id'] != 210)
+				// Set achievements belong to the site's collections only, so nothing is recorded for a
+				// collection a player assembled, however complete it is.
+				if ($set['Set']['id'] != 210 && Set::isOfficial($set['Set']))
 				{
 					$this->updateAchievementConditions($set['Set']['id'], $avgTime2, $accuracy);
 					$achievementChecker->checkSetAchievements($set['Set']['id'], $setRating);
@@ -1169,12 +1171,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 	 */
 	private function updateAchievementConditions(int $sid, int|float $avgTime, int|float $accuracy): void
 	{
-		// Set achievements belong to the site's collections only, so nothing is recorded for a
-		// collection a player assembled, however complete it is.
-		$set = $this->Set->findById($sid);
-		if (!$set || !Set::isOfficial($set['Set']))
-			return;
-
 		$uid = Auth::getUserID();
 		$acS = $this->AchievementCondition->find('first', ['order' => 'value ASC', 'conditions' => ['set_id' => $sid, 'user_id' => $uid, 'category' => 's']]);
 		$acA = $this->AchievementCondition->find('first', ['order' => 'value DESC', 'conditions' => ['set_id' => $sid, 'user_id' => $uid, 'category' => '%']]);
