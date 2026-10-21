@@ -122,6 +122,7 @@ class CommentsControllerTest extends ControllerTestCase
 
 		// The badge comes from the positions rendered with the page, the comments tab stays closed
 		$browser->find('.besogo-tree-comment-badge');
+		$this->assertCount(1, $browser->getElements('.besogo-tree-comment-badge'));
 	}
 
 	/**
@@ -233,7 +234,8 @@ class CommentsControllerTest extends ControllerTestCase
 		$rendered = $this->renderComment('B H19,w K18, b L18, after w J19 B kills with H18!', 5);
 
 		$this->assertSame(['H19,w K18, b L18, after w J19 B kills with H18'], $rendered['sequences']);
-		$this->assertSame(['H19' => 'b', 'K18' => 'w', 'L18' => 'b', 'J19' => 'w', 'H18' => 'b'], $rendered['colors']);
+		// The browser doesn't keep the key order of the returned object
+		$this->assertEquals(['H19' => 'b', 'K18' => 'w', 'L18' => 'b', 'J19' => 'w', 'H18' => 'b'], $rendered['colors']);
 	}
 
 	/**
