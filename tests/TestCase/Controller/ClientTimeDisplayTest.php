@@ -49,7 +49,7 @@ class ClientTimeDisplayTest extends TestCaseWithAuth
 	private function prepareSolveHistory(int $dateFormat): ContextPreparator
 	{
 		$context = new ContextPreparator([
-			'user' => ['pref_date_format' => $dateFormat],
+			'user' => ['date_format' => $dateFormat],
 			'tsumego' => ['sets' => [['name' => 'Time Test Set', 'num' => '1']]],
 		]);
 

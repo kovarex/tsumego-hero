@@ -115,9 +115,9 @@ class Auth
 		return Auth::isLoggedIn() ? (int) Auth::getUser()['pref_board_orientation'] : User::PREF_BOARD_ORIENTATION_RANDOM;
 	}
 
-	public static function getPrefDateFormat(): int
+	public static function getDateFormat(): int
 	{
-		return Auth::isLoggedIn() ? (int) Auth::getUser()['pref_date_format'] : User::DATE_FORMAT_ISO;
+		return Auth::isLoggedIn() ? (int) Auth::getUser()['date_format'] : User::DATE_FORMAT_ISO;
 	}
 
 	/**

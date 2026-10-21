@@ -2094,7 +2094,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		if ($format < User::DATE_FORMAT_ISO || $format > User::DATE_FORMAT_BROWSER)
 			$format = User::DATE_FORMAT_ISO;
 
-		Auth::saveUserField('pref_date_format', $format);
+		Auth::saveUserField('date_format', $format);
 
 		$this->response->statusCode(200);
 		$this->response->type('application/json');

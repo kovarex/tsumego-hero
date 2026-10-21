@@ -125,7 +125,7 @@ use App\Utility\Constants;
 			<div class="field">
 				<span class="field__label">Date format</span>
 				<?php
-				$dateFormat = Auth::getPrefDateFormat();
+				$dateFormat = Auth::getDateFormat();
 				foreach ([
 					User::DATE_FORMAT_ISO => '2026-02-28 14:05',
 					User::DATE_FORMAT_DAY_MONTH_YEAR => '28. 2. 2026 14:05',
