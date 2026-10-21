@@ -70,6 +70,18 @@ reset_db_if_ahead() {
 deploy_steps() {
 	set -e
 	echo "=== Deploying PR $1 as $(id -un) ==="
+	# A CGI process gets less memory than an ssh session: raise the soft limits as far as
+	# the hard ones allow, and keep git from mapping its packs in 1 GiB windows. The
+	# GIT_CONFIG_* variables also reach the git calls made by deploy.sh.
+	for limit in d m v; do
+		ulimit -S -$limit "$(ulimit -H -$limit)" 2> /dev/null || true
+	done
+	ulimit -a
+	export GIT_CONFIG_COUNT=4
+	export GIT_CONFIG_KEY_0=core.packedGitWindowSize GIT_CONFIG_VALUE_0=16m
+	export GIT_CONFIG_KEY_1=core.packedGitLimit GIT_CONFIG_VALUE_1=64m
+	export GIT_CONFIG_KEY_2=pack.windowMemory GIT_CONFIG_VALUE_2=64m
+	export GIT_CONFIG_KEY_3=pack.threads GIT_CONFIG_VALUE_3=1
 	cd "$REPO_DIR"
 	if [ "$1" = 0 ]; then
 		git fetch origin master
