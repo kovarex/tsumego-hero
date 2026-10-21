@@ -16,10 +16,10 @@ class CommentsControllerTest extends ControllerTestCase
 	private const SOLVED_SGF = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])';
 
 	/** Opens a tsumego the admin has already solved, so its comments and the review mode are available. */
-	private function openSolvedTsumego(array $tsumego = []): ContextPreparator
+	private function openSolvedTsumego(Browser $browser, array $tsumego = []): ContextPreparator
 	{
 		$context = new ContextPreparator(['user' => ['admin' => true], 'tsumego' => ['set_order' => 1, 'status' => 'S'] + $tsumego]);
-		Browser::instance()->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		return $context;
 	}
 
@@ -37,8 +37,8 @@ class CommentsControllerTest extends ControllerTestCase
 	 */
 	private function renderComment(string $message, int $coordCount): array
 	{
-		$this->openSolvedTsumego(['comments' => [['message' => $message]]]);
 		$browser = Browser::instance();
+		$this->openSolvedTsumego($browser, ['comments' => [['message' => $message]]]);
 		$browser->expandComments();
 		$browser->waitUntilJs('document.querySelectorAll(".go-coord").length >= ' . $coordCount);
 		return $browser->driver->executeScript('
@@ -82,8 +82,8 @@ class CommentsControllerTest extends ControllerTestCase
 
 	public function testAddCommentWithBoardPositionStoresAnchorWithoutMarker()
 	{
-		$this->openSolvedTsumego(['sgf' => self::SOLVED_SGF]);
 		$browser = Browser::instance();
+		$this->openSolvedTsumego($browser, ['sgf' => self::SOLVED_SGF]);
 		$browser->expandComments();
 
 		// Navigate the board to a move so a position can be anchored
@@ -114,10 +114,10 @@ class CommentsControllerTest extends ControllerTestCase
 
 	public function testReviewBadgeShowsWithoutOpeningComments()
 	{
-		$this->openSolvedTsumego([
+		$browser = Browser::instance();
+		$this->openSolvedTsumego($browser, [
 			'sgf' => self::SOLVED_SGF,
 			'comments' => [['message' => 'anchored note', 'position' => '1/1/-1/-1/0/0/1/0/full-board|1/1']]]);
-		$browser = Browser::instance();
 		$this->enterReviewMode($browser);
 
 		// The badge comes from the positions rendered with the page, the comments tab stays closed
@@ -131,8 +131,8 @@ class CommentsControllerTest extends ControllerTestCase
 	 */
 	public function testMultipleCommentBadgesOnDifferentNodes()
 	{
-		$context = $this->openSolvedTsumego(['sgf' => self::SOLVED_SGF, 'alternative_response' => 0]);
 		$browser = Browser::instance();
+		$context = $this->openSolvedTsumego($browser, ['sgf' => self::SOLVED_SGF, 'alternative_response' => 0]);
 
 		// Capture the board position strings for move 1 and move 2.
 		$positions = $browser->driver->executeScript("
@@ -243,8 +243,8 @@ class CommentsControllerTest extends ControllerTestCase
 	 */
 	public function testCoordHoverMapsLabelsToDistinctIntersections()
 	{
-		$this->openSolvedTsumego(['sgf' => '(;GM[1]FF[4]SZ[19]AB[aa]AP[test:1])']);
 		$browser = Browser::instance();
+		$this->openSolvedTsumego($browser, ['sgf' => '(;GM[1]FF[4]SZ[19]AB[aa]AP[test:1])']);
 		$browser->waitUntilJs('typeof besogo !== "undefined" && besogo.scaleParameters && besogo.editor');
 
 		$result = $browser->driver->executeScript(
