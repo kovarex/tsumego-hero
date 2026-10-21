@@ -3,6 +3,7 @@
 namespace App\Utility;
 
 use ClassRegistry;
+use Set;
 use SetConnection;
 
 class TsumegoButtonsQueryBuilder
@@ -51,7 +52,7 @@ class TsumegoButtonsQueryBuilder
 		// It means I explicitelly want to view that.
 		// In all other cases, private set is not included.
 		if ($tsumegoFilters->query != 'topics')
-			$this->query->conditions [] = '`set`.public = 1';
+			$this->query->conditions [] = Set::officialCondition();
 
 		$this->query->query .= " JOIN `set` ON `set`.id=set_connection.set_id";
 		if (Auth::isLoggedIn())
@@ -101,7 +102,7 @@ class TsumegoButtonsQueryBuilder
 		{
 			$ratingBounds = RatingBounds::coverRankSpec($_COOKIE['lastSet'], Rating::weakestRank());
 			$ratingBounds->addQueryConditions($this->query);
-			$this->description = $_COOKIE['lastSet'] . ' are problems that have a rating ' . $ratingBounds->textualDescription() . '.';
+			$this->description = $_COOKIE['lastSet'] . ' are problems that have a rating' . $ratingBounds->textualDescription() . '.';
 		}
 		catch (RatingParseException $e)
 		{

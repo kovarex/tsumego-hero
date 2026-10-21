@@ -94,6 +94,21 @@ class SetPolicy extends BasePolicy
 	}
 
 	/**
+	 * Deciding whether a collection can be opened by anyone with the link: the player who
+	 * assembled it, and only them. The site's own collections are public already and a
+	 * sandbox build is a workspace, so neither has a sharing decision to make.
+	 *
+	 * @param UserRow|null $user
+	 * @param SetRow $set
+	 */
+	public static function canShare(?array $user, array $set): bool
+	{
+		if ($user === null || $set['user_id'] === null)
+			return false;
+		return (int) $set['user_id'] === $user['id'];
+	}
+
+	/**
 	 * Creating a set: any logged-in user.
 	 *
 	 * @param UserRow|null $user

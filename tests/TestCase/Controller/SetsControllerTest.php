@@ -45,7 +45,7 @@ class SetsControllerTest extends TestCaseWithAuth
 			$this->createFullySolvedSet($setId, $context->user['id']);
 		$_COOKIE['disable-achievements'] = false;
 
-		$this->testAction('sets/view/50', ['return' => 'contents']);
+		$this->testAction('sets/50', ['return' => 'contents']);
 
 		$popups = array_column($this->controller->viewVars['achievementUpdates'], 'id');
 		$this->assertContains(AchievementId::LIFE_DEATH_ELEMENTARY->value, $popups, 'The set page hands the achievements it unlocked to the layout');
@@ -287,8 +287,8 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$boxLinks = $dom->querySelectorAll('.set-card__link');
 		$setId = $context->tsumegos[0]['sets'][0]['id'];
-		$this->assertSame('/sets/view/' . $setId, $boxLinks[0]->getAttribute('href'));
-		$this->assertSame('/sets/view/' . $setId . '/2', $boxLinks[1]->getAttribute('href'));
+		$this->assertSame('/sets/' . $setId, $boxLinks[0]->getAttribute('href'));
+		$this->assertSame('/sets/' . $setId . '/2', $boxLinks[1]->getAttribute('href'));
 	}
 
 	public function testTopicsIndexSmallCollectionShowsSingleBox(): void
@@ -310,7 +310,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame('3 problems', $collectionMiddleLeft[0]->textContent);
 
 		$boxLinks = $dom->querySelectorAll('.set-card__link');
-		$this->assertSame('/sets/view/' . $context->tsumegos[0]['sets'][0]['id'], $boxLinks[0]->getAttribute('href'));
+		$this->assertSame('/sets/' . $context->tsumegos[0]['sets'][0]['id'], $boxLinks[0]->getAttribute('href'));
 	}
 
 	public function testTopicsIndexSortsNullOrderSetLast(): void
@@ -529,7 +529,7 @@ class SetsControllerTest extends TestCaseWithAuth
 			'sets' => [['name' => 'set 2', 'num' => '1']]];
 		$context = new ContextPreparator($contextParams);
 
-		$this->testAction('sets/view/15k', ['return' => 'view']);
+		$this->testAction('sets/15k', ['return' => 'view']);
 		$dom = $this->getStringDom();
 		$setTitle = $dom->querySelectorAll('.set-view-title');
 		$this->assertCount(1, $setTitle);
@@ -543,7 +543,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertCount(1, $problemLinks);
 		$this->assertSame($problemLinks[0]->getAttribute('href'), '/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
-		$this->testAction('sets/view/10k', ['return' => 'view']);
+		$this->testAction('sets/10k', ['return' => 'view']);
 		$dom = $this->getStringDom();
 		$setTitle = $dom->querySelectorAll('.set-view-title');
 		$this->assertCount(1, $setTitle);
@@ -567,7 +567,7 @@ class SetsControllerTest extends TestCaseWithAuth
 			'sets' => [['name' => 'set 1', 'num' => '1']]];
 		new ContextPreparator($contextParams);
 
-		$this->testAction('sets/view/5k', ['return' => 'view']);
+		$this->testAction('sets/5k', ['return' => 'view']);
 		$result = $this->getStringDom();
 
 		$this->assertStringContainsString('<span class="rank-icon rank-icon-large">5k</span>',
@@ -616,7 +616,7 @@ class SetsControllerTest extends TestCaseWithAuth
 			'sets' => [['name' => 'set 2', 'num' => '1']]];
 		$context = new ContextPreparator($contextParams);
 
-		$this->testAction('sets/view/' . $context->tsumegos[0]['sets'][0]['id'], ['return' => 'view']);
+		$this->testAction('sets/' . $context->tsumegos[0]['sets'][0]['id'], ['return' => 'view']);
 		$dom = $this->getStringDom();
 		$setTitle = $dom->querySelectorAll('.set-view-title');
 		$this->assertCount(1, $setTitle);
@@ -630,7 +630,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertCount(1, $problemLinks);
 		$this->assertSame($problemLinks[0]->getAttribute('href'), '/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
-		$this->testAction('sets/view/' . $context->tsumegos[1]['sets'][0]['id'], ['return' => 'view']);
+		$this->testAction('sets/' . $context->tsumegos[1]['sets'][0]['id'], ['return' => 'view']);
 		$dom = $this->getStringDom();
 		$setTitle = $dom->querySelectorAll('.set-view-title');
 		$this->assertCount(1, $setTitle);
@@ -652,7 +652,7 @@ class SetsControllerTest extends TestCaseWithAuth
 				'description' => '<b onmouseover="alert(1)">hi</b><a href="javascript:alert(2)">click</a>']]]]);
 		$setId = $context->tsumegos[0]['sets'][0]['id'];
 
-		$this->testAction('sets/view/' . $setId, ['return' => 'view']);
+		$this->testAction('sets/' . $setId, ['return' => 'view']);
 
 		$this->assertStringNotContainsString('onmouseover', $this->view);
 		$this->assertStringNotContainsString('javascript:alert(2)', $this->view);
@@ -669,10 +669,10 @@ class SetsControllerTest extends TestCaseWithAuth
 		$setId = $context->tsumegos[0]['sets'][0]['id'];
 
 		$browser = Browser::instance();
-		$browser->getAnonymous('sets/view/' . $setId);
+		$browser->getAnonymous('sets/' . $setId);
 		$browser->driver->manage()->deleteAllCookies();
 		$browser->driver->manage()->addCookie(['name' => 'filtered_ranks', 'value' => '15k']);
-		$browser->getAnonymous('sets/view/' . $setId);
+		$browser->getAnonymous('sets/' . $setId);
 
 		// open the filters panel so the active tiles (and clear button) are visible
 		$browser->find('#showFilters')->click();
@@ -680,7 +680,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$browser->find('#unselect-active-tiles')->click();
 
-		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $setId, $browser->driver->getCurrentURL());
+		$this->assertSame(Util::getMyAddress() . '/sets/' . $setId, $browser->driver->getCurrentURL());
 		$this->assertFalse($browser->idExists('unselect-active-tiles'));
 	}
 
@@ -823,7 +823,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertCount(1, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), '15k');
 		$collectionTopDivs[0]->click();
-		$this->assertSame(Util::getMyAddress() . '/sets/view/15k', $browser->driver->getCurrentURL());
+		$this->assertSame(Util::getMyAddress() . '/sets/15k', $browser->driver->getCurrentURL());
 
 		// now we are viewing the 15k set insides and checking the buttons
 		$buttons = $this->checkSetNavigationButtons($browser, 4, $context, function ($index) {
@@ -880,7 +880,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame($collectionTopDivs[0]->getText(), 'test set #1');
 		$this->assertSame($collectionTopDivs[1]->getText(), 'test set #2');
 		$collectionTopDivs[0]->click();
-		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->tsumegos[0]['sets'][0]['id'], $browser->driver->getCurrentURL());
+		$this->assertSame(Util::getMyAddress() . '/sets/' . $context->tsumegos[0]['sets'][0]['id'], $browser->driver->getCurrentURL());
 
 		// now we are viewing the 'test set' and checking the buttons
 
@@ -919,7 +919,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$collectionTopDivs[1]->click();
 
 		// now we are in the second partition of the set
-		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->tsumegos[0]['sets'][0]['id'] . '/2', $browser->driver->getCurrentURL());
+		$this->assertSame(Util::getMyAddress() . '/sets/' . $context->tsumegos[0]['sets'][0]['id'] . '/2', $browser->driver->getCurrentURL());
 
 		// there should be just the 1 problem of the second partition
 		$buttons = $this->checkSetNavigationButtons($browser, 1, $context, function ($index) {
@@ -1003,7 +1003,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		// first we visit the 15k one
 		$collectionTopDivs[0]->click();
-		$this->assertSame(Util::getMyAddress() . '/sets/view/15k', $browser->driver->getCurrentURL());
+		$this->assertSame(Util::getMyAddress() . '/sets/15k', $browser->driver->getCurrentURL());
 		$this->assertSame($this->getSetTitle($browser), '15k');
 
 		// now we are viewing the 15k set insides and checking the buttons
@@ -1044,7 +1044,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		// first we visit the 1d one
 		$collectionTopDivs[1]->click();
-		$this->assertSame(Util::getMyAddress() . '/sets/view/1d', $browser->driver->getCurrentURL());
+		$this->assertSame(Util::getMyAddress() . '/sets/1d', $browser->driver->getCurrentURL());
 		$this->assertSame($this->getSetTitle($browser), '1d');
 
 		// now we are viewing the 1d set insides and checking the buttons
@@ -1107,7 +1107,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		// first visit the 'set 1'
 		$collectionTopDivs[0]->click();
-		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->tsumegos[0]['set-connections'][0]['set_id'], $browser->driver->getCurrentURL());
+		$this->assertSame(Util::getMyAddress() . '/sets/' . $context->tsumegos[0]['set-connections'][0]['set_id'], $browser->driver->getCurrentURL());
 		$this->assertSame($this->getSetTitle($browser), 'set 1');
 
 		// now we are viewing the 'set 1' insides and checking the buttons
@@ -1141,7 +1141,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		// clicking on next problem should get us back to the set
 		$browser->find('#besogo-next-button')->click();
-		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->tsumegos[0]['set-connections'][0]['set_id'], $browser->driver->getCurrentURL());
+		$this->assertSame(Util::getMyAddress() . '/sets/' . $context->tsumegos[0]['set-connections'][0]['set_id'], $browser->driver->getCurrentURL());
 		$browser->driver->getPageSource();
 		$this->assertCount(2, $browser->getElements('.title4'));
 		$this->assertSame($this->getSetTitle($browser), 'set 1');
@@ -1192,7 +1192,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		// first visit the 'set 15k'
 		$collectionTopDivs[0]->click();
-		$this->assertSame(Util::getMyAddress() . '/sets/view/15k', $browser->driver->getCurrentURL());
+		$this->assertSame(Util::getMyAddress() . '/sets/15k', $browser->driver->getCurrentURL());
 		$this->assertSame($this->getSetTitle($browser), '15k');
 
 		// now we are viewing the 'set 2' insides and checking the buttons
@@ -1226,7 +1226,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		// clicking on next problem should get us back to the set
 		$browser->find('#besogo-next-button')->click();
-		$this->assertSame(Util::getMyAddress() . '/sets/view/15k', $browser->driver->getCurrentURL());
+		$this->assertSame(Util::getMyAddress() . '/sets/15k', $browser->driver->getCurrentURL());
 		$this->assertSame($this->getSetTitle($browser), '15k');
 	}
 
@@ -1287,7 +1287,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame($collectionMiddleLeftDivs[0]->getText(), '1 problem');
 
 		$collectionTopDivs[0]->click();
-		$this->assertSame(Util::getMyAddress() . '/sets/view/10k', $browser->driver->getCurrentURL());
+		$this->assertSame(Util::getMyAddress() . '/sets/10k', $browser->driver->getCurrentURL());
 
 		// now we are viewing the 10k set insides and checking the buttons
 		$buttons = $this->checkSetNavigationButtons($browser, 1, $context, function ($index) {
@@ -1407,7 +1407,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		// going into the 'atari' set
 		$collectionTopDivs[0]->click();
-		$this->assertSame(Util::getMyAddress() . '/sets/view/atari', $browser->driver->getCurrentURL());
+		$this->assertSame(Util::getMyAddress() . '/sets/atari', $browser->driver->getCurrentURL());
 		$this->assertSame($this->getSetTitle($browser), 'atari');
 
 		// now we are viewing the 'atari' insides and checking the buttons
@@ -1439,7 +1439,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		// clicking on next problem should get us back to the set
 		$browser->find('#besogo-next-button')->click();
-		$this->assertSame(Util::getMyAddress() . '/sets/view/atari', $browser->driver->getCurrentURL());
+		$this->assertSame(Util::getMyAddress() . '/sets/atari', $browser->driver->getCurrentURL());
 		$this->assertSame($this->getSetTitle($browser), 'atari');
 	}
 
@@ -1477,7 +1477,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		// going into the 'set 1'
 		$collectionTopDivs[0]->click();
-		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->tsumegos[3]['set-connections'][0]['set_id'], $browser->driver->getCurrentURL());
+		$this->assertSame(Util::getMyAddress() . '/sets/' . $context->tsumegos[3]['set-connections'][0]['set_id'], $browser->driver->getCurrentURL());
 		$this->assertSame($this->getSetTitle($browser), 'set 1');
 
 		// now we are viewing the 'set 1' insides and checking the buttons
@@ -1509,7 +1509,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		// clicking on next problem should get us back to the set
 		$browser->find('#besogo-next-button')->click();
-		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->tsumegos[3]['set-connections'][0]['set_id'], $browser->driver->getCurrentURL());
+		$this->assertSame(Util::getMyAddress() . '/sets/' . $context->tsumegos[3]['set-connections'][0]['set_id'], $browser->driver->getCurrentURL());
 		$this->assertSame($this->getSetTitle($browser), 'set 1');
 	}
 
@@ -1682,7 +1682,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertCount(1, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), 'private set');
 		$collectionTopDivs[0]->click();
-		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->tsumegos[1]['set-connections'][0]['set_id'], $browser->driver->getCurrentURL());
+		$this->assertSame(Util::getMyAddress() . '/sets/' . $context->tsumegos[1]['set-connections'][0]['set_id'], $browser->driver->getCurrentURL());
 
 		$problemButtons = $browser->getElements('.problem-nav__number');
 		$this->assertCount(1, $problemButtons);
@@ -1731,7 +1731,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		// Get set ID from first other-tsumego
 		$setId = $context->tsumegos[0]['sets'][0]['id'];
 
-		$browser->get("sets/view/{$setId}");
+		$browser->get("sets/{$setId}");
 
 		// Completed tab should be active by default - find problem buttons
 		$buttons = $browser->getElements('.problem-nav__number');
@@ -1779,7 +1779,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$browser = Browser::instance();
 		$setId = $context->tsumegos[0]['sets'][0]['id'];
-		$browser->get("sets/view/{$setId}");
+		$browser->get("sets/{$setId}");
 
 		// Find the <li> elements (button containers with status classes)
 		$listItems = $browser->getElements('li.problem-nav__item');
@@ -1820,7 +1820,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$browser = Browser::instance();
 		$setId = $context->tsumegos[0]['sets'][0]['id'];
-		$browser->get("sets/view/{$setId}");
+		$browser->get("sets/{$setId}");
 
 		// Click Accuracy tab
 		$accuracyTab = $browser->findBy(WebDriverBy::xpath("//a[contains(text(), 'Accuracy')]"));
@@ -1867,7 +1867,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$browser = Browser::instance();
 		$setId = $context->tsumegos[0]['sets'][0]['id'];
-		$browser->get("sets/view/{$setId}");
+		$browser->get("sets/{$setId}");
 
 		// Click Accuracy tab
 		$accuracyTab = $browser->findBy(WebDriverBy::xpath("//a[contains(text(), 'Accuracy')]"));
@@ -1908,7 +1908,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$browser = Browser::instance();
 		$setId = $context->tsumegos[0]['sets'][0]['id'];
-		$browser->get("sets/view/{$setId}");
+		$browser->get("sets/{$setId}");
 
 		// Switch to Time tab
 		$browser->findById('timeButton')->click();
@@ -1953,7 +1953,7 @@ class SetsControllerTest extends TestCaseWithAuth
 						'sets' => [['name' => 'Test Set 2', 'num' => 2]],
 						'status' => 'S'
 					]]]);
-			$browser->get('sets/view/' . $context->tsumegos[0]['sets'][0]['id']);
+			$browser->get('sets/' . $context->tsumegos[0]['sets'][0]['id']);
 			$browser->clickId("showx");
 			$browser->clickId("reset-textfield");
 			$browser->driver->getKeyboard()->sendKeys($resetInput);
@@ -2012,7 +2012,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$setId = $context->tsumegos[0]['sets'][0]['id'];
 
 		// With 40% solved, reset button should NOT be shown
-		$browser->get('sets/view/' . $setId . '/1');
+		$browser->get('sets/' . $setId . '/1');
 		$this->assertFalse($browser->idExists('showx'), "Reset button should not exist when below 50%");
 		$this->assertTextContains('You need to complete 50% to reset', $browser->driver->getPageSource());
 	}
@@ -2041,7 +2041,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertEquals(102, $statusCount, "Should have 102 solved statuses");
 
 		// With 51% solved, reset button SHOULD be shown
-		$browser->get('sets/view/' . $setId . '/1');
+		$browser->get('sets/' . $setId . '/1');
 		$pageSource = $browser->driver->getPageSource();
 		$this->assertStringNotContainsString('You need to complete 50% to reset', $pageSource, "Page says <50% but should be 51%");
 		$this->assertTrue($browser->idExists('showx'), "Reset button should be shown at 51%");
@@ -2058,7 +2058,7 @@ class SetsControllerTest extends TestCaseWithAuth
 			$context = new ContextPreparator($contextParameters);
 
 			// we open partition of the set
-			$browser->get('sets/view/' . $context->tsumegos[0]['sets'][0]['id'] . '/' . $partition);
+			$browser->get('sets/' . $context->tsumegos[0]['sets'][0]['id'] . '/' . $partition);
 			$browser->clickId("showx");
 			$browser->clickId("reset-textfield");
 			$browser->driver->getKeyboard()->sendKeys('reset');
@@ -2081,14 +2081,13 @@ class SetsControllerTest extends TestCaseWithAuth
 		$contextParameters['user'] = ['collection_size' => 150];
 		$context = new ContextPreparator($contextParameters);
 
-		// we open partition of the set
-		$browser->get('sets/view/' . $context->tsumegos[0]['sets'][0]['id'] . '/1');
+		$browser->get('sets/' . $context->tsumegos[0]['sets'][0]['id']);
 		$this->assertEmpty($browser->getElements("showx")); // no reset offered
 		$this->assertTextContains('Reset is only possible when collection size is set to 200', $browser->driver->getPageSource());
 
-		// we try to force it on the server anyway - redirect back to same partition
+		// we try to force it on the server anyway - redirect back to the same set
 		$browser->post('/sets/resetProgress/' . $context->sets[0]['id'] . '/1', ['reset-check' => 'reset']);
-		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->sets[0]['id'] . '/1', $browser->driver->getCurrentURL());
+		$this->assertSame(Util::getMyAddress() . '/sets/' . $context->sets[0]['id'], $browser->driver->getCurrentURL());
 		$this->assertSame(400, count(ClassRegistry::init('TsumegoStatus')->find('all', ['order' => 'id'])));
 	}
 
@@ -2117,7 +2116,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get('sites/blank');
 		$pageSource = $browser->driver->getPageSource();
-		$this->assertStringContainsString('href="/sets/view/favorites"', $pageSource, 'Favorites link should be in the page HTML for logged-in users');
+		$this->assertStringContainsString('href="/sets/favorites"', $pageSource, 'Favorites link should be in the page HTML for logged-in users');
 	}
 
 	public function testIndexWithNonexistentFilteredSetAndRankFiltersDoesNotCrash(): void

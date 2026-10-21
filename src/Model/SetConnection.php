@@ -50,7 +50,7 @@ class SetConnection extends AppModel
 		return 'SELECT sc.set_id FROM set_connection sc'
 			. ' JOIN tsumego t ON t.id = sc.tsumego_id'
 			. ' JOIN `set` st ON st.id = sc.set_id'
-			. ' WHERE st.public = 1 AND st.user_id IS NULL'
+			. ' WHERE ' . Set::officialCondition('st')
 			. ' GROUP BY sc.set_id HAVING COUNT(*) >= ' . self::ACHIEVEMENT_MINIMUM_PROBLEMS;
 	}
 

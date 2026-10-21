@@ -4,6 +4,8 @@ use App\Utility\MistakeTraining;
 use App\Utility\PlayOutcome;
 use App\Utility\RungInsignia;
 use App\Utility\TsumegoButton;
+use App\Utility\TsumegoButtons;
+use App\Utility\TsumegoFilters;
 
 class TsumegoButtonsTest extends TestCaseWithAuth
 {
@@ -128,6 +130,34 @@ class TsumegoButtonsTest extends TestCaseWithAuth
 		$this->assertSame('', $links['previousLink'], 'Back at the start of the training has nowhere to go');
 		$this->assertSame('/mistake-training/play/' . $context->tsumegos[1]['set-connections'][0]['id'], $links['nextLink'],
 			'Queue navigation must stay on the training route, so the route can re-assert the mode');
+	}
+
+	public function testTheEndsOfTheListLeadToThePageAndTheMiddleToTheNeighbour(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'edge'],
+			'tsumego' => ['set_order' => 1],
+			'tsumegos' => [['set_order' => 2]],
+		]);
+		$first = $context->tsumegos[0]['set-connections'][0];
+		$second = $context->tsumegos[1]['set-connections'][0];
+		$buttons = TsumegoButtons::fromRows([
+			['tsumego_id' => $context->tsumegos[0]['id'], 'set_connection_id' => $first['id'], 'num' => 1, 'status' => 'S'],
+			['tsumego_id' => $context->tsumegos[1]['id'], 'set_connection_id' => $second['id'], 'num' => 2, 'status' => 'S'],
+		], (int) $first['id'], 2);
+		$links = [];
+		$setFunction = function ($name, $value) use (&$links) {
+			$links[$name] = $value;
+		};
+
+		$buttons->exportCurrentAndPreviousLink($setFunction, new TsumegoFilters('topics'), (int) $first['id'], ['Set' => ['id' => $first['set_id']]], '/page');
+		$this->assertSame('/page', $links['previousLink'], 'The first problem has the page behind it');
+		$this->assertSame('/' . $second['id'], $links['nextLink']);
+
+		$buttons->exportCurrentAndPreviousLink($setFunction, new TsumegoFilters('topics'), (int) $second['id'], ['Set' => ['id' => $second['set_id']]], '/page');
+
+		$this->assertSame('/' . $first['id'], $links['previousLink'], 'The last problem has its neighbour behind it');
+		$this->assertSame('/page', $links['nextLink']);
 	}
 
 	public function testMistakeTrainingQueueButtonsStayOnTheTrainingRoute(): void

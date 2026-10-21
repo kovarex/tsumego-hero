@@ -242,6 +242,23 @@ class User extends AppModel
 	}
 
 	/**
+	 * Whether a player ever proposed a tag, tagged a problem, uploaded a solution or had a proposal
+	 * rejected. A player who never did any of that has no contributions page worth opening.
+	 */
+	public static function hasContributions(int $userId): bool
+	{
+		$rows = Util::query(
+			'SELECT
+				EXISTS(SELECT 1 FROM tag WHERE user_id = ?)
+				OR EXISTS(SELECT 1 FROM tag_connection WHERE user_id = ?)
+				OR EXISTS(SELECT 1 FROM sgf WHERE user_id = ?)
+				OR EXISTS(SELECT 1 FROM reject WHERE user_id = ? AND (tsumego_id = 0
+					OR EXISTS(SELECT 1 FROM set_connection WHERE tsumego_id = reject.tsumego_id))) AS found',
+			[$userId, $userId, $userId, $userId]);
+		return (bool) $rows[0]['found'];
+	}
+
+	/**
 	 * The same rule as displayNameOrNull() for the places that print the name instead of sending it
 	 * to the frontend: a user whose account is not there anymore is shown as DELETED_NAME.
 	 *
@@ -657,15 +674,15 @@ class User extends AppModel
 	}
 
 	/**
-	 * Whether the account solved enough of the public problems to throw away the progress
-	 * it has not touched for years.
+	 * Whether the account solved enough of the problems of the site to throw away the
+	 * progress it has not touched for years.
 	 *
 	 * @param UserRow $user
 	 */
 	public static function canResetOldProgress(array $user): bool
 	{
-		$publicProblems = ClassRegistry::init('Tsumego')->countPublicProblems();
-		return Util::getPercent($user['solved'], $publicProblems)
+		$progress = ClassRegistry::init('Tsumego')->publicProblemProgress((int) $user['id']);
+		return Util::getPercent($progress['solved'], $progress['total'])
 			>= Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED;
 	}
 }

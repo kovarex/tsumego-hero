@@ -21,6 +21,7 @@ use App\Utility\ViteManifest;
  * @var string $nextDay
  * @var string $boardsBitmask
  * @var string|null $canonicalPath Path a page with more than one address wants to be known by
+ * @var bool $robotsNoIndex The page is reachable but must stay out of search results
  * @var array|null $og
  */
 
@@ -109,6 +110,9 @@ echo $this->Html->charset();
 $canonicalUrl = Router::url($canonicalPath ?? '/' . trim(strtok($this->request->here, '?'), '/'), true);
 ?>
 <link rel="canonical" href="<?php echo h($canonicalUrl); ?>">
+<?php if (!empty($robotsNoIndex)): ?>
+<meta name="robots" content="noindex">
+<?php endif; ?>
 <?php
 // Controllers can describe the page themselves; what they set wins, everything
 // else comes from here.
@@ -287,7 +291,7 @@ echo ViteManifest::legacyScript('legacy');
 						if(Auth::isLoggedIn()){
 							echo '<ul class="newMenuLi2">';
 							echo '<li><a href="/sets/mine">My Sets</a></li>';
-							echo '<li><a class="'.$refreshLinkToFavs.'" href="/sets/view/favorites">Favorites</a></li>';
+							echo '<li><a class="'.$refreshLinkToFavs.'" href="'.Set::url('favorites').'">Favorites</a></li>';
 							if(Auth::hasPremium() || Auth::isAdmin())
 								echo '<li><a '.$refreshLinkToSandbox.' class="'.$sandboxA.'" href="/sets/sandbox">Sandbox</a></li>';
 							if(Auth::isAdmin()){
@@ -578,8 +582,13 @@ echo ViteManifest::legacyScript('legacy');
 
 	function setSoundCookie(value)
 	{
-		// One cookie for the whole site, written for path / so every page sees it.
+		// One cookie for the whole site, written for path /. Copies written earlier for single
+		// page paths would still outrank it, so those are expired here.
 		document.cookie = "sound=" + value + ";path=/";
+		["/users", "/users/view", "/sets/view", "/tsumegos/play"].forEach(function (page)
+		{
+			document.cookie = "sound=;path=" + page + ";max-age=0";
+		});
 	}
 
 	function changeSound()

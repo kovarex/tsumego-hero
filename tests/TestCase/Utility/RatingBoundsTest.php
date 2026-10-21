@@ -112,4 +112,24 @@ class RatingBoundsTest extends CakeTestCase
 		$this->assertSame($condition['rating < '], 20.0);
 	}
 
+	public function testTextualDescriptionOfARangeWithBothBounds()
+	{
+		$this->assertSame(' from 10 to 20', new RatingBounds(10, 20)->textualDescription());
+	}
+
+	public function testTextualDescriptionOfTheLowestRangeReadsUpTo()
+	{
+		$this->assertSame(' up to 20', new RatingBounds(null, 20)->textualDescription());
+	}
+
+	public function testTextualDescriptionOfARangeWithOnlyALowerBound()
+	{
+		$this->assertSame(' from 10', new RatingBounds(10, null)->textualDescription());
+	}
+
+	public function testTextualDescriptionOfEverything()
+	{
+		$this->assertSame('', new RatingBounds()->textualDescription());
+	}
+
 }

@@ -11,7 +11,6 @@ use App\Utility\Rating;
 use App\Utility\RatingParseException;
 use App\Utility\SimilarSearchLogic;
 use App\Utility\TsumegoButton;
-use App\Utility\TsumegoFilters;
 use App\Utility\TsumegoMerger;
 use App\Utility\TsumegoUtil;
 use App\Utility\Util;
@@ -63,12 +62,6 @@ class TsumegosController extends AppController
 		throw new NotFoundException("Problem doesn't exist in the specified set");
 	}
 
-	public static function tsumegoOrSetLink(TsumegoFilters $tsumegoFilters, ?int $setConnectionID, string $setID): string
-	{
-		if ($setConnectionID)
-			return '/' . $setConnectionID;
-		return '/sets/view/' . $setID; // edge of the set (last or first), so we return to the set
-	}
 
 	public function play(?string $id = null, ?string $setConnectionID = null)
 	{
@@ -294,7 +287,7 @@ class TsumegosController extends AppController
 				'type' => 'INNER',
 				'conditions' => ['S.id = SetConnection.set_id'],
 			]],
-			'conditions' => ['SetConnection.tsumego_id' => $masterSetConnection['tsumego_id'], 'S.public' => 1],
+			'conditions' => ['SetConnection.tsumego_id' => $masterSetConnection['tsumego_id'], Set::officialCondition('S')],
 		]);
 		$slaveSetConnectionBrothers = ClassRegistry::init('SetConnection')->find('all', [
 			'joins' => [[
@@ -303,7 +296,7 @@ class TsumegosController extends AppController
 				'type' => 'INNER',
 				'conditions' => ['S.id = SetConnection.set_id'],
 			]],
-			'conditions' => ['SetConnection.tsumego_id' => $slaveSetConnection['tsumego_id'], 'S.public' => 1],
+			'conditions' => ['SetConnection.tsumego_id' => $slaveSetConnection['tsumego_id'], Set::officialCondition('S')],
 		]);
 		$masterTsumego = ClassRegistry::init('Tsumego')->findById($masterSetConnection['tsumego_id']);
 		$slaveTsumego = ClassRegistry::init('Tsumego')->findById($slaveSetConnection['tsumego_id']);

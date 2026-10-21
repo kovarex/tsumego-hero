@@ -23,6 +23,8 @@
 
 
 require_once(__DIR__ . "/../src/UrlRoute.php");
+require_once(__DIR__ . "/../src/ParseOnlyRoute.php");
+require_once(__DIR__ . "/../src/SetViewRoute.php");
 
 use App\Utility\Avatar;
 
@@ -178,6 +180,11 @@ Router::connect(
 	['pass' => ['id'], 'id' => '[0-9]+']
 );
 Router::connect(
+	'/sets/share/:id',
+	['controller' => 'sets', 'action' => 'share'],
+	['pass' => ['id'], 'id' => '[0-9]+']
+);
+Router::connect(
 	'/sets/addTsumego/:id',
 	['controller' => 'sets', 'action' => 'addTsumego'],
 	['pass' => ['id'], 'id' => '[0-9]+|favorites']
@@ -196,6 +203,28 @@ Router::connect(
 	'/sets/reorderTsumego/:id',
 	['controller' => 'sets', 'action' => 'reorderTsumego'],
 	['pass' => ['id'], 'id' => '[0-9]+']
+);
+// The old /sets/view/<id> addresses keep answering for links written before the short ones, and the
+// short /sets/<id> ones decline an id that names an action, which the default routes then serve.
+Router::connect(
+	'/sets/view/:id',
+	['controller' => 'sets', 'action' => 'view'],
+	['pass' => ['id'], 'id' => '[^/]+', 'routeClass' => 'ParseOnlyRoute']
+);
+Router::connect(
+	'/sets/view/:id/:partition',
+	['controller' => 'sets', 'action' => 'view'],
+	['pass' => ['id', 'partition'], 'id' => '[^/]+', 'partition' => '[0-9]+', 'routeClass' => 'ParseOnlyRoute']
+);
+Router::connect(
+	'/sets/:id',
+	['controller' => 'sets', 'action' => 'view'],
+	['pass' => ['id'], 'id' => '[^/]+', 'routeClass' => 'SetViewRoute']
+);
+Router::connect(
+	'/sets/:id/:partition',
+	['controller' => 'sets', 'action' => 'view'],
+	['pass' => ['id', 'partition'], 'id' => '[^/]+', 'partition' => '[0-9]+', 'routeClass' => 'SetViewRoute']
 );
 Router::connect(
 	'/users/playerColorPreference',

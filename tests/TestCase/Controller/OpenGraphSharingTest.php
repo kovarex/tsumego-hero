@@ -1,6 +1,7 @@
 <?php
 
 use App\Utility\Avatar;
+use App\Utility\Constants;
 
 /**
  * End-to-end tests for Open Graph social sharing tags.
@@ -41,9 +42,54 @@ class OpenGraphSharingTest extends TestCaseWithAuth
 		$this->assertStringContainsString('property="og:image" content="', $body);
 		$this->assertStringContainsString('/img/cover.jpg', $body);
 		$this->assertStringContainsString('property="og:url" content="', $body);
-		$this->assertStringContainsString('/sets/view/' . $setId, $body);
+		$this->assertStringContainsString('/sets/' . $setId . '"', $body);
 		$this->assertStringContainsString('<meta property="og:site_name" content="Tsumego">', $body);
 		$this->assertStringContainsString('<meta name="twitter:card" content="summary">', $body);
+	}
+
+	public function testSharedCollectionNamesItsOwner(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'alice'],
+			'other-users' => [['name' => 'bob', 'display_name' => 'Bobby']],
+		]);
+		$setModel = ClassRegistry::init('Set');
+		$setModel->create();
+		$setModel->save(['Set' => [
+			'user_id' => $context->otherUsers[0]['id'],
+			'title' => 'Bobby Collection',
+			'public' => 1,
+			'order' => Constants::$DEFAULT_SET_ORDER,
+		]]);
+
+		$body = $this->testAction('sets/' . $setModel->id, ['return' => 'contents']);
+
+		$this->assertStringContainsString('<meta property="og:title" content="Bobby Collection by Bobby">', $body);
+		$this->assertMatchesRegularExpression(
+			'#<meta property="og:description" content="\d+ go problems collected by Bobby">#',
+			$body);
+	}
+
+	public function testSharedCollectionOfADeletedAccountDoesNotNameItsOwner(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'alice'],
+			'other-users' => [['name' => 'bob', 'display_name' => 'Bobby', 'deleted' => true]],
+		]);
+		$setModel = ClassRegistry::init('Set');
+		$setModel->create();
+		$setModel->save(['Set' => [
+			'user_id' => $context->otherUsers[0]['id'],
+			'title' => 'Bobby Collection',
+			'public' => 1,
+			'order' => Constants::$DEFAULT_SET_ORDER,
+		]]);
+
+		$body = $this->testAction('sets/' . $setModel->id, ['return' => 'contents']);
+
+		$this->assertStringContainsString('<meta property="og:title" content="Bobby Collection by ' . h(User::DELETED_NAME) . '">', $body);
+		$this->assertStringNotContainsString('Bobby"', $body, 'the name of a deleted account stays out of the preview');
+		$this->assertStringNotContainsString('collected by Bobby', $body);
 	}
 
 	public function testHomePageShowsDefaultOpenGraphTags(): void

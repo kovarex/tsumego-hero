@@ -42,6 +42,9 @@ class Play
 	public function play(int $setConnectionID, CakeRequest $params, array $data): mixed
 	{
 		($this->setFunction)('page', 'play');
+		// The board always receives both arrows, and an empty one is the arrow turned off.
+		// Only the modes that walk a list fill this one in.
+		($this->setFunction)('previousLink', '');
 
 		$suspiciousBehavior = false;
 		$isSandbox = false;
@@ -344,6 +347,7 @@ class Play
 			$requestSignature = 'true';
 		else
 			$requestSignature = 'false';
+		// A signature describes the problem itself, so a public collection qualifies whatever owns it.
 		if (isset($_COOKIE['signatures']) && $set['Set']['public'] == 1)
 		{
 			$signature = explode('/', $_COOKIE['signatures']);
@@ -478,13 +482,13 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 
 		$order = $setConnection['SetConnection']['num'];
 		if ($tsumegoFilters->query == 'difficulty' || $tsumegoFilters->query == 'tags')
-			return '<a id="playTitleA" href="/sets/view/' . $tsumegoFilters->getSetID($set) . $tsumegoButtons?->getPartitionLinkSuffix() . '">' . $queryTitle . '</a><br>
+			return '<a id="playTitleA" href="' . Set::url($tsumegoFilters->getSetID($set), $tsumegoButtons?->getPartition() ?? 1) . '">' . $queryTitle . '</a><br>
 							<font style="font-weight:400;" color="grey">
-											<a style="color:grey;" id="playTitleA" href="/sets/view/' . $set['Set']['id'] . '">
+											<a style="color:grey;" id="playTitleA" href="' . Set::url($set['Set']['id']) . '">
 												(' . $set['Set']['title'] . ' ' . $order . '/' . $amountOfOtherCollection . ')
 											</a>
 										</font>';
-		return '<a id="playTitleA" href="/sets/view/' . $set['Set']['id'] . $tsumegoButtons?->getPartitionLinkSuffix() . '">' . $set['Set']['title'] . ' ' . $tsumegoButtons?->getPartitionTitleSuffix() . ' ' . $order . '/' . $tsumegoButtons?->highestTsumegoOrder . '</a>';
+		return '<a id="playTitleA" href="' . Set::url($set['Set']['id'], $tsumegoButtons?->getPartition() ?? 1) . '">' . $set['Set']['title'] . ' ' . $tsumegoButtons?->getPartitionTitleSuffix() . ' ' . $order . '/' . $tsumegoButtons?->highestTsumegoOrder . '</a>';
 	}
 
 	private static function randomCorner(): string

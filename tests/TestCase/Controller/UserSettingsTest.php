@@ -264,8 +264,13 @@ class UserSettingsTest extends ControllerTestCase
 	public function testResetIsNotOfferedBeforeEnoughProblemsAreSolved(): void
 	{
 		$context = new ContextPreparator([
-			'user' => ['name' => 'beginner', 'solved' => 0],
-			'tsumegos' => [['set_order' => 1, 'status' => ['name' => 'S', 'updated' => date('Y-m-d H:i:s', strtotime('-2 years'))]]],
+			'user' => ['name' => 'beginner'],
+			'tsumegos' => [
+				['set_order' => 1, 'status' => ['name' => 'S', 'updated' => date('Y-m-d H:i:s', strtotime('-2 years'))]],
+				['set_order' => 2],
+				['set_order' => 3],
+				['set_order' => 4],
+			],
 		]);
 		$browser = Browser::instance();
 

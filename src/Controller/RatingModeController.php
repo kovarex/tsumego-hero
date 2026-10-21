@@ -38,7 +38,7 @@ class RatingModeController extends AppController
 			$adjustedRating + Constants::$RATING_MODE_SELECTION_INTERVAL / 2);
 
 		$queryCondition = "";
-		Util::addSqlCondition($queryCondition, "`set`.public = true");
+		Util::addSqlCondition($queryCondition, Set::officialCondition());
 		$ratingBounds->addSqlConditions($queryCondition);
 		$query = "
 SELECT
