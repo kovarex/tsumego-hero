@@ -42,6 +42,9 @@ class Play
 	public function play(int $setConnectionID, CakeRequest $params, array $data): mixed
 	{
 		($this->setFunction)('page', 'play');
+		// The board always receives both arrows, and an empty one is the arrow turned off.
+		// Only the modes that walk a list fill this one in.
+		($this->setFunction)('previousLink', '');
 
 		$suspiciousBehavior = false;
 		$isSandbox = false;
@@ -404,11 +407,12 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		($this->setFunction)('userSetsJson', $userSetsJson);
 
 		if (Auth::isInLevelMode() && isset($tsumegoButtons))
-			$tsumegoButtons->exportCurrentAndPreviousLink($this->setFunction, $tsumegoFilters, $setConnectionID, $set);
+			$tsumegoButtons->exportCurrentAndPreviousLink($this->setFunction, $setConnectionID,
+				Set::url($tsumegoFilters->getSetID($set), $tsumegoButtons->getPartition()));
 		elseif (Auth::isInMistakeTrainingMode() && isset($mistakeTrainingButtons))
 		{
 			// No link before the first problem: the queue page would serve the first due one again
-			$mistakeTrainingButtons->exportCurrentAndPreviousLink($this->setFunction, $tsumegoFilters, $setConnectionID, $set, '');
+			$mistakeTrainingButtons->exportCurrentAndPreviousLink($this->setFunction, $setConnectionID, '');
 			// The row keeps what today already solved, so "Next" skips it instead of
 			// serving the neighbour.
 			($this->setFunction)('nextLink', MistakeTraining::nextLink($mistakeTrainingButtons, $setConnectionID));

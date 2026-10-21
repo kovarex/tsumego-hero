@@ -3,7 +3,6 @@
 namespace App\Utility;
 
 use ArrayObject;
-use TsumegosController;
 
 class TsumegoButtons extends ArrayObject
 {
@@ -178,22 +177,25 @@ class TsumegoButtons extends ArrayObject
 		return $this->isPartitioned ? ' #' . $this->getPartition() : '';
 	}
 
-	public function exportCurrentAndPreviousLink(callable $setFunction, ?TsumegoFilters $tsumegoFilters, int $setConnectionID, ?array $set, ?string $edgeLink = null): void
+	/**
+	 * Where the arrows at either end of the list lead. A problem in the middle steps to its
+	 * neighbour on the route that owns the list ($linkPrefix); the first and the last one have
+	 * no neighbour, so both point at $edgeLink, which the caller names: the page of the
+	 * collection, or the page of a queue that runs on a route of its own.
+	 */
+	public function exportCurrentAndPreviousLink(callable $setFunction, int $setConnectionID, string $edgeLink): void
 	{
 		$indexOfCurrent = array_find_key((array) $this, function ($tsumegoButton) use ($setConnectionID) {
 			return $tsumegoButton->setConnectionID == $setConnectionID;
 		});
 
-		if ($edgeLink === null && $tsumegoFilters !== null)
-			$edgeLink = TsumegosController::tsumegoOrSetLink($tsumegoFilters, null, $tsumegoFilters->getSetID($set ?? []));
-
 		if (isset($indexOfCurrent) && $indexOfCurrent > 0)
 			$previousSetConnectionID = $this[$indexOfCurrent - 1]->setConnectionID;
-		$setFunction('previousLink', TsumegosController::tsumegoOrSetLink(isset($previousSetConnectionID) ? $previousSetConnectionID : null, $tsumegoFilters->getSetID($set), $this->getPartition()));
+		$setFunction('previousLink', isset($previousSetConnectionID) ? $this->linkPrefix . $previousSetConnectionID : $edgeLink);
 
 		if (isset($indexOfCurrent) && count($this) > $indexOfCurrent + 1)
 			$nextSetConnectionID = $this[$indexOfCurrent + 1]->setConnectionID;
-		$setFunction('nextLink', TsumegosController::tsumegoOrSetLink(isset($nextSetConnectionID) ? $nextSetConnectionID : null, $tsumegoFilters->getSetID($set), $this->getPartition()));
+		$setFunction('nextLink', isset($nextSetConnectionID) ? $this->linkPrefix . $nextSetConnectionID : $edgeLink);
 	}
 
 	public function getProblemsSolvedPercent(): float

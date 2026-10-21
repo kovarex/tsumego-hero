@@ -4,6 +4,7 @@ use App\Utility\MistakeTraining;
 use App\Utility\PlayOutcome;
 use App\Utility\RungInsignia;
 use App\Utility\TsumegoButton;
+use App\Utility\TsumegoButtons;
 
 class TsumegoButtonsTest extends TestCaseWithAuth
 {
@@ -123,11 +124,40 @@ class TsumegoButtonsTest extends TestCaseWithAuth
 		$setFunction = function ($name, $value) use (&$links) {
 			$links[$name] = $value;
 		};
-		$buttons->exportCurrentAndPreviousLink($setFunction, null, $scId, null, '');
+		$buttons->exportCurrentAndPreviousLink($setFunction, $scId, '');
 
 		$this->assertSame('', $links['previousLink'], 'Back at the start of the training has nowhere to go');
 		$this->assertSame('/mistake-training/play/' . $context->tsumegos[1]['set-connections'][0]['id'], $links['nextLink'],
 			'Queue navigation must stay on the training route, so the route can re-assert the mode');
+	}
+
+	public function testTheEndsOfTheListLeadToThePageAndTheMiddleToTheNeighbour(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'edge'],
+			'tsumego' => ['set_order' => 1],
+			'tsumegos' => [['set_order' => 2]],
+		]);
+		$first = $context->tsumegos[0]['set-connections'][0];
+		$second = $context->tsumegos[1]['set-connections'][0];
+		$buttons = TsumegoButtons::fromRows([
+			['tsumego_id' => $context->tsumegos[0]['id'], 'set_connection_id' => $first['id'], 'num' => 1, 'status' => 'S'],
+			['tsumego_id' => $context->tsumegos[1]['id'], 'set_connection_id' => $second['id'], 'num' => 2, 'status' => 'S'],
+		], (int) $first['id'], 2);
+		$links = [];
+		$setFunction = function ($name, $value) use (&$links) {
+			$links[$name] = $value;
+		};
+
+		$buttons->exportCurrentAndPreviousLink($setFunction, (int) $first['id'], '/page');
+
+		$this->assertSame('/page', $links['previousLink'], 'The first problem has the page behind it');
+		$this->assertSame('/' . $second['id'], $links['nextLink']);
+
+		$buttons->exportCurrentAndPreviousLink($setFunction, (int) $second['id'], '/page');
+
+		$this->assertSame('/' . $first['id'], $links['previousLink'], 'The last problem has its neighbour behind it');
+		$this->assertSame('/page', $links['nextLink']);
 	}
 
 	public function testMistakeTrainingQueueButtonsStayOnTheTrainingRoute(): void

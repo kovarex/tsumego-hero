@@ -62,12 +62,6 @@ class TsumegosController extends AppController
 		throw new NotFoundException("Problem doesn't exist in the specified set");
 	}
 
-	public static function tsumegoOrSetLink(?int $setConnectionID, string $setID, int $partition = 1): string
-	{
-		if ($setConnectionID)
-			return '/' . $setConnectionID;
-		return Set::url($setID, $partition); // edge of the set (last or first), so we return to the set
-	}
 
 	public function play(?string $id = null, ?string $setConnectionID = null)
 	{
