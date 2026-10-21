@@ -134,6 +134,8 @@ class SetsController extends AppController
 		$this->set('_title', 'Tsumego Hero - ' . $pageTitle);
 		$this->set('profileUser', $profileUser['User']);
 		$this->set('isOwn', $isOwn);
+		// /sets/mine is the shortcut to this page, so the page itself is known by the player's address.
+		$this->set('canonicalPath', '/sets/user/' . $userId);
 
 		// Own sets (or an admin browsing) show all sets; others only see public ones
 		$publicFilter = ($isOwn || Auth::isAdmin()) ? '' : 'AND s.public = 1';
