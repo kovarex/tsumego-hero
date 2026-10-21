@@ -70,6 +70,28 @@ class OpenGraphSharingTest extends TestCaseWithAuth
 			$body);
 	}
 
+	public function testSharedCollectionOfADeletedAccountDoesNotNameItsOwner(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'alice'],
+			'other-users' => [['name' => 'bob', 'display_name' => 'Bobby', 'deleted' => true]],
+		]);
+		$setModel = ClassRegistry::init('Set');
+		$setModel->create();
+		$setModel->save(['Set' => [
+			'user_id' => $context->otherUsers[0]['id'],
+			'title' => 'Bobby Collection',
+			'public' => 1,
+			'order' => Constants::$DEFAULT_SET_ORDER,
+		]]);
+
+		$body = $this->testAction('sets/' . $setModel->id, ['return' => 'contents']);
+
+		$this->assertStringContainsString('<meta property="og:title" content="Bobby Collection by ' . h(User::DELETED_NAME) . '">', $body);
+		$this->assertStringNotContainsString('Bobby"', $body, 'the name of a deleted account stays out of the preview');
+		$this->assertStringNotContainsString('collected by Bobby', $body);
+	}
+
 	public function testHomePageShowsDefaultOpenGraphTags(): void
 	{
 		$body = $this->testAction('sites/index', ['return' => 'contents']);

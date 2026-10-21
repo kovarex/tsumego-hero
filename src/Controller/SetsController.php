@@ -982,7 +982,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 			{
 				$ogDescription = $this->Set->getProblemCount($set['Set']['id']) . ' go problems';
 				if ($setAuthor !== null)
-					$ogDescription .= ' collected by ' . (string) $setAuthor['display_name'];
+					$ogDescription .= ' collected by ' . User::displayName($setAuthor);
 			}
 			else
 				$ogDescription = 'Interactive go problems';
@@ -991,7 +991,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$og = [
 			'title' => $setAuthor === null
 				? $displayTitle
-				: $displayTitle . ' by ' . (string) $setAuthor['display_name'],
+				: $displayTitle . ' by ' . User::displayName($setAuthor),
 			'description' => $ogDescription,
 			'type' => 'website',
 			'site_name' => 'Tsumego',
