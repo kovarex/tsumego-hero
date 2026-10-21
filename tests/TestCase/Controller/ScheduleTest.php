@@ -1,5 +1,6 @@
 <?php
 
+use App\Utility\CookieFlash;
 use App\Utility\SchedulePublisher;
 
 class ScheduleTest extends TestCaseWithAuth
@@ -226,6 +227,75 @@ class ScheduleTest extends TestCaseWithAuth
 		$this->assertCount(1, $p);
 		$this->assertSame(436, (int) $p[0]['num']);
 		$this->assertStringContainsString('target set', $p[0]['target_set_title']);
+	}
+
+	/**
+	 * An entry whose problem is no longer in a sandbox set and is not in the target set
+	 * cannot be published, so the page says so instead of leaving a bare number there.
+	 */
+	public function testScheduleIndexMarksAnEntryThatCannotBePublished(): void
+	{
+		new ContextPreparator([
+			'user' => ['name' => 'admin', 'admin' => true],
+			'tsumegos' => [
+				['sets' => [['name' => 'some public set', 'num' => 1]]],
+				['sets' => [['name' => 'sandbox set', 'num' => 2, 'public' => 0]]],
+			],
+			'schedule' => [
+				['tsumego' => 0, 'set' => 'target set', 'date' => self::futureDate()],
+				['tsumego' => 1, 'set' => 'target set', 'date' => self::futureDate()],
+			],
+		]);
+		$this->login('admin');
+
+		$result = $this->testAction('/schedule', ['return' => 'view']);
+
+		$this->assertSame(1, substr_count($result, 'cannot be published'));
+	}
+
+	/**
+	 * The preview answers the question the admin is asking: which problem goes live on
+	 * which day.
+	 */
+	public function testPreviewShowsTheDayEachProblemPublishes(): void
+	{
+		[, $sandboxSetId, $targetSetId] = $this->_sandboxAndTarget([1, 2, 3]);
+
+		$this->testAction('/schedule/preview', [
+			'method' => 'GET',
+			'data' => [
+				'set_id_from' => $sandboxSetId,
+				'set_id_to' => $targetSetId,
+				'count' => 3,
+				'per_day' => 2,
+				'start_date' => self::futureDate(),
+			],
+		]);
+
+		$body = json_decode($this->controller->response->body(), true);
+		$this->assertSame(self::futureDate(), $body[0]['date']);
+		$this->assertSame(self::futureDate(), $body[1]['date']);
+		$this->assertSame(self::futureDate(3), $body[2]['date']);
+	}
+
+	/**
+	 * Asking for problems when the set has none left says so, instead of reporting that
+	 * zero problems were scheduled.
+	 */
+	public function testAddToScheduleSaysWhenNothingIsLeft(): void
+	{
+		[, $sandboxSetId, $targetSetId] = $this->_sandboxAndTarget([1]);
+
+		$data = [
+			'set_id_from' => $sandboxSetId,
+			'set_id_to' => $targetSetId,
+			'count' => 1,
+			'start_date' => self::futureDate(),
+		];
+		$this->testAction('/schedule/add', ['data' => $data, 'method' => 'POST']);
+		$this->testAction('/schedule/add', ['data' => $data, 'method' => 'POST']);
+
+		$this->assertStringContainsString('already published or already scheduled', (string) CookieFlash::get());
 	}
 
 	public function testAddToScheduleLogsAdminActivity(): void

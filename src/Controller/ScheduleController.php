@@ -163,12 +163,16 @@ LIMIT {$count}");
 		if ($startsToday)
 			SchedulePublisher::publishDue();
 
-		CookieFlash::set($scheduled . ($startsToday ? ' problems published.' : ' problems scheduled.'), 'success');
+		if ($scheduled === 0)
+			CookieFlash::set('Nothing scheduled: everything from that position on is already published or already scheduled.', 'info');
+		else
+			CookieFlash::set($scheduled . ($startsToday ? ' problems published.' : ' problems scheduled.'), 'success');
 		$this->redirect('/schedule');
 	}
 
 	/**
-	 * Preview which problems would be scheduled. Admin only. Returns JSON.
+	 * Preview which problems would be scheduled, and on which day each of them lands.
+	 * Admin only. Returns JSON.
 	 */
 	public function preview(): void
 	{
@@ -179,6 +183,8 @@ LIMIT {$count}");
 		$targetSetId = (int) ($this->request->query['set_id_to'] ?? 0);
 		$num = (int) ($this->request->query['num'] ?? 0);
 		$count = (int) ($this->request->query['count'] ?? 1);
+		$perDay = max(1, (int) ($this->request->query['per_day'] ?? 5));
+		$startDate = strtotime((string) ($this->request->query['start_date'] ?? '')) ?: strtotime('today');
 
 		if ($setIdFrom <= 0 || $targetSetId <= 0 || $count < 1 || $count > 100)
 		{
@@ -205,10 +211,11 @@ LIMIT {$count}");
 			'fields' => ['num', 'num'],
 			'conditions' => ['set_id' => $targetSetId],
 		]);
-		foreach ($candidates as &$c)
+		foreach ($candidates as $index => &$c)
 		{
 			$c['preview'] = TsumegoButton::sgfToPreviewData($c['sgf'] ?? '');
 			$c['num_collision'] = isset($existingNums[(int) $c['num']]);
+			$c['date'] = date('Y-m-d', strtotime('+' . intdiv($index, $perDay) . ' days', $startDate));
 			unset($c['sgf']);
 		}
 		unset($c);
