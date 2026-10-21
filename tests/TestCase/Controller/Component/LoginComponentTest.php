@@ -94,7 +94,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 
 		$page = $this->testAction('users/login/', ['method' => 'GET', 'return' => 'view']);
 
-		$this->assertStringContainsString('Signed up with Google? Use the button below.', $page);
+		$this->assertStringContainsString('class="g_id_signin"', $page);
 	}
 
 	public function testLogout(): void
