@@ -197,4 +197,4 @@ mysqldump ... | gzip > /home/private/test-snapshot.sql.gz
 ```
 Then in GitHub: Settings → Environments → `test` → add the secret `TEST_DEPLOY_TOKEN` with the contents of `/home/private/deploy-token`, and limit the environment's deployment branches to `master`.
 If the hook ends up at a different URL, set it as the `TEST_DEPLOY_URL` variable of the environment.
-After changing `scripts/deploy-test-hook.cgi`, copy it to the test site again.
+Deploying master (`0`) also puts the latest `scripts/deploy-test-hook.cgi` in place of the installed hook.

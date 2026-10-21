@@ -3,8 +3,8 @@
 # "Deploy to test" GitHub workflow asks for it.
 #
 # Installed once on the test site, outside of what git checks out, so deploying
-# an older PR can't remove or change it (see "Deploying a PR to the test site"
-# in README.md):
+# an older PR can't remove or change it; deploying master updates it (see
+# "Deploying a PR to the test site" in README.md):
 #
 #	cp scripts/deploy-test-hook.cgi webroot/deploy-hook.cgi
 #	chmod 4755 webroot/deploy-hook.cgi
@@ -99,6 +99,14 @@ deploy_steps() {
 	reset_db_if_ahead
 	# DEPLOY_REEXEC makes deploy.sh skip its git pull, which can't work on a detached commit.
 	DEPLOY_REEXEC=1 bash ./deploy.sh
+	# Deploying master brings the hook's own latest version. It replaces this file by a
+	# new one, so the copy running now isn't changed under it.
+	if [ "$1" = 0 ] && ! cmp -s scripts/deploy-test-hook.cgi "$HOOK_FILE"; then
+		cp scripts/deploy-test-hook.cgi "$HOOK_FILE.new"
+		chmod 4755 "$HOOK_FILE.new"
+		mv "$HOOK_FILE.new" "$HOOK_FILE"
+		echo "=== Updated $HOOK_FILE ==="
+	fi
 }
 
 run_deploy() {
@@ -139,6 +147,7 @@ lock() {
 }
 
 if [ "$1" = __run ]; then
+	HOOK_FILE=$0
 	run_deploy "$2" "$3"
 	exit 0
 fi
