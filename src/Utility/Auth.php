@@ -117,7 +117,7 @@ class Auth
 
 	public static function getDateFormat(): int
 	{
-		return Auth::isLoggedIn() ? (int) Auth::getUser()['date_format'] : User::DATE_FORMAT_ISO;
+		return Auth::isLoggedIn() ? (int) Auth::getUser()['date_format_id'] : User::DATE_FORMAT_ISO;
 	}
 
 	/**

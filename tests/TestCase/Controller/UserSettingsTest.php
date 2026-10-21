@@ -199,12 +199,12 @@ class UserSettingsTest extends ControllerTestCase
 
 	public function testDateFormatIsStored(): void
 	{
-		$context = new ContextPreparator(['user' => ['date_format' => User::DATE_FORMAT_ISO]]);
+		$context = new ContextPreparator(['user' => ['date_format_id' => User::DATE_FORMAT_ISO]]);
 		$browser = Browser::instance();
 
 		$browser->get('users/settings');
 		$browser->find('input[name="dateFormat"][value="' . User::DATE_FORMAT_DAY_MONTH_YEAR . '"]')->click();
-		$this->waitForUserField($context, 'date_format', (string) User::DATE_FORMAT_DAY_MONTH_YEAR);
+		$this->waitForUserField($context, 'date_format_id', (string) User::DATE_FORMAT_DAY_MONTH_YEAR);
 	}
 
 	public function testOnlyAnAdminCanStepDown(): void

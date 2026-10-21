@@ -17,16 +17,16 @@ class DateFormatPreferenceTest extends TestCaseWithAuth
 		]);
 
 		$this->assertSame('{"status":"ok"}', $result);
-		$this->assertSame(User::DATE_FORMAT_DAY_MONTH_YEAR, (int) $context->reloadUser()['date_format']);
+		$this->assertSame(User::DATE_FORMAT_DAY_MONTH_YEAR, (int) $context->reloadUser()['date_format_id']);
 	}
 
 	public function testFormatOutOfRangeFallsBackToIso(): void
 	{
-		foreach ([User::DATE_FORMAT_BROWSER + 1, -1] as $invalid)
+		foreach ([User::DATE_FORMAT_BROWSER + 1, 0, -1] as $invalid)
 		{
 			Auth::logout();
 			$name = 'dateFormatClamps' . $invalid;
-			$context = new ContextPreparator(['user' => ['name' => $name, 'date_format' => User::DATE_FORMAT_DAY_MONTH_YEAR]]);
+			$context = new ContextPreparator(['user' => ['name' => $name, 'date_format_id' => User::DATE_FORMAT_DAY_MONTH_YEAR]]);
 			$this->login($name);
 
 			$this->testAction('/users/dateFormatPreference', [
@@ -34,7 +34,7 @@ class DateFormatPreferenceTest extends TestCaseWithAuth
 				'data' => ['format' => $invalid],
 			]);
 
-			$this->assertSame(User::DATE_FORMAT_ISO, (int) $context->reloadUser()['date_format']);
+			$this->assertSame(User::DATE_FORMAT_ISO, (int) $context->reloadUser()['date_format_id']);
 		}
 	}
 }

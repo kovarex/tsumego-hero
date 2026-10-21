@@ -30,17 +30,17 @@ const BROWSER_OPTIONS: Record<DateFormat, Intl.DateTimeFormatOptions> = {
 	'month-day': { month: 'short', day: 'numeric' }
 };
 
-/** Indexed by User::DATE_FORMAT_*, the choice the layout puts on <html data-date-format>. */
-const FORMATTERS: Formatter[] = [
+/** By the ids of the date_format table (User::DATE_FORMAT_*), the choice the layout puts on <html data-date-format>. */
+const FORMATTERS: Record<number, Formatter> = {
 	// ISO, 2026-10-21 14:05
-	patterns({ datetime: 'YYYY-MM-DD HH:mm', date: 'YYYY-MM-DD', time: 'HH:mm', 'month-day': 'MMM D' }),
+	1: patterns({ datetime: 'YYYY-MM-DD HH:mm', date: 'YYYY-MM-DD', time: 'HH:mm', 'month-day': 'MMM D' }),
 	// the Czech way, 21. 10. 2026 14:05
-	patterns({ datetime: 'D. M. YYYY HH:mm', date: 'D. M. YYYY', time: 'HH:mm', 'month-day': 'D MMM' }),
+	2: patterns({ datetime: 'D. M. YYYY HH:mm', date: 'D. M. YYYY', time: 'HH:mm', 'month-day': 'D MMM' }),
 	// 10/21/2026 2:05 PM
-	patterns({ datetime: 'MM/DD/YYYY h:mm A', date: 'MM/DD/YYYY', time: 'h:mm A', 'month-day': 'MMM D' }),
+	3: patterns({ datetime: 'MM/DD/YYYY h:mm A', date: 'MM/DD/YYYY', time: 'h:mm A', 'month-day': 'MMM D' }),
 	// whatever the language the browser is set to uses
-	(date, format) => date.toDate().toLocaleString(undefined, BROWSER_OPTIONS[format])
-];
+	4: (date, format) => date.toDate().toLocaleString(undefined, BROWSER_OPTIONS[format])
+};
 
 /** The text to show for the date, or the input itself when it is not a date. */
 export function formatDate(value: string, format: DateFormat = 'datetime'): string
@@ -48,7 +48,7 @@ export function formatDate(value: string, format: DateFormat = 'datetime'): stri
 	const date = dayjs(value);
 	if (!date.isValid())
 		return value;
-	const formatter = FORMATTERS[Number(document.documentElement.dataset.dateFormat)] ?? FORMATTERS[0];
+	const formatter = FORMATTERS[Number(document.documentElement.dataset.dateFormat)] ?? FORMATTERS[1];
 	return formatter(date, format);
 }
 
