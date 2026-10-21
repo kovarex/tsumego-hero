@@ -66,7 +66,7 @@ class TagsController extends AppController
 			throw new NotFoundException('Tag not found');
 		$allTags = $this->getAllTags();
 		$user = $this->User->findById($tn['Tag']['user_id']);
-		$tn['Tag']['user'] = $user ? self::checkPicture($user['User']) : '';
+		$tn['Tag']['user'] = $user ? $user['User'] : null;
 		$this->set('allTags', $allTags);
 		$this->set('tn', $tn);
 		$this->set('canAddTag', $this->Authorization->can('Tag', 'add'));
@@ -221,6 +221,7 @@ class TagsController extends AppController
 
 	public function index(): void {}
 
+	#[HttpPost]
 	public function acceptTagProposal(string $tagID): CakeResponse
 	{
 		$this->Authorization->authorize('Tag');
@@ -248,6 +249,7 @@ class TagsController extends AppController
 		return $this->redirect('/users/adminstats');
 	}
 
+	#[HttpPost]
 	public function rejectTagProposal(string $tagID): CakeResponse
 	{
 		$this->Authorization->authorize('Tag');

@@ -21,6 +21,40 @@
 
 @layer components
 {
+/* ── Avatar ── */
+.user-avatar
+{
+	width: var(--avatar-size);
+	height: var(--avatar-size);
+	border-radius: var(--radius-full);
+	vertical-align: middle;
+	margin-right: var(--space-1);
+	object-fit: cover;
+}
+
+/* A board is a picture of a thing, not of a face, so it keeps its corners square.
+   The hairline keeps the sharp edge from reading as a broken crop of a round
+   photo. */
+.user-avatar--board
+{
+	border-radius: 0;
+	box-shadow: 0 0 0 1px var(--avatar-board-edge);
+}
+
+.user-avatar--lg
+{
+	width: var(--avatar-size-lg);
+	height: var(--avatar-size-lg);
+	margin-right: var(--space-2);
+}
+
+/* The score tables run a larger type size, so the avatar grows with them. */
+.data-table .user-avatar
+{
+	width: var(--avatar-size-table);
+	height: var(--avatar-size-table);
+}
+
 /* ── Card ── */
 .card
 {
@@ -47,6 +81,46 @@
 	font-size: var(--font-size-base);
 	letter-spacing: 0.05em;
 	margin-bottom: var(--space-3);
+}
+
+/* ── Info box (muted callout / empty-state container) ── */
+.info-box
+{
+	background: var(--info-box-background);
+	border: 1px solid var(--current-border-color);
+	border-radius: var(--radius-md);
+	padding: var(--space-6);
+}
+
+.info-box--empty
+{
+	max-width: 600px;
+	margin: 100px auto;
+	text-align: center;
+}
+
+/* On a phone the box keeps a gutter and does not start half a screen down */
+@media (width < 40rem)
+{
+	.info-box--empty
+	{
+		margin: var(--space-5) var(--space-4);
+		padding: var(--space-5) var(--space-4);
+	}
+}
+
+.info-box__icon
+{
+	font-size: 48px;
+	line-height: 1;
+	margin: 0 0 var(--space-4);
+}
+
+.info-box__title
+{
+	font-size: 18px;
+	font-weight: var(--font-weight-bold);
+	margin: 0 0 var(--space-2);
 }
 
 /* ── Stat list ── */
@@ -675,7 +749,21 @@
 
 .dropdown__tile--difficulty
 {
-	background-color: var(--rank-color, var(--surface-translucent));
+	background-color: rgba(0, 0, 0, 0.35);
+	background-image: none;
+	color: var(--rank-color, var(--color-white));
+	color: color-mix(in srgb, var(--rank-color, var(--color-white)) 70%, #fff);
+	border: 1px solid var(--rank-color, transparent);
+	font-weight: 700;
+	box-shadow: none;
+	text-shadow: none;
+	transition: background-color 0.12s ease, transform 0.12s ease;
+}
+
+.dropdown__tile--difficulty:hover
+{
+	background-color: rgba(255, 255, 255, 0.14);
+	transform: translateY(-1px);
 }
 
 .dropdown__tile--tag
@@ -685,7 +773,11 @@
 
 .dropdown__tile--difficulty.is-selected
 {
-	outline: 2px solid var(--color-white);
+	background-color: var(--rank-color);
+	border-color: var(--color-white);
+	color: #101010;
+	box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.4);
+	transform: translateY(-1px);
 }
 
 .dropdown__tile--muted
@@ -741,6 +833,10 @@
 {
 	color: var(--color-green);
 	cursor: pointer;
+	background: none;
+	border: 0;
+	padding: 0;
+	font: inherit;
 }
 
 /* ── Pagination ── */

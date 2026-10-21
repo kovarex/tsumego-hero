@@ -22,7 +22,7 @@ class SimilarSearchLogicTest extends CakeTestCase
 			['set_order' => 3, 'status' => 'S', 'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[dd][df][fd][ff];B[aa];W[ab];B[ba]C[+])']]]);
 		$browser->get('/' . $context->setConnections[0]['id']);
 		$browser->clickId('findSimilarProblems');
-		$tsumegoButtons = $browser->getCssSelect('.problem-nav__number');
+		$tsumegoButtons = $browser->getElements('.problem-nav__number');
 		$this->assertSame(2, count($tsumegoButtons));
 		$this->assertSame('1', $tsumegoButtons[0]->getText()); // the original problem
 		$this->assertSame('3', $tsumegoButtons[1]->getText()); // the third problem same as original
@@ -70,7 +70,7 @@ class SimilarSearchLogicTest extends CakeTestCase
 			]]]);
 		$browser->get('/' . $context->setConnections[0]['id']);
 		$browser->clickId('findSimilarProblems');
-		$tsumegoButtons = $browser->getCssSelect('.problem-nav__number');
+		$tsumegoButtons = $browser->getElements('.problem-nav__number');
 		$this->assertSame(2, count($tsumegoButtons));
 		$this->assertSame('1', $tsumegoButtons[0]->getText()); // the original problem
 		$this->assertSame('3', $tsumegoButtons[1]->getText()); // the third problem same as original
@@ -119,7 +119,7 @@ class SimilarSearchLogicTest extends CakeTestCase
 			]]]);
 		$browser->get('/' . $context->setConnections[0]['id']);
 		$browser->clickId('findSimilarProblems');
-		$tsumegoButtons = $browser->getCssSelect('.problem-nav__number');
+		$tsumegoButtons = $browser->getElements('.problem-nav__number');
 		$this->assertSame(2, count($tsumegoButtons));
 		$this->assertSame('1', $tsumegoButtons[0]->getText()); // the original problem
 		$this->assertSame('3', $tsumegoButtons[1]->getText()); // the third problem same as original
@@ -162,7 +162,7 @@ class SimilarSearchLogicTest extends CakeTestCase
 			]]]);
 		$browser->get('/' . $context->setConnections[0]['id']);
 		$browser->clickId('findSimilarProblems');
-		$tsumegoButtons = $browser->getCssSelect('.problem-nav__number');
+		$tsumegoButtons = $browser->getElements('.problem-nav__number');
 		$this->assertSame(2, count($tsumegoButtons));
 		$this->assertSame('1', $tsumegoButtons[0]->getText()); // the original problem
 		$this->assertSame('3', $tsumegoButtons[1]->getText()); // the third problem same as original
@@ -177,7 +177,7 @@ class SimilarSearchLogicTest extends CakeTestCase
 		$browser = Browser::instance();
 		$browser->get('/tsumegos/duplicatesearch/' . $context->setConnections[0]['id']);
 
-		$redStones = $browser->getCssSelect('circle[fill="red"]');
+		$redStones = $browser->getElements('circle[fill="red"]');
 		$this->assertNotEmpty($redStones, 'Differing stones should be highlighted in red');
 	}
 }

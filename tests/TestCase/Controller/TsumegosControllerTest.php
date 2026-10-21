@@ -1,6 +1,5 @@
 <?php
 
-use Facebook\WebDriver\WebDriverBy;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\TsumegoUtil;
@@ -25,6 +24,55 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			$this->assertTextContains('test set', $href->textContent);
 			$this->assertTextContains('666', $href->textContent);
 		}
+	}
+
+	public function testTheFirstProblemOfACollectionLeadsBackToTheCollectionPage(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'levelplayer'],
+			'tsumego' => ['set_order' => 1],
+			'tsumegos' => [['set_order' => 2]],
+		]);
+		$first = $context->tsumegos[0]['set-connections'][0];
+		$second = $context->tsumegos[1]['set-connections'][0];
+
+		$this->testAction('/tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'contents']);
+
+		$this->assertStringContainsString('var previousButtonLink = "/sets/' . $first['set_id'] . '"', $this->view);
+		$this->assertStringContainsString('var nextButtonLink = "/' . $second['id'] . '"', $this->view);
+	}
+
+	public function testProblemKeepsOneAddressInBothUrlShapes()
+	{
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 666]]);
+		$setConnectionID = $context->tsumegos[0]['set-connections'][0]['id'];
+		$address = Router::url('/' . $setConnectionID, true);
+		$urls = [
+			'/' . $setConnectionID,
+			'/' . $setConnectionID . '?mode=2',
+			'tsumegos/play/' . $context->tsumegos[0]['id']
+		];
+
+		foreach ($urls as $url)
+		{
+			$contents = (string) $this->testAction($url, ['method' => 'get', 'return' => 'contents']);
+			$this->assertStringContainsString('<link rel="canonical" href="' . $address . '">', $contents, $url);
+			$this->assertStringContainsString('<meta property="og:url" content="' . $address . '">', $contents, $url);
+		}
+	}
+
+	/**
+	 * The "ask the author for a solution" button is offered to the admins the policy allows
+	 */
+	public function testTheSolutionRequestButtonIsOfferedToAdminsOnly()
+	{
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 666]]);
+		$url = '/' . $context->tsumegos[0]['set-connections'][0]['id'];
+		$this->assertStringNotContainsString('?requestSolution=', (string) $this->testAction($url, ['method' => 'get', 'return' => 'contents']));
+
+		$adminContext = new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true], 'tsumego' => ['set_order' => 666]]);
+		$adminUrl = '/' . $adminContext->tsumegos[0]['set-connections'][0]['id'];
+		$this->assertStringContainsString('?requestSolution=', (string) $this->testAction($adminUrl, ['method' => 'get', 'return' => 'contents']));
 	}
 
 	public function testPageTitleShowsRealSetCount()
@@ -317,9 +365,9 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$browser->getAnonymous('/tsumegos/play/' . $tsumegoId);
 
 		// open the filters panel so the active tiles (and clear button) are visible
-		$browser->driver->findElement(WebDriverBy::cssSelector('#showFilters'))->click();
+		$browser->find('#showFilters')->click();
 		$browser->waitUntilCssSelectorDisplayed('#unselect-active-tiles');
-		$browser->driver->findElement(WebDriverBy::cssSelector('#unselect-active-tiles'))->click();
+		$browser->find('#unselect-active-tiles')->click();
 
 		$this->assertSame(Util::getMyAddress() . '/tsumegos/play/' . $tsumegoId, $browser->driver->getCurrentURL());
 		$this->assertFalse($browser->idExists('unselect-active-tiles'));
@@ -334,7 +382,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 
 		$browser = Browser::instance();
 		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
-		$href = $browser->driver->findElement(WebDriverBy::cssSelector('#playTitleA'));
+		$href = $browser->find('#playTitleA');
 		$this->assertTextContains('set 1', $href->getText());
 		$this->assertTextContains('666', $href->getText());
 	}
@@ -535,7 +583,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 	}
 
 	/**
-	 * OG description uses true-color convention — no swap needed.
+	 * OG description uses true-color convention - no swap needed.
 	 * The OG image renders actual SGF colors, and descriptions match the board.
 	 */
 	public function testOgDescriptionUsesTrueColor(): void

@@ -1,5 +1,6 @@
 <?php
 
+use App\Utility\AchievementId;
 use App\Utility\Constants;
 
 class FavoritesAchievementTest extends AchievementTestCase
@@ -17,7 +18,7 @@ class FavoritesAchievementTest extends AchievementTestCase
 			'method' => 'POST',
 		]);
 
-		$this->assertAchievementUnlocked(Achievement::FAVORITES, 'Favorites achievement should unlock when favoriting a problem');
+		$this->assertAchievementUnlocked(AchievementId::FAVORITES, 'Favorites achievement should unlock when favoriting a problem');
 	}
 
 	public function testFavoritesAchievementDoesNotUnlockForRegularSet()
@@ -38,6 +39,6 @@ class FavoritesAchievementTest extends AchievementTestCase
 			'method' => 'POST',
 		]);
 
-		$this->assertAchievementNotUnlocked(Achievement::FAVORITES);
+		$this->assertAchievementNotUnlocked(AchievementId::FAVORITES);
 	}
 }

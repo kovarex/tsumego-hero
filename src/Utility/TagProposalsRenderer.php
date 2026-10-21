@@ -14,8 +14,12 @@ class TagProposalsRenderer extends DataTableRenderer
 SELECT
 	tag.id as tag_id,
 	tag.name as tag_name,
-	user.name as user_name,
+	user.display_name AS user_display_name,
 	user.id as user_id,
+	user.picture AS user_picture,
+	user.pref_avatar AS user_pref_avatar,
+	user.external_id AS user_external_id,
+	user.email AS user_email,
 	user.rating as user_rating
 FROM
 	tag
@@ -35,8 +39,12 @@ OFFSET " . $this->offset);
 		echo '<td>' . User::renderLink($item) . '</td>';
 		echo '<td><a href="/tags/view/' . (int) $item['tag_id'] . '">' . h($item['tag_name']) . '</a></td>';
 		echo '<td>';
-		echo '<button class="btn btn--small" onclick="window.location=\'/tags/acceptTagProposal/' . $item['tag_id'] . '\'" id="tag-accept-' . $item['tag_id'] . '">Accept</button>';
-		echo '<button class="btn btn--small" onclick="window.location=\'/tags/rejectTagProposal/' . $item['tag_id'] . '\'" id="tag-reject-' . $item['tag_id'] . '">Reject</button>';
+		echo '<form method="post" style="display:inline" action="/tags/acceptTagProposal/' . $item['tag_id'] . '">';
+		echo '<button type="submit" class="btn btn--small" id="tag-accept-' . $item['tag_id'] . '">Accept</button>';
+		echo '</form>';
+		echo '<form method="post" style="display:inline" action="/tags/rejectTagProposal/' . $item['tag_id'] . '">';
+		echo '<button type="submit" class="btn btn--small" id="tag-reject-' . $item['tag_id'] . '">Reject</button>';
+		echo '</form>';
 		echo '</td>';
 	}
 }

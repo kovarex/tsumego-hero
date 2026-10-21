@@ -1,5 +1,6 @@
 <?php
 
+use App\Utility\AchievementId;
 use App\Utility\AchievementChecker;
 use App\Utility\Auth;
 use App\Utility\HeroPowers;
@@ -32,7 +33,7 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 			$this->assertEquals($achievementCondition['AchievementCondition']['value'], $i + 1);
 		}
 
-		$this->assertAchievementUnlocked(Achievement::NO_ERROR_STREAK_I, "No Error Streak I should unlock at 10");
+		$this->assertAchievementUnlocked(AchievementId::NO_ERROR_STREAK_I, "No Error Streak I should unlock at 10");
 	}
 
 	public function testNoErrorStreakGetsClearedWhenErrorHappensThroughBrowser()
@@ -116,9 +117,9 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 
 		$browser->playWithResult('F');
 		$browser->clickId('rejuvenation');
-		$browser->driver->wait(10, 500)->until(function () use ($context) {
+		$browser->waitUntil(function () use ($context) {
 			return $context->reloadUser()['damage'] == 0;
-		});
+		}, 10, 'rejuvenation to restore the damage');
 		$browser->playWithResult('S');
 
 		$this->assertSame(0, $this->noErrorStreak(), 'A rejuvenated play still counts as a play with a mistake');
@@ -165,17 +166,17 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 
 	public function testSingleNoErrorStreakAchievements()
 	{
-		// Arrange: Create user and set err=10 (just meets threshold for Achievement::NO_ERROR_STREAK_I)
+		// Arrange: Create user and set err=10 (just meets threshold for AchievementId::NO_ERROR_STREAK_I)
 		$context = new ContextPreparator(['achievement-conditions' => [['category' => 'err', 'value' => Achievement::NO_ERROR_STREAK_I_STREAK_COUNT]]]);
 		new AchievementChecker()->checkNoErrorAchievements();
 
-		$this->assertAchievementUnlocked(Achievement::NO_ERROR_STREAK_I, "No Error Streak I should unlock at 10");
+		$this->assertAchievementUnlocked(AchievementId::NO_ERROR_STREAK_I, "No Error Streak I should unlock at 10");
 
 		// Assert: Higher achievements should NOT be unlocked yet
-		$this->assertAchievementNotUnlocked(Achievement::NO_ERROR_STREAK_II);
-		$this->assertAchievementNotUnlocked(Achievement::NO_ERROR_STREAK_III);
-		$this->assertAchievementNotUnlocked(Achievement::NO_ERROR_STREAK_IV);
-		$this->assertAchievementNotUnlocked(Achievement::NO_ERROR_STREAK_V);
+		$this->assertAchievementNotUnlocked(AchievementId::NO_ERROR_STREAK_II);
+		$this->assertAchievementNotUnlocked(AchievementId::NO_ERROR_STREAK_III);
+		$this->assertAchievementNotUnlocked(AchievementId::NO_ERROR_STREAK_IV);
+		$this->assertAchievementNotUnlocked(AchievementId::NO_ERROR_STREAK_V);
 	}
 
 	public function testTwoHundredStreakUnlocksAll()
@@ -184,30 +185,30 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 		new AchievementChecker()->checkNoErrorAchievements();
 
 		// Assert: All 6 achievements should be unlocked
-		$this->assertAchievementUnlocked(Achievement::NO_ERROR_STREAK_I, "No Error Streak I");
-		$this->assertAchievementUnlocked(Achievement::NO_ERROR_STREAK_II, "No Error Streak II");
-		$this->assertAchievementUnlocked(Achievement::NO_ERROR_STREAK_III, "No Error Streak III");
-		$this->assertAchievementUnlocked(Achievement::NO_ERROR_STREAK_IV, "No Error Streak IV");
-		$this->assertAchievementUnlocked(Achievement::NO_ERROR_STREAK_V, "No Error Streak V");
-		$this->assertAchievementUnlocked(Achievement::NO_ERROR_STREAK_VI, "No Error Streak VI");
+		$this->assertAchievementUnlocked(AchievementId::NO_ERROR_STREAK_I, "No Error Streak I");
+		$this->assertAchievementUnlocked(AchievementId::NO_ERROR_STREAK_II, "No Error Streak II");
+		$this->assertAchievementUnlocked(AchievementId::NO_ERROR_STREAK_III, "No Error Streak III");
+		$this->assertAchievementUnlocked(AchievementId::NO_ERROR_STREAK_IV, "No Error Streak IV");
+		$this->assertAchievementUnlocked(AchievementId::NO_ERROR_STREAK_V, "No Error Streak V");
+		$this->assertAchievementUnlocked(AchievementId::NO_ERROR_STREAK_VI, "No Error Streak VI");
 	}
 
 	public function testAllNoErrorStreakAchievements()
 	{
 		$thresholds = [
-			Achievement::NO_ERROR_STREAK_I => Achievement::NO_ERROR_STREAK_I_STREAK_COUNT,
-			Achievement::NO_ERROR_STREAK_II => Achievement::NO_ERROR_STREAK_II_STREAK_COUNT,
-			Achievement::NO_ERROR_STREAK_III => Achievement::NO_ERROR_STREAK_III_STREAK_COUNT,
-			Achievement::NO_ERROR_STREAK_IV => Achievement::NO_ERROR_STREAK_IV_STREAK_COUNT,
-			Achievement::NO_ERROR_STREAK_V => Achievement::NO_ERROR_STREAK_V_STREAK_COUNT,
-			Achievement::NO_ERROR_STREAK_VI => Achievement::NO_ERROR_STREAK_VI_STREAK_COUNT,
+			[AchievementId::NO_ERROR_STREAK_I, Achievement::NO_ERROR_STREAK_I_STREAK_COUNT],
+			[AchievementId::NO_ERROR_STREAK_II, Achievement::NO_ERROR_STREAK_II_STREAK_COUNT],
+			[AchievementId::NO_ERROR_STREAK_III, Achievement::NO_ERROR_STREAK_III_STREAK_COUNT],
+			[AchievementId::NO_ERROR_STREAK_IV, Achievement::NO_ERROR_STREAK_IV_STREAK_COUNT],
+			[AchievementId::NO_ERROR_STREAK_V, Achievement::NO_ERROR_STREAK_V_STREAK_COUNT],
+			[AchievementId::NO_ERROR_STREAK_VI, Achievement::NO_ERROR_STREAK_VI_STREAK_COUNT],
 		];
 
-		foreach ($thresholds as $achievementId => $errValue)
+		foreach ($thresholds as [$achievementId, $errValue])
 		{
 			$context = new ContextPreparator(['achievement-conditions' => [['category' => 'err', 'value' => $errValue]]]);
 			new AchievementChecker()->checkNoErrorAchievements();
-			$this->assertAchievementUnlocked($achievementId, "Achievement $achievementId should unlock at err=$errValue");
+			$this->assertAchievementUnlocked($achievementId, "Achievement {$achievementId->name} should unlock at err=$errValue");
 		}
 	}
 

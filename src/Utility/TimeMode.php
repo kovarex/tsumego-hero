@@ -4,9 +4,9 @@ namespace App\Utility;
 
 use ClassRegistry;
 use DateTime;
-use ForbiddenException;
 use InternalErrorException;
 use NotFoundException;
+use Set;
 
 class TimeMode
 {
@@ -56,9 +56,6 @@ class TimeMode
 
 	public function startTimeMode(int $categoryID, int $rankID): void
 	{
-		if (!Auth::isLoggedIn())
-			throw new ForbiddenException('Not logged in.');
-
 		ClassRegistry::init('TimeModeSession')->deleteAll(['user_id' => Auth::getUserID(), 'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]);
 
 		$relevantTsumegos = $this->getRelevantTsumegos($rankID);
@@ -120,7 +117,7 @@ class TimeMode
 	private function getRelevantTsumegos(int $timeModeRankID): array
 	{
 		$ratingBounds = $this->getRatingBounds($timeModeRankID);
-		$query = "SELECT DISTINCT tsumego.id as id FROM tsumego JOIN set_connection ON set_connection.tsumego_id = tsumego.id JOIN `set` ON set.id = set_connection.set_id WHERE `set`.included_in_time_mode = TRUE AND `set`.public = 1";
+		$query = "SELECT DISTINCT tsumego.id as id FROM tsumego JOIN set_connection ON set_connection.tsumego_id = tsumego.id JOIN `set` ON set.id = set_connection.set_id WHERE `set`.included_in_time_mode = TRUE AND " . Set::officialCondition();
 		if ($ratingBounds->min)
 			$query .= " AND rating >= " . $ratingBounds->min;
 		if ($ratingBounds->max)

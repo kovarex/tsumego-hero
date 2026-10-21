@@ -9,13 +9,12 @@ use App\Utility\Util;
  * @var array $attempts
  * @var int $count
  * @var int $pageIndex
+ * @var array $profileUser
  * @var int $userID
- * @var string $userName
  */
 
 echo '<div align="center">';
-echo '<p class="profile-username">' . h($userName) . '</p>';
-echo $this->element('user_subnav', ['userID' => $userID, 'activeTab' => 'solveHistory']);
+echo $this->element('user_header', ['user' => $profileUser, 'activeTab' => 'solveHistory']);
 echo PaginationHelper::render($pageIndex, intval(ceil($count / $PAGE_SIZE)), 'page');
 echo '<table class="data-table">';
 echo '<thead><tr><th>Set</th><th>Tsumego <label style="cursor:pointer;font-size:11px;color:var(--text-softer-color);font-weight:normal;text-transform:none" title="Toggle board previews"><input type="checkbox" class="preview-zoom-toggle" style="vertical-align:middle;margin-right:2px">🔍</label></th><th>Solved</th><th>Misplays</th><th>Rating</th><th>XP gained</th><th>Date</th></tr></thead>';
@@ -25,7 +24,7 @@ foreach ($attempts as $attempt)
 	echo '<tr>';
 	if ($attempt['set_connection_id'])
 	{
-		echo '<td><a href="/sets/view/' . (int) $attempt['set_id'] . '">' . h($attempt['set_title']) . '</a></td>';
+			echo '<td><a href="' . Set::url((int) $attempt['set_id']) . '">' . h($attempt['set_title']) . '</a></td>';
 		echo '<td>';
 		new TsumegoButton($attempt['tsumego_id'], $attempt['set_connection_id'], $attempt['num'], $attempt['status'] ?: 'N', 0, $attempt['sgf'])->render();
 		echo '</td>';

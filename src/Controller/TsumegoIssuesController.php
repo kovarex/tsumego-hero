@@ -138,23 +138,21 @@ class TsumegoIssuesController extends AppController
 		$issueData = [
 			'id' => $issueId,
 			'tsumego_issue_status_id' => TsumegoIssue::$OPENED_STATUS,
-			'created' => date('Y-m-d H:i:s'),
+			'created' => date('c'),
 			'user_id' => Auth::getUserID(),
-			'user_name' => $user['User']['name'],
-			'user_picture' => $user['User']['picture'],
+			'user_display_name' => $user['User']['display_name'],
+			'user_avatar_url' => User::getAvatarUrl($user['User']),
 			'user_rating' => $user['User']['rating'],
-			'user_external_id' => $user['User']['externalId'],
 			'isAdmin' => Auth::isAdmin(),
 			'comments' => [[
 				'id' => $TsumegoComment->getLastInsertID(),
 				'text' => $message,
 				'user_id' => Auth::getUserID(),
-				'user_name' => $user['User']['name'],
-				'user_picture' => $user['User']['picture'],
+				'user_display_name' => $user['User']['display_name'],
+				'user_avatar_url' => User::getAvatarUrl($user['User']),
 				'user_rating' => $user['User']['rating'],
-				'user_external_id' => $user['User']['externalId'],
 				'isAdmin' => Auth::isAdmin(),
-				'created' => date('Y-m-d H:i:s'),
+				'created' => date('c'),
 				'position' => $position,
 			]],
 		];
@@ -307,27 +305,24 @@ class TsumegoIssuesController extends AppController
 			$TsumegoComment->id = $commentId;
 			$TsumegoComment->saveField('tsumego_issue_id', $targetIssueId);
 
-			$issueUser = $User->findById($comment['TsumegoComment']['user_id']);
 			$commentUser = $User->findById($comment['TsumegoComment']['user_id']);
 
 			$issueData = [
 				'id' => $targetIssueId,
 				'status' => 'open',
-				'created' => date('Y-m-d H:i:s'),
+				'created' => date('c'),
 				'user_id' => $comment['TsumegoComment']['user_id'],
-				'user_name' => User::nameOrNull($comment['TsumegoComment']['user_id'], $issueUser['User']['name']),
-				'user_picture' => $issueUser['User']['picture'],
-				'user_rating' => $issueUser['User']['rating'],
-				'user_external_id' => $issueUser['User']['externalId'],
-				'isAdmin' => ($issueUser['User']['isAdmin'] == 1),
+				'user_display_name' => User::displayNameOrNull($commentUser['User']),
+				'user_avatar_url' => User::avatarOrNull($commentUser['User']),
+				'user_rating' => $commentUser['User']['rating'],
+				'isAdmin' => ($commentUser['User']['isAdmin'] == 1),
 				'comments' => [[
 					'id' => $commentId,
 					'text' => $comment['TsumegoComment']['message'],
 					'user_id' => $comment['TsumegoComment']['user_id'],
-					'user_name' => User::nameOrNull($comment['TsumegoComment']['user_id'], $commentUser['User']['name']),
-					'user_picture' => $commentUser['User']['picture'],
+					'user_display_name' => User::displayNameOrNull($commentUser['User']),
+					'user_avatar_url' => User::avatarOrNull($commentUser['User']),
 					'user_rating' => $commentUser['User']['rating'],
-					'user_external_id' => $commentUser['User']['externalId'],
 					'isAdmin' => ($commentUser['User']['isAdmin'] == 1),
 					'created' => Util::toIso8601($comment['TsumegoComment']['created']),
 					'position' => $comment['TsumegoComment']['position'],

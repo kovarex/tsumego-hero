@@ -143,34 +143,28 @@ class AdminStatsControllerTest extends ControllerTestCase
 			];
 		}
 
-		$context = new ContextPreparator([
+		new ContextPreparator([
 			'user' => ['admin' => true],
 			'tsumego' => [],
 			'admin-activities' => $activities
 		]);
 
-		// Create unapproved tags
-		for ($i = 1; $i <= 105; $i++)
-		{
-			$tagName = ClassRegistry::init('Tag');
-			$tagName->create();
-			$tagName->save([
-				'name' => "Test Tag $i",
-				'description' => '',
-				'user_id' => $context->user['id'],
-				'approved' => 0
-			]);
-		}
-
-		// Navigate with both pagination parameters
+		// Navigate to the second page of the activities, from a page that also
+		// carries another parameter
 		$browser = Browser::instance();
-		$browser->get('users/adminstats?activity_page=2&tagnames_page=2');
+		$browser->get('users/adminstats?activity_page=2&sgf_proposals_page=2');
 
 		$pageSource = $browser->driver->getPageSource();
+		$this->assertStringContainsString('Page 2 of 2', $pageSource);
 
-		// Both paginations should preserve their state
-		$this->assertStringContainsString('activity_page=2', $pageSource);
-		$this->assertStringContainsString('tagnames_page=2', $pageSource);
+		// Paging the activities keeps what the visitor asked for elsewhere
+		preg_match_all('~href="\?([^"#]+)~', $pageSource, $matches);
+		$this->assertNotEmpty($matches[1]);
+
+		$previousPages = array_filter($matches[1], fn($query) => str_contains($query, 'activity_page=1'));
+		$this->assertNotEmpty($previousPages);
+		foreach ($previousPages as $query)
+			$this->assertStringContainsString('sgf_proposals_page=2', $query);
 	}
 
 	/**
@@ -226,6 +220,9 @@ class AdminStatsControllerTest extends ControllerTestCase
 				// Delete user
 				['type' => AdminActivityType::DELETE_USER, 'old_value' => 'banned_spammer'],
 
+				// Display name change
+				['type' => AdminActivityType::DISPLAY_NAME_CHANGE, 'old_value' => 'Old Name', 'new_value' => 'New Name'],
+
 				// SGF edit
 				['type' => AdminActivityType::SGF_EDIT, 'tsumego_id' => true, 'old_value' => 'old sgf', 'new_value' => 'new sgf'],
 
@@ -265,6 +262,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$this->assertTextContains('Set Pass Mode', $pageSource);
 		$this->assertTextContains('Merged tsumego ' . $context->tsumegos[0]['id'], $pageSource);
 		$this->assertTextContains('Deleted user banned_spammer', $pageSource);
+		$this->assertTextContains('Display Name Change: Old Name → New Name', $pageSource);
 
 		// Verify formatted messages with old/new values appear in HTML
 
@@ -325,19 +323,13 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$browser->assertNoErrors();
 
 		// Wait for editor to be ready
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			return $driver->executeScript('return typeof besogo !== "undefined";');
-		});
+		$browser->waitUntilJs('typeof besogo !== "undefined"');
 		$browser->clickBoard(4, 4);
 		$browser->clickId('makeCorrectButton');
 		$browser->clickId('saveSGFButton');
 
 		// Wait for redirect after saving SGF
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function () use ($browser) {
-			return strpos($browser->driver->getCurrentURL(), '/editor/') === false;
-		});
+		$browser->waitUntilJs('!location.href.includes("/editor/")');
 
 		// checking that the non-accepted sgf is not used for the problem
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL());

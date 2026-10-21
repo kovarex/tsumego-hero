@@ -18,6 +18,66 @@ class AdminGuardTest extends ControllerTestCase
 		$this->testAction('/users/adminstats', ['method' => 'get']);
 	}
 
+	public function testPreferenceActionsRequireLogin()
+	{
+		new ContextPreparator(['user' => null]);
+
+		// The avatar endpoint is guarded the same way, see AvatarPreferenceTest::testRequiresLogin
+		foreach (['/users/playerColorPreference', '/users/boardOrientationPreference', '/users/dateFormatPreference', '/users/emailPreference'] as $url)
+		{
+			try
+			{
+				$this->testAction($url, ['method' => 'post', 'data' => ['color' => 1, 'orientation' => 1, 'format' => 1, 'User' => ['email' => 'guest@example.com']]]);
+				$this->fail($url . ' let a guest through');
+			}
+			catch (UnauthorizedException $e)
+			{
+				$this->addToAssertionCount(1);
+			}
+		}
+	}
+
+	public function testTagProposalActionsRequirePost()
+	{
+		new ContextPreparator(['user' => ['admin' => true]]);
+
+		foreach (['/tags/acceptTagProposal/1', '/tags/rejectTagProposal/1'] as $url)
+		{
+			try
+			{
+				$this->testAction($url, ['method' => 'get']);
+				$this->fail($url . ' accepted a GET');
+			}
+			catch (MethodNotAllowedException $e)
+			{
+				$this->addToAssertionCount(1);
+			}
+		}
+	}
+
+	public function testUserProposalActionsRequirePost()
+	{
+		new ContextPreparator(['user' => ['admin' => true]]);
+
+		foreach ([
+			'/users/acceptSGFProposal/1',
+			'/users/rejectSGFProposal/1',
+			'/users/acceptTagConnectionProposal/1',
+			'/users/rejectTagConnectionProposal/1',
+		] as $url)
+		{
+			try
+			{
+				$this->testAction($url, ['method' => 'get']);
+				$this->fail($url . ' accepted a GET');
+			}
+			catch (MethodNotAllowedException $e)
+			{
+				$this->addToAssertionCount(1);
+			}
+		}
+	}
+
 	public function testAdminstatsRequiresAdmin()
 	{
 		new ContextPreparator(['user' => ['name' => 'regular', 'admin' => false]]);
@@ -193,6 +253,44 @@ class AdminGuardTest extends ControllerTestCase
 			],
 			'method' => 'post',
 		]);
+	}
+
+	// ── TsumegosController::play ?requestSolution ──
+
+	public function testRequestSolutionRequiresLogin()
+	{
+		$context = new ContextPreparator(['user' => null, 'tsumego' => ['set_order' => 1]]);
+
+		$this->expectException(UnauthorizedException::class);
+
+		$this->testAction('/' . $context->tsumegos[0]['set-connections'][0]['id'] . '?requestSolution=1', ['method' => 'get']);
+	}
+
+	public function testRequestSolutionRequiresAdmin()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'regular', 'admin' => false],
+			'tsumego' => ['set_order' => 1],
+		]);
+
+		$this->expectException(ForbiddenException::class);
+
+		$this->testAction('/' . $context->tsumegos[0]['set-connections'][0]['id'] . '?requestSolution=1', ['method' => 'get']);
+	}
+
+	public function testRequestSolutionAllowsAdmin()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'admin', 'admin' => true],
+			'tsumego' => ['set_order' => 1],
+		]);
+		$adminActivity = ClassRegistry::init('AdminActivity');
+		$before = $adminActivity->find('count');
+
+		$this->testAction('/' . $context->tsumegos[0]['set-connections'][0]['id'] . '?requestSolution=1', ['method' => 'get']);
+
+		$this->assertSame(200, $this->controller->response->statusCode());
+		$this->assertSame($before + 1, $adminActivity->find('count'));
 	}
 
 	// ── UsersController::showPublishSchedule ──

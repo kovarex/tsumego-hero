@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\AchievementId;
+
 /**
  * Test Collection Sets Achievements (IDs 47-52)
  *
@@ -16,32 +18,32 @@ class CollectionSetsAchievementTest extends AchievementTestCase
 	{
 		$context = new ContextPreparator();
 		$this->triggerSetCompletionAchievementCheck(Achievement::COMPLETE_SETS_I_SETS_COUNT);
-		$this->assertAchievementUnlocked(Achievement::COMPLETE_SETS_I);
+		$this->assertAchievementUnlocked(AchievementId::COMPLETE_SETS_I);
 	}
 
 	public function testAchievementCompleteSets1DoesNotUnlockBelow10Sets()
 	{
 		$context = new ContextPreparator();
 		$this->triggerSetCompletionAchievementCheck(Achievement::COMPLETE_SETS_I_SETS_COUNT - 1);
-		$this->assertAchievementNotUnlocked(Achievement::COMPLETE_SETS_I);
+		$this->assertAchievementNotUnlocked(AchievementId::COMPLETE_SETS_I);
 	}
 
 	public function testAllCollectionSetsAchievements()
 	{
 		$achievementSets = [
-			Achievement::COMPLETE_SETS_I => Achievement::COMPLETE_SETS_I_SETS_COUNT,
-			Achievement::COMPLETE_SETS_II => Achievement::COMPLETE_SETS_II_SETS_COUNT,
-			Achievement::COMPLETE_SETS_III => Achievement::COMPLETE_SETS_III_SETS_COUNT,
-			Achievement::COMPLETE_SETS_IV => Achievement::COMPLETE_SETS_IV_SETS_COUNT,
-			Achievement::COMPLETE_SETS_V => Achievement::COMPLETE_SETS_V_SETS_COUNT,
-			Achievement::COMPLETE_SETS_VI => Achievement::COMPLETE_SETS_VI_SETS_COUNT,
+			[AchievementId::COMPLETE_SETS_I, Achievement::COMPLETE_SETS_I_SETS_COUNT],
+			[AchievementId::COMPLETE_SETS_II, Achievement::COMPLETE_SETS_II_SETS_COUNT],
+			[AchievementId::COMPLETE_SETS_III, Achievement::COMPLETE_SETS_III_SETS_COUNT],
+			[AchievementId::COMPLETE_SETS_IV, Achievement::COMPLETE_SETS_IV_SETS_COUNT],
+			[AchievementId::COMPLETE_SETS_V, Achievement::COMPLETE_SETS_V_SETS_COUNT],
+			[AchievementId::COMPLETE_SETS_VI, Achievement::COMPLETE_SETS_VI_SETS_COUNT],
 		];
 
-		foreach ($achievementSets as $achievementId => $requiredSets)
+		foreach ($achievementSets as [$achievementId, $requiredSets])
 		{
 			$context = new ContextPreparator();
 			$this->triggerSetCompletionAchievementCheck($requiredSets);
-			$this->assertAchievementUnlocked($achievementId, "Achievement $achievementId should unlock at $requiredSets completed sets");
+			$this->assertAchievementUnlocked($achievementId, "Achievement {$achievementId->name} should unlock at $requiredSets completed sets");
 		}
 	}
 }

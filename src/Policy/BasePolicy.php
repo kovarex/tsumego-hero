@@ -5,8 +5,11 @@ namespace App\Policy;
 use App\Utility\Constants;
 
 /**
- * Shared helpers for policies. Policies are stateless decision objects;
- * all state comes from the identity ($user) and the resource.
+ * Shared helpers for policies. Policies are stateless decision objects; they
+ * receive the identity ($user) and the resource, and when those two are not
+ * enough to decide (such as "did this player solve the related problem"), they
+ * read the missing fact through the model layer instead of making the caller
+ * prepare it.
  *
  * Mirrors CakePHP 5's policy shape: methods receive ($user, $resource = null),
  * $user is null for anonymous users.

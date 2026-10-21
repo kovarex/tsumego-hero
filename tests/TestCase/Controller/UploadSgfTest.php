@@ -1,6 +1,5 @@
 <?php
 
-use Facebook\WebDriver\WebDriverBy;
 use App\Utility\Constants;
 
 class UploadSgfTest extends TestCaseWithAuth
@@ -13,25 +12,21 @@ class UploadSgfTest extends TestCaseWithAuth
 		$this->assertSame(0, $initialCount);
 		$browser->get($context->setConnections[0]['id']);
 		$this->assertSame(0, count(ClassRegistry::init('Sgf')->find('all', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]])));
-		$openLink = $browser->driver->findElement(WebDriverBy::cssSelector('#openSgfLink'));
+		$openLink = $browser->find('#openSgfLink');
 		$this->assertTrue($openLink->isDisplayed());
 		$this->assertSame($openLink->getText(), "Open");
 		$openLink->click();
-		$browser->waitUntilIDExists('sgfCommentButton');
-		$commentEditButton = $browser->driver->findElement(WebDriverBy::cssSelector('#sgfCommentButton'));
+		$commentEditButton = $browser->findById('sgfCommentButton');
 		$commentEditButton->click();
-		$commentEditField = $browser->driver->findElement(WebDriverBy::cssSelector('#commentEditField'));
+		$commentEditField = $browser->find('#commentEditField');
 		$commentEditField->click();
 		$browser->driver->getKeyboard()->sendKeys("Hello from test");
 		$commentEditButton->click();
-		$saveButton = $browser->driver->findElement(WebDriverBy::cssSelector('#saveSGFButton'));
+		$saveButton = $browser->find('#saveSGFButton');
 		$saveButton->click();
 
 		// Wait for the form submit to complete (page navigates away from editor)
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function () use ($browser) {
-			return strpos($browser->driver->getCurrentURL(), '/editor/') === false;
-		});
+		$browser->waitUntilJs('!location.href.includes("/editor/")');
 
 		$sgf = ClassRegistry::init('Sgf')->find('all', [
 			'conditions' => ['tsumego_id' => $context->tsumegos[0]['id']],
@@ -57,21 +52,19 @@ class UploadSgfTest extends TestCaseWithAuth
 		$this->assertEquals(count(ClassRegistry::init('Sgf')->find('all', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]])), 2);
 		$browser = Browser::instance();
 		$browser->get('/sgfs/view/' . $context->tsumegos[0]['id']);
-		$links = $browser->driver->findElements(WebDriverBy::cssSelector('.openHistoryPointLink'));
+		$links = $browser->getElements('.openHistoryPointLink');
 		$this->assertCount(2, $links);
 
 		$links[0]->click();
-		$browser->waitUntilIDExists('commentBox');
 
-		$commentBox = $browser->driver->findElement(WebDriverBy::cssSelector('#commentBox'));
+		$commentBox = $browser->findById('commentBox');
 		$this->assertSame($commentBox->getText(), 'Version 2');
 
 		$browser->get('/sgfs/view/' . $context->tsumegos[0]['id']);
-		$links = $browser->driver->findElements(WebDriverBy::cssSelector('.openHistoryPointLink'));
+		$links = $browser->getElements('.openHistoryPointLink');
 		$this->assertCount(2, $links);
 		$links[1]->click();
-		$browser->waitUntilIDExists('commentBox');
-		$commentBox = $browser->driver->findElement(WebDriverBy::cssSelector('#commentBox'));
+		$commentBox = $browser->findById('commentBox');
 		$this->assertSame($commentBox->getText(), 'Version 1');
 	}
 
@@ -86,15 +79,14 @@ class UploadSgfTest extends TestCaseWithAuth
 		$this->assertEquals(count(ClassRegistry::init('Sgf')->find('all', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]])), 2);
 		$browser = Browser::instance();
 		$browser->get('/sgfs/view/' . $context->tsumegos[0]['id']);
-		$links = $browser->driver->findElements(WebDriverBy::cssSelector('.openDiff'));
+		$links = $browser->getElements('.openDiff');
 		$this->assertCount(1, $links);
 		$links[0]->click();
-		$browser->waitUntilIDExists('commentBox');
-		$commentBox = $browser->driver->findElement(WebDriverBy::cssSelector('#commentBox'));
+		$commentBox = $browser->findById('commentBox');
 		$this->assertSame($commentBox->getText(), 'Version 2');
 
-		$browser->waitUntilCssSelectorExists('.sgf-plus-mark');
-		$plusMark = $browser->driver->findElements(WebDriverBy::cssSelector('.sgf-plus-mark'));
+		$browser->find('.sgf-plus-mark');
+		$plusMark = $browser->getElements('.sgf-plus-mark');
 		$this->assertCount(2, $plusMark); // one on the board, one on the tree I guess? But mainly there is some
 	}
 }

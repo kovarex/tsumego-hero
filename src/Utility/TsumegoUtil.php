@@ -57,11 +57,30 @@ class TsumegoUtil
 		return $tsx;
 	}
 
-	// Whether the problem is solved for the current mode. In time mode every
-	// problem is presented fresh, so this is false at page load until solved.
+	/**
+	 * How many problems the set has. The same number as count(collectTsumegosFromSet()),
+	 * but the database counts them, so no tsumego rows are loaded into PHP.
+	 */
+	public static function countTsumegosFromSet(int $setID): int
+	{
+		$rows = Util::query(
+			'SELECT COUNT(*) AS total FROM set_connection sc '
+			. 'JOIN tsumego t ON t.id = sc.tsumego_id '
+			. 'WHERE sc.set_id = ?',
+			[$setID]
+		);
+
+		return (int) $rows[0]['total'];
+	}
+
+	// Whether the problem is solved for the current mode. Time mode and mistake
+	// training always present the problem as a fresh challenge, so this stays
+	// false at page load even for a problem the player has already solved.
 	public static function isSolvedForCurrentMode(array $tsumego): bool
 	{
-		return !Auth::isInTimeMode() && TsumegoUtil::isRecentlySolved($tsumego['Tsumego']['status']);
+		return !Auth::isInTimeMode()
+			&& !Auth::isInMistakeTrainingMode()
+			&& TsumegoUtil::isRecentlySolved($tsumego['Tsumego']['status']);
 	}
 
 	public static function isRecentlySolved(?string $status): bool

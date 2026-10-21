@@ -5,6 +5,7 @@ use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\HeroPowers;
 use App\Utility\Level;
+use App\Utility\MistakeTraining;
 use App\Utility\PlayOutcome;
 use App\Utility\Rating;
 use App\Utility\SetCompletionCounter;
@@ -21,10 +22,54 @@ class PlayResultProcessorComponent extends Component
 	 * @param float $seconds Time spent on the problem, in seconds.
 	 * @param int|null $setConnectionID Part of the set the problem is played from; null means
 	 *   the display set connection is deduced instead.
+	 * @param int|null $pageMode Mode of the page the problem was played on, see playMode();
+	 *   null means the stored mode.
 	 * @return array Result with xp_gained, new_rating, new_xp, new_level, new_damage, status,
-	 *   potion_triggered and achievement_updates.
+	 *   potion_triggered and achievement_updates, and in the mistake training
+	 *   mistake_training_button.
 	 */
-	public function processResult(int $tsumegoID, PlayOutcome $outcome, float $seconds, ?int $setConnectionID = null): array
+	public function processResult(int $tsumegoID, PlayOutcome $outcome, float $seconds, ?int $setConnectionID = null, ?int $pageMode = null): array
+	{
+		Auth::overrideMode($this->playMode($tsumegoID, $pageMode));
+		try
+		{
+			return $this->processResultInPlayMode($tsumegoID, $outcome, $seconds, $setConnectionID);
+		}
+		finally
+		{
+			Auth::overrideMode(null);
+		}
+	}
+
+	/**
+	 * The mode a result counts in, when it is not the stored one. The mode is stored on
+	 * the player, and opening another mode in another tab, or going back to a page in
+	 * the browser history, switches it under a page that is still open, so the page says
+	 * which mode it was played in. A page of the training counts as training only while
+	 * the problem is in today's training, so claiming it spares no hearts on any other
+	 * problem. A page of a normal mode counts in its own mode when the stored one is the
+	 * training, which is what the other tab switched to. Any other disagreement keeps
+	 * the stored mode.
+	 */
+	private function playMode(int $tsumegoID, ?int $pageMode): ?int
+	{
+		$storedMode = Auth::getMode();
+		if ($pageMode === null || $pageMode === $storedMode)
+			return null;
+
+		if ($pageMode === Constants::$MISTAKE_TRAINING_MODE)
+		{
+			$row = MistakeTraining::getPoolRow((int) Auth::getUserID(), $tsumegoID);
+			return $row !== null && MistakeTraining::isInTodaysTraining($row) ? $pageMode : null;
+		}
+
+		$normalModes = [Constants::$LEVEL_MODE, Constants::$RATING_MODE, Constants::$TIME_MODE];
+		if ($storedMode === Constants::$MISTAKE_TRAINING_MODE && in_array($pageMode, $normalModes, true))
+			return $pageMode;
+		return null;
+	}
+
+	private function processResultInPlayMode(int $tsumegoID, PlayOutcome $outcome, float $seconds, ?int $setConnectionID): array
 	{
 		$seconds = max(0.01, $seconds);
 		$solved = $outcome === PlayOutcome::SolvedClean || $outcome === PlayOutcome::SolvedAfterMistake;
@@ -69,6 +114,13 @@ class PlayResultProcessorComponent extends Component
 			$result['potion_triggered'] = $this->processPotion();
 		$this->processXpChange($tsumego, $result, $previousStatusValue, $originalTsumegoRating, $progressDeletionCount);
 		$this->updateTsumegoAttempt($tsumego, $result, $previousStatusValue, $seconds);
+		// The pool is fed from every mode: a solved problem that goes wrong enters the
+		// review ladder, a clean solve climbs it. The training says it is the one playing, since a replay there counts for nothing,
+		// and so does the time mode, the one mode where a solved problem is not free play.
+		$trainingXp = null;
+		$review = MistakeTraining::recordResult(Auth::getUserID(), $tsumegoID, $outcome, $previousStatusValue, Auth::isInMistakeTrainingMode(), Auth::isInTimeMode());
+		if ($review !== null && Auth::isInMistakeTrainingMode())
+			$trainingXp = $this->processTrainingXp($review, (float) $originalTsumegoRating);
 		$this->processErrorAchievement($result, $previousStatusValue, $outcome);
 		$this->processUnsortedStuff($tsumego, $result, $previousStatusValue);
 
@@ -78,7 +130,7 @@ class PlayResultProcessorComponent extends Component
 		$achievementChecker->checkStandardAchievements()->finalize();
 
 		$response = [
-			'xp_gained' => $result['xp-gained'] ?? 0,
+			'xp_gained' => $trainingXp !== null ? array_sum($trainingXp) : ($result['xp-gained'] ?? 0),
 			'new_rating' => Auth::getUser()['rating'],
 			'new_xp' => Auth::getUser()['xp'],
 			'new_level' => Auth::getUser()['level'],
@@ -88,8 +140,46 @@ class PlayResultProcessorComponent extends Component
 		];
 		if (!empty($achievementChecker->updated))
 			$response['achievement_updates'] = $achievementChecker->updated;
+		// The training row shows what today did with the problem, and this result just
+		// changed it, so the page redraws the button from the review as it was stored.
+		if (Auth::isInMistakeTrainingMode())
+		{
+			$response['mistake_training_button'] = MistakeTraining::describeTodaysReview(Auth::getUserID(), $tsumegoID);
+			$response['mistake_training_xp'] = $trainingXp ?? ['review' => 0, 'graduation' => 0, 'clear' => 0];
+		}
 
 		return $response;
+	}
+
+	/**
+	 * The XP of a review in the training (see MistakeTraining::REVIEW_XP_SHARE). It
+	 * counts like the XP of a solve, for the level and the day's XP; the bonus for
+	 * clearing the day is not a solve, so it leaves the day's solved count alone.
+	 *
+	 * @param array{id: int, result: string, climbed: bool, clear_bonus: bool} $review
+	 * @return array{review: int, graduation: int, clear: int}
+	 */
+	private function processTrainingXp(array $review, float $problemRating): array
+	{
+		$xp = MistakeTraining::awardXp((int) Auth::getUserID(), $review, $problemRating);
+		if (array_sum($xp) == 0)
+			return $xp;
+
+		$user = & Auth::getUser();
+		if ($xp['review'] + $xp['graduation'] > 0)
+			Level::addXPAsResultOfTsumegoSolving($user, $xp['review'] + $xp['graduation']);
+		if ($xp['clear'] > 0)
+		{
+			Level::addXP($user, $xp['clear']);
+			$user['daily_xp'] += $xp['clear'];
+		}
+		Auth::saveUserFields([
+			'xp' => $user['xp'],
+			'level' => $user['level'],
+			'daily_xp' => $user['daily_xp'],
+			'daily_solved' => $user['daily_solved'],
+		]);
+		return $xp;
 	}
 
 	/**
@@ -108,6 +198,8 @@ class PlayResultProcessorComponent extends Component
 	 */
 	public function processPotion(): bool
 	{
+		if (Auth::isInMistakeTrainingMode())
+			return false;
 		if (!HeroPowers::canPotionTrigger())
 			return false;
 
@@ -164,6 +256,9 @@ class PlayResultProcessorComponent extends Component
 
 	private function updateTsumegoStatus(array $previousTsumego, array &$result, ?array $previousTsumegoStatus): string
 	{
+		if (Auth::isInMistakeTrainingMode())
+			return $previousTsumegoStatus['TsumegoStatus']['status'] ?? TsumegoStatus::$NOT_VISITED;
+
 		if ($previousTsumegoStatus == null)
 		{
 			$previousTsumegoStatus['TsumegoStatus'] = [];
@@ -173,17 +268,18 @@ class PlayResultProcessorComponent extends Component
 		}
 
 		$newStatus = $this->getNewStatus($result['solved'], $previousTsumegoStatus['TsumegoStatus']['status'], $result);
+
 		if (TsumegoUtil::isSolvedStatus($newStatus) && !TsumegoUtil::isSolvedStatus($previousTsumegoStatus['TsumegoStatus']['status']))
 			Auth::incrementUserField('solved', 1);
 		$previousTsumegoStatus['TsumegoStatus']['status'] = $newStatus;
 		$previousTsumegoStatus['TsumegoStatus']['created'] = date('Y-m-d H:i:s');
 		ClassRegistry::init('TsumegoStatus')->save($previousTsumegoStatus);
-		return $previousTsumegoStatus['TsumegoStatus']['status'];
+		return $newStatus;
 	}
 
 	private function updateTsumegoAttempt(array $previousTsumego, array $result, string $previousTsumegoStatus, float $seconds): void
 	{
-		if (Auth::isInTimeMode())
+		if (Auth::isInTimeMode() || Auth::isInMistakeTrainingMode())
 			return;
 		if (TsumegoUtil::isRecentlySolved($previousTsumegoStatus))
 			return;
@@ -322,6 +418,8 @@ class PlayResultProcessorComponent extends Component
 
 	private function processUnsortedStuff(array $previousTsumego, array $result, string $previousTsumegoStatus): void
 	{
+		if (Auth::isInMistakeTrainingMode())
+			return;
 		if (!Level::XPAndRatingIsGainedInTsumegoStatus($previousTsumegoStatus))
 			return;
 		if (!$result['solved'])

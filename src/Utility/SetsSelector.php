@@ -2,6 +2,8 @@
 
 namespace App\Utility;
 
+use Set;
+
 class SetsSelector
 {
 	public function __construct(TsumegoFilters $tsumegoFilters)
@@ -102,7 +104,7 @@ class SetsSelector
 		$query->selects[] = 'tsumego.rating';
 		$query->query .= ' JOIN set_connection sc ON sc.set_id = s.id';
 		$query->query .= ' JOIN tsumego ON tsumego.id = sc.tsumego_id';
-		$query->conditions[] = 's.public = 1';
+		$query->conditions[] = Set::officialCondition('s');
 		$query->conditions[] = 'tsumego.deleted IS NULL';
 		if (!empty($this->tsumegoFilters->setIDs))
 			$query->conditions[] = 's.id IN (' . implode(',', $this->tsumegoFilters->setIDs) . ')';
@@ -144,22 +146,15 @@ class SetsSelector
 
 	private function selectByDifficulty(): void
 	{
-		$ranks = Rating::ranks();
-
-		if (!empty($this->tsumegoFilters->ranks))
-			$ranks = array_values(array_filter($ranks, function ($r) {
-				return in_array($r, $this->tsumegoFilters->ranks);
-			}));
-
-		// assign each tsumego to a rank band using the same bounds RatingBounds::coverRank uses
+		// assign each tsumego to a rank band using the same bounds RatingBounds uses
 		$bands = [];
 		$rankOrder = 0;
-		foreach ($ranks as $rank)
+		foreach ($this->rankBands() as [$weakest, $strongest])
 		{
-			$bounds = RatingBounds::coverRank($rank, '15k');
+			$bounds = RatingBounds::coverRankSpec($weakest . '-' . $strongest, Rating::weakestRank());
 			$bands[] = [
-				'name' => $rank,
-				'color' => Rating::rankColorVar($rank),
+				'name' => $weakest === $strongest ? $weakest : $weakest . '-' . $strongest,
+				'color' => Rating::rankColorVar($strongest),
 				'order' => $rankOrder,
 				'min' => $bounds->min,
 				'max' => $bounds->max,
@@ -175,8 +170,8 @@ class SetsSelector
 		if (!empty($this->tsumegoFilters->tagIDs))
 			$query->conditions[] = $this->tagMembershipCondition('tsumego.id');
 		// restrict to the rating range covered by the bands, so rows that would
-		// never match a band are not transferred; safe because bands are contiguous
-		// and any band left open (min or max null) leaves that side unbounded.
+		// never match a band are not transferred; rows falling into a gap between
+		// two bands are dropped by the assignment loop below.
 		$hasOpenLower = false;
 		$hasOpenUpper = false;
 		$minRating = null;
@@ -244,12 +239,36 @@ class SetsSelector
 	}
 
 	/**
+	 * Rank bands to display, weakest first, as [weakest, strongest] pairs.
+	 * Without a rank filter every rank is its own band. Each rank filter is one
+	 * band: separately picked ranks stay separate boxes, and a picked range
+	 * becomes one box spanning it.
+	 *
+	 * @return array<int, array{0: string, 1: string}>
+	 */
+	private function rankBands(): array
+	{
+		if (empty($this->tsumegoFilters->rankSpecs))
+			return array_map(function ($rank) {
+				return [$rank, $rank];
+			}, Rating::ranks());
+
+		$bands = [];
+		foreach ($this->tsumegoFilters->rankSpecs as $spec)
+			$bands[] = Rating::parseReadableRankRange($spec) ?? [$spec, $spec];
+		usort($bands, function ($a, $b) {
+			return Rating::getRankFromReadableRank($a[0]) <=> Rating::getRankFromReadableRank($b[0]);
+		});
+		return $bands;
+	}
+
+	/**
 	 * Group rows by collection, split each into partitions of the user's collection size,
 	 * and compute per-partition stats (count, rating sum, solved count).
 	 *
 	 * Items are sorted within each collection by the $itemSortKeys row fields (e.g.
 	 * num, tsumego_id) so partitions always hold consecutive problems in the canonical
-	 * order (the same order the /sets/view page uses), regardless of the row order the
+	 * order (the same order a collection page uses), regardless of the row order the
 	 * database returns.
 	 *
 	 * @param array $rows Query rows, each with $idField, $nameField, $colorField, tsumego_id and rating.
@@ -352,7 +371,7 @@ class SetsSelector
 	 */
 	private function publicMembershipCondition(string $tsumegoRef): string
 	{
-		$setCondition = '`set`.public = 1';
+		$setCondition = Set::officialCondition();
 		if (!empty($this->tsumegoFilters->setIDs))
 			$setCondition .= ' AND `set`.id IN (' . implode(',', $this->tsumegoFilters->setIDs) . ')';
 		return 'EXISTS (SELECT 1 FROM set_connection sc JOIN `set` ON `set`.id = sc.set_id AND ' . $setCondition . ' WHERE sc.tsumego_id = ' . $tsumegoRef . ')';
@@ -372,10 +391,10 @@ class SetsSelector
 	private function rankCondition(): string
 	{
 		$rankConditions = '';
-		foreach ($this->tsumegoFilters->ranks as $rankFilter)
+		foreach ($this->tsumegoFilters->rankSpecs as $rankFilter)
 		{
 			$rankCondition = '';
-			RatingBounds::coverRank($rankFilter, '15k')->addSqlConditions($rankCondition);
+			RatingBounds::coverRankSpec($rankFilter, Rating::weakestRank())->addSqlConditions($rankCondition);
 			Util::addSqlOrCondition($rankConditions, $rankCondition);
 		}
 		return $rankConditions;

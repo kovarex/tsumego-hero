@@ -6,6 +6,7 @@ use PHPUnitRetry\RetryTrait;
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
+use App\Utility\Avatar;
 use App\Utility\Constants;
 
 class SitesControllerTest extends ControllerTestCase
@@ -65,12 +66,12 @@ class SitesControllerTest extends ControllerTestCase
 		$this->assertStringContainsString('Latest additions', $source);
 		$this->assertStringContainsString('<time datetime="' . $today . '"', $source);
 
-		$buttons = $browser->getCssSelect('.problem-nav__number');
+		$buttons = $browser->getElements('.problem-nav__number');
 		$this->assertCount(1, $buttons);
 		$this->assertSame('564', $buttons[0]->getText());
 
 		// Published tsumego buttons should have preview data
-		$previewLinks = $browser->getCssSelect('.new-tsumego-box a[data-sgf-preview]');
+		$previewLinks = $browser->getElements('.new-tsumego-box a[data-sgf-preview]');
 		$this->assertNotEmpty($previewLinks);
 	}
 
@@ -94,7 +95,7 @@ class SitesControllerTest extends ControllerTestCase
 		$this->assertStringContainsString('Latest additions', $source);
 		$this->assertStringContainsString('<time datetime="' . $pastDate . '"', $source);
 
-		$buttons = $browser->getCssSelect('.problem-nav__number');
+		$buttons = $browser->getElements('.problem-nav__number');
 		$this->assertCount(1, $buttons);
 		$this->assertSame('564', $buttons[0]->getText());
 	}
@@ -188,7 +189,7 @@ class SitesControllerTest extends ControllerTestCase
 		$this->assertStringContainsString('Level Evaluation', $source);
 		$this->assertStringContainsString('Set Beginner', $source);
 		$this->assertSame(2, substr_count($source, 'class="scheduleTsumego"'));
-		$this->assertCount(2, $browser->getCssSelect('.problem-nav__number'));
+		$this->assertCount(2, $browser->getElements('.problem-nav__number'));
 	}
 
 	/**
@@ -206,8 +207,9 @@ class SitesControllerTest extends ControllerTestCase
 		// Act: Load the index page
 		$browser->get('sites/index');
 
-		// Assert: Check that page loaded successfully (no exceptions thrown by assertNoErrors)
-		$this->assertTrue($browser->idExists('totd') || true); // Page loaded successfully
+		// Assert: the index page rendered with a clean JS console
+		$this->assertTrue($browser->titleContains('Tsumego Hero'), 'The index page rendered');
+		$browser->assertNoJsErrors();
 	}
 
 	public function testIndexPageLoadsWithoutDayRecord()
@@ -215,7 +217,8 @@ class SitesControllerTest extends ControllerTestCase
 		$browser = Browser::instance();
 		new ContextPreparator();
 		$browser->get('sites/index');
-		$this->assertTrue($browser->idExists('totd') || true); // Page loaded successfully
+		$this->assertTrue($browser->titleContains('Tsumego Hero'), 'The index page rendered');
+		$browser->assertNoJsErrors();
 	}
 
 	public function testNewsColumnsRevealMoreArticlesUntilAllAreVisible()
@@ -374,9 +377,10 @@ class SitesControllerTest extends ControllerTestCase
 		$browser->get('sites/index');
 
 		$pageSource = $browser->driver->getPageSource();
-		$aliceId = $context->otherUsers[0]['id'];
+		$this->assertStringContainsString('DN_Alice', $pageSource,
+			'User of the day name should appear on the page');
 		$this->assertStringContainsString(
-			'<a href="/users/view/' . $aliceId . '">Alice</a>',
+			'href="/users/view/' . $context->otherUsers[0]['id'] . '"',
 			$pageSource,
 			'User of the day should link to their profile'
 		);
@@ -425,22 +429,28 @@ class SitesControllerTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$browser->get('sites/index');
 
-		$rows = $browser->driver->findElements(WebDriverBy::cssSelector('.recent-achievement-row'));
+		$rows = $browser->getElements('.recent-achievement-row');
 		$this->assertCount(7, $rows, 'Should show at most 7 achievements');
 
 		// Most recent first: Bob's 10000 Problems (Jan 10)
 		$this->assertStringContainsString('10000 Problems', $rows[0]->getText());
-		$this->assertStringContainsString('Bob', $rows[0]->getText());
+		$this->assertStringContainsString('DN_Bob', $rows[0]->getText());
 		$link = $rows[0]->findElement(WebDriverBy::cssSelector('.recent-achievement-achievement-link'));
 		$this->assertStringContainsString('/achievements/view/10', $link->getAttribute('href'));
 
+		// The row shows the board the site draws for the account, which keeps the square
+		// corners of a board instead of the circle of a picture
+		$avatar = $rows[0]->findElement(WebDriverBy::cssSelector('.recent-achievement-user-link img.user-avatar'));
+		$this->assertStringContainsString('/board/', $avatar->getAttribute('src'));
+		$this->assertStringContainsString('user-avatar--board', $avatar->getAttribute('class'));
+
 		// Second: Alice's 9000 Problems (Jan 9)
 		$this->assertStringContainsString('9000 Problems', $rows[1]->getText());
-		$this->assertStringContainsString('Alice', $rows[1]->getText());
+		$this->assertStringContainsString('DN_Alice', $rows[1]->getText());
 
 		// Third: Charlie's 8000 Problems (Jan 8)
 		$this->assertStringContainsString('8000 Problems', $rows[2]->getText());
-		$this->assertStringContainsString('Charlie', $rows[2]->getText());
+		$this->assertStringContainsString('DN_Charlie', $rows[2]->getText());
 
 		// Verify reverse chronological order
 		$allText = implode("\n", array_map(fn($r) => $r->getText(), $rows));
@@ -451,9 +461,47 @@ class SitesControllerTest extends ControllerTestCase
 		$this->assertStringNotContainsString('1000 Problems', $allText);
 
 		// All three users appear in the visible rows
-		$this->assertStringContainsString('Alice', $allText);
-		$this->assertStringContainsString('Bob', $allText);
-		$this->assertStringContainsString('Charlie', $allText);
+		$this->assertStringContainsString('DN_Alice', $allText);
+		$this->assertStringContainsString('DN_Bob', $allText);
+		$this->assertStringContainsString('DN_Charlie', $allText);
+	}
+
+	/**
+	 * A picture of another host can stop working, which the browser draws as a broken image.
+	 * The board of the account takes over, so the row keeps its square avatar.
+	 *
+	 * The picture is broken by the test instead of by the fixture: a page that loads with a
+	 * failing image records it as an error, and every navigation asserts that there are none.
+	 */
+	public function testAnAvatarWhosePictureIsGoneShowsTheBoardOfTheAccount(): void
+	{
+		$context = new ContextPreparator([
+			'other-users' => [[
+				'name' => 'Alice',
+				'external_id' => '123456789012345678901',
+				'picture' => '/img/ac036.png',
+				'pref_avatar' => User::AVATAR_GOOGLE,
+				'achievement-statuses' => [['id' => 1, 'created' => '2026-01-01 12:00:00']],
+			]],
+		]);
+		$userId = $context->otherUsers[0]['id'];
+		$browser = Browser::instance();
+		$browser->get('sites/index');
+
+		$avatar = '.recent-achievement-user-link img.user-avatar';
+		$before = $browser->driver->executeScript("const img = document.querySelector('{$avatar}'); return img.getAttribute('src') + ' | ' + img.className;");
+		$this->assertStringContainsString('/img/ac036.png', $before, 'The row shows the picture the player picked');
+		$this->assertStringNotContainsString('user-avatar--board', $before);
+
+		$browser->driver->executeScript("document.querySelector('{$avatar}').src = '/img/no-such-picture.png';");
+		$browser->waitUntilJs("document.querySelector('{$avatar}').src.endsWith('/avatar/{$userId}')");
+
+		$after = $browser->driver->executeScript("return document.querySelector('{$avatar}').className;");
+		$this->assertStringContainsString('user-avatar--board', $after);
+
+		// The page records the broken picture the test asked for as an error, so the record
+		// is dropped: a later check on this page would otherwise assert on it.
+		$browser->driver->executeScript('window.__jsErrors = [];');
 	}
 
 	/**

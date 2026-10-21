@@ -5,6 +5,7 @@ use App\Utility\CookieFlash;
 
 /**
  * @var View $this
+ * @var string $lightDark
  * @var bool $sent
  */
 
@@ -16,14 +17,17 @@ use App\Utility\CookieFlash;
 <div id="login-box" class="users form">
 	<div class="left signin">
 		<?php echo CookieFlash::render(); ?>
-		 <h1>Please enter your E-Mail</h1>
+		<h1>Reset password</h1>
 		<?php echo $this->Form->create('User', array('action' => 'resetpassword')); ?>
-		<label for="UserEmail"></label>
 		<div class="input text required">
-			<label for="UserEmail"></label>
-			<input name="data[User][email]" maxlength="50" placeholder="E-Mail" type="text" id="UserEmail" required="required"/>
+			<label for="UserEmail">E-Mail</label>
+			<input name="data[User][email]" maxlength="50" type="text" id="UserEmail" autocomplete="email" required="required"/>
 		</div>
-		<?php echo $this->Form->end('Submit'); ?>
+		<button type="submit" class="btn">Send reset link</button>
+		<?php echo $this->Form->end(); ?>
+		<p class="hint">Remembered it? <a href="/users/login">Sign in</a></p>
+		<p class="hint">Signed up with Google? Sign in there instead:</p>
+		<?php echo $this->element('google_signin'); ?>
 	</div>
 	<div class="right">
 	</div>
@@ -33,8 +37,9 @@ use App\Utility\CookieFlash;
 <div id="login-box" class="users form">
 	<div class="left signin">
 		<?php echo CookieFlash::render(); ?>
-		 <h3>Please check your mailbox.</h3>
-		
+		<h1>Reset password</h1>
+		<p class="hint">Please check your mailbox.</p>
+		<p class="hint">Remembered it? <a href="/users/login">Sign in</a></p>
 	</div>
 	<div class="right">
 	</div>

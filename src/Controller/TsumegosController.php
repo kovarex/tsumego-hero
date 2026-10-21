@@ -11,7 +11,6 @@ use App\Utility\Rating;
 use App\Utility\RatingParseException;
 use App\Utility\SimilarSearchLogic;
 use App\Utility\TsumegoButton;
-use App\Utility\TsumegoFilters;
 use App\Utility\TsumegoMerger;
 use App\Utility\TsumegoUtil;
 use App\Utility\Util;
@@ -25,8 +24,7 @@ class TsumegosController extends AppController
 	{
 		$this->response->type('application/json');
 
-		if (!Auth::isLoggedIn())
-			throw new ForbiddenException('Login required');
+		$this->Authorization->authorize('User', 'reportResult');
 
 		$data = json_decode($this->request->input(), true) ?: $this->request->data;
 		if (!$data || empty($data['tsumego_id']))
@@ -40,7 +38,8 @@ class TsumegosController extends AppController
 			tsumegoID: (int) $data['tsumego_id'],
 			outcome: $outcome,
 			seconds: (float) ($data['seconds'] ?? 0),
-			setConnectionID: isset($data['set_connection_id']) ? (int) $data['set_connection_id'] : null
+			setConnectionID: isset($data['set_connection_id']) ? (int) $data['set_connection_id'] : null,
+			pageMode: isset($data['mode']) ? (int) $data['mode'] : null
 		);
 
 		// Keep the response as pure data; the client renders the popup from the
@@ -63,12 +62,6 @@ class TsumegosController extends AppController
 		throw new NotFoundException("Problem doesn't exist in the specified set");
 	}
 
-	public static function tsumegoOrSetLink(TsumegoFilters $tsumegoFilters, ?int $setConnectionID, string $setID): string
-	{
-		if ($setConnectionID)
-			return '/' . $setConnectionID;
-		return '/sets/view/' . $setID; // edge of the set (last or first), so we return to the set
-	}
 
 	public function play(?string $id = null, ?string $setConnectionID = null)
 	{
@@ -83,6 +76,7 @@ class TsumegosController extends AppController
 				if ($sc)
 					$this->PlayResultProcessor->markAsVisited((int) $sc['SetConnection']['tsumego_id']);
 			}
+			$this->set('canonicalPath', '/' . (int) $setConnectionID);
 			return new Play(function ($name, $value) { $this->set($name, $value); })->play((int) $setConnectionID, $this->request, $this->request->data);
 		}
 
@@ -100,6 +94,8 @@ class TsumegosController extends AppController
 		if (!$setConnections)
 			throw new NotFoundException("Problem not found in any set");
 		$setConnection = $this->deduceRelevantSetConnection($setConnections);
+
+		$this->set('canonicalPath', '/' . $setConnections[0]['SetConnection']['id']);
 		return new Play(function ($name, $value) {
 			$this->set($name, $value);
 		})->play($setConnection['SetConnection']['id'], $this->request, $this->request->data);
@@ -291,7 +287,7 @@ class TsumegosController extends AppController
 				'type' => 'INNER',
 				'conditions' => ['S.id = SetConnection.set_id'],
 			]],
-			'conditions' => ['SetConnection.tsumego_id' => $masterSetConnection['tsumego_id'], 'S.public' => 1],
+			'conditions' => ['SetConnection.tsumego_id' => $masterSetConnection['tsumego_id'], Set::officialCondition('S')],
 		]);
 		$slaveSetConnectionBrothers = ClassRegistry::init('SetConnection')->find('all', [
 			'joins' => [[
@@ -300,7 +296,7 @@ class TsumegosController extends AppController
 				'type' => 'INNER',
 				'conditions' => ['S.id = SetConnection.set_id'],
 			]],
-			'conditions' => ['SetConnection.tsumego_id' => $slaveSetConnection['tsumego_id'], 'S.public' => 1],
+			'conditions' => ['SetConnection.tsumego_id' => $slaveSetConnection['tsumego_id'], Set::officialCondition('S')],
 		]);
 		$masterTsumego = ClassRegistry::init('Tsumego')->findById($masterSetConnection['tsumego_id']);
 		$slaveTsumego = ClassRegistry::init('Tsumego')->findById($slaveSetConnection['tsumego_id']);

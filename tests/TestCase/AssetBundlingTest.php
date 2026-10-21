@@ -53,10 +53,7 @@ class AssetBundlingTest extends CakeTestCase
 		$this->assertStringNotContainsString('"/js/dark.js', $html, 'Individual dark.js should NOT be loaded');
 
 		// Wait for JS bundles to load and execute
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			return $driver->executeScript('return typeof setCookie === "function" && typeof darkAndLight === "function";');
-		});
+		$browser->waitUntilJs('typeof setCookie === "function" && typeof darkAndLight === "function"');
 
 		// Verify JavaScript functions from bundled files are available
 		$hasUtil = $browser->driver->executeScript('return typeof setCookie === "function";');
@@ -84,10 +81,7 @@ class AssetBundlingTest extends CakeTestCase
 		$this->assertStringNotContainsString('"/FileSaver.min.js', $html, 'Individual FileSaver.min.js should NOT be loaded');
 
 		// Wait for JS bundles to load and execute
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			return $driver->executeScript('return typeof displayMultipleChoiceResult === "function" && typeof createPreviewBoard === "function";');
-		});
+		$browser->waitUntilJs('typeof displayMultipleChoiceResult === "function" && typeof createPreviewBoard === "function"');
 
 		$hasMcFunctions = $browser->driver->executeScript('return typeof displayMultipleChoiceResult === "function";');
 		$this->assertTrue($hasMcFunctions, 'displayMultipleChoiceResult function from multipleChoice.js should be available in bundle');

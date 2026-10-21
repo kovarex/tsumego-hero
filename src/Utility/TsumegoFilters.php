@@ -4,6 +4,7 @@ namespace App\Utility;
 
 use ClassRegistry;
 use Exception;
+use Set;
 
 class TsumegoFilters
 {
@@ -26,7 +27,7 @@ class TsumegoFilters
 
 		foreach ($rawSets as $set)
 		{
-			$found = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $set, 'public' => 1]]);
+			$found = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $set, Set::officialCondition('Set')]]);
 			if ($found)
 			{
 				$this->sets[] = $set;
@@ -34,9 +35,24 @@ class TsumegoFilters
 			}
 		}
 
-		$this->ranks = self::processItem('filtered_ranks', [], function ($input) {
-			return array_values(array_filter(explode('@', $input), fn($rank) => Rating::isValidReadableRank($rank)));
+		$rawRanks = self::processItem('filtered_ranks', [], function ($input) {
+			return array_values(array_filter(explode('@', $input)));
 		});
+		foreach ($rawRanks as $spec)
+		{
+			$range = Rating::parseReadableRankRange($spec);
+			if ($range !== null)
+			{
+				$this->rankSpecs[] = $range[0] . '-' . $range[1];
+				foreach (Rating::ranksBetween($range[0], $range[1]) as $rank)
+					$this->ranks[] = $rank;
+			}
+			elseif (Rating::isValidReadableRank($spec))
+			{
+				$this->rankSpecs[] = $spec;
+				$this->ranks[] = $spec;
+			}
+		}
 		$rawTags = self::processItem('filtered_tags', [], function ($input) {
 			return array_values(array_filter(explode('@', $input)));
 		});
@@ -126,17 +142,50 @@ class TsumegoFilters
 
 	public function filterRanks(Query $query): void
 	{
-		if (empty($this->ranks))
+		if (empty($this->rankSpecs))
 			return;
 
 		$rankConditions = '';
-		foreach ($this->ranks as $rankFilter)
+		foreach ($this->rankSpecs as $rankFilter)
 		{
 			$rankCondition = '';
-			RatingBounds::coverRank($rankFilter, '15k')->addSqlConditions($rankCondition);
+			RatingBounds::coverRankSpec($rankFilter, Rating::weakestRank())->addSqlConditions($rankCondition);
 			Util::addSqlOrCondition($rankConditions, $rankCondition);
 		}
 		$query->conditions[] = $rankConditions;
+	}
+
+	/**
+	 * The ranks the From/To selects should show: the picked range, or the one
+	 * picked rank when it fits both ends. A filter of several separate ranks
+	 * cannot be shown in the two selects, so it reports ['', ''].
+	 *
+	 * @return array{0: string, 1: string}
+	 */
+	public function rankRange(): array
+	{
+		$singleRanks = [];
+		foreach ($this->rankSpecs as $spec)
+		{
+			$range = Rating::parseReadableRankRange($spec);
+			if ($range !== null)
+				return $range;
+			$singleRanks[] = $spec;
+		}
+		if (count($singleRanks) === 1)
+			return [$singleRanks[0], $singleRanks[0]];
+		return ['', ''];
+	}
+
+	/**
+	 * The rank filter labels as the user picked them: single ranks stay single,
+	 * a range stays one label such as "20k-16k".
+	 *
+	 * @return string[]
+	 */
+	public function rankFilterLabels(): array
+	{
+		return $this->rankSpecs;
 	}
 
 	public function filterTags(Query $query): void
@@ -165,7 +214,7 @@ class TsumegoFilters
 	 */
 	private function publicMembershipCondition(): string
 	{
-		$setCondition = '`set`.public = 1';
+		$setCondition = Set::officialCondition();
 		if (!empty($this->setIDs))
 			$setCondition .= ' AND `set`.id IN (' . implode(',', $this->setIDs) . ')';
 		return 'EXISTS (SELECT 1 FROM set_connection sc JOIN `set` ON `set`.id = sc.set_id AND ' . $setCondition . ' WHERE sc.tsumego_id = tsumego.id)';
@@ -190,7 +239,7 @@ class TsumegoFilters
 			if (empty($this->ranks))
 			{
 				$ranks = Rating::ranks();
-				$query->conditions[] = 'tsumego.rating < ' . RatingBounds::coverRank(end($ranks), '15k')->max;
+				$query->conditions[] = 'tsumego.rating < ' . RatingBounds::coverRank(end($ranks), Rating::weakestRank())->max;
 			}
 			else
 				$this->filterRanks($query);
@@ -207,6 +256,7 @@ class TsumegoFilters
 	public array $sets = [];
 	public array $setIDs = [];
 	public array $ranks = [];
+	public array $rankSpecs = [];
 	public array $tags = [];
 	public array $tagIDs = [];
 	public array $tagColors = [];

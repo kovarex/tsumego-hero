@@ -25,7 +25,12 @@ class TestEmailer
 
 	public function send($body)
 	{
+		// A mailbox that is not reachable, the way mail() reports it
+		if (self::$unreachable)
+			throw new SocketException('Could not send email: unknown');
+
 		self::$lastEmail['body'] = $body;
 	}
 	public static $lastEmail = null;
+	public static bool $unreachable = false;
 };

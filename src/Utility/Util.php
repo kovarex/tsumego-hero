@@ -66,13 +66,17 @@ class Util
 		return isset($_COOKIE[$name]) ? $_COOKIE[$name] : $default;
 	}
 
+	/**
+	 * A random string of letters and digits. It is used for tokens that end up in a
+	 * link, so it comes from the cryptographic source and not from rand().
+	 */
 	public static function generateRandomString(int $length = 20): string
 	{
 		$characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 		$charactersLength = strlen($characters);
 		$randomString = '';
 		for ($i = 0; $i < $length; $i++)
-			$randomString .= $characters[rand(0, $charactersLength - 1)];
+			$randomString .= $characters[random_int(0, $charactersLength - 1)];
 		return $randomString;
 	}
 
@@ -157,11 +161,31 @@ class Util
 		return false;
 	}
 
+	/**
+	 * Whether this copy of the site is not the one players use, which is what allows a
+	 * test to put a fake in place of a service. It is true for the whole development
+	 * container (both its dev and its test hostname) and for the runner on GitHub.
+	 */
 	public static function isInTestEnvironment(): bool
 	{
 		if (@$_SERVER['DDEV_PRIMARY_URL'] && str_contains($_SERVER['DDEV_PRIMARY_URL'], "tsumego.ddev.site"))
 			return true;
 		return Util::isInGithubCI();
+	}
+
+	/**
+	 * Whether the request is made by the test suite: the test hostname of the same
+	 * container, the runner on GitHub, or the PHPUnit process that dispatches the
+	 * controller tests. The dev site shares its container with the test site, so
+	 * isInTestEnvironment() is true there too and says nothing about this.
+	 */
+	public static function isOnTestSite(): bool
+	{
+		if (Util::isInGithubCI())
+			return true;
+		if (str_contains((string) ($_SERVER['HTTP_HOST'] ?? ''), 'test.tsumego'))
+			return true;
+		return PHP_SAPI === 'cli' && !empty($_SERVER['argv']) && str_contains((string) $_SERVER['argv'][0], 'phpunit');
 	}
 
 	public static function getMyAddress(): string
@@ -222,6 +246,15 @@ class Util
 		$stmt = ClassRegistry::init('Tsumego')->getDataSource()->getConnection()->prepare($sql);
 		$stmt->execute($params);
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
+	}
+
+	/**
+	 * The connection of the default database.
+	 */
+	public static function connection(): PDO
+	{
+		/** @phpstan-ignore-next-line */
+		return ClassRegistry::init('Tsumego')->getDataSource()->getConnection();
 	}
 
 	/**

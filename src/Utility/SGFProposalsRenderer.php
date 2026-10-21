@@ -19,10 +19,12 @@ SELECT
     p.id AS proposed_id,
     p.user_id AS user_id,
     p.user_id AS proposed_user_id,
-    user.name AS user_name,
+    user.display_name AS user_display_name,
     user.external_id AS user_external_id,
     user.picture AS user_picture,
+    user.pref_avatar AS user_pref_avatar,
     user.rating AS user_rating,
+    user.email AS user_email,
     sc.id AS set_connection_id,
     sc.num AS num,
     tsumego_status.status AS status,
@@ -67,6 +69,13 @@ OFFSET " . $this->offset, [Auth::getUserID()]);
 		echo '<td>';
 		new TsumegoButton($item['tsumego_id'], $item['set_connection_id'], $item['num'], $item['status'] ?: 'N', 0, $item['sgf'])->render();
 		echo '</td>';
-		echo '<td style="white-space:nowrap"><button class="btn btn--small" onclick="window.location=\'/users/acceptSGFProposal/' . $item['proposed_id'] . '\'" id="accept-' . $item['proposed_id'] . '">Accept</button> <button class="btn btn--small" onclick="window.location=\'/users/rejectSGFProposal/' . $item['proposed_id'] . '\'" id="reject-' . $item['proposed_id'] . '">Reject</button></td>';
+		echo '<td style="white-space:nowrap">';
+		echo '<form method="post" style="display:inline" action="/users/acceptSGFProposal/' . $item['proposed_id'] . '">';
+		echo '<button type="submit" class="btn btn--small" id="accept-' . $item['proposed_id'] . '">Accept</button>';
+		echo '</form>';
+		echo '<form method="post" style="display:inline" action="/users/rejectSGFProposal/' . $item['proposed_id'] . '">';
+		echo '<button type="submit" class="btn btn--small" id="reject-' . $item['proposed_id'] . '">Reject</button>';
+		echo '</form>';
+		echo '</td>';
 	}
 }

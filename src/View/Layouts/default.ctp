@@ -20,11 +20,14 @@ use App\Utility\ViteManifest;
  * @var string $lastProfileRight
  * @var string $nextDay
  * @var string $boardsBitmask
+ * @var string|null $canonicalPath Path a page with more than one address wants to be known by
+ * @var bool $robotsNoIndex The page is reachable but must stay out of search results
+ * @var array|null $og
  */
 
 ?>
 <!DOCTYPE html>
-<html lang="en" data-theme="<?php echo $lightDark === 'dark' ? 'dark' : 'light'; ?>">
+<html lang="en" data-theme="<?php echo $lightDark === 'dark' ? 'dark' : 'light'; ?>" data-date-format="<?php echo Auth::getDateFormat(); ?>">
 <?php
 if (Configure::read('debug')) { ?>
 <script>
@@ -104,20 +107,27 @@ echo $this->Html->charset();
 <meta name="apple-mobile-web-app-title" content="Tsumego">
 <link rel="apple-touch-icon" href="/pwa/icon-192.png">
 <?php
-// Open Graph meta tags. Controllers may set a richer $og array
-// (see src/View/Elements/open_graph_meta.ctp); otherwise a generic default is used.
-if (empty($og))
-{
-	$og = [
-		'title' => $_title ?? 'Tsumego',
-		'description' => 'Interactive tsumego database. Solve go problems, get stronger, level up, have fun.',
-		'image' => Router::url('/img/Tsumego-Hero-Logo.png', true),
-		'url' => Router::url(null, true),
-		'type' => 'website',
-		'site_name' => 'Tsumego',
-		'locale' => 'en_US',
-	];
-}
+$canonicalUrl = Router::url($canonicalPath ?? '/' . trim(strtok($this->request->here, '?'), '/'), true);
+?>
+<link rel="canonical" href="<?php echo h($canonicalUrl); ?>">
+<?php if (!empty($robotsNoIndex)): ?>
+<meta name="robots" content="noindex">
+<?php endif; ?>
+<?php
+// Controllers can describe the page themselves; what they set wins, everything
+// else comes from here.
+$og = ($og ?? []) + [
+	'title' => $_title ?? 'Tsumego',
+	'description' => 'Interactive tsumego database. Solve go problems, get stronger, level up, have fun.',
+	'image' => Router::url('/img/Tsumego-Hero-Logo.png', true),
+	'type' => 'website',
+	'site_name' => 'Tsumego',
+	'locale' => 'en_US',
+];
+
+// The address of the page is decided here and nowhere else, so the canonical
+// link and what gets shared can never point at two different addresses.
+$og['url'] = $canonicalUrl;
 $this->element('open_graph_meta', ['og' => $og]);
 echo $this->fetch('og_meta');
 ?>
@@ -157,15 +167,16 @@ echo ViteManifest::legacyScript('legacy');
 		<div class="site-nav">
 			<?php
 			// Account access at the top of the drawer (logged-in). The username
-			// links to the profile; only Sign Out is listed as a separate action.
+			// links to the profile; Settings and Sign Out are listed as separate actions.
 			if (Auth::isLoggedIn()):
 			?>
 			<div class="site-nav__account">
 				<div class="site-nav__account-user">
-					<a href="/users/view/<?php echo Auth::getUserID(); ?>"><?php echo h(Auth::getUser()['name']); ?></a>
+					<a href="/users/view/<?php echo Auth::getUserID(); ?>"><?php echo h(Auth::getUser()['display_name']); ?></a>
 				</div>
 				<nav class="site-nav__account-links">
 					<ul>
+						<li><a href="/users/settings">Settings</a></li>
 						<li><a href="/users/logout">Sign Out</a></li>
 					</ul>
 				</nav>
@@ -280,7 +291,7 @@ echo ViteManifest::legacyScript('legacy');
 						if(Auth::isLoggedIn()){
 							echo '<ul class="newMenuLi2">';
 							echo '<li><a href="/sets/mine">My Sets</a></li>';
-							echo '<li><a class="'.$refreshLinkToFavs.'" href="/sets/view/favorites">Favorites</a></li>';
+							echo '<li><a class="'.$refreshLinkToFavs.'" href="'.Set::url('favorites').'">Favorites</a></li>';
 							if(Auth::hasPremium() || Auth::isAdmin())
 								echo '<li><a '.$refreshLinkToSandbox.' class="'.$sandboxA.'" href="/sets/sandbox">Sandbox</a></li>';
 							if(Auth::isAdmin()){
@@ -320,14 +331,9 @@ echo ViteManifest::legacyScript('legacy');
 						else
 							echo '<li class="discuss-disabled"><a style="color:var(--surface-muted-text);">Discuss</a></li>';
 						if(Auth::isLoggedIn())
-							if(Auth::getUser()['sound'] == 'off')
-								$soundButtonImageValue = 'sound-icon2.png';
-							else if(Auth::getUser()['sound'] == 'on')
-								$soundButtonImageValue = 'sound-icon1.png';
+							$soundButtonImageValue = User::soundIsOn(Auth::getUser()) ? 'sound-icon1.png' : 'sound-icon2.png';
 						else
-								$soundButtonImageValue = 'sound-icon1.png';
-						else
-								$soundButtonImageValue = 'sound-icon1.png';
+							$soundButtonImageValue = 'sound-icon1.png';
 
 						echo '<li class="menuIcons1">
 						<a href="#" id="soundButton" onclick="changeSound(); return false;"><img id="soundButtonImage" src="/img/'.$soundButtonImageValue.'" width="25px"></a>
@@ -344,7 +350,7 @@ echo ViteManifest::legacyScript('legacy');
 									<table id="dropdowntable" border="0"></table>
 									<br>
 									<div id="dropdowntable2" align="center">
-										<a class="btn btn--primary" href="<?php echo h($_SERVER['REQUEST_URI']); ?>">Save</a>
+											<a class="btn btn--primary" href="<?php echo h($_SERVER['REQUEST_URI']); ?>">Save</a>
 										<br><br>
 									</div>
 									</div>
@@ -440,7 +446,7 @@ echo ViteManifest::legacyScript('legacy');
 
 	<?php if(Auth::isLoggedIn()){ ?>
 	var soundValue = 0;
-	<?php echo 'soundValue = "'.Auth::getUser()['sound'].'";';
+	<?php echo 'soundValue = "'.(User::soundIsOn(Auth::getUser()) ? 'on' : 'off').'";';
 	}else{
 	?>
 	soundValue = getCookie("sound");
@@ -574,38 +580,25 @@ echo ViteManifest::legacyScript('legacy');
 		e.stopPropagation();
 	});
 
+	function setSoundCookie(value)
+	{
+		// One cookie for the whole site, written for path /. Copies written earlier for single
+		// page paths would still outrank it, so those are expired here.
+		document.cookie = "sound=" + value + ";path=/";
+		["/users", "/users/view", "/sets/view", "/tsumegos/play"].forEach(function (page)
+		{
+			document.cookie = "sound=;path=" + page + ";max-age=0";
+		});
+	}
+
 	function changeSound()
 	{
-		if(getCookie("sound")=="off")
-		{
-			document.getElementById("soundButtonImage").src="/img/sound-icon1.png";
-			document.cookie = "sound=on;path=/";
-			document.cookie = "sound=on;path=/sets/view";
-			document.cookie = "sound=on;path=/tsumegos/play";
-			document.cookie = "sound=on;path=/users";
-			document.cookie = "sound=on;path=/users/view";
-			updateSoundValue(true);
-		}
-		else if(getCookie("sound")=="on")
-		{
-			document.getElementById("soundButtonImage").src="/img/sound-icon2.png";
-			document.cookie = "sound=off;path=/";
-			document.cookie = "sound=off;path=/sets/view";
-			document.cookie = "sound=off;path=/tsumegos/play";
-			document.cookie = "sound=off;path=/users";
-			document.cookie = "sound=off;path=/users/view";
-			updateSoundValue(false);
-		}
-		else
-		{
-			document.getElementById("soundButtonImage").src="/img/sound-icon2.png";
-			document.cookie = "sound=off;path=/";
-			document.cookie = "sound=off;path=/sets/view";
-			document.cookie = "sound=off;path=/tsumegos/play";
-			document.cookie = "sound=off;path=/users";
-			document.cookie = "sound=off;path=/users/view";
-			updateSoundValue(false);
-		}
+		// A visitor who has not picked anything hears sound: only an explicit "off" is
+		// silent.
+		var soundIsOn = getCookie("sound") != "off";
+		document.getElementById("soundButtonImage").src = soundIsOn ? "/img/sound-icon2.png" : "/img/sound-icon1.png";
+		setSoundCookie(soundIsOn ? "off" : "on");
+		updateSoundValue(!soundIsOn);
 	}
 
 	function getCookie(cname){
@@ -662,25 +655,6 @@ echo ViteManifest::legacyScript('legacy');
 	}
 
 	boardSelector = new BoardSelector(<?php echo $boardsBitmask . 'n';?>);
-
-	// Localize <time datetime="..."> elements.
-	//
-	// Convention:
-	// - Timestamps (full ISO 8601, e.g. 2026-08-15T12:00:00+00:00) are instants:
-	//   render them in the user's local timezone, where the day may cross over.
-	// - Calendar dates (date-only YYYY-MM-DD) are timezone-free: anchor them at
-	//   UTC so the day never changes across timezones.
-	document.querySelectorAll('time[datetime]').forEach(function(el) {
-		var raw = el.getAttribute('datetime');
-		var dateOnly = raw.indexOf('T') === -1;
-		var d = new Date(dateOnly ? raw + 'T00:00:00Z' : raw);
-		if (isNaN(d)) return;
-		var fmt = el.getAttribute('data-format') || 'datetime';
-		if (fmt === 'date') el.textContent = d.toLocaleDateString(undefined, dateOnly ? { timeZone: 'UTC' } : undefined);
-		else if (fmt === 'month-day') el.textContent = d.toLocaleDateString(undefined, dateOnly ? { timeZone: 'UTC', month: 'short', day: 'numeric' } : { month: 'short', day: 'numeric' });
-		else if (fmt === 'time') el.textContent = d.toLocaleTimeString([], { timeStyle: 'short' });
-		else el.textContent = d.toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
-	});
 </script>
 
 <?php

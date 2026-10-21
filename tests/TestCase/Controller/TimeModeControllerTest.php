@@ -26,6 +26,15 @@ class TimeModeControllerTest extends ControllerTestCase
 		$this->testAction('/timeMode/start?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED);
 	}
 
+	public function testStartTimeModeRequiresLogin()
+	{
+		$context = new ContextPreparator(['user' => null, 'time-mode-ranks' => ['5k']]);
+
+		$this->expectException(UnauthorizedException::class);
+
+		$this->testAction('/timeMode/start?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED . '&rankID=' . $context->timeModeRanks[0]['id']);
+	}
+
 	public function testTimeModePlayWithoutBeingLoggedInRedirectsToLogin()
 	{
 		foreach (['/timeMode/play', '/timeMode/overview', '/timeMode/result'] as $page)
@@ -576,5 +585,65 @@ class TimeModeControllerTest extends ControllerTestCase
 		$html = $this->testAction('/timeMode/play/2', ['return' => 'contents']);
 
 		$this->assertStringContainsString('Finishing your session', $html);
+	}
+
+	public function testTimeModeResultListsAllTheRunsOfTheRank()
+	{
+		$solved = ['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED];
+		$failedRun = [
+			['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED],
+			['order' => 2, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED, 'tsumego_id' => 'other:1'],
+			['order' => 3, 'status' => TimeModeUtil::$ATTEMPT_RESULT_FAILED, 'tsumego_id' => 'other:2']];
+		$context = new ContextPreparator([
+			'tsumego' => 1,
+			'tsumegos' => [2, 3],
+			'time-mode-ranks' => ['5k'],
+			'time-mode-sessions' => [
+				['category' => TimeModeUtil::$CATEGORY_BLITZ, 'rank' => '5k', 'status' => TimeModeUtil::$SESSION_STATUS_SOLVED, 'attempts' => [$solved]],
+				['category' => TimeModeUtil::$CATEGORY_BLITZ, 'rank' => '5k', 'status' => TimeModeUtil::$SESSION_STATUS_FAILED, 'attempts' => $failedRun],
+				['category' => TimeModeUtil::$CATEGORY_BLITZ, 'rank' => '5k', 'status' => TimeModeUtil::$SESSION_STATUS_SOLVED, 'attempts' => [$solved]],
+				// still being played, so it is not a finished run yet
+				['category' => TimeModeUtil::$CATEGORY_BLITZ, 'rank' => '5k', 'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+					'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]],
+				// the only run of its rank and category, so there is no history to show for it
+				['category' => TimeModeUtil::$CATEGORY_SLOW_SPEED, 'rank' => '5k', 'status' => TimeModeUtil::$SESSION_STATUS_SOLVED, 'attempts' => [$solved]]]]);
+
+		$html = $this->testAction('/timeMode/result', ['return' => 'contents']);
+
+		$this->assertSame(1, substr_count($html, 'History:'));
+		$this->assertStringContainsString('History: 3 runs', $html);
+		$this->assertStringContainsString('>2/3</td>', $html);
+		$this->assertSame(2, substr_count($html, '>1/1</td>'));
+		// the newest run first
+		$positions = array_map(
+			fn($index) => strpos($html, 'href="/timeMode/result/' . $context->timeModeSessions[$index]['id'] . '?history=1"'),
+			[2, 1, 0]);
+		$this->assertNotContains(false, $positions);
+		$sortedPositions = $positions;
+		sort($sortedPositions);
+		$this->assertSame($sortedPositions, $positions);
+		foreach ([3, 4] as $index)
+			$this->assertStringNotContainsString('href="/timeMode/result/' . $context->timeModeSessions[$index]['id'] . '?history=1"', $html);
+	}
+
+	public function testTimeModeRunOpenedFromTheHistoryDoesNotShowTheUnlockAgain()
+	{
+		foreach ([['query' => '', 'unlockShown' => true], ['query' => '?history=1', 'unlockShown' => false]] as $testCase)
+		{
+			$context = new ContextPreparator([
+				'tsumego' => 1,
+				'time-mode-ranks' => ['5k', '1d'],
+				'time-mode-sessions' => [[
+					'category' => TimeModeUtil::$CATEGORY_BLITZ,
+					'rank' => '5k',
+					'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
+					'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED]]]]]);
+
+			$html = $this->testAction(
+				'/timeMode/result/' . $context->timeModeSessions[0]['id'] . $testCase['query'],
+				['return' => 'contents']);
+
+			$this->assertSame($testCase['unlockShown'], str_contains($html, 'time-rank-unlock-alert'));
+		}
 	}
 }

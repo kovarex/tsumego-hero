@@ -24,12 +24,25 @@ class AuthorizationComponent extends Component
 {
 	public function authorize(string|array|object $resource, ?string $action = null): void
 	{
-		if (!$this->can($resource, $action))
-		{
-			if (Auth::getIdentity() === null)
-				throw new UnauthorizedException();
-			throw new ForbiddenException();
-		}
+		self::require($this->can($resource, $action));
+	}
+
+	/**
+	 * The one place that turns a refused answer into a response: a guest is told to
+	 * sign in, a signed-in user without a grant is told no. Pass the answer of a
+	 * policy method.
+	 *
+	 * Controllers reach this through authorize(); the direct callers are only
+	 * App\Controller\Component\Play, which renders the board instead of being a
+	 * controller and so cannot use the component API.
+	 */
+	public static function require(bool $granted): void
+	{
+		if ($granted)
+			return;
+		if (Auth::getIdentity() === null)
+			throw new UnauthorizedException();
+		throw new ForbiddenException();
 	}
 
 	public function can(string|array|object $resource, ?string $action = null): bool

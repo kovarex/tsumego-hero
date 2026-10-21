@@ -46,7 +46,7 @@ class AccountWidget
 				  <div id="account-bar">
 						<div id="account-bar-user" class="account-bar-user-class">
 							<a href="/users/view/' . Auth::getUserID() . '">
-							' . h(Auth::getUser()['name']) . '
+							' . h(Auth::getUser()['display_name']) . '
 							</a>
 						</div>
 						<div id="xp-bar">
@@ -74,6 +74,9 @@ class AccountWidget
 				</div>
 			<div id="heroAchievements" onmouseover="accountWidget.hover();" onmouseout="accountWidget.noHover();">
 				<li><a href="/achievements">Achievements</a></li>
+			</div>
+			<div id="heroSettings" onmouseover="accountWidget.hover();" onmouseout="accountWidget.noHover();">
+				<li><a href="/users/settings">Settings</a></li>
 			</div>
 			<div id="heroLogout" onmouseover="accountWidget.hover();" onmouseout="accountWidget.noHover();">
 				<li><a href="/users/logout">Sign Out</a></li>

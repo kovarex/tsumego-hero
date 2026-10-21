@@ -25,7 +25,6 @@ class SgfControllerUploadTest extends TestCaseWithAuth
 		$this->assertTrue($openLink->isDisplayed());
 		$this->assertSame($openLink->getText(), "Open");
 		$openLink->click();
-		$browser->waitUntilIDExists('sgfCommentButton');
 		$browser->clickId('sgfCommentButton');
 		$browser->clickId('commentEditField');
 		$browser->driver->getKeyboard()->sendKeys("Hello from test");
@@ -33,10 +32,7 @@ class SgfControllerUploadTest extends TestCaseWithAuth
 		$browser->clickId('saveSGFButton');
 
 		// Wait for redirect after saving SGF
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function () use ($browser) {
-			return strpos($browser->driver->getCurrentURL(), '/editor/') === false;
-		});
+		$browser->waitUntilJs('!location.href.includes("/editor/")');
 
 		// Upload new SGF via besogo (uses 'sgfForBesogo' field)
 		$newSgfContent = '(;FF[4]GM[1]SZ[19]ST[2]AB[dd]AW[dc]C[Hello from test];B[cd];W[cc]C[+])';

@@ -68,18 +68,6 @@ class AppController extends Controller
 			throw new NotFoundException('User not found');
 	}
 
-	protected function checkPictureLarge(array $u): string
-	{
-		return self::checkPicture($u['User']);
-	}
-	/**
-	 * @param UserRow $user
-	 */
-	public static function checkPicture(array $user): string
-	{
-		return User::displayName($user['id'] ?? null, $user['name'], $user['external_id']);
-	}
-
 	public static function saveDanSolveCondition(string $solvedTsumegoRank, int $tId): void
 	{
 		if ($solvedTsumegoRank == '1d' || $solvedTsumegoRank == '2d' || $solvedTsumegoRank == '3d' || $solvedTsumegoRank == '4d' || $solvedTsumegoRank == '5d')
@@ -370,6 +358,12 @@ class AppController extends Controller
 	public function beforeFilter(): void
 	{
 		$this->enforceHttpMethodAttribute();
+
+		// Boards are drawn without a session: a list of a thousand players would otherwise
+		// pay for the login of a visitor who is not there.
+		if (strtolower((string) ($this->request->params['controller'] ?? '')) === 'avatars')
+			return;
+
 		$this->loadModel('User');
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
@@ -388,12 +382,36 @@ class AppController extends Controller
 
 		$highscoreLink = 'highscore';
 		$lightDark = 'light';
-		$levelBar = 1;
+		$levelBar = User::LEVEL_BAR_LEVEL;
 		$lastProfileLeft = 1;
 		$lastProfileRight = 2;
 
 		if (Auth::isLoggedIn())
 		{
+			if (!empty(Auth::getUser()['needs_display_name_change']))
+			{
+				$controller = $this->request->params['controller'];
+				$action = $this->request->params['action'];
+				// The links that arrive by e-mail and the ways out of the account stay
+				// reachable: asking for a password reset or for deletion must not require
+				// picking a name first.
+				$allowedChangeActions = [
+					'users/changename',
+					'users/updatename',
+					'users/logout',
+					'users/login',
+					'users/newpassword',
+					'users/confirm_delete_account',
+					'users/delete_account',
+				];
+
+				if (!in_array(strtolower($controller . '/' . $action), $allowedChangeActions, true))
+				{
+					$this->redirect(['controller' => 'users', 'action' => 'changename']);
+					return;
+				}
+			}
+
 			if ($lastTimeModeCategoryID = Util::clearCookie('lastTimeModeCategoryID'))
 				Auth::saveUserField('last_time_mode_category_id', $lastTimeModeCategoryID);
 			if (Auth::getUser()['lastHighscore'] == Constants::$HIGHSCORE_LEVEL)
@@ -407,7 +425,8 @@ class AppController extends Controller
 
 			if (isset($_COOKIE['sound']) && $_COOKIE['sound'] != '0')
 			{
-				Auth::saveUserField('sound', $_COOKIE['sound']);
+				// The cookie says 'on' or 'off', the column holds 1 or 0
+				Auth::saveUserField('sound', $_COOKIE['sound'] === 'on' ? User::SOUND_ON : User::SOUND_OFF);
 				unset($_COOKIE['sound']);
 			}
 			$this->set('user', Auth::getUser());
@@ -417,32 +436,21 @@ class AppController extends Controller
 		{
 			$lightDark = $_COOKIE['lightDark'];
 			if (Auth::isLoggedIn())
-			{
-				// Convert string to integer for database storage
-				$lightDarkInt = ($lightDark === 'light') ? 0 : 2;
-				Auth::saveUserField('lastLight', $lightDarkInt);
-			}
+				Auth::saveUserField('lastLight', $lightDark === 'dark' ? User::THEME_DARK : User::THEME_LIGHT);
 		}
 		elseif (Auth::isLoggedIn())
-			if (Auth::getUser()['lastLight'] == 0
-			|| Auth::getUser()['lastLight'] == 1)
-				$lightDark = 'light';
-			else
-				$lightDark = 'dark';
+			$lightDark = (Auth::getUser()['lastLight'] == User::THEME_DARK) ? 'dark' : 'light';
 
 		if (Auth::isLoggedIn())
 		{
 			$this->handleSearchSettings(Auth::getUserID());
 			if (isset($_COOKIE['levelBar']) && $_COOKIE['levelBar'] != '0')
 			{
-				$levelBar = $_COOKIE['levelBar'];
+				$levelBar = ((int) $_COOKIE['levelBar']) === User::LEVEL_BAR_RATING ? User::LEVEL_BAR_RATING : User::LEVEL_BAR_LEVEL;
 				Auth::saveUserField('levelBar', $levelBar);
 			}
-			elseif (Auth::getUser()['levelBar'] == 0
-		  || Auth::getUser()['levelBar'] == 'level')
-		  	$levelBar = 1;
 			else
-				$levelBar = 2;
+				$levelBar = ((int) Auth::getUser()['levelBar']) === User::LEVEL_BAR_RATING ? User::LEVEL_BAR_RATING : User::LEVEL_BAR_LEVEL;
 
 			if (isset($_COOKIE['lastProfileLeft']) && $_COOKIE['lastProfileLeft'] != '0')
 			{
@@ -489,12 +497,7 @@ class AppController extends Controller
 
 		$nextDay = new DateTime('tomorrow');
 		if (Auth::isLoggedIn())
-		{
-			$user = Auth::getUser();
-			$displayUser = $user;
-			$displayUser['name'] = $this->checkPicture($user);
-			$this->set('user', $displayUser);
-		}
+			$this->set('user', Auth::getUser());
 		$this->set('nextDay', $nextDay->format('m/d/Y'));
 		$this->set('highscoreLink', $highscoreLink);
 		$this->set('lightDark', $lightDark);

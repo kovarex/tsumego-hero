@@ -1,6 +1,8 @@
 <?php
 
+use App\Utility\Auth;
 use App\Utility\Constants;
+use App\Utility\MistakeTraining;
 use App\Utility\TsumegoButtons;
 use App\Utility\TsumegoFilters;
 use App\Utility\Util;
@@ -47,9 +49,10 @@ class SitesController extends AppController
 		{
 			$currentQuote = $dayRecord['DayRecord']['quote'];
 			$userOfTheDay = $this->User->find('first', ['conditions' => ['id' => $dayRecord['DayRecord']['user_id']]]);
-			$this->set('userOfTheDay', $this->checkPictureLarge($userOfTheDay));
-			$this->set('userOfTheDayId', $userOfTheDay['User']['id']);
+			$this->set('userOfTheDay', $userOfTheDay ? $userOfTheDay['User'] : null);
 		}
+		else
+			$this->set('userOfTheDay', null);
 
 		$this->set('tsumegoButtonsOfPublishedTsumegos', $tsumegoButtonsOfPublishedTsumegos);
 		$chartData = Cache::read('homepage_chart', 'long');
@@ -62,8 +65,18 @@ class SitesController extends AppController
 		$this->set('latestPublishDate', $latestPublishDate);
 		$this->set('quote', $currentQuote);
 
+		$this->loadModel('AchievementStatus');
 		$recentAchievements = $this->AchievementStatus->getRecent();
 		$this->set('recentAchievements', $recentAchievements);
+
+		// The way into the mistake training: what is due today. The offer to bring past
+		// mistakes in is on the card always, without a count: counting them reads the
+		// whole attempt history, far too much for a page this hot.
+		if (Auth::isLoggedIn())
+		{
+			$userId = (int) Auth::getUserID();
+			$this->set('mistakeTrainingDue', MistakeTraining::dueCount($userId));
+		}
 	}
 
 	private function buildChartData(): array

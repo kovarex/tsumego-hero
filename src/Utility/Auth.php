@@ -29,7 +29,7 @@ class Auth
 		{
 			Auth::$user = $user['User'];
 			// Set JWT cookie for stateless auth
-			JwtAuth::setAuthCookie(Auth::getUserID());
+			JwtAuth::setAuthCookie(Auth::getUserID(), $user['User']['password_hash'] ?? null);
 			return;
 		}
 
@@ -38,7 +38,7 @@ class Auth
 		if ($userIdFromJwt)
 		{
 			$userData = ClassRegistry::init('User')->findById($userIdFromJwt);
-			if ($userData && empty($userData['User']['deleted']))
+			if ($userData && empty($userData['User']['deleted']) && self::tokenFitsTheAccount($userData['User']))
 			{
 				Auth::$user = $userData['User'];
 				return;
@@ -49,6 +49,19 @@ class Auth
 
 		// Not logged in
 		Auth::$user = null;
+	}
+
+	/**
+	 * A token is issued with the password the session was opened with, so changing the
+	 * password ends the sessions that were opened with the old one. A token without the
+	 * claim is taken at face value.
+	 *
+	 * @param UserRow $user
+	 */
+	private static function tokenFitsTheAccount(array $user): bool
+	{
+		$claim = JwtAuth::getPasswordClaimFromCookie();
+		return $claim === null || $claim === JwtAuth::claimOf($user['password_hash'] ?? null);
 	}
 
 	public static function isLoggedIn(): bool
@@ -100,6 +113,20 @@ class Auth
 	public static function getPrefBoardOrientation(): int
 	{
 		return Auth::isLoggedIn() ? (int) Auth::getUser()['pref_board_orientation'] : User::PREF_BOARD_ORIENTATION_RANDOM;
+	}
+
+	public static function getDateFormat(): int
+	{
+		return Auth::isLoggedIn() ? (int) Auth::getUser()['date_format_id'] : User::DATE_FORMAT_ISO;
+	}
+
+	/**
+	 * The avatar the logged in player picked, which is the board for a visitor who
+	 * is not logged in at all.
+	 */
+	public static function getPrefAvatar(): int
+	{
+		return Auth::isLoggedIn() ? User::avatarChoice(Auth::getUser()) : User::AVATAR_BOARD;
 	}
 
 	/**
@@ -192,7 +219,20 @@ class Auth
 
 	public static function getMode(): int
 	{
+		if (Auth::$modeOverride !== null)
+			return Auth::$modeOverride;
+
 		return Auth::isLoggedIn() ? (int) Auth::getUser()['mode'] : Constants::$LEVEL_MODE;
+	}
+
+	/**
+	 * Play by $mode instead of the stored one until it is cleared with null: a result
+	 * counts in the mode of the page it was played on, which another tab may have
+	 * switched away from since. See PlayResultProcessorComponent::playMode().
+	 */
+	public static function overrideMode(?int $mode): void
+	{
+		Auth::$modeOverride = $mode;
 	}
 
 	public static function isInLevelMode(): bool
@@ -208,6 +248,11 @@ class Auth
 	public static function isInTimeMode(): bool
 	{
 		return Auth::getMode() == Constants::$TIME_MODE;
+	}
+
+	public static function isInMistakeTrainingMode(): bool
+	{
+		return Auth::getMode() == Constants::$MISTAKE_TRAINING_MODE;
 	}
 
 	public static function XPisGainedInCurrentMode(): bool
@@ -234,7 +279,7 @@ class Auth
 	public static function lightMode(): int
 	{
 		if (Auth::isLoggedIn())
-			return (Auth::getUser()['lastLight'] == 0) ? self::$LIGHT_MODE : self::$DARK_MODE;
+			return (Auth::getUser()['lastLight'] == User::THEME_DARK) ? self::$DARK_MODE : self::$LIGHT_MODE;
 		if  (!empty($_COOKIE['lightDark']))
 			if ($_COOKIE['lightDark'] == 'dark')
 				return self::$DARK_MODE;
@@ -242,6 +287,7 @@ class Auth
 	}
 
 	private static ?array $user = null;
+	private static ?int $modeOverride = null;
 	public static int $LIGHT_MODE = 1;
 	public static int $DARK_MODE = 2;
 }

@@ -3,8 +3,16 @@
 use App\Utility\AdminActivityLogger;
 use App\Utility\AdminActivityRenderer;
 use App\Utility\Auth;
+use App\Utility\Avatar;
 use App\Utility\Constants;
 use App\Utility\CookieFlash;
+use App\Utility\FakePwnedPasswordChecker;
+use App\Utility\GoogleTokenVerifier;
+use App\Utility\GoogleTokenVerifierInterface;
+use App\Utility\JwtAuth;
+use App\Utility\MistakeTraining;
+use App\Utility\PwnedPasswordChecker;
+use App\Utility\PwnedPasswordCheckerInterface;
 use App\Utility\SGFProposalsRenderer;
 use App\Utility\TagConnectionProposalsRenderer;
 use App\Utility\TagProposalsRenderer;
@@ -12,10 +20,119 @@ use App\Utility\TimeModeUtil;
 use App\Utility\TsumegoUtil;
 use App\Utility\Util;
 use App\Attribute\HttpPost;
+use App\Attribute\HttpGet;
 
 class UsersController extends AppController
 {
 	public $helpers = ['Html', 'Form', 'Highscore'];
+
+	protected ?PwnedPasswordCheckerInterface $passwordChecker = null;
+
+	protected ?GoogleTokenVerifierInterface $tokenVerifier = null;
+
+	/**
+	 * A password that login alone would never reject, used to spend the same time on a
+	 * name that has no account. It costs what PASSWORD_DEFAULT costs, and
+	 * LoginComponentTest fails when the two drift apart.
+	 */
+	private static string $DUMMY_PASSWORD_HASH = '$2y$12$BZ5TgNGDEJZktTLaEt5Tx.zJfbhdsQxv5/O7wfVeX0QpDwVSdTGg.';
+
+	public static function dummyPasswordHash(): string
+	{
+		return self::$DUMMY_PASSWORD_HASH;
+	}
+
+	/**
+	 * Static test checker, so tests can decide which passwords count as breached.
+	 * Only honored for the test suite, so it can never take effect for players.
+	 */
+	private static ?PwnedPasswordCheckerInterface $testPasswordChecker = null;
+
+	public static function setTestPasswordChecker(?PwnedPasswordCheckerInterface $checker): void
+	{
+		self::$testPasswordChecker = Util::isOnTestSite() ? $checker : null;
+	}
+
+	protected function getPasswordChecker(): PwnedPasswordCheckerInterface
+	{
+		if (self::$testPasswordChecker !== null)
+			return self::$testPasswordChecker;
+
+		if ($this->passwordChecker === null)
+		{
+			// The test suite never asks the public list; every other site does, so the
+			// check can be tried by hand on the dev site too.
+			$this->passwordChecker = Util::isOnTestSite()
+				? new FakePwnedPasswordChecker()
+				: new PwnedPasswordChecker();
+		}
+		return $this->passwordChecker;
+	}
+
+	/**
+	 * Whether the password is one an attacker would try first, because it is already
+	 * in a public breach. Such a password is refused wherever a password is set.
+	 */
+	private function isKnownLeaked(string $password): bool
+	{
+		return $this->getPasswordChecker()->isBreached($password);
+	}
+
+	/**
+	 * The message to show for a password that can not be used, or null when it can.
+	 * Every place that sets a password asks this, so the rules are the same when an
+	 * account is created, when the password is changed and when it is reset. Signing in
+	 * does not ask it, so an account with a shorter password still gets in.
+	 */
+	private function passwordProblem(string $password, string $repeated): ?string
+	{
+		if (mb_strlen($password) < Constants::$MINIMUM_PASSWORD_LENGTH)
+			return 'The password needs at least ' . Constants::$MINIMUM_PASSWORD_LENGTH . ' characters.';
+		if ($password !== $repeated)
+			return 'The new passwords do not match.';
+		if ($this->isKnownLeaked($password))
+			return 'That password appeared in a public data breach, choose another one.';
+		return null;
+	}
+
+	/**
+	 * Static test verifier (used by tests to inject FakeGoogleTokenVerifier).
+	 * Only honored on a dev/CI instance, so it can never take effect in production.
+	 */
+	private static ?GoogleTokenVerifierInterface $testVerifier = null;
+
+	/**
+	 * Set the Google token verifier for testing (static, affects all instances)
+	 */
+	public static function setTestTokenVerifier(?GoogleTokenVerifierInterface $verifier): void
+	{
+		self::$testVerifier = Util::isInTestEnvironment() ? $verifier : null;
+	}
+
+	/**
+	 * Set the Google token verifier (for this instance)
+	 */
+	public function setTokenVerifier(GoogleTokenVerifierInterface $verifier): void
+	{
+		$this->tokenVerifier = $verifier;
+	}
+
+	/**
+	 * Get the Google token verifier (lazily creates real verifier if not set)
+	 */
+	protected function getTokenVerifier(): GoogleTokenVerifierInterface
+	{
+		// Test verifier takes precedence
+		if (self::$testVerifier !== null)
+			return self::$testVerifier;
+
+		if ($this->tokenVerifier === null)
+		{
+			$clientId = '986748597524-05gdpjqrfop96k6haga9gvj1f61sji6v.apps.googleusercontent.com';
+			$this->tokenVerifier = new GoogleTokenVerifier($clientId);
+		}
+		return $this->tokenVerifier;
+	}
 
 	// shows the publish schedule
 	public function showPublishSchedule(): void
@@ -52,19 +169,44 @@ class UsersController extends AppController
 		if (empty($this->request->data))
 			return;
 
-		$user = $this->User->findByEmail($this->request->data['User']['email']);
-		if (!$user)
-			return;
-		$randomString = Util::generateRandomString(20);
-		$user['User']['passwordreset'] = $randomString;
-		$this->User->save($user);
+		$userEmail = $this->request->data['User']['email'];
 
-		$email = $this->_getEmailer();
-		$email->from(['me@tsumego.com' => 'https://tsumego.com']);
-		$email->to($this->request->data['User']['email']);
-		$email->subject('Password reset for your Tsumego Hero account');
-		$email->send('Click the following button to reset your password. If you have not requested the password reset,
-then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/' . $randomString);
+		// Only allow password reset for local users (not Google Sign-In users)
+		$user = $this->User->findLocalUserByEmail($userEmail);
+		if (!$user)
+		{
+			// An address that can not get a link is answered like one that has no account,
+			// so the form says nothing about which addresses are taken. The sign-in page
+			// points Google accounts to their button before they submit this form.
+			return;
+		}
+
+		// Another mail on top of the one just sent only fills the inbox. The answer is
+		// the same either way, so nothing about the account is revealed by skipping it.
+		$askedAt = $user['User']['passwordreset_created'];
+		if ($askedAt && strtotime($askedAt) > strtotime('-' . self::$PASSWORD_RESET_MINUTES_BETWEEN_MAILS . ' minutes'))
+			return;
+
+		$hours = self::$PASSWORD_RESET_LINK_VALID_HOURS;
+		$randomString = Util::generateRandomString(20);
+
+		$emailer = $this->_getEmailer();
+		$emailer->from(['me@tsumego.com' => 'https://tsumego.com']);
+		$emailer->to($userEmail);
+		$emailer->subject('Password reset for your Tsumego Hero account');
+		if (!$this->linkMailWasSent($emailer, 'Click the following button to reset your password (valid for ' . $hours . ' hours). If you have not requested the password reset,
+then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, true)))
+		{
+			$this->set('sent', false);
+			CookieFlash::set('The mail could not be sent. Please try again in a minute.', 'error');
+			return;
+		}
+
+		// The link works with the token alone, so the token is remembered only once the mail
+		// carrying it has left. A mail server that stays quiet holds nothing back.
+		$user['User']['passwordreset'] = $randomString;
+		$user['User']['passwordreset_created'] = date('Y-m-d H:i:s');
+		$this->User->save($user);
 	}
 
 	/**
@@ -72,7 +214,51 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	 */
 	public function _getEmailer()
 	{
-		return new CakeEmail();
+		// A run of the tests must not hand a mail to a mail server that is not there. The
+		// debug transport builds the message and returns it instead of sending it.
+		return Util::isOnTestSite() ? new CakeEmail(['transport' => 'Debug']) : new CakeEmail();
+	}
+
+	/**
+	 * Send the mail that carries a link. The token in it is remembered only when this
+	 * returns true, so a mail server that does not answer leaves nothing behind and the
+	 * user can go through the flow again right away.
+	 *
+	 * @param CakeEmail $emailer The mailer from _getEmailer(), which a test replaces
+	 * @return bool Whether the mail left
+	 */
+	private function linkMailWasSent(mixed $emailer, string $body): bool
+	{
+		try
+		{
+			$emailer->send($body);
+		}
+		catch (Exception $e)
+		{
+			CakeLog::write('error', 'A Tsumego Hero link mail could not be sent: ' . $e->getMessage());
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Send a mail that only tells the account about a change that already happened. It is
+	 * not part of the change, so a mail server that does not answer is logged instead of
+	 * turned into an error page.
+	 *
+	 * @param CakeEmail $emailer The mailer from _getEmailer(), which a test replaces
+	 */
+	private function sendNotification(mixed $emailer, string $body): void
+	{
+		try
+		{
+			$emailer->send($body);
+		}
+		catch (Exception $e)
+		{
+			CakeLog::write('error', 'A Tsumego Hero notification could not be sent: ' . $e->getMessage());
+		}
 	}
 
 	// @param string|null $checksum Password reset checksum
@@ -80,27 +266,37 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	{
 		$this->set('_page', 'user');
 		$this->set('_title', 'Tsumego Hero - Sign In');
-		$done = false;
-		if ($checksum == null)
-			$checksum = 1;
-		$user = $this->User->find('first', ['conditions' => ['passwordreset' => $checksum, 'deleted IS NULL']]);
-		$valid = ($user != null);
+		$this->set('valid', false);
+		$this->set('done', false);
+		$this->set('checksum', (string) $checksum);
+
+		$user = $checksum === null ? null : $this->User->find('first', ['conditions' => [
+			'passwordreset' => $checksum,
+			'deleted IS NULL',
+			'passwordreset_created >' => date('Y-m-d H:i:s', strtotime('-' . self::$PASSWORD_RESET_LINK_VALID_HOURS . ' hours'))]]);
 		if (!$user)
 			return null;
 
-		if ($this->request->data['User']['password'])
+		$this->set('valid', true);
+		$password = (string) ($this->request->data['User']['password1'] ?? '');
+		$repeated = (string) ($this->request->data['User']['password2'] ?? '');
+		if ($password === '')
+			return null;
+
+		$problem = $this->passwordProblem($password, $repeated);
+		if ($problem)
 		{
-			$user['User']['passwordreset'] = null;
-			$user['User']['password_hash'] = password_hash($this->request->data['User']['password'], PASSWORD_DEFAULT);
-			$this->User->save($user);
-			CookieFlash::set("Password changed", 'success');
-			return $this->redirect("/users/login");
+			CookieFlash::set($problem, 'error');
+			return null;
 		}
 
-		$this->set('valid', $valid);
-		$this->set('done', $done);
-		$this->set('checksum', $checksum);
-		return null;
+		$user['User']['passwordreset'] = null;
+		$user['User']['passwordreset_created'] = null;
+		$user['User']['password_hash'] = password_hash($password, PASSWORD_DEFAULT);
+		$this->User->save($user);
+		$this->sendPasswordChangedMail($user['User']['email']);
+		CookieFlash::set('Password changed', 'success');
+		return $this->redirect('/users/login');
 	}
 
 	/**
@@ -133,7 +329,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		for ($i = 0; $i < $urCount; $i++)
 		{
 			$u = $this->User->findById($ur[$i]['TsumegoAttempt']['user_id']);
-			$ur[$i]['TsumegoAttempt']['user_name'] = $u['User']['name'];
+			$ur[$i]['TsumegoAttempt']['user_display_name'] = $u['User']['display_name'];
 			$ur[$i]['TsumegoAttempt']['level'] = $u['User']['level'];
 			$t = $this->Tsumego->findById($ur[$i]['TsumegoAttempt']['tsumego_id']);
 			$scT = $this->SetConnection->findDisplaySetConnection($t['Tsumego']['id']);
@@ -186,7 +382,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		for ($i = 0; $i < $urCount; $i++)
 		{
 			$u = $this->User->findById($ur[$i]['TsumegoAttempt']['user_id']);
-			$ur[$i]['TsumegoAttempt']['user_name'] = $u['User']['name'];
+			$ur[$i]['TsumegoAttempt']['user_display_name'] = $u['User']['display_name'];
 			$t = $this->Tsumego->findById($ur[$i]['TsumegoAttempt']['tsumego_id']);
 			$ur[$i]['TsumegoAttempt']['tsumego_num'] = $t['Tsumego']['num'];
 			$ur[$i]['TsumegoAttempt']['tsumego_xp'] = $t['Tsumego']['difficulty'];
@@ -235,7 +431,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 
 			$u = $this->User->findById($s[$i]['Sgf']['user_id']);
-			$s[$i]['Sgf']['user'] = $u['User']['name'];
+			$s[$i]['Sgf']['user'] = $u['User']['display_name'];
 			$t = $this->Tsumego->findById($s[$i]['Sgf']['tsumego_id']);
 			$scT = $this->SetConnection->findDisplaySetConnection($t['Tsumego']['id']);
 			$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
@@ -265,40 +461,11 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->loadModel('DayRecord');
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
-		$this->loadModel('Tag');
 		$this->loadModel('AdminActivityType');
-
-		// Pagination setup
-		$perPage = 100;
-		$tagNamesPage = isset($this->params['url']['tagnames_page']) ? max(1, (int) $this->params['url']['tagnames_page']) : 1;
-
-		$tagNamesOffset = ($tagNamesPage - 1) * $perPage;
-
-		// Get total counts
-		$tags = $this->Tag->find('all', [
-			'conditions' => ['approved' => 0],
-			'limit' => $perPage,
-			'offset' => $tagNamesOffset,
-			'order' => 'created DESC'
-		]);
-
-		$tagsByKey = $this->Tag->find('all');
-		$tKeys = [];
-		$tagsByKeyCount = count($tagsByKey);
-		for ($i = 0; $i < $tagsByKeyCount; $i++)
-			$tKeys[$tagsByKey[$i]['Tag']['id']] = $tagsByKey[$i]['Tag']['name'];
-
-		$tagNamesCount = count($tags);
-		for ($i = 0; $i < $tagNamesCount; $i++)
-		{
-			$au = $this->User->findById($tags[$i]['Tag']['user_id']);
-			$tags[$i]['Tag']['user'] = $this->checkPicture($au['User']);
-		}
 
 		$this->set('deletedUsers', $this->User->find('all', [
 			'conditions' => ['deleted IS NOT NULL'],
 			'order' => 'deleted DESC']) ?: []);
-		$this->set('tagNames', $tags);
 
 		// Pagination data
 		$this->set('sgfProposalsRenderer', new SGFProposalsRenderer($this->params['url']));
@@ -312,11 +479,14 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$input = $this->request->data['username'];
 		if (empty($input))
 			return null;
+
+		// A local account is found by its login name, a Google account has none
 		if ($user = $this->User->findByName($input))
 			return $user;
-		if ($user = $this->User->findByEmail($input))
-			return $user;
-		return null;
+
+		// Only a local account can be signed in with a password, so an address that is
+		// also used by a Google account must not shadow it.
+		return $this->User->findLocalUserByEmail($input);
 	}
 
 	public function login()
@@ -345,13 +515,30 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$user = $this->getUserFromNameOrEmail();
 		if (!$user)
 		{
-			CookieFlash::set('Unknown user', 'error');
+			// A name without an account is answered the same way as a wrong password, and
+			// the hash is computed either way, so neither the message nor the time it takes
+			// tells whether the account exists.
+			password_verify((string) ($this->request->data['password'] ?? ''), self::$DUMMY_PASSWORD_HASH);
+
+			// The address may belong to a Google account only, which can't log in here
+			$googleUser = $this->User->findByEmail($this->request->data['username']);
+			if ($googleUser && User::isGoogleUser($googleUser['User']))
+				CookieFlash::set('This account uses Google Sign-In. Please use the "Sign in with Google" button.', 'info');
+			else
+				CookieFlash::set('Wrong username or password.', 'error');
+			return null;
+		}
+
+		// Google users should use "Sign in with Google" button
+		if (User::isGoogleUser($user['User']))
+		{
+			CookieFlash::set('This account uses Google Sign-In. Please use the "Sign in with Google" button.', 'info');
 			return null;
 		}
 
 		if (!$this->validateLogin($this->request->data, $user))
 		{
-			CookieFlash::set('Incorrect password', 'error');
+			CookieFlash::set('Wrong username or password.', 'error');
 			return null;
 		}
 
@@ -419,15 +606,29 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		if (empty($this->request->data))
 			return;
 
-		if ($this->request->data['User']['password1'] != $this->request->data['User']['password2'])
+		$password = (string) ($this->request->data['User']['password1'] ?? '');
+		$problem = $this->passwordProblem($password, (string) ($this->request->data['User']['password2'] ?? ''));
+		if ($problem)
 		{
-			CookieFlash::set('passwords don\'t match', 'error');
+			CookieFlash::set($problem, 'error');
+			return;
+		}
+
+		if ($this->User->findByEmail($this->request->data['User']['email']))
+		{
+			CookieFlash::set('Email already exists', 'error');
 			return;
 		}
 
 		$userData = $this->request->data;
-		$userData['User']['password_hash'] = password_hash($this->request->data['User']['password1'], PASSWORD_DEFAULT);
+		$userData['User']['password_hash'] = password_hash($password, PASSWORD_DEFAULT);
 		$userData['User']['name'] = $this->request->data['User']['name'];
+		$normalizedName = User::normalizeDisplayName($this->request->data['User']['name']);
+		$uniqueDisplayName = User::generateUniqueDisplayName($normalizedName);
+		$userData['User']['display_name'] = $uniqueDisplayName;
+		// A taken display name gets a numbered suffix, which is not the name the player chose,
+		// so they are asked to pick their own before continuing (the same as the Google path).
+		$userData['User']['needs_display_name_change'] = $uniqueDisplayName !== $normalizedName;
 		$userData['User']['email'] = $this->request->data['User']['email'];
 
 		$this->User->create();
@@ -450,6 +651,112 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	}
 
 	/**
+	 * Render the forced display-name change form. Only users flagged with
+	 * needs_display_name_change can reach this (free renaming is disabled).
+	 *
+	 * @return mixed
+	 */
+	#[HttpGet]
+	public function changename()
+	{
+		if (!Auth::isLoggedIn())
+			return $this->redirect('/users/login');
+
+		$user = Auth::getUser();
+
+		if (empty($user['needs_display_name_change']))
+		{
+			CookieFlash::set(__('You can only change your display name when asked to.'), 'error');
+			return $this->redirect('/');
+		}
+
+		$this->set('_page', 'changename');
+		$this->set('_title', 'Choose your display name');
+		$this->set('user', $user);
+		return null;
+	}
+
+	/**
+	 * Update user's display name. Only allowed while the account is flagged for it
+	 * (needs_display_name_change = 1). Clears the flag on success.
+	 *
+	 * @return mixed
+	 */
+	#[HttpPost]
+	public function updatename()
+	{
+		$userId = Auth::getUserID();
+		if (!$userId)
+		{
+			CookieFlash::set(__('You must be logged in.'), 'error');
+			return $this->redirect('/');
+		}
+
+		$user = $this->User->findById($userId);
+		if (!$user)
+		{
+			CookieFlash::set(__('User not found.'), 'error');
+			return $this->redirect('/');
+		}
+
+		// Free renaming is intentionally disabled: this only serves an account that is
+		// flagged for a rename.
+		if (empty($user['User']['needs_display_name_change']))
+		{
+			CookieFlash::set(__('You can only change your display name when asked to.'), 'error');
+			return $this->redirect('/');
+		}
+
+		$newDisplayName = User::normalizeDisplayName($this->request->data['User']['display_name'] ?? '');
+
+		if (empty($newDisplayName))
+		{
+			CookieFlash::set(__('Display name cannot be empty.'), 'error');
+			return $this->redirect(['action' => 'changename']);
+		}
+
+		// Validate display name length in characters, not bytes: the column holds 50
+		// characters, and a name in another alphabet takes several bytes per character.
+		$displayNameLength = mb_strlen($newDisplayName);
+		if ($displayNameLength < 3 || $displayNameLength > 50)
+		{
+			CookieFlash::set(__('Display name must be between 3 and 50 characters.'), 'error');
+			return $this->redirect(['action' => 'changename']);
+		}
+
+		if ($newDisplayName === $user['User']['display_name'])
+		{
+			CookieFlash::set(__('Please choose a different display name.'), 'error');
+			return $this->redirect(['action' => 'changename']);
+		}
+
+		// Check uniqueness - another user might have this display_name
+		$existingUser = $this->User->find('first', [
+			'conditions' => [
+				'display_name' => $newDisplayName,
+				'id !=' => $userId,
+			],
+		]);
+		if ($existingUser)
+		{
+			CookieFlash::set(__('This display name is already taken.'), 'error');
+			return $this->redirect(['action' => 'changename']);
+		}
+
+		// Update display_name (including forum sync)
+		User::updateDisplayName($userId, $newDisplayName);
+
+		AdminActivityLogger::log(AdminActivityType::DISPLAY_NAME_CHANGE, null, null, $user['User']['display_name'], $newDisplayName, $userId);
+
+		// Clear the forced flag and update the session
+		Auth::saveUserField('display_name', $newDisplayName);
+		Auth::saveUserField('needs_display_name_change', false);
+
+		CookieFlash::set(__('Display name updated successfully.'), 'success');
+		return $this->redirect('/sets/');
+	}
+
+	/**
 	 * @return void
 	 */
 	public function highscore(): void
@@ -458,7 +765,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('_title', 'Tsumego Hero - Highscore');
 
 		$this->set('users', $this->queryHighscoreWithSelfView(
-			"SELECT id, name, external_id, picture, rating, premium, level, xp, solved,
+			"SELECT id, display_name, external_id, picture, pref_avatar, email, rating, premium, level, xp, solved,
 				ROW_NUMBER() OVER (ORDER BY level DESC, xp DESC) as position
 			FROM user
 			WHERE deleted IS NULL",
@@ -480,7 +787,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		}
 
 		$this->set('users', $this->queryHighscoreWithSelfView(
-			"SELECT id, name, external_id, picture, rating, premium,
+			"SELECT id, display_name, external_id, picture, pref_avatar, email, rating, premium,
 				ROW_NUMBER() OVER (ORDER BY rating DESC) as position
 			FROM user
 			WHERE deleted IS NULL"
@@ -501,9 +808,11 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('tagContributors', $this->queryHighscoreWithSelfView("
 			SELECT
 				user.id as id,
-				user.name as name,
+				user.display_name as display_name,
 				user.external_id as external_id,
 				user.picture as picture,
+				user.pref_avatar as pref_avatar,
+				user.email as email,
 				user.rating as rating,
 				user.premium as premium,
 				COUNT(tag_connection.id) AS tag_count,
@@ -532,13 +841,18 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('users', $this->queryHighscoreWithSelfView("
 			SELECT
 				user.id AS id,
-				user.name AS name,
+				user.display_name AS display_name,
 				user.rating AS rating,
 				user.picture AS picture,
+				user.pref_avatar AS pref_avatar,
 				user.external_id AS external_id,
 				user.premium AS premium,
-				COALESCE(SUM(achievement_status.value), 0) AS achievement_score,
-				ROW_NUMBER() OVER (ORDER BY COALESCE(SUM(achievement_status.value), 0) DESC) as position
+				user.email AS email,
+				COUNT(DISTINCT achievement_status.achievement_id) AS achievement_score,
+				COALESCE(SUM(CASE WHEN achievement_status.value > 1 THEN achievement_status.value ELSE 0 END), 0) AS achievement_earned_times,
+				ROW_NUMBER() OVER (
+					ORDER BY COUNT(DISTINCT achievement_status.achievement_id) DESC,
+						COALESCE(SUM(achievement_status.value), 0) DESC) as position
 			FROM user
 			LEFT JOIN achievement_status
 				ON achievement_status.user_id = user.id
@@ -601,9 +915,11 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('users', $this->queryHighscoreWithSelfView("
 			SELECT
 				user.id AS id,
-				user.name AS name,
+				user.display_name AS display_name,
 				user.external_id AS external_id,
 				user.picture AS picture,
+				user.pref_avatar AS pref_avatar,
+				user.email AS email,
 				user.rating AS rating,
 				user.premium AS premium,
 				COALESCE(MAX(time_mode_session.points), 0) AS points,
@@ -710,7 +1026,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$userId = Auth::isLoggedIn() ? Auth::getUserID() : -1;
 
 		$this->set('users', $this->queryHighscoreWithSelfView(
-			"SELECT id, name, external_id, picture, rating, premium, daily_xp, daily_solved,
+			"SELECT id, name, display_name, external_id, picture, pref_avatar, email, rating, premium, daily_xp, daily_solved,
 				ROW_NUMBER() OVER (ORDER BY daily_xp DESC) as position
 			FROM user
 			WHERE (daily_xp > 0 OR id = ?) AND deleted IS NULL",
@@ -766,37 +1082,40 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		if (!$user)
 			return $this->redirect('/sets');
 		$this->assertUserVisible($user['User']);
-		$this->set('_title', 'Profile of ' . $user['User']['name']);
+		$this->set('_title', 'Profile of ' . $user['User']['display_name']);
 
-		$this->set('og', [
-			'title' => 'Profile of ' . $user['User']['name'],
-			'description' => $user['User']['name'] . ' on Tsumego',
-			'image' => Router::url('/img/Tsumego-Hero-Logo.png', true),
-			'url' => Router::url('/users/view/' . $user['User']['id'], true),
+		// The profile is shared with the avatar the player picked, at the size a
+		// preview takes. What the site draws is a png of known size and type; an
+		// avatar of another host is shared as its url, and only the size a host is
+		// told to send is known.
+		$avatarChoice = User::avatarChoice($user['User']);
+		$og = [
+			'title' => 'Profile of ' . $user['User']['display_name'],
+			'description' => $user['User']['display_name'] . ' on Tsumego',
+			'image_alt' => 'Avatar of ' . $user['User']['display_name'],
 			'type' => 'profile',
-			'profile_username' => $user['User']['name'],
+			'profile_username' => $user['User']['display_name'],
 			'site_name' => 'Tsumego',
-		]);
-
-		// user edit
-		// TODO: should be its own action
-		if ($id == Auth::getUserID())
+		];
+		if ($avatarChoice === User::AVATAR_BOARD)
 		{
-			if (!empty($this->request->data))
-				if (isset($this->request->data['User']['email']))
-					if (Validation::email($this->request->data['User']['email']))
-						Auth::saveUserField('email', $this->request->data['User']['email']);
+			$og['image'] = Router::url(Avatar::pngUrl($user['User']['display_name']), true);
+			$og['image_type'] = 'image/png';
+			$og['image_width'] = Avatar::SHARE_SIZE;
+			$og['image_height'] = Avatar::SHARE_SIZE;
 		}
-
-		$tsumegoStatusToRestCount = Util::query("
-SELECT
-	COUNT(*) AS total
-FROM tsumego_status
-WHERE
-	user_id = ? AND
-	tsumego_status.status IN ('S', 'C', 'W') AND
-	tsumego_status.updated <= NOW() - INTERVAL 1 YEAR;", [$id])[0]['total'];
-		$this->set('tsumegoStatusToRestCount', $tsumegoStatusToRestCount);
+		else
+		{
+			$og['image'] = User::getAvatarUrl($user['User'], Avatar::SHARE_SIZE);
+			if ($avatarChoice === User::AVATAR_GRAVATAR)
+			{
+				// Gravatar answers with the size it is asked for, so the size of the
+				// picture is known even though its format is not.
+				$og['image_width'] = Avatar::SHARE_SIZE;
+				$og['image_height'] = Avatar::SHARE_SIZE;
+			}
+		}
+		$this->set('og', $og);
 
 		$oldest = new DateTime(date('Y-m-d', strtotime('-183 days')));
 		$oldest = $oldest->format('Y-m-d');
@@ -849,8 +1168,9 @@ WHERE time_mode_session.user_id = ?
 GROUP BY DATE(time_mode_session.created)
 ORDER BY category DESC', [$user['User']['id']]));
 
-		$tsumegoCount = ClassRegistry::init('Tsumego')->countPublicProblems();
-		$canResetOldTsumegoStatuses = Util::getPercent($user['User']['solved'], $tsumegoCount) >= Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED;
+		$progress = ClassRegistry::init('Tsumego')->publicProblemProgress((int) $user['User']['id']);
+		$tsumegoCount = $progress['total'];
+		$this->set('solvedProblemCount', $progress['solved']);
 
 		$achievementById = [];
 		foreach ($ach as $achievement)
@@ -869,32 +1189,76 @@ ORDER BY category DESC', [$user['User']['id']]));
 			$item['AchievementStatus']['a_color'] = $achievement['color'];
 			$item['AchievementStatus']['a_id'] = $achievement['id'];
 			$item['AchievementStatus']['a_xp'] = $achievement['xp'];
+			$item['AchievementStatus']['a_earned_count'] = (int) $item['AchievementStatus']['value'];
 			$asList[] = $item;
 		}
 		$as = $asList;
 
-		$aNum = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $id]]);
-		$asx = $this->AchievementStatus->find('first', ['conditions' => ['user_id' => $id, 'achievement_id' => 46]]);
-		$aNumx = count($aNum);
-		if ($asx != null)
-			$aNumx = $aNumx + $asx['AchievementStatus']['value'] - 1;
+		$counts = Util::query(
+			'SELECT COUNT(DISTINCT achievement_status.achievement_id) AS completed,
+				COALESCE(SUM(CASE WHEN achievement_status.value > 1 THEN achievement_status.value ELSE 0 END), 0) AS earned_times
+			FROM achievement_status
+			WHERE achievement_status.user_id = ?',
+			[$id]
+		)[0];
+		$aNumx = (int) $counts['completed'];
+		$aEarnedTimes = (int) $counts['earned_times'];
 
 		// only admins get to the profile of a deleted account, they see who it was
 		if ($user['User']['deleted'])
-			$user['User']['name'] = $user['User']['deleted_name'] . ' ' . User::DELETED_NAME;
-		else
-			$user['User']['name'] = $this->checkPicture($user['User']);
+			$user['User']['display_name'] = $user['User']['deleted_name'] . ' ' . User::DELETED_NAME;
 
 		$aCount = $this->Achievement->find('all');
+
+		// The section of the training shows only for a player who trained.
+		$this->set('mistakeTraining', MistakeTraining::profile((int) $user['User']['id'], MistakeTraining::profileStart()));
 
 		$this->set('dailyResults', $dailyResults);
 		$this->set('user', $user);
 		$this->set('tsumegoCount', $tsumegoCount);
 		$this->set('as', $as);
 		$this->set('aNum', $aNumx);
+		$this->set('aEarnedTimes', $aEarnedTimes);
 		$this->set('aCount', $aCount);
-		$this->set('canResetOldTsumegoStatuses', $canResetOldTsumegoStatuses);
 		return null;
+	}
+
+	/**
+	 * How the site behaves for the logged in player: appearance, how a problem is
+	 * dealt and the progress actions. The profile stays the public page, so
+	 * everything that only changes the player's own view lives here. The boards in
+	 * the rotation are picked in the dropdown in the header.
+	 */
+	public function settings(): mixed
+	{
+		if (!Auth::isLoggedIn())
+			return $this->redirect('/users/login');
+
+		$this->set('_page', 'user');
+		$this->set('_title', 'Settings');
+
+		$user = Auth::getUser();
+		$this->set('user', $user);
+		$this->set('tsumegoStatusToRestCount', TsumegoStatus::countOldProgress($user['id']));
+		$this->set('canResetOldTsumegoStatuses', User::canResetOldProgress($user));
+		$this->set('unconfirmedEmail', self::waitingAddress($user));
+
+		return null;
+	}
+
+	/**
+	 * The address an account is waiting for the confirmation of, or null when there is
+	 * none or its link is too old to work.
+	 *
+	 * @param array $user
+	 */
+	private static function waitingAddress(array $user): ?string
+	{
+		if (empty($user['unconfirmed_email']) || empty($user['unconfirmed_email_created']))
+			return null;
+		if (strtotime($user['unconfirmed_email_created']) <= strtotime('-' . self::$EMAIL_CHANGE_LINK_VALID_HOURS . ' hours'))
+			return null;
+		return (string) $user['unconfirmed_email'];
 	}
 
 	/**
@@ -930,43 +1294,43 @@ ORDER BY category DESC', [$user['User']['id']]));
 
 		$count = [];
 		$count[0]['author'] = 'Innokentiy Zabirov';
-		$count[0]['collections'] = 's: <a href="/sets/view/41">Life & Death - Intermediate</a> and <a href="/sets/view/122">Gokyo Shumyo 1-4</a>';
+		$count[0]['collections'] = 's: <a href="' . Set::url(41) . '">Life & Death - Intermediate</a> and <a href="' . Set::url(122) . '">Gokyo Shumyo 1-4</a>';
 		$count[0]['count'] = 0;
 		$count[1]['author'] = 'Alexandre Dinerchtein';
-		$count[1]['collections'] = ': <a href="/sets/view/109">Problems from Professional Games</a>';
+		$count[1]['collections'] = ': <a href="' . Set::url(109) . '">Problems from Professional Games</a>';
 		$count[1]['count'] = 0;
 		$count[2]['author'] = 'David Ulbricht';
-		$count[2]['collections'] = ': <a href="/sets/view/41">Life & Death - Intermediate</a>';
+		$count[2]['collections'] = ': <a href="' . Set::url(41) . '">Life & Death - Intermediate</a>';
 		$count[2]['count'] = 0;
 		$count[3]['author'] = 'Bradford Malbon';
-		$count[3]['collections'] = 's: <a href="/sets/view/104">Easy Life</a> and <a href="/sets/view/105">Easy Kill</a>';
+		$count[3]['collections'] = 's: <a href="' . Set::url(104) . '">Easy Life</a> and <a href="' . Set::url(105) . '">Easy Kill</a>';
 		$count[3]['count'] = 0;
 		$count[4]['author'] = 'Ryan Smith';
-		$count[4]['collections'] = 's: <a href="/sets/view/67">Korean Problem Academy 1-4</a>';
+		$count[4]['collections'] = 's: <a href="' . Set::url(67) . '">Korean Problem Academy 1-4</a>';
 		$count[4]['count'] = 0;
 		$count[5]['author'] = 'Fupfv';
-		$count[5]['collections'] = ': <a href="/sets/view/139">Gokyo Shumyo 4</a>';
+		$count[5]['collections'] = ': <a href="' . Set::url(139) . '">Gokyo Shumyo 4</a>';
 		$count[5]['count'] = 0;
 		$count[6]['author'] = 'саша черных';
-		$count[6]['collections'] = ': <a href="/sets/view/137">Tsumego Master</a>';
+		$count[6]['collections'] = ': <a href="' . Set::url(137) . '">Tsumego Master</a>';
 		$count[6]['count'] = 0;
 		$count[7]['author'] = 'Timo Kreuzer';
-		$count[7]['collections'] = ': <a href="/sets/view/137">Tsumego Master</a>';
+		$count[7]['collections'] = ': <a href="' . Set::url(137) . '">Tsumego Master</a>';
 		$count[7]['count'] = 0;
 		$count[8]['author'] = 'David Mitchell';
-		$count[8]['collections'] = ': <a href="/sets/view/143">Diabolical</a>';
+		$count[8]['collections'] = ': <a href="' . Set::url(143) . '">Diabolical</a>';
 		$count[8]['count'] = 10;
 		$count[9]['author'] = 'Omicron';
-		$count[9]['collections'] = ': <a href="/sets/view/145">Tesujis in Real Board Positions</a>';
+		$count[9]['collections'] = ': <a href="' . Set::url(145) . '">Tesujis in Real Board Positions</a>';
 		$count[9]['count'] = 0;
 		$count[10]['author'] = 'Sadaharu';
-		$count[10]['collections'] = ': <a href="/sets/view/146">Tsumego of Fortitude</a>, <a href="/sets/view/166">Secret Tsumego from Hong Dojo</a>, <a href="/sets/view/158">Beautiful Tsumego</a> and more.';
+		$count[10]['collections'] = ': <a href="' . Set::url(146) . '">Tsumego of Fortitude</a>, <a href="' . Set::url(166) . '">Secret Tsumego from Hong Dojo</a>, <a href="' . Set::url(158) . '">Beautiful Tsumego</a> and more.';
 		$count[10]['count'] = 0;
 		$count[11]['author'] = 'Jérôme Hubert';
-		$count[11]['collections'] = ': <a href="/sets/view/150">Kanzufu</a> and more.';
+		$count[11]['collections'] = ': <a href="' . Set::url(150) . '">Kanzufu</a> and more.';
 		$count[11]['count'] = 0;
 		$count[12]['author'] = 'Kaan Malçok';
-		$count[12]['collections'] = ': <a href="/sets/view/163">Xuanxuan Qijing</a>';
+		$count[12]['collections'] = ': <a href="' . Set::url(163) . '">Xuanxuan Qijing</a>';
 		$count[12]['count'] = 0;
 
 		$this->set('count', $count);
@@ -985,52 +1349,109 @@ ORDER BY category DESC', [$user['User']['id']]));
 	{
 		if (!$user)
 			return false;
+		// The minimum length is not asked here: an account whose password is shorter
+		// still has to sign in.
 		return password_verify($data['password'], $user['User']['password_hash']);
 	}
 
 	/**
 	 * @return CakeResponse|null
 	 */
+	#[HttpPost]
 	public function googlesignin()
 	{
-		$name = '';
-		$email = '';
-		$picture = '';
-		$id_token = $_POST['credential'];
-		$client_id = '986748597524-05gdpjqrfop96k6haga9gvj1f61sji6v.apps.googleusercontent.com';
-		$token_info = file_get_contents('https://oauth2.googleapis.com/tokeninfo?id_token=' . $id_token);
-		$token_data = json_decode($token_info, true);
-		if (isset($token_data['aud']) && $token_data['aud'] == $client_id)
+		// CSRF protection: Google Sign-In provides g_csrf_token in both POST and cookie
+		// These must match to prevent cross-site request forgery
+		$csrfToken = $_POST['g_csrf_token'] ?? ($this->request->data['g_csrf_token'] ?? '');
+		$csrfCookie = $_COOKIE['g_csrf_token'] ?? '';
+		if (empty($csrfToken) || $csrfToken !== $csrfCookie)
 		{
-			$name = $token_data['name'];
-			$email = $token_data['email'];
-			$picture = $token_data['picture'];
+			CakeLog::write('warning', 'GoogleSignIn: CSRF validation failed');
+			CookieFlash::set('CSRF validation failed', 'error');
+			return $this->redirect('/users/login');
 		}
-		else
-			echo 'Invalid token';
-		$externalId = 'g__' . $token_data['sub'];
+
+		// Google Sign-In posts credential directly, but testAction uses $this->request->data
+		$id_token = $_POST['credential'] ?? ($this->request->data['credential'] ?? '');
+
+		$verifier = $this->getTokenVerifier();
+		$token_data = $verifier->verify($id_token);
+
+		if (!$token_data)
+		{
+			CakeLog::write('debug', 'GoogleSignIn: Token verification failed');
+			CookieFlash::set('Invalid Google token', 'error');
+			return $this->redirect('/users/login');
+		}
+
+		$name = $token_data['name'] ?? '';
+		// Fallback to last 6 digits of sub if no name provided
+		if (empty($name))
+			$name = 'User ' . substr($token_data['sub'] ?? '', -6);
+		$email = $token_data['email'] ?? '';
+		$picture = $token_data['picture'] ?? '';
+		// 'sub' is the Google account id, it identifies the player on their next sign in
+		$externalId = $token_data['sub'];
+
 		$u = $this->User->find('first', ['conditions' => ['external_id' => $externalId]]);
 		if ($u == null)
 		{
-			$imageUrl = $picture;
-			$imageContent = file_get_contents($imageUrl);
+			// A Google account gets no login name, it can't sign in with a password. A
+			// taken display name gets a numbered suffix and the player is asked to choose
+			// their own name before continuing.
+			$normalizedName = User::normalizeDisplayName($name);
+			$uniqueDisplayName = User::generateUniqueDisplayName($normalizedName);
 
 			$userData = [];
-			$userData['User']['name'] = 'g__' . $name;
-			$userData['User']['email'] = 'g__' . $email;
-			$userData['User']['password_hash'] = 'not used';
+			$userData['User']['display_name'] = $uniqueDisplayName;
+			$userData['User']['needs_display_name_change'] = ($uniqueDisplayName !== $normalizedName) ? true : false;
+			$userData['User']['email'] = $email;
+			$userData['User']['password_hash'] = 'google_oauth';
 			$userData['User']['external_id'] = $externalId;
+			$userData['User']['picture'] = $picture;
+			// A Google account shows the picture of its Google profile until the player
+			// picks another avatar on the profile page.
+			if ($picture)
+				$userData['User']['pref_avatar'] = User::AVATAR_GOOGLE;
 
-			if ($imageContent === false)
-				$userData['User']['picture'] = 'default.png';
-			else
-			{
-				$userData['User']['picture'] = $externalId . '.png';
-				file_put_contents('img/google/' . $externalId . '.png', $imageContent);
-			}
 			$this->User->create();
-			$this->User->save($userData, true);
+			$saveResult = $this->User->save($userData);
+			if (!$saveResult)
+			{
+				CookieFlash::set('Failed to create Google user', 'error');
+				return $this->redirect('/users/login');
+			}
 			$u = $this->User->find('first', ['conditions' => ['external_id' => $externalId]]);
+		}
+		else
+		{
+			// Update profile data on each login (in case user changed Google profile)
+			$updates = [];
+
+			// Update picture if changed
+			if ($picture && $u['User']['picture'] !== $picture)
+				$updates['picture'] = $picture;
+
+			// An account with no picture starts showing the Google one as soon as a sign
+			// in brings the first picture. A picture that only changed keeps the avatar
+			// the player picked.
+			if ($picture && empty($u['User']['picture']))
+				$updates['pref_avatar'] = User::AVATAR_GOOGLE;
+
+			// Update email if changed and not empty
+			if ($email && $u['User']['email'] !== $email)
+				$updates['email'] = $email;
+
+			// Apply updates if any changed
+			if (!empty($updates))
+			{
+				$this->User->id = $u['User']['id'];
+				foreach ($updates as $field => $value)
+				{
+					$this->User->saveField($field, $value);
+					$u['User'][$field] = $value;
+				}
+			}
 		}
 		$this->signIn($u);
 
@@ -1038,7 +1459,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 		// Google Sign-In provides built-in CSRF protection via g_csrf_token cookie
 		// We use HMAC signature to prevent redirect URL tampering (stateless)
 		$redirect = '/sets/';
-		$stateJson = $_POST['state'] ?? null;
+		$stateJson = $_POST['state'] ?? ($this->request->data['state'] ?? null);
 		if ($stateJson)
 		{
 			$stateData = json_decode(base64_decode($stateJson), true);
@@ -1052,6 +1473,22 @@ ORDER BY category DESC', [$user['User']['id']]));
 	}
 
 	private static int $DELETION_LINK_VALID_HOURS = 24;
+
+	/**
+	 * How long the two links of an address change work, in hours. The cron forgets a
+	 * change that nobody confirmed, so it reads the same value.
+	 */
+	public static int $EMAIL_CHANGE_LINK_VALID_HOURS = 24;
+
+	/**
+	 * How long the link of a password reset works, in hours.
+	 */
+	private static int $PASSWORD_RESET_LINK_VALID_HOURS = 2;
+
+	/**
+	 * How long to wait before another reset mail is sent for the same account.
+	 */
+	private static int $PASSWORD_RESET_MINUTES_BETWEEN_MAILS = 5;
 
 	/**
 	 * First step of deleting the account of the logged-in user: emails a link confirming the deletion
@@ -1068,21 +1505,21 @@ ORDER BY category DESC', [$user['User']['id']]));
 			return null;
 
 		$token = bin2hex(random_bytes(32));
-		Auth::saveUserField('deletion_token', $token);
-		Auth::saveUserField('deletion_token_created', date('Y-m-d H:i:s'));
-
-		// Google accounts store their email with the g__ prefix
-		$email = Auth::getUser()['email'];
-		if (Auth::getUser()['external_id'] != null && str_starts_with($email, 'g__'))
-			$email = substr($email, 3);
 
 		$emailer = $this->_getEmailer();
 		$emailer->from(['me@tsumego.com' => 'https://tsumego.com']);
-		$emailer->to($email);
+		$emailer->to(Auth::getUser()['email']);
 		$emailer->subject('Deletion of your Tsumego Hero account');
-		$emailer->send('You asked to delete your Tsumego Hero account ' . self::checkPicture(Auth::getUser()) . '.
+		if (!$this->linkMailWasSent($emailer, 'You asked to delete your Tsumego Hero account ' . User::displayName(Auth::getUser()) . '.
 To confirm the deletion, open the following link (valid for ' . self::$DELETION_LINK_VALID_HOURS . ' hours): https://' . $_SERVER['HTTP_HOST'] . '/users/confirm_delete_account/' . $token . '
-If you have not asked for this, ignore this email, your account stays as it is.');
+If you have not asked for this, ignore this email, your account stays as it is.'))
+		{
+			CookieFlash::set('The mail could not be sent. Please try again in a minute.', 'error');
+			return null;
+		}
+
+		Auth::saveUserField('deletion_token', $token);
+		Auth::saveUserField('deletion_token_created', date('Y-m-d H:i:s'));
 		$this->set('sent', true);
 		return null;
 	}
@@ -1109,7 +1546,7 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 			return null;
 
 		$userID = (int) $user['User']['id'];
-		AdminActivityLogger::log(AdminActivityType::DELETE_USER, null, null, $user['User']['name'], null, $userID);
+		AdminActivityLogger::log(AdminActivityType::DELETE_USER, null, null, $user['User']['display_name'], null, $userID);
 		User::deleteAccount($userID);
 		Cache::delete('recent_achievements_7', 'default');
 		if (Auth::getUserID() == $userID)
@@ -1121,12 +1558,10 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 	/**
 	 * Restores a deleted account (admin only).
 	 */
+	#[HttpPost]
 	public function restore_account(?string $id = null)
 	{
-		if (!Auth::isAdmin())
-			throw new ForbiddenException();
-		if (!$this->request->is('post'))
-			throw new MethodNotAllowedException();
+		$this->Authorization->authorize('Admin', 'restoreAccount');
 		$user = $this->User->findById($id);
 		if (!$user)
 			throw new NotFoundException('User not found');
@@ -1163,7 +1598,6 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 					$status = '<p style="color:#d63a49">Password incorrect.</p>';
 
 		$user = Auth::getUser();
-		$user['name'] = $this->checkPicture($user);
 
 		$this->set('redirect', $redirect);
 		$this->set('status', $status);
@@ -1172,10 +1606,11 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 
 	public function solveHistory(string $userID): void
 	{
-		$profileUser = Util::query("SELECT name, deleted FROM user WHERE id = ?", [$userID])[0] ?? null;
-		if ($profileUser)
-			$this->assertUserVisible($profileUser);
-		$userName = $profileUser['name'] ?? 'Unknown';
+		$profileUser = $this->User->findById($userID)['User'] ?? null;
+		if (!$profileUser)
+			throw new NotFoundException('User not found');
+		$this->assertUserVisible($profileUser);
+		$userName = $profileUser['display_name'];
 		$PAGE_SIZE = 500;
 		$pageIndex = isset($this->request->query['page']) ? max(1, (int) $this->request->query['page']) : 1;
 		$count = Util::query("SELECT COUNT(*) FROM tsumego_attempt where user_id = ?", [$userID])[0]['COUNT(*)'];
@@ -1216,13 +1651,14 @@ OFFSET " . $offset, [$userID, $userID]);
 		$this->set('_page', 'solveHistory');
 		$this->set('_title', $userName . '\'s Solve History');
 		$this->set('userID', $userID);
-		$this->set('userName', $userName);
+		$this->set('profileUser', $profileUser);
 		$this->set('count', $count);
 		$this->set('pageIndex', $pageIndex);
 		$this->set('PAGE_SIZE', $PAGE_SIZE);
 		$this->set('attempts', $attempts);
 	}
 
+	#[HttpPost]
 	public function acceptSGFProposal(string $sgfID)
 	{
 		$this->Authorization->authorize('Admin');
@@ -1248,11 +1684,12 @@ OFFSET " . $offset, [$userID, $userID]);
 		CookieFlash::set('Sgf proposal accepted', 'success');
 
 		$userToApprove = $this->User->findById($proposalToApprove['user_id']);
-		AdminActivityLogger::log(AdminActivityType::ACCEPT_PROPOSAL, $proposalToApprove['tsumego_id'], null, null, $userToApprove['User']['name']);
+		AdminActivityLogger::log(AdminActivityType::ACCEPT_PROPOSAL, $proposalToApprove['tsumego_id'], null, null, $userToApprove['User']['display_name']);
 
 		return $this->redirect('/users/adminstats');
 	}
 
+	#[HttpPost]
 	public function rejectSGFProposal(string $sgfID)
 	{
 		$this->Authorization->authorize('Admin');
@@ -1283,11 +1720,12 @@ OFFSET " . $offset, [$userID, $userID]);
 		CookieFlash::set('Sgf proposal rejected', 'success');
 
 		$userToReject = $this->User->findById($proposalToReject['user_id']);
-		AdminActivityLogger::log(AdminActivityType::REJECT_PROPOSAL, $proposalToReject['tsumego_id'], null, null, $userToReject['User']['name']);
+		AdminActivityLogger::log(AdminActivityType::REJECT_PROPOSAL, $proposalToReject['tsumego_id'], null, null, $userToReject['User']['display_name']);
 
 		return $this->redirect('/users/adminstats');
 	}
 
+	#[HttpPost]
 	public function acceptTagConnectionProposal(string $tagConnectionID)
 	{
 		$this->Authorization->authorize('Admin');
@@ -1315,6 +1753,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		return $this->redirect('/users/adminstats');
 	}
 
+	#[HttpPost]
 	public function rejectTagConnectionProposal(string $tagConnectionID)
 	{
 		$this->Authorization->authorize('Admin');
@@ -1356,25 +1795,261 @@ OFFSET " . $offset, [$userID, $userID]);
 		if (!Auth::isLoggedIn())
 			return $this->redirect('/sets');
 
-		$userId = Auth::getUserID();
-		$tsumegoCount = ClassRegistry::init('Tsumego')->countPublicProblems();
-		if (Util::getPercent(Auth::getUser()['solved'], $tsumegoCount) < Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED)
-			return $this->redirect('/users/view/' . $userId);
+		$user = Auth::getUser();
+		if (!User::canResetOldProgress($user))
+			return $this->redirect('/users/settings');
 
-		$deleted = Util::execute("DELETE FROM tsumego_status WHERE user_id = ? AND tsumego_status.updated <= NOW() - INTERVAL 1 YEAR", [$userId]);
-
-		Util::execute("UPDATE user
-LEFT JOIN (
-    SELECT user_id, COUNT(*) AS cnt
-    FROM tsumego_status
-    WHERE status IN ('S', 'W', 'C', 'X')
-    AND user_id = ?
-    GROUP BY user_id
-) ts ON ts.user_id = user.id
-SET user.solved = COALESCE(ts.cnt, 0)
-WHERE user.id = ?", [$userId, $userId]);
+		$deleted = TsumegoStatus::deleteOldProgress((int) $user['id']);
 		CookieFlash::set('Deleted progress on ' . $deleted . ' problems', 'success');
-		return $this->redirect('/users/view/' . $userId);
+		return $this->redirect('/users/settings');
+	}
+
+	/**
+	 * Ask for a different e-mail address. The account keeps the address it has until
+	 * the player confirms the new one from the link sent there, so a session left open
+	 * somewhere can not move the account to an address of somebody else.
+	 */
+	#[HttpPost]
+	public function emailPreference(): mixed
+	{
+		$this->Authorization->authorize('User', 'editPreferences');
+
+		$user = Auth::getUser();
+		$email = trim((string) ($this->request->data['User']['email'] ?? ''));
+		$password = (string) ($this->request->data['User']['password'] ?? '');
+
+		if (User::isGoogleUser($user))
+		{
+			CookieFlash::set('This account signs in through Google, so it uses the address of your Google account.', 'error');
+			return $this->redirect('/users/settings');
+		}
+
+		// The column holds 50 characters, a longer address can not be stored
+		if (mb_strlen($email) > 50 || !Validation::email($email))
+		{
+			CookieFlash::set('That is not a valid e-mail address.', 'error');
+			return $this->redirect('/users/settings');
+		}
+
+		if ($email === $user['email'])
+		{
+			CookieFlash::set('This account already uses that address.', 'error');
+			return $this->redirect('/users/settings');
+		}
+
+		if ($this->User->findByEmail($email))
+		{
+			CookieFlash::set('That address belongs to another account.', 'error');
+			return $this->redirect('/users/settings');
+		}
+
+		if (!password_verify($password, $user['password_hash']))
+		{
+			CookieFlash::set('The password is not correct.', 'error');
+			return $this->redirect('/users/settings');
+		}
+
+		$hours = self::$EMAIL_CHANGE_LINK_VALID_HOURS;
+		$token = bin2hex(random_bytes(32));
+		$cancelToken = bin2hex(random_bytes(32));
+
+		$emailer = $this->_getEmailer();
+		$emailer->from(['me@tsumego.com' => 'https://tsumego.com']);
+		$emailer->to($email);
+		$emailer->subject('Confirm your new Tsumego Hero address');
+		$confirmationSent = $this->linkMailWasSent($emailer, 'You asked to use this address for your Tsumego Hero account.'
+			. "\nTo make it the address of the account, open this link (valid for $hours hours): "
+			. Router::url('/users/confirmEmailChange/' . $token, true)
+			. "\nIf you have not asked for this, ignore this email.");
+
+		$emailer->to($user['email']);
+		$emailer->subject('An address change was asked for on your Tsumego Hero account');
+		$warningSent = $confirmationSent && $this->linkMailWasSent($emailer, 'Somebody asked to move your Tsumego Hero account to ' . $email . '.'
+			. "\nIf that was not you, cancel it here (valid for $hours hours): "
+			. Router::url('/users/cancelEmailChange/' . $cancelToken, true));
+		if (!$warningSent)
+		{
+			CookieFlash::set('The mail could not be sent. Please try again in a minute.', 'error');
+			return $this->redirect('/users/settings');
+		}
+
+		Auth::saveUserFields([
+			'unconfirmed_email' => $email,
+			'unconfirmed_email_token' => $token,
+			'unconfirmed_email_cancel_token' => $cancelToken,
+			'unconfirmed_email_created' => date('Y-m-d H:i:s'),
+		]);
+
+		CookieFlash::set('We sent a confirmation link to ' . $email . '. The address changes once you open it.', 'success');
+		return $this->redirect('/users/settings');
+	}
+
+	/**
+	 * Second step of an address change, opened from the link sent to the new address.
+	 * It works without being signed in, like the password reset. GET only shows the
+	 * confirmation button (email scanners open links), the change happens on POST.
+	 */
+	public function confirmEmailChange(?string $token = null)
+	{
+		$this->set('_page', 'user');
+		$this->set('_title', 'Tsumego Hero - Confirm address');
+		$user = $this->findByEmailChangeToken('unconfirmed_email_token', $token);
+		$this->set('valid', (bool) $user);
+		$this->set('address', $user ? (string) $user['User']['unconfirmed_email'] : '');
+		$this->set('token', (string) $token);
+		if (!$user || !$this->request->is('post'))
+			return null;
+
+		$userID = (int) $user['User']['id'];
+		$newAddress = (string) $user['User']['unconfirmed_email'];
+		// The address was free when it was asked for, but the link works for a day, so
+		// another account may have taken it in between.
+		if ($this->User->findByEmail($newAddress))
+		{
+			$this->forgetAddressChange($userID);
+			CookieFlash::set('That address belongs to another account now, so it was not used. Ask for another one in your settings.', 'error');
+			return $this->redirect(Auth::isLoggedIn() && Auth::getUserID() === $userID ? '/users/settings' : '/users/login');
+		}
+
+		$givenUp = (string) $user['User']['email'];
+		$this->User->save(['User' => [
+			'id' => $userID,
+			'email' => $newAddress,
+			'unconfirmed_email' => null,
+			'unconfirmed_email_token' => null,
+			'unconfirmed_email_cancel_token' => null,
+			'unconfirmed_email_created' => null,
+		]], ['validate' => false, 'fieldList' => [
+			'email', 'unconfirmed_email', 'unconfirmed_email_token',
+			'unconfirmed_email_cancel_token', 'unconfirmed_email_created']]);
+
+		$emailer = $this->_getEmailer();
+		$emailer->from(['me@tsumego.com' => 'https://tsumego.com']);
+		$emailer->to($givenUp);
+		$emailer->subject('Your Tsumego Hero address was changed');
+		$this->sendNotification($emailer, 'The address of your Tsumego Hero account was changed to ' . $user['User']['unconfirmed_email'] . '.'
+			. "\nIf you did not ask for this, write to me@tsumego.com.");
+
+		if (Auth::isLoggedIn() && Auth::getUserID() === $userID)
+			Auth::init($this->User->findById($userID));
+
+		CookieFlash::set('Your e-mail address has been changed.', 'success');
+		return $this->redirect(Auth::isLoggedIn() ? '/users/settings' : '/users/login');
+	}
+
+	/**
+	 * Second step of cancelling an address change, opened from the link sent to the
+	 * address that is being given up. GET only shows the button, POST cancels.
+	 */
+	public function cancelEmailChange(?string $token = null)
+	{
+		$this->set('_page', 'user');
+		$this->set('_title', 'Tsumego Hero - Cancel address change');
+		$user = $this->findByEmailChangeToken('unconfirmed_email_cancel_token', $token);
+		$this->set('valid', (bool) $user);
+		$this->set('address', $user ? (string) $user['User']['unconfirmed_email'] : '');
+		$this->set('token', (string) $token);
+		if (!$user || !$this->request->is('post'))
+			return null;
+
+		$userID = (int) $user['User']['id'];
+		$this->forgetAddressChange($userID);
+
+		if (Auth::isLoggedIn() && Auth::getUserID() === $userID)
+			Auth::init($this->User->findById($userID));
+
+		CookieFlash::set('The address change was cancelled.', 'success');
+		return $this->redirect(Auth::isLoggedIn() ? '/users/settings' : '/users/login');
+	}
+
+	/**
+	 * Drop a pending address change, so the links it was sent with stop working.
+	 */
+	private function forgetAddressChange(int $userID): void
+	{
+		$this->User->save(['User' => [
+			'id' => $userID,
+			'unconfirmed_email' => null,
+			'unconfirmed_email_token' => null,
+			'unconfirmed_email_cancel_token' => null,
+			'unconfirmed_email_created' => null,
+		]], ['validate' => false, 'fieldList' => [
+			'unconfirmed_email', 'unconfirmed_email_token',
+			'unconfirmed_email_cancel_token', 'unconfirmed_email_created']]);
+	}
+
+	/**
+	 * The account waiting for the given link, or null when the link is unknown or old.
+	 *
+	 * @return array|null
+	 */
+	private function findByEmailChangeToken(string $field, ?string $token): ?array
+	{
+		if (!$token)
+			return null;
+
+		$user = $this->User->find('first', ['conditions' => [
+			$field => $token,
+			'deleted IS NULL',
+			'unconfirmed_email_created >' => date('Y-m-d H:i:s', strtotime('-' . self::$EMAIL_CHANGE_LINK_VALID_HOURS . ' hours'))]]);
+		return $user ?: null;
+	}
+
+	/**
+	 * Change the password of a local account. The current password is asked for so
+	 * that a session left open on a shared computer is not enough to take the
+	 * account over.
+	 */
+	#[HttpPost]
+	public function passwordPreference(): mixed
+	{
+		$this->Authorization->authorize('User', 'editPreferences');
+
+		$user = Auth::getUser();
+		if (User::isGoogleUser($user))
+		{
+			CookieFlash::set('This account signs in through Google, so it has no password.', 'error');
+			return $this->redirect('/users/settings');
+		}
+
+		$current = (string) ($this->request->data['current'] ?? '');
+		$new = (string) ($this->request->data['new1'] ?? '');
+		$repeated = (string) ($this->request->data['new2'] ?? '');
+
+		if (!password_verify($current, $user['password_hash']))
+		{
+			CookieFlash::set('The current password is not correct.', 'error');
+			return $this->redirect('/users/settings');
+		}
+
+		$problem = $this->passwordProblem($new, $repeated);
+		if ($problem)
+		{
+			CookieFlash::set($problem, 'error');
+			return $this->redirect('/users/settings');
+		}
+
+		$hash = password_hash($new, PASSWORD_DEFAULT);
+		Auth::saveUserField('password_hash', $hash);
+		// The tokens of the other devices were issued with the old password and stop fitting
+		JwtAuth::setAuthCookie((int) Auth::getUserID(), $hash);
+		$this->sendPasswordChangedMail($user['email']);
+		CookieFlash::set('Your password has been changed.', 'success');
+		return $this->redirect('/users/settings');
+	}
+
+	/**
+	 * Tell the account by mail that its password changed, so that a change made by
+	 * somebody else is noticed. The password itself is never part of the mail.
+	 */
+	private function sendPasswordChangedMail(string $email): void
+	{
+		$emailer = $this->_getEmailer();
+		$emailer->from(['me@tsumego.com' => 'https://tsumego.com']);
+		$emailer->to($email);
+		$emailer->subject('Your Tsumego Hero password was changed');
+		$this->sendNotification($emailer, 'The password of your Tsumego Hero account was changed. If you did not change it, set a new one at '
+			. Router::url('/users/resetpassword', true) . ' and write to me@tsumego.com.');
 	}
 
 	#[HttpPost]
@@ -1405,6 +2080,43 @@ WHERE user.id = ?", [$userId, $userId]);
 			$orientation = User::PREF_BOARD_ORIENTATION_RANDOM;
 
 		Auth::saveUserField('pref_board_orientation', $orientation);
+
+		$this->response->statusCode(200);
+		$this->response->type('application/json');
+		$this->response->body(json_encode(['status' => 'ok']));
+	}
+
+	#[HttpPost]
+	public function dateFormatPreference(): void
+	{
+		$this->autoRender = false;
+		$this->Authorization->authorize('User', 'editPreferences');
+
+		$format = (int) ($this->request->data['format'] ?? User::DATE_FORMAT_ISO);
+		if ($format < User::DATE_FORMAT_ISO || $format > User::DATE_FORMAT_BROWSER)
+			$format = User::DATE_FORMAT_ISO;
+
+		Auth::saveUserField('date_format_id', $format);
+
+		$this->response->statusCode(200);
+		$this->response->type('application/json');
+		$this->response->body(json_encode(['status' => 'ok']));
+	}
+
+	/**
+	 * Store the avatar a player picked. A choice that is not on offer for this
+	 * account (a Google picture it does not have) is ignored, the same way the other
+	 * preferences ignore a value they can not store.
+	 */
+	#[HttpPost]
+	public function avatarPreference(): void
+	{
+		$this->autoRender = false;
+		$this->Authorization->authorize('User', 'editPreferences');
+
+		$choice = (int) ($this->request->data['avatar'] ?? User::AVATAR_BOARD);
+		if (array_key_exists($choice, User::avatarChoices(Auth::getUser())))
+			Auth::saveUserField('pref_avatar', $choice);
 
 		$this->response->statusCode(200);
 		$this->response->type('application/json');

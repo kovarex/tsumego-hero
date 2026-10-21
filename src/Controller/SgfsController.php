@@ -91,8 +91,8 @@ class SgfsController extends AppController
 
 
 			$u = $this->User->findById($s[$i]['Sgf']['user_id']);
-			$s[$i]['Sgf']['user'] = $u ? self::checkPicture($u['User']) : '';
-			$ux = $u['User']['name'];
+			$ux = $u ? User::displayName($u['User']) : '';
+			$s[$i]['Sgf']['user'] = $ux;
 			$t = $this->Tsumego->findById($s[$i]['Sgf']['tsumego_id']);
 			$scT = $this->SetConnection->findDisplaySetConnection($t['Tsumego']['id']);
 			$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];

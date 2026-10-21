@@ -20,9 +20,11 @@ SELECT
     tsumego.id as tsumego_id,
     COALESCE(sgf.sgf, '') AS sgf,
     user.id AS user_id,
-    user.name AS user_name,
+    user.display_name AS user_display_name,
     user.picture AS user_picture,
+    user.pref_avatar AS user_pref_avatar,
     user.external_id AS user_external_id,
+    user.email AS user_email,
     user.rating AS user_rating,
     set_connection.id AS set_connection_id,
     set_connection.num AS num,
@@ -66,8 +68,12 @@ OFFSET " . $this->offset, [Auth::getUserID()]);
 		new TsumegoButton($item['tsumego_id'], $item['set_connection_id'], $item['num'], $item['status'] ?: 'N', 0, $item['sgf'])->render();
 		echo '</td>';
 		echo '<td style="white-space:nowrap">';
-		echo '<button class="btn btn--small" onclick="window.location=\'/users/acceptTagConnectionProposal/' . $item['tag_connection_id'] . '\'" id="tag-connection-accept-' . $item['tag_connection_id'] . '">Accept</button>';
-		echo '<button class="btn btn--small" onclick="window.location=\'/users/rejectTagConnectionProposal/' . $item['tag_connection_id'] . '\'" id="tag-connection-reject-' . $item['tag_connection_id'] . '">Reject</button>';
+		echo '<form method="post" style="display:inline" action="/users/acceptTagConnectionProposal/' . $item['tag_connection_id'] . '">';
+		echo '<button type="submit" class="btn btn--small" id="tag-connection-accept-' . $item['tag_connection_id'] . '">Accept</button>';
+		echo '</form>';
+		echo '<form method="post" style="display:inline" action="/users/rejectTagConnectionProposal/' . $item['tag_connection_id'] . '">';
+		echo '<button type="submit" class="btn btn--small" id="tag-connection-reject-' . $item['tag_connection_id'] . '">Reject</button>';
+		echo '</form>';
 		echo '</td>';
 		echo '<td style="font-size:13px"><time datetime="' . Util::toIso8601($item['created']) . '" data-format="datetime">' . $item['created'] . '</time></td>';
 	}

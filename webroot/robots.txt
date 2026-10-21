@@ -22,7 +22,8 @@ Disallow: /api/
 # Forum (phpBB2) - Block entirely
 Disallow: /forums/
 
-# Block search/filter pages with parameters (avoid duplicate content)
+# Block parameterised variants of a list (sorting, paging). They share one
+# canonical URL, so crawling them adds nothing to the index
 Disallow: /*?*sort=
 Disallow: /*?*page=
 

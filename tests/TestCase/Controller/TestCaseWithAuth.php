@@ -66,7 +66,7 @@ class TestCaseWithAuth extends ControllerTestCase
 
 	protected function checkPlayNavigationButtons($browser, int $count, $context, $indexFunction, $orderFunction, int $currentIndex, string $currentStatus): void
 	{
-		$navigationButtons = $browser->driver->findElements(WebDriverBy::cssSelector('div.problem-nav__inner li'));
+		$navigationButtons = $browser->getElements('div.problem-nav__inner li');
 
 		$this->assertCount($count, $navigationButtons);
 		foreach ($navigationButtons as $key => $button)

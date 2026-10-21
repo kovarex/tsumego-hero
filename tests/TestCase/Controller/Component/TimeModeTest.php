@@ -7,7 +7,6 @@ use App\Utility\TimeMode;
 use App\Utility\TimeModeUtil;
 use App\Utility\Util;
 use Facebook\WebDriver\WebDriverBy;
-use Facebook\WebDriver\WebDriverExpectedCondition;
 
 class TimeModeTest extends TestCaseWithAuth
 {
@@ -110,7 +109,7 @@ class TimeModeTest extends TestCaseWithAuth
 
 	public function getTimeModeReportedTime($browser): array
 	{
-		$countdown = $browser->driver->findElement(WebDriverBy::cssSelector('#time-mode-countdown'))->getText();
+		$countdown = $browser->find('#time-mode-countdown')->getText();
 		$x = [];
 		$this->assertSame(preg_match('/(\d+):([0-5]\d)\.(\d)/', $countdown, $x), 1, 'The status should contain time in format m:s.d, but it wasn\'t found in the string: "' . $countdown . "'");
 		return ['minutes' => intval($x[1]), 'seconds' => intval($x[2]), 'decimals' => intval($x[3])];
@@ -176,13 +175,13 @@ class TimeModeTest extends TestCaseWithAuth
 			if ($i == TimeModeUtil::$PROBLEM_COUNT)
 				break;
 			$browser->playWithResult('S');
-			$nextButton = $browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'));
+			$nextButton = $browser->find('#besogo-next-button');
 			$this->assertTrue($nextButton->isEnabled());
 			$this->assertTrue($nextButton->isDisplayed());
 			$this->assertSame($nextButton->getTagName(), "input");
 			$this->assertSame($nextButton->getAttribute('value'), 'Next');
 			$nextButton->click();
-			$browser->driver->wait(10)->until(WebDriverExpectedCondition::stalenessOf($nextButton));
+			$browser->waitUntilStale($nextButton);
 		}
 
 		$this->assertEmpty(ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => [
@@ -219,7 +218,7 @@ class TimeModeTest extends TestCaseWithAuth
 		// In time mode a previously solved problem is a fresh challenge, so it
 		// must not open in review mode before the player solves it.
 		$this->assertSame(
-			count($browser->driver->findElements(WebDriverBy::cssSelector('#besogo-review-button'))),
+			count($browser->getElements('#besogo-review-button')),
 			0,
 			'A time mode problem the player already solved must not open in review mode.'
 		);
@@ -239,12 +238,10 @@ class TimeModeTest extends TestCaseWithAuth
 
 		// The session must move on to a different problem, not re-serve the one
 		// just solved.
-		$nextButton = $browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'));
+		$nextButton = $browser->find('#besogo-next-button');
 		$nextButton->click();
-		$browser->driver->wait(10)->until(WebDriverExpectedCondition::stalenessOf($nextButton));
-		$browser->driver->wait(10)->until(function ($driver) {
-			return is_numeric($driver->executeScript('return window.tsumegoID;'));
-		});
+		$browser->waitUntilStale($nextButton);
+		$browser->waitUntilJs('window.tsumegoID != null && !isNaN(window.tsumegoID)');
 		$this->assertNotSame(
 			(int) $browser->driver->executeScript('return window.tsumegoID;'),
 			(int) $tsumegoID,
@@ -270,13 +267,13 @@ class TimeModeTest extends TestCaseWithAuth
 		);
 
 		// A previously solved problem starts fresh in time mode: no review, comments hidden.
-		$this->assertSame(0, count($browser->driver->findElements(WebDriverBy::cssSelector('#besogo-review-button'))));
+		$this->assertSame(0, count($browser->getElements('#besogo-review-button')));
 		$this->assertSame('none', $commentDisplay());
 
 		$browser->playWithResult('S');
 
 		// Solving enables review and reveals the comments.
-		$this->assertGreaterThan(0, count($browser->driver->findElements(WebDriverBy::cssSelector('#besogo-review-button'))));
+		$this->assertGreaterThan(0, count($browser->getElements('#besogo-review-button')));
 		$this->assertSame('block', $commentDisplay());
 	}
 
@@ -299,11 +296,7 @@ class TimeModeTest extends TestCaseWithAuth
 		$this->assertTrue(Auth::isInTimeMode());
 
 		// Wait for countdown JS to initialize
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			$text = $driver->findElement(WebDriverBy::cssSelector('#time-mode-countdown'))->getText();
-			return preg_match('/\d+:[0-5]\d\.\d/', $text) === 1;
-		});
+		$browser->waitUntilJs('/\d+:[0-5]\d\.\d/.test(document.querySelector("#time-mode-countdown").textContent)');
 		$result = $this->getTimeModeReportedTime($browser);
 		$resultTotal = $result['minutes'] * 60 + $result['seconds'] + $result['decimals'] * 0.1;
 		$this->assertTrue($resultTotal > 200 && $resultTotal <= TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS,
@@ -311,10 +304,7 @@ class TimeModeTest extends TestCaseWithAuth
 
 		// refresh
 		$browser->get('timeMode/play');
-		$wait->until(function ($driver) {
-			$text = $driver->findElement(WebDriverBy::cssSelector('#time-mode-countdown'))->getText();
-			return preg_match('/\d+:[0-5]\d\.\d/', $text) === 1;
-		});
+		$browser->waitUntilJs('/\d+:[0-5]\d\.\d/.test(document.querySelector("#time-mode-countdown").textContent)');
 		$timeModeSessionID = ClassRegistry::init('TimeModeSession')->find('first')['TimeModeSession']['id'];
 		$queuedAttempts = ClassRegistry::init('TimeModeAttempt')->find('all', ['conditions' => [
 			'time_mode_session_id' => $timeModeSessionID,
@@ -356,18 +346,11 @@ class TimeModeTest extends TestCaseWithAuth
 		$this->assertTrue(Auth::isInTimeMode());
 
 		// Wait for countdown JS to be ready
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			$text = $driver->findElement(WebDriverBy::cssSelector('#time-mode-countdown'))->getText();
-			return preg_match('/\d+:[0-5]\d\.\d/', $text) === 1;
-		});
+		$browser->waitUntilJs('/\d+:[0-5]\d\.\d/.test(document.querySelector("#time-mode-countdown").textContent)');
 		$openForTooLong = (TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS + 1) * 1000;
 		$browser->driver->executeScript("window.clockStart -= {$openForTooLong};");
 		// Wait for countdown to show 0:00.0
-		$wait->until(function ($driver) {
-			$text = $driver->findElement(WebDriverBy::cssSelector('#time-mode-countdown'))->getText();
-			return preg_match('/0:00\.0/', $text) === 1;
-		});
+		$browser->waitUntilJs('document.querySelector("#time-mode-countdown").textContent.includes("0:00.0")');
 		$browser->assertNoJsErrors();
 		$newResult = $this->getTimeModeReportedTime($browser);
 		$this->assertSame($newResult['minutes'], 0);
@@ -400,9 +383,9 @@ class TimeModeTest extends TestCaseWithAuth
 
 		Auth::init();
 		$this->assertTrue(Auth::isInTimeMode());
-		$this->assertSame($browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->getAttribute("value"), "Skip");
+		$this->assertSame($browser->find('#besogo-next-button')->getAttribute("value"), "Skip");
 		$browser->playWithResult('S'); // mark the problem solved
-		$this->assertSame($browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->getAttribute("value"), "Next");
+		$this->assertSame($browser->find('#besogo-next-button')->getAttribute("value"), "Next");
 	}
 
 	public function testTimeModeSkip()
@@ -422,7 +405,7 @@ class TimeModeTest extends TestCaseWithAuth
 
 		Auth::init();
 		$this->assertTrue(Auth::isInTimeMode());
-		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
+		$browser->find('#besogo-next-button')->click();
 		$session = ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => [
 			'user_id' => Auth::getUserID(),
 			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]])['TimeModeSession'];
@@ -448,7 +431,7 @@ class TimeModeTest extends TestCaseWithAuth
 		Auth::init();
 		$this->assertTrue(Auth::isInTimeMode());
 		$this->assertSame(Util::getMyAddress() . '/timeMode/play', $browser->driver->getCurrentURL());
-		$this->assertSame($browser->getCssSelect("#playTitle")[0]->getText(), "1 of 10");
+		$this->assertSame($browser->getElements("#playTitle")[0]->getText(), "1 of 10");
 	}
 
 	public function checkUnlockWhen($conditions)
@@ -487,8 +470,8 @@ class TimeModeTest extends TestCaseWithAuth
 		$browser->get('timeMode/play');
 
 		$browser->playWithResult($conditions['actuallySolvedSession'] ? 'S' : 'F'); // mark the problem solved
-		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
-		$browser->waitUntilCssSelectorExists('.timeModeTable', 10); // wait for result page to load
+		$browser->find('#besogo-next-button')->click();
+		$browser->find('.timeModeTable', 10); // wait for result page to load
 
 		$this->assertEmpty(ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => [
 			'user_id' => Auth::getUserID(),
@@ -498,7 +481,7 @@ class TimeModeTest extends TestCaseWithAuth
 		$session = ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => ['id' => $context->timeModeSessions[0]['id']]]);
 		$this->assertSame($session['TimeModeSession']['time_mode_session_status_id'],
 			$conditions['actuallySolvedSession'] ? TimeModeUtil::$SESSION_STATUS_SOLVED : TimeModeUtil::$SESSION_STATUS_FAILED);
-		$alerts = $browser->driver->findElements(WebDriverBy::cssSelector('#time-rank-unlock-alert'));
+		$alerts = $browser->getElements('#time-rank-unlock-alert');
 		if (count($alerts) == 1)
 		{
 			$browser->waitUntilCssSelectorDisplayed('#time-rank-unlock-alert', 5);
@@ -551,7 +534,7 @@ class TimeModeTest extends TestCaseWithAuth
 			$browser->get('timeMode/result/' . $context->timeModeSessions[$indexToShow]['id']);
 			foreach ($contextParameters['time-mode-ranks'] as $rank)
 			{
-				$relatedDiv = $browser->driver->findElement(WebDriverBy::cssSelector('#results_Blitz_' . $rank));
+				$relatedDiv = $browser->find('#results_Blitz_' . $rank);
 				$this->assertSame($relatedDiv->isDisplayed(), $rank == $context->timeModeRanks[$indexToShow]['name']);
 			}
 		}
@@ -573,10 +556,10 @@ class TimeModeTest extends TestCaseWithAuth
 			$context = new ContextPreparator($contextParameters);
 			$browser->get('timeMode/overview');
 
-			$div5k = $browser->driver->findElement(WebDriverBy::cssSelector('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . $context->timeModeRanks[0]['id']));
+			$div5k = $browser->find('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . $context->timeModeRanks[0]['id']);
 			$links5k = $div5k->findElements(WebDriverBy::tagName('a'));
 
-			$div1d = $browser->driver->findElement(WebDriverBy::cssSelector('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . $context->timeModeRanks[1]['id']));
+			$div1d = $browser->find('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . $context->timeModeRanks[1]['id']);
 			$links1d = $div1d->findElements(WebDriverBy::tagName('a'));
 
 			// lowest rank is always unlocked
@@ -608,7 +591,7 @@ class TimeModeTest extends TestCaseWithAuth
 		$context = new ContextPreparator($contextParameters);
 		$browser = Browser::instance();
 		$browser->get('timeMode/overview');
-		$renderedCounts = $browser->driver->findElements(WebDriverBy::cssSelector(".imageContainerText2"));
+		$renderedCounts = $browser->getElements(".imageContainerText2");
 		$visibleCounts = array_values(array_filter($renderedCounts, function ($el) {
 			return $el->isDisplayed();
 		}));
@@ -631,11 +614,11 @@ class TimeModeTest extends TestCaseWithAuth
 		$context = new ContextPreparator($contextParameters);
 		$browser->get('timeMode/overview');
 
-		$div5k = $browser->driver->findElement(WebDriverBy::cssSelector('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . $context->timeModeRanks[0]['id']));
+		$div5k = $browser->find('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . $context->timeModeRanks[0]['id']);
 		$links5k = $div5k->findElements(WebDriverBy::tagName('a'));
 		$imgs5k = $div5k->findElements(WebDriverBy::tagName('img'));
 
-		$div1d = $browser->driver->findElement(WebDriverBy::cssSelector('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . $context->timeModeRanks[1]['id']));
+		$div1d = $browser->find('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . $context->timeModeRanks[1]['id']);
 		$links1d = $div1d->findElements(WebDriverBy::tagName('a'));
 		$imgs1d = $div1d->findElements(WebDriverBy::tagName('img'));
 
@@ -647,15 +630,15 @@ class TimeModeTest extends TestCaseWithAuth
 
 		// hovering shows hovered image
 		$browser->hover($div5k);
-		$browser->driver->wait(10, 50)->until(function () use ($imgs5k) {
+		$browser->waitUntil(function () use ($imgs5k) {
 			return $imgs5k[0]->getAttribute('src') == "/img/rankButton5khover.png";
-		});
+		}, 10, 'rank button 5k to show its hovered image');
 
 		// hovering something else shows unhovered image
 		$browser->hover($div1d);
-		$browser->driver->wait(10, 50)->until(function () use ($imgs5k) {
+		$browser->waitUntil(function () use ($imgs5k) {
 			return $imgs5k[0]->getAttribute('src') == "/img/rankButton5k.png";
-		});
+		}, 10, 'rank button 5k to stop showing its hovered image');
 
 		// locked rank shows inactive image
 		$this->assertSame(count($links1d), 0);
@@ -672,10 +655,10 @@ class TimeModeTest extends TestCaseWithAuth
 		$context = new ContextPreparator($contextParameters);
 		$browser->get('timeMode/overview');
 
-		$div5kBlitz = $browser->driver->findElement(WebDriverBy::cssSelector('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . $context->timeModeRanks[0]['id']));
-		$div1dBlitz = $browser->driver->findElement(WebDriverBy::cssSelector('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . $context->timeModeRanks[1]['id']));
-		$div5kFast = $browser->driver->findElement(WebDriverBy::cssSelector('#rank-selector-' . TimeModeUtil::$CATEGORY_FAST_SPEED . '-' . $context->timeModeRanks[0]['id']));
-		$div1dFast = $browser->driver->findElement(WebDriverBy::cssSelector('#rank-selector-' . TimeModeUtil::$CATEGORY_FAST_SPEED . '-' . $context->timeModeRanks[1]['id']));
+		$div5kBlitz = $browser->find('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . $context->timeModeRanks[0]['id']);
+		$div1dBlitz = $browser->find('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . $context->timeModeRanks[1]['id']);
+		$div5kFast = $browser->find('#rank-selector-' . TimeModeUtil::$CATEGORY_FAST_SPEED . '-' . $context->timeModeRanks[0]['id']);
+		$div1dFast = $browser->find('#rank-selector-' . TimeModeUtil::$CATEGORY_FAST_SPEED . '-' . $context->timeModeRanks[1]['id']);
 
 		// blirz buttons are visible at start
 		$this->assertTrue($div5kBlitz->isDisplayed());
@@ -753,11 +736,7 @@ class TimeModeTest extends TestCaseWithAuth
 		$this->assertTrue(Auth::isInTimeMode());
 
 		// Wait for countdown JS to initialize
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			$text = $driver->findElement(WebDriverBy::cssSelector('#time-mode-countdown'))->getText();
-			return preg_match('/\d+:[0-5]\d\.\d/', $text) === 1;
-		});
+		$browser->waitUntilJs('/\d+:[0-5]\d\.\d/.test(document.querySelector("#time-mode-countdown").textContent)');
 		$browser->assertNoJsErrors();
 		$beforePlayResult = $this->getTimeModeReportedTime($browser);
 		$beforePlayResultSeconds = $beforePlayResult['seconds'] + $beforePlayResult['minutes'] * 60;

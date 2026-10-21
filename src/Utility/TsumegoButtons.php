@@ -3,7 +3,7 @@
 namespace App\Utility;
 
 use ArrayObject;
-use TsumegosController;
+use Set;
 
 class TsumegoButtons extends ArrayObject
 {
@@ -11,12 +11,48 @@ class TsumegoButtons extends ArrayObject
 	{
 		if (!$tsumegoFilters)
 			return;
-		$condition = "";
-		$this->fill($condition, $tsumegoFilters, $id);
+		$this->fill('', $tsumegoFilters, $id);
 
 		// in topics we respect the orders specified by set connections, in other cases, it is kind of a
 		// 'virtual set' and we just order it from 1 to max
-		if ($tsumegoFilters->query != 'topics' && $tsumegoFilters->query != 'published')
+		$resetOrders = $tsumegoFilters->query != 'topics' && $tsumegoFilters->query != 'published';
+		$this->finalize($currentSetConnectionID, $partition, $tsumegoFilters->collectionSize, $resetOrders);
+	}
+
+	/**
+	 * Build buttons directly from a row set, used by dynamic queues such as mistake training.
+	 * Rows must expose tsumego_id, set_connection_id, num, status, rating and sgf.
+	 *
+	 * $linkPrefix points every problem link at the route that owns the queue, so
+	 * following the queue does not drop the player back into plain play.
+	 */
+	public static function fromRows(array $rows, ?int $currentSetConnectionID = null, int $collectionSize = 200, string $linkPrefix = '/'): TsumegoButtons
+	{
+		$result = new TsumegoButtons();
+		$result->linkPrefix = $linkPrefix;
+		foreach ($rows as $row)
+		{
+			$button = new TsumegoButton(
+				(int) $row['tsumego_id'],
+				(int) $row['set_connection_id'],
+				(int) $row['num'],
+				Auth::isLoggedIn() ? ($row['status'] ?: 'N') : 'N',
+				isset($row['rating']) ? (float) $row['rating'] : 0,
+				$row['sgf'] ?? ''
+			);
+			$button->linkPrefix = $linkPrefix;
+			$result[] = $button;
+		}
+		$result->finalize($currentSetConnectionID, null, $collectionSize, true);
+		return $result;
+	}
+
+	/**
+	 * Apply virtual-set ordering, mark the currently opened problem and partition.
+	 */
+	private function finalize(?int $currentSetConnectionID, ?int $partition, int $collectionSize, bool $resetOrders): void
+	{
+		if ($resetOrders)
 			$this->resetOrders();
 
 		if (!is_null($currentSetConnectionID))
@@ -28,10 +64,10 @@ class TsumegoButtons extends ArrayObject
 				$this[$currentIndex]->isCurrentlyOpened = true;
 				$this->currentOrder = $this[$currentIndex]->order;
 			}
-			$this->partitionByCurrentOne($currentIndex, $tsumegoFilters->collectionSize);
+			$this->partitionByCurrentOne($currentIndex, $collectionSize);
 		}
 		elseif (!is_null($partition))
-			$this->partitionByParameter($partition, $tsumegoFilters->collectionSize);
+			$this->partitionByParameter($partition, $collectionSize);
 	}
 
 	public static function deriveFrom(TsumegoButtons $other): TsumegoButtons
@@ -41,6 +77,7 @@ class TsumegoButtons extends ArrayObject
 		$result->partition = $other->partition;
 		$result->isPartitioned = $other->isPartitioned;
 		$result->currentOrder = $other->currentOrder;
+		$result->linkPrefix = $other->linkPrefix;
 		return $result;
 	}
 
@@ -125,33 +162,38 @@ class TsumegoButtons extends ArrayObject
 		}
 	}
 
-	public function getPartitionLinkSuffix(): string
+	/**
+	 * The page of the collection a link should open, counting from one.
+	 */
+	public function getPartition(): int
 	{
-		if (!$this->isPartitioned)
-			return '';
-		return '/' . ($this->partition + 1);
+		return $this->isPartitioned ? $this->partition + 1 : 1;
 	}
 
+	/**
+	 * The page of the collection a title should name, counting from one.
+	 */
 	public function getPartitionTitleSuffix(): string
 	{
-		if (!$this->isPartitioned)
-			return '';
-		return ' #' . ($this->partition + 1);
+		return $this->isPartitioned ? ' #' . $this->getPartition() : '';
 	}
 
-	public function exportCurrentAndPreviousLink(callable $setFunction, TsumegoFilters $tsumegoFilters, int $setConnectionID, array $set): void
+	public function exportCurrentAndPreviousLink(callable $setFunction, ?TsumegoFilters $tsumegoFilters, int $setConnectionID, ?array $set, ?string $edgeLink = null): void
 	{
 		$indexOfCurrent = array_find_key((array) $this, function ($tsumegoButton) use ($setConnectionID) {
 			return $tsumegoButton->setConnectionID == $setConnectionID;
 		});
 
+		if ($edgeLink === null && $tsumegoFilters !== null)
+			$edgeLink = Set::url($tsumegoFilters->getSetID($set ?? []), $this->getPartition());
+
 		if (isset($indexOfCurrent) && $indexOfCurrent > 0)
 			$previousSetConnectionID = $this[$indexOfCurrent - 1]->setConnectionID;
-		$setFunction('previousLink', TsumegosController::tsumegoOrSetLink($tsumegoFilters, isset($previousSetConnectionID) ? $previousSetConnectionID : null, $tsumegoFilters->getSetID($set)));
+		$setFunction('previousLink', isset($previousSetConnectionID) ? $this->linkPrefix . $previousSetConnectionID : $edgeLink);
 
 		if (isset($indexOfCurrent) && count($this) > $indexOfCurrent + 1)
 			$nextSetConnectionID = $this[$indexOfCurrent + 1]->setConnectionID;
-		$setFunction('nextLink', TsumegosController::tsumegoOrSetLink($tsumegoFilters, isset($nextSetConnectionID) ? $nextSetConnectionID : null, $tsumegoFilters->getSetID($set)));
+		$setFunction('nextLink', isset($nextSetConnectionID) ? $this->linkPrefix . $nextSetConnectionID : $edgeLink);
 	}
 
 	public function getProblemsSolvedPercent(): float
@@ -175,6 +217,7 @@ class TsumegoButtons extends ArrayObject
 
 	public int $partition = 0;
 	public bool $isPartitioned = false;
+	public string $linkPrefix = '/';
 	public int $highestTsumegoOrder = -1;
 	public ?int $currentOrder = -1;
 	public ?string $description = null;
