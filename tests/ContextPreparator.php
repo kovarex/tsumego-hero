@@ -336,6 +336,7 @@ class ContextPreparator
 		$comment['message'] = Util::extract('message', $commentInput);
 		$comment['tsumego_id'] = $tsumego['id'];
 		$comment['user_id'] = $this->user['id'];
+		$comment['position'] = Util::extract('position', $commentInput);
 		if ($issueId !== null)
 			$comment['tsumego_issue_id'] = $issueId;
 		$created = Util::extract('created', $commentInput);

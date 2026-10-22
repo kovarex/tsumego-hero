@@ -14,6 +14,7 @@ use App\Utility\MistakeTraining;
 use App\Utility\PwnedPasswordChecker;
 use App\Utility\PwnedPasswordCheckerInterface;
 use App\Utility\SGFProposalsRenderer;
+use App\Utility\SgfCommentReorientation;
 use App\Utility\TagConnectionProposalsRenderer;
 use App\Utility\TagProposalsRenderer;
 use App\Utility\TimeModeUtil;
@@ -1678,6 +1679,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		}
 		$proposalToApprove['accepted'] = 1;
 		ClassRegistry::init('Sgf')->save($proposalToApprove);
+		SgfCommentReorientation::afterAccepted((int) $proposalToApprove['id']);
 
 		AppController::handleContribution(Auth::getUserID(), 'reviewed');
 		AppController::handleContribution($proposalToApprove['user_id'], 'made_proposal');

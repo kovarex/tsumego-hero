@@ -20,7 +20,6 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     label = "1", // Next label that will be applied
     navHistory = [], // Navigation history
     gameInfo = {}, // Game info properties
-    nextOpen = [],
     // Order of coordinate systems
     COORDS = "none numeric western eastern pierre corner eastcor".split(" "),
     coord = "none", // Selected coordinate system
@@ -38,13 +37,15 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     fullEditor = false, // when true, it enables the moves to be considered when calculating correct status, and these are also allowed to be played by autoplay
     // when false, the moves are blue and considered to be just explore moves by the review/testing when solving and don't affect autoplay nor correct calculations
     remainingRequiredNodes = [],
-    commentParamList = [],
+    appliedTransformations = [], // Transformations applied since the root was loaded, see recordTransformation
+    anchoredCommentNodes = new Map(),
     displayResult = null,
     showComment = null,
     addTimeForMovePlayed = null;
 
   return {
     addListener: addListener,
+    removeListener: removeListener,
     click: click,
     nextNode: nextNode,
     prevNode: prevNode,
@@ -90,17 +91,21 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     resetToStart: resetToStart,
     registerShowComment: registerShowComment,
     displayHoverCoord: displayHoverCoord,
-    commentPosition: commentPosition,
-    commentTreeSearch: commentTreeSearch,
-    commentTreeSearchExtendPath: commentTreeSearchExtendPath,
-    getOrientation: getOrientation,
-    dynamicCommentCoords: dynamicCommentCoords,
-    adjustCommentCoords: adjustCommentCoords,
-    isMoveInTree: isMoveInTree,
-    searchNodesForTreePosition: searchNodesForTreePosition,
+    displayHoverCoordAt: displayHoverCoordAt,
+    coordLabelToXY: coordLabelToXY,
+    resolveSequenceHover: resolveSequenceHover,
+    coordXYToLabel: coordXYToLabel,
+    findNodeForPosition: findNodeForPosition,
+    showCommentPosition: showCommentPosition,
+    makeCommentPosition: makeCommentPosition,
+    sgfLabelToView: sgfLabelToView,
+    viewLabelToSgf: viewLabelToSgf,
+    isColorInverted: isColorInverted,
+    getTransformationFromSgf: getTransformationFromSgf,
+    getAnchoredCommentCount: getAnchoredCommentCount,
+    setAnchoredComments: setAnchoredComments,
     setFullEditor: setFullEditor,
     displayError: displayError,
-    compareFoundCommentMoves: compareFoundCommentMoves,
     createSignatures: createSignatures,
     applyRotation: applyRotation,
   };
@@ -226,7 +231,8 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
   function loadRoot(load) {
     root = load;
     current = load;
-    notifyListeners({ treeChange: true, navChange: true, stoneChange: true });
+    appliedTransformations = [];
+    notifyListeners({ treeChange: true, navChange: true, stoneChange: true, transformChange: true });
     edited = false;
   }
 
@@ -698,6 +704,12 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     listeners.push(listener);
   }
 
+  // Removes a previously registered listener (used for React cleanup)
+  function removeListener(listener) {
+    var index = listeners.indexOf(listener);
+    if (index !== -1) listeners.splice(index, 1);
+  }
+
   // Notify listeners with the given message object
   //  Data sent to listeners:
   //    tool: changed tool selection
@@ -736,7 +748,8 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
 
   function applyTransformation(transformation) {
     root.applyTransformationOnRoot(transformation);
-    notifyListeners({ treeChange: true, navChange: true, stoneChange: true });
+    recordTransformation(transformation);
+    notifyListeners({ treeChange: true, navChange: true, stoneChange: true, transformChange: true });
     edited = true;
   }
 
@@ -843,365 +856,274 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     showComment = value;
   }
 
-  function commentPosition(positionParams) {
-    commentParamList = [];
-    var positionParams2 = [];
-    if (typeof positionParams[9] !== "undefined") {
-      positionParams2 = positionParams[9].split("+");
-      for (let i = 0; i < positionParams2.length; i++)
-        positionParams2[i] = positionParams2[i].split("/");
+  // ── Board transformation record ───────────────────────────────────
+  // Every transformation (normalising the problem to the top-left, the chosen
+  // corner, rotating a tall board, inverting the colours, the orientation
+  // buttons) changes the tree's coordinates in place. Each one applied since
+  // the root was loaded is recorded here, so a point of the stored SGF maps
+  // exactly to the board as shown, and back. Comments keep their coordinates
+  // in the space of the stored SGF and are converted through these.
+
+  function recordTransformation(transformation) {
+    var copy = besogo.makeTransformation();
+    copy.hFlip = !!transformation.hFlip;
+    copy.vFlip = !!transformation.vFlip;
+    copy.rotateClockwise = !!transformation.rotateClockwise;
+    copy.rotateCounterClockwise = !!transformation.rotateCounterClockwise;
+    copy.invertColors = !!transformation.invertColors;
+    appliedTransformations.push(copy);
+  }
+
+  // Maps a point of the stored SGF to the point on the board as shown.
+  function sgfPointToView(point) {
+    var size = root.getSize();
+    var result = { x: point.x, y: point.y };
+    for (var i = 0; i < appliedTransformations.length; i++)
+      result = appliedTransformations[i].apply(result, size);
+    return { x: result.x, y: result.y };
+  }
+
+  // Maps a point on the board as shown back to the point of the stored SGF.
+  function viewPointToSgf(point) {
+    var size = root.getSize();
+    var result = { x: point.x, y: point.y };
+    for (var i = appliedTransformations.length - 1; i >= 0; i--)
+      result = appliedTransformations[i].applyInverse(result, size);
+    return { x: result.x, y: result.y };
+  }
+
+  // Whether black and white are swapped compared to the stored SGF.
+  function isColorInverted() {
+    var inverted = false;
+    for (var i = 0; i < appliedTransformations.length; i++)
+      if (appliedTransformations[i].invertColors)
+        inverted = !inverted;
+    return inverted;
+  }
+
+  // The transformation from the stored SGF to the board as shown, written as
+  // an optional transpose (x and y swapped) followed by the flips. The server
+  // applies it in this form when the board is saved as a new SGF version.
+  function getTransformationFromSgf() {
+    var size = root.getSize();
+    // (1, 2) lies on no symmetry axis, so its image identifies the transformation
+    var probe = sgfPointToView({ x: 1, y: 2 });
+    var transpose = probe.x === 2 || probe.x === size.x - 1;
+    return {
+      transpose: transpose,
+      flipX: transpose ? probe.x === size.x - 1 : probe.x === size.x,
+      flipY: transpose ? probe.y === size.y : probe.y === size.y - 1,
+      invertColors: isColorInverted(),
+    };
+  }
+
+  // Converts a western coordinate label (e.g. "R19") into its (x, y) point,
+  // or null when it is not on the board.
+  function coordLabelToXY(label) {
+    var size = root.getSize();
+    var letter = String(label).charAt(0).toUpperCase();
+    if (letter < "A" || letter > "Z" || letter === "I") return null;
+    var x = letter.charCodeAt(0) - 64;
+    if (letter > "I") x--;
+    var row = parseInt(String(label).substring(1), 10);
+    var y = size.y - row + 1;
+    if (!(x >= 1 && x <= size.x && y >= 1 && y <= size.y)) return null;
+    return { x: x, y: y };
+  }
+
+  // Converts an (x, y) point into its western coordinate label (e.g. A17).
+  function coordXYToLabel(x, y) {
+    var size = root.getSize();
+    if (x < 1 || x > size.x || y < 1 || y > size.y) return null;
+    var labels = besogo.coord.western(size.x, size.y);
+    return labels.x[x] + labels.y[y];
+  }
+
+  // Converts a coordinate label of the stored SGF to the label of the same
+  // intersection on the board as shown (null when it is not on the board).
+  function sgfLabelToView(label) {
+    var point = coordLabelToXY(label);
+    if (!point) return null;
+    var view = sgfPointToView(point);
+    return coordXYToLabel(view.x, view.y);
+  }
+
+  // Converts a coordinate label read on the board as shown to the label of
+  // the same intersection in the stored SGF (null when it is not on the board).
+  function viewLabelToSgf(label) {
+    var point = coordLabelToXY(label);
+    if (!point) return null;
+    var sgf = viewPointToSgf(point);
+    return coordXYToLabel(sgf.x, sgf.y);
+  }
+
+  // ── Position-anchored comment support ─────────────────────────────
+  // A comment can be anchored to a node of the game tree. Its `position` is
+  // "x/y/parentX/parentY/childX/childY/moveNumber/childCount/sgf|path", where
+  // path lists the moves from the root to the node ("x/y+x/y"). All of the
+  // coordinates are points of the stored SGF (missing moves are -1/-1).
+
+  function makeCommentPosition(node) {
+    if (!node || !node.move) return null;
+    function sgfMove(move) {
+      if (!move) return "-1/-1";
+      var point = viewPointToSgf(move);
+      return point.x + "/" + point.y;
     }
+    var path = [];
+    for (var n = node; n; n = n.parent)
+      if (n.move) path.unshift(sgfMove(n.move));
+    var parentMove = node.parent && node.parent.move ? node.parent.move : null;
+    var childMove = node.children.length > 0 && node.children[0].move ? node.children[0].move : null;
+    return sgfMove(node.move) + "/" + sgfMove(parentMove) + "/" + sgfMove(childMove) + "/" +
+      node.moveNumber + "/" + node.children.length + "/sgf|" + path.join("+");
+  }
 
-    let hasParent = true;
-    if (positionParams[2] == -1) hasParent = false;
-
-    //normalizing orientation
-    let counter = 0;
-    if (positionParams[8] === "top-right") {
-      counter = 0;
-      while (counter <= 5) {
-        if (counter % 2 == 0)
-          positionParams[counter] = 20 - positionParams[counter];
-        counter++;
+  // Finds the direct child (or its continuation through null-move/setup nodes)
+  // whose move matches the coordinate. Child moves among siblings are unique in
+  // a game tree, so we must only descend along the actual path - NOT search the
+  // whole subtree, which would match transpositions from other variations and
+  // collapse different comments onto the same node.
+  function findChildByCoord(node, coord) {
+    if (!node) return null;
+    for (var i = 0; i < node.children.length; i++) {
+      var child = node.children[i];
+      if (!child.move)
+      {
+        // setup node: the path passes through it - inspect its continuation
+        var result = findChildByCoord(child, coord);
+        if (result) return result;
       }
-      for (let i = 0; i < positionParams2.length; i++)
-        positionParams2[i][0] = 20 - positionParams2[i][0];
-    } else if (positionParams[8] === "bottom-left") {
-      counter = 0;
-      while (counter <= 5) {
-        if (counter % 2 != 0)
-          positionParams[counter] = 20 - positionParams[counter];
-        counter++;
-      }
-      for (let i = 0; i < positionParams2.length; i++)
-        positionParams2[i][1] = 20 - positionParams2[i][1];
-    } else if (positionParams[8] === "bottom-right") {
-      counter = 0;
-      while (counter <= 5) {
-        positionParams[counter] = 20 - positionParams[counter];
-        counter++;
-      }
-      for (let i = 0; i < positionParams2.length; i++) {
-        positionParams2[i][0] = 20 - positionParams2[i][0];
-        positionParams2[i][1] = 20 - positionParams2[i][1];
-      }
+      else if (child.move.x === coord.x && child.move.y === coord.y)
+        return child;
     }
-    //apply transformation after normalizing
-    if (besogo.scaleParameters["orientation"] !== "full-board") {
-      if (besogo.boardParameters["corner"] === "top-right") {
-        counter = 0;
-        while (counter <= 5) {
-          if (counter % 2 == 0)
-            positionParams[counter] = 20 - positionParams[counter];
-          counter++;
-        }
-        for (let i = 0; i < positionParams2.length; i++)
-          positionParams2[i][0] = 20 - positionParams2[i][0];
-      } else if (besogo.boardParameters["corner"] === "bottom-left") {
-        counter = 0;
-        while (counter <= 5) {
-          if (counter % 2 != 0)
-            positionParams[counter] = 20 - positionParams[counter];
-          counter++;
-        }
-        for (let i = 0; i < positionParams2.length; i++)
-          positionParams2[i][1] = 20 - positionParams2[i][1];
-      } else if (besogo.boardParameters["corner"] === "bottom-right") {
-        counter = 0;
-        while (counter <= 5) {
-          positionParams[counter] = 20 - positionParams[counter];
-          counter++;
-        }
-        for (let i = 0; i < positionParams2.length; i++) {
-          positionParams2[i][0] = 20 - positionParams2[i][0];
-          positionParams2[i][1] = 20 - positionParams2[i][1];
-        }
-      }
+    return null;
+  }
+
+  // Resolves a comment position to the game-tree node it anchors, or null when
+  // it cannot be found (e.g. the tree changed underneath). Does not navigate or
+  // mutate the editor state.
+  function findNodeForPosition(positionString) {
+    if (!positionString) return null;
+    var path = positionString.split("|")[1];
+    if (!path) return null;
+    var node = root;
+    var moves = path.split("+");
+    for (var i = 0; i < moves.length; i++) {
+      var parts = moves[i].split("/");
+      if (parts.length < 2) return null;
+      var point = sgfPointToView({ x: parseInt(parts[0], 10), y: parseInt(parts[1], 10) });
+      node = findChildByCoord(node, point);
+      if (!node) return null;
     }
+    return node;
+  }
 
-    if (positionParams[8] !== "0") {
-      commentTreeSearch(
-        root,
-        0,
-        0,
-        nextOpen,
-        positionParams,
-        true,
-        positionParams2
-      );
+  // Shows the position a comment is anchored to. When the tree changed since
+  // the comment was written, the moves it no longer has are played as local
+  // moves, as far as they are legal. Returns false when there is no position.
+  function showCommentPosition(positionString) {
+    var path = positionString ? positionString.split("|")[1] : null;
+    if (!path) return false;
+    var node = root;
+    var moves = path.split("+");
+    for (var i = 0; i < moves.length; i++) {
+      var parts = moves[i].split("/");
+      if (parts.length < 2) break;
+      var point = sgfPointToView({ x: parseInt(parts[0], 10), y: parseInt(parts[1], 10) });
+      var child = findChildByCoord(node, point);
+      if (!child) {
+        child = node.makeChild();
+        child.localEdit = true;
+        if (!child.playMove(point.x, point.y)) break;
+        node.registerChild(child);
+      }
+      node = child;
+    }
+    current = node;
+    notifyListeners({ treeChange: true, navChange: true, stoneChange: true });
+    return true;
+  }
 
-      if (positionParams2.length !== 0) {
-        let foundMatch = false;
-        for (let i = 0; i < commentParamList.length; i++) {
-          if (
-            compareFoundCommentMoves(
-              positionParams2,
-              commentParamList[i],
-              i
-            ) !== false
-          ) {
-            foundMatch = i;
-            break;
+  // Finds the shallowest descendant of `node` (strictly below it) whose move
+  // matches `coord`, or null when there is none. Searching for the shallowest
+  // keeps the resolved path as close to the sequence as possible (fewest
+  // unlisted intermediate moves inserted).
+  function findDescendant(node, coord, color) {
+    var bestNode = null;
+    var bestDepth = Infinity;
+    (function visit(n, depth) {
+      for (var i = 0; i < n.children.length; i++) {
+        var child = n.children[i];
+        if (child.move) {
+          if (child.move.x === coord.x && child.move.y === coord.y && depth < bestDepth) {
+            if (color === undefined || child.move.color === color) {
+              bestNode = child;
+              bestDepth = depth;
+            }
           }
         }
-        if (foundMatch !== false) setCurrent(commentParamList[foundMatch]);
-        else setCurrent(root);
+        visit(child, depth + 1);
       }
-    } else setCurrent(root);
+    })(node, 1);
+    return bestNode;
   }
 
-  function compareFoundCommentMoves(
-    positionParams2,
-    commentParams,
-    currentIndex
-  ) {
-    let newP = commentParams;
-    let counter = 0;
-    let match = true;
-    while (newP !== null && newP.move !== null) {
-      if (typeof positionParams2[counter] === "undefined") return false;
-      if (newP.move.x != positionParams2[counter][0]) return false;
-      if (newP.move.y != positionParams2[counter++][1]) return false;
-      newP = newP.parent;
+  // Maps a comment colour marker (b/w) to the besogo stone colour (-1/1).
+  function commentColorToStone(color) {
+    if (color === 'b') return -1;
+    if (color === 'w') return 1;
+    return undefined;
+  }
+
+  // Resolves a comment coordinate sequence for a hover on `hoverIndex`. The
+  // coordinates are labels of the board as shown. The sequence is treated as a
+  // subsequence: it finds the tree path that contains the coords in order
+  // (allowing intermediate moves), and returns the node the hovered coordinate
+  // lands on plus the node right before it. This lets hovering a move always
+  // show the board just before it, even when the comment omits intermediate
+  // moves or spans different branches.
+  //
+  // Returns { found, beforeNode, hoverNode, nodes }. `found` is true when the
+  // hovered coordinate landed on a tree node; `beforeNode` is the node to show
+  // (the move just before the hovered one and from which the hovered move is a
+  // next move).
+  function resolveSequenceHover(coords, hoverIndex, startNode, colors) {
+    var current = startNode || root;
+    var hoverNode = null;
+    var beforeNode = null;
+    var nodes = [];
+    for (var i = 0; i < coords.length; i++) {
+      var point = coordLabelToXY(coords[i]);
+      if (!point) break;
+      var found = findDescendant(current, point, commentColorToStone(colors && colors[i]));
+      if (!found) break;
+      nodes.push(found);
+      if (i === hoverIndex) {
+        hoverNode = found;
+        beforeNode = found.parent || current;
+      }
+      current = found;
     }
-    if (positionParams2.length != counter) return false;
-    return currentIndex;
-  }
-  function commentTreeSearch(
-    node,
-    x,
-    y,
-    nextOpen,
-    positionParams,
-    hasParent = true,
-    positionParams2 = null
-  ) {
-    var children = node.children,
-      position,
-      path,
-      childPath,
-      i; // Scratch iteration variable
-    if (children.length === 0)
-      // Reached end of branch
-      path = "m" + x + "," + y; // Start path at end of branch
-    // Current node has children
-    else {
-      position = nextOpen[x + 1] || 0; // First open spot in next column
-      position = position < y ? y : position; // Bring level with current y
-      if (y < position - 1)
-        // Check if first child natural drop > 1
-        y = position - 1; // Bring current y within 1 of first child drop
-      // Place first child and extend path
-      path =
-        commentTreeSearch(
-          children[0],
-          x + 1,
-          position,
-          nextOpen,
-          positionParams,
-          hasParent,
-          positionParams2
-        ) + commentTreeSearchExtendPath(x, y, nextOpen);
-      // Place other children (intentionally starting at i = 1)
-      for (i = 1; i < children.length; i++) {
-        position = nextOpen[x + 1];
-        childPath =
-          commentTreeSearch(
-            children[i],
-            x + 1,
-            position,
-            nextOpen,
-            positionParams,
-            hasParent,
-            positionParams2
-          ) + commentTreeSearchExtendPath(x, y, nextOpen, position - 1);
-        // End path at beginning of branch
-      }
-    }
-    let childrenMoveX = 0;
-    let childrenMoveY = 0;
-    if (node.children.length === 0) {
-      childrenMoveX = positionParams[4];
-      childrenMoveY = positionParams[5];
-    } else {
-      childrenMoveX = node.children[0].move.x;
-      childrenMoveY = node.children[0].move.y;
-    }
-    if (node.parent !== null && node.parent.move !== null) {
-      if (
-        node.move.x == positionParams[0] &&
-        node.move.y == positionParams[1] &&
-        node.parent.move.x == positionParams[2] &&
-        node.parent.move.y == positionParams[3] &&
-        childrenMoveX == positionParams[4] &&
-        childrenMoveY == positionParams[5] &&
-        node.moveNumber == positionParams[6]
-      ) {
-        if (positionParams2.length === 0) setCurrent(node);
-      }
-    } else if (node.move !== null) {
-      if (
-        node.move.x == positionParams[0] &&
-        node.move.y == positionParams[1] &&
-        childrenMoveX == positionParams[4] &&
-        childrenMoveY == positionParams[5] &&
-        node.moveNumber == positionParams[6]
-      ) {
-        if (positionParams2.length === 0) setCurrent(node);
-      }
-    }
-
-    if (positionParams2.length !== 0 && node.move !== null) {
-      if (
-        node.move.x == positionParams2[0][0] &&
-        node.move.y == positionParams2[0][1]
-      )
-        commentParamList.push(node);
-    }
-
-    nextOpen[x] = y + 1;
-    return path;
+    return { found: !!hoverNode, beforeNode: beforeNode, hoverNode: hoverNode, nodes: nodes };
   }
 
-  function commentTreeSearchExtendPath(x, y, nextOpen, prevChildPos) {
-    // Extends path from child to current
-    var childPos = nextOpen[x + 1] - 1; // Position of child
-    if (childPos === y)
-      // Child is horizontally level with current
-      return "h-120"; // Horizontal line back to current
-    else if (childPos === y + 1)
-      // Child is one drop from current
-      return "l-120,-120"; // Diagonal drop line back to current
-    else if (prevChildPos && prevChildPos !== y)
-      // Previous is already dropped, extend back to previous child drop line
-      return "l-60,-60v-" + 120 * (childPos - prevChildPos);
-    // Extend double-bend drop line back to parent
-    else return "l-60,-60v-" + 120 * (childPos - y - 1) + "l-60,-60";
+  // Highlights a single intersection on the main board by its internal (x, y).
+  function displayHoverCoordAt(x, y) {
+    if (besogo.boardDisplay && besogo.boardDisplay.displayHoverCoordAt)
+      besogo.boardDisplay.displayHoverCoordAt(x, y);
   }
 
-  function getOrientation() {
-    let array = [];
-    array[0] = besogo.boardParameters["corner"];
-    array[1] = besogo.scaleParameters["orientation"];
-    return array;
+  // ── Anchored-comment badge support ────────────────────────────────
+  // `setAnchoredComments` receives a Map of node -> comment count and tells
+  // the tree panel to redraw (only effective when review mode is on).
+  function getAnchoredCommentCount(node) {
+    return anchoredCommentNodes.get(node) || 0;
   }
 
-  function dynamicCommentCoords(id, content) {
-    if (besogo.dynamicCommentCoords.length === 0) {
-      besogo.dynamicCommentCoords[0] = [];
-      besogo.dynamicCommentCoords[1] = [];
-    }
-    besogo.dynamicCommentCoords[0].push(id);
-    besogo.dynamicCommentCoords[1].push(content);
-  }
-
-  function adjustCommentCoords() {
-    let buffer;
-    let c1;
-    let c2;
-    let found = false;
-    let spin = 0;
-    let convertedCoords = besogo.coord["western"](
-      besogo.scaleParameters["boardCoordSize"],
-      besogo.scaleParameters["boardCoordSize"]
-    );
-
-    if (typeof besogo.dynamicCommentCoords[0] !== "undefined") {
-      if (besogo.coordArea["lowestX"] > besogo.coordArea["highestX"]) {
-        buffer = besogo.coordArea["lowestX"];
-        besogo.coordArea["lowestX"] = besogo.coordArea["highestX"];
-        besogo.coordArea["highestX"] = buffer;
-      }
-      if (besogo.coordArea["lowestY"] > besogo.coordArea["highestY"]) {
-        buffer = besogo.coordArea["lowestY"];
-        besogo.coordArea["lowestY"] = besogo.coordArea["highestY"];
-        besogo.coordArea["highestY"] = buffer;
-      }
-      for (let i = 0; i < besogo.dynamicCommentCoords[0].length; i++) {
-        c1 = besogo.dynamicCommentCoords[1][i].charAt(0).toUpperCase();
-        c2 = besogo.dynamicCommentCoords[1][i].substring(1);
-        c1 = c1.charCodeAt(0) - 65;
-        if (c1 > 7) c1--;
-        c2 = besogo.scaleParameters["boardCoordSize"] - c2;
-        found = false;
-        spin = 0;
-        while (spin < 4) {
-          if (!found) {
-            if (spin == 1 || spin == 3) {
-              if (
-                besogo.scaleParameters["boardCanvasSize"] !==
-                "horizontal half board"
-              )
-                c1 = besogo.scaleParameters["boardCoordSize"] - c1 - 1;
-              else c2 = besogo.scaleParameters["boardCoordSize"] - c2 - 1;
-            } else if (spin == 2)
-              c2 = besogo.scaleParameters["boardCoordSize"] - c2 - 1;
-            if (
-              c1 >= besogo.coordArea["lowestX"] &&
-              c1 <= besogo.coordArea["highestX"] &&
-              c2 >= besogo.coordArea["lowestY"] &&
-              c2 <= besogo.coordArea["highestY"]
-            )
-              found = true;
-          }
-          spin++;
-        }
-        c1 = convertedCoords.x[c1 + 1];
-        c2 = convertedCoords.y[c2 + 1];
-        $("#" + besogo.dynamicCommentCoords[0][i]).text(c1 + c2);
-      }
-    }
-  }
-
-  function isMoveInTree(cu) {
-    let moveX;
-    let moveY;
-    let treeX = cu.navTreeX;
-    let treeY = cu.navTreeY;
-    let depth = -1;
-    let found = null;
-    let notInTreeCoords = [];
-    notInTreeCoords["x"] = [];
-    notInTreeCoords["y"] = [];
-    let returnArray = [];
-    let convertedCoords = besogo.coord["western"](
-      besogo.scaleParameters["boardCoordSize"],
-      besogo.scaleParameters["boardCoordSize"]
-    );
-    let exitCounter = 0;
-
-    if (treeX !== 0) {
-      let cu2 = cu;
-      while (found === null) {
-        found = searchNodesForTreePosition(cu2);
-        cu2 = cu2.parent;
-        treeX--;
-        depth++;
-        exitCounter++;
-        if (exitCounter > 1000) break;
-      }
-      while (depth > 0) {
-        moveX = convertedCoords.x[cu.move.x];
-        moveY = convertedCoords.y[cu.move.y];
-        notInTreeCoords["x"].push(moveX);
-        notInTreeCoords["y"].push(moveY);
-        cu = cu.parent;
-        depth--;
-      }
-    } else found = null;
-
-    if (exitCounter > 1000) found = null;
-    returnArray[0] = found;
-    returnArray[1] = notInTreeCoords;
-
-    return returnArray;
-  }
-
-  function searchNodesForTreePosition(cu) {
-    let found = null;
-    for (let i = 0; i < besogo.nodes.length; i++)
-      if (cu == besogo.nodes[i]) found = besogo.nodes[i];
-    return found;
+  function setAnchoredComments(nodeCounts) {
+    anchoredCommentNodes = nodeCounts || new Map();
+    notifyListeners({ treeChange: true });
   }
 
   function setFullEditor(value) {

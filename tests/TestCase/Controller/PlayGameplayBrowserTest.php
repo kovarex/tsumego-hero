@@ -458,6 +458,32 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 		}
 	}
 
+	/**
+	 * Toggling review mode should NOT reset the board to the start position.
+	 * If the user navigated to a move, entering/leaving review keeps them there.
+	 */
+	public function testReviewTogglePreservesBoardPosition(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => ['set_order' => 1, 'status' => 'S', 'sgf' => self::SGF_19]]);
+		$browser = Browser::instance();
+		$browser->get($this->playUrl($context));
+		$this->waitForBoard($browser);
+
+		// Navigate to the first move so the board is not at the root position.
+		// Use setCurrent (not clickBoard) so the puzzle's auto-response cannot
+		// advance the board independently of the review toggle.
+		$browser->driver->executeScript('var root = besogo.editor.getRoot(); if (root.children && root.children.length) besogo.editor.setCurrent(root.children[0]);');
+		$browser->waitUntilJs('besogo.editor.getCurrent().moveNumber >= 1');
+		$moveBefore = $browser->driver->executeScript('return besogo.editor.getCurrent().moveNumber;');
+
+		$browser->clickId('besogo-review-button');
+
+		$moveAfter = $browser->driver->executeScript('return besogo.editor.getCurrent().moveNumber;');
+		$this->assertSame($moveBefore, $moveAfter, 'Review toggle should not reset the board to the start position');
+	}
+
 	public function testSolvedPuzzleCannotBeFailedOrReSolved(): void
 	{
 		$context = new ContextPreparator(['tsumego' => 1]);

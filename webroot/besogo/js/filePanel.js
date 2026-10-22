@@ -229,6 +229,10 @@ besogo.makeFilePanel = function (container, editor) {
       container.removeChild(link); // Immediately remove the link
     } else {
       document.getElementById("sgfInput").value = text;
+      const source = besogo.sourceSgf;
+      const fromSource = source && source.id && source.root === editor.getRoot();
+      document.getElementById("sgfSourceInput").value = fromSource ? source.id : "";
+      document.getElementById("sgfTransformationInput").value = fromSource ? JSON.stringify(editor.getTransformationFromSgf()) : "";
       document.getElementById("sgfForm").submit();
     }
   }

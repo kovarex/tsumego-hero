@@ -63,7 +63,8 @@ besogo.makeBoardDisplay = function(container, editor, corner)
 
   return {
       redrawHover: redrawHover,
-    displayHoverCoord: displayHoverCoord
+    displayHoverCoord: displayHoverCoord,
+    displayHoverCoordAt: displayHoverCoordAt
     };
 
   // Function for setting the flag for touch interfaces
@@ -603,56 +604,13 @@ besogo.makeBoardDisplay = function(container, editor, corner)
       redrawNextMoveStatus(group, current.virtualChildren[i].target, current.virtualChildren[i].move);
   }
 
-  function displayHoverCoord(c = -1)
+  // Highlights an intersection on the main board by its internal (x, y), where
+  // x and y are 1-indexed (pass -1/-1 to clear). Draws the review-move markers
+  // and then a blue marker at the given position.
+  function displayHoverCoordAt(x, y)
   {
-	if(besogoRotation!==-1)
-		return null;
-    let x = -1;
-    let y = -1;
-    if (c!=-1)
-    {
-      let c1 = c.charAt(0).toUpperCase();
-      let c2 = c.substring(1);
-      c1 = c1.charCodeAt(0)-65;
-      if (c1>7)
-        c1--;
-      c2 = besogo.scaleParameters['boardCoordSize']-c2;
-
-      x = c1;
-      y = c2;
-
-      if (besogo.coordArea['lowestX']>besogo.coordArea['highestX'])
-      {
-        buffer = besogo.coordArea['lowestX'];
-        besogo.coordArea['lowestX'] = besogo.coordArea['highestX'];
-        besogo.coordArea['highestX'] = buffer;
-      }
-      if (besogo.coordArea['lowestY']>besogo.coordArea['highestY'])
-      {
-        buffer = besogo.coordArea['lowestY'];
-        besogo.coordArea['lowestY'] = besogo.coordArea['highestY'];
-        besogo.coordArea['highestY'] = buffer;
-      }
-
-      let found = false;
-      let spin = 0;
-      while (spin<4)
-      {
-        if (!found)
-        {
-          if (spin==1 || spin==3)
-            if (besogo.scaleParameters['boardCanvasSize']!=='horizontal half board')
-              x = besogo.scaleParameters['boardCoordSize'] - x - 1;
-            else
-              y = besogo.scaleParameters['boardCoordSize'] - y - 1;
-          else if (spin==2)
-            y = besogo.scaleParameters['boardCoordSize'] - y - 1;
-          if (x >= besogo.coordArea['lowestX'] && x <= besogo.coordArea['highestX'] && y >= besogo.coordArea['lowestY'] && y <= besogo.coordArea['highestY'])
-            found = true;
-        }
-        spin++;
-      }
-    }
+    if (besogoRotation !== -1)
+      return null;
 
     nextMoveGroup.innerHTML = "";
     var circleSize = 15;
@@ -664,24 +622,34 @@ besogo.makeBoardDisplay = function(container, editor, corner)
       {
         var child = current.children[i];
         var element = besogo.svgFilledCircle(svgPos(child.move.x), svgPos(child.move.y), child.getCorrectColor(), circleSize);
-		nextMoveGroup.appendChild(element);
+        nextMoveGroup.appendChild(element);
       }
-	if (current.virtualChildren)
-		for (let i = 0; i < current.virtualChildren.length; ++i)
+      if (current.virtualChildren)
+        for (let i = 0; i < current.virtualChildren.length; ++i)
         {
-			var redirect = current.virtualChildren[i];
-			nextMoveGroup.appendChild(besogo.svgFilledCircle(svgPos(redirect.move.x), svgPos(redirect.move.y), redirect.target.getCorrectColor(), virtualCircleSize));
+          var redirect = current.virtualChildren[i];
+          nextMoveGroup.appendChild(besogo.svgFilledCircle(svgPos(redirect.move.x), svgPos(redirect.move.y), redirect.target.getCorrectColor(), virtualCircleSize));
         }
     }
 
-    if (x != -1)
-    {
-		x+=1;
-		y+=1;
-		nextMoveGroup.appendChild(besogo.svgFilledCircle(svgPos(x), svgPos(y), "blue", circleSize));
-    }
+    if (x !== -1 && y !== -1)
+      nextMoveGroup.appendChild(besogo.svgFilledCircle(svgPos(x), svgPos(y), "blue", circleSize));
     else
-		nextMoveGroup.appendChild(besogo.svgFilledCircle(1, 1, "red", 0));
+      nextMoveGroup.appendChild(besogo.svgFilledCircle(1, 1, "red", 0));
+  }
+
+  // Highlights the intersection a coordinate label (e.g. "R19") denotes on the
+  // main board. A label always maps to the same absolute intersection (its
+  // label-space position) regardless of the current corner - there is no
+  // rotation-guessing, so distinct labels never collapse onto one point.
+  function displayHoverCoord(c = -1)
+  {
+    if (c === -1)
+      return displayHoverCoordAt(-1, -1);
+    var base = editor.coordLabelToXY(c);
+    if (base)
+      return displayHoverCoordAt(base.x, base.y);
+    return displayHoverCoordAt(-1, -1);
   }
 
   function redrawNextMoves(current, clear = false)
