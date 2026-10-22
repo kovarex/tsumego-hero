@@ -14,6 +14,10 @@ class CommentsControllerTest extends ControllerTestCase
 
 	/** SGF of a solved problem with a three move solution line. */
 	private const SOLVED_SGF = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])';
+	/** SOLVED_SGF in the bottom-right corner: the solution is T1, T2, S1. */
+	private const BOTTOM_RIGHT_SGF = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[qq];B[ss];W[sr];B[rs]C[+])';
+	/** A problem along the left edge, taller than wide, so the board turns it on its side: the solution is A19, A18, A17. */
+	private const TALL_SGF = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[ca][cb][cc][cd][ce][cf][cg][ch][ci][cj];B[aa];W[ab];B[ac]C[+])';
 
 	/** The board as the SGF stores it: the top-left corner and its own colours, so comments show as stored. */
 	private const STORED_BOARD = ['pref_board_orientation' => User::PREF_BOARD_ORIENTATION_ORIGINAL, 'pref_player_color' => User::PREF_PLAYER_COLOR_ORIGINAL];
@@ -48,6 +52,20 @@ class CommentsControllerTest extends ControllerTestCase
 		$browser->find('.tsumego-comments__form button[type="submit"]')->click();
 		$browser->waitUntilJs('document.querySelector(".tsumego-comments__form textarea").value === ""');
 		return ClassRegistry::init('TsumegoComment')->find('first', ['order' => 'TsumegoComment.id DESC'])['TsumegoComment'];
+	}
+
+	/** Goes to the second move of the solution, the one a comment attaches in these tests. */
+	private function goToSecondMove(Browser $browser): void
+	{
+		$this->enterReviewMode($browser);
+		$browser->driver->executeScript('besogo.editor.setCurrent(besogo.editor.getRoot().children[0].children[0]);');
+	}
+
+	/** Where the current move is on the board as shown. */
+	private function currentMove(Browser $browser): array
+	{
+		// the browser doesn't keep the key order of the returned object, compare with assertEquals
+		return $browser->driver->executeScript('var move = besogo.editor.getCurrent().move; return {x: move.x, y: move.y};');
 	}
 
 	/**
@@ -229,6 +247,85 @@ class CommentsControllerTest extends ControllerTestCase
 		$comment = $this->submitComment($browser, 'Check this move', true);
 		// the second move, W[ab], with the first move as its parent and the third as its child
 		$this->assertSame('1/2/1/1/2/1/2/1/sgf|1/1+1/2', $comment['position']);
+	}
+
+	/** On a problem the board shows as it is stored, the comment and its position are stored as written. */
+	public function testCommentOnAProblemShownAsStoredIsStoredAsWritten()
+	{
+		$browser = Browser::instance();
+		$this->openSolvedTsumego($browser, ['sgf' => self::SOLVED_SGF], self::STORED_BOARD);
+		$browser->expandComments();
+		$this->goToSecondMove($browser);
+		$this->assertEquals(['x' => 1, 'y' => 2], $this->currentMove($browser));
+
+		$comment = $this->submitComment($browser, 'black A19 then w A18', true);
+		$this->assertSame('black A19 then w A18', $comment['message']);
+		$this->assertSame('1/2/1/1/2/1/2/1/sgf|1/1+1/2', $comment['position']);
+		$browser->waitUntilCssSelectorExistsWithText('.comment__text', 'black A19 then w A18');
+	}
+
+	/**
+	 * A problem stored in another corner is turned to the top-left by the board as it loads,
+	 * here also with the colours swapped. The comment is written as the viewer sees it, stored
+	 * as it refers to the SGF, and points at the same stones on a board turned another way.
+	 */
+	public function testCommentOnAProblemTheBoardTurnsIsStoredInSgfCoordinates()
+	{
+		$browser = Browser::instance();
+		$context = $this->openSolvedTsumego($browser, ['sgf' => self::BOTTOM_RIGHT_SGF], self::STORED_BOARD);
+		$url = '/' . $context->tsumegos[0]['set-connections'][0]['id'];
+		$browser->get($url . '?playercolor=white');
+		$browser->expandComments();
+		// the second move, W[sr] at T2 of the SGF, is shown as black at A18
+		$this->goToSecondMove($browser);
+		$this->assertEquals(['x' => 1, 'y' => 2], $this->currentMove($browser));
+
+		$comment = $this->submitComment($browser, 'white A19 then b A18', true);
+		$this->assertSame('black T1 then w T2', $comment['message']);
+		$this->assertSame('19/18/19/19/18/19/2/1/sgf|19/19+19/18', $comment['position']);
+		$browser->waitUntilCssSelectorExistsWithText('.comment__text', 'white A19 then b A18');
+
+		// in the colours of the SGF, mirrored into the top-right corner
+		$browser->get($url);
+		$browser->expandComments();
+		$this->transformBoard($browser, ['hFlip' => true]);
+		$browser->waitUntilCssSelectorExistsWithText('.comment__text', 'black T19 then w T18');
+		$browser->find('.tsumego-comment__position-label')->click();
+		$browser->waitUntilJs('besogo.editor.getCurrent().moveNumber === 2');
+		$this->assertEquals(['x' => 19, 'y' => 2], $this->currentMove($browser));
+	}
+
+	/** On a board turned as it loads, the coordinates and colours of the comment as shown lead to its moves in the tree, as hovering them does. */
+	public function testCommentOnATurnedBoardPointsAtItsMoves()
+	{
+		$browser = Browser::instance();
+		$context = $this->openSolvedTsumego($browser, ['sgf' => self::BOTTOM_RIGHT_SGF, 'comments' => [['message' => 'black T1 then w T2']]], self::STORED_BOARD);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id'] . '?playercolor=white');
+		$browser->expandComments();
+		$browser->waitUntilCssSelectorExistsWithText('.comment__text', 'white A19 then b A18');
+
+		$this->assertSame([1, 2], $browser->driver->executeScript('
+			var spans = document.querySelectorAll(".go-coord");
+			var coords = [].map.call(spans, function (e) { return e.dataset.coord; });
+			var colors = [].map.call(spans, function (e) { return e.dataset.color || null; });
+			var hover = besogo.editor.resolveSequenceHover(coords, 1, null, colors);
+			return hover.found ? hover.nodes.map(function (node) { return node.moveNumber; }) : null;'));
+	}
+
+	/** A problem taller than wide is turned on its side by the board, the comment follows the rotation. */
+	public function testCommentOnAProblemTheBoardRotatesIsStoredInSgfCoordinates()
+	{
+		$browser = Browser::instance();
+		$this->openSolvedTsumego($browser, ['sgf' => self::TALL_SGF], self::STORED_BOARD);
+		$browser->expandComments();
+		// the second move, W[ab] at A18 of the SGF, is shown at B1
+		$this->goToSecondMove($browser);
+		$this->assertEquals(['x' => 2, 'y' => 19], $this->currentMove($browser));
+
+		$comment = $this->submitComment($browser, 'black A1 then w B1', true);
+		$this->assertSame('black A19 then w A18', $comment['message']);
+		$this->assertSame('1/2/1/1/1/3/2/1/sgf|1/1+1/2', $comment['position']);
+		$browser->waitUntilCssSelectorExistsWithText('.comment__text', 'black A1 then w B1');
 	}
 
 	public function testPositionButtonShowsTheAnchoredMove()
