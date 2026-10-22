@@ -91,11 +91,6 @@
   position: relative;
   top: 9px;
 }
-.author-notice {
-  font-size: 12px;
-  color: var(--text-softer-color);
-  padding: 5px 0 0 5px;
-}
 .besogo-blank-space {
   width: 25px;
   height: 25px;
@@ -611,12 +606,35 @@ h1 {
   margin: 12px 5px 0 1px;
   cursor: pointer;
 }
+/* The author credit is positioned against the board container */
+#target {
+  position: relative;
+}
+/* Author credit: centred in the free band directly above the board. The board
+   panel fills the text with the problem's author. */
 #author-notice {
   position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
   font-size: 12px;
+  line-height: 15px;
+  white-space: nowrap;
   color: var(--text-softer-color);
-  right: 207px;
-  margin-top: 18px;
+}
+/* The XP bar leaves only a narrow gap above the board on a small phone */
+@media (width < 28rem) {
+  #author-notice {
+    font-size: 10px;
+  }
+}
+.play-preview-row {
+  margin-top: 8px;
+}
+.play-preview-row .preview-toggle {
+  display: inline-block;
+  font-weight: var(--font-weight-normal);
+  margin: 0;
 }
 /* Compact health counter (x / y). Hidden on desktop, where the full row of
    heart images is shown; shown instead of the hearts on mobile. */
@@ -870,7 +888,6 @@ h1 {
 	}
 	#target {
 		max-width: 100%;
-		overflow: hidden;
 	}
 
 	/* Back/Reset/Next/Review row: let the buttons wrap to a second line
@@ -880,18 +897,6 @@ h1 {
 		justify-content: center;
 		overflow-x: hidden;
 		margin: 15px 10px 2px 10px;
-	}
-
-	/* "File by <author>" sits below the button row (it was desktop
-	   absolute right:207px which overlapped the buttons on a phone). */
-	#author-notice {
-		position: static;
-		flex-basis: 100%;
-		width: auto;
-		margin: 4px 0 0;
-		text-align: center;
-		font-size: 11px;
-		order: 99;
 	}
 
 	/* Rotation / orientation / fav icons: smaller + tighter so the row
