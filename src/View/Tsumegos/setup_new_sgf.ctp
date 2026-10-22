@@ -4,6 +4,8 @@
  * @var View $this
  * @var int $setConnectionID
  * @var string $sgf
+ * @var ?string $sourceSgfID
+ * @var ?string $transformationFromSource
  */
 
 use App\Utility\ViteManifest;
@@ -42,6 +44,8 @@ $this->end();
 	addInput(form, 'firstMoveColor', firstColor);
 	addInput(form, 'correctMoves', correctMoves);
 	addInput(form, 'setConnectionID', <?php echo (int)$setConnectionID; ?>);
+	addInput(form, 'sourceSgfID', <?php echo json_encode((string) ($sourceSgfID ?? '')); ?>);
+	addInput(form, 'transformationFromSource', <?php echo json_encode((string) ($transformationFromSource ?? ''), JSON_HEX_TAG); ?>);
 
     document.body.appendChild(form);
     form.submit();

@@ -7,6 +7,16 @@
  * Besogo board editor API.
  * The besogo editor is defined in webroot/besogo/js/editor.js
  */
+/** What changed, as passed to editor listeners. */
+interface BesogoChange
+{
+	navChange?: boolean;
+	treeChange?: boolean;
+	stoneChange?: boolean;
+	/** The board was flipped, rotated or its colours swapped, or a new SGF was loaded */
+	transformChange?: boolean;
+}
+
 interface BesogoEditor
 {
 	/**
@@ -34,19 +44,40 @@ interface BesogoEditor
 	click(x: number, y: number, ctrlKey: boolean, shiftKey: boolean): void;
 
 	/**
-	 * Get the board orientation.
-	 * Returns [corner, orientation] where:
-	 * - corner: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
-	 * - orientation: 'full-board' | corner
-	 */
-	getOrientation(): [string, string];
-
-	/**
 	 * Resolve a comment's `position` string to the game-tree node it anchors.
 	 * Returns null when the node cannot be found. Does not navigate/mutate.
-	 * @param positionString The comment.position value (e.g. "3/3/.../full-board|x/y+x/y")
+	 * @param positionString The comment.position value, see makeCommentPosition
 	 */
 	findNodeForPosition(positionString: string): BesogoNode | null;
+
+	/**
+	 * Build the position string anchoring a comment to a node:
+	 * "x/y/parentX/parentY/childX/childY/moveNumber/childCount/sgf|path" with the
+	 * path of moves from the root, all in coordinates of the stored SGF.
+	 * Returns null for a node without a move.
+	 */
+	makeCommentPosition(node: BesogoNode): string | null;
+
+	/**
+	 * Convert a coordinate label of the stored SGF to the label of the same
+	 * intersection on the board as shown, or null when it is not on the board.
+	 */
+	sgfLabelToView(label: string): string | null;
+
+	/**
+	 * Convert a coordinate label read on the board as shown to the label of
+	 * the same intersection in the stored SGF, or null when it is not on the board.
+	 */
+	viewLabelToSgf(label: string): string | null;
+
+	/** Whether black and white are swapped compared to the stored SGF. */
+	isColorInverted(): boolean;
+
+	/**
+	 * The transformation from the stored SGF to the board as shown: an optional
+	 * transpose (x and y swapped) followed by the flips.
+	 */
+	getTransformationFromSgf(): { transpose: boolean; flipX: boolean; flipY: boolean; invertColors: boolean };
 
 	/**
 	 * Get the number of position-anchored comments attached to a node.
@@ -60,43 +91,26 @@ interface BesogoEditor
 	setAnchoredComments(nodeCounts: Map<BesogoNode, number>): void;
 
 	/**
-	 * Convert a western coordinate label (e.g. "R19") to its internal (x, y).
-	 * The label space is canonical: the same label always means the same
-	 * intersection regardless of the displayed corner.
+	 * Convert a western coordinate label (e.g. "R19") to its (x, y) point.
 	 */
 	coordLabelToXY(coord: string): { x: number; y: number } | null;
 
 	/**
-	 * Convert a resolved internal (x, y) back to a western coordinate label.
+	 * Convert an (x, y) point back to a western coordinate label.
 	 * Inverse of coordLabelToXY.
 	 */
 	coordXYToLabel(x: number, y: number): string | null;
 
 	/**
-	 * Re-label comment coordinates (authored in the commenters board
-	 * orientation) to match the currently-displayed board. Falls back to the
-	 * input labels when the orientation cannot be determined uniquely.
-	 * @param coords Comment coordinate labels, e.g. ["T3","Q2"]
-	 * @param positionString Optional comment.position anchor
-	 */
-	transformCommentCoords(coords: string[], positionString?: string | null): string[];
-
-	/**
 	 * Register a listener for editor state changes (navChange/treeChange/etc).
+	 * transformChange means the board was flipped, rotated or its colours swapped.
 	 */
-	addListener(listener: (msg: { navChange?: boolean; treeChange?: boolean; stoneChange?: boolean }) => void): void;
+	addListener(listener: (msg: BesogoChange) => void): void;
 
 	/**
 	 * Remove a previously registered listener.
 	 */
-	removeListener(listener: (msg: { navChange?: boolean; treeChange?: boolean; stoneChange?: boolean }) => void): void;
-
-	/**
-	 * Navigate to a saved board position.
-	 * @param positionParams Array of position parameters from database:
-	 *   [x, y, parentX, parentY, childX, childY, moveNumber, childrenCount, orientation, path]
-	 */
-	commentPosition(positionParams: (number | string)[]): void;
+	removeListener(listener: (msg: BesogoChange) => void): void;
 
 	/**
 	 * Play a move at the given coordinates.
@@ -170,35 +184,6 @@ declare global
 		besogo: Besogo;
 
 		/**
-		 * Navigate to a comment's saved board position.
-		 * Defined in play.ctp, called by comment position icons.
-		 * @param x Current move X coord
-		 * @param y Current move Y coord
-		 * @param pX Parent move X coord (-1 if none)
-		 * @param pY Parent move Y coord (-1 if none)
-		 * @param cX Child move X coord (-1 if none)
-		 * @param cY Child move Y coord (-1 if none)
-		 * @param mNum Move number
-		 * @param cNum Number of children
-		 * @param orientation Board orientation when saved
-		 * @param newX Optional new X coord (unused)
-		 * @param newY Optional new Y coord (unused)
-		 */
-		commentPosition(
-			x: number,
-			y: number,
-			pX: number,
-			pY: number,
-			cX: number,
-			cY: number,
-			mNum: number,
-			cNum: number,
-			orientation: string,
-			newX?: number,
-			newY?: number
-		): void;
-
-		/**
 		 * Show coordinate popup on hover (displays position on floating board).
 		 * Defined in play.ctp.
 		 * @param coord Go coordinate like "C3", "D4"
@@ -220,4 +205,4 @@ declare global
 	}
 }
 
-export type { BesogoNode, BesogoEditor, Besogo, CoordSequence };
+export type { BesogoNode, BesogoEditor, BesogoChange, Besogo, CoordSequence };

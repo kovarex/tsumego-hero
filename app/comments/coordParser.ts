@@ -44,8 +44,10 @@ export type ParsedSlice =
 
 // Go columns a-t (skipping i), case-insensitive, then a number 1-19.
 // Note: this intentionally matches a letter immediately followed by digits, so
-// "B1" is a coordinate; a standalone "b " is a color marker.
-const COORD_RE = /([A-Ha-hJ-Tj-t])([1-9]\d?)/g;
+// "B1" is a coordinate; a standalone "b " is a color marker. A longer number
+// ("a123") is not a coordinate. The server rewrites comment coordinates with
+// the same pattern (App\Utility\CommentCoordinates), keep the two in sync.
+export const COORD_RE = /([A-Ha-hJ-Tj-t])([1-9]\d?)(?!\d)/g;
 
 function normalizeCoord(letter: string, digits: string): string
 {

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { positionMoveNumber } from './boardPosition';
+import { commentTextFromBoardView } from './boardView';
 
 interface CommentFormProps
 {
@@ -30,7 +31,8 @@ export function CommentForm({
 		if (!form.text.trim() || isSubmitting) 
 			return;
 
-		await onSubmit(form.text, form.position, form.reportAsIssue);
+		// Saved in the coordinates and colours of the SGF, see boardView
+		await onSubmit(commentTextFromBoardView(form.text), form.position, form.reportAsIssue);
 		setForm({ text: '', position: undefined, reportAsIssue: false });
 	};
 
@@ -38,55 +40,11 @@ export function CommentForm({
 	// when the board is at a node without a move (e.g. the root position).
 	const buildPositionFromCurrent = (): string | null =>
 	{
-		// Get position from besogo editor
-		const current = window.besogo.editor.getCurrent();
-		if (!current.move)
-		{
+		const editor = window.besogo.editor;
+		const position = editor.makeCommentPosition(editor.getCurrent());
+		if (!position)
 			alert('No move at current position');
-			return null;
-		}
-
-		// Get orientation from besogo
-		const besogoOrientation = window.besogo.editor.getOrientation();
-		const orientation = besogoOrientation[1] === 'full-board' ? 'full-board' : besogoOrientation[0];
-
-		// Use coordinates directly from besogo (NO normalization)
-		const moveX = current.move.x;
-		const moveY = current.move.y;
-
-		// Get parent coordinates
-		let pX = -1;
-		let pY = -1;
-		if (current.moveNumber > 1 && current.parent && current.parent.move)
-		{
-			pX = current.parent.move.x;
-			pY = current.parent.move.y;
-		}
-
-		// Get first child coordinates
-		let cX = -1;
-		let cY = -1;
-		if (current.children && current.children.length > 0 && current.children[0].move)
-		{
-			cX = current.children[0].move.x;
-			cY = current.children[0].move.y;
-		}
-
-		// Build path from ROOT to CURRENT (reversed order)
-		const pathCoords: [number, number][] = [];
-		pathCoords.push([moveX, moveY]);
-		let newP = current.parent;
-		while (newP && newP.move)
-		{
-			pathCoords.push([newP.move.x, newP.move.y]);
-			newP = newP.parent;
-		}
-		// Reverse to go from root to current (matches PHP version)
-		pathCoords.reverse();
-		const newPcoords = pathCoords.map(c => `${c[0]}/${c[1]}`).join('+');
-
-		// Store with current orientation (matches original PHP behavior)
-		return `${moveX}/${moveY}/${pX}/${pY}/${cX}/${cY}/${current.moveNumber}/${current.children?.length || 0}/${orientation}|${newPcoords}`;
+		return position;
 	};
 
 	// The checkbox is the single "Attach board position" toggle.

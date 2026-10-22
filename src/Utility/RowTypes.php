@@ -20,7 +20,7 @@ namespace App\Utility;
  * @phpstan-type ScheduleRow array{id?: int, date?: string, tsumego_id?: int|null, set_id?: int|null, published?: int, ...}
  * @phpstan-type SetConnectionRow array{id?: int, set_id?: int, tsumego_id?: int, num?: int, created?: string, ...}
  * @phpstan-type SetRow array{id?: int, user_id?: int|null, title?: string|null, title2?: string|null, author?: string|null, description?: string|null, image?: string|null, order?: int|null, public?: int|null, multiplier?: float, color?: string|null, created?: string|null, included_in_time_mode?: int, board_theme_index?: int|null, ...}
- * @phpstan-type SgfRow array{id?: int, sgf?: string|null, user_id?: int|null, tsumego_id?: int, created?: string|null, accepted?: int, first_move_color?: string|null, correct_moves?: string|null, ...}
+ * @phpstan-type SgfRow array{id?: int, sgf?: string|null, user_id?: int|null, tsumego_id?: int, created?: string|null, accepted?: int, first_move_color?: string|null, correct_moves?: string|null, source_sgf_id?: int|null, transformation_from_source?: string|null, ...}
  * @phpstan-type SignatureRow array{id?: int, tsumego_id?: int, signature?: string|null, created?: string, ...}
  * @phpstan-type SiteRow array{id?: int, title?: string|null, body?: string|null, ...}
  * @phpstan-type TagConnectionRow array{id?: int, tag_id?: int|null, user_id?: int|null, tsumego_id?: int, approved?: int|null, created?: string, ...}
@@ -33,6 +33,7 @@ namespace App\Utility;
  * @phpstan-type TimeModeSessionStatusRow array{id?: int, name?: string, ...}
  * @phpstan-type TsumegoAttemptRow array{id?: int, user_id?: int, tsumego_id?: int, gain?: int, solved?: int, seconds?: int, misplays?: int, user_rating?: int|null, tsumego_rating?: int, created?: string, ...}
  * @phpstan-type TsumegoCommentRow array{id?: int, tsumego_id?: int, tsumego_issue_id?: int|null, message?: string, created?: string, user_id?: int, position?: string|null, deleted?: int, ...}
+ * @phpstan-type TsumegoCommentBeforeSgfCoordinatesRow array{tsumego_comment_id?: int, message?: string, position?: string|null, ...}
  * @phpstan-type TsumegoIssueRow array{id?: int, tsumego_issue_status_id?: int, tsumego_id?: int, user_id?: int, created?: string, deleted?: int, ...}
  * @phpstan-type TsumegoIssueStatusRow array{id?: int, name?: string, ...}
  * @phpstan-type TsumegoRow array{id?: int, part?: string|null, part_increment?: int|null, description?: string|null, hint?: string|null, author?: string, author_user_id?: int|null, solved?: int|null, failed?: int|null, rating?: float, minimum_rating?: float|null, maximum_rating?: float|null, userWin?: float, userLoss?: int, created?: string|null, minLib?: int|null, maxLib?: int|null, variance?: int|null, libertyCount?: int|null, insideLiberties?: int|null, eyeLiberties1?: int|null, eyeLiberties2?: int|null, semeaiType?: int|null, alternative_response?: int, pass?: int, activity_value?: int, deleted?: string|null, ...}

@@ -2,10 +2,10 @@ import { UserLink } from '../shared/UserLink';
 import type { Comment as CommentType } from './commentTypes';
 import { IssueStatus, type IssueStatusId } from '../issues/issueTypes';
 import { useAuth } from '../shared/AuthContext';
-import { useMemo } from 'react';
 import { formatDate } from '../shared/dates';
 import type { CoordSequence } from '../types/global';
 import { positionMoveNumber } from './boardPosition';
+import { commentTextToBoardView, useRerenderOnBoardTransformation } from './boardView';
 import { parseCoordinateReferences, type CoordColor } from './coordParser';
 
 interface CommentProps
@@ -47,28 +47,10 @@ function CoordSpan({ coord, position, color, sequence }: { coord: string; positi
 	);
 }
 
-// Re-label comment coordinates written in the commenter's board orientation so
-// they match the currently-displayed board (e.g. "T3" -> "A17" when the board
-// is shown top-left). Falls back to the authored labels when the board is not
-// ready or the orientation cannot be determined uniquely.
-function transformCoords(coords: string[], position?: string | null): string[]
-{
-	const editor = typeof window.besogo !== 'undefined' && window.besogo ? window.besogo.editor : null;
-	if (!editor || typeof editor.transformCommentCoords !== 'function')
-		return coords;
-	try
-	{
-		return editor.transformCommentCoords(coords, position ?? undefined);
-	}
-	catch
-	{
-		return coords;
-	}
-}
-
 // Parse comment text and return React nodes with coordinate highlighting.
 // Uses the coordinate parser so lowercase coords, sequences (M16-N17-M20),
-// alternatives (F2/G1) and color markers are recognized consistently.
+// alternatives (F2/G1) and color markers are recognized consistently. The text
+// is already converted to the board as the viewer sees it.
 function renderCommentText(text: string | null | undefined, position?: string | null): React.ReactNode[]
 {
 	if (!text) 
@@ -86,15 +68,11 @@ function renderCommentText(text: string | null | undefined, position?: string | 
 		const groupClass = `go-coord-group go-coord-group--${kind}`;
 		const children: React.ReactNode[] = [];
 
-		// Transform the authored labels to the displayed board orientation so the
-		// comment text agrees with the board the reader sees.
-		const boardCoords = transformCoords(tokens.map(t => t.coord), position);
-
 		// For a sequence, each coordinate carries the full list of moves plus its
 		// own index so hover can preview the moves before it. A lone coordinate is
 		// a one-move sequence, so it carries this context too. Alternatives (e.g.
 		// F2/G1) have no sequence context.
-		const sequenceCoords = kind === 'sequence' ? boardCoords : undefined;
+		const sequenceCoords = kind === 'sequence' ? tokens.map(t => t.coord) : undefined;
 		// Per-move explicit colour (w/b) from the comment, or null to alternate.
 		const sequenceColors = tokens.map(t => t.color ?? null);
 
@@ -102,10 +80,9 @@ function renderCommentText(text: string | null | undefined, position?: string | 
 		{
 			if (i > 0) 
 				children.push(separators[i - 1] || ' ');
-			const coord = boardCoords[i] ?? token.coord;
 			const sequence = sequenceCoords ? { coords: sequenceCoords, colors: sequenceColors, index: i } : undefined;
 			children.push(
-				<CoordSpan key={`coord-${key++}`} coord={coord} position={position} color={token.color} sequence={sequence} />
+				<CoordSpan key={`coord-${key++}`} coord={token.coord} position={position} color={token.color} sequence={sequence} />
 			);
 		});
 
@@ -134,15 +111,10 @@ export function Comment({
 	// User styling - admin comments use different class
 	const commentColorClass = comment.isAdmin ? 'commentBox2' : 'commentBox1';
 
-	// Legacy comments had a literal "[current position]" marker baked into the
-	// message; the anchor is now stored solely in `position`, so strip it here.
-	const displayText = (comment.text || '').replace(/\[current position\]/g, '');
-
-	// Parse comment text with coordinate highlighting. Pass the comment's anchor
-	// so hovering a coordinate previews the anchored board position, not the
-	// position the user is currently viewing.
-	// Memoized: re-labelling the coordinates searches the game tree.
-	const commentContent = useMemo(() => renderCommentText(displayText, comment.position), [displayText, comment.position]);
+	// The text is stored in the coordinates and colours of the SGF; show it as
+	// the viewer's board is oriented, again whenever the board is flipped or rotated.
+	useRerenderOnBoardTransformation();
+	const commentContent = renderCommentText(commentTextToBoardView(comment.text || ''), comment.position);
 
 	const anchoredMoveNumber = comment.position ? positionMoveNumber(comment.position) : null;
 
@@ -154,43 +126,14 @@ export function Comment({
 	// Navigate the board to the node this comment is anchored to.
 	const navigateToPosition = () =>
 	{
-		if (!window.besogo?.editor || !comment.position) 
+		const editor = window.besogo?.editor;
+		if (!editor || !comment.position)
 			return;
-
-		// Parse position data
-		const [mainPart, pathPart] = comment.position.split('|');
-		const parts = mainPart.split('/');
-
-		if (parts.length < 9) 
+		const node = editor.findNodeForPosition(comment.position);
+		if (!node)
 			return;
-
-		// Extract position parameters
-		const x = parseInt(parts[0]);
-		const y = parseInt(parts[1]);
-		const pX = parseInt(parts[2]);
-		const pY = parseInt(parts[3]);
-		const cX = parseInt(parts[4]);
-		const cY = parseInt(parts[5]);
-		const mNum = parseInt(parts[6]);
-		const cNum = parseInt(parts[7]);
-		const orientation = parts[8];
-
-		// Try commentPosition first (handles tree positions)
-		window.commentPosition(x, y, pX, pY, cX, cY, mNum, cNum, orientation);
-
-		// Check if we're still at root (commentPosition failed to find position)
-		const currentNode = window.besogo.editor.getCurrent();
-		const isAtRoot = currentNode.moveNumber === 0;
-
-		// If still at root and we have a path, try playing the moves
-		if (isAtRoot && pathPart)
-		{
-			const coords = pathPart.split('+').map(c => c.split('/').map(Number));
-
-			// Play each move in sequence (click navigates first, then plays if needed)
-			for (const [mx, my] of coords)
-				window.besogo.editor.click(mx, my, false, false);
-		}
+		editor.setCurrent(node);
+		(document.querySelector('.besogo-container') ?? document.getElementById('board'))?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 	};
 
 	return (

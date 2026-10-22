@@ -79,7 +79,6 @@ besogo.makeToolPanel = function (container, editor) {
           $("#boardSpinCounterClockwise").css("opacity", ".62");
           $("#boardSpinClockwise").css("opacity", ".62");
           besogo.boardParameters["corner"] = "top-left";
-          besogo.editor.adjustCommentCoords();
         }
       );
 
@@ -137,7 +136,6 @@ besogo.makeToolPanel = function (container, editor) {
             $("#boardSpinCounterClockwise").css("opacity", ".62");
             $("#boardSpinClockwise").css("opacity", ".62");
             besogo.boardParameters["corner"] = "top-right";
-            besogo.editor.adjustCommentCoords();
           }
         );
       }
@@ -195,7 +193,6 @@ besogo.makeToolPanel = function (container, editor) {
             $("#boardSpinCounterClockwise").css("opacity", ".62");
             $("#boardSpinClockwise").css("opacity", ".62");
             besogo.boardParameters["corner"] = "bottom-left";
-            besogo.editor.adjustCommentCoords();
           }
         );
       }
@@ -251,7 +248,6 @@ besogo.makeToolPanel = function (container, editor) {
             $("#boardSpinCounterClockwise").css("opacity", ".62");
             $("#boardSpinClockwise").css("opacity", ".62");
             besogo.boardParameters["corner"] = "bottom-right";
-            besogo.editor.adjustCommentCoords();
           }
         );
       }
@@ -1070,6 +1066,15 @@ besogo.makeToolPanel = function (container, editor) {
     inputNode.type = "text";
     inputNode.name = "sgfForBesogo";
     formNode.appendChild(inputNode);
+    // The SGF version the tree was loaded from and the transformation (normalising, corner,
+    // rotation, colours) from its coordinates to the saved ones, so comments can follow
+    for (const [id, name] of [["sgfSourceInput", "sourceSgfID"], ["sgfTransformationInput", "transformationFromSource"]]) {
+      const hiddenNode = document.createElement("input");
+      hiddenNode.id = id;
+      hiddenNode.type = "hidden";
+      hiddenNode.name = name;
+      formNode.appendChild(hiddenNode);
+    }
     container.appendChild(formNode);
     return formNode;
   }

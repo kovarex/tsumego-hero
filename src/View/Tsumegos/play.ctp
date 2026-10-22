@@ -54,7 +54,6 @@ use App\Utility\ViteManifest;
  * @var bool $requestSolution
  * @var bool $reviewCheat
  * @var string $reviewEnabled
- * @var array $sT
  * @var array $set
  * @var array $setConnection
  * @var array $setConnections
@@ -1357,31 +1356,6 @@ use App\Utility\ViteManifest;
 	}
 	redrawHearts();
 
-	function commentPosition(x, y, pX, pY, cX, cY, mNum, cNum, orientation, newX=false, newY=false){
-		positionParams = [];
-		positionParams[0] = x;
-		positionParams[1] = y;
-		positionParams[2] = pX;
-		positionParams[3] = pY;
-		positionParams[4] = cX;
-		positionParams[5] = cY;
-		positionParams[6] = mNum;
-		positionParams[7] = cNum;
-		positionParams[8] = orientation;
-		if(newX!=false)
-			positionParams[9] = newX;
-		besogo.editor.commentPosition(positionParams);
-
-		// Scroll to board so user can see the position
-		var boardElement = document.querySelector('.besogo-container') || document.getElementById('board');
-		if (boardElement) {
-			boardElement.scrollIntoView({
-				behavior: 'smooth',
-				block: 'center'
-			});
-	}
-	}
-
 	function rejuvenation(){
 		$.ajax({
 				url: '/hero/rejuvenation',
@@ -1422,10 +1396,6 @@ use App\Utility\ViteManifest;
 	});
 
 	<?php
-	$dynamicCommentCoords = array();
-	$dynamicCommentCoords[0] = array();
-	$dynamicCommentCoords[1] = array();
-
 	// Create floating board popup for coordinate hover
 			echo '
 	var coordPopupBoard = null;
@@ -1608,43 +1578,7 @@ use App\Utility\ViteManifest;
 	}
 		';
 
-	if (!isset($commentCoordinates)) $commentCoordinates = [];
-	$fn1 = 1;
-	for($i=0; $i<count($commentCoordinates); $i++){
-		$n2x = explode(' ', $commentCoordinates[$i]);
-		if(count($n2x)>0){
-			$fn2 = 1;
-			for($j=count($n2x)-1; $j>=0; $j--){
-				$n2xx = explode('-', $n2x[$j]);
-				if(strlen($n2xx[0])>0 && strlen($n2xx[1])>0){
-					echo 'function ccIn' . $fn1 . $fn2 . '(e){showCoordPopup("' . $n2xx[2] . '",e||window.event);}';
-					echo 'function ccOut' . $fn1 . $fn2 . '(){hideCoordPopup();}';
-					array_push($dynamicCommentCoords[0], 'ccIn'.$fn1.$fn2);
-					array_push($dynamicCommentCoords[1], $n2xx[2]);
-					$fn2++;
-	}
-	}
-	}
-		$fn1++;
-	}
-
-	$fn1 = 999;
-	$n2x = explode(' ', $sT[1]);
-	if(count($n2x)>0){
-		$fn2 = 1;
-		for($j=count($n2x)-1; $j>=0; $j--){
-			$n2xx = explode('-', $n2x[$j]);
-			if(strlen($n2xx[0])>0 && strlen($n2xx[1])>0){
-				echo 'function ccIn' . $fn1 . $fn2 . '(e){showCoordPopup("' . $n2xx[2] . '",e||window.event);}';
-				echo 'function ccOut' . $fn1 . $fn2 . '(){hideCoordPopup();}';
-				array_push($dynamicCommentCoords[0], 'ccIn'.$fn1.$fn2);
-				array_push($dynamicCommentCoords[1], $n2xx[2]);
-				$fn2++;
-	}
-	}
-	}
-	$fn1++;
-		?>
+	?>
 
 	function addTimeForMovePlayed(multiplier = 1)
 	{
@@ -2015,13 +1949,6 @@ use App\Utility\ViteManifest;
 	})();
 	if (mode == 2)
 		$("#targetLockOverlay").css('top', '235px');
-	<?php
-		for($i=0; $i<count($dynamicCommentCoords[0]); $i++)
-		{
-			echo 'besogo.editor.dynamicCommentCoords("'.$dynamicCommentCoords[0][$i].'", "'.$dynamicCommentCoords[1][$i].'");';
-			echo 'besogo.editor.adjustCommentCoords();';
-		}
-		?>
 	</script>
 	<style>
 		#msg2,
