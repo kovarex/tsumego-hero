@@ -19,12 +19,12 @@ class SgfCommentReorientationTest extends CakeTestCase
 			'comments' => [['message' => 'black A19 then w A18', 'position' => '1/1/-1/-1/1/2/1/1/sgf|1/1']]]]);
 	}
 
-	/** Saves a new accepted SGF version of the problem, returns its id. */
+	/** Saves a new SGF version of the problem, accepted unless $sgf says otherwise, returns its id. */
 	private function saveVersion(ContextPreparator $context, array $sgf): int
 	{
 		$Sgf = ClassRegistry::init('Sgf');
 		$Sgf->create();
-		$Sgf->save(['tsumego_id' => $context->tsumegos[0]['id'], 'accepted' => true] + $sgf);
+		$Sgf->save($sgf + ['tsumego_id' => $context->tsumegos[0]['id'], 'accepted' => true]);
 		return (int) $Sgf->id;
 	}
 
@@ -92,6 +92,27 @@ class SgfCommentReorientationTest extends CakeTestCase
 		$comment = $this->comment($context);
 		$this->assertSame('black A19 then w A18', $comment['message']);
 		$this->assertSame('1/1/-1/-1/1/2/1/1/sgf|1/1', $comment['position']);
+	}
+
+	public function testCommentsStayWhenTheUploadedStonesChanged()
+	{
+		// mirrored and with one more stone: no transformation turns the old stones into the new ones
+		$context = $this->prepare();
+		SgfCommentReorientation::afterAccepted($this->saveVersion($context, ['sgf' => str_replace('AB[qc][pc]', 'AB[qc][pc][oc]', self::MIRRORED_SGF)]));
+
+		$this->assertSame('black A19 then w A18', $this->comment($context)['message']);
+	}
+
+	public function testCommentsStayWhileTheVersionIsAProposal()
+	{
+		$context = $this->prepare();
+		SgfCommentReorientation::afterAccepted($this->saveVersion($context, [
+			'sgf' => self::MIRRORED_SGF,
+			'accepted' => false,
+			'source_sgf_id' => $context->tsumegos[0]['sgfs'][0]['id'],
+			'transformation_from_source' => new BoardTransformation(flipX: true)->toJson()]));
+
+		$this->assertSame('black A19 then w A18', $this->comment($context)['message']);
 	}
 
 	public function testCommentsStayWhenANewerVersionIsShown()

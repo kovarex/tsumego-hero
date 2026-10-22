@@ -53,6 +53,16 @@ class LegacyCommentConverterTest extends CakeTestCase
 		$this->assertSame('19/2/18/2/17/2/2/1/sgf|18/2+19/2', $conversion->position);
 	}
 
+	public function testAnchorOfMovesNoLongerInTheTreeIsMovedFromItsCorner()
+	{
+		// the tree changed since, the recorded corner still tells where the move was
+		$conversion = $this->convert('what about here?', '5/5/-1/-1/-1/-1/1/0/top-left|5/5');
+		$this->assertSame('moves not in the tree', $conversion->positionMethod);
+		$this->assertSame('15/5/-1/-1/-1/-1/1/0/sgf|15/5', $conversion->position);
+		// an anchor that names only its move
+		$this->assertSame('15/5/-1/-1/-1/-1/1/0/sgf|15/5', $this->convert('here', '5/5/-1/-1/-1/-1/1/0/top-left')->position);
+	}
+
 	public function testEmptyAnchorIsDropped()
 	{
 		$conversion = $this->convert('B18', '-1/-1/0/0/0/0/0/0/0');
@@ -67,6 +77,30 @@ class LegacyCommentConverterTest extends CakeTestCase
 		$this->assertSame('S18 S19', $this->convert('B2 B1')->message);
 		// a third move only the transposition explains: the SGF was replaced since
 		$this->assertSame('S18 T18 R18', $this->convert('B2 B1 B3')->message);
+	}
+
+	public function testATallProblemWasReadOnTheBoardTurnedOnItsSide()
+	{
+		// along the left edge and taller than wide, the site showed it turned a quarter
+		// counter-clockwise: the first moves, A19, A18 and A17 of the SGF, at A1, B1 and C1
+		$sgf = '(;GM[1]FF[4]SZ[19]AB[ca][cb][cc][cd][ce][cf][cg][ch][ci][cj];B[aa];W[ab];B[ac]C[+])';
+		$converter = new LegacyCommentConverter(SgfTree::parse($sgf));
+		$conversion = $converter->convert('A1, B1 and C1');
+		$this->assertSame('A19, A18 and A17', $conversion->message);
+		$this->assertSame('unique', $conversion->textMethod);
+
+		// an anchor of moves no longer in the tree goes with the text onto the turned board
+		$conversion = $converter->convert('A1, B1 and C1', '5/15/-1/-1/-1/-1/1/0/top-left|5/15');
+		$this->assertSame('A19, A18 and A17', $conversion->message);
+		$this->assertSame('5/5/-1/-1/-1/-1/1/0/sgf|5/5', $conversion->position);
+	}
+
+	public function testCoordinatesAwayFromTheProblemAreReadInTheTopLeftCorner()
+	{
+		// no orientation puts A10 on a move or near the stones, the problem was most likely seen as "Original"
+		$conversion = $this->convert('A10 is far away');
+		$this->assertSame('T10 is far away', $conversion->message);
+		$this->assertSame('tie, decided by the top-left orientation', $conversion->textMethod);
 	}
 
 	public function testColorsAreSwappedOnlyWhenTheWrittenColorsContradictTheTree()
