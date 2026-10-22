@@ -272,14 +272,14 @@ li a.menuLi.nav__link--active {
   cursor: context-menu;
   background-color: var(--color-white);
 }
-/* The account bar reads as a display label, so it keeps the interface face with
-   its heavy weight instead of the body serif. */
+/* The account bar reads as a display label, so it keeps its heavy face instead
+   of the body serif. */
 #account-bar-xp-wrapper,
 #account-bar-xp,
 #account-bar-user,
 #account-bar-user2
 {
-  font-family: var(--font-family-ui);
+  font-family: var(--font-family-account);
 }
 #account-bar-xp-wrapper {
   position: absolute;
@@ -511,6 +511,7 @@ h4 {
   background-color: var(--color-gray);
 }.board-picker {
   display: inline-block;
+  font-family: var(--font-family-heading);
   letter-spacing: 1px;
   color: var(--color-purple-bright);
   font-size: 16px;
@@ -529,6 +530,12 @@ h4 {
 input.newCheck {
   width: 15px;
   height: 15px;
+}
+/* The board choice is a page of its own opened from the menu, so it is set in
+   the page face rather than the menu's. */
+#dropdowntable,
+#dropdowntable2 {
+  font-family: var(--font-family-body);
 }
 #dropdowntable {
   width: 700px;
@@ -710,10 +717,10 @@ pre {
   font-weight: 800;
   color: var(--color-blue-accent);
 }
-/* The legacy menu is set in a UI sans, not in the body serif. */
+/* The legacy menu is set in its own wide sans, not in the body serif. */
 #newMenu {
   display: inline-block;
-  font-family: var(--font-family-ui);
+  font-family: var(--font-family-menu);
 }
 nav ul {
   padding: 0;

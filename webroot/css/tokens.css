@@ -258,6 +258,11 @@
 		/* Narrow display face, for numbers that have to fit a tight box. */
 		--font-family-cond: Impact, "Arial Narrow", "Liberation Sans Narrow",
 			"Nimbus Sans Narrow", sans-serif;
+		/* Wide sans with a tall x-height: stays open and legible in bold at the
+		   menu's sizes, where a system UI sans gets dense. */
+		--font-family-wide: Verdana, Geneva, "DejaVu Sans", sans-serif;
+		/* Single heavy weight, for short labels on a coloured bar. */
+		--font-family-black: "Arial Black", Verdana, Helvetica, Arial, sans-serif;
 
 		/* Role: which type goes where. Rules reference these, never the
 		   families above, so a family can be swapped without touching any of
@@ -272,10 +277,18 @@
 		   the tone of the page. */
 		--font-family-heading: var(--font-family-serif);
 
-		/* The chrome around the text: menus, bars, overlays. Controls are not listed
+		/* The chrome around the text: bars, overlays. Controls are not listed
 		   here, they follow the container they sit in, so a button in an article is
 		   set in the body face and the same button in a menu in this one. */
 		--font-family-ui: var(--font-family-sans);
+
+		/* The top menu and its submenus. Its labels are set at weight 800, which
+		   in a system UI sans resolves to Segoe UI Black or SF Heavy and reads
+		   cramped, so the menu keeps its own wide face. */
+		--font-family-menu: var(--font-family-wide);
+
+		/* The account bar: user name, level and XP. */
+		--font-family-account: var(--font-family-black);
 
 		/* Code: pre, code, file paths and stack traces. */
 		--font-family-code: var(--font-family-mono);
