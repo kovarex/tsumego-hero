@@ -20,7 +20,8 @@
 
 	/* Controls carry no face of their own: a field or a button follows the text it
 	   sits in, so a form in an article is set in the page face and the same field
-	   inside the menu or an overlay in the interface face. */
+	   inside the menu or an overlay in the interface face. Only the family is taken
+	   over here; each control's size still comes from the rule that styles it. */
 	button,
 	input,
 	select,

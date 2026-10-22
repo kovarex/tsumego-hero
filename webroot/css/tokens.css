@@ -272,9 +272,9 @@
 		   the tone of the page. */
 		--font-family-heading: var(--font-family-serif);
 
-		/* The interface around the text: form fields (input, select), bars,
-		   menus, overlays. Form controls do not follow the page font on their
-		   own, so this is the one role that has to be set explicitly. */
+		/* The chrome around the text: menus, bars, overlays. Controls are not listed
+		   here, they follow the container they sit in, so a button in an article is
+		   set in the body face and the same button in a menu in this one. */
 		--font-family-ui: var(--font-family-sans);
 
 		/* Code: pre, code, file paths and stack traces. */
