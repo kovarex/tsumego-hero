@@ -261,7 +261,6 @@
 .btn
 {
 	display: inline-block;
-	font-family: var(--font-family-body);
 	font-size: 16px;
 	font-weight: 800;
 	text-decoration: none;

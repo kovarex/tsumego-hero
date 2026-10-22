@@ -325,24 +325,6 @@ h1 {
 .besogo-file #openButton {
   background-color: var(--surface-button);
 }
-/* The board's control buttons were serif in the legacy stylesheet, so they ask
-   for the body face explicitly: form controls default to the interface font. */
-.besogo-tsumegoPlayTool input[type="button"],
-.besogo-file input[type="button"],
-#besogo-next-button,
-#besogo-back-button,
-#besogo-back-button-inactive,
-#history-button,
-#besogo-se-more,
-#besogo-se-less,
-#besogo-pass-button,
-#submitScoreEstimatingSE,
-#submitScoreEstimatingBlackWins,
-#submitScoreEstimatingWhiteWins,
-#submitScoreEstimatingJigo
-{
-  font-family: var(--font-family-body);
-}
 .besogo-tsumegoPlayTool input[type="button"],
 .besogo-file input[type="button"] {
   font-size: 16px;
