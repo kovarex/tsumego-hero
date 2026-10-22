@@ -44,10 +44,14 @@ export type ParsedSlice =
 
 // Go columns a-t (skipping i), case-insensitive, then a number 1-19.
 // Note: this intentionally matches a letter immediately followed by digits, so
-// "B1" is a coordinate; a standalone "b " is a color marker. A longer number
-// ("a123") is not a coordinate. The server rewrites comment coordinates with
-// the same pattern (App\Utility\CommentCoordinates), keep the two in sync.
-export const COORD_RE = /([A-Ha-hJ-Tj-t])([1-9]\d?)(?!\d)/g;
+// "B1" is a coordinate; a standalone "b " is a color marker. A coordinate is
+// not a part of a longer word or number ("a123", "d4rkm4tter", "/files/ul1/"),
+// only a colour letter can be glued in front of it ("bL18", "WQ4"). The server
+// rewrites comment coordinates with the same pattern
+// (App\Utility\CommentCoordinates), keep the two in sync.
+export const COORD_RE = /(?:(?<![\p{L}\p{N}])|(?<=(?<![\p{L}\p{N}])[bwBW]))([A-Ha-hJ-Tj-t])([1-9][0-9]?)(?![\p{L}\p{N}])/gu;
+// Links stay as written: "%C3" or "/c3/" in them is not a coordinate.
+export const LINK_RE = /((?:https?:\/\/|www\.)\S+)/gi;
 
 function normalizeCoord(letter: string, digits: string): string
 {
@@ -164,7 +168,9 @@ function classifyGap(gap: string): 'sequence' | 'alternative' | 'break'
  */
 export function parseCoordinateReferences(text: string): ParsedSlice[]
 {
-	const matches = [...text.matchAll(COORD_RE)].filter(m => parseInt(m[2], 10) <= 19);
+	const links = [...text.matchAll(LINK_RE)].map(link => [link.index, link.index + link[0].length]);
+	const matches = [...text.matchAll(COORD_RE)].filter(m =>
+		parseInt(m[2], 10) <= 19 && !links.some(([start, end]) => m.index >= start && m.index < end));
 	const slices: ParsedSlice[] = [];
 
 	if (matches.length === 0)

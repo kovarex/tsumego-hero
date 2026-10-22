@@ -51,6 +51,13 @@ interface BesogoEditor
 	findNodeForPosition(positionString: string): BesogoNode | null;
 
 	/**
+	 * Show the position a comment is anchored to on the board. Moves the tree
+	 * no longer has are played as local moves. Returns false without a position.
+	 * @param positionString The comment.position value, see makeCommentPosition
+	 */
+	showCommentPosition(positionString: string): boolean;
+
+	/**
 	 * Build the position string anchoring a comment to a node:
 	 * "x/y/parentX/parentY/childX/childY/moveNumber/childCount/sgf|path" with the
 	 * path of moves from the root, all in coordinates of the stored SGF.

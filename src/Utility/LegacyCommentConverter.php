@@ -7,19 +7,24 @@ namespace App\Utility;
  * the SGF. Such a comment was typed while looking at the board as its author saw
  * it: normalised to the top-left, then mirrored into the author's corner (random
  * or chosen), maybe rotated, maybe with the colours swapped, and nothing of that
- * was saved with the text. The board used to guess the orientation every time
- * the comment was shown; this makes the same kind of guess once, so the comment
- * can be stored in the coordinates of the SGF and shown exactly from then on.
+ * was saved with the text. This finds the orientation once, so the comment can be
+ * stored in the coordinates of the SGF and shown exactly from then on.
  *
  * - The anchor (position) records the author's corner, so it is converted
- *   exactly when its moves are still in the tree; otherwise the orientation in
- *   which its moves are found is used.
- * - The coordinates in the text get the orientation in which most of them are
- *   moves of the tree, then setup stones, then points near the stones. A tie is
- *   decided by the anchor's orientation when there is one, otherwise by the
- *   problem as shown in the top-left corner (the "Original" orientation).
- * - Black and white are swapped only when the colours written next to the
- *   coordinates contradict the colours of those moves in the tree.
+ *   exactly. Its moves are looked up in the tree in that orientation first, then
+ *   in the others (the board could have been rotated, or the SGF replaced).
+ * - The coordinates in the text follow the anchor when there is one: the text
+ *   was written on the same board. Otherwise the orientation is chosen in which
+ *   most of them are moves of the tree, where a board the site could show (one
+ *   of the four corners, a full board as it is, rotated when it is tall) counts
+ *   as one more: any other orientation has to explain two more moves, as only an
+ *   SGF replaced since could have turned it. Then the orientation with more of
+ *   them on setup stones and near the stones wins. A remaining tie is decided by
+ *   the problem as shown in the top-left corner (the "Original" orientation).
+ * - Black and white are swapped only when the colours the text names contradict
+ *   the problem: the colour written next to a coordinate against the colour of
+ *   the move there in the tree, and "white to kill" against the description.
+ *   A hypothetical ("if w D4", "should this be white to play?") does not count.
  * - The "[current position]" marker is removed, the anchor alone marks it now.
  */
 class LegacyCommentConverter
@@ -27,6 +32,10 @@ class LegacyCommentConverter
 	public const MARKER = '[current position]';
 	// how far from the stones a coordinate still counts as near the problem
 	private const NEAR_STONES_MARGIN = 3;
+	// "Black to kill", "w to live": the side to play, as in the description of the problem
+	private const SIDE_TO_PLAY_PATTERN = '/\b(black|white|b|w)\s+to\s+(?:play|move|kill|live|capture|win|save|escape|connect|cut)\b/i';
+	// "if w D4", "should this be white to play?": a hypothetical, not the colours the author saw
+	private const HYPOTHETICAL_PATTERN = '/\b(?:if|should|would|could|suppose|add|adding|added|suggest\w*|chang\w*|instead|rather|consider\w*|label\w*)\b/i';
 
 	private int $size;
 	/** @var array<string, string[]> "x/y" => the colours of the moves played there */
@@ -38,8 +47,13 @@ class LegacyCommentConverter
 	// the flips normalising the problem to the top-left corner, as besogo does on load
 	private BoardTransformation $normalization;
 	private bool $fullBoard;
+	// besogo turns a tall and narrow board a quarter counter-clockwise (since January 2026)
+	private bool $tall;
+	/** @var BoardTransformation[] from the boards the site could show to the SGF */
+	private array $siteViews;
 
-	public function __construct(private SgfTree $tree)
+	/** @param ?string $description of the problem, in the colours of the SGF */
+	public function __construct(private SgfTree $tree, private ?string $description = null)
 	{
 		$this->size = $tree->boardSize();
 		$lowestX = $lowestY = $this->size;
@@ -66,12 +80,35 @@ class LegacyCommentConverter
 			}
 		}
 		$this->bounds = [$lowestX, $lowestY, $highestX, $highestY];
+
 		// besogo's scaleParameters.normalizeToTopLeft and checkFullBoard
 		$flipX = $lowestX - 1 > $this->size - $highestX;
 		$flipY = $lowestY - 1 > $this->size - $highestY;
 		$this->normalization = new BoardTransformation(false, $flipX, $flipY);
-		[$normalizedHighestX, $normalizedHighestY] = [$flipX ? $this->size + 1 - $lowestX : $highestX, $flipY ? $this->size + 1 - $lowestY : $highestY];
+		$normalizedHighestX = $flipX ? $this->size + 1 - $lowestX : $highestX;
+		$normalizedHighestY = $flipY ? $this->size + 1 - $lowestY : $highestY;
 		$this->fullBoard = !($this->size - $normalizedHighestX >= 10 || $this->size - $normalizedHighestY >= 10);
+
+		// besogo's parseAndLoad (the area shown) and boardDisplay (the rotation of a tall board)
+		if ($this->fullBoard)
+			$this->tall = $normalizedHighestX - $normalizedHighestY < -4;
+		else
+		{
+			$shownX = $normalizedHighestX >= 10 ? 19 : $normalizedHighestX + 3;
+			$shownY = $normalizedHighestY >= 14 ? 19 : $normalizedHighestY + 3;
+			$verticalHalfBoard = $shownX != 19 && $shownY == 19;
+			$regularBoard = !$verticalHalfBoard && !($shownX == 19 && $shownY != 19);
+			$this->tall = $regularBoard && $shownX - $shownY < -4 || $verticalHalfBoard && $shownX - $shownY < -10;
+		}
+
+		$this->siteViews = [];
+		foreach (['top-left', 'top-right', 'bottom-left', 'bottom-right'] as $corner)
+		{
+			$view = $this->cornerView($corner);
+			foreach ($this->tall ? [$view, $this->rotated($view)] : [$view] as $candidate)
+				if (!$this->contains($this->siteViews, $candidate))
+					$this->siteViews[] = $candidate;
+		}
 	}
 
 	public function convert(string $message, ?string $position = null): LegacyCommentConversion
@@ -80,46 +117,115 @@ class LegacyCommentConverter
 		$result->originalMessage = $message;
 		$result->originalPosition = $position;
 
-		$this->convertPosition($position, $result);
+		$anchorViews = $this->convertPosition($position, $result);
 
-		$text = str_replace(self::MARKER, '', $message);
+		$text = self::withoutMarker($message);
 		$labels = CommentCoordinates::labels($text);
 		$result->labels = $labels;
 		if (empty($labels))
-		{
 			$result->textMethod = 'no coordinates';
-			$result->message = $text;
-			return $result;
+		else
+		{
+			$this->chooseTextOrientation($labels, $anchorViews, $result);
+			if ($result->positionMethod == 'moves not in the tree' && !$result->textTransformation->equals($result->anchorTransformation))
+			{
+				// a tall board was shown rotated, which the text tells
+				$result->anchorTransformation = $result->textTransformation;
+				$result->position = $this->unresolvedPosition($position, $result->anchorTransformation);
+			}
 		}
 
-		$this->chooseTextOrientation($labels, $result);
-		$result->colorEvidence = $this->colorEvidence($text, $result->textTransformation);
+		$transformation = $result->textTransformation ?? BoardTransformation::identity();
+		$result->colorEvidence = $this->colorEvidence($text, $transformation);
 		$result->colorsSwapped = $result->colorEvidence['swapped'] > $result->colorEvidence['same'];
-		$transformation = $result->textTransformation;
 		if ($result->colorsSwapped)
 			$transformation = new BoardTransformation($transformation->transpose, $transformation->flipX, $transformation->flipY, true);
 		$result->message = CommentCoordinates::transformTextBy($text, $transformation, $this->size);
 		return $result;
 	}
 
-	/** The transformation from the author's view to the SGF the old board assumed for an anchor in this corner. */
-	private function expectedAnchorTransformation(string $orientation): BoardTransformation
+	/** The message without the "[current position]" marker and the spaces it leaves behind. */
+	public static function withoutMarker(string $message): string
 	{
-		if ($orientation == 'full-board' || $this->fullBoard)
-			return BoardTransformation::identity();
-		// the view was the corner's flips applied to the normalised problem
-		$corner = new BoardTransformation(false, str_ends_with($orientation, 'right'), str_starts_with($orientation, 'bottom'));
-		return $this->normalization->then($corner)->inverse();
+		if (!str_contains($message, self::MARKER))
+			return $message;
+		return trim(preg_replace('/[ \t]*' . preg_quote(self::MARKER, '/') . '[ \t]*/', ' ', $message));
 	}
 
-	private function convertPosition(?string $position, LegacyCommentConversion $result): void
+	/** From the board shown in the corner (normalised, then mirrored into it) to the SGF. */
+	private function cornerView(string $corner): BoardTransformation
+	{
+		if ($corner == 'full-board' || $this->fullBoard)
+			return BoardTransformation::identity();
+		$mirror = new BoardTransformation(false, str_ends_with($corner, 'right'), str_starts_with($corner, 'bottom'));
+		return $this->normalization->then($mirror)->inverse();
+	}
+
+	/** The same view after besogo turned the board a quarter counter-clockwise. */
+	private function rotated(BoardTransformation $view): BoardTransformation
+	{
+		$counterClockwise = new BoardTransformation(true, false, true);
+		return $view->inverse()->then($counterClockwise)->inverse();
+	}
+
+	/** @param BoardTransformation[] $transformations */
+	private function contains(array $transformations, BoardTransformation $transformation): bool
+	{
+		foreach ($transformations as $candidate)
+			if ($candidate->equals($transformation))
+				return true;
+		return false;
+	}
+
+	/**
+	 * @return BoardTransformation[] the orientations the text can be in according to the anchor,
+	 *   empty when there is no anchor
+	 */
+	private function convertPosition(?string $position, LegacyCommentConversion $result): array
 	{
 		$result->position = null;
-		if ($position === null || $position === '')
+		[$fields, $path] = self::parsePosition($position);
+		if (empty($path))
 		{
 			$result->positionMethod = 'none';
-			return;
+			return [];
 		}
+
+		// the recorded corner, then the same corner rotated, then the other boards the site
+		// could show, then any orientation (an older SGF version may have been turned)
+		$expected = $this->cornerView($fields[8] ?? '');
+		$known = $this->tall ? [$expected, $this->rotated($expected)] : [$expected];
+		$candidates = $known;
+		foreach ([...$this->siteViews, ...BoardTransformation::all()] as $candidate)
+			if (!$candidate->invertColors && !$this->contains($candidates, $candidate))
+				$candidates[] = $candidate;
+		foreach ($candidates as $index => $candidate)
+			foreach ([$path, array_reverse($path)] as $order)
+				if ($node = $this->follow($order, $candidate))
+				{
+					$result->anchorTransformation = $candidate;
+					$result->positionMethod = $index < count($known) ? 'exact' : 'found in another orientation';
+					$result->position = $this->positionOf($node);
+					return [$candidate];
+				}
+
+		// the moves are not in the tree, the recorded corner still says where they were played
+		$result->anchorTransformation = $expected;
+		$result->positionMethod = 'moves not in the tree';
+		$result->position = $this->unresolvedPosition($position, $expected);
+		return $known;
+	}
+
+	/**
+	 * Splits a position ("x/y/parentX/parentY/childX/childY/moveNumber/childCount/corner|path")
+	 * into its fields and the moves of its path, from the root or (the old PHP form) to the root.
+	 *
+	 * @return array{string[], array<array{int, int}>}
+	 */
+	private static function parsePosition(?string $position): array
+	{
+		if ($position === null || $position === '')
+			return [[], []];
 		$pieces = explode('|', $position, 2);
 		$fields = explode('/', $pieces[0]);
 		$path = [];
@@ -131,32 +237,16 @@ class LegacyCommentConverter
 		}
 		if (empty($path) && (int) ($fields[0] ?? -1) > 0)
 			$path[] = [(int) $fields[0], (int) $fields[1]]; // only the move itself
-		if (empty($path))
-		{
-			$result->positionMethod = 'none';
-			return;
-		}
+		return [$fields, $path];
+	}
 
-		$expected = $this->expectedAnchorTransformation($fields[8] ?? '');
-		$candidates = [$expected];
-		foreach (BoardTransformation::all() as $candidate)
-			if (!$candidate->invertColors && !$candidate->equals($expected))
-				$candidates[] = $candidate;
-		foreach ($candidates as $index => $candidate)
-			foreach ([$path, array_reverse($path)] as $order)
-				if ($node = $this->follow($order, $candidate))
-				{
-					$result->anchorTransformation = $candidate;
-					$result->positionMethod = $index == 0 ? 'exact' : 'found in another orientation';
-					$result->position = $this->positionOf($node);
-					return;
-				}
-
-		// the moves are not in the tree any more, so the anchor can not be resolved either way
-		$result->positionMethod = 'moves not in the tree';
-		$result->position = CommentCoordinates::transformPosition(
+	/** The position with its moves (not in the tree) moved by the transformation, as written. */
+	private function unresolvedPosition(?string $position, BoardTransformation $transformation): string
+	{
+		[$fields, $path] = self::parsePosition($position);
+		return CommentCoordinates::transformPosition(
 			implode('/', array_slice($fields, 0, 8)) . '/sgf|' . implode('+', array_map(fn($point) => implode('/', $point), $path)),
-			$expected, $this->size);
+			$transformation, $this->size);
 	}
 
 	/** @param array<array{int, int}> $path */
@@ -176,8 +266,7 @@ class LegacyCommentConverter
 	/** The position string of the node, in SGF coordinates (see besogo's makeCommentPosition). */
 	private function positionOf(SgfTree $node): string
 	{
-		$moveOf = function (?SgfTree $node): string
-		{
+		$moveOf = function (?SgfTree $node): string {
 			$move = $node?->move($this->size);
 			return $move ? $move[1] . '/' . $move[2] : '-1/-1';
 		};
@@ -191,45 +280,60 @@ class LegacyCommentConverter
 			. $node->moveNumber() . '/' . count($node->children) . '/sgf|' . implode('+', $path);
 	}
 
-	/** @param string[] $labels */
-	private function chooseTextOrientation(array $labels, LegacyCommentConversion $result): void
+	/**
+	 * @param string[] $labels
+	 * @param BoardTransformation[] $anchorViews the orientations the anchor allows, empty without one
+	 */
+	private function chooseTextOrientation(array $labels, array $anchorViews, LegacyCommentConversion $result): void
 	{
-		$preferences = [];
-		if ($result->anchorTransformation)
-			$preferences[] = $result->anchorTransformation;
-		$preferences[] = $this->fullBoard ? BoardTransformation::identity() : $this->normalization;
-		$preferences[] = BoardTransformation::identity();
-		foreach (BoardTransformation::all() as $candidate)
-			if (!$candidate->invertColors)
+		// the order deciding a tie
+		$preferences = $anchorViews;
+		foreach ([$this->cornerView('top-left'), BoardTransformation::identity(), ...$this->siteViews, ...BoardTransformation::all()] as $candidate)
+			if (!$candidate->invertColors && !$this->contains($preferences, $candidate))
 				$preferences[] = $candidate;
 
 		$best = null;
-		$scores = [];
 		foreach ($preferences as $candidate)
 		{
-			$key = $candidate->toJson();
-			if (isset($scores[$key]))
-				continue;
-			$scores[$key] = $this->score($labels, $candidate);
-			if (!$best || $scores[$key] > $scores[$best->toJson()])
-				$best = $candidate;
+			$scored = [
+				'transformation' => $candidate,
+				'score' => $this->score($labels, $candidate),
+				'siteView' => $this->contains($this->siteViews, $candidate),
+				'points' => $this->mappedPoints($labels, $candidate)];
+			$result->candidates[] = $scored;
+			// the anchor was set on the board the text was written on, so only its orientations count
+			if ((empty($anchorViews) || $this->contains($anchorViews, $candidate)) && (!$best || self::rank($scored) > self::rank($best)))
+				$best = $scored;
 		}
-		$result->textTransformation = $best;
-		$result->textScore = $scores[$best->toJson()];
+		$result->textTransformation = $best['transformation'];
+		$result->textScore = $best['score'];
 
-		// candidates scoring the same but putting the coordinates elsewhere make the choice a guess
-		$bestPoints = $this->mappedPoints($labels, $best);
+		// candidates ranking the same but putting the coordinates elsewhere make the choice a guess
 		$alternatives = 0;
-		foreach ($scores as $key => $score)
-			if ($score == $result->textScore && $this->mappedPoints($labels, BoardTransformation::fromJson($key)) != $bestPoints)
+		foreach ($result->candidates as $candidate)
+			if (self::rank($candidate) == self::rank($best) && $candidate['points'] != $best['points'])
 				$alternatives++;
-		if ($alternatives == 0)
+		$result->textAlternatives = $alternatives;
+
+		if (!empty($anchorViews))
+			$result->textMethod = 'the anchor';
+		elseif ($alternatives == 0)
 			$result->textMethod = 'unique';
-		elseif ($result->anchorTransformation && $best->equals($result->anchorTransformation))
-			$result->textMethod = 'tie, decided by the anchor';
 		else
 			$result->textMethod = 'tie, decided by the top-left orientation';
-		$result->textAlternatives = $alternatives;
+	}
+
+	/**
+	 * Coordinates on moves first, a board the site could show counting as one more;
+	 * then a board the site could show; then coordinates on setup stones and near the stones.
+	 *
+	 * @param array{score: array{int, int, int}, siteView: bool} $candidate
+	 * @return array{int, int, int, int}
+	 */
+	private static function rank(array $candidate): array
+	{
+		$siteView = $candidate['siteView'] ? 1 : 0;
+		return [$candidate['score'][0] + $siteView, $siteView, $candidate['score'][1], $candidate['score'][2]];
 	}
 
 	/**
@@ -251,7 +355,7 @@ class LegacyCommentConverter
 				$score[1]++;
 			if ($x >= $lowestX - self::NEAR_STONES_MARGIN && $x <= $highestX + self::NEAR_STONES_MARGIN
 				&& $y >= $lowestY - self::NEAR_STONES_MARGIN && $y <= $highestY + self::NEAR_STONES_MARGIN)
-				$score[2]++;
+					$score[2]++;
 		}
 		return $score;
 	}
@@ -262,8 +366,7 @@ class LegacyCommentConverter
 	 */
 	private function mappedPoints(array $labels, BoardTransformation $transformation): array
 	{
-		return array_map(function (string $label) use ($transformation): ?string
-		{
+		return array_map(function (string $label) use ($transformation): ?string {
 			$point = CommentCoordinates::labelToPoint($label, $this->size);
 			if (!$point)
 				return null;
@@ -273,20 +376,26 @@ class LegacyCommentConverter
 
 	/**
 	 * Compares the colour written right before a coordinate ("black D4", "w-T19")
-	 * with the colour of the moves at that point.
+	 * with the colour of the moves at that point, and the side to play the text
+	 * names ("in a white to kill problem") with the one in the description,
+	 * leaving out hypotheticals.
 	 *
 	 * @return array{same: int, swapped: int}
 	 */
 	private function colorEvidence(string $text, BoardTransformation $transformation): array
 	{
 		$evidence = ['same' => 0, 'swapped' => 0];
+		$text = CommentCoordinates::withoutLinks($text);
 		preg_match_all(CommentCoordinates::COORDINATE_PATTERN, $text, $matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
 		foreach ($matches as $match)
 		{
-			$before = substr($text, max(0, $match[0][1] - 12), min(12, $match[0][1]));
-			if (preg_match('/(black|white)\s*[,:-]?\s*$/i', $before, $word))
+			$before = self::sentenceBefore($text, $match[0][1]);
+			if (preg_match(self::HYPOTHETICAL_PATTERN, $before))
+				continue;
+			// "black D4", "w-T19", "bL18", but not "kills white - D4"
+			if (preg_match('/(black|white)(?:\s+|[-:])$/i', $before, $word))
 				$color = strtolower($word[1]) == 'black' ? 'B' : 'W';
-			elseif (preg_match('/(?:^|[^\p{L}\p{N}])([bwBW])\s*[,:-]?\s*$/u', $before, $letter))
+			elseif (preg_match('/(?:^|[^\p{L}\p{N}])([bwBW])(?:\s*|[-:])$/u', $before, $letter))
 				$color = strtoupper($letter[1]);
 			else
 				continue;
@@ -299,6 +408,21 @@ class LegacyCommentConverter
 				continue; // no move there, or both colours play there in different lines
 			$evidence[$colors[0] == $color ? 'same' : 'swapped']++;
 		}
+
+		if ($this->description !== null && preg_match(self::SIDE_TO_PLAY_PATTERN, $this->description, $side))
+		{
+			preg_match_all(self::SIDE_TO_PLAY_PATTERN, $text, $mentions, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
+			foreach ($mentions as $mention)
+				if (!preg_match(self::HYPOTHETICAL_PATTERN, self::sentenceBefore($text, $mention[0][1])))
+					$evidence[strtoupper($mention[1][0][0]) == strtoupper($side[1][0]) ? 'same' : 'swapped']++;
+		}
 		return $evidence;
+	}
+
+	/** The part of the sentence that comes before the offset. */
+	private static function sentenceBefore(string $text, int $offset): string
+	{
+		$sentences = preg_split('/[.!?\n]/', substr($text, 0, $offset));
+		return end($sentences);
 	}
 }

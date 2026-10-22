@@ -15,12 +15,16 @@ namespace App\Utility;
  */
 class CommentCoordinates
 {
-	public const COORDINATE_PATTERN = '/([A-Ha-hJ-Tj-t])([1-9]\d?)(?!\d)/';
+	// a coordinate is not a part of a longer word or number ("d4rkm4tter", "/files/ul1/"),
+	// only a colour letter can be glued in front of it ("bL18", "WQ4")
+	public const COORDINATE_PATTERN = '/(?:(?<![\p{L}\p{N}])|(?<=(?<![\p{L}\p{N}])[bwBW]))([A-Ha-hJ-Tj-t])([1-9][0-9]?)(?![\p{L}\p{N}])/u';
+	// links stay as written, "%C3" or "/c3/" in them is not a coordinate
+	private const LINK_PATTERN = '~((?:https?://|www\.)\S+)~i';
 	private const COLOR_WORD_PATTERN = '/\b(black|white)\b/i';
 	// a b/w letter that is not the end of a longer word or number
 	private const COLOR_LETTER_PATTERN = '/(?<![\p{L}\p{N}])[bwBW]/u';
 	// what follows a colour letter that marks the colour of a coordinate: "b E2", "w-T19", "bL18"
-	private const FOLLOWED_BY_COORDINATE_PATTERN = '/^[\s,:-]*[A-HJ-Ta-hj-t][1-9]/';
+	private const FOLLOWED_BY_COORDINATE_PATTERN = '/^[\s,:-]*[A-HJ-Ta-hj-t][1-9][0-9]?(?![\p{L}\p{N}])/u';
 
 	/** @return array{int, int}|null */
 	public static function labelToPoint(string $label, int $size): ?array
@@ -49,7 +53,7 @@ class CommentCoordinates
 	/** @return string[] the labels of all coordinates in the text, upper case, in order */
 	public static function labels(string $text): array
 	{
-		preg_match_all(self::COORDINATE_PATTERN, $text, $matches, PREG_SET_ORDER);
+		preg_match_all(self::COORDINATE_PATTERN, self::withoutLinks($text), $matches, PREG_SET_ORDER);
 		$labels = [];
 		foreach ($matches as $match)
 			if ((int) $match[2] <= 19)
@@ -57,17 +61,33 @@ class CommentCoordinates
 		return $labels;
 	}
 
+	/** The text with every link replaced by a space, to look at its coordinates. */
+	public static function withoutLinks(string $text): string
+	{
+		return preg_replace(self::LINK_PATTERN, ' ', $text);
+	}
+
 	/**
 	 * Rewrites every coordinate in the text through $mapping (keeping the case of
 	 * its letter, a null result keeps the coordinate as written) and optionally
-	 * swaps the colours.
+	 * swaps the colours. Links stay as written.
 	 *
 	 * @param callable(string): ?string $mapping
 	 */
 	public static function transformText(string $text, callable $mapping, bool $invertColors): string
 	{
-		$transformed = preg_replace_callback(self::COORDINATE_PATTERN, function (array $match) use ($mapping): string
-		{
+		// the parts at odd indexes are the links
+		$parts = preg_split(self::LINK_PATTERN, $text, -1, PREG_SPLIT_DELIM_CAPTURE);
+		foreach ($parts as $index => $part)
+			if ($index % 2 == 0)
+				$parts[$index] = self::transformTextOutsideLinks($part, $mapping, $invertColors);
+		return implode('', $parts);
+	}
+
+	/** @param callable(string): ?string $mapping */
+	private static function transformTextOutsideLinks(string $text, callable $mapping, bool $invertColors): string
+	{
+		$transformed = preg_replace_callback(self::COORDINATE_PATTERN, function (array $match) use ($mapping): string {
 			if ((int) $match[2] > 19)
 				return $match[0];
 			$mapped = $mapping(strtoupper($match[1]) . $match[2]);
@@ -82,10 +102,9 @@ class CommentCoordinates
 	 * Swaps black and white: the words, a standalone B or W ("B kills"), and a b/w
 	 * letter marking the colour of a coordinate ("b E2", "W-T19", "bL18").
 	 */
-	public static function swapColors(string $text): string
+	private static function swapColors(string $text): string
 	{
-		$text = preg_replace_callback(self::COLOR_WORD_PATTERN, function (array $match): string
-		{
+		$text = preg_replace_callback(self::COLOR_WORD_PATTERN, function (array $match): string {
 			$swapped = strtolower($match[1]) == 'black' ? 'white' : 'black';
 			if ($match[1] === strtoupper($match[1]))
 				return strtoupper($swapped);
@@ -94,8 +113,7 @@ class CommentCoordinates
 			return $swapped;
 		}, $text);
 
-		return preg_replace_callback(self::COLOR_LETTER_PATTERN, function (array $match) use ($text): string
-		{
+		return preg_replace_callback(self::COLOR_LETTER_PATTERN, function (array $match) use ($text): string {
 			[$letter, $offset] = $match[0];
 			$rest = substr($text, $offset + 1);
 			$standalone = !preg_match('/^[\p{L}\p{N}]/u', $rest);
@@ -109,8 +127,7 @@ class CommentCoordinates
 
 	public static function transformTextBy(string $text, BoardTransformation $transformation, int $size): string
 	{
-		return self::transformText($text, function (string $label) use ($transformation, $size): ?string
-		{
+		return self::transformText($text, function (string $label) use ($transformation, $size): ?string {
 			$point = self::labelToPoint($label, $size);
 			if (!$point)
 				return null;

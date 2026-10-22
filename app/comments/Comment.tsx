@@ -123,16 +123,12 @@ export function Comment({
 	// Admin can drag: standalone comments OR comments inside open issues (not closed)
 	const canDrag = isDraggingEnabled && isAdmin && issueStatus !== IssueStatus.CLOSED;
 
-	// Navigate the board to the node this comment is anchored to.
+	// Show the position this comment is anchored to on the board.
 	const navigateToPosition = () =>
 	{
 		const editor = window.besogo?.editor;
-		if (!editor || !comment.position)
+		if (!editor || !comment.position || !editor.showCommentPosition(comment.position))
 			return;
-		const node = editor.findNodeForPosition(comment.position);
-		if (!node)
-			return;
-		editor.setCurrent(node);
 		(document.querySelector('.besogo-container') ?? document.getElementById('board'))?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 	};
 

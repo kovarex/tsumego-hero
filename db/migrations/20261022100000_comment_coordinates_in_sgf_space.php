@@ -35,7 +35,9 @@ class CommentCoordinatesInSgfSpace extends AbstractMigration
 		$connection = $this->getAdapter()->getConnection();
 		$backup = $connection->prepare('INSERT INTO tsumego_comment_before_sgf_coordinates (tsumego_comment_id, message, position) VALUES (?, ?, ?)');
 		$update = $connection->prepare('UPDATE tsumego_comment SET message = ?, position = ? WHERE id = ?');
-		$currentSgf = $connection->prepare('SELECT sgf FROM sgf WHERE tsumego_id = ? AND accepted = 1 ORDER BY id DESC LIMIT 1');
+		$problem = $connection->prepare('
+			SELECT t.description, (SELECT s.sgf FROM sgf s WHERE s.tsumego_id = t.id AND s.accepted = 1 ORDER BY s.id DESC LIMIT 1) AS sgf
+			FROM tsumego t WHERE t.id = ?');
 
 		$converters = [];
 		foreach ($this->fetchAll('SELECT id, tsumego_id, message, position FROM tsumego_comment ORDER BY tsumego_id, id') as $comment)
@@ -43,10 +45,11 @@ class CommentCoordinatesInSgfSpace extends AbstractMigration
 			$tsumegoID = (int) $comment['tsumego_id'];
 			if (!array_key_exists($tsumegoID, $converters))
 			{
-				$currentSgf->execute([$tsumegoID]);
-				$sgf = $currentSgf->fetchColumn();
-				$tree = $sgf ? SgfTree::parse($sgf) : null;
-				$converters = [$tsumegoID => $tree ? new LegacyCommentConverter($tree) : null]; // comments come grouped by problem
+				$problem->execute([$tsumegoID]);
+				$current = $problem->fetch(PDO::FETCH_ASSOC) ?: ['sgf' => null, 'description' => null];
+				$tree = $current['sgf'] ? SgfTree::parse($current['sgf']) : null;
+				// comments come grouped by problem
+				$converters = [$tsumegoID => $tree ? new LegacyCommentConverter($tree, $current['description']) : null];
 			}
 
 			$converter = $converters[$tsumegoID];
@@ -59,13 +62,13 @@ class CommentCoordinatesInSgfSpace extends AbstractMigration
 			else
 			{
 				// without an SGF there is nothing to orient against, only the marker goes
-				$message = str_replace(LegacyCommentConverter::MARKER, '', $comment['message']);
+				$message = LegacyCommentConverter::withoutMarker($comment['message']);
 				$position = $comment['position'];
 			}
 
 			// a label can grow by a digit ("A1" to "A19"); a text that would not fit keeps its coordinates
 			if (mb_strlen($message) > 2048)
-				$message = str_replace(LegacyCommentConverter::MARKER, '', $comment['message']);
+				$message = LegacyCommentConverter::withoutMarker($comment['message']);
 			if ($message === $comment['message'] && $position === $comment['position'])
 				continue;
 			$backup->execute([$comment['id'], $comment['message'], $comment['position']]);

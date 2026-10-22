@@ -5,9 +5,10 @@
  * comments with LegacyCommentConverter and prints the outcome as JSON, without
  * touching any database.
  *
- * Export the comments with their current SGF (mysql --batch output):
+ * Export the comments with the current SGF and description of their problem (mysql --batch output):
  *   SELECT c.id, c.tsumego_id, c.message, c.position, c.created,
- *     (SELECT s.sgf FROM sgf s WHERE s.tsumego_id = c.tsumego_id AND s.accepted = 1 ORDER BY s.id DESC LIMIT 1) AS sgf
+ *     (SELECT s.sgf FROM sgf s WHERE s.tsumego_id = c.tsumego_id AND s.accepted = 1 ORDER BY s.id DESC LIMIT 1) AS sgf,
+ *     (SELECT t.description FROM tsumego t WHERE t.id = c.tsumego_id) AS description
  *   FROM tsumego_comment c WHERE c.deleted = 0
  *
  * Usage: php scripts/legacy-comment-conversion-report.php comments.tsv > report.json
@@ -62,10 +63,11 @@ foreach ($lines as $line)
 		'tsumego_id' => (int) $comment['tsumego_id'],
 		'created' => $comment['created'] ?? null,
 		'message' => $comment['message'],
-		'position' => $comment['position']];
+		'position' => $comment['position'],
+		'description' => $comment['description'] ?? null];
 	if (!$tree)
 	{
-		$row['converted_message'] = str_replace(LegacyCommentConverter::MARKER, '', $comment['message']);
+		$row['converted_message'] = LegacyCommentConverter::withoutMarker($comment['message']);
 		$row['converted_position'] = $comment['position'];
 		$row['text_method'] = 'no SGF';
 		$rows[] = $row;
@@ -73,7 +75,7 @@ foreach ($lines as $line)
 	}
 
 	$size = $tree->boardSize();
-	$conversion = (new LegacyCommentConverter($tree))->convert($comment['message'], $comment['position']);
+	$conversion = (new LegacyCommentConverter($tree, $comment['description'] ?? null))->convert($comment['message'], $comment['position']);
 	$stones = [];
 	foreach ($tree->setupStones($size) as $key => $color)
 		$stones[] = [...array_map('intval', explode('/', $key)), $color];
@@ -86,6 +88,14 @@ foreach ($lines as $line)
 		if ($point = CommentCoordinates::labelToPoint($label, $size))
 			$points[] = [$label, ...$conversion->textTransformation->applyToPoint($point[0], $point[1], $size)];
 
+	$candidates = [];
+	foreach ($conversion->candidates as $candidate)
+		$candidates[] = [
+			'transformation' => transformationName($candidate['transformation']),
+			'score' => $candidate['score'],
+			'site_view' => $candidate['siteView'],
+			'labels' => array_map(fn(?string $key) => $key === null ? null : CommentCoordinates::pointToLabel(...array_map('intval', explode('/', $key)), size: $size), $candidate['points'])];
+
 	$rows[] = $row + [
 		'converted_message' => $conversion->message,
 		'converted_position' => $conversion->position,
@@ -97,6 +107,7 @@ foreach ($lines as $line)
 		'text_transformation' => transformationName($conversion->textTransformation),
 		'text_score' => $conversion->textScore,
 		'text_alternatives' => $conversion->textAlternatives,
+		'candidates' => $candidates,
 		'color_evidence' => $conversion->colorEvidence,
 		'colors_swapped' => $conversion->colorsSwapped,
 		'position_method' => $conversion->positionMethod,

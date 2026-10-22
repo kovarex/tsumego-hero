@@ -96,6 +96,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     resolveSequenceHover: resolveSequenceHover,
     coordXYToLabel: coordXYToLabel,
     findNodeForPosition: findNodeForPosition,
+    showCommentPosition: showCommentPosition,
     makeCommentPosition: makeCommentPosition,
     sgfLabelToView: sgfLabelToView,
     viewLabelToSgf: viewLabelToSgf,
@@ -1016,6 +1017,32 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
       if (!node) return null;
     }
     return node;
+  }
+
+  // Shows the position a comment is anchored to. When the tree changed since
+  // the comment was written, the moves it no longer has are played as local
+  // moves, as far as they are legal. Returns false when there is no position.
+  function showCommentPosition(positionString) {
+    var path = positionString ? positionString.split("|")[1] : null;
+    if (!path) return false;
+    var node = root;
+    var moves = path.split("+");
+    for (var i = 0; i < moves.length; i++) {
+      var parts = moves[i].split("/");
+      if (parts.length < 2) break;
+      var point = sgfPointToView({ x: parseInt(parts[0], 10), y: parseInt(parts[1], 10) });
+      var child = findChildByCoord(node, point);
+      if (!child) {
+        child = node.makeChild();
+        child.localEdit = true;
+        if (!child.playMove(point.x, point.y)) break;
+        node.registerChild(child);
+      }
+      node = child;
+    }
+    current = node;
+    notifyListeners({ treeChange: true, navChange: true, stoneChange: true });
+    return true;
   }
 
   // Finds the shallowest descendant of `node` (strictly below it) whose move

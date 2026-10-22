@@ -21,6 +21,16 @@ class CommentCoordinatesTest extends CakeTestCase
 		$this->assertSame(['D4', 'Q16', 'C3'], CommentCoordinates::labels('d4 then Q16, a123 and c3'));
 	}
 
+	public function testLabelsSkipWordsWithDigits()
+	{
+		$this->assertSame(['D4'], CommentCoordinates::labels('d4rkm4tter, R2D2 and mp3 say D4'));
+	}
+
+	public function testLabelsSkipLinks()
+	{
+		$this->assertSame(['Q16', 'D4'], CommentCoordinates::labels('Q16 (https://senseis.xmp.net/?path=%C3%A9/c3 or www.example.com/a1) D4'));
+	}
+
 	/** Must match app/comments/commentCoordinates.ts, which does the same in the browser. */
 	public function testTransformTextMirrorsCoordinatesAndSwapsColors()
 	{
@@ -31,8 +41,15 @@ class CommentCoordinatesTest extends CakeTestCase
 		$this->assertSame(
 			'Plan b is bad; Black lives. B plays D16',
 			CommentCoordinates::transformTextBy('Plan b is bad; White lives. W plays Q16', $mirror, 19));
-		$this->assertSame('a123 C2Q2 S1 w P2 WHITE', CommentCoordinates::transformTextBy('a123 R2D2 B1 b E2 BLACK', $mirror, 19));
+		$this->assertSame('a123 R2D2 S1 w P2 WHITE', CommentCoordinates::transformTextBy('a123 R2D2 B1 b E2 BLACK', $mirror, 19));
 		$this->assertSame('w/o reason, w r1', CommentCoordinates::transformTextBy('w/o reason, b c1', $mirror, 19));
+	}
+
+	public function testTransformTextKeepsLinks()
+	{
+		$this->assertSame(
+			'Q4, see https://tsumego.com/files/ul1/c3.sgf?black%C3 at Q4',
+			CommentCoordinates::transformTextBy('D4, see https://tsumego.com/files/ul1/c3.sgf?black%C3 at D4', new BoardTransformation(false, true, false, true), 19));
 	}
 
 	public function testTransformTextIsUndoneByTheInverse()
