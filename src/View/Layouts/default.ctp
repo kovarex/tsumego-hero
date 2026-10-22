@@ -357,7 +357,7 @@ echo ViteManifest::legacyScript('legacy');
 									</div>
 						</li>
 						<li class="menuIcons1">
-							<a class="menuIcons2" id="darkButton" onclick="darkAndLight();"><img id="darkButtonImage"></a>
+							<a class="menuIcons2" id="darkButton" onclick="darkAndLight();" title="Light or dark theme" aria-label="Switch between light and dark theme"><span class="theme-icon"></span></a>
 						</li>
 					</ul>
 				</nav>

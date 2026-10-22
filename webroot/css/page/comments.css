@@ -30,7 +30,6 @@
 	background: var(--surface-bar);
 	cursor: pointer;
 	border-radius: 4px;
-	font-family: Georgia, serif;
 	font-size: 13px;
 }
 .tsumego-comments__tab.active {
@@ -155,7 +154,6 @@
 	border: 1px solid var(--current-border-color);
 	border-radius: 4px;
 	resize: vertical;
-	font-family: inherit;
 	font-size: 13px;
 	box-sizing: border-box;
 }
@@ -487,7 +485,6 @@
 	padding: 8px;
 	border: 1px solid var(--current-border-color);
 	border-radius: 4px;
-	font-family: inherit;
 	font-size: 13px;
 	resize: vertical;
 	min-height: 50px;

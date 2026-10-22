@@ -44,7 +44,6 @@
 	border: none;
 	border-bottom: 1px solid var(--text-softer-color);
 	color: var(--text-color);
-	font-family: Georgia, sans-serif;
 	font-weight: 400;
 	font-size: 15px;
 	transition: 0.2s ease;
