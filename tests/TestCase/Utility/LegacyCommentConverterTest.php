@@ -79,6 +79,18 @@ class LegacyCommentConverterTest extends CakeTestCase
 		$this->assertSame('black B18, white A18', $swapped->message);
 	}
 
+	public function testThreeCoordinatesInARowPlayingALineHaveItsColors()
+	{
+		// B18, A18 and B19 are each played by both colours, in different lines
+		$sgf = '(;GM[1]FF[4]SZ[19]AB[cc][dc]AW[bc][cb](;B[bb];W[ab];B[ba]C[+])(;B[ab];W[bb])(;B[aa];W[ba]))';
+		$converter = new LegacyCommentConverter(SgfTree::parse($sgf));
+		$swapped = $converter->convert('white B18, black A18, white B19 lives');
+		$this->assertTrue($swapped->colorsSwapped);
+		$this->assertSame('black B18, white A18, black B19 lives', $swapped->message);
+		// two in a row can meet a line by chance
+		$this->assertFalse($converter->convert('white B18, black A18')->colorsSwapped);
+	}
+
 	public function testColorsOfAHypotheticalMoveDoNotCount()
 	{
 		// S18 is the first move, black's

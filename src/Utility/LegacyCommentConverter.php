@@ -23,7 +23,9 @@ namespace App\Utility;
  *   the problem as shown in the top-left corner (the "Original" orientation).
  * - Black and white are swapped only when the colours the text names contradict
  *   the problem: the colour written next to a coordinate against the colour of
- *   the move there in the tree, and "white to kill" against the description.
+ *   the move there in the tree (in the line of the tree, when it is one of three
+ *   or more coordinates in a row playing one), and "white to kill" against the
+ *   description.
  *   A hypothetical ("if w D4", "should this be white to play?") does not count.
  * - The "[current position]" marker is removed, the anchor alone marks it now.
  */
@@ -32,13 +34,15 @@ class LegacyCommentConverter
 	public const MARKER = '[current position]';
 	// how far from the stones a coordinate still counts as near the problem
 	private const NEAR_STONES_MARGIN = 3;
+	// how many coordinates in a row playing a line of the tree tell the colours of that line, two meet by chance
+	private const LINE_LENGTH = 3;
 	// "Black to kill", "w to live": the side to play, as in the description of the problem
 	private const SIDE_TO_PLAY_PATTERN = '/\b(black|white|b|w)\s+to\s+(?:play|move|kill|live|capture|win|save|escape|connect|cut)\b/i';
 	// "if w D4", "should this be white to play?": a hypothetical, not the colours the author saw
 	private const HYPOTHETICAL_PATTERN = '/\b(?:if|should|would|could|suppose|add|adding|added|suggest\w*|chang\w*|instead|rather|consider\w*|label\w*)\b/i';
 
 	private int $size;
-	/** @var array<string, string[]> "x/y" => the colours of the moves played there */
+	/** @var array<string, SgfTree[]> "x/y" => the nodes with a move there */
 	private array $moves = [];
 	/** @var array<string, string> "x/y" => the colour of the setup stone there */
 	private array $stones = [];
@@ -68,7 +72,7 @@ class LegacyCommentConverter
 			}
 			if ($move = $node->move($this->size))
 			{
-				$this->moves[$move[1] . '/' . $move[2]][] = $move[0];
+				$this->moves[$move[1] . '/' . $move[2]][] = $node;
 				$points[] = [$move[1], $move[2]];
 			}
 			foreach ($points as [$x, $y])
@@ -387,7 +391,12 @@ class LegacyCommentConverter
 		$evidence = ['same' => 0, 'swapped' => 0];
 		$text = CommentCoordinates::withoutLinks($text);
 		preg_match_all(CommentCoordinates::COORDINATE_PATTERN, $text, $matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
-		foreach ($matches as $match)
+		$points = array_map(function (array $match) use ($transformation): ?array {
+			$point = CommentCoordinates::labelToPoint(strtoupper($match[1][0]) . $match[2][0], $this->size);
+			return $point ? $transformation->applyToPoint($point[0], $point[1], $this->size) : null;
+		}, $matches);
+		$lineColors = $this->colorsInLines($points);
+		foreach ($matches as $index => $match)
 		{
 			$before = self::sentenceBefore($text, $match[0][1]);
 			if (preg_match(self::HYPOTHETICAL_PATTERN, $before))
@@ -399,11 +408,9 @@ class LegacyCommentConverter
 				$color = strtoupper($letter[1]);
 			else
 				continue;
-			$point = CommentCoordinates::labelToPoint(strtoupper($match[1][0]) . $match[2][0], $this->size);
-			if (!$point)
+			if (!$points[$index])
 				continue;
-			[$x, $y] = $transformation->applyToPoint($point[0], $point[1], $this->size);
-			$colors = array_values(array_unique($this->moves[$x . '/' . $y] ?? []));
+			$colors = $lineColors[$index] ?? $this->colorsAt($points[$index]);
 			if (count($colors) != 1)
 				continue; // no move there, or both colours play there in different lines
 			$evidence[$colors[0] == $color ? 'same' : 'swapped']++;
@@ -417,6 +424,39 @@ class LegacyCommentConverter
 					$evidence[strtoupper($mention[1][0][0]) == strtoupper($side[1][0]) ? 'same' : 'swapped']++;
 		}
 		return $evidence;
+	}
+
+	/**
+	 * @param array{int, int} $point
+	 * @return string[] the colours of all moves at the point
+	 */
+	private function colorsAt(array $point): array
+	{
+		$colors = array_map(fn(SgfTree $node) => $node->move($this->size)[0], $this->moves[$point[0] . '/' . $point[1]] ?? []);
+		return array_values(array_unique($colors));
+	}
+
+	/**
+	 * The colours of the coordinates that play a line of the tree, LINE_LENGTH or
+	 * more one after the other ("W B1, B C2, W A2"), by their index.
+	 *
+	 * @param array<?array{int, int}> $points of the coordinates of the text, in order
+	 * @return array<int, string[]>
+	 */
+	private function colorsInLines(array $points): array
+	{
+		$colors = [];
+		foreach ($points as $start => $point)
+			foreach ($point ? $this->moves[$point[0] . '/' . $point[1]] ?? [] : [] as $node)
+			{
+				$line = [$start => $node];
+				for ($index = $start + 1; isset($points[$index]) && ($node = $node->childWithMoveAt($points[$index][0], $points[$index][1], $this->size)); $index++)
+					$line[$index] = $node;
+				if (count($line) >= self::LINE_LENGTH)
+					foreach ($line as $index => $lineNode)
+						$colors[$index][] = $lineNode->move($this->size)[0];
+			}
+		return array_map(fn(array $lineColors) => array_values(array_unique($lineColors)), $colors);
 	}
 
 	/** The part of the sentence that comes before the offset. */
