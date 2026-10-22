@@ -71,6 +71,7 @@
 	background: none;
 	border: none;
 	color: var(--text-softer-color);
+	font-family: var(--font-family-ui);
 	font-size: var(--font-size-md);
 	text-decoration: underline;
 	cursor: pointer;
