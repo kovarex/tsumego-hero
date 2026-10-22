@@ -113,6 +113,7 @@ body {
   display: none;
 }
 li a.menuLi {
+  font-family: var(--font-family-display);
   letter-spacing: 1px;
   padding: 7px 9px 10px 9px;
   margin: 13px 6px 0 6px;
@@ -150,6 +151,7 @@ li a.menuLi.nav__link--active {
    to a browser-blue underlined link. */
 .site-nav__signin a.menuLi,
 .site-nav__signin #signInMenu {
+  font-family: var(--font-family-display);
   letter-spacing: 1px;
   font-size: 24px;
   font-weight: 700;
@@ -511,7 +513,7 @@ h4 {
   background-color: var(--color-gray);
 }.board-picker {
   display: inline-block;
-  font-family: var(--font-family-heading);
+  font-family: var(--font-family-display);
   letter-spacing: 1px;
   color: var(--color-purple-bright);
   font-size: 16px;
@@ -571,6 +573,7 @@ input.newCheck {
   top: 54px;
   background: var(--color-hero-gradient);
   padding: 1px 10px;
+  font-family: var(--font-family-display);
   letter-spacing: 1px;
   font-size: 14px;
   font-weight: 600;
@@ -591,6 +594,7 @@ input.newCheck {
   top: 82px;
   background: var(--color-hero-gradient);
   padding: 1px 10px;
+  font-family: var(--font-family-display);
   letter-spacing: 1px;
   font-size: 14px;
   font-weight: 600;
@@ -611,6 +615,7 @@ input.newCheck {
   top: 110px;
   background: var(--color-hero-gradient);
   padding: 1px 10px;
+  font-family: var(--font-family-display);
   letter-spacing: 1px;
   font-size: 14px;
   font-weight: 600;
@@ -631,6 +636,7 @@ input.newCheck {
   top: 138px;
   background: var(--color-hero-gradient);
   padding: 1px 10px;
+  font-family: var(--font-family-display);
   letter-spacing: 1px;
   font-size: 14px;
   font-weight: 600;
@@ -651,6 +657,7 @@ input.newCheck {
   top: 166px;
   background: var(--color-hero-gradient);
   padding: 1px 10px;
+  font-family: var(--font-family-display);
   letter-spacing: 1px;
   font-size: 14px;
   font-weight: 600;
@@ -674,6 +681,7 @@ input.newCheck {
   display: none;
   background-color: var(--color-gray);
   padding: 3px 0px 1px 5px;
+  font-family: var(--font-family-display);
   letter-spacing: 1px;
   font-size: 24px;
   font-weight: 400;

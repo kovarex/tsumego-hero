@@ -92,6 +92,7 @@
   top: 9px;
 }
 .author-notice {
+  font-family: var(--font-family-display);
   font-size: 12px;
   color: var(--text-softer-color);
   padding: 5px 0 0 5px;
@@ -105,6 +106,7 @@
 #multipleChoice2,
 #multipleChoice3,
 #multipleChoice4 {
+  font-family: var(--font-family-display);
   padding: 10px 13px;
   font-size: 18px;
   font-style: normal;
@@ -207,6 +209,7 @@
   vertical-align: text-top;
 }
 h1 {
+  font-family: var(--font-family-display);
   letter-spacing: 1px;
   font-size: 18px;
   font-style: normal;
@@ -253,6 +256,7 @@ h1 {
   display: none;
   background-color: var(--color-gray);
   padding: 3px 0px 1px 29px;
+  font-family: var(--font-family-display);
   letter-spacing: 1px;
   font-size: 24px;
   font-weight: 700;
@@ -613,6 +617,7 @@ h1 {
 }
 #author-notice {
   position: absolute;
+  font-family: var(--font-family-display);
   font-size: 12px;
   color: var(--text-softer-color);
   right: 207px;
