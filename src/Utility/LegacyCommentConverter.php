@@ -27,6 +27,7 @@ namespace App\Utility;
  *   or more coordinates in a row playing one), and "white to kill" against the
  *   description.
  *   A hypothetical ("if w D4", "should this be white to play?") does not count.
+ *   A caller that knows the colours (a comment checked by hand) gives them instead.
  * - The "[current position]" marker is removed, the anchor alone marks it now.
  */
 class LegacyCommentConverter
@@ -115,7 +116,8 @@ class LegacyCommentConverter
 		}
 	}
 
-	public function convert(string $message, ?string $position = null): LegacyCommentConversion
+	/** @param ?bool $colorsSwapped known from elsewhere, null lets the colours the text names decide */
+	public function convert(string $message, ?string $position = null, ?bool $colorsSwapped = null): LegacyCommentConversion
 	{
 		$result = new LegacyCommentConversion();
 		$result->originalMessage = $message;
@@ -141,7 +143,7 @@ class LegacyCommentConverter
 
 		$transformation = $result->textTransformation ?? BoardTransformation::identity();
 		$result->colorEvidence = $this->colorEvidence($text, $transformation);
-		$result->colorsSwapped = $result->colorEvidence['swapped'] > $result->colorEvidence['same'];
+		$result->colorsSwapped = $colorsSwapped ?? $result->colorEvidence['swapped'] > $result->colorEvidence['same'];
 		if ($result->colorsSwapped)
 			$transformation = new BoardTransformation($transformation->transpose, $transformation->flipX, $transformation->flipY, true);
 		$result->message = CommentCoordinates::transformTextBy($text, $transformation, $this->size);

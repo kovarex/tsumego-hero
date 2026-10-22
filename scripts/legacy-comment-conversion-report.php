@@ -3,7 +3,8 @@
 /**
  * Dry run of the migration CommentCoordinatesInSgfSpace: converts exported
  * comments with LegacyCommentConverter and prints the outcome as JSON, without
- * touching any database.
+ * touching any database. The colours of the comments the migration lists as
+ * checked by hand are left to the converter here.
  *
  * Export the comments with the current SGF and description of their problem (mysql --batch output):
  *   SELECT c.id, c.tsumego_id, c.message, c.position, c.created,

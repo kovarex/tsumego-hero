@@ -20,6 +20,22 @@ use Phinx\Migration\AbstractMigration;
  */
 class CommentCoordinatesInSgfSpace extends AbstractMigration
 {
+	/**
+	 * Comments checked by hand (2026-10-22) that were written with the colours swapped,
+	 * which only their words tell ("white can live with Ko" on a "Black to live."
+	 * problem), so the converter can't see it. Each is matched by the md5 of its text,
+	 * one edited since is left to the converter.
+	 */
+	private const COLORS_SWAPPED = [
+		790 => '1258f359d7ec248857e8b9c95795573f',
+		2113 => 'e31d59c8f2513a757c8be72115abf285',
+		2249 => '19610b5b7ea77cbc0f1d6c2fa9bc6108',
+		2507 => '475db379dd75c691d16182fdf3a8a65b',
+		3021 => '4f7da5d36d264705cadc878f118b5588',
+		3281 => '569433b730b3573987a875974a788786',
+		3381 => 'd3bb2b72eaeb6b79ff06ac9ba1b5ba2f',
+		9224 => '7db42b0d35c2d4a3a78041fb411a9177'];
+
 	public function up(): void
 	{
 		$this->execute("
@@ -55,7 +71,7 @@ class CommentCoordinatesInSgfSpace extends AbstractMigration
 			$converter = $converters[$tsumegoID];
 			if ($converter)
 			{
-				$conversion = $converter->convert($comment['message'], $comment['position']);
+				$conversion = $converter->convert($comment['message'], $comment['position'], $this->colorsSwappedByHand($comment));
 				$message = $conversion->message;
 				$position = $conversion->position;
 			}
@@ -74,6 +90,18 @@ class CommentCoordinatesInSgfSpace extends AbstractMigration
 			$backup->execute([$comment['id'], $comment['message'], $comment['position']]);
 			$update->execute([$message, $position, $comment['id']]);
 		}
+	}
+
+	/** True for a comment of COLORS_SWAPPED as it was checked, null leaves its colours to the converter. */
+	private function colorsSwappedByHand(array $comment): ?bool
+	{
+		$checked = self::COLORS_SWAPPED[(int) $comment['id']] ?? null;
+		if ($checked === null)
+			return null;
+		if (md5($comment['message']) === $checked)
+			return true;
+		$this->getOutput()?->writeln("Comment {$comment['id']} was edited since its colours were checked, the converter decides them.");
+		return null;
 	}
 
 	public function down(): void

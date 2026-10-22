@@ -8,9 +8,9 @@ class LegacyCommentConverterTest extends CakeTestCase
 	/** A problem in the top-right corner of the SGF, the solution starts at S18 (rb). */
 	private const TOP_RIGHT_SGF = '(;GM[1]FF[4]SZ[19]AB[pc][qd][rd]AW[qc][rc][sd];B[rb](;W[sb];B[qb]C[+])(;W[qb];B[sb]C[+]))';
 
-	private function convert(string $message, ?string $position = null): App\Utility\LegacyCommentConversion
+	private function convert(string $message, ?string $position = null, ?bool $colorsSwapped = null): App\Utility\LegacyCommentConversion
 	{
-		return (new LegacyCommentConverter(SgfTree::parse(self::TOP_RIGHT_SGF)))->convert($message, $position);
+		return (new LegacyCommentConverter(SgfTree::parse(self::TOP_RIGHT_SGF)))->convert($message, $position, $colorsSwapped);
 	}
 
 	public function testCoordinatesWrittenInAnotherCornerMoveToTheMovesOfTheSgf()
@@ -108,6 +108,15 @@ class LegacyCommentConverterTest extends CakeTestCase
 		$this->assertSame('Nice black to kill problem', $swapped->message);
 		// asking about another side to play says nothing about the colours seen
 		$this->assertFalse($converter->convert('Should this be white to kill?')->colorsSwapped);
+	}
+
+	public function testColorsKnownFromElsewhereDecideInsteadOfTheText()
+	{
+		// only the words tell that the author saw white playing S18, black's first move
+		$swapped = $this->convert("White's move S18 kills", colorsSwapped: true);
+		$this->assertTrue($swapped->colorsSwapped);
+		$this->assertSame("Black's move S18 kills", $swapped->message);
+		$this->assertFalse($this->convert('w S18 is wrong', colorsSwapped: false)->colorsSwapped);
 	}
 
 	public function testLinksStayAsWritten()
