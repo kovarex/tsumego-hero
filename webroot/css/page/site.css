@@ -866,17 +866,17 @@ nav ul ul ul li {
 .xpDisplayTable {
   text-align: center;
 }
-#darkButtonImage {
-	content: var(--dark-button-icon);
-	width:30px;
-}
-#darkButtonImage2 {
-	content: var(--dark-button-icon);
-	width:30px;
-}
-#darkButtonImage3 {
-	content: var(--dark-button-icon);
-	width:30px;
+/* The theme icon comes from the theme token, so it follows the palette without a
+   second file to load or a src the script would have to swap. Its width is in rem,
+   so raising the base font size takes the icon along. */
+.theme-icon {
+  display: inline-block;
+  width: 1.875rem;
+  aspect-ratio: 65 / 60;
+  background-image: var(--dark-button-icon);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
 }
 .grey-link { color: var(--text-softer-color); }
 li {

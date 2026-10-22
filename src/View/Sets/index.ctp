@@ -28,9 +28,7 @@ use App\Utility\TsumegoFilters;
 							Topics
 					</div>
 					<div class="set-button-icon" id="set-button-icon-topics">
-						<svg class="animate-icon set-filter-chevron" viewBox="0 0 12 8" aria-hidden="true" focusable="false">
-							<path d="M1 1.5 6 6.5 11 1.5" />
-						</svg>
+						<?php echo $this->element('filter_chevron'); ?>
 					</div>
 				</button>
 				<div align="left" id="dropdown-topics" class="dropdown__menu dropdown__menu--filters">
@@ -54,9 +52,7 @@ use App\Utility\TsumegoFilters;
 							Difficulty
 					</div>
 					<div class="set-button-icon" id="set-button-icon-difficulty">
-						<svg class="animate-icon set-filter-chevron" viewBox="0 0 12 8" aria-hidden="true" focusable="false">
-							<path d="M1 1.5 6 6.5 11 1.5" />
-						</svg>
+						<?php echo $this->element('filter_chevron'); ?>
 					</div>
 				</button>
 				<div align="left" id="dropdown-difficulty" class="dropdown__menu dropdown__menu--filters">
@@ -104,9 +100,7 @@ use App\Utility\TsumegoFilters;
 							Tags
 					</div>
 					<div class="set-button-icon" id="set-button-icon-tags">
-						<svg class="animate-icon set-filter-chevron" viewBox="0 0 12 8" aria-hidden="true" focusable="false">
-							<path d="M1 1.5 6 6.5 11 1.5" />
-						</svg>
+						<?php echo $this->element('filter_chevron'); ?>
 					</div>
 				</button>
 				<div align="left" id="dropdown-tags" class="dropdown__menu dropdown__menu--filters">
