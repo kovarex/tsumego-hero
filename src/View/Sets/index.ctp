@@ -20,6 +20,7 @@ use App\Utility\TsumegoFilters;
  * @var array $tagList
  */
 ?>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
 	<div align="center" class="set-search-menu query-<?php echo h($tsumegoFilters->query); ?>">
 		<div class="set-buttons-left">
 			<div class="set-buttons">
@@ -28,7 +29,7 @@ use App\Utility\TsumegoFilters;
 							Topics
 					</div>
 					<div class="set-button-icon" id="set-button-icon-topics">
-						<?php echo $this->element('filter_chevron'); ?>
+							<i class="animate-icon fa fa-chevron-down" aria-hidden="true"></i>
 					</div>
 				</button>
 				<div align="left" id="dropdown-topics" class="dropdown__menu dropdown__menu--filters">
@@ -52,7 +53,7 @@ use App\Utility\TsumegoFilters;
 							Difficulty
 					</div>
 					<div class="set-button-icon" id="set-button-icon-difficulty">
-						<?php echo $this->element('filter_chevron'); ?>
+							<i class="animate-icon fa fa-chevron-down" aria-hidden="true"></i>
 					</div>
 				</button>
 				<div align="left" id="dropdown-difficulty" class="dropdown__menu dropdown__menu--filters">
@@ -100,7 +101,7 @@ use App\Utility\TsumegoFilters;
 							Tags
 					</div>
 					<div class="set-button-icon" id="set-button-icon-tags">
-						<?php echo $this->element('filter_chevron'); ?>
+							<i class="animate-icon fa fa-chevron-down" aria-hidden="true"></i>
 					</div>
 				</button>
 				<div align="left" id="dropdown-tags" class="dropdown__menu dropdown__menu--filters">
@@ -662,17 +663,17 @@ use App\Utility\TsumegoFilters;
 
 		$("#topics-button").click(function(e){
 			e.stopPropagation();
-			this.querySelector('#set-button-icon-topics .set-filter-chevron').classList.toggle('rotateArrow');
+			this.querySelector('#set-button-icon-topics i.fa').classList.toggle('rotateArrow');
 			if(!topicsToggle){
 				topicsToggle = true;
 				$("#dropdown-topics").fadeIn(250);
 				if(difficultyToggle){
-					document.querySelector('#set-button-icon-difficulty .set-filter-chevron').classList.toggle('rotateArrow');
+					document.querySelector('#set-button-icon-difficulty i.fa').classList.toggle('rotateArrow');
 					difficultyToggle = false;
 					$("#dropdown-difficulty").fadeOut(250);
 				}
 				if(tagsToggle){
-					document.querySelector('#set-button-icon-tags .set-filter-chevron').classList.toggle('rotateArrow');
+					document.querySelector('#set-button-icon-tags i.fa').classList.toggle('rotateArrow');
 					tagsToggle = false;
 					$("#dropdown-tags").fadeOut(250);
 				}
@@ -683,17 +684,17 @@ use App\Utility\TsumegoFilters;
 		});
 		$("#difficulty-button").click(function(e){
 			e.stopPropagation();
-			this.querySelector('#set-button-icon-difficulty .set-filter-chevron').classList.toggle('rotateArrow');
+			this.querySelector('#set-button-icon-difficulty i.fa').classList.toggle('rotateArrow');
 			if(!difficultyToggle){
 				difficultyToggle = true;
 				$("#dropdown-difficulty").fadeIn(250);
 				if(topicsToggle){
-					document.querySelector('#set-button-icon-topics .set-filter-chevron').classList.toggle('rotateArrow');
+					document.querySelector('#set-button-icon-topics i.fa').classList.toggle('rotateArrow');
 					topicsToggle = false;
 					$("#dropdown-topics").fadeOut(250);
 				}
 				if(tagsToggle){
-					document.querySelector('#set-button-icon-tags .set-filter-chevron').classList.toggle('rotateArrow');
+					document.querySelector('#set-button-icon-tags i.fa').classList.toggle('rotateArrow');
 					tagsToggle = false;
 					$("#dropdown-tags").fadeOut(250);
 				}
@@ -704,17 +705,17 @@ use App\Utility\TsumegoFilters;
 		});
 		$("#tags-button").click(function(e){
 			e.stopPropagation();
-			this.querySelector('#set-button-icon-tags .set-filter-chevron').classList.toggle('rotateArrow');
+			this.querySelector('#set-button-icon-tags i.fa').classList.toggle('rotateArrow');
 			if(!tagsToggle){
 				tagsToggle = true;
 				$("#dropdown-tags").fadeIn(250);
 				if(topicsToggle){
-					document.querySelector('#set-button-icon-topics .set-filter-chevron').classList.toggle('rotateArrow');
+					document.querySelector('#set-button-icon-topics i.fa').classList.toggle('rotateArrow');
 					topicsToggle = false;
 					$("#dropdown-topics").fadeOut(250);
 				}
 				if(difficultyToggle){
-					document.querySelector('#set-button-icon-difficulty .set-filter-chevron').classList.toggle('rotateArrow');
+					document.querySelector('#set-button-icon-difficulty i.fa').classList.toggle('rotateArrow');
 					difficultyToggle = false;
 					$("#dropdown-difficulty").fadeOut(250);
 				}
@@ -728,17 +729,17 @@ use App\Utility\TsumegoFilters;
 		});
 		$(".whitebox2").click(function(e){
 			if(topicsToggle){
-				document.querySelector('#set-button-icon-topics .set-filter-chevron').classList.toggle('rotateArrow');
+				document.querySelector('#set-button-icon-topics i.fa').classList.toggle('rotateArrow');
 				topicsToggle = false;
 				$("#dropdown-topics").fadeOut(250);
 			}
 			if(difficultyToggle){
-				document.querySelector('#set-button-icon-difficulty .set-filter-chevron').classList.toggle('rotateArrow');
+				document.querySelector('#set-button-icon-difficulty i.fa').classList.toggle('rotateArrow');
 				difficultyToggle = false;
 				$("#dropdown-difficulty").fadeOut(250);
 			}
 			if(tagsToggle){
-				document.querySelector('#set-button-icon-tags .set-filter-chevron').classList.toggle('rotateArrow');
+				document.querySelector('#set-button-icon-tags i.fa').classList.toggle('rotateArrow');
 				tagsToggle = false;
 				$("#dropdown-tags").fadeOut(250);
 			}

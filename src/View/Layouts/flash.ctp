@@ -33,8 +33,7 @@ if (Configure::read('debug') == 0):
 endif;
 ?>
 <style><!--
-BODY { font-family:sans-serif }
-P { text-align:center; font-size:1.1em; font-weight:bold }
+P { text-align:center; font:bold 1.1em sans-serif }
 A { color:#444; text-decoration:none }
 A:HOVER { text-decoration: underline; color:#44E }
 --></style>

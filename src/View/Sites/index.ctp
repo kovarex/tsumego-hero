@@ -445,9 +445,9 @@ else
 					<div class="new1">
 					<br>
 					<div align="center">
-					<a class="menuIcons2" id="darkButton2" onclick="darkAndLight();" title="Light or dark theme" aria-label="Switch between light and dark theme"><span class="theme-icon"></span></a>
+					<a class="menuIcons2" id="darkButton2" onclick="darkAndLight();"><img id="darkButtonImage2"></a>
 					<h1 class="darkButton2">Dark Theme</h1>
-					<a class="menuIcons2" id="darkButton3" onclick="darkAndLight();" aria-hidden="true" tabindex="-1"><span class="theme-icon"></span></a>
+					<a class="menuIcons2" id="darkButton3" onclick="darkAndLight();"><img id="darkButtonImage3"></a>
 					</div>
 					<br>
 					<br>
