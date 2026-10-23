@@ -91,6 +91,8 @@ class ProposalFeedbackTest extends TestCaseWithAuth
 		$this->assertCount(1, $messages);
 		$this->assertStringContainsString('was accepted by DN_reviewer, it is the current version of the problem now.', $messages[0]['text']);
 		$this->assertStringNotContainsString('DN_reviewer:', $messages[0]['text']);
+		$replaced = $context->tsumegos[0]['sgfs'][0];
+		$this->assertStringContainsString('Your changes: ' . Router::url('/editor/?sgfID=' . $proposal['id'] . '&diffID=' . $replaced['id'], true), $messages[0]['text']);
 	}
 
 	public function testAcceptingOwnProposalSendsNothing(): void

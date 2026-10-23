@@ -99,6 +99,16 @@ class Sgf extends AppModel
 		return $this->find('first', ['conditions' => ['id' => $this->id]]);
 	}
 
+	/** The id of the current version of the tsumego, the latest accepted one. */
+	public function findLatestAcceptedID(int $tsumegoID): ?int
+	{
+		$latest = $this->find('first', [
+			'fields' => ['id'],
+			'order' => 'id DESC',
+			'conditions' => ['tsumego_id' => $tsumegoID, 'accepted' => true]]);
+		return $latest ? (int) $latest['Sgf']['id'] : null;
+	}
+
 	/**
 	 * The id of the version of the same tsumego uploaded right before the given one, the one to diff it against.
 	 */

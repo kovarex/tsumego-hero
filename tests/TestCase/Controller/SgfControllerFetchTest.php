@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\Util;
+
 class SgfControllerFetchTest extends TestCaseWithAuth
 {
 	public function testFetchRequiresLogin()
@@ -35,6 +37,7 @@ class SgfControllerFetchTest extends TestCaseWithAuth
 		]);
 
 		$sgf = ClassRegistry::init('Sgf')->find('first');
+		Util::execute('UPDATE sgf SET user_id = NULL');
 
 		$this->expectException(ForbiddenException::class);
 
@@ -54,6 +57,26 @@ class SgfControllerFetchTest extends TestCaseWithAuth
 
 		$this->assertSame(200, $this->controller->response->statusCode());
 		$this->assertSame($sgf['Sgf']['sgf'], $this->controller->response->body());
+	}
+
+	/** The proposer gets the decision about their proposal with a link to its diff, so they see both versions. */
+	public function testFetchReturnsEveryVersionToAProposerOfTheProblem()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'proposer'],
+			'tsumego' => ['set_order' => 1, 'sgfs' => [
+				['data' => '(;FF[4]GM[1]SZ[19]AB[dd])', 'accepted' => true],
+				['data' => '(;FF[4]GM[1]SZ[19]AB[dd]AB[ee])', 'accepted' => true]]],
+		]);
+		[$previous, $proposal] = $context->tsumegos[0]['sgfs'];
+		Util::execute('UPDATE sgf SET user_id = NULL WHERE id = ?', [$previous['id']]);
+
+		foreach ([$previous, $proposal] as $version)
+		{
+			$this->testAction('/sgf/fetch/' . $version['id'], ['method' => 'get']);
+			$this->assertSame(200, $this->controller->response->statusCode());
+			$this->assertSame(ClassRegistry::init('Sgf')->findById($version['id'])['Sgf']['sgf'], $this->controller->response->body());
+		}
 	}
 
 	public function testFetchReturnsSgfForAdmin()

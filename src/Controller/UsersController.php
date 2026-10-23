@@ -1667,6 +1667,7 @@ OFFSET " . $offset, [$userID, $userID]);
 			CookieFlash::set('Sgf proposal was already accepted.', 'fail');
 			return $this->redirect('/users/adminstats');
 		}
+		$replacedSgfID = ClassRegistry::init('Sgf')->findLatestAcceptedID((int) $proposalToApprove['tsumego_id']);
 		$proposalToApprove['accepted'] = 1;
 		ClassRegistry::init('Sgf')->save($proposalToApprove);
 		SgfCommentReorientation::afterAccepted((int) $proposalToApprove['id']);
@@ -1685,7 +1686,8 @@ OFFSET " . $offset, [$userID, $userID]);
 			$tsumegoID,
 			$proposalToApprove['description'],
 			ProposalFeedback::commentFromRequest($this->request->data['comment'] ?? null),
-			$this->_getEmailer());
+			$this->_getEmailer(),
+			ProposalFeedback::diffUrl((int) $proposalToApprove['id'], $replacedSgfID));
 
 		return $this->redirect('/users/adminstats');
 	}

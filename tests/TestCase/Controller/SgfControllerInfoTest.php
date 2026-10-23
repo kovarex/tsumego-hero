@@ -26,6 +26,7 @@ class SgfControllerInfoTest extends TestCaseWithAuth
 		$context = new ContextPreparator([
 			'user' => ['name' => 'nosolver'],
 			'tsumego' => ['set_order' => 1, 'sgf' => '(;FF[4]GM[1]SZ[19]AB[dd])']]);
+		Util::execute('UPDATE sgf SET user_id = NULL');
 
 		$this->expectException(ForbiddenException::class);
 
