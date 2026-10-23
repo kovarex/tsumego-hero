@@ -842,7 +842,7 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
   root.getCorrespondingChild = function(otherChild)
   {
     for (let i = 0; i < this.children.length; ++i)
-      if (this.children[i].move.x == otherChild.move.x && this.children[i].move.y == otherChild.move.y)
+      if (this.children[i].move && otherChild.move && this.children[i].move.x == otherChild.move.x && this.children[i].move.y == otherChild.move.y)
         return this.children[i];
     return null;
   }
@@ -874,13 +874,15 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
     for (let i = 0; i < otherRoot.children.length; ++i)
     {
       let otherChild = otherRoot.children[i];
-      let correspondingChild = this.getCorrespondingChild(otherChild);
-      if (!correspondingChild)
-      {
-        let newChild = this.registerMove(otherChild.move.x, otherChild.move.y);
-        newChild.diffInfo = besogo.makeRemovedMoveDiffInfo();
-        newChild.incorporateDiffInternal(otherChild);
-      }
+      if (!otherChild.move || this.getCorrespondingChild(otherChild))
+        continue;
+      // The removed move can be illegal here, when the stones of the two versions differ, then it can't be shown
+      let newChild = this.makeChild();
+      if (!newChild.playMove(otherChild.move.x, otherChild.move.y))
+        continue;
+      this.registerChild(newChild);
+      newChild.diffInfo = besogo.makeRemovedMoveDiffInfo();
+      newChild.incorporateDiffInternal(otherChild);
     }
   }
 
