@@ -58,19 +58,19 @@ class MessagesBrowserTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 
 		$browser->get('messages');
-		$this->assertSame('1', $browser->driver->executeScript('return document.querySelector("#account-bar-user .messages-unread-count").textContent;'));
+		$this->assertSame('1', $browser->driver->executeScript('return document.querySelector("#account-bar-messages .messages-unread-count").textContent;'));
 		$browser->waitUntilCssSelectorExistsWithText('.messages-list__item--unread .messages-list__unread', '1');
 
 		$browser->clickCssSelect('.messages-list__item[data-partner-id="' . $sender['id'] . '"]');
 		$browser->waitUntilCssSelectorExistsWithText('.message .message__text', 'Shall we review the game?');
 		$browser->waitUntilCssSelectorDoesntExist('.messages-list__item--unread');
-		$browser->waitUntilJs('document.querySelector("#account-bar-user .messages-unread-count").hidden');
+		$browser->waitUntilJs('document.querySelector("#account-bar-messages .messages-unread-count").hidden');
 		$this->assertSame('/messages/' . $sender['id'], $browser->driver->executeScript('return location.pathname;'));
 		$this->assertSame(0, Message::unreadCount($recipient['id']));
 
 		// The badge stays away on the next page too
 		$browser->get('messages');
-		$this->assertFalse($browser->find('#account-bar-user .messages-unread-count')->isDisplayed());
+		$this->assertFalse($browser->find('#account-bar-messages .messages-unread-count')->isDisplayed());
 	}
 
 	public function testFindingAPlayerToWriteTo(): void

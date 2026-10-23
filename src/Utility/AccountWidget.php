@@ -48,8 +48,8 @@ class AccountWidget
 							<a href="/users/view/' . Auth::getUserID() . '">
 							' . h(Auth::getUser()['display_name']) . '
 							</a>
-							<a href="/messages">' . self::unreadMessagesBadge($unreadMessageCount) . '</a>
 						</div>
+						<a id="account-bar-messages" href="/messages">' . self::unreadMessagesBadge($unreadMessageCount) . '</a>
 						<div id="xp-bar">
 							  <div id="xp-bar-fill" class="' . $barClassname . '" style="width: ' . $barRatio * 100 . '%">
 									<div id="xp-increase-fx" style="display:none;">

@@ -339,6 +339,15 @@
 
 /* ── Elsewhere ── */
 
+/* The unread count at the end of the row of the name in the account bar */
+#account-bar-messages
+{
+	position: absolute;
+	top: 38px;
+	right: 2px;
+	text-decoration: none;
+}
+
 .profile-header__message
 {
 	display: table;
