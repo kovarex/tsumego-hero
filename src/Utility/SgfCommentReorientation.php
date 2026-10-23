@@ -3,6 +3,7 @@
 namespace App\Utility;
 
 use ClassRegistry;
+use Sgf;
 
 /**
  * Comments store their coordinates in the coordinates of the current SGF version
@@ -24,15 +25,15 @@ class SgfCommentReorientation
 	{
 		$Sgf = ClassRegistry::init('Sgf');
 		$new = $Sgf->findById($sgfID)['Sgf'] ?? null;
-		if (!$new || !$new['accepted'])
+		if (!$new || $new['sgf_status_id'] != Sgf::STATUS_ACCEPTED)
 			return;
 		$current = $Sgf->find('first', [
-			'conditions' => ['tsumego_id' => $new['tsumego_id'], 'accepted' => true],
+			'conditions' => ['tsumego_id' => $new['tsumego_id'], 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
 			'order' => 'id DESC'])['Sgf'];
 		if ($current['id'] != $new['id'])
 			return; // a newer version is shown, the comments are in its coordinates
 		$previous = $Sgf->find('first', [
-			'conditions' => ['tsumego_id' => $new['tsumego_id'], 'accepted' => true, 'id <' => $new['id']],
+			'conditions' => ['tsumego_id' => $new['tsumego_id'], 'sgf_status_id' => Sgf::STATUS_ACCEPTED, 'id <' => $new['id']],
 			'order' => 'id DESC'])['Sgf'] ?? null;
 		if (!$previous)
 			return;

@@ -65,7 +65,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		ClassRegistry::init('SetConnection')->create();
 		ClassRegistry::init('SetConnection')->save(['set_id' => $setId, 'tsumego_id' => $tsumegoId, 'num' => 1]);
 		ClassRegistry::init('Sgf')->create();
-		ClassRegistry::init('Sgf')->save(['tsumego_id' => $tsumegoId, 'sgf' => '(;GM[1]FF[4]SZ[19])', 'user_id' => $userId, 'accepted' => 1]);
+		ClassRegistry::init('Sgf')->save(['tsumego_id' => $tsumegoId, 'sgf' => '(;GM[1]FF[4]SZ[19])', 'user_id' => $userId, 'sgf_status_id' => Sgf::STATUS_ACCEPTED]);
 		ClassRegistry::init('TsumegoStatus')->create();
 		ClassRegistry::init('TsumegoStatus')->save(['tsumego_id' => $tsumegoId, 'status' => 'S', 'user_id' => $userId]);
 	}

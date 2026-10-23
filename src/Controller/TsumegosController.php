@@ -311,7 +311,7 @@ class TsumegosController extends AppController
 		if ($ids)
 			foreach (ClassRegistry::init('Sgf')->find('all', [
 				'fields' => ['tsumego_id', 'sgf'],
-				'conditions' => ['tsumego_id' => $ids, 'id IN (SELECT MAX(id) FROM sgf GROUP BY tsumego_id)'],
+				'conditions' => ['tsumego_id' => $ids, 'id = ' . Sgf::currentVersionIDSql('Sgf.tsumego_id')],
 			]) as $s)
 				$sgfs[$s['Sgf']['tsumego_id']] = $s['Sgf']['sgf'];
 
@@ -400,7 +400,7 @@ class TsumegosController extends AppController
 		$sgf['sgf'] = $sgfData;
 		$sgf['user_id'] = Auth::getUserId();
 		$sgf['tsumego_id'] = $tsumego['id'];
-		$sgf['accepted'] = Auth::isAdmin() ? true : false;
+		$sgf['sgf_status_id'] = Auth::isAdmin() ? Sgf::STATUS_ACCEPTED : Sgf::STATUS_PROPOSED;
 		$sgf['first_move_color'] = $firstMoveColor;
 		$sgf['correct_moves'] = $correctMoves;
 		// the admin reviewing a proposal needs to know what it is about, an admin's own edit may go without

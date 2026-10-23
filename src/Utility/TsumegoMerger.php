@@ -5,6 +5,7 @@ namespace App\Utility;
 use AdminActivityType;
 use ClassRegistry;
 use Exception;
+use Sgf;
 use TsumegoStatus;
 
 class TsumegoMerger
@@ -162,10 +163,10 @@ HAVING
 		try
 		{
 			$masterSgf = ClassRegistry::init('Sgf')->find('first', [
-				'conditions' => ['tsumego_id' => $this->masterTsumegoID, 'accepted' => true],
+				'conditions' => ['tsumego_id' => $this->masterTsumegoID, 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
 				'order' => 'id DESC'])['Sgf'];
 			$slaveSgf = ClassRegistry::init('Sgf')->find('first', [
-				'conditions' => ['tsumego_id' => $this->slaveTsumegoID, 'accepted' => true],
+				'conditions' => ['tsumego_id' => $this->slaveTsumegoID, 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
 				'order' => 'id DESC'])['Sgf'];
 			$oldData = [
 				'tsumego_old' => $this->slaveTsumegoID,

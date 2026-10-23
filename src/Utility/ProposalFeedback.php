@@ -43,9 +43,10 @@ class ProposalFeedback
 	 * @param string|null $proposalDescription What the proposer wrote about their proposal, quoted so they know which one it was
 	 * @param string $comment The admin's comment
 	 * @param mixed $emailer CakeEmail from AppController::_getEmailer()
+	 * @param string|null $diffUrl The proposed version compared with the one it would replace, linked after the problem
 	 * @return bool Whether the message was sent
 	 */
-	public static function send(int $proposerUserID, string $decision, ?int $tsumegoID, ?string $proposalDescription, string $comment, mixed $emailer): bool
+	public static function send(int $proposerUserID, string $decision, ?int $tsumegoID, ?string $proposalDescription, string $comment, mixed $emailer, ?string $diffUrl = null): bool
 	{
 		$paragraphs = [$decision];
 		if ($proposalDescription !== null && $proposalDescription !== '')
@@ -58,12 +59,23 @@ class ProposalFeedback
 			if ($setConnection)
 				$paragraphs[] = Router::url('/' . $setConnection['SetConnection']['id'], true);
 		}
+		if ($diffUrl !== null)
+			$paragraphs[] = 'Your changes: ' . $diffUrl;
 		$text = implode("\n\n", $paragraphs);
 
 		if (Message::problemWith(Auth::getUserID(), $proposerUserID, $text) !== null)
 			return false;
 		Message::send(Auth::getUserID(), $proposerUserID, $text, $emailer);
 		return true;
+	}
+
+	/** The editor showing the proposed version compared with the one it would replace, the version alone when there is none. */
+	public static function diffUrl(int $proposalSgfID, ?int $replacedSgfID): string
+	{
+		$query = 'sgfID=' . $proposalSgfID;
+		if ($replacedSgfID !== null)
+			$query .= '&diffID=' . $replacedSgfID;
+		return Router::url('/editor/?' . $query, true);
 	}
 
 	/** The name of the signed in admin, for the decision line. */

@@ -303,7 +303,7 @@ class PolicyTest extends CakeTestCase
 	public function testAdminPolicyProposalActionsAllowOnlyAdmins()
 	{
 		$policy = new AdminPolicy();
-		foreach (['canAcceptSGFProposal', 'canRejectSGFProposal', 'canAcceptTagConnectionProposal', 'canRejectTagConnectionProposal'] as $method)
+		foreach (['canAcceptSGFProposal', 'canRejectSGFProposal', 'canReopenSGFProposal', 'canAcceptTagConnectionProposal', 'canRejectTagConnectionProposal'] as $method)
 		{
 			$this->assertTrue($policy->{$method}($this->identity(true)), $method . ' allows admin');
 			$this->assertFalse($policy->{$method}($this->identity(false)), $method . ' blocks regular user');

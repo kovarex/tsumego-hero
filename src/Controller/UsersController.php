@@ -14,6 +14,7 @@ use App\Utility\MistakeTraining;
 use App\Utility\ProposalFeedback;
 use App\Utility\PwnedPasswordChecker;
 use App\Utility\PwnedPasswordCheckerInterface;
+use App\Utility\RejectedSGFProposalsRenderer;
 use App\Utility\SGFProposalsRenderer;
 use App\Utility\SgfCommentReorientation;
 use App\Utility\TagConnectionProposalsRenderer;
@@ -412,6 +413,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		$s = $this->Sgf->find('all', [
 			'limit' => 250,
 			'order' => 'created DESC',
+			'conditions' => ['sgf_status_id !=' => Sgf::STATUS_REJECTED],
 		]);
 
 		//to display the correct version
@@ -435,7 +437,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 				$versionCounter[$scT['SetConnection']['tsumego_id']]++;
 			else
 				$versionCounter[$scT['SetConnection']['tsumego_id']] = 0;
-			$s[$i]['Sgf']['version'] = count($this->Sgf->find('all', ['conditions' => ['tsumego_id' => $scT['SetConnection']['tsumego_id']]])) - $versionCounter[$scT['SetConnection']['tsumego_id']];
+			$s[$i]['Sgf']['version'] = count($this->Sgf->find('all', ['conditions' => ['tsumego_id' => $scT['SetConnection']['tsumego_id'], 'sgf_status_id !=' => Sgf::STATUS_REJECTED]])) - $versionCounter[$scT['SetConnection']['tsumego_id']];
 
 			$s[$i]['Sgf']['delete'] = false;
 			$s[$i]['Sgf']['diff'] = $this->Sgf->findPreviousVersionID($s[$i]['Sgf']['tsumego_id'], $s[$i]['Sgf']['id']);
@@ -460,6 +462,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 
 		// Pagination data
 		$this->set('sgfProposalsRenderer', new SGFProposalsRenderer($this->params['url']));
+		$this->set('rejectedSgfProposalsRenderer', new RejectedSGFProposalsRenderer($this->params['url']));
 		$this->set('tagProposalsRenderer', new TagProposalsRenderer($this->params['url']));
 		$this->set('adminActivityRenderer', new AdminActivityRenderer($this->params['url']));
 		$this->set('tagConnectionProposalsRenderer', new TagConnectionProposalsRenderer($this->params['url']));
@@ -1630,7 +1633,7 @@ FROM
 		WHERE sc.tsumego_id = tsumego_attempt.tsumego_id
 		ORDER BY " . SetConnection::displayOrderSql('ss', 'sc') . "
 		LIMIT 1)
-	LEFT JOIN sgf ON sgf.id = (SELECT MAX(s2.id) FROM sgf s2 WHERE s2.tsumego_id = tsumego_attempt.tsumego_id)
+	LEFT JOIN sgf ON sgf.id = " . Sgf::currentVersionIDSql('tsumego_attempt.tsumego_id') . "
 	LEFT JOIN tsumego_status ON tsumego_status.user_id = ? AND tsumego_status.tsumego_id = tsumego_attempt.tsumego_id
 	LEFT JOIN `set` s ON set_connection.set_id = s.id
 WHERE
@@ -1662,13 +1665,13 @@ OFFSET " . $offset, [$userID, $userID]);
 		}
 
 		$proposalToApprove = $proposalToApprove['Sgf'];
-		if ($proposalToApprove['accepted'] != 0)
+		if ($proposalToApprove['sgf_status_id'] != Sgf::STATUS_PROPOSED)
 		{
-			CookieFlash::set('Sgf proposal was already accepted.', 'fail');
+			CookieFlash::set('Sgf proposal was already decided.', 'fail');
 			return $this->redirect('/users/adminstats');
 		}
-		$proposalToApprove['accepted'] = 1;
-		ClassRegistry::init('Sgf')->save($proposalToApprove);
+		$replacedSgfID = ClassRegistry::init('Sgf')->findCurrentVersionID((int) $proposalToApprove['tsumego_id']);
+		ClassRegistry::init('Sgf')->setStatus((int) $proposalToApprove['id'], Sgf::STATUS_ACCEPTED);
 		SgfCommentReorientation::afterAccepted((int) $proposalToApprove['id']);
 
 		AppController::handleContribution(Auth::getUserID(), 'reviewed');
@@ -1685,7 +1688,8 @@ OFFSET " . $offset, [$userID, $userID]);
 			$tsumegoID,
 			$proposalToApprove['description'],
 			ProposalFeedback::commentFromRequest($this->request->data['comment'] ?? null),
-			$this->_getEmailer());
+			$this->_getEmailer(),
+			ProposalFeedback::diffUrl((int) $proposalToApprove['id'], $replacedSgfID));
 
 		return $this->redirect('/users/adminstats');
 	}
@@ -1704,9 +1708,9 @@ OFFSET " . $offset, [$userID, $userID]);
 
 		$proposalToReject = $proposalToReject['Sgf'];
 
-		if ($proposalToReject['accepted'] != 0)
+		if ($proposalToReject['sgf_status_id'] != Sgf::STATUS_PROPOSED)
 		{
-			CookieFlash::set('Sgf proposal was already accepted.', 'fail');
+			CookieFlash::set('Sgf proposal was already decided.', 'fail');
 			return $this->redirect('/users/adminstats');
 		}
 
@@ -1719,11 +1723,15 @@ OFFSET " . $offset, [$userID, $userID]);
 
 		$reject = [];
 		$reject['user_id'] = $proposalToReject['user_id'];
+		$reject['rejected_by_user_id'] = Auth::getUserID();
+		$reject['comment'] = $comment;
 		$reject['tsumego_id'] = $proposalToReject['tsumego_id'];
+		$reject['sgf_id'] = $proposalToReject['id'];
 		$reject['type'] = 'proposal';
 		ClassRegistry::init('Reject')->create();
 		ClassRegistry::init('Reject')->save($reject);
-		ClassRegistry::init('Sgf')->delete($proposalToReject['id']);
+		// kept, so the proposer can still see what they proposed
+		ClassRegistry::init('Sgf')->setStatus((int) $proposalToReject['id'], Sgf::STATUS_REJECTED);
 		CookieFlash::set('Sgf proposal rejected', 'success');
 
 		$userToReject = $this->User->findById($proposalToReject['user_id']);
@@ -1736,7 +1744,32 @@ OFFSET " . $offset, [$userID, $userID]);
 			$tsumegoID,
 			$proposalToReject['description'],
 			$comment,
-			$this->_getEmailer());
+			$this->_getEmailer(),
+			ProposalFeedback::diffUrl((int) $proposalToReject['id'], ClassRegistry::init('Sgf')->findCurrentVersionID($tsumegoID)));
+
+		return $this->redirect('/users/adminstats');
+	}
+
+	/** Puts a rejected SGF proposal back among the ones waiting for a decision. */
+	#[HttpPost]
+	public function reopenSGFProposal(string $sgfID)
+	{
+		$this->Authorization->authorize('Admin');
+
+		$proposalToReopen = ClassRegistry::init('Sgf')->findById($sgfID);
+		if (!$proposalToReopen || $proposalToReopen['Sgf']['sgf_status_id'] != Sgf::STATUS_REJECTED)
+		{
+			CookieFlash::set('There is no rejected sgf proposal to reopen.', 'fail');
+			return $this->redirect('/users/adminstats');
+		}
+		$proposalToReopen = $proposalToReopen['Sgf'];
+
+		ClassRegistry::init('Sgf')->setStatus((int) $proposalToReopen['id'], Sgf::STATUS_PROPOSED);
+		ClassRegistry::init('Reject')->deleteAll(['Reject.sgf_id' => $proposalToReopen['id']], false);
+		CookieFlash::set('Sgf proposal reopened', 'success');
+
+		$proposer = $this->User->findById($proposalToReopen['user_id']);
+		AdminActivityLogger::log(AdminActivityType::REOPEN_PROPOSAL, $proposalToReopen['tsumego_id'], null, null, $proposer ? $proposer['User']['display_name'] : null);
 
 		return $this->redirect('/users/adminstats');
 	}
@@ -1812,6 +1845,8 @@ OFFSET " . $offset, [$userID, $userID]);
 
 		$reject = [];
 		$reject['user_id'] = $proposalToReject['user_id'];
+		$reject['rejected_by_user_id'] = Auth::getUserID();
+		$reject['comment'] = $comment;
 		$reject['tsumego_id'] = $proposalToReject['tsumego_id'];
 		$tag = ClassRegistry::init('Tag')->findById($proposalToReject['tag_id'])['Tag'];
 		$reject['type'] = $tag['name'];

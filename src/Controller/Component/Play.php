@@ -174,7 +174,7 @@ class Play
 			'order' => 'id DESC',
 			'conditions' => [
 				'tsumego_id' => $id,
-				'accepted' => true]]);
+				'sgf_status_id' => Sgf::STATUS_ACCEPTED]]);
 		if (!$sgfdb)
 		{
 			$sgf['Sgf']['sgf'] = Constants::$SGF_PLACEHOLDER;
@@ -420,7 +420,7 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		($this->setFunction)('isAllowedToContribute', $isAllowedToContribute);
 		($this->setFunction)('canAddMoreTags', $canAddMoreTags);
 
-		$sgfProposal = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['tsumego_id' => $id, 'user_id' => Auth::getUserID(), 'accepted' => false]]);
+		$sgfProposal = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['tsumego_id' => $id, 'user_id' => Auth::getUserID(), 'sgf_status_id' => Sgf::STATUS_PROPOSED]]);
 		($this->setFunction)('hasSgfProposal', $sgfProposal != null);
 
 		($this->setFunction)('tagData', $tagData);

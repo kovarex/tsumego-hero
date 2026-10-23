@@ -20,8 +20,8 @@ class ProposalReviewBrowserTest extends TestCaseWithAuth
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
 			'tsumego' => ['set_order' => 1, 'status' => 'S', 'sgfs' => [
-				['data' => self::SGF_VERSION_1, 'accepted' => true],
-				['data' => self::SGF_VERSION_2, 'accepted' => false]]]]);
+				['data' => self::SGF_VERSION_1, 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
+				['data' => self::SGF_VERSION_2, 'sgf_status_id' => Sgf::STATUS_PROPOSED]]]]);
 		App\Utility\Util::execute('UPDATE sgf SET user_id = ?, description = ? WHERE id = ?', [$context->user['id'], 'Made it status based', $context->tsumegos[0]['sgfs'][1]['id']]);
 		$browser = Browser::instance();
 		$browser->get('/editor/?sgfID=' . $context->tsumegos[0]['sgfs'][1]['id'] . '&diffID=' . $context->tsumegos[0]['sgfs'][0]['id']);
@@ -57,8 +57,8 @@ class ProposalReviewBrowserTest extends TestCaseWithAuth
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
 			'tsumego' => ['set_order' => 1, 'status' => 'S', 'sgfs' => [
-				['data' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc](;B[aa]C[+])(;B[ba]))', 'accepted' => true],
-				['data' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc](;B[ba])(;B[aa]C[+]))', 'accepted' => false]]]]);
+				['data' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc](;B[aa]C[+])(;B[ba]))', 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
+				['data' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc](;B[ba])(;B[aa]C[+]))', 'sgf_status_id' => Sgf::STATUS_PROPOSED]]]]);
 		$browser = Browser::instance();
 		$browser->get('/editor/?sgfID=' . $context->tsumegos[0]['sgfs'][1]['id'] . '&diffID=' . $context->tsumegos[0]['sgfs'][0]['id']);
 
@@ -74,9 +74,9 @@ class ProposalReviewBrowserTest extends TestCaseWithAuth
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
 			'tsumego' => ['set_order' => 1, 'status' => 'S', 'sgfs' => [
-				['data' => '(;GM[1]FF[3]SZ[19]AB[cc];B[aa])', 'accepted' => true],
-				['data' => '(;GM[1]FF[4]SZ[19]AB[cc];B[aa])', 'accepted' => true],
-				['data' => '(;GM[1]FF[4]SZ[19]AB[cc];B[aa])', 'accepted' => false]]]]);
+				['data' => '(;GM[1]FF[3]SZ[19]AB[cc];B[aa])', 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
+				['data' => '(;GM[1]FF[4]SZ[19]AB[cc];B[aa])', 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
+				['data' => '(;GM[1]FF[4]SZ[19]AB[cc];B[aa])', 'sgf_status_id' => Sgf::STATUS_PROPOSED]]]]);
 		$sgfs = $context->tsumegos[0]['sgfs'];
 		$browser = Browser::instance();
 
@@ -98,8 +98,8 @@ class ProposalReviewBrowserTest extends TestCaseWithAuth
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
 			'tsumego' => ['set_order' => 1, 'status' => 'S', 'sgfs' => [
-				['data' => self::SGF_VERSION_1, 'accepted' => true],
-				['data' => self::SGF_VERSION_2, 'accepted' => false]]]]);
+				['data' => self::SGF_VERSION_1, 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
+				['data' => self::SGF_VERSION_2, 'sgf_status_id' => Sgf::STATUS_PROPOSED]]]]);
 		$url = '/editor/?sgfID=' . $context->tsumegos[0]['sgfs'][1]['id'] . '&diffID=' . $context->tsumegos[0]['sgfs'][0]['id'];
 		$browser = Browser::instance();
 		$window = $browser->driver->manage()->window();
@@ -151,7 +151,7 @@ class ProposalReviewBrowserTest extends TestCaseWithAuth
 		$browser->clickId('sgfDescriptionSave');
 		$browser->waitUntilJs('!location.href.includes("/editor/")');
 		$proposal = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']], 'order' => 'id DESC'])['Sgf'];
-		$this->assertEquals(0, $proposal['accepted']);
+		$this->assertEquals(Sgf::STATUS_PROPOSED, $proposal['sgf_status_id']);
 		$this->assertSame('Nothing really', $proposal['description']);
 	}
 
@@ -161,8 +161,8 @@ class ProposalReviewBrowserTest extends TestCaseWithAuth
 			'user' => ['admin' => true],
 			'other-users' => [['name' => 'proposer']],
 			'tsumego' => ['set_order' => 1, 'status' => 'S', 'sgfs' => [
-				['data' => self::SGF_VERSION_1, 'accepted' => true],
-				['data' => self::SGF_VERSION_2, 'accepted' => false]]]]);
+				['data' => self::SGF_VERSION_1, 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
+				['data' => self::SGF_VERSION_2, 'sgf_status_id' => Sgf::STATUS_PROPOSED]]]]);
 		$proposalID = $context->tsumegos[0]['sgfs'][1]['id'];
 		App\Utility\Util::execute('UPDATE sgf SET user_id = ?, description = ? WHERE id = ?', [$context->otherUsers[0]['id'], 'Made it status based', $proposalID]);
 		$browser = Browser::instance();
@@ -179,12 +179,12 @@ class ProposalReviewBrowserTest extends TestCaseWithAuth
 		// the browser asks for the comment before the form goes anywhere
 		$browser->clickId('reject-' . $proposalID);
 		$this->assertTrue((bool) $browser->driver->executeScript('return !document.getElementById(arguments[0]).validity.valid;', ['comment-' . $proposalID]));
-		$this->assertNotEmpty(ClassRegistry::init('Sgf')->findById($proposalID));
+		$this->assertEquals(Sgf::STATUS_PROPOSED, ClassRegistry::init('Sgf')->findById($proposalID)['Sgf']['sgf_status_id']);
 
 		$browser->findById('comment-' . $proposalID)->sendKeys('Status based is not wanted here');
 		$browser->clickId('reject-' . $proposalID);
 		$browser->waitUntilCssSelectorExistsWithText('#sgf_proposals_page_header', 'SGF Proposals (0)');
-		$this->assertEmpty(ClassRegistry::init('Sgf')->findById($proposalID));
+		$this->assertEquals(Sgf::STATUS_REJECTED, ClassRegistry::init('Sgf')->findById($proposalID)['Sgf']['sgf_status_id']);
 		$message = App\Utility\Util::query('SELECT text FROM message WHERE recipient_user_id = ?', [$context->otherUsers[0]['id']]);
 		$this->assertCount(1, $message);
 		$this->assertStringContainsString('Status based is not wanted here', $message[0]['text']);

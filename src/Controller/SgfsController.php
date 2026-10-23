@@ -66,7 +66,7 @@ class SgfsController extends AppController
 			$s = $this->Sgf->find('all', [
 				'order' => 'id DESC',
 				'limit' => 100,
-				'conditions' => ['user_id' => $this->params['url']['user']],
+				'conditions' => ['user_id' => $this->params['url']['user'], 'sgf_status_id !=' => Sgf::STATUS_REJECTED],
 			]);
 			if (!$s)
 				$s = [];
@@ -77,7 +77,7 @@ class SgfsController extends AppController
 			$s = $this->Sgf->find('all', [
 				'order' => 'id DESC',
 				'limit' => 100,
-				'conditions' => ['tsumego_id' => $id]]);
+				'conditions' => ['tsumego_id' => $id, 'sgf_status_id !=' => Sgf::STATUS_REJECTED]]);
 			if (!$s)
 				$s = [];
 		}
@@ -104,7 +104,7 @@ class SgfsController extends AppController
 				$versionCounter[$scT['SetConnection']['tsumego_id']]++;
 			else
 				$versionCounter[$scT['SetConnection']['tsumego_id']] = 0;
-			$s[$i]['Sgf']['version'] = count($this->Sgf->find('all', ['conditions' => ['tsumego_id' => $scT['SetConnection']['tsumego_id']]])) - $versionCounter[$scT['SetConnection']['tsumego_id']];
+			$s[$i]['Sgf']['version'] = count($this->Sgf->find('all', ['conditions' => ['tsumego_id' => $scT['SetConnection']['tsumego_id'], 'sgf_status_id !=' => Sgf::STATUS_REJECTED]])) - $versionCounter[$scT['SetConnection']['tsumego_id']];
 
 			if ($s[$i]['Sgf']['user'] == 'noUser')
 				$s[$i]['Sgf']['user'] = 'automatically generated';

@@ -108,7 +108,7 @@ class TagsController extends AppController
 				. 'WHERE tc.user_id = ? '
 				. 'UNION ALL '
 				// Proposals (SGF uploads)
-				. 'SELECT \'proposal\', IF(sg.accepted, \'accepted\', \'pending\'), sg.created, \'\', \'\', sg.tsumego_id, CONCAT(s.title, \' - \', sc.num), sg.id '
+				. 'SELECT \'proposal\', IF(sg.sgf_status_id = ' . Sgf::STATUS_ACCEPTED . ', \'accepted\', \'pending\'), sg.created, \'\', \'\', sg.tsumego_id, CONCAT(s.title, \' - \', sc.num), sg.id '
 				. 'FROM sgf sg '
 				. 'JOIN set_connection sc ON sc.id = ('
 					. 'SELECT sc2.id FROM set_connection sc2 '
@@ -116,7 +116,8 @@ class TagsController extends AppController
 					. 'WHERE sc2.tsumego_id = sg.tsumego_id '
 					. 'ORDER BY ' . SetConnection::displayOrderSql('s2', 'sc2') . ' LIMIT 1) '
 				. 'JOIN `set` s ON s.id = sc.set_id '
-				. 'WHERE sg.user_id = ? '
+				// the rejected ones come from their reject rows below
+				. 'WHERE sg.user_id = ? AND sg.sgf_status_id != ' . Sgf::STATUS_REJECTED . ' '
 				. 'UNION ALL '
 				// Rejected items (tag names have tsumego_id = 0, so LEFT JOIN gives empty label)
 				. 'SELECT r.type, \'rejected\', r.created, \'\', r.text, r.tsumego_id, '

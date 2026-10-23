@@ -5,6 +5,11 @@ class Sgf extends AppModel
 	/** Longest description of a saved version (what was changed and why), in characters. */
 	public const DESCRIPTION_MAX_LENGTH = 1000;
 
+	// sgf_status rows
+	public const STATUS_PROPOSED = 1; // waits for an admin to decide
+	public const STATUS_ACCEPTED = 2; // a version the problem had, the latest one is the current version
+	public const STATUS_REJECTED = 3; // kept so the proposer can still see what they proposed
+
 	public $validate = [
 		'tsumego_id' => [
 			'required' => [
@@ -85,7 +90,7 @@ class Sgf extends AppModel
 		$sgf['sgf'] = $sgfData;
 		$sgf['user_id'] = $userID;
 		$sgf['tsumego_id'] = $tsumegoID;
-		$sgf['accepted'] = $accepted;
+		$sgf['sgf_status_id'] = $accepted ? self::STATUS_ACCEPTED : self::STATUS_PROPOSED;
 		if (!$this->save($sgf))
 		{
 			$errorMessages = array_map(function ($error) {
@@ -99,15 +104,43 @@ class Sgf extends AppModel
 		return $this->find('first', ['conditions' => ['id' => $this->id]]);
 	}
 
+	/** Moves the version to the given sgf_status (see the STATUS_ constants). */
+	public function setStatus(int $sgfID, int $statusID): void
+	{
+		$this->id = $sgfID;
+		if (!$this->saveField('sgf_status_id', $statusID))
+			throw new InternalErrorException('Failed to change the status of SGF ' . $sgfID);
+	}
+
+	/** The id of the current version of the tsumego, the latest accepted one. */
+	public function findCurrentVersionID(int $tsumegoID): ?int
+	{
+		$current = $this->find('first', [
+			'fields' => ['id'],
+			'order' => 'id DESC',
+			'conditions' => ['tsumego_id' => $tsumegoID, 'sgf_status_id' => self::STATUS_ACCEPTED]]);
+		return $current ? (int) $current['Sgf']['id'] : null;
+	}
+
 	/**
-	 * The id of the version of the same tsumego uploaded right before the given one, the one to diff it against.
+	 * The id of the accepted version of the same tsumego saved right before the given one, the one to diff it against.
 	 */
 	public function findPreviousVersionID(int $tsumegoID, int $sgfID): ?int
 	{
 		$previous = $this->find('first', [
 			'fields' => ['id'],
 			'order' => 'id DESC',
-			'conditions' => ['tsumego_id' => $tsumegoID, 'id <' => $sgfID]]);
+			'conditions' => ['tsumego_id' => $tsumegoID, 'sgf_status_id' => self::STATUS_ACCEPTED, 'id <' => $sgfID]]);
 		return $previous ? (int) $previous['Sgf']['id'] : null;
+	}
+
+	/**
+	 * SQL giving the id of the current version (the latest accepted one) of the tsumego in the given SQL
+	 * expression, e.g. "LEFT JOIN sgf ON sgf.id = " . Sgf::currentVersionIDSql('tsumego.id').
+	 */
+	public static function currentVersionIDSql(string $tsumegoID): string
+	{
+		return '(SELECT MAX(current_sgf.id) FROM sgf current_sgf WHERE current_sgf.tsumego_id = ' . $tsumegoID
+			. ' AND current_sgf.sgf_status_id = ' . self::STATUS_ACCEPTED . ')';
 	}
 }

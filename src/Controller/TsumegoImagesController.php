@@ -29,7 +29,7 @@ class TsumegoImagesController extends AppController
 			FROM set_connection sc
 			JOIN tsumego t ON t.id = sc.tsumego_id
 			JOIN `set` s ON s.id = sc.set_id
-			JOIN sgf ON sgf.tsumego_id = t.id AND sgf.accepted = 1
+			JOIN sgf ON sgf.tsumego_id = t.id AND sgf.sgf_status_id = ' . Sgf::STATUS_ACCEPTED . '
 			WHERE sc.id = ?
 			ORDER BY sgf.id DESC
 			LIMIT 1',

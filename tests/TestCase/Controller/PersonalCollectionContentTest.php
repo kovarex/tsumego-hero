@@ -205,7 +205,7 @@ class PersonalCollectionContentTest extends TestCaseWithAuth
 		ClassRegistry::init('Sgf')->save(['Sgf' => [
 			'tsumego_id' => $tsumegoId,
 			'sgf' => '(;GM[1]FF[4]SZ[19])',
-			'accepted' => 1,
+			'sgf_status_id' => Sgf::STATUS_ACCEPTED,
 		]]);
 
 		return $setId;
