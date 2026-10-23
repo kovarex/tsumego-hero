@@ -80,7 +80,7 @@ class TagsIndexTest extends TestCaseWithAuth
 	public function testDeleteFromTheOverview()
 	{
 		$context = new ContextPreparator([
-			'user' => ['admin' => true],
+			'user' => ['admin' => true, 'id' => 72],
 			'tsumegos' => [['set_order' => 1, 'tags' => [['name' => 'atari'], ['name' => 'ko']]]]]);
 		$atariId = $context->tsumegos[0]['tags'][0]['id'];
 		$browser = Browser::instance();
@@ -109,7 +109,7 @@ class TagsIndexTest extends TestCaseWithAuth
 	public function testDeleteRemovesTagFromProblemsAndLogsWhatItWas()
 	{
 		$context = new ContextPreparator([
-			'user' => ['admin' => true],
+			'user' => ['admin' => true, 'id' => 72],
 			'tsumegos' => [
 				['set_order' => 1, 'tags' => [['name' => 'atari'], ['name' => 'ko']]],
 				['set_order' => 2, 'tags' => [['name' => 'atari', 'approved' => 0]]]]]);
