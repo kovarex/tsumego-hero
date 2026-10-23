@@ -46,8 +46,15 @@ class PhpbbNames
 
 	/**
 	 * Writes a player's display name into their phpBB rows.
+	 *
+	 * The cached poster names are found by the name they hold, the way phpBB's own
+	 * user_update_name() does it: those columns are copies of the name, and the ids
+	 * beside them are phpBB ids, which are not the ids of this site. The old name has
+	 * to be the one the forum still holds; when it is not known, the phpBB id of the
+	 * account is looked up instead, so a rename never writes into the row of another
+	 * player.
 	 */
-	public static function sync(PDO $connection, int $userId, string $displayName): void
+	public static function sync(PDO $connection, int $userId, string $displayName, ?string $oldDisplayName = null): void
 	{
 		$statement = $connection->prepare(
 			"UPDATE phpbb_users SET username = ?, username_clean = ? WHERE external_id = ?"
@@ -56,15 +63,32 @@ class PhpbbNames
 
 		foreach (self::NAME_CACHES as [$table, $nameColumn, $idColumn])
 		{
-			$statement = $connection->prepare(
-				"UPDATE `$table` SET `$nameColumn` = ? WHERE `$idColumn` = ?"
-			);
+			if ($oldDisplayName !== null)
+			{
+				$statement = $connection->prepare("UPDATE `$table` SET `$nameColumn` = ? WHERE `$nameColumn` = ?");
+				$statement->execute([$displayName, $oldDisplayName]);
+				continue;
+			}
+
+			$statement = $connection->prepare("UPDATE `$table` SET `$nameColumn` = ? WHERE `$idColumn` IN"
+				. ' (SELECT `user_id` FROM `phpbb_users` WHERE `external_id` = ?)');
 			$statement->execute([$displayName, $userId]);
 		}
 
 		// Guest posts keep a copy of the poster name, posts of registered players keep it empty.
+		if ($oldDisplayName !== null)
+		{
+			$statement = $connection->prepare(
+				"UPDATE phpbb_posts SET post_username = ? WHERE post_username = ? AND post_username <> ''"
+			);
+			$statement->execute([$displayName, $oldDisplayName]);
+
+			return;
+		}
+
 		$statement = $connection->prepare(
-			"UPDATE phpbb_posts SET post_username = ? WHERE poster_id = ? AND post_username <> ''"
+			'UPDATE phpbb_posts SET post_username = ? WHERE poster_id IN'
+			. " (SELECT `user_id` FROM phpbb_users WHERE `external_id` = ?) AND post_username <> ''"
 		);
 		$statement->execute([$displayName, $userId]);
 	}

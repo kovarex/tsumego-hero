@@ -430,6 +430,8 @@ class User extends AppModel
 	public static function updateDisplayName(int $userId, string $newDisplayName): bool
 	{
 		$connection = Util::connection();
+		$previous = Util::query('SELECT display_name FROM user WHERE id = ?', [$userId]);
+		$oldDisplayName = isset($previous[0]) ? (string) $previous[0]['display_name'] : null;
 		$connection->beginTransaction();
 		try
 		{
@@ -457,7 +459,7 @@ class User extends AppModel
 		// be written to right now must not fail the rename itself.
 		try
 		{
-			self::syncToForum($userId, $newDisplayName);
+			self::syncToForum($userId, $newDisplayName, $oldDisplayName);
 		}
 		catch (Throwable $exception)
 		{
@@ -475,10 +477,11 @@ class User extends AppModel
 	 *
 	 * @param int $userId The user ID (maps to external_id in phpBB)
 	 * @param string $displayName The display name to sync
+	 * @param string|null $oldDisplayName The name the forum still holds, if known
 	 */
-	private static function syncToForum(int $userId, string $displayName): void
+	private static function syncToForum(int $userId, string $displayName, ?string $oldDisplayName = null): void
 	{
-		PhpbbNames::sync(Util::connection(), $userId, $displayName);
+		PhpbbNames::sync(Util::connection(), $userId, $displayName, $oldDisplayName);
 	}
 
 	/**
