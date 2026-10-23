@@ -123,8 +123,9 @@ else
 fi
 
 # The application writes 4-byte characters (an emoji in a comment, for one), and a
-# utf8mb3 connection stores those as "????". This also brings a config created by
-# an older deploy in line with database.example.php.
+# utf8mb3 connection cannot carry them: the write loses them to "?" or fails with
+# "Incorrect string value". This also brings a config created by an older deploy in
+# line with database.example.php.
 #
 # The pattern ends at the closing quote, so a config that already says utf8mb4 is
 # left alone and running the deploy twice changes nothing. A backup suffix keeps

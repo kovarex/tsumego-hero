@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Utility\PhpbbNames;
 use Phinx\Migration\AbstractMigration;
 
 /**
@@ -12,10 +13,25 @@ use Phinx\Migration\AbstractMigration;
  * restored without any loss (the characters read back as Windows-1252 bytes are
  * the UTF-8 bytes of the original text).
  *
- * Rows that carry such a value on this data: user.display_name 291, user.name 67.
- * tsumego_comment.message, set.author, tag.description, user.deleted_name, tsumego.author,
- * set.title and the forum tables hold nothing that is still double encoded; they are in
- * the loop anyway, because a database from a different point in time may.
+ * Rows that carry such a value on this data: user.display_name 291, user.name 290.
+ *
+ * The display name migration collapsed runs of whitespace, which also turned the
+ * byte A0 into a space where it sat inside a character. That byte is put back
+ * wherever a character is missing one, which restores names like "魚市場" and
+ * "드래곤킹". A name that lost a different byte ("Ð Ð½Ñ‚Ð¾Ð?") cannot be restored,
+ * so its owner is only asked to pick a name.
+ *
+ * The columns of copied text are in the loop: tsumego_comment.message, its archive
+ * in tsumego_comment_before_sgf_coordinates.message, set.author, tag.description and
+ * user.deleted_name. A renamed account is written into the forum as well, with the
+ * same PhpbbNames helper the display name migration uses, because phpBB keeps its
+ * own copy of a name in phpbb_users, in the poster names it caches in topics and
+ * forums and in the poster names of guest posts.
+ *
+ * The rest of the columns held no such value on this data; a database from a
+ * different point in time may differ, which is what the loop is for. Post bodies
+ * and titles in the forum stay as they are, because phpBB keeps a checksum and
+ * BBCode identifiers beside them.
  *
  * user.name is deliberately left alone. It is the login identifier, unique under
  * a case and accent insensitive collation, and the site never shows it: players
@@ -44,8 +60,21 @@ use Phinx\Migration\AbstractMigration;
  */
 final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 {
-	/** The character the converter substitutes for characters it cannot express. */
+	/** The character mbstring substitutes for a character it cannot express. */
 	private const SUBSTITUTE = 0x3F;
+
+	/**
+	 * Columns holding a copy of text a player wrote, each with the column that
+	 * identifies a row. Decoding only changes values that are double encoded, so a
+	 * column that holds none today is safe to keep.
+	 */
+	private const TEXT_COLUMNS = [
+		['tsumego_comment', 'message', 'id'],
+		['tsumego_comment_before_sgf_coordinates', 'message', 'tsumego_comment_id'],
+		['set', 'author', 'id'],
+		['tag', 'description', 'id'],
+		['user', 'deleted_name', 'id'],
+	];
 
 	/** Length of user.display_name. */
 	private const NAME_MAX_LENGTH = 50;
@@ -83,13 +112,9 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 		$this->execute('SET NAMES utf8mb4');
 		try
 		{
-			foreach ([
-				['tsumego_comment', 'message'],
-				['set', 'author'],
-				['tag', 'description'],
-				['user', 'deleted_name'],
-			] as [$table, $column])
-				$this->write($table . '.' . $column . ': decoded ' . $this->decodeColumn($table, $column) . ' values');
+			foreach (self::TEXT_COLUMNS as [$table, $column, $key])
+				if ($this->hasTable($table))
+					$this->write($table . '.' . $column . ': decoded ' . $this->decodeColumn($table, $column, $key) . ' values');
 
 			$this->decodeDisplayNames();
 		}
@@ -105,14 +130,96 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 	}
 
 	/**
-	 * The original text, or null when the value is not double encoded and has to
-	 * be left alone.
+	 * The original text, or null when the value does not come from a Windows-1252
+	 * connection.
 	 */
 	private static function decode(string $value): ?string
 	{
 		$bytes = self::windows1252Bytes($value);
 
 		return $bytes === null ? null : self::readableText($bytes);
+	}
+
+	/**
+	 * The original text of a value that lost the byte A0 as well, or null when the
+	 * value is not double encoded or nothing is missing from it.
+	 *
+	 * The display name migration collapsed runs of whitespace, which also turned the
+	 * byte A0 into a space where it sat inside a character. A space where a byte of a
+	 * character belongs cannot be a real space, so it is put back as A0. Text that
+	 * lost a byte any other way is not touched: nothing tells which byte it was.
+	 */
+	private static function restoreCollapsedSpaces(string $value): ?string
+	{
+		$bytes = self::windows1252Bytes($value);
+		if ($bytes === null || !self::hasCompleteCharacter($bytes))
+			return null;
+
+		$restored = '';
+		$missing = 0;
+		$repaired = 0;
+		for ($index = 0, $length = strlen($bytes); $index < $length; $index++)
+		{
+			$byte = ord($bytes[$index]);
+			if ($missing > 0)
+			{
+				if ($byte === 0x20)
+				{
+					$restored .= "\xA0";
+					$repaired++;
+					$missing--;
+					continue;
+				}
+				if ($byte < 0x80 || $byte > 0xBF)
+					return null;
+
+				$restored .= $bytes[$index];
+				$missing--;
+				continue;
+			}
+
+			$restored .= $bytes[$index];
+			if ($byte >= 0xC2 && $byte <= 0xDF)
+				$missing = 1;
+			elseif ($byte >= 0xE0 && $byte <= 0xEF)
+				$missing = 2;
+			elseif ($byte >= 0xF0 && $byte <= 0xF4)
+				$missing = 3;
+			elseif ($byte > 0x7F)
+				return null;
+		}
+
+		if ($missing !== 0 || $repaired === 0)
+			return null;
+
+		return self::readableText($restored);
+	}
+
+	/**
+	 * The text a value held before it was stored through a Windows-1252 connection,
+	 * also when collapsing whitespace removed a byte from it.
+	 */
+	private static function originalText(string $value): ?string
+	{
+		return self::decode($value) ?? self::restoreCollapsedSpaces($value);
+	}
+
+	/**
+	 * Whether the value holds a complete multi byte character made of the stored
+	 * characters themselves. Only text that went through a Windows-1252 connection
+	 * does: in correct text like "weiß den" the space is a real space, so a byte
+	 * that would start a character followed by a space proves nothing.
+	 */
+	private static function looksDoubleEncoded(string $value): bool
+	{
+		$bytes = self::windows1252Bytes($value);
+
+		return $bytes !== null && self::hasCompleteCharacter($bytes);
+	}
+
+	private static function hasCompleteCharacter(string $bytes): bool
+	{
+		return preg_match('/[\xC2-\xDF][\x80-\xBF]|[\xE0-\xEF][\x80-\xBF]{2}|[\xF0-\xF4][\x80-\xBF]{3}/', $bytes) === 1;
 	}
 
 	/**
@@ -140,8 +247,8 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 		if (!is_string($bytes) || $bytes === $value)
 			return null;
 
-		// A character that could not be expressed became "?", so the value was
-		// not text that went through a Windows-1252 connection.
+		// A character that could not be expressed became "?", so the value was not
+		// text that went through a Windows-1252 connection.
 		if (substr_count($bytes, chr(self::SUBSTITUTE)) !== substr_count($value, chr(self::SUBSTITUTE)))
 			return null;
 
@@ -157,33 +264,56 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 		if (!mb_check_encoding($bytes, 'UTF-8'))
 			return null;
 
-		if (preg_match('/[ÐÃ][\x{80}-\x{BF}]/u', $bytes))
+		if (preg_match('/[\x{00D0}\x{00C3}][\x{80}-\x{BF}]/u', $bytes))
 			return null;
 
 		return $bytes;
 	}
 
 	/**
-	 * Decodes every value of a column that is double encoded. Everything else is
-	 * left alone: plain ASCII, text that is already correct, and text that still
-	 * contains characters Windows-1252 has no code point for.
+	 * Decodes every value of a column that is double encoded, also the ones that lost
+	 * the byte A0. Everything else is left alone: plain ASCII, text that is already
+	 * correct, and text that still contains characters Windows-1252 has no code point
+	 * for.
 	 */
-	private function decodeColumn(string $table, string $column): int
+	private function decodeColumn(string $table, string $column, string $key): int
 	{
 		$decoded = 0;
-		$rows = $this->fetchAll('SELECT `id`, `' . $column . '` AS `stored` FROM `' . $table . '` WHERE `' . $column . '` IS NOT NULL');
+		$rows = $this->fetchAll('SELECT `' . $key . '` AS `row`, `' . $column . '` AS `stored` FROM `' . $table . '`'
+			. ' WHERE `' . $column . '` IS NOT NULL');
 
 		foreach ($rows as $row)
 		{
-			$value = self::decode($row['stored']);
+			$value = self::originalText((string) $row['stored']);
 			if ($value === null)
 				continue;
 
-			$this->execute('UPDATE `' . $table . '` SET `' . $column . '` = ? WHERE `id` = ?', [$value, $row['id']]);
+			$this->execute('UPDATE `' . $table . '` SET `' . $column . '` = ? WHERE `' . $key . '` = ?', [$value, $row['row']]);
 			$decoded++;
 		}
 
 		return $decoded;
+	}
+
+	/**
+	 * The forum keeps its own copy of a player's name, so every account whose name this
+	 * migration changed is written there as well, with the helper the display name
+	 * migration uses. It updates phpbb_users (including the username_clean key phpBB
+	 * looks players up by) and the poster names phpBB caches in topics, forums and guest
+	 * posts.
+	 *
+	 * @param array<int, array{name: string, needsChange: bool}> $changes
+	 */
+	private function syncForumNames(array $changes): void
+	{
+		if ($changes === [] || !$this->hasTable('phpbb_users'))
+			return;
+
+		$connection = $this->connection();
+		foreach ($changes as $id => $change)
+			PhpbbNames::sync($connection, (int) $id, $change['name']);
+
+		$this->write('phpbb: synced ' . count($changes) . ' names');
 	}
 
 	/**
@@ -193,6 +323,7 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 	{
 		$plan = $this->planDisplayNames();
 		$written = $this->applyNames($plan);
+		$this->syncForumNames($plan);
 
 		$renumbered = array_filter($plan, fn(array $change) => $change['needsChange']);
 		$this->write('user.display_name: rewrote ' . $written . ' names');
@@ -202,93 +333,36 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 		foreach ($renumbered as $id => $change)
 			$this->write('  ' . $id . ' => ' . $change['name']);
 
-		$this->repairBrokenNames();
+		$this->flagNamesThatCannotBeRestored();
 	}
 
 	/**
-	 * A display name that is still unreadable after the decoding has lost the byte A0.
-	 * It is the second byte of every two byte character ending in A0 (Р is D0 A0), and
-	 * a whitespace rule that counts a non-breaking space as whitespace turns it into a
-	 * plain space, which leaves "Ð" followed by " " and a byte stream that is no
-	 * longer UTF-8.
-	 *
-	 * A space directly after a UTF-8 lead byte cannot be a real space (a lead byte is
-	 * always followed by a continuation byte), so it is put back as A0. That is the
-	 * only certain repair: a character that was lost to "?" as well cannot be
-	 * recovered, and the login name is no substitute, because the owner may have picked
-	 * a display name of their own. Such accounts are only asked to pick a name, so
-	 * nothing uncertain is ever written.
+	 * An account whose name is still unreadable after the restoring is asked to pick
+	 * one, and nothing uncertain is ever written to it. That is the only certain
+	 * repair: nothing tells which byte a value lost, and the login name is no
+	 * substitute, because the owner may have picked a display name of their own.
 	 */
-	private function repairBrokenNames(): void
+	private function flagNamesThatCannotBeRestored(): void
 	{
-		$restored = [];
 		$flagged = [];
-		foreach ($this->fetchAll('SELECT `id`, `display_name` FROM `user` WHERE `needs_display_name_change` = 0') as $row)
+		$rows = $this->fetchAll('SELECT p.`id` AS `id`, p.`name` AS `name` FROM `' . self::PLANNED_TABLE . '` p'
+			. ' JOIN `user` u ON u.`id` = p.`id`'
+			. ' WHERE u.`needs_display_name_change` = 0 AND BINARY p.`name` = BINARY u.`display_name`');
+		foreach ($rows as $row)
 		{
-			if (!preg_match('/[ÐÃ][\x{80}-\x{BF}]/u', $row['display_name']))
+			// A name the restoring did not change and that still looks double encoded is
+			// one that lost a byte other than A0.
+			if (!self::looksDoubleEncoded((string) $row['name']))
 				continue;
 
 			$id = (int) $row['id'];
-			$name = self::restoreCollapsedSpaces($row['display_name']);
-			if ($name === null)
-			{
-				$this->execute('UPDATE `user` SET `needs_display_name_change` = 1 WHERE `id` = ?', [$id]);
-				$flagged[] = $id;
-				continue;
-			}
-
-			// The name may already be shown by another account, and then it has to be
-			// numbered like every other contested name.
-			$needsChange = $this->isDisplayNameTaken($name, $id);
-			if ($needsChange)
-				$name = self::number($name, fn(string $candidate) => $this->isDisplayNameTaken($candidate, $id));
-
-			$this->execute('UPDATE `user` SET `display_name` = ?, `needs_display_name_change` = ? WHERE `id` = ?',
-				[$name, $needsChange ? 1 : 0, $id]);
-			$restored[] = $id;
+			$this->execute('UPDATE `user` SET `needs_display_name_change` = 1 WHERE `id` = ?', [$id]);
+			$flagged[] = $id;
 		}
 
-		$this->write('user.display_name: restored ' . count($restored)
-			. ' names by putting the collapsed byte back (ids ' . implode(', ', $restored) . ')');
 		if ($flagged !== [])
 			$this->write('user.display_name: ' . count($flagged)
-				. ' names were damaged beyond that and left for the owner to pick (ids ' . implode(', ', $flagged) . ')');
-	}
-
-	/**
-	 * The text of a display name whose non-breaking spaces were collapsed to plain
-	 * spaces: the bytes Windows-1252 gives back, with every space that follows a
-	 * UTF-8 lead byte turned back into A0. Null when the result is not valid UTF-8.
-	 */
-	private static function restoreCollapsedSpaces(string $stored): ?string
-	{
-		$bytes = self::windows1252Bytes($stored);
-		if ($bytes === null)
-			return null;
-
-		$restored = '';
-		for ($index = 0, $length = strlen($bytes); $index < $length; $index++)
-		{
-			$byte = $bytes[$index];
-			$previous = $index > 0 ? ord($bytes[$index - 1]) : 0;
-			if ($byte === ' ' && $previous >= 0xC2 && $previous <= 0xDF)
-				$byte = "\xA0";
-			$restored .= $byte;
-		}
-
-		return self::readableText($restored);
-	}
-
-	/**
-	 * Whether another account already shows the name. The comparison uses the
-	 * collation of the column.
-	 */
-	private function isDisplayNameTaken(string $name, int $id): bool
-	{
-		$statement = $this->connection()->prepare('SELECT `id` FROM `user` WHERE `display_name` = ? AND `id` <> ? LIMIT 1');
-		$statement->execute([$name, $id]);
-
-		return $statement->fetch(PDO::FETCH_ASSOC) !== false;
+				. ' names were damaged beyond restoring and left for the owner to pick (ids ' . implode(', ', $flagged) . ')');
 	}
 
 	/**
@@ -614,8 +688,9 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 	}
 
 	/**
-	 * Fills the planning table with the name every account would have after
-	 * decoding. Accounts without a display name cannot be planned and are skipped.
+	 * Fills the planning table with the name every account would have after the
+	 * decoding and the restoring, so that the same rules apply to both. Accounts
+	 * without a display name cannot be planned and are skipped.
 	 */
 	private function fillPlannedNames(): void
 	{
@@ -626,8 +701,65 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 			. ' CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL)');
 
 		$insert = $connection->prepare('INSERT INTO ' . self::PLANNED_TABLE . ' (id, name) VALUES (?, ?)');
-		foreach ($connection->query('SELECT id, display_name FROM user WHERE display_name IS NOT NULL') as $row)
-			$insert->execute([(int) $row['id'], self::decode($row['display_name']) ?? $row['display_name']]);
+		foreach ($connection->query('SELECT id, display_name, name FROM user WHERE display_name IS NOT NULL') as $row)
+		{
+			$loginName = $row['name'] === null ? null : (string) $row['name'];
+			$insert->execute([(int) $row['id'], self::restoredDisplayName((string) $row['display_name'], $loginName)]);
+		}
+	}
+
+	/**
+	 * The name to keep for an account: the restored display name, with the spaces that
+	 * collapsing whitespace ate filled in from the login name.
+	 *
+	 * A whitespace rule ran over the display name and ate a space wherever the byte A0
+	 * was followed by one: "Ð\u{00A0} Ð¡" became "Ð Ð¡", so the space between the two
+	 * words was gone. The login name was never collapsed and still has it. Only a space
+	 * that is missing is put back, at the place where it is missing: runs are not
+	 * widened and the edges stay trimmed, so the result is a name the site itself would
+	 * store, and a name the owner chose keeps its own text because the letters differ.
+	 */
+	private static function restoredDisplayName(string $displayName, ?string $loginName): string
+	{
+		$restored = trim(self::originalText($displayName) ?? $displayName);
+		$restoredLogin = $loginName === null ? null : trim(self::originalText($loginName) ?? $loginName);
+		if ($restoredLogin === null)
+			return $restored;
+
+		$display = preg_split('//u', $restored, -1, PREG_SPLIT_NO_EMPTY);
+		if ($display === false)
+			return $restored;
+
+		$filled = '';
+		$index = 0;
+		$loginHasSpace = false;
+		foreach (preg_split('//u', $restoredLogin, -1, PREG_SPLIT_NO_EMPTY) ?: [] as $character)
+		{
+			if (preg_match('/\s/u', $character))
+			{
+				$loginHasSpace = true;
+				continue;
+			}
+
+			$displayHasSpace = false;
+			while (preg_match('/\s/u', $display[$index] ?? ''))
+			{
+				$displayHasSpace = true;
+				$index++;
+			}
+
+			// A letter that does not line up means these are different names.
+			if (($display[$index] ?? null) !== $character)
+				return $restored;
+
+			if (($loginHasSpace || $displayHasSpace) && $filled !== '')
+				$filled .= ' ';
+			$filled .= $character;
+			$index++;
+			$loginHasSpace = false;
+		}
+
+		return $index === count($display) ? $filled : $restored;
 	}
 
 	/**
@@ -710,7 +842,7 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 		foreach (array_map('intval', $ids) as $id)
 		{
 			$row = $this->connection()->query("
-				SELECT u.email, u.deleted, u.deletion_token, u.display_name,
+				SELECT u.email, u.deleted, u.deletion_token, u.display_name, u.name,
 					(SELECT COUNT(*) FROM tsumego_attempt a WHERE a.user_id = $id) AS attempts,
 					(SELECT GREATEST(
 						COALESCE((SELECT MAX(a.created) FROM tsumego_attempt a WHERE a.user_id = $id), '1970-01-01 00:00:00'),
@@ -732,8 +864,8 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 
 			$facts[$id] = [
 				'email' => (string) $row['email'],
-				// A name the decoding will not touch is one the owner already sees.
-				'readable' => self::decode((string) $row['display_name']) === null,
+				// A name the restoring does not touch is one the owner already sees.
+				'readable' => self::restoredDisplayName((string) $row['display_name'], $row['name'] === null ? null : (string) $row['name']) === $row['display_name'],
 				'attempts' => (int) $row['attempts'],
 				'lastActivity' => (string) $row['last_activity'],
 				'recentDays' => (int) $row['recent_days'],
