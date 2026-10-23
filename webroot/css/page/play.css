@@ -609,28 +609,26 @@ h1 {
   margin: 12px 5px 0 1px;
   cursor: pointer;
 }
-/* The author credit is positioned against the board container */
+/* The author credit gets its own line at the top of the board container, so
+   it never runs into the XP, status and rank row above the board. The board
+   panel fills the text with the problem's author. */
 #target {
   position: relative;
+  padding-top: 16px;
 }
-/* Author credit: centred in the free band directly above the board. The board
-   panel fills the text with the problem's author. */
 #author-notice {
   position: absolute;
-  bottom: calc(100% + 6px);
-  left: 50%;
-  transform: translateX(-50%);
+  top: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-family: var(--font-family-display);
   font-size: 12px;
   line-height: 15px;
-  white-space: nowrap;
   color: var(--text-softer-color);
-}
-/* The XP bar leaves only a narrow gap above the board on a small phone */
-@media (width < 28rem) {
-  #author-notice {
-    font-size: 10px;
-  }
 }
 .play-preview-row {
   margin-top: 8px;
