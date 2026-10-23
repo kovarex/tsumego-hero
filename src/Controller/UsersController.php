@@ -447,8 +447,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 			$s[$i]['Sgf']['version'] = count($this->Sgf->find('all', ['conditions' => ['tsumego_id' => $scT['SetConnection']['tsumego_id']]])) - $versionCounter[$scT['SetConnection']['tsumego_id']];
 
 			$s[$i]['Sgf']['delete'] = false;
-			$sDiff = $this->Sgf->find('all', ['order' => 'id DESC', 'limit' => 2, 'conditions' => ['tsumego_id' => $s[$i]['Sgf']['tsumego_id']]]);
-			$s[$i]['Sgf']['diff'] = $sDiff[1]['Sgf']['id'];
+			$s[$i]['Sgf']['diff'] = $this->Sgf->findPreviousVersionID($s[$i]['Sgf']['tsumego_id'], $s[$i]['Sgf']['id']);
 		}
 		$this->set('s', $s);
 	}

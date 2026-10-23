@@ -1,6 +1,8 @@
 <?php
 
+use App\Utility\Auth;
 use App\Utility\Constants;
+use App\Utility\Util;
 
 class UploadSgfTest extends TestCaseWithAuth
 {
@@ -88,5 +90,27 @@ class UploadSgfTest extends TestCaseWithAuth
 		$browser->find('.sgf-plus-mark');
 		$plusMark = $browser->getElements('.sgf-plus-mark');
 		$this->assertCount(2, $plusMark); // one on the board, one on the tree I guess? But mainly there is some
+	}
+
+	public function testOpeningSgfDiffFromTheUploadsList()
+	{
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true],
+			'tsumego' => ['set_order' => 1, 'status' => 'S', 'sgf' => '(;GM[1]FF[4]SZ[19]AB[cc]C[Version 1];B[aa])'],
+			'tsumegos' => [['set_order' => 2, 'status' => 'S', 'sgf' => '(;GM[1]FF[4]SZ[19]AW[bb]C[Other problem];W[ab])']]]);
+		$problem = $context->tsumegos[0];
+		$latest = ClassRegistry::init('Sgf')->uploadSgf('(;GM[1]FF[4]SZ[19]AB[cc]C[Version 2](;B[aa])(;B[ba]))', $problem['id'], Auth::getUserID(), true);
+		Util::execute('UPDATE sgf SET created = ? WHERE id = ?', ['2026-01-01 10:00:00', $problem['sgfs'][0]['id']]);
+		Util::execute('UPDATE sgf SET created = ? WHERE id = ?', ['2026-01-01 11:00:00', $context->tsumegos[1]['sgfs'][0]['id']]);
+		Util::execute('UPDATE sgf SET created = ? WHERE id = ?', ['2026-01-01 12:00:00', $latest['Sgf']['id']]);
+
+		$browser = Browser::instance();
+		$browser->get('/users/uploads');
+		$browser->find('#compare-' . $latest['Sgf']['id'])->click();
+		$this->assertSame('Version 2', $browser->findById('commentBox')->getText());
+
+		// only the added variation is marked, compared with the other problem both moves would be
+		$browser->waitUntilJs('document.querySelectorAll(".besogo-board .sgf-plus-mark").length > 0');
+		$this->assertCount(1, $browser->getElements('.besogo-board .sgf-plus-mark'));
 	}
 }

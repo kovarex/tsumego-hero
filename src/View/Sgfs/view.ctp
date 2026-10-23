@@ -6,7 +6,6 @@ use App\Utility\Util;
  * @var View $this
  * @var array $dTitle
  * @var string $id
- * @var string $id2
  * @var string $name
  * @var array $s
  * @var string $type
@@ -40,7 +39,7 @@ use App\Utility\Util;
 		<?php if($type=='tsumego'){ ?>
 			<a href="/tsumegos/play/<?php echo $id; ?>">back</a>
 		<?php }else{ ?>
-			<a href="/sgfs/view/<?php echo $id2; ?>">back</a>
+			<a href="/sgfs/view/<?php echo (int)$id; ?>">back</a>
 		<?php } ?>
 	</div>
 	<table class="data-table" border="0">
@@ -60,19 +59,19 @@ use App\Utility\Util;
 			if($s[$i]['Sgf']['user_id']==33)
 				echo 'automatically generated';
 			else
-				echo '<a href="/sgfs/view/'.($s[$i]['Sgf']['tsumego_id']*1337).'?user='.$s[$i]['Sgf']['user_id'].'">'.h($s[$i]['Sgf']['user']).'</a>';
+				echo '<a href="/sgfs/view/'.$s[$i]['Sgf']['tsumego_id'].'?user='.$s[$i]['Sgf']['user_id'].'">'.h($s[$i]['Sgf']['user']).'</a>';
 			echo '</td>';
 			echo '<td class="timeTableMiddle versionColor" align="left">';
 			if($type=='tsumego')
 				echo '<a href="/tsumegos/play/'.($s[$i]['Sgf']['tsumego_id']).'"> '.h($s[$i]['Sgf']['title']).'</a> ';
 			else
-				echo '<a href="/sgfs/view/'.($s[$i]['Sgf']['tsumego_id']*1337).'"> '.h($s[$i]['Sgf']['title']).'</a> ';
+				echo '<a href="/sgfs/view/'.$s[$i]['Sgf']['tsumego_id'].'"> '.h($s[$i]['Sgf']['title']).'</a> ';
 			echo '<a href="/sgfs/view/'.$s[$i]['Sgf']['tsumego_id'].'" id="dl1-'.$s[$i]['Sgf']['id'].'">v '.$s[$i]['Sgf']['version'].'</a>';
 			echo '</td>
 			<td class="timeTableRight versionColor" align="left">
 			<a id="open-'.$s[$i]['Sgf']['id'].'" class="openHistoryPointLink">open</a>&nbsp;&nbsp;&nbsp;';
-			if ($i != count($s) - 1)
-				echo '<a id="compare-'.$s[$i]['Sgf']['id'].'" class="openDiff" href="/editor?sgfID='.$s[$i]['Sgf']['id'].'&diffID='.$s[$i + 1]['Sgf']['id'].'"">diff</a>&nbsp;&nbsp;&nbsp;';
+			if ($s[$i]['Sgf']['diff'])
+				echo '<a id="compare-'.$s[$i]['Sgf']['id'].'" class="openDiff" href="/editor?sgfID='.$s[$i]['Sgf']['id'].'&diffID='.$s[$i]['Sgf']['diff'].'">diff</a>&nbsp;&nbsp;&nbsp;';
 			echo '<a href="#" id="dl2-'.$s[$i]['Sgf']['id'].'">download</a>';
 			if($s[$i]['Sgf']['delete'])
 				echo '&nbsp;&nbsp;&nbsp;<a onclick="delV('.$s[$i]['Sgf']['id'].');" href="#">delete</a>';
@@ -87,7 +86,7 @@ use App\Utility\Util;
 <script>
 	function delV(sgfid){
 		var confirmed = confirm("Are you sure?");
-		if(confirmed) window.location.href = "/sgfs/view/<?php echo (int)$id2; ?>?delete="+sgfid;
+		if(confirmed) window.location.href = "/sgfs/view/<?php echo (int)$id; ?>?delete="+sgfid;
 	}
 
 	<?php for($i=0; $i<count($s); $i++){ ?>
@@ -112,7 +111,7 @@ use App\Utility\Util;
 			$("#<?php echo (int)$s[$i]['Sgf']['id']; ?> td").css("background","");
 		  }
 		);
-		<?php if($i!=count($s)-1){ ?>
+		<?php if($s[$i]['Sgf']['diff']){ ?>
 			$("#compare-<?php echo (int)$s[$i]['Sgf']['id']; ?>").hover(
 			  function () {
 				$("#<?php echo (int)$s[$i]['Sgf']['id']; ?> td").css("background","linear-gradient(#fff, #c8c8c8)");

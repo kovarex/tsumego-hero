@@ -150,6 +150,44 @@ besogo.addTest("GameRoot", "KoComparisonRequiresBothCoordinatesToMatch", functio
 	CHECK(!moveA.hasSameKoStateAs(moveB));
 });
 
+besogo.addTest("GameRoot", "DiffMarksAddedAndRemovedMoves", function()
+{
+	let newRoot = besogo.makeGameRoot(5, 5);
+	newRoot.registerMove(1, 1);
+	newRoot.registerMove(2, 2);
+
+	let oldRoot = besogo.makeGameRoot(5, 5);
+	oldRoot.registerMove(1, 1);
+	oldRoot.registerMove(3, 3);
+
+	newRoot.incorporateDiff(oldRoot);
+
+	CHECK_EQUALS(newRoot.children.length, 3);
+	CHECK(!newRoot.children[0].diffInfo);
+	CHECK_EQUALS(newRoot.children[1].diffInfo.type, DIFF_ADDED);
+	CHECK_EQUALS(newRoot.children[2].diffInfo.type, DIFF_REMOVED);
+	CHECK_EQUALS(newRoot.children[2].move.x, 3);
+});
+
+besogo.addTest("GameRoot", "DiffSkipsRemovedMoveIllegalInTheNewPosition", function()
+{
+	// the new version has a stone where the old version played, so the removed move can't be shown
+	let newRoot = besogo.makeGameRoot(5, 5);
+	newRoot.placeSetup(3, 3, WHITE);
+	newRoot.registerMove(2, 2);
+
+	let oldRoot = besogo.makeGameRoot(5, 5);
+	oldRoot.registerMove(3, 3);
+	oldRoot.registerMove(4, 4);
+
+	newRoot.incorporateDiff(oldRoot);
+
+	CHECK_EQUALS(newRoot.children.length, 2);
+	CHECK_EQUALS(newRoot.children[0].diffInfo.type, DIFF_ADDED);
+	CHECK_EQUALS(newRoot.children[1].diffInfo.type, DIFF_REMOVED);
+	CHECK_EQUALS(newRoot.children[1].move.x, 4);
+});
+
 besogo.addTest("GameRoot", "CanStillEndCorrectTellsTheLostLineApart", function()
 {
 	let root = besogo.makeGameRoot();
