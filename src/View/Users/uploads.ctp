@@ -5,7 +5,6 @@ use App\Utility\Util;
 /**
  * @var View $this
  * @var array $s
- * @var int $id2
  */
 
 ?>
@@ -31,7 +30,7 @@ use App\Utility\Util;
 				<time datetime="' . Util::toIso8601($s[$i]['Sgf']['created']) . '" data-format="datetime">' . $s[$i]['Sgf']['created'] . '</time>
 			</td>
 			<td class="timeTableMiddle versionColor" align="left">';
-		echo '<a href="/sgfs/view/' . $id2 . '?user=' . $s[$i]['Sgf']['user_id'] . '">' . h($s[$i]['Sgf']['user']) . '</a>';
+		echo '<a href="/sgfs/view/' . $s[$i]['Sgf']['tsumego_id'] . '?user=' . $s[$i]['Sgf']['user_id'] . '">' . h($s[$i]['Sgf']['user']) . '</a>';
 
 		echo '</td>';
 		echo '<td class="timeTableMiddle versionColor" align="left">';
@@ -40,8 +39,8 @@ use App\Utility\Util;
 		echo '</td>
 			<td class="timeTableRight versionColor" align="left">';
 		echo '<a id="open-' . $s[$i]['Sgf']['id'] . '">open</a>&nbsp;&nbsp;&nbsp;';
-		if ($i != count($s) - 1)
-			echo '<a id="compare-' . $s[$i]['Sgf']['id'] . '" class="openDiff" href="/editor?sgfID=' . $s[$i]['Sgf']['id'] . '&diffID=' . $s[$i + 1]['Sgf']['id'] . '"">diff</a>&nbsp;&nbsp;&nbsp;';
+		if ($s[$i]['Sgf']['diff'])
+			echo '<a id="compare-' . $s[$i]['Sgf']['id'] . '" class="openDiff" href="/editor?sgfID=' . $s[$i]['Sgf']['id'] . '&diffID=' . $s[$i]['Sgf']['diff'] . '">diff</a>&nbsp;&nbsp;&nbsp;';
 		echo '<a href="#" id="dl2-' . $s[$i]['Sgf']['id'] . '">download</a>';
 		echo '</td>
 			</tr>';
@@ -76,7 +75,7 @@ use App\Utility\Util;
 			$("#<?php echo (int) $s[$i]['Sgf']['id']; ?> td").css("background","");
 		  }
 		);
-		<?php if($i != count($s) - 1)
+		<?php if($s[$i]['Sgf']['diff'])
 		{ ?>
 			$("#compare-<?php echo (int) $s[$i]['Sgf']['id']; ?>").hover(
 			  function () {

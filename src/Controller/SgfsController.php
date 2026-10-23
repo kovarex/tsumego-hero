@@ -112,15 +112,7 @@ class SgfsController extends AppController
 				$s[$i]['Sgf']['delete'] = true;
 			else
 				$s[$i]['Sgf']['delete'] = false;
-			if ($type == 'user')
-			{
-				$sDiff = $this->Sgf->find('all', ['order' => 'id DESC', 'limit' => 2, 'conditions' => ['tsumego_id' => $s[$i]['Sgf']['tsumego_id']]]);
-				if (!$sDiff)
-					$sDiff = [];
-				$s[$i]['Sgf']['diff'] = $sDiff[1]['Sgf']['id'];
-			}
-			elseif ($i != count($s) - 1)
-				$s[$i]['Sgf']['diff'] = $s[$i + 1]['Sgf']['id'];
+			$s[$i]['Sgf']['diff'] = $this->Sgf->findPreviousVersionID($s[$i]['Sgf']['tsumego_id'], $s[$i]['Sgf']['id']);
 		}
 
 		$this->set('ux', $ux);

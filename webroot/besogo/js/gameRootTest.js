@@ -149,3 +149,99 @@ besogo.addTest("GameRoot", "KoComparisonRequiresBothCoordinatesToMatch", functio
 	// Different ko points sharing only x coordinate must NOT match
 	CHECK(!moveA.hasSameKoStateAs(moveB));
 });
+
+besogo.addTest("GameRoot", "DiffMarksAddedAndRemovedMoves", function()
+{
+	let newRoot = besogo.makeGameRoot(5, 5);
+	newRoot.registerMove(1, 1);
+	newRoot.registerMove(2, 2);
+
+	let oldRoot = besogo.makeGameRoot(5, 5);
+	oldRoot.registerMove(1, 1);
+	oldRoot.registerMove(3, 3);
+
+	newRoot.incorporateDiff(oldRoot);
+
+	CHECK_EQUALS(newRoot.children.length, 3);
+	CHECK(!newRoot.children[0].diffInfo);
+	CHECK_EQUALS(newRoot.children[1].diffInfo.type, DIFF_ADDED);
+	CHECK_EQUALS(newRoot.children[2].diffInfo.type, DIFF_REMOVED);
+	CHECK_EQUALS(newRoot.children[2].move.x, 3);
+});
+
+besogo.addTest("GameRoot", "DiffSkipsRemovedMoveIllegalInTheNewPosition", function()
+{
+	// the new version has a stone where the old version played, so the removed move can't be shown
+	let newRoot = besogo.makeGameRoot(5, 5);
+	newRoot.placeSetup(3, 3, WHITE);
+	newRoot.registerMove(2, 2);
+
+	let oldRoot = besogo.makeGameRoot(5, 5);
+	oldRoot.registerMove(3, 3);
+	oldRoot.registerMove(4, 4);
+
+	newRoot.incorporateDiff(oldRoot);
+
+	CHECK_EQUALS(newRoot.children.length, 2);
+	CHECK_EQUALS(newRoot.children[0].diffInfo.type, DIFF_ADDED);
+	CHECK_EQUALS(newRoot.children[1].diffInfo.type, DIFF_REMOVED);
+	CHECK_EQUALS(newRoot.children[1].move.x, 4);
+});
+
+besogo.addTest("GameRoot", "CanStillEndCorrectTellsTheLostLineApart", function()
+{
+	let root = besogo.makeGameRoot();
+	let correct = root.registerMove(1, 1);
+	correct.registerMove(1, 2).registerMove(2, 1).setCorrectSource(true);
+	let wrong = root.registerMove(5, 5);
+	let refutation = wrong.registerMove(5, 6);
+	let wrongEnd = refutation.registerMove(5, 7);
+
+	CHECK(root.canStillEndCorrect());
+	CHECK(correct.canStillEndCorrect());
+	CHECK(!wrong.canStillEndCorrect());
+	CHECK(!refutation.canStillEndCorrect());
+	CHECK(!wrongEnd.canStillEndCorrect());
+});
+
+besogo.addTest("GameRoot", "CanStillEndCorrectWhileTheOpponentMayPickAReplyThatLoses", function()
+{
+	// The move is wrong because of the refutation, but the autoplay may still pick the other reply
+	let root = besogo.makeGameRoot();
+	let move = root.registerMove(1, 1);
+	let refutation = move.registerMove(1, 2);
+	refutation.registerMove(1, 3);
+	let losingReply = move.registerMove(2, 2);
+	losingReply.registerMove(2, 3).setCorrectSource(true);
+
+	CHECK_EQUALS(move.correct, CORRECT_BAD);
+	CHECK(move.canStillEndCorrect());
+	CHECK(!refutation.canStillEndCorrect());
+	CHECK(losingReply.canStillEndCorrect());
+});
+
+besogo.addTest("GameRoot", "CanStillEndCorrectThroughATransposition", function()
+{
+	let root = besogo.makeGameRoot();
+	let finalChild = root.registerMove(1, 1).registerMove(1, 2).registerMove(2, 1).registerMove(2, 2);
+	finalChild.registerMove(3, 3).setCorrectSource(true);
+	let otherOrderStart = root.registerMove(2, 1);
+	let otherOrder = otherOrderStart.registerMove(2, 2).registerMove(1, 1);
+
+	CHECK_EQUALS(otherOrder.children.length, 0);
+	CHECK(otherOrder.canStillEndCorrect());
+	CHECK(otherOrderStart.canStillEndCorrect());
+});
+
+besogo.addTest("GameRoot", "CanStillEndCorrectIsFalseOffTheTree", function()
+{
+	let root = besogo.makeGameRoot();
+	root.registerMove(1, 1).registerMove(1, 2).registerMove(2, 1).setCorrectSource(true);
+	let localEditMove = root.makeChild();
+	localEditMove.localEdit = true;
+	localEditMove.playMove(5, 5);
+	root.registerChild(localEditMove);
+
+	CHECK(!localEditMove.canStillEndCorrect());
+	CHECK(root.canStillEndCorrect());
+});

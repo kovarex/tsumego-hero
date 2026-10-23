@@ -73,7 +73,19 @@ class Sgf extends AppModel
 			throw new InternalErrorException('Failed to save SGF: ' . $errorMessage);
 		}
 
-		// Return the saved record from the model (includes auto-generated ID and timestamps)
-		return ['Sgf' => $this->data['Sgf']];
+		// Return the saved record (includes auto-generated ID and timestamps), the model's data is cleared by the save
+		return $this->find('first', ['conditions' => ['id' => $this->id]]);
+	}
+
+	/**
+	 * The id of the version of the same tsumego uploaded right before the given one, the one to diff it against.
+	 */
+	public function findPreviousVersionID(int $tsumegoID, int $sgfID): ?int
+	{
+		$previous = $this->find('first', [
+			'fields' => ['id'],
+			'order' => 'id DESC',
+			'conditions' => ['tsumego_id' => $tsumegoID, 'id <' => $sgfID]]);
+		return $previous ? (int) $previous['Sgf']['id'] : null;
 	}
 }

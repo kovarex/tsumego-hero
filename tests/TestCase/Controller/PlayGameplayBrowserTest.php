@@ -398,20 +398,22 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 		$this->assertSame(1, $context->reloadUser()['damage']);
 	}
 
-	public function testTheAccountBarGlowsForARecordedSolveAndARecordedFail(): void
+	public function testTheAccountBarGlowsWhenWhatItShowsChanges(): void
 	{
-		foreach (['S', 'F'] as $result)
+		// a fail costs rating, but no XP
+		foreach ([['rating', 'S', true], ['rating', 'F', true], ['level', 'S', true], ['level', 'F', false]] as [$show, $result, $glows])
 		{
 			$context = new ContextPreparator(['tsumego' => 1]);
 			$browser = Browser::instance();
+			$browser->setCookie('showInAccountWidget', $show);
 			$browser->get($this->playUrl($context));
 			$this->waitForBoard($browser);
 
 			$browser->driver->executeScript("displayResult('" . $result . "')");
 
-			$this->assertSame('inline-block',
+			$this->assertSame($glows ? 'inline-block' : 'none',
 				$browser->driver->executeScript("return document.getElementById('xp-increase-fx').style.display;"),
-				'The bar shows that the account changed, in either direction');
+				$show . ' bar, result ' . $result);
 		}
 	}
 
