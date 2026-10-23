@@ -40,6 +40,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     appliedTransformations = [], // Transformations applied since the root was loaded, see recordTransformation
     anchoredCommentNodes = new Map(),
     displayResult = null,
+    lineLost = null,
     showComment = null,
     addTimeForMovePlayed = null;
 
@@ -87,6 +88,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     isPerformingAutoPlay: isPerformingAutoPlay,
     setSoundEnabled: setSoundEnabled,
     registerDisplayResult: registerDisplayResult,
+    registerLineLost: registerLineLost,
     registerAddTimeForMovePlayed: registerAddTimeForMovePlayed,
     resetToStart: resetToStart,
     registerShowComment: registerShowComment,
@@ -280,6 +282,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
       current.visited = true;
       num--;
     }
+    reportIfLineIsLost(current);
 
     if (besogo.soundsEnabled && !reviewMode)
       document.getElementsByTagName("audio")[0].play();
@@ -543,7 +546,14 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
       }, 240);
     }
     notifyListeners({ navChange: true }); // Notify navigation (with no tree edits)
+    reportIfLineIsLost(node);
     tryToFinish(node);
+  }
+
+  // Tells the page the moment the line can no longer end correct, long before it is played out and the result shown
+  function reportIfLineIsLost(node) {
+    if (reviewMode || !autoPlay || !lineLost) return;
+    if (!node.canStillEndCorrect()) lineLost();
   }
 
   // Navigates to child with move at (x, y), searching tree if shift key pressed
@@ -801,6 +811,11 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
   function registerDisplayResult(value)
   {
     displayResult = value;
+  }
+
+  function registerLineLost(value)
+  {
+    lineLost = value;
   }
 
 	function registerAddTimeForMovePlayed(value)

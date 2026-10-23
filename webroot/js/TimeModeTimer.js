@@ -27,7 +27,11 @@ class TimeModeTimer
 		{
 			locked = true;
 			tryAgainTomorrow = true;
-			submitResult(playOutcome.timedOut);
+			// a line lost before the time ran out was already sent as a fail
+			if (unrevealedFail)
+				revealFail();
+			else
+				submitResult(playOutcome.timedOut);
 
 			$("#time-mode-countdown").css("color","var(--feedback-error)");
 			document.getElementById("status").style.color = "var(--feedback-error)";

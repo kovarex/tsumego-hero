@@ -103,7 +103,8 @@ class AccountWidget
 					xp: " . Auth::getUser()['xp'] . ",
 					level: " . Auth::getUser()['level'] . ",
 					show: '" . AccountWidget::whatToShow() . "',
-					timeMode: " . $timeMode->exportTimeModeInfo() . "});";
+					timeMode: " . $timeMode->exportTimeModeInfo() . "});
+				accountWidget.replayUnshownResult();";
 		else
 			echo "null;";
 	}

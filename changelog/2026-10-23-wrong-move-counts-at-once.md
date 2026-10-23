@@ -1,0 +1,1 @@
+Fixed: A wrong move costs its heart and rating as soon as it is played, so leaving or refreshing the page before the wrong line is played out no longer escapes it. You still see the result only when the line ends.
