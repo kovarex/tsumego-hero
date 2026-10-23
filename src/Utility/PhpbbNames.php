@@ -11,8 +11,7 @@ use RuntimeException;
  * The forum shares our database and its single sign-on looks a player up by the username_clean
  * key, so that key has to be the one phpBB itself computes with utf8_clean_string(): case folded,
  * normalised, lookalike characters mapped to their latin counterparts and whitespace collapsed.
- * phpBB caches the name in a few more tables as well, so a rename follows what its own
- * user_update_name() does.
+ * phpBB caches the name in a few more tables as well, so a rename writes those copies too.
  */
 class PhpbbNames
 {
@@ -46,6 +45,10 @@ class PhpbbNames
 
 	/**
 	 * Writes a player's display name into their phpBB rows.
+	 *
+	 * The ids beside the cached names are phpBB ids, so the account is translated through
+	 * external_id and only rows of that account are written; a rename never touches the
+	 * rows of another player.
 	 */
 	public static function sync(PDO $connection, int $userId, string $displayName): void
 	{
@@ -56,15 +59,15 @@ class PhpbbNames
 
 		foreach (self::NAME_CACHES as [$table, $nameColumn, $idColumn])
 		{
-			$statement = $connection->prepare(
-				"UPDATE `$table` SET `$nameColumn` = ? WHERE `$idColumn` = ?"
-			);
+			$statement = $connection->prepare("UPDATE `$table` SET `$nameColumn` = ? WHERE `$idColumn` IN"
+				. ' (SELECT `user_id` FROM `phpbb_users` WHERE `external_id` = ?)');
 			$statement->execute([$displayName, $userId]);
 		}
 
 		// Guest posts keep a copy of the poster name, posts of registered players keep it empty.
 		$statement = $connection->prepare(
-			"UPDATE phpbb_posts SET post_username = ? WHERE poster_id = ? AND post_username <> ''"
+			'UPDATE phpbb_posts SET post_username = ? WHERE poster_id IN'
+			. " (SELECT `user_id` FROM phpbb_users WHERE `external_id` = ?) AND post_username <> ''"
 		);
 		$statement->execute([$displayName, $userId]);
 	}
