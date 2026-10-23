@@ -8,7 +8,7 @@
  *
  * Export the comments with the current SGF and description of their problem (mysql --batch output):
  *   SELECT c.id, c.tsumego_id, c.message, c.position, c.created,
- *     (SELECT s.sgf FROM sgf s WHERE s.tsumego_id = c.tsumego_id AND s.accepted = 1 ORDER BY s.id DESC LIMIT 1) AS sgf,
+ *     (SELECT s.sgf FROM sgf s WHERE s.tsumego_id = c.tsumego_id AND s.sgf_status_id = 2 ORDER BY s.id DESC LIMIT 1) AS sgf,
  *     (SELECT t.description FROM tsumego t WHERE t.id = c.tsumego_id) AS description
  *   FROM tsumego_comment c WHERE c.deleted = 0
  *

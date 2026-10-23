@@ -338,7 +338,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$this->assertSame($loadedSgf, $sgfVersion1);
 
 		// the reviewer gets to know what the proposal is about
-		$proposal = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id'], 'accepted' => false]])['Sgf'];
+		$proposal = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id'], 'sgf_status_id' => Sgf::STATUS_PROPOSED]])['Sgf'];
 		$this->assertSame('Black D16 is correct too', $proposal['description']);
 	}
 
@@ -350,8 +350,8 @@ class AdminStatsControllerTest extends ControllerTestCase
 			'user' => ['admin' => true],
 			'tsumego' => [
 				'sgfs' => [
-					['data' => $sgfVersion1, 'accepted' => true],
-					['data' => $sgfVersion2, 'accepted' => false]],
+					['data' => $sgfVersion1, 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
+					['data' => $sgfVersion2, 'sgf_status_id' => Sgf::STATUS_PROPOSED]],
 				'status' => 'S',
 				'set_order' => 1]]);
 		$browser = Browser::instance();
@@ -365,7 +365,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 		// we got redirected back to adminstats, the proposal shouldn't be visible anymore
 		$this->assertSame(Util::getMyAddress() . '/users/adminstats', $browser->driver->getCurrentURL());
 		$this->assertSame('SGF Proposals (0)', $browser->find('#sgf_proposals_page_header')->getText());
-		$this->assertSame(true, ClassRegistry::init('Sgf')->findById($context->tsumegos[0]['sgfs'][1]['id'])['Sgf']['accepted']);
+		$this->assertEquals(Sgf::STATUS_ACCEPTED, ClassRegistry::init('Sgf')->findById($context->tsumegos[0]['sgfs'][1]['id'])['Sgf']['sgf_status_id']);
 
 		// checking that the accepted sgf is now used for the problem
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
@@ -381,8 +381,8 @@ class AdminStatsControllerTest extends ControllerTestCase
 			'user' => ['admin' => true],
 			'tsumego' => [
 				'sgfs' => [
-					['data' => $sgfVersion1, 'accepted' => true],
-					['data' => $sgfVersion2, 'accepted' => false]],
+					['data' => $sgfVersion1, 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
+					['data' => $sgfVersion2, 'sgf_status_id' => Sgf::STATUS_PROPOSED]],
 				'status' => 'S',
 				'set_order' => 1]]);
 		$browser = Browser::instance();
@@ -397,8 +397,11 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$this->assertSame(Util::getMyAddress() . '/users/adminstats', $browser->driver->getCurrentURL());
 		$this->assertSame('SGF Proposals (0)', $browser->find('#sgf_proposals_page_header')->getText());
 
-		// the sgf is deleted
-		$this->assertEmpty(ClassRegistry::init('Sgf')->findById($context->tsumegos[0]['sgfs'][1]['id']));
+		// the sgf is kept as rejected, listed folded under the waiting proposals
+		$this->assertEquals(Sgf::STATUS_REJECTED, ClassRegistry::init('Sgf')->findById($context->tsumegos[0]['sgfs'][1]['id'])['Sgf']['sgf_status_id']);
+		$this->assertSame('', $browser->find('#rejected-sgf-proposals table')->getText(), 'folded');
+		$browser->find('#rejected-sgf-proposals summary')->click();
+		$this->assertStringContainsString('Black B19 is not needed', $browser->find('#rejection-' . $context->tsumegos[0]['sgfs'][1]['id'])->getText());
 	}
 
 	public function testApproveTag()

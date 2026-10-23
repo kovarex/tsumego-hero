@@ -33,9 +33,10 @@ class SgfPolicy extends BasePolicy
 		if (static::isAdmin($user))
 			return true;
 		// the proposer sees their versions and the ones they were compared with, the decision message links the diff
-		if (ClassRegistry::init('Sgf')->find('count', ['conditions' => [
+		$ownVersionCount = ClassRegistry::init('Sgf')->find('count', ['conditions' => [
 			'tsumego_id' => $sgf['tsumego_id'],
-			'user_id' => $user['id']]]) > 0)
+			'user_id' => $user['id']]]);
+		if ($ownVersionCount > 0)
 			return true;
 		$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => [
 			'tsumego_id' => $sgf['tsumego_id'],

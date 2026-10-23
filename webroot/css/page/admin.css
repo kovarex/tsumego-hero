@@ -26,4 +26,11 @@
 	max-width: 20em;
 	font-size: 13px;
 }
+.rejected-proposals { /* RejectedSGFProposalsRenderer, folded under the waiting proposals */
+	margin-top: 8px;
+}
+.rejected-proposals > summary {
+	cursor: pointer;
+	font-weight: bold;
+}
 }

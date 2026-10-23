@@ -24,7 +24,7 @@ class SgfCommentReorientationTest extends CakeTestCase
 	{
 		$Sgf = ClassRegistry::init('Sgf');
 		$Sgf->create();
-		$Sgf->save($sgf + ['tsumego_id' => $context->tsumegos[0]['id'], 'accepted' => true]);
+		$Sgf->save($sgf + ['tsumego_id' => $context->tsumegos[0]['id'], 'sgf_status_id' => Sgf::STATUS_ACCEPTED]);
 		return (int) $Sgf->id;
 	}
 
@@ -108,7 +108,7 @@ class SgfCommentReorientationTest extends CakeTestCase
 		$context = $this->prepare();
 		SgfCommentReorientation::afterAccepted($this->saveVersion($context, [
 			'sgf' => self::MIRRORED_SGF,
-			'accepted' => false,
+			'sgf_status_id' => Sgf::STATUS_PROPOSED,
 			'source_sgf_id' => $context->tsumegos[0]['sgfs'][0]['id'],
 			'transformation_from_source' => new BoardTransformation(flipX: true)->toJson()]));
 

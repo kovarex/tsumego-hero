@@ -1,6 +1,7 @@
 <?php
 
 use App\Utility\AdminActivityRenderer;
+use App\Utility\RejectedSGFProposalsRenderer;
 use App\Utility\SGFProposalsRenderer;
 use App\Utility\TagConnectionProposalsRenderer;
 use App\Utility\TagProposalsRenderer;
@@ -10,6 +11,7 @@ use App\Utility\Util;
  * @var View $this
  * @var AdminActivityRenderer $adminActivityRenderer
  * @var array $deletedUsers
+ * @var RejectedSGFProposalsRenderer $rejectedSgfProposalsRenderer
  * @var SGFProposalsRenderer $sgfProposalsRenderer
  * @var TagConnectionProposalsRenderer $tagConnectionProposalsRenderer
  * @var TagProposalsRenderer $tagProposalsRenderer
@@ -19,6 +21,7 @@ use App\Utility\Util;
 	echo '<div style="text-align:left;flex:3 1 0;min-width:min-content">';
 
 		$sgfProposalsRenderer->render();
+		$rejectedSgfProposalsRenderer->render();
 		echo '<hr>';
 		$tagProposalsRenderer->render();
 		echo '<hr>';

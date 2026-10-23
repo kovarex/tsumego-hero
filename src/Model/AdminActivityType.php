@@ -47,6 +47,7 @@ class AdminActivityType extends AppModel
 	// Proposals
 	public const ACCEPT_PROPOSAL = 29;
 	public const REJECT_PROPOSAL = 30;
+	public const REOPEN_PROPOSAL = 35; // a rejected SGF proposal waits for a decision again
 
 	// Tsumego merge
 	public const TSUMEGO_MERGE = 25;

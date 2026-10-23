@@ -65,8 +65,8 @@ class SgfControllerFetchTest extends TestCaseWithAuth
 		$context = new ContextPreparator([
 			'user' => ['name' => 'proposer'],
 			'tsumego' => ['set_order' => 1, 'sgfs' => [
-				['data' => '(;FF[4]GM[1]SZ[19]AB[dd])', 'accepted' => true],
-				['data' => '(;FF[4]GM[1]SZ[19]AB[dd]AB[ee])', 'accepted' => true]]],
+				['data' => '(;FF[4]GM[1]SZ[19]AB[dd])', 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
+				['data' => '(;FF[4]GM[1]SZ[19]AB[dd]AB[ee])', 'sgf_status_id' => Sgf::STATUS_ACCEPTED]]],
 		]);
 		[$previous, $proposal] = $context->tsumegos[0]['sgfs'];
 		Util::execute('UPDATE sgf SET user_id = NULL WHERE id = ?', [$previous['id']]);

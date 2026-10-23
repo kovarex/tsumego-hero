@@ -291,7 +291,7 @@ class ContextPreparator
 		$sgf['tsumego_id'] = $tsumego['id'];
 		$sgf['sgf'] = Util::extract('data', $tsumegoSgf);
 		$this->validateFixtureSgf($sgf['sgf'], $tsumego['id']);
-		$sgf['accepted'] = Util::extractWithDefault('accepted', $tsumegoSgf, true);
+		$sgf['sgf_status_id'] = Util::extractWithDefault('sgf_status_id', $tsumegoSgf, Sgf::STATUS_ACCEPTED);
 		$sgf['correct_moves'] = Util::extract('correct_moves', $tsumegoSgf);
 		$sgf['first_move_color'] = Util::extract('first_move_color', $tsumegoSgf);
 		$sgf['user_id'] = Auth::getUserID();
@@ -863,6 +863,7 @@ class ContextPreparator
 			AdminActivityType::ADD_TAG => 'Add Tag',
 			AdminActivityType::ACCEPT_PROPOSAL => 'Accept Proposal',
 			AdminActivityType::REJECT_PROPOSAL => 'Reject Proposal',
+			AdminActivityType::REOPEN_PROPOSAL => 'Reopen Proposal',
 			AdminActivityType::TSUMEGO_MERGE => 'Tsumego Merge',
 			AdminActivityType::DELETE_USER => 'Delete User',
 			AdminActivityType::RESTORE_USER => 'Restore User',

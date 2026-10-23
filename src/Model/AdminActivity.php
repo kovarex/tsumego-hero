@@ -29,6 +29,7 @@ class AdminActivity extends AppModel
 			case AdminActivityType::RESTORE_USER: return 'Restored user ' . h($adminActivity['new_value']);
 			case AdminActivityType::ACCEPT_PROPOSAL: return 'Accepted proposal by ' . h($adminActivity['new_value']);
 			case AdminActivityType::REJECT_PROPOSAL: return 'Rejected proposal by ' . h($adminActivity['new_value']);
+			case AdminActivityType::REOPEN_PROPOSAL: return 'Reopened rejected proposal by ' . h($adminActivity['new_value']);
 			case AdminActivityType::TSUMEGO_MERGE:
 				{
 					$decoded = json_decode($adminActivity['old_value'], true);

@@ -60,6 +60,14 @@ class AdminPolicy extends BasePolicy
 	/**
 	 * @param UserRow|null $user
 	 */
+	public static function canReopenSGFProposal(?array $user): bool
+	{
+		return static::isAdmin($user);
+	}
+
+	/**
+	 * @param UserRow|null $user
+	 */
 	public static function canAcceptTagConnectionProposal(?array $user): bool
 	{
 		return static::isAdmin($user);

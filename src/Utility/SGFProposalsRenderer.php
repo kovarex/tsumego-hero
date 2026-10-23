@@ -3,13 +3,14 @@
 namespace App\Utility;
 
 use SetConnection;
+use Sgf;
 use User;
 
 class SGFProposalsRenderer extends DataTableRenderer
 {
 	public function __construct(array $urlParams)
 	{
-		$this->count = Util::query("SELECT COUNT(*) AS total FROM sgf p WHERE p.accepted = false AND EXISTS (SELECT 1 FROM set_connection sc WHERE sc.tsumego_id = p.tsumego_id)")[0]['total'];
+		$this->count = Util::query("SELECT COUNT(*) AS total FROM sgf p WHERE p.sgf_status_id = " . Sgf::STATUS_PROPOSED . " AND EXISTS (SELECT 1 FROM set_connection sc WHERE sc.tsumego_id = p.tsumego_id)")[0]['total'];
 		parent::__construct($urlParams, 'sgf_proposals_page', 'SGF Proposals');
 		$this->data = Util::query("
 SELECT
@@ -34,7 +35,7 @@ FROM sgf p
 JOIN (
     SELECT tsumego_id, MAX(id) AS latest_accepted_id
     FROM sgf
-    WHERE accepted = TRUE
+    WHERE sgf_status_id = " . Sgf::STATUS_ACCEPTED . "
     GROUP BY tsumego_id
 ) a ON a.tsumego_id = p.tsumego_id
 JOIN set_connection sc ON sc.tsumego_id = p.tsumego_id
@@ -50,7 +51,7 @@ JOIN `set` s ON s.id = sc.set_id
 JOIN user ON p.user_id=user.id
 LEFT JOIN sgf ON sgf.id = a.latest_accepted_id
 LEFT JOIN tsumego_status ON tsumego_status.user_id = ? AND tsumego_status.tsumego_id = p.tsumego_id
-WHERE p.accepted = FALSE
+WHERE p.sgf_status_id = " . Sgf::STATUS_PROPOSED . "
 LIMIT " . self::$PAGE_SIZE . "
 OFFSET " . $this->offset, [Auth::getUserID()]);
 	}
