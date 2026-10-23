@@ -373,9 +373,17 @@ class UpdateNameTest extends ControllerTestCase
 		]);
 
 		Util::execute(
+			"INSERT INTO phpbb_users (user_id, username, username_clean, user_permissions, user_sig, external_id)"
+			. " VALUES (?, ?, ?, '', '', ?)",
+			[700002, 'Old Poster', 'old poster', $context->user['id']]
+		);
+
+		// A topic stores its poster by phpBB user id, and the forum account is the one
+		// linked to this site account by external_id.
+		Util::execute(
 			"INSERT INTO phpbb_topics (topic_id, topic_poster, topic_first_poster_name, topic_last_poster_id,"
 			. " topic_last_poster_name) VALUES (?, ?, ?, ?, ?)",
-			[700002, $context->user['id'], 'Old Poster', $context->user['id'], 'Old Poster']
+			[700002, 700002, 'Old Poster', 700002, 'Old Poster']
 		);
 
 		$this->testAction('/users/updatename', [
