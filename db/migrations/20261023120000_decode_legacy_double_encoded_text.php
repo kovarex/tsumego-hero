@@ -103,9 +103,6 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 
 	private const PLANNED_TABLE = 'planned_display_names';
 
-	/** The display name each account had before this migration rewrote it, keyed by id. */
-	private array $oldDisplayNames = [];
-
 	public function up(): void
 	{
 		$previousCharset = (string) $this->fetchRow('SELECT @@character_set_connection AS charset')['charset'];
@@ -305,10 +302,6 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 	 * looks players up by) and the poster names phpBB caches in topics, forums and guest
 	 * posts.
 	 *
-	 * The cached names are found by the name the forum still holds: the ids beside them
-	 * are phpBB ids, which are not the ids of this site, and an account without a forum
-	 * login has none of them.
-	 *
 	 * @param array<int, array{name: string, needsChange: bool}> $changes
 	 */
 	private function syncForumNames(array $changes): void
@@ -318,7 +311,7 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 
 		$connection = $this->connection();
 		foreach ($changes as $id => $change)
-			PhpbbNames::sync($connection, (int) $id, $change['name'], $this->oldDisplayNames[(int) $id] ?? null);
+			PhpbbNames::sync($connection, (int) $id, $change['name']);
 
 		$this->write('phpbb: synced ' . count($changes) . ' names');
 	}
@@ -711,7 +704,6 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 		foreach ($connection->query('SELECT id, display_name, name FROM user WHERE display_name IS NOT NULL') as $row)
 		{
 			$loginName = $row['name'] === null ? null : (string) $row['name'];
-			$this->oldDisplayNames[(int) $row['id']] = (string) $row['display_name'];
 			$insert->execute([(int) $row['id'], self::restoredDisplayName((string) $row['display_name'], $loginName)]);
 		}
 	}
