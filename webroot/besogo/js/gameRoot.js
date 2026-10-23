@@ -705,6 +705,45 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
     return result;
   }
 
+  // The nodes the line can go on to: any move of the solver, but only the replies the autoplay may pick
+  root.nodesToPlayOnTo = function()
+  {
+    let result = [];
+    if (this.nextMove() == this.getRoot().firstMove)
+    {
+      for (let i = 0; i < this.children.length; ++i)
+        if (!this.children[i].localEdit)
+          result.push(this.children[i]);
+      for (let i = 0; i < this.virtualChildren.length; ++i)
+        if (!this.virtualChildren[i].localEdit)
+          result.push(this.virtualChildren[i].target);
+      return result;
+    }
+
+    for (let i = 0; i < this.children.length; ++i)
+      if (this.isNonLocalChildWithNoBetterStatus(this.children[i]))
+        result.push(this.children[i]);
+    if (result.length != 0) // the autoplay ignores the virtual child variations when there are natural ones
+      return result;
+    for (let i = 0; i < this.virtualChildren.length; ++i)
+      if (this.isNonLocalChildWithNoBetterStatus(this.virtualChildren[i].target))
+        result.push(this.virtualChildren[i].target);
+    return result;
+  }
+
+  // Whether the line can still end on a correct node from here, so a false means the problem is already failed
+  root.canStillEndCorrect = function(visited = new Set())
+  {
+    if (this.localEdit)
+      return false;
+    if (this.correct == CORRECT_GOOD)
+      return true;
+    if (visited.has(this))
+      return false;
+    visited.add(this);
+    return this.nodesToPlayOnTo().some(node => node.canStillEndCorrect(visited));
+  }
+
   root.selectNonLocalChildIncludingVirtualWithNoBetterStatus = function(indexToSelect)
   {
     let currentIndex = 0;
