@@ -30,6 +30,7 @@
 	background: var(--surface-bar);
 	cursor: pointer;
 	border-radius: 4px;
+	font-family: var(--font-family-display);
 	font-size: 13px;
 }
 .tsumego-comments__tab.active {
