@@ -1,8 +1,0 @@
-# The board editor loads these files without a version in their URL, so without this a browser keeps
-# using an old copy for days after a deploy (a new script with the old styles). no-cache makes it ask
-# every time, and the unchanged files come back as a short 304.
-<IfModule mod_headers.c>
-	<FilesMatch "\.(?i:js|css|html)$">
-		Header set Cache-Control "no-cache"
-	</FilesMatch>
-</IfModule>
