@@ -658,6 +658,8 @@ use App\Utility\ViteManifest;
 	var playGreenColor = '<?php echo $playGreenColor; ?>';
 	var tStatus = "<?php echo $t['Tsumego']['status']; ?>";
 	var failAlreadyReported = false;
+	// The fail sent when the line was lost, which the player isn't shown until the line is over
+	var unrevealedFail = null;
 	window._submitResultPromise = null;
 
 	var userXP = <?php echo Auth::getWithDefault('xp', 0); ?>;
@@ -1593,13 +1595,29 @@ use App\Utility\ViteManifest;
 		timedOut: '<?php echo PlayOutcome::TimedOut->value; ?>',
 	};
 
+	function isSolved(outcome)
+	{
+		return outcome === playOutcome.solvedClean || outcome === playOutcome.solvedAfterMistake;
+	}
+
+	// xpStatus is not rendered in mistake training, the widget has nothing to animate there
+	function accountWidgetShowsResults()
+	{
+		return typeof accountWidget !== 'undefined' && accountWidget && typeof xpStatus !== 'undefined';
+	}
+
 	function submitResult(outcome)
 	{
+		showResultResponse(outcome, sendResult(outcome));
+	}
+
+	// Null for a guest, whose results aren't recorded
+	function sendResult(outcome)
+	{
 		if (besogoNoLogin)
-			return;
-		// xpStatus is not rendered in mistake training, the widget has nothing to animate there
-		if (typeof accountWidget !== 'undefined' && accountWidget && typeof xpStatus !== 'undefined')
-			accountWidget.animate(outcome === playOutcome.solvedClean || outcome === playOutcome.solvedAfterMistake);
+			return null;
+		if (accountWidgetShowsResults())
+			accountWidget.rememberResult(isSolved(outcome));
 		let data = {
 			tsumego_id: tsumegoID,
 			// the part of the set the problem is played from decides the XP reduction of its resets
@@ -1610,12 +1628,25 @@ use App\Utility\ViteManifest;
 			mode: mode,
 		};
 
-		window._submitResultPromise = fetch('/tsumegos/result', {
+		let response = fetch('/tsumegos/result', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
 			body: JSON.stringify(data),
+			// the request outlives the page, so leaving right after a lost line still counts it
 			keepalive: true,
-		}).then(response => response.json()).then(result => {
+		}).then(response => response.json());
+		window._submitResultPromise = response.catch(err => console.error('submitResult failed:', err));
+		return response;
+	}
+
+	// Shows the player what the result changed: the account bar, the XP, a potion and achievements
+	function showResultResponse(outcome, response)
+	{
+		if (!response)
+			return;
+		if (accountWidgetShowsResults())
+			accountWidget.animate(isSolved(outcome));
+		window._submitResultPromise = response.then(result => {
 			if (typeof accountWidget !== 'undefined' && accountWidget)
 			{
 				accountWidget.rating = result.new_rating;
@@ -1643,6 +1674,27 @@ use App\Utility\ViteManifest;
 		}).catch(err => {
 			console.error('submitResult failed:', err);
 		});
+	}
+
+	// Called by the board the moment the line can no longer end correct. The fail is sent
+	// right away, so leaving or refreshing before the line is played out doesn't escape it,
+	// but the player is shown nothing (hearts, account bar) until the line is over, as
+	// that would give the refutation away.
+	function lineLost()
+	{
+		if (failAlreadyReported || problemSolved)
+			return;
+		failAlreadyReported = true;
+		hadMisplay = true;
+		unrevealedFail = { response: sendResult(playOutcome.failed) };
+	}
+
+	// Shows the fail sent when the line was lost, once the line is over
+	function revealFail()
+	{
+		currentHealth--;
+		showResultResponse(playOutcome.failed, unrevealedFail.response);
+		unrevealedFail = null;
 	}
 
 	function displayResult(result)
@@ -1695,7 +1747,9 @@ use App\Utility\ViteManifest;
 		}
 		else //incorrect
 		{
-			if (!failAlreadyReported && !problemSolved)
+			if (unrevealedFail)
+				revealFail();
+			else if (!failAlreadyReported && !problemSolved)
 			{
 				failAlreadyReported = true;
 				hadMisplay = true;
@@ -1814,6 +1868,12 @@ use App\Utility\ViteManifest;
 			redrawHearts();
 			submitResult(playOutcome.failed);
 		}
+		else if (unrevealedFail)
+		{
+			// the line is given up before it was played out
+			revealFail();
+			redrawHearts();
+		}
 		failAlreadyReported = false;
 	}
 	</script>
@@ -1919,6 +1979,7 @@ use App\Utility\ViteManifest;
 	besogo.editor.setAutoPlay(true);
 	besogo.editor.registerAddTimeForMovePlayed(addTimeForMovePlayed);
 	besogo.editor.registerDisplayResult(displayResult);
+	besogo.editor.registerLineLost(lineLost);
 	besogo.editor.addListener(function (changes)
 	{
 		// the clock starts with the first move the player really plays
