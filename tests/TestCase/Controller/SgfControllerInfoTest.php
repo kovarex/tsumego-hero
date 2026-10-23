@@ -15,7 +15,10 @@ class SgfControllerInfoTest extends TestCaseWithAuth
 
 		$this->testAction('/sgf/info/' . $sgfID, ['method' => 'get']);
 
-		$this->assertSame(['description' => "Added D16\nbecause", 'author' => 'DN_proposer'], json_decode($this->controller->response->body(), true));
+		$info = json_decode($this->controller->response->body(), true);
+		$this->assertSame("Added D16\nbecause", $info['description']);
+		$this->assertSame(User::renderLink(ClassRegistry::init('User')->findById($context->otherUsers[0]['id'])['User']), $info['authorLink']);
+		$this->assertStringContainsString('href="/users/view/' . $context->otherUsers[0]['id'] . '"', $info['authorLink']);
 	}
 
 	public function testInfoIsForbiddenForAUserWhoMayNotFetchTheVersion()

@@ -12,7 +12,7 @@ besogo.makeDiffPanel = function(container, editor)
       UNFOLDED_PANELS_HEIGHT = 500, // in one column with lower panels, the list starts folded to leave room for the tree
       panels = container.parentElement,
       foldedByUser = null, // whether the user folded the list, null until they click the summary
-      versionInfo = null, // {description, author} of the shown version, see requestVersionInfo
+      versionInfo = null, // {description, authorLink} of the shown version, see requestVersionInfo
       versionInfoRequested = false,
       entries = []; // {node, element}
 
@@ -133,7 +133,11 @@ besogo.makeDiffPanel = function(container, editor)
     let element = document.createElement('div');
     element.className = 'besogo-diff-description';
     element.id = 'diffDescription';
-    element.appendChild(textElement('span', (info.author ? info.author : 'The author') + ' wrote: ', 'besogo-diff-property'));
+    let author = document.createElement('span');
+    author.className = 'besogo-diff-author';
+    author.innerHTML = info.authorLink; // rendered and escaped by the server (User::renderLink)
+    element.appendChild(author);
+    element.appendChild(textElement('span', ' wrote: ', 'besogo-diff-property'));
     element.appendChild(document.createTextNode(info.description));
     return element;
   }

@@ -183,6 +183,22 @@
     white-space: pre-wrap;
     padding: 3px 5px 6px;
 }
+.besogo-diff-author a { /* User::renderLink, the editor has none of the site's styles */
+    font-weight: bold;
+    color: inherit;
+    white-space: nowrap;
+}
+.besogo-diff-author .user-avatar {
+    width: 1.4em;
+    height: 1.4em;
+    border-radius: 50%;
+    object-fit: cover;
+    vertical-align: middle;
+    margin-right: 3px;
+}
+.besogo-diff-author .user-avatar--board {
+    border-radius: 0;
+}
 .besogo-diff--folded .besogo-diff-list,
 .besogo-diff--folded .besogo-diff-description {
     display: none;

@@ -20,7 +20,8 @@ class SgfController extends AppController
 	}
 
 	/**
-	 * What the author wrote about the version and who it is, for the diff of the version in the editor.
+	 * What the author wrote about the version and the author as the site shows a player (avatar,
+	 * link to the profile, rank), for the diff of the version in the editor.
 	 * Allowed to whoever may fetch the version.
 	 */
 	public function info(int $sgfID)
@@ -36,7 +37,7 @@ class SgfController extends AppController
 		$this->response->type('json');
 		$this->response->body(json_encode([
 			'description' => $sgf['Sgf']['description'],
-			'author' => $author ? User::displayName($author['User']) : null]));
+			'authorLink' => User::renderLink($author ? $author['User'] : null)]));
 		return $this->response;
 	}
 

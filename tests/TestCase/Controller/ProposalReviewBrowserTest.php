@@ -22,7 +22,7 @@ class ProposalReviewBrowserTest extends TestCaseWithAuth
 			'tsumego' => ['set_order' => 1, 'status' => 'S', 'sgfs' => [
 				['data' => self::SGF_VERSION_1, 'accepted' => true],
 				['data' => self::SGF_VERSION_2, 'accepted' => false]]]]);
-		App\Utility\Util::execute('UPDATE sgf SET description = ? WHERE id = ?', ['Made it status based', $context->tsumegos[0]['sgfs'][1]['id']]);
+		App\Utility\Util::execute('UPDATE sgf SET user_id = ?, description = ? WHERE id = ?', [$context->user['id'], 'Made it status based', $context->tsumegos[0]['sgfs'][1]['id']]);
 		$browser = Browser::instance();
 		$browser->get('/editor/?sgfID=' . $context->tsumegos[0]['sgfs'][1]['id'] . '&diffID=' . $context->tsumegos[0]['sgfs'][0]['id']);
 
@@ -31,6 +31,8 @@ class ProposalReviewBrowserTest extends TestCaseWithAuth
 		// what the author wrote about the version is above the changes
 		$browser->waitUntilJs('document.getElementById("diffDescription") !== null');
 		$this->assertStringEndsWith('wrote: Made it status based', $browser->find('#diffDescription')->getText());
+		$this->assertStringEndsWith('/users/view/' . $context->user['id'], $browser->find('#diffDescription .besogo-diff-author a')->getAttribute('href'));
+		$this->assertNotEmpty($browser->getElements('#diffDescription .user-avatar'));
 		$entries = $browser->getElements('.besogo-diff-entry');
 		$texts = array_map(fn($entry) => $entry->getText(), $entries);
 		$all = implode("\n", $texts);
