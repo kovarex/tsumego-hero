@@ -26,7 +26,7 @@ class ProposalReviewBrowserTest extends TestCaseWithAuth
 		$browser->get('/editor/?sgfID=' . $context->tsumegos[0]['sgfs'][1]['id'] . '&diffID=' . $context->tsumegos[0]['sgfs'][0]['id']);
 
 		$browser->waitUntilJs('document.getElementById("diffSummary") !== null');
-		$this->assertStringContainsString('0 moves added', $browser->find('#diffSummary')->getText());
+		$this->assertStringContainsString('0 added', $browser->find('#diffSummary')->getText());
 		$entries = $browser->getElements('.besogo-diff-entry');
 		$texts = array_map(fn($entry) => $entry->getText(), $entries);
 		$all = implode("\n", $texts);
@@ -57,12 +57,12 @@ class ProposalReviewBrowserTest extends TestCaseWithAuth
 		$browser->get('/editor/?sgfID=' . $context->tsumegos[0]['sgfs'][1]['id'] . '&diffID=' . $context->tsumegos[0]['sgfs'][0]['id']);
 
 		$browser->waitUntilJs('document.getElementById("diffSummary") !== null');
-		$this->assertStringContainsString('1 position changed', $browser->find('#diffSummary')->getText());
+		$this->assertStringContainsString('1 changed', $browser->find('#diffSummary')->getText());
 		$this->assertStringContainsString('Order of the branches: A19, B19 → B19, A19', $browser->find('.besogo-diff-entry')->getText());
 		$browser->assertNoJsErrors();
 	}
 
-	/** Beside the board, wide panels put the changes in a column of their own, low panels below the board start with the list folded. */
+	/** Wide panels put the changes in a column of their own (sooner below the board), low narrow ones start with the list folded. */
 	public function testChangesListFitsTheRoom(): void
 	{
 		$context = new ContextPreparator([
@@ -86,7 +86,11 @@ class ProposalReviewBrowserTest extends TestCaseWithAuth
 			$browser->waitUntilJs('!document.querySelector(".besogo-panels").classList.contains("besogo-panels--diff-column")');
 			$this->assertSame([false, false], $browser->driver->executeScript($layout));
 
+			// below the board there is room for two columns sooner
 			$window->setSize(new Facebook\WebDriver\WebDriverDimension(800, 1200));
+			$browser->waitUntilJs('document.querySelector(".besogo-panels").classList.contains("besogo-panels--diff-column")');
+
+			$window->setSize(new Facebook\WebDriver\WebDriverDimension(500, 900));
 			$browser->waitUntilJs('document.querySelector(".besogo-diff").classList.contains("besogo-diff--folded")');
 			$browser->clickId('diffSummary');
 			$this->assertSame([false, false], $browser->driver->executeScript($layout));

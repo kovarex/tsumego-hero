@@ -165,6 +165,14 @@
     padding: 3px;
     cursor: pointer;
 }
+.besogo-diff-count:not(:last-child) {
+    margin-right: 0.9em;
+}
+.besogo-diff-icon {
+    width: 1.1em;
+    height: 1.1em;
+    vertical-align: -0.2em;
+}
 .besogo-diff-summary::before {
     content: "\25BE  "; /* ▾ */
 }

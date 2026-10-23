@@ -7,7 +7,8 @@ besogo.makeDiffPanel = function(container, editor)
       SETUP_NAMES = { AB: 'black', AW: 'white', AE: 'empty' },
       CORRECT_NAMES = { [CORRECT_GOOD]: 'correct', [CORRECT_BAD]: 'wrong', [CORRECT_UNDEFINED]: 'undecided', [CORRECT_EMPTY]: 'none' },
       SHOWN_MOVES = 4, // the last moves that name a position in the list
-      COLUMN_PANELS_WIDTH = 900, // from this width of the panels the changes get a column of their own
+      COLUMN_PANELS_WIDTH = 900, // from this width of the panels the changes get a column of their own,
+      COLUMN_FLAT_PANELS_WIDTH = 600, // and from this one when the panels are wider than tall, below the board
       UNFOLDED_PANELS_HEIGHT = 500, // in one column with lower panels, the list starts folded to leave room for the tree
       panels = container.parentElement,
       foldedByUser = null, // whether the user folded the list, null until they click the summary
@@ -47,10 +48,14 @@ besogo.makeDiffPanel = function(container, editor)
     summary.title = 'Show or hide the list';
     summary.onclick = function() { foldedByUser = container.classList.toggle('besogo-diff--folded'); };
     if (counts.added + counts.removed + counts.changed == 0)
-      summary.textContent = 'No differences from the compared version.';
+      summary.appendChild(document.createTextNode('No differences'));
     else
-      summary.textContent = 'Compared with the previous version: '
-        + [plural(counts.added, 'move') + ' added (+)', plural(counts.removed, 'move') + ' removed (×)', plural(counts.changed, 'position') + ' changed (orange dot)'].join(', ') + '.';
+    {
+      summary.title += '\nAdded and removed count moves, changed counts positions in both versions with another comment, status, markup...';
+      addCount(summary, counts.added, 'added', treeIcon(besogo.svgPlus));
+      addCount(summary, counts.removed, 'removed', treeIcon(besogo.svgCross));
+      addCount(summary, counts.changed, 'changed', changedIcon());
+    }
     container.appendChild(summary);
     container.appendChild(list);
     markCurrent();
@@ -95,8 +100,35 @@ besogo.makeDiffPanel = function(container, editor)
 
   function updateLayout()
   {
-    panels.classList.toggle('besogo-panels--diff-column', editor.getRoot().isDiff && panels.clientWidth >= COLUMN_PANELS_WIDTH);
+    let width = panels.clientWidth;
+    let column = width >= COLUMN_PANELS_WIDTH || (width >= COLUMN_FLAT_PANELS_WIDTH && width > panels.clientHeight);
+    panels.classList.toggle('besogo-panels--diff-column', editor.getRoot().isDiff && column);
     container.classList.toggle('besogo-diff--folded', foldedByUser !== null ? foldedByUser : panels.clientHeight < UNFOLDED_PANELS_HEIGHT);
+  }
+
+  // "3 added" with the icon of the tree
+  function addCount(summary, count, text, icon)
+  {
+    let item = textElement('span', count + ' ' + text + ' ', 'besogo-diff-count');
+    item.appendChild(icon);
+    summary.appendChild(item);
+  }
+
+  // An added or removed move as the tree shows it
+  function treeIcon(makeMark)
+  {
+    let icon = besogo.svgEl('svg', { viewBox: '-50 -50 100 100', 'class': 'besogo-diff-icon' });
+    icon.appendChild(besogo.svgStone(0, 0, BLACK));
+    icon.appendChild(makeMark(0, 0, 'white'));
+    return icon;
+  }
+
+  // The dot of a changed position in the tree
+  function changedIcon()
+  {
+    let icon = besogo.svgEl('svg', { viewBox: '-20 -20 40 40', 'class': 'besogo-diff-icon' });
+    icon.appendChild(besogo.svgEl('circle', { cx: 0, cy: 0, r: 16, 'class': 'besogo-tree-diff-changed' }));
+    return icon;
   }
 
   function markCurrent()
