@@ -52,7 +52,7 @@ class PolicyTest extends CakeTestCase
 	public function testTagPolicyAllowsOnlyAdmins()
 	{
 		$policy = new TagPolicy();
-		foreach (['canEdit', 'canEditAction'] as $method)
+		foreach (['canEdit', 'canEditAction', 'canIndex', 'canProblems'] as $method)
 		{
 			$this->assertTrue($policy->{$method}($this->identity(true)), $method . ' allows admin');
 			$this->assertFalse($policy->{$method}($this->identity(false)), $method . ' blocks regular user');

@@ -860,6 +860,7 @@ class ContextPreparator
 			AdminActivityType::REJECT_TAG => 'Reject Tag',
 			AdminActivityType::SGF_EDIT => 'SGF Edit',
 			AdminActivityType::ADD_TAG => 'Add Tag',
+			AdminActivityType::DELETE_TAG => 'Tag Delete',
 			AdminActivityType::ACCEPT_PROPOSAL => 'Accept Proposal',
 			AdminActivityType::REJECT_PROPOSAL => 'Reject Proposal',
 			AdminActivityType::TSUMEGO_MERGE => 'Tsumego Merge',
