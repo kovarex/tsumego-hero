@@ -339,7 +339,7 @@ use App\Utility\ViteManifest;
 		</div>
 		<br>
 		<?php
-			echo '<a id="openSgfLink" href="/editor/?setConnectionID='.$setConnection['SetConnection']['id'].'&sgfID='.$sgf['Sgf']['id'].'" class="selectable-text mr-5" style="'.$proposalSentColor.'">'.$makeProposal.'</a>';
+			echo '<a id="openSgfLink" href="/editor/?setConnectionID='.$setConnection['SetConnection']['id'].'&sgfID='.$sgf['Sgf']['id'].(Auth::isAdmin() ? '' : '&proposal=1').'" class="selectable-text mr-5" style="'.$proposalSentColor.'">'.$makeProposal.'</a>';
 			echo '<a id="showx3" class="selectable-text mr-5">Download SGF</a>';
 			echo '<a id="findSimilarProblems" class="selectable-text mr-5">Find Similar Problems</a>';
 			echo '<a id="showFilters" class="selectable-text">Filters<img id="greyArrowFilter" src="/img/greyArrow1.png"></a>';
@@ -438,6 +438,7 @@ use App\Utility\ViteManifest;
 						<br>
 						<form action="/sgf/upload/' . $setConnection['SetConnection']['id'] . '" method="POST" enctype="multipart/form-data">
 							<input id="admin-upload-button" type="file" name="adminUpload" />
+							<input id="admin-upload-description" type="text" name="description" maxlength="' . Sgf::DESCRIPTION_MAX_LENGTH . '" placeholder="What changed and why (optional)" />
 							<input id="admin-upload-submit" value="Submit" type="submit"/>
 						</form>
 					</div>

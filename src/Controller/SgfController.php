@@ -48,6 +48,7 @@ class SgfController extends AppController
 		// sent by the board editor, see SgfCommentReorientation
 		$this->set('sourceSgfID', $fileUpload ? null : ($this->request->data['sourceSgfID'] ?? null));
 		$this->set('transformationFromSource', $fileUpload ? null : ($this->request->data['transformationFromSource'] ?? null));
+		$this->set('description', (string) ($this->request->data['description'] ?? ''));
 		$this->render('/Tsumegos/setup_new_sgf');
 	}
 

@@ -58,6 +58,7 @@ const LEGACY_BESOGO_FILES = [
 	'webroot/besogo/js/commentPanel.js',
 	'webroot/besogo/js/treePanel.js',
 	'webroot/besogo/js/diffInfo.js',
+	'webroot/besogo/js/diffPanel.js',
 	'webroot/besogo/js/scaleParameters.js',
 ];
 

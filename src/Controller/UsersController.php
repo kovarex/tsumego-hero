@@ -11,6 +11,7 @@ use App\Utility\GoogleTokenVerifier;
 use App\Utility\GoogleTokenVerifierInterface;
 use App\Utility\JwtAuth;
 use App\Utility\MistakeTraining;
+use App\Utility\ProposalFeedback;
 use App\Utility\PwnedPasswordChecker;
 use App\Utility\PwnedPasswordCheckerInterface;
 use App\Utility\SGFProposalsRenderer;
@@ -1677,6 +1678,15 @@ OFFSET " . $offset, [$userID, $userID]);
 		$userToApprove = $this->User->findById($proposalToApprove['user_id']);
 		AdminActivityLogger::log(AdminActivityType::ACCEPT_PROPOSAL, $proposalToApprove['tsumego_id'], null, null, $userToApprove['User']['display_name']);
 
+		$tsumegoID = (int) $proposalToApprove['tsumego_id'];
+		ProposalFeedback::send(
+			(int) $proposalToApprove['user_id'],
+			'Your proposal for ' . ProposalFeedback::problemName($tsumegoID) . ' was accepted by ' . ProposalFeedback::adminName() . ', it is the current version of the problem now.',
+			$tsumegoID,
+			$proposalToApprove['description'],
+			ProposalFeedback::commentFromRequest($this->request->data['comment'] ?? null),
+			$this->_getEmailer());
+
 		return $this->redirect('/users/adminstats');
 	}
 
@@ -1698,7 +1708,13 @@ OFFSET " . $offset, [$userID, $userID]);
 		{
 			CookieFlash::set('Sgf proposal was already accepted.', 'fail');
 			return $this->redirect('/users/adminstats');
-			;
+		}
+
+		$comment = ProposalFeedback::commentFromRequest($this->request->data['comment'] ?? null);
+		if ($comment === '')
+		{
+			CookieFlash::set('Write the proposer why the proposal is rejected.', 'fail');
+			return $this->redirect('/users/adminstats');
 		}
 
 		$reject = [];
@@ -1712,6 +1728,15 @@ OFFSET " . $offset, [$userID, $userID]);
 
 		$userToReject = $this->User->findById($proposalToReject['user_id']);
 		AdminActivityLogger::log(AdminActivityType::REJECT_PROPOSAL, $proposalToReject['tsumego_id'], null, null, $userToReject['User']['display_name']);
+
+		$tsumegoID = (int) $proposalToReject['tsumego_id'];
+		ProposalFeedback::send(
+			(int) $proposalToReject['user_id'],
+			'Your proposal for ' . ProposalFeedback::problemName($tsumegoID) . ' was rejected by ' . ProposalFeedback::adminName() . '.',
+			$tsumegoID,
+			$proposalToReject['description'],
+			$comment,
+			$this->_getEmailer());
 
 		return $this->redirect('/users/adminstats');
 	}
@@ -1741,6 +1766,20 @@ OFFSET " . $offset, [$userID, $userID]);
 		ClassRegistry::init('TagConnection')->save($proposalToApprove);
 		AppController::handleContribution(Auth::getUserID(), 'reviewed');
 		AppController::handleContribution($proposalToApprove['user_id'], 'added_tag');
+
+		// tags are accepted by the dozen, so the proposer only hears about it when the admin had something to say
+		$comment = ProposalFeedback::commentFromRequest($this->request->data['comment'] ?? null);
+		if ($comment !== '')
+		{
+			$tsumegoID = (int) $proposalToApprove['tsumego_id'];
+			ProposalFeedback::send(
+				(int) $proposalToApprove['user_id'],
+				'Your tag ' . $tag['name'] . ' on ' . ProposalFeedback::problemName($tsumegoID) . ' was accepted by ' . ProposalFeedback::adminName() . '.',
+				$tsumegoID,
+				null,
+				$comment,
+				$this->_getEmailer());
+		}
 		return $this->redirect('/users/adminstats');
 	}
 
@@ -1764,6 +1803,13 @@ OFFSET " . $offset, [$userID, $userID]);
 			return $this->redirect('/users/adminstats');
 		}
 
+		$comment = ProposalFeedback::commentFromRequest($this->request->data['comment'] ?? null);
+		if ($comment === '')
+		{
+			CookieFlash::set('Write the proposer why the tag is rejected.', 'fail');
+			return $this->redirect('/users/adminstats');
+		}
+
 		$reject = [];
 		$reject['user_id'] = $proposalToReject['user_id'];
 		$reject['tsumego_id'] = $proposalToReject['tsumego_id'];
@@ -1775,6 +1821,15 @@ OFFSET " . $offset, [$userID, $userID]);
 		ClassRegistry::init('Reject')->create();
 		ClassRegistry::init('Reject')->save($reject);
 		ClassRegistry::init('TagConnection')->delete($proposalToReject['id']);
+
+		$tsumegoID = (int) $proposalToReject['tsumego_id'];
+		ProposalFeedback::send(
+			(int) $proposalToReject['user_id'],
+			'Your tag ' . $tag['name'] . ' on ' . ProposalFeedback::problemName($tsumegoID) . ' was rejected by ' . ProposalFeedback::adminName() . '.',
+			$tsumegoID,
+			null,
+			$comment,
+			$this->_getEmailer());
 
 		CookieFlash::set('Tag proposal rejected', 'success');
 		return $this->redirect('/users/adminstats');

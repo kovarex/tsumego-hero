@@ -2,6 +2,9 @@
 
 class Sgf extends AppModel
 {
+	/** Longest description of a saved version (what was changed and why), in characters. */
+	public const DESCRIPTION_MAX_LENGTH = 1000;
+
 	public $validate = [
 		'tsumego_id' => [
 			'required' => [
@@ -25,6 +28,25 @@ class Sgf extends AppModel
 	{
 		$id['table'] =  'sgf';
 		parent::__construct($id, $table, $ds);
+	}
+
+	/**
+	 * The description sent with a saved version: blank space dropped, null when there is none.
+	 *
+	 * @throws BadRequestException When it is missing for a proposal or too long
+	 */
+	public static function descriptionFromRequest(mixed $description, bool $required): ?string
+	{
+		$description = trim(str_replace(["\r\n", "\r"], "\n", is_string($description) ? $description : ''));
+		if ($description === '')
+		{
+			if ($required)
+				throw new BadRequestException('Describe what you changed and why.');
+			return null;
+		}
+		if (mb_strlen($description) > self::DESCRIPTION_MAX_LENGTH)
+			throw new BadRequestException('The description is too long, at most ' . self::DESCRIPTION_MAX_LENGTH . ' characters fit.');
+		return $description;
 	}
 
 	/**

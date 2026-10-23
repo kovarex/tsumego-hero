@@ -403,6 +403,8 @@ class TsumegosController extends AppController
 		$sgf['accepted'] = Auth::isAdmin() ? true : false;
 		$sgf['first_move_color'] = $firstMoveColor;
 		$sgf['correct_moves'] = $correctMoves;
+		// the admin reviewing a proposal needs to know what it is about, an admin's own edit may go without
+		$sgf['description'] = Sgf::descriptionFromRequest($this->request->data['description'] ?? null, !Auth::isAdmin());
 		// what the board editor did to the SGF it was opened with, so the comments can follow
 		$source = ClassRegistry::init('Sgf')->findById((int) ($this->request->data['sourceSgfID'] ?? 0));
 		if ($source && $source['Sgf']['tsumego_id'] == $tsumego['id'])

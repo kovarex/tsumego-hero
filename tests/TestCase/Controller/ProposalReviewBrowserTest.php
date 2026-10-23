@@ -1,0 +1,99 @@
+<?php
+
+use App\Utility\Constants;
+
+/**
+ * What the reviewer of a proposal sees: what the proposer wrote about it, a diff that shows more than
+ * the added and removed moves, and Accept / Reject with a comment for the proposer.
+ *
+ * @retryAttempts 2
+ * @retryIfException Facebook\WebDriver\Exception\WebDriverException
+ */
+class ProposalReviewBrowserTest extends TestCaseWithAuth
+{
+	private const SGF_VERSION_1 = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc]C[Old start];B[aa];W[ab];B[ba]C[+])';
+	/** The same moves, but the correct ends are controlled by status now, and the start comment changed. */
+	private const SGF_VERSION_2 = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc]C[New start]G[KILL];B[aa];W[ab];B[ba]S[DEAD])';
+
+	public function testDiffShowsChangesOtherThanMoves(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => ['set_order' => 1, 'status' => 'S', 'sgfs' => [
+				['data' => self::SGF_VERSION_1, 'accepted' => true],
+				['data' => self::SGF_VERSION_2, 'accepted' => false]]]]);
+		$browser = Browser::instance();
+		$browser->get('/editor/?sgfID=' . $context->tsumegos[0]['sgfs'][1]['id'] . '&diffID=' . $context->tsumegos[0]['sgfs'][0]['id']);
+
+		$browser->waitUntilJs('document.getElementById("diffSummary") !== null');
+		$this->assertStringContainsString('0 moves added', $browser->find('#diffSummary')->getText());
+		$entries = $browser->getElements('.besogo-diff-entry');
+		$texts = array_map(fn($entry) => $entry->getText(), $entries);
+		$all = implode("\n", $texts);
+		$this->assertStringContainsString('Correct controlled by status: no (correct ends are marked) → yes, goal: kill', $all);
+		$this->assertStringContainsString('Comment: Old start → New start', $all);
+		$this->assertStringContainsString('Status: (none) → DEAD', $all);
+		$this->assertStringStartsWith('Start position', $texts[0]);
+
+		// an entry takes the editor to its position
+		$statusEntry = null;
+		foreach ($entries as $entry)
+			if (str_contains($entry->getText(), 'Status:'))
+				$statusEntry = $entry;
+		$this->assertStringStartsWith('1. B A19, 2. W A18, 3. B B19', $statusEntry->getText());
+		$statusEntry->click();
+		$this->assertSame(3, $browser->driver->executeScript('return besogo.editor.getCurrent().moveNumber;'));
+		$browser->assertNoJsErrors();
+	}
+
+	public function testProposalCantBeSavedWithoutADescription(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => false, 'rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
+			'tsumego' => ['sgf' => self::SGF_VERSION_1, 'status' => 'S', 'set_order' => 1]]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->setConnections[0]['id']);
+		$browser->clickId('openSgfLink');
+		$browser->waitUntilJs('typeof besogo !== "undefined" && besogo.editor !== null');
+
+		$browser->saveFromEditor();
+		$browser->waitUntilCssSelectorExistsWithText('.besogo-save-dialog__problem', 'Please describe the change, the reviewer will see it.');
+		$this->assertStringContainsString('/editor/', $browser->driver->getCurrentURL());
+		$this->assertCount(1, ClassRegistry::init('Sgf')->find('all', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]]));
+
+		$browser->findById('sgfDescriptionField')->sendKeys('Nothing really');
+		$browser->clickId('sgfDescriptionSave');
+		$browser->waitUntilJs('!location.href.includes("/editor/")');
+		$proposal = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']], 'order' => 'id DESC'])['Sgf'];
+		$this->assertEquals(0, $proposal['accepted']);
+		$this->assertSame('Nothing really', $proposal['description']);
+	}
+
+	public function testReviewerSeesTheDescriptionAndCantRejectWithoutAComment(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'other-users' => [['name' => 'proposer']],
+			'tsumego' => ['set_order' => 1, 'status' => 'S', 'sgfs' => [
+				['data' => self::SGF_VERSION_1, 'accepted' => true],
+				['data' => self::SGF_VERSION_2, 'accepted' => false]]]]);
+		$proposalID = $context->tsumegos[0]['sgfs'][1]['id'];
+		App\Utility\Util::execute('UPDATE sgf SET user_id = ?, description = ? WHERE id = ?', [$context->otherUsers[0]['id'], 'Made it status based', $proposalID]);
+		$browser = Browser::instance();
+		$browser->get('/users/adminstats');
+		$this->assertSame('Made it status based', $browser->findById('description-' . $proposalID)->getText());
+
+		// the browser asks for the comment before the form goes anywhere
+		$browser->clickId('reject-' . $proposalID);
+		$this->assertTrue((bool) $browser->driver->executeScript('return !document.getElementById(arguments[0]).validity.valid;', ['comment-' . $proposalID]));
+		$this->assertNotEmpty(ClassRegistry::init('Sgf')->findById($proposalID));
+
+		$browser->findById('comment-' . $proposalID)->sendKeys('Status based is not wanted here');
+		$browser->clickId('reject-' . $proposalID);
+		$browser->waitUntilCssSelectorExistsWithText('#sgf_proposals_page_header', 'SGF Proposals (0)');
+		$this->assertEmpty(ClassRegistry::init('Sgf')->findById($proposalID));
+		$message = App\Utility\Util::query('SELECT text FROM message WHERE recipient_user_id = ?', [$context->otherUsers[0]['id']]);
+		$this->assertCount(1, $message);
+		$this->assertStringContainsString('Status based is not wanted here', $message[0]['text']);
+	}
+}

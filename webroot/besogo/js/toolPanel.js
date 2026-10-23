@@ -1068,7 +1068,7 @@ besogo.makeToolPanel = function (container, editor) {
     formNode.appendChild(inputNode);
     // The SGF version the tree was loaded from and the transformation (normalising, corner,
     // rotation, colours) from its coordinates to the saved ones, so comments can follow
-    for (const [id, name] of [["sgfSourceInput", "sourceSgfID"], ["sgfTransformationInput", "transformationFromSource"]]) {
+    for (const [id, name] of [["sgfSourceInput", "sourceSgfID"], ["sgfTransformationInput", "transformationFromSource"], ["sgfDescriptionInput", "description"]]) {
       const hiddenNode = document.createElement("input");
       hiddenNode.id = id;
       hiddenNode.type = "hidden";

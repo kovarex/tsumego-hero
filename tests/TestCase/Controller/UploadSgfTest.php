@@ -24,8 +24,7 @@ class UploadSgfTest extends TestCaseWithAuth
 		$commentEditField->click();
 		$browser->driver->getKeyboard()->sendKeys("Hello from test");
 		$commentEditButton->click();
-		$saveButton = $browser->find('#saveSGFButton');
-		$saveButton->click();
+		$browser->saveFromEditor();
 
 		// Wait for the form submit to complete (page navigates away from editor)
 		$browser->waitUntilJs('!location.href.includes("/editor/")');

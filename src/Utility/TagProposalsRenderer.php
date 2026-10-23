@@ -8,7 +8,7 @@ class TagProposalsRenderer extends DataTableRenderer
 {
 	public function __construct(array $urlParams)
 	{
-		$this->count = Util::query("SELECT COUNT(DISTINCT tsumego_id) as total FROM sgf WHERE accepted = false")[0]['total'];
+		$this->count = Util::query("SELECT COUNT(*) as total FROM tag WHERE approved = 0")[0]['total'];
 		parent::__construct($urlParams, 'tag_proposals_page', 'Tag proposals');
 		$this->data = Util::query("
 SELECT
@@ -39,12 +39,12 @@ OFFSET " . $this->offset);
 		echo '<td>' . User::renderLink($item) . '</td>';
 		echo '<td><a href="/tags/view/' . (int) $item['tag_id'] . '">' . h($item['tag_name']) . '</a></td>';
 		echo '<td>';
-		echo '<form method="post" style="display:inline" action="/tags/acceptTagProposal/' . $item['tag_id'] . '">';
-		echo '<button type="submit" class="btn btn--small" id="tag-accept-' . $item['tag_id'] . '">Accept</button>';
-		echo '</form>';
-		echo '<form method="post" style="display:inline" action="/tags/rejectTagProposal/' . $item['tag_id'] . '">';
-		echo '<button type="submit" class="btn btn--small" id="tag-reject-' . $item['tag_id'] . '">Reject</button>';
-		echo '</form>';
+		ProposalDecisionForm::render(
+			'/tags/acceptTagProposal/' . $item['tag_id'],
+			'/tags/rejectTagProposal/' . $item['tag_id'],
+			'tag-accept-' . $item['tag_id'],
+			'tag-reject-' . $item['tag_id'],
+			'tag-comment-' . $item['tag_id']);
 		echo '</td>';
 	}
 }

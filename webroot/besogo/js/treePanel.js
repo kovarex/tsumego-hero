@@ -188,6 +188,10 @@ besogo.makeTreePanel = function(container, editor)
         element = besogo.svgStone(svgPos(x), svgPos(y)); // Grey stone
     }
 
+    // A position that is in both versions of a diff, but with another comment, status, markup...
+    if (node.diffInfo && node.diffInfo.changes.length)
+      element.appendChild(besogo.svgEl('circle', { cx: svgPos(x) + 32, cy: svgPos(y) + 32, r: 16, 'class': 'besogo-tree-diff-changed' }));
+
     // Badge for nodes that have position-anchored player comments
     var commentCount = editor.getAnchoredCommentCount(node);
     if (commentCount > 0)

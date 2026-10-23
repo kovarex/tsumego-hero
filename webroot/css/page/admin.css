@@ -10,4 +10,20 @@
   max-width: 800px;
 }
 .admin-text { color: var(--admin-text-color); }
+/* Accept / Reject of a proposal with the comment sent to the proposer, see ProposalDecisionForm */
+.proposal-decision {
+	display: flex;
+	gap: 4px;
+	align-items: center;
+	white-space: nowrap;
+}
+.proposal-decision__comment {
+	min-width: 12em;
+	flex: 1 1 auto;
+}
+.proposal-description {
+	max-width: 20em;
+	white-space: pre-wrap;
+	font-size: 13px;
+}
 }

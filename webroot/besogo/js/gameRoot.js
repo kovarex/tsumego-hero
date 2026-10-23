@@ -38,6 +38,7 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
     node.visited = false; // player already was in this position while solving
 	node.visitedInRecursion = false; // internal bool for recursive algorithm
     node.localEdit = false;
+    node.diffInfo = null; // own, so a child does not show the changes of its parent in a diff
   }
   initNode(root, null); // Initialize root node with null parent
   root.relevantMoves = [];
@@ -896,7 +897,26 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
   root.incorporateDiff = function(otherRoot)
   {
     this.isDiff = true;
+    // before the removed moves are merged in, as they change what the tree makes of the moves around them
+    this.compareWithPreviousVersion(otherRoot);
     this.incorporateDiffInternal(otherRoot);
+  }
+
+  // Records what differs in the positions that are in both versions, see besogo.compareNodeProperties
+  root.compareWithPreviousVersion = function(previousNode)
+  {
+    let changes = besogo.compareNodeProperties(this, previousNode);
+    if (changes.length)
+    {
+      this.diffInfo = besogo.makeDiffInfo();
+      this.diffInfo.changes = changes;
+    }
+    for (let i = 0; i < this.children.length; ++i)
+    {
+      let previousChild = previousNode.getCorrespondingChild(this.children[i]);
+      if (previousChild)
+        this.children[i].compareWithPreviousVersion(previousChild);
+    }
   }
 
   root.incorporateDiffInternal = function(otherRoot)
@@ -921,6 +941,9 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
         continue;
       this.registerChild(newChild);
       newChild.diffInfo = besogo.makeRemovedMoveDiffInfo();
+      // shown, so the removed variation can be read, but not the + or status, which would change the tree
+      newChild.comment = otherChild.comment;
+      newChild.markup = otherChild.markup.slice();
       newChild.incorporateDiffInternal(otherChild);
     }
   }

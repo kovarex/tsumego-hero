@@ -149,6 +149,88 @@
     flex: 0 0 auto;
 }
 
+/* What a diff changed, see diffPanel.js */
+.besogo-diff {
+    flex: 0 1 auto;
+    width: 100%;
+    max-height: 35vh;
+    overflow: auto;
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size: 11pt;
+}
+.besogo-diff-summary {
+    font-weight: bold;
+    padding: 3px;
+}
+.besogo-diff-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.besogo-diff-entry {
+    cursor: pointer;
+    padding: 3px 5px;
+    border-left: 4px solid transparent;
+}
+.besogo-diff-entry:hover {
+    background: rgba(0, 0, 0, 0.06);
+}
+.besogo-diff-current {
+    background: rgba(6, 194, 172, 0.18);
+}
+.besogo-diff-added {
+    border-left-color: #2e8b57;
+}
+.besogo-diff-removed {
+    border-left-color: #be0119;
+}
+.besogo-diff-changed {
+    border-left-color: #f39c12;
+}
+.besogo-diff-position {
+    font-weight: bold;
+}
+.besogo-diff-change {
+    white-space: pre-wrap;
+}
+.besogo-diff-property {
+    font-style: italic;
+}
+.besogo-diff-change del {
+    color: #be0119;
+}
+.besogo-diff-change ins {
+    color: #2e8b57;
+    text-decoration: none;
+}
+.besogo-save-dialog { /* Asks for the description of a saved version, see filePanel.js */
+    width: min(30em, 90vw);
+    font-family: Tahoma, Geneva, sans-serif;
+}
+.besogo-save-dialog label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+.besogo-save-dialog textarea {
+    width: 100%;
+    box-sizing: border-box;
+}
+.besogo-save-dialog__problem {
+    color: #be0119;
+    min-height: 1.2em;
+}
+.besogo-save-dialog__buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+.besogo-tree-diff-changed { /* Tree node that is in both versions with other properties */
+    fill: #f39c12;
+    stroke: #ffffff;
+    stroke-width: 4;
+}
+
 /* Favorite (heart) button like-burst */
 .fav-heart {
     display: inline-block;

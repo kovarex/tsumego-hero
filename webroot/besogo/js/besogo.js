@@ -33,6 +33,8 @@
   besogo.multipleChoiceCustom = false;
   besogo.multipleChoiceCustomSetup = null;
   besogo.verticalHalfBoardRotationWidthToken = false;
+  besogo.savesProposal = false;
+  besogo.SGF_DESCRIPTION_MAX_LENGTH = 1000; // Sgf::DESCRIPTION_MAX_LENGTH
   let corner;
 
   function getMakers() {
@@ -43,6 +45,7 @@
     makers["tsumegoPlayTool"] = besogo.makeToolPanel;
     makers["tree"] = besogo.makeTreePanel;
     makers["file"] = besogo.makeFilePanel;
+    makers["diff"] = besogo.makeDiffPanel;
     return makers;
   }
 
@@ -309,6 +312,8 @@
 
 	  if (typeof options.setConnectionID === "string")
 		  besogo.setConnectionID = options.setConnectionID;
+	// saving sends a proposal an admin has to accept, not a new version of the problem
+	besogo.savesProposal = options.proposal === "1";
 
     besogo.theme = options.theme;
     besogo.light = options.light;

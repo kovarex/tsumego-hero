@@ -585,6 +585,7 @@ class TagTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$context = new ContextPreparator(['user' => ['admin' => true], 'tags' => [['name' => 'snapback', 'approved' => 0]]]);
 		$browser->get('users/adminstats');
+		$browser->findById('tag-comment-' . $context->tags[0]['id'])->sendKeys('We have the tag already');
 		$browser->clickId('tag-reject-' . $context->tags[0]['id']);
 		$tagAdded = ClassRegistry::init('Tag')->find('first')['Tag'];
 		$this->assertNull($tagAdded);
