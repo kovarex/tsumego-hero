@@ -24,8 +24,7 @@ class UploadSgfTest extends TestCaseWithAuth
 		$commentEditField->click();
 		$browser->driver->getKeyboard()->sendKeys("Hello from test");
 		$commentEditButton->click();
-		$saveButton = $browser->find('#saveSGFButton');
-		$saveButton->click();
+		$browser->saveFromEditor();
 
 		// Wait for the form submit to complete (page navigates away from editor)
 		$browser->waitUntilJs('!location.href.includes("/editor/")');
@@ -88,8 +87,8 @@ class UploadSgfTest extends TestCaseWithAuth
 		$this->assertSame($commentBox->getText(), 'Version 2');
 
 		$browser->find('.sgf-plus-mark');
-		$plusMark = $browser->getElements('.sgf-plus-mark');
-		$this->assertCount(2, $plusMark); // one on the board, one on the tree I guess? But mainly there is some
+		$plusMark = $browser->getElements('.besogo-board .sgf-plus-mark, .besogo-tree .sgf-plus-mark');
+		$this->assertCount(2, $plusMark); // one on the board, one in the tree (the summary of the changes has one too)
 	}
 
 	public function testOpeningSgfDiffFromTheUploadsList()

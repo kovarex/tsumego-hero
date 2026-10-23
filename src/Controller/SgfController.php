@@ -19,6 +19,28 @@ class SgfController extends AppController
 		return $this->response;
 	}
 
+	/**
+	 * What the author wrote about the version and the author as the site shows a player (avatar,
+	 * link to the profile, rank), for the diff of the version in the editor.
+	 * Allowed to whoever may fetch the version.
+	 */
+	public function info(int $sgfID)
+	{
+		$sgf = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['id' => $sgfID]]);
+		if (!$sgf)
+			throw new NotFoundException('Sgf not found.');
+
+		$this->Authorization->authorize($sgf, 'fetch');
+
+		$author = $sgf['Sgf']['user_id'] ? ClassRegistry::init('User')->findById($sgf['Sgf']['user_id']) : null;
+		$this->autoRender = false;
+		$this->response->type('json');
+		$this->response->body(json_encode([
+			'description' => $sgf['Sgf']['description'],
+			'authorLink' => User::renderLink($author ? $author['User'] : null)]));
+		return $this->response;
+	}
+
 	#[HttpPost]
 	public function upload(string $setConnectionID): void
 	{
@@ -48,6 +70,7 @@ class SgfController extends AppController
 		// sent by the board editor, see SgfCommentReorientation
 		$this->set('sourceSgfID', $fileUpload ? null : ($this->request->data['sourceSgfID'] ?? null));
 		$this->set('transformationFromSource', $fileUpload ? null : ($this->request->data['transformationFromSource'] ?? null));
+		$this->set('description', (string) ($this->request->data['description'] ?? ''));
 		$this->render('/Tsumegos/setup_new_sgf');
 	}
 

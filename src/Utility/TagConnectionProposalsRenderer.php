@@ -67,13 +67,13 @@ OFFSET " . $this->offset, [Auth::getUserID()]);
 		echo '<td>';
 		new TsumegoButton($item['tsumego_id'], $item['set_connection_id'], $item['num'], $item['status'] ?: 'N', 0, $item['sgf'])->render();
 		echo '</td>';
-		echo '<td style="white-space:nowrap">';
-		echo '<form method="post" style="display:inline" action="/users/acceptTagConnectionProposal/' . $item['tag_connection_id'] . '">';
-		echo '<button type="submit" class="btn btn--small" id="tag-connection-accept-' . $item['tag_connection_id'] . '">Accept</button>';
-		echo '</form>';
-		echo '<form method="post" style="display:inline" action="/users/rejectTagConnectionProposal/' . $item['tag_connection_id'] . '">';
-		echo '<button type="submit" class="btn btn--small" id="tag-connection-reject-' . $item['tag_connection_id'] . '">Reject</button>';
-		echo '</form>';
+		echo '<td>';
+		ProposalDecisionForm::render(
+			'/users/acceptTagConnectionProposal/' . $item['tag_connection_id'],
+			'/users/rejectTagConnectionProposal/' . $item['tag_connection_id'],
+			'tag-connection-accept-' . $item['tag_connection_id'],
+			'tag-connection-reject-' . $item['tag_connection_id'],
+			'tag-connection-comment-' . $item['tag_connection_id']);
 		echo '</td>';
 		echo '<td style="font-size:13px"><time datetime="' . Util::toIso8601($item['created']) . '" data-format="datetime">' . $item['created'] . '</time></td>';
 	}

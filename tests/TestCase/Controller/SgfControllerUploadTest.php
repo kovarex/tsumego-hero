@@ -31,7 +31,7 @@ class SgfControllerUploadTest extends TestCaseWithAuth
 		$browser->clickId('openSgfLink');
 		foreach ($buttons as $button)
 			$browser->find('input[type="button"][value="' . $button . '"]')->click();
-		$browser->clickId('saveSGFButton');
+		$browser->saveFromEditor('Turned the problem');
 		// the save goes through two more pages before it lands back on the problem
 		$browser->waitUntilJs('location.pathname === ' . json_encode('/' . $context->setConnections[0]['id']) . ' && document.readyState === "complete"');
 	}
@@ -78,7 +78,7 @@ class SgfControllerUploadTest extends TestCaseWithAuth
 		$browser->clickId('commentEditField');
 		$browser->driver->getKeyboard()->sendKeys("Hello from test");
 		$browser->clickId('sgfCommentButton');
-		$browser->clickId('saveSGFButton');
+		$browser->saveFromEditor('Greeting in the start position');
 
 		// Wait for redirect after saving SGF
 		$browser->waitUntilJs('!location.href.includes("/editor/")');

@@ -17,6 +17,7 @@ SELECT
     a.latest_accepted_id AS latest_accepted_id,
     COALESCE(sgf.sgf, '') AS sgf,
     p.id AS proposed_id,
+    p.description AS description,
     p.user_id AS user_id,
     p.user_id AS proposed_user_id,
     user.display_name AS user_display_name,
@@ -56,26 +57,27 @@ OFFSET " . $this->offset, [Auth::getUserID()]);
 
 	protected function renderHeader(): void
 	{
-		echo '<tr><th>User</th><th>Problem</th><th>Compare</th><th><label title="Toggle board previews"><input type="checkbox" class="preview-zoom-toggle">🔍</label></th><th></th></tr>';
+		echo '<tr><th>User</th><th>Problem</th><th>Description</th><th>Compare</th><th><label title="Toggle board previews"><input type="checkbox" class="preview-zoom-toggle">🔍</label></th><th></th></tr>';
 	}
 
 	public function renderItem(int $index, array $item): void
 	{
 		echo '<td>' . User::renderLink($item) . '</td>';
 		echo '<td><a class="adminpanel-link" href="/' . $item['set_connection_id'] . '">' . h($item['set_title']) . ' - ' . h($item['num']) . '</a></td>';
+		echo '<td class="proposal-description" id="description-' . $item['proposed_id'] . '">' . SgfDescription::render($item['description']) . '</td>';
 		echo '<td style="white-space:nowrap">';
 		echo '<a href="/editor/?sgfID=' . $item['latest_accepted_id'] . '">current</a> | <a href="/editor/?sgfID=' . $item['proposed_id'] . '">proposal</a> | <a href="/editor/?sgfID=' . $item['proposed_id'] . '&diffID=' . $item['latest_accepted_id'] . '">diff</a>';
 		echo '</td>';
 		echo '<td>';
 		new TsumegoButton($item['tsumego_id'], $item['set_connection_id'], $item['num'], $item['status'] ?: 'N', 0, $item['sgf'])->render();
 		echo '</td>';
-		echo '<td style="white-space:nowrap">';
-		echo '<form method="post" style="display:inline" action="/users/acceptSGFProposal/' . $item['proposed_id'] . '">';
-		echo '<button type="submit" class="btn btn--small" id="accept-' . $item['proposed_id'] . '">Accept</button>';
-		echo '</form>';
-		echo '<form method="post" style="display:inline" action="/users/rejectSGFProposal/' . $item['proposed_id'] . '">';
-		echo '<button type="submit" class="btn btn--small" id="reject-' . $item['proposed_id'] . '">Reject</button>';
-		echo '</form>';
+		echo '<td>';
+		ProposalDecisionForm::render(
+			'/users/acceptSGFProposal/' . $item['proposed_id'],
+			'/users/rejectSGFProposal/' . $item['proposed_id'],
+			'accept-' . $item['proposed_id'],
+			'reject-' . $item['proposed_id'],
+			'comment-' . $item['proposed_id']);
 		echo '</td>';
 	}
 }

@@ -4,6 +4,7 @@ use App\Utility\Auth;
 use App\Utility\ContributionRow;
 use App\Utility\CookieFlash;
 use App\Utility\HtmlSanitizer;
+use App\Utility\ProposalFeedback;
 use App\Utility\Util;
 use App\Attribute\HttpPost;
 
@@ -245,6 +246,18 @@ class TagsController extends AppController
 		$tagToApprove['approved'] = '1';
 		ClassRegistry::init('Tag')->save($tagToApprove);
 		AppController::handleContribution($tagToApprove['user_id'], 'created_tag');
+
+		// like a tag on a problem, the proposer only hears about it when the admin had something to say
+		$comment = ProposalFeedback::commentFromRequest($this->request->data['comment'] ?? null);
+		if ($comment !== '' && $tagToApprove['user_id'])
+			ProposalFeedback::send(
+				(int) $tagToApprove['user_id'],
+				'Your new tag ' . $tagToApprove['name'] . ' was accepted by ' . ProposalFeedback::adminName() . '.',
+				null,
+				null,
+				$comment,
+				$this->_getEmailer());
+
 		CookieFlash::set('Tag ' . $tagToApprove['name'] . ' was approved', 'success');
 		return $this->redirect('/users/adminstats');
 	}
@@ -269,9 +282,25 @@ class TagsController extends AppController
 			return $this->redirect('/users/adminstats');
 		}
 
+		$comment = ProposalFeedback::commentFromRequest($this->request->data['comment'] ?? null);
+		if ($comment === '')
+		{
+			CookieFlash::set('Write the proposer why the tag is rejected.', 'error');
+			return $this->redirect('/users/adminstats');
+		}
+
 		AppController::handleContribution(Auth::getUserID(), 'reviewed');
 
 		ClassRegistry::init('Tag')->delete($tagToReject);
+
+		if ($tagToReject['user_id'])
+			ProposalFeedback::send(
+				(int) $tagToReject['user_id'],
+				'Your new tag ' . $tagToReject['name'] . ' was rejected by ' . ProposalFeedback::adminName() . '.',
+				null,
+				null,
+				$comment,
+				$this->_getEmailer());
 
 		CookieFlash::set('Tag ' . $tagToReject['name'] . ' was rejected', 'success');
 		return $this->redirect('/users/adminstats');

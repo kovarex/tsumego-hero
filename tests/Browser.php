@@ -292,6 +292,15 @@ class Browser
 		$this->assertNoErrors();
 	}
 
+	// Presses Save of the board editor and answers its question what was changed and why.
+	public function saveFromEditor(string $description = ''): void
+	{
+		$this->clickId('saveSGFButton');
+		if ($description !== '')
+			$this->findById('sgfDescriptionField')->sendKeys($description);
+		$this->clickId('sgfDescriptionSave');
+	}
+
 	public function clickCssSelect($selector)
 	{
 		$this->find($selector)->click();

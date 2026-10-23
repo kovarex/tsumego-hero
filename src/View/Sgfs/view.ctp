@@ -1,5 +1,6 @@
   <?php
 
+use App\Utility\SgfDescription;
 use App\Utility\Util;
 
 /**
@@ -48,6 +49,8 @@ use App\Utility\Util;
 		<th>Date</th>
 		<th align="left">&nbsp;Author</th>
 		<th align="left">&nbsp;Version</th>
+		<th align="left">&nbsp;Description</th>
+		<th></th>
 	</tr>
 	<?php
 		for($i=0; $i<count($s); $i++){
@@ -67,8 +70,9 @@ use App\Utility\Util;
 			else
 				echo '<a href="/sgfs/view/'.$s[$i]['Sgf']['tsumego_id'].'"> '.h($s[$i]['Sgf']['title']).'</a> ';
 			echo '<a href="/sgfs/view/'.$s[$i]['Sgf']['tsumego_id'].'" id="dl1-'.$s[$i]['Sgf']['id'].'">v '.$s[$i]['Sgf']['version'].'</a>';
-			echo '</td>
-			<td class="timeTableRight versionColor" align="left">
+			echo '</td>';
+			echo '<td class="timeTableMiddle versionColor proposal-description" align="left" id="description-'.$s[$i]['Sgf']['id'].'">'.SgfDescription::render($s[$i]['Sgf']['description'] ?? null).'</td>';
+			echo '<td class="timeTableRight versionColor" align="left">
 			<a id="open-'.$s[$i]['Sgf']['id'].'" class="openHistoryPointLink">open</a>&nbsp;&nbsp;&nbsp;';
 			if ($s[$i]['Sgf']['diff'])
 				echo '<a id="compare-'.$s[$i]['Sgf']['id'].'" class="openDiff" href="/editor?sgfID='.$s[$i]['Sgf']['id'].'&diffID='.$s[$i]['Sgf']['diff'].'">diff</a>&nbsp;&nbsp;&nbsp;';
