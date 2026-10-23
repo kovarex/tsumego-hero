@@ -22,7 +22,7 @@ class ContextPreparator
 		foreach ([
 			'tag_connection', 'tag', 'schedule', 'progress_deletion',
 			'day_record', 'sgf', 'time_mode_attempt', 'time_mode_session',
-			'tsumego_comment', 'tsumego_issue', 'admin_activity',
+			'tsumego_comment', 'tsumego_issue', 'admin_activity', 'message',
 			'achievement_condition', 'achievement_status', 'set_connection',
 			'tsumego_attempt', 'tsumego_status', 'mistake_training_review', 'mistake_training_day', 'mistake_training_pool', 'user_contribution', 'signature',
 			'tsumego_variant', 'reject', 'publish_date', 'user', 'time_mode_rank',
@@ -134,6 +134,7 @@ class ContextPreparator
 		$user['pref_board_orientation'] = Util::extract('pref_board_orientation', $userInput) ?? User::PREF_BOARD_ORIENTATION_RANDOM;
 		$user['date_format_id'] = Util::extract('date_format_id', $userInput) ?? User::DATE_FORMAT_ISO;
 		$user['sound'] = Util::extract('sound', $userInput) ?? 0;
+		$user['email_on_new_message'] = Util::extract('email_on_new_message', $userInput) ?? 1;
 		if ($lastTimeModeCategoryID = Util::extract('last-time-mode-category-id', $userInput))
 			$user['last_time_mode_category_id'] = $lastTimeModeCategoryID;
 

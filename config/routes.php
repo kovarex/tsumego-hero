@@ -99,6 +99,42 @@ Router::connect(
 );
 
 /**
+ * Messages between players, see MessagesController
+ */
+Router::connect(
+	'/messages',
+	['controller' => 'Messages', 'action' => 'index']
+);
+Router::connect(
+	'/messages/conversations',
+	['controller' => 'Messages', 'action' => 'conversations', '[method]' => 'GET']
+);
+Router::connect(
+	'/messages/conversations/:partnerUserId',
+	['controller' => 'Messages', 'action' => 'conversation', '[method]' => 'GET'],
+	['pass' => ['partnerUserId'], 'partnerUserId' => '[0-9]+']
+);
+Router::connect(
+	'/messages/conversations/:partnerUserId',
+	['controller' => 'Messages', 'action' => 'send', '[method]' => 'POST'],
+	['pass' => ['partnerUserId'], 'partnerUserId' => '[0-9]+']
+);
+Router::connect(
+	'/messages/conversations/:partnerUserId/read',
+	['controller' => 'Messages', 'action' => 'read'],
+	['pass' => ['partnerUserId'], 'partnerUserId' => '[0-9]+']
+);
+Router::connect(
+	'/messages/recipients',
+	['controller' => 'Messages', 'action' => 'recipients']
+);
+Router::connect(
+	'/messages/:partnerUserId',
+	['controller' => 'Messages', 'action' => 'index'],
+	['pass' => ['partnerUserId'], 'partnerUserId' => '[0-9]+']
+);
+
+/**
  * Mistake Training
  */
 Router::connect(
@@ -237,6 +273,10 @@ Router::connect(
 Router::connect(
 	'/users/dateFormatPreference',
 	['controller' => 'Users', 'action' => 'dateFormatPreference']
+);
+Router::connect(
+	'/users/emailOnNewMessagePreference',
+	['controller' => 'Users', 'action' => 'emailOnNewMessagePreference']
 );
 Router::connect(
 	'/users/avatarPreference',

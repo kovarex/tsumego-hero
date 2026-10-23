@@ -101,6 +101,18 @@ use App\Utility\Constants;
 		</table>
 	</div>
 	<div class="card card--green">
+		<div class="card__title">Messages</div>
+		<div class="stack">
+			<div class="field">
+				<span class="field__label">Email me when a message arrives</span>
+				<?php $emailOnNewMessage = (bool) $user['email_on_new_message']; ?>
+				<label class="field__option"><input type="radio" name="emailOnNewMessage" value="1" onclick="emailOnNewMessagePreference(this.value);" <?php echo $emailOnNewMessage ? 'checked="checked"' : ''; ?>> Yes</label>
+				<label class="field__option"><input type="radio" name="emailOnNewMessage" value="0" onclick="emailOnNewMessagePreference(this.value);" <?php echo $emailOnNewMessage ? '' : 'checked="checked"'; ?>> No</label>
+				<div class="hint">One email for the first message of a player you haven't read yet, to <?php echo h($user['email']); ?>.</div>
+			</div>
+		</div>
+	</div>
+	<div class="card card--green">
 		<div class="card__title">Appearance</div>
 		<div class="stack">
 			<div class="field">
@@ -259,6 +271,15 @@ function boardOrientationPreference(orientation)
 		method: 'POST',
 		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
 		body: 'orientation=' + encodeURIComponent(orientation)
+	});
+}
+
+function emailOnNewMessagePreference(enabled)
+{
+	fetch('/users/emailOnNewMessagePreference', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+		body: 'enabled=' + encodeURIComponent(enabled)
 	});
 }
 

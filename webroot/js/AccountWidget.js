@@ -29,6 +29,7 @@ class AccountWidget
 	heroProfile;
 	heroBar;
 	heroAchievements;
+	heroMessages;
 	heroSettings;
 	heroLogout;
 	timeMode;
@@ -49,6 +50,7 @@ class AccountWidget
 		this.heroProfile = document.getElementById("heroProfile");
 		this.heroBar = document.getElementById("heroBar");
 		this.heroAchievements = document.getElementById("heroAchievements");
+		this.heroMessages = document.getElementById("heroMessages");
 		this.heroSettings = document.getElementById("heroSettings");
 		this.heroLogout = document.getElementById("heroLogout");
 
@@ -117,6 +119,7 @@ class AccountWidget
 		if (this.heroBar)
 			this.heroBar.style.display = "inline-block";
 		this.heroAchievements.style.display = "inline-block";
+		this.heroMessages.style.display = "inline-block";
 		this.heroSettings.style.display = "inline-block";
 		this.heroLogout.style.display = "inline-block";
 	}
@@ -129,6 +132,7 @@ class AccountWidget
 		if (this.heroBar)
 			this.heroBar.style.display = "none";
 		this.heroAchievements.style.display = "none";
+		this.heroMessages.style.display = "none";
 		this.heroSettings.style.display = "none";
 		this.heroLogout.style.display = "none";
 	}

@@ -1,0 +1,356 @@
+/* Page layer: messages.css - the messages page (app/messages), the unread count in
+   the menus and the button to write to a player on their profile. */
+@layer page
+{
+.messages
+{
+	display: grid;
+	grid-template-columns: minmax(220px, 300px) 1fr;
+	gap: var(--space-3);
+	max-width: 960px;
+	height: 70vh;
+	min-height: 420px;
+	margin: 0 auto var(--space-5);
+	text-align: left;
+}
+
+/* ── The conversations ── */
+
+.messages-list
+{
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	border: 1px solid var(--current-border-color);
+	border-radius: var(--radius-md);
+	background: var(--info-box-background);
+}
+
+.messages-list__items
+{
+	flex: 1;
+	margin: 0;
+	padding: 0;
+	overflow-y: auto;
+	list-style: none;
+}
+
+/* The site floats every li (site.css), a list here keeps one row under the other. */
+.messages-list__items > li,
+.messages-search__results > li
+{
+	float: none;
+}
+
+.messages-list__empty
+{
+	padding: var(--space-3);
+}
+
+.messages-list__item
+{
+	display: grid;
+	grid-template-columns: 1fr auto;
+	gap: 2px var(--space-2);
+	width: 100%;
+	padding: var(--space-2) var(--space-3);
+	border: 0;
+	border-bottom: 1px solid var(--current-border-color);
+	background: none;
+	color: var(--text-color);
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+}
+
+.messages-list__item:hover
+{
+	background: var(--surface-hover);
+}
+
+.messages-list__item--selected
+{
+	background: var(--surface-bar);
+	box-shadow: inset 3px 0 0 var(--color-green);
+}
+
+.messages-list__name
+{
+	display: flex;
+	align-items: center;
+	gap: var(--space-1);
+	min-width: 0;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.messages-list__item--unread .messages-list__name
+{
+	font-weight: var(--font-weight-bold);
+}
+
+.messages-list__date
+{
+	font-size: var(--font-size-sm);
+	color: var(--text-softer-color);
+}
+
+.messages-list__preview
+{
+	grid-column: 1 / -1;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	font-size: var(--font-size-md);
+	color: var(--text-softer-color);
+}
+
+.messages-list__unread,
+.messages-unread-count
+{
+	display: inline-block;
+	min-width: 16px;
+	padding: 0 4px;
+	font-size: var(--font-size-xs);
+	font-weight: var(--font-weight-bold);
+	line-height: 16px;
+	text-align: center;
+	color: var(--color-white);
+	background: var(--color-red);
+	border-radius: 8px;
+}
+
+.messages-unread-count[hidden]
+{
+	display: none;
+}
+
+/* ── Finding a player ── */
+
+.messages-search
+{
+	position: relative;
+	padding: var(--space-2);
+	border-bottom: 1px solid var(--current-border-color);
+}
+
+.messages-search__input
+{
+	box-sizing: border-box;
+	width: 100%;
+	padding: 6px var(--space-2);
+	border: 1px solid var(--current-border-color);
+	border-radius: var(--radius-sm);
+	background: var(--surface-bar);
+	color: var(--text-color);
+}
+
+.messages-search__results
+{
+	position: absolute;
+	z-index: 10;
+	left: var(--space-2);
+	right: var(--space-2);
+	margin: 2px 0 0;
+	padding: 0;
+	list-style: none;
+	border: 1px solid var(--current-border-color);
+	border-radius: var(--radius-sm);
+	background: var(--info-box-background);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.messages-search__result
+{
+	display: flex;
+	align-items: center;
+	gap: var(--space-1);
+	width: 100%;
+	padding: 6px var(--space-2);
+	border: 0;
+	background: none;
+	color: var(--text-color);
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+}
+
+.messages-search__result:hover,
+.messages-search__result:focus
+{
+	background: var(--surface-hover);
+}
+
+.messages-search__empty
+{
+	padding: 6px var(--space-2);
+	color: var(--text-softer-color);
+}
+
+/* ── One conversation ── */
+
+.messages-conversation
+{
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	border: 1px solid var(--current-border-color);
+	border-radius: var(--radius-md);
+	background: var(--info-box-background);
+}
+
+.messages-conversation--none
+{
+	align-items: center;
+	justify-content: center;
+}
+
+.messages-conversation__header
+{
+	display: flex;
+	align-items: center;
+	gap: var(--space-3);
+	padding: var(--space-2) var(--space-3);
+	border-bottom: 1px solid var(--current-border-color);
+	font-weight: var(--font-weight-bold);
+}
+
+/* The list is next to the conversation, the way back is only needed on a phone. */
+.messages-conversation__back
+{
+	display: none;
+}
+
+.messages-conversation__messages
+{
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: var(--space-2);
+	padding: var(--space-3);
+	overflow-y: auto;
+}
+
+.messages-conversation__older
+{
+	align-self: center;
+}
+
+.messages-conversation__empty,
+.messages-conversation__closed
+{
+	margin: auto;
+	padding: var(--space-3);
+}
+
+.messages-conversation__seen
+{
+	align-self: flex-end;
+	margin-top: -4px;
+}
+
+.message
+{
+	align-self: flex-start;
+	max-width: 75%;
+	padding: 6px 10px;
+	border-radius: var(--radius-md);
+	background: var(--surface-bar);
+	border: 1px solid var(--current-border-color);
+}
+
+.message--own
+{
+	align-self: flex-end;
+	background: var(--alert-success-bg);
+}
+
+.message__text
+{
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+}
+
+.message__time
+{
+	display: block;
+	margin-top: 2px;
+	font-size: var(--font-size-sm);
+	color: var(--text-softer-color);
+	text-align: right;
+}
+
+.messages-form
+{
+	padding: var(--space-2) var(--space-3);
+	border-top: 1px solid var(--current-border-color);
+}
+
+.messages-form__text
+{
+	box-sizing: border-box;
+	width: 100%;
+	resize: vertical;
+	font: inherit;
+}
+
+.messages-form__actions
+{
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: var(--space-3);
+}
+
+/* On a phone the list and the open conversation take turns. */
+@media (width < 40rem)
+{
+	.messages
+	{
+		grid-template-columns: 1fr;
+		/* What is left under the site header and the tabs of the player */
+		height: calc(100vh - 250px);
+		min-height: 380px;
+		margin: 0 var(--space-2) var(--space-3);
+	}
+
+	.messages--conversation-open .messages-list,
+	.messages:not(.messages--conversation-open) .messages-conversation
+	{
+		display: none;
+	}
+
+	.messages-conversation__back
+	{
+		display: inline;
+	}
+
+	.message
+	{
+		max-width: 90%;
+	}
+
+	.messages-form__actions .hint
+	{
+		display: none;
+	}
+}
+
+/* ── Elsewhere ── */
+
+/* The unread count at the end of the row of the name in the account bar */
+#account-bar-messages
+{
+	position: absolute;
+	top: 38px;
+	right: 2px;
+	text-decoration: none;
+}
+
+.profile-header__message
+{
+	display: table;
+	margin: 0 auto var(--space-2);
+}
+}

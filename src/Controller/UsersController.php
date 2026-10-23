@@ -211,16 +211,6 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	}
 
 	/**
-	 * @return CakeEmail
-	 */
-	public function _getEmailer()
-	{
-		// A run of the tests must not hand a mail to a mail server that is not there. The
-		// debug transport builds the message and returns it instead of sending it.
-		return Util::isOnTestSite() ? new CakeEmail(['transport' => 'Debug']) : new CakeEmail();
-	}
-
-	/**
 	 * Send the mail that carries a link. The token in it is remembered only when this
 	 * returns true, so a mail server that does not answer leaves nothing behind and the
 	 * user can go through the flow again right away.
@@ -2098,6 +2088,22 @@ OFFSET " . $offset, [$userID, $userID]);
 			$format = User::DATE_FORMAT_ISO;
 
 		Auth::saveUserField('date_format_id', $format);
+
+		$this->response->statusCode(200);
+		$this->response->type('application/json');
+		$this->response->body(json_encode(['status' => 'ok']));
+	}
+
+	/**
+	 * Whether a new message is announced by an email, see Message::send().
+	 */
+	#[HttpPost]
+	public function emailOnNewMessagePreference(): void
+	{
+		$this->autoRender = false;
+		$this->Authorization->authorize('User', 'editPreferences');
+
+		Auth::saveUserField('email_on_new_message', ($this->request->data['enabled'] ?? '') === '1' ? 1 : 0);
 
 		$this->response->statusCode(200);
 		$this->response->type('application/json');
