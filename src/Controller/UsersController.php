@@ -211,16 +211,6 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	}
 
 	/**
-	 * @return CakeEmail
-	 */
-	public function _getEmailer()
-	{
-		// A run of the tests must not hand a mail to a mail server that is not there. The
-		// debug transport builds the message and returns it instead of sending it.
-		return Util::isOnTestSite() ? new CakeEmail(['transport' => 'Debug']) : new CakeEmail();
-	}
-
-	/**
 	 * Send the mail that carries a link. The token in it is remembered only when this
 	 * returns true, so a mail server that does not answer leaves nothing behind and the
 	 * user can go through the flow again right away.
