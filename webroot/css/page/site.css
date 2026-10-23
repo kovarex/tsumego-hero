@@ -627,13 +627,34 @@ input.newCheck {
 #heroAchievements li a {
   color: var(--color-green);
 }
-#heroSettings {
+#heroMessages {
   color: var(--color-green);
   position: absolute;
   right: 0;
   left: auto;
   width: 144px;
   top: 138px;
+  background: var(--color-hero-gradient);
+  padding: 1px 10px;
+  font-family: var(--font-family-display);
+  letter-spacing: 1px;
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 5;
+  border-top: 1px solid var(--surface-ink);
+  cursor: pointer;
+  display: none;
+}
+#heroMessages li a {
+  color: var(--color-green);
+}
+#heroSettings {
+  color: var(--color-green);
+  position: absolute;
+  right: 0;
+  left: auto;
+  width: 144px;
+  top: 166px;
   background: var(--color-hero-gradient);
   padding: 1px 10px;
   font-family: var(--font-family-display);
@@ -654,7 +675,7 @@ input.newCheck {
   right: 0;
   left: auto;
   width: 144px;
-  top: 166px;
+  top: 194px;
   background: var(--color-hero-gradient);
   padding: 1px 10px;
   font-family: var(--font-family-display);
@@ -947,6 +968,10 @@ ul ul {
 		right: 0;
 		left: auto;
 	}
+	#heroMessages {
+		right: 0;
+		left: auto;
+	}
 	#heroSettings {
 		right: 0;
 		left: auto;
@@ -1186,6 +1211,7 @@ ul ul {
 	#heroProfile,
 	#heroBar,
 	#heroAchievements,
+	#heroMessages,
 	#heroSettings,
 	#heroLogout,
 	#modeSelector {

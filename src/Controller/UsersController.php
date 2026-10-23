@@ -2096,6 +2096,22 @@ OFFSET " . $offset, [$userID, $userID]);
 	}
 
 	/**
+	 * Whether a new message is announced by an email, see Message::send().
+	 */
+	#[HttpPost]
+	public function emailOnNewMessagePreference(): void
+	{
+		$this->autoRender = false;
+		$this->Authorization->authorize('User', 'editPreferences');
+
+		Auth::saveUserField('email_on_new_message', ($this->request->data['enabled'] ?? '') === '1' ? 1 : 0);
+
+		$this->response->statusCode(200);
+		$this->response->type('application/json');
+		$this->response->body(json_encode(['status' => 'ok']));
+	}
+
+	/**
 	 * Store the avatar a player picked. A choice that is not on offer for this
 	 * account (a Google picture it does not have) is ignored, the same way the other
 	 * preferences ignore a value they can not store.
