@@ -368,9 +368,28 @@ class AppController extends Controller
 		}
 	}
 
+	/**
+	 * Bumped when browsers hold files that no deploy can replace: the old static editor page (until
+	 * 2026-10-23) was cached with the besogo scripts it loaded, so its users kept running the old editor.
+	 */
+	public const BROWSER_CACHE_VERSION = '2026-10-23';
+
+	/**
+	 * Drops the site's HTTP cache in a browser once per BROWSER_CACHE_VERSION, on whatever request of
+	 * the site comes first. The cookie keeps it from happening again.
+	 */
+	private function resetStaleBrowserCache(): void
+	{
+		if (($_COOKIE['browser_cache_version'] ?? null) === self::BROWSER_CACHE_VERSION)
+			return;
+		$this->response->header('Clear-Site-Data', '"cache"');
+		Util::setCookie('browser_cache_version', self::BROWSER_CACHE_VERSION);
+	}
+
 	public function beforeFilter(): void
 	{
 		$this->enforceHttpMethodAttribute();
+		$this->resetStaleBrowserCache();
 
 		// Boards are drawn without a session: a list of a thousand players would otherwise
 		// pay for the login of a visitor who is not there.
