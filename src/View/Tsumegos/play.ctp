@@ -1595,6 +1595,17 @@ use App\Utility\ViteManifest;
 		timedOut: '<?php echo PlayOutcome::TimedOut->value; ?>',
 	};
 
+	function isSolved(outcome)
+	{
+		return outcome === playOutcome.solvedClean || outcome === playOutcome.solvedAfterMistake;
+	}
+
+	// xpStatus is not rendered in mistake training, the widget has nothing to animate there
+	function accountWidgetShowsResults()
+	{
+		return typeof accountWidget !== 'undefined' && accountWidget && typeof xpStatus !== 'undefined';
+	}
+
 	function submitResult(outcome)
 	{
 		showResultResponse(outcome, sendResult(outcome));
@@ -1605,6 +1616,8 @@ use App\Utility\ViteManifest;
 	{
 		if (besogoNoLogin)
 			return null;
+		if (accountWidgetShowsResults())
+			accountWidget.rememberResult(isSolved(outcome));
 		let data = {
 			tsumego_id: tsumegoID,
 			// the part of the set the problem is played from decides the XP reduction of its resets
@@ -1631,9 +1644,8 @@ use App\Utility\ViteManifest;
 	{
 		if (!response)
 			return;
-		// xpStatus is not rendered in mistake training, the widget has nothing to animate there
-		if (typeof accountWidget !== 'undefined' && accountWidget && typeof xpStatus !== 'undefined')
-			accountWidget.animate(outcome === playOutcome.solvedClean || outcome === playOutcome.solvedAfterMistake);
+		if (accountWidgetShowsResults())
+			accountWidget.animate(isSolved(outcome));
 		window._submitResultPromise = response.then(result => {
 			if (typeof accountWidget !== 'undefined' && accountWidget)
 			{
