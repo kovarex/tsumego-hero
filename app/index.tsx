@@ -4,6 +4,7 @@ import { IssuesList } from './issues/IssuesList';
 import { RecentAchievements } from './home/RecentAchievements';
 import { TagEditor } from './tags/TagEditor';
 import { Changelog } from './changelog/Changelog';
+import { ClassroomProgress } from './classrooms/ClassroomProgress';
 import { syncMenuNewBadge } from './changelog/changelogCount';
 import { queryClient } from './queryClient';
 import { localizeTimeElements } from './shared/dates';
@@ -16,6 +17,7 @@ function initializeApp()
 	mountApp('[data-recent-achievements-root]', RecentAchievements);
 	mountApp('[data-tag-editor-root]', TagEditor);
 	mountApp('[data-changelog-root]', Changelog);
+	mountApp('[data-classroom-progress-root]', ClassroomProgress);
 
 	syncMenuNewBadge();
 

@@ -1,0 +1,210 @@
+@layer page
+{
+/* Classes of a teacher, their assignments and the table of who solved what
+   (src/View/Classrooms, app/classrooms). */
+.classes
+{
+	max-width: 900px;
+	margin: 0 auto;
+	padding: var(--space-4);
+	text-align: left;
+}
+
+.classes__header
+{
+	text-align: center;
+	margin-bottom: var(--space-5);
+}
+
+.classes__crumb
+{
+	color: var(--text-softer-color);
+	font-size: var(--font-size-sm);
+	margin-bottom: var(--space-2);
+}
+
+.classes__title
+{
+	font-size: var(--font-size-lg);
+	margin: var(--space-2) 0;
+	text-align: center;
+}
+
+.classes__section
+{
+	margin-bottom: var(--space-4);
+	padding: var(--space-4);
+}
+
+.classes__heading
+{
+	font-size: var(--font-size-md);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--text-softer-color);
+	margin: 0 0 var(--space-3);
+}
+
+.classes__row
+{
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--space-2);
+	padding: var(--space-2) 0;
+	border-bottom: 1px solid var(--current-border-color);
+}
+
+.classes__actions
+{
+	display: inline-flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--space-2);
+}
+
+.classes__form
+{
+	margin-top: var(--space-4);
+}
+
+.classes__form-row
+{
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: var(--space-3);
+}
+
+@media (width < 40rem)
+{
+	.classes__form-row
+	{
+		grid-template-columns: 1fr;
+	}
+}
+
+.classes__join-link
+{
+	margin-top: var(--space-4);
+}
+
+.classes__join,
+.classes__danger
+{
+	text-align: center;
+}
+
+.classes__assignment
+{
+	margin-bottom: var(--space-3);
+	padding: var(--space-3);
+}
+
+.classes__assignment-header
+{
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--space-2);
+	margin-bottom: var(--space-2);
+}
+
+.classes__assignment-title
+{
+	font-weight: var(--font-weight-bold);
+}
+
+/* A long collection is wider than the page, so the table scrolls on its own. */
+.classes__progress
+{
+	overflow-x: auto;
+}
+
+.classes__table
+{
+	border-collapse: collapse;
+}
+
+.classes__table th,
+.classes__table td
+{
+	padding: 4px 6px;
+	text-align: center;
+	border: 1px solid var(--current-border-color);
+	white-space: nowrap;
+}
+
+.classes__table th
+{
+	color: var(--text-softer-color);
+	font-weight: normal;
+}
+
+.classes__pupil
+{
+	text-align: left;
+}
+
+.classes__table td.classes__pupil
+{
+	text-align: left;
+}
+
+.classes__table a
+{
+	color: inherit;
+}
+
+.classes__cell
+{
+	min-width: 1.6em;
+	font-weight: var(--font-weight-bold);
+}
+
+.classes__legend .classes__cell
+{
+	display: inline-block;
+	margin-left: var(--space-3);
+	text-align: center;
+	border-radius: var(--radius-sm);
+}
+
+.classes__cell--solved
+{
+	background: var(--color-green);
+	color: #fff;
+}
+
+.classes__cell--late
+{
+	background: var(--color-yellow);
+	color: #000;
+}
+
+.classes__cell--earlier
+{
+	color: var(--color-green);
+}
+
+.classes__cell--tried
+{
+	background: var(--color-red);
+	color: #fff;
+}
+
+.classes__solved-count
+{
+	font-weight: var(--font-weight-bold);
+}
+
+/* Invitations and requests waiting for the player's answer are counted on the Classes menu
+   item and on Collections above it, with the badge of the changelog item (.nav__new-badge). */
+a[href="/classes"],
+a[href="/sets"]
+{
+	position: relative;
+	white-space: nowrap;
+}
+}
