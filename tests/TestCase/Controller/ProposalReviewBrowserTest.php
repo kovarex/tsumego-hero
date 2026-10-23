@@ -62,6 +62,42 @@ class ProposalReviewBrowserTest extends TestCaseWithAuth
 		$browser->assertNoJsErrors();
 	}
 
+	/** Beside the board, wide panels put the changes in a column of their own, low panels below the board start with the list folded. */
+	public function testChangesListFitsTheRoom(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => ['set_order' => 1, 'status' => 'S', 'sgfs' => [
+				['data' => self::SGF_VERSION_1, 'accepted' => true],
+				['data' => self::SGF_VERSION_2, 'accepted' => false]]]]);
+		$url = '/editor/?sgfID=' . $context->tsumegos[0]['sgfs'][1]['id'] . '&diffID=' . $context->tsumegos[0]['sgfs'][0]['id'];
+		$browser = Browser::instance();
+		$window = $browser->driver->manage()->window();
+		$originalSize = $window->getSize();
+		$layout = 'return [document.querySelector(".besogo-panels").classList.contains("besogo-panels--diff-column"), document.querySelector(".besogo-diff").classList.contains("besogo-diff--folded")];';
+		try
+		{
+			$window->setSize(new Facebook\WebDriver\WebDriverDimension(1920, 1080));
+			$browser->get($url);
+			$browser->waitUntilJs('document.getElementById("diffSummary") !== null');
+			$this->assertSame([true, false], $browser->driver->executeScript($layout));
+
+			$window->setSize(new Facebook\WebDriver\WebDriverDimension(1400, 900));
+			$browser->waitUntilJs('!document.querySelector(".besogo-panels").classList.contains("besogo-panels--diff-column")');
+			$this->assertSame([false, false], $browser->driver->executeScript($layout));
+
+			$window->setSize(new Facebook\WebDriver\WebDriverDimension(800, 1200));
+			$browser->waitUntilJs('document.querySelector(".besogo-diff").classList.contains("besogo-diff--folded")');
+			$browser->clickId('diffSummary');
+			$this->assertSame([false, false], $browser->driver->executeScript($layout));
+			$browser->assertNoJsErrors();
+		}
+		finally
+		{
+			$window->setSize($originalSize);
+		}
+	}
+
 	public function testProposalCantBeSavedWithoutADescription(): void
 	{
 		$context = new ContextPreparator([

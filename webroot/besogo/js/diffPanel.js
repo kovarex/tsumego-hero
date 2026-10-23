@@ -7,10 +7,16 @@ besogo.makeDiffPanel = function(container, editor)
       SETUP_NAMES = { AB: 'black', AW: 'white', AE: 'empty' },
       CORRECT_NAMES = { [CORRECT_GOOD]: 'correct', [CORRECT_BAD]: 'wrong', [CORRECT_UNDEFINED]: 'undecided', [CORRECT_EMPTY]: 'none' },
       SHOWN_MOVES = 4, // the last moves that name a position in the list
+      COLUMN_PANELS_WIDTH = 900, // from this width of the panels the changes get a column of their own
+      UNFOLDED_PANELS_HEIGHT = 500, // in one column with lower panels, the list starts folded to leave room for the tree
+      panels = container.parentElement,
+      foldedByUser = null, // whether the user folded the list, null until they click the summary
       entries = []; // {node, element}
 
   editor.addListener(update);
   update({ treeChange: true });
+  // the panels change size with the window, and they are beside the board or below it
+  new ResizeObserver(updateLayout).observe(panels);
 
   function update(msg)
   {
@@ -26,6 +32,7 @@ besogo.makeDiffPanel = function(container, editor)
     container.textContent = '';
     entries = [];
     container.style.display = root.isDiff ? '' : 'none';
+    updateLayout();
     if (!root.isDiff)
       return;
 
@@ -37,6 +44,8 @@ besogo.makeDiffPanel = function(container, editor)
     let summary = document.createElement('div');
     summary.className = 'besogo-diff-summary';
     summary.id = 'diffSummary';
+    summary.title = 'Show or hide the list';
+    summary.onclick = function() { foldedByUser = container.classList.toggle('besogo-diff--folded'); };
     if (counts.added + counts.removed + counts.changed == 0)
       summary.textContent = 'No differences from the compared version.';
     else
@@ -82,6 +91,12 @@ besogo.makeDiffPanel = function(container, editor)
     item.onclick = function() { editor.setCurrent(node); };
     list.appendChild(item);
     entries.push({ node: node, element: item });
+  }
+
+  function updateLayout()
+  {
+    panels.classList.toggle('besogo-panels--diff-column', editor.getRoot().isDiff && panels.clientWidth >= COLUMN_PANELS_WIDTH);
+    container.classList.toggle('besogo-diff--folded', foldedByUser !== null ? foldedByUser : panels.clientHeight < UNFOLDED_PANELS_HEIGHT);
   }
 
   function markCurrent()

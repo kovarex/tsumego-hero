@@ -149,11 +149,13 @@
     flex: 0 0 auto;
 }
 
-/* What a diff changed, see diffPanel.js */
+/* What a diff changed, see diffPanel.js. It is what a diff is opened for, so in one column with the
+   other panels it keeps its height (up to almost half of them) and the comment and tree panels give
+   way; the summary folds the list away when the room is needed. */
 .besogo-diff {
-    flex: 0 1 auto;
+    flex: 0 0 auto;
     width: 100%;
-    max-height: 35vh;
+    max-height: 45%;
     overflow: auto;
     font-family: Tahoma, Geneva, sans-serif;
     font-size: 11pt;
@@ -161,6 +163,44 @@
 .besogo-diff-summary {
     font-weight: bold;
     padding: 3px;
+    cursor: pointer;
+}
+.besogo-diff-summary::before {
+    content: "\25BE  "; /* ▾ */
+}
+.besogo-diff--folded .besogo-diff-summary::before {
+    content: "\25B8  "; /* ▸ */
+}
+.besogo-diff--folded .besogo-diff-list {
+    display: none;
+}
+/* Panels wide enough for two columns: the editor panels on the left, the changes on the right in full height */
+.besogo-panels.besogo-panels--diff-column {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 3fr) auto minmax(0, 2fr) auto;
+    grid-template-areas: "control diff" "comment diff" "tool diff" "tree diff" "file diff";
+    column-gap: 10px;
+    align-items: stretch;
+}
+.besogo-panels--diff-column > .besogo-control { grid-area: control; }
+.besogo-panels--diff-column > .besogo-comment { grid-area: comment; }
+.besogo-panels--diff-column > .besogo-tool { grid-area: tool; }
+.besogo-panels--diff-column > .besogo-tree { grid-area: tree; }
+.besogo-panels--diff-column > .besogo-file { grid-area: file; justify-self: center; }
+.besogo-panels--diff-column > .besogo-diff {
+    grid-area: diff;
+    max-height: none;
+    border-left: 1px solid #ccc;
+}
+.besogo-panels--diff-column .besogo-diff-summary {
+    cursor: auto;
+}
+.besogo-panels--diff-column .besogo-diff-summary::before {
+    content: none;
+}
+.besogo-panels--diff-column .besogo-diff--folded .besogo-diff-list {
+    display: block;
 }
 .besogo-diff-list {
     list-style: none;
