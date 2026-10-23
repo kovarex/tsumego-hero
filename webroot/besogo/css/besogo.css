@@ -179,6 +179,19 @@
 .besogo-diff--folded .besogo-diff-summary::before {
     content: "\25B8  "; /* ▸ */
 }
+.besogo-diff-sgf { /* the SGF text, when the files differ in something the tree doesn't show */
+    font-family: monospace;
+    word-break: break-all;
+    padding: 3px 5px 6px;
+}
+.besogo-diff-sgf del {
+    color: #be0119;
+}
+.besogo-diff-sgf ins {
+    color: #2e8b57;
+    text-decoration: none;
+    font-weight: bold;
+}
 .besogo-diff-description {
     white-space: pre-wrap;
     padding: 3px 5px 6px;
@@ -200,6 +213,7 @@
     border-radius: 0;
 }
 .besogo-diff--folded .besogo-diff-list,
+.besogo-diff--folded .besogo-diff-sgf,
 .besogo-diff--folded .besogo-diff-description {
     display: none;
 }
@@ -229,6 +243,7 @@
     content: none;
 }
 .besogo-panels--diff-column .besogo-diff--folded .besogo-diff-list,
+.besogo-panels--diff-column .besogo-diff--folded .besogo-diff-sgf,
 .besogo-panels--diff-column .besogo-diff--folded .besogo-diff-description {
     display: block;
 }

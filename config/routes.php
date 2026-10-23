@@ -40,6 +40,12 @@ Router::connect('/sitemap.xml', [
 Router::connect('/', ['controller' => 'sites', 'action' => 'index'], ['routeClass' => 'UrlRoute']);
 
 /**
+ * The board editor, see EditorController
+ */
+Router::connect('/editor', ['controller' => 'editor', 'action' => 'index']);
+Router::connect('/editor/', ['controller' => 'editor', 'action' => 'index']);
+
+/**
  * Public changelog / "what's new" page
  */
 Router::connect('/changelog', ['controller' => 'changelog', 'action' => 'index']);

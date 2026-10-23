@@ -68,6 +68,30 @@ class ProposalReviewBrowserTest extends TestCaseWithAuth
 		$browser->assertNoJsErrors();
 	}
 
+	/** When the trees show no difference, the SGF files are compared as text, so nothing stays hidden. */
+	public function testNoDifferenceInTheTreeComparesTheSgfFiles(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => ['set_order' => 1, 'status' => 'S', 'sgfs' => [
+				['data' => '(;GM[1]FF[3]SZ[19]AB[cc];B[aa])', 'accepted' => true],
+				['data' => '(;GM[1]FF[4]SZ[19]AB[cc];B[aa])', 'accepted' => true],
+				['data' => '(;GM[1]FF[4]SZ[19]AB[cc];B[aa])', 'accepted' => false]]]]);
+		$sgfs = $context->tsumegos[0]['sgfs'];
+		$browser = Browser::instance();
+
+		$browser->get('/editor/?sgfID=' . $sgfs[2]['id'] . '&diffID=' . $sgfs[1]['id']);
+		$browser->waitUntilJs('document.getElementById("diffSummary") !== null');
+		$this->assertSame('No differences, the SGF files are identical', $browser->find('#diffSummary')->getText());
+
+		$browser->get('/editor/?sgfID=' . $sgfs[1]['id'] . '&diffID=' . $sgfs[0]['id']);
+		$browser->waitUntilJs('document.getElementById("diffSgfText") !== null');
+		$this->assertSame('No differences in the problem, but the SGF files differ:', $browser->find('#diffSummary')->getText());
+		$this->assertSame('FF[3]', $browser->find('#diffSgfText del')->getText());
+		$this->assertSame('FF[4]', $browser->find('#diffSgfText ins')->getText());
+		$browser->assertNoJsErrors();
+	}
+
 	/** Wide panels put the changes in a column of their own (sooner below the board), low narrow ones start with the list folded. */
 	public function testChangesListFitsTheRoom(): void
 	{

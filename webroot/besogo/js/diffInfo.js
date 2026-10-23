@@ -108,3 +108,89 @@ besogo.compareGameInfo = function(gameInfo, previousGameInfo)
       changes.push({property: 'gameInfo', key: key, before: previousGameInfo[key] || '', after: gameInfo[key] || ''});
   return changes;
 }
+
+// The SGF files of a diff whose trees show no difference, compared as text, so that a change the
+// tree doesn't show (a property besogo ignores, the order of properties...) is not hidden.
+// Returns {identical, sameTokens, parts}: parts is the diff of the tokens (a property with its
+// values, or ; ( )) as [{type: 'same' | 'removed' | 'added', text}], unchanged runs cut to
+// SGF_TEXT_CONTEXT tokens around the changes and '…' between.
+var SGF_TEXT_CONTEXT = 2;
+
+besogo.compareSgfTexts = function(shownText, comparedText)
+{
+  let result = { identical: shownText === comparedText, sameTokens: false, parts: [] };
+  if (result.identical)
+    return result;
+  let shown = besogo.tokenizeSgf(shownText), compared = besogo.tokenizeSgf(comparedText);
+  result.sameTokens = JSON.stringify(shown) === JSON.stringify(compared);
+  if (!result.sameTokens)
+    result.parts = besogo.withContext(besogo.diffTokens(compared, shown));
+  return result;
+}
+
+// Spacing and line breaks between the tokens and between the values of a property don't count
+besogo.tokenizeSgf = function(text)
+{
+  let tokens = [];
+  for (let match of text.matchAll(/[;()]|[A-Za-z]+\s*(?:\[(?:\\[\s\S]|[^\]\\])*\]\s*)+/g))
+    tokens.push(match[0].trim().replace(/^([A-Za-z]+)\s+\[/, '$1[').replace(/\]\s+\[/g, ']['));
+  return tokens;
+}
+
+// [{type, text}] turning the tokens before into the tokens after (longest common subsequence)
+besogo.diffTokens = function(before, after)
+{
+  let start = 0;
+  while (start < before.length && start < after.length && before[start] === after[start])
+    ++start;
+  let end = 0;
+  while (end < before.length - start && end < after.length - start && before[before.length - 1 - end] === after[after.length - 1 - end])
+    ++end;
+  let removed = before.slice(start, before.length - end), added = after.slice(start, after.length - end);
+  let parts = before.slice(0, start).map(function(text) { return { type: 'same', text: text }; });
+
+  if (removed.length * added.length > 1000000) // too big to align, all of it changed
+    parts = parts.concat(removed.map(function(text) { return { type: 'removed', text: text }; }),
+                         added.map(function(text) { return { type: 'added', text: text }; }));
+  else
+  {
+    // common[i][j]: length of the longest common subsequence of removed[i..] and added[j..]
+    let common = [];
+    for (let i = removed.length; i >= 0; --i)
+    {
+      common[i] = new Array(added.length + 1).fill(0);
+      if (i < removed.length)
+        for (let j = added.length - 1; j >= 0; --j)
+          common[i][j] = removed[i] === added[j] ? common[i + 1][j + 1] + 1 : Math.max(common[i + 1][j], common[i][j + 1]);
+    }
+    let i = 0, j = 0;
+    while (i < removed.length || j < added.length)
+      if (i < removed.length && j < added.length && removed[i] === added[j])
+      {
+        parts.push({ type: 'same', text: removed[i] });
+        ++i;
+        ++j;
+      }
+      else if (i < removed.length && (j == added.length || common[i + 1][j] >= common[i][j + 1]))
+        parts.push({ type: 'removed', text: removed[i++] });
+      else
+        parts.push({ type: 'added', text: added[j++] });
+  }
+  return parts.concat(before.slice(before.length - end).map(function(text) { return { type: 'same', text: text }; }));
+}
+
+besogo.withContext = function(parts)
+{
+  let result = [];
+  for (let i = 0; i < parts.length; ++i)
+  {
+    let near = false;
+    for (let k = Math.max(0, i - SGF_TEXT_CONTEXT); k <= Math.min(parts.length - 1, i + SGF_TEXT_CONTEXT); ++k)
+      near = near || parts[k].type != 'same';
+    if (near)
+      result.push(parts[i]);
+    else if (result.length == 0 || result[result.length - 1].text !== '…')
+      result.push({ type: 'same', text: '…' });
+  }
+  return result;
+}

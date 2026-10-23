@@ -200,3 +200,32 @@ besogo.addTest("Diff", "AddedAndRemovedBranchesAreNotAReorder", function()
   shown.incorporateDiff(previous);
   CHECK(!findDiffChange(shown, 'branchOrder'));
 });
+
+besogo.addTest("Diff", "SgfTextsIdentical", function()
+{
+  let texts = besogo.compareSgfTexts('(;GM[1]AB[aa];B[bb])', '(;GM[1]AB[aa];B[bb])');
+  CHECK(texts.identical);
+});
+
+besogo.addTest("Diff", "SgfTextsDifferOnlyInSpacing", function()
+{
+  let texts = besogo.compareSgfTexts('(;GM[1]AB[aa][bb];B[cc])', '(;GM[1]\nAB [aa]\n[bb]\n;B[cc])');
+  CHECK(!texts.identical);
+  CHECK(texts.sameTokens);
+});
+
+besogo.addTest("Diff", "SgfTextsDifferInAProperty", function()
+{
+  // the compared version turned into the shown one, with the unchanged tokens around cut to '…'
+  let texts = besogo.compareSgfTexts('(;GM[1]FF[4]SZ[19]AB[aa];B[bb];W[cc];B[dd])', '(;GM[1]FF[3]SZ[19]AB[aa];B[bb];W[cc];B[dd])');
+  CHECK(!texts.sameTokens);
+  CHECK_EQUALS(JSON.stringify(texts.parts), JSON.stringify([
+    { type: 'same', text: '…' },
+    { type: 'same', text: ';' },
+    { type: 'same', text: 'GM[1]' },
+    { type: 'removed', text: 'FF[3]' },
+    { type: 'added', text: 'FF[4]' },
+    { type: 'same', text: 'SZ[19]' },
+    { type: 'same', text: 'AB[aa]' },
+    { type: 'same', text: '…' }]));
+});

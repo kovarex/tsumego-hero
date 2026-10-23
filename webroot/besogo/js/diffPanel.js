@@ -49,8 +49,23 @@ besogo.makeDiffPanel = function(container, editor)
     summary.id = 'diffSummary';
     summary.title = 'Show or hide the list';
     summary.onclick = function() { foldedByUser = container.classList.toggle('besogo-diff--folded'); };
+    let textDifference = null;
     if (counts.added + counts.removed + counts.changed == 0)
-      summary.appendChild(document.createTextNode('No differences'));
+    {
+      // nothing the tree shows, so the files are either the same or differ in something it doesn't show
+      let texts = besogo.diffTexts ? besogo.compareSgfTexts(besogo.diffTexts.shown, besogo.diffTexts.compared) : null;
+      if (!texts)
+        summary.appendChild(document.createTextNode('No differences'));
+      else if (texts.identical)
+        summary.appendChild(document.createTextNode('No differences, the SGF files are identical'));
+      else if (texts.sameTokens)
+        summary.appendChild(document.createTextNode('No differences, the SGF files differ only in spaces and line breaks'));
+      else
+      {
+        summary.appendChild(document.createTextNode('No differences in the problem, but the SGF files differ:'));
+        textDifference = describeTextDifference(texts.parts);
+      }
+    }
     else
     {
       summary.title += '\nAdded and removed count moves, changed counts positions in both versions with another comment, status, markup...';
@@ -62,6 +77,8 @@ besogo.makeDiffPanel = function(container, editor)
     requestVersionInfo();
     if (versionInfo && versionInfo.description)
       container.appendChild(describeVersion(versionInfo));
+    if (textDifference)
+      container.appendChild(textDifference);
     container.appendChild(list);
     markCurrent();
   }
@@ -139,6 +156,17 @@ besogo.makeDiffPanel = function(container, editor)
     element.appendChild(author);
     element.appendChild(textElement('span', ' wrote: ', 'besogo-diff-property'));
     element.appendChild(document.createTextNode(info.description));
+    return element;
+  }
+
+  // The SGF text of the compared version turned into the shown one, see besogo.compareSgfTexts
+  function describeTextDifference(parts)
+  {
+    let element = document.createElement('div');
+    element.className = 'besogo-diff-sgf';
+    element.id = 'diffSgfText';
+    for (let part of parts)
+      element.appendChild(textElement(part.type == 'removed' ? 'del' : part.type == 'added' ? 'ins' : 'span', part.text));
     return element;
   }
 
