@@ -249,10 +249,17 @@
 
 		/* ── Typography ── */
 		/* Type: the concrete stacks. No other file names a font family. */
-		--font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-			"Helvetica Neue", "Noto Sans", Arial, sans-serif, "Apple Color Emoji",
-			"Segoe UI Emoji", "Noto Color Emoji";
-		--font-family-serif: Georgia, Cambria, "Times New Roman", Times, serif;
+		/* Plain sans, what the browser picks for sans-serif. A system UI stack
+		   (Segoe UI, SF) turns the heavy weights used here into its Black face. */
+		--font-family-sans: Arial, Helvetica, sans-serif;
+		/* Wide sans with a tall x-height: stays open and legible in bold at the
+		   menu's sizes, where a system UI sans gets dense. */
+		--font-family-sans-wide: Verdana, Geneva, "DejaVu Sans", sans-serif;
+		/* Single heavy weight, for short labels on a coloured bar. */
+		--font-family-sans-heavy: "Arial Black", Verdana, Helvetica, Arial, sans-serif;
+		--font-family-serif: "Times New Roman", Times, serif;
+		/* Serif drawn for screens, wider and heavier than the text serif. */
+		--font-family-serif-display: Georgia, Cambria, "Times New Roman", serif;
 		--font-family-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
 			"Liberation Mono", "Courier New", monospace;
 		/* Narrow display face, for numbers that have to fit a tight box. */
@@ -261,21 +268,32 @@
 
 		/* Role: which type goes where. Rules reference these, never the
 		   families above, so a family can be swapped without touching any of
-		   them. */
+		   them. The values keep the faces the site had before the tokens. */
 
 		/* Normal text: paragraphs, lists, table cells, anything you read as
 		   sentences (p, li, td). This is also the default, so a rule only
 		   names a token when it wants something else. */
 		--font-family-body: var(--font-family-serif);
 
-		/* Titles and nav labels: h1 to h6, nav items, the short words that set
-		   the tone of the page. */
+		/* Titles: h2 to h6, set like the text around them. */
 		--font-family-heading: var(--font-family-serif);
 
-		/* The chrome around the text: menus, bars, overlays. Controls are not listed
+		/* Short text that sets the tone: the page title (h1), the sign-in and
+		   account menu labels, answer choices, notices, tabs. */
+		--font-family-display: var(--font-family-serif-display);
+
+		/* The chrome around the text: bars, overlays. Controls are not listed
 		   here, they follow the container they sit in, so a button in an article is
-		   set in the body face and the same button in a menu in this one. */
+		   set in the body face and the same button in a menu in its face. */
 		--font-family-ui: var(--font-family-sans);
+
+		/* The top menu and its submenus. Its labels are set at weight 800, which
+		   in a system UI sans resolves to Segoe UI Black or SF Heavy and reads
+		   cramped, so the menu keeps its own wide face. */
+		--font-family-menu: var(--font-family-sans-wide);
+
+		/* The account bar: user name, level and XP. */
+		--font-family-account: var(--font-family-sans-heavy);
 
 		/* Code: pre, code, file paths and stack traces. */
 		--font-family-code: var(--font-family-mono);

@@ -10,7 +10,6 @@
   besogo.boardParameters = []; //parameters of the board the refer to pixels
   besogo.scaleParameters = []; //parameters of the board the refer to coordinates
   besogo.coordArea = []; //the square of valid visible coordinates
-  besogo.dynamicCommentCoords = []; //the comment coord texts that need to be inside the visible area
   besogo.boardCanvasSvg = null;
   besogo.intuitionActive = false;
   besogo.playerColor = "black";
@@ -381,7 +380,7 @@
     if (options.sgfID) {
       try {
         let url = new URL(window.location.origin + '/sgf/fetch/' + options.sgfID);
-		fetchParseLoad(url, besogo.editor, options.path, sgfLoaded, options.diffID);
+		fetchParseLoad(url, besogo.editor, options.path, sgfLoaded, options.diffID, options.sgfID);
 	  } catch (e) {
 		  window.alert('Error fetching sgf ' + e.message);
 		  return;
@@ -694,7 +693,7 @@
   }
 
   // Fetches text file at url from same domain
-  function fetchParseLoad(url, editor, path, sgfLoaded, diffID) {
+  function fetchParseLoad(url, editor, path, sgfLoaded, diffID, sgfID) {
     var http = new XMLHttpRequest();
 
     http.onreadystatechange = function () {
@@ -702,6 +701,8 @@
 		  if (http.status === 200) {
 			  // Successful fetch
 			  sgfLoaded.scaleParameters = parseAndLoad(http.responseText, editor);
+			  // Saving sends the transformation from this SGF version, as long as the tree is still the one loaded from it
+			  besogo.sourceSgf = { id: sgfID, root: editor.getRoot() };
 			  navigatePath(editor, path);
 
 			  // If no diff ID, we are done

@@ -4,11 +4,13 @@ use App\Attribute\HttpPost;
 use App\Utility\AchievementChecker;
 use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
+use App\Utility\BoardTransformation;
 use App\Utility\Constants;
 use App\Utility\CookieFlash;
 use App\Utility\PlayOutcome;
 use App\Utility\Rating;
 use App\Utility\RatingParseException;
+use App\Utility\SgfCommentReorientation;
 use App\Utility\SimilarSearchLogic;
 use App\Utility\TsumegoButton;
 use App\Utility\TsumegoMerger;
@@ -401,8 +403,16 @@ class TsumegosController extends AppController
 		$sgf['accepted'] = Auth::isAdmin() ? true : false;
 		$sgf['first_move_color'] = $firstMoveColor;
 		$sgf['correct_moves'] = $correctMoves;
+		// what the board editor did to the SGF it was opened with, so the comments can follow
+		$source = ClassRegistry::init('Sgf')->findById((int) ($this->request->data['sourceSgfID'] ?? 0));
+		if ($source && $source['Sgf']['tsumego_id'] == $tsumego['id'])
+		{
+			$sgf['source_sgf_id'] = $source['Sgf']['id'];
+			$sgf['transformation_from_source'] = BoardTransformation::fromJson($this->request->data['transformationFromSource'] ?? null)->toJson();
+		}
 		ClassRegistry::init("Sgf")->create();
 		ClassRegistry::init("Sgf")->save($sgf);
+		SgfCommentReorientation::afterAccepted((int) ClassRegistry::init("Sgf")->id);
 		return $this->redirect('/' . $setConnectionID);
 	}
 

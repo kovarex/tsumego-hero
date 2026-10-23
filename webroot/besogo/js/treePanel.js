@@ -187,11 +187,59 @@ besogo.makeTreePanel = function(container, editor)
       default: // Empty node
         element = besogo.svgStone(svgPos(x), svgPos(y)); // Grey stone
     }
+
+    // Badge for nodes that have position-anchored player comments
+    var commentCount = editor.getAnchoredCommentCount(node);
+    if (commentCount > 0)
+      element.appendChild(makeCommentBadge(svgPos(x) + 32, svgPos(y) - 32, commentCount));
+
     node.navTreeIcon = element; // Save icon reference in game state tree
     node.navTreeX = x; // Save position of the icon
     node.navTreeY = y;
 
     return element;
+  }
+
+  // Makes a speech-bubble badge showing a comment count. Filled via CSS so the
+  // color uses the theme tokens and stays distinct from the green correct-move
+  // circle and the teal current-node marker in the tree.
+  function makeCommentBadge(x, y, count)
+  {
+    var w = 54,
+        h = 36,
+        text = count > 99 ? '99+' : '' + count,
+        group = besogo.svgEl('g'),
+        bubbleGroup = besogo.svgEl('g', { 'class': 'besogo-tree-comment-badge__bubble' }),
+        rect = besogo.svgEl('rect', {
+            x: x - w / 2,
+            y: y - h / 2,
+            width: w,
+            height: h,
+            rx: 15,
+            ry: 15
+        }),
+        tail = besogo.svgEl('polygon', {
+            points: (x - 11) + ',' + (y + h / 2) + ' ' + (x + 2) + ',' + (y + h / 2) + ' ' + (x - 7) + ',' + (y + h / 2 + 15)
+        }),
+        label = besogo.svgEl('text', {
+            x: x,
+            y: y,
+            dy: '.30em',
+            'font-size': 20,
+            'text-anchor': 'middle',
+            'font-family': 'Helvetica, Arial, sans-serif',
+            fill: '#ffffff',
+            'font-weight': 'bold'
+        });
+
+    if (text.length > 3) text = text.slice(0, 2) + '+';
+    label.appendChild(document.createTextNode(text));
+    bubbleGroup.appendChild(rect);
+    bubbleGroup.appendChild(tail);
+    group.appendChild(bubbleGroup);
+    group.appendChild(label);
+    group.setAttribute('class', 'besogo-tree-comment-badge');
+    return group;
   }
 
   function updateCurrentNodeIcon() // Updates the current node icon

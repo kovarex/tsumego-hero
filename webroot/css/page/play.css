@@ -100,6 +100,7 @@
 #multipleChoice2,
 #multipleChoice3,
 #multipleChoice4 {
+  font-family: var(--font-family-display);
   padding: 10px 13px;
   font-size: 18px;
   font-style: normal;
@@ -202,6 +203,7 @@
   vertical-align: text-top;
 }
 h1 {
+  font-family: var(--font-family-display);
   letter-spacing: 1px;
   font-size: 18px;
   font-style: normal;
@@ -248,6 +250,7 @@ h1 {
   display: none;
   background-color: var(--color-gray);
   padding: 3px 0px 1px 29px;
+  font-family: var(--font-family-display);
   letter-spacing: 1px;
   font-size: 24px;
   font-weight: 700;
@@ -617,6 +620,7 @@ h1 {
   bottom: calc(100% + 6px);
   left: 50%;
   transform: translateX(-50%);
+  font-family: var(--font-family-display);
   font-size: 12px;
   line-height: 15px;
   white-space: nowrap;

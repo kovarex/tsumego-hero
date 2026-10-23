@@ -44,6 +44,7 @@
 	border: none;
 	border-bottom: 1px solid var(--text-softer-color);
 	color: var(--text-color);
+	font-family: var(--font-family-display);
 	font-weight: 400;
 	font-size: 15px;
 	transition: 0.2s ease;
@@ -70,6 +71,7 @@
 	background: none;
 	border: none;
 	color: var(--text-softer-color);
+	font-family: var(--font-family-ui);
 	font-size: var(--font-size-md);
 	text-decoration: underline;
 	cursor: pointer;
