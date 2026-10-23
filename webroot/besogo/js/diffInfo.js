@@ -54,7 +54,17 @@ besogo.compareNodeProperties = function(node, previousNode)
   // what the tree below makes of the move, so a branch that became wrong or correct shows up
   if (node.move)
     compare('correct', node.correct, previousNode.correct);
+  // the branches both versions have, in the order they are shown, so reordered branches show up
+  compare('branchOrder', besogo.listSharedBranches(node, previousNode), besogo.listSharedBranches(previousNode, node));
   return changes;
+}
+
+// The moves of the node's children that the other node has a child for too, in order, as [{x, y}]
+besogo.listSharedBranches = function(node, otherNode)
+{
+  return node.children
+    .filter(function(child) { return otherNode.getCorrespondingChild(child); })
+    .map(function(child) { return {x: child.move.x, y: child.move.y}; });
 }
 
 // The setup stones placed in the node, as [{x, y, value}] with value AB, AW or AE.

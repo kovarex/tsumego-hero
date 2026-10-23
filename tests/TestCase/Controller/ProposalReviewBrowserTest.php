@@ -46,6 +46,22 @@ class ProposalReviewBrowserTest extends TestCaseWithAuth
 		$browser->assertNoJsErrors();
 	}
 
+	public function testDiffShowsReorderedBranches(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => ['set_order' => 1, 'status' => 'S', 'sgfs' => [
+				['data' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc](;B[aa]C[+])(;B[ba]))', 'accepted' => true],
+				['data' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc](;B[ba])(;B[aa]C[+]))', 'accepted' => false]]]]);
+		$browser = Browser::instance();
+		$browser->get('/editor/?sgfID=' . $context->tsumegos[0]['sgfs'][1]['id'] . '&diffID=' . $context->tsumegos[0]['sgfs'][0]['id']);
+
+		$browser->waitUntilJs('document.getElementById("diffSummary") !== null');
+		$this->assertStringContainsString('1 position changed', $browser->find('#diffSummary')->getText());
+		$this->assertStringContainsString('Order of the branches: A19, B19 → B19, A19', $browser->find('.besogo-diff-entry')->getText());
+		$browser->assertNoJsErrors();
+	}
+
 	public function testProposalCantBeSavedWithoutADescription(): void
 	{
 		$context = new ContextPreparator([

@@ -146,6 +146,7 @@ besogo.makeDiffPanel = function(container, editor)
       case 'status': return 'Status';
       case 'superkoMeansDead': return 'Super ko means dead';
       case 'correct': return 'Result';
+      case 'branchOrder': return 'Order of the branches';
     }
     return change.property;
   }
@@ -167,6 +168,7 @@ besogo.makeDiffPanel = function(container, editor)
       case 'markedCorrect':
       case 'superkoMeansDead': return value ? 'yes' : 'no';
       case 'correct': return CORRECT_NAMES[value];
+      case 'branchOrder': return value.map(function(move) { return editor.coordXYToLabel(move.x, move.y); }).join(', ');
     }
     return '' + value;
   }

@@ -167,3 +167,36 @@ besogo.addTest("Diff", "ChildDoesNotShowTheChangesOfItsParent", function()
   CHECK(findDiffChange(shown, 'comment'));
   CHECK(!move.diffInfo);
 });
+
+besogo.addTest("Diff", "BranchOrderChange", function()
+{
+  let previous = besogo.makeGameRoot();
+  previous.registerMove(1, 1);
+  previous.registerMove(2, 2);
+  previous.registerMove(3, 3);
+  let shown = besogo.makeGameRoot();
+  shown.registerMove(3, 3);
+  shown.registerMove(1, 1);
+  shown.registerMove(2, 2);
+
+  shown.incorporateDiff(previous);
+  let change = findDiffChange(shown, 'branchOrder');
+  CHECK(change);
+  CHECK_EQUALS(JSON.stringify(change.before), JSON.stringify([{x: 1, y: 1}, {x: 2, y: 2}, {x: 3, y: 3}]));
+  CHECK_EQUALS(JSON.stringify(change.after), JSON.stringify([{x: 3, y: 3}, {x: 1, y: 1}, {x: 2, y: 2}]));
+});
+
+besogo.addTest("Diff", "AddedAndRemovedBranchesAreNotAReorder", function()
+{
+  let previous = besogo.makeGameRoot();
+  previous.registerMove(1, 1);
+  previous.registerMove(2, 2);
+  previous.registerMove(3, 3);
+  let shown = besogo.makeGameRoot();
+  shown.registerMove(4, 4);
+  shown.registerMove(1, 1);
+  shown.registerMove(3, 3);
+
+  shown.incorporateDiff(previous);
+  CHECK(!findDiffChange(shown, 'branchOrder'));
+});
