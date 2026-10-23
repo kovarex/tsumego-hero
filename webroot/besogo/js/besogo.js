@@ -35,6 +35,8 @@
   besogo.verticalHalfBoardRotationWidthToken = false;
   besogo.savesProposal = false;
   besogo.SGF_DESCRIPTION_MAX_LENGTH = 1000; // Sgf::DESCRIPTION_MAX_LENGTH
+  besogo.loadedSgfText = null; // the SGF the editor loaded by sgfID
+  besogo.diffTexts = null; // {shown, compared}: the SGF texts of the diff, see besogo.compareSgfTexts
   let corner;
 
   function getMakers() {
@@ -705,6 +707,7 @@
       if (http.readyState === XMLHttpRequest.DONE) {
 		  if (http.status === 200) {
 			  // Successful fetch
+			  besogo.loadedSgfText = http.responseText;
 			  sgfLoaded.scaleParameters = parseAndLoad(http.responseText, editor);
 			  // Saving sends the transformation from this SGF version, as long as the tree is still the one loaded from it
 			  besogo.sourceSgf = { id: sgfID, root: editor.getRoot() };
@@ -739,6 +742,7 @@
 					let diffSgf = http.responseText.trim();
 					if (diffSgf !== "")
 					{
+						besogo.diffTexts = { shown: besogo.loadedSgfText, compared: http.responseText };
 						diffSgf = besogo.parseSgf(diffSgf);
 						besogo.loadSgf(diffSgf, editor, OPEN_FOR_DIFF);
 					}

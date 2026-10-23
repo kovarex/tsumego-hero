@@ -217,6 +217,7 @@ besogo.makeFilePanel = function (container, editor) {
         alert("SGF parse error at " + error.at + ":\n" + error.message);
         return;
       }
+      besogo.diffTexts = { shown: besogo.composeSgf(editor), compared: e.target.result };
       besogo.loadSgf(sgf, editor, OPEN_FOR_DIFF);
     };
     reader.readAsText(file); // Initiate file read
