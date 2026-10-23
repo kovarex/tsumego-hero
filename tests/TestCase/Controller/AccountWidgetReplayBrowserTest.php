@@ -15,21 +15,21 @@ class AccountWidgetReplayBrowserTest extends TestCaseWithAuth
 {
 	use RetryTrait;
 
+	/** AccountWidget.unshownResultKey, Firefox doesn't let the test scripts see the class itself */
+	private const UNSHOWN_RESULT_KEY = 'accountWidgetUnshownResult';
+
 	/**
 	 * Black (1,1), white (1,2), black (2,1) is correct. Black (2,1) is lost at once, but the
 	 * line goes on: white answers (1,1) and only black (3,1) ends it.
 	 */
-	/** AccountWidget.unshownResultKey, Firefox doesn't let the test scripts see the class itself */
-	private const UNSHOWN_RESULT_KEY = 'accountWidgetUnshownResult';
-
 	private const SGF = '(;GM[1]FF[4]ST[2]SZ[19](;B[aa];W[ab];B[ba]C[+])(;B[ba];W[aa];B[ca]))';
 
-	private function prepare(Browser $browser): ContextPreparator
+	private function prepare(Browser $browser, string $show = 'rating'): ContextPreparator
 	{
 		$context = new ContextPreparator([
 			'user' => ['rating' => 1000, 'mode' => Constants::$LEVEL_MODE],
 			'tsumego' => ['rating' => 1000, 'set_order' => 1, 'sgf' => self::SGF]]);
-		$browser->setCookie('showInAccountWidget', 'rating');
+		$browser->setCookie('showInAccountWidget', $show);
 		$browser->get($this->playUrl($context));
 		$browser->waitUntilJs('typeof besogo !== "undefined" && besogo.editor && typeof besogo.editor.getCurrent === "function"');
 		return $context;
@@ -43,6 +43,11 @@ class AccountWidgetReplayBrowserTest extends TestCaseWithAuth
 	private function unshownResult(Browser $browser): ?array
 	{
 		return $browser->driver->executeScript('return JSON.parse(sessionStorage.getItem("' . self::UNSHOWN_RESULT_KEY . '"));');
+	}
+
+	private function barGlows(Browser $browser): bool
+	{
+		return $browser->driver->executeScript('return document.getElementById("xp-increase-fx").style.display;') === 'inline-block';
 	}
 
 	/** The animation leaves the transition on the bar, a page that animated nothing has none */
@@ -84,6 +89,38 @@ class AccountWidgetReplayBrowserTest extends TestCaseWithAuth
 			$browser->get($this->playUrl($context));
 			$this->assertFalse($this->barAnimated($browser), $case . ': the page after it plays nothing');
 		}
+	}
+
+	public function testTheLevelBarPlaysNoFailAsAFailCostsNoXP(): void
+	{
+		$browser = Browser::instance();
+		$context = $this->prepare($browser, 'level');
+
+		$browser->clickBoard(2, 1);
+		$browser->waitUntilJs('sessionStorage.getItem("' . self::UNSHOWN_RESULT_KEY . '") !== null');
+		$browser->get($this->playUrl($context));
+
+		$this->assertFalse($this->barAnimated($browser), 'The bar doesn\'t move');
+		$this->assertFalse($this->barGlows($browser), 'The bar doesn\'t glow');
+		$this->assertNull($this->unshownResult($browser));
+		$this->waitForDamage($context, 1);
+	}
+
+	public function testTheLevelBarPlaysASolve(): void
+	{
+		$browser = Browser::instance();
+		$context = $this->prepare($browser, 'level');
+		$xpBefore = (int) $browser->driver->executeScript('return accountWidget.xp;');
+
+		$browser->clickBoard(1, 1);
+		$browser->waitUntilJs('besogo.editor.getCurrent().moveNumber >= 2');
+		$browser->clickBoard(2, 1);
+		$browser->waitUntilJs('sessionStorage.getItem("' . self::UNSHOWN_RESULT_KEY . '") !== null');
+		$browser->get($this->playUrl($context));
+
+		$this->assertTrue($this->barAnimated($browser));
+		$this->assertTrue($this->barGlows($browser));
+		$this->assertGreaterThan($xpBefore, (int) $browser->driver->executeScript('return accountWidget.xp;'));
 	}
 
 	public function testAResultShownInFullIsNotPlayedAgain(): void

@@ -161,7 +161,22 @@ class AccountWidget
 			this.showTimeMode();
 			return;
 		}
-		this.animateTo(this.valuesAfter(increase));
+		let values = this.valuesAfter(increase);
+		if (this.showsChange(this.values(), values))
+			this.animateTo(values);
+		else
+		{
+			this.setValues(values);
+			AccountWidget.forgetUnshownResult();
+		}
+	}
+
+	// A fail changes no XP, so the level bar has nothing to show for it
+	showsChange(from, to)
+	{
+		if (this.show == 'rating')
+			return Math.abs(from.rating - to.rating) >= 0.001;
+		return from.xp != to.xp || from.level != to.level;
 	}
 
 	animateTo(values)
@@ -231,6 +246,11 @@ class AccountWidget
 		// the result can still be on its way to the server when this page is rendered
 		if (AccountWidget.sameValues(target, unshown.before))
 			target = unshown.after;
+		if (!this.showsChange(unshown.before, target))
+		{
+			this.setValues(target);
+			return;
+		}
 		this.bar.style.webkitTransition = "none";
 		this.setValues(unshown.before);
 		this.setup();
