@@ -43,6 +43,7 @@ class AdminActivityType extends AppModel
 	public const ACCEPT_TAG = 23;
 	public const REJECT_TAG = 24;
 	public const ADD_TAG = 28; // An admin adds a tag to a problem. It doesn't need to be accepted.
+	public const DELETE_TAG = 33; // old_value: JSON of the deleted tag row and its tag connections
 
 	// Proposals
 	public const ACCEPT_PROPOSAL = 29;

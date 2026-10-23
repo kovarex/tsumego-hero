@@ -33,11 +33,11 @@ use App\Utility\Util;
 		<a href="/tags/edit/<?php echo $tn['Tag']['id']; ?>" id="tag-edit">Edit</a>
 		<?php if($canDeleteTag){ ?>
 			|
-			<form method="post" action="/tags/delete/<?php echo $tn['Tag']['id']; ?>" style="display:inline" onsubmit="return confirm('Delete this tag?');">
-				<input type="hidden" name="data[Tag][delete]" value="<?php echo $tn['Tag']['id']; ?>">
-				<input type="submit" value="Delete">
+			<form method="post" action="/tags/delete/<?php echo $tn['Tag']['id']; ?>" style="display:inline" onsubmit="return confirm('Delete this tag? It will be removed from every problem that has it.');">
+				<input type="submit" value="Delete" id="tag-delete">
 			</form>
 		<?php } ?>
+		| <a href="/tags">All tags</a>
 	<?php } ?>
 				</div>
         <div class="existing-tags-list">

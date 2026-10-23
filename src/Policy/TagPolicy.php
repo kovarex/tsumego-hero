@@ -35,6 +35,24 @@ class TagPolicy extends BasePolicy
 	}
 
 	/**
+	 * The tag overview: every tag with the problems that carry it.
+	 *
+	 * @param UserRow|null $user
+	 */
+	public static function canIndex(?array $user): bool
+	{
+		return static::isAdmin($user);
+	}
+
+	/**
+	 * @param UserRow|null $user
+	 */
+	public static function canProblems(?array $user): bool
+	{
+		return static::isAdmin($user);
+	}
+
+	/**
 	 * Deleting a tag name is reserved for (user id 72 = d4rkm4tter),
 	 * not for regular admins.
 	 *
