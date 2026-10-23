@@ -158,7 +158,7 @@ class ClassroomsController extends AppController
 		$isTeacher = $this->Authorization->can(['Classroom' => $classroom], 'manage');
 		if (!($statusId === ClassroomMemberStatus::INVITED && $isMember)
 			&& !($statusId === ClassroomMemberStatus::REQUESTED && $isTeacher))
-			throw new ForbiddenException();
+				throw new ForbiddenException();
 
 		ClassroomMember::accept((int) $membership['id']);
 		return $this->redirect(self::classUrl((int) $classroom['id']));

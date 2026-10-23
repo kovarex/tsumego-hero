@@ -423,12 +423,12 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 
 		$browser->get('/classes/' . $classroomId);
 		$browser->waitUntilCssSelectorExistsWithText('.classes__solved-count', '0/3');
-		$this->assertCount(0, $browser->getElements('.classes__cell--solved'));
+		$this->assertCount(0, $browser->getElements('.classes__table .classes__cell--solved'));
 
 		$this->addAttempt('pupil', 1, true, 0, date('Y-m-d H:i:s'));
 
 		$browser->waitUntilCssSelectorExistsWithText('.classes__solved-count', '1/3', 30);
-		$this->assertCount(1, $browser->getElements('.classes__cell--solved'));
+		$this->assertCount(1, $browser->getElements('.classes__table .classes__cell--solved'));
 	}
 
 	public function testDeletingTheClassTakesItsMembersAndAssignments(): void
