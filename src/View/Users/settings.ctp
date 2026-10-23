@@ -2,6 +2,7 @@
 
 use App\Utility\Auth;
 use App\Utility\Constants;
+use App\Utility\ReadingStones;
 
 /**
  * Everything a player can change about their account and about how the site
@@ -168,6 +169,27 @@ use App\Utility\Constants;
 		</div>
 	</div>
 	<div class="card card--green">
+		<div class="card__title">Reading trainer</div>
+		<div class="stack">
+			<div class="field">
+				<span class="field__label">Your stones</span>
+				<?php
+				$playedStones = Auth::getPrefReadingPlayed();
+				foreach (ReadingStones::cases() as $readingCase)
+					echo '<label class="field__option"><input type="radio" name="readingPlayed" value="' . $readingCase->value . '" onclick="readingPreference(\'played\');" ' . ($playedStones === $readingCase ? 'checked="checked"' : '') . '> ' . $readingCase->name . '</label>';
+				?>
+			</div>
+			<div class="field">
+				<span class="field__label">The problem's stones</span>
+				<?php
+				$setupStones = Auth::getPrefReadingSetup();
+				foreach (ReadingStones::cases() as $readingCase)
+					echo '<label class="field__option"><input type="radio" name="readingSetup" value="' . $readingCase->value . '" onclick="readingPreference(\'setup\');" ' . ($setupStones === $readingCase ? 'checked="checked"' : '') . '> ' . $readingCase->name . '</label>';
+				?>
+			</div>
+		</div>
+	</div>
+	<div class="card card--green">
 		<div class="card__title">Progress</div>
 		<div class="stack">
 			<?php if ($canResetOldTsumegoStatuses): ?>
@@ -259,6 +281,26 @@ function boardOrientationPreference(orientation)
 		method: 'POST',
 		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
 		body: 'orientation=' + encodeURIComponent(orientation)
+	});
+}
+
+function readingPreference(picked)
+{
+	// Both sides visible is the plain game, not a trainer setting: the side the
+	// player did not just pick turns Hidden instead.
+	const played = document.querySelector('input[name="readingPlayed"]:checked');
+	const setup = document.querySelector('input[name="readingSetup"]:checked');
+	if (played.value === '0' && setup.value === '0')
+	{
+		const side = picked === 'played' ? 'readingSetup' : 'readingPlayed';
+		document.querySelector('input[name="' + side + '"][value="2"]').checked = true;
+	}
+
+	fetch('/users/readingModePreference', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+		body: 'played=' + encodeURIComponent(document.querySelector('input[name="readingPlayed"]:checked').value)
+			+ '&setup=' + encodeURIComponent(document.querySelector('input[name="readingSetup"]:checked').value)
 	});
 }
 

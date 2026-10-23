@@ -120,6 +120,19 @@ class Auth
 		return Auth::isLoggedIn() ? (int) Auth::getUser()['date_format_id'] : User::DATE_FORMAT_ISO;
 	}
 
+	public static function getPrefReadingPlayed(): ReadingStones
+	{
+		return Auth::isLoggedIn() ? ReadingStones::fromPreference(Auth::getUser()['pref_reading_played']) : ReadingStones::defaultPlayed();
+	}
+
+	/**
+	 * How the stones the problem starts with are drawn once the first move is played.
+	 */
+	public static function getPrefReadingSetup(): ReadingStones
+	{
+		return Auth::isLoggedIn() ? ReadingStones::fromPreference(Auth::getUser()['pref_reading_setup']) : ReadingStones::defaultSetup();
+	}
+
 	/**
 	 * The avatar the logged in player picked, which is the board for a visitor who
 	 * is not logged in at all.

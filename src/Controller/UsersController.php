@@ -13,6 +13,7 @@ use App\Utility\JwtAuth;
 use App\Utility\MistakeTraining;
 use App\Utility\PwnedPasswordChecker;
 use App\Utility\PwnedPasswordCheckerInterface;
+use App\Utility\ReadingStones;
 use App\Utility\SGFProposalsRenderer;
 use App\Utility\SgfCommentReorientation;
 use App\Utility\TagConnectionProposalsRenderer;
@@ -2099,6 +2100,32 @@ OFFSET " . $offset, [$userID, $userID]);
 			$format = User::DATE_FORMAT_ISO;
 
 		Auth::saveUserField('date_format_id', $format);
+
+		$this->response->statusCode(200);
+		$this->response->type('application/json');
+		$this->response->body(json_encode(['status' => 'ok']));
+	}
+
+	/**
+	 * Store both reading-trainer axes: how the stones the player plays are drawn,
+	 * and how the stones the problem starts with are drawn. A pair that leaves
+	 * everything visible is the plain game, so it is refused; the trainer is turned
+	 * on and off by the eye under the board.
+	 */
+	#[HttpPost]
+	public function readingModePreference(): void
+	{
+		$this->autoRender = false;
+		$this->Authorization->authorize('User', 'editPreferences');
+
+		$played = ReadingStones::tryFrom((int) ($this->request->data['played'] ?? -1));
+		$setup = ReadingStones::tryFrom((int) ($this->request->data['setup'] ?? -1));
+
+		if ($played && $setup && ($played !== ReadingStones::Normal || $setup !== ReadingStones::Normal))
+		{
+			Auth::saveUserField('pref_reading_played', $played->value);
+			Auth::saveUserField('pref_reading_setup', $setup->value);
+		}
 
 		$this->response->statusCode(200);
 		$this->response->type('application/json');

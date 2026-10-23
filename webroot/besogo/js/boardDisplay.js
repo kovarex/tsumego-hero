@@ -19,7 +19,17 @@ besogo.makeBoardDisplay = function(container, editor, corner)
 
       randIndex, // Random index for stone images
       lastHoverPosition = null,
-      TOUCH_FLAG = false; // Flag for touch interfaces
+      TOUCH_FLAG = false, // Flag for touch interfaces
+
+      // Reading trainer bookkeeping: when each point stops showing a move that was just
+      // made, which node was painted last (so going back to an older position does not
+      // show anything again), and one timer that redraws when the first moment is over.
+      // drawnStates keeps what each point looked like in the last paint, so a stone that
+      // leaves can fade instead of blinking away.
+      visibleUntil = {},
+      drawnStates = {},
+      lastPaintedNode = null,
+      readingRedrawTimer = null;
 
   try
   {
@@ -447,12 +457,71 @@ besogo.makeBoardDisplay = function(container, editor, corner)
     };
   }
 
+  // What the stones the player played and the stones the problem started with look
+  // like right now: the pair picked in the settings while the trainer is on, the
+  // plain board while it is off or while the solved problem is shown whole.
+  function readingStates()
+  {
+    if (!editor.READING_ON || editor.READING_REVEAL)
+      return { played: besogo.READING_NORMAL, setup: besogo.READING_NORMAL };
+
+    return { played: editor.READING_LOOK_PLAYED, setup: editor.READING_LOOK_SETUP };
+  }
+
+  // Whether this point still shows the colour of a move that was just made.
+  function isFresh(point)
+  {
+    return visibleUntil[point] > Date.now();
+  }
+
+  // One stone in the look the trainer asks for: its real colour, or one glass stone
+  // for both colours (the point reads as taken, not as whose).
+  function stoneElement(i, j, color, state)
+  {
+    var x = svgPos(i),
+        y = svgPos(j);
+
+    if (state === besogo.READING_GLASS)
+      return editor.REAL_STONES
+        ? besogo.realStone(x, y, -1, 0, editor.GLASS_STONE, editor.GLASS_STONE)
+        : besogo.svgStone(x, y, -1);
+
+    return editor.REAL_STONES
+      ? besogo.realStone(x, y, color, randIndex[fromXY(i, j)], editor.BLACK_STONES, editor.WHITE_STONES)
+      : besogo.svgStone(x, y, color);
+  }
+
+  // A stone that leaves the board fades out instead of blinking away, so the eye can
+  // follow what went away.
+  function fadeOut(element)
+  {
+    if (element.animate)
+      element.animate([{ opacity: 1 }, { opacity: 0 }], { duration: besogo.READING_FADE_MS, fill: "forwards" });
+  }
+
   // Redraws the stones
   function redrawStones(current)
   {
     var group = besogo.svgEl("g"), // New stone layer group
         shadowGroup, // Group for shadow layer
-        i, j, x, y, color; // Scratch iteration variables
+        i, j, x, y, color, state, isPlayed, element, // Scratch iteration variables
+        painted = {}, // What each point looks like now, for the next fade
+        playedPoints = editor.getPlayedPoints(current),
+        hasPlayed = Object.keys(playedPoints).length > 0;
+
+    // A move keeps its real colour for a moment so the player sees where it landed. The
+    // answer lands right after it, so every point keeps its own moment; a retry of the
+    // same point starts a new one.
+    if (editor.READING_ENABLED && current !== lastPaintedNode && current.move)
+      visibleUntil[current.move.x + "-" + current.move.y] = Date.now() + besogo.READING_GRACE_MS;
+
+    lastPaintedNode = current;
+
+    var states = readingStates(),
+        playedState = states.played,
+        setupState = states.setup;
+
+    scheduleReadingRedraw();
 
     // Add group for shawdows
     if (editor.SHADOWS)
@@ -465,30 +534,72 @@ besogo.makeBoardDisplay = function(container, editor, corner)
       for (j = 1; j <= sizeY; j++)
       {
         color = current.getStone(i, j);
-        if (color)
+        if (!color)
+          continue;
+
+        isPlayed = !!(playedPoints && playedPoints[i + "-" + j]);
+        state = isPlayed ? playedState : (hasPlayed ? setupState : besogo.READING_NORMAL);
+        if (isPlayed && isFresh(i + "-" + j))
+          state = besogo.READING_NORMAL;
+
+        if (state === besogo.READING_HIDDEN)
         {
-          x = svgPos(i);
-          y = svgPos(j);
-
-          if (editor.REAL_STONES) // Realistic stone
-            group.appendChild(besogo.realStone(x, y, color, randIndex[fromXY(i, j)], editor.BLACK_STONES, editor.WHITE_STONES));
-          else // SVG stone
-            group.appendChild(besogo.svgStone(x, y, color));
-
-          // Draw shadows
-          if (editor.SHADOWS)
-          {
-            shadowGroup.appendChild(besogo.svgShadow(x - 2, y - 4));
-            shadowGroup.appendChild(besogo.svgShadow(x + 2, y + 4));
-          }
+          var wasState = drawnStates[i + "-" + j];
+          if (wasState === undefined)
+            continue;
+          element = stoneElement(i, j, color, wasState);
+          fadeOut(element);
+          group.appendChild(element);
+          continue;
         }
+
+        painted[i + "-" + j] = state;
+        x = svgPos(i);
+        y = svgPos(j);
+        element = stoneElement(i, j, color, state);
+        element.setAttribute('data-reading', state === besogo.READING_GLASS ? 'glass' : 'normal');
+        group.appendChild(element);
+
+        // A glass stone leaves no shadow, otherwise it looks solid.
+        if (state !== besogo.READING_GLASS && editor.SHADOWS)
+        {
+          shadowGroup.appendChild(besogo.svgShadow(x - 2, y - 4));
+          shadowGroup.appendChild(besogo.svgShadow(x + 2, y + 4));
+        }
+        element.setAttribute('data-x', i);
+        element.setAttribute('data-y', j);
       }
+
     let koPosition = current.getForbiddenMoveBecauseOfKo();
-    if (koPosition)
+    // A ko square would give away where stones are, so it follows the setup axis.
+    if (koPosition && setupState !== besogo.READING_HIDDEN)
       group.appendChild(besogo.svgSquare(svgPos(koPosition.x), svgPos(koPosition.y), "black", 2));
 
     svg.replaceChild(group, stoneGroup); // Replace the stone group
     stoneGroup = group;
+    drawnStates = painted;
+  }
+
+  // Redraw when the first of those moments is over. The same pass drops the moments
+  // that are spent, so the map only ever holds the moves of the last few seconds.
+  function scheduleReadingRedraw()
+  {
+    clearTimeout(readingRedrawTimer);
+    readingRedrawTimer = null;
+
+    var now = Date.now(),
+        next = Infinity;
+    for (var point in visibleUntil)
+      if (visibleUntil[point] > now)
+      {
+        if (visibleUntil[point] < next)
+          next = visibleUntil[point];
+      }
+      else
+        delete visibleUntil[point];
+
+    if (next < Infinity)
+      readingRedrawTimer = setTimeout(function () { redrawAll(editor.getCurrent()); }, next - now);
   }
 
   // Redraws the markup
@@ -545,8 +656,10 @@ besogo.makeBoardDisplay = function(container, editor, corner)
       }
     }
 
-    // Mark last move with circle if not already marked
+    // Mark last move with circle if not already marked. A hidden stone must not leave
+    // the marker behind, it would give the point away.
     if (lastMove && lastMove.x !== 0 && lastMove.y !== 0 &&
+        (readingStates().played !== besogo.READING_HIDDEN || isFresh(lastMove.x + "-" + lastMove.y)) &&
         !markupLayer[fromXY(lastMove.x, lastMove.y)]) // Last move not marked
     {
       let moveToUse = lastMove;

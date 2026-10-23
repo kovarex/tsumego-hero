@@ -7,6 +7,7 @@ use App\Utility\BoardSelector;
 use App\Utility\Constants;
 use App\Utility\HeroPowers;
 use App\Utility\Level;
+use App\Utility\ReadingStones;
 use App\Utility\SgfParser;
 use App\Utility\Util;
 
@@ -134,6 +135,8 @@ class ContextPreparator
 		$user['pref_board_orientation'] = Util::extract('pref_board_orientation', $userInput) ?? User::PREF_BOARD_ORIENTATION_RANDOM;
 		$user['date_format_id'] = Util::extract('date_format_id', $userInput) ?? User::DATE_FORMAT_ISO;
 		$user['sound'] = Util::extract('sound', $userInput) ?? 0;
+		$user['pref_reading_played'] = Util::extract('pref_reading_played', $userInput) ?? ReadingStones::defaultPlayed()->value;
+		$user['pref_reading_setup'] = Util::extract('pref_reading_setup', $userInput) ?? ReadingStones::defaultSetup()->value;
 		if ($lastTimeModeCategoryID = Util::extract('last-time-mode-category-id', $userInput))
 			$user['last_time_mode_category_id'] = $lastTimeModeCategoryID;
 

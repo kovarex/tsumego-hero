@@ -283,6 +283,14 @@ class Play
 		else
 			$corner = Play::randomCorner();
 
+		// The reading trainer is offered on plain problems; a variant or a semeai asks
+		// about the real groups, which the trainer would hide.
+		if ($tsumegoVariant == null && ($t['Tsumego']['semeaiType'] ?? 0) == 0)
+		{
+			($this->setFunction)('readingPlayed', Auth::getPrefReadingPlayed()->value);
+			($this->setFunction)('readingSetup', Auth::getPrefReadingSetup()->value);
+		}
+
 		// Variants (multiple-choice / score-estimating) and semeai questions are
 		// about the actual Black/White groups on the board, so the player always
 		// plays black here.

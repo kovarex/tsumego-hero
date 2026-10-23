@@ -17,4 +17,15 @@ besogo.getCookie =	function (cname){
 	return "";
 };
 
+besogo.setCookie =	function (cname, value, days){
+	var expires = new Date();
+	expires.setTime(expires.getTime() + (days || 365) * 24 * 60 * 60 * 1000);
+	document.cookie =
+		cname + "=" + encodeURIComponent(value) +
+		"; expires=" + expires.toUTCString() +
+		"; path=/" +
+		"; SameSite=Lax" +
+		"; Secure";
+};
+
 })(); 
