@@ -1,5 +1,6 @@
 <?php
 
+use App\Utility\SgfDescription;
 use App\Utility\Util;
 
 /**
@@ -39,7 +40,7 @@ use App\Utility\Util;
 		echo '<a href="/tsumegos/play/' . $s[$i]['Sgf']['tsumego_id'] . '"> ' . h($s[$i]['Sgf']['title']) . '</a> ';
 		echo '<a href="/sgfs/view/' . $s[$i]['Sgf']['tsumego_id'] . '" id="dl1-' . $s[$i]['Sgf']['id'] . '">v ' . $s[$i]['Sgf']['version'] . '</a>';
 		echo '</td>';
-		echo '<td class="timeTableMiddle versionColor proposal-description" align="left" id="description-' . $s[$i]['Sgf']['id'] . '">' . h($s[$i]['Sgf']['description'] ?? '') . '</td>';
+		echo '<td class="timeTableMiddle versionColor proposal-description" align="left" id="description-' . $s[$i]['Sgf']['id'] . '">' . SgfDescription::render($s[$i]['Sgf']['description'] ?? null) . '</td>';
 		echo '<td class="timeTableRight versionColor" align="left">';
 		echo '<a id="open-' . $s[$i]['Sgf']['id'] . '">open</a>&nbsp;&nbsp;&nbsp;';
 		if ($s[$i]['Sgf']['diff'])

@@ -22,11 +22,15 @@ class ProposalReviewBrowserTest extends TestCaseWithAuth
 			'tsumego' => ['set_order' => 1, 'status' => 'S', 'sgfs' => [
 				['data' => self::SGF_VERSION_1, 'accepted' => true],
 				['data' => self::SGF_VERSION_2, 'accepted' => false]]]]);
+		App\Utility\Util::execute('UPDATE sgf SET description = ? WHERE id = ?', ['Made it status based', $context->tsumegos[0]['sgfs'][1]['id']]);
 		$browser = Browser::instance();
 		$browser->get('/editor/?sgfID=' . $context->tsumegos[0]['sgfs'][1]['id'] . '&diffID=' . $context->tsumegos[0]['sgfs'][0]['id']);
 
 		$browser->waitUntilJs('document.getElementById("diffSummary") !== null');
 		$this->assertStringContainsString('0 added', $browser->find('#diffSummary')->getText());
+		// what the author wrote about the version is above the changes
+		$browser->waitUntilJs('document.getElementById("diffDescription") !== null');
+		$this->assertStringEndsWith('wrote: Made it status based', $browser->find('#diffDescription')->getText());
 		$entries = $browser->getElements('.besogo-diff-entry');
 		$texts = array_map(fn($entry) => $entry->getText(), $entries);
 		$all = implode("\n", $texts);
@@ -138,6 +142,13 @@ class ProposalReviewBrowserTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get('/users/adminstats');
 		$this->assertSame('Made it status based', $browser->findById('description-' . $proposalID)->getText());
+
+		// a long one is shortened, the whole is in the tooltip
+		$long = str_repeat('Made it status based. ', 10);
+		App\Utility\Util::execute('UPDATE sgf SET description = ? WHERE id = ?', [$long, $proposalID]);
+		$browser->get('/users/adminstats');
+		$this->assertStringEndsWith('…', $browser->findById('description-' . $proposalID)->getText());
+		$this->assertSame($long, $browser->find('#description-' . $proposalID . ' span')->getAttribute('title'));
 
 		// the browser asks for the comment before the form goes anywhere
 		$browser->clickId('reject-' . $proposalID);

@@ -179,7 +179,12 @@
 .besogo-diff--folded .besogo-diff-summary::before {
     content: "\25B8  "; /* ▸ */
 }
-.besogo-diff--folded .besogo-diff-list {
+.besogo-diff-description {
+    white-space: pre-wrap;
+    padding: 3px 5px 6px;
+}
+.besogo-diff--folded .besogo-diff-list,
+.besogo-diff--folded .besogo-diff-description {
     display: none;
 }
 /* Panels wide enough for two columns: the editor panels on the left, the changes on the right in full height */
@@ -207,7 +212,8 @@
 .besogo-panels--diff-column .besogo-diff-summary::before {
     content: none;
 }
-.besogo-panels--diff-column .besogo-diff--folded .besogo-diff-list {
+.besogo-panels--diff-column .besogo-diff--folded .besogo-diff-list,
+.besogo-panels--diff-column .besogo-diff--folded .besogo-diff-description {
     display: block;
 }
 .besogo-diff-list {

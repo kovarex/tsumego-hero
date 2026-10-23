@@ -64,7 +64,7 @@ OFFSET " . $this->offset, [Auth::getUserID()]);
 	{
 		echo '<td>' . User::renderLink($item) . '</td>';
 		echo '<td><a class="adminpanel-link" href="/' . $item['set_connection_id'] . '">' . h($item['set_title']) . ' - ' . h($item['num']) . '</a></td>';
-		echo '<td class="proposal-description" id="description-' . $item['proposed_id'] . '">' . h($item['description'] ?? '') . '</td>';
+		echo '<td class="proposal-description" id="description-' . $item['proposed_id'] . '">' . SgfDescription::render($item['description']) . '</td>';
 		echo '<td style="white-space:nowrap">';
 		echo '<a href="/editor/?sgfID=' . $item['latest_accepted_id'] . '">current</a> | <a href="/editor/?sgfID=' . $item['proposed_id'] . '">proposal</a> | <a href="/editor/?sgfID=' . $item['proposed_id'] . '&diffID=' . $item['latest_accepted_id'] . '">diff</a>';
 		echo '</td>';

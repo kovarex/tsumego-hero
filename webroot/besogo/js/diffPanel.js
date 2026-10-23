@@ -12,6 +12,8 @@ besogo.makeDiffPanel = function(container, editor)
       UNFOLDED_PANELS_HEIGHT = 500, // in one column with lower panels, the list starts folded to leave room for the tree
       panels = container.parentElement,
       foldedByUser = null, // whether the user folded the list, null until they click the summary
+      versionInfo = null, // {description, author} of the shown version, see requestVersionInfo
+      versionInfoRequested = false,
       entries = []; // {node, element}
 
   editor.addListener(update);
@@ -57,6 +59,9 @@ besogo.makeDiffPanel = function(container, editor)
       addCount(summary, counts.changed, 'changed', changedIcon());
     }
     container.appendChild(summary);
+    requestVersionInfo();
+    if (versionInfo && versionInfo.description)
+      container.appendChild(describeVersion(versionInfo));
     container.appendChild(list);
     markCurrent();
   }
@@ -104,6 +109,33 @@ besogo.makeDiffPanel = function(container, editor)
     let column = width >= COLUMN_PANELS_WIDTH || (width >= COLUMN_FLAT_PANELS_WIDTH && width > panels.clientHeight);
     panels.classList.toggle('besogo-panels--diff-column', editor.getRoot().isDiff && column);
     container.classList.toggle('besogo-diff--folded', foldedByUser !== null ? foldedByUser : panels.clientHeight < UNFOLDED_PANELS_HEIGHT);
+  }
+
+  // What the author of the shown version wrote about it (the proposal's description), fetched once
+  function requestVersionInfo()
+  {
+    if (versionInfoRequested || !besogo.sourceSgf || !besogo.sourceSgf.id)
+      return;
+    versionInfoRequested = true;
+    fetch('/sgf/info/' + besogo.sourceSgf.id)
+      .then(function(response) { return response.ok ? response.json() : null; })
+      .then(function(info)
+      {
+        versionInfo = info;
+        if (info && info.description)
+          rebuild();
+      })
+      .catch(function() {}); // the changes are shown without it
+  }
+
+  function describeVersion(info)
+  {
+    let element = document.createElement('div');
+    element.className = 'besogo-diff-description';
+    element.id = 'diffDescription';
+    element.appendChild(textElement('span', (info.author ? info.author : 'The author') + ' wrote: ', 'besogo-diff-property'));
+    element.appendChild(document.createTextNode(info.description));
+    return element;
   }
 
   // "3 added" with the icon of the tree

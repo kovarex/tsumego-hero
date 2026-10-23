@@ -21,9 +21,9 @@
 	min-width: 12em;
 	flex: 1 1 auto;
 }
-.proposal-description {
+.proposal-description { /* see SgfDescription, a long one is cut to fit in about three lines */
+	min-width: 16em;
 	max-width: 20em;
-	white-space: pre-wrap;
 	font-size: 13px;
 }
 }
