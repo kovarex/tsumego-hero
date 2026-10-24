@@ -309,7 +309,7 @@ class UserSettingsTest extends ControllerTestCase
 		$browser->find('input[type="submit"]')->click();
 		$browser->waitUntilJs('location.href.includes("/users/view/' . $context->user['id'] . '")');
 
-		$this->assertSame(0, (int) $context->reloadUser()['isAdmin']);
+		$this->assertSame(User::ROLE_PLAYER, (int) $context->reloadUser()['user_role_id']);
 	}
 
 	/**

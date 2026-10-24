@@ -62,6 +62,9 @@ class AdminActivityType extends AppModel
 	// Display name
 	public const DISPLAY_NAME_CHANGE = 32;
 
+	// Roles: an owner made someone a player, an admin or an owner (see User::changeRole)
+	public const ROLE_CHANGE = 43;
+
 	// Schedule
 	public const ADD_TO_SCHEDULE = 33;
 	public const CANCEL_SCHEDULE = 34;

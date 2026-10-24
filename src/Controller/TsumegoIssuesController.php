@@ -318,7 +318,7 @@ class TsumegoIssuesController extends AppController
 				'user_display_name' => User::displayNameOrNull($commentUser['User']),
 				'user_avatar_url' => User::avatarOrNull($commentUser['User']),
 				'user_rating' => $commentUser['User']['rating'],
-				'isAdmin' => ($commentUser['User']['isAdmin'] == 1),
+				'isAdmin' => User::isAdmin($commentUser['User']),
 				'comments' => [[
 					'id' => $commentId,
 					'text' => $comment['TsumegoComment']['message'],
@@ -326,7 +326,7 @@ class TsumegoIssuesController extends AppController
 					'user_display_name' => User::displayNameOrNull($commentUser['User']),
 					'user_avatar_url' => User::avatarOrNull($commentUser['User']),
 					'user_rating' => $commentUser['User']['rating'],
-					'isAdmin' => ($commentUser['User']['isAdmin'] == 1),
+					'isAdmin' => User::isAdmin($commentUser['User']),
 					'created' => Util::toIso8601($comment['TsumegoComment']['created']),
 					'position' => $comment['TsumegoComment']['position'],
 				]],

@@ -133,7 +133,9 @@ class ContextPreparator
 		$id = Util::extract('id', $userInput);
 		if ($id)
 			$user['id'] = (int) $id;
-		$user['isAdmin'] = Util::extract('admin', $userInput) ?? false;
+		$isAdmin = Util::extract('admin', $userInput) ?? false;
+		$isOwner = Util::extract('owner', $userInput) ?? false;
+		$user['user_role_id'] = $isOwner ? User::ROLE_OWNER : ($isAdmin ? User::ROLE_ADMIN : User::ROLE_PLAYER);
 		$user['rating'] = Util::extract('rating', $userInput) ?: self::$DEFAULT_USER_RATING;
 		$user['premium'] = Util::extract('premium', $userInput) ?: 0;
 		$deleted = Util::extract('deleted', $userInput) ?: false;
@@ -948,6 +950,7 @@ class ContextPreparator
 			AdminActivityType::DELETE_USER => 'Delete User',
 			AdminActivityType::RESTORE_USER => 'Restore User',
 			AdminActivityType::DISPLAY_NAME_CHANGE => 'Display Name Change',
+			AdminActivityType::ROLE_CHANGE => 'Role Change',
 			AdminActivityType::PROBLEM_RESTORE => 'Problem Restore',
 			AdminActivityType::SET_DELETE => 'Set Delete',
 			AdminActivityType::SET_RESTORE => 'Set Restore',

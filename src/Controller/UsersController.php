@@ -1555,8 +1555,10 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 			if (isset($this->request->data['User']['demote']))
 				if (password_verify($this->request->data['User']['demote'], Auth::getUser()['password_hash']))
 				{
-					Auth::saveUserField('isAdmin', 0);
-					$redirect = true;
+					if ($error = User::changeRole(Auth::getUserID(), User::ROLE_PLAYER))
+						$status = '<p style="color:#d63a49">' . h($error) . '</p>';
+					else
+						$redirect = true;
 				}
 				else
 					$status = '<p style="color:#d63a49">Password incorrect.</p>';

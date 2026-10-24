@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\AdminActivityLogger;
+use App\Utility\Auth;
 use App\Utility\Avatar;
 use App\Utility\Constants;
 use App\Utility\PhpbbNames;
@@ -21,6 +23,25 @@ class User extends AppModel
 	public const DATE_FORMAT_DAY_MONTH_YEAR = 2; // 21. 10. 2026 14:05, the Czech way
 	public const DATE_FORMAT_MONTH_DAY_YEAR = 3; // 10/21/2026 2:05 PM
 	public const DATE_FORMAT_BROWSER = 4; // whatever the language of the browser uses
+
+	/**
+	 * The ids of the user_role table, what a user may do on the site. An admin edits the problems
+	 * and collections and decides the proposals. An owner can do everything an admin can, and also
+	 * decides who is an admin or an owner.
+	 */
+	public const ROLE_PLAYER = 1;
+	public const ROLE_ADMIN = 2;
+	public const ROLE_OWNER = 3;
+
+	/** The roles with the rights of an admin. */
+	public const ADMIN_ROLES = [self::ROLE_ADMIN, self::ROLE_OWNER];
+
+	/** The names of the roles, as the user_role table has them. */
+	public const ROLE_NAMES = [
+		self::ROLE_PLAYER => 'player',
+		self::ROLE_ADMIN => 'admin',
+		self::ROLE_OWNER => 'owner',
+	];
 
 	/** Whether the player wants sound. The cookie spells them 'on' and 'off'. */
 	public const SOUND_OFF = 0;
@@ -150,6 +171,73 @@ class User extends AppModel
 		if ($highestTsumegoAttempt)
 			return max($highestTsumegoAttempt['TsumegoAttempt']['user_rating'], $user['rating']);
 		return $user['rating'];
+	}
+
+	/**
+	 * Whether a user has the rights of an admin, which an owner has too. False for a visitor who is
+	 * not logged in (null).
+	 *
+	 * @param UserRow|array<string, mixed>|null $user
+	 */
+	public static function isAdmin(?array $user): bool
+	{
+		return $user !== null && in_array((int) ($user['user_role_id'] ?? 0), self::ADMIN_ROLES, true);
+	}
+
+	/**
+	 * @param UserRow|array<string, mixed>|null $user
+	 */
+	public static function isOwner(?array $user): bool
+	{
+		return $user !== null && (int) ($user['user_role_id'] ?? 0) === self::ROLE_OWNER;
+	}
+
+	/**
+	 * SQL that tells whether the user behind $roleColumn has the rights of an admin, for the raw
+	 * queries that read the role together with something else.
+	 */
+	public static function isAdminSql(string $roleColumn): string
+	{
+		return $roleColumn . ' IN (' . implode(', ', self::ADMIN_ROLES) . ')';
+	}
+
+	/**
+	 * Gives a user another role, which is the decision of an owner (see OwnerPolicy). The site
+	 * always keeps an owner, so the last one can't stop being one until there is another.
+	 *
+	 * @return string|null why the role can't be changed, null when the user has the role now
+	 */
+	public static function changeRole(int $userID, int $roleID): ?string
+	{
+		if (!array_key_exists($roleID, self::ROLE_NAMES))
+			return 'There is no such role.';
+		$user = ClassRegistry::init('User')->findById($userID);
+		if (!$user || $user['User']['deleted'])
+			return 'The account is not there.';
+		$user = $user['User'];
+		$oldRoleID = (int) $user['user_role_id'];
+		if ($oldRoleID === $roleID)
+			return null;
+		if ($oldRoleID === self::ROLE_OWNER && self::ownerCount() === 1)
+			return $user['display_name'] . ' is the last owner, make someone else an owner first.';
+
+		if (Auth::getUserID() === $userID)
+			Auth::saveUserField('user_role_id', $roleID);
+		else
+			Util::execute('UPDATE user SET user_role_id = ? WHERE id = ?', [$roleID, $userID]);
+		AdminActivityLogger::log(
+			AdminActivityType::ROLE_CHANGE,
+			null,
+			null,
+			json_encode(['user_id' => $userID, 'display_name' => $user['display_name'], 'role' => self::ROLE_NAMES[$oldRoleID]]),
+			self::ROLE_NAMES[$roleID]);
+		return null;
+	}
+
+	/** How many accounts (not deleted) have the owner role. */
+	public static function ownerCount(): int
+	{
+		return (int) Util::query('SELECT COUNT(*) AS count FROM user WHERE user_role_id = ? AND deleted IS NULL', [self::ROLE_OWNER])[0]['count'];
 	}
 
 	/**

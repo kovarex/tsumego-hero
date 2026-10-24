@@ -101,7 +101,7 @@ class SetsController extends AppController
 			array_push($setsNew, $sn);
 		}
 
-		$adminsList = $this->User->find('all', ['order' => 'id ASC', 'conditions' => ['isAdmin >' => 0]]) ?: [];
+		$adminsList = $this->User->find('all', ['order' => 'id ASC', 'conditions' => ['user_role_id' => User::ADMIN_ROLES]]) ?: [];
 		$admins = [];
 		foreach ($adminsList as $item)
 			$admins[] = $item['User']['display_name'];

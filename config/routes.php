@@ -202,6 +202,12 @@ Router::connect(
 /**
  * User Sets routes
  */
+Router::connect('/roles', ['controller' => 'Roles', 'action' => 'index']);
+Router::connect(
+	'/roles/change/:id',
+	['controller' => 'Roles', 'action' => 'change'],
+	['pass' => ['id'], 'id' => '[0-9]+'] // Id of the user
+);
 Router::connect('/trash', ['controller' => 'Trash', 'action' => 'index']);
 Router::connect(
 	'/trash/restore-problem/:id',

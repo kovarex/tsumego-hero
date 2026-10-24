@@ -5,6 +5,7 @@ namespace App\Utility;
 use PaginationHelper;
 use SetConnection;
 use Sgf;
+use User;
 
 class CommentsRenderer
 {
@@ -67,7 +68,7 @@ SELECT
 	tsumego_comment.tsumego_id AS tsumego_id,
 	tsumego_comment.created AS created,
 	tsumego_status.status AS status,
-	user.isAdmin AS from_admin,
+	" . User::isAdminSql('user.user_role_id') . " AS from_admin,
 	user.display_name as from_display_name,
 	user.id as from_id,
 	tsumego_comment.id as id,
