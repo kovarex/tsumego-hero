@@ -68,7 +68,7 @@ class PolicyTest extends CakeTestCase
 	public function testTagPolicyAllowsOnlyAdmins()
 	{
 		$policy = new TagPolicy();
-		foreach (['canEdit', 'canEditAction'] as $method)
+		foreach (['canEdit', 'canEditAction', 'canIndex', 'canProblems'] as $method)
 		{
 			$this->assertTrue($policy->{$method}($this->identity(true)), $method . ' allows admin');
 			$this->assertFalse($policy->{$method}($this->identity(false)), $method . ' blocks regular user');
@@ -76,11 +76,11 @@ class PolicyTest extends CakeTestCase
 		}
 	}
 
-	public function testTagDeleteReservedForSiteOwner()
+	public function testTagDeleteReservedForOwners()
 	{
 		$policy = new TagPolicy();
-		$this->assertTrue($policy->canDelete($this->identity(true, 0, 72)), 'site owner can delete');
-		$this->assertFalse($policy->canDelete($this->identity(true)), 'regular admin blocked');
+		$this->assertTrue($policy->canDelete(['user_role_id' => User::ROLE_OWNER]), 'owner can delete');
+		$this->assertFalse($policy->canDelete($this->identity(true, 0, 72)), 'admin blocked, whatever the id');
 		$this->assertFalse($policy->canDelete($this->identity(false)), 'regular user blocked');
 		$this->assertFalse($policy->canDelete($this->identity(null)), 'anonymous blocked');
 	}

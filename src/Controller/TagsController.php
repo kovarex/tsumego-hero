@@ -198,36 +198,55 @@ class TagsController extends AppController
 	}
 
 	/**
-	 * @param string $id Tag name ID
-	 * @return void
+	 * Deletes the tag and takes it off every problem.
 	 */
 	#[HttpPost]
-	public function delete(string $id): void
+	public function delete(string $id): CakeResponse
 	{
 		$this->Authorization->authorize('Tag');
-		$this->loadModel('Tag');
-		$this->loadModel('TagConnection');
-		$tn = $this->Tag->findById($id);
-		if (!$tn)
+		$tag = ClassRegistry::init('Tag')->findById($id);
+		if (!$tag)
 			throw new NotFoundException('Tag not found');
 
-		if (isset($this->request->data['Tag']))
-			if ($this->request->data['Tag']['delete'] == $id)
-			{
-				$tags = $this->TagConnection->find('all', ['conditions' => ['tag_id' => $id]]);
-				if (!$tags)
-					$tags = [];
-				foreach ($tags as $tag)
-					$this->TagConnection->delete($tag['TagConnection']['id']);
-				$this->Tag->delete($id);
-				$this->set('del', 'del');
-			}
-
-		$this->set('tn', $tn);
+		$problemCount = Tag::deleteWithConnections($tag['Tag']);
+		CookieFlash::set('Tag "' . $tag['Tag']['name'] . '" was deleted from ' . $problemCount . ' ' . ($problemCount === 1 ? 'problem' : 'problems') . '.', 'success');
+		return $this->redirect('/tags');
 	}
 
+	/**
+	 * Every tag with how many problems carry it; each count opens the list of those problems.
+	 */
 	#[HttpGet]
-	public function index(): void {}
+	public function index(): void
+	{
+		$this->Authorization->authorize('Tag');
+		$sort = ($this->request->query['sort'] ?? '') === 'problems' ? 'problems' : 'name';
+		$this->set('_title', 'Tsumego Hero - Tags');
+		$this->set('tags', Tag::listWithProblemCounts($sort === 'problems'));
+		$this->set('sort', $sort);
+		$this->set('canDeleteTag', $this->Authorization->can('Tag', 'delete'));
+	}
+
+	/**
+	 * The problems that carry the tag or have it proposed, as JSON for the tag overview.
+	 */
+	#[HttpGet]
+	public function problems(string $id): CakeResponse
+	{
+		$this->Authorization->authorize('Tag');
+		if (!ClassRegistry::init('Tag')->findById($id))
+			throw new NotFoundException('Tag not found');
+
+		$problems = [];
+		foreach (Tag::problems((int) $id) as $row)
+			$problems[] = [
+				'url' => $row['set_connection_id'] ? '/' . $row['set_connection_id'] : '/tsumegos/play/' . $row['tsumego_id'],
+				'name' => $row['set_title'] !== null ? $row['set_title'] . ' ' . $row['num'] : 'Problem ' . $row['tsumego_id'],
+				'approved' => (bool) $row['approved']];
+		$this->response->type('json');
+		$this->response->body(json_encode($problems));
+		return $this->response;
+	}
 
 	#[HttpPost]
 	public function acceptTagProposal(string $tagID): CakeResponse

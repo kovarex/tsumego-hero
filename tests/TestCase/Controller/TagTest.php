@@ -832,7 +832,7 @@ class TagTest extends ControllerTestCase
 	public function testOwnerDeletesTag()
 	{
 		$context = new ContextPreparator([
-			'user' => ['name' => 'joshka', 'admin' => true, 'id' => 72],
+			'user' => ['name' => 'joshka', 'owner' => true],
 			'tags' => [['name' => 'snapback']]]);
 
 		$tagId = $context->tags[0]['id'];

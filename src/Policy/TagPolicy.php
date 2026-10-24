@@ -35,17 +35,32 @@ class TagPolicy extends BasePolicy
 	}
 
 	/**
-	 * Deleting a tag name is reserved for (user id 72 = d4rkm4tter),
-	 * not for regular admins.
+	 * The tag overview: every tag with the problems that carry it.
 	 *
-	 * TODO: replace the hardcoded user id 72 with a dedicated role above admin
-	 * (e.g. "superadmin" / "site owner")
+	 * @param UserRow|null $user
+	 */
+	public static function canIndex(?array $user): bool
+	{
+		return static::isAdmin($user);
+	}
+
+	/**
+	 * @param UserRow|null $user
+	 */
+	public static function canProblems(?array $user): bool
+	{
+		return static::isAdmin($user);
+	}
+
+	/**
+	 * Deleting a tag takes it off every problem, so it is reserved for owners, not
+	 * regular admins. The admin activity log keeps what was deleted.
 	 *
 	 * @param UserRow|null $user
 	 */
 	public static function canDelete(?array $user): bool
 	{
-		return static::isAdmin($user) && (int) $user['id'] === 72;
+		return static::isOwner($user);
 	}
 
 	/**

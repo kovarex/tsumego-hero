@@ -25,6 +25,12 @@ class AdminActivity extends AppModel
 			case AdminActivityType::ACCEPT_TAG: return 'Accepted tag ' . h($adminActivity['new_value']);
 			case AdminActivityType::REJECT_TAG: return 'Rejected tag ' . h($adminActivity['old_value']);
 			case AdminActivityType::ADD_TAG: return 'Added tag ' . h($adminActivity['new_value']);
+			case AdminActivityType::DELETE_TAG:
+				{
+					$deleted = json_decode((string) $adminActivity['old_value'], true);
+					$problemCount = count($deleted['connections'] ?? []);
+					return 'Deleted tag ' . h($deleted['tag']['name'] ?? '') . ' (' . $problemCount . ' ' . ($problemCount === 1 ? 'problem' : 'problems') . ')';
+				}
 			case AdminActivityType::DELETE_USER: return 'Deleted user ' . h($adminActivity['old_value']);
 			case AdminActivityType::RESTORE_USER: return 'Restored user ' . h($adminActivity['new_value']);
 			case AdminActivityType::ROLE_CHANGE:
