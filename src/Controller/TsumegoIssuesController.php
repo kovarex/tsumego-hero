@@ -1,5 +1,6 @@
 <?php
 
+use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Lib\Error\UnprocessableEntityException;
 /**
@@ -23,6 +24,7 @@ class TsumegoIssuesController extends AppController
 	 *
 	 * @return CakeResponse|null
 	 */
+	#[HttpGet]
 	public function api()
 	{
 		$this->loadModel('TsumegoIssue');
@@ -61,6 +63,7 @@ class TsumegoIssuesController extends AppController
 	 *
 	 * @return void
 	 */
+	#[HttpGet]
 	public function index(): void
 	{
 		$this->set('_title', 'Tsumego Hero - Issues');
@@ -315,7 +318,7 @@ class TsumegoIssuesController extends AppController
 				'user_display_name' => User::displayNameOrNull($commentUser['User']),
 				'user_avatar_url' => User::avatarOrNull($commentUser['User']),
 				'user_rating' => $commentUser['User']['rating'],
-				'isAdmin' => ($commentUser['User']['isAdmin'] == 1),
+				'isAdmin' => User::isAdmin($commentUser['User']),
 				'comments' => [[
 					'id' => $commentId,
 					'text' => $comment['TsumegoComment']['message'],
@@ -323,7 +326,7 @@ class TsumegoIssuesController extends AppController
 					'user_display_name' => User::displayNameOrNull($commentUser['User']),
 					'user_avatar_url' => User::avatarOrNull($commentUser['User']),
 					'user_rating' => $commentUser['User']['rating'],
-					'isAdmin' => ($commentUser['User']['isAdmin'] == 1),
+					'isAdmin' => User::isAdmin($commentUser['User']),
 					'created' => Util::toIso8601($comment['TsumegoComment']['created']),
 					'position' => $comment['TsumegoComment']['position'],
 				]],

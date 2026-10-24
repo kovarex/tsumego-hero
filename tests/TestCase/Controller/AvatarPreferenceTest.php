@@ -109,7 +109,7 @@ class AvatarPreferenceTest extends TestCaseWithAuth
 		$context = new ContextPreparator(['user' => ['name' => 'avatarOffers']]);
 		$this->login('avatarOffers');
 
-		$html = $this->testAction('/users/settings', ['return' => 'contents']);
+		$html = $this->testAction('/users/settings', ['method' => 'get', 'return' => 'contents']);
 
 		$this->assertStringContainsString('name="avatar" value="' . User::AVATAR_BOARD . '"', $html);
 		$this->assertStringContainsString('name="avatar" value="' . User::AVATAR_GRAVATAR . '"', $html);
@@ -123,7 +123,7 @@ class AvatarPreferenceTest extends TestCaseWithAuth
 		$this->storeGooglePicture($context->user['id']);
 		$this->login('avatarOffersGoogle');
 
-		$html = $this->testAction('/users/settings', ['return' => 'contents']);
+		$html = $this->testAction('/users/settings', ['method' => 'get', 'return' => 'contents']);
 
 		$this->assertStringContainsString('name="avatar" value="' . User::AVATAR_GOOGLE . '"', $html);
 	}

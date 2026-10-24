@@ -1,9 +1,30 @@
 <?php
 
 use App\Utility\Avatar;
+use App\Utility\Util;
 
 class UserTest extends CakeTestCase
 {
+	// =====================================================================
+	// Characters the forum cannot store
+	// =====================================================================
+
+	/**
+	 * The rule guards the name of a new account, not every save of the row: an account that
+	 * already carries such a character keeps working.
+	 */
+	public function testAnExistingNameTheForumCannotStoreDoesNotBlockSaving(): void
+	{
+		$context = new ContextPreparator(['user' => ['display_name' => 'Player']]);
+		Util::query('UPDATE user SET display_name = ? WHERE id = ?', ['Player😀', $context->user['id']]);
+
+		$User = ClassRegistry::init('User');
+		$user = $User->findById($context->user['id']);
+		$user['User']['lastHighscore'] = 5;
+
+		$this->assertNotFalse($User->save($user), 'Saving an account that already has such a name must work');
+	}
+
 	// =====================================================================
 	// getAvatarUrl Tests
 	// =====================================================================
@@ -441,18 +462,28 @@ class UserTest extends CakeTestCase
 	}
 
 	/**
-	 * Test that a display name can not be empty.
+	 * A display name has to be one the site can store: not empty, and without a character above
+	 * U+FFFF, which the utf8mb3 columns of the forum cannot hold. Three-byte letters from any
+	 * alphabet fit and stay allowed.
 	 */
-	public function testDisplayNameCannotBeBlank()
+	public function testDisplayNameMustBeOneTheSiteCanStore()
 	{
 		$Model = ClassRegistry::init('User');
-		$Model->create();
-		$Model->set([
-			'name' => 'SomeLoginName',
-			'display_name' => '',
-			'email' => 'blank@example.com',
-		]);
-		$this->assertFalse($Model->validates());
+		foreach ([
+			'empty' => ['', false],
+			'with an emoji' => ['Player😀', false],
+			'with a rare kanji above U+FFFF' => ['𠮷', false],
+			'Cyrillic' => ['Лисёнок', true],
+			'Japanese' => ['日本語', true]] as $case => [$displayName, $valid])
+		{
+			$Model->create();
+			$Model->set([
+				'name' => 'SomeLoginName',
+				'display_name' => $displayName,
+				'email' => 'blank@example.com',
+			]);
+			$this->assertSame($valid, $Model->validates(), 'A display name ' . $case . ($valid ? ' must validate' : ' must be refused'));
+		}
 	}
 
 	/**

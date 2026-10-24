@@ -6,7 +6,7 @@ class AccountWidget
 {
 	// to avoid flickering, I need to setup the original values also directly in the html
 	// as the javascript update is too late and it would "flicker" when the page is begin loaded
-	public static function render(TimeMode $timeMode): void
+	public static function render(TimeMode $timeMode, int $unreadMessageCount): void
 	{
 		if(!Auth::isLoggedIn())
 			return;
@@ -49,6 +49,7 @@ class AccountWidget
 							' . h(Auth::getUser()['display_name']) . '
 							</a>
 						</div>
+						<a id="account-bar-messages" href="/messages">' . self::unreadMessagesBadge($unreadMessageCount) . '</a>
 						<div id="xp-bar">
 							  <div id="xp-bar-fill" class="' . $barClassname . '" style="width: ' . $barRatio * 100 . '%">
 									<div id="xp-increase-fx" style="display:none;">
@@ -75,6 +76,9 @@ class AccountWidget
 			<div id="heroAchievements" onmouseover="accountWidget.hover();" onmouseout="accountWidget.noHover();">
 				<li><a href="/achievements">Achievements</a></li>
 			</div>
+			<div id="heroMessages" onmouseover="accountWidget.hover();" onmouseout="accountWidget.noHover();">
+				<li><a href="/messages">Messages ' . self::unreadMessagesBadge($unreadMessageCount) . '</a></li>
+			</div>
 			<div id="heroSettings" onmouseover="accountWidget.hover();" onmouseout="accountWidget.noHover();">
 				<li><a href="/users/settings">Settings</a></li>
 			</div>
@@ -82,6 +86,16 @@ class AccountWidget
 				<li><a href="/users/logout">Sign Out</a></li>
 			</div>
 			<div id="modeSelector" class="' . $modeSelectorClass . '" onclick="accountWidget.switchBarInMenu();"></div>';
+	}
+
+	/**
+	 * The number of unread messages, hidden while there are none. The messages page updates
+	 * every badge on the page (data-unread-messages) once it marks a conversation read.
+	 */
+	public static function unreadMessagesBadge(int $unreadMessageCount): string
+	{
+		return '<span class="messages-unread-count" data-unread-messages title="Unread messages"' . ($unreadMessageCount ? '' : ' hidden') . '>'
+			. $unreadMessageCount . '</span>';
 	}
 
 	private static function whatToShow(): string
@@ -103,7 +117,8 @@ class AccountWidget
 					xp: " . Auth::getUser()['xp'] . ",
 					level: " . Auth::getUser()['level'] . ",
 					show: '" . AccountWidget::whatToShow() . "',
-					timeMode: " . $timeMode->exportTimeModeInfo() . "});";
+					timeMode: " . $timeMode->exportTimeModeInfo() . "});
+				accountWidget.replayUnshownResult();";
 		else
 			echo "null;";
 	}

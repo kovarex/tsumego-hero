@@ -6,13 +6,14 @@ use App\Utility\Auth;
 use App\Utility\Avatar;
 use App\Utility\Constants;
 use App\Utility\CookieFlash;
-use App\Utility\FakePwnedPasswordChecker;
 use App\Utility\GoogleTokenVerifier;
 use App\Utility\GoogleTokenVerifierInterface;
 use App\Utility\JwtAuth;
 use App\Utility\MistakeTraining;
+use App\Utility\ProposalFeedback;
 use App\Utility\PwnedPasswordChecker;
 use App\Utility\PwnedPasswordCheckerInterface;
+use App\Utility\RejectedSGFProposalsRenderer;
 use App\Utility\SGFProposalsRenderer;
 use App\Utility\SgfCommentReorientation;
 use App\Utility\TagConnectionProposalsRenderer;
@@ -38,36 +39,14 @@ class UsersController extends AppController
 	 */
 	private static string $DUMMY_PASSWORD_HASH = '$2y$12$BZ5TgNGDEJZktTLaEt5Tx.zJfbhdsQxv5/O7wfVeX0QpDwVSdTGg.';
 
-	public static function dummyPasswordHash(): string
+	public static function _dummyPasswordHash(): string
 	{
 		return self::$DUMMY_PASSWORD_HASH;
 	}
 
-	/**
-	 * Static test checker, so tests can decide which passwords count as breached.
-	 * Only honored for the test suite, so it can never take effect for players.
-	 */
-	private static ?PwnedPasswordCheckerInterface $testPasswordChecker = null;
-
-	public static function setTestPasswordChecker(?PwnedPasswordCheckerInterface $checker): void
-	{
-		self::$testPasswordChecker = Util::isOnTestSite() ? $checker : null;
-	}
-
 	protected function getPasswordChecker(): PwnedPasswordCheckerInterface
 	{
-		if (self::$testPasswordChecker !== null)
-			return self::$testPasswordChecker;
-
-		if ($this->passwordChecker === null)
-		{
-			// The test suite never asks the public list; every other site does, so the
-			// check can be tried by hand on the dev site too.
-			$this->passwordChecker = Util::isOnTestSite()
-				? new FakePwnedPasswordChecker()
-				: new PwnedPasswordChecker();
-		}
-		return $this->passwordChecker;
+		return $this->passwordChecker ??= PwnedPasswordChecker::create();
 	}
 
 	/**
@@ -97,71 +76,19 @@ class UsersController extends AppController
 	}
 
 	/**
-	 * Static test verifier (used by tests to inject FakeGoogleTokenVerifier).
-	 * Only honored on a dev/CI instance, so it can never take effect in production.
-	 */
-	private static ?GoogleTokenVerifierInterface $testVerifier = null;
-
-	/**
-	 * Set the Google token verifier for testing (static, affects all instances)
-	 */
-	public static function setTestTokenVerifier(?GoogleTokenVerifierInterface $verifier): void
-	{
-		self::$testVerifier = Util::isInTestEnvironment() ? $verifier : null;
-	}
-
-	/**
-	 * Set the Google token verifier (for this instance)
-	 */
-	public function setTokenVerifier(GoogleTokenVerifierInterface $verifier): void
-	{
-		$this->tokenVerifier = $verifier;
-	}
-
-	/**
 	 * Get the Google token verifier (lazily creates real verifier if not set)
 	 */
 	protected function getTokenVerifier(): GoogleTokenVerifierInterface
 	{
-		// Test verifier takes precedence
-		if (self::$testVerifier !== null)
-			return self::$testVerifier;
-
-		if ($this->tokenVerifier === null)
-		{
-			$clientId = '986748597524-05gdpjqrfop96k6haga9gvj1f61sji6v.apps.googleusercontent.com';
-			$this->tokenVerifier = new GoogleTokenVerifier($clientId);
-		}
-		return $this->tokenVerifier;
-	}
-
-	// shows the publish schedule
-	public function showPublishSchedule(): void
-	{
-		$this->Authorization->authorize('Admin');
-		$this->loadModel('Tsumego');
-		$this->loadModel('Set');
-		$this->loadModel('Schedule');
-		$this->loadModel('SetConnection');
-
-		$p = $this->Schedule->find('all', ['order' => 'date ASC', 'conditions' => ['published' => 0]]);
-
-		$pCount = count($p);
-		for ($i = 0; $i < $pCount; $i++)
-		{
-			$t = $this->Tsumego->findById($p[$i]['Schedule']['tsumego_id']);
-			$scT = $this->SetConnection->findDisplaySetConnection($t['Tsumego']['id']);
-			$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
-			$s = $this->Set->findById($t['Tsumego']['set_id']);
-			$p[$i]['Schedule']['num'] = $scT['SetConnection']['num'];
-			$p[$i]['Schedule']['set'] = $s['Set']['title'] . ' ' . $s['Set']['title2'] . ' ';
-		}
-		$this->set('p', $p);
+		return $this->tokenVerifier ??= GoogleTokenVerifier::create(
+			'986748597524-05gdpjqrfop96k6haga9gvj1f61sji6v.apps.googleusercontent.com');
 	}
 
 	/**
 	 * @return void
 	 */
+	#[HttpGet]
+	#[HttpPost]
 	public function resetpassword(): void
 	{
 		$this->set('_page', 'user');
@@ -211,16 +138,6 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	}
 
 	/**
-	 * @return CakeEmail
-	 */
-	public function _getEmailer()
-	{
-		// A run of the tests must not hand a mail to a mail server that is not there. The
-		// debug transport builds the message and returns it instead of sending it.
-		return Util::isOnTestSite() ? new CakeEmail(['transport' => 'Debug']) : new CakeEmail();
-	}
-
-	/**
 	 * Send the mail that carries a link. The token in it is remembered only when this
 	 * returns true, so a mail server that does not answer leaves nothing behind and the
 	 * user can go through the flow again right away.
@@ -263,6 +180,8 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	}
 
 	// @param string|null $checksum Password reset checksum
+	#[HttpGet]
+	#[HttpPost]
 	public function newpassword(?string $checksum = null): mixed
 	{
 		$this->set('_page', 'user');
@@ -304,6 +223,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	 * @param string|null $uid User ID
 	 * @return void
 	 */
+	#[HttpGet]
 	public function userstats(?string $uid = null): void
 	{
 		$this->Authorization->authorize('Admin');
@@ -357,6 +277,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	 * @param string|null $sid Set ID
 	 * @return void
 	 */
+	#[HttpGet]
 	public function userstats3(?string $sid = null): void
 	{
 		$this->Authorization->authorize('Admin');
@@ -408,6 +329,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	/**
 	 * @return void
 	 */
+	#[HttpGet]
 	public function uploads(): void
 	{
 		$this->Authorization->authorize('Admin');
@@ -421,6 +343,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		$s = $this->Sgf->find('all', [
 			'limit' => 250,
 			'order' => 'created DESC',
+			'conditions' => ['sgf_status_id !=' => Sgf::STATUS_REJECTED],
 		]);
 
 		//to display the correct version
@@ -444,15 +367,15 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 				$versionCounter[$scT['SetConnection']['tsumego_id']]++;
 			else
 				$versionCounter[$scT['SetConnection']['tsumego_id']] = 0;
-			$s[$i]['Sgf']['version'] = count($this->Sgf->find('all', ['conditions' => ['tsumego_id' => $scT['SetConnection']['tsumego_id']]])) - $versionCounter[$scT['SetConnection']['tsumego_id']];
+			$s[$i]['Sgf']['version'] = count($this->Sgf->find('all', ['conditions' => ['tsumego_id' => $scT['SetConnection']['tsumego_id'], 'sgf_status_id !=' => Sgf::STATUS_REJECTED]])) - $versionCounter[$scT['SetConnection']['tsumego_id']];
 
 			$s[$i]['Sgf']['delete'] = false;
-			$sDiff = $this->Sgf->find('all', ['order' => 'id DESC', 'limit' => 2, 'conditions' => ['tsumego_id' => $s[$i]['Sgf']['tsumego_id']]]);
-			$s[$i]['Sgf']['diff'] = $sDiff[1]['Sgf']['id'];
+			$s[$i]['Sgf']['diff'] = $this->Sgf->findPreviousVersionID($s[$i]['Sgf']['tsumego_id'], $s[$i]['Sgf']['id']);
 		}
 		$this->set('s', $s);
 	}
 
+	#[HttpGet]
 	public function adminstats(): void
 	{
 		$this->Authorization->authorize('Admin');
@@ -470,6 +393,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 
 		// Pagination data
 		$this->set('sgfProposalsRenderer', new SGFProposalsRenderer($this->params['url']));
+		$this->set('rejectedSgfProposalsRenderer', new RejectedSGFProposalsRenderer($this->params['url']));
 		$this->set('tagProposalsRenderer', new TagProposalsRenderer($this->params['url']));
 		$this->set('adminActivityRenderer', new AdminActivityRenderer($this->params['url']));
 		$this->set('tagConnectionProposalsRenderer', new TagConnectionProposalsRenderer($this->params['url']));
@@ -490,6 +414,8 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		return $this->User->findLocalUserByEmail($input);
 	}
 
+	#[HttpGet]
+	#[HttpPost]
 	public function login()
 	{
 		$this->set('_page', 'login');
@@ -593,6 +519,8 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		return strlen($url) > 0 && $url[0] === '/' && (strlen($url) < 2 || $url[1] !== '/');
 	}
 
+	#[HttpGet]
+	#[HttpPost]
 	public function add()
 	{
 		$this->set('_page', 'user');
@@ -625,6 +553,11 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		$userData['User']['password_hash'] = password_hash($password, PASSWORD_DEFAULT);
 		$userData['User']['name'] = $this->request->data['User']['name'];
 		$normalizedName = User::normalizeDisplayName($this->request->data['User']['name']);
+		if (User::containsCharactersTheForumCannotStore($normalizedName))
+		{
+			CookieFlash::set('The name must not contain emoji or other rare symbols, please choose another one.', 'error');
+			return;
+		}
 		$uniqueDisplayName = User::generateUniqueDisplayName($normalizedName);
 		$userData['User']['display_name'] = $uniqueDisplayName;
 		// A taken display name gets a numbered suffix, which is not the name the player chose,
@@ -716,6 +649,12 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 			return $this->redirect(['action' => 'changename']);
 		}
 
+		if (User::containsCharactersTheForumCannotStore($newDisplayName))
+		{
+			CookieFlash::set(__('The display name must not contain emoji or other rare symbols.'), 'error');
+			return $this->redirect(['action' => 'changename']);
+		}
+
 		// Validate display name length in characters, not bytes: the column holds 50
 		// characters, and a name in another alphabet takes several bytes per character.
 		$displayNameLength = mb_strlen($newDisplayName);
@@ -760,6 +699,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	/**
 	 * @return void
 	 */
+	#[HttpGet]
 	public function highscore(): void
 	{
 		$this->set('_page', 'levelHighscore');
@@ -775,6 +715,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		$this->set('totalUsers', $this->countActiveUsers());
 	}
 
+	#[HttpGet]
 	public function rating(): void
 	{
 		$this->set('_page', 'ratingHighscore');
@@ -799,6 +740,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	/**
 	 * @return void
 	 */
+	#[HttpGet]
 	public function added_tags(): void
 	{
 		$this->set('_page', 'tagHighscore');
@@ -825,6 +767,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		$this->set('totalUsers', $this->countActiveUsers());
 	}
 
+	#[HttpGet]
 	public function achievements(): void
 	{
 		$this->set('_page', 'achievementHighscore');
@@ -864,6 +807,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	/**
 	 * @return void
 	 */
+	#[HttpGet]
 	public function time_mode(): void
 	{
 		$this->set('_page', 'timeHighscore');
@@ -1019,6 +963,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	/**
 	 * @return void
 	 */
+	#[HttpGet]
 	public function leaderboard(): void
 	{
 		$this->set('_page', 'dailyHighscore');
@@ -1043,6 +988,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	 *
 	 * @return void
 	 */
+	#[HttpGet]
 	public function profile(): void
 	{
 		if (!Auth::isLoggedIn())
@@ -1050,6 +996,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		$this->redirect('/users/view/' . Auth::getUserID());
 	}
 
+	#[HttpGet]
 	public function meSolveHistory(): void
 	{
 		if (!Auth::isLoggedIn())
@@ -1057,6 +1004,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		$this->redirect('/users/solveHistory/' . Auth::getUserID());
 	}
 
+	#[HttpGet]
 	public function meContributions(): void
 	{
 		if (!Auth::isLoggedIn())
@@ -1064,6 +1012,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		$this->redirect('/tags/user/' . Auth::getUserID());
 	}
 
+	#[HttpGet]
 	public function view(?string $id = null): mixed
 	{
 		$this->set('_page', 'user');
@@ -1230,6 +1179,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 	 * everything that only changes the player's own view lives here. The boards in
 	 * the rotation are picked in the dropdown in the header.
 	 */
+	#[HttpGet]
 	public function settings(): mixed
 	{
 		if (!Auth::isLoggedIn())
@@ -1265,6 +1215,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 	/**
 	 * @return void
 	 */
+	#[HttpGet]
 	public function authors(): void
 	{
 		$this->loadModel('User');
@@ -1341,6 +1292,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 	/**
 	 * @return void
 	 */
+	#[HttpGet]
 	public function logout(): void
 	{
 		Auth::logout();
@@ -1386,6 +1338,11 @@ ORDER BY category DESC', [$user['User']['id']]));
 		}
 
 		$name = $token_data['name'] ?? '';
+		// A Google profile name is free text and can hold an emoji, which the forum cannot
+		// store; the character is dropped and the player is asked to pick a name below.
+		$nameWithoutEmoji = User::withoutCharactersTheForumCannotStore($name);
+		$droppedCharacters = $nameWithoutEmoji !== $name;
+		$name = $nameWithoutEmoji;
 		// Fallback to last 6 digits of sub if no name provided
 		if (empty($name))
 			$name = 'User ' . substr($token_data['sub'] ?? '', -6);
@@ -1405,7 +1362,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 
 			$userData = [];
 			$userData['User']['display_name'] = $uniqueDisplayName;
-			$userData['User']['needs_display_name_change'] = ($uniqueDisplayName !== $normalizedName) ? true : false;
+			$userData['User']['needs_display_name_change'] = ($uniqueDisplayName !== $normalizedName || $droppedCharacters) ? true : false;
 			$userData['User']['email'] = $email;
 			$userData['User']['password_hash'] = 'google_oauth';
 			$userData['User']['external_id'] = $externalId;
@@ -1495,6 +1452,8 @@ ORDER BY category DESC', [$user['User']['id']]));
 	 * First step of deleting the account of the logged-in user: emails a link confirming the deletion
 	 * (confirm_delete_account).
 	 */
+	#[HttpGet]
+	#[HttpPost]
 	public function delete_account()
 	{
 		if (!Auth::isLoggedIn())
@@ -1533,6 +1492,8 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 	 * The account is only marked as deleted: everything it created stays (shown as DELETED_NAME),
 	 * it can't sign in anymore, and an admin can restore it.
 	 */
+	#[HttpGet]
+	#[HttpPost]
 	public function confirm_delete_account(?string $token = null)
 	{
 		$this->set('_page', 'user');
@@ -1581,6 +1542,8 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 
 	/**
 	 */
+	#[HttpGet]
+	#[HttpPost]
 	public function demote_admin()
 	{
 		$redirect = false;
@@ -1592,8 +1555,10 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 			if (isset($this->request->data['User']['demote']))
 				if (password_verify($this->request->data['User']['demote'], Auth::getUser()['password_hash']))
 				{
-					Auth::saveUserField('isAdmin', 0);
-					$redirect = true;
+					if ($error = User::changeRole(Auth::getUserID(), User::ROLE_PLAYER))
+						$status = '<p style="color:#d63a49">' . h($error) . '</p>';
+					else
+						$redirect = true;
 				}
 				else
 					$status = '<p style="color:#d63a49">Password incorrect.</p>';
@@ -1605,6 +1570,7 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 		$this->set('u', ['User' => $user]);
 	}
 
+	#[HttpGet]
 	public function solveHistory(string $userID): void
 	{
 		$profileUser = $this->User->findById($userID)['User'] ?? null;
@@ -1640,7 +1606,7 @@ FROM
 		WHERE sc.tsumego_id = tsumego_attempt.tsumego_id
 		ORDER BY " . SetConnection::displayOrderSql('ss', 'sc') . "
 		LIMIT 1)
-	LEFT JOIN sgf ON sgf.id = (SELECT MAX(s2.id) FROM sgf s2 WHERE s2.tsumego_id = tsumego_attempt.tsumego_id)
+	LEFT JOIN sgf ON sgf.id = " . Sgf::currentVersionIDSql('tsumego_attempt.tsumego_id') . "
 	LEFT JOIN tsumego_status ON tsumego_status.user_id = ? AND tsumego_status.tsumego_id = tsumego_attempt.tsumego_id
 	LEFT JOIN `set` s ON set_connection.set_id = s.id
 WHERE
@@ -1672,21 +1638,31 @@ OFFSET " . $offset, [$userID, $userID]);
 		}
 
 		$proposalToApprove = $proposalToApprove['Sgf'];
-		if ($proposalToApprove['accepted'] != 0)
+		if ($proposalToApprove['sgf_status_id'] != Sgf::STATUS_PROPOSED)
 		{
-			CookieFlash::set('Sgf proposal was already accepted.', 'fail');
+			CookieFlash::set('Sgf proposal was already decided.', 'fail');
 			return $this->redirect('/users/adminstats');
 		}
-		$proposalToApprove['accepted'] = 1;
-		ClassRegistry::init('Sgf')->save($proposalToApprove);
+		$replacedSgfID = ClassRegistry::init('Sgf')->findCurrentVersionID((int) $proposalToApprove['tsumego_id']);
+		ClassRegistry::init('Sgf')->setStatus((int) $proposalToApprove['id'], Sgf::STATUS_ACCEPTED);
 		SgfCommentReorientation::afterAccepted((int) $proposalToApprove['id']);
 
-		AppController::handleContribution(Auth::getUserID(), 'reviewed');
-		AppController::handleContribution($proposalToApprove['user_id'], 'made_proposal');
+		AppController::_handleContribution(Auth::getUserID(), 'reviewed');
+		AppController::_handleContribution($proposalToApprove['user_id'], 'made_proposal');
 		CookieFlash::set('Sgf proposal accepted', 'success');
 
 		$userToApprove = $this->User->findById($proposalToApprove['user_id']);
 		AdminActivityLogger::log(AdminActivityType::ACCEPT_PROPOSAL, $proposalToApprove['tsumego_id'], null, null, $userToApprove['User']['display_name']);
+
+		$tsumegoID = (int) $proposalToApprove['tsumego_id'];
+		ProposalFeedback::send(
+			(int) $proposalToApprove['user_id'],
+			'Your proposal for ' . ProposalFeedback::problemName($tsumegoID) . ' was accepted by ' . ProposalFeedback::adminName() . ', it is the current version of the problem now.',
+			$tsumegoID,
+			$proposalToApprove['description'],
+			ProposalFeedback::commentFromRequest($this->request->data['comment'] ?? null),
+			$this->_getEmailer(),
+			ProposalFeedback::diffUrl((int) $proposalToApprove['id'], $replacedSgfID));
 
 		return $this->redirect('/users/adminstats');
 	}
@@ -1705,24 +1681,68 @@ OFFSET " . $offset, [$userID, $userID]);
 
 		$proposalToReject = $proposalToReject['Sgf'];
 
-		if ($proposalToReject['accepted'] != 0)
+		if ($proposalToReject['sgf_status_id'] != Sgf::STATUS_PROPOSED)
 		{
-			CookieFlash::set('Sgf proposal was already accepted.', 'fail');
+			CookieFlash::set('Sgf proposal was already decided.', 'fail');
 			return $this->redirect('/users/adminstats');
-			;
+		}
+
+		$comment = ProposalFeedback::commentFromRequest($this->request->data['comment'] ?? null);
+		if ($comment === '')
+		{
+			CookieFlash::set('Write the proposer why the proposal is rejected.', 'fail');
+			return $this->redirect('/users/adminstats');
 		}
 
 		$reject = [];
 		$reject['user_id'] = $proposalToReject['user_id'];
+		$reject['rejected_by_user_id'] = Auth::getUserID();
+		$reject['comment'] = $comment;
 		$reject['tsumego_id'] = $proposalToReject['tsumego_id'];
+		$reject['sgf_id'] = $proposalToReject['id'];
 		$reject['type'] = 'proposal';
 		ClassRegistry::init('Reject')->create();
 		ClassRegistry::init('Reject')->save($reject);
-		ClassRegistry::init('Sgf')->delete($proposalToReject['id']);
+		// kept, so the proposer can still see what they proposed
+		ClassRegistry::init('Sgf')->setStatus((int) $proposalToReject['id'], Sgf::STATUS_REJECTED);
 		CookieFlash::set('Sgf proposal rejected', 'success');
 
 		$userToReject = $this->User->findById($proposalToReject['user_id']);
 		AdminActivityLogger::log(AdminActivityType::REJECT_PROPOSAL, $proposalToReject['tsumego_id'], null, null, $userToReject['User']['display_name']);
+
+		$tsumegoID = (int) $proposalToReject['tsumego_id'];
+		ProposalFeedback::send(
+			(int) $proposalToReject['user_id'],
+			'Your proposal for ' . ProposalFeedback::problemName($tsumegoID) . ' was rejected by ' . ProposalFeedback::adminName() . '.',
+			$tsumegoID,
+			$proposalToReject['description'],
+			$comment,
+			$this->_getEmailer(),
+			ProposalFeedback::diffUrl((int) $proposalToReject['id'], ClassRegistry::init('Sgf')->findCurrentVersionID($tsumegoID)));
+
+		return $this->redirect('/users/adminstats');
+	}
+
+	/** Puts a rejected SGF proposal back among the ones waiting for a decision. */
+	#[HttpPost]
+	public function reopenSGFProposal(string $sgfID)
+	{
+		$this->Authorization->authorize('Admin');
+
+		$proposalToReopen = ClassRegistry::init('Sgf')->findById($sgfID);
+		if (!$proposalToReopen || $proposalToReopen['Sgf']['sgf_status_id'] != Sgf::STATUS_REJECTED)
+		{
+			CookieFlash::set('There is no rejected sgf proposal to reopen.', 'fail');
+			return $this->redirect('/users/adminstats');
+		}
+		$proposalToReopen = $proposalToReopen['Sgf'];
+
+		ClassRegistry::init('Sgf')->setStatus((int) $proposalToReopen['id'], Sgf::STATUS_PROPOSED);
+		ClassRegistry::init('Reject')->deleteAll(['Reject.sgf_id' => $proposalToReopen['id']], false);
+		CookieFlash::set('Sgf proposal reopened', 'success');
+
+		$proposer = $this->User->findById($proposalToReopen['user_id']);
+		AdminActivityLogger::log(AdminActivityType::REOPEN_PROPOSAL, $proposalToReopen['tsumego_id'], null, null, $proposer ? $proposer['User']['display_name'] : null);
 
 		return $this->redirect('/users/adminstats');
 	}
@@ -1750,8 +1770,22 @@ OFFSET " . $offset, [$userID, $userID]);
 		$tag = ClassRegistry::init('Tag')->findById($proposalToApprove['tag_id'])['Tag'];
 		AdminActivityLogger::log(AdminActivityType::ACCEPT_TAG, $proposalToApprove['tsumego_id'], null, null, $tag['name']);
 		ClassRegistry::init('TagConnection')->save($proposalToApprove);
-		AppController::handleContribution(Auth::getUserID(), 'reviewed');
-		AppController::handleContribution($proposalToApprove['user_id'], 'added_tag');
+		AppController::_handleContribution(Auth::getUserID(), 'reviewed');
+		AppController::_handleContribution($proposalToApprove['user_id'], 'added_tag');
+
+		// tags are accepted by the dozen, so the proposer only hears about it when the admin had something to say
+		$comment = ProposalFeedback::commentFromRequest($this->request->data['comment'] ?? null);
+		if ($comment !== '')
+		{
+			$tsumegoID = (int) $proposalToApprove['tsumego_id'];
+			ProposalFeedback::send(
+				(int) $proposalToApprove['user_id'],
+				'Your tag ' . $tag['name'] . ' on ' . ProposalFeedback::problemName($tsumegoID) . ' was accepted by ' . ProposalFeedback::adminName() . '.',
+				$tsumegoID,
+				null,
+				$comment,
+				$this->_getEmailer());
+		}
 		return $this->redirect('/users/adminstats');
 	}
 
@@ -1775,8 +1809,17 @@ OFFSET " . $offset, [$userID, $userID]);
 			return $this->redirect('/users/adminstats');
 		}
 
+		$comment = ProposalFeedback::commentFromRequest($this->request->data['comment'] ?? null);
+		if ($comment === '')
+		{
+			CookieFlash::set('Write the proposer why the tag is rejected.', 'fail');
+			return $this->redirect('/users/adminstats');
+		}
+
 		$reject = [];
 		$reject['user_id'] = $proposalToReject['user_id'];
+		$reject['rejected_by_user_id'] = Auth::getUserID();
+		$reject['comment'] = $comment;
 		$reject['tsumego_id'] = $proposalToReject['tsumego_id'];
 		$tag = ClassRegistry::init('Tag')->findById($proposalToReject['tag_id'])['Tag'];
 		$reject['type'] = $tag['name'];
@@ -1786,6 +1829,15 @@ OFFSET " . $offset, [$userID, $userID]);
 		ClassRegistry::init('Reject')->create();
 		ClassRegistry::init('Reject')->save($reject);
 		ClassRegistry::init('TagConnection')->delete($proposalToReject['id']);
+
+		$tsumegoID = (int) $proposalToReject['tsumego_id'];
+		ProposalFeedback::send(
+			(int) $proposalToReject['user_id'],
+			'Your tag ' . $tag['name'] . ' on ' . ProposalFeedback::problemName($tsumegoID) . ' was rejected by ' . ProposalFeedback::adminName() . '.',
+			$tsumegoID,
+			null,
+			$comment,
+			$this->_getEmailer());
 
 		CookieFlash::set('Tag proposal rejected', 'success');
 		return $this->redirect('/users/adminstats');
@@ -1891,6 +1943,8 @@ OFFSET " . $offset, [$userID, $userID]);
 	 * It works without being signed in, like the password reset. GET only shows the
 	 * confirmation button (email scanners open links), the change happens on POST.
 	 */
+	#[HttpGet]
+	#[HttpPost]
 	public function confirmEmailChange(?string $token = null)
 	{
 		$this->set('_page', 'user');
@@ -1943,6 +1997,8 @@ OFFSET " . $offset, [$userID, $userID]);
 	 * Second step of cancelling an address change, opened from the link sent to the
 	 * address that is being given up. GET only shows the button, POST cancels.
 	 */
+	#[HttpGet]
+	#[HttpPost]
 	public function cancelEmailChange(?string $token = null)
 	{
 		$this->set('_page', 'user');
@@ -2099,6 +2155,22 @@ OFFSET " . $offset, [$userID, $userID]);
 			$format = User::DATE_FORMAT_ISO;
 
 		Auth::saveUserField('date_format_id', $format);
+
+		$this->response->statusCode(200);
+		$this->response->type('application/json');
+		$this->response->body(json_encode(['status' => 'ok']));
+	}
+
+	/**
+	 * Whether a new message is announced by an email, see Message::send().
+	 */
+	#[HttpPost]
+	public function emailOnNewMessagePreference(): void
+	{
+		$this->autoRender = false;
+		$this->Authorization->authorize('User', 'editPreferences');
+
+		Auth::saveUserField('email_on_new_message', ($this->request->data['enabled'] ?? '') === '1' ? 1 : 0);
 
 		$this->response->statusCode(200);
 		$this->response->type('application/json');

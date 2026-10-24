@@ -3,6 +3,7 @@
 namespace App\Policy;
 
 use App\Utility\Constants;
+use User;
 
 /**
  * Shared helpers for policies. Policies are stateless decision objects; they
@@ -25,7 +26,17 @@ abstract class BasePolicy
 	 */
 	protected static function isAdmin(?array $user): bool
 	{
-		return $user !== null && (bool) $user['isAdmin'];
+		return User::isAdmin($user);
+	}
+
+	/**
+	 * Whether the identity is an owner (false for anonymous).
+	 *
+	 * @param UserRow|null $user
+	 */
+	protected static function isOwner(?array $user): bool
+	{
+		return User::isOwner($user);
 	}
 
 	/**
@@ -37,7 +48,7 @@ abstract class BasePolicy
 	{
 		if ($user === null)
 			return false;
-		return (bool) $user['isAdmin'] || (bool) $user['premium'];
+		return static::isAdmin($user) || (bool) $user['premium'];
 	}
 
 	/**

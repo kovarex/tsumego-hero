@@ -40,6 +40,12 @@ Router::connect('/sitemap.xml', [
 Router::connect('/', ['controller' => 'sites', 'action' => 'index'], ['routeClass' => 'UrlRoute']);
 
 /**
+ * The board editor, see EditorController
+ */
+Router::connect('/editor', ['controller' => 'editor', 'action' => 'index']);
+Router::connect('/editor/', ['controller' => 'editor', 'action' => 'index']);
+
+/**
  * Public changelog / "what's new" page
  */
 Router::connect('/changelog', ['controller' => 'changelog', 'action' => 'index']);
@@ -96,6 +102,42 @@ Router::connect(
 	'/tsumego-issues/move-comment/:id',
 	['controller' => 'TsumegoIssues', 'action' => 'moveComment'],
 	['pass' => ['id'], 'id' => '[0-9]+']
+);
+
+/**
+ * Messages between players, see MessagesController
+ */
+Router::connect(
+	'/messages',
+	['controller' => 'Messages', 'action' => 'index']
+);
+Router::connect(
+	'/messages/conversations',
+	['controller' => 'Messages', 'action' => 'conversations', '[method]' => 'GET']
+);
+Router::connect(
+	'/messages/conversations/:partnerUserId',
+	['controller' => 'Messages', 'action' => 'conversation', '[method]' => 'GET'],
+	['pass' => ['partnerUserId'], 'partnerUserId' => '[0-9]+']
+);
+Router::connect(
+	'/messages/conversations/:partnerUserId',
+	['controller' => 'Messages', 'action' => 'send', '[method]' => 'POST'],
+	['pass' => ['partnerUserId'], 'partnerUserId' => '[0-9]+']
+);
+Router::connect(
+	'/messages/conversations/:partnerUserId/read',
+	['controller' => 'Messages', 'action' => 'read'],
+	['pass' => ['partnerUserId'], 'partnerUserId' => '[0-9]+']
+);
+Router::connect(
+	'/messages/recipients',
+	['controller' => 'Messages', 'action' => 'recipients']
+);
+Router::connect(
+	'/messages/:partnerUserId',
+	['controller' => 'Messages', 'action' => 'index'],
+	['pass' => ['partnerUserId'], 'partnerUserId' => '[0-9]+']
 );
 
 /**
@@ -160,6 +202,24 @@ Router::connect(
 /**
  * User Sets routes
  */
+Router::connect('/roles', ['controller' => 'Roles', 'action' => 'index']);
+Router::connect(
+	'/roles/change/:id',
+	['controller' => 'Roles', 'action' => 'change'],
+	['pass' => ['id'], 'id' => '[0-9]+'] // Id of the user
+);
+Router::connect('/trash', ['controller' => 'Trash', 'action' => 'index']);
+Router::connect(
+	'/trash/restore-problem/:id',
+	['controller' => 'Trash', 'action' => 'restoreProblem'],
+	['pass' => ['id'], 'id' => '[0-9]+'] // Id of the tsumego
+);
+Router::connect(
+	'/trash/restore-set/:id',
+	['controller' => 'Trash', 'action' => 'restoreSet'],
+	['pass' => ['id'], 'id' => '[0-9]+']
+);
+
 Router::connect(
 	'/sets/mine',
 	['controller' => 'sets', 'action' => 'mine']
@@ -237,6 +297,10 @@ Router::connect(
 Router::connect(
 	'/users/dateFormatPreference',
 	['controller' => 'Users', 'action' => 'dateFormatPreference']
+);
+Router::connect(
+	'/users/emailOnNewMessagePreference',
+	['controller' => 'Users', 'action' => 'emailOnNewMessagePreference']
 );
 Router::connect(
 	'/users/avatarPreference',

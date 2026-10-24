@@ -60,6 +60,14 @@ class AdminPolicy extends BasePolicy
 	/**
 	 * @param UserRow|null $user
 	 */
+	public static function canReopenSGFProposal(?array $user): bool
+	{
+		return static::isAdmin($user);
+	}
+
+	/**
+	 * @param UserRow|null $user
+	 */
 	public static function canAcceptTagConnectionProposal(?array $user): bool
 	{
 		return static::isAdmin($user);
@@ -69,14 +77,6 @@ class AdminPolicy extends BasePolicy
 	 * @param UserRow|null $user
 	 */
 	public static function canRejectTagConnectionProposal(?array $user): bool
-	{
-		return static::isAdmin($user);
-	}
-
-	/**
-	 * @param UserRow|null $user
-	 */
-	public static function canShowPublishSchedule(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}
@@ -97,6 +97,26 @@ class AdminPolicy extends BasePolicy
 	 * @param UserRow|null $user
 	 */
 	public static function canRestoreAccount(?array $user): bool
+	{
+		return static::isAdmin($user);
+	}
+
+	/**
+	 * Seeing the problems and collections in the trash
+	 *
+	 * @param UserRow|null $user
+	 */
+	public static function canViewTrash(?array $user): bool
+	{
+		return static::isAdmin($user);
+	}
+
+	/**
+	 * Taking a problem or a collection back from the trash
+	 *
+	 * @param UserRow|null $user
+	 */
+	public static function canRestoreFromTrash(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}

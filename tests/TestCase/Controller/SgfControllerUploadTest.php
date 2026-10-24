@@ -31,7 +31,7 @@ class SgfControllerUploadTest extends TestCaseWithAuth
 		$browser->clickId('openSgfLink');
 		foreach ($buttons as $button)
 			$browser->find('input[type="button"][value="' . $button . '"]')->click();
-		$browser->clickId('saveSGFButton');
+		$browser->saveFromEditor('Turned the problem');
 		// the save goes through two more pages before it lands back on the problem
 		$browser->waitUntilJs('location.pathname === ' . json_encode('/' . $context->setConnections[0]['id']) . ' && document.readyState === "complete"');
 	}
@@ -78,7 +78,7 @@ class SgfControllerUploadTest extends TestCaseWithAuth
 		$browser->clickId('commentEditField');
 		$browser->driver->getKeyboard()->sendKeys("Hello from test");
 		$browser->clickId('sgfCommentButton');
-		$browser->clickId('saveSGFButton');
+		$browser->saveFromEditor('Greeting in the start position');
 
 		// Wait for redirect after saving SGF
 		$browser->waitUntilJs('!location.href.includes("/editor/")');
@@ -93,7 +93,7 @@ class SgfControllerUploadTest extends TestCaseWithAuth
 		$this->assertEquals(2, count($sgfs), 'Should have 2 SGFs after upload');
 		$this->assertEquals($newSgfContent, $sgfs[0]['Sgf']['sgf']);
 		$this->assertEquals(Auth::getUserID(), $sgfs[0]['Sgf']['user_id']);
-		$this->assertEquals(1, $sgfs[0]['Sgf']['accepted'], 'Admin uploads should be auto-accepted');
+		$this->assertEquals(Sgf::STATUS_ACCEPTED, $sgfs[0]['Sgf']['sgf_status_id'], 'Admin uploads should be auto-accepted');
 		$this->assertSame('B', $sgfs[0]['Sgf']['first_move_color']);
 		$this->assertSame('cd', $sgfs[0]['Sgf']['correct_moves']);
 
@@ -153,7 +153,7 @@ class SgfControllerUploadTest extends TestCaseWithAuth
 		$this->saveFromEditor($browser, $context, ['H Flip', 'Invert']);
 
 		$saved = $this->newestSgf($context);
-		$this->assertEquals(1, $saved['accepted']);
+		$this->assertEquals(Sgf::STATUS_ACCEPTED, $saved['sgf_status_id']);
 		$this->assertEquals($context->tsumegos[0]['sgfs'][0]['id'], $saved['source_sgf_id']);
 		$this->assertSame('{"transpose":false,"flipX":true,"flipY":false,"invertColors":true}', $saved['transformation_from_source']);
 		$comment = $this->comment($context);
@@ -213,13 +213,13 @@ class SgfControllerUploadTest extends TestCaseWithAuth
 		$this->saveFromEditor($browser, $context, ['H Flip']);
 
 		$proposal = $this->newestSgf($context);
-		$this->assertEquals(0, $proposal['accepted']);
+		$this->assertEquals(Sgf::STATUS_PROPOSED, $proposal['sgf_status_id']);
 		$this->assertSame('{"transpose":false,"flipX":true,"flipY":false,"invertColors":false}', $proposal['transformation_from_source']);
 		$comment = $this->comment($context);
 		$this->assertSame(self::COMMENT['message'], $comment['message']);
 		$this->assertSame(self::COMMENT['position'], $comment['position']);
 
-		ClassRegistry::init('User')->save(['id' => $context->user['id'], 'isAdmin' => true]);
+		ClassRegistry::init('User')->save(['id' => $context->user['id'], 'user_role_id' => User::ROLE_ADMIN]);
 		$browser->get('/users/adminstats');
 		$browser->post('/users/acceptSGFProposal/' . $proposal['id']);
 

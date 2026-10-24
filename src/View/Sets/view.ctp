@@ -46,7 +46,13 @@ if($set['Set']['id'] == 11969 || $set['Set']['id'] == 29156 || $set['Set']['id']
 		$ownerNote = $setAuthor && (int) $setAuthor['id'] !== Auth::getUserID()
 			? ' <span class="set-view__owner">by ' . User::renderLink($setAuthor) . '</span>'
 			: '';
-		echo '<p class="title4 set-view-title">' . h($setTitle) . $ownerNote . '</p>';?>
+		echo '<p class="title4 set-view-title">' . h($setTitle) . $ownerNote . '</p>';
+		if (!empty($set['Set']['deleted']))
+			echo $this->element('trash_notice', [
+				'what' => 'collection',
+				'deleted' => $set['Set']['deleted'],
+				'restoreAction' => '/trash/restore-set/' . (int) $set['Set']['id']]);
+		?>
 		<div class="new1">
 		<table border="0" width="100%">
 		<tr>
@@ -179,7 +185,7 @@ if ($tsumegoFilters->query != 'topics')
 				}
 				if ($tsumegoFilters->collectionSize != ProgressDeletion::$PARTITION_SIZE)
 					echo 'Reset is only possible when collection size is set to ' . ProgressDeletion::$PARTITION_SIZE;
-				elseif (SetsController::hasProblemFilters($tsumegoFilters))
+				elseif ($tsumegoFilters->hasProblemFilters())
 					echo 'Reset is only possible without rank and tag filters';
 				elseif ($problemSolvedPercent < 50)
 					echo '<br><font color="gray">You need to complete 50% to reset.</font>';
@@ -216,7 +222,7 @@ if ($tsumegoFilters->query != 'topics')
 			</td>
 			<td>
 			<?php
-			if ($problemSolvedPercent >= 50 && $tsumegoFilters->collectionSize == ProgressDeletion::$PARTITION_SIZE && !SetsController::hasProblemFilters($tsumegoFilters))
+			if ($problemSolvedPercent >= 50 && $tsumegoFilters->collectionSize == ProgressDeletion::$PARTITION_SIZE && !$tsumegoFilters->hasProblemFilters())
 			{
 				echo '<div id="msg2x">';
 				echo 'Type "reset" to remove all your progress on this collection.<br><br>';
@@ -342,7 +348,7 @@ if(!$beta2)
 	foreach ($tsumegoButtons as $tsumegoButton)
 		$tsumegoButton->render();
 
-$totalPages = (int) ceil($tsumegoButtons->highestTsumegoOrder / $tsumegoFilters->collectionSize);
+$totalPages = $tsumegoButtons->getPageCount($tsumegoFilters->collectionSize);
 if ($totalPages > 1):
 	$currentPage = $partition + 1;
 	?>

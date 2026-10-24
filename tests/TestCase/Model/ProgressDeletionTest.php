@@ -229,7 +229,7 @@ class ProgressDeletionTest extends TestCaseWithAuth
 			'progress-deletions' => [['set' => 'big set', 'partition' => 1, 'created' => self::now()]]]);
 		$setID = $context->tsumegos[0]['sets'][0]['id'];
 
-		$this->assertStringContainsString('XP reduced by 50%', $this->testAction('/sets/view/' . $setID . '/2', ['return' => 'view']));
-		$this->assertStringNotContainsString('XP reduced by', $this->testAction('/sets/view/' . $setID . '/1', ['return' => 'view']));
+		$this->assertStringContainsString('XP reduced by 50%', $this->testAction('/sets/view/' . $setID . '/2', ['method' => 'get', 'return' => 'view']));
+		$this->assertStringNotContainsString('XP reduced by', $this->testAction('/sets/view/' . $setID . '/1', ['method' => 'get', 'return' => 'view']));
 	}
 }

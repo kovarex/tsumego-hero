@@ -8,6 +8,7 @@ use App\Utility\PlayOutcome;
 use App\Utility\Rating;
 use App\Utility\TimeMode;
 use App\Utility\TimeModeUtil;
+use App\Utility\Trash;
 use App\Utility\TsumegoButton;
 use App\Utility\TsumegoButtons;
 use App\Utility\TsumegoFilters;
@@ -89,8 +90,6 @@ use App\Utility\ViteManifest;
 		$playGreenColor = 'green';
 	}
 
-	if(isset($deleteProblem2))
-		echo '<script type="text/javascript">window.location.href = "' . Set::url((int) $t['Tsumego']['set_id']) . '";</script>';
 	$swapColorWords = function (string $text): string
 	{
 		return preg_replace_callback(
@@ -121,6 +120,16 @@ use App\Utility\ViteManifest;
 	$resetLink = (Auth::isInMistakeTrainingMode() ? MistakeTraining::$PLAY_LINK_PREFIX : '/') . (int) $setConnection['SetConnection']['id'];
 	if ($nothingInRange != false)
 		echo '<div align="center" class="status-message">'.$nothingInRange.'</div>';
+	if (!empty($t['Tsumego']['deleted']))
+		echo $this->element('trash_notice', [
+			'what' => 'problem',
+			'deleted' => $t['Tsumego']['deleted'],
+			'restoreAction' => '/trash/restore-problem/' . (int) $t['Tsumego']['id']]);
+	if (!empty($set['Set']['deleted']))
+		echo $this->element('trash_notice', [
+			'what' => 'collection',
+			'deleted' => $set['Set']['deleted'],
+			'restoreAction' => '/trash/restore-set/' . (int) $set['Set']['id']]);
 	?>
 	<table width="100%" border="0" class="play-header-table">
 	<tr>
@@ -206,10 +215,13 @@ use App\Utility\ViteManifest;
 						<td><label for="author">Author:</label></td>
 						<td><input type="text" name="author" id="author" value="<?php echo h($t['Tsumego']['author']); ?>"></td>
 					</tr>
-					<?php if ($isSandbox) { ?>
+					<?php if (empty($t['Tsumego']['deleted'])) { ?>
 					<tr>
 						<td><label for="delete">Delete:</label></td>
-						<td><input type="text" name="delete" id="delete" value="" placeholder="Type delete"></td>
+						<td>
+							<input type="text" name="delete" id="delete" value="" placeholder="Type delete">
+							<br><small style="color: #888;">Moves the problem to the trash, it can be restored for <?php echo Trash::$RETENTION_DAYS; ?> days.</small>
+						</td>
 					</tr>
 					<?php } ?>
 				</table>
@@ -339,7 +351,7 @@ use App\Utility\ViteManifest;
 		</div>
 		<br>
 		<?php
-			echo '<a id="openSgfLink" href="/editor/?setConnectionID='.$setConnection['SetConnection']['id'].'&sgfID='.$sgf['Sgf']['id'].'" class="selectable-text mr-5" style="'.$proposalSentColor.'">'.$makeProposal.'</a>';
+			echo '<a id="openSgfLink" href="/editor/?setConnectionID='.$setConnection['SetConnection']['id'].'&sgfID='.$sgf['Sgf']['id'].(Auth::isAdmin() ? '' : '&proposal=1').'" class="selectable-text mr-5" style="'.$proposalSentColor.'">'.$makeProposal.'</a>';
 			echo '<a id="showx3" class="selectable-text mr-5">Download SGF</a>';
 			echo '<a id="findSimilarProblems" class="selectable-text mr-5">Find Similar Problems</a>';
 			echo '<a id="showFilters" class="selectable-text">Filters<img id="greyArrowFilter" src="/img/greyArrow1.png"></a>';
@@ -438,6 +450,7 @@ use App\Utility\ViteManifest;
 						<br>
 						<form action="/sgf/upload/' . $setConnection['SetConnection']['id'] . '" method="POST" enctype="multipart/form-data">
 							<input id="admin-upload-button" type="file" name="adminUpload" />
+							<input id="admin-upload-description" type="text" name="description" maxlength="' . Sgf::DESCRIPTION_MAX_LENGTH . '" placeholder="What changed and why (optional)" />
 							<input id="admin-upload-submit" value="Submit" type="submit"/>
 						</form>
 					</div>
@@ -658,6 +671,8 @@ use App\Utility\ViteManifest;
 	var playGreenColor = '<?php echo $playGreenColor; ?>';
 	var tStatus = "<?php echo $t['Tsumego']['status']; ?>";
 	var failAlreadyReported = false;
+	// The fail sent when the line was lost, which the player isn't shown until the line is over
+	var unrevealedFail = null;
 	window._submitResultPromise = null;
 
 	var userXP = <?php echo Auth::getWithDefault('xp', 0); ?>;
@@ -1593,13 +1608,29 @@ use App\Utility\ViteManifest;
 		timedOut: '<?php echo PlayOutcome::TimedOut->value; ?>',
 	};
 
+	function isSolved(outcome)
+	{
+		return outcome === playOutcome.solvedClean || outcome === playOutcome.solvedAfterMistake;
+	}
+
+	// xpStatus is not rendered in mistake training, the widget has nothing to animate there
+	function accountWidgetShowsResults()
+	{
+		return typeof accountWidget !== 'undefined' && accountWidget && typeof xpStatus !== 'undefined';
+	}
+
 	function submitResult(outcome)
 	{
+		showResultResponse(outcome, sendResult(outcome));
+	}
+
+	// Null for a guest, whose results aren't recorded
+	function sendResult(outcome)
+	{
 		if (besogoNoLogin)
-			return;
-		// xpStatus is not rendered in mistake training, the widget has nothing to animate there
-		if (typeof accountWidget !== 'undefined' && accountWidget && typeof xpStatus !== 'undefined')
-			accountWidget.animate(outcome === playOutcome.solvedClean || outcome === playOutcome.solvedAfterMistake);
+			return null;
+		if (accountWidgetShowsResults())
+			accountWidget.rememberResult(isSolved(outcome));
 		let data = {
 			tsumego_id: tsumegoID,
 			// the part of the set the problem is played from decides the XP reduction of its resets
@@ -1610,12 +1641,25 @@ use App\Utility\ViteManifest;
 			mode: mode,
 		};
 
-		window._submitResultPromise = fetch('/tsumegos/result', {
+		let response = fetch('/tsumegos/result', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
 			body: JSON.stringify(data),
+			// the request outlives the page, so leaving right after a lost line still counts it
 			keepalive: true,
-		}).then(response => response.json()).then(result => {
+		}).then(response => response.json());
+		window._submitResultPromise = response.catch(err => console.error('submitResult failed:', err));
+		return response;
+	}
+
+	// Shows the player what the result changed: the account bar, the XP, a potion and achievements
+	function showResultResponse(outcome, response)
+	{
+		if (!response)
+			return;
+		if (accountWidgetShowsResults())
+			accountWidget.animate(isSolved(outcome));
+		window._submitResultPromise = response.then(result => {
 			if (typeof accountWidget !== 'undefined' && accountWidget)
 			{
 				accountWidget.rating = result.new_rating;
@@ -1643,6 +1687,27 @@ use App\Utility\ViteManifest;
 		}).catch(err => {
 			console.error('submitResult failed:', err);
 		});
+	}
+
+	// Called by the board the moment the line can no longer end correct. The fail is sent
+	// right away, so leaving or refreshing before the line is played out doesn't escape it,
+	// but the player is shown nothing (hearts, account bar) until the line is over, as
+	// that would give the refutation away.
+	function lineLost()
+	{
+		if (failAlreadyReported || problemSolved)
+			return;
+		failAlreadyReported = true;
+		hadMisplay = true;
+		unrevealedFail = { response: sendResult(playOutcome.failed) };
+	}
+
+	// Shows the fail sent when the line was lost, once the line is over
+	function revealFail()
+	{
+		currentHealth--;
+		showResultResponse(playOutcome.failed, unrevealedFail.response);
+		unrevealedFail = null;
 	}
 
 	function displayResult(result)
@@ -1695,7 +1760,9 @@ use App\Utility\ViteManifest;
 		}
 		else //incorrect
 		{
-			if (!failAlreadyReported && !problemSolved)
+			if (unrevealedFail)
+				revealFail();
+			else if (!failAlreadyReported && !problemSolved)
 			{
 				failAlreadyReported = true;
 				hadMisplay = true;
@@ -1814,6 +1881,12 @@ use App\Utility\ViteManifest;
 			redrawHearts();
 			submitResult(playOutcome.failed);
 		}
+		else if (unrevealedFail)
+		{
+			// the line is given up before it was played out
+			revealFail();
+			redrawHearts();
+		}
 		failAlreadyReported = false;
 	}
 	</script>
@@ -1919,6 +1992,7 @@ use App\Utility\ViteManifest;
 	besogo.editor.setAutoPlay(true);
 	besogo.editor.registerAddTimeForMovePlayed(addTimeForMovePlayed);
 	besogo.editor.registerDisplayResult(displayResult);
+	besogo.editor.registerLineLost(lineLost);
 	besogo.editor.addListener(function (changes)
 	{
 		// the clock starts with the first move the player really plays

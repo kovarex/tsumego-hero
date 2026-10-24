@@ -7,7 +7,7 @@ class ChangelogControllerTest extends ControllerTestCase
 	 */
 	public function testIndexRendersPageShell()
 	{
-		$result = $this->testAction('/changelog', ['return' => 'view']);
+		$result = $this->testAction('/changelog', ['method' => 'get', 'return' => 'view']);
 
 		$this->assertStringContainsString('What\'s new', $result);
 		$this->assertStringContainsString('data-changelog-root', $result);
@@ -19,7 +19,7 @@ class ChangelogControllerTest extends ControllerTestCase
 	 */
 	public function testIndexEmbedsEntriesAsJson()
 	{
-		$result = $this->testAction('/changelog', ['return' => 'view']);
+		$result = $this->testAction('/changelog', ['method' => 'get', 'return' => 'view']);
 
 		$this->assertSame(1, preg_match('/data-props="([^"]*)"/', $result, $m), 'data-props attribute should be present');
 		$json = html_entity_decode($m[1], ENT_QUOTES);

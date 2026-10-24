@@ -93,10 +93,56 @@ besogo.makeFilePanel = function (container, editor) {
     element.title = "Go back to Tsumego Hero and save the problem";
     element.onclick = function () {
       if (!checkCompatibility()) return;
-      saveFile("export.sgf", besogo.composeSgf(editor), 2);
-      editor.resetEdited();
+      askForDescription(function (description) {
+        document.getElementById("sgfDescriptionInput").value = description;
+        saveFile("export.sgf", besogo.composeSgf(editor), 2);
+        editor.resetEdited();
+      });
     };
     container.appendChild(element);
+  }
+
+  // Asks what was changed and why, so whoever reviews the proposal or reads the history knows.
+  // A proposal can't go without it, an admin's own edit can.
+  function askForDescription(save) {
+    const dialog = document.createElement("dialog");
+    dialog.className = "besogo-save-dialog";
+    const label = document.createElement("label");
+    label.htmlFor = "sgfDescriptionField";
+    label.textContent = "What did you change and why?";
+    const field = document.createElement("textarea");
+    field.id = "sgfDescriptionField";
+    field.maxLength = besogo.SGF_DESCRIPTION_MAX_LENGTH;
+    field.rows = 5;
+    const problem = document.createElement("div");
+    problem.className = "besogo-save-dialog__problem";
+    const buttons = document.createElement("div");
+    buttons.className = "besogo-save-dialog__buttons";
+    const saveButton = document.createElement("input");
+    saveButton.type = "button";
+    saveButton.id = "sgfDescriptionSave";
+    saveButton.value = besogo.savesProposal ? "Send proposal" : "Save";
+    const cancelButton = document.createElement("input");
+    cancelButton.type = "button";
+    cancelButton.value = "Cancel";
+    buttons.append(saveButton, cancelButton);
+    dialog.append(label, field, problem, buttons);
+    document.body.appendChild(dialog);
+
+    saveButton.onclick = function () {
+      const description = field.value.trim();
+      if (besogo.savesProposal && description === "") {
+        problem.textContent = "Please describe the change, the reviewer will see it.";
+        field.focus();
+        return;
+      }
+      dialog.close();
+      save(description);
+    };
+    cancelButton.onclick = function () { dialog.close(); };
+    dialog.addEventListener("close", function () { dialog.remove(); });
+    dialog.showModal();
+    field.focus();
   }
 
   // Makes a new board button
@@ -171,6 +217,7 @@ besogo.makeFilePanel = function (container, editor) {
         alert("SGF parse error at " + error.at + ":\n" + error.message);
         return;
       }
+      besogo.diffTexts = { shown: besogo.composeSgf(editor), compared: e.target.result };
       besogo.loadSgf(sgf, editor, OPEN_FOR_DIFF);
     };
     reader.readAsText(file); // Initiate file read

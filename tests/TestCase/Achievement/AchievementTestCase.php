@@ -63,8 +63,6 @@ abstract class AchievementTestCase extends ControllerTestCase
 	 *
 	 * This sets the 'initialLoading' cookie and makes a request,
 	 * which causes AppController::beforeFilter to check achievements.
-	 *
-	 * @param int $userId User ID
 	 */
 	protected function triggerAchievementCheck()
 	{
@@ -76,7 +74,7 @@ abstract class AchievementTestCase extends ControllerTestCase
 
 		// Make a simple request - achievements checked in AppController::beforeFilter
 		// beforeFilter will call Auth::init() which loads fresh user data from DB
-		$this->testAction('/sites/index', ['return' => 'view']);
+		$this->testAction('/sites/index', ['method' => 'get', 'return' => 'view']);
 	}
 
 	/**
@@ -89,7 +87,6 @@ abstract class AchievementTestCase extends ControllerTestCase
 	 * since set completion achievements are checked immediately when completing
 	 * a set, not on every page load.
 	 *
-	 * @param int $userId User ID
 	 * @param int $completedSetsCount Number of completed sets
 	 */
 	protected function triggerSetCompletionAchievementCheck($completedSetsCount)
@@ -143,7 +140,7 @@ abstract class AchievementTestCase extends ControllerTestCase
 			$SetConnection->save(['set_id' => $setId, 'tsumego_id' => $tsumegoId, 'num' => $i + 1]);
 
 			ClassRegistry::init('Sgf')->create();
-			ClassRegistry::init('Sgf')->save(['tsumego_id' => $tsumegoId, 'sgf' => '(;GM[1]FF[4]SZ[19])', 'user_id' => Auth::getUserID(), 'accepted' => 1]);
+			ClassRegistry::init('Sgf')->save(['tsumego_id' => $tsumegoId, 'sgf' => '(;GM[1]FF[4]SZ[19])', 'user_id' => Auth::getUserID(), 'sgf_status_id' => Sgf::STATUS_ACCEPTED]);
 
 			ClassRegistry::init('TsumegoStatus')->create();
 			ClassRegistry::init('TsumegoStatus')->save(['tsumego_id' => $tsumegoId, 'status' => 'S', 'user_id' => Auth::getUserID()]);

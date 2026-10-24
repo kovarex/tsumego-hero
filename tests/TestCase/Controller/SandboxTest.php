@@ -147,28 +147,29 @@ class SandboxTest extends ControllerTestCase
 		]]);
 	}
 
-	public function testRemoveDeletesSetById(): void
+	public function testRemoveMovesSetToTrash(): void
 	{
 		new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
 		$setId = $this->createSetWithTsumego('to delete', 0);
 
 		$this->testAction('/sets/delete', ['method' => 'post', 'data' => [
 			'Set' => ['id' => $setId],
+			'confirmation' => 'to delete',
 		]]);
 
-		$this->assertEmpty(ClassRegistry::init('Set')->findById($setId));
+		$this->assertNotNull(ClassRegistry::init('Set')->findById($setId)['Set']['deleted']);
 	}
 
-	public function testRemoveDoesNotDeletePublicSets(): void
+	public function testRemoveWithoutTitleKeepsSet(): void
 	{
 		new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
 		$setId = $this->createSetWithTsumego('public set', 1);
 
-		$this->expectException(ForbiddenException::class);
-
 		$this->testAction('/sets/delete', ['method' => 'post', 'data' => [
 			'Set' => ['id' => $setId],
 		]]);
+
+		$this->assertNull(ClassRegistry::init('Set')->findById($setId)['Set']['deleted']);
 	}
 
 	public function testRemovePreservesTsumegos(): void
@@ -180,16 +181,16 @@ class SandboxTest extends ControllerTestCase
 
 		$this->testAction('/sets/delete', ['method' => 'post', 'data' => [
 			'Set' => ['id' => $setId],
+			'confirmation' => 'small set',
 		]]);
 
-		$this->assertEmpty(ClassRegistry::init('Set')->findById($setId));
 		$this->assertEquals($beforeCount, ClassRegistry::init('Tsumego')->find('count'),
 			'Tsumegos survive set deletion (they may be in multiple sets)');
 
 		$connections = ClassRegistry::init('SetConnection')->find('all', [
 			'conditions' => ['set_id' => $setId],
 		]);
-		$this->assertEmpty($connections, 'Set connections should be cascade-deleted');
+		$this->assertCount(1, $connections, 'The set waits in the trash with its problems in place, so it can be restored');
 	}
 
 	public function testAddTsumegoRequiresLogin(): void

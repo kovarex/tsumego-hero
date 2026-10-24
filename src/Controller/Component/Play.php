@@ -66,6 +66,10 @@ class Play
 			$id = $t['Tsumego']['id'];
 		}
 
+		// a problem in the trash is gone for everyone but the admins, who can take it back
+		if (!empty($t['Tsumego']['deleted']) && !Auth::isAdmin())
+			throw new NotFoundException('Problem not found');
+
 		$setConnections = TsumegoUtil::getSetConnectionsWithTitles($id);
 		$set = ClassRegistry::init('Set')->findById($currentSetConnection['SetConnection']['set_id']);
 
@@ -152,12 +156,6 @@ class Play
 					if ($t['Tsumego']['rating'] > 100)
 						ClassRegistry::init('Tsumego')->save($t, true);
 				}
-		if (Auth::isAdmin())
-		{
-			$aad = ClassRegistry::init('AdminActivity')->find('first', ['order' => 'id DESC']);
-			if ($aad && $aad['AdminActivity']['type'] === AdminActivityType::PROBLEM_DELETE)($this->setFunction)('deleteProblem2', true);
-		}
-
 		$isSandbox = ($set['Set']['public'] == 0 && $set['Set']['user_id'] === null);
 
 		AuthorizationComponent::require(SetPolicy::canPlay(Auth::getIdentity(), $set['Set']));
@@ -174,7 +172,7 @@ class Play
 			'order' => 'id DESC',
 			'conditions' => [
 				'tsumego_id' => $id,
-				'accepted' => true]]);
+				'sgf_status_id' => Sgf::STATUS_ACCEPTED]]);
 		if (!$sgfdb)
 		{
 			$sgf['Sgf']['sgf'] = Constants::$SGF_PLACEHOLDER;
@@ -420,7 +418,7 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		($this->setFunction)('isAllowedToContribute', $isAllowedToContribute);
 		($this->setFunction)('canAddMoreTags', $canAddMoreTags);
 
-		$sgfProposal = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['tsumego_id' => $id, 'user_id' => Auth::getUserID(), 'accepted' => false]]);
+		$sgfProposal = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['tsumego_id' => $id, 'user_id' => Auth::getUserID(), 'sgf_status_id' => Sgf::STATUS_PROPOSED]]);
 		($this->setFunction)('hasSgfProposal', $sgfProposal != null);
 
 		($this->setFunction)('tagData', $tagData);

@@ -140,6 +140,14 @@ class TsumegoFilters
 		return "Unsupported yet";
 	}
 
+	/**
+	 * Whether rank or tag filters narrow which problems a set holds.
+	 */
+	public function hasProblemFilters(): bool
+	{
+		return !empty($this->ranks) || !empty($this->tagIDs);
+	}
+
 	public function filterRanks(Query $query): void
 	{
 		if (empty($this->rankSpecs))

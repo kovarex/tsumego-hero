@@ -216,7 +216,7 @@ class PlayResultProcessorComponent extends Component
 			return true;
 		}
 
-		AppController::updatePotionCondition();
+		AppController::_updatePotionCondition();
 		return false;
 	}
 
@@ -427,14 +427,14 @@ class PlayResultProcessorComponent extends Component
 			return;
 
 		$solvedTsumegoRank = Rating::getReadableRankFromRating($previousTsumego['Tsumego']['rating']);
-		AppController::saveDanSolveCondition($solvedTsumegoRank, $previousTsumego['Tsumego']['id']);
-		AppController::updateGems($solvedTsumegoRank);
+		AppController::_saveDanSolveCondition($solvedTsumegoRank, $previousTsumego['Tsumego']['id']);
+		AppController::_updateGems($solvedTsumegoRank);
 		// Sprint state is server-authoritative (user.sprint_start). A solve only
 		// counts toward the sprint achievement while a sprint is actually active.
 		if (HeroPowers::getSprintRemainingSeconds() > 0)
-			AppController::updateSprintCondition(true);
+			AppController::_updateSprintCondition(true);
 		else
-			AppController::updateSprintCondition();
+			AppController::_updateSprintCondition();
 	}
 
 	/**
@@ -447,6 +447,6 @@ class PlayResultProcessorComponent extends Component
 			return;
 		if ($previousTsumegoStatus != TsumegoStatus::$GOLDEN)
 			return;
-		AppController::updateGoldenCondition($result['solved']);
+		AppController::_updateGoldenCondition($result['solved']);
 	}
 }

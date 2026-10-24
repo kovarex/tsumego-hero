@@ -52,6 +52,7 @@ class TsumegoButtons extends ArrayObject
 	 */
 	private function finalize(?int $currentSetConnectionID, ?int $partition, int $collectionSize, bool $resetOrders): void
 	{
+		$this->totalCount = count($this);
 		if ($resetOrders)
 			$this->resetOrders();
 
@@ -74,6 +75,7 @@ class TsumegoButtons extends ArrayObject
 	{
 		$result = new TsumegoButtons();
 		$result->highestTsumegoOrder = $other->highestTsumegoOrder;
+		$result->totalCount = $other->totalCount;
 		$result->partition = $other->partition;
 		$result->isPartitioned = $other->isPartitioned;
 		$result->currentOrder = $other->currentOrder;
@@ -163,6 +165,16 @@ class TsumegoButtons extends ArrayObject
 	}
 
 	/**
+	 * How many pages the whole collection splits into. Pages are cut by position, so the count
+	 * follows the number of problems, not the highest problem number, which leaves gaps when
+	 * problems were moved out of the collection.
+	 */
+	public function getPageCount(int $collectionSize): int
+	{
+		return (int) ceil($this->totalCount / $collectionSize);
+	}
+
+	/**
 	 * The page of the collection a link should open, counting from one.
 	 */
 	public function getPartition(): int
@@ -219,6 +231,7 @@ class TsumegoButtons extends ArrayObject
 	public bool $isPartitioned = false;
 	public string $linkPrefix = '/';
 	public int $highestTsumegoOrder = -1;
+	public int $totalCount = 0; // problems in the whole collection, before it was cut to one page
 	public ?int $currentOrder = -1;
 	public ?string $description = null;
 }

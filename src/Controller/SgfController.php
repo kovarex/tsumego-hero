@@ -1,11 +1,13 @@
 <?php
 
+use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Utility\AdminActivityLogger;
 use App\Utility\SgfParser;
 
 class SgfController extends AppController
 {
+	#[HttpGet]
 	public function fetch(int $sgfID)
 	{
 		$sgf = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['id' => $sgfID], 'order' => 'id DESC']);
@@ -16,6 +18,29 @@ class SgfController extends AppController
 
 		$this->response->statusCode(200);
 		$this->response->body($sgf['Sgf']['sgf']);
+		return $this->response;
+	}
+
+	/**
+	 * What the author wrote about the version and the author as the site shows a player (avatar,
+	 * link to the profile, rank), for the diff of the version in the editor.
+	 * Allowed to whoever may fetch the version.
+	 */
+	#[HttpGet]
+	public function info(int $sgfID)
+	{
+		$sgf = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['id' => $sgfID]]);
+		if (!$sgf)
+			throw new NotFoundException('Sgf not found.');
+
+		$this->Authorization->authorize($sgf, 'fetch');
+
+		$author = $sgf['Sgf']['user_id'] ? ClassRegistry::init('User')->findById($sgf['Sgf']['user_id']) : null;
+		$this->autoRender = false;
+		$this->response->type('json');
+		$this->response->body(json_encode([
+			'description' => $sgf['Sgf']['description'],
+			'authorLink' => User::renderLink($author ? $author['User'] : null)]));
 		return $this->response;
 	}
 
@@ -35,7 +60,8 @@ class SgfController extends AppController
 		if (!$sgfDataOrFile)
 			throw new BadRequestException('No SGF data provided.');
 
-		self::validateSgfFormat($sgfDataOrFile);
+		if ($problem = SgfParser::validationProblem($sgfDataOrFile))
+			throw new BadRequestException('Invalid SGF format: ' . $problem);
 
 		AdminActivityLogger::log(
 			AdminActivityType::SGF_EDIT,
@@ -48,17 +74,7 @@ class SgfController extends AppController
 		// sent by the board editor, see SgfCommentReorientation
 		$this->set('sourceSgfID', $fileUpload ? null : ($this->request->data['sourceSgfID'] ?? null));
 		$this->set('transformationFromSource', $fileUpload ? null : ($this->request->data['transformationFromSource'] ?? null));
+		$this->set('description', (string) ($this->request->data['description'] ?? ''));
 		$this->render('/Tsumegos/setup_new_sgf');
-	}
-
-	public static function validateSgfFormat(string $sgf): void
-	{
-		$error = SgfParser::validate($sgf);
-		if ($error !== null)
-			throw new BadRequestException('Invalid SGF format: ' . $error);
-
-		$gameError = SgfParser::validateGame($sgf);
-		if ($gameError !== null)
-			throw new BadRequestException('Invalid SGF format: ' . $gameError);
 	}
 }
