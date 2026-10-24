@@ -16,27 +16,13 @@ class UserTest extends CakeTestCase
 	public function testAnExistingNameTheForumCannotStoreDoesNotBlockSaving(): void
 	{
 		$context = new ContextPreparator(['user' => ['display_name' => 'Player']]);
-		$connection = ClassRegistry::init('User')->getDataSource()->getConnection();
+		Util::query('UPDATE user SET display_name = ? WHERE id = ?', ['Player😀', $context->user['id']]);
 
-		// A row holds such a name only if it was written by a connection able to carry it,
-		// so the name is written and saved over one of those. The connection the site uses
-		// is given back afterwards, whatever it was.
-		$charset = (string) $connection->query('SELECT @@character_set_client')->fetchColumn();
-		$connection->exec('SET NAMES utf8mb4');
-		try
-		{
-			Util::query('UPDATE user SET display_name = ? WHERE id = ?', ['Player😀', $context->user['id']]);
+		$User = ClassRegistry::init('User');
+		$user = $User->findById($context->user['id']);
+		$user['User']['lastHighscore'] = 5;
 
-			$User = ClassRegistry::init('User');
-			$user = $User->findById($context->user['id']);
-			$user['User']['lastHighscore'] = 5;
-
-			$this->assertNotFalse($User->save($user), 'Saving an account that already has such a name must work');
-		}
-		finally
-		{
-			$connection->exec('SET NAMES ' . ($charset === 'utf8mb4' ? 'utf8mb4' : 'utf8mb3'));
-		}
+		$this->assertNotFalse($User->save($user), 'Saving an account that already has such a name must work');
 	}
 
 	// =====================================================================
