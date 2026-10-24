@@ -400,7 +400,8 @@ class TsumegosController extends AppController
 		$firstMoveColor = $this->request->data['firstMoveColor'];
 		$correctMoves = $this->request->data['correctMoves'];
 
-		SgfParser::validateOrFail($sgfData);
+		if ($problem = SgfParser::validationProblem($sgfData))
+			throw new BadRequestException('Invalid SGF format: ' . $problem);
 
 		$tsumego = ClassRegistry::init("Tsumego")->findById($tsumegoID);
 		if (!$tsumego)

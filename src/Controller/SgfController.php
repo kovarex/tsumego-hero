@@ -60,7 +60,8 @@ class SgfController extends AppController
 		if (!$sgfDataOrFile)
 			throw new BadRequestException('No SGF data provided.');
 
-		SgfParser::validateOrFail($sgfDataOrFile);
+		if ($problem = SgfParser::validationProblem($sgfDataOrFile))
+			throw new BadRequestException('Invalid SGF format: ' . $problem);
 
 		AdminActivityLogger::log(
 			AdminActivityType::SGF_EDIT,

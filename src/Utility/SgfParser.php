@@ -4,22 +4,15 @@ declare(strict_types=1);
 
 namespace App\Utility;
 
-use BadRequestException;
-
 class SgfParser
 {
 	/**
-	 * Accept the SGF or refuse the request: the message names what is wrong with it.
+	 * What is wrong with the SGF, or null when it is fit to be stored. The caller decides how to
+	 * refuse the request.
 	 */
-	public static function validateOrFail(string $sgf): void
+	public static function validationProblem(string $sgf): ?string
 	{
-		$error = self::validate($sgf);
-		if ($error !== null)
-			throw new BadRequestException('Invalid SGF format: ' . $error);
-
-		$gameError = self::validateGame($sgf);
-		if ($gameError !== null)
-			throw new BadRequestException('Invalid SGF format: ' . $gameError);
+		return self::validate($sgf) ?? self::validateGame($sgf);
 	}
 
 	/**
