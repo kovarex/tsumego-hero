@@ -30,6 +30,7 @@ class RatingModeController extends AppController
 
 		$queryCondition = "";
 		Util::addSqlCondition($queryCondition, Set::officialCondition());
+		Util::addSqlCondition($queryCondition, 'tsumego.deleted IS NULL');
 		$ratingBounds->addSqlConditions($queryCondition);
 		$query = "
 SELECT

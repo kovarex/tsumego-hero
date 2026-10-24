@@ -548,7 +548,8 @@ class ContextPreparator
 			'user_id' => Util::extract('user_id', $setInput),
 			'order' => Util::extractWithDefault('order', $setInput, null),
 			'default' => Util::extract('default', $setInput),
-			'description' => Util::extractWithDefault('description', $setInput, null)]);
+			'description' => Util::extractWithDefault('description', $setInput, null),
+			'deleted' => Util::extractWithDefault('deleted', $setInput, null)]);
 		$setConnection = [];
 		$setConnection['tsumego_id'] = $tsumego['id'];
 		$setConnection['set_id'] = $set['id'];
@@ -600,6 +601,7 @@ class ContextPreparator
 			$boardThemeIndex = 1;
 			$userId = null;
 			$description = null;
+			$deleted = null;
 		}
 		else
 		{
@@ -611,6 +613,7 @@ class ContextPreparator
 			$order = Util::extractWithDefault('order', $input, null);
 			$isDefault = Util::extract('default', $input) ?: false;
 			$description = Util::extractWithDefault('description', $input, null);
+			$deleted = Util::extractWithDefault('deleted', $input, null);
 			$this->checkOptionsConsumed($input);
 		}
 		$set  = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $name]]);
@@ -624,6 +627,8 @@ class ContextPreparator
 			$set['order'] = $order ?: Constants::$DEFAULT_SET_ORDER;
 			if ($description !== null)
 				$set['description'] = $description;
+			if ($deleted !== null)
+				$set['deleted'] = $deleted;
 			if ($userId === 'self')
 				$set['user_id'] = $this->user['id'];
 			elseif ($userId !== null)
@@ -902,7 +907,10 @@ class ContextPreparator
 			AdminActivityType::TSUMEGO_MERGE => 'Tsumego Merge',
 			AdminActivityType::DELETE_USER => 'Delete User',
 			AdminActivityType::RESTORE_USER => 'Restore User',
-			AdminActivityType::DISPLAY_NAME_CHANGE => 'Display Name Change'];
+			AdminActivityType::DISPLAY_NAME_CHANGE => 'Display Name Change',
+			AdminActivityType::PROBLEM_RESTORE => 'Problem Restore',
+			AdminActivityType::SET_DELETE => 'Set Delete',
+			AdminActivityType::SET_RESTORE => 'Set Restore'];
 
 		$adminActivityType = ClassRegistry::init('AdminActivityType');
 

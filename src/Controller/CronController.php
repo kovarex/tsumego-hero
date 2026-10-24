@@ -1,6 +1,7 @@
 <?php
 
 use App\Attribute\HttpGet;
+use App\Utility\Trash;
 use App\Utility\Util;
 
 class CronController extends AppController
@@ -27,6 +28,7 @@ class CronController extends AppController
 		$this->dailyPotionConditionReset();
 		$this->updateSolvedCounts();
 		self::dropExpiredAddressChanges();
+		Trash::purgeExpired();
 
 		$this->response->statusCode(200);
 		return $this->response;
