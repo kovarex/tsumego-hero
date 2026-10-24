@@ -73,7 +73,6 @@ class TimeModeController extends AppController
 	}
 
 	#[HttpGet]
-	#[HttpPost]
 	public function skip(?string $position = null): mixed
 	{
 		if (!$position)

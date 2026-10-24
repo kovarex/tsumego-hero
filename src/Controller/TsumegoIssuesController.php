@@ -25,7 +25,6 @@ class TsumegoIssuesController extends AppController
 	 * @return CakeResponse|null
 	 */
 	#[HttpGet]
-	#[HttpPost]
 	public function api()
 	{
 		$this->loadModel('TsumegoIssue');

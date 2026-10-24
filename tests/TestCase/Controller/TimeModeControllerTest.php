@@ -443,7 +443,7 @@ class TimeModeControllerTest extends ControllerTestCase
 		preg_match('/var nextButtonLink = "([^"]*)";/', $html, $matches);
 		$this->assertSame('/timeMode/skip/2', $matches[1] ?? 'not rendered');
 
-		$this->testAction('/timeMode/skip/2');
+		$this->testAction('/timeMode/skip/2', ['method' => 'get']);
 		$this->assertSame(Util::getInternalAddress() . '/timeMode/play/3', $this->headers['Location']);
 
 		$attempt = ClassRegistry::init('TimeModeAttempt')->find('first', [
@@ -477,7 +477,7 @@ class TimeModeControllerTest extends ControllerTestCase
 						['order' => 2, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'started-seconds-ago' => 0, 'tsumego_id' => 'other:1']]]]]);
 			$sessionID = $context->timeModeSessions[0]['id'];
 
-			$this->testAction('/timeMode/skip' . ($position === null ? '' : '/' . $position));
+			$this->testAction('/timeMode/skip' . ($position === null ? '' : '/' . $position), ['method' => 'get']);
 			$this->assertSame(
 				Util::getInternalAddress() . '/timeMode/play' . ($position === null ? '' : '/2'),
 				$this->headers['Location']);

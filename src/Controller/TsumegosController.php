@@ -141,7 +141,6 @@ class TsumegosController extends AppController
 		return null;
 	}
 
-	#[HttpGet]
 	#[HttpPost]
 	public function edit(string $tsumegoID)
 	{
