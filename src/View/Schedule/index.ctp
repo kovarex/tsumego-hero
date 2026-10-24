@@ -52,7 +52,9 @@ $today = date('Y-m-d');
 						<?php endif; ?>
 					</td>
 					<td>
-						<?php if ($row['sc_id']): ?>
+						<?php if ($row['tsumego_deleted']): ?>
+							<a class="hint" href="/trash" title="A problem in the trash is not published. Restore it, or cancel this row.">in the trash</a>
+						<?php elseif ($row['sc_id']): ?>
 							<ul class="setViewButtons"><?php new TsumegoButton((int) $row['tsumego_id'], (int) $row['sc_id'], (int) $row['num'], 'N', 0, $row['sgf'] ?? '')->render(); ?></ul>
 						<?php else: ?>
 							<span class="hint" title="The problem is no longer in a sandbox set and is not in the target set either, so there is nothing to move.">cannot be published</span>

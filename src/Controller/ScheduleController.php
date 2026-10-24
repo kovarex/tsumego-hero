@@ -1,5 +1,6 @@
 <?php
 
+use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
@@ -10,6 +11,12 @@ use App\Utility\Util;
 
 class ScheduleController extends AppController
 {
+	/**
+	 * A sandbox set: an unpublished collection of the site that is not in the trash.
+	 */
+	private const SANDBOX_CONDITION = '`Set`.public = 0 AND `Set`.user_id IS NULL AND `Set`.deleted IS NULL';
+
+	#[HttpGet]
 	public function index(): void
 	{
 		$this->Authorization->authorize('Schedule');
@@ -28,9 +35,11 @@ SELECT
 	target_set.title AS target_set_title,
 	COALESCE(sandbox_sc.id, target_sc.id) AS sc_id,
 	sgf.sgf AS sgf,
+	tsumego.deleted AS tsumego_deleted,
 	creator.name AS created_by_name,
 	creator.id AS created_by_id
 FROM schedule
+LEFT JOIN tsumego ON tsumego.id = schedule.tsumego_id
 LEFT JOIN set_connection target_sc
 	ON target_sc.tsumego_id = schedule.tsumego_id
 	AND target_sc.set_id = schedule.set_id
@@ -51,7 +60,7 @@ LEFT JOIN sgf ON sgf.id = (
 	WHERE s1.tsumego_id = schedule.tsumego_id
 	ORDER BY s1.id DESC LIMIT 1
 )
-LEFT JOIN `user` creator ON creator.id = schedule.created_by
+LEFT JOIN `user` creator ON creator.id = schedule.created_by_user_id
 WHERE schedule.published = 0
 ORDER BY schedule.date ASC");
 
@@ -77,11 +86,11 @@ ORDER BY schedule.date DESC, schedule.id DESC");
 
 		$this->set('sandboxSets', $this->Set->find('all', [
 			'order' => ['Set.order'],
-			'conditions' => ['public' => 0, 'user_id IS NULL'],
+			'conditions' => [self::SANDBOX_CONDITION],
 		]) ?: []);
 		$this->set('publicSets', $this->Set->find('all', [
 			'order' => ['Set.order'],
-			'conditions' => ['public' => 1],
+			'conditions' => [Set::officialCondition('Set')],
 		]) ?: []);
 	}
 
@@ -116,27 +125,18 @@ ORDER BY schedule.date DESC, schedule.id DESC");
 			throw new BadRequestException('Start date must be today or later.');
 
 		$sourceSet = ClassRegistry::init('Set')->find('first', [
-			'conditions' => ['id' => $setIdFrom, 'public' => 0, 'user_id IS NULL'],
+			'conditions' => ['Set.id' => $setIdFrom, self::SANDBOX_CONDITION],
 		]);
 		if (!$sourceSet)
 			throw new BadRequestException('Source set must be a sandbox set.');
 
 		$targetSet = ClassRegistry::init('Set')->find('first', [
-			'conditions' => ['id' => $targetSetId, 'public' => 1],
+			'conditions' => ['Set.id' => $targetSetId, Set::officialCondition('Set')],
 		]);
 		if (!$targetSet)
-			throw new BadRequestException('Target set must be public.');
+			throw new BadRequestException('Target set must be a public collection of the site.');
 
-		$numCondition = $num > 0 ? " AND sc.num >= {$num}" : '';
-		$candidates = Util::query("
-SELECT sc.tsumego_id
-FROM set_connection sc
-WHERE sc.set_id = {$setIdFrom}
-  AND sc.tsumego_id NOT IN (SELECT tsumego_id FROM schedule WHERE published = 0)
-  AND sc.tsumego_id NOT IN (SELECT tsumego_id FROM set_connection WHERE set_id = {$targetSetId})
-  {$numCondition}
-ORDER BY sc.num ASC
-LIMIT {$count}");
+		$candidates = self::candidates($setIdFrom, $targetSetId, $num, $count);
 
 		$scheduleModel = ClassRegistry::init('Schedule');
 		$scheduled = 0;
@@ -152,7 +152,7 @@ LIMIT {$count}");
 					'set_id' => $targetSetId,
 					'date' => $date,
 					'published' => 0,
-					'created_by' => $userId,
+					'created_by_user_id' => $userId,
 				],
 			]);
 			AdminActivityLogger::log(AdminActivityType::ADD_TO_SCHEDULE, $candidate['tsumego_id'], $targetSetId);
@@ -174,6 +174,7 @@ LIMIT {$count}");
 	 * Preview which problems would be scheduled, and on which day each of them lands.
 	 * Admin only. Returns JSON.
 	 */
+	#[HttpGet]
 	public function preview(): void
 	{
 		$this->Authorization->authorize('Schedule');
@@ -193,18 +194,7 @@ LIMIT {$count}");
 			return;
 		}
 
-		$numCondition = $num > 0 ? " AND sc.num >= {$num}" : '';
-		$candidates = Util::query("
-SELECT sc.tsumego_id, sc.id AS sc_id, sc.num, s.title AS set_title, s.title2 AS set_title2,
-	(SELECT s1.sgf FROM sgf s1 WHERE s1.tsumego_id = sc.tsumego_id ORDER BY s1.id DESC LIMIT 1) AS sgf
-FROM set_connection sc
-JOIN `set` s ON s.id = sc.set_id
-WHERE sc.set_id = {$setIdFrom}
-  AND sc.tsumego_id NOT IN (SELECT tsumego_id FROM schedule WHERE published = 0)
-  AND sc.tsumego_id NOT IN (SELECT tsumego_id FROM set_connection WHERE set_id = {$targetSetId})
-  {$numCondition}
-ORDER BY sc.num ASC
-LIMIT {$count}");
+		$candidates = self::candidates($setIdFrom, $targetSetId, $num, $count);
 
 		// Pre-parse SGF to preview data so the client doesn't need to
 		$existingNums = ClassRegistry::init('SetConnection')->find('list', [
@@ -222,6 +212,28 @@ LIMIT {$count}");
 
 		$this->response->type('json');
 		$this->response->body(json_encode($candidates ?: []));
+	}
+
+	/**
+	 * The problems of the source set that the next schedule takes, in the order of the set: the
+	 * ones not waiting in the schedule already, not in the target set already and not in the
+	 * trash, from position `num` on when it is given.
+	 *
+	 * @return array<array{tsumego_id: int, sc_id: int, num: int, sgf: ?string}>
+	 */
+	private static function candidates(int $setIdFrom, int $targetSetId, int $num, int $count): array
+	{
+		return Util::query("
+SELECT sc.tsumego_id, sc.id AS sc_id, sc.num,
+	(SELECT s1.sgf FROM sgf s1 WHERE s1.tsumego_id = sc.tsumego_id ORDER BY s1.id DESC LIMIT 1) AS sgf
+FROM set_connection sc
+JOIN tsumego ON tsumego.id = sc.tsumego_id AND tsumego.deleted IS NULL
+WHERE sc.set_id = ?
+	AND sc.num >= ?
+	AND NOT EXISTS (SELECT 1 FROM schedule WHERE schedule.tsumego_id = sc.tsumego_id AND schedule.published = 0)
+	AND NOT EXISTS (SELECT 1 FROM set_connection target WHERE target.tsumego_id = sc.tsumego_id AND target.set_id = ?)
+ORDER BY sc.num ASC
+LIMIT " . $count, [$setIdFrom, $num, $targetSetId]);
 	}
 
 	/**

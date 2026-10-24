@@ -38,6 +38,22 @@ class SchedulePageTest extends TestCaseWithAuth
 		$this->assertSame('Schedule', $this->submitLabel($browser));
 	}
 
+	public function testUpcomingShowsTheSandboxSourceAndNumber(): void
+	{
+		new ContextPreparator([
+			'user' => ['name' => 'admin', 'admin' => true],
+			'tsumegos' => [
+				['sets' => [['name' => 'sandbox set', 'num' => 268, 'public' => 0]]],
+				['sets' => [['name' => 'set 1', 'num' => 673]]]],
+			'schedule' => [['tsumego' => 0, 'set' => 'set 1', 'date' => date('Y-m-d', strtotime('+1 day'))]]]);
+		$this->login('admin');
+
+		$browser = Browser::instance();
+		$browser->get('/schedule');
+		$this->assertTextContains('sandbox set', $browser->getTableCell('.data-table', 1, 1)->getText());
+		$this->assertTextContains('268', $browser->getTableCell('.data-table', 1, 2)->getText());
+	}
+
 	private function submitLabel(Browser $browser): string
 	{
 		return trim($browser->driver->executeScript(

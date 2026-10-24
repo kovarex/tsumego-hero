@@ -42,7 +42,7 @@ class ScheduleTest extends TestCaseWithAuth
 				'per_day' => 1,
 				'start_date' => self::futureDate(),
 			],
-			'method' => 'POST',
+			'method' => 'post',
 		]);
 
 		$schedules = ClassRegistry::init('Schedule')->find('all', ['order' => 'date ASC']);
@@ -65,12 +65,12 @@ class ScheduleTest extends TestCaseWithAuth
 
 		$this->testAction('/schedule/add', [
 			'data' => ['set_id_from' => $sandboxSetId, 'set_id_to' => $targetSetId, 'count' => 1, 'start_date' => self::futureDate()],
-			'method' => 'POST',
+			'method' => 'post',
 		]);
 
 		$this->testAction('/schedule/add', [
 			'data' => ['set_id_from' => $sandboxSetId, 'set_id_to' => $targetSetId, 'count' => 2, 'start_date' => self::futureDate(3)],
-			'method' => 'POST',
+			'method' => 'post',
 		]);
 
 		$schedules = ClassRegistry::init('Schedule')->find('all', ['order' => 'date ASC']);
@@ -90,7 +90,7 @@ class ScheduleTest extends TestCaseWithAuth
 				'num' => 3,
 				'start_date' => self::futureDate(),
 			],
-			'method' => 'POST',
+			'method' => 'post',
 		]);
 
 		$schedules = ClassRegistry::init('Schedule')->find('all');
@@ -111,7 +111,7 @@ class ScheduleTest extends TestCaseWithAuth
 				'count' => 2,
 				'start_date' => self::futureDate(),
 			],
-			'method' => 'POST',
+			'method' => 'post',
 		]);
 
 		$schedules = ClassRegistry::init('Schedule')->find('all', ['order' => 'date ASC']);
@@ -145,7 +145,7 @@ class ScheduleTest extends TestCaseWithAuth
 				'count' => 3,
 				'start_date' => self::futureDate(),
 			],
-			'method' => 'POST',
+			'method' => 'post',
 		]);
 
 		$schedules = ClassRegistry::init('Schedule')->find('all', ['order' => 'date ASC']);
@@ -166,7 +166,7 @@ class ScheduleTest extends TestCaseWithAuth
 
 		$this->testAction('/schedule/add', [
 			'data' => ['set_id_from' => 1, 'set_id_to' => 2, 'count' => 1, 'start_date' => self::futureDate()],
-			'method' => 'POST',
+			'method' => 'post',
 		]);
 	}
 
@@ -178,7 +178,7 @@ class ScheduleTest extends TestCaseWithAuth
 
 		$this->testAction('/schedule/add', [
 			'data' => ['set_id_from' => $sandboxSetId, 'set_id_to' => $targetSetId, 'count' => 1, 'start_date' => '2020-01-01'],
-			'method' => 'POST',
+			'method' => 'post',
 		]);
 	}
 
@@ -199,7 +199,7 @@ class ScheduleTest extends TestCaseWithAuth
 		]);
 		$this->login('admin');
 
-		$this->testAction('/schedule');
+		$this->testAction('/schedule', ['method' => 'get']);
 
 		$p = $this->vars['p'];
 		$this->assertCount(1, $p);
@@ -221,7 +221,7 @@ class ScheduleTest extends TestCaseWithAuth
 		]);
 		$this->login('admin');
 
-		$this->testAction('/schedule');
+		$this->testAction('/schedule', ['method' => 'get']);
 
 		$p = $this->vars['p'];
 		$this->assertCount(1, $p);
@@ -248,7 +248,7 @@ class ScheduleTest extends TestCaseWithAuth
 		]);
 		$this->login('admin');
 
-		$result = $this->testAction('/schedule', ['return' => 'view']);
+		$result = $this->testAction('/schedule', ['method' => 'get', 'return' => 'view']);
 
 		$this->assertSame(1, substr_count($result, 'cannot be published'));
 	}
@@ -262,7 +262,7 @@ class ScheduleTest extends TestCaseWithAuth
 		[, $sandboxSetId, $targetSetId] = $this->_sandboxAndTarget([1, 2, 3]);
 
 		$this->testAction('/schedule/preview', [
-			'method' => 'GET',
+			'method' => 'get',
 			'data' => [
 				'set_id_from' => $sandboxSetId,
 				'set_id_to' => $targetSetId,
@@ -292,8 +292,8 @@ class ScheduleTest extends TestCaseWithAuth
 			'count' => 1,
 			'start_date' => self::futureDate(),
 		];
-		$this->testAction('/schedule/add', ['data' => $data, 'method' => 'POST']);
-		$this->testAction('/schedule/add', ['data' => $data, 'method' => 'POST']);
+		$this->testAction('/schedule/add', ['data' => $data, 'method' => 'post']);
+		$this->testAction('/schedule/add', ['data' => $data, 'method' => 'post']);
 
 		$this->assertStringContainsString('already published or already scheduled', (string) CookieFlash::get());
 	}
@@ -304,7 +304,7 @@ class ScheduleTest extends TestCaseWithAuth
 
 		$this->testAction('/schedule/add', [
 			'data' => ['set_id_from' => $sandboxSetId, 'set_id_to' => $targetSetId, 'count' => 1, 'start_date' => self::futureDate()],
-			'method' => 'POST',
+			'method' => 'post',
 		]);
 
 		$activity = ClassRegistry::init('AdminActivity')->find('first', ['order' => 'id DESC']);
@@ -330,7 +330,7 @@ class ScheduleTest extends TestCaseWithAuth
 		$scheduleId = ClassRegistry::init('Schedule')->find('first', ['order' => 'id DESC'])['Schedule']['id'];
 		$targetSetId = $context->tsumegos[1]['set-connections'][0]['set_id'];
 
-		$this->testAction('/schedule/cancel/' . $scheduleId, ['method' => 'POST']);
+		$this->testAction('/schedule/cancel/' . $scheduleId, ['method' => 'post']);
 
 		$this->assertSame([], ClassRegistry::init('Schedule')->findById($scheduleId));
 
@@ -346,15 +346,15 @@ class ScheduleTest extends TestCaseWithAuth
 
 		$this->testAction('/schedule/add', [
 			'data' => ['set_id_from' => $sandboxSetId, 'set_id_to' => $targetSetId, 'count' => 1, 'start_date' => self::futureDate()],
-			'method' => 'POST',
+			'method' => 'post',
 		]);
 		$scheduleId = ClassRegistry::init('Schedule')->id;
 
-		$this->testAction('/schedule/cancel/' . $scheduleId, ['method' => 'POST']);
+		$this->testAction('/schedule/cancel/' . $scheduleId, ['method' => 'post']);
 
 		$this->testAction('/schedule/add', [
 			'data' => ['set_id_from' => $sandboxSetId, 'set_id_to' => $targetSetId, 'count' => 1, 'start_date' => self::futureDate()],
-			'method' => 'POST',
+			'method' => 'post',
 		]);
 
 		$this->assertSame(1, ClassRegistry::init('Schedule')->find('count'));
@@ -366,13 +366,13 @@ class ScheduleTest extends TestCaseWithAuth
 
 		$this->testAction('/schedule/add', [
 			'data' => ['set_id_from' => $sandboxSetId, 'set_id_to' => $targetSetId, 'count' => 2, 'start_date' => self::futureDate()],
-			'method' => 'POST',
+			'method' => 'post',
 		]);
 
 		$schedules = ClassRegistry::init('Schedule')->find('all');
-		$this->testAction('/schedule/cancel/' . $schedules[0]['Schedule']['id'], ['method' => 'POST']);
+		$this->testAction('/schedule/cancel/' . $schedules[0]['Schedule']['id'], ['method' => 'post']);
 
-		$this->testAction('/schedule');
+		$this->testAction('/schedule', ['method' => 'get']);
 
 		$this->assertCount(1, $this->vars['p']);
 	}
@@ -395,7 +395,7 @@ class ScheduleTest extends TestCaseWithAuth
 
 		$this->expectException(BadRequestException::class);
 
-		$this->testAction('/schedule/cancel/' . $scheduleId, ['method' => 'POST']);
+		$this->testAction('/schedule/cancel/' . $scheduleId, ['method' => 'post']);
 	}
 
 	public function testPublishSkipsAlreadyPublishedTsumego(): void
@@ -597,7 +597,7 @@ class ScheduleTest extends TestCaseWithAuth
 		$targetSetId = $context->tsumegos[2]['set-connections'][0]['set_id'];
 
 		$this->testAction('/schedule/preview', [
-			'method' => 'GET',
+			'method' => 'get',
 			'data' => ['set_id_from' => $sandboxSetId, 'set_id_to' => $targetSetId, 'count' => 2, 'num' => 0],
 		]);
 
@@ -619,7 +619,7 @@ class ScheduleTest extends TestCaseWithAuth
 				'per_day' => 5,
 				'start_date' => self::futureDate(),
 			],
-			'method' => 'POST',
+			'method' => 'post',
 		]);
 
 		$dates = array_map(function ($row) {
@@ -641,7 +641,7 @@ class ScheduleTest extends TestCaseWithAuth
 				'count' => 6,
 				'start_date' => self::futureDate(),
 			],
-			'method' => 'POST',
+			'method' => 'post',
 		]);
 
 		$dates = array_map(function ($row) {
@@ -662,7 +662,7 @@ class ScheduleTest extends TestCaseWithAuth
 				'set_id_to' => $targetSetId,
 				'start_date' => date('Y-m-d'),
 			],
-			'method' => 'POST',
+			'method' => 'post',
 		]);
 
 		$schedule = ClassRegistry::init('Schedule')->find('first', ['order' => 'id DESC']);
@@ -789,12 +789,97 @@ class ScheduleTest extends TestCaseWithAuth
 		]);
 		$this->login('admin');
 
-		$this->testAction('/schedule');
+		$this->testAction('/schedule', ['method' => 'get']);
 
 		$recentlyPublished = $this->vars['recentlyPublished'];
 		$this->assertCount(1, $recentlyPublished);
 		$this->assertSame($context->tsumegos[0]['id'], (int) $recentlyPublished[0]['tsumego_id']);
 		$this->assertSame(1, (int) $recentlyPublished[0]['num']);
 		$this->assertEmpty($this->vars['p']);
+	}
+
+	/**
+	 * A collection a player shared is public too, but it is not the site's, so the schedule
+	 * neither offers it nor publishes into it.
+	 */
+	public function testTargetMustBeACollectionOfTheSite(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'admin', 'admin' => true],
+			'tsumegos' => [
+				['sets' => [['name' => 'sandbox set', 'num' => 1, 'public' => 0]]],
+				['sets' => [['name' => 'shared player collection', 'num' => 1, 'public' => 1, 'user_id' => 'self']]],
+			],
+		]);
+		$this->login('admin');
+
+		$sandboxSetId = $context->tsumegos[0]['set-connections'][0]['set_id'];
+		$playerSetId = $context->tsumegos[1]['set-connections'][0]['set_id'];
+
+		$this->testAction('/schedule', ['method' => 'get']);
+		$this->assertSame([], array_column(array_column($this->vars['publicSets'], 'Set'), 'title'));
+
+		$this->expectException(BadRequestException::class);
+		$this->testAction('/schedule/add', [
+			'data' => ['set_id_from' => $sandboxSetId, 'set_id_to' => $playerSetId, 'count' => 1, 'start_date' => self::futureDate()],
+			'method' => 'post',
+		]);
+	}
+
+	public function testAddToScheduleSkipsProblemsInTheTrash(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'admin', 'admin' => true],
+			'tsumegos' => [
+				['sets' => [['name' => 'sandbox set', 'num' => 1, 'public' => 0]], 'deleted' => date('Y-m-d H:i:s')],
+				['sets' => [['name' => 'sandbox set', 'num' => 2, 'public' => 0]]],
+				['sets' => [['name' => 'public set', 'num' => 1]]],
+			],
+		]);
+		$this->login('admin');
+
+		$this->testAction('/schedule/add', [
+			'data' => [
+				'set_id_from' => $context->tsumegos[0]['set-connections'][0]['set_id'],
+				'set_id_to' => $context->tsumegos[2]['set-connections'][0]['set_id'],
+				'count' => 2,
+				'start_date' => self::futureDate(),
+			],
+			'method' => 'post',
+		]);
+
+		$schedules = ClassRegistry::init('Schedule')->find('all');
+		$this->assertCount(1, $schedules);
+		$this->assertSame($context->tsumegos[1]['id'], (int) $schedules[0]['Schedule']['tsumego_id']);
+	}
+
+	/**
+	 * A problem deleted after it was scheduled is not published from the trash: the entry
+	 * waits, and the schedule page says where the problem is.
+	 */
+	public function testPublishLeavesAProblemInTheTrashPending(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'admin', 'admin' => true],
+			'tsumegos' => [
+				['sets' => [['name' => 'sandbox set', 'num' => 1, 'public' => 0]], 'deleted' => date('Y-m-d H:i:s')],
+				['sets' => [['name' => 'target set', 'num' => 1]]],
+			],
+			'schedule' => [
+				['tsumego' => 0, 'set' => 'target set', 'date' => date('Y-m-d')],
+			],
+		]);
+		$this->login('admin');
+
+		SchedulePublisher::publishDue();
+
+		$schedule = ClassRegistry::init('Schedule')->find('first');
+		$this->assertSame(0, (int) $schedule['Schedule']['published']);
+		$this->assertSame(1, ClassRegistry::init('SetConnection')->find('count', [
+			'conditions' => ['tsumego_id' => $context->tsumegos[0]['id'], 'set_id' => $context->tsumegos[0]['set-connections'][0]['set_id']],
+		]));
+
+		$result = $this->testAction('/schedule', ['method' => 'get', 'return' => 'view']);
+		$this->assertStringContainsString('in the trash', $result);
 	}
 }

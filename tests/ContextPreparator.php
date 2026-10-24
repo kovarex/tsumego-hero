@@ -830,7 +830,7 @@ class ContextPreparator
 				'set_id' => $targetSetId,
 				'date' => $entry['date'],
 				'published' => $entry['published'] ?? 0,
-				'created_by' => $this->user['id'] ?? null,
+				'created_by_user_id' => $this->user['id'] ?? null,
 			]);
 		}
 	}

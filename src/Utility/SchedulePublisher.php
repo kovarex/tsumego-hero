@@ -4,6 +4,7 @@ namespace App\Utility;
 
 use CakeLog;
 use ClassRegistry;
+use Set;
 
 /**
  * Publishes the schedule entries that are due, which the daily cron runs.
@@ -16,7 +17,7 @@ class SchedulePublisher
 	/**
 	 * Publish every entry that is due, oldest first. Entries of a day the cron did not
 	 * run on are published by the next run, so nothing stays pending forever. An entry
-	 * without a sandbox source to move from stays pending and is logged.
+	 * that cannot be published stays pending, so the schedule page shows it, and is logged.
 	 */
 	public static function publishDue(): void
 	{
@@ -26,18 +27,22 @@ class SchedulePublisher
 			'order' => 'date ASC',
 		]) ?: [];
 		foreach ($dueSchedule as $item)
-			if (self::publishSingle($item['Schedule']['tsumego_id'], $item['Schedule']['set_id']))
+		{
+			$failure = self::publishSingle($item['Schedule']['tsumego_id'], $item['Schedule']['set_id']);
+			if ($failure === null)
 			{
 				$item['Schedule']['published'] = 1;
 				ClassRegistry::init('Schedule')->save($item);
 			}
 			else
 				CakeLog::warning(sprintf(
-					'Schedule publish failed: entry %d (tsumego %d -> set %d) has no sandbox source',
+					'Schedule publish failed: entry %d (tsumego %d -> set %d): %s',
 					$item['Schedule']['id'],
 					$item['Schedule']['tsumego_id'],
-					$item['Schedule']['set_id']
+					$item['Schedule']['set_id'],
+					$failure
 				));
+		}
 	}
 
 	/**
@@ -45,13 +50,17 @@ class SchedulePublisher
 	 * Always moves the tsumego to the target set. Only resets stats and
 	 * wipes tsumego_status if the tsumego is not already in any other
 	 * public set (to preserve solve history for existing public problems).
-	 * Returns false if the tsumego has no sandbox source to move from.
+	 * Returns why it could not be published, null when it was.
 	 */
-	private static function publishSingle(int|string|null $tsumegoID = null, int|string|null $to = null): bool
+	private static function publishSingle(int|string|null $tsumegoID = null, int|string|null $to = null): ?string
 	{
 		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID);
 		if (!$tsumego)
-			return false;
+			return 'the problem does not exist';
+		if ($tsumego['Tsumego']['deleted'])
+			return 'the problem is in the trash';
+		if (!ClassRegistry::init('Set')->find('first', ['conditions' => ['Set.id' => $to, Set::officialCondition('Set')]]))
+			return 'the target is not a public collection of the site';
 
 		// A tsumego lives in at most one official sandbox set, but be robust to
 		// several: publishing moves it out of every sandbox set into the target.
@@ -76,7 +85,7 @@ class SchedulePublisher
 				'table' => 'set',
 				'alias' => 'S',
 				'type' => 'INNER',
-				'conditions' => ['S.id = SetConnection.set_id', 'S.public' => 1],
+				'conditions' => ['S.id = SetConnection.set_id', Set::officialCondition('S')],
 			]],
 			'conditions' => ['SetConnection.tsumego_id' => $tsumegoID],
 		]);
@@ -110,7 +119,7 @@ class SchedulePublisher
 				ClassRegistry::init('SetConnection')->delete($sandboxConnection['SetConnection']['id']);
 		}
 		else
-			return false;
+			return 'the problem is in no sandbox set to move from';
 
 		if (!$alreadyPublic)
 		{
@@ -123,6 +132,6 @@ class SchedulePublisher
 			ClassRegistry::init('TsumegoStatus')->deleteAll(['tsumego_id' => $tsumego['Tsumego']['id']]);
 		}
 
-		return true;
+		return null;
 	}
 }
