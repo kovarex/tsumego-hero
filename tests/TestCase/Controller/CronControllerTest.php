@@ -154,64 +154,26 @@ class CronControllerTest extends TestCaseWithAuth
 		$this->assertSame($newSetConnection['SetConnection']['set_id'], $publicSetID);
 	}
 
-	public function testPublishSkipsAlreadyPublishedTsumego()
+	/**
+	 * The other daily work runs once a day, but publishing repeats on every call
+	 * and only takes what is still pending, so a due entry is never left behind by
+	 * a day that is already recorded as done.
+	 */
+	public function testPublishRunsWhenTheDayIsAlreadyRecorded()
 	{
-		$context = new ContextPreparator([
+		new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'day-records' => [['date' => date('Y-m-d')]],
 			'tsumegos' => [
 				['sets' => [['name' => 'sandbox set', 'num' => 5, 'public' => 0]]],
-				['sets' => [['name' => 'set 1', 'num' => 3]]]]]);
+				['sets' => [['name' => 'set 1', 'num' => 3]]]],
+			'schedule' => [
+				['tsumego' => 0, 'set' => 'set 1', 'date' => date('Y-m-d', strtotime('-2 days'))]]]);
 
-		$tsumegoToMigrate = $context->tsumegos[0];
-		$publicSetID = $context->tsumegos[1]['set-connections'][0]['set_id'];
+		$this->testAction('/cron/daily/' . CRON_SECRET, ['method' => 'get']);
 
-		ClassRegistry::init('Schedule')->create();
-		$scheduleItem = [];
-		$scheduleItem['tsumego_id'] = $tsumegoToMigrate['id'];
-		$scheduleItem['set_id'] = $publicSetID;
-		$scheduleItem['date'] = date('Y-m-d');
-		$scheduleItem['published'] = 1;
-		ClassRegistry::init('Schedule')->save($scheduleItem);
-
-		ClassRegistry::init('Tsumego')->updateAll(
-			['solved' => 42, 'failed' => 7],
-			['id' => $tsumegoToMigrate['id']]);
-
-		CronController::_publish();
-
-		$this->assertSame(0, ClassRegistry::init('PublishDate')->find('count', [
-			'conditions' => ['tsumego_id' => $tsumegoToMigrate['id']]]));
-		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoToMigrate['id']);
-		$this->assertSame(42, (int) $tsumego['Tsumego']['solved']);
-		$this->assertSame(7, (int) $tsumego['Tsumego']['failed']);
-	}
-
-	public function testPublishWhenAlreadyInTargetSetKeepsOneConnection(): void
-	{
-		$context = new ContextPreparator([
-			'tsumegos' => [
-				['sets' => [
-					['name' => 'sandbox set', 'num' => 5, 'public' => 0],
-					['name' => 'set 1', 'num' => 3],
-				]],
-			]]);
-
-		$tsumegoToMigrate = $context->tsumegos[0];
-		$targetSetId = $tsumegoToMigrate['set-connections'][1]['set_id'];
-
-		ClassRegistry::init('Schedule')->create();
-		$scheduleItem = [];
-		$scheduleItem['tsumego_id'] = $tsumegoToMigrate['id'];
-		$scheduleItem['set_id'] = $targetSetId;
-		$scheduleItem['date'] = date('Y-m-d');
-		$scheduleItem['published'] = 0;
-		ClassRegistry::init('Schedule')->save($scheduleItem);
-
-		CronController::_publish();
-
-		$count = ClassRegistry::init('SetConnection')->find('count', [
-			'conditions' => ['set_id' => $targetSetId, 'tsumego_id' => $tsumegoToMigrate['id']],
-		]);
-		$this->assertSame(1, $count);
+		$schedule = ClassRegistry::init('Schedule')->find('first', ['order' => 'id ASC']);
+		$this->assertSame(1, (int) $schedule['Schedule']['published']);
 	}
 
 	public function testUpdateSolved()

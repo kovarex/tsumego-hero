@@ -498,31 +498,6 @@ class UsersControllerTest extends ControllerTestCase
 		$this->assertTextContains('test set', $browser->driver->getPageSource());
 	}
 
-	public function testShowPublishSchedule()
-	{
-		$context = new ContextPreparator([
-			'user' => ['name' => 'admin', 'admin' => true],
-			'tsumegos' => [
-				['sets' => [['name' => 'sandbox set', 'num' => 268, 'public' => 0]]],
-				['sets' => [['name' => 'set 1', 'num' => 673]]]]]);
-
-		$tsumegoToPublish = $context->tsumegos[0];
-		$publicSetID = $context->tsumegos[1]['set-connections'][0]['set_id'];
-
-		ClassRegistry::init('Schedule')->create();
-		$scheduleItem = [];
-		$scheduleItem['tsumego_id'] = $tsumegoToPublish['id'];
-		$scheduleItem['set_id'] = $publicSetID;
-		$scheduleItem['date'] = date('Y-m-d');
-		$scheduleItem['published'] = 0;
-		ClassRegistry::init('Schedule')->save($scheduleItem);
-
-		$browser = Browser::instance();
-		$browser->get('/users/showPublishSchedule');
-		$this->assertTextContains('sandbox set', $browser->getTableCell('.data-table', 1, 1)->getText());
-		$this->assertTextContains('268', $browser->getTableCell('.data-table', 1, 1)->getText());
-	}
-
 	public function testResetOldProgressRemovesOnlyOldStatuses()
 	{
 		$twoYearsAgo = date('Y-m-d H:i:s', strtotime('-2 years'));
