@@ -262,9 +262,7 @@ ORDER BY time_mode_session.created DESC, time_mode_session.id DESC",
 		return $result;
 	}
 
-	#[HttpGet]
-	#[HttpPost]
-	public static function deduceUnlock(?array $finishedSession, array $timeModeRanks, array $timeModeCategories): ?array
+	private static function deduceUnlock(?array $finishedSession, array $timeModeRanks, array $timeModeCategories): ?array
 	{
 		if (!$finishedSession)
 			return null;

@@ -176,7 +176,7 @@ class CronControllerTest extends TestCaseWithAuth
 			['solved' => 42, 'failed' => 7],
 			['id' => $tsumegoToMigrate['id']]);
 
-		CronController::publish();
+		CronController::_publish();
 
 		$this->assertSame(0, ClassRegistry::init('PublishDate')->find('count', [
 			'conditions' => ['tsumego_id' => $tsumegoToMigrate['id']]]));
@@ -206,7 +206,7 @@ class CronControllerTest extends TestCaseWithAuth
 		$scheduleItem['published'] = 0;
 		ClassRegistry::init('Schedule')->save($scheduleItem);
 
-		CronController::publish();
+		CronController::_publish();
 
 		$count = ClassRegistry::init('SetConnection')->find('count', [
 			'conditions' => ['set_id' => $targetSetId, 'tsumego_id' => $tsumegoToMigrate['id']],

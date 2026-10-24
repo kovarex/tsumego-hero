@@ -4,8 +4,24 @@ declare(strict_types=1);
 
 namespace App\Utility;
 
+use BadRequestException;
+
 class SgfParser
 {
+	/**
+	 * Accept the SGF or refuse the request: the message names what is wrong with it.
+	 */
+	public static function validateOrFail(string $sgf): void
+	{
+		$error = self::validate($sgf);
+		if ($error !== null)
+			throw new BadRequestException('Invalid SGF format: ' . $error);
+
+		$gameError = self::validateGame($sgf);
+		if ($gameError !== null)
+			throw new BadRequestException('Invalid SGF format: ' . $gameError);
+	}
+
 	/**
 	 * Parse SGF and return board, stones and info array.
 	 *

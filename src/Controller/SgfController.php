@@ -60,7 +60,7 @@ class SgfController extends AppController
 		if (!$sgfDataOrFile)
 			throw new BadRequestException('No SGF data provided.');
 
-		self::validateSgfFormat($sgfDataOrFile);
+		SgfParser::validateOrFail($sgfDataOrFile);
 
 		AdminActivityLogger::log(
 			AdminActivityType::SGF_EDIT,
@@ -75,18 +75,5 @@ class SgfController extends AppController
 		$this->set('transformationFromSource', $fileUpload ? null : ($this->request->data['transformationFromSource'] ?? null));
 		$this->set('description', (string) ($this->request->data['description'] ?? ''));
 		$this->render('/Tsumegos/setup_new_sgf');
-	}
-
-	#[HttpGet]
-	#[HttpPost]
-	public static function validateSgfFormat(string $sgf): void
-	{
-		$error = SgfParser::validate($sgf);
-		if ($error !== null)
-			throw new BadRequestException('Invalid SGF format: ' . $error);
-
-		$gameError = SgfParser::validateGame($sgf);
-		if ($gameError !== null)
-			throw new BadRequestException('Invalid SGF format: ' . $gameError);
 	}
 }

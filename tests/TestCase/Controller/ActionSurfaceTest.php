@@ -56,6 +56,21 @@ class ActionSurfaceTest extends CakeTestCase
 	}
 
 	/**
+	 * A verb on a method the dispatcher never reaches describes a rule nobody reads, and it
+	 * makes the next reader believe the method is an address.
+	 */
+	public function testOnlyActionsDeclareHttpVerbs(): void
+	{
+		$offenders = [];
+		foreach ($this->controllerClasses() as $className)
+			foreach ((new ReflectionClass($className))->getMethods() as $method)
+				if (!$this->isAction($className, $method) && $this->declaredVerbs($method) !== [])
+					$offenders[] = $this->name($method);
+
+		$this->assertSame([], $offenders, 'these declare an HTTP verb yet are not reachable by address');
+	}
+
+	/**
 	 * A method reachable by address is given the pieces of that address, which are strings. One
 	 * that needs an object anywhere in its signature can only end in a TypeError when it is
 	 * reached, so it belongs behind a leading underscore or a non-public visibility.
@@ -105,20 +120,27 @@ class ActionSurfaceTest extends CakeTestCase
 	{
 		$actions = [];
 		foreach ($this->controllerClasses() as $className)
-		{
-			$added = array_diff(get_class_methods($className), get_class_methods('Controller'));
 			foreach ((new ReflectionClass($className))->getMethods(ReflectionMethod::IS_PUBLIC) as $method)
-			{
-				if (!in_array($method->getName(), $added, true))
-					continue;
-				if (str_starts_with($method->getName(), '_') || in_array($method->getName(), self::LIFECYCLE, true))
-					continue;
-
-				$actions[] = $method;
-			}
-		}
+				if ($this->isAction($className, $method))
+					$actions[] = $method;
 
 		return $actions;
+	}
+
+	/**
+	 * Whether the dispatcher would answer to the method, worked out the way
+	 * Controller::_isPrivateAction() does it: public, not leading-underscored, and not already part
+	 * of the framework controller.
+	 */
+	private function isAction(string $className, ReflectionMethod $method): bool
+	{
+		if (!$method->isPublic() || str_starts_with($method->getName(), '_'))
+			return false;
+		if (in_array($method->getName(), self::LIFECYCLE, true))
+			return false;
+
+		$added = array_diff(get_class_methods($className), get_class_methods('Controller'));
+		return in_array($method->getName(), $added, true);
 	}
 
 	/**

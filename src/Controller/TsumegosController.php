@@ -12,6 +12,7 @@ use App\Utility\PlayOutcome;
 use App\Utility\Rating;
 use App\Utility\RatingParseException;
 use App\Utility\SgfCommentReorientation;
+use App\Utility\SgfParser;
 use App\Utility\SimilarSearchLogic;
 use App\Utility\TsumegoButton;
 use App\Utility\TsumegoMerger;
@@ -399,7 +400,7 @@ class TsumegosController extends AppController
 		$firstMoveColor = $this->request->data['firstMoveColor'];
 		$correctMoves = $this->request->data['correctMoves'];
 
-		SgfController::validateSgfFormat($sgfData);
+		SgfParser::validateOrFail($sgfData);
 
 		$tsumego = ClassRegistry::init("Tsumego")->findById($tsumegoID);
 		if (!$tsumego)

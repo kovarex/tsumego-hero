@@ -17,12 +17,13 @@ class GoogleTokenVerifier implements GoogleTokenVerifierInterface
 	}
 
 	/**
-	 * Answer the token check with the given verifier instead of the network, on a test
-	 * instance only.
+	 * Answer the token check with the given verifier instead of the network, in the test suite
+	 * only. The guard is the same one the password checker uses, so both seams can be dropped
+	 * for the same request.
 	 */
 	public static function useForTests(?GoogleTokenVerifierInterface $verifier): void
 	{
-		self::$testInstance = Util::isInTestEnvironment() ? $verifier : null;
+		self::$testInstance = Util::isOnTestSite() ? $verifier : null;
 	}
 
 	public static function testInstance(): ?GoogleTokenVerifierInterface
