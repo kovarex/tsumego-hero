@@ -127,7 +127,7 @@ WHERE c.TABLE_SCHEMA = DATABASE() AND c.COLUMN_NAME = 'tsumego_id'");
 			'tsumegos' => [['deleted' => self::daysAgo(1), 'sets' => [['name' => 'published', 'num' => 1]]]]]);
 
 		$this->expectException(NotFoundException::class);
-		$this->testAction('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$this->testAction('/' . $context->tsumegos[0]['set-connections'][0]['id'], ['method' => 'GET']);
 	}
 
 	public function testLastVisitedProblemThatWasDeletedLeadsToCollections(): void
@@ -136,7 +136,7 @@ WHERE c.TABLE_SCHEMA = DATABASE() AND c.COLUMN_NAME = 'tsumego_id'");
 			'user' => ['admin' => false],
 			'tsumegos' => [['deleted' => self::daysAgo(1), 'sets' => [['name' => 'published', 'num' => 1]]]]]);
 
-		$this->testAction('/tsumegos/play/' . $context->tsumegos[0]['id']);
+		$this->testAction('/tsumegos/play/' . $context->tsumegos[0]['id'], ['method' => 'GET']);
 
 		$this->assertStringEndsWith('/sets', $this->headers['Location']);
 	}
@@ -147,7 +147,7 @@ WHERE c.TABLE_SCHEMA = DATABASE() AND c.COLUMN_NAME = 'tsumego_id'");
 			'user' => ['admin' => true],
 			'tsumegos' => [['deleted' => self::daysAgo(1), 'sets' => [['name' => 'published', 'num' => 1]]]]]);
 
-		$view = $this->testAction('/' . $context->tsumegos[0]['set-connections'][0]['id'], ['return' => 'view']);
+		$view = $this->testAction('/' . $context->tsumegos[0]['set-connections'][0]['id'], ['method' => 'GET', 'return' => 'view']);
 
 		$this->assertStringContainsString('This problem is in the trash', $view);
 		$this->assertStringContainsString('/trash/restore-problem/' . $context->tsumegos[0]['id'], $view);
@@ -160,11 +160,11 @@ WHERE c.TABLE_SCHEMA = DATABASE() AND c.COLUMN_NAME = 'tsumego_id'");
 			'user' => ['admin' => false],
 			'tsumegos' => [['sets' => [['name' => 'gone', 'num' => 1, 'deleted' => self::daysAgo(1)]]]]]);
 
-		$view = $this->testAction('/sets', ['return' => 'view']);
+		$view = $this->testAction('/sets', ['method' => 'GET', 'return' => 'view']);
 		$this->assertStringNotContainsString('gone', $view);
 
 		$this->expectException(ForbiddenException::class);
-		$this->testAction(Set::url($context->tsumegos[0]['sets'][0]['id']));
+		$this->testAction(Set::url($context->tsumegos[0]['sets'][0]['id']), ['method' => 'GET']);
 	}
 
 	public function testTrashedSetIsLeftOutOfTimeAndRatingMode(): void
@@ -188,7 +188,7 @@ WHERE c.TABLE_SCHEMA = DATABASE() AND c.COLUMN_NAME = 'tsumego_id'");
 				['deleted' => self::daysAgo(2), 'description' => 'doomed problem', 'sets' => [['name' => 'live', 'num' => 7]]],
 				['sets' => [['name' => 'doomed collection', 'num' => 1, 'deleted' => self::daysAgo(3)]]]]]);
 
-		$view = $this->testAction('/trash', ['return' => 'view']);
+		$view = $this->testAction('/trash', ['method' => 'GET', 'return' => 'view']);
 
 		$this->assertStringContainsString('doomed problem', $view);
 		$this->assertStringContainsString('live 7', $view);
@@ -202,7 +202,7 @@ WHERE c.TABLE_SCHEMA = DATABASE() AND c.COLUMN_NAME = 'tsumego_id'");
 	{
 		new ContextPreparator(['user' => ['admin' => false]]);
 		$this->expectException(ForbiddenException::class);
-		$this->testAction('/trash');
+		$this->testAction('/trash', ['method' => 'GET']);
 	}
 
 	public function testOnlyAdminRestores(): void
@@ -285,7 +285,7 @@ WHERE c.TABLE_SCHEMA = DATABASE() AND c.COLUMN_NAME = 'tsumego_id'");
 				['sets' => [['name' => 'published', 'num' => 3]]]]]);
 		$purgedID = $context->tsumegos[0]['id'];
 
-		$this->testAction('/cron/daily/' . CRON_SECRET);
+		$this->testAction('/cron/daily/' . CRON_SECRET, ['method' => 'GET']);
 
 		$this->assertNull(self::tsumegoRow($purgedID));
 		foreach (['set_connection', 'tsumego_status', 'tsumego_comment', 'tsumego_variant'] as $table)
