@@ -23,14 +23,14 @@ final class AddTrash extends AbstractMigration
 			MODIFY COLUMN `deleted` DATETIME NULL DEFAULT NULL COMMENT 'When the problem was moved to the trash, NULL when it is not in it.',
 			ADD INDEX `deleted` (`deleted`)");
 		$this->execute("INSERT IGNORE INTO `admin_activity_type` (`id`, `name`) VALUES
-			(34, 'Problem Restore'),
-			(35, 'Set Delete'),
-			(36, 'Set Restore')");
+			(40, 'Problem Restore'),
+			(41, 'Set Delete'),
+			(42, 'Set Restore')");
 	}
 
 	public function down(): void
 	{
-		$this->execute("DELETE FROM `admin_activity_type` WHERE `id` IN (34, 35, 36)");
+		$this->execute("DELETE FROM `admin_activity_type` WHERE `id` IN (40, 41, 42)");
 		$this->execute("ALTER TABLE `tsumego`
 			DROP INDEX `deleted`,
 			MODIFY COLUMN `deleted` DATETIME NULL DEFAULT NULL");
