@@ -618,6 +618,11 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		$userData['User']['password_hash'] = password_hash($password, PASSWORD_DEFAULT);
 		$userData['User']['name'] = $this->request->data['User']['name'];
 		$normalizedName = User::normalizeDisplayName($this->request->data['User']['name']);
+		if (User::containsCharactersTheForumCannotStore($normalizedName))
+		{
+			CookieFlash::set('The name must not contain emoji or other rare symbols, please choose another one.', 'error');
+			return;
+		}
 		$uniqueDisplayName = User::generateUniqueDisplayName($normalizedName);
 		$userData['User']['display_name'] = $uniqueDisplayName;
 		// A taken display name gets a numbered suffix, which is not the name the player chose,
@@ -706,6 +711,12 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		if (empty($newDisplayName))
 		{
 			CookieFlash::set(__('Display name cannot be empty.'), 'error');
+			return $this->redirect(['action' => 'changename']);
+		}
+
+		if (User::containsCharactersTheForumCannotStore($newDisplayName))
+		{
+			CookieFlash::set(__('The display name must not contain emoji or other rare symbols.'), 'error');
 			return $this->redirect(['action' => 'changename']);
 		}
 
@@ -1379,6 +1390,11 @@ ORDER BY category DESC', [$user['User']['id']]));
 		}
 
 		$name = $token_data['name'] ?? '';
+		// A Google profile name is free text and can hold an emoji, which the forum cannot
+		// store; the character is dropped and the player is asked to pick a name below.
+		$nameWithoutEmoji = User::withoutCharactersTheForumCannotStore($name);
+		$droppedCharacters = $nameWithoutEmoji !== $name;
+		$name = $nameWithoutEmoji;
 		// Fallback to last 6 digits of sub if no name provided
 		if (empty($name))
 			$name = 'User ' . substr($token_data['sub'] ?? '', -6);
@@ -1398,7 +1414,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 
 			$userData = [];
 			$userData['User']['display_name'] = $uniqueDisplayName;
-			$userData['User']['needs_display_name_change'] = ($uniqueDisplayName !== $normalizedName) ? true : false;
+			$userData['User']['needs_display_name_change'] = ($uniqueDisplayName !== $normalizedName || $droppedCharacters) ? true : false;
 			$userData['User']['email'] = $email;
 			$userData['User']['password_hash'] = 'google_oauth';
 			$userData['User']['external_id'] = $externalId;
