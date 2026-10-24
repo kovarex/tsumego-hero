@@ -6,7 +6,6 @@ use App\Utility\Auth;
 use App\Utility\Avatar;
 use App\Utility\Constants;
 use App\Utility\CookieFlash;
-use App\Utility\FakePwnedPasswordChecker;
 use App\Utility\GoogleTokenVerifier;
 use App\Utility\GoogleTokenVerifierInterface;
 use App\Utility\JwtAuth;
@@ -45,31 +44,9 @@ class UsersController extends AppController
 		return self::$DUMMY_PASSWORD_HASH;
 	}
 
-	/**
-	 * Static test checker, so tests can decide which passwords count as breached.
-	 * Only honored for the test suite, so it can never take effect for players.
-	 */
-	private static ?PwnedPasswordCheckerInterface $testPasswordChecker = null;
-
-	public static function setTestPasswordChecker(?PwnedPasswordCheckerInterface $checker): void
-	{
-		self::$testPasswordChecker = Util::isOnTestSite() ? $checker : null;
-	}
-
 	protected function getPasswordChecker(): PwnedPasswordCheckerInterface
 	{
-		if (self::$testPasswordChecker !== null)
-			return self::$testPasswordChecker;
-
-		if ($this->passwordChecker === null)
-		{
-			// The test suite never asks the public list; every other site does, so the
-			// check can be tried by hand on the dev site too.
-			$this->passwordChecker = Util::isOnTestSite()
-				? new FakePwnedPasswordChecker()
-				: new PwnedPasswordChecker();
-		}
-		return $this->passwordChecker;
+		return $this->passwordChecker ??= PwnedPasswordChecker::create();
 	}
 
 	/**
@@ -99,42 +76,12 @@ class UsersController extends AppController
 	}
 
 	/**
-	 * Static test verifier (used by tests to inject FakeGoogleTokenVerifier).
-	 * Only honored on a dev/CI instance, so it can never take effect in production.
-	 */
-	private static ?GoogleTokenVerifierInterface $testVerifier = null;
-
-	/**
-	 * Set the Google token verifier for testing (static, affects all instances)
-	 */
-	public static function setTestTokenVerifier(?GoogleTokenVerifierInterface $verifier): void
-	{
-		self::$testVerifier = Util::isInTestEnvironment() ? $verifier : null;
-	}
-
-	/**
-	 * Set the Google token verifier (for this instance)
-	 */
-	public function setTokenVerifier(GoogleTokenVerifierInterface $verifier): void
-	{
-		$this->tokenVerifier = $verifier;
-	}
-
-	/**
 	 * Get the Google token verifier (lazily creates real verifier if not set)
 	 */
 	protected function getTokenVerifier(): GoogleTokenVerifierInterface
 	{
-		// Test verifier takes precedence
-		if (self::$testVerifier !== null)
-			return self::$testVerifier;
-
-		if ($this->tokenVerifier === null)
-		{
-			$clientId = '986748597524-05gdpjqrfop96k6haga9gvj1f61sji6v.apps.googleusercontent.com';
-			$this->tokenVerifier = new GoogleTokenVerifier($clientId);
-		}
-		return $this->tokenVerifier;
+		return $this->tokenVerifier ??= GoogleTokenVerifier::create(
+			'986748597524-05gdpjqrfop96k6haga9gvj1f61sji6v.apps.googleusercontent.com');
 	}
 
 	// shows the publish schedule

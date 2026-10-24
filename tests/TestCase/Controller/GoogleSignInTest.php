@@ -1,6 +1,7 @@
 <?php
 
 use App\Utility\FakeGoogleTokenVerifier;
+use App\Utility\GoogleTokenVerifier;
 
 /**
  * Tests for Google Sign-In functionality.
@@ -19,13 +20,13 @@ class GoogleSignInTest extends ControllerTestCase
 		parent::setUp();
 		$this->fakeVerifier = new FakeGoogleTokenVerifier();
 		// Set the static test verifier so it's used by any controller instance
-		UsersController::setTestTokenVerifier($this->fakeVerifier);
+			GoogleTokenVerifier::useForTests($this->fakeVerifier);
 	}
 
 	public function tearDown(): void
 	{
 		// Clean up the static verifier
-		UsersController::setTestTokenVerifier(null);
+			GoogleTokenVerifier::useForTests(null);
 		$this->fakeVerifier->reset();
 		parent::tearDown();
 	}

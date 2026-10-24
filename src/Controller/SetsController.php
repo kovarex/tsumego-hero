@@ -1207,12 +1207,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 		}
 	}
 
-	// Rank and tag filters change which problems a part of a set has, which a reset can't allow.
-	public static function hasProblemFilters(TsumegoFilters $tsumegoFilters): bool
-	{
-		return !empty($tsumegoFilters->ranks) || !empty($tsumegoFilters->tagIDs);
-	}
-
 	#[HttpPost]
 	public function resetProgress(int $setID, int $partition): mixed
 	{
@@ -1234,7 +1228,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 			CookieFlash::set('Reset is only possible for collection size ' . ProgressDeletion::$PARTITION_SIZE, 'error');
 			return $this->redirect($redirectUrl);
 		}
-		if (self::hasProblemFilters($tsumegoFilters))
+		if ($tsumegoFilters->hasProblemFilters())
 		{
 			CookieFlash::set('Reset is only possible without rank and tag filters', 'error');
 			return $this->redirect($redirectUrl);

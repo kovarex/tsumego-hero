@@ -8,7 +8,7 @@ namespace App\Utility;
  * Usage:
  *   $checker = new FakePwnedPasswordChecker();
  *   $checker->addBreachedPassword('password123');
- *   UsersController::setTestPasswordChecker($checker);
+ *   PwnedPasswordChecker::useForTests($checker);
  */
 class FakePwnedPasswordChecker implements PwnedPasswordCheckerInterface
 {

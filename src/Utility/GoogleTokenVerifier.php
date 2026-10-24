@@ -7,11 +7,36 @@ namespace App\Utility;
  */
 class GoogleTokenVerifier implements GoogleTokenVerifierInterface
 {
+	private static ?GoogleTokenVerifierInterface $testInstance = null;
+
 	private string $clientId;
 
 	public function __construct(string $clientId)
 	{
 		$this->clientId = $clientId;
+	}
+
+	/**
+	 * Answer the token check with the given verifier instead of the network, on a test
+	 * instance only.
+	 */
+	public static function useForTests(?GoogleTokenVerifierInterface $verifier): void
+	{
+		self::$testInstance = Util::isInTestEnvironment() ? $verifier : null;
+	}
+
+	public static function testInstance(): ?GoogleTokenVerifierInterface
+	{
+		return self::$testInstance;
+	}
+
+	/**
+	 * The verifier a caller should use: the one a test put in place, or one that asks
+	 * Google.
+	 */
+	public static function create(string $clientId): GoogleTokenVerifierInterface
+	{
+		return self::$testInstance ?? new self($clientId);
 	}
 
 	/**
