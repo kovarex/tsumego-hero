@@ -236,7 +236,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 
 		TestEmailer::$lastEmail = null;
 		$this->testAction('users/resetpassword/', ['data' => ['User' => ['email' => $user['email']]], 'method' => 'POST']);
-		$this->assertNull(TestEmailer::$lastEmail['to'] ?? null);
+		$this->assertArrayNotHasKey('body', TestEmailer::$lastEmail ?? [], 'the second request sends no mail');
 	}
 
 	public function testNewPassword(): void
