@@ -197,7 +197,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$this->assertEquals('Fixed by Admin', $set['Set']['title']);
 	}
 
-	public function testEditPageHidesDeleteForPublicSiteSet(): void
+	public function testEditPageAsksForTitleToDeletePublicSiteSet(): void
 	{
 		$context = new ContextPreparator([
 			'user' => ['name' => 'alice'],
@@ -207,7 +207,8 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$this->login('admin');
 
 		$this->testAction("/sets/edit/{$setId}", ['return' => 'view']);
-		$this->assertTextNotContains('Delete Collection', $this->view);
+		$this->assertTextContains('Delete Collection', $this->view);
+		$this->assertTextContains('id="set-delete-confirmation"', $this->view);
 	}
 
 	public function testAnonymousCannotEditPublicSetTitle(): void
@@ -859,9 +860,9 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$this->login('admin');
 		$setId = $this->_createSet('Sandbox Set', null, 0);
 
-		$this->testAction("/sets/delete/{$setId}", ['method' => 'POST']);
+		$this->testAction("/sets/delete/{$setId}", ['method' => 'POST', 'data' => ['confirmation' => 'Sandbox Set']]);
 
-		$this->assertEmpty(ClassRegistry::init('Set')->findById($setId));
+		$this->assertNotNull(ClassRegistry::init('Set')->findById($setId)['Set']['deleted'], 'It went to the trash');
 	}
 
 	// ── Sharing a collection with a link ────────────────────────────────

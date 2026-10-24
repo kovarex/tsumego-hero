@@ -244,7 +244,7 @@ class PolicyTest extends CakeTestCase
 		$this->assertFalse($policy->canEdit($this->identity(null), $set), 'anonymous blocked');
 	}
 
-	public function testSetPolicyDeleteAllowsOwnerOrAdminForSandbox()
+	public function testSetPolicyDeleteAllowsOwnerOrAdminForSiteSets()
 	{
 		$policy = new SetPolicy();
 		$ownedSet = ['user_id' => 7, 'public' => 1];
@@ -258,7 +258,7 @@ class PolicyTest extends CakeTestCase
 		$this->assertFalse($policy->canDelete($this->identity(true), $ownedSet), 'admin cannot delete other user set');
 		$this->assertFalse($policy->canDelete($this->identity(null), $ownedSet), 'anonymous cannot delete');
 		$publicSet = ['user_id' => null, 'public' => 1];
-		$this->assertFalse($policy->canDelete($this->identity(true), $publicSet), 'admin cannot delete public site set');
+		$this->assertTrue($policy->canDelete($this->identity(true), $publicSet), 'admin can delete public site set (to the trash)');
 		$this->assertFalse($policy->canDelete($this->identity(false), $publicSet), 'regular cannot delete public site set');
 	}
 
