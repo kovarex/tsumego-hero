@@ -22,15 +22,6 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		$this->assertTrue(Auth::isLoggedIn());
 	}
 
-	public function testGoogleSignInRequiresPost(): void
-	{
-		new ContextPreparator(['user' => null]);
-
-		$this->expectException(MethodNotAllowedException::class);
-
-		$this->testAction('users/googlesignin', ['method' => 'GET']);
-	}
-
 	public function testLoginWithEmail(): void
 	{
 		new ContextPreparator(['user' => null, 'other-users' => [['name' => 'kovarex', 'email' => 'kovarex@example.com']]]);

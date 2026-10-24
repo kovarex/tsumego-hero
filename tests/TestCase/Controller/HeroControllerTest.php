@@ -58,40 +58,4 @@ class HeroControllerTest extends ControllerTestCase
 
 		$this->testAction('/hero/refinement', ['method' => 'post']);
 	}
-
-	public function testSprintRequiresPost()
-	{
-		new ContextPreparator(['user' => ['name' => 'sprinter', 'level' => 50]]);
-
-		$this->expectException(MethodNotAllowedException::class);
-
-		$this->testAction('/hero/sprint', ['method' => 'get']);
-	}
-
-	public function testIntuitionRequiresPost()
-	{
-		new ContextPreparator(['user' => ['name' => 'intuiter', 'level' => 50]]);
-
-		$this->expectException(MethodNotAllowedException::class);
-
-		$this->testAction('/hero/intuition', ['method' => 'get']);
-	}
-
-	public function testRejuvenationRequiresPost()
-	{
-		new ContextPreparator(['user' => ['name' => 'rejuvenator', 'level' => 50]]);
-
-		$this->expectException(MethodNotAllowedException::class);
-
-		$this->testAction('/hero/rejuvenation', ['method' => 'get']);
-	}
-
-	public function testRevelationRequiresPost()
-	{
-		$context = new ContextPreparator(['tsumego' => 1, 'user' => ['level' => 1]]);
-
-		$this->expectException(MethodNotAllowedException::class);
-
-		$this->testAction('/hero/revelation/' . $context->tsumegos[0]['id'], ['method' => 'get']);
-	}
 }

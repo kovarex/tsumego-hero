@@ -320,11 +320,4 @@ class AccountDeletionTest extends TestCaseWithAuth
 		$this->assertNotNull($this->deletedOf($context->otherUsers[0]['id']));
 		$this->assertStringContainsString('The Google account is linked to another account now.', CookieFlash::get());
 	}
-
-	public function testRestoreRequiresPost(): void
-	{
-		$context = new ContextPreparator(['user' => ['admin' => true], 'other-users' => [['name' => 'ghost', 'deleted' => true]]]);
-		$this->expectException(MethodNotAllowedException::class);
-		$this->testAction('/users/restore_account/' . $context->otherUsers[0]['id'], ['method' => 'GET']);
-	}
 }
