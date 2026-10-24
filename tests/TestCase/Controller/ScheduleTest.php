@@ -59,6 +59,27 @@ class ScheduleTest extends TestCaseWithAuth
 		$this->assertSame(0, (int) $first['published']);
 	}
 
+	/**
+	 * An empty count asks for every problem left in the source set, without a cap.
+	 */
+	public function testAddToScheduleWithoutCountTakesAllProblems(): void
+	{
+		[, $sandboxSetId, $targetSetId] = $this->_sandboxAndTarget(range(1, 120));
+
+		$this->testAction('/schedule/add', [
+			'data' => [
+				'set_id_from' => $sandboxSetId,
+				'set_id_to' => $targetSetId,
+				'count' => '',
+				'per_day' => 50,
+				'start_date' => self::futureDate(),
+			],
+			'method' => 'post',
+		]);
+
+		$this->assertSame(120, ClassRegistry::init('Schedule')->find('count'));
+	}
+
 	public function testAddToScheduleSkipsAlreadyScheduledProblems(): void
 	{
 		[$context, $sandboxSetId, $targetSetId] = $this->_sandboxAndTarget([1, 2]);

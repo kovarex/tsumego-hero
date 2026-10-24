@@ -96,8 +96,8 @@ ORDER BY schedule.date DESC, schedule.id DESC");
 
 	/**
 	 * Schedule sandbox problems for publishing. Admin only.
-	 * Schedules the next `count` unscheduled problems of the source set that are
-	 * not already in the target set, optionally starting from position `num`,
+	 * Schedules the next `count` unscheduled problems of the source set (all of them
+	 * when `count` is empty) that are not already in the target set, optionally starting from position `num`,
 	 * `per_day` of them on each day. A schedule starting today is published right
 	 * away, because the daily cron only publishes the day it runs on.
 	 */
@@ -109,14 +109,14 @@ ORDER BY schedule.date DESC, schedule.id DESC");
 		$setIdFrom = (int) ($this->request->data['set_id_from'] ?? 0);
 		$targetSetId = (int) ($this->request->data['set_id_to'] ?? 0);
 		$num = (int) ($this->request->data['num'] ?? 0);
-		$count = (int) ($this->request->data['count'] ?? 1);
+		$count = self::count($this->request->data['count'] ?? null);
 		$perDay = (int) ($this->request->data['per_day'] ?? 5);
 		$startDate = (string) ($this->request->data['start_date'] ?? '');
 
 		if ($setIdFrom <= 0 || $targetSetId <= 0)
 			throw new BadRequestException('Invalid set ids.');
-		if ($count < 1 || $count > 100)
-			throw new BadRequestException('Count must be between 1 and 100.');
+		if ($count !== null && $count < 1)
+			throw new BadRequestException('Count must be at least 1, or empty for all.');
 		if ($perDay < 1 || $perDay > 50)
 			throw new BadRequestException('Problems per day must be between 1 and 50.');
 		if (!strtotime($startDate))
@@ -183,11 +183,11 @@ ORDER BY schedule.date DESC, schedule.id DESC");
 		$setIdFrom = (int) ($this->request->query['set_id_from'] ?? 0);
 		$targetSetId = (int) ($this->request->query['set_id_to'] ?? 0);
 		$num = (int) ($this->request->query['num'] ?? 0);
-		$count = (int) ($this->request->query['count'] ?? 1);
+		$count = self::count($this->request->query['count'] ?? null);
 		$perDay = max(1, (int) ($this->request->query['per_day'] ?? 5));
 		$startDate = strtotime((string) ($this->request->query['start_date'] ?? '')) ?: strtotime('today');
 
-		if ($setIdFrom <= 0 || $targetSetId <= 0 || $count < 1 || $count > 100)
+		if ($setIdFrom <= 0 || $targetSetId <= 0 || ($count !== null && $count < 1))
 		{
 			$this->response->type('json');
 			$this->response->body(json_encode([]));
@@ -215,13 +215,21 @@ ORDER BY schedule.date DESC, schedule.id DESC");
 	}
 
 	/**
+	 * How many problems to schedule, null for all of them, which an empty field asks for.
+	 */
+	private static function count(mixed $value): ?int
+	{
+		return $value === null || $value === '' ? null : (int) $value;
+	}
+
+	/**
 	 * The problems of the source set that the next schedule takes, in the order of the set: the
 	 * ones not waiting in the schedule already, not in the target set already and not in the
-	 * trash, from position `num` on when it is given.
+	 * trash, from position `num` on when it is given, at most `count` of them when it is given.
 	 *
 	 * @return array<array{tsumego_id: int, sc_id: int, num: int, sgf: ?string}>
 	 */
-	private static function candidates(int $setIdFrom, int $targetSetId, int $num, int $count): array
+	private static function candidates(int $setIdFrom, int $targetSetId, int $num, ?int $count): array
 	{
 		return Util::query("
 SELECT sc.tsumego_id, sc.id AS sc_id, sc.num,
@@ -232,8 +240,8 @@ WHERE sc.set_id = ?
 	AND sc.num >= ?
 	AND NOT EXISTS (SELECT 1 FROM schedule WHERE schedule.tsumego_id = sc.tsumego_id AND schedule.published = 0)
 	AND NOT EXISTS (SELECT 1 FROM set_connection target WHERE target.tsumego_id = sc.tsumego_id AND target.set_id = ?)
-ORDER BY sc.num ASC
-LIMIT " . $count, [$setIdFrom, $num, $targetSetId]);
+ORDER BY sc.num ASC" . ($count === null ? '' : "
+LIMIT " . $count), [$setIdFrom, $num, $targetSetId]);
 	}
 
 	/**

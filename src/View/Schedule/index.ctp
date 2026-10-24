@@ -143,9 +143,9 @@ $today = date('Y-m-d');
 				<span class="hint">Publishing takes the problem out of the sandbox and puts it here; a number that is already taken is renumbered.</span>
 			</div>
 			<div class="form-field">
-				<label class="form-field__label" for="schedule-count">How many problems</label>
-				<input class="form-field__control" type="number" id="schedule-count" name="count" value="1" min="1" max="100" required>
-				<span class="hint">At most this many: a problem already in the target set, or already scheduled, is skipped.</span>
+				<label class="form-field__label" for="schedule-count">How many problems (optional)</label>
+				<input class="form-field__control" type="number" id="schedule-count" name="count" min="1" placeholder="All">
+				<span class="hint">Leave it empty for all of them. A problem already in the target set, or already scheduled, is skipped.</span>
 			</div>
 			<div class="form-field">
 				<label class="form-field__label" for="schedule-num">Start from problem number (optional)</label>
@@ -268,10 +268,8 @@ $today = date('Y-m-d');
 
 	function confirmPublishingNow(event) {
 		if (dateField.value !== todayIso) return;
-		var count = document.getElementById('schedule-count').value;
 		var target = document.getElementById('schedule-to').selectedOptions[0].text;
-		var problems = count === '1' ? 'problem' : 'problems';
-		var question = 'Publishing starts today, so up to ' + count + ' ' + problems + ' go into "' + target + '" right away. Continue?';
+		var question = 'Publishing starts today, so the problems of the first day go into "' + target + '" right away. Continue?';
 		if (!confirm(question)) event.preventDefault();
 	}
 
