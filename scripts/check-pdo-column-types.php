@@ -34,7 +34,7 @@ echo 'STRINGIFY_FETCHES=' . var_export($pdo->getAttribute(PDO::ATTR_STRINGIFY_FE
 
 $checks = [
 	'int (achievement.id)' => 'SELECT id FROM achievement LIMIT 1',
-	'tinyint (user.isAdmin)' => 'SELECT isAdmin FROM user LIMIT 1',
+	'tinyint (tsumego_comment.deleted)' => 'SELECT deleted FROM tsumego_comment LIMIT 1',
 	'bigint (phinxlog.version)' => 'SELECT version FROM phinxlog LIMIT 1',
 	'decimal (time_mode_attempt.points)' => 'SELECT points FROM time_mode_attempt LIMIT 1',
 	'double (achievement_condition.value)' => 'SELECT value FROM achievement_condition LIMIT 1',

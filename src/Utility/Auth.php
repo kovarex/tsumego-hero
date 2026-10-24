@@ -97,7 +97,12 @@ class Auth
 
 	public static function isAdmin(): bool
 	{
-		return Auth::isLoggedIn() && Auth::getUser()['isAdmin'];
+		return User::isAdmin(Auth::$user);
+	}
+
+	public static function isOwner(): bool
+	{
+		return User::isOwner(Auth::$user);
 	}
 
 	public static function hasPremium(): bool

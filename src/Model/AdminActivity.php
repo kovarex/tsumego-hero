@@ -27,6 +27,12 @@ class AdminActivity extends AppModel
 			case AdminActivityType::ADD_TAG: return 'Added tag ' . h($adminActivity['new_value']);
 			case AdminActivityType::DELETE_USER: return 'Deleted user ' . h($adminActivity['old_value']);
 			case AdminActivityType::RESTORE_USER: return 'Restored user ' . h($adminActivity['new_value']);
+			case AdminActivityType::ROLE_CHANGE:
+				{
+					$old = json_decode((string) $adminActivity['old_value'], true);
+					return 'Changed the role of <a href="/users/view/' . (int) $old['user_id'] . '">' . h($old['display_name']) . '</a>'
+						. ' from ' . h($old['role']) . ' to ' . h($adminActivity['new_value']);
+				}
 			case AdminActivityType::SET_DELETE: return 'Moved collection ' . h($adminActivity['old_value']) . ' to the trash';
 			case AdminActivityType::SET_RESTORE: return 'Restored collection ' . h($adminActivity['new_value']) . ' from the trash';
 			case AdminActivityType::ACCEPT_PROPOSAL: return 'Accepted proposal by ' . h($adminActivity['new_value']);

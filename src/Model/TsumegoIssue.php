@@ -137,7 +137,7 @@ class TsumegoIssue extends AppModel
 				cu.pref_avatar AS comment_author_pref_avatar,
 				cu.email AS comment_author_email,
 				cu.rating AS comment_author_rating,
-				cu.isAdmin AS comment_author_isAdmin,
+				cu.user_role_id AS comment_author_user_role_id,
 				s.id AS set_id,
 				s.title AS set_title,
 				sc.num AS tsumego_num
@@ -218,7 +218,7 @@ class TsumegoIssue extends AppModel
 						'pref_avatar' => $row['cu']['comment_author_pref_avatar'] ?? null,
 						'email' => $row['cu']['comment_author_email'] ?? null,
 					]),
-					'isAdmin' => (bool) ($row['cu']['comment_author_isAdmin'] ?? false),
+					'isAdmin' => User::isAdmin(['user_role_id' => $row['cu']['comment_author_user_role_id'] ?? null]),
 				];
 			}
 		}

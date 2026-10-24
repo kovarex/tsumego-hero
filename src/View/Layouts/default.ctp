@@ -307,6 +307,8 @@ echo ViteManifest::legacyScript('legacy');
 								echo '<li class="additional-adminLink"><a class="adminLink" href="/trash">Trash</a></li>';
 								echo '<li class="additional-adminLink"><a class="adminLink" href="/app/webroot/editor">Editor</a></li>';
 								echo '<li class="additional-adminLink"><a class="adminLink" href="/users/userstats">User Activities</a></li>';
+								if(Auth::isOwner())
+									echo '<li class="additional-adminLink"><a class="adminLink" href="/roles">Admins and Owners</a></li>';
 							}
 							echo '</ul>';
 						}

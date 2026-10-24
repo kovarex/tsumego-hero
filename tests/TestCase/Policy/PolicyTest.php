@@ -5,6 +5,7 @@
  * They read only the computed `permissions` list attached by Auth::getIdentity().
  */
 use App\Policy\AdminPolicy;
+use App\Policy\OwnerPolicy;
 use App\Policy\SgfPolicy;
 use App\Policy\SetPolicy;
 use App\Policy\TagConnectionPolicy;
@@ -24,7 +25,7 @@ class PolicyTest extends CakeTestCase
 	{
 		if ($isAdmin === null)
 			return null;
-		$identity = ['isAdmin' => $isAdmin, 'premium' => $premium, 'level' => 1, 'rating' => 1000];
+		$identity = ['user_role_id' => $isAdmin ? User::ROLE_ADMIN : User::ROLE_PLAYER, 'premium' => $premium, 'level' => 1, 'rating' => 1000];
 		if ($id !== null)
 			$identity['id'] = $id;
 		return $identity;
@@ -39,6 +40,21 @@ class PolicyTest extends CakeTestCase
 			$this->assertFalse($policy->{$method}($this->identity(false)), $method . ' blocks regular user');
 			$this->assertFalse($policy->{$method}($this->identity(null)), $method . ' blocks anonymous');
 		}
+	}
+
+	public function testOwnerHasTheRightsOfAnAdmin()
+	{
+		$owner = ['user_role_id' => User::ROLE_OWNER, 'premium' => 0, 'level' => 1, 'rating' => 1000];
+		$this->assertTrue(AdminPolicy::canAdminstats($owner));
+		$this->assertTrue(SgfPolicy::canView($owner));
+	}
+
+	public function testOwnerPolicyAllowsOnlyOwners()
+	{
+		$this->assertTrue(OwnerPolicy::canManageRoles(['user_role_id' => User::ROLE_OWNER]));
+		$this->assertFalse(OwnerPolicy::canManageRoles($this->identity(true)));
+		$this->assertFalse(OwnerPolicy::canManageRoles($this->identity(false)));
+		$this->assertFalse(OwnerPolicy::canManageRoles($this->identity(null)));
 	}
 
 	public function testSgfPolicyAllowsOnlyAdmins()

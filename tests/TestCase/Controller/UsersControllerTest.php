@@ -691,7 +691,7 @@ class UsersControllerTest extends ControllerTestCase
 		]);
 
 		$user = ClassRegistry::init('User')->findById($context->user['id']);
-		$this->assertSame(0, (int) $user['User']['isAdmin']);
+		$this->assertSame(User::ROLE_PLAYER, (int) $user['User']['user_role_id']);
 		// The view must redirect to the demoted user's own profile with the id filled in.
 		$this->assertStringContainsString('/users/view/' . $context->user['id'], $this->view);
 	}
@@ -709,7 +709,22 @@ class UsersControllerTest extends ControllerTestCase
 		$browser->waitUntilJs('location.href.includes("/users/view/' . $context->user['id'] . '")');
 
 		$user = ClassRegistry::init('User')->findById($context->user['id']);
-		$this->assertSame(0, (int) $user['User']['isAdmin']);
+		$this->assertSame(User::ROLE_PLAYER, (int) $user['User']['user_role_id']);
+	}
+
+	public function testLastOwnerCantDemoteSelf()
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'owner', 'owner' => true]]);
+
+		$this->testAction('/users/demote_admin', [
+			'data' => ['User' => ['demote' => 'test']],
+			'method' => 'POST',
+			'return' => 'view',
+		]);
+
+		$user = ClassRegistry::init('User')->findById($context->user['id']);
+		$this->assertSame(User::ROLE_OWNER, (int) $user['User']['user_role_id']);
+		$this->assertStringContainsString('is the last owner', $this->view);
 	}
 
 	public function testNonAdminDemoteIsNoop()
@@ -722,6 +737,6 @@ class UsersControllerTest extends ControllerTestCase
 		]);
 
 		$user = ClassRegistry::init('User')->findById($context->user['id']);
-		$this->assertSame(0, (int) $user['User']['isAdmin']);
+		$this->assertSame(User::ROLE_PLAYER, (int) $user['User']['user_role_id']);
 	}
 }
