@@ -91,6 +91,9 @@ jobs:
       - name: Install pnpm dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Test build and deploy scripts
+        run: pnpm run test:scripts
+
       - name: Build React app
         run: ${{ github.ref == 'refs/heads/master' && 'pnpm run build:coverage' || 'pnpm run build' }}
 

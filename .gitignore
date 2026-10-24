@@ -67,6 +67,7 @@ Thumbs.db
 node_modules/
 webroot/js/dist/
 webroot/dist/
+webroot/dist-next/
 package-lock.json
 .pnpm-store/
 vite.config.*.timestamp-*
