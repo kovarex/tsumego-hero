@@ -56,6 +56,6 @@ class HeroControllerTest extends ControllerTestCase
 
 		$this->expectException(ForbiddenException::class);
 
-		$this->testAction('/hero/refinement', ['method' => 'post']);
+		$this->testAction('/hero/refinement', ['method' => 'get']);
 	}
 }

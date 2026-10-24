@@ -1,5 +1,6 @@
 <?php
 
+use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Lib\Error\UnprocessableEntityException;
 /**
@@ -23,6 +24,8 @@ class TsumegoIssuesController extends AppController
 	 *
 	 * @return CakeResponse|null
 	 */
+	#[HttpGet]
+	#[HttpPost]
 	public function api()
 	{
 		$this->loadModel('TsumegoIssue');
@@ -61,6 +64,7 @@ class TsumegoIssuesController extends AppController
 	 *
 	 * @return void
 	 */
+	#[HttpGet]
 	public function index(): void
 	{
 		$this->set('_title', 'Tsumego Hero - Issues');

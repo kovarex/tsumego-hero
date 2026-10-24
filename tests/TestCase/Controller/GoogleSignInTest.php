@@ -20,13 +20,13 @@ class GoogleSignInTest extends ControllerTestCase
 		parent::setUp();
 		$this->fakeVerifier = new FakeGoogleTokenVerifier();
 		// Set the static test verifier so it's used by any controller instance
-			GoogleTokenVerifier::useForTests($this->fakeVerifier);
+		GoogleTokenVerifier::useForTests($this->fakeVerifier);
 	}
 
 	public function tearDown(): void
 	{
 		// Clean up the static verifier
-			GoogleTokenVerifier::useForTests(null);
+		GoogleTokenVerifier::useForTests(null);
 		$this->fakeVerifier->reset();
 		parent::tearDown();
 	}

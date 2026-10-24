@@ -1,11 +1,13 @@
 <?php
 
+use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Utility\AdminActivityLogger;
 use App\Utility\SgfParser;
 
 class SgfController extends AppController
 {
+	#[HttpGet]
 	public function fetch(int $sgfID)
 	{
 		$sgf = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['id' => $sgfID], 'order' => 'id DESC']);
@@ -24,6 +26,7 @@ class SgfController extends AppController
 	 * link to the profile, rank), for the diff of the version in the editor.
 	 * Allowed to whoever may fetch the version.
 	 */
+	#[HttpGet]
 	public function info(int $sgfID)
 	{
 		$sgf = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['id' => $sgfID]]);
@@ -74,6 +77,8 @@ class SgfController extends AppController
 		$this->render('/Tsumegos/setup_new_sgf');
 	}
 
+	#[HttpGet]
+	#[HttpPost]
 	public static function validateSgfFormat(string $sgf): void
 	{
 		$error = SgfParser::validate($sgf);

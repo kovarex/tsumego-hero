@@ -6,7 +6,7 @@ class AvatarsControllerTest extends ControllerTestCase
 {
 	public function testImageIsAnSvg()
 	{
-		$result = $this->testAction('/board/' . Avatar::key('Anna'), ['return' => 'contents']);
+		$result = $this->testAction('/board/' . Avatar::key('Anna'), ['method' => 'get', 'return' => 'contents']);
 
 		$this->assertStringStartsWith('<svg', $result);
 		$this->assertEquals('image/svg+xml', $this->controller->response->type());
@@ -20,21 +20,21 @@ class AvatarsControllerTest extends ControllerTestCase
 	{
 		$key = Avatar::key('Anna');
 
-		$this->assertSame(Avatar::svg($key), $this->testAction('/board/' . $key, ['return' => 'contents']));
+		$this->assertSame(Avatar::svg($key), $this->testAction('/board/' . $key, ['method' => 'get', 'return' => 'contents']));
 	}
 
 	public function testTheSameNameAlwaysGetsTheSameImage()
 	{
-		$first = $this->testAction('/board/' . Avatar::key('Anna'), ['return' => 'contents']);
-		$second = $this->testAction('/board/' . Avatar::key('Anna'), ['return' => 'contents']);
+		$first = $this->testAction('/board/' . Avatar::key('Anna'), ['method' => 'get', 'return' => 'contents']);
+		$second = $this->testAction('/board/' . Avatar::key('Anna'), ['method' => 'get', 'return' => 'contents']);
 
 		$this->assertSame($first, $second);
 	}
 
 	public function testDifferentNamesGetDifferentImages()
 	{
-		$first = $this->testAction('/board/' . Avatar::key('Anna'), ['return' => 'contents']);
-		$second = $this->testAction('/board/' . Avatar::key('kovarex'), ['return' => 'contents']);
+		$first = $this->testAction('/board/' . Avatar::key('Anna'), ['method' => 'get', 'return' => 'contents']);
+		$second = $this->testAction('/board/' . Avatar::key('kovarex'), ['method' => 'get', 'return' => 'contents']);
 
 		$this->assertNotSame($first, $second);
 	}
@@ -47,7 +47,7 @@ class AvatarsControllerTest extends ControllerTestCase
 	{
 		$key = Avatar::key('a name no account has');
 
-		$this->assertStringStartsWith('<svg', $this->testAction('/board/' . $key, ['return' => 'contents']));
+		$this->assertStringStartsWith('<svg', $this->testAction('/board/' . $key, ['method' => 'get', 'return' => 'contents']));
 	}
 
 	/**
@@ -56,7 +56,7 @@ class AvatarsControllerTest extends ControllerTestCase
 	 */
 	public function testImageIsCachedForALongTime()
 	{
-		$this->testAction('/board/' . Avatar::key('Anna'), ['return' => 'contents']);
+		$this->testAction('/board/' . Avatar::key('Anna'), ['method' => 'get', 'return' => 'contents']);
 
 		$headers = $this->controller->response->header();
 		$this->assertNotEmpty($headers['Etag']);
@@ -69,7 +69,7 @@ class AvatarsControllerTest extends ControllerTestCase
 	 */
 	public function testImageLoadsForAVisitorWhoIsNotLoggedIn()
 	{
-		$result = $this->testAction('/board/' . Avatar::key('Anna'), ['return' => 'contents']);
+		$result = $this->testAction('/board/' . Avatar::key('Anna'), ['method' => 'get', 'return' => 'contents']);
 
 		$this->assertStringStartsWith('<svg', $result);
 	}
@@ -81,7 +81,7 @@ class AvatarsControllerTest extends ControllerTestCase
 			$notFound = false;
 			try
 			{
-				$this->testAction('/avatars/image/' . $key, ['return' => 'contents']);
+				$this->testAction('/avatars/image/' . $key, ['method' => 'get', 'return' => 'contents']);
 			}
 			catch (NotFoundException $e)
 			{
@@ -130,7 +130,7 @@ class AvatarsControllerTest extends ControllerTestCase
 	{
 		$key = Avatar::key('Anna');
 
-		$result = $this->testAction('/board/' . $key . '.png', ['return' => 'contents']);
+		$result = $this->testAction('/board/' . $key . '.png', ['method' => 'get', 'return' => 'contents']);
 		$size = getimagesizefromstring($result);
 
 		$this->assertSame("\x89PNG\r\n\x1a\n", substr($result, 0, 8));
@@ -141,7 +141,7 @@ class AvatarsControllerTest extends ControllerTestCase
 
 	public function testThePngOfAKeyIsCachedForALongTime()
 	{
-		$this->testAction('/board/' . Avatar::key('Anna') . '.png', ['return' => 'contents']);
+		$this->testAction('/board/' . Avatar::key('Anna') . '.png', ['method' => 'get', 'return' => 'contents']);
 
 		$headers = $this->controller->response->header();
 		$this->assertNotEmpty($headers['Etag']);
@@ -151,6 +151,6 @@ class AvatarsControllerTest extends ControllerTestCase
 	public function testAPngKeyThatIsNotADrawingIsNotFound()
 	{
 		$this->expectException(NotFoundException::class);
-		$this->testAction('/avatars/imagePng/not-a-hex-key', ['return' => 'contents']);
+		$this->testAction('/avatars/imagePng/not-a-hex-key', ['method' => 'get', 'return' => 'contents']);
 	}
 }

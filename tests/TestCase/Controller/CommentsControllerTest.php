@@ -505,7 +505,7 @@ class CommentsControllerTest extends ControllerTestCase
 		$comment->create();
 		$comment->save(['tsumego_id' => $tsumego->id, 'user_id' => $context->user['id'], 'message' => 'hello']);
 
-		$this->testAction('comments/index', ['return' => 'view']);
+		$this->testAction('comments/index', ['method' => 'get', 'return' => 'view']);
 
 		$this->assertTextContains('public set', $this->view);
 		$this->assertStringNotContainsString('alice favorites', $this->view);
@@ -1361,7 +1361,7 @@ class CommentsControllerTest extends ControllerTestCase
 			]
 		]);
 
-		$this->testAction('comments', ['return' => 'view']);
+		$this->testAction('comments', ['method' => 'get', 'return' => 'view']);
 
 		// Comment appears in both "All Comments" and "Your Comments" sections (= 2 times)
 		$this->assertSame(2, substr_count($this->view, 'UNIQUE_TEST_COMMENT_XYZ'));

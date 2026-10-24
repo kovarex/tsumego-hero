@@ -30,7 +30,7 @@ class AppController extends Controller
 	 *
 	 * @return void
 	 */
-	public static function handleContribution(int $uid, string $action): void
+	public static function _handleContribution(int $uid, string $action): void
 	{
 		$uc = ClassRegistry::init('UserContribution')->find('first', ['conditions' => ['user_id' => $uid]]);
 		if ($uc == null)
@@ -51,7 +51,7 @@ class AppController extends Controller
 		ClassRegistry::init('UserContribution')->save($uc);
 	}
 
-	public static function getAllTags(): array
+	public static function _getAllTags(): array
 	{
 		return Util::query("SELECT * from tag WHERE approved = 1 ORDER BY tag.name");
 	}
@@ -68,7 +68,7 @@ class AppController extends Controller
 			throw new NotFoundException('User not found');
 	}
 
-	public static function saveDanSolveCondition(string $solvedTsumegoRank, int $tId): void
+	public static function _saveDanSolveCondition(string $solvedTsumegoRank, int $tId): void
 	{
 		if ($solvedTsumegoRank == '1d' || $solvedTsumegoRank == '2d' || $solvedTsumegoRank == '3d' || $solvedTsumegoRank == '4d' || $solvedTsumegoRank == '5d')
 		{
@@ -94,7 +94,7 @@ class AppController extends Controller
 		}
 	}
 
-	public static function updateSprintCondition(bool $trigger = false): void
+	public static function _updateSprintCondition(bool $trigger = false): void
 	{
 		if (Auth::isLoggedIn())
 		{
@@ -121,7 +121,7 @@ class AppController extends Controller
 		}
 	}
 
-	public static function updateGoldenCondition(bool $trigger = false): void
+	public static function _updateGoldenCondition(bool $trigger = false): void
 	{
 		$goldenCondition = ClassRegistry::init('AchievementCondition')->find('first', [
 			'order' => 'value DESC',
@@ -145,7 +145,7 @@ class AppController extends Controller
 		ClassRegistry::init('AchievementCondition')->save($goldenCondition);
 	}
 
-	public static function updatePotionCondition(): void
+	public static function _updatePotionCondition(): void
 	{
 		$potionCondition = ClassRegistry::init('AchievementCondition')->find('first', [
 			'conditions' => [
@@ -165,7 +165,7 @@ class AppController extends Controller
 		ClassRegistry::init('AchievementCondition')->save($potionCondition);
 	}
 
-	public static function updateGems(string $rank): void
+	public static function _updateGems(string $rank): void
 	{
 		$datex = new DateTime('today');
 		$today = $datex->format('Y-m-d');
@@ -360,7 +360,12 @@ class AppController extends Controller
 		if (!$allowed)
 			return;
 
-		if (!in_array($this->request->method(), $allowed, true))
+		// HEAD asks for the headers of a GET response, so a page that answers GET answers it
+		$method = $this->request->method();
+		if ($method === 'HEAD' && in_array('GET', $allowed, true))
+			$method = 'GET';
+
+		if (!in_array($method, $allowed, true))
 		{
 			$e = new MethodNotAllowedException();
 			$e->responseHeader('Allow', implode(', ', $allowed));
@@ -509,7 +514,7 @@ class AppController extends Controller
 		}
 
 		if (HeroPowers::getSprintRemainingSeconds() == 0)
-			$this->updateSprintCondition();
+			$this->_updateSprintCondition();
 
 		if (Auth::isLoggedIn() && !$this->request->is('ajax'))
 		{

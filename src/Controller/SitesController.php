@@ -5,6 +5,7 @@ use App\Utility\Constants;
 use App\Utility\MistakeTraining;
 use App\Utility\TsumegoButtons;
 use App\Utility\TsumegoFilters;
+use App\Attribute\HttpGet;
 use App\Utility\Util;
 
 class SitesController extends AppController
@@ -14,6 +15,7 @@ class SitesController extends AppController
 	/**
 	 * @return void
 	 */
+	#[HttpGet]
 	public function index(): void
 	{
 		$this->set('_page', 'home');
@@ -135,6 +137,7 @@ class SitesController extends AppController
 	 *
 	 * @return void
 	 */
+	#[HttpGet]
 	public function recentAchievements(): void
 	{
 		$this->autoRender = false;
@@ -148,6 +151,7 @@ class SitesController extends AppController
 	 * @param string|null $id
 	 * @return void
 	 */
+	#[HttpGet]
 	public function view(?string $id = null): void
 	{
 		$news = $this->Site->find('all');
@@ -157,6 +161,7 @@ class SitesController extends AppController
 	/**
 	 * @return void
 	 */
+	#[HttpGet]
 	public function impressum(): void
 	{
 		$this->set('_page', 'about');
@@ -166,6 +171,7 @@ class SitesController extends AppController
 	/**
 	 * @return void
 	 */
+	#[HttpGet]
 	public function websitefunctions(): void
 	{
 		$this->set('_page', 'websitefunctions');
@@ -175,6 +181,7 @@ class SitesController extends AppController
 	/**
 	 * @return void
 	 */
+	#[HttpGet]
 	public function gotutorial(): void
 	{
 		$this->set('_page', 'gotutorial');
@@ -184,6 +191,7 @@ class SitesController extends AppController
 	/**
 	 * @return void
 	 */
+	#[HttpGet]
 	public function privacypolicy(): void
 	{
 		$this->set('_page', 'privacypolicy');
@@ -193,6 +201,7 @@ class SitesController extends AppController
 	/**
 	 * @return void
 	 */
+	#[HttpGet]
 	public function about(): void
 	{
 		$this->set('_page', 'about');
@@ -205,6 +214,7 @@ class SitesController extends AppController
 	 *
 	 * @return void
 	 */
+	#[HttpGet]
 	public function blank(): void
 	{
 		$this->set('_page', 'blank');

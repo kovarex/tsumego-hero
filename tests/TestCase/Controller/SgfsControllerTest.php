@@ -19,7 +19,7 @@ class SgfsControllerTest extends ControllerTestCase
 		$tsumegoId = $context->tsumegos[0]['id'];
 		Util::execute('UPDATE sgf SET user_id = ? WHERE tsumego_id = ?', [$uploader['id'], $tsumegoId]);
 
-		$view = $this->testAction('/sgfs/view/' . $tsumegoId . '?user=' . $uploader['id'], ['return' => 'view']);
+		$view = $this->testAction('/sgfs/view/' . $tsumegoId . '?user=' . $uploader['id'], ['method' => 'get', 'return' => 'view']);
 		$html = preg_replace('/\s+/', ' ', $view);
 
 		$this->assertStringContainsString('Upload History of ' . User::DELETED_NAME, $html);
@@ -47,18 +47,18 @@ class SgfsControllerTest extends ControllerTestCase
 		Util::execute('UPDATE sgf SET created = ? WHERE id = ?', ['2026-01-01 12:00:00', $a2]);
 
 		// all uploads: A2, B1, A1
-		$uploads = $this->testAction('/users/uploads', ['return' => 'view']);
+		$uploads = $this->testAction('/users/uploads', ['method' => 'get', 'return' => 'view']);
 		$this->assertStringContainsString('id="compare-' . $a2 . '" class="openDiff" href="/editor?sgfID=' . $a2 . '&diffID=' . $a1 . '"', $uploads);
 		$this->assertStringNotContainsString('id="compare-' . $b1 . '"', $uploads);
 		$this->assertStringNotContainsString('id="compare-' . $a1 . '"', $uploads);
 
 		// uploads of one user
-		$userUploads = $this->testAction('/sgfs/view/' . $problemA['id'] . '?user=' . Auth::getUserID(), ['return' => 'view']);
+		$userUploads = $this->testAction('/sgfs/view/' . $problemA['id'] . '?user=' . Auth::getUserID(), ['method' => 'get', 'return' => 'view']);
 		$this->assertStringContainsString('href="/editor?sgfID=' . $a2 . '&diffID=' . $a1 . '"', $userUploads);
 		$this->assertStringNotContainsString('id="compare-' . $b1 . '"', $userUploads);
 
 		// history of the problem
-		$history = $this->testAction('/sgfs/view/' . $problemA['id'], ['return' => 'view']);
+		$history = $this->testAction('/sgfs/view/' . $problemA['id'], ['method' => 'get', 'return' => 'view']);
 		$this->assertStringContainsString('href="/editor?sgfID=' . $a2 . '&diffID=' . $a1 . '"', $history);
 		$this->assertStringNotContainsString('id="compare-' . $a1 . '"', $history);
 	}

@@ -8,6 +8,7 @@
  * @link https://www.sitemaps.org/protocol.html
  */
 use App\Utility\Constants;
+use App\Attribute\HttpGet;
 use App\Utility\Util;
 
 class SitemapsController extends AppController
@@ -44,6 +45,7 @@ class SitemapsController extends AppController
 	 *
 	 * @return void
 	 */
+	#[HttpGet]
 	public function index(): void
 	{
 		$cacheKey = 'sitemap_xml';

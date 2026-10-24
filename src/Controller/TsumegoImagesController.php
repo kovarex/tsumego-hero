@@ -1,5 +1,6 @@
 <?php
 
+use App\Attribute\HttpGet;
 use App\Utility\Constants;
 
 /**
@@ -18,6 +19,7 @@ class TsumegoImagesController extends AppController
 	 * @param string|null $setConnectionId The SetConnection ID (same as /id route)
 	 * @return CakeResponse PNG image with caching headers
 	 */
+	#[HttpGet]
 	public function tsumegoImage(?string $setConnectionId = null)
 	{
 		if (!$setConnectionId || !is_numeric($setConnectionId))

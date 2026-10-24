@@ -1,5 +1,7 @@
 <?php
 
+use App\Attribute\HttpGet;
+use App\Attribute\HttpPost;
 use App\Utility\AchievementChecker;
 use App\Utility\Auth;
 use App\Utility\Constants;
@@ -10,6 +12,7 @@ use App\Utility\Util;
 
 class TimeModeController extends AppController
 {
+	#[HttpGet]
 	public function start(): mixed
 	{
 		$this->Authorization->authorize('User', 'startTimeMode');
@@ -26,6 +29,8 @@ class TimeModeController extends AppController
 		return $this->redirect("/timeMode/play");
 	}
 
+	#[HttpGet]
+	#[HttpPost]
 	public function play(?string $position = null): mixed
 	{
 		if (!Auth::isLoggedIn())
@@ -67,6 +72,8 @@ class TimeModeController extends AppController
 		return null;
 	}
 
+	#[HttpGet]
+	#[HttpPost]
 	public function skip(?string $position = null): mixed
 	{
 		if (!$position)
@@ -140,6 +147,7 @@ ORDER BY MIN(rating);");
 		return $result;
 	}
 
+	#[HttpGet]
 	public function overview(): mixed
 	{
 		if (!Auth::isLoggedIn())
@@ -181,7 +189,7 @@ ORDER BY MIN(rating);");
 		return null;
 	}
 
-	public function exportSessionToShow(array $session, array $timeModeCategory, array $timeModeRank): array
+	private function exportSessionToShow(array $session, array $timeModeCategory, array $timeModeRank): array
 	{
 		$result = [];
 		$result['id'] = $session['TimeModeSession']['id'];
@@ -254,6 +262,8 @@ ORDER BY time_mode_session.created DESC, time_mode_session.id DESC",
 		return $result;
 	}
 
+	#[HttpGet]
+	#[HttpPost]
 	public static function deduceUnlock(?array $finishedSession, array $timeModeRanks, array $timeModeCategories): ?array
 	{
 		if (!$finishedSession)
@@ -315,6 +325,7 @@ ORDER BY time_mode_session.created DESC, time_mode_session.id DESC",
 		return null;
 	}
 
+	#[HttpGet]
 	public function result(?string $timeModeSessionID = null): mixed
 	{
 		if (!Auth::isLoggedIn())

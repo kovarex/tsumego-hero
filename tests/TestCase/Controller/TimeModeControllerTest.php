@@ -14,7 +14,7 @@ class TimeModeControllerTest extends ControllerTestCase
 		$this->assertTrue(Auth::isInLevelMode());
 		$this->expectException(BadRequestException::class);
 		$this->expectExceptionMessage('Time mode category not specified.');
-		$this->testAction('/timeMode/start?rankID=' . $context->timeModeRanks[0]['id'], ['return' => 'view']);
+		$this->testAction('/timeMode/start?rankID=' . $context->timeModeRanks[0]['id'], ['method' => 'get', 'return' => 'view']);
 	}
 
 	public function testStartTimeModeWithoutSpecifyingRankIDThrowsException()
@@ -23,7 +23,7 @@ class TimeModeControllerTest extends ControllerTestCase
 		$this->assertTrue(Auth::isInLevelMode());
 		$this->expectException(BadRequestException::class);
 		$this->expectExceptionMessage('Time mode rank not specified.');
-		$this->testAction('/timeMode/start?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED);
+		$this->testAction('/timeMode/start?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED, ['method' => 'get']);
 	}
 
 	public function testStartTimeModeRequiresLogin()
@@ -32,7 +32,7 @@ class TimeModeControllerTest extends ControllerTestCase
 
 		$this->expectException(UnauthorizedException::class);
 
-		$this->testAction('/timeMode/start?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED . '&rankID=' . $context->timeModeRanks[0]['id']);
+		$this->testAction('/timeMode/start?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED . '&rankID=' . $context->timeModeRanks[0]['id'], ['method' => 'get']);
 	}
 
 	public function testTimeModePlayWithoutBeingLoggedInRedirectsToLogin()
@@ -40,7 +40,7 @@ class TimeModeControllerTest extends ControllerTestCase
 		foreach (['/timeMode/play', '/timeMode/overview', '/timeMode/result'] as $page)
 		{
 			new ContextPreparator(['user' => null]);
-			$this->testAction($page);
+			$this->testAction($page, ['method' => 'get']);
 			$this->assertSame(Util::getInternalAddress() . '/users/login', $this->headers['Location']);
 		}
 	}
@@ -107,7 +107,7 @@ class TimeModeControllerTest extends ControllerTestCase
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
 		new ContextPreparator($contextParameters);
 
-		$this->testAction('/timeMode/result');
+		$this->testAction('/timeMode/result', ['method' => 'get']);
 		// no redirect
 		$this->assertSame(null, $this->headers['Location']);
 	}
@@ -120,7 +120,7 @@ class TimeModeControllerTest extends ControllerTestCase
 
 		$this->expectException(NotFoundException::class);
 		$this->expectExceptionMessage('Time Mode Session not found.');
-		$this->testAction('/timeMode/result/56465487');
+		$this->testAction('/timeMode/result/56465487', ['method' => 'get']);
 	}
 
 	public function testSolvingAProblemInTimeModeRecordsTheTimeItTook()
@@ -348,7 +348,7 @@ class TimeModeControllerTest extends ControllerTestCase
 			'time-mode-ranks' => ['5k']]);
 
 		$this->testAction('/timeMode/start?categoryID=' . TimeModeUtil::$CATEGORY_BLITZ
-			. '&rankID=' . $context->timeModeRanks[0]['id']);
+			. '&rankID=' . $context->timeModeRanks[0]['id'], ['method' => 'get']);
 
 		$session = ClassRegistry::init('TimeModeSession')->find('first', [
 			'conditions' => ['user_id' => $context->user['id']]]);
@@ -377,7 +377,7 @@ class TimeModeControllerTest extends ControllerTestCase
 
 		$html = $this->testAction(
 			'/timeMode/result/' . $context->timeModeSessions[0]['id'],
-			['return' => 'contents']);
+			['method' => 'get', 'return' => 'contents']);
 
 		$this->assertStringContainsString('Finishing your session', $html);
 		$session = ClassRegistry::init('TimeModeSession')->findById($context->timeModeSessions[0]['id']);
@@ -414,7 +414,7 @@ class TimeModeControllerTest extends ControllerTestCase
 
 			$html = $this->testAction(
 				'/timeMode/result/' . $context->timeModeSessions[0]['id'],
-				['return' => 'contents']);
+				['method' => 'get', 'return' => 'contents']);
 
 			$this->assertStringContainsString('passed(' . $problemCount . '/' . $problemCount . ')', $html);
 		}
@@ -608,7 +608,7 @@ class TimeModeControllerTest extends ControllerTestCase
 				// the only run of its rank and category, so there is no history to show for it
 				['category' => TimeModeUtil::$CATEGORY_SLOW_SPEED, 'rank' => '5k', 'status' => TimeModeUtil::$SESSION_STATUS_SOLVED, 'attempts' => [$solved]]]]);
 
-		$html = $this->testAction('/timeMode/result', ['return' => 'contents']);
+		$html = $this->testAction('/timeMode/result', ['method' => 'get', 'return' => 'contents']);
 
 		$this->assertSame(1, substr_count($html, 'History:'));
 		$this->assertStringContainsString('History: 3 runs', $html);
@@ -641,7 +641,7 @@ class TimeModeControllerTest extends ControllerTestCase
 
 			$html = $this->testAction(
 				'/timeMode/result/' . $context->timeModeSessions[0]['id'] . $testCase['query'],
-				['return' => 'contents']);
+				['method' => 'get', 'return' => 'contents']);
 
 			$this->assertSame($testCase['unlockShown'], str_contains($html, 'time-rank-unlock-alert'));
 		}

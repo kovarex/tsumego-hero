@@ -15,7 +15,7 @@ class PersonalCollectionContentTest extends TestCaseWithAuth
 		$this->_createCollection('Player Collection', $context->user['id'], 1);
 		$this->login('alice');
 
-		$page = $this->testAction('/sets', ['return' => 'view']);
+		$page = $this->testAction('/sets', ['method' => 'get', 'return' => 'view']);
 
 		$this->assertTextContains('Site Collection', $page);
 		$this->assertTextNotContains('Player Collection', $page);
@@ -27,7 +27,7 @@ class PersonalCollectionContentTest extends TestCaseWithAuth
 		$this->_createCollection('Player Collection', $context->user['id'], 1);
 		$this->login('alice');
 
-		$page = $this->testAction('/sets', ['return' => 'view']);
+		$page = $this->testAction('/sets', ['method' => 'get', 'return' => 'view']);
 
 		$this->assertTextContains('Problems found: 0', $page);
 	}
@@ -74,7 +74,7 @@ class PersonalCollectionContentTest extends TestCaseWithAuth
 		$this->login('alice');
 
 		$this->testAction('/timeMode/start?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
-			. '&rankID=' . $context->timeModeRanks[0]['id']);
+			. '&rankID=' . $context->timeModeRanks[0]['id'], ['method' => 'get']);
 
 		$session = ClassRegistry::init('TimeModeSession')->find('first', [
 			'conditions' => ['user_id' => $context->user['id']],
@@ -132,7 +132,7 @@ class PersonalCollectionContentTest extends TestCaseWithAuth
 				'time-mode-ranks' => $ranks,
 			]);
 
-			$vars = $this->testAction('/timeMode/overview', ['return' => 'vars']);
+			$vars = $this->testAction('/timeMode/overview', ['method' => 'get', 'return' => 'vars']);
 
 			$counts = array_map(fn($rank) => (int) $rank['tsumego_count'], $vars['timeModeRanks']);
 			$this->assertSame(1, array_sum($counts));
@@ -153,7 +153,7 @@ class PersonalCollectionContentTest extends TestCaseWithAuth
 		$playerSetId = (int) $context->tsumegos[0]['sets'][0]['id'];
 		$this->login('alice');
 
-		$this->testAction('/sets/' . $playerSetId, ['return' => 'view']);
+		$this->testAction('/sets/' . $playerSetId, ['method' => 'get', 'return' => 'view']);
 
 		$this->assertSame(0, ClassRegistry::init('AchievementCondition')->find('count', [
 			'conditions' => ['set_id' => $playerSetId],
@@ -170,7 +170,7 @@ class PersonalCollectionContentTest extends TestCaseWithAuth
 		$siteSetId = (int) $context->tsumegos[0]['sets'][0]['id'];
 		$this->login('alice');
 
-		$this->testAction('/sets/' . $siteSetId, ['return' => 'view']);
+		$this->testAction('/sets/' . $siteSetId, ['method' => 'get', 'return' => 'view']);
 
 		$this->assertSame(1, ClassRegistry::init('AchievementCondition')->find('count', [
 			'conditions' => ['set_id' => $siteSetId, 'category' => 's'],

@@ -48,7 +48,7 @@ class MistakeTrainingProfileTest extends TestCaseWithAuth
 
 	private function profileOf(int $userId): string
 	{
-		return $this->testAction('/users/view/' . $userId, ['return' => 'contents']);
+		return $this->testAction('/users/view/' . $userId, ['method' => 'get', 'return' => 'contents']);
 	}
 
 	public function testTheProfileShowsTheTrainingOfThePlayer(): void

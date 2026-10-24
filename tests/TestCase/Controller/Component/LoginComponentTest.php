@@ -76,7 +76,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 	{
 		$this->assertSame(
 			password_get_info(password_hash('anything', PASSWORD_DEFAULT))['options']['cost'],
-			password_get_info(UsersController::dummyPasswordHash())['options']['cost']);
+			password_get_info(UsersController::_dummyPasswordHash())['options']['cost']);
 	}
 
 	public function testTheSignInPagePointsGoogleAccountsToTheGoogleButton(): void
@@ -92,7 +92,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 	{
 		new ContextPreparator(['user' => ['name' => 'kovarex']]);
 		$this->assertTrue(Auth::isLoggedIn());
-		$this->testAction('users/logout/');
+		$this->testAction('users/logout/', ['method' => 'GET']);
 		$this->assertFalse(Auth::isLoggedIn());
 	}
 

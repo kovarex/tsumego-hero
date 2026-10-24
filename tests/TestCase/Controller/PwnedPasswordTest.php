@@ -31,12 +31,12 @@ class PwnedPasswordTest extends TestCaseWithAuth
 	{
 		parent::setUp();
 		$this->checker = new FakePwnedPasswordChecker();
-			PwnedPasswordChecker::useForTests($this->checker);
+		PwnedPasswordChecker::useForTests($this->checker);
 	}
 
 	public function tearDown(): void
 	{
-			PwnedPasswordChecker::useForTests(null);
+		PwnedPasswordChecker::useForTests(null);
 		parent::tearDown();
 	}
 

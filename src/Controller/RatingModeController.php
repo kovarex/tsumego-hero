@@ -4,10 +4,13 @@ use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\CookieFlash;
 use App\Utility\RatingBounds;
+use App\Attribute\HttpGet;
+use App\Attribute\HttpPost;
 use App\Utility\Util;
 
 class RatingModeController extends AppController
 {
+	#[HttpGet]
 	public static function ratingAdjustment(int|string $difficultySetting): int
 	{
 		$adjustments = [
@@ -22,6 +25,8 @@ class RatingModeController extends AppController
 		return $adjustments[$difficultySetting] ?? 0;
 	}
 
+	#[HttpGet]
+	#[HttpPost]
 	public function index(): mixed
 	{
 		if (!Auth::isLoggedIn())

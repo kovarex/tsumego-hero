@@ -318,7 +318,7 @@ class UsersControllerTest extends ControllerTestCase
 			],
 		]);
 
-		$this->testAction('users/view/' . $context->user['id'], ['return' => 'view']);
+		$this->testAction('users/view/' . $context->user['id'], ['method' => 'get', 'return' => 'view']);
 
 		$this->assertStringContainsString('/achievements/view/115', $this->view);
 		$this->assertStringContainsString('/achievements/view/115/' . $context->user['id'], $this->view,
@@ -335,7 +335,7 @@ class UsersControllerTest extends ControllerTestCase
 				['name' => 'Player Collection', 'num' => 1, 'public' => 1, 'user_id' => 'self']]]],
 		]);
 
-		$this->testAction('users/view/' . $context->user['id'], ['return' => 'view']);
+		$this->testAction('users/view/' . $context->user['id'], ['method' => 'get', 'return' => 'view']);
 
 		$this->assertMatchesRegularExpression('#Completed:</td>\s*<td>1 of 1</td>#', $this->view);
 	}
@@ -404,7 +404,7 @@ class UsersControllerTest extends ControllerTestCase
 			],
 		]);
 
-		$this->testAction('users/view/' . $context->user['id'], ['return' => 'view']);
+		$this->testAction('users/view/' . $context->user['id'], ['method' => 'get', 'return' => 'view']);
 
 		$this->assertStringContainsString('title="Earned 3 times"', $this->view);
 	}
@@ -424,7 +424,7 @@ class UsersControllerTest extends ControllerTestCase
 			],
 		]);
 
-		$this->testAction('users/view/' . $context->user['id'], ['return' => 'view']);
+		$this->testAction('users/view/' . $context->user['id'], ['method' => 'get', 'return' => 'view']);
 
 		$this->assertStringContainsString(
 			'1 of ' . AchievementId::count() . ' <span class="achievementEarnedTimes" title="Earned 3 times">+3</span>',
@@ -450,7 +450,7 @@ class UsersControllerTest extends ControllerTestCase
 		$connection->create();
 		$connection->save(['tsumego_id' => $context->tsumegos[0]['id'], 'set_id' => $set->id, 'num' => 3]);
 
-		$this->testAction('users/solveHistory/' . $context->user['id'], ['return' => 'view']);
+		$this->testAction('users/solveHistory/' . $context->user['id'], ['method' => 'get', 'return' => 'view']);
 
 		$this->assertTextContains('public set', $this->view);
 		$this->assertStringNotContainsString('alice favorites', $this->view);
@@ -648,7 +648,7 @@ class UsersControllerTest extends ControllerTestCase
 		}
 
 		// Slow/15k: shows 900, not 600 or 750
-		$this->testAction('users/time_mode?category=2&rank=15k', ['return' => 'view']);
+		$this->testAction('users/time_mode?category=2&rank=15k', ['method' => 'get', 'return' => 'view']);
 		$this->assertTextContains('900.00', $this->view);
 		$this->assertTextNotContains('600.00', $this->view);
 		$this->assertTextNotContains('750.00', $this->view);
@@ -656,13 +656,13 @@ class UsersControllerTest extends ControllerTestCase
 		$this->assertTextContains('category=1', $this->view); // Fast link preserves rank
 
 		// Fast/15k: shows 600, not 900 or 750
-		$this->testAction('users/time_mode?category=1&rank=15k', ['return' => 'view']);
+		$this->testAction('users/time_mode?category=1&rank=15k', ['method' => 'get', 'return' => 'view']);
 		$this->assertTextContains('600.00', $this->view);
 		$this->assertTextNotContains('900.00', $this->view);
 		$this->assertTextContains('btn--inactive">Fast</a>', $this->view);
 
 		// Slow/10k: shows 750, not 900
-		$this->testAction('users/time_mode?category=2&rank=10k', ['return' => 'view']);
+		$this->testAction('users/time_mode?category=2&rank=10k', ['method' => 'get', 'return' => 'view']);
 		$this->assertTextContains('750.00', $this->view);
 		$this->assertTextNotContains('900.00', $this->view);
 	}
@@ -690,7 +690,7 @@ class UsersControllerTest extends ControllerTestCase
 		// Each category's rank buttons should link back to the same category
 		foreach (['2' => 'Slow', '1' => 'Fast', '0' => 'Blitz'] as $catId => $catName)
 		{
-			$this->testAction("users/time_mode?category={$catId}&rank=15k", ['return' => 'view']);
+			$this->testAction("users/time_mode?category={$catId}&rank=15k", ['method' => 'get', 'return' => 'view']);
 			// Rank button links should contain the current category
 			$this->assertTextContains("category={$catId}&rank=", $this->view);
 		}

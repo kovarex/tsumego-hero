@@ -1,5 +1,6 @@
 <?php
 
+use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Utility\Auth;
 use App\Utility\Constants;
@@ -17,6 +18,7 @@ class MistakeTrainingController extends AppController
 	 * plain problem URL always means normal play, just like it does for the other
 	 * modes.
 	 */
+	#[HttpGet]
 	public function play(?string $setConnectionID = null): mixed
 	{
 		if (!Auth::isLoggedIn())
@@ -54,6 +56,7 @@ class MistakeTrainingController extends AppController
 	 * once nothing is left, so the homepage and the title of a training problem link
 	 * here.
 	 */
+	#[HttpGet]
 	public function overview(): mixed
 	{
 		if (!Auth::isLoggedIn())

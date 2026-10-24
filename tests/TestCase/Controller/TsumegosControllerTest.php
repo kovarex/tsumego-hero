@@ -478,7 +478,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			],
 		]);
 
-		$result = $this->testAction('/tsumegos/duplicatesearch/' . $context->tsumegos[0]['set-connections'][0]['id'], ['return' => 'view']);
+		$result = $this->testAction('/tsumegos/duplicatesearch/' . $context->tsumegos[0]['set-connections'][0]['id'], ['method' => 'get', 'return' => 'view']);
 
 		$this->assertMatchesRegularExpression('/"diff":"[a-z]+"/', $result);
 	}

@@ -74,7 +74,7 @@ abstract class AchievementTestCase extends ControllerTestCase
 
 		// Make a simple request - achievements checked in AppController::beforeFilter
 		// beforeFilter will call Auth::init() which loads fresh user data from DB
-		$this->testAction('/sites/index', ['return' => 'view']);
+		$this->testAction('/sites/index', ['method' => 'get', 'return' => 'view']);
 	}
 
 	/**

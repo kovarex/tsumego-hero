@@ -1,5 +1,6 @@
 <?php
 
+use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Utility\AchievementChecker;
 use App\Utility\AdminActivityLogger;
@@ -65,6 +66,8 @@ class TsumegosController extends AppController
 	}
 
 
+	#[HttpGet]
+	#[HttpPost]
 	public function play(?string $id = null, ?string $setConnectionID = null)
 	{
 		if (Auth::isLoggedIn() && !Auth::isInLevelMode())
@@ -103,6 +106,7 @@ class TsumegosController extends AppController
 		})->play($setConnection['SetConnection']['id'], $this->request, $this->request->data);
 	}
 
+	#[HttpGet]
 	public function duplicatesearch(string $setConnectionID): mixed
 	{
 		$this->loadModel('Sgf');
@@ -136,6 +140,8 @@ class TsumegosController extends AppController
 		return null;
 	}
 
+	#[HttpGet]
+	#[HttpPost]
 	public function edit(string $tsumegoID)
 	{
 		$this->Authorization->authorize('Tsumego');
@@ -247,6 +253,7 @@ class TsumegosController extends AppController
 		return $this->redirect($this->request->data['redirect']);
 	}
 
+	#[HttpGet]
 	public function mergeForm(): mixed
 	{
 		$this->Authorization->authorize('Tsumego');
@@ -340,6 +347,7 @@ class TsumegosController extends AppController
 		$this->redirect('/tsumegos/mergeForm');
 	}
 
+	#[HttpGet]
 	public function setupSgf(): mixed
 	{
 		$this->Authorization->authorize('Tsumego');
@@ -356,6 +364,7 @@ class TsumegosController extends AppController
 		return null;
 	}
 
+	#[HttpGet]
 	public function setupSgfStep2(string $sgfID, string $firstMoveColor, ?string $correctMoves = null)
 	{
 		$this->Authorization->authorize('Tsumego');
@@ -374,6 +383,7 @@ class TsumegosController extends AppController
 		return $this->redirect('/tsumegos/setupSgf');
 	}
 
+	#[HttpPost]
 	public function setupNewSgfStep2()
 	{
 		$this->Authorization->authorize('Sgf', 'propose');
@@ -418,6 +428,7 @@ class TsumegosController extends AppController
 		return $this->redirect('/' . $setConnectionID);
 	}
 
+	#[HttpGet]
 	public function history(string $setConnectionID)
 	{
 		$setConnection = ClassRegistry::init("SetConnection")->findById($setConnectionID);

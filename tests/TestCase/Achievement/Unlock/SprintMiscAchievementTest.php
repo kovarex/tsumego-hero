@@ -41,7 +41,7 @@ class SprintMiscAchievementTest extends AchievementTestCase
 	 * category='potion' and value >= BAD_POTION_THRESHOLD.
 	 *
 	 * This tests only the AchievementChecker. The real trigger path
-	 * (updatePotionCondition incrementing the counter) is tested in
+	 * (_updatePotionCondition incrementing the counter) is tested in
 	 * PlayResultProcessorComponentTest::testPotionConditionIncrementsOnPreviousFail.
 	 */
 	public function testBadPotionAchievementChecker(): void

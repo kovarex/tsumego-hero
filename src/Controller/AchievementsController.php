@@ -4,6 +4,7 @@ use App\Utility\AchievementId;
 use App\Utility\Auth;
 use App\Utility\SetCompletionCounter;
 use App\Utility\Util;
+use App\Attribute\HttpGet;
 use SetConnection;
 
 /**
@@ -14,6 +15,7 @@ class AchievementsController extends AppController
 	/**
 	 * @return void
 	 */
+	#[HttpGet]
 	public function index(): void
 	{
 		$this->renderAchievementsPage(Auth::isLoggedIn() ? Auth::getUser() : null);
@@ -23,6 +25,7 @@ class AchievementsController extends AppController
 	 * @param string $userId
 	 * @return void
 	 */
+	#[HttpGet]
 	public function user(string $userId): void
 	{
 		$user = $this->User->findById($userId);
@@ -121,6 +124,7 @@ class AchievementsController extends AppController
 	 * @param string|null $userId
 	 * @return void
 	 */
+	#[HttpGet]
 	public function view(?string $id = null, ?string $userId = null): void
 	{
 		$this->set('_page', 'user');
