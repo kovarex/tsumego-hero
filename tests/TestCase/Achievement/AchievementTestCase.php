@@ -63,8 +63,6 @@ abstract class AchievementTestCase extends ControllerTestCase
 	 *
 	 * This sets the 'initialLoading' cookie and makes a request,
 	 * which causes AppController::beforeFilter to check achievements.
-	 *
-	 * @param int $userId User ID
 	 */
 	protected function triggerAchievementCheck()
 	{
@@ -76,7 +74,7 @@ abstract class AchievementTestCase extends ControllerTestCase
 
 		// Make a simple request - achievements checked in AppController::beforeFilter
 		// beforeFilter will call Auth::init() which loads fresh user data from DB
-		$this->testAction('/sites/index', ['return' => 'view']);
+		$this->testAction('/sites/index', ['method' => 'get', 'return' => 'view']);
 	}
 
 	/**
@@ -89,7 +87,6 @@ abstract class AchievementTestCase extends ControllerTestCase
 	 * since set completion achievements are checked immediately when completing
 	 * a set, not on every page load.
 	 *
-	 * @param int $userId User ID
 	 * @param int $completedSetsCount Number of completed sets
 	 */
 	protected function triggerSetCompletionAchievementCheck($completedSetsCount)

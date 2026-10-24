@@ -1,5 +1,6 @@
 <?php
 
+use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Utility\Auth;
 use App\Utility\Constants;
@@ -8,6 +9,7 @@ use App\Utility\Util;
 
 class HeroController extends AppController
 {
+	#[HttpGet]
 	public function refinement()
 	{
 		$this->Authorization->authorize('Hero');

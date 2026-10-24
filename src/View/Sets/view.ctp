@@ -179,7 +179,7 @@ if ($tsumegoFilters->query != 'topics')
 				}
 				if ($tsumegoFilters->collectionSize != ProgressDeletion::$PARTITION_SIZE)
 					echo 'Reset is only possible when collection size is set to ' . ProgressDeletion::$PARTITION_SIZE;
-				elseif (SetsController::hasProblemFilters($tsumegoFilters))
+				elseif ($tsumegoFilters->hasProblemFilters())
 					echo 'Reset is only possible without rank and tag filters';
 				elseif ($problemSolvedPercent < 50)
 					echo '<br><font color="gray">You need to complete 50% to reset.</font>';
@@ -216,7 +216,7 @@ if ($tsumegoFilters->query != 'topics')
 			</td>
 			<td>
 			<?php
-			if ($problemSolvedPercent >= 50 && $tsumegoFilters->collectionSize == ProgressDeletion::$PARTITION_SIZE && !SetsController::hasProblemFilters($tsumegoFilters))
+			if ($problemSolvedPercent >= 50 && $tsumegoFilters->collectionSize == ProgressDeletion::$PARTITION_SIZE && !$tsumegoFilters->hasProblemFilters())
 			{
 				echo '<div id="msg2x">';
 				echo 'Type "reset" to remove all your progress on this collection.<br><br>';

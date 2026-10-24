@@ -1,10 +1,12 @@
 <?php
 
+use App\Attribute\HttpGet;
 use App\Utility\Util;
 
 class CronController extends AppController
 {
 	/* Supposed to be ran daily to reset hearts and hero powers */
+	#[HttpGet]
 	public function daily(string $secret)
 	{
 		if ($secret != CRON_SECRET)
@@ -20,7 +22,7 @@ class CronController extends AppController
 		$this->dailyTsumegoStatusReset();
 		$this->dailyStalingSolvedTsumegoStatuses();
 		self::createDayRecord();
-		self::publish();
+		self::_publish();
 		$this->dailyUsersReset();
 		$this->dailyPotionConditionReset();
 		$this->updateSolvedCounts();
@@ -174,7 +176,7 @@ WHERE
 		ClassRegistry::init('AchievementCondition')->save($achievementCondition);
 	}
 
-	public static function publish(): void
+	public static function _publish(): void
 	{
 		$date = date('Y-m-d', strtotime('today'));
 		$todaysSchedule = ClassRegistry::init('Schedule')->find('all', ['conditions' => ['date' => $date, 'published' => 0]]) ?: [];

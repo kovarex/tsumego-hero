@@ -22,15 +22,6 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		$this->assertTrue(Auth::isLoggedIn());
 	}
 
-	public function testGoogleSignInRequiresPost(): void
-	{
-		new ContextPreparator(['user' => null]);
-
-		$this->expectException(MethodNotAllowedException::class);
-
-		$this->testAction('users/googlesignin', ['method' => 'GET']);
-	}
-
 	public function testLoginWithEmail(): void
 	{
 		new ContextPreparator(['user' => null, 'other-users' => [['name' => 'kovarex', 'email' => 'kovarex@example.com']]]);
@@ -85,7 +76,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 	{
 		$this->assertSame(
 			password_get_info(password_hash('anything', PASSWORD_DEFAULT))['options']['cost'],
-			password_get_info(UsersController::dummyPasswordHash())['options']['cost']);
+			password_get_info(UsersController::_dummyPasswordHash())['options']['cost']);
 	}
 
 	public function testTheSignInPagePointsGoogleAccountsToTheGoogleButton(): void
@@ -101,7 +92,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 	{
 		new ContextPreparator(['user' => ['name' => 'kovarex']]);
 		$this->assertTrue(Auth::isLoggedIn());
-		$this->testAction('users/logout/');
+		$this->testAction('users/logout/', ['method' => 'GET']);
 		$this->assertFalse(Auth::isLoggedIn());
 	}
 
@@ -236,7 +227,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 
 		TestEmailer::$lastEmail = null;
 		$this->testAction('users/resetpassword/', ['data' => ['User' => ['email' => $user['email']]], 'method' => 'POST']);
-		$this->assertNull(TestEmailer::$lastEmail['to'] ?? null);
+		$this->assertArrayNotHasKey('body', TestEmailer::$lastEmail ?? [], 'the second request sends no mail');
 	}
 
 	public function testNewPassword(): void

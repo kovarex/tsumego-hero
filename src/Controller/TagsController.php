@@ -6,14 +6,16 @@ use App\Utility\CookieFlash;
 use App\Utility\HtmlSanitizer;
 use App\Utility\ProposalFeedback;
 use App\Utility\Util;
+use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 
 class TagsController extends AppController
 {
+	#[HttpGet]
 	public function add(): void
 	{
 		$this->Authorization->authorize('Tag', 'add');
-		$allTags = $this->getAllTags();
+		$allTags = $this->_getAllTags();
 		$this->set('allTags', $allTags);
 	}
 
@@ -60,12 +62,13 @@ class TagsController extends AppController
 	 * @param string|null $id
 	 * @return void
 	 */
+	#[HttpGet]
 	public function view(?string $id = null): void
 	{
 		$tn = $this->Tag->findById($id);
 		if (!$tn)
 			throw new NotFoundException('Tag not found');
-		$allTags = $this->getAllTags();
+		$allTags = $this->_getAllTags();
 		$user = $this->User->findById($tn['Tag']['user_id']);
 		$tn['Tag']['user'] = $user ? $user['User'] : null;
 		$this->set('allTags', $allTags);
@@ -78,6 +81,7 @@ class TagsController extends AppController
 	 * @param string $id User ID
 	 * @return void
 	 */
+	#[HttpGet]
 	public function user(string $id): void
 	{
 		$u = $this->User->findById($id);
@@ -149,6 +153,7 @@ class TagsController extends AppController
 		$this->set('pageSize', $pageSize);
 	}
 
+	#[HttpGet]
 	public function edit(string $tagID): ?CakeResponse
 	{
 		$this->Authorization->authorize('Tag');
@@ -159,7 +164,7 @@ class TagsController extends AppController
 			return $this->redirect('/users/adminstats');
 		}
 
-		$this->set('allTags', $this->getAllTags());
+		$this->set('allTags', $this->_getAllTags());
 		$this->set('tag', $tag['Tag']);
 		$this->set('canAddTag', $this->Authorization->can('Tag', 'add'));
 		return null;
@@ -221,6 +226,7 @@ class TagsController extends AppController
 		$this->set('tn', $tn);
 	}
 
+	#[HttpGet]
 	public function index(): void {}
 
 	#[HttpPost]
@@ -243,10 +249,10 @@ class TagsController extends AppController
 			return $this->redirect('/users/adminstats');
 		}
 
-		AppController::handleContribution(Auth::getUserID(), 'reviewed');
+		AppController::_handleContribution(Auth::getUserID(), 'reviewed');
 		$tagToApprove['approved'] = '1';
 		ClassRegistry::init('Tag')->save($tagToApprove);
-		AppController::handleContribution($tagToApprove['user_id'], 'created_tag');
+		AppController::_handleContribution($tagToApprove['user_id'], 'created_tag');
 
 		// like a tag on a problem, the proposer only hears about it when the admin had something to say
 		$comment = ProposalFeedback::commentFromRequest($this->request->data['comment'] ?? null);
@@ -290,7 +296,7 @@ class TagsController extends AppController
 			return $this->redirect('/users/adminstats');
 		}
 
-		AppController::handleContribution(Auth::getUserID(), 'reviewed');
+		AppController::_handleContribution(Auth::getUserID(), 'reviewed');
 
 		ClassRegistry::init('Tag')->delete($tagToReject);
 

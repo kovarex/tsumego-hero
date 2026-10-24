@@ -12,6 +12,8 @@ use CakeLog;
  */
 class PwnedPasswordChecker implements PwnedPasswordCheckerInterface
 {
+	private static ?PwnedPasswordCheckerInterface $testInstance = null;
+
 	private static string $DEFAULT_RANGE_URL = 'https://api.pwnedpasswords.com/range/';
 
 	private static int $TIMEOUT_SECONDS = 2;
@@ -31,6 +33,32 @@ class PwnedPasswordChecker implements PwnedPasswordCheckerInterface
 	{
 		$this->rangeUrl = $rangeUrl ?? self::$DEFAULT_RANGE_URL;
 		$this->rangeFetcher = $rangeFetcher;
+	}
+
+	/**
+	 * Answer the password check with the given checker instead of the list, on a test
+	 * instance only.
+	 */
+	public static function useForTests(?PwnedPasswordCheckerInterface $checker): void
+	{
+		self::$testInstance = Util::isOnTestSite() ? $checker : null;
+	}
+
+	public static function testInstance(): ?PwnedPasswordCheckerInterface
+	{
+		return self::$testInstance;
+	}
+
+	/**
+	 * The checker a caller should use: the one a test put in place, the fake the test site
+	 * answers with, or the real list.
+	 */
+	public static function create(): PwnedPasswordCheckerInterface
+	{
+		if (self::$testInstance !== null)
+			return self::$testInstance;
+
+		return Util::isOnTestSite() ? new FakePwnedPasswordChecker() : new self();
 	}
 
 	public function isBreached(string $password): bool

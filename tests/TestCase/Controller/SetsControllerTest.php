@@ -17,7 +17,7 @@ class SetsControllerTest extends TestCaseWithAuth
 			['name' => 'tsumego set 1', 'num' => '666'],
 			['name' => 'tsumego set 2', 'num' => '777']]]], );
 		$this->login($context->user['User']['name']);
-		$this->testAction('sets', ['return' => 'view']);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
 		$this->assertTextContains("tsumego set 1", $this->view);
 		$this->assertTextContains("tsumego set 2", $this->view);
 		$this->assertTextNotContains("Problems found 0", $this->view);
@@ -28,7 +28,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		new ContextPreparator(['tsumego' => ['sets' => [
 			['name' => 'tsumego set 1', 'num' => '666'],
 			['name' => 'tsumego set 2', 'num' => '777']]]], );
-		$this->testAction('sets', ['return' => 'view']);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
 		$this->assertTextContains("tsumego set 1", $this->view);
 		$this->assertTextContains("tsumego set 2", $this->view);
 		$this->assertTextNotContains("Problems found 0", $this->view);
@@ -45,7 +45,7 @@ class SetsControllerTest extends TestCaseWithAuth
 			$this->createFullySolvedSet($setId, $context->user['id']);
 		$_COOKIE['disable-achievements'] = false;
 
-		$this->testAction('sets/50', ['return' => 'contents']);
+		$this->testAction('sets/50', ['method' => 'get', 'return' => 'contents']);
 
 		$popups = array_column($this->controller->viewVars['achievementUpdates'], 'id');
 		$this->assertContains(AchievementId::LIFE_DEATH_ELEMENTARY->value, $popups, 'The set page hands the achievements it unlocked to the layout');
@@ -87,7 +87,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$_COOKIE['query'] = 'difficulty';
 		$_COOKIE['filtered_ranks'] = '15k';
-		$this->testAction('sets', ['return' => 'view']);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
 		$dom = $this->getStringDom();
 		$collectionTopDivs = $dom->querySelectorAll('.set-card__top');
 		$this->assertCount(1, $collectionTopDivs);
@@ -98,7 +98,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame($collectionMiddleLeft[0]->textContent, '1 problem'); // the sandbox problem isn't included
 
 		$_COOKIE['filtered_ranks'] = '10k';
-		$this->testAction('sets', ['return' => 'view']);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
 		$dom = $this->getStringDom();
 		$collectionTopDivs = $dom->querySelectorAll('.set-card__top');
 		$this->assertCount(1, $collectionTopDivs);
@@ -115,7 +115,7 @@ class SetsControllerTest extends TestCaseWithAuth
 				'rating' => Rating::getRankMiddleRatingFromReadableRank($rank),
 				'sets' => [['name' => 'set ' . $rank, 'num' => '1']]];
 		new ContextPreparator($contextParams);
-		$this->testAction('sets', ['return' => 'view']);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
 
 		$boxTitles = [];
 		foreach ($this->getStringDom()->querySelectorAll('.set-card__top') as $boxTitle)
@@ -130,7 +130,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$contextParams['tsumegos'] = [
 			['rating' => -1200, 'sets' => [['name' => 'beginner set', 'num' => '1']]]];
 		new ContextPreparator($contextParams);
-		$this->testAction('sets', ['return' => 'view']);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
 
 		$boxTitles = [];
 		foreach ($this->getStringDom()->querySelectorAll('.set-card__top') as $boxTitle)
@@ -147,7 +147,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		new ContextPreparator($contextParams);
 		$_COOKIE['query'] = 'difficulty';
 		$_COOKIE['filtered_ranks'] = '15k';
-		$this->testAction('sets', ['return' => 'view']);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
 
 		$this->assertTextContains('Problems found: 1', $this->view);
 		$dom = $this->getStringDom();
@@ -164,7 +164,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		new ContextPreparator($contextParams);
 		$_COOKIE['query'] = 'difficulty';
 		$_COOKIE['filtered_ranks'] = '5k';
-		$this->testAction('sets', ['return' => 'view']);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
 
 		$dom = $this->getStringDom();
 		$this->assertSame('5k', $dom->querySelector('#difficulty-from option[selected]')->getAttribute('value'));
@@ -179,7 +179,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		new ContextPreparator($contextParams);
 		$_COOKIE['query'] = 'difficulty';
 		$_COOKIE['filtered_ranks'] = '17k@15k';
-		$this->testAction('sets', ['return' => 'view']);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
 
 		$dom = $this->getStringDom();
 		$this->assertCount(0, $dom->querySelectorAll('#difficulty-from option[selected]'));
@@ -195,7 +195,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		new ContextPreparator($contextParams);
 		$_COOKIE['query'] = 'difficulty';
 		$_COOKIE['filtered_ranks'] = '17k@16k';
-		$this->testAction('sets', ['return' => 'view']);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
 
 		$this->assertTextContains('Problems found: 2', $this->view);
 		$dom = $this->getStringDom();
@@ -215,7 +215,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		new ContextPreparator($contextParams);
 		$_COOKIE['query'] = 'difficulty';
 		$_COOKIE['filtered_ranks'] = '17k-16k';
-		$this->testAction('sets', ['return' => 'view']);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
 
 		$this->assertTextContains('Problems found: 2', $this->view);
 		$dom = $this->getStringDom();
@@ -237,7 +237,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		new ContextPreparator($contextParams);
 		$_COOKIE['query'] = 'difficulty';
 		$_COOKIE['filtered_ranks'] = '20k@10k-9k';
-		$this->testAction('sets', ['return' => 'view']);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
 
 		$this->assertTextContains('Problems found: 3', $this->view);
 		$boxTitles = [];
@@ -256,7 +256,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		new ContextPreparator($contextParams);
 		$_COOKIE['query'] = 'difficulty';
 		$_COOKIE['filtered_ranks'] = '17k@10k';
-		$this->testAction('sets', ['return' => 'view']);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
 
 		$boxTitles = [];
 		foreach ($this->getStringDom()->querySelectorAll('.set-card__top') as $boxTitle)
@@ -273,7 +273,7 @@ class SetsControllerTest extends TestCaseWithAuth
 			$contextParams['tsumegos'] [] = [
 				'sets' => [['name' => 'partitioned set', 'num' => $i + 1]]];
 		$context = new ContextPreparator($contextParams);
-		$this->testAction('sets', ['return' => 'view']);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
 
 		$dom = $this->getStringDom();
 		$collectionTopDivs = $dom->querySelectorAll('.set-card__top');
@@ -299,7 +299,7 @@ class SetsControllerTest extends TestCaseWithAuth
 			$contextParams['tsumegos'] [] = [
 				'sets' => [['name' => 'small set', 'num' => $i + 1]]];
 		$context = new ContextPreparator($contextParams);
-		$this->testAction('sets', ['return' => 'view']);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
 
 		$dom = $this->getStringDom();
 		$collectionTopDivs = $dom->querySelectorAll('.set-card__top');
@@ -326,7 +326,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$connection->create();
 		$connection->save(['tsumego_id' => $context->tsumegos[0]['id'], 'set_id' => $set->id, 'num' => 2]);
 
-		$this->testAction('sets', ['return' => 'view']);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
 
 		$dom = $this->getStringDom();
 		$collectionTopDivs = $dom->querySelectorAll('.set-card__top');
@@ -343,7 +343,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		// a problem only in a private set is not shown, so not counted
 		$contextParams['tsumegos'][] = ['sets' => [['name' => 'sandbox set', 'public' => 0, 'num' => '1']]];
 		new ContextPreparator($contextParams);
-		$this->testAction('sets', ['return' => 'view']);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
 		$this->assertTextContains('Problems found: 2', $this->view);
 	}
 
@@ -356,7 +356,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$contextParams['tsumegos'][] = ['rating' => 2810, 'sets' => [['name' => 'set', 'num' => '3']]];
 		new ContextPreparator($contextParams);
 		$_COOKIE['query'] = 'difficulty';
-		$this->testAction('sets', ['return' => 'view']);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
 		$this->assertTextContains('Problems found: 2', $this->view);
 	}
 
@@ -369,7 +369,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$contextParams['tsumegos'][] = ['sets' => [['name' => 'set', 'num' => '3']]];
 		new ContextPreparator($contextParams);
 		$_COOKIE['query'] = 'tags';
-		$this->testAction('sets', ['return' => 'view']);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
 		$this->assertTextContains('Problems found: 2', $this->view);
 	}
 
@@ -380,7 +380,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		// a deleted problem in the same public set is neither counted nor shown
 		$contextParams['tsumegos'][] = ['deleted' => date('Y-m-d H:i:s'), 'sets' => [['name' => 'set', 'num' => '2']]];
 		new ContextPreparator($contextParams);
-		$this->testAction('sets', ['return' => 'view']);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
 
 		$this->assertTextContains('Problems found: 1', $this->view);
 		$dom = $this->getStringDom();
@@ -396,7 +396,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$contextParams['tsumegos'][] = ['deleted' => date('Y-m-d H:i:s'), 'sets' => [['name' => 'set', 'num' => '2']], 'tags' => [['name' => 'atari']]];
 		new ContextPreparator($contextParams);
 		$_COOKIE['query'] = 'tags';
-		$this->testAction('sets', ['return' => 'view']);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
 
 		$this->assertTextContains('Problems found: 1', $this->view);
 		$dom = $this->getStringDom();
@@ -413,7 +413,7 @@ class SetsControllerTest extends TestCaseWithAuth
 				'sets' => [['name' => 'solved set', 'num' => $i + 1]],
 				'status' => $status];
 		new ContextPreparator($contextParams);
-		$this->testAction('sets', ['return' => 'view']);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
 
 		$this->assertTextContains('Problems found: 12', $this->view);
 
@@ -438,7 +438,7 @@ class SetsControllerTest extends TestCaseWithAuth
 						'sets' => [['name' => 'difficulty set', 'num' => $i + 1]],
 						'rating' => $rating];
 		new ContextPreparator($contextParams);
-		$this->testAction('sets', ['return' => 'view']);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
 
 		// difficulty must be computed per partition, not per whole set:
 		// partition 1 (ten 15k problems) shows 15k, partition 2 (two 5k) shows 5k.
@@ -457,7 +457,7 @@ class SetsControllerTest extends TestCaseWithAuth
 			$contextParams['tsumegos'] [] = [
 				'sets' => [['name' => 'guest set', 'num' => $i + 1]]];
 		new ContextPreparator($contextParams);
-		$this->testAction('sets', ['return' => 'view']);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
 
 		$dom = $this->getStringDom();
 		$fills = $dom->querySelectorAll('.progress__fill');
@@ -476,7 +476,7 @@ class SetsControllerTest extends TestCaseWithAuth
 				'rating' => Rating::getRankMiddleRatingFromReadableRank('15k'),
 				'sets' => [['name' => 'set 1', 'num' => $i + 1]]];
 		new ContextPreparator($contextParams);
-		$this->testAction('sets', ['return' => 'view']);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
 
 		$dom = $this->getStringDom();
 		$collectionTopDivs = $dom->querySelectorAll('.set-card__top');
@@ -498,7 +498,7 @@ class SetsControllerTest extends TestCaseWithAuth
 				'sets' => [['name' => 'set 1', 'num' => $i + 1]],
 				'tags' => [['name' => 'atari']]];
 		new ContextPreparator($contextParams);
-		$this->testAction('sets', ['return' => 'view']);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
 
 		$dom = $this->getStringDom();
 		$collectionTopDivs = $dom->querySelectorAll('.set-card__top');
@@ -529,7 +529,7 @@ class SetsControllerTest extends TestCaseWithAuth
 			'sets' => [['name' => 'set 2', 'num' => '1']]];
 		$context = new ContextPreparator($contextParams);
 
-		$this->testAction('sets/15k', ['return' => 'view']);
+		$this->testAction('sets/15k', ['method' => 'get', 'return' => 'view']);
 		$dom = $this->getStringDom();
 		$setTitle = $dom->querySelectorAll('.set-view-title');
 		$this->assertCount(1, $setTitle);
@@ -543,7 +543,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertCount(1, $problemLinks);
 		$this->assertSame($problemLinks[0]->getAttribute('href'), '/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
-		$this->testAction('sets/10k', ['return' => 'view']);
+		$this->testAction('sets/10k', ['method' => 'get', 'return' => 'view']);
 		$dom = $this->getStringDom();
 		$setTitle = $dom->querySelectorAll('.set-view-title');
 		$this->assertCount(1, $setTitle);
@@ -567,7 +567,7 @@ class SetsControllerTest extends TestCaseWithAuth
 			'sets' => [['name' => 'set 1', 'num' => '1']]];
 		new ContextPreparator($contextParams);
 
-		$this->testAction('sets/5k', ['return' => 'view']);
+		$this->testAction('sets/5k', ['method' => 'get', 'return' => 'view']);
 		$result = $this->getStringDom();
 
 		$this->assertStringContainsString('<span class="rank-icon rank-icon-large">5k</span>',
@@ -584,7 +584,7 @@ class SetsControllerTest extends TestCaseWithAuth
 				'sets' => [['name' => 'set ' . $rank, 'num' => '1']]];
 		$context = new ContextPreparator($contextParams);
 
-		$this->testAction('sets/view/20k-16k', ['return' => 'view']);
+		$this->testAction('sets/view/20k-16k', ['method' => 'get', 'return' => 'view']);
 		$dom = $this->getStringDom();
 		$setTitle = $dom->querySelectorAll('.set-view-title');
 		$this->assertCount(1, $setTitle);
@@ -616,7 +616,7 @@ class SetsControllerTest extends TestCaseWithAuth
 			'sets' => [['name' => 'set 2', 'num' => '1']]];
 		$context = new ContextPreparator($contextParams);
 
-		$this->testAction('sets/' . $context->tsumegos[0]['sets'][0]['id'], ['return' => 'view']);
+		$this->testAction('sets/' . $context->tsumegos[0]['sets'][0]['id'], ['method' => 'get', 'return' => 'view']);
 		$dom = $this->getStringDom();
 		$setTitle = $dom->querySelectorAll('.set-view-title');
 		$this->assertCount(1, $setTitle);
@@ -630,7 +630,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertCount(1, $problemLinks);
 		$this->assertSame($problemLinks[0]->getAttribute('href'), '/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
-		$this->testAction('sets/' . $context->tsumegos[1]['sets'][0]['id'], ['return' => 'view']);
+		$this->testAction('sets/' . $context->tsumegos[1]['sets'][0]['id'], ['method' => 'get', 'return' => 'view']);
 		$dom = $this->getStringDom();
 		$setTitle = $dom->querySelectorAll('.set-view-title');
 		$this->assertCount(1, $setTitle);
@@ -652,7 +652,7 @@ class SetsControllerTest extends TestCaseWithAuth
 				'description' => '<b onmouseover="alert(1)">hi</b><a href="javascript:alert(2)">click</a>']]]]);
 		$setId = $context->tsumegos[0]['sets'][0]['id'];
 
-		$this->testAction('sets/' . $setId, ['return' => 'view']);
+		$this->testAction('sets/' . $setId, ['method' => 'get', 'return' => 'view']);
 
 		$this->assertStringNotContainsString('onmouseover', $this->view);
 		$this->assertStringNotContainsString('javascript:alert(2)', $this->view);
@@ -2132,7 +2132,7 @@ class SetsControllerTest extends TestCaseWithAuth
 			'sets' => [['name' => 'valid-set', 'num' => '1']]];
 
 		new ContextPreparator($contextParams);
-		$this->testAction('sets', ['return' => 'view']);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
 		$this->assertTextContains('15k', $this->view);
 		$this->assertTextNotContains('nonexistent-set-that-was-deleted', $this->view);
 	}
@@ -2149,7 +2149,7 @@ class SetsControllerTest extends TestCaseWithAuth
 			'sets' => [['name' => 'TestSet', 'num' => '1']]];
 
 		new ContextPreparator($contextParams);
-		$this->testAction('sets', ['return' => 'view']);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
 		$this->assertTextContains('15k', $this->view);
 		$this->assertTextNotContains('deleted', $this->view);
 	}

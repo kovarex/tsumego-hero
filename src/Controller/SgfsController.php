@@ -1,5 +1,6 @@
 <?php
 
+use App\Attribute\HttpGet;
 use App\Utility\Auth;
 
 class SgfsController extends AppController
@@ -8,6 +9,7 @@ class SgfsController extends AppController
 	 * @param string|null $id
 	 * @return void
 	 */
+	#[HttpGet]
 	public function view(?string $id = null): void
 	{
 		$this->Authorization->authorize('Sgf');

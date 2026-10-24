@@ -15,6 +15,7 @@ use App\Utility\TsumegoButtons;
 use App\Utility\TsumegoFilters;
 use App\Utility\TsumegoUtil;
 use App\Utility\Util;
+use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 
 class SetsController extends AppController
@@ -24,6 +25,7 @@ class SetsController extends AppController
 	/**
 	 * @return void
 	 */
+	#[HttpGet]
 	public function sandbox(): void
 	{
 		$this->Authorization->authorize('Set');
@@ -108,6 +110,7 @@ class SetsController extends AppController
 		$this->set('overallCounter', $overallCounter);
 	}
 
+	#[HttpGet]
 	public function mine()
 	{
 		if (!Auth::isLoggedIn())
@@ -116,6 +119,7 @@ class SetsController extends AppController
 		$this->_showUserSets(Auth::getUserID());
 	}
 
+	#[HttpGet]
 	public function userSets(string $userId): void
 	{
 		$this->_showUserSets((int) $userId);
@@ -177,6 +181,8 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 		$this->render('user_sets');
 	}
 
+	#[HttpGet]
+	#[HttpPost]
 	public function create(): void
 	{
 		$this->Authorization->authorize('Set', 'create');
@@ -242,6 +248,8 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 	 * Edit a set: details, problems and (for admins) re-rate and solve-mode
 	 * settings. Owner or admin only.
 	 */
+	#[HttpGet]
+	#[HttpPost]
 	public function edit(?string $id = null)
 	{
 		$this->loadModel('Tsumego');
@@ -496,6 +504,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 			$this->redirect('/sets/mine');
 	}
 
+	#[HttpGet]
 	public function index(): void
 	{
 		$this->loadModel('User');
@@ -831,6 +840,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		return $this->redirect('/sets/edit/' . (int) $setID);
 	}
 
+	#[HttpGet]
 	public function view(string|int|null $id = null, int $partition = 1): void
 	{
 		// transferring from 1 indexed for humans to 0 indexed for us programmers.
@@ -1207,12 +1217,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 		}
 	}
 
-	// Rank and tag filters change which problems a part of a set has, which a reset can't allow.
-	public static function hasProblemFilters(TsumegoFilters $tsumegoFilters): bool
-	{
-		return !empty($tsumegoFilters->ranks) || !empty($tsumegoFilters->tagIDs);
-	}
-
 	#[HttpPost]
 	public function resetProgress(int $setID, int $partition): mixed
 	{
@@ -1234,7 +1238,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 			CookieFlash::set('Reset is only possible for collection size ' . ProgressDeletion::$PARTITION_SIZE, 'error');
 			return $this->redirect($redirectUrl);
 		}
-		if (self::hasProblemFilters($tsumegoFilters))
+		if ($tsumegoFilters->hasProblemFilters())
 		{
 			CookieFlash::set('Reset is only possible without rank and tag filters', 'error');
 			return $this->redirect($redirectUrl);
@@ -1262,6 +1266,7 @@ WHERE tsumego_status.user_id = ? AND tsumego_status.tsumego_id IN(" . implode(',
 		return $this->redirect($redirectUrl);
 	}
 
+	#[HttpPost]
 	public function changeCollectionSize(): mixed
 	{
 		$collectionSize = $this->request->data['collection_size'] ?? null;

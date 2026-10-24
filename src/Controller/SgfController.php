@@ -1,11 +1,13 @@
 <?php
 
+use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Utility\AdminActivityLogger;
 use App\Utility\SgfParser;
 
 class SgfController extends AppController
 {
+	#[HttpGet]
 	public function fetch(int $sgfID)
 	{
 		$sgf = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['id' => $sgfID], 'order' => 'id DESC']);
@@ -24,6 +26,7 @@ class SgfController extends AppController
 	 * link to the profile, rank), for the diff of the version in the editor.
 	 * Allowed to whoever may fetch the version.
 	 */
+	#[HttpGet]
 	public function info(int $sgfID)
 	{
 		$sgf = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['id' => $sgfID]]);
@@ -57,7 +60,8 @@ class SgfController extends AppController
 		if (!$sgfDataOrFile)
 			throw new BadRequestException('No SGF data provided.');
 
-		self::validateSgfFormat($sgfDataOrFile);
+		if ($problem = SgfParser::validationProblem($sgfDataOrFile))
+			throw new BadRequestException('Invalid SGF format: ' . $problem);
 
 		AdminActivityLogger::log(
 			AdminActivityType::SGF_EDIT,
@@ -72,16 +76,5 @@ class SgfController extends AppController
 		$this->set('transformationFromSource', $fileUpload ? null : ($this->request->data['transformationFromSource'] ?? null));
 		$this->set('description', (string) ($this->request->data['description'] ?? ''));
 		$this->render('/Tsumegos/setup_new_sgf');
-	}
-
-	public static function validateSgfFormat(string $sgf): void
-	{
-		$error = SgfParser::validate($sgf);
-		if ($error !== null)
-			throw new BadRequestException('Invalid SGF format: ' . $error);
-
-		$gameError = SgfParser::validateGame($sgf);
-		if ($gameError !== null)
-			throw new BadRequestException('Invalid SGF format: ' . $gameError);
 	}
 }
