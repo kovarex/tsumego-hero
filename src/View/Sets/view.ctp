@@ -348,7 +348,7 @@ if(!$beta2)
 	foreach ($tsumegoButtons as $tsumegoButton)
 		$tsumegoButton->render();
 
-$totalPages = (int) ceil($tsumegoButtons->highestTsumegoOrder / $tsumegoFilters->collectionSize);
+$totalPages = $tsumegoButtons->getPageCount($tsumegoFilters->collectionSize);
 if ($totalPages > 1):
 	$currentPage = $partition + 1;
 	?>
