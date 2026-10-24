@@ -245,3 +245,29 @@ besogo.addTest("GameRoot", "CanStillEndCorrectIsFalseOffTheTree", function()
 	CHECK(!localEditMove.canStillEndCorrect());
 	CHECK(root.canStillEndCorrect());
 });
+
+besogo.addTest("GameRoot", "TenThousandYearsKoBranchIsCorrectOnlyWhenLiving", function()
+{
+	let root = besogo.makeGameRoot();
+	root.goal = GOAL_LIVE;
+
+	let tenThousandYearsKoMove = root.makeChild();
+	tenThousandYearsKoMove.playMove(1, 1);
+	tenThousandYearsKoMove.statusSource = besogo.makeStatusSimple(STATUS_TEN_THOUSAND_YEARS_KO);
+	root.registerChild(tenThousandYearsKoMove);
+
+	let koMove = root.makeChild();
+	koMove.playMove(2, 2);
+	koMove.statusSource = besogo.makeStatusSimple(STATUS_KO);
+	root.registerChild(koMove);
+
+	// the attacker has to approach before a ten thousand years ko starts, so it is the better result for the defender
+	CHECK_EQUALS(tenThousandYearsKoMove.correct, CORRECT_GOOD);
+	CHECK_EQUALS(koMove.correct, CORRECT_BAD);
+
+	// and the worse one for the attacker
+	root.goal = GOAL_KILL;
+	besogo.updateCorrectValues(root);
+	CHECK_EQUALS(tenThousandYearsKoMove.correct, CORRECT_BAD);
+	CHECK_EQUALS(koMove.correct, CORRECT_GOOD);
+});
