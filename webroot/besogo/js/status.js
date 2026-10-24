@@ -162,12 +162,16 @@ besogo.makeStatusInternal = function(type)
 
   status.better = function(other, goal)
   {
+    // In a ten thousand years ko the attacker has to play an approach move before the ko starts,
+    // so it equals an approach ko where the attacker needs one approach move.
+    // Approaches count from black's (the solver's) side, so it is A-1 when black kills and A+1 when black lives.
+    let tenThousandYearsKoApproaches = goal == GOAL_KILL ? -1 : 1;
     if (this.type == STATUS_TEN_THOUSAND_YEARS_KO)
       if (other.type == STATUS_KO)
-        return other.approaches < -1;
+        return other.approaches < tenThousandYearsKoApproaches;
     if (other.type == STATUS_TEN_THOUSAND_YEARS_KO)
       if (this.type == STATUS_KO)
-        return this.approaches > -1;
+        return this.approaches > tenThousandYearsKoApproaches;
     if (this.type != other.type)
       return goal == GOAL_KILL ? (this.type < other.type) : (this.type > other.type);
     if (this.type == STATUS_KO)
