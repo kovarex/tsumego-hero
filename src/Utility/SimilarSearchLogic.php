@@ -54,7 +54,8 @@ JOIN set_connection sc_best ON sc_best.id = (
     ORDER BY " . SetConnection::displayOrderSql('s2', 'sc2') . "
     LIMIT 1
 )
-LEFT JOIN sgf ON sgf.id = " . Sgf::currentVersionIDSql('tsumego.id'));
+LEFT JOIN sgf ON sgf.id = " . Sgf::currentVersionIDSql('tsumego.id') . "
+WHERE tsumego.deleted IS NULL");
 
 		foreach ($candidates as $candidate)
 			if ($candidate['tsumego_id'] != $this->sourceTsumegoID)

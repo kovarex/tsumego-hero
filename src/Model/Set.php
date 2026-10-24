@@ -16,15 +16,15 @@ class Set extends AppModel
 	public $hasMany = ['SetConnection'];
 
 	/**
-	 * A collection the site publishes: public and owned by nobody. A collection a player
-	 * assembled and a sandbox build are not site content, so they do not count wherever
+	 * A collection the site publishes: public, owned by nobody and not in the trash. A collection
+	 * a player assembled and a sandbox build are not site content, so they do not count wherever
 	 * the site's own collections are meant.
 	 *
 	 * @param SetRow $set Unwrapped set row
 	 */
 	public static function isOfficial(array $set): bool
 	{
-		return (int) $set['public'] === 1 && ($set['user_id'] ?? null) === null;
+		return (int) $set['public'] === 1 && ($set['user_id'] ?? null) === null && empty($set['deleted']);
 	}
 
 	/**
@@ -34,7 +34,7 @@ class Set extends AppModel
 	 */
 	public static function officialCondition(string $alias = 'set'): string
 	{
-		return '`' . $alias . '`.public = 1 AND `' . $alias . '`.user_id IS NULL';
+		return '`' . $alias . '`.public = 1 AND `' . $alias . '`.user_id IS NULL AND `' . $alias . '`.deleted IS NULL';
 	}
 
 	/**
@@ -55,7 +55,9 @@ class Set extends AppModel
 
 	public static function getProblemCount(int $setID): int
 	{
-		return Util::query("SELECT COUNT(*) AS total FROM set_connection WHERE set_connection.set_id = ?", [$setID])[0]["total"];
+		return Util::query("SELECT COUNT(*) AS total FROM set_connection"
+			. " JOIN tsumego ON tsumego.id = set_connection.tsumego_id AND tsumego.deleted IS NULL"
+			. " WHERE set_connection.set_id = ?", [$setID])[0]["total"];
 	}
 
 	/**

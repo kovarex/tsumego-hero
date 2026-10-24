@@ -14,6 +14,7 @@ use App\Utility\RatingParseException;
 use App\Utility\SgfCommentReorientation;
 use App\Utility\SgfParser;
 use App\Utility\SimilarSearchLogic;
+use App\Utility\Trash;
 use App\Utility\TsumegoButton;
 use App\Utility\TsumegoMerger;
 use App\Utility\TsumegoUtil;
@@ -92,6 +93,13 @@ class TsumegosController extends AppController
 		$tsumego = ClassRegistry::init('Tsumego')->findById($id);
 		if (!$tsumego)
 			throw new NotFoundException("Tsumego not found");
+		// The Play menu leads to the last visited problem, which may have been deleted since,
+		// so the player lands on the collections instead of an error.
+		if ($tsumego['Tsumego']['deleted'] && !Auth::isAdmin())
+		{
+			CookieFlash::set('That problem was deleted', 'info');
+			return $this->redirect('/sets');
+		}
 
 		if (Auth::isLoggedIn())
 			$this->PlayResultProcessor->markAsVisited((int) $id);
@@ -153,13 +161,8 @@ class TsumegosController extends AppController
 		}
 		$tsumego = $tsumego['Tsumego'];
 
-		if ($this->request->data['delete'] == 'delete')
-		{
-			$tsumego['deleted'] = date('Y-m-d H:i:s');
-			ClassRegistry::init('Tsumego')->save($tsumego);
-			AdminActivityLogger::log(AdminActivityType::PROBLEM_DELETE, $tsumegoID);
-			return $this->redirect("/sets");
-		}
+		if (($this->request->data['delete'] ?? '') == 'delete')
+			return $this->moveToTrash((int) $tsumegoID);
 
 		try
 		{
@@ -251,6 +254,24 @@ class TsumegosController extends AppController
 
 		ClassRegistry::init('Tsumego')->save($tsumego);
 		return $this->redirect($this->request->data['redirect']);
+	}
+
+	/**
+	 * Moves the problem to the trash and goes back to its collection, or to the list of collections
+	 * when it was the last problem of it, as the collection went to the trash with it.
+	 */
+	private function moveToTrash(int $tsumegoID): mixed
+	{
+		$setConnection = ClassRegistry::init('SetConnection')->findDisplaySetConnection($tsumegoID);
+		Trash::deleteProblem($tsumegoID);
+		AdminActivityLogger::log(AdminActivityType::PROBLEM_DELETE, $tsumegoID);
+		CookieFlash::set('The problem was moved to the trash, it can be restored for ' . Trash::$RETENTION_DAYS . ' days.', 'success');
+		if (!$setConnection)
+			return $this->redirect('/sets');
+		$set = ClassRegistry::init('Set')->findById($setConnection['SetConnection']['set_id']);
+		if (!empty($set['Set']['deleted']))
+			return $this->redirect('/sets');
+		return $this->redirect(Set::url((int) $set['Set']['id']));
 	}
 
 	#[HttpGet]

@@ -41,6 +41,9 @@ class TsumegoIssue extends AppModel
 	public static int $OPENED_STATUS = 1;
 	public static int $CLOSED_STATUS = 2;
 
+	// the issues of a problem in the trash are left out of the issue list
+	private static string $LIVE_PROBLEM_CONDITION = 'TsumegoIssue.tsumego_id IN (SELECT id FROM tsumego WHERE deleted IS NULL)';
+
 
 	/**
 	 * Delete an issue if it has no non-deleted comments.
@@ -96,6 +99,7 @@ class TsumegoIssue extends AppModel
 			SELECT id
 			FROM tsumego_issue
 			WHERE deleted = 0
+				AND tsumego_id IN (SELECT id FROM tsumego WHERE deleted IS NULL)
 			{$statusCondition}
 			ORDER BY created DESC, id DESC
 			LIMIT {$limit} OFFSET {$offset}
@@ -244,12 +248,14 @@ class TsumegoIssue extends AppModel
 				'conditions' => [
 					'tsumego_issue_status_id' => self::$OPENED_STATUS,
 					'deleted' => false,
+					self::$LIVE_PROBLEM_CONDITION,
 				],
 			]),
 			'closed' => $this->find('count', [
 				'conditions' => [
 					'tsumego_issue_status_id' => self::$CLOSED_STATUS,
 					'deleted' => false,
+					self::$LIVE_PROBLEM_CONDITION,
 				],
 			]),
 		];

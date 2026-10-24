@@ -8,6 +8,7 @@ use App\Utility\PlayOutcome;
 use App\Utility\Rating;
 use App\Utility\TimeMode;
 use App\Utility\TimeModeUtil;
+use App\Utility\Trash;
 use App\Utility\TsumegoButton;
 use App\Utility\TsumegoButtons;
 use App\Utility\TsumegoFilters;
@@ -89,8 +90,6 @@ use App\Utility\ViteManifest;
 		$playGreenColor = 'green';
 	}
 
-	if(isset($deleteProblem2))
-		echo '<script type="text/javascript">window.location.href = "' . Set::url((int) $t['Tsumego']['set_id']) . '";</script>';
 	$swapColorWords = function (string $text): string
 	{
 		return preg_replace_callback(
@@ -121,6 +120,16 @@ use App\Utility\ViteManifest;
 	$resetLink = (Auth::isInMistakeTrainingMode() ? MistakeTraining::$PLAY_LINK_PREFIX : '/') . (int) $setConnection['SetConnection']['id'];
 	if ($nothingInRange != false)
 		echo '<div align="center" class="status-message">'.$nothingInRange.'</div>';
+	if (!empty($t['Tsumego']['deleted']))
+		echo $this->element('trash_notice', [
+			'what' => 'problem',
+			'deleted' => $t['Tsumego']['deleted'],
+			'restoreAction' => '/trash/restore-problem/' . (int) $t['Tsumego']['id']]);
+	if (!empty($set['Set']['deleted']))
+		echo $this->element('trash_notice', [
+			'what' => 'collection',
+			'deleted' => $set['Set']['deleted'],
+			'restoreAction' => '/trash/restore-set/' . (int) $set['Set']['id']]);
 	?>
 	<table width="100%" border="0" class="play-header-table">
 	<tr>
@@ -206,10 +215,13 @@ use App\Utility\ViteManifest;
 						<td><label for="author">Author:</label></td>
 						<td><input type="text" name="author" id="author" value="<?php echo h($t['Tsumego']['author']); ?>"></td>
 					</tr>
-					<?php if ($isSandbox) { ?>
+					<?php if (empty($t['Tsumego']['deleted'])) { ?>
 					<tr>
 						<td><label for="delete">Delete:</label></td>
-						<td><input type="text" name="delete" id="delete" value="" placeholder="Type delete"></td>
+						<td>
+							<input type="text" name="delete" id="delete" value="" placeholder="Type delete">
+							<br><small style="color: #888;">Moves the problem to the trash, it can be restored for <?php echo Trash::$RETENTION_DAYS; ?> days.</small>
+						</td>
 					</tr>
 					<?php } ?>
 				</table>

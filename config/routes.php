@@ -202,6 +202,18 @@ Router::connect(
 /**
  * User Sets routes
  */
+Router::connect('/trash', ['controller' => 'Trash', 'action' => 'index']);
+Router::connect(
+	'/trash/restore-problem/:id',
+	['controller' => 'Trash', 'action' => 'restoreProblem'],
+	['pass' => ['id'], 'id' => '[0-9]+'] // Id of the tsumego
+);
+Router::connect(
+	'/trash/restore-set/:id',
+	['controller' => 'Trash', 'action' => 'restoreSet'],
+	['pass' => ['id'], 'id' => '[0-9]+']
+);
+
 Router::connect(
 	'/sets/mine',
 	['controller' => 'sets', 'action' => 'mine']

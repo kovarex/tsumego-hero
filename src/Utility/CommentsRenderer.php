@@ -57,7 +57,7 @@ class CommentsRenderer
 		$parameters = [];
 		$parameters[] = Auth::getUserID();
 
-		$queryCondition = "tsumego_comment.deleted = 0";
+		$queryCondition = "tsumego_comment.deleted = 0 AND tsumego.deleted IS NULL";
 		if ($this->userID)
 			Util::addSqlCondition($queryCondition, "tsumego_comment.user_id = " . $this->userID);
 

@@ -108,4 +108,24 @@ class AdminPolicy extends BasePolicy
 	{
 		return static::isAdmin($user);
 	}
+
+	/**
+	 * Seeing the problems and collections in the trash
+	 *
+	 * @param UserRow|null $user
+	 */
+	public static function canViewTrash(?array $user): bool
+	{
+		return static::isAdmin($user);
+	}
+
+	/**
+	 * Taking a problem or a collection back from the trash
+	 *
+	 * @param UserRow|null $user
+	 */
+	public static function canRestoreFromTrash(?array $user): bool
+	{
+		return static::isAdmin($user);
+	}
 }

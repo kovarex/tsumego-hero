@@ -46,7 +46,13 @@ if($set['Set']['id'] == 11969 || $set['Set']['id'] == 29156 || $set['Set']['id']
 		$ownerNote = $setAuthor && (int) $setAuthor['id'] !== Auth::getUserID()
 			? ' <span class="set-view__owner">by ' . User::renderLink($setAuthor) . '</span>'
 			: '';
-		echo '<p class="title4 set-view-title">' . h($setTitle) . $ownerNote . '</p>';?>
+		echo '<p class="title4 set-view-title">' . h($setTitle) . $ownerNote . '</p>';
+		if (!empty($set['Set']['deleted']))
+			echo $this->element('trash_notice', [
+				'what' => 'collection',
+				'deleted' => $set['Set']['deleted'],
+				'restoreAction' => '/trash/restore-set/' . (int) $set['Set']['id']]);
+		?>
 		<div class="new1">
 		<table border="0" width="100%">
 		<tr>

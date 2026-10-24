@@ -43,7 +43,8 @@ class TsumegoUtil
 			array_push($scIds, $sc[$i]['SetConnection']['tsumego_id']);
 			$scMap[$sc[$i]['SetConnection']['tsumego_id']] = $i;
 		}
-		$finalCondition = ['conditions' => ['id' => $scIds]];
+		// a problem in the trash is not in the set anymore
+		$finalCondition = ['conditions' => ['id' => $scIds, 'deleted IS NULL']];
 		if ($tsumegoConditions)
 			$finalCondition['conditions'] [] = $tsumegoConditions;
 		$ts = ClassRegistry::init('Tsumego')->find('all', $finalCondition) ?: [];
@@ -54,7 +55,9 @@ class TsumegoUtil
 			$tsx[$scMap[$ts[$i]['Tsumego']['id']]] = $ts[$i];
 		}
 
-		return $tsx;
+		// in the order of the set, and numbered from 0 even when some of its problems were left out
+		ksort($tsx);
+		return array_values($tsx);
 	}
 
 	/**
@@ -65,7 +68,7 @@ class TsumegoUtil
 	{
 		$rows = Util::query(
 			'SELECT COUNT(*) AS total FROM set_connection sc '
-			. 'JOIN tsumego t ON t.id = sc.tsumego_id '
+			. 'JOIN tsumego t ON t.id = sc.tsumego_id AND t.deleted IS NULL '
 			. 'WHERE sc.set_id = ?',
 			[$setID]
 		);
