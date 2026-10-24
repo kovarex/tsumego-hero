@@ -12,8 +12,13 @@ use App\Utility\Util;
 
 class ContextPreparator
 {
+	/** Held for the whole process, so no second run can empty the tables in the middle of a run. */
+	private static $testDatabaseLock = null;
+
 	public function __construct(?array $options = [])
 	{
+		self::takeTestDatabaseLock();
+
 		// Delete all test data via raw PDO so FK check disable is guaranteed on the same connection
 		/** @var DboSource $db */
 		$db = ClassRegistry::init('User')->getDataSource();
@@ -53,6 +58,36 @@ class ContextPreparator
 		$this->checkOptionsConsumed($options);
 		if ($this->user)
 			$this->lastXp = Level::getOverallXPGained($this->user);
+	}
+
+	/**
+	 * Every run empties every table before each test, so a second process would pull the rows out
+	 * from under the first one. The lock lives as long as this process does, which is exactly the
+	 * window in which the shared test database is in use. The kernel drops it however the process
+	 * ends, so a killed run leaves nothing behind to clean up.
+	 */
+	private static function takeTestDatabaseLock(): void
+	{
+		if (self::$testDatabaseLock !== null)
+			return;
+
+		$path = TMP . 'test-db.lock';
+		$handle = @fopen($path, 'c');
+		if ($handle === false)
+			throw new RuntimeException('Cannot create the test database lock file at ' . $path);
+
+		if (!flock($handle, LOCK_EX | LOCK_NB))
+		{
+			$holder = trim((string) @file_get_contents($path));
+			throw new RuntimeException('Another test run is using the test database'
+				. ($holder === '' ? '.' : ' (pid ' . $holder . ').')
+				. ' Stop it before starting a new run.');
+		}
+
+		ftruncate($handle, 0);
+		fwrite($handle, (string) getmypid());
+		fflush($handle);
+		self::$testDatabaseLock = $handle;
 	}
 
 	private function checkOptionsConsumed(?array $options)
