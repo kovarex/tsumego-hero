@@ -645,6 +645,29 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame($problemLinks[0]->getAttribute('href'), '/' . $context->tsumegos[1]['set-connections'][0]['id']);
 	}
 
+	public function testSetViewPageLinksFollowProblemCountNotProblemNumbers(): void
+	{
+		// 15 problems numbered 1, 5, 9 … 57, as when problems were moved out of a collection:
+		// two pages of 10, though the highest number would make it six.
+		$contextParams = ['user' => ['collection_size' => 10]];
+		$contextParams['tsumegos'] = [];
+		for ($i = 0; $i < 15; $i++)
+			$contextParams['tsumegos'] [] = ['sets' => [['name' => 'set with gaps', 'num' => $i * 4 + 1]]];
+		$context = new ContextPreparator($contextParams);
+		$setId = $context->tsumegos[0]['sets'][0]['id'];
+
+		$this->testAction(Set::url($setId), ['method' => 'get', 'return' => 'view']);
+		$dom = $this->getStringDom();
+		$pageLinks = array_map(fn($node) => $node->textContent, iterator_to_array($dom->querySelectorAll('.pagination a, .pagination strong')));
+		$this->assertSame(['1', '2'], $pageLinks);
+		$this->assertCount(10, $dom->querySelectorAll('.problem-nav__number'));
+
+		$this->testAction(Set::url($setId, 2), ['method' => 'get', 'return' => 'view']);
+		$dom = $this->getStringDom();
+		$problemNumbers = array_map(fn($node) => $node->textContent, iterator_to_array($dom->querySelectorAll('.problem-nav__number')));
+		$this->assertSame(['41', '45', '49', '53', '57'], $problemNumbers);
+	}
+
 	public function testSetViewSanitizesDescriptionOnDisplay(): void
 	{
 		$context = new ContextPreparator(['tsumego' => ['sets' => [
