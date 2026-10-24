@@ -128,7 +128,7 @@ jobs:
                   'password' => 'root',
                   'database' => 'test',
                   'prefix' => '',
-                  'encoding' => 'utf8',
+                  'encoding' => 'utf8mb4',
               ];
 
               public function __construct() {
@@ -145,7 +145,7 @@ jobs:
                   'password' => 'root',
                   'database' => 'test',
                   'prefix' => '',
-                  'encoding' => 'utf8',
+                  'encoding' => 'utf8mb4',
               ];
           }
           EOF

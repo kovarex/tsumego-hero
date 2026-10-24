@@ -88,6 +88,28 @@ class GoogleSignInTest extends ControllerTestCase
 	}
 
 	/**
+	 * A name Google brings with an emoji loses the character the forum cannot store. What is
+	 * left is checked for uniqueness like any other name, so the account cannot take a name an
+	 * existing account already has, and the player is asked to pick their own.
+	 */
+	public function testNameWithAnEmojiLosesItAndCannotTakeAnExistingName(): void
+	{
+		new ContextPreparator(['user' => ['display_name' => 'Player']]);
+		$this->fakeVerifier->addToken('emoji-token', [
+			'sub' => '987654321',
+			'email' => 'emoji@gmail.com',
+			'name' => 'Player😀',
+		]);
+
+		$this->googleSignIn('emoji-token');
+
+		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['external_id' => '987654321']]);
+		$this->assertNotEmpty($user, 'The Google sign in must create the account');
+		$this->assertSame('Player (2)', $user['User']['display_name'], 'The name left without the emoji is made unique like any other name');
+		$this->assertEquals(true, $user['User']['needs_display_name_change']);
+	}
+
+	/**
 	 * Test that new Google user is created with correct data.
 	 */
 	public function testNewGoogleUserCreated(): void

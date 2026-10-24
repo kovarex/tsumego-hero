@@ -133,6 +133,31 @@ class UpdateNameTest extends ControllerTestCase
 	}
 
 	/**
+	 * An emoji is above U+FFFF, which the utf8mb3 columns the forum shares cannot hold, so a
+	 * rename cannot bring one in.
+	 */
+	public function testRenameToANameWithAnEmojiIsRejected(): void
+	{
+		$context = new ContextPreparator([
+			'user' => [
+				'display_name' => 'My Name',
+				'email' => 'my@example.com',
+				'needs_display_name_change' => true,
+			],
+		]);
+
+		$this->testAction('/users/updatename', [
+			'method' => 'post',
+			'data' => ['User' => ['display_name' => 'My Name 😀']],
+			'return' => 'result',
+		]);
+
+		$updatedUser = ClassRegistry::init('User')->findById($context->user['id']);
+		$this->assertEquals('My Name', $updatedUser['User']['display_name']);
+		$this->assertEquals(true, $updatedUser['User']['needs_display_name_change']);
+	}
+
+	/**
 	 * Test that an unchanged display name is rejected even when forced.
 	 */
 	public function testUnchangedNameIsRejected(): void
