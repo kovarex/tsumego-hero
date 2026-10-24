@@ -172,3 +172,29 @@ On the server in ROOT:
 sh deploy.sh
 ```
 It will run git pull + composer install etc.
+
+### Deploying a PR to the test site
+To try a pull request before merging, run the **Deploy to test** workflow (Actions → Deploy to test → Run workflow) with the PR number, or `0` for master.
+It sends one request to `https://test.tsumego.com/deploy-hook.cgi`; the test site then checks out the PR (`pull/N/head`), runs `deploy.sh` and the workflow prints the log and comments the result on the PR.
+Production is never touched: the workflow only knows a token that the test site accepts.
+
+The checkout on the test site ends up on a detached commit, and local changes to tracked files there are discarded.
+When the test DB has a migration the deployed commit doesn't have (typically after testing a PR with a new migration), the DB is restored from `/home/private/test-snapshot.sql.gz` first; without that file the DB stays as it is and the log lists those migrations.
+
+One-time setup on the test site (NearlyFreeSpeech, repo in `/home/public`):
+```
+# A random token, known only to the test site and GitHub
+openssl rand -hex 32 > /home/private/deploy-token
+chmod 600 /home/private/deploy-token
+
+# The hook lives outside what git checks out, so deploying an older PR can't change it.
+# The suid bit makes it run as the site owner, who can update the files.
+cp scripts/deploy-test-hook.cgi webroot/deploy-hook.cgi
+chmod 4755 webroot/deploy-hook.cgi
+
+# Optional: a DB snapshot (ideally with anonymized emails and passwords) to restore when the DB is ahead
+mysqldump ... | gzip > /home/private/test-snapshot.sql.gz
+```
+Then in GitHub: Settings → Environments → `test` → add the secret `TEST_DEPLOY_TOKEN` with the contents of `/home/private/deploy-token`, and limit the environment's deployment branches to `master`.
+If the hook ends up at a different URL, set it as the `TEST_DEPLOY_URL` variable of the environment.
+Deploying master (`0`) also puts the latest `scripts/deploy-test-hook.cgi` in place of the installed hook.

@@ -10,12 +10,11 @@ class FavoritesViewTest extends TestCaseWithAuth
 	{
 		new ContextPreparator(['user' => ['name' => 'nofavs', 'rating' => 1500]]);
 
-		$this->testAction('/sets/view/favorites');
+		$this->testAction('/sets/view/favorites', ['method' => 'get']);
 
 		// Should redirect to the default Favorites set (created lazily)
 		$redirectUrl = $this->headers['Location'] ?? '';
-		$this->assertNotEmpty($redirectUrl);
-		$this->assertStringContainsString('/sets/view/', $redirectUrl);
+		$this->assertMatchesRegularExpression('#/sets/\d+$#', $redirectUrl);
 	}
 
 	// ── Heart flag: lit when in ANY set ──────────────────────────────────

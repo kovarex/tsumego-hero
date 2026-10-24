@@ -2,6 +2,8 @@
 
 namespace App\Utility;
 
+use Set;
+
 class SetsSelector
 {
 	public function __construct(TsumegoFilters $tsumegoFilters)
@@ -102,7 +104,7 @@ class SetsSelector
 		$query->selects[] = 'tsumego.rating';
 		$query->query .= ' JOIN set_connection sc ON sc.set_id = s.id';
 		$query->query .= ' JOIN tsumego ON tsumego.id = sc.tsumego_id';
-		$query->conditions[] = 's.public = 1';
+		$query->conditions[] = Set::officialCondition('s');
 		$query->conditions[] = 'tsumego.deleted IS NULL';
 		if (!empty($this->tsumegoFilters->setIDs))
 			$query->conditions[] = 's.id IN (' . implode(',', $this->tsumegoFilters->setIDs) . ')';
@@ -266,7 +268,7 @@ class SetsSelector
 	 *
 	 * Items are sorted within each collection by the $itemSortKeys row fields (e.g.
 	 * num, tsumego_id) so partitions always hold consecutive problems in the canonical
-	 * order (the same order the /sets/view page uses), regardless of the row order the
+	 * order (the same order a collection page uses), regardless of the row order the
 	 * database returns.
 	 *
 	 * @param array $rows Query rows, each with $idField, $nameField, $colorField, tsumego_id and rating.
@@ -369,7 +371,7 @@ class SetsSelector
 	 */
 	private function publicMembershipCondition(string $tsumegoRef): string
 	{
-		$setCondition = '`set`.public = 1';
+		$setCondition = Set::officialCondition();
 		if (!empty($this->tsumegoFilters->setIDs))
 			$setCondition .= ' AND `set`.id IN (' . implode(',', $this->tsumegoFilters->setIDs) . ')';
 		return 'EXISTS (SELECT 1 FROM set_connection sc JOIN `set` ON `set`.id = sc.set_id AND ' . $setCondition . ' WHERE sc.tsumego_id = ' . $tsumegoRef . ')';

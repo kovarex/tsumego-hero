@@ -133,6 +133,31 @@ class UpdateNameTest extends ControllerTestCase
 	}
 
 	/**
+	 * An emoji is above U+FFFF, which the utf8mb3 columns the forum shares cannot hold, so a
+	 * rename cannot bring one in.
+	 */
+	public function testRenameToANameWithAnEmojiIsRejected(): void
+	{
+		$context = new ContextPreparator([
+			'user' => [
+				'display_name' => 'My Name',
+				'email' => 'my@example.com',
+				'needs_display_name_change' => true,
+			],
+		]);
+
+		$this->testAction('/users/updatename', [
+			'method' => 'post',
+			'data' => ['User' => ['display_name' => 'My Name 😀']],
+			'return' => 'result',
+		]);
+
+		$updatedUser = ClassRegistry::init('User')->findById($context->user['id']);
+		$this->assertEquals('My Name', $updatedUser['User']['display_name']);
+		$this->assertEquals(true, $updatedUser['User']['needs_display_name_change']);
+	}
+
+	/**
 	 * Test that an unchanged display name is rejected even when forced.
 	 */
 	public function testUnchangedNameIsRejected(): void
@@ -373,9 +398,17 @@ class UpdateNameTest extends ControllerTestCase
 		]);
 
 		Util::execute(
+			"INSERT INTO phpbb_users (user_id, username, username_clean, user_permissions, user_sig, external_id)"
+			. " VALUES (?, ?, ?, '', '', ?)",
+			[700002, 'Old Poster', 'old poster', $context->user['id']]
+		);
+
+		// A topic stores its poster by phpBB user id, and the forum account is the one
+		// linked to this site account by external_id.
+		Util::execute(
 			"INSERT INTO phpbb_topics (topic_id, topic_poster, topic_first_poster_name, topic_last_poster_id,"
 			. " topic_last_poster_name) VALUES (?, ?, ?, ?, ?)",
-			[700002, $context->user['id'], 'Old Poster', $context->user['id'], 'Old Poster']
+			[700002, 700002, 'Old Poster', 700002, 'Old Poster']
 		);
 
 		$this->testAction('/users/updatename', [

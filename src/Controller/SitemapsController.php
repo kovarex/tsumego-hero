@@ -8,6 +8,7 @@
  * @link https://www.sitemaps.org/protocol.html
  */
 use App\Utility\Constants;
+use App\Attribute\HttpGet;
 use App\Utility\Util;
 
 class SitemapsController extends AppController
@@ -44,6 +45,7 @@ class SitemapsController extends AppController
 	 *
 	 * @return void
 	 */
+	#[HttpGet]
 	public function index(): void
 	{
 		$cacheKey = 'sitemap_xml';
@@ -82,12 +84,12 @@ class SitemapsController extends AppController
 SELECT set_id, COUNT(*) AS problems
 FROM set_connection
 	JOIN `set` ON set_connection.set_id = `set`.id
-WHERE `set`.public = 1
+WHERE " . Set::officialCondition() . "
 GROUP BY set_id") as $row)
 			$setProblemCounts[$row['set_id']] = (int) $row['problems'];
 
 		$sets = $this->Set->find('all', [
-			'conditions' => ['Set.public' => 1],
+			'conditions' => [Set::officialCondition('Set')],
 			'fields' => ['Set.id'],
 			'order' => ['Set.id' => 'ASC']
 		]);
@@ -95,12 +97,12 @@ GROUP BY set_id") as $row)
 		foreach ($sets as $set)
 		{
 			$setID = $set['Set']['id'];
-			$urls[] = self::_urlOf(['controller' => 'sets', 'action' => 'view', $setID]);
+			$urls[] = Set::url($setID, 1, true);
 
 			// A visitor sees the default number of problems per page.
 			$pages = (int) ceil(($setProblemCounts[$setID] ?? 0) / Constants::$DEFAULT_COLLECTION_SIZE);
 			for ($page = 2; $page <= $pages; $page++)
-				$urls[] = self::_urlOf(['controller' => 'sets', 'action' => 'view', $setID, $page]);
+				$urls[] = Set::url($setID, $page, true);
 		}
 
 		// All achievements, each with its own page
@@ -131,7 +133,7 @@ GROUP BY set_id") as $row)
 SELECT set_connection.id
 FROM set_connection
 	JOIN `set` ON set_connection.set_id = `set`.id
-WHERE `set`.public = 1
+WHERE " . Set::officialCondition() . "
 ORDER BY set_connection.id ASC");
 
 		foreach ($puzzleIds as $row)

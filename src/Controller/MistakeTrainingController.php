@@ -1,8 +1,10 @@
 <?php
 
+use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Utility\Auth;
 use App\Utility\Constants;
+use App\Utility\CookieFlash;
 use App\Utility\MistakeTraining;
 
 class MistakeTrainingController extends AppController
@@ -16,6 +18,7 @@ class MistakeTrainingController extends AppController
 	 * plain problem URL always means normal play, just like it does for the other
 	 * modes.
 	 */
+	#[HttpGet]
 	public function play(?string $setConnectionID = null): mixed
 	{
 		if (!Auth::isLoggedIn())
@@ -53,6 +56,7 @@ class MistakeTrainingController extends AppController
 	 * once nothing is left, so the homepage and the title of a training problem link
 	 * here.
 	 */
+	#[HttpGet]
 	public function overview(): mixed
 	{
 		if (!Auth::isLoggedIn())
@@ -75,10 +79,6 @@ class MistakeTrainingController extends AppController
 		$upcoming = MistakeTraining::upcomingByDay($userId);
 		$this->set('totalInTraining', MistakeTraining::totalInTraining($userId));
 		$this->set('everTrained', MistakeTraining::hasEverTrained($userId));
-		// Offered on every visit that finds nothing due, so a player can keep pulling
-		// old mistakes in as the training empties, and never more than a day at once.
-		$this->set('importCandidates', $dueToday > 0 ? 0 : MistakeTraining::importCandidates($userId));
-		$this->set('importLimit', MistakeTraining::IMPORT_LIMIT);
 		$this->set('upcomingDays', $upcoming['days']);
 		$this->set('furtherDays', $upcoming['furtherDays']);
 		$this->set('lastUpcomingDay', $upcoming['lastDay']);
@@ -96,8 +96,9 @@ class MistakeTrainingController extends AppController
 
 	/**
 	 * Bring the player's past mistakes into the training. Offered on the queue page
-	 * while the training is empty, because a problem solved before the training
-	 * existed never entered it by itself.
+	 * while nothing is due, because a problem solved before the training existed never
+	 * entered it by itself. What the import found is said here, so no page has to count
+	 * the attempt history to offer the button.
 	 */
 	#[HttpPost]
 	public function import(): mixed
@@ -105,7 +106,13 @@ class MistakeTrainingController extends AppController
 		if (!Auth::isLoggedIn())
 			return $this->redirect('/users/login');
 
-		MistakeTraining::importPastMistakes((int) Auth::getUserID());
+		$added = MistakeTraining::importPastMistakes((int) Auth::getUserID());
+		CookieFlash::set(
+			$added > 0
+				? 'Added ' . $added . ' past mistake' . ($added == 1 ? '' : 's') . ' to the training.'
+				: 'Nothing left to add, every past mistake is already in the training.',
+			$added > 0 ? 'success' : 'info'
+		);
 
 		return $this->redirect(MistakeTraining::$QUEUE_LINK);
 	}

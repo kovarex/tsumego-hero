@@ -20,7 +20,7 @@ class CronControllerTest extends TestCaseWithAuth
 			$context = new ContextPreparator([
 				'user' => ['mode' => Constants::$LEVEL_MODE, $name => 1]]);
 			$this->assertSame($context->reloadUser()[$name], 1);
-			$this->testAction('/cron/daily/' . CRON_SECRET);
+			$this->testAction('/cron/daily/' . CRON_SECRET, ['method' => 'get']);
 			$this->assertSame($context->reloadUser()[$name], 0);
 		}
 	}
@@ -32,7 +32,7 @@ class CronControllerTest extends TestCaseWithAuth
 
 		$this->expectException(ForbiddenException::class);
 
-		$this->testAction('/cron/daily/wrongsecret');
+		$this->testAction('/cron/daily/wrongsecret', ['method' => 'get']);
 	}
 
 	/**
@@ -48,7 +48,7 @@ class CronControllerTest extends TestCaseWithAuth
 			'new@example.com', 'confirm_token', 'cancel_token',
 			date('Y-m-d H:i:s', strtotime('-2 days')), $context->user['id']]);
 
-		$this->testAction('/cron/daily/' . CRON_SECRET);
+		$this->testAction('/cron/daily/' . CRON_SECRET, ['method' => 'get']);
 
 		$user = $context->reloadUser();
 		$this->assertNull($user['unconfirmed_email']);
@@ -63,7 +63,7 @@ class CronControllerTest extends TestCaseWithAuth
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'damage' => 7]]);
 		$this->assertSame($context->reloadUser()['damage'], 7);
-		$this->testAction('/cron/daily/' . CRON_SECRET);
+		$this->testAction('/cron/daily/' . CRON_SECRET, ['method' => 'get']);
 		$this->assertSame($context->reloadUser()['damage'], 0);
 	}
 
@@ -74,7 +74,7 @@ class CronControllerTest extends TestCaseWithAuth
 			'tsumegos' => [
 				['set_order' => 1, 'status' => 'F'],
 				['set_order' => 2, 'status' => 'X']]]);
-		$this->testAction('/cron/daily/' . CRON_SECRET);
+		$this->testAction('/cron/daily/' . CRON_SECRET, ['method' => 'get']);
 		$status1 = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[0]['id']]]);
 		$this->assertSame($status1['TsumegoStatus']['status'], 'V');
 		$status2 = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[1]['id']]]);
@@ -90,7 +90,7 @@ class CronControllerTest extends TestCaseWithAuth
 			'tsumegos' => [
 				['set_order' => 1, 'status' => ['name' => 'S', 'updated' => $oldEnoughToTransfer]],
 				['set_order' => 2, 'status' => ['name' => 'S', 'updated' => $newEnoughToTransfer]]]]);
-		$this->testAction('/cron/daily/' . CRON_SECRET);
+		$this->testAction('/cron/daily/' . CRON_SECRET, ['method' => 'get']);
 		$status1 = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[0]['id']]]);
 		$this->assertSame($status1['TsumegoStatus']['status'], 'W');
 		$status2 = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[1]['id']]]);
@@ -103,7 +103,7 @@ class CronControllerTest extends TestCaseWithAuth
 			'user' => ['name' => 'kovarex', 'daily_xp' => 5, 'daily_solved' => 1],
 			'other-users' => [['name' => 'Ivan Detkov', 'daily_xp' => 10, 'daily_solved' => 2]]]);
 
-		$this->testAction('/cron/daily/' . CRON_SECRET);
+		$this->testAction('/cron/daily/' . CRON_SECRET, ['method' => 'get']);
 		$this->assertSame($context->reloadUser()['daily_xp'], 0);
 		$this->assertSame($context->reloadUser()['daily_solved'], 0);
 		$detkov = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'Ivan Detkov']]);
@@ -119,8 +119,8 @@ class CronControllerTest extends TestCaseWithAuth
 		new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'daily_xp' => 5, 'daily_solved' => 1]]);
 
-		$this->testAction('/cron/daily/' . CRON_SECRET);
-		$this->testAction('/cron/daily/' . CRON_SECRET);
+		$this->testAction('/cron/daily/' . CRON_SECRET, ['method' => 'get']);
+		$this->testAction('/cron/daily/' . CRON_SECRET, ['method' => 'get']);
 
 		$this->assertSame(1, ClassRegistry::init('DayRecord')->find('count'));
 		$this->assertSame(1, ClassRegistry::init('AchievementCondition')->find('count', [
@@ -146,7 +146,7 @@ class CronControllerTest extends TestCaseWithAuth
 		$scheduleItem['published'] = 0;
 		ClassRegistry::init('Schedule')->save($scheduleItem);
 
-		$this->testAction('/cron/daily/' . CRON_SECRET);
+		$this->testAction('/cron/daily/' . CRON_SECRET, ['method' => 'get']);
 		$newTsumego = ClassRegistry::init('Tsumego')->find('first', ['conditions' => ['id' => $tsumegoToMigrate['id']]]);
 		$newSetConnection = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $tsumegoToMigrate['id']]]);
 		$this->assertSame($newTsumego['Tsumego']['id'], $tsumegoToMigrate['id']);
@@ -170,7 +170,7 @@ class CronControllerTest extends TestCaseWithAuth
 			'schedule' => [
 				['tsumego' => 0, 'set' => 'set 1', 'date' => date('Y-m-d', strtotime('-2 days'))]]]);
 
-		$this->testAction('/cron/daily/' . CRON_SECRET);
+		$this->testAction('/cron/daily/' . CRON_SECRET, ['method' => 'get']);
 
 		$schedule = ClassRegistry::init('Schedule')->find('first', ['order' => 'id ASC']);
 		$this->assertSame(1, (int) $schedule['Schedule']['published']);
@@ -184,7 +184,7 @@ class CronControllerTest extends TestCaseWithAuth
 				['set_order' => 2, 'status' => 'S']],
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'solved' => 2]]);
 		ClassRegistry::init('TsumegoStatus')->deleteAll(['tsumego_id' => $context->tsumegos[0]['id']]);
-		$this->testAction('/cron/daily/' . CRON_SECRET);
+		$this->testAction('/cron/daily/' . CRON_SECRET, ['method' => 'get']);
 		$this->assertSame($context->reloadUser()['solved'], 1);
 	}
 }

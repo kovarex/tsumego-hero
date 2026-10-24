@@ -2,6 +2,7 @@
 
 use App\Utility\Auth;
 use App\Utility\Constants;
+use App\Utility\CookieFlash;
 use App\Utility\MistakeTraining;
 use App\Utility\PlayOutcome;
 use App\Utility\Rating;
@@ -12,7 +13,7 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 	public function testRequiresLogin()
 	{
 		new ContextPreparator(['user' => null]);
-		$this->testAction('/mistake-training');
+		$this->testAction('/mistake-training', ['method' => 'get']);
 		$this->assertNotNull($this->headers['Location'] ?? null,
 			'Should redirect to login');
 	}
@@ -20,7 +21,7 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 	public function testNothingToReviewYetForAPlayerWhoNeverTrained()
 	{
 		new ContextPreparator(['user' => ['name' => 'testuser']]);
-		$this->testAction('/mistake-training', ['return' => 'contents']);
+		$this->testAction('/mistake-training', ['method' => 'get', 'return' => 'contents']);
 
 		$this->assertStringContainsString('Nothing to review yet', $this->view);
 		$this->assertStringNotContainsString('All caught up', $this->view);
@@ -37,7 +38,7 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 			],
 		]);
 
-		$this->testAction('/mistake-training', ['return' => 'contents']);
+		$this->testAction('/mistake-training', ['method' => 'get', 'return' => 'contents']);
 
 		$this->assertMatchesRegularExpression('/<div id="status2" align="center">\s*<font size="4">\s*' . preg_quote(Rating::getReadableRankFromRating(1500), '/') . ' /',
 			$this->view, 'The rank shows as in the level mode');
@@ -50,7 +51,7 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 			'user' => ['name' => 'testuser'],
 			'tsumego' => ['set_order' => 1, 'status' => ['name' => 'S', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('+3 days'))]],
 		]);
-		$this->testAction('/mistake-training', ['return' => 'contents']);
+		$this->testAction('/mistake-training', ['method' => 'get', 'return' => 'contents']);
 		$this->assertStringContainsString('All caught up', $this->view);
 	}
 
@@ -64,7 +65,7 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 			],
 		]);
 
-		$this->testAction('/mistake-training', ['return' => 'contents']);
+		$this->testAction('/mistake-training', ['method' => 'get', 'return' => 'contents']);
 		// Renders the next due problem's play page directly (no redirect), and
 		// puts the user into mistake-training mode.
 		$this->assertStringContainsString('var tsumegoID = ' . $context->tsumegos[0]['id'] . ';', $this->view,
@@ -86,7 +87,7 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 			],
 		]);
 
-		$this->testAction('/mistake-training', ['return' => 'contents']);
+		$this->testAction('/mistake-training', ['method' => 'get', 'return' => 'contents']);
 
 		$text = preg_replace('/\s+/', ' ', $this->view);
 		$this->assertStringContainsString('All caught up', $text);
@@ -106,7 +107,7 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		]);
 		$scId = (int) $context->tsumegos[0]['set-connections'][0]['id'];
 
-		$this->testAction('/mistake-training', ['return' => 'contents']);
+		$this->testAction('/mistake-training', ['method' => 'get', 'return' => 'contents']);
 
 		$this->assertStringContainsString('href="/mistake-training/play/' . $scId . '"', $this->view,
 			'Queue navigation must go through the training route, which owns the mode');
@@ -124,7 +125,7 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		$scId = (int) $context->tsumegos[0]['set-connections'][0]['id'];
 		Auth::saveUserField('mode', Constants::$LEVEL_MODE);
 
-		$this->testAction('/mistake-training/play/' . $scId, ['return' => 'contents']);
+		$this->testAction('/mistake-training/play/' . $scId, ['method' => 'get', 'return' => 'contents']);
 
 		$this->assertTrue(Auth::isInMistakeTrainingMode(), 'The training route asserts the training mode');
 		$this->assertStringContainsString('Mistake Training', $this->view);
@@ -138,7 +139,7 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		]);
 		$scId = (int) $context->tsumegos[0]['set-connections'][0]['id'];
 
-		$this->testAction('/mistake-training/play/' . $scId);
+		$this->testAction('/mistake-training/play/' . $scId, ['method' => 'get']);
 
 		$this->assertStringEndsWith('/mistake-training', $this->headers['Location'] ?? '',
 			'A problem outside the pool falls back to the queue');
@@ -155,7 +156,7 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		]);
 		$scId = (int) $context->tsumegos[0]['set-connections'][0]['id'];
 
-		$this->testAction('/mistake-training/play/' . $scId);
+		$this->testAction('/mistake-training/play/' . $scId, ['method' => 'get']);
 
 		$this->assertStringEndsWith('/mistake-training', $this->headers['Location'] ?? '',
 			'A problem that is scheduled for later is not part of today\'s queue');
@@ -206,7 +207,7 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		foreach ([1, 2, 0] as $index)
 			MistakeTraining::addProblem($context->user['id'], (int) $context->tsumegos[$index]['id'], $due);
 
-		$this->testAction('/mistake-training', ['return' => 'contents']);
+		$this->testAction('/mistake-training', ['method' => 'get', 'return' => 'contents']);
 
 		$this->assertStringContainsString('var tsumegoID = ' . $context->tsumegos[1]['id'] . ';', $this->view,
 			'The training opens the problem that came in first');
@@ -217,7 +218,7 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 	{
 		$this->prepareTraining(self::reviewedToday(MistakeTraining::REVIEW_SOLVED), self::reviewedToday(MistakeTraining::REVIEW_MISSED), []);
 
-		$this->testAction('/mistake-training', ['return' => 'contents']);
+		$this->testAction('/mistake-training', ['method' => 'get', 'return' => 'contents']);
 
 		$this->assertStringContainsString('Mistake Training 3/3', $this->view,
 			'A problem solved today keeps its place in the row, a problem missed today waits for the untried ones');
@@ -227,7 +228,7 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 	{
 		$context = $this->prepareTraining(self::reviewedToday(MistakeTraining::REVIEW_MISSED));
 
-		$this->testAction('/mistake-training/play/' . self::setConnectionId($context, 0), ['return' => 'contents']);
+		$this->testAction('/mistake-training/play/' . self::setConnectionId($context, 0), ['method' => 'get', 'return' => 'contents']);
 
 		$this->assertStringContainsString('Mistake Training 1/1', $this->view, 'A miss stays in today\'s training');
 		$this->assertStringNotContainsString('This try does not count', $this->view, 'Trying a missed problem again is its review');
@@ -238,7 +239,7 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 	{
 		$context = $this->prepareTraining([], self::reviewedToday(MistakeTraining::REVIEW_SOLVED));
 
-		$this->testAction('/mistake-training/play/' . self::setConnectionId($context, 1), ['return' => 'contents']);
+		$this->testAction('/mistake-training/play/' . self::setConnectionId($context, 1), ['method' => 'get', 'return' => 'contents']);
 
 		$this->assertStringContainsString('Mistake Training 2/2', $this->view, 'A problem solved today keeps its place in the row');
 		$this->assertStringContainsString('Already solved today. This try does not count.', $this->view);
@@ -256,7 +257,7 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::Failed, null, true);
 		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null, true);
 
-		$this->testAction('/mistake-training/play/' . self::setConnectionId($context, 0), ['return' => 'contents']);
+		$this->testAction('/mistake-training/play/' . self::setConnectionId($context, 0), ['method' => 'get', 'return' => 'contents']);
 
 		$this->assertStringContainsString('problem-nav__item problem-nav__item--S problem-nav__item--current', $this->view);
 		$this->assertStringContainsString('<div class="problem-nav__rung problem-nav__rung--chevron" data-rung="0" role="img" aria-label="Rung 1 of 8">', $this->view,
@@ -272,7 +273,7 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 			'mistake_training_review_result' => MistakeTraining::REVIEW_SOLVED,
 		]);
 
-		$this->testAction('/mistake-training/play/' . self::setConnectionId($context, 0));
+		$this->testAction('/mistake-training/play/' . self::setConnectionId($context, 0), ['method' => 'get']);
 
 		$this->assertStringEndsWith('/mistake-training', $this->headers['Location'] ?? '',
 			'Yesterday\'s solve is not part of today\'s training');
@@ -282,7 +283,7 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 	{
 		$context = $this->prepareTraining([], self::reviewedToday(MistakeTraining::REVIEW_SOLVED), []);
 
-		$this->testAction('/mistake-training/play/' . self::setConnectionId($context, 0), ['return' => 'contents']);
+		$this->testAction('/mistake-training/play/' . self::setConnectionId($context, 0), ['method' => 'get', 'return' => 'contents']);
 
 		$this->assertStringContainsString(
 			'var nextButtonLink = "' . MistakeTraining::$PLAY_LINK_PREFIX . self::setConnectionId($context, 2) . '"', $this->view);
@@ -294,7 +295,7 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 	{
 		$context = $this->prepareTraining(self::reviewedToday(MistakeTraining::REVIEW_SOLVED), []);
 
-		$this->testAction('/mistake-training/play/' . self::setConnectionId($context, 1), ['return' => 'contents']);
+		$this->testAction('/mistake-training/play/' . self::setConnectionId($context, 1), ['method' => 'get', 'return' => 'contents']);
 
 		$this->assertStringContainsString('var nextButtonLink = ""', $this->view,
 			'The queue page would only serve the same problem again; the solve turns Next on');
@@ -305,7 +306,7 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 	{
 		$context = $this->prepareTraining(self::reviewedToday(MistakeTraining::REVIEW_SOLVED), self::reviewedToday(MistakeTraining::REVIEW_SOLVED));
 
-		$this->testAction('/mistake-training', ['return' => 'contents']);
+		$this->testAction('/mistake-training', ['method' => 'get', 'return' => 'contents']);
 
 		$text = preg_replace('/\s+/', ' ', $this->view);
 		$this->assertStringContainsString('All caught up', $text);
@@ -321,7 +322,7 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 			'tsumego' => ['set_order' => 1, 'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('+2 days'))]],
 		]);
 
-		$this->testAction('/mistake-training', ['return' => 'contents']);
+		$this->testAction('/mistake-training', ['method' => 'get', 'return' => 'contents']);
 
 		$this->assertStringNotContainsString('Today you solved', $this->view);
 	}
@@ -442,7 +443,7 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 
 		ClassRegistry::init('Tsumego')->delete($context->tsumegos[0]['id']);
 
-		$this->testAction('/mistake-training', ['return' => 'contents']);
+		$this->testAction('/mistake-training', ['method' => 'get', 'return' => 'contents']);
 		// The row went with the problem, so the training is empty
 		$this->assertStringContainsString('Nothing to review yet', $this->view);
 	}
@@ -458,7 +459,7 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 			],
 		]);
 
-		$this->testAction('/mistake-training', ['return' => 'contents']);
+		$this->testAction('/mistake-training', ['method' => 'get', 'return' => 'contents']);
 		// Soft-deleted tsumego should be skipped, and with nothing else due it
 		// shows "All caught up".
 		$this->assertStringContainsString('All caught up', $this->view);
@@ -477,7 +478,7 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 			],
 		]);
 
-		$html = (string) $this->testAction('/sites/index', ['return' => 'contents']);
+		$html = (string) $this->testAction('/sites/index', ['method' => 'get', 'return' => 'contents']);
 
 		$this->assertStringContainsString('class="mistake-training-card" href="' . MistakeTraining::$OVERVIEW_LINK . '"', $html,
 			'The homepage opens the overview, which leads into the training');
@@ -495,7 +496,7 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 			],
 		]);
 
-		$html = (string) $this->testAction(MistakeTraining::$OVERVIEW_LINK, ['return' => 'contents']);
+		$html = (string) $this->testAction(MistakeTraining::$OVERVIEW_LINK, ['method' => 'get', 'return' => 'contents']);
 
 		$this->assertStringContainsString('id="mistake-training-due">2 problems to review today</p>', $html);
 		$this->assertStringContainsString('id="mistake-training-start" href="' . MistakeTraining::$QUEUE_LINK . '">Start training</a>', $html);
@@ -514,7 +515,7 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 			],
 		]);
 
-		$html = (string) $this->testAction(MistakeTraining::$OVERVIEW_LINK, ['return' => 'contents']);
+		$html = (string) $this->testAction(MistakeTraining::$OVERVIEW_LINK, ['method' => 'get', 'return' => 'contents']);
 
 		$this->assertStringContainsString('<summary>Problems in training (2)</summary>', $html);
 		$this->assertMatchesRegularExpression('~#7</td>\s*<td><span class="training-overview__insignia training-overview__insignia--chevron" role="img" aria-label="' . MistakeTraining::rungName(0) . '"~', $html);
@@ -530,7 +531,7 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 			'tsumego' => ['set_order' => 1, 'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('+2 days'))]],
 		]);
 
-		$html = (string) $this->testAction(MistakeTraining::$OVERVIEW_LINK, ['return' => 'contents']);
+		$html = (string) $this->testAction(MistakeTraining::$OVERVIEW_LINK, ['method' => 'get', 'return' => 'contents']);
 
 		$this->assertStringContainsString('All caught up!', $html);
 		$this->assertStringNotContainsString('mistake-training-start', $html);
@@ -543,41 +544,38 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 			'tsumego' => ['set_order' => 1, 'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 hour'))]],
 		]);
 
-		$html = (string) $this->testAction('/mistake-training', ['return' => 'contents']);
+		$html = (string) $this->testAction('/mistake-training', ['method' => 'get', 'return' => 'contents']);
 
 		$this->assertStringContainsString('<a id="playTitleA" href="' . MistakeTraining::$OVERVIEW_LINK . '">Mistake Training 1/1</a>', $html);
 	}
 
-	public function testTheHomepageOffersPastMistakesWhenNothingIsDue()
+	public function testTheHomepageOffersPastMistakesEvenWithNothingToImport()
 	{
-		new ContextPreparator([
-			'user' => ['name' => 'testuser'],
-			'tsumego' => ['set_order' => 1, 'attempt' => ['solved' => true, 'misplays' => 1]],
-		]);
+		new ContextPreparator(['user' => ['name' => 'testuser']]);
 
-		$html = (string) $this->testAction('/sites/index', ['return' => 'contents']);
+		$html = (string) $this->testAction('/sites/index', ['method' => 'get', 'return' => 'contents']);
 
-		$this->assertStringContainsString('Nothing to review today. 1 past mistake is ready to add.', $html);
+		$this->assertStringContainsString('Nothing to review today. Add past mistakes to training.', $html);
 	}
 
 	public function testAGuestSeesNoTrainingOnTheHomepage()
 	{
 		new ContextPreparator(['user' => null]);
 
-		$html = (string) $this->testAction('/sites/index', ['return' => 'contents']);
+		$html = (string) $this->testAction('/sites/index', ['method' => 'get', 'return' => 'contents']);
 
 		$this->assertStringNotContainsString('mistake-training-card', $html);
 	}
 
 	public function testHelpPageDescribesTheTraining()
 	{
-		$html = (string) $this->testAction('/sites/websitefunctions', ['return' => 'contents']);
+		$html = (string) $this->testAction('/sites/websitefunctions', ['method' => 'get', 'return' => 'contents']);
 		$this->assertStringContainsString('A problem goes to the mistake training', $html);
 	}
 
 	public function testHelpPageGivesTheXpOfTheTraining()
 	{
-		$html = (string) $this->testAction('/sites/websitefunctions', ['return' => 'contents']);
+		$html = (string) $this->testAction('/sites/websitefunctions', ['method' => 'get', 'return' => 'contents']);
 		$text = preg_replace('/\s+/', ' ', strip_tags($html));
 
 		$this->assertStringContainsString('earns ' . round(MistakeTraining::REVIEW_XP_SHARE * 100) . '% of the XP the problem gives', $text);
@@ -593,37 +591,59 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 			'tsumego' => ['set_order' => 1, 'attempt' => ['solved' => true, 'misplays' => 1]],
 		]);
 
-		$this->testAction('/mistake-training', ['return' => 'contents']);
+		$this->testAction('/mistake-training', ['method' => 'get', 'return' => 'contents']);
 
 		$this->assertStringContainsString(MistakeTraining::$IMPORT_LINK, (string) $this->view);
+		$this->assertStringContainsString('Add past mistakes to training', (string) $this->view);
 	}
 
-	public function testATrainingWithProblemsDoesNotOfferAnImport()
+	public function testATrainingThatHasWorkTodayDoesNotOfferAnImport()
 	{
 		new ContextPreparator([
 			'user' => ['name' => 'testuser'],
 			'tsumego' => [
 				'set_order' => 1,
 				'attempt' => ['solved' => true, 'misplays' => 1],
-				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('+2 days'))],
+				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 hour'))],
 			],
 		]);
 
-		$this->testAction('/mistake-training', ['return' => 'contents']);
+		$this->testAction('/mistake-training', ['method' => 'get', 'return' => 'contents']);
 
 		$this->assertStringNotContainsString(MistakeTraining::$IMPORT_LINK, (string) $this->view);
 	}
 
-	public function testATrainingWithoutCandidatesDoesNotOfferAnImport()
+	public function testTheImportIsOfferedWithoutACount()
 	{
 		new ContextPreparator([
 			'user' => ['name' => 'testuser'],
-			'tsumego' => ['set_order' => 1, 'attempt' => ['solved' => true, 'misplays' => 0]],
+			'tsumego' => ['set_order' => 1, 'attempt' => ['solved' => true, 'misplays' => 1]],
 		]);
 
-		$this->testAction('/mistake-training', ['return' => 'contents']);
+		$this->testAction('/mistake-training', ['method' => 'get', 'return' => 'contents']);
 
-		$this->assertStringNotContainsString(MistakeTraining::$IMPORT_LINK, (string) $this->view);
+		$this->assertStringNotContainsString('Before the training existed', (string) $this->view, 'The page does not count what is left to import');
+	}
+
+	public function testTheImportSaysHowManyProblemsItAdded()
+	{
+		new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumego' => ['set_order' => 1, 'attempt' => ['solved' => true, 'misplays' => 1]],
+		]);
+
+		$this->testAction(MistakeTraining::$IMPORT_LINK, ['method' => 'post']);
+
+		$this->assertSame('Added 1 past mistake to the training.', CookieFlash::get());
+	}
+
+	public function testTheImportSaysWhenThereIsNothingLeftToAdd()
+	{
+		new ContextPreparator(['user' => ['name' => 'testuser']]);
+
+		$this->testAction(MistakeTraining::$IMPORT_LINK, ['method' => 'post']);
+
+		$this->assertSame('Nothing left to add, every past mistake is already in the training.', CookieFlash::get());
 	}
 
 	public function testImportFillsTheTrainingAndReturnsToTheQueue()

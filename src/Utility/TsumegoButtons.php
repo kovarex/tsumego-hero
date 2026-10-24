@@ -3,7 +3,7 @@
 namespace App\Utility;
 
 use ArrayObject;
-use TsumegosController;
+use Set;
 
 class TsumegoButtons extends ArrayObject
 {
@@ -162,18 +162,20 @@ class TsumegoButtons extends ArrayObject
 		}
 	}
 
-	public function getPartitionLinkSuffix(): string
+	/**
+	 * The page of the collection a link should open, counting from one.
+	 */
+	public function getPartition(): int
 	{
-		if (!$this->isPartitioned)
-			return '';
-		return '/' . ($this->partition + 1);
+		return $this->isPartitioned ? $this->partition + 1 : 1;
 	}
 
+	/**
+	 * The page of the collection a title should name, counting from one.
+	 */
 	public function getPartitionTitleSuffix(): string
 	{
-		if (!$this->isPartitioned)
-			return '';
-		return ' #' . ($this->partition + 1);
+		return $this->isPartitioned ? ' #' . $this->getPartition() : '';
 	}
 
 	public function exportCurrentAndPreviousLink(callable $setFunction, ?TsumegoFilters $tsumegoFilters, int $setConnectionID, ?array $set, ?string $edgeLink = null): void
@@ -183,7 +185,7 @@ class TsumegoButtons extends ArrayObject
 		});
 
 		if ($edgeLink === null && $tsumegoFilters !== null)
-			$edgeLink = TsumegosController::tsumegoOrSetLink($tsumegoFilters, null, $tsumegoFilters->getSetID($set ?? []));
+			$edgeLink = Set::url($tsumegoFilters->getSetID($set ?? []), $this->getPartition());
 
 		if (isset($indexOfCurrent) && $indexOfCurrent > 0)
 			$previousSetConnectionID = $this[$indexOfCurrent - 1]->setConnectionID;

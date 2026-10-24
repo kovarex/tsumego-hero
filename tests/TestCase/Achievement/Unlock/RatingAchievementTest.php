@@ -19,18 +19,20 @@ class RatingAchievementTest extends AchievementTestCase
 {
 	public function testAchievementRating6KyuDoesUnlockBasedOnRating()
 	{
-		foreach ([0, -1] as $ratingDefitient)
+		// One point below the threshold leaves the achievement locked, the threshold itself
+		// and anything above it unlocks it.
+		foreach ([-1, 0, 1] as $pointsFromThreshold)
 		{
-			$context = new ContextPreparator(['user' => ['rating' => (Rating::getRankMinimalRatingFromReadableRank('6k') - $ratingDefitient)]]);
+			$context = new ContextPreparator(['user' => ['rating' => (Rating::getRankMinimalRatingFromReadableRank('6k') + $pointsFromThreshold)]]);
 			$this->triggerAchievementCheck();
-			if ($ratingDefitient > 0)
+			if ($pointsFromThreshold < 0)
 				$this->assertAchievementNotUnlocked(AchievementId::RATING_6_KYU);
 			else
 				$this->assertAchievementUnlocked(AchievementId::RATING_6_KYU);
 		}
 	}
 
-	public function testAllRatingAchievementsUnlockAtCorrectTresholds()
+	public function testEveryRatingAchievementUnlocksAtItsThreshold()
 	{
 		$achievementRatings = [
 			[AchievementId::RATING_6_KYU, Rating::getRankMinimalRatingFromReadableRank('6k')],
@@ -46,6 +48,15 @@ class RatingAchievementTest extends AchievementTestCase
 			[AchievementId::RATING_5_DAN, Rating::getRankMinimalRatingFromReadableRank('5d')],
 		];
 
+		// One rating point below the threshold none of them is unlocked yet...
+		foreach ($achievementRatings as [$achievementId, $requiredRating])
+		{
+			$context = new ContextPreparator(['user' => ['rating' => $requiredRating - 1]]);
+			$this->triggerAchievementCheck();
+			$this->assertAchievementNotUnlocked($achievementId);
+		}
+
+		// ...and the threshold itself unlocks it.
 		foreach ($achievementRatings as [$achievementId, $requiredRating])
 		{
 			$context = new ContextPreparator(['user' => ['rating' => $requiredRating]]);

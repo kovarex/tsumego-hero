@@ -90,7 +90,7 @@ class TimeModeTest extends TestCaseWithAuth
 		$this->assertTrue(Auth::isInLevelMode());
 		$this->testAction('/timeMode/start'
 			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
-			. '&rankID=' . $context->timeModeRanks[0]['id']);
+			. '&rankID=' . $context->timeModeRanks[0]['id'], ['method' => 'get']);
 		$this->assertTrue(Auth::isInTimeMode());
 		$sessions = ClassRegistry::init('TimeModeSession')->find('all', [
 			'user_id' => Auth::getUserID(),

@@ -1,5 +1,6 @@
 <?php
 
+use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Utility\Auth;
 use App\Utility\Constants;
@@ -8,6 +9,7 @@ use App\Utility\Util;
 
 class HeroController extends AppController
 {
+	#[HttpGet]
 	public function refinement()
 	{
 		$this->Authorization->authorize('Hero');
@@ -17,7 +19,7 @@ class HeroController extends AppController
 				. " FROM tsumego"
 				. " JOIN set_connection ON set_connection.tsumego_id=tsumego.id"
 				. " JOIN `set` ON `set`.id=set_connection.set_id"
-				. " WHERE tsumego.deleted is null AND set.public = 1";
+				. " WHERE tsumego.deleted is null AND " . Set::officialCondition();
 
 		// first we try to select golden tsumego with proper rating relative to user
 		$setConnectionIDs = Util::query($queryWithoutRankLimit . " AND tsumego.rating >= ? AND tsumego.rating <= ?",

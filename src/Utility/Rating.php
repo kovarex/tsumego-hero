@@ -216,4 +216,22 @@ class Rating
 	{
 		return 'var(--rank-' . $rank . ')';
 	}
+
+	/**
+	 * How far the difficulty setting of rating mode moves the player's rating: the selection
+	 * is centred on the adjusted value, so a higher setting picks stronger problems.
+	 */
+	public static function adjustmentForDifficulty(int|string $difficultySetting): int
+	{
+		$adjustments = [
+			1 => -Constants::$RATING_MODE_DIFFERENCE_SETTING_3,
+			2 => -Constants::$RATING_MODE_DIFFERENCE_SETTING_2,
+			3 => -Constants::$RATING_MODE_DIFFERENCE_SETTING_1,
+			4 => 0,
+			5 => Constants::$RATING_MODE_DIFFERENCE_SETTING_1,
+			6 => Constants::$RATING_MODE_DIFFERENCE_SETTING_2,
+			7 => Constants::$RATING_MODE_DIFFERENCE_SETTING_3,
+		];
+		return $adjustments[$difficultySetting] ?? 0;
+	}
 }

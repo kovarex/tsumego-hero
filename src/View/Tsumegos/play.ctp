@@ -8,6 +8,7 @@ use App\Utility\PlayOutcome;
 use App\Utility\Rating;
 use App\Utility\TimeMode;
 use App\Utility\TimeModeUtil;
+use App\Utility\Trash;
 use App\Utility\TsumegoButton;
 use App\Utility\TsumegoButtons;
 use App\Utility\TsumegoFilters;
@@ -54,7 +55,6 @@ use App\Utility\ViteManifest;
  * @var bool $requestSolution
  * @var bool $reviewCheat
  * @var string $reviewEnabled
- * @var array $sT
  * @var array $set
  * @var array $setConnection
  * @var array $setConnections
@@ -90,8 +90,6 @@ use App\Utility\ViteManifest;
 		$playGreenColor = 'green';
 	}
 
-	if(isset($deleteProblem2))
-		echo '<script type="text/javascript">window.location.href = "/sets/view/'.$t['Tsumego']['set_id'].'";</script>';
 	$swapColorWords = function (string $text): string
 	{
 		return preg_replace_callback(
@@ -122,6 +120,16 @@ use App\Utility\ViteManifest;
 	$resetLink = (Auth::isInMistakeTrainingMode() ? MistakeTraining::$PLAY_LINK_PREFIX : '/') . (int) $setConnection['SetConnection']['id'];
 	if ($nothingInRange != false)
 		echo '<div align="center" class="status-message">'.$nothingInRange.'</div>';
+	if (!empty($t['Tsumego']['deleted']))
+		echo $this->element('trash_notice', [
+			'what' => 'problem',
+			'deleted' => $t['Tsumego']['deleted'],
+			'restoreAction' => '/trash/restore-problem/' . (int) $t['Tsumego']['id']]);
+	if (!empty($set['Set']['deleted']))
+		echo $this->element('trash_notice', [
+			'what' => 'collection',
+			'deleted' => $set['Set']['deleted'],
+			'restoreAction' => '/trash/restore-set/' . (int) $set['Set']['id']]);
 	?>
 	<table width="100%" border="0" class="play-header-table">
 	<tr>
@@ -207,10 +215,13 @@ use App\Utility\ViteManifest;
 						<td><label for="author">Author:</label></td>
 						<td><input type="text" name="author" id="author" value="<?php echo h($t['Tsumego']['author']); ?>"></td>
 					</tr>
-					<?php if ($isSandbox) { ?>
+					<?php if (empty($t['Tsumego']['deleted'])) { ?>
 					<tr>
 						<td><label for="delete">Delete:</label></td>
-						<td><input type="text" name="delete" id="delete" value="" placeholder="Type delete"></td>
+						<td>
+							<input type="text" name="delete" id="delete" value="" placeholder="Type delete">
+							<br><small style="color: #888;">Moves the problem to the trash, it can be restored for <?php echo Trash::$RETENTION_DAYS; ?> days.</small>
+						</td>
 					</tr>
 					<?php } ?>
 				</table>
@@ -340,7 +351,7 @@ use App\Utility\ViteManifest;
 		</div>
 		<br>
 		<?php
-			echo '<a id="openSgfLink" href="/editor/?setConnectionID='.$setConnection['SetConnection']['id'].'&sgfID='.$sgf['Sgf']['id'].'" class="selectable-text mr-5" style="'.$proposalSentColor.'">'.$makeProposal.'</a>';
+			echo '<a id="openSgfLink" href="/editor/?setConnectionID='.$setConnection['SetConnection']['id'].'&sgfID='.$sgf['Sgf']['id'].(Auth::isAdmin() ? '' : '&proposal=1').'" class="selectable-text mr-5" style="'.$proposalSentColor.'">'.$makeProposal.'</a>';
 			echo '<a id="showx3" class="selectable-text mr-5">Download SGF</a>';
 			echo '<a id="findSimilarProblems" class="selectable-text mr-5">Find Similar Problems</a>';
 			echo '<a id="showFilters" class="selectable-text">Filters<img id="greyArrowFilter" src="/img/greyArrow1.png"></a>';
@@ -439,6 +450,7 @@ use App\Utility\ViteManifest;
 						<br>
 						<form action="/sgf/upload/' . $setConnection['SetConnection']['id'] . '" method="POST" enctype="multipart/form-data">
 							<input id="admin-upload-button" type="file" name="adminUpload" />
+							<input id="admin-upload-description" type="text" name="description" maxlength="' . Sgf::DESCRIPTION_MAX_LENGTH . '" placeholder="What changed and why (optional)" />
 							<input id="admin-upload-submit" value="Submit" type="submit"/>
 						</form>
 					</div>
@@ -659,6 +671,8 @@ use App\Utility\ViteManifest;
 	var playGreenColor = '<?php echo $playGreenColor; ?>';
 	var tStatus = "<?php echo $t['Tsumego']['status']; ?>";
 	var failAlreadyReported = false;
+	// The fail sent when the line was lost, which the player isn't shown until the line is over
+	var unrevealedFail = null;
 	window._submitResultPromise = null;
 
 	var userXP = <?php echo Auth::getWithDefault('xp', 0); ?>;
@@ -1241,57 +1255,6 @@ use App\Utility\ViteManifest;
 				});
 		<?php } ?>
 		<?php } ?>
-		$("#commentPosition").click(function(){
-			let commentContent = $("#CommentMessage").val();
-			let additionalCoords = "";
-			let current = besogo.editor.getCurrent();
-			let besogoOrientation = besogo.editor.getOrientation();
-			if(besogoOrientation[1]=="full-board")
-			besogoOrientation[0] = besogoOrientation[1];
-			let isInTree = besogo.editor.isMoveInTree(current);
-			current = isInTree[0];
-
-			if(isInTree[1]['x'].length>0){
-				for(let i=isInTree[1]['x'].length-1;i>=0;i--)
-				additionalCoords += isInTree[1]['x'][i] + isInTree[1]['y'][i] + " ";
-				additionalCoords = " + " + additionalCoords;
-	}
-			if(commentContent.includes("[current position]")){
-			 commentContent = commentContent.replace('[current position]','');
-	}
-			$("#CommentMessage").val(commentContent + "[current position]" + additionalCoords);
-
-			if(current===null || current.move===null){
-			$("#CommentPosition").val(
-				"-1/-1/0/0/0/0/0/0/0"
-			);
-	}else{
-				pX = -1;
-				pY = -1;
-			if(current.moveNumber>1){
-				pX = current.parent.move.x;
-				pY = current.parent.move.y;
-	}
-			if(current.children.length===0){
-				cX = -1;
-				cY = -1;
-	}else{
-				cX = current.children[0].move.x;
-				cY = current.children[0].move.y;
-	}
-
-			let newP = current.parent;
-			let newPcoords = current.move.x+"/"+current.move.y+"+";
-				while(newP!==null && newP.move!==null){
-					newPcoords += newP.move.x+"/"+newP.move.y+"+"
-					newP = newP.parent;
-	}
-				newPcoords = newPcoords.slice(0, -1);
-			$("#CommentPosition").val(
-				current.move.x+"/"+current.move.y+"/"+pX+"/"+pY+"/"+cX+"/"+cY+"/"+current.moveNumber+"/"+current.children.length+"/"+besogoOrientation[0]+"|"+newPcoords
-			);
-	}
-		});
 		let solutionRequest = true;
 		<?php if($solved || $isSandbox) { ?>
 			displaySettings();
@@ -1408,31 +1371,6 @@ use App\Utility\ViteManifest;
 	}
 	redrawHearts();
 
-	function commentPosition(x, y, pX, pY, cX, cY, mNum, cNum, orientation, newX=false, newY=false){
-		positionParams = [];
-		positionParams[0] = x;
-		positionParams[1] = y;
-		positionParams[2] = pX;
-		positionParams[3] = pY;
-		positionParams[4] = cX;
-		positionParams[5] = cY;
-		positionParams[6] = mNum;
-		positionParams[7] = cNum;
-		positionParams[8] = orientation;
-		if(newX!=false)
-			positionParams[9] = newX;
-		besogo.editor.commentPosition(positionParams);
-
-		// Scroll to board so user can see the position
-		var boardElement = document.querySelector('.besogo-container') || document.getElementById('board');
-		if (boardElement) {
-			boardElement.scrollIntoView({
-				behavior: 'smooth',
-				block: 'center'
-			});
-	}
-	}
-
 	function rejuvenation(){
 		$.ajax({
 				url: '/hero/rejuvenation',
@@ -1473,10 +1411,6 @@ use App\Utility\ViteManifest;
 	});
 
 	<?php
-	$dynamicCommentCoords = array();
-	$dynamicCommentCoords[0] = array();
-	$dynamicCommentCoords[1] = array();
-
 	// Create floating board popup for coordinate hover
 			echo '
 	var coordPopupBoard = null;
@@ -1491,13 +1425,105 @@ use App\Utility\ViteManifest;
 		document.body.appendChild(coordPopupDiv);
 	}
 
-	function showCoordPopup(coord, event) {
+	// Maps an internal board coordinate to its pixel position on the board SVG.
+	// Matches boardDisplay.js svgPos (CELL_SIZE=88, COORD_MARGIN=75).
+	function boardPixel(x) {
+		var coordStyle = besogo.editor.getCoordStyle();
+		var cell = 88;
+		var margin = coordStyle === "none" ? 0 : 75;
+		return margin + cell / 2 + (x - 1) * cell;
+	}
+
+	// Returns the coordinate labels for the path from the root to `node`.
+	function pathLabels(node) {
+		var size = besogo.scaleParameters.boardCoordSize || 19;
+		var labels = besogo.coord.western(size, size);
+		var out = [];
+		while (node) {
+			if (node.move) out.unshift(labels.x[node.move.x] + labels.y[node.move.y]);
+			node = node.parent;
+		}
+		return out;
+	}
+
+	// Draws one numbered realistic stone onto a cloned board SVG, ringed in blue
+	// when it is the hovered move.
+	function drawNumberedStone(svg, x, y, isBlack, moveNumber, hovered) {
+		var px = boardPixel(x);
+		var py = boardPixel(y);
+		svg.appendChild(besogo.realStone(px, py, isBlack ? -1 : 1, 0, besogo.editor.BLACK_STONES || "", besogo.editor.WHITE_STONES || ""));
+		var text = besogo.svgEl("text", {
+			x: px, y: py, dy: ".35ex", "text-anchor": "middle",
+			"font-size": 22, "font-weight": "bold",
+			fill: isBlack ? "white" : "black",
+			"font-family": "Helvetica,Arial,sans-serif"
+		});
+		text.appendChild(document.createTextNode(String(moveNumber)));
+		svg.appendChild(text);
+		if (hovered)
+			svg.appendChild(besogo.svgCircle(px, py, "blue", 44, 4));
+	}
+
+	// Draws the comment sequence moves as written, through to the hovered one.
+	// This shows the commenters line even when it is not a path in the game tree.
+	// An explicit b/w marker is honored, otherwise the colors alternate from the
+	// puzzle first-move colour.
+	function overlaySequenceOnBoard(svg, coords, colors, hoverIndex, firstMove, startMoveNumber) {
+		var nextIsBlack = firstMove !== 1;
+		for (var i = 0; i <= hoverIndex && i < coords.length; i++) {
+			var xy = besogo.editor.coordLabelToXY(coords[i]);
+			if (!xy) continue;
+			var isBlack = colors && colors[i] ? colors[i] === "b" : nextIsBlack;
+			nextIsBlack = !isBlack;
+			drawNumberedStone(svg, xy.x, xy.y, isBlack, startMoveNumber + i + 1, i === hoverIndex);
+		}
+	}
+
+	// Draws the commenter moves using their resolved tree nodes, with the real game
+	// move numbers.
+	function overlayNodesOnBoard(svg, nodes, hoverIndex) {
+		for (var i = 0; i <= hoverIndex && i < nodes.length; i++) {
+			var node = nodes[i];
+			if (node && node.move)
+				drawNumberedStone(svg, node.move.x, node.move.y, node.move.color === -1, node.moveNumber, i === hoverIndex);
+		}
+	}
+
+	function showCoordPopup(coord, event, position, sequence) {
 		createCoordPopup();
 		var mainBoard = document.querySelector(".besogo-board svg");
 		if (!mainBoard) return;
 
-		// Always highlight on main board
-		besogo.editor.displayHoverCoord(coord);
+		// The preview board is the main board cloned at the previewed node: the
+		// comment anchor, or for a sequence (such as R19-P19-Q19) the node right
+		// before the hovered move. The current node is restored afterwards.
+		var isSequence = sequence && sequence.coords && sequence.coords.length > 0;
+		var restoreNode = null;
+		var previewNode = null;
+		// The sequence resolved along the game tree, null when it is not a tree line
+		var hover = null;
+
+		if (isSequence) {
+			restoreNode = besogo.editor.getCurrent();
+			var startNode = position ? besogo.editor.findNodeForPosition(position) : null;
+			// Tree-first: reconstruct the line from the game tree, filling in the
+			// opponents moves the commenter omitted. Fall back to drawing the moves as
+			// written when the sequence does not match a tree line (e.g. a proposed
+			// new line).
+			var resolved = besogo.editor.resolveSequenceHover(sequence.coords, sequence.index, startNode, sequence.colors);
+			if (resolved.found && resolved.beforeNode)
+				hover = resolved;
+			previewNode = hover ? hover.beforeNode : (startNode || besogo.editor.getRoot());
+			besogo.editor.setCurrent(previewNode);
+		} else {
+			var anchoredNode = position ? besogo.editor.findNodeForPosition(position) : null;
+			if (anchoredNode) {
+				restoreNode = besogo.editor.getCurrent();
+				previewNode = anchoredNode;
+				besogo.editor.setCurrent(anchoredNode);
+			}
+			besogo.editor.displayHoverCoord(coord);
+		}
 
 		// Clear any pending hide
 		if (coordPopupTimeout) {
@@ -1505,12 +1531,49 @@ use App\Utility\ViteManifest;
 			coordPopupTimeout = null;
 	}
 
-		// Show popup near cursor
+		// Show popup near cursor (clone the board at the previewed position)
 		var clone = mainBoard.cloneNode(true);
 		clone.style.width = "400px";
 		clone.style.height = "400px";
 		coordPopupDiv.innerHTML = "";
+		// Show what is being previewed. In tree mode this is the reconstructed
+		// game line (with the opponents moves filled in), otherwise the commenter
+		// moves as written, through to the hovered move.
+		var caption = coord;
+		if (isSequence) {
+			var line = hover ? pathLabels(previewNode) : sequence.coords.slice(0, sequence.index + 1);
+			if (hover && hover.hoverNode.move) {
+				var hoverLabel = besogo.editor.coordXYToLabel(hover.hoverNode.move.x, hover.hoverNode.move.y);
+				if (hoverLabel) line.push(hoverLabel);
+			}
+			if (line.length > 0) caption = line.join(" > ");
+		}
+		var label = document.createElement("div");
+		label.id = "coord-popup-label";
+		label.style.cssText = "font:600 14px/1.4 Helvetica,Arial,sans-serif;color:#3a2410;text-align:center;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:400px;";
+		label.textContent = caption;
+		coordPopupDiv.appendChild(label);
+		// Draw the commenter moves as numbered stones so the turn numbers always
+		// show: the resolved tree nodes in tree mode, otherwise the moves as written.
+		if (isSequence) {
+			if (hover && hover.nodes.length > 0)
+				overlayNodesOnBoard(clone, hover.nodes, sequence.index);
+			else
+				overlaySequenceOnBoard(clone, sequence.coords, sequence.colors, sequence.index,
+					besogo.editor.getRoot().firstMove || -1, previewNode.moveNumber || 0);
+		} else {
+			// Single coordinate: ring the point on the popup board so it matches
+			// the sequence look.
+			var singleXY = besogo.editor.coordLabelToXY(coord);
+			if (singleXY) clone.appendChild(besogo.svgCircle(boardPixel(singleXY.x), boardPixel(singleXY.y), "blue", 44, 4));
+		}
 		coordPopupDiv.appendChild(clone);
+
+		// Restore the original position after capturing the preview
+		if (restoreNode) {
+			besogo.editor.setCurrent(restoreNode);
+			besogo.editor.displayHoverCoord(-1);
+		}
 
 		// Position near cursor
 		var x = event.clientX + 15;
@@ -1530,43 +1593,7 @@ use App\Utility\ViteManifest;
 	}
 		';
 
-	if (!isset($commentCoordinates)) $commentCoordinates = [];
-	$fn1 = 1;
-	for($i=0; $i<count($commentCoordinates); $i++){
-		$n2x = explode(' ', $commentCoordinates[$i]);
-		if(count($n2x)>0){
-			$fn2 = 1;
-			for($j=count($n2x)-1; $j>=0; $j--){
-				$n2xx = explode('-', $n2x[$j]);
-				if(strlen($n2xx[0])>0 && strlen($n2xx[1])>0){
-					echo 'function ccIn' . $fn1 . $fn2 . '(e){showCoordPopup("' . $n2xx[2] . '",e||window.event);}';
-					echo 'function ccOut' . $fn1 . $fn2 . '(){hideCoordPopup();}';
-					array_push($dynamicCommentCoords[0], 'ccIn'.$fn1.$fn2);
-					array_push($dynamicCommentCoords[1], $n2xx[2]);
-					$fn2++;
-	}
-	}
-	}
-		$fn1++;
-	}
-
-	$fn1 = 999;
-	$n2x = explode(' ', $sT[1]);
-	if(count($n2x)>0){
-		$fn2 = 1;
-		for($j=count($n2x)-1; $j>=0; $j--){
-			$n2xx = explode('-', $n2x[$j]);
-			if(strlen($n2xx[0])>0 && strlen($n2xx[1])>0){
-				echo 'function ccIn' . $fn1 . $fn2 . '(e){showCoordPopup("' . $n2xx[2] . '",e||window.event);}';
-				echo 'function ccOut' . $fn1 . $fn2 . '(){hideCoordPopup();}';
-				array_push($dynamicCommentCoords[0], 'ccIn'.$fn1.$fn2);
-				array_push($dynamicCommentCoords[1], $n2xx[2]);
-				$fn2++;
-	}
-	}
-	}
-	$fn1++;
-		?>
+	?>
 
 	function addTimeForMovePlayed(multiplier = 1)
 	{
@@ -1581,13 +1608,29 @@ use App\Utility\ViteManifest;
 		timedOut: '<?php echo PlayOutcome::TimedOut->value; ?>',
 	};
 
+	function isSolved(outcome)
+	{
+		return outcome === playOutcome.solvedClean || outcome === playOutcome.solvedAfterMistake;
+	}
+
+	// xpStatus is not rendered in mistake training, the widget has nothing to animate there
+	function accountWidgetShowsResults()
+	{
+		return typeof accountWidget !== 'undefined' && accountWidget && typeof xpStatus !== 'undefined';
+	}
+
 	function submitResult(outcome)
 	{
+		showResultResponse(outcome, sendResult(outcome));
+	}
+
+	// Null for a guest, whose results aren't recorded
+	function sendResult(outcome)
+	{
 		if (besogoNoLogin)
-			return;
-		// xpStatus is not rendered in mistake training, the widget has nothing to animate there
-		if (typeof accountWidget !== 'undefined' && accountWidget && typeof xpStatus !== 'undefined')
-			accountWidget.animate(outcome === playOutcome.solvedClean || outcome === playOutcome.solvedAfterMistake);
+			return null;
+		if (accountWidgetShowsResults())
+			accountWidget.rememberResult(isSolved(outcome));
 		let data = {
 			tsumego_id: tsumegoID,
 			// the part of the set the problem is played from decides the XP reduction of its resets
@@ -1598,12 +1641,25 @@ use App\Utility\ViteManifest;
 			mode: mode,
 		};
 
-		window._submitResultPromise = fetch('/tsumegos/result', {
+		let response = fetch('/tsumegos/result', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
 			body: JSON.stringify(data),
+			// the request outlives the page, so leaving right after a lost line still counts it
 			keepalive: true,
-		}).then(response => response.json()).then(result => {
+		}).then(response => response.json());
+		window._submitResultPromise = response.catch(err => console.error('submitResult failed:', err));
+		return response;
+	}
+
+	// Shows the player what the result changed: the account bar, the XP, a potion and achievements
+	function showResultResponse(outcome, response)
+	{
+		if (!response)
+			return;
+		if (accountWidgetShowsResults())
+			accountWidget.animate(isSolved(outcome));
+		window._submitResultPromise = response.then(result => {
 			if (typeof accountWidget !== 'undefined' && accountWidget)
 			{
 				accountWidget.rating = result.new_rating;
@@ -1631,6 +1687,27 @@ use App\Utility\ViteManifest;
 		}).catch(err => {
 			console.error('submitResult failed:', err);
 		});
+	}
+
+	// Called by the board the moment the line can no longer end correct. The fail is sent
+	// right away, so leaving or refreshing before the line is played out doesn't escape it,
+	// but the player is shown nothing (hearts, account bar) until the line is over, as
+	// that would give the refutation away.
+	function lineLost()
+	{
+		if (failAlreadyReported || problemSolved)
+			return;
+		failAlreadyReported = true;
+		hadMisplay = true;
+		unrevealedFail = { response: sendResult(playOutcome.failed) };
+	}
+
+	// Shows the fail sent when the line was lost, once the line is over
+	function revealFail()
+	{
+		currentHealth--;
+		showResultResponse(playOutcome.failed, unrevealedFail.response);
+		unrevealedFail = null;
 	}
 
 	function displayResult(result)
@@ -1683,7 +1760,9 @@ use App\Utility\ViteManifest;
 		}
 		else //incorrect
 		{
-			if (!failAlreadyReported && !problemSolved)
+			if (unrevealedFail)
+				revealFail();
+			else if (!failAlreadyReported && !problemSolved)
 			{
 				failAlreadyReported = true;
 				hadMisplay = true;
@@ -1802,6 +1881,12 @@ use App\Utility\ViteManifest;
 			redrawHearts();
 			submitResult(playOutcome.failed);
 		}
+		else if (unrevealedFail)
+		{
+			// the line is given up before it was played out
+			revealFail();
+			redrawHearts();
+		}
 		failAlreadyReported = false;
 	}
 	</script>
@@ -1907,6 +1992,7 @@ use App\Utility\ViteManifest;
 	besogo.editor.setAutoPlay(true);
 	besogo.editor.registerAddTimeForMovePlayed(addTimeForMovePlayed);
 	besogo.editor.registerDisplayResult(displayResult);
+	besogo.editor.registerLineLost(lineLost);
 	besogo.editor.addListener(function (changes)
 	{
 		// the clock starts with the first move the player really plays
@@ -1937,13 +2023,6 @@ use App\Utility\ViteManifest;
 	})();
 	if (mode == 2)
 		$("#targetLockOverlay").css('top', '235px');
-	<?php
-		for($i=0; $i<count($dynamicCommentCoords[0]); $i++)
-		{
-			echo 'besogo.editor.dynamicCommentCoords("'.$dynamicCommentCoords[0][$i].'", "'.$dynamicCommentCoords[1][$i].'");';
-			echo 'besogo.editor.adjustCommentCoords();';
-		}
-		?>
 	</script>
 	<style>
 		#msg2,

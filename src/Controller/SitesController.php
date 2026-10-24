@@ -5,6 +5,7 @@ use App\Utility\Constants;
 use App\Utility\MistakeTraining;
 use App\Utility\TsumegoButtons;
 use App\Utility\TsumegoFilters;
+use App\Attribute\HttpGet;
 use App\Utility\Util;
 
 class SitesController extends AppController
@@ -14,6 +15,7 @@ class SitesController extends AppController
 	/**
 	 * @return void
 	 */
+	#[HttpGet]
 	public function index(): void
 	{
 		$this->set('_page', 'home');
@@ -69,14 +71,13 @@ class SitesController extends AppController
 		$recentAchievements = $this->AchievementStatus->getRecent();
 		$this->set('recentAchievements', $recentAchievements);
 
-		// The way into the mistake training: what is due today, or else how many past
-		// mistakes are ready to come in.
+		// The way into the mistake training: what is due today. The offer to bring past
+		// mistakes in is on the card always, without a count: counting them reads the
+		// whole attempt history, far too much for a page this hot.
 		if (Auth::isLoggedIn())
 		{
 			$userId = (int) Auth::getUserID();
-			$due = MistakeTraining::dueCount($userId);
-			$this->set('mistakeTrainingDue', $due);
-			$this->set('mistakeTrainingImportable', $due > 0 ? 0 : min(MistakeTraining::IMPORT_LIMIT, MistakeTraining::importCandidates($userId)));
+			$this->set('mistakeTrainingDue', MistakeTraining::dueCount($userId));
 		}
 	}
 
@@ -136,6 +137,7 @@ class SitesController extends AppController
 	 *
 	 * @return void
 	 */
+	#[HttpGet]
 	public function recentAchievements(): void
 	{
 		$this->autoRender = false;
@@ -149,6 +151,7 @@ class SitesController extends AppController
 	 * @param string|null $id
 	 * @return void
 	 */
+	#[HttpGet]
 	public function view(?string $id = null): void
 	{
 		$news = $this->Site->find('all');
@@ -158,6 +161,7 @@ class SitesController extends AppController
 	/**
 	 * @return void
 	 */
+	#[HttpGet]
 	public function impressum(): void
 	{
 		$this->set('_page', 'about');
@@ -167,6 +171,7 @@ class SitesController extends AppController
 	/**
 	 * @return void
 	 */
+	#[HttpGet]
 	public function websitefunctions(): void
 	{
 		$this->set('_page', 'websitefunctions');
@@ -176,6 +181,7 @@ class SitesController extends AppController
 	/**
 	 * @return void
 	 */
+	#[HttpGet]
 	public function gotutorial(): void
 	{
 		$this->set('_page', 'gotutorial');
@@ -185,6 +191,7 @@ class SitesController extends AppController
 	/**
 	 * @return void
 	 */
+	#[HttpGet]
 	public function privacypolicy(): void
 	{
 		$this->set('_page', 'privacypolicy');
@@ -194,6 +201,7 @@ class SitesController extends AppController
 	/**
 	 * @return void
 	 */
+	#[HttpGet]
 	public function about(): void
 	{
 		$this->set('_page', 'about');
@@ -206,6 +214,7 @@ class SitesController extends AppController
 	 *
 	 * @return void
 	 */
+	#[HttpGet]
 	public function blank(): void
 	{
 		$this->set('_page', 'blank');

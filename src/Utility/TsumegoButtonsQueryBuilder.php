@@ -3,7 +3,9 @@
 namespace App\Utility;
 
 use ClassRegistry;
+use Set;
 use SetConnection;
+use Sgf;
 
 class TsumegoButtonsQueryBuilder
 {
@@ -44,14 +46,14 @@ class TsumegoButtonsQueryBuilder
 			$this->query->selects[] = 'tsumego_status.status as status';
 
 		$this->query->query .= " JOIN set_connection ON set_connection.tsumego_id = tsumego.id";
-		$this->query->query .= " LEFT JOIN sgf ON sgf.id = (SELECT MAX(s2.id) FROM sgf s2 WHERE s2.tsumego_id = tsumego.id)";
+		$this->query->query .= " LEFT JOIN sgf ON sgf.id = " . Sgf::currentVersionIDSql('tsumego.id');
 		$this->query->conditions[] = 'tsumego.deleted is NULL';
 
 		// when I'm quering by topics (which means sets), and I'm viewing private set
 		// It means I explicitelly want to view that.
 		// In all other cases, private set is not included.
 		if ($tsumegoFilters->query != 'topics')
-			$this->query->conditions [] = '`set`.public = 1';
+			$this->query->conditions [] = Set::officialCondition();
 
 		$this->query->query .= " JOIN `set` ON `set`.id=set_connection.set_id";
 		if (Auth::isLoggedIn())
@@ -101,7 +103,7 @@ class TsumegoButtonsQueryBuilder
 		{
 			$ratingBounds = RatingBounds::coverRankSpec($_COOKIE['lastSet'], Rating::weakestRank());
 			$ratingBounds->addQueryConditions($this->query);
-			$this->description = $_COOKIE['lastSet'] . ' are problems that have a rating ' . $ratingBounds->textualDescription() . '.';
+			$this->description = $_COOKIE['lastSet'] . ' are problems that have a rating' . $ratingBounds->textualDescription() . '.';
 		}
 		catch (RatingParseException $e)
 		{

@@ -4,7 +4,9 @@ namespace App\Utility;
 
 use ClassRegistry;
 use NotFoundException;
+use Set;
 use SetConnection;
+use Sgf;
 
 /**
  * @phpstan-import-type SetConnectionRow from \App\Utility\RowTypes
@@ -21,7 +23,7 @@ class SimilarSearchLogic
 		$this->result = new SimilarSearchResult();
 		$this->sourceTsumegoID = $this->setConnection['tsumego_id'];
 		$this->sourceTsumego = ClassRegistry::init('Tsumego')->findById($this->sourceTsumegoID)['Tsumego'];
-		$sgf = ClassRegistry::init('Sgf')->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $this->sourceTsumegoID]]);
+		$sgf = ClassRegistry::init('Sgf')->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $this->sourceTsumegoID, 'sgf_status_id' => Sgf::STATUS_ACCEPTED]]);
 		if (!$sgf)
 			throw new NotFoundException('SGF not found');
 		$this->sourceBoard = SgfParser::process($sgf['Sgf']['sgf'], SgfBoard::decodePositionString($sgf['Sgf']['correct_moves'] ?? ''));
@@ -48,19 +50,12 @@ JOIN set_connection sc_best ON sc_best.id = (
     SELECT sc2.id
     FROM set_connection sc2
     JOIN `set` s2 ON s2.id = sc2.set_id
-    WHERE sc2.tsumego_id = tsumego.id AND s2.public = 1
+    WHERE sc2.tsumego_id = tsumego.id AND " . Set::officialCondition('s2') . "
     ORDER BY " . SetConnection::displayOrderSql('s2', 'sc2') . "
     LIMIT 1
 )
-LEFT JOIN sgf
-    ON sgf.tsumego_id = tsumego.id
-   AND sgf.accepted = 1
-   AND sgf.id = (
-        SELECT MAX(id)
-        FROM sgf
-        WHERE sgf.tsumego_id = tsumego.id
-          AND sgf.accepted = 1
-   )");
+LEFT JOIN sgf ON sgf.id = " . Sgf::currentVersionIDSql('tsumego.id') . "
+WHERE tsumego.deleted IS NULL");
 
 		foreach ($candidates as $candidate)
 			if ($candidate['tsumego_id'] != $this->sourceTsumegoID)

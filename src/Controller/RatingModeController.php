@@ -3,25 +3,16 @@
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\CookieFlash;
+use App\Utility\Rating;
 use App\Utility\RatingBounds;
+use App\Attribute\HttpGet;
+use App\Attribute\HttpPost;
 use App\Utility\Util;
 
 class RatingModeController extends AppController
 {
-	public static function ratingAdjustment(int|string $difficultySetting): int
-	{
-		$adjustments = [
-			1 => -Constants::$RATING_MODE_DIFFERENCE_SETTING_3,
-			2 => -Constants::$RATING_MODE_DIFFERENCE_SETTING_2,
-			3 => -Constants::$RATING_MODE_DIFFERENCE_SETTING_1,
-			4 => 0,
-			5 => Constants::$RATING_MODE_DIFFERENCE_SETTING_1,
-			6 => Constants::$RATING_MODE_DIFFERENCE_SETTING_2,
-			7 => Constants::$RATING_MODE_DIFFERENCE_SETTING_3,
-		];
-		return $adjustments[$difficultySetting] ?? 0;
-	}
-
+	#[HttpGet]
+	#[HttpPost]
 	public function index(): mixed
 	{
 		if (!Auth::isLoggedIn())
@@ -32,13 +23,14 @@ class RatingModeController extends AppController
 		if ($difficultyChange = Util::clearCookie('difficulty'))
 			Auth::saveUserField('t_glicko', $difficultyChange);
 
-		$adjustedRating =  Auth::getUser()['rating'] + self::ratingAdjustment(Auth::getUser()['t_glicko']);
+		$adjustedRating =  Auth::getUser()['rating'] + Rating::adjustmentForDifficulty(Auth::getUser()['t_glicko']);
 		$ratingBounds = new RatingBounds(
 			$adjustedRating - Constants::$RATING_MODE_SELECTION_INTERVAL / 2,
 			$adjustedRating + Constants::$RATING_MODE_SELECTION_INTERVAL / 2);
 
 		$queryCondition = "";
-		Util::addSqlCondition($queryCondition, "`set`.public = true");
+		Util::addSqlCondition($queryCondition, Set::officialCondition());
+		Util::addSqlCondition($queryCondition, 'tsumego.deleted IS NULL');
 		$ratingBounds->addSqlConditions($queryCondition);
 		$query = "
 SELECT

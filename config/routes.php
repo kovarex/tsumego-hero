@@ -23,6 +23,8 @@
 
 
 require_once(__DIR__ . "/../src/UrlRoute.php");
+require_once(__DIR__ . "/../src/ParseOnlyRoute.php");
+require_once(__DIR__ . "/../src/SetViewRoute.php");
 
 use App\Utility\Avatar;
 
@@ -36,6 +38,12 @@ Router::connect('/sitemap.xml', [
  * Connect '/' (base path) to the sites index.
  */
 Router::connect('/', ['controller' => 'sites', 'action' => 'index'], ['routeClass' => 'UrlRoute']);
+
+/**
+ * The board editor, see EditorController
+ */
+Router::connect('/editor', ['controller' => 'editor', 'action' => 'index']);
+Router::connect('/editor/', ['controller' => 'editor', 'action' => 'index']);
 
 /**
  * Public changelog / "what's new" page
@@ -94,6 +102,42 @@ Router::connect(
 	'/tsumego-issues/move-comment/:id',
 	['controller' => 'TsumegoIssues', 'action' => 'moveComment'],
 	['pass' => ['id'], 'id' => '[0-9]+']
+);
+
+/**
+ * Messages between players, see MessagesController
+ */
+Router::connect(
+	'/messages',
+	['controller' => 'Messages', 'action' => 'index']
+);
+Router::connect(
+	'/messages/conversations',
+	['controller' => 'Messages', 'action' => 'conversations', '[method]' => 'GET']
+);
+Router::connect(
+	'/messages/conversations/:partnerUserId',
+	['controller' => 'Messages', 'action' => 'conversation', '[method]' => 'GET'],
+	['pass' => ['partnerUserId'], 'partnerUserId' => '[0-9]+']
+);
+Router::connect(
+	'/messages/conversations/:partnerUserId',
+	['controller' => 'Messages', 'action' => 'send', '[method]' => 'POST'],
+	['pass' => ['partnerUserId'], 'partnerUserId' => '[0-9]+']
+);
+Router::connect(
+	'/messages/conversations/:partnerUserId/read',
+	['controller' => 'Messages', 'action' => 'read'],
+	['pass' => ['partnerUserId'], 'partnerUserId' => '[0-9]+']
+);
+Router::connect(
+	'/messages/recipients',
+	['controller' => 'Messages', 'action' => 'recipients']
+);
+Router::connect(
+	'/messages/:partnerUserId',
+	['controller' => 'Messages', 'action' => 'index'],
+	['pass' => ['partnerUserId'], 'partnerUserId' => '[0-9]+']
 );
 
 /**
@@ -158,6 +202,18 @@ Router::connect(
 /**
  * User Sets routes
  */
+Router::connect('/trash', ['controller' => 'Trash', 'action' => 'index']);
+Router::connect(
+	'/trash/restore-problem/:id',
+	['controller' => 'Trash', 'action' => 'restoreProblem'],
+	['pass' => ['id'], 'id' => '[0-9]+'] // Id of the tsumego
+);
+Router::connect(
+	'/trash/restore-set/:id',
+	['controller' => 'Trash', 'action' => 'restoreSet'],
+	['pass' => ['id'], 'id' => '[0-9]+']
+);
+
 Router::connect(
 	'/sets/mine',
 	['controller' => 'sets', 'action' => 'mine']
@@ -175,6 +231,11 @@ Router::connect(
 Router::connect(
 	'/sets/edit/:id',
 	['controller' => 'sets', 'action' => 'edit'],
+	['pass' => ['id'], 'id' => '[0-9]+']
+);
+Router::connect(
+	'/sets/share/:id',
+	['controller' => 'sets', 'action' => 'share'],
 	['pass' => ['id'], 'id' => '[0-9]+']
 );
 Router::connect(
@@ -197,6 +258,28 @@ Router::connect(
 	['controller' => 'sets', 'action' => 'reorderTsumego'],
 	['pass' => ['id'], 'id' => '[0-9]+']
 );
+// The old /sets/view/<id> addresses keep answering for links written before the short ones, and the
+// short /sets/<id> ones decline an id that names an action, which the default routes then serve.
+Router::connect(
+	'/sets/view/:id',
+	['controller' => 'sets', 'action' => 'view'],
+	['pass' => ['id'], 'id' => '[^/]+', 'routeClass' => 'ParseOnlyRoute']
+);
+Router::connect(
+	'/sets/view/:id/:partition',
+	['controller' => 'sets', 'action' => 'view'],
+	['pass' => ['id', 'partition'], 'id' => '[^/]+', 'partition' => '[0-9]+', 'routeClass' => 'ParseOnlyRoute']
+);
+Router::connect(
+	'/sets/:id',
+	['controller' => 'sets', 'action' => 'view'],
+	['pass' => ['id'], 'id' => '[^/]+', 'routeClass' => 'SetViewRoute']
+);
+Router::connect(
+	'/sets/:id/:partition',
+	['controller' => 'sets', 'action' => 'view'],
+	['pass' => ['id', 'partition'], 'id' => '[^/]+', 'partition' => '[0-9]+', 'routeClass' => 'SetViewRoute']
+);
 Router::connect(
 	'/users/playerColorPreference',
 	['controller' => 'Users', 'action' => 'playerColorPreference']
@@ -204,6 +287,14 @@ Router::connect(
 Router::connect(
 	'/users/boardOrientationPreference',
 	['controller' => 'Users', 'action' => 'boardOrientationPreference']
+);
+Router::connect(
+	'/users/dateFormatPreference',
+	['controller' => 'Users', 'action' => 'dateFormatPreference']
+);
+Router::connect(
+	'/users/emailOnNewMessagePreference',
+	['controller' => 'Users', 'action' => 'emailOnNewMessagePreference']
 );
 Router::connect(
 	'/users/avatarPreference',

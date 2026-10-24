@@ -1,5 +1,6 @@
 <?php
 
+use App\Attribute\HttpGet;
 use App\Utility\Avatar;
 
 /**
@@ -22,6 +23,7 @@ class AvatarsController extends AppController
 	 * @param string|null $key The key of a display name
 	 * @return CakeResponse svg image, cached for a year
 	 */
+	#[HttpGet]
 	public function image(?string $key = null)
 	{
 		if ($key === null || preg_match('/^[0-9a-f]{' . Avatar::KEY_LENGTH . '}$/', $key) !== 1)
@@ -43,6 +45,7 @@ class AvatarsController extends AppController
 	 * @param string|null $key The key of a display name
 	 * @return CakeResponse png image, cached for a year
 	 */
+	#[HttpGet]
 	public function imagePng(?string $key = null)
 	{
 		if ($key === null || preg_match('/^[0-9a-f]{' . Avatar::KEY_LENGTH . '}$/', $key) !== 1)
@@ -65,6 +68,7 @@ class AvatarsController extends AppController
 	 * @param int|null $id User id
 	 * @return CakeResponse redirect to the board of the account
 	 */
+	#[HttpGet]
 	public function boardOfUser(?int $id = null)
 	{
 		$this->loadModel('User');

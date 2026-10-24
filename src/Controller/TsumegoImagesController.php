@@ -1,5 +1,6 @@
 <?php
 
+use App\Attribute\HttpGet;
 use App\Utility\Constants;
 
 /**
@@ -18,6 +19,7 @@ class TsumegoImagesController extends AppController
 	 * @param string|null $setConnectionId The SetConnection ID (same as /id route)
 	 * @return CakeResponse PNG image with caching headers
 	 */
+	#[HttpGet]
 	public function tsumegoImage(?string $setConnectionId = null)
 	{
 		if (!$setConnectionId || !is_numeric($setConnectionId))
@@ -27,9 +29,9 @@ class TsumegoImagesController extends AppController
 		$data = ClassRegistry::init('SetConnection')->query(
 			'SELECT s.title AS set_title, t.description, t.created, sgf.sgf
 			FROM set_connection sc
-			JOIN tsumego t ON t.id = sc.tsumego_id
-			JOIN `set` s ON s.id = sc.set_id
-			JOIN sgf ON sgf.tsumego_id = t.id AND sgf.accepted = 1
+			JOIN tsumego t ON t.id = sc.tsumego_id AND t.deleted IS NULL
+			JOIN `set` s ON s.id = sc.set_id AND s.deleted IS NULL
+			JOIN sgf ON sgf.tsumego_id = t.id AND sgf.sgf_status_id = ' . Sgf::STATUS_ACCEPTED . '
 			WHERE sc.id = ?
 			ORDER BY sgf.id DESC
 			LIMIT 1',

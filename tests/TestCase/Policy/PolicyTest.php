@@ -109,6 +109,32 @@ class PolicyTest extends CakeTestCase
 		$this->assertFalse($policy->canView($this->identity(null), $privateSet), 'anonymous blocked');
 	}
 
+	public function testSetPolicyAllowsViewingSharedPlayerCollections()
+	{
+		$policy = new SetPolicy();
+		$sharedSet = ['public' => 1, 'user_id' => 7];
+
+		$this->assertTrue($policy->canView($this->identity(null), $sharedSet), 'anyone with the link');
+		$this->assertTrue($policy->canView($this->identity(false), $sharedSet));
+	}
+
+	public function testSetPolicyLetsOnlyTheOwnerDecideOnSharing()
+	{
+		$policy = new SetPolicy();
+		$playerSet = ['public' => 0, 'user_id' => 7];
+		$siteSet = ['public' => 1, 'user_id' => null];
+		$owner = $this->identity(false);
+		$owner['id'] = 7;
+		$other = $this->identity(false);
+		$other['id'] = 8;
+
+		$this->assertTrue($policy->canShare($owner, $playerSet), 'the owner decides');
+		$this->assertFalse($policy->canShare($other, $playerSet), 'another player cannot share it');
+		$this->assertFalse($policy->canShare($this->identity(true), $playerSet), 'not even an admin decides for the owner');
+		$this->assertFalse($policy->canShare($this->identity(null), $playerSet), 'anonymous blocked');
+		$this->assertFalse($policy->canShare($this->identity(true), $siteSet), 'site collections are public already');
+	}
+
 	public function testSetPolicyAllowsPlayingSandboxOnlyWithPermission()
 	{
 		$policy = new SetPolicy();
@@ -218,7 +244,7 @@ class PolicyTest extends CakeTestCase
 		$this->assertFalse($policy->canEdit($this->identity(null), $set), 'anonymous blocked');
 	}
 
-	public function testSetPolicyDeleteAllowsOwnerOrAdminForSandbox()
+	public function testSetPolicyDeleteAllowsOwnerOrAdminForSiteSets()
 	{
 		$policy = new SetPolicy();
 		$ownedSet = ['user_id' => 7, 'public' => 1];
@@ -232,7 +258,7 @@ class PolicyTest extends CakeTestCase
 		$this->assertFalse($policy->canDelete($this->identity(true), $ownedSet), 'admin cannot delete other user set');
 		$this->assertFalse($policy->canDelete($this->identity(null), $ownedSet), 'anonymous cannot delete');
 		$publicSet = ['user_id' => null, 'public' => 1];
-		$this->assertFalse($policy->canDelete($this->identity(true), $publicSet), 'admin cannot delete public site set');
+		$this->assertTrue($policy->canDelete($this->identity(true), $publicSet), 'admin can delete public site set (to the trash)');
 		$this->assertFalse($policy->canDelete($this->identity(false), $publicSet), 'regular cannot delete public site set');
 	}
 
@@ -277,7 +303,7 @@ class PolicyTest extends CakeTestCase
 	public function testAdminPolicyProposalActionsAllowOnlyAdmins()
 	{
 		$policy = new AdminPolicy();
-		foreach (['canAcceptSGFProposal', 'canRejectSGFProposal', 'canAcceptTagConnectionProposal', 'canRejectTagConnectionProposal'] as $method)
+		foreach (['canAcceptSGFProposal', 'canRejectSGFProposal', 'canReopenSGFProposal', 'canAcceptTagConnectionProposal', 'canRejectTagConnectionProposal'] as $method)
 		{
 			$this->assertTrue($policy->{$method}($this->identity(true)), $method . ' allows admin');
 			$this->assertFalse($policy->{$method}($this->identity(false)), $method . ' blocks regular user');

@@ -16,6 +16,12 @@ class User extends AppModel
 	public const PREF_BOARD_ORIENTATION_RANDOM = 0;
 	public const PREF_BOARD_ORIENTATION_ORIGINAL = 1;
 
+	/** The ids of the date_format table, how the dates are written. app/shared/dates.ts has the patterns. */
+	public const DATE_FORMAT_ISO = 1; // 2026-10-21 14:05
+	public const DATE_FORMAT_DAY_MONTH_YEAR = 2; // 21. 10. 2026 14:05, the Czech way
+	public const DATE_FORMAT_MONTH_DAY_YEAR = 3; // 10/21/2026 2:05 PM
+	public const DATE_FORMAT_BROWSER = 4; // whatever the language of the browser uses
+
 	/** Whether the player wants sound. The cookie spells them 'on' and 'off'. */
 	public const SOUND_OFF = 0;
 	public const SOUND_ON = 1;
@@ -54,6 +60,13 @@ class User extends AppModel
 
 	/** Twice the 64px a profile shows (--avatar-size-lg in tokens.css). */
 	public const AVATAR_PIXELS_PROFILE = 128;
+
+	/**
+	 * A character above U+FFFF (an emoji, for one) takes four bytes in UTF-8. The phpBB
+	 * tables the site shares store names as utf8mb3, which cannot hold one, so a display
+	 * name with such a character would differ between the site and the forum.
+	 */
+	public const UNSTORABLE_PATTERN = '/[\x{10000}-\x{10FFFF}]/u';
 
 	public function __construct(mixed $id = false, ?string $table = null, ?string $ds = null)
 	{
@@ -101,6 +114,16 @@ class User extends AppModel
 			'maxlength' => [
 				'rule' => ['maxLength', self::DISPLAY_NAME_MAX_LENGTH],
 				'message' => 'The display name must not be longer than 50 characters',
+			],
+
+			// The forum cannot store a character above U+FFFF (an emoji, a rare kanji), so a
+			// name the site could not copy there would be the result. It guards the name an
+			// account is created with; an account that already carries one keeps working, and
+			// a rename is checked by UsersController::updatename().
+			'storableByForum' => [
+				'rule' => 'hasOnlyCharactersTheForumCanStore',
+				'message' => 'The display name must not contain emoji or other rare symbols.',
+				'on' => 'create',
 			],
 		],
 	];
@@ -236,6 +259,23 @@ class User extends AppModel
 	}
 
 	/**
+	 * Whether a player ever proposed a tag, tagged a problem, uploaded a solution or had a proposal
+	 * rejected. A player who never did any of that has no contributions page worth opening.
+	 */
+	public static function hasContributions(int $userId): bool
+	{
+		$rows = Util::query(
+			'SELECT
+				EXISTS(SELECT 1 FROM tag WHERE user_id = ?)
+				OR EXISTS(SELECT 1 FROM tag_connection WHERE user_id = ?)
+				OR EXISTS(SELECT 1 FROM sgf WHERE user_id = ?)
+				OR EXISTS(SELECT 1 FROM reject WHERE user_id = ? AND (tsumego_id = 0
+					OR EXISTS(SELECT 1 FROM set_connection WHERE tsumego_id = reject.tsumego_id))) AS found',
+			[$userId, $userId, $userId, $userId]);
+		return (bool) $rows[0]['found'];
+	}
+
+	/**
 	 * The same rule as displayNameOrNull() for the places that print the name instead of sending it
 	 * to the frontend: a user whose account is not there anymore is shown as DELETED_NAME.
 	 *
@@ -349,6 +389,30 @@ class User extends AppModel
 		$name = trim($name);
 		$name = preg_replace('/\s+/u', ' ', $name);
 		return $name;
+	}
+
+	/** Whether the name holds a character the forum cannot store, see UNSTORABLE_PATTERN. */
+	public static function containsCharactersTheForumCannotStore(string $name): bool
+	{
+		return (bool) preg_match(self::UNSTORABLE_PATTERN, $name);
+	}
+
+	/**
+	 * The display name rule: a name the site can copy into the forum beside it. CakePHP hands
+	 * a method rule the data as an array keyed by the field.
+	 *
+	 * @param array<string, string>|string $check
+	 */
+	public function hasOnlyCharactersTheForumCanStore(mixed $check): bool
+	{
+		$name = is_array($check) ? (string) reset($check) : (string) $check;
+		return !self::containsCharactersTheForumCannotStore($name);
+	}
+
+	/** The name without the characters the forum cannot store, see UNSTORABLE_PATTERN. */
+	public static function withoutCharactersTheForumCannotStore(string $name): string
+	{
+		return (string) preg_replace(self::UNSTORABLE_PATTERN, '', $name);
 	}
 
 	/**
@@ -651,15 +715,15 @@ class User extends AppModel
 	}
 
 	/**
-	 * Whether the account solved enough of the public problems to throw away the progress
-	 * it has not touched for years.
+	 * Whether the account solved enough of the problems of the site to throw away the
+	 * progress it has not touched for years.
 	 *
 	 * @param UserRow $user
 	 */
 	public static function canResetOldProgress(array $user): bool
 	{
-		$publicProblems = ClassRegistry::init('Tsumego')->countPublicProblems();
-		return Util::getPercent($user['solved'], $publicProblems)
+		$progress = ClassRegistry::init('Tsumego')->publicProblemProgress((int) $user['id']);
+		return Util::getPercent($progress['solved'], $progress['total'])
 			>= Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED;
 	}
 }

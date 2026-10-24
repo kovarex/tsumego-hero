@@ -1,11 +1,14 @@
 <?php
 
+use App\Attribute\HttpGet;
 use App\Utility\SchedulePublisher;
+use App\Utility\Trash;
 use App\Utility\Util;
 
 class CronController extends AppController
 {
 	/* Supposed to be ran daily to reset hearts and hero powers */
+	#[HttpGet]
 	public function daily(string $secret)
 	{
 		if ($secret != CRON_SECRET)
@@ -29,6 +32,7 @@ class CronController extends AppController
 		$this->dailyPotionConditionReset();
 		$this->updateSolvedCounts();
 		self::dropExpiredAddressChanges();
+		Trash::purgeExpired();
 
 		$this->response->statusCode(200);
 		return $this->response;

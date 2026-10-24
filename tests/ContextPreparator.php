@@ -12,8 +12,13 @@ use App\Utility\Util;
 
 class ContextPreparator
 {
+	/** Held for the whole process, so no second run can empty the tables in the middle of a run. */
+	private static $testDatabaseLock = null;
+
 	public function __construct(?array $options = [])
 	{
+		self::takeTestDatabaseLock();
+
 		// Delete all test data via raw PDO so FK check disable is guaranteed on the same connection
 		/** @var DboSource $db */
 		$db = ClassRegistry::init('User')->getDataSource();
@@ -22,7 +27,7 @@ class ContextPreparator
 		foreach ([
 			'tag_connection', 'tag', 'schedule', 'progress_deletion',
 			'day_record', 'sgf', 'time_mode_attempt', 'time_mode_session',
-			'tsumego_comment', 'tsumego_issue', 'admin_activity',
+			'tsumego_comment', 'tsumego_issue', 'admin_activity', 'message',
 			'achievement_condition', 'achievement_status', 'set_connection',
 			'tsumego_attempt', 'tsumego_status', 'mistake_training_review', 'mistake_training_day', 'mistake_training_pool', 'user_contribution', 'signature',
 			'tsumego_variant', 'reject', 'publish_date', 'user', 'time_mode_rank',
@@ -54,6 +59,36 @@ class ContextPreparator
 		$this->checkOptionsConsumed($options);
 		if ($this->user)
 			$this->lastXp = Level::getOverallXPGained($this->user);
+	}
+
+	/**
+	 * Every run empties every table before each test, so a second process would pull the rows out
+	 * from under the first one. The lock lives as long as this process does, which is exactly the
+	 * window in which the shared test database is in use. The kernel drops it however the process
+	 * ends, so a killed run leaves nothing behind to clean up.
+	 */
+	private static function takeTestDatabaseLock(): void
+	{
+		if (self::$testDatabaseLock !== null)
+			return;
+
+		$path = TMP . 'test-db.lock';
+		$handle = @fopen($path, 'c');
+		if ($handle === false)
+			throw new RuntimeException('Cannot create the test database lock file at ' . $path);
+
+		if (!flock($handle, LOCK_EX | LOCK_NB))
+		{
+			$holder = trim((string) @file_get_contents($path));
+			throw new RuntimeException('Another test run is using the test database'
+				. ($holder === '' ? '.' : ' (pid ' . $holder . ').')
+				. ' Stop it before starting a new run.');
+		}
+
+		ftruncate($handle, 0);
+		fwrite($handle, (string) getmypid());
+		fflush($handle);
+		self::$testDatabaseLock = $handle;
 	}
 
 	private function checkOptionsConsumed(?array $options)
@@ -133,7 +168,9 @@ class ContextPreparator
 		$user['mode'] = Util::extract('mode', $userInput) ?: Constants::$LEVEL_MODE;
 		$user['pref_player_color'] = Util::extract('pref_player_color', $userInput) ?? User::PREF_PLAYER_COLOR_RANDOM;
 		$user['pref_board_orientation'] = Util::extract('pref_board_orientation', $userInput) ?? User::PREF_BOARD_ORIENTATION_RANDOM;
+		$user['date_format_id'] = Util::extract('date_format_id', $userInput) ?? User::DATE_FORMAT_ISO;
 		$user['sound'] = Util::extract('sound', $userInput) ?? 0;
+		$user['email_on_new_message'] = Util::extract('email_on_new_message', $userInput) ?? 1;
 		if ($lastTimeModeCategoryID = Util::extract('last-time-mode-category-id', $userInput))
 			$user['last_time_mode_category_id'] = $lastTimeModeCategoryID;
 
@@ -298,7 +335,7 @@ class ContextPreparator
 		$sgf['tsumego_id'] = $tsumego['id'];
 		$sgf['sgf'] = Util::extract('data', $tsumegoSgf);
 		$this->validateFixtureSgf($sgf['sgf'], $tsumego['id']);
-		$sgf['accepted'] = Util::extractWithDefault('accepted', $tsumegoSgf, true);
+		$sgf['sgf_status_id'] = Util::extractWithDefault('sgf_status_id', $tsumegoSgf, Sgf::STATUS_ACCEPTED);
 		$sgf['correct_moves'] = Util::extract('correct_moves', $tsumegoSgf);
 		$sgf['first_move_color'] = Util::extract('first_move_color', $tsumegoSgf);
 		$sgf['user_id'] = Auth::getUserID();
@@ -344,8 +381,12 @@ class ContextPreparator
 		$comment['message'] = Util::extract('message', $commentInput);
 		$comment['tsumego_id'] = $tsumego['id'];
 		$comment['user_id'] = $this->user['id'];
+		$comment['position'] = Util::extract('position', $commentInput);
 		if ($issueId !== null)
 			$comment['tsumego_issue_id'] = $issueId;
+		$created = Util::extract('created', $commentInput);
+		if ($created)
+			$comment['created'] = $created;
 		ClassRegistry::init('TsumegoComment')->save($comment);
 		$this->checkOptionsConsumed($commentInput);
 	}
@@ -367,6 +408,9 @@ class ContextPreparator
 		$issue['tsumego_id'] = $tsumego['id'];
 		$issue['user_id'] = $this->user['id'];
 		$issue['tsumego_issue_status_id'] = Util::extract('status', $issueInput) ?: TsumegoIssue::$OPENED_STATUS;
+		$created = Util::extract('created', $issueInput);
+		if ($created)
+			$issue['created'] = $created;
 		$issueModel = ClassRegistry::init('TsumegoIssue');
 		$issueModel->save($issue);
 
@@ -379,7 +423,7 @@ class ContextPreparator
 		// Create initial comment for the issue
 		$message = Util::extract('message', $issueInput);
 		if ($message)
-			$this->prepareTsumegoComment(['message' => $message], $tsumego, $issueId);
+			$this->prepareTsumegoComment(['message' => $message, 'created' => $created], $tsumego, $issueId);
 
 		$this->checkOptionsConsumed($issueInput);
 	}
@@ -513,7 +557,8 @@ class ContextPreparator
 			'user_id' => Util::extract('user_id', $setInput),
 			'order' => Util::extractWithDefault('order', $setInput, null),
 			'default' => Util::extract('default', $setInput),
-			'description' => Util::extractWithDefault('description', $setInput, null)]);
+			'description' => Util::extractWithDefault('description', $setInput, null),
+			'deleted' => Util::extractWithDefault('deleted', $setInput, null)]);
 		$setConnection = [];
 		$setConnection['tsumego_id'] = $tsumego['id'];
 		$setConnection['set_id'] = $set['id'];
@@ -565,6 +610,7 @@ class ContextPreparator
 			$boardThemeIndex = 1;
 			$userId = null;
 			$description = null;
+			$deleted = null;
 		}
 		else
 		{
@@ -576,6 +622,7 @@ class ContextPreparator
 			$order = Util::extractWithDefault('order', $input, null);
 			$isDefault = Util::extract('default', $input) ?: false;
 			$description = Util::extractWithDefault('description', $input, null);
+			$deleted = Util::extractWithDefault('deleted', $input, null);
 			$this->checkOptionsConsumed($input);
 		}
 		$set  = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $name]]);
@@ -589,6 +636,8 @@ class ContextPreparator
 			$set['order'] = $order ?: Constants::$DEFAULT_SET_ORDER;
 			if ($description !== null)
 				$set['description'] = $description;
+			if ($deleted !== null)
+				$set['deleted'] = $deleted;
 			if ($userId === 'self')
 				$set['user_id'] = $this->user['id'];
 			elseif ($userId !== null)
@@ -894,10 +943,14 @@ class ContextPreparator
 			AdminActivityType::ADD_TAG => 'Add Tag',
 			AdminActivityType::ACCEPT_PROPOSAL => 'Accept Proposal',
 			AdminActivityType::REJECT_PROPOSAL => 'Reject Proposal',
+			AdminActivityType::REOPEN_PROPOSAL => 'Reopen Proposal',
 			AdminActivityType::TSUMEGO_MERGE => 'Tsumego Merge',
 			AdminActivityType::DELETE_USER => 'Delete User',
 			AdminActivityType::RESTORE_USER => 'Restore User',
 			AdminActivityType::DISPLAY_NAME_CHANGE => 'Display Name Change',
+			AdminActivityType::PROBLEM_RESTORE => 'Problem Restore',
+			AdminActivityType::SET_DELETE => 'Set Delete',
+			AdminActivityType::SET_RESTORE => 'Set Restore',
 			AdminActivityType::ADD_TO_SCHEDULE => 'Add to Schedule',
 			AdminActivityType::CANCEL_SCHEDULE => 'Cancel Schedule'];
 

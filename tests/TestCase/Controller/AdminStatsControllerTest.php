@@ -318,7 +318,8 @@ class AdminStatsControllerTest extends ControllerTestCase
 			Util::getMyAddress()
 			. '/editor/?setConnectionID='
 			. $context->tsumegos[0]['set-connections'][0]['id']
-			. '&sgfID=' . $context->tsumegos[0]['sgfs'][0]['id'],
+			. '&sgfID=' . $context->tsumegos[0]['sgfs'][0]['id']
+			. '&proposal=1',
 			$browser->driver->getCurrentURL());
 		$browser->assertNoErrors();
 
@@ -326,7 +327,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$browser->waitUntilJs('typeof besogo !== "undefined"');
 		$browser->clickBoard(4, 4);
 		$browser->clickId('makeCorrectButton');
-		$browser->clickId('saveSGFButton');
+		$browser->saveFromEditor('Black D16 is correct too');
 
 		// Wait for redirect after saving SGF
 		$browser->waitUntilJs('!location.href.includes("/editor/")');
@@ -335,6 +336,10 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$loadedSgf = $browser->driver->executeScript('return besogo.sgfLoaded;');
 		$this->assertSame($loadedSgf, $sgfVersion1);
+
+		// the reviewer gets to know what the proposal is about
+		$proposal = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id'], 'sgf_status_id' => Sgf::STATUS_PROPOSED]])['Sgf'];
+		$this->assertSame('Black D16 is correct too', $proposal['description']);
 	}
 
 	public function testAcceptSgfProposal()
@@ -345,8 +350,8 @@ class AdminStatsControllerTest extends ControllerTestCase
 			'user' => ['admin' => true],
 			'tsumego' => [
 				'sgfs' => [
-					['data' => $sgfVersion1, 'accepted' => true],
-					['data' => $sgfVersion2, 'accepted' => false]],
+					['data' => $sgfVersion1, 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
+					['data' => $sgfVersion2, 'sgf_status_id' => Sgf::STATUS_PROPOSED]],
 				'status' => 'S',
 				'set_order' => 1]]);
 		$browser = Browser::instance();
@@ -360,7 +365,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 		// we got redirected back to adminstats, the proposal shouldn't be visible anymore
 		$this->assertSame(Util::getMyAddress() . '/users/adminstats', $browser->driver->getCurrentURL());
 		$this->assertSame('SGF Proposals (0)', $browser->find('#sgf_proposals_page_header')->getText());
-		$this->assertSame(true, ClassRegistry::init('Sgf')->findById($context->tsumegos[0]['sgfs'][1]['id'])['Sgf']['accepted']);
+		$this->assertEquals(Sgf::STATUS_ACCEPTED, ClassRegistry::init('Sgf')->findById($context->tsumegos[0]['sgfs'][1]['id'])['Sgf']['sgf_status_id']);
 
 		// checking that the accepted sgf is now used for the problem
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
@@ -376,15 +381,15 @@ class AdminStatsControllerTest extends ControllerTestCase
 			'user' => ['admin' => true],
 			'tsumego' => [
 				'sgfs' => [
-					['data' => $sgfVersion1, 'accepted' => true],
-					['data' => $sgfVersion2, 'accepted' => false]],
+					['data' => $sgfVersion1, 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
+					['data' => $sgfVersion2, 'sgf_status_id' => Sgf::STATUS_PROPOSED]],
 				'status' => 'S',
 				'set_order' => 1]]);
 		$browser = Browser::instance();
 		$browser->get('/users/adminstats');
 		$this->assertSame('SGF Proposals (1)', $browser->find('#sgf_proposals_page_header')->getText());
 
-		// click the accept proposal button
+		$browser->findById('comment-' . $context->tsumegos[0]['sgfs'][1]['id'])->sendKeys('Black B19 is not needed');
 		$browser->clickId('reject-' . $context->tsumegos[0]['sgfs'][1]['id']);
 		$browser->waitUntilCssSelectorExistsWithText('#sgf_proposals_page_header', 'SGF Proposals (0)');
 
@@ -392,8 +397,11 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$this->assertSame(Util::getMyAddress() . '/users/adminstats', $browser->driver->getCurrentURL());
 		$this->assertSame('SGF Proposals (0)', $browser->find('#sgf_proposals_page_header')->getText());
 
-		// the sgf is deleted
-		$this->assertEmpty(ClassRegistry::init('Sgf')->findById($context->tsumegos[0]['sgfs'][1]['id']));
+		// the sgf is kept as rejected, listed folded under the waiting proposals
+		$this->assertEquals(Sgf::STATUS_REJECTED, ClassRegistry::init('Sgf')->findById($context->tsumegos[0]['sgfs'][1]['id'])['Sgf']['sgf_status_id']);
+		$this->assertSame('', $browser->find('#rejected-sgf-proposals table')->getText(), 'folded');
+		$browser->find('#rejected-sgf-proposals summary')->click();
+		$this->assertStringContainsString('Black B19 is not needed', $browser->find('#rejection-' . $context->tsumegos[0]['sgfs'][1]['id'])->getText());
 	}
 
 	public function testApproveTag()
@@ -431,7 +439,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$browser->get('/users/adminstats');
 		$this->assertSame('New Tags (1)', $browser->find('#tag_connection_proposals_page_header')->getText());
 
-		// click the accept proposal button
+		$browser->findById('tag-connection-comment-' . $context->tsumegos[0]['tag-connections'][0]['id'])->sendKeys('There is no snapback');
 		$browser->clickId('tag-connection-reject-' . $context->tsumegos[0]['tag-connections'][0]['id']);
 		$browser->waitUntilCssSelectorExistsWithText('#tag_connection_proposals_page_header', 'New Tags (0)');
 

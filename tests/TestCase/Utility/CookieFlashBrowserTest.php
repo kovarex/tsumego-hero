@@ -27,7 +27,7 @@ class CookieFlashBrowserTest extends CakeTestCase
 		// Submit login form with invalid credentials
 		$browser->findById('UserName')->sendKeys('nonexistent_user');
 		$browser->findById('password')->sendKeys('wrong_password');
-		$browser->find('input[type="submit"]')->click();
+		$browser->find('#UserLoginForm button[type="submit"]')->click();
 
 		// Wait for page to load
 		$browser->waitUntilJs('document.documentElement.outerHTML.includes("Wrong username or password.")');
@@ -49,7 +49,7 @@ class CookieFlashBrowserTest extends CakeTestCase
 		$browser->get('users/login');
 		$browser->findById('UserName')->sendKeys('test');
 		$browser->findById('password')->sendKeys('test');
-		$browser->find('input[type="submit"]')->click();
+		$browser->find('#UserLoginForm button[type="submit"]')->click();
 		$browser->waitUntilJs('document.documentElement.outerHTML.includes("alert")');
 
 		// Flash message should be present on first view
@@ -76,7 +76,7 @@ class CookieFlashBrowserTest extends CakeTestCase
 		$browser->get('users/login');
 		$browser->findById('UserName')->sendKeys('test');
 		$browser->findById('password')->sendKeys('wrong');
-		$browser->find('input[type="submit"]')->click();
+		$browser->find('#UserLoginForm button[type="submit"]')->click();
 		$browser->waitUntilJs('document.documentElement.outerHTML.includes("alert-error")');
 
 		$pageSource = $browser->driver->getPageSource();

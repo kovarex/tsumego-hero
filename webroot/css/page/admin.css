@@ -10,4 +10,43 @@
   max-width: 800px;
 }
 .admin-text { color: var(--admin-text-color); }
+/* Accept / Reject of a proposal with the comment sent to the proposer, see ProposalDecisionForm */
+.proposal-decision {
+	display: flex;
+	gap: 4px;
+	align-items: center;
+	white-space: nowrap;
+}
+.proposal-decision__comment {
+	min-width: 12em;
+	flex: 1 1 auto;
+}
+.proposal-description { /* see SgfDescription, a long one is cut to fit in about three lines */
+	min-width: 16em;
+	max-width: 20em;
+	font-size: 13px;
+}
+.rejected-proposals { /* RejectedSGFProposalsRenderer, folded under the waiting proposals */
+	margin-top: 8px;
+}
+.rejected-proposals > summary {
+	cursor: pointer;
+	font-weight: bold;
+}
+.trash {
+  text-align: left;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+.trash .data-table {
+  margin-bottom: 24px;
+}
+.trash-notice {
+  max-width: 800px;
+  margin: 8px auto;
+}
+.trash-notice__restore {
+  display: inline-block;
+  margin-left: 8px;
+}
 }

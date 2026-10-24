@@ -18,6 +18,36 @@
 		text-size-adjust: 100%;
 	}
 
+	/* Controls carry no face of their own: a field or a button follows the text it
+	   sits in, so a form in an article is set in the page face and the same field
+	   inside the menu or an overlay in the interface face. Only the family is taken
+	   over here; each control's size still comes from the rule that styles it. */
+	button,
+	input,
+	select,
+	textarea
+	{
+		font-family: inherit;
+	}
+
+	pre,
+	code,
+	kbd,
+	samp
+	{
+		font-family: var(--font-family-code);
+	}
+
+	h1,
+	h2,
+	h3,
+	h4,
+	h5,
+	h6
+	{
+		font-family: var(--font-family-heading);
+	}
+
 	a
 	{
 		color: var(--link-color);

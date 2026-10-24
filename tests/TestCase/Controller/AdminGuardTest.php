@@ -23,11 +23,11 @@ class AdminGuardTest extends ControllerTestCase
 		new ContextPreparator(['user' => null]);
 
 		// The avatar endpoint is guarded the same way, see AvatarPreferenceTest::testRequiresLogin
-		foreach (['/users/playerColorPreference', '/users/boardOrientationPreference', '/users/emailPreference'] as $url)
+		foreach (['/users/playerColorPreference', '/users/boardOrientationPreference', '/users/dateFormatPreference', '/users/emailPreference'] as $url)
 		{
 			try
 			{
-				$this->testAction($url, ['method' => 'post', 'data' => ['color' => 1, 'orientation' => 1, 'User' => ['email' => 'guest@example.com']]]);
+				$this->testAction($url, ['method' => 'post', 'data' => ['color' => 1, 'orientation' => 1, 'format' => 1, 'User' => ['email' => 'guest@example.com']]]);
 				$this->fail($url . ' let a guest through');
 			}
 			catch (UnauthorizedException $e)
@@ -37,41 +37,24 @@ class AdminGuardTest extends ControllerTestCase
 		}
 	}
 
-	public function testTagProposalActionsRequirePost()
+	public function testUserProposalActionsRequireAdmin()
 	{
-		new ContextPreparator(['user' => ['admin' => true]]);
-
-		foreach (['/tags/acceptTagProposal/1', '/tags/rejectTagProposal/1'] as $url)
-		{
-			try
-			{
-				$this->testAction($url, ['method' => 'get']);
-				$this->fail($url . ' accepted a GET');
-			}
-			catch (MethodNotAllowedException $e)
-			{
-				$this->addToAssertionCount(1);
-			}
-		}
-	}
-
-	public function testUserProposalActionsRequirePost()
-	{
-		new ContextPreparator(['user' => ['admin' => true]]);
+		new ContextPreparator(['user' => ['name' => 'regular', 'admin' => false]]);
 
 		foreach ([
 			'/users/acceptSGFProposal/1',
 			'/users/rejectSGFProposal/1',
 			'/users/acceptTagConnectionProposal/1',
 			'/users/rejectTagConnectionProposal/1',
+			'/users/reopenSGFProposal/1',
 		] as $url)
 		{
 			try
 			{
-				$this->testAction($url, ['method' => 'get']);
-				$this->fail($url . ' accepted a GET');
+				$this->testAction($url, ['method' => 'post']);
+				$this->fail($url . ' let a player who is not an admin through');
 			}
-			catch (MethodNotAllowedException $e)
+			catch (ForbiddenException $e)
 			{
 				$this->addToAssertionCount(1);
 			}

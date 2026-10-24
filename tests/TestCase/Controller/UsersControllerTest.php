@@ -37,8 +37,7 @@ class UsersControllerTest extends ControllerTestCase
 		// Fill in login form
 		$browser->findById('UserName')->sendKeys('testuser');
 		$browser->findById('password')->sendKeys('test');
-		$browser->find('input[type="submit"]')->click();
-
+		$browser->find('#UserLoginForm button[type="submit"]')->click();
 		// Should be redirected back to highscore page
 		$browser->waitUntilJs('location.href.includes("highscore")');
 		$currentUrl = $browser->driver->getCurrentURL();
@@ -240,10 +239,13 @@ class UsersControllerTest extends ControllerTestCase
 	public function testResetKeepsAGoldenProblemInProgress(): void
 	{
 		$context = new ContextPreparator([
-			'user' => ['name' => 'resetGolden', 'solved' => 2],
+			'user' => ['name' => 'resetGolden'],
 			'tsumegos' => [
 				['status' => ['name' => 'S', 'updated' => '2000-01-01 00:00:00'], 'sets' => [['name' => 'reset-1', 'num' => 1]]],
-				['status' => ['name' => 'G', 'updated' => '2000-01-01 00:00:00'], 'sets' => [['name' => 'reset-2', 'num' => 1]]]]]);
+				['status' => ['name' => 'G', 'updated' => '2000-01-01 00:00:00'], 'sets' => [['name' => 'reset-2', 'num' => 1]]],
+				['status' => ['name' => 'S'], 'sets' => [['name' => 'reset-2', 'num' => 2]]],
+				['status' => ['name' => 'S'], 'sets' => [['name' => 'reset-2', 'num' => 3]]],
+				['status' => ['name' => 'S'], 'sets' => [['name' => 'reset-2', 'num' => 4]]]]]);
 		$browser = Browser::instance();
 
 		$browser->get('users/settings');
@@ -316,12 +318,26 @@ class UsersControllerTest extends ControllerTestCase
 			],
 		]);
 
-		$this->testAction('users/view/' . $context->user['id'], ['return' => 'view']);
+		$this->testAction('users/view/' . $context->user['id'], ['method' => 'get', 'return' => 'view']);
 
 		$this->assertStringContainsString('/achievements/view/115', $this->view);
 		$this->assertStringContainsString('/achievements/view/115/' . $context->user['id'], $this->view,
 			'the achievement link keeps the profile it was opened from');
 		$this->assertStringContainsString('1000 Weiqi problems 2nd half', $this->view);
+	}
+
+	public function testProfileCountsOnlyTheProblemsOfTheSite(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'solver', 'solved' => 2],
+			'tsumego' => ['status' => 'S', 'sets' => [['name' => 'Site Collection', 'num' => 1]]],
+			'tsumegos' => [['status' => 'S', 'sets' => [
+				['name' => 'Player Collection', 'num' => 1, 'public' => 1, 'user_id' => 'self']]]],
+		]);
+
+		$this->testAction('users/view/' . $context->user['id'], ['method' => 'get', 'return' => 'view']);
+
+		$this->assertMatchesRegularExpression('#Completed:</td>\s*<td>1 of 1</td>#', $this->view);
 	}
 
 	/**
@@ -388,7 +404,7 @@ class UsersControllerTest extends ControllerTestCase
 			],
 		]);
 
-		$this->testAction('users/view/' . $context->user['id'], ['return' => 'view']);
+		$this->testAction('users/view/' . $context->user['id'], ['method' => 'get', 'return' => 'view']);
 
 		$this->assertStringContainsString('title="Earned 3 times"', $this->view);
 	}
@@ -408,7 +424,7 @@ class UsersControllerTest extends ControllerTestCase
 			],
 		]);
 
-		$this->testAction('users/view/' . $context->user['id'], ['return' => 'view']);
+		$this->testAction('users/view/' . $context->user['id'], ['method' => 'get', 'return' => 'view']);
 
 		$this->assertStringContainsString(
 			'1 of ' . AchievementId::count() . ' <span class="achievementEarnedTimes" title="Earned 3 times">+3</span>',
@@ -434,10 +450,18 @@ class UsersControllerTest extends ControllerTestCase
 		$connection->create();
 		$connection->save(['tsumego_id' => $context->tsumegos[0]['id'], 'set_id' => $set->id, 'num' => 3]);
 
-		$this->testAction('users/solveHistory/' . $context->user['id'], ['return' => 'view']);
+		$this->testAction('users/solveHistory/' . $context->user['id'], ['method' => 'get', 'return' => 'view']);
 
 		$this->assertTextContains('public set', $this->view);
 		$this->assertStringNotContainsString('alice favorites', $this->view);
+	}
+
+	public function testSolveHistoryOfAnUnknownUserIsNotFound(): void
+	{
+		new ContextPreparator(['user' => ['name' => 'viewer']]);
+
+		$this->expectException(NotFoundException::class);
+		$this->testAction('users/solveHistory/99999999', ['method' => 'get']);
 	}
 
 	public function testProgressBarPreferenceOnlyOnOwnSettingsPage(): void
@@ -624,7 +648,7 @@ class UsersControllerTest extends ControllerTestCase
 		}
 
 		// Slow/15k: shows 900, not 600 or 750
-		$this->testAction('users/time_mode?category=2&rank=15k', ['return' => 'view']);
+		$this->testAction('users/time_mode?category=2&rank=15k', ['method' => 'get', 'return' => 'view']);
 		$this->assertTextContains('900.00', $this->view);
 		$this->assertTextNotContains('600.00', $this->view);
 		$this->assertTextNotContains('750.00', $this->view);
@@ -632,13 +656,13 @@ class UsersControllerTest extends ControllerTestCase
 		$this->assertTextContains('category=1', $this->view); // Fast link preserves rank
 
 		// Fast/15k: shows 600, not 900 or 750
-		$this->testAction('users/time_mode?category=1&rank=15k', ['return' => 'view']);
+		$this->testAction('users/time_mode?category=1&rank=15k', ['method' => 'get', 'return' => 'view']);
 		$this->assertTextContains('600.00', $this->view);
 		$this->assertTextNotContains('900.00', $this->view);
 		$this->assertTextContains('btn--inactive">Fast</a>', $this->view);
 
 		// Slow/10k: shows 750, not 900
-		$this->testAction('users/time_mode?category=2&rank=10k', ['return' => 'view']);
+		$this->testAction('users/time_mode?category=2&rank=10k', ['method' => 'get', 'return' => 'view']);
 		$this->assertTextContains('750.00', $this->view);
 		$this->assertTextNotContains('900.00', $this->view);
 	}
@@ -666,7 +690,7 @@ class UsersControllerTest extends ControllerTestCase
 		// Each category's rank buttons should link back to the same category
 		foreach (['2' => 'Slow', '1' => 'Fast', '0' => 'Blitz'] as $catId => $catName)
 		{
-			$this->testAction("users/time_mode?category={$catId}&rank=15k", ['return' => 'view']);
+			$this->testAction("users/time_mode?category={$catId}&rank=15k", ['method' => 'get', 'return' => 'view']);
 			// Rank button links should contain the current category
 			$this->assertTextContains("category={$catId}&rank=", $this->view);
 		}

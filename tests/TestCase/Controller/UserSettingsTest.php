@@ -197,6 +197,16 @@ class UserSettingsTest extends ControllerTestCase
 		$this->waitForUserField($context, 'pref_board_orientation', (string) User::PREF_BOARD_ORIENTATION_ORIGINAL);
 	}
 
+	public function testDateFormatIsStored(): void
+	{
+		$context = new ContextPreparator(['user' => ['date_format_id' => User::DATE_FORMAT_ISO]]);
+		$browser = Browser::instance();
+
+		$browser->get('users/settings');
+		$browser->find('input[name="dateFormat"][value="' . User::DATE_FORMAT_DAY_MONTH_YEAR . '"]')->click();
+		$this->waitForUserField($context, 'date_format_id', (string) User::DATE_FORMAT_DAY_MONTH_YEAR);
+	}
+
 	public function testOnlyAnAdminCanStepDown(): void
 	{
 		new ContextPreparator(['user' => ['name' => 'plain', 'admin' => false]]);
@@ -254,8 +264,13 @@ class UserSettingsTest extends ControllerTestCase
 	public function testResetIsNotOfferedBeforeEnoughProblemsAreSolved(): void
 	{
 		$context = new ContextPreparator([
-			'user' => ['name' => 'beginner', 'solved' => 0],
-			'tsumegos' => [['set_order' => 1, 'status' => ['name' => 'S', 'updated' => date('Y-m-d H:i:s', strtotime('-2 years'))]]],
+			'user' => ['name' => 'beginner'],
+			'tsumegos' => [
+				['set_order' => 1, 'status' => ['name' => 'S', 'updated' => date('Y-m-d H:i:s', strtotime('-2 years'))]],
+				['set_order' => 2],
+				['set_order' => 3],
+				['set_order' => 4],
+			],
 		]);
 		$browser = Browser::instance();
 

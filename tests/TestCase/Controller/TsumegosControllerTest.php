@@ -26,6 +26,22 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		}
 	}
 
+	public function testTheFirstProblemOfACollectionLeadsBackToTheCollectionPage(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'levelplayer'],
+			'tsumego' => ['set_order' => 1],
+			'tsumegos' => [['set_order' => 2]],
+		]);
+		$first = $context->tsumegos[0]['set-connections'][0];
+		$second = $context->tsumegos[1]['set-connections'][0];
+
+		$this->testAction('/tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'contents']);
+
+		$this->assertStringContainsString('var previousButtonLink = "/sets/' . $first['set_id'] . '"', $this->view);
+		$this->assertStringContainsString('var nextButtonLink = "/' . $second['id'] . '"', $this->view);
+	}
+
 	public function testProblemKeepsOneAddressInBothUrlShapes()
 	{
 		$context = new ContextPreparator(['tsumego' => ['set_order' => 666]]);
@@ -462,7 +478,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			],
 		]);
 
-		$result = $this->testAction('/tsumegos/duplicatesearch/' . $context->tsumegos[0]['set-connections'][0]['id'], ['return' => 'view']);
+		$result = $this->testAction('/tsumegos/duplicatesearch/' . $context->tsumegos[0]['set-connections'][0]['id'], ['method' => 'get', 'return' => 'view']);
 
 		$this->assertMatchesRegularExpression('/"diff":"[a-z]+"/', $result);
 	}

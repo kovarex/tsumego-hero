@@ -398,20 +398,22 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 		$this->assertSame(1, $context->reloadUser()['damage']);
 	}
 
-	public function testTheAccountBarGlowsForARecordedSolveAndARecordedFail(): void
+	public function testTheAccountBarGlowsWhenWhatItShowsChanges(): void
 	{
-		foreach (['S', 'F'] as $result)
+		// a fail costs rating, but no XP
+		foreach ([['rating', 'S', true], ['rating', 'F', true], ['level', 'S', true], ['level', 'F', false]] as [$show, $result, $glows])
 		{
 			$context = new ContextPreparator(['tsumego' => 1]);
 			$browser = Browser::instance();
+			$browser->setCookie('showInAccountWidget', $show);
 			$browser->get($this->playUrl($context));
 			$this->waitForBoard($browser);
 
 			$browser->driver->executeScript("displayResult('" . $result . "')");
 
-			$this->assertSame('inline-block',
+			$this->assertSame($glows ? 'inline-block' : 'none',
 				$browser->driver->executeScript("return document.getElementById('xp-increase-fx').style.display;"),
-				'The bar shows that the account changed, in either direction');
+				$show . ' bar, result ' . $result);
 		}
 	}
 
@@ -456,6 +458,32 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 			$this->assertSame($reveals ? 'block' : 'none', $this->commentSpaceDisplay($browser),
 				'The comments after a ' . $result);
 		}
+	}
+
+	/**
+	 * Toggling review mode should NOT reset the board to the start position.
+	 * If the user navigated to a move, entering/leaving review keeps them there.
+	 */
+	public function testReviewTogglePreservesBoardPosition(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => ['set_order' => 1, 'status' => 'S', 'sgf' => self::SGF_19]]);
+		$browser = Browser::instance();
+		$browser->get($this->playUrl($context));
+		$this->waitForBoard($browser);
+
+		// Navigate to the first move so the board is not at the root position.
+		// Use setCurrent (not clickBoard) so the puzzle's auto-response cannot
+		// advance the board independently of the review toggle.
+		$browser->driver->executeScript('var root = besogo.editor.getRoot(); if (root.children && root.children.length) besogo.editor.setCurrent(root.children[0]);');
+		$browser->waitUntilJs('besogo.editor.getCurrent().moveNumber >= 1');
+		$moveBefore = $browser->driver->executeScript('return besogo.editor.getCurrent().moveNumber;');
+
+		$browser->clickId('besogo-review-button');
+
+		$moveAfter = $browser->driver->executeScript('return besogo.editor.getCurrent().moveNumber;');
+		$this->assertSame($moveBefore, $moveAfter, 'Review toggle should not reset the board to the start position');
 	}
 
 	public function testSolvedPuzzleCannotBeFailedOrReSolved(): void

@@ -123,6 +123,7 @@ class PlayResultProcessorComponent extends Component
 			$trainingXp = $this->processTrainingXp($review, (float) $originalTsumegoRating);
 		$this->processErrorAchievement($result, $previousStatusValue, $outcome);
 		$this->processUnsortedStuff($tsumego, $result, $previousStatusValue);
+		$this->processGoldenRun($result, $previousStatusValue);
 
 		// Check solve-dependent achievements right away (not only on the next page
 		// load) so the user sees the popup immediately after solving.
@@ -215,7 +216,7 @@ class PlayResultProcessorComponent extends Component
 			return true;
 		}
 
-		AppController::updatePotionCondition();
+		AppController::_updatePotionCondition();
 		return false;
 	}
 
@@ -426,15 +427,26 @@ class PlayResultProcessorComponent extends Component
 			return;
 
 		$solvedTsumegoRank = Rating::getReadableRankFromRating($previousTsumego['Tsumego']['rating']);
-		AppController::saveDanSolveCondition($solvedTsumegoRank, $previousTsumego['Tsumego']['id']);
-		AppController::updateGems($solvedTsumegoRank);
+		AppController::_saveDanSolveCondition($solvedTsumegoRank, $previousTsumego['Tsumego']['id']);
+		AppController::_updateGems($solvedTsumegoRank);
 		// Sprint state is server-authoritative (user.sprint_start). A solve only
 		// counts toward the sprint achievement while a sprint is actually active.
 		if (HeroPowers::getSprintRemainingSeconds() > 0)
-			AppController::updateSprintCondition(true);
+			AppController::_updateSprintCondition(true);
 		else
-			AppController::updateSprintCondition();
-		if ($previousTsumegoStatus == TsumegoStatus::$GOLDEN)
-			AppController::updateGoldenCondition(true);
+			AppController::_updateSprintCondition();
+	}
+
+	/**
+	 * The Gold Digger run counts the golden tsumego solved in a row. A golden tsumego is a
+	 * single attempt, so a solve moves the run one further and a fail starts it over.
+	 */
+	private function processGoldenRun(array $result, string $previousTsumegoStatus): void
+	{
+		if (Auth::isInMistakeTrainingMode())
+			return;
+		if ($previousTsumegoStatus != TsumegoStatus::$GOLDEN)
+			return;
+		AppController::_updateGoldenCondition($result['solved']);
 	}
 }

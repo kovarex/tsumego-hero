@@ -86,7 +86,6 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth
 		$this->assertTextContains('Sprint', $browser->find('#xpDisplay')->getText());
 		$status = $browser->find('#status2')->getText();
 		$this->assertSame(preg_match('/(\d+):([0-5]\d)/', $status, $m), 1, 'The status should contain time in format m:s, but it wasn\'t found in the string: "' . $status . "'");
-		$this->assertTrue($m > 1);
 	}
 
 	public function testShowingSprintAfterSprintIsClicked(): void

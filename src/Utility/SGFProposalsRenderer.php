@@ -3,13 +3,14 @@
 namespace App\Utility;
 
 use SetConnection;
+use Sgf;
 use User;
 
 class SGFProposalsRenderer extends DataTableRenderer
 {
 	public function __construct(array $urlParams)
 	{
-		$this->count = Util::query("SELECT COUNT(*) AS total FROM sgf p WHERE p.accepted = false AND EXISTS (SELECT 1 FROM set_connection sc WHERE sc.tsumego_id = p.tsumego_id)")[0]['total'];
+		$this->count = Util::query("SELECT COUNT(*) AS total FROM sgf p WHERE p.sgf_status_id = " . Sgf::STATUS_PROPOSED . " AND EXISTS (SELECT 1 FROM set_connection sc WHERE sc.tsumego_id = p.tsumego_id)")[0]['total'];
 		parent::__construct($urlParams, 'sgf_proposals_page', 'SGF Proposals');
 		$this->data = Util::query("
 SELECT
@@ -17,6 +18,7 @@ SELECT
     a.latest_accepted_id AS latest_accepted_id,
     COALESCE(sgf.sgf, '') AS sgf,
     p.id AS proposed_id,
+    p.description AS description,
     p.user_id AS user_id,
     p.user_id AS proposed_user_id,
     user.display_name AS user_display_name,
@@ -33,7 +35,7 @@ FROM sgf p
 JOIN (
     SELECT tsumego_id, MAX(id) AS latest_accepted_id
     FROM sgf
-    WHERE accepted = TRUE
+    WHERE sgf_status_id = " . Sgf::STATUS_ACCEPTED . "
     GROUP BY tsumego_id
 ) a ON a.tsumego_id = p.tsumego_id
 JOIN set_connection sc ON sc.tsumego_id = p.tsumego_id
@@ -49,33 +51,34 @@ JOIN `set` s ON s.id = sc.set_id
 JOIN user ON p.user_id=user.id
 LEFT JOIN sgf ON sgf.id = a.latest_accepted_id
 LEFT JOIN tsumego_status ON tsumego_status.user_id = ? AND tsumego_status.tsumego_id = p.tsumego_id
-WHERE p.accepted = FALSE
+WHERE p.sgf_status_id = " . Sgf::STATUS_PROPOSED . "
 LIMIT " . self::$PAGE_SIZE . "
 OFFSET " . $this->offset, [Auth::getUserID()]);
 	}
 
 	protected function renderHeader(): void
 	{
-		echo '<tr><th>User</th><th>Problem</th><th>Compare</th><th><label title="Toggle board previews"><input type="checkbox" class="preview-zoom-toggle">🔍</label></th><th></th></tr>';
+		echo '<tr><th>User</th><th>Problem</th><th>Description</th><th>Compare</th><th><label title="Toggle board previews"><input type="checkbox" class="preview-zoom-toggle">🔍</label></th><th></th></tr>';
 	}
 
 	public function renderItem(int $index, array $item): void
 	{
 		echo '<td>' . User::renderLink($item) . '</td>';
 		echo '<td><a class="adminpanel-link" href="/' . $item['set_connection_id'] . '">' . h($item['set_title']) . ' - ' . h($item['num']) . '</a></td>';
+		echo '<td class="proposal-description" id="description-' . $item['proposed_id'] . '">' . SgfDescription::render($item['description']) . '</td>';
 		echo '<td style="white-space:nowrap">';
 		echo '<a href="/editor/?sgfID=' . $item['latest_accepted_id'] . '">current</a> | <a href="/editor/?sgfID=' . $item['proposed_id'] . '">proposal</a> | <a href="/editor/?sgfID=' . $item['proposed_id'] . '&diffID=' . $item['latest_accepted_id'] . '">diff</a>';
 		echo '</td>';
 		echo '<td>';
 		new TsumegoButton($item['tsumego_id'], $item['set_connection_id'], $item['num'], $item['status'] ?: 'N', 0, $item['sgf'])->render();
 		echo '</td>';
-		echo '<td style="white-space:nowrap">';
-		echo '<form method="post" style="display:inline" action="/users/acceptSGFProposal/' . $item['proposed_id'] . '">';
-		echo '<button type="submit" class="btn btn--small" id="accept-' . $item['proposed_id'] . '">Accept</button>';
-		echo '</form>';
-		echo '<form method="post" style="display:inline" action="/users/rejectSGFProposal/' . $item['proposed_id'] . '">';
-		echo '<button type="submit" class="btn btn--small" id="reject-' . $item['proposed_id'] . '">Reject</button>';
-		echo '</form>';
+		echo '<td>';
+		ProposalDecisionForm::render(
+			'/users/acceptSGFProposal/' . $item['proposed_id'],
+			'/users/rejectSGFProposal/' . $item['proposed_id'],
+			'accept-' . $item['proposed_id'],
+			'reject-' . $item['proposed_id'],
+			'comment-' . $item['proposed_id']);
 		echo '</td>';
 	}
 }

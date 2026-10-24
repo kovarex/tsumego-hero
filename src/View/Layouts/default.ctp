@@ -21,12 +21,13 @@ use App\Utility\ViteManifest;
  * @var string $nextDay
  * @var string $boardsBitmask
  * @var string|null $canonicalPath Path a page with more than one address wants to be known by
+ * @var bool $robotsNoIndex The page is reachable but must stay out of search results
  * @var array|null $og
  */
 
 ?>
 <!DOCTYPE html>
-<html lang="en" data-theme="<?php echo $lightDark === 'dark' ? 'dark' : 'light'; ?>">
+<html lang="en" data-theme="<?php echo $lightDark === 'dark' ? 'dark' : 'light'; ?>" data-date-format="<?php echo Auth::getDateFormat(); ?>">
 <?php
 if (Configure::read('debug')) { ?>
 <script>
@@ -109,6 +110,9 @@ echo $this->Html->charset();
 $canonicalUrl = Router::url($canonicalPath ?? '/' . trim(strtok($this->request->here, '?'), '/'), true);
 ?>
 <link rel="canonical" href="<?php echo h($canonicalUrl); ?>">
+<?php if (!empty($robotsNoIndex)): ?>
+<meta name="robots" content="noindex">
+<?php endif; ?>
 <?php
 // Controllers can describe the page themselves; what they set wins, everything
 // else comes from here.
@@ -165,6 +169,7 @@ echo ViteManifest::legacyScript('legacy');
 			// Account access at the top of the drawer (logged-in). The username
 			// links to the profile; Settings and Sign Out are listed as separate actions.
 			if (Auth::isLoggedIn()):
+				$unreadMessageCount = Message::unreadCount(Auth::getUserID());
 			?>
 			<div class="site-nav__account">
 				<div class="site-nav__account-user">
@@ -172,6 +177,7 @@ echo ViteManifest::legacyScript('legacy');
 				</div>
 				<nav class="site-nav__account-links">
 					<ul>
+						<li><a href="/messages">Messages <?php echo AccountWidget::unreadMessagesBadge($unreadMessageCount); ?></a></li>
 						<li><a href="/users/settings">Settings</a></li>
 						<li><a href="/users/logout">Sign Out</a></li>
 					</ul>
@@ -287,7 +293,7 @@ echo ViteManifest::legacyScript('legacy');
 						if(Auth::isLoggedIn()){
 							echo '<ul class="newMenuLi2">';
 							echo '<li><a href="/sets/mine">My Sets</a></li>';
-							echo '<li><a class="'.$refreshLinkToFavs.'" href="/sets/view/favorites">Favorites</a></li>';
+							echo '<li><a class="'.$refreshLinkToFavs.'" href="'.Set::url('favorites').'">Favorites</a></li>';
 							if(Auth::hasPremium() || Auth::isAdmin())
 								echo '<li><a '.$refreshLinkToSandbox.' class="'.$sandboxA.'" href="/sets/sandbox">Sandbox</a></li>';
 							if(Auth::isAdmin()){
@@ -298,6 +304,7 @@ echo ViteManifest::legacyScript('legacy');
 								echo '<li class="additional-adminLink"><a class="adminLink" href="/tsumegos/mergeForm">Merge Duplicates</a></li>';
 								echo '<li class="additional-adminLink"><a class="adminLink" href="/sets/duplicatesearch">Duplicate Search Results</a></li>';
 								echo '<li class="additional-adminLink"><a class="adminLink" href="/schedule">Publish Schedule</a></li>';
+								echo '<li class="additional-adminLink"><a class="adminLink" href="/trash">Trash</a></li>';
 								echo '<li class="additional-adminLink"><a class="adminLink" href="/app/webroot/editor">Editor</a></li>';
 								echo '<li class="additional-adminLink"><a class="adminLink" href="/users/userstats">User Activities</a></li>';
 							}
@@ -353,7 +360,7 @@ echo ViteManifest::legacyScript('legacy');
 									</div>
 						</li>
 						<li class="menuIcons1">
-							<a class="menuIcons2" id="darkButton" onclick="darkAndLight();"><img id="darkButtonImage"></a>
+							<a class="menuIcons2" id="darkButton" onclick="darkAndLight();" title="Light or dark theme" aria-label="Switch between light and dark theme"><span class="theme-icon"></span></a>
 						</li>
 					</ul>
 				</nav>
@@ -367,7 +374,7 @@ echo ViteManifest::legacyScript('legacy');
 			echo '<div class="site-nav__signin"><a class="menuLi '.$currentPage.'" id="signInMenu" href="/users/login">Sign In</a></div>';
 		?>
 		</div>
-			<?php AccountWidget::render($timeMode); ?>
+			<?php AccountWidget::render($timeMode, $unreadMessageCount ?? 0); ?>
 	<div width="100%" align="left" class="whitebox2">
 		<?php
 		$setHeight = '';
@@ -578,8 +585,13 @@ echo ViteManifest::legacyScript('legacy');
 
 	function setSoundCookie(value)
 	{
-		// One cookie for the whole site, written for path / so every page sees it.
+		// One cookie for the whole site, written for path /. Copies written earlier for single
+		// page paths would still outrank it, so those are expired here.
 		document.cookie = "sound=" + value + ";path=/";
+		["/users", "/users/view", "/sets/view", "/tsumegos/play"].forEach(function (page)
+		{
+			document.cookie = "sound=;path=" + page + ";max-age=0";
+		});
 	}
 
 	function changeSound()
@@ -646,25 +658,6 @@ echo ViteManifest::legacyScript('legacy');
 	}
 
 	boardSelector = new BoardSelector(<?php echo $boardsBitmask . 'n';?>);
-
-	// Localize <time datetime="..."> elements.
-	//
-	// Convention:
-	// - Timestamps (full ISO 8601, e.g. 2026-08-15T12:00:00+00:00) are instants:
-	//   render them in the user's local timezone, where the day may cross over.
-	// - Calendar dates (date-only YYYY-MM-DD) are timezone-free: anchor them at
-	//   UTC so the day never changes across timezones.
-	document.querySelectorAll('time[datetime]').forEach(function(el) {
-		var raw = el.getAttribute('datetime');
-		var dateOnly = raw.indexOf('T') === -1;
-		var d = new Date(dateOnly ? raw + 'T00:00:00Z' : raw);
-		if (isNaN(d)) return;
-		var fmt = el.getAttribute('data-format') || 'datetime';
-		if (fmt === 'date') el.textContent = d.toLocaleDateString(undefined, dateOnly ? { timeZone: 'UTC' } : undefined);
-		else if (fmt === 'month-day') el.textContent = d.toLocaleDateString(undefined, dateOnly ? { timeZone: 'UTC', month: 'short', day: 'numeric' } : { month: 'short', day: 'numeric' });
-		else if (fmt === 'time') el.textContent = d.toLocaleTimeString([], { timeStyle: 'short' });
-		else el.textContent = d.toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
-	});
 </script>
 
 <?php

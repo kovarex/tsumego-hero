@@ -1,5 +1,7 @@
 <?php
 
+use App\Attribute\HttpGet;
+use App\Attribute\HttpPost;
 use App\Utility\AchievementChecker;
 use App\Utility\Auth;
 use App\Utility\Constants;
@@ -10,6 +12,7 @@ use App\Utility\Util;
 
 class TimeModeController extends AppController
 {
+	#[HttpGet]
 	public function start(): mixed
 	{
 		$this->Authorization->authorize('User', 'startTimeMode');
@@ -26,6 +29,8 @@ class TimeModeController extends AppController
 		return $this->redirect("/timeMode/play");
 	}
 
+	#[HttpGet]
+	#[HttpPost]
 	public function play(?string $position = null): mixed
 	{
 		if (!Auth::isLoggedIn())
@@ -67,6 +72,7 @@ class TimeModeController extends AppController
 		return null;
 	}
 
+	#[HttpGet]
 	public function skip(?string $position = null): mixed
 	{
 		if (!$position)
@@ -98,8 +104,7 @@ FROM
 	JOIN set_connection ON set_connection.tsumego_id=tsumego.id
 	JOIN `set` ON set_connection.set_id=`set`.id
 WHERE
-	`set`.`included_in_time_mode` = 1 AND
-	`set`.public = 1");
+	`set`.`included_in_time_mode` = 1 AND " . Set::officialCondition());
 
 			$rank['tsumego_count'] = $count[0]['count'];
 			$result[] = $rank;
@@ -120,8 +125,7 @@ FROM
 	JOIN set_connection ON set_connection.tsumego_id=tsumego.id
 	JOIN `set` ON set_connection.set_id=`set`.id
 WHERE
-	`set`.`included_in_time_mode` = 1 AND
-	`set`.public = 1
+	`set`.`included_in_time_mode` = 1 AND " . Set::officialCondition() . "
 GROUP BY bucket
 ORDER BY MIN(rating);");
 
@@ -142,6 +146,7 @@ ORDER BY MIN(rating);");
 		return $result;
 	}
 
+	#[HttpGet]
 	public function overview(): mixed
 	{
 		if (!Auth::isLoggedIn())
@@ -183,7 +188,7 @@ ORDER BY MIN(rating);");
 		return null;
 	}
 
-	public function exportSessionToShow(array $session, array $timeModeCategory, array $timeModeRank): array
+	private function exportSessionToShow(array $session, array $timeModeCategory, array $timeModeRank): array
 	{
 		$result = [];
 		$result['id'] = $session['TimeModeSession']['id'];
@@ -218,7 +223,45 @@ ORDER BY MIN(rating);");
 		return $result;
 	}
 
-	public static function deduceUnlock(?array $finishedSession, array $timeModeRanks, array $timeModeCategories): ?array
+	/**
+	 * All the finished sessions of the current user indexed by category and rank, the newest first.
+	 * Only the counts of the attempts are loaded, the attempts themselves are shown when the session is opened.
+	 */
+	private static function getHistory(): array
+	{
+		$sessions = Util::query("
+SELECT
+	time_mode_session.id,
+	time_mode_session.points,
+	time_mode_session.created,
+	time_mode_session.time_mode_session_status_id,
+	time_mode_session.time_mode_category_id,
+	time_mode_session.time_mode_rank_id,
+	(SELECT COUNT(*) FROM time_mode_attempt
+		WHERE time_mode_attempt.time_mode_session_id = time_mode_session.id) AS attempt_count,
+	(SELECT COUNT(*) FROM time_mode_attempt
+		WHERE time_mode_attempt.time_mode_session_id = time_mode_session.id
+		AND time_mode_attempt.time_mode_attempt_status_id = ?) AS solved_count
+FROM time_mode_session
+WHERE
+	time_mode_session.user_id = ? AND
+	time_mode_session.time_mode_session_status_id != ?
+ORDER BY time_mode_session.created DESC, time_mode_session.id DESC",
+			[TimeModeUtil::$ATTEMPT_RESULT_SOLVED, Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]);
+
+		$result = [];
+		foreach ($sessions as $session)
+			$result[$session['time_mode_category_id']][$session['time_mode_rank_id']] [] = [
+				'id' => $session['id'],
+				'status' => $session['time_mode_session_status_id'] == TimeModeUtil::$SESSION_STATUS_SOLVED ? 'passed' : 'failed',
+				'points' => $session['points'],
+				'created' => $session['created'],
+				'solvedCount' => $session['solved_count'],
+				'attemptCount' => $session['attempt_count']];
+		return $result;
+	}
+
+	private static function deduceUnlock(?array $finishedSession, array $timeModeRanks, array $timeModeCategories): ?array
 	{
 		if (!$finishedSession)
 			return null;
@@ -279,6 +322,7 @@ ORDER BY MIN(rating);");
 		return null;
 	}
 
+	#[HttpGet]
 	public function result(?string $timeModeSessionID = null): mixed
 	{
 		if (!Auth::isLoggedIn())
@@ -299,6 +343,7 @@ ORDER BY MIN(rating);");
 
 		$timeModeCategories = ClassRegistry::init('TimeModeCategory')->find('all', []);
 		$timeModeRanks = ClassRegistry::init('TimeModeRank')->find('all', ['order' => 'id DESC']);
+		$history = self::getHistory();
 
 		$sessionsToShow = [];
 		foreach ($timeModeCategories as $timeModeCategory)
@@ -316,6 +361,9 @@ ORDER BY MIN(rating);");
 					&& $finishedSession['TimeModeSession']['time_mode_category_id'] == $categoryID
 					&& $finishedSession['TimeModeSession']['time_mode_rank_id'] == $rankID)
 						$sessionsToShow[$categoryID][$rankID]['current'] = $this->exportSessionToShow($finishedSession, $timeModeCategory, $timeModeRank);
+				// a single run is already shown as the result or the best one
+				if (count($history[$categoryID][$rankID] ?? []) > 1)
+					$sessionsToShow[$categoryID][$rankID]['history'] = $history[$categoryID][$rankID];
 				if (!$session || isset($finishedSession) && $session['TimeModeSession']['id'] == $finishedSession['TimeModeSession']['id'])
 					continue;
 				$sessionsToShow[$categoryID][$rankID]['best'] = $this->exportSessionToShow($session, $timeModeCategory, $timeModeRank);
@@ -324,7 +372,10 @@ ORDER BY MIN(rating);");
 		$this->set('sessionsToShow', $sessionsToShow);
 		$this->set('rankArrowClosed', '/img/greyArrow1.png');
 		$this->set('rankArrowOpened', '/img/greyArrow2.png');
-		$this->set('unlock', self::deduceUnlock($finishedSession, $timeModeRanks, $timeModeCategories));
+		// a run opened from the history unlocked whatever it unlocked when it was finished
+		$this->set('unlock', isset($this->params['url']['history'])
+			? null
+			: self::deduceUnlock($finishedSession, $timeModeRanks, $timeModeCategories));
 		$this->set('achievementUpdates', new AchievementChecker()->checkTimeModeAchievements()->finalize()->updated);
 
 		return null;

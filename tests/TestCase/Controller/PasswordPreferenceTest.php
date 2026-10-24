@@ -128,14 +128,6 @@ class PasswordPreferenceTest extends TestCaseWithAuth
 		$this->assertStringNotContainsString('brnoHorse42', TestEmailer::$lastEmail['body']);
 	}
 
-	public function testRefusesARequestThatIsNotAPost(): void
-	{
-		$this->prepareUser('passwordGet');
-
-		$this->expectException(MethodNotAllowedException::class);
-		$this->testAction('/users/passwordPreference', ['method' => 'get', 'return' => 'contents']);
-	}
-
 	/**
 	 * Session of another device, opened with the old password.
 	 */

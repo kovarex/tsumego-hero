@@ -297,6 +297,63 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 			'Solving the same tsumego twice must count the golden solve only once');
 	}
 
+	private function goldenRunOf(ContextPreparator $context): int
+	{
+		$goldenCondition = ClassRegistry::init('AchievementCondition')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'category' => 'golden'],
+		]);
+		return $goldenCondition ? (int) $goldenCondition['AchievementCondition']['value'] : 0;
+	}
+
+	public function testFailingAGoldenTsumegoRestartsTheGoldenRun(): void
+	{
+		$context = new ContextPreparator([
+			'tsumego' => ['status' => 'G'],
+			'achievement-conditions' => [['category' => 'golden', 'value' => 5]],
+		]);
+
+		$this->failResult($context);
+
+		$this->assertSame(0, $this->goldenRunOf($context), 'Failing a golden tsumego must start the golden run over');
+	}
+
+	public function testSolvingAGoldenTsumegoAfterAMistakeDoesNotExtendTheGoldenRun(): void
+	{
+		$context = new ContextPreparator([
+			'tsumego' => ['status' => 'G'],
+			'achievement-conditions' => [['category' => 'golden', 'value' => 5]],
+		]);
+
+		$this->solveWithMisplays($context);
+
+		$this->assertSame(0, $this->goldenRunOf($context), 'The misplay ends the run, the later solve must not count');
+	}
+
+	public function testFailingANormalTsumegoKeepsTheGoldenRun(): void
+	{
+		$context = new ContextPreparator([
+			'tsumego' => ['status' => 'V'],
+			'achievement-conditions' => [['category' => 'golden', 'value' => 5]],
+		]);
+
+		$this->failResult($context);
+
+		$this->assertSame(5, $this->goldenRunOf($context), 'Only a golden tsumego can break the golden run');
+	}
+
+	public function testTenthGoldenTsumegoSolvedInARowUnlocksGoldDigger(): void
+	{
+		$context = new ContextPreparator([
+			'tsumego' => ['status' => 'G'],
+			'achievement-conditions' => [['category' => 'golden', 'value' => Achievement::GOLD_DIGGER_COUNT - 1]],
+		]);
+
+		$response = $this->solve($context);
+
+		$this->assertSame(Achievement::GOLD_DIGGER_COUNT, $this->goldenRunOf($context));
+		$this->assertContains(AchievementId::GOLD_DIGGER->value, array_column($response['achievement_updates'] ?? [], 'id'));
+	}
+
 	public function testSolvingAddsNewTsumegoAttempt(): void
 	{
 		foreach (['V', 'W', 'S', 'C'] as $status)

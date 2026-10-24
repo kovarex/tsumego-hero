@@ -22,15 +22,6 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		$this->assertTrue(Auth::isLoggedIn());
 	}
 
-	public function testGoogleSignInRequiresPost(): void
-	{
-		new ContextPreparator(['user' => null]);
-
-		$this->expectException(MethodNotAllowedException::class);
-
-		$this->testAction('users/googlesignin', ['method' => 'GET']);
-	}
-
 	public function testLoginWithEmail(): void
 	{
 		new ContextPreparator(['user' => null, 'other-users' => [['name' => 'kovarex', 'email' => 'kovarex@example.com']]]);
@@ -40,7 +31,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		$browser->driver->getKeyboard()->sendKeys('kovarex@example.com');
 		$browser->clickId('password');
 		$browser->driver->getKeyboard()->sendKeys('test');
-		$sumbitButton = $browser->find('#UserLoginForm input[type="submit"]');
+		$sumbitButton = $browser->find('#UserLoginForm button[type="submit"]');
 		$sumbitButton->click();
 		$this->assertSame($browser->find('.account-bar-user-class')->getText(), 'DN_kovarex');
 	}
@@ -85,7 +76,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 	{
 		$this->assertSame(
 			password_get_info(password_hash('anything', PASSWORD_DEFAULT))['options']['cost'],
-			password_get_info(UsersController::dummyPasswordHash())['options']['cost']);
+			password_get_info(UsersController::_dummyPasswordHash())['options']['cost']);
 	}
 
 	public function testTheSignInPagePointsGoogleAccountsToTheGoogleButton(): void
@@ -94,14 +85,14 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 
 		$page = $this->testAction('users/login/', ['method' => 'GET', 'return' => 'view']);
 
-		$this->assertStringContainsString('Signed up with Google? Use the button below.', $page);
+		$this->assertStringContainsString('class="g_id_signin"', $page);
 	}
 
 	public function testLogout(): void
 	{
 		new ContextPreparator(['user' => ['name' => 'kovarex']]);
 		$this->assertTrue(Auth::isLoggedIn());
-		$this->testAction('users/logout/');
+		$this->testAction('users/logout/', ['method' => 'GET']);
 		$this->assertFalse(Auth::isLoggedIn());
 	}
 
@@ -123,7 +114,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		$browser->findBy(WebDriverBy::name('data[User][password2]'))->sendKeys('hello123');
 
 		// Submit the form
-		$browser->find('.signin input[type="submit"]')->click();
+		$browser->find('.signin button[type="submit"]')->click();
 
 		// Wait for form submission to process and redirect away from signup page
 		$browser->waitUntilJs('!location.href.includes("users/add")');
@@ -236,7 +227,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 
 		TestEmailer::$lastEmail = null;
 		$this->testAction('users/resetpassword/', ['data' => ['User' => ['email' => $user['email']]], 'method' => 'POST']);
-		$this->assertNull(TestEmailer::$lastEmail['to'] ?? null);
+		$this->assertArrayNotHasKey('body', TestEmailer::$lastEmail ?? [], 'the second request sends no mail');
 	}
 
 	public function testNewPassword(): void

@@ -1,5 +1,6 @@
 <?php
 
+use App\Attribute\HttpGet;
 use App\Utility\Auth;
 
 class SgfsController extends AppController
@@ -8,6 +9,7 @@ class SgfsController extends AppController
 	 * @param string|null $id
 	 * @return void
 	 */
+	#[HttpGet]
 	public function view(?string $id = null): void
 	{
 		$this->Authorization->authorize('Sgf');
@@ -66,7 +68,7 @@ class SgfsController extends AppController
 			$s = $this->Sgf->find('all', [
 				'order' => 'id DESC',
 				'limit' => 100,
-				'conditions' => ['user_id' => $this->params['url']['user']],
+				'conditions' => ['user_id' => $this->params['url']['user'], 'sgf_status_id !=' => Sgf::STATUS_REJECTED],
 			]);
 			if (!$s)
 				$s = [];
@@ -77,7 +79,7 @@ class SgfsController extends AppController
 			$s = $this->Sgf->find('all', [
 				'order' => 'id DESC',
 				'limit' => 100,
-				'conditions' => ['tsumego_id' => $id]]);
+				'conditions' => ['tsumego_id' => $id, 'sgf_status_id !=' => Sgf::STATUS_REJECTED]]);
 			if (!$s)
 				$s = [];
 		}
@@ -104,7 +106,7 @@ class SgfsController extends AppController
 				$versionCounter[$scT['SetConnection']['tsumego_id']]++;
 			else
 				$versionCounter[$scT['SetConnection']['tsumego_id']] = 0;
-			$s[$i]['Sgf']['version'] = count($this->Sgf->find('all', ['conditions' => ['tsumego_id' => $scT['SetConnection']['tsumego_id']]])) - $versionCounter[$scT['SetConnection']['tsumego_id']];
+			$s[$i]['Sgf']['version'] = count($this->Sgf->find('all', ['conditions' => ['tsumego_id' => $scT['SetConnection']['tsumego_id'], 'sgf_status_id !=' => Sgf::STATUS_REJECTED]])) - $versionCounter[$scT['SetConnection']['tsumego_id']];
 
 			if ($s[$i]['Sgf']['user'] == 'noUser')
 				$s[$i]['Sgf']['user'] = 'automatically generated';
@@ -112,15 +114,7 @@ class SgfsController extends AppController
 				$s[$i]['Sgf']['delete'] = true;
 			else
 				$s[$i]['Sgf']['delete'] = false;
-			if ($type == 'user')
-			{
-				$sDiff = $this->Sgf->find('all', ['order' => 'id DESC', 'limit' => 2, 'conditions' => ['tsumego_id' => $s[$i]['Sgf']['tsumego_id']]]);
-				if (!$sDiff)
-					$sDiff = [];
-				$s[$i]['Sgf']['diff'] = $sDiff[1]['Sgf']['id'];
-			}
-			elseif ($i != count($s) - 1)
-				$s[$i]['Sgf']['diff'] = $s[$i + 1]['Sgf']['id'];
+			$s[$i]['Sgf']['diff'] = $this->Sgf->findPreviousVersionID($s[$i]['Sgf']['tsumego_id'], $s[$i]['Sgf']['id']);
 		}
 
 		$this->set('ux', $ux);

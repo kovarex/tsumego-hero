@@ -55,6 +55,7 @@ These entries are written for **players**, so describe the outcome, not the impl
 - **Write a full sentence, not a noun phrase.** Don't copy the commit message, which is terse dev shorthand ("Add burst animation"); tell the player what they get ("Favoriting a problem now plays a burst animation").
 - **Lead with what the player gets**; what's now possible, faster, or different from their point of view.
 - **One sentence per change, short and scannable.**
+- **Stop at what the reader can use.** Leave out what did not change, including where something does not appear; the entry is news, not a specification.
 - **Avoid internal jargon.** Name the feature and the page the way the UI does, and say the exact behavior that changed, not how the code does it.
 - **Stay honest and concrete**; no marketing fluff ("exciting", "amazing") and **no bare qualifiers**. "Correctly", "properly", "the right order", "better" tell players nothing.
 - **Tone:** warm, direct, and specific; like a friendly announcement to players, not a dev changelog. Each line reads as one clear, confident sentence.
