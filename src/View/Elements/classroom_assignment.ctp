@@ -30,7 +30,9 @@ $props = json_encode([
 		</span>
 		<span class="classes__actions">
 			<span class="hint">due <time datetime="<?= h($assignment['due']) ?>" data-format="date"><?= h($assignment['due']) ?></time></span>
-			<?php if ($isTeacher): ?>
+			<?php if (!$isTeacher): ?>
+			<a class="btn btn--small btn--success" href="<?= ClassroomAssignment::playLink((int) $assignment['id']) ?>">Solve</a>
+			<?php else: ?>
 			<a class="btn btn--small<?= $isPublished ? ' btn--neutral' : '' ?>" href="/classes/assignment/<?= (int) $assignment['id'] ?>"><?= $isPublished ? 'Edit' : 'Continue' ?></a>
 			<form method="post" action="/classes/delete-assignment/<?= (int) $assignment['id'] ?>" onsubmit="return confirm('<?= $isPublished ? 'Take this assignment back?' : 'Throw this draft away?' ?>');">
 				<button class="btn btn--small btn--neutral" type="submit">Remove</button>

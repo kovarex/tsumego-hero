@@ -81,6 +81,11 @@ export function ClassroomProgress({ assignmentId, isTeacher }: ClassroomProgress
 		refetchOnWindowFocus: true
 	});
 
+	// A pupil plays the problem in the row of the assignment, the teacher opens it on its own.
+	const problemLink = (setConnectionId: number) => isTeacher
+		? `/${setConnectionId}`
+		: `/classes/play/${assignmentId}/${setConnectionId}`;
+
 	if (progressQuery.isError)
 		return <ErrorMessage onRetry={() => progressQuery.refetch()} />;
 	if (!progressQuery.data)
@@ -106,7 +111,7 @@ export function ClassroomProgress({ assignmentId, isTeacher }: ClassroomProgress
 					<tr>
 						{problems.map(problem => (
 							<th key={problem.setConnectionId}>
-								<a href={`/${problem.setConnectionId}`}>{problem.number}</a>
+								<a href={problemLink(problem.setConnectionId)}>{problem.number}</a>
 							</th>
 						))}
 					</tr>
@@ -127,7 +132,7 @@ export function ClassroomProgress({ assignmentId, isTeacher }: ClassroomProgress
 								>
 									{isTeacher
 										? cellText(cell)
-										: <a href={`/${problems[index].setConnectionId}`}>{cellText(cell) || '·'}</a>}
+										: <a href={problemLink(problems[index].setConnectionId)}>{cellText(cell) || '·'}</a>}
 								</td>
 							))}
 							<td className="classes__solved-count">{pupil.solvedCount}/{problems.length}</td>

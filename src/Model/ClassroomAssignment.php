@@ -2,6 +2,7 @@
 
 use App\Utility\Rating;
 use App\Utility\TsumegoButton;
+use App\Utility\TsumegoButtons;
 use App\Utility\TsumegoUtil;
 use App\Utility\Util;
 
@@ -37,7 +38,7 @@ class ClassroomAssignment extends AppModel
 	 * The assignments of a class, the drafts first and then the latest due date first, each with
 	 * the collections its problems come from under `collections`. The pupils don't see the drafts.
 	 *
-	 * @return array<array<string, mixed>>
+	 * @return list<array<string, mixed>>
 	 */
 	public static function ofClassroom(int $classroomId, bool $withDrafts): array
 	{
@@ -45,6 +46,18 @@ class ClassroomAssignment extends AppModel
 			WHERE a.classroom_id = ?' . ($withDrafts ? '' : ' AND a.published IS NOT NULL') . '
 			ORDER BY a.published IS NULL DESC, a.due DESC, a.id DESC',
 			[$classroomId]);
+		return self::withCollections($assignments);
+	}
+
+	/**
+	 * The assignments, each with the collections its problems come from under `collections`, in
+	 * the order of their first problem, for the name of an assignment without one (title()).
+	 *
+	 * @param list<array<string, mixed>> $assignments
+	 * @return list<array<string, mixed>>
+	 */
+	public static function withCollections(array $assignments): array
+	{
 		if (empty($assignments))
 			return [];
 
@@ -254,6 +267,82 @@ class ClassroomAssignment extends AppModel
 			throw $exception;
 		}
 		return count($tsumegoIds);
+	}
+
+	/**
+	 * The address where a pupil plays the assignment as one row of problems, at the problem when
+	 * given, else at the first one they haven't solved (ClassroomsController::play()).
+	 */
+	public static function playLink(int $assignmentId, ?int $setConnectionId = null): string
+	{
+		return '/classes/play/' . $assignmentId . ($setConnectionId === null ? '' : '/' . $setConnectionId);
+	}
+
+	/**
+	 * The problems of the assignment the player solved since it was published, by tsumego id.
+	 *
+	 * @param array<string, mixed> $assignment A published one
+	 * @return array<int, true>
+	 */
+	public static function solvedTsumegoIds(array $assignment, int $userId): array
+	{
+		$rows = Util::query('SELECT DISTINCT ta.tsumego_id FROM tsumego_attempt ta
+			WHERE ta.user_id = ? AND ta.solved = 1 AND ta.created >= ?
+				AND ta.tsumego_id IN (SELECT sc.tsumego_id FROM classroom_assignment_problem p
+					JOIN set_connection sc ON sc.id = p.set_connection_id
+					WHERE p.classroom_assignment_id = ?)',
+			[$userId, $assignment['published'] ?? $assignment['created'], (int) $assignment['id']]);
+		return array_fill_keys(array_map('intval', array_column($rows, 'tsumego_id')), true);
+	}
+
+	/**
+	 * The first problem of the assignment the player hasn't solved since it was published, or the
+	 * first problem once they solved them all; null for an assignment without problems.
+	 *
+	 * @param array<string, mixed> $assignment
+	 */
+	public static function firstUnsolvedSetConnectionId(array $assignment, int $userId): ?int
+	{
+		$problems = self::problems($assignment);
+		if (empty($problems))
+			return null;
+		$solved = self::solvedTsumegoIds($assignment, $userId);
+		foreach ($problems as $problem)
+			if (!isset($solved[$problem['tsumegoId']]))
+				return $problem['setConnectionId'];
+		return $problems[0]['setConnectionId'];
+	}
+
+	/**
+	 * The row of buttons under the board while the player plays the assignment, numbered from 1
+	 * like a collection of its own: green for a problem solved since it was published, grey for
+	 * one still to solve. The tooltip names the collection and the number the problem has there.
+	 *
+	 * @param array<string, mixed> $assignment
+	 */
+	public static function playButtons(array $assignment, int $userId, int $currentSetConnectionId): TsumegoButtons
+	{
+		$rows = Util::query('SELECT sc.id AS set_connection_id, sc.tsumego_id, sc.num, s.title AS set_title, t.rating' . self::PREVIEW_COLUMN . '
+			FROM classroom_assignment_problem p
+			' . self::visibleProblemJoins() . '
+			' . self::previewJoin() . '
+			WHERE p.classroom_assignment_id = ?
+			ORDER BY p.position, p.id',
+			[(int) $assignment['id']]);
+		$solved = self::solvedTsumegoIds($assignment, $userId);
+		foreach ($rows as &$row)
+			$row['status'] = isset($solved[(int) $row['tsumego_id']]) ? 'S' : 'N';
+		unset($row);
+
+		$buttons = TsumegoButtons::fromRows($rows, $currentSetConnectionId, self::MAXIMUM_PROBLEMS, self::playLink((int) $assignment['id']) . '/');
+		$rowsBySetConnection = array_column($rows, null, 'set_connection_id');
+		foreach ($buttons as $button)
+		{
+			$row = $rowsBySetConnection[$button->setConnectionID];
+			$button->label = $row['status'] === 'S' ? 'Solved' : 'Not solved yet';
+			$button->description = $row['set_title'] . ' ' . $row['num'];
+		}
+		return $buttons;
 	}
 
 	/**

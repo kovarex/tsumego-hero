@@ -4,6 +4,7 @@ use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Lib\Error\UnprocessableEntityException;
 use App\Utility\Auth;
+use App\Utility\Constants;
 use App\Utility\CookieFlash;
 use App\Utility\Util;
 
@@ -296,6 +297,53 @@ class ClassroomsController extends AppController
 			'published' => $published === null ? null : Util::toIso8601($published),
 			'classUrl' => self::classUrl((int) $classroom['id']),
 		]);
+	}
+
+	/**
+	 * A pupil plays the assignment as one row of problems, numbered from 1 under the board like a
+	 * collection of its own, with the title saying where in the assignment they are and which
+	 * problem of which collection it is. Without a problem it opens the first one they haven't
+	 * solved. The teacher can play it too, to see what the pupils see.
+	 */
+	#[HttpGet]
+	public function play(string $assignmentId, ?string $setConnectionId = null): mixed
+	{
+		if (!Auth::isLoggedIn())
+			return $this->redirect('/users/login');
+		$assignment = $this->findAssignment($assignmentId);
+		$classroom = $this->findClassroom((string) $assignment['classroom_id']);
+		$isTeacher = $this->Authorization->can(['Classroom' => $classroom], 'manage');
+		if (!$isTeacher && !ClassroomMember::isPupil((int) $classroom['id'], Auth::getUserID()))
+			throw new ForbiddenException();
+		if (!$isTeacher && !ClassroomAssignment::isPublished($assignment))
+			throw new NotFoundException('Assignment not found');
+
+		$problems = ClassroomAssignment::problems($assignment);
+		if (empty($problems))
+		{
+			CookieFlash::set('The assignment has no problems.', 'info');
+			return $this->redirect(self::classUrl((int) $classroom['id']));
+		}
+		$current = $setConnectionId === null
+			? ClassroomAssignment::firstUnsolvedSetConnectionId($assignment, Auth::getUserID())
+			: (int) $setConnectionId;
+		if (!in_array($current, array_column($problems, 'setConnectionId'), true))
+			return $this->redirect(ClassroomAssignment::playLink((int) $assignment['id']));
+
+		// the problems of an assignment are played like the ones of a collection
+		if (!Auth::isInLevelMode())
+			Auth::saveUserField('mode', Constants::$LEVEL_MODE);
+
+		$play = new Play(function ($name, $value) {
+			$this->set($name, $value);
+		});
+		$play->classroomAssignment = ClassroomAssignment::withCollections([$assignment])[0];
+		// Same problem, same address for search engines, whichever route got here.
+		$this->set('canonicalPath', '/' . $current);
+		$play->play($current, $this->request, $this->request->data);
+		$this->set('_page', 'classes');
+		$this->render('/Tsumegos/play');
+		return null;
 	}
 
 	#[HttpPost]

@@ -688,6 +688,94 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$this->assertNotNull($this->assignment($assignmentId)['published']);
 	}
 
+	/**
+	 * The pupil plays the assignment as a row of its own: the buttons are numbered from 1, green
+	 * for a problem solved since it was published, and the title says where in the assignment the
+	 * pupil is and which problem of which collection it is. Without a problem the route opens the
+	 * first one not solved yet.
+	 */
+	public function testAPupilPlaysTheAssignmentAsOneRow(): void
+	{
+		$this->prepare();
+		$classroomId = $this->createClassroom();
+		$this->addMember($classroomId, 'pupil');
+		$assignmentId = $this->createAssignment($classroomId, '2026-10-01 00:00:00', '2026-10-08', [3, 1, 0]);
+		Util::execute("UPDATE classroom_assignment SET title = 'Week two' WHERE id = ?", [$assignmentId]);
+		$this->addAttempt('pupil', 3, true, 0, '2026-10-02 10:00:00');
+		$this->addAttempt('pupil', 1, true, 0, '2026-09-02 10:00:00');
+		$this->login('pupil');
+
+		$this->testAction('/classes/play/' . $assignmentId, ['method' => 'get', 'return' => 'contents']);
+
+		$this->assertStringContainsString('var tsumegoID = ' . $this->context->tsumegos[1]['id'] . ';', $this->view);
+		$buttons = (array) $this->vars['tsumegoButtons'];
+		$this->assertSame([1, 2, 3], array_map(fn($button) => $button->order, $buttons));
+		$this->assertSame(['S', 'V', 'N'], array_map(fn($button) => $button->status, $buttons));
+		$this->assertSame('Homework 1', $buttons[2]->description);
+		$text = preg_replace('/\s+/', ' ', $this->view);
+		$this->assertStringContainsString('Week two 2/3</a>', $text);
+		$this->assertStringContainsString('(Homework 2/3)', $text);
+		$this->assertStringContainsString('href="/classes/play/' . $assignmentId . '/' . $this->setConnectionId(0) . '"', $this->view);
+		$this->assertSame('/classes/play/' . $assignmentId . '/' . $this->setConnectionId(3), $this->vars['previousLink']);
+		$this->assertSame('/classes/play/' . $assignmentId . '/' . $this->setConnectionId(0), $this->vars['nextLink']);
+		$this->assertTrue(App\Utility\Auth::isInLevelMode());
+	}
+
+	public function testAfterTheLastProblemComesTheClass(): void
+	{
+		$this->prepare();
+		$classroomId = $this->createClassroom();
+		$this->addMember($classroomId, 'pupil');
+		$assignmentId = $this->createAssignment($classroomId, '2026-10-01 00:00:00', '2026-10-08', [3, 1, 0]);
+		$this->login('pupil');
+
+		$this->testAction('/classes/play/' . $assignmentId . '/' . $this->setConnectionId(0), ['method' => 'get', 'return' => 'contents']);
+
+		$this->assertSame('/classes/' . $classroomId, $this->vars['nextLink']);
+	}
+
+	public function testAProblemOutsideTheAssignmentLeadsToItsStart(): void
+	{
+		$this->prepare();
+		$classroomId = $this->createClassroom();
+		$this->addMember($classroomId, 'pupil');
+		$assignmentId = $this->createAssignment($classroomId, '2026-10-01 00:00:00', '2026-10-08', [3, 1]);
+		$this->login('pupil');
+
+		$this->testAction('/classes/play/' . $assignmentId . '/' . $this->setConnectionId(2), ['method' => 'get']);
+
+		$this->assertStringEndsWith('/classes/play/' . $assignmentId, $this->headers['Location']);
+	}
+
+	public function testOnlyTheClassPlaysItsAssignment(): void
+	{
+		$this->prepare();
+		$classroomId = $this->createClassroom();
+		$this->addMember($classroomId, 'pupil');
+		$assignmentId = $this->createAssignment($classroomId, '2026-10-01 00:00:00', '2026-10-08');
+		$draftId = $this->createAssignment($classroomId, null, '2026-10-08');
+
+		$this->login('outsider');
+		$this->assertForbidden(fn() => $this->testAction('/classes/play/' . $assignmentId, ['method' => 'get']));
+
+		$this->login('pupil');
+		$this->expectException(NotFoundException::class);
+		$this->testAction('/classes/play/' . $draftId, ['method' => 'get']);
+	}
+
+	public function testThePupilPageLeadsToTheAssignmentRow(): void
+	{
+		$this->prepare();
+		$classroomId = $this->createClassroom();
+		$this->addMember($classroomId, 'pupil');
+		$assignmentId = $this->createAssignment($classroomId, '2026-10-01 00:00:00', '2026-10-08');
+		$this->login('pupil');
+
+		$page = $this->testAction('/classes/' . $classroomId, ['method' => 'get', 'return' => 'view']);
+
+		$this->assertTextContains('href="/classes/play/' . $assignmentId . '">Solve</a>', $page);
+	}
+
 	public function testDeletingTheClassTakesItsMembersAndAssignments(): void
 	{
 		$this->prepare();

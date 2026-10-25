@@ -38,6 +38,7 @@ use App\Utility\ViteManifest;
  * @var int $i
  * @var bool $isAllowedToContribute
  * @var bool $canAddMoreTags
+ * @var array|null $classroomAssignment Set by the route of a class assignment, which is the row of buttons
  * @var bool $isSandbox
  * @var bool $isSemeai
  * @var string $lightDark
@@ -116,8 +117,12 @@ use App\Utility\ViteManifest;
 	// problem is presented fresh, so this stays false until it is solved.
 	$solved = TsumegoUtil::isSolvedForCurrentMode($t);
 	// Reset opens the problem again on the route it is played from, so a retry in the
-	// training stays in the training
-	$resetLink = (Auth::isInMistakeTrainingMode() ? MistakeTraining::$PLAY_LINK_PREFIX : '/') . (int) $setConnection['SetConnection']['id'];
+	// training or in a class assignment stays there
+	$classroomAssignment ??= null;
+	if ($classroomAssignment !== null)
+		$resetLink = ClassroomAssignment::playLink((int) $classroomAssignment['id'], (int) $setConnection['SetConnection']['id']);
+	else
+		$resetLink = (Auth::isInMistakeTrainingMode() ? MistakeTraining::$PLAY_LINK_PREFIX : '/') . (int) $setConnection['SetConnection']['id'];
 	if ($nothingInRange != false)
 		echo '<div align="center" class="status-message">'.$nothingInRange.'</div>';
 	if (!empty($t['Tsumego']['deleted']))
@@ -152,7 +157,9 @@ use App\Utility\ViteManifest;
 	<tr>
 		<td align="center">
 			<div id="playTitle">
-				<?php echo Play::renderTitle($setConnection, $set, $tsumegoFilters, $tsumegoButtons, $amountOfOtherCollection, $difficulty, $timeMode, $queryTitle, $t); ?>
+				<?php echo $classroomAssignment !== null
+					? Play::renderAssignmentTitle($classroomAssignment, $tsumegoButtons, $setConnection, $set, $amountOfOtherCollection)
+					: Play::renderTitle($setConnection, $set, $tsumegoFilters, $tsumegoButtons, $amountOfOtherCollection, $difficulty, $timeMode, $queryTitle, $t); ?>
 				<br>
 			</div>
 		</td>

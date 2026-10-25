@@ -324,6 +324,16 @@ foreach (['accept-member' => 'acceptMember', 'remove-member' => 'removeMember'] 
 		['controller' => 'Classrooms', 'action' => $classroomAction],
 		['pass' => ['id'], 'id' => '[0-9]+'] // Id of a membership
 	);
+Router::connect(
+	'/classes/play/:id/:setConnectionId',
+	['controller' => 'Classrooms', 'action' => 'play'],
+	['pass' => ['id', 'setConnectionId'], 'id' => '[0-9]+', 'setConnectionId' => '[0-9]+'] // Id of an assignment, then of a problem in it
+);
+Router::connect(
+	'/classes/play/:id',
+	['controller' => 'Classrooms', 'action' => 'play'],
+	['pass' => ['id'], 'id' => '[0-9]+'] // Id of an assignment
+);
 foreach (['assignment' => 'assignment', 'save-assignment' => 'saveAssignment', 'delete-assignment' => 'deleteAssignment', 'progress' => 'progress'] as $path => $classroomAction)
 	Router::connect(
 		'/classes/' . $path . '/:id',
