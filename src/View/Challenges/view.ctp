@@ -70,6 +70,7 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 
 	<section class="challenges__section" id="challenge-standings">
 		<h2 class="challenges__heading">Players</h2>
+		<div class="challenges__table-area">
 		<div class="challenges__table-wrapper">
 			<table class="challenges__table">
 				<thead>
@@ -114,6 +115,7 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 				</tbody>
 			</table>
 		</div>
+		</div>
 		<?php if ($showResults): ?>
 		<p class="hint challenges__legend">A problem button opens the problem and shows its board when you point at it. A solved problem shows its points, the time is in its tooltip.
 			<span class="challenges__cell challenges__cell--failed">✗</span> failed
@@ -123,6 +125,22 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 		<p class="hint">How everyone did with each problem shows once you finish your run.</p>
 		<?php endif; ?>
 	</section>
+	<?php if (!empty($problemButtons)): ?>
+	<script>
+		// The table scrolls sideways when it is wider than the page, which would cut off the board
+		// previews of its problem buttons, so a preview is put under its button on the screen instead.
+		document.getElementById('challenge-standings').addEventListener('mouseover', function(event)
+		{
+			const link = event.target.closest('.challenges__problem a[data-tsumego-id]');
+			if (!link)
+				return;
+			const box = link.querySelector('.tooltip-box');
+			const rect = link.getBoundingClientRect();
+			box.style.top = (rect.bottom + 4) + 'px';
+			box.style.left = (rect.left - 1) + 'px';
+		});
+	</script>
+	<?php endif; ?>
 
 	<?php if ($isParticipant): ?>
 	<section class="card card--purple challenges__section" id="challenge-invite">
