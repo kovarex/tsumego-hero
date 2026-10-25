@@ -28,7 +28,7 @@ use App\Utility\Util;
 	<?php
 	for($i = 0; $i < count($s); $i++)
 	{
-		echo '<tr id="' . $s[$i]['Sgf']['id'] . '">
+		echo '<tr id="' . $s[$i]['Sgf']['id'] . '"' . ($s[$i]['Sgf']['new'] ? ' class="data-table__row--new"' : '') . '>
 			<td class="timeTableLeft versionColor" align="center">
 				<time datetime="' . Util::toIso8601($s[$i]['Sgf']['created']) . '" data-format="datetime">' . $s[$i]['Sgf']['created'] . '</time>
 			</td>

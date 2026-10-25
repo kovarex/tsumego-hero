@@ -165,9 +165,6 @@ li a.menuLi.nav__link--active {
   background-color: var(--color-gray);
   color: var(--color-green);
 }
-.additional-adminLink {
-  display: none;
-}
 .main-page {
   padding: 8px 11px !important;
 }
@@ -850,9 +847,6 @@ nav ul ul ul li {
   font-weight: 400;
   font-size: 19px;
   color: var(--color-red-light);
-}
-.adminLink3 {
-  cursor: pointer;
 }
 .homeMenuLink {
   width: 115px;

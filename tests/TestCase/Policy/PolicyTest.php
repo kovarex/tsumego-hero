@@ -34,7 +34,7 @@ class PolicyTest extends CakeTestCase
 	public function testAdminPolicyAllowsOnlyAdmins()
 	{
 		$policy = new AdminPolicy();
-		foreach (['canAdminstats', 'canUploads', 'canUserstats', 'canUserstats3'] as $method)
+		foreach (['canViewAdminArea', 'canUploads', 'canUserstats', 'canUserstats3'] as $method)
 		{
 			$this->assertTrue($policy->{$method}($this->identity(true)), $method . ' allows admin');
 			$this->assertFalse($policy->{$method}($this->identity(false)), $method . ' blocks regular user');
@@ -45,7 +45,7 @@ class PolicyTest extends CakeTestCase
 	public function testOwnerHasTheRightsOfAnAdmin()
 	{
 		$owner = ['user_role_id' => User::ROLE_OWNER, 'premium' => 0, 'level' => 1, 'rating' => 1000];
-		$this->assertTrue(AdminPolicy::canAdminstats($owner));
+		$this->assertTrue(AdminPolicy::canViewAdminArea($owner));
 		$this->assertTrue(SgfPolicy::canView($owner));
 	}
 

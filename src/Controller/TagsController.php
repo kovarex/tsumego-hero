@@ -161,7 +161,7 @@ class TagsController extends AppController
 		if (!$tag)
 		{
 			CookieFlash::set('Tag to edit not found.', 'error');
-			return $this->redirect('/users/adminstats');
+			return $this->redirect('/tags');
 		}
 
 		$this->set('allTags', $this->_getAllTags());
@@ -178,7 +178,7 @@ class TagsController extends AppController
 		if (!$tag)
 		{
 			CookieFlash::set('Tag to edit not found.');
-			$this->redirect('/users/adminstats');
+			$this->redirect('/tags');
 		}
 
 		$tag = $tag['Tag'];
@@ -257,7 +257,7 @@ class TagsController extends AppController
 		if (!$tagToApprove)
 		{
 			CookieFlash::set('Tag to approve not found', 'error');
-			return $this->redirect('/users/adminstats');
+			return $this->redirect('/admin/new-tags');
 		}
 
 		$tagToApprove = $tagToApprove['Tag'];
@@ -265,7 +265,7 @@ class TagsController extends AppController
 		if ($tagToApprove['approved'] == 1)
 		{
 			CookieFlash::set('Tag to approve was already approved', 'error');
-			return $this->redirect('/users/adminstats');
+			return $this->redirect('/admin/new-tags');
 		}
 
 		AppController::_handleContribution(Auth::getUserID(), 'reviewed');
@@ -285,7 +285,7 @@ class TagsController extends AppController
 				$this->_getEmailer());
 
 		CookieFlash::set('Tag ' . $tagToApprove['name'] . ' was approved', 'success');
-		return $this->redirect('/users/adminstats');
+		return $this->redirect('/admin/new-tags');
 	}
 
 	#[HttpPost]
@@ -297,7 +297,7 @@ class TagsController extends AppController
 		if (!$tagToReject)
 		{
 			CookieFlash::set('Tag to approve not found', 'error');
-			return $this->redirect('/users/adminstats');
+			return $this->redirect('/admin/new-tags');
 		}
 
 		$tagToReject = $tagToReject['Tag'];
@@ -305,14 +305,14 @@ class TagsController extends AppController
 		if ($tagToReject['approved'] == 1)
 		{
 			CookieFlash::set('Tag to reject was already approved', 'error');
-			return $this->redirect('/users/adminstats');
+			return $this->redirect('/admin/new-tags');
 		}
 
 		$comment = ProposalFeedback::commentFromRequest($this->request->data['comment'] ?? null);
 		if ($comment === '')
 		{
 			CookieFlash::set('Write the proposer why the tag is rejected.', 'error');
-			return $this->redirect('/users/adminstats');
+			return $this->redirect('/admin/new-tags');
 		}
 
 		AppController::_handleContribution(Auth::getUserID(), 'reviewed');
@@ -329,6 +329,6 @@ class TagsController extends AppController
 				$this->_getEmailer());
 
 		CookieFlash::set('Tag ' . $tagToReject['name'] . ' was rejected', 'success');
-		return $this->redirect('/users/adminstats');
+		return $this->redirect('/admin/new-tags');
 	}
 }

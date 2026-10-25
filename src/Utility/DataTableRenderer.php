@@ -23,7 +23,8 @@ abstract class DataTableRenderer
 		$this->renderHeader();
 		foreach ($this->data as $index => $item)
 		{
-			echo '<tr>';
+			$class = $this->rowClass($item);
+			echo $class ? '<tr class="' . $class . '">' : '<tr>';
 			$this->renderItem($index, $item);
 			echo '</tr>';
 		}
@@ -33,6 +34,10 @@ abstract class DataTableRenderer
 
 	abstract protected function renderItem(int $index, array $item): void;
 	protected function renderHeader(): void {}
+	protected function rowClass(array $item): string
+	{
+		return '';
+	}
 
 	protected string $name;
 	protected string $caption;

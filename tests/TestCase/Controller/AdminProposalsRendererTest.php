@@ -33,7 +33,7 @@ class AdminProposalsRendererTest extends TestCaseWithAuth
 		]);
 		$this->login('kovarex');
 
-		$this->testAction('/users/adminstats', ['method' => 'get', 'return' => 'view']);
+		$this->testAction('/admin/sgf-proposals', ['method' => 'get', 'return' => 'view']);
 
 		// The proposal must link to the official set, not the private favorites.
 		$officialConnectionId = $context->tsumegos[0]['set-connections'][0]['id'];
@@ -62,12 +62,12 @@ class AdminProposalsRendererTest extends TestCaseWithAuth
 		]);
 		$this->login('kovarex');
 
-		$this->testAction('/users/adminstats', ['method' => 'get', 'return' => 'view']);
+		$this->testAction('/admin/tag-proposals', ['method' => 'get', 'return' => 'view']);
 
 		$officialConnectionId = $context->tsumegos[0]['set-connections'][0]['id'];
 		$favoriteConnectionId = $context->tsumegos[0]['set-connections'][1]['id'];
 
-		$this->assertTextContains('New Tags (1)', $this->view);
+		$this->assertTextContains('Tag Proposals (1)', $this->view);
 		// The tag proposal must link to the official set, not the private favorites.
 		$this->assertStringContainsString('href="/' . $officialConnectionId . '"', $this->view);
 		$this->assertStringNotContainsString('href="/' . $favoriteConnectionId . '"', $this->view);
