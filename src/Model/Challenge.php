@@ -1,8 +1,8 @@
 <?php
 
-use App\Utility\Rating;
 use App\Utility\TimeMode;
 use App\Utility\TimeModeUtil;
+use App\Utility\TsumegoButton;
 use App\Utility\Util;
 
 /**
@@ -78,31 +78,35 @@ class Challenge extends AppModel
 	}
 
 	/**
-	 * The problems of a challenge with where to open each, for the results.
+	 * The problems of a challenge as the buttons of a collection page, numbered in the order they
+	 * are played, coloured by the status of the player looking and with the board in the tooltip.
 	 *
-	 * @return array<array{order: int, tsumego_id: int, set_connection_id: int|null, title: string, rank: string}>
+	 * @return array<int, TsumegoButton> By the order in the challenge
 	 */
-	public static function problems(int $challengeId): array
+	public static function problemButtons(int $challengeId, ?int $viewerUserId): array
 	{
-		$rows = Util::query('SELECT p.`order`, p.tsumego_id, t.rating
+		$rows = Util::query('SELECT p.`order`, p.tsumego_id, t.rating, sgf.sgf, status.status
 			FROM challenge_problem p
 			JOIN tsumego t ON t.id = p.tsumego_id
+			LEFT JOIN sgf ON sgf.id = ' . Sgf::currentVersionIDSql('p.tsumego_id') . '
+			LEFT JOIN tsumego_status status ON status.tsumego_id = p.tsumego_id AND status.user_id = ?
 			WHERE p.challenge_id = ?
-			ORDER BY p.`order`', [$challengeId]);
-		$problems = [];
+			ORDER BY p.`order`', [$viewerUserId, $challengeId]);
+		$buttons = [];
 		foreach ($rows as $row)
 		{
 			$setConnection = ClassRegistry::init('SetConnection')->findDisplaySetConnection((int) $row['tsumego_id']);
-			$set = $setConnection ? ClassRegistry::init('Set')->findById($setConnection['SetConnection']['set_id']) : null;
-			$problems[] = [
-				'order' => (int) $row['order'],
-				'tsumego_id' => (int) $row['tsumego_id'],
-				'set_connection_id' => $setConnection ? (int) $setConnection['SetConnection']['id'] : null,
-				'title' => $set ? trim($set['Set']['title'] . ' ' . $set['Set']['title2']) . ' ' . $setConnection['SetConnection']['num'] : '',
-				'rank' => Rating::getReadableRankFromRating((float) $row['rating']),
-			];
+			if (!$setConnection)
+				continue;
+			$buttons[(int) $row['order']] = new TsumegoButton(
+				(int) $row['tsumego_id'],
+				(int) $setConnection['SetConnection']['id'],
+				(int) $row['order'],
+				$row['status'] ?? 'N',
+				(float) $row['rating'],
+				$row['sgf'] ?? '');
 		}
-		return $problems;
+		return $buttons;
 	}
 
 	/** Points as the tables show them, to a tenth. */

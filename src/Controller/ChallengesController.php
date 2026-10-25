@@ -109,7 +109,7 @@ class ChallengesController extends AppController
 
 		$showResults = $myRun !== null && $myRun['run'] === Challenge::RUN_FINISHED;
 		$this->set('showResults', $showResults);
-		$this->set('problems', $showResults ? Challenge::problems($challengeID) : []);
+		$this->set('problemButtons', $showResults ? Challenge::problemButtons($challengeID, Auth::getUserID()) : []);
 		$this->set('attemptsByRun', $showResults ? Challenge::attemptsByRun($challengeID) : []);
 		return null;
 	}

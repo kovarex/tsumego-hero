@@ -137,6 +137,27 @@
 	color: inherit;
 }
 
+.challenges__table th.challenges__problem
+{
+	padding: 2px;
+}
+
+.challenges__problem .setViewButtons
+{
+	display: flex;
+	justify-content: center;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+/* The ratio and the time of a button say nothing about the challenge, the rows under it do. */
+.challenges__problem .problem-nav__ratio,
+.challenges__problem .problem-nav__time
+{
+	display: none;
+}
+
 .challenges__table td.challenges__player,
 .challenges__table th.challenges__player
 {

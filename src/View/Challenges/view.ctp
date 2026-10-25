@@ -14,7 +14,7 @@
  * @var bool $isFull The viewer isn't in the challenge and there is no room for them
  * @var string $joinUrl The link of the challenge to send around
  * @var bool $showResults Whether the viewer sees how everyone did with each problem
- * @var array $problems What Challenge::problems() returned, when $showResults
+ * @var array<int, App\Utility\TsumegoButton> $problemButtons What Challenge::problemButtons() returned, when $showResults
  * @var array $attemptsByRun What Challenge::attemptsByRun() returned, when $showResults
  * @var int|null $otherChallengeInProgressID Another challenge whose run the viewer is in the middle of
  */
@@ -79,8 +79,8 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 						<th>Points</th>
 						<th>Solved</th>
 						<th>Time</th>
-						<?php foreach ($problems as $problem): ?>
-						<th><?php if ($problem['set_connection_id'] !== null): ?><a href="/<?= $problem['set_connection_id'] ?>" title="<?= h($problem['title'] . ' (' . $problem['rank'] . ')') ?>"><?= $problem['order'] ?></a><?php else: ?><?= $problem['order'] ?><?php endif; ?></th>
+						<?php foreach ($problemButtons as $button): ?>
+						<th class="challenges__problem"><ul class="setViewButtons"><?php $button->render(); ?></ul></th>
 						<?php endforeach; ?>
 					</tr>
 				</thead>
@@ -100,9 +100,9 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 							? 'playing, ' . $row['played_count'] . '/' . (int) $challenge['problem_count']
 							: ($row['run'] === Challenge::RUN_DECLINED ? 'declined' : 'not played yet') ?></td>
 						<?php endif; ?>
-						<?php foreach ($problems as $problem): ?>
+						<?php foreach (array_keys($problemButtons) as $order): ?>
 						<?php
-							$attempt = $row['session_id'] === null ? null : ($attemptsByRun[(int) $row['session_id']][$problem['order']] ?? null);
+							$attempt = $row['session_id'] === null ? null : ($attemptsByRun[(int) $row['session_id']][$order] ?? null);
 							$status = $attempt['status'] ?? 'queued';
 						?>
 						<td class="challenges__cell challenges__cell--<?= h($status) ?>"<?= $attempt !== null && $attempt['seconds'] !== null ? ' title="' . Challenge::formatSeconds($attempt['seconds']) . '"' : '' ?>>
@@ -115,7 +115,7 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 			</table>
 		</div>
 		<?php if ($showResults): ?>
-		<p class="hint challenges__legend">The number of a problem opens it. A solved problem shows its points, the time is in its tooltip.
+		<p class="hint challenges__legend">A problem button opens the problem and shows its board when you point at it. A solved problem shows its points, the time is in its tooltip.
 			<span class="challenges__cell challenges__cell--failed">✗</span> failed
 			<span class="challenges__cell challenges__cell--timeout">⏱</span> out of time
 			<span class="challenges__cell challenges__cell--skipped">–</span> skipped</p>

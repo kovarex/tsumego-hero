@@ -321,11 +321,13 @@ class ChallengesControllerTest extends TestCaseWithAuth
 
 		$page = $this->testAction('/challenges/' . $challengeId, ['method' => 'get', 'return' => 'view']);
 		$this->assertTextContains($firstProblemLink, $page);
+		$this->assertSame(5, substr_count($page, 'class="problem-nav__item '));
 		$this->assertTextContains('challenges__cell--solved', $page);
 
 		$this->login('friend');
 		$page = $this->testAction('/challenges/' . $challengeId, ['method' => 'get', 'return' => 'view']);
 		$this->assertTextNotContains($firstProblemLink, $page);
+		$this->assertTextNotContains('problem-nav__item', $page);
 		$this->assertTextNotContains('challenges__cell--solved', $page);
 		$this->assertTextContains('shows once you finish your run', $page);
 	}
