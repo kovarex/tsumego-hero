@@ -71,7 +71,10 @@ use App\Utility\TimeModeUtil;
 		<?php endif; ?>
 		<?php foreach ($challenges as $challenge): ?>
 		<?php
-			if ($challenge['my_run_status_id'] === null)
+			$canDecline = $challenge['my_run_status_id'] === null && $challenge['my_declined'] === null;
+			if ($challenge['my_declined'] !== null && $challenge['my_run_status_id'] === null)
+				$myRun = 'you declined';
+			elseif ($challenge['my_run_status_id'] === null)
 				$myRun = '<strong>not played yet</strong>';
 			elseif ((int) $challenge['my_run_status_id'] === TimeModeUtil::$SESSION_STATUS_IN_PROGRESS)
 				$myRun = '<strong>playing</strong>';
@@ -87,6 +90,9 @@ use App\Utility\TimeModeUtil;
 				by <?= User::renderLink($challenge) ?>
 				· <?= (int) $challenge['finished_count'] ?>/<?= (int) $challenge['participant_count'] ?> played
 				· <?= $myRun ?>
+				<?php if ($canDecline): ?>
+				<form class="challenges__inline-form" method="post" action="/challenges/decline/<?= (int) $challenge['id'] ?>" onsubmit="return confirm('Decline the challenge?');"><button class="btn btn--small btn--neutral" type="submit">Decline</button></form>
+				<?php endif; ?>
 			</span>
 		</div>
 		<?php endforeach; ?>

@@ -94,6 +94,7 @@ class ChallengesController extends AppController
 		$isParticipant = Auth::isLoggedIn() && Challenge::isParticipant($challengeID, Auth::getUserID());
 		$myRun = $isParticipant ? array_find($standings, fn(array $row) => (int) $row['user_id'] === Auth::getUserID()) : null;
 		$this->set('isParticipant', $isParticipant);
+		$this->set('hasDeclined', Auth::isLoggedIn() && !$isParticipant && Challenge::participation($challengeID, Auth::getUserID()) !== null);
 		$this->set('myRun', $myRun);
 		$this->set('isFull', !$isParticipant && Challenge::participantCount($challengeID) >= Challenge::MAXIMUM_PARTICIPANTS);
 		$this->set('joinUrl', Router::url(self::challengeUrl($challengeID), true));
@@ -121,6 +122,22 @@ class ChallengesController extends AppController
 		$challenge = $this->findChallenge($id);
 		$this->joinChallenge($challenge);
 		return $this->redirect(self::challengeUrl((int) $challenge['id']));
+	}
+
+	/**
+	 * The player turns the challenge down, before they start their run.
+	 */
+	#[HttpPost]
+	public function decline(string $id): mixed
+	{
+		if (!Auth::isLoggedIn())
+			return $this->redirect('/users/login');
+		$challenge = $this->findChallenge($id);
+		if (Challenge::decline((int) $challenge['id'], Auth::getUserID()))
+			CookieFlash::set('You declined ' . Challenge::title($challenge) . '.', 'success');
+		else
+			CookieFlash::set('Only a challenge you haven\'t started can be declined.', 'error');
+		return $this->redirect('/challenges');
 	}
 
 	/**
@@ -160,7 +177,7 @@ class ChallengesController extends AppController
 	}
 
 	/**
-	 * Puts the player into the challenge when they aren't in yet and there is room.
+	 * Puts the player into the challenge when they aren't in yet, or declined it before, and there is room.
 	 *
 	 * @param array<string, mixed> $challenge
 	 * @return bool Whether the player is in the challenge
@@ -176,7 +193,10 @@ class ChallengesController extends AppController
 			CookieFlash::set('The challenge is full, ' . Challenge::MAXIMUM_PARTICIPANTS . ' players are in it already.', 'error');
 			return false;
 		}
-		Challenge::addParticipant($challengeID, Auth::getUserID(), null);
+		if (Challenge::participation($challengeID, Auth::getUserID()) !== null)
+			Challenge::rejoin($challengeID, Auth::getUserID());
+		else
+			Challenge::addParticipant($challengeID, Auth::getUserID(), null);
 		return true;
 	}
 
@@ -213,7 +233,9 @@ class ChallengesController extends AppController
 			}
 			if (!Challenge::addParticipant($challengeID, $playerID, Auth::getUserID()))
 			{
-				$problems[] = $name . ' is in the challenge already.';
+				$problems[] = Challenge::isParticipant($challengeID, $playerID)
+					? $name . ' is in the challenge already.'
+					: $name . ' declined the challenge.';
 				continue;
 			}
 			Message::send(Auth::getUserID(), $playerID, self::invitationText($challenge), $this->_getEmailer());

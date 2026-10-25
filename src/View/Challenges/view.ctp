@@ -8,7 +8,8 @@
  * @var View $this
  * @var array $challenge What Challenge::withDetails() returned
  * @var array $standings What Challenge::standings() returned
- * @var bool $isParticipant
+ * @var bool $isParticipant In the challenge and not declined
+ * @var bool $hasDeclined The viewer declined the challenge
  * @var array|null $myRun The row of the viewer in $standings
  * @var bool $isFull The viewer isn't in the challenge and there is no room for them
  * @var string $joinUrl The link of the challenge to send around
@@ -40,6 +41,9 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 		<?php elseif ($isFull): ?>
 		<p>The challenge is full, <?= Challenge::MAXIMUM_PARTICIPANTS ?> players are in it already.</p>
 		<?php elseif ($myRun === null || $myRun['run'] === Challenge::RUN_NOT_STARTED): ?>
+		<?php if ($hasDeclined): ?>
+		<p id="challenge-declined"><strong>You declined this challenge.</strong> You can still change your mind and play it.</p>
+		<?php endif; ?>
 		<p>Every problem has <?= (int) $challenge['seconds_per_problem'] ?> seconds, and the faster you solve it, the more points you get.
 			The clock of a problem starts when it is shown, and you can play your run only once.</p>
 		<?php if ($otherChallengeInProgressID): ?>
@@ -50,6 +54,8 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 			<form method="post" action="/challenges/play/<?= $challengeId ?>"><button class="btn btn--success" type="submit" id="challenge-play">Play now</button></form>
 			<?php if (!$isParticipant): ?>
 			<form method="post" action="/challenges/join/<?= $challengeId ?>"><button class="btn btn--neutral" type="submit" id="challenge-join">Join, play later</button></form>
+			<?php else: ?>
+			<form method="post" action="/challenges/decline/<?= $challengeId ?>" onsubmit="return confirm('Decline the challenge?');"><button class="btn btn--neutral" type="submit" id="challenge-decline">Decline</button></form>
 			<?php endif; ?>
 		</span>
 		<?php elseif ($myRun['run'] === Challenge::RUN_PLAYING): ?>
@@ -92,7 +98,7 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 						<td class="challenges__player"><?= User::renderLink($row) ?></td>
 						<td colspan="3" class="hint"><?= $row['run'] === Challenge::RUN_PLAYING
 							? 'playing, ' . $row['played_count'] . '/' . (int) $challenge['problem_count']
-							: 'not played yet' ?></td>
+							: ($row['run'] === Challenge::RUN_DECLINED ? 'declined' : 'not played yet') ?></td>
 						<?php endif; ?>
 						<?php foreach ($problems as $problem): ?>
 						<?php

@@ -303,7 +303,7 @@ Router::connect(
 	['controller' => 'Challenges', 'action' => 'view'],
 	['pass' => ['id'], 'id' => '[0-9]+']
 );
-foreach (['join' => 'join', 'invite' => 'invite', 'play' => 'play'] as $path => $challengeAction)
+foreach (['join' => 'join', 'decline' => 'decline', 'invite' => 'invite', 'play' => 'play'] as $path => $challengeAction)
 	Router::connect(
 		'/challenges/' . $path . '/:id',
 		['controller' => 'Challenges', 'action' => $challengeAction],

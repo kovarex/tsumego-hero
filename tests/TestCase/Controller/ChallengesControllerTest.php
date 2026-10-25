@@ -376,6 +376,50 @@ class ChallengesControllerTest extends TestCaseWithAuth
 		$this->assertSame([Challenge::RUN_PLAYING], array_column(Challenge::standings($secondId), 'run'));
 	}
 
+	public function testAnInvitedPlayerDeclinesAndCanStillChangeTheirMind(): void
+	{
+		$this->prepare();
+		$challengeId = $this->create(['problem_count' => 5, 'players' => 'DN_friend']);
+		$this->login('friend');
+		$page = $this->testAction('/challenges', ['method' => 'get', 'return' => 'view']);
+		$this->assertTextContains('action="/challenges/decline/' . $challengeId . '"', $page);
+
+		$this->testAction('/challenges/decline/' . $challengeId, ['method' => 'post']);
+
+		$this->assertFalse(Challenge::isParticipant($challengeId, $this->userId('friend')));
+		$this->assertSame(0, Challenge::countWaitingFor($this->userId('friend')));
+		$this->assertSame(['DN_challenger', 'DN_friend'], array_column(Challenge::standings($challengeId), 'user_display_name'));
+		$this->assertSame([Challenge::RUN_NOT_STARTED, Challenge::RUN_DECLINED], array_column(Challenge::standings($challengeId), 'run'));
+		$page = $this->testAction('/challenges/' . $challengeId, ['method' => 'get', 'return' => 'view']);
+		$this->assertTextContains('id="challenge-declined"', $page);
+
+		// the challenger sees it and can't invite the friend again
+		$this->login('challenger');
+		$page = $this->testAction('/challenges/' . $challengeId, ['method' => 'get', 'return' => 'view']);
+		$this->assertTextContains('>declined</td>', $page);
+		$this->registerTestEmailer('Challenges');
+		$this->testAction('/challenges/invite/' . $challengeId, ['method' => 'post', 'data' => ['players' => 'DN_friend']]);
+		$this->assertCount(1, Util::query('SELECT * FROM message'));
+
+		// playing it after all puts the friend back in
+		$this->login('friend');
+		$this->testAction('/challenges/play/' . $challengeId, ['method' => 'post']);
+		$this->assertTrue(Challenge::isParticipant($challengeId, $this->userId('friend')));
+		$this->assertNotNull(Challenge::runOf($challengeId, $this->userId('friend')));
+	}
+
+	public function testAStartedRunCannotBeDeclined(): void
+	{
+		$this->prepare();
+		$challengeId = $this->create(['problem_count' => 5]);
+		$this->testAction('/challenges/play/' . $challengeId, ['method' => 'post']);
+
+		$this->testAction('/challenges/decline/' . $challengeId, ['method' => 'post']);
+
+		$this->assertTrue(Challenge::isParticipant($challengeId, $this->userId('challenger')));
+		$this->assertSame([Challenge::RUN_PLAYING], array_column(Challenge::standings($challengeId), 'run'));
+	}
+
 	public function testARunOfAChallengeIsNotARunOfTheTimeMode(): void
 	{
 		$this->prepare();

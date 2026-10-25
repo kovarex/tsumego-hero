@@ -12,7 +12,9 @@ use App\Utility\Util;
  * challenge, so the board, the clock and the points are the ones of the time mode.
  *
  * Who is in the challenge is challenge_participant: the player who created it, the players they or
- * another participant invited, and anyone who opened its link and joined.
+ * another participant invited, and anyone who opened its link and joined. A player who hasn't
+ * started their run can decline the challenge; the row stays, so the others see it and nobody
+ * invites them again, and the player can still change their mind and play.
  */
 class Challenge extends AppModel
 {
@@ -33,6 +35,7 @@ class Challenge extends AppModel
 	public const RUN_NOT_STARTED = 'not started';
 	public const RUN_PLAYING = 'playing';
 	public const RUN_FINISHED = 'finished';
+	public const RUN_DECLINED = 'declined';
 
 	/**
 	 * Draws the problems and creates the challenge, with its creator as its first participant.
@@ -153,7 +156,7 @@ class Challenge extends AppModel
 	 */
 	public static function ofPlayer(int $userId): array
 	{
-		return Util::query(self::selectSql('my_run.time_mode_session_status_id AS my_run_status_id, my_run.points AS my_points,') . '
+		return Util::query(self::selectSql('my_run.time_mode_session_status_id AS my_run_status_id, my_run.points AS my_points, me.declined AS my_declined,') . '
 			JOIN challenge_participant me ON me.challenge_id = c.id AND me.user_id = ?
 			LEFT JOIN time_mode_session my_run ON my_run.challenge_id = c.id AND my_run.user_id = me.user_id
 			ORDER BY c.created DESC, c.id DESC',
@@ -161,14 +164,14 @@ class Challenge extends AppModel
 	}
 
 	/**
-	 * The challenges a player is in and hasn't played yet, for the badge of the menu.
+	 * The challenges a player is in and hasn't played nor declined yet, for the badge of the menu.
 	 */
 	public static function countWaitingFor(int $userId): int
 	{
 		$rows = Util::query('SELECT COUNT(*) AS count
 			FROM challenge_participant p
 			LEFT JOIN time_mode_session s ON s.challenge_id = p.challenge_id AND s.user_id = p.user_id
-			WHERE p.user_id = ? AND s.id IS NULL', [$userId]);
+			WHERE p.user_id = ? AND p.declined IS NULL AND s.id IS NULL', [$userId]);
 		return (int) $rows[0]['count'];
 	}
 
@@ -181,7 +184,7 @@ class Challenge extends AppModel
 				c.seconds_per_problem, c.created, minimum_rank.name AS minimum_rank, maximum_rank.name AS maximum_rank, ' . $extraColumns . '
 				(SELECT COUNT(*) FROM challenge_problem p WHERE p.challenge_id = c.id) AS problem_count,
 				(SELECT COUNT(*) FROM challenge_participant p JOIN user pu ON pu.id = p.user_id AND pu.deleted IS NULL
-					WHERE p.challenge_id = c.id) AS participant_count,
+					WHERE p.challenge_id = c.id AND p.declined IS NULL) AS participant_count,
 				(SELECT COUNT(*) FROM time_mode_session s JOIN user su ON su.id = s.user_id AND su.deleted IS NULL
 					WHERE s.challenge_id = c.id AND s.time_mode_session_status_id != ' . TimeModeUtil::$SESSION_STATUS_IN_PROGRESS . ') AS finished_count,
 				' . Classroom::USER_COLUMNS . '
@@ -191,27 +194,60 @@ class Challenge extends AppModel
 			LEFT JOIN user u ON u.id = c.created_by_user_id';
 	}
 
-	public static function isParticipant(int $challengeId, int $userId): bool
+	/**
+	 * The row of a player in a challenge, in it or declined, null when they were never in it.
+	 *
+	 * @return array<string, mixed>|null
+	 */
+	public static function participation(int $challengeId, int $userId): ?array
 	{
-		return !empty(Util::query('SELECT id FROM challenge_participant WHERE challenge_id = ? AND user_id = ?', [$challengeId, $userId]));
+		return Util::query('SELECT * FROM challenge_participant WHERE challenge_id = ? AND user_id = ?', [$challengeId, $userId])[0] ?? null;
 	}
 
+	/** Whether the player is in the challenge and didn't decline it. */
+	public static function isParticipant(int $challengeId, int $userId): bool
+	{
+		$participation = self::participation($challengeId, $userId);
+		return $participation !== null && $participation['declined'] === null;
+	}
+
+	/** The players in the challenge, without the ones who declined it. */
 	public static function participantCount(int $challengeId): int
 	{
-		return (int) Util::query('SELECT COUNT(*) AS count FROM challenge_participant WHERE challenge_id = ?', [$challengeId])[0]['count'];
+		return (int) Util::query('SELECT COUNT(*) AS count FROM challenge_participant WHERE challenge_id = ? AND declined IS NULL', [$challengeId])[0]['count'];
 	}
 
 	/**
 	 * @param int|null $invitedByUserId Who invited the player, null when they came on their own
-	 * @return bool False when the player is in the challenge already
+	 * @return bool False when the player is in the challenge already or declined it
 	 */
 	public static function addParticipant(int $challengeId, int $userId, ?int $invitedByUserId): bool
 	{
-		if (self::isParticipant($challengeId, $userId))
+		if (self::participation($challengeId, $userId) !== null)
 			return false;
 		Util::execute('INSERT INTO challenge_participant (challenge_id, user_id, invited_by_user_id) VALUES (?, ?, ?)',
 			[$challengeId, $userId, $invitedByUserId]);
 		return true;
+	}
+
+	/**
+	 * The player turns the challenge down. A run once started is played to its end, so only a
+	 * player who hasn't started can decline.
+	 *
+	 * @return bool Whether the player declined
+	 */
+	public static function decline(int $challengeId, int $userId): bool
+	{
+		if (!self::isParticipant($challengeId, $userId) || self::runOf($challengeId, $userId) !== null)
+			return false;
+		Util::execute('UPDATE challenge_participant SET declined = NOW() WHERE challenge_id = ? AND user_id = ?', [$challengeId, $userId]);
+		return true;
+	}
+
+	/** A player who declined the challenge changes their mind and is in it again. */
+	public static function rejoin(int $challengeId, int $userId): void
+	{
+		Util::execute('UPDATE challenge_participant SET declined = NULL WHERE challenge_id = ? AND user_id = ?', [$challengeId, $userId]);
 	}
 
 	/**
@@ -229,14 +265,15 @@ class Challenge extends AppModel
 	/**
 	 * The players of a challenge in the order of the table: the finished runs by their points
 	 * (the faster one first when the points are the same) with their place, then the runs being
-	 * played, then the players who haven't started. A deleted account is left out.
+	 * played, then the players who haven't started, and the ones who declined last. A deleted account
+	 * is left out.
 	 *
 	 * @return array<array<string, mixed>> Rows of USER_COLUMNS, session_id, run (RUN_*), points,
 	 *   solved_count, played_count, seconds and place (null for a run not finished)
 	 */
 	public static function standings(int $challengeId): array
 	{
-		$rows = Util::query('SELECT p.created AS joined, ' . Classroom::USER_COLUMNS . ',
+		$rows = Util::query('SELECT p.created AS joined, p.declined, ' . Classroom::USER_COLUMNS . ',
 				s.id AS session_id, s.time_mode_session_status_id, s.points,
 				(SELECT COUNT(*) FROM time_mode_attempt a WHERE a.time_mode_session_id = s.id AND a.time_mode_attempt_status_id = ?) AS solved_count,
 				(SELECT COUNT(*) FROM time_mode_attempt a WHERE a.time_mode_session_id = s.id AND a.time_mode_attempt_status_id != ?) AS played_count,
@@ -250,7 +287,7 @@ class Challenge extends AppModel
 		foreach ($rows as &$row)
 		{
 			if ($row['session_id'] === null)
-				$row['run'] = self::RUN_NOT_STARTED;
+				$row['run'] = $row['declined'] === null ? self::RUN_NOT_STARTED : self::RUN_DECLINED;
 			elseif ((int) $row['time_mode_session_status_id'] === TimeModeUtil::$SESSION_STATUS_IN_PROGRESS)
 				$row['run'] = self::RUN_PLAYING;
 			else
@@ -263,7 +300,7 @@ class Challenge extends AppModel
 		}
 		unset($row);
 
-		$runOrder = [self::RUN_FINISHED => 0, self::RUN_PLAYING => 1, self::RUN_NOT_STARTED => 2];
+		$runOrder = [self::RUN_FINISHED => 0, self::RUN_PLAYING => 1, self::RUN_NOT_STARTED => 2, self::RUN_DECLINED => 3];
 		usort($rows, fn(array $a, array $b) => [$runOrder[$a['run']], -$a['points'], $a['seconds'], -$a['played_count'], $a['joined'], $a['user_display_name']]
 			<=> [$runOrder[$b['run']], -$b['points'], $b['seconds'], -$b['played_count'], $b['joined'], $b['user_display_name']]);
 
