@@ -1,0 +1,248 @@
+@layer page
+{
+/* Challenges between players and the table of a challenge (src/View/Challenges). */
+.challenges
+{
+	padding: var(--space-4);
+	text-align: left;
+}
+
+/* The page is a column in the middle of the white box, only the table of the players may be wider. */
+.challenges > *
+{
+	max-width: 1000px;
+	margin-inline: auto;
+}
+
+.challenges > .challenges__section--wide
+{
+	max-width: none;
+}
+
+.challenges__header
+{
+	text-align: center;
+	margin-bottom: var(--space-5);
+}
+
+.challenges__crumb
+{
+	color: var(--text-softer-color);
+	font-size: var(--font-size-sm);
+	margin-bottom: var(--space-2);
+}
+
+.challenges__title
+{
+	font-size: var(--font-size-lg);
+	margin: var(--space-2) 0;
+	text-align: center;
+}
+
+.challenges__intro
+{
+	text-align: center;
+	margin-bottom: var(--space-4);
+}
+
+.challenges__settings
+{
+	font-weight: var(--font-weight-bold);
+}
+
+.challenges__section
+{
+	margin-bottom: var(--space-4);
+	padding: var(--space-4);
+}
+
+.challenges__heading
+{
+	font-size: var(--font-size-md);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--text-softer-color);
+	margin: 0 0 var(--space-3);
+}
+
+.challenges__form-row
+{
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: var(--space-3);
+}
+
+@media (width < 40rem)
+{
+	.challenges__form-row
+	{
+		grid-template-columns: 1fr 1fr;
+	}
+}
+
+.challenges__row
+{
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--space-2);
+	padding: var(--space-2) 0;
+	border-bottom: 1px solid var(--current-border-color);
+}
+
+.challenges__action
+{
+	text-align: center;
+}
+
+.challenges__actions
+{
+	display: inline-flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: var(--space-2);
+}
+
+.challenges__inline-form
+{
+	display: inline;
+	margin-left: var(--space-2);
+}
+
+.challenges__join-link
+{
+	margin-top: var(--space-4);
+}
+
+/* A table of many problems takes the whole width of the white box rather than only the column of
+   the page, and scrolls sideways on its own only when even that is too narrow. */
+.challenges__table-wrapper
+{
+	width: fit-content;
+	max-width: 100%;
+	margin: 0 auto;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+
+/* The previews would be cut off by the scrolling table, so they are placed on the screen, under
+   their button (the script of the view). */
+.challenges__problem .tooltip-box
+{
+	position: fixed;
+}
+
+/* The avatar's max-width: 100% counts as nothing in the width of a table column, so the name would
+   run over the next one. */
+.challenges__table .user-avatar
+{
+	max-width: none;
+}
+
+.challenges__table
+{
+	border-collapse: collapse;
+}
+
+.challenges__table th,
+.challenges__table td
+{
+	padding: 4px 8px;
+	text-align: center;
+	border: 1px solid var(--current-border-color);
+	white-space: nowrap;
+}
+
+.challenges__table th
+{
+	color: var(--text-softer-color);
+	font-weight: normal;
+}
+
+.challenges__table a
+{
+	color: inherit;
+}
+
+.challenges__table th.challenges__problem
+{
+	padding: 2px;
+}
+
+.challenges__problem .setViewButtons
+{
+	display: flex;
+	justify-content: center;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+/* The ratio and the time of a button say nothing about the challenge, the rows under it do. */
+.challenges__problem .problem-nav__ratio,
+.challenges__problem .problem-nav__time
+{
+	display: none;
+}
+
+.challenges__table td.challenges__player,
+.challenges__table th.challenges__player
+{
+	text-align: left;
+}
+
+.challenges__place,
+.challenges__points
+{
+	font-weight: var(--font-weight-bold);
+}
+
+.challenges__standing--me
+{
+	background: color-mix(in srgb, var(--color-green) 15%, transparent);
+}
+
+.challenges__cell
+{
+	min-width: 2.5em;
+}
+
+.challenges__legend .challenges__cell
+{
+	display: inline-block;
+	min-width: 1.6em;
+	margin-left: var(--space-3);
+	text-align: center;
+	border-radius: var(--radius-sm);
+}
+
+.challenges__cell--solved
+{
+	background: var(--color-green);
+	color: #fff;
+	font-weight: var(--font-weight-bold);
+}
+
+.challenges__cell--failed,
+.challenges__cell--timeout
+{
+	background: var(--color-red);
+	color: #fff;
+}
+
+.challenges__cell--skipped
+{
+	background: color-mix(in srgb, var(--color-red) 35%, transparent);
+}
+
+/* Challenges waiting for the player to play them are counted on the Challenges menu item and on
+   Play above it, with the badge of the changelog item (.nav__new-badge). */
+a[href="/challenges"],
+.nav__play-link
+{
+	position: relative;
+	white-space: nowrap;
+}
+}

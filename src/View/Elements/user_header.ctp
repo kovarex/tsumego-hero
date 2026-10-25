@@ -57,6 +57,7 @@ if (Auth::getUserID() === $userID)
 	?></p>
 	<?php if (Auth::isLoggedIn() && Auth::getUserID() !== $userID && !User::isDeleted($user)): ?>
 	<a class="btn btn--small profile-header__message" href="/messages/<?php echo $userID; ?>">Send message</a>
+	<a class="btn btn--small profile-header__message" href="/challenges?opponent=<?php echo $userID; ?>" id="profile-challenge">Challenge</a>
 	<?php endif; ?>
 	<div class="subnav">
 <?php foreach ($tabs as $key => $tab): ?>

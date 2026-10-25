@@ -1,13 +1,13 @@
 class TimeModeState
 {
-	rank;
+	title; // the time mode of a rank, or a challenge
 	failCount;
 	successCount;
 	overallCount;
 
-	constructor({rank, failCount, successCount, overallCount})
+	constructor({title, failCount, successCount, overallCount})
 	{
-		this.rank = rank;
+		this.title = title;
 		this.failCount = failCount;
 		this.successCount = successCount;
 		this.overallCount = overallCount;
@@ -102,7 +102,7 @@ class AccountWidget
 			this.barCaption.innerHTML = message;
 		}
 		else
-			this.barCaption.innerHTML = 'Time mode ' + this.timeMode.rank;
+			this.barCaption.textContent = this.timeMode.title;
 		this.setBarRatio((this.timeMode.failCount + this.timeMode.successCount) / this.timeMode.overallCount);
 	}
 

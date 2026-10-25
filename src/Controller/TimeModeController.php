@@ -164,7 +164,8 @@ ORDER BY MIN(rating);");
 		$timeModeStatuses = ClassRegistry::init('TimeModeSession')->find('all', [
 			'conditions' => [
 				'user_id' => Auth::getUserID(),
-				'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_SOLVED]]) ?: [];
+				'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_SOLVED,
+				'challenge_id' => null]]) ?: [];
 
 		$solvedMap = [];
 		foreach ($timeModeStatuses as $timeModeStatus)
@@ -183,8 +184,15 @@ ORDER BY MIN(rating);");
 		$this->set('solvedMap', $solvedMap);
 		$finishedSessionCount = ClassRegistry::init('TimeModeSession')->find('count', ['conditions' => [
 			'user_id' => Auth::getUserID(),
-			'time_mode_session_status_id !=' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]]);
+			'time_mode_session_status_id !=' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+			'challenge_id' => null]]);
 		$this->set('hasFinishedSesssion', $finishedSessionCount > 0);
+		// a new run ends the run of a challenge, so the player is told before they start one
+		$challengeRun = ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => [
+			'user_id' => Auth::getUserID(),
+			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+			'challenge_id NOT' => null]]);
+		$this->set('challengeInProgressID', $challengeRun ? (int) $challengeRun['TimeModeSession']['challenge_id'] : null);
 		return null;
 	}
 
@@ -245,7 +253,8 @@ SELECT
 FROM time_mode_session
 WHERE
 	time_mode_session.user_id = ? AND
-	time_mode_session.time_mode_session_status_id != ?
+	time_mode_session.time_mode_session_status_id != ? AND
+	time_mode_session.challenge_id IS NULL
 ORDER BY time_mode_session.created DESC, time_mode_session.id DESC",
 			[TimeModeUtil::$ATTEMPT_RESULT_SOLVED, Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]);
 
@@ -333,6 +342,9 @@ ORDER BY time_mode_session.created DESC, time_mode_session.id DESC",
 			return $this->renderWaitingForTheResult();
 
 		$finishedSession = $this->deduceFinishedSession($timeModeSessionID, $timeMode);
+		// the results of a challenge are the table of all its players
+		if ($finishedSession && $finishedSession['TimeModeSession']['challenge_id'])
+			return $this->redirect('/challenges/' . $finishedSession['TimeModeSession']['challenge_id']);
 
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');

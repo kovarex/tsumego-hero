@@ -233,6 +233,7 @@ echo ViteManifest::legacyScript('legacy');
 			$aboutA = '';
 			$changelogA = '';
 			$classesA = '';
+			$challengesA = '';
 
 			$_page = $_page ?? '';
 			if($_page == 'home') $homeA = 'nav__link--active';
@@ -256,6 +257,7 @@ echo ViteManifest::legacyScript('legacy');
 			else if($_page == 'about') $aboutA = 'nav__link--active';
 			else if($_page == 'changelog') $changelogA = 'nav__link--active';
 			else if($_page == 'classes') $classesA = 'nav__link--active';
+			else if($_page == 'challenges') $challengesA = 'nav__link--active';
 			else if($_page == 'levelHighscore') $levelHighscoreA = 'nav__link--active';
 			else if($_page == 'ratingHighscore') $ratingHighscoreA = 'nav__link--active';
 			else if($_page == 'achievementHighscore') $achievementHighscoreA = 'nav__link--active';
@@ -324,12 +326,19 @@ echo ViteManifest::legacyScript('legacy');
 						}
 						$sessionLastVisit = (int)($_COOKIE['lastVisit'] ?? 15352);
 						echo '</li>';
-						echo '<li><a class="homeMenuLink '.$playA.'" href="/tsumegos/play/'.$lv.'">Play</a>';
+						// Challenges the player is in and hasn't played yet: the Challenges item counts them,
+						// and so does Play, where the item is hidden.
+						$challengesWaiting = Auth::isLoggedIn() ? Challenge::countWaitingFor(Auth::getUserID()) : 0;
+						$challengesBadge = $challengesWaiting > 0
+							? '<span class="nav__new-badge nav__new-badge--visible" title="Challenges waiting for you to play them">'.$challengesWaiting.'</span>'
+							: '';
+						echo '<li><a class="homeMenuLink nav__play-link '.$playA.'" href="/tsumegos/play/'.$lv.'">Play'.$challengesBadge.'</a>';
 						echo '<ul class="newMenuLi3">';
 						echo '<li><a class="'.$levelModeA.'" href="/tsumegos/play/'.$sessionLastVisit.'?mode=1">Level</a></li>';
 						if(Auth::isLoggedIn()){
 							echo '<li><a class="'.$ratingModeA.'" href="/ratingMode">Rating</a></li>';
 							echo '<li><a class="'.$timeModeA.'" href="/timeMode/overview">Time</a></li>';
+							echo '<li><a class="'.$challengesA.'" href="/challenges">Challenges'.$challengesBadge.'</a></li>';
 						}
 								echo '</ul>';
 						echo '<li><a '.$refreshLinkToHighscore.' class="'.$highscoreA.'" href="/users/'.$highscoreLink.'">Highscore</a>';

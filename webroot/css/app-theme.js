@@ -19,6 +19,7 @@ import './page/admin.css';
 import './page/about.css';
 import './page/changelog.css';
 import './page/classes.css';
+import './page/challenges.css';
 import './page/auth.css';
 import './page/comments.css';
 import './page/messages.css';

@@ -338,6 +338,14 @@ class Util
 		return date('c', strtotime($mysqlDatetime));
 	}
 
+	/** A place in a table in words: 1st, 2nd, 3rd, 4th, 11th, 21st… */
+	public static function ordinal(int $number): string
+	{
+		if (in_array($number % 100, [11, 12, 13], true))
+			return $number . 'th';
+		return $number . (['th', 'st', 'nd', 'rd'][$number % 10] ?? 'th');
+	}
+
 	public static function calculateLibertyStatus(
 		int $multipleChoiceSquares,
 		int $multipleChoiceTriangles,
