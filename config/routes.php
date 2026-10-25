@@ -299,13 +299,22 @@ Router::connect(
 	['controller' => 'Classrooms', 'action' => 'create']
 );
 Router::connect(
+	'/classes/collections',
+	['controller' => 'Classrooms', 'action' => 'collections']
+);
+Router::connect(
+	'/classes/collection-problems/:id',
+	['controller' => 'Classrooms', 'action' => 'collectionProblems'],
+	['pass' => ['id'], 'id' => '[0-9]+'] // Id of a collection
+);
+Router::connect(
 	'/classes/:id',
 	['controller' => 'Classrooms', 'action' => 'view'],
 	['pass' => ['id'], 'id' => '[0-9]+']
 );
-foreach (['invite', 'join', 'assign', 'delete'] as $classroomAction)
+foreach (['invite' => 'invite', 'join' => 'join', 'create-assignment' => 'createAssignment', 'delete' => 'delete'] as $path => $classroomAction)
 	Router::connect(
-		'/classes/' . $classroomAction . '/:id',
+		'/classes/' . $path . '/:id',
 		['controller' => 'Classrooms', 'action' => $classroomAction],
 		['pass' => ['id'], 'id' => '[0-9]+'] // Id of a class
 	);
@@ -315,7 +324,7 @@ foreach (['accept-member' => 'acceptMember', 'remove-member' => 'removeMember'] 
 		['controller' => 'Classrooms', 'action' => $classroomAction],
 		['pass' => ['id'], 'id' => '[0-9]+'] // Id of a membership
 	);
-foreach (['delete-assignment' => 'deleteAssignment', 'progress' => 'progress'] as $path => $classroomAction)
+foreach (['assignment' => 'assignment', 'save-assignment' => 'saveAssignment', 'delete-assignment' => 'deleteAssignment', 'progress' => 'progress'] as $path => $classroomAction)
 	Router::connect(
 		'/classes/' . $path . '/:id',
 		['controller' => 'Classrooms', 'action' => $classroomAction],

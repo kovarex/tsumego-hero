@@ -9,10 +9,8 @@
  * @var array|null $teacher
  * @var bool $isTeacher
  * @var array|null $membership The membership of the viewer, in whatever state
- * @var array $assignments What ClassroomAssignment::ofClassroom() returned, for the teacher and the pupils
+ * @var array $assignments What ClassroomAssignment::ofClassroom() returned, with the drafts for the teacher
  * @var array $members What ClassroomMember::ofClassroom() returned, for the teacher
- * @var array $assignableSets What ClassroomAssignment::assignableSets() returned, for the teacher
- * @var string $defaultDue The due day the form starts with, for the teacher
  * @var string $joinUrl The link of the class to send around, for the teacher
  */
 
@@ -51,7 +49,14 @@ $isPupil = $membershipStatus === ClassroomMemberStatus::ACCEPTED;
 
 	<?php if ($isTeacher || $isPupil): ?>
 	<section class="classes__section" id="classes-assignments">
-		<h2 class="classes__heading">Assignments</h2>
+		<div class="classes__section-header">
+			<h2 class="classes__heading">Assignments</h2>
+			<?php if ($isTeacher): ?>
+			<form method="post" action="/classes/create-assignment/<?= $classroomId ?>">
+				<button class="btn" type="submit" id="new-assignment">New assignment</button>
+			</form>
+			<?php endif; ?>
+		</div>
 		<?php if (empty($assignments)): ?>
 		<p class="hint"><?= $isTeacher ? 'Nothing assigned yet.' : 'Nothing to solve yet.' ?></p>
 		<?php endif; ?>
@@ -68,45 +73,6 @@ $isPupil = $membershipStatus === ClassroomMemberStatus::ACCEPTED;
 	<?php endif; ?>
 
 	<?php if ($isTeacher): ?>
-	<section class="card card--green classes__section" id="classes-assign">
-		<h2 class="classes__heading">Assign problems</h2>
-		<form class="classes__form" method="post" action="/classes/assign/<?= $classroomId ?>">
-			<div class="form-field">
-				<label class="form-field__label" for="assignment-set">Collection</label>
-				<select class="form-field__control" id="assignment-set" name="set_id" required>
-					<?php if (!empty($assignableSets['own'])): ?>
-					<optgroup label="Your collections">
-						<?php foreach ($assignableSets['own'] as $set): ?>
-						<option value="<?= $set['id'] ?>"><?= h($set['title']) ?></option>
-						<?php endforeach; ?>
-					</optgroup>
-					<?php endif; ?>
-					<optgroup label="Collections of the site">
-						<?php foreach ($assignableSets['site'] as $set): ?>
-						<option value="<?= $set['id'] ?>"><?= h($set['title']) ?></option>
-						<?php endforeach; ?>
-					</optgroup>
-				</select>
-				<p class="hint">To give your own pick of problems, put them in one of <a href="/sets/mine">your collections</a> with the heart on the problem page.</p>
-			</div>
-			<div class="classes__form-row">
-				<div class="form-field">
-					<label class="form-field__label" for="assignment-first-number">From problem</label>
-					<input class="form-field__control" type="number" min="1" id="assignment-first-number" name="first_number" placeholder="first">
-				</div>
-				<div class="form-field">
-					<label class="form-field__label" for="assignment-last-number">To problem</label>
-					<input class="form-field__control" type="number" min="1" id="assignment-last-number" name="last_number" placeholder="last">
-				</div>
-				<div class="form-field">
-					<label class="form-field__label" for="assignment-due">Due</label>
-					<input class="form-field__control" type="date" id="assignment-due" name="due" value="<?= h($defaultDue) ?>" required>
-				</div>
-			</div>
-			<button class="btn" type="submit">Assign</button>
-		</form>
-	</section>
-
 	<section class="card card--purple classes__section" id="classes-pupils">
 		<h2 class="classes__heading">Pupils</h2>
 		<?php foreach ($members[ClassroomMemberStatus::REQUESTED] as $member): ?>

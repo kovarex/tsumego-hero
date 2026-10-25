@@ -3,7 +3,7 @@ import { get } from '../shared/api';
 import { formatDate } from '../shared/dates';
 import { ErrorMessage } from '../shared/ErrorMessage';
 import { UserLink } from '../shared/UserLink';
-import type { AssignmentProgress, ProgressCell } from './classroomTypes';
+import type { AssignmentProgress, ProgressCell, ProgressProblem } from './classroomTypes';
 
 /** How often the table asks again, so the teacher sees the solves while the pupils play. */
 const REFRESH_MILLISECONDS = 10000;
@@ -46,6 +46,28 @@ function cellText(cell: ProgressCell | null): string
 	return cell.state === 'tried' ? String(cell.misplays ?? '') : '✓';
 }
 
+interface CollectionRun
+{
+	setId: number;
+	setTitle: string;
+	problemCount: number;
+}
+
+/** The problems that follow one another in the same collection, for the header above their numbers. */
+function collectionRuns(problems: ProgressProblem[]): CollectionRun[]
+{
+	const runs: CollectionRun[] = [];
+	for (const problem of problems)
+	{
+		const last = runs[runs.length - 1];
+		if (last && last.setId === problem.setId)
+			last.problemCount++;
+		else
+			runs.push({ setId: problem.setId, setTitle: problem.setTitle, problemCount: 1 });
+	}
+	return runs;
+}
+
 /**
  * The table of who solved which problem of an assignment: a row per pupil, a column per problem.
  * It asks the server again every few seconds, so the teacher watches the class work in real time.
@@ -73,13 +95,20 @@ export function ClassroomProgress({ assignmentId, isTeacher }: ClassroomProgress
 			<table className="classes__table">
 				<thead>
 					<tr>
-						{isTeacher && <th className="classes__pupil">Pupil</th>}
+						{isTeacher && <th className="classes__pupil" rowSpan={2}>Pupil</th>}
+						{collectionRuns(problems).map((run, index) => (
+							<th key={index} colSpan={run.problemCount} className="classes__collection">
+								<a href={`/sets/${run.setId}`} title={run.setTitle}>{run.setTitle}</a>
+							</th>
+						))}
+						<th rowSpan={2}>Solved</th>
+					</tr>
+					<tr>
 						{problems.map(problem => (
 							<th key={problem.setConnectionId}>
 								<a href={`/${problem.setConnectionId}`}>{problem.number}</a>
 							</th>
 						))}
-						<th>Solved</th>
 					</tr>
 				</thead>
 				<tbody>

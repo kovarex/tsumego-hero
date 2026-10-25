@@ -1,45 +1,49 @@
 <?php
 
 /**
- * One assignment of a class: the collection and its problem numbers, the due day, and the table of
- * who solved what, which keeps itself up to date (app/classrooms/ClassroomProgress.tsx).
+ * One assignment of a class: its name, the collections its problems come from, the due day, and
+ * the table of who solved what, which keeps itself up to date (app/classrooms/ClassroomProgress.tsx).
+ * A draft only the teacher sees has no table yet.
  *
  * @var View $this
  * @var array $assignment A row of ClassroomAssignment::ofClassroom()
- * @var bool $isTeacher The teacher sees every pupil and can take the assignment back
+ * @var bool $isTeacher The teacher sees every pupil, and can edit and take the assignment back
  */
 
-$firstNumber = $assignment['first_number'];
-$lastNumber = $assignment['last_number'];
-if ($firstNumber !== null && $lastNumber !== null)
-	$range = $firstNumber == $lastNumber ? 'problem ' . $firstNumber : 'problems ' . $firstNumber . '–' . $lastNumber;
-elseif ($firstNumber !== null)
-	$range = 'from problem ' . $firstNumber;
-elseif ($lastNumber !== null)
-	$range = 'up to problem ' . $lastNumber;
-else
-	$range = null;
+$isPublished = ClassroomAssignment::isPublished($assignment);
+$collections = array_map(
+	fn(array $collection) => '<a href="' . Set::url($collection['id']) . '">' . h($collection['title']) . '</a> '
+		. '<span class="hint">' . $collection['problemCount'] . ($collection['problemCount'] == 1 ? ' problem' : ' problems') . '</span>',
+	$assignment['collections']);
 $props = json_encode([
 	'assignmentId' => (int) $assignment['id'],
 	'isTeacher' => $isTeacher,
 ]);
 ?>
-<div class="card classes__assignment" data-assignment-id="<?= (int) $assignment['id'] ?>">
+<div class="card classes__assignment<?= $isPublished ? '' : ' classes__assignment--draft' ?>" data-assignment-id="<?= (int) $assignment['id'] ?>">
 	<div class="classes__assignment-header">
 		<span>
-			<a class="classes__assignment-title" href="<?= Set::url((int) $assignment['set_id']) ?>"><?= h($assignment['set_title']) ?></a>
-			<?php if ($range !== null): ?>
-			<span class="hint"><?= $range ?></span>
+			<?php if (!$isPublished): ?>
+			<span class="classes__badge">draft</span>
 			<?php endif; ?>
+			<span class="classes__assignment-title"><?= h(ClassroomAssignment::title($assignment)) ?></span>
 		</span>
 		<span class="classes__actions">
 			<span class="hint">due <time datetime="<?= h($assignment['due']) ?>" data-format="date"><?= h($assignment['due']) ?></time></span>
 			<?php if ($isTeacher): ?>
-			<form method="post" action="/classes/delete-assignment/<?= (int) $assignment['id'] ?>" onsubmit="return confirm('Take this assignment back?');">
+			<a class="btn btn--small<?= $isPublished ? ' btn--neutral' : '' ?>" href="/classes/assignment/<?= (int) $assignment['id'] ?>"><?= $isPublished ? 'Edit' : 'Continue' ?></a>
+			<form method="post" action="/classes/delete-assignment/<?= (int) $assignment['id'] ?>" onsubmit="return confirm('<?= $isPublished ? 'Take this assignment back?' : 'Throw this draft away?' ?>');">
 				<button class="btn btn--small btn--neutral" type="submit">Remove</button>
 			</form>
 			<?php endif; ?>
 		</span>
 	</div>
+	<?php if (!empty($collections)): ?>
+	<p class="classes__assignment-collections"><?= implode(' · ', $collections) ?></p>
+	<?php elseif (!$isPublished): ?>
+	<p class="hint">No problems picked yet.</p>
+	<?php endif; ?>
+	<?php if ($isPublished): ?>
 	<div data-classroom-progress-root data-props="<?= h($props) ?>"></div>
+	<?php endif; ?>
 </div>

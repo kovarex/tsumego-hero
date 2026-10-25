@@ -25,7 +25,7 @@ class ContextPreparator
 		$pdo = $db->getConnection();
 		$pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
 		foreach ([
-			'classroom_assignment', 'classroom_member', 'classroom',
+			'classroom_assignment_problem', 'classroom_assignment', 'classroom_member', 'classroom',
 			'tag_connection', 'tag', 'schedule', 'progress_deletion',
 			'day_record', 'sgf', 'time_mode_attempt', 'time_mode_session',
 			'tsumego_comment', 'tsumego_issue', 'admin_activity', 'message',

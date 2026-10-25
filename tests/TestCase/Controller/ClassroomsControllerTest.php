@@ -1,5 +1,6 @@
 <?php
 
+use App\Lib\Error\UnprocessableEntityException;
 use App\Utility\Util;
 
 /**
@@ -11,16 +12,24 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 	private ContextPreparator $context;
 
 	/**
-	 * A teacher with a private collection of three problems, two players who can become pupils and
-	 * one who stays out.
+	 * A teacher with a private collection of three problems (0-2) and a second one of one problem
+	 * (4), a collection of the site with two problems (3, and 0 again as its number 2), two players
+	 * who can become pupils and one who stays out.
 	 */
 	private function prepare(): void
 	{
-		$homework = fn(int $num) => ['sets' => [['name' => 'Homework', 'num' => $num, 'public' => 0, 'user_id' => 'self']]];
+		$homework = fn(int $num) => ['name' => 'Homework', 'num' => $num, 'public' => 0, 'user_id' => 'self'];
+		$site = fn(int $num) => ['name' => 'Site basics', 'num' => $num];
 		$this->context = new ContextPreparator([
 			'user' => ['name' => 'teacher'],
 			'other-users' => [['name' => 'pupil'], ['name' => 'pupil2'], ['name' => 'outsider']],
-			'tsumegos' => [$homework(1), $homework(2), $homework(3)],
+			'tsumegos' => [
+				['sets' => [$homework(1), $site(2)]],
+				['sets' => [$homework(2)]],
+				['sets' => [$homework(3)]],
+				['sets' => [$site(1)]],
+				['sets' => [['name' => 'Secret', 'num' => 1, 'public' => 0, 'user_id' => 'self']]],
+			],
 		]);
 	}
 
@@ -47,11 +56,68 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		return (int) $this->context->tsumegos[0]['sets'][0]['id'];
 	}
 
-	private function createAssignment(int $classroomId, string $created, string $due, ?int $firstNumber = null, ?int $lastNumber = null): int
+	/**
+	 * The problem of the tsumego with the index in the collection with the index among its own.
+	 */
+	private function setConnectionId(int $tsumegoIndex, int $setIndex = 0): int
 	{
-		Util::execute('INSERT INTO classroom_assignment (classroom_id, set_id, first_number, last_number, due, created) VALUES (?, ?, ?, ?, ?, ?)',
-			[$classroomId, $this->homeworkSetId(), $firstNumber, $lastNumber, $due, $created]);
-		return (int) Util::connection()->lastInsertId();
+		return (int) $this->context->tsumegos[$tsumegoIndex]['set-connections'][$setIndex]['id'];
+	}
+
+	/**
+	 * @param string|null $published Null for a draft
+	 * @param list<int> $tsumegoIndexes The problems, from the first collection of each tsumego
+	 */
+	private function createAssignment(int $classroomId, ?string $published, string $due, array $tsumegoIndexes = [0, 1, 2]): int
+	{
+		Util::execute('INSERT INTO classroom_assignment (classroom_id, due, published, created) VALUES (?, ?, ?, ?)',
+			[$classroomId, $due, $published, $published ?? date('Y-m-d H:i:s')]);
+		$assignmentId = (int) Util::connection()->lastInsertId();
+		foreach ($tsumegoIndexes as $position => $tsumegoIndex)
+			Util::execute('INSERT INTO classroom_assignment_problem (classroom_assignment_id, set_connection_id, position) VALUES (?, ?, ?)',
+				[$assignmentId, $this->setConnectionId($tsumegoIndex), $position + 1]);
+		return $assignmentId;
+	}
+
+	/**
+	 * @return array<string, mixed>
+	 */
+	private function assignment(int $assignmentId): array
+	{
+		return Util::query('SELECT * FROM classroom_assignment WHERE id = ?', [$assignmentId])[0];
+	}
+
+	/**
+	 * @return list<int> The set connections of the problems of the assignment, in their order
+	 */
+	private function assignedSetConnectionIds(int $assignmentId): array
+	{
+		return array_map('intval', array_column(Util::query(
+			'SELECT set_connection_id FROM classroom_assignment_problem WHERE classroom_assignment_id = ? ORDER BY position',
+			[$assignmentId]), 'set_connection_id'));
+	}
+
+	/**
+	 * @param array<string, mixed> $data
+	 * @return array<string, mixed>
+	 */
+	private function saveAssignment(int $assignmentId, array $data): array
+	{
+		$this->testAction('/classes/save-assignment/' . $assignmentId, [
+			'method' => 'post',
+			'data' => json_encode($data + ['title' => '', 'due' => '2026-11-05', 'setConnectionIds' => []]),
+			'return' => 'contents',
+		]);
+		return json_decode($this->controller->response->body(), true);
+	}
+
+	/**
+	 * @return array<string, mixed>
+	 */
+	private function getJson(string $url): array
+	{
+		$this->testAction($url, ['method' => 'get', 'return' => 'contents']);
+		return json_decode($this->controller->response->body(), true);
 	}
 
 	private function addAttempt(string $name, int $tsumegoIndex, bool $solved, int $misplays, string $created): void
@@ -230,53 +296,193 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$this->testAction('/classes/remove-member/' . $membershipId, ['method' => 'post']);
 	}
 
-	public function testTheTeacherAssignsAPartOfACollection(): void
+	public function testANewAssignmentIsADraftThePupilsDontSee(): void
 	{
 		$this->prepare();
 		$classroomId = $this->createClassroom();
+		$this->addMember($classroomId, 'pupil');
 
-		$this->testAction('/classes/assign/' . $classroomId, ['method' => 'post', 'data' => [
-			'set_id' => $this->homeworkSetId(),
-			'first_number' => '2',
-			'last_number' => '',
+		$this->testAction('/classes/create-assignment/' . $classroomId, ['method' => 'post']);
+
+		$assignment = Util::query('SELECT * FROM classroom_assignment')[0];
+		$this->assertStringEndsWith('/classes/assignment/' . $assignment['id'], $this->headers['Location']);
+		$this->assertNull($assignment['published']);
+		$this->assertSame(date('Y-m-d', strtotime('+7 days')), $assignment['due']);
+		$page = $this->testAction('/classes/' . $classroomId, ['method' => 'get', 'return' => 'view']);
+		$this->assertTextContains('data-assignment-id="' . $assignment['id'] . '"', $page);
+		$this->assertTextContains('classes__badge">draft', $page);
+
+		$this->login('pupil');
+		$page = $this->testAction('/classes/' . $classroomId, ['method' => 'get', 'return' => 'view']);
+		$this->assertTextNotContains('data-assignment-id="' . $assignment['id'] . '"', $page);
+	}
+
+	public function testTheTeacherBuildsAnAssignmentFromSeveralCollections(): void
+	{
+		$this->prepare();
+		$classroomId = $this->createClassroom();
+		$assignmentId = $this->createAssignment($classroomId, null, '2026-11-01', []);
+
+		$saved = $this->saveAssignment($assignmentId, [
+			'title' => '  Thursday   homework ',
 			'due' => '2026-11-05',
-		]]);
+			'setConnectionIds' => [$this->setConnectionId(1), $this->setConnectionId(3), $this->setConnectionId(0)],
+		]);
 
-		$assignment = ClassRegistry::init('ClassroomAssignment')->find('first')['ClassroomAssignment'];
-		$this->assertSame($this->homeworkSetId(), (int) $assignment['set_id']);
-		$this->assertSame(2, (int) $assignment['first_number']);
-		$this->assertNull($assignment['last_number']);
+		$this->assertSame(3, $saved['problemCount']);
+		$this->assertNull($saved['published']);
+		$this->assertSame([$this->setConnectionId(1), $this->setConnectionId(3), $this->setConnectionId(0)], $this->assignedSetConnectionIds($assignmentId));
+		$assignment = $this->assignment($assignmentId);
+		$this->assertSame('Thursday homework', $assignment['title']);
 		$this->assertSame('2026-11-05', $assignment['due']);
-		$this->assertCount(2, ClassroomAssignment::problems($assignment));
+		$this->assertNull($assignment['published']);
+
+		$this->saveAssignment($assignmentId, ['setConnectionIds' => [$this->setConnectionId(3)]]);
+		$this->assertSame([$this->setConnectionId(3)], $this->assignedSetConnectionIds($assignmentId));
+		$this->assertNull($this->assignment($assignmentId)['title']);
 	}
 
-	public function testATeacherCannotAssignAPrivateCollectionOfAnotherPlayer(): void
+	public function testAProblemInTwoCollectionsIsPickedOnce(): void
 	{
 		$this->prepare();
 		$classroomId = $this->createClassroom();
-		Util::execute('UPDATE `set` SET user_id = ? WHERE id = ?', [$this->userId('outsider'), $this->homeworkSetId()]);
+		$assignmentId = $this->createAssignment($classroomId, null, '2026-11-01', []);
 
-		$this->testAction('/classes/assign/' . $classroomId, ['method' => 'post', 'data' => [
-			'set_id' => $this->homeworkSetId(),
-			'due' => '2026-11-05',
-		]]);
+		$saved = $this->saveAssignment($assignmentId, ['setConnectionIds' => [$this->setConnectionId(0, 1), $this->setConnectionId(0)]]);
 
-		$this->assertSame(0, ClassRegistry::init('ClassroomAssignment')->find('count'));
+		$this->assertSame(1, $saved['problemCount']);
+		$this->assertSame([$this->setConnectionId(0, 1)], $this->assignedSetConnectionIds($assignmentId));
 	}
 
-	public function testAnAssignmentNeedsADueDateAndProblems(): void
+	public function testATeacherCannotPickFromAPrivateCollectionOfAnotherPlayer(): void
 	{
 		$this->prepare();
 		$classroomId = $this->createClassroom();
+		$assignmentId = $this->createAssignment($classroomId, null, '2026-11-01', []);
+		$secretSetId = (int) $this->context->tsumegos[4]['sets'][0]['id'];
+		Util::execute('UPDATE `set` SET user_id = ? WHERE id = ?', [$this->userId('outsider'), $secretSetId]);
+
+		$this->saveAssignment($assignmentId, ['setConnectionIds' => [$this->setConnectionId(4), $this->setConnectionId(1)]]);
+		$this->assertSame([$this->setConnectionId(1)], $this->assignedSetConnectionIds($assignmentId));
+
+		$collections = $this->getJson('/classes/collections');
+		$this->assertNotContains($secretSetId, array_column($collections['own'], 'id'));
+
+		$this->expectException(ForbiddenException::class);
+		$this->getJson('/classes/collection-problems/' . $secretSetId);
+	}
+
+	public function testThePickerOffersTheOwnCollectionsAndTheOnesOfTheSite(): void
+	{
+		$this->prepare();
+
+		$collections = $this->getJson('/classes/collections');
+
+		$this->assertSame(['Homework', 'Secret'], array_column($collections['own'], 'title'));
+		$this->assertSame(['Site basics'], array_column($collections['site'], 'title'));
+		$this->assertSame(2, $collections['site'][0]['problemCount']);
+	}
+
+	public function testThePickerShowsTheProblemsOfACollection(): void
+	{
+		$this->prepare();
+
+		$problems = $this->getJson('/classes/collection-problems/' . $this->homeworkSetId());
+
+		$this->assertSame('Homework', $problems['collection']['title']);
+		$this->assertSame([1, 2, 3], array_column($problems['problems'], 'number'));
+		$this->assertSame($this->setConnectionId(0), $problems['problems'][0]['setConnectionId']);
+		$this->assertSame((int) $this->context->tsumegos[0]['id'], $problems['problems'][0]['tsumegoId']);
+		$this->assertArrayHasKey('preview', $problems['problems'][0]);
+	}
+
+	public function testPublishingGivesTheAssignmentToThePupils(): void
+	{
+		$this->prepare();
+		$classroomId = $this->createClassroom();
+		$this->addMember($classroomId, 'pupil');
+		$assignmentId = $this->createAssignment($classroomId, null, '2026-11-01', []);
+
+		$saved = $this->saveAssignment($assignmentId, [
+			'setConnectionIds' => [$this->setConnectionId(0), $this->setConnectionId(3)],
+			'publish' => true,
+		]);
+
+		$this->assertNotNull($saved['published']);
+		$this->assertSame('/classes/' . $classroomId, $saved['classUrl']);
+		$this->assertNotNull($this->assignment($assignmentId)['published']);
+
+		$this->login('pupil');
+		$page = $this->testAction('/classes/' . $classroomId, ['method' => 'get', 'return' => 'view']);
+		$this->assertTextContains('data-assignment-id="' . $assignmentId . '"', $page);
+		$this->assertTextContains('Homework', $page);
+		$this->assertTextContains('Site basics', $page);
+	}
+
+	public function testAnEmptyAssignmentIsNotPublished(): void
+	{
+		$this->prepare();
+		$classroomId = $this->createClassroom();
+		$assignmentId = $this->createAssignment($classroomId, null, '2026-11-01', []);
+
+		try
+		{
+			$this->saveAssignment($assignmentId, ['setConnectionIds' => [], 'publish' => true]);
+			$this->fail('An empty assignment was published');
+		}
+		catch (UnprocessableEntityException $exception)
+		{
+			$this->assertSame('Pick the problems to give first.', $exception->getMessage());
+		}
+		$this->assertNull($this->assignment($assignmentId)['published']);
+	}
+
+	public function testAnAssignmentNeedsADueDate(): void
+	{
+		$this->prepare();
+		$classroomId = $this->createClassroom();
+		$assignmentId = $this->createAssignment($classroomId, null, '2026-11-01', []);
+
+		$this->expectException(UnprocessableEntityException::class);
+		$this->saveAssignment($assignmentId, ['due' => 'next week', 'setConnectionIds' => [$this->setConnectionId(0)]]);
+	}
+
+	public function testOnlyTheTeacherEditsAnAssignment(): void
+	{
+		$this->prepare();
+		$classroomId = $this->createClassroom();
+		$this->addMember($classroomId, 'pupil');
+		$assignmentId = $this->createAssignment($classroomId, '2026-10-01 00:00:00', '2026-10-08');
+		$this->login('pupil');
 
 		foreach ([
-			['due' => 'next week'],
-			['due' => '2026-11-05', 'first_number' => '5'],
-			['due' => '2026-11-05', 'first_number' => '3', 'last_number' => '2'],
-		] as $data)
-			$this->testAction('/classes/assign/' . $classroomId, ['method' => 'post', 'data' => ['set_id' => $this->homeworkSetId()] + $data]);
+			fn() => $this->testAction('/classes/assignment/' . $assignmentId, ['method' => 'get']),
+			fn() => $this->saveAssignment($assignmentId, ['setConnectionIds' => []]),
+			fn() => $this->testAction('/classes/create-assignment/' . $classroomId, ['method' => 'post']),
+		] as $request)
+			try
+			{
+				$request();
+				$this->fail('A pupil changed the assignments');
+			}
+			catch (ForbiddenException)
+			{
+			}
+		$this->assertCount(3, $this->assignedSetConnectionIds($assignmentId));
+	}
 
-		$this->assertSame(0, ClassRegistry::init('ClassroomAssignment')->find('count'));
+	public function testTheEditorPageShowsThePickedProblems(): void
+	{
+		$this->prepare();
+		$classroomId = $this->createClassroom();
+		$assignmentId = $this->createAssignment($classroomId, null, '2026-11-01', [3, 1]);
+
+		$page = $this->testAction('/classes/assignment/' . $assignmentId, ['method' => 'get', 'return' => 'view']);
+
+		$this->assertSame(1, preg_match('/data-assignment-editor-root data-props="([^"]+)"/', $page, $match));
+		$props = json_decode(html_entity_decode($match[1]), true);
+		$this->assertSame([$this->setConnectionId(3), $this->setConnectionId(1)], array_column($props['problems'], 'setConnectionId'));
+		$this->assertFalse($props['isPublished']);
 	}
 
 	public function testTheTeacherSeesWhoSolvedWhich(): void
@@ -298,6 +504,7 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$progress = $this->progress($assignmentId);
 
 		$this->assertSame([1, 2, 3], array_column($progress['problems'], 'number'));
+		$this->assertSame(['Homework', 'Homework', 'Homework'], array_column($progress['problems'], 'setTitle'));
 		$this->assertSame([$this->userId('pupil'), $this->userId('pupil2')], array_column($progress['pupils'], 'userId'));
 		[$pupil, $pupil2] = $progress['pupils'];
 		$this->assertSame(['solved', 'late', 'earlier'], array_column($pupil['cells'], 'state'));
@@ -308,12 +515,12 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$this->assertSame(0, $pupil2['solvedCount']);
 	}
 
-	public function testTheProgressCoversOnlyTheAssignedNumbers(): void
+	public function testTheProgressCoversOnlyTheAssignedProblems(): void
 	{
 		$this->prepare();
 		$classroomId = $this->createClassroom();
 		$this->addMember($classroomId, 'pupil');
-		$assignmentId = $this->createAssignment($classroomId, '2026-10-01 00:00:00', '2026-10-08', 2, 2);
+		$assignmentId = $this->createAssignment($classroomId, '2026-10-01 00:00:00', '2026-10-08', [1]);
 		$this->addAttempt('pupil', 0, true, 0, '2026-10-02 10:00:00');
 
 		$progress = $this->progress($assignmentId);
@@ -429,6 +636,52 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 
 		$browser->waitUntilCssSelectorExistsWithText('.classes__solved-count', '1/3', 30);
 		$this->assertCount(1, $browser->getElements('.classes__table .classes__cell--solved'));
+	}
+
+	public function testAPupilGetsNoProgressOfADraft(): void
+	{
+		$this->prepare();
+		$classroomId = $this->createClassroom();
+		$this->addMember($classroomId, 'pupil');
+		$assignmentId = $this->createAssignment($classroomId, null, '2026-10-08');
+		$this->login('pupil');
+
+		$this->expectException(NotFoundException::class);
+		$this->progress($assignmentId);
+	}
+
+	/**
+	 * The teacher picks problems of two collections in the popup, some one by one and some as a
+	 * range of numbers, and publishes; the class page then shows the table of the new assignment.
+	 */
+	public function testTheTeacherPicksProblemsInThePopupAndPublishes(): void
+	{
+		$this->prepare();
+		$classroomId = $this->createClassroom();
+		$this->addMember($classroomId, 'pupil');
+		$assignmentId = $this->createAssignment($classroomId, null, date('Y-m-d', strtotime('+7 days')), []);
+		$siteSetId = (int) $this->context->tsumegos[3]['sets'][0]['id'];
+		$browser = Browser::instance();
+
+		$browser->get('/classes/assignment/' . $assignmentId);
+		$browser->clickId('add-problems');
+		$browser->clickCssSelect('.classes__picker-card[data-collection-id="' . $this->homeworkSetId() . '"]');
+		$browser->clickCssSelect('.classes__picker a[data-tsumego-id="' . $this->context->tsumegos[2]['id'] . '"]');
+		$browser->clickCssSelect('.classes__picker a[data-tsumego-id="' . $this->context->tsumegos[1]['id'] . '"]');
+		$browser->waitUntilCssSelectorExistsWithText('.classes__picker [data-picked-count]', '2 of 3 picked');
+		$browser->clickCssSelect('.classes__picker-header button');
+		$browser->clickCssSelect('.classes__picker-card[data-collection-id="' . $siteSetId . '"]');
+		$browser->find('.classes__picker-range input[name="last_number"]')->sendKeys('1');
+		$browser->clickCssSelect('.classes__picker-range button[type="submit"]');
+		$browser->waitUntilCssSelectorExistsWithText('.classes__picker [data-picked-count]', '1 of 2 picked');
+		$browser->clickCssSelect('.classes__picker-footer button');
+		$browser->waitUntilCssSelectorExistsWithText('#assignment-problems .classes__count', '3');
+
+		$browser->clickId('publish-assignment');
+		$browser->waitUntilCssSelectorExistsWithText('.classes__solved-count', '0/3');
+
+		$this->assertSame([$this->setConnectionId(1), $this->setConnectionId(2), $this->setConnectionId(3)], $this->assignedSetConnectionIds($assignmentId));
+		$this->assertNotNull($this->assignment($assignmentId)['published']);
 	}
 
 	public function testDeletingTheClassTakesItsMembersAndAssignments(): void

@@ -2,8 +2,10 @@
 
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
+use App\Lib\Error\UnprocessableEntityException;
 use App\Utility\Auth;
 use App\Utility\CookieFlash;
+use App\Utility\Util;
 
 /**
  * Classes: a teacher gathers players into a class, gives them problems to solve by a day and
@@ -67,13 +69,11 @@ class ClassroomsController extends AppController
 		$isPupil = $membership !== null && (int) $membership['classroom_member_status_id'] === ClassroomMemberStatus::ACCEPTED;
 		$this->set('isTeacher', $isTeacher);
 		$this->set('membership', $membership);
-		$this->set('assignments', $isTeacher || $isPupil ? ClassroomAssignment::ofClassroom((int) $classroom['id']) : []);
+		$this->set('assignments', $isTeacher || $isPupil ? ClassroomAssignment::ofClassroom((int) $classroom['id'], $isTeacher) : []);
 
 		if ($isTeacher)
 		{
 			$this->set('members', ClassroomMember::ofClassroom((int) $classroom['id']));
-			$this->set('assignableSets', ClassroomAssignment::assignableSets(Auth::getUserID()));
-			$this->set('defaultDue', date('Y-m-d', strtotime('+7 days')));
 			$this->set('joinUrl', Router::url(self::classUrl((int) $classroom['id']), true));
 		}
 		return null;
@@ -185,56 +185,117 @@ class ClassroomsController extends AppController
 	}
 
 	/**
-	 * The teacher gives the class a collection, or the problems of it with the numbers from
-	 * first_number to last_number, to solve by the due day.
+	 * The teacher starts a new assignment, a draft the pupils don't see until it is published,
+	 * and builds it up on its own page.
 	 */
 	#[HttpPost]
-	public function assign(string $id): mixed
+	public function createAssignment(string $id): mixed
 	{
 		$classroom = $this->findClassroom($id);
 		$this->Authorization->authorize(['Classroom' => $classroom], 'manage');
-		$url = self::classUrl((int) $classroom['id']);
 
-		$set = ClassRegistry::init('Set')->findById((int) ($this->request->data['set_id'] ?? 0));
-		if (!$set || !ClassroomAssignment::canAssignSet($set['Set'], Auth::getUserID()))
-		{
-			CookieFlash::set('Pick one of your collections or a collection of the site.', 'error');
-			return $this->redirect($url);
-		}
-
-		$due = DateTime::createFromFormat('!Y-m-d', (string) ($this->request->data['due'] ?? ''));
-		if ($due === false || $due->format('Y-m-d') !== $this->request->data['due'])
-		{
-			CookieFlash::set('The due date is not a date.', 'error');
-			return $this->redirect($url);
-		}
-
-		$firstNumber = self::optionalNumber($this->request->data['first_number'] ?? null);
-		$lastNumber = self::optionalNumber($this->request->data['last_number'] ?? null);
-		if ($firstNumber === false || $lastNumber === false
-			|| ($firstNumber !== null && $lastNumber !== null && $firstNumber > $lastNumber))
-		{
-			CookieFlash::set('The problem numbers are a range from a smaller number to a bigger one.', 'error');
-			return $this->redirect($url);
-		}
-
-		$assignment = [
+		$assignmentModel = ClassRegistry::init('ClassroomAssignment');
+		$assignmentModel->create();
+		$assignmentModel->save([
 			'classroom_id' => (int) $classroom['id'],
-			'set_id' => (int) $set['Set']['id'],
-			'first_number' => $firstNumber,
-			'last_number' => $lastNumber,
-			'due' => $due->format('Y-m-d'),
-		];
-		if (empty(ClassroomAssignment::problems($assignment)))
-		{
-			CookieFlash::set('The collection has no problems with those numbers.', 'error');
-			return $this->redirect($url);
-		}
+			'due' => date('Y-m-d', strtotime('+7 days')),
+		]);
+		return $this->redirect(self::assignmentUrl((int) $assignmentModel->id));
+	}
 
-		ClassRegistry::init('ClassroomAssignment')->create();
-		ClassRegistry::init('ClassroomAssignment')->save($assignment);
-		CookieFlash::set('Assigned ' . $set['Set']['title'] . '.', 'success');
-		return $this->redirect($url);
+	/**
+	 * The page where the teacher builds an assignment: the picked problems, and the picker that
+	 * adds more from the collections (app/classrooms/AssignmentEditor.tsx).
+	 */
+	#[HttpGet]
+	public function assignment(string $assignmentId): mixed
+	{
+		$assignment = $this->findAssignment($assignmentId);
+		$classroom = $this->findClassroom((string) $assignment['classroom_id']);
+		$this->Authorization->authorize(['Classroom' => $classroom], 'manage');
+
+		$this->set('_page', 'classes');
+		$this->set('_title', 'Tsumego Hero - ' . $classroom['name'] . ' - Assignment');
+		$this->set('classroom', $classroom);
+		$this->set('assignment', $assignment);
+		$this->set('problems', ClassroomAssignment::problems($assignment, true));
+		return null;
+	}
+
+	/**
+	 * The collections the teacher can pick problems from, for the picker.
+	 */
+	#[HttpGet]
+	public function collections(): CakeResponse
+	{
+		$this->Authorization->authorize('Classroom', 'create');
+		return $this->json(ClassroomAssignment::collectionCards(Auth::getUserID()));
+	}
+
+	/**
+	 * The problems of a collection with their previews, for the picker.
+	 */
+	#[HttpGet]
+	public function collectionProblems(string $setId): CakeResponse
+	{
+		$this->Authorization->authorize('Classroom', 'create');
+		$set = ClassRegistry::init('Set')->findById((int) $setId);
+		if (!$set)
+			throw new NotFoundException('Collection not found');
+		if (!ClassroomAssignment::canAssignSet($set['Set'], Auth::getUserID()))
+			throw new ForbiddenException();
+		return $this->json([
+			'collection' => ['id' => (int) $set['Set']['id'], 'title' => (string) $set['Set']['title']],
+			'problems' => ClassroomAssignment::collectionProblems((int) $set['Set']['id']),
+		]);
+	}
+
+	/**
+	 * Saves what the teacher built: the title, the due day and the picked problems in their
+	 * order. With `publish` a draft goes to the pupils. A published assignment can still change,
+	 * but keeps some problems.
+	 */
+	#[HttpPost]
+	public function saveAssignment(string $assignmentId): CakeResponse
+	{
+		$assignment = $this->findAssignment($assignmentId);
+		$classroom = $this->findClassroom((string) $assignment['classroom_id']);
+		$this->Authorization->authorize(['Classroom' => $classroom], 'manage');
+
+		$input = json_decode((string) $this->request->input(), true);
+		if (!is_array($input))
+			throw new BadRequestException('Expected JSON.');
+		$due = DateTime::createFromFormat('!Y-m-d', (string) ($input['due'] ?? ''));
+		if ($due === false || $due->format('Y-m-d') !== ($input['due'] ?? null))
+			throw new UnprocessableEntityException('The due date is not a date.');
+		$setConnectionIds = $input['setConnectionIds'] ?? null;
+		if (!is_array($setConnectionIds) || !array_is_list($setConnectionIds))
+			throw new BadRequestException('Expected a list of problems.');
+		if (count($setConnectionIds) > ClassroomAssignment::MAXIMUM_PROBLEMS)
+			throw new UnprocessableEntityException('An assignment has at most ' . ClassroomAssignment::MAXIMUM_PROBLEMS . ' problems.');
+		$publish = !empty($input['publish']) && !ClassroomAssignment::isPublished($assignment);
+		if (($publish || ClassroomAssignment::isPublished($assignment)) && empty($setConnectionIds))
+			throw new UnprocessableEntityException('Pick the problems to give first.');
+
+		$problemCount = ClassroomAssignment::replaceProblems(
+			(int) $assignment['id'],
+			array_map('intval', $setConnectionIds),
+			Auth::getUserID());
+
+		$published = $publish ? date('Y-m-d H:i:s') : $assignment['published'];
+		Util::execute('UPDATE classroom_assignment SET title = ?, due = ?, published = ? WHERE id = ?', [
+			ClassroomAssignment::cleanTitle((string) ($input['title'] ?? '')),
+			$due->format('Y-m-d'),
+			$published,
+			(int) $assignment['id'],
+		]);
+		if ($publish)
+			CookieFlash::set('Published. The pupils see the assignment now.', 'success');
+		return $this->json([
+			'problemCount' => $problemCount,
+			'published' => $published === null ? null : Util::toIso8601($published),
+			'classUrl' => self::classUrl((int) $classroom['id']),
+		]);
 	}
 
 	#[HttpPost]
@@ -257,6 +318,8 @@ class ClassroomsController extends AppController
 	{
 		$assignment = $this->findAssignment($assignmentId);
 		$classroom = $this->findClassroom((string) $assignment['classroom_id']);
+		if (!ClassroomAssignment::isPublished($assignment))
+			throw new NotFoundException('Assignment not found');
 		if ($this->Authorization->can(['Classroom' => $classroom], 'manage'))
 			$progress = ClassroomAssignment::progress($assignment);
 		elseif (Auth::isLoggedIn() && ClassroomMember::isPupil((int) $classroom['id'], Auth::getUserID()))
@@ -264,9 +327,7 @@ class ClassroomsController extends AppController
 		else
 			throw Auth::isLoggedIn() ? new ForbiddenException() : new UnauthorizedException();
 
-		$this->response->type('json');
-		$this->response->body(json_encode($progress));
-		return $this->response;
+		return $this->json($progress);
 	}
 
 	#[HttpPost]
@@ -285,17 +346,20 @@ class ClassroomsController extends AppController
 		return '/classes/' . $classroomId;
 	}
 
-	/**
-	 * A problem number the form may leave empty: null when empty, false when it is not a number.
-	 */
-	private static function optionalNumber(mixed $value): int|false|null
+	private static function assignmentUrl(int $assignmentId): string
 	{
-		$value = trim((string) $value);
-		if ($value === '')
-			return null;
-		if (!ctype_digit($value) || (int) $value < 1)
-			return false;
-		return (int) $value;
+		return '/classes/assignment/' . $assignmentId;
+	}
+
+	/**
+	 * @param array<mixed> $data
+	 */
+	private function json(array $data): CakeResponse
+	{
+		$this->autoRender = false;
+		$this->response->type('json');
+		$this->response->body(json_encode($data));
+		return $this->response;
 	}
 
 	/**
