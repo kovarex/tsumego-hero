@@ -141,6 +141,19 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		return json_decode($this->controller->response->body(), true);
 	}
 
+	private function assertForbidden(callable $request): void
+	{
+		try
+		{
+			$request();
+		}
+		catch (ForbiddenException)
+		{
+			return;
+		}
+		$this->fail('The request was not forbidden');
+	}
+
 	public function testCreatingAClassMakesThePlayerItsTeacher(): void
 	{
 		$this->prepare();
@@ -455,20 +468,11 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$assignmentId = $this->createAssignment($classroomId, '2026-10-01 00:00:00', '2026-10-08');
 		$this->login('pupil');
 
-		foreach ([
-			fn() => $this->testAction('/classes/assignment/' . $assignmentId, ['method' => 'get']),
-			fn() => $this->saveAssignment($assignmentId, ['setConnectionIds' => []]),
-			fn() => $this->testAction('/classes/create-assignment/' . $classroomId, ['method' => 'post']),
-		] as $request)
-			try
-			{
-				$request();
-				$this->fail('A pupil changed the assignments');
-			}
-			catch (ForbiddenException)
-			{
-			}
+		$this->assertForbidden(fn() => $this->testAction('/classes/assignment/' . $assignmentId, ['method' => 'get']));
+		$this->assertForbidden(fn() => $this->saveAssignment($assignmentId, ['setConnectionIds' => []]));
+		$this->assertForbidden(fn() => $this->testAction('/classes/create-assignment/' . $classroomId, ['method' => 'post']));
 		$this->assertCount(3, $this->assignedSetConnectionIds($assignmentId));
+		$this->assertSame(1, ClassRegistry::init('ClassroomAssignment')->find('count'));
 	}
 
 	public function testTheEditorPageShowsThePickedProblems(): void
