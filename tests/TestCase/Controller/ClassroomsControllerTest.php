@@ -146,6 +146,24 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		return empty($rows) ? null : ['misplays' => (int) $rows[0]['misplays'], 'solved' => $rows[0]['solved']];
 	}
 
+	private function status(string $name, int $tsumegoIndex): ?string
+	{
+		$rows = Util::query('SELECT status FROM tsumego_status WHERE user_id = ? AND tsumego_id = ?',
+			[$this->userId($name), $this->context->tsumegos[$tsumegoIndex]['id']]);
+		return empty($rows) ? null : $rows[0]['status'];
+	}
+
+	/**
+	 * The colour of the button of the problem under the board, as its status letter.
+	 */
+	private function buttonStatus(Browser $browser, int $tsumegoIndex): string
+	{
+		$class = $browser->driver->executeScript('return document.querySelector(\'.problem-nav__item > a[data-tsumego-id="\' + arguments[0] + \'"]\').parentElement.className;',
+			[$this->context->tsumegos[$tsumegoIndex]['id']]);
+		$this->assertSame(1, preg_match('/problem-nav__item--([A-Z])\b/', $class, $match), $class);
+		return $match[1];
+	}
+
 	private function xp(string $name): int
 	{
 		return (int) Util::query('SELECT xp FROM user WHERE id = ?', [$this->userId($name)])[0]['xp'];
@@ -586,6 +604,7 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$result = $this->result($assignmentId, 'pupil', 0);
 		$this->assertSame(2, $result['misplays']);
 		$this->assertNotNull($result['solved']);
+		$this->assertSame('S', $this->status('pupil', 0), 'The solve for the assignment solves the problem too');
 		$this->assertNull($this->result($draftId, 'pupil', 0));
 		$this->assertNull($this->result($assignmentId, 'pupil', 1));
 	}
@@ -608,8 +627,7 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$this->assertSame(1, $this->result($assignmentId, 'pupil', 0)['misplays']);
 		$this->assertNotNull($this->result($assignmentId, 'pupil', 0)['solved']);
 		$this->assertSame($xp, $this->xp('pupil'));
-		$this->assertSame('S', Util::query('SELECT status FROM tsumego_status WHERE user_id = ? AND tsumego_id = ?',
-			[$this->userId('pupil'), $this->context->tsumegos[0]['id']])[0]['status']);
+		$this->assertSame('S', $this->status('pupil', 0));
 	}
 
 	public function testAResultOfAPlayerOutsideTheClassDoesntCount(): void
@@ -812,6 +830,69 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$this->assertSame('/classes/play/' . $assignmentId . '/' . $this->setConnectionId(3), $this->vars['previousLink']);
 		$this->assertSame('/classes/play/' . $assignmentId . '/' . $this->setConnectionId(0), $this->vars['nextLink']);
 		$this->assertTrue(App\Utility\Auth::isInLevelMode());
+	}
+
+	/**
+	 * A pupil solves a new problem in the assignment row: the problem is solved like anywhere
+	 * else, with its XP, and counts for the assignment, so its button stays green on the next page.
+	 */
+	public function testSolvingInTheAssignmentRowSolvesTheProblemAndTheAssignment(): void
+	{
+		$this->prepare();
+		$classroomId = $this->createClassroom();
+		$this->addMember($classroomId, 'pupil');
+		$assignmentId = $this->createAssignment($classroomId, date('Y-m-d H:i:s', strtotime('-1 hour')), date('Y-m-d', strtotime('+7 days')), [0, 1]);
+		$xp = $this->xp('pupil');
+		$this->login('pupil');
+		$browser = Browser::instance();
+
+		$browser->get(ClassroomAssignment::playLink($assignmentId));
+		$this->assertFalse($browser->driver->executeScript('return assignmentReplay;'));
+		$browser->playWithResult('S');
+		$this->assertSame('S', $this->buttonStatus($browser, 0));
+
+		$this->assertSame('S', $this->status('pupil', 0));
+		$this->assertGreaterThan($xp, $this->xp('pupil'));
+		$this->assertSame(0, $this->result($assignmentId, 'pupil', 0)['misplays']);
+		$this->assertNotNull($this->result($assignmentId, 'pupil', 0)['solved']);
+
+		$browser->get(ClassroomAssignment::playLink($assignmentId));
+		$this->assertSame('S', $this->buttonStatus($browser, 0));
+		$this->assertSame('V', $this->buttonStatus($browser, 1), 'The row opens at the problem not solved yet');
+	}
+
+	/**
+	 * A pupil plays a problem they solved before. Its button is light blue until they solve it
+	 * again in the assignment row, then green, also on the next page. The page sends that solve,
+	 * which counts for the assignment and shows in the teacher's table, but gives no XP and leaves
+	 * the problem solved as it was.
+	 */
+	public function testSolvingAProblemSolvedBeforeInTheAssignmentRowCountsForTheAssignment(): void
+	{
+		$this->prepare();
+		$classroomId = $this->createClassroom();
+		$this->addMember($classroomId, 'pupil');
+		$assignmentId = $this->createAssignment($classroomId, date('Y-m-d H:i:s', strtotime('-1 hour')), date('Y-m-d', strtotime('+7 days')), [0, 1]);
+		$this->addSolvedStatus('pupil', 0);
+		$xp = $this->xp('pupil');
+		$this->login('pupil');
+		$browser = Browser::instance();
+
+		$browser->get(ClassroomAssignment::playLink($assignmentId));
+		$this->assertSame('W', $this->buttonStatus($browser, 0));
+		$this->assertSame(['state' => 'earlier'], ClassroomAssignment::progress($this->assignment($assignmentId))['pupils'][0]['cells'][0]);
+		$this->assertTrue($browser->driver->executeScript('return assignmentReplay;'));
+		$browser->playWithResult('S');
+		$this->assertSame('S', $this->buttonStatus($browser, 0));
+
+		$this->assertNotNull($this->result($assignmentId, 'pupil', 0)['solved']);
+		$this->assertSame($xp, $this->xp('pupil'));
+		$this->assertSame('S', $this->status('pupil', 0));
+		$this->assertSame('solved', ClassroomAssignment::progress($this->assignment($assignmentId))['pupils'][0]['cells'][0]['state']);
+
+		$browser->get(ClassroomAssignment::playLink($assignmentId, $this->setConnectionId(0)));
+		$this->assertSame('S', $this->buttonStatus($browser, 0));
+		$this->assertFalse($browser->driver->executeScript('return assignmentReplay;'), 'Once solved for the assignment, a replay sends nothing again');
 	}
 
 	public function testAfterTheLastProblemComesTheClass(): void
