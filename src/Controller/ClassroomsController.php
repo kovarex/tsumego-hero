@@ -1,5 +1,6 @@
 <?php
 
+use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Utility\Auth;
 use App\Utility\CookieFlash;
@@ -15,6 +16,7 @@ class ClassroomsController extends AppController
 	 * The classes the player teaches and the ones they are in, the invitations waiting for their
 	 * answer and the requests to join waiting for a teacher's, and the form to start a class.
 	 */
+	#[HttpGet]
 	public function index(): mixed
 	{
 		if (!Auth::isLoggedIn())
@@ -51,6 +53,7 @@ class ClassroomsController extends AppController
 	 * own progress, an invited player the invitation, and anyone else a way to ask to join, which
 	 * is why the teacher sends this link around.
 	 */
+	#[HttpGet]
 	public function view(string $id): mixed
 	{
 		$classroom = $this->findClassroom($id);
@@ -249,6 +252,7 @@ class ClassroomsController extends AppController
 	 * Who solved which problem of an assignment, as JSON for the table that keeps itself up to
 	 * date: every pupil for the teacher, only their own row for a pupil.
 	 */
+	#[HttpGet]
 	public function progress(string $assignmentId): CakeResponse
 	{
 		$assignment = $this->findAssignment($assignmentId);
@@ -276,7 +280,7 @@ class ClassroomsController extends AppController
 		return $this->redirect('/classes');
 	}
 
-	public static function classUrl(int $classroomId): string
+	private static function classUrl(int $classroomId): string
 	{
 		return '/classes/' . $classroomId;
 	}
