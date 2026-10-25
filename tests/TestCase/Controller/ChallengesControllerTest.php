@@ -121,6 +121,14 @@ class ChallengesControllerTest extends TestCaseWithAuth
 		$this->assertStringContainsString('/challenges/' . $challengeId, $messages[0]['text']);
 	}
 
+	public function testTheTimeForAProblemCanBeLong(): void
+	{
+		$this->prepare();
+		$challengeId = $this->create(['seconds_per_problem' => 1800]);
+		$this->assertSame(1800, (int) Challenge::withDetails($challengeId)['seconds_per_problem']);
+		$this->assertStringContainsString('10 problems, 5k, 30 minutes each', Challenge::describe(Challenge::withDetails($challengeId)));
+	}
+
 	public function testAChallengeDrawsOnlyProblemsOfItsRanks(): void
 	{
 		Auth::logout();

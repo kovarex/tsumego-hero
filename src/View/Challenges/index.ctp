@@ -42,7 +42,7 @@ use App\Utility\TimeModeUtil;
 					<label class="form-field__label" for="challenge-seconds">Time for a problem</label>
 					<select class="form-field__control" id="challenge-seconds" name="seconds_per_problem">
 						<?php foreach (Challenge::SECONDS_PER_PROBLEM_CHOICES as $seconds): ?>
-						<option value="<?= $seconds ?>"<?= $seconds === Challenge::DEFAULT_SECONDS_PER_PROBLEM ? ' selected' : '' ?>><?= $seconds < 60 ? $seconds . ' seconds' : ($seconds / 60) . ($seconds == 60 ? ' minute' : ' minutes') ?></option>
+						<option value="<?= $seconds ?>"<?= $seconds === Challenge::DEFAULT_SECONDS_PER_PROBLEM ? ' selected' : '' ?>><?= Challenge::formatTimeForAProblem($seconds) ?></option>
 						<?php endforeach; ?>
 					</select>
 				</div>

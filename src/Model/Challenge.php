@@ -21,7 +21,7 @@ class Challenge extends AppModel
 	public $useTable = 'challenge';
 
 	/** The times for a problem to choose from, in seconds. */
-	public const SECONDS_PER_PROBLEM_CHOICES = [15, 30, 45, 60, 90, 120, 180, 240, 300];
+	public const SECONDS_PER_PROBLEM_CHOICES = [15, 30, 45, 60, 90, 120, 180, 240, 300, 600, 1800];
 	public const DEFAULT_SECONDS_PER_PROBLEM = 60;
 
 	/** The numbers of problems to choose from. */
@@ -136,7 +136,7 @@ class Challenge extends AppModel
 	}
 
 	/**
-	 * What is played in a challenge, like "10 problems, 5k to 1d, 60 seconds each".
+	 * What is played in a challenge, like "10 problems, 5k to 1d, 1 minute each".
 	 *
 	 * @param array<string, mixed> $challenge With problem_count, minimum_rank and maximum_rank, see withDetails()
 	 */
@@ -146,7 +146,15 @@ class Challenge extends AppModel
 			? $challenge['minimum_rank']
 			: $challenge['minimum_rank'] . ' to ' . $challenge['maximum_rank'];
 		return $challenge['problem_count'] . ' problem' . ($challenge['problem_count'] == 1 ? '' : 's') . ', '
-			. $ranks . ', ' . $challenge['seconds_per_problem'] . ' seconds each';
+			. $ranks . ', ' . self::formatTimeForAProblem((int) $challenge['seconds_per_problem']) . ' each';
+	}
+
+	/** The time for a problem in words, like "45 seconds", "1 minute" or "1.5 minutes". */
+	public static function formatTimeForAProblem(int $seconds): string
+	{
+		if ($seconds < 60)
+			return $seconds . ' seconds';
+		return ($seconds / 60) . ($seconds === 60 ? ' minute' : ' minutes');
 	}
 
 	/**
