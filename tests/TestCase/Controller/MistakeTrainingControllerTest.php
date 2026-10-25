@@ -468,6 +468,110 @@ class MistakeTrainingControllerTest extends TestCaseWithAuth
 		$this->assertNotNull(MistakeTraining::getPoolRow($context->user['id'], (int) $context->tsumegos[0]['id']));
 	}
 
+	public function testLeavesOutAProblemOfACollectionInTheTrash()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumego' => [
+				'sets' => [['name' => 'trashed collection', 'num' => 1, 'deleted' => date('Y-m-d H:i:s')]],
+				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
+			],
+		]);
+
+		$this->testAction('/mistake-training', ['method' => 'get', 'return' => 'contents']);
+		$this->assertStringContainsString('All caught up', $this->view,
+			'A collection in the trash cannot be opened, so its problems are not served');
+
+		// The row stays, so a restored collection brings the problem back with what it has learned
+		$this->assertNotNull(MistakeTraining::getPoolRow($context->user['id'], (int) $context->tsumegos[0]['id']));
+	}
+
+	public function testServesAProblemOfATrashedCollectionThroughItsOtherCollection()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumego' => [
+				'sets' => [
+					['name' => 'trashed collection', 'num' => 1, 'deleted' => date('Y-m-d H:i:s')],
+					['name' => 'live collection', 'num' => 1],
+				],
+				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
+			],
+		]);
+
+		$this->testAction('/mistake-training', ['method' => 'get', 'return' => 'contents']);
+		$openConnection = (int) $context->tsumegos[0]['set-connections'][1]['id'];
+		$this->assertStringContainsString('var tsumegoID = ' . $context->tsumegos[0]['id'] . ';', $this->view);
+		$this->assertStringContainsString('set_connection_id: ' . $openConnection . ',', $this->view,
+			'The problem is played in the collection that is still there');
+	}
+
+	public function testALinkToACollectionInTheTrashLeadsBackToTheQueue()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumego' => [
+				'sets' => [
+					['name' => 'trashed collection', 'num' => 1, 'deleted' => date('Y-m-d H:i:s')],
+					['name' => 'live collection', 'num' => 1],
+				],
+				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
+			],
+		]);
+
+		$trashedConnection = (int) $context->tsumegos[0]['set-connections'][0]['id'];
+		$this->testAction(MistakeTraining::$PLAY_LINK_PREFIX . $trashedConnection, ['method' => 'get']);
+
+		$this->assertStringEndsWith('/mistake-training', $this->headers['Location'] ?? '',
+			'A link the play page would refuse leads back to the queue');
+	}
+
+	public function testTheOverviewNamesTheCollectionTheProblemOpensIn()
+	{
+		new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumego' => [
+				'sets' => [
+					['name' => 'trashed collection', 'num' => 1, 'deleted' => date('Y-m-d H:i:s')],
+					['name' => 'live collection', 'num' => 1],
+				],
+				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d', strtotime('+3 days')) . ' 00:00:00'],
+			],
+		]);
+
+		$this->testAction(MistakeTraining::$OVERVIEW_LINK, ['method' => 'get', 'return' => 'contents']);
+
+		$this->assertStringContainsString('live collection', $this->view, 'The list names the collection the problem opens in');
+		$this->assertStringNotContainsString('trashed collection', $this->view, 'Not the one in the trash');
+	}
+
+	public function testServesASandboxProblemOnlyToAPlayerWithSandbox()
+	{
+		new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumego' => [
+				'sets' => [['name' => 'sandbox collection', 'num' => 1, 'public' => 0]],
+				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
+			],
+		]);
+
+		$this->testAction('/mistake-training', ['method' => 'get', 'return' => 'contents']);
+		$this->assertStringContainsString('All caught up', $this->view,
+			'A player without sandbox access is not sent into a sandbox collection');
+
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser2', 'premium' => 2],
+			'tsumego' => [
+				'sets' => [['name' => 'sandbox collection', 'num' => 1, 'public' => 0]],
+				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
+			],
+		]);
+
+		$this->testAction('/mistake-training', ['method' => 'get', 'return' => 'contents']);
+		$this->assertStringContainsString('var tsumegoID = ' . $context->tsumegos[0]['id'] . ';', $this->view,
+			'Premium players may play sandbox collections, so the training opens the problem');
+	}
+
 	public function testTheHomepageShowsWhatTheTrainingHasToday()
 	{
 		new ContextPreparator([
