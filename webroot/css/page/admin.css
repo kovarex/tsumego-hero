@@ -75,6 +75,69 @@
   display: inline-block;
   margin-left: 8px;
 }
+/* The admin page (AdminController), a link to everything an admin does with a count of what waits there */
+.admin-area {
+  text-align: left;
+  max-width: 800px;
+  margin: 0 auto;
+}
+.admin-area .title4 {
+  margin-bottom: 12px;
+}
+.admin-area--wide {
+  max-width: none;
+}
+.admin-area__links {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+  margin: 0 0 24px;
+  padding: 0;
+  list-style: none;
+}
+.admin-area__link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid var(--current-border-color);
+  border-radius: 6px;
+  background: var(--info-box-background);
+  font-size: 18px;
+  text-decoration: none;
+}
+.admin-area__link:hover {
+  border-color: var(--color-green);
+}
+.admin-area__links--tools .admin-area__link {
+  font-size: 16px;
+}
+.admin-area__badge,
+.admin-area__count {
+  min-width: 1.6em;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 1.4;
+  text-align: center;
+}
+.admin-area__badge {
+  color: #fff;
+  background: var(--color-red);
+}
+.admin-area__count {
+  color: var(--text-softer-color);
+  border: 1px solid var(--current-border-color);
+}
+/* What others did since the admin looked the time before, see AdminPage::markViewed */
+.data-table tr.data-table__row--new td {
+  font-weight: bold;
+}
+.data-table tr.data-table__row--new td:first-child {
+  box-shadow: inset 3px 0 0 var(--color-red);
+}
 .roles {
   text-align: left;
   max-width: 800px;

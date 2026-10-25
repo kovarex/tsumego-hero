@@ -4,12 +4,24 @@ namespace App\Utility;
 
 use User;
 
+/**
+ * The new tags players proposed, waiting for an admin to accept them. Proposals to put an existing
+ * tag on a problem are in TagConnectionProposalsRenderer.
+ */
 class TagProposalsRenderer extends DataTableRenderer
 {
+	/**
+	 * How many new tags wait for a decision, the admin page shows it on the link here.
+	 */
+	public static function total(): int
+	{
+		return (int) Util::query("SELECT COUNT(*) as total FROM tag WHERE approved = 0")[0]['total'];
+	}
+
 	public function __construct(array $urlParams)
 	{
-		$this->count = Util::query("SELECT COUNT(*) as total FROM tag WHERE approved = 0")[0]['total'];
-		parent::__construct($urlParams, 'tag_proposals_page', 'Tag proposals');
+		$this->count = self::total();
+		parent::__construct($urlParams, 'tag_proposals_page', 'New Tags');
 		$this->data = Util::query("
 SELECT
 	tag.id as tag_id,

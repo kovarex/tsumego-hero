@@ -166,13 +166,13 @@ class ProposalReviewBrowserTest extends TestCaseWithAuth
 		$proposalID = $context->tsumegos[0]['sgfs'][1]['id'];
 		App\Utility\Util::execute('UPDATE sgf SET user_id = ?, description = ? WHERE id = ?', [$context->otherUsers[0]['id'], 'Made it status based', $proposalID]);
 		$browser = Browser::instance();
-		$browser->get('/users/adminstats');
+		$browser->get('/admin/sgf-proposals');
 		$this->assertSame('Made it status based', $browser->findById('description-' . $proposalID)->getText());
 
 		// a long one is shortened, the whole is in the tooltip
 		$long = str_repeat('Made it status based. ', 10);
 		App\Utility\Util::execute('UPDATE sgf SET description = ? WHERE id = ?', [$long, $proposalID]);
-		$browser->get('/users/adminstats');
+		$browser->get('/admin/sgf-proposals');
 		$this->assertStringEndsWith('…', $browser->findById('description-' . $proposalID)->getText());
 		$this->assertSame($long, $browser->find('#description-' . $proposalID . ' span')->getAttribute('title'));
 

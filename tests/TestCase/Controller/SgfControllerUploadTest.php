@@ -220,7 +220,7 @@ class SgfControllerUploadTest extends TestCaseWithAuth
 		$this->assertSame(self::COMMENT['position'], $comment['position']);
 
 		ClassRegistry::init('User')->save(['id' => $context->user['id'], 'user_role_id' => User::ROLE_ADMIN]);
-		$browser->get('/users/adminstats');
+		$browser->get('/admin/sgf-proposals');
 		$browser->post('/users/acceptSGFProposal/' . $proposal['id']);
 
 		$comment = $this->comment($context);

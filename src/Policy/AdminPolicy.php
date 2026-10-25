@@ -10,9 +10,11 @@ namespace App\Policy;
 class AdminPolicy extends BasePolicy
 {
 	/**
+	 * The admin page and the pages of the proposals and of the admin activity, see AdminController
+	 *
 	 * @param UserRow|null $user
 	 */
-	public static function canAdminstats(?array $user): bool
+	public static function canViewAdminArea(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}

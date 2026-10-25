@@ -573,7 +573,7 @@ class TagTest extends ControllerTestCase
 	{
 		$browser = Browser::instance();
 		$context = new ContextPreparator(['user' => ['admin' => true], 'tags' => [['name' => 'snapback', 'approved' => 0]]]);
-		$browser->get('users/adminstats');
+		$browser->get('admin/new-tags');
 
 		$this->assertSame(ClassRegistry::init('Tag')->find('first')['Tag']['approved'], 0);
 		$browser->clickId('tag-accept-' . $context->tags[0]['id']);
@@ -584,7 +584,7 @@ class TagTest extends ControllerTestCase
 	{
 		$browser = Browser::instance();
 		$context = new ContextPreparator(['user' => ['admin' => true], 'tags' => [['name' => 'snapback', 'approved' => 0]]]);
-		$browser->get('users/adminstats');
+		$browser->get('admin/new-tags');
 		$browser->findById('tag-comment-' . $context->tags[0]['id'])->sendKeys('We have the tag already');
 		$browser->clickId('tag-reject-' . $context->tags[0]['id']);
 		$tagAdded = ClassRegistry::init('Tag')->find('first')['Tag'];
@@ -744,11 +744,11 @@ class TagTest extends ControllerTestCase
 		$this->assertSame(0, ClassRegistry::init('Tag')->findById($tagId)['Tag']['approved']);
 
 		$browser = Browser::instance();
-		$browser->get('/users/adminstats');
+		$browser->get('/admin/new-tags');
 		$browser->clickId('tag-accept-' . $tagId);
 		$browser->waitUntilJs('document.documentElement.outerHTML.includes("was approved")');
 
-		$this->assertStringEndsWith('/users/adminstats', $browser->driver->getCurrentURL());
+		$this->assertStringEndsWith('/admin/new-tags', $browser->driver->getCurrentURL());
 		$this->assertSame(1, ClassRegistry::init('Tag')->findById($tagId)['Tag']['approved']);
 
 		$contrib = ClassRegistry::init('UserContribution')->find('first', [
@@ -775,10 +775,10 @@ class TagTest extends ControllerTestCase
 		$tagId = $tag->id;
 
 		$browser = Browser::instance();
-		$browser->get('/users/adminstats');
+		$browser->get('/admin/new-tags');
 		$browser->post('/tags/acceptTagProposal/' . $tagId);
 
-		$this->assertStringEndsWith('/users/adminstats', $browser->driver->getCurrentURL());
+		$this->assertStringEndsWith('/admin/new-tags', $browser->driver->getCurrentURL());
 		$this->assertStringContainsString('already approved', $browser->driver->getPageSource());
 	}
 
@@ -804,7 +804,7 @@ class TagTest extends ControllerTestCase
 		$browser->get('/users/view/' . $context->user['id']);
 		$browser->post('/tags/acceptTagProposal/' . $tagId);
 
-		$this->assertStringNotContainsString('adminstats', $browser->driver->getCurrentURL());
+		$this->assertStringNotContainsString('/admin/', $browser->driver->getCurrentURL());
 		$this->assertSame(0, ClassRegistry::init('Tag')->findById($tagId)['Tag']['approved']);
 	}
 
@@ -822,7 +822,7 @@ class TagTest extends ControllerTestCase
 		$browser->get('/users/added_tags');
 		$this->assertStringNotContainsString('proposer', $browser->driver->getPageSource());
 
-		$browser->get('/users/adminstats');
+		$browser->get('/admin/tag-proposals');
 		$browser->post('/users/acceptTagConnectionProposal/' . $tagConnectionId);
 
 		$browser->get('/users/added_tags');

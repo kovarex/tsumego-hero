@@ -8,9 +8,17 @@ use User;
 
 class SGFProposalsRenderer extends DataTableRenderer
 {
+	/**
+	 * How many proposals wait for a decision, the admin page shows it on the link here.
+	 */
+	public static function total(): int
+	{
+		return (int) Util::query("SELECT COUNT(*) AS total FROM sgf p WHERE p.sgf_status_id = " . Sgf::STATUS_PROPOSED . " AND EXISTS (SELECT 1 FROM set_connection sc WHERE sc.tsumego_id = p.tsumego_id)")[0]['total'];
+	}
+
 	public function __construct(array $urlParams)
 	{
-		$this->count = Util::query("SELECT COUNT(*) AS total FROM sgf p WHERE p.sgf_status_id = " . Sgf::STATUS_PROPOSED . " AND EXISTS (SELECT 1 FROM set_connection sc WHERE sc.tsumego_id = p.tsumego_id)")[0]['total'];
+		$this->count = self::total();
 		parent::__construct($urlParams, 'sgf_proposals_page', 'SGF Proposals');
 		$this->data = Util::query("
 SELECT

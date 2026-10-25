@@ -7,12 +7,23 @@ use SetConnection;
 use Sgf;
 use User;
 
+/**
+ * The proposals of players to put an existing tag on a problem. New tags are in TagProposalsRenderer.
+ */
 class TagConnectionProposalsRenderer extends DataTableRenderer
 {
+	/**
+	 * How many tags wait for a decision to be put on a problem, the admin page shows it on the link here.
+	 */
+	public static function total(): int
+	{
+		return (int) ClassRegistry::init('TagConnection')->find('count', ['conditions' => ['approved' => 0]]);
+	}
+
 	public function __construct(array $urlParams)
 	{
-		$this->count = ClassRegistry::init('TagConnection')->find('count', ['conditions' => ['approved' => 0]]);
-		parent::__construct($urlParams, 'tag_connection_proposals_page', 'New Tags');
+		$this->count = self::total();
+		parent::__construct($urlParams, 'tag_connection_proposals_page', 'Tag Proposals');
 		$this->data = Util::query("
 SELECT
 	tag_connection.id as tag_connection_id,

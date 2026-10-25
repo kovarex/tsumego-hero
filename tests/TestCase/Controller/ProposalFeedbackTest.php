@@ -84,7 +84,7 @@ class ProposalFeedbackTest extends TestCaseWithAuth
 		$this->assertEquals($context->user['id'], $reject['rejected_by_user_id']);
 		$this->assertSame('The stone at D16 changes nothing.', $reject['comment']);
 
-		$this->testAction('/users/adminstats', ['method' => 'get', 'return' => 'view']);
+		$this->testAction('/admin/sgf-proposals', ['method' => 'get', 'return' => 'view']);
 		$this->assertStringContainsString('Rejected SGF Proposals (1)', $this->view);
 		$this->assertStringContainsString('SGF Proposals (0)', $this->view);
 		$this->assertStringContainsString('href="/editor/?sgfID=' . $proposal['id'] . '&diffID=' . $context->tsumegos[0]['sgfs'][0]['id'] . '"', $this->view);
@@ -98,7 +98,7 @@ class ProposalFeedbackTest extends TestCaseWithAuth
 		$this->assertSame(1, (int) Util::query('SELECT COUNT(*) AS c FROM admin_activity WHERE type = ?', [AdminActivityType::REOPEN_PROPOSAL])[0]['c']);
 		$this->assertCount(1, $this->messagesTo($proposer['id']), 'reopening sends nothing, the next decision does');
 
-		$this->testAction('/users/adminstats', ['method' => 'get', 'return' => 'view']);
+		$this->testAction('/admin/sgf-proposals', ['method' => 'get', 'return' => 'view']);
 		$this->assertStringContainsString('Rejected SGF Proposals (0)', $this->view);
 		$this->assertStringContainsString('id="reject-' . $proposal['id'] . '"', $this->view);
 	}

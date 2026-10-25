@@ -234,6 +234,7 @@ echo ViteManifest::legacyScript('legacy');
 			$changelogA = '';
 			$classesA = '';
 			$challengesA = '';
+			$adminA = '';
 
 			$_page = $_page ?? '';
 			if($_page == 'home') $homeA = 'nav__link--active';
@@ -258,6 +259,7 @@ echo ViteManifest::legacyScript('legacy');
 			else if($_page == 'changelog') $changelogA = 'nav__link--active';
 			else if($_page == 'classes') $classesA = 'nav__link--active';
 			else if($_page == 'challenges') $challengesA = 'nav__link--active';
+			else if($_page == 'admin') $adminA = 'nav__link--active';
 			else if($_page == 'levelHighscore') $levelHighscoreA = 'nav__link--active';
 			else if($_page == 'ratingHighscore') $ratingHighscoreA = 'nav__link--active';
 			else if($_page == 'achievementHighscore') $achievementHighscoreA = 'nav__link--active';
@@ -307,21 +309,9 @@ echo ViteManifest::legacyScript('legacy');
 							echo '<li><a class="'.$classesA.'" href="/classes">Classes'.$classesBadge.'</a></li>';
 							if(Auth::hasPremium() || Auth::isAdmin())
 								echo '<li><a '.$refreshLinkToSandbox.' class="'.$sandboxA.'" href="/sets/sandbox">Sandbox</a></li>';
-							if(Auth::isAdmin()){
-								echo '<li><a class="adminLink" href="/users/adminstats">Activities</a></li>';
-									echo '<li><a class="adminLink" href="/tsumego-issues">Issues</a></li>';
-								echo '<li class="additional-adminLink2"><a id="adminLink-more" class="adminLink adminLink3"><i>more</i></a></li>';
-								echo '<li class="additional-adminLink"><a class="adminLink" href="/users/uploads">Uploads</a></li>';
-								echo '<li class="additional-adminLink"><a class="adminLink" href="/tags">Tags</a></li>';
-								echo '<li class="additional-adminLink"><a class="adminLink" href="/tsumegos/mergeForm">Merge Duplicates</a></li>';
-								echo '<li class="additional-adminLink"><a class="adminLink" href="/sets/duplicatesearch">Duplicate Search Results</a></li>';
-								echo '<li class="additional-adminLink"><a class="adminLink" href="/schedule">Publish Schedule</a></li>';
-								echo '<li class="additional-adminLink"><a class="adminLink" href="/trash">Trash</a></li>';
-								echo '<li class="additional-adminLink"><a class="adminLink" href="/app/webroot/editor">Editor</a></li>';
-								echo '<li class="additional-adminLink"><a class="adminLink" href="/users/userstats">User Activities</a></li>';
-								if(Auth::isOwner())
-									echo '<li class="additional-adminLink"><a class="adminLink" href="/roles">Admins and Owners</a></li>';
-							}
+							// Everything an admin does is linked from the admin page
+							if(Auth::isAdmin())
+								echo '<li><a class="adminLink '.$adminA.'" href="/admin">Admin</a></li>';
 							echo '</ul>';
 						}
 						$sessionLastVisit = (int)($_COOKIE['lastVisit'] ?? 15352);
@@ -490,11 +480,6 @@ echo ViteManifest::legacyScript('legacy');
 			setCookie("sound", "on");
 			updateSoundValue(true);
 		}
-
-		$("#adminLink-more").click(function(){
-			$(".additional-adminLink").show();
-			$(".additional-adminLink2").hide();
-		});
 
 		<?php
 		if(Auth::isLoggedIn()){

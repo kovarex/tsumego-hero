@@ -9,7 +9,11 @@ use User;
 
 class AdminActivityRenderer extends DataTableRenderer
 {
-	public function __construct(array $urlParams)
+	/**
+	 * @param string|null $newSince When the admin looked the time before (see AdminPage::markViewed),
+	 *   what the others did since then is marked as new
+	 */
+	public function __construct(array $urlParams, private ?string $newSince = null)
 	{
 		$this->count = Util::query("SELECT COUNT(*) as total FROM admin_activity")[0]['total'];
 		parent::__construct($urlParams, 'activity_page', 'Admin Activity');
@@ -68,6 +72,13 @@ OFFSET " . $this->offset, [Auth::getUserID()]);
 	protected function renderHeader(): void
 	{
 		echo '<tr><th><label title="Toggle board previews"><input type="checkbox" class="preview-zoom-toggle">🔍</label></th><th>Action</th><th>Date</th></tr>';
+	}
+
+	protected function rowClass(array $item): string
+	{
+		return $this->newSince !== null && $item['created'] > $this->newSince && (int) $item['user_id'] !== Auth::getUserID()
+			? 'data-table__row--new'
+			: '';
 	}
 
 	public function renderItem(int $index, array $item): void

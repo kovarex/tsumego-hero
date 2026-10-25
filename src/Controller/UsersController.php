@@ -1,7 +1,6 @@
 <?php
 
 use App\Utility\AdminActivityLogger;
-use App\Utility\AdminActivityRenderer;
 use App\Utility\Auth;
 use App\Utility\Avatar;
 use App\Utility\Constants;
@@ -13,11 +12,7 @@ use App\Utility\MistakeTraining;
 use App\Utility\ProposalFeedback;
 use App\Utility\PwnedPasswordChecker;
 use App\Utility\PwnedPasswordCheckerInterface;
-use App\Utility\RejectedSGFProposalsRenderer;
-use App\Utility\SGFProposalsRenderer;
 use App\Utility\SgfCommentReorientation;
-use App\Utility\TagConnectionProposalsRenderer;
-use App\Utility\TagProposalsRenderer;
 use App\Utility\TimeModeUtil;
 use App\Utility\TsumegoUtil;
 use App\Utility\Util;
@@ -335,6 +330,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		$this->Authorization->authorize('Admin');
 		$this->set('_page', 'set');
 		$this->set('_title', 'Uploads');
+		$newSince = AdminPage::markViewed(Auth::getUserID(), AdminPage::UPLOADS);
 		$this->loadModel('Sgf');
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
@@ -370,33 +366,19 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 			$s[$i]['Sgf']['version'] = count($this->Sgf->find('all', ['conditions' => ['tsumego_id' => $scT['SetConnection']['tsumego_id'], 'sgf_status_id !=' => Sgf::STATUS_REJECTED]])) - $versionCounter[$scT['SetConnection']['tsumego_id']];
 
 			$s[$i]['Sgf']['delete'] = false;
+			$s[$i]['Sgf']['new'] = $newSince !== null && $s[$i]['Sgf']['created'] > $newSince && (int) $s[$i]['Sgf']['user_id'] !== Auth::getUserID();
 			$s[$i]['Sgf']['diff'] = $this->Sgf->findPreviousVersionID($s[$i]['Sgf']['tsumego_id'], $s[$i]['Sgf']['id']);
 		}
 		$this->set('s', $s);
 	}
 
+	/**
+	 * The admin panel of old, its tables are pages of the admin area now
+	 */
 	#[HttpGet]
-	public function adminstats(): void
+	public function adminstats(): CakeResponse
 	{
-		$this->Authorization->authorize('Admin');
-		$this->set('_page', 'user');
-		$this->set('_title', 'Admin Panel');
-		$this->loadModel('User');
-		$this->loadModel('DayRecord');
-		$this->loadModel('Tsumego');
-		$this->loadModel('Set');
-		$this->loadModel('AdminActivityType');
-
-		$this->set('deletedUsers', $this->User->find('all', [
-			'conditions' => ['deleted IS NOT NULL'],
-			'order' => 'deleted DESC']) ?: []);
-
-		// Pagination data
-		$this->set('sgfProposalsRenderer', new SGFProposalsRenderer($this->params['url']));
-		$this->set('rejectedSgfProposalsRenderer', new RejectedSGFProposalsRenderer($this->params['url']));
-		$this->set('tagProposalsRenderer', new TagProposalsRenderer($this->params['url']));
-		$this->set('adminActivityRenderer', new AdminActivityRenderer($this->params['url']));
-		$this->set('tagConnectionProposalsRenderer', new TagConnectionProposalsRenderer($this->params['url']));
+		return $this->redirect('/admin');
 	}
 
 	private function getUserFromNameOrEmail(): ?array
@@ -1532,12 +1514,12 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 		if ($error = User::restoreAccount((int) $user['User']['id']))
 		{
 			CookieFlash::set('Account ' . $name . ' can\'t be restored: ' . $error, 'error');
-			return $this->redirect('/users/adminstats');
+			return $this->redirect('/admin/deleted-accounts');
 		}
 		AdminActivityLogger::log(AdminActivityType::RESTORE_USER, null, null, null, $name);
 		Cache::delete('recent_achievements_7', 'default');
 		CookieFlash::set('Account ' . $name . ' restored', 'success');
-		return $this->redirect('/users/adminstats');
+		return $this->redirect('/admin/deleted-accounts');
 	}
 
 	/**
@@ -1634,14 +1616,14 @@ OFFSET " . $offset, [$userID, $userID]);
 		if (!$proposalToApprove)
 		{
 			CookieFlash::set('Sgf proposal doesn\'t exist.', 'fail');
-			return $this->redirect('/users/adminstats');
+			return $this->redirect('/admin/sgf-proposals');
 		}
 
 		$proposalToApprove = $proposalToApprove['Sgf'];
 		if ($proposalToApprove['sgf_status_id'] != Sgf::STATUS_PROPOSED)
 		{
 			CookieFlash::set('Sgf proposal was already decided.', 'fail');
-			return $this->redirect('/users/adminstats');
+			return $this->redirect('/admin/sgf-proposals');
 		}
 		$replacedSgfID = ClassRegistry::init('Sgf')->findCurrentVersionID((int) $proposalToApprove['tsumego_id']);
 		ClassRegistry::init('Sgf')->setStatus((int) $proposalToApprove['id'], Sgf::STATUS_ACCEPTED);
@@ -1664,7 +1646,7 @@ OFFSET " . $offset, [$userID, $userID]);
 			$this->_getEmailer(),
 			ProposalFeedback::diffUrl((int) $proposalToApprove['id'], $replacedSgfID));
 
-		return $this->redirect('/users/adminstats');
+		return $this->redirect('/admin/sgf-proposals');
 	}
 
 	#[HttpPost]
@@ -1676,7 +1658,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		if (!$proposalToReject)
 		{
 			CookieFlash::set('Sgf proposal doesn\'t exist.', 'fail');
-			return $this->redirect('/users/adminstats');
+			return $this->redirect('/admin/sgf-proposals');
 		}
 
 		$proposalToReject = $proposalToReject['Sgf'];
@@ -1684,14 +1666,14 @@ OFFSET " . $offset, [$userID, $userID]);
 		if ($proposalToReject['sgf_status_id'] != Sgf::STATUS_PROPOSED)
 		{
 			CookieFlash::set('Sgf proposal was already decided.', 'fail');
-			return $this->redirect('/users/adminstats');
+			return $this->redirect('/admin/sgf-proposals');
 		}
 
 		$comment = ProposalFeedback::commentFromRequest($this->request->data['comment'] ?? null);
 		if ($comment === '')
 		{
 			CookieFlash::set('Write the proposer why the proposal is rejected.', 'fail');
-			return $this->redirect('/users/adminstats');
+			return $this->redirect('/admin/sgf-proposals');
 		}
 
 		$reject = [];
@@ -1720,7 +1702,7 @@ OFFSET " . $offset, [$userID, $userID]);
 			$this->_getEmailer(),
 			ProposalFeedback::diffUrl((int) $proposalToReject['id'], ClassRegistry::init('Sgf')->findCurrentVersionID($tsumegoID)));
 
-		return $this->redirect('/users/adminstats');
+		return $this->redirect('/admin/sgf-proposals');
 	}
 
 	/** Puts a rejected SGF proposal back among the ones waiting for a decision. */
@@ -1733,7 +1715,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		if (!$proposalToReopen || $proposalToReopen['Sgf']['sgf_status_id'] != Sgf::STATUS_REJECTED)
 		{
 			CookieFlash::set('There is no rejected sgf proposal to reopen.', 'fail');
-			return $this->redirect('/users/adminstats');
+			return $this->redirect('/admin/sgf-proposals');
 		}
 		$proposalToReopen = $proposalToReopen['Sgf'];
 
@@ -1744,7 +1726,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		$proposer = $this->User->findById($proposalToReopen['user_id']);
 		AdminActivityLogger::log(AdminActivityType::REOPEN_PROPOSAL, $proposalToReopen['tsumego_id'], null, null, $proposer ? $proposer['User']['display_name'] : null);
 
-		return $this->redirect('/users/adminstats');
+		return $this->redirect('/admin/sgf-proposals');
 	}
 
 	#[HttpPost]
@@ -1756,14 +1738,14 @@ OFFSET " . $offset, [$userID, $userID]);
 		if (!$proposalToApprove)
 		{
 			CookieFlash::set('Tag proposal doesn\'t exist.', 'fail');
-			return $this->redirect('/users/adminstats');
+			return $this->redirect('/admin/tag-proposals');
 		}
 
 		$proposalToApprove = $proposalToApprove['TagConnection'];
 		if ($proposalToApprove['approved'] != 0)
 		{
 			CookieFlash::set('Tag proposal was already accepted.', 'fail');
-			return $this->redirect('/users/adminstats');
+			return $this->redirect('/admin/tag-proposals');
 		}
 		$proposalToApprove['approved'] = 1;
 
@@ -1786,7 +1768,7 @@ OFFSET " . $offset, [$userID, $userID]);
 				$comment,
 				$this->_getEmailer());
 		}
-		return $this->redirect('/users/adminstats');
+		return $this->redirect('/admin/tag-proposals');
 	}
 
 	#[HttpPost]
@@ -1798,7 +1780,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		if (!$proposalToReject)
 		{
 			CookieFlash::set('Tag proposal doesn\'t exist.', 'fail');
-			return $this->redirect('/users/adminstats');
+			return $this->redirect('/admin/tag-proposals');
 		}
 
 		$proposalToReject = $proposalToReject['TagConnection'];
@@ -1806,14 +1788,14 @@ OFFSET " . $offset, [$userID, $userID]);
 		if ($proposalToReject['approved'] != 0)
 		{
 			CookieFlash::set('Tag proposal was already accepted.', 'fail');
-			return $this->redirect('/users/adminstats');
+			return $this->redirect('/admin/tag-proposals');
 		}
 
 		$comment = ProposalFeedback::commentFromRequest($this->request->data['comment'] ?? null);
 		if ($comment === '')
 		{
 			CookieFlash::set('Write the proposer why the tag is rejected.', 'fail');
-			return $this->redirect('/users/adminstats');
+			return $this->redirect('/admin/tag-proposals');
 		}
 
 		$reject = [];
@@ -1840,7 +1822,7 @@ OFFSET " . $offset, [$userID, $userID]);
 			$this->_getEmailer());
 
 		CookieFlash::set('Tag proposal rejected', 'success');
-		return $this->redirect('/users/adminstats');
+		return $this->redirect('/admin/tag-proposals');
 	}
 
 	#[HttpPost]

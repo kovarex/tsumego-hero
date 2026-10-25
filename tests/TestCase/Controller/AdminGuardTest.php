@@ -9,13 +9,24 @@ class AdminGuardTest extends ControllerTestCase
 {
 	// ── UsersController admin pages ──
 
-	public function testAdminstatsRequiresLogin()
+	private const ADMIN_AREA_PAGES = ['/admin', '/admin/activity', '/admin/sgf-proposals', '/admin/tag-proposals', '/admin/new-tags', '/admin/deleted-accounts'];
+
+	public function testAdminAreaRequiresLogin()
 	{
 		new ContextPreparator(['user' => null]);
 
-		$this->expectException(UnauthorizedException::class);
-
-		$this->testAction('/users/adminstats', ['method' => 'get']);
+		foreach (self::ADMIN_AREA_PAGES as $url)
+		{
+			try
+			{
+				$this->testAction($url, ['method' => 'get']);
+				$this->fail($url . ' let a guest through');
+			}
+			catch (UnauthorizedException $e)
+			{
+				$this->addToAssertionCount(1);
+			}
+		}
 	}
 
 	public function testPreferenceActionsRequireLogin()
@@ -61,13 +72,22 @@ class AdminGuardTest extends ControllerTestCase
 		}
 	}
 
-	public function testAdminstatsRequiresAdmin()
+	public function testAdminAreaRequiresAdmin()
 	{
 		new ContextPreparator(['user' => ['name' => 'regular', 'admin' => false]]);
 
-		$this->expectException(ForbiddenException::class);
-
-		$this->testAction('/users/adminstats', ['method' => 'get']);
+		foreach (self::ADMIN_AREA_PAGES as $url)
+		{
+			try
+			{
+				$this->testAction($url, ['method' => 'get']);
+				$this->fail($url . ' let a player who is not an admin through');
+			}
+			catch (ForbiddenException $e)
+			{
+				$this->addToAssertionCount(1);
+			}
+		}
 	}
 
 	public function testUploadsRequiresLogin()
@@ -124,13 +144,15 @@ class AdminGuardTest extends ControllerTestCase
 		$this->testAction('/users/userstats3', ['method' => 'get']);
 	}
 
-	public function testAdminstatsAllowsAdmin()
+	public function testAdminAreaAllowsAdmin()
 	{
 		new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
 
-		$this->testAction('/users/adminstats', ['method' => 'get']);
-
-		$this->assertSame(200, $this->controller->response->statusCode());
+		foreach (self::ADMIN_AREA_PAGES as $url)
+		{
+			$this->testAction($url, ['method' => 'get']);
+			$this->assertSame(200, $this->controller->response->statusCode(), $url);
+		}
 	}
 
 	// ── SgfsController::view ──

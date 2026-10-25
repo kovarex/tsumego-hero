@@ -7,8 +7,8 @@ use App\Utility\Util;
 /**
  * AdminStatsControllerTest
  *
- * Tests for the admin activity logging system and adminstats page
- * - Tests adminstats page pagination and display
+ * Tests for the admin activity logging system and the pages of the admin area (AdminController)
+ * - Tests the admin activity page pagination and display
  * - Tests filtering out non-admin SGF uploads
  * - Tests pagination with multiple sections (activity, proposals, tags, tagnames)
  * - Tests all 18 activity types display correctly with formatted messages
@@ -20,7 +20,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 {
 	use RetryTrait;
 	/**
-	 * Test adminstats page displays in browser
+	 * Test the admin activity page displays in browser
 	 */
 	public function testAdminStatsPageDisplaysInBrowser()
 	{
@@ -39,7 +39,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 		]);
 
 		$browser = Browser::instance();
-		$browser->get('users/adminstats');
+		$browser->get('admin/activity');
 
 		$pageSource = $browser->driver->getPageSource();
 		$this->assertTextContains('Admin Activity', $pageSource);
@@ -50,7 +50,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 	{
 		$browser = Browser::instance();
 		new ContextPreparator(['user' => ['name' => 'regular', 'admin' => false]]);
-		$browser->get('users/adminstats');
+		$browser->get('admin/activity');
 
 		$pageSource = $browser->driver->getPageSource();
 		$this->assertTextContains('Forbidden', $pageSource);
@@ -77,7 +77,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 		]);
 
 		$browser = Browser::instance();
-		$browser->get('users/adminstats');
+		$browser->get('admin/activity');
 
 		$pageSource = $browser->driver->getPageSource();
 		$this->assertTextContains('Set Title Edit', $pageSource);
@@ -111,7 +111,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 		]);
 
 		$browser = Browser::instance();
-		$browser->get('users/adminstats');
+		$browser->get('admin/activity');
 
 		$pageSource = $browser->driver->getPageSource();
 
@@ -121,7 +121,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$this->assertTextContains('#pagination-activity', $pageSource);
 
 		// Navigate to page 2
-		$browser->get('users/adminstats?activity_page=2');
+		$browser->get('admin/activity?activity_page=2');
 		$pageSource = $browser->driver->getPageSource();
 
 		$this->assertTextContains('Page 2 of 2', $pageSource);
@@ -152,7 +152,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 		// Navigate to the second page of the activities, from a page that also
 		// carries another parameter
 		$browser = Browser::instance();
-		$browser->get('users/adminstats?activity_page=2&sgf_proposals_page=2');
+		$browser->get('admin/activity?activity_page=2&sgf_proposals_page=2');
 
 		$pageSource = $browser->driver->getPageSource();
 		$this->assertStringContainsString('Page 2 of 2', $pageSource);
@@ -236,7 +236,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 		]);
 
 		$browser = Browser::instance();
-		$browser->get('users/adminstats');
+		$browser->get('admin/activity');
 		$pageSource = $browser->driver->getPageSource();
 
 		// Verify all activity type names appear in HTML
@@ -355,15 +355,15 @@ class AdminStatsControllerTest extends ControllerTestCase
 				'status' => 'S',
 				'set_order' => 1]]);
 		$browser = Browser::instance();
-		$browser->get('/users/adminstats');
+		$browser->get('/admin/sgf-proposals');
 		$this->assertSame('SGF Proposals (1)', $browser->find('#sgf_proposals_page_header')->getText());
 
 		// click the accept proposal button
 		$browser->clickId('accept-' . $context->tsumegos[0]['sgfs'][1]['id']);
 		$browser->waitUntilCssSelectorExistsWithText('#sgf_proposals_page_header', 'SGF Proposals (0)');
 
-		// we got redirected back to adminstats, the proposal shouldn't be visible anymore
-		$this->assertSame(Util::getMyAddress() . '/users/adminstats', $browser->driver->getCurrentURL());
+		// we got redirected back to the list, the proposal shouldn't be visible anymore
+		$this->assertSame(Util::getMyAddress() . '/admin/sgf-proposals', $browser->driver->getCurrentURL());
 		$this->assertSame('SGF Proposals (0)', $browser->find('#sgf_proposals_page_header')->getText());
 		$this->assertEquals(Sgf::STATUS_ACCEPTED, ClassRegistry::init('Sgf')->findById($context->tsumegos[0]['sgfs'][1]['id'])['Sgf']['sgf_status_id']);
 
@@ -386,15 +386,15 @@ class AdminStatsControllerTest extends ControllerTestCase
 				'status' => 'S',
 				'set_order' => 1]]);
 		$browser = Browser::instance();
-		$browser->get('/users/adminstats');
+		$browser->get('/admin/sgf-proposals');
 		$this->assertSame('SGF Proposals (1)', $browser->find('#sgf_proposals_page_header')->getText());
 
 		$browser->findById('comment-' . $context->tsumegos[0]['sgfs'][1]['id'])->sendKeys('Black B19 is not needed');
 		$browser->clickId('reject-' . $context->tsumegos[0]['sgfs'][1]['id']);
 		$browser->waitUntilCssSelectorExistsWithText('#sgf_proposals_page_header', 'SGF Proposals (0)');
 
-		// we got redirected back to adminstats, the proposal shouldn't be visible anymore
-		$this->assertSame(Util::getMyAddress() . '/users/adminstats', $browser->driver->getCurrentURL());
+		// we got redirected back to the list, the proposal shouldn't be visible anymore
+		$this->assertSame(Util::getMyAddress() . '/admin/sgf-proposals', $browser->driver->getCurrentURL());
 		$this->assertSame('SGF Proposals (0)', $browser->find('#sgf_proposals_page_header')->getText());
 
 		// the sgf is kept as rejected, listed folded under the waiting proposals
@@ -410,16 +410,16 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
 			'tsumego' => ['set_order' => 1, 'tags' => [['name' => 'snapback', 'user' => 'kovarex', 'approved' => 0]]]]);
-		$browser->get('/users/adminstats');
-		$this->assertSame('New Tags (1)', $browser->find('#tag_connection_proposals_page_header')->getText());
+		$browser->get('/admin/tag-proposals');
+		$this->assertSame('Tag Proposals (1)', $browser->find('#tag_connection_proposals_page_header')->getText());
 
 		// click the accept proposal button
 		$browser->clickId('tag-connection-accept-' . $context->tsumegos[0]['tag-connections'][0]['id']);
-		$browser->waitUntilCssSelectorExistsWithText('#tag_connection_proposals_page_header', 'New Tags (0)');
+		$browser->waitUntilCssSelectorExistsWithText('#tag_connection_proposals_page_header', 'Tag Proposals (0)');
 
-		// we got redirected back to adminstats, the proposal shouldn't be visible anymore
-		$this->assertSame(Util::getMyAddress() . '/users/adminstats', $browser->driver->getCurrentURL());
-		$this->assertSame('New Tags (0)', $browser->find('#tag_connection_proposals_page_header')->getText());
+		// we got redirected back to the list, the proposal shouldn't be visible anymore
+		$this->assertSame(Util::getMyAddress() . '/admin/tag-proposals', $browser->driver->getCurrentURL());
+		$this->assertSame('Tag Proposals (0)', $browser->find('#tag_connection_proposals_page_header')->getText());
 		$this->assertSame(1, ClassRegistry::init('TagConnection')->findById($context->tsumegos[0]['tag-connections'][0]['id'])['TagConnection']['approved']);
 
 		// tag approval is saved in admin activities
@@ -436,16 +436,16 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
 			'tsumego' => ['set_order' => 1, 'tags' => [['name' => 'snapback', 'user' => 'kovarex', 'approved' => 0]]]]);
-		$browser->get('/users/adminstats');
-		$this->assertSame('New Tags (1)', $browser->find('#tag_connection_proposals_page_header')->getText());
+		$browser->get('/admin/tag-proposals');
+		$this->assertSame('Tag Proposals (1)', $browser->find('#tag_connection_proposals_page_header')->getText());
 
 		$browser->findById('tag-connection-comment-' . $context->tsumegos[0]['tag-connections'][0]['id'])->sendKeys('There is no snapback');
 		$browser->clickId('tag-connection-reject-' . $context->tsumegos[0]['tag-connections'][0]['id']);
-		$browser->waitUntilCssSelectorExistsWithText('#tag_connection_proposals_page_header', 'New Tags (0)');
+		$browser->waitUntilCssSelectorExistsWithText('#tag_connection_proposals_page_header', 'Tag Proposals (0)');
 
-		// we got redirected back to adminstats, the proposal shouldn't be visible anymore
-		$this->assertSame(Util::getMyAddress() . '/users/adminstats', $browser->driver->getCurrentURL());
-		$this->assertSame('New Tags (0)', $browser->find('#tag_connection_proposals_page_header')->getText());
+		// we got redirected back to the list, the proposal shouldn't be visible anymore
+		$this->assertSame(Util::getMyAddress() . '/admin/tag-proposals', $browser->driver->getCurrentURL());
+		$this->assertSame('Tag Proposals (0)', $browser->find('#tag_connection_proposals_page_header')->getText());
 
 		// the tag is deleted
 		$this->assertEmpty(ClassRegistry::init('TagConnection')->findById($context->tsumegos[0]['tag-connections'][0]['id']));
@@ -466,12 +466,12 @@ class AdminStatsControllerTest extends ControllerTestCase
 			'other-users' => [['deleted' => true, 'name' => 'TwT', 'email' => 'twt@example.com']]
 		]);
 		$deletedUserID = $context->otherUsers[0]['id'];
-		$browser->get('/users/adminstats');
+		$browser->get('/admin/deleted-accounts');
 		$this->assertTextContains('Deleted Accounts (1)', $browser->driver->getPageSource());
 		$browser->clickIdAndAcceptAlert('restore-user-' . $deletedUserID);
 		// Wait for the server-side restore to be committed before asserting DB state
 		$browser->waitUntilCssSelectorDoesntExist('#restore-user-' . $deletedUserID);
-		$this->assertStringContainsString('/users/adminstats', $browser->driver->getCurrentURL());
+		$this->assertStringContainsString('/admin/deleted-accounts', $browser->driver->getCurrentURL());
 		$this->assertNull(ClassRegistry::init('User')->findById($deletedUserID)['User']['deleted']);
 
 		// the restore is saved in admin activities
