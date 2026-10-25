@@ -104,6 +104,7 @@
   border: 1px solid var(--current-border-color);
   border-radius: 6px;
   background: var(--info-box-background);
+  color: var(--text-color); /* not the white of the menu links (li a in base.css) */
   font-size: 18px;
   text-decoration: none;
 }
