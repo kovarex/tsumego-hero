@@ -29,7 +29,6 @@ class ChallengesControllerTest extends TestCaseWithAuth
 			'tsumegos' => range(1, $problemCount),
 		]);
 		$this->login('challenger');
-		TestEmailer::$lastEmail = null;
 	}
 
 	private function userId(string $name): int
@@ -47,7 +46,6 @@ class ChallengesControllerTest extends TestCaseWithAuth
 	 */
 	private function create(array $data = []): ?int
 	{
-		$this->registerTestEmailer('Challenges');
 		$this->testAction('/challenges/create', ['method' => 'post', 'data' => $data + [
 			'minimum_rank' => $this->rankId('5k'),
 			'maximum_rank' => $this->rankId('5k'),
@@ -114,11 +112,10 @@ class ChallengesControllerTest extends TestCaseWithAuth
 		$this->assertSame([$this->userId('challenger'), $this->userId('friend')], $this->participants($challengeId));
 		$this->assertStringEndsWith('/challenges/' . $challengeId, $this->headers['Location']);
 
-		$messages = Util::query('SELECT * FROM message');
-		$this->assertCount(1, $messages);
-		$this->assertSame($this->userId('friend'), (int) $messages[0]['recipient_user_id']);
-		$this->assertStringContainsString('10 problems, 5k, 30 seconds each', $messages[0]['text']);
-		$this->assertStringContainsString('/challenges/' . $challengeId, $messages[0]['text']);
+		// the invitation is the challenge in the friend's challenges, not a message
+		$this->assertEmpty(Util::query('SELECT * FROM message'));
+		$this->assertSame(1, Challenge::countWaitingFor($this->userId('friend')));
+		$this->assertStringContainsString('10 problems, 5k, 30 seconds each', Challenge::describe($challenge));
 	}
 
 	public function testTheTimeForAProblemCanBeLong(): void
@@ -192,7 +189,6 @@ class ChallengesControllerTest extends TestCaseWithAuth
 		$this->prepare();
 		$challengeId = $this->create();
 
-		$this->registerTestEmailer('Challenges');
 		$this->testAction('/challenges/invite/' . $challengeId, ['method' => 'post', 'data' => ['players' => 'Nobody']]);
 
 		$this->assertSame([$this->userId('challenger')], $this->participants($challengeId));
@@ -416,9 +412,8 @@ class ChallengesControllerTest extends TestCaseWithAuth
 		$this->login('challenger');
 		$page = $this->testAction('/challenges/' . $challengeId, ['method' => 'get', 'return' => 'view']);
 		$this->assertTextContains('>declined</td>', $page);
-		$this->registerTestEmailer('Challenges');
 		$this->testAction('/challenges/invite/' . $challengeId, ['method' => 'post', 'data' => ['players' => 'DN_friend']]);
-		$this->assertCount(1, Util::query('SELECT * FROM message'));
+		$this->assertSame(Challenge::RUN_DECLINED, Challenge::standings($challengeId)[1]['run']);
 
 		// playing it after all puts the friend back in
 		$this->login('friend');

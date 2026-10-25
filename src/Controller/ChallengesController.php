@@ -142,8 +142,7 @@ class ChallengesController extends AppController
 	}
 
 	/**
-	 * A player in the challenge invites others by their names, separated by commas. Each gets a
-	 * message with the link.
+	 * A player in the challenge invites others by their names, separated by commas.
 	 */
 	#[HttpPost]
 	public function invite(string $id): mixed
@@ -202,8 +201,8 @@ class ChallengesController extends AppController
 	}
 
 	/**
-	 * Adds the players of the names to the challenge and sends each of them the link, then says
-	 * what came of it.
+	 * Adds the players of the names to the challenge, where it shows in their challenges and on the
+	 * count of the menu, then says what came of it.
 	 *
 	 * @param string $names Display names separated by commas
 	 */
@@ -213,7 +212,6 @@ class ChallengesController extends AppController
 		if (empty($names))
 			return;
 
-		$challenge = Challenge::withDetails($challengeID);
 		$invited = [];
 		$problems = [];
 		foreach ($names as $name)
@@ -239,25 +237,14 @@ class ChallengesController extends AppController
 					: $name . ' declined the challenge.';
 				continue;
 			}
-			Message::send(Auth::getUserID(), $playerID, self::invitationText($challenge), $this->_getEmailer());
 			$invited[] = $name;
 		}
 
 		if (!empty($invited))
-			CookieFlash::set('Invited ' . implode(', ', $invited) . '. They got a message with the link.'
+			CookieFlash::set('Invited ' . implode(', ', $invited) . '. The challenge waits for them in their challenges.'
 				. (empty($problems) ? '' : ' ' . implode(' ', $problems)), empty($problems) ? 'success' : 'info');
 		elseif (!empty($problems))
 			CookieFlash::set(implode(' ', $problems), 'error');
-	}
-
-	/**
-	 * @param array<string, mixed> $challenge As Challenge::withDetails() returns it
-	 */
-	private static function invitationText(array $challenge): string
-	{
-		return 'I challenge you to a tsumego duel: ' . Challenge::describe($challenge) . '. '
-			. 'We all get the same problems, the most points win. Play it whenever you like: '
-			. Router::url(self::challengeUrl((int) $challenge['id']), true);
 	}
 
 	/**

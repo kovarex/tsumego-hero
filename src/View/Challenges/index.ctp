@@ -60,7 +60,7 @@ use App\Utility\TimeModeUtil;
 				<input class="form-field__control" type="text" id="challenge-players" name="players" value="<?= h((string) $opponent) ?>" placeholder="Names of the players, separated by commas">
 			</div>
 			<button class="btn" type="submit" id="challenge-create">Create challenge</button>
-			<p class="hint">The invited players get a message with the link. You can also send the link yourself, anyone who opens it can join.</p>
+			<p class="hint">The invited players find the challenge in their challenges. You can also send them the link, anyone who opens it can join.</p>
 		</form>
 	</section>
 
