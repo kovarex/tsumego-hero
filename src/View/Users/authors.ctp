@@ -1,5 +1,8 @@
 <?php 
-//echo '<pre>';print_r($c);echo '</pre>'; 
+
+/**
+ * @var View $this
+ */
 ?><br>
 <div align="center">
 <p class="title">

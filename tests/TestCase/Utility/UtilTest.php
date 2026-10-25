@@ -1,6 +1,7 @@
 <?php
 
-App::uses('Util', 'Utility');
+
+use App\Utility\Util;
 
 class UtilTest extends CakeTestCase
 {
@@ -27,6 +28,15 @@ class UtilTest extends CakeTestCase
 		$result = Util::clearNumericCookie('number');
 		$this->assertSame(42, $result);
 		$this->assertEmpty($_COOKIE['number']);
+	}
+
+	public function testIsHttpUrl(): void
+	{
+		$this->assertTrue(Util::isHttpUrl('https://senseis.xmp.net/?Snapback'));
+		$this->assertTrue(Util::isHttpUrl(' http://example.com '));
+		$this->assertFalse(Util::isHttpUrl('javascript:alert(1)'));
+		$this->assertFalse(Util::isHttpUrl('tag.example.com'));
+		$this->assertFalse(Util::isHttpUrl(''));
 	}
 
 	public function testClearNumericCookieThrowsOnNonNumeric()
@@ -171,11 +181,16 @@ class UtilTest extends CakeTestCase
 		$this->assertSame('fallback', Util::getCookie('missing', 'fallback'));
 	}
 
-	public function testGenerateRandomStringIsDeterministicWithSeed()
+	public function testGenerateRandomStringHasTheAskedLength()
 	{
-		srand(1);
-		$this->assertSame('Fp8eBdl3HU', Util::generateRandomString(10));
-		srand(); // reset to random seed
+		$this->assertSame(10, strlen(Util::generateRandomString(10)));
+		$this->assertSame(20, strlen(Util::generateRandomString()));
+	}
+
+	public function testGenerateRandomStringIsNotPredictable()
+	{
+		$this->assertNotSame(Util::generateRandomString(20), Util::generateRandomString(20));
+		$this->assertMatchesRegularExpression('/^[0-9a-zA-Z]+$/', Util::generateRandomString(20));
 	}
 
 	public function testEncryptAndDecryptRoundTrip()
@@ -281,5 +296,18 @@ class UtilTest extends CakeTestCase
 	{
 		$this->assertSame(10, Util::getHealthBasedOnLevel(0));
 		$this->assertSame(11, Util::getHealthBasedOnLevel(9));
+	}
+
+	public function testToIso8601(): void
+	{
+		$original = date_default_timezone_get();
+
+		date_default_timezone_set('UTC');
+		$this->assertSame('2026-08-11T12:00:00+00:00', Util::toIso8601('2026-08-11 12:00:00'));
+
+		date_default_timezone_set('Europe/Prague');
+		$this->assertSame('2026-08-11T12:00:00+02:00', Util::toIso8601('2026-08-11 12:00:00'));
+
+		date_default_timezone_set($original);
 	}
 }

@@ -1,10 +1,13 @@
 <?php
 
+use App\Utility\AchievementId;
+use App\Utility\Constants;
+use App\Utility\Rating;
+use App\Utility\TsumegoFilters;
+use App\Utility\Util;
 use Facebook\WebDriver\WebDriverBy;
-use Facebook\WebDriver\WebDriverWait;
 use Facebook\WebDriver\WebDriverKeys;
-
-App::uses('TsumegoFilters', 'Utility');
+use Facebook\WebDriver\WebDriverSelect;
 
 class SetsControllerTest extends TestCaseWithAuth
 {
@@ -14,7 +17,7 @@ class SetsControllerTest extends TestCaseWithAuth
 			['name' => 'tsumego set 1', 'num' => '666'],
 			['name' => 'tsumego set 2', 'num' => '777']]]], );
 		$this->login($context->user['User']['name']);
-		$this->testAction('sets', ['return' => 'view']);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
 		$this->assertTextContains("tsumego set 1", $this->view);
 		$this->assertTextContains("tsumego set 2", $this->view);
 		$this->assertTextNotContains("Problems found 0", $this->view);
@@ -25,10 +28,46 @@ class SetsControllerTest extends TestCaseWithAuth
 		new ContextPreparator(['tsumego' => ['sets' => [
 			['name' => 'tsumego set 1', 'num' => '666'],
 			['name' => 'tsumego set 2', 'num' => '777']]]], );
-		$this->testAction('sets', ['return' => 'view']);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
 		$this->assertTextContains("tsumego set 1", $this->view);
 		$this->assertTextContains("tsumego set 2", $this->view);
 		$this->assertTextNotContains("Problems found 0", $this->view);
+	}
+
+	/**
+	 * Finishing the last problem of a set unlocks achievements on the set page, and
+	 * those achievements pop up for the player.
+	 */
+	public function testSetPagePopsUpAchievementsUnlockedByTheSet(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'setViewer']]);
+		foreach ([50, 52, 53, 54] as $setId)
+			$this->createFullySolvedSet($setId, $context->user['id']);
+		$_COOKIE['disable-achievements'] = false;
+
+		$this->testAction('sets/50', ['method' => 'get', 'return' => 'contents']);
+
+		$popups = array_column($this->controller->viewVars['achievementUpdates'], 'id');
+		$this->assertContains(AchievementId::LIFE_DEATH_ELEMENTARY->value, $popups, 'The set page hands the achievements it unlocked to the layout');
+		$this->assertTextContains('"id":' . AchievementId::LIFE_DEATH_ELEMENTARY->value, $this->contents, 'The layout renders the achievements the set page unlocked');
+	}
+
+	/**
+	 * Create a public set with a single problem that the given user solved.
+	 */
+	private function createFullySolvedSet(int $setId, int $userId): void
+	{
+		ClassRegistry::init('Set')->create();
+		ClassRegistry::init('Set')->save(['id' => $setId, 'public' => 1, 'title' => 'set ' . $setId]);
+		ClassRegistry::init('Tsumego')->create();
+		ClassRegistry::init('Tsumego')->save(['rating' => 1000]);
+		$tsumegoId = ClassRegistry::init('Tsumego')->getInsertID();
+		ClassRegistry::init('SetConnection')->create();
+		ClassRegistry::init('SetConnection')->save(['set_id' => $setId, 'tsumego_id' => $tsumegoId, 'num' => 1]);
+		ClassRegistry::init('Sgf')->create();
+		ClassRegistry::init('Sgf')->save(['tsumego_id' => $tsumegoId, 'sgf' => '(;GM[1]FF[4]SZ[19])', 'user_id' => $userId, 'sgf_status_id' => Sgf::STATUS_ACCEPTED]);
+		ClassRegistry::init('TsumegoStatus')->create();
+		ClassRegistry::init('TsumegoStatus')->save(['tsumego_id' => $tsumegoId, 'status' => 'S', 'user_id' => $userId]);
 	}
 
 	public function testIndexRankBased(): void
@@ -48,22 +87,428 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$_COOKIE['query'] = 'difficulty';
 		$_COOKIE['filtered_ranks'] = '15k';
-		$this->testAction('sets', ['return' => 'view']);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
 		$dom = $this->getStringDom();
-		$collectionTopDivs = $dom->querySelectorAll('.collection-top');
+		$collectionTopDivs = $dom->querySelectorAll('.set-card__top');
 		$this->assertCount(1, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->textContent, '15k');
 
-		$collectionMiddleLeft = $dom->querySelectorAll('.collection-middle-left');
+		$collectionMiddleLeft = $dom->querySelectorAll('.set-card__middle-left');
 		$this->assertCount(1, $collectionMiddleLeft);
 		$this->assertSame($collectionMiddleLeft[0]->textContent, '1 problem'); // the sandbox problem isn't included
 
 		$_COOKIE['filtered_ranks'] = '10k';
-		$this->testAction('sets', ['return' => 'view']);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
 		$dom = $this->getStringDom();
-		$collectionTopDivs = $dom->querySelectorAll('.collection-top');
+		$collectionTopDivs = $dom->querySelectorAll('.set-card__top');
 		$this->assertCount(1, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->textContent, '10k');
+	}
+
+	public function testDifficultyIndexGivesEveryRankItsOwnBox(): void
+	{
+		$ranks = ['30k', '25k', '20k', '17k', '16k', '15k', '10k'];
+		$contextParams = ['user' => ['query' => 'difficulty']];
+		$contextParams['tsumegos'] = [];
+		foreach ($ranks as $rank)
+			$contextParams['tsumegos'][] = [
+				'rating' => Rating::getRankMiddleRatingFromReadableRank($rank),
+				'sets' => [['name' => 'set ' . $rank, 'num' => '1']]];
+		new ContextPreparator($contextParams);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
+
+		$boxTitles = [];
+		foreach ($this->getStringDom()->querySelectorAll('.set-card__top') as $boxTitle)
+			$boxTitles[] = $boxTitle->textContent;
+
+		$this->assertSame($ranks, $boxTitles);
+	}
+
+	public function testDifficultyIndexGroupsProblemsBelowThirtyKyuInTheThirtyKyuBox(): void
+	{
+		$contextParams = ['user' => ['query' => 'difficulty']];
+		$contextParams['tsumegos'] = [
+			['rating' => -1200, 'sets' => [['name' => 'beginner set', 'num' => '1']]]];
+		new ContextPreparator($contextParams);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
+
+		$boxTitles = [];
+		foreach ($this->getStringDom()->querySelectorAll('.set-card__top') as $boxTitle)
+			$boxTitles[] = $boxTitle->textContent;
+
+		$this->assertSame(['30k'], $boxTitles);
+	}
+
+	public function testDifficultyIndexRankFilterShowsOnlyThatRank(): void
+	{
+		$contextParams['tsumegos'] = [
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('16k'), 'sets' => [['name' => 'set 1', 'num' => '1']]],
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('15k'), 'sets' => [['name' => 'set 2', 'num' => '1']]]];
+		new ContextPreparator($contextParams);
+		$_COOKIE['query'] = 'difficulty';
+		$_COOKIE['filtered_ranks'] = '15k';
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
+
+		$this->assertTextContains('Problems found: 1', $this->view);
+		$dom = $this->getStringDom();
+		$collectionTopDivs = $dom->querySelectorAll('.set-card__top');
+		$this->assertCount(1, $collectionTopDivs);
+		$this->assertSame('15k', $collectionTopDivs[0]->textContent);
+		$this->assertSame('1 problem', $dom->querySelectorAll('.set-card__middle-left')[0]->textContent);
+	}
+
+	public function testDifficultyIndexShowsTheOnlyPickedRankInTheRangeSelects(): void
+	{
+		$contextParams['tsumegos'] = [
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('5k'), 'sets' => [['name' => 'set 1', 'num' => '1']]]];
+		new ContextPreparator($contextParams);
+		$_COOKIE['query'] = 'difficulty';
+		$_COOKIE['filtered_ranks'] = '5k';
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
+
+		$dom = $this->getStringDom();
+		$this->assertSame('5k', $dom->querySelector('#difficulty-from option[selected]')->getAttribute('value'));
+		$this->assertSame('5k', $dom->querySelector('#difficulty-to option[selected]')->getAttribute('value'));
+	}
+
+	public function testDifficultyIndexLeavesTheRangeSelectsOpenForSeveralPickedRanks(): void
+	{
+		$contextParams['tsumegos'] = [
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('17k'), 'sets' => [['name' => 'set 1', 'num' => '1']]],
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('15k'), 'sets' => [['name' => 'set 2', 'num' => '1']]]];
+		new ContextPreparator($contextParams);
+		$_COOKIE['query'] = 'difficulty';
+		$_COOKIE['filtered_ranks'] = '17k@15k';
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
+
+		$dom = $this->getStringDom();
+		$this->assertCount(0, $dom->querySelectorAll('#difficulty-from option[selected]'));
+		$this->assertCount(0, $dom->querySelectorAll('#difficulty-to option[selected]'));
+	}
+
+	public function testDifficultyIndexKeepsPickedRanksInTheirOwnBoxes(): void
+	{
+		$contextParams['tsumegos'] = [
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('17k'), 'sets' => [['name' => 'set 1', 'num' => '1']]],
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('16k'), 'sets' => [['name' => 'set 2', 'num' => '1']]],
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('15k'), 'sets' => [['name' => 'set 3', 'num' => '1']]]];
+		new ContextPreparator($contextParams);
+		$_COOKIE['query'] = 'difficulty';
+		$_COOKIE['filtered_ranks'] = '17k@16k';
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
+
+		$this->assertTextContains('Problems found: 2', $this->view);
+		$dom = $this->getStringDom();
+		$boxTitles = [];
+		foreach ($dom->querySelectorAll('.set-card__top') as $boxTitle)
+			$boxTitles[] = $boxTitle->textContent;
+
+		$this->assertSame(['17k', '16k'], $boxTitles);
+	}
+
+	public function testDifficultyIndexShowsAPickedRangeAsOneBox(): void
+	{
+		$contextParams['tsumegos'] = [
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('17k'), 'sets' => [['name' => 'set 1', 'num' => '1']]],
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('16k'), 'sets' => [['name' => 'set 2', 'num' => '1']]],
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('15k'), 'sets' => [['name' => 'set 3', 'num' => '1']]]];
+		new ContextPreparator($contextParams);
+		$_COOKIE['query'] = 'difficulty';
+		$_COOKIE['filtered_ranks'] = '17k-16k';
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
+
+		$this->assertTextContains('Problems found: 2', $this->view);
+		$dom = $this->getStringDom();
+		$boxTitles = [];
+		foreach ($dom->querySelectorAll('.set-card__top') as $boxTitle)
+			$boxTitles[] = $boxTitle->textContent;
+
+		$this->assertSame(['17k-16k'], $boxTitles);
+		$this->assertSame('2 problems', $dom->querySelectorAll('.set-card__middle-left')[0]->textContent);
+	}
+
+	public function testDifficultyIndexCombinesPickedRanksWithAPickedRange(): void
+	{
+		$contextParams['tsumegos'] = [
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('20k'), 'sets' => [['name' => 'set 1', 'num' => '1']]],
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('10k'), 'sets' => [['name' => 'set 2', 'num' => '1']]],
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('9k'), 'sets' => [['name' => 'set 3', 'num' => '1']]],
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('5k'), 'sets' => [['name' => 'set 4', 'num' => '1']]]];
+		new ContextPreparator($contextParams);
+		$_COOKIE['query'] = 'difficulty';
+		$_COOKIE['filtered_ranks'] = '20k@10k-9k';
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
+
+		$this->assertTextContains('Problems found: 3', $this->view);
+		$boxTitles = [];
+		foreach ($this->getStringDom()->querySelectorAll('.set-card__top') as $boxTitle)
+			$boxTitles[] = $boxTitle->textContent;
+
+		$this->assertSame(['20k', '10k-9k'], $boxTitles);
+	}
+
+	public function testDifficultyIndexKeepsSeparateRunsOfTheRankFilterApart(): void
+	{
+		$contextParams['tsumegos'] = [
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('17k'), 'sets' => [['name' => 'set 1', 'num' => '1']]],
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('15k'), 'sets' => [['name' => 'set 2', 'num' => '1']]],
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('10k'), 'sets' => [['name' => 'set 3', 'num' => '1']]]];
+		new ContextPreparator($contextParams);
+		$_COOKIE['query'] = 'difficulty';
+		$_COOKIE['filtered_ranks'] = '17k@10k';
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
+
+		$boxTitles = [];
+		foreach ($this->getStringDom()->querySelectorAll('.set-card__top') as $boxTitle)
+			$boxTitles[] = $boxTitle->textContent;
+
+		$this->assertSame(['17k', '10k'], $boxTitles);
+	}
+
+	public function testTopicsIndexSplitsCollectionIntoPartitionBoxes(): void
+	{
+		$contextParams = ['user' => ['collection_size' => 10]];
+		$contextParams['tsumegos'] = [];
+		for ($i = 0; $i < 11; $i++)
+			$contextParams['tsumegos'] [] = [
+				'sets' => [['name' => 'partitioned set', 'num' => $i + 1]]];
+		$context = new ContextPreparator($contextParams);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
+
+		$dom = $this->getStringDom();
+		$collectionTopDivs = $dom->querySelectorAll('.set-card__top');
+		$this->assertCount(2, $collectionTopDivs);
+		$this->assertSame('partitioned set #1', $collectionTopDivs[0]->textContent);
+		$this->assertSame('partitioned set #2', $collectionTopDivs[1]->textContent);
+
+		$collectionMiddleLeft = $dom->querySelectorAll('.set-card__middle-left');
+		$this->assertSame('10 problems', $collectionMiddleLeft[0]->textContent);
+		$this->assertSame('1 problem', $collectionMiddleLeft[1]->textContent);
+
+		$boxLinks = $dom->querySelectorAll('.set-card__link');
+		$setId = $context->tsumegos[0]['sets'][0]['id'];
+		$this->assertSame('/sets/' . $setId, $boxLinks[0]->getAttribute('href'));
+		$this->assertSame('/sets/' . $setId . '/2', $boxLinks[1]->getAttribute('href'));
+	}
+
+	public function testTopicsIndexSmallCollectionShowsSingleBox(): void
+	{
+		$contextParams = ['user' => ['collection_size' => 200]];
+		$contextParams['tsumegos'] = [];
+		for ($i = 0; $i < 3; $i++)
+			$contextParams['tsumegos'] [] = [
+				'sets' => [['name' => 'small set', 'num' => $i + 1]]];
+		$context = new ContextPreparator($contextParams);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
+
+		$dom = $this->getStringDom();
+		$collectionTopDivs = $dom->querySelectorAll('.set-card__top');
+		$this->assertCount(1, $collectionTopDivs);
+		$this->assertSame('small set', $collectionTopDivs[0]->textContent);
+
+		$collectionMiddleLeft = $dom->querySelectorAll('.set-card__middle-left');
+		$this->assertSame('3 problems', $collectionMiddleLeft[0]->textContent);
+
+		$boxLinks = $dom->querySelectorAll('.set-card__link');
+		$this->assertSame('/sets/' . $context->tsumegos[0]['sets'][0]['id'], $boxLinks[0]->getAttribute('href'));
+	}
+
+	public function testTopicsIndexSortsNullOrderSetLast(): void
+	{
+		$context = new ContextPreparator(['tsumego' => ['sets' => [
+			['name' => 'ordered set', 'public' => 1, 'order' => 5, 'num' => 1]]]]);
+
+		// a public set with no curated order holding the same tsumego
+		$set = ClassRegistry::init('Set');
+		$set->create();
+		$set->save(['title' => 'unordered set', 'public' => 1, 'order' => null]);
+		$connection = ClassRegistry::init('SetConnection');
+		$connection->create();
+		$connection->save(['tsumego_id' => $context->tsumegos[0]['id'], 'set_id' => $set->id, 'num' => 2]);
+
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
+
+		$dom = $this->getStringDom();
+		$collectionTopDivs = $dom->querySelectorAll('.set-card__top');
+		$this->assertCount(2, $collectionTopDivs);
+		$this->assertSame('ordered set', $collectionTopDivs[0]->textContent);
+		$this->assertSame('unordered set', $collectionTopDivs[1]->textContent);
+	}
+
+	public function testTopicsIndexProblemsFoundCountsAllPublicProblems(): void
+	{
+		$contextParams = ['tsumegos' => []];
+		$contextParams['tsumegos'][] = ['sets' => [['name' => 'public set', 'num' => '1']]];
+		$contextParams['tsumegos'][] = ['sets' => [['name' => 'public set', 'num' => '2']]];
+		// a problem only in a private set is not shown, so not counted
+		$contextParams['tsumegos'][] = ['sets' => [['name' => 'sandbox set', 'public' => 0, 'num' => '1']]];
+		new ContextPreparator($contextParams);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
+		$this->assertTextContains('Problems found: 2', $this->view);
+	}
+
+	public function testDifficultyIndexProblemsFoundExcludesProblemsAboveNineDan(): void
+	{
+		$contextParams = ['tsumegos' => []];
+		$contextParams['tsumegos'][] = ['rating' => Rating::getRankMiddleRatingFromReadableRank('15k'), 'sets' => [['name' => 'set', 'num' => '1']]];
+		$contextParams['tsumegos'][] = ['rating' => Rating::getRankMiddleRatingFromReadableRank('15k'), 'sets' => [['name' => 'set', 'num' => '2']]];
+		// rating 2810+ falls above the 9d band, so no difficulty box shows it
+		$contextParams['tsumegos'][] = ['rating' => 2810, 'sets' => [['name' => 'set', 'num' => '3']]];
+		new ContextPreparator($contextParams);
+		$_COOKIE['query'] = 'difficulty';
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
+		$this->assertTextContains('Problems found: 2', $this->view);
+	}
+
+	public function testTagsIndexProblemsFoundCountsOnlyTaggedProblems(): void
+	{
+		$contextParams = ['tsumegos' => []];
+		$contextParams['tsumegos'][] = ['sets' => [['name' => 'set', 'num' => '1']], 'tags' => [['name' => 'atari']]];
+		$contextParams['tsumegos'][] = ['sets' => [['name' => 'set', 'num' => '2']], 'tags' => [['name' => 'atari']]];
+		// a public problem with no tag is not shown in tags mode, so not counted
+		$contextParams['tsumegos'][] = ['sets' => [['name' => 'set', 'num' => '3']]];
+		new ContextPreparator($contextParams);
+		$_COOKIE['query'] = 'tags';
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
+		$this->assertTextContains('Problems found: 2', $this->view);
+	}
+
+	public function testTopicsIndexExcludesDeletedProblems(): void
+	{
+		$contextParams = ['tsumegos' => []];
+		$contextParams['tsumegos'][] = ['sets' => [['name' => 'set', 'num' => '1']]];
+		// a deleted problem in the same public set is neither counted nor shown
+		$contextParams['tsumegos'][] = ['deleted' => date('Y-m-d H:i:s'), 'sets' => [['name' => 'set', 'num' => '2']]];
+		new ContextPreparator($contextParams);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
+
+		$this->assertTextContains('Problems found: 1', $this->view);
+		$dom = $this->getStringDom();
+		$this->assertCount(1, $dom->querySelectorAll('.set-card__top'));
+		$this->assertSame('1 problem', $dom->querySelectorAll('.set-card__middle-left')[0]->textContent);
+	}
+
+	public function testTagsIndexExcludesDeletedProblems(): void
+	{
+		$contextParams = ['tsumegos' => []];
+		$contextParams['tsumegos'][] = ['sets' => [['name' => 'set', 'num' => '1']], 'tags' => [['name' => 'atari']]];
+		// a deleted problem with the same tag is neither counted nor shown
+		$contextParams['tsumegos'][] = ['deleted' => date('Y-m-d H:i:s'), 'sets' => [['name' => 'set', 'num' => '2']], 'tags' => [['name' => 'atari']]];
+		new ContextPreparator($contextParams);
+		$_COOKIE['query'] = 'tags';
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
+
+		$this->assertTextContains('Problems found: 1', $this->view);
+		$dom = $this->getStringDom();
+		$this->assertCount(1, $dom->querySelectorAll('.set-card__top'));
+		$this->assertSame('1 problem', $dom->querySelectorAll('.set-card__middle-left')[0]->textContent);
+	}
+
+	public function testTopicsIndexShowsSolvedPercentPerPartition(): void
+	{
+		$contextParams = ['user' => ['collection_size' => 10]];
+		$contextParams['tsumegos'] = [];
+		foreach (array_merge(array_fill(0, 10, 'S'), ['S', 'N']) as $i => $status)
+			$contextParams['tsumegos'] [] = [
+				'sets' => [['name' => 'solved set', 'num' => $i + 1]],
+				'status' => $status];
+		new ContextPreparator($contextParams);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
+
+		$this->assertTextContains('Problems found: 12', $this->view);
+
+		$dom = $this->getStringDom();
+		$fills = $dom->querySelectorAll('.progress__fill');
+		$this->assertCount(2, $fills);
+		$this->assertTextContains('width: 100%', $fills[0]->getAttribute('style'));
+		$this->assertTextContains('width: 50%', $fills[1]->getAttribute('style'));
+		$this->assertCount(1, $dom->querySelectorAll('.set-card__completed'));
+	}
+
+	public function testTopicsIndexShowsDifficultyPerPartition(): void
+	{
+		$contextParams = ['user' => ['collection_size' => 10]];
+		$contextParams['tsumegos'] = [];
+		foreach (array_merge(
+			array_fill(0, 10, Rating::getRankMiddleRatingFromReadableRank('15k')),
+			[
+				Rating::getRankMiddleRatingFromReadableRank('5k'),
+				Rating::getRankMiddleRatingFromReadableRank('5k')]) as $i => $rating)
+					$contextParams['tsumegos'] [] = [
+						'sets' => [['name' => 'difficulty set', 'num' => $i + 1]],
+						'rating' => $rating];
+		new ContextPreparator($contextParams);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
+
+		// difficulty must be computed per partition, not per whole set:
+		// partition 1 (ten 15k problems) shows 15k, partition 2 (two 5k) shows 5k.
+		$dom = $this->getStringDom();
+		$difficulties = $dom->querySelectorAll('.set-card__middle-right');
+		$this->assertCount(2, $difficulties);
+		$this->assertSame('~15k', $difficulties[0]->textContent);
+		$this->assertSame('~5k', $difficulties[1]->textContent);
+	}
+
+	public function testTopicsIndexGuestShowsNoSolvedProgress(): void
+	{
+		$contextParams = ['user' => null];
+		$contextParams['tsumegos'] = [];
+		for ($i = 0; $i < 2; $i++)
+			$contextParams['tsumegos'] [] = [
+				'sets' => [['name' => 'guest set', 'num' => $i + 1]]];
+		new ContextPreparator($contextParams);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
+
+		$dom = $this->getStringDom();
+		$fills = $dom->querySelectorAll('.progress__fill');
+		$this->assertCount(1, $fills);
+		$this->assertTextContains('width: 0%', $fills[0]->getAttribute('style'));
+		$this->assertCount(1, $dom->querySelectorAll('.set-card__top'));
+		$this->assertCount(0, $dom->querySelectorAll('.set-card__completed'));
+	}
+
+	public function testDifficultyIndexSplitsRankIntoPartitionBoxes(): void
+	{
+		$contextParams = ['user' => ['query' => 'difficulty', 'collection_size' => 10]];
+		$contextParams['tsumegos'] = [];
+		for ($i = 0; $i < 11; $i++)
+			$contextParams['tsumegos'] [] = [
+				'rating' => Rating::getRankMiddleRatingFromReadableRank('15k'),
+				'sets' => [['name' => 'set 1', 'num' => $i + 1]]];
+		new ContextPreparator($contextParams);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
+
+		$dom = $this->getStringDom();
+		$collectionTopDivs = $dom->querySelectorAll('.set-card__top');
+		$this->assertCount(2, $collectionTopDivs);
+		$this->assertSame('15k #1', $collectionTopDivs[0]->textContent);
+		$this->assertSame('15k #2', $collectionTopDivs[1]->textContent);
+
+		$collectionMiddleLeft = $dom->querySelectorAll('.set-card__middle-left');
+		$this->assertSame('10 problems', $collectionMiddleLeft[0]->textContent);
+		$this->assertSame('1 problem', $collectionMiddleLeft[1]->textContent);
+	}
+
+	public function testTagsIndexSplitsTagIntoPartitionBoxes(): void
+	{
+		$contextParams = ['user' => ['query' => 'tags', 'collection_size' => 10]];
+		$contextParams['tsumegos'] = [];
+		for ($i = 0; $i < 11; $i++)
+			$contextParams['tsumegos'] [] = [
+				'sets' => [['name' => 'set 1', 'num' => $i + 1]],
+				'tags' => [['name' => 'atari']]];
+		new ContextPreparator($contextParams);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
+
+		$dom = $this->getStringDom();
+		$collectionTopDivs = $dom->querySelectorAll('.set-card__top');
+		$this->assertCount(2, $collectionTopDivs);
+		$this->assertSame('atari #1', $collectionTopDivs[0]->textContent);
+		$this->assertSame('atari #2', $collectionTopDivs[1]->textContent);
+
+		$collectionMiddleLeft = $dom->querySelectorAll('.set-card__middle-left');
+		$this->assertSame('10 problems', $collectionMiddleLeft[0]->textContent);
+		$this->assertSame('1 problem', $collectionMiddleLeft[1]->textContent);
 	}
 
 	public function testSetViewRankBased(): void
@@ -84,13 +529,13 @@ class SetsControllerTest extends TestCaseWithAuth
 			'sets' => [['name' => 'set 2', 'num' => '1']]];
 		$context = new ContextPreparator($contextParams);
 
-		$this->testAction('sets/view/15k', ['return' => 'view']);
+		$this->testAction('sets/15k', ['method' => 'get', 'return' => 'view']);
 		$dom = $this->getStringDom();
-		$titleDivs = $dom->querySelectorAll('.title4');
-		$this->assertCount(2, $titleDivs);
-		$this->assertSame($titleDivs[1]->textContent, '15k');
+		$setTitle = $dom->querySelectorAll('.set-view-title');
+		$this->assertCount(1, $setTitle);
+		$this->assertSame($setTitle[0]->textContent, '15k');
 
-		$problemButtons = $dom->querySelectorAll('.setViewButtons1');
+		$problemButtons = $dom->querySelectorAll('.problem-nav__number');
 		$this->assertCount(1, $problemButtons);
 		$this->assertSame($problemButtons[0]->textContent, '1');
 
@@ -98,19 +543,65 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertCount(1, $problemLinks);
 		$this->assertSame($problemLinks[0]->getAttribute('href'), '/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
-		$this->testAction('sets/view/10k', ['return' => 'view']);
+		$this->testAction('sets/10k', ['method' => 'get', 'return' => 'view']);
 		$dom = $this->getStringDom();
-		$titleDivs = $dom->querySelectorAll('.title4');
-		$this->assertCount(2, $titleDivs);
-		$this->assertSame($titleDivs[1]->textContent, '10k');
+		$setTitle = $dom->querySelectorAll('.set-view-title');
+		$this->assertCount(1, $setTitle);
+		$this->assertSame($setTitle[0]->textContent, '10k');
 
-		$problemButtons = $dom->querySelectorAll('.setViewButtons1');
+		$problemButtons = $dom->querySelectorAll('.problem-nav__number');
 		$this->assertCount(1, $problemButtons);
 		$this->assertSame($problemButtons[0]->textContent, '1');
 
 		$problemLinks = $dom->querySelectorAll('.tooltip');
-		$this->assertCount(1, $problemButtons);
+		$this->assertCount(1, $problemLinks);
 		$this->assertSame($problemLinks[0]->getAttribute('href'), '/' . $context->tsumegos[2]['set-connections'][0]['id']);
+	}
+
+	public function testDifficultySetViewShowsRank(): void
+	{
+		$contextParams = [];
+		$contextParams['tsumegos'] = [];
+		$contextParams['tsumegos'] [] = [
+			'rating' => Rating::getRankMiddleRatingFromReadableRank('5k'),
+			'sets' => [['name' => 'set 1', 'num' => '1']]];
+		new ContextPreparator($contextParams);
+
+		$this->testAction('sets/5k', ['method' => 'get', 'return' => 'view']);
+		$result = $this->getStringDom();
+
+		$this->assertStringContainsString('<span class="rank-icon rank-icon-large">5k</span>',
+			$result->saveHTML());
+	}
+
+	public function testDifficultySetViewShowsMergedRankRange(): void
+	{
+		$contextParams = [];
+		$contextParams['tsumegos'] = [];
+		foreach (['20k', '17k', '15k'] as $rank)
+			$contextParams['tsumegos'][] = [
+				'rating' => Rating::getRankMiddleRatingFromReadableRank($rank),
+				'sets' => [['name' => 'set ' . $rank, 'num' => '1']]];
+		$context = new ContextPreparator($contextParams);
+
+		$this->testAction('sets/view/20k-16k', ['method' => 'get', 'return' => 'view']);
+		$dom = $this->getStringDom();
+		$setTitle = $dom->querySelectorAll('.set-view-title');
+		$this->assertCount(1, $setTitle);
+		$this->assertSame('20k-16k', $setTitle[0]->textContent);
+
+		$problemButtons = $dom->querySelectorAll('.problem-nav__number');
+		$this->assertCount(2, $problemButtons);
+
+		$problemLinks = [];
+		foreach ($dom->querySelectorAll('.tooltip') as $problemLink)
+			$problemLinks[] = $problemLink->getAttribute('href');
+		sort($problemLinks);
+		$expectedLinks = [
+			'/' . $context->tsumegos[0]['set-connections'][0]['id'],
+			'/' . $context->tsumegos[1]['set-connections'][0]['id']];
+		sort($expectedLinks);
+		$this->assertSame($expectedLinks, $problemLinks);
 	}
 
 	public function testSetViewSetBased(): void
@@ -125,13 +616,13 @@ class SetsControllerTest extends TestCaseWithAuth
 			'sets' => [['name' => 'set 2', 'num' => '1']]];
 		$context = new ContextPreparator($contextParams);
 
-		$this->testAction('sets/view/' . $context->tsumegos[0]['sets'][0]['id'], ['return' => 'view']);
+		$this->testAction('sets/' . $context->tsumegos[0]['sets'][0]['id'], ['method' => 'get', 'return' => 'view']);
 		$dom = $this->getStringDom();
-		$titleDivs = $dom->querySelectorAll('.title4');
-		$this->assertCount(2, $titleDivs);
-		$this->assertSame($titleDivs[1]->textContent, 'set 1');
+		$setTitle = $dom->querySelectorAll('.set-view-title');
+		$this->assertCount(1, $setTitle);
+		$this->assertSame($setTitle[0]->textContent, 'set 1');
 
-		$problemButtons = $dom->querySelectorAll('.setViewButtons1');
+		$problemButtons = $dom->querySelectorAll('.problem-nav__number');
 		$this->assertCount(1, $problemButtons);
 		$this->assertSame($problemButtons[0]->textContent, '1');
 
@@ -139,24 +630,86 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertCount(1, $problemLinks);
 		$this->assertSame($problemLinks[0]->getAttribute('href'), '/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
-		$this->testAction('sets/view/' . $context->tsumegos[1]['sets'][0]['id'], ['return' => 'view']);
+		$this->testAction('sets/' . $context->tsumegos[1]['sets'][0]['id'], ['method' => 'get', 'return' => 'view']);
 		$dom = $this->getStringDom();
-		$titleDivs = $dom->querySelectorAll('.title4');
-		$this->assertCount(2, $titleDivs);
-		$this->assertSame($titleDivs[1]->textContent, 'set 2');
+		$setTitle = $dom->querySelectorAll('.set-view-title');
+		$this->assertCount(1, $setTitle);
+		$this->assertSame($setTitle[0]->textContent, 'set 2');
 
-		$problemButtons = $dom->querySelectorAll('.setViewButtons1');
+		$problemButtons = $dom->querySelectorAll('.problem-nav__number');
 		$this->assertCount(1, $problemButtons);
 		$this->assertSame($problemButtons[0]->textContent, '1');
 
 		$problemLinks = $dom->querySelectorAll('.tooltip');
-		$this->assertCount(1, $problemButtons);
+		$this->assertCount(1, $problemLinks);
 		$this->assertSame($problemLinks[0]->getAttribute('href'), '/' . $context->tsumegos[1]['set-connections'][0]['id']);
+	}
+
+	public function testSetViewPageLinksFollowProblemCountNotProblemNumbers(): void
+	{
+		// 15 problems numbered 1, 5, 9 … 57, as when problems were moved out of a collection:
+		// two pages of 10, though the highest number would make it six.
+		$contextParams = ['user' => ['collection_size' => 10]];
+		$contextParams['tsumegos'] = [];
+		for ($i = 0; $i < 15; $i++)
+			$contextParams['tsumegos'] [] = ['sets' => [['name' => 'set with gaps', 'num' => $i * 4 + 1]]];
+		$context = new ContextPreparator($contextParams);
+		$setId = $context->tsumegos[0]['sets'][0]['id'];
+
+		$this->testAction(Set::url($setId), ['method' => 'get', 'return' => 'view']);
+		$dom = $this->getStringDom();
+		$pageLinks = array_map(fn($node) => $node->textContent, iterator_to_array($dom->querySelectorAll('.pagination a, .pagination strong')));
+		$this->assertSame(['1', '2'], $pageLinks);
+		$this->assertCount(10, $dom->querySelectorAll('.problem-nav__number'));
+
+		$this->testAction(Set::url($setId, 2), ['method' => 'get', 'return' => 'view']);
+		$dom = $this->getStringDom();
+		$problemNumbers = array_map(fn($node) => $node->textContent, iterator_to_array($dom->querySelectorAll('.problem-nav__number')));
+		$this->assertSame(['41', '45', '49', '53', '57'], $problemNumbers);
+	}
+
+	public function testSetViewSanitizesDescriptionOnDisplay(): void
+	{
+		$context = new ContextPreparator(['tsumego' => ['sets' => [
+			['name' => 'xss set', 'num' => '1',
+				'description' => '<b onmouseover="alert(1)">hi</b><a href="javascript:alert(2)">click</a>']]]]);
+		$setId = $context->tsumegos[0]['sets'][0]['id'];
+
+		$this->testAction('sets/' . $setId, ['method' => 'get', 'return' => 'view']);
+
+		$this->assertStringNotContainsString('onmouseover', $this->view);
+		$this->assertStringNotContainsString('javascript:alert(2)', $this->view);
+		$this->assertStringContainsString('<b>hi</b>', $this->view);
+	}
+
+	public function testClearFiltersReloadsCurrentSetView(): void
+	{
+		$context = new ContextPreparator([
+			'tsumego' => [
+				'sets' => [['name' => 'tsumego set 1', 'num' => '666']],
+			],
+		]);
+		$setId = $context->tsumegos[0]['sets'][0]['id'];
+
+		$browser = Browser::instance();
+		$browser->getAnonymous('sets/' . $setId);
+		$browser->driver->manage()->deleteAllCookies();
+		$browser->driver->manage()->addCookie(['name' => 'filtered_ranks', 'value' => '15k']);
+		$browser->getAnonymous('sets/' . $setId);
+
+		// open the filters panel so the active tiles (and clear button) are visible
+		$browser->find('#showFilters')->click();
+		$browser->waitUntilCssSelectorDisplayed('#unselect-active-tiles');
+
+		$browser->find('#unselect-active-tiles')->click();
+
+		$this->assertSame(Util::getMyAddress() . '/sets/' . $setId, $browser->driver->getCurrentURL());
+		$this->assertFalse($browser->idExists('unselect-active-tiles'));
 	}
 
 	private function checkSetNavigationButtons($browser, int $count, $context, $indexFunction, $orderFunction): array
 	{
-		$buttons = $browser->driver->findElements(WebDriverBy::cssSelector('div.set-view-main li'));
+		$buttons = $browser->getElements('div.set-view-main li');
 		$this->assertCount($count, $buttons);
 		foreach ($buttons as $key => $button)
 			$this->checkNavigationButton($button, $context, $indexFunction($key), $orderFunction($key));
@@ -165,9 +718,83 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	private function checkPlayTitle($browser, string $title)
 	{
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('#playTitle'));
+		$browser->find('#playTitle');
+		$collectionTopDivs = $browser->getElements('#playTitle');
 		$this->assertCount(1, $collectionTopDivs);
 		$this->assertTextStartsWith($title, $collectionTopDivs[0]->getText());
+	}
+
+	public function testDifficultyRangeSelectionShowsOneMergedBox(): void
+	{
+		$contextParams['tsumegos'] = [];
+		foreach (['17k', '16k', '15k'] as $rank)
+			$contextParams['tsumegos'][] = [
+				'rating' => Rating::getRankMiddleRatingFromReadableRank($rank),
+				'sets' => [['name' => 'set ' . $rank, 'num' => '1']]];
+		new ContextPreparator($contextParams);
+
+		$browser = Browser::instance();
+		$browser->get('sets');
+		$browser->findById('difficulty-button')->click();
+		(new WebDriverSelect($browser->findById('difficulty-from')))->selectByValue('17k');
+		(new WebDriverSelect($browser->findById('difficulty-to')))->selectByValue('16k');
+		$browser->findById('tile-difficulty-submit')->click();
+
+		$this->assertSame('17k-16k', urldecode($browser->driver->manage()->getCookieNamed('filtered_ranks')->getValue()));
+		$boxes = $browser->getElements('.set-card__top');
+		$this->assertCount(1, $boxes);
+		$this->assertSame('17k-16k', $boxes[0]->getText());
+	}
+
+	public function testDifficultyPillsSelectSeparateBoxes(): void
+	{
+		$contextParams['tsumegos'] = [];
+		foreach (['17k', '16k', '15k'] as $rank)
+			$contextParams['tsumegos'][] = [
+				'rating' => Rating::getRankMiddleRatingFromReadableRank($rank),
+				'sets' => [['name' => 'set ' . $rank, 'num' => '1']]];
+		new ContextPreparator($contextParams);
+
+		$browser = Browser::instance();
+		$browser->get('sets');
+		$browser->findById('difficulty-button')->click();
+		$browser->findById('tile-difficulty' . array_search('17k', Rating::ranks()))->click();
+		$browser->findById('tile-difficulty' . array_search('16k', Rating::ranks()))->click();
+		$browser->findById('tile-difficulty-submit')->click();
+
+		$this->assertSame('17k@16k', urldecode($browser->driver->manage()->getCookieNamed('filtered_ranks')->getValue()));
+		$boxes = $browser->getElements('.set-card__top');
+		$this->assertCount(2, $boxes);
+		$this->assertSame('17k', $boxes[0]->getText());
+		$this->assertSame('16k', $boxes[1]->getText());
+	}
+
+	/**
+	 * A picked rank is shown in the filter bar and survives the next page load,
+	 * before Search is pressed.
+	 */
+	public function testAPickedRankIsKeptAcrossThePageLoad(): void
+	{
+		$contextParams['tsumegos'] = [];
+		foreach (['17k', '16k'] as $rank)
+			$contextParams['tsumegos'][] = [
+				'rating' => Rating::getRankMiddleRatingFromReadableRank($rank),
+				'sets' => [['name' => 'set ' . $rank, 'num' => '1']]];
+		new ContextPreparator($contextParams);
+
+		$browser = Browser::instance();
+		$browser->get('sets');
+		$browser->findById('difficulty-button')->click();
+		$browser->findById('tile-difficulty' . array_search('17k', Rating::ranks()))->click();
+
+		$picked = $browser->getElements('.active-tiles-container .dropdown__tile--difficulty');
+		$this->assertCount(1, $picked);
+		$this->assertSame('17k', $picked[0]->getText());
+
+		$browser->get('sets');
+		$kept = $browser->getElements('.active-tiles-container .dropdown__tile--difficulty');
+		$this->assertCount(1, $kept);
+		$this->assertSame('17k', $kept[0]->getText());
 	}
 
 	public function testFullProcessOfDifficultyBasedSelectionAndSolving(): void
@@ -205,25 +832,28 @@ class SetsControllerTest extends TestCaseWithAuth
 		// first we select the difficulty of 15k
 		$browser = Browser::instance();
 		$browser->get("sets");
-		$browser->driver->findElement(WebDriverBy::id('difficulty-button'))->click();
-		$difficulty15kSelector = $browser->driver->findElement(WebDriverBy::id('tile-difficulty0'));
-		$this->assertSame($difficulty15kSelector->getText(), '15k');
-		$difficulty15kSelector->click();
-		$browser->driver->findElement(WebDriverBy::id('tile-difficulty-submit'))->click();
+		$browser->findById('difficulty-button')->click();
+		(new WebDriverSelect($browser->findById('difficulty-from')))->selectByValue('15k');
+		(new WebDriverSelect($browser->findById('difficulty-to')))->selectByValue('15k');
+		$browser->findById('tile-difficulty-submit')->click();
 
 		// difficulty selected
 		$this->assertSame($browser->driver->manage()->getCookieNamed('query')->getValue(), 'difficulty');
 		$this->assertSame($browser->driver->manage()->getCookieNamed('filtered_ranks')->getValue(), '15k');
 
 		// we check the set card and clicking
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->getElements('.set-card__top');
 		$this->assertCount(1, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), '15k');
 		$collectionTopDivs[0]->click();
-		$this->assertSame(Util::getMyAddress() . '/sets/view/15k', $browser->driver->getCurrentURL());
+		$this->assertSame(Util::getMyAddress() . '/sets/15k', $browser->driver->getCurrentURL());
 
 		// now we are viewing the 15k set insides and checking the buttons
-		$buttons = $this->checkSetNavigationButtons($browser, 4, $context, function ($index) { return $index; }, function ($index) { return $index + 1; });
+		$buttons = $this->checkSetNavigationButtons($browser, 4, $context, function ($index) {
+			return $index;
+		}, function ($index) {
+			return $index + 1;
+		});
 
 		// clicking to get inside the set to play it
 		$buttons[0]->findElement(WebDriverBy::tagName('a'))->click();
@@ -231,23 +861,31 @@ class SetsControllerTest extends TestCaseWithAuth
 		// now we are in the problem
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$this->checkPlayTitle($browser, '15k 1/4');
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 4, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, 0, 'V');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 4, $context, function ($index) {
+			return $index;
+		}, function ($index) {
+			return $index + 1;
+		}, 0, 'V');
 
 		// clicking on next problem
-		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
+		$browser->find('#besogo-next-button')->click();
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[1]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$this->checkPlayTitle($browser, '15k 2/4');
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 4, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, 1, 'S');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 4, $context, function ($index) {
+			return $index;
+		}, function ($index) {
+			return $index + 1;
+		}, 1, 'S');
 	}
 
 	public function testFullProcessOfPartitionedSetBasedSelection(): void
 	{
-		$contextParams = ['user' => ['collection_size' => 2]];
+		$contextParams = ['user' => ['collection_size' => 10]];
 		$contextParams['tsumegos'] = [];
-		$statuses = ['N', 'N', 'V', 'V'];
+		$statuses = array_merge(array_fill(0, 10, 'N'), ['V']);
 
-		// 4 problems in our set
-		for ($i = 0; $i < 4; $i++)
+		// 11 problems in our set, so it is split into a 10-problem and a 1-problem partition
+		for ($i = 0; $i < 11; $i++)
 		{
 			$contextParams['tsumegos'] [] = [
 				'set_order' => ($i + 1),
@@ -256,51 +894,89 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$context = new ContextPreparator($contextParams);
 
-		// first we select the difficulty of 15k
 		$browser = Browser::instance();
 		$browser->get("sets");
 
 		// we check the set card and clicking
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
-		$this->assertCount(2, $collectionTopDivs); // 2 partitions of 2 problems
+		$collectionTopDivs = $browser->getElements('.set-card__top');
+		$this->assertCount(2, $collectionTopDivs); // 2 partitions of 10 and 1 problems
 		$this->assertSame($collectionTopDivs[0]->getText(), 'test set #1');
 		$this->assertSame($collectionTopDivs[1]->getText(), 'test set #2');
 		$collectionTopDivs[0]->click();
-		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->tsumegos[0]['sets'][0]['id'] . '/1', $browser->driver->getCurrentURL());
+		$this->assertSame(Util::getMyAddress() . '/sets/' . $context->tsumegos[0]['sets'][0]['id'], $browser->driver->getCurrentURL());
 
 		// now we are viewing the 'test set' and checking the buttons
 
-		// there should be just 2 of the 4 tsumegos, as we picked collection size of 2
-		$buttons = $this->checkSetNavigationButtons($browser, 2, $context, function ($index) { return $index; }, function ($index) { return $index + 1; });
+		// there should be just the 10 problems of the first partition
+		$buttons = $this->checkSetNavigationButtons($browser, 10, $context, function ($index) {
+			return $index;
+		}, function ($index) {
+			return $index + 1;
+		});
 
 		// clicking to get inside the set to play it
 		$buttons[0]->findElement(WebDriverBy::tagName('a'))->click();
 
 		// now we are in the problem
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, 0, 'V');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 10, $context, function ($index) {
+			return $index;
+		}, function ($index) {
+			return $index + 1;
+		}, 0, 'V');
 
 		// clicking on next problem
-		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
+		$browser->find('#besogo-next-button')->click();
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[1]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
-		$this->checkPlayTitle($browser, 'test set #1 2/4');
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, 1, 'V');
+		$this->checkPlayTitle($browser, 'test set #1 2/11');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 10, $context, function ($index) {
+			return $index;
+		}, function ($index) {
+			return $index + 1;
+		}, 1, 'V');
 
 		// now we go back to the sets selection and we visit the second partition of the set
 		$browser->get('sets');
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
-		$this->assertCount(2, $collectionTopDivs); // 2 partitions of 2 problems
+		$collectionTopDivs = $browser->getElements('.set-card__top');
+		$this->assertCount(2, $collectionTopDivs); // 2 partitions of 10 and 1 problems
 		$collectionTopDivs[1]->click();
 
 		// now we are in the second partition of the set
-		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->tsumegos[0]['sets'][0]['id'] . '/2', $browser->driver->getCurrentURL());
+		$this->assertSame(Util::getMyAddress() . '/sets/' . $context->tsumegos[0]['sets'][0]['id'] . '/2', $browser->driver->getCurrentURL());
 
-		// there should be just 2 of the 4 tsumegos, as we picked collection size of 2
-		$buttons = $this->checkSetNavigationButtons($browser, 2, $context, function ($index) { return $index + 2; }, function ($index) { return $index + 3; });
+		// there should be just the 1 problem of the second partition
+		$buttons = $this->checkSetNavigationButtons($browser, 1, $context, function ($index) {
+			return $index + 10;
+		}, function ($index) {
+			return $index + 11;
+		});
 
 		// clicking to get inside the set to play it
 		$buttons[0]->findElement(WebDriverBy::tagName('a'))->click();
-		$this->checkPlayTitle($browser, 'test set #2 3/4');
+		$this->checkPlayTitle($browser, 'test set #2 11/11');
+	}
+
+	public function testEditTitleFormSavesBaseTitle(): void
+	{
+		$contextParams = ['user' => ['collection_size' => 2]];
+		$contextParams['tsumegos'] = [];
+		for ($i = 0; $i < 4; $i++)
+			$contextParams['tsumegos'] [] = [
+				'sets' => [['name' => 'My Set', 'num' => $i + 1, 'user_id' => 'self', 'public' => 0]]];
+
+		$context = new ContextPreparator($contextParams);
+		$setId = $context->tsumegos[0]['sets'][0]['id'];
+
+		$browser = Browser::instance();
+		$browser->get('sets/edit/' . $setId);
+
+		$browser->findById('SetTitle')->clear();
+		$browser->findById('SetTitle')->sendKeys('Renamed Set');
+		$browser->find('#set-edit-details input[type="submit"]')->click();
+
+		$browser->waitUntilCssSelectorExistsWithText('.set-edit-title', 'Renamed Set');
+
+		$this->assertSame('Renamed Set', ClassRegistry::init('Set')->findById($setId)['Set']['title']);
 	}
 
 
@@ -343,18 +1019,22 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		// we open sets, and since we filtered 15k and 1d, this is the sets we should see
 		$browser->get("sets");
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->getElements('.set-card__top');
 		$this->assertCount(2, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), '15k');
 		$this->assertSame($collectionTopDivs[1]->getText(), '1d');
 
 		// first we visit the 15k one
 		$collectionTopDivs[0]->click();
-		$this->assertSame(Util::getMyAddress() . '/sets/view/15k', $browser->driver->getCurrentURL());
-		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), '15k');
+		$this->assertSame(Util::getMyAddress() . '/sets/15k', $browser->driver->getCurrentURL());
+		$this->assertSame($this->getSetTitle($browser), '15k');
 
 		// now we are viewing the 15k set insides and checking the buttons
-		$buttons = $this->checkSetNavigationButtons($browser, 3, $context, function ($index) { return $index; }, function ($index) { return $index + 1; });
+		$buttons = $this->checkSetNavigationButtons($browser, 3, $context, function ($index) {
+			return $index;
+		}, function ($index) {
+			return $index + 1;
+		});
 
 		// clicking to get inside the set to play it
 		$buttons[0]->findElement(WebDriverBy::tagName('a'))->click();
@@ -362,28 +1042,40 @@ class SetsControllerTest extends TestCaseWithAuth
 		// now we are in the problem
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$this->checkPlayTitle($browser, '15k 1/3');
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 3, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, 0, 'V');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 3, $context, function ($index) {
+			return $index;
+		}, function ($index) {
+			return $index + 1;
+		}, 0, 'V');
 
 		// clicking on next problem
-		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
+		$browser->find('#besogo-next-button')->click();
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[1]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$this->checkPlayTitle($browser, '15k 2/3');
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 3, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, 1, 'V');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 3, $context, function ($index) {
+			return $index;
+		}, function ($index) {
+			return $index + 1;
+		}, 1, 'V');
 
 		// now we go to visit the 1d section, so back to sets
 		$browser->get("sets");
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->getElements('.set-card__top');
 		$this->assertCount(2, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), '15k');
 		$this->assertSame($collectionTopDivs[1]->getText(), '1d');
 
 		// first we visit the 1d one
 		$collectionTopDivs[1]->click();
-		$this->assertSame(Util::getMyAddress() . '/sets/view/1d', $browser->driver->getCurrentURL());
-		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), '1d');
+		$this->assertSame(Util::getMyAddress() . '/sets/1d', $browser->driver->getCurrentURL());
+		$this->assertSame($this->getSetTitle($browser), '1d');
 
 		// now we are viewing the 1d set insides and checking the buttons
-		$buttons = $this->checkSetNavigationButtons($browser, 3, $context, function ($index) { return $index + 3; }, function ($index) { return $index + 1; });
+		$buttons = $this->checkSetNavigationButtons($browser, 3, $context, function ($index) {
+			return $index + 3;
+		}, function ($index) {
+			return $index + 1;
+		});
 
 		// clicking to get inside the set to play it
 		$buttons[0]->findElement(WebDriverBy::tagName('a'))->click();
@@ -391,7 +1083,11 @@ class SetsControllerTest extends TestCaseWithAuth
 		// now we are in the problem
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[3]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$this->checkPlayTitle($browser, '1d 1/3');
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 3, $context, function ($index) { return $index + 3; }, function ($index) { return $index + 1; }, 0, 'V');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 3, $context, function ($index) {
+			return $index + 3;
+		}, function ($index) {
+			return $index + 1;
+		}, 0, 'V');
 	}
 
 	public function testQueringSetsByTopicButLimitedByRanks(): void
@@ -419,14 +1115,14 @@ class SetsControllerTest extends TestCaseWithAuth
 		// we open sets, we filtered 15k and 1d, but query by sets, so we should see:
 		// all 3 sets with
 		$browser->get("sets");
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->getElements('.set-card__top');
 		$this->assertCount(3, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), 'set 1');
 		$this->assertSame($collectionTopDivs[1]->getText(), 'set 2');
 		$this->assertSame($collectionTopDivs[2]->getText(), 'set 3');
 
 		// with 2 problems each as the 5d problems should be already filtered out
-		$collectionMiddleLeftDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-middle-left'));
+		$collectionMiddleLeftDivs = $browser->getElements('.set-card__middle-left');
 		$this->assertCount(3, $collectionMiddleLeftDivs);
 		$this->assertSame($collectionMiddleLeftDivs[0]->getText(), '2 problems');
 		$this->assertSame($collectionMiddleLeftDivs[1]->getText(), '2 problems');
@@ -434,11 +1130,15 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		// first visit the 'set 1'
 		$collectionTopDivs[0]->click();
-		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->tsumegos[0]['set-connections'][0]['set_id'], $browser->driver->getCurrentURL());
-		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'set 1');
+		$this->assertSame(Util::getMyAddress() . '/sets/' . $context->tsumegos[0]['set-connections'][0]['set_id'], $browser->driver->getCurrentURL());
+		$this->assertSame($this->getSetTitle($browser), 'set 1');
 
 		// now we are viewing the 'set 1' insides and checking the buttons
-		$buttons = $this->checkSetNavigationButtons($browser, 2, $context, function ($index) { return ($index + 1) * 3; }, function ($index) { return $index + 2; });
+		$buttons = $this->checkSetNavigationButtons($browser, 2, $context, function ($index) {
+			return ($index + 1) * 3;
+		}, function ($index) {
+			return $index + 2;
+		});
 
 		// clicking to get inside the set to play it
 		$buttons[0]->findElement(WebDriverBy::tagName('a'))->click();
@@ -446,20 +1146,28 @@ class SetsControllerTest extends TestCaseWithAuth
 		// now we are in the problem
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[3]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$this->checkPlayTitle($browser, 'set 1 2/3');
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) { return ($index + 1) * 3; }, function ($index) { return $index + 2; }, 0, 'V');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) {
+			return ($index + 1) * 3;
+		}, function ($index) {
+			return $index + 2;
+		}, 0, 'V');
 
 		// clicking on next problem
-		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
+		$browser->find('#besogo-next-button')->click();
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[6]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$this->checkPlayTitle($browser, 'set 1 3/3');
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) { return ($index + 1) * 3; }, function ($index) { return $index + 2; }, 1, 'V');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) {
+			return ($index + 1) * 3;
+		}, function ($index) {
+			return $index + 2;
+		}, 1, 'V');
 
 		// clicking on next problem should get us back to the set
-		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
-		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->tsumegos[0]['set-connections'][0]['set_id'], $browser->driver->getCurrentURL());
+		$browser->find('#besogo-next-button')->click();
+		$this->assertSame(Util::getMyAddress() . '/sets/' . $context->tsumegos[0]['set-connections'][0]['set_id'], $browser->driver->getCurrentURL());
 		$browser->driver->getPageSource();
-		$this->assertCount(2, $browser->getCssSelect('.title4'));
-		$this->assertSame($browser->getCssSelect('.title4')[1]->getText(), 'set 1');
+		$this->assertCount(2, $browser->getElements('.title4'));
+		$this->assertSame($this->getSetTitle($browser), 'set 1');
 	}
 
 	public function testQueringSetsByRanksButLimitedByTopics(): void
@@ -492,14 +1200,14 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		// all 3 ranks with
 		$browser->get("sets");
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->getElements('.set-card__top');
 		$this->assertCount(3, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), '15k');
 		$this->assertSame($collectionTopDivs[1]->getText(), '1d');
 		$this->assertSame($collectionTopDivs[2]->getText(), '5d');
 
 		// with 2 problems each as the set 1 problems should already be filtered out
-		$collectionMiddleLeftDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-middle-left'));
+		$collectionMiddleLeftDivs = $browser->getElements('.set-card__middle-left');
 		$this->assertCount(3, $collectionMiddleLeftDivs);
 		$this->assertSame($collectionMiddleLeftDivs[0]->getText(), '2 problems');
 		$this->assertSame($collectionMiddleLeftDivs[1]->getText(), '2 problems');
@@ -507,11 +1215,15 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		// first visit the 'set 15k'
 		$collectionTopDivs[0]->click();
-		$this->assertSame(Util::getMyAddress() . '/sets/view/15k', $browser->driver->getCurrentURL());
-		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), '15k');
+		$this->assertSame(Util::getMyAddress() . '/sets/15k', $browser->driver->getCurrentURL());
+		$this->assertSame($this->getSetTitle($browser), '15k');
 
 		// now we are viewing the 'set 2' insides and checking the buttons
-		$buttons = $this->checkSetNavigationButtons($browser, 2, $context, function ($index) { return $index + 4; }, function ($index) { return $index + 1; });
+		$buttons = $this->checkSetNavigationButtons($browser, 2, $context, function ($index) {
+			return $index + 4;
+		}, function ($index) {
+			return $index + 1;
+		});
 
 		// clicking to get inside the set to play it
 		$buttons[0]->findElement(WebDriverBy::tagName('a'))->click();
@@ -519,18 +1231,26 @@ class SetsControllerTest extends TestCaseWithAuth
 		// now we are in the problem
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[4]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$this->checkPlayTitle($browser, '15k 1/2');
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) { return $index + 4; }, function ($index) { return $index + 1; }, 0, 'V');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) {
+			return $index + 4;
+		}, function ($index) {
+			return $index + 1;
+		}, 0, 'V');
 
 		// clicking on next problem
-		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
+		$browser->find('#besogo-next-button')->click();
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[5]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$this->checkPlayTitle($browser, '15k 2/2');
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) { return $index + 4; }, function ($index) { return $index + 1; }, 1, 'V');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) {
+			return $index + 4;
+		}, function ($index) {
+			return $index + 1;
+		}, 1, 'V');
 
 		// clicking on next problem should get us back to the set
-		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
-		$this->assertSame(Util::getMyAddress() . '/sets/view/15k', $browser->driver->getCurrentURL());
-		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), '15k');
+		$browser->find('#besogo-next-button')->click();
+		$this->assertSame(Util::getMyAddress() . '/sets/15k', $browser->driver->getCurrentURL());
+		$this->assertSame($this->getSetTitle($browser), '15k');
 	}
 
 	/**
@@ -553,7 +1273,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->checkPlayTitle($browser, 'Set A 1/2');
 
 		// Navigation should show 2 buttons (Set A: 1, 2), not 3 (mixing with Set B)
-		$buttons = $browser->driver->findElements(WebDriverBy::cssSelector('div.tsumegoNavi2 li'));
+		$buttons = $browser->getElements('div.problem-nav__inner li');
 		$this->assertCount(2, $buttons, 'Bug: navigation mixed problems from different sets');
 	}
 
@@ -672,9 +1392,9 @@ class SetsControllerTest extends TestCaseWithAuth
 	}
 
 	/**
-	 * Next/Back buttons should link to the correct problems when navigating within a set.
+	 * The previous and next links follow the order of the set, and lead to the set at its edges.
 	 */
-	public function testNextAndBackButtonsLinkCorrectlyInTopicMode(): void
+	public function testPreviousAndNextLinksInTopicMode(): void
 	{
 		$browser = Browser::instance();
 		$context = new ContextPreparator([
@@ -685,39 +1405,16 @@ class SetsControllerTest extends TestCaseWithAuth
 				['sets' => [['name' => 'test set', 'num' => 3]]],
 			]]);
 
-		// Navigate to the middle problem (num=2)
 		$browser->get('/' . $context->tsumegos[1]['set-connections'][0]['id']);
 		$this->checkPlayTitle($browser, 'test set 2/3');
-
-		// Click Next to get to num=3
-		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
-		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[2]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
-		$this->checkPlayTitle($browser, 'test set 3/3');
-
-		// Click Next should go back to set view
-		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
-		$this->assertStringContainsString('/sets/view/', $browser->driver->getCurrentURL());
-	}
-
-	/**
-	 * When viewing the first problem in a set, the Back button should link to the set view.
-	 */
-	public function testBackButtonAtStartOfSetLinksToSetView(): void
-	{
-		$browser = Browser::instance();
-		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE],
-			'tsumegos' => [
-				['sets' => [['name' => 'test set', 'num' => 1]]],
-				['sets' => [['name' => 'test set', 'num' => 2]]],
-			]]);
+		$this->assertSame('/' . $context->tsumegos[0]['set-connections'][0]['id'], $browser->driver->executeScript('return previousButtonLink;'));
+		$this->assertSame('/' . $context->tsumegos[2]['set-connections'][0]['id'], $browser->driver->executeScript('return nextButtonLink;'));
 
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$this->checkPlayTitle($browser, 'test set 1/2');
+		$this->assertSame(Set::url($context->tsumegos[0]['sets'][0]['id']), $browser->driver->executeScript('return previousButtonLink;'));
 
-		// Back button should go to set view since we're at the first problem
-		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-back-button'))->click();
-		$this->assertStringContainsString('/sets/view/', $browser->driver->getCurrentURL());
+		$browser->get('/' . $context->tsumegos[2]['set-connections'][0]['id']);
+		$this->assertSame(Set::url($context->tsumegos[2]['sets'][0]['id']), $browser->driver->executeScript('return nextButtonLink;'));
 	}
 
 	/**
@@ -743,8 +1440,86 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->checkPlayTitle($browser, '15k 1/2');
 
 		// Should show 2 buttons (both 15k problems), not 3 (10k excluded)
-		$navigationButtons = $browser->driver->findElements(WebDriverBy::cssSelector('div.tsumegoNavi2 li'));
-		$this->assertCount(2, $navigationButtons);
+		$this->checkPlayNavigationButtons($browser, 2, $context,
+			function ($index) { return $index; },
+			function ($index) { return $index + 1; },
+			0, 'V');
+	}
+
+	/**
+	 * The set filter is meant for the difficulty and tag collections, the fallback to the set of the
+	 * problem shows the whole set, as when the set is opened directly.
+	 */
+	public function testFallbackToTopicsIgnoresSetFilter(): void
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'query' => 'difficulty', 'filtered_sets' => ['other set']],
+			'tsumegos' => [
+				['sets' => [['name' => 'test set', 'num' => 2]]],
+				['sets' => [['name' => 'test set', 'num' => 1]]],
+				['sets' => [['name' => 'other set', 'num' => 1]]],
+			]]);
+
+		$browser->setCookie('lastSet', 'not a rank');
+		$browser->get('/' . $context->tsumegos[1]['set-connections'][0]['id']);
+
+		$this->checkPlayTitle($browser, 'test set 1/2');
+		$this->checkPlayNavigationButtons($browser, 2, $context,
+			function ($index) { return [1, 0][$index]; },
+			function ($index) { return $index + 1; },
+			0, 'V');
+	}
+
+	/**
+	 * When the opened problem is not part of the difficulty collection (another tab switched to another
+	 * rank, or its rating moved it to another rank), the navigation shows its set instead of a
+	 * collection without the current problem.
+	 */
+	public function testDifficultyFallsBackToSetWhenProblemIsNotInTheRank(): void
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'query' => 'difficulty'],
+			'tsumegos' => [
+				['rating' => Rating::getRankMiddleRatingFromReadableRank('10k'),
+					'sets' => [['name' => 'test set', 'num' => 2]]],
+				['rating' => Rating::getRankMiddleRatingFromReadableRank('15k'),
+					'sets' => [['name' => 'test set', 'num' => 1]]],
+			]]);
+
+		$browser->setCookie('lastSet', '15k');
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		$this->checkPlayTitle($browser, 'test set 2/2');
+		$this->checkPlayNavigationButtons($browser, 2, $context,
+			function ($index) { return [1, 0][$index]; },
+			function ($index) { return $index + 1; },
+			1, 'V');
+		$this->assertSame(Set::url($context->tsumegos[0]['sets'][0]['id']), $browser->driver->executeScript('return nextButtonLink;'));
+	}
+
+	/**
+	 * Same as above, for a tag collection the problem doesn't have.
+	 */
+	public function testTagsFallBackToSetWhenProblemDoesNotHaveTheTag(): void
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'query' => 'tags'],
+			'tsumegos' => [
+				['sets' => [['name' => 'test set', 'num' => 1]]],
+				['sets' => [['name' => 'test set', 'num' => 2]], 'tags' => [['name' => 'atari']]],
+			]]);
+
+		$browser->setCookie('lastSet', 'atari');
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		$this->checkPlayTitle($browser, 'test set 1/2');
+		$this->checkPlayNavigationButtons($browser, 2, $context,
+			function ($index) { return $index; },
+			function ($index) { return $index + 1; },
+			0, 'V');
 	}
 
 	public function testClickingOnSetViewSwitchesTsumegoFiltersToSetViewAndShowsCorrectTsumego(): void
@@ -758,20 +1533,24 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$browser->get('sets');
 
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->getElements('.set-card__top');
 		$this->assertCount(1, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), '10k');
 
 		// the problem is in 2 sets, but it shouldn't matter in this view and should show just 1 problem
-		$collectionMiddleLeftDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-middle-left'));
+		$collectionMiddleLeftDivs = $browser->getElements('.set-card__middle-left');
 		$this->assertCount(1, $collectionMiddleLeftDivs);
 		$this->assertSame($collectionMiddleLeftDivs[0]->getText(), '1 problem');
 
 		$collectionTopDivs[0]->click();
-		$this->assertSame(Util::getMyAddress() . '/sets/view/10k', $browser->driver->getCurrentURL());
+		$this->assertSame(Util::getMyAddress() . '/sets/10k', $browser->driver->getCurrentURL());
 
 		// now we are viewing the 10k set insides and checking the buttons
-		$buttons = $this->checkSetNavigationButtons($browser, 1, $context, function ($index) { return $index; }, function ($index) { return $index + 1; });
+		$buttons = $this->checkSetNavigationButtons($browser, 1, $context, function ($index) {
+			return $index;
+		}, function ($index) {
+			return $index + 1;
+		});
 
 		// clicking to get inside the set to play it
 		$buttons[0]->findElement(WebDriverBy::tagName('a'))->click();
@@ -795,7 +1574,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		// we filtered to 10k, but we are opening the 5k problem
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$this->assertEmpty($browser->getCssSelect('#currentNavigationButton')); // no tsumego button is marked as current
+		$this->assertEmpty($browser->getElements('#currentNavigationButton')); // no tsumego button is marked as current
 	}
 
 	public function testSelectingTagFilters(): void
@@ -813,14 +1592,14 @@ class SetsControllerTest extends TestCaseWithAuth
 		// first we select the difficulty of 15k
 		$browser = Browser::instance();
 		$browser->get("sets");
-		$browser->driver->findElement(WebDriverBy::id('tags-button'))->click();
-		$tagSelectors = $browser->driver->findElements(WebDriverBy::cssSelector('[id^="tile-tags"]:not([id*="select-all"]):not([id*="submit"])'));
+		$browser->findById('tags-button')->click();
+		$tagSelectors = $browser->getElements('[id^="tile-tags"]:not([id*="select-all"]):not([id*="submit"])');
 		$this->assertCount(3, $tagSelectors);
 		$this->assertSame($tagSelectors[0]->getText(), 'snapback');
 		$this->assertSame($tagSelectors[1]->getText(), 'atari');
 		$this->assertSame($tagSelectors[2]->getText(), 'empty triangle');
 		$tagSelectors[0]->click();
-		$browser->driver->findElement(WebDriverBy::id('tile-tags-submit'))->click();
+		$browser->findById('tile-tags-submit')->click();
 
 		// difficulty selected
 		$this->assertSame($browser->driver->manage()->getCookieNamed('query')->getValue(), 'tags');
@@ -847,7 +1626,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$context = new ContextPreparator($contextParams);
 		$browser->get("sets");
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->getElements('.set-card__top');
 		$this->assertCount(3, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), 'snapback');
 		$this->assertSame($collectionTopDivs[1]->getText(), 'atari');
@@ -876,7 +1655,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$context = new ContextPreparator($contextParams);
 		$browser = Browser::instance();
 		$browser->get("sets");
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->getElements('.set-card__top');
 		$this->assertCount(2, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), 'atari');
 		$this->assertSame($collectionTopDivs[1]->getText(), 'empty triangle');
@@ -884,28 +1663,40 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		// going into the 'atari' set
 		$collectionTopDivs[0]->click();
-		$this->assertSame(Util::getMyAddress() . '/sets/view/atari', $browser->driver->getCurrentURL());
-		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'atari');
+		$this->assertSame(Util::getMyAddress() . '/sets/atari', $browser->driver->getCurrentURL());
+		$this->assertSame($this->getSetTitle($browser), 'atari');
 
 		// now we are viewing the 'atari' insides and checking the buttons
-		$buttons = $this->checkSetNavigationButtons($browser, 2, $context, function ($index) { return $index + 3; }, function ($index) { return $index + 1; });
+		$buttons = $this->checkSetNavigationButtons($browser, 2, $context, function ($index) {
+			return $index + 3;
+		}, function ($index) {
+			return $index + 1;
+		});
 
 		// entering the tsumego in the set
 		$buttons[0]->click();
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[3]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$this->checkPlayTitle($browser, 'atari 1/2');
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) { return $index + 3; }, function ($index) { return $index + 1; }, 0, 'V');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) {
+			return $index + 3;
+		}, function ($index) {
+			return $index + 1;
+		}, 0, 'V');
 
 		// clicking next to get to the second one
-		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
+		$browser->find('#besogo-next-button')->click();
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[4]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$this->checkPlayTitle($browser, 'atari 2/2');
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) { return $index + 3; }, function ($index) { return $index + 1; }, 1, 'V');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) {
+			return $index + 3;
+		}, function ($index) {
+			return $index + 1;
+		}, 1, 'V');
 
 		// clicking on next problem should get us back to the set
-		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
-		$this->assertSame(Util::getMyAddress() . '/sets/view/atari', $browser->driver->getCurrentURL());
-		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'atari');
+		$browser->find('#besogo-next-button')->click();
+		$this->assertSame(Util::getMyAddress() . '/sets/atari', $browser->driver->getCurrentURL());
+		$this->assertSame($this->getSetTitle($browser), 'atari');
 	}
 
 	public function testVisitingTopicBasedSetsRespectsTagFilters(): void
@@ -929,12 +1720,12 @@ class SetsControllerTest extends TestCaseWithAuth
 		$context = new ContextPreparator($contextParams);
 		$browser = Browser::instance();
 		$browser->get("sets");
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->getElements('.set-card__top');
 		$this->assertCount(2, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), 'set 1');
 		$this->assertSame($collectionTopDivs[1]->getText(), 'set 2');
 
-		$collectionMiddleLeftDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-middle-left'));
+		$collectionMiddleLeftDivs = $browser->getElements('.set-card__middle-left');
 		$this->assertCount(2, $collectionMiddleLeftDivs);
 		$this->assertSame($collectionMiddleLeftDivs[0]->getText(), '2 problems');
 		$this->assertSame($collectionMiddleLeftDivs[1]->getText(), '1 problem');
@@ -942,35 +1733,47 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		// going into the 'set 1'
 		$collectionTopDivs[0]->click();
-		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->tsumegos[3]['set-connections'][0]['set_id'], $browser->driver->getCurrentURL());
-		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'set 1');
+		$this->assertSame(Util::getMyAddress() . '/sets/' . $context->tsumegos[3]['set-connections'][0]['set_id'], $browser->driver->getCurrentURL());
+		$this->assertSame($this->getSetTitle($browser), 'set 1');
 
 		// now we are viewing the 'set 1' insides and checking the buttons
-		$buttons = $this->checkSetNavigationButtons($browser, 2, $context, function ($index) { return $index * 2 + 3; }, function ($index) { return $index + 2; });
+		$buttons = $this->checkSetNavigationButtons($browser, 2, $context, function ($index) {
+			return $index * 2 + 3;
+		}, function ($index) {
+			return $index + 2;
+		});
 
 		// entering the tsumego in the set
 		$buttons[0]->click();
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[3]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$this->checkPlayTitle($browser, 'set 1 2/3');
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) { return $index * 2 + 3; }, function ($index) { return $index + 2; }, 0, 'V');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) {
+			return $index * 2 + 3;
+		}, function ($index) {
+			return $index + 2;
+		}, 0, 'V');
 
 		// clicking next to get to the second one
-		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
+		$browser->find('#besogo-next-button')->click();
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[5]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$this->checkPlayTitle($browser, 'set 1 3/3');
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) { return $index * 2 + 3; }, function ($index) { return $index + 2; }, 1, 'V');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) {
+			return $index * 2 + 3;
+		}, function ($index) {
+			return $index + 2;
+		}, 1, 'V');
 
 		// clicking on next problem should get us back to the set
-		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
-		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->tsumegos[3]['set-connections'][0]['set_id'], $browser->driver->getCurrentURL());
-		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'set 1');
+		$browser->find('#besogo-next-button')->click();
+		$this->assertSame(Util::getMyAddress() . '/sets/' . $context->tsumegos[3]['set-connections'][0]['set_id'], $browser->driver->getCurrentURL());
+		$this->assertSame($this->getSetTitle($browser), 'set 1');
 	}
 
 	private function checkSetFinishedPercent($browser, $index, $title, $percent): void
 	{
-		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'))[$index]->getText(), $title);
-		$this->assertSame($browser->driver->findElement(WebDriverBy::cssSelector('#number' . $index))->getText(), $percent);
-		$barStyle = $browser->driver->findElement(WebDriverBy::cssSelector('#xp-bar-fill2' . $index))->getAttribute('style');
+		$this->assertSame($browser->getElements('.set-card__top')[$index]->getText(), $title);
+		$this->assertSame($browser->getElements('.progress__label')[$index]->getText(), $percent);
+		$barStyle = $browser->getElements('.progress__fill')[$index]->getAttribute('style');
 		$this->assertTextContains('width: ' . $percent, $barStyle);
 	}
 
@@ -996,12 +1799,9 @@ class SetsControllerTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get("sets");
 
-		$wait = new WebDriverWait($browser->driver, 10, 500); // (driver, timeout, polling interval)
-		$wait->until(function () use ($browser) {
-			return $browser->driver->findElement(WebDriverBy::cssSelector('#number4'))->getText() == '100%';
-		});
+		$browser->waitUntilJs('document.querySelectorAll(".progress__label")[4]?.textContent.trim() === "100%"');
 
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->getElements('.set-card__top');
 		$this->assertCount(5, $collectionTopDivs);
 		$this->checkSetFinishedPercent($browser, 0, 'set 1', '0%');
 		$this->checkSetFinishedPercent($browser, 1, 'set 2', '25%');
@@ -1019,36 +1819,23 @@ class SetsControllerTest extends TestCaseWithAuth
 			'query' => 'topics']];
 		$contextParams['tsumegos'] = [];
 
-		// first 40 problems are 20 duplications
-		for ($i = 0; $i < 10; $i++)
-			$contextParams['tsumegos'] [] = [
-				'sets' => [
-					['name' => 'partitioned set', 'num' => $i * 2 + 1],
-					['name' => 'partitioned set', 'num' => $i * 2 + 2]],
-				'status' => 'S'];
-
-		// The reversed direction of filling is important here
-		// this means that the ids of tsumegos are not sequential in the set and the sql logic needs to make sure
-		// to sort primarily by set connection num
-		for ($i = 299; $i >= 20; $i--)
+		// Fill 300 problems in reverse so tsumego ids are not sequential in the
+		// set; the SQL must sort primarily by set connection num.
+		for ($i = 299; $i >= 0; $i--)
 			$contextParams['tsumegos'] [] = [
 				'sets' => [['name' => 'partitioned set', 'num' => $i + 1]],
 				'status' => ($i < 200 ? ($i < 66 ? 'S' : 'N') : (($i - 200) < 66 ? 'S' : 'N'))];
-		;
 
 		new ContextPreparator($contextParams);
 		$browser->get("sets");
 
-		$wait = new WebDriverWait($browser->driver, 10, 50); // (driver, timeout, polling interval)
-		$wait->until(function () use ($browser) {
-			return $browser->driver->findElement(WebDriverBy::cssSelector('#number0'))->getText() == '33%';
-		});
+		$browser->waitUntilJs('document.querySelectorAll(".progress__label")[0]?.textContent.trim() === "33%"');
 
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->getElements('.set-card__top');
 		$this->assertCount(2, $collectionTopDivs);
 		$this->checkSetFinishedPercent($browser, 0, 'partitioned set #1', '33%');
 		$this->checkSetFinishedPercent($browser, 1, 'partitioned set #2', '66%');
-		$this->assertSame('Problems found: 290', $browser->find('#problems-found')->getText());
+		$this->assertSame('Problems found: 300', $browser->find('#problems-found')->getText());
 	}
 
 	public function testTagBasedSetViewShowsSolvedPercentProperly(): void
@@ -1074,12 +1861,9 @@ class SetsControllerTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get("sets");
 
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 500); // (driver, timeout, polling interval)
-		$wait->until(function () use ($browser) {
-			return $browser->driver->findElement(WebDriverBy::cssSelector('#number4'))->getText() == '100%';
-		});
+		$browser->waitUntilJs('document.querySelectorAll(".progress__label")[4]?.textContent.trim() === "100%"');
 
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->getElements('.set-card__top');
 		$this->assertCount(5, $collectionTopDivs);
 		$this->checkSetFinishedPercent($browser, 0, 'atari', '0%');
 		$this->checkSetFinishedPercent($browser, 1, 'bambule', '25%');
@@ -1111,12 +1895,9 @@ class SetsControllerTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get("sets");
 
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 500); // (driver, timeout, polling interval)
-		$wait->until(function () use ($browser) {
-			return $browser->driver->findElement(WebDriverBy::cssSelector('#number4'))->getText() == '100%';
-		});
+		$browser->waitUntilJs('document.querySelectorAll(".progress__label")[4]?.textContent.trim() === "100%"');
 
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->getElements('.set-card__top');
 		$this->assertCount(5, $collectionTopDivs);
 		$this->checkSetFinishedPercent($browser, 0, '15k', '0%');
 		$this->checkSetFinishedPercent($browser, 1, '10k', '25%');
@@ -1130,102 +1911,6 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertTextContains('Solved: <b>25%</b>', $browser->driver->getPageSource());
 	}
 
-	public function testAddingToFavoritesAndViewingIt(): void
-	{
-		$contextParams = [];
-		for ($i = 0; $i < 3; $i++)
-			$contextParams ['tsumegos'] [] = ['sets' => [['name' => 'set ' . $i, 'num' => $i]]];
-		$context = new ContextPreparator($contextParams);
-
-		$browser = Browser::instance();
-		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$browser->driver->findElement(WebDriverBy::cssSelector('#favButton'))->click();
-		$browser->get('/sets/view/favorites');
-		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'Favorites');
-
-		// now we are viewing the 'favorites' insides and checking the buttons
-		$buttons = $this->checkSetNavigationButtons($browser, 1, $context, function ($index) { return $index; }, function ($index) { return $index + 1; });
-		$buttons[0]->click();
-
-		// opening the favorites problem
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 1, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, 0, 'V');
-
-		// next will get us back to favorites
-		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
-		$this->assertSame(Util::getMyAddress() . '/sets/view/favorites', $browser->driver->getCurrentURL());
-		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'Favorites');
-	}
-
-	public function testRemovingFavorites(): void
-	{
-		$contextParams = [];
-		$contextParams['user'] = ['mode' => Constants::$LEVEL_MODE];
-		for ($i = 0; $i < 3; $i++)
-			$contextParams ['tsumegos'] [] = ['sets' => [['name' => 'set ' . $i, 'num' => $i]]];
-		$context = new ContextPreparator($contextParams);
-		$context->addFavorite($context->tsumegos[0]);
-
-		$browser = Browser::instance();
-		$browser->get('sets/view/favorites');
-		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'Favorites');
-
-		// now we are viewing the 'favorites' insides and checking the buttons
-		$buttons = $this->checkSetNavigationButtons($browser, 1, $context, function ($index) { return $index; }, function ($index) { return $index + 1; });
-		$buttons[0]->click(); // opening the favorites problem
-
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 1, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, 0, 'V');
-		$browser->driver->findElement(WebDriverBy::cssSelector('#favButton'))->click();
-
-		// going back to favorites, which should be empty now
-		$browser->get('sets/view/favorites');
-		$buttons = $this->checkSetNavigationButtons($browser, 0, $context, function ($index) { return $index; }, function ($index) { return $index + 1; });
-	}
-
-	public function testGoingFromFavoritesToSetIndexResetsTheFavoritesQuery(): void
-	{
-		$contextParams = [];
-		$contextParams['user'] = ['mode' => Constants::$LEVEL_MODE, 'query' => 'favorites'];
-		for ($i = 0; $i < 3; $i++)
-			$contextParams ['tsumegos'] [] = ['sets' => [['name' => 'set ' . $i, 'num' => $i]]];
-		$context = new ContextPreparator($contextParams);
-
-		$browser = Browser::instance();
-		$browser->get('sets');
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
-		$this->assertCount(3, $collectionTopDivs); // the 3 sets are visible even when not in favorites, as top index ignores favorites
-		$tsumegoFilters = new TsumegoFilters();
-		$this->assertTrue($tsumegoFilters->query != 'favorites');
-	}
-
-	public function testBrowsingFavoritesByNextButton(): void
-	{
-		$contextParams = [];
-		$contextParams['user'] = ['mode' => Constants::$LEVEL_MODE, 'query' => 'favorites'];
-		for ($i = 0; $i < 5; $i++)
-			$contextParams ['tsumegos'] [] = ['sets' => [['name' => 'set ' . $i, 'num' => $i]]];
-		$context = new ContextPreparator($contextParams);
-
-		// only 3 out of 5 are favorites
-		for ($i = 0; $i < 3; $i++)
-			$context->addFavorite($context->tsumegos[$i]);
-
-		$browser = Browser::instance();
-		$browser->get('sets/view/favorites');
-		// now we are viewing the 'favorites' insides and checking the buttons
-		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'Favorites');
-		$buttons = $this->checkSetNavigationButtons($browser, 3, $context, function ($index) { return $index; }, function ($index) { return $index + 1; });
-		$buttons[0]->click();
-
-		// first favorite
-		for ($i = 0; $i < 3; $i++)
-		{
-			$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[$i]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
-			$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 3, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, $i, 'V');
-			$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
-		}
-		$this->assertSame(Util::getMyAddress() . '/sets/view/favorites', $browser->driver->getCurrentURL());
-	}
-
 	public function testOnlyPublicSetsAreVisible(): void
 	{
 		new ContextPreparator(['tsumego' => ['sets' => [
@@ -1234,7 +1919,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$browser = Browser::instance();
 		$browser->get('sets');
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->getElements('.set-card__top');
 		$this->assertCount(1, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), 'public set');
 		$this->assertSame('Problems found: 1', $browser->find('#problems-found')->getText());
@@ -1249,13 +1934,13 @@ class SetsControllerTest extends TestCaseWithAuth
 				['sets' => [['name' => 'private set', 'public' => 0, 'num' => '777']]]]]);
 		$browser = Browser::instance();
 		$browser->get('sets/sandbox');
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->getElements('.set-card__top');
 		$this->assertCount(1, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), 'private set');
 		$collectionTopDivs[0]->click();
-		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->tsumegos[1]['set-connections'][0]['set_id'], $browser->driver->getCurrentURL());
+		$this->assertSame(Util::getMyAddress() . '/sets/' . $context->tsumegos[1]['set-connections'][0]['set_id'], $browser->driver->getCurrentURL());
 
-		$problemButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons1'));
+		$problemButtons = $browser->getElements('.problem-nav__number');
 		$this->assertCount(1, $problemButtons);
 		$this->assertSame($problemButtons[0]->getText(), '777');
 	}
@@ -1266,20 +1951,17 @@ class SetsControllerTest extends TestCaseWithAuth
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => 1],
 			'tsumegos' => [['sets' => [['name' => 'private set', 'public' => 0, 'num' => '1']]]]]);
 		$browser = Browser::instance();
-		$browser->get('/sets/view/' . $context->tsumegos[0]['set-connections'][0]['set_id']);
+		$browser->get('/sets/edit/' . $context->tsumegos[0]['set-connections'][0]['set_id']);
 
-		$problemButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons1'));
+		$problemButtons = $browser->getElements('.problem-nav__number');
 		$this->assertCount(1, $problemButtons);
 		$this->assertSame($problemButtons[0]->getText(), '1');
 		$browser->clickCssSelect('#TsumegoViewForm input[type="submit"]');
 
 		// Wait for the page to reload with the new problem
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function () use ($browser) {
-			return count($browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons1'))) == 2;
-		});
+		$browser->waitUntilJs('document.querySelectorAll(".problem-nav__number").length === 2');
 
-		$problemButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons1'));
+		$problemButtons = $browser->getElements('.problem-nav__number');
 		$this->assertCount(2, $problemButtons);
 		$this->assertSame($problemButtons[0]->getText(), '1');
 		$this->assertSame($problemButtons[1]->getText(), '2');
@@ -1305,10 +1987,10 @@ class SetsControllerTest extends TestCaseWithAuth
 		// Get set ID from first other-tsumego
 		$setId = $context->tsumegos[0]['sets'][0]['id'];
 
-		$browser->get("sets/view/{$setId}");
+		$browser->get("sets/{$setId}");
 
 		// Completed tab should be active by default - find problem buttons
-		$buttons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons1'));
+		$buttons = $browser->getElements('.problem-nav__number');
 
 		// Should show problem numbers: 1, 2, 3
 		$this->assertCount(3, $buttons, 'Should have 3 problems in set');
@@ -1317,11 +1999,11 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame('3', trim($buttons[2]->getText()));
 
 		// setViewButtons2 (accuracy) and setViewButtons3 (time) should be hidden
-		$accuracyButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons2'));
+		$accuracyButtons = $browser->getElements('.problem-nav__ratio');
 		foreach ($accuracyButtons as $btn)
 			$this->assertFalse($btn->isDisplayed(), 'Accuracy buttons should be hidden on Completed tab');
 
-		$timeButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons3'));
+		$timeButtons = $browser->getElements('.problem-nav__time');
 		foreach ($timeButtons as $btn)
 			$this->assertFalse($btn->isDisplayed(), 'Time buttons should be hidden on Completed tab');
 	}
@@ -1353,20 +2035,20 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$browser = Browser::instance();
 		$setId = $context->tsumegos[0]['sets'][0]['id'];
-		$browser->get("sets/view/{$setId}");
+		$browser->get("sets/{$setId}");
 
 		// Find the <li> elements (button containers with status classes)
-		$listItems = $browser->driver->findElements(WebDriverBy::cssSelector('li[class*="status"]'));
+		$listItems = $browser->getElements('li.problem-nav__item');
 		$this->assertCount(3, $listItems, 'Should have 3 problem buttons');
 
 		// Problem 1: Not attempted - should have statusN class
-		$this->assertStringContainsString('statusN', $listItems[0]->getAttribute('class'), 'Problem 1 should have statusN (not attempted)');
+		$this->assertStringContainsString('problem-nav__item--N', $listItems[0]->getAttribute('class'), 'Problem 1 should have statusN (not attempted)');
 
 		// Problem 2: Solved - should have statusS class
-		$this->assertStringContainsString('statusS', $listItems[1]->getAttribute('class'), 'Problem 2 should have statusS (solved)');
+		$this->assertStringContainsString('problem-nav__item--S', $listItems[1]->getAttribute('class'), 'Problem 2 should have statusS (solved)');
 
 		// Problem 3: Failed - should have statusF class
-		$this->assertStringContainsString('statusF', $listItems[2]->getAttribute('class'), 'Problem 3 should have statusF (failed)');
+		$this->assertStringContainsString('problem-nav__item--F', $listItems[2]->getAttribute('class'), 'Problem 3 should have statusF (failed)');
 	}
 
 	/**
@@ -1394,20 +2076,16 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$browser = Browser::instance();
 		$setId = $context->tsumegos[0]['sets'][0]['id'];
-		$browser->get("sets/view/{$setId}");
+		$browser->get("sets/{$setId}");
 
 		// Click Accuracy tab
-		$accuracyTab = $browser->driver->findElement(WebDriverBy::xpath("//a[contains(text(), 'Accuracy')]"));
+		$accuracyTab = $browser->findBy(WebDriverBy::xpath("//a[contains(text(), 'Accuracy')]"));
 		$accuracyTab->click();
 		// Wait for accuracy buttons to be visible
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			$buttons = $driver->findElements(WebDriverBy::cssSelector('.setViewButtons2'));
-			return count($buttons) > 0 && $buttons[0]->isDisplayed();
-		});
+		$browser->waitUntilCssSelectorDisplayed('.problem-nav__ratio');
 
 		// Check accuracy buttons are visible
-		$accuracyButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons2'));
+		$accuracyButtons = $browser->getElements('.problem-nav__ratio');
 		$this->assertCount(2, $accuracyButtons);
 
 		// Problem 1 should show "3/1" (3 solved, 1 failed)
@@ -1419,9 +2097,42 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame('-', trim($accuracyButtons[1]->getText()), 'Problem 2 accuracy should be - (no attempts)');
 
 		// Order numbers and time should be hidden
-		$orderButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons1'));
+		$orderButtons = $browser->getElements('.problem-nav__number');
 		foreach ($orderButtons as $btn)
 			$this->assertFalse($btn->isDisplayed(), 'Order numbers should be hidden on Accuracy tab');
+	}
+
+	/**
+	 * Misplays on solved attempts are summed across all solve sessions.
+	 */
+	public function testSetViewAccuracyTabSumsMisplaysAcrossSolvedAttempts()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumegos' => [
+				[
+					'sets' => [['name' => 'Test Set', 'num' => 1]],
+					'attempts' => [
+						['solved' => 1, 'seconds' => 10, 'gain' => 5, 'misplays' => 3],
+						['solved' => 1, 'seconds' => 15, 'gain' => 5, 'misplays' => 2],
+					],
+				],
+				['sets' => [['name' => 'Test Set', 'num' => 2]]],  // No attempts
+			],
+		]);
+
+		$browser = Browser::instance();
+		$setId = $context->tsumegos[0]['sets'][0]['id'];
+		$browser->get("sets/{$setId}");
+
+		// Click Accuracy tab
+		$accuracyTab = $browser->findBy(WebDriverBy::xpath("//a[contains(text(), 'Accuracy')]"));
+		$accuracyTab->click();
+		// Wait for accuracy buttons to be visible
+		$browser->waitUntilCssSelectorDisplayed('.problem-nav__ratio');
+
+		$accuracyButtons = $browser->getElements('.problem-nav__ratio');
+		$this->assertSame('2/5', trim($accuracyButtons[0]->getText()), 'Two solved attempts (3 + 2 misplays) should show 2/5');
 	}
 
 	/**
@@ -1453,20 +2164,15 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$browser = Browser::instance();
 		$setId = $context->tsumegos[0]['sets'][0]['id'];
-		$browser->get("sets/view/{$setId}");
+		$browser->get("sets/{$setId}");
 
-		// Click Time tab - use specific selector to avoid Time Mode menu link
-		$timeTab = $browser->driver->findElement(WebDriverBy::xpath("//a[contains(@class, 'setViewTime') or (contains(text(), 'Time') and not(contains(@href, 'timeMode')))]"));
-		$browser->driver->executeScript("arguments[0].click();", [$timeTab]);
+		// Switch to Time tab
+		$browser->findById('timeButton')->click();
 		// Wait for time buttons to be visible
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			$buttons = $driver->findElements(WebDriverBy::cssSelector('.setViewButtons3'));
-			return count($buttons) > 0 && $buttons[0]->isDisplayed();
-		});
+		$browser->waitUntilCssSelectorDisplayed('.problem-nav__time');
 
 		// Check time buttons are visible
-		$timeButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons3'));
+		$timeButtons = $browser->getElements('.problem-nav__time');
 		$this->assertCount(2, $timeButtons);
 
 		// Problem 1 should show "10s" (minimum/best of 10, 20, 30)
@@ -1503,7 +2209,7 @@ class SetsControllerTest extends TestCaseWithAuth
 						'sets' => [['name' => 'Test Set 2', 'num' => 2]],
 						'status' => 'S'
 					]]]);
-			$browser->get('sets/view/' . $context->tsumegos[0]['sets'][0]['id']);
+			$browser->get('sets/' . $context->tsumegos[0]['sets'][0]['id']);
 			$browser->clickId("showx");
 			$browser->clickId("reset-textfield");
 			$browser->driver->getKeyboard()->sendKeys($resetInput);
@@ -1562,7 +2268,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$setId = $context->tsumegos[0]['sets'][0]['id'];
 
 		// With 40% solved, reset button should NOT be shown
-		$browser->get('sets/view/' . $setId . '/1');
+		$browser->get('sets/' . $setId . '/1');
 		$this->assertFalse($browser->idExists('showx'), "Reset button should not exist when below 50%");
 		$this->assertTextContains('You need to complete 50% to reset', $browser->driver->getPageSource());
 	}
@@ -1591,7 +2297,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertEquals(102, $statusCount, "Should have 102 solved statuses");
 
 		// With 51% solved, reset button SHOULD be shown
-		$browser->get('sets/view/' . $setId . '/1');
+		$browser->get('sets/' . $setId . '/1');
 		$pageSource = $browser->driver->getPageSource();
 		$this->assertStringNotContainsString('You need to complete 50% to reset', $pageSource, "Page says <50% but should be 51%");
 		$this->assertTrue($browser->idExists('showx'), "Reset button should be shown at 51%");
@@ -1608,7 +2314,7 @@ class SetsControllerTest extends TestCaseWithAuth
 			$context = new ContextPreparator($contextParameters);
 
 			// we open partition of the set
-			$browser->get('sets/view/' . $context->tsumegos[0]['sets'][0]['id'] . '/' . $partition);
+			$browser->get('sets/' . $context->tsumegos[0]['sets'][0]['id'] . '/' . $partition);
 			$browser->clickId("showx");
 			$browser->clickId("reset-textfield");
 			$browser->driver->getKeyboard()->sendKeys('reset');
@@ -1631,14 +2337,13 @@ class SetsControllerTest extends TestCaseWithAuth
 		$contextParameters['user'] = ['collection_size' => 150];
 		$context = new ContextPreparator($contextParameters);
 
-		// we open partition of the set
-		$browser->get('sets/view/' . $context->tsumegos[0]['sets'][0]['id'] . '/1');
-		$this->assertEmpty($browser->getCssSelect("showx")); // no reset offered
+		$browser->get('sets/' . $context->tsumegos[0]['sets'][0]['id']);
+		$this->assertEmpty($browser->getElements("showx")); // no reset offered
 		$this->assertTextContains('Reset is only possible when collection size is set to 200', $browser->driver->getPageSource());
 
-		// we try to force it on the server anyway - redirect back to same partition
-		$browser->getWithPostData('/sets/resetProgress/' . $context->sets[0]['id'] . '/1', ['reset-check' => 'reset']);
-		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->sets[0]['id'] . '/1', $browser->driver->getCurrentURL());
+		// we try to force it on the server anyway - redirect back to the same set
+		$browser->post('/sets/resetProgress/' . $context->sets[0]['id'] . '/1', ['reset-check' => 'reset']);
+		$this->assertSame(Util::getMyAddress() . '/sets/' . $context->sets[0]['id'], $browser->driver->getCurrentURL());
 		$this->assertSame(400, count(ClassRegistry::init('TsumegoStatus')->find('all', ['order' => 'id'])));
 	}
 
@@ -1667,7 +2372,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get('sites/blank');
 		$pageSource = $browser->driver->getPageSource();
-		$this->assertStringContainsString('href="/sets/view/favorites"', $pageSource, 'Favorites link should be in the page HTML for logged-in users');
+		$this->assertStringContainsString('href="/sets/favorites"', $pageSource, 'Favorites link should be in the page HTML for logged-in users');
 	}
 
 	public function testIndexWithNonexistentFilteredSetAndRankFiltersDoesNotCrash(): void
@@ -1683,7 +2388,7 @@ class SetsControllerTest extends TestCaseWithAuth
 			'sets' => [['name' => 'valid-set', 'num' => '1']]];
 
 		new ContextPreparator($contextParams);
-		$this->testAction('sets', ['return' => 'view']);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
 		$this->assertTextContains('15k', $this->view);
 		$this->assertTextNotContains('nonexistent-set-that-was-deleted', $this->view);
 	}
@@ -1700,9 +2405,84 @@ class SetsControllerTest extends TestCaseWithAuth
 			'sets' => [['name' => 'TestSet', 'num' => '1']]];
 
 		new ContextPreparator($contextParams);
-		$this->testAction('sets', ['return' => 'view']);
+		$this->testAction('sets', ['method' => 'get', 'return' => 'view']);
 		$this->assertTextContains('15k', $this->view);
 		$this->assertTextNotContains('deleted', $this->view);
 	}
 
+	/**
+	 * Verifies a sandbox tsumego's play page loads correctly for premium users.
+	 * Smoke test to ensure the $isSandbox code path in Play.php doesn't crash.
+	 *
+	 * @group browser
+	 * @retryAttempts 2
+	 * @retryIfException Facebook\WebDriver\Exception\WebDriverException
+	 */
+	public function testSandboxPlayPageLoads(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'premiumuser', 'mode' => Constants::$LEVEL_MODE, 'premium' => 1],
+			'tsumego' => [
+				'sets' => [['name' => 'Sandbox Play Test', 'public' => 0, 'num' => '1']],
+				'sgf' => '(;GM[1]FF[4]SZ[19]AB[pd][dp]AW[pp][dd])',
+			],
+		]);
+
+		$setConnectionId = $context->tsumegos[0]['set-connections'][0]['id'];
+		$browser = Browser::instance();
+		$browser->get('/' . $setConnectionId);
+
+		// Page loads without error
+		$this->assertTrue($browser->titleContains('Tsumego Hero'), 'Sandbox play page should load');
+
+		// Play title exists (confirms the play page rendered fully)
+		$this->assertTrue($browser->idExists('playTitle'), 'Play title should be present');
+	}
+
+	/**
+	 * Verifies non-premium users are blocked from sandbox play pages.
+	 * Creates sandbox set as premium owner, then switches to a non-premium user.
+	 *
+	 * @group browser
+	 * @retryAttempts 2
+	 * @retryIfException Facebook\WebDriver\Exception\WebDriverException
+	 */
+	public function testSandboxPlayPageBlocksNonPremium(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'owner', 'mode' => Constants::$LEVEL_MODE, 'premium' => 1],
+			'other-users' => [['name' => 'regularuser']],
+			'tsumego' => [
+				'sets' => [['name' => 'Premium Only Set', 'public' => 0, 'num' => '1']],
+				'sgf' => '(;GM[1]FF[4]SZ[19]AB[pd][dp]AW[pp][dd])',
+			],
+		]);
+
+		$setConnectionId = $context->tsumegos[0]['set-connections'][0]['id'];
+
+		// Navigate as non-premium user (getAnonymous avoids Browser's auto-auth cookie)
+		$browser = Browser::instance();
+		$browser->getAnonymous('empty.php');
+		$browser->setCookie('hackedLoggedInUserID', (string) $context->otherUsers[0]['id']);
+		$browser->getAnonymous('/' . $setConnectionId);
+
+		// Server-side guard rejects the request with a 403 error page
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertTextContains('Forbidden', $pageSource,
+			'Non-premium user should see the forbidden error page');
+		$this->assertFalse($browser->idExists('playTitle'),
+			'Play title should not render for non-premium user');
+	}
+
+	/**
+	 * The set-title heading carries the .set-view-title class (see Sets/view.ctp).
+	 * Return its text.
+	 *
+	 * @param mixed $browser Browser instance
+	 */
+	private function getSetTitle($browser): string
+	{
+		$titles = $browser->getElements('.set-view-title');
+		return $titles ? $titles[0]->getText() : '';
+	}
 }

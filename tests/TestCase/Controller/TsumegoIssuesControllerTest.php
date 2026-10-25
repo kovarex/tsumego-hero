@@ -1,12 +1,18 @@
 <?php
 
-use Facebook\WebDriver\WebDriverBy;
+use App\Utility\Avatar;
+use PHPUnitRetry\RetryTrait;
 
-App::uses('TsumegoIssue', 'Model');
-
-// Tests for TsumegoIssuesController - specifically the global issues index page.
+/**
+ * Tests for TsumegoIssuesController - specifically the global issues index page.
+ *
+ * @retryAttempts 2
+ * @retryIfException Facebook\WebDriver\Exception\WebDriverException
+ */
 class TsumegoIssuesControllerTest extends ControllerTestCase
 {
+	use RetryTrait;
+
 	public function testIssuesIndexPageLoads()
 	{
 		$browser = Browser::instance();
@@ -133,6 +139,131 @@ class TsumegoIssuesControllerTest extends ControllerTestCase
 
 		// Verify Prev link exists on page 2
 		$this->assertTextContains('Prev', $pageSource);
+	}
+
+	/**
+	 * Test that issue author's Go rank is displayed correctly on the issues list.
+	 */
+	public function testIssueAuthorRankDisplayedCorrectly()
+	{
+		$browser = Browser::instance();
+		new ContextPreparator([
+			'user' => ['admin' => true, 'rating' => 1500],
+			'tsumego' => ['set_order' => 1, 'issues' => [['message' => 'Issue with author rank']]]]);
+		$browser->get('tsumego-issues');
+		$this->waitForReactIssuesList($browser);
+		$pageSource = $browser->driver->getPageSource();
+
+		// Rating 1500 should display as 6k rank
+		$this->assertTextContains('6k', $pageSource);
+	}
+
+	/**
+	 * Test closing an issue from the issues list page.
+	 */
+	public function testCloseIssueFromListPage()
+	{
+		$browser = Browser::instance();
+		new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => ['set_order' => 1, 'issues' => [['message' => 'Issue to close from list']]]]);
+		$browser->get('tsumego-issues?status=opened');
+		$this->waitForReactIssuesList($browser);
+
+		// Verify issue shows as open
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertTextContains('Issue to close from list', $pageSource);
+
+		// Wait for and click close button
+		$closeButton = $browser->find('.tsumego-issue button.btn--success', 10);
+		$closeButton->click();
+
+		// After closing, the issue disappears from the open list, which then shows the empty state
+		$browser->waitUntilCssSelectorDoesntExist('.tsumego-issue:not(.skeleton-wrapper)', 10);
+
+		$pageSource = $browser->driver->getPageSource();
+		// Should show no open issues or empty state
+		$this->assertTextNotContains('Issue to close from list', $pageSource);
+	}
+
+	/**
+	 * Test that deleted accounts show as [account deleted] on the issues list.
+	 */
+	public function testDeletedUserShowsPlaceholder()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'other-users' => [['name' => 'doomed_user', 'deleted' => true]],
+			'tsumego' => ['set_order' => 1, 'issues' => [['message' => 'Issue by deleted user']]]]);
+
+		// Reassign the issue and its comment to the deleted user
+		$otherUserId = $context->otherUsers[0]['id'];
+		ClassRegistry::init('TsumegoIssue')->updateAll(
+			['TsumegoIssue.user_id' => $otherUserId],
+			['TsumegoIssue.id' => $context->issues[0]['id']]
+		);
+		ClassRegistry::init('TsumegoComment')->updateAll(
+			['TsumegoComment.user_id' => $otherUserId],
+			['TsumegoComment.tsumego_issue_id' => $context->issues[0]['id']]
+		);
+
+		$browser->get('tsumego-issues');
+		$this->waitForReactIssuesList($browser);
+		$pageSource = $browser->driver->getPageSource();
+
+		$this->assertTextContains('Issue by deleted user', $pageSource);
+		$this->assertTextContains('[account deleted]', $pageSource);
+		$this->assertTextNotContains('doomed_user', $pageSource);
+	}
+
+	/**
+	 * Test that the issues API sends the avatar of the author.
+	 */
+	public function testIssuesApiSendsAuthorAvatars(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'kovarex', 'email' => 'kovarex@example.com'],
+			'tsumego' => ['set_order' => 1, 'issues' => [['message' => 'Issue with an avatar']]],
+		]);
+
+		$this->testAction('/tsumego-issues/api', ['method' => 'get']);
+
+		$body = json_decode($this->controller->response->body(), true);
+		$avatar = Avatar::url($context->user['display_name']);
+		$this->assertSame($avatar, $body['issues'][0]['issue']['user_avatar_url']);
+		$this->assertSame($avatar, $body['issues'][0]['comments'][0]['user_avatar_url']);
+	}
+
+	/**
+	 * Test that the issues API leaves out the avatar of a deleted author.
+	 */
+	public function testIssuesApiLeavesOutTheAvatarOfADeletedAuthor(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'kovarex', 'email' => 'kovarex@example.com'],
+			'other-users' => [['name' => 'doomed_user', 'email' => 'doomed@example.com', 'deleted' => true]],
+			'tsumego' => ['set_order' => 1, 'issues' => [['message' => 'Issue by a deleted author']]],
+		]);
+
+		$otherUserId = $context->otherUsers[0]['id'];
+		ClassRegistry::init('TsumegoIssue')->updateAll(
+			['TsumegoIssue.user_id' => $otherUserId],
+			['TsumegoIssue.id' => $context->issues[0]['id']]
+		);
+		ClassRegistry::init('TsumegoComment')->updateAll(
+			['TsumegoComment.user_id' => $otherUserId],
+			['TsumegoComment.tsumego_issue_id' => $context->issues[0]['id']]
+		);
+
+		$this->testAction('/tsumego-issues/api', ['method' => 'get']);
+
+		$body = $this->controller->response->body();
+		$issues = json_decode($body, true)['issues'];
+		$this->assertNull($issues[0]['issue']['user_display_name']);
+		$this->assertNull($issues[0]['issue']['user_avatar_url']);
+		$this->assertNull($issues[0]['comments'][0]['user_avatar_url']);
+		$this->assertStringNotContainsString(md5('doomed@example.com'), $body);
 	}
 
 	/**

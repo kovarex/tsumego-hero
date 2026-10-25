@@ -1,48 +1,72 @@
+<?php
+
+use App\Utility\ContributionRow;
+use App\Utility\Util;
+
+/**
+ * @var View $this
+ * @var array $viewedUser
+ * @var ContributionRow[] $contributions
+ * @var int $count
+ * @var int $pageIndex
+ * @var int $pageSize
+ */
+
+if (!function_exists('_tagLink')):
+
+	function _tagLink(ContributionRow $c): string
+	{
+		$tag = h($c->tag);
+		if ($c->tagId)
+			return '<b><a href="/tags/view/' . $c->tagId . '"><i>' . $tag . '</i></a></b>';
+		return '<b><i>' . $tag . '</i></b>';
+	}
+
+	function _tsumegoLink(ContributionRow $c): string
+	{
+		return '<b><a href="/tsumegos/play/' . $c->tsumegoId . '">' . h($c->tsumegoLabel) . '</a></b>';
+	}
+
+endif;
+
+?>
 
 <div align="center">
-	<p class="title">
-		<br>
-		Tags and proposals by <?php echo h(Auth::getUser()['name']) ?>
-		<br><br> 
-	</p>
-	<table class="highscoreTable" border="0">
-		<tbody>
+	<?php echo $this->element('user_header', ['user' => $viewedUser, 'activeTab' => 'contributions']); ?>
+	<?php echo PaginationHelper::render($pageIndex, (int) ceil($count / $pageSize), 'page'); ?>
+	<table class="data-table">
+		<thead>
 		<tr>
-			<th align="left">Action</th>
-			<th align="left">Status</th>
-			<th align="left">Timestamp</th>
+			<th>Action</th>
+			<th>Status</th>
+			<th>Timestamp</th>
 		</tr>
-		<?php
-			for($i=0; $i<count($list); $i++){
-				$statusColor = $list[$i]['status'] === 'accepted' ? '#047804' : '#ce3a47';
-				if($list[$i]['type'] == 'proposal'){
-					echo '<tr>';
-						echo '<td class="timeTableLeft versionColor" align="left">'
-						.h($list[$i]['user']).' made a proposal for <a href="/tsumegos/play/'.$list[$i]['tsumego_id'].'">'
-						.h($list[$i]['tsumego']).'</a></td>';
-						echo '<td class="timeTableMiddle versionColor" align="left"><b style="color:'.$statusColor.'">'.h($list[$i]['status']).'</b></td>';
-						echo '<td class="timeTableRight versionColor" align="left">'.h($list[$i]['created']).'</td>';
-					echo '</tr>';
-				}else if($list[$i]['type'] == 'tag'){
-					echo '<tr>';
-						echo '<td class="timeTableLeft versionColor" align="left">'
-						.h($list[$i]['user']).' added the tag <i>'.h($list[$i]['tag'])
-						.'</i> for <a href="/tsumegos/play/'.$list[$i]['tsumego_id'].'">'.h($list[$i]['tsumego'])
-						.'</a></td>';
-						echo '<td class="timeTableMiddle versionColor" align="left"><b style="color:'.$statusColor.'">'.h($list[$i]['status']).'</b></td>';
-						echo '<td class="timeTableRight versionColor" align="left">'.h($list[$i]['created']).'</td>';
-					echo '</tr>';
-				}else if($list[$i]['type'] == 'tag name'){
-					echo '<tr>';
-						echo '<td class="timeTableLeft versionColor" align="left">'
-						.h($list[$i]['user']).' created a new tag: <i>'.h($list[$i]['tag']).'</i></td>';
-						echo '<td class="timeTableMiddle versionColor" align="left"><b style="color:'.$statusColor.'">'.h($list[$i]['status']).'</b></td>';
-						echo '<td class="timeTableRight versionColor" align="left">'.h($list[$i]['created']).'</td>';
-					echo '</tr>';
-				}
-			}
-		?>
-
+		</thead>
+		<tbody>
+		<?php foreach ($contributions as $c): ?>
+			<?php
+				if ($c->status === 'accepted')
+					$color = 'var(--color-green)';
+				elseif ($c->status === 'pending')
+					$color = 'var(--color-yellow)';
+				else
+					$color = 'var(--color-red)';
+			?>
+				<tr>
+					<td>
+					<?php if ($c->type === 'proposal'): ?>
+						Proposal for <?php echo _tsumegoLink($c) ?> was submitted
+					<?php elseif ($c->type === 'tag'): ?>
+						Tag <?php echo _tagLink($c) ?> was added to <?php echo _tsumegoLink($c) ?>
+					<?php else: ?>
+						Tag <?php echo _tagLink($c) ?> was created
+						<?php endif; ?>
+					</td>
+					<td><b style="color:<?php echo $color ?>"><?php echo h($c->status) ?></b></td>
+					<td><time datetime="<?php echo Util::toIso8601($c->created) ?>" data-format="datetime"><?php echo h($c->created) ?></time></td>
+				</tr>
+		<?php endforeach; ?>
 	</tbody>
 	</table>
+	<?php echo PaginationHelper::render($pageIndex, (int) ceil($count / $pageSize), 'page'); ?>
 </div>

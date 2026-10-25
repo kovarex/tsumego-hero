@@ -1,8 +1,12 @@
 <?php
 
+namespace App\Utility;
+
+use DateTime;
+
 class TimeGraphRenderer
 {
-	public static function render($caption, $id, $input, $value)
+	public static function render(string $caption, string $id, array $input, string $value): void
 	{
 		echo '<div id="' . $id . '" class="timeGraph"></div>';
 		echo '<script>';
@@ -29,6 +33,7 @@ var options =
 		foreColor: '" . Util::getGraphGridColor() . "',
 		zoom: {enabled: false}
 	},
+	theme: { mode: '" . Util::getGraphThemeMode() . "' },
 	dataLabels:	{ enabled: false },
 	stroke:
 	{
@@ -56,13 +61,15 @@ var options =
 	}
 };
 var chart = new ApexCharts(document.querySelector('#" . $id . "'), options);
-chart.render();";
+chart.render();
+if (!window.__apexCharts) window.__apexCharts = [];
+window.__apexCharts.push(chart);";
 		echo '</script>';
 	}
 
 	// this is weird, why do we include 3rd party js, we should just put the js on our site
 	// instead of depending on availability of theirs
-	public static function renderScriptInclude()
+	public static function renderScriptInclude(): void
 	{
 		echo '
 <script>

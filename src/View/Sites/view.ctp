@@ -1,9 +1,19 @@
-	<div class="teuber">
-		<div class="homeLeft2">
-			<?php echo strip_tags($news['Site']['body'], '<br><a><b><i><p><h1><h2><h3><ul><ol><li><img><div><span><table><tr><td><th>'); ?>
+<?php
+
+use App\Utility\HtmlSanitizer;
+
+/**
+ * @var View $this
+ * @var array $news
+ */
+
+?>
+	<div class="split">
+		<div>
+			<?php echo HtmlSanitizer::sanitize((string) ($news['Site']['body'] ?? '')); ?>
 			<br><br><br><br><br><br><br><br><br><br><br>
 		</div>
-		<div class="homeRight2">
+		<div>
 			<?php echo h($news['Site']['title']); ?>
 		</div>
 	</div>

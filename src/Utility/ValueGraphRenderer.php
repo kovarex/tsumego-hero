@@ -1,8 +1,10 @@
 <?php
 
+namespace App\Utility;
+
 class ValueGraphRenderer
 {
-	public static function render($caption, $id, $structure, $input, $categoryName, $reverseOrder = false)
+	public static function render(string $caption, string $id, array $structure, array $input, string $categoryName, bool $reverseOrder = false): void
 	{
 		$series = [];
 		foreach ($structure as $node)
@@ -31,6 +33,7 @@ class ValueGraphRenderer
 				stacked: true,
 				foreColor: '" . Util::getGraphGridColor() . "'
 			},
+			theme: { mode: '" . Util::getGraphThemeMode() . "' },
 			plotOptions:
 			{
 				bar:
@@ -45,8 +48,7 @@ class ValueGraphRenderer
 							style:
 							{
 								fontSize: '13px',
-								fontWeight: 900,
-								color: '" . Util::getGraphGridColor() . "'
+								fontWeight: 900
 							}
 					  }
 					}
@@ -71,6 +73,9 @@ class ValueGraphRenderer
 				colors: ['#74d14c', '#d63a49']
 			}
 		};
-		new ApexCharts(document.querySelector('#" . $id . "'), options).render();";
+		var chart = new ApexCharts(document.querySelector('#" . $id . "'), options);
+chart.render();
+if (!window.__apexCharts) window.__apexCharts = [];
+window.__apexCharts.push(chart);";
 	}
 }

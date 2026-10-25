@@ -1,3 +1,18 @@
+<?php
+
+use App\Utility\Auth;
+use App\Utility\SimilarSearchResult;
+use App\Utility\TsumegoButton;
+
+/**
+ * @var View $this
+ * @var SimilarSearchResult $result
+ * @var int $sourceMoveCount
+ * @var string $sourceSetName
+ * @var TsumegoButton $sourceTsumegoButton
+ */
+
+?>
 <div style="text-align:center;">
 	<p class="title">
 		Similar problem search:
@@ -45,11 +60,14 @@
 			echo h($item->title) . '</div></td>';
 			echo '</tr>' . PHP_EOL;
 		}
-		if (empty($result))
+		if (empty($result->items))
 			echo 'No problems found.';
 echo '</table>';
 echo '<script>';
-echo $sourceTsumegoButton->createBoard('document.getElementById(\'previewMaster\')', 'createBoard');
-foreach ($result->items as $item)
-	echo $item->tsumegoButton->createBoard('document.getElementById(\'preview' . $item->tsumegoButton->setConnectionID . '\')', 'createBoard', $item->diff);
+echo 'document.querySelectorAll("a[data-sgf-preview]").forEach(function(a) {';
+echo '  var td = a.closest("tr").querySelector("td[id^=preview]");';
+echo '  if (!td) return;';
+echo '  var data = JSON.parse(a.dataset.sgfPreview);';
+echo '  createBoard(td, data.black, data.white, data.xMax, data.yMax, data.boardSize, data.diff || "");';
+echo '});';
 echo '</script>';

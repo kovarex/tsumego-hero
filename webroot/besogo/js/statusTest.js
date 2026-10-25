@@ -166,33 +166,75 @@ besogo.addTest("Status", "SaveLoadTenThousandYearsKo", function()
   CHECK_EQUALS(statusLoaded.blackFirst.type, STATUS_TEN_THOUSAND_YEARS_KO);
 });
 
-besogo.addTest("Status", "TenThousandYearsKoIsWorseThanDirectKo", function()
+besogo.addTest("Status", "TenThousandYearsKoIsWorseThanDirectKoWhenKilling", function()
 {
   let statusBad = besogo.makeStatusSimple(STATUS_TEN_THOUSAND_YEARS_KO);
   let statusGood = besogo.makeStatusSimple(STATUS_KO);
 
-  CHECK(statusGood.better(statusBad));
-  CHECK(!statusBad.better(statusGood));
+  CHECK(statusGood.better(statusBad, GOAL_KILL));
+  CHECK(!statusBad.better(statusGood, GOAL_KILL));
 });
 
-besogo.addTest("Status", "TenThousandYearsKoIsSameAsOneMoveApproachKo", function()
+besogo.addTest("Status", "TenThousandYearsKoIsBetterThanDirectKoWhenLiving", function()
+{
+  let statusGood = besogo.makeStatusSimple(STATUS_TEN_THOUSAND_YEARS_KO);
+  let statusBad = besogo.makeStatusSimple(STATUS_KO);
+
+  CHECK(statusGood.better(statusBad, GOAL_LIVE));
+  CHECK(!statusBad.better(statusGood, GOAL_LIVE));
+});
+
+besogo.addTest("Status", "TenThousandYearsKoIsSameAsOneMoveApproachKoWhenKilling", function()
 {
   let status1 = besogo.makeStatusSimple(STATUS_TEN_THOUSAND_YEARS_KO);
   let status2 = besogo.makeStatusSimple(STATUS_KO);
   status2.setApproachKo(-1);
 
-  CHECK(!status1.better(status2));
-  CHECK(!status2.better(status1));
+  CHECK(!status1.better(status2, GOAL_KILL));
+  CHECK(!status2.better(status1, GOAL_KILL));
 });
 
-besogo.addTest("Status", "TenThousandYearsKoIsBetterThanTwoMovesApproachKo", function()
+besogo.addTest("Status", "TenThousandYearsKoIsSameAsOneMoveApproachKoWhenLiving", function()
+{
+  let status1 = besogo.makeStatusSimple(STATUS_TEN_THOUSAND_YEARS_KO);
+  let status2 = besogo.makeStatusSimple(STATUS_KO);
+  status2.setApproachKo(1);
+
+  CHECK(!status1.better(status2, GOAL_LIVE));
+  CHECK(!status2.better(status1, GOAL_LIVE));
+});
+
+besogo.addTest("Status", "TenThousandYearsKoIsBetterThanTwoMovesApproachKoWhenKilling", function()
 {
   let statusGood = besogo.makeStatusSimple(STATUS_TEN_THOUSAND_YEARS_KO);
   let statusBad = besogo.makeStatusSimple(STATUS_KO);
   statusBad.setApproachKo(-2);
 
-  CHECK(statusGood.better(statusBad));
-  CHECK(!statusBad.better(statusGood));
+  CHECK(statusGood.better(statusBad, GOAL_KILL));
+  CHECK(!statusBad.better(statusGood, GOAL_KILL));
+});
+
+besogo.addTest("Status", "TenThousandYearsKoIsWorseThanTwoMovesApproachKoWhenLiving", function()
+{
+  let statusBad = besogo.makeStatusSimple(STATUS_TEN_THOUSAND_YEARS_KO);
+  let statusGood = besogo.makeStatusSimple(STATUS_KO);
+  statusGood.setApproachKo(2);
+
+  CHECK(statusGood.better(statusBad, GOAL_LIVE));
+  CHECK(!statusBad.better(statusGood, GOAL_LIVE));
+});
+
+besogo.addTest("Status", "TenThousandYearsKoIsBetweenKoAndSeki", function()
+{
+  let ko = besogo.makeStatusSimple(STATUS_KO);
+  let tenThousandYearsKo = besogo.makeStatusSimple(STATUS_TEN_THOUSAND_YEARS_KO);
+  let seki = besogo.makeStatusSimple(STATUS_SEKI);
+
+  CHECK(ko.better(tenThousandYearsKo, GOAL_KILL));
+  CHECK(tenThousandYearsKo.better(seki, GOAL_KILL));
+
+  CHECK(seki.better(tenThousandYearsKo, GOAL_LIVE));
+  CHECK(tenThousandYearsKo.better(ko, GOAL_LIVE));
 });
 
 besogo.addTest("Status", "StatusSekiSimple", function()

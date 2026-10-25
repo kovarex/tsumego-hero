@@ -10,6 +10,8 @@ if (!defined('DS'))
 	define('DS', DIRECTORY_SEPARATOR);
 define('ROOT', dirname(__DIR__));
 define('VENDORS', ROOT . DS . 'vendor' . DS);
+define('WEBROOT_DIR', 'webroot');
+define('WWW_ROOT', ROOT . DS . WEBROOT_DIR . DS);
 
 require_once InstalledVersions::getInstallPath('pieceofcake2/cakephp') . DS . 'tests' . DS . 'bootstrap.php';
 
@@ -28,6 +30,11 @@ if (PHP_SAPI === 'cli' && !empty($_SERVER['argv']) && str_contains($_SERVER['arg
 // Load test helpers globally to avoid repetition in every test file
 require_once ROOT . '/tests/Browser.php';
 require_once ROOT . '/tests/ContextPreparator.php';
+require_once ROOT . '/tests/TestEmailer.php';
+
+// Pin the server timezone to UTC. The Selenium browser runs in its own
+// timezone (Europe/Prague), so displayed times shift, which browser tests assert.
+date_default_timezone_set('UTC');
 require_once ROOT . '/tests/TestCase/Controller/TestCaseWithAuth.php';
 require_once ROOT . '/tests/TestCase/Achievement/AchievementTestCase.php';
 register_shutdown_function(fn() => Browser::shutdown());

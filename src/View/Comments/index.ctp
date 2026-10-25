@@ -1,3 +1,14 @@
+<?php
+
+use App\Utility\CommentsRenderer;
+
+/**
+ * @var View $this
+ * @var CommentsRenderer $allComments
+ * @var CommentsRenderer $yourComments
+ */
+
+?>
 	<table class="co-table" width="100%">
 	<tr>
 	<td width="50%">

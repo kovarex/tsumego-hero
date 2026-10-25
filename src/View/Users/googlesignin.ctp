@@ -1,3 +1,12 @@
+<?php
+
+/**
+ * @var View $this
+ * @var string $email
+ * @var string $name
+ */
+
+?>
 
 
 	<div align="left">

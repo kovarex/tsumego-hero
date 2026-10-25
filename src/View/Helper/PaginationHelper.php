@@ -1,7 +1,5 @@
 <?php
 
-App::uses('AppHelper', 'View/Helper');
-
 /**
  * PaginationHelper - Generates pagination controls
  *
@@ -9,6 +7,8 @@ App::uses('AppHelper', 'View/Helper');
  * and ellipsis for large page counts. Automatically preserves query
  * parameters and generates anchor links for smooth scrolling.
  */
+use App\Utility\Query;
+
 class PaginationHelper extends AppHelper
 {
 	/**
@@ -19,7 +19,7 @@ class PaginationHelper extends AppHelper
 	 * @param string $paramName Query parameter name (e.g., 'activity_page')
 	 * @return string HTML pagination controls
 	 */
-	public static function render($currentPage, $totalPages, $paramName)
+	public static function render(int $currentPage, int $totalPages, string $paramName): string
 	{
 		if ($totalPages <= 1)
 			return '';
@@ -33,24 +33,19 @@ class PaginationHelper extends AppHelper
 		unset($queryParams[$paramName]); // Remove current param, will add it back with new value
 		$baseQuery = empty($queryParams) ? '?' : '?' . http_build_query($queryParams) . '&';
 
-		// Style variables for easy customization
-		$containerStyle = 'margin:15px 0; text-align:center;';
-		$ellipsisStyle = 'margin:0 5px; color:#999;';
-
-		$output = '<div id="' . $divId . '" style="' . $containerStyle . '">';
-		$output .= '<span class="paginator-info">Page ' . $currentPage . ' of ' . $totalPages . '</span>';
+		$output = '<div id="' . $divId . '" class="pagination">';
+		$output .= '<span class="pagination__info">Page ' . $currentPage . ' of ' . $totalPages . '</span>';
 
 		// Previous button
 		if ($currentPage > 1)
-			$output .= '<a class="paginator-link" href="' . $baseQuery . $paramName . '=' . ($currentPage - 1) . $anchorId . '">« Previous</a>';
+			$output .= '<a class="pagination__link" href="' . $baseQuery . $paramName . '=' . ($currentPage - 1) . $anchorId . '">« Previous</a>';
 
 		// Show page numbers with reduced range for tighter pagination
 		$pages = [];
 		$pages[] = 1;
 		for ($i = max(2, $currentPage - 1); $i <= min($totalPages - 1, $currentPage + 1); $i++)
 			$pages[] = $i;
-		if ($totalPages > 1)
-			$pages[] = $totalPages;
+		$pages[] = $totalPages;
 		$pages = array_unique($pages);
 		sort($pages);
 
@@ -59,17 +54,17 @@ class PaginationHelper extends AppHelper
 		foreach ($pages as $page)
 		{
 			if ($page > $lastPage + 1)
-				$output .= '<span style="' . $ellipsisStyle . '">...</span>';
+				$output .= '<span class="pagination__ellipsis">...</span>';
 			if ($page == $currentPage)
-				$output .= '<span class="active-paginator-link">' . $page . '</span>';
+				$output .= '<span class="pagination__link pagination__link--active">' . $page . '</span>';
 			else
-				$output .= '<a class="paginator-link" href="' . $baseQuery . $paramName . '=' . $page . $anchorId . '">' . $page . '</a>';
+				$output .= '<a class="pagination__link" href="' . $baseQuery . $paramName . '=' . $page . $anchorId . '">' . $page . '</a>';
 			$lastPage = $page;
 		}
 
 		// Next button
 		if ($currentPage < $totalPages)
-			$output .= '<a class="paginator-link" href="' . $baseQuery . $paramName . '=' . ($currentPage + 1) . $anchorId . '">Next »</a>';
+			$output .= '<a class="pagination__link" href="' . $baseQuery . $paramName . '=' . ($currentPage + 1) . $anchorId . '">Next »</a>';
 
 		$output .= '</div>';
 		return $output;

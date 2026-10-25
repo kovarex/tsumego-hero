@@ -1,4 +1,5 @@
 <?php
+
 /**
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
@@ -12,6 +13,12 @@
  * @package       app.View.Layouts
  * @since         CakePHP(tm) v 0.10.0.1076
  * @license       http://www.opensource.org/licenses/mit-license.php MIT License
+ * 
+ * @var View $this
+ * @var string $message
+ * @var string $pageTitle
+ * @var bool $pause
+ * @var string $url
  */
 ?>
 <!DOCTYPE html>
@@ -26,7 +33,8 @@ if (Configure::read('debug') == 0):
 endif;
 ?>
 <style><!--
-P { text-align:center; font:bold 1.1em sans-serif }
+BODY { font-family:sans-serif }
+P { text-align:center; font-size:1.1em; font-weight:bold }
 A { color:#444; text-decoration:none }
 A:HOVER { text-decoration: underline; color:#44E }
 --></style>

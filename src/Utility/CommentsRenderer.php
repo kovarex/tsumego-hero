@@ -1,15 +1,22 @@
 <?php
 
+namespace App\Utility;
+
+use PaginationHelper;
+use SetConnection;
+use Sgf;
+use User;
+
 class CommentsRenderer
 {
-	public function __construct(string $name, ?int $userID, $urlParams)
+	public function __construct(string $name, ?int $userID, array $urlParams)
 	{
 		$this->name = $name;
 		$this->userID = $userID;
 		$this->params = $urlParams;
 	}
 
-	private function renderComment($comment, $index)
+	private function renderComment(array $comment, int $index): void
 	{
 		echo '<div class="sandboxComment">';
 		$commentColor = $comment['from_admin'] ? 'admin-text' : '';
@@ -25,7 +32,7 @@ class CommentsRenderer
 
 		echo '<br></div>';
 		echo '<div class="' . $commentColor . '">';
-		echo h($comment['from_name']) . ':<br>';
+		echo h(\User::displayName(['id' => $comment['from_id'], 'display_name' => $comment['from_display_name']])) . ':<br>';
 		echo '</div>';
 		echo '<div ';
 		if($comment['from_admin'])
@@ -34,25 +41,24 @@ class CommentsRenderer
 		if (TsumegoUtil::isSolvedStatus($comment['status']) || Auth::isAdmin())
 			echo '>' . nl2br(h($comment['message'])) . '</div>';
 		else
-			echo ' class="grey-text">[You need to solve this problem to see the comment]</div>';
-		$date = new DateTime($comment['created']);
-		echo '</td><td class="sandboxTable2time" align="right">' . $date->format('Y-m-d') . '<br>' . $date->format('H:i') . '</td>';
+			echo ' class="text-muted">[You need to solve this problem to see the comment]</div>';
+		echo '</td><td class="sandboxTable2time" align="right"><time datetime="' . Util::toIso8601($comment['created']) . '" data-format="date">' . h($comment['created']) . '</time><br><time datetime="' . Util::toIso8601($comment['created']) . '" data-format="time">' . h($comment['created']) . '</time></td>';
 		echo '</tr>';
 		echo '<tr><td colspan="2"><div width="100%"><div align="center">';
 
 		if ($comment['set_connection_id'])
-			new TsumegoButton($comment['tsumego_id'], $comment['set_connection_id'], $comment['set_num'], $comment['status'])->render();
+			new TsumegoButton($comment['tsumego_id'], $comment['set_connection_id'], $comment['set_num'], $comment['status'] ?: 'N', 0, $comment['sgf'])->render();
 		echo '</div></td></tr>';
 		echo '</table>';
 		echo '</div>';
 	}
 
-	public function render()
+	public function render(): void
 	{
 		$parameters = [];
 		$parameters[] = Auth::getUserID();
 
-		$queryCondition = "tsumego_comment.deleted = 0";
+		$queryCondition = "tsumego_comment.deleted = 0 AND tsumego.deleted IS NULL";
 		if ($this->userID)
 			Util::addSqlCondition($queryCondition, "tsumego_comment.user_id = " . $this->userID);
 
@@ -62,20 +68,28 @@ SELECT
 	tsumego_comment.tsumego_id AS tsumego_id,
 	tsumego_comment.created AS created,
 	tsumego_status.status AS status,
-	user.isAdmin AS from_admin,
-	user.name as from_name,
+	" . User::isAdminSql('user.user_role_id') . " AS from_admin,
+	user.display_name as from_display_name,
+	user.id as from_id,
 	tsumego_comment.id as id,
 	set_connection.id AS set_connection_id,
 	CONCAT(`set`.title, ' ', `set`.title2) as set_title,
-	set_connection.num as set_num";
+	set_connection.num as set_num,
+	COALESCE(sgf.sgf, '') AS sgf";
 		$queryFrom = "
 FROM
 	tsumego_comment
 	JOIN tsumego ON tsumego_comment.tsumego_id = tsumego.id
+    LEFT JOIN sgf ON sgf.id = " . Sgf::currentVersionIDSql('tsumego.id') . "
 	JOIN user ON tsumego_comment.user_id = user.id
 	LEFT JOIN tsumego_status ON tsumego_status.tsumego_id = tsumego.id AND tsumego_status.user_id = ?
     LEFT JOIN set_connection ON set_connection.id = (
-        SELECT MIN(sc.id) FROM set_connection sc WHERE sc.tsumego_id = tsumego.id)
+        SELECT sc.id
+        FROM set_connection sc
+        JOIN `set` s ON s.id = sc.set_id
+        WHERE sc.tsumego_id = tsumego.id AND " . SetConnection::visibilitySql('s') . "
+        ORDER BY " . SetConnection::displayOrderSql('s', 'sc') . "
+        LIMIT 1)
     LEFT JOIN `set` ON set_connection.set_id = `set`.id";
 
 		if (!empty($queryCondition))

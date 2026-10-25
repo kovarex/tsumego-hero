@@ -1,0 +1,157 @@
+@layer page
+{
+.adminpanel-table-text {
+  max-width: 350px;
+}
+.adminpanel-link {
+  overflow-wrap: anywhere;
+}
+.duplicateTable {
+  max-width: 800px;
+}
+.admin-text { color: var(--admin-text-color); }
+
+.tag-overview {
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: left;
+}
+/* A tag's problem list sits in the row under it, so the rows are not striped. */
+.tag-overview .data-table tr:nth-child(even) td {
+  background: var(--info-box-background);
+}
+.tag-overview__toggle {
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.tag-overview__note {
+  color: var(--text-softer-color);
+}
+.tag-overview__problems ol {
+  margin: 0;
+  columns: 3 14em;
+}
+/* Accept / Reject of a proposal with the comment sent to the proposer, see ProposalDecisionForm */
+.proposal-decision {
+	display: flex;
+	gap: 4px;
+	align-items: center;
+	white-space: nowrap;
+}
+.proposal-decision__comment {
+	min-width: 12em;
+	flex: 1 1 auto;
+}
+.proposal-description { /* see SgfDescription, a long one is cut to fit in about three lines */
+	min-width: 16em;
+	max-width: 20em;
+	font-size: 13px;
+}
+.rejected-proposals { /* RejectedSGFProposalsRenderer, folded under the waiting proposals */
+	margin-top: 8px;
+}
+.rejected-proposals > summary {
+	cursor: pointer;
+	font-weight: bold;
+}
+.trash {
+  text-align: left;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+.trash .data-table {
+  margin-bottom: 24px;
+}
+.trash-notice {
+  max-width: 800px;
+  margin: 8px auto;
+}
+.trash-notice__restore {
+  display: inline-block;
+  margin-left: 8px;
+}
+/* The admin page (AdminController), a link to everything an admin does with a count of what waits there */
+.admin-area {
+  text-align: left;
+  max-width: 800px;
+  margin: 0 auto;
+}
+.admin-area .title4 {
+  margin-bottom: 12px;
+}
+.admin-area--wide {
+  max-width: none;
+}
+.admin-area__links {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+  margin: 0 0 24px;
+  padding: 0;
+  list-style: none;
+}
+.admin-area__link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid var(--current-border-color);
+  border-radius: 6px;
+  background: var(--info-box-background);
+  color: var(--text-color); /* not the white of the menu links (li a in base.css) */
+  font-size: 18px;
+  text-decoration: none;
+}
+.admin-area__link:hover {
+  border-color: var(--color-green);
+}
+.admin-area__links--tools .admin-area__link {
+  font-size: 16px;
+}
+.admin-area__badge,
+.admin-area__count {
+  margin: -4px 0; /* a link with a count is as tall as one without */
+  min-width: 1.6em;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 1.4;
+  text-align: center;
+}
+.admin-area__badge {
+  color: #fff;
+  background: var(--color-red);
+}
+.admin-area__count {
+  color: var(--text-softer-color);
+  border: 1px solid var(--current-border-color);
+}
+/* What others did since the admin looked the time before, see AdminPage::markViewed */
+.data-table tr.data-table__row--new td {
+  font-weight: bold;
+}
+.data-table tr.data-table__row--new td:first-child {
+  box-shadow: inset 3px 0 0 var(--color-red);
+}
+.roles {
+  text-align: left;
+  max-width: 800px;
+  margin: 0 auto;
+}
+.profile-role {
+  text-align: center;
+  margin-bottom: 8px;
+}
+.role-form {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+}

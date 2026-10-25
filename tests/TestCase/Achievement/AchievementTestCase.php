@@ -1,9 +1,22 @@
 <?php
 
-// Base class for all achievement tests
+use PHPUnitRetry\RetryTrait;
+/**
+ * Base class for all achievement tests.
+ *
+ * @retryAttempts 2
+ * @retryIfException Facebook\WebDriver\Exception\WebDriverException
+ */
+use App\Utility\AchievementChecker;
+use App\Utility\AchievementId;
+use App\Utility\Auth;
+use App\Utility\TsumegoUtil;
+
 abstract class AchievementTestCase extends ControllerTestCase
 {
-	protected function assertAchievementUnlockedWhen($when, $achievementId, $message = null)
+	use RetryTrait;
+
+	protected function assertAchievementUnlockedWhen($when, AchievementId $achievementId, $message = null)
 	{
 		if ($when)
 			$this->assertAchievementUnlocked($achievementId, $message);
@@ -11,21 +24,21 @@ abstract class AchievementTestCase extends ControllerTestCase
 			$this->assertAchievementNotUnlocked($achievementId);
 	}
 
-	protected function assertAchievementUnlocked($achievementId, $message = null)
+	protected function assertAchievementUnlocked(AchievementId $achievementId, $message = null)
 	{
 		$AchievementStatus = ClassRegistry::init('AchievementStatus');
 		$exists = $AchievementStatus->find('count', [
-			'conditions' => ['user_id' => Auth::getUserID(), 'achievement_id' => $achievementId]]);
+			'conditions' => ['user_id' => Auth::getUserID(), 'achievement_id' => $achievementId->value]]);
 
-		$this->assertGreaterThan(0, $exists, $message ?: "Achievement {$achievementId} should be unlocked");
+		$this->assertGreaterThan(0, $exists, $message ?: $achievementId->name . ' should be unlocked');
 	}
 
-	protected function assertAchievementNotUnlocked($achievementId)
+	protected function assertAchievementNotUnlocked(AchievementId $achievementId)
 	{
 		$AchievementStatus = ClassRegistry::init('AchievementStatus');
 		$exists = $AchievementStatus->find('count', [
-			'conditions' => ['user_id' => Auth::getUserID(), 'achievement_id' => $achievementId]]);
-		$this->assertEquals(0, $exists, "Achievement {$achievementId} should NOT be unlocked");
+			'conditions' => ['user_id' => Auth::getUserID(), 'achievement_id' => $achievementId->value]]);
+		$this->assertEquals(0, $exists, $achievementId->name . ' should NOT be unlocked');
 	}
 
 	/**
@@ -50,8 +63,6 @@ abstract class AchievementTestCase extends ControllerTestCase
 	 *
 	 * This sets the 'initialLoading' cookie and makes a request,
 	 * which causes AppController::beforeFilter to check achievements.
-	 *
-	 * @param int $userId User ID
 	 */
 	protected function triggerAchievementCheck()
 	{
@@ -63,7 +74,7 @@ abstract class AchievementTestCase extends ControllerTestCase
 
 		// Make a simple request - achievements checked in AppController::beforeFilter
 		// beforeFilter will call Auth::init() which loads fresh user data from DB
-		$this->testAction('/sites/index', ['return' => 'view']);
+		$this->testAction('/sites/index', ['method' => 'get', 'return' => 'view']);
 	}
 
 	/**
@@ -76,7 +87,6 @@ abstract class AchievementTestCase extends ControllerTestCase
 	 * since set completion achievements are checked immediately when completing
 	 * a set, not on every page load.
 	 *
-	 * @param int $userId User ID
 	 * @param int $completedSetsCount Number of completed sets
 	 */
 	protected function triggerSetCompletionAchievementCheck($completedSetsCount)
@@ -101,9 +111,11 @@ abstract class AchievementTestCase extends ControllerTestCase
 	 *
 	 * @param int $rating Set difficulty rating
 	 * @param int $count Number of tsumegos to create
+	 * @param int $public Set visibility (1 = public)
+	 * @param int|null $userId Owner of the collection (null = the site's own collection)
 	 * @return int Created set ID
 	 */
-	protected function createSetWithTsumegosAndConnections($rating, $count)
+	protected function createSetWithTsumegosAndConnections($rating, $count, int $public = 1, ?int $userId = null)
 	{
 		$Set = ClassRegistry::init('Set');
 		$Tsumego = ClassRegistry::init('Tsumego');
@@ -112,7 +124,8 @@ abstract class AchievementTestCase extends ControllerTestCase
 		// Create Set (use auto-increment ID to avoid collisions)
 		$Set->create();
 		$Set->save([
-			'public' => 1,
+			'public' => $public,
+			'user_id' => $userId,
 			'title' => "Test Set (rating $rating)"]);
 		$setId = $Set->getInsertID();
 
@@ -125,6 +138,9 @@ abstract class AchievementTestCase extends ControllerTestCase
 
 			$SetConnection->create();
 			$SetConnection->save(['set_id' => $setId, 'tsumego_id' => $tsumegoId, 'num' => $i + 1]);
+
+			ClassRegistry::init('Sgf')->create();
+			ClassRegistry::init('Sgf')->save(['tsumego_id' => $tsumegoId, 'sgf' => '(;GM[1]FF[4]SZ[19])', 'user_id' => Auth::getUserID(), 'sgf_status_id' => Sgf::STATUS_ACCEPTED]);
 
 			ClassRegistry::init('TsumegoStatus')->create();
 			ClassRegistry::init('TsumegoStatus')->save(['tsumego_id' => $tsumegoId, 'status' => 'S', 'user_id' => Auth::getUserID()]);

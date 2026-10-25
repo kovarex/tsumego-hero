@@ -1,9 +1,8 @@
 <?php
 
-App::uses('Achievement', 'Model');
-App::uses('AppController', 'Controller');
-App::uses('AchievementTestCase', 'TestCase/Achievement');
-App::uses('ContextPreparator', 'Test');
+use App\Utility\AchievementId;
+use App\Utility\AchievementChecker;
+use App\Utility\HeroPowers;
 
 class SprintMiscAchievementTest extends AchievementTestCase
 {
@@ -15,14 +14,14 @@ class SprintMiscAchievementTest extends AchievementTestCase
 	{
 		$context = new ContextPreparator(['achievement-conditions' => [['category' => 'sprint', 'value' => 30]]]);
 		new AchievementChecker()->checkDanSolveAchievements();
-		$this->assertAchievementUnlocked(Achievement::SPRINT, 'Sprint achievement should unlock when sprint condition >= 30');
+		$this->assertAchievementUnlocked(AchievementId::SPRINT, 'Sprint achievement should unlock when sprint condition >= 30');
 	}
 
 	public function testSprintDoesNotUnlockBelow30()
 	{
 		$context = new ContextPreparator(['achievement-conditions' => [['category' => 'sprint', 'value' => 29]]]);
 		new AchievementChecker()->checkDanSolveAchievements();
-		$this->assertAchievementNotUnlocked(Achievement::SPRINT);
+		$this->assertAchievementNotUnlocked(AchievementId::SPRINT);
 	}
 
 	/**
@@ -33,18 +32,29 @@ class SprintMiscAchievementTest extends AchievementTestCase
 	{
 		$context = new ContextPreparator(['achievement-conditions' => [['category' => 'golden', 'value' => 10]]]);
 		new AchievementChecker()->checkDanSolveAchievements();
-		$this->assertAchievementUnlocked(Achievement::GOLD_DIGGER, 'Gold Digger achievement should unlock when golden condition >= 10');
+		$this->assertAchievementUnlocked(AchievementId::GOLD_DIGGER, 'Gold Digger achievement should unlock when golden condition >= 10');
 	}
 
 	/**
-	 * Test Bad Potion achievement (ID 98): "Have the potion not triggered 15 times on the same day"
-	 * Actually checks potion >= 1 in code (not 15 as description says)
-	 * Requires achievement_condition with category='potion' and value >= 1
+	 * Test Bad Potion achievement checker (ID 98): "Have the potion not triggered
+	 * enough times on the same day." Requires achievement_condition with
+	 * category='potion' and value >= BAD_POTION_THRESHOLD.
+	 *
+	 * This tests only the AchievementChecker. The real trigger path
+	 * (_updatePotionCondition incrementing the counter) is tested in
+	 * PlayResultProcessorComponentTest::testPotionConditionIncrementsOnPreviousFail.
 	 */
-	public function testBadPotionAchievement()
+	public function testBadPotionAchievementChecker(): void
 	{
-		$context = new ContextPreparator(['achievement-conditions' => [['category' => 'potion', 'value' => 1]]]);
+		$context = new ContextPreparator(['achievement-conditions' => [['category' => 'potion', 'value' => HeroPowers::$BAD_POTION_THRESHOLD]]]);
 		new AchievementChecker()->checkDanSolveAchievements();
-		$this->assertAchievementUnlocked(Achievement::BAD_POTION, 'Bad Potion achievement should unlock when potion condition >= 1');
+		$this->assertAchievementUnlocked(AchievementId::BAD_POTION, 'Bad Potion checker should unlock when potion condition >= ' . HeroPowers::$BAD_POTION_THRESHOLD);
+	}
+
+	public function testBadPotionDoesNotUnlockBelow15(): void
+	{
+		$context = new ContextPreparator(['achievement-conditions' => [['category' => 'potion', 'value' => HeroPowers::$BAD_POTION_THRESHOLD - 1]]]);
+		new AchievementChecker()->checkDanSolveAchievements();
+		$this->assertAchievementNotUnlocked(AchievementId::BAD_POTION);
 	}
 }

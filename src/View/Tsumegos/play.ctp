@@ -1,144 +1,169 @@
 <?php
-// Open Graph meta tags for social sharing
-echo $this->element('open_graph_meta');
-?>
-<link rel="stylesheet" type="text/css" href="/besogo/css/besogo.css">
-<link rel="stylesheet" type="text/css" href="/besogo/css/board-flat.css">
-<script src="/besogo/js/besogo.js"></script>
-<script src="/besogo/js/transformation.js"></script>
-<script src="/besogo/js/treeProblemUpdater.js?v=2"></script>
-<script src="/besogo/js/nodeHashTable.js"></script>
-<script src="/besogo/js/editor.js?v=2"></script>
-<script src="/besogo/js/gameRoot.js?v=2"></script>
-<script src="/besogo/js/status.js"></script>
-<script src="/besogo/js/svgUtil.js"></script>
-<script src="/besogo/js/cookieUtil.js"></script>
-<script src="/besogo/js/parseSgf.js"></script>
-<script src="/besogo/js/loadSgf.js"></script>
-<script src="/besogo/js/saveSgf.js"></script>
-<script src="/besogo/js/boardDisplay.js"></script>
-<script src="/besogo/js/coord.js"></script>
-<script src="/besogo/js/toolPanel.js"></script>
-<script src="/besogo/js/filePanel.js"></script>
-<script src="/besogo/js/controlPanel.js"></script>
-<script src="/besogo/js/commentPanel.js"></script>
-<script src="/besogo/js/treePanel.js"></script>
-<script src="/besogo/js/diffInfo.js"></script>
-<script src="/besogo/js/scaleParameters.js"></script>
-<?php
-	$boardSize = 'large';
-	if ($t['Tsumego']['author'] == 'Stepan')
-		$t['Tsumego']['author'] = 'Stepan Trubitsin';
-	$authorx = $t['Tsumego']['author'];
-	if ($authorx == 'Joschka Zimdars')
-		$authorx = 'd4rkm4tter';
-	else if ($authorx == 'Jérôme Hubert')
-		$authorx = 'jhubert';
-	else if($authorx=='Stepan Trubitsin')
-		$authorx = 'Stepan';
+
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\HeroPowers;
+use App\Utility\MistakeTraining;
+use App\Utility\PlayOutcome;
+use App\Utility\Rating;
+use App\Utility\TimeMode;
+use App\Utility\TimeModeUtil;
+use App\Utility\Trash;
+use App\Utility\TsumegoButton;
+use App\Utility\TsumegoButtons;
+use App\Utility\TsumegoFilters;
+use App\Utility\TsumegoUtil;
+use App\Utility\TsumegoXPAndRating;
+use App\Utility\Util;
+use App\Utility\ViteManifest;
+
+/**
+ * @var View $this
+ * @var bool $alternative_response
+ * @var int $amountOfOtherCollection
+ * @var array $boardSelection
+ * @var int $checkBSize
+ * @var string $playerColor 'black' or 'white'
+ * @var string $corner
+ * @var bool $swapColors
+ * @var float|int|string|null $difficulty
+ * @var string $emptyHeart
+ * @var bool $fav
+ * @var string $file
+ * @var int $firstRanks
+ * @var string $fullHeart
+ * @var string $getTitle
+ * @var bool $goldenTsumego
+ * @var bool $hasSgfProposal
+ * @var int $i
+ * @var bool $isAllowedToContribute
+ * @var bool $canAddMoreTags
+ * @var array|null $classroomAssignment Set by the route of a class assignment, which is the row of buttons
+ * @var bool $solvedForAssignment Set with $classroomAssignment: the player solved the problem for the assignment
+ * @var bool $isSandbox
+ * @var bool $isSemeai
+ * @var string $lightDark
+ * @var int $maxHealth
+ * @var bool $mistakeTrainingReplay Set by the training route: the problem was solved today already
+ * @var int $multipleChoiceSquares
+ * @var int $multipleChoiceTriangles
+ * @var string $nextLink
+ * @var bool $noSkipNextLink
+ * @var bool $nothingInRange
+ * @var bool $passEnabled
+ * @var string $previousLink
+ * @var string $queryTitle
+ * @var string $requestSignature
+ * @var bool $requestSolution
+ * @var bool $reviewCheat
+ * @var string $reviewEnabled
+ * @var array $set
+ * @var array $setConnection
+ * @var array $setConnections
+ * @var bool $set_duplicate
+ * @var array $sgf
+ * @var bool $suspiciousBehavior
+ * @var array $t
+ * @var array $tagData
+ * @var TimeMode $timeMode
+ * @var TsumegoButton $tsumegoButton
+ * @var TsumegoButtons|null $tsumegoButtons
+ * @var TsumegoFilters $tsumegoFilters
+ * @var TsumegoXPAndRating $tsumegoXPAndRating
+ * @var array $tv
+ * @var string $userSetsJson
+ */
+
+
+	$this->start('css');
+	echo ViteManifest::css('besogo-css');
+	$this->end();
+
+	$this->start('script');
+	echo ViteManifest::legacyScript('besogo');
+	$this->end();
 
 	if ($lightDark == 'dark')
 	{
 		$playGreenColor = '#0cbb0c';
-		$playBlueColor = '#72a7f2';
 	}
 	else
 	{
 		$playGreenColor = 'green';
-		$playBlueColor = 'blue';
 	}
 
-	if(isset($deleteProblem2))
-		echo '<script type="text/javascript">window.location.href = "/sets/view/'.$t['Tsumego']['set_id'].'";</script>';
-	if ($isSandbox)
+	$swapColorWords = function (string $text): string
 	{
-		$sandboxComment = '(Sandbox)';
-		if (!Auth::hasPremium() && !Auth::isAdmin())
-			echo '<script type="text/javascript">window.location.href = "/";</script>';
-	}
-	else $sandboxComment = '';
+		return preg_replace_callback(
+			'/\b(Black|black|White|white)\b/',
+			fn($m) => ['Black' => 'White', 'black' => 'white', 'White' => 'Black', 'white' => 'black'][$m[1]],
+			$text
+		);
+	};
+	$displayDescription = $t['Tsumego']['description'];
+	// True-color convention: descriptions already match the actual board stones.
+	// When the board is inverted ($swapColors), swap Black<->White to match what the player sees.
+	if ($swapColors)
+		$displayDescription = $swapColorWords($displayDescription);
 
-	$lv = (int)($_COOKIE['lastVisit'] ?? 15352);
-	$a1 = '';
-	$b1 = '';
-	$c1 = '';
-	$d1 = '';
-	$x2 = '';
-	$ansDisplay = 'ans';
-	$playerColor = array();
-	$pl = 0;
-	$plRand = false;
-	if($colorOrientation=='black')
-		$pl = 0;
-	else if($colorOrientation=='white')
-		$pl = 1;
-	else if ($tv != null)
-		$pl = 0;
-	else
-	{
-		$pl = rand(0,1);
-		$plRand = true;
-	}
-if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
-	|| $t['Tsumego']['set_id'] == 243 || $t['Tsumego']['set_id'] == 244 || $t['Tsumego']['set_id'] == 246 || $t['Tsumego']['set_id'] == 251 || $t['Tsumego']['set_id'] == 253)
-		$pl=0;
-	if($pl==0)
-	{
-		$playerColor[0] = 'BLACK';
-		$playerColor[1] = 'WHITE';
-	}
-	else
-	{
-		$playerColor[0] = 'WHITE';
-		$playerColor[1] = 'BLACK';
-	}
-	if($pl==0)
-		$descriptionColor = 'Black ';
-	else
-		$descriptionColor = 'White ';
+	// Variant answers are stored in true colors (they describe the stones on the board as authored).
+	// When the board is inverted ($swapColors), swap Black<->White so the answers match what the player sees.
+	$displayAnswers = $tv['TsumegoVariant'] ?? null;
+	if ($displayAnswers !== null && $swapColors)
+		foreach (['answer1', 'answer2', 'answer3', 'answer4'] as $answerKey)
+			if (isset($displayAnswers[$answerKey]))
+				$displayAnswers[$answerKey] = $swapColorWords($displayAnswers[$answerKey]);
 
-	if($startingPlayer==1 && $plRand==true)
-	{
-		if($descriptionColor=='Black ')
-			$descriptionColor = 'White ';
-		else if($descriptionColor=='White ')
-			$descriptionColor = 'Black ';
-	}
-	$t['Tsumego']['description'] = str_replace('[b]', $descriptionColor, $t['Tsumego']['description']);
+	// Whether the problem is solved for the current mode. In time mode every
+	// problem is presented fresh, so this stays false until it is solved.
+	$solved = TsumegoUtil::isSolvedForCurrentMode($t);
+	// Reset opens the problem again on the route it is played from, so a retry in the
+	// training or in a class assignment stays there
+	$classroomAssignment ??= null;
+	// A problem solved before is played again for a class assignment, which counts the solve on its own
+	$assignmentReplay = $classroomAssignment !== null && $solved && empty($solvedForAssignment);
+	if ($classroomAssignment !== null)
+		$resetLink = ClassroomAssignment::playLink((int) $classroomAssignment['id'], (int) $setConnection['SetConnection']['id']);
+	else
+		$resetLink = (Auth::isInMistakeTrainingMode() ? MistakeTraining::$PLAY_LINK_PREFIX : '/') . (int) $setConnection['SetConnection']['id'];
 	if ($nothingInRange != false)
-		echo '<div align="center" style="color:red;font-weight:800;">'.$nothingInRange.'</div>';
+		echo '<div align="center" class="status-message">'.$nothingInRange.'</div>';
+	if (!empty($t['Tsumego']['deleted']))
+		echo $this->element('trash_notice', [
+			'what' => 'problem',
+			'deleted' => $t['Tsumego']['deleted'],
+			'restoreAction' => '/trash/restore-problem/' . (int) $t['Tsumego']['id']]);
+	if (!empty($set['Set']['deleted']))
+		echo $this->element('trash_notice', [
+			'what' => 'collection',
+			'deleted' => $set['Set']['deleted'],
+			'restoreAction' => '/trash/restore-set/' . (int) $set['Set']['id']]);
 	?>
-	<table width="100%" border="0">
+	<table width="100%" border="0" class="play-header-table">
 	<tr>
 	<td align="center" width="29%">
+		<?php if (!Auth::isInMistakeTrainingMode()): ?>
 		<div id="health">
 			<?php
 			if (Auth::isLoggedIn())
 			{
-				$maxHealth = Util::getHealthBasedOnLevel(Auth::getUser()['level']);
-				$health = max(0, $maxHealth - Auth::getUser()['damage']);
-				for($i = 0; $i < $health; $i++)
-					echo '<img title="Heart" id="heart'.$i.'" src="/img/'.$fullHeart.'.png">';
-				for($i = 0; $i < ($maxHealth - $health); $i++)
-				{
-					$h = $health+$i;
-					echo '<img title="Empty Heart" id="heart'.$h.'" src="/img/'.$emptyHeart.'.png">';
-				}
+				echo '<span id="health-counter" class="health-counter">' . (int)Auth::getRemainingHealth() . ' / ' . (int)$maxHealth . '</span>';
+				for ($i = 0; $i < $maxHealth; $i++)
+					echo '<img title="Heart" id="heart'.$i.'">';
 			}
 			?>
 		</div>
+		<?php endif; ?>
 	</td>
 	<td align="center" width="42%">
 	<table>
 	<tr>
 		<td align="center">
 			<div id="playTitle">
-				<?php echo Play::renderTitle($setConnection, $set, $tsumegoFilters, $tsumegoButtons, $amountOfOtherCollection, $difficulty, $timeMode, $queryTitle, $t); ?>
+				<?php echo $classroomAssignment !== null
+					? Play::renderAssignmentTitle($classroomAssignment, $tsumegoButtons, $setConnection, $set, $amountOfOtherCollection)
+					: Play::renderTitle($setConnection, $set, $tsumegoFilters, $tsumegoButtons, $amountOfOtherCollection, $difficulty, $timeMode, $queryTitle, $t); ?>
 				<br>
-				<?php
-				if (!isset($additionalInfo))
-					$additionalInfo = ['triangle' => [], 'square' => [], 'playerNames' => [], 'lastPlayed' => [99, 99], 'mode' => 0];
-				?>
 			</div>
 		</td>
 	</tr>
@@ -149,17 +174,20 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			echo '<div id="titleDescription" class="titleDescription1">';
 		elseif (Auth::isInRatingMode()|| Auth::isInTimeMode())
 			echo '<div id="titleDescription" class="titleDescription2">';
-		echo '<a id="descriptionText">'.h($t['Tsumego']['description']).'</a> ';
+		else
+			echo '<div id="titleDescription" class="titleDescription1">';
+		echo '<a id="descriptionText">'.h($displayDescription).'</a> ';
 		if (isset($t['Tsumego']['hint']) && $t['Tsumego']['hint']!='')
-			echo '<font color="grey" style="font-style:italic;">('.h($t['Tsumego']['hint']).')</font>';
+			echo '<span class="hint italic">('.h($t['Tsumego']['hint']).')</span>';
 		if($tv!=null)
 		{
 			if($tv['TsumegoVariant']['type']=='score_estimating')
 			{
+				$capturesLabels = 'Black captures: '.$tv['TsumegoVariant']['answer2'].' | White captures: '.$tv['TsumegoVariant']['answer3'];
+				if ($swapColors)
+					$capturesLabels = $swapColorWords($capturesLabels);
 				echo '<br>';
-				echo 'Black captures: '.h($tv['TsumegoVariant']['answer2']).' | ';
-				echo 'White captures: '.h($tv['TsumegoVariant']['answer3']).' | ';
-				echo 'Komi: '.h($tv['TsumegoVariant']['answer1']).' ';
+				echo '<span id="scoreEstimatingLabels">'.h($capturesLabels).' | Komi: '.h($tv['TsumegoVariant']['answer1']).'</span>';
 			}
 		}
 		if(Auth::isAdmin()) { ?>
@@ -168,14 +196,18 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			<form id="tsumego-edit" method="post" action="/tsumegos/edit/<?php echo $t['Tsumego']['id']; ?>">
 				<input type="hidden" name="tsumego_id" value="<?php echo $t['Tsumego']['id']; ?>">
 				<input type="hidden" name="redirect" value="<?php echo h($_SERVER['REQUEST_URI']); ?>">
+				<input type="hidden" name="color_swapped" value="<?php echo $swapColors ? '1' : '0'; ?>">
 				<table>
 					<tr>
-						<td><label for="description">Desription:</label></td>
-						<td><input type="text" name="description" id="description" value="<?php echo h(str_replace($descriptionColor, '[b]', $t['Tsumego']['description'])); ?>"></td>
+						<td><label for="description">Description:</label></td>
+						<td>
+							<textarea name="description" id="description" rows="3" style="width: 100%;"><?php echo h($displayDescription); ?></textarea>
+							<br><small style="color: #888;">Describe the problem. <?php echo ($playerColor === 'white') ? 'White' : 'Black'; ?> is to move.</small>
+						</td>
 					</tr>
 					<tr>
 						<td><label for="hint">Hint:</label></td>
-						<td><input type="text" name="hint" id="hint" value="<?php echo h($t['Tsumego']['hint']); ?>"></td>
+						<td><textarea name="hint" id="hint" rows="1" style="width: 100%;"><?php echo h($t['Tsumego']['hint']); ?></textarea></td>
 					</tr>
 					<tr>
 						<td><label for="rating">Rating:</label></td>
@@ -193,10 +225,13 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 						<td><label for="author">Author:</label></td>
 						<td><input type="text" name="author" id="author" value="<?php echo h($t['Tsumego']['author']); ?>"></td>
 					</tr>
-					<?php if ($isSandbox) { ?>
+					<?php if (empty($t['Tsumego']['deleted'])) { ?>
 					<tr>
 						<td><label for="delete">Delete:</label></td>
-						<td><input type="text" name="delete" id="delete" value="" placeholder="Type delete"></td>
+						<td>
+							<input type="text" name="delete" id="delete" value="" placeholder="Type delete">
+							<br><small style="color: #888;">Moves the problem to the trash, it can be restored for <?php echo Trash::$RETENTION_DAYS; ?> days.</small>
+						</td>
 					</tr>
 					<?php } ?>
 				</table>
@@ -210,39 +245,41 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	</table>
 	</td>
 	<td align="center" width="29%">
-		<?php HeroPowers::render(); ?>
+		<?php if (!Auth::isInMistakeTrainingMode()) HeroPowers::render(); ?>
 	</td>
 	</tr>
 	</table>
-	<?php $tsumegoXPAndRating->render(); ?>
+	<?php if (Auth::isInMistakeTrainingMode() && !empty($mistakeTrainingReplay)): ?>
+		<div class="alert alert-info mistake-training-replay" role="status">Already solved today. This try does not count.</div>
+	<?php endif; ?>
+	<?php // The XP of the training shows under "Correct!", so its column stays empty, but the rank of the problem shows as in the level mode ?>
+	<div<?php echo Auth::isInMistakeTrainingMode() ? ' class="play-status--training"' : ''; ?>>
+		<?php $tsumegoXPAndRating->render(); ?>
+	</div>
 	<div align="center">
 		<div id="theComment"></div>
 	</div>
 
 	<!-- BOARD -->
-	<?php if($ui==2){ ?>
-		<div id="target"></div>
-		<div id="targetLockOverlay"></div>
-	<?php }else{ ?>
-		<div id="board" align="center"></div>
-	<?php } ?>
+	<div id="target"></div>
+	<div id="targetLockOverlay"></div>
 	<?php if(!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0 || ($tv!=null && $tv['TsumegoVariant']['type']=='multiple_choice')){ ?>
 	<div align="center">
 	<br>
-		<a href="/tsumegos/play/<?php echo $t['Tsumego']['id']; ?>" title="reset problem" id="besogo-next-button">Reset</a>
+		<a href="<?php echo $resetLink; ?>" title="reset problem" id="besogo-next-button">Reset</a>
 		<br><br>
 	</div>
 	<?php }else if($tv!=null && $tv['TsumegoVariant']['type'] == 'score_estimating'){ ?>
 	<div align="center">
 		<?php if($t['Tsumego']['set_id']==262){ ?>
 			<br>
-			<a id="submitScoreEstimatingBlackWins" href="#">Black wins</a>
+			<a id="submitScoreEstimatingBlackWins" href="#"><?php echo $swapColors ? 'White wins' : 'Black wins'; ?></a>
 			<?php if(substr($tv['TsumegoVariant']['answer1'],-2) !== '.5') { ?>
 				<a id="submitScoreEstimatingJigo" href="#">Jigo</a>
 			<?php } ?>
-			<a id="submitScoreEstimatingWhiteWins" href="#">White wins</a>
+			<a id="submitScoreEstimatingWhiteWins" href="#"><?php echo $swapColors ? 'Black wins' : 'White wins'; ?></a>
 		<?php }else{ ?>
-			<a href="/tsumegos/play/<?php echo $t['Tsumego']['id']; ?>" title="reset problem" id="besogo-next-button">Reset</a>
+			<a href="<?php echo $resetLink; ?>" title="reset problem" id="besogo-next-button">Reset</a>
 			<input value="0" placeholder="Score" type="text" id="ScoreEstimatingSE">
 			<a id="submitScoreEstimatingSE" href="#">Submit</a>
 		<?php } ?>
@@ -261,8 +298,8 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	?>
 
 <?php if (isset($tsumegoButtons)) { ?>
-	<div class="tsumegoNavi1">
-		<div class="tsumegoNavi2">
+	<div class="problem-nav">
+		<div class="problem-nav__inner">
 			<?php
 			foreach ($tsumegoButtons as $index => $tsumegoButton) {
 				$tsumegoButton->render($index, $fav);
@@ -293,32 +330,42 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 				else
 				{
 					$makeProposal = 'Proposal sent';
-					$proposalSentColor = 'color:#717171;';
+					$proposalSentColor = 'color:var(--text-softer-color);';
 				}
 			}
 			$getTitle = str_replace('&','and',$set['Set']['title']);
 			$getTitle .= ' '.$set['SetConnection']['num'];
+		$tagEditorProps = json_encode([
+			'userId' => Auth::getUserID() ? (int) Auth::getUserID() : null,
+			'isAdmin' => Auth::isAdmin(),
+			'tsumegoId' => (int) $t['Tsumego']['id'],
+			'isTimeMode' => Auth::isInTimeMode(),
+			'problemSolved' => $solved,
+			'canAddMoreTags' => $canAddMoreTags,
+			'isAllowedToContribute' => $isAllowedToContribute,
+			'initialTags' => array_map(fn($row) => [
+				'id' => (int) $row['id'],
+				'name' => $row['name'],
+				'isAdded' => (bool) ($row['tag_connection_id'] !== null),
+				'isApproved' => (bool) ($row['approved'] ?? false),
+				'isMine' => (bool) ($row['is_mine'] ?? false),
+				'isHint' => (bool) ($row['hint'] ?? false),
+			], $tagData),
+		]);
 		?>
 		<div class="tag-container" align="center">
-			<div class="tag-list"></div>
-			<?php if($isAllowedToContribute2){ ?>
-			<div class="add-tag-list-button"><a class="add-tag-list-anchor" id="open-add-tag-menu">
-			<?php if($isAllowedToContribute){ ?>
-				Edit tags
-			<?php } ?>
-			</a></div>
-			<?php }else{
-				echo '<div style="color:gray;font-size:14px">Daily limit reached.</div>';
-			} ?>
-			<div class="add-tag-list-popular"></div>
-			<div class="add-tag-list"></div>
+			<div
+				data-tag-editor-root
+				data-props="<?php echo htmlspecialchars($tagEditorProps); ?>"
+			></div>
 		</div>
 		<br>
 		<?php
-			echo '<a id="openSgfLink" href="/editor/?setConnectionID='.$setConnection['SetConnection']['id'].'&sgfID='.$sgf['Sgf']['id'].'" style="margin-right:20px;'.$proposalSentColor.'" class="selectable-text">'.$makeProposal.'</a>';
-			echo '<a id="showx3" style="margin-right:20px;" class="selectable-text">Download SGF</a>';
-			echo '<a id="findSimilarProblems" style="margin-right:20px;" class="selectable-text">Find Similar Problems</a>';
+			echo '<a id="openSgfLink" href="/editor/?setConnectionID='.$setConnection['SetConnection']['id'].'&sgfID='.$sgf['Sgf']['id'].(Auth::isAdmin() ? '' : '&proposal=1').'" class="selectable-text mr-5" style="'.$proposalSentColor.'">'.$makeProposal.'</a>';
+			echo '<a id="showx3" class="selectable-text mr-5">Download SGF</a>';
+			echo '<a id="findSimilarProblems" class="selectable-text mr-5">Find Similar Problems</a>';
 			echo '<a id="showFilters" class="selectable-text">Filters<img id="greyArrowFilter" src="/img/greyArrow1.png"></a>';
+			echo ' <label class="preview-toggle" title="Toggle board previews"><input type="checkbox" class="preview-zoom-toggle">🔍 Preview</label>';
 			echo '<br><br>';
 			echo '<div class="filters-outer">
 				<div id="msgFilters">
@@ -347,11 +394,11 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 
 			if(Auth::isAdmin())
 			{
-				echo '<a id="showx99" style="margin-right:20px;" class="selectable-text">Admin-Request Solution</a>';
-				echo '<a id="showx4" style="margin-right:20px;" class="selectable-text">Admin-Download</a>';
-				echo '<a id="show4" style="margin-right:20px;" class="selectable-text">Admin-Upload<img id="greyArrow4" src="/img/greyArrow1.png"></a>';
-				echo '<a id="showx6" style="margin-right:20px;" class="selectable-text '.$adHighlight.'">History</a>';
-				echo '<a id="showx8" style="margin-right:20px;" class="selectable-text">Rating</a>';
+				echo '<a id="showx99" class="selectable-text mr-5">Admin-Request Solution</a>';
+				echo '<a id="showx4" class="selectable-text mr-5">Admin-Download</a>';
+				echo '<a id="show4" class="selectable-text mr-5">Admin-Upload<img id="greyArrow4" src="/img/greyArrow1.png"></a>';
+				echo '<a id="showx6" class="selectable-text mr-5 '.$adHighlight.'">History</a>';
+				echo '<a id="showx8" class="selectable-text mr-5">Rating</a>';
 				echo '<a id="show5" class="selectable-text">Settings<img id="greyArrow5" src="/img/greyArrow1.png"></a>';
 				if($alternative_response==1)
 				{
@@ -413,6 +460,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 						<br>
 						<form action="/sgf/upload/' . $setConnection['SetConnection']['id'] . '" method="POST" enctype="multipart/form-data">
 							<input id="admin-upload-button" type="file" name="adminUpload" />
+							<input id="admin-upload-description" type="text" name="description" maxlength="' . Sgf::DESCRIPTION_MAX_LENGTH . '" placeholder="What changed and why (optional)" />
 							<input id="admin-upload-submit" value="Submit" type="submit"/>
 						</form>
 					</div>
@@ -464,7 +512,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 							'legend'=>false,
 							'value'=>$tv['TsumegoVariant']['numAnswer']
 						);
-						echo '<a id="showMC" class="selectable-text" style="display: inline-block;">Edit multiple choice
+						echo '<a id="showMC" class="selectable-text selectable-text--inline">Edit multiple choice
 						<img id="greyArrowMC" src="/img/greyArrow1.png"></a><br><br>';
 						echo '<div id="showxMC">';
 						echo $this->Form->create('Study');
@@ -481,7 +529,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 						echo '<br><br>';
 						echo '</div>';
 	}else{
-						echo '<a id="showSE" class="selectable-text" style="display: inline-block;">Edit correct answer
+						echo '<a id="showSE" class="selectable-text selectable-text--inline">Edit correct answer
 						<img id="greyArrowSE" src="/img/greyArrow1.png"></a><br><br>';
 						echo '<div id="showxSE">';
 						echo '<input type="button" value="Black wins" id="besogo-se-edit-black">';
@@ -524,7 +572,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		<tr>
 				<td><?php echo $this->element('TsumegoComments/section', [
 						'tsumegoId' => $t['Tsumego']['id'],
-						't' => $t,
+						'solved' => $solved,
 					]); ?></td>
 					</tr>
 					</table>
@@ -534,28 +582,27 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		?>
 	<?php if(!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0 || $tv!=null&&$tv['TsumegoVariant']['type']=='multiple_choice'){ ?>
 		<label>
-		<input type="checkbox" class="alertCheckbox1" id="alertCheckbox" autocomplete="off" />
-		<div class="alertBox alertInfo" id="multipleChoiceAlerts">
-		<div class="alertBanner">
+		<input type="checkbox" class="toast__toggle" id="alertCheckbox" autocomplete="off" />
+		<div class="toast" id="multipleChoiceAlerts">
+		<div class="toast__banner">
 		Infomation
-		<span class="alertClose">x</span>
+		<span class="toast__close">x</span>
 		</div>
-		<span class="alertText2">
+		<span class="toast__body toast__body--left">
 		<div id="multipleChoiceText"></div>
 		<div class="clear1"></div>
 		</span>
 					</div>
 		</label>
 	<?php }else{ ?>
-		<?php if($potionAlert){ ?>
 		<label>
-			<input type="checkbox" class="alertCheckbox1" id="potionAlertCheckbox" autocomplete="off" />
-			<div class="alertBox alertInfo" id="potionAlerts">
-			<div class="alertBanner" align="center">
+			<input type="checkbox" class="toast__toggle" id="potionAlertCheckbox" autocomplete="off" />
+			<div class="toast" id="potionAlerts">
+			<div class="toast__banner" align="center">
 			Hero Power
-			<span class="alertClose">x</span>
+			<span class="toast__close">x</span>
 		</div>
-			<span class="alertText">
+			<span class="toast__body">
 	<?php
 			echo '<img id="hpIcon1" src="/img/hp5.png">
 			You found a potion, your hearts have been restored.<br>'
@@ -563,21 +610,19 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			<br class="clear1"/></span>
 					</div>
 		</label>
-	<?php }else{ ?>
 		<label>
-		<input type="checkbox" class="alertCheckbox1" id="customAlertCheckbox" autocomplete="off" />
-		<div class="alertBox alertInfo" id="customAlerts">
-		<div class="alertBanner">
+		<input type="checkbox" class="toast__toggle" id="customAlertCheckbox" autocomplete="off" />
+		<div class="toast" id="customAlerts">
+		<div class="toast__banner">
 		Message
-		<span class="alertClose">x</span>
+		<span class="toast__close">x</span>
 		</div>
-		<span class="alertText3">
+		<span class="toast__body toast__body--wide">
 		<div id="customText"></div>
 		<div class="clear1"></div>
 		</span>
 		</div>
 		</label>
-	<?php } ?>
 	<?php } ?>
 
 	<?php echo '</div>'; ?>
@@ -592,11 +637,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	$browser = $_SERVER['HTTP_USER_AGENT'] . "\n\n";
 	echo '<audio><source src="/sounds/newStone.ogg"></audio>';
 	echo '';
-
-	/*
-	§TESTING AREA§
-	echo '<pre>'; print_r($levelBar); echo '</pre>';
-	*/
 		?>
 
 <script type="text/javascript">
@@ -605,13 +645,16 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	var lastHover = false,
 		lastX = -1,
 		lastY = -1;
-	var moveCounter = 0;
 	var move = 0;
 	var branch = "";
-	var misplays = 0;
+	var hadMisplay = false;
 	var hoverLocked = false;
 	var tryAgainTomorrow = false;
-	var doubleXP = false;
+	var currentHealth = <?php echo Auth::getRemainingHealth(); ?>;
+	var maxHealth = <?php echo $maxHealth; ?>;
+	var fullHeart = '<?php echo $fullHeart; ?>';
+	var emptyHeart = '<?php echo $emptyHeart; ?>';
+	var heartResetTime = new Date(new Date().setUTCHours(24,0,0,0)).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
 	var countDownDate = new Date();
 	var revelationUseCount = <?php echo HeroPowers::remainingRevelationUseCount(); ?>;
 	var multipleChoiceSelected = false;
@@ -624,85 +667,60 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	var msgMCselected = false;
 	var msgSEselected = false;
 	var playedWrong = false;
-	var seconds = 0;
-	var xpInfo = [];
+	var clockStart = 0;
+	var bonusSeconds = 0;
+	var timeToFirstClick = null;
 	var freePlayMode = false;
-	var freePlayMode2 = false;
-	var freePlayMode2done = false;
-	var rw = false;
-	var rwLevel = 0;
-	var rwBranch = 0;
-	var masterArrayPreI = 0;
-	var masterArrayPreJ = 0;
-	var rwSwitcher = 2;
-	var inPath = false;
-	var pathLock = false;
 	var reviewEnabled = false;
 	var theComment = "";
-	var moveHasComment = false;
-	var isIncorrect = false;
-	var thumbsUpSelected = false;
-	var thumbsDownSelected = false;
-	var thumbsUpSelected2 = false;
-	var thumbsDownSelected2 = false;
-	var mode = <?php echo Auth::getWithDefault('mode', 1); ?>;
+	// The effective mode the server plays by, so the board cannot disagree with it.
+	var mode = <?php echo Auth::getMode(); ?>;
 	var timeModeEnabled = true;
-	var timeUp = false;
-	var moveTimeout = 360;
 	var authorProblem = false;
 	var tsumegoID = <?php echo $t['Tsumego']['id'] ?>;
 	var playGreenColor = '<?php echo $playGreenColor; ?>';
 	var tStatus = "<?php echo $t['Tsumego']['status']; ?>";
 	var failAlreadyReported = false;
+	// A problem solved before, played again for a class assignment: the solve is sent for the
+	// assignment, though it changes nothing else
+	var assignmentReplay = <?php echo Util::boolString($assignmentReplay); ?>;
+	// The fail sent when the line was lost, which the player isn't shown until the line is over
+	var unrevealedFail = null;
+	window._submitResultPromise = null;
 
-	var tcount = <?php echo $timeMode ? $timeMode->secondsToSolve : 0; ?>;
-	var secondsMultiplier = <?php echo $t['Tsumego']['id'] * 7900; ?>;
-	var isCorrect = false;
-	var whiteMoveAfterCorrect = false;
-	var whiteMoveAfterCorrectI = 0;
-	var whiteMoveAfterCorrectJ = 0;
-	var reviewModeActive = false;
-	var ui = <?php echo $ui; ?>;
 	var userXP = <?php echo Auth::getWithDefault('xp', 0); ?>;
 	var previousButtonLink = "<?php echo $previousLink; ?>";
 	var nextButtonLink = "<?php echo $nextLink; ?>";
+	// A training try ends at the first mistake, Reset opens the problem again for the next one
+	var resetButtonLink = "<?php echo $resetLink; ?>";
 	var noSkipNextButtonLink = "<?php echo $noSkipNextLink; ?>";
-	var timeModeTimer = (mode == 3 ? new TimeModeTimer() : null);
+	var timeModeTimer = (mode == 3 ? new TimeModeTimer(<?php echo $timeMode->secondsToSolve; ?>) : null);
 	var setID = <?php echo $set['Set']['id'] ?>;
 	var isMutable = true;
 	var deleteNextMoveGroup = false;
 	var file = <?php echo json_encode($file, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
-	var clearFile = <?php echo json_encode($set['Set']['title'] . ' - ' . $setConnection['SetConnection']['num'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 	var tsumegoFileLink = "<?php echo $t['Tsumego']['id']; ?>";
 	var requestSignature = "<?php echo $requestSignature; ?>";
-	var idForSignature = "<?php echo $idForSignature; ?>";
-	var idForSignature2 = "<?php echo $idForSignature2; ?>";
 	var author = <?php echo json_encode($t['Tsumego']['author'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
-	var besogoPlayerColor = "black";
-	var favorite = "<?php echo $isTSUMEGOinFAVORITE; ?>";
+	var userSets = <?php echo $userSetsJson; ?>;
 	var besogoMode2Solved = false;
 	var disableAutoplay = false;
 	var besogoNoLogin = false;
-	var soundParameterForCorrect = false;
 	var sprintSeconds = <?php echo Constants::$SPRINT_SECONDS; ?>;
-	<?php $tagConnectionsEdit->renderJs(); ?>
-	var problemSolved = <?php echo Util::boolString(TsumegoUtil::hasStateAllowingInspection($t)); ?>;
+	var problemSolved = <?php echo Util::boolString($solved); ?>;
 	var playerRatingCalculationModifier = <?php echo Constants::$PLAYER_RATING_CALCULATION_MODIFIER; ?>;
 	let multipleChoiceLibertiesB = 0;
 	let multipleChoiceLibertiesW = 0;
-	let multipleChoiceVariance = <?php echo $t['Tsumego']['variance']; ?>+"";
 	let multipleChoiceLibertyCount = <?php echo $t['Tsumego']['libertyCount']; ?>+"";
 	let multipleChoiceSemeaiType = <?php echo $t['Tsumego']['semeaiType']; ?>+"";
 	let multipleChoiceInsideLiberties = <?php echo $t['Tsumego']['insideLiberties']; ?>+"";
 	let multipleChoiceEnabled = false;
 	let hasChosen = false;
 	let enableDownloads = false;
-	let cvn = true;
 	let adminCommentOpened = false;
 	let customMultipleChoiceAnswer = 0;
 	var boardLockValue = 0;
 	let mText = "";
-	let ratingBarLock = false;
 	let passEnabled = <?php echo $t['Tsumego']['pass']; ?>+"";
 	let besogoRotation = -1;
 	let msgFilterSelected = false;
@@ -716,12 +734,64 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		// The navigation buttons don't exist in all of the modes
 		if (!current)
 			return;
-		current.parentElement.parentElement.className = 'status' + status + ' statusCurrent';
+		current.parentElement.parentElement.className = 'problem-nav__item problem-nav__item--' + status + ' problem-nav__item--current';
+	}
+
+	// The mistake training button of the open problem as the server stored its result:
+	// the colour, the rung badge and the tooltip that explains them
+	function updateMistakeTrainingButton(button, xp)
+	{
+		let current = document.getElementById("currentNavigationButton");
+		if (!current)
+			return;
+		updateCurrentNavigationButton(button.status);
+		let link = current.parentElement;
+		let badge = link.querySelector(".problem-nav__rung");
+		if (badge)
+			badge.outerHTML = button.badge;
+		let label = link.querySelector(".tooltip-label");
+		label.className = "tooltip-label status" + button.status;
+		label.textContent = button.label;
+		link.querySelector(".tooltip-desc").textContent = button.description;
+
+		// A solve says under "Correct!" what it did to the problem: its next review, or its graduation
+		let status = document.getElementById("status");
+		status.querySelectorAll(".mistake-training-outcome").forEach(old => old.remove());
+		let outcome;
+		if (button.status === 'S' && problemSolved)
+		{
+			outcome = document.createElement("p");
+			outcome.className = "mistake-training-outcome";
+			let earned = xp ? xp.review + xp.graduation : 0;
+			outcome.textContent = (earned > 0 ? "+" + earned + " XP \u00b7 " : "") + button.description;
+			status.appendChild(outcome);
+			if (xp && xp.clear > 0)
+			{
+				let clear = document.createElement("p");
+				clear.className = "mistake-training-outcome mistake-training-outcome--clear";
+				clear.textContent = "All clear today: +" + xp.clear + " XP";
+				outcome.after(clear);
+			}
+
+			// The last problem of the day is solved, so Next leads to the end of the training
+			if (!nextButtonLink)
+			{
+				nextButtonLink = <?php echo json_encode(MistakeTraining::$QUEUE_LINK); ?>;
+				let next = document.getElementById("besogo-next-button-inactive");
+				if (next)
+				{
+					next.id = "besogo-next-button";
+					next.href = nextButtonLink;
+					next.title = "next problem";
+				}
+			}
+		}
 	}
 
 	<?php
 		$tsumegoXPAndRating->renderJavascript();
-		HeroPowers::renderJavascript();
+		if (!Auth::isInMistakeTrainingMode())
+			HeroPowers::renderJavascript();
 	?>
 	$("#showFilters").click(function(){
 		if(!msgFilterSelected){
@@ -741,8 +811,8 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			foreach ($tsumegoFilters->sets as $setName)
 				echo 'activeTopicTiles.push('.json_encode($setName, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');';
 		if($tsumegoFilters->query != 'difficulty')
-			foreach ($tsumegoFilters->ranks as $rank)
-				echo 'activeDifficultyTiles.push('.json_encode($rank, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');';
+			foreach ($tsumegoFilters->rankFilterLabels() as $rankLabel)
+				echo 'activeDifficultyTiles.push('.json_encode($rankLabel, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');';
 		if($tsumegoFilters->query != 'tags')
 			foreach ($tsumegoFilters->tags as $tag)
 				echo 'activeTagTiles.push('.json_encode($tag, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');';
@@ -752,23 +822,41 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	function drawActiveTiles(){
 		$(".active-tiles-container").html("");
 		for(let i=0;i<activeTopicTiles.length;i++)
-			$(".active-tiles-container").append('<div class="dropdown-tile tile-color1" id="active-tiles-element'+i+'" onclick="removeActiveTopic('+i+')" style="cursor:context-menu">'+activeTopicTiles[i]+'</div>');
+			$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--green dropdown__tile--context" id="active-tiles-element'+i+'" onclick="removeActiveTopic('+i+')">'+activeTopicTiles[i]+'</div>');
 		for(let i=0;i<activeDifficultyTiles.length;i++)
-			$(".active-tiles-container").append('<div class="dropdown-tile tile-color2" id="active-tiles-element'+i+'" onclick="removeActiveDifficulty('+i+')" style="cursor:context-menu">'+activeDifficultyTiles[i]+'</div>');
+			$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--purple dropdown__tile--context" id="active-tiles-element'+i+'" onclick="removeActiveDifficulty('+i+')">'+activeDifficultyTiles[i]+'</div>');
 		for(let i=0;i<activeTagTiles.length;i++)
-			$(".active-tiles-container").append('<div class="dropdown-tile tile-color3" id="active-tiles-element'+i+'" onclick="removeActiveTag('+i+')" style="cursor:context-menu">'+activeTagTiles[i]+'</div>');
+			$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--brown dropdown__tile--context" id="active-tiles-element'+i+'" onclick="removeActiveTag('+i+')">'+activeTagTiles[i]+'</div>');
 		if(activeTopicTiles.length>0 || activeDifficultyTiles.length>0 || activeTagTiles.length>0)
-			$(".active-tiles-container").append('<a class="dropdown-tile tile-color4" id="unselect-active-tiles" href="">clear</a><div style="clear:both"</div>');
+			$(".active-tiles-container").append('<a class="dropdown__tile dropdown__tile--muted" id="unselect-active-tiles" href="">clear</a><div class="clearfix"></div>');
 	}
 
 	$(".active-tiles-container").on("click", "#unselect-active-tiles", function(e){
 		e.preventDefault();
 		$(".active-tiles-container").html("");
-		setCookie("filtered_sets", "");
-		setCookie("filtered_ranks", "");
-		setCookie("filtered_tags", "");
-		window.location.href = "/tsumegos/play/<?php echo $t['Tsumego']['id']; ?>";
+		setCookie("filtered_sets", "clear");
+		setCookie("filtered_ranks", "clear");
+		setCookie("filtered_tags", "clear");
+		window.location.reload();
 	});
+
+	function removeActiveTopic(index){
+		activeTopicTiles.splice(index, 1);
+		setCookie("filtered_sets", activeTopicTiles.length == 0 ? "clear" : activeTopicTiles.join("@"));
+		window.location.reload();
+	}
+
+	function removeActiveDifficulty(index){
+		activeDifficultyTiles.splice(index, 1);
+		setCookie("filtered_ranks", activeDifficultyTiles.length == 0 ? "clear" : activeDifficultyTiles.join("@"));
+		window.location.reload();
+	}
+
+	function removeActiveTag(index){
+		activeTagTiles.splice(index, 1);
+		setCookie("filtered_tags", activeTagTiles.length == 0 ? "clear" : activeTagTiles.join("@"));
+		window.location.reload();
+	}
 
 <?php
 	if($tv!=null){
@@ -783,42 +871,29 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		echo 'besogoNoLogin = true;';
 	}
 
-	if($pl==1) echo 'besogoPlayerColor = "white";';
-	if (
-		!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0 || $t['Tsumego']['set_id'] == 109
-		|| $t['Tsumego']['set_id'] == 233 || $t['Tsumego']['set_id'] == 236
-	)
-	echo 'besogoPlayerColor = "black";';
-
-	if ($authorx == Auth::getWithDefault('name', ''))
+	// Author mode is decided by the account link, the author string can be a legacy alias.
+	$authorUserId = $t['Tsumego']['author_user_id'] ?? null;
+	if ($authorUserId !== null && $authorUserId == Auth::getUserID())
 		echo 'authorProblem = true;';
 	if($requestSolution)
 		echo 'authorProblem = true;';
 	if(Auth::isInTimeMode())
-	{
-		echo 'seconds = 0.0;';
 		echo 'var besogoMode3Next = 0;'; // probably whatever, the id doesn't matter in time mode
-	}
 	?>
 
-<?php
-		if($corner=='t' || $corner=='b' || $corner=='full board')
-			echo '$("#plus2").css("left", "340px");';
-			?>
 
-	<?php if(!Auth::isInTimeMode()){ ?>
 
-		function incrementSeconds(){
-			seconds += 1;
+	function elapsedSeconds()
+	{
+		return (performance.now() - clockStart) / 1000;
 	}
-		var secondsx = setInterval(incrementSeconds, 1000);
-	<?php }else{ ?>
 
-		function incrementSeconds(){
-			seconds += 0.1;
+	function startClock()
+	{
+		clockStart = performance.now();
+		if (timeModeTimer)
+			timeModeTimer.start();
 	}
-		var secondsx = setInterval(incrementSeconds, 100);
-	<?php } ?>
 	$(".adminCommentPanel").hide();
 	$(".tsumegoNavi-middle2").hide();
 	$(".tsumegoNavi-middle2").hide();
@@ -1019,15 +1094,12 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			$("#scoreEstEditField").val(chars+num);
 		});
 	<?php } ?>
+
 	<?php
-	if($potionSuccess){
-		echo 'document.cookie = "rejuvenationx=2;path=/tsumegos/play;SameSite=Lax";';
-		echo 'window.location = "/tsumegos/play/'.$t['Tsumego']['id'].'?potionAlert=1";';
-	}
 	if(Auth::isInLevelMode()){
 	}elseif(Auth::isInRatingMode()){
 		echo '
-			$(".tsumegoNavi1").hide();
+			$(".problem-nav").hide();
 			$(".tsumegoNavi-middle").hide();
 			$(".tsumegoNavi-middle2").show();
 			$(".mode1").css({"padding-top":"8px"});
@@ -1041,14 +1113,12 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		echo '$("#account-bar-user > a").css({color:"#ca6658"});';
 	}
 
-	$showComments = TsumegoUtil::hasStateAllowingInspection($t) || Auth::isAdmin();
-	echo 'var showCommentSpace = ' . Util::boolString($showComments) . ';';
 			if(Auth::isAdmin())
 		echo '$("#show5").css("display", "inline-block");';
 
 	echo 'var goldenTsumego = '.Util::boolString($goldenTsumego).';';
 
-	if ($t['Tsumego']['status'] == 'F' || $t['Tsumego']['status'] == 'X') {
+	if (!Auth::isInMistakeTrainingMode() && ($t['Tsumego']['status'] == 'F' || $t['Tsumego']['status'] == 'X')) {
 		echo 'var locked=true; tryAgainTomorrow = true;';
 		echo 'toggleBoardLock(true);';
 	} else echo 'var locked=false;';
@@ -1065,32 +1135,25 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		echo 'var noXP=true;';
 	else
 		echo 'var noXP=false;';
-
-	if (!isset($additionalInfo))
-		$additionalInfo = ['triangle' => [], 'square' => [], 'playerNames' => [], 'lastPlayed' => [99, 99]];
 	?>
 
 	$(document).ready(function(){
 	<?php
 		if($t['Tsumego']['set_id']==210)
 			echo '$("#author-notice").hide();';
-		if ($ui==1)
-			echo 'document.cookie = "ui=1;path=/tsumegos/play;SameSite=Lax";';
-		else if($ui==2)
-			echo 'document.cookie = "ui=2;path=/tsumegos/play;SameSite=Lax";';
 
 		if(Auth::isInTimeMode())
 			echo 'notMode3 = false;';
 	?>
 	<?php
-		if (!Auth::isInTimeMode() && ($t['Tsumego']['status'] == 'F' || $t['Tsumego']['status'] == 'X')){
+		if (!Auth::isInTimeMode() && !Auth::isInMistakeTrainingMode() && ($t['Tsumego']['status'] == 'F' || $t['Tsumego']['status'] == 'X')){
 		echo '
-				document.getElementById("status").innerHTML = \'<b style="font-size:17px">Try again tomorrow</b>\';
+				document.getElementById("status").innerHTML = \'<b class="message--locked">This problem is locked until \' + heartResetTime + \'</b>\';
 				tryAgainTomorrow = true;
-				document.getElementById("status").style.color = "#e03c4b";';
-	}
-		if($potionAlert){
-			echo '$(".alertBox").fadeIn(500);';
+				document.getElementById("status").style.color = "var(--feedback-error)";
+				$(".besogo-board").addClass("besogo-board-red-glow");
+				var resetBtn = document.getElementById("besogo-reset-button");
+				if (resetBtn) { resetBtn.id = "besogo-reset-button-inactive"; }';
 	}
 		if($isSemeai){
 			echo '
@@ -1098,11 +1161,9 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 				locked = true;
 		';
 	}
-		if($doublexp!=null && !$goldenTsumego){
-			echo 'doubleXP = true; countDownDate = '.$doublexp.';';
-	}
 
-		if($t['Tsumego']['status']=='S' || $t['Tsumego']['status']=='C'){
+		$reviewEnabled = false;
+		if($solved){
 			$reviewEnabled = true;
 			echo 'reviewEnabled = true;';
 	}
@@ -1120,25 +1181,8 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	}
 	?>
 
-	<?php if($firstRanks==0)
-		echo "tagConnectionsEdit.draw();"; ?>
-
-	$('.tag-container').on('click', "#open-add-tag-menu", function(e)
-	{
-		tagConnectionsEdit.activateEdit();
-		$("#open-add-tag-menu").hide();
-			$(".add-tag-list").hide();
-			$(".add-tag-list-popular").show();
-		});
-
-	$('.tag-container').on('click', "#open-more-tags", function(e){
-		$("#open-add-tag-menu").hide();
-		$(".add-tag-list").show();
-			$(".add-tag-list-popular").hide();
-		});
-
-		$('#target').click(function(e){
-			if(locked)
+		$('.besogo-board').click(function(e){
+			if(locked && nextButtonLink)
 				window.location = nextButtonLink;
 	});
 
@@ -1224,65 +1268,14 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 				});
 		<?php } ?>
 		<?php } ?>
-		$("#commentPosition").click(function(){
-			let commentContent = $("#CommentMessage").val();
-			let additionalCoords = "";
-			let current = besogo.editor.getCurrent();
-			let besogoOrientation = besogo.editor.getOrientation();
-			if(besogoOrientation[1]=="full-board")
-			besogoOrientation[0] = besogoOrientation[1];
-			let isInTree = besogo.editor.isMoveInTree(current);
-			current = isInTree[0];
-
-			if(isInTree[1]['x'].length>0){
-				for(let i=isInTree[1]['x'].length-1;i>=0;i--)
-				additionalCoords += isInTree[1]['x'][i] + isInTree[1]['y'][i] + " ";
-				additionalCoords = " + " + additionalCoords;
-	}
-			if(commentContent.includes("[current position]")){
-			 commentContent = commentContent.replace('[current position]','');
-	}
-			$("#CommentMessage").val(commentContent + "[current position]" + additionalCoords);
-
-			if(current===null || current.move===null){
-			$("#CommentPosition").val(
-				"-1/-1/0/0/0/0/0/0/0"
-			);
-	}else{
-				pX = -1;
-				pY = -1;
-			if(current.moveNumber>1){
-				pX = current.parent.move.x;
-				pY = current.parent.move.y;
-	}
-			if(current.children.length===0){
-				cX = -1;
-				cY = -1;
-	}else{
-				cX = current.children[0].move.x;
-				cY = current.children[0].move.y;
-	}
-
-			let newP = current.parent;
-			let newPcoords = current.move.x+"/"+current.move.y+"+";
-				while(newP!==null && newP.move!==null){
-					newPcoords += newP.move.x+"/"+newP.move.y+"+"
-					newP = newP.parent;
-	}
-				newPcoords = newPcoords.slice(0, -1);
-			$("#CommentPosition").val(
-				current.move.x+"/"+current.move.y+"/"+pX+"/"+pY+"/"+cX+"/"+cY+"/"+current.moveNumber+"/"+current.children.length+"/"+besogoOrientation[0]+"|"+newPcoords
-			);
-	}
-		});
 		let solutionRequest = true;
-		<?php if(TsumegoUtil::hasStateAllowingInspection($t) || $isSandbox) { ?>
+		<?php if($solved || $isSandbox) { ?>
 			displaySettings();
 			solutionRequest = false;
 		<?php } ?>
 		if(authorProblem)
 			displaySettings();
-		<?php if (Auth::isAdmin()) {
+		<?php if (\App\Policy\AdminPolicy::canRequestSolution(Auth::getIdentity())) {
 			if (!$requestSolution) { ?>
 			if(solutionRequest)
 				displaySolutionRequest();
@@ -1374,113 +1367,41 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	}
 	}
 
-	function reset()
+	function redrawHearts()
 	{
-		if(!tryAgainTomorrow)
-			locked = false;
-		hoverLocked = false;
-		ko = false, lastMove = false;
-		lastHover = false, lastX = -1, lastY = -1;
-		moveCounter = 0;
-		isCorrect = false;
-		isIncorrect = false;
-		whiteMoveAfterCorrect = false;
-		whiteMoveAfterCorrectI = 0;
-		whiteMoveAfterCorrectJ = 0;
-		disableAutoplay = false;
-		branch = "";
-		rw = false;
-		boardSize = 19;
-		<?php if($checkBSize!=19)
-			echo 'boardSize = '.$checkBSize.';'; ?>
-		var i, j;
-		tStatus = "<?php echo $t['Tsumego']['status']; ?>";
-		let heartLoss = !isStatusAllowingInspection(tStatus);
-
-		if (move==0)
-			heartLoss = false;
-		if (noXP || freePlayMode || locked || authorProblem)
-			heartLoss = false;
-		if (mode==2)
-			heartLoss = false;
-		if (failAlreadyReported)
-			heartLoss = false;
-		freePlayMode = false;
-		freePlayMode2 = false;
-		freePlayMode2done = false;
-		if (heartLoss)
+		if (!document.getElementById("heart0"))
+			return;
+		for (var i = 0; i < maxHealth; i++)
 		{
-			misplays++;
-			setCookie('misplays', 'misplays');
-			updateHealth();
+			var full = i < currentHealth;
+			var el = document.getElementById("heart" + i);
+			el.src = "/img/" + (full ? fullHeart : emptyHeart) + ".png";
+			el.title = full ? "Heart" : "Empty Heart";
 		}
-		move = 0;
-
-		document.getElementById("status").innerHTML = "";
-		document.getElementById("theComment").style.cssText = "display:none;";
-		failAlreadyReported = false;
+		var counter = document.getElementById("health-counter");
+		if (counter)
+			counter.textContent = currentHealth + " / " + maxHealth;
 	}
-
-	function updateHealth()
-	{
-		<?php
-			$m = 1;
-			while($health>0)
-			{
-				$h = $health-1;
-				echo 'if(misplays=='.$m.')document.getElementById("heart'.$h.'").src = "/img/'.$emptyHeart.'.png"; ';
-				$health--;
-				$m++;
-			}
-			?>
-	}
-
-	function commentPosition(x, y, pX, pY, cX, cY, mNum, cNum, orientation, newX=false, newY=false){
-		positionParams = [];
-		positionParams[0] = x;
-		positionParams[1] = y;
-		positionParams[2] = pX;
-		positionParams[3] = pY;
-		positionParams[4] = cX;
-		positionParams[5] = cY;
-		positionParams[6] = mNum;
-		positionParams[7] = cNum;
-		positionParams[8] = orientation;
-		if(newX!=false)
-			positionParams[9] = newX;
-		besogo.editor.commentPosition(positionParams);
-
-		// Scroll to board so user can see the position
-		var boardElement = document.querySelector('.besogo-container') || document.getElementById('board');
-		if (boardElement) {
-			boardElement.scrollIntoView({
-				behavior: 'smooth',
-				block: 'center'
-			});
-	}
-	}
+	redrawHearts();
 
 	function rejuvenation(){
 		$.ajax({
 				url: '/hero/rejuvenation',
 				type: 'POST',
 			success: function(response) {
-					<?php
-					$health = Util::getHealthBasedOnLevel(Auth::getWithDefault('level', 0));
-					for($i = 0; $i < $health; $i++) {
-						echo 'document.getElementById("heart'.$i.'").src = "/img/'.$fullHeart.'.png";';
-	}
-			?>
-					misplays = 0;
+					currentHealth = maxHealth;
+					redrawHearts();
 					disableRejuvenation();
 					enableIntuition();
-	}
+					tryAgainTomorrow = false;
+					locked = false;
+					toggleBoardLock(false);
+					document.getElementById("status").innerHTML = '';
+					$(".besogo-board").removeClass("besogo-board-red-glow");
+					var resetBtn = document.getElementById("besogo-reset-button-inactive");
+					if (resetBtn) { resetBtn.id = "besogo-reset-button"; resetBtn.onclick = function() { window.location.reload(); }; }
+			}
 		});
-	}
-
-	function selectFav()
-	{
-		document.getElementById("ans2").innerHTML = "";
 	}
 
 	$(document).keydown(function(event){
@@ -1491,9 +1412,10 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 				var activeElement = document.activeElement;
 				var isTextInput = activeElement && (activeElement.tagName === 'TEXTAREA' || (activeElement.tagName === 'INPUT' && activeElement.type === 'text'));
 				if (!isTextInput) {
-					if(keycode == '37') {
+					// an empty link is a training edge with nowhere to go
+					if(keycode == '37' && previousButtonLink) {
 						window.location.href = previousButtonLink;
-					}else if(keycode == '39'){
+					}else if(keycode == '39' && nextButtonLink){
 						window.location.href =  nextButtonLink;
 					}
 				}
@@ -1501,29 +1423,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		}
 	});
 
-	function m1hover(){
-		$("#modeSwitcher1 label").css("background-color", "#5dcb89");
-	}
-
-	function m1noHover(){
-		if(ui==1) $("#modeSwitcher1 label").css("background-color", "#54b97c");
-		else $("#modeSwitcher1 label").css("background-color", "#5b5d60");
-	}
-
-	function m2hover(){
-		$("#modeSwitcher2 label").css("background-color", "#ca7a6f");
-	}
-
-	function m2noHover(){
-		if(ui==2) $("#modeSwitcher2 label").css("background-color", "#ca6658");
-		else $("#modeSwitcher2 label").css("background-color", "#5b5d60");
-	}
-
 	<?php
-	$dynamicCommentCoords = array();
-	$dynamicCommentCoords[0] = array();
-	$dynamicCommentCoords[1] = array();
-
 	// Create floating board popup for coordinate hover
 			echo '
 	var coordPopupBoard = null;
@@ -1538,13 +1438,105 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		document.body.appendChild(coordPopupDiv);
 	}
 
-	function showCoordPopup(coord, event) {
+	// Maps an internal board coordinate to its pixel position on the board SVG.
+	// Matches boardDisplay.js svgPos (CELL_SIZE=88, COORD_MARGIN=75).
+	function boardPixel(x) {
+		var coordStyle = besogo.editor.getCoordStyle();
+		var cell = 88;
+		var margin = coordStyle === "none" ? 0 : 75;
+		return margin + cell / 2 + (x - 1) * cell;
+	}
+
+	// Returns the coordinate labels for the path from the root to `node`.
+	function pathLabels(node) {
+		var size = besogo.scaleParameters.boardCoordSize || 19;
+		var labels = besogo.coord.western(size, size);
+		var out = [];
+		while (node) {
+			if (node.move) out.unshift(labels.x[node.move.x] + labels.y[node.move.y]);
+			node = node.parent;
+		}
+		return out;
+	}
+
+	// Draws one numbered realistic stone onto a cloned board SVG, ringed in blue
+	// when it is the hovered move.
+	function drawNumberedStone(svg, x, y, isBlack, moveNumber, hovered) {
+		var px = boardPixel(x);
+		var py = boardPixel(y);
+		svg.appendChild(besogo.realStone(px, py, isBlack ? -1 : 1, 0, besogo.editor.BLACK_STONES || "", besogo.editor.WHITE_STONES || ""));
+		var text = besogo.svgEl("text", {
+			x: px, y: py, dy: ".35ex", "text-anchor": "middle",
+			"font-size": 22, "font-weight": "bold",
+			fill: isBlack ? "white" : "black",
+			"font-family": "Helvetica,Arial,sans-serif"
+		});
+		text.appendChild(document.createTextNode(String(moveNumber)));
+		svg.appendChild(text);
+		if (hovered)
+			svg.appendChild(besogo.svgCircle(px, py, "blue", 44, 4));
+	}
+
+	// Draws the comment sequence moves as written, through to the hovered one.
+	// This shows the commenters line even when it is not a path in the game tree.
+	// An explicit b/w marker is honored, otherwise the colors alternate from the
+	// puzzle first-move colour.
+	function overlaySequenceOnBoard(svg, coords, colors, hoverIndex, firstMove, startMoveNumber) {
+		var nextIsBlack = firstMove !== 1;
+		for (var i = 0; i <= hoverIndex && i < coords.length; i++) {
+			var xy = besogo.editor.coordLabelToXY(coords[i]);
+			if (!xy) continue;
+			var isBlack = colors && colors[i] ? colors[i] === "b" : nextIsBlack;
+			nextIsBlack = !isBlack;
+			drawNumberedStone(svg, xy.x, xy.y, isBlack, startMoveNumber + i + 1, i === hoverIndex);
+		}
+	}
+
+	// Draws the commenter moves using their resolved tree nodes, with the real game
+	// move numbers.
+	function overlayNodesOnBoard(svg, nodes, hoverIndex) {
+		for (var i = 0; i <= hoverIndex && i < nodes.length; i++) {
+			var node = nodes[i];
+			if (node && node.move)
+				drawNumberedStone(svg, node.move.x, node.move.y, node.move.color === -1, node.moveNumber, i === hoverIndex);
+		}
+	}
+
+	function showCoordPopup(coord, event, position, sequence) {
 		createCoordPopup();
 		var mainBoard = document.querySelector(".besogo-board svg");
 		if (!mainBoard) return;
 
-		// Always highlight on main board
-		besogo.editor.displayHoverCoord(coord);
+		// The preview board is the main board cloned at the previewed node: the
+		// comment anchor, or for a sequence (such as R19-P19-Q19) the node right
+		// before the hovered move. The current node is restored afterwards.
+		var isSequence = sequence && sequence.coords && sequence.coords.length > 0;
+		var restoreNode = null;
+		var previewNode = null;
+		// The sequence resolved along the game tree, null when it is not a tree line
+		var hover = null;
+
+		if (isSequence) {
+			restoreNode = besogo.editor.getCurrent();
+			var startNode = position ? besogo.editor.findNodeForPosition(position) : null;
+			// Tree-first: reconstruct the line from the game tree, filling in the
+			// opponents moves the commenter omitted. Fall back to drawing the moves as
+			// written when the sequence does not match a tree line (e.g. a proposed
+			// new line).
+			var resolved = besogo.editor.resolveSequenceHover(sequence.coords, sequence.index, startNode, sequence.colors);
+			if (resolved.found && resolved.beforeNode)
+				hover = resolved;
+			previewNode = hover ? hover.beforeNode : (startNode || besogo.editor.getRoot());
+			besogo.editor.setCurrent(previewNode);
+		} else {
+			var anchoredNode = position ? besogo.editor.findNodeForPosition(position) : null;
+			if (anchoredNode) {
+				restoreNode = besogo.editor.getCurrent();
+				previewNode = anchoredNode;
+				besogo.editor.setCurrent(anchoredNode);
+			}
+			besogo.editor.displayHoverCoord(coord);
+		}
 
 		// Clear any pending hide
 		if (coordPopupTimeout) {
@@ -1552,12 +1544,49 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			coordPopupTimeout = null;
 	}
 
-		// Show popup near cursor
+		// Show popup near cursor (clone the board at the previewed position)
 		var clone = mainBoard.cloneNode(true);
 		clone.style.width = "400px";
 		clone.style.height = "400px";
 		coordPopupDiv.innerHTML = "";
+		// Show what is being previewed. In tree mode this is the reconstructed
+		// game line (with the opponents moves filled in), otherwise the commenter
+		// moves as written, through to the hovered move.
+		var caption = coord;
+		if (isSequence) {
+			var line = hover ? pathLabels(previewNode) : sequence.coords.slice(0, sequence.index + 1);
+			if (hover && hover.hoverNode.move) {
+				var hoverLabel = besogo.editor.coordXYToLabel(hover.hoverNode.move.x, hover.hoverNode.move.y);
+				if (hoverLabel) line.push(hoverLabel);
+			}
+			if (line.length > 0) caption = line.join(" > ");
+		}
+		var label = document.createElement("div");
+		label.id = "coord-popup-label";
+		label.style.cssText = "font:600 14px/1.4 Helvetica,Arial,sans-serif;color:#3a2410;text-align:center;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:400px;";
+		label.textContent = caption;
+		coordPopupDiv.appendChild(label);
+		// Draw the commenter moves as numbered stones so the turn numbers always
+		// show: the resolved tree nodes in tree mode, otherwise the moves as written.
+		if (isSequence) {
+			if (hover && hover.nodes.length > 0)
+				overlayNodesOnBoard(clone, hover.nodes, sequence.index);
+			else
+				overlaySequenceOnBoard(clone, sequence.coords, sequence.colors, sequence.index,
+					besogo.editor.getRoot().firstMove || -1, previewNode.moveNumber || 0);
+		} else {
+			// Single coordinate: ring the point on the popup board so it matches
+			// the sequence look.
+			var singleXY = besogo.editor.coordLabelToXY(coord);
+			if (singleXY) clone.appendChild(besogo.svgCircle(boardPixel(singleXY.x), boardPixel(singleXY.y), "blue", 44, 4));
+		}
 		coordPopupDiv.appendChild(clone);
+
+		// Restore the original position after capturing the preview
+		if (restoreNode) {
+			besogo.editor.setCurrent(restoreNode);
+			besogo.editor.displayHoverCoord(-1);
+		}
 
 		// Position near cursor
 		var x = event.clientX + 15;
@@ -1577,71 +1606,146 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	}
 		';
 
-	if (!isset($commentCoordinates)) $commentCoordinates = [];
-	$fn1 = 1;
-	for($i=0; $i<count($commentCoordinates); $i++){
-		$n2x = explode(' ', $commentCoordinates[$i]);
-		if(count($n2x)>0){
-			$fn2 = 1;
-			for($j=count($n2x)-1; $j>=0; $j--){
-				$n2xx = explode('-', $n2x[$j]);
-				if(strlen($n2xx[0])>0 && strlen($n2xx[1])>0){
-					echo 'function ccIn' . $fn1 . $fn2 . '(e){showCoordPopup("' . $n2xx[2] . '",e||window.event);}';
-					echo 'function ccOut' . $fn1 . $fn2 . '(){hideCoordPopup();}';
-					array_push($dynamicCommentCoords[0], 'ccIn'.$fn1.$fn2);
-					array_push($dynamicCommentCoords[1], $n2xx[2]);
-					$fn2++;
-	}
-	}
-	}
-		$fn1++;
-	}
-
-	$fn1 = 999;
-	$n2x = explode(' ', $sT[1]);
-	if(count($n2x)>0){
-		$fn2 = 1;
-		for($j=count($n2x)-1; $j>=0; $j--){
-			$n2xx = explode('-', $n2x[$j]);
-			if(strlen($n2xx[0])>0 && strlen($n2xx[1])>0){
-				echo 'function ccIn' . $fn1 . $fn2 . '(e){showCoordPopup("' . $n2xx[2] . '",e||window.event);}';
-				echo 'function ccOut' . $fn1 . $fn2 . '(){hideCoordPopup();}';
-				array_push($dynamicCommentCoords[0], 'ccIn'.$fn1.$fn2);
-				array_push($dynamicCommentCoords[1], $n2xx[2]);
-				$fn2++;
-	}
-	}
-	}
-	$fn1++;
-		?>
+	?>
 
 	function addTimeForMovePlayed(multiplier = 1)
 	{
-		let timeToAdd = <?php echo TimeModeUtil::$SECONDS_ADDED_PER_MOVE_PLAYED; ?> * multiplier;
-		tcount += timeToAdd;
-		seconds -= timeToAdd;
+		bonusSeconds += <?php echo TimeModeUtil::$SECONDS_ADDED_PER_MOVE_PLAYED; ?> * multiplier;
+	}
+
+	// The outcome values come from the App\Utility\PlayOutcome enum
+	var playOutcome = {
+		solvedClean: '<?php echo PlayOutcome::SolvedClean->value; ?>',
+		solvedAfterMistake: '<?php echo PlayOutcome::SolvedAfterMistake->value; ?>',
+		failed: '<?php echo PlayOutcome::Failed->value; ?>',
+		timedOut: '<?php echo PlayOutcome::TimedOut->value; ?>',
+	};
+
+	function isSolved(outcome)
+	{
+		return outcome === playOutcome.solvedClean || outcome === playOutcome.solvedAfterMistake;
+	}
+
+	// xpStatus is not rendered in mistake training, the widget has nothing to animate there
+	function accountWidgetShowsResults()
+	{
+		return typeof accountWidget !== 'undefined' && accountWidget && typeof xpStatus !== 'undefined';
+	}
+
+	function submitResult(outcome)
+	{
+		showResultResponse(outcome, sendResult(outcome));
+	}
+
+	// Null for a guest, whose results aren't recorded
+	function sendResult(outcome)
+	{
+		if (besogoNoLogin)
+			return null;
+		// a replay for an assignment changes nothing the account bar shows
+		if (accountWidgetShowsResults() && !assignmentReplay)
+			accountWidget.rememberResult(isSolved(outcome));
+		let data = {
+			tsumego_id: tsumegoID,
+			// the part of the set the problem is played from decides the XP reduction of its resets
+			set_connection_id: <?php echo (int) $setConnection['SetConnection']['id']; ?>,
+			seconds: Math.max(elapsedSeconds() - bonusSeconds, timeToFirstClick || 0, 0.01),
+			outcome: outcome,
+			// another tab may have switched the stored mode since this page was opened
+			mode: mode,
+		};
+
+		let response = fetch('/tsumegos/result', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+			body: JSON.stringify(data),
+			// the request outlives the page, so leaving right after a lost line still counts it
+			keepalive: true,
+		}).then(response => response.json());
+		window._submitResultPromise = response.catch(err => console.error('submitResult failed:', err));
+		return response;
+	}
+
+	// Shows the player what the result changed: the account bar, the XP, a potion and achievements
+	function showResultResponse(outcome, response)
+	{
+		if (!response)
+			return;
+		if (accountWidgetShowsResults())
+			accountWidget.animate(isSolved(outcome));
+		window._submitResultPromise = response.then(result => {
+			if (typeof accountWidget !== 'undefined' && accountWidget)
+			{
+				accountWidget.rating = result.new_rating;
+				accountWidget.xp = result.new_xp;
+				accountWidget.level = result.new_level;
+				try { accountWidget.setup(); } catch(e) { console.error('accountWidget.setup failed:', e); }
+			}
+			if (result.xp_gained && typeof xpStatus !== 'undefined' && xpStatus)
+			{
+				xpStatus.set('solved', true);
+				xpStatus.update();
+			}
+			if (result.potion_triggered)
+			{
+				currentHealth = maxHealth;
+				redrawHearts();
+				$("#potionAlerts").fadeIn(500);
+			}
+			if (result.achievement_updates && result.achievement_updates.length
+				&& typeof showAchievementPopup === 'function')
+					result.achievement_updates.forEach(showAchievementPopup);
+			// The training row says what today did with the problem, which this result changed
+			if (result.mistake_training_button)
+				updateMistakeTrainingButton(result.mistake_training_button, result.mistake_training_xp);
+		}).catch(err => {
+			console.error('submitResult failed:', err);
+		});
+	}
+
+	// Called by the board the moment the line can no longer end correct. The fail is sent
+	// right away, so leaving or refreshing before the line is played out doesn't escape it,
+	// but the player is shown nothing (hearts, account bar) until the line is over, as
+	// that would give the refutation away.
+	function lineLost()
+	{
+		if (failAlreadyReported || problemSolved)
+			return;
+		failAlreadyReported = true;
+		hadMisplay = true;
+		unrevealedFail = { response: sendResult(playOutcome.failed) };
+	}
+
+	// Shows the fail sent when the line was lost, once the line is over
+	function revealFail()
+	{
+		currentHealth--;
+		showResultResponse(playOutcome.failed, unrevealedFail.response);
+		unrevealedFail = null;
 	}
 
 	function displayResult(result)
 	{
 		let success = result == 'S';
-		if (!success && failAlreadyReported)
-			return;
-		setCookie("secondsCheck", Math.round(Math.max(seconds, 0.01).toFixed(2) * secondsMultiplier));
-		setCookie("av", <?php echo $activityValue[0]; ?>);
 		document.getElementById("status").style.color = "<?php echo $playGreenColor; ?>";
 		if (timeModeTimer)
 			timeModeTimer.stop();
 
-		if (accountWidget)
-			accountWidget.animate(success);
 		if (success)
 		{
-			problemSolved = true;
-			tagConnectionsEdit.onProblemSolved();
-			if (typeof xpStatus !== "undefined" && xpStatus)
-				xpStatus.set('solved', true);
-			setCookie("solvedCheck", "<?php echo $solvedCheck; ?>");
+			if (!problemSolved)
+			{
+				problemSolved = true;
+				window.dispatchEvent(new Event('tag-editor-solved'));
+				if (typeof xpStatus !== "undefined" && xpStatus)
+					xpStatus.set('solved', true);
+				submitResult(hadMisplay ? playOutcome.solvedAfterMistake : playOutcome.solvedClean);
+			}
+			else if (assignmentReplay)
+			{
+				sendResult(hadMisplay ? playOutcome.solvedAfterMistake : playOutcome.solvedClean);
+				assignmentReplay = false;
+			}
 			updateCurrentNavigationButton('S');
 			document.getElementById("status").innerHTML = "<h2>Correct!</h2>";
 			if(light)
@@ -1663,47 +1767,47 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 					$("#reviewButton").show();
 					$("#reviewButton-inactive").hide();
 				}
-				if(!noXP)
-				{
-					if (goldenTsumego)
-						setCookie("type", "g");
-					noXP = true;
-				}
+				noXP = true;
 			}
 			else
 			{//mode 2 correct
 				besogoMode2Solved = true;
-				if (!noXP)
-				{
-					setCookie("mode", mode);
-					if(goldenTsumego)
-						setCookie("type", "g");
-					noXP = true;
-				}
+				noXP = true;
 			}
 			toggleBoardLock(true);
 			displaySettings();
 		}
 		else //incorrect
 		{
-			failAlreadyReported = true;
-			misplays++;
-			setCookie("misplays", misplays);
+			if (unrevealedFail)
+				revealFail();
+			else if (!failAlreadyReported && !problemSolved)
+			{
+				failAlreadyReported = true;
+				hadMisplay = true;
+				currentHealth--;
+				submitResult(playOutcome.failed);
+			}
+			else if (assignmentReplay)
+				hadMisplay = true;
 			// Don't lock board - let user keep trying
 			if (mode != 2)
 			{
 				branch = "no";
-				document.getElementById("status").style.color = "#e03c4b";
-				document.getElementById("status").innerHTML = "<h2>Incorrect</h2>";
-				if (light)
-					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(183, 19, 19, 0.8), 0 6px 20px 0 rgba(183, 19, 19, 0.2)");
-				else
-					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgb(225, 34, 34), 0 6px 20px 0 rgba(253, 59, 59, 0.58)");
+				document.getElementById("status").style.color = "var(--feedback-error)";
+				document.getElementById("status").innerHTML = "<h2>Incorrect!</h2>";
+				$(".besogo-board").addClass("besogo-board-red-glow");
 				if (mode==3)
 				{
 					timeModeEnabled = false;
-					$("#time-mode-countdown").css("color","#e45663");
+					$("#time-mode-countdown").css("color","var(--feedback-error)");
 					toggleBoardLock(true);
+				}
+				if (mode==<?php echo Constants::$MISTAKE_TRAINING_MODE; ?>)
+				{
+					// The board locks, but the problem stays in today's training until it is solved
+					toggleBoardLock(true);
+					document.getElementById("status").innerHTML = '<h2>Incorrect!</h2><p class="mistake-training-note">Press Reset to try again.</p>';
 				}
 				noLastMark = true;
 				if (!noXP)
@@ -1712,20 +1816,23 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 					{
 						hoverLocked = false;
 						if (mode == 1)
-							updateHealth();
+							redrawHearts();
 					}
 					freePlayMode = true;
 					if (mode == 1)
 					{
-						if(<?php echo Auth::getRemainingHealth(); ?> - misplays <= 0)
+						if (currentHealth < 0)
 						{
 							updateCurrentNavigationButton('F');
-							document.getElementById("status").innerHTML = '<b style="font-size:17px">Try again tomorrow</b>';
+							document.getElementById("status").innerHTML = '<b class="message--locked">This problem is locked until ' + heartResetTime + '</b>';
 							tryAgainTomorrow = true;
 							toggleBoardLock(true);
+							var resetBtn = document.getElementById("besogo-reset-button");
+							if (resetBtn) { resetBtn.id = "besogo-reset-button-inactive"; }
 						}
 					}
-					if (goldenTsumego)
+					// leaving for the plain problem page would drop the player out of the training
+					if (goldenTsumego && mode != <?php echo Constants::$MISTAKE_TRAINING_MODE; ?>)
 					{
 						window.location.href = '/' + '<?php echo $setConnection['SetConnection']['id']; ?>';
 						return;
@@ -1735,19 +1842,14 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			else
 			{//mode 2 incorrect
 				branch = "no";
-				document.getElementById("status").style.color = "#e03c4b";
-				document.getElementById("status").innerHTML = "<h2>Incorrect</h2>";
+				document.getElementById("status").style.color = "var(--feedback-error)";
+				document.getElementById("status").innerHTML = "<h2>Incorrect!</h2>";
 				noLastMark = true;
 				besogoMode2Solved = true;
-				setCookie("mode", mode);
-				if (light)
-					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(183, 19, 19, 0.8), 0 6px 20px 0 rgba(183, 19, 19, 0.2)");
-				else
-					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgb(225, 34, 34), 0 6px 20px 0 rgba(253, 59, 59, 0.58)");
+				$(".besogo-board").addClass("besogo-board-red-glow");
 				if (!noXP)
 				{
 					playedWrong = true;
-					setCookie("transition", 2);
 					hoverLocked = false;
 					freePlayMode = true;
 				}
@@ -1772,10 +1874,10 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		$('#customText').html(message);
 		$("#customAlerts").fadeIn(500);
 		if (color==='red')
-			$(".alertBanner").addClass("alertBannerIncorrect");
+			$(".toast__banner").addClass("toast__banner--error");
 		else
-			$(".alertBanner").addClass("alertBannerCorrect");
-		$(".alertBanner").html(topic+"<span class=\"alertClose\">x</span>");
+			$(".toast__banner").addClass("toast__banner--success");
+		$(".toast__banner").html(topic+"<span class=\"toast__close\">x</span>");
 	}
 
 	function resetParameters(isAtStart)
@@ -1795,17 +1897,20 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		freePlayMode = false;
 		if (heartLoss)
 		{
-			misplays++;
-			if (accountWidget)
-				accountWidget.animate(false);
-			setCookie("secondsCheck", Math.round(Math.max(seconds, 0.01).toFixed(2) * secondsMultiplier));
-			setCookie("misplays", misplays);
-			updateHealth();
+			hadMisplay = true;
+			currentHealth--;
+			redrawHearts();
+			submitResult(playOutcome.failed);
+		}
+		else if (unrevealedFail)
+		{
+			// the line is given up before it was played out
+			revealFail();
+			redrawHearts();
 		}
 		failAlreadyReported = false;
 	}
 	</script>
-	<?php if($ui==2){ ?>
 	<script type="text/javascript">
 	(function() {
 		var options = { },
@@ -1835,56 +1940,30 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			echo 'options.alternativeResponse = false;';
 		if (!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0)
 		{
-			$sStatusB = '';
-			$sStatusW = '';
-			if($t['Tsumego']['semeaiType'] == 1){
-				$t['Tsumego']['minLib'] += $t['Tsumego']['variance'];
-				$t['Tsumego']['maxLib'] -= $t['Tsumego']['variance'];
-				$sStatusB = rand($t['Tsumego']['minLib'],$t['Tsumego']['maxLib']);
-				$sStatusWmin = $sStatusB - $t['Tsumego']['variance'];
-				$sStatusWmax = $sStatusB + $t['Tsumego']['variance'];
-				$sStatusW = rand($sStatusWmin,$sStatusWmax);
-				} else if ($t['Tsumego']['semeaiType'] == 2) {
-				$sStatusB = rand(0,$t['Tsumego']['libertyCount']);
-				$sStatusW = rand(0,$t['Tsumego']['libertyCount']);
-			}else if($t['Tsumego']['semeaiType'] == 3){
-				$t['Tsumego']['minLib'] += $t['Tsumego']['variance'];
-				$t['Tsumego']['maxLib'] -= $t['Tsumego']['variance'];
-				$sStatusB = rand($t['Tsumego']['minLib'],$t['Tsumego']['maxLib']);
-				$sStatusWmin = $sStatusB - $t['Tsumego']['variance'];
-				$sStatusWmax = $sStatusB + $t['Tsumego']['variance'];
-				$sStatusW = rand($sStatusWmin,$sStatusWmax);
-			}else if($t['Tsumego']['semeaiType'] == 4){
-				$sStatusB = rand(0,$t['Tsumego']['variance']);
-				$sStatusW = rand(0,$t['Tsumego']['variance']);
-			}else if($t['Tsumego']['semeaiType'] == 5){
-				$t['Tsumego']['minLib'] += $t['Tsumego']['variance'];
-				$t['Tsumego']['maxLib'] -= $t['Tsumego']['variance'];
-				$sStatusB = rand($t['Tsumego']['minLib'],$t['Tsumego']['maxLib']);
-				$sStatusWmin = $sStatusB - $t['Tsumego']['variance'];
-				$sStatusWmax = $sStatusB + $t['Tsumego']['variance'];
-				$sStatusW = rand($sStatusWmin,$sStatusWmax);
-			}else if($t['Tsumego']['semeaiType'] == 6){
-				$sStatusB = rand(0,$t['Tsumego']['variance']);
-				$sStatusW = rand(0,$t['Tsumego']['variance']);
-	}
+			[$sStatusB, $sStatusW] = Util::calculateLibertyStatus(
+				$multipleChoiceSquares,
+				$multipleChoiceTriangles,
+				$t['Tsumego']['minLib'],
+				$t['Tsumego']['maxLib'],
+				$t['Tsumego']['libertyCount'],
+				$t['Tsumego']['variance']);
 			echo 'options.multipleChoice = true;';
 			echo 'let sStatusB = '.$sStatusB.';';
 			echo 'let sStatusW = '.$sStatusW.';';
 			echo 'multipleChoiceLibertiesB = sStatusB;';
 			echo 'multipleChoiceLibertiesW = sStatusW;';
-			echo 'multipleChoiceVariance = '.$t['Tsumego']['variance'].';';
 			echo 'multipleChoiceLibertyCount = '.$t['Tsumego']['libertyCount'].';';
 			echo 'let mVariance = '.$multipleChoiceTriangles.';';
 			echo 'let a1 = []; let a2 = [];
-			for(i=0;i<mVariance;i++){
+			for(i=0; i<mVariance; i++)
+			{
 				if(sStatusB>0) a1.push(1);
 				else a1.push(0);
 				if(sStatusW>0) a2.push(1);
 				else a2.push(0);
 				sStatusB--;
 				sStatusW--;
-	}
+			}
 			let a3 = a1.map(value => ({ value, sort: Math.random() })).sort((a, b) => a.sort - b.sort).map(({ value }) => value);
 			let a4 = a2.map(value => ({ value, sort: Math.random() })).sort((a, b) => a.sort - b.sort).map(({ value }) => value);
 			let a5 = [];
@@ -1897,25 +1976,24 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		{
 			echo 'options.multipleChoiceCustom = '.json_encode($tv['TsumegoVariant']['type'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).';';
 			echo 'let a5 = [];
-			a5.push('.json_encode($tv['TsumegoVariant']['answer1'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
-			a5.push('.json_encode($tv['TsumegoVariant']['answer2'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
-			a5.push('.json_encode($tv['TsumegoVariant']['answer3'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
-			a5.push('.json_encode($tv['TsumegoVariant']['answer4'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
+			a5.push('.json_encode($displayAnswers['answer1'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
+			a5.push('.json_encode($displayAnswers['answer2'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
+			a5.push('.json_encode($displayAnswers['answer3'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
+			a5.push('.json_encode($displayAnswers['answer4'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
 			customMultipleChoiceAnswer = '.(int)$tv['TsumegoVariant']['numAnswer'].';
 			options.multipleChoiceCustomSetup = a5;';
 		}
 	?>
-		const cornerArray = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
-		shuffledCornerArray = cornerArray.sort((a, b) => 0.5 - Math.random());
-		options.corner = shuffledCornerArray[0];
-		options.playerColor = besogoPlayerColor;
+		options.corner = "<?php echo $corner; ?>";
+		options.playerColor = "<?php echo $playerColor; ?>";
+		options.swapColors = <?php echo $swapColors ? 'true' : 'false'; ?>;
 		options.rootPath = '/besogo/';
 		options.theme = '<?php echo $boardSelection['texture']; ?>';
 		options.themeParameters = ['<?php echo $boardSelection['black']; ?>', '<?php echo $boardSelection['white']; ?>'];
 		options.coord = 'western';
 		options.sgf = '/placeholder.sgf';
 		options.sgf2 = <?php echo json_encode($sgf['Sgf']['sgf'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
-		options.light = <?php echo json_encode($_COOKIE['lightDark'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
+		options.light = <?php echo json_encode($lightDark, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 		if (options.theme) addStyleLink('/besogo/css/board-'+options.theme+'.css');
 			if (options.height && options.width && options.resize === 'fixed')
 			{
@@ -1931,14 +2009,26 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	if(authorProblem)
 		options.reviewEnabled = true;
 	besogo.create(div, options);
+	if (tryAgainTomorrow) { var resetBtn = document.getElementById("besogo-reset-button"); if (resetBtn) { resetBtn.id = "besogo-reset-button-inactive"; } }
 	besogo.editor.setAutoPlay(true);
 	besogo.editor.registerAddTimeForMovePlayed(addTimeForMovePlayed);
 	besogo.editor.registerDisplayResult(displayResult);
+	besogo.editor.registerLineLost(lineLost);
+	besogo.editor.addListener(function (changes)
+	{
+		// the clock starts with the first move the player really plays
+		if (timeToFirstClick !== null || !changes || !changes.navChange)
+			return;
+		let current = besogo.editor.getCurrent();
+		if (current.move && current.move.color === besogo.editor.getRoot().firstMove)
+			timeToFirstClick = elapsedSeconds();
+	});
+
+	startClock();
 	var showComment = function(commentText)
 		{
 			$("#theComment").css("display", commentText.length == 0 ? "none" : "block");
-			$("#xpDisplayDiv").css("display", commentText.length == 0 ? "block" : "none");
-			$("#theComment").text(commentText);
+			$("#theComment").text(besogo.boardInverted ? besogo.swapColorWords(commentText) : commentText);
 		};
 	besogo.editor.registerShowComment(showComment);
 	showComment(besogo.editor.getCurrent().comment || '');
@@ -1954,15 +2044,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	})();
 	if (mode == 2)
 		$("#targetLockOverlay").css('top', '235px');
-	<?php
-		for($i=0; $i<count($dynamicCommentCoords[0]); $i++)
-		{
-			echo 'besogo.editor.dynamicCommentCoords("'.$dynamicCommentCoords[0][$i].'", "'.$dynamicCommentCoords[1][$i].'");';
-			echo 'besogo.editor.adjustCommentCoords();';
-		}
-		?>
 	</script>
-<?php } ?>
 	<style>
 		#msg2,
 		#msg4,
@@ -1983,16 +2065,8 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	#showFilters,
 	.showFilters {
 				<?php
-			$displayNone = false;
-			if ($set['Set']['id'] == 1 || (empty($tsumegoFilters->sets) && empty($tsumegoFilters->ranks) && empty($tsumegoFilters->tags)))
-				$displayNone = true;
-			else if($tsumegoFilters->query && empty($tsumegoFilters->ranks) && empty($tsumegoFilters->tags))
-				$displayNone = true;
-			else if($tsumegoFilters->query == 'difficulty' && empty($tsumegoFilters->sets) && empty($tsumegoFilters->tags))
-				$displayNone = true;
-			else if($tsumegoFilters->query == 'tags' && empty($tsumegoFilters->sets) && empty($tsumegoFilters->ranks))
-				$displayNone = true;
-			if($displayNone)
+			$displayNone = empty($tsumegoFilters->sets) && empty($tsumegoFilters->ranks) && empty($tsumegoFilters->tags);
+			if ($displayNone)
 				echo 'display:none;';
 		?>margin: 8px 4px;
 	}

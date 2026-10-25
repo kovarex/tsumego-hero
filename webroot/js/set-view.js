@@ -24,7 +24,7 @@ function initSetImageZoom()
 			const table = img.closest('table');
 			const tableRect = table ? table.getBoundingClientRect() : {left: 0, width: 600};
 			const centerX = table != null ? tableRect.left + (tableRect.width / 2) + "px" : "50%";
-			clone.style.cssText = `position:fixed;top:50%;left:${centerX};transform:translate(-50%,-50%) scale(3);z-index:9999;cursor:pointer;transition:transform 0.3s;max-width:${tableRect.width * 0.8}px;max-height:90vh;border:3px solid #333;box-shadow:0 0 20px rgba(0,0,0,0.5);pointer-events:none`;
+			clone.style.cssText = `position:fixed;top:50%;left:${centerX};transform:translate(-50%,-50%) scale(3);z-index:9999;cursor:pointer;transition:transform 0.3s;max-width:${tableRect.width * 0.8}px;max-height:90vh;border:3px solid #333;box-shadow:0 0 20px rgba(0,0,0,0.5);pointer-events:none;object-fit:cover`;
 			clone.className = 'zoom-preview';
 			document.body.appendChild(clone);
 			activeClone = clone;

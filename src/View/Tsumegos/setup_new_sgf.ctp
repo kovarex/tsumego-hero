@@ -1,24 +1,19 @@
-<script src="/besogo/js/besogo.js"></script>
-<script src="/besogo/js/transformation.js"></script>
-<script src="/besogo/js/treeProblemUpdater.js?v=2"></script>
-<script src="/besogo/js/nodeHashTable.js"></script>
-<script src="/besogo/js/editor.js?v=2"></script>
-<script src="/besogo/js/gameRoot.js?v=2"></script>
-<script src="/besogo/js/status.js"></script>
-<script src="/besogo/js/svgUtil.js"></script>
-<script src="/besogo/js/cookieUtil.js"></script>
-<script src="/besogo/js/parseSgf.js"></script>
-<script src="/besogo/js/loadSgf.js"></script>
-<script src="/besogo/js/saveSgf.js"></script>
-<script src="/besogo/js/boardDisplay.js"></script>
-<script src="/besogo/js/coord.js"></script>
-<script src="/besogo/js/toolPanel.js"></script>
-<script src="/besogo/js/filePanel.js"></script>
-<script src="/besogo/js/controlPanel.js"></script>
-<script src="/besogo/js/commentPanel.js"></script>
-<script src="/besogo/js/treePanel.js"></script>
-<script src="/besogo/js/diffInfo.js"></script>
-<script src="/besogo/js/scaleParameters.js"></script>
+<?php
+
+/**
+ * @var View $this
+ * @var int $setConnectionID
+ * @var string $sgf
+ * @var ?string $sourceSgfID
+ * @var ?string $transformationFromSource
+ * @var string $description
+ */
+
+use App\Utility\ViteManifest;
+$this->start('script');
+echo ViteManifest::legacyScript('besogo');
+$this->end();
+?>
 <div id="something"></div>
 <script>
 
@@ -50,6 +45,9 @@
 	addInput(form, 'firstMoveColor', firstColor);
 	addInput(form, 'correctMoves', correctMoves);
 	addInput(form, 'setConnectionID', <?php echo (int)$setConnectionID; ?>);
+	addInput(form, 'sourceSgfID', <?php echo json_encode((string) ($sourceSgfID ?? '')); ?>);
+	addInput(form, 'transformationFromSource', <?php echo json_encode((string) ($transformationFromSource ?? ''), JSON_HEX_TAG); ?>);
+	addInput(form, 'description', <?php echo json_encode($description, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>);
 
     document.body.appendChild(form);
     form.submit();

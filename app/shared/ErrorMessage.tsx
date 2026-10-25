@@ -13,7 +13,7 @@ export function ErrorMessage({
 	return (
 		<div className="error-message">
 			<p>⚠️ {message}</p>
-			<button onClick={onRetry}>Retry</button>
+			<button className="btn btn--small" onClick={onRetry}>Retry</button>
 		</div>
 	);
 }
