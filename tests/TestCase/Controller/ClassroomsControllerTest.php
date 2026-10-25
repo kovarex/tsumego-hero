@@ -1,6 +1,7 @@
 <?php
 
 use App\Lib\Error\UnprocessableEntityException;
+use App\Utility\PlayOutcome;
 use App\Utility\Util;
 
 /**
@@ -120,10 +121,43 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		return json_decode($this->controller->response->body(), true);
 	}
 
-	private function addAttempt(string $name, int $tsumegoIndex, bool $solved, int $misplays, string $created): void
+	/**
+	 * @param string|null $solved When the problem was solved for the assignment, null for not yet
+	 */
+	private function addResult(int $assignmentId, string $name, int $tsumegoIndex, ?string $solved, int $misplays = 0): void
 	{
-		Util::execute('INSERT INTO tsumego_attempt (user_id, tsumego_id, gain, solved, seconds, misplays, tsumego_rating, created) VALUES (?, ?, 0, ?, 10, ?, 1000, ?)',
-			[$this->userId($name), $this->context->tsumegos[$tsumegoIndex]['id'], $solved ? 1 : 0, $misplays, $created]);
+		Util::execute('INSERT INTO classroom_assignment_result (classroom_assignment_id, user_id, tsumego_id, misplays, solved) VALUES (?, ?, ?, ?, ?)',
+			[$assignmentId, $this->userId($name), $this->context->tsumegos[$tsumegoIndex]['id'], $misplays, $solved]);
+	}
+
+	private function addSolvedStatus(string $name, int $tsumegoIndex): void
+	{
+		Util::execute("INSERT INTO tsumego_status (user_id, tsumego_id, status) VALUES (?, ?, 'S')",
+			[$this->userId($name), $this->context->tsumegos[$tsumegoIndex]['id']]);
+	}
+
+	/**
+	 * @return array{misplays: int, solved: string|null}|null What the assignment counts of the player on the problem
+	 */
+	private function result(int $assignmentId, string $name, int $tsumegoIndex): ?array
+	{
+		$rows = Util::query('SELECT misplays, solved FROM classroom_assignment_result WHERE classroom_assignment_id = ? AND user_id = ? AND tsumego_id = ?',
+			[$assignmentId, $this->userId($name), $this->context->tsumegos[$tsumegoIndex]['id']]);
+		return empty($rows) ? null : ['misplays' => (int) $rows[0]['misplays'], 'solved' => $rows[0]['solved']];
+	}
+
+	private function xp(string $name): int
+	{
+		return (int) Util::query('SELECT xp FROM user WHERE id = ?', [$this->userId($name)])[0]['xp'];
+	}
+
+	private function postResult(string $name, int $tsumegoIndex, PlayOutcome $outcome): void
+	{
+		$this->login($name);
+		$this->testAction('/tsumegos/result', [
+			'method' => 'POST',
+			'data' => ['tsumego_id' => $this->context->tsumegos[$tsumegoIndex]['id'], 'seconds' => 10, 'outcome' => $outcome->value],
+		]);
 	}
 
 	private function membershipStatus(int $classroomId, string $name): ?int
@@ -497,13 +531,11 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$this->addMember($classroomId, 'pupil2');
 		$this->addMember($classroomId, 'outsider', ClassroomMemberStatus::INVITED);
 		$assignmentId = $this->createAssignment($classroomId, '2026-10-01 00:00:00', '2026-10-08');
-		$this->addAttempt('pupil', 0, true, 1, '2026-10-02 10:00:00');
-		$this->addAttempt('pupil', 1, true, 0, '2026-10-09 10:00:00');
-		$this->addAttempt('pupil', 2, true, 0, '2026-09-01 10:00:00');
-		Util::execute("INSERT INTO tsumego_status (user_id, tsumego_id, status) VALUES (?, ?, 'S')",
-			[$this->userId('pupil'), $this->context->tsumegos[2]['id']]);
-		$this->addAttempt('pupil2', 0, false, 2, '2026-10-03 10:00:00');
-		$this->addAttempt('outsider', 0, true, 0, '2026-10-03 10:00:00');
+		$this->addResult($assignmentId, 'pupil', 0, '2026-10-02 10:00:00', 1);
+		$this->addResult($assignmentId, 'pupil', 1, '2026-10-09 10:00:00');
+		$this->addSolvedStatus('pupil', 2);
+		$this->addResult($assignmentId, 'pupil2', 0, null, 2);
+		$this->addResult($assignmentId, 'outsider', 0, '2026-10-03 10:00:00');
 
 		$progress = $this->progress($assignmentId);
 
@@ -519,18 +551,77 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$this->assertSame(0, $pupil2['solvedCount']);
 	}
 
-	public function testTheProgressCoversOnlyTheAssignedProblems(): void
+	public function testTheProgressCoversOnlyItsOwnAssignment(): void
 	{
 		$this->prepare();
 		$classroomId = $this->createClassroom();
 		$this->addMember($classroomId, 'pupil');
-		$assignmentId = $this->createAssignment($classroomId, '2026-10-01 00:00:00', '2026-10-08', [1]);
-		$this->addAttempt('pupil', 0, true, 0, '2026-10-02 10:00:00');
+		$assignmentId = $this->createAssignment($classroomId, '2026-10-01 00:00:00', '2026-10-08', [0, 1]);
+		$otherAssignmentId = $this->createAssignment($classroomId, '2026-09-01 00:00:00', '2026-09-08', [0]);
+		$this->addResult($otherAssignmentId, 'pupil', 0, '2026-09-02 10:00:00');
 
 		$progress = $this->progress($assignmentId);
 
-		$this->assertSame([2], array_column($progress['problems'], 'number'));
-		$this->assertSame([null], $progress['pupils'][0]['cells']);
+		$this->assertSame([1, 2], array_column($progress['problems'], 'number'));
+		$this->assertSame([null, null], $progress['pupils'][0]['cells']);
+	}
+
+	/**
+	 * A result on a problem counts for every published assignment of the pupil's classes that has
+	 * it: each misplay and the first solve, wherever the problem is played.
+	 */
+	public function testAResultOfAPupilCountsForTheAssignment(): void
+	{
+		$this->prepare();
+		$classroomId = $this->createClassroom();
+		$this->addMember($classroomId, 'pupil');
+		$assignmentId = $this->createAssignment($classroomId, '2026-10-01 00:00:00', '2026-10-08', [0, 1]);
+		$draftId = $this->createAssignment($classroomId, null, '2026-10-08', [0]);
+
+		$this->postResult('pupil', 0, PlayOutcome::Failed);
+		$this->postResult('pupil', 0, PlayOutcome::Failed);
+		$this->assertSame(['misplays' => 2, 'solved' => null], $this->result($assignmentId, 'pupil', 0));
+
+		$this->postResult('pupil', 0, PlayOutcome::SolvedAfterMistake);
+		$result = $this->result($assignmentId, 'pupil', 0);
+		$this->assertSame(2, $result['misplays']);
+		$this->assertNotNull($result['solved']);
+		$this->assertNull($this->result($draftId, 'pupil', 0));
+		$this->assertNull($this->result($assignmentId, 'pupil', 1));
+	}
+
+	/**
+	 * A problem the pupil solved before is played again for the assignment. The play page sends
+	 * that solve, which leaves the status alone and gives no XP, but counts for the assignment.
+	 */
+	public function testASolveOfAProblemSolvedBeforeCountsForTheAssignment(): void
+	{
+		$this->prepare();
+		$classroomId = $this->createClassroom();
+		$this->addMember($classroomId, 'pupil');
+		$assignmentId = $this->createAssignment($classroomId, '2026-10-01 00:00:00', '2026-10-08', [0]);
+		$this->addSolvedStatus('pupil', 0);
+		$xp = $this->xp('pupil');
+
+		$this->postResult('pupil', 0, PlayOutcome::SolvedAfterMistake);
+
+		$this->assertSame(1, $this->result($assignmentId, 'pupil', 0)['misplays']);
+		$this->assertNotNull($this->result($assignmentId, 'pupil', 0)['solved']);
+		$this->assertSame($xp, $this->xp('pupil'));
+		$this->assertSame('S', Util::query('SELECT status FROM tsumego_status WHERE user_id = ? AND tsumego_id = ?',
+			[$this->userId('pupil'), $this->context->tsumegos[0]['id']])[0]['status']);
+	}
+
+	public function testAResultOfAPlayerOutsideTheClassDoesntCount(): void
+	{
+		$this->prepare();
+		$classroomId = $this->createClassroom();
+		$this->addMember($classroomId, 'outsider', ClassroomMemberStatus::REQUESTED);
+		$assignmentId = $this->createAssignment($classroomId, '2026-10-01 00:00:00', '2026-10-08', [0]);
+
+		$this->postResult('outsider', 0, PlayOutcome::SolvedClean);
+
+		$this->assertNull($this->result($assignmentId, 'outsider', 0));
 	}
 
 	public function testAPupilSeesOnlyTheirOwnProgress(): void
@@ -629,14 +720,14 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$this->prepare();
 		$classroomId = $this->createClassroom();
 		$this->addMember($classroomId, 'pupil');
-		$this->createAssignment($classroomId, date('Y-m-d H:i:s', strtotime('-1 hour')), date('Y-m-d', strtotime('+7 days')));
+		$assignmentId = $this->createAssignment($classroomId, date('Y-m-d H:i:s', strtotime('-1 hour')), date('Y-m-d', strtotime('+7 days')));
 		$browser = Browser::instance();
 
 		$browser->get('/classes/' . $classroomId);
 		$browser->waitUntilCssSelectorExistsWithText('.classes__solved-count', '0/3');
 		$this->assertCount(0, $browser->getElements('.classes__table .classes__cell--solved'));
 
-		$this->addAttempt('pupil', 1, true, 0, date('Y-m-d H:i:s'));
+		$this->addResult($assignmentId, 'pupil', 1, date('Y-m-d H:i:s'));
 
 		$browser->waitUntilCssSelectorExistsWithText('.classes__solved-count', '1/3', 30);
 		$this->assertCount(1, $browser->getElements('.classes__table .classes__cell--solved'));
@@ -690,9 +781,10 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 
 	/**
 	 * The pupil plays the assignment as a row of its own: the buttons are numbered from 1, green
-	 * for a problem solved since it was published, and the title says where in the assignment the
-	 * pupil is and which problem of which collection it is. Without a problem the route opens the
-	 * first one not solved yet.
+	 * for a problem solved for the assignment, light blue (W) for one solved only before, and the
+	 * title says where in the assignment the pupil is and which problem of which collection it is.
+	 * Without a problem the route opens the first one not solved for the assignment yet, and a
+	 * solve of it is sent though it was solved before.
 	 */
 	public function testAPupilPlaysTheAssignmentAsOneRow(): void
 	{
@@ -701,8 +793,8 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$this->addMember($classroomId, 'pupil');
 		$assignmentId = $this->createAssignment($classroomId, '2026-10-01 00:00:00', '2026-10-08', [3, 1, 0]);
 		Util::execute("UPDATE classroom_assignment SET title = 'Week two' WHERE id = ?", [$assignmentId]);
-		$this->addAttempt('pupil', 3, true, 0, '2026-10-02 10:00:00');
-		$this->addAttempt('pupil', 1, true, 0, '2026-09-02 10:00:00');
+		$this->addResult($assignmentId, 'pupil', 3, '2026-10-02 10:00:00');
+		$this->addSolvedStatus('pupil', 1);
 		$this->login('pupil');
 
 		$this->testAction('/classes/play/' . $assignmentId, ['method' => 'get', 'return' => 'contents']);
@@ -710,7 +802,8 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$this->assertStringContainsString('var tsumegoID = ' . $this->context->tsumegos[1]['id'] . ';', $this->view);
 		$buttons = (array) $this->vars['tsumegoButtons'];
 		$this->assertSame([1, 2, 3], array_map(fn($button) => $button->order, $buttons));
-		$this->assertSame(['S', 'V', 'N'], array_map(fn($button) => $button->status, $buttons));
+		$this->assertSame(['S', 'W', 'N'], array_map(fn($button) => $button->status, $buttons));
+		$this->assertStringContainsString('var assignmentReplay = true;', $this->view);
 		$this->assertSame('Homework 1', $buttons[2]->description);
 		$text = preg_replace('/\s+/', ' ', $this->view);
 		$this->assertStringContainsString('Week two 2/3</a>', $text);

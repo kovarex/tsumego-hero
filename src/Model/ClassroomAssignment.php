@@ -1,5 +1,6 @@
 <?php
 
+use App\Utility\PlayOutcome;
 use App\Utility\Rating;
 use App\Utility\TsumegoButton;
 use App\Utility\TsumegoButtons;
@@ -12,8 +13,9 @@ use App\Utility\Util;
  * it once it is published. The picked problems are rows of classroom_assignment_problem, each a
  * problem of a collection (a set_connection), so it keeps the number it has there.
  *
- * What counts as done for the class is a solve after the assignment was published. A problem a
- * pupil solved before is shown apart, so the teacher sees it was not played again for the homework.
+ * What counts as done for the class is a solve for the assignment, a row of
+ * classroom_assignment_result (recordResult()). A problem a pupil solved before is shown apart, so
+ * the teacher sees it was not played again for the homework.
  */
 class ClassroomAssignment extends AppModel
 {
@@ -28,6 +30,11 @@ class ClassroomAssignment extends AppModel
 	public const CELL_LATE = 'late';
 	public const CELL_EARLIER = 'earlier';
 	public const CELL_TRIED = 'tried';
+
+	/** The colours of the buttons of playButtons(), as the statuses of the problem buttons. */
+	public const BUTTON_SOLVED = 'S';
+	public const BUTTON_SOLVED_BEFORE = 'W';
+	public const BUTTON_NOT_SOLVED = 'N';
 
 	public static function isPublished(array $assignment): bool
 	{
@@ -279,25 +286,52 @@ class ClassroomAssignment extends AppModel
 	}
 
 	/**
-	 * The problems of the assignment the player solved since it was published, by tsumego id.
+	 * Counts a result of the player on a problem for every published assignment of their classes
+	 * that has it: a misplay until the problem is solved for the assignment, and the first solve. A problem solved before counts too when it is
+	 * solved again (the play page sends that result in an assignment, see Play::play()).
+	 */
+	public static function recordResult(int $userId, int $tsumegoId, PlayOutcome $outcome): void
+	{
+		if ($outcome === PlayOutcome::TimedOut)
+			return;
+		$rows = Util::query('SELECT DISTINCT a.id FROM classroom_member m
+			JOIN classroom_assignment a ON a.classroom_id = m.classroom_id AND a.published IS NOT NULL
+			JOIN classroom_assignment_problem p ON p.classroom_assignment_id = a.id
+			JOIN set_connection sc ON sc.id = p.set_connection_id AND sc.tsumego_id = ?
+			WHERE m.user_id = ? AND m.classroom_member_status_id = ?',
+			[$tsumegoId, $userId, ClassroomMemberStatus::ACCEPTED]);
+		if (empty($rows))
+			return;
+
+		$solved = $outcome === PlayOutcome::Failed ? null : date('Y-m-d H:i:s');
+		// a solve after a mistake whose fail wasn't sent, as on a problem solved before, still had one
+		$misplays = $outcome === PlayOutcome::SolvedClean ? 0 : 1;
+		foreach ($rows as $row)
+			Util::execute('INSERT INTO classroom_assignment_result (classroom_assignment_id, user_id, tsumego_id, misplays, solved)
+				VALUES (?, ?, ?, ?, ?)
+				ON DUPLICATE KEY UPDATE
+					misplays = IF(solved IS NOT NULL, misplays, IF(VALUES(solved) IS NULL, misplays + 1, GREATEST(misplays, VALUES(misplays)))),
+					solved = COALESCE(solved, VALUES(solved))',
+				[(int) $row['id'], $userId, $tsumegoId, $misplays, $solved]);
+	}
+
+	/**
+	 * The problems of the assignment the player solved for it, by tsumego id.
 	 *
-	 * @param array<string, mixed> $assignment A published one
+	 * @param array<string, mixed> $assignment
 	 * @return array<int, true>
 	 */
 	public static function solvedTsumegoIds(array $assignment, int $userId): array
 	{
-		$rows = Util::query('SELECT DISTINCT ta.tsumego_id FROM tsumego_attempt ta
-			WHERE ta.user_id = ? AND ta.solved = 1 AND ta.created >= ?
-				AND ta.tsumego_id IN (SELECT sc.tsumego_id FROM classroom_assignment_problem p
-					JOIN set_connection sc ON sc.id = p.set_connection_id
-					WHERE p.classroom_assignment_id = ?)',
-			[$userId, $assignment['published'] ?? $assignment['created'], (int) $assignment['id']]);
+		$rows = Util::query('SELECT tsumego_id FROM classroom_assignment_result
+			WHERE classroom_assignment_id = ? AND user_id = ? AND solved IS NOT NULL',
+			[(int) $assignment['id'], $userId]);
 		return array_fill_keys(array_map('intval', array_column($rows, 'tsumego_id')), true);
 	}
 
 	/**
-	 * The first problem of the assignment the player hasn't solved since it was published, or the
-	 * first problem once they solved them all; null for an assignment without problems.
+	 * The first problem of the assignment the player hasn't solved for it, or the first problem
+	 * once they solved them all; null for an assignment without problems.
 	 *
 	 * @param array<string, mixed> $assignment
 	 */
@@ -315,31 +349,43 @@ class ClassroomAssignment extends AppModel
 
 	/**
 	 * The row of buttons under the board while the player plays the assignment, numbered from 1
-	 * like a collection of its own: green for a problem solved since it was published, grey for
-	 * one still to solve. The tooltip names the collection and the number the problem has there.
+	 * like a collection of its own: green for a problem solved for the assignment, light blue
+	 * for one solved before but not yet for the assignment, grey for one never solved. The
+	 * tooltip names the collection and the number the problem has there.
 	 *
 	 * @param array<string, mixed> $assignment
 	 */
 	public static function playButtons(array $assignment, int $userId, int $currentSetConnectionId): TsumegoButtons
 	{
-		$rows = Util::query('SELECT sc.id AS set_connection_id, sc.tsumego_id, sc.num, s.title AS set_title, t.rating' . self::PREVIEW_COLUMN . '
+		$rows = Util::query('SELECT sc.id AS set_connection_id, sc.tsumego_id, sc.num, s.title AS set_title, t.rating, ts.status AS tsumego_status' . self::PREVIEW_COLUMN . '
 			FROM classroom_assignment_problem p
 			' . self::visibleProblemJoins() . '
+			LEFT JOIN tsumego_status ts ON ts.tsumego_id = sc.tsumego_id AND ts.user_id = ?
 			' . self::previewJoin() . '
 			WHERE p.classroom_assignment_id = ?
 			ORDER BY p.position, p.id',
-			[(int) $assignment['id']]);
+			[$userId, (int) $assignment['id']]);
 		$solved = self::solvedTsumegoIds($assignment, $userId);
 		foreach ($rows as &$row)
-			$row['status'] = isset($solved[(int) $row['tsumego_id']]) ? 'S' : 'N';
+			$row['status'] = match (true)
+			{
+				isset($solved[(int) $row['tsumego_id']]) => self::BUTTON_SOLVED,
+				TsumegoUtil::isSolvedStatus($row['tsumego_status']) => self::BUTTON_SOLVED_BEFORE,
+				default => self::BUTTON_NOT_SOLVED,
+			};
 		unset($row);
 
+		$labels = [
+			self::BUTTON_SOLVED => 'Solved',
+			self::BUTTON_SOLVED_BEFORE => 'Solved before, not yet for this assignment',
+			self::BUTTON_NOT_SOLVED => 'Not solved yet',
+		];
 		$buttons = TsumegoButtons::fromRows($rows, $currentSetConnectionId, self::MAXIMUM_PROBLEMS, self::playLink((int) $assignment['id']) . '/');
 		$rowsBySetConnection = array_column($rows, null, 'set_connection_id');
 		foreach ($buttons as $button)
 		{
 			$row = $rowsBySetConnection[$button->setConnectionID];
-			$button->label = $row['status'] === 'S' ? 'Solved' : 'Not solved yet';
+			$button->label = $labels[$row['status']];
 			$button->description = $row['set_title'] . ' ' . $row['num'];
 		}
 		return $buttons;
@@ -373,8 +419,8 @@ class ClassroomAssignment extends AppModel
 
 	/**
 	 * Who of the class solved which assigned problem: one row per pupil, one cell per problem.
-	 * A cell is null for a problem not touched since the assignment was published, or says it was
-	 * solved (late when after the due day), solved only before, or tried without a solve yet.
+	 * A cell is null for a problem not touched for the assignment, or says it was solved for it
+	 * (late when after the due day), solved only before, or tried without a solve yet.
 	 *
 	 * @param array<string, mixed> $assignment A published one
 	 * @param int|null $pupilId Only this pupil, for the pupil looking at their own homework
@@ -387,23 +433,18 @@ class ClassroomAssignment extends AppModel
 		if ($pupilId !== null)
 			$pupils = array_values(array_filter($pupils, fn(array $pupil) => (int) $pupil['user_id'] === $pupilId));
 
-		$assignedTsumegos = 'SELECT sc.tsumego_id FROM classroom_assignment_problem p
-			JOIN set_connection sc ON sc.id = p.set_connection_id
-			WHERE p.classroom_assignment_id = ?';
-		$attempts = Util::query('SELECT ta.user_id, ta.tsumego_id,
-				MIN(CASE WHEN ta.solved = 1 THEN ta.created END) AS solved_at,
-				SUM(ta.misplays) AS misplays
-			FROM classroom_member m
-			JOIN tsumego_attempt ta ON ta.user_id = m.user_id AND ta.created >= ?
-			WHERE m.classroom_id = ? AND m.classroom_member_status_id = ?
-				AND ta.tsumego_id IN (' . $assignedTsumegos . ')
-			GROUP BY ta.user_id, ta.tsumego_id',
-			[$assignment['published'], (int) $assignment['classroom_id'], ClassroomMemberStatus::ACCEPTED, (int) $assignment['id']]);
+		$results = Util::query('SELECT r.user_id, r.tsumego_id, r.solved, r.misplays
+			FROM classroom_assignment_result r
+			JOIN classroom_member m ON m.user_id = r.user_id AND m.classroom_id = ? AND m.classroom_member_status_id = ?
+			WHERE r.classroom_assignment_id = ?',
+			[(int) $assignment['classroom_id'], ClassroomMemberStatus::ACCEPTED, (int) $assignment['id']]);
 		$statuses = Util::query('SELECT ts.user_id, ts.tsumego_id, ts.status
 			FROM classroom_member m
 			JOIN tsumego_status ts ON ts.user_id = m.user_id
 			WHERE m.classroom_id = ? AND m.classroom_member_status_id = ?
-				AND ts.tsumego_id IN (' . $assignedTsumegos . ')',
+				AND ts.tsumego_id IN (SELECT sc.tsumego_id FROM classroom_assignment_problem p
+					JOIN set_connection sc ON sc.id = p.set_connection_id
+					WHERE p.classroom_assignment_id = ?)',
 			[(int) $assignment['classroom_id'], ClassroomMemberStatus::ACCEPTED, (int) $assignment['id']]);
 
 		$lateFrom = self::lateFrom($assignment);
@@ -411,17 +452,17 @@ class ClassroomAssignment extends AppModel
 		foreach ($statuses as $status)
 			if (TsumegoUtil::isSolvedStatus($status['status']))
 				$cells[$status['user_id']][$status['tsumego_id']] = ['state' => self::CELL_EARLIER];
-		foreach ($attempts as $attempt)
+		foreach ($results as $result)
 		{
-			$misplays = (int) $attempt['misplays'];
-			if ($attempt['solved_at'] !== null)
-				$cells[$attempt['user_id']][$attempt['tsumego_id']] = [
-					'state' => $attempt['solved_at'] >= $lateFrom ? self::CELL_LATE : self::CELL_SOLVED,
-					'solvedAt' => Util::toIso8601($attempt['solved_at']),
+			$misplays = (int) $result['misplays'];
+			if ($result['solved'] !== null)
+				$cells[$result['user_id']][$result['tsumego_id']] = [
+					'state' => $result['solved'] >= $lateFrom ? self::CELL_LATE : self::CELL_SOLVED,
+					'solvedAt' => Util::toIso8601($result['solved']),
 					'misplays' => $misplays,
 				];
-			else
-				$cells[$attempt['user_id']][$attempt['tsumego_id']] = ['state' => self::CELL_TRIED, 'misplays' => $misplays];
+			elseif ($misplays > 0)
+				$cells[$result['user_id']][$result['tsumego_id']] = ['state' => self::CELL_TRIED, 'misplays' => $misplays];
 		}
 
 		$pupilRows = [];

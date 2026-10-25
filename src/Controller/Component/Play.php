@@ -225,6 +225,8 @@ class Play
 			new SetNavigationButtonsInput($this->setFunction)->execute($assignmentButtons, $currentSetConnection);
 			($this->setFunction)('_title', ClassroomAssignment::title($this->classroomAssignment) . ' ' . $assignmentButtons->currentOrder . '/' . $assignmentButtons->highestTsumegoOrder . ' on Tsumego Hero');
 			($this->setFunction)('classroomAssignment', $this->classroomAssignment);
+			$currentButton = array_find((array) $assignmentButtons, fn($button) => $button->setConnectionID == $currentSetConnection['SetConnection']['id']);
+			($this->setFunction)('solvedForAssignment', $currentButton?->status === ClassroomAssignment::BUTTON_SOLVED);
 		}
 		elseif (Auth::isInLevelMode())
 		{

@@ -39,6 +39,7 @@ use App\Utility\ViteManifest;
  * @var bool $isAllowedToContribute
  * @var bool $canAddMoreTags
  * @var array|null $classroomAssignment Set by the route of a class assignment, which is the row of buttons
+ * @var bool $solvedForAssignment Set with $classroomAssignment: the player solved the problem for the assignment
  * @var bool $isSandbox
  * @var bool $isSemeai
  * @var string $lightDark
@@ -119,6 +120,8 @@ use App\Utility\ViteManifest;
 	// Reset opens the problem again on the route it is played from, so a retry in the
 	// training or in a class assignment stays there
 	$classroomAssignment ??= null;
+	// A problem solved before is played again for a class assignment, which counts the solve on its own
+	$assignmentReplay = $classroomAssignment !== null && $solved && empty($solvedForAssignment);
 	if ($classroomAssignment !== null)
 		$resetLink = ClassroomAssignment::playLink((int) $classroomAssignment['id'], (int) $setConnection['SetConnection']['id']);
 	else
@@ -678,6 +681,9 @@ use App\Utility\ViteManifest;
 	var playGreenColor = '<?php echo $playGreenColor; ?>';
 	var tStatus = "<?php echo $t['Tsumego']['status']; ?>";
 	var failAlreadyReported = false;
+	// A problem solved before, played again for a class assignment: the solve is sent for the
+	// assignment, though it changes nothing else
+	var assignmentReplay = <?php echo Util::boolString($assignmentReplay); ?>;
 	// The fail sent when the line was lost, which the player isn't shown until the line is over
 	var unrevealedFail = null;
 	window._submitResultPromise = null;
@@ -1636,7 +1642,8 @@ use App\Utility\ViteManifest;
 	{
 		if (besogoNoLogin)
 			return null;
-		if (accountWidgetShowsResults())
+		// a replay for an assignment changes nothing the account bar shows
+		if (accountWidgetShowsResults() && !assignmentReplay)
 			accountWidget.rememberResult(isSolved(outcome));
 		let data = {
 			tsumego_id: tsumegoID,
@@ -1734,6 +1741,11 @@ use App\Utility\ViteManifest;
 					xpStatus.set('solved', true);
 				submitResult(hadMisplay ? playOutcome.solvedAfterMistake : playOutcome.solvedClean);
 			}
+			else if (assignmentReplay)
+			{
+				sendResult(hadMisplay ? playOutcome.solvedAfterMistake : playOutcome.solvedClean);
+				assignmentReplay = false;
+			}
 			updateCurrentNavigationButton('S');
 			document.getElementById("status").innerHTML = "<h2>Correct!</h2>";
 			if(light)
@@ -1776,6 +1788,8 @@ use App\Utility\ViteManifest;
 				currentHealth--;
 				submitResult(playOutcome.failed);
 			}
+			else if (assignmentReplay)
+				hadMisplay = true;
 			// Don't lock board - let user keep trying
 			if (mode != 2)
 			{
