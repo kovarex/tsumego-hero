@@ -476,6 +476,55 @@ class MistakeTrainingTest extends TestCaseWithAuth
 		$this->assertSame(date('M j', strtotime('+30 days')), MistakeTraining::describeDay(date('Y-m-d', strtotime('+30 days')), $today));
 	}
 
+	public function testAProblemInTwoCollectionsCountsOnce(): void
+	{
+		$dueLater = date('Y-m-d', strtotime(MistakeTraining::today() . ' +3 days')) . ' 00:00:00';
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumegos' => [
+				[
+					'sets' => [['name' => 'first collection', 'num' => 1], ['name' => 'second collection', 'num' => 1]],
+					'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
+				],
+				[
+					'sets' => [['name' => 'first collection', 'num' => 2], ['name' => 'second collection', 'num' => 2]],
+					'status' => ['name' => 'V', 'mistake_training_due' => $dueLater],
+				],
+			],
+		]);
+		$userId = $context->user['id'];
+
+		$this->assertSame(1, MistakeTraining::dueCount($userId));
+		$this->assertSame(1, MistakeTraining::countTodaysTraining($userId));
+		$this->assertCount(1, MistakeTraining::todaysTraining($userId), 'The problem is one entry of the queue');
+		$this->assertSame(2, MistakeTraining::totalInTraining($userId));
+		$this->assertSame([substr($dueLater, 0, 10) => 1], MistakeTraining::upcomingByDay($userId)['days']);
+	}
+
+	public function testCountsOnlyWhatTheTrainingCanServe(): void
+	{
+		$dueLater = date('Y-m-d', strtotime(MistakeTraining::today() . ' +3 days')) . ' 00:00:00';
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumegos' => [
+				[
+					'sets' => [['name' => 'trashed collection', 'num' => 1, 'deleted' => date('Y-m-d H:i:s')]],
+					'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
+				],
+				[
+					'sets' => [['name' => 'live collection', 'num' => 1]],
+					'status' => ['name' => 'V', 'mistake_training_due' => $dueLater],
+				],
+			],
+		]);
+		$userId = $context->user['id'];
+
+		$this->assertSame(0, MistakeTraining::countTodaysTraining($userId), 'A problem of a collection in the trash is not in today\'s training');
+		$this->assertSame(1, MistakeTraining::totalInTraining($userId));
+		$this->assertSame([substr($dueLater, 0, 10) => 1], MistakeTraining::upcomingByDay($userId)['days'],
+			'Only the problem the training can open is announced');
+	}
+
 	public function testDueCount(): void
 	{
 		$context = new ContextPreparator(['tsumego' => 1]);

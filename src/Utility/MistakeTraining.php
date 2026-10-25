@@ -374,11 +374,21 @@ class MistakeTraining
 	{
 		$rows = Util::query(
 			'SELECT COUNT(*) AS total FROM mistake_training_pool p' . self::servableSql()
-			. ' AND ((p.next_due IS NOT NULL AND p.next_due <= ?)'
-			. " OR (p.last_review_day = ? AND p.last_review_result IN ('" . self::REVIEW_SOLVED . "', '" . self::REVIEW_GRADUATED . "')))",
+				. ' AND ' . self::todaysTrainingSql(),
 			[$userId, date('Y-m-d H:i:s'), self::today()]
 		);
 		return (int) $rows[0]['total'];
+	}
+
+	/**
+	 * The condition of a pool row that is part of today's training: due now, or solved today
+	 * and so kept in the day's list as done. Its two parameters are the moment and the day.
+	 */
+	private static function todaysTrainingSql(): string
+	{
+		return '((p.next_due IS NOT NULL AND p.next_due <= ?)'
+			. ' OR (p.last_review_day = ? AND p.last_review_result IN ('
+			. "'" . self::REVIEW_SOLVED . "', '" . self::REVIEW_GRADUATED . "')))";
 	}
 
 	/**
@@ -455,14 +465,29 @@ class MistakeTraining
 	}
 
 	/**
-	 * The join and conditions that keep the pool rows of player ? the training can
-	 * serve: the problem is not deleted and is in a set.
+	 * The join and conditions that keep the rows of the player's pool that the training
+	 * can serve: the problem is not deleted and is in a collection the player can open.
+	 * A problem whose collections are all in the trash waits in the pool, so it comes
+	 * back with its history once a collection is restored.
 	 */
 	private static function servableSql(): string
 	{
 		return ' JOIN tsumego t ON t.id = p.tsumego_id AND t.deleted IS NULL'
 			. ' WHERE p.user_id = ?'
-			. ' AND EXISTS (SELECT 1 FROM set_connection sc WHERE sc.tsumego_id = p.tsumego_id)';
+			. ' AND EXISTS (SELECT 1' . self::playableConnectionsSql('p.tsumego_id') . ')';
+	}
+
+	/**
+	 * The connections of a problem the player can play, as the FROM and WHERE of a query:
+	 * wrapped in EXISTS() it asks whether the problem is in any of them, picked with LIMIT 1
+	 * after the display order it names the one the training opens the problem in.
+	 */
+	private static function playableConnectionsSql(string $tsumegoID): string
+	{
+		return ' FROM set_connection c'
+			. ' JOIN `set` s ON s.id = c.set_id'
+			. ' WHERE c.tsumego_id = ' . $tsumegoID
+			. ' AND ' . SetConnection::playableSql('s');
 	}
 
 	/**
@@ -471,14 +496,17 @@ class MistakeTraining
 	 * does not order it, because an import brings many problems due at the same
 	 * moment. A problem missed earlier today waits until the untried ones are done,
 	 * so one hard problem does not hold up the day. A problem the training cannot
-	 * serve (deleted, or in no set) is skipped, so it keeps its row for when it is back.
+	 * serve (deleted, or in no collection the player can play) is skipped, so it keeps
+	 * its row for when it is back. The row names the set connection to open it in.
 	 *
 	 * @return array|null
 	 */
 	public static function nextDue(int $userId): ?array
 	{
 		$rows = Util::query(
-			'SELECT p.* FROM mistake_training_pool p' . self::servableSql()
+			'SELECT p.*, (SELECT c.id' . self::playableConnectionsSql('p.tsumego_id')
+			. ' ORDER BY ' . SetConnection::displayOrderForSetSql('s') . ', c.id LIMIT 1) AS set_connection_id'
+			. ' FROM mistake_training_pool p' . self::servableSql()
 			. ' AND p.next_due IS NOT NULL AND p.next_due <= ?'
 			. ' ORDER BY (p.last_review_day IS NOT NULL AND p.last_review_day = ?) ASC, p.id ASC LIMIT 1',
 			[$userId, date('Y-m-d H:i:s'), self::today()]
@@ -506,10 +534,8 @@ class MistakeTraining
 	public static function totalInTraining(int $userId): int
 	{
 		$rows = Util::query(
-			'SELECT COUNT(DISTINCT p.id) AS total FROM mistake_training_pool p'
-			. ' JOIN tsumego t ON t.id = p.tsumego_id'
-			. ' JOIN set_connection sc ON sc.tsumego_id = p.tsumego_id'
-			. ' WHERE p.user_id = ? AND p.next_due IS NOT NULL AND t.deleted IS NULL',
+			'SELECT COUNT(*) AS total FROM mistake_training_pool p' . self::servableSql()
+			. ' AND p.next_due IS NOT NULL',
 			[$userId]
 		);
 
@@ -670,9 +696,9 @@ class MistakeTraining
 
 	/**
 	 * The problems of a player in the training, soonest review first, for the list on
-	 * the overview: each with its set and number, its rung and its next review. A
-	 * graduated problem has left the training, and one the training cannot serve is
-	 * not shown, like in todaysTraining().
+	 * the overview: each with the collection it will open in and its number, its rung and
+	 * its next review. A graduated problem has left the training, and one the training
+	 * cannot serve is not shown, like in todaysTraining().
 	 *
 	 * @return list<array{tsumego_id: int, set_title: string, num: int, rung: int, next_due: string, missed_today: bool}>
 	 */
@@ -681,7 +707,8 @@ class MistakeTraining
 		$rows = Util::query(
 			'SELECT p.tsumego_id, p.rung, p.next_due, p.last_review_day, p.last_review_result, st.title AS set_title, sc.num'
 			. ' FROM mistake_training_pool p'
-			. ' JOIN set_connection sc ON sc.id = (SELECT MIN(sc2.id) FROM set_connection sc2 WHERE sc2.tsumego_id = p.tsumego_id)'
+			. ' JOIN set_connection sc ON sc.id = (SELECT c.id' . self::playableConnectionsSql('p.tsumego_id')
+			. ' ORDER BY ' . SetConnection::displayOrderForSetSql('s') . ', c.id LIMIT 1)'
 			. ' JOIN `set` st ON st.id = sc.set_id'
 			. self::servableSql()
 			. ' AND p.next_due IS NOT NULL'
@@ -773,7 +800,7 @@ class MistakeTraining
 
 	/**
 	 * The attempts that are past mistakes and are not in the training yet: a problem
-	 * the player solved with misplays, still alive, still reachable from a set.
+	 * the player solved with misplays, still alive, still openable in a collection.
 	 *
 	 * This is the longest thing the training reads: the whole attempt history of the
 	 * player, seconds of work on a cold cache once it holds tens of thousands of
@@ -785,7 +812,7 @@ class MistakeTraining
 		return ' FROM tsumego_attempt a'
 			. ' JOIN tsumego t ON t.id = a.tsumego_id AND t.deleted IS NULL'
 			. ' WHERE a.user_id = ? AND a.solved = 1 AND a.misplays > 0'
-			. ' AND EXISTS (SELECT 1 FROM set_connection sc WHERE sc.tsumego_id = a.tsumego_id)'
+			. ' AND EXISTS (SELECT 1' . self::playableConnectionsSql('a.tsumego_id') . ')'
 			. ' AND NOT EXISTS (SELECT 1 FROM mistake_training_pool p'
 			. ' WHERE p.user_id = a.user_id AND p.tsumego_id = a.tsumego_id)';
 	}
@@ -803,10 +830,9 @@ class MistakeTraining
 	public static function upcomingByDay(int $userId, int $maxDays = 7): array
 	{
 		$rows = Util::query(
-			'SELECT DATE(p.next_due) AS day, COUNT(DISTINCT p.id) AS day_count FROM mistake_training_pool p'
-			. ' JOIN tsumego t ON t.id = p.tsumego_id'
-			. ' JOIN set_connection sc ON sc.tsumego_id = p.tsumego_id'
-			. ' WHERE p.user_id = ? AND p.next_due > ? AND t.deleted IS NULL'
+			'SELECT DATE(p.next_due) AS day, COUNT(*) AS day_count FROM mistake_training_pool p'
+			. self::servableSql()
+			. ' AND p.next_due > ?'
 			. ' GROUP BY DATE(p.next_due) ORDER BY day',
 			[$userId, date('Y-m-d H:i:s')]
 		);
@@ -836,15 +862,6 @@ class MistakeTraining
 		if ($daysAhead <= 6)
 			return date('l', strtotime($day));
 		return date('M j', strtotime($day));
-	}
-
-	/**
-	 * Remove a problem from the pool: when the tsumego is deleted or has no set
-	 * connection. Graduation keeps the row, see graduate().
-	 */
-	public static function removeFromPool(int $userId, int $tsumegoId): void
-	{
-		ClassRegistry::init('MistakeTrainingPool')->deleteAll(['user_id' => $userId, 'tsumego_id' => $tsumegoId]);
 	}
 
 	/**
@@ -1120,15 +1137,12 @@ class MistakeTraining
 					) AS rn
 				FROM mistake_training_pool p
 				JOIN set_connection sc ON sc.tsumego_id = p.tsumego_id
-				JOIN `set` st ON st.id = sc.set_id
+				JOIN `set` st ON st.id = sc.set_id AND " . SetConnection::playableSql('st') . "
 				JOIN tsumego t ON t.id = p.tsumego_id
 				LEFT JOIN sgf ON sgf.id = " . Sgf::currentVersionIDSql('p.tsumego_id') . "
 				WHERE p.user_id = ?
 				  AND t.deleted IS NULL
-				  AND (
-					(p.next_due IS NOT NULL AND p.next_due <= ?)
-					OR (p.last_review_day = ? AND p.last_review_result IN ('" . self::REVIEW_SOLVED . "', '" . self::REVIEW_GRADUATED . "'))
-				  )
+				  AND " . self::todaysTrainingSql() . "
 			) x
 			WHERE rn = 1
 			ORDER BY id ASC
