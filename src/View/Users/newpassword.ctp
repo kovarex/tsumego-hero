@@ -1,5 +1,9 @@
 <?php
 
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\CookieFlash;
+
 /**
  * @var View $this
  * @var string $checksum
@@ -18,12 +22,16 @@
 		 <h1>New password:</h1>
 		<form action="/users/newpassword/<?php echo urlencode($checksum); ?>" id="UserNewpasswordForm" method="post" accept-charset="utf-8">
 		<div style="display:none;"><input type="hidden" name="_method" value="POST"></div>	
-		<div class="input text required">
-			<label for="password"></label>
-			<input name="data[User][password]" maxlength="50" placeholder="Password" type="text" id="password" required="required"/>
-		</div>
-		<?php echo $this->Form->end('Submit'); ?>
-		
+                <div class="input">
+                        <label for="password1">New password</label>
+                        <input name="data[User][password1]" maxlength="50" type="password" id="password1" autocomplete="new-password" required="required"/>
+                </div>
+                <div class="input">
+                        <label for="password2">New password again</label>
+                        <input name="data[User][password2]" maxlength="50" type="password" id="password2" autocomplete="new-password" required="required"/>
+                </div>
+                <div class="hint">At least <?php echo Constants::$MINIMUM_PASSWORD_LENGTH; ?> characters.</div>
+                <button type="submit" class="btn" id="newpassword-submit">Submit</button>
 	</div>
 	<div class="right">
 	</div>
@@ -44,7 +52,9 @@
 <?php }else{ ?>
 	<div id="login-box" class="users form">
 	<div class="left signin">
-		 <h1>Chechsum error.</h1>
+		 <h1>This link is not valid any more.</h1>
+		 <a href="/users/resetpassword">Ask for a new one</a>
+		 <br>
 		 <a href="/users/login">Back to Sign In</a>
 	</div>
 	

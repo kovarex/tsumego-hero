@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\Auth;
+use App\Utility\Rating;
 use Facebook\WebDriver\WebDriverKeys;
 use PHPUnitRetry\RetryTrait;
 
@@ -28,6 +30,7 @@ class EditTsumegoTest extends ControllerTestCase
 			'min-bigger-than-max' => [['field' => 'maximum-rating', 'value' => '10k', 'field2' => 'minimum-rating', 'value2' => '5k', 'result' => null]],
 			'delete-invalid' => [['field' => 'delete', 'value' => 'bla', 'result' => true, 'public' => 0]],
 			'delete-confirm' => [['field' => 'delete', 'value' => 'delete', 'result' => true, 'public' => 0]],
+			'delete-published' => [['field' => 'delete', 'value' => 'delete', 'result' => true, 'public' => 1]],
 			'non-admin' => [['field' => 'description', 'value' => 'bar', 'result' => 'foo', 'admin' => false]],
 			'invalid-tsumego' => [['field' => 'description', 'value' => 'bar', 'result' => 'foo', 'invalid-tsumego' => true]],
 		];
@@ -65,10 +68,7 @@ class EditTsumegoTest extends ControllerTestCase
 			ClassRegistry::init('Tsumego')->delete($context->tsumegos[0]['id']);
 
 		if (($testCase['admin'] ?? null) === false)
-		{
-			Auth::getUser()['isAdmin'] = false;
-			Auth::saveUser();
-		}
+			Auth::saveUserField('user_role_id', User::ROLE_PLAYER);
 
 		$browser->clickId("tsumego-edit-submit");
 
@@ -165,8 +165,8 @@ class EditTsumegoTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$browser->clickId("modify-description");
-		$this->assertSame($browser->getCssSelect("#rating")[0]->getAttribute("value"), "10k");
-		$this->assertSame($browser->getCssSelect("#minimum-rating")[0]->getAttribute("value"), "5k");
-		$this->assertSame($browser->getCssSelect("#maximum-rating")[0]->getAttribute("value"), "15k");
+		$this->assertSame($browser->getElements("#rating")[0]->getAttribute("value"), "10k");
+		$this->assertSame($browser->getElements("#minimum-rating")[0]->getAttribute("value"), "5k");
+		$this->assertSame($browser->getElements("#maximum-rating")[0]->getAttribute("value"), "15k");
 	}
 }

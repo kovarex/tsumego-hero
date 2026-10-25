@@ -1,18 +1,26 @@
 <?php
 
-App::uses('SetNavigationButtonsInput', 'Utility');
-App::uses('TsumegoButton', 'Utility');
-App::uses('TsumegoButtons', 'Utility');
-App::uses('TsumegoXPAndRating', 'Utility');
-App::uses('Level', 'Utility');
-App::uses('AdminActivityLogger', 'Utility');
-App::uses('AdminActivityType', 'Model');
-App::uses('TagConnectionsEdit', 'Utility');
-App::uses('NotFoundException', 'Routing/Error');
+use App\Policy\AdminPolicy;
+use App\Policy\BasePolicy;
+use App\Policy\SetPolicy;
+use App\Policy\TsumegoPolicy;
+use App\Utility\AdminActivityLogger;
+use App\Utility\Auth;
+use App\Utility\BoardSelector;
+use App\Utility\Constants;
+use App\Utility\MistakeTraining;
+use App\Utility\SetNavigationButtonsInput;
+use App\Utility\SgfParser;
+use App\Utility\TimeMode;
+use App\Utility\TsumegoButtons;
+use App\Utility\TsumegoFilters;
+use App\Utility\TsumegoUtil;
+use App\Utility\TsumegoXPAndRating;
+use App\Utility\Util;
 
 class Play
 {
-	public function __construct($setFunction)
+	public function __construct(callable $setFunction)
 	{
 		$this->setFunction = $setFunction;
 	}
@@ -31,24 +39,17 @@ class Play
 		return 'V';
 	}
 
-	public function play(int $setConnectionID, $params, $data): mixed
+	public function play(int $setConnectionID, CakeRequest $params, array $data): mixed
 	{
 		($this->setFunction)('page', 'play');
+		// The board always receives both arrows, and an empty one is the arrow turned off.
+		// Only the modes that walk a list fill this one in.
+		($this->setFunction)('previousLink', '');
 
-		$highestTsumegoOrder = 0;
-		$doublexp = null;
 		$suspiciousBehavior = false;
-		$half = '';
 		$isSandbox = false;
 		$goldenTsumego = false;
 		$reviewCheat = false;
-		$commentCoordinates = [];
-		$trs = [];
-		$eloScore = 0;
-		$eloScore2 = 0;
-		$requestProblem = '';
-		$achievementUpdate = [];
-		$tRank = '15k';
 		$nothingInRange = false;
 		$queryTitle = '';
 
@@ -65,31 +66,21 @@ class Play
 			$id = $t['Tsumego']['id'];
 		}
 
+		// a problem in the trash is gone for everyone but the admins, who can take it back
+		if (!empty($t['Tsumego']['deleted']) && !Auth::isAdmin())
+			throw new NotFoundException('Problem not found');
+
 		$setConnections = TsumegoUtil::getSetConnectionsWithTitles($id);
 		$set = ClassRegistry::init('Set')->findById($currentSetConnection['SetConnection']['set_id']);
 
 		$tsumegoVariant = ClassRegistry::init('TsumegoVariant')->find('first', ['conditions' => ['tsumego_id' => $id]]);
 
-		if (isset($params['url']['search']))
-			if ($params['url']['search'] == 'topics')
-			{
-				$query = $params['url']['search'];
-				$_COOKIE['query'] = $params['url']['search'];
-			}
-
 		$tsumegoFilters = new TsumegoFilters();
-
-		if (Auth::isLoggedIn())
-			$activityValue = $this->getActivityValue(Auth::getUserID(), $t['Tsumego']['id']);
-
-		if ($t['Tsumego']['rating'])
-			$tRank = Rating::getReadableRankFromRating($t['Tsumego']['rating']);
 
 		Util::setCookie('lastVisit', $id);
 
-		if (Auth::isLoggedIn())
+		if (TsumegoPolicy::canEditSettings(Auth::getIdentity()))
 			if (!empty($data))
-			{
 				if (isset($data['Study']))
 				{
 					$tsumegoVariant['TsumegoVariant']['answer1'] = $data['Study']['study1'];
@@ -165,30 +156,14 @@ class Play
 					if ($t['Tsumego']['rating'] > 100)
 						ClassRegistry::init('Tsumego')->save($t, true);
 				}
-				($this->setFunction)('formRedirect', true);
-			}
-		if (Auth::isAdmin())
-		{
-			$aad = ClassRegistry::init('AdminActivity')->find('first', ['order' => 'id DESC']);
-			if ($aad && $aad['AdminActivity']['type'] === AdminActivityType::PROBLEM_DELETE)($this->setFunction)('deleteProblem2', true);
-		}
+		$isSandbox = ($set['Set']['public'] == 0 && $set['Set']['user_id'] === null);
 
-		if (isset($_COOKIE['skip']) && $_COOKIE['skip'] != '0' && Auth::isLoggedIn())
-		{
-			Auth::getUser()['readingTrial']--;
-			unset($_COOKIE['skip']);
-		}
-		$sandboxSets = ClassRegistry::init('Set')->find('all', ['conditions' => ['public' => 0]]) ?: [];
-		foreach ($sandboxSets as $sandboxSet)
-			if ($set['Set']['id'] == $sandboxSet['Set']['id'])
-				$isSandbox = true;
+		AuthorizationComponent::require(SetPolicy::canPlay(Auth::getIdentity(), $set['Set']));
 
 		$tsumegoStatus = Play::getTsumegoStatus($t);
 
 		if ($tsumegoStatus == 'G')
 			$goldenTsumego = true;
-
-		Util::setCookie('previousTsumegoID', $id);
 
 		$amountOfOtherCollection = count(TsumegoUtil::collectTsumegosFromSet($set['Set']['id']));
 
@@ -197,7 +172,7 @@ class Play
 			'order' => 'id DESC',
 			'conditions' => [
 				'tsumego_id' => $id,
-				'accepted' => true]]);
+				'sgf_status_id' => Sgf::STATUS_ACCEPTED]]);
 		if (!$sgfdb)
 		{
 			$sgf['Sgf']['sgf'] = Constants::$SGF_PLACEHOLDER;
@@ -205,37 +180,150 @@ class Play
 		}
 		else
 			$sgf = $sgfdb;
+
+		$ogTitle = $set['Set']['title'] ?? '';
+		$ogTitle .= ' ' . $currentSetConnection['SetConnection']['num'] . '/' . $amountOfOtherCollection;
+
+		$ogDescription = strip_tags($t['Tsumego']['description'] ?? '');
+		// True-color convention: descriptions already match the actual board stones.
+		// The OG image also renders actual SGF colors (no board inversion), so no swap needed.
+		$author = $t['Tsumego']['author'] ?? '';
+		if ($author !== '' && $author !== 'Unknown')
+			$ogDescription .= ' - by ' . $author;
+		if (trim($ogDescription) === '')
+			$ogDescription = $ogTitle;
+
+		$sgfCreated = $sgf['Sgf']['created'] ?? '';
+		$imageUrl = Router::url('/tsumego-image/' . $currentSetConnection['SetConnection']['id']
+			. '?v=' . Constants::$TSUMEGO_IMAGE_VERSION
+			. '&t=' . ($sgfCreated !== '' ? strtotime($sgfCreated) : ''), true);
+
+		($this->setFunction)('og', [
+			'title' => $ogTitle,
+			'description' => $ogDescription,
+			'image' => $imageUrl,
+			'image_type' => 'image/png',
+			'image_width' => Constants::$OG_IMAGE_WIDTH,
+			'image_height' => Constants::$OG_IMAGE_HEIGHT,
+			'image_alt' => $ogTitle,
+			'url' => Router::url('/' . $currentSetConnection['SetConnection']['id'], true),
+			'type' => 'website',
+			'site_name' => 'Tsumego',
+			'locale' => 'en_US',
+			'twitter_card' => 'summary_large_image',
+		]);
+
 		if (!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0)
 		{
 			($this->setFunction)('multipleChoiceTriangles', count(Util::getFollowingSgfCoordinates($sgf['Sgf']['sgf'], strpos($sgf['Sgf']['sgf'], 'TR') + 2)));
 			($this->setFunction)('multipleChoiceSquares', count(Util::getFollowingSgfCoordinates($sgf['Sgf']['sgf'], strpos($sgf['Sgf']['sgf'], 'SQ') + 2)));
 		}
-		if ($tsumegoFilters->query == 'topics')($this->setFunction)('_title', $set['Set']['title'] . ' ' . $currentSetConnection['SetConnection']['num'] . '/' . $highestTsumegoOrder . ' on Tsumego Hero');
-		else
-		($this->setFunction)('_title', ($_COOKIE['lastSet'] ?? 'Tsumego') . ' ' . $currentSetConnection['SetConnection']['num'] . '/' . $highestTsumegoOrder . ' on Tsumego Hero');
 
-		if (Auth::isInLevelMode())
+		if ($this->classroomAssignment !== null)
+		{
+			$assignmentButtons = ClassroomAssignment::playButtons($this->classroomAssignment, (int) Auth::getUserID(), (int) $currentSetConnection['SetConnection']['id']);
+			new SetNavigationButtonsInput($this->setFunction)->execute($assignmentButtons, $currentSetConnection);
+			($this->setFunction)('_title', ClassroomAssignment::title($this->classroomAssignment) . ' ' . $assignmentButtons->currentOrder . '/' . $assignmentButtons->highestTsumegoOrder . ' on Tsumego Hero');
+			($this->setFunction)('classroomAssignment', $this->classroomAssignment);
+			$currentButton = array_find((array) $assignmentButtons, fn($button) => $button->setConnectionID == $currentSetConnection['SetConnection']['id']);
+			($this->setFunction)('solvedForAssignment', $currentButton?->status === ClassroomAssignment::BUTTON_SOLVED);
+		}
+		elseif (Auth::isInLevelMode())
 		{
 			$tsumegoButtons = new TsumegoButtons($tsumegoFilters, $currentSetConnection['SetConnection']['id'], null, $set['Set']['id']);
 			new SetNavigationButtonsInput($this->setFunction)->execute($tsumegoButtons, $currentSetConnection);
 			$queryTitle = $tsumegoFilters->getSetTitle($set) . $tsumegoButtons->getPartitionTitleSuffix() . ' ' . $tsumegoButtons->currentOrder . '/' . $tsumegoButtons->highestTsumegoOrder;
+
+			if ($tsumegoFilters->query == 'topics')($this->setFunction)('_title', $set['Set']['title'] . ' ' . $currentSetConnection['SetConnection']['num'] . '/' . $tsumegoButtons->highestTsumegoOrder . ' on Tsumego Hero');
+			else
+			($this->setFunction)('_title', ($_COOKIE['lastSet'] ?? 'Tsumego') . ' ' . $currentSetConnection['SetConnection']['num'] . '/' . $tsumegoButtons->highestTsumegoOrder . ' on Tsumego Hero');
+		}
+		elseif (Auth::isInMistakeTrainingMode())
+		{
+			$mistakeTrainingButtons = MistakeTraining::buildQueueButtons($currentSetConnection['SetConnection']['id']);
+			new SetNavigationButtonsInput($this->setFunction)->execute($mistakeTrainingButtons, $currentSetConnection);
+			($this->setFunction)('_title', 'Mistake Training ' . $mistakeTrainingButtons->currentOrder . '/' . $mistakeTrainingButtons->highestTsumegoOrder . ' on Tsumego Hero');
 		}
 
 		$t['Tsumego']['status'] = $tsumegoStatus;
 
 		if (!isset($t['Tsumego']['file']) || $t['Tsumego']['file'] == '')
 			$t['Tsumego']['file'] = $currentSetConnection['SetConnection']['num'];
-		$orientation = null;
-		$colorOrientation = null;
-		if (isset($params['url']['orientation']))
-			$orientation = $params['url']['orientation'];
-		if (isset($params['url']['playercolor']))
-			$colorOrientation = $params['url']['playercolor'];
+		$playerColor = 'black';
+		$playerColorPreference = Auth::getPrefPlayerColor();
+		$sgfColor = SgfParser::firstMoveColor($sgf['Sgf']['sgf']);
+		$swapColors = false;
+		if ($playerColorPreference === User::PREF_PLAYER_COLOR_ORIGINAL)
+		{
+			// Original: play the SGF as designed, no color swap.
+			if ($sgfColor === 'W')
+				$playerColor = 'white';
+			else
+				$playerColor = 'black';
+		}
+		else
+		{
+			// Random: randomly play black or white, swapping the board colors
+			// when the chosen side differs from the SGF's first move.
+			$playerColor = rand(0, 1) ? 'white' : 'black';
+			if ($sgfColor === 'W')
+				$swapColors = $playerColor === 'black';
+			elseif ($sgfColor === 'B')
+				$swapColors = $playerColor === 'white';
+		}
 
 		$checkBSize = 19;
 		for ($i = 2; $i <= 19; $i++)
 			if (strpos(';' . $set['Set']['title'], $i . 'x' . $i))
 				$checkBSize = $i;
+
+		// Board orientation preference: decide which corner the board faces.
+		// The corner is purely a visual mirror (hFlip/vFlip on coordinates), so
+		// it never affects solving. "Original" shows the problem's canonical
+		// orientation (besogo's loadSgf already normalizes the board to top-left
+		// internally, so top-left reproduces the thumbnail), "Random" picks a
+		// random corner for variety.
+		$corner = null;
+		$orientationPreference = Auth::getPrefBoardOrientation();
+		if ($orientationPreference === User::PREF_BOARD_ORIENTATION_ORIGINAL)
+			$corner = 'top-left';
+		else
+			$corner = Play::randomCorner();
+
+		// Variants (multiple-choice / score-estimating) and semeai questions are
+		// about the actual Black/White groups on the board, so the player always
+		// plays black here.
+		// Small boards and specific sets also force black.
+		// The player always plays black; when the SGF is White-first, invert the
+		// board so the player sees black as the side to move, and swap the
+		// true-color description (Black<->White) to match the player's color.
+		if ($tsumegoVariant != null
+			|| ($t['Tsumego']['semeaiType'] ?? 0) != 0
+			|| $checkBSize != 19
+			|| in_array($set['Set']['id'], [109, 233, 236, 239, 243, 244, 246, 251, 253]))
+		{
+			$playerColor = 'black';
+			$swapColors = ($sgfColor === 'W');
+		}
+
+		// Optional URL override: ?playercolor=black|white forces the player color,
+		// even for small boards / semeai / variants that normally force black.
+		// No effect when the parameter is absent.
+		if (isset($params['url']['playercolor']))
+		{
+			$requested = strtolower((string) $params['url']['playercolor']);
+			if ($requested === 'white' || $requested === 'black')
+			{
+				$playerColor = $requested;
+				$sgfColor = SgfParser::firstMoveColor($sgf['Sgf']['sgf']);
+				if ($sgfColor === 'W')
+					$swapColors = $playerColor === 'black';
+				elseif ($sgfColor === 'B')
+					$swapColors = $playerColor === 'white';
+				else
+					$swapColors = false;
+			}
+		}
 
 		if (Util::getHealthBasedOnLevel(Auth::getWithDefault('level', 0)) >= 8)
 		{
@@ -250,31 +338,23 @@ class Play
 		if (Auth::isLoggedIn())
 			if (Auth::getUser()['reuse5'] == 1)
 				$suspiciousBehavior = true;
-		$hash = AppController::encrypt($currentSetConnection['SetConnection']['num'] . 'number' . $set['Set']['id']);
-
-		$activate = true;
 		if (Auth::isInRatingMode() || Auth::isInTimeMode())($this->setFunction)('_title', 'Tsumego Hero');
 		if ($isSandbox)
 			$t['Tsumego']['userWin'] = 0;
-
-		$crs = 0;
 
 		if (Auth::isInLevelMode())($this->setFunction)('page', 'level mode');
 		elseif (Auth::isInRatingMode())($this->setFunction)('page', 'rating mode');
 		elseif (Auth::isInTimeMode())($this->setFunction)('page', 'time mode');
 
-		$ui = 2;
 		$file = 'placeholder2.sgf';
-		$startingPlayer = TsumegosController::getStartingPlayer($sgf['Sgf']['sgf']);
 
-		$eloScoreRounded = round($eloScore);
-		$eloScore2Rounded = round($eloScore2);
 
 		$existingSignatures = ClassRegistry::init('Signature')->find('all', ['conditions' => ['tsumego_id' => $id]]);
 		if ($existingSignatures == null || $existingSignatures[0]['Signature']['created'] < date('Y-m-d', strtotime('-1 week')))
 			$requestSignature = 'true';
 		else
 			$requestSignature = 'false';
+		// A signature describes the problem itself, so a public collection qualifies whatever owns it.
 		if (isset($_COOKIE['signatures']) && $set['Set']['public'] == 1)
 		{
 			$signature = explode('/', $_COOKIE['signatures']);
@@ -298,73 +378,68 @@ class Play
 			}
 			unset($_COOKIE['signatures']);
 		}
-		$idForSignature = -1;
-		$idForSignature2 = -1;
-		if (isset($params['url']['idForTheThing']))
-		{
-			$idForSignature2 = $params['url']['idForTheThing'] + 1;
-			$idForSignature = TsumegosController::getTheIdForTheThing($idForSignature2);
-		}
 
-		$tagConnectionsEdit = new TagConnectionsEdit($id, TsumegoUtil::hasStateAllowingInspection($t));
+		$tagData = ClassRegistry::init('Tag')::getForTsumego($id);
 
 		$isAllowedToContribute = false;
-		$isAllowedToContribute2 = false;
+		$canAddMoreTags = false;
 		if (Auth::isLoggedIn())
 		{
-			if (Auth::getUser()['level'] >= 40)
-				$isAllowedToContribute = true;
-			elseif (Auth::getUser()['rating'] >= Constants::$MINIMUM_RATING_TO_CONTRIBUTE)
-				$isAllowedToContribute = true;
-
-			if (Auth::isAdmin())
-			{
-				$isAllowedToContribute = true;
-				$isAllowedToContribute2 = true;
-			}
-			else
-			{
-				$tagsToCheck = ClassRegistry::init('TagConnection')->find('all', ['limit' => 20, 'order' => 'created DESC', 'conditions' => ['user_id' => Auth::getUserID()]]) ?: [];
-				$datex = date('Y-m-d', strtotime('today'));
-				$tagsToCheckCount = count($tagsToCheck);
-
-				for ($i = 0; $i < $tagsToCheckCount; $i++)
-				{
-					$datexx = new DateTime($tagsToCheck[$i]['TagConnection']['created']);
-					$datexx = $datexx->format('Y-m-d');
-					if ($datex !== $datexx)
-						$isAllowedToContribute2 = true;
-				}
-				if (count($tagsToCheck) < 20)
-					$isAllowedToContribute2 = true;
-			}
+			$isAllowedToContribute = BasePolicy::canPropose(Auth::getIdentity());
+			$canAddMoreTags = ClassRegistry::init('TagConnection')::canCurrentUserAddTag();
 		}
 
-		$checkNotInSearch = false;
+		$userSetsJson = '[]';
+		if (Auth::isLoggedIn())
+		{
+			// Build user sets list for the heart dropdown
+			$userSets = Util::query("
+SELECT s.id, s.title, sc.tsumego_id
+FROM `set` s
+LEFT JOIN set_connection sc ON sc.set_id = s.id AND sc.tsumego_id = ?
+WHERE s.user_id = ?
+ORDER BY s.title", [$id, Auth::getUserID()]);
 
-		$isTSUMEGOinFAVORITE = ClassRegistry::init('Favorite')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $id]]);
+			$setsData = [];
+			foreach ($userSets as $s)
+			{
+				$setsData[] = [
+					'id' => $s['id'],
+					'title' => $s['title'],
+					'contains' => ($s['tsumego_id'] != null),
+				];
+			}
+			$userSetsJson = json_encode($setsData);
+		}
+		($this->setFunction)('userSetsJson', $userSetsJson);
 
-		if (Auth::isInLevelMode())
+		// past either end of a class assignment is the page of its class
+		if (isset($assignmentButtons))
+			$assignmentButtons->exportCurrentAndPreviousLink($this->setFunction, null, $setConnectionID, null, '/classes/' . (int) $this->classroomAssignment['classroom_id']);
+		elseif (Auth::isInLevelMode() && isset($tsumegoButtons))
 			$tsumegoButtons->exportCurrentAndPreviousLink($this->setFunction, $tsumegoFilters, $setConnectionID, $set);
+		elseif (Auth::isInMistakeTrainingMode() && isset($mistakeTrainingButtons))
+		{
+			// No link before the first problem: the queue page would serve the first due one again
+			$mistakeTrainingButtons->exportCurrentAndPreviousLink($this->setFunction, $tsumegoFilters, $setConnectionID, $set, '');
+			// The row keeps what today already solved, so "Next" skips it instead of
+			// serving the neighbour.
+			($this->setFunction)('nextLink', MistakeTraining::nextLink($mistakeTrainingButtons, $setConnectionID));
+		}
 
 		($this->setFunction)('isAllowedToContribute', $isAllowedToContribute);
-		($this->setFunction)('isAllowedToContribute2', $isAllowedToContribute2);
+		($this->setFunction)('canAddMoreTags', $canAddMoreTags);
 
-		$sgfProposal = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['tsumego_id' => $id, 'user_id' => Auth::getUserID(), 'accepted' => false]]);
+		$sgfProposal = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['tsumego_id' => $id, 'user_id' => Auth::getUserID(), 'sgf_status_id' => Sgf::STATUS_PROPOSED]]);
 		($this->setFunction)('hasSgfProposal', $sgfProposal != null);
 
-		($this->setFunction)('tagConnectionsEdit', $tagConnectionsEdit);
+		($this->setFunction)('tagData', $tagData);
 		($this->setFunction)('requestSignature', $requestSignature);
-		($this->setFunction)('idForSignature', $idForSignature);
-		($this->setFunction)('idForSignature2', $idForSignature2);
-		if (isset($activityValue))($this->setFunction)('activityValue', $activityValue);
 		($this->setFunction)('nothingInRange', $nothingInRange);
-		($this->setFunction)('tRank', $tRank);
 		($this->setFunction)('sgf', $sgf);
-		($this->setFunction)('crs', $crs);
-		($this->setFunction)('orientation', $orientation);
-		($this->setFunction)('colorOrientation', $colorOrientation);
-		($this->setFunction)('isTSUMEGOinFAVORITE', $isTSUMEGOinFAVORITE != null);
+		($this->setFunction)('corner', $corner);
+		($this->setFunction)('playerColor', $playerColor);
+		($this->setFunction)('swapColors', $swapColors);
 		($this->setFunction)('suspiciousBehavior', $suspiciousBehavior);
 		($this->setFunction)('isSandbox', $isSandbox);
 		($this->setFunction)('goldenTsumego', $goldenTsumego);
@@ -376,116 +451,34 @@ class Play
 		($this->setFunction)('libertyCount', $t['Tsumego']['libertyCount']);
 		($this->setFunction)('semeaiType', $t['Tsumego']['semeaiType']);
 		($this->setFunction)('insideLiberties', $t['Tsumego']['insideLiberties']);
-		($this->setFunction)('doublexp', $doublexp);
-		($this->setFunction)('half', $half);
 		($this->setFunction)('set', $set);
-		if (Auth::isLoggedIn())($this->setFunction)('barPercent', Util::getPercent(Auth::getUser()['xp'], Level::getXPForNext(Auth::getUser()['level'])));
-		else
-		($this->setFunction)('barPercent', 0);
 		($this->setFunction)('t', $t);
-		($this->setFunction)('solvedCheck', AppController::encrypt($t['Tsumego']['id'] . '-' . time()));
-		($this->setFunction)('hash', $hash);
 		($this->setFunction)('rating', Auth::getWithDefault('rating', 0));
-		($this->setFunction)('eloScore', $eloScore);
-		($this->setFunction)('eloScore2', $eloScore2);
-		($this->setFunction)('eloScoreRounded', $eloScoreRounded);
-		($this->setFunction)('eloScore2Rounded', $eloScore2Rounded);
-		($this->setFunction)('activate', $activate);
-		($this->setFunction)('tsumegoElo', $t['Tsumego']['rating']);
-		($this->setFunction)('trs', $trs);
 		($this->setFunction)('reviewCheat', $reviewCheat);
-		($this->setFunction)('part', $t['Tsumego']['part']);
 		($this->setFunction)('checkBSize', $checkBSize);
 		($this->setFunction)('file', $file);
-		($this->setFunction)('ui', $ui);
-		($this->setFunction)('requestProblem', $requestProblem);
 		($this->setFunction)('alternative_response', $t['Tsumego']['alternative_response']);
 		($this->setFunction)('passEnabled', $t['Tsumego']['pass']);
-		($this->setFunction)('achievementUpdate', $achievementUpdate);
 		($this->setFunction)('setConnection', $currentSetConnection);
 		($this->setFunction)('setConnections', $setConnections);
-		if (isset($params['url']['requestSolution']))($this->setFunction)('requestSolution', AdminActivityLogger::log(AdminActivityType::SOLUTION_REQUEST, $id));
-		($this->setFunction)('startingPlayer', $startingPlayer);
+		if (isset($params['url']['requestSolution']))
+		{
+			AuthorizationComponent::require(AdminPolicy::canRequestSolution(Auth::getIdentity()));
+			($this->setFunction)('requestSolution', AdminActivityLogger::log(AdminActivityType::SOLUTION_REQUEST, $id));
+		}
 		($this->setFunction)('tv', $tsumegoVariant);
 		($this->setFunction)('tsumegoFilters', $tsumegoFilters);
 		($this->setFunction)('queryTitle', $queryTitle);
 		($this->setFunction)('amountOfOtherCollection', $amountOfOtherCollection);
-		($this->setFunction)('checkNotInSearch', $checkNotInSearch);
-		($this->setFunction)('tsumegoXPAndRating', new TsumegoXPAndRating($t['Tsumego'], $tsumegoStatus));
+		($this->setFunction)('tsumegoXPAndRating', new TsumegoXPAndRating($t['Tsumego'], $tsumegoStatus, (int) $currentSetConnection['SetConnection']['id']));
 
 		return null;
 	}
 
-	protected function getActivityValue($uid, $tid)
-	{
-		$return = [];
-		$tsumegoNum = 90;
-		$ra = ClassRegistry::init('TsumegoAttempt')->find('all', ['limit' => $tsumegoNum, 'order' => 'created DESC', 'conditions' => ['user_id' => $uid]]);
-		if (!$ra)
-			$ra = [];
-		if (count($ra) < $tsumegoNum)
-		{
-			$missing = $tsumegoNum - count($ra);
-			$raSize = count($ra);
-			$datex = new DateTime('-1 month');
-			while ($missing != 0)
-			{
-				$ra[$raSize]['TsumegoAttempt']['created'] = $datex->format('Y-m-d H:i:s');
-				$ra[$raSize]['TsumegoAttempt']['tsumego_id'] = 1;
-				$raSize++;
-				$missing--;
-			}
-		}
-		$date = date('Y-m-d H:i:s');
-		$x = [];
-		$avg = 0;
-		$foundTsumego = 0;
-		$raCount = count($ra);
-		for ($i = 0; $i < $raCount; $i++)
-		{
-			if ($ra[$i]['TsumegoAttempt']['tsumego_id'] == $tid)
-				$foundTsumego = 1;
-			$d = $this->getActivityValueSingle($ra[$i]['TsumegoAttempt']['created']);
-			$avg += $d;
-			array_push($x, $d);
-		}
-		$avg /= count($x);
-		$return[0] = round($avg);
-		$return[1] = $foundTsumego;
-
-		return $return;
-	}
-
-	private function getActivityValueSingle($date2)
-	{
-		$date1 = new DateTime('now');
-		$date2 = new DateTime($date2);
-		$interval = $date1->diff($date2);
-		$m = $interval->m;
-		$d = $interval->d;
-		$h = $interval->h;
-		$i = $interval->i;
-		$months = 0;
-		while ($m > 0)
-		{
-			$months += 672;
-			$m--;
-		}
-		$hours = $h;
-		while ($d > 0)
-		{
-			$hours += 24;
-			$d--;
-		}
-		$hours += $months;
-
-		return $hours;
-	}
-
-	public static function renderTitle($setConnection, $set, $tsumegoFilters, $tsumegoButtons, $amountOfOtherCollection, $difficulty, $timeMode, $queryTitle, $t)
+	public static function renderTitle(array $setConnection, array $set, TsumegoFilters $tsumegoFilters, ?TsumegoButtons $tsumegoButtons, int $amountOfOtherCollection, int|float|string|null $difficulty, ?TimeMode $timeMode, string $queryTitle, array $t): string
 	{
 		if (Auth::isInTimeMode())
-			return '<font size="5px">' . $timeMode->currentOrder . ' of ' . $timeMode->overallCount . '</font>';
+			return '<font size="5px">' . $timeMode?->currentPosition() . ' of ' . $timeMode?->overallCount . '</font>';
 
 		if (Auth::isInRatingMode())
 			return '<div class="slidecontainer">
@@ -494,16 +487,51 @@ class Play
 						</div>
 						<a id="playTitleA" href=""></a>';
 
+		if (Auth::isInMistakeTrainingMode())
+			return '<a id="playTitleA" href="' . MistakeTraining::$OVERVIEW_LINK . '">Mistake Training ' . ($tsumegoButtons->currentOrder ?? 0) . '/' . ($tsumegoButtons->highestTsumegoOrder ?? 0) . '</a>';
+
 		$order = $setConnection['SetConnection']['num'];
-		if ($tsumegoFilters->query == 'difficulty' || $tsumegoFilters->query == 'tags' || $tsumegoFilters->query == 'favorites')
-			return '<a id="playTitleA" href="/sets/view/' . $tsumegoFilters->getSetID($set['Set']['id']) . $tsumegoButtons->getPartitionLinkSuffix() . '">' . $queryTitle . '</a><br>
+		if ($tsumegoFilters->query == 'difficulty' || $tsumegoFilters->query == 'tags')
+			return '<a id="playTitleA" href="' . Set::url($tsumegoFilters->getSetID($set), $tsumegoButtons?->getPartition() ?? 1) . '">' . $queryTitle . '</a><br>
 							<font style="font-weight:400;" color="grey">
-											<a style="color:grey;" id="playTitleA" href="/sets/view/' . $set['Set']['id'] . '">
+											<a style="color:grey;" id="playTitleA" href="' . Set::url($set['Set']['id']) . '">
 												(' . $set['Set']['title'] . ' ' . $order . '/' . $amountOfOtherCollection . ')
 											</a>
 										</font>';
-		return '<a id="playTitleA" href="/sets/view/' . $set['Set']['id'] . $tsumegoButtons->getPartitionLinkSuffix() . '">' . $set['Set']['title'] . ' ' . $tsumegoButtons->getPartitionTitleSuffix() . ' ' . $order . '/' . $tsumegoButtons->highestTsumegoOrder . '</a>';
+		return '<a id="playTitleA" href="' . Set::url($set['Set']['id'], $tsumegoButtons?->getPartition() ?? 1) . '">' . $set['Set']['title'] . ' ' . $tsumegoButtons?->getPartitionTitleSuffix() . ' ' . $order . '/' . $tsumegoButtons?->highestTsumegoOrder . '</a>';
 	}
 
+	/**
+	 * The title of a problem played as a part of a class assignment: the assignment and where in
+	 * it the player is, and under it which problem of which collection it really is.
+	 *
+	 * @param array<string, mixed> $assignment With its collections, see ClassroomAssignment::withCollections()
+	 */
+	public static function renderAssignmentTitle(array $assignment, TsumegoButtons $tsumegoButtons, array $setConnection, array $set, int $amountOfOtherCollection): string
+	{
+		return '<a id="playTitleA" href="/classes/' . (int) $assignment['classroom_id'] . '">'
+			. h(ClassroomAssignment::title($assignment)) . ' ' . $tsumegoButtons->currentOrder . '/' . $tsumegoButtons->highestTsumegoOrder . '</a><br>
+							<font style="font-weight:400;" color="grey">
+								<a style="color:grey;" class="play-title__origin" href="' . Set::url($set['Set']['id']) . '">
+									(' . h($set['Set']['title']) . ' ' . $setConnection['SetConnection']['num'] . '/' . $amountOfOtherCollection . ')
+								</a>
+							</font>';
+	}
+
+	private static function randomCorner(): string
+	{
+		$corners = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
+		return $corners[array_rand($corners)];
+	}
+
+	/**
+	 * The class assignment the problem is played in, with its collections, set by its route
+	 * (ClassroomsController::play()): its problems are the row of buttons and Next walks them.
+	 *
+	 * @var array<string, mixed>|null
+	 */
+	public ?array $classroomAssignment = null;
+
+	/** @var callable */
 	private $setFunction;
 }

@@ -454,11 +454,13 @@ function displayMultipleChoiceResult(num) {
           multipleChoiceInsideLiberties +
           " inside";
         wx1 = "favorite: " + whiteLibertiesBefore + " exclusive liberties";
-      } else {
-        fav = "Seki - same amount of liberties.<br>";
-        correct = 4;
-        $("#besogo-multipleChoice4").css("background-color", "#3ecf78");
       }
+		else if (multipleChoiceInsideLiberties != 0)
+		{
+			fav = "Seki - same amount of liberties.<br>";
+			correct = 4;
+			$("#besogo-multipleChoice4").css("background-color", "#3ecf78");
+		}
       if (whiteLiberties > blackLiberties) {
         bwSum = whiteLiberties - blackLiberties;
         plural = "";
@@ -497,10 +499,7 @@ function displayMultipleChoiceResult(num) {
           $("#besogo-multipleChoice2").css("background-color", "#3ecf78");
         }
       }
-      if (
-        whiteLiberties == blackLiberties &&
-        fav != "Seki - same amount of liberties.<br>"
-      ) {
+      if (whiteLiberties == blackLiberties && fav != "Seki - same amount of liberties.<br>") {
         x1 = "Unsettled. (whoever plays first accomplishes the task)";
         correct = 3;
         $("#besogo-multipleChoice3").css("background-color", "#3ecf78");
@@ -528,14 +527,14 @@ function displayMultipleChoiceResult(num) {
       displayResult("S");
       multipleChoiceEnabled = false;
       //$(".alertBanner").css("background-color", "rgb(18, 121, 59)");
-      $(".alertBanner").addClass("alertBannerCorrect");
-      $(".alertBanner").html('Correct!<span class="alertClose">x</span>');
+      $(".toast__banner").addClass("toast__banner--success");
+      $(".toast__banner").html('Correct!<span class="toast__close">x</span>');
     } else {
       displayResult("F");
       multipleChoiceEnabled = false;
       //$(".alertBanner").css("background-color", "linear-gradient(rgba(214,70,74,1), rgba(201,95,105,1))");
-      $(".alertBanner").addClass("alertBannerIncorrect");
-      $(".alertBanner").html('Incorrect<span class="alertClose">x</span>');
+      $(".toast__banner").addClass("toast__banner--error");
+      $(".toast__banner").html('Incorrect!<span class="toast__close">x</span>');
     }
     $("#multipleChoiceText").html(mText);
     $("#multipleChoiceAlerts").fadeIn(500);

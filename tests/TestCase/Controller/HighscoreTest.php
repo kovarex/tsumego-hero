@@ -1,5 +1,9 @@
 <?php
 
+use App\Utility\AchievementId;
+use App\Utility\Level;
+use App\Utility\Rating;
+
 class HighscoreTest extends TestCaseWithAuth
 {
 	/**
@@ -15,15 +19,15 @@ class HighscoreTest extends TestCaseWithAuth
 			],
 		]);
 
-		$this->testAction('users/rating', ['return' => 'view']);
+		$this->testAction('users/rating', ['method' => 'get', 'return' => 'view']);
 		$dom = $this->getStringDom();
-		$rows = $dom->querySelectorAll('.highscoreTable tr');
+		$rows = $dom->querySelectorAll('.data-table tr');
 
 		// Row 0 = header, rows 1-3 = users
 		$this->assertGreaterThanOrEqual(4, count($rows));
-		$this->assertRowContains($rows[1], '#1', 'TopPlayer', '2,800');
-		$this->assertRowContains($rows[2], '#2', 'MidPlayer', '2,200');
-		$this->assertRowContains($rows[3], '#3', 'LowPlayer', '1,500');
+		$this->assertRowContains($rows[1], '#1', 'DN_TopPlayer', '2,800');
+		$this->assertRowContains($rows[2], '#2', 'DN_MidPlayer', '2,200');
+		$this->assertRowContains($rows[3], '#3', 'DN_LowPlayer', '1,500');
 	}
 
 	/**
@@ -39,7 +43,7 @@ class HighscoreTest extends TestCaseWithAuth
 			],
 		]);
 
-		$this->testAction('users/rating', ['return' => 'view']);
+		$this->testAction('users/rating', ['method' => 'get', 'return' => 'view']);
 		$this->assertTextContains('12d', $this->view);
 		$this->assertTextContains('1d', $this->view);
 		$this->assertTextContains('2k', $this->view);
@@ -59,17 +63,17 @@ class HighscoreTest extends TestCaseWithAuth
 			],
 		]);
 
-		$this->testAction('users/highscore', ['return' => 'view']);
+		$this->testAction('users/highscore', ['method' => 'get', 'return' => 'view']);
 		$dom = $this->getStringDom();
-		$rows = $dom->querySelectorAll('.highscoreTable tr');
+		$rows = $dom->querySelectorAll('.data-table tr');
 
 		// Header + 4 user rows
 		$this->assertGreaterThanOrEqual(5, count($rows));
-		$this->assertRowContains($rows[1], '#1', 'HighLevel');
+		$this->assertRowContains($rows[1], '#1', 'DN_HighLevel');
 		$this->assertRowContains($rows[1], '#1', '50');
-		$this->assertRowContains($rows[2], '#2', 'SameLevelMoreXP');
-		$this->assertRowContains($rows[3], '#3', 'SameLevelLessXP');
-		$this->assertRowContains($rows[4], '#4', 'LowLevel');
+		$this->assertRowContains($rows[2], '#2', 'DN_SameLevelMoreXP');
+		$this->assertRowContains($rows[3], '#3', 'DN_SameLevelLessXP');
+		$this->assertRowContains($rows[4], '#4', 'DN_LowLevel');
 	}
 
 	/**
@@ -84,12 +88,12 @@ class HighscoreTest extends TestCaseWithAuth
 			],
 		]);
 
-		$this->testAction('users/highscore', ['return' => 'view']);
+		$this->testAction('users/highscore', ['method' => 'get', 'return' => 'view']);
 		$dom = $this->getStringDom();
-		$rows = $dom->querySelectorAll('.highscoreTable tr');
+		$rows = $dom->querySelectorAll('.data-table tr');
 
-		$this->assertRowContains($rows[1], '#1', 'HighLevel');
-		$this->assertRowContains($rows[2], '#2', 'kovarex');
+		$this->assertRowContains($rows[1], '#1', 'DN_HighLevel');
+		$this->assertRowContains($rows[2], '#2', 'DN_kovarex');
 	}
 
 	/**
@@ -121,18 +125,20 @@ class HighscoreTest extends TestCaseWithAuth
 			],
 		]);
 
-		$this->testAction('users/added_tags', ['return' => 'view']);
+		$this->testAction('users/added_tags', ['method' => 'get', 'return' => 'view']);
 		$dom = $this->getStringDom();
-		$rows = $dom->querySelectorAll('.highscoreTable tr');
+		$rows = $dom->querySelectorAll('.data-table tr');
 
 		// Header row + 2 user rows
 		$this->assertGreaterThanOrEqual(3, count($rows));
-		$this->assertRowContains($rows[1], '1', 'TagMaster', '3');
-		$this->assertRowContains($rows[2], '2', 'TagNovice', '1');
+		$this->assertRowContains($rows[1], '1', 'DN_TagMaster', '3');
+		$this->assertRowContains($rows[2], '2', 'DN_TagNovice', '1');
 	}
 
 	/**
-	 * Achievements highscore orders by total achievement score descending.
+	 * Achievements highscore orders by the number of unlocked achievements. Players
+	 * with the same number are separated by how often they earned the repeatable
+	 * achievement, which does not add to the completed count itself.
 	 */
 	public function testAchievementsHighscoreOrdering()
 	{
@@ -142,29 +148,34 @@ class HighscoreTest extends TestCaseWithAuth
 					'name' => 'AchieverA',
 					'rating' => 2200,
 					'achievement-statuses' => [
-						['id' => Achievement::PROBLEMS_1000],
-						['id' => Achievement::SUPERIOR_ACCURACY, 'value' => 5],
+						['id' => AchievementId::PROBLEMS_1000->value],
+						['id' => AchievementId::SUPERIOR_ACCURACY->value, 'value' => 5],
 					],
 				],
 				[
 					'name' => 'AchieverB',
 					'rating' => 1800,
 					'achievement-statuses' => [
-						['id' => Achievement::PROBLEMS_1000],
-						['id' => Achievement::SUPERIOR_ACCURACY, 'value' => 8],
+						['id' => AchievementId::PROBLEMS_1000->value],
+						['id' => AchievementId::SUPERIOR_ACCURACY->value, 'value' => 8],
 					],
 				],
 			],
 		]);
 
-		$this->testAction('users/achievements', ['return' => 'view']);
+		$this->testAction('users/achievements', ['method' => 'get', 'return' => 'view']);
 		$dom = $this->getStringDom();
-		$rows = $dom->querySelectorAll('.highscoreTable tr');
+		$rows = $dom->querySelectorAll('.data-table tr');
 
-		// AchieverB has higher total (1+8=9) vs AchieverA (1+5=6)
+		// Both unlocked 2 achievements; the repetitions of Superior Accuracy only
+		// separate them, they don't count as further completed achievements.
 		$this->assertGreaterThanOrEqual(3, count($rows));
-		$this->assertRowContains($rows[1], '#1', 'AchieverB');
-		$this->assertRowContains($rows[2], '#2', 'AchieverA');
+		$this->assertRowContains($rows[1], '#1', 'DN_AchieverB', '2/' . AchievementId::count() . ' +8');
+		$this->assertRowContains($rows[2], '#2', 'DN_AchieverA', '2/' . AchievementId::count() . ' +5');
+		// the tiebreaker rides along in the score cell, it gets no column of its own
+		$this->assertRowContains($rows[0], 'Place', 'Name', 'Premium', 'Completed');
+		$this->assertStringNotContainsString('Repeats', $rows[0]->textContent);
+		$this->assertStringContainsString('Earned 8 times', $this->view);
 	}
 
 	/**
@@ -205,11 +216,11 @@ class HighscoreTest extends TestCaseWithAuth
 			'points' => 600,
 		]]);
 
-		$this->testAction('users/time_mode', ['return' => 'view']);
+		$this->testAction('users/time_mode', ['method' => 'get', 'return' => 'view']);
 		$source = $this->view;
 		// FastPlayer should be before SlowPlayer
-		$fastPos = strpos($source, 'FastPlayer');
-		$slowPos = strpos($source, 'SlowPlayer');
+		$fastPos = strpos($source, 'DN_FastPlayer');
+		$slowPos = strpos($source, 'DN_SlowPlayer');
 		$this->assertNotFalse($fastPos);
 		$this->assertNotFalse($slowPos);
 		$this->assertLessThan($slowPos, $fastPos, 'FastPlayer (900pts) should appear before SlowPlayer (600pts)');
@@ -244,35 +255,59 @@ class HighscoreTest extends TestCaseWithAuth
 			]]);
 		}
 
-		$this->testAction('users/time_mode', ['return' => 'view']);
+		$this->testAction('users/time_mode', ['method' => 'get', 'return' => 'view']);
 		// Should only appear once with best score
-		$this->assertSame(1, substr_count($this->view, 'MultiPlayer'));
+		$this->assertSame(1, substr_count($this->view, 'DN_MultiPlayer'));
 		$this->assertTextContains('950', $this->view);
 	}
 
 	/**
-	 * Self-view with gap works for multiple highscore pages (rating, level).
-	 * User outside top 30 should appear with gap separator and color-self class.
+	 * Self-view with gap: a user outside the top 30 appears with a gap separator
+	 * and the data-table__row--self class.
 	 */
-	public function testSelfViewWithGap()
+	public function testRatingSelfViewWithGap()
 	{
 		$otherUsers = [];
 		for ($i = 0; $i < 110; $i++)
-			$otherUsers[] = ['name' => 'player' . $i, 'rating' => 2000 + $i, 'level' => 50 + $i];
+			$otherUsers[] = ['name' => 'player' . $i, 'rating' => 2000 + $i];
 
 		new ContextPreparator([
-			'user' => ['name' => 'kovarex', 'rating' => 500, 'level' => 1],
+			'user' => ['name' => 'kovarex', 'rating' => 500],
 			'other-users' => $otherUsers,
 		]);
 
-		foreach (['users/rating', 'users/highscore'] as $url)
-		{
-			$this->testAction($url, ['return' => 'view']);
-			$this->assertTextContains('kovarex', $this->view);
-			$this->assertTextContains('⋮', $this->view);
-			$this->assertTextContains('color-self', $this->view);
-			$this->assertTextContains('#111', $this->view);
-		}
+		$this->testAction('users/rating', ['method' => 'get', 'return' => 'view']);
+		$this->assertTextContains('kovarex', $this->view);
+		$this->assertTextContains('⋮', $this->view);
+		$this->assertTextContains('data-table__row--self', $this->view);
+		$this->assertTextContains('#111', $this->view);
+	}
+
+	/**
+	 * The level highscore lists the top 1000 players, and a player ranked below
+	 * 1000 is still shown with a gap separator.
+	 */
+	public function testLevelHighscoreListsTop1000()
+	{
+		$otherUsers = [];
+		for ($i = 0; $i < 1005; $i++)
+			$otherUsers[] = ['name' => 'player' . $i, 'level' => 50 + $i];
+
+		new ContextPreparator([
+			'user' => ['name' => 'kovarex', 'level' => 1],
+			'other-users' => $otherUsers,
+		]);
+
+		$this->testAction('users/highscore', ['method' => 'get', 'return' => 'view']);
+
+		// The 1000th ranked player is listed ...
+		$this->assertTextContains('#1000', $this->view);
+		// ... and the 1001st is not.
+		$this->assertTextNotContains('#1001', $this->view);
+		// kovarex (rank 1006) still appears below the top 1000, marked as self-view.
+		$this->assertTextContains('#1006', $this->view);
+		$this->assertTextContains('data-table__row--self', $this->view);
+		$this->assertTextContains('⋮', $this->view);
 	}
 
 	/**
@@ -287,8 +322,8 @@ class HighscoreTest extends TestCaseWithAuth
 			],
 		]);
 
-		$this->testAction('users/rating', ['return' => 'view']);
-		$this->assertTextContains('kovarex', $this->view);
+		$this->testAction('users/rating', ['method' => 'get', 'return' => 'view']);
+		$this->assertTextContains('DN_kovarex', $this->view);
 		// No gap separator when both users are within top 100
 		$this->assertTextNotContains('⋮', $this->view);
 	}
@@ -305,10 +340,10 @@ class HighscoreTest extends TestCaseWithAuth
 			],
 		]);
 
-		$this->testAction('users/rating', ['return' => 'view']);
-		$this->assertTextContains('TopPlayer', $this->view);
-		$this->assertTextContains('SecondPlayer', $this->view);
-		$this->assertTextNotContains('color-self', $this->view);
+		$this->testAction('users/rating', ['method' => 'get', 'return' => 'view']);
+		$this->assertTextContains('DN_TopPlayer', $this->view);
+		$this->assertTextContains('DN_SecondPlayer', $this->view);
+		$this->assertTextNotContains('data-table__row--self', $this->view);
 		$this->assertTextNotContains('⋮', $this->view);
 	}
 
@@ -322,16 +357,54 @@ class HighscoreTest extends TestCaseWithAuth
 			'other-users' => [
 				[
 					'name' => 'AchPlayer',
-					'achievement-statuses' => [['id' => Achievement::PROBLEMS_1000]],
+					'achievement-statuses' => [['id' => AchievementId::PROBLEMS_1000->value]],
 				],
 			],
 		]);
 
-		$this->testAction('users/achievements', ['return' => 'view']);
-		$this->assertTextContains('AchPlayer', $this->view);
+		$this->testAction('users/achievements', ['method' => 'get', 'return' => 'view']);
+		$this->assertTextContains('DN_AchPlayer', $this->view);
 		// kovarex has no achievements but still appears via self-view with 0
-		$this->assertTextContains('kovarex', $this->view);
-		$this->assertTextContains('0/' . Achievement::COUNT, $this->view);
+		$this->assertTextContains('DN_kovarex', $this->view);
+		$this->assertTextContains('0/' . AchievementId::count(), $this->view);
+	}
+
+	/**
+	 * Achievement highscore counts each unlocked achievement once: earning the
+	 * repeatable achievement again does not raise the score.
+	 */
+	public function testAchievementsHighscoreCountsEachAchievementOnce()
+	{
+		new ContextPreparator([
+			'other-users' => [
+				[
+					'name' => 'Repeater',
+					'achievement-statuses' => [
+						['id' => AchievementId::PROBLEMS_1000->value],
+						['id' => AchievementId::PROBLEMS_2000->value],
+						['id' => AchievementId::SUPERIOR_ACCURACY->value, 'value' => 5],
+					],
+				],
+				[
+					'name' => 'Collector',
+					'achievement-statuses' => [
+						['id' => AchievementId::PROBLEMS_3000->value],
+						['id' => AchievementId::PROBLEMS_4000->value],
+						['id' => AchievementId::PROBLEMS_5000->value],
+					],
+				],
+			],
+		]);
+
+		$this->testAction('users/achievements', ['method' => 'get', 'return' => 'view']);
+		$dom = $this->getStringDom();
+		$rows = $dom->querySelectorAll('.data-table tr');
+
+		// both unlocked three achievements, the repetitions of Superior Accuracy excluded
+		$this->assertRowContains($rows[1], 'Repeater', '3/' . AchievementId::count() . ' +5');
+		$this->assertRowContains($rows[2], 'Collector', '3/' . AchievementId::count());
+		// the collector earned both exactly once, so nothing is added to his score
+		$this->assertStringNotContainsString('+', $rows[2]->textContent);
 	}
 
 	/**
@@ -350,10 +423,10 @@ class HighscoreTest extends TestCaseWithAuth
 			],
 		]);
 
-		$this->testAction('users/added_tags', ['return' => 'view']);
-		$this->assertTextContains('Tagger', $this->view);
+		$this->testAction('users/added_tags', ['method' => 'get', 'return' => 'view']);
+		$this->assertTextContains('DN_Tagger', $this->view);
 		// kovarex has no tags but appears via self-view
-		$this->assertTextContains('kovarex', $this->view);
+		$this->assertTextContains('DN_kovarex', $this->view);
 	}
 
 	/**

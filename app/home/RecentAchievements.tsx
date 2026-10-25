@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { get } from '../shared/api';
+import { Avatar } from '../shared/Avatar';
 
 dayjs.extend(relativeTime);
 
@@ -11,7 +12,9 @@ export interface RecentAchievement {
 	name: string;
 	image: string;
 	user_id: number;
-	user_name: string;
+	user_display_name: string;
+	user_avatar_url: string;
+	user_rank: string;
 	created: string;
 }
 
@@ -25,9 +28,9 @@ export function RecentAchievements({ initialAchievements }: RecentAchievementsPr
 		queryKey: ['recentAchievements'],
 		queryFn: () => get<{ recentAchievements: RecentAchievement[] }>('/sites/recentAchievements'),
 		initialData: { recentAchievements: initialAchievements },
-		refetchInterval: 60000,
+		refetchInterval: 5 * 60 * 1000,
 		refetchOnWindowFocus: false,
-		retry: false,
+		retry: false
 	});
 
 	const achievements = query.data.recentAchievements;
@@ -47,7 +50,8 @@ export function RecentAchievements({ initialAchievements }: RecentAchievementsPr
 					<div className="recent-achievement-body">
 						<div className="recent-achievement-message">
 							<a className="recent-achievement-user-link" href={`/users/view/${achievement.user_id}`}>
-								{achievement.user_name}
+								<Avatar url={achievement.user_avatar_url} fallbackUrl={`/avatar/${achievement.user_id}`} />
+								{achievement.user_display_name}{achievement.user_rank ? ` ${achievement.user_rank}` : ''}
 							</a> earned&nbsp;
 							<a className="recent-achievement-achievement-link" href={`/achievements/view/${achievement.id}`}>
 								<b>{achievement.name}</b>

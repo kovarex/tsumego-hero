@@ -1,0 +1,514 @@
+/* Page layer: tsumego.css - the tsumego-solving status strip
+   (.problem-nav) and its SGF-preview tooltips, shared by play,
+   set view, duplicatesearch and comments. Feature-specific, so
+   it lives in the page layer like the other page files. */
+@layer page
+{
+/* ── Problem-status navigation (play, set view, duplicatesearch, comments) ── */
+.problem-nav
+{
+	width: 100%;
+}
+
+.problem-nav__inner
+{
+	width: 100%;
+	height: 50px;
+	padding-top: 10px;
+	margin: 0 auto;
+	padding-left: 11px;
+	padding-right: 11px;
+	display: flex;
+	flex-wrap: nowrap;
+	align-items: center;
+	/* Center the buttons when they fit; fall back to left (scrollable) when
+	   a huge set overflows, otherwise the leftmost buttons become unreachable. */
+	justify-content: safe center;
+	gap: 2px;
+	/* Visible so the SGF-preview tooltips (absolutely positioned, z-index high)
+	   are NOT clipped by the strip, and so the strip never traps the mouse
+	   wheel into a scroll container. The buttons fit on one row since the
+	   max-width cap was removed. */
+	overflow: visible;
+	box-sizing: border-box;
+}
+
+/* A wrapping row of problem-status buttons; `.problem-nav__item` no longer
+   floats, so a flex container is required to lay them out in a row. */
+.problem-nav__buttons
+{
+	display: flex;
+	flex-wrap: wrap;
+	gap: 2px;
+}
+
+/* Base button look: the problem-status nav keeps its classic 58px two-tone button. */
+.problem-nav__item
+{
+	width: 58px;
+	flex: 0 0 auto;
+	display: flex;
+	align-items: stretch;
+	justify-content: center;
+	float: none;
+	font-weight: 700;
+	text-align: center;
+	text-decoration: none;
+	border: 1px solid var(--surface-border-strong);
+	border-top-color: var(--surface-border-light);
+	border-left-color: var(--surface-border-light);
+	border-radius: 9px;
+	margin: 0;
+	height: 30px;
+	position: relative;
+	box-sizing: border-box;
+	background-image: url("/img/viewButton1.png");
+}
+
+/* The whole button is the clickable area: the anchor overlays the entire
+   item (absolute, inset:0) and centers its content (number/ratio/time). */
+.problem-nav__item a
+{
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-decoration: none;
+	color: var(--color-white);
+}
+
+/* The spacer between groups uses flex spacing instead of float. */
+.gap10
+{
+	flex: 0 0 10px;
+	width: 10px;
+	height: 1px;
+	display: block;
+	float: none;
+}
+
+.problem-nav__item--current
+{
+	position: relative;
+}
+
+.problem-nav__item--current::before
+{
+	content: "";
+	position: absolute;
+	inset: -5px;
+	border-radius: 9px;
+	border: 3px solid var(--text-color);
+	z-index: 20;
+	pointer-events: none;
+}
+
+.problem-nav__item--N
+{
+	background-color: var(--status-n-color);
+}
+
+.problem-nav__item--N:hover
+{
+	background-color: var(--nav-hover-gray);
+}
+
+.problem-nav__item--V
+{
+	background-color: var(--status-v-color);
+}
+
+.problem-nav__item--V:hover
+{
+	background-color: var(--nav-hover-blue);
+}
+
+.problem-nav__item--S
+{
+	background-color: var(--status-s-color);
+}
+
+.problem-nav__item--S:hover
+{
+	background-color: var(--nav-hover-green);
+}
+
+.problem-nav__item--C
+{
+	background-color: var(--status-c-color);
+}
+
+.problem-nav__item--C:hover
+{
+	background-color: var(--nav-hover-green2);
+}
+
+.problem-nav__item--W
+{
+	background-color: var(--status-w-color);
+}
+
+.problem-nav__item--W:hover
+{
+	background-color: var(--nav-hover-teal);
+}
+
+.problem-nav__item--F
+{
+	background-color: var(--status-f-color);
+}
+
+.problem-nav__item--F:hover
+{
+	background-color: var(--nav-hover-rose);
+}
+
+.problem-nav__item--X
+{
+	background-color: var(--status-x-color);
+}
+
+.problem-nav__item--X:hover
+{
+	background-color: var(--nav-hover-rose2);
+}
+
+@keyframes goldenShineSweep
+{
+	0% { background-position: 150% 0, 0 0; }
+	100% { background-position: -50% 0, 0 0; }
+}
+
+.problem-nav__item--G
+{
+	background:
+		linear-gradient(115deg, transparent 30%, rgba(255,255,255,0) 42%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 58%, transparent 70%),
+		linear-gradient(135deg, var(--status-g-color), var(--status-g-highlight), var(--status-g-color));
+	background-size: 250% 100%, 100% 100%;
+	background-position: 150% 0, 0 0;
+	animation: goldenShineSweep 3s ease-in-out infinite;
+}
+
+.problem-nav__item--G:hover
+{
+	background:
+		linear-gradient(115deg, transparent 30%, rgba(255,255,255,0) 42%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0) 58%, transparent 70%),
+		linear-gradient(135deg, var(--status-g-highlight), var(--gold-sheen), var(--status-g-highlight));
+	background-size: 250% 100%, 100% 100%;
+	background-position: 150% 0, 0 0;
+	animation: goldenShineSweep 1.5s ease-in-out infinite;
+}
+
+.problem-nav__item--G a
+{
+	color: var(--gold-ink);
+}
+
+.problem-nav__item--G a:hover
+{
+	color: var(--gold-ink);
+}
+
+.problem-nav__ratio
+{
+	display: none;
+}
+
+.problem-nav__time
+{
+	display: none;
+}
+
+/* Mistake training: the number sits over the rank insignia of the rung of the
+   review ladder (chevrons, then stars, a crown for a graduation of today), so the
+   row tells a fresh mistake from a late review. The insignia are white on a dark
+   see-through patch, which keeps them apart from the grey and the green items
+   in both themes; the patch stays inside the button, clear of the current-item
+   outline. */
+.problem-nav__rung-link
+{
+	flex-direction: column;
+	gap: 1px;
+}
+
+.problem-nav__rung-link .problem-nav__number
+{
+	font-size: var(--font-size-md);
+	line-height: 1;
+}
+
+.problem-nav__rung
+{
+	display: flex;
+	padding: 1px 4px;
+	border-radius: var(--radius-full);
+	background-color: var(--rung-patch-color);
+	color: var(--color-white);
+}
+
+.problem-nav__rung svg
+{
+	display: block;
+}
+
+.problem-nav__rung--graduated
+{
+	color: var(--status-g-highlight);
+}
+
+/* Missed today: the item stays grey, a red ring around its insignia tells it from
+   one not tried yet */
+.problem-nav__rung--missed
+{
+	box-shadow: 0 0 0 2px var(--feedback-error);
+}
+
+.preview-zoomed .problem-nav__number,
+.preview-zoomed .problem-nav__ratio,
+.preview-zoomed .problem-nav__time,
+.preview-zoomed .problem-nav__rung,
+.preview-zoomed .tooltip-label,
+.preview-zoomed .tooltip-desc
+{
+	display: none;
+}
+
+.preview-zoomed .problem-nav__item
+{
+	width: 130px;
+	height: 110px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	background-image: none;
+	border: 1px solid var(--surface-border-strong);
+	margin: 2px;
+}
+
+.preview-zoomed .problem-nav__inner
+{
+	height: auto;
+	width: auto;
+	max-width: 100%;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 2px;
+	justify-content: center;
+	padding: 4px;
+}
+
+/* ── Problem-nav tooltips (SGF preview + status pill) ── */
+.tooltip
+{
+	text-decoration: none;
+	position: relative;
+}
+
+.tooltip span
+{
+	z-index: 100;
+}
+
+.tooltip-box
+{
+	opacity: 0;
+	position: absolute;
+	top: 34px;
+	left: -1px;
+	z-index: 1000;
+	pointer-events: none;
+	transition: opacity 0s;
+}
+
+.tooltip-box svg
+{
+	display: block;
+}
+
+.preview-zoomed .tooltip-box
+{
+	opacity: 1;
+	position: static;
+	pointer-events: auto;
+}
+
+.preview-zoomed .tooltip-box svg
+{
+	max-width: 120px;
+	max-height: 100px;
+}
+
+.preview-zoomed .set-view-main
+{
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	align-items: flex-start;
+}
+
+.tooltip-label
+{
+	opacity: 0;
+	padding: 3px 8px;
+	font-size: 12px;
+	font-weight: 800;
+	text-align: center;
+	border-radius: 3px;
+	transition: opacity 0.2s ease;
+}
+
+.tooltip-desc
+{
+	opacity: 0;
+	padding: 4px 6px;
+	font-size: 10px;
+	color: var(--text-on-dark);
+	text-align: center;
+	max-width: 180px;
+	transition: opacity 0.3s ease;
+	line-height: 1.3;
+	background: rgba(0, 0, 0, 0.8);
+	border-radius: 0 0 3px 3px;
+}
+
+a[data-tsumego-id]:hover .tooltip-box
+{
+	opacity: 1;
+}
+
+a[data-tsumego-id]:hover .tooltip-label
+{
+	opacity: 1;
+	transition-delay: 0.6s;
+}
+
+a[data-tsumego-id]:hover .tooltip-desc
+{
+	opacity: 1;
+	transition-delay: 1.2s;
+}
+
+.tooltip-label.statusN { background-color: var(--status-n-color); color: var(--color-white); }
+.tooltip-label.statusV { background-color: var(--status-v-color); color: var(--color-white); }
+.tooltip-label.statusS { background-color: var(--status-s-color); color: var(--color-white); }
+.tooltip-label.statusC { background-color: var(--status-c-color); color: var(--color-white); }
+.tooltip-label.statusW { background-color: var(--status-w-color); color: var(--color-white); }
+.tooltip-label.statusF { background-color: var(--status-f-color); color: var(--color-white); }
+.tooltip-label.statusX { background-color: var(--status-x-color); color: var(--color-white); }
+.tooltip-label.statusG
+{
+	background: linear-gradient(135deg, var(--status-g-color), var(--status-g-highlight), var(--status-g-color));
+	color: var(--medal-gold-fg);
+	box-shadow: 0 1px 4px rgba(218, 165, 32, 0.5), inset 0 1px 0 rgba(255,255,255,0.3);
+	border: 1px solid rgba(180, 140, 30, 0.4);
+	position: relative;
+	overflow: hidden;
+}
+
+.tooltip-label.statusG::after
+{
+	content: "";
+	position: absolute;
+	top: -50%;
+	left: -75%;
+	width: 40%;
+	height: 200%;
+	background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+	transform: skewX(-25deg);
+	animation: goldenShine 3s ease-in-out infinite;
+	pointer-events: none;
+}
+
+
+@media (width < 64rem)
+{
+	.problem-nav__inner
+	{
+		flex-wrap: wrap;
+		height: auto;
+	}
+}
+}
+
+/* Mistake training: the line under "Correct!" (what the solve did to the problem)
+   or under "Incorrect!" */
+.mistake-training-outcome,
+.mistake-training-note
+{
+	margin: var(--space-1) 0 0;
+	font-size: var(--font-size-lg);
+	white-space: normal;
+}
+
+/* The bonus for clearing the day, under the outcome */
+.mistake-training-outcome--clear
+{
+	font-weight: var(--font-weight-bold);
+}
+
+/* Mistake training: the status keeps room for its two lines, so the board does not
+   move when a result shows, and stays clear of the board */
+.play-status--training #xpDisplayDiv
+{
+	height: auto;
+}
+
+.play-status--training #status
+{
+	min-height: 72px;
+	padding-bottom: var(--space-2);
+}
+
+.mistake-training-replay
+{
+	max-width: 480px;
+	margin: 0 auto var(--space-3);
+	text-align: center;
+	font-size: var(--font-size-md);
+}
+
+/* The calendar and streak of the profile under the overview of the training */
+.mistake-training-progress
+{
+	margin-top: var(--space-5);
+	text-align: left;
+}
+
+.mistake-training-progress .training-overview
+{
+	margin: 0;
+}
+
+/* The problems in the training, on the overview */
+.mistake-training-pool
+{
+	margin-top: var(--space-5);
+	text-align: left;
+}
+
+.mistake-training-pool summary
+{
+	cursor: pointer;
+	font-weight: var(--font-weight-bold);
+	margin-bottom: var(--space-2);
+}
+
+.mistake-training-pool__table
+{
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.mistake-training-pool__table th,
+.mistake-training-pool__table td
+{
+	padding: var(--space-1) var(--space-2);
+	border-bottom: 1px solid var(--current-border-color);
+	text-align: left;
+}
+
+.mistake-training-pool__table .training-overview__insignia
+{
+	display: inline-flex;
+}

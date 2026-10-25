@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\Auth;
+
 /**
  * React Issues List Mount Point
  *
@@ -13,14 +15,17 @@
 
 $userId = Auth::isLoggedIn() ? Auth::getUserID() : null;
 $isAdmin = Auth::isAdmin();
+$props = json_encode([
+	'userId' => $userId,
+	'isAdmin' => $isAdmin,
+	'initialFilter' => $statusFilter,
+	'initialPage' => (int) $currentPage,
+]);
 ?>
 
 <div 
 	data-issues-root 
-	data-user-id="<?php echo $userId; ?>"
-	data-is-admin="<?php echo $isAdmin ? 'true' : 'false'; ?>"
-	data-status-filter="<?php echo h($statusFilter); ?>"
-	data-current-page="<?php echo h((string)$currentPage); ?>"
+	data-props="<?php echo htmlspecialchars($props, ENT_QUOTES, 'UTF-8'); ?>"
 >
 	<!-- React app will mount here and fetch all data -->
 	<div class="loading">Loading issues...</div>

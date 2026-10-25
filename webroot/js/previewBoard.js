@@ -89,91 +89,45 @@
 	}
 
 /**
- * AJAX tooltip preview loader.
+ * Inline SGF preview loader.
  *
- * A single delegated mouseover listener fetches board data on demand from
- * /api/preview/{tsumegoId} and renders an SVG preview into the link element.
- *
- * Debounce: 200ms hover delay before fetching -- fast swiping over buttons
- * does not spam requests.
+ * A single delegated mouseover listener reads pre-parsed SGF data from
+ * data-sgf-preview attributes and renders an SVG preview into the link element.
+ * No AJAX, no delay — data is embedded at render time by TsumegoButton.
  *
  * Caching:
- *   - SVG in DOM is the cache -- querySelector('svg') guard prevents re-fetch.
- *   - pending Set prevents duplicate in-flight requests for the same ID.
+ *   - SVG in DOM is the cache — querySelector('svg') guard prevents re-render.
  *   - Page navigation clears everything naturally; no eviction needed.
  */
 (function () {
 	'use strict';
 
-	var pending = new Set();
-	var hoverTimer = null;
-	var hoverTarget = null;
-	var HOVER_DELAY = 200;
-
 	document.addEventListener('mouseover', function (e) {
 		var target = e.target.closest('a[data-tsumego-id]');
-
-		// Mouse left any tooltip button -- cancel pending timer
-		if (hoverTimer && hoverTarget !== target) {
-			clearTimeout(hoverTimer);
-			hoverTimer = null;
-			hoverTarget = null;
-		}
-
 		if (!target)
 			return;
 
-		// Already rendered -- nothing to do
-		if (target.querySelector('svg'))
+		// Already rendered or no preview data
+		if (target.querySelector('svg') || !target.dataset.sgfPreview)
 			return;
 
-		hoverTarget = target;
-		if (hoverTimer)
-			return; // already waiting on this target
+		var data;
+		try {
+			data = JSON.parse(target.dataset.sgfPreview);
+		} catch (e) {
+			return;
+		}
 
-		hoverTimer = setTimeout(function () {
-			hoverTimer = null;
-			hoverTarget = null;
+		if (!data || !data.black)
+			return;
 
-			// Bail if mouse already left during the delay
-			if (!target.matches(':hover'))
-				return;
-
-			// Guard against re-render (SVG may have arrived while waiting)
-			if (target.querySelector('svg'))
-				return;
-
-			var id = target.dataset.tsumegoId;
-			if (pending.has(id))
-				return;
-
-			pending.add(id);
-
-			fetch('/api/preview/' + encodeURIComponent(id))
-				.then(function (r) {
-					if (!r.ok)
-						throw new Error('HTTP ' + r.status);
-					return r.json();
-				})
-				.then(function (data) {
-					pending.delete(id);
-
-					if (!data || !data.black)
-						return;
-
-					createBoard(
-						target,
-						data.black,
-						data.white,
-						data.xMax,
-						data.yMax,
-						data.boardSize,
-						data.diff
-					);
-				})
-				.catch(function () {
-					pending.delete(id);
-				});
-		}, HOVER_DELAY);
+		createBoard(
+			target,
+			data.black,
+			data.white,
+			data.xMax,
+			data.yMax,
+			data.boardSize
+		);
 	}, true);
 })();

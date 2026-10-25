@@ -1,11 +1,17 @@
 <?php
 
-App::uses('Auth', 'Utility');
-App::uses('BoardSelector', 'Utility');
-App::uses('TsumegoFilters', 'Utility');
-App::uses('AchievementChecker', 'Utility');
-App::uses('TimeMode', 'Utility');
+use App\Utility\AchievementChecker;
+use App\Utility\Auth;
+use App\Utility\BoardSelector;
+use App\Utility\Constants;
+use App\Utility\HeroPowers;
+use App\Utility\TimeMode;
+use App\Utility\TsumegoFilters;
+use App\Utility\Util;
 
+/**
+ * @phpstan-import-type UserRow from \App\Utility\RowTypes
+ */
 class AppController extends Controller
 {
 	public $viewClass = 'App';
@@ -14,20 +20,9 @@ class AppController extends Controller
 
 	public $components = [
 		//'DebugKit.Toolbar',
-		'PlayResultProcessor'
+		'PlayResultProcessor',
+		'Authorization'
 	];
-
-	protected function getDeletedSets()
-	{
-		$dSets = [];
-		$de = $this->Set->find('all', ['conditions' => ['public' => -1]]);
-		if (!$de)
-			$de = [];
-		foreach ($de as $item)
-			$dSets[] = $item['Set']['id'];
-
-		return $dSets;
-	}
 
 	/**
 	 * @param int $uid User ID
@@ -35,7 +30,7 @@ class AppController extends Controller
 	 *
 	 * @return void
 	 */
-	public static function handleContribution($uid, $action)
+	public static function _handleContribution(int $uid, string $action): void
 	{
 		$uc = ClassRegistry::init('UserContribution')->find('first', ['conditions' => ['user_id' => $uid]]);
 		if ($uc == null)
@@ -56,38 +51,24 @@ class AppController extends Controller
 		ClassRegistry::init('UserContribution')->save($uc);
 	}
 
-	public static function getAllTags()
+	public static function _getAllTags(): array
 	{
 		return Util::query("SELECT * from tag WHERE approved = 1 ORDER BY tag.name");
 	}
 
-	public static function encrypt($str = null)
+	/**
+	 * The pages of a deleted account (profile, its sets, tags, solve history...) are gone for
+	 * everyone but the admins.
+	 *
+	 * @param UserRow $user
+	 */
+	protected function assertUserVisible(array $user): void
 	{
-		$secret_key = 'my_simple_secret_keyx';
-		$secret_iv = 'my_simple_secret_ivx';
-		$encrypt_method = 'AES-256-CBC';
-		$key = hash('sha256', $secret_key);
-		$iv = substr(hash('sha256', $secret_iv), 0, 16);
-
-		return base64_encode(openssl_encrypt($str, $encrypt_method, $key, 0, $iv));
+		if (!empty($user['deleted']) && !Auth::isAdmin())
+			throw new NotFoundException('User not found');
 	}
 
-	protected function checkPictureLarge($u)
-	{
-		if (substr($u['User']['name'], 0, 3) == 'g__' && $u['User']['external_id'] != null)
-			return substr($u['User']['name'], 3);
-
-		return $u['User']['name'];
-	}
-	public static function checkPicture($user)
-	{
-		if (substr($user['name'], 0, 3) == 'g__' && $user['external_id'] != null)
-			return substr($user['name'], 3);
-
-		return $user['name'];
-	}
-
-	public static function saveDanSolveCondition($solvedTsumegoRank, $tId): void
+	public static function _saveDanSolveCondition(string $solvedTsumegoRank, int $tId): void
 	{
 		if ($solvedTsumegoRank == '1d' || $solvedTsumegoRank == '2d' || $solvedTsumegoRank == '3d' || $solvedTsumegoRank == '4d' || $solvedTsumegoRank == '5d')
 		{
@@ -113,7 +94,7 @@ class AppController extends Controller
 		}
 	}
 
-	public static function updateSprintCondition(bool $trigger = false): void
+	public static function _updateSprintCondition(bool $trigger = false): void
 	{
 		if (Auth::isLoggedIn())
 		{
@@ -140,7 +121,7 @@ class AppController extends Controller
 		}
 	}
 
-	public static function updateGoldenCondition(bool $trigger = false): void
+	public static function _updateGoldenCondition(bool $trigger = false): void
 	{
 		$goldenCondition = ClassRegistry::init('AchievementCondition')->find('first', [
 			'order' => 'value DESC',
@@ -164,7 +145,7 @@ class AppController extends Controller
 		ClassRegistry::init('AchievementCondition')->save($goldenCondition);
 	}
 
-	public static function updatePotionCondition(): void
+	public static function _updatePotionCondition(): void
 	{
 		$potionCondition = ClassRegistry::init('AchievementCondition')->find('first', [
 			'conditions' => [
@@ -184,7 +165,7 @@ class AppController extends Controller
 		ClassRegistry::init('AchievementCondition')->save($potionCondition);
 	}
 
-	public static function updateGems(string $rank): void
+	public static function _updateGems(string $rank): void
 	{
 		$datex = new DateTime('today');
 		$today = $datex->format('Y-m-d');
@@ -310,7 +291,7 @@ class AppController extends Controller
 	 * @param int $uid User ID
 	 * @return void
 	 */
-	protected function handleSearchSettings($uid)
+	protected function handleSearchSettings(int $uid): void
 	{
 		$this->loadModel('UserContribution');
 		$uc = $this->UserContribution->find('first', ['conditions' => ['user_id' => $uid]]);
@@ -328,20 +309,99 @@ class AppController extends Controller
 		new TsumegoFilters();
 	}
 
+	/**
+	 * The mailer of the emails a controller sends. A test replaces it on the controller it
+	 * generates, see TestCaseWithAuth::registerTestEmailer().
+	 *
+	 * @return CakeEmail
+	 */
+	public function _getEmailer()
+	{
+		// A run of the tests must not hand a mail to a mail server that is not there. The
+		// debug transport builds the message and returns it instead of sending it.
+		return Util::isOnTestSite() ? new CakeEmail(['transport' => 'Debug']) : new CakeEmail();
+	}
+
 	protected function signIn(array $user): void
 	{
 		Auth::init($user);
 		$vs = $this->TsumegoStatus->find('first', ['conditions' => ['user_id' => $user['User']['id']], 'order' => 'updated DESC']);
 		if ($vs)
 			Util::setCookie('lastVisit', $vs['TsumegoStatus']['tsumego_id']);
-		Util::setCookie('texture', $user['User']['texture']);
-		Util::setCookie('check1', $user['User']['id']);
+	}
+
+	/**
+	 * Enforce HTTP-method attributes (e.g. #[HttpPost]) on the dispatched action.
+	 * Mirrors CakePHP 5's Cake\Http\Attribute\* so migration is a use-swap: the
+	 * attributes stay, this enforcement method is deleted.
+	 */
+	protected function enforceHttpMethodAttribute(): void
+	{
+		$action = $this->action;
+		if (!is_string($action) || !method_exists($this, $action))
+			return;
+
+		$allowed = [];
+		$reflection = new ReflectionMethod($this, $action);
+		foreach ($reflection->getAttributes() as $attribute)
+		{
+			$method = match ($attribute->getName())
+			{
+				'App\Attribute\HttpGet' => 'GET',
+				'App\Attribute\HttpPost' => 'POST',
+				'App\Attribute\HttpPut' => 'PUT',
+				'App\Attribute\HttpPatch' => 'PATCH',
+				'App\Attribute\HttpDelete' => 'DELETE',
+				default => null,
+			};
+			if ($method)
+				$allowed[] = $method;
+		}
+		if (!$allowed)
+			return;
+
+		// HEAD asks for the headers of a GET response, so a page that answers GET answers it
+		$method = $this->request->method();
+		if ($method === 'HEAD' && in_array('GET', $allowed, true))
+			$method = 'GET';
+
+		if (!in_array($method, $allowed, true))
+		{
+			$e = new MethodNotAllowedException();
+			$e->responseHeader('Allow', implode(', ', $allowed));
+			throw $e;
+		}
+	}
+
+	/**
+	 * Bumped when browsers hold files that no deploy can replace: the old static editor page (until
+	 * 2026-10-23) was cached with the besogo scripts it loaded, so its users kept running the old editor.
+	 */
+	public const BROWSER_CACHE_VERSION = '2026-10-23';
+
+	/**
+	 * Drops the site's HTTP cache in a browser once per BROWSER_CACHE_VERSION, on whatever request of
+	 * the site comes first. The cookie keeps it from happening again.
+	 */
+	private function resetStaleBrowserCache(): void
+	{
+		if (($_COOKIE['browser_cache_version'] ?? null) === self::BROWSER_CACHE_VERSION)
+			return;
+		$this->response->header('Clear-Site-Data', '"cache"');
+		Util::setCookie('browser_cache_version', self::BROWSER_CACHE_VERSION);
 	}
 
 	public function beforeFilter(): void
 	{
+		$this->enforceHttpMethodAttribute();
+		$this->resetStaleBrowserCache();
+
+		// Boards are drawn without a session: a list of a thousand players would otherwise
+		// pay for the login of a visitor who is not there.
+		if (strtolower((string) ($this->request->params['controller'] ?? '')) === 'avatars')
+			return;
+
 		$this->loadModel('User');
-		$this->loadModel('Activate');
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
 		$this->loadModel('TimeModeAttempt');
@@ -353,28 +413,44 @@ class AppController extends Controller
 		$this->loadModel('AchievementCondition');
 		$this->loadModel('SetConnection');
 		$this->loadModel('Tag');
-		$this->loadModel('Favorite');
 
 		Auth::init();
 		$timeMode = new TimeMode();
 
 		$highscoreLink = 'highscore';
 		$lightDark = 'light';
-		$resetCookies = false;
-		$levelBar = 1;
+		$levelBar = User::LEVEL_BAR_LEVEL;
 		$lastProfileLeft = 1;
 		$lastProfileRight = 2;
 
 		if (Auth::isLoggedIn())
 		{
-			if ($lastTimeModeCategoryID = Util::clearCookie('lastTimeModeCategoryID'))
-				Auth::getUser()['last_time_mode_category_id'] = $lastTimeModeCategoryID;
-			if (isset($_COOKIE['z_sess']) && $_COOKIE['z_sess'] != 0
-			&& strlen($_COOKIE['z_sess']) > 5)
+			if (!empty(Auth::getUser()['needs_display_name_change']))
 			{
-				Auth::getUser()['_sessid'] = $_COOKIE['z_sess'];
-				Auth::saveUser();
+				$controller = $this->request->params['controller'];
+				$action = $this->request->params['action'];
+				// The links that arrive by e-mail and the ways out of the account stay
+				// reachable: asking for a password reset or for deletion must not require
+				// picking a name first.
+				$allowedChangeActions = [
+					'users/changename',
+					'users/updatename',
+					'users/logout',
+					'users/login',
+					'users/newpassword',
+					'users/confirm_delete_account',
+					'users/delete_account',
+				];
+
+				if (!in_array(strtolower($controller . '/' . $action), $allowedChangeActions, true))
+				{
+					$this->redirect(['controller' => 'users', 'action' => 'changename']);
+					return;
+				}
 			}
+
+			if ($lastTimeModeCategoryID = Util::clearCookie('lastTimeModeCategoryID'))
+				Auth::saveUserField('last_time_mode_category_id', $lastTimeModeCategoryID);
 			if (Auth::getUser()['lastHighscore'] == Constants::$HIGHSCORE_LEVEL)
 				$highscoreLink = 'highscore';
 			elseif (Auth::getUser()['lastHighscore'] == Constants::$HIGHSCORE_RATING)
@@ -384,18 +460,12 @@ class AppController extends Controller
 			elseif (Auth::getUser()['lastHighscore'] == Constants::$HIGHSCORE_TIME_MODE)
 				$highscoreLink = 'time_mode';
 
-			if (isset($_COOKIE['lastMode']) && $_COOKIE['lastMode'] != 0)
-			{
-				Auth::getUser()['lastMode'] = $_COOKIE['lastMode'];
-				Auth::saveUser();
-			}
 			if (isset($_COOKIE['sound']) && $_COOKIE['sound'] != '0')
 			{
-				Auth::getUser()['sound'] = $_COOKIE['sound'];
-				Auth::saveUser();
+				// The cookie says 'on' or 'off', the column holds 1 or 0
+				Auth::saveUserField('sound', $_COOKIE['sound'] === 'on' ? User::SOUND_ON : User::SOUND_OFF);
 				unset($_COOKIE['sound']);
 			}
-			$this->set('ac', true);
 			$this->set('user', Auth::getUser());
 		}
 
@@ -403,37 +473,26 @@ class AppController extends Controller
 		{
 			$lightDark = $_COOKIE['lightDark'];
 			if (Auth::isLoggedIn())
-			{
-				// Convert string to integer for database storage
-				$lightDarkInt = ($lightDark === 'light') ? 0 : 2;
-				Auth::getUser()['lastLight'] = $lightDarkInt;
-			}
+				Auth::saveUserField('lastLight', $lightDark === 'dark' ? User::THEME_DARK : User::THEME_LIGHT);
 		}
 		elseif (Auth::isLoggedIn())
-			if (Auth::getUser()['lastLight'] == 0
-			|| Auth::getUser()['lastLight'] == 1)
-				$lightDark = 'light';
-			else
-				$lightDark = 'dark';
+			$lightDark = (Auth::getUser()['lastLight'] == User::THEME_DARK) ? 'dark' : 'light';
 
 		if (Auth::isLoggedIn())
 		{
 			$this->handleSearchSettings(Auth::getUserID());
 			if (isset($_COOKIE['levelBar']) && $_COOKIE['levelBar'] != '0')
 			{
-				$levelBar = $_COOKIE['levelBar'];
-				Auth::getUser()['levelBar'] = $levelBar;
+				$levelBar = ((int) $_COOKIE['levelBar']) === User::LEVEL_BAR_RATING ? User::LEVEL_BAR_RATING : User::LEVEL_BAR_LEVEL;
+				Auth::saveUserField('levelBar', $levelBar);
 			}
-			elseif (Auth::getUser()['levelBar'] == 0
-		  || Auth::getUser()['levelBar'] == 'level')
-		  	$levelBar = 1;
 			else
-				$levelBar = 2;
+				$levelBar = ((int) Auth::getUser()['levelBar']) === User::LEVEL_BAR_RATING ? User::LEVEL_BAR_RATING : User::LEVEL_BAR_LEVEL;
 
 			if (isset($_COOKIE['lastProfileLeft']) && $_COOKIE['lastProfileLeft'] != '0')
 			{
 				$lastProfileLeft = $_COOKIE['lastProfileLeft'];
-				Auth::getUser()['lastProfileLeft'] = $lastProfileLeft;
+				Auth::saveUserField('lastProfileLeft', $lastProfileLeft);
 			}
 			else
 			{
@@ -444,7 +503,7 @@ class AppController extends Controller
 			if (isset($_COOKIE['lastProfileRight']) && $_COOKIE['lastProfileRight'] != '0')
 			{
 				$lastProfileRight = $_COOKIE['lastProfileRight'];
-				Auth::getUser()['lastProfileRight'] = $lastProfileRight;
+				Auth::saveUserField('lastProfileRight', $lastProfileRight);
 			}
 			else
 			{
@@ -453,41 +512,20 @@ class AppController extends Controller
 					$lastProfileRight = 1;
 			}
 		}
-		$mode = 1;
-		if (isset($_COOKIE['mode']) && $_COOKIE['mode'] != '0')
-			if ($_COOKIE['mode'] == 1)
-				$mode = 1;
-			else
-				$mode = 2;
 
-		if (Auth::isLoggedIn() && Auth::getUser()['mode'] == 2)
-			$mode = 2;
-
-		if (($_COOKIE['sprint'] ?? null) != 1)
-			$this->updateSprintCondition();
+		if (HeroPowers::getSprintRemainingSeconds() == 0)
+			$this->_updateSprintCondition();
 
 		if (Auth::isLoggedIn() && !$this->request->is('ajax'))
 		{
-			$this->PlayResultProcessor->checkPreviousPlay($timeMode);
-			$this->set('potionSuccess', $this->PlayResultProcessor->processPotion());
 			$achievementChecker = new AchievementChecker();
-			$achievementChecker->checkLevelAchievements();
-			$achievementChecker->checkProblemNumberAchievements();
-			$achievementChecker->checkRatingAchievements();
-			$achievementChecker->checkDanSolveAchievements();
-			$achievementChecker->checkNoErrorAchievements();
-			$achievementChecker->finalize();
+			$achievementChecker->checkStandardAchievements()->finalize();
 			$this->set('achievementUpdates', $achievementChecker->updated);
 		}
-		$boardNames = [];
-
 		if (!is_null($boardsBitmask = Util::clearCookie('boards_bitmask')))
 		{
 			if (Auth::isLoggedIn())
-			{
-				Auth::getUser()['boards_bitmask'] = BoardSelector::filterValidBits($boardsBitmask);
-				Auth::saveUser();
-			}
+				Auth::saveUserField('boards_bitmask', BoardSelector::filterValidBits((int) $boardsBitmask));
 		}
 		else
 			$boardsBitmask = BoardSelector::filterValidBits(Auth::isLoggedIn() ? Auth::getUser()['boards_bitmask'] : BoardSelector::$DEFAULT_BOARDS_BITMASK);
@@ -496,25 +534,16 @@ class AppController extends Controller
 
 		$nextDay = new DateTime('tomorrow');
 		if (Auth::isLoggedIn())
-		{
-			$user = Auth::getUser();
-			$displayUser = $user;
-			$displayUser['name'] = $this->checkPicture($user);
-			$this->set('user', $displayUser);
-		}
-		$this->set('mode', $mode);
+			$this->set('user', Auth::getUser());
 		$this->set('nextDay', $nextDay->format('m/d/Y'));
-		$this->set('boardNames', $boardNames);
 		$this->set('highscoreLink', $highscoreLink);
 		$this->set('lightDark', $lightDark);
 		$this->set('levelBar', $levelBar);
 		$this->set('lastProfileLeft', $lastProfileLeft);
 		$this->set('lastProfileRight', $lastProfileRight);
-		$this->set('resetCookies', $resetCookies);
 		$this->set('timeMode', $timeMode);
-		if (Auth::isLoggedIn())
-			Auth::saveUser();
+		$this->set('changelogTimestamps', ChangelogController::changelogTimestamps());
 	}
 
-	public function afterFilter() {}
+	public function afterFilter(): void {}
 }

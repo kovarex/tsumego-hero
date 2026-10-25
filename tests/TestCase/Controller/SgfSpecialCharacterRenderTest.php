@@ -145,10 +145,7 @@ class SgfSpecialCharacterRenderTest extends TestCaseWithAuth
 		$browser->clickId('admin-upload-submit');
 
 		// Wait for setup_new_sgf.ctp to process and redirect back
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function () use ($browser) {
-			return strpos($browser->driver->getCurrentURL(), '/sgf/upload/') === false;
-		});
+		$browser->waitUntilJs('!location.href.includes("/sgf/upload/")');
 
 		// Verify the uploaded SGF was saved to the database
 		$sgfs = ClassRegistry::init('Sgf')->find('all', [

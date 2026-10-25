@@ -22,10 +22,10 @@ class EmptyIntegerBehavior extends ModelBehavior
 	 * Before save callback
 	 *
 	 * @param Model $model Model instance
-	 * @param array $options Options array
+	 * @param mixed $options Options array
 	 * @return bool True to continue save, false to abort
 	 */
-	public function beforeSave(Model $model, $options = [])
+	public function beforeSave(Model $model, mixed $options = []): bool
 	{
 		if (empty($model->data[$model->alias]))
 			return true;
@@ -103,7 +103,7 @@ class EmptyIntegerBehavior extends ModelBehavior
 	 * @param string $type Field type from schema
 	 * @return bool True if integer type
 	 */
-	protected function _isIntegerType($type)
+	protected function _isIntegerType(string $type): bool
 	{
 		$integerTypes = ['integer', 'biginteger', 'smallinteger', 'tinyinteger'];
 

@@ -1,6 +1,5 @@
 <?php
 
-use Facebook\WebDriver\WebDriverBy;
 
 class SandboxSgfUploadTest extends TestCaseWithAuth
 {
@@ -26,14 +25,14 @@ class SandboxSgfUploadTest extends TestCaseWithAuth
 		// POST to addTsumego endpoint
 		$data = ['order' => 1];
 
-		$this->testAction('/sets/addTsumego/' . $setID, [
+		$this->testAction('/sets/createAndAddTsumego/' . $setID, [
 			'method' => 'post',
 			'data' => $data]);
 
 		// Verify tsumego was created
 		$tsumego = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC']);
 		$this->assertNotEmpty($tsumego, 'Tsumego should be created');
-		$this->assertEquals('kovarex', $tsumego['Tsumego']['author']);
+		$this->assertEquals('DN_kovarex', $tsumego['Tsumego']['author']);
 
 		// Verify set connection was created with correct num
 		$setConnection = ClassRegistry::init('SetConnection')->find('first', [
@@ -65,7 +64,7 @@ class SandboxSgfUploadTest extends TestCaseWithAuth
 		// POST to addTsumego endpoint with SGF in data
 		$data = ['order' => 1, 'sgf' => $sgfContent];
 
-		$this->testAction('/sets/addTsumego/' . $setID, [
+		$this->testAction('/sets/createAndAddTsumego/' . $setID, [
 			'method' => 'post',
 			'data' => $data]);
 

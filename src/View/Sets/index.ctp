@@ -1,4 +1,10 @@
 <?php
+
+use App\Utility\Constants;
+use App\Utility\Rating;
+use App\Utility\SetsSelector;
+use App\Utility\TsumegoFilters;
+
 /**
  * @var View $this  
  * @var array $setTiles
@@ -8,12 +14,13 @@
  * @var SetsSelector $setsSelector
  * @var string $lightDark
  * @var bool $queryRefresh
- * @var array $ranksArray
+ * @var string $rankFrom
+ * @var string $rankTo
+ * @var array $rankFilterLabels
  * @var array $tagList
  */
 ?>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
-	<div align="center" class="set-search-menu">
+	<div align="center" class="set-search-menu query-<?php echo h($tsumegoFilters->query); ?>">
 		<div class="set-buttons-left">
 			<div class="set-buttons">
 				<button id="topics-button" class="btn btn-link collapsed set-search" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
@@ -21,20 +28,20 @@
 							Topics
 					</div>
 					<div class="set-button-icon" id="set-button-icon-topics">
-							<i class="animate-icon fa fa-chevron-down" aria-hidden="true"></i>
+						<?php echo $this->element('filter_chevron'); ?>
 					</div>
 				</button>
-				<div align="left" id="dropdown-topics" class="dropdown-boxes">
+				<div align="left" id="dropdown-topics" class="dropdown__menu dropdown__menu--filters">
 					<?php
 						for($i=0; $i<count($setTiles); $i++){
 							if($setTiles[$i] != '[continuation]')
-								echo '<div class="dropdown-tile" id="tile-topics'.$i.'">'.h($setTiles[$i]).'</div>';
+								echo '<div class="dropdown__tile" id="tile-topics'.$i.'">'.h($setTiles[$i]).'</div>';
 						}
 					?>
-					<div class="tiles-submit">
-						<div class="dropdown-tile tiles-submit-inner-select" id="tile-topics-select-all">Select all</div>
+					<div class="dropdown__tile-actions">
+						<div class="dropdown__tile dropdown__tile-actions__select" id="tile-topics-select-all">Select all</div>
 						<?php if($tsumegoFilters->query){ ?>
-							<a class="dropdown-tile tiles-submit-inner" id="tile-topics-submit" href="">Search</a>
+							<a class="dropdown__tile dropdown__tile-actions__submit" id="tile-topics-submit" href="">Search</a>
 						<?php } ?>
 					</div>
 				</div>
@@ -45,21 +52,45 @@
 							Difficulty
 					</div>
 					<div class="set-button-icon" id="set-button-icon-difficulty">
-							<i class="animate-icon fa fa-chevron-down" aria-hidden="true"></i>
+						<?php echo $this->element('filter_chevron'); ?>
 					</div>
 				</button>
-				<div align="left" id="dropdown-difficulty" class="dropdown-boxes">
+				<div align="left" id="dropdown-difficulty" class="dropdown__menu dropdown__menu--filters">
 					<?php
 						for($i=0; $i<count($difficultyTiles); $i++){
 							if($difficultyTiles[$i] != '[continuation]')
-								echo '<div class="dropdown-tile" id="tile-difficulty'.$i.'">'.h($difficultyTiles[$i]).'</div>';
+								echo '<div class="dropdown__tile dropdown__tile--difficulty" id="tile-difficulty'.$i.'" style="--rank-color:'.Rating::rankColorVar($difficultyTiles[$i]).'">'.h($difficultyTiles[$i]).'</div>';
 						}
 					?>
-					<div class="tiles-submit">
-						<div class="dropdown-tile tiles-submit-inner-select" id="tile-difficulty-select-all">Select all</div>
-						<?php if($tsumegoFilters->query){ ?>
-							<a class="dropdown-tile tiles-submit-inner" id="tile-difficulty-submit" href="">Search</a>
-						<?php } ?>
+					<div class="difficulty-range">
+						<div class="difficulty-range__scale" id="difficulty-range-scale" title="Click to show everything up to a rank, or drag to pick a range">
+							<div class="difficulty-range__scale-track">
+								<div class="difficulty-range__scale-fill" id="difficulty-range-fill"></div>
+							</div>
+						</div>
+						<div class="difficulty-range__controls">
+							<span class="difficulty-range__caption">Add a range</span>
+							<label class="difficulty-range__label" for="difficulty-from">from</label>
+							<select id="difficulty-from" class="difficulty-range__select">
+								<option value="">Any</option>
+								<?php
+									foreach ($difficultyTiles as $rank)
+										echo '<option value="' . h($rank) . '" style="color:' . Rating::rankColorVar($rank) . '"' . ($rank === $rankFrom ? ' selected' : '') . '>' . h($rank) . '</option>';
+								?>
+							</select>
+							<label class="difficulty-range__label" for="difficulty-to">to</label>
+							<select id="difficulty-to" class="difficulty-range__select">
+								<option value="">Any</option>
+								<?php
+									foreach ($difficultyTiles as $rank)
+										echo '<option value="' . h($rank) . '" style="color:' . Rating::rankColorVar($rank) . '"' . ($rank === $rankTo ? ' selected' : '') . '>' . h($rank) . '</option>';
+								?>
+							</select>
+						</div>
+					</div>
+					<div class="dropdown__tile-actions">
+						<div class="dropdown__tile dropdown__tile-actions__select" id="tile-difficulty-reset">Reset</div>
+						<a class="dropdown__tile dropdown__tile-actions__submit" id="tile-difficulty-submit" href="">Search</a>
 					</div>
 				</div>
 			</div>
@@ -69,20 +100,20 @@
 							Tags
 					</div>
 					<div class="set-button-icon" id="set-button-icon-tags">
-							<i class="animate-icon fa fa-chevron-down" aria-hidden="true"></i>
+						<?php echo $this->element('filter_chevron'); ?>
 					</div>
 				</button>
-				<div align="left" id="dropdown-tags" class="dropdown-boxes">
+				<div align="left" id="dropdown-tags" class="dropdown__menu dropdown__menu--filters">
 					<?php
 						for($i=0; $i<count($tagTiles); $i++){
 							if($tagTiles[$i] != '[continuation]')
-								echo '<div class="dropdown-tile" id="tile-tags'.$i.'">'.h($tagTiles[$i]).'</div>';
+								echo '<div class="dropdown__tile" id="tile-tags'.$i.'">'.h($tagTiles[$i]).'</div>';
 						}
 					?>
-					<div class="tiles-submit">
-						<div class="dropdown-tile tiles-submit-inner-select" id="tile-tags-select-all">Select all</div>
+					<div class="dropdown__tile-actions">
+						<div class="dropdown__tile dropdown__tile-actions__select" id="tile-tags-select-all">Select all</div>
 						<?php if($tsumegoFilters->query){ ?>
-							<a class="dropdown-tile tiles-submit-inner" id="tile-tags-submit" href="">Search</a>
+							<a class="dropdown__tile dropdown__tile-actions__submit" id="tile-tags-submit" href="">Search</a>
 						<?php } ?>
 					</div>
 				</div>
@@ -94,7 +125,7 @@
 		<form method="post" action="/sets/changeCollectionSize">
 		<div class="set-buttons-right">
 			<div class="set-buttons">Collection size:
-				<input id="set-size-input" type="number" value="<?php echo $tsumegoFilters->collectionSize; ?>" step="10" min="10" max="1000" name="collection_size">
+				<input id="set-size-input" type="number" value="<?php echo $tsumegoFilters->collectionSize; ?>" step="<?php echo Constants::$COLLECTION_SIZE_STEP; ?>" min="<?php echo Constants::$MIN_COLLECTION_SIZE; ?>" max="<?php echo Constants::$MAX_COLLECTION_SIZE; ?>" name="collection_size">
 			</div>
 			<div class="set-buttons">
 			<input type="submit" id="submit-size-button" class="btn btn-link collapsed set-search" style="width:70px;" value="Submit">
@@ -110,218 +141,38 @@
 	else
 		$lightDarkBoxes = '3';
 	foreach ($setsSelector->sets as $i => $set) {
-		if($set['amount'] == 1) {
-			$problems = 'problem';
-			$tilde = '';
-		} else {
-			$problems = 'problems';
-			$tilde = '~';
-		}
-		if ($set['partition'] == -1) {
-			$partition = '';
-			$partitionLink = '';
-		} else {
-			$partition = ' #'.($set['partition']+1);
-			$partitionLink = '/'.($set['partition'] + 1);
-		}
-		if($set['solved_percent'] != 0)
-			$isZero = '';
-		else
-			$isZero = 'display:none;';
-
-		if($lightDark=='light')
+		if ($lightDark == 'light')
 		{
 			$lightDarkBoxes = '3';
 			if ($set['partition'] >= 4)
 				$lightDarkBoxes = '6';
 		}
 		$backgroundImage = 'linear-gradient(rgba(169, 169, 169, 0.'.$lightDarkBoxes.'0), rgba(0, 0, 0, 0.'.$lightDarkBoxes.'5));';
-		$box1unlocked = 'box1default';
 
-		echo '<a href="/sets/view/' . $set['id'] . $partitionLink . '" class="box1link">
-			<div class="box1 box1topic ' . $box1unlocked.' topic-box' . $set['id'] . '"
-				style="background-color:' . $set['color'] . ';background-image: ' . $backgroundImage . '">';
-				if ($set['solved_percent'] >= 100)
-					echo '<div class="collection-completed">completed</div>';
-				echo '<div class="collection-top">' . h($set['name']) . $partition . '</div>';
-				echo '<div class="collection-middle-left">' . $set['amount'] . ' ' . $problems . '</div>';
-				if ($set['difficulty'])
-					echo '<div class="collection-middle-right">' . $tilde . $set['difficulty'] . '</div>';
-				echo '<div class="collection-bottom">
-					<div class="number" id="number' . $i . '">0</div>
-						<div align="left" class="reward-bar-container">
-							<div id="account-bar-wrapper2">
-								<div id="account-bar2">
-									<div id="xp-bar2">
-										<div class="xp-bar-empty"></div>
-										<div id="xp-bar-fill2' . $i . '" class="xp-bar-fill-c4" style="width: 5%; transition: 0.6s;'.$isZero.'">
-											<div id="xp-increase-fx2' . $i . '">
-												<div id="xp-increase-fx-flicker2' . $i . '">
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</a>';
+		echo $this->element('set_card', [
+			'set' => [
+				'id' => $set['id'],
+				'name' => $set['name'],
+				'amount' => $set['amount'],
+				'color' => $set['color'],
+				'difficulty' => $set['difficulty'],
+				'solved' => $set['solved_percent'],
+				'partition' => $set['partition'],
+			],
+			'backgroundImage' => $backgroundImage,
+		]);
 	} ?>
 	</div>
-	<style>
-		<?php if ($tsumegoFilters->query == 'topics') { ?>
-		#topics-button .set-button-text{
-			color:#77c14a;
-		}
-		#set-button-icon-topics i.animate-icon{
-			color:#77c14a;
-		}
-		<?php } else if ($tsumegoFilters->query == 'difficulty') { ?>
-		#difficulty-button .set-button-text{
-			color:#be6cdd;
-		}
-		#set-button-icon-difficulty i.animate-icon{
-			color:#be6cdd;
-		}
-		<?php } else if ($tsumegoFilters->query == 'tags') { ?>
-		#tags-button .set-button-text{
-			color:#d5795a;
-		}
-		#set-button-icon-tags i.animate-icon{
-			color:#d5795a;
-		}
-		<?php } ?>
-		<?php if($lightDark=='light') { ?>
-			<?php if ($tsumegoFilters->query=='topics') { ?>
-			.box1default:hover {
-				background-image: linear-gradient(
-					rgba(200, 200, 200, 0.3),
-					rgba(33, 33, 33, 0.35)
-				) !important;
-			}
-			<?php }else{ ?>
-			.box1default:hover {
-				background-image: linear-gradient(
-					rgba(200, 200, 200, 0.6),
-					rgba(33, 33, 33, 0.65)
-				) !important;
-			}
-			<?php } ?>
-		<?php }else{ ?>
-			.box1default:hover {
-				background-image: linear-gradient(
-					rgba(200, 200, 200, 0.3),
-					rgba(33, 33, 33, 0.35)
-				) !important;
-			}
-		<?php } ?>
-		.set-search {
-			display: flex;
-			font-weight: 800;
-			padding: 6px 10px;
-			margin: 5px;
-			border-radius: 5px;
-			<?php if($lightDark=='light'){ ?>
-				background: #555;
-				color: #fff;
-			<?php }else{ ?>
-				background: #222;
-				color: #bfc1c4;
-			<?php } ?>
-		}
-		.xp-bar-fill-c4 {
-			position: relative;
-			left: 0;
-			background-color: #bbbbbb;
-			background-image: linear-gradient(#f5f5f5, #9b9b9b);
-			height:5px;
-			border-radius:3px;
-			z-index: 2;
-		}
-		.number {
-			animation: fadeIn 1s ease-in-out;
-		}
-		@keyframes fadeIn {
-			0% {opacity: 0;}
-			100% {opacity: 1;}
-		}
-		@keyframes fadeIn2 {
-			0% {opacity: 0;}
-			100% {opacity: .9;}
-		}
-	</style>
 	<script>
-		<?php if($tsumegoFilters->query == 'topics'){ ?>
-			$("#topics-button").css("border", "1px solid #558a35");
-		<?php }else if($tsumegoFilters->query == 'difficulty'){ ?>
-			$("#difficulty-button").css("border", "1px solid #ac4bd0");
-		<?php }else if($tsumegoFilters->query == 'tags'){ ?>
-			$("#tags-button").css("border", "1px solid #aa5538");
-		<?php } ?>
-		<?php
-		echo 'function animateNumber(index, start, end, duration) {
-				const element = document.getElementById("number" + index);
-				if (!element) {
-					console.warn("Element number" + index + " not found.");
-					return;
-				}
-				const range = end - start;
-				const increment = range / (duration * 60);
-				const decimalIndex = end.toString().indexOf(".");
-			const dx = decimalIndex >= 0 ? end.toString().length - decimalIndex - 1 : 0;
-				let currentNumber = start;
-				const step = () => {
-					let randomDecimal = "";
-					if(dx===1){
-						randomDecimal = "."+Math.floor(Math.random() * 9);
-					}else if(dx===2){
-						randomDecimal = "."+(Math.floor(Math.random() * 90) + 10);
-					}
-					currentNumber += increment;
-					if (currentNumber < end) {
-							element.textContent = Math.floor(currentNumber) + randomDecimal + "%";
-							requestAnimationFrame(step);
-					} else {
-							element.textContent = end + "%";
-					}
-				};
-				requestAnimationFrame(step);
-			}';
 
-		echo 'function animateBar(index, percent){
-				$("#xp-increase-fx2" + index).css("display","inline-block");
-				$("#xp-bar-fill2" + index).css("box-shadow", "-5px 0px 10px #fff inset");
-				$("#xp-bar-fill2" + index).css("width", 0+"%");
-				$("#xp-increase-fx2" + index).hide();
-				$("#xp-bar-fill2" + index).css({"-webkit-transition":"all 0.6s ease","box-shadow":""});
-
-				$("#xp-bar-fill2" + index).css({"width":percent+"%"});
-				$("#xp-bar-fill2" + index).css("-webkit-transition","all 0.6s ease");
-				$("#xp-increase-fx2" + index).fadeIn(0);
-				$("#xp-bar-fill2" + index).css({"-webkit-transition":"all 0.6s ease","box-shadow":""});
-				setTimeout(function(){
-					$("#xp-increase-fx-flicker2" + index).fadeOut(600);
-					$("#xp-bar-fill2" + index).css({"-webkit-transition":"all 0.6s ease","box-shadow":""});
-				},600);
-			}';
-
-		foreach ($setsSelector->sets as $i => $set) {
-			echo 'animateNumber(' . $i . ', 0, ' . $set['solved_percent'] . ', .6);';
-			echo 'animateBar(' . $i . ', ' . $set['solved_percent'] . ');';
-		}
-		?>
 		let query = <?php echo json_encode($tsumegoFilters->query, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 		let queryRefresh = <?php echo json_encode($queryRefresh, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
-		let collectionSize = <?php echo $tsumegoFilters->collectionSize; ?>-0;
 		let filteredSets = [];
-		let filteredRanks = [];
 		let filteredTags = [];
 		let searchText1 = "";
 		let searchText2 = "";
 		let searchText3 = "";
 		let initialTopicTiles = [];
-		let initialDifficultyTiles = [];
 		let initialTagTiles = [];
 		let topicsToggle = false;
 		let difficultyToggle = false;
@@ -332,12 +183,12 @@
 		let activeTopicIds = [];
 		let allTopicIds = [];
 		let allTopicNames = [];
-		let tileDifficultyBool = [];
-		let activeDifficultyTiles = [];
-		let allDifficultyTiles = [];
-		let activeDifficultyIds = [];
-		let allDifficultyIds = [];
-		let allDifficultyNames = [];
+		let allRanks = [];
+		let activeRankTiles = [];
+		let activeRankRange = null;
+		let serverRankLabels = [];
+		let rankDragStart = null;
+		let rankDragMoved = false;
 		let tileTagsBool = [];
 		let activeTagTiles = [];
 		let allTagTiles = [];
@@ -374,37 +225,6 @@
 							for(let i=0;i<allTopicNames.length;i++){
 								if(allTopicNames[i] === name){
 									unselectTopic(allTopicIds[i]);
-									break;
-								}
-							}
-						}
-					}
-					drawActiveCollections();
-					drawActiveTiles();
-				};';
-
-		echo 'function toggleRank(index, name, e) {
-			e.stopPropagation();
-					if(!tileDifficultyBool[index]){
-						handleTiles(name, "difficulty", true);
-						activeDifficultyTiles.push(name);
-						if(query === "difficulty"){
-							for(let i=0;i<allDifficultyNames.length;i++)
-								if(allDifficultyNames[i] === name)
-									activeDifficultyIds.push(allDifficultyIds[i]);
-						}
-					}else{
-						handleTiles(name, "difficulty", false);
-						let newActiveDifficultyTiles = [];
-						for(let i=0;i<activeDifficultyTiles.length;i++){
-							if(activeDifficultyTiles[i] !== name)
-								newActiveDifficultyTiles.push(activeDifficultyTiles[i]);
-						}
-						activeDifficultyTiles = newActiveDifficultyTiles;
-						if(query === "difficulty"){
-							for(let i=0;i<allDifficultyNames.length;i++){
-								if(allDifficultyNames[i] === name){
-									unselectDifficulty(allDifficultyIds[i]);
 									break;
 								}
 							}
@@ -452,15 +272,11 @@
 				echo '$("#tile-topics'.$index.'").click(function(e){ toggleTopic('.$index.', '.$jsName.', e); });';
 			}
 
-			foreach ($ranksArray as $rank) {
-				echo 'allDifficultyIds.push("'.$rank['id'].'");';
-				echo 'allDifficultyNames.push('.json_encode($rank['name'], $jsFlags).');';
-			}
+			echo 'allRanks = ' . json_encode($difficultyTiles, $jsFlags) . ';';
+			echo 'serverRankLabels = ' . json_encode(array_values($rankFilterLabels), $jsFlags) . ';';
 
 			foreach ($difficultyTiles as $index => $rankName) {
 				$jsRankName = json_encode($rankName, $jsFlags);
-				echo 'allDifficultyTiles.push('.$jsRankName.');';
-				echo 'tileDifficultyBool.push(false);';
 				echo '$("#tile-difficulty'.$index.'").click(function(e){ toggleRank('.$index.', '.$jsRankName.', e); });';
 			}
 
@@ -482,12 +298,6 @@
 				echo 'activeTopicTiles.push('.$jsSet.');';
 				echo 'handleTiles('.$jsSet.', "topics", true);';
 			}
-			foreach ($tsumegoFilters->ranks as $rank) {
-				$jsRank = json_encode($rank, $jsFlags);
-				echo 'filteredRanks.push('.$jsRank.');';
-				echo 'activeDifficultyTiles.push('.$jsRank.');';
-				echo 'handleTiles('.$jsRank.', "difficulty", true);';
-			}
 			foreach ($tsumegoFilters->tags as $tag) {
 				$jsTag = json_encode($tag, $jsFlags);
 				echo 'filteredTags.push('.$jsTag.');';
@@ -497,18 +307,20 @@
 		?>
 		$(document).ready(function(){
 			setCookie("query", query);
+			$("#tile-topics-select-all").html(selectAllTopics ? "Unselect all" : "Select all");
+			$("#tile-tags-select-all").html(selectAllTags ? "Unselect all" : "Select all");
+			initRankFilter();
+			colorRankSelects();
 			drawActiveCollections();
 			drawActiveTiles(true);
 		});
 		function handleTiles(name, query, select){
-			let color = "#ffffff1a";
+			let color = "var(--surface-translucent)";
 			if(select){
 				if(query === "topics"){
-					color = "#558a35";
-				}else if(query === "difficulty"){
-					color = "#ac4bd0";
+					color = "var(--color-tile-green)";
 				}else if(query === "tags"){
-					color = "#aa5538";
+					color = "var(--color-tile-brown)";
 				}
 			}
 			let position = -1;
@@ -518,12 +330,6 @@
 						position = i;
 				$("#tile-"+query+position).css("background", color);
 				tileTopicsBool[position] = select;
-			}else if(query === "difficulty"){
-				for(let i=0;i<allDifficultyTiles.length;i++)
-					if(name === allDifficultyTiles[i])
-						position = i;
-				$("#tile-"+query+position).css("background", color);
-				tileDifficultyBool[position] = select;
 			}else if(query === "tags"){
 				for(let i=0;i<allTagTiles.length;i++)
 					if(name === allTagTiles[i])
@@ -562,35 +368,6 @@
 					for(let i=0;i<activeTopicIds.length;i++)
 						$(".topic-box"+activeTopicIds[i]).fadeIn(250);
 				}
-			<?php }else if ($tsumegoFilters->query == 'difficulty') { ?>
-				if(activeDifficultyIds.length<1){
-					for(let i=0;i<allDifficultyIds.length;i++)
-						$(".difficulty-box"+allDifficultyIds[i]).css("display", "grid");
-				}else{
-					for(let i=0;i<allDifficultyIds.length;i++)
-						if(!activeDifficultyIds.includes(allDifficultyIds[i]))
-							$(".difficulty-box"+allDifficultyIds[i]).css("display", "none");
-					let pos = [];
-					let posX = [];
-					for(let i=0;i<activeDifficultyIds.length;i++){
-						for(let j=0;j<allDifficultyIds.length;j++){
-							if(activeDifficultyIds[i] === allDifficultyIds[j] && !posX.includes(allDifficultyIds[j])){
-								posX.push(allDifficultyIds[j]);
-								pos.push(j);
-							}
-						}
-					}
-					let posXX = [];
-					for(let i=0;i<pos.length;i++)
-						posXX.push(allDifficultyNames[pos[i]]);
-					for(let i=0;i<tileDifficultyBool.length;i++)
-					tileDifficultyBool[i] = false;
-					for(let i=0;i<allDifficultyTiles.length;i++)
-						if(posXX.includes(allDifficultyTiles[i]))
-							tileDifficultyBool[i] = true;
-					for(let i=0;i<activeDifficultyIds.length;i++)
-						$(".difficulty-box"+activeDifficultyIds[i]).fadeIn(250);
-				}
 			<?php }else if ( $tsumegoFilters->query == 'tags'){ ?>
 				if(activeTagIds.length<1){
 					for(let i=0;i<allTagIds.length;i++)
@@ -624,21 +401,12 @@
 		}
 		function drawActiveTiles(initialDraw = false){
 			$(".active-tiles-container").html("");
-			let initialDrawCounter = 0;
 
 			if(initialDraw){
-				for(let i=0;i<activeTopicTiles.length;i++){
+				for(let i=0;i<activeTopicTiles.length;i++)
 					initialTopicTiles.push(activeTopicTiles[i]);
-					initialDrawCounter++;
-				}
-				for(let i=0;i<activeDifficultyTiles.length;i++){
-					initialDifficultyTiles.push(activeDifficultyTiles[i]);
-					initialDrawCounter++;
-				}
-				for(let i=0;i<activeTagTiles.length;i++){
+				for(let i=0;i<activeTagTiles.length;i++)
 					initialTagTiles.push(activeTagTiles[i]);
-					initialDrawCounter++;
-				}
 			}
 			for(let i=0;i<activeTopicTiles.length;i++){
 				let initialTile = false;
@@ -646,32 +414,28 @@
 					if(activeTopicTiles[i] === initialTopicTiles[j])
 						initialTile = true;
 				if(query == "topics" || initialTile)
-					$(".active-tiles-container").append('<div class="dropdown-tile tile-color1" id="active-tiles-element'+i+'" onclick="removeActiveTopic('+i+')">'+activeTopicTiles[i]+'</div>');
+					$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--green" id="active-tiles-element'+i+'" onclick="removeActiveTopic('+i+')">'+activeTopicTiles[i]+'</div>');
 			}
-			for(let i=0;i<activeDifficultyTiles.length;i++){
-				let initialTile = false;
-				for(let j=0;j<initialDifficultyTiles.length;j++)
-					if(activeDifficultyTiles[i] === initialDifficultyTiles[j])
-						initialTile = true;
-				if(query == "difficulty" || initialTile)
-					$(".active-tiles-container").append('<div class="dropdown-tile tile-color2" id="active-tiles-element'+i+'" onclick="removeActiveDifficulty('+i+')">'+activeDifficultyTiles[i]+'</div>');
-			}
+			// Rank picks are kept from every page, so their chips are not bound to the
+			// difficulty query the way the topic and tag chips are.
+			for(let i=0;i<activeRankTiles.length;i++)
+				if(!rankInRange(activeRankTiles[i]))
+					$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--difficulty" style="--rank-color:var(--rank-'+activeRankTiles[i]+')" id="active-tiles-rank'+i+'" onclick="removeRankTile('+i+')">'+activeRankTiles[i]+'</div>');
+			if(activeRankRange)
+				$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--purple" id="active-tiles-difficulty" onclick="clearRankRange()">'+rangeLabel(activeRankRange)+'</div>');
 			for(let i=0;i<activeTagTiles.length;i++){
 				let initialTile = false;
 				for(let j=0;j<initialTagTiles.length;j++)
 					if(activeTagTiles[i] === initialTagTiles[j])
 						initialTile = true;
 				if(query == "tags" || initialTile)
-					$(".active-tiles-container").append('<div class="dropdown-tile tile-color3" id="active-tiles-element'+i+'" onclick="removeActiveTag('+i+')">'+activeTagTiles[i]+'</div>');
+					$(".active-tiles-container").append('<div class="dropdown__tile dropdown__tile--brown" id="active-tiles-element'+i+'" onclick="removeActiveTag('+i+')">'+activeTagTiles[i]+'</div>');
 			}
 			setCookie("filtered_sets", activeTopicTiles.length == 0 ? 'clear' : activeTopicTiles.join('@'));
-			setCookie("filtered_ranks", activeDifficultyTiles.length == 0 ? 'clear' : activeDifficultyTiles.join("@"));
+			setCookie("filtered_ranks", selectedRankCookieValue());
 			setCookie("filtered_tags", activeTagTiles.length == 0 ? 'clear' : activeTagTiles.join('@'));
-			if(query=="topics" && activeTopicTiles.length > 0
-			|| query=="difficulty" && activeDifficultyTiles.length > 0
-			|| query=="tags" && activeTagTiles.length > 0
-			|| initialDraw && initialDrawCounter>0)
-				$(".active-tiles-container").append('<a class="dropdown-tile tile-color4" href="" id="unselect-active-tiles">clear</a>');
+			if($(".active-tiles-container").children().length > 0)
+				$(".active-tiles-container").append('<a class="dropdown__tile dropdown__tile--muted" href="" id="unselect-active-tiles">clear</a>');
 		}
 
 		$(".active-tiles-container").on("click", "#unselect-active-tiles", function(e) {
@@ -712,33 +476,140 @@
 				window.location.href = "/sets";
 		}
 
-		function removeActiveDifficulty(index){
-			let removeMap = 0;
-			for(let i=0;i<allDifficultyTiles.length;i++){
-				if(allDifficultyTiles[i] === activeDifficultyTiles[index])
-					removeMap = i;
-			}
-			for(let i=0;i<allDifficultyNames.length;i++){
-				if(allDifficultyNames[i] === allDifficultyTiles[removeMap]){
-					unselectDifficulty(allDifficultyIds[i]);
-					break;
-				}
-			}
-			for(let i=0;i<allDifficultyTiles.length;i++){
-				if(allDifficultyTiles[i] === activeDifficultyTiles[index])
-					$("#tile-difficulty"+i).css("background", "#ffffff1a");
-			}
-			let newTiles = [];
-			for(let i=0;i<activeDifficultyTiles.length;i++){
-				if(i !== index)
-					newTiles.push(activeDifficultyTiles[i]);
-			}
-			activeDifficultyTiles = newTiles;
+		function clearRankRange(){
+			activeRankRange = null;
+			$("#difficulty-from").val("");
+			$("#difficulty-to").val("");
+			setCookie("filtered_ranks", selectedRankCookieValue());
+			window.location.href = "/sets";
+		}
 
-			drawActiveCollections();
+		function initRankFilter(){
+			for(let i=0;i<serverRankLabels.length;i++){
+				let label = serverRankLabels[i];
+				if(label.includes("-")){
+					if(activeRankRange === null){
+						let parts = label.split("-");
+						activeRankRange = { from: parts[0], to: parts[1] };
+					}
+				}else
+					activeRankTiles.push(label);
+			}
+			activeRankTiles.sort(function(a, b){ return allRanks.indexOf(a) - allRanks.indexOf(b); });
+			paintRankTiles();
+		}
+
+		function rankInRange(rank){
+			if(!activeRankRange)
+				return false;
+			let rangeFrom = allRanks.indexOf(activeRankRange.from);
+			let rangeTo = allRanks.indexOf(activeRankRange.to);
+			if(rangeFrom > rangeTo){
+				let swap = rangeFrom;
+				rangeFrom = rangeTo;
+				rangeTo = swap;
+			}
+			let index = allRanks.indexOf(rank);
+			return index >= rangeFrom && index <= rangeTo;
+		}
+
+		function rankChips(){
+			let chips = [];
+			for(let i=0;i<activeRankTiles.length;i++)
+				if(!rankInRange(activeRankTiles[i]))
+					chips.push(activeRankTiles[i]);
+			if(activeRankRange)
+				chips.push(rangeLabel(activeRankRange));
+			chips.sort(function(a, b){ return allRanks.indexOf(a.split("-")[0]) - allRanks.indexOf(b.split("-")[0]); });
+			return chips;
+		}
+
+		function paintRankTiles(){
+			for(let i=0;i<allRanks.length;i++){
+				let selected = activeRankTiles.indexOf(allRanks[i]) !== -1 || rankInRange(allRanks[i]);
+				$("#tile-difficulty"+i).toggleClass("is-selected", selected);
+			}
+			updateRangeScale();
+		}
+
+		function updateRangeScale(){
+			let fill = document.getElementById("difficulty-range-fill");
+			if(!fill)
+				return;
+			let range = activeRankRange;
+			if(!range && activeRankTiles.length === 1)
+				range = { from: activeRankTiles[0], to: activeRankTiles[0] };
+			if(!range){
+				fill.style.clipPath = "inset(0 100% 0 0)";
+				return;
+			}
+			let from = allRanks.indexOf(range.from);
+			let to = allRanks.indexOf(range.to);
+			if(from > to){
+				let swap = from;
+				from = to;
+				to = swap;
+			}
+			let left = from / allRanks.length * 100;
+			let right = (to + 1) / allRanks.length * 100;
+			fill.style.clipPath = "inset(0 " + (100 - right) + "% 0 " + left + "%)";
+		}
+
+		function syncRangeSelects(){
+			if(activeRankRange)
+				return;
+			if(activeRankTiles.length === 1){
+				$("#difficulty-from").val(activeRankTiles[0]);
+				$("#difficulty-to").val(activeRankTiles[0]);
+			}else{
+				$("#difficulty-from").val("");
+				$("#difficulty-to").val("");
+			}
+			colorRankSelects();
+		}
+
+		function colorRankSelects(){
+			["difficulty-from", "difficulty-to"].forEach(function(id){
+				let select = document.getElementById(id);
+				let rank = select.value;
+				select.style.color = rank ? "var(--rank-" + rank + ")" : "";
+			});
+		}
+
+		function toggleRank(index, name, e){
+			e.stopPropagation();
+			if(rankInRange(name)){
+				// A range is one filter of its own; picking one of its ranks switches
+				// back to separate ranks so the pick is visible.
+				activeRankRange = null;
+				$("#difficulty-from").val("");
+				$("#difficulty-to").val("");
+				activeRankTiles = activeRankTiles.filter(function(rank){ return rank !== name; });
+			}
+			let position = activeRankTiles.indexOf(name);
+			if(position === -1)
+				activeRankTiles.push(name);
+			else
+				activeRankTiles.splice(position, 1);
+			activeRankTiles.sort(function(a, b){ return allRanks.indexOf(a) - allRanks.indexOf(b); });
+			syncRangeSelects();
+			paintRankTiles();
 			drawActiveTiles();
-			if(query !== "difficulty" || queryRefresh)
-				window.location.href = "/sets";
+		}
+
+		function rangeLabel(range){
+			return range.from === range.to ? range.from : range.from + "-" + range.to;
+		}
+
+		function selectedRankCookieValue(){
+			let chips = rankChips();
+			return chips.length === 0 ? "clear" : chips.join("@");
+		}
+
+		function removeRankTile(index){
+			activeRankTiles.splice(index, 1);
+			setCookie("filtered_ranks", selectedRankCookieValue());
+			window.location.href = "/sets";
 		}
 
 		function removeActiveTag(index){
@@ -779,15 +650,6 @@
 			}
 			activeTopicIds = newActiveIds;
 		}
-		function unselectDifficulty(id){
-			let newActiveIds = [];
-			for(let i=0;i<activeDifficultyIds.length;i++){
-				if(activeDifficultyIds[i] !== id){
-					newActiveIds.push(activeDifficultyIds[i]);
-				}
-			}
-			activeDifficultyIds = newActiveIds;
-		}
 		function unselectTag(id){
 			let newActiveIds = [];
 			for(let i=0;i<activeTagIds.length;i++){
@@ -800,17 +662,17 @@
 
 		$("#topics-button").click(function(e){
 			e.stopPropagation();
-			this.querySelector('#set-button-icon-topics i.fa').classList.toggle('rotateArrow');
+			this.querySelector('#set-button-icon-topics .set-filter-chevron').classList.toggle('rotateArrow');
 			if(!topicsToggle){
 				topicsToggle = true;
 				$("#dropdown-topics").fadeIn(250);
 				if(difficultyToggle){
-					document.querySelector('#set-button-icon-difficulty i.fa').classList.toggle('rotateArrow');
+					document.querySelector('#set-button-icon-difficulty .set-filter-chevron').classList.toggle('rotateArrow');
 					difficultyToggle = false;
 					$("#dropdown-difficulty").fadeOut(250);
 				}
 				if(tagsToggle){
-					document.querySelector('#set-button-icon-tags i.fa').classList.toggle('rotateArrow');
+					document.querySelector('#set-button-icon-tags .set-filter-chevron').classList.toggle('rotateArrow');
 					tagsToggle = false;
 					$("#dropdown-tags").fadeOut(250);
 				}
@@ -821,17 +683,17 @@
 		});
 		$("#difficulty-button").click(function(e){
 			e.stopPropagation();
-			this.querySelector('#set-button-icon-difficulty i.fa').classList.toggle('rotateArrow');
+			this.querySelector('#set-button-icon-difficulty .set-filter-chevron').classList.toggle('rotateArrow');
 			if(!difficultyToggle){
 				difficultyToggle = true;
 				$("#dropdown-difficulty").fadeIn(250);
 				if(topicsToggle){
-					document.querySelector('#set-button-icon-topics i.fa').classList.toggle('rotateArrow');
+					document.querySelector('#set-button-icon-topics .set-filter-chevron').classList.toggle('rotateArrow');
 					topicsToggle = false;
 					$("#dropdown-topics").fadeOut(250);
 				}
 				if(tagsToggle){
-					document.querySelector('#set-button-icon-tags i.fa').classList.toggle('rotateArrow');
+					document.querySelector('#set-button-icon-tags .set-filter-chevron').classList.toggle('rotateArrow');
 					tagsToggle = false;
 					$("#dropdown-tags").fadeOut(250);
 				}
@@ -842,17 +704,17 @@
 		});
 		$("#tags-button").click(function(e){
 			e.stopPropagation();
-			this.querySelector('#set-button-icon-tags i.fa').classList.toggle('rotateArrow');
+			this.querySelector('#set-button-icon-tags .set-filter-chevron').classList.toggle('rotateArrow');
 			if(!tagsToggle){
 				tagsToggle = true;
 				$("#dropdown-tags").fadeIn(250);
 				if(topicsToggle){
-					document.querySelector('#set-button-icon-topics i.fa').classList.toggle('rotateArrow');
+					document.querySelector('#set-button-icon-topics .set-filter-chevron').classList.toggle('rotateArrow');
 					topicsToggle = false;
 					$("#dropdown-topics").fadeOut(250);
 				}
 				if(difficultyToggle){
-					document.querySelector('#set-button-icon-difficulty i.fa').classList.toggle('rotateArrow');
+					document.querySelector('#set-button-icon-difficulty .set-filter-chevron').classList.toggle('rotateArrow');
 					difficultyToggle = false;
 					$("#dropdown-difficulty").fadeOut(250);
 				}
@@ -861,22 +723,22 @@
 				$("#dropdown-tags").fadeOut(250);
 			}
 		});
-		$(".dropdown-boxes").click(function(e){
+		$(".dropdown__menu").click(function(e){
 			e.stopPropagation();
 		});
 		$(".whitebox2").click(function(e){
 			if(topicsToggle){
-				document.querySelector('#set-button-icon-topics i.fa').classList.toggle('rotateArrow');
+				document.querySelector('#set-button-icon-topics .set-filter-chevron').classList.toggle('rotateArrow');
 				topicsToggle = false;
 				$("#dropdown-topics").fadeOut(250);
 			}
 			if(difficultyToggle){
-				document.querySelector('#set-button-icon-difficulty i.fa').classList.toggle('rotateArrow');
+				document.querySelector('#set-button-icon-difficulty .set-filter-chevron').classList.toggle('rotateArrow');
 				difficultyToggle = false;
 				$("#dropdown-difficulty").fadeOut(250);
 			}
 			if(tagsToggle){
-				document.querySelector('#set-button-icon-tags i.fa').classList.toggle('rotateArrow');
+				document.querySelector('#set-button-icon-tags .set-filter-chevron').classList.toggle('rotateArrow');
 				tagsToggle = false;
 				$("#dropdown-tags").fadeOut(250);
 			}
@@ -884,23 +746,175 @@
 
 		$("#tile-topics-submit").click(function(e){
 			setCookie("query", "topics");
-			setCookie("collectionSize", collectionSize);
 			window.location.href = "/sets";
 		});
 		$("#tile-difficulty-submit").click(function(e){
+			e.preventDefault();
 			setCookie("query", "difficulty");
-			setCookie("collectionSize", collectionSize);
+			setCookie("filtered_ranks", selectedRankCookieValue());
 			window.location.href = "/sets";
 		});
+		$("#tile-difficulty-reset").click(function(e){
+			e.stopPropagation();
+			activeRankTiles = [];
+			activeRankRange = null;
+			$("#difficulty-from").val("");
+			$("#difficulty-to").val("");
+			paintRankTiles();
+			drawActiveTiles();
+			setCookie("filtered_ranks", "clear");
+			window.location.href = "/sets";
+		});
+		$("#difficulty-from, #difficulty-to").change(function(e){
+			e.stopPropagation();
+			let from = $("#difficulty-from").val();
+			let to = $("#difficulty-to").val();
+			activeRankRange = null;
+			if(from || to){
+				let fromIndex = from ? allRanks.indexOf(from) : 0;
+				let toIndex = to ? allRanks.indexOf(to) : allRanks.length - 1;
+				if(fromIndex > toIndex){
+					let swap = fromIndex;
+					fromIndex = toIndex;
+					toIndex = swap;
+				}
+				activeRankRange = { from: allRanks[fromIndex], to: allRanks[toIndex] };
+			}
+			colorRankSelects();
+			paintRankTiles();
+			drawActiveTiles();
+		});
+
+		function rankIndexFromPointer(event){
+			let track = document.querySelector(".difficulty-range__scale-track");
+			let rect = track.getBoundingClientRect();
+			let ratio = (event.clientX - rect.left) / rect.width;
+			let index = Math.floor(ratio * allRanks.length);
+			return Math.max(0, Math.min(allRanks.length - 1, index));
+		}
+
+		function affectedSelectId(index){
+			if(!activeRankRange)
+				return "difficulty-to";
+			let from = allRanks.indexOf(activeRankRange.from);
+			let to = allRanks.indexOf(activeRankRange.to);
+			if(from > to){
+				let swap = from;
+				from = to;
+				to = swap;
+			}
+			if(index <= from)
+				return "difficulty-from";
+			if(index >= to)
+				return "difficulty-to";
+			return index - from <= to - index ? "difficulty-from" : "difficulty-to";
+		}
+
+		function previewRangeSelect(index){
+			restoreRangeSelects();
+			let select = document.getElementById(affectedSelectId(index));
+			select.value = allRanks[index];
+			select.style.color = "var(--rank-" + allRanks[index] + ")";
+		}
+
+		function restoreRangeSelects(){
+			if(activeRankRange){
+				$("#difficulty-from").val(activeRankRange.from === allRanks[0] ? "" : activeRankRange.from);
+				$("#difficulty-to").val(activeRankRange.to);
+				colorRankSelects();
+			}else
+				syncRangeSelects();
+		}
+
+		function applyRankRange(fromIndex, toIndex){
+			let from = Math.min(fromIndex, toIndex);
+			let to = Math.max(fromIndex, toIndex);
+			activeRankRange = { from: allRanks[from], to: allRanks[to] };
+			$("#difficulty-from").val(from === 0 ? "" : activeRankRange.from);
+			$("#difficulty-to").val(activeRankRange.to);
+			colorRankSelects();
+			paintRankTiles();
+			drawActiveTiles();
+		}
+
+		function applyNearestRangeEnd(index){
+			if(!activeRankRange){
+				// Nothing picked yet: clicking the scale means "everything up to here".
+				applyRankRange(0, index);
+				return;
+			}
+			let from = allRanks.indexOf(activeRankRange.from);
+			let to = allRanks.indexOf(activeRankRange.to);
+			if(from > to){
+				let swap = from;
+				from = to;
+				to = swap;
+			}
+			if(index <= from)
+				applyRankRange(index, to);
+			else if(index >= to)
+				applyRankRange(from, index);
+			else if(index - from <= to - index)
+				applyRankRange(index, to);
+			else
+				applyRankRange(from, index);
+		}
+
+		$("#difficulty-range-scale")
+			.on("pointerdown", function(e){
+				e.stopPropagation();
+				rankDragStart = rankIndexFromPointer(e);
+				rankDragMoved = false;
+				try {
+					this.setPointerCapture(e.pointerId);
+				} catch (error) {
+					// capture only keeps the drag alive outside the track
+				}
+			})
+			.on("pointermove", function(e){
+				let index = rankIndexFromPointer(e);
+				if(rankDragStart === null){
+					previewRangeSelect(index);
+					return;
+				}
+				if(index !== rankDragStart)
+					rankDragMoved = true;
+				if(rankDragMoved)
+					applyRankRange(rankDragStart, index);
+			})
+			.on("pointerup", function(e){
+				e.stopPropagation();
+				if(rankDragStart === null)
+					return;
+				let start = rankDragStart;
+				let index = rankIndexFromPointer(e);
+				let moved = rankDragMoved;
+				rankDragStart = null;
+				rankDragMoved = false;
+				if(moved || start !== index)
+					applyRankRange(start, index);
+				else
+					applyNearestRangeEnd(start);
+			})
+			.on("pointerleave", function(){
+				if(rankDragStart === null)
+					restoreRangeSelects();
+			})
+			.on("pointercancel", function(){
+				rankDragStart = null;
+				rankDragMoved = false;
+				restoreRangeSelects();
+			});
 		$("#tile-tags-submit").click(function(e){
 			setCookie("query", "tags");
-			setCookie("collectionSize", collectionSize);
 			window.location.href = "/sets";
 		});
 
-		let selectAllTopics = false;
-		let selectAllDifficulty = false;
-		let selectAllTags = false;
+		function isAllSelected(active, all){
+			return all.length > 0 && all.every(function(t){ return active.indexOf(t) !== -1; });
+		}
+		let selectAllTopics = isAllSelected(activeTopicTiles, allTopicTiles);
+		let selectAllTags = isAllSelected(activeTagTiles, allTagTiles);
 
 		$("#tile-topics-select-all").click(function(e){
 			e.stopPropagation();
@@ -917,34 +931,11 @@
 				activeTopicTiles = allTopicTiles;
 				activeTopicIds = allTopicIds;
 				for(let i=0;i<allTopicTiles.length;i++)
-					$("#tile-topics"+i).css("background", "#558a35");
+					$("#tile-topics"+i).css("background", "var(--color-tile-green)");
 				for(let i=0;i<tileTopicsBool.length;i++)
 					tileTopicsBool[i] = true;
 			}
 			selectAllTopics = !selectAllTopics;
-			drawActiveTiles();
-			drawActiveCollections();
-		});
-		$("#tile-difficulty-select-all").click(function(e){
-			e.stopPropagation();
-			if(selectAllDifficulty){
-				$("#tile-difficulty-select-all").html("Select all");
-				activeDifficultyTiles = [];
-				activeDifficultyIds = allDifficultyIds;
-				for(let i=0;i<allDifficultyTiles.length;i++)
-					$("#tile-difficulty"+i).css("background", "#ffffff1a");
-				for(let i=0;i<tileDifficultyBool.length;i++)
-					tileDifficultyBool[i] = false;
-			}else{
-				$("#tile-difficulty-select-all").html("Unselect all");
-				activeDifficultyTiles = allDifficultyTiles;
-				activeDifficultyIds = allDifficultyIds;
-				for(let i=0;i<allDifficultyTiles.length;i++)
-					$("#tile-difficulty"+i).css("background", "#ac4bd0");
-				for(let i=0;i<tileDifficultyBool.length;i++)
-					tileDifficultyBool[i] = true;
-			}
-			selectAllDifficulty = !selectAllDifficulty;
 			drawActiveTiles();
 			drawActiveCollections();
 		});
@@ -963,7 +954,7 @@
 				activeTagTiles = allTagTiles;
 				activeTagIds = allTagIds;
 				for(let i=0;i<allTagTiles.length;i++)
-					$("#tile-tags"+i).css("background", "#aa5538");
+					$("#tile-tags"+i).css("background", "var(--color-tile-brown)");
 				for(let i=0;i<tileTagsBool.length;i++)
 					tileTagsBool[i] = true;
 			}

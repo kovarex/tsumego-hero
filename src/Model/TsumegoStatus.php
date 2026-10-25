@@ -1,31 +1,42 @@
 <?php
 
+use App\Utility\Util;
+
 class TsumegoStatus extends AppModel
 {
-	public function __construct($id = false, $table = null, $ds = null)
+	public static string $NOT_VISITED = 'N';
+	public static string $VISITED = 'V';
+	public static string $SOLVED = 'S';
+	public static string $MASTERED = 'C';
+	public static string $REVIEW = 'W';
+	public static string $LOCKED = 'F';
+	public static string $FORGOTTEN = 'X';
+	public static string $GOLDEN = 'G';
+
+	public function __construct(mixed $id = false, ?string $table = null, ?string $ds = null)
 	{
 		$id['table'] =  'tsumego_status';
 		parent::__construct($id, $table, $ds);
 	}
 
 	// when two statuses are to be merged, we need to decide which one is more valuable to keep for the user
-	public static function less($status1, $status2)
+	public static function less(string $status1, string $status2): bool
 	{
 		return self::value($status1) < self::value($status2);
 	}
 
-	private static function value($status): int
+	private static function value(string $status): int
 	{
 		switch ($status)
 		{
-			case 'F' : return 0; // failed
-			case 'N' : return 1; // nothing
-			case 'V' : return 2; // visited
-			case 'X' : return 3; // once solve but then failed
-			case 'S' : return 4; // once solved
-			case 'W' : return 5; // half XP after once solved
-			case 'C' : return 6; // double solved
-			case 'G' : return 7; // golden tsumego
+			case self::$LOCKED: return 0; // failed
+			case self::$NOT_VISITED: return 1; // nothing
+			case self::$VISITED: return 2; // visited
+			case self::$FORGOTTEN: return 3; // once solve but then failed
+			case self::$SOLVED: return 4; // once solved
+			case self::$REVIEW: return 5; // half XP after once solved
+			case self::$MASTERED: return 6; // double solved
+			case self::$GOLDEN: return 7; // golden tsumego
 			default: throw new Exception("Unknown status: $status");
 		}
 	}
@@ -62,16 +73,55 @@ class TsumegoStatus extends AppModel
 		return self::$descriptions[$status] ?? '';
 	}
 
-	public static function getProblemsSolvedInSet($setID)
+	/**
+	 * How long untouched progress is kept. A problem nobody has touched for this long
+	 * counts as old progress, which the settings page offers to throw away.
+	 */
+	private static int $OLD_PROGRESS_YEARS = 1;
+
+	/**
+	 * The statuses that hold solved progress: the same ones the progress of a set is
+	 * counted from. Anything else is a marker (opened, locked), not progress.
+	 *
+	 * @return array<string>
+	 */
+	private static function progressStatuses(): array
 	{
-		return Util::query("
-SELECT
-	COUNT(DISTINCT tsumego_status.id) AS total
-FROM
-	tsumego_status
-	JOIN set_connection ON tsumego_status.tsumego_id = set_connection.tsumego_id AND set_connection.set_id = ?
-WHERE
-	tsumego_status.user_id = ? AND
-	tsumego_status.status IN ('S', 'C', 'W')", [$setID, Auth::getUserID()])[0]["total"];
+		return [self::$SOLVED, self::$REVIEW, self::$MASTERED];
+	}
+
+	/**
+	 * The old progress the settings page counts and offers to reset.
+	 */
+	public static function countOldProgress(int $userID): int
+	{
+		return (int) Util::query('SELECT COUNT(*) AS total FROM tsumego_status
+			WHERE user_id = ? AND status IN (?, ?, ?) AND updated <= NOW() - INTERVAL ? YEAR;',
+			[$userID, ...self::progressStatuses(), self::$OLD_PROGRESS_YEARS])[0]['total'];
+	}
+
+	/**
+	 * Throws away the progress nobody touched for OLD_PROGRESS_YEARS and keeps the solved
+	 * count of the account in step. Only solved progress goes: a problem that was opened
+	 * and left is not progress, and a golden problem waits for its one attempt.
+	 */
+	public static function deleteOldProgress(int $userID): int
+	{
+		$deleted = Util::execute('DELETE FROM tsumego_status
+			WHERE user_id = ? AND status IN (?, ?, ?) AND updated <= NOW() - INTERVAL ? YEAR;',
+			[$userID, ...self::progressStatuses(), self::$OLD_PROGRESS_YEARS]);
+
+		Util::execute('UPDATE user
+			LEFT JOIN (
+				SELECT user_id, COUNT(*) AS cnt
+				FROM tsumego_status
+				WHERE status IN (?, ?, ?, ?) AND user_id = ?
+				GROUP BY user_id
+			) ts ON ts.user_id = user.id
+			SET user.solved = COALESCE(ts.cnt, 0)
+			WHERE user.id = ?;',
+			[self::$SOLVED, self::$REVIEW, self::$MASTERED, self::$FORGOTTEN, $userID, $userID]);
+
+		return $deleted;
 	}
 }

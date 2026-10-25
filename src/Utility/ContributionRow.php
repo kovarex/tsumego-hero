@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Utility;
+
 /**
  * A single row in a user's contributions timeline.
  */
@@ -18,13 +20,13 @@ final readonly class ContributionRow
 	public static function fromQueryRow(array $row): self
 	{
 		return new self(
-			type: $row['type'],
-			status: $row['status'],
-			created: $row['created'],
-			tagId: $row['tag_id'],
-			tag: $row['tag'],
-			tsumegoId: $row['tsumego_id'],
-			tsumegoLabel: $row['tsumego_label'],
+			type: $row['type'] ?? '',
+			status: $row['status'] ?? '',
+			created: $row['created'] ?? '',
+			tagId: $row['tag_id'] ?? '',
+			tag: $row['tag'] ?? '',
+			tsumegoId: $row['tsumego_id'] ?? '',
+			tsumegoLabel: $row['tsumego_label'] ?? '',
 		);
 	}
 }

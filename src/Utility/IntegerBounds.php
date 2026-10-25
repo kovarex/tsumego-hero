@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Utility;
+
 class IntegerBounds
 {
 	public function add(int $value): void
@@ -8,12 +10,12 @@ class IntegerBounds
 		$this->max = max($this->max, $value);
 	}
 
-	public function isCloserToEnd($size)
+	public function isCloserToEnd(int $size): bool
 	{
 		return $size - 1 - $this->min < $this->max;
 	}
 
-	public function flip($size)
+	public function flip(int $size): void
 	{
 		$minSave = $this->min;
 		$this->min = $size - 1 - $this->max;

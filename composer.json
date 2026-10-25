@@ -6,11 +6,10 @@
     "license": "proprietary",
     "require": {
 		"php": ">=8.4",
+		"ezyang/htmlpurifier": "^4.19",
 		"firebase/php-jwt": "^6.11.1",
-		"markstory/asset_compress": "^0.26.0",
 		"pieceofcake2/cakephp": "^2.12",
-		"robmorgan/phinx": "^0.16.10",
-		"tedivm/jshrink": "^1.8"
+		"robmorgan/phinx": "^0.16.10"
 	},
     "require-dev": {
 		"bshaffer/phpunit-retry-annotations": "^0.3.0",
@@ -25,7 +24,10 @@
 		"pieceofcake2/phpstan-cakephp2": "^0.2.1"
 	},
     "autoload": {
-        "classmap": ["src/"]
+        "classmap": ["src/"],
+        "psr-4": {
+            "App\\": "src/"
+        }
     },
 	"scripts": {
 		"setup": "bin/cake generate code_completion && bin/cake generate phpstorm",
@@ -35,13 +37,12 @@
 		"cs-modified": "sh cs-modified.sh",
 		"cs-check": "./vendor/bin/php-cs-fixer check",
 		"cs-fix": "./vendor/bin/php-cs-fixer fix",
-		"stan": "phpstan analyse",
-		"stan-views": "phpstan analyse -c phpstan-views.neon",
+		"stan": "phpstan analyse @additional_args; E1=$?; phpstan analyse -c phpstan-views.neon @additional_args; E2=$?; test $E1 -eq 0 -a $E2 -eq 0",
 		"migrate": "vendor/bin/phinx migrate",
 		"migrate-test": "vendor/bin/phinx migrate -e test",
 		"migrate-status": "vendor/bin/phinx status",
 		"migrate-rollback": "vendor/bin/phinx rollback",
-		"images:webp": "bash scripts/convert-to-webp.sh"
+		"images:webp": "sh scripts/convert-to-webp.sh"
 	},
     "config": {
         "sort-packages": true,

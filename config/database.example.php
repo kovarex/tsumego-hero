@@ -74,7 +74,7 @@ class DATABASE_CONFIG {
 		'password' => 'template_db_password',
 		'database' => 'db',
 		'prefix' => '',
-		'encoding' => 'utf8',
+		'encoding' => 'utf8mb4',
 	];
 
 	public function __construct() {
@@ -96,6 +96,6 @@ class DATABASE_CONFIG {
 		'password' => 'db',
 		'database' => 'test',
 		'prefix' => '',
-		'encoding' => 'utf8',
+		'encoding' => 'utf8mb4',
 	];
 }

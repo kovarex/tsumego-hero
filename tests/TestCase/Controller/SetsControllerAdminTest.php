@@ -2,10 +2,6 @@
 
 use PHPUnitRetry\RetryTrait;
 
-App::uses('ControllerTestCase', 'TestSuite');
-App::uses('Browser', 'TestSuite');
-App::uses('ContextPreparator', 'TestSuite');
-
 /**
  * Tests for SetsController admin functions (create set/tsumego)
  *
@@ -29,7 +25,7 @@ class SetsControllerAdminTest extends ControllerTestCase
 		$browser = Browser::instance();
 
 		// Navigate to create set page
-		$browser->get('sets/create');
+		$browser->get('sets/create?sandbox=1');
 		$this->assertTrue($browser->titleContains('Tsumego Hero'), 'Should load create set page');
 
 		// Get current number of sets in database
@@ -39,15 +35,11 @@ class SetsControllerAdminTest extends ControllerTestCase
 		$initialTsumegoCount = $tsumegoModel->find('count');
 
 		// Create new set by submitting form
-		$browser->byId('SetTitle')->sendKeys('Test Auto-Increment Set');
-		$browser->byCssSelector('form input[type="submit"]')->click();
+		$browser->findById('SetTitle')->sendKeys('Test Auto-Increment Set');
+		$browser->find('form input[type="submit"]')->click();
 
-		// Wait for redirect back to sandbox page
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			return str_contains($driver->getTitle(), 'Collections');
-		});
-		$this->assertTrue($browser->titleContains('Tsumego Hero - Collections'), 'Should redirect to sandbox after creating set');
+		// Wait for redirect to the newly created set's view page
+		$this->assertTrue($browser->titleContains('Test Auto-Increment Set'), 'Should redirect to the new set view after creating set');
 
 		// Verify set was created
 		$newSetCount = $setModel->find('count');
@@ -60,7 +52,7 @@ class SetsControllerAdminTest extends ControllerTestCase
 		// Verify the set and tsumego are properly linked
 		$newSet = $setModel->find('first', ['order' => 'id DESC']);
 		$this->assertEquals('Test Auto-Increment Set', $newSet['Set']['title'], 'Set should have correct title');
-		$this->assertEquals($context->user['User']['id'], $newSet['Set']['user_id'], 'Set should belong to admin user');
+		$this->assertNull($newSet['Set']['user_id'], 'Sandbox set should not belong to any user');
 		$this->assertEquals(false, $newSet['Set']['public'], 'New set should be private');
 
 		$newTsumego = $tsumegoModel->find('first', ['order' => 'id DESC']);

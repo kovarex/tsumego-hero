@@ -1,7 +1,5 @@
 <?php
 
-App::uses('TsumegosController', 'Controller');
-
 /**
  * TsumegoComment Model
  *
@@ -15,7 +13,10 @@ App::uses('TsumegosController', 'Controller');
  *   - message (VARCHAR(2048))
  *   - created (DATETIME)
  *   - user_id (INT, FK -> user)
- *   - position (VARCHAR(300) NULL) - board position for the comment
+ *   - position (VARCHAR(300) NULL) - the node the comment is anchored to, see besogo's makeCommentPosition
+ *
+ * The coordinates in message and position are those of the current SGF version, without the
+ * transformation the board is shown with (see App\Utility\CommentCoordinates).
  *   - deleted (BOOL, default 0)
  */
 class TsumegoComment extends AppModel

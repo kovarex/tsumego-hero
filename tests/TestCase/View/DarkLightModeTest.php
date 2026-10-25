@@ -27,7 +27,7 @@ class DarkLightModeTest extends ControllerTestCase
 
 		$browser->get('sites/index');
 
-		$html = $browser->driver->findElement(WebDriverBy::tagName('html'));
+		$html = $browser->findBy(WebDriverBy::tagName('html'));
 		$theme = $html->getAttribute('data-theme');
 		$this->assertEquals('light', $theme, 'HTML should have data-theme="light" by default');
 	}
@@ -44,7 +44,7 @@ class DarkLightModeTest extends ControllerTestCase
 		$browser->setCookie('lightDark', 'dark');
 		$browser->get('sites/index');
 
-		$html = $browser->driver->findElement(WebDriverBy::tagName('html'));
+		$html = $browser->findBy(WebDriverBy::tagName('html'));
 		$theme = $html->getAttribute('data-theme');
 		$this->assertEquals('dark', $theme, 'HTML should have data-theme="dark" when lightDark cookie is dark');
 	}
@@ -61,12 +61,12 @@ class DarkLightModeTest extends ControllerTestCase
 		$browser->setCookie('lightDark', 'dark');
 		$browser->get('sites/index');
 
-		$html = $browser->driver->findElement(WebDriverBy::tagName('html'));
+		$html = $browser->findBy(WebDriverBy::tagName('html'));
 		$this->assertEquals('dark', $html->getAttribute('data-theme'), 'Should start in dark mode');
 
 		$browser->driver->executeScript('darkAndLight();');
 
-		$html = $browser->driver->findElement(WebDriverBy::tagName('html'));
+		$html = $browser->findBy(WebDriverBy::tagName('html'));
 		$this->assertEquals('light', $html->getAttribute('data-theme'), 'Should switch to light after toggle from dark');
 	}
 
@@ -80,12 +80,12 @@ class DarkLightModeTest extends ControllerTestCase
 
 		$browser->get('sites/index');
 
-		$html = $browser->driver->findElement(WebDriverBy::tagName('html'));
+		$html = $browser->findBy(WebDriverBy::tagName('html'));
 		$this->assertEquals('light', $html->getAttribute('data-theme'), 'Should start in light mode');
 
 		$browser->driver->executeScript('darkAndLight();');
 
-		$html = $browser->driver->findElement(WebDriverBy::tagName('html'));
+		$html = $browser->findBy(WebDriverBy::tagName('html'));
 		$this->assertEquals('dark', $html->getAttribute('data-theme'), 'Should switch to dark after toggle from light');
 	}
 
@@ -139,12 +139,12 @@ class DarkLightModeTest extends ControllerTestCase
 
 		$browser->driver->executeScript('darkAndLight();');
 
-		$html = $browser->driver->findElement(WebDriverBy::tagName('html'));
+		$html = $browser->findBy(WebDriverBy::tagName('html'));
 		$this->assertEquals('dark', $html->getAttribute('data-theme'), 'Should be in dark mode before refresh');
 
 		$browser->get('sites/index');
 
-		$html = $browser->driver->findElement(WebDriverBy::tagName('html'));
+		$html = $browser->findBy(WebDriverBy::tagName('html'));
 		$this->assertEquals('dark', $html->getAttribute('data-theme'), 'Should remain dark after page refresh');
 	}
 }

@@ -1,20 +1,21 @@
 <?php
 
+use App\Utility\Auth;
+use App\Utility\HtmlSanitizer;
+use App\Utility\Rating;
+use App\Utility\TsumegoButton;
+use App\Utility\TsumegoButtons;
+use App\Utility\TsumegoFilters;
+
 /**
  * @var View $this
  * @var array $acA
  * @var array $acS
  * @var string $accuracy
- * @var bool $allArActive
- * @var bool $allArInactive
- * @var bool $allPassActive
- * @var bool $allPassInactive
- * @var array $allTags
- * @var bool $allVcActive
- * @var bool $allVcInactive
  * @var float $avgTime
  * @var bool $isFav
  * @var string $lightDark
+ * @var bool $canShare
  * @var int $partition
  * @var int $pdCounter
  * @var int $problemSolvedPercent
@@ -22,10 +23,10 @@
  * @var int $saNum
  * @var bool $scoring
  * @var array $set
- * @var int $setDifficulty
+ * @var array|null $setAuthor
  * @var int $setRating
+ * @var string $setTitle
  * @var bool $startingSetConnectionID
- * @var array $tags
  * @var TsumegoButton $tsumegoButton
  * @var TsumegoButtons $tsumegoButtons
  * @var TsumegoFilters $tsumegoFilters
@@ -37,48 +38,27 @@ if($set['Set']['id'] == 11969 || $set['Set']['id'] == 29156 || $set['Set']['id']
 || $set['Set']['id'] == 71790 || $set['Set']['id'] == 74761 || $set['Set']['id'] == 81578 || $set['Set']['id'] == 88156)
 	$noImage = true;
 
-if($set['Set']['public'] == 0)
-	if(Auth::isLoggedIn())
-	{
-	}
-	else
-	{
-		echo '<script type="text/javascript">window.location.href = "/";</script>';
-	} ?>
-</script>
-	<div class="homeRight">
-		<p class="title4">Problems</p>
-		<div class="showFilters">
-			<a id="showFilters" class="selectable-text">Filters<img id="greyArrowFilter" src="/img/greyArrow1.png"></a>
-		</div>
-		<div id="msgFilters">
-			<div class="active-tiles-container tiles-view"></div>
-		</div>
-		<div class="set-view-main">
-		<?php
-	if($set['Set']['id'] != 58 && $set['Set']['id'] != 62 && $set['Set']['id'] != 91 && $set['Set']['id'] != 72 && $set['Set']['id'] != 73 && $set['Set']['id'] != 74
-	&& $set['Set']['id'] != 75 && $set['Set']['id'] != 76 && $set['Set']['id'] != 77 && $set['Set']['id'] != 78 && $set['Set']['id'] != 79 && $set['Set']['id'] != 80
-	&& $set['Set']['id'] != 51 && $set['Set']['id'] != 56 && $set['Set']['id'] != 57 && $set['Set']['id'] != 119
-	&& $set['Set']['id'] != 119 && $set['Set']['id'] != 126 && $set['Set']['id'] != 129 && $set['Set']['id'] != 134 && $set['Set']['id'] != 135)
-		$beta2 = false;
-	else $beta2 = true;
-if(Auth::getUserID() == 72)
-	$beta2 = false;
-
-if(!$beta2)
-	foreach ($tsumegoButtons as $tsumegoButton)
-		$tsumegoButton->render();
 ?>
-	</div>
-	</div>
-	<div class="homeLeft">
-		<?php echo '<p class="title4">' . h($set['Set']['title']) . '</p>';?>
+</script>
+	<div class="split">
+		<div>
+		<?php
+		$ownerNote = $setAuthor && (int) $setAuthor['id'] !== Auth::getUserID()
+			? ' <span class="set-view__owner">by ' . User::renderLink($setAuthor) . '</span>'
+			: '';
+		echo '<p class="title4 set-view-title">' . h($setTitle) . $ownerNote . '</p>';
+		if (!empty($set['Set']['deleted']))
+			echo $this->element('trash_notice', [
+				'what' => 'collection',
+				'deleted' => $set['Set']['deleted'],
+				'restoreAction' => '/trash/restore-set/' . (int) $set['Set']['id']]);
+		?>
 		<div class="new1">
 		<table border="0" width="100%">
 		<tr>
-			<td style="vertical-align:top;">
+			<td class="valign-top">
 				<?php
-			$saNum = 0;
+				$saNum = 0;
 
 if($set['Set']['image'] == 'sa-pretty.jpg') $saNum = 9;
 elseif($set['Set']['image'] == 'sa-hunting.jpg') $saNum = 8;
@@ -89,47 +69,39 @@ elseif($set['Set']['image'] == 'sa-giant.jpg') $saNum = 4;
 elseif($set['Set']['image'] == 'sa-resistance.jpg') $saNum = 3;
 else $saNum = 11;
 
-echo strip_tags($set['Set']['description'], '<br><a><b><i><p><ul><ol><li><img><font><table><tr><td><th>');
+echo HtmlSanitizer::sanitize((string) ($set['Set']['description'] ?? ''));
 ?>
 			</td>
 				<?php
 if (!$noImage && $tsumegoFilters->query == 'topics' && $set['Set']['image'])
 {
 	if ($set['Set']['image'][2] != '-')
-		echo '<td width="195px" style="vertical-align:top;"><div align="center" class="set-image-zoom">
+		echo '<td width="195px" class="valign-top"><div align="center" class="set-image-zoom">
 							<a href="/' . $startingSetConnectionID . '">
-							<img height="252" width="182" style="border:1px solid black" src="/img/' . h($set['Set']['image']) . '"
-							alt="Tsumego Collection: ' . h($set['Set']['title']) . '" title="Tsumego Collection: ' . h($set['Set']['title']) . '">
+							<img height="252" width="182" src="/img/' . h($set['Set']['image']) . '"
+							alt="Tsumego Collection: ' . h($setTitle) . '" title="Tsumego Collection: ' . h($setTitle) . '">
 							</a></div></td>';
 	else
-		echo '<td width="195px" style="vertical-align:bottom;padding-bottom:17px;"><div align="center" class="set-image-zoom">
+		echo '<td width="195px" class="set-view__img-bottom"><div align="center" class="set-image-zoom">
 							<a href="/' . $startingSetConnectionID . '">
-							<img height="252" width="182" style="border:1px solid black" src="/img/' . h($set['Set']['image']) . '"
-							alt="Tsumego Collection: ' . h($set['Set']['title']) . '" title="Tsumego Collection: ' . h($set['Set']['title']) . '" width="210">
+							<img height="252" width="182" src="/img/' . h($set['Set']['image']) . '"
+							alt="Tsumego Collection: ' . h($setTitle) . '" title="Tsumego Collection: ' . h($setTitle) . '" width="210">
 							</a></div></td>';
 }
 elseif (!$noImage && $tsumegoFilters->query == 'difficulty')
-{
-	if ($lightDark == 'light')
-		$lightDarkImageBackground = 'style="background-color:gray;"';
-	else
-		$lightDarkImageBackground = '';
-	echo '<td width="195px" style="vertical-align:top;"><div ' . $lightDarkImageBackground . ' align="center" class="set-image-zoom">
+	echo '<td width="195px" class="valign-top"><div class="set-image-zoom set-image-zoom--rank" align="center">
 						<a href="/' . $startingSetConnectionID . '">
-						<span class="rank-icon rank-icon-large">' . h($set['Set']['id']) . '</span>
+						<span class="rank-icon rank-icon-large' . (str_contains($set['Set']['id'], '-') ? ' rank-icon-large--range' : '') . '">' . h($set['Set']['id']) . '</span>
 						</a></div></td>';
-}
 else
-{
-	echo '<td width="195px" style="vertical-align:top;"><div align="center"></div></td>';
-}
+	echo '<td width="195px" class="valign-top"><div align="center"></div></td>';
 ?>
 		</tr>
 		<tr>
-			<td style="vertical-align:top;">
+			<td class="valign-top">
 				<table width="100%">
 					<tr>
-						<td style="vertical-align:top;" width="50%">
+						<td class="valign-top" width="50%">
 						<div align="center">
 						<br>
 						<?php
@@ -145,7 +117,7 @@ echo '<b>' . count($tsumegoButtons) . ' Problems<br>';
 ?>
 						</div>
 						</td>
-						<td style="vertical-align:bottom;" width="50%">
+						<td class="valign-bottom" width="50%">
 						<div align="center">
 							<br>
 							Difficulty: <?php
@@ -158,11 +130,11 @@ if ($tsumegoFilters->query != 'topics')
 					</tr>
 				</table>
 			</td>
-			<td style="vertical-align:top;">
+			<td class="valign-top">
 				<div align="center">
 				<br><br>
 					<?php
-					echo '<a class="new-button new-buttonx" style="top:-16px;position:relative;" href="/' . $startingSetConnectionID . '">Start</a>';
+					echo '<a class="btn set-view__start" href="/' . $startingSetConnectionID . '">Start</a>';
 ?>
 				</div>
 			</td>
@@ -209,10 +181,12 @@ if ($tsumegoFilters->query != 'topics')
 					else
 						$pdCounterValue = 99;
 
-					echo '<font color="gray">XP reduced by ' . $pdCounterValue . '%. (' . $pdCounter . ' reset' . $plural . ' this month.)</font>';
+					echo '<font color="gray">XP reduced by ' . $pdCounterValue . '%. (' . $pdCounter . ' reset' . $plural . ' in the last month.)</font>';
 				}
-				if ($tsumegoFilters->collectionSize != 200)
-					echo 'Reset is only possible when collection size is set to 200';
+				if ($tsumegoFilters->collectionSize != ProgressDeletion::$PARTITION_SIZE)
+					echo 'Reset is only possible when collection size is set to ' . ProgressDeletion::$PARTITION_SIZE;
+				elseif ($tsumegoFilters->hasProblemFilters())
+					echo 'Reset is only possible without rank and tag filters';
 				elseif ($problemSolvedPercent < 50)
 					echo '<br><font color="gray">You need to complete 50% to reset.</font>';
 				else
@@ -228,19 +202,19 @@ if ($tsumegoFilters->query != 'topics')
 			<div align="center">
 			<br>
 			<br>
-			<a id="numbersButton" class="new-button-time" onclick="d1();">Numbers</a>
-			<a id="ratioButton" class="new-button-time" onclick="d2();">Accuracy</a>
-			<a id="timeButton" class="new-button-time" onclick="d3();">Time</a>
+			<a id="numbersButton" class="btn" onclick="d1();">Numbers</a>
+			<a id="ratioButton" class="btn" onclick="d2();">Accuracy</a>
+			<a id="timeButton" class="btn" onclick="d3();">Time</a>
 			<br>
 			<br>
 			<div id="numbersInfo">
 				The problem numbers are displayed.
 			</div>
 			<div id="ratioInfo">
-				The solved and failed (s/f) attempts are displayed.<br><font style="color:gray;">Outdated and missing entries (-) are counted as fail.</font>
+				The solved and failed (s/f) attempts are displayed.<br><span class="hint">Outdated and missing entries (-) are counted as fail.</span>
 			</div>
 			<div id="timeInfo">
-				The time (in seconds) for solving is displayed.<br><font style="color:gray;">Outdated and missing entries (-) are counted as 60 seconds.</font>
+				The time (in seconds) for solving is displayed.<br><span class="hint">Outdated and missing entries (-) are counted as 60 seconds.</span>
 			</div>
 			</div>
 			<br>
@@ -248,7 +222,7 @@ if ($tsumegoFilters->query != 'topics')
 			</td>
 			<td>
 			<?php
-			if ($problemSolvedPercent >= 50)
+			if ($problemSolvedPercent >= 50 && $tsumegoFilters->collectionSize == ProgressDeletion::$PARTITION_SIZE && !$tsumegoFilters->hasProblemFilters())
 			{
 				echo '<div id="msg2x">';
 				echo 'Type "reset" to remove all your progress on this collection.<br><br>';
@@ -260,147 +234,58 @@ if ($tsumegoFilters->query != 'topics')
 			} ?>
 			</td>
 			</tr>
-			<?php
-			if (Auth::isAdmin())
-			{
-					echo '<tr><td colspan="2">
-					<div class="admin-panel">
-					<div align="center"><h1> Admin Panel </h1></div>
-					<br>
-					<table width="100%">
-					<tr>
-					<td>';
-
-					SetEditRenderer::renderAddProblemForm($set, $tsumegoButtons);
-					if($set['Set']['public'] == 0)
-					{
-						echo '<br><a id="show">Edit Title<img id="greyArrow2" src="/img/greyArrow1.png"></a><br>
-						<div id="msg1">';
-						echo $this->Form->create('Set');
-						echo $this->Form->input('title', ['label' => '', 'type' => 'text', 'placeholder' => 'Title', 'value' => $set['Set']['title']]);
-						echo $this->Form->input('title2', ['label' => '', 'type' => 'text', 'placeholder' => 'Title2', 'value' => $set['Set']['title2']]);
-						echo '<div class="submit"><input style="margin:0px;" value="Submit" type="submit"></div><br>';
-						echo '</div>';
-						echo '<a id="show2">Edit Description<img id="greyArrow3" src="/img/greyArrow1.png"></a><br>
-						<div id="msg2">';
-						echo $this->Form->create('Set');
-						echo $this->Form->input('description', ['label' => '', 'type' => 'textarea', 'placeholder' => 'Description', 'value' => $set['Set']['description']]);
-						echo '<div class="submit"><input style="margin:0px;" value="Submit" type="submit"></div><br>';
-						echo '</div>';
-
-						echo '<a id="show7">Edit Difficulty<img id="greyArrow7" src="/img/greyArrow1.png"></a><br>
-						<div id="msg7">';
-						echo $this->Form->create('Set');
-						echo $this->Form->input('setDifficulty', ['label' => '', 'type' => 'text', 'placeholder' => 'Rating', 'value' => $setDifficulty]);
-						echo '<div class="submit"><input style="margin:0px;" value="Submit" type="submit"></div><br>';
-						echo '</div>';
-
-						echo '<a id="show3">Edit Color<img id="greyArrow4" src="/img/greyArrow1.png"></a><br>
-						<div id="msg3">';
-						echo $this->Form->create('Set');
-						echo $this->Form->input('color', ['label' => '', 'type' => 'text', 'placeholder' => 'color', 'value' => $set['Set']['color']]);
-						echo '<div class="submit"><input style="margin:0px;" value="Submit" type="submit"></div>';
-						echo '<i><a href="https://www.w3schools.com/colors/colors_picker.asp" target="_blank">hex color picker</a>&nbsp;(external link)</i><br>';
-						echo '</div>';
-						echo '<a id="show6">Edit Order<img id="greyArrow6" src="/img/greyArrow1.png"></a><br>
-						<div id="msg6">';
-						echo $this->Form->create('Set');
-						echo $this->Form->input('order', ['label' => '', 'type' => 'text', 'placeholder' => 'Order', 'value' => $set['Set']['order']]);
-						echo '<div class="submit"><input style="margin:0px;" value="Submit" type="submit"></div>';
-						echo '<i>Low numbers are on top, high numbers at the bottom.</i><br>';
-						echo '</div>';
-						echo '<a href="/sets/ui/' . $set['Set']['id'] . '">Upload Image</a><br>';
-						echo '<a href="#" onclick="remove()">Remove Collection</a><br><br>';
-					}
-					echo '<a id="show5" class="selectable-text">Settings<img id="greyArrow5" src="/img/greyArrow1.png"></a>';
-					$vcOn = '';
-					$vcOff = '';
-					$arOn = '';
-					$arOff = '';
-					$passingNo = '';
-					$passingYes = '';
-					$vcMessage = '';
-					$arMessage = '';
-					$passingMessage = '';
-					if($allVcActive)
-					{
-						$vcMessage = '<font color="#717171">[Merge recurring positions activated on all problems]</font><br>';
-						$vcOn = 'checked="checked"';
-					}
-					elseif($allVcInactive)
-					{
-						$vcMessage = '<font color="#717171">[Merge recurring positions deactivated on all problems]</font><br>';
-						$vcOff = 'checked="checked"';
-					}
-					if($allArActive)
-					{
-						$arMessage = '<font color="#717171">[Alternative Respone Mode activated on all problems]</font><br>';
-						$arOn = 'checked="checked"';
-					}
-					elseif($allArInactive)
-					{
-						$arMessage = '<font color="#717171">[Alternative Respone Mode deactivated on all problems]</font><br>';
-						$arOff = 'checked="checked"';
-					}
-					if($allPassActive)
-					{
-						$passingMessage = '<font color="#717171">[Passing enabled on all problems]</font><br>';
-						$passingYes = 'checked="checked"';
-					}
-					elseif($allPassInactive)
-					{
-						$passingMessage = '<font color="#717171">[Passing disabled on all problems]</font><br>';
-						$passingNo = 'checked="checked"';
-					}
-					echo '
-							<div id="msg5">
-								<br>
-								' . $vcMessage . '
-								' . $arMessage . '
-								' . $passingMessage . '
-								<form action="" method="POST" enctype="multipart/form-data">
-									<table>
-										<tr>
-											<td>Merge recurring positions</td>
-											<td><input type="radio" id="r38" name="data[Settings][r38]" value="on" ><label for="r38">on</label></td>
-											<td><input type="radio" id="r38" name="data[Settings][r38]" value="off" ><label for="r38">off</label></td>
-										</tr>
-										<tr>
-											<td>Alternative Response Mode</td>
-											<td><input type="radio" id="r39" name="data[Settings][r39]" value="on" ><label for="r39">on</label></td>
-											<td><input type="radio" id="r39" name="data[Settings][r39]" value="off" ><label for="r39">off</label></td>
-										</tr>
-										<tr>
-											<td>Enable passing</td>
-											<td><input type="radio" id="r43" name="data[Settings][r43]" value="no" ><label for="r43">no</label></td>
-											<td><input type="radio" id="r43" name="data[Settings][r43]" value="yes" ><label for="r43">yes</label></td>
-										</tr>
-									</table>
-									<br>
-									<input value="Submit" type="submit"/>
-								</form>
-								<br><br>
-								<div class="tag-container" align="left">
-									<div class="tag-list"></div>
-									<div class="add-tag-list-button"><a class="add-tag-list-anchor" id="open-add-tag-menu" >Add tag</a></div>
-									<div class="add-tag-list"></div>
-								</div>
-							</div>';
-					echo '</td>';
-					echo '<td>';
-					if($set['Set']['public'] == 0)
-						echo '<div align="right">
-						<a class="new-button new-buttonx" href="/users/userstats3/' . $set['Set']['id'] . '">Activities</a>
-						</div>';
-					elseif($set['Set']['public'] == -1)
-						echo '<a href="#" onclick="restore()">Restore Collection</a>';
-					echo '</td>
-					</tr>
-					</table>
-					</div>
-					</td>';
-				}
-			?>
+			<?php if (isset($canEdit) && $canEdit): ?>
+				<tr>
+					<td colspan="2" class="set-view__edit-row">
+						<a class="btn btn--primary" href="/sets/edit/<?php echo (int) $set['Set']['id']; ?>">Edit Set</a>
+						<?php if (!empty($canShare)): ?>
+							<form method="post" action="/sets/share/<?php echo (int) $set['Set']['id']; ?>" class="set-view__share">
+								<label class="set-view__share-toggle">
+									<input type="hidden" name="shared" value="0">
+									<input type="checkbox" name="shared" value="1"<?php echo $set['Set']['public'] == 1 ? ' checked' : ''; ?> onchange="this.form.submit()">
+									Anyone with the link can open this collection
+								</label>
+								<noscript><button type="submit" class="btn">Save sharing</button></noscript>
+								<?php if ($set['Set']['public'] == 1): ?>
+									<span class="set-view__share-link-row">
+										<input class="form-field__control set-view__share-link" type="text" id="SetShareLink" readonly value="<?php echo h(Set::url((int) $set['Set']['id'], 1, true)); ?>" onclick="this.select()">
+										<button type="button" class="btn set-view__share-copy" id="SetShareCopy" aria-label="Copy the link to this collection">Copy</button>
+									</span>
+									<span class="set-view__share-status" id="SetShareStatus" role="status" aria-live="polite"></span>
+								<?php endif; ?>
+							</form>
+							<?php if ($set['Set']['public'] == 1): ?>
+								<script>
+									(function () {
+										const button = document.getElementById('SetShareCopy');
+										const field = document.getElementById('SetShareLink');
+										const status = document.getElementById('SetShareStatus');
+										if (!button || !field)
+											return;
+										button.addEventListener('click', () => {
+											const copied = navigator.clipboard && window.isSecureContext
+												? navigator.clipboard.writeText(field.value)
+												: Promise.reject(new Error('no clipboard'));
+											copied.then(() => {
+												button.textContent = 'Copied';
+												status.textContent = 'The link is in your clipboard.';
+												setTimeout(() => {
+													button.textContent = 'Copy';
+													status.textContent = '';
+												}, 2000);
+											}).catch(() => {
+												// The browser refused, so leave the address selected for a manual copy.
+												field.select();
+												status.textContent = 'Press Ctrl+C to copy the address.';
+											});
+										});
+									}());
+								</script>
+							<?php endif; ?>
+						<?php endif; ?>
+					</td>
+				</tr>
+			<?php endif; ?>
 			</tr>
 		<?php } ?>
 
@@ -409,147 +294,119 @@ if ($tsumegoFilters->query != 'topics')
 		<?php if(!$isFav) echo '<br><br><br><br><br>'; ?>
 		<br><br>
 	</div>
-	<div style="clear:both;"></div>
+	<div>
+		<p class="title4">Problems</p>
+		<div class="showFilters">
+			<a id="showFilters" class="selectable-text">Filters<img id="greyArrowFilter" src="/img/greyArrow1.png"></a>
+		</div>
+		<label class="preview-toggle" title="Toggle board previews"><input type="checkbox" class="preview-zoom-toggle">🔍 Preview</label>
+		<div id="msgFilters">
+			<div class="active-tiles-container tiles-view">
+<?php
+$hasActiveTiles = false;
+$rankLabels = $tsumegoFilters->query != 'difficulty' ? $tsumegoFilters->rankFilterLabels() : [];
+if ($tsumegoFilters->query != 'topics')
+	foreach ($tsumegoFilters->sets as $i => $setName)
+	{
+		$hasActiveTiles = true;
+		echo '<div class="dropdown__tile dropdown__tile--green dropdown__tile--context" id="active-set-element' . $i . '" onclick="removeActiveTopic(' . $i . ')">' . h($setName) . '</div>';
+	}
+if ($tsumegoFilters->query != 'difficulty')
+	foreach ($rankLabels as $i => $rankLabel)
+	{
+		$hasActiveTiles = true;
+		$isRange = str_contains($rankLabel, '-');
+		echo '<div class="dropdown__tile ' . ($isRange ? 'dropdown__tile--purple' : 'dropdown__tile--difficulty')
+			. ' dropdown__tile--context"'
+			. ($isRange ? '' : ' style="--rank-color:var(--rank-' . h($rankLabel) . ')"')
+			. ' id="active-rank-element' . $i . '" onclick="removeActiveDifficulty(' . $i . ')">' . h($rankLabel) . '</div>';
+	}
+if ($tsumegoFilters->query != 'tags')
+	foreach ($tsumegoFilters->tags as $i => $tag)
+	{
+		$hasActiveTiles = true;
+		$color = (int) ($tsumegoFilters->tagColors[$tag] ?? 24);
+		echo '<div class="dropdown__tile dropdown__tile--tag dropdown__tile--context" style="--tag-color:var(--tag-palette-' . $color . ')" id="active-tag-element' . $i . '" onclick="removeActiveTag(' . $i . ')">' . h($tag) . '</div>';
+	}
+if ($hasActiveTiles)
+	echo '<a class="dropdown__tile dropdown__tile--muted" id="unselect-active-tiles" href="">clear</a><div class="clearfix"></div>';
+?>
+			</div>
+		</div>
+		<div class="set-view-main">
+		<?php
+	if($set['Set']['id'] != 58 && $set['Set']['id'] != 62 && $set['Set']['id'] != 91 && $set['Set']['id'] != 72 && $set['Set']['id'] != 73 && $set['Set']['id'] != 74
+	&& $set['Set']['id'] != 75 && $set['Set']['id'] != 76 && $set['Set']['id'] != 77 && $set['Set']['id'] != 78 && $set['Set']['id'] != 79 && $set['Set']['id'] != 80
+	&& $set['Set']['id'] != 51 && $set['Set']['id'] != 56 && $set['Set']['id'] != 57 && $set['Set']['id'] != 119
+	&& $set['Set']['id'] != 119 && $set['Set']['id'] != 126 && $set['Set']['id'] != 129 && $set['Set']['id'] != 134 && $set['Set']['id'] != 135)
+		$beta2 = false;
+	else $beta2 = true;
+if(Auth::getUserID() == 72)
+	$beta2 = false;
+
+if(!$beta2)
+	foreach ($tsumegoButtons as $tsumegoButton)
+		$tsumegoButton->render();
+
+$totalPages = $tsumegoButtons->getPageCount($tsumegoFilters->collectionSize);
+if ($totalPages > 1):
+	$currentPage = $partition + 1;
+	?>
+	<div class="pagination">
+<?php for ($p = 1; $p <= $totalPages; $p++): ?>
+<?php if ($p === $currentPage): ?>
+		<strong><?php echo $p; ?></strong>
+<?php else: ?>
+			<a href="<?php echo Set::url($set['Set']['id'], $p); ?>"><?php echo $p; ?></a>
+<?php endif; ?>
+<?php endfor; ?>
+	</div>
+<?php endif; ?>
+	</div>
+	</div>
+	</div>
+	<div class="clearfix"></div>
 
 	<script>
-	var t1 = false;
-	var t2 = false;
-	var t7 = false;
-	var t3 = false;
-	var msg5selected = false;
-	var msg6selected = false;
-	$("#msg1").hide();
-	$("#msg2").hide();
-	$("#msg7").hide();
-	$("#msg3").hide();
-	$("#msg5").hide();
-	$("#msg6").hide();
-
-	$("#show").click(function(){
-		if(!t1){
-			$("#msg1").show();
-			document.getElementById("greyArrow2").src = "/img/greyArrow2.png";
-		}else{
-			$("#msg1").hide();
-			document.getElementById("greyArrow2").src = "/img/greyArrow1.png";
-		}
-		t1=!t1;
-	});
-	$("#show2").click(function(){
-		if(!t2){
-			$("#msg2").show();
-			document.getElementById("greyArrow3").src = "/img/greyArrow2.png";
-		}else{
-			$("#msg2").hide();
-			document.getElementById("greyArrow3").src = "/img/greyArrow1.png";
-		}
-		t2=!t2;
-	});
-	$("#show7").click(function(){
-		if(!t7){
-			$("#msg7").show();
-			document.getElementById("greyArrow7").src = "/img/greyArrow2.png";
-		}else{
-			$("#msg7").hide();
-			document.getElementById("greyArrow7").src = "/img/greyArrow1.png";
-		}
-		t7=!t7;
-	});
-	$("#show3").click(function(){
-		if(!t3){
-			$("#msg3").show();
-			document.getElementById("greyArrow4").src = "/img/greyArrow2.png";
-		}else{
-			$("#msg3").hide();
-			document.getElementById("greyArrow4").src = "/img/greyArrow1.png";
-		}
-		t3=!t3;
-	});
-	$("#show5").click(function(){
-		if(!msg5selected){
-			$("#msg5").fadeIn(250);
-			document.getElementById("greyArrow5").src = "/img/greyArrow2.png";
-		}else{
-			$("#msg5").fadeOut(250);
-			document.getElementById("greyArrow5").src = "/img/greyArrow1.png";
-		}
-		msg5selected = !msg5selected;
-	});
-	$("#show6").click(function(){
-		if(!msg6selected){
-			$("#msg6").fadeIn(250);
-			document.getElementById("greyArrow6").src = "/img/greyArrow2.png";
-		}else{
-			$("#msg6").fadeOut(250);
-			document.getElementById("greyArrow6").src = "/img/greyArrow1.png";
-		}
-		msg6selected = !msg6selected;
-	});
-	<?php if($tsumegoFilters->query == 'topics')
-	{ ?>
-		function restore(){
-			var confirmed = confirm("Are you sure?");
-			if(confirmed) window.location.href = "/sets/beta?restore="+<?php echo $set['Set']['id']; ?>;
-		}
-		function remove(){
-			var confirmed = confirm("Are you sure?");
-			if(confirmed) window.location.href = "/sets/beta2?remove="+<?php echo $set['Set']['id']; ?>;
-		}
-	<?php } ?>
-	const activeTopicTiles = [];
-	const activeDifficultyTiles = [];
-	const activeTagTiles = [];
-
-	<?php
-		if ($tsumegoFilters->query != 'topics')
-			foreach ($tsumegoFilters->sets as $setName)
-				echo 'activeTopicTiles.push(' . json_encode($setName, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE) . ');';
-if ($tsumegoFilters->query != 'difficulty')
-	foreach ($tsumegoFilters->ranks as $rank)
-		echo 'activeDifficultyTiles.push(' . json_encode($rank, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE) . ');';
-if($tsumegoFilters->query != 'tags')
-	foreach ($tsumegoFilters->tags as $tag)
-		echo 'activeTagTiles.push(' . json_encode($tag, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE) . ');';
-?>
-
-	drawActiveTiles();
-
-	function drawActiveTiles(){
-		$(".active-tiles-container").html("");
-		for(let i=0;i<activeTopicTiles.length;i++)
-			$(".active-tiles-container").append('<div class="dropdown-tile tile-color1" id="active-tiles-element'+i+'" onclick="removeActiveTopic('+i+')" style="cursor:context-menu">'+activeTopicTiles[i]+'</div>');
-		for(let i=0;i<activeDifficultyTiles.length;i++)
-			$(".active-tiles-container").append('<div class="dropdown-tile tile-color2" id="active-tiles-element'+i+'" onclick="removeActiveDifficulty('+i+')" style="cursor:context-menu">'+activeDifficultyTiles[i]+'</div>');
-		for(let i=0;i<activeTagTiles.length;i++)
-			$(".active-tiles-container").append('<div class="dropdown-tile tile-color3" id="active-tiles-element'+i+'" onclick="removeActiveTag('+i+')" style="cursor:context-menu">'+activeTagTiles[i]+'</div>');
-		if(activeTopicTiles.length>0 || activeDifficultyTiles.length>0 || activeTagTiles.length>0)
-			$(".active-tiles-container").append('<a class="dropdown-tile tile-color4" id="unselect-active-tiles" href="">clear</a><div style="clear:both;"</div>');
-	}
+	const activeSets = <?php echo json_encode($tsumegoFilters->query != 'topics' ? array_values($tsumegoFilters->sets) : [], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
+	const activeRanks = <?php echo json_encode($rankLabels, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
+	const activeTags = <?php echo json_encode($tsumegoFilters->query != 'tags' ? array_values($tsumegoFilters->tags) : [], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 
 	$(".active-tiles-container").on("click", "#unselect-active-tiles", function(e){
 		e.preventDefault();
-		$(".active-tiles-container").html("");
-		setCookie("filteredSets", "");
-		setCookie("filteredRanks", "");
-		setCookie("filteredTags", "");
-		window.location.href = "/sets/view/<?php echo $set['Set']['id']; ?>";
+		setCookie("filtered_sets", "clear");
+		setCookie("filtered_ranks", "clear");
+		setCookie("filtered_tags", "clear");
+		window.location.reload();
 	});
 
+	function removeActiveTopic(index){
+		activeSets.splice(index, 1);
+		setCookie("filtered_sets", activeSets.length == 0 ? "clear" : activeSets.join("@"));
+		window.location.reload();
+	}
+
+	function removeActiveDifficulty(index){
+		activeRanks.splice(index, 1);
+		setCookie("filtered_ranks", activeRanks.length == 0 ? "clear" : activeRanks.join("@"));
+		window.location.reload();
+	}
+
+	function removeActiveTag(index){
+		activeTags.splice(index, 1);
+		setCookie("filtered_tags", activeTags.length == 0 ? "clear" : activeTags.join("@"));
+		window.location.reload();
+	}
+
 		var msg2selected = false;
-		var msg3selected = false;
-		var msg4selected = false;
-		var msg5selected = false;
 		var msgFilterSelected = false;
 
 		$("#msg2x").hide();
 		$("#ratioInfo").hide();
 		$("#timeInfo").hide();
-		$("#numbersButton").addClass("new-button-time-inactive");
-		$("#numbersButton").removeClass("new-button-time");
-		$("#ratioButton").addClass("new-button-time");
-		$("#ratioButton").removeClass("new-button-time-inactive");
-		$("#timeButton").addClass("new-button-time");
-		$("#timeButton").removeClass("new-button-time-inactive");
+		$("#numbersButton").addClass("btn--inactive");
+		$("#ratioButton").removeClass("btn--inactive");
+		$("#timeButton").removeClass("btn--inactive");
 
 		$("#showx").click(function(){
 			if(!msg2selected){
@@ -574,175 +431,66 @@ if($tsumegoFilters->query != 'tags')
 		});
 
 		function d1(){
-			$("#numbersButton").addClass("new-button-time-inactive");
-			$("#numbersButton").removeClass("new-button-time");
-			$("#ratioButton").addClass("new-button-time");
-			$("#ratioButton").removeClass("new-button-time-inactive");
-			$("#timeButton").addClass("new-button-time");
-			$("#timeButton").removeClass("new-button-time-inactive");
+			$("#numbersButton").addClass("btn--inactive");
+			$("#ratioButton").removeClass("btn--inactive");
+			$("#timeButton").removeClass("btn--inactive");
 			$("#numbersInfo").fadeIn(250);
 			$("#ratioInfo").hide();
 			$("#timeInfo").hide();
-			$(".setViewButtons1").fadeIn(200);
-			$(".setViewButtons2").hide();
-			$(".setViewButtons3").hide();
-			$(".setViewCompleted").css("border", "1px solid #45ac6e");
+			$(".problem-nav__number").fadeIn(200);
+			$(".problem-nav__ratio").hide();
+			$(".problem-nav__time").hide();
+			$(".setViewCompleted").css("border", "1px solid var(--set-accent-green)");
 			$(".setViewAccuracy").css("border", "none");
 			$(".setViewTime").css("border", "none");
 		}
 		function d2(){
-			$("#numbersButton").addClass("new-button-time");
-			$("#numbersButton").removeClass("new-button-time-inactive");
-			$("#ratioButton").addClass("new-button-time-inactive");
-			$("#ratioButton").removeClass("new-button-time");
-			$("#timeButton").addClass("new-button-time");
-			$("#timeButton").removeClass("new-button-time-inactive");
+			$("#numbersButton").removeClass("btn--inactive");
+			$("#ratioButton").addClass("btn--inactive");
+			$("#timeButton").removeClass("btn--inactive");
 			$("#numbersInfo").hide();
 			$("#ratioInfo").fadeIn(250);
 			$("#timeInfo").hide();
-			$(".setViewButtons1").hide();
-			$(".setViewButtons2").fadeIn(200);
-			$(".setViewButtons3").hide();
+			$(".problem-nav__number").hide();
+			$(".problem-nav__ratio").fadeIn(200);
+			$(".problem-nav__time").hide();
 			$(".setViewCompleted").css("border", "none");
-			$(".setViewAccuracy").css("border", "1px solid #722394");
+			$(".setViewAccuracy").css("border", "1px solid var(--set-accent-purple)");
 			$(".setViewTime").css("border", "none");
 		}
 		function d3(){
-			$("#numbersButton").addClass("new-button-time");
-			$("#numbersButton").removeClass("new-button-time-inactive");
-			$("#ratioButton").addClass("new-button-time");
-			$("#ratioButton").removeClass("new-button-time-inactive");
-			$("#timeButton").addClass("new-button-time-inactive");
-			$("#timeButton").removeClass("new-button-time");
+			$("#numbersButton").removeClass("btn--inactive");
+			$("#ratioButton").removeClass("btn--inactive");
+			$("#timeButton").addClass("btn--inactive");
 			$("#numbersInfo").hide();
 			$("#ratioInfo").hide();
 			$("#timeInfo").fadeIn(250);
-			$(".setViewButtons1").hide();
-			$(".setViewButtons2").hide();
-			$(".setViewButtons3").fadeIn(200);
+			$(".problem-nav__number").hide();
+			$(".problem-nav__ratio").hide();
+			$(".problem-nav__time").fadeIn(200);
 			$(".setViewCompleted").css("border", "none");
 			$(".setViewAccuracy").css("border", "none");
-			$(".setViewTime").css("border", "1px solid #b34717");
+			$(".setViewTime").css("border", "1px solid var(--set-accent-orange)");
 		}
-
-	let tags = [];
-	let unapprovedTags = [];
-	let idTags = [];
-	let allTags = [];
-	let newTag = null;
-	<?php
-	for($i = 0;$i < count($allTags);$i++)
-		echo 'allTags.push(' . json_encode($allTags[$i]['Tag']['name'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE) . ');';
-?>
-	drawTags();
-
-	function drawTags(){
-		if(tags.length>0) $(".tag-list").append("Tags: ");
-		let foundNewTag = false;
-		for(let i=0;i<tags.length;i++){
-			let isNewTag = '';
-			if(tags[i]===newTag){
-				isNewTag = 'class="is-new-tag"';
-				foundNewTag = true;
-			}
-			if(unapprovedTags[i]==0){
-				isNewTag = 'class="is-new-tag"';
-			}
-			let tagLink = 'href="/tags/view/'+idTags[i]+'"';
-			let tagLinkId = 'id="'+makeIdValidName(tags[i])+'"';
-			if(typeof idTags[i] === "undefined"){
-				tagLink = '';
-				tagLinkId = '';
-			}
-			$(".tag-list").append('<a '+tagLink+' '+isNewTag+' '+tagLinkId+'>'+tags[i]+'</a>');
-			if(i<tags.length-1)
-				$(".tag-list").append(', ');
-		}
-		if(foundNewTag){
-			$(".tag-list").append(" ");
-			$(".tag-list").append('<button id="undo-tags-button">Undo</button>');
-			$(".tag-list").append(' <a class="new-button-default" href="/sets/view/<?php echo $set['Set']['id'] ?>?hash=32bb90e8976aab5298d5da10fe66f21d">Submit</a>');
-			$("#undo-tags-button").show();
-		}
-
-		$(".add-tag-list").append("Add tag to ALL problems in this collection: ");
-		for(let i=0;i<allTags.length;i++){
-			$(".add-tag-list").append('<a class="add-tag-list-anchor" id="'+makeIdValidName(allTags[i])+'">'
-			+allTags[i]+'</a>');
-			if(i<allTags.length-1)
-				$(".add-tag-list").append(', ');
-		}
-		$(".add-tag-list").append(' <a class="add-tag-list-anchor" href="/tags/add">[Create new tag]</a>');
-	}
-
-	for(let i=0;i<allTags.length;i++){
-		let currentIdValue = "#" + makeIdValidName(allTags[i]);
-		$('.tag-container').on('click', currentIdValue, function(e) {
-			e.preventDefault();
-			setCookie("addTag", "<?php echo $set['Set']['id']; ?>-"+allTags[i]);
-			newTag = $(currentIdValue).text();
-			let newAllTags = [];
-			for(let i=0;i<allTags.length;i++){
-				if(allTags[i] !== $(currentIdValue).text())
-					newAllTags.push(allTags[i]);
-			}
-			allTags = newAllTags;
-			tags.push($(currentIdValue).text());
-			$(".tag-list").html("");
-			$(".add-tag-list").html("");
-			drawTags();
-			$(".add-tag-list").hide();
-		});
-	}
-
-	$('.tag-container').on('click', '#undo-tags-button', function(){
-		setCookie("addTag", 0);
-		$(".tag-list").html("");
-		$(".add-tag-list").html("");
-		$(".add-tag-list").show();
-		tags = [];
-		allTags = [];
-		newTag = null;
-		<?php
-	$tags  = (array) $tags;
-$allTags = (array) $allTags;
-for($i = 0;$i < count($tags);$i++)
-	echo 'tags.push(' . json_encode($tags[$i]['TagConnection']['name'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE) . ');';
-for($i = 0;$i < count($allTags);$i++)
-	echo 'allTags.push(' . json_encode($allTags[$i]['Tag']['name'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE) . ');';
-?>
-		drawTags();
-	});
-
-	$('.tag-container').on('click', "#open-add-tag-menu", function(e){
-		$("#open-add-tag-menu").hide();
-		$(".add-tag-list").show();
-	});
 
 		<?php
-	if($refreshView)
-		echo 'window.location.href = "/sets/view/' . $set['Set']['id'] . '";';
+if($refreshView)
+	echo 'window.location.href = "' . Set::url($set['Set']['id']) . '";';
 ?>
 	</script>
 	<style>
-	#show5{display:block;}
-	#show6{text-decoration:underline;cursor:pointer;}
 	#msgFilters{
 		display:none;
 		margin:0 4px 8px
 	}
+	.showFilters{
+		display:inline-block;
+	}
 	#showFilters, .showFilters{
 		<?php
-$displayNone = false;
-if($set['Set']['id'] == 1 || (empty($tsumegoFilters->sets) && empty($tsumegoFilters->ranks) && empty($tsumegoFilters->tags)))
-	$displayNone = true;
-elseif($tsumegoFilters->query && empty($tsumegoFilters->ranks) && empty($tsumegoFilters->tags))
-	$displayNone = true;
-elseif($tsumegoFilters->query == 'difficulty' && empty($tsumegoFilters->sets) && empty($tsumegoFilters->tags))
-	$displayNone = true;
-elseif($tsumegoFilters->query == 'tags' && empty($tsumegoFilters->sets) && empty($tsumegoFilters->ranks))
-	$displayNone = true;
-if($displayNone)
+// Show Filters button whenever any filter type has active selections
+$displayNone = empty($tsumegoFilters->sets) && empty($tsumegoFilters->ranks) && empty($tsumegoFilters->tags);
+if ($displayNone)
 	echo 'display:none;';
 ?>
 		margin:8px 4px;

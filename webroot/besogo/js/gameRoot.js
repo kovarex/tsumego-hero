@@ -38,6 +38,7 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
     node.visited = false; // player already was in this position while solving
 	node.visitedInRecursion = false; // internal bool for recursive algorithm
     node.localEdit = false;
+    node.diffInfo = null; // own, so a child does not show the changes of its parent in a diff
   }
   initNode(root, null); // Initialize root node with null parent
   root.relevantMoves = [];
@@ -705,6 +706,45 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
     return result;
   }
 
+  // The nodes the line can go on to: any move of the solver, but only the replies the autoplay may pick
+  root.nodesToPlayOnTo = function()
+  {
+    let result = [];
+    if (this.nextMove() == this.getRoot().firstMove)
+    {
+      for (let i = 0; i < this.children.length; ++i)
+        if (!this.children[i].localEdit)
+          result.push(this.children[i]);
+      for (let i = 0; i < this.virtualChildren.length; ++i)
+        if (!this.virtualChildren[i].localEdit)
+          result.push(this.virtualChildren[i].target);
+      return result;
+    }
+
+    for (let i = 0; i < this.children.length; ++i)
+      if (this.isNonLocalChildWithNoBetterStatus(this.children[i]))
+        result.push(this.children[i]);
+    if (result.length != 0) // the autoplay ignores the virtual child variations when there are natural ones
+      return result;
+    for (let i = 0; i < this.virtualChildren.length; ++i)
+      if (this.isNonLocalChildWithNoBetterStatus(this.virtualChildren[i].target))
+        result.push(this.virtualChildren[i].target);
+    return result;
+  }
+
+  // Whether the line can still end on a correct node from here, so a false means the problem is already failed
+  root.canStillEndCorrect = function(visited = new Set())
+  {
+    if (this.localEdit)
+      return false;
+    if (this.correct == CORRECT_GOOD)
+      return true;
+    if (visited.has(this))
+      return false;
+    visited.add(this);
+    return this.nodesToPlayOnTo().some(node => node.canStillEndCorrect(visited));
+  }
+
   root.selectNonLocalChildIncludingVirtualWithNoBetterStatus = function(indexToSelect)
   {
     let currentIndex = 0;
@@ -842,7 +882,7 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
   root.getCorrespondingChild = function(otherChild)
   {
     for (let i = 0; i < this.children.length; ++i)
-      if (this.children[i].move.x == otherChild.move.x && this.children[i].move.y == otherChild.move.y)
+      if (this.children[i].move && otherChild.move && this.children[i].move.x == otherChild.move.x && this.children[i].move.y == otherChild.move.y)
         return this.children[i];
     return null;
   }
@@ -857,7 +897,26 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
   root.incorporateDiff = function(otherRoot)
   {
     this.isDiff = true;
+    // before the removed moves are merged in, as they change what the tree makes of the moves around them
+    this.compareWithPreviousVersion(otherRoot);
     this.incorporateDiffInternal(otherRoot);
+  }
+
+  // Records what differs in the positions that are in both versions, see besogo.compareNodeProperties
+  root.compareWithPreviousVersion = function(previousNode)
+  {
+    let changes = besogo.compareNodeProperties(this, previousNode);
+    if (changes.length)
+    {
+      this.diffInfo = besogo.makeDiffInfo();
+      this.diffInfo.changes = changes;
+    }
+    for (let i = 0; i < this.children.length; ++i)
+    {
+      let previousChild = previousNode.getCorrespondingChild(this.children[i]);
+      if (previousChild)
+        this.children[i].compareWithPreviousVersion(previousChild);
+    }
   }
 
   root.incorporateDiffInternal = function(otherRoot)
@@ -874,13 +933,18 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
     for (let i = 0; i < otherRoot.children.length; ++i)
     {
       let otherChild = otherRoot.children[i];
-      let correspondingChild = this.getCorrespondingChild(otherChild);
-      if (!correspondingChild)
-      {
-        let newChild = this.registerMove(otherChild.move.x, otherChild.move.y);
-        newChild.diffInfo = besogo.makeRemovedMoveDiffInfo();
-        newChild.incorporateDiffInternal(otherChild);
-      }
+      if (!otherChild.move || this.getCorrespondingChild(otherChild))
+        continue;
+      // The removed move can be illegal here, when the stones of the two versions differ, then it can't be shown
+      let newChild = this.makeChild();
+      if (!newChild.playMove(otherChild.move.x, otherChild.move.y))
+        continue;
+      this.registerChild(newChild);
+      newChild.diffInfo = besogo.makeRemovedMoveDiffInfo();
+      // shown, so the removed variation can be read, but not the + or status, which would change the tree
+      newChild.comment = otherChild.comment;
+      newChild.markup = otherChild.markup.slice();
+      newChild.incorporateDiffInternal(otherChild);
     }
   }
 

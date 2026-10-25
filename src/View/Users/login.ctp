@@ -1,65 +1,47 @@
 <?php
 
+use App\Utility\CookieFlash;
+
 /**
  * @var View $this
+ * @var string $lightDark
  * @var string $redirectSignature
  * @var string $redirectUrl
  */
 
 ?>
-<?php $this->start('script'); ?>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-<?php $this->end(); ?>
-	<br>
 	<div id="login-box" class="users form">
 		<div class="left signin">
 			<?php echo CookieFlash::render(); ?>
-			 <h1>Sign in</h1>
+			<h1>Sign in</h1>
 			<?php echo $this->Form->create('User', ['action' => 'login']); ?>
 			<input type="hidden" name="redirect" value="<?php echo h($redirectUrl); ?>"/>
 			<input type="hidden" name="redirect_signature" value="<?php echo h($redirectSignature); ?>"/>
-			<label for="UserName"></label>
 			<div class="input text required">
-				<label for="UserName"></label>
-				<input name="username" maxlength="50" placeholder="Username or email" type="text" id="UserName" required="required"/>
+				<label for="UserName">Username or email</label>
+				<input name="username" maxlength="50" type="text" id="UserName" autocomplete="username" required="required"/>
 			</div>
-			<label for="UserPassword"></label>
 			<div class="input password required">
-				<label for="password"></label>
-				<input name="password" type="password" placeholder="Password" id="password" required="required"/>
+				<label for="password">Password</label>
+				<input name="password" type="password" id="password" autocomplete="current-password" required="required"/>
+				<button type="button" class="password-toggle" data-target="password">Show</button>
 			</div>
-			<?php echo $this->Form->end('Submit'); ?>
-			Need an account?<br>
-			<a href="/users/add">Sign Up</a><br><br>
-			Forgot password?<br>
-			<a href="/users/resetpassword">Reset</a>
-			<br><br>
+			<button type="submit" class="btn">Sign in</button>
+			<?php echo $this->Form->end(); ?>
+			<p class="hint">Need an account? <a href="/users/add">Sign up</a></p>
+			<p class="hint">Forgot password? <a href="/users/resetpassword">Reset it</a></p>
 
 			<?php
-			// Encode redirect URL + signature in state for Google Sign-In (stateless)
+			// The redirect rides along in the state so it survives the trip through Google
 			$googleState = base64_encode(json_encode([
 				'redirect' => $redirectUrl,
 				'signature' => $redirectSignature,
 			]));
+			echo $this->element('google_signin', ['googleState' => $googleState]);
+			echo $this->element('password_toggle');
 			?>
-			<div
-				id="g_id_onload"
-				data-client_id="986748597524-05gdpjqrfop96k6haga9gvj1f61sji6v.apps.googleusercontent.com"
-				data-context="signin"
-				data-ux_mode="popup"
-				data-login_uri="/users/googlesignin"
-				data-auto_prompt="false"></div>
-			<div
-				class="g_id_signin"
-				data-type="standard"
-				data-shape="rectangular"
-				data-theme="outline"
-				data-text="sign_in_with"
-				data-size="large"
-				data-state="<?php echo h($googleState); ?>"></div>
 		</div>
 		<div class="right">
 		</div>
 	</div>
-	<br>
 

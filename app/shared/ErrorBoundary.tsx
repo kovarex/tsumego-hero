@@ -57,7 +57,7 @@ export class ErrorBoundary extends Component<Props, State>
 					<div className="error-boundary__content">
 						<h3>⚠️ Something went wrong</h3>
 						<p>We encountered an error loading this section.</p>
-						<button onClick={() => window.location.reload()} className="error-boundary__reload">
+						<button onClick={() => window.location.reload()} className="btn">
 							Reload Page
 						</button>
 						{this.state.error && (

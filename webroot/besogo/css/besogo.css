@@ -37,7 +37,14 @@
     -moz-user-select: none;      /* Firefox */
     -ms-user-select: none;       /* Internet Explorer/Edge */
      user-select: none;
-     
+     }
+
+.besogo-tree-comment-badge { /* Badge on review-tree nodes with anchored comments */
+    pointer-events: none;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
+}
+.besogo-tree-comment-badge__bubble {
+    fill: var(--color-purple-vivid, #6239ff);
 }
 
 .besogo-panels {
@@ -140,4 +147,233 @@
 
 .besogo-file {
     flex: 0 0 auto;
+}
+
+/* What a diff changed, see diffPanel.js. It is what a diff is opened for, so in one column with the
+   other panels it keeps its height (up to almost half of them) and the comment and tree panels give
+   way; the summary folds the list away when the room is needed. */
+.besogo-diff {
+    flex: 0 0 auto;
+    width: 100%;
+    max-height: 45%;
+    overflow: auto;
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size: 11pt;
+}
+.besogo-diff-summary {
+    font-weight: bold;
+    padding: 3px;
+    cursor: pointer;
+}
+.besogo-diff-count:not(:last-child) {
+    margin-right: 0.9em;
+}
+.besogo-diff-icon {
+    width: 1.1em;
+    height: 1.1em;
+    vertical-align: -0.2em;
+}
+.besogo-diff-summary::before {
+    content: "\25BE  "; /* ▾ */
+}
+.besogo-diff--folded .besogo-diff-summary::before {
+    content: "\25B8  "; /* ▸ */
+}
+.besogo-diff-sgf { /* the SGF text, when the files differ in something the tree doesn't show */
+    font-family: monospace;
+    word-break: break-all;
+    padding: 3px 5px 6px;
+}
+.besogo-diff-sgf del {
+    color: #be0119;
+}
+.besogo-diff-sgf ins {
+    color: #2e8b57;
+    text-decoration: none;
+    font-weight: bold;
+}
+.besogo-diff-description {
+    white-space: pre-wrap;
+    padding: 3px 5px 6px;
+}
+.besogo-diff-author a { /* User::renderLink, the editor has none of the site's styles */
+    font-weight: bold;
+    color: inherit;
+    white-space: nowrap;
+}
+.besogo-diff-author .user-avatar {
+    width: 1.4em;
+    height: 1.4em;
+    border-radius: 50%;
+    object-fit: cover;
+    vertical-align: middle;
+    margin-right: 3px;
+}
+.besogo-diff-author .user-avatar--board {
+    border-radius: 0;
+}
+.besogo-diff--folded .besogo-diff-list,
+.besogo-diff--folded .besogo-diff-sgf,
+.besogo-diff--folded .besogo-diff-description {
+    display: none;
+}
+/* Panels wide enough for two columns: the editor panels on the left, the changes on the right in full height */
+.besogo-panels.besogo-panels--diff-column {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 3fr) auto minmax(0, 2fr) auto;
+    grid-template-areas: "control diff" "comment diff" "tool diff" "tree diff" "file diff";
+    column-gap: 10px;
+    align-items: stretch;
+}
+.besogo-panels--diff-column > .besogo-control { grid-area: control; }
+.besogo-panels--diff-column > .besogo-comment { grid-area: comment; }
+.besogo-panels--diff-column > .besogo-tool { grid-area: tool; }
+.besogo-panels--diff-column > .besogo-tree { grid-area: tree; }
+.besogo-panels--diff-column > .besogo-file { grid-area: file; justify-self: center; }
+.besogo-panels--diff-column > .besogo-diff {
+    grid-area: diff;
+    max-height: none;
+    border-left: 1px solid #ccc;
+}
+.besogo-panels--diff-column .besogo-diff-summary {
+    cursor: auto;
+}
+.besogo-panels--diff-column .besogo-diff-summary::before {
+    content: none;
+}
+.besogo-panels--diff-column .besogo-diff--folded .besogo-diff-list,
+.besogo-panels--diff-column .besogo-diff--folded .besogo-diff-sgf,
+.besogo-panels--diff-column .besogo-diff--folded .besogo-diff-description {
+    display: block;
+}
+.besogo-diff-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.besogo-diff-entry {
+    cursor: pointer;
+    padding: 3px 5px;
+    border-left: 4px solid transparent;
+}
+.besogo-diff-entry:hover {
+    background: rgba(0, 0, 0, 0.06);
+}
+.besogo-diff-current {
+    background: rgba(6, 194, 172, 0.18);
+}
+.besogo-diff-added {
+    border-left-color: #2e8b57;
+}
+.besogo-diff-removed {
+    border-left-color: #be0119;
+}
+.besogo-diff-changed {
+    border-left-color: #f39c12;
+}
+.besogo-diff-position {
+    font-weight: bold;
+}
+.besogo-diff-change {
+    white-space: pre-wrap;
+}
+.besogo-diff-property {
+    font-style: italic;
+}
+.besogo-diff-change del {
+    color: #be0119;
+}
+.besogo-diff-change ins {
+    color: #2e8b57;
+    text-decoration: none;
+}
+.besogo-save-dialog { /* Asks for the description of a saved version, see filePanel.js */
+    width: min(30em, 90vw);
+    font-family: Tahoma, Geneva, sans-serif;
+}
+.besogo-save-dialog label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+.besogo-save-dialog textarea {
+    width: 100%;
+    box-sizing: border-box;
+}
+.besogo-save-dialog__problem {
+    color: #be0119;
+    min-height: 1.2em;
+}
+.besogo-save-dialog__buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+.besogo-tree-diff-changed { /* Tree node that is in both versions with other properties */
+    fill: #f39c12;
+    stroke: #ffffff;
+    stroke-width: 4;
+}
+
+/* Favorite (heart) button like-burst */
+.fav-heart {
+    display: inline-block;
+}
+
+.fav-heart.pop {
+    animation: favHeartPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes favHeartPop {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.5); }
+    70% { transform: scale(0.86); }
+    100% { transform: scale(1); }
+}
+
+.fav-burst-particle {
+    position: fixed;
+    z-index: 10000;
+    pointer-events: none;
+    will-change: transform, opacity;
+    animation: favParticleFly 0.55s cubic-bezier(0.12, 0.8, 0.35, 1) forwards;
+}
+
+.fav-burst-particle--heart {
+    line-height: 1;
+}
+
+.fav-burst-particle--sparkle {
+    line-height: 1;
+}
+
+.fav-burst-particle--round {
+    border-radius: 50%;
+}
+
+.fav-burst-particle--shape {
+    border-radius: 2px;
+}
+
+@keyframes favParticleFly {
+    0% { transform: translate(-50%, -50%) scale(0.3); opacity: 1; }
+    100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1); opacity: 0; }
+}
+
+.fav-burst-ring {
+    position: fixed;
+    z-index: 9999;
+    width: 56px;
+    height: 56px;
+    border: 3px solid rgba(255, 68, 102, 0.85);
+    border-radius: 50%;
+    pointer-events: none;
+    will-change: transform, opacity;
+    animation: favRingExpand 0.5s ease-out forwards;
+}
+
+@keyframes favRingExpand {
+    0% { transform: translate(-50%, -50%) scale(0.2); opacity: 0.9; }
+    100% { transform: translate(-50%, -50%) scale(2.2); opacity: 0; }
 }

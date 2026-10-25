@@ -11,7 +11,7 @@ class TagsUserTest extends TestCaseWithAuth
 	public function testUserNotFound()
 	{
 		$this->expectException(\NotFoundException::class);
-		$this->testAction('/tags/user/999999', ['return' => 'view']);
+		$this->testAction('/tags/user/999999', ['method' => 'get', 'return' => 'view']);
 	}
 
 	/**
@@ -22,10 +22,10 @@ class TagsUserTest extends TestCaseWithAuth
 		new ContextPreparator(['user' => ['name' => 'lonely', 'rating' => 1500]]);
 		$user = ClassRegistry::init('User')->findByName('lonely');
 
-		$this->testAction('/tags/user/' . $user['User']['id'], ['return' => 'view']);
+		$this->testAction('/tags/user/' . $user['User']['id'], ['method' => 'get', 'return' => 'view']);
 
-		$this->assertTextContains('Tags and proposals by lonely', $this->view);
-		// No data rows in the table (only header row)
+		$this->assertTextContains('lonely', $this->view);
+		// No legacy classes in the table
 		$this->assertStringNotContainsString('timeTableLeft', $this->view);
 	}
 
@@ -65,32 +65,35 @@ class TagsUserTest extends TestCaseWithAuth
 			'user_id' => $userId, 'tsumego_id' => $context->tsumegos[1]['id'], 'type' => 'proposal', 'text' => 'bad sgf',
 		]]);
 
-		$this->testAction("/tags/user/{$userId}", ['return' => 'view']);
+		$this->testAction("/tags/user/{$userId}", ['method' => 'get', 'return' => 'view']);
 		$text = strip_tags($this->view);
 
 		// 1. Accepted tag name
-		$this->assertStringContainsString('created a new tag: tesuji', $text);
-		$this->assertStringContainsString('color:#047804', $this->view); // green = accepted
+		$this->assertStringContainsString('Tag', $text);
+		$this->assertStringContainsString('tesuji', $text);
+		$this->assertStringContainsString('color:var(--color-green)', $this->view); // green = accepted
 
 		// 2. Rejected tag name
-		$this->assertStringContainsString('created a new tag: badname', $text);
-		$this->assertStringContainsString('color:#ce3a47', $this->view); // red = rejected
+		$this->assertStringContainsString('Tag', $text);
+		$this->assertStringContainsString('badname', $text);
+		$this->assertStringContainsString('color:var(--color-red)', $this->view); // red = rejected
 
 		// 3. Accepted tag connection
-		$this->assertStringContainsString('added the tag tesuji for', $text);
+		$this->assertStringContainsString('was added to', $text);
+		$this->assertStringContainsString('tesuji', $text);
 
 		// 4. Rejected tag connection
-		$this->assertStringContainsString('added the tag bad tag for', $text);
+		$this->assertStringContainsString('bad tag', $text);
 
 		// 5. Accepted proposal
-		$this->assertTextContains('made a proposal for', $this->view);
+		$this->assertTextContains('Proposal for', $this->view);
 
-		// 6. Rejected proposal (shows tsumego label, not the SGF text)
-		$this->assertTextContains('made a proposal for', $this->view);
+		// 6. Rejected proposal
+		$this->assertTextContains('Proposal for', $this->view);
 
 		// Verify both colors appear
-		$greenCount = substr_count($this->view, '#047804');
-		$redCount = substr_count($this->view, '#ce3a47');
+		$greenCount = substr_count($this->view, 'var(--color-green)');
+		$redCount = substr_count($this->view, 'var(--color-red)');
 		$this->assertGreaterThanOrEqual(3, $greenCount); // 3 accepted items
 		$this->assertGreaterThanOrEqual(3, $redCount);   // 3 rejected items
 	}
@@ -118,7 +121,7 @@ class TagsUserTest extends TestCaseWithAuth
 			'Tag' => ['name' => 'omega', 'user_id' => $userId, 'approved' => 1, 'description' => 'o', 'created' => '2025-06-01 10:00:00'],
 		]);
 
-		$this->testAction("/tags/user/{$userId}", ['return' => 'view']);
+		$this->testAction("/tags/user/{$userId}", ['method' => 'get', 'return' => 'view']);
 
 		$posAlpha = strpos($this->view, 'alpha');
 		$posOmega = strpos($this->view, 'omega');
@@ -154,7 +157,7 @@ class TagsUserTest extends TestCaseWithAuth
 			'user_id' => $userId, 'tsumego_id' => 999999, 'type' => 'tag', 'text' => 'hidden tag',
 		]]);
 
-		$this->testAction("/tags/user/{$userId}", ['return' => 'view']);
+		$this->testAction("/tags/user/{$userId}", ['method' => 'get', 'return' => 'view']);
 
 		$this->assertTextContains('visible tag', $this->view);
 		$this->assertTextNotContains('hidden tag', $this->view);
@@ -168,8 +171,95 @@ class TagsUserTest extends TestCaseWithAuth
 		new ContextPreparator(['user' => ['name' => 'pageTitleUser', 'rating' => 1500]]);
 		$user = ClassRegistry::init('User')->findByName('pageTitleUser');
 
-		$this->testAction('/tags/user/' . $user['User']['id'], ['return' => 'view']);
+		$this->testAction('/tags/user/' . $user['User']['id'], ['method' => 'get', 'return' => 'view']);
 
-		$this->assertTextContains('Tags and proposals by pageTitleUser', $this->view);
+		$this->assertTextContains('pageTitleUser', $this->view);
+	}
+
+	// --- Pending proposals ---
+
+	/**
+	 * A pending tag name proposal (approved=0) appears in the contributions list.
+	 */
+	public function testPendingTagNameAppearsInContributions()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'proposer', 'rating' => 1500],
+			'tags' => [['name' => 'snapback', 'approved' => 0]],
+		]);
+
+		$this->testAction('/tags/user/' . $context->user['id'], ['method' => 'get', 'return' => 'view']);
+		$text = strip_tags($this->view);
+
+		$this->assertStringContainsString('Tag', $text);
+		$this->assertStringContainsString('was created', $text);
+		$this->assertStringContainsString('snapback', $text);
+		$this->assertStringContainsString('pending', $text);
+	}
+
+	/**
+	 * A pending tag connection (approved=0) appears in the contributions list.
+	 */
+	public function testPendingTagConnectionAppearsInContributions()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'tagger', 'rating' => 1500],
+			'tsumegos' => [[
+				'set_order' => 1,
+				'sgf' => '(;GM[1]FF[4]SZ[19])',
+				'tags' => [['name' => 'atari', 'approved' => 0]],
+			]],
+		]);
+
+		$this->testAction('/tags/user/' . $context->user['id'], ['method' => 'get', 'return' => 'view']);
+		$text = strip_tags($this->view);
+
+		$this->assertStringContainsString('Tag', $text);
+		$this->assertStringContainsString('was added to', $text);
+		$this->assertStringContainsString('atari', $text);
+		$this->assertStringContainsString('pending', $text);
+	}
+
+	/**
+	 * Pending items appear alongside accepted and rejected items.
+	 */
+	public function testPendingItemsMixedWithAcceptedAndRejected()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'mixer', 'rating' => 1500],
+			'tags' => [['name' => 'tesuji']],
+			'tsumegos' => [[
+				'set_order' => 1,
+				'sgf' => '(;GM[1]FF[4]SZ[19])',
+				'tags' => [['name' => 'snapback', 'approved' => 0]],
+			]],
+		]);
+
+		// Add a rejected tag name
+		$reject = ClassRegistry::init('Reject');
+		$reject->create();
+		$reject->save(['Reject' => [
+			'user_id' => $context->user['id'],
+			'tsumego_id' => 0,
+			'type' => 'tag name',
+			'text' => 'badname',
+		]]);
+
+		$this->testAction('/tags/user/' . $context->user['id'], ['method' => 'get', 'return' => 'view']);
+		$text = strip_tags($this->view);
+
+		// Accepted tag name
+		$this->assertStringContainsString('was created', $text);
+		$this->assertStringContainsString('accepted', $text);
+
+		// Pending tag connection
+		$this->assertStringContainsString('was added to', $text);
+		$this->assertStringContainsString('snapback', $text);
+		$this->assertStringContainsString('pending', $text);
+
+		// Rejected tag name
+		$this->assertStringContainsString('Tag', $text);
+		$this->assertStringContainsString('badname', $text);
+		$this->assertStringContainsString('rejected', $text);
 	}
 }

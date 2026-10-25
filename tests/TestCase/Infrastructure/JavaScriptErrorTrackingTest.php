@@ -1,11 +1,12 @@
 <?php
 
 use PHPUnitRetry\RetryTrait;
-
 /**
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
+use App\Utility\Util;
+
 class JavaScriptErrorTrackingTest extends CakeTestCase
 {
 	use RetryTrait;
@@ -21,10 +22,7 @@ class JavaScriptErrorTrackingTest extends CakeTestCase
 
 		// Navigate to page WITHOUT assertNoErrors() - we'll check manually
 		$browser->driver->get(Util::getMyAddress() . '/sites/index');
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			return $driver->executeScript('return window.__jsErrors !== undefined;');
-		});
+		$browser->waitUntilJs('window.__jsErrors !== undefined');
 
 		// CRITICAL: Verify window.__jsErrors exists (only initialized when debug mode enabled)
 		$jsErrors = $browser->driver->executeScript('return window.__jsErrors;');

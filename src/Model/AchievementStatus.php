@@ -1,10 +1,11 @@
 <?php
 
-App::uses('AppController', 'Controller');
+use App\Utility\Rating;
+use App\Utility\Util;
 
 class AchievementStatus extends AppModel
 {
-	public function __construct($id = false, $table = null, $ds = null)
+	public function __construct(mixed $id = false, ?string $table = null, ?string $ds = null)
 	{
 		$id['table'] =  'achievement_status';
 		parent::__construct($id, $table, $ds);
@@ -18,6 +19,11 @@ class AchievementStatus extends AppModel
 	 */
 	public function getRecent(int $limit = 7): array
 	{
+		$cacheKey = 'recent_achievements_' . $limit;
+		$cached = Cache::read($cacheKey);
+		if ($cached !== false)
+			return $cached;
+
 		$rows = $this->find('all', [
 			'joins' => [
 				[
@@ -35,8 +41,9 @@ class AchievementStatus extends AppModel
 			],
 			'fields' => [
 				'AchievementStatus.id', 'AchievementStatus.created', 'Achievement.id', 'Achievement.name', 'Achievement.image',
-				'User.id', 'User.name', 'User.external_id',
+				'User.id', 'User.display_name', 'User.name', 'User.external_id', 'User.picture', 'User.pref_avatar', 'User.email', 'User.rating',
 			],
+			'conditions' => ['User.deleted IS NULL'],
 			'limit' => $limit,
 			'order' => 'AchievementStatus.created DESC',
 		]) ?: [];
@@ -44,16 +51,28 @@ class AchievementStatus extends AppModel
 		$result = [];
 		foreach ($rows as $row)
 		{
+			$userData = [
+				'id' => (int) $row['User']['id'],
+				'display_name' => $row['User']['display_name'],
+				'external_id' => $row['User']['external_id'],
+				'picture' => $row['User']['picture'],
+				'pref_avatar' => $row['User']['pref_avatar'],
+				'email' => $row['User']['email'],
+			];
+			$rating = (float) $row['User']['rating'];
 			$result[] = [
 				'status_id' => $row['AchievementStatus']['id'],
 				'id' => $row['Achievement']['id'],
 				'name' => $row['Achievement']['name'],
 				'image' => $row['Achievement']['image'],
 				'user_id' => (int) $row['User']['id'],
-				'user_name' => AppController::checkPicture($row['User']),
-				'created' => $row['AchievementStatus']['created'],
+				'user_display_name' => $row['User']['display_name'],
+				'user_avatar_url' => User::getAvatarUrl($userData),
+				'user_rank' => $rating > 0 ? Rating::getReadableRankFromRating($rating) : '',
+				'created' => Util::toIso8601($row['AchievementStatus']['created']),
 			];
 		}
+		Cache::write($cacheKey, $result, 'default');
 		return $result;
 	}
 }

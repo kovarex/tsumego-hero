@@ -1,6 +1,6 @@
 <?php
 
-App::uses('Achievement', 'Model');
+use App\Utility\AchievementId;
 
 class AccuracySpeedAchievementTest extends AchievementTestCase
 {
@@ -24,7 +24,7 @@ class AccuracySpeedAchievementTest extends AchievementTestCase
 				'value' => $percent]);
 
 			$browser->get('/sets/view/' . $setID);
-			$this->assertAchievementUnlockedWhen($percent >= 75, Achievement::ACCURACY_I, "Accuracy I should unlock at 75% on 11k set");
+			$this->assertAchievementUnlockedWhen($percent >= 75, AchievementId::ACCURACY_I, "Accuracy I should unlock at 75% on 11k set");
 		}
 	}
 }
