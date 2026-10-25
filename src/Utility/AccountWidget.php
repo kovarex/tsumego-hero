@@ -15,7 +15,7 @@ class AccountWidget
 			$barClassname = 'xp-bar-fill-c3';
 			$barRatio = Util::getRatio($timeMode->currentPosition() - 1, $timeMode->overallCount);
 			$accountBarClassname = '';
-			$barText = 'Time mode ' . $timeMode->getCurrentRank();
+			$barText = $timeMode->getTitle();
 			$textBarInMenu = 'Level bar';
 			$modeSelectorClass = 'modeSelectorInLevelBar';
 		}

@@ -239,6 +239,7 @@ FROM (
     FROM time_mode_session
     WHERE time_mode_session.user_id = ?
       AND time_mode_session.time_mode_session_status_id = ?
+      AND time_mode_session.challenge_id IS NULL
 ) ranked
 WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 		foreach ($timeModeSessions as $timeModeSession)

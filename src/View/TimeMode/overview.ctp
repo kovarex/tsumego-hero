@@ -7,6 +7,7 @@
  * @var array $solvedMap
  * @var array $timeModeCategories
  * @var array $timeModeRanks
+ * @var int|null $challengeInProgressID The challenge whose run the player is in the middle of
  */
 
 ?>
@@ -17,7 +18,14 @@
 <div align="center">
 	<a class="btn btn--inactive" href="#">Select</a>
 	<?php echo '<a class="btn'.($hasFinishedSesssion ? ' btn--primary' : ' btn--inactive').'" href="'.($hasFinishedSesssion ? '/timeMode/result' : '#').'">Results</a>'; ?>
+	<a class="btn btn--primary" href="/challenges">Challenge a friend</a>
 </div>
+<?php if ($challengeInProgressID): ?>
+<p class="hint" align="center" id="challenge-in-progress">
+	You are in the middle of <a href="/challenges/<?= $challengeInProgressID ?>">Challenge #<?= $challengeInProgressID ?></a>:
+	<a href="/timeMode/play">continue it</a>. Starting a time mode run ends it, and the problems you didn't play get no points.
+</p>
+<?php endif; ?>
 <br><br>
 <div align="center">
 	<?php

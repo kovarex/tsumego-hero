@@ -287,6 +287,29 @@ Router::connect(
 	['pass' => ['id', 'partition'], 'id' => '[^/]+', 'partition' => '[0-9]+', 'routeClass' => 'SetViewRoute']
 );
 /**
+ * Challenges between players, see ChallengesController. The address of a challenge is the link
+ * its players send to the ones who should join.
+ */
+Router::connect(
+	'/challenges',
+	['controller' => 'Challenges', 'action' => 'index']
+);
+Router::connect(
+	'/challenges/create',
+	['controller' => 'Challenges', 'action' => 'create']
+);
+Router::connect(
+	'/challenges/:id',
+	['controller' => 'Challenges', 'action' => 'view'],
+	['pass' => ['id'], 'id' => '[0-9]+']
+);
+foreach (['join' => 'join', 'invite' => 'invite', 'play' => 'play'] as $path => $challengeAction)
+	Router::connect(
+		'/challenges/' . $path . '/:id',
+		['controller' => 'Challenges', 'action' => $challengeAction],
+		['pass' => ['id'], 'id' => '[0-9]+'] // Id of a challenge
+	);
+/**
  * Classes of a teacher, see ClassroomsController. The address of a class is the link the teacher
  * sends to the players who should ask to join.
  */

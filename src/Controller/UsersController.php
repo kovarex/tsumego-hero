@@ -1114,7 +1114,7 @@ SELECT
     SUM(CASE WHEN time_mode_session.time_mode_session_status_id = ' . TimeModeUtil::$SESSION_STATUS_SOLVED . ' THEN 1 ELSE 0 END) AS Passes,
     SUM(CASE WHEN time_mode_session.time_mode_session_status_id = ' . TimeModeUtil::$SESSION_STATUS_FAILED . ' THEN 1 ELSE 0 END) AS Fails
 FROM time_mode_session
-WHERE time_mode_session.user_id = ?
+WHERE time_mode_session.user_id = ? AND time_mode_session.challenge_id IS NULL
 GROUP BY DATE(time_mode_session.created)
 ORDER BY category DESC', [$user['User']['id']]));
 
