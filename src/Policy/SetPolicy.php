@@ -32,7 +32,8 @@ class SetPolicy extends BasePolicy
 
 	/**
 	 * Viewing a set: private sets require login (sandbox is an admin/premium
-	 * workspace; user-owned private sets are also login-only for now).
+	 * workspace; user-owned private sets are also login-only for now). A private
+	 * collection a teacher gave to a class is open to the pupils of that class.
 	 *
 	 * @param UserRow|null $user
 	 * @param SetRow $set
@@ -47,7 +48,9 @@ class SetPolicy extends BasePolicy
 		if ($user === null)
 			return false;
 		if ($set['user_id'] !== null)
-			return static::isAdmin($user) || (int) $set['user_id'] === $user['id'];
+			return static::isAdmin($user)
+				|| (int) $set['user_id'] === $user['id']
+				|| (isset($user['id'], $set['id']) && \ClassroomAssignment::isSetAssignedTo((int) $user['id'], (int) $set['id']));
 		return true;
 	}
 

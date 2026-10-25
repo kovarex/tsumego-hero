@@ -232,6 +232,7 @@ echo ViteManifest::legacyScript('legacy');
 			$gotutorialA = '';
 			$aboutA = '';
 			$changelogA = '';
+			$classesA = '';
 
 			$_page = $_page ?? '';
 			if($_page == 'home') $homeA = 'nav__link--active';
@@ -254,6 +255,7 @@ echo ViteManifest::legacyScript('legacy');
 			else if($_page == 'gotutorial') $gotutorialA = 'nav__link--active';
 			else if($_page == 'about') $aboutA = 'nav__link--active';
 			else if($_page == 'changelog') $changelogA = 'nav__link--active';
+			else if($_page == 'classes') $classesA = 'nav__link--active';
 			else if($_page == 'levelHighscore') $levelHighscoreA = 'nav__link--active';
 			else if($_page == 'ratingHighscore') $ratingHighscoreA = 'nav__link--active';
 			else if($_page == 'achievementHighscore') $achievementHighscoreA = 'nav__link--active';
@@ -289,11 +291,18 @@ echo ViteManifest::legacyScript('legacy');
 						echo '<li><a class="'.$aboutA.'" href="/sites/about">About</a></li>';
 						echo '</ul>';
 						echo '</li>';
-						echo '<li><a '.$refreshLinkToSets.' class="'.$collectionsA.'" href="/sets">Collections</a>';
+						// Invitations to a class and requests to join one wait for the player's answer, which
+						// the Classes item counts, and so does Collections, where the item is hidden.
+						$classesAwaitingAnswer = Auth::isLoggedIn() ? ClassroomMember::countAwaitingAnswer(Auth::getUserID()) : 0;
+						$classesBadge = $classesAwaitingAnswer > 0
+							? '<span class="nav__new-badge nav__new-badge--visible" title="Waiting for your answer in Classes">'.$classesAwaitingAnswer.'</span>'
+							: '';
+						echo '<li><a '.$refreshLinkToSets.' class="'.$collectionsA.'" href="/sets">Collections'.$classesBadge.'</a>';
 						if(Auth::isLoggedIn()){
 							echo '<ul class="newMenuLi2">';
 							echo '<li><a href="/sets/mine">My Sets</a></li>';
 							echo '<li><a class="'.$refreshLinkToFavs.'" href="'.Set::url('favorites').'">Favorites</a></li>';
+							echo '<li><a class="'.$classesA.'" href="/classes">Classes'.$classesBadge.'</a></li>';
 							if(Auth::hasPremium() || Auth::isAdmin())
 								echo '<li><a '.$refreshLinkToSandbox.' class="'.$sandboxA.'" href="/sets/sandbox">Sandbox</a></li>';
 							if(Auth::isAdmin()){

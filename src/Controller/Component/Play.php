@@ -219,7 +219,16 @@ class Play
 			($this->setFunction)('multipleChoiceSquares', count(Util::getFollowingSgfCoordinates($sgf['Sgf']['sgf'], strpos($sgf['Sgf']['sgf'], 'SQ') + 2)));
 		}
 
-		if (Auth::isInLevelMode())
+		if ($this->classroomAssignment !== null)
+		{
+			$assignmentButtons = ClassroomAssignment::playButtons($this->classroomAssignment, (int) Auth::getUserID(), (int) $currentSetConnection['SetConnection']['id']);
+			new SetNavigationButtonsInput($this->setFunction)->execute($assignmentButtons, $currentSetConnection);
+			($this->setFunction)('_title', ClassroomAssignment::title($this->classroomAssignment) . ' ' . $assignmentButtons->currentOrder . '/' . $assignmentButtons->highestTsumegoOrder . ' on Tsumego Hero');
+			($this->setFunction)('classroomAssignment', $this->classroomAssignment);
+			$currentButton = array_find((array) $assignmentButtons, fn($button) => $button->setConnectionID == $currentSetConnection['SetConnection']['id']);
+			($this->setFunction)('solvedForAssignment', $currentButton?->status === ClassroomAssignment::BUTTON_SOLVED);
+		}
+		elseif (Auth::isInLevelMode())
 		{
 			$tsumegoButtons = new TsumegoButtons($tsumegoFilters, $currentSetConnection['SetConnection']['id'], null, $set['Set']['id']);
 			new SetNavigationButtonsInput($this->setFunction)->execute($tsumegoButtons, $currentSetConnection);
@@ -404,7 +413,10 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		}
 		($this->setFunction)('userSetsJson', $userSetsJson);
 
-		if (Auth::isInLevelMode() && isset($tsumegoButtons))
+		// past either end of a class assignment is the page of its class
+		if (isset($assignmentButtons))
+			$assignmentButtons->exportCurrentAndPreviousLink($this->setFunction, null, $setConnectionID, null, '/classes/' . (int) $this->classroomAssignment['classroom_id']);
+		elseif (Auth::isInLevelMode() && isset($tsumegoButtons))
 			$tsumegoButtons->exportCurrentAndPreviousLink($this->setFunction, $tsumegoFilters, $setConnectionID, $set);
 		elseif (Auth::isInMistakeTrainingMode() && isset($mistakeTrainingButtons))
 		{
@@ -489,11 +501,36 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		return '<a id="playTitleA" href="' . Set::url($set['Set']['id'], $tsumegoButtons?->getPartition() ?? 1) . '">' . $set['Set']['title'] . ' ' . $tsumegoButtons?->getPartitionTitleSuffix() . ' ' . $order . '/' . $tsumegoButtons?->highestTsumegoOrder . '</a>';
 	}
 
+	/**
+	 * The title of a problem played as a part of a class assignment: the assignment and where in
+	 * it the player is, and under it which problem of which collection it really is.
+	 *
+	 * @param array<string, mixed> $assignment With its collections, see ClassroomAssignment::withCollections()
+	 */
+	public static function renderAssignmentTitle(array $assignment, TsumegoButtons $tsumegoButtons, array $setConnection, array $set, int $amountOfOtherCollection): string
+	{
+		return '<a id="playTitleA" href="/classes/' . (int) $assignment['classroom_id'] . '">'
+			. h(ClassroomAssignment::title($assignment)) . ' ' . $tsumegoButtons->currentOrder . '/' . $tsumegoButtons->highestTsumegoOrder . '</a><br>
+							<font style="font-weight:400;" color="grey">
+								<a style="color:grey;" class="play-title__origin" href="' . Set::url($set['Set']['id']) . '">
+									(' . h($set['Set']['title']) . ' ' . $setConnection['SetConnection']['num'] . '/' . $amountOfOtherCollection . ')
+								</a>
+							</font>';
+	}
+
 	private static function randomCorner(): string
 	{
 		$corners = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
 		return $corners[array_rand($corners)];
 	}
+
+	/**
+	 * The class assignment the problem is played in, with its collections, set by its route
+	 * (ClassroomsController::play()): its problems are the row of buttons and Next walks them.
+	 *
+	 * @var array<string, mixed>|null
+	 */
+	public ?array $classroomAssignment = null;
 
 	/** @var callable */
 	private $setFunction;

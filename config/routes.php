@@ -286,6 +286,61 @@ Router::connect(
 	['controller' => 'sets', 'action' => 'view'],
 	['pass' => ['id', 'partition'], 'id' => '[^/]+', 'partition' => '[0-9]+', 'routeClass' => 'SetViewRoute']
 );
+/**
+ * Classes of a teacher, see ClassroomsController. The address of a class is the link the teacher
+ * sends to the players who should ask to join.
+ */
+Router::connect(
+	'/classes',
+	['controller' => 'Classrooms', 'action' => 'index']
+);
+Router::connect(
+	'/classes/create',
+	['controller' => 'Classrooms', 'action' => 'create']
+);
+Router::connect(
+	'/classes/collections',
+	['controller' => 'Classrooms', 'action' => 'collections']
+);
+Router::connect(
+	'/classes/collection-problems/:id',
+	['controller' => 'Classrooms', 'action' => 'collectionProblems'],
+	['pass' => ['id'], 'id' => '[0-9]+'] // Id of a collection
+);
+Router::connect(
+	'/classes/:id',
+	['controller' => 'Classrooms', 'action' => 'view'],
+	['pass' => ['id'], 'id' => '[0-9]+']
+);
+foreach (['invite' => 'invite', 'join' => 'join', 'create-assignment' => 'createAssignment', 'delete' => 'delete'] as $path => $classroomAction)
+	Router::connect(
+		'/classes/' . $path . '/:id',
+		['controller' => 'Classrooms', 'action' => $classroomAction],
+		['pass' => ['id'], 'id' => '[0-9]+'] // Id of a class
+	);
+foreach (['accept-member' => 'acceptMember', 'remove-member' => 'removeMember'] as $path => $classroomAction)
+	Router::connect(
+		'/classes/' . $path . '/:id',
+		['controller' => 'Classrooms', 'action' => $classroomAction],
+		['pass' => ['id'], 'id' => '[0-9]+'] // Id of a membership
+	);
+Router::connect(
+	'/classes/play/:id/:setConnectionId',
+	['controller' => 'Classrooms', 'action' => 'play'],
+	['pass' => ['id', 'setConnectionId'], 'id' => '[0-9]+', 'setConnectionId' => '[0-9]+'] // Id of an assignment, then of a problem in it
+);
+Router::connect(
+	'/classes/play/:id',
+	['controller' => 'Classrooms', 'action' => 'play'],
+	['pass' => ['id'], 'id' => '[0-9]+'] // Id of an assignment
+);
+foreach (['assignment' => 'assignment', 'save-assignment' => 'saveAssignment', 'delete-assignment' => 'deleteAssignment', 'progress' => 'progress'] as $path => $classroomAction)
+	Router::connect(
+		'/classes/' . $path . '/:id',
+		['controller' => 'Classrooms', 'action' => $classroomAction],
+		['pass' => ['id'], 'id' => '[0-9]+'] // Id of an assignment
+	);
+
 Router::connect(
 	'/users/playerColorPreference',
 	['controller' => 'Users', 'action' => 'playerColorPreference']

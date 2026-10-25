@@ -114,6 +114,7 @@ class PlayResultProcessorComponent extends Component
 			$result['potion_triggered'] = $this->processPotion();
 		$this->processXpChange($tsumego, $result, $previousStatusValue, $originalTsumegoRating, $progressDeletionCount);
 		$this->updateTsumegoAttempt($tsumego, $result, $previousStatusValue, $seconds);
+		ClassroomAssignment::recordResult((int) Auth::getUserID(), $tsumegoID, $outcome);
 		// The pool is fed from every mode: a solved problem that goes wrong enters the
 		// review ladder, a clean solve climbs it. The training says it is the one playing, since a replay there counts for nothing,
 		// and so does the time mode, the one mode where a solved problem is not free play.
