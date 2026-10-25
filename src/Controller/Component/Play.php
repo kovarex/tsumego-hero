@@ -411,8 +411,8 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		}
 		($this->setFunction)('userSetsJson', $userSetsJson);
 
+		// past either end of a class assignment is the page of its class
 		if (isset($assignmentButtons))
-			// past either end of the assignment is the page of its class
 			$assignmentButtons->exportCurrentAndPreviousLink($this->setFunction, null, $setConnectionID, null, '/classes/' . (int) $this->classroomAssignment['classroom_id']);
 		elseif (Auth::isInLevelMode() && isset($tsumegoButtons))
 			$tsumegoButtons->exportCurrentAndPreviousLink($this->setFunction, $tsumegoFilters, $setConnectionID, $set);
