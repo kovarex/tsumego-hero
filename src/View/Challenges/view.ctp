@@ -68,9 +68,8 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 		<?php endif; ?>
 	</section>
 
-	<section class="challenges__section" id="challenge-standings">
+	<section class="challenges__section challenges__section--wide" id="challenge-standings">
 		<h2 class="challenges__heading">Players</h2>
-		<div class="challenges__table-area">
 		<div class="challenges__table-wrapper">
 			<table class="challenges__table">
 				<thead>
@@ -115,9 +114,8 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 				</tbody>
 			</table>
 		</div>
-		</div>
 		<?php if ($showResults): ?>
-		<p class="hint challenges__legend">A problem button opens the problem and shows its board when you point at it. A solved problem shows its points, the time is in its tooltip.
+		<p class="hint challenges__legend">A problem button opens the problem and shows its board when you point at it, its colour is how you did with it. A solved problem shows its points, the time is in its tooltip.
 			<span class="challenges__cell challenges__cell--failed">✗</span> failed
 			<span class="challenges__cell challenges__cell--timeout">⏱</span> out of time
 			<span class="challenges__cell challenges__cell--skipped">–</span> skipped</p>
@@ -127,7 +125,7 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 	</section>
 	<?php if (!empty($problemButtons)): ?>
 	<script>
-		// The table scrolls sideways when it is wider than the page, which would cut off the board
+		// The table scrolls sideways when it is wider than the white box, which would cut off the board
 		// previews of its problem buttons, so a preview is put under its button on the screen instead.
 		document.getElementById('challenge-standings').addEventListener('mouseover', function(event)
 		{

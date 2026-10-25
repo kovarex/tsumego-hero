@@ -310,6 +310,15 @@ class ChallengesControllerTest extends TestCaseWithAuth
 		$this->assertTextContains('You are <strong>1st</strong> of 2', $page);
 		$this->assertTextContains('challenges__cell--failed', $page);
 		$this->assertTextContains('not played yet', $page);
+
+		// the problem buttons are coloured by how the player looking did in their run, not by their status of the problem
+		preg_match_all('/class="problem-nav__item problem-nav__item--(\w)/', $page, $matches);
+		$this->assertSame(['S', 'S', 'S', 'S', 'S'], $matches[1]);
+		$this->login('challenger');
+		$page = $this->testAction('/challenges/' . $challengeId, ['method' => 'get', 'return' => 'view']);
+		preg_match_all('/class="problem-nav__item problem-nav__item--(\w)/', $page, $matches);
+		$this->assertSame(['S', 'F', 'S', 'F', 'S'], $matches[1]);
+		$this->assertTextContains('You got it wrong.', $page);
 	}
 
 	public function testTheProblemsShowOnlyToThePlayersWhoFinishedTheirRun(): void

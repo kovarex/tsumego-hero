@@ -79,32 +79,40 @@ class Challenge extends AppModel
 
 	/**
 	 * The problems of a challenge as the buttons of a collection page, numbered in the order they
-	 * are played, coloured by the status of the player looking and with the board in the tooltip.
+	 * are played, with the board in the tooltip, and coloured by how the player looking did with
+	 * them in their run: green solved, red failed or out of time, grey skipped.
 	 *
+	 * @param array<int, array{status: string, seconds: ?float, points: ?float}> $myAttempts The
+	 *     attempts of the run of the player looking, by the order, as attemptsByRun() gives them
 	 * @return array<int, TsumegoButton> By the order in the challenge
 	 */
-	public static function problemButtons(int $challengeId, ?int $viewerUserId): array
+	public static function problemButtons(int $challengeId, array $myAttempts): array
 	{
-		$rows = Util::query('SELECT p.`order`, p.tsumego_id, t.rating, sgf.sgf, status.status
+		$rows = Util::query('SELECT p.`order`, p.tsumego_id, t.rating, sgf.sgf
 			FROM challenge_problem p
 			JOIN tsumego t ON t.id = p.tsumego_id
 			LEFT JOIN sgf ON sgf.id = ' . Sgf::currentVersionIDSql('p.tsumego_id') . '
-			LEFT JOIN tsumego_status status ON status.tsumego_id = p.tsumego_id AND status.user_id = ?
 			WHERE p.challenge_id = ?
-			ORDER BY p.`order`', [$viewerUserId, $challengeId]);
+			ORDER BY p.`order`', [$challengeId]);
 		$buttons = [];
 		foreach ($rows as $row)
 		{
 			$setConnection = ClassRegistry::init('SetConnection')->findDisplaySetConnection((int) $row['tsumego_id']);
 			if (!$setConnection)
 				continue;
-			$buttons[(int) $row['order']] = new TsumegoButton(
-				(int) $row['tsumego_id'],
-				(int) $setConnection['SetConnection']['id'],
-				(int) $row['order'],
-				$row['status'] ?? 'N',
-				(float) $row['rating'],
-				$row['sgf'] ?? '');
+			$order = (int) $row['order'];
+			$attempt = $myAttempts[$order] ?? null;
+			[$status, $label, $description] = match ($attempt['status'] ?? 'skipped')
+			{
+				'solved' => ['S', 'Solved', 'You solved it in ' . self::formatSeconds((float) $attempt['seconds']) . ' for ' . self::formatPoints((float) $attempt['points']) . ' points.'],
+				'failed' => ['F', 'Failed', 'You got it wrong.'],
+				'timeout' => ['F', 'Out of time', 'You ran out of time.'],
+				default => ['N', 'Skipped', 'You didn\'t play it.'],
+			};
+			$button = new TsumegoButton((int) $row['tsumego_id'], (int) $setConnection['SetConnection']['id'], $order, $status, (float) $row['rating'], $row['sgf'] ?? '');
+			$button->label = $label;
+			$button->description = $description;
+			$buttons[$order] = $button;
 		}
 		return $buttons;
 	}

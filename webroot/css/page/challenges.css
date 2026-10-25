@@ -3,10 +3,20 @@
 /* Challenges between players and the table of a challenge (src/View/Challenges). */
 .challenges
 {
-	max-width: 1000px;
-	margin: 0 auto;
 	padding: var(--space-4);
 	text-align: left;
+}
+
+/* The page is a column in the middle of the white box, only the table of the players may be wider. */
+.challenges > *
+{
+	max-width: 1000px;
+	margin-inline: auto;
+}
+
+.challenges > .challenges__section--wide
+{
+	max-width: none;
 }
 
 .challenges__header
@@ -106,18 +116,13 @@
 	margin-top: var(--space-4);
 }
 
-/* A table of many problems takes the whole width of the window rather than only the column of the
-   page, centred under it, and scrolls sideways on its own only when even that is too narrow. */
-.challenges__table-area
-{
-	display: flex;
-	justify-content: center;
-}
-
+/* A table of many problems takes the whole width of the white box rather than only the column of
+   the page, and scrolls sideways on its own only when even that is too narrow. */
 .challenges__table-wrapper
 {
-	flex: 0 0 auto;
-	max-width: calc(100vw - 2 * var(--space-4));
+	width: fit-content;
+	max-width: 100%;
+	margin: 0 auto;
 	overflow-x: auto;
 	overflow-y: hidden;
 }
