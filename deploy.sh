@@ -36,6 +36,20 @@ else
     CI=true npx pnpm@10 run changelog:gen
 fi
 
+### Build the JS and CSS bundles with Vite
+### Right after the pull, as the new pages need the new bundles. build:deploy builds into
+### webroot/dist-next and only then swaps it into webroot/dist (scripts/publish-dist.mjs):
+### building in place empties webroot/dist first, and a page rendered meanwhile loaded
+### without the legacy scripts.
+echo "=== Building React app ==="
+if [[ "$IS_DDEV" = true ]]; then
+    ddev exec CI=true npx pnpm@10 install --frozen-lockfile
+    ddev exec CI=true npx pnpm@10 run build:deploy
+else
+    CI=true npx pnpm@10 install --frozen-lockfile
+    CI=true npx pnpm@10 run build:deploy
+fi
+
 ### Select MySQL client (local or DDEV)
 if [[ "$IS_DDEV" = true ]]; then
     MYSQL="ddev mysql"
@@ -198,23 +212,11 @@ else
     vendor/bin/phinx migrate
 fi
 
-# Clear all caches before rebuilding assets
-# This ensures the build uses fresh source files and doesn't serve stale versions
+# Clear all caches, so the new code doesn't run on stale cached models and views
 echo "=== Clearing caches ==="
 rm -rf "$ROOT_DIR/tmp/cache/models"/*
 rm -rf "$ROOT_DIR/tmp/cache/persistent"/*
 rm -rf "$ROOT_DIR/tmp/cache/views"/*
-
-
-# Build React app with Vite
-echo "=== Building React app ==="
-if [[ "$IS_DDEV" = true ]]; then
-    ddev exec CI=true npx pnpm@10 install --frozen-lockfile
-    ddev exec CI=true npx pnpm@10 run build
-else
-    CI=true npx pnpm@10 install --frozen-lockfile
-    CI=true npx pnpm@10 run build
-fi
 
 
 echo "=== Deploy complete ==="

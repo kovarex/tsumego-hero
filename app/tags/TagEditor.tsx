@@ -3,8 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useAuth } from '../shared/AuthContext';
 import type { TagItem } from './tagTypes';
 import { addTag, removeTag } from './api';
-
-declare function makeIdValidName(name: string): string;
+import { makeIdValidName } from './tagElementId';
 
 interface Props
 {
