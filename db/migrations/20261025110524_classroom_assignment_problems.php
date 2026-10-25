@@ -18,7 +18,7 @@ class ClassroomAssignmentProblems extends AbstractMigration
 		$this->execute("CREATE TABLE `classroom_assignment_problem` (
   `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `classroom_assignment_id` int(10) UNSIGNED NOT NULL,
-  `set_connection_id` int(10) UNSIGNED NOT NULL,
+  `set_connection_id` int(11) NOT NULL COMMENT 'Signed like set_connection.id.',
   `position` int(11) NOT NULL COMMENT 'The order of the problem in the assignment, from the smallest.',
   PRIMARY KEY (`id`),
   UNIQUE KEY `classroom_assignment_id_set_connection_id` (`classroom_assignment_id`, `set_connection_id`),
