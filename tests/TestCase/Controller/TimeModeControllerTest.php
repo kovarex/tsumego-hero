@@ -646,4 +646,82 @@ class TimeModeControllerTest extends ControllerTestCase
 			$this->assertSame($testCase['unlockShown'], str_contains($html, 'time-rank-unlock-alert'));
 		}
 	}
+
+	public function testTimeModeResultShowsAProblemInSeveralSetsOnceInItsDisplaySet()
+	{
+		$context = new ContextPreparator([
+			'tsumego' => ['sets' => [
+				['name' => 'time mode set one', 'num' => 1],
+				['name' => 'time mode set two', 'num' => 2, 'order' => 1]]],
+			'time-mode-ranks' => ['5k'],
+			'time-mode-sessions' => [[
+				'category' => TimeModeUtil::$CATEGORY_BLITZ,
+				'rank' => '5k',
+				'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
+				'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED]]]]]);
+
+		$html = $this->testAction(
+			'/timeMode/result/' . $context->timeModeSessions[0]['id'],
+			['method' => 'get', 'return' => 'contents']);
+
+		$this->assertSame(1, substr_count($html, 'href="/tsumegos/play/' . $context->tsumegos[0]['id'] . '"'));
+		// the set with an order is shown before the one without
+		$this->assertStringContainsString('time mode set two', $html);
+		$this->assertStringNotContainsString('time mode set one', $html);
+		$this->assertStringContainsString('passed(1/1)', $html);
+	}
+
+	public function testTimeModeResultShowsTheBestRunNextToTheResult()
+	{
+		$context = new ContextPreparator([
+			'tsumego' => 1,
+			'tsumegos' => [2],
+			'time-mode-ranks' => ['5k'],
+			'time-mode-sessions' => [
+				['category' => TimeModeUtil::$CATEGORY_BLITZ, 'rank' => '5k', 'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
+					'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED]]],
+				['category' => TimeModeUtil::$CATEGORY_BLITZ, 'rank' => '5k', 'status' => TimeModeUtil::$SESSION_STATUS_FAILED,
+					'attempts' => [
+						['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED],
+						['order' => 2, 'status' => TimeModeUtil::$ATTEMPT_RESULT_FAILED, 'tsumego_id' => 'other:1']]]]]);
+		Util::execute('UPDATE time_mode_session SET points = 30 WHERE id = ?', [$context->timeModeSessions[0]['id']]);
+		Util::execute('UPDATE time_mode_session SET points = 10 WHERE id = ?', [$context->timeModeSessions[1]['id']]);
+
+		$html = $this->testAction(
+			'/timeMode/result/' . $context->timeModeSessions[1]['id'],
+			['method' => 'get', 'return' => 'contents']);
+		$this->assertStringContainsString('Best: passed(1/1)', $html);
+		$this->assertStringContainsString('Result: failed(1/2)- 10.00 points', $html);
+		$this->assertSame(1, substr_count($html, 'href="/tsumegos/play/' . $context->tsumegos[1]['id'] . '"'));
+
+		// the best run itself is shown only once, as the result
+		$html = $this->testAction(
+			'/timeMode/result/' . $context->timeModeSessions[0]['id'],
+			['method' => 'get', 'return' => 'contents']);
+		$this->assertStringNotContainsString('Best:', $html);
+		$this->assertStringContainsString('Result: passed(1/1)- 30.00 points', $html);
+	}
+
+	public function testTimeModeRunStillBeingPlayedIsNotTheBestRun()
+	{
+		$context = new ContextPreparator([
+			'tsumego' => 1,
+			'tsumegos' => [2],
+			'time-mode-ranks' => ['5k'],
+			'time-mode-sessions' => [
+				['category' => TimeModeUtil::$CATEGORY_BLITZ, 'rank' => '5k', 'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
+					'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED]]],
+				['category' => TimeModeUtil::$CATEGORY_BLITZ, 'rank' => '5k', 'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+					'attempts' => [
+						['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED],
+						['order' => 2, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:1']]]]]);
+		Util::execute('UPDATE time_mode_session SET points = 10 WHERE id = ?', [$context->timeModeSessions[0]['id']]);
+		Util::execute('UPDATE time_mode_session SET points = 50 WHERE id = ?', [$context->timeModeSessions[1]['id']]);
+
+		$html = $this->testAction('/timeMode/result', ['method' => 'get', 'return' => 'contents']);
+
+		$this->assertStringContainsString('Best: passed(1/1)', $html);
+		$this->assertStringContainsString('10.00 points', $html);
+		$this->assertStringNotContainsString('50.00 points', $html);
+	}
 }
