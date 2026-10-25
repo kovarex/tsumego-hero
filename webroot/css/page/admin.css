@@ -116,6 +116,7 @@
 }
 .admin-area__badge,
 .admin-area__count {
+  margin: -4px 0; /* a link with a count is as tall as one without */
   min-width: 1.6em;
   padding: 1px 6px;
   border-radius: 999px;
