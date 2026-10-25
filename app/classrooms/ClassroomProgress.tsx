@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { get } from '../shared/api';
 import { formatDate } from '../shared/dates';
@@ -39,11 +40,29 @@ function cellTitle(cell: ProgressCell | null): string
 	}
 }
 
-function cellText(cell: ProgressCell | null): string
+/** A solve that took misplays, which is worth less than a clean one. */
+function isSolvedAfterMisplays(cell: ProgressCell | null): boolean
+{
+	return cell !== null && (cell.state === 'solved' || cell.state === 'late') && (cell.misplays ?? 0) > 0;
+}
+
+/** A tick for a solve, with the misplays it took; the misplays alone while not solved yet. */
+function cellText(cell: ProgressCell | null): ReactNode
 {
 	if (cell === null)
 		return '';
-	return cell.state === 'tried' ? String(cell.misplays ?? '') : '✓';
+	if (cell.state === 'tried')
+		return String(cell.misplays ?? '');
+	if (isSolvedAfterMisplays(cell))
+		return <>✓<sup className="classes__misplays">{cell.misplays}</sup></>;
+	return '✓';
+}
+
+function cellClassName(cell: ProgressCell | null): string
+{
+	if (cell === null)
+		return 'classes__cell';
+	return `classes__cell classes__cell--${cell.state}` + (isSolvedAfterMisplays(cell) ? ' classes__cell--with-misplays' : '');
 }
 
 interface CollectionRun
@@ -127,7 +146,7 @@ export function ClassroomProgress({ assignmentId, isTeacher }: ClassroomProgress
 							{pupil.cells.map((cell, index) => (
 								<td
 									key={problems[index].setConnectionId}
-									className={'classes__cell' + (cell ? ` classes__cell--${cell.state}` : '')}
+									className={cellClassName(cell)}
 									title={cellTitle(cell)}
 								>
 									{isTeacher

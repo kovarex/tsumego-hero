@@ -731,7 +731,8 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 	}
 
 	/**
-	 * The teacher keeps the page open while the class plays, and a solve shows up without a reload.
+	 * The teacher keeps the page open while the class plays, and a solve shows up without a reload,
+	 * with the misplays it took.
 	 */
 	public function testTheTableShowsASolveWhileThePageIsOpen(): void
 	{
@@ -746,9 +747,14 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$this->assertCount(0, $browser->getElements('.classes__table .classes__cell--solved'));
 
 		$this->addResult($assignmentId, 'pupil', 1, date('Y-m-d H:i:s'));
+		$this->addResult($assignmentId, 'pupil', 2, date('Y-m-d H:i:s'), 2);
 
-		$browser->waitUntilCssSelectorExistsWithText('.classes__solved-count', '1/3', 30);
-		$this->assertCount(1, $browser->getElements('.classes__table .classes__cell--solved'));
+		$browser->waitUntilCssSelectorExistsWithText('.classes__solved-count', '2/3', 30);
+		$this->assertCount(2, $browser->getElements('.classes__table .classes__cell--solved'));
+		// a solve after misplays shows how many it took, not only in the tooltip
+		$misplayed = $browser->getElements('.classes__table .classes__cell--with-misplays');
+		$this->assertCount(1, $misplayed);
+		$this->assertSame('✓2', $misplayed[0]->getText());
 	}
 
 	public function testAPupilGetsNoProgressOfADraft(): void

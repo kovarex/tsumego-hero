@@ -64,7 +64,8 @@ $isPupil = $membershipStatus === ClassroomMemberStatus::ACCEPTED;
 		<?= $this->element('classroom_assignment', ['assignment' => $assignment, 'isTeacher' => $isTeacher]) ?>
 		<?php endforeach; ?>
 		<p class="hint classes__legend">
-			<span class="classes__cell classes__cell--solved">✓</span> solved
+			<span class="classes__cell classes__cell--solved">✓</span> solved without a misplay
+			<span class="classes__cell classes__cell--solved classes__cell--with-misplays">✓<sup class="classes__misplays">2</sup></span> solved after 2 misplays
 			<span class="classes__cell classes__cell--late">✓</span> solved after the due day
 			<span class="classes__cell classes__cell--earlier">✓</span> solved only before it was assigned
 			<span class="classes__cell classes__cell--tried">2</span> misplays, not solved yet

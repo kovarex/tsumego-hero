@@ -183,6 +183,24 @@
 	color: #000;
 }
 
+.classes__cell--solved.classes__cell--with-misplays
+{
+	background: color-mix(in srgb, var(--color-green) 45%, transparent);
+	color: inherit;
+}
+
+.classes__cell--late.classes__cell--with-misplays
+{
+	background: color-mix(in srgb, var(--color-yellow) 45%, transparent);
+	color: inherit;
+}
+
+.classes__misplays
+{
+	margin-left: 1px;
+	font-size: 0.75em;
+}
+
 .classes__cell--earlier
 {
 	color: var(--color-green);
