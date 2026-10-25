@@ -30,25 +30,11 @@ class MistakeTrainingController extends AppController
 			return $this->playSetConnection((int) $setConnectionID);
 
 		$userId = (int) Auth::getUserID();
-		while (true)
-		{
-			$next = MistakeTraining::nextDue($userId);
-			if (!$next)
-				return $this->renderOverview($userId);
+		$next = MistakeTraining::nextDue($userId);
+		if (!$next)
+			return $this->renderOverview($userId);
 
-			$tsumegoId = (int) $next['tsumego_id'];
-			$tsumego = ClassRegistry::init('Tsumego')->find('first', [
-				'conditions' => ['id' => $tsumegoId, 'deleted IS NULL'],
-			]);
-			$setConnection = ClassRegistry::init('SetConnection')->findDisplaySetConnection($tsumegoId);
-			if (!$tsumego || !$setConnection)
-			{
-				MistakeTraining::removeFromPool($userId, $tsumegoId);
-				continue;
-			}
-
-			return $this->playSetConnection((int) $setConnection['SetConnection']['id']);
-		}
+		return $this->playSetConnection((int) $next['set_connection_id']);
 	}
 
 	/**
@@ -121,7 +107,9 @@ class MistakeTrainingController extends AppController
 	 * Render the shared play page for a problem of today's training. A problem that
 	 * is due is its review, also when it was missed earlier today. One solved today
 	 * stays in the row, so it can be opened again, but only as a replay that counts
-	 * for nothing, and the page says so.
+	 * for nothing, and the page says so. A link that stopped holding, because the
+	 * problem left the training or its collection is not open to the player, leads
+	 * back to the queue instead of the refusal of the play page.
 	 */
 	private function playSetConnection(int $setConnectionID): mixed
 	{
@@ -129,6 +117,10 @@ class MistakeTrainingController extends AppController
 		$tsumegoId = $setConnection ? (int) $setConnection['SetConnection']['tsumego_id'] : 0;
 		$pool = $tsumegoId ? MistakeTraining::getPoolRow((int) Auth::getUserID(), $tsumegoId) : null;
 		if (!$pool || !MistakeTraining::isInTodaysTraining($pool))
+			return $this->redirect(MistakeTraining::$QUEUE_LINK);
+
+		$set = ClassRegistry::init('Set')->findById($setConnection['SetConnection']['set_id']);
+		if (!$set || !$this->Authorization->can(['Set' => $set['Set']], 'play'))
 			return $this->redirect(MistakeTraining::$QUEUE_LINK);
 
 		$play = new Play(function ($name, $value) {

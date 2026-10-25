@@ -70,6 +70,21 @@ class SetConnection extends AppModel
 	}
 
 	/**
+	 * SQL predicate for the sets the current user may play: every set that is not in the
+	 * trash, and a sandbox set only for admins and premium players. The play page decides
+	 * the same thing in SetPolicy::canPlay(), so a link built on this predicate never
+	 * leads to a refusal.
+	 */
+	public static function playableSql(string $setAlias): string
+	{
+		$playable = $setAlias . '.deleted IS NULL';
+		if (!Auth::isAdmin() && !Auth::hasPremium())
+			$playable .= ' AND NOT ((' . $setAlias . '.public IS NULL OR ' . $setAlias . '.public = 0)'
+				. ' AND ' . $setAlias . '.user_id IS NULL)';
+		return '(' . $playable . ')';
+	}
+
+	/**
 	 * Find a representative set connection for a tsumego, for display only.
 	 */
 	public function findDisplaySetConnection(int $tsumegoId): ?array
