@@ -8,6 +8,7 @@ besogo.loadSgf = function(sgf, editor, mode = NORMAL_LOAD)
       root;
   let bCounter = 0;
   let wCounter = 0;
+  let gameInfo = {}; // Structure for game info properties
   loadRootProps(sgf); // Load size, variants style and game info
   root = besogo.makeGameRoot(size.x, size.y);
 
@@ -21,11 +22,23 @@ besogo.loadSgf = function(sgf, editor, mode = NORMAL_LOAD)
   besogo.scaleParameters.initializeRotation(-1);
 
   if (mode == NORMAL_LOAD)
+  {
+    editor.setGameInfo(gameInfo);
     editor.loadRoot(root); // Load root into the editor
+  }
   else
   {
     besogo.scaleParameters.transform(root); // when applying diff, we need to transform now, as the other root is already normalised.
-    editor.getRoot().incorporateDiff(root);
+    let shownRoot = editor.getRoot();
+    shownRoot.incorporateDiff(root);
+    // the game info of the shown version stays, the compared one only tells what differs
+    let gameInfoChanges = besogo.compareGameInfo(editor.getGameInfo(), gameInfo);
+    if (gameInfoChanges.length)
+    {
+      if (!shownRoot.diffInfo)
+        shownRoot.diffInfo = besogo.makeDiffInfo();
+      shownRoot.diffInfo.changes = shownRoot.diffInfo.changes.concat(gameInfoChanges);
+    }
     editor.notifyListeners({treeChange: true, navChange: true, stoneChange: true});
   }
 
@@ -238,7 +251,6 @@ besogo.loadSgf = function(sgf, editor, mode = NORMAL_LOAD)
             'DT', 'EV', 'GN', 'PC', 'RO', // Event info
             'GC', 'ON', 'RE', // General comments
             'AN', 'CP', 'SO', 'US' ], // IP credits
-        gameInfo = {}, // Structure for game info properties
         i, id, value; // Scratch iteration variables
 
     for (i = 0; i < node.props.length; i++)
@@ -247,7 +259,7 @@ besogo.loadSgf = function(sgf, editor, mode = NORMAL_LOAD)
       value = node.props[i].values.join().trim(); // Join the values array
       if (id === 'SZ') // Size property
         size = besogo.parseSize(value);
-      else if (id === 'ST')
+      else if (id === 'ST' && mode == NORMAL_LOAD)
         editor.setVariantStyle( +value ); // Converts value to number
       else if (gameInfoIds.indexOf(id) !== -1) // Game info property
       {
@@ -257,7 +269,6 @@ besogo.loadSgf = function(sgf, editor, mode = NORMAL_LOAD)
           gameInfo[id] = value;
       }
     }
-    editor.setGameInfo(gameInfo);
   }
 
   // Converts letters to numerical coordinates

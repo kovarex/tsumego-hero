@@ -1,5 +1,7 @@
 <?php
 
+use App\Attribute\HttpGet;
+
 class ChangelogController extends AppController
 {
 	public $helpers = ['Html', 'Form'];
@@ -11,6 +13,7 @@ class ChangelogController extends AppController
 	 *
 	 * @return void
 	 */
+	#[HttpGet]
 	public function index(): void
 	{
 		$this->set('_page', 'changelog');
@@ -38,6 +41,7 @@ class ChangelogController extends AppController
 	 * @param string|null $file Changelog index path (overridable for tests)
 	 * @return int[]
 	 */
+	#[HttpGet]
 	public static function changelogTimestamps(?string $file = null): array
 	{
 		$file = $file ?? (ROOT . DS . 'changelog' . DS . 'index.json');

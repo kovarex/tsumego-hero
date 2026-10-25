@@ -10,4 +10,83 @@
   max-width: 800px;
 }
 .admin-text { color: var(--admin-text-color); }
+
+.tag-overview {
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: left;
+}
+/* A tag's problem list sits in the row under it, so the rows are not striped. */
+.tag-overview .data-table tr:nth-child(even) td {
+  background: var(--info-box-background);
+}
+.tag-overview__toggle {
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.tag-overview__note {
+  color: var(--text-softer-color);
+}
+.tag-overview__problems ol {
+  margin: 0;
+  columns: 3 14em;
+}
+/* Accept / Reject of a proposal with the comment sent to the proposer, see ProposalDecisionForm */
+.proposal-decision {
+	display: flex;
+	gap: 4px;
+	align-items: center;
+	white-space: nowrap;
+}
+.proposal-decision__comment {
+	min-width: 12em;
+	flex: 1 1 auto;
+}
+.proposal-description { /* see SgfDescription, a long one is cut to fit in about three lines */
+	min-width: 16em;
+	max-width: 20em;
+	font-size: 13px;
+}
+.rejected-proposals { /* RejectedSGFProposalsRenderer, folded under the waiting proposals */
+	margin-top: 8px;
+}
+.rejected-proposals > summary {
+	cursor: pointer;
+	font-weight: bold;
+}
+.trash {
+  text-align: left;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+.trash .data-table {
+  margin-bottom: 24px;
+}
+.trash-notice {
+  max-width: 800px;
+  margin: 8px auto;
+}
+.trash-notice__restore {
+  display: inline-block;
+  margin-left: 8px;
+}
+.roles {
+  text-align: left;
+  max-width: 800px;
+  margin: 0 auto;
+}
+.profile-role {
+  text-align: center;
+  margin-bottom: 8px;
+}
+.role-form {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
 }

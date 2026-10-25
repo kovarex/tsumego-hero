@@ -30,6 +30,7 @@ class EditTsumegoTest extends ControllerTestCase
 			'min-bigger-than-max' => [['field' => 'maximum-rating', 'value' => '10k', 'field2' => 'minimum-rating', 'value2' => '5k', 'result' => null]],
 			'delete-invalid' => [['field' => 'delete', 'value' => 'bla', 'result' => true, 'public' => 0]],
 			'delete-confirm' => [['field' => 'delete', 'value' => 'delete', 'result' => true, 'public' => 0]],
+			'delete-published' => [['field' => 'delete', 'value' => 'delete', 'result' => true, 'public' => 1]],
 			'non-admin' => [['field' => 'description', 'value' => 'bar', 'result' => 'foo', 'admin' => false]],
 			'invalid-tsumego' => [['field' => 'description', 'value' => 'bar', 'result' => 'foo', 'invalid-tsumego' => true]],
 		];
@@ -67,7 +68,7 @@ class EditTsumegoTest extends ControllerTestCase
 			ClassRegistry::init('Tsumego')->delete($context->tsumegos[0]['id']);
 
 		if (($testCase['admin'] ?? null) === false)
-			Auth::saveUserField('isAdmin', false);
+			Auth::saveUserField('user_role_id', User::ROLE_PLAYER);
 
 		$browser->clickId("tsumego-edit-submit");
 

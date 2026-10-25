@@ -2,6 +2,7 @@
 
 use App\Utility\Rating;
 use App\Utility\SetEditRenderer;
+use App\Utility\Trash;
 use App\Utility\TsumegoButtons;
 
 /**
@@ -169,9 +170,22 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 	<?php if (!empty($canDelete)): ?>
 		<div class="card set-edit__section set-edit__section--danger">
 			<h2 class="set-edit__heading">Danger Zone</h2>
-			<form method="post" action="/sets/delete/<?php echo $setId; ?>" onsubmit="return confirm('Delete this collection?');">
-				<input type="submit" class="btn btn--danger" value="Delete Collection">
-			</form>
+			<?php if ($set['Set']['user_id'] === null): ?>
+				<?php // a collection of the site goes to the trash with its problems, a big step, so it is confirmed by typing its title ?>
+				<form method="post" action="/sets/delete/<?php echo $setId; ?>" id="set-delete">
+					<p>
+						Deleting moves the collection and its <?php echo $problemCount; ?> problems to the trash.
+						An admin can restore it for <?php echo Trash::$RETENTION_DAYS; ?> days, then it is removed for good.
+					</p>
+					<label for="set-delete-confirmation">Type <b><?php echo h($set['Set']['title']); ?></b> to confirm:</label>
+					<input type="text" name="confirmation" id="set-delete-confirmation" class="form-field__control" autocomplete="off">
+					<input type="submit" class="btn btn--danger" value="Delete Collection" id="set-delete-submit">
+				</form>
+			<?php else: ?>
+				<form method="post" action="/sets/delete/<?php echo $setId; ?>" onsubmit="return confirm('Delete this collection?');">
+					<input type="submit" class="btn btn--danger" value="Delete Collection">
+				</form>
+			<?php endif; ?>
 		</div>
 	<?php endif; ?>
 </div>

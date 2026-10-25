@@ -5,6 +5,7 @@ namespace App\Utility;
 use ClassRegistry;
 use Set;
 use SetConnection;
+use Sgf;
 
 class TsumegoButtonsQueryBuilder
 {
@@ -45,7 +46,7 @@ class TsumegoButtonsQueryBuilder
 			$this->query->selects[] = 'tsumego_status.status as status';
 
 		$this->query->query .= " JOIN set_connection ON set_connection.tsumego_id = tsumego.id";
-		$this->query->query .= " LEFT JOIN sgf ON sgf.id = (SELECT MAX(s2.id) FROM sgf s2 WHERE s2.tsumego_id = tsumego.id)";
+		$this->query->query .= " LEFT JOIN sgf ON sgf.id = " . Sgf::currentVersionIDSql('tsumego.id');
 		$this->query->conditions[] = 'tsumego.deleted is NULL';
 
 		// when I'm quering by topics (which means sets), and I'm viewing private set

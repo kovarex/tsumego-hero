@@ -30,7 +30,7 @@ class AppController extends Controller
 	 *
 	 * @return void
 	 */
-	public static function handleContribution(int $uid, string $action): void
+	public static function _handleContribution(int $uid, string $action): void
 	{
 		$uc = ClassRegistry::init('UserContribution')->find('first', ['conditions' => ['user_id' => $uid]]);
 		if ($uc == null)
@@ -51,7 +51,7 @@ class AppController extends Controller
 		ClassRegistry::init('UserContribution')->save($uc);
 	}
 
-	public static function getAllTags(): array
+	public static function _getAllTags(): array
 	{
 		return Util::query("SELECT * from tag WHERE approved = 1 ORDER BY tag.name");
 	}
@@ -68,7 +68,7 @@ class AppController extends Controller
 			throw new NotFoundException('User not found');
 	}
 
-	public static function saveDanSolveCondition(string $solvedTsumegoRank, int $tId): void
+	public static function _saveDanSolveCondition(string $solvedTsumegoRank, int $tId): void
 	{
 		if ($solvedTsumegoRank == '1d' || $solvedTsumegoRank == '2d' || $solvedTsumegoRank == '3d' || $solvedTsumegoRank == '4d' || $solvedTsumegoRank == '5d')
 		{
@@ -94,7 +94,7 @@ class AppController extends Controller
 		}
 	}
 
-	public static function updateSprintCondition(bool $trigger = false): void
+	public static function _updateSprintCondition(bool $trigger = false): void
 	{
 		if (Auth::isLoggedIn())
 		{
@@ -121,7 +121,7 @@ class AppController extends Controller
 		}
 	}
 
-	public static function updateGoldenCondition(bool $trigger = false): void
+	public static function _updateGoldenCondition(bool $trigger = false): void
 	{
 		$goldenCondition = ClassRegistry::init('AchievementCondition')->find('first', [
 			'order' => 'value DESC',
@@ -145,7 +145,7 @@ class AppController extends Controller
 		ClassRegistry::init('AchievementCondition')->save($goldenCondition);
 	}
 
-	public static function updatePotionCondition(): void
+	public static function _updatePotionCondition(): void
 	{
 		$potionCondition = ClassRegistry::init('AchievementCondition')->find('first', [
 			'conditions' => [
@@ -165,7 +165,7 @@ class AppController extends Controller
 		ClassRegistry::init('AchievementCondition')->save($potionCondition);
 	}
 
-	public static function updateGems(string $rank): void
+	public static function _updateGems(string $rank): void
 	{
 		$datex = new DateTime('today');
 		$today = $datex->format('Y-m-d');
@@ -309,6 +309,19 @@ class AppController extends Controller
 		new TsumegoFilters();
 	}
 
+	/**
+	 * The mailer of the emails a controller sends. A test replaces it on the controller it
+	 * generates, see TestCaseWithAuth::registerTestEmailer().
+	 *
+	 * @return CakeEmail
+	 */
+	public function _getEmailer()
+	{
+		// A run of the tests must not hand a mail to a mail server that is not there. The
+		// debug transport builds the message and returns it instead of sending it.
+		return Util::isOnTestSite() ? new CakeEmail(['transport' => 'Debug']) : new CakeEmail();
+	}
+
 	protected function signIn(array $user): void
 	{
 		Auth::init($user);
@@ -347,7 +360,12 @@ class AppController extends Controller
 		if (!$allowed)
 			return;
 
-		if (!in_array($this->request->method(), $allowed, true))
+		// HEAD asks for the headers of a GET response, so a page that answers GET answers it
+		$method = $this->request->method();
+		if ($method === 'HEAD' && in_array('GET', $allowed, true))
+			$method = 'GET';
+
+		if (!in_array($method, $allowed, true))
 		{
 			$e = new MethodNotAllowedException();
 			$e->responseHeader('Allow', implode(', ', $allowed));
@@ -355,9 +373,28 @@ class AppController extends Controller
 		}
 	}
 
+	/**
+	 * Bumped when browsers hold files that no deploy can replace: the old static editor page (until
+	 * 2026-10-23) was cached with the besogo scripts it loaded, so its users kept running the old editor.
+	 */
+	public const BROWSER_CACHE_VERSION = '2026-10-23';
+
+	/**
+	 * Drops the site's HTTP cache in a browser once per BROWSER_CACHE_VERSION, on whatever request of
+	 * the site comes first. The cookie keeps it from happening again.
+	 */
+	private function resetStaleBrowserCache(): void
+	{
+		if (($_COOKIE['browser_cache_version'] ?? null) === self::BROWSER_CACHE_VERSION)
+			return;
+		$this->response->header('Clear-Site-Data', '"cache"');
+		Util::setCookie('browser_cache_version', self::BROWSER_CACHE_VERSION);
+	}
+
 	public function beforeFilter(): void
 	{
 		$this->enforceHttpMethodAttribute();
+		$this->resetStaleBrowserCache();
 
 		// Boards are drawn without a session: a list of a thousand players would otherwise
 		// pay for the login of a visitor who is not there.
@@ -477,7 +514,7 @@ class AppController extends Controller
 		}
 
 		if (HeroPowers::getSprintRemainingSeconds() == 0)
-			$this->updateSprintCondition();
+			$this->_updateSprintCondition();
 
 		if (Auth::isLoggedIn() && !$this->request->is('ajax'))
 		{

@@ -48,7 +48,7 @@ class SetConnection extends AppModel
 	public static function publicCollectionsWithMinimumProblemsSql(): string
 	{
 		return 'SELECT sc.set_id FROM set_connection sc'
-			. ' JOIN tsumego t ON t.id = sc.tsumego_id'
+			. ' JOIN tsumego t ON t.id = sc.tsumego_id AND t.deleted IS NULL'
 			. ' JOIN `set` st ON st.id = sc.set_id'
 			. ' WHERE ' . Set::officialCondition('st')
 			. ' GROUP BY sc.set_id HAVING COUNT(*) >= ' . self::ACHIEVEMENT_MINIMUM_PROBLEMS;
@@ -65,7 +65,8 @@ class SetConnection extends AppModel
 			$visibility .= ' OR ' . $setAlias . '.user_id = ' . (int) Auth::getUserID();
 		if (Auth::isAdmin() || Auth::hasPremium())
 			$visibility .= ' OR (' . $setAlias . '.public = 0 AND ' . $setAlias . '.user_id IS NULL)';
-		return '(' . $visibility . ')';
+		// a collection in the trash is reached only from the trash
+		return '(' . $setAlias . '.deleted IS NULL AND (' . $visibility . '))';
 	}
 
 	/**

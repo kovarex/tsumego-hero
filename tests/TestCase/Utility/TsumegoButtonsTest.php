@@ -76,6 +76,28 @@ class TsumegoButtonsTest extends TestCaseWithAuth
 		$this->assertSame(1, $buttons->currentOrder);
 	}
 
+	/** The preview of a problem is its current version, never a proposal waiting for an admin or a rejected one. */
+	public function testButtonPreviewShowsTheCurrentVersion(): void
+	{
+		$current = '(;GM[1]FF[4]SZ[19]AB[cc];B[aa])';
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumego' => [
+				'set_order' => 1,
+				'sgfs' => [
+					['data' => '(;GM[1]FF[4]SZ[19]AB[dd];B[aa])', 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
+					['data' => $current, 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
+					['data' => '(;GM[1]FF[4]SZ[19]AB[ee];B[aa])', 'sgf_status_id' => Sgf::STATUS_REJECTED],
+					['data' => '(;GM[1]FF[4]SZ[19]AB[ff];B[aa])', 'sgf_status_id' => Sgf::STATUS_PROPOSED]],
+				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
+			],
+		]);
+
+		$buttons = MistakeTraining::buildQueueButtons((int) $context->tsumegos[0]['set-connections'][0]['id']);
+
+		$this->assertSame($current, $buttons[0]->sgf);
+	}
+
 	public function testMistakeTrainingQueueExcludesNotDueAndDeleted(): void
 	{
 		$context = new ContextPreparator([

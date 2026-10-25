@@ -41,6 +41,9 @@ class TsumegoIssue extends AppModel
 	public static int $OPENED_STATUS = 1;
 	public static int $CLOSED_STATUS = 2;
 
+	// the issues of a problem in the trash are left out of the issue list
+	private static string $LIVE_PROBLEM_CONDITION = 'TsumegoIssue.tsumego_id IN (SELECT id FROM tsumego WHERE deleted IS NULL)';
+
 
 	/**
 	 * Delete an issue if it has no non-deleted comments.
@@ -96,6 +99,7 @@ class TsumegoIssue extends AppModel
 			SELECT id
 			FROM tsumego_issue
 			WHERE deleted = 0
+				AND tsumego_id IN (SELECT id FROM tsumego WHERE deleted IS NULL)
 			{$statusCondition}
 			ORDER BY created DESC, id DESC
 			LIMIT {$limit} OFFSET {$offset}
@@ -133,7 +137,7 @@ class TsumegoIssue extends AppModel
 				cu.pref_avatar AS comment_author_pref_avatar,
 				cu.email AS comment_author_email,
 				cu.rating AS comment_author_rating,
-				cu.isAdmin AS comment_author_isAdmin,
+				cu.user_role_id AS comment_author_user_role_id,
 				s.id AS set_id,
 				s.title AS set_title,
 				sc.num AS tsumego_num
@@ -214,7 +218,7 @@ class TsumegoIssue extends AppModel
 						'pref_avatar' => $row['cu']['comment_author_pref_avatar'] ?? null,
 						'email' => $row['cu']['comment_author_email'] ?? null,
 					]),
-					'isAdmin' => (bool) ($row['cu']['comment_author_isAdmin'] ?? false),
+					'isAdmin' => User::isAdmin(['user_role_id' => $row['cu']['comment_author_user_role_id'] ?? null]),
 				];
 			}
 		}
@@ -244,12 +248,14 @@ class TsumegoIssue extends AppModel
 				'conditions' => [
 					'tsumego_issue_status_id' => self::$OPENED_STATUS,
 					'deleted' => false,
+					self::$LIVE_PROBLEM_CONDITION,
 				],
 			]),
 			'closed' => $this->find('count', [
 				'conditions' => [
 					'tsumego_issue_status_id' => self::$CLOSED_STATUS,
 					'deleted' => false,
+					self::$LIVE_PROBLEM_CONDITION,
 				],
 			]),
 		];

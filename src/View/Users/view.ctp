@@ -29,6 +29,9 @@ use App\Utility\ValueGraphRenderer;
 
 <div>
 	<?php echo $this->element('user_header', ['user' => $user['User'], 'activeTab' => 'profile']); ?>
+	<?php if (Auth::isOwner() && !User::isDeleted($user['User'])): ?>
+	<div class="profile-role"><?php echo $this->element('role_form', ['user' => $user['User']]); ?></div>
+	<?php endif; ?>
 
 <div class="cluster cluster--stretch">
 	<div class="card card--purple">

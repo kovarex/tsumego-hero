@@ -5,6 +5,7 @@
  * They read only the computed `permissions` list attached by Auth::getIdentity().
  */
 use App\Policy\AdminPolicy;
+use App\Policy\OwnerPolicy;
 use App\Policy\SgfPolicy;
 use App\Policy\SetPolicy;
 use App\Policy\TagConnectionPolicy;
@@ -24,7 +25,7 @@ class PolicyTest extends CakeTestCase
 	{
 		if ($isAdmin === null)
 			return null;
-		$identity = ['isAdmin' => $isAdmin, 'premium' => $premium, 'level' => 1, 'rating' => 1000];
+		$identity = ['user_role_id' => $isAdmin ? User::ROLE_ADMIN : User::ROLE_PLAYER, 'premium' => $premium, 'level' => 1, 'rating' => 1000];
 		if ($id !== null)
 			$identity['id'] = $id;
 		return $identity;
@@ -33,12 +34,27 @@ class PolicyTest extends CakeTestCase
 	public function testAdminPolicyAllowsOnlyAdmins()
 	{
 		$policy = new AdminPolicy();
-		foreach (['canAdminstats', 'canUploads', 'canUserstats', 'canUserstats3', 'canShowPublishSchedule'] as $method)
+		foreach (['canAdminstats', 'canUploads', 'canUserstats', 'canUserstats3'] as $method)
 		{
 			$this->assertTrue($policy->{$method}($this->identity(true)), $method . ' allows admin');
 			$this->assertFalse($policy->{$method}($this->identity(false)), $method . ' blocks regular user');
 			$this->assertFalse($policy->{$method}($this->identity(null)), $method . ' blocks anonymous');
 		}
+	}
+
+	public function testOwnerHasTheRightsOfAnAdmin()
+	{
+		$owner = ['user_role_id' => User::ROLE_OWNER, 'premium' => 0, 'level' => 1, 'rating' => 1000];
+		$this->assertTrue(AdminPolicy::canAdminstats($owner));
+		$this->assertTrue(SgfPolicy::canView($owner));
+	}
+
+	public function testOwnerPolicyAllowsOnlyOwners()
+	{
+		$this->assertTrue(OwnerPolicy::canManageRoles(['user_role_id' => User::ROLE_OWNER]));
+		$this->assertFalse(OwnerPolicy::canManageRoles($this->identity(true)));
+		$this->assertFalse(OwnerPolicy::canManageRoles($this->identity(false)));
+		$this->assertFalse(OwnerPolicy::canManageRoles($this->identity(null)));
 	}
 
 	public function testSgfPolicyAllowsOnlyAdmins()
@@ -52,7 +68,7 @@ class PolicyTest extends CakeTestCase
 	public function testTagPolicyAllowsOnlyAdmins()
 	{
 		$policy = new TagPolicy();
-		foreach (['canEdit', 'canEditAction'] as $method)
+		foreach (['canEdit', 'canEditAction', 'canIndex', 'canProblems'] as $method)
 		{
 			$this->assertTrue($policy->{$method}($this->identity(true)), $method . ' allows admin');
 			$this->assertFalse($policy->{$method}($this->identity(false)), $method . ' blocks regular user');
@@ -60,11 +76,11 @@ class PolicyTest extends CakeTestCase
 		}
 	}
 
-	public function testTagDeleteReservedForSiteOwner()
+	public function testTagDeleteReservedForOwners()
 	{
 		$policy = new TagPolicy();
-		$this->assertTrue($policy->canDelete($this->identity(true, 0, 72)), 'site owner can delete');
-		$this->assertFalse($policy->canDelete($this->identity(true)), 'regular admin blocked');
+		$this->assertTrue($policy->canDelete(['user_role_id' => User::ROLE_OWNER]), 'owner can delete');
+		$this->assertFalse($policy->canDelete($this->identity(true, 0, 72)), 'admin blocked, whatever the id');
 		$this->assertFalse($policy->canDelete($this->identity(false)), 'regular user blocked');
 		$this->assertFalse($policy->canDelete($this->identity(null)), 'anonymous blocked');
 	}
@@ -244,7 +260,7 @@ class PolicyTest extends CakeTestCase
 		$this->assertFalse($policy->canEdit($this->identity(null), $set), 'anonymous blocked');
 	}
 
-	public function testSetPolicyDeleteAllowsOwnerOrAdminForSandbox()
+	public function testSetPolicyDeleteAllowsOwnerOrAdminForSiteSets()
 	{
 		$policy = new SetPolicy();
 		$ownedSet = ['user_id' => 7, 'public' => 1];
@@ -258,7 +274,7 @@ class PolicyTest extends CakeTestCase
 		$this->assertFalse($policy->canDelete($this->identity(true), $ownedSet), 'admin cannot delete other user set');
 		$this->assertFalse($policy->canDelete($this->identity(null), $ownedSet), 'anonymous cannot delete');
 		$publicSet = ['user_id' => null, 'public' => 1];
-		$this->assertFalse($policy->canDelete($this->identity(true), $publicSet), 'admin cannot delete public site set');
+		$this->assertTrue($policy->canDelete($this->identity(true), $publicSet), 'admin can delete public site set (to the trash)');
 		$this->assertFalse($policy->canDelete($this->identity(false), $publicSet), 'regular cannot delete public site set');
 	}
 
@@ -303,7 +319,7 @@ class PolicyTest extends CakeTestCase
 	public function testAdminPolicyProposalActionsAllowOnlyAdmins()
 	{
 		$policy = new AdminPolicy();
-		foreach (['canAcceptSGFProposal', 'canRejectSGFProposal', 'canAcceptTagConnectionProposal', 'canRejectTagConnectionProposal'] as $method)
+		foreach (['canAcceptSGFProposal', 'canRejectSGFProposal', 'canReopenSGFProposal', 'canAcceptTagConnectionProposal', 'canRejectTagConnectionProposal'] as $method)
 		{
 			$this->assertTrue($policy->{$method}($this->identity(true)), $method . ' allows admin');
 			$this->assertFalse($policy->{$method}($this->identity(false)), $method . ' blocks regular user');

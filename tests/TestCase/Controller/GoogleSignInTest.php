@@ -1,6 +1,7 @@
 <?php
 
 use App\Utility\FakeGoogleTokenVerifier;
+use App\Utility\GoogleTokenVerifier;
 
 /**
  * Tests for Google Sign-In functionality.
@@ -19,13 +20,13 @@ class GoogleSignInTest extends ControllerTestCase
 		parent::setUp();
 		$this->fakeVerifier = new FakeGoogleTokenVerifier();
 		// Set the static test verifier so it's used by any controller instance
-		UsersController::setTestTokenVerifier($this->fakeVerifier);
+		GoogleTokenVerifier::useForTests($this->fakeVerifier);
 	}
 
 	public function tearDown(): void
 	{
 		// Clean up the static verifier
-		UsersController::setTestTokenVerifier(null);
+		GoogleTokenVerifier::useForTests(null);
 		$this->fakeVerifier->reset();
 		parent::tearDown();
 	}
@@ -84,6 +85,28 @@ class GoogleSignInTest extends ControllerTestCase
 		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['external_id' => '123456789']]);
 		$this->assertNotEmpty($user, 'The Google sign in must create the account');
 		$this->assertSame(str_repeat('B', 50), $user['User']['display_name']);
+		$this->assertEquals(true, $user['User']['needs_display_name_change']);
+	}
+
+	/**
+	 * A name Google brings with an emoji loses the character the forum cannot store. What is
+	 * left is checked for uniqueness like any other name, so the account cannot take a name an
+	 * existing account already has, and the player is asked to pick their own.
+	 */
+	public function testNameWithAnEmojiLosesItAndCannotTakeAnExistingName(): void
+	{
+		new ContextPreparator(['user' => ['display_name' => 'Player']]);
+		$this->fakeVerifier->addToken('emoji-token', [
+			'sub' => '987654321',
+			'email' => 'emoji@gmail.com',
+			'name' => 'Player😀',
+		]);
+
+		$this->googleSignIn('emoji-token');
+
+		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['external_id' => '987654321']]);
+		$this->assertNotEmpty($user, 'The Google sign in must create the account');
+		$this->assertSame('Player (2)', $user['User']['display_name'], 'The name left without the emoji is made unique like any other name');
 		$this->assertEquals(true, $user['User']['needs_display_name_change']);
 	}
 

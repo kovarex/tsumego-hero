@@ -26,8 +26,8 @@ class AdminProposalsRendererTest extends TestCaseWithAuth
 					['name' => 'favorites', 'public' => 0, 'user_id' => 'self', 'order' => 5, 'num' => 1],
 				],
 				'sgfs' => [
-					['data' => $solvedSgf, 'accepted' => true],
-					['data' => $proposalSgf, 'accepted' => false],
+					['data' => $solvedSgf, 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
+					['data' => $proposalSgf, 'sgf_status_id' => Sgf::STATUS_PROPOSED],
 				],
 			],
 		]);

@@ -36,6 +36,20 @@ else
     CI=true npx pnpm@10 run changelog:gen
 fi
 
+### Build the JS and CSS bundles with Vite
+### Right after the pull, as the new pages need the new bundles. build:deploy builds into
+### webroot/dist-next and only then swaps it into webroot/dist (scripts/publish-dist.mjs):
+### building in place empties webroot/dist first, and a page rendered meanwhile loaded
+### without the legacy scripts.
+echo "=== Building React app ==="
+if [[ "$IS_DDEV" = true ]]; then
+    ddev exec CI=true npx pnpm@10 install --frozen-lockfile
+    ddev exec CI=true npx pnpm@10 run build:deploy
+else
+    CI=true npx pnpm@10 install --frozen-lockfile
+    CI=true npx pnpm@10 run build:deploy
+fi
+
 ### Select MySQL client (local or DDEV)
 if [[ "$IS_DDEV" = true ]]; then
     MYSQL="ddev mysql"
@@ -122,6 +136,17 @@ else
     echo "config/database.php already exists, skipping."
 fi
 
+# The application writes 4-byte characters (an emoji in a comment, for one), and a
+# utf8mb3 connection cannot carry them: the write loses them to "?" or fails with
+# "Incorrect string value". This also brings a config created by an older deploy in
+# line with database.example.php.
+#
+# The pattern ends at the closing quote, so a config that already says utf8mb4 is
+# left alone and running the deploy twice changes nothing. A backup suffix keeps
+# in-place editing working with both GNU sed and BSD sed.
+sed -i.bak "s/'encoding' => 'utf8'/'encoding' => 'utf8mb4'/" "$DB_CONFIG_FILE"
+rm -f "$DB_CONFIG_FILE.bak"
+
 ### Generate phpBB config.php if missing
 if [[ ! -f "$PHPBB_CONFIG_FILE" ]]; then
     echo "Creating webroot/forums/config.php ..."
@@ -187,23 +212,11 @@ else
     vendor/bin/phinx migrate
 fi
 
-# Clear all caches before rebuilding assets
-# This ensures the build uses fresh source files and doesn't serve stale versions
+# Clear all caches, so the new code doesn't run on stale cached models and views
 echo "=== Clearing caches ==="
 rm -rf "$ROOT_DIR/tmp/cache/models"/*
 rm -rf "$ROOT_DIR/tmp/cache/persistent"/*
 rm -rf "$ROOT_DIR/tmp/cache/views"/*
-
-
-# Build React app with Vite
-echo "=== Building React app ==="
-if [[ "$IS_DDEV" = true ]]; then
-    ddev exec CI=true npx pnpm@10 install --frozen-lockfile
-    ddev exec CI=true npx pnpm@10 run build
-else
-    CI=true npx pnpm@10 install --frozen-lockfile
-    CI=true npx pnpm@10 run build
-fi
 
 
 echo "=== Deploy complete ==="

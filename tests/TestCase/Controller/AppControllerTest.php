@@ -21,21 +21,21 @@ class AppControllerTest extends TestCaseWithAuth
 		]);
 
 		// Test emerald gem (15k rank)
-		AppController::updateGems('15k');
+		AppController::_updateGems('15k');
 		$dayRecord = ClassRegistry::init('DayRecord')->find('first', ['conditions' => ['date' => date('Y-m-d')]]);
 		$this->assertSame(1, (int) $dayRecord['DayRecord']['gemCounter1'], 'Solving 15k should increment gemCounter1');
 		$this->assertSame(0, (int) $dayRecord['DayRecord']['gemCounter2'], 'gemCounter2 should remain 0');
 		$this->assertSame(0, (int) $dayRecord['DayRecord']['gemCounter3'], 'gemCounter3 should remain 0');
 
 		// Test sapphire gem (9k rank)
-		AppController::updateGems('9k');
+		AppController::_updateGems('9k');
 		$dayRecord = ClassRegistry::init('DayRecord')->find('first', ['conditions' => ['date' => date('Y-m-d')]]);
 		$this->assertSame(1, (int) $dayRecord['DayRecord']['gemCounter1'], 'gemCounter1 should remain 1');
 		$this->assertSame(1, (int) $dayRecord['DayRecord']['gemCounter2'], 'Solving 9k should increment gemCounter2');
 		$this->assertSame(0, (int) $dayRecord['DayRecord']['gemCounter3'], 'gemCounter3 should remain 0');
 
 		// Test ruby gem (1d rank)
-		AppController::updateGems('1d');
+		AppController::_updateGems('1d');
 		$dayRecord = ClassRegistry::init('DayRecord')->find('first', ['conditions' => ['date' => date('Y-m-d')]]);
 		$this->assertSame(1, (int) $dayRecord['DayRecord']['gemCounter1'], 'gemCounter1 should remain 1');
 		$this->assertSame(1, (int) $dayRecord['DayRecord']['gemCounter2'], 'gemCounter2 should remain 1');
@@ -59,7 +59,7 @@ class AppControllerTest extends TestCaseWithAuth
 
 		// Solve 5 problems at 15k rank
 		for ($i = 0; $i < 5; $i++)
-			AppController::updateGems('15k');
+			AppController::_updateGems('15k');
 
 		$dayRecord = ClassRegistry::init('DayRecord')->find('first', ['conditions' => ['date' => date('Y-m-d')]]);
 		$this->assertSame(5, (int) $dayRecord['DayRecord']['gemCounter1'], 'gemCounter1 should be 5 after 5 solves');
@@ -81,12 +81,12 @@ class AppControllerTest extends TestCaseWithAuth
 		]);
 
 		// Solve at 14k (not matching 15k gem)
-		AppController::updateGems('14k');
+		AppController::_updateGems('14k');
 		$dayRecord = ClassRegistry::init('DayRecord')->find('first', ['conditions' => ['date' => date('Y-m-d')]]);
 		$this->assertSame(0, (int) $dayRecord['DayRecord']['gemCounter1'], 'gemCounter1 should not increment for non-matching rank');
 
 		// Solve at 8k (not matching 9k gem)
-		AppController::updateGems('8k');
+		AppController::_updateGems('8k');
 		$dayRecord = ClassRegistry::init('DayRecord')->find('first', ['conditions' => ['date' => date('Y-m-d')]]);
 		$this->assertSame(0, (int) $dayRecord['DayRecord']['gemCounter2'], 'gemCounter2 should not increment for non-matching rank');
 	}
@@ -111,7 +111,7 @@ class AppControllerTest extends TestCaseWithAuth
 		$testUserId = Auth::getUserID();
 
 		// Test user solves 15k problem (crosses threshold)
-		AppController::updateGems('15k');
+		AppController::_updateGems('15k');
 
 		// Verify test user got the achievement
 		$testUserAchievement = ClassRegistry::init('AchievementCondition')->find('first', [
@@ -125,7 +125,7 @@ class AppControllerTest extends TestCaseWithAuth
 		$this->assertSame(500, (int) $dayRecord['DayRecord']['gemCounter1']);
 
 		// Same user solves another 15k problem
-		AppController::updateGems('15k');
+		AppController::_updateGems('15k');
 
 		// Counter increments to 501 (past threshold)
 		$dayRecord = ClassRegistry::init('DayRecord')->find('first', ['conditions' => ['date' => date('Y-m-d')]]);
@@ -166,7 +166,7 @@ class AppControllerTest extends TestCaseWithAuth
 		]);
 
 		// User solves 15k problem (would cross threshold)
-		AppController::updateGems('15k');
+		AppController::_updateGems('15k');
 
 		// Counter STAYS at 499 (doesn't increment when user already has achievement)
 		// This preserves old behavior: increment 499→500, find achievement, decrement 500→499

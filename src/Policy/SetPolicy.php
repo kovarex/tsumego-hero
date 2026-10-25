@@ -40,6 +40,9 @@ class SetPolicy extends BasePolicy
 	 */
 	public static function canView(?array $user, array $set): bool
 	{
+		// a collection in the trash is gone for everyone but the admins, who can take it back
+		if (!empty($set['deleted']))
+			return static::isAdmin($user);
 		if ($set['public'] != 0)
 			return true;
 		if ($user === null)
@@ -59,6 +62,8 @@ class SetPolicy extends BasePolicy
 	 */
 	public static function canPlay(?array $user, array $set): bool
 	{
+		if (!empty($set['deleted']))
+			return static::isAdmin($user);
 		if (!($set['public'] == 0 && $set['user_id'] === null))
 			return true;
 		return static::hasSandbox($user);
@@ -80,7 +85,8 @@ class SetPolicy extends BasePolicy
 	}
 
 	/**
-	 * Deleting a set: owner can delete their own; admin can delete sandbox sets.
+	 * Deleting a set: owner can delete their own; admin can delete the collections of the site,
+	 * the published ones and the sandbox ones, which go to the trash (App\Utility\Trash).
 	 *
 	 * @param UserRow|null $user
 	 * @param SetRow $set
@@ -92,8 +98,7 @@ class SetPolicy extends BasePolicy
 		$isOwner = (int) $set['user_id'] === $user['id'];
 		if ($isOwner)
 			return true;
-		$isSandbox = $set['user_id'] === null && $set['public'] == 0;
-		return static::isAdmin($user) && $isSandbox;
+		return static::isAdmin($user) && $set['user_id'] === null;
 	}
 
 	/**

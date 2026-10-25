@@ -1,5 +1,6 @@
 <?php
 
+use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Utility\AchievementChecker;
 use App\Utility\AdminActivityLogger;
@@ -11,7 +12,9 @@ use App\Utility\PlayOutcome;
 use App\Utility\Rating;
 use App\Utility\RatingParseException;
 use App\Utility\SgfCommentReorientation;
+use App\Utility\SgfParser;
 use App\Utility\SimilarSearchLogic;
+use App\Utility\Trash;
 use App\Utility\TsumegoButton;
 use App\Utility\TsumegoMerger;
 use App\Utility\TsumegoUtil;
@@ -65,6 +68,8 @@ class TsumegosController extends AppController
 	}
 
 
+	#[HttpGet]
+	#[HttpPost]
 	public function play(?string $id = null, ?string $setConnectionID = null)
 	{
 		if (Auth::isLoggedIn() && !Auth::isInLevelMode())
@@ -88,6 +93,13 @@ class TsumegosController extends AppController
 		$tsumego = ClassRegistry::init('Tsumego')->findById($id);
 		if (!$tsumego)
 			throw new NotFoundException("Tsumego not found");
+		// The Play menu leads to the last visited problem, which may have been deleted since,
+		// so the player lands on the collections instead of an error.
+		if ($tsumego['Tsumego']['deleted'] && !Auth::isAdmin())
+		{
+			CookieFlash::set('That problem was deleted', 'info');
+			return $this->redirect('/sets');
+		}
 
 		if (Auth::isLoggedIn())
 			$this->PlayResultProcessor->markAsVisited((int) $id);
@@ -103,6 +115,7 @@ class TsumegosController extends AppController
 		})->play($setConnection['SetConnection']['id'], $this->request, $this->request->data);
 	}
 
+	#[HttpGet]
 	public function duplicatesearch(string $setConnectionID): mixed
 	{
 		$this->loadModel('Sgf');
@@ -136,6 +149,7 @@ class TsumegosController extends AppController
 		return null;
 	}
 
+	#[HttpPost]
 	public function edit(string $tsumegoID)
 	{
 		$this->Authorization->authorize('Tsumego');
@@ -147,13 +161,8 @@ class TsumegosController extends AppController
 		}
 		$tsumego = $tsumego['Tsumego'];
 
-		if ($this->request->data['delete'] == 'delete')
-		{
-			$tsumego['deleted'] = date('Y-m-d H:i:s');
-			ClassRegistry::init('Tsumego')->save($tsumego);
-			AdminActivityLogger::log(AdminActivityType::PROBLEM_DELETE, $tsumegoID);
-			return $this->redirect("/sets");
-		}
+		if (($this->request->data['delete'] ?? '') == 'delete')
+			return $this->moveToTrash((int) $tsumegoID);
 
 		try
 		{
@@ -247,6 +256,25 @@ class TsumegosController extends AppController
 		return $this->redirect($this->request->data['redirect']);
 	}
 
+	/**
+	 * Moves the problem to the trash and goes back to its collection, or to the list of collections
+	 * when it was the last problem of it, as the collection went to the trash with it.
+	 */
+	private function moveToTrash(int $tsumegoID): mixed
+	{
+		$setConnection = ClassRegistry::init('SetConnection')->findDisplaySetConnection($tsumegoID);
+		Trash::deleteProblem($tsumegoID);
+		AdminActivityLogger::log(AdminActivityType::PROBLEM_DELETE, $tsumegoID);
+		CookieFlash::set('The problem was moved to the trash, it can be restored for ' . Trash::$RETENTION_DAYS . ' days.', 'success');
+		if (!$setConnection)
+			return $this->redirect('/sets');
+		$set = ClassRegistry::init('Set')->findById($setConnection['SetConnection']['set_id']);
+		if (!empty($set['Set']['deleted']))
+			return $this->redirect('/sets');
+		return $this->redirect(Set::url((int) $set['Set']['id']));
+	}
+
+	#[HttpGet]
 	public function mergeForm(): mixed
 	{
 		$this->Authorization->authorize('Tsumego');
@@ -311,7 +339,7 @@ class TsumegosController extends AppController
 		if ($ids)
 			foreach (ClassRegistry::init('Sgf')->find('all', [
 				'fields' => ['tsumego_id', 'sgf'],
-				'conditions' => ['tsumego_id' => $ids, 'id IN (SELECT MAX(id) FROM sgf GROUP BY tsumego_id)'],
+				'conditions' => ['tsumego_id' => $ids, 'id = ' . Sgf::currentVersionIDSql('Sgf.tsumego_id')],
 			]) as $s)
 				$sgfs[$s['Sgf']['tsumego_id']] = $s['Sgf']['sgf'];
 
@@ -340,6 +368,7 @@ class TsumegosController extends AppController
 		$this->redirect('/tsumegos/mergeForm');
 	}
 
+	#[HttpGet]
 	public function setupSgf(): mixed
 	{
 		$this->Authorization->authorize('Tsumego');
@@ -356,6 +385,7 @@ class TsumegosController extends AppController
 		return null;
 	}
 
+	#[HttpGet]
 	public function setupSgfStep2(string $sgfID, string $firstMoveColor, ?string $correctMoves = null)
 	{
 		$this->Authorization->authorize('Tsumego');
@@ -374,6 +404,7 @@ class TsumegosController extends AppController
 		return $this->redirect('/tsumegos/setupSgf');
 	}
 
+	#[HttpPost]
 	public function setupNewSgfStep2()
 	{
 		$this->Authorization->authorize('Sgf', 'propose');
@@ -389,7 +420,8 @@ class TsumegosController extends AppController
 		$firstMoveColor = $this->request->data['firstMoveColor'];
 		$correctMoves = $this->request->data['correctMoves'];
 
-		SgfController::validateSgfFormat($sgfData);
+		if ($problem = SgfParser::validationProblem($sgfData))
+			throw new BadRequestException('Invalid SGF format: ' . $problem);
 
 		$tsumego = ClassRegistry::init("Tsumego")->findById($tsumegoID);
 		if (!$tsumego)
@@ -400,9 +432,11 @@ class TsumegosController extends AppController
 		$sgf['sgf'] = $sgfData;
 		$sgf['user_id'] = Auth::getUserId();
 		$sgf['tsumego_id'] = $tsumego['id'];
-		$sgf['accepted'] = Auth::isAdmin() ? true : false;
+		$sgf['sgf_status_id'] = Auth::isAdmin() ? Sgf::STATUS_ACCEPTED : Sgf::STATUS_PROPOSED;
 		$sgf['first_move_color'] = $firstMoveColor;
 		$sgf['correct_moves'] = $correctMoves;
+		// the admin reviewing a proposal needs to know what it is about, an admin's own edit may go without
+		$sgf['description'] = Sgf::descriptionFromRequest($this->request->data['description'] ?? null, !Auth::isAdmin());
 		// what the board editor did to the SGF it was opened with, so the comments can follow
 		$source = ClassRegistry::init('Sgf')->findById((int) ($this->request->data['sourceSgfID'] ?? 0));
 		if ($source && $source['Sgf']['tsumego_id'] == $tsumego['id'])
@@ -416,6 +450,7 @@ class TsumegosController extends AppController
 		return $this->redirect('/' . $setConnectionID);
 	}
 
+	#[HttpGet]
 	public function history(string $setConnectionID)
 	{
 		$setConnection = ClassRegistry::init("SetConnection")->findById($setConnectionID);

@@ -13,7 +13,7 @@ class TsumegoImagesControllerTest extends ControllerTestCase
 		]);
 		$scId = $context->tsumegos[0]['set-connections'][0]['id'];
 
-		$result = $this->testAction("/tsumego-image/{$scId}", ['return' => 'contents']);
+		$result = $this->testAction("/tsumego-image/{$scId}", ['method' => 'get', 'return' => 'contents']);
 
 		// Valid PNG with correct content type
 		$this->assertStringStartsWith("\x89PNG", $result);
@@ -36,8 +36,8 @@ class TsumegoImagesControllerTest extends ControllerTestCase
 		]);
 		$scId = $context->tsumegos[0]['set-connections'][0]['id'];
 
-		$result1 = $this->testAction("/tsumego-image/{$scId}", ['return' => 'contents']);
-		$result2 = $this->testAction("/tsumego-image/{$scId}", ['return' => 'contents']);
+		$result1 = $this->testAction("/tsumego-image/{$scId}", ['method' => 'get', 'return' => 'contents']);
+		$result2 = $this->testAction("/tsumego-image/{$scId}", ['method' => 'get', 'return' => 'contents']);
 
 		$this->assertStringStartsWith("\x89PNG", $result1);
 		$this->assertEquals($result1, $result2, 'Image generation should be deterministic');
@@ -46,6 +46,6 @@ class TsumegoImagesControllerTest extends ControllerTestCase
 	public function testNonexistentSetConnectionThrows404()
 	{
 		$this->expectException(NotFoundException::class);
-		$this->testAction('/tsumego-image/999999', ['return' => 'contents']);
+		$this->testAction('/tsumego-image/999999', ['method' => 'get', 'return' => 'contents']);
 	}
 }

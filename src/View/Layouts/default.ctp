@@ -169,6 +169,7 @@ echo ViteManifest::legacyScript('legacy');
 			// Account access at the top of the drawer (logged-in). The username
 			// links to the profile; Settings and Sign Out are listed as separate actions.
 			if (Auth::isLoggedIn()):
+				$unreadMessageCount = Message::unreadCount(Auth::getUserID());
 			?>
 			<div class="site-nav__account">
 				<div class="site-nav__account-user">
@@ -176,6 +177,7 @@ echo ViteManifest::legacyScript('legacy');
 				</div>
 				<nav class="site-nav__account-links">
 					<ul>
+						<li><a href="/messages">Messages <?php echo AccountWidget::unreadMessagesBadge($unreadMessageCount); ?></a></li>
 						<li><a href="/users/settings">Settings</a></li>
 						<li><a href="/users/logout">Sign Out</a></li>
 					</ul>
@@ -308,11 +310,15 @@ echo ViteManifest::legacyScript('legacy');
 									echo '<li><a class="adminLink" href="/tsumego-issues">Issues</a></li>';
 								echo '<li class="additional-adminLink2"><a id="adminLink-more" class="adminLink adminLink3"><i>more</i></a></li>';
 								echo '<li class="additional-adminLink"><a class="adminLink" href="/users/uploads">Uploads</a></li>';
+								echo '<li class="additional-adminLink"><a class="adminLink" href="/tags">Tags</a></li>';
 								echo '<li class="additional-adminLink"><a class="adminLink" href="/tsumegos/mergeForm">Merge Duplicates</a></li>';
 								echo '<li class="additional-adminLink"><a class="adminLink" href="/sets/duplicatesearch">Duplicate Search Results</a></li>';
-								echo '<li class="additional-adminLink"><a class="adminLink" href="/users/showPublishSchedule">Publish Schedule</a></li>';
+								echo '<li class="additional-adminLink"><a class="adminLink" href="/schedule">Publish Schedule</a></li>';
+								echo '<li class="additional-adminLink"><a class="adminLink" href="/trash">Trash</a></li>';
 								echo '<li class="additional-adminLink"><a class="adminLink" href="/app/webroot/editor">Editor</a></li>';
 								echo '<li class="additional-adminLink"><a class="adminLink" href="/users/userstats">User Activities</a></li>';
+								if(Auth::isOwner())
+									echo '<li class="additional-adminLink"><a class="adminLink" href="/roles">Admins and Owners</a></li>';
 							}
 							echo '</ul>';
 						}
@@ -380,7 +386,7 @@ echo ViteManifest::legacyScript('legacy');
 			echo '<div class="site-nav__signin"><a class="menuLi '.$currentPage.'" id="signInMenu" href="/users/login">Sign In</a></div>';
 		?>
 		</div>
-			<?php AccountWidget::render($timeMode); ?>
+			<?php AccountWidget::render($timeMode, $unreadMessageCount ?? 0); ?>
 	<div width="100%" align="left" class="whitebox2">
 		<?php
 		$setHeight = '';

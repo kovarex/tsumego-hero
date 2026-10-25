@@ -4,6 +4,7 @@ use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\CookieFlash;
 use App\Utility\FakePwnedPasswordChecker;
+use App\Utility\PwnedPasswordChecker;
 
 /**
  * A password that already appears in a public breach is refused wherever a password
@@ -30,12 +31,12 @@ class PwnedPasswordTest extends TestCaseWithAuth
 	{
 		parent::setUp();
 		$this->checker = new FakePwnedPasswordChecker();
-		UsersController::setTestPasswordChecker($this->checker);
+		PwnedPasswordChecker::useForTests($this->checker);
 	}
 
 	public function tearDown(): void
 	{
-		UsersController::setTestPasswordChecker(null);
+		PwnedPasswordChecker::useForTests(null);
 		parent::tearDown();
 	}
 

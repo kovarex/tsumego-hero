@@ -356,8 +356,8 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$this->createAssignment($classroomId, '2026-10-01 00:00:00', '2026-10-08');
 		$set = ['id' => $this->homeworkSetId(), 'public' => 0, 'user_id' => $this->userId('teacher')];
 
-		$this->assertTrue(App\Policy\SetPolicy::canView(['id' => $this->userId('pupil'), 'isAdmin' => 0], $set));
-		$this->assertFalse(App\Policy\SetPolicy::canView(['id' => $this->userId('outsider'), 'isAdmin' => 0], $set));
+		$this->assertTrue(App\Policy\SetPolicy::canView(['id' => $this->userId('pupil')], $set));
+		$this->assertFalse(App\Policy\SetPolicy::canView(['id' => $this->userId('outsider')], $set));
 
 		$this->login('pupil');
 		$page = $this->testAction('/sets/' . $this->homeworkSetId(), ['method' => 'get', 'return' => 'view']);

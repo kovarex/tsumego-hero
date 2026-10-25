@@ -21,7 +21,8 @@ class ClassroomAssignment extends AppModel
 	public const CELL_TRIED = 'tried';
 
 	/**
-	 * The assignments of a class with the title of their collection, the latest due date first.
+	 * The assignments of a class with the title of their collection, the latest due date first. An
+	 * assignment of a collection in the trash is left out, as nobody but an admin can open it.
 	 *
 	 * @return array<array<string, mixed>>
 	 */
@@ -29,7 +30,7 @@ class ClassroomAssignment extends AppModel
 	{
 		return Util::query('SELECT a.*, s.title AS set_title
 			FROM classroom_assignment a
-			JOIN `set` s ON s.id = a.set_id
+			JOIN `set` s ON s.id = a.set_id AND s.deleted IS NULL
 			WHERE a.classroom_id = ?
 			ORDER BY a.due DESC, a.id DESC',
 			[$classroomId]);
@@ -43,7 +44,7 @@ class ClassroomAssignment extends AppModel
 	public static function assignableSets(int $teacherId): array
 	{
 		$rows = Util::query('SELECT s.id, s.title, s.user_id FROM `set` s
-			WHERE s.user_id = ? OR (' . Set::officialCondition('s') . ')
+			WHERE (s.user_id = ? AND s.deleted IS NULL) OR (' . Set::officialCondition('s') . ')
 			ORDER BY s.user_id IS NULL, s.title, s.id',
 			[$teacherId]);
 		$sets = ['own' => [], 'site' => []];
@@ -59,7 +60,7 @@ class ClassroomAssignment extends AppModel
 	 */
 	public static function canAssignSet(array $set, int $teacherId): bool
 	{
-		return Set::isOfficial($set) || (int) ($set['user_id'] ?? 0) === $teacherId;
+		return Set::isOfficial($set) || ((int) ($set['user_id'] ?? 0) === $teacherId && empty($set['deleted']));
 	}
 
 	/**

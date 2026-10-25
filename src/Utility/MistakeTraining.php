@@ -5,6 +5,7 @@ namespace App\Utility;
 use ClassRegistry;
 use DateTime;
 use SetConnection;
+use Sgf;
 use TsumegoStatus;
 
 /**
@@ -1121,7 +1122,7 @@ class MistakeTraining
 				JOIN set_connection sc ON sc.tsumego_id = p.tsumego_id
 				JOIN `set` st ON st.id = sc.set_id
 				JOIN tsumego t ON t.id = p.tsumego_id
-				LEFT JOIN sgf ON sgf.id = (SELECT MAX(s2.id) FROM sgf s2 WHERE s2.tsumego_id = p.tsumego_id)
+				LEFT JOIN sgf ON sgf.id = " . Sgf::currentVersionIDSql('p.tsumego_id') . "
 				WHERE p.user_id = ?
 				  AND t.deleted IS NULL
 				  AND (

@@ -6,6 +6,7 @@
  * @var string $sgf
  * @var ?string $sourceSgfID
  * @var ?string $transformationFromSource
+ * @var string $description
  */
 
 use App\Utility\ViteManifest;
@@ -46,6 +47,7 @@ $this->end();
 	addInput(form, 'setConnectionID', <?php echo (int)$setConnectionID; ?>);
 	addInput(form, 'sourceSgfID', <?php echo json_encode((string) ($sourceSgfID ?? '')); ?>);
 	addInput(form, 'transformationFromSource', <?php echo json_encode((string) ($transformationFromSource ?? ''), JSON_HEX_TAG); ?>);
+	addInput(form, 'description', <?php echo json_encode($description, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>);
 
     document.body.appendChild(form);
     form.submit();

@@ -563,7 +563,7 @@ class TagTest extends ControllerTestCase
 	public function testTagViewLinksTheAuthor(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'tagauthor'], 'tags' => [['name' => 'snapback']]]);
-		$result = $this->testAction('/tags/view/' . $context->tags[0]['id'], ['return' => 'view']);
+		$result = $this->testAction('/tags/view/' . $context->tags[0]['id'], ['method' => 'get', 'return' => 'view']);
 
 		$this->assertStringContainsString('<a href="/users/view/' . $context->tags[0]['user_id'] . '"', $result);
 		$this->assertStringContainsString($context->user['display_name'], $result);
@@ -585,6 +585,7 @@ class TagTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$context = new ContextPreparator(['user' => ['admin' => true], 'tags' => [['name' => 'snapback', 'approved' => 0]]]);
 		$browser->get('users/adminstats');
+		$browser->findById('tag-comment-' . $context->tags[0]['id'])->sendKeys('We have the tag already');
 		$browser->clickId('tag-reject-' . $context->tags[0]['id']);
 		$tagAdded = ClassRegistry::init('Tag')->find('first')['Tag'];
 		$this->assertNull($tagAdded);
@@ -617,7 +618,7 @@ class TagTest extends ControllerTestCase
 			'name' => 'snapback',
 			'description' => '<b onmouseover="alert(1)">Shape</b>',
 		]]]);
-		$this->testAction('/tags/view/' . $context->tags[0]['id'], ['return' => 'view']);
+		$this->testAction('/tags/view/' . $context->tags[0]['id'], ['method' => 'get', 'return' => 'view']);
 
 		$this->assertStringContainsString('<b>Shape</b>', $this->view);
 		$this->assertStringNotContainsString('onmouseover', $this->view);
@@ -626,7 +627,7 @@ class TagTest extends ControllerTestCase
 	public function testTagViewRendersHttpReferenceAsLink(): void
 	{
 		$context = new ContextPreparator(['tags' => [['name' => 'ok', 'link' => 'https://example.com/ref']]]);
-		$this->testAction('/tags/view/' . $context->tags[0]['id'], ['return' => 'view']);
+		$this->testAction('/tags/view/' . $context->tags[0]['id'], ['method' => 'get', 'return' => 'view']);
 
 		$this->assertStringContainsString('href="https://example.com/ref"', $this->view);
 	}
@@ -634,7 +635,7 @@ class TagTest extends ControllerTestCase
 	public function testTagViewRendersNonUrlReferenceAsText(): void
 	{
 		$context = new ContextPreparator(['tags' => [['name' => 'ok', 'link' => 'segoe seigen tesuji jiten vol 1']]]);
-		$this->testAction('/tags/view/' . $context->tags[0]['id'], ['return' => 'view']);
+		$this->testAction('/tags/view/' . $context->tags[0]['id'], ['method' => 'get', 'return' => 'view']);
 
 		$this->assertStringContainsString('>segoe seigen tesuji jiten vol 1</p>', $this->view);
 		$this->assertStringNotContainsString('href="segoe seigen', $this->view);
@@ -643,7 +644,7 @@ class TagTest extends ControllerTestCase
 	public function testTagViewDoesNotLinkifyUnsafeReference(): void
 	{
 		$context = new ContextPreparator(['tags' => [['name' => 'ok', 'link' => 'javascript:alert(1)']]]);
-		$this->testAction('/tags/view/' . $context->tags[0]['id'], ['return' => 'view']);
+		$this->testAction('/tags/view/' . $context->tags[0]['id'], ['method' => 'get', 'return' => 'view']);
 
 		$this->assertStringContainsString('>javascript:alert(1)</p>', $this->view);
 		$this->assertStringNotContainsString('href="javascript:', $this->view);
@@ -831,7 +832,7 @@ class TagTest extends ControllerTestCase
 	public function testOwnerDeletesTag()
 	{
 		$context = new ContextPreparator([
-			'user' => ['name' => 'joshka', 'admin' => true, 'id' => 72],
+			'user' => ['name' => 'joshka', 'owner' => true],
 			'tags' => [['name' => 'snapback']]]);
 
 		$tagId = $context->tags[0]['id'];

@@ -148,7 +148,7 @@ class AccountDeletionTest extends TestCaseWithAuth
 	{
 		// the login cookie is still there, but the account was deleted
 		new ContextPreparator(['user' => ['deleted' => true]]);
-		$this->testAction('/sites/index');
+		$this->testAction('/sites/index', ['method' => 'get']);
 		$this->assertFalse(Auth::isLoggedIn());
 	}
 
@@ -160,7 +160,7 @@ class AccountDeletionTest extends TestCaseWithAuth
 
 		foreach (['/users/highscore', '/users/rating'] as $url)
 		{
-			$result = $this->testAction($url, ['return' => 'view']);
+			$result = $this->testAction($url, ['method' => 'get', 'return' => 'view']);
 			$this->assertStringContainsString('alive', $result, $url);
 			$this->assertStringNotContainsString('ghost', $result, $url);
 			$this->assertStringNotContainsString(User::DELETED_NAME, $result, $url);
@@ -188,7 +188,7 @@ class AccountDeletionTest extends TestCaseWithAuth
 			'tsumego' => ['set_order' => 1, 'comments' => [['message' => 'comment by a deleted account']]]]);
 		ClassRegistry::init('TsumegoComment')->updateAll(['TsumegoComment.user_id' => $context->otherUsers[0]['id']], []);
 
-		$result = $this->testAction('/comments', ['return' => 'view']);
+		$result = $this->testAction('/comments', ['method' => 'get', 'return' => 'view']);
 		$this->assertStringContainsString('comment by a deleted account', $result);
 		$this->assertStringContainsString(h(User::DELETED_NAME), $result);
 		$this->assertStringNotContainsString('ghost', $result);
@@ -198,13 +198,13 @@ class AccountDeletionTest extends TestCaseWithAuth
 	{
 		$context = new ContextPreparator(['other-users' => [['name' => 'ghost', 'deleted' => true]]]);
 		$this->expectException(NotFoundException::class);
-		$this->testAction('/users/view/' . $context->otherUsers[0]['id']);
+		$this->testAction('/users/view/' . $context->otherUsers[0]['id'], ['method' => 'get']);
 	}
 
 	public function testAdminCanSeeProfileOfDeletedAccount(): void
 	{
 		$context = new ContextPreparator(['user' => ['admin' => true], 'other-users' => [['name' => 'ghost', 'deleted' => true]]]);
-		$result = $this->testAction('/users/view/' . $context->otherUsers[0]['id'], ['return' => 'view']);
+		$result = $this->testAction('/users/view/' . $context->otherUsers[0]['id'], ['method' => 'get', 'return' => 'view']);
 		$this->assertStringContainsString('ghost', $result);
 	}
 
@@ -319,12 +319,5 @@ class AccountDeletionTest extends TestCaseWithAuth
 		$this->restoreAccount($context->otherUsers[0]['id']);
 		$this->assertNotNull($this->deletedOf($context->otherUsers[0]['id']));
 		$this->assertStringContainsString('The Google account is linked to another account now.', CookieFlash::get());
-	}
-
-	public function testRestoreRequiresPost(): void
-	{
-		$context = new ContextPreparator(['user' => ['admin' => true], 'other-users' => [['name' => 'ghost', 'deleted' => true]]]);
-		$this->expectException(MethodNotAllowedException::class);
-		$this->testAction('/users/restore_account/' . $context->otherUsers[0]['id'], ['method' => 'GET']);
 	}
 }

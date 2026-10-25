@@ -7,6 +7,15 @@ namespace App\Utility;
 class SgfParser
 {
 	/**
+	 * What is wrong with the SGF, or null when it is fit to be stored. The caller decides how to
+	 * refuse the request.
+	 */
+	public static function validationProblem(string $sgf): ?string
+	{
+		return self::validate($sgf) ?? self::validateGame($sgf);
+	}
+
+	/**
 	 * Parse SGF and return board, stones and info array.
 	 *
 	 * @param string $sgf

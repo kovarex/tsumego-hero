@@ -91,6 +91,9 @@ jobs:
       - name: Install pnpm dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Test build and deploy scripts
+        run: pnpm run test:scripts
+
       - name: Build React app
         run: ${{ github.ref == 'refs/heads/master' && 'pnpm run build:coverage' || 'pnpm run build' }}
 
@@ -128,7 +131,7 @@ jobs:
                   'password' => 'root',
                   'database' => 'test',
                   'prefix' => '',
-                  'encoding' => 'utf8',
+                  'encoding' => 'utf8mb4',
               ];
 
               public function __construct() {
@@ -145,7 +148,7 @@ jobs:
                   'password' => 'root',
                   'database' => 'test',
                   'prefix' => '',
-                  'encoding' => 'utf8',
+                  'encoding' => 'utf8mb4',
               ];
           }
           EOF

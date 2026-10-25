@@ -4,6 +4,8 @@ namespace App\Utility;
 
 use PaginationHelper;
 use SetConnection;
+use Sgf;
+use User;
 
 class CommentsRenderer
 {
@@ -56,7 +58,7 @@ class CommentsRenderer
 		$parameters = [];
 		$parameters[] = Auth::getUserID();
 
-		$queryCondition = "tsumego_comment.deleted = 0";
+		$queryCondition = "tsumego_comment.deleted = 0 AND tsumego.deleted IS NULL";
 		if ($this->userID)
 			Util::addSqlCondition($queryCondition, "tsumego_comment.user_id = " . $this->userID);
 
@@ -66,7 +68,7 @@ SELECT
 	tsumego_comment.tsumego_id AS tsumego_id,
 	tsumego_comment.created AS created,
 	tsumego_status.status AS status,
-	user.isAdmin AS from_admin,
+	" . User::isAdminSql('user.user_role_id') . " AS from_admin,
 	user.display_name as from_display_name,
 	user.id as from_id,
 	tsumego_comment.id as id,
@@ -78,7 +80,7 @@ SELECT
 FROM
 	tsumego_comment
 	JOIN tsumego ON tsumego_comment.tsumego_id = tsumego.id
-    LEFT JOIN sgf ON sgf.id = (SELECT MAX(s2.id) FROM sgf s2 WHERE s2.tsumego_id = tsumego.id)
+    LEFT JOIN sgf ON sgf.id = " . Sgf::currentVersionIDSql('tsumego.id') . "
 	JOIN user ON tsumego_comment.user_id = user.id
 	LEFT JOIN tsumego_status ON tsumego_status.tsumego_id = tsumego.id AND tsumego_status.user_id = ?
     LEFT JOIN set_connection ON set_connection.id = (

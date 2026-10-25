@@ -61,7 +61,7 @@ class TsumegoCommentsController extends AppController
 			'user_display_name' => $savedComment['User']['display_name'] ?? null,
 			'user_avatar_url' => User::getAvatarUrl($savedComment['User']),
 			'user_rating' => $savedComment['User']['rating'] ?? null,
-			'isAdmin' => isset($savedComment['User']['isAdmin']) && $savedComment['User']['isAdmin'] ? true : false,
+			'isAdmin' => User::isAdmin($savedComment['User'] ?? null),
 			'created' => Util::toIso8601($savedComment['TsumegoComment']['created']),
 			'position' => $savedComment['TsumegoComment']['position'],
 		]));
@@ -160,7 +160,7 @@ class TsumegoCommentsController extends AppController
 					'user_display_name' => User::displayNameOrNull($comment['User']),
 					'user_avatar_url' => User::avatarOrNull($comment['User']),
 					'user_rating' => $comment['User']['rating'] ?? null,
-					'isAdmin' => isset($comment['User']) && $comment['User']['isAdmin'] ? true : false,
+					'isAdmin' => User::isAdmin($comment['User'] ?? null),
 					'created' => Util::toIso8601($comment['created']),
 					'position' => $comment['position'],
 				];
@@ -174,7 +174,7 @@ class TsumegoCommentsController extends AppController
 				'user_display_name' => User::displayNameOrNull($issue['User']),
 				'user_avatar_url' => User::avatarOrNull($issue['User']),
 				'user_rating' => $issue['User']['rating'] ?? null,
-				'isAdmin' => isset($issue['User']) && $issue['User']['isAdmin'] ? true : false,
+				'isAdmin' => User::isAdmin($issue['User'] ?? null),
 				'comments' => $comments,
 			];
 		}
@@ -188,7 +188,7 @@ class TsumegoCommentsController extends AppController
 				'user_display_name' => User::displayNameOrNull($comment['User']),
 				'user_avatar_url' => User::avatarOrNull($comment['User']),
 				'user_rating' => $comment['User']['rating'] ?? null,
-				'isAdmin' => isset($comment['User']) && $comment['User']['isAdmin'] ? true : false,
+				'isAdmin' => User::isAdmin($comment['User'] ?? null),
 				'created' => Util::toIso8601($comment['TsumegoComment']['created']),
 				'position' => $comment['TsumegoComment']['position'],
 			];
