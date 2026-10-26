@@ -14,6 +14,7 @@ use App\Utility\PwnedPasswordChecker;
 use App\Utility\PwnedPasswordCheckerInterface;
 use App\Utility\SgfCommentReorientation;
 use App\Utility\TimeModeUtil;
+use App\Utility\UploadedAvatar;
 use App\Utility\UserActivitiesRenderer;
 use App\Utility\Util;
 use App\Attribute\HttpPost;
@@ -564,7 +565,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		$this->set('_title', 'Tsumego Hero - Highscore');
 
 		$this->set('users', $this->queryHighscoreWithSelfView(
-			"SELECT id, display_name, external_id, picture, avatar_setting_id, email, rating, premium_id, level, xp, solved,
+			"SELECT id, display_name, external_id, picture, avatar_setting_id, uploaded_avatar_hash, email, rating, premium_id, level, xp, solved,
 				ROW_NUMBER() OVER (ORDER BY level DESC, xp DESC) as position
 			FROM user
 			WHERE deleted IS NULL",
@@ -583,7 +584,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 			Auth::saveUserField('highscore_page_id', Constants::$HIGHSCORE_RATING);
 
 		$this->set('users', $this->queryHighscoreWithSelfView(
-			"SELECT id, display_name, external_id, picture, avatar_setting_id, email, rating, premium_id,
+			"SELECT id, display_name, external_id, picture, avatar_setting_id, uploaded_avatar_hash, email, rating, premium_id,
 				ROW_NUMBER() OVER (ORDER BY rating DESC) as position
 			FROM user
 			WHERE deleted IS NULL"
@@ -609,6 +610,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 				user.external_id as external_id,
 				user.picture as picture,
 				user.avatar_setting_id as avatar_setting_id,
+				user.uploaded_avatar_hash as uploaded_avatar_hash,
 				user.email as email,
 				user.rating as rating,
 				user.premium_id AS premium_id,
@@ -639,6 +641,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 				user.rating AS rating,
 				user.picture AS picture,
 				user.avatar_setting_id AS avatar_setting_id,
+				user.uploaded_avatar_hash AS uploaded_avatar_hash,
 				user.external_id AS external_id,
 				user.premium_id AS premium_id,
 				user.email AS email,
@@ -710,6 +713,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 				user.external_id AS external_id,
 				user.picture AS picture,
 				user.avatar_setting_id AS avatar_setting_id,
+				user.uploaded_avatar_hash AS uploaded_avatar_hash,
 				user.email AS email,
 				user.rating AS rating,
 				user.premium_id AS premium_id,
@@ -818,7 +822,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		$userId = Auth::isLoggedIn() ? Auth::getUserID() : -1;
 
 		$this->set('users', $this->queryHighscoreWithSelfView(
-			"SELECT id, name, display_name, external_id, picture, avatar_setting_id, email, rating, premium_id, daily_xp, daily_solved,
+			"SELECT id, name, display_name, external_id, picture, avatar_setting_id, uploaded_avatar_hash, email, rating, premium_id, daily_xp, daily_solved,
 				ROW_NUMBER() OVER (ORDER BY daily_xp DESC) as position
 			FROM user
 			WHERE (daily_xp > 0 OR id = ?) AND deleted IS NULL",
@@ -899,6 +903,14 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 			$og['image_type'] = 'image/png';
 			$og['image_width'] = Avatar::SHARE_SIZE;
 			$og['image_height'] = Avatar::SHARE_SIZE;
+		}
+		elseif ($avatarChoice === User::AVATAR_UPLOADED)
+		{
+			// An uploaded picture is stored at one size and type, so both are known.
+			$og['image'] = Router::url(User::getAvatarUrl($user['User']), true);
+			$og['image_type'] = 'image/webp';
+			$og['image_width'] = UploadedAvatar::SIZE;
+			$og['image_height'] = UploadedAvatar::SIZE;
 		}
 		else
 		{
@@ -2039,5 +2051,60 @@ OFFSET " . $offset, [$userID, $userID]);
 		$this->response->statusCode(200);
 		$this->response->type('application/json');
 		$this->response->body(json_encode(['status' => 'ok']));
+	}
+
+	/**
+	 * Make a picture the player uploaded their avatar. It takes the place of the picture
+	 * they had before, so an account has one uploaded picture at most.
+	 */
+	#[HttpPost]
+	public function avatarUpload(): mixed
+	{
+		$this->Authorization->authorize('User', 'editPreferences');
+
+		try
+		{
+			// A request larger than post_max_size arrives without any of its files, which
+			// is a picture too large and not a form sent without one.
+			$file = $_FILES['avatar'] ?? ((int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > UploadedAvatar::maxBytes() ? ['error' => UPLOAD_ERR_INI_SIZE] : null);
+			$avatar = UploadedAvatar::fromUpload($file);
+			$hash = UploadedAvatar::store(Auth::getUserID(), $avatar);
+			Auth::saveUserFields(['uploaded_avatar_hash' => $hash, 'avatar_setting_id' => User::AVATAR_UPLOADED]);
+			CookieFlash::set('Your picture is your avatar now.', 'success');
+		}
+		catch (InvalidArgumentException $e)
+		{
+			CookieFlash::set($e->getMessage(), 'error');
+		}
+		catch (RuntimeException $e)
+		{
+			CakeLog::write('error', 'Avatar upload of user ' . Auth::getUserID() . ': ' . $e->getMessage());
+			CookieFlash::set('The picture could not be stored, please try again.', 'error');
+		}
+
+		return $this->redirect('/users/settings');
+	}
+
+	/**
+	 * Remove the picture the player uploaded. An account that showed it shows the board
+	 * again, the avatar every account has.
+	 */
+	#[HttpPost]
+	public function avatarRemove(): mixed
+	{
+		$this->Authorization->authorize('User', 'editPreferences');
+
+		$user = Auth::getUser();
+		if (!empty($user['uploaded_avatar_hash']))
+		{
+			$fields = ['uploaded_avatar_hash' => null];
+			if ((int) $user['avatar_setting_id'] === User::AVATAR_UPLOADED)
+				$fields['avatar_setting_id'] = User::AVATAR_BOARD;
+			Auth::saveUserFields($fields);
+			UploadedAvatar::remove((int) $user['id']);
+			CookieFlash::set('Your picture was removed.', 'success');
+		}
+
+		return $this->redirect('/users/settings');
 	}
 }

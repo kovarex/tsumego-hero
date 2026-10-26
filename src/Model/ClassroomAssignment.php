@@ -488,6 +488,7 @@ class ClassroomAssignment extends AppModel
 					'picture' => $pupil['user_picture'],
 					'email' => $pupil['user_email'],
 					'avatar_setting_id' => $pupil['user_avatar_setting_id'],
+					'uploaded_avatar_hash' => $pupil['user_uploaded_avatar_hash'],
 				]),
 				'rating' => (float) $pupil['user_rating'],
 				'solvedCount' => $solvedCount,

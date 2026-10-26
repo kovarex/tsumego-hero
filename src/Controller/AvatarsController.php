@@ -2,6 +2,7 @@
 
 use App\Attribute\HttpGet;
 use App\Utility\Avatar;
+use App\Utility\UploadedAvatar;
 
 /**
  * AvatarsController
@@ -16,6 +17,8 @@ use App\Utility\Avatar;
  *
  * A board keeps its corners (a circle would cut the pattern off), so the callers
  * pass border-radius:0 for this avatar and keep the round shape for a picture.
+ *
+ * A picture a player uploaded is served here as well, from the database.
  */
 class AvatarsController extends AppController
 {
@@ -55,6 +58,31 @@ class AvatarsController extends AppController
 		$this->response->header('Cache-Control: public, max-age=31536000, immutable');
 		$this->response->etag(md5(Avatar::VERSION . '|png|' . $key));
 		$this->response->body(Avatar::png($key));
+
+		return $this->response;
+	}
+
+	/**
+	 * The picture a player uploaded. The url carries the hash of the picture, so what it
+	 * answers never changes and the browser keeps it for a year; the url of a picture that
+	 * was replaced or removed, or of a deleted account, answers nothing.
+	 *
+	 * @param int|null $id User id
+	 * @param string|null $hash user.uploaded_avatar_hash
+	 * @return CakeResponse webp image, cached for a year
+	 */
+	#[HttpGet]
+	public function picture(?int $id = null, ?string $hash = null)
+	{
+		$picture = $id === null || $hash === null ? null : UploadedAvatar::picture($id, $hash);
+		if ($picture === null)
+			throw new NotFoundException('No such picture');
+
+		$this->response->type(['webp' => 'image/webp']);
+		$this->response->type('webp');
+		$this->response->header('Cache-Control: public, max-age=31536000, immutable');
+		$this->response->etag($hash);
+		$this->response->body($picture);
 
 		return $this->response;
 	}

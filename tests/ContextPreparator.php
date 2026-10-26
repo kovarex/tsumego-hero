@@ -31,7 +31,7 @@ class ContextPreparator
 			'tsumego_comment', 'tsumego_issue', 'admin_activity', 'admin_page_view', 'message',
 			'achievement_condition', 'achievement_status', 'set_connection',
 			'tsumego_attempt', 'tsumego_status', 'mistake_training_review', 'mistake_training_day', 'mistake_training_pool',
-			'tsumego_variant', 'reject', 'user', 'time_mode_rank',
+			'tsumego_variant', 'reject', 'user_avatar', 'user', 'time_mode_rank',
 			'tsumego', 'set', 'phpbb_users', 'phpbb_topics',
 		] as $table)
 			$pdo->exec("DELETE FROM `$table`");
@@ -152,6 +152,7 @@ class ContextPreparator
 		$user['external_id'] = $externalId ?: null;
 		$user['picture'] = Util::extract('picture', $userInput) ?: null;
 		$user['avatar_setting_id'] = Util::extract('avatar_setting_id', $userInput) ?: User::AVATAR_BOARD;
+		$user['uploaded_avatar_hash'] = Util::extract('uploaded_avatar_hash', $userInput) ?: null;
 		$user['needs_display_name_change'] = Util::extract('needs_display_name_change', $userInput) ?: false;
 		foreach ([
 			'used_refinement',

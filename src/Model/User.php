@@ -6,6 +6,7 @@ use App\Utility\Avatar;
 use App\Utility\Constants;
 use App\Utility\PhpbbNames;
 use App\Utility\Rating;
+use App\Utility\UploadedAvatar;
 use App\Utility\Util;
 
 /**
@@ -76,6 +77,9 @@ class User extends AppModel
 
 	/** The avatar a player picked: the picture of their Google account. */
 	public const AVATAR_GOOGLE = 3;
+
+	/** The avatar a player picked: a picture they uploaded (UploadedAvatar). */
+	public const AVATAR_UPLOADED = 4;
 
 	/**
 	 * The pixels asked of an avatar host for the avatar in a list: twice the 24px
@@ -434,7 +438,7 @@ class User extends AppModel
 				return '<span>' . h(self::DELETED_NAME) . '</span>';
 			$rating = $user['user_rating'] ?? null;
 			$rank = $rating !== null ? Rating::getReadableRankFromRating((float) $rating) : '';
-			return self::renderLinkInternal($user['user_id'], $displayName, $user['user_external_id'] ?? null, $user['user_picture'] ?? null, $user['user_email'] ?? null, $user['user_avatar_setting_id'] ?? null, $rank);
+			return self::renderLinkInternal($user['user_id'], $displayName, $user['user_external_id'] ?? null, $user['user_picture'] ?? null, $user['user_email'] ?? null, $user['user_avatar_setting_id'] ?? null, $user['user_uploaded_avatar_hash'] ?? null, $rank);
 		}
 
 		// Standard format: id, display_name, etc. A row without a display name gets the same
@@ -444,13 +448,13 @@ class User extends AppModel
 			return '<span>' . h(self::DELETED_NAME) . '</span>';
 		$rating = $user['rating'] ?? null;
 		$rank = $rating !== null ? Rating::getReadableRankFromRating((float) $rating) : '';
-		return self::renderLinkInternal($user['id'], $displayName, $user['external_id'] ?? null, $user['picture'] ?? null, $user['email'] ?? null, $user['avatar_setting_id'] ?? null, $rank);
+		return self::renderLinkInternal($user['id'], $displayName, $user['external_id'] ?? null, $user['picture'] ?? null, $user['email'] ?? null, $user['avatar_setting_id'] ?? null, $user['uploaded_avatar_hash'] ?? null, $rank);
 	}
 
 	/**
 	 * Internal function to render user link HTML.
 	 */
-	private static function renderLinkInternal(int $id, string $displayName, ?string $externalID, ?string $picture, ?string $email, ?int $avatarSettingID, string $rank): string
+	private static function renderLinkInternal(int $id, string $displayName, ?string $externalID, ?string $picture, ?string $email, ?int $avatarSettingID, ?string $uploadedAvatarHash, string $rank): string
 	{
 		assert(($externalID !== null && $picture !== null) || $email !== null, 'Must have either (externalID + picture) or email for avatar');
 
@@ -459,6 +463,7 @@ class User extends AppModel
 			'id' => $id,
 			'display_name' => $displayName,
 			'avatar_setting_id' => $avatarSettingID,
+			'uploaded_avatar_hash' => $uploadedAvatarHash,
 			'external_id' => $externalID,
 			'picture' => $picture,
 			'email' => $email,
@@ -672,7 +677,7 @@ class User extends AppModel
 
 	/**
 	 * The avatars a player can pick, as value => label. The Google picture is only
-	 * offered to an account that has one.
+	 * offered to an account that has one, and so is an uploaded picture.
 	 *
 	 * @param array<string, mixed> $user
 	 * @return array<int, string>
@@ -685,13 +690,15 @@ class User extends AppModel
 		];
 		if (self::hasGooglePicture($user))
 			$choices[self::AVATAR_GOOGLE] = 'Google picture';
+		if (!empty($user['uploaded_avatar_hash']))
+			$choices[self::AVATAR_UPLOADED] = 'My picture';
 		return $choices;
 	}
 
 	/**
 	 * The avatar an account shows. Without a stored choice it is the board, and a
 	 * stored choice that is not on offer (the Google picture of an account that lost
-	 * it) falls back to the board too.
+	 * it, a picture that was removed) falls back to the board too.
 	 *
 	 * @param array<string, mixed> $user
 	 * @return int
@@ -715,19 +722,24 @@ class User extends AppModel
 	}
 
 	/**
-	 * Get the avatar URL for a user: the avatar the player picked, which is the
-	 * picture of a Google account, their Gravatar or the board the site draws.
+	 * Get the avatar URL for a user: the avatar the player picked, which is a picture
+	 * they uploaded, the picture of a Google account, their Gravatar or the board the
+	 * site draws.
 	 *
 	 * Only the avatar fields are needed, the callers pass either a full user row or
 	 * just these values.
 	 *
-	 * @param array{id?: int, display_name?: string|null, avatar_setting_id?: int|null, external_id?: string|null, picture?: string|null, email?: string|null} $user
-	 * @param int $size Pixels to ask an avatar host for, the board ignores it
+	 * @param array{id?: int, display_name?: string|null, avatar_setting_id?: int|null, uploaded_avatar_hash?: string|null, external_id?: string|null, picture?: string|null, email?: string|null} $user
+	 * @param int $size Pixels to ask an avatar host for, the board and an uploaded picture ignore it
 	 * @return string Avatar URL
 	 */
 	public static function getAvatarUrl(array $user, int $size = self::AVATAR_PIXELS_INLINE): string
 	{
 		$choice = self::avatarChoice($user);
+
+		// One picture of UploadedAvatar::SIZE serves every size, like the board.
+		if ($choice === self::AVATAR_UPLOADED)
+			return UploadedAvatar::url((int) $user['id'], $user['uploaded_avatar_hash']);
 
 		if ($choice === self::AVATAR_GOOGLE)
 		{

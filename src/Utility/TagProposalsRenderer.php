@@ -30,6 +30,7 @@ SELECT
 	user.id as user_id,
 	user.picture AS user_picture,
 	user.avatar_setting_id AS user_avatar_setting_id,
+	user.uploaded_avatar_hash AS user_uploaded_avatar_hash,
 	user.external_id AS user_external_id,
 	user.email AS user_email,
 	user.rating as user_rating

@@ -27,6 +27,7 @@ require_once(__DIR__ . "/../src/ParseOnlyRoute.php");
 require_once(__DIR__ . "/../src/SetViewRoute.php");
 
 use App\Utility\Avatar;
+use App\Utility\UploadedAvatar;
 
 // XML Sitemap for search engines
 Router::connect('/sitemap.xml', [
@@ -197,6 +198,16 @@ Router::connect(
 	'/avatar/:id',
 	['controller' => 'Avatars', 'action' => 'boardOfUser'],
 	['pass' => ['id'], 'id' => '[0-9]+'] // Id of a user
+);
+
+/**
+ * The picture a player uploaded as their avatar, stored in the database. The hash
+ * changes with the picture, so the url can be cached for good.
+ */
+Router::connect(
+	'/avatar/:id/:hash.webp',
+	['controller' => 'Avatars', 'action' => 'picture'],
+	['pass' => ['id', 'hash'], 'id' => '[0-9]+', 'hash' => '[0-9a-f]{' . UploadedAvatar::HASH_LENGTH . '}'] // Id of a user, hash of their picture
 );
 
 /**
@@ -398,6 +409,14 @@ Router::connect(
 Router::connect(
 	'/users/avatarPreference',
 	['controller' => 'Users', 'action' => 'avatarPreference']
+);
+Router::connect(
+	'/users/avatarUpload',
+	['controller' => 'Users', 'action' => 'avatarUpload']
+);
+Router::connect(
+	'/users/avatarRemove',
+	['controller' => 'Users', 'action' => 'avatarRemove']
 );
 Router::connect(
 	'/profile',

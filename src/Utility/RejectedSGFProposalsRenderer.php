@@ -28,6 +28,7 @@ SELECT
     user.external_id AS user_external_id,
     user.picture AS user_picture,
     user.avatar_setting_id AS user_avatar_setting_id,
+    user.uploaded_avatar_hash AS user_uploaded_avatar_hash,
     user.rating AS user_rating,
     user.email AS user_email,
     reject.created AS rejected,
@@ -37,6 +38,7 @@ SELECT
     admin.external_id AS admin_external_id,
     admin.picture AS admin_picture,
     admin.avatar_setting_id AS admin_avatar_setting_id,
+    admin.uploaded_avatar_hash AS admin_uploaded_avatar_hash,
     admin.rating AS admin_rating,
     admin.email AS admin_email,
     sc.id AS set_connection_id,
@@ -93,6 +95,7 @@ OFFSET " . $this->offset);
 				'user_external_id' => $item['admin_external_id'],
 				'user_picture' => $item['admin_picture'],
 				'user_avatar_setting_id' => $item['admin_avatar_setting_id'],
+				'user_uploaded_avatar_hash' => $item['admin_uploaded_avatar_hash'],
 				'user_rating' => $item['admin_rating'],
 				'user_email' => $item['admin_email']]);
 			if ($item['comment'] !== null && $item['comment'] !== '')
