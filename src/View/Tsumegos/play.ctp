@@ -19,6 +19,7 @@ use App\Utility\ViteManifest;
 
 /**
  * @var View $this
+ * @var bool $accountBlocked
  * @var bool $alternative_response
  * @var int $amountOfOtherCollection
  * @var array $boardSelection
@@ -62,7 +63,6 @@ use App\Utility\ViteManifest;
  * @var array $setConnections
  * @var bool $set_duplicate
  * @var array $sgf
- * @var bool $suspiciousBehavior
  * @var array $t
  * @var array $tagData
  * @var TimeMode $timeMode
@@ -1123,7 +1123,7 @@ use App\Utility\ViteManifest;
 		echo 'toggleBoardLock(true);';
 	} else echo 'var locked=false;';
 
-	if ($suspiciousBehavior)
+	if ($accountBlocked)
 	{
 		echo 'var locked=true; tryAgainTomorrow = true;';
 		echo 'document.getElementById("status").innerHTML = "<h3><b>Your account is temporarily locked.</b></h3>";
