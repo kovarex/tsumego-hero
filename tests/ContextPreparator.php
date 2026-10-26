@@ -502,7 +502,7 @@ class ContextPreparator
 			'lapses' => $tsumegoStatus['mistake_training_lapses'] ?? 0,
 			'next_due' => $mistakeTrainingDue,
 			'last_review_day' => $tsumegoStatus['mistake_training_review_day'] ?? null,
-			'last_review_result' => $tsumegoStatus['mistake_training_review_result'] ?? null,
+			'last_mistake_training_result_id' => $tsumegoStatus['mistake_training_review_result'] ?? null,
 		];
 		if ($existing)
 		{

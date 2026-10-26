@@ -176,7 +176,7 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 		return new ContextPreparator(['user' => ['name' => 'testuser'], 'tsumegos' => $tsumegos]);
 	}
 
-	private static function reviewedToday(string $result): array
+	private static function reviewedToday(int $result): array
 	{
 		return [
 			'mistake_training_due' => $result === MistakeTraining::REVIEW_MISSED
@@ -421,7 +421,7 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 
 		$row = MistakeTraining::getPoolRow($userId, $tsumegoId);
 		$this->assertSame(0, (int) $row['rung'], 'The solve after a mistake of the same day earns no rung');
-		$this->assertSame(MistakeTraining::REVIEW_SOLVED, $row['last_review_result']);
+		$this->assertSame(MistakeTraining::REVIEW_SOLVED, $row['last_mistake_training_result_id']);
 		$this->assertFalse(MistakeTraining::isDue($userId, $tsumegoId), 'The problem is done for today');
 
 		// The colour the server draws, not the one the page set on the solve.
@@ -788,8 +788,8 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 			'user' => ['name' => 'admin', 'admin' => true],
 			'tsumegos' => [
 				['set_order' => 1, 'status' => ['name' => 'S', 'mistake_training_due' => $now]],
-				['set_order' => 2, 'status' => ['name' => 'S', 'mistake_training_due' => $now, 'mistake_training_review_day' => $today, 'mistake_training_review_result' => 'F']],
-				['set_order' => 3, 'status' => ['name' => 'S', 'mistake_training_rung' => 1, 'mistake_training_due' => date('Y-m-d', strtotime($today . ' +2 days')) . ' 00:00:00', 'mistake_training_review_day' => $today, 'mistake_training_review_result' => 'S']],
+				['set_order' => 2, 'status' => ['name' => 'S', 'mistake_training_due' => $now, 'mistake_training_review_day' => $today, 'mistake_training_review_result' => MistakeTraining::REVIEW_MISSED]],
+				['set_order' => 3, 'status' => ['name' => 'S', 'mistake_training_rung' => 1, 'mistake_training_due' => date('Y-m-d', strtotime($today . ' +2 days')) . ' 00:00:00', 'mistake_training_review_day' => $today, 'mistake_training_review_result' => MistakeTraining::REVIEW_SOLVED]],
 			],
 		]);
 		$userId = $context->user['id'];

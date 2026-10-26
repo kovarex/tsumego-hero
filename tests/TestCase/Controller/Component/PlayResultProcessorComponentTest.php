@@ -1247,7 +1247,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		$row = MistakeTraining::getPoolRow($userId, $tsumegoId);
 		$this->assertSame(2, (int) $row['rung'], 'A replay neither takes the problem down nor up');
 		$this->assertSame($reviewed['next_due'], $row['next_due']);
-		$this->assertSame(MistakeTraining::REVIEW_SOLVED, $row['last_review_result']);
+		$this->assertSame(MistakeTraining::REVIEW_SOLVED, $row['last_mistake_training_result_id']);
 	}
 
 	/**
@@ -1269,14 +1269,14 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		$row = MistakeTraining::getPoolRow($userId, $tsumegoId);
 		$this->assertSame(0, (int) $row['rung']);
 		$this->assertTrue(MistakeTraining::isRowDue($row), 'The problem waits in today\'s training until it is solved');
-		$this->assertSame(MistakeTraining::REVIEW_MISSED, $row['last_review_result']);
+		$this->assertSame(MistakeTraining::REVIEW_MISSED, $row['last_mistake_training_result_id']);
 
 		$this->solveAfterMistake($context);
 
 		$row = MistakeTraining::getPoolRow($userId, $tsumegoId);
 		$this->assertFalse(MistakeTraining::isRowDue($row), 'The solve of the same play ends the review for today');
 		$this->assertSame(0, (int) $row['rung']);
-		$this->assertSame(MistakeTraining::REVIEW_SOLVED, $row['last_review_result']);
+		$this->assertSame(MistakeTraining::REVIEW_SOLVED, $row['last_mistake_training_result_id']);
 	}
 
 	public function testPoolProblemStaysRegardlessOfStatus(): void
@@ -1443,7 +1443,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		$this->assertCount(0, $this->attemptsOf($context));
 		$this->assertArrayHasKey('mistake_training_button', $response, 'The training page redraws its row');
 		$row = MistakeTraining::getPoolRow($context->user['id'], (int) $context->tsumegos[0]['id']);
-		$this->assertSame(MistakeTraining::REVIEW_MISSED, $row['last_review_result']);
+		$this->assertSame(MistakeTraining::REVIEW_MISSED, $row['last_mistake_training_result_id']);
 	}
 
 	public function testClaimingTheTrainingForAProblemOutsideItSparesNoHeart(): void
@@ -1642,7 +1642,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		// A problem that comes due again later in the day is reviewed, but the day
 		// was already cleared.
 		MistakeTraining::makeDueNow($context->user['id'], (int) $context->tsumegos[0]['id']);
-		Util::execute('UPDATE mistake_training_pool SET last_review_day = NULL, last_review_result = NULL WHERE user_id = ? AND tsumego_id = ?',
+		Util::execute('UPDATE mistake_training_pool SET last_review_day = NULL, last_mistake_training_result_id = NULL WHERE user_id = ? AND tsumego_id = ?',
 			[$context->user['id'], $context->tsumegos[0]['id']]);
 		$again = $this->playInTraining($context, PlayOutcome::SolvedClean);
 		$this->assertSame(['review' => 9, 'graduation' => 0, 'clear' => 0], $again['mistake_training_xp']);

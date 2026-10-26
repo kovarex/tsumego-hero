@@ -27,7 +27,7 @@ class MistakeTrainingTest extends IntegrationTestCase
 	private function reviewCleanly(int $userId, int $tsumegoId): void
 	{
 		Util::execute(
-			'UPDATE mistake_training_pool SET next_due = ?, last_review_day = NULL, last_review_result = NULL WHERE user_id = ? AND tsumego_id = ?',
+			'UPDATE mistake_training_pool SET next_due = ?, last_review_day = NULL, last_mistake_training_result_id = NULL WHERE user_id = ? AND tsumego_id = ?',
 			[date('Y-m-d H:i:s', strtotime('-1 minute')), $userId, $tsumegoId]
 		);
 		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, null);
@@ -155,7 +155,7 @@ class MistakeTrainingTest extends IntegrationTestCase
 
 		$row = $this->poolRow($userId, $tsumegoId);
 		$this->assertSame(0, (int) $row['rung'], 'The review of a due problem counts wherever it is played');
-		$this->assertSame(MistakeTraining::REVIEW_MISSED, $row['last_review_result']);
+		$this->assertSame(MistakeTraining::REVIEW_MISSED, $row['last_mistake_training_result_id']);
 	}
 
 	public function testAMistakeOnASolvedProblemInTheTimeModeEntersTraining(): void
@@ -731,7 +731,7 @@ class MistakeTrainingTest extends IntegrationTestCase
 		$this->assertSame(0, (int) $row['rung'], 'A mistake still takes back everything the problem had climbed');
 		$this->assertTrue(MistakeTraining::isRowDue($row), 'A mistake must not make the problem disappear from today');
 		$this->assertSame(MistakeTraining::today(), $row['last_review_day']);
-		$this->assertSame(MistakeTraining::REVIEW_MISSED, $row['last_review_result']);
+		$this->assertSame(MistakeTraining::REVIEW_MISSED, $row['last_mistake_training_result_id']);
 
 		$button = $this->trainingButtons($context)[$this->tsumegoId($context, 0)];
 		$this->assertSame('N', $button->status, 'A problem missed today is grey until it is solved');
@@ -755,7 +755,7 @@ class MistakeTrainingTest extends IntegrationTestCase
 		$row = $this->trainingRow($context, 0);
 		$this->assertSame(0, (int) $row['rung']);
 		$this->assertTrue(MistakeTraining::isRowDue($row), 'Every try that fails keeps the problem in today\'s training');
-		$this->assertSame(MistakeTraining::REVIEW_MISSED, $row['last_review_result']);
+		$this->assertSame(MistakeTraining::REVIEW_MISSED, $row['last_mistake_training_result_id']);
 	}
 
 	public function testASolveAfterAMistakeTheSameDayEarnsNothing(): void
@@ -768,7 +768,7 @@ class MistakeTrainingTest extends IntegrationTestCase
 		$row = $this->trainingRow($context, 0);
 		$this->assertSame(0, (int) $row['rung'], 'A clean try after a mistake of the same day is a retry, it climbs nothing');
 		$this->assertDaysAhead(1, $row, 'A problem solved on a retry comes back tomorrow');
-		$this->assertSame(MistakeTraining::REVIEW_SOLVED, $row['last_review_result']);
+		$this->assertSame(MistakeTraining::REVIEW_SOLVED, $row['last_mistake_training_result_id']);
 
 		$button = $this->trainingButtons($context)[$this->tsumegoId($context, 0)];
 		$this->assertSame('S', $button->status, 'Solved today is green');
@@ -798,7 +798,7 @@ class MistakeTrainingTest extends IntegrationTestCase
 		$this->assertSame(2, (int) $row['rung']);
 		$this->assertDaysAhead(4, $row, 'A clean solve at rung 2 waits 4 days');
 		$this->assertSame(MistakeTraining::today(), $row['last_review_day']);
-		$this->assertSame(MistakeTraining::REVIEW_SOLVED, $row['last_review_result']);
+		$this->assertSame(MistakeTraining::REVIEW_SOLVED, $row['last_mistake_training_result_id']);
 		$this->assertCount(1, MistakeTraining::todaysTraining($context->user['id']),
 			'A problem solved today stays in today\'s training, so the row holds still');
 		$this->assertNull(MistakeTraining::nextDue($context->user['id']), 'But it is not served again');
@@ -851,7 +851,7 @@ class MistakeTrainingTest extends IntegrationTestCase
 		$row = $this->trainingRow($context, 0);
 		$this->assertSame((int) $solved['rung'], (int) $row['rung'], 'A replay neither climbs nor falls');
 		$this->assertSame($solved['next_due'], $row['next_due'], 'A replay does not move the review');
-		$this->assertSame(MistakeTraining::REVIEW_SOLVED, $row['last_review_result'], 'A replay leaves the day solved');
+		$this->assertSame(MistakeTraining::REVIEW_SOLVED, $row['last_mistake_training_result_id'], 'A replay leaves the day solved');
 	}
 
 	public function testNextSkipsWhatTodaySolvedAndWrapsAround(): void
@@ -894,7 +894,7 @@ class MistakeTrainingTest extends IntegrationTestCase
 
 		$row = $this->trainingRow($context, 0);
 		$this->assertNull($row['next_due'], 'A clean solve at the top rung graduates');
-		$this->assertSame(MistakeTraining::REVIEW_GRADUATED, $row['last_review_result']);
+		$this->assertSame(MistakeTraining::REVIEW_GRADUATED, $row['last_mistake_training_result_id']);
 		$this->assertSame(0, MistakeTraining::totalInTraining($context->user['id']));
 
 		$button = $this->trainingButtons($context)[$this->tsumegoId($context, 0)];
@@ -1128,14 +1128,14 @@ class MistakeTrainingTest extends IntegrationTestCase
 
 		$review = MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedClean, 'V', true);
 
-		$this->assertSame(['result' => 'S', 'rung_before' => 2, 'rung_after' => 3, 'climbed' => true, 'cleared' => false, 'clear_bonus' => false],
+		$this->assertSame(['result' => MistakeTraining::REVIEW_SOLVED, 'rung_before' => 2, 'rung_after' => 3, 'climbed' => true, 'cleared' => false, 'clear_bonus' => false],
 			array_diff_key($review, ['id' => 0]));
 		$rows = $this->reviews($userId);
 		$this->assertCount(1, $rows);
 		$this->assertSame($review['id'], (int) $rows[0]['id']);
 		$this->assertSame($tsumegoId, (int) $rows[0]['tsumego_id']);
 		$this->assertSame(MistakeTraining::today(), $rows[0]['day']);
-		$this->assertSame('S', $rows[0]['result']);
+		$this->assertSame(MistakeTraining::REVIEW_SOLVED, $rows[0]['mistake_training_result_id']);
 		$this->assertSame(0, (int) $rows[0]['xp'], 'The XP is the training\'s to award');
 
 		$day = $this->trainingDay($userId);
@@ -1156,12 +1156,12 @@ class MistakeTrainingTest extends IntegrationTestCase
 			'Missing it again the same day is the same miss');
 		$retry = MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedAfterMistake, 'V', true);
 
-		$this->assertSame('F', $miss['result']);
+		$this->assertSame(MistakeTraining::REVIEW_MISSED, $miss['result']);
 		$this->assertSame([3, 0], [$miss['rung_before'], $miss['rung_after']]);
 		$this->assertFalse($miss['climbed']);
-		$this->assertSame('S', $retry['result']);
+		$this->assertSame(MistakeTraining::REVIEW_SOLVED, $retry['result']);
 		$this->assertFalse($retry['climbed'], 'A retry earns nothing');
-		$this->assertSame(['F', 'S'], array_column($this->reviews($userId), 'result'));
+		$this->assertSame([MistakeTraining::REVIEW_MISSED, MistakeTraining::REVIEW_SOLVED], array_column($this->reviews($userId), 'mistake_training_result_id'));
 		$this->assertSame(1, (int) $this->trainingDay($userId)['reviewed'], 'One problem was reviewed');
 	}
 
@@ -1174,7 +1174,7 @@ class MistakeTrainingTest extends IntegrationTestCase
 
 		$this->assertSame(MistakeTraining::REVIEW_GRADUATED, $review['result']);
 		$this->assertTrue($review['climbed']);
-		$this->assertSame(MistakeTraining::REVIEW_GRADUATED, $this->reviews($userId)[0]['result']);
+		$this->assertSame(MistakeTraining::REVIEW_GRADUATED, $this->reviews($userId)[0]['mistake_training_result_id']);
 	}
 
 	public function testAProblemThatIsNotDueIsNoReview(): void
@@ -1466,6 +1466,7 @@ class MistakeTrainingTest extends IntegrationTestCase
 		);
 		$this->assertSame([
 			['CONSTRAINT_NAME' => 'mistake_training_day_user_id', 'DELETE_RULE' => 'CASCADE'],
+			['CONSTRAINT_NAME' => 'mistake_training_review_mistake_training_result_id', 'DELETE_RULE' => 'RESTRICT'],
 			['CONSTRAINT_NAME' => 'mistake_training_review_tsumego_id', 'DELETE_RULE' => 'CASCADE'],
 			['CONSTRAINT_NAME' => 'mistake_training_review_user_id', 'DELETE_RULE' => 'CASCADE'],
 		], $keys);
