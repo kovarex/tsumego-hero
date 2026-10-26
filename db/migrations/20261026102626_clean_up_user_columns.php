@@ -11,14 +11,15 @@ use Phinx\Migration\AbstractMigration;
  * - reward: the date of a donation, nothing reads it since the "member since" backfill
  *   (20261025100000) used it as evidence,
  * - login_token: the forum signs in with the JWT auth_token cookie now,
- * - readingTrial, reuse4: only the daily cron reset them, nothing read them.
+ * - readingTrial, reuse4: only the daily cron reset them, nothing read them,
+ * - lastProfileLeft, lastProfileRight: the chart tab of a profile is a string ('level', 'rating'...),
+ *   which never fit these INT columns, so they always stayed 0; the cookie alone remembers the tab.
  *
  * The columns left are renamed to snake_case, like the rest of the schema, and to names saying what
  * they are: t_glicko is the difficulty a player picked for the rating mode (1 easiest, 4 normal,
  * 7 hardest), reuse5 = 1 blocked the account (its play page locks the board; nothing sets the block,
  * an admin does it in the database), lastLight is the theme, lastHighscore the highscore page the
- * menu links to, lastProfileLeft/Right the charts shown on the two sides of a profile. The cookies
- * that carry these choices keep their names.
+ * menu links to. The cookies that carry these choices keep their names.
  *
  * IRREVERSIBLE in part: a rollback brings the columns back with their defaults, the data is gone.
  */
@@ -42,6 +43,8 @@ final class CleanUpUserColumns extends AbstractMigration
 				DROP COLUMN login_token,
 				DROP COLUMN readingTrial,
 				DROP COLUMN reuse4,
+				DROP COLUMN lastProfileLeft,
+				DROP COLUMN lastProfileRight,
 				CHANGE t_glicko rating_mode_difficulty_selection TINYINT NOT NULL DEFAULT 4
 					COMMENT 'The difficulty picked for the rating mode, 1 easiest, 4 normal, 7 hardest.',
 				CHANGE reuse5 blocked TINYINT(1) NOT NULL DEFAULT 0
@@ -50,8 +53,6 @@ final class CleanUpUserColumns extends AbstractMigration
 					COMMENT 'The highscore page the menu links to: 1 level, 2 rating, 3 daily, 4 time mode, 0 none yet.',
 				CHANGE lastLight theme TINYINT NOT NULL DEFAULT 0 COMMENT '0=light, 1=dark',
 				CHANGE levelBar level_bar TINYINT NOT NULL DEFAULT 1 COMMENT 'What the bar in the header shows: 1=level, 2=rating',
-				CHANGE lastProfileLeft profile_left_chart INT(11) NOT NULL DEFAULT 0,
-				CHANGE lastProfileRight profile_right_chart INT(11) NOT NULL DEFAULT 0,
 				CHANGE passwordreset password_reset_token VARCHAR(50) NULL DEFAULT NULL,
 				CHANGE passwordreset_created password_reset_token_created DATETIME NULL DEFAULT NULL");
 	}
@@ -66,8 +67,6 @@ final class CleanUpUserColumns extends AbstractMigration
 				CHANGE highscore_page lastHighscore INT(11) NOT NULL DEFAULT 0 COMMENT 'Last used highscore page.',
 				CHANGE theme lastLight TINYINT NOT NULL DEFAULT 0 COMMENT '0=light, 1=dark',
 				CHANGE level_bar levelBar TINYINT NOT NULL DEFAULT 1 COMMENT '1=level, 2=rating',
-				CHANGE profile_left_chart lastProfileLeft INT(11) NOT NULL DEFAULT 0,
-				CHANGE profile_right_chart lastProfileRight INT(11) NOT NULL DEFAULT 0,
 				CHANGE password_reset_token passwordreset VARCHAR(50) NULL DEFAULT NULL,
 				CHANGE password_reset_token_created passwordreset_created DATETIME NULL DEFAULT NULL,
 				ADD COLUMN lastRefresh DATE DEFAULT NULL,
@@ -80,6 +79,8 @@ final class CleanUpUserColumns extends AbstractMigration
 				ADD COLUMN location VARCHAR(10) DEFAULT NULL,
 				ADD COLUMN login_token VARCHAR(64) DEFAULT NULL,
 				ADD COLUMN readingTrial INT(11) NOT NULL DEFAULT 30,
-				ADD COLUMN reuse4 INT(11) NOT NULL DEFAULT 0");
+				ADD COLUMN reuse4 INT(11) NOT NULL DEFAULT 0,
+				ADD COLUMN lastProfileLeft INT(11) NOT NULL DEFAULT 0,
+				ADD COLUMN lastProfileRight INT(11) NOT NULL DEFAULT 0");
 	}
 }

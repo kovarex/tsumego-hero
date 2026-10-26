@@ -16,8 +16,6 @@ use App\Utility\ViteManifest;
  * @var string $discussFilter
  * @var TimeMode $timeMode
  * @var bool $achievementUpdate
- * @var string $lastProfileLeft
- * @var string $lastProfileRight
  * @var string $nextDay
  * @var string $boardsBitmask
  * @var string|null $canonicalPath Path a page with more than one address wants to be known by
@@ -453,8 +451,6 @@ echo ViteManifest::legacyScript('legacy');
 	}
 
 	setCookie("lightDark", <?php echo json_encode($lightDark, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>);
-	setCookie("lastProfileLeft", <?php echo json_encode($lastProfileLeft, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>);
-	setCookie("lastProfileRight", <?php echo json_encode($lastProfileRight, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>);
 	var soundsEnabled = true;
 	var notMode3 = true;
 

@@ -371,8 +371,6 @@ class AppController extends Controller
 		$highscoreLink = 'highscore';
 		$lightDark = 'light';
 		$levelBar = User::LEVEL_BAR_LEVEL;
-		$lastProfileLeft = 1;
-		$lastProfileRight = 2;
 
 		if (Auth::isLoggedIn())
 		{
@@ -439,29 +437,6 @@ class AppController extends Controller
 			}
 			else
 				$levelBar = ((int) Auth::getUser()['level_bar']) === User::LEVEL_BAR_RATING ? User::LEVEL_BAR_RATING : User::LEVEL_BAR_LEVEL;
-
-			if (isset($_COOKIE['lastProfileLeft']) && $_COOKIE['lastProfileLeft'] != '0')
-			{
-				$lastProfileLeft = $_COOKIE['lastProfileLeft'];
-				Auth::saveUserField('profile_left_chart', $lastProfileLeft);
-			}
-			else
-			{
-				$lastProfileLeft = Auth::getUser()['profile_left_chart'];
-				if ($lastProfileLeft == 0)
-					$lastProfileLeft = 1;
-			}
-			if (isset($_COOKIE['lastProfileRight']) && $_COOKIE['lastProfileRight'] != '0')
-			{
-				$lastProfileRight = $_COOKIE['lastProfileRight'];
-				Auth::saveUserField('profile_right_chart', $lastProfileRight);
-			}
-			else
-			{
-				$lastProfileRight = Auth::getUser()['profile_right_chart'];
-				if ($lastProfileRight == 0)
-					$lastProfileRight = 1;
-			}
 		}
 
 		if (HeroPowers::getSprintRemainingSeconds() == 0)
@@ -490,8 +465,6 @@ class AppController extends Controller
 		$this->set('highscoreLink', $highscoreLink);
 		$this->set('lightDark', $lightDark);
 		$this->set('levelBar', $levelBar);
-		$this->set('lastProfileLeft', $lastProfileLeft);
-		$this->set('lastProfileRight', $lastProfileRight);
 		$this->set('timeMode', $timeMode);
 		$this->set('changelogTimestamps', ChangelogController::changelogTimestamps());
 	}
