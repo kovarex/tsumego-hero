@@ -50,14 +50,13 @@ class CronController extends AppController
 	 */
 	private static function withReadCommitted(callable $work): void
 	{
-		$session = Util::query("SELECT @@SESSION.tx_isolation AS isolation,
-			@@GLOBAL.log_bin AND @@SESSION.binlog_format = 'STATEMENT' AS statement_log")[0];
-		if ($session['statement_log'])
+		if (Util::query("SELECT @@GLOBAL.log_bin AND @@SESSION.binlog_format = 'STATEMENT' AS statement_log")[0]['statement_log'])
 		{
 			$work();
 			return;
 		}
 
+		$isolation = Util::isolationLevel();
 		Util::execute('SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED');
 		try
 		{
@@ -65,7 +64,8 @@ class CronController extends AppController
 		}
 		finally
 		{
-			Util::execute('SET SESSION tx_isolation = ?', [$session['isolation']]);
+			// the server names the level with a dash, as in REPEATABLE-READ
+			Util::execute('SET SESSION TRANSACTION ISOLATION LEVEL ' . str_replace('-', ' ', $isolation));
 		}
 	}
 

@@ -229,7 +229,7 @@ class CronControllerTest extends IntegrationTestCase
 		try
 		{
 			$this->get('/cron/daily/' . CRON_SECRET);
-			$this->assertSame('SERIALIZABLE', Util::query('SELECT @@SESSION.tx_isolation AS isolation')[0]['isolation']);
+			$this->assertSame('SERIALIZABLE', Util::isolationLevel());
 		}
 		finally
 		{

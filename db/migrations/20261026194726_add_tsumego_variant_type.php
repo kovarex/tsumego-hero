@@ -19,6 +19,8 @@ final class AddTsumegoVariantType extends AbstractMigration
 		2 => ['score_estimating', 'score estimating'],
 	];
 
+	private const MULTIPLE_CHOICE = 1;
+
 	public function up(): void
 	{
 		$this->execute("CREATE TABLE tsumego_variant_type (
@@ -39,6 +41,10 @@ final class AddTsumegoVariantType extends AbstractMigration
 		$this->execute('ALTER TABLE tsumego_variant ADD tsumego_variant_type_id int(10) unsigned DEFAULT NULL AFTER tsumego_id');
 		$this->execute('UPDATE tsumego_variant SET tsumego_variant_type_id = CASE type ' . implode(' ', $cases) . ' END');
 		$this->execute('DELETE FROM tsumego_variant WHERE tsumego_variant_type_id IS NULL');
+		// Only a multiple choice problem reads correct_answer, as one of its four answers. Any other value
+		// would stop the conversion below (a negative one or one past 255 is out of range), so it becomes 0.
+		$this->execute('UPDATE tsumego_variant
+			SET correct_answer = IF(tsumego_variant_type_id = ' . self::MULTIPLE_CHOICE . ' AND correct_answer BETWEEN 1 AND 4, FLOOR(correct_answer), 0)');
 		$this->execute("ALTER TABLE tsumego_variant
 			DROP COLUMN type,
 			MODIFY tsumego_variant_type_id int(10) unsigned NOT NULL,
