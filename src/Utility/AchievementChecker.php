@@ -3,6 +3,7 @@
 namespace App\Utility;
 
 use Achievement;
+use AchievementCondition;
 use Cache;
 use ClassRegistry;
 use SetConnection;
@@ -115,56 +116,30 @@ class AchievementChecker
 		if ($solvedCount >= 10000)
 			$this->gained(AchievementId::PROBLEMS_10000);
 
-		if (ClassRegistry::init('AchievementCondition')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'category' => 'uotd']]))
+		if (AchievementCondition::value(Auth::getUserID(), AchievementCondition::CATEGORY_USER_OF_THE_DAY) !== null)
 			$this->gained(AchievementId::USER_OF_THE_DAY);
 		return $this;
 	}
 
 	public function checkDanSolveAchievements(): void
 	{
-		$achievementConditions = ClassRegistry::init('AchievementCondition')->find('all', [
-			'order' => 'category ASC',
-			'conditions' => [
-				'user_id' => Auth::getUserID(),
-				'OR' => [
-					['category' => 'danSolve1d'],
-					['category' => 'danSolve2d'],
-					['category' => 'danSolve3d'],
-					['category' => 'danSolve4d'],
-					['category' => 'danSolve5d'],
-					['category' => 'emerald'],
-					['category' => 'sapphire'],
-					['category' => 'ruby'],
-					['category' => 'sprint'],
-					['category' => 'golden'],
-					['category' => 'potion'],
-				],
-			],
-		]) ?: [];
+		$conditions = AchievementCondition::values(Auth::getUserID(), [
+			...array_values(AchievementCondition::DAN_SOLVE_CATEGORIES),
+			AchievementCondition::CATEGORY_EMERALD,
+			AchievementCondition::CATEGORY_SAPPHIRE,
+			AchievementCondition::CATEGORY_RUBY,
+			AchievementCondition::CATEGORY_SPRINT,
+			AchievementCondition::CATEGORY_GOLDEN,
+			AchievementCondition::CATEGORY_POTION]);
 		$ac1 = [];
-		foreach ($achievementConditions as $achievementCondition)
-			if ($achievementCondition['AchievementCondition']['category'] == 'danSolve1d')
-				$ac1['1d'] = $achievementCondition['AchievementCondition']['value'];
-			elseif ($achievementCondition['AchievementCondition']['category'] == 'danSolve2d')
-				$ac1['2d'] = $achievementCondition['AchievementCondition']['value'];
-			elseif ($achievementCondition['AchievementCondition']['category'] == 'danSolve3d')
-				$ac1['3d'] = $achievementCondition['AchievementCondition']['value'];
-			elseif ($achievementCondition['AchievementCondition']['category'] == 'danSolve4d')
-				$ac1['4d'] = $achievementCondition['AchievementCondition']['value'];
-			elseif ($achievementCondition['AchievementCondition']['category'] == 'danSolve5d')
-				$ac1['5d'] = $achievementCondition['AchievementCondition']['value'];
-			elseif ($achievementCondition['AchievementCondition']['category'] == 'emerald')
-				$ac1['emerald'] = $achievementCondition['AchievementCondition']['value'];
-			elseif ($achievementCondition['AchievementCondition']['category'] == 'sapphire')
-				$ac1['sapphire'] = $achievementCondition['AchievementCondition']['value'];
-			elseif ($achievementCondition['AchievementCondition']['category'] == 'ruby')
-				$ac1['ruby'] = $achievementCondition['AchievementCondition']['value'];
-			elseif ($achievementCondition['AchievementCondition']['category'] == 'sprint')
-				$ac1['sprint'] = $achievementCondition['AchievementCondition']['value'];
-			elseif ($achievementCondition['AchievementCondition']['category'] == 'golden')
-				$ac1['golden'] = $achievementCondition['AchievementCondition']['value'];
-			elseif ($achievementCondition['AchievementCondition']['category'] == 'potion')
-				$ac1['potion'] = $achievementCondition['AchievementCondition']['value'];
+		foreach (AchievementCondition::DAN_SOLVE_CATEGORIES as $rank => $category)
+			$ac1[$rank] = $conditions[$category] ?? 0;
+		$ac1['emerald'] = $conditions[AchievementCondition::CATEGORY_EMERALD] ?? 0;
+		$ac1['sapphire'] = $conditions[AchievementCondition::CATEGORY_SAPPHIRE] ?? 0;
+		$ac1['ruby'] = $conditions[AchievementCondition::CATEGORY_RUBY] ?? 0;
+		$ac1['sprint'] = $conditions[AchievementCondition::CATEGORY_SPRINT] ?? 0;
+		$ac1['golden'] = $conditions[AchievementCondition::CATEGORY_GOLDEN] ?? 0;
+		$ac1['potion'] = $conditions[AchievementCondition::CATEGORY_POTION] ?? 0;
 
 		if ($ac1['1d'] > 0)
 			$this->gained(AchievementId::SOLVE_1D);
@@ -186,11 +161,11 @@ class AchievementChecker
 			$this->gained(AchievementId::SOLVE_10_4D);
 		if ($ac1['5d'] >= Achievement::SOLVE_10_COUNT)
 			$this->gained(AchievementId::SOLVE_10_5D);
-		if (isset($ac1['emerald']) && $ac1['emerald'] == 1)
+		if ($ac1['emerald'] == 1)
 			$this->gained(AchievementId::EMERALD);
-		if (isset($ac1['sapphire']) && $ac1['sapphire'] == 1)
+		if ($ac1['sapphire'] == 1)
 			$this->gained(AchievementId::SAPPHIRE);
-		if (isset($ac1['ruby']) && $ac1['ruby'] == 1)
+		if ($ac1['ruby'] == 1)
 			$this->gained(AchievementId::RUBY);
 
 		if ($this->unlocked(AchievementId::EMERALD)
@@ -207,20 +182,18 @@ class AchievementChecker
 
 	public function checkNoErrorAchievements(): void
 	{
-		$ac = ClassRegistry::init('AchievementCondition')->find('first', [
-			'order' => 'value DESC',
-			'conditions' => ['user_id' => Auth::getUserID(), 'category' => 'err']]);
-		if ($ac['AchievementCondition']['value'] >= Achievement::NO_ERROR_STREAK_I_STREAK_COUNT)
+		$streak = AchievementCondition::value(Auth::getUserID(), AchievementCondition::CATEGORY_NO_ERROR_STREAK) ?? 0;
+		if ($streak >= Achievement::NO_ERROR_STREAK_I_STREAK_COUNT)
 			$this->gained(AchievementId::NO_ERROR_STREAK_I);
-		if ($ac['AchievementCondition']['value'] >= Achievement::NO_ERROR_STREAK_II_STREAK_COUNT)
+		if ($streak >= Achievement::NO_ERROR_STREAK_II_STREAK_COUNT)
 			$this->gained(AchievementId::NO_ERROR_STREAK_II);
-		if ($ac['AchievementCondition']['value'] >= Achievement::NO_ERROR_STREAK_III_STREAK_COUNT)
+		if ($streak >= Achievement::NO_ERROR_STREAK_III_STREAK_COUNT)
 			$this->gained(AchievementId::NO_ERROR_STREAK_III);
-		if ($ac['AchievementCondition']['value'] >= Achievement::NO_ERROR_STREAK_IV_STREAK_COUNT)
+		if ($streak >= Achievement::NO_ERROR_STREAK_IV_STREAK_COUNT)
 			$this->gained(AchievementId::NO_ERROR_STREAK_IV);
-		if ($ac['AchievementCondition']['value'] >= Achievement::NO_ERROR_STREAK_V_STREAK_COUNT)
+		if ($streak >= Achievement::NO_ERROR_STREAK_V_STREAK_COUNT)
 			$this->gained(AchievementId::NO_ERROR_STREAK_V);
-		if ($ac['AchievementCondition']['value'] >= Achievement::NO_ERROR_STREAK_VI_STREAK_COUNT)
+		if ($streak >= Achievement::NO_ERROR_STREAK_VI_STREAK_COUNT)
 			$this->gained(AchievementId::NO_ERROR_STREAK_VI);
 	}
 
@@ -374,26 +347,20 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 
 	public function checkSetCompletedAchievements(): AchievementChecker
 	{
-		$achievementCondition = ClassRegistry::init('AchievementCondition')->find('first', [
-			'order' => 'value DESC',
-			'conditions' => [
-				'user_id' => Auth::getUserID(),
-				'category' => SetCompletionCounter::$CATEGORY]]);
-
-		if (!$achievementCondition)
+		$completedSets = AchievementCondition::value(Auth::getUserID(), AchievementCondition::CATEGORY_COMPLETED_SETS);
+		if ($completedSets === null)
 			return $this;
-		$achievementCondition = $achievementCondition['AchievementCondition'];
-		if ($achievementCondition['value'] >= Achievement::COMPLETE_SETS_I_SETS_COUNT)
+		if ($completedSets >= Achievement::COMPLETE_SETS_I_SETS_COUNT)
 			$this->gained(AchievementId::COMPLETE_SETS_I);
-		if ($achievementCondition['value'] >= Achievement::COMPLETE_SETS_II_SETS_COUNT)
+		if ($completedSets >= Achievement::COMPLETE_SETS_II_SETS_COUNT)
 			$this->gained(AchievementId::COMPLETE_SETS_II);
-		if ($achievementCondition['value'] >= Achievement::COMPLETE_SETS_III_SETS_COUNT)
+		if ($completedSets >= Achievement::COMPLETE_SETS_III_SETS_COUNT)
 			$this->gained(AchievementId::COMPLETE_SETS_III);
-		if ($achievementCondition['value'] >= Achievement::COMPLETE_SETS_IV_SETS_COUNT)
+		if ($completedSets >= Achievement::COMPLETE_SETS_IV_SETS_COUNT)
 			$this->gained(AchievementId::COMPLETE_SETS_IV);
-		if ($achievementCondition['value'] >= Achievement::COMPLETE_SETS_V_SETS_COUNT)
+		if ($completedSets >= Achievement::COMPLETE_SETS_V_SETS_COUNT)
 			$this->gained(AchievementId::COMPLETE_SETS_V);
-		if ($achievementCondition['value'] >= Achievement::COMPLETE_SETS_VI_SETS_COUNT)
+		if ($completedSets >= Achievement::COMPLETE_SETS_VI_SETS_COUNT)
 			$this->gained(AchievementId::COMPLETE_SETS_VI);
 		return $this;
 	}
@@ -535,85 +502,75 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 
 	public function checkSetAchievements(int $sid = 0, float|int $setRating = 0): AchievementChecker
 	{
-		$acA = ClassRegistry::init('AchievementCondition')->find('first', [
-			'order' => 'value DESC',
-			'conditions' => [
-				'set_id' => $sid,
-				'user_id' => Auth::getUserID(),
-				'category' => '%']]);
-		if (!$acA)
+		$accuracy = AchievementCondition::value(Auth::getUserID(), AchievementCondition::CATEGORY_SET_ACCURACY, $sid);
+		if ($accuracy === null)
 			return $this;
 		if (TsumegoUtil::countTsumegosFromSet($sid) < 100)
 			return $this;
-		$acS = ClassRegistry::init('AchievementCondition')->find('first', [
-			'order' => 'value ASC',
-			'conditions' => [
-				'set_id' => $sid,
-				'user_id' => Auth::getUserID(),
-				'category' => 's']]);
+		$time = AchievementCondition::value(Auth::getUserID(), AchievementCondition::CATEGORY_SET_TIME, $sid);
 
 		if ($setRating < 1300)
 		{
-			if ($acA['AchievementCondition']['value'] >= 75)
+			if ($accuracy >= 75)
 				$this->gained(AchievementId::ACCURACY_I);
-			if  ($acA['AchievementCondition']['value'] >= 85)
+			if  ($accuracy >= 85)
 				$this->gained(AchievementId::ACCURACY_II);
-			if ($acA['AchievementCondition']['value'] >= 95)
+			if ($accuracy >= 95)
 				$this->gained(AchievementId::ACCURACY_III);
-			if ($acS['AchievementCondition']['value'] < 15)
+			if ($time < 15)
 				$this->gained(AchievementId::SPEED_I);
-			if ($acS['AchievementCondition']['value'] < 10)
+			if ($time < 10)
 				$this->gained(AchievementId::SPEED_II);
-			if ($acS['AchievementCondition']['value'] < 5)
+			if ($time < 5)
 				$this->gained(AchievementId::SPEED_III);
 		}
 		elseif ($setRating >= 1300 && $setRating < 1500)
 		{
-			if ($acA['AchievementCondition']['value'] >= 75)
+			if ($accuracy >= 75)
 				$this->gained(AchievementId::ACCURACY_IV);
-			if ($acA['AchievementCondition']['value'] >= 85)
+			if ($accuracy >= 85)
 				$this->gained(AchievementId::ACCURACY_V);
-			if ($acA['AchievementCondition']['value'] >= 95)
+			if ($accuracy >= 95)
 				$this->gained(AchievementId::ACCURACY_VI);
-			if ($acS['AchievementCondition']['value'] < 18)
+			if ($time < 18)
 				$this->gained(AchievementId::SPEED_IV);
-			if ($acS['AchievementCondition']['value'] < 13)
+			if ($time < 13)
 				$this->gained(AchievementId::SPEED_V);
-			if ($acS['AchievementCondition']['value'] < 8)
+			if ($time < 8)
 				$this->gained(AchievementId::SPEED_VI);
 		}
 		elseif ($setRating >= 1500 && $setRating < 1700)
 		{
-			if ($acA['AchievementCondition']['value'] >= 75)
+			if ($accuracy >= 75)
 				$this->gained(AchievementId::ACCURACY_VII);
-			if ($acA['AchievementCondition']['value'] >= 85)
+			if ($accuracy >= 85)
 				$this->gained(AchievementId::ACCURACY_VIII);
-			if ($acA['AchievementCondition']['value'] >= 95)
+			if ($accuracy >= 95)
 				$this->gained(AchievementId::ACCURACY_IX);
-			if ($acS['AchievementCondition']['value'] < 30)
+			if ($time < 30)
 				$this->gained(AchievementId::SPEED_VII);
-			if ($acS['AchievementCondition']['value'] < 20)
+			if ($time < 20)
 				$this->gained(AchievementId::SPEED_VIII);
-			if ($acS['AchievementCondition']['value'] < 10)
+			if ($time < 10)
 				$this->gained(AchievementId::SPEED_IX);
 		}
 		else
 		{
-			if ($acA['AchievementCondition']['value'] >= 75)
+			if ($accuracy >= 75)
 				$this->gained(AchievementId::ACCURACY_X);
-			if ($acA['AchievementCondition']['value'] >= 85)
+			if ($accuracy >= 85)
 				$this->gained(AchievementId::ACCURACY_XI);
-			if ($acA['AchievementCondition']['value'] >= 95)
+			if ($accuracy >= 95)
 				$this->gained(AchievementId::ACCURACY_XII);
-			if ($acS['AchievementCondition']['value'] < 30)
+			if ($time < 30)
 				$this->gained(AchievementId::SPEED_X);
-			if ($acS['AchievementCondition']['value'] < 20)
+			if ($time < 20)
 				$this->gained(AchievementId::SPEED_XI);
-			if ($acS['AchievementCondition']['value'] < 10)
+			if ($time < 10)
 				$this->gained(AchievementId::SPEED_XII);
 		}
 
-		if ($acA['AchievementCondition']['value'] >= 100)
+		if ($accuracy >= 100)
 		{
 			// Repeatable: one perfect collection of 100+ problems per count. The first
 			// one pays out like any other achievement, further ones only raise the count.
@@ -624,17 +581,16 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 
 	/**
 	 * How many public collections the player finished at 100% accuracy, on a set of at
-	 * least the problems a collection achievement asks for. Counts collections and not
-	 * accuracy rows, so a set whose row was written twice still counts once. One query
-	 * instead of loading every set's problems.
+	 * least the problems a collection achievement asks for. One query instead of loading
+	 * every set's problems.
 	 */
 	private function countPerfectCollections(): int
 	{
 		$rows = Util::query(
-			'SELECT COUNT(DISTINCT ac.set_id) AS total FROM achievement_condition ac '
-			. 'WHERE ac.user_id = ? AND ac.category = ? AND ac.value >= ? '
+			'SELECT COUNT(*) AS total FROM achievement_condition ac '
+			. 'WHERE ac.user_id = ? AND ac.achievement_condition_category_id = ? AND ac.value >= ? '
 			. 'AND ac.set_id IN (' . SetConnection::publicCollectionsWithMinimumProblemsSql() . ')',
-			[Auth::getUserID(), '%', 100]
+			[Auth::getUserID(), AchievementCondition::CATEGORY_SET_ACCURACY, 100]
 		);
 
 		return (int) $rows[0]['total'];

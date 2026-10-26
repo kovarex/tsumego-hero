@@ -851,7 +851,7 @@ class ContextPreparator
 	 *
 	 * @param array|null $conditions Array of achievement condition definitions
 	 *   Each condition should have:
-	 *   - 'category' (required): The achievement category (e.g., 'accuracy', 'speed', 'uotd')
+	 *   - 'category' (required): The achievement category, an AchievementCondition::CATEGORY_ constant
 	 *   - 'value' (required): The condition value (e.g., 100 for percentage, 1 for boolean)
 	 *   - 'set_id' (optional): The set_id for set-specific conditions (defaults to null)
 	 *   - 'user_id' (optional): Override the user_id (defaults to $this->user['id'])
@@ -861,17 +861,13 @@ class ContextPreparator
 		if (!$conditions)
 			return;
 
-		$AchievementCondition = ClassRegistry::init('AchievementCondition');
 		foreach ($conditions as $conditionInput)
 		{
-			$condition = [];
-			$condition['AchievementCondition']['user_id'] = Util::extract('user_id', $conditionInput) ?: $this->user['id'];
-			$condition['AchievementCondition']['category'] = Util::extract('category', $conditionInput);
-			$condition['AchievementCondition']['value'] = Util::extract('value', $conditionInput);
-			$condition['AchievementCondition']['set_id'] = Util::extract('set_id', $conditionInput);
-
-			$AchievementCondition->create();
-			$AchievementCondition->save($condition);
+			AchievementCondition::put(
+				(int) (Util::extract('user_id', $conditionInput) ?: $this->user['id']),
+				Util::extract('category', $conditionInput),
+				Util::extract('value', $conditionInput),
+				Util::extract('set_id', $conditionInput));
 			$this->checkOptionsConsumed($conditionInput);
 		}
 	}

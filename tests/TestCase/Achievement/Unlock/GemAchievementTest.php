@@ -6,21 +6,21 @@ class GemAchievementTest extends AchievementTestCase
 {
 	public function testEmeraldAchievement(): void
 	{
-		new ContextPreparator(['achievement-conditions' => [['category' => 'emerald', 'value' => 1]]]);
+		new ContextPreparator(['achievement-conditions' => [['category' => AchievementCondition::CATEGORY_EMERALD, 'value' => 1]]]);
 		$this->triggerAchievementCheck();
 		$this->assertAchievementUnlocked(AchievementId::EMERALD, 'Emerald achievement should unlock when emerald condition = 1');
 	}
 
 	public function testSapphireAchievement(): void
 	{
-		new ContextPreparator(['achievement-conditions' => [['category' => 'sapphire', 'value' => 1]]]);
+		new ContextPreparator(['achievement-conditions' => [['category' => AchievementCondition::CATEGORY_SAPPHIRE, 'value' => 1]]]);
 		$this->triggerAchievementCheck();
 		$this->assertAchievementUnlocked(AchievementId::SAPPHIRE, 'Sapphire achievement should unlock when sapphire condition = 1');
 	}
 
 	public function testRubyAchievement(): void
 	{
-		new ContextPreparator(['achievement-conditions' => [['category' => 'ruby', 'value' => 1]]]);
+		new ContextPreparator(['achievement-conditions' => [['category' => AchievementCondition::CATEGORY_RUBY, 'value' => 1]]]);
 		$this->triggerAchievementCheck();
 		$this->assertAchievementUnlocked(AchievementId::RUBY, 'Ruby achievement should unlock when ruby condition = 1');
 	}
@@ -29,9 +29,9 @@ class GemAchievementTest extends AchievementTestCase
 	{
 		new ContextPreparator([
 			'achievement-conditions' => [
-				['category' => 'emerald', 'value' => 1],
-				['category' => 'sapphire', 'value' => 1],
-				['category' => 'ruby', 'value' => 1]]]);
+				['category' => AchievementCondition::CATEGORY_EMERALD, 'value' => 1],
+				['category' => AchievementCondition::CATEGORY_SAPPHIRE, 'value' => 1],
+				['category' => AchievementCondition::CATEGORY_RUBY, 'value' => 1]]]);
 
 		// Trigger check - should unlock emerald, sapphire, ruby first
 		$this->triggerAchievementCheck();
@@ -49,8 +49,8 @@ class GemAchievementTest extends AchievementTestCase
 	{
 		new ContextPreparator([
 			'achievement-conditions' => [
-				['category' => 'emerald', 'value' => 1],
-				['category' => 'sapphire', 'value' => 1]]]); // NO ruby - should not unlock diamond
+				['category' => AchievementCondition::CATEGORY_EMERALD, 'value' => 1],
+				['category' => AchievementCondition::CATEGORY_SAPPHIRE, 'value' => 1]]]); // NO ruby - should not unlock diamond
 
 		// Trigger check
 		$this->triggerAchievementCheck();

@@ -2,7 +2,6 @@
 
 use App\Utility\AchievementId;
 use App\Utility\Auth;
-use App\Utility\SetCompletionCounter;
 use App\Utility\Util;
 use App\Attribute\HttpGet;
 use SetConnection;
@@ -96,25 +95,15 @@ class AchievementsController extends AppController
 		foreach ($achievements as $index => $achievement)
 			if (!$achievement['Achievement']['unlocked'])
 				if ($definition = Achievement::progressDefinition((int) $achievement['Achievement']['id']))
-					if ($definition['category'] == SetCompletionCounter::$CATEGORY)
+					if ($definition['category'] == AchievementCondition::CATEGORY_COMPLETED_SETS)
 						$definitions[$index] = $definition;
 		if (!$definitions)
 			return;
 
-		$this->loadModel('AchievementCondition');
-		$conditions = $this->AchievementCondition->find('all', ['conditions' => [
-			'user_id' => $userID,
-			'category' => array_values(array_unique(array_column($definitions, 'category')))]]) ?: [];
-		$values = [];
-		foreach ($conditions as $condition)
-		{
-			$category = $condition['AchievementCondition']['category'];
-			$values[$category] = max($values[$category] ?? 0, (int) $condition['AchievementCondition']['value']);
-		}
-
+		$values = AchievementCondition::values($userID, array_values(array_unique(array_column($definitions, 'category'))));
 		foreach ($definitions as $index => $definition)
 		{
-			$achievements[$index]['Achievement']['progress'] = min($values[$definition['category']] ?? 0, $definition['goal']);
+			$achievements[$index]['Achievement']['progress'] = min((int) ($values[$definition['category']] ?? 0), $definition['goal']);
 			$achievements[$index]['Achievement']['progress_goal'] = $definition['goal'];
 		}
 	}
@@ -129,7 +118,6 @@ class AchievementsController extends AppController
 	{
 		$this->set('_page', 'user');
 		$this->set('_title', 'Tsumego Hero - Achievements');
-		$this->loadModel('AchievementCondition');
 		$this->loadModel('AchievementStatus');
 		$this->loadModel('User');
 		$achievement = $this->Achievement->findById($id);
@@ -179,11 +167,7 @@ class AchievementsController extends AppController
 			$progressDefinition = Achievement::progressDefinition((int) $achievement['Achievement']['id']);
 			if ($progressDefinition)
 			{
-				$condition = $this->AchievementCondition->find('first', [
-					'order' => 'value DESC',
-					'conditions' => ['user_id' => $statusUserId, 'category' => $progressDefinition['category']],
-				]);
-				$progress = $condition ? (int) $condition['AchievementCondition']['value'] : 0;
+				$progress = (int) AchievementCondition::value($statusUserId, $progressDefinition['category']);
 				$progressGoal = $progressDefinition['goal'];
 				if ($currentUserStatus)
 					$progress = $progressGoal;
@@ -227,9 +211,8 @@ class AchievementsController extends AppController
 		$bestAccuracy = [];
 		if ($userID)
 			foreach (Util::query(
-				'SELECT ac.set_id, MAX(ac.value) AS accuracy FROM achievement_condition ac '
-				. 'WHERE ac.user_id = ? AND ac.category = ? GROUP BY ac.set_id',
-				[$userID, '%']) as $row)
+				'SELECT set_id, value AS accuracy FROM achievement_condition WHERE user_id = ? AND achievement_condition_category_id = ?',
+				[$userID, AchievementCondition::CATEGORY_SET_ACCURACY]) as $row)
 					$bestAccuracy[(int) $row['set_id']] = (float) $row['accuracy'];
 
 		$collections = [];

@@ -400,23 +400,12 @@ class PlayResultProcessorComponent extends Component
 		if (!Level::XPAndRatingIsGainedInTsumegoStatus($previousTsumegoStatus))
 			return;
 
-		$achievementCondition = ClassRegistry::init('AchievementCondition')->find('first', [
-			'conditions' => [
-				'user_id' => Auth::getUserID(),
-				'category' => 'err']]);
-		if (!$achievementCondition)
-		{
-			$achievementCondition = [];
-			$achievementCondition['AchievementCondition']['category'] = 'err';
-			$achievementCondition['AchievementCondition']['user_id'] = Auth::getUserID();
-			ClassRegistry::init('AchievementCondition')->create();
-		}
 		// The streak counts the problems solved since the last error: only a clean solve
 		// extends it, anything else resets it.
-		$streak = (int) ($achievementCondition['AchievementCondition']['value'] ?? 0);
-		$cleanSolve = $outcome === PlayOutcome::SolvedClean;
-		$achievementCondition['AchievementCondition']['value'] = $cleanSolve ? $streak + 1 : 0;
-		ClassRegistry::init('AchievementCondition')->save($achievementCondition);
+		if ($outcome === PlayOutcome::SolvedClean)
+			AchievementCondition::increment(Auth::getUserID(), AchievementCondition::CATEGORY_NO_ERROR_STREAK);
+		else
+			AchievementCondition::put(Auth::getUserID(), AchievementCondition::CATEGORY_NO_ERROR_STREAK, 0);
 	}
 
 	private function processUnsortedStuff(array $previousTsumego, array $result, string $previousTsumegoStatus): void

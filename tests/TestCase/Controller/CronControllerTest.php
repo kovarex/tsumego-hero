@@ -124,7 +124,7 @@ class CronControllerTest extends IntegrationTestCase
 
 		$this->assertSame(1, ClassRegistry::init('DayRecord')->find('count'));
 		$this->assertSame(1, ClassRegistry::init('AchievementCondition')->find('count', [
-			'conditions' => ['category' => 'uotd']]));
+			'conditions' => ['achievement_condition_category_id' => AchievementCondition::CATEGORY_USER_OF_THE_DAY]]));
 	}
 
 	public function testPublish()
@@ -207,15 +207,15 @@ class CronControllerTest extends IntegrationTestCase
 		new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE],
 			'achievement-conditions' => [
-				['category' => 'potion', 'value' => 2],
-				['category' => 'golden', 'value' => 2]]]);
+				['category' => AchievementCondition::CATEGORY_POTION, 'value' => 2],
+				['category' => AchievementCondition::CATEGORY_GOLDEN, 'value' => 2]]]);
 
 		$this->get('/cron/daily/' . CRON_SECRET);
 
 		$values = ClassRegistry::init('AchievementCondition')->find('list', [
-			'fields' => ['category', 'value'],
-			'conditions' => ['category' => ['potion', 'golden']]]);
-		$this->assertEquals(['potion' => 0, 'golden' => 2], $values);
+			'fields' => ['achievement_condition_category_id', 'value'],
+			'conditions' => ['achievement_condition_category_id' => [AchievementCondition::CATEGORY_POTION, AchievementCondition::CATEGORY_GOLDEN]]]);
+		$this->assertEquals([AchievementCondition::CATEGORY_POTION => 0, AchievementCondition::CATEGORY_GOLDEN => 2], $values);
 	}
 
 	/**

@@ -99,7 +99,7 @@ class CronController extends AppController
 
 	private function dailyPotionConditionReset(): void
 	{
-		Util::execute("UPDATE achievement_condition SET value = 0 WHERE category = 'potion' AND value <> 0");
+		Util::execute('UPDATE achievement_condition SET value = 0 WHERE achievement_condition_category_id = ? AND value <> 0', [AchievementCondition::CATEGORY_POTION]);
 	}
 
 	private function dailyTsumegoStatusReset(): void
@@ -199,13 +199,7 @@ WHERE
 		$dayRecord['DayRecord']['ruby_solves'] = 0;
 		ClassRegistry::init('DayRecord')->save($dayRecord);
 
-		ClassRegistry::init('AchievementCondition')->create();
-		$achievementCondition = [];
-		$achievementCondition['AchievementCondition']['user_id'] = $userOfTheDay['User']['id'];
-		$achievementCondition['AchievementCondition']['set_id'] = null;
-		$achievementCondition['AchievementCondition']['category'] = 'uotd';
-		$achievementCondition['AchievementCondition']['value'] = 1;
-		ClassRegistry::init('AchievementCondition')->save($achievementCondition);
+		AchievementCondition::put((int) $userOfTheDay['User']['id'], AchievementCondition::CATEGORY_USER_OF_THE_DAY, 1);
 	}
 
 	/**

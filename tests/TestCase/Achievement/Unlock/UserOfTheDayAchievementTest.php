@@ -7,13 +7,13 @@ use App\Utility\AchievementId;
  *
  * This is a special achievement awarded by the system (probably via a cron job)
  * when a user becomes the most active user of the day. The achievement is checked
- * via achievement_condition with category='uotd'.
+ * via achievement_condition with category CATEGORY_USER_OF_THE_DAY.
  */
 class UserOfTheDayAchievementTest extends AchievementTestCase
 {
 	public function testUserOfTheDayAchievement()
 	{
-		new ContextPreparator(['achievement-conditions' => [['category' => 'uotd', 'value' => 1]]]);
+		new ContextPreparator(['achievement-conditions' => [['category' => AchievementCondition::CATEGORY_USER_OF_THE_DAY, 'value' => 1]]]);
 		$this->triggerAchievementCheck();
 		$this->assertAchievementUnlocked(AchievementId::USER_OF_THE_DAY);
 	}

@@ -175,7 +175,7 @@ class PersonalCollectionContentTest extends IntegrationTestCase
 		$this->get('/sets/' . $siteSetId);
 
 		$this->assertSame(1, ClassRegistry::init('AchievementCondition')->find('count', [
-			'conditions' => ['set_id' => $siteSetId, 'category' => 's'],
+			'conditions' => ['set_id' => $siteSetId, 'achievement_condition_category_id' => AchievementCondition::CATEGORY_SET_TIME],
 		]));
 	}
 

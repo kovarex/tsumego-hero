@@ -512,7 +512,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 	{
 		$this->loadModel('User');
 		$this->loadModel('Tsumego');
-		$this->loadModel('AchievementCondition');
 		$this->loadModel('TsumegoStatus');
 		$this->loadModel('SetConnection');
 		$this->set('_page', 'set');
@@ -867,7 +866,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$this->loadModel('ProgressDeletion');
 		$this->loadModel('Achievement');
 		$this->loadModel('AchievementStatus');
-		$this->loadModel('AchievementCondition');
 		$this->loadModel('Sgf');
 		$this->loadModel('SetConnection');
 		$this->loadModel('Tag');
@@ -892,8 +890,8 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$avgTime = 0;
 		$accuracy = 0;
 		$pdCounter = 0;
-		$acS = null;
-		$acA = null;
+		$bestTime = null;
+		$bestAccuracy = null;
 		$this->set('canEdit', false);
 		$queryType = self::decodeQueryType($id);
 
@@ -1127,18 +1125,8 @@ ORDER BY sc.num ASC", [(int) $id]);
 				$this->set('achievementUpdates', $achievementChecker->updated);
 			}
 
-			$acS = $this->AchievementCondition->find('first', [
-				'order' => 'value ASC',
-				'conditions' => [
-					'set_id' => $id,
-					'user_id' => Auth::getUserID(),
-					'category' => 's']]);
-			$acA = $this->AchievementCondition->find('first', [
-				'order' => 'value DESC',
-				'conditions' => [
-					'set_id' => $id,
-					'user_id' => Auth::getUserID(),
-					'category' => '%']]);
+			$bestTime = AchievementCondition::value(Auth::getUserID(), AchievementCondition::CATEGORY_SET_TIME, (int) $id);
+			$bestAccuracy = AchievementCondition::value(Auth::getUserID(), AchievementCondition::CATEGORY_SET_ACCURACY, (int) $id);
 		}
 		else
 			$scoring = false;
@@ -1146,8 +1134,8 @@ ORDER BY sc.num ASC", [(int) $id]);
 		if ($tsumegoFilters->query == 'topics')
 		{
 			$this->set('pdCounter', $pdCounter);
-			$this->set('acS', $acS);
-			$this->set('acA', $acA);
+			$this->set('bestTime', $bestTime);
+			$this->set('bestAccuracy', $bestAccuracy);
 		}
 
 		$this->set('tsumegoFilters', $tsumegoFilters);
@@ -1161,47 +1149,12 @@ ORDER BY sc.num ASC", [(int) $id]);
 	}
 
 	/**
-	 * @param int $sid Set ID
-	 * @param float $avgTime Average time
-	 * @param float $accuracy Accuracy percentage
-	 * @return void
+	 * Keeps the player's records on the set: the best average time and the best accuracy.
 	 */
 	private function updateAchievementConditions(int $sid, int|float $avgTime, int|float $accuracy): void
 	{
-		$uid = Auth::getUserID();
-		$acS = $this->AchievementCondition->find('first', ['order' => 'value ASC', 'conditions' => ['set_id' => $sid, 'user_id' => $uid, 'category' => 's']]);
-		$acA = $this->AchievementCondition->find('first', ['order' => 'value DESC', 'conditions' => ['set_id' => $sid, 'user_id' => $uid, 'category' => '%']]);
-
-		if ($acS == null)
-		{
-			$aCond = [];
-			$aCond['AchievementCondition']['user_id'] = $uid;
-			$aCond['AchievementCondition']['set_id'] = $sid;
-			$aCond['AchievementCondition']['value'] = $avgTime;
-			$aCond['AchievementCondition']['category'] = 's';
-			$this->AchievementCondition->create();
-			$this->AchievementCondition->save($aCond);
-		}
-		elseif ($avgTime < $acS['AchievementCondition']['value'])
-		{
-			$acS['AchievementCondition']['value'] = $avgTime;
-			$this->AchievementCondition->save($acS);
-		}
-		if ($acA == null)
-		{
-			$aCond = [];
-			$aCond['AchievementCondition']['user_id'] = $uid;
-			$aCond['AchievementCondition']['set_id'] = $sid;
-			$aCond['AchievementCondition']['value'] = $accuracy;
-			$aCond['AchievementCondition']['category'] = '%';
-			$this->AchievementCondition->create();
-			$this->AchievementCondition->save($aCond);
-		}
-		elseif ($accuracy > $acA['AchievementCondition']['value'])
-		{
-			$acA['AchievementCondition']['value'] = $accuracy;
-			$this->AchievementCondition->save($acA);
-		}
+		AchievementCondition::keepLowest(Auth::getUserID(), AchievementCondition::CATEGORY_SET_TIME, $avgTime, $sid);
+		AchievementCondition::keepHighest(Auth::getUserID(), AchievementCondition::CATEGORY_SET_ACCURACY, $accuracy, $sid);
 	}
 
 	#[HttpPost]

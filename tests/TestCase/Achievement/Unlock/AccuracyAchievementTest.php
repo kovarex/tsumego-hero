@@ -53,7 +53,7 @@ class AccuracyAchievementTest extends AchievementTestCase
 			ClassRegistry::init('AchievementCondition')->save([
 				'user_id' => $context->user['id'],
 				'set_id' => $setId,
-				'category' => '%',
+				'achievement_condition_category_id' => AchievementCondition::CATEGORY_SET_ACCURACY,
 				'value' => $accuracy]);
 
 			$browser->get('/sets/view/' . $setId);
