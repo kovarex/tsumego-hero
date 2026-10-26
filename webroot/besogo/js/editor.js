@@ -480,6 +480,8 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
       let root = node.getRoot();
       if (
         root.goal != GOAL_NONE &&
+        !node.status.isNone() && // a line ending without a status has nothing to compare (forum#111)
+        !root.status.isNone() &&
         node.status.blackFirst.type != STATUS_ALIVE && // when the current is clearly dead or alive, we don't say the obvious
         node.status.blackFirst.type != STATUS_DEAD
       )
