@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">66.89% </span>
+                <span class="strong">67.84% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>289/432</span>
+                <span class='fraction'>289/426</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">47.86% </span>
+                <span class="strong">47.78% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>112/234</span>
+                <span class='fraction'>108/226</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">66.74% </span>
+                <span class="strong">67.75% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>271/406</span>
+                <span class='fraction'>271/400</span>
             </div>
         
             
@@ -845,22 +845,7 @@
 <a name='L780'></a><a href='#L780'>780</a>
 <a name='L781'></a><a href='#L781'>781</a>
 <a name='L782'></a><a href='#L782'>782</a>
-<a name='L783'></a><a href='#L783'>783</a>
-<a name='L784'></a><a href='#L784'>784</a>
-<a name='L785'></a><a href='#L785'>785</a>
-<a name='L786'></a><a href='#L786'>786</a>
-<a name='L787'></a><a href='#L787'>787</a>
-<a name='L788'></a><a href='#L788'>788</a>
-<a name='L789'></a><a href='#L789'>789</a>
-<a name='L790'></a><a href='#L790'>790</a>
-<a name='L791'></a><a href='#L791'>791</a>
-<a name='L792'></a><a href='#L792'>792</a>
-<a name='L793'></a><a href='#L793'>793</a>
-<a name='L794'></a><a href='#L794'>794</a>
-<a name='L795'></a><a href='#L795'>795</a>
-<a name='L796'></a><a href='#L796'>796</a>
-<a name='L797'></a><a href='#L797'>797</a>
-<a name='L798'></a><a href='#L798'>798</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">83x</span>
+<a name='L783'></a><a href='#L783'>783</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">83x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">83x</span>
 <span class="cline-any cline-yes">83x</span>
@@ -1065,13 +1050,13 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">21x</span>
-<span class="cline-any cline-yes">7x</span>
-<span class="cline-any cline-yes">14x</span>
-<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">83x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1091,22 +1076,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">83x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">83x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1887,23 +1857,8 @@
         'class': 'besogo-svg-lines'
     }) );
 &nbsp;
-    // If the board is too tall and slim, the problem can't be viewed without scrolling.
-    // This applies for regular boards when the highest y is higher than x by at least 5 (x-y &lt; -4).
-    // And for vertical half boards when the highest y is higher than x by at least 11 (x-y &lt; -10).
-    <span class="missing-if-branch" title="if path not taken" >I</span>if(
-      besogo.scaleParameters["boardCanvasSize"] === "regular board"
-      &amp;&amp; besogo.scaleParameters["highest"].x - besogo.scaleParameters["highest"].y &lt; -4
-      ||
-      besogo.scaleParameters["boardCanvasSize"] === "vertical half board"
-      &amp;&amp; <span class="branch-3 cbranch-no" title="branch not covered" >besogo.scaleParameters["highest"].x - besogo.scaleParameters["highest"].y &lt; -10</span>
-    ){
-      let transformation = <span class="cstat-no" title="statement not covered" >besogo.makeTransformation();</span>
-<span class="cstat-no" title="statement not covered" >      transformation.rotateCounterClockwise = true;</span>
-<span class="cstat-no" title="statement not covered" >      besogo.editor.applyTransformation(transformation);</span>
-<span class="cstat-no" title="statement not covered" >      besogo.editor.applyRotation(false);</span>
-<span class="cstat-no" title="statement not covered" >      if(besogo.scaleParameters["boardCanvasSize"] === "vertical half board")</span>
-<span class="cstat-no" title="statement not covered" >        besogo.verticalHalfBoardRotationWidthToken = true;</span>
-    }
+    // Auto-rotate boards that are too tall to view without scrolling
+    besogo.editor.autoRotate();
 &nbsp;
     drawHoshi(); // Draw the hoshi points
 &nbsp;
@@ -2461,7 +2416,7 @@
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-10-26T08:43:39.222Z
+                at 2026-10-26T09:43:01.033Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
