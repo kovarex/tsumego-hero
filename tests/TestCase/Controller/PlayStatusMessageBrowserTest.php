@@ -4,7 +4,8 @@ use App\Utility\Constants;
 
 /**
  * A status based problem tells the player what a wrong line ends in, when it isn't plainly dead
- * or alive. A line ending without a status has nothing to tell, so nothing is shown (forum#111).
+ * or alive. A line ending without a status is an error in the problem and the player is told so,
+ * instead of "It is undefined" (forum#111).
  *
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
@@ -48,10 +49,10 @@ class PlayStatusMessageBrowserTest extends IntegrationTestCase
 		$this->assertSame('It is SEKI (in gote), but it should be: DEAD', $this->shownMessage($browser));
 	}
 
-	public function testALineEndingWithoutAStatusShowsNoMessage(): void
+	public function testALineEndingWithoutAStatusSaysItIsAnErrorInTheProblem(): void
 	{
 		$browser = $this->playLine([[4, 1]]);
-		$this->assertSame('', $this->shownMessage($browser), 'There is no "It is undefined" message');
+		$this->assertSame('This line ends without a status, which is an error in the problem. Please report it in the comments.', $this->shownMessage($browser));
 		$browser->assertNoJsErrors();
 	}
 }
