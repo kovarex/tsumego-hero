@@ -109,7 +109,8 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     setFullEditor: setFullEditor,
     displayError: displayError,
     createSignatures: createSignatures,
-    applyRotation: applyRotation,
+    rotateBoard: rotateBoard,
+    autoRotate: autoRotate,
   };
 
   // Returns the active tool
@@ -1270,264 +1271,127 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     console.log(str.substring(6, 9));
   }
 
-  //determine which rotation should be applied
-  function applyRotation(clockwise = false) {
-    if (besogo.scaleParameters["orientation"] !== "full-board") {
-      if(!clockwise){
-          if (
-            besogo.scaleParameters["boardCanvasSize"] !==
-              "horizontal half board" &&
-            besogo.scaleParameters["boardCanvasSize"] !== "vertical half board"
-          ) {
-            if (besogo.scaleParameters["rotation"] === -1) {
-              if (besogo.boardParameters["corner"] === "top-left")
-                rotateViewBox(1);
-              else if (besogo.boardParameters["corner"] === "top-right")
-                rotateViewBox(0);
-              else if (besogo.boardParameters["corner"] === "bottom-right")
-                rotateViewBox(3);
-              else if (besogo.boardParameters["corner"] === "bottom-left")
-                rotateViewBox(2);
-            } else {
-              let rotationDivider =
-                besogo.boardParameters["corner"] === "top-left" ||
-                besogo.boardParameters["corner"] === "bottom-right"
-                  ? 1
-                  : 0;
-              let currentRotation =
-                besogo.scaleParameters["rotation"] !== 3
-                  ? besogo.scaleParameters["rotation"] + 1
-                  : 0;
-              rotateViewBox(
-                currentRotation,
-                besogo.scaleParameters["rotation"] % 2 === rotationDivider
-              );
-            }
-          } else {
-            changeRotationWidth(
-              besogo.scaleParameters["boardCanvasSize"],
-              besogo.boardParameters["corner"],
-              besogo.scaleParameters["rotation"]
-            );
-            if (besogo.scaleParameters["rotation"] === -1) {
-              if (besogo.boardParameters["corner"] === "top-left")
-                rotateViewBox(1);
-              else if (besogo.boardParameters["corner"] === "top-right")
-                rotateViewBox(0);
-              else if (besogo.boardParameters["corner"] === "bottom-right")
-                rotateViewBox(3);
-              else if (besogo.boardParameters["corner"] === "bottom-left")
-                rotateViewBox(2);
-            } else {
-              let rotationDivider =
-                besogo.boardParameters["corner"] === "top-left" ||
-                besogo.boardParameters["corner"] === "bottom-right"
-                  ? 1
-                  : 0;
-              let currentRotation =
-                besogo.scaleParameters["rotation"] !== 3
-                  ? besogo.scaleParameters["rotation"] + 1
-                  : 0;
-              rotateViewBox(
-                currentRotation,
-                besogo.scaleParameters["rotation"] % 2 === rotationDivider
-              );
-            }
-          }
-      }else{
-          if (
-            besogo.scaleParameters["boardCanvasSize"] !==
-              "horizontal half board" &&
-            besogo.scaleParameters["boardCanvasSize"] !== "vertical half board"
-          ) {
-            if (besogo.scaleParameters["rotation"] === -1) {
-              if (besogo.boardParameters["corner"] === "top-left")
-                rotateViewBox(3);
-              else if (besogo.boardParameters["corner"] === "top-right")
-                rotateViewBox(2);
-              else if (besogo.boardParameters["corner"] === "bottom-right")
-                rotateViewBox(1);
-              else if (besogo.boardParameters["corner"] === "bottom-left")
-                rotateViewBox(0);
-            } else {
-              let rotationDivider =
-                besogo.boardParameters["corner"] === "top-left" ||
-                besogo.boardParameters["corner"] === "bottom-right"
-                  ? 1
-                  : 0;
-              let currentRotation =
-                besogo.scaleParameters["rotation"] !== 0
-                  ? besogo.scaleParameters["rotation"] - 1
-                  : 3;
-              rotateViewBox(
-                currentRotation,
-                besogo.scaleParameters["rotation"] % 2 === rotationDivider
-              );
-            }
-          } else {
-            changeRotationWidth(
-              besogo.scaleParameters["boardCanvasSize"],
-              besogo.boardParameters["corner"],
-              besogo.scaleParameters["rotation"]
-            );
-            if (besogo.scaleParameters["rotation"] === -1) {
-              if (besogo.boardParameters["corner"] === "top-left")
-                rotateViewBox(3);
-              else if (besogo.boardParameters["corner"] === "top-right")
-                rotateViewBox(2);
-              else if (besogo.boardParameters["corner"] === "bottom-right")
-                rotateViewBox(1);
-              else if (besogo.boardParameters["corner"] === "bottom-left")
-                rotateViewBox(0);
-            } else {
-              let rotationDivider =
-                besogo.boardParameters["corner"] === "top-left" ||
-                besogo.boardParameters["corner"] === "bottom-right"
-                  ? 1
-                  : 0;
-              let currentRotation =
-                besogo.scaleParameters["rotation"] !== 0
-                  ? besogo.scaleParameters["rotation"] - 1
-                  : 3;
-              rotateViewBox(
-                currentRotation,
-                besogo.scaleParameters["rotation"] % 2 === rotationDivider
-              );
-            }
-          }
-        
-      }
+  // Rotate the board 90° in the given direction.
+  //
+  // This does three things:
+  //   1. Remaps coordinates in the game tree so stone placement still works
+  //      correctly after the visual rotation (via applyTransformation).
+  //   2. Adjusts CSS width for half-boards (via changeRotationWidth).
+  //   3. Updates the SVG viewBox to show the rotated view (via rotateViewBox).
+  //
+  // A full board shows the whole board, so only the stones turn (step 1).
+  //
+  // Called by:
+  //   - autoRotate() — automatic rotation of boards too tall to view without scrolling
+  //   - toolPanel.js — manual rotation buttons (CCW/CW)
+  function rotateBoard(clockwise) {
+    // Remap coordinates in game tree so clicks map correctly after rotation
+    var transformation = besogo.makeTransformation();
+    if (clockwise)
+      transformation.rotateClockwise = true;
+    else
+      transformation.rotateCounterClockwise = true;
+    applyTransformation(transformation);
+
+    if (besogo.scaleParameters["orientation"] === "full-board")
+      return;
+
+    var isHalfBoard =
+      besogo.scaleParameters["boardCanvasSize"] === "horizontal half board" ||
+      besogo.scaleParameters["boardCanvasSize"] === "vertical half board";
+
+    if (isHalfBoard)
+      changeRotationWidth(
+        besogo.scaleParameters["boardCanvasSize"],
+        besogo.boardParameters["corner"],
+        besogo.scaleParameters["rotation"]
+      );
+
+    var corner = besogo.boardParameters["corner"];
+    var rotation = besogo.scaleParameters["rotation"];
+
+    // Initial rotation mapping: corner → rotation type when no rotation is set yet
+    var initialMap = clockwise
+      ? { "top-left": 3, "top-right": 2, "bottom-right": 1, "bottom-left": 0 }
+      : { "top-left": 1, "top-right": 0, "bottom-right": 3, "bottom-left": 2 };
+
+    if (rotation === -1) {
+      rotateViewBox(initialMap[corner]);
+    } else {
+      var rotationDivider =
+        corner === "top-left" || corner === "bottom-right" ? 1 : 0;
+      var currentRotation = clockwise
+        ? (rotation !== 0 ? rotation - 1 : 3)
+        : (rotation !== 3 ? rotation + 1 : 0);
+      rotateViewBox(currentRotation, rotation % 2 === rotationDivider);
     }
+  }
+
+  // If the board is too tall and slim, the problem can't be viewed without scrolling,
+  // so it is turned counter-clockwise.
+  // This applies for regular boards when the highest y is higher than x by at least 5 (x-y < -4).
+  // And for vertical half boards when the highest y is higher than x by at least 11 (x-y < -10).
+  function autoRotate() {
+    var size = besogo.scaleParameters["boardCanvasSize"];
+    var highest = besogo.scaleParameters["highest"];
+    var tooTall =
+      (size === "regular board" && highest.x - highest.y < -4) ||
+      (size === "vertical half board" && highest.x - highest.y < -10);
+    if (!tooTall)
+      return;
+
+    rotateBoard(false);
+
+    // CSS width hack: vertical half boards need a wider container after rotation
+    // to prevent layout overflow. Only needed on initial auto-rotate, not manual.
+    if (size === "vertical half board")
+      besogo.verticalHalfBoardRotationWidthToken = true;
   }
 
   //adjust the viewBox to the rotation
   function rotateViewBox(type = 0, swap = false) {
-    if (type === 0) {
-      let boardHeight = "boardHeight";
-      let boardWidth = "boardWidth";
-      if (swap) {
-        boardHeight = "boardWidth";
-        boardWidth = "boardHeight";
-      }
-      besogo.boardCanvasSvg.setAttribute(
-        "viewBox",
-        "0 0 " +
-          besogo.boardParameters[boardHeight] +
-          " " +
-          besogo.boardParameters[boardWidth]
-      );
-    } else if (type === 1) {
-      let boardWidth2 = "boardWidth2";
-      let boardHeight3 = "boardHeight3";
-      let boardWidth3 = "boardWidth3";
-      if (swap) {
-        boardWidth2 = "boardHeight2";
-        boardHeight3 = "boardWidth3";
-        boardWidth3 = "boardHeight3";
-      }
-      besogo.boardCanvasSvg.setAttribute(
-        "viewBox",
-        0 +
-          " " +
-          besogo.boardParameters[boardWidth2] +
-          " " +
-          besogo.boardParameters[boardHeight3] +
-          " " +
-          besogo.boardParameters[boardWidth3]
-      );
-    } else if (type === 2) {
-      let boardHeight2 = "boardHeight2";
-      let boardWidth2 = "boardWidth2";
-      let boardHeight3 = "boardHeight3";
-      let boardWidth3 = "boardWidth3";
-      if (swap) {
-        boardHeight2 = "boardWidth2";
-        boardWidth2 = "boardHeight2";
-        boardHeight3 = "boardWidth3";
-        boardWidth3 = "boardHeight3";
-      }
-      besogo.boardCanvasSvg.setAttribute(
-        "viewBox",
-        besogo.boardParameters[boardHeight2] +
-          " " +
-          besogo.boardParameters[boardWidth2] +
-          " " +
-          besogo.boardParameters[boardHeight3] +
-          " " +
-          besogo.boardParameters[boardWidth3]
-      );
-    } else {
-      let boardHeight2 = "boardHeight2";
-      let boardHeight3 = "boardHeight3";
-      let boardWidth3 = "boardWidth3";
-      if (swap) {
-        boardHeight2 = "boardWidth2";
-        boardHeight3 = "boardWidth3";
-        boardWidth3 = "boardHeight3";
-      }
-      besogo.boardCanvasSvg.setAttribute(
-        "viewBox",
-        besogo.boardParameters[boardHeight2] +
-          " " +
-          0 +
-          " " +
-          besogo.boardParameters[boardHeight3] +
-          " " +
-          besogo.boardParameters[boardWidth3]
-      );
-    }
+    var bp = besogo.boardParameters;
+    var h = swap ? "Width" : "Height";
+    var w = swap ? "Height" : "Width";
+
+    // Each rotation type has a viewBox defined as [x, y, width, height]
+    // using board parameter names that get swapped when the board dimensions are transposed
+    var viewBoxParams = [
+      [0,                  0,                  "board" + h,       "board" + w],
+      [0,                  "board" + w + "2",  "board" + h + "3", "board" + w + "3"],
+      ["board" + h + "2", "board" + w + "2",  "board" + h + "3", "board" + w + "3"],
+      ["board" + h + "2", 0,                  "board" + h + "3", "board" + w + "3"],
+    ];
+
+    var values = viewBoxParams[type].map(function(p) {
+      return typeof p === "number" ? p : bp[p];
+    });
+    besogo.boardCanvasSvg.setAttribute("viewBox", values.join(" "));
     besogo.scaleParameters["rotation"] = type;
     besogoRotation = type;
   }
 
-  //the board with should adjust with the rotation sometimes
+  //the board width should adjust with the rotation sometimes
   function changeRotationWidth(canvas, corner, rotation) {
-    if (canvas === "vertical half board") {
-      if (rotation === -1) {
-        $(".besogo-board").css("width", "78%");
-        $(".besogo-board").css("margin", "0 138px");
-      } else {
-        if (corner === "top-left") {
-          if (rotation === 1 || rotation === 3) {
-            $(".besogo-board").css("width", "30%");
-            $(".besogo-board").css("margin", "0 443px");
-          } else {
-            $(".besogo-board").css("width", "78%");
-            $(".besogo-board").css("margin", "0 138px");
-          }
-        } else if (corner === "top-right") {
-          if (rotation === 0 || rotation === 2) {
-            $(".besogo-board").css("width", "30%");
-            $(".besogo-board").css("margin", "0 443px");
-          } else {
-            $(".besogo-board").css("width", "78%");
-            $(".besogo-board").css("margin", "0 138px");
-          }
-        }
-      }
+    var WIDE = { width: "78%", margin: "0 138px" };
+    var NARROW = { width: "30%", margin: "0 443px" };
+
+    // Determine if the board should be narrow or wide based on canvas type, corner, and rotation
+    var isNarrow;
+    if (rotation === -1) {
+      isNarrow = canvas === "horizontal half board";
+    } else if (canvas === "vertical half board") {
+      var oddRotation = rotation === 1 || rotation === 3;
+      isNarrow = corner === "top-left" ? oddRotation : (corner === "top-right" ? !oddRotation : false);
     } else if (canvas === "horizontal half board") {
-      if (rotation === -1) {
-        $(".besogo-board").css("width", "30%");
-        $(".besogo-board").css("margin", "0 443px");
-      } else {
-        if (corner === "top-left") {
-          if (rotation === 1 || rotation === 3) {
-            $(".besogo-board").css("width", "78%");
-            $(".besogo-board").css("margin", "0 138px");
-          } else {
-            $(".besogo-board").css("width", "30%");
-            $(".besogo-board").css("margin", "0 443px");
-          }
-        } else if (corner === "bottom-left") {
-          if (rotation === 0 || rotation === 2) {
-            $(".besogo-board").css("width", "78%");
-            $(".besogo-board").css("margin", "0 138px");
-          } else {
-            $(".besogo-board").css("width", "30%");
-            $(".besogo-board").css("margin", "0 443px");
-          }
-        }
-      }
+      var oddRotation = rotation === 1 || rotation === 3;
+      isNarrow = corner === "top-left" ? !oddRotation : (corner === "bottom-left" ? oddRotation : false);
+    } else {
+      return;
     }
+
+    var style = isNarrow ? NARROW : WIDE;
+    $(".besogo-board").css("width", style.width);
+    $(".besogo-board").css("margin", style.margin);
   }
 };

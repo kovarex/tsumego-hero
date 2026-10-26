@@ -708,7 +708,7 @@ class Browser
 	 *
 	 * @return int Board size, 19 for a 19x19 board
 	 */
-	private function waitForBoard(): int
+	public function waitForBoard(): int
 	{
 		return (int) $this->waitAndDumpOnTimeout(function ($driver) {
 			$size = $driver->executeScript('return typeof besogo !== "undefined" && besogo.scaleParameters ? besogo.scaleParameters.boardCoordSize : null;');
