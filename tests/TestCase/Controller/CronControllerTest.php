@@ -187,4 +187,53 @@ class CronControllerTest extends IntegrationTestCase
 		$this->get('/cron/daily/' . CRON_SECRET);
 		$this->assertSame($context->reloadUser()['solved'], 1);
 	}
+
+	public function testUpdateSolvedForPlayersWithoutSolvedProblems()
+	{
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'solved' => 3],
+			'other-users' => [['name' => 'Ivan Detkov']]]);
+		Util::execute('UPDATE user SET solved = NULL WHERE id = ?', [$context->otherUsers[0]['id']]);
+
+		$this->get('/cron/daily/' . CRON_SECRET);
+
+		$this->assertSame(0, $context->reloadUser()['solved']);
+		$detkov = ClassRegistry::init('User')->findById($context->otherUsers[0]['id']);
+		$this->assertSame(0, $detkov['User']['solved']);
+	}
+
+	public function testCronResetsOnlyThePotionCondition()
+	{
+		new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'achievement-conditions' => [
+				['category' => 'potion', 'value' => 2],
+				['category' => 'golden', 'value' => 2]]]);
+
+		$this->get('/cron/daily/' . CRON_SECRET);
+
+		$values = ClassRegistry::init('AchievementCondition')->find('list', [
+			'fields' => ['category', 'value'],
+			'conditions' => ['category' => ['potion', 'golden']]]);
+		$this->assertEquals(['potion' => 0, 'golden' => 2], $values);
+	}
+
+	/**
+	 * The daily work runs under READ COMMITTED, and the session gets back the level it had, as the
+	 * connection outlives the request here.
+	 */
+	public function testCronPutsBackTheIsolationLevel()
+	{
+		new ContextPreparator(['user' => ['mode' => Constants::$LEVEL_MODE]]);
+		Util::execute('SET SESSION TRANSACTION ISOLATION LEVEL SERIALIZABLE');
+		try
+		{
+			$this->get('/cron/daily/' . CRON_SECRET);
+			$this->assertSame('SERIALIZABLE', Util::query('SELECT @@SESSION.tx_isolation AS isolation')[0]['isolation']);
+		}
+		finally
+		{
+			Util::execute('SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ');
+		}
+	}
 }
