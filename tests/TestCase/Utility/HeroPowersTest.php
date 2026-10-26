@@ -413,4 +413,14 @@ class HeroPowersTest extends TestCaseWithAuth
 		$browser->clickId('besogo-review-button');
 		$this->assertSame(0, $browser->driver->executeScript('return window.boardLockValue;'));
 	}
+
+	public function testContributionRevelationBonusGivesOneMoreRevelation()
+	{
+		new ContextPreparator();
+		$withoutBonus = HeroPowers::getRevelationUseCount();
+
+		new ContextPreparator(['user' => ['contribution_revelation_bonus' => 1]]);
+		$this->assertSame($withoutBonus + 1, HeroPowers::getRevelationUseCount());
+		$this->assertTrue(HeroPowers::hasContributionRevelationBonus(Auth::getUser()));
+	}
 }

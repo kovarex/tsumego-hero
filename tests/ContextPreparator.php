@@ -30,7 +30,7 @@ class ContextPreparator
 			'day_record', 'sgf', 'time_mode_attempt', 'time_mode_session', 'challenge_participant', 'challenge_problem', 'challenge',
 			'tsumego_comment', 'tsumego_issue', 'admin_activity', 'admin_page_view', 'message',
 			'achievement_condition', 'achievement_status', 'set_connection',
-			'tsumego_attempt', 'tsumego_status', 'mistake_training_review', 'mistake_training_day', 'mistake_training_pool', 'user_contribution', 'signature',
+			'tsumego_attempt', 'tsumego_status', 'mistake_training_review', 'mistake_training_day', 'mistake_training_pool', 'signature',
 			'tsumego_variant', 'reject', 'publish_date', 'user', 'time_mode_rank',
 			'tsumego', 'set', 'phpbb_users', 'phpbb_topics',
 		] as $table)
@@ -176,6 +176,14 @@ class ContextPreparator
 		$user['email_on_new_message'] = Util::extract('email_on_new_message', $userInput) ?? 1;
 		if ($lastTimeModeCategoryID = Util::extract('last-time-mode-category-id', $userInput))
 			$user['last_time_mode_category_id'] = $lastTimeModeCategoryID;
+		if ($query = Util::extract('query', $userInput))
+			$user['collection_grouping'] = $query;
+		if ($collectionSize = Util::extract('collection_size', $userInput))
+			$user['collection_size'] = $collectionSize;
+		foreach (['filtered_sets', 'filtered_ranks', 'filtered_tags'] as $name)
+			if ($filter = Util::extract($name, $userInput))
+				$user[$name] = implode('@', $filter);
+		$user['contribution_revelation_bonus'] = Util::extract('contribution_revelation_bonus', $userInput) ?: 0;
 
 		// Save user
 		$Model = ClassRegistry::init('User');
@@ -186,22 +194,6 @@ class ContextPreparator
 		// Find by display_name (works for both regular and Google users)
 		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['display_name' => $user['display_name']]])['User'];
 
-		if (isset($userInput['query'])
-			|| isset($userInput['filtered_sets'])
-			|| isset($userInput['filtered_topics'])
-			|| isset($userInput['filtered_tags'])
-			|| isset($userInput['collection_size']))
-		{
-			$userContribution = [];
-			$userContribution['user_id'] = $user['id'];
-			$userContribution['query'] = Util::extract('query', $userInput) ?: '';
-			$userContribution['filtered_sets'] = $userInput['filtered_sets'] ? implode('@', Util::extract('filtered_sets', $userInput)) : '';
-			$userContribution['filtered_ranks'] = $userInput['filtered_ranks'] ? implode('@', Util::extract('filtered_ranks', $userInput)) : '';
-			$userContribution['filtered_tags'] = $userInput['filtered_tags'] ? implode('@', Util::extract('filtered_tags', $userInput)) : '';
-			$userContribution['collection_size'] = Util::extract('collection_size', $userInput) ?: 200;
-			ClassRegistry::init('UserContribution')->create($userContribution);
-			ClassRegistry::init('UserContribution')->save($userContribution);
-		}
 		$this->prepareAchievementStatuses($user, Util::extract('achievement-statuses', $userInput));
 		if ($deleted)
 		{

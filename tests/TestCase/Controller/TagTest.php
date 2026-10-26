@@ -750,10 +750,6 @@ class TagTest extends ControllerTestCase
 
 		$this->assertStringEndsWith('/admin/new-tags', $browser->driver->getCurrentURL());
 		$this->assertSame(1, ClassRegistry::init('Tag')->findById($tagId)['Tag']['approved']);
-
-		$contrib = ClassRegistry::init('UserContribution')->find('first', [
-			'conditions' => ['user_id' => $context->otherUsers[0]['id']]]);
-		$this->assertSame(1, (int) $contrib['UserContribution']['created_tag']);
 	}
 
 	public function testAcceptAlreadyApprovedTagShowsError()

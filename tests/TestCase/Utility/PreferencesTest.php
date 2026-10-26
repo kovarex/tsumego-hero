@@ -66,12 +66,10 @@ class PreferencesTest extends CakeTestCase
 		// Act
 		Preferences::set('query', 'topics');
 
+		Preferences::set('query', 'tags');
+
 		// Assert - check it's in the database
-		$userContribution = ClassRegistry::init('UserContribution')->find('first', [
-			'conditions' => ['user_id' => $userId],
-		]);
-		$this->assertNotNull($userContribution);
-		$this->assertEquals('topics', $userContribution['UserContribution']['query']);
+		$this->assertSame('tags', ClassRegistry::init('User')->findById($userId)['User']['collection_grouping']);
 	}
 
 	/**
@@ -100,27 +98,17 @@ class PreferencesTest extends CakeTestCase
 		Preferences::set('query', 'guest_query');
 		Preferences::set('collection_size', '150');
 
-		// Act - login (creates user and initializes auth)
-		// Note: ContextPreparator doesn't create UserContribution unless filter options passed
+		// Act - login (creates user and initializes auth), the user has the default preferences
 		$context = new ContextPreparator(['user' => ['name' => 'newuser']]);
 		$userId = Auth::getUserID();
-
-		// Verify no UserContribution exists yet
-		$existingContribution = ClassRegistry::init('UserContribution')->find('first', [
-			'conditions' => ['user_id' => $userId],
-		]);
-		$this->assertEmpty($existingContribution, 'No UserContribution should exist before merge');
 
 		// Merge should happen
 		Preferences::mergeGuestPreferencesOnLogin();
 
 		// Assert - preferences should now be in database
-		$userContribution = ClassRegistry::init('UserContribution')->find('first', [
-			'conditions' => ['user_id' => $userId],
-		]);
-		$this->assertNotEmpty($userContribution);
-		$this->assertEquals('guest_query', $userContribution['UserContribution']['query']);
-		$this->assertEquals('150', $userContribution['UserContribution']['collection_size']);
+		$user = ClassRegistry::init('User')->findById($userId)['User'];
+		$this->assertEquals('guest_query', $user['collection_grouping']);
+		$this->assertEquals(150, $user['collection_size']);
 	}
 
 	/**
@@ -177,7 +165,7 @@ class PreferencesTest extends CakeTestCase
 	 *
 	 * This documents the current behavior:
 	 * - Guests: Preferences returns string (from cookie)
-	 * - Logged-in users: Preferences returns int (from DB)
+	 * - Logged-in users: Preferences returns int when loaded from the DB, the stored value after a set
 	 * - Consumers (TsumegoFilters) must handle both by casting to (int)
 	 *
 	 * This is acceptable because:
@@ -188,20 +176,17 @@ class PreferencesTest extends CakeTestCase
 	{
 		$context = new ContextPreparator();
 
+		// the default comes from the DB as int (CakePHP PDO behavior)
+		$this->assertSame(200, Preferences::get('collection_size'));
+
 		// Act - store as string (simulating cookie or form input)
 		Preferences::set('collection_size', '150');
-		$result = Preferences::get('collection_size');
-
-		// Assert - DB returns int (CakePHP PDO behavior)
-		$this->assertIsInt($result, 'DB returns collection_size as int');
-		$this->assertEquals(150, $result);
-		$this->assertEquals(150, (int) $result, 'Already int, cast is no-op');
+		$this->assertEquals(150, (int) Preferences::get('collection_size'));
+		$this->assertSame(150, ClassRegistry::init('User')->findById(Auth::getUserID())['User']['collection_size']);
 
 		// Test with numeric int value
 		Preferences::set('collection_size', 200);
-		$result2 = Preferences::get('collection_size');
-		$this->assertIsInt($result2);
-		$this->assertEquals(200, $result2);
+		$this->assertSame(200, Preferences::get('collection_size'));
 
 		// Now test guest behavior (string from cookie)
 		Auth::logout();
@@ -214,5 +199,18 @@ class PreferencesTest extends CakeTestCase
 		// Guest preferences use test storage in unit tests, which preserves types
 		// In real browser, cookies are strings
 		$this->assertEquals(150, (int) $guestResult, 'Guest result can be cast to int');
+	}
+
+	/**
+	 * TsumegoFilters stores every filter on every page, a value that didn't change isn't written.
+	 */
+	public function testUnchangedPreferenceIsNotWritten()
+	{
+		$context = new ContextPreparator(['user' => ['query' => 'tags']]);
+		Util::execute("UPDATE user SET collection_grouping = 'difficulty' WHERE id = ?", [Auth::getUserID()]);
+
+		Preferences::set('query', 'tags');
+
+		$this->assertSame('difficulty', ClassRegistry::init('User')->findById(Auth::getUserID())['User']['collection_grouping']);
 	}
 }

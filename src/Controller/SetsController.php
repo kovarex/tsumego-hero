@@ -528,7 +528,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$this->loadModel('AchievementCondition');
 		$this->loadModel('TsumegoStatus');
 		$this->loadModel('SetConnection');
-		$this->loadModel('UserContribution');
 		$this->set('_page', 'set');
 		$this->set('_title', 'Tsumego Hero - Collections');
 
@@ -887,7 +886,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$this->loadModel('SetConnection');
 		$this->loadModel('Tag');
 		$this->loadModel('User');
-		$this->loadModel('UserContribution');
 
 		if ($id === null)
 		{

@@ -2,7 +2,6 @@
 
 namespace App\Utility;
 
-use ClassRegistry;
 use DateTime;
 
 /**
@@ -44,11 +43,7 @@ class HeroPowers
 	 */
 	public static function hasContributionRevelationBonus(array $user): bool
 	{
-		$userId = (int) ($user['id'] ?? 0);
-		if ($userId && ($contribution = ClassRegistry::init('UserContribution')->find('first', ['conditions' => ['user_id' => $userId]])))
-			if (!empty($contribution['UserContribution']['reward3']))
-				return true;
-		return false;
+		return !empty($user['contribution_revelation_bonus']);
 	}
 
 	public static function render(): void
@@ -106,9 +101,8 @@ class HeroPowers
 			$result++;
 		if (Auth::getUser()['level'] >= self::$REVELATION_MINIMUM_LEVEL)
 			$result++;
-		if ($userContribution = ClassRegistry::init('UserContribution')->find('first', ['conditions' => ['user_id' => Auth::getUserID()]]))
-			if ($userContribution['UserContribution']['reward3'])
-				$result++;
+		if (self::hasContributionRevelationBonus(Auth::getUser()))
+			$result++;
 		return $result;
 	}
 

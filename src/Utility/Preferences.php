@@ -2,16 +2,15 @@
 
 namespace App\Utility;
 
-use ClassRegistry;
 use InvalidArgumentException;
 
 /**
  * Unified Preferences storage class.
  *
- * - For logged-in users: Uses UserContribution table in database
+ * - For logged-in users: Uses columns of the user table (see $userColumns)
  * - For guests: Uses cookies (or in-memory storage during tests)
  *
- * Supported keys (matching TsumegoFilters/UserContribution columns):
+ * Supported keys (the cookie names, used by TsumegoFilters):
  * - query
  * - collection_size
  * - filtered_sets
@@ -38,14 +37,14 @@ class Preferences
 	];
 
 	/**
-	 * Valid preference keys (must match UserContribution columns)
+	 * Valid preference keys, each with the user column that stores it
 	 */
-	private static array $validKeys = [
-		'query',
-		'collection_size',
-		'filtered_sets',
-		'filtered_ranks',
-		'filtered_tags',
+	private static array $userColumns = [
+		'query' => 'collection_grouping',
+		'collection_size' => 'collection_size',
+		'filtered_sets' => 'filtered_sets',
+		'filtered_ranks' => 'filtered_ranks',
+		'filtered_tags' => 'filtered_tags',
 	];
 
 	/**
@@ -106,7 +105,7 @@ class Preferences
 		if (!Auth::isLoggedIn())
 			return;
 
-		foreach (self::$validKeys as $key)
+		foreach (array_keys(self::$userColumns) as $key)
 		{
 			$guestValue = self::getFromGuestStorage($key);
 			if ($guestValue !== null)
@@ -149,42 +148,23 @@ class Preferences
 	}
 
 	/**
-	 * Get preference from database (for logged-in users)
+	 * Get preference from database (for logged-in users), the user row is loaded with the login
 	 */
 	private static function getFromDatabase(string $key, mixed $default = null): mixed
 	{
-		$userContribution = ClassRegistry::init('UserContribution')->find('first', [
-			'conditions' => ['user_id' => Auth::getUserID()],
-		]);
-
-		if (!$userContribution || !isset($userContribution['UserContribution'][$key]))
-			return $default;
-
-		$value = $userContribution['UserContribution'][$key];
-		return ($value === '') ? $default : $value;
+		$value = Auth::getUser()[self::$userColumns[$key]] ?? null;
+		return ($value === null || $value === '') ? $default : $value;
 	}
 
 	/**
-	 * Set preference in database (for logged-in users)
+	 * Set preference in database (for logged-in users). TsumegoFilters stores every filter on
+	 * every page, so an unchanged value isn't written again.
 	 */
 	private static function setInDatabase(string $key, mixed $value): void
 	{
-		$userId = Auth::getUserID();
-		$userContribution = ClassRegistry::init('UserContribution')->find('first', ['conditions' => ['user_id' => $userId]]);
-
-		if ($userContribution)
-		{
-			// Update existing record
-			$userContribution['UserContribution'][$key] = $value;
-			ClassRegistry::init('UserContribution')->save($userContribution);
-		}
-		else
-		{
-			// Create new record
-			$newContribution = ['user_id' => $userId, $key => $value];
-			ClassRegistry::init('UserContribution')->create();
-			ClassRegistry::init('UserContribution')->save($newContribution);
-		}
+		$column = self::$userColumns[$key];
+		if ((string) (Auth::getUser()[$column] ?? '') !== (string) ($value ?? ''))
+			Auth::saveUserField($column, $value);
 	}
 
 	/**
@@ -250,7 +230,7 @@ class Preferences
 	 */
 	private static function validateKey(string $key): void
 	{
-		if (!in_array($key, self::$validKeys))
-			throw new InvalidArgumentException("Invalid preference key: $key. Valid keys are: " . implode(', ', self::$validKeys));
+		if (!isset(self::$userColumns[$key]))
+			throw new InvalidArgumentException("Invalid preference key: $key. Valid keys are: " . implode(', ', array_keys(self::$userColumns)));
 	}
 }
