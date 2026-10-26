@@ -211,15 +211,27 @@ class PolicyTest extends CakeTestCase
 		$this->assertFalse($policy->canMoveComment($this->identity(false)));
 	}
 
-	public function testTagConnectionPolicyAddRequiresContribution()
+	public function testTagConnectionPolicyAddRequiresContributionAndASolve()
 	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'contributor', 'rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
+			'tsumegos' => [
+				['set_order' => 1, 'status' => 'S'],
+				['set_order' => 2, 'status' => 'W'],
+				['set_order' => 3, 'status' => 'F'],
+				['set_order' => 4]]]);
 		$policy = new TagConnectionPolicy();
-		$contributor = $this->identity(false);
+		$contributor = $this->identity(false, 0, $context->user['id']);
 		$contributor['rating'] = Constants::$MINIMUM_RATING_TO_CONTRIBUTE;
+		[$solved, $solvedLongAgo, $failed, $notVisited] = array_map(fn($tsumego) => ['id' => $tsumego['id']], $context->tsumegos);
 
-		$this->assertTrue($policy->canAdd($contributor), 'contributor allowed');
-		$this->assertFalse($policy->canAdd($this->identity(false)), 'non-contributor blocked');
-		$this->assertFalse($policy->canAdd($this->identity(null)), 'anonymous blocked');
+		$this->assertTrue($policy->canAdd($contributor, $solved), 'contributor tags a solved problem');
+		$this->assertTrue($policy->canAdd($contributor, $solvedLongAgo), 'a problem solved long ago is solved too');
+		$this->assertFalse($policy->canAdd($contributor, $failed), 'tags are hints, an unsolved problem gets none');
+		$this->assertFalse($policy->canAdd($contributor, $notVisited), 'nor one never opened');
+		$this->assertTrue($policy->canAdd($this->identity(true, 0, $context->user['id']), $notVisited), 'admin tags any problem');
+		$this->assertFalse($policy->canAdd($this->identity(false, 0, $context->user['id']), $solved), 'non-contributor blocked');
+		$this->assertFalse($policy->canAdd($this->identity(null), $solved), 'anonymous blocked');
 	}
 
 	public function testTagConnectionPolicyRemoveAllowsOwnerOfUnapprovedOrAdmin()

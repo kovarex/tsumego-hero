@@ -3,6 +3,7 @@
 use App\Policy\AdminPolicy;
 use App\Policy\BasePolicy;
 use App\Policy\SetPolicy;
+use App\Policy\TagConnectionPolicy;
 use App\Policy\TsumegoPolicy;
 use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
@@ -319,10 +320,12 @@ class Play
 		$tagData = ClassRegistry::init('Tag')::getForTsumego($id);
 
 		$isAllowedToContribute = false;
+		$isAllowedToTag = false;
 		$canAddMoreTags = false;
 		if (Auth::isLoggedIn())
 		{
 			$isAllowedToContribute = BasePolicy::canPropose(Auth::getIdentity());
+			$isAllowedToTag = TagConnectionPolicy::canAdd(Auth::getIdentity(), $t['Tsumego']);
 			$canAddMoreTags = ClassRegistry::init('TagConnection')::canCurrentUserAddTag();
 		}
 
@@ -365,6 +368,7 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		}
 
 		($this->setFunction)('isAllowedToContribute', $isAllowedToContribute);
+		($this->setFunction)('isAllowedToTag', $isAllowedToTag);
 		($this->setFunction)('canAddMoreTags', $canAddMoreTags);
 
 		$sgfProposal = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['tsumego_id' => $id, 'user_id' => Auth::getUserID(), 'sgf_status_id' => Sgf::STATUS_PROPOSED]]);

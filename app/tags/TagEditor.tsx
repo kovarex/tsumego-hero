@@ -12,10 +12,12 @@ interface Props
 	problemSolved: boolean;
 	canAddMoreTags: boolean;
 	isAllowedToContribute: boolean;
+	// tags are hints, so a player adds them only to a problem they solved (an admin to any)
+	isAllowedToTag: boolean;
 	initialTags: TagItem[];
 }
 
-export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags, isAllowedToContribute, initialTags }: Props)
+export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags, isAllowedToContribute, isAllowedToTag, initialTags }: Props)
 {
 	const { userId, isAdmin } = useAuth();
 	const [tags, setTags] = useState<TagItem[]>(initialTags);
@@ -119,6 +121,7 @@ export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags
 	}, []);
 
 	const solved = problemSolved || solvedInSession;
+	const canTag = isAllowedToTag || solvedInSession;
 
 	const addedTags = tags.filter(t =>
 		t.isAdded && (t.isApproved || t.isMine) &&
@@ -155,11 +158,15 @@ export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags
 
 			{error && <div style={{ color: 'var(--feedback-error)', marginBottom: 6 }} data-testid="tag-error">{error}</div>}
 
-			{!canAddMoreTags && (
+			{!canTag && (
+				<div style={{ color: 'var(--text-softer-color)', fontSize: 14 }} data-testid="tag-solve-first">Solve the problem to add tags.</div>
+			)}
+
+			{canTag && !canAddMoreTags && (
 				<div style={{ color: 'var(--text-softer-color)', fontSize: 14 }}>Daily limit reached.</div>
 			)}
 
-			{canAddMoreTags && !error && (
+			{canTag && canAddMoreTags && !error && (
 			<>
 			<div style={{ position: 'relative', display: 'inline-block', maxWidth: 300, width: '100%' }}>
 				<input
