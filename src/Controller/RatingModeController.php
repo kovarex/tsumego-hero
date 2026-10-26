@@ -33,6 +33,9 @@ class RatingModeController extends AppController
 		Util::addSqlCondition($queryCondition, Set::officialCondition());
 		Util::addSqlCondition($queryCondition, 'tsumego.deleted IS NULL');
 		$ratingBounds->addSqlConditions($queryCondition);
+		// Solved and mastered problems give no rating or XP, and locked ones can't be played today, so they
+		// are only picked when nothing else is in range. A solve older than a week turns into review,
+		// which counts again.
 		$query = "
 SELECT
 	set_connection.id as id
@@ -40,15 +43,26 @@ FROM
 	tsumego
 	JOIN set_connection ON set_connection.tsumego_id = tsumego.id
 	JOIN `set` ON set_connection.set_id = set.id
-WHERE " . $queryCondition;
-		$relatedTsumegos = Util::query($query);
+	LEFT JOIN tsumego_status ON tsumego_status.tsumego_id = tsumego.id AND tsumego_status.user_id = ?
+WHERE " . $queryCondition . "
+ORDER BY
+	CASE
+		WHEN tsumego_status.status IN (?, ?) THEN 2
+		WHEN tsumego_status.status IN (?, ?) THEN 1
+		ELSE 0
+	END,
+	RAND()
+LIMIT 1";
+		$selectedTsumego = Util::query($query, [
+			Auth::getUserID(),
+			TsumegoStatus::$LOCKED, TsumegoStatus::$FORGOTTEN,
+			TsumegoStatus::$SOLVED, TsumegoStatus::$MASTERED])[0] ?? null;
 
-		if (empty($relatedTsumegos))
+		if (!$selectedTsumego)
 		{
 			CookieFlash::set("No problems found for your rating selection", 'failure');
 			return $this->redirect('/sets');
 		}
-		shuffle($relatedTsumegos);
 
 		$this->set('nextLink', '/ratingMode');
 		$this->set('difficulty', Auth::getUser()['rating_mode_difficulty_selection']);
@@ -56,7 +70,7 @@ WHERE " . $queryCondition;
 		$play  = new Play(function ($name, $value) {
 			$this->set($name, $value);
 		});
-		$play->play($relatedTsumegos[0]['id'], $this->request, $this->request->data);
+		$play->play((int) $selectedTsumego['id'], $this->request, $this->request->data);
 		$this->render('/Tsumegos/play');
 		return null;
 	}
