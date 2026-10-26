@@ -765,7 +765,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 				'title' => 'Favorites',
 				'public' => 0,
 				'image' => null,
-				'author' => Auth::getUser()['display_name'],
 				'order' => Constants::$DEFAULT_SET_ORDER,
 			],
 		]);
