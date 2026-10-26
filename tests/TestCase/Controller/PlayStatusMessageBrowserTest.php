@@ -25,8 +25,13 @@ class PlayStatusMessageBrowserTest extends IntegrationTestCase
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$browser->waitForBoard();
-		foreach ($moves as [$x, $y])
+		foreach ($moves as $index => [$x, $y])
+		{
+			// a click before white's automatic answer lands is ignored, so wait for it
+			if ($index > 0)
+				$browser->waitUntilJs('besogo.editor.getCurrent().moveNumber >= ' . (2 * $index));
 			$browser->clickBoard($x, $y);
+		}
 		$browser->waitUntilJs('document.getElementById("status").textContent.includes("Incorrect")');
 		$browser->waitForSubmitResult();
 		return $browser;
