@@ -2,7 +2,6 @@
 
 use App\Utility\Constants;
 use App\Utility\TimeModeUtil;
-use PHPUnitRetry\RetryTrait;
 
 /**
  * A line that can no longer end correct is sent as a fail the moment it is lost, so leaving
@@ -12,10 +11,8 @@ use PHPUnitRetry\RetryTrait;
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
-class PlayLostLineBrowserTest extends TestCaseWithAuth
+class PlayLostLineBrowserTest extends IntegrationTestCase
 {
-	use RetryTrait;
-
 	/**
 	 * Black (1,1), white (1,2), black (2,1) is correct. Black (2,1) is lost at once, but the
 	 * line goes on: white answers (1,1) and only black (3,1) ends it.

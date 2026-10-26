@@ -11,7 +11,7 @@ use Facebook\WebDriver\WebDriverKeys;
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
-class MessagesBrowserTest extends TestCaseWithAuth
+class MessagesBrowserTest extends IntegrationTestCase
 {
 	private function prepare(): ContextPreparator
 	{

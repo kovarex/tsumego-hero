@@ -1,6 +1,6 @@
 <?php
 
-class TsumegoImagesControllerTest extends ControllerTestCase
+class TsumegoImagesControllerTest extends IntegrationTestCase
 {
 	public function testReturnsValidPngWithCorrectHeaders()
 	{
@@ -13,16 +13,14 @@ class TsumegoImagesControllerTest extends ControllerTestCase
 		]);
 		$scId = $context->tsumegos[0]['set-connections'][0]['id'];
 
-		$result = $this->testAction("/tsumego-image/{$scId}", ['method' => 'get', 'return' => 'contents']);
+		$this->get("/tsumego-image/{$scId}");
 
 		// Valid PNG with correct content type
-		$this->assertStringStartsWith("\x89PNG", $result);
-		$this->assertEquals('image/png', $this->controller->response->type());
+		$this->assertStringStartsWith("\x89PNG", $this->view);
+		$this->assertContentType('image/png');
 
-		// Cache headers set
-		$headers = $this->controller->response->header();
-		$this->assertArrayHasKey('Etag', $headers);
-		$this->assertNotEmpty($headers['Etag']);
+		// The image is cacheable, so a browser can keep it
+		$this->assertMatchesRegularExpression('/^"[0-9a-f]{32}"$/', (string) $this->headerValue('Etag'));
 	}
 
 	public function testRepeatedRequestsReturnSameImage()
@@ -36,8 +34,10 @@ class TsumegoImagesControllerTest extends ControllerTestCase
 		]);
 		$scId = $context->tsumegos[0]['set-connections'][0]['id'];
 
-		$result1 = $this->testAction("/tsumego-image/{$scId}", ['method' => 'get', 'return' => 'contents']);
-		$result2 = $this->testAction("/tsumego-image/{$scId}", ['method' => 'get', 'return' => 'contents']);
+		$this->get("/tsumego-image/{$scId}");
+		$result1 = $this->view;
+		$this->get("/tsumego-image/{$scId}");
+		$result2 = $this->view;
 
 		$this->assertStringStartsWith("\x89PNG", $result1);
 		$this->assertEquals($result1, $result2, 'Image generation should be deterministic');
@@ -45,7 +45,8 @@ class TsumegoImagesControllerTest extends ControllerTestCase
 
 	public function testNonexistentSetConnectionThrows404()
 	{
-		$this->expectException(NotFoundException::class);
-		$this->testAction('/tsumego-image/999999', ['method' => 'get', 'return' => 'contents']);
+		$this->get('/tsumego-image/999999');
+
+		$this->assertResponseCode(404);
 	}
 }

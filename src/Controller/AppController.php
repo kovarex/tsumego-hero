@@ -260,17 +260,27 @@ class AppController extends Controller
 		}
 	}
 
+	/** The mailer of a running test, and null outside of one. */
+	private static $testEmailer = null;
+
+	public static function _setTestEmailer($emailer): void
+	{
+		self::$testEmailer = $emailer;
+	}
+
 	/**
-	 * The mailer of the emails a controller sends. A test replaces it on the controller it
-	 * generates, see TestCaseWithAuth::registerTestEmailer().
+	 * The mailer of the emails a controller sends.
+	 *
+	 * A test puts its own mailer here through _setTestEmailer(), so it reads what the site
+	 * wrote instead of receiving it. The test suite and the test host build the message and
+	 * stop there; the dev site hands it to the local mail catcher, like it always did.
 	 *
 	 * @return CakeEmail
 	 */
 	public function _getEmailer()
 	{
-		// A run of the tests must not hand a mail to a mail server that is not there. The
-		// debug transport builds the message and returns it instead of sending it.
-		return Util::isOnTestSite() ? new CakeEmail(['transport' => 'Debug']) : new CakeEmail();
+		return self::$testEmailer
+			?? (Util::isOnTestSite() ? new CakeEmail(['transport' => 'Debug']) : new CakeEmail());
 	}
 
 	protected function signIn(array $user): void

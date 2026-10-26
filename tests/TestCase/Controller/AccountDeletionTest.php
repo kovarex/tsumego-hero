@@ -3,7 +3,7 @@
 use App\Utility\Auth;
 use App\Utility\CookieFlash;
 
-class AccountDeletionTest extends TestCaseWithAuth
+class AccountDeletionTest extends IntegrationTestCase
 {
 	private function userRow(int $userID): array
 	{
@@ -18,12 +18,12 @@ class AccountDeletionTest extends TestCaseWithAuth
 	private function requestDeletion(): void
 	{
 		$this->registerTestEmailer();
-		$this->testAction('/users/delete_account', ['method' => 'POST']);
+		$this->post('/users/delete_account');
 	}
 
 	private function confirmDeletion(string $token): void
 	{
-		$this->testAction('/users/confirm_delete_account/' . $token, ['method' => 'POST']);
+		$this->post('/users/confirm_delete_account/' . $token);
 	}
 
 	// the whole deletion of the logged-in user: the emailed link, then confirming it
@@ -36,7 +36,7 @@ class AccountDeletionTest extends TestCaseWithAuth
 
 	private function restoreAccount(int $userID): void
 	{
-		$this->testAction('/users/restore_account/' . $userID, ['method' => 'POST']);
+		$this->post('/users/restore_account/' . $userID);
 	}
 
 	public function testRequestingDeletionEmailsConfirmationLink(): void
@@ -71,7 +71,7 @@ class AccountDeletionTest extends TestCaseWithAuth
 		try
 		{
 			TestEmailer::$unreachable = true;
-			$this->testAction('/users/delete_account', ['method' => 'POST']);
+			$this->post('/users/delete_account');
 		}
 		finally
 		{
@@ -117,7 +117,8 @@ class AccountDeletionTest extends TestCaseWithAuth
 		$token = $this->userRow($context->user['id'])['deletion_token'];
 
 		// email scanners open links, so just opening it must not delete anything
-		$result = $this->testAction('/users/confirm_delete_account/' . $token, ['method' => 'GET', 'return' => 'view']);
+		$this->get('/users/confirm_delete_account/' . $token);
+		$result = $this->view;
 		$this->assertStringContainsString('confirm-deletion-button', $result);
 		$this->assertNull($this->deletedOf($context->user['id']));
 	}
@@ -132,7 +133,8 @@ class AccountDeletionTest extends TestCaseWithAuth
 		$this->assertNull($this->deletedOf($context->user['id']));
 
 		ClassRegistry::init('User')->save(['User' => ['id' => $context->user['id'], 'deletion_token_created' => date('Y-m-d H:i:s', strtotime('-25 hours'))]], false);
-		$result = $this->testAction('/users/confirm_delete_account/' . $token, ['method' => 'POST', 'return' => 'view']);
+		$this->post('/users/confirm_delete_account/' . $token);
+		$result = $this->view;
 		$this->assertStringContainsString('deletion-link-invalid', $result);
 		$this->assertNull($this->deletedOf($context->user['id']));
 	}
@@ -140,7 +142,7 @@ class AccountDeletionTest extends TestCaseWithAuth
 	public function testDeletedAccountCannotLogIn(): void
 	{
 		new ContextPreparator(['user' => null, 'other-users' => [['name' => 'kovarex', 'deleted' => true]]]);
-		$this->testAction('users/login/', ['data' => ['username' => 'kovarex', 'password' => 'test'], 'method' => 'POST']);
+		$this->post('users/login/', ['username' => 'kovarex', 'password' => 'test']);
 		$this->assertFalse(Auth::isLoggedIn());
 	}
 
@@ -148,7 +150,7 @@ class AccountDeletionTest extends TestCaseWithAuth
 	{
 		// the login cookie is still there, but the account was deleted
 		new ContextPreparator(['user' => ['deleted' => true]]);
-		$this->testAction('/sites/index', ['method' => 'get']);
+		$this->get('/sites/index');
 		$this->assertFalse(Auth::isLoggedIn());
 	}
 
@@ -160,7 +162,8 @@ class AccountDeletionTest extends TestCaseWithAuth
 
 		foreach (['/users/highscore', '/users/rating'] as $url)
 		{
-			$result = $this->testAction($url, ['method' => 'get', 'return' => 'view']);
+			$this->get($url);
+			$result = $this->view;
 			$this->assertStringContainsString('alive', $result, $url);
 			$this->assertStringNotContainsString('ghost', $result, $url);
 			$this->assertStringNotContainsString(User::DELETED_NAME, $result, $url);
@@ -188,7 +191,8 @@ class AccountDeletionTest extends TestCaseWithAuth
 			'tsumego' => ['set_order' => 1, 'comments' => [['message' => 'comment by a deleted account']]]]);
 		ClassRegistry::init('TsumegoComment')->updateAll(['TsumegoComment.user_id' => $context->otherUsers[0]['id']], []);
 
-		$result = $this->testAction('/comments', ['method' => 'get', 'return' => 'view']);
+		$this->get('/comments');
+		$result = $this->view;
 		$this->assertStringContainsString('comment by a deleted account', $result);
 		$this->assertStringContainsString(h(User::DELETED_NAME), $result);
 		$this->assertStringNotContainsString('ghost', $result);
@@ -197,14 +201,16 @@ class AccountDeletionTest extends TestCaseWithAuth
 	public function testProfileOfDeletedAccountIsNotFound(): void
 	{
 		$context = new ContextPreparator(['other-users' => [['name' => 'ghost', 'deleted' => true]]]);
-		$this->expectException(NotFoundException::class);
-		$this->testAction('/users/view/' . $context->otherUsers[0]['id'], ['method' => 'get']);
+		$this->get('/users/view/' . $context->otherUsers[0]['id']);
+
+		$this->assertResponseCode(404);
 	}
 
 	public function testAdminCanSeeProfileOfDeletedAccount(): void
 	{
 		$context = new ContextPreparator(['user' => ['admin' => true], 'other-users' => [['name' => 'ghost', 'deleted' => true]]]);
-		$result = $this->testAction('/users/view/' . $context->otherUsers[0]['id'], ['method' => 'get', 'return' => 'view']);
+		$this->get('/users/view/' . $context->otherUsers[0]['id']);
+		$result = $this->view;
 		$this->assertStringContainsString('ghost', $result);
 	}
 
@@ -233,9 +239,9 @@ class AccountDeletionTest extends TestCaseWithAuth
 	{
 		$context = new ContextPreparator(['other-users' => [['name' => 'ghost', 'deleted' => true]]]);
 
-		$this->expectException(UnauthorizedException::class);
+		$this->post('/users/restore_account/' . $context->otherUsers[0]['id']);
 
-		$this->testAction('/users/restore_account/' . $context->otherUsers[0]['id'], ['method' => 'POST']);
+		$this->assertResponseCode(401);
 	}
 
 	public function testOnlyAdminCanRestoreAccount(): void
@@ -244,9 +250,9 @@ class AccountDeletionTest extends TestCaseWithAuth
 			'user' => ['admin' => false],
 			'other-users' => [['name' => 'ghost', 'deleted' => true]]]);
 
-		$this->expectException(ForbiddenException::class);
+		$this->post('/users/restore_account/' . $context->otherUsers[0]['id']);
 
-		$this->testAction('/users/restore_account/' . $context->otherUsers[0]['id'], ['method' => 'POST']);
+		$this->assertResponseCode(403);
 	}
 
 	public function testDeletingFreesNameAndGoogleAccount(): void
@@ -280,11 +286,11 @@ class AccountDeletionTest extends TestCaseWithAuth
 
 		// a new account can take the name; the email stays with the deleted account
 		$this->logout();
-		$this->testAction('/users/add', ['data' => ['User' => [
+		$this->post('/users/add', ['User' => [
 			'name' => 'kovarex',
 			'email' => 'newkovarex@example.com',
 			'password1' => 'secretChest42',
-			'password2' => 'secretChest42']], 'method' => 'POST']);
+			'password2' => 'secretChest42']]);
 		$newAccount = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
 		$this->assertNotEmpty($newAccount);
 		$this->assertNotEquals($oldAccountID, $newAccount['User']['id']);

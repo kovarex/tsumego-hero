@@ -1,6 +1,5 @@
 <?php
 
-use PHPUnitRetry\RetryTrait;
 
 /**
  * Tests for SetsController admin functions (create set/tsumego)
@@ -10,9 +9,8 @@ use PHPUnitRetry\RetryTrait;
  *
  * @group browser
  */
-class SetsControllerAdminTest extends ControllerTestCase
+class SetsControllerAdminTest extends IntegrationTestCase
 {
-	use RetryTrait;
 	/**
 	 * Test SetsController::create() - creating new set with first tsumego
 	 */

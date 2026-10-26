@@ -3,7 +3,7 @@
 use App\Utility\Auth;
 use App\Utility\SetCompletionCounter;
 
-class SetCompletionCounterTest extends TestCaseWithAuth
+class SetCompletionCounterTest extends IntegrationTestCase
 {
 	private int $originalPartitionSize;
 

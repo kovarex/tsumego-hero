@@ -8,7 +8,7 @@ use App\Utility\Util;
  * Messages between players: sending, the email that announces one, the conversations
  * and the search of a player to write to.
  */
-class MessagesControllerTest extends TestCaseWithAuth
+class MessagesControllerTest extends IntegrationTestCase
 {
 	/**
 	 * The player 'messageSender' is signed in, the others can be written to.
@@ -27,19 +27,15 @@ class MessagesControllerTest extends TestCaseWithAuth
 	private function send(int $recipientUserId, string $text, bool $withEmailer = true): array
 	{
 		if ($withEmailer)
-			$this->registerTestEmailer('Messages');
-		$this->testAction('/messages/conversations/' . $recipientUserId, [
-			'method' => 'post',
-			'data' => json_encode(['text' => $text]),
-			'return' => 'contents',
-		]);
-		return json_decode($this->controller->response->body(), true);
+			$this->registerTestEmailer();
+		$this->post('/messages/conversations/' . $recipientUserId, json_encode(['text' => $text]));
+		return json_decode($this->view, true);
 	}
 
 	private function getJson(string $url): array
 	{
-		$this->testAction($url, ['method' => 'get', 'return' => 'contents']);
-		return json_decode($this->controller->response->body(), true);
+		$this->get($url);
+		return json_decode($this->view, true);
 	}
 
 	/**
@@ -47,6 +43,8 @@ class MessagesControllerTest extends TestCaseWithAuth
 	 */
 	private function refusal(int $recipientUserId, string $text): ?string
 	{
+		// The refusal reason is the exception message, so the exception has to reach the test.
+		$this->disableErrorHandlerMiddleware();
 		try
 		{
 			$this->send($recipientUserId, $text);
@@ -165,8 +163,9 @@ class MessagesControllerTest extends TestCaseWithAuth
 	{
 		$context = $this->prepare();
 
-		$this->expectException(NotFoundException::class);
-		$this->send($context->otherUsers[0]['id'] + 1000, 'Hello');
+		$this->post('/messages/conversations/' . ($context->otherUsers[0]['id'] + 1000), json_encode(['text' => 'Hello']));
+
+		$this->assertResponseCode(404);
 	}
 
 	public function testGuestCanNotSend(): void
@@ -174,8 +173,9 @@ class MessagesControllerTest extends TestCaseWithAuth
 		$context = $this->prepare();
 		$this->logout();
 
-		$this->expectException(UnauthorizedException::class);
-		$this->send($context->otherUsers[0]['id'], 'Hello');
+		$this->post('/messages/conversations/' . $context->otherUsers[0]['id'], json_encode(['text' => 'Hello']));
+
+		$this->assertResponseCode(401);
 	}
 
 	/**
@@ -263,9 +263,9 @@ class MessagesControllerTest extends TestCaseWithAuth
 		Message::send($second['id'], $me, 'From second', new TestEmailer());
 		Message::send($me, $first['id'], 'To first', new TestEmailer());
 
-		$this->testAction('/messages/conversations/' . $first['id'] . '/read', ['method' => 'post', 'return' => 'contents']);
+		$this->post('/messages/conversations/' . $first['id'] . '/read');
 
-		$this->assertSame(['unreadCount' => 1], json_decode($this->controller->response->body(), true));
+		$this->assertSame(['unreadCount' => 1], json_decode($this->view, true));
 		$this->assertSame(0, Message::unreadCountFrom($me, $first['id']));
 		$this->assertSame(1, Message::unreadCountFrom($me, $second['id']));
 		$this->assertSame(1, Message::unreadCountFrom($first['id'], $me), 'The message to the partner became read too');
@@ -297,19 +297,19 @@ class MessagesControllerTest extends TestCaseWithAuth
 		$this->prepare();
 		$this->logout();
 
-		$this->testAction('/messages', ['method' => 'get']);
+		$this->get('/messages');
 
-		$this->assertStringEndsWith('/users/login', $this->headers['Location']);
+		$this->assertStringEndsWith('/users/login', $this->headerValue('Location'));
 	}
 
 	public function testEmailPreferenceIsStored(): void
 	{
 		$context = $this->prepare();
 
-		$this->testAction('/users/emailOnNewMessagePreference', ['method' => 'post', 'data' => ['enabled' => '0']]);
+		$this->post('/users/emailOnNewMessagePreference', ['enabled' => '0']);
 		$this->assertSame(0, (int) $context->reloadUser()['email_on_new_message']);
 
-		$this->testAction('/users/emailOnNewMessagePreference', ['method' => 'post', 'data' => ['enabled' => '1']]);
+		$this->post('/users/emailOnNewMessagePreference', ['enabled' => '1']);
 		$this->assertSame(1, (int) $context->reloadUser()['email_on_new_message']);
 	}
 }

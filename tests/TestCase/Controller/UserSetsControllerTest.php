@@ -1,10 +1,8 @@
 <?php
 
-use App\Lib\Error\ConflictException;
 use App\Utility\Constants;
-use App\Utility\CookieFlash;
 
-class UserSetsControllerTest extends TestCaseWithAuth
+class UserSetsControllerTest extends IntegrationTestCase
 {
 	private function _createSet(string $title, ?int $userId, int $public): int
 	{
@@ -30,7 +28,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$this->_createSet('My Puzzles', $userId, 0);
 		$this->login('alice');
 
-		$this->testAction("/sets/mine", ['method' => 'get', 'return' => 'view']);
+		$this->get("/sets/mine");
 		$this->assertTextContains('My Puzzles', $this->view);
 	}
 
@@ -42,7 +40,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$this->login('alice');
 
 		$data = ['Set' => ['title' => 'My New Set', 'description' => 'My collection', 'color' => '#74d14c']];
-		$this->testAction('/sets/create', ['data' => $data, 'method' => 'POST']);
+		$this->post('/sets/create', $data);
 
 		$set = ClassRegistry::init('Set')->find('first', [
 			'conditions' => ['title' => 'My New Set'],
@@ -52,7 +50,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$this->assertEquals(0, $set['Set']['public']);
 		$this->assertEquals('My collection', $set['Set']['description']);
 		$this->assertEquals('#74d14c', $set['Set']['color']);
-		$this->assertStringContainsString('/sets/edit/', $this->headers['Location']);
+		$this->assertStringContainsString('/sets/edit/', $this->headerValue('Location'));
 	}
 
 	public function testCreateSandboxSet(): void
@@ -61,9 +59,9 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$this->login('admin');
 
 		$data = ['Set' => ['title' => 'New Sandbox']];
-		$this->testAction('/sets/create?sandbox=1', ['data' => $data, 'method' => 'POST']);
+		$this->post('/sets/create?sandbox=1', $data);
 
-		$this->assertStringContainsString('/sets/edit/', $this->headers['Location']);
+		$this->assertStringContainsString('/sets/edit/', $this->headerValue('Location'));
 
 		$set = ClassRegistry::init('Set')->find('first', [
 			'conditions' => ['title' => 'New Sandbox'],
@@ -85,7 +83,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$this->login('alice');
 
 		$data = ['Set' => ['title' => 'Sneaky Sandbox', 'sandbox' => '1']];
-		$this->testAction('/sets/create', ['data' => $data, 'method' => 'POST']);
+		$this->post('/sets/create', $data);
 
 		$set = ClassRegistry::init('Set')->find('first', [
 			'conditions' => ['title' => 'Sneaky Sandbox'],
@@ -98,9 +96,9 @@ class UserSetsControllerTest extends TestCaseWithAuth
 	{
 		$data = ['Set' => ['title' => 'Guest Set']];
 
-		$this->expectException(UnauthorizedException::class);
+		$this->post('/sets/create', $data);
 
-		$this->testAction('/sets/create', ['data' => $data, 'method' => 'POST']);
+		$this->assertResponseCode(401);
 	}
 
 	// ── /sets/edit/:id ──────────────────────────────────────────────────
@@ -112,7 +110,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$this->login('alice');
 
 		$data = ['Set' => ['title' => 'Renamed', 'description' => 'New desc', 'color' => '#3366cc', 'order' => '7']];
-		$this->testAction("/sets/edit/{$setId}", ['data' => $data, 'method' => 'POST']);
+		$this->post("/sets/edit/{$setId}", $data);
 
 		$set = ClassRegistry::init('Set')->findById($setId);
 		$this->assertEquals('Renamed', $set['Set']['title']);
@@ -127,7 +125,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = $this->_createSet('My Set', $context->user['id'], 0);
 		$this->login('alice');
 
-		$this->testAction("/sets/edit/{$setId}", ['return' => 'view']);
+		$this->post("/sets/edit/{$setId}");
 		$this->assertTextContains('Edit Set', $this->view);
 		$this->assertTextContains('My Set', $this->view);
 	}
@@ -148,7 +146,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 
 		$this->login('alice');
 
-		$this->testAction("/sets/edit/{$setId}", ['return' => 'view']);
+		$this->post("/sets/edit/{$setId}");
 		$this->assertTextContains('Edit Set', $this->view);
 		$this->assertTextContains((string) $context->tsumegos[0]['id'], $this->view);
 	}
@@ -162,9 +160,9 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = $this->_createSet('Public Set', null, 1);
 		$this->login('bob');
 
-		$this->expectException(ForbiddenException::class);
+		$this->post("/sets/edit/{$setId}");
 
-		$this->testAction("/sets/edit/{$setId}", ['return' => 'view']);
+		$this->assertResponseCode(403);
 	}
 
 	public function testEditOtherUserSetFails(): void
@@ -176,9 +174,9 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = $this->_createSet('Public Set', null, 1);
 		$this->login('bob');
 
-		$this->expectException(ForbiddenException::class);
+		$this->post("/sets/edit/{$setId}", ['Set' => ['title' => 'Hacked']]);
 
-		$this->testAction("/sets/edit/{$setId}", ['data' => ['Set' => ['title' => 'Hacked']], 'method' => 'POST']);
+		$this->assertResponseCode(403);
 	}
 
 	public function testAdminCanEditAnySet(): void
@@ -191,7 +189,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$this->login('admin');
 
 		$data = ['Set' => ['title' => 'Fixed by Admin']];
-		$this->testAction("/sets/edit/{$setId}", ['data' => $data, 'method' => 'POST']);
+		$this->post("/sets/edit/{$setId}", $data);
 
 		$set = ClassRegistry::init('Set')->findById($setId);
 		$this->assertEquals('Fixed by Admin', $set['Set']['title']);
@@ -206,7 +204,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = $this->_createSet('Public Set', null, 1);
 		$this->login('admin');
 
-		$this->testAction("/sets/edit/{$setId}", ['return' => 'view']);
+		$this->post("/sets/edit/{$setId}");
 		$this->assertTextContains('Delete Collection', $this->view);
 		$this->assertTextContains('id="set-delete-confirmation"', $this->view);
 	}
@@ -216,9 +214,9 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		new ContextPreparator(['user' => null]);
 		$setId = $this->_createSet('Public Set', null, 1);
 
-		$this->expectException(UnauthorizedException::class);
+		$this->post("/sets/edit/{$setId}", ['Set' => ['title' => 'Hacked']]);
 
-		$this->testAction("/sets/edit/{$setId}", ['data' => ['Set' => ['title' => 'Hacked']], 'method' => 'POST']);
+		$this->assertResponseCode(401);
 	}
 
 	public function testNonOwnerCannotEditPublicSetTitle(): void
@@ -227,9 +225,9 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = $this->_createSet('Public Set', null, 1);
 		$this->login('alice');
 
-		$this->expectException(ForbiddenException::class);
+		$this->post("/sets/edit/{$setId}", ['Set' => ['title' => 'Hacked']]);
 
-		$this->testAction("/sets/edit/{$setId}", ['data' => ['Set' => ['title' => 'Hacked']], 'method' => 'POST']);
+		$this->assertResponseCode(403);
 	}
 
 	public function testNonAdminCannotToggleSetSettings(): void
@@ -244,7 +242,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => 'My Set']])['Set']['id'];
 		$tsumegoId = $context->tsumegos[0]['id'];
 
-		$this->testAction("/sets/edit/{$setId}", ['data' => ['Settings' => ['r43' => 'yes']], 'method' => 'POST']);
+		$this->post("/sets/edit/{$setId}", ['Settings' => ['r43' => 'yes']]);
 
 		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoId);
 		$this->assertSame(0, (int) $tsumego['Tsumego']['pass']);
@@ -258,7 +256,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = $this->_createSet('My Private Set', $context->user['id'], 0);
 		$this->login('alice');
 
-		$this->testAction("/sets/view/{$setId}", ['method' => 'get', 'return' => 'view']);
+		$this->get("/sets/view/{$setId}");
 		$this->assertTextContains('My Private Set', $this->view);
 	}
 
@@ -271,16 +269,10 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = $this->_createSet('Alice Secret', $context->user['id'], 0);
 		$this->login('bob');
 
-		try
-		{
-			$this->testAction("/sets/view/{$setId}", ['method' => 'get', 'return' => 'view']);
-			$this->assertTextNotContains('Alice Secret', $this->view);
-		}
-		catch (ForbiddenException $e)
-		{
-			// Expected: non-owner gets 403 for private set
-			$this->assertTrue(true, 'Non-owner blocked from viewing private set');
-		}
+		$this->get("/sets/view/{$setId}");
+
+		$this->assertResponseCode(403);
+		$this->assertStringNotContainsString('Alice Secret', $this->view);
 	}
 
 	// ── /sets/delete/:id ────────────────────────────────────────────────
@@ -291,7 +283,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = $this->_createSet('To Delete', $context->user['id'], 0);
 		$this->login('alice');
 
-		$this->testAction("/sets/delete/{$setId}", ['method' => 'POST']);
+		$this->post("/sets/delete/{$setId}");
 
 		$set = ClassRegistry::init('Set')->findById($setId);
 		$this->assertEmpty($set);
@@ -306,9 +298,9 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = $this->_createSet('Alice Set', $context->user['id'], 0);
 		$this->login('bob');
 
-		$this->expectException(ForbiddenException::class);
+		$this->post("/sets/delete/{$setId}");
 
-		$this->testAction("/sets/delete/{$setId}", ['method' => 'POST']);
+		$this->assertResponseCode(403);
 	}
 
 	// ── Sandbox excludes user sets ──────────────────────────────────────
@@ -321,7 +313,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$this->_createSet('User Set', $adminId, 0);
 		$this->login('admin');
 
-		$this->testAction('/sets/sandbox', ['method' => 'get', 'return' => 'view']);
+		$this->get('/sets/sandbox');
 		$this->assertTextContains('Sandbox Set', $this->view);
 		$this->assertTextNotContains('User Set', $this->view);
 	}
@@ -339,9 +331,9 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$this->login('alice');
 
 		$data = ['tsumego_id' => $tsumegoId];
-		$this->testAction("/sets/addTsumego/{$setId}", ['data' => $data, 'method' => 'POST']);
+		$this->post("/sets/addTsumego/{$setId}", $data);
 
-		$this->assertStringContainsString("/sets/edit/{$setId}", $this->headers['Location']);
+		$this->assertStringContainsString("/sets/edit/{$setId}", $this->headerValue('Location'));
 
 		$sc = ClassRegistry::init('SetConnection')->find('first', [
 			'conditions' => ['set_id' => $setId, 'tsumego_id' => $tsumegoId],
@@ -360,9 +352,9 @@ class UserSetsControllerTest extends TestCaseWithAuth
 
 		$data = ['tsumego_id' => 1];
 
-		$this->expectException(ForbiddenException::class);
+		$this->post("/sets/addTsumego/{$setId}", $data);
 
-		$this->testAction("/sets/addTsumego/{$setId}", ['data' => $data, 'method' => 'POST']);
+		$this->assertResponseCode(403);
 	}
 
 	// ── removeTsumego ───────────────────────────────────────────────────
@@ -385,9 +377,9 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$this->login('alice');
 
 		$data = ['tsumego_id' => $tsumegoId];
-		$this->testAction("/sets/removeTsumego/{$setId}", ['data' => $data, 'method' => 'POST']);
+		$this->post("/sets/removeTsumego/{$setId}", $data);
 
-		$this->assertStringContainsString("/sets/edit/{$setId}", $this->headers['Location']);
+		$this->assertStringContainsString("/sets/edit/{$setId}", $this->headerValue('Location'));
 
 		$sc = ClassRegistry::init('SetConnection')->find('first', [
 			'conditions' => ['set_id' => $setId, 'tsumego_id' => $tsumegoId],
@@ -412,7 +404,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$this->assertEquals(0, $before);
 
 		$data = ['tsumego_id' => $tsumegoId];
-		$this->testAction('/sets/addTsumego/favorites', ['data' => $data, 'method' => 'POST']);
+		$this->post('/sets/addTsumego/favorites', $data);
 
 		$set = ClassRegistry::init('Set')->find('first', [
 			'conditions' => ['user_id' => $context->user['id'], 'title' => 'Favorites'],
@@ -438,18 +430,12 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$tsumegoId = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC'])['Tsumego']['id'];
 		$this->login('alice');
 
-		$_SERVER['HTTP_X_REQUESTED_WITH'] = 'XMLHttpRequest';
-		try
-		{
-			$this->testAction('/sets/addTsumego/favorites', ['data' => ['tsumego_id' => $tsumegoId], 'method' => 'POST']);
-		}
-		finally
-		{
-			unset($_SERVER['HTTP_X_REQUESTED_WITH']);
-		}
+		// The heart answers a JSON body to the fetch the page makes, and a redirect to a form.
+		$this->configRequest(['headers' => ['X-Requested-With' => 'XMLHttpRequest']]);
+		$this->post('/sets/addTsumego/favorites', ['tsumego_id' => $tsumegoId]);
 
-		$this->assertSame(200, $this->controller->response->statusCode());
-		$body = json_decode($this->controller->response->body(), true);
+		$this->assertResponseCode(200);
+		$body = json_decode($this->view, true);
 
 		$set = ClassRegistry::init('Set')->find('first', [
 			'conditions' => ['user_id' => $context->user['id'], 'title' => 'Favorites'],
@@ -471,17 +457,11 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$this->login('alice');
 
 		$data = ['tsumego_id' => $tsumegoId];
-		$this->testAction("/sets/addTsumego/{$setId}", ['data' => $data, 'method' => 'POST']);
+		$this->post("/sets/addTsumego/{$setId}", $data);
 
-		try
-		{
-			$this->testAction("/sets/addTsumego/{$setId}", ['data' => $data, 'method' => 'POST']);
-			$this->fail('Expected ConflictException');
-		}
-		catch (ConflictException $e)
-		{
-			// expected
-		}
+		$this->post("/sets/addTsumego/{$setId}", $data);
+
+		$this->assertResponseCode(409);
 
 		$count = ClassRegistry::init('SetConnection')->find('count', [
 			'conditions' => ['set_id' => $setId, 'tsumego_id' => $tsumegoId],
@@ -511,9 +491,9 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$this->login('alice');
 
 		// Move second problem up
-		$this->testAction("/sets/reorderTsumego/{$setId}?tsumego_id={$secondTsumego['id']}&dir=up", ['method' => 'POST']);
+		$this->post("/sets/reorderTsumego/{$setId}?tsumego_id={$secondTsumego['id']}&dir=up");
 
-		$this->assertStringContainsString("/sets/edit/{$setId}", $this->headers['Location']);
+		$this->assertStringContainsString("/sets/edit/{$setId}", $this->headerValue('Location'));
 
 		// Verify nums swapped
 		$scs = ClassRegistry::init('SetConnection')->find('all', [
@@ -540,7 +520,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$firstTsumego = $context->tsumegos[0];
 		$this->login('alice');
 
-		$this->testAction("/sets/reorderTsumego/{$setId}?tsumego_id={$firstTsumego['id']}&dir=down", ['method' => 'POST']);
+		$this->post("/sets/reorderTsumego/{$setId}?tsumego_id={$firstTsumego['id']}&dir=down");
 
 		$scs = ClassRegistry::init('SetConnection')->find('all', [
 			'conditions' => ['set_id' => $setId],
@@ -562,7 +542,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$this->_createSet('Alice Private Set', $aliceId, 0);
 		$this->login('bob');
 
-		$this->testAction("/sets/user/{$aliceId}", ['method' => 'get', 'return' => 'view']);
+		$this->get("/sets/user/{$aliceId}");
 		$this->assertTextContains('Alice Name', $this->view);
 		$this->assertTextContains('Alice Public Set', $this->view);
 		$this->assertTextNotContains('Alice Private Set', $this->view);
@@ -582,10 +562,11 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		]);
 		$this->login('alice');
 
-		$result = $this->testAction('/sets/mine', ['method' => 'get', 'return' => 'vars']);
+		$this->get('/sets/mine');
+		$result = $this->viewVariable('setsNew');
 
-		$this->assertCount(1, $result['setsNew']);
-		$set = $result['setsNew'][0];
+		$this->assertCount(1, $result);
+		$set = $result[0];
 		$this->assertSame('My Set', $set['name']);
 		$this->assertSame(3, $set['amount']);
 		$this->assertSame(67, $set['solved']);
@@ -620,7 +601,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 
 		$description = 'External <img src="https://evil.com/tracker.png"> Internal <img src="/img/ok.png"> '
 			. '<b onmouseover="alert(1)">hi</b> <a href="javascript:alert(2)">click</a>';
-		$this->testAction("/sets/edit/{$setId}", ['data' => ['Set' => ['description' => $description]], 'method' => 'POST']);
+		$this->post("/sets/edit/{$setId}", ['Set' => ['description' => $description]]);
 
 		$set = ClassRegistry::init('Set')->findById($setId);
 		$this->assertStringNotContainsString('evil.com', $set['Set']['description']);
@@ -637,7 +618,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = $this->_createSet('My Set', $context->user['id'], 0);
 		$this->login('alice');
 
-		$this->testAction("/sets/edit/{$setId}", ['data' => ['Set' => ['description' => 'New desc']], 'method' => 'POST']);
+		$this->post("/sets/edit/{$setId}", ['Set' => ['description' => 'New desc']]);
 
 		$this->assertSame(0, ClassRegistry::init('AdminActivity')->find('count'));
 	}
@@ -652,7 +633,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = $this->_createSet('Bob Set', $bobId, 0);
 		$this->login('admin');
 
-		$this->testAction("/sets/edit/{$setId}", ['data' => ['Set' => ['description' => 'New desc']], 'method' => 'POST']);
+		$this->post("/sets/edit/{$setId}", ['Set' => ['description' => 'New desc']]);
 
 		$activity = ClassRegistry::init('AdminActivity')->find('first', ['order' => 'id DESC']);
 		$this->assertNotEmpty($activity);
@@ -668,7 +649,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = $context->set['id'];
 		$this->login('admin');
 
-		$this->testAction("/sets/createAndAddTsumego/{$setId}", ['data' => ['order' => 1], 'method' => 'POST']);
+		$this->post("/sets/createAndAddTsumego/{$setId}", ['order' => 1]);
 
 		$activity = ClassRegistry::init('AdminActivity')->find('first', ['order' => 'id DESC']);
 		$this->assertNotEmpty($activity);
@@ -689,7 +670,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => 'My Set']])['Set']['id'];
 		$tsumegoId = $context->tsumegos[0]['id'];
 
-		$this->testAction("/sets/edit/{$setId}", ['data' => ['Set' => ['setDifficulty' => 2000]], 'method' => 'POST']);
+		$this->post("/sets/edit/{$setId}", ['Set' => ['setDifficulty' => 2000]]);
 
 		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoId);
 		$this->assertEquals(1000, $tsumego['Tsumego']['rating']);
@@ -707,7 +688,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => 'Sandbox Set']])['Set']['id'];
 		$tsumegoId = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC'])['Tsumego']['id'];
 
-		$this->testAction("/sets/edit/{$setId}", ['data' => ['Set' => ['setDifficulty' => 2000]], 'method' => 'POST']);
+		$this->post("/sets/edit/{$setId}", ['Set' => ['setDifficulty' => 2000]]);
 
 		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoId);
 		$this->assertEquals(2000, $tsumego['Tsumego']['rating']);
@@ -725,7 +706,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => 'Sandbox Set']])['Set']['id'];
 		$tsumegoId = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC'])['Tsumego']['id'];
 
-		$this->testAction("/sets/edit/{$setId}", ['method' => 'POST']);
+		$this->post("/sets/edit/{$setId}");
 
 		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoId);
 		$this->assertEquals(1000, $tsumego['Tsumego']['rating']);
@@ -743,7 +724,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => 'Sandbox Set']])['Set']['id'];
 		$tsumegoId = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC'])['Tsumego']['id'];
 
-		$this->testAction("/sets/edit/{$setId}", ['data' => ['Settings' => ['r39' => 'on']], 'method' => 'POST']);
+		$this->post("/sets/edit/{$setId}", ['Settings' => ['r39' => 'on']]);
 
 		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoId);
 		$this->assertSame(1, (int) $tsumego['Tsumego']['alternative_response']);
@@ -761,7 +742,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => 'Sandbox Set']])['Set']['id'];
 		$tsumegoId = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC'])['Tsumego']['id'];
 
-		$this->testAction("/sets/edit/{$setId}", ['data' => ['Settings' => ['r43' => 'yes']], 'method' => 'POST']);
+		$this->post("/sets/edit/{$setId}", ['Settings' => ['r43' => 'yes']]);
 
 		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoId);
 		$this->assertSame(1, (int) $tsumego['Tsumego']['pass']);
@@ -784,9 +765,9 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$scModel->save(['SetConnection' => ['set_id' => $setId, 'tsumego_id' => $tsumegoModel->id, 'num' => 1]]);
 		$this->login('bob');
 
-		$this->expectException(ForbiddenException::class);
+		$this->post("/sets/removeTsumego/{$setId}", ['tsumego_id' => $tsumegoModel->id]);
 
-		$this->testAction("/sets/removeTsumego/{$setId}", ['data' => ['tsumego_id' => $tsumegoModel->id], 'method' => 'POST']);
+		$this->assertResponseCode(403);
 	}
 
 	public function testReorderTsumegoInOtherUserSetFails(): void
@@ -805,9 +786,9 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		ClassRegistry::init('Set')->save($set);
 		$this->login('bob');
 
-		$this->expectException(ForbiddenException::class);
+		$this->post("/sets/reorderTsumego/{$setId}?tsumego_id={$context->tsumegos[1]['id']}&dir=up");
 
-		$this->testAction("/sets/reorderTsumego/{$setId}?tsumego_id={$context->tsumegos[1]['id']}&dir=up", ['method' => 'POST']);
+		$this->assertResponseCode(403);
 	}
 
 	public function testReorderAtBoundaryReturnsConflict(): void
@@ -825,15 +806,9 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		ClassRegistry::init('Set')->save($set);
 		$this->login('alice');
 
-		try
-		{
-			$this->testAction("/sets/reorderTsumego/{$setId}?tsumego_id={$context->tsumegos[0]['id']}&dir=up", ['method' => 'POST']);
-			$this->fail('Expected ConflictException');
-		}
-		catch (ConflictException $e)
-		{
-			// expected
-		}
+		$this->post("/sets/reorderTsumego/{$setId}?tsumego_id={$context->tsumegos[0]['id']}&dir=up");
+
+		$this->assertResponseCode(409);
 
 		$scs = ClassRegistry::init('SetConnection')->find('all', [
 			'conditions' => ['set_id' => $setId],
@@ -849,9 +824,9 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = $this->_createSet('Alice Set', $context->user['id'], 0);
 		$this->login('alice');
 
-		$this->expectException(ForbiddenException::class);
+		$this->post("/sets/createAndAddTsumego/{$setId}", ['order' => 1]);
 
-		$this->testAction("/sets/createAndAddTsumego/{$setId}", ['data' => ['order' => 1], 'method' => 'POST']);
+		$this->assertResponseCode(403);
 	}
 
 	public function testAdminCanDeleteSandboxSet(): void
@@ -860,7 +835,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$this->login('admin');
 		$setId = $this->_createSet('Sandbox Set', null, 0);
 
-		$this->testAction("/sets/delete/{$setId}", ['method' => 'POST', 'data' => ['confirmation' => 'Sandbox Set']]);
+		$this->post("/sets/delete/{$setId}", ['confirmation' => 'Sandbox Set']);
 
 		$this->assertNotNull(ClassRegistry::init('Set')->findById($setId)['Set']['deleted'], 'It went to the trash');
 	}
@@ -873,7 +848,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = $this->_createSet('Alice Collection', $context->user['id'], 0);
 		$this->login('alice');
 
-		$this->testAction("/sets/share/{$setId}", ['data' => ['shared' => '1'], 'method' => 'POST']);
+		$this->post("/sets/share/{$setId}", ['shared' => '1']);
 
 		$this->assertEquals(1, ClassRegistry::init('Set')->findById($setId)['Set']['public']);
 	}
@@ -884,7 +859,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = $this->_createSet('Alice Collection', $context->user['id'], 1);
 		$this->login('alice');
 
-		$this->testAction("/sets/share/{$setId}", ['data' => ['shared' => '0'], 'method' => 'POST']);
+		$this->post("/sets/share/{$setId}", ['shared' => '0']);
 
 		$this->assertEquals(0, ClassRegistry::init('Set')->findById($setId)['Set']['public']);
 	}
@@ -895,9 +870,9 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = $this->_createSet('Alice Collection', $context->user['id'], 0);
 		$this->login('alice');
 
-		$this->testAction("/sets/share/{$setId}", ['data' => ['shared' => '1'], 'method' => 'POST']);
+		$this->post("/sets/share/{$setId}", ['shared' => '1']);
 
-		$this->assertStringContainsString("/sets/{$setId}", $this->headers['Location']);
+		$this->assertStringContainsString("/sets/{$setId}", $this->headerValue('Location'));
 	}
 
 	public function testTheAddressOfASharedLinkStillOpensTheCollection(): void
@@ -906,7 +881,8 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = $this->_createSet('Shared Collection', $context->user['id'], 1);
 		$this->login('alice');
 
-		$page = $this->testAction("/sets/view/{$setId}", ['method' => 'get', 'return' => 'contents']);
+		$this->get("/sets/view/{$setId}");
+		$page = $this->view;
 
 		$this->assertStringContainsString('Shared Collection', $page);
 	}
@@ -920,9 +896,9 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = $this->_createSet('Alice Collection', $context->user['id'], 0);
 		$this->login('bob');
 
-		$this->expectException(ForbiddenException::class);
+		$this->post("/sets/share/{$setId}", ['shared' => '1']);
 
-		$this->testAction("/sets/share/{$setId}", ['data' => ['shared' => '1'], 'method' => 'POST']);
+		$this->assertResponseCode(403);
 	}
 
 	public function testGuestCannotChangeSharing(): void
@@ -931,9 +907,9 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = $this->_createSet('Owner Collection', $context->otherUsers[0]['id'], 0);
 		$this->logout();
 
-		$this->expectException(UnauthorizedException::class);
+		$this->post("/sets/share/{$setId}", ['shared' => '1']);
 
-		$this->testAction("/sets/share/{$setId}", ['data' => ['shared' => '1'], 'method' => 'POST']);
+		$this->assertResponseCode(401);
 	}
 
 	public function testTheSiteKeepsTheVisibilityOfItsOwnCollections(): void
@@ -942,15 +918,9 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = $this->_createSet('Site Collection', null, 1);
 		$this->login('admin');
 
-		try
-		{
-			$this->testAction("/sets/share/{$setId}", ['data' => ['shared' => '0'], 'method' => 'POST']);
-			$this->assertTrue(true, 'a site collection has no sharing to change');
-		}
-		catch (ForbiddenException $e)
-		{
-			// Expected: the site's collections are not the player's to share
-		}
+		$this->post("/sets/share/{$setId}", ['shared' => '0']);
+
+		$this->assertResponseCode(403);
 
 		$this->assertEquals(1, ClassRegistry::init('Set')->findById($setId)['Set']['public']);
 	}
@@ -961,7 +931,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = $this->_createSet('Alice Collection', $context->user['id'], 1);
 		$this->login('alice');
 
-		$this->testAction("/sets/edit/{$setId}", ['data' => ['Set' => ['public' => '0']], 'method' => 'POST']);
+		$this->post("/sets/edit/{$setId}", ['Set' => ['public' => '0']]);
 
 		$this->assertEquals(1, ClassRegistry::init('Set')->findById($setId)['Set']['public'],
 			'sharing is decided on the collection page, not by the edit form');
@@ -978,9 +948,12 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$siteSetId = $this->_createSet('Site Collection', null, 1);
 		$this->login('alice');
 
-		$ownPage = $this->testAction("/sets/view/{$ownSetId}", ['method' => 'get', 'return' => 'contents']);
-		$otherPage = $this->testAction("/sets/view/{$otherSetId}", ['method' => 'get', 'return' => 'contents']);
-		$sitePage = $this->testAction("/sets/view/{$siteSetId}", ['method' => 'get', 'return' => 'contents']);
+		$this->get("/sets/view/{$ownSetId}");
+		$ownPage = $this->view;
+		$this->get("/sets/view/{$otherSetId}");
+		$otherPage = $this->view;
+		$this->get("/sets/view/{$siteSetId}");
+		$sitePage = $this->view;
 
 		$this->assertStringContainsString('Anyone with the link can open this collection', $ownPage);
 		$this->assertStringNotContainsString('Anyone with the link can open this collection', $otherPage);
@@ -994,8 +967,10 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$privateSetId = $this->_createSet('Private Collection', $context->user['id'], 0);
 		$this->login('alice');
 
-		$sharedPage = $this->testAction("/sets/view/{$sharedSetId}", ['method' => 'get', 'return' => 'contents']);
-		$privatePage = $this->testAction("/sets/view/{$privateSetId}", ['method' => 'get', 'return' => 'contents']);
+		$this->get("/sets/view/{$sharedSetId}");
+		$sharedPage = $this->view;
+		$this->get("/sets/view/{$privateSetId}");
+		$privatePage = $this->view;
 
 		$this->assertMatchesRegularExpression(
 			'#<input[^>]*id="SetShareLink"[^>]*value="https?://[^"]*/sets/' . $sharedSetId . '"#',
@@ -1012,7 +987,8 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$bobbySetId = $this->_createSet('Bobby Collection', $context->otherUsers[0]['id'], 1);
 		$this->login('alice');
 
-		$page = $this->testAction("/sets/{$bobbySetId}", ['method' => 'get', 'return' => 'contents']);
+		$this->get("/sets/{$bobbySetId}");
+		$page = $this->view;
 
 		$this->assertMatchesRegularExpression(
 			'#<a href="/users/view/' . $context->otherUsers[0]['id'] . '">.*?Bobby.*?</a>#',
@@ -1025,7 +1001,8 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$siteSetId = $this->_createSet('Site Collection', null, 1);
 		$this->login('alice');
 
-		$page = $this->testAction("/sets/{$siteSetId}", ['method' => 'get', 'return' => 'contents']);
+		$this->get("/sets/{$siteSetId}");
+		$page = $this->view;
 
 		$this->assertStringNotContainsString('set-view__owner', $page);
 	}
@@ -1036,7 +1013,8 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = $this->_createSet('Alice Collection', $context->user['id'], 1);
 		$this->login('alice');
 
-		$page = $this->testAction("/sets/{$setId}", ['method' => 'get', 'return' => 'contents']);
+		$this->get("/sets/{$setId}");
+		$page = $this->view;
 
 		$this->assertStringNotContainsString('set-view__owner', $page);
 	}
@@ -1047,7 +1025,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = $this->_createSet('Shared Collection', $context->otherUsers[0]['id'], 1);
 		$this->logout();
 
-		$this->testAction("/sets/view/{$setId}", ['method' => 'get', 'return' => 'view']);
+		$this->get("/sets/view/{$setId}");
 
 		$this->assertTextContains('Shared Collection', $this->view);
 	}
@@ -1058,9 +1036,9 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = $this->_createSet('Private Collection', $context->otherUsers[0]['id'], 0);
 		$this->logout();
 
-		$this->expectException(UnauthorizedException::class);
+		$this->get("/sets/view/{$setId}");
 
-		$this->testAction("/sets/view/{$setId}", ['method' => 'get', 'return' => 'view']);
+		$this->assertResponseCode(401);
 	}
 
 	public function testPlayerCollectionPageIsNotIndexed(): void
@@ -1069,7 +1047,8 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = $this->_createSet('Shared Collection', $context->user['id'], 1);
 		$this->login('alice');
 
-		$page = $this->testAction("/sets/view/{$setId}", ['method' => 'get', 'return' => 'contents']);
+		$this->get("/sets/view/{$setId}");
+		$page = $this->view;
 
 		$this->assertStringContainsString('name="robots" content="noindex"', $page);
 	}
@@ -1080,7 +1059,8 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = $this->_createSet('Site Collection', null, 1);
 		$this->login('alice');
 
-		$page = $this->testAction("/sets/view/{$setId}", ['method' => 'get', 'return' => 'contents']);
+		$this->get("/sets/view/{$setId}");
+		$page = $this->view;
 
 		$this->assertStringNotContainsString('name="robots" content="noindex"', $page);
 	}
@@ -1102,7 +1082,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 			'size' => filesize($tmp),
 		];
 
-		$this->testAction("/sets/edit/{$setId}", ['method' => 'POST']);
+		$this->post("/sets/edit/{$setId}");
 
 		$set = ClassRegistry::init('Set')->findById($setId);
 		$this->assertMatchesRegularExpression('#^sets/' . $setId . '/[0-9a-f]{16}\.webp$#', $set['Set']['image']);
@@ -1140,7 +1120,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		chmod($setsDir, 0555);
 		try
 		{
-			$this->testAction("/sets/edit/{$setId}", ['method' => 'POST']);
+			$this->post("/sets/edit/{$setId}");
 		}
 		finally
 		{
@@ -1150,7 +1130,8 @@ class UserSetsControllerTest extends TestCaseWithAuth
 
 		$set = ClassRegistry::init('Set')->findById($setId);
 		$this->assertEmpty($set['Set']['image'], 'An image was saved although its file could not be written');
-		$this->assertStringContainsString('could not', (string) CookieFlash::get());
+		// The edit form renders the flash it was given, so that is where the player reads it.
+		$this->assertStringContainsString('The image could not be stored', $this->view);
 	}
 
 	public function testDeleteSetRemovesImageFolder(): void
@@ -1163,7 +1144,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		mkdir($setDir, 0775, true);
 		file_put_contents($setDir . DS . 'abc.webp', 'fake');
 
-		$this->testAction("/sets/delete/{$setId}", ['method' => 'POST']);
+		$this->post("/sets/delete/{$setId}");
 
 		$this->assertDirectoryDoesNotExist($setDir);
 	}
@@ -1221,7 +1202,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$imagePath = WWW_ROOT . 'img' . DS . str_replace('/', DS, ClassRegistry::init('Set')->findById($setId)['Set']['image']);
 		$this->assertFileExists($imagePath);
 
-		$this->testAction("/sets/edit/{$setId}", ['data' => ['Set' => ['remove_image' => '1']], 'method' => 'POST']);
+		$this->post("/sets/edit/{$setId}", ['Set' => ['remove_image' => '1']]);
 
 		$set = ClassRegistry::init('Set')->findById($setId);
 		$this->assertSame('', $set['Set']['image']);
@@ -1238,7 +1219,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 			'error' => UPLOAD_ERR_OK,
 			'size' => filesize($tmp),
 		];
-		$this->testAction("/sets/edit/{$setId}", ['method' => 'POST']);
+		$this->post("/sets/edit/{$setId}");
 		@unlink($tmp);
 	}
 

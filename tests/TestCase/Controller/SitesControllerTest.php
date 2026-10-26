@@ -1,7 +1,6 @@
 <?php
 
 use Facebook\WebDriver\WebDriverBy;
-use PHPUnitRetry\RetryTrait;
 /**
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
@@ -9,10 +8,8 @@ use PHPUnitRetry\RetryTrait;
 use App\Utility\Avatar;
 use App\Utility\Constants;
 
-class SitesControllerTest extends ControllerTestCase
+class SitesControllerTest extends IntegrationTestCase
 {
-	use RetryTrait;
-
 	public function testIndex()
 	{
 		$browser = Browser::instance();

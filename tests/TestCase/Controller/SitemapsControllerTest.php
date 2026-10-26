@@ -7,7 +7,7 @@ use App\Utility\Constants;
  *
  * Tests XML sitemap generation
  */
-class SitemapsControllerTest extends ControllerTestCase
+class SitemapsControllerTest extends IntegrationTestCase
 {
 	/**
 	 * Test sitemap includes public sets
@@ -21,10 +21,8 @@ class SitemapsControllerTest extends ControllerTestCase
 
 		Cache::delete('sitemap_xml', 'long');
 
-		$result = $this->testAction('/sitemap.xml', [
-			'method' => 'get',
-			'return' => 'contents'
-		]);
+		$this->get('/sitemap.xml');
+		$result = $this->view;
 
 		$this->assertStringContainsString('/sets/' . $context->set['id'] . '</loc>', $result);
 		$this->assertStringNotContainsString('/sets/view/', $result);
@@ -44,10 +42,8 @@ class SitemapsControllerTest extends ControllerTestCase
 
 		Cache::delete('sitemap_xml', 'long');
 
-		$result = $this->testAction('/sitemap.xml', [
-			'method' => 'get',
-			'return' => 'contents'
-		]);
+		$this->get('/sitemap.xml');
+		$result = $this->view;
 
 		$this->assertStringContainsString('/tags/view/' . $context->tags[0]['id'], $result);
 		$this->assertStringNotContainsString('/sets/tag/', $result);
@@ -67,10 +63,8 @@ class SitemapsControllerTest extends ControllerTestCase
 
 		Cache::delete('sitemap_xml', 'long');
 
-		$result = $this->testAction('/sitemap.xml', [
-			'method' => 'get',
-			'return' => 'contents'
-		]);
+		$this->get('/sitemap.xml');
+		$result = $this->view;
 
 		$approved = self::tagIdByName('Approved Tag');
 		$pending = self::tagIdByName('Pending Tag');
@@ -86,10 +80,8 @@ class SitemapsControllerTest extends ControllerTestCase
 	{
 		Cache::delete('sitemap_xml', 'long');
 
-		$result = $this->testAction('/sitemap.xml', [
-			'method' => 'get',
-			'return' => 'contents'
-		]);
+		$this->get('/sitemap.xml');
+		$result = $this->view;
 
 		$this->assertStringContainsString('<loc>' . self::baseUrl() . '/</loc>', $result);
 	}
@@ -101,14 +93,10 @@ class SitemapsControllerTest extends ControllerTestCase
 	{
 		Cache::delete('sitemap_xml', 'long');
 
-		$home = $this->testAction('/', [
-			'method' => 'get',
-			'return' => 'contents'
-		]);
-		$sitemap = $this->testAction('/sitemap.xml', [
-			'method' => 'get',
-			'return' => 'contents'
-		]);
+		$this->get('/');
+		$home = $this->view;
+		$this->get('/sitemap.xml');
+		$sitemap = $this->view;
 
 		// Linked by the site but kept out of the sitemap: they need a sign-in,
 		// belong to one player, or are a tool rather than content.
@@ -147,18 +135,16 @@ class SitemapsControllerTest extends ControllerTestCase
 	{
 		Cache::delete('sitemap_xml', 'long');
 
-		$result = $this->testAction('/sitemap.xml', [
-			'method' => 'get',
-			'return' => 'contents'
-		]);
+		$this->get('/sitemap.xml');
+		$result = $this->view;
 
 		preg_match_all('#<loc>([^<]+)</loc>#', (string) $result, $matches);
 		$this->assertNotEmpty($matches[1]);
 
 		foreach ($matches[1] as $url)
 		{
-			$this->testAction((string) parse_url($url, PHP_URL_PATH), ['method' => 'get']);
-			$this->assertSame(200, $this->controller->response->statusCode(), $url);
+			$this->get((string) parse_url($url, PHP_URL_PATH));
+			$this->assertResponseCode(200, $url);
 		}
 	}
 
@@ -175,10 +161,8 @@ class SitemapsControllerTest extends ControllerTestCase
 
 		Cache::delete('sitemap_xml', 'long');
 
-		$result = $this->testAction('/sitemap.xml', [
-			'method' => 'get',
-			'return' => 'contents'
-		]);
+		$this->get('/sitemap.xml');
+		$result = $this->view;
 
 		preg_match_all('#<loc>([^<]+)</loc>#', $result, $matches);
 		$this->assertNotEmpty($matches[1]);
@@ -235,10 +219,8 @@ class SitemapsControllerTest extends ControllerTestCase
 
 		Cache::delete('sitemap_xml', 'long');
 
-		$result = $this->testAction('/sitemap.xml', [
-			'method' => 'get',
-			'return' => 'contents'
-		]);
+		$this->get('/sitemap.xml');
+		$result = $this->view;
 
 		// Verify individual puzzle URL is in sitemap (uses set_connection ID)
 		$this->assertStringContainsString('/' . $context->setConnections[0]['id'] . '</loc>', $result);
@@ -258,10 +240,8 @@ class SitemapsControllerTest extends ControllerTestCase
 
 		Cache::delete('sitemap_xml', 'long');
 
-		$result = (string) $this->testAction('/sitemap.xml', [
-			'method' => 'get',
-			'return' => 'contents'
-		]);
+		$this->get('/sitemap.xml');
+		$result = $this->view;
 
 		$this->assertStringContainsString('<loc>' . self::baseUrl() . '/sets/' . $setID . '</loc>', $result);
 		$this->assertStringContainsString('<loc>' . self::baseUrl() . '/sets/' . $setID . '/2</loc>', $result);
@@ -276,8 +256,10 @@ class SitemapsControllerTest extends ControllerTestCase
 	{
 		Cache::delete('sitemap_xml', 'long');
 
-		$index = (string) $this->testAction('/achievements', ['method' => 'get', 'return' => 'contents']);
-		$sitemap = (string) $this->testAction('/sitemap.xml', ['method' => 'get', 'return' => 'contents']);
+		$this->get('/achievements');
+		$index = $this->view;
+		$this->get('/sitemap.xml');
+		$sitemap = $this->view;
 
 		preg_match_all('~href="(/achievements/view/\d+)"~', $index, $matches);
 		$this->assertNotEmpty($matches[1]);

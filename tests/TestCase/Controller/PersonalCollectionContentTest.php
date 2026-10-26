@@ -6,7 +6,7 @@ use App\Utility\TimeModeUtil;
  * A collection a player assembled is not site content: the site's collections, pools and
  * counters never pick up its problems, whether it is shared or not.
  */
-class PersonalCollectionContentTest extends TestCaseWithAuth
+class PersonalCollectionContentTest extends IntegrationTestCase
 {
 	public function testSetsPageListsOnlyTheSitesCollections(): void
 	{
@@ -15,7 +15,8 @@ class PersonalCollectionContentTest extends TestCaseWithAuth
 		$this->_createCollection('Player Collection', $context->user['id'], 1);
 		$this->login('alice');
 
-		$page = $this->testAction('/sets', ['method' => 'get', 'return' => 'view']);
+		$this->get('/sets');
+		$page = $this->view;
 
 		$this->assertTextContains('Site Collection', $page);
 		$this->assertTextNotContains('Player Collection', $page);
@@ -27,7 +28,8 @@ class PersonalCollectionContentTest extends TestCaseWithAuth
 		$this->_createCollection('Player Collection', $context->user['id'], 1);
 		$this->login('alice');
 
-		$page = $this->testAction('/sets', ['method' => 'get', 'return' => 'view']);
+		$this->get('/sets');
+		$page = $this->view;
 
 		$this->assertTextContains('Problems found: 0', $page);
 	}
@@ -39,7 +41,8 @@ class PersonalCollectionContentTest extends TestCaseWithAuth
 		$playerSetId = $this->_createCollection('Player Collection', $context->user['id'], 1);
 		Cache::delete('sitemap_xml', 'long');
 
-		$sitemap = $this->testAction('/sitemap.xml', ['method' => 'get', 'return' => 'contents']);
+		$this->get('/sitemap.xml');
+		$sitemap = $this->view;
 
 		$this->assertStringContainsString('/sets/' . $siteSetId . '<', $sitemap);
 		$this->assertStringNotContainsString('/sets/' . $playerSetId . '<', $sitemap);
@@ -73,8 +76,8 @@ class PersonalCollectionContentTest extends TestCaseWithAuth
 		$playerTsumegoId = $this->_firstProblemOf($playerSetId);
 		$this->login('alice');
 
-		$this->testAction('/timeMode/start?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
-			. '&rankID=' . $context->timeModeRanks[0]['id'], ['method' => 'get']);
+		$this->get('/timeMode/start?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
+			. '&rankID=' . $context->timeModeRanks[0]['id']);
 
 		$session = ClassRegistry::init('TimeModeSession')->find('first', [
 			'conditions' => ['user_id' => $context->user['id']],
@@ -97,9 +100,9 @@ class PersonalCollectionContentTest extends TestCaseWithAuth
 		]);
 		$this->login('alice');
 
-		$this->testAction('/ratingMode');
+		$this->post('/ratingMode');
 
-		$this->assertStringEndsWith('/sets', $this->headers['Location'] ?? '',
+		$this->assertStringEndsWith('/sets', $this->headerValue('Location') ?? '',
 			'with no problem of the site to offer, rating mode sends the player back');
 	}
 
@@ -132,9 +135,8 @@ class PersonalCollectionContentTest extends TestCaseWithAuth
 				'time-mode-ranks' => $ranks,
 			]);
 
-			$vars = $this->testAction('/timeMode/overview', ['method' => 'get', 'return' => 'vars']);
-
-			$counts = array_map(fn($rank) => (int) $rank['tsumego_count'], $vars['timeModeRanks']);
+			$this->get('/timeMode/overview');
+			$counts = array_map(fn($rank) => (int) $rank['tsumego_count'], $this->viewVariable('timeModeRanks'));
 			$this->assertSame(1, array_sum($counts));
 		}
 	}
@@ -153,7 +155,7 @@ class PersonalCollectionContentTest extends TestCaseWithAuth
 		$playerSetId = (int) $context->tsumegos[0]['sets'][0]['id'];
 		$this->login('alice');
 
-		$this->testAction('/sets/' . $playerSetId, ['method' => 'get', 'return' => 'view']);
+		$this->get('/sets/' . $playerSetId);
 
 		$this->assertSame(0, ClassRegistry::init('AchievementCondition')->find('count', [
 			'conditions' => ['set_id' => $playerSetId],
@@ -170,7 +172,7 @@ class PersonalCollectionContentTest extends TestCaseWithAuth
 		$siteSetId = (int) $context->tsumegos[0]['sets'][0]['id'];
 		$this->login('alice');
 
-		$this->testAction('/sets/' . $siteSetId, ['method' => 'get', 'return' => 'view']);
+		$this->get('/sets/' . $siteSetId);
 
 		$this->assertSame(1, ClassRegistry::init('AchievementCondition')->find('count', [
 			'conditions' => ['set_id' => $siteSetId, 'category' => 's'],

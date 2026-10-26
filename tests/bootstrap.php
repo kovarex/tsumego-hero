@@ -35,6 +35,6 @@ require_once ROOT . '/tests/TestEmailer.php';
 // Pin the server timezone to UTC. The Selenium browser runs in its own
 // timezone (Europe/Prague), so displayed times shift, which browser tests assert.
 date_default_timezone_set('UTC');
-require_once ROOT . '/tests/TestCase/Controller/TestCaseWithAuth.php';
+require_once ROOT . '/tests/TestCase/Controller/IntegrationTestCase.php';
 require_once ROOT . '/tests/TestCase/Achievement/AchievementTestCase.php';
 register_shutdown_function(fn() => Browser::shutdown());

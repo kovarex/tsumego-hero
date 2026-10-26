@@ -2,7 +2,7 @@
 
 use App\Utility\Util;
 
-class SgfControllerInfoTest extends TestCaseWithAuth
+class SgfControllerInfoTest extends IntegrationTestCase
 {
 	public function testInfoTellsWhatTheAuthorWrote()
 	{
@@ -13,9 +13,9 @@ class SgfControllerInfoTest extends TestCaseWithAuth
 		$sgfID = $context->tsumegos[0]['sgfs'][0]['id'];
 		Util::execute('UPDATE sgf SET user_id = ?, description = ? WHERE id = ?', [$context->otherUsers[0]['id'], "Added D16\nbecause", $sgfID]);
 
-		$this->testAction('/sgf/info/' . $sgfID, ['method' => 'get']);
+		$this->get('/sgf/info/' . $sgfID);
 
-		$info = json_decode($this->controller->response->body(), true);
+		$info = json_decode($this->view, true);
 		$this->assertSame("Added D16\nbecause", $info['description']);
 		$this->assertSame(User::renderLink(ClassRegistry::init('User')->findById($context->otherUsers[0]['id'])['User']), $info['authorLink']);
 		$this->assertStringContainsString('href="/users/view/' . $context->otherUsers[0]['id'] . '"', $info['authorLink']);
@@ -28,8 +28,8 @@ class SgfControllerInfoTest extends TestCaseWithAuth
 			'tsumego' => ['set_order' => 1, 'sgf' => '(;FF[4]GM[1]SZ[19]AB[dd])']]);
 		Util::execute('UPDATE sgf SET user_id = NULL');
 
-		$this->expectException(ForbiddenException::class);
+		$this->get('/sgf/info/' . $context->tsumegos[0]['sgfs'][0]['id']);
 
-		$this->testAction('/sgf/info/' . $context->tsumegos[0]['sgfs'][0]['id'], ['method' => 'get']);
+		$this->assertResponseCode(403);
 	}
 }

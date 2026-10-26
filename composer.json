@@ -8,7 +8,7 @@
 		"php": ">=8.4",
 		"ezyang/htmlpurifier": "^4.19",
 		"firebase/php-jwt": "^6.11.1",
-		"pieceofcake2/cakephp": "^2.12",
+		"pieceofcake2/cakephp": "~2.12.9",
 		"robmorgan/phinx": "^0.16.10"
 	},
     "require-dev": {

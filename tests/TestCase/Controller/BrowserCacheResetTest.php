@@ -1,17 +1,19 @@
 <?php
 
-class BrowserCacheResetTest extends TestCaseWithAuth
+class BrowserCacheResetTest extends IntegrationTestCase
 {
+	/** Two requests in a row are two page loads of the same browser. */
 	public function testFirstRequestClearsTheBrowserCacheOnce()
 	{
 		new ContextPreparator(['user' => ['name' => 'kovarex']]);
-		unset($_COOKIE['browser_cache_version']);
 
-		$this->testAction('/changelog', ['method' => 'get']);
-		$this->assertSame('"cache"', $this->controller->response->header()['Clear-Site-Data'] ?? null);
-		$this->assertSame(AppController::BROWSER_CACHE_VERSION, $_COOKIE['browser_cache_version']);
+		$this->get('/changelog');
+		$this->assertSame('"cache"', $this->headerValue('Clear-Site-Data'));
 
-		$this->testAction('/changelog', ['method' => 'get']);
-		$this->assertArrayNotHasKey('Clear-Site-Data', $this->controller->response->header());
+		// The page the browser got back carries the version, so the next load keeps its cache.
+		$this->assertSame(AppController::BROWSER_CACHE_VERSION, $this->browserCookies()['browser_cache_version'] ?? null);
+		$this->cookie('browser_cache_version', AppController::BROWSER_CACHE_VERSION);
+		$this->get('/changelog');
+		$this->assertNull($this->headerValue('Clear-Site-Data'));
 	}
 }

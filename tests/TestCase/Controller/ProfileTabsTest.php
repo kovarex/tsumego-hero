@@ -6,7 +6,7 @@ use App\Utility\Constants;
  * The tabs over a player's pages: a player's own content is one click away, and a tab that leads
  * to nothing is not there at all.
  */
-class ProfileTabsTest extends TestCaseWithAuth
+class ProfileTabsTest extends IntegrationTestCase
 {
 	public function testProfileLinksToThePublicCollectionsOfAPlayer(): void
 	{
@@ -18,7 +18,8 @@ class ProfileTabsTest extends TestCaseWithAuth
 		$this->_createSet('Bobby Collection', $bobbyId, 1);
 		$this->login('alice');
 
-		$page = $this->testAction('/users/view/' . $bobbyId, ['method' => 'get', 'return' => 'contents']);
+		$this->get('/users/view/' . $bobbyId);
+		$page = $this->view;
 
 		$this->assertStringContainsString('href="/sets/user/' . $bobbyId . '"', $page);
 	}
@@ -33,7 +34,8 @@ class ProfileTabsTest extends TestCaseWithAuth
 		$this->_createSet('Bobby Collection', $bobbyId, 0);
 		$this->login('alice');
 
-		$page = $this->testAction('/users/view/' . $bobbyId, ['method' => 'get', 'return' => 'contents']);
+		$this->get('/users/view/' . $bobbyId);
+		$page = $this->view;
 
 		$this->assertStringNotContainsString('href="/sets/user/' . $bobbyId . '"', $page);
 	}
@@ -46,7 +48,8 @@ class ProfileTabsTest extends TestCaseWithAuth
 		]);
 		$this->login('alice');
 
-		$page = $this->testAction('/users/view/' . $context->otherUsers[0]['id'], ['method' => 'get', 'return' => 'contents']);
+		$this->get('/users/view/' . $context->otherUsers[0]['id']);
+		$page = $this->view;
 
 		$this->assertStringNotContainsString('href="/sets/user/' . $context->otherUsers[0]['id'] . '"', $page);
 	}
@@ -57,7 +60,8 @@ class ProfileTabsTest extends TestCaseWithAuth
 		$this->_createSet('My Collection', $context->user['id'], 0);
 		$this->login('alice');
 
-		$page = $this->testAction('/users/view/' . $context->user['id'], ['method' => 'get', 'return' => 'contents']);
+		$this->get('/users/view/' . $context->user['id']);
+		$page = $this->view;
 
 		$this->assertStringContainsString('href="/sets/user/' . $context->user['id'] . '"', $page);
 	}
@@ -70,7 +74,8 @@ class ProfileTabsTest extends TestCaseWithAuth
 		]);
 		$this->login('alice');
 
-		$page = $this->testAction('/users/view/' . $context->otherUsers[0]['id'], ['method' => 'get', 'return' => 'contents']);
+		$this->get('/users/view/' . $context->otherUsers[0]['id']);
+		$page = $this->view;
 
 		$this->assertStringNotContainsString('href="/tags/user/' . $context->otherUsers[0]['id'] . '"', $page);
 	}
@@ -91,7 +96,8 @@ class ProfileTabsTest extends TestCaseWithAuth
 		]]);
 		$this->login('alice');
 
-		$page = $this->testAction('/users/view/' . $bobbyId, ['method' => 'get', 'return' => 'contents']);
+		$this->get('/users/view/' . $bobbyId);
+		$page = $this->view;
 
 		$this->assertStringContainsString('href="/tags/user/' . $bobbyId . '"', $page);
 	}
@@ -103,7 +109,8 @@ class ProfileTabsTest extends TestCaseWithAuth
 		$this->_createSet('My Collection', $userId, 0);
 		$this->login('alice');
 
-		$page = $this->testAction('/sets/user/' . $userId, ['method' => 'get', 'return' => 'contents']);
+		$this->get('/sets/user/' . $userId);
+		$page = $this->view;
 
 		$this->assertStringContainsString('href="/users/solveHistory/' . $userId . '"', $page);
 		$this->assertStringContainsString(
@@ -136,7 +143,8 @@ class ProfileTabsTest extends TestCaseWithAuth
 			'/sets/user/' . $bobbyId,
 		] as $address)
 		{
-			$page = $this->testAction($address, ['method' => 'get', 'return' => 'contents']);
+			$this->get($address);
+			$page = $this->view;
 			$this->assertStringContainsString('user-avatar--lg', $page, $address . ' shows the avatar');
 			$this->assertStringContainsString('Bobby', $page, $address . ' names the player');
 		}

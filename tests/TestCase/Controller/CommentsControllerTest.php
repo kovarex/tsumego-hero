@@ -1,17 +1,14 @@
 <?php
 
 use Facebook\WebDriver\WebDriverBy;
-use PHPUnitRetry\RetryTrait;
 
 /**
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
 
-class CommentsControllerTest extends ControllerTestCase
+class CommentsControllerTest extends IntegrationTestCase
 {
-	use RetryTrait;
-
 	/** SGF of a solved problem with a three move solution line. */
 	private const SOLVED_SGF = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])';
 	/** SOLVED_SGF in the bottom-right corner: the solution is T1, T2, S1. */
@@ -505,7 +502,7 @@ class CommentsControllerTest extends ControllerTestCase
 		$comment->create();
 		$comment->save(['tsumego_id' => $tsumego->id, 'user_id' => $context->user['id'], 'message' => 'hello']);
 
-		$this->testAction('comments/index', ['method' => 'get', 'return' => 'view']);
+		$this->get('comments/index');
 
 		$this->assertTextContains('public set', $this->view);
 		$this->assertStringNotContainsString('alice favorites', $this->view);
@@ -1361,7 +1358,7 @@ class CommentsControllerTest extends ControllerTestCase
 			]
 		]);
 
-		$this->testAction('comments', ['method' => 'get', 'return' => 'view']);
+		$this->get('comments');
 
 		// Comment appears in both "All Comments" and "Your Comments" sections (= 2 times)
 		$this->assertSame(2, substr_count($this->view, 'UNIQUE_TEST_COMMENT_XYZ'));

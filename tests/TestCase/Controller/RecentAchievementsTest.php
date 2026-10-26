@@ -1,6 +1,6 @@
 <?php
 
-class RecentAchievementsTest extends TestCaseWithAuth
+class RecentAchievementsTest extends IntegrationTestCase
 {
 	public function testGetRecentReturnsResults(): void
 	{

@@ -3,7 +3,7 @@
 /**
  * Tests for the display name a new account gets at registration.
  */
-class RegistrationDisplayNameTest extends ControllerTestCase
+class RegistrationDisplayNameTest extends IntegrationTestCase
 {
 	/**
 	 * A name the account cannot be made with gets no account: empty, or with a character above
@@ -15,17 +15,13 @@ class RegistrationDisplayNameTest extends ControllerTestCase
 
 		foreach (['empty' => '', 'emoji' => 'Player😀', 'rare kanji' => '𠮷野家'] as $case => $name)
 		{
-			$this->testAction('users/add', [
-				'data' => [
-					'User' => [
-						'name' => $name,
-						'email' => $case . '@example.com',
-						'password1' => 'Kd8#vQzP2mWx!7t',
-						'password2' => 'Kd8#vQzP2mWx!7t',
-					]
+			$this->post('users/add', [
+				'User' => [
+					'name' => $name,
+					'email' => $case . '@example.com',
+					'password1' => 'Kd8#vQzP2mWx!7t',
+					'password2' => 'Kd8#vQzP2mWx!7t',
 				],
-				'method' => 'POST',
-				'return' => 'vars'
 			]);
 
 			$user = ClassRegistry::init('User')->find('first', [

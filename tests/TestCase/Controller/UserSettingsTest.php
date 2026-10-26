@@ -2,7 +2,6 @@
 
 use App\Utility\Util;
 use Facebook\WebDriver\WebDriverKeys;
-use PHPUnitRetry\RetryTrait;
 
 /**
  * The settings page holds everything a player can change about their own account,
@@ -11,10 +10,8 @@ use PHPUnitRetry\RetryTrait;
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
-class UserSettingsTest extends ControllerTestCase
+class UserSettingsTest extends IntegrationTestCase
 {
-	use RetryTrait;
-
 	public function testEmailIsChangedFromTheSettingsPage(): void
 	{
 		$context = new ContextPreparator(['user' => ['email' => 'old@example.com']]);

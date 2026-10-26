@@ -1,7 +1,7 @@
 <?php
 
 
-class SetViewFilterTest extends TestCaseWithAuth
+class SetViewFilterTest extends IntegrationTestCase
 {
 	public function testFilterButtonHiddenWhenNoFiltersActive(): void
 	{

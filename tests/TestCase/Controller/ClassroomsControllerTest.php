@@ -8,7 +8,7 @@ use App\Utility\Util;
  * Classes of a teacher: getting into one takes both sides, the teacher gives the class problems to
  * solve by a day and sees who solved which.
  */
-class ClassroomsControllerTest extends TestCaseWithAuth
+class ClassroomsControllerTest extends IntegrationTestCase
 {
 	private ContextPreparator $context;
 
@@ -104,12 +104,8 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 	 */
 	private function saveAssignment(int $assignmentId, array $data): array
 	{
-		$this->testAction('/classes/save-assignment/' . $assignmentId, [
-			'method' => 'post',
-			'data' => json_encode($data + ['title' => '', 'due' => '2026-11-05', 'setConnectionIds' => []]),
-			'return' => 'contents',
-		]);
-		return json_decode($this->controller->response->body(), true);
+		$this->post('/classes/save-assignment/' . $assignmentId, json_encode($data + ['title' => '', 'due' => '2026-11-05', 'setConnectionIds' => []]));
+		return json_decode($this->view, true);
 	}
 
 	/**
@@ -117,8 +113,8 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 	 */
 	private function getJson(string $url): array
 	{
-		$this->testAction($url, ['method' => 'get', 'return' => 'contents']);
-		return json_decode($this->controller->response->body(), true);
+		$this->get($url);
+		return json_decode($this->view, true);
 	}
 
 	/**
@@ -172,10 +168,7 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 	private function postResult(string $name, int $tsumegoIndex, PlayOutcome $outcome): void
 	{
 		$this->login($name);
-		$this->testAction('/tsumegos/result', [
-			'method' => 'POST',
-			'data' => ['tsumego_id' => $this->context->tsumegos[$tsumegoIndex]['id'], 'seconds' => 10, 'outcome' => $outcome->value],
-		]);
+		$this->post('/tsumegos/result', ['tsumego_id' => $this->context->tsumegos[$tsumegoIndex]['id'], 'seconds' => 10, 'outcome' => $outcome->value]);
 	}
 
 	private function membershipStatus(int $classroomId, string $name): ?int
@@ -189,40 +182,34 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 	 */
 	private function progress(int $assignmentId): array
 	{
-		$this->testAction('/classes/progress/' . $assignmentId, ['method' => 'get']);
-		return json_decode($this->controller->response->body(), true);
+		$this->get('/classes/progress/' . $assignmentId);
+		return json_decode($this->view, true);
 	}
 
 	private function assertForbidden(callable $request): void
 	{
-		try
-		{
-			$request();
-		}
-		catch (ForbiddenException)
-		{
-			return;
-		}
-		$this->fail('The request was not forbidden');
+		$request();
+
+		$this->assertResponseCode(403);
 	}
 
 	public function testCreatingAClassMakesThePlayerItsTeacher(): void
 	{
 		$this->prepare();
 
-		$this->testAction('/classes/create', ['method' => 'post', 'data' => ['name' => '  Lukas,   Thursday ']]);
+		$this->post('/classes/create', ['name' => '  Lukas,   Thursday ']);
 
 		$classroom = ClassRegistry::init('Classroom')->find('first')['Classroom'];
 		$this->assertSame('Lukas, Thursday', $classroom['name']);
 		$this->assertSame($this->userId('teacher'), (int) $classroom['teacher_id']);
-		$this->assertStringEndsWith('/classes/' . $classroom['id'], $this->headers['Location']);
+		$this->assertStringEndsWith('/classes/' . $classroom['id'], $this->headerValue('Location'));
 	}
 
 	public function testAClassNeedsAName(): void
 	{
 		$this->prepare();
 
-		$this->testAction('/classes/create', ['method' => 'post', 'data' => ['name' => '   ']]);
+		$this->post('/classes/create', ['name' => '   ']);
 
 		$this->assertSame(0, ClassRegistry::init('Classroom')->find('count'));
 	}
@@ -230,9 +217,9 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 	public function testCreatingAClassNeedsAnAccount(): void
 	{
 		new ContextPreparator(['user' => null]);
-		$this->expectException(UnauthorizedException::class);
+		$this->post('/classes/create', ['name' => 'Sneaky']);
 
-		$this->testAction('/classes/create', ['method' => 'post', 'data' => ['name' => 'Sneaky']]);
+		$this->assertResponseCode(401);
 	}
 
 	public function testAnInvitedPlayerIsInTheClassOnceTheyAccept(): void
@@ -240,15 +227,16 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$this->prepare();
 		$classroomId = $this->createClassroom();
 
-		$this->testAction('/classes/invite/' . $classroomId, ['method' => 'post', 'data' => ['name' => 'DN_pupil']]);
+		$this->post('/classes/invite/' . $classroomId, ['name' => 'DN_pupil']);
 		$this->assertSame(ClassroomMemberStatus::INVITED, $this->membershipStatus($classroomId, 'pupil'));
 
 		$this->login('pupil');
-		$page = $this->testAction('/classes', ['method' => 'get', 'return' => 'view']);
+		$this->get('/classes');
+		$page = $this->view;
 		$this->assertTextContains('invites you to', $page);
 
 		$membership = ClassroomMember::of($classroomId, $this->userId('pupil'));
-		$this->testAction('/classes/accept-member/' . $membership['id'], ['method' => 'post']);
+		$this->post('/classes/accept-member/' . $membership['id']);
 		$this->assertSame(ClassroomMemberStatus::ACCEPTED, $this->membershipStatus($classroomId, 'pupil'));
 	}
 
@@ -258,8 +246,9 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$classroomId = $this->createClassroom();
 		$membershipId = $this->addMember($classroomId, 'pupil', ClassroomMemberStatus::INVITED);
 
-		$this->expectException(ForbiddenException::class);
-		$this->testAction('/classes/accept-member/' . $membershipId, ['method' => 'post']);
+		$this->post('/classes/accept-member/' . $membershipId);
+
+		$this->assertResponseCode(403);
 	}
 
 	public function testAPlayerWhoAskedToJoinIsInOnceTheTeacherAccepts(): void
@@ -268,16 +257,18 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$classroomId = $this->createClassroom();
 
 		$this->login('pupil');
-		$page = $this->testAction('/classes/' . $classroomId, ['method' => 'get', 'return' => 'view']);
+		$this->get('/classes/' . $classroomId);
+		$page = $this->view;
 		$this->assertTextContains('Ask to join', $page);
-		$this->testAction('/classes/join/' . $classroomId, ['method' => 'post']);
+		$this->post('/classes/join/' . $classroomId);
 		$this->assertSame(ClassroomMemberStatus::REQUESTED, $this->membershipStatus($classroomId, 'pupil'));
 
 		$this->login('teacher');
-		$page = $this->testAction('/classes/' . $classroomId, ['method' => 'get', 'return' => 'view']);
+		$this->get('/classes/' . $classroomId);
+		$page = $this->view;
 		$this->assertTextContains('asks to join', $page);
 		$membership = ClassroomMember::of($classroomId, $this->userId('pupil'));
-		$this->testAction('/classes/accept-member/' . $membership['id'], ['method' => 'post']);
+		$this->post('/classes/accept-member/' . $membership['id']);
 		$this->assertSame(ClassroomMemberStatus::ACCEPTED, $this->membershipStatus($classroomId, 'pupil'));
 	}
 
@@ -288,8 +279,9 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$membershipId = $this->addMember($classroomId, 'pupil', ClassroomMemberStatus::REQUESTED);
 		$this->login('pupil');
 
-		$this->expectException(ForbiddenException::class);
-		$this->testAction('/classes/accept-member/' . $membershipId, ['method' => 'post']);
+		$this->post('/classes/accept-member/' . $membershipId);
+
+		$this->assertResponseCode(403);
 	}
 
 	public function testInvitingAPlayerWhoAskedToJoinPutsThemInTheClass(): void
@@ -298,7 +290,7 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$classroomId = $this->createClassroom();
 		$this->addMember($classroomId, 'pupil', ClassroomMemberStatus::REQUESTED);
 
-		$this->testAction('/classes/invite/' . $classroomId, ['method' => 'post', 'data' => ['name' => 'DN_pupil']]);
+		$this->post('/classes/invite/' . $classroomId, ['name' => 'DN_pupil']);
 
 		$this->assertSame(ClassroomMemberStatus::ACCEPTED, $this->membershipStatus($classroomId, 'pupil'));
 	}
@@ -310,7 +302,7 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$this->addMember($classroomId, 'pupil', ClassroomMemberStatus::INVITED);
 		$this->login('pupil');
 
-		$this->testAction('/classes/join/' . $classroomId, ['method' => 'post']);
+		$this->post('/classes/join/' . $classroomId);
 
 		$this->assertSame(ClassroomMemberStatus::ACCEPTED, $this->membershipStatus($classroomId, 'pupil'));
 	}
@@ -320,7 +312,7 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$this->prepare();
 		$classroomId = $this->createClassroom();
 
-		$this->testAction('/classes/invite/' . $classroomId, ['method' => 'post', 'data' => ['name' => 'Nobody']]);
+		$this->post('/classes/invite/' . $classroomId, ['name' => 'Nobody']);
 
 		$this->assertSame(0, ClassRegistry::init('ClassroomMember')->find('count'));
 	}
@@ -331,8 +323,9 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$classroomId = $this->createClassroom();
 		$this->login('outsider');
 
-		$this->expectException(ForbiddenException::class);
-		$this->testAction('/classes/invite/' . $classroomId, ['method' => 'post', 'data' => ['name' => 'DN_pupil']]);
+		$this->post('/classes/invite/' . $classroomId, ['name' => 'DN_pupil']);
+
+		$this->assertResponseCode(403);
 	}
 
 	public function testAPupilLeavesAndTheTeacherRemoves(): void
@@ -342,9 +335,9 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$leavingId = $this->addMember($classroomId, 'pupil');
 		$removedId = $this->addMember($classroomId, 'pupil2');
 
-		$this->testAction('/classes/remove-member/' . $removedId, ['method' => 'post']);
+		$this->post('/classes/remove-member/' . $removedId);
 		$this->login('pupil');
-		$this->testAction('/classes/remove-member/' . $leavingId, ['method' => 'post']);
+		$this->post('/classes/remove-member/' . $leavingId);
 
 		$this->assertNull($this->membershipStatus($classroomId, 'pupil'));
 		$this->assertNull($this->membershipStatus($classroomId, 'pupil2'));
@@ -357,8 +350,9 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$membershipId = $this->addMember($classroomId, 'pupil');
 		$this->login('outsider');
 
-		$this->expectException(ForbiddenException::class);
-		$this->testAction('/classes/remove-member/' . $membershipId, ['method' => 'post']);
+		$this->post('/classes/remove-member/' . $membershipId);
+
+		$this->assertResponseCode(403);
 	}
 
 	public function testANewAssignmentIsADraftThePupilsDontSee(): void
@@ -367,18 +361,20 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$classroomId = $this->createClassroom();
 		$this->addMember($classroomId, 'pupil');
 
-		$this->testAction('/classes/create-assignment/' . $classroomId, ['method' => 'post']);
+		$this->post('/classes/create-assignment/' . $classroomId);
 
 		$assignment = Util::query('SELECT * FROM classroom_assignment')[0];
-		$this->assertStringEndsWith('/classes/assignment/' . $assignment['id'], $this->headers['Location']);
+		$this->assertStringEndsWith('/classes/assignment/' . $assignment['id'], $this->headerValue('Location'));
 		$this->assertNull($assignment['published']);
 		$this->assertSame(date('Y-m-d', strtotime('+7 days')), $assignment['due']);
-		$page = $this->testAction('/classes/' . $classroomId, ['method' => 'get', 'return' => 'view']);
+		$this->get('/classes/' . $classroomId);
+		$page = $this->view;
 		$this->assertTextContains('data-assignment-id="' . $assignment['id'] . '"', $page);
 		$this->assertTextContains('classes__badge">draft', $page);
 
 		$this->login('pupil');
-		$page = $this->testAction('/classes/' . $classroomId, ['method' => 'get', 'return' => 'view']);
+		$this->get('/classes/' . $classroomId);
+		$page = $this->view;
 		$this->assertTextNotContains('data-assignment-id="' . $assignment['id'] . '"', $page);
 	}
 
@@ -433,8 +429,9 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$collections = $this->getJson('/classes/collections');
 		$this->assertNotContains($secretSetId, array_column($collections['own'], 'id'));
 
-		$this->expectException(ForbiddenException::class);
-		$this->getJson('/classes/collection-problems/' . $secretSetId);
+		$this->get('/classes/collection-problems/' . $secretSetId);
+
+		$this->assertResponseCode(403);
 	}
 
 	public function testThePickerOffersTheOwnCollectionsAndTheOnesOfTheSite(): void
@@ -478,7 +475,8 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$this->assertNotNull($this->assignment($assignmentId)['published']);
 
 		$this->login('pupil');
-		$page = $this->testAction('/classes/' . $classroomId, ['method' => 'get', 'return' => 'view']);
+		$this->get('/classes/' . $classroomId);
+		$page = $this->view;
 		$this->assertTextContains('data-assignment-id="' . $assignmentId . '"', $page);
 		$this->assertTextContains('Homework', $page);
 		$this->assertTextContains('Site basics', $page);
@@ -490,6 +488,7 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$classroomId = $this->createClassroom();
 		$assignmentId = $this->createAssignment($classroomId, null, '2026-11-01', []);
 
+		$this->disableErrorHandlerMiddleware();
 		try
 		{
 			$this->saveAssignment($assignmentId, ['setConnectionIds' => [], 'publish' => true]);
@@ -508,8 +507,13 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$classroomId = $this->createClassroom();
 		$assignmentId = $this->createAssignment($classroomId, null, '2026-11-01', []);
 
-		$this->expectException(UnprocessableEntityException::class);
-		$this->saveAssignment($assignmentId, ['due' => 'next week', 'setConnectionIds' => [$this->setConnectionId(0)]]);
+		$this->post('/classes/save-assignment/' . $assignmentId, json_encode([
+			'title' => '',
+			'due' => 'next week',
+			'setConnectionIds' => [$this->setConnectionId(0)],
+		]));
+
+		$this->assertResponseCode(422);
 	}
 
 	public function testOnlyTheTeacherEditsAnAssignment(): void
@@ -520,9 +524,9 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$assignmentId = $this->createAssignment($classroomId, '2026-10-01 00:00:00', '2026-10-08');
 		$this->login('pupil');
 
-		$this->assertForbidden(fn() => $this->testAction('/classes/assignment/' . $assignmentId, ['method' => 'get']));
-		$this->assertForbidden(fn() => $this->saveAssignment($assignmentId, ['setConnectionIds' => []]));
-		$this->assertForbidden(fn() => $this->testAction('/classes/create-assignment/' . $classroomId, ['method' => 'post']));
+		$this->assertForbidden(fn() => $this->get('/classes/assignment/' . $assignmentId));
+		$this->assertForbidden(fn() => $this->post('/classes/save-assignment/' . $assignmentId, json_encode(['setConnectionIds' => []])));
+		$this->assertForbidden(fn() => $this->post('/classes/create-assignment/' . $classroomId));
 		$this->assertCount(3, $this->assignedSetConnectionIds($assignmentId));
 		$this->assertSame(1, ClassRegistry::init('ClassroomAssignment')->find('count'));
 	}
@@ -533,7 +537,8 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$classroomId = $this->createClassroom();
 		$assignmentId = $this->createAssignment($classroomId, null, '2026-11-01', [3, 1]);
 
-		$page = $this->testAction('/classes/assignment/' . $assignmentId, ['method' => 'get', 'return' => 'view']);
+		$this->get('/classes/assignment/' . $assignmentId);
+		$page = $this->view;
 
 		$this->assertSame(1, preg_match('/data-assignment-editor-root data-props="([^"]+)"/', $page, $match));
 		$props = json_decode(html_entity_decode($match[1]), true);
@@ -664,8 +669,9 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$assignmentId = $this->createAssignment($classroomId, '2026-10-01 00:00:00', '2026-10-08');
 		$this->login('outsider');
 
-		$this->expectException(ForbiddenException::class);
-		$this->progress($assignmentId);
+		$this->get('/classes/progress/' . $assignmentId);
+
+		$this->assertResponseCode(403);
 	}
 
 	public function testAPupilOpensThePrivateCollectionGivenToTheClass(): void
@@ -680,7 +686,8 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$this->assertFalse(App\Policy\SetPolicy::canView(['id' => $this->userId('outsider')], $set));
 
 		$this->login('pupil');
-		$page = $this->testAction('/sets/' . $this->homeworkSetId(), ['method' => 'get', 'return' => 'view']);
+		$this->get('/sets/' . $this->homeworkSetId());
+		$page = $this->view;
 		$this->assertTextContains('Homework', $page);
 	}
 
@@ -692,7 +699,8 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$assignmentId = $this->createAssignment($classroomId, '2026-10-01 00:00:00', '2026-10-08');
 		$this->login('pupil');
 
-		$page = $this->testAction('/classes/' . $classroomId, ['method' => 'get', 'return' => 'view']);
+		$this->get('/classes/' . $classroomId);
+		$page = $this->view;
 
 		$this->assertTextContains('data-assignment-id="' . $assignmentId . '"', $page);
 		$this->assertTextContains('Leave the class', $page);
@@ -706,7 +714,8 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$assignmentId = $this->createAssignment($classroomId, '2026-10-01 00:00:00', '2026-10-08');
 		$this->login('outsider');
 
-		$page = $this->testAction('/classes/' . $classroomId, ['method' => 'get', 'return' => 'view']);
+		$this->get('/classes/' . $classroomId);
+		$page = $this->view;
 
 		$this->assertTextNotContains('data-assignment-id="' . $assignmentId . '"', $page);
 		$this->assertTextContains('Ask to join', $page);
@@ -726,7 +735,8 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$this->assertSame(0, ClassroomMember::countAwaitingAnswer($this->userId('pupil2')));
 
 		$this->login('pupil');
-		$page = $this->testAction('/classes', ['method' => 'get', 'return' => 'contents']);
+		$this->get('/classes');
+		$page = $this->view;
 		$this->assertMatchesRegularExpression('#href="/classes">Classes<span class="nav__new-badge nav__new-badge--visible"[^>]*>1</span>#', $page);
 	}
 
@@ -765,8 +775,9 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$assignmentId = $this->createAssignment($classroomId, null, '2026-10-08');
 		$this->login('pupil');
 
-		$this->expectException(NotFoundException::class);
-		$this->progress($assignmentId);
+		$this->get('/classes/progress/' . $assignmentId);
+
+		$this->assertResponseCode(404);
 	}
 
 	/**
@@ -821,10 +832,10 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$this->addSolvedStatus('pupil', 1);
 		$this->login('pupil');
 
-		$this->testAction('/classes/play/' . $assignmentId, ['method' => 'get', 'return' => 'contents']);
+		$this->get('/classes/play/' . $assignmentId);
 
 		$this->assertStringContainsString('var tsumegoID = ' . $this->context->tsumegos[1]['id'] . ';', $this->view);
-		$buttons = (array) $this->vars['tsumegoButtons'];
+		$buttons = (array) $this->viewVariable('tsumegoButtons');
 		$this->assertSame([1, 2, 3], array_map(fn($button) => $button->order, $buttons));
 		$this->assertSame(['S', 'W', 'N'], array_map(fn($button) => $button->status, $buttons));
 		$this->assertStringContainsString('var assignmentReplay = true;', $this->view);
@@ -833,8 +844,8 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$this->assertStringContainsString('Week two 2/3</a>', $text);
 		$this->assertStringContainsString('(Homework 2/3)', $text);
 		$this->assertStringContainsString('href="/classes/play/' . $assignmentId . '/' . $this->setConnectionId(0) . '"', $this->view);
-		$this->assertSame('/classes/play/' . $assignmentId . '/' . $this->setConnectionId(3), $this->vars['previousLink']);
-		$this->assertSame('/classes/play/' . $assignmentId . '/' . $this->setConnectionId(0), $this->vars['nextLink']);
+		$this->assertSame('/classes/play/' . $assignmentId . '/' . $this->setConnectionId(3), $this->viewVariable('previousLink'));
+		$this->assertSame('/classes/play/' . $assignmentId . '/' . $this->setConnectionId(0), $this->viewVariable('nextLink'));
 		$this->assertTrue(App\Utility\Auth::isInLevelMode());
 	}
 
@@ -909,9 +920,9 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$assignmentId = $this->createAssignment($classroomId, '2026-10-01 00:00:00', '2026-10-08', [3, 1, 0]);
 		$this->login('pupil');
 
-		$this->testAction('/classes/play/' . $assignmentId . '/' . $this->setConnectionId(0), ['method' => 'get', 'return' => 'contents']);
+		$this->get('/classes/play/' . $assignmentId . '/' . $this->setConnectionId(0));
 
-		$this->assertSame('/classes/' . $classroomId, $this->vars['nextLink']);
+		$this->assertSame('/classes/' . $classroomId, $this->viewVariable('nextLink'));
 	}
 
 	public function testAProblemOutsideTheAssignmentLeadsToItsStart(): void
@@ -922,9 +933,9 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$assignmentId = $this->createAssignment($classroomId, '2026-10-01 00:00:00', '2026-10-08', [3, 1]);
 		$this->login('pupil');
 
-		$this->testAction('/classes/play/' . $assignmentId . '/' . $this->setConnectionId(2), ['method' => 'get']);
+		$this->get('/classes/play/' . $assignmentId . '/' . $this->setConnectionId(2));
 
-		$this->assertStringEndsWith('/classes/play/' . $assignmentId, $this->headers['Location']);
+		$this->assertStringEndsWith('/classes/play/' . $assignmentId, $this->headerValue('Location'));
 	}
 
 	public function testOnlyTheClassPlaysItsAssignment(): void
@@ -936,11 +947,12 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$draftId = $this->createAssignment($classroomId, null, '2026-10-08');
 
 		$this->login('outsider');
-		$this->assertForbidden(fn() => $this->testAction('/classes/play/' . $assignmentId, ['method' => 'get']));
+		$this->assertForbidden(fn() => $this->get('/classes/play/' . $assignmentId));
 
 		$this->login('pupil');
-		$this->expectException(NotFoundException::class);
-		$this->testAction('/classes/play/' . $draftId, ['method' => 'get']);
+		$this->get('/classes/play/' . $draftId);
+
+		$this->assertResponseCode(404);
 	}
 
 	public function testThePupilPageLeadsToTheAssignmentRow(): void
@@ -951,7 +963,8 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$assignmentId = $this->createAssignment($classroomId, '2026-10-01 00:00:00', '2026-10-08');
 		$this->login('pupil');
 
-		$page = $this->testAction('/classes/' . $classroomId, ['method' => 'get', 'return' => 'view']);
+		$this->get('/classes/' . $classroomId);
+		$page = $this->view;
 
 		$this->assertTextContains('href="/classes/play/' . $assignmentId . '">Solve</a>', $page);
 	}
@@ -963,7 +976,7 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$this->addMember($classroomId, 'pupil');
 		$this->createAssignment($classroomId, '2026-10-01 00:00:00', '2026-10-08');
 
-		$this->testAction('/classes/delete/' . $classroomId, ['method' => 'post']);
+		$this->post('/classes/delete/' . $classroomId);
 
 		$this->assertSame(0, ClassRegistry::init('Classroom')->find('count'));
 		$this->assertSame(0, ClassRegistry::init('ClassroomMember')->find('count'));
@@ -977,7 +990,8 @@ class ClassroomsControllerTest extends TestCaseWithAuth
 		$this->addMember($classroomId, 'pupil');
 		$this->login('pupil');
 
-		$this->expectException(ForbiddenException::class);
-		$this->testAction('/classes/delete/' . $classroomId, ['method' => 'post']);
+		$this->post('/classes/delete/' . $classroomId);
+
+		$this->assertResponseCode(403);
 	}
 }

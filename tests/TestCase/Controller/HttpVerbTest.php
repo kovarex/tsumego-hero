@@ -3,27 +3,22 @@
 /**
  * The verb an action declares is the only verb it answers to.
  */
-class HttpVerbTest extends ControllerTestCase
+class HttpVerbTest extends IntegrationTestCase
 {
 	public function testAPageRefusesPost(): void
 	{
-		$this->expectException(MethodNotAllowedException::class);
+		$this->post('/changelog');
 
-		$this->testAction('/changelog', ['method' => 'post']);
+		$this->assertResponseCode(405);
+		$this->assertHeader('Allow', 'GET');
 	}
 
 	public function testASubmitRefusesGet(): void
 	{
-		try
-		{
-			$this->testAction('/users/avatarPreference', ['method' => 'get']);
-			$this->fail('a submit answered a GET');
-		}
-		catch (MethodNotAllowedException $e)
-		{
-			// The header tells a client which verb would have worked
-			$this->assertSame(['Allow' => 'POST'], $e->responseHeader());
-		}
+		$this->get('/users/avatarPreference');
+
+		$this->assertResponseCode(405);
+		$this->assertHeader('Allow', 'POST');
 	}
 
 	/**
@@ -31,8 +26,9 @@ class HttpVerbTest extends ControllerTestCase
 	 */
 	public function testAPageAnswersHead(): void
 	{
-		$page = $this->testAction('/changelog', ['method' => 'head', 'return' => 'contents']);
+		$this->head('/changelog');
 
-		$this->assertStringContainsString("What's new", $page);
+		$this->assertResponseOk();
+		$this->assertResponseContains("What's new");
 	}
 }

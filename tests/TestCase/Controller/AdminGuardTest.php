@@ -5,7 +5,7 @@
  */
 use App\Utility\Constants;
 
-class AdminGuardTest extends ControllerTestCase
+class AdminGuardTest extends IntegrationTestCase
 {
 	// ── UsersController admin pages ──
 
@@ -17,15 +17,8 @@ class AdminGuardTest extends ControllerTestCase
 
 		foreach (self::ADMIN_AREA_PAGES as $url)
 		{
-			try
-			{
-				$this->testAction($url, ['method' => 'get']);
-				$this->fail($url . ' let a guest through');
-			}
-			catch (UnauthorizedException $e)
-			{
-				$this->addToAssertionCount(1);
-			}
+			$this->get($url);
+			$this->assertResponseCode(401, $url . ' let a guest through');
 		}
 	}
 
@@ -36,15 +29,8 @@ class AdminGuardTest extends ControllerTestCase
 		// The avatar endpoint is guarded the same way, see AvatarPreferenceTest::testRequiresLogin
 		foreach (['/users/playerColorPreference', '/users/boardOrientationPreference', '/users/dateFormatPreference', '/users/emailPreference'] as $url)
 		{
-			try
-			{
-				$this->testAction($url, ['method' => 'post', 'data' => ['color' => 1, 'orientation' => 1, 'format' => 1, 'User' => ['email' => 'guest@example.com']]]);
-				$this->fail($url . ' let a guest through');
-			}
-			catch (UnauthorizedException $e)
-			{
-				$this->addToAssertionCount(1);
-			}
+			$this->post($url, ['color' => 1, 'orientation' => 1, 'format' => 1, 'User' => ['email' => 'guest@example.com']]);
+			$this->assertResponseCode(401, $url . ' let a guest through');
 		}
 	}
 
@@ -60,15 +46,8 @@ class AdminGuardTest extends ControllerTestCase
 			'/users/reopenSGFProposal/1',
 		] as $url)
 		{
-			try
-			{
-				$this->testAction($url, ['method' => 'post']);
-				$this->fail($url . ' let a player who is not an admin through');
-			}
-			catch (ForbiddenException $e)
-			{
-				$this->addToAssertionCount(1);
-			}
+			$this->post($url);
+			$this->assertResponseCode(403, $url . ' let a player who is not an admin through');
 		}
 	}
 
@@ -78,15 +57,8 @@ class AdminGuardTest extends ControllerTestCase
 
 		foreach (self::ADMIN_AREA_PAGES as $url)
 		{
-			try
-			{
-				$this->testAction($url, ['method' => 'get']);
-				$this->fail($url . ' let a player who is not an admin through');
-			}
-			catch (ForbiddenException $e)
-			{
-				$this->addToAssertionCount(1);
-			}
+			$this->get($url);
+			$this->assertResponseCode(403, $url . ' let a player who is not an admin through');
 		}
 	}
 
@@ -94,54 +66,54 @@ class AdminGuardTest extends ControllerTestCase
 	{
 		new ContextPreparator(['user' => null]);
 
-		$this->expectException(UnauthorizedException::class);
+		$this->get('/users/uploads');
 
-		$this->testAction('/users/uploads', ['method' => 'get']);
+		$this->assertResponseCode(401);
 	}
 
 	public function testUploadsRequiresAdmin()
 	{
 		new ContextPreparator(['user' => ['name' => 'regular', 'admin' => false]]);
 
-		$this->expectException(ForbiddenException::class);
+		$this->get('/users/uploads');
 
-		$this->testAction('/users/uploads', ['method' => 'get']);
+		$this->assertResponseCode(403);
 	}
 
 	public function testUserstatsRequiresLogin()
 	{
 		new ContextPreparator(['user' => null]);
 
-		$this->expectException(UnauthorizedException::class);
+		$this->get('/users/userstats');
 
-		$this->testAction('/users/userstats', ['method' => 'get']);
+		$this->assertResponseCode(401);
 	}
 
 	public function testUserstatsRequiresAdmin()
 	{
 		new ContextPreparator(['user' => ['name' => 'regular', 'admin' => false]]);
 
-		$this->expectException(ForbiddenException::class);
+		$this->get('/users/userstats');
 
-		$this->testAction('/users/userstats', ['method' => 'get']);
+		$this->assertResponseCode(403);
 	}
 
 	public function testUserstats3RequiresLogin()
 	{
 		new ContextPreparator(['user' => null]);
 
-		$this->expectException(UnauthorizedException::class);
+		$this->get('/users/userstats3');
 
-		$this->testAction('/users/userstats3', ['method' => 'get']);
+		$this->assertResponseCode(401);
 	}
 
 	public function testUserstats3RequiresAdmin()
 	{
 		new ContextPreparator(['user' => ['name' => 'regular', 'admin' => false]]);
 
-		$this->expectException(ForbiddenException::class);
+		$this->get('/users/userstats3');
 
-		$this->testAction('/users/userstats3', ['method' => 'get']);
+		$this->assertResponseCode(403);
 	}
 
 	public function testAdminAreaAllowsAdmin()
@@ -150,8 +122,8 @@ class AdminGuardTest extends ControllerTestCase
 
 		foreach (self::ADMIN_AREA_PAGES as $url)
 		{
-			$this->testAction($url, ['method' => 'get']);
-			$this->assertSame(200, $this->controller->response->statusCode(), $url);
+			$this->get($url);
+			$this->assertResponseCode(200, $url);
 		}
 	}
 
@@ -161,9 +133,9 @@ class AdminGuardTest extends ControllerTestCase
 	{
 		new ContextPreparator(['user' => null]);
 
-		$this->expectException(UnauthorizedException::class);
+		$this->get('/sgfs/view/1');
 
-		$this->testAction('/sgfs/view/1', ['method' => 'get']);
+		$this->assertResponseCode(401);
 	}
 
 	public function testSgfViewRequiresAdmin()
@@ -173,9 +145,9 @@ class AdminGuardTest extends ControllerTestCase
 			'tsumego' => ['set_order' => 1],
 		]);
 
-		$this->expectException(ForbiddenException::class);
+		$this->get('/sgfs/view/' . $context->tsumegos[0]['id']);
 
-		$this->testAction('/sgfs/view/' . $context->tsumegos[0]['id'], ['method' => 'get']);
+		$this->assertResponseCode(403);
 	}
 
 	// ── TagsController::delete ──
@@ -184,9 +156,9 @@ class AdminGuardTest extends ControllerTestCase
 	{
 		new ContextPreparator(['user' => null]);
 
-		$this->expectException(UnauthorizedException::class);
+		$this->post('/tags/delete/1');
 
-		$this->testAction('/tags/delete/1', ['method' => 'post']);
+		$this->assertResponseCode(401);
 	}
 
 	public function testTagDeleteRequiresAdmin()
@@ -196,9 +168,9 @@ class AdminGuardTest extends ControllerTestCase
 			'tags' => [['name' => 'atari']],
 		]);
 
-		$this->expectException(ForbiddenException::class);
+		$this->post('/tags/delete/' . $context->tags[0]['id']);
 
-		$this->testAction('/tags/delete/' . $context->tags[0]['id'], ['method' => 'post']);
+		$this->assertResponseCode(403);
 	}
 
 	// ── SetsController::sandbox ──
@@ -207,18 +179,18 @@ class AdminGuardTest extends ControllerTestCase
 	{
 		new ContextPreparator(['user' => null]);
 
-		$this->expectException(UnauthorizedException::class);
+		$this->get('/sets/sandbox');
 
-		$this->testAction('/sets/sandbox', ['method' => 'get']);
+		$this->assertResponseCode(401);
 	}
 
 	public function testSandboxRequiresPremiumOrAdmin()
 	{
 		new ContextPreparator(['user' => ['name' => 'regular', 'admin' => false]]);
 
-		$this->expectException(ForbiddenException::class);
+		$this->get('/sets/sandbox');
 
-		$this->testAction('/sets/sandbox', ['method' => 'get']);
+		$this->assertResponseCode(403);
 	}
 
 	// ── SetsController::view private sets ──
@@ -230,9 +202,9 @@ class AdminGuardTest extends ControllerTestCase
 			'tsumegos' => [['sets' => [['name' => 'private set', 'public' => 0, 'num' => '1']]]],
 		]);
 
-		$this->expectException(UnauthorizedException::class);
+		$this->get('/sets/view/' . $this->privateSetId());
 
-		$this->testAction('/sets/view/' . $this->privateSetId(), ['method' => 'get']);
+		$this->assertResponseCode(401);
 	}
 
 	private function privateSetId()
@@ -249,15 +221,12 @@ class AdminGuardTest extends ControllerTestCase
 			'tsumego' => ['set_order' => 1],
 		]);
 
-		$this->expectException(ForbiddenException::class);
-
-		$this->testAction('/tsumegos/performMerge', [
-			'data' => [
-				'master-tsumego-id' => $context->tsumegos[0]['id'],
-				'slave-tsumego-id' => $context->tsumegos[0]['id'],
-			],
-			'method' => 'post',
+		$this->post('/tsumegos/performMerge', [
+			'master-tsumego-id' => $context->tsumegos[0]['id'],
+			'slave-tsumego-id' => $context->tsumegos[0]['id'],
 		]);
+
+		$this->assertResponseCode(403);
 	}
 
 	// ── TsumegosController::play ?requestSolution ──
@@ -266,9 +235,9 @@ class AdminGuardTest extends ControllerTestCase
 	{
 		$context = new ContextPreparator(['user' => null, 'tsumego' => ['set_order' => 1]]);
 
-		$this->expectException(UnauthorizedException::class);
+		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id'] . '?requestSolution=1');
 
-		$this->testAction('/' . $context->tsumegos[0]['set-connections'][0]['id'] . '?requestSolution=1', ['method' => 'get']);
+		$this->assertResponseCode(401);
 	}
 
 	public function testRequestSolutionRequiresAdmin()
@@ -278,9 +247,9 @@ class AdminGuardTest extends ControllerTestCase
 			'tsumego' => ['set_order' => 1],
 		]);
 
-		$this->expectException(ForbiddenException::class);
+		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id'] . '?requestSolution=1');
 
-		$this->testAction('/' . $context->tsumegos[0]['set-connections'][0]['id'] . '?requestSolution=1', ['method' => 'get']);
+		$this->assertResponseCode(403);
 	}
 
 	public function testRequestSolutionAllowsAdmin()
@@ -292,9 +261,9 @@ class AdminGuardTest extends ControllerTestCase
 		$adminActivity = ClassRegistry::init('AdminActivity');
 		$before = $adminActivity->find('count');
 
-		$this->testAction('/' . $context->tsumegos[0]['set-connections'][0]['id'] . '?requestSolution=1', ['method' => 'get']);
+		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id'] . '?requestSolution=1');
 
-		$this->assertSame(200, $this->controller->response->statusCode());
+		$this->assertResponseCode(200);
 		$this->assertSame($before + 1, $adminActivity->find('count'));
 	}
 
@@ -304,9 +273,9 @@ class AdminGuardTest extends ControllerTestCase
 	{
 		new ContextPreparator(['user' => ['name' => 'regular', 'admin' => false]]);
 
-		$this->expectException(ForbiddenException::class);
+		$this->get('/schedule');
 
-		$this->testAction('/schedule', ['method' => 'get']);
+		$this->assertResponseCode(403);
 	}
 
 	// ── TagsController::edit / editAction ──
@@ -318,9 +287,9 @@ class AdminGuardTest extends ControllerTestCase
 			'tags' => [['name' => 'atari']],
 		]);
 
-		$this->expectException(ForbiddenException::class);
+		$this->get('/tags/edit/' . $context->tags[0]['id']);
 
-		$this->testAction('/tags/edit/' . $context->tags[0]['id'], ['method' => 'get']);
+		$this->assertResponseCode(403);
 	}
 
 	public function testTagEditActionRequiresAdmin()
@@ -330,12 +299,9 @@ class AdminGuardTest extends ControllerTestCase
 			'tags' => [['name' => 'atari']],
 		]);
 
-		$this->expectException(ForbiddenException::class);
+		$this->post('/tags/editAction/' . $context->tags[0]['id'], ['tag_description' => 'test']);
 
-		$this->testAction('/tags/editAction/' . $context->tags[0]['id'], [
-			'data' => ['tag_description' => 'test'],
-			'method' => 'post',
-		]);
+		$this->assertResponseCode(403);
 	}
 
 	// ── TagsController::add / addAction ──
@@ -344,52 +310,43 @@ class AdminGuardTest extends ControllerTestCase
 	{
 		new ContextPreparator(['user' => null]);
 
-		$this->expectException(UnauthorizedException::class);
+		$this->get('/tags/add');
 
-		$this->testAction('/tags/add', ['method' => 'get']);
+		$this->assertResponseCode(401);
 	}
 
 	public function testTagAddRequiresContribution()
 	{
 		new ContextPreparator(['user' => ['name' => 'lowrating', 'rating' => 100]]);
 
-		$this->expectException(ForbiddenException::class);
+		$this->get('/tags/add');
 
-		$this->testAction('/tags/add', ['method' => 'get']);
+		$this->assertResponseCode(403);
 	}
 
 	public function testTagAddActionRequiresLogin()
 	{
 		new ContextPreparator(['user' => null]);
 
-		$this->expectException(UnauthorizedException::class);
+		$this->post('/tags/addAction', ['tag_name' => 'foo', 'tag_description' => 'bar']);
 
-		$this->testAction('/tags/addAction', [
-			'data' => ['tag_name' => 'foo', 'tag_description' => 'bar'],
-			'method' => 'post',
-		]);
+		$this->assertResponseCode(401);
 	}
 
 	public function testTagAddActionRequiresContribution()
 	{
 		new ContextPreparator(['user' => ['name' => 'lowrating', 'rating' => 100]]);
 
-		$this->expectException(ForbiddenException::class);
+		$this->post('/tags/addAction', ['tag_name' => 'foo', 'tag_description' => 'bar']);
 
-		$this->testAction('/tags/addAction', [
-			'data' => ['tag_name' => 'foo', 'tag_description' => 'bar'],
-			'method' => 'post',
-		]);
+		$this->assertResponseCode(403);
 	}
 
 	public function testTagAddActionSucceedsForContributor()
 	{
 		new ContextPreparator(['user' => ['name' => 'contributor', 'rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE]]);
 
-		$this->testAction('/tags/addAction', [
-			'data' => ['tag_name' => 'contribution tag', 'tag_description' => 'desc'],
-			'method' => 'post',
-		]);
+		$this->post('/tags/addAction', ['tag_name' => 'contribution tag', 'tag_description' => 'desc']);
 
 		$tag = ClassRegistry::init('Tag')->findByName('contribution tag');
 		$this->assertNotEmpty($tag);
@@ -402,23 +359,17 @@ class AdminGuardTest extends ControllerTestCase
 	{
 		new ContextPreparator(['user' => ['name' => 'lowrating', 'rating' => 100]]);
 
-		$this->expectException(ForbiddenException::class);
+		$this->post('/sgf/upload/1', ['sgfForBesogo' => '(;GM[1])']);
 
-		$this->testAction('/sgf/upload/1', [
-			'data' => ['sgfForBesogo' => '(;GM[1])'],
-			'method' => 'post',
-		]);
+		$this->assertResponseCode(403);
 	}
 
 	public function testSetupNewSgfStep2RequiresContribution()
 	{
 		new ContextPreparator(['user' => ['name' => 'lowrating', 'rating' => 100]]);
 
-		$this->expectException(ForbiddenException::class);
+		$this->post('/tsumegos/setupNewSgfStep2', ['setConnectionID' => 1]);
 
-		$this->testAction('/tsumegos/setupNewSgfStep2', [
-			'data' => ['setConnectionID' => 1],
-			'method' => 'post',
-		]);
+		$this->assertResponseCode(403);
 	}
 }

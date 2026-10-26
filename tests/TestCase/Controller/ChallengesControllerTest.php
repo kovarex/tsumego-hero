@@ -11,7 +11,7 @@ use App\Utility\Util;
  * Challenges between players: everyone in a challenge plays the same problems like a time mode
  * run, and the page of the challenge ranks them by their points.
  */
-class ChallengesControllerTest extends TestCaseWithAuth
+class ChallengesControllerTest extends IntegrationTestCase
 {
 	private ContextPreparator $context;
 
@@ -46,13 +46,13 @@ class ChallengesControllerTest extends TestCaseWithAuth
 	 */
 	private function create(array $data = []): ?int
 	{
-		$this->testAction('/challenges/create', ['method' => 'post', 'data' => $data + [
+		$this->post('/challenges/create', $data + [
 			'minimum_rank' => $this->rankId('5k'),
 			'maximum_rank' => $this->rankId('5k'),
 			'seconds_per_problem' => 60,
 			'problem_count' => 10,
 			'players' => '',
-		]]);
+		]);
 		$challenge = ClassRegistry::init('Challenge')->find('first', ['order' => 'id DESC']);
 		return $challenge ? (int) $challenge['Challenge']['id'] : null;
 	}
@@ -84,18 +84,18 @@ class ChallengesControllerTest extends TestCaseWithAuth
 	 */
 	private function playRun(int $challengeId, array $results): void
 	{
-		$this->testAction('/challenges/play/' . $challengeId, ['method' => 'post']);
+		$this->post('/challenges/play/' . $challengeId);
 		$problemIDs = Challenge::problemIDs($challengeId);
 		foreach ($results as $index => [$outcome, $seconds])
 		{
-			$this->testAction('/timeMode/play/' . ($index + 1));
+			$this->post('/timeMode/play/' . ($index + 1));
 			Auth::init();
-			$this->testAction('/tsumegos/result', ['method' => 'POST', 'data' => [
+			$this->post('/tsumegos/result', [
 				'tsumego_id' => $problemIDs[$index],
 				'seconds' => $seconds,
-				'outcome' => $outcome->value]]);
+				'outcome' => $outcome->value]);
 		}
-		$this->testAction('/timeMode/play');
+		$this->post('/timeMode/play');
 		Auth::init();
 	}
 
@@ -110,7 +110,7 @@ class ChallengesControllerTest extends TestCaseWithAuth
 		$this->assertSame(10, (int) $challenge['problem_count']);
 		$this->assertCount(10, array_unique(Challenge::problemIDs($challengeId)));
 		$this->assertSame([$this->userId('challenger'), $this->userId('friend')], $this->participants($challengeId));
-		$this->assertStringEndsWith('/challenges/' . $challengeId, $this->headers['Location']);
+		$this->assertStringEndsWith('/challenges/' . $challengeId, $this->headerValue('Location'));
 
 		// the invitation is the challenge in the friend's challenges, not a message
 		$this->assertEmpty(Util::query('SELECT * FROM message'));
@@ -165,23 +165,24 @@ class ChallengesControllerTest extends TestCaseWithAuth
 		$this->login('challenger');
 
 		$this->assertNull($this->create(['minimum_rank' => $this->rankId('1d'), 'maximum_rank' => $this->rankId('1d')]));
-		$this->assertStringEndsWith('/challenges', $this->headers['Location']);
+		$this->assertStringEndsWith('/challenges', $this->headerValue('Location'));
 	}
 
 	public function testAnUnknownTimeForAProblemIsRefused(): void
 	{
 		$this->prepare();
-		$this->expectException(BadRequestException::class);
 
 		$this->create(['seconds_per_problem' => 7]);
+
+		$this->assertResponseCode(400);
 	}
 
 	public function testCreatingAChallengeNeedsAnAccount(): void
 	{
 		new ContextPreparator(['user' => null, 'time-mode-ranks' => ['5k']]);
-		$this->expectException(UnauthorizedException::class);
+		$this->post('/challenges/create');
 
-		$this->testAction('/challenges/create', ['method' => 'post', 'data' => []]);
+		$this->assertResponseCode(401);
 	}
 
 	public function testInvitingAnUnknownNameInvitesNobody(): void
@@ -189,7 +190,7 @@ class ChallengesControllerTest extends TestCaseWithAuth
 		$this->prepare();
 		$challengeId = $this->create();
 
-		$this->testAction('/challenges/invite/' . $challengeId, ['method' => 'post', 'data' => ['players' => 'Nobody']]);
+		$this->post('/challenges/invite/' . $challengeId, ['players' => 'Nobody']);
 
 		$this->assertSame([$this->userId('challenger')], $this->participants($challengeId));
 		$this->assertEmpty(Util::query('SELECT * FROM message'));
@@ -200,9 +201,9 @@ class ChallengesControllerTest extends TestCaseWithAuth
 		$this->prepare();
 		$challengeId = $this->create();
 		$this->login('stranger');
-		$this->expectException(ForbiddenException::class);
+		$this->post('/challenges/invite/' . $challengeId, ['players' => 'DN_friend']);
 
-		$this->testAction('/challenges/invite/' . $challengeId, ['method' => 'post', 'data' => ['players' => 'DN_friend']]);
+		$this->assertResponseCode(403);
 	}
 
 	public function testAnyoneWithTheLinkCanJoin(): void
@@ -211,10 +212,11 @@ class ChallengesControllerTest extends TestCaseWithAuth
 		$challengeId = $this->create();
 		$this->login('stranger');
 
-		$page = $this->testAction('/challenges/' . $challengeId, ['method' => 'get', 'return' => 'view']);
+		$this->get('/challenges/' . $challengeId);
+		$page = $this->view;
 		$this->assertTextContains('id="challenge-join"', $page);
 
-		$this->testAction('/challenges/join/' . $challengeId, ['method' => 'post']);
+		$this->post('/challenges/join/' . $challengeId);
 		$this->assertSame([$this->userId('challenger'), $this->userId('stranger')], $this->participants($challengeId));
 	}
 
@@ -223,14 +225,14 @@ class ChallengesControllerTest extends TestCaseWithAuth
 		$this->prepare();
 		$challengeId = $this->create(['seconds_per_problem' => 30, 'problem_count' => 5]);
 
-		$this->testAction('/challenges/play/' . $challengeId, ['method' => 'post']);
-		$this->assertStringEndsWith('/timeMode/play', $this->headers['Location']);
+		$this->post('/challenges/play/' . $challengeId);
+		$this->assertStringEndsWith('/timeMode/play', $this->headerValue('Location'));
 		Auth::init();
 		$this->assertTrue(Auth::isInTimeMode());
 
 		// playing joins the challenge too
 		$this->login('stranger');
-		$this->testAction('/challenges/play/' . $challengeId, ['method' => 'post']);
+		$this->post('/challenges/play/' . $challengeId);
 		$this->assertContains($this->userId('stranger'), $this->participants($challengeId));
 
 		foreach (['challenger', 'stranger'] as $name)
@@ -241,12 +243,12 @@ class ChallengesControllerTest extends TestCaseWithAuth
 		}
 
 		// the time the client reports is capped by the time of the challenge, and the points are counted from it
-		$this->testAction('/timeMode/play');
+		$this->post('/timeMode/play');
 		Auth::init();
-		$this->testAction('/tsumegos/result', ['method' => 'POST', 'data' => [
+		$this->post('/tsumegos/result', [
 			'tsumego_id' => Challenge::problemIDs($challengeId)[0],
 			'seconds' => 500,
-			'outcome' => PlayOutcome::SolvedClean->value]]);
+			'outcome' => PlayOutcome::SolvedClean->value]);
 		$attempt = $this->runAttempts($challengeId, 'stranger')[0];
 		$this->assertSame(30.0, (float) $attempt['seconds']);
 		$this->assertSame(100 * TimeModeUtil::$POINTS_RATIO_FOR_FINISHING, (float) $attempt['points']);
@@ -259,9 +261,9 @@ class ChallengesControllerTest extends TestCaseWithAuth
 		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 10]));
 		$this->assertFalse(Auth::isInTimeMode());
 
-		$this->testAction('/challenges/play/' . $challengeId, ['method' => 'post']);
+		$this->post('/challenges/play/' . $challengeId);
 
-		$this->assertStringEndsWith('/challenges/' . $challengeId, $this->headers['Location']);
+		$this->assertStringEndsWith('/challenges/' . $challengeId, $this->headerValue('Location'));
 		$this->assertSame(1, ClassRegistry::init('TimeModeSession')->find('count', ['conditions' => ['challenge_id' => $challengeId]]));
 	}
 
@@ -269,22 +271,22 @@ class ChallengesControllerTest extends TestCaseWithAuth
 	{
 		$this->prepare();
 		$challengeId = $this->create(['problem_count' => 5]);
-		$this->testAction('/challenges/play/' . $challengeId, ['method' => 'post']);
+		$this->post('/challenges/play/' . $challengeId);
 		$problemIDs = Challenge::problemIDs($challengeId);
 		foreach ($problemIDs as $index => $problemID)
 		{
-			$this->testAction('/timeMode/play/' . ($index + 1));
+			$this->post('/timeMode/play/' . ($index + 1));
 			Auth::init();
-			$this->testAction('/tsumegos/result', ['method' => 'POST', 'data' => [
-				'tsumego_id' => $problemID, 'seconds' => 10, 'outcome' => PlayOutcome::SolvedClean->value]]);
+			$this->post('/tsumegos/result', [
+				'tsumego_id' => $problemID, 'seconds' => 10, 'outcome' => PlayOutcome::SolvedClean->value]);
 		}
 
-		$this->testAction('/timeMode/play');
+		$this->post('/timeMode/play');
 		$session = Challenge::runOf($challengeId, $this->userId('challenger'));
-		$this->assertSame(Util::getInternalAddress() . '/timeMode/result/' . $session['TimeModeSession']['id'], $this->headers['Location']);
+		$this->assertSame(Util::getInternalAddress() . '/timeMode/result/' . $session['TimeModeSession']['id'], $this->headerValue('Location'));
 
-		$this->testAction('/timeMode/result/' . $session['TimeModeSession']['id'], ['method' => 'get']);
-		$this->assertSame(Util::getInternalAddress() . '/challenges/' . $challengeId, $this->headers['Location']);
+		$this->get('/timeMode/result/' . $session['TimeModeSession']['id']);
+		$this->assertSame(Util::getInternalAddress() . '/challenges/' . $challengeId, $this->headerValue('Location'));
 	}
 
 	public function testTheTableRanksThePlayersByTheirPoints(): void
@@ -310,7 +312,8 @@ class ChallengesControllerTest extends TestCaseWithAuth
 		$this->assertSame([5, 3, 0], array_column($standings, 'solved_count'));
 		$this->assertSame([Challenge::RUN_FINISHED, Challenge::RUN_FINISHED, Challenge::RUN_NOT_STARTED], array_column($standings, 'run'));
 
-		$page = $this->testAction('/challenges/' . $challengeId, ['method' => 'get', 'return' => 'view']);
+		$this->get('/challenges/' . $challengeId);
+		$page = $this->view;
 		$this->assertTextContains('You are <strong>1st</strong> of 2', $page);
 		$this->assertTextContains('challenges__cell--failed', $page);
 		$this->assertTextContains('not played yet', $page);
@@ -319,7 +322,8 @@ class ChallengesControllerTest extends TestCaseWithAuth
 		preg_match_all('/class="problem-nav__item problem-nav__item--(\w)/', $page, $matches);
 		$this->assertSame(['S', 'S', 'S', 'S', 'S'], $matches[1]);
 		$this->login('challenger');
-		$page = $this->testAction('/challenges/' . $challengeId, ['method' => 'get', 'return' => 'view']);
+		$this->get('/challenges/' . $challengeId);
+		$page = $this->view;
 		preg_match_all('/class="problem-nav__item problem-nav__item--(\w)/', $page, $matches);
 		$this->assertSame(['S', 'F', 'S', 'F', 'S'], $matches[1]);
 		$this->assertTextContains('You got it wrong.', $page);
@@ -332,13 +336,15 @@ class ChallengesControllerTest extends TestCaseWithAuth
 		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 10]));
 		$firstProblemLink = 'href="/' . ClassRegistry::init('SetConnection')->findDisplaySetConnection(Challenge::problemIDs($challengeId)[0])['SetConnection']['id'] . '"';
 
-		$page = $this->testAction('/challenges/' . $challengeId, ['method' => 'get', 'return' => 'view']);
+		$this->get('/challenges/' . $challengeId);
+		$page = $this->view;
 		$this->assertTextContains($firstProblemLink, $page);
 		$this->assertSame(5, substr_count($page, 'class="problem-nav__item '));
 		$this->assertTextContains('challenges__cell--solved', $page);
 
 		$this->login('friend');
-		$page = $this->testAction('/challenges/' . $challengeId, ['method' => 'get', 'return' => 'view']);
+		$this->get('/challenges/' . $challengeId);
+		$page = $this->view;
 		$this->assertTextNotContains($firstProblemLink, $page);
 		$this->assertTextNotContains('problem-nav__item', $page);
 		$this->assertTextNotContains('challenges__cell--solved', $page);
@@ -349,16 +355,17 @@ class ChallengesControllerTest extends TestCaseWithAuth
 	{
 		$this->prepare();
 		$challengeId = $this->create(['problem_count' => 5]);
-		$this->testAction('/challenges/play/' . $challengeId, ['method' => 'post']);
-		$this->testAction('/timeMode/play/1');
+		$this->post('/challenges/play/' . $challengeId);
+		$this->post('/timeMode/play/1');
 		Auth::init();
-		$this->testAction('/tsumegos/result', ['method' => 'POST', 'data' => [
-			'tsumego_id' => Challenge::problemIDs($challengeId)[0], 'seconds' => 10, 'outcome' => PlayOutcome::SolvedClean->value]]);
+		$this->post('/tsumegos/result', [
+			'tsumego_id' => Challenge::problemIDs($challengeId)[0], 'seconds' => 10, 'outcome' => PlayOutcome::SolvedClean->value]);
 
-		$page = $this->testAction('/timeMode/overview', ['method' => 'get', 'return' => 'view']);
+		$this->get('/timeMode/overview');
+		$page = $this->view;
 		$this->assertTextContains('id="challenge-in-progress"', $page);
 
-		$this->testAction('/timeMode/start?categoryID=' . TimeModeUtil::$CATEGORY_BLITZ . '&rankID=' . $this->rankId('5k'), ['method' => 'get']);
+		$this->get('/timeMode/start?categoryID=' . TimeModeUtil::$CATEGORY_BLITZ . '&rankID=' . $this->rankId('5k'));
 
 		// the problems of the challenge are known now, so its run ends instead of being thrown away
 		$session = Challenge::runOf($challengeId, $this->userId('challenger'));
@@ -378,14 +385,16 @@ class ChallengesControllerTest extends TestCaseWithAuth
 		$this->prepare();
 		$firstId = $this->create(['problem_count' => 5]);
 		$secondId = $this->create(['problem_count' => 5]);
-		$this->testAction('/challenges/play/' . $firstId, ['method' => 'post']);
+		$this->post('/challenges/play/' . $firstId);
 
-		$page = $this->testAction('/challenges/' . $secondId, ['method' => 'get', 'return' => 'view']);
+		$this->get('/challenges/' . $secondId);
+		$page = $this->view;
 		$this->assertTextContains('id="challenge-other-in-progress"', $page);
-		$page = $this->testAction('/challenges/' . $firstId, ['method' => 'get', 'return' => 'view']);
+		$this->get('/challenges/' . $firstId);
+		$page = $this->view;
 		$this->assertTextNotContains('id="challenge-other-in-progress"', $page);
 
-		$this->testAction('/challenges/play/' . $secondId, ['method' => 'post']);
+		$this->post('/challenges/play/' . $secondId);
 
 		$this->assertSame([Challenge::RUN_FINISHED], array_column(Challenge::standings($firstId), 'run'));
 		$this->assertSame([Challenge::RUN_PLAYING], array_column(Challenge::standings($secondId), 'run'));
@@ -396,28 +405,31 @@ class ChallengesControllerTest extends TestCaseWithAuth
 		$this->prepare();
 		$challengeId = $this->create(['problem_count' => 5, 'players' => 'DN_friend']);
 		$this->login('friend');
-		$page = $this->testAction('/challenges', ['method' => 'get', 'return' => 'view']);
+		$this->get('/challenges');
+		$page = $this->view;
 		$this->assertTextContains('action="/challenges/decline/' . $challengeId . '"', $page);
 
-		$this->testAction('/challenges/decline/' . $challengeId, ['method' => 'post']);
+		$this->post('/challenges/decline/' . $challengeId);
 
 		$this->assertFalse(Challenge::isParticipant($challengeId, $this->userId('friend')));
 		$this->assertSame(0, Challenge::countWaitingFor($this->userId('friend')));
 		$this->assertSame(['DN_challenger', 'DN_friend'], array_column(Challenge::standings($challengeId), 'user_display_name'));
 		$this->assertSame([Challenge::RUN_NOT_STARTED, Challenge::RUN_DECLINED], array_column(Challenge::standings($challengeId), 'run'));
-		$page = $this->testAction('/challenges/' . $challengeId, ['method' => 'get', 'return' => 'view']);
+		$this->get('/challenges/' . $challengeId);
+		$page = $this->view;
 		$this->assertTextContains('id="challenge-declined"', $page);
 
 		// the challenger sees it and can't invite the friend again
 		$this->login('challenger');
-		$page = $this->testAction('/challenges/' . $challengeId, ['method' => 'get', 'return' => 'view']);
+		$this->get('/challenges/' . $challengeId);
+		$page = $this->view;
 		$this->assertTextContains('>declined</td>', $page);
-		$this->testAction('/challenges/invite/' . $challengeId, ['method' => 'post', 'data' => ['players' => 'DN_friend']]);
+		$this->post('/challenges/invite/' . $challengeId, ['players' => 'DN_friend']);
 		$this->assertSame(Challenge::RUN_DECLINED, Challenge::standings($challengeId)[1]['run']);
 
 		// playing it after all puts the friend back in
 		$this->login('friend');
-		$this->testAction('/challenges/play/' . $challengeId, ['method' => 'post']);
+		$this->post('/challenges/play/' . $challengeId);
 		$this->assertTrue(Challenge::isParticipant($challengeId, $this->userId('friend')));
 		$this->assertNotNull(Challenge::runOf($challengeId, $this->userId('friend')));
 	}
@@ -426,9 +438,9 @@ class ChallengesControllerTest extends TestCaseWithAuth
 	{
 		$this->prepare();
 		$challengeId = $this->create(['problem_count' => 5]);
-		$this->testAction('/challenges/play/' . $challengeId, ['method' => 'post']);
+		$this->post('/challenges/play/' . $challengeId);
 
-		$this->testAction('/challenges/decline/' . $challengeId, ['method' => 'post']);
+		$this->post('/challenges/decline/' . $challengeId);
 
 		$this->assertTrue(Challenge::isParticipant($challengeId, $this->userId('challenger')));
 		$this->assertSame([Challenge::RUN_PLAYING], array_column(Challenge::standings($challengeId), 'run'));
@@ -440,7 +452,8 @@ class ChallengesControllerTest extends TestCaseWithAuth
 		$challengeId = $this->create(['problem_count' => 5]);
 		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 10]));
 
-		$page = $this->testAction('/timeMode/overview', ['method' => 'get', 'return' => 'view']);
+		$this->get('/timeMode/overview');
+		$page = $this->view;
 
 		// with no run of the time mode there are no results of it to open
 		$this->assertTextContains('btn btn--inactive" href="#">Results', $page);
@@ -450,7 +463,8 @@ class ChallengesControllerTest extends TestCaseWithAuth
 	{
 		$this->prepare();
 
-		$page = $this->testAction('/challenges?opponent=' . $this->userId('friend'), ['method' => 'get', 'return' => 'view']);
+		$this->get('/challenges?opponent=' . $this->userId('friend'));
+		$page = $this->view;
 
 		$this->assertTextContains('id="challenge-players" name="players" value="DN_friend"', $page);
 	}

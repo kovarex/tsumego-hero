@@ -6,7 +6,7 @@ use App\Utility\Util;
  * The admin page links everything an admin does and counts what waits there (AdminController),
  * the admin activity and the uploads count what is new since the admin last opened them (AdminPage).
  */
-class AdminControllerTest extends ControllerTestCase
+class AdminControllerTest extends IntegrationTestCase
 {
 	private const SGF = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])';
 
@@ -15,7 +15,7 @@ class AdminControllerTest extends ControllerTestCase
 	 */
 	private function countOnLink(string $url): int
 	{
-		$this->testAction('/admin', ['method' => 'get', 'return' => 'view']);
+		$this->get('/admin');
 		$this->assertMatchesRegularExpression('~<a class="admin-area__link" href="' . preg_quote($url, '~') . '">~', $this->view, $url . ' is linked');
 		preg_match('~href="' . preg_quote($url, '~') . '">[^<]*<span class="admin-area__badge"[^>]*>(\d+)</span>~', $this->view, $match);
 		return (int) ($match[1] ?? 0);
@@ -60,7 +60,7 @@ class AdminControllerTest extends ControllerTestCase
 	public function testNothingWaitsNoCountIsShown(): void
 	{
 		new ContextPreparator(['user' => ['admin' => true]]);
-		$this->testAction('/admin', ['method' => 'get', 'return' => 'view']);
+		$this->get('/admin');
 		$this->assertStringNotContainsString('admin-area__badge', $this->view);
 	}
 
@@ -75,14 +75,14 @@ class AdminControllerTest extends ControllerTestCase
 		self::logActivity($otherID);
 		$this->assertSame(0, $this->countOnLink('/admin/activity'));
 
-		$this->testAction('/admin/activity', ['method' => 'get', 'return' => 'view']);
+		$this->get('/admin/activity');
 		$this->assertStringNotContainsString('data-table__row--new', $this->view, 'the first look marks nothing');
 		self::viewedAnHourAgo(AdminPage::ACTIVITY);
 		self::logActivity($otherID);
 		self::logActivity($context->user['id']); // what the admin did is not new to them
 		$this->assertSame(2, $this->countOnLink('/admin/activity'));
 
-		$this->testAction('/admin/activity', ['method' => 'get', 'return' => 'view']);
+		$this->get('/admin/activity');
 		$this->assertSame(2, substr_count($this->view, 'data-table__row--new'), 'what is new is marked in the list');
 		$this->assertSame(0, $this->countOnLink('/admin/activity'));
 	}
@@ -101,13 +101,13 @@ class AdminControllerTest extends ControllerTestCase
 					['data' => self::SGF, 'sgf_status_id' => Sgf::STATUS_REJECTED]]]]);
 		[$oldUpload, , $proposal, $rejected] = array_column($context->tsumegos[0]['sgfs'], 'id');
 
-		$this->testAction('/users/uploads', ['method' => 'get']);
+		$this->get('/users/uploads');
 		self::viewedAnHourAgo(AdminPage::UPLOADS);
 		Util::execute('UPDATE sgf SET user_id = ? WHERE id IN (?, ?, ?)', [$context->otherUsers[0]['id'], $oldUpload, $proposal, $rejected]);
 		Util::execute('UPDATE sgf SET created = NOW() - INTERVAL 2 HOUR WHERE id = ?', [$oldUpload]);
 		$this->assertSame(1, $this->countOnLink('/users/uploads'), 'the proposal only: the own upload and the rejected one do not count, the old one was seen');
 
-		$this->testAction('/users/uploads', ['method' => 'get', 'return' => 'view']);
+		$this->get('/users/uploads');
 		$this->assertSame(1, substr_count($this->view, 'data-table__row--new'));
 		$this->assertStringContainsString('<tr id="' . $proposal . '" class="data-table__row--new">', $this->view);
 		$this->assertSame(0, $this->countOnLink('/users/uploads'));
@@ -116,31 +116,33 @@ class AdminControllerTest extends ControllerTestCase
 	public function testOnlyOwnersSeeTheLinkToTheRoles(): void
 	{
 		new ContextPreparator(['user' => ['admin' => true]]);
-		$this->testAction('/admin', ['method' => 'get', 'return' => 'view']);
+		$this->get('/admin');
 		$this->assertStringNotContainsString('href="/roles"', $this->view);
 
 		new ContextPreparator(['user' => ['owner' => true]]);
-		$this->testAction('/admin', ['method' => 'get', 'return' => 'view']);
+		$this->get('/admin');
 		$this->assertStringContainsString('href="/roles"', $this->view);
 	}
 
 	public function testMenuHasOneLinkToTheAdminPage(): void
 	{
 		new ContextPreparator(['user' => ['admin' => true]]);
-		$page = $this->testAction('/changelog', ['method' => 'get', 'return' => 'contents']);
+		$this->get('/changelog');
+		$page = $this->view;
 		$this->assertSame(1, substr_count($page, 'class="adminLink'));
 		$this->assertStringContainsString('href="/admin">Admin</a>', $page);
 		$this->assertStringNotContainsString('adminLink-more', $page);
 
 		new ContextPreparator(['user' => ['admin' => false]]);
-		$page = $this->testAction('/changelog', ['method' => 'get', 'return' => 'contents']);
+		$this->get('/changelog');
+		$page = $this->view;
 		$this->assertStringNotContainsString('href="/admin"', $page);
 	}
 
 	public function testOldAdminPanelAddressLeadsToTheAdminPage(): void
 	{
 		new ContextPreparator(['user' => ['admin' => true]]);
-		$this->testAction('/users/adminstats', ['method' => 'get']);
-		$this->assertStringEndsWith('/admin', $this->headers['Location']);
+		$this->get('/users/adminstats');
+		$this->assertStringEndsWith('/admin', $this->headerValue('Location'));
 	}
 }

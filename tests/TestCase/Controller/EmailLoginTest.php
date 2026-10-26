@@ -10,7 +10,7 @@ use App\Utility\Auth;
  * - Regular users can log in with email
  * - When both exist with same email, only regular user is matched
  */
-class EmailLoginTest extends ControllerTestCase
+class EmailLoginTest extends IntegrationTestCase
 {
 	private const TEST_PASSWORD = 'test';  // ContextPreparator uses 'test' as default password
 
@@ -30,17 +30,13 @@ class EmailLoginTest extends ControllerTestCase
 			],
 		]);
 
-		$result = $this->testAction('/users/login', [
-			'method' => 'post',
-			'data' => [
-				'username' => 'regular@example.com',
-				'password' => self::TEST_PASSWORD,
-			],
-			'return' => 'vars',
+		$this->post('/users/login', [
+			'username' => 'regular@example.com',
+			'password' => self::TEST_PASSWORD,
 		]);
 
 		// Should redirect (successful login)
-		$this->assertContains($this->controller->response->statusCode(), [301, 302]);
+		$this->assertRedirect();
 	}
 
 	/**
@@ -61,18 +57,14 @@ class EmailLoginTest extends ControllerTestCase
 			'external_id' => '123456',
 		], false);
 
-		$this->testAction('/users/login', [
-			'method' => 'post',
-			'data' => [
-				'username' => 'google@gmail.com',
-				'password' => 'anypassword',
-			],
-			'return' => 'view',
+		$this->post('/users/login', [
+			'username' => 'google@gmail.com',
+			'password' => 'anypassword',
 		]);
 
 		// Should NOT redirect (failed login - user not found by email)
 		// The getUserFromNameOrEmail excludes Google users from email lookup
-		$this->assertEquals(200, $this->controller->response->statusCode());
+		$this->assertResponseOk();
 	}
 
 	/**
@@ -103,15 +95,12 @@ class EmailLoginTest extends ControllerTestCase
 			],
 		]);
 
-		$this->testAction('/users/login', [
-			'method' => 'post',
-			'data' => [
-				'username' => 'shared@example.com',
-				'password' => self::TEST_PASSWORD,
-			],
+		$this->post('/users/login', [
+			'username' => 'shared@example.com',
+			'password' => self::TEST_PASSWORD,
 		]);
 
-		$this->assertContains($this->controller->response->statusCode(), [301, 302]);
+		$this->assertRedirect();
 		$this->assertEquals($context->otherUsers[0]['id'], Auth::getUserID());
 	}
 
@@ -142,15 +131,12 @@ class EmailLoginTest extends ControllerTestCase
 			],
 		]);
 
-		$this->testAction('/users/login', [
-			'method' => 'post',
-			'data' => [
-				'username' => 'LocalOwner',
-				'password' => self::TEST_PASSWORD,
-			],
+		$this->post('/users/login', [
+			'username' => 'LocalOwner',
+			'password' => self::TEST_PASSWORD,
 		]);
 
-		$this->assertContains($this->controller->response->statusCode(), [301, 302]);
+		$this->assertRedirect();
 		$this->assertEquals($context->otherUsers[0]['id'], Auth::getUserID());
 	}
 
@@ -184,17 +170,13 @@ class EmailLoginTest extends ControllerTestCase
 			'external_id' => 'shared123',
 		], false);
 
-		$result = $this->testAction('/users/login', [
-			'method' => 'post',
-			'data' => [
-				'username' => $sharedEmail,
-				'password' => self::TEST_PASSWORD,
-			],
-			'return' => 'vars',
+		$this->post('/users/login', [
+			'username' => $sharedEmail,
+			'password' => self::TEST_PASSWORD,
 		]);
 
 		// Should redirect (successful login as regular user)
-		$this->assertContains($this->controller->response->statusCode(), [301, 302]);
+		$this->assertRedirect();
 	}
 
 	/**
@@ -215,16 +197,12 @@ class EmailLoginTest extends ControllerTestCase
 			'external_id' => 'byname123',
 		], false);
 
-		$this->testAction('/users/login', [
-			'method' => 'post',
-			'data' => [
-				'username' => 'GoogleByName', // Using name, not email
-				'password' => 'anypassword',
-			],
-			'return' => 'view',
+		$this->post('/users/login', [
+			'username' => 'GoogleByName', // Using name, not email
+			'password' => 'anypassword',
 		]);
 
 		// Should NOT redirect (password validation fails - google_oauth hash doesn't match)
-		$this->assertEquals(200, $this->controller->response->statusCode());
+		$this->assertResponseOk();
 	}
 }

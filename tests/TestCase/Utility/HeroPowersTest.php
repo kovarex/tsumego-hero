@@ -7,7 +7,7 @@ use App\Utility\Rating;
 use App\Utility\TsumegoUtil;
 use App\Utility\Util;
 
-class HeroPowersTest extends TestCaseWithAuth
+class HeroPowersTest extends IntegrationTestCase
 {
 	public function testRefinementGoldenTsumego()
 	{

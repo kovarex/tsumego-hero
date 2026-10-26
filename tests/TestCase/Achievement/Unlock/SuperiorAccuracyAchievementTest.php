@@ -215,7 +215,8 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$plainSetId = $this->createSetWithTsumegosAndConnections(1200, 100);
 		$personalSetId = $this->createFinishedCollection($context->user['id'], 100, 0);
 
-		$page = $this->testAction('/achievements/view/' . AchievementId::SUPERIOR_ACCURACY->value, ['method' => 'get', 'return' => 'view']);
+		$this->get('/achievements/view/' . AchievementId::SUPERIOR_ACCURACY->value);
+		$page = $this->view;
 
 		$this->assertStringContainsString('href="' . Set::url($earnedSetId) . '" class="acCollections__link acCollections__link--earned"', $page,
 			'the collection finished at 100% accuracy is marked as earned');
@@ -246,7 +247,8 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$finishedSetId = $this->createFinishedCollection($context->user['id']);
 		$untouchedSetId = $this->createSetWithTsumegosAndConnections(1200, 100);
 
-		$page = $this->testAction('/achievements/view/' . AchievementId::SUPERIOR_ACCURACY->value, ['method' => 'get', 'return' => 'view']);
+		$this->get('/achievements/view/' . AchievementId::SUPERIOR_ACCURACY->value);
+		$page = $this->view;
 
 		$this->assertStringContainsString(
 			'href="' . Set::url($closeSetId) . '" class="acCollections__link">Test Set (rating 1200)<span class="acCollections__percent">96.5%</span></a>',
@@ -272,7 +274,8 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 			['id' => AchievementId::SUPERIOR_ACCURACY->value, 'value' => 14]]]]);
 		$this->createSetWithTsumegosAndConnections(1200, 100);
 
-		$page = $this->testAction('/achievements/view/' . AchievementId::SUPERIOR_ACCURACY->value, ['method' => 'get', 'return' => 'view']);
+		$this->get('/achievements/view/' . AchievementId::SUPERIOR_ACCURACY->value);
+		$page = $this->view;
 
 		$this->assertStringContainsString('14 of the collections it was earned on no longer count', $page,
 			'a count without marked collections is explained');
@@ -291,7 +294,8 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$mySetId = $this->createFinishedCollection($context->user['id']);
 		$theirSetId = $this->createFinishedCollection($otherUserId);
 
-		$page = $this->testAction('/achievements/view/' . AchievementId::SUPERIOR_ACCURACY->value . '/' . $otherUserId, ['method' => 'get', 'return' => 'view']);
+		$this->get('/achievements/view/' . AchievementId::SUPERIOR_ACCURACY->value . '/' . $otherUserId);
+		$page = $this->view;
 
 		$this->assertStringContainsString('href="' . Set::url($theirSetId) . '" class="acCollections__link acCollections__link--earned"', $page,
 			'the viewed player\'s perfect collection is marked');
@@ -314,7 +318,8 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 			'other-users' => [['name' => 'otherplayer']]]);
 		$otherUserId = $context->otherUsers[0]['id'];
 
-		$page = $this->testAction('/achievements/user/' . $otherUserId, ['method' => 'get', 'return' => 'view']);
+		$this->get('/achievements/user/' . $otherUserId);
+		$page = $this->view;
 
 		$this->assertStringContainsString(
 			'href="/achievements/view/' . AchievementId::SUPERIOR_ACCURACY->value . '/' . $otherUserId . '"', $page,

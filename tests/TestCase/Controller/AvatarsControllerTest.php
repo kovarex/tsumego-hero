@@ -2,14 +2,15 @@
 
 use App\Utility\Avatar;
 
-class AvatarsControllerTest extends ControllerTestCase
+class AvatarsControllerTest extends IntegrationTestCase
 {
 	public function testImageIsAnSvg()
 	{
-		$result = $this->testAction('/board/' . Avatar::key('Anna'), ['method' => 'get', 'return' => 'contents']);
+		$this->get('/board/' . Avatar::key('Anna'));
+		$result = $this->view;
 
 		$this->assertStringStartsWith('<svg', $result);
-		$this->assertEquals('image/svg+xml', $this->controller->response->type());
+		$this->assertContentType('image/svg+xml');
 	}
 
 	/**
@@ -20,21 +21,27 @@ class AvatarsControllerTest extends ControllerTestCase
 	{
 		$key = Avatar::key('Anna');
 
-		$this->assertSame(Avatar::svg($key), $this->testAction('/board/' . $key, ['method' => 'get', 'return' => 'contents']));
+		$this->get('/board/' . $key);
+
+		$this->assertSame(Avatar::svg($key), $this->view);
 	}
 
 	public function testTheSameNameAlwaysGetsTheSameImage()
 	{
-		$first = $this->testAction('/board/' . Avatar::key('Anna'), ['method' => 'get', 'return' => 'contents']);
-		$second = $this->testAction('/board/' . Avatar::key('Anna'), ['method' => 'get', 'return' => 'contents']);
+		$this->get('/board/' . Avatar::key('Anna'));
+		$first = $this->view;
+		$this->get('/board/' . Avatar::key('Anna'));
+		$second = $this->view;
 
 		$this->assertSame($first, $second);
 	}
 
 	public function testDifferentNamesGetDifferentImages()
 	{
-		$first = $this->testAction('/board/' . Avatar::key('Anna'), ['method' => 'get', 'return' => 'contents']);
-		$second = $this->testAction('/board/' . Avatar::key('kovarex'), ['method' => 'get', 'return' => 'contents']);
+		$this->get('/board/' . Avatar::key('Anna'));
+		$first = $this->view;
+		$this->get('/board/' . Avatar::key('kovarex'));
+		$second = $this->view;
 
 		$this->assertNotSame($first, $second);
 	}
@@ -47,7 +54,9 @@ class AvatarsControllerTest extends ControllerTestCase
 	{
 		$key = Avatar::key('a name no account has');
 
-		$this->assertStringStartsWith('<svg', $this->testAction('/board/' . $key, ['method' => 'get', 'return' => 'contents']));
+		$this->get('/board/' . $key);
+
+		$this->assertStringStartsWith('<svg', $this->view);
 	}
 
 	/**
@@ -56,9 +65,9 @@ class AvatarsControllerTest extends ControllerTestCase
 	 */
 	public function testImageIsCachedForALongTime()
 	{
-		$this->testAction('/board/' . Avatar::key('Anna'), ['method' => 'get', 'return' => 'contents']);
+		$this->get('/board/' . Avatar::key('Anna'));
 
-		$headers = $this->controller->response->header();
+		$headers = $this->_response->header();
 		$this->assertNotEmpty($headers['Etag']);
 		$this->assertStringContainsString('max-age=', $headers['Cache-Control']);
 	}
@@ -69,7 +78,8 @@ class AvatarsControllerTest extends ControllerTestCase
 	 */
 	public function testImageLoadsForAVisitorWhoIsNotLoggedIn()
 	{
-		$result = $this->testAction('/board/' . Avatar::key('Anna'), ['method' => 'get', 'return' => 'contents']);
+		$this->get('/board/' . Avatar::key('Anna'));
+		$result = $this->view;
 
 		$this->assertStringStartsWith('<svg', $result);
 	}
@@ -79,9 +89,11 @@ class AvatarsControllerTest extends ControllerTestCase
 		foreach (['not-a-hex-key', '123', 'ABCDEFABCDEF', 'abcdefabcdef0'] as $key)
 		{
 			$notFound = false;
+			// The exception itself is what tells the key was refused.
+			$this->disableErrorHandlerMiddleware();
 			try
 			{
-				$this->testAction('/avatars/image/' . $key, ['method' => 'get', 'return' => 'contents']);
+				$this->get('/avatars/image/' . $key);
 			}
 			catch (NotFoundException $e)
 			{
@@ -100,9 +112,9 @@ class AvatarsControllerTest extends ControllerTestCase
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'Anna']]);
 
-		$this->testAction('/avatar/' . $context->user['id'], ['method' => 'get']);
+		$this->get('/avatar/' . $context->user['id']);
 
-		$this->assertStringContainsString(Avatar::url('DN_Anna'), (string) $this->headers['Location']);
+		$this->assertStringContainsString(Avatar::url('DN_Anna'), (string) $this->headerValue('Location'));
 	}
 
 	/**
@@ -112,14 +124,16 @@ class AvatarsControllerTest extends ControllerTestCase
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'Anna', 'deleted' => true]]);
 
-		$this->expectException(NotFoundException::class);
-		$this->testAction('/avatar/' . $context->user['id'], ['method' => 'get']);
+		$this->get('/avatar/' . $context->user['id']);
+
+		$this->assertResponseCode(404);
 	}
 
 	public function testAnUnknownUserIdHasNoBoard()
 	{
-		$this->expectException(NotFoundException::class);
-		$this->testAction('/avatar/999999999', ['method' => 'get']);
+		$this->get('/avatar/999999999');
+
+		$this->assertResponseCode(404);
 	}
 
 	/**
@@ -130,27 +144,29 @@ class AvatarsControllerTest extends ControllerTestCase
 	{
 		$key = Avatar::key('Anna');
 
-		$result = $this->testAction('/board/' . $key . '.png', ['method' => 'get', 'return' => 'contents']);
+		$this->get('/board/' . $key . '.png');
+		$result = $this->view;
 		$size = getimagesizefromstring($result);
 
 		$this->assertSame("\x89PNG\r\n\x1a\n", substr($result, 0, 8));
-		$this->assertEquals('image/png', $this->controller->response->type());
+		$this->assertContentType('image/png');
 		$this->assertSame(Avatar::SHARE_SIZE, $size[0]);
 		$this->assertSame(Avatar::SHARE_SIZE, $size[1]);
 	}
 
 	public function testThePngOfAKeyIsCachedForALongTime()
 	{
-		$this->testAction('/board/' . Avatar::key('Anna') . '.png', ['method' => 'get', 'return' => 'contents']);
+		$this->get('/board/' . Avatar::key('Anna') . '.png');
 
-		$headers = $this->controller->response->header();
+		$headers = $this->_response->header();
 		$this->assertNotEmpty($headers['Etag']);
 		$this->assertStringContainsString('max-age=', $headers['Cache-Control']);
 	}
 
 	public function testAPngKeyThatIsNotADrawingIsNotFound()
 	{
-		$this->expectException(NotFoundException::class);
-		$this->testAction('/avatars/imagePng/not-a-hex-key', ['method' => 'get', 'return' => 'contents']);
+		$this->get('/avatars/imagePng/not-a-hex-key');
+
+		$this->assertResponseCode(404);
 	}
 }

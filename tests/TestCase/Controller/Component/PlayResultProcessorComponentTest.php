@@ -13,7 +13,7 @@ use App\Utility\SetCompletionCounter;
 use App\Utility\TsumegoUtil;
 use App\Utility\Util;
 
-class PlayResultProcessorComponentTest extends TestCaseWithAuth
+class PlayResultProcessorComponentTest extends IntegrationTestCase
 {
 	private function loginAs(ContextPreparator &$context): void
 	{
@@ -24,12 +24,9 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 	private function postResult(ContextPreparator &$context, array $params): array
 	{
 		$this->loginAs($context);
-		$this->testAction('/tsumegos/result', [
-			'method' => 'POST',
-			'data' => $params,
-		]);
+		$this->post('/tsumegos/result', $params);
 		$this->loginAs($context);
-		return json_decode($this->controller->response->body(), true) ?? [];
+		return json_decode($this->view, true) ?? [];
 	}
 
 	private function postOutcome(ContextPreparator &$context, PlayOutcome $outcome): array
@@ -45,16 +42,13 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 	{
 		$context = new ContextPreparator(['user' => null, 'tsumego' => 1]);
 
-		$this->expectException(UnauthorizedException::class);
-
-		$this->testAction('/tsumegos/result', [
-			'method' => 'POST',
-			'data' => [
-				'tsumego_id' => $context->tsumegos[0]['id'],
-				'seconds' => 0,
-				'outcome' => 'solved',
-			],
+		$this->post('/tsumegos/result', [
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'seconds' => 0,
+			'outcome' => 'solved',
 		]);
+
+		$this->assertResponseCode(401);
 	}
 
 	private function solveWithMisplays(ContextPreparator &$context, int $misplays = 1): array
@@ -104,7 +98,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 	{
 		$context = new ContextPreparator(['tsumego' => 1]);
 		$this->loginAs($context);
-		$this->testAction('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$this->post('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->assertSame('V', $this->statusOf($context));
 	}
 
@@ -120,7 +114,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 	{
 		$context = new ContextPreparator(['tsumego' => ['status' => 'S', 'set_order' => 1]]);
 		$this->loginAs($context);
-		$this->testAction('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$this->post('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->assertSame('S', $this->statusOf($context));
 	}
 
@@ -783,13 +777,13 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 		// Switch to rating mode -> DB mode must be rating immediately (same request).
 		$this->loginAs($context);
-		$this->testAction('/ratingMode');
+		$this->post('/ratingMode');
 		$this->assertSame(Constants::$RATING_MODE, (int) $context->reloadUser()['mode'],
 			'DB mode should be RATING right after visiting /ratingMode');
 
 		// Switch back to level mode by opening a problem directly -> DB mode must be level immediately.
 		$this->loginAs($context);
-		$this->testAction('/' . $context->tsumegos[0]['set-connections'][0]['id'], ['return' => 'view']);
+		$this->post('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->assertSame(Constants::$LEVEL_MODE, (int) $context->reloadUser()['mode'],
 			'DB mode should be LEVEL right after opening a problem directly');
 		$this->assertTextContains('var mode = 1;', $this->view,
@@ -812,7 +806,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 		// Switch to rating mode and solve immediately, without touching level mode in between.
 		$this->loginAs($context);
-		$this->testAction('/ratingMode');
+		$this->post('/ratingMode');
 		$this->assertSame(Constants::$RATING_MODE, (int) $context->reloadUser()['mode'],
 			'DB mode should be RATING after visiting /ratingMode');
 
@@ -977,7 +971,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 	{
 		$context = new ContextPreparator(['tsumego' => 1]);
 		$this->loginAs($context);
-		$this->testAction('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$this->post('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->assertNull(
 			MistakeTraining::getPoolRow($context->user['id'], (int) $context->tsumegos[0]['id']),
 			'Visit only should not enter the pool'

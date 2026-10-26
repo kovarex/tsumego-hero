@@ -3,15 +3,13 @@
 use App\Utility\Auth;
 use App\Utility\Rating;
 use Facebook\WebDriver\WebDriverKeys;
-use PHPUnitRetry\RetryTrait;
 
 /**
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
-class EditTsumegoTest extends ControllerTestCase
+class EditTsumegoTest extends IntegrationTestCase
 {
-	use RetryTrait;
 	public static function editTsumegoProvider(): array
 	{
 		return [

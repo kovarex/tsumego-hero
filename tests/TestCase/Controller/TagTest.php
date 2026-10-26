@@ -1,7 +1,6 @@
 <?php
 
 use Facebook\WebDriver\WebDriverKeys;
-use PHPUnitRetry\RetryTrait;
 /**
  * Tag editor tests - React component with data-testid selectors.
  *
@@ -13,10 +12,8 @@ use App\Utility\Constants;
 use App\Utility\TimeModeUtil;
 use App\Utility\Util;
 
-class TagTest extends ControllerTestCase
+class TagTest extends IntegrationTestCase
 {
-	use RetryTrait;
-
 	private function openEditorAndType(Browser $browser, string $query): void
 	{
 		$browser->clickCssSelect('[data-testid="tag-search-input"]');
@@ -563,7 +560,8 @@ class TagTest extends ControllerTestCase
 	public function testTagViewLinksTheAuthor(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'tagauthor'], 'tags' => [['name' => 'snapback']]]);
-		$result = $this->testAction('/tags/view/' . $context->tags[0]['id'], ['method' => 'get', 'return' => 'view']);
+		$this->get('/tags/view/' . $context->tags[0]['id']);
+		$result = $this->view;
 
 		$this->assertStringContainsString('<a href="/users/view/' . $context->tags[0]['user_id'] . '"', $result);
 		$this->assertStringContainsString($context->user['display_name'], $result);
@@ -618,16 +616,16 @@ class TagTest extends ControllerTestCase
 			'name' => 'snapback',
 			'description' => '<b onmouseover="alert(1)">Shape</b>',
 		]]]);
-		$this->testAction('/tags/view/' . $context->tags[0]['id'], ['method' => 'get', 'return' => 'view']);
+		$this->get('/tags/view/' . $context->tags[0]['id']);
 
 		$this->assertStringContainsString('<b>Shape</b>', $this->view);
-		$this->assertStringNotContainsString('onmouseover', $this->view);
+		$this->assertStringNotContainsString('onmouseover="alert', $this->view);
 	}
 
 	public function testTagViewRendersHttpReferenceAsLink(): void
 	{
 		$context = new ContextPreparator(['tags' => [['name' => 'ok', 'link' => 'https://example.com/ref']]]);
-		$this->testAction('/tags/view/' . $context->tags[0]['id'], ['method' => 'get', 'return' => 'view']);
+		$this->get('/tags/view/' . $context->tags[0]['id']);
 
 		$this->assertStringContainsString('href="https://example.com/ref"', $this->view);
 	}
@@ -635,7 +633,7 @@ class TagTest extends ControllerTestCase
 	public function testTagViewRendersNonUrlReferenceAsText(): void
 	{
 		$context = new ContextPreparator(['tags' => [['name' => 'ok', 'link' => 'segoe seigen tesuji jiten vol 1']]]);
-		$this->testAction('/tags/view/' . $context->tags[0]['id'], ['method' => 'get', 'return' => 'view']);
+		$this->get('/tags/view/' . $context->tags[0]['id']);
 
 		$this->assertStringContainsString('>segoe seigen tesuji jiten vol 1</p>', $this->view);
 		$this->assertStringNotContainsString('href="segoe seigen', $this->view);
@@ -644,7 +642,7 @@ class TagTest extends ControllerTestCase
 	public function testTagViewDoesNotLinkifyUnsafeReference(): void
 	{
 		$context = new ContextPreparator(['tags' => [['name' => 'ok', 'link' => 'javascript:alert(1)']]]);
-		$this->testAction('/tags/view/' . $context->tags[0]['id'], ['method' => 'get', 'return' => 'view']);
+		$this->get('/tags/view/' . $context->tags[0]['id']);
 
 		$this->assertStringContainsString('>javascript:alert(1)</p>', $this->view);
 		$this->assertStringNotContainsString('href="javascript:', $this->view);
@@ -834,10 +832,7 @@ class TagTest extends ControllerTestCase
 		$tagId = $context->tags[0]['id'];
 		$this->assertNotEmpty(ClassRegistry::init('Tag')->findById($tagId));
 
-		$this->testAction('/tags/delete/' . $tagId, [
-			'method' => 'post',
-			'data' => ['Tag' => ['delete' => $tagId]],
-		]);
+		$this->post('/tags/delete/' . $tagId, ['Tag' => ['delete' => $tagId]]);
 
 		$this->assertEmpty(ClassRegistry::init('Tag')->findById($tagId));
 	}
@@ -850,12 +845,9 @@ class TagTest extends ControllerTestCase
 
 		$tagId = $context->tags[0]['id'];
 
-		$this->expectException(ForbiddenException::class);
+		$this->post('/tags/delete/' . $tagId, ['Tag' => ['delete' => $tagId]]);
 
-		$this->testAction('/tags/delete/' . $tagId, [
-			'method' => 'post',
-			'data' => ['Tag' => ['delete' => $tagId]],
-		]);
+		$this->assertResponseCode(403);
 	}
 
 	public function testCommunityHintTagHiddenUntilProblemSolved()

@@ -1,7 +1,7 @@
 <?php
 
 
-class SandboxSgfUploadTest extends TestCaseWithAuth
+class SandboxSgfUploadTest extends IntegrationTestCase
 {
 	public function testAddTsumegoWithSgfFileUpload()
 	{
@@ -25,9 +25,7 @@ class SandboxSgfUploadTest extends TestCaseWithAuth
 		// POST to addTsumego endpoint
 		$data = ['order' => 1];
 
-		$this->testAction('/sets/createAndAddTsumego/' . $setID, [
-			'method' => 'post',
-			'data' => $data]);
+		$this->post('/sets/createAndAddTsumego/' . $setID, $data);
 
 		// Verify tsumego was created
 		$tsumego = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC']);
@@ -64,9 +62,7 @@ class SandboxSgfUploadTest extends TestCaseWithAuth
 		// POST to addTsumego endpoint with SGF in data
 		$data = ['order' => 1, 'sgf' => $sgfContent];
 
-		$this->testAction('/sets/createAndAddTsumego/' . $setID, [
-			'method' => 'post',
-			'data' => $data]);
+		$this->post('/sets/createAndAddTsumego/' . $setID, $data);
 
 		// Verify tsumego was created
 		$tsumego = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC']);

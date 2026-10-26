@@ -1,7 +1,6 @@
 <?php
 
 use App\Utility\Constants;
-use PHPUnitRetry\RetryTrait;
 
 /**
  * The account bar animates a result for a second. A page left sooner (a refresh, Next,
@@ -11,10 +10,8 @@ use PHPUnitRetry\RetryTrait;
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
-class AccountWidgetReplayBrowserTest extends TestCaseWithAuth
+class AccountWidgetReplayBrowserTest extends IntegrationTestCase
 {
-	use RetryTrait;
-
 	/** AccountWidget.unshownResultKey, Firefox doesn't let the test scripts see the class itself */
 	private const UNSHOWN_RESULT_KEY = 'accountWidgetUnshownResult';
 

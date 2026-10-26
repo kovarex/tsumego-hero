@@ -15,7 +15,7 @@ use App\Utility\Constants;
  * These tests lock down behavior of rotateBoard() and autoRotate()
  * in editor.js.
  */
-class RotationTest extends TestCaseWithAuth
+class RotationTest extends IntegrationTestCase
 {
 	/** Tall regular board: the highest y exceeds x by 10, so it is turned on its side. */
 	private const TALL_SGF = '(;GM[1]FF[4]SZ[19]AB[ab][ac][ad][ae][af][ag][ah][ai][aj][ak]AW[bb][bc][bd][be][bf][bg][bh][bi][bj][bk];B[al]C[+])';

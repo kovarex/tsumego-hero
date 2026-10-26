@@ -5,10 +5,8 @@ use App\Utility\CookieFlash;
 /**
  * Tests for the registration endpoint: the e-mail and the login name a new account
  * gets, and the registrations it refuses.
- *
- * Uses testAction for controller testing without Selenium.
  */
-class RegistrationEmailTest extends ControllerTestCase
+class RegistrationEmailTest extends IntegrationTestCase
 {
 	/**
 	 * Test that registration fails when email is already used by a regular user.
@@ -28,17 +26,13 @@ class RegistrationEmailTest extends ControllerTestCase
 		]);
 
 		// Try to register with the same email
-		$this->testAction('users/add', [
-			'data' => [
-				'User' => [
-					'name' => 'newuser',
-					'email' => 'taken@example.com',
-					'password1' => 'password123',
-					'password2' => 'password123',
-				]
+		$this->post('users/add', [
+			'User' => [
+				'name' => 'newuser',
+				'email' => 'taken@example.com',
+				'password1' => 'password123',
+				'password2' => 'password123',
 			],
-			'method' => 'POST',
-			'return' => 'vars'
 		]);
 
 		// Check that no new user was created with this email/name
@@ -74,17 +68,13 @@ class RegistrationEmailTest extends ControllerTestCase
 		]);
 
 		// Try to register with the same email
-		$this->testAction('users/add', [
-			'data' => [
-				'User' => [
-					'name' => 'newuser2',
-					'email' => 'google@gmail.com',
-					'password1' => 'password123',
-					'password2' => 'password123',
-				]
+		$this->post('users/add', [
+			'User' => [
+				'name' => 'newuser2',
+				'email' => 'google@gmail.com',
+				'password1' => 'password123',
+				'password2' => 'password123',
 			],
-			'method' => 'POST',
-			'return' => 'vars'
 		]);
 
 		// Check that no new user was created with this email/name
@@ -110,17 +100,13 @@ class RegistrationEmailTest extends ControllerTestCase
 		// Clean state with no users
 		new ContextPreparator(['user' => null]);
 
-		$this->testAction('users/add', [
-			'data' => [
-				'User' => [
-					'name' => 'uniqueuser',
-					'email' => 'unique@example.com',
-					'password1' => 'password123',
-					'password2' => 'password123',
-				]
+		$this->post('users/add', [
+			'User' => [
+				'name' => 'uniqueuser',
+				'email' => 'unique@example.com',
+				'password1' => 'password123',
+				'password2' => 'password123',
 			],
-			'method' => 'POST',
-			'return' => 'vars'
 		]);
 
 		// Check the user was created
@@ -160,17 +146,13 @@ class RegistrationEmailTest extends ControllerTestCase
 
 		// The new player wants the login name "ConflictName", which the Google account
 		// does not use
-		$this->testAction('users/add', [
-			'data' => [
-				'User' => [
-					'name' => 'ConflictName',
-					'email' => 'newuser@example.com',
-					'password1' => 'password123',
-					'password2' => 'password123',
-				]
+		$this->post('users/add', [
+			'User' => [
+				'name' => 'ConflictName',
+				'email' => 'newuser@example.com',
+				'password1' => 'password123',
+				'password2' => 'password123',
 			],
-			'method' => 'POST',
-			'return' => 'vars'
 		]);
 
 		// Check the new user was created

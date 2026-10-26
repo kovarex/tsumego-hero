@@ -2,15 +2,15 @@
 
 use App\Utility\Constants;
 
-class TagConnectionControllerTest extends ControllerTestCase
+class TagConnectionControllerTest extends IntegrationTestCase
 {
 	public function testAddRequiresLogin()
 	{
 		new ContextPreparator(['user' => null]);
 
-		$this->expectException(UnauthorizedException::class);
+		$this->post('/tagConnection/add/1/snapback');
 
-		$this->testAction('/tagConnection/add/1/snapback', ['method' => 'post']);
+		$this->assertResponseCode(401);
 	}
 
 	public function testAddRequiresContributionPermission()
@@ -21,9 +21,9 @@ class TagConnectionControllerTest extends ControllerTestCase
 			'tags' => [['name' => 'snapback']],
 		]);
 
-		$this->expectException(ForbiddenException::class);
+		$this->post('/tagConnection/add/' . $context->tsumegos[0]['id'] . '/snapback');
 
-		$this->testAction('/tagConnection/add/' . $context->tsumegos[0]['id'] . '/snapback', ['method' => 'post']);
+		$this->assertResponseCode(403);
 	}
 
 	public function testAddWithUnknownTag()
@@ -33,9 +33,9 @@ class TagConnectionControllerTest extends ControllerTestCase
 			'tsumego' => ['set_order' => 1, 'status' => 'S'],
 		]);
 
-		$this->expectException(ForbiddenException::class);
+		$this->post('/tagConnection/add/' . $context->tsumegos[0]['id'] . '/nonexistent-tag');
 
-		$this->testAction('/tagConnection/add/' . $context->tsumegos[0]['id'] . '/nonexistent-tag', ['method' => 'post']);
+		$this->assertResponseCode(403);
 	}
 
 	public function testAddSucceeds()
@@ -46,9 +46,9 @@ class TagConnectionControllerTest extends ControllerTestCase
 			'tags' => [['name' => 'snapback']],
 		]);
 
-		$this->testAction('/tagConnection/add/' . $context->tsumegos[0]['id'] . '/snapback', ['method' => 'post']);
+		$this->post('/tagConnection/add/' . $context->tsumegos[0]['id'] . '/snapback');
 
-		$this->assertSame(200, $this->controller->response->statusCode());
+		$this->assertResponseCode(200);
 		$connection = ClassRegistry::init('TagConnection')->find('first', [
 			'conditions' => ['tsumego_id' => $context->tsumegos[0]['id']],
 		]);
@@ -59,9 +59,9 @@ class TagConnectionControllerTest extends ControllerTestCase
 	{
 		new ContextPreparator(['user' => null]);
 
-		$this->expectException(ForbiddenException::class);
+		$this->post('/tagConnection/remove/1/snapback');
 
-		$this->testAction('/tagConnection/remove/1/snapback', ['method' => 'post']);
+		$this->assertResponseCode(403);
 	}
 
 	public function testRemoveSucceeds()
@@ -71,9 +71,9 @@ class TagConnectionControllerTest extends ControllerTestCase
 			'tsumego' => ['set_order' => 1, 'status' => 'S', 'tags' => [['name' => 'snapback', 'approved' => 0]]],
 		]);
 
-		$this->testAction('/tagConnection/remove/' . $context->tsumegos[0]['id'] . '/snapback', ['method' => 'post']);
+		$this->post('/tagConnection/remove/' . $context->tsumegos[0]['id'] . '/snapback');
 
-		$this->assertSame(200, $this->controller->response->statusCode());
+		$this->assertResponseCode(200);
 		$connection = ClassRegistry::init('TagConnection')->find('first', [
 			'conditions' => ['tsumego_id' => $context->tsumegos[0]['id']],
 		]);
@@ -112,9 +112,9 @@ class TagConnectionControllerTest extends ControllerTestCase
 		$tag->create();
 		$tag->save(['Tag' => ['name' => 'one-too-many', 'description' => '']]);
 
-		$this->expectException(ForbiddenException::class);
+		$this->post('/tagConnection/add/' . $context->tsumegos[0]['id'] . '/one-too-many');
 
-		$this->testAction('/tagConnection/add/' . $context->tsumegos[0]['id'] . '/one-too-many', ['method' => 'post']);
+		$this->assertResponseCode(403);
 	}
 
 	public function testAddAllowedWhenUnderDailyLimit()
@@ -125,8 +125,8 @@ class TagConnectionControllerTest extends ControllerTestCase
 			'tags' => [['name' => 'fresh-tag']],
 		]);
 
-		$this->testAction('/tagConnection/add/' . $context->tsumegos[0]['id'] . '/fresh-tag', ['method' => 'post']);
+		$this->post('/tagConnection/add/' . $context->tsumegos[0]['id'] . '/fresh-tag');
 
-		$this->assertSame(200, $this->controller->response->statusCode());
+		$this->assertResponseCode(200);
 	}
 }

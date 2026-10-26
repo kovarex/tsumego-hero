@@ -1,6 +1,5 @@
 <?php
 
-use PHPUnitRetry\RetryTrait;
 /**
  * Base class for all achievement tests.
  *
@@ -12,10 +11,8 @@ use App\Utility\AchievementId;
 use App\Utility\Auth;
 use App\Utility\TsumegoUtil;
 
-abstract class AchievementTestCase extends ControllerTestCase
+abstract class AchievementTestCase extends IntegrationTestCase
 {
-	use RetryTrait;
-
 	protected function assertAchievementUnlockedWhen($when, AchievementId $achievementId, $message = null)
 	{
 		if ($when)
@@ -74,7 +71,7 @@ abstract class AchievementTestCase extends ControllerTestCase
 
 		// Make a simple request - achievements checked in AppController::beforeFilter
 		// beforeFilter will call Auth::init() which loads fresh user data from DB
-		$this->testAction('/sites/index', ['method' => 'get', 'return' => 'view']);
+		$this->get('/sites/index');
 	}
 
 	/**

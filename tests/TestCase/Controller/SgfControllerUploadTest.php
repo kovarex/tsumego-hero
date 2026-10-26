@@ -3,7 +3,7 @@
 use App\Utility\Auth;
 use App\Utility\Constants;
 
-class SgfControllerUploadTest extends TestCaseWithAuth
+class SgfControllerUploadTest extends IntegrationTestCase
 {
 	/** A problem in the top-left corner: the solution is A19, A18, B19. */
 	private const SGF = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])';

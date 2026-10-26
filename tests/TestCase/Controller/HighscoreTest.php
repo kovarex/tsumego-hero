@@ -4,7 +4,7 @@ use App\Utility\AchievementId;
 use App\Utility\Level;
 use App\Utility\Rating;
 
-class HighscoreTest extends TestCaseWithAuth
+class HighscoreTest extends IntegrationTestCase
 {
 	/**
 	 * Rating highscore shows users sorted by rating descending with correct positions.
@@ -19,7 +19,7 @@ class HighscoreTest extends TestCaseWithAuth
 			],
 		]);
 
-		$this->testAction('users/rating', ['method' => 'get', 'return' => 'view']);
+		$this->get('users/rating');
 		$dom = $this->getStringDom();
 		$rows = $dom->querySelectorAll('.data-table tr');
 
@@ -43,7 +43,7 @@ class HighscoreTest extends TestCaseWithAuth
 			],
 		]);
 
-		$this->testAction('users/rating', ['method' => 'get', 'return' => 'view']);
+		$this->get('users/rating');
 		$this->assertTextContains('12d', $this->view);
 		$this->assertTextContains('1d', $this->view);
 		$this->assertTextContains('2k', $this->view);
@@ -63,7 +63,7 @@ class HighscoreTest extends TestCaseWithAuth
 			],
 		]);
 
-		$this->testAction('users/highscore', ['method' => 'get', 'return' => 'view']);
+		$this->get('users/highscore');
 		$dom = $this->getStringDom();
 		$rows = $dom->querySelectorAll('.data-table tr');
 
@@ -88,7 +88,7 @@ class HighscoreTest extends TestCaseWithAuth
 			],
 		]);
 
-		$this->testAction('users/highscore', ['method' => 'get', 'return' => 'view']);
+		$this->get('users/highscore');
 		$dom = $this->getStringDom();
 		$rows = $dom->querySelectorAll('.data-table tr');
 
@@ -125,7 +125,7 @@ class HighscoreTest extends TestCaseWithAuth
 			],
 		]);
 
-		$this->testAction('users/added_tags', ['method' => 'get', 'return' => 'view']);
+		$this->get('users/added_tags');
 		$dom = $this->getStringDom();
 		$rows = $dom->querySelectorAll('.data-table tr');
 
@@ -163,7 +163,7 @@ class HighscoreTest extends TestCaseWithAuth
 			],
 		]);
 
-		$this->testAction('users/achievements', ['method' => 'get', 'return' => 'view']);
+		$this->get('users/achievements');
 		$dom = $this->getStringDom();
 		$rows = $dom->querySelectorAll('.data-table tr');
 
@@ -216,7 +216,7 @@ class HighscoreTest extends TestCaseWithAuth
 			'points' => 600,
 		]]);
 
-		$this->testAction('users/time_mode', ['method' => 'get', 'return' => 'view']);
+		$this->get('users/time_mode');
 		$source = $this->view;
 		// FastPlayer should be before SlowPlayer
 		$fastPos = strpos($source, 'DN_FastPlayer');
@@ -255,7 +255,7 @@ class HighscoreTest extends TestCaseWithAuth
 			]]);
 		}
 
-		$this->testAction('users/time_mode', ['method' => 'get', 'return' => 'view']);
+		$this->get('users/time_mode');
 		// Should only appear once with best score
 		$this->assertSame(1, substr_count($this->view, 'DN_MultiPlayer'));
 		$this->assertTextContains('950', $this->view);
@@ -276,7 +276,7 @@ class HighscoreTest extends TestCaseWithAuth
 			'other-users' => $otherUsers,
 		]);
 
-		$this->testAction('users/rating', ['method' => 'get', 'return' => 'view']);
+		$this->get('users/rating');
 		$this->assertTextContains('kovarex', $this->view);
 		$this->assertTextContains('⋮', $this->view);
 		$this->assertTextContains('data-table__row--self', $this->view);
@@ -298,7 +298,7 @@ class HighscoreTest extends TestCaseWithAuth
 			'other-users' => $otherUsers,
 		]);
 
-		$this->testAction('users/highscore', ['method' => 'get', 'return' => 'view']);
+		$this->get('users/highscore');
 
 		// The 1000th ranked player is listed ...
 		$this->assertTextContains('#1000', $this->view);
@@ -322,7 +322,7 @@ class HighscoreTest extends TestCaseWithAuth
 			],
 		]);
 
-		$this->testAction('users/rating', ['method' => 'get', 'return' => 'view']);
+		$this->get('users/rating');
 		$this->assertTextContains('DN_kovarex', $this->view);
 		// No gap separator when both users are within top 100
 		$this->assertTextNotContains('⋮', $this->view);
@@ -340,7 +340,7 @@ class HighscoreTest extends TestCaseWithAuth
 			],
 		]);
 
-		$this->testAction('users/rating', ['method' => 'get', 'return' => 'view']);
+		$this->get('users/rating');
 		$this->assertTextContains('DN_TopPlayer', $this->view);
 		$this->assertTextContains('DN_SecondPlayer', $this->view);
 		$this->assertTextNotContains('data-table__row--self', $this->view);
@@ -362,7 +362,7 @@ class HighscoreTest extends TestCaseWithAuth
 			],
 		]);
 
-		$this->testAction('users/achievements', ['method' => 'get', 'return' => 'view']);
+		$this->get('users/achievements');
 		$this->assertTextContains('DN_AchPlayer', $this->view);
 		// kovarex has no achievements but still appears via self-view with 0
 		$this->assertTextContains('DN_kovarex', $this->view);
@@ -396,7 +396,7 @@ class HighscoreTest extends TestCaseWithAuth
 			],
 		]);
 
-		$this->testAction('users/achievements', ['method' => 'get', 'return' => 'view']);
+		$this->get('users/achievements');
 		$dom = $this->getStringDom();
 		$rows = $dom->querySelectorAll('.data-table tr');
 
@@ -423,7 +423,7 @@ class HighscoreTest extends TestCaseWithAuth
 			],
 		]);
 
-		$this->testAction('users/added_tags', ['method' => 'get', 'return' => 'view']);
+		$this->get('users/added_tags');
 		$this->assertTextContains('DN_Tagger', $this->view);
 		// kovarex has no tags but appears via self-view
 		$this->assertTextContains('DN_kovarex', $this->view);

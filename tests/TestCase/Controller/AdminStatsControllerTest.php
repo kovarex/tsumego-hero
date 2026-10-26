@@ -1,6 +1,5 @@
 <?php
 
-use PHPUnitRetry\RetryTrait;
 use App\Utility\Constants;
 use App\Utility\Util;
 
@@ -16,9 +15,8 @@ use App\Utility\Util;
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
-class AdminStatsControllerTest extends ControllerTestCase
+class AdminStatsControllerTest extends IntegrationTestCase
 {
-	use RetryTrait;
 	/**
 	 * Test the admin activity page displays in browser
 	 */

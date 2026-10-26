@@ -2,18 +2,15 @@
 
 use App\Utility\Avatar;
 
-class TsumegoCommentsControllerTest extends ControllerTestCase
+class TsumegoCommentsControllerTest extends IntegrationTestCase
 {
 	public function testAddRequiresLogin()
 	{
 		new ContextPreparator(['user' => null]);
 
-		$this->expectException(UnauthorizedException::class);
+		$this->post('/tsumego-comments/add', json_encode(['tsumego_id' => 1, 'text' => 'hello']));
 
-		$this->testAction('/tsumego-comments/add', [
-			'method' => 'post',
-			'data' => json_encode(['tsumego_id' => 1, 'text' => 'hello']),
-		]);
+		$this->assertResponseCode(401);
 	}
 
 	public function testAddCommentSucceeds()
@@ -23,13 +20,10 @@ class TsumegoCommentsControllerTest extends ControllerTestCase
 			'tsumego' => ['set_order' => 1, 'status' => 'S'],
 		]);
 
-		$this->testAction('/tsumego-comments/add', [
-			'method' => 'post',
-			'data' => json_encode(['tsumego_id' => $context->tsumegos[0]['id'], 'text' => 'my comment']),
-		]);
+		$this->post('/tsumego-comments/add', json_encode(['tsumego_id' => $context->tsumegos[0]['id'], 'text' => 'my comment']));
 
-		$this->assertSame(200, $this->controller->response->statusCode());
-		$body = json_decode($this->controller->response->body(), true);
+		$this->assertResponseCode(200);
+		$body = json_decode($this->view, true);
 		$this->assertSame('my comment', $body['text']);
 	}
 
@@ -46,12 +40,9 @@ class TsumegoCommentsControllerTest extends ControllerTestCase
 		$user->saveField('name', null);
 		$user->saveField('external_id', '123456789012345678901');
 
-		$this->testAction('/tsumego-comments/add', [
-			'method' => 'post',
-			'data' => json_encode(['tsumego_id' => $context->tsumegos[0]['id'], 'text' => 'from a google account']),
-		]);
+		$this->post('/tsumego-comments/add', json_encode(['tsumego_id' => $context->tsumegos[0]['id'], 'text' => 'from a google account']));
 
-		$body = json_decode($this->controller->response->body(), true);
+		$body = json_decode($this->view, true);
 		$this->assertSame('DN_GoogleCommenter', $body['user_display_name']);
 	}
 
@@ -62,9 +53,9 @@ class TsumegoCommentsControllerTest extends ControllerTestCase
 			'tsumego' => ['set_order' => 1, 'status' => 'S', 'issues' => [['message' => 'an issue']], 'comments' => [['message' => 'a comment']]],
 		]);
 
-		$this->testAction('/tsumego-comments/index/' . $context->tsumegos[0]['id'], ['method' => 'get']);
+		$this->get('/tsumego-comments/index/' . $context->tsumegos[0]['id']);
 
-		$body = json_decode($this->controller->response->body(), true);
+		$body = json_decode($this->view, true);
 		$avatar = Avatar::url($context->user['display_name']);
 		$this->assertSame($avatar, $body['issues'][0]['user_avatar_url']);
 		$this->assertSame($avatar, $body['issues'][0]['comments'][0]['user_avatar_url']);
@@ -85,12 +76,9 @@ class TsumegoCommentsControllerTest extends ControllerTestCase
 		$user->saveField('picture', 'https://lh3.googleusercontent.com/a/abc123');
 		$user->saveField('pref_avatar', User::AVATAR_GOOGLE);
 
-		$this->testAction('/tsumego-comments/add', [
-			'method' => 'post',
-			'data' => json_encode(['tsumego_id' => $context->tsumegos[0]['id'], 'text' => 'from a google account']),
-		]);
+		$this->post('/tsumego-comments/add', json_encode(['tsumego_id' => $context->tsumegos[0]['id'], 'text' => 'from a google account']));
 
-		$body = json_decode($this->controller->response->body(), true);
+		$body = json_decode($this->view, true);
 		$this->assertSame('https://lh3.googleusercontent.com/a/abc123=s48', $body['user_avatar_url']);
 	}
 
@@ -98,9 +86,9 @@ class TsumegoCommentsControllerTest extends ControllerTestCase
 	{
 		new ContextPreparator(['user' => ['name' => 'kovarex']]);
 
-		$this->expectException(NotFoundException::class);
+		$this->post('/tsumego-comments/delete/999999');
 
-		$this->testAction('/tsumego-comments/delete/999999', ['method' => 'post']);
+		$this->assertResponseCode(404);
 	}
 
 	public function testDeleteForbiddenForCommentByOtherUser()
@@ -115,9 +103,9 @@ class TsumegoCommentsControllerTest extends ControllerTestCase
 		$comment['TsumegoComment']['user_id'] = $context->otherUsers[0]['id'];
 		ClassRegistry::init('TsumegoComment')->save($comment);
 
-		$this->expectException(ForbiddenException::class);
+		$this->post('/tsumego-comments/delete/' . $comment['TsumegoComment']['id']);
 
-		$this->testAction('/tsumego-comments/delete/' . $comment['TsumegoComment']['id'], ['method' => 'post']);
+		$this->assertResponseCode(403);
 	}
 
 	public function testDeleteOwnCommentSucceeds()
@@ -129,9 +117,9 @@ class TsumegoCommentsControllerTest extends ControllerTestCase
 
 		$comment = ClassRegistry::init('TsumegoComment')->find('first');
 
-		$this->testAction('/tsumego-comments/delete/' . $comment['TsumegoComment']['id'], ['method' => 'post']);
+		$this->post('/tsumego-comments/delete/' . $comment['TsumegoComment']['id']);
 
-		$this->assertSame(200, $this->controller->response->statusCode());
+		$this->assertResponseCode(200);
 		$deleted = ClassRegistry::init('TsumegoComment')->findById($comment['TsumegoComment']['id']);
 		$this->assertSame(1, (int) $deleted['TsumegoComment']['deleted']);
 	}

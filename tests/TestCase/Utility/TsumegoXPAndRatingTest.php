@@ -6,7 +6,7 @@ use App\Utility\Rating;
 use App\Utility\TsumegoUtil;
 use App\Utility\TsumegoXPAndRating;
 
-class TsumegoXPAndRatingTest extends TestCaseWithAuth
+class TsumegoXPAndRatingTest extends IntegrationTestCase
 {
 	public function testshowNormalXP(): void
 	{

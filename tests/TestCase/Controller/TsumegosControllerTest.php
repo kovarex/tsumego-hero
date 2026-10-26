@@ -5,18 +5,16 @@ use App\Utility\Constants;
 use App\Utility\TsumegoUtil;
 use App\Utility\Util;
 
-class TsumegosControllerTest extends TestCaseWithAuth
+class TsumegosControllerTest extends IntegrationTestCase
 {
 	public function testSetNameAndNumIsVisible()
 	{
 		foreach ([false, true] as $openBySetConnectionID)
 		{
 			$context = new ContextPreparator(['tsumego' => ['set_order' => 666]]);
-			$this->testAction(
-				$openBySetConnectionID
+			$this->post($openBySetConnectionID
 				? ('/' . $context->tsumegos[0]['set-connections'][0]['id'])
-				: ('tsumegos/play/' . $context->tsumegos[0]['id']),
-				['return' => 'view']);
+				: ('tsumegos/play/' . $context->tsumegos[0]['id']));
 			$this->assertTextContains("test set", $this->view);
 
 			$dom = $this->getStringDom();
@@ -36,7 +34,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$first = $context->tsumegos[0]['set-connections'][0];
 		$second = $context->tsumegos[1]['set-connections'][0];
 
-		$this->testAction('/tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'contents']);
+		$this->post('/tsumegos/play/' . $context->tsumegos[0]['id']);
 
 		$this->assertStringContainsString('var previousButtonLink = "/sets/' . $first['set_id'] . '"', $this->view);
 		$this->assertStringContainsString('var nextButtonLink = "/' . $second['id'] . '"', $this->view);
@@ -55,7 +53,8 @@ class TsumegosControllerTest extends TestCaseWithAuth
 
 		foreach ($urls as $url)
 		{
-			$contents = (string) $this->testAction($url, ['method' => 'get', 'return' => 'contents']);
+			$this->get($url);
+			$contents = $this->view;
 			$this->assertStringContainsString('<link rel="canonical" href="' . $address . '">', $contents, $url);
 			$this->assertStringContainsString('<meta property="og:url" content="' . $address . '">', $contents, $url);
 		}
@@ -68,11 +67,15 @@ class TsumegosControllerTest extends TestCaseWithAuth
 	{
 		$context = new ContextPreparator(['tsumego' => ['set_order' => 666]]);
 		$url = '/' . $context->tsumegos[0]['set-connections'][0]['id'];
-		$this->assertStringNotContainsString('?requestSolution=', (string) $this->testAction($url, ['method' => 'get', 'return' => 'contents']));
+		$this->get($url);
+		$page = $this->view;
+		$this->assertStringNotContainsString('?requestSolution=', $page);
 
 		$adminContext = new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true], 'tsumego' => ['set_order' => 666]]);
 		$adminUrl = '/' . $adminContext->tsumegos[0]['set-connections'][0]['id'];
-		$this->assertStringContainsString('?requestSolution=', (string) $this->testAction($adminUrl, ['method' => 'get', 'return' => 'contents']));
+		$this->get($adminUrl);
+		$page = $this->view;
+		$this->assertStringContainsString('?requestSolution=', $page);
 	}
 
 	public function testPageTitleShowsRealSetCount()
@@ -84,8 +87,8 @@ class TsumegosControllerTest extends TestCaseWithAuth
 				['sets' => [['name' => 'test set', 'num' => '3']]],
 			],
 		]);
-		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'contents']);
-		$this->assertTextContains('test set 1/3 on Tsumego Hero', $this->contents);
+		$this->post('tsumegos/play/' . $context->tsumegos[0]['id']);
+		$this->assertTextContains('test set 1/3 on Tsumego Hero', $this->view);
 	}
 
 	public function testViewingTsumegoInMoreSets()
@@ -96,7 +99,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 					['name' => 'tsumego set 1', 'num' => '666'],
 					['name' => 'tsumego set 2', 'num' => '777']]]]);
 		$tsumegoID = $context->tsumegos[0]['id'];
-		$this->testAction('tsumegos/play/' . $tsumegoID, ['return' => 'view']);
+		$this->post('tsumegos/play/' . $tsumegoID);
 
 		// The first one was selected into the title
 		$dom = $this->getStringDom();
@@ -123,7 +126,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 					['name' => 'tsumego set 1', 'num' => '666'],
 					['name' => 'tsumego set 2', 'num' => '777']]]]);
 
-		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'] . '?sid=' . $context->tsumegos[0]['sets'][1]['id'], ['return' => 'view']);
+		$this->post('tsumegos/play/' . $context->tsumegos[0]['id'] . '?sid=' . $context->tsumegos[0]['sets'][1]['id']);
 
 		// The second one was selected by the sid parameter
 		$dom = $this->getStringDom();
@@ -150,7 +153,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			],
 		]);
 
-		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'view']);
+		$this->post('tsumegos/play/' . $context->tsumegos[0]['id']);
 
 		$dom = $this->getStringDom();
 		$links = $dom->querySelector('.duplicateTable')->getElementsByTagName('a');
@@ -173,7 +176,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		]);
 		$this->addSetForTsumego($context->tsumegos[0]['id'], 'alice favorites', $context->otherUsers[0]['id'], 0, 3);
 
-		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'view']);
+		$this->post('tsumegos/play/' . $context->tsumegos[0]['id']);
 
 		$dom = $this->getStringDom();
 		$links = $dom->querySelector('.duplicateTable')->getElementsByTagName('a');
@@ -196,7 +199,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		]);
 		$this->addSetForTsumego($context->tsumegos[0]['id'], 'alice favorites', $context->otherUsers[0]['id'], 0, 3);
 
-		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'view']);
+		$this->post('tsumegos/play/' . $context->tsumegos[0]['id']);
 
 		$dom = $this->getStringDom();
 		$links = $dom->querySelector('.duplicateTable')->getElementsByTagName('a');
@@ -217,7 +220,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			],
 		]);
 
-		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'view']);
+		$this->post('tsumegos/play/' . $context->tsumegos[0]['id']);
 
 		$dom = $this->getStringDom();
 		$links = $dom->querySelector('.duplicateTable')->getElementsByTagName('a');
@@ -239,7 +242,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			],
 		]);
 
-		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'view']);
+		$this->post('tsumegos/play/' . $context->tsumegos[0]['id']);
 
 		$dom = $this->getStringDom();
 		$links = $dom->querySelector('.duplicateTable')->getElementsByTagName('a');
@@ -262,7 +265,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		]);
 		$this->addSetForTsumego($context->tsumegos[0]['id'], 'alice favorites', $context->otherUsers[0]['id'], 0, 3);
 
-		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'view']);
+		$this->post('tsumegos/play/' . $context->tsumegos[0]['id']);
 
 		$dom = $this->getStringDom();
 		$links = $dom->querySelector('.duplicateTable')->getElementsByTagName('a');
@@ -307,7 +310,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			],
 		]);
 
-		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'] . '?sid=' . $context->tsumegos[0]['sets'][1]['id'], ['return' => 'view']);
+		$this->post('tsumegos/play/' . $context->tsumegos[0]['id'] . '?sid=' . $context->tsumegos[0]['sets'][1]['id']);
 
 		$dom = $this->getStringDom();
 		$href = $dom->querySelector('#playTitleA');
@@ -326,8 +329,9 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$tsumego->save(['description' => 'private only']);
 		$this->addSetForTsumego($tsumego->id, 'alice favorites', $context->otherUsers[0]['id'], 0, 1);
 
-		$this->expectException(NotFoundException::class);
-		$this->testAction('tsumegos/play/' . $tsumego->id);
+		$this->post('tsumegos/play/' . $tsumego->id);
+
+		$this->assertResponseCode(404);
 	}
 
 	private function addSetForTsumego(int $tsumegoId, string $title, ?int $userId, int $public, int $num): void
@@ -345,7 +349,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 	{
 		$context = new ContextPreparator(['tsumego' => ['set_order' => 666]]);
 
-		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'view']);
+		$this->post('tsumegos/play/' . $context->tsumegos[0]['id']);
 
 		$dom = $this->getStringDom();
 		$href = $dom->querySelector('#playTitleA');
@@ -405,13 +409,11 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			],
 		]);
 
-		$result = $this->testAction('/tsumegos/mergeFinalForm', [
-			'data' => [
-				'master-id' => $context->tsumegos[0]['set-connections'][0]['id'],
-				'slave-id' => $context->tsumegos[1]['set-connections'][0]['id'],
-			],
-			'return' => 'view',
+		$this->post('/tsumegos/mergeFinalForm', [
+			'master-id' => $context->tsumegos[0]['set-connections'][0]['id'],
+			'slave-id' => $context->tsumegos[1]['set-connections'][0]['id'],
 		]);
+		$result = $this->view;
 
 		$this->assertStringContainsString('data-sgf-preview', $result);
 	}
@@ -454,13 +456,11 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$this->assertNotEmpty($publicConnectionIds, 'Test setup must include public connections');
 		$this->assertNotEmpty($favoriteConnectionIds, 'Test setup must include favorites connections');
 
-		$result = $this->testAction('/tsumegos/mergeFinalForm', [
-			'data' => [
-				'master-id' => $context->tsumegos[0]['set-connections'][0]['id'],
-				'slave-id' => $context->tsumegos[1]['set-connections'][0]['id'],
-			],
-			'return' => 'view',
+		$this->post('/tsumegos/mergeFinalForm', [
+			'master-id' => $context->tsumegos[0]['set-connections'][0]['id'],
+			'slave-id' => $context->tsumegos[1]['set-connections'][0]['id'],
 		]);
+		$result = $this->view;
 
 		foreach ($publicConnectionIds as $id)
 			$this->assertStringContainsString('href="/' . $id . '"', $result, 'Public occurrence should be shown');
@@ -478,7 +478,8 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			],
 		]);
 
-		$result = $this->testAction('/tsumegos/duplicatesearch/' . $context->tsumegos[0]['set-connections'][0]['id'], ['method' => 'get', 'return' => 'view']);
+		$this->get('/tsumegos/duplicatesearch/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$result = $this->view;
 
 		$this->assertMatchesRegularExpression('/"diff":"[a-z]+"/', $result);
 	}
@@ -495,7 +496,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			'tsumego' => ['set_order' => 1, 'description' => "Black's stones attack White's group.", 'sgf' => $blackFirstSgf],
 		]);
 		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
-		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'view']);
+		$this->post('tsumegos/play/' . $context->tsumegos[0]['id']);
 		$decoded = htmlspecialchars_decode(strip_tags($this->view));
 		$this->assertStringContainsString("Black's stones attack White's group.", $decoded);
 
@@ -504,7 +505,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			'tsumego' => ['set_order' => 1, 'description' => 'White to play. Attack the black group.', 'sgf' => $whiteFirstSgf],
 		]);
 		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
-		$this->testAction('tsumegos/play/' . $context2->tsumegos[0]['id'], ['return' => 'view']);
+		$this->post('tsumegos/play/' . $context2->tsumegos[0]['id']);
 		$decoded = htmlspecialchars_decode(strip_tags($this->view));
 		$this->assertStringContainsString('White to play. Attack the black group.', $decoded);
 	}
@@ -526,20 +527,16 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		]);
 		$tsumegoId = $context->tsumegos[0]['id'];
 
-		$this->testAction('/tsumegos/edit/' . $tsumegoId, [
-			'method' => 'post',
-			'data' => [
-				'delete' => '',
-				'description' => 'Black to play here.',
-				'color_swapped' => '1',
-				'rating' => '1500',
-				'minimum-rating' => '',
-				'maximum-rating' => '',
-				'hint' => '',
-				'author' => '',
-				'redirect' => '/',
-			],
-			'return' => 'contents',
+		$this->post('/tsumegos/edit/' . $tsumegoId, [
+			'delete' => '',
+			'description' => 'Black to play here.',
+			'color_swapped' => '1',
+			'rating' => '1500',
+			'minimum-rating' => '',
+			'maximum-rating' => '',
+			'hint' => '',
+			'author' => '',
+			'redirect' => '/',
 		]);
 
 		$saved = ClassRegistry::init('Tsumego')->findById($tsumegoId);
@@ -562,20 +559,16 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		]);
 		$tsumegoId = $context->tsumegos[0]['id'];
 
-		$this->testAction('/tsumegos/edit/' . $tsumegoId, [
-			'method' => 'post',
-			'data' => [
-				'delete' => '',
-				'description' => 'Black to play first.',
-				'color_swapped' => '0',
-				'rating' => '1500',
-				'minimum-rating' => '',
-				'maximum-rating' => '',
-				'hint' => '',
-				'author' => '',
-				'redirect' => '/',
-			],
-			'return' => 'contents',
+		$this->post('/tsumegos/edit/' . $tsumegoId, [
+			'delete' => '',
+			'description' => 'Black to play first.',
+			'color_swapped' => '0',
+			'rating' => '1500',
+			'minimum-rating' => '',
+			'maximum-rating' => '',
+			'hint' => '',
+			'author' => '',
+			'redirect' => '/',
 		]);
 
 		$saved = ClassRegistry::init('Tsumego')->findById($tsumegoId);
@@ -595,10 +588,8 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$context = new ContextPreparator([
 			'tsumego' => ['set_order' => 1, 'description' => 'Black to capture the white group', 'sgf' => $blackFirstSgf],
 		]);
-		$result = $this->testAction(
-			'tsumegos/play/' . $context->tsumegos[0]['id'],
-			['return' => 'contents']
-		);
+		$this->post('tsumegos/play/' . $context->tsumegos[0]['id']);
+		$result = $this->view;
 		preg_match('/property="og:description"\s+content="([^"]*)"/', $result, $m);
 		$this->assertNotEmpty($m, 'og:description should exist for Black-first SGF');
 		$this->assertStringContainsString('Black to capture the white group', $m[1]);
@@ -607,10 +598,8 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$context2 = new ContextPreparator([
 			'tsumego' => ['set_order' => 1, 'description' => 'White to capture the black group', 'sgf' => $whiteFirstSgf],
 		]);
-		$result2 = $this->testAction(
-			'tsumegos/play/' . $context2->tsumegos[0]['id'],
-			['return' => 'contents']
-		);
+		$this->post('tsumegos/play/' . $context2->tsumegos[0]['id']);
+		$result2 = $this->view;
 		preg_match('/property="og:description"\s+content="([^"]*)"/', $result2, $m2);
 		$this->assertNotEmpty($m2, 'og:description should exist for White-first SGF');
 		$this->assertStringContainsString('White to capture the black group', $m2[1]);
@@ -641,11 +630,11 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		]);
 
 		// No inversion: answers keep their true colors.
-		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'view']);
+		$this->post('tsumegos/play/' . $context->tsumegos[0]['id']);
 		$this->assertStringContainsString('"White is dead"', $this->view);
 
 		// Inverted board: the answer text is swapped to match the visual stones.
-		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=white', ['return' => 'view']);
+		$this->post('tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=white');
 		$this->assertStringContainsString('"Black is dead"', $this->view);
 		$this->assertStringNotContainsString('"White is dead"', $this->view);
 	}
@@ -673,11 +662,11 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			],
 		]);
 
-		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'view']);
+		$this->post('tsumegos/play/' . $context->tsumegos[0]['id']);
 		$this->assertStringContainsString('Black captures: 3', $this->view);
 		$this->assertStringContainsString('White captures: 6', $this->view);
 
-		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=white', ['return' => 'view']);
+		$this->post('tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=white');
 		$this->assertStringContainsString('White captures: 3', $this->view);
 		$this->assertStringContainsString('Black captures: 6', $this->view);
 	}
@@ -697,17 +686,22 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			'tsumego' => ['set_order' => 1, 'description' => 'Black to play.', 'sgf' => $blackFirst],
 		]);
 		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
-		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=white', ['return' => 'view']);
-		$this->assertStringContainsString('White to play.', $this->view);
-		$this->assertStringNotContainsString('Black to play.', $this->view);
+		$this->post('tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=white');
+		$this->assertSame('White to play.', $this->shownDescription());
 
 		$context2 = new ContextPreparator([
 			'user' => ['name' => 'descOpposeW'],
 			'tsumego' => ['set_order' => 1, 'description' => 'White to play.', 'sgf' => $whiteFirst],
 		]);
 		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
-		$this->testAction('tsumegos/play/' . $context2->tsumegos[0]['id'] . '?playercolor=black', ['return' => 'view']);
-		$this->assertStringContainsString('Black to play.', $this->view);
+		$this->post('tsumegos/play/' . $context2->tsumegos[0]['id'] . '?playercolor=black');
+		$this->assertSame('Black to play.', $this->shownDescription());
+	}
+
+	/** The description the play page shows, which is the one the colour swap applies to. */
+	private function shownDescription(): string
+	{
+		return trim((string) $this->getStringDom()->querySelector('#descriptionText')->textContent);
 	}
 
 	/**
@@ -724,7 +718,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			'tsumego' => ['set_order' => 1, 'description' => 'Black to play.', 'sgf' => $blackFirst],
 		]);
 		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
-		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=black', ['return' => 'view']);
+		$this->post('tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=black');
 		$this->assertStringContainsString('Black to play.', $this->view);
 
 		$context2 = new ContextPreparator([
@@ -732,7 +726,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			'tsumego' => ['set_order' => 1, 'description' => 'White to play.', 'sgf' => $whiteFirst],
 		]);
 		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
-		$this->testAction('tsumegos/play/' . $context2->tsumegos[0]['id'] . '?playercolor=white', ['return' => 'view']);
+		$this->post('tsumegos/play/' . $context2->tsumegos[0]['id'] . '?playercolor=white');
 		$this->assertStringContainsString('White to play.', $this->view);
 	}
 
@@ -747,7 +741,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			'tsumego' => ['set_order' => 1, 'description' => 'Black to play. Find the way to kill the white group.', 'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])'],
 		]);
 		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
-		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=white', ['return' => 'view']);
+		$this->post('tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=white');
 		$this->assertStringContainsString('White to play. Find the way to kill the black group.', $this->view);
 	}
 
@@ -762,7 +756,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			'tsumego' => ['set_order' => 1, 'description' => 'Black to play. The Blackbird group is white.', 'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])'],
 		]);
 		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
-		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=white', ['return' => 'view']);
+		$this->post('tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=white');
 		$this->assertStringContainsString('White to play. The Blackbird group is black.', $this->view);
 	}
 
@@ -776,7 +770,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			'tsumego' => ['set_order' => 1, 'description' => 'black stones attack White stones.', 'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])'],
 		]);
 		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
-		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=white', ['return' => 'view']);
+		$this->post('tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=white');
 		$this->assertStringContainsString('white stones attack Black stones.', $this->view);
 	}
 
@@ -796,7 +790,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			],
 		]);
 		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
-		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'view']);
+		$this->post('tsumegos/play/' . $context->tsumegos[0]['id']);
 		$this->assertStringContainsString('Black to play. Find the way to kill the white group.', $this->view);
 	}
 }

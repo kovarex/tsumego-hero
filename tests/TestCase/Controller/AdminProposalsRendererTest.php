@@ -9,7 +9,7 @@
  * each pick the official set for the displayed link, and must not duplicate
  * rows.
  */
-class AdminProposalsRendererTest extends TestCaseWithAuth
+class AdminProposalsRendererTest extends IntegrationTestCase
 {
 	public function testProposalLinksToOfficialSetNotFavorite(): void
 	{
@@ -33,7 +33,7 @@ class AdminProposalsRendererTest extends TestCaseWithAuth
 		]);
 		$this->login('kovarex');
 
-		$this->testAction('/admin/sgf-proposals', ['method' => 'get', 'return' => 'view']);
+		$this->get('/admin/sgf-proposals');
 
 		// The proposal must link to the official set, not the private favorites.
 		$officialConnectionId = $context->tsumegos[0]['set-connections'][0]['id'];
@@ -62,7 +62,7 @@ class AdminProposalsRendererTest extends TestCaseWithAuth
 		]);
 		$this->login('kovarex');
 
-		$this->testAction('/admin/tag-proposals', ['method' => 'get', 'return' => 'view']);
+		$this->get('/admin/tag-proposals');
 
 		$officialConnectionId = $context->tsumegos[0]['set-connections'][0]['id'];
 		$favoriteConnectionId = $context->tsumegos[0]['set-connections'][1]['id'];

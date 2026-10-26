@@ -7,7 +7,7 @@ use App\Utility\Util;
  * An admin deciding about a proposal (a new SGF version, a tag on a problem, a new tag) writes
  * the proposer why, and the proposer gets it as a message from the admin.
  */
-class ProposalFeedbackTest extends TestCaseWithAuth
+class ProposalFeedbackTest extends IntegrationTestCase
 {
 	private const SGF_VERSION_1 = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])';
 	private const SGF_VERSION_2 = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc]AB[dd];B[aa];W[ab];B[ba]C[+])';
@@ -25,6 +25,7 @@ class ProposalFeedbackTest extends TestCaseWithAuth
 			$options['tags'] = $tags;
 		$context = new ContextPreparator($options);
 		$this->login('reviewer');
+		$this->registerTestEmailer();
 		TestEmailer::$lastEmail = null;
 		return $context;
 	}
@@ -40,12 +41,6 @@ class ProposalFeedbackTest extends TestCaseWithAuth
 		return $proposal;
 	}
 
-	private function post(string $controller, string $url, array $data): void
-	{
-		$this->registerTestEmailer($controller);
-		$this->testAction($url, ['method' => 'post', 'data' => $data]);
-	}
-
 	private function messagesTo(int $userID): array
 	{
 		return Util::query('SELECT * FROM message WHERE recipient_user_id = ? ORDER BY id', [$userID]);
@@ -56,7 +51,7 @@ class ProposalFeedbackTest extends TestCaseWithAuth
 		$proposal = $this->prepareSgfProposal($context);
 		$proposer = $context->otherUsers[0];
 
-		$this->post('Users', '/users/rejectSGFProposal/' . $proposal['id'], ['comment' => 'The stone at D16 changes nothing.']);
+		$this->post('/users/rejectSGFProposal/' . $proposal['id'], ['comment' => 'The stone at D16 changes nothing.']);
 
 		$this->assertEquals(Sgf::STATUS_REJECTED, ClassRegistry::init('Sgf')->findById($proposal['id'])['Sgf']['sgf_status_id'], 'kept for the link in the message');
 		$messages = $this->messagesTo($proposer['id']);
@@ -77,28 +72,28 @@ class ProposalFeedbackTest extends TestCaseWithAuth
 	{
 		$proposal = $this->prepareSgfProposal($context);
 		$proposer = $context->otherUsers[0];
-		$this->post('Users', '/users/rejectSGFProposal/' . $proposal['id'], ['comment' => 'The stone at D16 changes nothing.']);
+		$this->post('/users/rejectSGFProposal/' . $proposal['id'], ['comment' => 'The stone at D16 changes nothing.']);
 
 		$reject = ClassRegistry::init('Reject')->find('first', ['conditions' => ['sgf_id' => $proposal['id']]])['Reject'];
 		$this->assertEquals($proposer['id'], $reject['user_id']);
 		$this->assertEquals($context->user['id'], $reject['rejected_by_user_id']);
 		$this->assertSame('The stone at D16 changes nothing.', $reject['comment']);
 
-		$this->testAction('/admin/sgf-proposals', ['method' => 'get', 'return' => 'view']);
+		$this->get('/admin/sgf-proposals');
 		$this->assertStringContainsString('Rejected SGF Proposals (1)', $this->view);
 		$this->assertStringContainsString('SGF Proposals (0)', $this->view);
 		$this->assertStringContainsString('href="/editor/?sgfID=' . $proposal['id'] . '&diffID=' . $context->tsumegos[0]['sgfs'][0]['id'] . '"', $this->view);
 		$this->assertStringContainsString('The stone at D16 changes nothing.', $this->view);
 		$this->assertStringContainsString('id="reopen-' . $proposal['id'] . '"', $this->view);
 
-		$this->post('Users', '/users/reopenSGFProposal/' . $proposal['id'], []);
+		$this->post('/users/reopenSGFProposal/' . $proposal['id'], []);
 
 		$this->assertEquals(Sgf::STATUS_PROPOSED, ClassRegistry::init('Sgf')->findById($proposal['id'])['Sgf']['sgf_status_id']);
 		$this->assertSame([], Util::query('SELECT * FROM reject WHERE sgf_id = ?', [$proposal['id']]), 'gone from the contributions of the proposer');
 		$this->assertSame(1, (int) Util::query('SELECT COUNT(*) AS c FROM admin_activity WHERE type = ?', [AdminActivityType::REOPEN_PROPOSAL])[0]['c']);
 		$this->assertCount(1, $this->messagesTo($proposer['id']), 'reopening sends nothing, the next decision does');
 
-		$this->testAction('/admin/sgf-proposals', ['method' => 'get', 'return' => 'view']);
+		$this->get('/admin/sgf-proposals');
 		$this->assertStringContainsString('Rejected SGF Proposals (0)', $this->view);
 		$this->assertStringContainsString('id="reject-' . $proposal['id'] . '"', $this->view);
 	}
@@ -107,8 +102,8 @@ class ProposalFeedbackTest extends TestCaseWithAuth
 	{
 		$proposal = $this->prepareSgfProposal($context);
 
-		$this->post('Users', '/users/reopenSGFProposal/' . $context->tsumegos[0]['sgfs'][0]['id'], []);
-		$this->post('Users', '/users/reopenSGFProposal/' . $proposal['id'], []);
+		$this->post('/users/reopenSGFProposal/' . $context->tsumegos[0]['sgfs'][0]['id'], []);
+		$this->post('/users/reopenSGFProposal/' . $proposal['id'], []);
 
 		$this->assertEquals(Sgf::STATUS_ACCEPTED, ClassRegistry::init('Sgf')->findById($context->tsumegos[0]['sgfs'][0]['id'])['Sgf']['sgf_status_id']);
 		$this->assertEquals(Sgf::STATUS_PROPOSED, ClassRegistry::init('Sgf')->findById($proposal['id'])['Sgf']['sgf_status_id']);
@@ -119,7 +114,7 @@ class ProposalFeedbackTest extends TestCaseWithAuth
 	{
 		$proposal = $this->prepareSgfProposal($context);
 
-		$this->post('Users', '/users/rejectSGFProposal/' . $proposal['id'], ['comment' => '  ']);
+		$this->post('/users/rejectSGFProposal/' . $proposal['id'], ['comment' => '  ']);
 
 		$this->assertNotEmpty(ClassRegistry::init('Sgf')->findById($proposal['id']));
 		$this->assertSame([], $this->messagesTo($context->otherUsers[0]['id']));
@@ -129,7 +124,7 @@ class ProposalFeedbackTest extends TestCaseWithAuth
 	{
 		$proposal = $this->prepareSgfProposal($context);
 
-		$this->post('Users', '/users/acceptSGFProposal/' . $proposal['id'], ['comment' => '']);
+		$this->post('/users/acceptSGFProposal/' . $proposal['id'], ['comment' => '']);
 
 		$this->assertEquals(Sgf::STATUS_ACCEPTED, ClassRegistry::init('Sgf')->findById($proposal['id'])['Sgf']['sgf_status_id']);
 		$messages = $this->messagesTo($context->otherUsers[0]['id']);
@@ -146,7 +141,7 @@ class ProposalFeedbackTest extends TestCaseWithAuth
 			['data' => self::SGF_VERSION_1, 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
 			['data' => self::SGF_VERSION_2, 'sgf_status_id' => Sgf::STATUS_PROPOSED]]]);
 
-		$this->post('Users', '/users/acceptSGFProposal/' . $context->tsumegos[0]['sgfs'][1]['id'], ['comment' => 'Thanks me']);
+		$this->post('/users/acceptSGFProposal/' . $context->tsumegos[0]['sgfs'][1]['id'], ['comment' => 'Thanks me']);
 
 		$this->assertSame([], Util::query('SELECT * FROM message'));
 	}
@@ -156,7 +151,7 @@ class ProposalFeedbackTest extends TestCaseWithAuth
 		$context = $this->prepare(['tags' => [['name' => 'snapback', 'user' => 'proposer', 'approved' => 0]]]);
 		$tagConnectionID = $context->tsumegos[0]['tag-connections'][0]['id'];
 
-		$this->post('Users', '/users/rejectTagConnectionProposal/' . $tagConnectionID, ['comment' => 'There is no snapback here.']);
+		$this->post('/users/rejectTagConnectionProposal/' . $tagConnectionID, ['comment' => 'There is no snapback here.']);
 
 		$this->assertEmpty(ClassRegistry::init('TagConnection')->findById($tagConnectionID));
 		$messages = $this->messagesTo($context->otherUsers[0]['id']);
@@ -171,7 +166,7 @@ class ProposalFeedbackTest extends TestCaseWithAuth
 		$context = $this->prepare(['tags' => [['name' => 'snapback', 'user' => 'proposer', 'approved' => 0]]]);
 		$tagConnectionID = $context->tsumegos[0]['tag-connections'][0]['id'];
 
-		$this->post('Users', '/users/rejectTagConnectionProposal/' . $tagConnectionID, []);
+		$this->post('/users/rejectTagConnectionProposal/' . $tagConnectionID, []);
 
 		$this->assertNotEmpty(ClassRegistry::init('TagConnection')->findById($tagConnectionID));
 		$this->assertSame([], Util::query('SELECT * FROM message'));
@@ -185,10 +180,10 @@ class ProposalFeedbackTest extends TestCaseWithAuth
 			['name' => 'ladder', 'user' => 'proposer', 'approved' => 0]]]);
 		$proposerID = $context->otherUsers[0]['id'];
 
-		$this->post('Users', '/users/acceptTagConnectionProposal/' . $context->tsumegos[0]['tag-connections'][0]['id'], ['comment' => '']);
+		$this->post('/users/acceptTagConnectionProposal/' . $context->tsumegos[0]['tag-connections'][0]['id'], ['comment' => '']);
 		$this->assertSame([], $this->messagesTo($proposerID));
 
-		$this->post('Users', '/users/acceptTagConnectionProposal/' . $context->tsumegos[0]['tag-connections'][1]['id'], ['comment' => 'Nice find.']);
+		$this->post('/users/acceptTagConnectionProposal/' . $context->tsumegos[0]['tag-connections'][1]['id'], ['comment' => 'Nice find.']);
 		$messages = $this->messagesTo($proposerID);
 		$this->assertCount(1, $messages);
 		$this->assertStringContainsString('Your tag ladder on ', $messages[0]['text']);
@@ -201,10 +196,10 @@ class ProposalFeedbackTest extends TestCaseWithAuth
 		$tagID = $context->tags[0]['id'];
 		ClassRegistry::init('Tag')->save(['id' => $tagID, 'user_id' => $context->otherUsers[0]['id']]);
 
-		$this->post('Tags', '/tags/rejectTagProposal/' . $tagID, []);
+		$this->post('/tags/rejectTagProposal/' . $tagID, []);
 		$this->assertNotEmpty(ClassRegistry::init('Tag')->findById($tagID), 'rejected without a comment');
 
-		$this->post('Tags', '/tags/rejectTagProposal/' . $tagID, ['comment' => 'We have it already.']);
+		$this->post('/tags/rejectTagProposal/' . $tagID, ['comment' => 'We have it already.']);
 		$this->assertEmpty(ClassRegistry::init('Tag')->findById($tagID));
 		$messages = $this->messagesTo($context->otherUsers[0]['id']);
 		$this->assertCount(1, $messages);
@@ -221,9 +216,10 @@ class ProposalFeedbackTest extends TestCaseWithAuth
 		$this->login('proposer');
 		$data = ['sgf' => self::SGF_VERSION_2, 'firstMoveColor' => 'B', 'correctMoves' => 'aa', 'setConnectionID' => $context->setConnections[0]['id']];
 
+		$this->disableErrorHandlerMiddleware();
 		try
 		{
-			$this->testAction('/tsumegos/setupNewSgfStep2', ['method' => 'post', 'data' => $data + ['description' => ' ']]);
+			$this->post('/tsumegos/setupNewSgfStep2', $data + ['description' => ' ']);
 			$this->fail('A proposal without a description was saved');
 		}
 		catch (BadRequestException $e)
@@ -231,7 +227,7 @@ class ProposalFeedbackTest extends TestCaseWithAuth
 			$this->assertSame('Describe what you changed and why.', $e->getMessage());
 		}
 
-		$this->testAction('/tsumegos/setupNewSgfStep2', ['method' => 'post', 'data' => $data + ['description' => "Added D16\r\nbecause it is needed"]]);
+		$this->post('/tsumegos/setupNewSgfStep2', $data + ['description' => "Added D16\r\nbecause it is needed"]);
 		$proposal = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']], 'order' => 'id DESC'])['Sgf'];
 		$this->assertEquals(Sgf::STATUS_PROPOSED, $proposal['sgf_status_id']);
 		$this->assertSame("Added D16\nbecause it is needed", $proposal['description']);
