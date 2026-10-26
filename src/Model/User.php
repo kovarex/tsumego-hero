@@ -165,12 +165,8 @@ class User extends AppModel
 	 */
 	public static function getHighestRating(array $user): float
 	{
-		$highestTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('first', [
-			'conditions' => ['user_id' => $user['id']],
-			'order' => 'user_rating DESC']);
-		if ($highestTsumegoAttempt)
-			return max($highestTsumegoAttempt['TsumegoAttempt']['user_rating'], $user['rating']);
-		return $user['rating'];
+		// only a played problem raises highest_rating, a rating set another way (by hand, by a test) can be above it
+		return max((float) $user['highest_rating'], (float) $user['rating']);
 	}
 
 	/**

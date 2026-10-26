@@ -202,6 +202,28 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		$this->assertSame(1000.0, $this->tsumegoRating($context));
 	}
 
+	public function testGainingRatingRaisesTheHighestRating(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['rating' => 1000],
+			'tsumego' => ['rating' => 1000, 'set_order' => 1]]);
+		$this->solve($context);
+		$user = $context->reloadUser();
+		$this->assertGreaterThan(1000.0, (float) $user['rating']);
+		$this->assertSame((float) $user['rating'], (float) $user['highest_rating']);
+	}
+
+	public function testLosingRatingKeepsTheHighestRating(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['rating' => 1000, 'highest_rating' => 1200],
+			'tsumego' => ['rating' => 1000, 'set_order' => 1]]);
+		$this->failResult($context);
+		$user = $context->reloadUser();
+		$this->assertLessThan(1000.0, (float) $user['rating']);
+		$this->assertSame(1200.0, (float) $user['highest_rating']);
+	}
+
 	public function testSolvingAddsXP(): void
 	{
 		foreach (['V', 'W'] as $status)

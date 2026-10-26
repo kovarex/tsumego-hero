@@ -229,7 +229,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		$this->loadModel('Tsumego');
 		$this->loadModel('SetConnection');
 		if ($uid == null)
-			$ur = $this->TsumegoAttempt->find('all', ['limit' => 500, 'order' => 'created DESC']);
+			$ur = $this->TsumegoAttempt->find('all', ['limit' => 500, 'order' => 'id DESC']);
 		elseif ($uid == 99)
 			$ur = $this->TsumegoAttempt->find('all', [
 				'order' => 'created DESC',
@@ -284,7 +284,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		$this->loadModel('SetConnection');
 
 		if ($sid == null)
-			$ur = $this->TsumegoAttempt->find('all', ['limit' => 500, 'order' => 'created DESC']);
+			$ur = $this->TsumegoAttempt->find('all', ['limit' => 500, 'order' => 'id DESC']);
 		else
 		{
 			$ts = TsumegoUtil::collectTsumegosFromSet((int) $sid);

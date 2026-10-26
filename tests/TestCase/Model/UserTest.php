@@ -25,6 +25,16 @@ class UserTest extends CakeTestCase
 		$this->assertNotFalse($User->save($user), 'Saving an account that already has such a name must work');
 	}
 
+	/**
+	 * Only a played problem raises highest_rating, so a rating set another way (by hand in the database)
+	 * can be above it, and the profile shows the higher one.
+	 */
+	public function testTheHighestRatingIsNeverBelowTheRating(): void
+	{
+		$this->assertSame(1500.0, User::getHighestRating(['rating' => 1500, 'highest_rating' => 1200]));
+		$this->assertSame(1700.0, User::getHighestRating(['rating' => 1500, 'highest_rating' => 1700]));
+	}
+
 	// =====================================================================
 	// getAvatarUrl Tests
 	// =====================================================================
