@@ -212,7 +212,7 @@ class AccountWidget
 	valuesAfter(increase)
 	{
 		let values = this.values();
-		values.rating += calculateRatingChange(values.rating, xpStatus.tsumegoRating, increase, 0.5);
+		values.rating += xpStatus.ratingChange(values.rating, increase);
 		if (increase)
 		{
 			values.xp += xpStatus.getXP();

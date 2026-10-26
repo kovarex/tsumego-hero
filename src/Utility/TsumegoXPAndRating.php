@@ -3,6 +3,7 @@
 namespace App\Utility;
 
 use ProgressDeletion;
+use TsumegoAttempt;
 
 /**
  * @phpstan-import-type TsumegoRow from \App\Utility\RowTypes
@@ -23,6 +24,7 @@ class TsumegoXPAndRating
 		$this->tsumegoRating = $tsumego['rating'];
 		// the resets of the part of the set the problem is played from
 		$this->progressDeletionCount = Auth::isLoggedIn() ? ProgressDeletion::countRecentForProblem(Auth::getUserID(), (int) $tsumego['id'], $setConnectionID) : 0;
+		$this->failsInARow = Auth::isLoggedIn() ? TsumegoAttempt::failsInARow(TsumegoAttempt::findLast((int) Auth::getUserID(), (int) $tsumego['id'])) : 0;
 	}
 
 	public function render(): void
@@ -74,7 +76,9 @@ class TsumegoXPAndRating
 		resolvingMultiplier: ' . Constants::$RESOLVING_MULTIPLIER . ',
 		userRating: ' . Auth::getUser()['rating'] . ',
 		tsumegoRating: ' . $this->tsumegoRating . ',
-		progressDeletionCount: ' . $this->progressDeletionCount . '
+		progressDeletionCount: ' . $this->progressDeletionCount . ',
+		failsInARow: ' . $this->failsInARow . ',
+		maximumRatedFailsInARow: ' . Constants::$MAXIMUM_RATED_FAILS_IN_A_ROW . '
 	});
 	xpStatus.update();
 ';
@@ -100,4 +104,6 @@ class TsumegoXPAndRating
 
 	public float $tsumegoRating;
 	public float $progressDeletionCount;
+	// the fails of the player on the problem since it was last solved
+	public int $failsInARow;
 }

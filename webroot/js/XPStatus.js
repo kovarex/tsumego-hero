@@ -1,6 +1,6 @@
 class XPStatus
 {
-	constructor({ solved, sprintRemainingSeconds, sprintMultiplier, goldenTsumego, goldenTsumegoMultiplier, resolving, resolvingMultiplier, userRating, tsumegoRating, progressDeletionCount})
+	constructor({ solved, sprintRemainingSeconds, sprintMultiplier, goldenTsumego, goldenTsumegoMultiplier, resolving, resolvingMultiplier, userRating, tsumegoRating, progressDeletionCount, failsInARow, maximumRatedFailsInARow})
 	{
 		this.solved = solved;
 		this.sprintRemainingSeconds = sprintRemainingSeconds;
@@ -12,6 +12,8 @@ class XPStatus
 		this.tsumegoRating = tsumegoRating;
 		this.userRating = userRating;
 	    this.progressDeletionCount = progressDeletionCount;
+		this.failsInARow = failsInARow;
+		this.maximumRatedFailsInARow = maximumRatedFailsInARow;
 
 		// cache the element
 		this.xpDisplayText = document.querySelector("#xpDisplayText");
@@ -106,11 +108,38 @@ class XPStatus
 		}
 		else
 		{
-			let ratingLoss = calculateRatingChange(this.userRating, this.tsumegoRating, 0, playerRatingCalculationModifier);
+			let ratingLoss = this.ratingChange(this.userRating, false);
 			this.ratingSeparator.textContent = '/';
 			this.ratingLossShort.textContent = showRatingShort(ratingLoss);
-			this.ratingLossLong.textContent = showRatingLong(ratingLoss);
+			if (this.failChangesRating())
+				this.ratingLossLong.textContent = showRatingLong(ratingLoss);
+			else
+				this.ratingLossLong.textContent = 'You failed this problem ' + this.failsInARow
+					+ ' times in a row, more fails don\'t lower your rating until you solve it.';
 		}
+	}
+
+	// Only the first fails in a row on a problem change the rating, until it is solved
+	failChangesRating()
+	{
+		return this.failsInARow < this.maximumRatedFailsInARow;
+	}
+
+	// The change of the player's rating the result makes, counted the same way as on the server
+	ratingChange(rating, increase)
+	{
+		if (this.progressDeletionCount > 0)
+			return 0;
+		if (!increase && !this.failChangesRating())
+			return 0;
+		return calculateRatingChange(rating, this.tsumegoRating, increase ? 1 : 0, playerRatingCalculationModifier);
+	}
+
+	// Called once a fail is shown, so the next one is counted after it
+	addFail()
+	{
+		this.failsInARow++;
+		this.update();
 	}
 
 	update()

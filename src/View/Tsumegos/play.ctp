@@ -1671,6 +1671,8 @@ use App\Utility\ViteManifest;
 			return;
 		if (accountWidgetShowsResults())
 			accountWidget.animate(isSolved(outcome));
+		if (!isSolved(outcome) && typeof xpStatus !== 'undefined' && xpStatus)
+			xpStatus.addFail();
 		window._submitResultPromise = response.then(result => {
 			if (typeof accountWidget !== 'undefined' && accountWidget)
 			{

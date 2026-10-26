@@ -44,6 +44,9 @@ class Constants
 
 	public static float $PLAYER_RATING_CALCULATION_MODIFIER = 0.5;
 	public static float $TSUMEGO_RATING_CALCULATION_MODIFIER = 0.5;
+	// After this many fails in a row on a problem, further fails change neither the rating of the
+	// player nor of the problem, until the player solves it.
+	public static int $MAXIMUM_RATED_FAILS_IN_A_ROW = 3;
 
 	public static float $RATING_MODE_SELECTION_INTERVAL = 480;
 	public static float $RATING_MODE_DIFFERENCE_SETTING_1 = 150;

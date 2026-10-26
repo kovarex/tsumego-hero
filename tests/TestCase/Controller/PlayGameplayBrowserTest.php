@@ -437,6 +437,42 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 			'The server is told about a fail once per problem, so the repeats must not move the rating again');
 	}
 
+	public function testFailsPastTheMaximumInARowDontMoveTheRating(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['rating' => 1000],
+			'tsumego' => ['rating' => 1000, 'set_order' => 1, 'attempt' => ['misplays' => Constants::$MAXIMUM_RATED_FAILS_IN_A_ROW - 1]]]);
+		$browser = Browser::instance();
+		$browser->setCookie('showInAccountWidget', 'rating');
+		$browser->get($this->playUrl($context));
+		$this->waitForBoard($browser);
+
+		$rating = 'return Math.round(window.accountWidget.rating * 1000) / 1000;';
+		$ratingLoss = "return document.getElementById('ratingLossShort').textContent;";
+		$before = $browser->driver->executeScript($rating);
+		$this->assertNotSame('0', $browser->driver->executeScript($ratingLoss));
+
+		// the last fail in a row that still counts
+		$browser->playWithResult('F');
+		$afterLastRatedFail = $browser->driver->executeScript($rating);
+		$this->assertNotSame($before, $afterLastRatedFail);
+		$this->assertSame('0', $browser->driver->executeScript($ratingLoss), 'The next fail costs no rating');
+
+		$browser->clickId('besogo-reset-button');
+		$browser->waitUntilJs("document.getElementById('xp-increase-fx').style.display == 'none'");
+		$browser->driver->executeScript("displayResult('F')");
+		$this->assertSame('none', $browser->driver->executeScript("return document.getElementById('xp-increase-fx').style.display;"),
+			'The bar has no change to show');
+		$browser->waitForSubmitResult();
+		$this->assertSame($afterLastRatedFail, $browser->driver->executeScript($rating));
+		$this->assertEqualsWithDelta($afterLastRatedFail, (float) $context->reloadUser()['rating'], 0.001);
+
+		// the page knows the fails from before it was opened
+		$browser->get($this->playUrl($context));
+		$this->waitForBoard($browser);
+		$this->assertSame('0', $browser->driver->executeScript($ratingLoss));
+	}
+
 	public function testOnlyASolvedProblemCanBeReviewedAndCommented(): void
 	{
 		foreach (['S' => true, 'F' => false] as $result => $reveals)
