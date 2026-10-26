@@ -18,6 +18,8 @@ use App\Utility\ValueGraphRenderer;
  * @var array $dailyResults
  * @var array|null $mistakeTraining
  * @var int $solvedProblemCount
+ * @var int $solvedPublishedCount
+ * @var int $publishedProblemCount
  * @var array $timeGraph
  * @var array $timeModeRanks
  * @var int $tsumegoCount
@@ -126,9 +128,26 @@ use App\Utility\ValueGraphRenderer;
 			</tr>
 			<tr>
 				<td colspan="2">
-					<?php $completedPercent = Util::getPercentButAvoid100UntilComplete($solvedProblemCount, $tsumegoCount); ?>
+					<?php
+					// One scale, two kinds of problems: up to the boundary the problems of the published
+					// collections, from it on the collections the site holds but does not offer.
+					$completedPercent = Util::getPercentButAvoid100UntilComplete($solvedProblemCount, $tsumegoCount);
+					$publishedShare = $tsumegoCount > 0 ? round($publishedProblemCount / $tsumegoCount * 100, 2) : 100;
+					$solvedPublished = min($solvedPublishedCount, $publishedProblemCount);
+					$solvedDrafts = max(0, min($solvedProblemCount - $solvedPublished, $tsumegoCount - $publishedProblemCount));
+					$publishedPercent = $tsumegoCount > 0 ? round($solvedPublished / $tsumegoCount * 100, 2) : 0;
+					$draftsPercent = $tsumegoCount > 0 ? round($solvedDrafts / $tsumegoCount * 100, 2) : 0;
+					?>
 					<div class="progress">
-						<div class="progress__fill" style="width:<?php echo $completedPercent; ?>%"></div>
+						<?php if ($publishedProblemCount < $tsumegoCount): ?>
+						<div class="progress__drafts" style="left:<?php echo $publishedShare; ?>%"
+							title="From here on: <?php echo $tsumegoCount - $publishedProblemCount; ?> problems of collections the site does not publish yet, level evaluation and other drafts."></div>
+						<?php endif; ?>
+						<div class="progress__fill" style="width:<?php echo $publishedPercent; ?>%"></div>
+						<?php if ($solvedDrafts > 0): ?>
+						<div class="progress__fill progress__fill--drafts" style="left:<?php echo $publishedShare; ?>%;width:<?php echo $draftsPercent; ?>%"
+							title="<?php echo $solvedDrafts; ?> of those problems solved"></div>
+						<?php endif; ?>
 						<div class="progress__label"><?php echo $completedPercent; ?>%</div>
 					</div>
 				</td>

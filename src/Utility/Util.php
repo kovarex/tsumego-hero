@@ -84,7 +84,7 @@ class Util
 	{
 		assert($value >= 0);
 		assert($max >= 0);
-		assert($value <= $max);
+		$value = min($value, $max);
 		$result = (int) round(Util::getRatio($value, $max) * 100);
 		if ($result == 100 && $value < $max)
 			return 99;

@@ -20,6 +20,17 @@ class Tsumego extends AppModel
 	];
 
 	/**
+	 * The problems the site holds: every problem that is not in the trash, whatever collection it
+	 * sits in and whether or not that collection is published yet. A problem that belongs to three
+	 * sets counts once. This is the number the solve counter of a player runs against on the
+	 * profile, so a solve of a problem of a collection nobody published yet is inside the fraction.
+	 */
+	public static function problemCount(): int
+	{
+		return (int) Util::query('SELECT COUNT(*) AS total FROM tsumego WHERE deleted IS NULL')[0]['total'];
+	}
+
+	/**
 	 * The problems of the site and how many of them the player solved.
 	 *
 	 * Both numbers are counted over the same set of problems, so the second one can never

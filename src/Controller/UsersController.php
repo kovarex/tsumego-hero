@@ -1100,9 +1100,11 @@ WHERE time_mode_session.user_id = ? AND time_mode_session.challenge_id IS NULL
 GROUP BY DATE(time_mode_session.created)
 ORDER BY category DESC', [$user['User']['id']]));
 
-		$progress = ClassRegistry::init('Tsumego')->publicProblemProgress((int) $user['User']['id']);
-		$tsumegoCount = $progress['total'];
-		$this->set('solvedProblemCount', $progress['solved']);
+		$progress = $this->Tsumego->publicProblemProgress((int) $user['User']['id']);
+		$this->set('solvedProblemCount', (int) $user['User']['solved']);
+		$this->set('tsumegoCount', $this->Tsumego->problemCount());
+		$this->set('publishedProblemCount', $progress['total']);
+		$this->set('solvedPublishedCount', $progress['solved']);
 
 		$achievementById = [];
 		foreach ($ach as $achievement)
@@ -1147,7 +1149,6 @@ ORDER BY category DESC', [$user['User']['id']]));
 
 		$this->set('dailyResults', $dailyResults);
 		$this->set('user', $user);
-		$this->set('tsumegoCount', $tsumegoCount);
 		$this->set('as', $as);
 		$this->set('aNum', $aNumx);
 		$this->set('aEarnedTimes', $aEarnedTimes);

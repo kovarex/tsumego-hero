@@ -326,18 +326,26 @@ class UsersControllerTest extends ControllerTestCase
 		$this->assertStringContainsString('1000 Weiqi problems 2nd half', $this->view);
 	}
 
-	public function testProfileCountsOnlyTheProblemsOfTheSite(): void
+	/**
+	 * The profile counts the problems the player solved over the problems the site holds, wherever the
+	 * collections of those problems stand: a solve of a problem of a collection nobody published yet
+	 * counts for the player and counts in the total. The solved number is the counter of the account,
+	 * the one the highscore shows, so a solve that outlives its problem is still in it.
+	 */
+	public function testProfileCountsTheProblemsThePlayerSolved(): void
 	{
 		$context = new ContextPreparator([
-			'user' => ['name' => 'solver', 'solved' => 2],
-			'tsumego' => ['status' => 'S', 'sets' => [['name' => 'Site Collection', 'num' => 1]]],
-			'tsumegos' => [['status' => 'S', 'sets' => [
-				['name' => 'Player Collection', 'num' => 1, 'public' => 1, 'user_id' => 'self']]]],
+			'user' => ['name' => 'solver', 'solved' => 3],
+			'tsumegos' => [
+				['status' => 'S', 'sets' => [['name' => 'published set', 'num' => 1]]],
+				['status' => 'S', 'sets' => [['name' => 'unpublished set', 'public' => 0, 'num' => 1]]],
+				['sets' => [['name' => 'published set', 'num' => 2]]],
+			],
 		]);
 
 		$this->testAction('users/view/' . $context->user['id'], ['method' => 'get', 'return' => 'view']);
 
-		$this->assertMatchesRegularExpression('#Completed:</td>\s*<td>1 of 1</td>#', $this->view);
+		$this->assertMatchesRegularExpression('#Completed:</td>\s*<td>3 of 3</td>#', $this->view);
 	}
 
 	/**

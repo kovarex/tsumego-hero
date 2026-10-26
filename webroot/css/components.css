@@ -190,6 +190,25 @@
 	pointer-events: none;
 }
 
+.progress__drafts
+{
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	right: 0;
+	background: repeating-linear-gradient(-45deg,
+		rgba(0, 0, 0, 0.22) 0 3px,
+		rgba(233, 196, 90, 0.55) 3px 6px);
+}
+
+.progress__fill--drafts
+{
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	background: linear-gradient(var(--color-yellow), var(--color-yellow-dark));
+}
+
 /* Thin variant: small track with the label above (set cards) */
 .progress--thin
 {
