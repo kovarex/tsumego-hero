@@ -285,7 +285,7 @@ WHERE c.TABLE_SCHEMA = DATABASE() AND c.COLUMN_NAME = 'tsumego_id'");
 					'sets' => [['name' => 'published', 'num' => 1]],
 					'status' => 'S',
 					'comments' => [['message' => 'nice']],
-					'variants' => [['type' => 'multiple_choice', 'answer1' => 'a']]],
+					'variants' => [['tsumego_variant_type_id' => TsumegoVariant::TYPE_MULTIPLE_CHOICE, 'answer1' => 'a']]],
 				['deleted' => self::daysAgo(Trash::$RETENTION_DAYS - 1), 'sets' => [['name' => 'published', 'num' => 2]]],
 				['sets' => [['name' => 'published', 'num' => 3]]]]]);
 		$purgedID = $context->tsumegos[0]['id'];

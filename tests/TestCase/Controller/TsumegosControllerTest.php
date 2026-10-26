@@ -619,7 +619,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 				'description' => 'Black to play. What is the result?',
 				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])',
 				'variants' => [[
-					'type' => 'multiple_choice',
+					'tsumego_variant_type_id' => TsumegoVariant::TYPE_MULTIPLE_CHOICE,
 					'answer1' => 'White is dead',
 					'answer2' => 'Ko',
 					'answer3' => 'Seki in sente',
@@ -659,17 +659,17 @@ class TsumegosControllerTest extends IntegrationTestCase
 
 	private static function variantsOf(int $tsumegoID): array
 	{
-		return Util::query('SELECT type, answer1 FROM tsumego_variant WHERE tsumego_id = ?', [$tsumegoID]);
+		return Util::query('SELECT tsumego_variant_type_id, answer1 FROM tsumego_variant WHERE tsumego_id = ?', [$tsumegoID]);
 	}
 
 	/** The form comes with "multiple choice: yes, score estimating: no" checked, saving it used to delete the variant. */
 	public function testProblemSettingsKeepTheVariantAndItsAnswers(): void
 	{
-		$context = $this->prepareSandboxProblem([['type' => 'multiple_choice', 'answer1' => 'Seki in sente']]);
+		$context = $this->prepareSandboxProblem([['tsumego_variant_type_id' => TsumegoVariant::TYPE_MULTIPLE_CHOICE, 'answer1' => 'Seki in sente']]);
 
 		$this->postProblemSettings($context, 'yes', 'no');
 
-		$this->assertSame([['type' => 'multiple_choice', 'answer1' => 'Seki in sente']], self::variantsOf($context->tsumegos[0]['id']));
+		$this->assertSame([['tsumego_variant_type_id' => TsumegoVariant::TYPE_MULTIPLE_CHOICE, 'answer1' => 'Seki in sente']], self::variantsOf($context->tsumegos[0]['id']));
 	}
 
 	/** A problem has one variant at most, it used to get both. */
@@ -679,16 +679,16 @@ class TsumegosControllerTest extends IntegrationTestCase
 
 		$this->postProblemSettings($context, 'yes', 'yes');
 
-		$this->assertSame([['type' => 'multiple_choice', 'answer1' => 'Black is dead']], self::variantsOf($context->tsumegos[0]['id']));
+		$this->assertSame([['tsumego_variant_type_id' => TsumegoVariant::TYPE_MULTIPLE_CHOICE, 'answer1' => 'Black is dead']], self::variantsOf($context->tsumegos[0]['id']));
 	}
 
 	public function testProblemSettingsChangeTheVariant(): void
 	{
-		$context = $this->prepareSandboxProblem([['type' => 'multiple_choice', 'answer1' => 'Seki in sente']]);
+		$context = $this->prepareSandboxProblem([['tsumego_variant_type_id' => TsumegoVariant::TYPE_MULTIPLE_CHOICE, 'answer1' => 'Seki in sente']]);
 
 		$this->postProblemSettings($context, 'no', 'yes');
-		$this->assertSame('score_estimating', self::variantsOf($context->tsumegos[0]['id'])[0]['type']);
-		$this->assertCount(1, self::variantsOf($context->tsumegos[0]['id']));
+		// a new score estimating problem starts at komi 0
+		$this->assertSame([['tsumego_variant_type_id' => TsumegoVariant::TYPE_SCORE_ESTIMATING, 'answer1' => '0']], self::variantsOf($context->tsumegos[0]['id']));
 
 		$this->postProblemSettings($context, 'no', 'no');
 		$this->assertSame([], self::variantsOf($context->tsumegos[0]['id']));
@@ -708,7 +708,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 				'description' => 'Who wins?',
 				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])',
 				'variants' => [[
-					'type' => 'score_estimating',
+					'tsumego_variant_type_id' => TsumegoVariant::TYPE_SCORE_ESTIMATING,
 					'answer1' => '6.5',
 					'answer2' => '3',
 					'answer3' => '6',

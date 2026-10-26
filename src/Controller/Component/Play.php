@@ -113,9 +113,9 @@ class Play
 					{
 						$variantType = null;
 						if ($data['Settings']['r41'] == 'yes')
-							$variantType = 'multiple_choice';
+							$variantType = TsumegoVariant::TYPE_MULTIPLE_CHOICE;
 						elseif ($data['Settings']['r42'] == 'yes')
-							$variantType = 'score_estimating';
+							$variantType = TsumegoVariant::TYPE_SCORE_ESTIMATING;
 						$tsumegoVariant = self::changeVariantType((int) $id, $tsumegoVariant, $variantType);
 					}
 					if ($data['Settings']['r39'] == 'on')
@@ -460,25 +460,28 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 	 *
 	 * @return array|null The variant the problem has now
 	 */
-	private static function changeVariantType(int $tsumegoID, ?array $variant, ?string $type): ?array
+	private static function changeVariantType(int $tsumegoID, ?array $variant, ?int $type): ?array
 	{
-		$activityTypes = ['multiple_choice' => AdminActivityType::MULTIPLE_CHOICE, 'score_estimating' => AdminActivityType::SCORE_ESTIMATING];
-		$currentType = $variant['TsumegoVariant']['type'] ?? null;
+		$activityTypes = [
+			TsumegoVariant::TYPE_MULTIPLE_CHOICE => AdminActivityType::MULTIPLE_CHOICE,
+			TsumegoVariant::TYPE_SCORE_ESTIMATING => AdminActivityType::SCORE_ESTIMATING];
+		$currentType = $variant ? (int) $variant['TsumegoVariant']['tsumego_variant_type_id'] : null;
 		if ($currentType === $type)
 			return $variant;
 		if ($variant)
 		{
-			if (isset($activityTypes[$currentType]))
-				AdminActivityLogger::log($activityTypes[$currentType], $tsumegoID, null, null, '0');
+			AdminActivityLogger::log($activityTypes[$currentType], $tsumegoID, null, null, '0');
 			ClassRegistry::init('TsumegoVariant')->delete($variant['TsumegoVariant']['id']);
 		}
 		if ($type === null)
 			return null;
 
 		AdminActivityLogger::log($activityTypes[$type], $tsumegoID, null, null, '1');
-		$newVariant = ['tsumego_id' => $tsumegoID, 'type' => $type, 'correct_answer' => 0];
-		if ($type === 'multiple_choice')
-			$newVariant = ['answer1' => 'Black is dead', 'answer2' => 'White is dead', 'answer3' => 'Ko', 'answer4' => 'Seki', 'correct_answer' => 1] + $newVariant;
+		$newVariant = ['tsumego_id' => $tsumegoID, 'tsumego_variant_type_id' => $type];
+		if ($type === TsumegoVariant::TYPE_MULTIPLE_CHOICE)
+			$newVariant += ['answer1' => 'Black is dead', 'answer2' => 'White is dead', 'answer3' => 'Ko', 'answer4' => 'Seki', 'correct_answer' => 1];
+		else // the komi, the captures of black and of white, and the score
+			$newVariant += ['answer1' => '0', 'answer2' => '0', 'answer3' => '0', 'winner' => '0'];
 		ClassRegistry::init('TsumegoVariant')->create();
 		ClassRegistry::init('TsumegoVariant')->save($newVariant);
 		return ClassRegistry::init('TsumegoVariant')->find('first', ['conditions' => ['tsumego_id' => $tsumegoID]]);

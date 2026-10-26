@@ -180,7 +180,7 @@ use App\Utility\ViteManifest;
 			echo '<span class="hint italic">('.h($t['Tsumego']['hint']).')</span>';
 		if($tv!=null)
 		{
-			if($tv['TsumegoVariant']['type']=='score_estimating')
+			if($tv['TsumegoVariant']['tsumego_variant_type_id'] == TsumegoVariant::TYPE_SCORE_ESTIMATING)
 			{
 				$capturesLabels = 'Black captures: '.$tv['TsumegoVariant']['answer2'].' | White captures: '.$tv['TsumegoVariant']['answer3'];
 				if ($swapColors)
@@ -262,13 +262,13 @@ use App\Utility\ViteManifest;
 	<!-- BOARD -->
 	<div id="target"></div>
 	<div id="targetLockOverlay"></div>
-	<?php if(!is_null($t['Tsumego']['semeai_type']) && $t['Tsumego']['semeai_type'] != 0 || ($tv!=null && $tv['TsumegoVariant']['type']=='multiple_choice')){ ?>
+	<?php if(!is_null($t['Tsumego']['semeai_type']) && $t['Tsumego']['semeai_type'] != 0 || ($tv!=null && $tv['TsumegoVariant']['tsumego_variant_type_id'] == TsumegoVariant::TYPE_MULTIPLE_CHOICE)){ ?>
 	<div align="center">
 	<br>
 		<a href="<?php echo $resetLink; ?>" title="reset problem" id="besogo-next-button">Reset</a>
 		<br><br>
 	</div>
-	<?php }else if($tv!=null && $tv['TsumegoVariant']['type'] == 'score_estimating'){ ?>
+	<?php }else if($tv!=null && $tv['TsumegoVariant']['tsumego_variant_type_id'] == TsumegoVariant::TYPE_SCORE_ESTIMATING){ ?>
 	<div align="center">
 		<?php if($t['Tsumego']['set_id']==262){ ?>
 			<br>
@@ -438,7 +438,7 @@ use App\Utility\ViteManifest;
 				}
 				else
 				{
-					if($tv['TsumegoVariant']['type'] == 'multiple_choice')
+					if($tv['TsumegoVariant']['tsumego_variant_type_id'] == TsumegoVariant::TYPE_MULTIPLE_CHOICE)
 					{
 						$multipleNo = '';
 						$multipleYes = 'checked="checked"';
@@ -499,7 +499,7 @@ use App\Utility\ViteManifest;
 			}
 			if($isSandbox && $tv!=null)
 			{
-				if($tv['TsumegoVariant']['type']=='multiple_choice')
+				if($tv['TsumegoVariant']['tsumego_variant_type_id'] == TsumegoVariant::TYPE_MULTIPLE_CHOICE)
 				{
 					$studyCorrectOptions = array(
 						'1'=>'1',
@@ -579,7 +579,7 @@ use App\Utility\ViteManifest;
 		<?php
 	}
 		?>
-	<?php if(!is_null($t['Tsumego']['semeai_type']) && $t['Tsumego']['semeai_type'] != 0 || $tv!=null&&$tv['TsumegoVariant']['type']=='multiple_choice'){ ?>
+	<?php if(!is_null($t['Tsumego']['semeai_type']) && $t['Tsumego']['semeai_type'] != 0 || $tv!=null&&$tv['TsumegoVariant']['tsumego_variant_type_id'] == TsumegoVariant::TYPE_MULTIPLE_CHOICE){ ?>
 		<label>
 		<input type="checkbox" class="toast__toggle" id="alertCheckbox" autocomplete="off" />
 		<div class="toast" id="multipleChoiceAlerts">
@@ -858,7 +858,7 @@ use App\Utility\ViteManifest;
 
 <?php
 	if($tv!=null){
-	if($tv['TsumegoVariant']['type']=='multiple_choice' && $tv['TsumegoVariant']['explanation']!=""){
+	if($tv['TsumegoVariant']['tsumego_variant_type_id'] == TsumegoVariant::TYPE_MULTIPLE_CHOICE && $tv['TsumegoVariant']['explanation']!=""){
 		echo 'mText = '.json_encode($tv['TsumegoVariant']['explanation'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).';';
 	}
 	}
@@ -900,7 +900,7 @@ use App\Utility\ViteManifest;
 	$("#reviewButton2").hide();
 
 	<?php if(Auth::isInRatingMode()) echo 'var ratingModeDifficultySelector = new RatingModeDifficultySelector();';	?>
-	<?php if($tv!=null&&$tv['TsumegoVariant']['type']=='score_estimating'){ ?>
+	<?php if($tv!=null&&$tv['TsumegoVariant']['tsumego_variant_type_id'] == TsumegoVariant::TYPE_SCORE_ESTIMATING){ ?>
 		$("#submitScoreEstimatingSE").click(function(e){
 			e.preventDefault();
 			if(!hasChosen){
@@ -1240,7 +1240,7 @@ use App\Utility\ViteManifest;
 			msg5selected = !msg5selected;
 		});
 		<?php if($tv!=null){ ?>
-		<?php if($tv['TsumegoVariant']['type']=='multiple_choice'){ ?>
+		<?php if($tv['TsumegoVariant']['tsumego_variant_type_id'] == TsumegoVariant::TYPE_MULTIPLE_CHOICE){ ?>
 			$("#showxMC").hide();
 			$("#showMC").click(function(){
 				if(!msgMCselected){
@@ -1972,7 +1972,7 @@ use App\Utility\ViteManifest;
 		}
 		else if($tv!=null)
 		{
-			echo 'options.multipleChoiceCustom = '.json_encode($tv['TsumegoVariant']['type'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).';';
+			echo 'options.multipleChoiceCustom = '.json_encode(TsumegoVariant::BOARD_TYPE_NAMES[$tv['TsumegoVariant']['tsumego_variant_type_id']], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).';';
 			echo 'let a5 = [];
 			a5.push('.json_encode($displayAnswers['answer1'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
 			a5.push('.json_encode($displayAnswers['answer2'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');

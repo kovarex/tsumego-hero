@@ -154,7 +154,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 				'set_order' => 1,
 				'sgf' => self::SGF_19,
 				'variants' => [[
-					'type' => 'multiple_choice',
+					'tsumego_variant_type_id' => TsumegoVariant::TYPE_MULTIPLE_CHOICE,
 					'answer1' => 'White is dead',
 					'answer2' => 'Ko',
 					'answer3' => 'Seki in sente',
@@ -186,7 +186,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 				'set_order' => 1,
 				'sgf' => self::SGF_19,
 				'variants' => [[
-					'type' => 'score_estimating',
+					'tsumego_variant_type_id' => TsumegoVariant::TYPE_SCORE_ESTIMATING,
 					'answer1' => '6.5',
 					'answer2' => '3',
 					'answer3' => '6',
@@ -872,7 +872,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 				'description' => 'Black to play. What is the result?',
 				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc]AW[dd];B[aa];W[ab];B[ba]C[+])',
 				'variants' => [[
-					'type' => 'multiple_choice',
+					'tsumego_variant_type_id' => TsumegoVariant::TYPE_MULTIPLE_CHOICE,
 					'answer1' => 'White is dead',
 					'answer2' => 'Ko',
 					'answer3' => 'Seki in sente',
@@ -904,7 +904,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 				'description' => 'Who wins?',
 				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])',
 				'variants' => [[
-					'type' => 'score_estimating',
+					'tsumego_variant_type_id' => TsumegoVariant::TYPE_SCORE_ESTIMATING,
 					'answer1' => '6.5',
 					'answer2' => '3',
 					'answer3' => '6',
