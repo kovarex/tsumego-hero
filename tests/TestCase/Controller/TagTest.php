@@ -47,7 +47,7 @@ class TagTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator([
 			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
-			'tsumegos' => [['set_order' => 1, 'tags' => [['name' => 'atari']]]],
+			'tsumegos' => [['set_order' => 1, 'status' => 'S', 'tags' => [['name' => 'atari']]]],
 			'tags' => [['name' => 'snapback']]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
@@ -82,11 +82,33 @@ class TagTest extends IntegrationTestCase
 			'Non-contributor should not see the tag search input');
 	}
 
+	/** Tags are hints, so a player adds them only once the problem is solved (forum#94) */
+	public function testTagSearchShowsOnlyAfterTheProblemIsSolved()
+	{
+		$context = new ContextPreparator([
+			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE, 'mode' => Constants::$LEVEL_MODE],
+			'tsumego' => ['set_order' => 1, 'sgf' => '(;GM[1]FF[4]ST[2]SZ[19]AB[cc];B[aa]C[+])'],
+			'tags' => [['name' => 'snapback']]]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->find('[data-testid="tag-solve-first"]');
+		$this->assertCount(0, $browser->getElements('[data-testid="tag-search-input"]'), 'No tag search before the problem is solved');
+
+		$browser->waitForBoard();
+		$browser->clickBoard(1, 1);
+		$browser->waitForSubmitResult();
+		$this->openEditorAndType($browser, 'snap');
+		$browser->clickId('tag-snapback');
+		$browser->find('[data-testid="tag-snapback"]');
+		$this->assertCount(0, $browser->getElements('[data-testid="tag-solve-first"]'));
+		$this->assertSame(1, ClassRegistry::init('TagConnection')->find('count', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]]));
+	}
+
 	public function testShowMyUnapprovedTagsInTagListAndNotInTagsToAdd()
 	{
 		$context = new ContextPreparator([
 			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
-			'tsumegos' => [['set_order' => 1, 'tags' => [['name' => 'atari', 'approved' => 0]]]],
+			'tsumegos' => [['set_order' => 1, 'status' => 'S', 'tags' => [['name' => 'atari', 'approved' => 0]]]],
 			'tags' => [['name' => 'snapback']]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
@@ -102,7 +124,7 @@ class TagTest extends IntegrationTestCase
 			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
 			'other-users' => [['name' => 'Ivan detkov']],
 			'tsumegos' => [[
-				'set_order' => 1,
+				'set_order' => 1, 'status' => 'S',
 				'tags' => [['name' => 'atari', 'approved' => 1, 'user' => 'Ivan detkov']]]],
 			'tags' => [['name' => 'snapback']]]);
 		$browser = Browser::instance();
@@ -120,7 +142,7 @@ class TagTest extends IntegrationTestCase
 			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
 			'other-users' => [['name' => 'Ivan detkov']],
 			'tsumegos' => [[
-				'set_order' => 1,
+				'set_order' => 1, 'status' => 'S',
 				'tags' => [['name' => 'atari', 'approved' => 0, 'user' => 'Ivan detkov']]]],
 			'tags' => [['name' => 'snapback']]]);
 		$browser = Browser::instance();
@@ -149,7 +171,7 @@ class TagTest extends IntegrationTestCase
 			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
 			'other-users' => [['name' => 'Ivan detkov']],
 			'tsumegos' => [[
-				'set_order' => 1,
+				'set_order' => 1, 'status' => 'S',
 				'tags' => [['name' => 'atari', 'approved' => 0, 'user' => 'Ivan detkov']]]],
 			'tags' => [['name' => 'snapback']]]);
 		$browser = Browser::instance();
@@ -297,7 +319,7 @@ class TagTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator([
 			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
-			'tsumego' => ['set_order' => 1],
+			'tsumego' => ['set_order' => 1, 'status' => 'S'],
 			'tags' => [['name' => 'snapback', 'is_hint' => 1]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
@@ -321,7 +343,7 @@ class TagTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator([
 			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
-			'tsumego' => 1,
+			'tsumego' => ['set_order' => 1, 'status' => 'S'],
 			'tags' => [['name' => 'snapback']]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
@@ -336,7 +358,7 @@ class TagTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator([
 			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
-			'tsumego' => 1,
+			'tsumego' => ['set_order' => 1, 'status' => 'S'],
 			'tags' => [['name' => 'snapback']]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
@@ -350,8 +372,9 @@ class TagTest extends IntegrationTestCase
 	public function testTryToAddTagToNonExistingTsumego()
 	{
 		$context = new ContextPreparator([
-			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
-			'tsumego' => 1,
+			// a player has no solve of a problem that is gone, so only an admin gets this far
+			'user' => ['admin' => true],
+			'tsumego' => ['set_order' => 1, 'status' => 'S'],
 			'tags' => [['name' => 'snapback']]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
@@ -366,7 +389,7 @@ class TagTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator([
 			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
-			'tsumego' => 1,
+			'tsumego' => ['set_order' => 1, 'status' => 'S'],
 			'tags' => [['name' => 'snapback']]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);

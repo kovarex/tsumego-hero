@@ -38,6 +38,7 @@ use App\Utility\ViteManifest;
  * @var bool $hasSgfProposal
  * @var int $i
  * @var bool $isAllowedToContribute
+ * @var bool $isAllowedToTag
  * @var bool $canAddMoreTags
  * @var array|null $classroomAssignment Set by the route of a class assignment, which is the row of buttons
  * @var bool $solvedForAssignment Set with $classroomAssignment: the player solved the problem for the assignment
@@ -341,6 +342,7 @@ use App\Utility\ViteManifest;
 			'isTimeMode' => Auth::isInTimeMode(),
 			'problemSolved' => $solved,
 			'canAddMoreTags' => $canAddMoreTags,
+			'isAllowedToTag' => $isAllowedToTag,
 			'isAllowedToContribute' => $isAllowedToContribute,
 			'initialTags' => array_map(fn($row) => [
 				'id' => (int) $row['id'],

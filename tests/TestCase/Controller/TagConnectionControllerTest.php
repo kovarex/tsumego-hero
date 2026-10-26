@@ -26,6 +26,21 @@ class TagConnectionControllerTest extends IntegrationTestCase
 		$this->assertResponseCode(403);
 	}
 
+	/** Tags are hints, so only a player who solved the problem adds them (forum#94) */
+	public function testAddRequiresTheProblemSolved()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'kovarex', 'rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
+			'tsumego' => ['set_order' => 1, 'status' => 'V'],
+			'tags' => [['name' => 'snapback']],
+		]);
+
+		$this->post('/tagConnection/add/' . $context->tsumegos[0]['id'] . '/snapback');
+
+		$this->assertResponseCode(403);
+		$this->assertSame(0, ClassRegistry::init('TagConnection')->find('count', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]]));
+	}
+
 	public function testAddWithUnknownTag()
 	{
 		$context = new ContextPreparator([
