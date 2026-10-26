@@ -346,7 +346,9 @@ class PlayResultProcessorComponent extends Component
 			// Prior misplays were already processed by their own AJAX calls.
 			self::processRatingChangeStep($userRating, $tsumegoRating, $result['solved']);
 
-			Auth::saveUserField('rating', $userRating);
+			Auth::saveUserFields([
+				'rating' => $userRating,
+				'highest_rating' => max((float) Auth::getUser()['highest_rating'], $userRating)]);
 
 			$previousTsumego['Tsumego']['rating'] = Util::clampOptional(
 				$tsumegoRating,

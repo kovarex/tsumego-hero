@@ -138,6 +138,7 @@ class ContextPreparator
 		$isOwner = Util::extract('owner', $userInput) ?? false;
 		$user['user_role_id'] = $isOwner ? User::ROLE_OWNER : ($isAdmin ? User::ROLE_ADMIN : User::ROLE_PLAYER);
 		$user['rating'] = Util::extract('rating', $userInput) ?: self::$DEFAULT_USER_RATING;
+		$user['highest_rating'] = Util::extract('highest_rating', $userInput) ?: $user['rating'];
 		$user['premium'] = Util::extract('premium', $userInput) ?: 0;
 		$deleted = Util::extract('deleted', $userInput) ?: false;
 		$user['solved'] = Util::extract('solved', $userInput) ?: 0;
