@@ -30,9 +30,9 @@ class SitesControllerTest extends ControllerTestCase
 				'date' => date('Y-m-d'),
 				'quote' => 'q01',
 				'gems' => '0-0-0',
-				'gemCounter1' => 0,
-				'gemCounter2' => 0,
-				'gemCounter3' => 0,
+				'emerald_solves' => 0,
+				'sapphire_solves' => 0,
+				'ruby_solves' => 0,
 			],
 		]);
 
@@ -367,9 +367,9 @@ class SitesControllerTest extends ControllerTestCase
 				'date' => date('Y-m-d'),
 				'quote' => 'q01',
 				'gems' => '0-0-0',
-				'gemCounter1' => 0,
-				'gemCounter2' => 0,
-				'gemCounter3' => 0,
+				'emerald_solves' => 0,
+				'sapphire_solves' => 0,
+				'ruby_solves' => 0,
 			],
 		]);
 

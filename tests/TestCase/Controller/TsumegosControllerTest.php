@@ -635,7 +635,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 					'answer2' => 'Ko',
 					'answer3' => 'Seki in sente',
 					'answer4' => 'Seki in gote',
-					'numAnswer' => '3',
+					'correct_answer' => '3',
 				]],
 			],
 		]);
@@ -668,7 +668,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 					'answer1' => '6.5',
 					'answer2' => '3',
 					'answer3' => '6',
-					'numAnswer' => '0',
+					'correct_answer' => '0',
 				]],
 			],
 		]);

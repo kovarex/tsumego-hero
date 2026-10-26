@@ -263,7 +263,7 @@ use App\Utility\ViteManifest;
 	<!-- BOARD -->
 	<div id="target"></div>
 	<div id="targetLockOverlay"></div>
-	<?php if(!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0 || ($tv!=null && $tv['TsumegoVariant']['type']=='multiple_choice')){ ?>
+	<?php if(!is_null($t['Tsumego']['semeai_type']) && $t['Tsumego']['semeai_type'] != 0 || ($tv!=null && $tv['TsumegoVariant']['type']=='multiple_choice')){ ?>
 	<div align="center">
 	<br>
 		<a href="<?php echo $resetLink; ?>" title="reset problem" id="besogo-next-button">Reset</a>
@@ -510,7 +510,7 @@ use App\Utility\ViteManifest;
 					);
 						$studyCorrectAttributes = array(
 							'legend'=>false,
-							'value'=>$tv['TsumegoVariant']['numAnswer']
+							'value'=>$tv['TsumegoVariant']['correct_answer']
 						);
 						echo '<a id="showMC" class="selectable-text selectable-text--inline">Edit multiple choice
 						<img id="greyArrowMC" src="/img/greyArrow1.png"></a><br><br>';
@@ -580,7 +580,7 @@ use App\Utility\ViteManifest;
 		<?php
 	}
 		?>
-	<?php if(!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0 || $tv!=null&&$tv['TsumegoVariant']['type']=='multiple_choice'){ ?>
+	<?php if(!is_null($t['Tsumego']['semeai_type']) && $t['Tsumego']['semeai_type'] != 0 || $tv!=null&&$tv['TsumegoVariant']['type']=='multiple_choice'){ ?>
 		<label>
 		<input type="checkbox" class="toast__toggle" id="alertCheckbox" autocomplete="off" />
 		<div class="toast" id="multipleChoiceAlerts">
@@ -711,9 +711,9 @@ use App\Utility\ViteManifest;
 	var playerRatingCalculationModifier = <?php echo Constants::$PLAYER_RATING_CALCULATION_MODIFIER; ?>;
 	let multipleChoiceLibertiesB = 0;
 	let multipleChoiceLibertiesW = 0;
-	let multipleChoiceLibertyCount = <?php echo $t['Tsumego']['libertyCount']; ?>+"";
-	let multipleChoiceSemeaiType = <?php echo $t['Tsumego']['semeaiType']; ?>+"";
-	let multipleChoiceInsideLiberties = <?php echo $t['Tsumego']['insideLiberties']; ?>+"";
+	let multipleChoiceLibertyCount = <?php echo $t['Tsumego']['liberty_count']; ?>+"";
+	let multipleChoiceSemeaiType = <?php echo $t['Tsumego']['semeai_type']; ?>+"";
+	let multipleChoiceInsideLiberties = <?php echo $t['Tsumego']['inside_liberties']; ?>+"";
 	let multipleChoiceEnabled = false;
 	let hasChosen = false;
 	let enableDownloads = false;
@@ -1285,7 +1285,7 @@ use App\Utility\ViteManifest;
 		<?php }
 		} ?>
 
-		<?php if(!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0 || $tv!=null){ ?>
+		<?php if(!is_null($t['Tsumego']['semeai_type']) && $t['Tsumego']['semeai_type'] != 0 || $tv!=null){ ?>
 		$("#alertCheckbox").change(function(){
 			$("#multipleChoiceAlerts").fadeOut(500);
 			});
@@ -1938,21 +1938,21 @@ use App\Utility\ViteManifest;
 		<?php
 		if ($alternative_response != 1)
 			echo 'options.alternativeResponse = false;';
-		if (!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0)
+		if (!is_null($t['Tsumego']['semeai_type']) && $t['Tsumego']['semeai_type'] != 0)
 		{
 			[$sStatusB, $sStatusW] = Util::calculateLibertyStatus(
 				$multipleChoiceSquares,
 				$multipleChoiceTriangles,
-				$t['Tsumego']['minLib'],
-				$t['Tsumego']['maxLib'],
-				$t['Tsumego']['libertyCount'],
+				$t['Tsumego']['minimum_liberties'],
+				$t['Tsumego']['maximum_liberties'],
+				$t['Tsumego']['liberty_count'],
 				$t['Tsumego']['variance']);
 			echo 'options.multipleChoice = true;';
 			echo 'let sStatusB = '.$sStatusB.';';
 			echo 'let sStatusW = '.$sStatusW.';';
 			echo 'multipleChoiceLibertiesB = sStatusB;';
 			echo 'multipleChoiceLibertiesW = sStatusW;';
-			echo 'multipleChoiceLibertyCount = '.$t['Tsumego']['libertyCount'].';';
+			echo 'multipleChoiceLibertyCount = '.$t['Tsumego']['liberty_count'].';';
 			echo 'let mVariance = '.$multipleChoiceTriangles.';';
 			echo 'let a1 = []; let a2 = [];
 			for(i=0; i<mVariance; i++)
@@ -1980,7 +1980,7 @@ use App\Utility\ViteManifest;
 			a5.push('.json_encode($displayAnswers['answer2'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
 			a5.push('.json_encode($displayAnswers['answer3'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
 			a5.push('.json_encode($displayAnswers['answer4'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
-			customMultipleChoiceAnswer = '.(int)$tv['TsumegoVariant']['numAnswer'].';
+			customMultipleChoiceAnswer = '.(int)$tv['TsumegoVariant']['correct_answer'].';
 			options.multipleChoiceCustomSetup = a5;';
 		}
 	?>

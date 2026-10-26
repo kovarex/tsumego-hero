@@ -87,7 +87,7 @@ class Play
 					$tsumegoVariant['TsumegoVariant']['answer3'] = $data['Study']['study3'];
 					$tsumegoVariant['TsumegoVariant']['answer4'] = $data['Study']['study4'];
 					$tsumegoVariant['TsumegoVariant']['explanation'] = $data['Study']['explanation'];
-					$tsumegoVariant['TsumegoVariant']['numAnswer'] = $data['Study']['studyCorrect'];
+					$tsumegoVariant['TsumegoVariant']['correct_answer'] = $data['Study']['studyCorrect'];
 					ClassRegistry::init('TsumegoVariant')->save($tsumegoVariant);
 				}
 				elseif (isset($data['Study2']))
@@ -118,7 +118,7 @@ class Play
 						$tv1['TsumegoVariant']['answer2'] = 'White is dead';
 						$tv1['TsumegoVariant']['answer3'] = 'Ko';
 						$tv1['TsumegoVariant']['answer4'] = 'Seki';
-						$tv1['TsumegoVariant']['numAnswer'] = '1';
+						$tv1['TsumegoVariant']['correct_answer'] = '1';
 						ClassRegistry::init('TsumegoVariant')->create();
 						ClassRegistry::init('TsumegoVariant')->save($tv1);
 					}
@@ -134,7 +134,7 @@ class Play
 						$tv1 = [];
 						$tv1['TsumegoVariant']['tsumego_id'] = $id;
 						$tv1['TsumegoVariant']['type'] = 'score_estimating';
-						$tv1['TsumegoVariant']['numAnswer'] = '0';
+						$tv1['TsumegoVariant']['correct_answer'] = '0';
 						ClassRegistry::init('TsumegoVariant')->create();
 						ClassRegistry::init('TsumegoVariant')->save($tv1);
 					}
@@ -212,7 +212,7 @@ class Play
 			'twitter_card' => 'summary_large_image',
 		]);
 
-		if (!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0)
+		if (!is_null($t['Tsumego']['semeai_type']) && $t['Tsumego']['semeai_type'] != 0)
 		{
 			($this->setFunction)('multipleChoiceTriangles', count(Util::getFollowingSgfCoordinates($sgf['Sgf']['sgf'], strpos($sgf['Sgf']['sgf'], 'TR') + 2)));
 			($this->setFunction)('multipleChoiceSquares', count(Util::getFollowingSgfCoordinates($sgf['Sgf']['sgf'], strpos($sgf['Sgf']['sgf'], 'SQ') + 2)));
@@ -297,7 +297,7 @@ class Play
 		// board so the player sees black as the side to move, and swap the
 		// true-color description (Black<->White) to match the player's color.
 		if ($tsumegoVariant != null
-			|| ($t['Tsumego']['semeaiType'] ?? 0) != 0
+			|| ($t['Tsumego']['semeai_type'] ?? 0) != 0
 			|| $checkBSize != 19
 			|| in_array($set['Set']['id'], [109, 233, 236, 239, 243, 244, 246, 251, 253]))
 		{
@@ -335,8 +335,6 @@ class Play
 			$emptyHeart = 'heart2';
 		}
 		if (Auth::isInRatingMode() || Auth::isInTimeMode())($this->setFunction)('_title', 'Tsumego Hero');
-		if ($isSandbox)
-			$t['Tsumego']['userWin'] = 0;
 
 		if (Auth::isInLevelMode())($this->setFunction)('page', 'level mode');
 		elseif (Auth::isInRatingMode())($this->setFunction)('page', 'rating mode');
@@ -444,9 +442,9 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		($this->setFunction)('fullHeart', $fullHeart);
 		($this->setFunction)('emptyHeart', $emptyHeart);
 		($this->setFunction)('maxHealth', Util::getHealthBasedOnLevel(Auth::getWithDefault('level', 0)));
-		($this->setFunction)('libertyCount', $t['Tsumego']['libertyCount']);
-		($this->setFunction)('semeaiType', $t['Tsumego']['semeaiType']);
-		($this->setFunction)('insideLiberties', $t['Tsumego']['insideLiberties']);
+		($this->setFunction)('libertyCount', $t['Tsumego']['liberty_count']);
+		($this->setFunction)('semeaiType', $t['Tsumego']['semeai_type']);
+		($this->setFunction)('insideLiberties', $t['Tsumego']['inside_liberties']);
 		($this->setFunction)('set', $set);
 		($this->setFunction)('t', $t);
 		($this->setFunction)('rating', Auth::getWithDefault('rating', 0));

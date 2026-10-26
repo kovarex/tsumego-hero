@@ -61,7 +61,7 @@ if (empty($currentUserStatus))
 		<div class="acDesc">
 			<?php
 	echo h($achievement['Achievement']['description']);
-if ($achievement['Achievement']['additionalDescription'] != null)
+if ($achievement['Achievement']['additional_description'] != null)
 	echo '*';
 ?>
 		</div>
@@ -85,8 +85,8 @@ if ($achievement['Achievement']['additionalDescription'] != null)
 	</div>
 	<font color="gray">
 	<?php
-	if ($achievement['Achievement']['additionalDescription'] != null)
-		echo '*' . h($achievement['Achievement']['additionalDescription']);
+	if ($achievement['Achievement']['additional_description'] != null)
+		echo '*' . h($achievement['Achievement']['additional_description']);
 ?></font>
 	<?php if ($collections): ?>
 	<div class="acCollections">

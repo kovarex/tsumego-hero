@@ -240,10 +240,10 @@ class ContextPreparator
 		$tsumego['maximum_rating'] = Util::extract('maximum_rating', $tsumegoInput) ?: null;
 		$tsumego['alternative_response'] = Util::extract('alternative_response', $tsumegoInput) ?? 1;
 		$tsumego['pass'] = Util::extract('pass', $tsumegoInput) ?? 0;
-		$tsumego['semeaiType'] = Util::extract('semeai_type', $tsumegoInput);
-		$tsumego['minLib'] = Util::extract('min_lib', $tsumegoInput);
-		$tsumego['maxLib'] = Util::extract('max_lib', $tsumegoInput);
-		$tsumego['libertyCount'] = Util::extract('liberty_count', $tsumegoInput);
+		$tsumego['semeai_type'] = Util::extract('semeai_type', $tsumegoInput);
+		$tsumego['minimum_liberties'] = Util::extract('minimum_liberties', $tsumegoInput);
+		$tsumego['maximum_liberties'] = Util::extract('maximum_liberties', $tsumegoInput);
+		$tsumego['liberty_count'] = Util::extract('liberty_count', $tsumegoInput);
 		$tsumego['variance'] = Util::extract('variance', $tsumegoInput);
 		$tsumego['deleted'] = Util::extract('deleted', $tsumegoInput);
 		$tsumego['author'] = Util::extract('author', $tsumegoInput) ?: '';
@@ -251,10 +251,6 @@ class ContextPreparator
 			$tsumego['solved'] = $solved;
 		if ($failed = Util::extract('failed', $tsumegoInput))
 			$tsumego['failed'] = $failed;
-		if ($userWin = Util::extract('userWin', $tsumegoInput))
-			$tsumego['userWin'] = $userWin;
-		if ($userLoss = Util::extract('userLoss', $tsumegoInput))
-			$tsumego['userLoss'] = $userLoss;
 		ClassRegistry::init('Tsumego')->create($tsumego);
 		ClassRegistry::init('Tsumego')->save($tsumego);
 		$tsumego = ClassRegistry::init('Tsumego')->find('first', ['order' => ['id' => 'DESC']])['Tsumego'];
@@ -842,9 +838,9 @@ class ContextPreparator
 			$dayRecord['date'] = Util::extract('date', $dayRecordInput) ?: date('Y-m-d');
 			$dayRecord['quote'] = Util::extract('quote', $dayRecordInput) ?: 'q01';
 			$dayRecord['gems'] = Util::extract('gems', $dayRecordInput) ?: '0-0-0';
-			$dayRecord['gemCounter1'] = Util::extract('gemCounter1', $dayRecordInput) ?: 0;
-			$dayRecord['gemCounter2'] = Util::extract('gemCounter2', $dayRecordInput) ?: 0;
-			$dayRecord['gemCounter3'] = Util::extract('gemCounter3', $dayRecordInput) ?: 0;
+			$dayRecord['emerald_solves'] = Util::extract('emerald_solves', $dayRecordInput) ?: 0;
+			$dayRecord['sapphire_solves'] = Util::extract('sapphire_solves', $dayRecordInput) ?: 0;
+			$dayRecord['ruby_solves'] = Util::extract('ruby_solves', $dayRecordInput) ?: 0;
 
 			ClassRegistry::init('DayRecord')->create($dayRecord);
 			ClassRegistry::init('DayRecord')->save($dayRecord);

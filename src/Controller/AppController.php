@@ -152,7 +152,7 @@ class AppController extends Controller
 			$condition1 = 500;
 			$condition2 = 200;
 			$condition3 = 5;
-			$counterField = null; // Which counter to increment (gemCounter1, gemCounter2, or gemCounter3)
+			$counterField = null; // Which counter to increment (emerald_solves, sapphire_solves, or ruby_solves)
 			$achievementCategory = null;
 			$conditionMet = false;
 
@@ -166,9 +166,9 @@ class AppController extends Controller
 					$gemValue = '10k';
 				if ($rank == $gemValue)
 				{
-					$counterField = 'gemCounter1';
+					$counterField = 'emerald_solves';
 					$achievementCategory = 'emerald';
-					if ($dateGem['DayRecord']['gemCounter1'] + 1 == $condition1)
+					if ($dateGem['DayRecord']['emerald_solves'] + 1 == $condition1)
 						$conditionMet = true;
 				}
 			}
@@ -194,9 +194,9 @@ class AppController extends Controller
 				}
 				if ($rank == $gemValue || $rank == $gemValue2 || $rank == $gemValue3)
 				{
-					$counterField = 'gemCounter2';
+					$counterField = 'sapphire_solves';
 					$achievementCategory = 'sapphire';
-					if ($dateGem['DayRecord']['gemCounter2'] + 1 == $condition2)
+					if ($dateGem['DayRecord']['sapphire_solves'] + 1 == $condition2)
 						$conditionMet = true;
 				}
 			}
@@ -222,9 +222,9 @@ class AppController extends Controller
 				}
 				if ($rank == $gemValue || $rank == $gemValue2 || $rank == $gemValue3)
 				{
-					$counterField = 'gemCounter3';
+					$counterField = 'ruby_solves';
 					$achievementCategory = 'ruby';
-					if ($dateGem['DayRecord']['gemCounter3'] + 1 == $condition3)
+					if ($dateGem['DayRecord']['ruby_solves'] + 1 == $condition3)
 						$conditionMet = true;
 				}
 			}
