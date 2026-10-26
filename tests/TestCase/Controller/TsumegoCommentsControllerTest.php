@@ -121,6 +121,6 @@ class TsumegoCommentsControllerTest extends IntegrationTestCase
 
 		$this->assertResponseCode(200);
 		$deleted = ClassRegistry::init('TsumegoComment')->findById($comment['TsumegoComment']['id']);
-		$this->assertSame(1, (int) $deleted['TsumegoComment']['deleted']);
+		$this->assertNotNull($deleted['TsumegoComment']['deleted'], 'The comment keeps the time it was deleted');
 	}
 }

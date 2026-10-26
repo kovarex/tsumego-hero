@@ -157,7 +157,7 @@ class TagsUserTest extends IntegrationTestCase
 		// A tsumego that has no set_connection
 		$tsumego = ClassRegistry::init('Tsumego');
 		$tsumego->create();
-		$tsumego->save(['description' => 'in no set']);
+		$tsumego->save(['description' => 'in no set', 'author' => '']);
 		$reject->create();
 		$reject->save(['Reject' => [
 			'user_id' => $userId, 'tsumego_id' => $tsumego->id, 'reject_type_id' => Reject::TYPE_TAG, 'tag_name' => 'hidden tag',

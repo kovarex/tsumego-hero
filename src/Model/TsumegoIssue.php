@@ -12,7 +12,7 @@
  *   - tsumego_id (INT, FK -> tsumego)
  *   - user_id (INT, FK -> user) - author of the issue
  *   - created (DATETIME)
- *   - deleted (TINYINT) - soft delete flag
+ *   - deleted (DATETIME NULL) - when the issue was deleted, NULL when it is not
  *
  * Statuses (tsumego_issue_status table):
  *   - 1 = opened
@@ -62,7 +62,7 @@ class TsumegoIssue extends AppModel
 		$count = $commentModel->find('count', [
 			'conditions' => [
 				'tsumego_issue_id' => $issueId,
-				'deleted' => false,
+				'deleted' => null,
 			],
 		]);
 
@@ -98,7 +98,7 @@ class TsumegoIssue extends AppModel
 		$idsSql = "
 			SELECT id
 			FROM tsumego_issue
-			WHERE deleted = 0
+			WHERE deleted IS NULL
 				AND tsumego_id IN (SELECT id FROM tsumego WHERE deleted IS NULL)
 			{$statusCondition}
 			ORDER BY created DESC, id DESC
@@ -143,7 +143,7 @@ class TsumegoIssue extends AppModel
 				sc.num AS tsumego_num
 			FROM tsumego_issue ti
 			LEFT JOIN user u ON u.id = ti.user_id
-			LEFT JOIN tsumego_comment tc ON tc.tsumego_issue_id = ti.id AND tc.deleted = 0
+			LEFT JOIN tsumego_comment tc ON tc.tsumego_issue_id = ti.id AND tc.deleted IS NULL
 			LEFT JOIN user cu ON cu.id = tc.user_id
 			LEFT JOIN set_connection sc ON sc.id = (
 				SELECT sc2.id
@@ -247,14 +247,14 @@ class TsumegoIssue extends AppModel
 			'open' => $this->find('count', [
 				'conditions' => [
 					'tsumego_issue_status_id' => self::$OPENED_STATUS,
-					'deleted' => false,
+					'deleted' => null,
 					self::$LIVE_PROBLEM_CONDITION,
 				],
 			]),
 			'closed' => $this->find('count', [
 				'conditions' => [
 					'tsumego_issue_status_id' => self::$CLOSED_STATUS,
-					'deleted' => false,
+					'deleted' => null,
 					self::$LIVE_PROBLEM_CONDITION,
 				],
 			]),
@@ -278,7 +278,7 @@ class TsumegoIssue extends AppModel
 			'conditions' => [
 				'TsumegoComment.tsumego_id' => $tsumegoId,
 				'TsumegoComment.tsumego_issue_id IS NULL',
-				'TsumegoComment.deleted' => false,
+				'TsumegoComment.deleted' => null,
 			],
 		]);
 

@@ -10,7 +10,7 @@
  *   SELECT c.id, c.tsumego_id, c.message, c.position, c.created,
  *     (SELECT s.sgf FROM sgf s WHERE s.tsumego_id = c.tsumego_id AND s.sgf_status_id = 2 ORDER BY s.id DESC LIMIT 1) AS sgf,
  *     (SELECT t.description FROM tsumego t WHERE t.id = c.tsumego_id) AS description
- *   FROM tsumego_comment c WHERE c.deleted = 0
+ *   FROM tsumego_comment c WHERE c.deleted IS NULL
  *
  * Usage: php scripts/legacy-comment-conversion-report.php comments.tsv > report.json
  */

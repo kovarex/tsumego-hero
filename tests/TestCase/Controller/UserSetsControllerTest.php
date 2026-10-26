@@ -452,7 +452,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$setId = $this->_createSet('Favorites', $context->user['id'], 0);
 		$tsumegoModel = ClassRegistry::init('Tsumego');
 		$tsumegoModel->create();
-		$tsumegoModel->save(['Tsumego' => ['difficulty' => 4, 'variance' => 100]]);
+		$tsumegoModel->save(['Tsumego' => ['difficulty' => 4, 'variance' => 100, 'author' => '']]);
 		$tsumegoId = $tsumegoModel->id;
 		$this->login('alice');
 
@@ -759,7 +759,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$setId = $this->_createSet('Alice Set', $context->user['id'], 0);
 		$tsumegoModel = ClassRegistry::init('Tsumego');
 		$tsumegoModel->create();
-		$tsumegoModel->save(['Tsumego' => ['difficulty' => 4, 'variance' => 100]]);
+		$tsumegoModel->save(['Tsumego' => ['difficulty' => 4, 'variance' => 100, 'author' => '']]);
 		$scModel = ClassRegistry::init('SetConnection');
 		$scModel->create();
 		$scModel->save(['SetConnection' => ['set_id' => $setId, 'tsumego_id' => $tsumegoModel->id, 'num' => 1]]);

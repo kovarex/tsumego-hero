@@ -28,7 +28,7 @@ $anchoredPositions = $TsumegoComment->find('list', [
 	'conditions' => [
 		'tsumego_id' => $tsumegoId,
 		'position !=' => null,
-		'deleted' => 0,
+		'deleted' => null,
 	],
 ]);
 

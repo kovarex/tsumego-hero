@@ -326,7 +326,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 
 		$tsumego = ClassRegistry::init('Tsumego');
 		$tsumego->create();
-		$tsumego->save(['description' => 'private only']);
+		$tsumego->save(['description' => 'private only', 'author' => '']);
 		$this->addSetForTsumego($tsumego->id, 'alice favorites', $context->otherUsers[0]['id'], 0, 1);
 
 		$this->post('tsumegos/play/' . $tsumego->id);

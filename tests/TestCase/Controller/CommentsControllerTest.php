@@ -110,7 +110,7 @@ class CommentsControllerTest extends IntegrationTestCase
 		$browser->waitUntilCssSelectorExistsWithText('#comment_' . $comment['TsumegoComment']['id'], 'My first comment');
 
 		// verify that deleted comment isn't visible
-		$comment['TsumegoComment']['deleted'] = 1;
+		$comment['TsumegoComment']['deleted'] = date('Y-m-d H:i:s');
 		ClassRegistry::init('TsumegoComment')->save($comment);
 
 		$browser->get('comments');
@@ -481,7 +481,7 @@ class CommentsControllerTest extends IntegrationTestCase
 
 		$tsumego = ClassRegistry::init('Tsumego');
 		$tsumego->create();
-		$tsumego->save(['description' => 'comment set link']);
+		$tsumego->save(['description' => 'comment set link', 'author' => '']);
 
 		// Private set connection created first, so it would win the old MIN(id) pick
 		$aliceSet = ClassRegistry::init('Set');

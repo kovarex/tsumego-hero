@@ -196,7 +196,7 @@ class PersonalCollectionContentTest extends IntegrationTestCase
 
 		$tsumego = ClassRegistry::init('Tsumego');
 		$tsumego->create();
-		$tsumego->save(['Tsumego' => ['rating' => 1000]]);
+		$tsumego->save(['Tsumego' => ['rating' => 1000, 'author' => '']]);
 		$tsumegoId = (int) $tsumego->id;
 
 		$setConnection = ClassRegistry::init('SetConnection');

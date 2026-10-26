@@ -124,7 +124,7 @@ abstract class AchievementTestCase extends IntegrationTestCase
 		for ($i = 0; $i < $count; $i++)
 		{
 			$Tsumego->create();
-			$Tsumego->save(['rating' => $rating]);
+			$Tsumego->save(['rating' => $rating, 'author' => '']);
 			$tsumegoId = $Tsumego->getInsertID();
 
 			$SetConnection->create();

@@ -96,7 +96,7 @@ class SetConnectionTest extends CakeTestCase
 	{
 		$tsumego = ClassRegistry::init('Tsumego');
 		$tsumego->create();
-		$tsumego->save(['description' => 'tie']);
+		$tsumego->save(['description' => 'tie', 'author' => '']);
 
 		$set = ClassRegistry::init('Set');
 		$set->create();
