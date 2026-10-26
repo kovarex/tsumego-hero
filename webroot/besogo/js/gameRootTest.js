@@ -56,6 +56,28 @@ besogo.addTest("GameRoot", "TwoOrderOfMovesLeadToTheSameNode", function()
   CHECK(finalChild.virtualParents[0] == otherOrder);
 });
 
+besogo.addTest("GameRoot", "CapturedStoneLeavesTheHash", function()
+{
+	// the hash of a move is the hash of its parent changed by the points of the move, the captures included
+	let root = besogo.makeGameRoot();
+	let capture = root.registerMove(2, 1).registerMove(1, 1).registerMove(1, 2);
+	CHECK(!capture.getStone(1, 1));
+
+	let samePosition = besogo.makeGameRoot();
+	samePosition.placeSetup(2, 1, BLACK);
+	samePosition.placeSetup(1, 2, BLACK);
+	CHECK_EQUALS(capture.getHash(), samePosition.getHash());
+});
+
+besogo.addTest("GameRoot", "ShiftedPositionsHaveDifferentHashes", function()
+{
+	// The string hashes of the points grow with their coordinates, so the sums over these two boards were equal
+	let root = besogo.makeGameRoot();
+	let first = root.registerMove(1, 1).registerMove(2, 2);
+	let second = root.registerMove(3, 3).registerMove(4, 4);
+	CHECK(first.getHash() != second.getHash());
+});
+
 besogo.addTest("GameRoot", "LocalEditDoesntBreakValidVariation", function()
 {
 	let root = besogo.makeGameRoot();
@@ -117,6 +139,27 @@ besogo.addTest("GameRoot", "LocalEditDoesntBreakStatusBasedProblem", function()
 	CHECK_EQUALS(move1.correct, CORRECT_GOOD);
 	CHECK_EQUALS(move2.correct, CORRECT_GOOD);
 	CHECK_EQUALS(move3.correct, CORRECT_GOOD);
+});
+
+besogo.addTest("GameRoot", "VirtualChildLeadingToALocalEditIsLocal", function()
+{
+	// the solver explores the same position in two orders of moves
+	let root = besogo.makeGameRoot();
+	let registerLocalMove = function(node, x, y)
+	{
+		let child = node.makeChild();
+		child.localEdit = true;
+		child.playMove(x, y);
+		node.registerChild(child);
+		return child;
+	};
+	let finalChild = registerLocalMove(registerLocalMove(registerLocalMove(root, 1, 1), 5, 5), 2, 2);
+	let otherOrder = registerLocalMove(registerLocalMove(root, 2, 2), 5, 5);
+
+	CHECK_EQUALS(otherOrder.virtualChildren.length, 1);
+	CHECK(otherOrder.virtualChildren[0].target == finalChild);
+	CHECK(!otherOrder.hasNonLocalChildIncludingVirtual());
+	CHECK_EQUALS(otherOrder.nodesToPlayOnTo().length, 0);
 });
 
 besogo.addTest("GameRoot", "KoComparisonRequiresBothCoordinatesToMatch", function()
