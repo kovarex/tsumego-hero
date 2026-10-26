@@ -71,6 +71,7 @@ SELECT
 	user.display_name AS user_display_name,
 	user.picture AS user_picture,
 	user.avatar_setting_id AS user_avatar_setting_id,
+	user.uploaded_avatar AS user_uploaded_avatar,
 	user.external_id AS user_external_id,
 	user.email AS user_email,
 	user.rating AS user_rating,

@@ -394,6 +394,14 @@ Router::connect(
 	['controller' => 'Users', 'action' => 'avatarPreference']
 );
 Router::connect(
+	'/users/avatarUpload',
+	['controller' => 'Users', 'action' => 'avatarUpload']
+);
+Router::connect(
+	'/users/avatarRemove',
+	['controller' => 'Users', 'action' => 'avatarRemove']
+);
+Router::connect(
 	'/profile',
 	['controller' => 'Users', 'action' => 'profile']
 );

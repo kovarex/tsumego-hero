@@ -249,6 +249,43 @@ class UserTest extends CakeTestCase
 		$this->assertNotSame(md5('myemailaddress@example.com'), User::gravatarHash('myemailaddress@example.com'));
 	}
 
+	/**
+	 * An uploaded picture is stored at one size, so every size gets the same url.
+	 */
+	public function testChoosingAnUploadedPictureUsesIt()
+	{
+		$user = ['id' => 9, 'display_name' => 'Anna', 'avatar_setting_id' => User::AVATAR_UPLOADED, 'uploaded_avatar' => 'avatars/9-0123456789abcdef.webp'];
+
+		$this->assertSame('/img/avatars/9-0123456789abcdef.webp', User::getAvatarUrl($user, 24));
+		$this->assertSame('/img/avatars/9-0123456789abcdef.webp', User::getAvatarUrl($user, User::AVATAR_PIXELS_PROFILE));
+	}
+
+	public function testAnUploadedChoiceWithoutAPictureFallsBackToTheBoard()
+	{
+		$user = ['id' => 9, 'display_name' => 'Anna', 'avatar_setting_id' => User::AVATAR_UPLOADED, 'uploaded_avatar' => null];
+
+		$this->assertSame(Avatar::url('Anna'), User::getAvatarUrl($user, 24));
+	}
+
+	/**
+	 * A list renders its rows with renderLink(), and the uploaded picture is taken from
+	 * the prefixed columns of a raw query as well as from a plain row.
+	 */
+	public function testRenderLinkShowsTheUploadedPicture()
+	{
+		$link = User::renderLink([
+			'user_id' => 9,
+			'user_display_name' => 'Anna',
+			'user_email' => 'anna@example.com',
+			'user_avatar_setting_id' => User::AVATAR_UPLOADED,
+			'user_uploaded_avatar' => 'avatars/9-0123456789abcdef.webp',
+		]);
+
+		$this->assertStringContainsString('<img src="/img/avatars/9-0123456789abcdef.webp" alt="" class="user-avatar"', $link);
+		// The board takes over when the file is gone.
+		$this->assertStringContainsString("this.src='" . Avatar::url('Anna') . "'", $link);
+	}
+
 	public function testAnUnknownChoiceFallsBackToTheBoard()
 	{
 		$user = ['id' => 8, 'display_name' => 'Anna', 'avatar_setting_id' => 99, 'email' => 'test@example.com'];

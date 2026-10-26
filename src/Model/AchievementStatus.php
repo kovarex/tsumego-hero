@@ -41,7 +41,7 @@ class AchievementStatus extends AppModel
 			],
 			'fields' => [
 				'AchievementStatus.id', 'AchievementStatus.created', 'Achievement.id', 'Achievement.name', 'Achievement.image',
-				'User.id', 'User.display_name', 'User.name', 'User.external_id', 'User.picture', 'User.avatar_setting_id', 'User.email', 'User.rating',
+				'User.id', 'User.display_name', 'User.name', 'User.external_id', 'User.picture', 'User.avatar_setting_id', 'User.uploaded_avatar', 'User.email', 'User.rating',
 			],
 			'conditions' => ['User.deleted IS NULL'],
 			'limit' => $limit,
@@ -57,6 +57,7 @@ class AchievementStatus extends AppModel
 				'external_id' => $row['User']['external_id'],
 				'picture' => $row['User']['picture'],
 				'avatar_setting_id' => $row['User']['avatar_setting_id'],
+				'uploaded_avatar' => $row['User']['uploaded_avatar'],
 				'email' => $row['User']['email'],
 			];
 			$rating = (float) $row['User']['rating'];

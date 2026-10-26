@@ -1,0 +1,14 @@
+# The name of an uploaded avatar carries a hash of the picture (UploadedAvatar),
+# so a picture never changes in place and can be cached for a year.
+<IfModule mod_headers.c>
+    Header set Cache-Control "public, max-age=31536000, immutable"
+</IfModule>
+
+# This directory is web-writable (players upload their avatars), so block
+# execution of any scripts that might be uploaded here.
+Options -ExecCGI -Indexes
+RemoveHandler .php .phtml .php3 .php4 .php5 .phps
+RemoveType .php .phtml .php3 .php4 .php5 .phps
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>

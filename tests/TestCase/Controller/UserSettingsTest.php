@@ -1,5 +1,6 @@
 <?php
 
+use App\Utility\UploadedAvatar;
 use App\Utility\Util;
 use Facebook\WebDriver\WebDriverKeys;
 
@@ -169,6 +170,44 @@ class UserSettingsTest extends IntegrationTestCase
 
 		$browser->get('users/settings');
 		$this->assertTextContains('gravatar.com', $browser->driver->getPageSource());
+	}
+
+	/**
+	 * A picture picked in the form is the avatar of the page the browser comes back to.
+	 */
+	public function testAnUploadedPictureIsTheAvatarOfThePage(): void
+	{
+		$context = new ContextPreparator(['user' => ['avatar_setting_id' => User::AVATAR_BOARD]]);
+		$browser = Browser::instance();
+		$image = imagecreatetruecolor(300, 200);
+		imagefill($image, 0, 0, imagecolorallocate($image, 30, 140, 90));
+		ob_start();
+		imagepng($image);
+		$png = (string) ob_get_clean();
+
+		$browser->get('users/settings');
+		// The file is handed to the input by script: the browser runs where the file of the test is not.
+		$browser->driver->executeScript("
+			var bytes = Uint8Array.from(atob(arguments[0]), function(c) { return c.charCodeAt(0); });
+			var input = document.querySelector('#avatar-upload input[type=file]');
+			var transfer = new DataTransfer();
+			transfer.items.add(new File([bytes], 'me.png', {type: 'image/png'}));
+			input.files = transfer.files;
+		", [base64_encode($png)]);
+		$browser->find('#avatar-upload button[type=submit]')->click();
+		$this->waitForUserField($context, 'avatar_setting_id', (string) User::AVATAR_UPLOADED);
+		$name = $context->reloadUser()['uploaded_avatar'];
+
+		try
+		{
+			$browser->waitUntilJs('document.querySelector("#avatar-remove") !== null');
+			$this->assertTrue($browser->find('input[name="avatar"][value="' . User::AVATAR_UPLOADED . '"]')->isSelected());
+			$this->assertStringContainsString(UploadedAvatar::url($name), $browser->driver->getPageSource());
+		}
+		finally
+		{
+			UploadedAvatar::remove($name);
+		}
 	}
 
 	public function testGoogleAccountHasNoLoginName(): void

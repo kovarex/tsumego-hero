@@ -137,7 +137,7 @@ You get an email for the first message you have not read yet. You can turn these
 			SELECT
 				conversation.unread_count,
 				message.id, message.sender_user_id, message.text, message.created, message.read_at,
-				user.id AS user_id, user.display_name, user.deleted, user.external_id, user.picture, user.email, user.avatar_setting_id, user.rating
+				user.id AS user_id, user.display_name, user.deleted, user.external_id, user.picture, user.email, user.avatar_setting_id, user.uploaded_avatar, user.rating
 			FROM (
 				SELECT partner_user_id, MAX(id) AS last_message_id, SUM(unread) AS unread_count
 				FROM (
@@ -251,7 +251,7 @@ You get an email for the first message you have not read yet. You can turn these
 			return [];
 		$escaped = addcslashes($query, '\\%_');
 		$rows = Util::query('
-			SELECT id AS user_id, display_name, deleted, external_id, picture, email, avatar_setting_id, rating
+			SELECT id AS user_id, display_name, deleted, external_id, picture, email, avatar_setting_id, uploaded_avatar, rating
 			FROM user
 			WHERE deleted IS NULL AND id <> ? AND display_name LIKE ?
 			ORDER BY display_name LIKE ? DESC, CHAR_LENGTH(display_name), display_name
@@ -263,7 +263,7 @@ You get an email for the first message you have not read yet. You can turn these
 	 * A player the way the page shows them. A deleted account has no name and no avatar,
 	 * the page writes it as deleted.
 	 *
-	 * @param array<string, mixed> $row With user_id, display_name, deleted, external_id, picture, email, avatar_setting_id, rating
+	 * @param array<string, mixed> $row With user_id, display_name, deleted, external_id, picture, email, avatar_setting_id, uploaded_avatar, rating
 	 * @return array{id: int, displayName: string|null, avatarUrl: string|null, rating: float}
 	 */
 	public static function playerPayload(array $row): array

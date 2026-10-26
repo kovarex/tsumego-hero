@@ -33,6 +33,7 @@ SELECT
     user.external_id AS user_external_id,
     user.picture AS user_picture,
     user.avatar_setting_id AS user_avatar_setting_id,
+    user.uploaded_avatar AS user_uploaded_avatar,
     user.rating AS user_rating,
     user.email AS user_email,
     sc.id AS set_connection_id,

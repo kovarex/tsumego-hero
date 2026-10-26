@@ -2,6 +2,7 @@
 
 use App\Utility\Auth;
 use App\Utility\Constants;
+use App\Utility\UploadedAvatar;
 
 /**
  * Everything a player can change about their account and about how the site
@@ -96,6 +97,16 @@ use App\Utility\Constants;
 					if ($chosenAvatar === User::AVATAR_GRAVATAR)
 						echo '<div class="hint">Change it at <a href="https://gravatar.com" target="_blank" rel="noopener">gravatar.com</a></div>';
 					?>
+					<form method="post" action="/users/avatarUpload" enctype="multipart/form-data" id="avatar-upload">
+						<input type="file" name="avatar" accept="image/jpeg,image/png,image/webp,image/gif" aria-label="Picture to upload" required="required">
+						<button type="submit" class="btn">Upload</button>
+						<div class="hint">Your own picture: JPEG, PNG, WebP or GIF up to <?php echo UploadedAvatar::maxSize(); ?>. The middle square of it is shown.</div>
+					</form>
+					<?php if (!empty($user['uploaded_avatar'])): ?>
+						<form method="post" action="/users/avatarRemove" style="display:inline;">
+							<button type="submit" class="link" id="avatar-remove">remove my picture</button>
+						</form>
+					<?php endif; ?>
 				</td>
 			</tr>
 		</table>

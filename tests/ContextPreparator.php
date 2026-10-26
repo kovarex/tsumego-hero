@@ -152,6 +152,7 @@ class ContextPreparator
 		$user['external_id'] = $externalId ?: null;
 		$user['picture'] = Util::extract('picture', $userInput) ?: null;
 		$user['avatar_setting_id'] = Util::extract('avatar_setting_id', $userInput) ?: User::AVATAR_BOARD;
+		$user['uploaded_avatar'] = Util::extract('uploaded_avatar', $userInput) ?: null;
 		$user['needs_display_name_change'] = Util::extract('needs_display_name_change', $userInput) ?: false;
 		foreach ([
 			'used_refinement',
