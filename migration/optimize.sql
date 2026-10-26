@@ -4,7 +4,6 @@ OPTIMIZE TABLE time_mode_setting;
 OPTIMIZE TABLE achievement;
 OPTIMIZE TABLE achievement_condition;
 OPTIMIZE TABLE achievement_status;
-OPTIMIZE TABLE activate;
 OPTIMIZE TABLE admin_activity;
 OPTIMIZE TABLE comment;
 OPTIMIZE TABLE day_record;

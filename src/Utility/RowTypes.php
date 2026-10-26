@@ -9,7 +9,6 @@ namespace App\Utility;
  * @phpstan-type AchievementConditionRow array{id?: int, value?: float|null, user_id?: int, set_id?: int|null, category?: string|null, created?: string, ...}
  * @phpstan-type AchievementRow array{id?: int, name?: string|null, description?: string|null, image?: string|null, color?: string|null, order?: int|null, xp?: int|null, additionalDescription?: string|null, created?: string|null, ...}
  * @phpstan-type AchievementStatusRow array{id?: int, user_id?: int, achievement_id?: int, value?: int, created?: string|null, ...}
- * @phpstan-type ActivateRow array{id?: int, user_id?: int, string?: string|null, created?: string, ...}
  * @phpstan-type AdminActivityRow array{id?: int, user_id?: int, tsumego_id?: int|null, set_id?: int|null, type?: int, old_value?: string|null, new_value?: string|null, created?: string, ...}
  * @phpstan-type AdminActivityTypeRow array{id?: int, name?: string|null, ...}
  * @phpstan-type AnswerRow array{id?: int, user_id?: int, comment_id?: int, message?: string, dismissed?: int, created?: string, ...}
