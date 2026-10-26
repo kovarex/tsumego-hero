@@ -214,6 +214,12 @@ Router::connect(
 Router::connect('/admin', ['controller' => 'Admin', 'action' => 'index']);
 Router::connect('/admin/activity', ['controller' => 'Admin', 'action' => 'activity']);
 Router::connect('/admin/sgf-proposals', ['controller' => 'Admin', 'action' => 'sgfProposals']);
+Router::connect('/admin/sgf-changes', ['controller' => 'Admin', 'action' => 'sgfChanges']);
+Router::connect(
+	'/admin/sgf-changes/review/:id',
+	['controller' => 'Admin', 'action' => 'reviewSgfChange'],
+	['pass' => ['id'], 'id' => '[0-9]+'] // Id of the sgf
+);
 Router::connect('/admin/tag-proposals', ['controller' => 'Admin', 'action' => 'tagProposals']);
 Router::connect('/admin/new-tags', ['controller' => 'Admin', 'action' => 'newTags']);
 Router::connect('/admin/deleted-accounts', ['controller' => 'Admin', 'action' => 'deletedAccounts']);

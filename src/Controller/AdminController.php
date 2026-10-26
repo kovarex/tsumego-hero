@@ -1,10 +1,12 @@
 <?php
 
 use App\Attribute\HttpGet;
+use App\Attribute\HttpPost;
 use App\Utility\AdminActivityRenderer;
 use App\Utility\Auth;
 use App\Utility\RejectedSGFProposalsRenderer;
 use App\Utility\SGFProposalsRenderer;
+use App\Utility\SgfChangesRenderer;
 use App\Utility\TagConnectionProposalsRenderer;
 use App\Utility\TagProposalsRenderer;
 
@@ -26,7 +28,7 @@ class AdminController extends AppController
 		$this->set('tagProposalCount', TagConnectionProposalsRenderer::total());
 		$this->set('newTagCount', TagProposalsRenderer::total());
 		$this->set('openIssueCount', ClassRegistry::init('TsumegoIssue')->getIndexCounts()['open']);
-		$this->set('newUploadCount', AdminPage::countNewUploads($userID));
+		$this->set('newSgfChangeCount', AdminPage::countNewSgfChanges($userID));
 		$this->set('deletedAccountCount', ClassRegistry::init('User')->find('count', ['conditions' => ['deleted IS NOT NULL']]));
 	}
 
@@ -48,6 +50,42 @@ class AdminController extends AppController
 		$this->set('_title', 'SGF proposals');
 		$this->set('sgfProposalsRenderer', new SGFProposalsRenderer($this->params['url']));
 		$this->set('rejectedSgfProposalsRenderer', new RejectedSGFProposalsRenderer($this->params['url']));
+	}
+
+	/**
+	 * Every saved version of a problem, for the admins to review the changes of each other
+	 */
+	#[HttpGet]
+	public function sgfChanges(): void
+	{
+		$this->Authorization->authorize('Admin', 'viewAdminArea');
+		$this->set('_page', 'admin');
+		$this->set('_title', 'SGF changes');
+		$newSince = AdminPage::markViewed(Auth::getUserID(), AdminPage::SGF_CHANGES);
+		$this->set('sgfChangesRenderer', new SgfChangesRenderer($this->params['url'], $newSince));
+	}
+
+	/**
+	 * Ticks an SGF change as reviewed by the admin (reviewed=1), or takes the tick back (reviewed=0).
+	 * The own changes are reviewed by the others.
+	 */
+	#[HttpPost]
+	public function reviewSgfChange(string $sgfID): CakeResponse
+	{
+		$this->Authorization->authorize('Admin', 'reviewSgfChange');
+		$sgf = ClassRegistry::init('Sgf')->find('first', ['fields' => ['id', 'user_id'], 'conditions' => ['id' => (int) $sgfID]]);
+		if (!$sgf)
+			throw new NotFoundException('SGF change not found');
+		if ((int) $sgf['Sgf']['user_id'] === Auth::getUserID())
+			throw new BadRequestException('Your own changes are reviewed by the other admins');
+
+		$reviewed = !empty($this->request->data['reviewed']);
+		SgfReview::mark((int) $sgfID, Auth::getUserID(), $reviewed);
+
+		$this->autoRender = false;
+		$this->response->type('json');
+		$this->response->body(json_encode(['reviewed' => $reviewed]));
+		return $this->response;
 	}
 
 	/**

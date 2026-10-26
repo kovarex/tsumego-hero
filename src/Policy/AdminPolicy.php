@@ -20,9 +20,11 @@ class AdminPolicy extends BasePolicy
 	}
 
 	/**
+	 * The tick of an SGF change on the SGF changes page, see AdminController::reviewSgfChange
+	 *
 	 * @param UserRow|null $user
 	 */
-	public static function canUploads(?array $user): bool
+	public static function canReviewSgfChange(?array $user): bool
 	{
 		return static::isAdmin($user);
 	}

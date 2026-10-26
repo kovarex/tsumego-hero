@@ -2,7 +2,7 @@
 
 /**
  * Shim of CakePHP 5's AuthorizationComponent. The call site is identical:
- * $this->Authorization->authorize('Admin') in the action uploads -> App\Policy\AdminPolicy::canUploads.
+ * $this->Authorization->authorize('Admin') in the action userstats -> App\Policy\AdminPolicy::canUserstats.
  *
  * Policies live in App\Policy and are resolved through composer (PSR-4), so a new
  * policy file is picked up without regenerating the classmap.

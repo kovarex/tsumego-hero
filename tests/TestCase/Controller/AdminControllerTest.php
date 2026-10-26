@@ -4,7 +4,7 @@ use App\Utility\Util;
 
 /**
  * The admin page links everything an admin does and counts what waits there (AdminController),
- * the admin activity and the uploads count what is new since the admin last opened them (AdminPage).
+ * the admin activity and the SGF changes count what is new since the admin last opened them (AdminPage).
  */
 class AdminControllerTest extends IntegrationTestCase
 {
@@ -128,16 +128,16 @@ class AdminControllerTest extends IntegrationTestCase
 					['data' => self::SGF, 'sgf_status_id' => Sgf::STATUS_REJECTED]]]]);
 		[$oldUpload, , $proposal, $rejected] = array_column($context->tsumegos[0]['sgfs'], 'id');
 
-		$this->get('/users/uploads');
-		self::viewedAnHourAgo(AdminPage::UPLOADS);
+		$this->get('/admin/sgf-changes');
+		self::viewedAnHourAgo(AdminPage::SGF_CHANGES);
 		Util::execute('UPDATE sgf SET user_id = ? WHERE id IN (?, ?, ?)', [$context->otherUsers[0]['id'], $oldUpload, $proposal, $rejected]);
 		Util::execute('UPDATE sgf SET created = NOW() - INTERVAL 2 HOUR WHERE id = ?', [$oldUpload]);
-		$this->assertSame(1, $this->countOnLink('/users/uploads'), 'the proposal only: the own upload and the rejected one do not count, the old one was seen');
+		$this->assertSame(1, $this->countOnLink('/admin/sgf-changes'), 'the proposal only: the own upload and the rejected one do not count, the old one was seen');
 
-		$this->get('/users/uploads');
+		$this->get('/admin/sgf-changes');
 		$this->assertSame(1, substr_count($this->view, 'data-table__row--new'));
-		$this->assertStringContainsString('<tr id="' . $proposal . '" class="data-table__row--new">', $this->view);
-		$this->assertSame(0, $this->countOnLink('/users/uploads'));
+		$this->assertStringContainsString('<tr class="data-table__row--new"><td class="sgf-review" id="review-' . $proposal . '">', $this->view);
+		$this->assertSame(0, $this->countOnLink('/admin/sgf-changes'));
 	}
 
 	public function testOnlyOwnersSeeTheLinkToTheRoles(): void

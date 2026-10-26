@@ -4,12 +4,13 @@
  * Server-side auth guards: anonymous -> 401, logged-in-without-permission -> 403.
  */
 use App\Utility\Constants;
+use App\Utility\Util;
 
 class AdminGuardTest extends IntegrationTestCase
 {
 	// ── UsersController admin pages ──
 
-	private const ADMIN_AREA_PAGES = ['/admin', '/admin/activity', '/admin/sgf-proposals', '/admin/tag-proposals', '/admin/new-tags', '/admin/deleted-accounts'];
+	private const ADMIN_AREA_PAGES = ['/admin', '/admin/activity', '/admin/sgf-proposals', '/admin/sgf-changes', '/admin/tag-proposals', '/admin/new-tags', '/admin/deleted-accounts'];
 
 	public function testAdminAreaRequiresLogin()
 	{
@@ -62,22 +63,20 @@ class AdminGuardTest extends IntegrationTestCase
 		}
 	}
 
-	public function testUploadsRequiresLogin()
+	public function testReviewOfAnSgfChangeRequiresAdmin()
 	{
-		new ContextPreparator(['user' => null]);
+		$context = new ContextPreparator([
+			'user' => ['name' => 'regular', 'admin' => false],
+			'tsumego' => ['sgf' => '(;GM[1]FF[4]SZ[19])']]);
+		$url = '/admin/sgf-changes/review/' . $context->tsumegos[0]['sgfs'][0]['id'];
 
-		$this->get('/users/uploads');
-
-		$this->assertResponseCode(401);
-	}
-
-	public function testUploadsRequiresAdmin()
-	{
-		new ContextPreparator(['user' => ['name' => 'regular', 'admin' => false]]);
-
-		$this->get('/users/uploads');
-
+		$this->post($url, ['reviewed' => 1]);
 		$this->assertResponseCode(403);
+
+		$this->logout();
+		$this->post($url, ['reviewed' => 1]);
+		$this->assertResponseCode(401);
+		$this->assertSame(0, (int) Util::query('SELECT COUNT(*) AS total FROM sgf_review')[0]['total']);
 	}
 
 	public function testUserstatsRequiresLogin()

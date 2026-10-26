@@ -80,12 +80,10 @@ class SgfSpecialCharacterRenderTest extends IntegrationTestCase
 	}
 
 	/**
-	 * Verify that user uploads page correctly embeds evil SGF in Blob download.
-	 * uploads.ctp uses: new Blob([json_encode($sgf)]) for download buttons.
+	 * The download of the SGF changes is the SGF the server sends, not a copy embedded in the page.
 	 */
-	public function testUserUploadsPageBlobContainsCorrectSgf()
+	public function testSgfChangesDownloadTheSgfUnchanged()
 	{
-		$browser = Browser::instance();
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
 			'tsumego' => [
@@ -94,23 +92,15 @@ class SgfSpecialCharacterRenderTest extends IntegrationTestCase
 				'status' => 'S',
 			],
 		]);
+		$sgfID = $context->tsumegos[0]['sgfs'][0]['id'];
 
-		$browser->get('/users/uploads');
+		$this->get('/admin/sgf-changes');
+		$this->assertResponseOk();
+		$this->assertStringNotContainsString('日本語', $this->view, 'the page does not carry the SGF');
+		$this->assertStringContainsString('id="download-' . $sgfID . '" href="/sgf/fetch/' . $sgfID . '"', $this->view);
 
-		$blobContent = $browser->driver->executeAsyncScript("
-			var callback = arguments[arguments.length - 1];
-			var origSaveAs = window.saveAs;
-			window.saveAs = function(blob) {
-				var reader = new FileReader();
-				reader.onload = function() { callback(reader.result); };
-				reader.readAsText(blob);
-			};
-			document.querySelector('[id^=\"dl1-\"]').click();
-		");
-
-		$this->assertStringContainsString("\n", $blobContent, 'Newlines preserved in Blob');
-		$this->assertStringContainsString('"quotes"', $blobContent, 'Quotes preserved in Blob');
-		$this->assertStringContainsString('日本語', $blobContent, 'Unicode preserved in Blob');
+		$this->get('/sgf/fetch/' . $sgfID);
+		$this->assertSame(self::tortureSgf(), $this->view);
 	}
 
 	/**

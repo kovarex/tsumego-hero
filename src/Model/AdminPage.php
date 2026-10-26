@@ -10,7 +10,7 @@ use App\Utility\Util;
 class AdminPage extends AppModel
 {
 	public const ACTIVITY = 1;
-	public const UPLOADS = 2;
+	public const SGF_CHANGES = 2;
 
 	public $useTable = 'admin_page';
 
@@ -39,14 +39,14 @@ WHERE admin_page_view.user_id = ? AND admin_page_view.admin_page_id = ?', [$user
 	}
 
 	/**
-	 * The SGFs uploaded by others since the admin last looked at the uploads, the rejected
+	 * The SGFs saved by others since the admin last looked at the SGF changes, the rejected
 	 * proposals are not on the page.
 	 */
-	public static function countNewUploads(int $userID): int
+	public static function countNewSgfChanges(int $userID): int
 	{
 		return (int) Util::query('SELECT COUNT(*) AS total
 FROM admin_page_view
 JOIN sgf ON sgf.created > admin_page_view.viewed AND sgf.sgf_status_id <> ? AND NOT (sgf.user_id <=> admin_page_view.user_id)
-WHERE admin_page_view.user_id = ? AND admin_page_view.admin_page_id = ?', [Sgf::STATUS_REJECTED, $userID, self::UPLOADS])[0]['total'];
+WHERE admin_page_view.user_id = ? AND admin_page_view.admin_page_id = ?', [Sgf::STATUS_REJECTED, $userID, self::SGF_CHANGES])[0]['total'];
 	}
 }

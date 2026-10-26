@@ -133,6 +133,69 @@
   color: var(--text-softer-color);
   border: 1px solid var(--current-border-color);
 }
+/* The SGF changes (SgfChangesRenderer): the tick of the admin and the avatars of the others who reviewed a change */
+.sgf-changes__filter {
+  margin: 0 0 8px;
+}
+.sgf-changes__filter a {
+  color: inherit;
+  text-decoration: underline;
+}
+.sgf-changes__version,
+.sgf-changes__proposal {
+  color: var(--text-softer-color);
+  font-size: 13px;
+}
+.sgf-changes__actions {
+  white-space: nowrap;
+}
+.sgf-review {
+  white-space: nowrap;
+}
+.sgf-review__tick {
+  width: 28px;
+  height: 28px;
+  margin-right: 4px;
+  padding: 0;
+  border: 2px solid var(--current-border-color);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--current-border-color);
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 1;
+  vertical-align: middle;
+  cursor: pointer;
+}
+.sgf-review__own { /* holds the place of the tick, an admin does not review their own change */
+  display: inline-block;
+  width: 28px;
+  margin-right: 4px;
+}
+.sgf-review__tick:hover {
+  border-color: var(--color-green);
+  color: var(--color-green);
+}
+.sgf-review__tick--reviewed,
+.sgf-review__tick--reviewed:hover {
+  border-color: var(--color-green);
+  background: var(--color-green);
+  color: #fff;
+}
+.sgf-review__tick:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.sgf-review__reviewer {
+  display: inline-block;
+  margin-right: 2px;
+  vertical-align: middle;
+}
+.data-table .sgf-review__reviewer .user-avatar {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+}
 /* What others did since the admin looked the time before, see AdminPage::markViewed */
 .data-table tr.data-table__row--new td {
   font-weight: bold;
