@@ -1279,13 +1279,12 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
   //   2. Adjusts CSS width for half-boards (via changeRotationWidth).
   //   3. Updates the SVG viewBox to show the rotated view (via rotateViewBox).
   //
+  // A full board shows the whole board, so only the stones turn (step 1).
+  //
   // Called by:
-  //   - autoRotate() — automatic rotation when board shape doesn't match viewport
+  //   - autoRotate() — automatic rotation of boards too tall to view without scrolling
   //   - toolPanel.js — manual rotation buttons (CCW/CW)
   function rotateBoard(clockwise) {
-    if (besogo.scaleParameters["orientation"] === "full-board")
-      return;
-
     // Remap coordinates in game tree so clicks map correctly after rotation
     var transformation = besogo.makeTransformation();
     if (clockwise)
@@ -1293,6 +1292,9 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     else
       transformation.rotateCounterClockwise = true;
     applyTransformation(transformation);
+
+    if (besogo.scaleParameters["orientation"] === "full-board")
+      return;
 
     var isHalfBoard =
       besogo.scaleParameters["boardCanvasSize"] === "horizontal half board" ||
@@ -1325,50 +1327,20 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     }
   }
 
-  // Automatically rotate the board if its shape is a poor fit for the viewport.
-  //
-  // The decision is based on aspect ratio mismatch:
-  //   mismatch = (board width / board height) / (viewport width / viewport height)
-  //
-  // When mismatch is very low (tooTall), the board is much taller than the
-  // viewport — rotating CCW makes it wider and easier to see on a landscape screen.
-  //
-  // When mismatch is very high (tooWide), the board is much wider than the
-  // viewport — rotating CW makes it taller and easier to see on a portrait screen.
-  //
-  // Examples:
-  //   Tall side-column problem on 16:9 monitor → mismatch ≈ 0.15 → rotated CCW
-  //   Same problem on portrait phone (1:3)     → mismatch ≈ 0.79 → NOT rotated (fits)
-  //   Wide top-row problem on portrait phone    → mismatch ≈ 11.5 → rotated CW
-  //   Same problem on 16:9 monitor              → mismatch ≈ 2.1  → NOT rotated (fits)
-  //
-  // Thresholds:
-  //   Regular boards:    rotate if mismatch < 0.4 or > 2.5
-  //   Half boards:       rotate if mismatch < 0.25 or > 4.0
-  //   (half boards are stricter because they already crop to one side)
+  // If the board is too tall and slim, the problem can't be viewed without scrolling,
+  // so it is turned counter-clockwise.
+  // This applies for regular boards when the highest y is higher than x by at least 5 (x-y < -4).
+  // And for vertical half boards when the highest y is higher than x by at least 11 (x-y < -10).
   function autoRotate() {
     var size = besogo.scaleParameters["boardCanvasSize"];
-    var hx = besogo.scaleParameters["highest"].x;
-    var hy = besogo.scaleParameters["highest"].y;
-
-    if (hx <= 0 || hy <= 0)
+    var highest = besogo.scaleParameters["highest"];
+    var tooTall =
+      (size === "regular board" && highest.x - highest.y < -4) ||
+      (size === "vertical half board" && highest.x - highest.y < -10);
+    if (!tooTall)
       return;
 
-    // How much wider/taller the board is compared to the viewport.
-    // mismatch < 1: board is taller relative to the viewport
-    // mismatch > 1: board is wider relative to the viewport
-    var mismatch = (hx / hy) / (window.innerWidth / window.innerHeight);
-
-    // Half boards need more extreme mismatch — they already crop to one side.
-    var threshold = (size === "regular board") ? 2.5 : 4.0;
-
-    var tooTall = mismatch < 1 / threshold;
-    var tooWide = mismatch > threshold;
-
-    if (!tooTall && !tooWide)
-      return;
-
-    rotateBoard(tooWide); // CW for wide problems, CCW for tall
+    rotateBoard(false);
 
     // CSS width hack: vertical half boards need a wider container after rotation
     // to prevent layout overflow. Only needed on initial auto-rotate, not manual.
