@@ -63,7 +63,8 @@ class UserSettingsTest extends IntegrationTestCase
 		$context = new ContextPreparator(['user' => ['email' => 'old@example.com']]);
 		$browser = Browser::instance();
 
-		foreach (['', 'not-an-address', 'two@@example.com', str_repeat('a', 45) . '@example.com'] as $invalid)
+		$tooLong = str_repeat('a', 64) . '@' . str_repeat('b', 63) . '.' . str_repeat('c', 63) . '.' . str_repeat('d', 58) . '.com';
+		foreach (['', 'not-an-address', 'two@@example.com', $tooLong] as $invalid)
 		{
 			$browser->get('users/settings');
 			$browser->post('users/emailPreference', ['data[User][email]' => $invalid, 'data[User][password]' => 'test']);

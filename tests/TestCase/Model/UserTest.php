@@ -497,6 +497,22 @@ class UserTest extends CakeTestCase
 	}
 
 	/**
+	 * An e-mail address can have 254 characters, the user table stores them all.
+	 */
+	public function testAnEmailAddressCanHaveUpTo254Characters(): void
+	{
+		$Model = ClassRegistry::init('User');
+		foreach ([57 => true, 58 => false] as $lastLabelLength => $valid)
+		{
+			// 64 + 1 + 63 + 1 + 63 + 1 + 57 + 4 = 254 characters
+			$email = str_repeat('a', 64) . '@' . str_repeat('b', 63) . '.' . str_repeat('c', 63) . '.' . str_repeat('d', $lastLabelLength) . '.com';
+			$Model->create();
+			$Model->set(['name' => 'SomeLoginName', 'display_name' => 'Player', 'email' => $email]);
+			$this->assertSame($valid, $Model->validates(), 'An address of ' . strlen($email) . ' characters' . ($valid ? ' must validate' : ' must be refused'));
+		}
+	}
+
+	/**
 	 * Test that a generated display name fits the column.
 	 */
 	public function testGenerateUniqueDisplayNameFitsTheColumn()

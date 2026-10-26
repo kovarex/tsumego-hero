@@ -1857,8 +1857,7 @@ OFFSET " . $offset, [$userID, $userID]);
 			return $this->redirect('/users/settings');
 		}
 
-		// The column holds 50 characters, a longer address can not be stored
-		if (mb_strlen($email) > 50 || !Validation::email($email))
+		if (mb_strlen($email) > User::EMAIL_MAX_LENGTH || !Validation::email($email))
 		{
 			CookieFlash::set('That is not a valid e-mail address.', 'error');
 			return $this->redirect('/users/settings');

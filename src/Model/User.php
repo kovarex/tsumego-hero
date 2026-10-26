@@ -64,6 +64,9 @@ class User extends AppModel
 	// The user table stores a display name in this many characters.
 	public const DISPLAY_NAME_MAX_LENGTH = 50;
 
+	// The longest e-mail address there can be (RFC 5321), and what the user table stores.
+	public const EMAIL_MAX_LENGTH = 254;
+
 	/** The avatar a player picked: the board the site draws. */
 	public const AVATAR_BOARD = 0;
 
@@ -120,6 +123,11 @@ class User extends AppModel
 			'email' => [
 				'rule' => ['email', false],
 				'message' => 'Enter a valid email-address',
+			],
+
+			'maxlength' => [
+				'rule' => ['maxLength', self::EMAIL_MAX_LENGTH],
+				'message' => 'An email address has at most 254 characters',
 			],
 		],
 
