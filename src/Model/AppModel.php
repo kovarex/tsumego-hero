@@ -39,4 +39,17 @@ class AppModel extends Model
 
 	public $recursive = -1;
 
+	/**
+	 * Cake wraps every save in its own transaction, which first checks that the row exists and then
+	 * updates it. Since MariaDB 11.6.2 (production runs 11.7) a request that changes the same row in
+	 * between fails that update with 1020 "Record has changed since last read" (forum#35, forum#102),
+	 * although the save only writes the fields it was given and nothing gets lost. So a save is
+	 * no transaction of its own, while explicit transactions keep MariaDB's check.
+	 */
+	public function save($data = null, $validate = true, $fieldList = [])
+	{
+		$options = is_array($validate) ? $validate : ['validate' => $validate, 'fieldList' => $fieldList];
+		return parent::save($data, $options + ['atomic' => false]);
+	}
+
 }

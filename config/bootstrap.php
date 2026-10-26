@@ -97,14 +97,3 @@ CakeLog::config('error', [
 	'types' => ['warning', 'error', 'critical', 'alert', 'emergency'],
 	'file' => 'error',
 ]);
-
-/**
- * MariaDB 11.6.2 turned innodb_snapshot_isolation on by default, and production runs 11.7. With it a
- * transaction that read anything before another request changed a row it then updates fails with
- * 1020 "Record has changed since last read" (forum#35, forum#102). Nothing here relies on that check,
- * so every connection turns it off and behaves like the MariaDB 10.11 the tests ran on.
- * Only MariaDB 11.6.2 and newer run the comment; MySQL and older MariaDB skip it.
- */
-ConnectionManager::enumConnectionObjects(); // reads config/database.php
-foreach (array_keys(get_object_vars(ConnectionManager::$config ?? new stdClass())) as $name)
-	ConnectionManager::$config->{$name}['flags'][PDO::MYSQL_ATTR_INIT_COMMAND] = '/*M!110602 SET SESSION innodb_snapshot_isolation = OFF */';
