@@ -56,6 +56,28 @@ besogo.addTest("GameRoot", "TwoOrderOfMovesLeadToTheSameNode", function()
   CHECK(finalChild.virtualParents[0] == otherOrder);
 });
 
+besogo.addTest("GameRoot", "CapturedStoneLeavesTheHash", function()
+{
+	// the hash of a move is the hash of its parent changed by the points of the move, the captures included
+	let root = besogo.makeGameRoot();
+	let capture = root.registerMove(2, 1).registerMove(1, 1).registerMove(1, 2);
+	CHECK(!capture.getStone(1, 1));
+
+	let samePosition = besogo.makeGameRoot();
+	samePosition.placeSetup(2, 1, BLACK);
+	samePosition.placeSetup(1, 2, BLACK);
+	CHECK_EQUALS(capture.getHash(), samePosition.getHash());
+});
+
+besogo.addTest("GameRoot", "ShiftedPositionsHaveDifferentHashes", function()
+{
+	// The string hashes of the points grow with their coordinates, so the sums over these two boards were equal
+	let root = besogo.makeGameRoot();
+	let first = root.registerMove(1, 1).registerMove(2, 2);
+	let second = root.registerMove(3, 3).registerMove(4, 4);
+	CHECK(first.getHash() != second.getHash());
+});
+
 besogo.addTest("GameRoot", "LocalEditDoesntBreakValidVariation", function()
 {
 	let root = besogo.makeGameRoot();

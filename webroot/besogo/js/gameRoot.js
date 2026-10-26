@@ -461,12 +461,37 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
     return hash;
   }
 
+  // The string hash of a point spread over all the 32 bits (the finaliser of MurmurHash3). The string hash
+  // of "x-y" grows linearly with x and y, so two positions whose stones differ by the same shift summed
+  // to the same hash, and almost every lookup of a position ended in comparing two whole boards.
+  function pointHash(key)
+  {
+    let hash = hashCode(key);
+    hash ^= hash >>> 16;
+    hash = Math.imul(hash, 0x85ebca6b);
+    hash ^= hash >>> 13;
+    hash = Math.imul(hash, 0xc2b2ae35);
+    hash ^= hash >>> 16;
+    return hash;
+  }
+
+  // The hash is a sum over the points of the board, so a child's hash is its parent's plus the change of
+  // the points its own board overrides (its move, the captures, the setup stones). Summing the whole
+  // board instead walked every point through the boards of all the ancestors, which made loading a deep
+  // problem take seconds.
   root.updateHash = function()
   {
-    this.hash = 1;
-    for (var key in this.board)
-      this.hash += hashCode(key) * this.board[key];
-    return this.hash
+    if (!this.parent)
+    {
+      this.hash = 1;
+      for (var key in this.board)
+        this.hash += pointHash(key) * this.board[key];
+      return this.hash;
+    }
+    this.hash = this.parent.getHash();
+    for (let key of Object.keys(this.board))
+      this.hash += pointHash(key) * (this.board[key] - (this.parent.board[key] || EMPTY));
+    return this.hash;
   }
 
   function keyCount(a)

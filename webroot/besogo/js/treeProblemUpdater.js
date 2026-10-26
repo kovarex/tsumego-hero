@@ -36,11 +36,20 @@ besogo.addVirtualChildren = function(root, node, addHash = true)
   if (addHash)
     root.nodeHashTable.push(node);
 
-  var sizeX = root.getSize().x;
-  var sizeY = root.getSize().y;
+  // A move to a child leads to the child's own position, which is no transposition. The positions in the
+  // tree are unique, so the lookup would only find the child, after comparing the whole boards.
+  let color = node.nextMove();
+  let childMoves = [];
+  for (let i = 0; i < node.children.length; ++i)
+  {
+    let child = node.children[i];
+    if (child.move && child.move.color == color)
+      childMoves[root.fromXY(child.move.x, child.move.y)] = true;
+  }
+
   for (let i = 0; i < root.relevantMoves.length; ++i)
   {
-    if (!root.relevantMoves[i])
+    if (!root.relevantMoves[i] || childMoves[i])
       continue;
     var move = root.toXY(i);
     if (!node.getStone(move.x, move.y))
