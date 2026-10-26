@@ -1,10 +1,12 @@
 <?php
 
-App::uses('DataTableRenderer', 'Utility');
+namespace App\Utility;
+
+use User;
 
 class TsumegoAttemptsRenderer extends DataTableRenderer
 {
-	public function __construct($urlParams, int $tsumegoID)
+	public function __construct(array $urlParams, int $tsumegoID)
 	{
 		$this->count = Util::query("SELECT COUNT(*) as total FROM tsumego_attempt WHERE tsumego_id = ?", [$tsumegoID])[0]['total'];
 		parent::__construct($urlParams, 'tsumego_attempts_page', 'Tsumego attempts');
@@ -14,8 +16,12 @@ SELECT
 	tsumego_attempt.misplays as misplays,
 	tsumego_attempt.tsumego_rating as tsumego_rating,
 	tsumego_attempt.created as created,
-	user.name as user_name,
+	user.display_name AS user_display_name,
 	user.id as user_id,
+	user.picture AS user_picture,
+	user.pref_avatar AS user_pref_avatar,
+	user.external_id AS user_external_id,
+	user.email AS user_email,
 	user.rating as user_rating
 FROM
 	tsumego_attempt
@@ -32,7 +38,7 @@ OFFSET " . $this->offset, [$tsumegoID]);
 		echo '<td>' . $item['solved'] . '</td>';
 		echo '<td>' . $item['misplays'] . '</td>';
 		echo '<td>' . $item['tsumego_rating'] . '</td>';
-		echo '<td>' . $item['created'] . '</td>';
+		echo '<td><time datetime="' . Util::toIso8601($item['created']) . '" data-format="datetime">' . $item['created'] . '</time></td>';
 	}
 
 	protected function renderHeader(): void

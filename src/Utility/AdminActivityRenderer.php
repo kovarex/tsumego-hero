@@ -1,10 +1,19 @@
 <?php
 
-App::uses('DataTableRenderer', 'Utility');
+namespace App\Utility;
+
+use AdminActivity;
+use SetConnection;
+use Sgf;
+use User;
 
 class AdminActivityRenderer extends DataTableRenderer
 {
-	public function __construct($urlParams)
+	/**
+	 * @param string|null $newSince When the admin looked the time before (see AdminPage::markViewed),
+	 *   what the others did since then is marked as new
+	 */
+	public function __construct(array $urlParams, private ?string $newSince = null)
 	{
 		$this->count = Util::query("SELECT COUNT(*) as total FROM admin_activity")[0]['total'];
 		parent::__construct($urlParams, 'activity_page', 'Admin Activity');
@@ -16,10 +25,13 @@ SELECT
 	admin_activity.old_value AS old_value,
 	admin_activity.new_value AS new_value,
 	tsumego.id AS tsumego_id,
+	COALESCE(sgf.sgf, '') AS sgf,
 	user.id AS user_id,
-	user.name AS user_name,
+	user.display_name AS user_display_name,
 	user.picture AS user_picture,
+	user.pref_avatar AS user_pref_avatar,
 	user.external_id AS user_external_id,
+	user.email AS user_email,
 	user.rating AS user_rating,
 	set_connection.id AS set_connection_id,
 	set_connection.num AS num,
@@ -32,26 +44,23 @@ FROM
 	LEFT JOIN tsumego
 		ON admin_activity.tsumego_id = tsumego.id
 
-	/* pick exactly ONE set_connection per tsumego */
-	LEFT JOIN (
-		SELECT *
-		FROM (
-			SELECT
-				set_connection.*,
-				ROW_NUMBER() OVER (
-					PARTITION BY set_connection.tsumego_id
-					ORDER BY set_connection.id
-				) AS rn
-			FROM set_connection
-		) ranked_set_connection
-		WHERE ranked_set_connection.rn = 1
-	) set_connection
+	/* pick the representative set_connection per tsumego (public/official before favorites) */
+	LEFT JOIN set_connection
 		ON set_connection.tsumego_id = admin_activity.tsumego_id
+	   AND set_connection.id = (
+			SELECT sc2.id
+			FROM set_connection sc2
+			JOIN `set` s2 ON s2.id = sc2.set_id
+			WHERE sc2.tsumego_id = admin_activity.tsumego_id
+			ORDER BY " . SetConnection::displayOrderSql('s2', 'sc2') . "
+			LIMIT 1
+		)
 
 	LEFT JOIN `set`
 		ON `set`.id = set_connection.set_id
 	LEFT JOIN user
 		ON admin_activity.user_id = user.id
+	LEFT JOIN sgf ON sgf.id = " . Sgf::currentVersionIDSql('tsumego.id') . "
 	LEFT JOIN tsumego_status
 		ON tsumego_status.user_id = ?
 	   AND tsumego_status.tsumego_id = tsumego.id
@@ -60,26 +69,33 @@ LIMIT " . self::$PAGE_SIZE . "
 OFFSET " . $this->offset, [Auth::getUserID()]);
 	}
 
+	protected function renderHeader(): void
+	{
+		echo '<tr><th><label title="Toggle board previews"><input type="checkbox" class="preview-zoom-toggle">🔍</label></th><th>Action</th><th>Date</th></tr>';
+	}
+
+	protected function rowClass(array $item): string
+	{
+		return $this->newSince !== null && $item['created'] > $this->newSince && (int) $item['user_id'] !== Auth::getUserID()
+			? 'data-table__row--new'
+			: '';
+	}
+
 	public function renderItem(int $index, array $item): void
 	{
-		// Format date without seconds
-		$timestamp = strtotime($item['created']);
-		$dateFormatted = date('Y-m-d H:i', $timestamp);
-
-		echo '<td>' . ($index + 1 + 100 * ($this->page - 1)) . '</td>';
 		echo '<td>';
 		if ($item['set_connection_id'])
-			new TsumegoButton($item['tsumego_id'], $item['set_connection_id'], $item['num'], $item['status'])->render();
+			new TsumegoButton($item['tsumego_id'], $item['set_connection_id'], $item['num'], $item['status'] ?: 'N', 0, $item['sgf'])->render();
 		echo '</td>';
 		echo '<td>';
 		if ($item['set_connection_id'])
-			echo '<a href="/' . $item['set_connection_id'] . '">' . $item['set_title'] . ' - ' . $item['num'] . '</a>';
+			echo '<a href="/' . $item['set_connection_id'] . '">' . h($item['set_title']) . ' - ' . h($item['num']) . '</a>';
 		else
 			echo '(Set-wide)';
 		echo '<div style="color:#666; margin-top:5px;">' . AdminActivity::renderChange($item) . '</div>
 				</td>
 				<td>
-					<div>' . $dateFormatted . '</div>
+					<div><time datetime="' . Util::toIso8601($item['created']) . '" data-format="datetime">' . h($item['created']) . '</time></div>
 					<div style="font-size:0.9em; color:#666; margin-top:2px;">' . User::renderLink($item) . '</div>
 				</td>';
 	}

@@ -10,10 +10,19 @@
   besogo.boardParameters = []; //parameters of the board the refer to pixels
   besogo.scaleParameters = []; //parameters of the board the refer to coordinates
   besogo.coordArea = []; //the square of valid visible coordinates
-  besogo.dynamicCommentCoords = []; //the comment coord texts that need to be inside the visible area
   besogo.boardCanvasSvg = null;
   besogo.intuitionActive = false;
   besogo.playerColor = "black";
+  // Shared helper: convert true-color text (Black/White) to the player's view by
+  // swapping the color words. Used when the board is color-inverted.
+  besogo.swapColorWords = function (text) {
+    return String(text).replace(/\b(Black|black|White|white)\b/g, function (m) {
+      return { Black: "White", black: "white", White: "Black", white: "black" }[m];
+    });
+  };
+  // Whether the board is currently color-inverted (true-color = stored values).
+  // Initialised from the server's swapColors and toggled by the orientation button.
+  besogo.boardInverted = false;
   besogo.soundsEnabled = false;
   besogo.controlButtonLock = true;
   besogo.theme = "";
@@ -24,6 +33,10 @@
   besogo.multipleChoiceCustom = false;
   besogo.multipleChoiceCustomSetup = null;
   besogo.verticalHalfBoardRotationWidthToken = false;
+  besogo.savesProposal = false;
+  besogo.SGF_DESCRIPTION_MAX_LENGTH = 1000; // Sgf::DESCRIPTION_MAX_LENGTH
+  besogo.loadedSgfText = null; // the SGF the editor loaded by sgfID
+  besogo.diffTexts = null; // {shown, compared}: the SGF texts of the diff, see besogo.compareSgfTexts
   let corner;
 
   function getMakers() {
@@ -34,6 +47,7 @@
     makers["tsumegoPlayTool"] = besogo.makeToolPanel;
     makers["tree"] = besogo.makeTreePanel;
     makers["file"] = besogo.makeFilePanel;
+    makers["diff"] = besogo.makeDiffPanel;
     return makers;
   }
 
@@ -300,6 +314,8 @@
 
 	  if (typeof options.setConnectionID === "string")
 		  besogo.setConnectionID = options.setConnectionID;
+	// saving sends a proposal an admin has to accept, not a new version of the problem
+	besogo.savesProposal = options.proposal === "1";
 
     besogo.theme = options.theme;
     besogo.light = options.light;
@@ -321,6 +337,8 @@
     options.coord = options.coord || "none";
     options.tool = options.tsumegoPlayTool || "auto";
     besogo.playerColor = options.playerColor;
+    besogo.swapColors = !!options.swapColors;
+    besogo.boardInverted = besogo.swapColors;
     if (options.tsumegoPlayTool)
       options.tsumegoPlayTool = options.tsumegoPlayTool || "auto";
     if (options.panels === "") options.panels = [];
@@ -369,7 +387,7 @@
     if (options.sgfID) {
       try {
         let url = new URL(window.location.origin + '/sgf/fetch/' + options.sgfID);
-		fetchParseLoad(url, besogo.editor, options.path, sgfLoaded, options.diffID);
+		fetchParseLoad(url, besogo.editor, options.path, sgfLoaded, options.diffID, options.sgfID);
 	  } catch (e) {
 		  window.alert('Error fetching sgf ' + e.message);
 		  return;
@@ -673,7 +691,7 @@
     besogo.coordArea["highestYconverted"] =
       convertedCoords.y[besogo.coordArea["highestY"] + 1];
 
-    if (besogo.playerColor === "white") {
+    if (besogo.swapColors) {
       let transformation = besogo.makeTransformation();
       transformation.invertColors = true;
       besogo.editor.applyTransformation(transformation);
@@ -682,14 +700,17 @@
   }
 
   // Fetches text file at url from same domain
-  function fetchParseLoad(url, editor, path, sgfLoaded, diffID) {
+  function fetchParseLoad(url, editor, path, sgfLoaded, diffID, sgfID) {
     var http = new XMLHttpRequest();
 
     http.onreadystatechange = function () {
       if (http.readyState === XMLHttpRequest.DONE) {
 		  if (http.status === 200) {
 			  // Successful fetch
+			  besogo.loadedSgfText = http.responseText;
 			  sgfLoaded.scaleParameters = parseAndLoad(http.responseText, editor);
+			  // Saving sends the transformation from this SGF version, as long as the tree is still the one loaded from it
+			  besogo.sourceSgf = { id: sgfID, root: editor.getRoot() };
 			  navigatePath(editor, path);
 
 			  // If no diff ID, we are done
@@ -721,6 +742,7 @@
 					let diffSgf = http.responseText.trim();
 					if (diffSgf !== "")
 					{
+						besogo.diffTexts = { shown: besogo.loadedSgfText, compared: http.responseText };
 						diffSgf = besogo.parseSgf(diffSgf);
 						besogo.loadSgf(diffSgf, editor, OPEN_FOR_DIFF);
 					}

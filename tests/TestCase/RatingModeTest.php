@@ -1,10 +1,17 @@
 <?php
 
 use Facebook\WebDriver\Interactions\WebDriverActions;
-use PHPUnit\Framework\Constraint\ExceptionMessage;
+use PHPUnitRetry\RetryTrait;
+/**
+ * @retryAttempts 2
+ * @retryIfException Facebook\WebDriver\Exception\WebDriverException
+ */
+use App\Utility\Auth;
+use App\Utility\Constants;
 
 class RatingModeTest extends ControllerTestCase
 {
+	use RetryTrait;
 	public function testRatingMode()
 	{
 		$context = new ContextPreparator([
@@ -19,8 +26,7 @@ class RatingModeTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$browser->get('/ratingMode');
 		$this->assertSame('1000 rating tsumego', $browser->find('#descriptionText')->getText());
-		Auth::getUser()['rating'] = 500;
-		Auth::saveUser();
+		Auth::saveUserField('rating', 500);
 
 		$browser->clickId('besogo-next-button');
 		$this->assertSame('500 rating tsumego', $browser->find('#descriptionText')->getText());

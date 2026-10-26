@@ -1,13 +1,10 @@
 <?php
 
-App::uses('TsumegoIssue', 'Model');
-App::uses('TsumegoComment', 'Model');
-App::uses('User', 'Model');
-App::uses('TsumegosController', 'Controller');
+use App\Utility\Util;
 
 class Tsumego extends AppModel
 {
-	public function __construct($id = false, $table = null, $ds = null)
+	public function __construct(mixed $id = false, ?string $table = null, ?string $ds = null)
 	{
 		$id['table'] = 'tsumego';
 		parent::__construct($id, $table, $ds);
@@ -23,121 +20,43 @@ class Tsumego extends AppModel
 	];
 
 	/**
-	 * Load all comments and issues data for a tsumego.
-	 *
-	 * Returns issues with their comments, standalone comments (not associated with any issue),
-	 * and parsed Go coordinates from comment messages.
-	 *
-	 * @param int $tsumegoId The tsumego ID to load comments for
-	 * @return array{issues: array, plainComments: array, coordinates: array}
+	 * The problems the site holds: every problem that is not in the trash, whatever collection it
+	 * sits in and whether or not that collection is published yet. A problem that belongs to three
+	 * sets counts once. This is the number the solve counter of a player runs against on the
+	 * profile, so a solve of a problem of a collection nobody published yet is inside the fraction.
 	 */
-	public function loadCommentsData(int $tsumegoId): array
+	public static function problemCount(): int
 	{
-		/** @var TsumegoIssue $issueModel */
-		$issueModel = ClassRegistry::init('TsumegoIssue');
-		/** @var TsumegoComment $commentModel */
-		$commentModel = ClassRegistry::init('TsumegoComment');
+		return (int) Util::query('SELECT COUNT(*) AS total FROM tsumego WHERE deleted IS NULL')[0]['total'];
+	}
 
-		// Counter only increments when coordinates are found (matches $fn1 in play.ctp)
-		$counter = 1;
-		$allCoordinates = [];
+	/**
+	 * The problems of the site and how many of them the player solved.
+	 *
+	 * Both numbers are counted over the same set of problems, so the second one can never
+	 * pass the first: a solve of a problem that does not belong to a collection of the site
+	 * (a sandbox build, an upload, a player collection) counts on neither side.
+	 *
+	 * @return array{total: int, solved: int}
+	 */
+	public static function publicProblemProgress(int $userId): array
+	{
+		$inOfficialSet = fn(string $tsumegoRef): string
+			=> 'EXISTS (SELECT 1 FROM set_connection sc JOIN `set` ON `set`.id = sc.set_id'
+				. ' AND ' . Set::officialCondition() . ' WHERE sc.tsumego_id = ' . $tsumegoRef . ')';
 
-		// Query 1: Load all issues with their authors
-		$issuesRaw = $issueModel->find('all', [
-			'conditions' => [
-				'tsumego_id' => $tsumegoId,
-				'deleted' => false,
-			],
-			'order' => 'TsumegoIssue.created DESC',
-			'contain' => ['User'],
-		]) ?: [];
+		$row = Util::query(
+			'SELECT '
+			. '(SELECT COUNT(*) FROM tsumego t WHERE t.deleted IS NULL AND ' . $inOfficialSet('t.id') . ') AS total, '
+			// The solved side only walks the statuses of that one player, which is what keeps this
+			// from joining every problem of the site.
+			. '(SELECT COUNT(DISTINCT ts.tsumego_id) FROM tsumego_status ts'
+			. ' JOIN tsumego t ON t.id = ts.tsumego_id AND t.deleted IS NULL'
+			. " WHERE ts.user_id = ? AND ts.status IN ('S', 'C', 'W')"
+			. ' AND ' . $inOfficialSet('ts.tsumego_id') . ') AS solved',
+			[$userId]
+		)[0];
 
-		// Collect issue IDs for batch comment loading
-		$issueIds = [];
-		$issuesMap = [];
-		foreach ($issuesRaw as $issueRaw)
-		{
-			$issue = $issueRaw['TsumegoIssue'];
-			$issueIds[] = $issue['id'];
-			$issue['author'] = !empty($issueRaw['User']) ? $issueRaw['User'] : ['name' => '[deleted user]'];
-			$issue['comments'] = []; // Will be filled from batch query
-			$issuesMap[$issue['id']] = $issue;
-		}
-
-		// Query 2: Load ALL comments for ALL issues in one query
-		if (!empty($issueIds))
-		{
-			$issueCommentsRaw = $commentModel->find('all', [
-				'conditions' => [
-					'TsumegoComment.tsumego_issue_id' => $issueIds,
-					'TsumegoComment.deleted' => false,
-				],
-				'order' => 'TsumegoComment.created ASC',
-				'contain' => ['User'],
-			]) ?: [];
-
-			// Group comments by issue_id
-			foreach ($issueCommentsRaw as $commentRaw)
-			{
-				$comment = $commentRaw['TsumegoComment'];
-				$issueId = $comment['tsumego_issue_id'];
-				$comment['user'] = !empty($commentRaw['User']) ? $commentRaw['User'] : ['name' => '[deleted user]', 'isAdmin' => 0];
-
-				// Process message for coordinates with global counter
-				$array = TsumegosController::commentCoordinates($comment['message'], $counter, true);
-				$comment['message'] = $array[0];
-				if (!empty($array[1]))
-				{
-					$allCoordinates[] = $array[1];
-					$counter++;
-				}
-
-				$issuesMap[$issueId]['comments'][] = $comment;
-			}
-		}
-
-		// Convert map back to ordered array (preserves original DESC order)
-		$issues = [];
-		foreach ($issuesRaw as $issueRaw)
-		{
-			$issueId = $issueRaw['TsumegoIssue']['id'];
-			if (isset($issuesMap[$issueId]))
-				$issues[] = $issuesMap[$issueId];
-		}
-
-		// Query 3: Load standalone comments (not associated with any issue)
-		$plainCommentsRaw = $commentModel->find('all', [
-			'conditions' => [
-				'TsumegoComment.tsumego_id' => $tsumegoId,
-				'TsumegoComment.tsumego_issue_id' => null,
-				'TsumegoComment.deleted' => false,
-			],
-			'order' => 'TsumegoComment.created ASC',
-			'contain' => ['User'],
-		]) ?: [];
-
-		$plainComments = [];
-		foreach ($plainCommentsRaw as $commentRaw)
-		{
-			$comment = $commentRaw['TsumegoComment'];
-			$comment['user'] = !empty($commentRaw['User']) ? $commentRaw['User'] : ['name' => '[deleted user]', 'isAdmin' => 0];
-
-			// Process message for coordinates with global counter
-			$array = TsumegosController::commentCoordinates($comment['message'], $counter, true);
-			$comment['message'] = $array[0];
-			if (!empty($array[1]))
-			{
-				$allCoordinates[] = $array[1];
-				$counter++;
-			}
-
-			$plainComments[] = $comment;
-		}
-
-		return [
-			'issues' => $issues,
-			'plainComments' => $plainComments,
-			'coordinates' => $allCoordinates,
-		];
+		return ['total' => (int) $row['total'], 'solved' => (int) $row['solved']];
 	}
 }

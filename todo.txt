@@ -6,7 +6,3 @@ Refactoring:
   - Make tsumego button more encapsulated (ideally the tooltip etc right in the button, without extra javascript call needed)
  UserBoards:
    - convert the field to a bitfield, so it is just an integer
-
-Low priority
-  Time mode:
-  - Way to see all sessions of the current rank when asked for

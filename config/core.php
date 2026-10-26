@@ -36,7 +36,7 @@
  * In development mode, you need to click the flash message to continue.
  */
 Configure::write('debug', 0);
-Configure::write('Cache.disable', true);
+Configure::write('Cache.disable', false);
 
 // Enable debug mode for DDEV development (including test subdomain for JS error tracking in Selenium tests)
 if (!empty($_SERVER['SERVER_NAME']) && str_contains($_SERVER['SERVER_NAME'], '.ddev.site'))

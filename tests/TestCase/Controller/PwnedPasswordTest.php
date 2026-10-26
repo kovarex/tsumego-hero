@@ -1,0 +1,159 @@
+<?php
+
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\CookieFlash;
+use App\Utility\FakePwnedPasswordChecker;
+use App\Utility\PwnedPasswordChecker;
+
+/**
+ * A password that already appears in a public breach is refused wherever a password
+ * is set: when an account is created, changed and reset.
+ */
+class PwnedPasswordTest extends TestCaseWithAuth
+{
+	/**
+	 * The password every fixture account has.
+	 */
+	private const CURRENT_PASSWORD = 'test';
+
+	/**
+	 * A password the fake list calls breached, and one it does not.
+	 */
+	private const LEAKED = 'password123';
+	private const FRESH = 'lanternQuiet42';
+
+	private const LEAKED_PASSWORD_MESSAGE = 'That password appeared in a public data breach, choose another one.';
+
+	private FakePwnedPasswordChecker $checker;
+
+	public function setUp(): void
+	{
+		parent::setUp();
+		$this->checker = new FakePwnedPasswordChecker();
+		PwnedPasswordChecker::useForTests($this->checker);
+	}
+
+	public function tearDown(): void
+	{
+		PwnedPasswordChecker::useForTests(null);
+		parent::tearDown();
+	}
+
+	private function storedHash(int $userID): string
+	{
+		return ClassRegistry::init('User')->findById($userID)['User']['password_hash'];
+	}
+
+	private function userCount(): int
+	{
+		return count(ClassRegistry::init('User')->find('all'));
+	}
+
+	private function userNamed(string $name): array
+	{
+		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => $name]]);
+		return $user ?: [];
+	}
+
+	private function register(string $name, string $password): string
+	{
+		return (string) $this->testAction('/users/add', ['method' => 'post', 'data' => ['User' => [
+			'name' => $name,
+			'email' => $name . '@example.com',
+			'password1' => $password,
+			'password2' => $password,
+		]], 'return' => 'contents']);
+	}
+
+	private function changePassword(string $current, string $new): void
+	{
+		$this->testAction('/users/passwordPreference', ['method' => 'post', 'data' => [
+			'current' => $current,
+			'new1' => $new,
+			'new2' => $new,
+		], 'return' => 'vars']);
+	}
+
+	private function prepareUser(string $name): array
+	{
+		Auth::logout();
+		$context = new ContextPreparator(['user' => ['name' => $name]]);
+		$this->login($name);
+		return $context->user;
+	}
+
+	public function testRegistrationRefusesALeakedPassword(): void
+	{
+		new ContextPreparator(['user' => null]);
+		$this->checker->addBreachedPassword(self::LEAKED);
+		$countBefore = $this->userCount();
+
+		$page = $this->register('leakedSignUp', self::LEAKED);
+
+		$this->assertCount($countBefore, ClassRegistry::init('User')->find('all'));
+		$this->assertStringContainsString(self::LEAKED_PASSWORD_MESSAGE, $page);
+	}
+
+	public function testRegistrationKeepsAPasswordThatIsNotInTheList(): void
+	{
+		new ContextPreparator(['user' => null]);
+		$this->checker->addBreachedPassword(self::LEAKED);
+
+		$this->register('freshSignUp', self::FRESH);
+
+		$this->assertNotEmpty($this->userNamed('freshSignUp'));
+		// the list is asked about the password as typed, never about the hash
+		$this->assertContains(self::FRESH, $this->checker->getAskedPasswords());
+	}
+
+	public function testRegistrationRefusesAPasswordShorterThanTheMinimum(): void
+	{
+		new ContextPreparator(['user' => null]);
+
+		$page = $this->register('shortSignUp', substr(self::FRESH, 0, Constants::$MINIMUM_PASSWORD_LENGTH - 1));
+
+		$this->assertEmpty($this->userNamed('shortSignUp'));
+		$this->assertStringContainsString('at least ' . Constants::$MINIMUM_PASSWORD_LENGTH . ' characters', $page);
+	}
+
+	public function testPasswordChangeRefusesALeakedPassword(): void
+	{
+		$user = $this->prepareUser('leakedChange');
+		$this->checker->addBreachedPassword(self::LEAKED);
+
+		$this->changePassword(self::CURRENT_PASSWORD, self::LEAKED);
+
+		$this->assertTrue(password_verify(self::CURRENT_PASSWORD, $this->storedHash($user['id'])));
+		$this->assertSame(self::LEAKED_PASSWORD_MESSAGE, CookieFlash::get());
+	}
+
+	public function testAWrongCurrentPasswordIsAnsweredWithoutAskingTheList(): void
+	{
+		$user = $this->prepareUser('leakedWrongCurrent');
+
+		$this->changePassword('not-the-password', self::FRESH);
+
+		$this->assertTrue(password_verify(self::CURRENT_PASSWORD, $this->storedHash($user['id'])));
+		$this->assertSame([], $this->checker->getAskedPasswords());
+	}
+
+	public function testPasswordResetRefusesALeakedPassword(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'leakedReset']]);
+		$user = ClassRegistry::init('User')->findById($context->user['id']);
+		$user['User']['passwordreset'] = 'resetLinkForLeaked';
+		$user['User']['passwordreset_created'] = date('Y-m-d H:i:s');
+		ClassRegistry::init('User')->save($user);
+		$this->logout();
+		$this->checker->addBreachedPassword(self::LEAKED);
+
+		$page = $this->testAction('/users/newpassword/resetLinkForLeaked', ['method' => 'post', 'data' => ['User' => [
+			'password1' => self::LEAKED,
+			'password2' => self::LEAKED,
+		]], 'return' => 'contents']);
+
+		$this->assertTrue(password_verify(self::CURRENT_PASSWORD, $this->storedHash($context->user['id'])));
+		$this->assertStringContainsString(self::LEAKED_PASSWORD_MESSAGE, $page);
+	}
+}

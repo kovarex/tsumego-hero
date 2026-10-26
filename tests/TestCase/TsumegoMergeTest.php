@@ -1,7 +1,16 @@
 <?php
 
+use PHPUnitRetry\RetryTrait;
+/**
+ * @retryAttempts 2
+ * @retryIfException Facebook\WebDriver\Exception\WebDriverException
+ */
+use App\Utility\TimeModeUtil;
+use App\Utility\Util;
+
 class TsumegoMergeTest extends ControllerTestCase
 {
+	use RetryTrait;
 	public function testMergeTwoTsumegos()
 	{
 		foreach (['notAdmin', 'masterNotSpecified', 'slaveNotSpecified', 'slaveAndMasterAlreadyMarged', 'merge', 'mergeWithDoubleFavorite', 'masterWithoutStatus'] as $testCase)
@@ -20,7 +29,8 @@ class TsumegoMergeTest extends ControllerTestCase
 						'description' => 'Master tsumego',
 						'sets' => [
 							['name' => 'set 1', 'num' => '1'],
-							['name' => 'set 3', 'num' => '1']],
+							['name' => 'set 3', 'num' => '1'],
+							['name' => 'Favorites', 'num' => '1', 'user_id' => 'self', 'public' => 0]],
 						'attempts' => [['solved' => 0, 'seconds' => 5, 'gain' => 5]],
 						'comments' => [['message' => 'master comment']],
 						'tags' => [['name' => 'atari'], ['name' => 'tenuki']]
@@ -30,7 +40,8 @@ class TsumegoMergeTest extends ControllerTestCase
 						'rating' => 100,
 						'sgf' => $version2,
 						'description' => 'Slave tsumego',
-						'sets' => [['name' => 'set 2', 'num' => '1']],
+						'sets' => [['name' => 'set 2', 'num' => '1'],
+							['name' => 'Favorites', 'num' => '2', 'user_id' => 'self', 'public' => 0]],
 						'attempts' => [['solved' => 1, 'seconds' => 5, 'gain' => 10]],
 						'comments' => [['message' => 'slave comment']],
 						'tags' => [['name' => 'snapback'], ['name' => 'atari']],
@@ -42,14 +53,22 @@ class TsumegoMergeTest extends ControllerTestCase
 					'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
 					'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED, 'tsumego_id' => 'other:1']]]]]);
 
-			if ($testCase == 'mergeWithDoubleFavorite')
-				$context->addFavorite($context->tsumegos[0]);
-			$context->addFavorite($context->tsumegos[1]);
+			// For non-double-favorite cases, remove master from Favorites
+			if ($testCase != 'mergeWithDoubleFavorite')
+			{
+				$favSet = ClassRegistry::init('Set')->find('first', [
+					'conditions' => ['title' => 'Favorites'],
+				]);
+				ClassRegistry::init('SetConnection')->deleteAll([
+					'set_id' => $favSet['Set']['id'],
+					'tsumego_id' => $context->tsumegos[0]['id'],
+				]);
+			}
 
 			$browser->get('/tsumegos/mergeForm');
 			if ($testCase == 'notAdmin')
 			{
-				$this->assertSame(Util::getMyAddress() . '/', $browser->driver->getCurrentURL());
+				$this->assertStringContainsString('Forbidden', $browser->driver->getPageSource());
 				continue;
 			}
 			if ($testCase != 'masterNotSpecified')
@@ -86,11 +105,8 @@ class TsumegoMergeTest extends ControllerTestCase
 			$this->assertSame(Util::getMyAddress() . '/tsumegos/mergeFinalForm', $browser->driver->getCurrentURL());
 			$browser->clickId('submit');
 
-			// Wait for merge to complete — page navigates away from mergeFinalForm
-			$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-			$wait->until(function () use ($browser) {
-				return strpos($browser->driver->getCurrentURL(), 'mergeFinalForm') === false;
-			});
+			// Wait for merge to complete, the page navigates away from mergeFinalForm
+			$browser->waitUntilJs('!location.href.includes("mergeFinalForm")');
 
 			// the tsumegos were merged
 			$this->assertSame($context->tsumegos[0]['set-connections'][0]['tsumego_id'], $context->tsumegos[0]['set-connections'][1]['tsumego_id']);
@@ -111,11 +127,6 @@ class TsumegoMergeTest extends ControllerTestCase
 			$this->assertSame($comments[0]['TsumegoComment']['message'], 'master comment');
 			$this->assertSame($comments[1]['TsumegoComment']['message'], 'slave comment');
 			$this->assertSame($comments[2]['TsumegoComment']['message'], 'Slave issue message');
-
-			// favorites got merged
-			$favorites = ClassRegistry::init('Favorite')->find('all');
-			$this->assertSame(1, count($favorites));
-			$this->assertSame($favorites[0]['Favorite']['tsumego_id'], $context->tsumegos[0]['id']);
 
 			// tags got merged
 			$tagConnections = ClassRegistry::init('TagConnection')->find('all');

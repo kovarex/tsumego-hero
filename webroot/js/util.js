@@ -142,6 +142,8 @@ function revelation()
 	makeAjaxCall('/hero/revelation/' + tsumegoID,
 		(response) =>
 		{
+			tryAgainTomorrow = false;
+			locked = false;
 			document.getElementById("status").style.color = playGreenColor;
 			document.getElementById("status").innerHTML = "<h2>Correct!</h2>";
 			if (light)
@@ -155,7 +157,6 @@ function revelation()
 			$("#commentSpace").show();
 			updateCurrentNavigationButton('S');
 			displaySettings();
-			setCookie("revelation", "1");
 			revelationUseCount--;
 			disableRevelation();
 		});
@@ -267,15 +268,6 @@ function ratingToXPFloat(rating)
 
 	// with higher ratings, it is important to have more aggressive exponential growth,
 	return (Math.pow((rating - 500)/ 100, 2) - 10) / 2;
-}
-
-function makeIdValidName(name)
-{
-	let str = name.split("");
-	for (let i = 0; i < str.length; i++)
-		if (!str[i].match(/[a-z]/i) && !str[i].match(/[0-9]/i))
-			str[i] = "-";
-	return "tag-"+str.join("");
 }
 
 function makeAjaxCall(urlToCall, method)

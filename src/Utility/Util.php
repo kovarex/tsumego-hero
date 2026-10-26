@@ -1,19 +1,19 @@
 <?php
 
+namespace App\Utility;
+
+use ClassRegistry;
+use Exception;
+use PDO;
+
 class Util
 {
-	public static function getCookieDomain(): ?string
+	public static function setCookie(string $name, string|int $value): void
 	{
-		$host = preg_replace('/:\d+$/', '', $_SERVER['HTTP_HOST'] ?? '');
-		return $host;
-	}
-
-	public static function setCookie($name, $value)
-	{
-		setcookie($name, $value, [
-			'expires'  => time() + 365 * 24 * 60 * 60,
-			'path'     => '/',
-			'secure'   => true,
+		setcookie($name, (string) $value, [
+			'expires' => time() + 365 * 24 * 60 * 60,
+			'path' => '/',
+			'secure' => true,
 			'httponly' => false,
 			'samesite' => 'Lax'
 		]);
@@ -28,9 +28,9 @@ class Util
 
 		setcookie($name, '',
 			[
-				'expires'  => time() - 3600,
-				'path'     => '/',
-				'secure'   => true,
+				'expires' => time() - 3600,
+				'path' => '/',
+				'secure' => true,
 				'httponly' => false,
 				'samesite' => 'Lax'
 			]);
@@ -61,18 +61,22 @@ class Util
 		return $result;
 	}
 
-	public static function getCookie(string $name, $default = null)
+	public static function getCookie(string $name, mixed $default = null): mixed
 	{
 		return isset($_COOKIE[$name]) ? $_COOKIE[$name] : $default;
 	}
 
-	public static function generateRandomString($length = 20)
+	/**
+	 * A random string of letters and digits. It is used for tokens that end up in a
+	 * link, so it comes from the cryptographic source and not from rand().
+	 */
+	public static function generateRandomString(int $length = 20): string
 	{
 		$characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 		$charactersLength = strlen($characters);
 		$randomString = '';
 		for ($i = 0; $i < $length; $i++)
-			$randomString .= $characters[rand(0, $charactersLength - 1)];
+			$randomString .= $characters[random_int(0, $charactersLength - 1)];
 		return $randomString;
 	}
 
@@ -80,7 +84,7 @@ class Util
 	{
 		assert($value >= 0);
 		assert($max >= 0);
-		assert($value <= $max);
+		$value = min($value, $max);
 		$result = (int) round(Util::getRatio($value, $max) * 100);
 		if ($result == 100 && $value < $max)
 			return 99;
@@ -105,14 +109,14 @@ class Util
 		return openssl_decrypt(base64_decode($str), self::ENCRYPT_METHOD, $key, 0, $iv);
 	}
 
-	public static function extract(string $name, array &$inputArray)
+	public static function extract(string $name, array &$inputArray): mixed
 	{
 		$result = $inputArray[$name];
 		unset($inputArray[$name]);
 		return $result;
 	}
 
-	public static function extractWithDefault(string $name, array &$inputArray, $default)
+	public static function extractWithDefault(string $name, array &$inputArray, mixed $default): mixed
 	{
 		$result = $inputArray[$name];
 		unset($inputArray[$name]);
@@ -128,12 +132,19 @@ class Util
 		return $amount / $max;
 	}
 
+	public static function isHttpUrl(string $url): bool
+	{
+		$scheme = strtolower((string) parse_url(trim($url), PHP_URL_SCHEME));
+
+		return in_array($scheme, ['http', 'https'], true);
+	}
+
 	public static function getPercent(float|int $amount, float|int $max): float
 	{
 		return self::getRatio($amount, $max) * 100;
 	}
 
-	public static function indexByID($array, $prefix1, $prefix2)
+	public static function indexByID(array $array, string $prefix1, string $prefix2): array
 	{
 		$result = [];
 		foreach ($array as $value)
@@ -141,7 +152,7 @@ class Util
 		return $result;
 	}
 
-	public static function isInGithubCI()
+	public static function isInGithubCI(): bool
 	{
 		if ($testEnvironment = @$_SERVER['TEST_ENVIRONMENT'])
 			return $testEnvironment == 'github-ci';
@@ -150,6 +161,11 @@ class Util
 		return false;
 	}
 
+	/**
+	 * Whether this copy of the site is not the one players use, which is what allows a
+	 * test to put a fake in place of a service. It is true for the whole development
+	 * container (both its dev and its test hostname) and for the runner on GitHub.
+	 */
 	public static function isInTestEnvironment(): bool
 	{
 		if (@$_SERVER['DDEV_PRIMARY_URL'] && str_contains($_SERVER['DDEV_PRIMARY_URL'], "tsumego.ddev.site"))
@@ -157,7 +173,22 @@ class Util
 		return Util::isInGithubCI();
 	}
 
-	public static function getMyAddress()
+	/**
+	 * Whether the request is made by the test suite: the test hostname of the same
+	 * container, the runner on GitHub, or the PHPUnit process that dispatches the
+	 * controller tests. The dev site shares its container with the test site, so
+	 * isInTestEnvironment() is true there too and says nothing about this.
+	 */
+	public static function isOnTestSite(): bool
+	{
+		if (Util::isInGithubCI())
+			return true;
+		if (str_contains((string) ($_SERVER['HTTP_HOST'] ?? ''), 'test.tsumego'))
+			return true;
+		return PHP_SAPI === 'cli' && !empty($_SERVER['argv']) && str_contains((string) $_SERVER['argv'][0], 'phpunit');
+	}
+
+	public static function getMyAddress(): string
 	{
 		if (Util::isInGithubCI())
 			return $_SERVER['TEST_APP_URL'];
@@ -166,14 +197,14 @@ class Util
 		return "https://test.tsumego.ddev.site";
 	}
 
-	public static function getInternalAddress()
+	public static function getInternalAddress(): string
 	{
 		if (Util::isInGithubCI())
 			return 'https://host.docker.internal:8443';
 		return 'http://localhost';
 	}
 
-	public static function addSqlCondition(&$existingCondition, $condition): void
+	public static function addSqlCondition(string &$existingCondition, string $condition): void
 	{
 		if (empty($condition))
 			return;
@@ -182,14 +213,14 @@ class Util
 			$existingCondition = $condition;
 			return;
 		}
-		$existingCondition .= " AND " ;
+		$existingCondition .= " AND ";
 		if (str_contains($condition, " OR "))
 			$existingCondition .= '(' . $condition . ')';
 		else
 			$existingCondition .= $condition;
 	}
 
-	public static function addSqlOrCondition(&$existingCondition, $condition): void
+	public static function addSqlOrCondition(string &$existingCondition, string $condition): void
 	{
 		if (empty($existingCondition))
 		{
@@ -199,7 +230,7 @@ class Util
 		$existingCondition .= " OR " . $condition;
 	}
 
-	public static function boolString($bool)
+	public static function boolString(bool $bool): string
 	{
 		return $bool ? 'true' : 'false';
 	}
@@ -209,7 +240,7 @@ class Util
 		return intdiv($level, 5) + 10;
 	}
 
-	public static function query($sql, $params = [])
+	public static function query(string $sql, array $params = []): array
 	{
 		/** @phpstan-ignore-next-line */
 		$stmt = ClassRegistry::init('Tsumego')->getDataSource()->getConnection()->prepare($sql);
@@ -217,7 +248,27 @@ class Util
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}
 
-	public static function clampOptional($value, $min, $max)
+	/**
+	 * The connection of the default database.
+	 */
+	public static function connection(): PDO
+	{
+		/** @phpstan-ignore-next-line */
+		return ClassRegistry::init('Tsumego')->getDataSource()->getConnection();
+	}
+
+	/**
+	 * Execute a non-SELECT SQL statement (INSERT, UPDATE, DELETE) and return the number of affected rows.
+	 */
+	public static function execute(string $sql, array $params = []): int
+	{
+		/** @phpstan-ignore-next-line */
+		$stmt = ClassRegistry::init('Tsumego')->getDataSource()->getConnection()->prepare($sql);
+		$stmt->execute($params);
+		return $stmt->rowCount();
+	}
+
+	public static function clampOptional(mixed $value, int|float|null $min, int|float|null $max): mixed
 	{
 		$result = $value;
 		if (!is_null($min))
@@ -227,7 +278,7 @@ class Util
 		return $result;
 	}
 
-	public static function strOrNull($input): ?string
+	public static function strOrNull(mixed $input): ?string
 	{
 		if (is_null($input))
 			return null;
@@ -244,77 +295,92 @@ class Util
 		return Auth::lightMode() == Auth::$LIGHT_MODE ? '#000' : '#fff';
 	}
 
-	public static function getValueGraphHeight($input)
+	public static function getGraphThemeMode(): string
+	{
+		return Auth::lightMode() == Auth::$LIGHT_MODE ? 'light' : 'dark';
+	}
+
+	public static function getValueGraphHeight(array $input): int
 	{
 		return 160 + count($input) * 25;
 	}
 
-	public static function smallScoreTableRowColor(int $index): string
+	public static function getFollowingSgfCoordinates(string $string, int $position): array
 	{
-		if ($index == 0)
-			return '#ffec85';
-		if ($index == 1)
-			return '#939393';
-		if ($index == 2)
-			return '#c28d47';
-		if ($index == 3)
-			return '#85e35d';
-		if ($index == 4)
-			return '#85e35d';
-		if ($index == 5)
-			return '#85e35d';
-		if ($index == 6)
-			return '#85e35d';
-		if ($index == 7)
-			return '#85e35d';
-		if ($index == 8)
-			return '#85e35d';
-		if ($index == 9)
-			return '#85e35d';
-		if ($index == 10)
-			return '#85e35d';
-		if ($index == 11)
-			return '#85e35d';
-		if ($index == 12)
-			return '#85e35d';
-		if ($index == 13)
-			return '#85e35d';
-		if ($index == 14)
-			return '#85e35d';
-		if ($index == 15)
-			return '#85e35d';
-		if ($index == 16)
-			return '#85e35d';
-		if ($index == 17)
-			return '#85e35d';
-		if ($index == 18)
-			return '#85e35d';
-		if ($index == 19)
-			return '#85e35d';
-		if ($index == 20)
-			return '#9cf974';
-		if ($index == 21)
-			return '#9cf974';
-		if ($index == 22)
-			return '#9cf974';
-		if ($index == 23)
-			return '#9cf974';
-		if ($index == 24)
-			return '#9cf974';
-		if ($index == 25)
-			return '#9cf974';
-		if ($index == 26)
-			return '#9cf974';
-		if ($index == 27)
-			return '#9cf974';
-		if ($index == 28)
-			return '#9cf974';
-		if ($index == 29)
-			return '#9cf974';
-		if ($index < 40)
-			return '#b6f998';
-		if ($index < 50)
-			return '#d3f9c2';
-		return '#e8f9e0';
+		$result = [];
+		do
+		{
+			$next = substr($string, $position, 4);
+			if ($next[0] != '[')
+				break;
+			if ($next[3] != ']')
+				break;
+			if ($next[1] < 'a' || $next[1] > 't')
+				break;
+			if ($next[2] < 'a' || $next[2] > 't')
+				break;
+			$result [] = substr($string, $position + 1, 2);
+			$position += 4;
+		}
+		while (true);
+		return $result;
+	}
+
+	/**
+	 * Convert a MySQL datetime (an instant) to ISO 8601 for the client-side
+	 * <time datetime="..."> localizer. Timestamps are rendered in the user's
+	 * local timezone. For timezone-free calendar dates, emit the raw YYYY-MM-DD
+	 * in datetime instead; the client anchors those at UTC so the day never
+	 * shifts across timezones.
+	 */
+	public static function toIso8601(string $mysqlDatetime): string
+	{
+		return date('c', strtotime($mysqlDatetime));
+	}
+
+	/** A place in a table in words: 1st, 2nd, 3rd, 4th, 11th, 21st… */
+	public static function ordinal(int $number): string
+	{
+		if (in_array($number % 100, [11, 12, 13], true))
+			return $number . 'th';
+		return $number . (['th', 'st', 'nd', 'rd'][$number % 10] ?? 'th');
+	}
+
+	public static function calculateLibertyStatus(
+		int $multipleChoiceSquares,
+		int $multipleChoiceTriangles,
+		?int $minLiberties,
+		?int $maxLiberties,
+		int $libertyCount,
+		int $variance): array
+	{
+		$minLiberties = max(1, $minLiberties);
+		$maxLiberties = $maxLiberties != 0 ? min($maxLiberties, $libertyCount) : $libertyCount;
+
+		$minBlackLiberties = max($minLiberties, $libertyCount - $multipleChoiceSquares);
+		// maxLib can be unobtainable when there is not enough places where we can remove black liberties
+		$maxBlackLiberties = max($maxLiberties, $libertyCount - $multipleChoiceSquares);
+
+		$minWhiteLiberties = max($minLiberties, $libertyCount - $multipleChoiceTriangles);
+		// maxLib can be unobtainable when there is not enough places where we can remove white liberties
+		$maxWhiteLiberties = max($maxLiberties, $libertyCount - $multipleChoiceTriangles);
+
+		$variance = $variance != 0 ? $variance : $maxLiberties - $minLiberties;
+
+		// Restrict Black to values for which a valid White value exists
+		$minBlackLiberties = max($minBlackLiberties, $minWhiteLiberties - $variance);
+		$maxBlackLiberties = min($maxBlackLiberties, $maxWhiteLiberties + $variance);
+
+		$remainingBlackLiberties = random_int($minBlackLiberties, $maxBlackLiberties);
+
+		// Calculate valid White range
+		$validMinWhiteLiberties = max($minWhiteLiberties, $remainingBlackLiberties - $variance);
+		$validMaxWhiteLiberties = min($maxWhiteLiberties, $remainingBlackLiberties + $variance);
+
+		// Pick remaining White liberties
+		$remainingW = random_int($validMinWhiteLiberties, $validMaxWhiteLiberties);
+
+		// Return number of liberties to remove
+		return [$libertyCount - $remainingBlackLiberties, $libertyCount - $remainingW];
 	}
 }

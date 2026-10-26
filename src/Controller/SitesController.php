@@ -1,16 +1,22 @@
 <?php
 
-App::uses('SgfParser', 'Utility');
+use App\Utility\Auth;
+use App\Utility\Constants;
+use App\Utility\MistakeTraining;
+use App\Utility\TsumegoButtons;
+use App\Utility\TsumegoFilters;
+use App\Attribute\HttpGet;
+use App\Utility\Util;
 
 class SitesController extends AppController
 {
 	public $helpers = ['Html', 'Form'];
 
 	/**
-	 * @param mixed $var Variable parameter
 	 * @return void
 	 */
-	public function index($var = null)
+	#[HttpGet]
+	public function index(): void
 	{
 		$this->set('_page', 'home');
 		$this->set('_title', 'Tsumego Hero');
@@ -22,17 +28,13 @@ class SitesController extends AppController
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
 		$this->loadModel('TsumegoStatus');
+		$this->loadModel('AchievementStatus');
 		$this->loadModel('User');
 		$this->loadModel('DayRecord');
 		$this->loadModel('Schedule');
 		$this->loadModel('Sgf');
 		$this->loadModel('SetConnection');
 		$this->loadModel('PublishDate');
-
-		$uReward = $this->User->find('all', ['limit' => 5, 'order' => 'reward DESC']) ?: [];
-		$urNames = [];
-		foreach ($uReward as $user)
-			$urNames[] = $this->checkPicture($user);
 
 		$today = date('Y-m-d');
 		$dayRecord = $this->DayRecord->find('first', ['conditions' => ['date' => $today]]);
@@ -41,30 +43,116 @@ class SitesController extends AppController
 
 		$currentQuote = 'q01';
 
-		$tsumegoFilters = new TsumegoFilters('published');
+		$latestPublishDate = ClassRegistry::init('Schedule')->field('date', ['published' => 1, 'date <=' => date('Y-m-d')], 'date DESC') ?: null;
+		$tsumegoFilters = new TsumegoFilters('published', $latestPublishDate);
 		$tsumegoButtonsOfPublishedTsumegos = new TsumegoButtons($tsumegoFilters);
 
 		if ($dayRecord)
 		{
 			$currentQuote = $dayRecord['DayRecord']['quote'];
 			$userOfTheDay = $this->User->find('first', ['conditions' => ['id' => $dayRecord['DayRecord']['user_id']]]);
-			if (!$userOfTheDay)
-				$userOfTheDay = ['User' => ['id' => 0, 'name' => 'Guest']];
-			$this->set('userOfTheDay', $this->checkPictureLarge($userOfTheDay));
+			$this->set('userOfTheDay', $userOfTheDay ? $userOfTheDay['User'] : null);
 		}
+		else
+			$this->set('userOfTheDay', null);
 
 		$this->set('tsumegoButtonsOfPublishedTsumegos', $tsumegoButtonsOfPublishedTsumegos);
-		$this->set('dayRecords', ClassRegistry::init('DayRecord')->find('all', ['order' => 'date ASC']));
+		$chartData = Cache::read('homepage_chart', 'long');
+		if ($chartData === false)
+		{
+			$chartData = $this->buildChartData();
+			Cache::write('homepage_chart', $chartData, 'long');
+		}
+		$this->set('chartData', $chartData);
+		$this->set('latestPublishDate', $latestPublishDate);
 		$this->set('quote', $currentQuote);
-		$this->set('dayRecord', $dayRecord);
-		$this->set('urNames', $urNames);
+
+		$this->loadModel('AchievementStatus');
+		$recentAchievements = $this->AchievementStatus->getRecent();
+		$this->set('recentAchievements', $recentAchievements);
+
+		// The way into the mistake training: what is due today. The offer to bring past
+		// mistakes in is on the card always, without a count: counting them reads the
+		// whole attempt history, far too much for a page this hot.
+		if (Auth::isLoggedIn())
+		{
+			$userId = (int) Auth::getUserID();
+			$this->set('mistakeTrainingDue', MistakeTraining::dueCount($userId));
+		}
+	}
+
+	private function buildChartData(): array
+	{
+		$problemsRaw = $this->Tsumego->query(
+			"SELECT DATE_FORMAT(created, '%Y-%m-01') AS date, COUNT(*) AS cnt
+			 FROM tsumego GROUP BY 1 ORDER BY 1 ASC"
+		);
+		$usersRaw = $this->User->query(
+			"SELECT DATE_FORMAT(created, '%Y-%m-01') AS date, COUNT(*) AS cnt
+			 FROM user WHERE created IS NOT NULL GROUP BY 1 ORDER BY 1 ASC"
+		);
+
+		// Build maps of cumulative values by month
+		$cumProblems = 0;
+		$problemsByMonth = [];
+		foreach ($problemsRaw as $r)
+		{
+			$cumProblems += (int) $r[0]['cnt'];
+			$problemsByMonth[(string) $r[0]['date']] = $cumProblems;
+		}
+		$cumUsers = 0;
+		$usersByMonth = [];
+		foreach ($usersRaw as $r)
+		{
+			$cumUsers += (int) $r[0]['cnt'];
+			$usersByMonth[(string) $r[0]['date']] = $cumUsers;
+		}
+
+		// Collect all unique months
+		$allMonths = array_unique(array_merge(array_keys($problemsByMonth), array_keys($usersByMonth)));
+		sort($allMonths);
+
+		// Build unified chart data, carrying forward last known values
+		$lastProblems = null;
+		$lastUsers = null;
+		$chartData = [];
+		foreach ($allMonths as $date)
+		{
+			if (array_key_exists($date, $problemsByMonth))
+				$lastProblems = $problemsByMonth[$date];
+			if (array_key_exists($date, $usersByMonth))
+				$lastUsers = $usersByMonth[$date];
+			$chartData[] = [
+				'date' => $date,
+				'problems' => $lastProblems,
+				'users' => $lastUsers,
+			];
+		}
+
+		return $chartData;
 	}
 
 	/**
-	 * @param string|int|null $id
+	 * Returns recent achievements for AJAX polling.
+	 *
 	 * @return void
 	 */
-	public function view($id = null)
+	#[HttpGet]
+	public function recentAchievements(): void
+	{
+		$this->autoRender = false;
+		$this->loadModel('AchievementStatus');
+		$this->response->type('json');
+		$recentAchievements = $this->AchievementStatus->getRecent();
+		$this->response->body(json_encode(['recentAchievements' => $recentAchievements]));
+	}
+
+	/**
+	 * @param string|null $id
+	 * @return void
+	 */
+	#[HttpGet]
+	public function view(?string $id = null): void
 	{
 		$news = $this->Site->find('all');
 		$this->set('news', $news[$id]);
@@ -73,7 +161,8 @@ class SitesController extends AppController
 	/**
 	 * @return void
 	 */
-	public function impressum()
+	#[HttpGet]
+	public function impressum(): void
 	{
 		$this->set('_page', 'about');
 		$this->set('_title', 'Tsumego Hero - Legal Notice');
@@ -82,7 +171,8 @@ class SitesController extends AppController
 	/**
 	 * @return void
 	 */
-	public function websitefunctions()
+	#[HttpGet]
+	public function websitefunctions(): void
 	{
 		$this->set('_page', 'websitefunctions');
 		$this->set('_title', 'Tsumego Hero - Website Functions');
@@ -91,7 +181,8 @@ class SitesController extends AppController
 	/**
 	 * @return void
 	 */
-	public function gotutorial()
+	#[HttpGet]
+	public function gotutorial(): void
 	{
 		$this->set('_page', 'gotutorial');
 		$this->set('_title', 'Tsumego Hero - Go Tutorial');
@@ -100,10 +191,21 @@ class SitesController extends AppController
 	/**
 	 * @return void
 	 */
-	public function privacypolicy()
+	#[HttpGet]
+	public function privacypolicy(): void
 	{
 		$this->set('_page', 'privacypolicy');
 		$this->set('_title', 'Tsumego Hero - Privacy Policy');
+	}
+
+	/**
+	 * @return void
+	 */
+	#[HttpGet]
+	public function about(): void
+	{
+		$this->set('_page', 'about');
+		$this->set('_title', 'Tsumego Hero - About');
 	}
 
 	/**
@@ -112,7 +214,8 @@ class SitesController extends AppController
 	 *
 	 * @return void
 	 */
-	public function blank()
+	#[HttpGet]
+	public function blank(): void
 	{
 		$this->set('_page', 'blank');
 		$this->set('_title', 'Tsumego Hero');

@@ -1,7 +1,16 @@
 <?php
 
+use PHPUnitRetry\RetryTrait;
+/**
+ * @retryAttempts 2
+ * @retryIfException Facebook\WebDriver\Exception\WebDriverException
+ */
+use App\Utility\Util;
+
 class JavaScriptErrorTrackingTest extends CakeTestCase
 {
+	use RetryTrait;
+
 	/* Verifies that JavaScript error tracking is enabled in test environment.
 	 * This test ensures debug mode is enabled so window.__jsErrors is initialized.
 	 * Without debug mode, ALL browser tests will be blind to JavaScript errors.
@@ -13,10 +22,7 @@ class JavaScriptErrorTrackingTest extends CakeTestCase
 
 		// Navigate to page WITHOUT assertNoErrors() - we'll check manually
 		$browser->driver->get(Util::getMyAddress() . '/sites/index');
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			return $driver->executeScript('return window.__jsErrors !== undefined;');
-		});
+		$browser->waitUntilJs('window.__jsErrors !== undefined');
 
 		// CRITICAL: Verify window.__jsErrors exists (only initialized when debug mode enabled)
 		$jsErrors = $browser->driver->executeScript('return window.__jsErrors;');

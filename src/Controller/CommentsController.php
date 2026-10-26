@@ -1,10 +1,12 @@
 <?php
 
-App::uses('SgfParser', 'Utility');
-App::uses('CommentsRenderer', 'Utility');
+use App\Utility\Auth;
+use App\Attribute\HttpGet;
+use App\Utility\CommentsRenderer;
 
 class CommentsController extends AppController
 {
+	#[HttpGet]
 	public function index(): mixed
 	{
 		$this->set('_title', 'Tsumego Hero - Discuss');

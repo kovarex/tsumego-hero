@@ -1,9 +1,6 @@
 <?php
 
-App::uses('Achievement', 'Model');
-App::uses('AppController', 'Controller');
-App::uses('AchievementTestCase', 'TestCase/Achievement');
-App::uses('ContextPreparator', 'Test');
+use App\Utility\AchievementId;
 
 /* Test all 12 Speed achievements (IDs 24-35)
  *
@@ -16,22 +13,22 @@ class SpeedAchievementTest extends AchievementTestCase
 	{
 		$testCases = [
 			// Tier 1: fastest tier
-			[Achievement::SPEED_I, 1200, 14, '11k'], // Speed I - <15s
-			[Achievement::SPEED_IV, 1400, 17, '5k'],  // Speed IV - <18s
-			[Achievement::SPEED_VII, 1600, 29, '10k'], // Speed VII - <30s
-			[Achievement::SPEED_X, 1750, 29, '1d'],  // Speed X - <30s
+			[AchievementId::SPEED_I, 1200, 14, '11k'], // Speed I - <15s
+			[AchievementId::SPEED_IV, 1400, 17, '5k'],  // Speed IV - <18s
+			[AchievementId::SPEED_VII, 1600, 29, '10k'], // Speed VII - <30s
+			[AchievementId::SPEED_X, 1750, 29, '1d'],  // Speed X - <30s
 
 			// Tier 2: medium tier
-			[Achievement::SPEED_II, 1200, 9, '11k'], // Speed II - <10s
-			[Achievement::SPEED_V, 1400, 12, '5k'],  // Speed V - <13s
-			[Achievement::SPEED_VIII, 1600, 19, '10k'], // Speed VIII - <20s
-			[Achievement::SPEED_XI, 1750, 19, '1d'],  // Speed XI - <20s
+			[AchievementId::SPEED_II, 1200, 9, '11k'], // Speed II - <10s
+			[AchievementId::SPEED_V, 1400, 12, '5k'],  // Speed V - <13s
+			[AchievementId::SPEED_VIII, 1600, 19, '10k'], // Speed VIII - <20s
+			[AchievementId::SPEED_XI, 1750, 19, '1d'],  // Speed XI - <20s
 
 			// Tier 3: fast tier
-			[Achievement::SPEED_III, 1200, 4, '11k'], // Speed III - <5s
-			[Achievement::SPEED_VI, 1400, 7, '5k'],  // Speed VI - <8s
-			[Achievement::SPEED_IX, 1600, 9, '10k'], // Speed IX - <10s
-			[Achievement::SPEED_XII, 1750, 9, '1d'],  // Speed XII - <10s
+			[AchievementId::SPEED_III, 1200, 4, '11k'], // Speed III - <5s
+			[AchievementId::SPEED_VI, 1400, 7, '5k'],  // Speed VI - <8s
+			[AchievementId::SPEED_IX, 1600, 9, '10k'], // Speed IX - <10s
+			[AchievementId::SPEED_XII, 1750, 9, '1d'],  // Speed XII - <10s
 		];
 
 		foreach ($testCases as [$achievementId, $difficulty, $speed, $rank])
@@ -52,7 +49,7 @@ class SpeedAchievementTest extends AchievementTestCase
 				'value' => $speed]);
 
 			$browser->get('/sets/view/' . $setID);
-			$this->assertAchievementUnlocked($achievementId, "Speed $achievementId (<{$speed}s at $rank) should unlock");
+			$this->assertAchievementUnlocked($achievementId, "Speed {$achievementId->name} (<{$speed}s at $rank) should unlock");
 		}
 	}
 }

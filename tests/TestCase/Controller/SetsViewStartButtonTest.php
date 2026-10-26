@@ -1,15 +1,21 @@
 <?php
 
 use Facebook\WebDriver\WebDriverBy;
-
+use PHPUnitRetry\RetryTrait;
 /**
  * Tests the Start button on set view pages.
  *
  * This test verifies that clicking the Start button on /sets/view/{setId}
  * navigates to the FIRST UNSOLVED puzzle in the set (not just the first puzzle).
+ *
+ * @retryAttempts 2
+ * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
+use App\Utility\Util;
+
 class SetsViewStartButtonTest extends ControllerTestCase
 {
+	use RetryTrait;
 	public function testStartButtonNavigatesToFirstUnsolvedPuzzle(): void
 	{
 		// when $statusToPick is 'W' (solved once more than a week ago)
@@ -37,10 +43,10 @@ class SetsViewStartButtonTest extends ControllerTestCase
 			$this->assertSame(Util::getMyAddress() . '/sets/view/' . $setId, $browser->driver->getCurrentURL());
 
 			// Wait for page to fully load
-			$browser->waitUntilCssSelectorExists('a.new-button.new-buttonx');
+			$browser->find('a.btn');
 
-			// 3. Find and click the Start button (using CSS selector since linkText didn't work)
-			$startButton = $browser->getCssSelect('a.new-button.new-buttonx')[0];
+			// 3. Find and click the Start button (target by text; the first a.btn may be a hidden nav button)
+			$startButton = $browser->findBy(WebDriverBy::xpath("//a[contains(@class,'btn') and .='Start']"));
 			$this->assertTrue($startButton->isDisplayed(), 'Start button should be visible');
 			$startButton->click();
 

@@ -1,10 +1,10 @@
 <?php
+
 /**
  * PHP Built-in Server Router Script
  *
  * This script is used with `php -S` to route requests similar to Apache's mod_rewrite.
- * For AssetCompress to work, requests to /cache_css/* and /cache_js/* must be routed
- * through index.php so the dispatcher filter can intercept them.
+ * Routes requests through index.php so the CakePHP dispatcher can handle them.
  *
  * Usage: php -S localhost:8080 -t webroot router.php
  */

@@ -1,0 +1,1260 @@
+@layer page
+{
+body {
+	font-family: var(--font-family-body);
+	font-size: clamp(15px, 0.9rem + 0.5vw, 16px);
+	margin: 0;
+	text-align: justify;
+	background: var(--body-background-gradient);
+	background-repeat: no-repeat;
+	background-position: center center;
+	background-attachment: fixed;
+	color: var(--text-color);
+	/* Respect notched/rounded phones: pull content in from the safe area.
+	   env() is 0 on non-notch devices, so this is a no-op there. */
+	padding-left: env(safe-area-inset-left);
+	padding-right: env(safe-area-inset-right);
+	padding-top: env(safe-area-inset-top);
+	padding-bottom: env(safe-area-inset-bottom);
+}
+#container {
+  position: relative;
+  margin: auto;
+  padding-top: 5px;
+  width: 100%;
+  min-width: 0;
+  max-width: 1300px;
+}
+.accessList {
+  color: var(--color-gray);
+  font-size: 14px;
+}
+.whitebox1 {
+  position: relative;
+  margin: auto;
+  color: var(--color-white);
+  font-weight: bold;
+  /* Reserve header space so the absolutely-positioned logo/nav don't overlap
+     the content below. The old outerMenu2 (height:65px) did this implicitly. */
+  height: 65px;
+}
+@media (width < 64rem) {
+  .whitebox1 {
+    height: 56px;
+  }
+}
+.whitebox2 {
+  width: 100%;
+  max-width: 1280px;
+  position: relative;
+  margin: auto;
+  padding: 0;
+  background-color: var(--color-white);
+  min-height: 700px;
+  border: 2px solid var(--color-black);
+  box-shadow: 10px 10px 15px var(--color-black);
+  border-radius:10px;
+  box-sizing: border-box;
+}
+.loader-container {
+  display: none;
+  position: absolute;
+  top: 40%;
+  left: 43.7%;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.loader-content {
+  font-size: 25px;
+  padding: 20px;
+  background: var(--color-gray);
+  opacity: 0.8;
+  -moz-border-radius-bottomleft: 30px;
+  -moz-border-radius-bottomright: 30px;
+  border-radius-bottomleft: 30px;
+  border-radius-bottomright: 30px;
+  -moz-border-radius-bottomright: 30px;
+  -moz-border-radius-bottomleft: 30px;
+  border-bottom-right-radius: 30px;
+  border-bottom-left-radius: 30px;
+  -moz-border-radius-topright: 30px;
+  -moz-border-radius-topleft: 30px;
+  border-top-right-radius: 30px;
+  border-top-left-radius: 30px;
+}
+.loader-text {
+  animation: blinker 1.5s linear infinite;
+}
+
+@keyframes goldenShine {
+  0% { left: -75%; }
+  100% { left: 125%; }
+}
+.site-nav {
+  display: table;
+  margin: 18px;
+  position: absolute;
+  left: 214px;
+  top: -8px;
+  z-index: 50;
+  width: 900px;
+}
+.site-nav__signin {
+  display: table;
+  margin: 0 auto;
+  position: absolute;
+  left: 1170px;
+  width: 130px;
+  top: 22px;
+}
+/* Account links in the drawer are mobile-only; desktop uses the hover account-bar. */
+.site-nav__account {
+  display: none;
+}
+li a.menuLi {
+  font-family: var(--font-family-display);
+  letter-spacing: 1px;
+  padding: 7px 9px 10px 9px;
+  margin: 13px 6px 0 6px;
+  color: var(--color-purple-bright);
+  font-size: 24px;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: 700;
+  line-height: 20px;
+  cursor: pointer;
+}
+#refreshLinkToSandbox {
+  margin-top: 0;
+}
+#refreshLinkToLeaderboard {
+  margin-top: 0;
+}
+.menuLi:hover {
+  background-color: var(--color-gray);
+  color: var(--color-green);
+}
+/* Active nav link */
+.nav__link--active,
+li a.menuLi.nav__link--active {
+  color: var(--color-green);
+}
+#signInMenu {
+  padding: 7px 9px 10px 9px;
+  margin-top: 0;
+  width: 115px;
+}
+/* The sign-in link lives in a <div class="site-nav__signin">, not an <li>, so the
+   `li a.menuLi` rule doesn't reach it. Apply the same top-level menu look here so
+   it matches the nav items (purple, bold, no underline) instead of defaulting
+   to a browser-blue underlined link. */
+.site-nav__signin a.menuLi,
+.site-nav__signin #signInMenu {
+  font-family: var(--font-family-display);
+  letter-spacing: 1px;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 20px;
+  color: var(--color-purple-bright);
+  text-decoration: none;
+  padding: 7px 9px 10px 9px;
+  cursor: pointer;
+}
+.site-nav__signin a.menuLi:hover {
+  background-color: var(--color-gray);
+  color: var(--color-green);
+}
+.main-page {
+  padding: 8px 11px !important;
+}
+.btn.main-page {
+  font-size: 14px;
+  color: #fff;
+}
+.sandbox-teaser {
+  text-align: center;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-heavy);
+}
+.img-bordered {
+  border: 2px solid var(--current-border-color);
+}
+.img-padded {
+  margin: var(--space-1);
+}
+.chart-box {
+  height: 400px;
+  width: 100%;
+}
+.text-topic {
+  color: var(--color-topic);
+}
+.text-difficulty {
+  color: var(--color-difficulty);
+}
+.text-tag {
+  color: var(--color-tag);
+}
+.mode-link--level {
+  color: var(--color-green);
+}
+.mode-link--rating {
+  color: var(--color-mode-rating);
+}
+.mode-link--time {
+  color: var(--color-mode-time);
+}
+.title {
+  color: var(--color-black);
+  padding: 0px;
+  margin-top: 7px;
+  margin-bottom: 0px;
+  font-size: 24px;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: 800;
+  line-height: 22px;
+  text-decoration: underline;
+}
+#header {
+  margin-bottom: 2px;
+  padding: 2px;
+  background-color: var(--color-sky);
+}
+#footer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-top: 5px;
+  padding: 10px;
+  font-size: 13px;
+  color: var(--color-white);
+}
+.footer-element {
+  margin: 2px;
+}
+.footer-space {
+  margin: 6px;
+}
+.footerLinks a {
+  color: var(--color-white);
+  text-decoration: none;
+}
+.footerLinks a:hover {
+  text-decoration: underline;
+}
+.titleDescription1 {
+  font-size: 17px;
+}
+.titleDescription2 {
+  font-size: 22px;
+}
+#pageTitle {
+  font-size: 16pt;
+  font-weight: bold;
+}
+#account-bar {
+  max-width: 966px;
+  height: 100%;
+  margin: 0px auto;
+}
+#account-bar-wrapper {
+  position: absolute;
+  top: -31px;
+  /* Right-anchor to the container instead of a hard-coded left:1130px, so the
+     widget no longer overflows on narrower windows. */
+  right: 0;
+  left: auto;
+  width: 160px;
+  cursor: context-menu;
+  background-color: var(--color-white);
+}
+/* The account bar reads as a display label, so it keeps its heavy face instead
+   of the body serif. */
+#account-bar-xp-wrapper,
+#account-bar-xp,
+#account-bar-user,
+#account-bar-user2
+{
+  font-family: var(--font-family-account);
+}
+#account-bar-xp-wrapper {
+  position: absolute;
+  left: 0px;
+  top: 59px;
+  width: 144px;
+  height: 26px;
+  margin: 0px 0px 0px 15px;
+  color: var(--color-white);
+  font-size: 14px;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: 600;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  border: 1px solid var(--color-gold);
+  -moz-border-radius-bottomleft: 5px;
+  -moz-border-radius-bottomright: 5px;
+  border-radius-bottomleft: 5px;
+  border-radius-bottomright: 5px;
+  -moz-border-radius-bottomright: 5px;
+  -moz-border-radius-bottomleft: 5px;
+  border-bottom-right-radius: 5px;
+  border-bottom-left-radius: 5px;
+  -moz-border-radius-topright: 5px;
+  -moz-border-radius-topleft: 5px;
+  border-top-right-radius: 5px;
+  border-top-left-radius: 5px;
+}
+#account-bar-xp {
+  position: relative;
+  margin: 3px 0px 0px 0px;
+  color: var(--color-white);
+  font-size: 14px;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: 600;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+#account-bar-xp p {
+  position: relative;
+}
+#account-bar-user,
+#account-bar-user2 {
+  letter-spacing: 1px;
+  position: absolute;
+  top: 36px;
+  left: 15px;
+  display: inline-block;
+  font-size: 17px;
+  font-weight: 700;
+  font-style: normal;
+  font-variant: normal;
+}
+#account-bar-user a {
+  color: var(--color-green);
+  text-decoration: none;
+  white-space: nowrap;
+}
+#account-bar-user2 a {
+  color: var(--color-purple-bright);
+  text-decoration: none;
+  white-space: nowrap;
+}
+#xp-bar {
+  position: absolute;
+  left: 0px;
+  top: 59px;
+  height: 26px;
+  width: 144px;
+  background: var(--surface-ink);
+  margin: 0px 0px 0px 15px;
+  display: inline-block;
+  vertical-align: left;
+}
+#xp-bar-fill {
+	position: absolute;
+	height: 100%;
+	width: 0.1%;
+	line-height: 10px;
+	text-align: right;
+	-moz-border-radius-bottomleft: 5px;
+	-moz-border-radius-bottomright: 5px;
+	-moz-border-radius-bottomright: 5px;
+	-moz-border-radius-bottomleft: 5px;
+	border-bottom-right-radius: 5px;
+	border-bottom-left-radius: 5px;
+	-moz-border-radius-topright: 5px;
+	-moz-border-radius-topleft: 5px;
+	border-top-right-radius: 5px;
+	border-top-left-radius: 5px;
+	box-shadow: -5px 0px 10px var(--color-white) inset;
+}
+.xp-bar-fill-c1 {
+  background-image: linear-gradient(var(--color-green-light), var(--color-green-dark));
+}
+.xp-bar-fill-c2 {
+  background-image: linear-gradient(var(--color-purple-bright), var(--color-purple-2));
+}
+.xp-bar-fill-c3 {
+  background-image: linear-gradient(var(--color-orange-1), var(--color-orange-2));
+}
+.xp-text-fill-c3x {
+  color: var(--color-orange-ink) !important;
+}
+#xp-increase-fx {
+	position: relative;
+	display: inline-block;
+	height: 100%;
+}
+.xp-increase-glow1 {
+  position: absolute;
+  margin: 0px 0px 0px -2px;
+  left: 0px;
+  top: 0px;
+  background: var(--color-white);
+  width: 5px;
+  height: 100%;
+  border-radius: 0px;
+  -webkit-filter: blur(2px);
+}
+.xp-increase-glow2 {
+  position: absolute;
+  margin: -5px 0px 0px -2px;
+  left: 0px;
+  top: 0px;
+  background: var(--color-blue-light);
+  width: 5px;
+  height: 200%;
+  border-radius: 0px;
+  -webkit-filter: blur(10px);
+}
+.xp-increase-glow3 {
+  position: absolute;
+  margin: 0px 0px 0px -5px;
+  left: 0px;
+  top: 0px;
+  background: var(--color-white);
+  width: 10px;
+  height: 100%;
+  border-radius: 5px;
+  -webkit-filter: blur(5px);
+}
+.mode-select-box {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+*:focus {
+  outline: none;
+}
+.sitesTable td {
+  vertical-align: top;
+}
+h2 {
+  font-size: clamp(22px, 1.1rem + 1vw, 28px);
+  font-style: normal;
+  font-variant: normal;
+  font-weight: 600;
+  line-height: 1.2;
+}
+h3 {
+  font-size: clamp(16px, 0.9rem + 0.6vw, 20px);
+  font-style: normal;
+  font-variant: normal;
+  font-weight: 400;
+  line-height: 1.2;
+}
+h4 {
+  font-size: clamp(17px, 1rem + 0.5vw, 21px);
+  font-weight: 600;
+  margin-bottom: 10px;
+  margin-top: 0px;
+}
+#darkButton2,
+#darkButton3,
+.darkButton2 {
+  float: left;
+  padding-top: 9px;
+  cursor: pointer;
+}
+#darkButton {
+  cursor: pointer;
+}
+/* A heading that can be wider than its column: the line box is taller than the
+   type, so a wrapped second line clears the first instead of sitting on it, and
+   the lines are balanced so a wrap splits the words evenly. */
+.title4 {
+	padding: 8px;
+	margin-top: 6px;
+	margin-bottom: 0px;
+	font-size: 24px;
+	font-style: normal;
+	font-variant: normal;
+	font-weight: 400;
+	line-height: 1.2;
+	text-wrap: balance;
+	text-decoration: none;
+	background: var(--title4-gradient);
+	border-radius: 4px 4px 0 0;
+	border: 1px solid var(--surface-border-muted);
+	color: var(--text-color);
+}
+.title4date3 {
+  padding: 8px;
+  margin-top: 7px;
+  margin-bottom: 0px;
+  font-size: 24px;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: 400;
+  line-height: 20px;
+  text-decoration: none;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+#logo1 {
+  position: absolute;
+  top: 0px;
+  left: 6px;
+  display: inline;
+  padding: 4px;
+}
+#logo1:hover {
+  background-color: var(--color-gray);
+}.board-picker {
+  display: inline-block;
+  font-family: var(--font-family-display);
+  letter-spacing: 1px;
+  color: var(--color-purple-bright);
+  font-size: 16px;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: 600;
+  line-height: 23px;
+  padding: 8px 15px 0px;
+  cursor: pointer;
+}
+/* Board picker dropdown menu positioning */
+.board-picker .dropdown__menu {
+  width: 700px;
+  left: 114px;
+}
+input.newCheck {
+  width: 15px;
+  height: 15px;
+}
+/* The board choice is a page of its own opened from the menu, so it is set in
+   the page face rather than the menu's. */
+#dropdowntable,
+#dropdowntable2 {
+  font-family: var(--font-family-body);
+}
+#dropdowntable {
+  width: 700px;
+  color: var(--color-green);
+  padding: 5px;
+  display: none;
+}
+#dropdowntable2 {
+  width: 700px;
+  color: var(--color-green);
+  padding: 5px;
+  display: none;
+}
+/* Board picker Save button: restore green button look inside the nav
+   (nav a overrides the .btn color/padding otherwise). */
+#dropdowntable2 .btn {
+  display: inline-block;
+  font-size: 16px;
+  padding: 10px 13px;
+  color: var(--color-green);
+  border-left: 1px solid var(--surface-ink);
+  border-top: 1px solid var(--surface-ink);
+}
+#dropdown-inner-propagation {
+  cursor: context-menu;
+}
+#heroProfile {
+  color: var(--color-green);
+  position: absolute;
+  right: 0;
+  left: auto;
+  width: 144px;
+  top: 54px;
+  background: var(--color-hero-gradient);
+  padding: 1px 10px;
+  font-family: var(--font-family-display);
+  letter-spacing: 1px;
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 5;
+  cursor: pointer;
+  border-radius: 4px 4px 0 0;
+  display: none;
+}
+#heroProfile li a {
+  color: var(--color-green);
+}
+#heroBar {
+  color: var(--color-green);
+  position: absolute;
+  right: 0;
+  left: auto;
+  width: 144px;
+  top: 82px;
+  background: var(--color-hero-gradient);
+  padding: 1px 10px;
+  font-family: var(--font-family-display);
+  letter-spacing: 1px;
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 5;
+  cursor: pointer;
+  border-top: 1px solid var(--surface-ink);
+  display: none;
+}
+#heroBar li a {
+  color: var(--color-green);
+}
+#heroAchievements {
+  color: var(--color-green);
+  position: absolute;
+  right: 0;
+  left: auto;
+  width: 144px;
+  top: 110px;
+  background: var(--color-hero-gradient);
+  padding: 1px 10px;
+  font-family: var(--font-family-display);
+  letter-spacing: 1px;
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 5;
+  border-top: 1px solid var(--surface-ink);
+  cursor: pointer;
+  display: none;
+}
+#heroAchievements li a {
+  color: var(--color-green);
+}
+#heroMessages {
+  color: var(--color-green);
+  position: absolute;
+  right: 0;
+  left: auto;
+  width: 144px;
+  top: 138px;
+  background: var(--color-hero-gradient);
+  padding: 1px 10px;
+  font-family: var(--font-family-display);
+  letter-spacing: 1px;
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 5;
+  border-top: 1px solid var(--surface-ink);
+  cursor: pointer;
+  display: none;
+}
+#heroMessages li a {
+  color: var(--color-green);
+}
+#heroSettings {
+  color: var(--color-green);
+  position: absolute;
+  right: 0;
+  left: auto;
+  width: 144px;
+  top: 166px;
+  background: var(--color-hero-gradient);
+  padding: 1px 10px;
+  font-family: var(--font-family-display);
+  letter-spacing: 1px;
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 5;
+  border-top: 1px solid var(--surface-ink);
+  cursor: pointer;
+  display: none;
+}
+#heroSettings li a {
+  color: var(--color-green);
+}
+#heroLogout {
+  color: var(--color-green);
+  position: absolute;
+  right: 0;
+  left: auto;
+  width: 144px;
+  top: 194px;
+  background: var(--color-hero-gradient);
+  padding: 1px 10px;
+  font-family: var(--font-family-display);
+  letter-spacing: 1px;
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 5;
+  cursor: pointer;
+  border-top: 1px solid var(--surface-ink);
+  white-space: nowrap;
+  border-radius: 0 0 4px 4px;
+  display: none;
+}
+#heroLogout li a {
+  color: var(--color-green);
+}
+#leaderboardLink {
+  color: var(--color-green);
+  position: absolute;
+  left: 684px;
+  width: 166px;
+  height: 46px;
+  top: 80px;
+  display: none;
+  background-color: var(--color-gray);
+  padding: 3px 0px 1px 5px;
+  font-family: var(--font-family-display);
+  letter-spacing: 1px;
+  font-size: 24px;
+  font-weight: 400;
+  z-index: 5;
+  cursor: pointer;
+}
+#leaderboardLink li a {
+  color: var(--color-green);
+}
+#status h2,
+#status h3,
+#status2 h3 {
+  margin: 0;
+  white-space: nowrap;
+}
+pre {
+  font-size: 18px;
+  color: var(--color-white);
+}
+#time-mode-countdown {
+  font-size: 21px;
+  font-weight: 800;
+}
+.clear1 {
+  clear: both;
+}
+.alert-success { background: var(--alert-success-bg); color: var(--alert-success-fg); border-color: var(--color-green-light); }
+.alert-error { background: var(--alert-error-bg); color: var(--alert-error-fg); border-color: var(--color-red); }
+.alert-warning { background: var(--alert-warning-bg); color: var(--alert-warning-fg); border-color: var(--color-yellow); }
+.alert-info { background: var(--alert-info-bg); color: var(--alert-info-fg); border-color: var(--color-blue); }
+[data-theme="dark"] .alert-success { background: var(--alert-success-bg); color: var(--alert-success-fg); border-color: var(--color-green-dark); }
+[data-theme="dark"] .alert-error { background: var(--alert-error-bg); color: var(--alert-error-fg); border-color: var(--color-red-dark); }
+[data-theme="dark"] .alert-warning { background: var(--alert-warning-bg); color: var(--alert-warning-fg); border-color: var(--color-yellow-dark); }
+[data-theme="dark"] .alert-info { background: var(--alert-info-bg); color: var(--alert-info-fg); border-color: var(--color-blue-dark); }
+#plus2 {
+  display: none;
+  position: absolute;
+  top: 111px;
+  left: 440px;
+  font-size: 21px;
+  font-weight: 800;
+  color: var(--color-blue-accent);
+}
+/* The legacy menu is set in its own wide sans, not in the body serif. */
+#newMenu {
+  display: inline-block;
+  font-family: var(--font-family-menu);
+}
+nav ul {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  position: relative;
+}
+nav ul li {
+  text-decoration: none;
+  display: block;
+  padding: 0;
+  background: var(--color-title-gradient);
+  color: var(--color-purple-nav);
+  float: left;
+  font-weight: 800;
+  text-align: center;
+  border-top: 2px solid var(--surface-border-light);
+  border-right: 2px solid var(--color-black);
+  border-bottom: 2px solid var(--color-black);
+  border-left: 2px solid var(--surface-border-light);
+}
+nav ul .menuIcons1 {
+  height: 40px;
+}
+.menuIcons2 {
+  padding: 5px 12px;
+}
+.historyLink {
+  color: var(--color-red) !important;
+}
+.historyLink2 {
+  color: var(--color-red-light) !important;
+}
+
+nav a {
+  display: block;
+  font-size: 22px;
+  padding: 5px 16px;
+  color: var(--color-purple-nav);
+  text-align: center;
+  text-decoration: none;
+}
+/* The top row of the menu has a fixed height instead of taking the line box of
+   whatever font the platform picks: with `normal` the text sits where the font's
+   own ascent puts it, so a family swap moves it up or down and the bar changes
+   height with it. The submenus keep their own line box. */
+nav > ul > li > a {
+  line-height: 26px;
+}
+nav ul ul {
+  display: none;
+  position: absolute;
+  z-index: 1000;
+}
+nav ul li:hover > ul {
+  display: inherit;
+}
+#newMenu li:hover {
+  background: var(--nav-hover-gradient);
+}
+nav ul ul li {
+  width: 170px;
+  float: none;
+  display: list-item;
+  position: relative;
+  top: 2px;
+  left: -2px;
+}
+nav ul ul ul li {
+  position: relative;
+  top: -60px;
+  left: 170px;
+}
+/* Home submenu: widen to fit the longest item ("Functions & Modes") at the
+   standard nav font so the text doesn't overflow. Other submenus are 169/159px;
+   this one is a touch wider because its labels are the longest. */
+.newMenuLi1 li {
+  width: 185px;
+}
+.newMenuLi2 li {
+  width: 169px;
+}
+.newMenuLi3 li {
+  width: 159px;
+}
+.newMenuLi3 a {
+  font-weight: 400;
+  font-size: 19px;
+}
+.newMenuLi4 li {
+  width: 159px;
+}
+#tutorialLink {
+  font-weight: 400;
+  font-size: 19px;
+}
+.adminLink {
+  font-weight: 400;
+  font-size: 19px;
+  color: var(--color-red-light);
+}
+.homeMenuLink {
+  width: 115px;
+}
+#soundButton,
+#boardsButton {
+  padding: 8px 14px 1px 14px;
+}
+#errorMessage {
+  width: 304px;
+  padding: 40px;
+  margin: 120px;
+  color: var(--color-red);
+  font-weight: bold;
+  background-color: var(--surface-panel-light);
+  border-radius: 12px;
+  border: 1px solid var(--color-red);
+  display: none;
+}
+#errorMessageOuter {
+  width: 100%;
+  display: none;
+}
+#targetLockOverlay {
+  position: absolute;
+  width: 0;
+  height: 0;
+  left: 320px;
+  top: 151px;
+  opacity: 0;
+  z-index: -1;
+}
+#modeSelector {
+  width: 9px;
+  height: 13px;
+  position: absolute;
+  top: 41px;
+  right: 136px;
+  left: auto;
+  border-bottom-left-radius: 4px;
+  border-top-right-radius: 2px;
+  cursor: pointer;
+}
+.modeSelectorInRatingBar {
+  background-image: var(--color-green-btn-gradient);
+}
+.modeSelectorInLevelBar {
+  background-image: var(--color-purple-btn-gradient);
+}
+.xpDisplayTable {
+  text-align: center;
+}
+/* The theme icon comes from the theme token, so it follows the palette without a
+   second file to load or a src the script would have to swap. Its width is in rem,
+   so raising the base font size takes the icon along. */
+.theme-icon {
+  display: inline-block;
+  width: 1.875rem;
+  aspect-ratio: 65 / 60;
+  background-image: var(--dark-button-icon);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+.grey-link { color: var(--text-softer-color); }
+li {
+  list-style-type: none;
+  float: left;
+}
+
+/* CookieFlash messages (CakePHP2 flash infrastructure) */
+.alert {
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  margin-bottom: 12px;
+  border: 1px solid;
+}
+@charset "UTF-8";
+*,
+:after,
+:before {
+  box-sizing: border-box;
+}
+figure,
+ul ul {
+  margin: 0;
+}
+
+/* Dark overrides */
+[data-theme="dark"] .whitebox2 {
+	background-color: var(--info-box-background);
+}
+[data-theme="dark"] #status2 font font,
+[data-theme="dark"] .titleDescription1 font {
+	color: var(--color-gray);
+}
+[data-theme="dark"] .title {
+	color: var(--color-white);
+}
+
+/* Responsive */
+@media (width < 81.25rem) {
+	#heroProfile {
+		right: 0;
+		left: auto;
+	}
+	#heroBar {
+		right: 0;
+		left: auto;
+	}
+	#heroAchievements {
+		right: 0;
+		left: auto;
+	}
+	#heroMessages {
+		right: 0;
+		left: auto;
+	}
+	#heroSettings {
+		right: 0;
+		left: auto;
+	}
+	#heroLogout {
+		right: 0;
+		left: auto;
+	}
+	#boardsInMenu {
+		padding-top: 3px;
+		padding-bottom: 3px;
+	}
+	li a.menuLi {
+		padding-bottom: 9px;
+		padding-top: 9px;
+	}
+}
+
+/* Logo: same lockup on all breakpoints. Desktop keeps the original 55px height
+   (the base.css img{height:auto} rule would otherwise let it render at natural
+   size); on mobile it is scaled down to fit the header bar beside the hamburger. */
+#logo1 {
+	height: 55px;
+	width: auto;
+}
+@media (width < 64rem) {
+	#logo1 {
+		height: 40px;
+		width: auto;
+	}
+}
+
+/* Mobile nav: a compact header bar (logo + hamburger) and a drawer that
+   replaces the desktop absolute-positioned mega-menu. Hybrid pattern: core
+   destinations stay reachable without hiding everything behind a menu. */
+.nav-toggle {
+	display: none;
+}
+.nav-toggle-btn {
+	display: none;
+}
+@media (width < 64rem) {
+	/* Header bar: logo on the left, hamburger on the right. */
+	.whitebox1 {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 8px 12px;
+		min-height: 56px;
+	}
+	#logo1 {
+		display: inline;
+		position: static;
+		height: 40px;
+		width: auto;
+		margin: 0;
+		padding: 0;
+	}
+	.nav-toggle-btn {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		gap: 5px;
+		width: 40px;
+		height: 40px;
+		padding: 8px;
+		cursor: pointer;
+		box-sizing: border-box;
+	}
+	.nav-toggle-btn span {
+		display: block;
+		height: 3px;
+		width: 100%;
+		/* The header sits on the dark body gradient in BOTH themes, so the bars
+		   must stay light or they'd vanish (e.g. black-on-dark in light mode). */
+		background: var(--text-on-dark);
+		border-radius: 2px;
+	}
+	.site-nav__signin {
+		display: none;
+	}
+	/* Sign In for logged-out users appears at the top of the drawer (like the
+	   logged-in account block). The absolute desktop .site-nav__signin is hidden
+	   above; this reuses .site-nav__account so it matches the account styling. */
+	.site-nav__signin-drawer {
+		display: block;
+	}
+	/* When logged out the disabled Discuss link is pointless on a phone; keep it
+	   only on desktop. */
+	.discuss-disabled {
+		display: none;
+	}
+	/* Drawer: hidden by default, opens when the checkbox is checked. */
+	.site-nav {
+		position: fixed;
+		left: 0;
+		top: 0;
+		z-index: 1000;
+		width: min(80vw, 360px);
+		height: 100vh;
+		overflow-y: auto;
+		margin: 0;
+		padding: 16px 12px;
+		background: var(--surface-near-black);
+		box-shadow: 2px 0 12px rgba(0,0,0,0.5);
+		transform: translateX(-100%);
+		transition: transform 0.2s ease;
+	}
+	.nav-toggle:checked ~ .site-nav {
+		transform: translateX(0);
+	}
+	/* Keep the hamburger above the drawer so it can be used to close it. */
+	.nav-toggle-btn {
+		position: relative;
+		z-index: 1001;
+	}
+	/* Stack the mega-menu vertically instead of absolute hover columns. */
+	.site-nav #newMenu,
+	.site-nav nav,
+	.site-nav nav ul,
+	.site-nav nav ul li {
+		width: 100%;
+		position: static;
+		display: block;
+		float: none;
+		text-align: left;
+	}
+	.site-nav nav ul li {
+		border: none;
+		background: none;
+	}
+	.site-nav nav a {
+		padding: 10px 8px;
+		font-size: 18px;
+		color: var(--color-purple-nav);
+		display: block;
+		width: 100%;
+		box-sizing: border-box;
+		text-align: left;
+		white-space: nowrap;
+	}
+	/* Keep submenus expanded (Home/Collections/Play) so their items are visible;
+	   only Highscore's submenu is collapsed to keep the drawer compact.
+	   On mobile the informational Home links (Functions & Modes, Go Rules, About)
+	   are not important to tap, so only Forums stays in the drawer; the full set
+	   is reachable on desktop hover. */
+	.site-nav nav ul ul {
+		position: static;
+		display: block;
+		padding-left: 24px;
+	}
+	.site-nav nav ul ul.newMenuLi4 {
+		display: none;
+	}
+	/* Keep only Forums in the Home submenu on mobile; the informational links
+	   (Functions & Modes, Go Rules, About) aren't important to tap on a phone.
+	   Use the explicit .newMenuLi1-forum hook rather than :first-child, which
+	   breaks if the submenu items are reordered. */
+	.site-nav nav ul ul.newMenuLi1 li {
+		display: none;
+	}
+	.site-nav nav ul ul.newMenuLi1 li.newMenuLi1-forum {
+		display: list-item;
+	}
+	.site-nav nav ul ul li a {
+		font-size: 16px;
+	}
+	/* Icon row (sound / board / dark) sits side by side on one line. */
+	.site-nav nav ul {
+		display: flex;
+		flex-wrap: wrap;
+	}
+	.site-nav nav ul > li:not(.menuIcons1) {
+		flex: 1 0 100%;
+	}
+	.site-nav nav ul > li.menuIcons1 {
+		flex: 0 0 33.333%;
+		height: auto;
+		padding: 0;
+	}
+	.site-nav nav ul > li.menuIcons1 > a,
+	.site-nav nav ul > li.menuIcons1 .board-picker {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		height: 48px;
+		padding: 0 8px;
+		box-sizing: border-box;
+		text-align: center;
+	}
+	.site-nav nav ul > li.menuIcons1 .board-picker {
+		position: relative;
+	}
+	/* The board picker dropdown is position:absolute; on mobile keep it in-flow. */
+	.site-nav nav ul > li.menuIcons1 .dropdown__menu {
+		position: static;
+		width: 100%;
+		max-width: 100%;
+		display: none;
+	}
+	/* Account access at the top of the drawer (desktop uses the hover
+	   account-bar; on mobile that bar is off-screen so we show these instead).
+	   The divider sits BELOW the account block (after Sign Out), not above it,
+	   and there is no empty space above the username. */
+	.site-nav__account {
+		display: block;
+		padding: 0 0 8px;
+		border-bottom: 1px solid var(--surface-border-strong);
+		margin-bottom: 8px;
+	}
+	.site-nav__account-user {
+		font-size: 16px;
+		padding: 8px 8px 0;
+		color: var(--color-white);
+	}
+	.site-nav__account-user a {
+		color: var(--color-green);
+		text-decoration: none;
+	}
+	.site-nav__account-links ul {
+		padding: 0;
+		margin: 0;
+		list-style: none;
+	}
+	.site-nav__account-links li a {
+		display: block;
+		width: 100%;
+		box-sizing: border-box;
+		padding: 10px 8px;
+		font-size: 18px;
+		color: var(--color-purple-nav);
+		text-align: left;
+	}
+	/* Hide the desktop floating account bar + hover dropdowns on mobile. */
+	#account-bar-wrapper,
+	#heroProfile,
+	#heroBar,
+	#heroAchievements,
+	#heroMessages,
+	#heroSettings,
+	#heroLogout,
+	#modeSelector {
+		display: none !important;
+	}
+}
+
+/* Touch polish
+   Coarse pointer = a finger/touch primary input. Hover states don't exist on
+   touch (the first tap triggers hover, the second activates), so we drop the
+   sticky-hover artifacts and give interactive elements a comfortable minimum
+   tap size. This is scoped to touch devices only; mouse/keyboard keep the
+   hover affordances. */
+@media (pointer: coarse)
+{
+	/* Links and buttons become easier to hit without growing the layout. */
+	a,
+	button,
+	.btn,
+	input[type="submit"],
+	input[type="button"],
+	.menuLi,
+	.selectable-text,
+	.problem-nav__item {
+		-webkit-tap-highlight-color: transparent;
+	}
+}
+
+/* On touch (no hover), a tap sticks the hover style until the user taps
+   elsewhere - this reads as a lingering "active" state. Reset those hover
+   looks to the idle state so a tap behaves like a tap. */
+@media (hover: none)
+{
+	.menuLi:hover,
+	.site-nav__signin a.menuLi:hover,
+	.footerLinks a:hover,
+	#logo1:hover,
+	#newMenu li:hover,
+	.btn:hover,
+	.problem-nav__item--N:hover,
+	.problem-nav__item--V:hover,
+	.problem-nav__item--S:hover,
+	.problem-nav__item--C:hover,
+	.problem-nav__item--W:hover,
+	.problem-nav__item--F:hover,
+	.problem-nav__item--X:hover {
+		background-color: inherit;
+		color: inherit;
+		text-decoration: none;
+	}
+}
+}

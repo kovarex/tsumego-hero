@@ -1,0 +1,1 @@
+Added: [Challenges](/challenges): pick a range of ranks, the time for a problem and how many problems, invite your friends or send them the link (or decline a challenge you were invited to), and everyone plays the same problems like in the time mode. The table of the challenge shows who got the most points, and once you finished your run, how everyone did with each problem.

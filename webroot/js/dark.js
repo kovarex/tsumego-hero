@@ -1,30 +1,42 @@
 function darkAndLight()
 {
-	// With AssetCompress bundles, both themes are loaded with IDs
-	// Toggle the disabled attribute to switch active theme
-	const darkLink = document.getElementById("dark-theme-css");
-	const lightLink = document.getElementById("light-theme-css");
-
 	if (light)
 	{
-		// Switch to dark theme
 		setCookie("lightDark", "dark");
-		// Update body class FIRST (synchronously) to avoid white flash
-		$("body").removeClass("light-theme").addClass("dark-theme");
-		// Then enable new theme and disable old (both themes loaded briefly)
-		darkLink.disabled = false;
-		lightLink.disabled = true;
+		document.documentElement.dataset.theme = "dark";
 	}
 	else
 	{
-		// Switch to light theme
 		setCookie("lightDark", "light");
-		// Update body class FIRST (synchronously) to avoid white flash
-		$("body").removeClass("dark-theme").addClass("light-theme");
-		// Then enable new theme and disable old (both themes loaded briefly)
-		lightLink.disabled = false;
-		darkLink.disabled = true;
+		document.documentElement.dataset.theme = "light";
 	}
-	
+
+	updateApexChartsTheme();
+
 	light = !light;
+}
+
+function updateApexChartsTheme()
+{
+	if (!window.__apexCharts)
+		return;
+
+	var goingDark = document.documentElement.dataset.theme === "dark";
+	var themeMode = goingDark ? 'dark' : 'light';
+	var foreColor = goingDark ? '#f0f0f0' : '#373d3f';
+	var gridColors = goingDark ? ['#3e3e3e', 'transparent'] : ['#ddd', 'transparent'];
+	window.__apexCharts.forEach(function(chart) {
+		chart.updateOptions({
+			theme: { mode: themeMode },
+			chart: { foreColor: foreColor },
+			grid: { row: { colors: gridColors } },
+			plotOptions: {
+				bar: {
+					dataLabels: {
+						total: { style: { color: foreColor } }
+					}
+				}
+			}
+		}, true, false);
+	});
 }

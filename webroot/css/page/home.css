@@ -1,0 +1,475 @@
+@layer page
+{
+/* The two-column layout for the home page is provided by the generic .split
+   composition object in composition.css (source order: modes first, news
+   second). No text-align: justify - it is a readability anti-pattern (creates
+   uneven 'rivers' of whitespace, especially bad in narrow mobile columns) and
+   it is a content style, so it does not belong on a layout object. */
+.gradient-heading {
+  display: inline-block;
+  font-size: 1.2rem;
+  line-height: 1.4;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-weight: 600;
+  background: var(--gradient-heading);
+  color: transparent;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.scheduleTsumego {
+  display: block;
+  clear: both;
+  color: var(--color-white);
+}
+.new1 {
+	background: var(--new1-gradient);
+	border-radius: 0 0 4px 4px;
+	border-bottom: 1px solid var(--surface-border-muted);
+	border-left: 1px solid var(--surface-border-muted);
+	border-right: 1px solid var(--surface-border-muted);
+	padding: 8px;
+	color: var(--text-color);
+}
+.show-more {
+	padding: 10px;
+}
+.show-more a {
+	text-decoration: underline;
+	cursor: pointer;
+}
+.show-more a:hover {
+	text-decoration: none;
+}
+.progress-bar--guest-hidden {
+	display: none;
+}
+.new-tsumego-box {
+  background-repeat: no-repeat;
+  border-radius: 4px;
+  border: 1px solid var(--surface-border-muted);
+  padding: 8px;
+  height:175px;
+  margin-top:6px;
+}
+/* Box art is a content modifier, not a positional descendant selector.
+   The modes box carries the left art, the news box carries the right. */
+.new-tsumego-box--modes {
+  background-image: url("/img/mode-select-bg-left.png");
+}
+.new-tsumego-box--news {
+  background-image: url("/img/mode-select-bg-right.png");
+  background-size: 100% 100%;
+  min-height: 175px;
+  height: auto;
+  display: flow-root;
+}
+/* The way into the mistake training, under the mode buttons */
+.mistake-training-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: 6px;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--surface-border-muted);
+  border-radius: 4px;
+  background: var(--info-box-background);
+  color: var(--text-color);
+  text-decoration: none;
+}
+.mistake-training-card:hover {
+  background: var(--surface-hover);
+  text-decoration: none;
+}
+.mistake-training-card__title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  white-space: nowrap;
+}
+.mistake-training-card__text {
+  flex: 1;
+  font-size: var(--font-size-md);
+}
+.mistake-training-card__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 7px;
+  box-sizing: border-box;
+  border-radius: 13px;
+  background: var(--color-red);
+  color: var(--color-white);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+}
+.mistake-training-card__go {
+  margin-left: auto;
+  font-size: 24px;
+  line-height: 1;
+}
+.achievement-quote-pick {
+  width: 100%;
+  max-width: 629px;
+  border: 1px solid var(--surface-border-muted);
+  border-radius: 4px;
+  margin-top: 6px;
+}
+.quote-pick-wrapper {
+  display:flex;
+  justify-content: space-between;
+  position:relative;
+  width: 100%;
+  max-width: 629px;
+  margin-top: 6px;
+}
+.user-pick-all {
+  position: absolute;
+  right: 0;
+  width: 100%;
+  max-width: 312px;
+  padding: 10px;
+  font-size: 20px;
+  cursor: context-menu;
+  box-sizing: border-box;
+}
+.quote-pick-1 {
+  flex: 1 1 0;
+  min-width: 0;
+  border: 1px solid var(--surface-border-muted);
+  border-radius: 4px;
+  height: auto;
+}
+/* ── Mode button (home mode tiles) ── */
+.mode-button {
+	position: relative;
+	z-index: 0;
+	display: inline-block;
+	line-height: 0;
+	cursor: pointer;
+}
+.mode-button::before {
+	content: "";
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width: 170px;
+	height: 170px;
+	transform: translate(-50%, -50%);
+	border-radius: 50%;
+	background: radial-gradient(closest-side, var(--mode-glow) 0%, transparent 20%);
+	filter: blur(6px);
+	opacity: 0;
+	transition: opacity 0.15s ease;
+	pointer-events: none;
+}
+.mode-button img {
+	position: relative;
+	z-index: 1;
+	display: block;
+	transition: filter 0.15s ease;
+}
+.mode-button:hover::before {
+	opacity: 1;
+}
+.mode-button:hover img {
+	filter: brightness(1.45) saturate(1.6);
+}
+.mode-button-level {
+	--mode-glow: var(--mode-glow-level);
+}
+.mode-button-rating {
+	--mode-glow: var(--mode-glow-rating);
+}
+.mode-button-time {
+	--mode-glow: var(--mode-glow-time);
+}
+.mode-button-achievements {
+	--mode-glow: var(--mode-glow-achievements);
+}
+.mode-button-disabled::before {
+	display: none;
+}
+.mode-button-disabled,
+.mode-button-disabled:hover {
+	cursor: default;
+	filter: grayscale(1) opacity(0.65);
+}
+.mode-button-disabled:hover img {
+	filter: none;
+}
+
+/* The achievement rows overlay the .achievement-quote-pick image ("the box").
+   The panel is relative; the image is the background; the stream is centered
+   over it. */
+.achievements-panel {
+  position: relative;
+  margin-top: 6px;
+}
+.achievements-panel .achievement-quote-pick {
+  display: block;
+  width: 100%;
+  max-width: 629px;
+  margin: 0;
+  height: auto;
+}
+#recent-achievement-stream {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 78%;
+  max-width: 460px;
+  max-height: 100%;
+  overflow-y: auto;
+  font-size: 14px;
+}
+
+#recent-achievement-stream .recent-achievement-row {
+  display: flex;
+  align-items: center;
+  padding: 5px 5px;
+  box-sizing: border-box;
+  background-color: rgba(0, 0, 0, 0.45);
+  color: var(--color-white);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+}
+
+#recent-achievement-stream .recent-achievement-icon {
+  flex: 0 0 44px;
+}
+
+#recent-achievement-stream .recent-achievement-body {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+#recent-achievement-stream .recent-achievement-message {
+  min-width: 0;
+  overflow: hidden;
+  word-wrap: break-word;
+}
+
+#recent-achievement-stream .recent-achievement-message a {
+  color: var(--text-on-dark);
+  text-decoration: underline;
+}
+
+#recent-achievement-stream .recent-achievement-message a:hover {
+  color: var(--color-white);
+}
+
+/* User / achievement links emitted by React RecentAchievements.tsx */
+
+#recent-achievement-stream .recent-achievement-user-link,
+#recent-achievement-stream .recent-achievement-achievement-link {
+  color: var(--text-on-dark);
+}
+
+#recent-achievement-stream .recent-achievement-user-link:hover,
+#recent-achievement-stream .recent-achievement-achievement-link:hover {
+  color: var(--color-white);
+}
+
+#recent-achievement-stream .recent-achievement-time {
+  color: var(--text-on-dark);
+  font-size: 12px;
+  margin-left: 12px;
+  white-space: nowrap;
+}
+
+.user-pick-all a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.user-pick-all a:hover {
+  text-decoration: underline;
+}
+
+
+.user-pick-q01 {
+  color: var(--color-white) !important;
+  left: 316px;
+  top: 172px;
+  font-family: Comic Sans MS, Times New Roman, verdana;
+}
+
+.user-pick-q02 {
+  color: var(--color-white) !important;
+  left: 316px;
+  top: 106px;
+  font-family: Impact, Times New Roman, verdana;
+}
+
+.user-pick-q03 {
+  color: var(--stat-pink) !important;
+  left: 316px;
+  top: 89px;
+  font-family: Lucida Console, Times New Roman, verdana;
+}
+
+.user-pick-q04 {
+  color: var(--color-white) !important;
+  left: 316px;
+  top: 189px;
+  font-weight: bold;
+  font-family: Baskerville, Times New Roman, verdana;
+}
+
+.user-pick-q05 {
+  color: var(--color-white) !important;
+  left: 316px;
+  top: 121px;
+  font-size: 22px !important;
+  font-weight: bold;
+  font-family: Geneva, Times New Roman, verdana;
+}
+
+.user-pick-q06 {
+  color: var(--stat-brown) !important;
+  left: 316px;
+  top: 151px;
+  font-weight: bold;
+  font-family: Comic Sans MS, Times New Roman, verdana;
+}
+
+.user-pick-q07 {
+  color: var(--stat-peach) !important;
+  left: 342px;
+  top: 113px;
+  font-weight: bold;
+  font-family: Comic Sans MS, Times New Roman, verdana;
+}
+
+.user-pick-q08 {
+  color: var(--color-black) !important;
+  left: 300px;
+  top: 22px;
+  font-weight: bold;
+  font-family: Garamond, Times New Roman, verdana;
+}
+
+.user-pick-q09 {
+  color: var(--color-white) !important;
+  left: 318px;
+  top: 53px;
+  font-family: Helvetica, Times New Roman, verdana;
+}
+
+.user-pick-q10 {
+  color: var(--stat-gold) !important;
+  left: 317px;
+  top: 153px;
+  font-weight: bold;
+  font-family: Helvetica, Times New Roman, verdana;
+}
+
+.user-pick-q11 {
+  color: var(--stat-yellow) !important;
+  left: 321px;
+  top: 125px;
+  font-size: 15px;
+  font-family: Helvetica, Times New Roman, verdana;
+}
+
+.user-pick-q12 {
+  color: var(--stat-red) !important;
+  left: 321px;
+  top: 145px;
+  font-family: Helvetica, Times New Roman, verdana;
+}
+
+.user-pick-q13 {
+  color: white !important;
+  left: 321px;
+  top: 118px;
+  font-family: Helvetica, Times New Roman, verdana;
+}
+
+.user-pick-q96 {
+  left: 280px;
+  top: 130px;
+  font-family: Helvetica, Times New Roman, verdana;
+  color: black !important;
+}
+
+.user-pick-q97 {
+  left: 321px;
+  top: 128px;
+  font-family: Helvetica, Times New Roman, verdana;
+}
+
+.user-pick-q99 {
+  left: 321px;
+  top: 210px;
+  font-family: Helvetica, Times New Roman, verdana;
+}
+
+/* Anchor the label to the wrapper's right edge rather than the per-quote
+   left offsets, which pushed it past the wrapper on narrower windows. */
+.user-pick-all {
+  left: auto;
+  right: 0;
+}
+
+
+/* Dark overrides. */
+[data-theme="dark"] .scheduleTsumego {
+	color: var(--link-color) !important;
+}
+
+/* Mobile-first: single column below 64rem, then widen. Column stacking is
+   handled by the .split object in composition.css; here we only make the
+   inner feed/cards fluid. */
+@media (width < 64rem)
+{
+	.quote-pick-wrapper,
+	.achievement-quote-pick {
+		width: 100%;
+		box-sizing: border-box;
+	}
+	.user-pick-all,
+	.quote-pick-1 {
+		width: 100%;
+		max-width: 312px;
+		box-sizing: border-box;
+	}
+	.quote-pick-wrapper {
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 8px;
+	}
+	/* The user-of-the-day label is absolutely positioned over the image on
+	   desktop; on mobile let it flow so it doesn't overflow the viewport. */
+	.user-pick-all {
+		position: static;
+		width: 100%;
+		max-width: none;
+		text-align: center;
+		margin-top: 8px;
+	}
+	.new-tsumego-box {
+		height: auto;
+	}
+	.mode-select-box {
+		flex-wrap: wrap;
+	}
+	.mistake-training-card {
+		flex-wrap: wrap;
+		gap: var(--space-1) var(--space-3);
+	}
+	/* The achievements stream stays centered over the .achievement-quote-pick
+	   image (the panel is relative). Only the label flows. */
+	.achievements-panel .achievement-quote-pick {
+		width: 100%;
+	}
+}
+}

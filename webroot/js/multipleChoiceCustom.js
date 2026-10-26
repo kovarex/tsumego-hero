@@ -18,8 +18,8 @@ function displayMultipleChoiceCustomResult(num){
 			else
 				$("#besogo-multipleChoice4").css("background-color", "#3ecf78");
 			if(mText!=""){
-				$(".alertBanner").addClass("alertBannerCorrect");
-				$(".alertBanner").html("Correct!<span class=\"alertClose\">x</span>");
+				$(".toast__banner").addClass("toast__banner--success");
+				$(".toast__banner").html("Correct!<span class=\"toast__close\">x</span>");
 				$('#multipleChoiceText').html(mText);
 				$("#multipleChoiceAlerts").fadeIn(500);
 			}

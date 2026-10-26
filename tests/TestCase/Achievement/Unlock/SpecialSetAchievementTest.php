@@ -1,13 +1,11 @@
 <?php
 
-App::uses('Achievement', 'Model');
-App::uses('AppController', 'Controller');
-App::uses('AchievementTestCase', 'TestCase/Achievement');
-App::uses('ContextPreparator', 'Test');
+use App\Utility\AchievementId;
+use App\Utility\AchievementChecker;
 
 class SpecialSetAchievementTest extends AchievementTestCase
 {
-	/* Test Achievement::LIFE_DEATH_ELEMENTARY
+	/* Test AchievementId::LIFE_DEATH_ELEMENTARY
 	 * Requires completing all tsumegos in sets: 50, 52, 53, 54 */
 	public function testLifeAndDeathElementary()
 	{
@@ -40,11 +38,11 @@ class SpecialSetAchievementTest extends AchievementTestCase
 		}
 
 		new AchievementChecker()->setAchievementSpecial('cc1');
-		$this->assertAchievementUnlocked(Achievement::LIFE_DEATH_ELEMENTARY, 'Life & Death Elementary should unlock when all sets 50,52,53,54 are completed');
+		$this->assertAchievementUnlocked(AchievementId::LIFE_DEATH_ELEMENTARY, 'Life & Death Elementary should unlock when all sets 50,52,53,54 are completed');
 	}
 
 	/**
-	 * Test Achievement::LIFE_DEATH_INTERMEDIATE
+	 * Test AchievementId::LIFE_DEATH_INTERMEDIATE
 	 * Requires completing all tsumegos in sets: 41, 49, 65, 66
 	 */
 	public function testLifeAndDeathIntermediate()
@@ -52,37 +50,37 @@ class SpecialSetAchievementTest extends AchievementTestCase
 		$context = new ContextPreparator();
 		$this->createAndSolveSets($context->user['id'], [41, 49, 65, 66]);
 		new AchievementChecker()->setAchievementSpecial('cc2');
-		$this->assertAchievementUnlocked(Achievement::LIFE_DEATH_INTERMEDIATE, 'Life & Death Intermediate should unlock');
+		$this->assertAchievementUnlocked(AchievementId::LIFE_DEATH_INTERMEDIATE, 'Life & Death Intermediate should unlock');
 	}
 
-	/* Test Achievement::LIFE_DEATH_ADVANCED
+	/* Test AchievementId::LIFE_DEATH_ADVANCED
 	 * Requires completing all tsumegos in sets: 186, 187, 196, 203 */
 	public function testLifeAndDeathAdvanced()
 	{
 		$context = new ContextPreparator();
 		$this->createAndSolveSets($context->user['id'], [186, 187, 196, 203]);
 		new AchievementChecker()->setAchievementSpecial('cc3');
-		$this->assertAchievementUnlocked(Achievement::LIFE_DEATH_ADVANCED, 'Life & Death Advanced should unlock');
+		$this->assertAchievementUnlocked(AchievementId::LIFE_DEATH_ADVANCED, 'Life & Death Advanced should unlock');
 	}
 
-	/* Test Achievement::WEIQI_1000_FIRST_HALF
+	/* Test AchievementId::WEIQI_1000_FIRST_HALF
 	 * Requires completing all tsumegos in sets: 190, 193, 198 */
 	public function test1000WeiqiFirstHalf()
 	{
 		$context = new ContextPreparator();
 		$this->createAndSolveSets($context->user['id'], [190, 193, 198]);
 		new AchievementChecker()->setAchievementSpecial('1000w1');
-		$this->assertAchievementUnlocked(Achievement::WEIQI_1000_FIRST_HALF, '1000 Weiqi 1st half should unlock');
+		$this->assertAchievementUnlocked(AchievementId::WEIQI_1000_FIRST_HALF, '1000 Weiqi 1st half should unlock');
 	}
 
-	/* Test Achievement::WEIQI_1000_SECOND_HALF
+	/* Test AchievementId::WEIQI_1000_SECOND_HALF
 	 * Requires completing all tsumegos in set: 216 */
 	public function test1000WeiqiSecondHalf()
 	{
 		$context = new ContextPreparator([]);
 		$this->createAndSolveSets($context->user['id'], [216]);
 		new AchievementChecker()->setAchievementSpecial('1000w2');
-		$this->assertAchievementUnlocked(Achievement::WEIQI_1000_SECOND_HALF, '1000 Weiqi 2nd half should unlock');
+		$this->assertAchievementUnlocked(AchievementId::WEIQI_1000_SECOND_HALF, '1000 Weiqi 2nd half should unlock');
 	}
 
 	// Helper: Create sets with tsumegos and mark them all as solved

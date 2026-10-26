@@ -1,6 +1,10 @@
 #!/bin/bash
 
-git pull
+if [ -z "$DEPLOY_REEXEC" ]; then
+    git pull || exit 1
+    exec env DEPLOY_REEXEC=1 bash "$0" "$@"
+fi
+
 set -e
 
 ROOT_DIR="$(cd "$(dirname "$0")"; pwd)"
@@ -20,6 +24,30 @@ IS_DDEV=false
 if command -v ddev >/dev/null 2>&1; then
     IS_DDEV=true
     echo "DDEV environment detected."
+fi
+
+### Changelog manifest + revision (before anything that touches the site)
+### The generator aborts when a fragment's ship date is not in git, and a bad
+### fragment must not end up half-deployed.
+echo "=== Generating changelog manifest + revision ==="
+if [[ "$IS_DDEV" = true ]]; then
+    ddev exec CI=true npx pnpm@10 run changelog:gen
+else
+    CI=true npx pnpm@10 run changelog:gen
+fi
+
+### Build the JS and CSS bundles with Vite
+### Right after the pull, as the new pages need the new bundles. build:deploy builds into
+### webroot/dist-next and only then swaps it into webroot/dist (scripts/publish-dist.mjs):
+### building in place empties webroot/dist first, and a page rendered meanwhile loaded
+### without the legacy scripts.
+echo "=== Building React app ==="
+if [[ "$IS_DDEV" = true ]]; then
+    ddev exec CI=true npx pnpm@10 install --frozen-lockfile
+    ddev exec CI=true npx pnpm@10 run build:deploy
+else
+    CI=true npx pnpm@10 install --frozen-lockfile
+    CI=true npx pnpm@10 run build:deploy
 fi
 
 ### Select MySQL client (local or DDEV)
@@ -108,6 +136,17 @@ else
     echo "config/database.php already exists, skipping."
 fi
 
+# The application writes 4-byte characters (an emoji in a comment, for one), and a
+# utf8mb3 connection cannot carry them: the write loses them to "?" or fails with
+# "Incorrect string value". This also brings a config created by an older deploy in
+# line with database.example.php.
+#
+# The pattern ends at the closing quote, so a config that already says utf8mb4 is
+# left alone and running the deploy twice changes nothing. A backup suffix keeps
+# in-place editing working with both GNU sed and BSD sed.
+sed -i.bak "s/'encoding' => 'utf8'/'encoding' => 'utf8mb4'/" "$DB_CONFIG_FILE"
+rm -f "$DB_CONFIG_FILE.bak"
+
 ### Generate phpBB config.php if missing
 if [[ ! -f "$PHPBB_CONFIG_FILE" ]]; then
     echo "Creating webroot/forums/config.php ..."
@@ -126,9 +165,9 @@ fi
 
 
 ### Composer install (host in dev, local in prod)
-echo "Running Composer..."
+echo "=== Running Composer... ==="
 if [[ "$IS_DDEV" = true ]]; then
-    composer install --prefer-dist --optimize-autoloader --no-interaction
+    ddev exec composer install --prefer-dist --optimize-autoloader --no-interaction
 else
     composer install --prefer-dist --no-dev --optimize-autoloader --no-interaction
 fi
@@ -137,8 +176,8 @@ fi
 echo "=== Setting up permissions ==="
 mkdir -p "$ROOT_DIR/tmp"
 chmod 777 "$ROOT_DIR/tmp"
-mkdir -p "$ROOT_DIR/tmp/logs"
-chmod 777 "$ROOT_DIR/tmp/logs"
+mkdir -p "$ROOT_DIR/logs"
+chmod 777 "$ROOT_DIR/logs"
 mkdir -p "$ROOT_DIR/tmp/cache"
 chmod 777 "$ROOT_DIR/tmp/cache"
 mkdir -p "$ROOT_DIR/tmp/cache/models"
@@ -147,14 +186,21 @@ mkdir -p "$ROOT_DIR/tmp/cache/persistent"
 chmod 777 "$ROOT_DIR/tmp/cache/persistent"
 mkdir -p "$ROOT_DIR/tmp/cache/views"
 chmod 777 "$ROOT_DIR/tmp/cache/views"
-mkdir -p "$ROOT_DIR/tmp/cache/asset_compress"
-chmod 777 "$ROOT_DIR/tmp/cache/asset_compress"
+mkdir -p "$ROOT_DIR/tmp/cache/htmlpurifier"
+chmod 777 "$ROOT_DIR/tmp/cache/htmlpurifier"
+
 chmod 777 "$ROOT_DIR/webroot/forums/cache"
 mkdir -p "$ROOT_DIR/webroot/forums/cache/production"
 chmod 777 "$ROOT_DIR/webroot/forums/cache/production"
 chmod 777 "$ROOT_DIR/webroot/forums/store"
 chmod 777 "$ROOT_DIR/webroot/forums/files"
 chmod 777 "$ROOT_DIR/webroot/forums/images/avatars/upload"
+
+# Set cover images are uploaded by the web user at runtime, so the directory they
+# land in has to be writable for that user. The directory's .htaccess blocks
+# execution of anything uploaded there.
+mkdir -p "$ROOT_DIR/webroot/img/sets"
+chmod 777 "$ROOT_DIR/webroot/img/sets"
 
 
 ### Run migrations (inside container in dev, locally in production)
@@ -166,27 +212,11 @@ else
     vendor/bin/phinx migrate
 fi
 
-# Clear all caches before rebuilding assets
-# This ensures the build uses fresh source files and doesn't serve stale versions
+# Clear all caches, so the new code doesn't run on stale cached models and views
 echo "=== Clearing caches ==="
 rm -rf "$ROOT_DIR/tmp/cache/models"/*
 rm -rf "$ROOT_DIR/tmp/cache/persistent"/*
 rm -rf "$ROOT_DIR/tmp/cache/views"/*
-rm -rf "$ROOT_DIR/tmp/cache/asset_compress"/*
-rm -rf "$ROOT_DIR/webroot/cache_js"
-rm -rf "$ROOT_DIR/webroot/cache_css"
-rm -rf "$ROOT_DIR/tmp/asset_compress_build_time"
 
-# Pre-build and minify all CSS/JS assets for production (faster page loads)
-# This generates all files in webroot/cache_css/ and webroot/cache_js/
-# Using 'clear' first ensures old build files are removed, then --force guarantees fresh build
-echo "=== Compressing css and js ==="
-mkdir -p "$ROOT_DIR/webroot/cache_js"
-chmod 777 "$ROOT_DIR/webroot/cache_js"
-mkdir -p "$ROOT_DIR/webroot/cache_css"
-chmod 777 "$ROOT_DIR/webroot/cache_css"
-
-./bin/cake asset_compress clear
-./bin/cake asset_compress build --force
 
 echo "=== Deploy complete ==="

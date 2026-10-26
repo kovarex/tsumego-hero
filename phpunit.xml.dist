@@ -11,6 +11,9 @@
     <listeners>
         <listener class="CakeFixtureInjector" file="./vendor/pieceofcake2/cakephp/src/Cake/TestSuite/Fixture/CakeFixtureInjector.php"/>
     </listeners>
+    <extensions>
+        <extension class="SuperglobalCleanup" file="./tests/SuperglobalCleanup.php"/>
+    </extensions>
     <testsuites>
         <testsuite name="All Tests">
             <directory>./tests/TestCase/</directory>

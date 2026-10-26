@@ -1,26 +1,10 @@
 <?php
 
-class XPForNextCalculator
-{
-	public function __construct($level)
-	{
-		foreach (Level::getSections() as $section)
-			if ($this->section($level, $section[0], $section[1]))
-				return;
-	}
+namespace App\Utility;
 
-	public function section($level, $to, $jump): bool
-	{
-		$steps = min($to, $level) - $this->from;
-		$this->result += $steps * $jump;
-		$this->from = $to;
-		return $level <= $to;
-	}
-
-	public int $from = 1;
-	public int $result = 50;
-}
-
+/**
+ * @phpstan-import-type UserRow from \App\Utility\RowTypes
+ */
 class Level
 {
 	// this needs to be up to date with level code in util.js
@@ -38,12 +22,12 @@ class Level
 		return $sections;
 	}
 
-	public static function getXPForNext($level): int
+	public static function getXPForNext(int $level): int
 	{
 		return new XPForNextCalculator($level)->result;
 	}
 
-	private static function sectionSum($level, &$from, $to, $jump, &$result, &$xpIncrease): bool
+	private static function sectionSum(int $level, int &$from, int $to, int $jump, int|float &$result, int &$xpIncrease): bool
 	{
 		$steps = min($to, $level) - $from;
 		$result += $steps * $xpIncrease;
@@ -54,7 +38,7 @@ class Level
 		return $level <= $to;
 	}
 
-	public static function getXpSumToGetLevel($level): int
+	public static function getXpSumToGetLevel(int $level): int
 	{
 		$result = 0;
 		$from = 1;
@@ -66,30 +50,33 @@ class Level
 		return $result;
 	}
 
-	public static function XPAndRatingIsGainedInTsumegoStatus($status)
+	public static function XPAndRatingIsGainedInTsumegoStatus(string $status): bool
 	{
 		return $status != 'S' && $status  != 'C'; // solved or doulbe solved is already rewarded, otherwise ok
 	}
 
-	public static function getOverallXPGained($user)
+	/**
+	 * @param UserRow $user
+	 */
+	public static function getOverallXPGained(array $user): int
 	{
 		return Level::getXpSumToGetLevel($user['level']) + $user['xp'];
 	}
 
-	public static function addXP(&$user, $value)
+	public static function addXP(array &$user, int|float $value): void
 	{
 		$user['xp'] += $value;
 		Level::checkLevelUp($user);
 	}
 
-	public static function addXPAsResultOfTsumegoSolving(&$user, $value)
+	public static function addXPAsResultOfTsumegoSolving(array &$user, int|float $value): void
 	{
 		Level::addXP($user, $value);
 		$user['daily_xp'] += $value;
 		$user['daily_solved']++;
 	}
 
-	public static function oldXPSumCode($level): int
+	public static function oldXPSumCode(int $level): int
 	{
 		$startxp = 50;
 		$sumx = 0;
@@ -117,7 +104,7 @@ class Level
 		return $sumx;
 	}
 
-	public static function checkLevelUp(&$user)
+	public static function checkLevelUp(array &$user): void
 	{
 		while (true)
 		{
