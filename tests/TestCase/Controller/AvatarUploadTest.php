@@ -1,7 +1,9 @@
 <?php
 
+use App\Utility\Auth;
 use App\Utility\CookieFlash;
 use App\Utility\UploadedAvatar;
+use App\Utility\Util;
 
 class AvatarUploadTest extends IntegrationTestCase
 {
@@ -28,32 +30,32 @@ class AvatarUploadTest extends IntegrationTestCase
 
 		$row = $this->userRow($context->user['id']);
 		$this->assertSame(User::AVATAR_UPLOADED, (int) $row['avatar_setting_id']);
-		$this->assertMatchesRegularExpression('#^avatars/' . $context->user['id'] . '-[0-9a-f]{16}\.webp$#', $row['uploaded_avatar']);
-		$this->files[] = UploadedAvatar::pathOf($row['uploaded_avatar']);
-		$this->assertSame('WEBP', substr((string) file_get_contents(UploadedAvatar::pathOf($row['uploaded_avatar'])), 8, 4));
+		$this->assertMatchesRegularExpression('/^[0-9a-f]{' . UploadedAvatar::HASH_LENGTH . '}$/', $row['uploaded_avatar_hash']);
+		$picture = UploadedAvatar::picture($context->user['id'], $row['uploaded_avatar_hash']);
+		$this->assertSame('WEBP', substr((string) $picture, 8, 4));
+		$this->assertSame(UploadedAvatar::hash((string) $picture), $row['uploaded_avatar_hash']);
 		$this->assertRedirect('/users/settings');
 		$this->assertSame('Your picture is your avatar now.', CookieFlash::get());
-		$this->assertSame(UploadedAvatar::url($row['uploaded_avatar']), User::getAvatarUrl($row));
+		$this->assertSame(UploadedAvatar::url($context->user['id'], $row['uploaded_avatar_hash']), User::getAvatarUrl($row));
 	}
 
 	/**
-	 * An account keeps one uploaded picture, so the picture a new one replaces is gone.
+	 * An account keeps one uploaded picture, and a new one gets a new url.
 	 */
 	public function testANewPictureReplacesTheOldOne(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'uploader']]);
 		$this->login('uploader');
 		$this->upload($this->picture(100, 100, [255, 0, 0]));
-		$first = $this->userRow($context->user['id'])['uploaded_avatar'];
-		$this->files[] = UploadedAvatar::pathOf($first);
+		$first = $this->userRow($context->user['id'])['uploaded_avatar_hash'];
 
 		$this->upload($this->picture(100, 100, [0, 0, 255]));
 
-		$second = $this->userRow($context->user['id'])['uploaded_avatar'];
-		$this->files[] = UploadedAvatar::pathOf($second);
+		$second = $this->userRow($context->user['id'])['uploaded_avatar_hash'];
 		$this->assertNotSame($first, $second);
-		$this->assertFileDoesNotExist(UploadedAvatar::pathOf($first));
-		$this->assertFileExists(UploadedAvatar::pathOf($second));
+		$this->assertNull(UploadedAvatar::picture($context->user['id'], $first));
+		$this->assertNotNull(UploadedAvatar::picture($context->user['id'], $second));
+		$this->assertSame(1, $this->pictureRows($context->user['id']));
 	}
 
 	public function testAFileThatIsNotAPictureChangesNothing(): void
@@ -65,10 +67,10 @@ class AvatarUploadTest extends IntegrationTestCase
 		$this->upload($path, 'avatar.png');
 
 		$row = $this->userRow($context->user['id']);
-		$this->assertNull($row['uploaded_avatar']);
+		$this->assertNull($row['uploaded_avatar_hash']);
 		$this->assertSame(User::AVATAR_GRAVATAR, (int) $row['avatar_setting_id']);
 		$this->assertSame('The file is not a JPEG, PNG, WebP or GIF picture.', CookieFlash::get());
-		$this->assertSame([], glob(WWW_ROOT . 'img' . DS . 'avatars' . DS . $context->user['id'] . '-*'));
+		$this->assertSame(0, $this->pictureRows($context->user['id']));
 	}
 
 	public function testUploadRequiresLogin(): void
@@ -86,15 +88,13 @@ class AvatarUploadTest extends IntegrationTestCase
 		$context = new ContextPreparator(['user' => ['name' => 'uploader']]);
 		$this->login('uploader');
 		$this->upload($this->picture(100, 100));
-		$name = $this->userRow($context->user['id'])['uploaded_avatar'];
-		$this->files[] = UploadedAvatar::pathOf($name);
 
 		$this->post('/users/avatarRemove');
 
 		$row = $this->userRow($context->user['id']);
-		$this->assertNull($row['uploaded_avatar']);
+		$this->assertNull($row['uploaded_avatar_hash']);
 		$this->assertSame(User::AVATAR_BOARD, (int) $row['avatar_setting_id']);
-		$this->assertFileDoesNotExist(UploadedAvatar::pathOf($name));
+		$this->assertSame(0, $this->pictureRows($context->user['id']));
 		$this->assertRedirect('/users/settings');
 	}
 
@@ -106,13 +106,12 @@ class AvatarUploadTest extends IntegrationTestCase
 		$context = new ContextPreparator(['user' => ['name' => 'uploader']]);
 		$this->login('uploader');
 		$this->upload($this->picture(100, 100));
-		$this->files[] = UploadedAvatar::pathOf($this->userRow($context->user['id'])['uploaded_avatar']);
 		$this->post('/users/avatarPreference', ['avatar' => User::AVATAR_GRAVATAR]);
 
 		$this->post('/users/avatarRemove');
 
 		$row = $this->userRow($context->user['id']);
-		$this->assertNull($row['uploaded_avatar']);
+		$this->assertNull($row['uploaded_avatar_hash']);
 		$this->assertSame(User::AVATAR_GRAVATAR, (int) $row['avatar_setting_id']);
 	}
 
@@ -125,7 +124,6 @@ class AvatarUploadTest extends IntegrationTestCase
 		$context = new ContextPreparator(['user' => ['name' => 'uploader']]);
 		$this->login('uploader');
 		$this->upload($this->picture(100, 100));
-		$this->files[] = UploadedAvatar::pathOf($this->userRow($context->user['id'])['uploaded_avatar']);
 		$this->post('/users/avatarPreference', ['avatar' => User::AVATAR_BOARD]);
 
 		$this->post('/users/avatarPreference', ['avatar' => User::AVATAR_UPLOADED]);
@@ -145,7 +143,7 @@ class AvatarUploadTest extends IntegrationTestCase
 
 	public function testTheSettingsPageOffersTheUploadAndThePicture(): void
 	{
-		$context = new ContextPreparator(['user' => ['name' => 'uploader']]);
+		new ContextPreparator(['user' => ['name' => 'uploader']]);
 		$this->login('uploader');
 
 		$this->get('/users/settings');
@@ -154,7 +152,6 @@ class AvatarUploadTest extends IntegrationTestCase
 		$this->assertStringNotContainsString('id="avatar-remove"', $this->view);
 
 		$this->upload($this->picture(100, 100));
-		$this->files[] = UploadedAvatar::pathOf($this->userRow($context->user['id'])['uploaded_avatar']);
 		$this->get('/users/settings');
 
 		$this->assertStringContainsString('name="avatar" value="' . User::AVATAR_UPLOADED . '" onclick="avatarPreference(this.value);" checked="checked"', $this->view);
@@ -169,29 +166,67 @@ class AvatarUploadTest extends IntegrationTestCase
 		$context = new ContextPreparator(['user' => ['name' => 'uploader']]);
 		$this->login('uploader');
 		$this->upload($this->picture(100, 100));
-		$name = $this->userRow($context->user['id'])['uploaded_avatar'];
-		$this->files[] = UploadedAvatar::pathOf($name);
+		$url = UploadedAvatar::url($context->user['id'], $this->userRow($context->user['id'])['uploaded_avatar_hash']);
 
 		$this->get('/users/view/' . $context->user['id']);
 
-		$this->assertStringContainsString('<img src="' . UploadedAvatar::url($name) . '"', $this->view);
-		$this->assertStringContainsString('og:image" content="' . Router::url(UploadedAvatar::url($name), true) . '"', $this->view);
+		$this->assertStringContainsString('<img src="' . $url . '"', $this->view);
+		$this->assertStringContainsString('og:image" content="' . Router::url($url, true) . '"', $this->view);
 		$this->assertStringContainsString('<meta property="og:image:type" content="image/webp">', $this->view);
 		$this->assertStringContainsString('<meta property="og:image:width" content="' . UploadedAvatar::SIZE . '">', $this->view);
 	}
 
 	/**
-	 * A deleted account asked to be forgotten, so its picture is not shown, the same as its board.
+	 * The url carries the hash of the picture, so the answer never changes and the browser
+	 * keeps it; an img tag asks for it without a session.
+	 */
+	public function testThePictureIsServedFromItsUrl(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'uploader']]);
+		$this->login('uploader');
+		$this->upload($this->picture(100, 100));
+		$hash = $this->userRow($context->user['id'])['uploaded_avatar_hash'];
+		$this->logout();
+		Auth::logout();
+
+		$this->get(UploadedAvatar::url($context->user['id'], $hash));
+
+		$this->assertResponseCode(200);
+		$this->assertContentType('image/webp');
+		$this->assertSame(UploadedAvatar::picture($context->user['id'], $hash), $this->view);
+		$this->assertSame(UploadedAvatar::SIZE, getimagesizefromstring($this->view)[0]);
+		$headers = $this->_response->header();
+		$this->assertStringContainsString('max-age=31536000', $headers['Cache-Control']);
+		$this->assertStringContainsString($hash, $headers['Etag']);
+	}
+
+	public function testTheUrlOfAReplacedPictureAnswersNothing(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'uploader']]);
+		$this->login('uploader');
+		$this->upload($this->picture(100, 100, [255, 0, 0]));
+		$first = $this->userRow($context->user['id'])['uploaded_avatar_hash'];
+		$this->upload($this->picture(100, 100, [0, 0, 255]));
+
+		$this->get(UploadedAvatar::url($context->user['id'], $first));
+
+		$this->assertResponseCode(404);
+	}
+
+	/**
+	 * A deleted account asked to be forgotten, so its picture is neither shown nor served.
 	 */
 	public function testADeletedAccountDoesNotShowThePicture(): void
 	{
-		$this->assertNull(User::avatarOrNull([
-			'id' => 5,
-			'display_name' => 'gone',
-			'deleted' => '2026-10-26 12:00:00',
-			'avatar_setting_id' => User::AVATAR_UPLOADED,
-			'uploaded_avatar' => 'avatars/5-0123456789abcdef.webp',
-		]));
+		$context = new ContextPreparator(['user' => ['name' => 'uploader']]);
+		$this->login('uploader');
+		$this->upload($this->picture(100, 100));
+		User::deleteAccount($context->user['id']);
+		$row = $this->userRow($context->user['id']);
+
+		$this->assertNull(User::avatarOrNull($row));
+		$this->get(UploadedAvatar::url($context->user['id'], $row['uploaded_avatar_hash']));
+		$this->assertResponseCode(404);
 	}
 
 	private function upload(string $path, string $name = 'avatar.png'): void
@@ -211,6 +246,11 @@ class AvatarUploadTest extends IntegrationTestCase
 	private function userRow(int $id): array
 	{
 		return ClassRegistry::init('User')->findById($id)['User'];
+	}
+
+	private function pictureRows(int $userID): int
+	{
+		return (int) Util::query('SELECT COUNT(*) AS count FROM user_avatar WHERE user_id = ?', [$userID])[0]['count'];
 	}
 
 	/** @param array{int, int, int} $colour */

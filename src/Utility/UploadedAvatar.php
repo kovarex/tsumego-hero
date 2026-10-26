@@ -14,10 +14,11 @@ use RuntimeException;
  * file carried (EXIF with the place a photo was taken, a script hidden in a comment)
  * and gives every uploaded avatar the same small file.
  *
- * The file lives under webroot/img/avatars, and its name carries the id of the
- * account and a part of the hash of the picture: a new picture is a new url, so the
- * browser may keep a picture for a year, and two players who upload the same picture
- * do not share a file one of them could remove.
+ * The picture is a row of user_avatar, so it is backed up with the database and no
+ * folder of the site has to be writable for the web server. Its url carries the id of
+ * the account and the start of the hash of the picture (user.uploaded_avatar_hash):
+ * a new picture is a new url, so the browser may keep a picture for a year, and a
+ * list of players builds the url from its own row.
  */
 class UploadedAvatar
 {
@@ -39,24 +40,25 @@ class UploadedAvatar
 
 	public const QUALITY = 85;
 
-	/** The folder under webroot/img the pictures are stored in. */
-	public const FOLDER = 'avatars';
+	/** The hex characters of the sha256 of a picture its url carries. */
+	public const HASH_LENGTH = 16;
+
+	/** The path the pictures are served from, followed by the id of the account. */
+	public const URL_PREFIX = '/avatar/';
 
 	/** The types of picture the upload takes, which are the ones a browser shows. */
 	private const TYPES = [IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_WEBP, IMAGETYPE_GIF];
 
-	/** The name of a stored picture, relative to webroot/img. */
-	private const NAME_PATTERN = '#^avatars/\d+-[0-9a-f]{16}\.webp$#';
-
 	/**
 	 * The url a page shows the picture from.
 	 *
-	 * @param string $name Name of the picture, relative to webroot/img (store())
+	 * @param int $userID
+	 * @param string $hash user.uploaded_avatar_hash of the account
 	 * @return string
 	 */
-	public static function url(string $name): string
+	public static function url(int $userID, string $hash): string
 	{
-		return '/img/' . $name;
+		return self::URL_PREFIX . $userID . '/' . $hash . '.webp';
 	}
 
 	/**
@@ -162,55 +164,59 @@ class UploadedAvatar
 	}
 
 	/**
-	 * Store an avatar and answer the name it is known by.
+	 * Store the avatar of an account, in place of the one it had.
 	 *
 	 * @param int $userID The account the avatar belongs to
 	 * @param string $webp Avatar from process()
-	 * @return string Name of the picture, relative to webroot/img
+	 * @return string Hash of the picture, for user.uploaded_avatar_hash
 	 */
 	public static function store(int $userID, string $webp): string
 	{
-		$folder = self::folder();
-		if (!is_dir($folder) && !@mkdir($folder, 0775, true) && !is_dir($folder))
-			throw new RuntimeException('The picture could not be stored.');
-
-		$name = self::FOLDER . '/' . $userID . '-' . substr(hash('sha256', $webp), 0, 16) . '.webp';
-		if (@file_put_contents(self::pathOf($name), $webp) === false)
-			throw new RuntimeException('The picture could not be stored.');
-
-		return $name;
+		// Sent as hex, so the bytes of the picture are never read as text of the connection.
+		Util::execute(
+			'INSERT INTO user_avatar (user_id, picture) VALUES (?, UNHEX(?)) ON DUPLICATE KEY UPDATE picture = VALUES(picture)',
+			[$userID, bin2hex($webp)]);
+		return self::hash($webp);
 	}
 
 	/**
-	 * Remove a stored avatar. A name that is not one of an avatar is left alone, so a
-	 * value of the column can never reach another file of the site.
+	 * Remove the avatar of an account.
 	 *
-	 * @param string|null $name Name of the picture, relative to webroot/img
+	 * @param int $userID
 	 * @return void
 	 */
-	public static function remove(?string $name): void
+	public static function remove(int $userID): void
 	{
-		if ($name === null || preg_match(self::NAME_PATTERN, $name) !== 1)
-			return;
-
-		$path = self::pathOf($name);
-		if (is_file($path))
-			unlink($path);
+		Util::execute('DELETE FROM user_avatar WHERE user_id = ?', [$userID]);
 	}
 
 	/**
-	 * @param string $name Name of the picture, relative to webroot/img
-	 * @return string Where that picture is on disk
+	 * The picture an url asks for: the avatar of the account, as long as it is still the
+	 * picture of that hash and the account is not deleted.
+	 *
+	 * @param int $userID
+	 * @param string $hash
+	 * @return string|null WebP data, null when there is no such picture
 	 */
-	public static function pathOf(string $name): string
+	public static function picture(int $userID, string $hash): ?string
 	{
-		return WWW_ROOT . 'img' . DS . str_replace('/', DS, $name);
+		$rows = Util::query('
+			SELECT user_avatar.picture
+			FROM user_avatar
+			JOIN user ON user.id = user_avatar.user_id
+			WHERE user_avatar.user_id = ? AND user.uploaded_avatar_hash = ? AND user.deleted IS NULL', [$userID, $hash]);
+		return $rows ? (string) $rows[0]['picture'] : null;
 	}
 
-	/** @return string The folder the pictures are stored in */
-	private static function folder(): string
+	/**
+	 * The part of the sha256 of a picture its url carries.
+	 *
+	 * @param string $webp
+	 * @return string
+	 */
+	public static function hash(string $webp): string
 	{
-		return WWW_ROOT . 'img' . DS . self::FOLDER;
+		return substr(hash('sha256', $webp), 0, self::HASH_LENGTH);
 	}
 
 	/**

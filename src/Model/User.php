@@ -438,7 +438,7 @@ class User extends AppModel
 				return '<span>' . h(self::DELETED_NAME) . '</span>';
 			$rating = $user['user_rating'] ?? null;
 			$rank = $rating !== null ? Rating::getReadableRankFromRating((float) $rating) : '';
-			return self::renderLinkInternal($user['user_id'], $displayName, $user['user_external_id'] ?? null, $user['user_picture'] ?? null, $user['user_email'] ?? null, $user['user_avatar_setting_id'] ?? null, $user['user_uploaded_avatar'] ?? null, $rank);
+			return self::renderLinkInternal($user['user_id'], $displayName, $user['user_external_id'] ?? null, $user['user_picture'] ?? null, $user['user_email'] ?? null, $user['user_avatar_setting_id'] ?? null, $user['user_uploaded_avatar_hash'] ?? null, $rank);
 		}
 
 		// Standard format: id, display_name, etc. A row without a display name gets the same
@@ -448,13 +448,13 @@ class User extends AppModel
 			return '<span>' . h(self::DELETED_NAME) . '</span>';
 		$rating = $user['rating'] ?? null;
 		$rank = $rating !== null ? Rating::getReadableRankFromRating((float) $rating) : '';
-		return self::renderLinkInternal($user['id'], $displayName, $user['external_id'] ?? null, $user['picture'] ?? null, $user['email'] ?? null, $user['avatar_setting_id'] ?? null, $user['uploaded_avatar'] ?? null, $rank);
+		return self::renderLinkInternal($user['id'], $displayName, $user['external_id'] ?? null, $user['picture'] ?? null, $user['email'] ?? null, $user['avatar_setting_id'] ?? null, $user['uploaded_avatar_hash'] ?? null, $rank);
 	}
 
 	/**
 	 * Internal function to render user link HTML.
 	 */
-	private static function renderLinkInternal(int $id, string $displayName, ?string $externalID, ?string $picture, ?string $email, ?int $avatarSettingID, ?string $uploadedAvatar, string $rank): string
+	private static function renderLinkInternal(int $id, string $displayName, ?string $externalID, ?string $picture, ?string $email, ?int $avatarSettingID, ?string $uploadedAvatarHash, string $rank): string
 	{
 		assert(($externalID !== null && $picture !== null) || $email !== null, 'Must have either (externalID + picture) or email for avatar');
 
@@ -463,7 +463,7 @@ class User extends AppModel
 			'id' => $id,
 			'display_name' => $displayName,
 			'avatar_setting_id' => $avatarSettingID,
-			'uploaded_avatar' => $uploadedAvatar,
+			'uploaded_avatar_hash' => $uploadedAvatarHash,
 			'external_id' => $externalID,
 			'picture' => $picture,
 			'email' => $email,
@@ -690,7 +690,7 @@ class User extends AppModel
 		];
 		if (self::hasGooglePicture($user))
 			$choices[self::AVATAR_GOOGLE] = 'Google picture';
-		if (!empty($user['uploaded_avatar']))
+		if (!empty($user['uploaded_avatar_hash']))
 			$choices[self::AVATAR_UPLOADED] = 'My picture';
 		return $choices;
 	}
@@ -729,7 +729,7 @@ class User extends AppModel
 	 * Only the avatar fields are needed, the callers pass either a full user row or
 	 * just these values.
 	 *
-	 * @param array{id?: int, display_name?: string|null, avatar_setting_id?: int|null, uploaded_avatar?: string|null, external_id?: string|null, picture?: string|null, email?: string|null} $user
+	 * @param array{id?: int, display_name?: string|null, avatar_setting_id?: int|null, uploaded_avatar_hash?: string|null, external_id?: string|null, picture?: string|null, email?: string|null} $user
 	 * @param int $size Pixels to ask an avatar host for, the board and an uploaded picture ignore it
 	 * @return string Avatar URL
 	 */
@@ -739,7 +739,7 @@ class User extends AppModel
 
 		// One picture of UploadedAvatar::SIZE serves every size, like the board.
 		if ($choice === self::AVATAR_UPLOADED)
-			return UploadedAvatar::url($user['uploaded_avatar']);
+			return UploadedAvatar::url((int) $user['id'], $user['uploaded_avatar_hash']);
 
 		if ($choice === self::AVATAR_GOOGLE)
 		{

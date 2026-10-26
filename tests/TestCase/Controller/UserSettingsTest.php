@@ -196,18 +196,13 @@ class UserSettingsTest extends IntegrationTestCase
 		", [base64_encode($png)]);
 		$browser->find('#avatar-upload button[type=submit]')->click();
 		$this->waitForUserField($context, 'avatar_setting_id', (string) User::AVATAR_UPLOADED);
-		$name = $context->reloadUser()['uploaded_avatar'];
+		$url = UploadedAvatar::url($context->user['id'], $context->reloadUser()['uploaded_avatar_hash']);
 
-		try
-		{
-			$browser->waitUntilJs('document.querySelector("#avatar-remove") !== null');
-			$this->assertTrue($browser->find('input[name="avatar"][value="' . User::AVATAR_UPLOADED . '"]')->isSelected());
-			$this->assertStringContainsString(UploadedAvatar::url($name), $browser->driver->getPageSource());
-		}
-		finally
-		{
-			UploadedAvatar::remove($name);
-		}
+		$browser->waitUntilJs('document.querySelector("#avatar-remove") !== null');
+		$this->assertTrue($browser->find('input[name="avatar"][value="' . User::AVATAR_UPLOADED . '"]')->isSelected());
+		$this->assertStringContainsString($url, $browser->driver->getPageSource());
+		// The browser shows the picture the server sends, not a broken image.
+		$browser->waitUntilJs('Array.from(document.images).some(function(image) { return image.getAttribute("src") === ' . json_encode($url) . ' && image.complete && image.naturalWidth === ' . UploadedAvatar::SIZE . '; })');
 	}
 
 	public function testGoogleAccountHasNoLoginName(): void

@@ -102,7 +102,7 @@ use App\Utility\UploadedAvatar;
 						<button type="submit" class="btn">Upload</button>
 						<div class="hint">Your own picture: JPEG, PNG, WebP or GIF up to <?php echo UploadedAvatar::maxSize(); ?>. The middle square of it is shown.</div>
 					</form>
-					<?php if (!empty($user['uploaded_avatar'])): ?>
+					<?php if (!empty($user['uploaded_avatar_hash'])): ?>
 						<form method="post" action="/users/avatarRemove" style="display:inline;">
 							<button type="submit" class="link" id="avatar-remove">remove my picture</button>
 						</form>

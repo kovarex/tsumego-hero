@@ -1,6 +1,7 @@
 <?php
 
 use App\Utility\UploadedAvatar;
+use App\Utility\Util;
 
 class UploadedAvatarTest extends CakeTestCase
 {
@@ -198,48 +199,77 @@ class UploadedAvatarTest extends CakeTestCase
 	}
 
 	/**
-	 * The name carries the account and the picture, so a new picture is a new url and two
-	 * accounts with the same picture have a file each.
+	 * A picture is bytes and not text, so it has to come back from the database exactly as
+	 * it went in.
 	 */
-	public function testAStoredAvatarIsNamedByItsAccountAndItsPicture(): void
+	public function testAStoredPictureComesBackByteForByte(): void
 	{
-		$avatar = UploadedAvatar::process($this->picture('png', 100, 100));
+		$context = new ContextPreparator(['user' => ['name' => 'pictured']]);
+		$avatar = UploadedAvatar::process($this->picture('jpeg', 300, 200));
 
-		$name = UploadedAvatar::store(41, $avatar);
-		$this->files[] = UploadedAvatar::pathOf($name);
-		$other = UploadedAvatar::store(42, $avatar);
-		$this->files[] = UploadedAvatar::pathOf($other);
+		$hash = $this->store($context->user['id'], $avatar);
 
-		$this->assertMatchesRegularExpression('#^avatars/41-[0-9a-f]{16}\.webp$#', $name);
-		$this->assertNotSame($name, $other);
-		$this->assertSame($avatar, file_get_contents(UploadedAvatar::pathOf($name)));
-		$this->assertSame('/img/' . $name, UploadedAvatar::url($name));
-	}
-
-	public function testRemoveDeletesTheFile(): void
-	{
-		$name = UploadedAvatar::store(43, UploadedAvatar::process($this->picture('png', 100, 100)));
-		$this->files[] = UploadedAvatar::pathOf($name);
-
-		UploadedAvatar::remove($name);
-
-		$this->assertFileDoesNotExist(UploadedAvatar::pathOf($name));
+		$this->assertMatchesRegularExpression('/^[0-9a-f]{' . UploadedAvatar::HASH_LENGTH . '}$/', $hash);
+		$this->assertSame($avatar, UploadedAvatar::picture($context->user['id'], $hash));
+		$this->assertSame('/avatar/' . $context->user['id'] . '/' . $hash . '.webp', UploadedAvatar::url($context->user['id'], $hash));
 	}
 
 	/**
-	 * Only a name an upload could have made is removed, so a value in the column can't
-	 * reach any other file of the site.
+	 * An account has one uploaded picture; the url of the one it replaced answers nothing.
 	 */
-	public function testRemoveLeavesAnythingElseAlone(): void
+	public function testANewPictureTakesThePlaceOfTheOldOne(): void
 	{
-		$other = WWW_ROOT . 'img' . DS . 'avatars' . DS . 'not-an-avatar.webp';
-		file_put_contents($other, 'x');
-		$this->files[] = $other;
+		$context = new ContextPreparator(['user' => ['name' => 'pictured']]);
+		$first = $this->store($context->user['id'], UploadedAvatar::process($this->picture('png', 100, 100)));
+		$second = $this->store($context->user['id'], UploadedAvatar::process($this->picture('png', 100, 100, [0, 0, 255])));
 
-		foreach (['avatars/not-an-avatar.webp', 'avatars/../avatars/not-an-avatar.webp', '../img/avatars/not-an-avatar.webp', '', null] as $name)
-			UploadedAvatar::remove($name);
+		$this->assertNotSame($first, $second);
+		$this->assertNull(UploadedAvatar::picture($context->user['id'], $first));
+		$this->assertNotNull(UploadedAvatar::picture($context->user['id'], $second));
+		$this->assertSame(1, (int) Util::query('SELECT COUNT(*) AS count FROM user_avatar WHERE user_id = ?', [$context->user['id']])[0]['count']);
+	}
 
-		$this->assertFileExists($other);
+	public function testAPictureIsOnlyServedForItsOwnAccount(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'pictured'], 'other-users' => [['name' => 'other']]]);
+		$hash = $this->store($context->user['id'], UploadedAvatar::process($this->picture('png', 100, 100)));
+
+		$this->assertNull(UploadedAvatar::picture($context->otherUsers[0]['id'], $hash));
+	}
+
+	public function testRemoveDeletesThePicture(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'pictured']]);
+		$hash = $this->store($context->user['id'], UploadedAvatar::process($this->picture('png', 100, 100)));
+
+		UploadedAvatar::remove($context->user['id']);
+
+		$this->assertNull(UploadedAvatar::picture($context->user['id'], $hash));
+		$this->assertSame([], Util::query('SELECT user_id FROM user_avatar WHERE user_id = ?', [$context->user['id']]));
+	}
+
+	/**
+	 * A deleted account asked to be forgotten, so its picture is not served even to someone
+	 * who kept its url. The row stays, so a restored account has it back.
+	 */
+	public function testADeletedAccountServesNoPicture(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'pictured']]);
+		$hash = $this->store($context->user['id'], UploadedAvatar::process($this->picture('png', 100, 100)));
+
+		User::deleteAccount($context->user['id']);
+		$this->assertNull(UploadedAvatar::picture($context->user['id'], $hash));
+
+		User::restoreAccount($context->user['id']);
+		$this->assertNotNull(UploadedAvatar::picture($context->user['id'], $hash));
+	}
+
+	/** Store a picture the way an upload does: the row and the hash of the account. */
+	private function store(int $userID, string $avatar): string
+	{
+		$hash = UploadedAvatar::store($userID, $avatar);
+		Util::execute('UPDATE user SET uploaded_avatar_hash = ?, avatar_setting_id = ? WHERE id = ?', [$hash, User::AVATAR_UPLOADED, $userID]);
+		return $hash;
 	}
 
 	private function assertUploadRefused(?array $file, string $message): void
@@ -267,10 +297,11 @@ class UploadedAvatarTest extends CakeTestCase
 		return substr($jpeg, 0, 2) . "\xFF\xE1" . pack('n', strlen($exif) + 2) . $exif . substr($jpeg, 2);
 	}
 
-	private function picture(string $type, int $width, int $height): string
+	/** @param array{int, int, int} $colour */
+	private function picture(string $type, int $width, int $height, array $colour = [200, 120, 40]): string
 	{
 		$image = imagecreatetruecolor($width, $height);
-		imagefill($image, 0, 0, imagecolorallocate($image, 200, 120, 40));
+		imagefill($image, 0, 0, imagecolorallocate($image, ...$colour));
 		return $this->save($image, $type);
 	}
 

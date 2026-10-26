@@ -202,10 +202,6 @@ chmod 777 "$ROOT_DIR/webroot/forums/images/avatars/upload"
 mkdir -p "$ROOT_DIR/webroot/img/sets"
 chmod 777 "$ROOT_DIR/webroot/img/sets"
 
-# The same goes for the avatars players upload (UploadedAvatar).
-mkdir -p "$ROOT_DIR/webroot/img/avatars"
-chmod 777 "$ROOT_DIR/webroot/img/avatars"
-
 
 ### Run migrations (inside container in dev, locally in production)
 echo "=== Running migrations ==="

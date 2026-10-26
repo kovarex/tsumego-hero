@@ -254,15 +254,15 @@ class UserTest extends CakeTestCase
 	 */
 	public function testChoosingAnUploadedPictureUsesIt()
 	{
-		$user = ['id' => 9, 'display_name' => 'Anna', 'avatar_setting_id' => User::AVATAR_UPLOADED, 'uploaded_avatar' => 'avatars/9-0123456789abcdef.webp'];
+		$user = ['id' => 9, 'display_name' => 'Anna', 'avatar_setting_id' => User::AVATAR_UPLOADED, 'uploaded_avatar_hash' => '0123456789abcdef'];
 
-		$this->assertSame('/img/avatars/9-0123456789abcdef.webp', User::getAvatarUrl($user, 24));
-		$this->assertSame('/img/avatars/9-0123456789abcdef.webp', User::getAvatarUrl($user, User::AVATAR_PIXELS_PROFILE));
+		$this->assertSame('/avatar/9/0123456789abcdef.webp', User::getAvatarUrl($user, 24));
+		$this->assertSame('/avatar/9/0123456789abcdef.webp', User::getAvatarUrl($user, User::AVATAR_PIXELS_PROFILE));
 	}
 
 	public function testAnUploadedChoiceWithoutAPictureFallsBackToTheBoard()
 	{
-		$user = ['id' => 9, 'display_name' => 'Anna', 'avatar_setting_id' => User::AVATAR_UPLOADED, 'uploaded_avatar' => null];
+		$user = ['id' => 9, 'display_name' => 'Anna', 'avatar_setting_id' => User::AVATAR_UPLOADED, 'uploaded_avatar_hash' => null];
 
 		$this->assertSame(Avatar::url('Anna'), User::getAvatarUrl($user, 24));
 	}
@@ -278,10 +278,10 @@ class UserTest extends CakeTestCase
 			'user_display_name' => 'Anna',
 			'user_email' => 'anna@example.com',
 			'user_avatar_setting_id' => User::AVATAR_UPLOADED,
-			'user_uploaded_avatar' => 'avatars/9-0123456789abcdef.webp',
+			'user_uploaded_avatar_hash' => '0123456789abcdef',
 		]);
 
-		$this->assertStringContainsString('<img src="/img/avatars/9-0123456789abcdef.webp" alt="" class="user-avatar"', $link);
+		$this->assertStringContainsString('<img src="/avatar/9/0123456789abcdef.webp" alt="" class="user-avatar"', $link);
 		// The board takes over when the file is gone.
 		$this->assertStringContainsString("this.src='" . Avatar::url('Anna') . "'", $link);
 	}

@@ -27,10 +27,6 @@ config/define.local.php
 /webroot/img/sets/*
 !/webroot/img/sets/.htaccess
 
-# Avatars uploaded by players (keep the cache-control .htaccess)
-/webroot/img/avatars/*
-!/webroot/img/avatars/.htaccess
-
 # Google profile pictures (created at runtime in UsersController::googlesignin)
 /img/google/*.png
 
