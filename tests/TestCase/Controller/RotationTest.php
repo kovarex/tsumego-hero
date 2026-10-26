@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\Constants;
+
 /**
  * Tests for board rotation functionality in besogo.
  *
