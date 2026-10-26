@@ -13,6 +13,18 @@ class TsumegoButtons extends ArrayObject
 			return;
 		$this->fill('', $tsumegoFilters, $id);
 
+		// The opened problem might not be part of the difficulty or tag collection (another tab switched
+		// the collection, or the rating of the problem moved it to another rank). The navigation would
+		// have no current problem then, so we show the set of the problem instead.
+		if (!is_null($currentSetConnectionID)
+			&& ($tsumegoFilters->query == 'difficulty' || $tsumegoFilters->query == 'tags')
+			&& is_null($this->deduceCurrentIndex($currentSetConnectionID)))
+		{
+			$tsumegoFilters->query = 'topics';
+			$this->exchangeArray([]);
+			$this->fill('', $tsumegoFilters, $id);
+		}
+
 		// in topics we respect the orders specified by set connections, in other cases, it is kind of a
 		// 'virtual set' and we just order it from 1 to max
 		$resetOrders = $tsumegoFilters->query != 'topics' && $tsumegoFilters->query != 'published';

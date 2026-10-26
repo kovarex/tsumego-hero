@@ -12,10 +12,16 @@ class TsumegoButtonsQueryBuilder
 	public Query $query;
 	public string $description = '';
 	private TsumegoFilters $tsumegoFilters;
+	private ?RatingBounds $ratingBounds = null;
+	private ?array $tag = null;
 
 	public function __construct(TsumegoFilters $tsumegoFilters, string|int|null $id)
 	{
 		$this->query = new Query('FROM tsumego');
+		$this->tsumegoFilters = $tsumegoFilters;
+		// The fallback to topics has to be decided first, as the shape of the query and the filters
+		// applied depend on the final query type.
+		$this->resolveQueryType();
 		if ($tsumegoFilters->query != 'topics')
 		{
 			$this->query->selects[] = "ROW_NUMBER() OVER (PARTITION BY tsumego.id ORDER BY " . SetConnection::displayOrderSql('`set`', 'set_connection') . ") AS rn";
@@ -30,7 +36,6 @@ class TsumegoButtonsQueryBuilder
 		}
 		else
 			$this->query->orderBy[] = 'set_connection.num, set_connection.id';
-		$this->tsumegoFilters = $tsumegoFilters;
 
 		$this->query->selects[] = 'tsumego.id as tsumego_id';
 		$this->query->selects[] = 'tsumego.rating as rating';
@@ -89,49 +94,53 @@ class TsumegoButtonsQueryBuilder
 		$this->tsumegoFilters->filterTags($this->query);
 	}
 
+	/**
+	 * Difficulty and tag queries name their collection by the lastSet cookie. When it is missing or
+	 * doesn't name a valid rank or an existing tag (another tab or device switched the collection,
+	 * or the cookie expired), we fall back to showing by topics (the set of the current tsumego).
+	 */
+	private function resolveQueryType(): void
+	{
+		$lastSet = $_COOKIE['lastSet'] ?? '';
+		if ($this->tsumegoFilters->query == 'difficulty')
+		{
+			if (empty($lastSet))
+			{
+				$this->tsumegoFilters->query = 'topics';
+				return;
+			}
+			try
+			{
+				$this->ratingBounds = RatingBounds::coverRankSpec($lastSet, Rating::weakestRank());
+			}
+			catch (RatingParseException $e)
+			{
+				$this->tsumegoFilters->query = 'topics';
+			}
+		}
+		elseif ($this->tsumegoFilters->query == 'tags')
+		{
+			if (!empty($lastSet))
+				$this->tag = ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => $lastSet]]) ?: null;
+			if (!$this->tag)
+				$this->tsumegoFilters->query = 'topics';
+		}
+	}
+
 	private function queryRank(): void
 	{
 		if ($this->tsumegoFilters->query != 'difficulty')
 			return;
-		if (empty($_COOKIE['lastSet']))
-		{
-			// when we don't have lastSet, we fallback to showing by topics (the set of current tsumego)
-			$this->tsumegoFilters->query = 'topics';
-			return;
-		}
-		try
-		{
-			$ratingBounds = RatingBounds::coverRankSpec($_COOKIE['lastSet'], Rating::weakestRank());
-			$ratingBounds->addQueryConditions($this->query);
-			$this->description = $_COOKIE['lastSet'] . ' are problems that have a rating' . $ratingBounds->textualDescription() . '.';
-		}
-		catch (RatingParseException $e)
-		{
-			// when we get bad lastSet value, we fallback to showing by topics (the set of current tsumego)
-			$this->tsumegoFilters->query = 'topics';
-		}
+		$this->ratingBounds->addQueryConditions($this->query);
+		$this->description = $_COOKIE['lastSet'] . ' are problems that have a rating' . $this->ratingBounds->textualDescription() . '.';
 	}
 
 	private function queryTag(): void
 	{
 		if ($this->tsumegoFilters->query != 'tags')
 			return;
-
-		$currentTag = $_COOKIE['lastSet'] ?? '';
-		if (empty($currentTag))
-		{
-			$this->tsumegoFilters->query = 'topics';
-			return;
-		}
-
-		$tag = ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => $currentTag]]);
-		if (!$tag)
-		{
-			$this->tsumegoFilters->query = 'topics';
-			return;
-		}
 		$this->query->query .= ' LEFT JOIN tag_connection ON tag_connection.tsumego_id=tsumego.id';
-		$this->query->conditions[] = 'tag_connection.tag_id=' . $tag['Tag']['id'];
+		$this->query->conditions[] = 'tag_connection.tag_id=' . $this->tag['Tag']['id'];
 	}
 
 	private function querySet(string|int|null $id): void
