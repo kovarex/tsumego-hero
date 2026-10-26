@@ -20,10 +20,11 @@ class RatingModeController extends AppController
 
 		if (!Auth::isInRatingMode())
 			Auth::saveUserField('mode', Constants::$RATING_MODE);
-		if ($difficultyChange = Util::clearCookie('difficulty'))
-			Auth::saveUserField('t_glicko', $difficultyChange);
+		$difficultyChange = (int) Util::clearCookie('difficulty');
+		if ($difficultyChange >= 1 && $difficultyChange <= 7)
+			Auth::saveUserField('rating_mode_difficulty_selection', $difficultyChange);
 
-		$adjustedRating =  Auth::getUser()['rating'] + Rating::adjustmentForDifficulty(Auth::getUser()['t_glicko']);
+		$adjustedRating =  Auth::getUser()['rating'] + Rating::adjustmentForDifficulty(Auth::getUser()['rating_mode_difficulty_selection']);
 		$ratingBounds = new RatingBounds(
 			$adjustedRating - Constants::$RATING_MODE_SELECTION_INTERVAL / 2,
 			$adjustedRating + Constants::$RATING_MODE_SELECTION_INTERVAL / 2);
@@ -50,7 +51,7 @@ WHERE " . $queryCondition;
 		shuffle($relatedTsumegos);
 
 		$this->set('nextLink', '/ratingMode');
-		$this->set('difficulty', Auth::getUser()['t_glicko']);
+		$this->set('difficulty', Auth::getUser()['rating_mode_difficulty_selection']);
 
 		$play  = new Play(function ($name, $value) {
 			$this->set($name, $value);

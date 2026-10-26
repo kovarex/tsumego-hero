@@ -106,7 +106,7 @@ class UsersController extends AppController
 
 		// Another mail on top of the one just sent only fills the inbox. The answer is
 		// the same either way, so nothing about the account is revealed by skipping it.
-		$askedAt = $user['User']['passwordreset_created'];
+		$askedAt = $user['User']['password_reset_token_created'];
 		if ($askedAt && strtotime($askedAt) > strtotime('-' . self::$PASSWORD_RESET_MINUTES_BETWEEN_MAILS . ' minutes'))
 			return;
 
@@ -127,8 +127,8 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 
 		// The link works with the token alone, so the token is remembered only once the mail
 		// carrying it has left. A mail server that stays quiet holds nothing back.
-		$user['User']['passwordreset'] = $randomString;
-		$user['User']['passwordreset_created'] = date('Y-m-d H:i:s');
+		$user['User']['password_reset_token'] = $randomString;
+		$user['User']['password_reset_token_created'] = date('Y-m-d H:i:s');
 		$this->User->save($user);
 	}
 
@@ -186,9 +186,9 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		$this->set('checksum', (string) $checksum);
 
 		$user = $checksum === null ? null : $this->User->find('first', ['conditions' => [
-			'passwordreset' => $checksum,
+			'password_reset_token' => $checksum,
 			'deleted IS NULL',
-			'passwordreset_created >' => date('Y-m-d H:i:s', strtotime('-' . self::$PASSWORD_RESET_LINK_VALID_HOURS . ' hours'))]]);
+			'password_reset_token_created >' => date('Y-m-d H:i:s', strtotime('-' . self::$PASSWORD_RESET_LINK_VALID_HOURS . ' hours'))]]);
 		if (!$user)
 			return null;
 
@@ -205,8 +205,8 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 			return null;
 		}
 
-		$user['User']['passwordreset'] = null;
-		$user['User']['passwordreset_created'] = null;
+		$user['User']['password_reset_token'] = null;
+		$user['User']['password_reset_token_created'] = null;
 		$user['User']['password_hash'] = password_hash($password, PASSWORD_DEFAULT);
 		$this->User->save($user);
 		$this->sendPasswordChangedMail($user['User']['email']);
@@ -706,7 +706,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		if (Auth::isLoggedIn())
 		{
 			$ux = $this->User->findById(Auth::getUserID());
-			$ux['User']['lastHighscore'] = Constants::$HIGHSCORE_RATING;
+			$ux['User']['highscore_page'] = Constants::$HIGHSCORE_RATING;
 			$this->User->save($ux);
 		}
 
@@ -758,7 +758,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		if (Auth::isLoggedIn())
 		{
 			$ux = $this->User->findById(Auth::getUserID());
-			$ux['User']['lastHighscore'] = Constants::$HIGHSCORE_RATING;
+			$ux['User']['highscore_page'] = Constants::$HIGHSCORE_RATING;
 			$this->User->save($ux);
 		}
 
@@ -811,7 +811,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		if (Auth::isLoggedIn())
 		{
 			$ux = $this->User->findById(Auth::getUserID());
-			$ux['User']['lastHighscore'] = Constants::$HIGHSCORE_TIME_MODE;
+			$ux['User']['highscore_page'] = Constants::$HIGHSCORE_TIME_MODE;
 			$this->User->save($ux);
 		}
 

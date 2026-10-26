@@ -27,7 +27,7 @@ class Constants
 	public static int $TIME_MODE = 3;
 	public static int $MISTAKE_TRAINING_MODE = 5;
 
-	// Highscore page identifiers (stored in user.lastHighscore)
+	// Highscore page identifiers (stored in user.highscore_page)
 	public static int $HIGHSCORE_LEVEL = 1;
 	public static int $HIGHSCORE_RATING = 2;
 	public static int $HIGHSCORE_DAILY = 3;

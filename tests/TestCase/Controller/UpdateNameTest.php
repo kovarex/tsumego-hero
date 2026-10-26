@@ -484,7 +484,7 @@ class UpdateNameTest extends ControllerTestCase
 				'needs_display_name_change' => true,
 			],
 		]);
-		Util::execute("UPDATE user SET passwordreset = ? WHERE id = ?", ['reset-checksum', $context->user['id']]);
+		Util::execute("UPDATE user SET password_reset_token = ? WHERE id = ?", ['reset-checksum', $context->user['id']]);
 
 		$this->testAction('/users/newpassword/reset-checksum', ['method' => 'get', 'return' => 'result']);
 		$this->assertStringNotContainsString('/users/changename', $this->headers['Location'] ?? '');

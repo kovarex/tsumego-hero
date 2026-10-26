@@ -46,7 +46,6 @@ class Play
 		// Only the modes that walk a list fill this one in.
 		($this->setFunction)('previousLink', '');
 
-		$suspiciousBehavior = false;
 		$isSandbox = false;
 		$goldenTsumego = false;
 		$reviewCheat = false;
@@ -335,9 +334,6 @@ class Play
 			$fullHeart = 'heart1';
 			$emptyHeart = 'heart2';
 		}
-		if (Auth::isLoggedIn())
-			if (Auth::getUser()['reuse5'] == 1)
-				$suspiciousBehavior = true;
 		if (Auth::isInRatingMode() || Auth::isInTimeMode())($this->setFunction)('_title', 'Tsumego Hero');
 		if ($isSandbox)
 			$t['Tsumego']['userWin'] = 0;
@@ -440,7 +436,7 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		($this->setFunction)('corner', $corner);
 		($this->setFunction)('playerColor', $playerColor);
 		($this->setFunction)('swapColors', $swapColors);
-		($this->setFunction)('suspiciousBehavior', $suspiciousBehavior);
+		($this->setFunction)('accountBlocked', Auth::isLoggedIn() && (bool) Auth::getUser()['blocked']);
 		($this->setFunction)('isSandbox', $isSandbox);
 		($this->setFunction)('goldenTsumego', $goldenTsumego);
 		$boardsBitmask = BoardSelector::filterValidBits(Auth::isLoggedIn() ? Auth::getUser()['boards_bitmask'] : BoardSelector::$DEFAULT_BOARDS_BITMASK);

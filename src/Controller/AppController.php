@@ -371,8 +371,6 @@ class AppController extends Controller
 		$highscoreLink = 'highscore';
 		$lightDark = 'light';
 		$levelBar = User::LEVEL_BAR_LEVEL;
-		$lastProfileLeft = 1;
-		$lastProfileRight = 2;
 
 		if (Auth::isLoggedIn())
 		{
@@ -402,13 +400,13 @@ class AppController extends Controller
 
 			if ($lastTimeModeCategoryID = Util::clearCookie('lastTimeModeCategoryID'))
 				Auth::saveUserField('last_time_mode_category_id', $lastTimeModeCategoryID);
-			if (Auth::getUser()['lastHighscore'] == Constants::$HIGHSCORE_LEVEL)
+			if (Auth::getUser()['highscore_page'] == Constants::$HIGHSCORE_LEVEL)
 				$highscoreLink = 'highscore';
-			elseif (Auth::getUser()['lastHighscore'] == Constants::$HIGHSCORE_RATING)
+			elseif (Auth::getUser()['highscore_page'] == Constants::$HIGHSCORE_RATING)
 				$highscoreLink = 'rating';
-			elseif (Auth::getUser()['lastHighscore'] == Constants::$HIGHSCORE_DAILY)
+			elseif (Auth::getUser()['highscore_page'] == Constants::$HIGHSCORE_DAILY)
 				$highscoreLink = 'leaderboard';
-			elseif (Auth::getUser()['lastHighscore'] == Constants::$HIGHSCORE_TIME_MODE)
+			elseif (Auth::getUser()['highscore_page'] == Constants::$HIGHSCORE_TIME_MODE)
 				$highscoreLink = 'time_mode';
 
 			if (isset($_COOKIE['sound']) && $_COOKIE['sound'] != '0')
@@ -424,10 +422,10 @@ class AppController extends Controller
 		{
 			$lightDark = $_COOKIE['lightDark'];
 			if (Auth::isLoggedIn())
-				Auth::saveUserField('lastLight', $lightDark === 'dark' ? User::THEME_DARK : User::THEME_LIGHT);
+				Auth::saveUserField('theme', $lightDark === 'dark' ? User::THEME_DARK : User::THEME_LIGHT);
 		}
 		elseif (Auth::isLoggedIn())
-			$lightDark = (Auth::getUser()['lastLight'] == User::THEME_DARK) ? 'dark' : 'light';
+			$lightDark = (Auth::getUser()['theme'] == User::THEME_DARK) ? 'dark' : 'light';
 
 		if (Auth::isLoggedIn())
 		{
@@ -435,33 +433,10 @@ class AppController extends Controller
 			if (isset($_COOKIE['levelBar']) && $_COOKIE['levelBar'] != '0')
 			{
 				$levelBar = ((int) $_COOKIE['levelBar']) === User::LEVEL_BAR_RATING ? User::LEVEL_BAR_RATING : User::LEVEL_BAR_LEVEL;
-				Auth::saveUserField('levelBar', $levelBar);
+				Auth::saveUserField('level_bar', $levelBar);
 			}
 			else
-				$levelBar = ((int) Auth::getUser()['levelBar']) === User::LEVEL_BAR_RATING ? User::LEVEL_BAR_RATING : User::LEVEL_BAR_LEVEL;
-
-			if (isset($_COOKIE['lastProfileLeft']) && $_COOKIE['lastProfileLeft'] != '0')
-			{
-				$lastProfileLeft = $_COOKIE['lastProfileLeft'];
-				Auth::saveUserField('lastProfileLeft', $lastProfileLeft);
-			}
-			else
-			{
-				$lastProfileLeft = Auth::getUser()['lastProfileLeft'];
-				if ($lastProfileLeft == 0)
-					$lastProfileLeft = 1;
-			}
-			if (isset($_COOKIE['lastProfileRight']) && $_COOKIE['lastProfileRight'] != '0')
-			{
-				$lastProfileRight = $_COOKIE['lastProfileRight'];
-				Auth::saveUserField('lastProfileRight', $lastProfileRight);
-			}
-			else
-			{
-				$lastProfileRight = Auth::getUser()['lastProfileRight'];
-				if ($lastProfileRight == 0)
-					$lastProfileRight = 1;
-			}
+				$levelBar = ((int) Auth::getUser()['level_bar']) === User::LEVEL_BAR_RATING ? User::LEVEL_BAR_RATING : User::LEVEL_BAR_LEVEL;
 		}
 
 		if (HeroPowers::getSprintRemainingSeconds() == 0)
@@ -490,8 +465,6 @@ class AppController extends Controller
 		$this->set('highscoreLink', $highscoreLink);
 		$this->set('lightDark', $lightDark);
 		$this->set('levelBar', $levelBar);
-		$this->set('lastProfileLeft', $lastProfileLeft);
-		$this->set('lastProfileRight', $lastProfileRight);
 		$this->set('timeMode', $timeMode);
 		$this->set('changelogTimestamps', ChangelogController::changelogTimestamps());
 	}

@@ -65,8 +65,6 @@ class CronController extends AppController
 		$query .= ',damage=0';
 		$query .= ',daily_xp=0';
 		$query .= ',daily_solved=0';
-		$query .= ',readingTrial=30';
-		$query .= ',reuse4=0';
 		ClassRegistry::init('User')->query($query);
 	}
 
