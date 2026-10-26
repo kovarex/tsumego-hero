@@ -529,7 +529,7 @@ class ScheduleTest extends TestCaseWithAuth
 				['sets' => [
 					['name' => 'sandbox set', 'num' => 1, 'public' => 0],
 					['name' => 'existing public', 'num' => 1],
-				], 'solved' => 42, 'failed' => 7, 'userWin' => 85.5, 'userLoss' => 100],
+				], 'solved' => 42, 'failed' => 7],
 				['sets' => [['name' => 'target set', 'num' => 1]]],
 			],
 			'schedule' => [
@@ -544,8 +544,6 @@ class ScheduleTest extends TestCaseWithAuth
 		$tsumego = ClassRegistry::init('Tsumego')->findById($context->tsumegos[0]['id']);
 		$this->assertSame(42, (int) $tsumego['Tsumego']['solved']);
 		$this->assertSame(7, (int) $tsumego['Tsumego']['failed']);
-		$this->assertSame(85.5, (float) $tsumego['Tsumego']['userWin']);
-		$this->assertSame(100, (int) $tsumego['Tsumego']['userLoss']);
 	}
 
 	public function testPublishFailedEntryStaysPending(): void

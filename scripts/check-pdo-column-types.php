@@ -42,7 +42,7 @@ $checks = [
 	'date (day_record.date)' => 'SELECT date FROM day_record LIMIT 1',
 	'datetime (achievement.created)' => 'SELECT created FROM achievement LIMIT 1',
 	'timestamp (admin_activity.created)' => 'SELECT created FROM admin_activity LIMIT 1',
-	'varchar (achievement.additionalDescription)' => 'SELECT additionalDescription FROM achievement LIMIT 1',
+	'varchar (achievement.additional_description)' => 'SELECT additional_description FROM achievement LIMIT 1',
 	'text (admin_activity.new_value)' => 'SELECT new_value FROM admin_activity LIMIT 1',
 ];
 

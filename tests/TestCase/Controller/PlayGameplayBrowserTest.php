@@ -162,7 +162,7 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 					'answer2' => 'Ko',
 					'answer3' => 'Seki in sente',
 					'answer4' => 'Seki in gote',
-					'numAnswer' => '3',
+					'correct_answer' => '3',
 				]],
 			],
 		]);
@@ -172,7 +172,7 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 
 		$browser->waitUntilJs('document.getElementById("besogo-multipleChoice3") !== null');
 
-		// numAnswer=3, so choosing the third answer is correct.
+		// correct_answer=3, so choosing the third answer is correct.
 		$browser->clickId('besogo-multipleChoice3');
 
 		$browser->waitUntilJs('document.getElementById("status").innerText.includes("Correct")');
@@ -194,7 +194,7 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 					'answer2' => '3',
 					'answer3' => '6',
 					'winner' => '0',
-					'numAnswer' => '0',
+					'correct_answer' => '0',
 				]],
 			],
 		]);
@@ -880,7 +880,7 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 					'answer2' => 'Ko',
 					'answer3' => 'Seki in sente',
 					'answer4' => 'Seki in gote',
-					'numAnswer' => '3',
+					'correct_answer' => '3',
 				]],
 			],
 		]);
@@ -911,7 +911,7 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 					'answer1' => '6.5',
 					'answer2' => '3',
 					'answer3' => '6',
-					'numAnswer' => '0',
+					'correct_answer' => '0',
 				]],
 			],
 		]);
@@ -940,8 +940,8 @@ class PlayGameplayBrowserTest extends TestCaseWithAuth
 			'tsumego' => [
 				'set_order' => 1,
 				'semeai_type' => 1,
-				'min_lib' => 0,
-				'max_lib' => 2,
+				'minimum_liberties' => 0,
+				'maximum_liberties' => 2,
 				'liberty_count' => 6,
 				'variance' => 2,
 				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AW[hm][im][gn][jn][go][jo][gp][jp][eq][gq][jq][fr][jr][gs][js]AB[jm][km][in][ln][io][lo][ip][lp];B[aa];W[ab];B[ba]C[+])',

@@ -166,9 +166,9 @@ WHERE
 		$dayRecord['DayRecord']['date'] = $today;
 		$dayRecord['DayRecord']['quote'] = $currentQuote;
 		$dayRecord['DayRecord']['gems'] = $gemRand1 . '-' . $gemRand2 . '-' . $gemRand3;
-		$dayRecord['DayRecord']['gemCounter1'] = 0;
-		$dayRecord['DayRecord']['gemCounter2'] = 0;
-		$dayRecord['DayRecord']['gemCounter3'] = 0;
+		$dayRecord['DayRecord']['emerald_solves'] = 0;
+		$dayRecord['DayRecord']['sapphire_solves'] = 0;
+		$dayRecord['DayRecord']['ruby_solves'] = 0;
 		ClassRegistry::init('DayRecord')->save($dayRecord);
 
 		ClassRegistry::init('AchievementCondition')->create();

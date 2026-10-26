@@ -125,8 +125,6 @@ class SchedulePublisher
 		{
 			$tsumego['Tsumego']['solved'] = 0;
 			$tsumego['Tsumego']['failed'] = 0;
-			$tsumego['Tsumego']['userWin'] = 0;
-			$tsumego['Tsumego']['userLoss'] = 0;
 			ClassRegistry::init('Tsumego')->save($tsumego);
 
 			ClassRegistry::init('TsumegoStatus')->deleteAll(['tsumego_id' => $tsumego['Tsumego']['id']]);
