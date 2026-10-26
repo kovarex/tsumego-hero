@@ -50,7 +50,7 @@ use App\Utility\Constants;
 					<div id="email-form" style="display:none;margin-top:3px;">
 						<?php
 						echo $this->Form->create('User', ['url' => ['controller' => 'users', 'action' => 'emailPreference']]);
-						echo '<div class="input"><input type="email" name="data[User][email]" placeholder="New e-mail" aria-label="New e-mail" maxlength="50" style="width:150px;" required="required"></div>';
+						echo '<div class="input"><input type="email" name="data[User][email]" placeholder="New e-mail" aria-label="New e-mail" maxlength="' . User::EMAIL_MAX_LENGTH . '" style="width:150px;" required="required"></div>';
 						echo '<div class="input"><input type="password" name="data[User][password]" placeholder="Password" aria-label="Password" autocomplete="current-password" style="width:150px;" required="required"></div>';
 						echo '<div class="hint">The address changes once you open the link sent to it.</div>';
 						echo '<div class="submit"><input class="btn" value="Submit" type="submit"></div>';
