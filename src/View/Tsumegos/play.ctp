@@ -892,6 +892,18 @@ use App\Utility\ViteManifest;
 		if (timeModeTimer)
 			timeModeTimer.start();
 	}
+
+	// The server adds up the seconds of the tries until the problem is solved, so each result sends
+	// only the time since the previous one. A try after a reset on the page would count the earlier
+	// tries again otherwise (forum#149).
+	function takeSecondsOfTry()
+	{
+		let seconds = Math.max(elapsedSeconds() - bonusSeconds, timeToFirstClick || 0, 0.01);
+		clockStart = performance.now();
+		bonusSeconds = 0;
+		timeToFirstClick = null;
+		return seconds;
+	}
 	$(".adminCommentPanel").hide();
 	$(".tsumegoNavi-middle2").hide();
 	$(".tsumegoNavi-middle2").hide();
@@ -1647,7 +1659,7 @@ use App\Utility\ViteManifest;
 			tsumego_id: tsumegoID,
 			// the part of the set the problem is played from decides the XP reduction of its resets
 			set_connection_id: <?php echo (int) $setConnection['SetConnection']['id']; ?>,
-			seconds: Math.max(elapsedSeconds() - bonusSeconds, timeToFirstClick || 0, 0.01),
+			seconds: takeSecondsOfTry(),
 			outcome: outcome,
 			// another tab may have switched the stored mode since this page was opened
 			mode: mode,

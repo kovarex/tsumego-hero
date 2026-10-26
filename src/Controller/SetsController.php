@@ -1070,15 +1070,13 @@ ORDER BY sc.num ASC", [(int) $id]);
 			$pFsum = 0;
 			foreach ($tsumegoButtons as $tsumegoButton)
 			{
-				if ($tsumegoButton->seconds == 0)
-					if (TsumegoUtil::isSolvedStatus($tsumegoButton->status))
-						$tss = 60;
-					else
-						$tss = 0;
-				else
-					$tss = $tsumegoButton->seconds;
-				$urSecAvg += $tss;
-				$urSecCounter++;
+				// The average is of the solved problems only, an unsolved one would pull it down
+				// and each new solve up (forum#149). A solve without a recorded time counts as a minute.
+				if (TsumegoUtil::isSolvedStatus($tsumegoButton->status))
+				{
+					$urSecAvg += $tsumegoButton->seconds ?: 60;
+					$urSecCounter++;
+				}
 
 				if ($tsumegoButton->performance == '')
 					if (TsumegoUtil::isSolvedStatus($tsumegoButton->status))
@@ -1093,7 +1091,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 				$pFsum += $pF;
 			}
 			if ($urSecCounter == 0)
-				$avgTime = 60;
+				$avgTime = 0;
 			else
 				$avgTime = round($urSecAvg / $urSecCounter, 2);
 			if ($pSsum + $pFsum == 0)
