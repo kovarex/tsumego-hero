@@ -24,33 +24,6 @@ class AppController extends Controller
 		'Authorization'
 	];
 
-	/**
-	 * @param int $uid User ID
-	 * @param string $action Action type
-	 *
-	 * @return void
-	 */
-	public static function _handleContribution(int $uid, string $action): void
-	{
-		$uc = ClassRegistry::init('UserContribution')->find('first', ['conditions' => ['user_id' => $uid]]);
-		if ($uc == null)
-		{
-			$uc = [];
-			$uc['UserContribution']['user_id'] = $uid;
-			$uc['UserContribution']['created_tag'] = 0;
-			$uc['UserContribution']['made_proposal'] = 0;
-			$uc['UserContribution']['reviewed'] = 0;
-			$uc['UserContribution']['score'] = 0;
-			ClassRegistry::init('UserContribution')->create();
-		}
-		$uc['UserContribution'][$action] += 1;
-		$uc['UserContribution']['score']
-		= $uc['UserContribution']['created_tag'] * 3
-		+ $uc['UserContribution']['made_proposal'] * 5
-		+ $uc['UserContribution']['reviewed'] * 2;
-		ClassRegistry::init('UserContribution')->save($uc);
-	}
-
 	public static function _getAllTags(): array
 	{
 		return Util::query("SELECT * from tag WHERE approved = 1 ORDER BY tag.name");
@@ -288,28 +261,6 @@ class AppController extends Controller
 	}
 
 	/**
-	 * @param int $uid User ID
-	 * @return void
-	 */
-	protected function handleSearchSettings(int $uid): void
-	{
-		$this->loadModel('UserContribution');
-		$uc = $this->UserContribution->find('first', ['conditions' => ['user_id' => $uid]]);
-		if ($uc == null)
-		{
-			$uc = [];
-			$uc['UserContribution']['user_id'] = $uid;
-			$uc['UserContribution']['created_tag'] = 0;
-			$uc['UserContribution']['made_proposal'] = 0;
-			$uc['UserContribution']['reviewed'] = 0;
-			$uc['UserContribution']['score'] = 0;
-			$this->UserContribution->create();
-			$this->UserContribution->save($uc);
-		}
-		new TsumegoFilters();
-	}
-
-	/**
 	 * The mailer of the emails a controller sends. A test replaces it on the controller it
 	 * generates, see TestCaseWithAuth::registerTestEmailer().
 	 *
@@ -480,7 +431,7 @@ class AppController extends Controller
 
 		if (Auth::isLoggedIn())
 		{
-			$this->handleSearchSettings(Auth::getUserID());
+			new TsumegoFilters(); // keeps the collection filters the pages set in cookies
 			if (isset($_COOKIE['levelBar']) && $_COOKIE['levelBar'] != '0')
 			{
 				$levelBar = ((int) $_COOKIE['levelBar']) === User::LEVEL_BAR_RATING ? User::LEVEL_BAR_RATING : User::LEVEL_BAR_LEVEL;

@@ -268,10 +268,8 @@ class TagsController extends AppController
 			return $this->redirect('/admin/new-tags');
 		}
 
-		AppController::_handleContribution(Auth::getUserID(), 'reviewed');
 		$tagToApprove['approved'] = '1';
 		ClassRegistry::init('Tag')->save($tagToApprove);
-		AppController::_handleContribution($tagToApprove['user_id'], 'created_tag');
 
 		// like a tag on a problem, the proposer only hears about it when the admin had something to say
 		$comment = ProposalFeedback::commentFromRequest($this->request->data['comment'] ?? null);
@@ -314,8 +312,6 @@ class TagsController extends AppController
 			CookieFlash::set('Write the proposer why the tag is rejected.', 'error');
 			return $this->redirect('/admin/new-tags');
 		}
-
-		AppController::_handleContribution(Auth::getUserID(), 'reviewed');
 
 		ClassRegistry::init('Tag')->delete($tagToReject);
 

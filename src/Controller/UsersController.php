@@ -1630,8 +1630,6 @@ OFFSET " . $offset, [$userID, $userID]);
 		ClassRegistry::init('Sgf')->setStatus((int) $proposalToApprove['id'], Sgf::STATUS_ACCEPTED);
 		SgfCommentReorientation::afterAccepted((int) $proposalToApprove['id']);
 
-		AppController::_handleContribution(Auth::getUserID(), 'reviewed');
-		AppController::_handleContribution($proposalToApprove['user_id'], 'made_proposal');
 		CookieFlash::set('Sgf proposal accepted', 'success');
 
 		$userToApprove = $this->User->findById($proposalToApprove['user_id']);
@@ -1753,8 +1751,6 @@ OFFSET " . $offset, [$userID, $userID]);
 		$tag = ClassRegistry::init('Tag')->findById($proposalToApprove['tag_id'])['Tag'];
 		AdminActivityLogger::log(AdminActivityType::ACCEPT_TAG, $proposalToApprove['tsumego_id'], null, null, $tag['name']);
 		ClassRegistry::init('TagConnection')->save($proposalToApprove);
-		AppController::_handleContribution(Auth::getUserID(), 'reviewed');
-		AppController::_handleContribution($proposalToApprove['user_id'], 'added_tag');
 
 		// tags are accepted by the dozen, so the proposer only hears about it when the admin had something to say
 		$comment = ProposalFeedback::commentFromRequest($this->request->data['comment'] ?? null);
