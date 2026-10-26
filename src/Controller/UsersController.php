@@ -1599,7 +1599,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		$reject['comment'] = $comment;
 		$reject['tsumego_id'] = $proposalToReject['tsumego_id'];
 		$reject['sgf_id'] = $proposalToReject['id'];
-		$reject['type'] = 'proposal';
+		$reject['reject_type_id'] = Reject::TYPE_PROPOSAL;
 		ClassRegistry::init('Reject')->create();
 		ClassRegistry::init('Reject')->save($reject);
 		// kept, so the proposer can still see what they proposed
@@ -1719,7 +1719,9 @@ OFFSET " . $offset, [$userID, $userID]);
 		$reject['comment'] = $comment;
 		$reject['tsumego_id'] = $proposalToReject['tsumego_id'];
 		$tag = ClassRegistry::init('Tag')->findById($proposalToReject['tag_id'])['Tag'];
-		$reject['type'] = $tag['name'];
+		$reject['reject_type_id'] = Reject::TYPE_TAG;
+		$reject['tag_id'] = $tag['id'];
+		$reject['tag_name'] = $tag['name'];
 
 		AdminActivityLogger::log(AdminActivityType::REJECT_TAG, $proposalToReject['tsumego_id'], null, $tag['name'], null);
 

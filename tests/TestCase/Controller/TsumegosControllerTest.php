@@ -639,6 +639,61 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$this->assertStringNotContainsString('"White is dead"', $this->view);
 	}
 
+	/** An admin on a sandbox problem: a problem in a set of the site that is not published yet. */
+	private function prepareSandboxProblem(array $variants = []): ContextPreparator
+	{
+		return new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => [
+				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])',
+				'sets' => [['name' => 'sandbox', 'public' => 0, 'num' => 1]],
+				'variants' => $variants]]);
+	}
+
+	private function postProblemSettings(ContextPreparator $context, string $multipleChoice, string $scoreEstimating): void
+	{
+		$this->post('tsumegos/play/' . $context->tsumegos[0]['id'], ['Settings' => [
+			'r39' => 'off', 'r43' => 'no', 'r41' => $multipleChoice, 'r42' => $scoreEstimating]]);
+		$this->assertResponseCode(200);
+	}
+
+	private static function variantsOf(int $tsumegoID): array
+	{
+		return Util::query('SELECT type, answer1 FROM tsumego_variant WHERE tsumego_id = ?', [$tsumegoID]);
+	}
+
+	/** The form comes with "multiple choice: yes, score estimating: no" checked, saving it used to delete the variant. */
+	public function testProblemSettingsKeepTheVariantAndItsAnswers(): void
+	{
+		$context = $this->prepareSandboxProblem([['type' => 'multiple_choice', 'answer1' => 'Seki in sente']]);
+
+		$this->postProblemSettings($context, 'yes', 'no');
+
+		$this->assertSame([['type' => 'multiple_choice', 'answer1' => 'Seki in sente']], self::variantsOf($context->tsumegos[0]['id']));
+	}
+
+	/** A problem has one variant at most, it used to get both. */
+	public function testProblemSettingsGiveAProblemOneVariant(): void
+	{
+		$context = $this->prepareSandboxProblem();
+
+		$this->postProblemSettings($context, 'yes', 'yes');
+
+		$this->assertSame([['type' => 'multiple_choice', 'answer1' => 'Black is dead']], self::variantsOf($context->tsumegos[0]['id']));
+	}
+
+	public function testProblemSettingsChangeTheVariant(): void
+	{
+		$context = $this->prepareSandboxProblem([['type' => 'multiple_choice', 'answer1' => 'Seki in sente']]);
+
+		$this->postProblemSettings($context, 'no', 'yes');
+		$this->assertSame('score_estimating', self::variantsOf($context->tsumegos[0]['id'])[0]['type']);
+		$this->assertCount(1, self::variantsOf($context->tsumegos[0]['id']));
+
+		$this->postProblemSettings($context, 'no', 'no');
+		$this->assertSame([], self::variantsOf($context->tsumegos[0]['id']));
+	}
+
 	/**
 	 * Score-estimating summary labels are stored in true colors. When the board
 	 * is inverted, the "Black/White captures" labels swap while the numeric

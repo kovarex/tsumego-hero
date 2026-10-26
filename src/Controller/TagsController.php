@@ -123,17 +123,19 @@ class TagsController extends AppController
 				// the rejected ones come from their reject rows below
 				. 'WHERE sg.user_id = ? AND sg.sgf_status_id != ' . Sgf::STATUS_REJECTED . ' '
 				. 'UNION ALL '
-				// Rejected items (tag names have tsumego_id = 0, so LEFT JOIN gives empty label)
-				. 'SELECT r.type, \'rejected\', r.created, \'\', r.text, r.tsumego_id, '
+				// Rejected items, reject_type names them like the rows above; a rejected new tag has no problem
+				. 'SELECT rt.name, \'rejected\', r.created, COALESCE(t.id, \'\'), COALESCE(t.name, r.tag_name, \'\'), COALESCE(r.tsumego_id, \'\'), '
 				. 'COALESCE(CONCAT(s.title, \' - \', sc.num), \'\'), r.id '
 				. 'FROM reject r '
+				. 'JOIN reject_type rt ON rt.id = r.reject_type_id '
+				. 'LEFT JOIN tag t ON t.id = r.tag_id '
 				. 'LEFT JOIN set_connection sc ON sc.id = ('
 					. 'SELECT sc2.id FROM set_connection sc2 '
 					. 'JOIN `set` s2 ON s2.id = sc2.set_id '
 					. 'WHERE sc2.tsumego_id = r.tsumego_id '
 					. 'ORDER BY ' . SetConnection::displayOrderSql('s2', 'sc2') . ' LIMIT 1) '
 				. 'LEFT JOIN `set` s ON s.id = sc.set_id '
-				. 'WHERE r.user_id = ? AND (sc.id IS NOT NULL OR r.tsumego_id = 0) '
+				. 'WHERE r.user_id = ? AND (sc.id IS NOT NULL OR r.reject_type_id = ' . Reject::TYPE_TAG_NAME . ') '
 			. ') AS contributions '
 			. "ORDER BY created DESC, row_id DESC "
 			. "LIMIT {$pageSize} OFFSET {$offset}",
@@ -316,6 +318,15 @@ class TagsController extends AppController
 		ClassRegistry::init('Tag')->delete($tagToReject);
 
 		if ($tagToReject['user_id'])
+		{
+			// the tag is gone, the proposer still sees its name among their contributions
+			ClassRegistry::init('Reject')->create();
+			ClassRegistry::init('Reject')->save([
+				'reject_type_id' => Reject::TYPE_TAG_NAME,
+				'tag_name' => $tagToReject['name'],
+				'user_id' => $tagToReject['user_id'],
+				'rejected_by_user_id' => Auth::getUserID(),
+				'comment' => $comment]);
 			ProposalFeedback::send(
 				(int) $tagToReject['user_id'],
 				'Your new tag ' . $tagToReject['name'] . ' was rejected by ' . ProposalFeedback::adminName() . '.',
@@ -323,6 +334,7 @@ class TagsController extends AppController
 				null,
 				$comment,
 				$this->_getEmailer());
+		}
 
 		CookieFlash::set('Tag ' . $tagToReject['name'] . ' was rejected', 'success');
 		return $this->redirect('/admin/new-tags');

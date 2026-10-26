@@ -40,16 +40,6 @@ class SetsController extends AppController
 		$this->set('_title', 'Tsumego Hero - Collections');
 		$setsNew = [];
 
-		if (isset($this->params['url']['restore']))
-		{
-			$restore = $this->Set->findById($this->params['url']['restore']);
-			if ($restore && $restore['Set']['public'] == -1)
-			{
-				$restore['Set']['public'] = 0;
-				$this->Set->save($restore);
-			}
-		}
-
 		$sets = $this->Set->find('all', [
 			'order' => ['Set.order'],
 			'conditions' => ['public' => 0, 'user_id IS NULL', 'deleted IS NULL'],

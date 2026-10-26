@@ -102,6 +102,22 @@ class ProfileTabsTest extends IntegrationTestCase
 		$this->assertStringContainsString('href="/tags/user/' . $bobbyId . '"', $page);
 	}
 
+	public function testProfileLinksToTheContributionsOfAPlayerWhoseNewTagWasRejected(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'alice'],
+			'other-users' => [['name' => 'bob']],
+		]);
+		$bobbyId = $context->otherUsers[0]['id'];
+		ClassRegistry::init('Reject')->create();
+		ClassRegistry::init('Reject')->save(['user_id' => $bobbyId, 'reject_type_id' => Reject::TYPE_TAG_NAME, 'tag_name' => 'tesuji']);
+		$this->login('alice');
+
+		$this->get('/users/view/' . $bobbyId);
+
+		$this->assertStringContainsString('href="/tags/user/' . $bobbyId . '"', $this->view);
+	}
+
 	public function testTheCollectionsPageCarriesTheSameTabs(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'alice']]);

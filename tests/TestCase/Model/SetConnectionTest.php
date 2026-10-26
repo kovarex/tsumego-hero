@@ -58,7 +58,7 @@ class SetConnectionTest extends CakeTestCase
 			'user' => ['name' => 'display', 'rating' => 1000],
 			'tsumego' => [
 				'sets' => [
-					['name' => 'deleted', 'public' => -1, 'order' => 5, 'num' => 1],
+					['name' => 'deleted', 'public' => 1, 'deleted' => '2026-10-01 00:00:00', 'order' => 5, 'num' => 1],
 					['name' => 'favorite', 'public' => 0, 'user_id' => 'self', 'order' => 5, 'num' => 1],
 				],
 			],

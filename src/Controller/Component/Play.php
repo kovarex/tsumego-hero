@@ -108,41 +108,15 @@ class Play
 						AdminActivityLogger::log(AdminActivityType::PASS_MODE, $t['Tsumego']['id'], null, null, '0');
 					if ($data['Settings']['r43'] == 'yes' && $t['Tsumego']['pass'] != 1)
 						AdminActivityLogger::log(AdminActivityType::PASS_MODE, $t['Tsumego']['id'], null, null, '1');
-					if ($data['Settings']['r41'] == 'yes' && $tsumegoVariant == null)
+					// only a sandbox problem has these two
+					if (isset($data['Settings']['r41'], $data['Settings']['r42']))
 					{
-						AdminActivityLogger::log(AdminActivityType::MULTIPLE_CHOICE, $t['Tsumego']['id'], null, null, '1');
-						$tv1 = [];
-						$tv1['TsumegoVariant']['tsumego_id'] = $id;
-						$tv1['TsumegoVariant']['type'] = 'multiple_choice';
-						$tv1['TsumegoVariant']['answer1'] = 'Black is dead';
-						$tv1['TsumegoVariant']['answer2'] = 'White is dead';
-						$tv1['TsumegoVariant']['answer3'] = 'Ko';
-						$tv1['TsumegoVariant']['answer4'] = 'Seki';
-						$tv1['TsumegoVariant']['correct_answer'] = '1';
-						ClassRegistry::init('TsumegoVariant')->create();
-						ClassRegistry::init('TsumegoVariant')->save($tv1);
-					}
-					if ($data['Settings']['r41'] == 'no' && $tsumegoVariant != null)
-					{
-						AdminActivityLogger::log(AdminActivityType::MULTIPLE_CHOICE, $t['Tsumego']['id'], null, null, '0');
-						ClassRegistry::init('TsumegoVariant')->delete($tsumegoVariant['TsumegoVariant']['id']);
-						$tsumegoVariant = null;
-					}
-					if ($data['Settings']['r42'] == 'yes' && $tsumegoVariant == null)
-					{
-						AdminActivityLogger::log(AdminActivityType::SCORE_ESTIMATING, $t['Tsumego']['id'], null, null, '1');
-						$tv1 = [];
-						$tv1['TsumegoVariant']['tsumego_id'] = $id;
-						$tv1['TsumegoVariant']['type'] = 'score_estimating';
-						$tv1['TsumegoVariant']['correct_answer'] = '0';
-						ClassRegistry::init('TsumegoVariant')->create();
-						ClassRegistry::init('TsumegoVariant')->save($tv1);
-					}
-					if ($data['Settings']['r42'] == 'no' && $tsumegoVariant != null)
-					{
-						AdminActivityLogger::log(AdminActivityType::SCORE_ESTIMATING, $t['Tsumego']['id'], null, null, '0');
-						ClassRegistry::init('TsumegoVariant')->delete($tsumegoVariant['TsumegoVariant']['id']);
-						$tsumegoVariant = null;
+						$variantType = null;
+						if ($data['Settings']['r41'] == 'yes')
+							$variantType = 'multiple_choice';
+						elseif ($data['Settings']['r42'] == 'yes')
+							$variantType = 'score_estimating';
+						$tsumegoVariant = self::changeVariantType((int) $id, $tsumegoVariant, $variantType);
 					}
 					if ($data['Settings']['r39'] == 'on')
 						$t['Tsumego']['alternative_response'] = 1;
@@ -478,6 +452,36 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 									(' . h($set['Set']['title']) . ' ' . $setConnection['SetConnection']['num'] . '/' . $amountOfOtherCollection . ')
 								</a>
 							</font>';
+	}
+
+	/**
+	 * Makes a problem a multiple choice or a score estimating problem, or neither (null). A problem has
+	 * one variant at most, and keeps the answers of its variant while the type stays.
+	 *
+	 * @return array|null The variant the problem has now
+	 */
+	private static function changeVariantType(int $tsumegoID, ?array $variant, ?string $type): ?array
+	{
+		$activityTypes = ['multiple_choice' => AdminActivityType::MULTIPLE_CHOICE, 'score_estimating' => AdminActivityType::SCORE_ESTIMATING];
+		$currentType = $variant['TsumegoVariant']['type'] ?? null;
+		if ($currentType === $type)
+			return $variant;
+		if ($variant)
+		{
+			if (isset($activityTypes[$currentType]))
+				AdminActivityLogger::log($activityTypes[$currentType], $tsumegoID, null, null, '0');
+			ClassRegistry::init('TsumegoVariant')->delete($variant['TsumegoVariant']['id']);
+		}
+		if ($type === null)
+			return null;
+
+		AdminActivityLogger::log($activityTypes[$type], $tsumegoID, null, null, '1');
+		$newVariant = ['tsumego_id' => $tsumegoID, 'type' => $type, 'correct_answer' => 0];
+		if ($type === 'multiple_choice')
+			$newVariant = ['answer1' => 'Black is dead', 'answer2' => 'White is dead', 'answer3' => 'Ko', 'answer4' => 'Seki', 'correct_answer' => 1] + $newVariant;
+		ClassRegistry::init('TsumegoVariant')->create();
+		ClassRegistry::init('TsumegoVariant')->save($newVariant);
+		return ClassRegistry::init('TsumegoVariant')->find('first', ['conditions' => ['tsumego_id' => $tsumegoID]]);
 	}
 
 	private static function randomCorner(): string

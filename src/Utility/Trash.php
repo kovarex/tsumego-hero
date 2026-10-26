@@ -20,12 +20,6 @@ class Trash
 {
 	public static int $RETENTION_DAYS = 30;
 
-	/**
-	 * The tables that point to a problem without a foreign key that removes their rows with it.
-	 * Every other table with a tsumego_id has one (ON DELETE CASCADE), TrashTest makes sure of it.
-	 */
-	public static array $TABLES_WITHOUT_CASCADE = ['reject', 'tsumego_variant'];
-
 	public static int $PURGE_BATCH_SIZE = 50;
 
 	/**
@@ -124,11 +118,8 @@ class Trash
 	 */
 	private static function purgeProblems(array $tsumegoIDs): void
 	{
-		$placeholders = self::placeholders($tsumegoIDs);
-		foreach (self::$TABLES_WITHOUT_CASCADE as $table)
-			Util::execute('DELETE FROM `' . $table . '` WHERE tsumego_id IN (' . $placeholders . ')', $tsumegoIDs);
-		// everything else that belongs to the problem goes with it through the foreign keys
-		Util::execute('DELETE FROM tsumego WHERE id IN (' . $placeholders . ')', $tsumegoIDs);
+		// everything that belongs to the problem goes with it through the foreign keys (TrashTest makes sure of it)
+		Util::execute('DELETE FROM tsumego WHERE id IN (' . self::placeholders($tsumegoIDs) . ')', $tsumegoIDs);
 	}
 
 	/**

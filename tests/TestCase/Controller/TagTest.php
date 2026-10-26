@@ -506,9 +506,9 @@ class TagTest extends IntegrationTestCase
 			$this->assertSame($tagAdded['name'], 'atari');
 			$this->assertSame($tagAdded['description'], 'Not the console, which is named by this by the way.');
 			$this->assertSame($tagAdded['link'], 'https://example.com');
-			$this->assertSame($tagAdded['hint'], $isHint ? 1 : 0);
+			$this->assertSame($isHint, $tagAdded['hint']);
 			$this->assertSame($tagAdded['user_id'], Auth::getUserID());
-			$this->assertSame($tagAdded['approved'], 1);
+			$this->assertTrue($tagAdded['approved']);
 		}
 	}
 
@@ -533,7 +533,7 @@ class TagTest extends IntegrationTestCase
 		$tagAdded = ClassRegistry::init('Tag')->find('first')['Tag'];
 		$this->assertSame(Util::getMyAddress() . '/tags/view/' . $tagAdded['id'], $browser->driver->getCurrentURL());
 		$this->assertSame($tagAdded['name'], 'self atari');
-		$this->assertSame($tagAdded['approved'], 0);
+		$this->assertFalse($tagAdded['approved']);
 	}
 
 	public function testAddTagWithoutDescriptionShowsError()
@@ -573,9 +573,9 @@ class TagTest extends IntegrationTestCase
 		$context = new ContextPreparator(['user' => ['admin' => true], 'tags' => [['name' => 'snapback', 'approved' => 0]]]);
 		$browser->get('admin/new-tags');
 
-		$this->assertSame(ClassRegistry::init('Tag')->find('first')['Tag']['approved'], 0);
+		$this->assertFalse(ClassRegistry::init('Tag')->find('first')['Tag']['approved']);
 		$browser->clickId('tag-accept-' . $context->tags[0]['id']);
-		$this->assertSame(ClassRegistry::init('Tag')->find('first')['Tag']['approved'], 1);
+		$this->assertTrue(ClassRegistry::init('Tag')->find('first')['Tag']['approved']);
 	}
 
 	public function testRejectNewTag()
@@ -607,7 +607,7 @@ class TagTest extends IntegrationTestCase
 		$tag = ClassRegistry::init('Tag')->find('first')['Tag'];
 		$this->assertSame('World', $tag['description']);
 		$this->assertSame('https://example.com', $tag['link']);
-		$this->assertSame(0, $tag['hint']);
+		$this->assertFalse($tag['hint']);
 	}
 
 	public function testTagViewSanitizesDescription(): void
@@ -677,7 +677,7 @@ class TagTest extends IntegrationTestCase
 		$browser->clickId('tag_hint_true');
 		$browser->clickId('submit_tag');
 		$tag = ClassRegistry::init('Tag')->find('first')['Tag'];
-		$this->assertSame(1, $tag['hint']);
+		$this->assertTrue($tag['hint']);
 	}
 
 	public function testEditTagDisableHint()
@@ -686,13 +686,13 @@ class TagTest extends IntegrationTestCase
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
 			'tags' => [['name' => 'snapback', 'description' => 'Hello', 'is_hint' => true]]]);
-		$this->assertSame(1, $context->tags[0]['hint']);
+		$this->assertTrue($context->tags[0]['hint']);
 		$browser->get('/tags/view/' . $context->tags[0]['id']);
 		$browser->clickId('tag-edit');
 		$browser->clickId('tag_hint_false');
 		$browser->clickId('submit_tag');
 		$tag = ClassRegistry::init('Tag')->find('first')['Tag'];
-		$this->assertSame(0, $tag['hint']); // hint value was not touched
+		$this->assertFalse($tag['hint']); // hint value was not touched
 	}
 
 	public function testTagContributionsShowsUsersTagActivity()
@@ -739,7 +739,7 @@ class TagTest extends IntegrationTestCase
 		]);
 		$tagId = $tag->id;
 
-		$this->assertSame(0, ClassRegistry::init('Tag')->findById($tagId)['Tag']['approved']);
+		$this->assertFalse(ClassRegistry::init('Tag')->findById($tagId)['Tag']['approved']);
 
 		$browser = Browser::instance();
 		$browser->get('/admin/new-tags');
@@ -747,7 +747,7 @@ class TagTest extends IntegrationTestCase
 		$browser->waitUntilJs('document.documentElement.outerHTML.includes("was approved")');
 
 		$this->assertStringEndsWith('/admin/new-tags', $browser->driver->getCurrentURL());
-		$this->assertSame(1, ClassRegistry::init('Tag')->findById($tagId)['Tag']['approved']);
+		$this->assertTrue(ClassRegistry::init('Tag')->findById($tagId)['Tag']['approved']);
 	}
 
 	public function testAcceptAlreadyApprovedTagShowsError()
@@ -799,7 +799,7 @@ class TagTest extends IntegrationTestCase
 		$browser->post('/tags/acceptTagProposal/' . $tagId);
 
 		$this->assertStringNotContainsString('/admin/', $browser->driver->getCurrentURL());
-		$this->assertSame(0, ClassRegistry::init('Tag')->findById($tagId)['Tag']['approved']);
+		$this->assertFalse(ClassRegistry::init('Tag')->findById($tagId)['Tag']['approved']);
 	}
 
 	public function testTagHighscoreUpdatesAfterAcceptance()
