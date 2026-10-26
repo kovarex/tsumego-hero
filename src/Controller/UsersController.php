@@ -240,54 +240,12 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	}
 
 	/**
-	 * @return void
+	 * The uploads became the SGF changes of the admin area
 	 */
 	#[HttpGet]
-	public function uploads(): void
+	public function uploads(): CakeResponse
 	{
-		$this->Authorization->authorize('Admin');
-		$this->set('_page', 'set');
-		$this->set('_title', 'Uploads');
-		$newSince = AdminPage::markViewed(Auth::getUserID(), AdminPage::UPLOADS);
-		$this->loadModel('Sgf');
-		$this->loadModel('Tsumego');
-		$this->loadModel('Set');
-		$this->loadModel('SetConnection');
-
-		$s = $this->Sgf->find('all', [
-			'limit' => 250,
-			'order' => 'created DESC',
-			'conditions' => ['sgf_status_id !=' => Sgf::STATUS_REJECTED],
-		]);
-
-		//to display the correct version
-		$versionCounter = [];
-
-		$sCount = count($s);
-		for ($i = 0; $i < $sCount; $i++)
-		{
-
-
-			$u = $this->User->findById($s[$i]['Sgf']['user_id']);
-			$s[$i]['Sgf']['user'] = $u['User']['display_name'];
-			$t = $this->Tsumego->findById($s[$i]['Sgf']['tsumego_id']);
-			$scT = $this->SetConnection->findDisplaySetConnection($t['Tsumego']['id']);
-			$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
-			$set = $this->Set->findById($t['Tsumego']['set_id']);
-			$s[$i]['Sgf']['title'] = $set['Set']['title'] . ' ' . $set['Set']['title2'] . ' #' . $scT['SetConnection']['num'];
-			$s[$i]['Sgf']['num'] = $scT['SetConnection']['num'];
-
-			if(isset($versionCounter[$scT['SetConnection']['tsumego_id']]))
-				$versionCounter[$scT['SetConnection']['tsumego_id']]++;
-			else
-				$versionCounter[$scT['SetConnection']['tsumego_id']] = 0;
-			$s[$i]['Sgf']['version'] = count($this->Sgf->find('all', ['conditions' => ['tsumego_id' => $scT['SetConnection']['tsumego_id'], 'sgf_status_id !=' => Sgf::STATUS_REJECTED]])) - $versionCounter[$scT['SetConnection']['tsumego_id']];
-
-			$s[$i]['Sgf']['delete'] = false;
-			$s[$i]['Sgf']['new'] = $newSince !== null && $s[$i]['Sgf']['created'] > $newSince && (int) $s[$i]['Sgf']['user_id'] !== Auth::getUserID();
-			$s[$i]['Sgf']['diff'] = $this->Sgf->findPreviousVersionID($s[$i]['Sgf']['tsumego_id'], $s[$i]['Sgf']['id']);
-		}
-		$this->set('s', $s);
+		return $this->redirect('/admin/sgf-changes');
 	}
 
 	/**

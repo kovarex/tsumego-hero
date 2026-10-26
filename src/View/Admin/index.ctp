@@ -9,7 +9,7 @@ use App\Utility\Auth;
  * @var int $tagProposalCount
  * @var int $newTagCount
  * @var int $openIssueCount
- * @var int $newUploadCount
+ * @var int $newSgfChangeCount
  * @var int $deletedAccountCount
  */
 
@@ -35,7 +35,7 @@ $renderLink = function (string $url, string $label, int $count = 0, string $coun
 		$renderLink('/admin/new-tags', 'New tags', $newTagCount, 'New tags proposed, waiting for a decision');
 		$renderLink('/tsumego-issues', 'Issues', $openIssueCount, 'Open issues');
 		$renderLink('/tags', 'Tag overview');
-		$renderLink('/users/uploads', 'Uploads', $newUploadCount, 'Uploaded by others since you last looked');
+		$renderLink('/admin/sgf-changes', 'SGF changes', $newSgfChangeCount, 'Saved by others since you last looked');
 		?>
 	</ul>
 

@@ -91,7 +91,7 @@ class UploadSgfTest extends IntegrationTestCase
 		$this->assertCount(2, $plusMark); // one on the board, one in the tree (the summary of the changes has one too)
 	}
 
-	public function testOpeningSgfDiffFromTheUploadsList()
+	public function testOpeningSgfDiffFromTheSgfChanges()
 	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true],
@@ -104,7 +104,7 @@ class UploadSgfTest extends IntegrationTestCase
 		Util::execute('UPDATE sgf SET created = ? WHERE id = ?', ['2026-01-01 12:00:00', $latest['Sgf']['id']]);
 
 		$browser = Browser::instance();
-		$browser->get('/users/uploads');
+		$browser->get('/admin/sgf-changes');
 		$browser->find('#compare-' . $latest['Sgf']['id'])->click();
 		$this->assertSame('Version 2', $browser->findById('commentBox')->getText());
 

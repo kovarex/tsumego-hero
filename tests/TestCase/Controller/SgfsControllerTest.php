@@ -47,9 +47,9 @@ class SgfsControllerTest extends IntegrationTestCase
 		Util::execute('UPDATE sgf SET created = ? WHERE id = ?', ['2026-01-01 12:00:00', $a2]);
 
 		// all uploads: A2, B1, A1
-		$this->get('/users/uploads');
+		$this->get('/admin/sgf-changes');
 		$uploads = $this->view;
-		$this->assertStringContainsString('id="compare-' . $a2 . '" class="openDiff" href="/editor?sgfID=' . $a2 . '&diffID=' . $a1 . '"', $uploads);
+		$this->assertStringContainsString('id="compare-' . $a2 . '" href="/editor?sgfID=' . $a2 . '&diffID=' . $a1 . '"', $uploads);
 		$this->assertStringNotContainsString('id="compare-' . $b1 . '"', $uploads);
 		$this->assertStringNotContainsString('id="compare-' . $a1 . '"', $uploads);
 
