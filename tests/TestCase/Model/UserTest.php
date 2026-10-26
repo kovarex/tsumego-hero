@@ -20,7 +20,7 @@ class UserTest extends CakeTestCase
 
 		$User = ClassRegistry::init('User');
 		$user = $User->findById($context->user['id']);
-		$user['User']['lastHighscore'] = 5;
+		$user['User']['highscore_page'] = 5;
 
 		$this->assertNotFalse($User->save($user), 'Saving an account that already has such a name must work');
 	}

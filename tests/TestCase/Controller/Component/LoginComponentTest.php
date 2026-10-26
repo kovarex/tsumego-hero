@@ -172,12 +172,12 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		$this->testAction('users/resetpassword/', ['data' => ['User' => ['email' => $user['email']]], 'method' => 'POST']);
 
 		$userNew = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
-		$this->assertNotEmpty($userNew['passwordreset']);
-		$this->assertNotEmpty($userNew['passwordreset_created']);
+		$this->assertNotEmpty($userNew['password_reset_token']);
+		$this->assertNotEmpty($userNew['password_reset_token_created']);
 		$this->assertNotNull(TestEmailer::$lastEmail);
 		$this->assertSame(TestEmailer::$lastEmail['to'], $user['email']);
 		$this->assertTextContains('Password reset', TestEmailer::$lastEmail['subject']);
-		$this->assertStringContainsString('/users/newpassword/' . $userNew['passwordreset'], TestEmailer::$lastEmail['body']);
+		$this->assertStringContainsString('/users/newpassword/' . $userNew['password_reset_token'], TestEmailer::$lastEmail['body']);
 	}
 
 	/**
@@ -200,11 +200,11 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 			TestEmailer::$unreachable = false;
 		}
 
-		$this->assertEmpty($this->resetFields()['passwordreset']);
+		$this->assertEmpty($this->resetFields()['password_reset_token']);
 
 		$this->registerTestEmailer();
 		$this->testAction('users/resetpassword/', ['data' => ['User' => ['email' => $user['email']]], 'method' => 'POST']);
-		$this->assertNotEmpty($this->resetFields()['passwordreset']);
+		$this->assertNotEmpty($this->resetFields()['password_reset_token']);
 	}
 
 	private function resetFields(): array
@@ -236,8 +236,8 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 
 		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
 		$resetSecret = 'reset_checksum_abc';
-		$user['passwordreset'] = $resetSecret;
-		$user['passwordreset_created'] = date('Y-m-d H:i:s');
+		$user['password_reset_token'] = $resetSecret;
+		$user['password_reset_token_created'] = date('Y-m-d H:i:s');
 		ClassRegistry::init('User')->save($user);
 
 		$browser = Browser::instance();
@@ -257,8 +257,8 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		$this->assertTextContains("Password changed", $browser->driver->getPageSource());
 
 		$newUser = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
-		$this->assertNull($newUser['passwordreset']); // password reset was cleared
-		$this->assertNull($newUser['passwordreset_created']);
+		$this->assertNull($newUser['password_reset_token']); // password reset was cleared
+		$this->assertNull($newUser['password_reset_token_created']);
 		$this->assertFalse(Auth::isLoggedIn());
 
 		$this->testAction('users/login/', ['data' => ['username' => 'kovarex', 'password' => $newPassword], 'method' => 'POST']);
@@ -275,8 +275,8 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 
 		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
 		$before = $user['password_hash'];
-		$user['passwordreset'] = 'old_reset_checksum';
-		$user['passwordreset_created'] = date('Y-m-d H:i:s', strtotime('-3 hours'));
+		$user['password_reset_token'] = 'old_reset_checksum';
+		$user['password_reset_token_created'] = date('Y-m-d H:i:s', strtotime('-3 hours'));
 		ClassRegistry::init('User')->save($user);
 
 		$this->testAction('users/newpassword/old_reset_checksum', [
@@ -285,7 +285,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 
 		$after = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
 		$this->assertSame($before, $after['password_hash']);
-		$this->assertSame('old_reset_checksum', $after['passwordreset']);
+		$this->assertSame('old_reset_checksum', $after['password_reset_token']);
 	}
 
 	public function testAResetKeepsThePasswordWhenItIsTypedTwiceDifferently(): void
@@ -294,8 +294,8 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 
 		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
 		$before = $user['password_hash'];
-		$user['passwordreset'] = 'reset_checksum_twice';
-		$user['passwordreset_created'] = date('Y-m-d H:i:s');
+		$user['password_reset_token'] = 'reset_checksum_twice';
+		$user['password_reset_token_created'] = date('Y-m-d H:i:s');
 		ClassRegistry::init('User')->save($user);
 
 		$this->testAction('users/newpassword/reset_checksum_twice', [

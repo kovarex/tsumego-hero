@@ -142,8 +142,8 @@ class PwnedPasswordTest extends TestCaseWithAuth
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'leakedReset']]);
 		$user = ClassRegistry::init('User')->findById($context->user['id']);
-		$user['User']['passwordreset'] = 'resetLinkForLeaked';
-		$user['User']['passwordreset_created'] = date('Y-m-d H:i:s');
+		$user['User']['password_reset_token'] = 'resetLinkForLeaked';
+		$user['User']['password_reset_token_created'] = date('Y-m-d H:i:s');
 		ClassRegistry::init('User')->save($user);
 		$this->logout();
 		$this->checker->addBreachedPassword(self::LEAKED);

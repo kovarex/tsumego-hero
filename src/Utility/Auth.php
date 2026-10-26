@@ -284,7 +284,7 @@ class Auth
 	public static function lightMode(): int
 	{
 		if (Auth::isLoggedIn())
-			return (Auth::getUser()['lastLight'] == User::THEME_DARK) ? self::$DARK_MODE : self::$LIGHT_MODE;
+			return (Auth::getUser()['theme'] == User::THEME_DARK) ? self::$DARK_MODE : self::$LIGHT_MODE;
 		if  (!empty($_COOKIE['lightDark']))
 			if ($_COOKIE['lightDark'] == 'dark')
 				return self::$DARK_MODE;

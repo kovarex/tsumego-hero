@@ -258,7 +258,7 @@ class UserSettingsTest extends ControllerTestCase
 
 		$this->assertSame('dark', $browser->driver->executeScript('return document.documentElement.dataset.theme;'));
 		$this->assertTrue($browser->find('input[name="theme"][value="dark"]')->isSelected());
-		$this->assertSame(1, $context->reloadUser()['lastLight'], 'dark is stored as 1');
+		$this->assertSame(1, $context->reloadUser()['theme'], 'dark is stored as 1');
 	}
 
 	public function testResetIsNotOfferedBeforeEnoughProblemsAreSolved(): void

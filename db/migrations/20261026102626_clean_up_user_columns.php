@@ -13,13 +13,16 @@ use Phinx\Migration\AbstractMigration;
  * - login_token: the forum signs in with the JWT auth_token cookie now,
  * - readingTrial, reuse4: only the daily cron reset them, nothing read them.
  *
- * Two columns get names saying what they are: t_glicko is the difficulty a player picked for the
- * rating mode (1 easiest, 4 normal, 7 hardest), reuse5 = 1 blocked the account (its play page
- * locks the board). Nothing sets the block, an admin does it in the database.
+ * The columns left are renamed to snake_case, like the rest of the schema, and to names saying what
+ * they are: t_glicko is the difficulty a player picked for the rating mode (1 easiest, 4 normal,
+ * 7 hardest), reuse5 = 1 blocked the account (its play page locks the board; nothing sets the block,
+ * an admin does it in the database), lastLight is the theme, lastHighscore the highscore page the
+ * menu links to, lastProfileLeft/Right the charts shown on the two sides of a profile. The cookies
+ * that carry these choices keep their names.
  *
  * IRREVERSIBLE in part: a rollback brings the columns back with their defaults, the data is gone.
  */
-final class DropUnusedUserColumns extends AbstractMigration
+final class CleanUpUserColumns extends AbstractMigration
 {
 	public function up(): void
 	{
@@ -42,7 +45,15 @@ final class DropUnusedUserColumns extends AbstractMigration
 				CHANGE t_glicko rating_mode_difficulty_selection TINYINT NOT NULL DEFAULT 4
 					COMMENT 'The difficulty picked for the rating mode, 1 easiest, 4 normal, 7 hardest.',
 				CHANGE reuse5 blocked TINYINT(1) NOT NULL DEFAULT 0
-					COMMENT 'A blocked account cannot solve problems, for cheaters or toxic players. Set by hand in the database.'");
+					COMMENT 'A blocked account cannot solve problems, for cheaters or toxic players. Set by hand in the database.',
+				CHANGE lastHighscore highscore_page INT(11) NOT NULL DEFAULT 0
+					COMMENT 'The highscore page the menu links to: 1 level, 2 rating, 3 daily, 4 time mode, 0 none yet.',
+				CHANGE lastLight theme TINYINT NOT NULL DEFAULT 0 COMMENT '0=light, 1=dark',
+				CHANGE levelBar level_bar TINYINT NOT NULL DEFAULT 1 COMMENT 'What the bar in the header shows: 1=level, 2=rating',
+				CHANGE lastProfileLeft profile_left_chart INT(11) NOT NULL DEFAULT 0,
+				CHANGE lastProfileRight profile_right_chart INT(11) NOT NULL DEFAULT 0,
+				CHANGE passwordreset password_reset_token VARCHAR(50) NULL DEFAULT NULL,
+				CHANGE passwordreset_created password_reset_token_created DATETIME NULL DEFAULT NULL");
 	}
 
 	public function down(): void
@@ -52,6 +63,13 @@ final class DropUnusedUserColumns extends AbstractMigration
 				CHANGE rating_mode_difficulty_selection t_glicko INT(11) NOT NULL DEFAULT 4
 					COMMENT 'Rating mode formula for calculating the changing value.',
 				CHANGE blocked reuse5 INT(11) NOT NULL DEFAULT 0 COMMENT 'Locks accounts. For example cheaters or toxic people.',
+				CHANGE highscore_page lastHighscore INT(11) NOT NULL DEFAULT 0 COMMENT 'Last used highscore page.',
+				CHANGE theme lastLight TINYINT NOT NULL DEFAULT 0 COMMENT '0=light, 1=dark',
+				CHANGE level_bar levelBar TINYINT NOT NULL DEFAULT 1 COMMENT '1=level, 2=rating',
+				CHANGE profile_left_chart lastProfileLeft INT(11) NOT NULL DEFAULT 0,
+				CHANGE profile_right_chart lastProfileRight INT(11) NOT NULL DEFAULT 0,
+				CHANGE password_reset_token passwordreset VARCHAR(50) NULL DEFAULT NULL,
+				CHANGE password_reset_token_created passwordreset_created DATETIME NULL DEFAULT NULL,
 				ADD COLUMN lastRefresh DATE DEFAULT NULL,
 				ADD COLUMN promoted INT(11) NOT NULL DEFAULT 0 COMMENT 'How active is the user in general.',
 				ADD COLUMN penalty INT(11) NOT NULL DEFAULT 0,
