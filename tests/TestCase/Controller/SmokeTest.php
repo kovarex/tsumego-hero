@@ -1,6 +1,5 @@
 <?php
 
-use PHPUnitRetry\RetryTrait;
 /**
  * Smoke tests - visit all major pages and verify:
  * - No JavaScript errors
@@ -14,9 +13,8 @@ use App\Utility\Auth;
 use App\Utility\TimeModeUtil;
 use App\Utility\Util;
 
-class SmokeTest extends ControllerTestCase
+class SmokeTest extends IntegrationTestCase
 {
-	use RetryTrait;
 	public function testAllMajorPagesLoadWithoutErrors()
 	{
 		// Create realistic production-like test data

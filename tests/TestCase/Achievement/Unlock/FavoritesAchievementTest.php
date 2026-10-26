@@ -13,10 +13,7 @@ class FavoritesAchievementTest extends AchievementTestCase
 		]);
 		$tsumegoId = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC'])['Tsumego']['id'];
 
-		$this->testAction('/sets/addTsumego/favorites', [
-			'data' => ['tsumego_id' => $tsumegoId],
-			'method' => 'POST',
-		]);
+		$this->post('/sets/addTsumego/favorites', ['tsumego_id' => $tsumegoId]);
 
 		$this->assertAchievementUnlocked(AchievementId::FAVORITES, 'Favorites achievement should unlock when favoriting a problem');
 	}
@@ -34,10 +31,7 @@ class FavoritesAchievementTest extends AchievementTestCase
 		$set->save(['title' => 'My Set', 'public' => 0, 'user_id' => $context->user['id'], 'order' => Constants::$DEFAULT_SET_ORDER]);
 		$setId = $set->getInsertID();
 
-		$this->testAction("/sets/addTsumego/{$setId}", [
-			'data' => ['tsumego_id' => $tsumegoId],
-			'method' => 'POST',
-		]);
+		$this->post("/sets/addTsumego/{$setId}", ['tsumego_id' => $tsumegoId]);
 
 		$this->assertAchievementNotUnlocked(AchievementId::FAVORITES);
 	}

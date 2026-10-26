@@ -4,17 +4,16 @@
 use App\Utility\Constants;
 use App\Utility\TsumegoMerger;
 
-class FavoritesViewTest extends TestCaseWithAuth
+class FavoritesViewTest extends IntegrationTestCase
 {
 	public function testFavoritesRedirectsToDefaultSet()
 	{
 		new ContextPreparator(['user' => ['name' => 'nofavs', 'rating' => 1500]]);
 
-		$this->testAction('/sets/view/favorites', ['method' => 'get']);
+		$this->get('/sets/view/favorites');
 
 		// Should redirect to the default Favorites set (created lazily)
-		$redirectUrl = $this->headers['Location'] ?? '';
-		$this->assertMatchesRegularExpression('#/sets/\d+$#', $redirectUrl);
+		$this->assertMatchesRegularExpression('#/sets/\d+$#', (string) $this->headerValue('Location'));
 	}
 
 	// ── Heart flag: lit when in ANY set ──────────────────────────────────
@@ -40,8 +39,8 @@ class FavoritesViewTest extends TestCaseWithAuth
 		$scModel->create();
 		$scModel->save(['SetConnection' => ['set_id' => $setModel->id, 'tsumego_id' => $tsumegoId, 'num' => 2]]);
 
-		$result = $this->testAction('/tsumegos/play/' . $tsumegoId, ['return' => 'vars']);
-		$sets = json_decode($result['userSetsJson'], true);
+		$this->get('/tsumegos/play/' . $tsumegoId);
+		$sets = json_decode($this->viewVariable('userSetsJson'), true);
 		$this->assertNotEmpty($sets);
 		$this->assertTrue(in_array(true, array_column($sets, 'contains'), true));
 	}
@@ -53,8 +52,8 @@ class FavoritesViewTest extends TestCaseWithAuth
 			'tsumego' => ['sgf' => '(;GM[1]FF[4]SZ[19])', 'sets' => [['name' => 'Playable Set', 'num' => 1]]],
 		]);
 
-		$result = $this->testAction('/tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'vars']);
-		$sets = json_decode($result['userSetsJson'], true);
+		$this->get('/tsumegos/play/' . $context->tsumegos[0]['id']);
+		$sets = json_decode($this->viewVariable('userSetsJson'), true);
 		// No user sets created, so userSetsJson should be empty
 		$this->assertEmpty($sets);
 	}
@@ -82,8 +81,8 @@ class FavoritesViewTest extends TestCaseWithAuth
 			$scModel->save(['SetConnection' => ['set_id' => $setModel->id, 'tsumego_id' => $tsumegoId, 'num' => 2]]);
 		}
 
-		$result = $this->testAction('/tsumegos/play/' . $tsumegoId, ['return' => 'vars']);
-		$sets = json_decode($result['userSetsJson'], true);
+		$this->get('/tsumegos/play/' . $tsumegoId);
+		$sets = json_decode($this->viewVariable('userSetsJson'), true);
 		$contains = array_column($sets, 'contains');
 		$this->assertCount(2, array_filter($contains));
 	}

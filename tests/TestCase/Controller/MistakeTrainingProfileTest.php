@@ -6,7 +6,7 @@ use App\Utility\Util;
 /**
  * The section of the mistake training on the profile of a player.
  */
-class MistakeTrainingProfileTest extends TestCaseWithAuth
+class MistakeTrainingProfileTest extends IntegrationTestCase
 {
 	private function daysAgo(int $days): string
 	{
@@ -48,7 +48,9 @@ class MistakeTrainingProfileTest extends TestCaseWithAuth
 
 	private function profileOf(int $userId): string
 	{
-		return $this->testAction('/users/view/' . $userId, ['method' => 'get', 'return' => 'contents']);
+		$this->get('/users/view/' . $userId);
+
+		return $this->view;
 	}
 
 	public function testTheProfileShowsTheTrainingOfThePlayer(): void

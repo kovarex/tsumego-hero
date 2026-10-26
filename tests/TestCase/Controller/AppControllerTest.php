@@ -2,7 +2,7 @@
 
 use App\Utility\Auth;
 
-class AppControllerTest extends TestCaseWithAuth
+class AppControllerTest extends IntegrationTestCase
 {
 	/**
 	 * Test that updateGems correctly increments gem counters based on solved puzzle rank.

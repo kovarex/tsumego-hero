@@ -7,7 +7,7 @@
  */
 use App\Utility\Auth;
 
-class DefaultPlayerColorTest extends TestCaseWithAuth
+class DefaultPlayerColorTest extends IntegrationTestCase
 {
 	public function testOriginalUsesSgfColor(): void
 	{
@@ -19,10 +19,8 @@ class DefaultPlayerColorTest extends TestCaseWithAuth
 		$this->login('originalUser');
 		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
 
-		$this->testAction(
-			'/' . $context->tsumegos[0]['set-connections'][0]['id'],
-			['return' => 'view']
-		);
+		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$this->assertResponseOk();
 
 		$this->assertTextContains('options.playerColor = "black"', $this->view);
 		$this->assertTextContains('options.swapColors = false', $this->view);
@@ -43,10 +41,8 @@ class DefaultPlayerColorTest extends TestCaseWithAuth
 		$this->login('originalUserWhite');
 		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
 
-		$this->testAction(
-			'/' . $context->tsumegos[0]['set-connections'][0]['id'],
-			['return' => 'view']
-		);
+		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$this->assertResponseOk();
 
 		$this->assertTextContains('options.playerColor = "white"', $this->view);
 		$this->assertTextContains('options.swapColors = false', $this->view);
@@ -67,10 +63,8 @@ class DefaultPlayerColorTest extends TestCaseWithAuth
 		$this->login('smallBoard');
 		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
 
-		$this->testAction(
-			'/' . $context->tsumegos[0]['set-connections'][0]['id'],
-			['return' => 'view']
-		);
+		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$this->assertResponseOk();
 
 		$this->assertTextContains('options.playerColor = "black"', $this->view);
 		$this->assertTextContains('options.swapColors = true', $this->view);
@@ -83,13 +77,9 @@ class DefaultPlayerColorTest extends TestCaseWithAuth
 		$context = new ContextPreparator(['user' => ['name' => 'prefStores']]);
 		$this->login('prefStores');
 
-		$result = $this->testAction('/users/playerColorPreference', [
-			'method' => 'post',
-			'data' => ['color' => User::PREF_PLAYER_COLOR_ORIGINAL],
-			'return' => 'contents',
-		]);
+		$this->post('/users/playerColorPreference', ['color' => User::PREF_PLAYER_COLOR_ORIGINAL]);
 
-		$this->assertSame('{"status":"ok"}', $result);
+		$this->assertSame('{"status":"ok"}', $this->view);
 		$user = ClassRegistry::init('User')->findById($context->user['id']);
 		$this->assertSame(User::PREF_PLAYER_COLOR_ORIGINAL, (int) $user['User']['pref_player_color']);
 	}
@@ -103,10 +93,7 @@ class DefaultPlayerColorTest extends TestCaseWithAuth
 			$context = new ContextPreparator(['user' => ['name' => $name]]);
 			$this->login($name);
 
-			$this->testAction('/users/playerColorPreference', [
-				'method' => 'post',
-				'data' => ['color' => $invalid],
-			]);
+			$this->post('/users/playerColorPreference', ['color' => $invalid]);
 
 			$user = ClassRegistry::init('User')->findById($context->user['id']);
 			$this->assertSame(User::PREF_PLAYER_COLOR_RANDOM, (int) $user['User']['pref_player_color']);
@@ -117,12 +104,9 @@ class DefaultPlayerColorTest extends TestCaseWithAuth
 	{
 		Auth::logout();
 
-		$this->expectException(UnauthorizedException::class);
+		$this->post('/users/playerColorPreference', ['color' => User::PREF_PLAYER_COLOR_ORIGINAL]);
 
-		$this->testAction('/users/playerColorPreference', [
-			'method' => 'post',
-			'data' => ['color' => User::PREF_PLAYER_COLOR_ORIGINAL],
-		]);
+		$this->assertResponseCode(401);
 	}
 
 	public function testRandomSwapMatchesChosenSide(): void
@@ -135,10 +119,8 @@ class DefaultPlayerColorTest extends TestCaseWithAuth
 		$this->login('randomSwap');
 		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_RANDOM);
 
-		$this->testAction(
-			'/' . $context->tsumegos[0]['set-connections'][0]['id'],
-			['return' => 'view']
-		);
+		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$this->assertResponseOk();
 
 		preg_match('/options\.playerColor = "(black|white)"/', $this->view, $playerColorMatch);
 		preg_match('/options\.swapColors = (true|false)/', $this->view, $swapColorsMatch);

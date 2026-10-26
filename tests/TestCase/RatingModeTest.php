@@ -1,7 +1,6 @@
 <?php
 
 use Facebook\WebDriver\Interactions\WebDriverActions;
-use PHPUnitRetry\RetryTrait;
 /**
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
@@ -9,9 +8,8 @@ use PHPUnitRetry\RetryTrait;
 use App\Utility\Auth;
 use App\Utility\Constants;
 
-class RatingModeTest extends ControllerTestCase
+class RatingModeTest extends IntegrationTestCase
 {
-	use RetryTrait;
 	public function testRatingMode()
 	{
 		$context = new ContextPreparator([

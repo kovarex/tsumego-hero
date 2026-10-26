@@ -1,7 +1,7 @@
 <?php
 
 
-class BoardTextureTest extends TestCaseWithAuth
+class BoardTextureTest extends IntegrationTestCase
 {
 	public function testBoardTexturePersistence()
 	{

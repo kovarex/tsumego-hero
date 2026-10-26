@@ -4,7 +4,7 @@
  * The tag overview (/tags): every tag with its problem count, the problems of a tag,
  * and deleting a tag.
  */
-class TagsIndexTest extends TestCaseWithAuth
+class TagsIndexTest extends IntegrationTestCase
 {
 	public function testIndexListsTagsWithProblemCounts()
 	{
@@ -17,7 +17,7 @@ class TagsIndexTest extends TestCaseWithAuth
 				['set_order' => 4, 'deleted' => '2026-10-01 00:00:00', 'tags' => [['name' => 'atari']]]],
 			'tags' => [['name' => 'snapback']]]);
 
-		$this->testAction('/tags', ['method' => 'get', 'return' => 'view']);
+		$this->get('/tags');
 
 		$this->assertMatchesRegularExpression('/>atari<.*?2 problems \+ 1 proposed/s', $this->view);
 		$this->assertMatchesRegularExpression('/>ko<.*?0 problems \+ 1 proposed/s', $this->view);
@@ -34,10 +34,10 @@ class TagsIndexTest extends TestCaseWithAuth
 				['set_order' => 3, 'tags' => [['name' => 'atari']]]],
 			'tags' => [['name' => 'snapback']]]);
 
-		$this->testAction('/tags', ['method' => 'get', 'return' => 'view']);
+		$this->get('/tags');
 		$this->assertMatchesRegularExpression('/>atari<.*>ko<.*>snapback</s', $this->view);
 
-		$this->testAction('/tags?sort=problems', ['method' => 'get', 'return' => 'view']);
+		$this->get('/tags?sort=problems');
 		$this->assertMatchesRegularExpression('/>ko<.*>atari<.*>snapback</s', $this->view);
 	}
 
@@ -50,7 +50,8 @@ class TagsIndexTest extends TestCaseWithAuth
 				['set_order' => 1, 'tags' => [['name' => 'atari']]],
 				['set_order' => 3, 'tags' => [['name' => 'ko']]]]]);
 
-		$problems = json_decode($this->testAction('/tags/problems/' . $context->tsumegos[0]['tags'][0]['id'], ['method' => 'get', 'return' => 'contents']), true);
+		$this->get('/tags/problems/' . $context->tsumegos[0]['tags'][0]['id']);
+		$problems = json_decode($this->view, true);
 
 		$this->assertSame([
 			['url' => '/' . $context->tsumegos[1]['set-connections'][0]['id'], 'name' => 'test set 1', 'approved' => true],
@@ -95,7 +96,7 @@ class TagsIndexTest extends TestCaseWithAuth
 	public function testOnlyOwnersAreOfferedTheDelete()
 	{
 		new ContextPreparator(['user' => ['admin' => true], 'tags' => [['name' => 'atari']]]);
-		$this->testAction('/tags', ['method' => 'get', 'return' => 'view']);
+		$this->get('/tags');
 		$this->assertStringContainsString('>atari<', $this->view);
 		$this->assertStringNotContainsString('tag-delete-', $this->view);
 	}
@@ -103,15 +104,17 @@ class TagsIndexTest extends TestCaseWithAuth
 	public function testIndexRequiresAdmin()
 	{
 		new ContextPreparator(['user' => ['admin' => false]]);
-		$this->expectException(ForbiddenException::class);
-		$this->testAction('/tags', ['method' => 'get']);
+		$this->get('/tags');
+
+		$this->assertResponseCode(403);
 	}
 
 	public function testProblemsRequireAdmin()
 	{
 		$context = new ContextPreparator(['user' => ['admin' => false], 'tags' => [['name' => 'atari']]]);
-		$this->expectException(ForbiddenException::class);
-		$this->testAction('/tags/problems/' . $context->tags[0]['id'], ['method' => 'get']);
+		$this->get('/tags/problems/' . $context->tags[0]['id']);
+
+		$this->assertResponseCode(403);
 	}
 
 	public function testDeleteRemovesTagFromProblemsAndLogsWhatItWas()
@@ -123,9 +126,9 @@ class TagsIndexTest extends TestCaseWithAuth
 				['set_order' => 2, 'tags' => [['name' => 'atari', 'approved' => 0]]]]]);
 		$atari = $context->tsumegos[0]['tags'][0];
 
-		$this->testAction('/tags/delete/' . $atari['id'], ['method' => 'post']);
+		$this->post('/tags/delete/' . $atari['id']);
 
-		$this->assertStringEndsWith('/tags', $this->headers['Location']);
+		$this->assertStringEndsWith('/tags', $this->headerValue('Location'));
 		$this->assertEmpty(ClassRegistry::init('Tag')->findById($atari['id']));
 		$this->assertSame(0, ClassRegistry::init('TagConnection')->find('count', ['conditions' => ['tag_id' => $atari['id']]]));
 		$this->assertSame(1, ClassRegistry::init('TagConnection')->find('count'), 'ko stays on its problem');

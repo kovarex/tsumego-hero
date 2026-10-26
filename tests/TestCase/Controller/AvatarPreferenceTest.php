@@ -2,7 +2,7 @@
 
 use App\Utility\Auth;
 
-class AvatarPreferenceTest extends TestCaseWithAuth
+class AvatarPreferenceTest extends IntegrationTestCase
 {
 	public function testStoresTheChosenAvatar(): void
 	{
@@ -10,11 +10,8 @@ class AvatarPreferenceTest extends TestCaseWithAuth
 		$context = new ContextPreparator(['user' => ['name' => 'avatarStores']]);
 		$this->login('avatarStores');
 
-		$result = $this->testAction('/users/avatarPreference', [
-			'method' => 'post',
-			'data' => ['avatar' => User::AVATAR_GRAVATAR],
-			'return' => 'contents',
-		]);
+		$this->post('/users/avatarPreference', ['avatar' => User::AVATAR_GRAVATAR]);
+		$result = $this->view;
 
 		$this->assertSame('{"status":"ok"}', $result);
 		$row = ClassRegistry::init('User')->findById($context->user['id']);
@@ -28,10 +25,7 @@ class AvatarPreferenceTest extends TestCaseWithAuth
 		$this->login('avatarBack');
 		$this->storeAvatar($context->user['id'], User::AVATAR_GRAVATAR);
 
-		$this->testAction('/users/avatarPreference', [
-			'method' => 'post',
-			'data' => ['avatar' => User::AVATAR_BOARD],
-		]);
+		$this->post('/users/avatarPreference', ['avatar' => User::AVATAR_BOARD]);
 
 		$row = ClassRegistry::init('User')->findById($context->user['id']);
 		$this->assertSame(User::AVATAR_BOARD, (int) $row['User']['pref_avatar']);
@@ -44,10 +38,7 @@ class AvatarPreferenceTest extends TestCaseWithAuth
 		$this->storeGooglePicture($context->user['id']);
 		$this->login('avatarGoogle');
 
-		$this->testAction('/users/avatarPreference', [
-			'method' => 'post',
-			'data' => ['avatar' => User::AVATAR_GOOGLE],
-		]);
+		$this->post('/users/avatarPreference', ['avatar' => User::AVATAR_GOOGLE]);
 
 		$row = ClassRegistry::init('User')->findById($context->user['id']);
 		$this->assertSame(User::AVATAR_GOOGLE, (int) $row['User']['pref_avatar']);
@@ -63,10 +54,7 @@ class AvatarPreferenceTest extends TestCaseWithAuth
 		$context = new ContextPreparator(['user' => ['name' => 'avatarNoGoogle']]);
 		$this->login('avatarNoGoogle');
 
-		$this->testAction('/users/avatarPreference', [
-			'method' => 'post',
-			'data' => ['avatar' => User::AVATAR_GOOGLE],
-		]);
+		$this->post('/users/avatarPreference', ['avatar' => User::AVATAR_GOOGLE]);
 
 		$row = ClassRegistry::init('User')->findById($context->user['id']);
 		$this->assertSame(User::AVATAR_BOARD, (int) $row['User']['pref_avatar']);
@@ -81,10 +69,7 @@ class AvatarPreferenceTest extends TestCaseWithAuth
 			$context = new ContextPreparator(['user' => ['name' => $name]]);
 			$this->login($name);
 
-			$this->testAction('/users/avatarPreference', [
-				'method' => 'post',
-				'data' => ['avatar' => $invalid],
-			]);
+			$this->post('/users/avatarPreference', ['avatar' => $invalid]);
 
 			$row = ClassRegistry::init('User')->findById($context->user['id']);
 			$this->assertSame(User::AVATAR_BOARD, (int) $row['User']['pref_avatar'], 'The value ' . $invalid . ' was stored');
@@ -95,12 +80,9 @@ class AvatarPreferenceTest extends TestCaseWithAuth
 	{
 		Auth::logout();
 
-		$this->expectException(UnauthorizedException::class);
+		$this->post('/users/avatarPreference', ['avatar' => User::AVATAR_BOARD]);
 
-		$this->testAction('/users/avatarPreference', [
-			'method' => 'post',
-			'data' => ['avatar' => User::AVATAR_BOARD],
-		]);
+		$this->assertResponseCode(401);
 	}
 
 	public function testTheSettingsPageOffersTheAvatarsTheAccountCanUse(): void
@@ -109,7 +91,8 @@ class AvatarPreferenceTest extends TestCaseWithAuth
 		$context = new ContextPreparator(['user' => ['name' => 'avatarOffers']]);
 		$this->login('avatarOffers');
 
-		$html = $this->testAction('/users/settings', ['method' => 'get', 'return' => 'contents']);
+		$this->get('/users/settings');
+		$html = $this->view;
 
 		$this->assertStringContainsString('name="avatar" value="' . User::AVATAR_BOARD . '"', $html);
 		$this->assertStringContainsString('name="avatar" value="' . User::AVATAR_GRAVATAR . '"', $html);
@@ -123,7 +106,8 @@ class AvatarPreferenceTest extends TestCaseWithAuth
 		$this->storeGooglePicture($context->user['id']);
 		$this->login('avatarOffersGoogle');
 
-		$html = $this->testAction('/users/settings', ['method' => 'get', 'return' => 'contents']);
+		$this->get('/users/settings');
+		$html = $this->view;
 
 		$this->assertStringContainsString('name="avatar" value="' . User::AVATAR_GOOGLE . '"', $html);
 	}

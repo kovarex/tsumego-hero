@@ -1,7 +1,6 @@
 <?php
 
 use Facebook\WebDriver\WebDriverBy;
-use PHPUnitRetry\RetryTrait;
 
 /**
  * Browser tests for inline SGF preview (data-sgf-preview attribute).
@@ -9,10 +8,8 @@ use PHPUnitRetry\RetryTrait;
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
-class TooltipPreviewTest extends ControllerTestCase
+class TooltipPreviewTest extends IntegrationTestCase
 {
-	use RetryTrait;
-
 	private const SGF = '(;GM[1]FF[4]CA[UTF-8]AP[CGoban:3]ST[2]SZ[19]KM[0.00]AW[cc][cd][dc][ed]AB[cb][db][eb][fc])';
 
 	public function testButtonHasInlineSgfPreview(): void

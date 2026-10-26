@@ -9,7 +9,7 @@ use App\Utility\Constants;
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
-class ProposalReviewBrowserTest extends TestCaseWithAuth
+class ProposalReviewBrowserTest extends IntegrationTestCase
 {
 	private const SGF_VERSION_1 = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc]C[Old start];B[aa];W[ab];B[ba]C[+])';
 	/** The same moves, but the correct ends are controlled by status now, and the start comment changed. */

@@ -7,7 +7,7 @@ use Facebook\WebDriver\WebDriverSelect;
 /**
  * Owners decide who is an admin or an owner (RolesController, User::changeRole).
  */
-class RolesControllerTest extends TestCaseWithAuth
+class RolesControllerTest extends IntegrationTestCase
 {
 	private static function roleOf(int $userID): int
 	{
@@ -16,7 +16,7 @@ class RolesControllerTest extends TestCaseWithAuth
 
 	private function changeRole(int $userID, int $roleID): void
 	{
-		$this->testAction('/roles/change/' . $userID, ['method' => 'POST', 'data' => ['user_role_id' => $roleID]]);
+		$this->post('/roles/change/' . $userID, ['user_role_id' => $roleID]);
 	}
 
 	public function testOwnerMakesPlayerAnAdmin(): void
@@ -57,22 +57,19 @@ class RolesControllerTest extends TestCaseWithAuth
 			'user' => ['name' => 'admin', 'admin' => true],
 			'other-users' => [['name' => 'player']]]);
 
-		try
-		{
-			$this->changeRole($context->otherUsers[0]['id'], User::ROLE_ADMIN);
-			$this->fail('An admin changed a role');
-		}
-		catch (ForbiddenException)
-		{
-		}
+		$this->changeRole($context->otherUsers[0]['id'], User::ROLE_ADMIN);
+
+		$this->assertResponseCode(403);
 		$this->assertSame(User::ROLE_PLAYER, self::roleOf($context->otherUsers[0]['id']));
 	}
 
 	public function testAdminCantMakeItselfAnOwner(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
-		$this->expectException(ForbiddenException::class);
+
 		$this->changeRole($context->user['id'], User::ROLE_OWNER);
+
+		$this->assertResponseCode(403);
 	}
 
 	public function testLastOwnerStaysOwner(): void
@@ -96,7 +93,7 @@ class RolesControllerTest extends TestCaseWithAuth
 
 		$this->assertSame(User::ROLE_ADMIN, self::roleOf($context->user['id']));
 		// the list of the roles is for owners only, so the former owner goes to the profile
-		$this->assertStringEndsWith('/users/view/' . $context->user['id'], $this->headers['Location']);
+		$this->assertRedirectContains('/users/view/' . $context->user['id']);
 	}
 
 	public function testDeletedOwnerDoesntCountAsAnotherOwner(): void
@@ -130,7 +127,8 @@ class RolesControllerTest extends TestCaseWithAuth
 				['name' => 'admin', 'admin' => true],
 				['name' => 'player']]]);
 
-		$view = $this->testAction('/roles', ['method' => 'GET', 'return' => 'view']);
+		$this->get('/roles');
+		$view = $this->view;
 
 		$this->assertStringContainsString('DN_owner', $view);
 		$this->assertStringContainsString('DN_admin', $view);
@@ -141,8 +139,10 @@ class RolesControllerTest extends TestCaseWithAuth
 	public function testOnlyOwnerSeesRolesPage(): void
 	{
 		new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
-		$this->expectException(ForbiddenException::class);
-		$this->testAction('/roles', ['method' => 'GET']);
+
+		$this->get('/roles');
+
+		$this->assertResponseCode(403);
 	}
 
 	public function testOnlyOwnerSeesRoleFormOnProfile(): void
@@ -150,7 +150,8 @@ class RolesControllerTest extends TestCaseWithAuth
 		$context = new ContextPreparator([
 			'user' => ['name' => 'admin', 'admin' => true],
 			'other-users' => [['name' => 'player']]]);
-		$view = $this->testAction('/users/view/' . $context->otherUsers[0]['id'], ['method' => 'GET', 'return' => 'view']);
+		$this->get('/users/view/' . $context->otherUsers[0]['id']);
+		$view = $this->view;
 		$this->assertStringNotContainsString('role-submit-', $view);
 		$this->assertStringNotContainsString('href="/roles"', $view);
 	}

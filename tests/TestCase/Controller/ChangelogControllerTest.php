@@ -1,13 +1,14 @@
 <?php
 
-class ChangelogControllerTest extends ControllerTestCase
+class ChangelogControllerTest extends IntegrationTestCase
 {
 	/**
 	 * The public changelog page renders its shell and mounts the React feed.
 	 */
 	public function testIndexRendersPageShell()
 	{
-		$result = $this->testAction('/changelog', ['method' => 'get', 'return' => 'view']);
+		$this->get('/changelog');
+		$result = $this->view;
 
 		$this->assertStringContainsString('What\'s new', $result);
 		$this->assertStringContainsString('data-changelog-root', $result);
@@ -19,7 +20,8 @@ class ChangelogControllerTest extends ControllerTestCase
 	 */
 	public function testIndexEmbedsEntriesAsJson()
 	{
-		$result = $this->testAction('/changelog', ['method' => 'get', 'return' => 'view']);
+		$this->get('/changelog');
+		$result = $this->view;
 
 		$this->assertSame(1, preg_match('/data-props="([^"]*)"/', $result, $m), 'data-props attribute should be present');
 		$json = html_entity_decode($m[1], ENT_QUOTES);
@@ -82,9 +84,8 @@ class ChangelogControllerTest extends ControllerTestCase
 
 	public function testBeforeFilterExposesChangelogTimestampsViewVar()
 	{
-		$this->testAction('/changelog', ['method' => 'get', 'return' => 'vars']);
+		$this->get('/changelog');
 
-		$this->assertArrayHasKey('changelogTimestamps', $this->vars);
-		$this->assertIsArray($this->vars['changelogTimestamps']);
+		$this->assertIsArray($this->viewVariable('changelogTimestamps'));
 	}
 }

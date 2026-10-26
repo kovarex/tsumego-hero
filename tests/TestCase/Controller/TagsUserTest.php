@@ -3,15 +3,16 @@
 /**
  * Tests for TagsController::user() - the contributions page.
  */
-class TagsUserTest extends TestCaseWithAuth
+class TagsUserTest extends IntegrationTestCase
 {
 	/**
 	 * User not found returns 404.
 	 */
 	public function testUserNotFound()
 	{
-		$this->expectException(\NotFoundException::class);
-		$this->testAction('/tags/user/999999', ['method' => 'get', 'return' => 'view']);
+		$this->get('/tags/user/999999');
+
+		$this->assertResponseCode(404);
 	}
 
 	/**
@@ -22,7 +23,7 @@ class TagsUserTest extends TestCaseWithAuth
 		new ContextPreparator(['user' => ['name' => 'lonely', 'rating' => 1500]]);
 		$user = ClassRegistry::init('User')->findByName('lonely');
 
-		$this->testAction('/tags/user/' . $user['User']['id'], ['method' => 'get', 'return' => 'view']);
+		$this->get('/tags/user/' . $user['User']['id']);
 
 		$this->assertTextContains('lonely', $this->view);
 		// No legacy classes in the table
@@ -65,7 +66,7 @@ class TagsUserTest extends TestCaseWithAuth
 			'user_id' => $userId, 'tsumego_id' => $context->tsumegos[1]['id'], 'type' => 'proposal', 'text' => 'bad sgf',
 		]]);
 
-		$this->testAction("/tags/user/{$userId}", ['method' => 'get', 'return' => 'view']);
+		$this->get("/tags/user/{$userId}");
 		$text = strip_tags($this->view);
 
 		// 1. Accepted tag name
@@ -121,7 +122,7 @@ class TagsUserTest extends TestCaseWithAuth
 			'Tag' => ['name' => 'omega', 'user_id' => $userId, 'approved' => 1, 'description' => 'o', 'created' => '2025-06-01 10:00:00'],
 		]);
 
-		$this->testAction("/tags/user/{$userId}", ['method' => 'get', 'return' => 'view']);
+		$this->get("/tags/user/{$userId}");
 
 		$posAlpha = strpos($this->view, 'alpha');
 		$posOmega = strpos($this->view, 'omega');
@@ -157,7 +158,7 @@ class TagsUserTest extends TestCaseWithAuth
 			'user_id' => $userId, 'tsumego_id' => 999999, 'type' => 'tag', 'text' => 'hidden tag',
 		]]);
 
-		$this->testAction("/tags/user/{$userId}", ['method' => 'get', 'return' => 'view']);
+		$this->get("/tags/user/{$userId}");
 
 		$this->assertTextContains('visible tag', $this->view);
 		$this->assertTextNotContains('hidden tag', $this->view);
@@ -171,7 +172,7 @@ class TagsUserTest extends TestCaseWithAuth
 		new ContextPreparator(['user' => ['name' => 'pageTitleUser', 'rating' => 1500]]);
 		$user = ClassRegistry::init('User')->findByName('pageTitleUser');
 
-		$this->testAction('/tags/user/' . $user['User']['id'], ['method' => 'get', 'return' => 'view']);
+		$this->get('/tags/user/' . $user['User']['id']);
 
 		$this->assertTextContains('pageTitleUser', $this->view);
 	}
@@ -188,7 +189,7 @@ class TagsUserTest extends TestCaseWithAuth
 			'tags' => [['name' => 'snapback', 'approved' => 0]],
 		]);
 
-		$this->testAction('/tags/user/' . $context->user['id'], ['method' => 'get', 'return' => 'view']);
+		$this->get('/tags/user/' . $context->user['id']);
 		$text = strip_tags($this->view);
 
 		$this->assertStringContainsString('Tag', $text);
@@ -211,7 +212,7 @@ class TagsUserTest extends TestCaseWithAuth
 			]],
 		]);
 
-		$this->testAction('/tags/user/' . $context->user['id'], ['method' => 'get', 'return' => 'view']);
+		$this->get('/tags/user/' . $context->user['id']);
 		$text = strip_tags($this->view);
 
 		$this->assertStringContainsString('Tag', $text);
@@ -245,7 +246,7 @@ class TagsUserTest extends TestCaseWithAuth
 			'text' => 'badname',
 		]]);
 
-		$this->testAction('/tags/user/' . $context->user['id'], ['method' => 'get', 'return' => 'view']);
+		$this->get('/tags/user/' . $context->user['id']);
 		$text = strip_tags($this->view);
 
 		// Accepted tag name

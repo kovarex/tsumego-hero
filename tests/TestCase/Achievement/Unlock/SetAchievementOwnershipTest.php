@@ -15,7 +15,7 @@ class SetAchievementOwnershipTest extends AchievementTestCase
 		$setId = $this->createSetWithTsumegosAndConnections(1200, 100, 0, $context->user['id']);
 		$this->saveAverageTime($context->user['id'], $setId, 4);
 
-		$this->testAction('sets/view/' . $setId, ['method' => 'get', 'return' => 'vars']);
+		$this->get('sets/view/' . $setId);
 
 		$this->assertAchievementNotUnlocked(AchievementId::SPEED_I);
 	}
@@ -26,7 +26,7 @@ class SetAchievementOwnershipTest extends AchievementTestCase
 		$setId = $this->createSetWithTsumegosAndConnections(1200, 100, 0);
 		$this->saveAverageTime($context->user['id'], $setId, 4);
 
-		$this->testAction('sets/view/' . $setId, ['method' => 'get', 'return' => 'vars']);
+		$this->get('sets/view/' . $setId);
 
 		$this->assertAchievementNotUnlocked(AchievementId::SPEED_I);
 	}
@@ -37,7 +37,7 @@ class SetAchievementOwnershipTest extends AchievementTestCase
 		$setId = $this->createSetWithTsumegosAndConnections(1200, 100);
 		$this->saveAverageTime($context->user['id'], $setId, 4);
 
-		$this->testAction('sets/view/' . $setId, ['method' => 'get', 'return' => 'vars']);
+		$this->get('sets/view/' . $setId);
 
 		$this->assertAchievementUnlocked(AchievementId::SPEED_I);
 	}

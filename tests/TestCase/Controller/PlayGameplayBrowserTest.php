@@ -6,16 +6,13 @@ use App\Utility\Rating;
 use App\Utility\TimeModeUtil;
 use App\Utility\Util;
 use Facebook\WebDriver\Exception\TimeoutException;
-use PHPUnitRetry\RetryTrait;
 
 /**
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
-class PlayGameplayBrowserTest extends TestCaseWithAuth
+class PlayGameplayBrowserTest extends IntegrationTestCase
 {
-	use RetryTrait;
-
 	/** SGF with a 19x19 board and 3 clearly positioned setup stones. */
 	private const SGF_19 = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc][dd]AW[ee];B[aa];W[ab];B[ba]C[+])';
 

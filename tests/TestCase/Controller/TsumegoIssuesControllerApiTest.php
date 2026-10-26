@@ -3,30 +3,24 @@
 /**
  * Controller-level tests for the TsumegoIssuesController JSON API.
  */
-class TsumegoIssuesControllerApiTest extends ControllerTestCase
+class TsumegoIssuesControllerApiTest extends IntegrationTestCase
 {
 	public function testCreateRequiresLogin()
 	{
 		new ContextPreparator(['user' => null]);
 
-		$this->expectException(UnauthorizedException::class);
+		$this->post('/tsumego-issues/create', json_encode(['tsumego_id' => 1, 'text' => 'broken move']));
 
-		$this->testAction('/tsumego-issues/create', [
-			'method' => 'post',
-			'data' => json_encode(['tsumego_id' => 1, 'text' => 'broken move']),
-		]);
+		$this->assertResponseCode(401);
 	}
 
 	public function testCreateRequiresTsumegoIdAndMessage()
 	{
 		new ContextPreparator(['user' => ['name' => 'kovarex']]);
 
-		$this->expectException(BadRequestException::class);
+		$this->post('/tsumego-issues/create', json_encode([]));
 
-		$this->testAction('/tsumego-issues/create', [
-			'method' => 'post',
-			'data' => json_encode([]),
-		]);
+		$this->assertResponseCode(400);
 	}
 
 	public function testCreateSucceeds()
@@ -36,13 +30,10 @@ class TsumegoIssuesControllerApiTest extends ControllerTestCase
 			'tsumego' => ['set_order' => 1, 'status' => 'S'],
 		]);
 
-		$this->testAction('/tsumego-issues/create', [
-			'method' => 'post',
-			'data' => json_encode(['tsumego_id' => $context->tsumegos[0]['id'], 'text' => 'wrong answer']),
-		]);
+		$this->post('/tsumego-issues/create', json_encode(['tsumego_id' => $context->tsumegos[0]['id'], 'text' => 'wrong answer']));
 
-		$this->assertSame(200, $this->controller->response->statusCode());
-		$body = json_decode($this->controller->response->body(), true);
+		$this->assertResponseCode(200);
+		$body = json_decode($this->view, true);
 		$this->assertTrue($body['success']);
 		$this->assertNotEmpty($body['issue']['id']);
 	}
@@ -51,9 +42,9 @@ class TsumegoIssuesControllerApiTest extends ControllerTestCase
 	{
 		new ContextPreparator(['user' => ['name' => 'kovarex']]);
 
-		$this->expectException(NotFoundException::class);
+		$this->post('/tsumego-issues/close/999999');
 
-		$this->testAction('/tsumego-issues/close/999999', ['method' => 'post']);
+		$this->assertResponseCode(404);
 	}
 
 	public function testReopenOwnIssueSucceeds()
@@ -63,9 +54,9 @@ class TsumegoIssuesControllerApiTest extends ControllerTestCase
 			'tsumego' => ['set_order' => 1, 'status' => 'S', 'issues' => [['message' => 'my issue', 'status' => TsumegoIssue::$CLOSED_STATUS]]],
 		]);
 
-		$this->testAction('/tsumego-issues/reopen/' . $context->issues[0]['id'], ['method' => 'post']);
+		$this->post('/tsumego-issues/reopen/' . $context->issues[0]['id']);
 
-		$this->assertSame(200, $this->controller->response->statusCode());
+		$this->assertResponseCode(200);
 		$issue = ClassRegistry::init('TsumegoIssue')->findById($context->issues[0]['id']);
 		$this->assertSame(TsumegoIssue::$OPENED_STATUS, (int) $issue['TsumegoIssue']['tsumego_issue_status_id']);
 	}
@@ -84,17 +75,17 @@ class TsumegoIssuesControllerApiTest extends ControllerTestCase
 			['TsumegoIssue.id' => $context->issues[0]['id']]
 		);
 
-		$this->expectException(ForbiddenException::class);
+		$this->post('/tsumego-issues/reopen/' . $context->issues[0]['id']);
 
-		$this->testAction('/tsumego-issues/reopen/' . $context->issues[0]['id'], ['method' => 'post']);
+		$this->assertResponseCode(403);
 	}
 
 	public function testMoveCommentRequiresAdmin()
 	{
 		new ContextPreparator(['user' => ['name' => 'kovarex', 'admin' => false]]);
 
-		$this->expectException(ForbiddenException::class);
+		$this->post('/tsumego-issues/move-comment/1');
 
-		$this->testAction('/tsumego-issues/move-comment/1', ['method' => 'post']);
+		$this->assertResponseCode(403);
 	}
 }

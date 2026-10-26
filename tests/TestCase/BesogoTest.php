@@ -1,14 +1,12 @@
 <?php
 
-use PHPUnitRetry\RetryTrait;
 
 /**
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
-class BesogoTest extends ControllerTestCase
+class BesogoTest extends IntegrationTestCase
 {
-	use RetryTrait;
 	public function testBesogoTests()
 	{
 		$browser = Browser::instance();

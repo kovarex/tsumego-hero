@@ -1,15 +1,12 @@
 <?php
 
-use PHPUnitRetry\RetryTrait;
 
 /**
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
-class SchedulePageTest extends TestCaseWithAuth
+class SchedulePageTest extends IntegrationTestCase
 {
-	use RetryTrait;
-
 	/**
 	 * A schedule that starts today publishes straight away, so the button says that
 	 * instead of the neutral label.

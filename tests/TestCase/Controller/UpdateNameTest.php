@@ -10,7 +10,7 @@ use App\Utility\Util;
  * who was flagged with needs_display_name_change (migration rename or a
  * duplicate Google name). On success the flag is cleared.
  */
-class UpdateNameTest extends ControllerTestCase
+class UpdateNameTest extends IntegrationTestCase
 {
 	/**
 	 * Test that logged out users cannot update display name.
@@ -20,14 +20,10 @@ class UpdateNameTest extends ControllerTestCase
 		// Create context but don't log in (pass null for user)
 		new ContextPreparator(['user' => null]);
 
-		$result = $this->testAction('/users/updatename', [
-			'method' => 'post',
-			'data' => ['User' => ['display_name' => 'testname_new']],
-			'return' => 'result',
-		]);
+		$this->post('/users/updatename', ['User' => ['display_name' => 'testname_new']]);
 
 		// Should redirect to home
-		$this->assertStringContainsString('/', $this->headers['Location']);
+		$this->assertStringContainsString('/', (string) $this->headerValue('Location'));
 	}
 
 	/**
@@ -42,11 +38,7 @@ class UpdateNameTest extends ControllerTestCase
 			],
 		]);
 
-		$this->testAction('/users/updatename', [
-			'method' => 'post',
-			'data' => ['User' => ['display_name' => 'Should Not Change']],
-			'return' => 'result',
-		]);
+		$this->post('/users/updatename', ['User' => ['display_name' => 'Should Not Change']]);
 
 		$updatedUser = ClassRegistry::init('User')->findById($context->user['id']);
 		$this->assertEquals('Original Name', $updatedUser['User']['display_name']);
@@ -67,11 +59,7 @@ class UpdateNameTest extends ControllerTestCase
 			],
 		]);
 
-		$this->testAction('/users/updatename', [
-			'method' => 'post',
-			'data' => ['User' => ['display_name' => 'New Name']],
-			'return' => 'result',
-		]);
+		$this->post('/users/updatename', ['User' => ['display_name' => 'New Name']]);
 
 		$updatedUser = ClassRegistry::init('User')->findById($context->user['id']);
 		$this->assertEquals('New Name', $updatedUser['User']['display_name']);
@@ -91,11 +79,7 @@ class UpdateNameTest extends ControllerTestCase
 			],
 		]);
 
-		$this->testAction('/users/updatename', [
-			'method' => 'post',
-			'data' => ['User' => ['display_name' => 'Updated Display']],
-			'return' => 'result',
-		]);
+		$this->post('/users/updatename', ['User' => ['display_name' => 'Updated Display']]);
 
 		$updatedUser = ClassRegistry::init('User')->findById($context->user['id']);
 		$this->assertEquals('Updated Display', $updatedUser['User']['display_name']);
@@ -122,11 +106,7 @@ class UpdateNameTest extends ControllerTestCase
 			],
 		]);
 
-		$this->testAction('/users/updatename', [
-			'method' => 'post',
-			'data' => ['User' => ['display_name' => 'Taken Name']],
-			'return' => 'result',
-		]);
+		$this->post('/users/updatename', ['User' => ['display_name' => 'Taken Name']]);
 
 		$updatedUser = ClassRegistry::init('User')->findById($context->user['id']);
 		$this->assertEquals('My Name', $updatedUser['User']['display_name']);
@@ -146,11 +126,7 @@ class UpdateNameTest extends ControllerTestCase
 			],
 		]);
 
-		$this->testAction('/users/updatename', [
-			'method' => 'post',
-			'data' => ['User' => ['display_name' => 'My Name 😀']],
-			'return' => 'result',
-		]);
+		$this->post('/users/updatename', ['User' => ['display_name' => 'My Name 😀']]);
 
 		$updatedUser = ClassRegistry::init('User')->findById($context->user['id']);
 		$this->assertEquals('My Name', $updatedUser['User']['display_name']);
@@ -170,11 +146,7 @@ class UpdateNameTest extends ControllerTestCase
 			],
 		]);
 
-		$this->testAction('/users/updatename', [
-			'method' => 'post',
-			'data' => ['User' => ['display_name' => 'Andrey (2)']],
-			'return' => 'result',
-		]);
+		$this->post('/users/updatename', ['User' => ['display_name' => 'Andrey (2)']]);
 
 		$updatedUser = ClassRegistry::init('User')->findById($context->user['id']);
 		$this->assertEquals('Andrey (2)', $updatedUser['User']['display_name']);
@@ -197,11 +169,7 @@ class UpdateNameTest extends ControllerTestCase
 		// 26 cyrillic characters, which is 52 bytes
 		$newName = str_repeat("\u{042F}", 26);
 
-		$this->testAction('/users/updatename', [
-			'method' => 'post',
-			'data' => ['User' => ['display_name' => $newName]],
-			'return' => 'result',
-		]);
+		$this->post('/users/updatename', ['User' => ['display_name' => $newName]]);
 
 		$updatedUser = ClassRegistry::init('User')->findById($context->user['id']);
 		$this->assertEquals($newName, $updatedUser['User']['display_name']);
@@ -221,11 +189,7 @@ class UpdateNameTest extends ControllerTestCase
 			],
 		]);
 
-		$this->testAction('/users/updatename', [
-			'method' => 'post',
-			'data' => ['User' => ['display_name' => 'ab']],
-			'return' => 'result',
-		]);
+		$this->post('/users/updatename', ['User' => ['display_name' => 'ab']]);
 
 		$updatedUser = ClassRegistry::init('User')->findById($context->user['id']);
 		$this->assertEquals('Original Name', $updatedUser['User']['display_name']);
@@ -244,11 +208,7 @@ class UpdateNameTest extends ControllerTestCase
 			],
 		]);
 
-		$this->testAction('/users/updatename', [
-			'method' => 'post',
-			'data' => ['User' => ['display_name' => '']],
-			'return' => 'result',
-		]);
+		$this->post('/users/updatename', ['User' => ['display_name' => '']]);
 
 		$updatedUser = ClassRegistry::init('User')->findById($context->user['id']);
 		$this->assertEquals('My Display', $updatedUser['User']['display_name']);
@@ -266,8 +226,8 @@ class UpdateNameTest extends ControllerTestCase
 			],
 		]);
 
-		$this->testAction('/users/changename', ['method' => 'get', 'return' => 'result']);
-		$this->assertStringContainsString('/', $this->headers['Location']);
+		$this->get('/users/changename');
+		$this->assertStringContainsString('/', (string) $this->headerValue('Location'));
 	}
 
 	/**
@@ -277,8 +237,8 @@ class UpdateNameTest extends ControllerTestCase
 	{
 		new ContextPreparator(['user' => null]);
 
-		$this->testAction('/users/changename', ['method' => 'get', 'return' => 'result']);
-		$this->assertStringContainsString('/users/login', $this->headers['Location']);
+		$this->get('/users/changename');
+		$this->assertStringContainsString('/users/login', $this->headerValue('Location'));
 	}
 
 	/**
@@ -294,7 +254,8 @@ class UpdateNameTest extends ControllerTestCase
 			],
 		]);
 
-		$result = $this->testAction('/users/changename', ['method' => 'get', 'return' => 'view']);
+		$this->get('/users/changename');
+		$result = $this->view;
 		$this->assertStringContainsString('Choose your display name', $result);
 	}
 
@@ -311,11 +272,7 @@ class UpdateNameTest extends ControllerTestCase
 			],
 		]);
 
-		$this->testAction('/users/updatename', [
-			'method' => 'post',
-			'data' => ['User' => ['display_name' => 'My Chosen Name']],
-			'return' => 'result',
-		]);
+		$this->post('/users/updatename', ['User' => ['display_name' => 'My Chosen Name']]);
 
 		$activities = ClassRegistry::init('AdminActivity')->find('all');
 		$this->assertCount(1, $activities);
@@ -345,11 +302,7 @@ class UpdateNameTest extends ControllerTestCase
 			],
 		]);
 
-		$this->testAction('/users/updatename', [
-			'method' => 'post',
-			'data' => ['User' => ['display_name' => 'Taken Name']],
-			'return' => 'result',
-		]);
+		$this->post('/users/updatename', ['User' => ['display_name' => 'Taken Name']]);
 
 		$this->assertCount(0, ClassRegistry::init('AdminActivity')->find('all'));
 	}
@@ -373,11 +326,7 @@ class UpdateNameTest extends ControllerTestCase
 			[700001, 'Old Forum Name', 'old forum name', $context->user['id']]
 		);
 
-		$this->testAction('/users/updatename', [
-			'method' => 'post',
-			'data' => ['User' => ['display_name' => 'New Forum Name']],
-			'return' => 'result',
-		]);
+		$this->post('/users/updatename', ['User' => ['display_name' => 'New Forum Name']]);
 
 		$forumUser = Util::query("SELECT username, username_clean FROM phpbb_users WHERE user_id = ?", [700001]);
 		$this->assertEquals('New Forum Name', $forumUser[0]['username']);
@@ -411,11 +360,7 @@ class UpdateNameTest extends ControllerTestCase
 			[700002, 700002, 'Old Poster', 700002, 'Old Poster']
 		);
 
-		$this->testAction('/users/updatename', [
-			'method' => 'post',
-			'data' => ['User' => ['display_name' => 'New Poster']],
-			'return' => 'result',
-		]);
+		$this->post('/users/updatename', ['User' => ['display_name' => 'New Poster']]);
 
 		$topic = Util::query(
 			"SELECT topic_first_poster_name, topic_last_poster_name FROM phpbb_topics WHERE topic_id = ?",
@@ -444,11 +389,7 @@ class UpdateNameTest extends ControllerTestCase
 			[700003, 'Old Key Name', 'old key name', $context->user['id']]
 		);
 
-		$this->testAction('/users/updatename', [
-			'method' => 'post',
-			'data' => ['User' => ['display_name' => 'Yiğit Aydın']],
-			'return' => 'result',
-		]);
+		$this->post('/users/updatename', ['User' => ['display_name' => 'Yiğit Aydın']]);
 
 		$forumUser = Util::query("SELECT username, username_clean FROM phpbb_users WHERE user_id = ?", [700003]);
 		$this->assertEquals('Yiğit Aydın', $forumUser[0]['username']);
@@ -468,8 +409,8 @@ class UpdateNameTest extends ControllerTestCase
 			],
 		]);
 
-		$this->testAction('/sets/index', ['method' => 'get', 'return' => 'result']);
-		$this->assertStringContainsString('/users/changename', $this->headers['Location'] ?? '');
+		$this->get('/sets/index');
+		$this->assertStringContainsString('/users/changename', $this->headerValue('Location') ?? '');
 	}
 
 	/**
@@ -486,8 +427,10 @@ class UpdateNameTest extends ControllerTestCase
 		]);
 		Util::execute("UPDATE user SET password_reset_token = ? WHERE id = ?", ['reset-checksum', $context->user['id']]);
 
-		$this->testAction('/users/newpassword/reset-checksum', ['method' => 'get', 'return' => 'result']);
-		$this->assertStringNotContainsString('/users/changename', $this->headers['Location'] ?? '');
+		$this->get('/users/newpassword/reset-checksum');
+
+		$this->assertResponseCode(200);
+		$this->assertStringNotContainsString('/users/changename', $this->headerValue('Location') ?? '');
 	}
 
 	/**
@@ -503,10 +446,14 @@ class UpdateNameTest extends ControllerTestCase
 				'needs_display_name_change' => true,
 			],
 		]);
-		Util::execute("UPDATE user SET deletion_token = ? WHERE id = ?", ['delete-token', $context->user['id']]);
+		// A token is only honoured while it is fresh, see UsersController::$DELETION_LINK_VALID_HOURS.
+		Util::execute('UPDATE user SET deletion_token = ?, deletion_token_created = ? WHERE id = ?', ['delete-token', date('Y-m-d H:i:s'), $context->user['id']]);
 
-		$this->testAction('/users/confirm_delete_account/delete-token', ['method' => 'post', 'return' => 'result']);
-		$this->assertStringNotContainsString('/users/changename', $this->headers['Location'] ?? '');
+		$this->post('/users/confirm_delete_account/delete-token');
+
+		$this->assertResponseCode(302);
+		$this->assertStringNotContainsString('/users/changename', $this->headerValue('Location') ?? '');
+		$this->assertNotNull(ClassRegistry::init('User')->findById($context->user['id'])['User']['deleted'], 'the account went through the deletion');
 	}
 
 	/**
@@ -522,8 +469,10 @@ class UpdateNameTest extends ControllerTestCase
 			],
 		]);
 
-		$this->testAction('/users/delete_account', ['method' => 'get', 'return' => 'result']);
-		$this->assertStringNotContainsString('/users/changename', $this->headers['Location'] ?? '');
+		$this->get('/users/delete_account');
+
+		$this->assertResponseCode(200);
+		$this->assertStringNotContainsString('/users/changename', $this->headerValue('Location') ?? '');
 	}
 
 	/**
@@ -585,11 +534,7 @@ class UpdateNameTest extends ControllerTestCase
 		Util::execute('RENAME TABLE phpbb_users TO phpbb_users_unreachable');
 		try
 		{
-			$this->testAction('/users/updatename', [
-				'method' => 'post',
-				'data' => ['User' => ['display_name' => 'New Forum Name']],
-				'return' => 'result',
-			]);
+			$this->post('/users/updatename', ['User' => ['display_name' => 'New Forum Name']]);
 		}
 		finally
 		{

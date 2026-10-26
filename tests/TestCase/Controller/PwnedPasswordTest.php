@@ -10,7 +10,7 @@ use App\Utility\PwnedPasswordChecker;
  * A password that already appears in a public breach is refused wherever a password
  * is set: when an account is created, changed and reset.
  */
-class PwnedPasswordTest extends TestCaseWithAuth
+class PwnedPasswordTest extends IntegrationTestCase
 {
 	/**
 	 * The password every fixture account has.
@@ -58,21 +58,23 @@ class PwnedPasswordTest extends TestCaseWithAuth
 
 	private function register(string $name, string $password): string
 	{
-		return (string) $this->testAction('/users/add', ['method' => 'post', 'data' => ['User' => [
+		$this->post('/users/add', ['User' => [
 			'name' => $name,
 			'email' => $name . '@example.com',
 			'password1' => $password,
 			'password2' => $password,
-		]], 'return' => 'contents']);
+		]]);
+
+		return $this->view;
 	}
 
 	private function changePassword(string $current, string $new): void
 	{
-		$this->testAction('/users/passwordPreference', ['method' => 'post', 'data' => [
+		$this->post('/users/passwordPreference', [
 			'current' => $current,
 			'new1' => $new,
 			'new2' => $new,
-		], 'return' => 'vars']);
+		]);
 	}
 
 	private function prepareUser(string $name): array
@@ -148,12 +150,12 @@ class PwnedPasswordTest extends TestCaseWithAuth
 		$this->logout();
 		$this->checker->addBreachedPassword(self::LEAKED);
 
-		$page = $this->testAction('/users/newpassword/resetLinkForLeaked', ['method' => 'post', 'data' => ['User' => [
+		$this->post('/users/newpassword/resetLinkForLeaked', ['User' => [
 			'password1' => self::LEAKED,
 			'password2' => self::LEAKED,
-		]], 'return' => 'contents']);
+		]]);
 
 		$this->assertTrue(password_verify(self::CURRENT_PASSWORD, $this->storedHash($context->user['id'])));
-		$this->assertStringContainsString(self::LEAKED_PASSWORD_MESSAGE, $page);
+		$this->assertStringContainsString(self::LEAKED_PASSWORD_MESSAGE, $this->view);
 	}
 }

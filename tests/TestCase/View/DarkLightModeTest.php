@@ -1,7 +1,6 @@
 <?php
 
 use Facebook\WebDriver\WebDriverBy;
-use PHPUnitRetry\RetryTrait;
 
 /**
  * Tests for dark/light mode theming functionality.
@@ -14,9 +13,8 @@ use PHPUnitRetry\RetryTrait;
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
-class DarkLightModeTest extends ControllerTestCase
+class DarkLightModeTest extends IntegrationTestCase
 {
-	use RetryTrait;
 	/**
 	 * Test that html has data-theme="light" by default
 	 */

@@ -9,7 +9,7 @@ use App\Utility\GoogleTokenVerifier;
  * Uses FakeGoogleTokenVerifier to simulate Google OAuth without network calls.
  * Uses ContextPreparator to ensure clean database state for each test.
  */
-class GoogleSignInTest extends ControllerTestCase
+class GoogleSignInTest extends IntegrationTestCase
 {
 	private const CSRF_TOKEN = 'test-csrf-token';
 
@@ -41,10 +41,7 @@ class GoogleSignInTest extends ControllerTestCase
 	private function googleSignIn(string $credential, string $csrfCookie = self::CSRF_TOKEN): void
 	{
 		$_COOKIE['g_csrf_token'] = $csrfCookie;
-		$this->testAction('/users/googlesignin', [
-			'data' => ['credential' => $credential, 'g_csrf_token' => self::CSRF_TOKEN],
-			'method' => 'post',
-		]);
+		$this->post('/users/googlesignin', ['credential' => $credential, 'g_csrf_token' => self::CSRF_TOKEN]);
 	}
 
 	/**
@@ -260,12 +257,9 @@ class GoogleSignInTest extends ControllerTestCase
 		$googleUserModel->id = $googleUser['User']['id'];
 		$googleUserModel->saveField('pref_avatar', User::AVATAR_GOOGLE);
 
-		$this->testAction('/tsumego-comments/add', [
-			'method' => 'post',
-			'data' => json_encode(['tsumego_id' => $context->tsumegos[0]['id'], 'text' => 'from a google account']),
-		]);
+		$this->post('/tsumego-comments/add', json_encode(['tsumego_id' => $context->tsumegos[0]['id'], 'text' => 'from a google account']));
 
-		$body = json_decode($this->controller->response->body(), true);
+		$body = json_decode($this->view, true);
 		$this->assertSame('Google Commenter', $body['user_display_name']);
 		$this->assertSame('https://lh3.googleusercontent.com/a/photo=s48', $body['user_avatar_url']);
 	}

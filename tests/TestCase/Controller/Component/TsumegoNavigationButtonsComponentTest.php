@@ -3,7 +3,7 @@
 use Facebook\WebDriver\WebDriverBy;
 use App\Utility\Constants;
 
-class TsumegoNavigationButtonsTest extends TestCaseWithAuth
+class TsumegoNavigationButtonsComponentTest extends IntegrationTestCase
 {
 	public function buttonsTestGeneric($currentNum, $otherNums, $expectedNums)
 	{

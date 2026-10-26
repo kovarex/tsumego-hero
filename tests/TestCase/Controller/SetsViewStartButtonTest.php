@@ -1,7 +1,6 @@
 <?php
 
 use Facebook\WebDriver\WebDriverBy;
-use PHPUnitRetry\RetryTrait;
 /**
  * Tests the Start button on set view pages.
  *
@@ -13,9 +12,8 @@ use PHPUnitRetry\RetryTrait;
  */
 use App\Utility\Util;
 
-class SetsViewStartButtonTest extends ControllerTestCase
+class SetsViewStartButtonTest extends IntegrationTestCase
 {
-	use RetryTrait;
 	public function testStartButtonNavigatesToFirstUnsolvedPuzzle(): void
 	{
 		// when $statusToPick is 'W' (solved once more than a week ago)

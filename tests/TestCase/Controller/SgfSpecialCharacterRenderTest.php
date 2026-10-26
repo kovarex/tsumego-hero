@@ -4,7 +4,7 @@
  * Tests that SGF data with special characters survives the round-trip
  * through json_encode → JavaScript → besogo/database without data loss or JS errors.
  */
-class SgfSpecialCharacterRenderTest extends TestCaseWithAuth
+class SgfSpecialCharacterRenderTest extends IntegrationTestCase
 {
 	/**
 	 * SGF with characters that would break raw PHP echo in JS context:

@@ -4,7 +4,7 @@ use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\Util;
 
-class UploadSgfTest extends TestCaseWithAuth
+class UploadSgfTest extends IntegrationTestCase
 {
 	public function testUploadSgf()
 	{

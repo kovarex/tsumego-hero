@@ -4,7 +4,7 @@ use App\Utility\MistakeTraining;
 use App\Utility\PlayOutcome;
 use App\Utility\Util;
 
-class MistakeTrainingTest extends TestCaseWithAuth
+class MistakeTrainingTest extends IntegrationTestCase
 {
 	private function poolRow(int $userId, int $tsumegoId): ?array
 	{

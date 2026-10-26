@@ -11,7 +11,7 @@ use Facebook\WebDriver\WebDriverBy;
  */
 use App\Utility\Constants;
 
-class HeartDropdownTest extends TestCaseWithAuth
+class HeartDropdownTest extends IntegrationTestCase
 {
 	public function testHeartButtonShowsWithoutDropdownWhenUserHasNoSets(): void
 	{

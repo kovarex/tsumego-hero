@@ -6,7 +6,7 @@ use App\Utility\PlayOutcome;
 use App\Utility\TsumegoUtil;
 use App\Utility\TsumegoXPAndRating;
 
-class ProgressDeletionTest extends TestCaseWithAuth
+class ProgressDeletionTest extends IntegrationTestCase
 {
 	private int $originalPartitionSize;
 
@@ -45,7 +45,7 @@ class ProgressDeletionTest extends TestCaseWithAuth
 
 	private function resetPart(int $setID, int $part): void
 	{
-		$this->testAction('/sets/resetProgress/' . $setID . '/' . $part, ['method' => 'POST', 'data' => ['reset-check' => 'reset']]);
+		$this->post('/sets/resetProgress/' . $setID . '/' . $part, ['reset-check' => 'reset']);
 	}
 
 	public function testPartitionOfLeavesOutDeletedProblems(): void
@@ -118,12 +118,12 @@ class ProgressDeletionTest extends TestCaseWithAuth
 
 	private function postOutcome(int $tsumegoID, int $setConnectionID, PlayOutcome $outcome): array
 	{
-		$this->testAction('/tsumegos/result', ['method' => 'POST', 'data' => [
+		$this->post('/tsumegos/result', [
 			'tsumego_id' => $tsumegoID,
 			'seconds' => 1,
 			'outcome' => $outcome->value,
-			'set_connection_id' => $setConnectionID]]);
-		return json_decode($this->controller->response->body(), true);
+			'set_connection_id' => $setConnectionID]);
+		return json_decode($this->view, true);
 	}
 
 	private function ratingsOf(ContextPreparator $context): array
@@ -229,7 +229,10 @@ class ProgressDeletionTest extends TestCaseWithAuth
 			'progress-deletions' => [['set' => 'big set', 'partition' => 1, 'created' => self::now()]]]);
 		$setID = $context->tsumegos[0]['sets'][0]['id'];
 
-		$this->assertStringContainsString('XP reduced by 50%', $this->testAction('/sets/view/' . $setID . '/2', ['method' => 'get', 'return' => 'view']));
-		$this->assertStringNotContainsString('XP reduced by', $this->testAction('/sets/view/' . $setID . '/1', ['method' => 'get', 'return' => 'view']));
+		$this->get('/sets/view/' . $setID . '/2');
+		$this->assertStringContainsString('XP reduced by 50%', $this->view);
+
+		$this->get('/sets/view/' . $setID . '/1');
+		$this->assertStringNotContainsString('XP reduced by', $this->view);
 	}
 }

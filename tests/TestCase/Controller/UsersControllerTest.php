@@ -3,16 +3,13 @@
 use App\Utility\AchievementId;
 use App\Utility\Rating;
 use App\Utility\TimeModeUtil;
-use PHPUnitRetry\RetryTrait;
 
 /**
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
-class UsersControllerTest extends ControllerTestCase
+class UsersControllerTest extends IntegrationTestCase
 {
-	use RetryTrait;
-
 	/**
 	 * Test that login redirects back to the page where user came from.
 	 */
@@ -318,7 +315,7 @@ class UsersControllerTest extends ControllerTestCase
 			],
 		]);
 
-		$this->testAction('users/view/' . $context->user['id'], ['method' => 'get', 'return' => 'view']);
+		$this->get('users/view/' . $context->user['id']);
 
 		$this->assertStringContainsString('/achievements/view/115', $this->view);
 		$this->assertStringContainsString('/achievements/view/115/' . $context->user['id'], $this->view,
@@ -343,7 +340,7 @@ class UsersControllerTest extends ControllerTestCase
 			],
 		]);
 
-		$this->testAction('users/view/' . $context->user['id'], ['method' => 'get', 'return' => 'view']);
+		$this->get('users/view/' . $context->user['id']);
 
 		$this->assertMatchesRegularExpression('#Completed:</td>\s*<td>3 of 3</td>#', $this->view);
 	}
@@ -412,7 +409,7 @@ class UsersControllerTest extends ControllerTestCase
 			],
 		]);
 
-		$this->testAction('users/view/' . $context->user['id'], ['method' => 'get', 'return' => 'view']);
+		$this->get('users/view/' . $context->user['id']);
 
 		$this->assertStringContainsString('title="Earned 3 times"', $this->view);
 	}
@@ -432,7 +429,7 @@ class UsersControllerTest extends ControllerTestCase
 			],
 		]);
 
-		$this->testAction('users/view/' . $context->user['id'], ['method' => 'get', 'return' => 'view']);
+		$this->get('users/view/' . $context->user['id']);
 
 		$this->assertStringContainsString(
 			'1 of ' . AchievementId::count() . ' <span class="achievementEarnedTimes" title="Earned 3 times">+3</span>',
@@ -458,7 +455,7 @@ class UsersControllerTest extends ControllerTestCase
 		$connection->create();
 		$connection->save(['tsumego_id' => $context->tsumegos[0]['id'], 'set_id' => $set->id, 'num' => 3]);
 
-		$this->testAction('users/solveHistory/' . $context->user['id'], ['method' => 'get', 'return' => 'view']);
+		$this->get('users/solveHistory/' . $context->user['id']);
 
 		$this->assertTextContains('public set', $this->view);
 		$this->assertStringNotContainsString('alice favorites', $this->view);
@@ -468,8 +465,9 @@ class UsersControllerTest extends ControllerTestCase
 	{
 		new ContextPreparator(['user' => ['name' => 'viewer']]);
 
-		$this->expectException(NotFoundException::class);
-		$this->testAction('users/solveHistory/99999999', ['method' => 'get']);
+		$this->get('users/solveHistory/99999999');
+
+		$this->assertResponseCode(404);
 	}
 
 	public function testProgressBarPreferenceOnlyOnOwnSettingsPage(): void
@@ -631,7 +629,7 @@ class UsersControllerTest extends ControllerTestCase
 		}
 
 		// Slow/15k: shows 900, not 600 or 750
-		$this->testAction('users/time_mode?category=2&rank=15k', ['method' => 'get', 'return' => 'view']);
+		$this->get('users/time_mode?category=2&rank=15k');
 		$this->assertTextContains('900.00', $this->view);
 		$this->assertTextNotContains('600.00', $this->view);
 		$this->assertTextNotContains('750.00', $this->view);
@@ -639,13 +637,13 @@ class UsersControllerTest extends ControllerTestCase
 		$this->assertTextContains('category=1', $this->view); // Fast link preserves rank
 
 		// Fast/15k: shows 600, not 900 or 750
-		$this->testAction('users/time_mode?category=1&rank=15k', ['method' => 'get', 'return' => 'view']);
+		$this->get('users/time_mode?category=1&rank=15k');
 		$this->assertTextContains('600.00', $this->view);
 		$this->assertTextNotContains('900.00', $this->view);
 		$this->assertTextContains('btn--inactive">Fast</a>', $this->view);
 
 		// Slow/10k: shows 750, not 900
-		$this->testAction('users/time_mode?category=2&rank=10k', ['method' => 'get', 'return' => 'view']);
+		$this->get('users/time_mode?category=2&rank=10k');
 		$this->assertTextContains('750.00', $this->view);
 		$this->assertTextNotContains('900.00', $this->view);
 	}
@@ -673,7 +671,7 @@ class UsersControllerTest extends ControllerTestCase
 		// Each category's rank buttons should link back to the same category
 		foreach (['2' => 'Slow', '1' => 'Fast', '0' => 'Blitz'] as $catId => $catName)
 		{
-			$this->testAction("users/time_mode?category={$catId}&rank=15k", ['method' => 'get', 'return' => 'view']);
+			$this->get("users/time_mode?category={$catId}&rank=15k");
 			// Rank button links should contain the current category
 			$this->assertTextContains("category={$catId}&rank=", $this->view);
 		}
@@ -683,20 +681,16 @@ class UsersControllerTest extends ControllerTestCase
 	{
 		new ContextPreparator(['user' => null]);
 
-		$this->testAction('/users/demote_admin', ['method' => 'get']);
+		$this->get('/users/demote_admin');
 
-		$this->assertSame(302, $this->controller->response->statusCode());
+		$this->assertResponseCode(302);
 	}
 
 	public function testAdminCanDemoteSelf()
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
 
-		$this->testAction('/users/demote_admin', [
-			'data' => ['User' => ['demote' => 'test']],
-			'method' => 'POST',
-			'return' => 'view',
-		]);
+		$this->post('/users/demote_admin', ['User' => ['demote' => 'test']]);
 
 		$user = ClassRegistry::init('User')->findById($context->user['id']);
 		$this->assertSame(User::ROLE_PLAYER, (int) $user['User']['user_role_id']);
@@ -724,11 +718,7 @@ class UsersControllerTest extends ControllerTestCase
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'owner', 'owner' => true]]);
 
-		$this->testAction('/users/demote_admin', [
-			'data' => ['User' => ['demote' => 'test']],
-			'method' => 'POST',
-			'return' => 'view',
-		]);
+		$this->post('/users/demote_admin', ['User' => ['demote' => 'test']]);
 
 		$user = ClassRegistry::init('User')->findById($context->user['id']);
 		$this->assertSame(User::ROLE_OWNER, (int) $user['User']['user_role_id']);
@@ -739,10 +729,7 @@ class UsersControllerTest extends ControllerTestCase
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'regular', 'admin' => false]]);
 
-		$this->testAction('/users/demote_admin', [
-			'data' => ['User' => ['demote' => 'test']],
-			'method' => 'POST',
-		]);
+		$this->post('/users/demote_admin', ['User' => ['demote' => 'test']]);
 
 		$user = ClassRegistry::init('User')->findById($context->user['id']);
 		$this->assertSame(User::ROLE_PLAYER, (int) $user['User']['user_role_id']);

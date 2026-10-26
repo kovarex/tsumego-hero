@@ -7,7 +7,7 @@ use App\Utility\Util;
  * Changing the address of an account: the new address waits for its confirmation
  * link, the old address gets a link that cancels the change.
  */
-class EmailChangeTest extends TestCaseWithAuth
+class EmailChangeTest extends IntegrationTestCase
 {
 	private const PASSWORD = 'test';
 
@@ -21,11 +21,7 @@ class EmailChangeTest extends TestCaseWithAuth
 
 	private function requestChange(array $data): void
 	{
-		$this->testAction('/users/emailPreference', [
-			'method' => 'post',
-			'data' => ['User' => $data],
-			'return' => 'contents',
-		]);
+		$this->post('/users/emailPreference', ['User' => $data]);
 	}
 
 	private function storedUser(int $userID): array
@@ -41,7 +37,7 @@ class EmailChangeTest extends TestCaseWithAuth
 
 	private function confirm(string $token, string $method = 'post'): void
 	{
-		$this->testAction('/users/confirmEmailChange/' . $token, ['method' => $method, 'return' => 'contents']);
+		$this->{$method}('/users/confirmEmailChange/' . $token);
 	}
 
 	public function testRequestKeepsTheAddressUntilItIsConfirmed(): void
@@ -172,7 +168,7 @@ class EmailChangeTest extends TestCaseWithAuth
 		$this->requestNewAddress($user['id']);
 		$cancelToken = $this->storedUser($user['id'])['unconfirmed_email_cancel_token'];
 
-		$this->testAction('/users/cancelEmailChange/' . $cancelToken, ['method' => 'post', 'return' => 'contents']);
+		$this->post('/users/cancelEmailChange/' . $cancelToken);
 
 		$stored = $this->storedUser($user['id']);
 		$this->assertSame('old@example.com', $stored['email']);

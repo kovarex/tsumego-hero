@@ -7,7 +7,7 @@ use App\Utility\TsumegoButton;
 use App\Utility\TsumegoButtons;
 use App\Utility\TsumegoFilters;
 
-class TsumegoButtonsTest extends TestCaseWithAuth
+class TsumegoButtonsTest extends IntegrationTestCase
 {
 	public function testMistakeTrainingOneButtonPerTsumegoInMultipleSets(): void
 	{

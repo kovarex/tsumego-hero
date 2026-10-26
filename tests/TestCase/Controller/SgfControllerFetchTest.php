@@ -2,7 +2,7 @@
 
 use App\Utility\Util;
 
-class SgfControllerFetchTest extends TestCaseWithAuth
+class SgfControllerFetchTest extends IntegrationTestCase
 {
 	public function testFetchRequiresLogin()
 	{
@@ -15,18 +15,18 @@ class SgfControllerFetchTest extends TestCaseWithAuth
 
 		$this->logout();
 
-		$this->expectException(UnauthorizedException::class);
+		$this->get('/sgf/fetch/' . $sgf['Sgf']['id']);
 
-		$this->testAction('/sgf/fetch/' . $sgf['Sgf']['id'], ['method' => 'get']);
+		$this->assertResponseCode(401);
 	}
 
 	public function testFetchNotFound()
 	{
 		new ContextPreparator(['user' => ['name' => 'kovarex']]);
 
-		$this->expectException(NotFoundException::class);
+		$this->get('/sgf/fetch/999999');
 
-		$this->testAction('/sgf/fetch/999999', ['method' => 'get']);
+		$this->assertResponseCode(404);
 	}
 
 	public function testFetchIsForbiddenForAUserWhoDidNotSolveTheProblem()
@@ -39,9 +39,9 @@ class SgfControllerFetchTest extends TestCaseWithAuth
 		$sgf = ClassRegistry::init('Sgf')->find('first');
 		Util::execute('UPDATE sgf SET user_id = NULL');
 
-		$this->expectException(ForbiddenException::class);
+		$this->get('/sgf/fetch/' . $sgf['Sgf']['id']);
 
-		$this->testAction('/sgf/fetch/' . $sgf['Sgf']['id'], ['method' => 'get']);
+		$this->assertResponseCode(403);
 	}
 
 	public function testFetchReturnsSgfForTheUserWhoSolvedTheProblem()
@@ -53,10 +53,10 @@ class SgfControllerFetchTest extends TestCaseWithAuth
 
 		$sgf = ClassRegistry::init('Sgf')->find('first');
 
-		$this->testAction('/sgf/fetch/' . $sgf['Sgf']['id'], ['method' => 'get']);
+		$this->get('/sgf/fetch/' . $sgf['Sgf']['id']);
 
-		$this->assertSame(200, $this->controller->response->statusCode());
-		$this->assertSame($sgf['Sgf']['sgf'], $this->controller->response->body());
+		$this->assertResponseCode(200);
+		$this->assertSame($sgf['Sgf']['sgf'], $this->view);
 	}
 
 	/** The proposer gets the decision about their proposal with a link to its diff, so they see both versions. */
@@ -73,9 +73,9 @@ class SgfControllerFetchTest extends TestCaseWithAuth
 
 		foreach ([$previous, $proposal] as $version)
 		{
-			$this->testAction('/sgf/fetch/' . $version['id'], ['method' => 'get']);
-			$this->assertSame(200, $this->controller->response->statusCode());
-			$this->assertSame(ClassRegistry::init('Sgf')->findById($version['id'])['Sgf']['sgf'], $this->controller->response->body());
+			$this->get('/sgf/fetch/' . $version['id']);
+			$this->assertResponseCode(200);
+			$this->assertSame(ClassRegistry::init('Sgf')->findById($version['id'])['Sgf']['sgf'], $this->view);
 		}
 	}
 
@@ -88,9 +88,9 @@ class SgfControllerFetchTest extends TestCaseWithAuth
 
 		$sgf = ClassRegistry::init('Sgf')->find('first');
 
-		$this->testAction('/sgf/fetch/' . $sgf['Sgf']['id'], ['method' => 'get']);
+		$this->get('/sgf/fetch/' . $sgf['Sgf']['id']);
 
-		$this->assertSame(200, $this->controller->response->statusCode());
-		$this->assertSame($sgf['Sgf']['sgf'], $this->controller->response->body());
+		$this->assertResponseCode(200);
+		$this->assertSame($sgf['Sgf']['sgf'], $this->view);
 	}
 }

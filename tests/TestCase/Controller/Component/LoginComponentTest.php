@@ -5,7 +5,7 @@ use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\Util;
 
-class LoginComponentTestWithAuth extends TestCaseWithAuth
+class LoginComponentTest extends IntegrationTestCase
 {
 	public function testLogin(): void
 	{
@@ -18,7 +18,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		ClassRegistry::init('User')->save($user);
 
 		$this->assertFalse(Auth::isLoggedIn());
-		$this->testAction('users/login/', ['data' => ['username' => 'kovarex', 'password' => 'test'], 'method' => 'POST']);
+		$this->post('users/login/', ['username' => 'kovarex', 'password' => 'test']);
 		$this->assertTrue(Auth::isLoggedIn());
 	}
 
@@ -40,7 +40,8 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 	{
 		new ContextPreparator(['other-users' => [['name' => 'kovarex']]]);
 
-		$page = $this->testAction('users/login/', ['data' => ['username' => 'kovarex', 'password' => 'testx'], 'method' => 'POST', 'return' => 'contents']);
+		$this->post('users/login/', ['username' => 'kovarex', 'password' => 'testx']);
+		$page = $this->view;
 
 		$this->assertFalse(Auth::isLoggedIn());
 		$this->assertStringContainsString('Wrong username or password.', $page);
@@ -53,7 +54,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		$user['User']['password_hash'] = password_hash('abc', PASSWORD_DEFAULT);
 		ClassRegistry::init('User')->save($user);
 
-		$this->testAction('users/login/', ['data' => ['username' => 'oldAccount', 'password' => 'abc'], 'method' => 'POST']);
+		$this->post('users/login/', ['username' => 'oldAccount', 'password' => 'abc']);
 
 		$this->assertTrue(Auth::isLoggedIn());
 	}
@@ -62,7 +63,8 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 	{
 		new ContextPreparator(['other-users' => [['name' => 'kovarex']]]);
 
-		$page = $this->testAction('users/login/', ['data' => ['username' => 'nobodyhere', 'password' => 'test'], 'method' => 'POST', 'return' => 'contents']);
+		$this->post('users/login/', ['username' => 'nobodyhere', 'password' => 'test']);
+		$page = $this->view;
 
 		$this->assertFalse(Auth::isLoggedIn());
 		$this->assertStringContainsString('Wrong username or password.', $page);
@@ -83,7 +85,8 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 	{
 		new ContextPreparator(['user' => null]);
 
-		$page = $this->testAction('users/login/', ['method' => 'GET', 'return' => 'view']);
+		$this->get('users/login/');
+		$page = $this->view;
 
 		$this->assertStringContainsString('class="g_id_signin"', $page);
 	}
@@ -92,7 +95,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 	{
 		new ContextPreparator(['user' => ['name' => 'kovarex']]);
 		$this->assertTrue(Auth::isLoggedIn());
-		$this->testAction('users/logout/', ['method' => 'GET']);
+		$this->get('users/logout/');
 		$this->assertFalse(Auth::isLoggedIn());
 	}
 
@@ -136,10 +139,10 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		$this->assertFalse(Auth::isLoggedIn());
 		$userWithBiggestID = ClassRegistry::init('User')->find('first', ['order' => 'id DESC'])['User']['id'];
 		$newUsername = 'kovarex';
-		$this->testAction('users/add/', ['data' => ['User' => ['name' => $newUsername,
+		$this->post('users/add/', ['User' => ['name' => $newUsername,
 			'password1' => 'helloThere42',
 			'password2' => 'helloThere42',
-			'email' => $newUsername . '@email.com']], 'method' => 'POST']);
+			'email' => $newUsername . '@email.com']]);
 		$userCount = count(ClassRegistry::init('User')->find('all'));
 
 		$newUser = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => $newUsername]]);
@@ -152,10 +155,10 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		$this->assertFalse(Auth::isLoggedIn());
 		$userWithBiggestID = ClassRegistry::init('User')->find('first', ['order' => 'id DESC'])['User']['id'];
 		$newUsername = 'Kovarex';
-		$this->testAction('users/add/', ['data' => ['User' => ['name' => $newUsername,
+		$this->post('users/add/', ['User' => ['name' => $newUsername,
 			'password1' => 'helloThere42',
 			'password2' => 'helloThere42',
-			'email' => $newUsername . '@email.com']], 'method' => 'POST']);
+			'email' => $newUsername . '@email.com']]);
 		$userCount = count(ClassRegistry::init('User')->find('all'));
 
 		$newUser = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => $newUsername]]);
@@ -169,7 +172,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 
 		$this->assertFalse(Auth::isLoggedIn());
 		$this->registerTestEmailer();
-		$this->testAction('users/resetpassword/', ['data' => ['User' => ['email' => $user['email']]], 'method' => 'POST']);
+		$this->post('users/resetpassword/', ['User' => ['email' => $user['email']]]);
 
 		$userNew = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
 		$this->assertNotEmpty($userNew['password_reset_token']);
@@ -193,7 +196,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		try
 		{
 			TestEmailer::$unreachable = true;
-			$this->testAction('users/resetpassword/', ['data' => ['User' => ['email' => $user['email']]], 'method' => 'POST']);
+			$this->post('users/resetpassword/', ['User' => ['email' => $user['email']]]);
 		}
 		finally
 		{
@@ -203,7 +206,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		$this->assertEmpty($this->resetFields()['password_reset_token']);
 
 		$this->registerTestEmailer();
-		$this->testAction('users/resetpassword/', ['data' => ['User' => ['email' => $user['email']]], 'method' => 'POST']);
+		$this->post('users/resetpassword/', ['User' => ['email' => $user['email']]]);
 		$this->assertNotEmpty($this->resetFields()['password_reset_token']);
 	}
 
@@ -222,11 +225,11 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		$user = $context->otherUsers[0];
 
 		$this->registerTestEmailer();
-		$this->testAction('users/resetpassword/', ['data' => ['User' => ['email' => $user['email']]], 'method' => 'POST']);
+		$this->post('users/resetpassword/', ['User' => ['email' => $user['email']]]);
 		$this->assertNotEmpty(TestEmailer::$lastEmail['to']);
 
 		TestEmailer::$lastEmail = null;
-		$this->testAction('users/resetpassword/', ['data' => ['User' => ['email' => $user['email']]], 'method' => 'POST']);
+		$this->post('users/resetpassword/', ['User' => ['email' => $user['email']]]);
 		$this->assertArrayNotHasKey('body', TestEmailer::$lastEmail ?? [], 'the second request sends no mail');
 	}
 
@@ -261,7 +264,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		$this->assertNull($newUser['password_reset_token_created']);
 		$this->assertFalse(Auth::isLoggedIn());
 
-		$this->testAction('users/login/', ['data' => ['username' => 'kovarex', 'password' => $newPassword], 'method' => 'POST']);
+		$this->post('users/login/', ['username' => 'kovarex', 'password' => $newPassword]);
 		$this->assertTrue(Auth::isLoggedIn());
 
 		// changing the password to test again to not break other tests
@@ -279,9 +282,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		$user['password_reset_token_created'] = date('Y-m-d H:i:s', strtotime('-3 hours'));
 		ClassRegistry::init('User')->save($user);
 
-		$this->testAction('users/newpassword/old_reset_checksum', [
-			'data' => ['User' => ['password1' => 'brnoHorse42', 'password2' => 'brnoHorse42']],
-			'method' => 'POST']);
+		$this->post('users/newpassword/old_reset_checksum', ['User' => ['password1' => 'brnoHorse42', 'password2' => 'brnoHorse42']]);
 
 		$after = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
 		$this->assertSame($before, $after['password_hash']);
@@ -298,9 +299,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		$user['password_reset_token_created'] = date('Y-m-d H:i:s');
 		ClassRegistry::init('User')->save($user);
 
-		$this->testAction('users/newpassword/reset_checksum_twice', [
-			'data' => ['User' => ['password1' => 'brnoHorse42', 'password2' => 'brnoHorse43']],
-			'method' => 'POST']);
+		$this->post('users/newpassword/reset_checksum_twice', ['User' => ['password1' => 'brnoHorse42', 'password2' => 'brnoHorse43']]);
 
 		$after = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
 		$this->assertSame($before, $after['password_hash']);
@@ -334,12 +333,10 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		]);
 
 		$this->registerTestEmailer();
-		$google = $this->testAction('users/resetpassword/', [
-			'data' => ['User' => ['email' => 'googleuser@gmail.com']],
-			'method' => 'POST', 'return' => 'contents']);
-		$unknown = $this->testAction('users/resetpassword/', [
-			'data' => ['User' => ['email' => 'nobodyhere@example.com']],
-			'method' => 'POST', 'return' => 'contents']);
+		$this->post('users/resetpassword/', ['User' => ['email' => 'googleuser@gmail.com']]);
+		$google = $this->view;
+		$this->post('users/resetpassword/', ['User' => ['email' => 'nobodyhere@example.com']]);
+		$unknown = $this->view;
 
 		$this->assertSame($unknown, $google);
 		$this->assertStringNotContainsString('Google Sign-In', $google);
@@ -354,7 +351,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		new ContextPreparator(['user' => null]);
 
 		$this->registerTestEmailer();
-		$this->testAction('users/resetpassword/', ['data' => ['User' => ['email' => 'nonexistent@example.com']], 'method' => 'POST']);
+		$this->post('users/resetpassword/', ['User' => ['email' => 'nonexistent@example.com']]);
 
 		// Should NOT send email
 		$this->assertEmpty(TestEmailer::$lastEmail['body'] ?? null, 'Email should not be sent for non-existent users');

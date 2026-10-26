@@ -8,7 +8,7 @@ use App\Utility\TimeModeUtil;
 use App\Utility\Util;
 use Facebook\WebDriver\WebDriverBy;
 
-class TimeModeTest extends TestCaseWithAuth
+class TimeModeTest extends IntegrationTestCase
 {
 	public function testPointsCalculation()
 	{
@@ -88,9 +88,9 @@ class TimeModeTest extends TestCaseWithAuth
 		$context = new ContextPreparator(['tsumego' => 1, 'time-mode-ranks' => ['5k']]);
 
 		$this->assertTrue(Auth::isInLevelMode());
-		$this->testAction('/timeMode/start'
+		$this->get('/timeMode/start'
 			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
-			. '&rankID=' . $context->timeModeRanks[0]['id'], ['method' => 'get']);
+			. '&rankID=' . $context->timeModeRanks[0]['id']);
 		$this->assertTrue(Auth::isInTimeMode());
 		$sessions = ClassRegistry::init('TimeModeSession')->find('all', [
 			'user_id' => Auth::getUserID(),

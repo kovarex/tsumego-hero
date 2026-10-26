@@ -6,7 +6,7 @@ use App\Utility\JwtAuth;
 /**
  * Changing the password of a local account from the settings page.
  */
-class PasswordPreferenceTest extends TestCaseWithAuth
+class PasswordPreferenceTest extends IntegrationTestCase
 {
 	/**
 	 * The password every fixture account starts with.
@@ -15,11 +15,7 @@ class PasswordPreferenceTest extends TestCaseWithAuth
 
 	private function changePassword(array $data): void
 	{
-		$this->testAction('/users/passwordPreference', [
-			'method' => 'post',
-			'data' => $data,
-			'return' => 'contents',
-		]);
+		$this->post('/users/passwordPreference', $data);
 	}
 
 	private function storedHash(int $userID): string
@@ -186,6 +182,9 @@ class PasswordPreferenceTest extends TestCaseWithAuth
 			'new2' => 'brnoHorse42',
 		]);
 
+		// The browser keeps the cookies the change handed out, and the test hack cookie is
+		// not one of them.
+		$_COOKIE = $this->browserCookies();
 		unset($_COOKIE['hackedLoggedInUserID']);
 		JwtAuth::clearCache();
 		Auth::init();

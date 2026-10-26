@@ -2,15 +2,13 @@
 
 use App\Utility\Constants;
 use App\Utility\Rating;
-use PHPUnitRetry\RetryTrait;
 
 /**
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
-class AccountWidgetTest extends ControllerTestCase
+class AccountWidgetTest extends IntegrationTestCase
 {
-	use RetryTrait;
 	// by default we show level
 	public function testShowLevelInAccountWidget()
 	{

@@ -1,6 +1,6 @@
 <?php
 
-class UserStatsTest extends ControllerTestCase
+class UserStatsTest extends IntegrationTestCase
 {
 	public function testUserstatsShowsRecentAttempts()
 	{
@@ -12,7 +12,7 @@ class UserStatsTest extends ControllerTestCase
 			],
 		]);
 
-		$this->testAction('/users/userstats', ['method' => 'get', 'return' => 'view']);
+		$this->get('/users/userstats');
 
 		$this->assertTextContains('statsuser', $this->view);
 		$this->assertTextContains('stats set', $this->view);
@@ -28,7 +28,7 @@ class UserStatsTest extends ControllerTestCase
 			],
 		]);
 
-		$this->testAction('/users/userstats/' . $context->user['id'], ['method' => 'get', 'return' => 'view']);
+		$this->get('/users/userstats/' . $context->user['id']);
 
 		$this->assertTextContains('statsuser', $this->view);
 	}
@@ -44,7 +44,7 @@ class UserStatsTest extends ControllerTestCase
 		]);
 		$setId = $context->tsumegos[0]['set-connections'][0]['set_id'];
 
-		$this->testAction('/users/userstats3/' . $setId, ['method' => 'get', 'return' => 'view']);
+		$this->get('/users/userstats3/' . $setId);
 
 		$this->assertTextContains('statsuser', $this->view);
 		$this->assertTextContains('stats set', $this->view);
@@ -60,7 +60,7 @@ class UserStatsTest extends ControllerTestCase
 			],
 		]);
 
-		$this->testAction('/users/userstats3', ['method' => 'get', 'return' => 'view']);
+		$this->get('/users/userstats3');
 
 		$this->assertTextContains('statsuser', $this->view);
 	}

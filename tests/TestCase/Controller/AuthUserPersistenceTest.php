@@ -9,7 +9,7 @@
  */
 use App\Utility\Auth;
 
-class AuthUserPersistenceTest extends ControllerTestCase
+class AuthUserPersistenceTest extends IntegrationTestCase
 {
 	/**
 	 * Test that user data remains unchanged after making requests.
@@ -32,7 +32,7 @@ class AuthUserPersistenceTest extends ControllerTestCase
 		$initialUser = ClassRegistry::init('User')->findById($userId)['User'];
 
 		// Act: Make a simple request (triggers beforeFilter, view rendering, saveUser)
-		$this->testAction('/sites/index', ['method' => 'get', 'return' => 'view']);
+		$this->get('/sites/index');
 
 		// Assert: User data in database should be identical
 		$userAfterRequest = ClassRegistry::init('User')->findById($userId)['User'];
@@ -62,7 +62,7 @@ class AuthUserPersistenceTest extends ControllerTestCase
 		$userId = $context->user['id'];
 
 		// Act: Make a request
-		$this->testAction('/sites/index', ['method' => 'get', 'return' => 'view']);
+		$this->get('/sites/index');
 
 		// Assert: Google user fields must be preserved
 		$userAfterRequest = ClassRegistry::init('User')->findById($userId);
@@ -99,22 +99,9 @@ class AuthUserPersistenceTest extends ControllerTestCase
 
 		$oauthUserId = $context->user['id'];
 
-		// Act: Make a request as the OAuth user
-		$exceptionThrown = false;
-		$exceptionMessage = '';
-		try
-		{
-			$this->testAction('/sites/index', ['method' => 'get', 'return' => 'view']);
-		}
-		catch (Exception $e)
-		{
-			$exceptionThrown = true;
-			$exceptionMessage = $e->getMessage();
-		}
+		$this->get('/sites/index');
 
-		// Assert: No exception, Google user maintains identity
-		$this->assertFalse($exceptionThrown,
-			"Users should coexist without conflict. Exception: $exceptionMessage");
+		$this->assertResponseCode(200);
 
 		$oauthUser = ClassRegistry::init('User')->findById($oauthUserId);
 		$this->assertNull($oauthUser['User']['name'],

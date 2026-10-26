@@ -3,7 +3,7 @@
 /**
  * Every page declares the one address a search engine should keep for it.
  */
-class CanonicalUrlTest extends ControllerTestCase
+class CanonicalUrlTest extends IntegrationTestCase
 {
 	/**
 	 * A listing and its first page are one page, however it was asked for
@@ -72,7 +72,8 @@ class CanonicalUrlTest extends ControllerTestCase
 		]);
 
 		Cache::delete('sitemap_xml', 'long');
-		$sitemap = (string) $this->testAction('/sitemap.xml', ['method' => 'get', 'return' => 'contents']);
+		$this->get('/sitemap.xml');
+		$sitemap = $this->view;
 		preg_match_all('~<loc>([^<]+)</loc>~', $sitemap, $matches);
 		$this->assertNotEmpty($matches[1]);
 
@@ -89,7 +90,9 @@ class CanonicalUrlTest extends ControllerTestCase
 
 	private function page(string $url): string
 	{
-		return (string) $this->testAction($url, ['method' => 'get', 'return' => 'contents']);
+		$this->get($url);
+
+		return $this->view;
 	}
 
 	private function metaContent(string $property, string $html): string

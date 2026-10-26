@@ -1,7 +1,6 @@
 <?php
 
 use App\Utility\Avatar;
-use PHPUnitRetry\RetryTrait;
 
 /**
  * Tests for TsumegoIssuesController - specifically the global issues index page.
@@ -9,10 +8,8 @@ use PHPUnitRetry\RetryTrait;
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
-class TsumegoIssuesControllerTest extends ControllerTestCase
+class TsumegoIssuesControllerTest extends IntegrationTestCase
 {
-	use RetryTrait;
-
 	public function testIssuesIndexPageLoads()
 	{
 		$browser = Browser::instance();
@@ -227,9 +224,9 @@ class TsumegoIssuesControllerTest extends ControllerTestCase
 			'tsumego' => ['set_order' => 1, 'issues' => [['message' => 'Issue with an avatar']]],
 		]);
 
-		$this->testAction('/tsumego-issues/api', ['method' => 'get']);
+		$this->get('/tsumego-issues/api');
 
-		$body = json_decode($this->controller->response->body(), true);
+		$body = json_decode($this->view, true);
 		$avatar = Avatar::url($context->user['display_name']);
 		$this->assertSame($avatar, $body['issues'][0]['issue']['user_avatar_url']);
 		$this->assertSame($avatar, $body['issues'][0]['comments'][0]['user_avatar_url']);
@@ -256,9 +253,9 @@ class TsumegoIssuesControllerTest extends ControllerTestCase
 			['TsumegoComment.tsumego_issue_id' => $context->issues[0]['id']]
 		);
 
-		$this->testAction('/tsumego-issues/api', ['method' => 'get']);
+		$this->get('/tsumego-issues/api');
 
-		$body = $this->controller->response->body();
+		$body = $this->view;
 		$issues = json_decode($body, true)['issues'];
 		$this->assertNull($issues[0]['issue']['user_display_name']);
 		$this->assertNull($issues[0]['issue']['user_avatar_url']);

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "346842025643230bdb9bf6cdbe69d7b1",
+    "content-hash": "ac7d19b28d0c3229f737ff6823013c6c",
     "packages": [
         {
             "name": "cakephp/chronos",
@@ -332,16 +332,16 @@
         },
         {
             "name": "composer/ca-bundle",
-            "version": "1.5.10",
+            "version": "1.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/ca-bundle.git",
-                "reference": "961a5e4056dd2e4a2eedcac7576075947c28bf63"
+                "reference": "2c99cf2e92516985dea4914812b93d9daf01cdd6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/ca-bundle/zipball/961a5e4056dd2e4a2eedcac7576075947c28bf63",
-                "reference": "961a5e4056dd2e4a2eedcac7576075947c28bf63",
+                "url": "https://api.github.com/repos/composer/ca-bundle/zipball/2c99cf2e92516985dea4914812b93d9daf01cdd6",
+                "reference": "2c99cf2e92516985dea4914812b93d9daf01cdd6",
                 "shasum": ""
             },
             "require": {
@@ -388,7 +388,7 @@
             "support": {
                 "irc": "irc://irc.freenode.org/composer",
                 "issues": "https://github.com/composer/ca-bundle/issues",
-                "source": "https://github.com/composer/ca-bundle/tree/1.5.10"
+                "source": "https://github.com/composer/ca-bundle/tree/1.6.0"
             },
             "funding": [
                 {
@@ -400,7 +400,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-12-08T15:06:51+00:00"
+            "time": "2026-10-20T20:14:05+00:00"
         },
         {
             "name": "ezyang/htmlpurifier",
@@ -610,16 +610,16 @@
         },
         {
             "name": "php81_bc/strftime",
-            "version": "0.7.6",
+            "version": "0.7.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/alphp/strftime.git",
-                "reference": "d115595bccd137660d25e9e05fb656143594b404"
+                "reference": "d9d4388b3b2d283ba988e1bec3db8dc6d19bbf07"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/alphp/strftime/zipball/d115595bccd137660d25e9e05fb656143594b404",
-                "reference": "d115595bccd137660d25e9e05fb656143594b404",
+                "url": "https://api.github.com/repos/alphp/strftime/zipball/d9d4388b3b2d283ba988e1bec3db8dc6d19bbf07",
+                "reference": "d9d4388b3b2d283ba988e1bec3db8dc6d19bbf07",
                 "shasum": ""
             },
             "require": {
@@ -650,20 +650,30 @@
                 "issues": "https://github.com/alphp/strftime/issues",
                 "source": "https://github.com/alphp/strftime"
             },
-            "time": "2024-11-19T14:01:36+00:00"
+            "funding": [
+                {
+                    "url": "https://github.com/alphp",
+                    "type": "github"
+                },
+                {
+                    "url": "https://thanks.dev/u/gh/alphp",
+                    "type": "thanks_dev"
+                }
+            ],
+            "time": "2026-10-24T18:13:10+00:00"
         },
         {
             "name": "pieceofcake2/cakephp",
-            "version": "v2.12.0",
+            "version": "v2.12.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pieceofcake2/cakephp.git",
-                "reference": "37a789e7e2e016eff994e92f741dd998c1d5e2ae"
+                "reference": "da4f36eff265797618c6ec17d3e9b7c62f273395"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pieceofcake2/cakephp/zipball/37a789e7e2e016eff994e92f741dd998c1d5e2ae",
-                "reference": "37a789e7e2e016eff994e92f741dd998c1d5e2ae",
+                "url": "https://api.github.com/repos/pieceofcake2/cakephp/zipball/da4f36eff265797618c6ec17d3e9b7c62f273395",
+                "reference": "da4f36eff265797618c6ec17d3e9b7c62f273395",
                 "shasum": ""
             },
             "require": {
@@ -680,11 +690,11 @@
                 "cakephp/cakephp": "^2.0"
             },
             "require-dev": {
-                "cakephp/cakephp-codesniffer": "^5.0",
                 "phpstan/phpstan": "^2.1",
                 "phpunit/phpunit": "^9.6",
-                "pieceofcake2/app": "^2.3",
-                "pieceofcake2/phpstan-cakephp2": "^0.2.1",
+                "pieceofcake2/app": "^2.5",
+                "pieceofcake2/phpcs-cakephp2": "^1.1",
+                "pieceofcake2/phpstan-cakephp2": "^1.0",
                 "rector/rector": "^2.1"
             },
             "suggest": {
@@ -714,9 +724,9 @@
             ],
             "support": {
                 "issues": "https://github.com/pieceofcake2/cakephp/issues",
-                "source": "https://github.com/pieceofcake2/cakephp/tree/v2.12.0"
+                "source": "https://github.com/pieceofcake2/cakephp/tree/v2.12.11"
             },
-            "time": "2025-10-09T06:52:46+00:00"
+            "time": "2026-10-19T09:41:26+00:00"
         },
         {
             "name": "psr/clock",
@@ -1488,16 +1498,16 @@
         },
         {
             "name": "symfony/polyfill-intl-icu",
-            "version": "v1.33.0",
+            "version": "v1.43.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-intl-icu.git",
-                "reference": "bfc8fa13dbaf21d69114b0efcd72ab700fb04d0c"
+                "reference": "d13cf82f40af144e5e5a867dc54ec3c7b4544b2e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-intl-icu/zipball/bfc8fa13dbaf21d69114b0efcd72ab700fb04d0c",
-                "reference": "bfc8fa13dbaf21d69114b0efcd72ab700fb04d0c",
+                "url": "https://api.github.com/repos/symfony/polyfill-intl-icu/zipball/d13cf82f40af144e5e5a867dc54ec3c7b4544b2e",
+                "reference": "d13cf82f40af144e5e5a867dc54ec3c7b4544b2e",
                 "shasum": ""
             },
             "require": {
@@ -1552,7 +1562,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-intl-icu/tree/v1.33.0"
+                "source": "https://github.com/symfony/polyfill-intl-icu/tree/v1.43.0"
             },
             "funding": [
                 {
@@ -1572,7 +1582,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-06-20T22:24:30+00:00"
+            "time": "2026-09-25T15:46:47+00:00"
         },
         {
             "name": "symfony/polyfill-intl-normalizer",
@@ -1661,16 +1671,16 @@
         },
         {
             "name": "symfony/polyfill-mbstring",
-            "version": "v1.33.0",
+            "version": "v1.43.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-mbstring.git",
-                "reference": "6d857f4d76bd4b343eac26d6b539585d2bc56493"
+                "reference": "4d5d331bf731e0aedbc6b2f5e61135b7b7996a72"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/6d857f4d76bd4b343eac26d6b539585d2bc56493",
-                "reference": "6d857f4d76bd4b343eac26d6b539585d2bc56493",
+                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/4d5d331bf731e0aedbc6b2f5e61135b7b7996a72",
+                "reference": "4d5d331bf731e0aedbc6b2f5e61135b7b7996a72",
                 "shasum": ""
             },
             "require": {
@@ -1722,7 +1732,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.33.0"
+                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.43.0"
             },
             "funding": [
                 {
@@ -1742,7 +1752,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-12-23T08:48:59+00:00"
+            "time": "2026-09-24T15:19:04+00:00"
         },
         {
             "name": "symfony/service-contracts",

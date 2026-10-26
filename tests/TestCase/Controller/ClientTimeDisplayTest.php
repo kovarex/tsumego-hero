@@ -3,7 +3,7 @@
 use App\Utility\Constants;
 use Facebook\WebDriver\WebDriverBy;
 
-class ClientTimeDisplayTest extends TestCaseWithAuth
+class ClientTimeDisplayTest extends IntegrationTestCase
 {
 	public function testSolveHistoryDisplaysTimeInBrowserTimezone(): void
 	{
