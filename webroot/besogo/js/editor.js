@@ -1261,8 +1261,8 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
 
   //the board width should adjust with the rotation sometimes
   function changeRotationWidth(canvas, corner, rotation) {
-    var WIDE = { width: "78%", margin: "0 138px" };
-    var NARROW = { width: "30%", margin: "0 443px" };
+    var WIDE = { width: "78%", margin: "0 auto" };
+    var NARROW = { width: "30%", margin: "0 auto" };
 
     // Determine if the board should be narrow or wide based on canvas type, corner, and rotation
     var isNarrow;
