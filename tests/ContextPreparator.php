@@ -30,8 +30,8 @@ class ContextPreparator
 			'day_record', 'sgf', 'time_mode_attempt', 'time_mode_session', 'challenge_participant', 'challenge_problem', 'challenge',
 			'tsumego_comment', 'tsumego_issue', 'admin_activity', 'admin_page_view', 'message',
 			'achievement_condition', 'achievement_status', 'set_connection',
-			'tsumego_attempt', 'tsumego_status', 'mistake_training_review', 'mistake_training_day', 'mistake_training_pool', 'signature',
-			'tsumego_variant', 'reject', 'publish_date', 'user', 'time_mode_rank',
+			'tsumego_attempt', 'tsumego_status', 'mistake_training_review', 'mistake_training_day', 'mistake_training_pool',
+			'tsumego_variant', 'reject', 'user', 'time_mode_rank',
 			'tsumego', 'set', 'phpbb_users', 'phpbb_topics',
 		] as $table)
 			$pdo->exec("DELETE FROM `$table`");
@@ -248,10 +248,6 @@ class ContextPreparator
 		$tsumego['variance'] = Util::extract('variance', $tsumegoInput);
 		$tsumego['deleted'] = Util::extract('deleted', $tsumegoInput);
 		$tsumego['author'] = Util::extract('author', $tsumegoInput) ?: '';
-		if ($solved = Util::extract('solved', $tsumegoInput))
-			$tsumego['solved'] = $solved;
-		if ($failed = Util::extract('failed', $tsumegoInput))
-			$tsumego['failed'] = $failed;
 		ClassRegistry::init('Tsumego')->create($tsumego);
 		ClassRegistry::init('Tsumego')->save($tsumego);
 		$tsumego = ClassRegistry::init('Tsumego')->find('first', ['order' => ['id' => 'DESC']])['Tsumego'];

@@ -342,37 +342,6 @@ class Play
 
 		$file = 'placeholder2.sgf';
 
-
-		$existingSignatures = ClassRegistry::init('Signature')->find('all', ['conditions' => ['tsumego_id' => $id]]);
-		if ($existingSignatures == null || $existingSignatures[0]['Signature']['created'] < date('Y-m-d', strtotime('-1 week')))
-			$requestSignature = 'true';
-		else
-			$requestSignature = 'false';
-		// A signature describes the problem itself, so a public collection qualifies whatever owns it.
-		if (isset($_COOKIE['signatures']) && $set['Set']['public'] == 1)
-		{
-			$signature = explode('/', $_COOKIE['signatures']);
-			$oldSignatures = ClassRegistry::init('Signature')->find('all', ['conditions' => ['tsumego_id' => $signature[count($signature) - 1]]]);
-			if (!$oldSignatures)
-				$oldSignatures = [];
-
-			$oldSignaturesCount = count($oldSignatures);
-
-			for ($i = 0; $i < $oldSignaturesCount; $i++)
-				ClassRegistry::init('Signature')->delete($oldSignatures[$i]['Signature']['id']);
-
-			$signatureCountMinus1 = count($signature) - 1;
-			for ($i = 0; $i < $signatureCountMinus1; $i++)
-			{
-				ClassRegistry::init('Signature')->create();
-				$newSignature = [];
-				$newSignature['Signature']['tsumego_id'] = $signature[count($signature) - 1];
-				$newSignature['Signature']['signature'] = $signature[$i];
-				ClassRegistry::init('Signature')->save($newSignature);
-			}
-			unset($_COOKIE['signatures']);
-		}
-
 		$tagData = ClassRegistry::init('Tag')::getForTsumego($id);
 
 		$isAllowedToContribute = false;
@@ -428,7 +397,6 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		($this->setFunction)('hasSgfProposal', $sgfProposal != null);
 
 		($this->setFunction)('tagData', $tagData);
-		($this->setFunction)('requestSignature', $requestSignature);
 		($this->setFunction)('nothingInRange', $nothingInRange);
 		($this->setFunction)('sgf', $sgf);
 		($this->setFunction)('corner', $corner);

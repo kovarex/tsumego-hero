@@ -210,10 +210,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 			$set['Set']['order'] = Constants::$DEFAULT_SET_ORDER;
 
 			if ($isSandbox)
-			{
 				$set['Set']['image'] = 'b1.png';
-				$set['Set']['author'] = 'various creators';
-			}
 			else
 				$set['Set']['user_id'] = Auth::getUserID();
 
@@ -936,7 +933,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 			$set = [];
 			$set['Set']['id'] = $id;
 			$set['Set']['title'] = $id;
-			$set['Set']['multiplier'] = 1;
 			$set['Set']['public'] = 1;
 			$rankRange = Rating::parseReadableRankRange($id);
 			$elo = Rating::getRankMinimalRatingFromReadableRank($rankRange === null ? $id : $rankRange[1]);
@@ -947,7 +943,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 			$set = [];
 			$set['Set']['id'] = $id;
 			$set['Set']['image'] = '';
-			$set['Set']['multiplier'] = 1;
 			$set['Set']['public'] = 1;
 			$tagName = $this->Tag->findByName($id);
 			if ($tagName && isset($tagName['Tag']['description']))

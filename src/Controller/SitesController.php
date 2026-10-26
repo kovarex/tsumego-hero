@@ -34,7 +34,6 @@ class SitesController extends AppController
 		$this->loadModel('Schedule');
 		$this->loadModel('Sgf');
 		$this->loadModel('SetConnection');
-		$this->loadModel('PublishDate');
 
 		$today = date('Y-m-d');
 		$dayRecord = $this->DayRecord->find('first', ['conditions' => ['date' => $today]]);
@@ -145,17 +144,6 @@ class SitesController extends AppController
 		$this->response->type('json');
 		$recentAchievements = $this->AchievementStatus->getRecent();
 		$this->response->body(json_encode(['recentAchievements' => $recentAchievements]));
-	}
-
-	/**
-	 * @param string|null $id
-	 * @return void
-	 */
-	#[HttpGet]
-	public function view(?string $id = null): void
-	{
-		$news = $this->Site->find('all');
-		$this->set('news', $news[$id]);
 	}
 
 	/**

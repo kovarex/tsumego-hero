@@ -54,7 +54,6 @@ use App\Utility\ViteManifest;
  * @var bool $passEnabled
  * @var string $previousLink
  * @var string $queryTitle
- * @var string $requestSignature
  * @var bool $requestSolution
  * @var bool $reviewCheat
  * @var string $reviewEnabled
@@ -700,7 +699,6 @@ use App\Utility\ViteManifest;
 	var deleteNextMoveGroup = false;
 	var file = <?php echo json_encode($file, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 	var tsumegoFileLink = "<?php echo $t['Tsumego']['id']; ?>";
-	var requestSignature = "<?php echo $requestSignature; ?>";
 	var author = <?php echo json_encode($t['Tsumego']['author'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 	var userSets = <?php echo $userSetsJson; ?>;
 	var besogoMode2Solved = false;

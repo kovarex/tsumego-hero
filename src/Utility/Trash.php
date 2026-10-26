@@ -24,7 +24,7 @@ class Trash
 	 * The tables that point to a problem without a foreign key that removes their rows with it.
 	 * Every other table with a tsumego_id has one (ON DELETE CASCADE), TrashTest makes sure of it.
 	 */
-	public static array $TABLES_WITHOUT_CASCADE = ['publish_date', 'reject', 'signature', 'tsumego_variant'];
+	public static array $TABLES_WITHOUT_CASCADE = ['reject', 'tsumego_variant'];
 
 	public static int $PURGE_BATCH_SIZE = 50;
 

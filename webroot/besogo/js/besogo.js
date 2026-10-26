@@ -423,10 +423,6 @@
     )
       besogo.editor.setVariantStyle(+options.variants); // Converts to number
 
-    //create signature strings for pattern search
-    if (typeof requestSignature !== "undefined" && requestSignature !== "false")
-      besogo.editor.createSignatures();
-
     //Fixes the asynchronous load of board and content
     sgfLoaded.registerListener(function (val) {
       besogo.initPanels(

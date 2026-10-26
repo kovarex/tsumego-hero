@@ -274,7 +274,6 @@ class PlayResultProcessorComponent extends Component
 		if (TsumegoUtil::isSolvedStatus($newStatus) && !TsumegoUtil::isSolvedStatus($previousTsumegoStatus['TsumegoStatus']['status']))
 			Auth::incrementUserField('solved', 1);
 		$previousTsumegoStatus['TsumegoStatus']['status'] = $newStatus;
-		$previousTsumegoStatus['TsumegoStatus']['created'] = date('Y-m-d H:i:s');
 		ClassRegistry::init('TsumegoStatus')->save($previousTsumegoStatus);
 		return $newStatus;
 	}

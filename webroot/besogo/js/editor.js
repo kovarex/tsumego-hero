@@ -108,7 +108,6 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     setAnchoredComments: setAnchoredComments,
     setFullEditor: setFullEditor,
     displayError: displayError,
-    createSignatures: createSignatures,
     rotateBoard: rotateBoard,
     autoRotate: autoRotate,
   };
@@ -1151,124 +1150,6 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     $("#theComment").css("display", "block");
     $("#theComment").css("color", "rgb(166, 27, 27)");
     $("#theComment").css("border", "thick double rgb(166, 27, 27)");
-  }
-
-  //signatures are strings that represent a 3x3 grid around correct moves for pattern search
-  function createSignatures() {
-    let board = getCurrent();
-    let correctMoves = getRoot().children;
-    let signatures = "";
-    let playerColor = besogo.playerColor === "white" ? [1, -1] : [-1, 1];
-    let size = besogo.scaleParameters.boardCoordSize;
-    for (let i = 0; i < correctMoves.length; i++) {
-      if (correctMoves[i].correct === 1) {
-        let array = [
-          ["_", "_", "_"],
-          ["_", "_", "_"],
-          ["_", "_", "_"],
-        ];
-        let x = correctMoves[i].move.x - 1;
-        let y = correctMoves[i].move.y - 1;
-        let counterX = 0;
-        let counterY = 0;
-        for (let j = y; j < y + 3; j++) {
-          counterX = 0;
-          for (let k = x; k < x + 3; k++) {
-            if (k > 0 && j > 0 && k <= size && j <= size) {
-              if (board.getStone(k, j) === playerColor[0])
-                array[counterY][counterX] = "b";
-              else if (board.getStone(k, j) === playerColor[1])
-                array[counterY][counterX] = "w";
-              else array[counterY][counterX] = "-";
-            } else array[counterY][counterX] = "_";
-            counterX++;
-          }
-          counterY++;
-        }
-        signatures += createSignature(array) + "/";
-      }
-    }
-    document.cookie =
-      "signatures=" +
-      signatures +
-      tsumegoFileLink +
-      ";SameSite=Lax";
-  }
-
-  function createSignature(a) {
-    let value = 0;
-    let highestValue = 0;
-    let highestSignature = "";
-    for (let i = 0; i < 8; i++) {
-      value = evaluateSignature(a);
-      if (value > highestValue) {
-        highestSignature =
-          a[0][0] +
-          a[0][1] +
-          a[0][2] +
-          a[1][0] +
-          a[1][1] +
-          a[1][2] +
-          a[2][0] +
-          a[2][1] +
-          a[2][2];
-        highestValue = value;
-      }
-      a = i !== 3 ? rotateSignature(a) : mirrorSignature(a);
-    }
-    return highestSignature;
-  }
-
-  //evaluation to find out which oritentation should be saved
-  function evaluateSignature(a) {
-    let values = [0, 0, 0];
-    let types = ["_", "b", "w"];
-    for (let i = 0; i < 3; i++)
-      for (let j = 0; j < 3; j++)
-        for (let k = 0; k < 3; k++)
-          if (a[j][k] === types[i]) values[i] += getSignatureFieldValue(j, k);
-    let valueString = "1";
-    for (let i = 0; i < 3; i++)
-      valueString += values[i] < 10 ? "0" + values[i] : values[i];
-    return parseInt(valueString);
-  }
-
-  function getSignatureFieldValue(x, y) {
-    if (x == 0 && y == 0) return 10;
-    let value = 1;
-    for (let i = 2; i >= 0; i--)
-      for (let j = 2; j >= 0; j--)
-        if (i == x && j == y) return value;
-        else value++;
-    return 0;
-  }
-
-  function mirrorSignature(matrix) {
-    const n = matrix.length;
-    for (let i = 0; i < n; i++)
-      for (let j = 0; j < Math.floor(n / 2); j++)
-        [matrix[i][j], matrix[i][n - 1 - j]] = [
-          matrix[i][n - 1 - j],
-          matrix[i][j],
-        ];
-    return matrix;
-  }
-
-  function rotateSignature(matrix) {
-    const n = matrix.length;
-    for (let i = 0; i < n; i++)
-      for (let j = i; j < n; j++)
-        [matrix[i][j], matrix[j][i]] = [matrix[j][i], matrix[i][j]];
-    for (let i = 0; i < n; i++) matrix[i].reverse();
-    return matrix;
-  }
-
-  function outputSignature(a) {
-    let str = "";
-    for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) str += a[i][j];
-    console.log(str.substring(0, 3));
-    console.log(str.substring(3, 6));
-    console.log(str.substring(6, 9));
   }
 
   // Rotate the board 90° in the given direction.

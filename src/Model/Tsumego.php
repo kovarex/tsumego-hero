@@ -10,15 +10,6 @@ class Tsumego extends AppModel
 		parent::__construct($id, $table, $ds);
 	}
 
-	public $validate = [
-		'title' => [
-			'rule' => 'notBlank',
-		],
-		'sgf1' => [
-			'rule' => 'notBlank',
-		],
-	];
-
 	/**
 	 * Moves the rating of the problem by the change a result brought, within its minimum and maximum.
 	 * Only the rating is written, and the change is added to the rating stored now: the row a request

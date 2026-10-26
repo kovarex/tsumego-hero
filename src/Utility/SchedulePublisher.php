@@ -47,9 +47,9 @@ class SchedulePublisher
 
 	/**
 	 * Publish a single tsumego from sandbox to the target public set.
-	 * Always moves the tsumego to the target set. Only resets stats and
-	 * wipes tsumego_status if the tsumego is not already in any other
-	 * public set (to preserve solve history for existing public problems).
+	 * Always moves the tsumego to the target set. Only wipes tsumego_status
+	 * if the tsumego is not already in any other public set (to preserve
+	 * solve history for existing public problems).
 	 * Returns why it could not be published, null when it was.
 	 */
 	private static function publishSingle(int|string|null $tsumegoID = null, int|string|null $to = null): ?string
@@ -122,13 +122,7 @@ class SchedulePublisher
 			return 'the problem is in no sandbox set to move from';
 
 		if (!$alreadyPublic)
-		{
-			$tsumego['Tsumego']['solved'] = 0;
-			$tsumego['Tsumego']['failed'] = 0;
-			ClassRegistry::init('Tsumego')->save($tsumego);
-
 			ClassRegistry::init('TsumegoStatus')->deleteAll(['tsumego_id' => $tsumego['Tsumego']['id']]);
-		}
 
 		return null;
 	}
