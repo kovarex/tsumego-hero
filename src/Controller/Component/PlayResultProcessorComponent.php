@@ -337,26 +337,26 @@ class PlayResultProcessorComponent extends Component
 
 		// After a reset of its part in the last month the problem is known, solving it again says little
 		// about the player or the problem, so neither rating changes.
-		if ($progressDeletionCount == 0)
-		{
-			$userRating = (float) Auth::getUser()['rating'];
-			$tsumegoRating = (float) $previousTsumego['Tsumego']['rating'];
+		if ($progressDeletionCount != 0)
+			return;
 
-			// Each AJAX call is a single atomic event: fail or solve, never both.
-			// Prior misplays were already processed by their own AJAX calls.
-			self::processRatingChangeStep($userRating, $tsumegoRating, $result['solved']);
+		$userRating = (float) Auth::getUser()['rating'];
+		$originalTsumegoRating = (float) $previousTsumego['Tsumego']['rating'];
+		$tsumegoRating = $originalTsumegoRating;
 
-			Auth::saveUserFields([
-				'rating' => $userRating,
-				'highest_rating' => max((float) Auth::getUser()['highest_rating'], $userRating)]);
+		// Each AJAX call is a single atomic event: fail or solve, never both.
+		// Prior misplays were already processed by their own AJAX calls.
+		self::processRatingChangeStep($userRating, $tsumegoRating, $result['solved']);
 
-			$previousTsumego['Tsumego']['rating'] = Util::clampOptional(
-				$tsumegoRating,
-				$previousTsumego['Tsumego']['minimum_rating'],
-				$previousTsumego['Tsumego']['maximum_rating']);
-		}
-		$previousTsumego['Tsumego']['activity_value']++;
-		ClassRegistry::init('Tsumego')->save($previousTsumego);
+		Auth::saveUserFields([
+			'rating' => $userRating,
+			'highest_rating' => max((float) Auth::getUser()['highest_rating'], $userRating)]);
+
+		$previousTsumego['Tsumego']['rating'] = Util::clampOptional(
+			$tsumegoRating,
+			$previousTsumego['Tsumego']['minimum_rating'],
+			$previousTsumego['Tsumego']['maximum_rating']);
+		Tsumego::addToRating((int) $previousTsumego['Tsumego']['id'], $tsumegoRating - $originalTsumegoRating);
 	}
 
 	private function processDamage(array $result, string $previousStatusValue): void

@@ -20,6 +20,22 @@ class Tsumego extends AppModel
 	];
 
 	/**
+	 * Moves the rating of the problem by the change a result brought, within its minimum and maximum.
+	 * Only the rating is written, and the change is added to the rating stored now: the row a request
+	 * read at its start may be older than an admin's edit or another player's result on the problem.
+	 */
+	public static function addToRating(int $tsumegoID, float $change): void
+	{
+		Util::execute('UPDATE tsumego
+			SET rating = CASE
+				WHEN rating + ? < minimum_rating THEN minimum_rating
+				WHEN rating + ? > maximum_rating THEN maximum_rating
+				ELSE rating + ?
+			END
+			WHERE id = ?', [$change, $change, $change, $tsumegoID]);
+	}
+
+	/**
 	 * The problems the site holds: every problem that is not in the trash, whatever collection it
 	 * sits in and whether or not that collection is published yet. A problem that belongs to three
 	 * sets counts once. This is the number the solve counter of a player runs against on the

@@ -1365,6 +1365,22 @@ class CommentsControllerTest extends IntegrationTestCase
 	}
 
 	/**
+	 * No new set has a subtitle, and the list still names the set of each comment.
+	 */
+	public function testCommentListNamesASetWithoutSubtitle()
+	{
+		new ContextPreparator([
+			'tsumego' => [
+				'sets' => [['name' => 'Set without subtitle', 'num' => 7]],
+				'status' => 'S',
+				'comments' => [['message' => 'A comment']]]]);
+
+		$this->get('comments');
+
+		$this->assertTextContains('Set without subtitle - 7', $this->view);
+	}
+
+	/**
 	 * Test that issue author's Go rank is displayed correctly on the play page.
 	 */
 	public function testIssueAuthorRankOnPlayPage()

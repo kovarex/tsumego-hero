@@ -41,7 +41,7 @@ SELECT
     set_connection.id AS set_connection_id,
     set_connection.num AS num,
     tsumego_status.status AS status,
-    CONCAT(`set`.title, ' ', `set`.title2) AS set_title,
+    CONCAT_WS(' ', `set`.title, `set`.title2) AS set_title,
     tag_connection.created as created
 FROM
 	tag_connection

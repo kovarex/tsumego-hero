@@ -73,7 +73,7 @@ SELECT
 	user.id as from_id,
 	tsumego_comment.id as id,
 	set_connection.id AS set_connection_id,
-	CONCAT(`set`.title, ' ', `set`.title2) as set_title,
+	CONCAT_WS(' ', `set`.title, `set`.title2) as set_title,
 	set_connection.num as set_num,
 	COALESCE(sgf.sgf, '') AS sgf";
 		$queryFrom = "

@@ -41,7 +41,7 @@ SELECT
     admin.email AS admin_email,
     sc.id AS set_connection_id,
     sc.num AS num,
-    CONCAT(s.title, ' ', s.title2) AS set_title
+    CONCAT_WS(' ', s.title, s.title2) AS set_title
 FROM sgf p
 JOIN set_connection sc ON sc.id = (
     SELECT sc2.id

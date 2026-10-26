@@ -38,7 +38,7 @@ SELECT
     sc.id AS set_connection_id,
     sc.num AS num,
     tsumego_status.status AS status,
-    CONCAT(s.title, ' ', s.title2) AS set_title
+    CONCAT_WS(' ', s.title, s.title2) AS set_title
 FROM sgf p
 JOIN (
     SELECT tsumego_id, MAX(id) AS latest_accepted_id

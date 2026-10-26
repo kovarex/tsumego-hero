@@ -14,7 +14,7 @@ use App\Utility\PwnedPasswordChecker;
 use App\Utility\PwnedPasswordCheckerInterface;
 use App\Utility\SgfCommentReorientation;
 use App\Utility\TimeModeUtil;
-use App\Utility\TsumegoUtil;
+use App\Utility\UserActivitiesRenderer;
 use App\Utility\Util;
 use App\Attribute\HttpPost;
 use App\Attribute\HttpGet;
@@ -215,110 +215,28 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	}
 
 	/**
-	 * @param string|null $uid User ID
-	 * @return void
+	 * The latest attempts of all players, or of the one player given (admin only)
 	 */
 	#[HttpGet]
-	public function userstats(?string $uid = null): void
+	public function userstats(?string $userID = null): void
 	{
 		$this->Authorization->authorize('Admin');
 		$this->set('_page', 'user');
-		$this->set('_title', 'USER STATS');
-		$this->loadModel('TsumegoAttempt');
-		$this->loadModel('Set');
-		$this->loadModel('Tsumego');
-		$this->loadModel('SetConnection');
-		if ($uid == null)
-			$ur = $this->TsumegoAttempt->find('all', ['limit' => 500, 'order' => 'id DESC']);
-		elseif ($uid == 99)
-			$ur = $this->TsumegoAttempt->find('all', [
-				'order' => 'created DESC',
-				'conditions' => [
-					'tsumego_id >=' => 19752,
-					'tsumego_id <=' => 19761,
-				],
-			]);
-		else
-			$ur = $this->TsumegoAttempt->find('all', ['limit' => 500, 'order' => 'created DESC', 'conditions' => ['user_id' => $uid]]);
-
-		$urCount = count($ur);
-		for ($i = 0; $i < $urCount; $i++)
-		{
-			$u = $this->User->findById($ur[$i]['TsumegoAttempt']['user_id']);
-			$ur[$i]['TsumegoAttempt']['user_display_name'] = $u['User']['display_name'];
-			$ur[$i]['TsumegoAttempt']['level'] = $u['User']['level'];
-			$t = $this->Tsumego->findById($ur[$i]['TsumegoAttempt']['tsumego_id']);
-			$scT = $this->SetConnection->findDisplaySetConnection($t['Tsumego']['id']);
-			$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
-			$ur[$i]['TsumegoAttempt']['tsumego_num'] = $scT['SetConnection']['num'];
-			$ur[$i]['TsumegoAttempt']['tsumego_xp'] = $t['Tsumego']['difficulty'];
-			$s = $this->Set->findById($t['Tsumego']['set_id']);
-			$ur[$i]['TsumegoAttempt']['set_name'] = $s['Set']['title'];
-		}
-
-		$noIndex = false;
-		if ($uid != null)
-			$noIndex = true;
-		if (isset($this->params['url']['c']))
-			$this->set('count', 1);
-		else
-			$this->set('count', 0);
-		$this->set('noIndex', $noIndex);
-		$this->set('ur', $ur);
-		$this->set('uid', $uid);
+		$this->set('_title', 'User activities');
+		$this->set('userActivitiesRenderer', new UserActivitiesRenderer($this->params['url'], userID: $userID === null ? null : (int) $userID));
 	}
 
 	/**
-	 * @param string|null $sid Set ID
-	 * @return void
+	 * The latest attempts on the problems of the set given, of all players without one (admin only)
 	 */
 	#[HttpGet]
-	public function userstats3(?string $sid = null): void
+	public function userstats3(?string $setID = null): void
 	{
 		$this->Authorization->authorize('Admin');
 		$this->set('_page', 'user');
-		$this->set('_title', 'USER STATS');
-		$this->loadModel('TsumegoAttempt');
-		$this->loadModel('Set');
-		$this->loadModel('Tsumego');
-		$this->loadModel('SetConnection');
-
-		if ($sid == null)
-			$ur = $this->TsumegoAttempt->find('all', ['limit' => 500, 'order' => 'id DESC']);
-		else
-		{
-			$ts = TsumegoUtil::collectTsumegosFromSet((int) $sid);
-			$ids = [];
-			$tsCount = count($ts);
-			for ($i = 0; $i < $tsCount; $i++)
-				array_push($ids, $ts[$i]['Tsumego']['id']);
-			$ur = $this->TsumegoAttempt->find('all', ['order' => 'created DESC', 'conditions' => ['tsumego_id' => $ids]]);
-		}
-
-		$urCount = count($ur);
-		for ($i = 0; $i < $urCount; $i++)
-		{
-			$u = $this->User->findById($ur[$i]['TsumegoAttempt']['user_id']);
-			$ur[$i]['TsumegoAttempt']['user_display_name'] = $u['User']['display_name'];
-			$t = $this->Tsumego->findById($ur[$i]['TsumegoAttempt']['tsumego_id']);
-			$ur[$i]['TsumegoAttempt']['tsumego_num'] = $t['Tsumego']['num'];
-			$ur[$i]['TsumegoAttempt']['tsumego_xp'] = $t['Tsumego']['difficulty'];
-			$scT = $this->SetConnection->findDisplaySetConnection($t['Tsumego']['id']);
-			$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
-			$s = $this->Set->findById($t['Tsumego']['set_id']);
-			$ur[$i]['TsumegoAttempt']['set_name'] = $s['Set']['title'];
-		}
-
-		$noIndex = false;
-		if ($sid != null)
-			$noIndex = true;
-		if (isset($this->params['url']['c']))
-			$this->set('count', 1);
-		else
-			$this->set('count', 0);
-		$this->set('noIndex', $noIndex);
-		$this->set('ur', $ur);
-		//$this->set('uid', $uid);
+		$this->set('_title', 'User activities');
+		$this->set('userActivitiesRenderer', new UserActivitiesRenderer($this->params['url'], setID: $setID === null ? null : (int) $setID));
+		$this->render('userstats');
 	}
 
 	/**
