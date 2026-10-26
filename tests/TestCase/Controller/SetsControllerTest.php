@@ -2184,6 +2184,37 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->assertSame('-', trim($timeButtons[1]->getText()), 'Problem 2 time should be - (no successful solves)');
 	}
 
+	/**
+	 * The average time is of the solved problems only, so solving another one faster than the
+	 * average brings it down (forum#149). A solve without a recorded time counts as a minute.
+	 */
+	public function testSetViewAverageTimeIsOfTheSolvedProblemsOnly(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumegos' => [
+				['sets' => [['name' => 'Test Set', 'num' => 1]], 'status' => 'S', 'attempts' => [['solved' => 1, 'seconds' => 10]]],
+				['sets' => [['name' => 'Test Set', 'num' => 2]], 'status' => 'S', 'attempts' => [['solved' => 1, 'seconds' => 20]]],
+				['sets' => [['name' => 'Test Set', 'num' => 3]], 'status' => 'S'],
+				['sets' => [['name' => 'Test Set', 'num' => 4]], 'status' => 'V', 'attempts' => [['solved' => 0, 'seconds' => 40, 'misplays' => 1]]],
+				['sets' => [['name' => 'Test Set', 'num' => 5]]]]]);
+
+		$this->get('sets/' . $context->tsumegos[0]['sets'][0]['id']);
+
+		$this->assertEquals(30, $this->viewVariable('avgTime'), '(10 + 20 + 60) / 3');
+	}
+
+	public function testSetViewAverageTimeWithNothingSolvedIsZero(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumegos' => [['sets' => [['name' => 'Test Set', 'num' => 1]]]]]);
+
+		$this->get('sets/' . $context->tsumegos[0]['sets'][0]['id']);
+
+		$this->assertEquals(0, $this->viewVariable('avgTime'));
+	}
+
 	public function testSetProgressDeletion()
 	{
 		foreach (['reset', 'hello'] as $resetInput)
