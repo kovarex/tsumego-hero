@@ -19,7 +19,7 @@ class RatingModeController extends AppController
 			return $this->redirect('/users/login');
 
 		if (!Auth::isInRatingMode())
-			Auth::saveUserField('mode', Constants::$RATING_MODE);
+			Auth::saveUserField('mode_id', Constants::$RATING_MODE);
 		$difficultyChange = (int) Util::clearCookie('difficulty');
 		if ($difficultyChange >= 1 && $difficultyChange <= 7)
 			Auth::saveUserField('rating_mode_difficulty_selection', $difficultyChange);

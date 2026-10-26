@@ -20,7 +20,7 @@ class UserTest extends CakeTestCase
 
 		$User = ClassRegistry::init('User');
 		$user = $User->findById($context->user['id']);
-		$user['User']['highscore_page'] = 5;
+		$user['User']['xp'] = 5;
 
 		$this->assertNotFalse($User->save($user), 'Saving an account that already has such a name must work');
 	}
@@ -45,7 +45,7 @@ class UserTest extends CakeTestCase
 	public function testGetAvatarUrlReturnsGooglePictureForGoogleUser()
 	{
 		$user = [
-			'pref_avatar' => User::AVATAR_GOOGLE,
+			'avatar_setting_id' => User::AVATAR_GOOGLE,
 			'external_id' => '123456789',
 			'picture' => 'https://lh3.googleusercontent.com/a/abc123',
 			'email' => 'test@gmail.com',
@@ -113,7 +113,7 @@ class UserTest extends CakeTestCase
 				'id' => 1,
 				'external_id' => '123',
 				'picture' => 'https://lh3.googleusercontent.com/a/x' . $suffix,
-				'pref_avatar' => User::AVATAR_GOOGLE,
+				'avatar_setting_id' => User::AVATAR_GOOGLE,
 			];
 
 			$this->assertSame(
@@ -134,7 +134,7 @@ class UserTest extends CakeTestCase
 			'id' => 1,
 			'external_id' => '123',
 			'picture' => 'https://lh3.googleusercontent.com/a/x?sz=50',
-			'pref_avatar' => User::AVATAR_GOOGLE,
+			'avatar_setting_id' => User::AVATAR_GOOGLE,
 		];
 
 		$this->assertSame('https://lh3.googleusercontent.com/a/x?sz=50', User::getAvatarUrl($user, 128));
@@ -149,7 +149,7 @@ class UserTest extends CakeTestCase
 			'id' => 1,
 			'external_id' => '123',
 			'picture' => 'https://example.com/photo.png',
-			'pref_avatar' => User::AVATAR_GOOGLE,
+			'avatar_setting_id' => User::AVATAR_GOOGLE,
 		];
 
 		$this->assertSame('https://example.com/photo.png', User::getAvatarUrl($user, 128));
@@ -162,7 +162,7 @@ class UserTest extends CakeTestCase
 			'display_name' => 'Pic',
 			'external_id' => '123',
 			'picture' => 'https://lh3.googleusercontent.com/a/x',
-			'pref_avatar' => User::AVATAR_GOOGLE,
+			'avatar_setting_id' => User::AVATAR_GOOGLE,
 		]);
 		$this->assertStringContainsString(
 			"onerror=\"this.onerror=null;this.classList.add('user-avatar--board');this.src='" . Avatar::url('Pic') . "'\"",
@@ -199,7 +199,7 @@ class UserTest extends CakeTestCase
 		$user = [
 			'id' => 1,
 			'display_name' => 'Anna',
-			'pref_avatar' => User::AVATAR_BOARD,
+			'avatar_setting_id' => User::AVATAR_BOARD,
 			'external_id' => '123',
 			'picture' => 'https://lh3.googleusercontent.com/a/x',
 		];
@@ -211,7 +211,7 @@ class UserTest extends CakeTestCase
 	{
 		$user = [
 			'id' => 1,
-			'pref_avatar' => User::AVATAR_GOOGLE,
+			'avatar_setting_id' => User::AVATAR_GOOGLE,
 			'external_id' => '123',
 			'picture' => 'https://lh3.googleusercontent.com/a/x',
 		];
@@ -221,14 +221,14 @@ class UserTest extends CakeTestCase
 
 	public function testAGoogleChoiceWithoutAPictureFallsBackToTheBoard()
 	{
-		$user = ['id' => 7, 'display_name' => 'Anna', 'pref_avatar' => User::AVATAR_GOOGLE, 'external_id' => '123', 'picture' => null];
+		$user = ['id' => 7, 'display_name' => 'Anna', 'avatar_setting_id' => User::AVATAR_GOOGLE, 'external_id' => '123', 'picture' => null];
 
 		$this->assertSame(Avatar::url('Anna'), User::getAvatarUrl($user, 24));
 	}
 
 	public function testChoosingGravatarUsesTheSha256OfTheEmail()
 	{
-		$user = ['id' => 1, 'pref_avatar' => User::AVATAR_GRAVATAR, 'email' => ' MyEmailAddress@example.com '];
+		$user = ['id' => 1, 'avatar_setting_id' => User::AVATAR_GRAVATAR, 'email' => ' MyEmailAddress@example.com '];
 
 		$this->assertSame(
 			'https://www.gravatar.com/avatar/84059b07d4be67b806386c0aad8070a23f18836bbaae342275dc0a83414c32ee?s=24&d=identicon',
@@ -251,7 +251,7 @@ class UserTest extends CakeTestCase
 
 	public function testAnUnknownChoiceFallsBackToTheBoard()
 	{
-		$user = ['id' => 8, 'display_name' => 'Anna', 'pref_avatar' => 99, 'email' => 'test@example.com'];
+		$user = ['id' => 8, 'display_name' => 'Anna', 'avatar_setting_id' => 99, 'email' => 'test@example.com'];
 
 		$this->assertSame(Avatar::url('Anna'), User::getAvatarUrl($user, 24));
 	}
@@ -293,7 +293,7 @@ class UserTest extends CakeTestCase
 		$html = User::renderLink([
 			'id' => 123,
 			'display_name' => 'GoogleUser',
-			'pref_avatar' => User::AVATAR_GOOGLE,
+			'avatar_setting_id' => User::AVATAR_GOOGLE,
 			'external_id' => 'google_ext_123',
 			'picture' => 'https://lh3.googleusercontent.com/a/abc123',
 			'rating' => 1500.0,

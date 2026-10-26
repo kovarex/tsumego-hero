@@ -64,8 +64,8 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 				'name' => 'renderUser',
 				// Pin the player color and board orientation so the board is never
 				// swapped or rotated (deterministic stone coordinates and colors).
-				'pref_player_color' => User::PREF_PLAYER_COLOR_ORIGINAL,
-				'pref_board_orientation' => User::PREF_BOARD_ORIENTATION_ORIGINAL,
+				'player_color_setting' => User::PLAYER_COLOR_SETTING_ORIGINAL,
+				'board_orientation_setting' => User::BOARD_ORIENTATION_SETTING_ORIGINAL,
 			],
 			'tsumego' => ['set_order' => 1, 'sgf' => self::SGF_19],
 		]);
@@ -898,7 +898,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 	public function testOrientationButtonSwapsScoreButtons(): void
 	{
 		$context = new ContextPreparator([
-			'user' => ['admin' => true, 'pref_player_color' => User::PREF_PLAYER_COLOR_ORIGINAL],
+			'user' => ['admin' => true, 'player_color_setting' => User::PLAYER_COLOR_SETTING_ORIGINAL],
 			'tsumego' => [
 				'set_order' => 1,
 				'description' => 'Who wins?',
@@ -933,7 +933,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 	public function testOrientationButtonSwapsSemeaiButtons(): void
 	{
 		$context = new ContextPreparator([
-			'user' => ['admin' => true, 'pref_player_color' => User::PREF_PLAYER_COLOR_ORIGINAL],
+			'user' => ['admin' => true, 'player_color_setting' => User::PLAYER_COLOR_SETTING_ORIGINAL],
 			'tsumego' => [
 				'set_order' => 1,
 				'semeai_type' => 1,
@@ -968,7 +968,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 	public function testOrientationButtonSwapsSgfComment(): void
 	{
 		$context = new ContextPreparator([
-			'user' => ['admin' => true, 'pref_player_color' => User::PREF_PLAYER_COLOR_ORIGINAL],
+			'user' => ['admin' => true, 'player_color_setting' => User::PLAYER_COLOR_SETTING_ORIGINAL],
 			'tsumego' => [
 				'set_order' => 1,
 				'description' => 'Black to play.',

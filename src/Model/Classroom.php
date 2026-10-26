@@ -17,7 +17,7 @@ class Classroom extends AppModel
 	 * that list players of a class, on the alias `u`.
 	 */
 	public const USER_COLUMNS = 'u.id AS user_id, u.display_name AS user_display_name, u.rating AS user_rating,
-		u.external_id AS user_external_id, u.picture AS user_picture, u.email AS user_email, u.pref_avatar AS user_pref_avatar';
+		u.external_id AS user_external_id, u.picture AS user_picture, u.email AS user_email, u.avatar_setting_id AS user_avatar_setting_id';
 
 	/**
 	 * The name a class is saved with, null when nothing is left of it.

@@ -74,7 +74,7 @@ class TsumegoCommentsControllerTest extends IntegrationTestCase
 		$user->id = $context->user['id'];
 		$user->saveField('external_id', '123456789012345678901');
 		$user->saveField('picture', 'https://lh3.googleusercontent.com/a/abc123');
-		$user->saveField('pref_avatar', User::AVATAR_GOOGLE);
+		$user->saveField('avatar_setting_id', User::AVATAR_GOOGLE);
 
 		$this->post('/tsumego-comments/add', json_encode(['tsumego_id' => $context->tsumegos[0]['id'], 'text' => 'from a google account']));
 

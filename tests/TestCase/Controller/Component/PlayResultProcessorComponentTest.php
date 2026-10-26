@@ -800,20 +800,20 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		// Switch to rating mode -> DB mode must be rating immediately (same request).
 		$this->loginAs($context);
 		$this->post('/ratingMode');
-		$this->assertSame(Constants::$RATING_MODE, (int) $context->reloadUser()['mode'],
+		$this->assertSame(Constants::$RATING_MODE, (int) $context->reloadUser()['mode_id'],
 			'DB mode should be RATING right after visiting /ratingMode');
 
 		// Switch back to level mode by opening a problem directly -> DB mode must be level immediately.
 		$this->loginAs($context);
 		$this->post('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$this->assertSame(Constants::$LEVEL_MODE, (int) $context->reloadUser()['mode'],
+		$this->assertSame(Constants::$LEVEL_MODE, (int) $context->reloadUser()['mode_id'],
 			'DB mode should be LEVEL right after opening a problem directly');
 		$this->assertTextContains('var mode = 1;', $this->view,
 			'Play page should render as level mode (no one-request lag)');
 
 		// Solve immediately; the mode used for the result must still be level (XP gained, mode unchanged).
 		$this->solve($context);
-		$this->assertSame(Constants::$LEVEL_MODE, (int) $context->reloadUser()['mode'],
+		$this->assertSame(Constants::$LEVEL_MODE, (int) $context->reloadUser()['mode_id'],
 			'DB mode should still be LEVEL after the solve');
 		$this->assertGreaterThan(0, (int) $context->reloadUser()['xp'],
 			'XP should be gained when solving in level mode');
@@ -829,12 +829,12 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		// Switch to rating mode and solve immediately, without touching level mode in between.
 		$this->loginAs($context);
 		$this->post('/ratingMode');
-		$this->assertSame(Constants::$RATING_MODE, (int) $context->reloadUser()['mode'],
+		$this->assertSame(Constants::$RATING_MODE, (int) $context->reloadUser()['mode_id'],
 			'DB mode should be RATING after visiting /ratingMode');
 
 		$ratingBefore = (int) $context->reloadUser()['rating'];
 		$this->solve($context);
-		$this->assertSame(Constants::$RATING_MODE, (int) $context->reloadUser()['mode'],
+		$this->assertSame(Constants::$RATING_MODE, (int) $context->reloadUser()['mode_id'],
 			'DB mode should still be RATING after solving in rating mode');
 		$this->assertNotSame($ratingBefore, (int) $context->reloadUser()['rating'],
 			'Rating should change when solving in rating mode');
@@ -1050,7 +1050,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
 			],
 		]);
-		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+		Auth::saveUserField('mode_id', Constants::$MISTAKE_TRAINING_MODE);
 		$this->failResult($context);
 
 		$this->assertSame(0, count($this->attemptsOf($context)), 'Training should not write to tsumego_attempt (like time mode)');
@@ -1064,7 +1064,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
 			],
 		]);
-		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+		Auth::saveUserField('mode_id', Constants::$MISTAKE_TRAINING_MODE);
 
 		$this->failResult($context);
 		$this->failResult($context);
@@ -1084,7 +1084,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 				'status' => ['name' => 'S', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
 			],
 		]);
-		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+		Auth::saveUserField('mode_id', Constants::$MISTAKE_TRAINING_MODE);
 
 		$this->failResult($context);
 
@@ -1103,7 +1103,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
 			],
 		]);
-		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+		Auth::saveUserField('mode_id', Constants::$MISTAKE_TRAINING_MODE);
 
 		$beforeSolved = (int) Auth::getUser()['solved'];
 
@@ -1134,7 +1134,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		]);
 		$userId = $context->user['id'];
 		$tsumegoId = (int) $context->tsumegos[0]['id'];
-		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+		Auth::saveUserField('mode_id', Constants::$MISTAKE_TRAINING_MODE);
 
 		$this->failResult($context);
 
@@ -1164,7 +1164,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day')), 'mistake_training_rung' => 3],
 			],
 		]);
-		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+		Auth::saveUserField('mode_id', Constants::$MISTAKE_TRAINING_MODE);
 
 		$button = $this->failResult($context)['mistake_training_button'];
 		$this->assertSame('N', $button['status'], 'A miss stays grey until it is solved');
@@ -1202,7 +1202,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day')), 'mistake_training_rung' => $rung],
 			],
 		]);
-		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+		Auth::saveUserField('mode_id', Constants::$MISTAKE_TRAINING_MODE);
 
 		$button = $this->solve($context)['mistake_training_button'];
 
@@ -1235,7 +1235,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		]);
 		$userId = $context->user['id'];
 		$tsumegoId = (int) $context->tsumegos[0]['id'];
-		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+		Auth::saveUserField('mode_id', Constants::$MISTAKE_TRAINING_MODE);
 
 		$this->solve($context);
 		$reviewed = MistakeTraining::getPoolRow($userId, $tsumegoId);
@@ -1311,7 +1311,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 				'attempt' => ['solved' => false, 'misplays' => 1], // real pool member (entered via fail)
 			],
 		]);
-		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+		Auth::saveUserField('mode_id', Constants::$MISTAKE_TRAINING_MODE);
 
 		$beforeXp = Auth::getUser()['xp'];
 		$beforeRating = Auth::getUser()['rating'];
@@ -1346,7 +1346,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
 			],
 		]);
-		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+		Auth::saveUserField('mode_id', Constants::$MISTAKE_TRAINING_MODE);
 
 		$beforeDamage = Auth::getUser()['damage'];
 
@@ -1410,7 +1410,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 	public function testALevelPageCountsInTheLevelModeWhileAnotherTabIsInTheTraining(): void
 	{
 		$context = new ContextPreparator(['tsumego' => 1]);
-		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+		Auth::saveUserField('mode_id', Constants::$MISTAKE_TRAINING_MODE);
 		$beforeXp = Auth::getUser()['xp'];
 
 		$this->postOutcomeFromPage($context, PlayOutcome::SolvedClean, Constants::$LEVEL_MODE);

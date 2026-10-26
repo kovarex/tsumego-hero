@@ -123,7 +123,7 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 			],
 		]);
 		$scId = (int) $context->tsumegos[0]['set-connections'][0]['id'];
-		Auth::saveUserField('mode', Constants::$LEVEL_MODE);
+		Auth::saveUserField('mode_id', Constants::$LEVEL_MODE);
 
 		$this->get('/mistake-training/play/' . $scId);
 
@@ -337,7 +337,7 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 			],
 		]);
 		$scId = (int) $context->tsumegos[0]['set-connections'][0]['id'];
-		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+		Auth::saveUserField('mode_id', Constants::$MISTAKE_TRAINING_MODE);
 
 		$this->post('/' . $scId);
 

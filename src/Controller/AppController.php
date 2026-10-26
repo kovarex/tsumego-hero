@@ -329,19 +329,19 @@ class AppController extends Controller
 
 			if ($lastTimeModeCategoryID = Util::clearCookie('lastTimeModeCategoryID'))
 				Auth::saveUserField('last_time_mode_category_id', $lastTimeModeCategoryID);
-			if (Auth::getUser()['highscore_page'] == Constants::$HIGHSCORE_LEVEL)
+			if (Auth::getUser()['highscore_page_id'] == Constants::$HIGHSCORE_LEVEL)
 				$highscoreLink = 'highscore';
-			elseif (Auth::getUser()['highscore_page'] == Constants::$HIGHSCORE_RATING)
+			elseif (Auth::getUser()['highscore_page_id'] == Constants::$HIGHSCORE_RATING)
 				$highscoreLink = 'rating';
-			elseif (Auth::getUser()['highscore_page'] == Constants::$HIGHSCORE_DAILY)
+			elseif (Auth::getUser()['highscore_page_id'] == Constants::$HIGHSCORE_DAILY)
 				$highscoreLink = 'leaderboard';
-			elseif (Auth::getUser()['highscore_page'] == Constants::$HIGHSCORE_TIME_MODE)
+			elseif (Auth::getUser()['highscore_page_id'] == Constants::$HIGHSCORE_TIME_MODE)
 				$highscoreLink = 'time_mode';
 
 			if (isset($_COOKIE['sound']) && $_COOKIE['sound'] != '0')
 			{
-				// The cookie says 'on' or 'off', the column holds 1 or 0
-				Auth::saveUserField('sound', $_COOKIE['sound'] === 'on' ? User::SOUND_ON : User::SOUND_OFF);
+				// The cookie says 'on' or 'off'
+				Auth::saveUserField('sound', $_COOKIE['sound'] === 'on');
 				unset($_COOKIE['sound']);
 			}
 			$this->set('user', Auth::getUser());
@@ -351,10 +351,10 @@ class AppController extends Controller
 		{
 			$lightDark = $_COOKIE['lightDark'];
 			if (Auth::isLoggedIn())
-				Auth::saveUserField('theme', $lightDark === 'dark' ? User::THEME_DARK : User::THEME_LIGHT);
+				Auth::saveUserField('theme_id', $lightDark === 'dark' ? User::THEME_DARK : User::THEME_LIGHT);
 		}
 		elseif (Auth::isLoggedIn())
-			$lightDark = (Auth::getUser()['theme'] == User::THEME_DARK) ? 'dark' : 'light';
+			$lightDark = (Auth::getUser()['theme_id'] == User::THEME_DARK) ? 'dark' : 'light';
 
 		if (Auth::isLoggedIn())
 		{
@@ -362,10 +362,10 @@ class AppController extends Controller
 			if (isset($_COOKIE['levelBar']) && $_COOKIE['levelBar'] != '0')
 			{
 				$levelBar = ((int) $_COOKIE['levelBar']) === User::LEVEL_BAR_RATING ? User::LEVEL_BAR_RATING : User::LEVEL_BAR_LEVEL;
-				Auth::saveUserField('level_bar', $levelBar);
+				Auth::saveUserField('level_bar_id', $levelBar);
 			}
 			else
-				$levelBar = ((int) Auth::getUser()['level_bar']) === User::LEVEL_BAR_RATING ? User::LEVEL_BAR_RATING : User::LEVEL_BAR_LEVEL;
+				$levelBar = ((int) Auth::getUser()['level_bar_id']) === User::LEVEL_BAR_RATING ? User::LEVEL_BAR_RATING : User::LEVEL_BAR_LEVEL;
 		}
 
 		if (HeroPowers::getSprintRemainingSeconds() == 0)

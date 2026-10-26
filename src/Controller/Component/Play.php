@@ -223,10 +223,10 @@ class Play
 		if (!isset($t['Tsumego']['file']) || $t['Tsumego']['file'] == '')
 			$t['Tsumego']['file'] = $currentSetConnection['SetConnection']['num'];
 		$playerColor = 'black';
-		$playerColorPreference = Auth::getPrefPlayerColor();
+		$playerColorPreference = Auth::getPlayerColorSetting();
 		$sgfColor = SgfParser::firstMoveColor($sgf['Sgf']['sgf']);
 		$swapColors = false;
-		if ($playerColorPreference === User::PREF_PLAYER_COLOR_ORIGINAL)
+		if ($playerColorPreference === User::PLAYER_COLOR_SETTING_ORIGINAL)
 		{
 			// Original: play the SGF as designed, no color swap.
 			if ($sgfColor === 'W')
@@ -257,8 +257,8 @@ class Play
 		// internally, so top-left reproduces the thumbnail), "Random" picks a
 		// random corner for variety.
 		$corner = null;
-		$orientationPreference = Auth::getPrefBoardOrientation();
-		if ($orientationPreference === User::PREF_BOARD_ORIENTATION_ORIGINAL)
+		$orientationPreference = Auth::getBoardOrientationSetting();
+		if ($orientationPreference === User::BOARD_ORIENTATION_SETTING_ORIGINAL)
 			$corner = 'top-left';
 		else
 			$corner = Play::randomCorner();

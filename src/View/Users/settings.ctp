@@ -160,22 +160,22 @@ use App\Utility\Constants;
 			<div class="field">
 				<span class="field__label">Player color</span>
 				<?php
-				$playerColor = Auth::getPrefPlayerColor();
-				$playerColorRandomChecked = $playerColor === User::PREF_PLAYER_COLOR_RANDOM ? 'checked="checked"' : '';
-				$playerColorOriginalChecked = $playerColor === User::PREF_PLAYER_COLOR_ORIGINAL ? 'checked="checked"' : '';
+				$playerColor = Auth::getPlayerColorSetting();
+				$playerColorRandomChecked = $playerColor === User::PLAYER_COLOR_SETTING_RANDOM ? 'checked="checked"' : '';
+				$playerColorOriginalChecked = $playerColor === User::PLAYER_COLOR_SETTING_ORIGINAL ? 'checked="checked"' : '';
 				?>
-				<label class="field__option"><input type="radio" name="playerColor" value="<?php echo User::PREF_PLAYER_COLOR_RANDOM; ?>" onclick="playerColorPreference(this.value);" <?php echo $playerColorRandomChecked; ?>> Random</label>
-				<label class="field__option"><input type="radio" name="playerColor" value="<?php echo User::PREF_PLAYER_COLOR_ORIGINAL; ?>" onclick="playerColorPreference(this.value);" <?php echo $playerColorOriginalChecked; ?>> Original</label>
+				<label class="field__option"><input type="radio" name="playerColor" value="<?php echo User::PLAYER_COLOR_SETTING_RANDOM; ?>" onclick="playerColorPreference(this.value);" <?php echo $playerColorRandomChecked; ?>> Random</label>
+				<label class="field__option"><input type="radio" name="playerColor" value="<?php echo User::PLAYER_COLOR_SETTING_ORIGINAL; ?>" onclick="playerColorPreference(this.value);" <?php echo $playerColorOriginalChecked; ?>> Original</label>
 			</div>
 			<div class="field">
 				<span class="field__label">Board orientation</span>
 				<?php
-				$boardOrientation = Auth::getPrefBoardOrientation();
-				$boardOrientationRandomChecked = $boardOrientation === User::PREF_BOARD_ORIENTATION_RANDOM ? 'checked="checked"' : '';
-				$boardOrientationOriginalChecked = $boardOrientation === User::PREF_BOARD_ORIENTATION_ORIGINAL ? 'checked="checked"' : '';
+				$boardOrientation = Auth::getBoardOrientationSetting();
+				$boardOrientationRandomChecked = $boardOrientation === User::BOARD_ORIENTATION_SETTING_RANDOM ? 'checked="checked"' : '';
+				$boardOrientationOriginalChecked = $boardOrientation === User::BOARD_ORIENTATION_SETTING_ORIGINAL ? 'checked="checked"' : '';
 				?>
-				<label class="field__option"><input type="radio" name="boardOrientation" value="<?php echo User::PREF_BOARD_ORIENTATION_RANDOM; ?>" onclick="boardOrientationPreference(this.value);" <?php echo $boardOrientationRandomChecked; ?>> Random</label>
-				<label class="field__option"><input type="radio" name="boardOrientation" value="<?php echo User::PREF_BOARD_ORIENTATION_ORIGINAL; ?>" onclick="boardOrientationPreference(this.value);" <?php echo $boardOrientationOriginalChecked; ?>> Original</label>
+				<label class="field__option"><input type="radio" name="boardOrientation" value="<?php echo User::BOARD_ORIENTATION_SETTING_RANDOM; ?>" onclick="boardOrientationPreference(this.value);" <?php echo $boardOrientationRandomChecked; ?>> Random</label>
+				<label class="field__option"><input type="radio" name="boardOrientation" value="<?php echo User::BOARD_ORIENTATION_SETTING_ORIGINAL; ?>" onclick="boardOrientationPreference(this.value);" <?php echo $boardOrientationOriginalChecked; ?>> Original</label>
 			</div>
 		</div>
 	</div>

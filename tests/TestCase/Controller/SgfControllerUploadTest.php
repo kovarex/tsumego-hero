@@ -10,7 +10,7 @@ class SgfControllerUploadTest extends IntegrationTestCase
 	/** A comment on it, anchored at the second move. */
 	private const COMMENT = ['message' => 'black A19 then w A18', 'position' => '1/2/1/1/2/1/2/1/sgf|1/1+1/2'];
 	/** The board as the SGF stores it, so the page shows the problem in the top-left corner and its own colours. */
-	private const STORED_BOARD = ['pref_board_orientation' => User::PREF_BOARD_ORIENTATION_ORIGINAL, 'pref_player_color' => User::PREF_PLAYER_COLOR_ORIGINAL];
+	private const STORED_BOARD = ['board_orientation_setting' => User::BOARD_ORIENTATION_SETTING_ORIGINAL, 'player_color_setting' => User::PLAYER_COLOR_SETTING_ORIGINAL];
 
 	private function newestSgf(ContextPreparator $context): array
 	{

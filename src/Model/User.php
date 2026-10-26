@@ -13,10 +13,15 @@ use App\Utility\Util;
  */
 class User extends AppModel
 {
-	public const PREF_PLAYER_COLOR_RANDOM = 0;
-	public const PREF_PLAYER_COLOR_ORIGINAL = 1;
-	public const PREF_BOARD_ORIENTATION_RANDOM = 0;
-	public const PREF_BOARD_ORIENTATION_ORIGINAL = 1;
+	/** The two values of player_color_setting and board_orientation_setting: random, or as in the original. */
+	public const PLAYER_COLOR_SETTING_RANDOM = 0;
+	public const PLAYER_COLOR_SETTING_ORIGINAL = 1;
+	public const BOARD_ORIENTATION_SETTING_RANDOM = 0;
+	public const BOARD_ORIENTATION_SETTING_ORIGINAL = 1;
+
+	/** The ids of the premium table, a premium_id of NULL is no premium. Premium can no longer be bought. */
+	public const PREMIUM_BASIC = 1;
+	public const PREMIUM_GOLDEN = 2;
 
 	/** The ids of the date_format table, how the dates are written. app/shared/dates.ts has the patterns. */
 	public const DATE_FORMAT_ISO = 1; // 2026-10-21 14:05
@@ -43,17 +48,13 @@ class User extends AppModel
 		self::ROLE_OWNER => 'owner',
 	];
 
-	/** Whether the player wants sound. The cookie spells them 'on' and 'off'. */
-	public const SOUND_OFF = 0;
-	public const SOUND_ON = 1;
-
-	/** The theme the player picked. */
-	public const THEME_LIGHT = 0;
-	public const THEME_DARK = 1;
+	/** The ids of the theme table, the theme the player picked. */
+	public const THEME_LIGHT = 1;
+	public const THEME_DARK = 2;
 
 	/**
-	 * What the bar in the header shows. There is no 0 because the cookie that carries
-	 * the choice reads 0 as "nothing picked yet".
+	 * The ids of the level_bar table, what the bar in the header shows. The cookie that
+	 * carries the choice has the same numbers and reads 0 as "nothing picked yet".
 	 */
 	public const LEVEL_BAR_LEVEL = 1;
 	public const LEVEL_BAR_RATING = 2;
@@ -67,14 +68,14 @@ class User extends AppModel
 	// The longest e-mail address there can be (RFC 5321), and what the user table stores.
 	public const EMAIL_MAX_LENGTH = 254;
 
-	/** The avatar a player picked: the board the site draws. */
-	public const AVATAR_BOARD = 0;
+	/** The ids of the avatar_setting table, the avatar a player picked: the board the site draws. */
+	public const AVATAR_BOARD = 1;
 
 	/** The avatar a player picked: their Gravatar. */
-	public const AVATAR_GRAVATAR = 1;
+	public const AVATAR_GRAVATAR = 2;
 
 	/** The avatar a player picked: the picture of their Google account. */
-	public const AVATAR_GOOGLE = 2;
+	public const AVATAR_GOOGLE = 3;
 
 	/**
 	 * The pixels asked of an avatar host for the avatar in a list: twice the 24px
@@ -162,9 +163,9 @@ class User extends AppModel
 	 */
 	public static function renderPremium(array $user): string
 	{
-		$premium = $user['premium'] ?? 0;
-		if ($premium == 2 || $premium == 1)
-			return '<img alt="Account Type" title="Account Type" src="/img/premium' . $premium . '.png" height="16px">';
+		$premiumID = $user['premium_id'] ?? null;
+		if ($premiumID == self::PREMIUM_BASIC || $premiumID == self::PREMIUM_GOLDEN)
+			return '<img alt="Account Type" title="Account Type" src="/img/premium' . $premiumID . '.png" height="16px">';
 		return '';
 	}
 
@@ -433,7 +434,7 @@ class User extends AppModel
 				return '<span>' . h(self::DELETED_NAME) . '</span>';
 			$rating = $user['user_rating'] ?? null;
 			$rank = $rating !== null ? Rating::getReadableRankFromRating((float) $rating) : '';
-			return self::renderLinkInternal($user['user_id'], $displayName, $user['user_external_id'] ?? null, $user['user_picture'] ?? null, $user['user_email'] ?? null, $user['user_pref_avatar'] ?? null, $rank);
+			return self::renderLinkInternal($user['user_id'], $displayName, $user['user_external_id'] ?? null, $user['user_picture'] ?? null, $user['user_email'] ?? null, $user['user_avatar_setting_id'] ?? null, $rank);
 		}
 
 		// Standard format: id, display_name, etc. A row without a display name gets the same
@@ -443,13 +444,13 @@ class User extends AppModel
 			return '<span>' . h(self::DELETED_NAME) . '</span>';
 		$rating = $user['rating'] ?? null;
 		$rank = $rating !== null ? Rating::getReadableRankFromRating((float) $rating) : '';
-		return self::renderLinkInternal($user['id'], $displayName, $user['external_id'] ?? null, $user['picture'] ?? null, $user['email'] ?? null, $user['pref_avatar'] ?? null, $rank);
+		return self::renderLinkInternal($user['id'], $displayName, $user['external_id'] ?? null, $user['picture'] ?? null, $user['email'] ?? null, $user['avatar_setting_id'] ?? null, $rank);
 	}
 
 	/**
 	 * Internal function to render user link HTML.
 	 */
-	private static function renderLinkInternal(int $id, string $displayName, ?string $externalID, ?string $picture, ?string $email, ?int $prefAvatar, string $rank): string
+	private static function renderLinkInternal(int $id, string $displayName, ?string $externalID, ?string $picture, ?string $email, ?int $avatarSettingID, string $rank): string
 	{
 		assert(($externalID !== null && $picture !== null) || $email !== null, 'Must have either (externalID + picture) or email for avatar');
 
@@ -457,7 +458,7 @@ class User extends AppModel
 		$avatarUrl = self::getAvatarUrl([
 			'id' => $id,
 			'display_name' => $displayName,
-			'pref_avatar' => $prefAvatar,
+			'avatar_setting_id' => $avatarSettingID,
 			'external_id' => $externalID,
 			'picture' => $picture,
 			'email' => $email,
@@ -666,7 +667,7 @@ class User extends AppModel
 	 */
 	public static function soundIsOn(array $user): bool
 	{
-		return (int) ($user['sound'] ?? self::SOUND_OFF) === self::SOUND_ON;
+		return (bool) ($user['sound'] ?? false);
 	}
 
 	/**
@@ -697,7 +698,7 @@ class User extends AppModel
 	 */
 	public static function avatarChoice(array $user): int
 	{
-		$stored = (int) ($user['pref_avatar'] ?? self::AVATAR_BOARD);
+		$stored = (int) ($user['avatar_setting_id'] ?? self::AVATAR_BOARD);
 		return array_key_exists($stored, self::avatarChoices($user)) ? $stored : self::AVATAR_BOARD;
 	}
 
@@ -720,7 +721,7 @@ class User extends AppModel
 	 * Only the avatar fields are needed, the callers pass either a full user row or
 	 * just these values.
 	 *
-	 * @param array{id?: int, display_name?: string|null, pref_avatar?: int|null, external_id?: string|null, picture?: string|null, email?: string|null} $user
+	 * @param array{id?: int, display_name?: string|null, avatar_setting_id?: int|null, external_id?: string|null, picture?: string|null, email?: string|null} $user
 	 * @param int $size Pixels to ask an avatar host for, the board ignores it
 	 * @return string Avatar URL
 	 */

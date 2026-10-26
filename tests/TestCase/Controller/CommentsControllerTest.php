@@ -17,7 +17,7 @@ class CommentsControllerTest extends IntegrationTestCase
 	private const TALL_SGF = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[ca][cb][cc][cd][ce][cf][cg][ch][ci][cj];B[aa];W[ab];B[ac]C[+])';
 
 	/** The board as the SGF stores it: the top-left corner and its own colours, so comments show as stored. */
-	private const STORED_BOARD = ['pref_board_orientation' => User::PREF_BOARD_ORIENTATION_ORIGINAL, 'pref_player_color' => User::PREF_PLAYER_COLOR_ORIGINAL];
+	private const STORED_BOARD = ['board_orientation_setting' => User::BOARD_ORIENTATION_SETTING_ORIGINAL, 'player_color_setting' => User::PLAYER_COLOR_SETTING_ORIGINAL];
 
 	/** Opens a tsumego the admin has already solved, so its comments and the review mode are available. */
 	private function openSolvedTsumego(Browser $browser, array $tsumego = [], array $user = []): ContextPreparator

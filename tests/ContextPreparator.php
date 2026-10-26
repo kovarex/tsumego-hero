@@ -139,7 +139,8 @@ class ContextPreparator
 		$user['user_role_id'] = $isOwner ? User::ROLE_OWNER : ($isAdmin ? User::ROLE_ADMIN : User::ROLE_PLAYER);
 		$user['rating'] = Util::extract('rating', $userInput) ?: self::$DEFAULT_USER_RATING;
 		$user['highest_rating'] = Util::extract('highest_rating', $userInput) ?: $user['rating'];
-		$user['premium'] = Util::extract('premium', $userInput) ?: 0;
+		$premium = Util::extract('premium', $userInput);
+		$user['premium_id'] = $premium ? (int) $premium : null;
 		$deleted = Util::extract('deleted', $userInput) ?: false;
 		$user['solved'] = Util::extract('solved', $userInput) ?: 0;
 		$user['xp'] = Util::extract('xp', $userInput) ?: 0;
@@ -150,7 +151,7 @@ class ContextPreparator
 		// Google Sign-In fields
 		$user['external_id'] = $externalId ?: null;
 		$user['picture'] = Util::extract('picture', $userInput) ?: null;
-		$user['pref_avatar'] = Util::extract('pref_avatar', $userInput) ?: User::AVATAR_BOARD;
+		$user['avatar_setting_id'] = Util::extract('avatar_setting_id', $userInput) ?: User::AVATAR_BOARD;
 		$user['needs_display_name_change'] = Util::extract('needs_display_name_change', $userInput) ?: false;
 		foreach ([
 			'used_refinement',
@@ -169,11 +170,11 @@ class ContextPreparator
 		else
 			$user['damage'] = Util::extract('damage', $userInput) ?? 0;
 		$user['sprint_start'] = Util::extract('sprint_start', $userInput) ?: null;
-		$user['mode'] = Util::extract('mode', $userInput) ?: Constants::$LEVEL_MODE;
-		$user['pref_player_color'] = Util::extract('pref_player_color', $userInput) ?? User::PREF_PLAYER_COLOR_RANDOM;
-		$user['pref_board_orientation'] = Util::extract('pref_board_orientation', $userInput) ?? User::PREF_BOARD_ORIENTATION_RANDOM;
+		$user['mode_id'] = Util::extract('mode', $userInput) ?: Constants::$LEVEL_MODE;
+		$user['player_color_setting'] = Util::extract('player_color_setting', $userInput) ?? User::PLAYER_COLOR_SETTING_RANDOM;
+		$user['board_orientation_setting'] = Util::extract('board_orientation_setting', $userInput) ?? User::BOARD_ORIENTATION_SETTING_RANDOM;
 		$user['date_format_id'] = Util::extract('date_format_id', $userInput) ?? User::DATE_FORMAT_ISO;
-		$user['sound'] = Util::extract('sound', $userInput) ?? 0;
+		$user['sound'] = (bool) (Util::extract('sound', $userInput) ?? false);
 		$user['email_on_new_message'] = Util::extract('email_on_new_message', $userInput) ?? 1;
 		if ($lastTimeModeCategoryID = Util::extract('last-time-mode-category-id', $userInput))
 			$user['last_time_mode_category_id'] = $lastTimeModeCategoryID;
@@ -1078,7 +1079,7 @@ class ContextPreparator
 	{
 		Auth::saveUserFields([
 			'level' => HeroPowers::$SPRINT_MINIMUM_LEVEL,
-			'mode' => Constants::$LEVEL_MODE,
+			'mode_id' => Constants::$LEVEL_MODE,
 		]);
 	}
 

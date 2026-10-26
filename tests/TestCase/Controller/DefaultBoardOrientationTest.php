@@ -3,7 +3,7 @@
 use App\Utility\Auth;
 
 /**
- * Tests that the pref_board_orientation user preference drives the
+ * Tests that the board_orientation_setting user preference drives the
  * board corner on the puzzle page.
  * "Original" shows the canonical orientation (matching the thumbnail).
  */
@@ -11,7 +11,7 @@ class DefaultBoardOrientationTest extends IntegrationTestCase
 {
 	private static function setOrientationPreference(int $value): void
 	{
-		Auth::saveUserField('pref_board_orientation', $value);
+		Auth::saveUserField('board_orientation_setting', $value);
 	}
 
 	public function testOriginalUsesTopLeftCorner(): void
@@ -25,7 +25,7 @@ class DefaultBoardOrientationTest extends IntegrationTestCase
 			],
 		]);
 		$this->login('orientTopLeft');
-		$this->setOrientationPreference(User::PREF_BOARD_ORIENTATION_ORIGINAL);
+		$this->setOrientationPreference(User::BOARD_ORIENTATION_SETTING_ORIGINAL);
 
 		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->assertResponseOk();
@@ -43,7 +43,7 @@ class DefaultBoardOrientationTest extends IntegrationTestCase
 			'tsumego' => ['sets' => [['name' => 'orientRandomSet', 'num' => 1]], 'sgf' => ['data' => '(;GM[1]FF[4]SZ[19];B[aa])']],
 		]);
 		$this->login('orientRandom');
-		$this->setOrientationPreference(User::PREF_BOARD_ORIENTATION_RANDOM);
+		$this->setOrientationPreference(User::BOARD_ORIENTATION_SETTING_RANDOM);
 
 		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->assertResponseOk();
@@ -57,11 +57,11 @@ class DefaultBoardOrientationTest extends IntegrationTestCase
 		$context = new ContextPreparator(['user' => ['name' => 'orientStores']]);
 		$this->login('orientStores');
 
-		$this->post('/users/boardOrientationPreference', ['orientation' => User::PREF_BOARD_ORIENTATION_ORIGINAL]);
+		$this->post('/users/boardOrientationPreference', ['orientation' => User::BOARD_ORIENTATION_SETTING_ORIGINAL]);
 
 		$this->assertSame('{"status":"ok"}', $this->view);
 		$user = ClassRegistry::init('User')->findById($context->user['id']);
-		$this->assertSame(User::PREF_BOARD_ORIENTATION_ORIGINAL, (int) $user['User']['pref_board_orientation']);
+		$this->assertSame(User::BOARD_ORIENTATION_SETTING_ORIGINAL, (int) $user['User']['board_orientation_setting']);
 	}
 
 	public function testBoardOrientationPreferenceClampsOutOfRangeValue(): void
@@ -76,7 +76,7 @@ class DefaultBoardOrientationTest extends IntegrationTestCase
 			$this->post('/users/boardOrientationPreference', ['orientation' => $invalid]);
 
 			$user = ClassRegistry::init('User')->findById($context->user['id']);
-			$this->assertSame(User::PREF_BOARD_ORIENTATION_RANDOM, (int) $user['User']['pref_board_orientation']);
+			$this->assertSame(User::BOARD_ORIENTATION_SETTING_RANDOM, (int) $user['User']['board_orientation_setting']);
 		}
 	}
 
@@ -84,7 +84,7 @@ class DefaultBoardOrientationTest extends IntegrationTestCase
 	{
 		Auth::logout();
 
-		$this->post('/users/boardOrientationPreference', ['orientation' => User::PREF_BOARD_ORIENTATION_ORIGINAL]);
+		$this->post('/users/boardOrientationPreference', ['orientation' => User::BOARD_ORIENTATION_SETTING_ORIGINAL]);
 
 		$this->assertResponseCode(401);
 	}

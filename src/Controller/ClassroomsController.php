@@ -332,7 +332,7 @@ class ClassroomsController extends AppController
 
 		// the problems of an assignment are played like the ones of a collection
 		if (!Auth::isInLevelMode())
-			Auth::saveUserField('mode', Constants::$LEVEL_MODE);
+			Auth::saveUserField('mode_id', Constants::$LEVEL_MODE);
 
 		$play = new Play(function ($name, $value) {
 			$this->set($name, $value);

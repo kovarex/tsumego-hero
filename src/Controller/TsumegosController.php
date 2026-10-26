@@ -73,7 +73,7 @@ class TsumegosController extends AppController
 	public function play(?string $id = null, ?string $setConnectionID = null)
 	{
 		if (Auth::isLoggedIn() && !Auth::isInLevelMode())
-			Auth::saveUserField('mode', Constants::$LEVEL_MODE);
+			Auth::saveUserField('mode_id', Constants::$LEVEL_MODE);
 
 		if ($setConnectionID)
 		{

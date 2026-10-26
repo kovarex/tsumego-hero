@@ -145,12 +145,12 @@ class UserSettingsTest extends IntegrationTestCase
 
 	public function testAvatarIsStoredAndShownAsChosen(): void
 	{
-		$context = new ContextPreparator(['user' => ['pref_avatar' => User::AVATAR_BOARD]]);
+		$context = new ContextPreparator(['user' => ['avatar_setting_id' => User::AVATAR_BOARD]]);
 		$browser = Browser::instance();
 
 		$browser->get('users/settings');
 		$browser->find('input[name="avatar"][value="' . User::AVATAR_GRAVATAR . '"]')->click();
-		$this->waitForUserField($context, 'pref_avatar', (string) User::AVATAR_GRAVATAR);
+		$this->waitForUserField($context, 'avatar_setting_id', (string) User::AVATAR_GRAVATAR);
 
 		$browser->get('users/settings');
 		$this->assertTrue($browser->find('input[name="avatar"][value="' . User::AVATAR_GRAVATAR . '"]')->isSelected());
@@ -158,14 +158,14 @@ class UserSettingsTest extends IntegrationTestCase
 
 	public function testGravatarHintIsShownOnlyForTheGravatarAvatar(): void
 	{
-		$context = new ContextPreparator(['user' => ['pref_avatar' => User::AVATAR_BOARD]]);
+		$context = new ContextPreparator(['user' => ['avatar_setting_id' => User::AVATAR_BOARD]]);
 		$browser = Browser::instance();
 
 		$browser->get('users/settings');
 		$this->assertTextNotContains('gravatar.com', $browser->driver->getPageSource());
 
 		$browser->find('input[name="avatar"][value="' . User::AVATAR_GRAVATAR . '"]')->click();
-		$this->waitForUserField($context, 'pref_avatar', (string) User::AVATAR_GRAVATAR);
+		$this->waitForUserField($context, 'avatar_setting_id', (string) User::AVATAR_GRAVATAR);
 
 		$browser->get('users/settings');
 		$this->assertTextContains('gravatar.com', $browser->driver->getPageSource());
@@ -183,16 +183,16 @@ class UserSettingsTest extends IntegrationTestCase
 	public function testPlayerColorAndBoardOrientationAreStored(): void
 	{
 		$context = new ContextPreparator(['user' => [
-			'pref_player_color' => User::PREF_PLAYER_COLOR_RANDOM,
-			'pref_board_orientation' => User::PREF_BOARD_ORIENTATION_RANDOM]]);
+			'player_color_setting' => User::PLAYER_COLOR_SETTING_RANDOM,
+			'board_orientation_setting' => User::BOARD_ORIENTATION_SETTING_RANDOM]]);
 		$browser = Browser::instance();
 
 		$browser->get('users/settings');
-		$browser->find('input[name="playerColor"][value="' . User::PREF_PLAYER_COLOR_ORIGINAL . '"]')->click();
-		$this->waitForUserField($context, 'pref_player_color', (string) User::PREF_PLAYER_COLOR_ORIGINAL);
+		$browser->find('input[name="playerColor"][value="' . User::PLAYER_COLOR_SETTING_ORIGINAL . '"]')->click();
+		$this->waitForUserField($context, 'player_color_setting', (string) User::PLAYER_COLOR_SETTING_ORIGINAL);
 
-		$browser->find('input[name="boardOrientation"][value="' . User::PREF_BOARD_ORIENTATION_ORIGINAL . '"]')->click();
-		$this->waitForUserField($context, 'pref_board_orientation', (string) User::PREF_BOARD_ORIENTATION_ORIGINAL);
+		$browser->find('input[name="boardOrientation"][value="' . User::BOARD_ORIENTATION_SETTING_ORIGINAL . '"]')->click();
+		$this->waitForUserField($context, 'board_orientation_setting', (string) User::BOARD_ORIENTATION_SETTING_ORIGINAL);
 	}
 
 	public function testDateFormatIsStored(): void
@@ -224,7 +224,7 @@ class UserSettingsTest extends IntegrationTestCase
 
 		// The choice is carried to the account by the next request
 		$browser->get('users/settings');
-		$this->assertSame(0, $context->reloadUser()['sound']);
+		$this->assertFalse($context->reloadUser()['sound']);
 		$this->assertTrue($browser->find('input[name="sound"][value="off"]')->isSelected());
 		$this->assertStringContainsString('sound-icon2.png', $browser->driver->executeScript('return document.getElementById("soundButtonImage").src;'));
 	}
@@ -256,7 +256,7 @@ class UserSettingsTest extends IntegrationTestCase
 
 		$this->assertSame('dark', $browser->driver->executeScript('return document.documentElement.dataset.theme;'));
 		$this->assertTrue($browser->find('input[name="theme"][value="dark"]')->isSelected());
-		$this->assertSame(1, $context->reloadUser()['theme'], 'dark is stored as 1');
+		$this->assertSame(User::THEME_DARK, $context->reloadUser()['theme_id']);
 	}
 
 	public function testResetIsNotOfferedBeforeEnoughProblemsAreSolved(): void

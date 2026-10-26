@@ -495,7 +495,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 			'user' => ['name' => 'descColorSwapB'],
 			'tsumego' => ['set_order' => 1, 'description' => "Black's stones attack White's group.", 'sgf' => $blackFirstSgf],
 		]);
-		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
+		Auth::saveUserField('player_color_setting', User::PLAYER_COLOR_SETTING_ORIGINAL);
 		$this->post('tsumegos/play/' . $context->tsumegos[0]['id']);
 		$decoded = htmlspecialchars_decode(strip_tags($this->view));
 		$this->assertStringContainsString("Black's stones attack White's group.", $decoded);
@@ -504,7 +504,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 			'user' => ['name' => 'descColorSwapW'],
 			'tsumego' => ['set_order' => 1, 'description' => 'White to play. Attack the black group.', 'sgf' => $whiteFirstSgf],
 		]);
-		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
+		Auth::saveUserField('player_color_setting', User::PLAYER_COLOR_SETTING_ORIGINAL);
 		$this->post('tsumegos/play/' . $context2->tsumegos[0]['id']);
 		$decoded = htmlspecialchars_decode(strip_tags($this->view));
 		$this->assertStringContainsString('White to play. Attack the black group.', $decoded);
@@ -740,7 +740,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 			'user' => ['name' => 'descOpposeB'],
 			'tsumego' => ['set_order' => 1, 'description' => 'Black to play.', 'sgf' => $blackFirst],
 		]);
-		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
+		Auth::saveUserField('player_color_setting', User::PLAYER_COLOR_SETTING_ORIGINAL);
 		$this->post('tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=white');
 		$this->assertSame('White to play.', $this->shownDescription());
 
@@ -748,7 +748,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 			'user' => ['name' => 'descOpposeW'],
 			'tsumego' => ['set_order' => 1, 'description' => 'White to play.', 'sgf' => $whiteFirst],
 		]);
-		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
+		Auth::saveUserField('player_color_setting', User::PLAYER_COLOR_SETTING_ORIGINAL);
 		$this->post('tsumegos/play/' . $context2->tsumegos[0]['id'] . '?playercolor=black');
 		$this->assertSame('Black to play.', $this->shownDescription());
 	}
@@ -772,7 +772,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 			'user' => ['name' => 'descMatchB'],
 			'tsumego' => ['set_order' => 1, 'description' => 'Black to play.', 'sgf' => $blackFirst],
 		]);
-		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
+		Auth::saveUserField('player_color_setting', User::PLAYER_COLOR_SETTING_ORIGINAL);
 		$this->post('tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=black');
 		$this->assertStringContainsString('Black to play.', $this->view);
 
@@ -780,7 +780,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 			'user' => ['name' => 'descMatchW'],
 			'tsumego' => ['set_order' => 1, 'description' => 'White to play.', 'sgf' => $whiteFirst],
 		]);
-		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
+		Auth::saveUserField('player_color_setting', User::PLAYER_COLOR_SETTING_ORIGINAL);
 		$this->post('tsumegos/play/' . $context2->tsumegos[0]['id'] . '?playercolor=white');
 		$this->assertStringContainsString('White to play.', $this->view);
 	}
@@ -795,7 +795,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 			'user' => ['name' => 'descAllWords'],
 			'tsumego' => ['set_order' => 1, 'description' => 'Black to play. Find the way to kill the white group.', 'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])'],
 		]);
-		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
+		Auth::saveUserField('player_color_setting', User::PLAYER_COLOR_SETTING_ORIGINAL);
 		$this->post('tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=white');
 		$this->assertStringContainsString('White to play. Find the way to kill the black group.', $this->view);
 	}
@@ -810,7 +810,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 			'user' => ['name' => 'descBoundary'],
 			'tsumego' => ['set_order' => 1, 'description' => 'Black to play. The Blackbird group is white.', 'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])'],
 		]);
-		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
+		Auth::saveUserField('player_color_setting', User::PLAYER_COLOR_SETTING_ORIGINAL);
 		$this->post('tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=white');
 		$this->assertStringContainsString('White to play. The Blackbird group is black.', $this->view);
 	}
@@ -824,7 +824,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 			'user' => ['name' => 'descCase'],
 			'tsumego' => ['set_order' => 1, 'description' => 'black stones attack White stones.', 'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])'],
 		]);
-		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
+		Auth::saveUserField('player_color_setting', User::PLAYER_COLOR_SETTING_ORIGINAL);
 		$this->post('tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=white');
 		$this->assertStringContainsString('white stones attack Black stones.', $this->view);
 	}
@@ -844,7 +844,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[9];W[aa];B[ab];W[ba]C[+])',
 			],
 		]);
-		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
+		Auth::saveUserField('player_color_setting', User::PLAYER_COLOR_SETTING_ORIGINAL);
 		$this->post('tsumegos/play/' . $context->tsumegos[0]['id']);
 		$this->assertStringContainsString('Black to play. Find the way to kill the white group.', $this->view);
 	}
