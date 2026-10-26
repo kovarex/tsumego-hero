@@ -43,7 +43,7 @@ class Classroom extends AppModel
 				(SELECT COUNT(*) FROM classroom_member m JOIN user u ON u.id = m.user_id AND u.deleted IS NULL
 					WHERE m.classroom_id = c.id AND m.classroom_member_status_id = ?) AS request_count
 			FROM classroom c
-			WHERE c.teacher_id = ?
+			WHERE c.teacher_user_id = ?
 			ORDER BY c.name, c.id',
 			[ClassroomMemberStatus::ACCEPTED, ClassroomMemberStatus::REQUESTED, $teacherId]);
 		return array_map(fn(array $row) => [
@@ -66,7 +66,7 @@ class Classroom extends AppModel
 		$rows = Util::query('SELECT c.id AS classroom_id, c.name, m.id AS membership_id, m.classroom_member_status_id, ' . self::USER_COLUMNS . '
 			FROM classroom_member m
 			JOIN classroom c ON c.id = m.classroom_id
-			JOIN user u ON u.id = c.teacher_id AND u.deleted IS NULL
+			JOIN user u ON u.id = c.teacher_user_id AND u.deleted IS NULL
 			WHERE m.user_id = ?
 			ORDER BY c.name, c.id',
 			[$userId]);
@@ -88,7 +88,7 @@ class Classroom extends AppModel
 	 */
 	public static function teacher(array $classroom): ?array
 	{
-		$teacher = ClassRegistry::init('User')->findById($classroom['teacher_id']);
+		$teacher = ClassRegistry::init('User')->findById($classroom['teacher_user_id']);
 		return $teacher ? $teacher['User'] : null;
 	}
 }

@@ -46,7 +46,7 @@ class ClassroomsController extends AppController
 		}
 
 		$this->Classroom->create();
-		$this->Classroom->save(['name' => $name, 'teacher_id' => Auth::getUserID()]);
+		$this->Classroom->save(['name' => $name, 'teacher_user_id' => Auth::getUserID()]);
 		return $this->redirect(self::classUrl((int) $this->Classroom->id));
 	}
 
@@ -139,7 +139,7 @@ class ClassroomsController extends AppController
 
 		$classroom = $this->findClassroom($id);
 		$url = self::classUrl((int) $classroom['id']);
-		if ((int) $classroom['teacher_id'] === Auth::getUserID())
+		if ((int) $classroom['teacher_user_id'] === Auth::getUserID())
 			return $this->redirect($url);
 
 		$status = ClassroomMember::offer((int) $classroom['id'], Auth::getUserID(), ClassroomMemberStatus::REQUESTED);

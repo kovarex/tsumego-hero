@@ -98,12 +98,12 @@ class ClassroomMember extends AppModel
 		$rows = Util::query('SELECT
 				(SELECT COUNT(*) FROM classroom_member m
 					JOIN classroom c ON c.id = m.classroom_id
-					JOIN user t ON t.id = c.teacher_id AND t.deleted IS NULL
+					JOIN user t ON t.id = c.teacher_user_id AND t.deleted IS NULL
 					WHERE m.user_id = ? AND m.classroom_member_status_id = ?)
 				+ (SELECT COUNT(*) FROM classroom c
 					JOIN classroom_member m ON m.classroom_id = c.id AND m.classroom_member_status_id = ?
 					JOIN user u ON u.id = m.user_id AND u.deleted IS NULL
-					WHERE c.teacher_id = ?) AS total',
+					WHERE c.teacher_user_id = ?) AS total',
 			[$userId, ClassroomMemberStatus::INVITED, ClassroomMemberStatus::REQUESTED, $userId]);
 		return (int) $rows[0]['total'];
 	}
