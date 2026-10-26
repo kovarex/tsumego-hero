@@ -251,26 +251,26 @@
     if (besogo.isEmbedded) {
       if (besogo.scaleParameters["boardCanvasSize"] === "full board") {
         $(".besogo-board").css("width", "60%");
-        $(".besogo-board").css("margin", "0 252px");
+        $(".besogo-board").css("margin", "0 auto");
       } else if (
         besogo.scaleParameters["boardCanvasSize"] === "horizontal half board"
       ) {
         $(".besogo-board").css("width", "78%");
-        $(".besogo-board").css("margin", "0 138px");
+        $(".besogo-board").css("margin", "0 auto");
       } else if (
         besogo.scaleParameters["boardCanvasSize"] === "vertical half board"
       ) {
         if(!besogo.verticalHalfBoardRotationWidthToken){
           $(".besogo-board").css("width", "30%");
-          $(".besogo-board").css("margin", "0 443px");
+          $(".besogo-board").css("margin", "0 auto");
         }else{
           $(".besogo-board").css("width", "78%");
-          $(".besogo-board").css("margin", "0 138px");
+          $(".besogo-board").css("margin", "0 auto");
         }
        
       } else {
         $(".besogo-board").css("width", "50%");
-        $(".besogo-board").css("margin", "0 315px");
+        $(".besogo-board").css("margin", "0 auto");
       }
       if (besogo.boardParameters["corner"] == "top-left")
         $("#boardOrientationTL").css("opacity", "1");
@@ -280,9 +280,39 @@
         $("#boardOrientationBL").css("opacity", "1");
       else if (besogo.boardParameters["corner"] == "bottom-right")
         $("#boardOrientationBR").css("opacity", "1");
+      keepBoardInWindowHeight(boardDiv);
     }
     besogo.boardDisplay = boardDisplay;
   };
+
+  // The board can't be smaller than this, however low the window is
+  const MINIMUM_BOARD_HEIGHT = 300;
+  // so the buttons don't touch the bottom of the window
+  const SPACE_UNDER_BUTTONS = 10;
+
+  // The width of the board is a share of the page, so a tall shape got taller than the window
+  // and pushed the buttons under it out of sight (forum#105). The width is capped so the board
+  // and the button row fit in the window. The cap follows the shape of the shown part of the
+  // board, which changes with each rotation.
+  function keepBoardInWindowHeight(boardDiv) {
+    let svg = boardDiv.querySelector("svg");
+    if (!svg) return;
+    let fit = function () {
+      let viewBox = svg.viewBox.baseVal;
+      if (!viewBox || !viewBox.width || !viewBox.height) return;
+      let board = boardDiv.getBoundingClientRect();
+      let buttons = document.querySelector(".besogo-tsumegoPlayTool");
+      let belowBoard = buttons ? Math.max(buttons.getBoundingClientRect().bottom - board.bottom, 0) : 0;
+      let top = board.top + window.scrollY;
+      let height = Math.max(window.innerHeight - top - belowBoard - SPACE_UNDER_BUTTONS, MINIMUM_BOARD_HEIGHT);
+      boardDiv.style.maxWidth = "min(100%, " + Math.floor((height * viewBox.width) / viewBox.height) + "px)";
+    };
+    new MutationObserver(fit).observe(svg, { attributes: true, attributeFilter: ["viewBox"] });
+    window.addEventListener("resize", fit);
+    // what is above the board may still change its height while the page loads
+    window.addEventListener("load", fit);
+    fit();
+  }
 
   besogo.create = function (container, options) {
     var editor, // Core editor object

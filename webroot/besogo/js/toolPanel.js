@@ -346,23 +346,23 @@ besogo.makeToolPanel = function (container, editor) {
 				if (besogo.scaleParameters["boardCanvasSize"] === "full board")
 				{
 				  $(".besogo-board").css("width", "60%");
-				  $(".besogo-board").css("margin", "0 252px");
+				  $(".besogo-board").css("margin", "0 auto");
 				}
 				else if (besogo.scaleParameters["boardCanvasSize"] === "horizontal half board")
 				{
 				  $(".besogo-board").css("width", "78%");
-				  $(".besogo-board").css("margin", "0 138px");
+				  $(".besogo-board").css("margin", "0 auto");
 				  $(".besogo-board").css("height", trueBoardHeight);
 				}
 				else if (besogo.scaleParameters["boardCanvasSize"] === "vertical half board")
 				{
 				  $(".besogo-board").css("width", "30%");
-				  $(".besogo-board").css("margin", "0 443px");
+				  $(".besogo-board").css("margin", "0 auto");
 				}
 				else
 				{
 				  $(".besogo-board").css("width", "50%");
-				  $(".besogo-board").css("margin", "0 315px");
+				  $(".besogo-board").css("margin", "0 auto");
 				}
 
 				$(".besogo-board").css(
@@ -488,24 +488,24 @@ besogo.makeToolPanel = function (container, editor) {
               $(".besogo-panels").css("display", "none");
               if (besogo.scaleParameters["boardCanvasSize"] === "full board") {
                 $(".besogo-board").css("width", "60%");
-                $(".besogo-board").css("margin", "0 252px");
+                $(".besogo-board").css("margin", "0 auto");
               } else if (
                 besogo.scaleParameters["boardCanvasSize"] ===
                 "vertical half board"
               ) {
                 if (besogo.scaleParameters["rotation"] === -1) {
                   $(".besogo-board").css("width", "30%");
-                  $(".besogo-board").css("margin", "0 443px");
+                  $(".besogo-board").css("margin", "0 auto");
                 } else if (besogo.boardParameters["corner"] === "top-left") {
                   if (
                     besogo.scaleParameters["rotation"] === 0 ||
                     besogo.scaleParameters["rotation"] === 2
                   ) {
                     $(".besogo-board").css("width", "30%");
-                    $(".besogo-board").css("margin", "0 443px");
+                    $(".besogo-board").css("margin", "0 auto");
                   } else {
                     $(".besogo-board").css("width", "78%");
-                    $(".besogo-board").css("margin", "0 138px");
+                    $(".besogo-board").css("margin", "0 auto");
                   }
                 } else if (besogo.boardParameters["corner"] === "top-right") {
                   if (
@@ -513,10 +513,10 @@ besogo.makeToolPanel = function (container, editor) {
                     besogo.scaleParameters["rotation"] === 3
                   ) {
                     $(".besogo-board").css("width", "30%");
-                    $(".besogo-board").css("margin", "0 443px");
+                    $(".besogo-board").css("margin", "0 auto");
                   } else {
                     $(".besogo-board").css("width", "78%");
-                    $(".besogo-board").css("margin", "0 138px");
+                    $(".besogo-board").css("margin", "0 auto");
                   }
                 }
               } else if (
@@ -525,17 +525,17 @@ besogo.makeToolPanel = function (container, editor) {
               ) {
                 if (besogo.scaleParameters["rotation"] === -1) {
                   $(".besogo-board").css("width", "78%");
-                  $(".besogo-board").css("margin", "0 138px");
+                  $(".besogo-board").css("margin", "0 auto");
                 } else if (besogo.boardParameters["corner"] === "top-left") {
                   if (
                     besogo.scaleParameters["rotation"] === 0 ||
                     besogo.scaleParameters["rotation"] === 2
                   ) {
                     $(".besogo-board").css("width", "78%");
-                    $(".besogo-board").css("margin", "0 138px");
+                    $(".besogo-board").css("margin", "0 auto");
                   } else {
                     $(".besogo-board").css("width", "30%");
-                    $(".besogo-board").css("margin", "0 443px");
+                    $(".besogo-board").css("margin", "0 auto");
                   }
                 } else if (besogo.boardParameters["corner"] === "bottom-left") {
                   if (
@@ -543,15 +543,15 @@ besogo.makeToolPanel = function (container, editor) {
                     besogo.scaleParameters["rotation"] === 3
                   ) {
                     $(".besogo-board").css("width", "78%");
-                    $(".besogo-board").css("margin", "0 138px");
+                    $(".besogo-board").css("margin", "0 auto");
                   } else {
                     $(".besogo-board").css("width", "30%");
-                    $(".besogo-board").css("margin", "0 443px");
+                    $(".besogo-board").css("margin", "0 auto");
                   }
                 }
               } else {
                 $(".besogo-board").css("width", "50%");
-                $(".besogo-board").css("margin", "0 315px");
+                $(".besogo-board").css("margin", "0 auto");
               }
               deleteNextMoveGroup = false;
               editor.setReviewMode(false);
@@ -961,12 +961,12 @@ besogo.makeToolPanel = function (container, editor) {
     if (rotation === -1) return null;
     if (besogo.scaleParameters["boardCanvasSize"] === "vertical half board") {
       $(".besogo-board").css("width", "30%");
-      $(".besogo-board").css("margin", "0 443px");
+      $(".besogo-board").css("margin", "0 auto");
     } else if (
       besogo.scaleParameters["boardCanvasSize"] === "horizontal half board"
     ) {
       $(".besogo-board").css("width", "78%");
-      $(".besogo-board").css("margin", "0 138px");
+      $(".besogo-board").css("margin", "0 auto");
     }
     if (corner === "top-right") rotation++;
     else if (corner === "bottom-left") rotation--;
