@@ -229,7 +229,7 @@ besogo.updateCorrectValuesInternal = function(root, node)
     }
 
   for (let i = 0; i < node.virtualChildren.length; ++i)
-    if (!node.virtualChildren[i].localEdit)
+    if (!node.virtualChildren[i].target.localEdit)
     {
       let parentStatus = besogo.updateCorrectValuesInternal(root, node.virtualChildren[i].target);
       if (parentStatus == CORRECT_GOOD)

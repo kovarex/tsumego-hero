@@ -690,7 +690,7 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
       if (!this.children[i].localEdit)
         return true;
     for (let i = 0; i < this.virtualChildren.length; ++i)
-      if (!this.virtualChildren[i].localEdit)
+      if (!this.virtualChildren[i].target.localEdit)
         return true;
     return false;
   }
@@ -741,7 +741,7 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
         if (!this.children[i].localEdit)
           result.push(this.children[i]);
       for (let i = 0; i < this.virtualChildren.length; ++i)
-        if (!this.virtualChildren[i].localEdit)
+        if (!this.virtualChildren[i].target.localEdit)
           result.push(this.virtualChildren[i].target);
       return result;
     }
@@ -785,8 +785,7 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
           return this.virtualChildren[i];
         else
           ++currentIndex;
-    assert(false);
-    return null; // this shouldn't happen
+    return null; // no child the autoplay may pick, as the best one for the opponent is a local edit
   }
 
   root.setGoal = function(goal)

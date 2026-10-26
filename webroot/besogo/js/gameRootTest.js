@@ -141,6 +141,27 @@ besogo.addTest("GameRoot", "LocalEditDoesntBreakStatusBasedProblem", function()
 	CHECK_EQUALS(move3.correct, CORRECT_GOOD);
 });
 
+besogo.addTest("GameRoot", "VirtualChildLeadingToALocalEditIsLocal", function()
+{
+	// the solver explores the same position in two orders of moves
+	let root = besogo.makeGameRoot();
+	let registerLocalMove = function(node, x, y)
+	{
+		let child = node.makeChild();
+		child.localEdit = true;
+		child.playMove(x, y);
+		node.registerChild(child);
+		return child;
+	};
+	let finalChild = registerLocalMove(registerLocalMove(registerLocalMove(root, 1, 1), 5, 5), 2, 2);
+	let otherOrder = registerLocalMove(registerLocalMove(root, 2, 2), 5, 5);
+
+	CHECK_EQUALS(otherOrder.virtualChildren.length, 1);
+	CHECK(otherOrder.virtualChildren[0].target == finalChild);
+	CHECK(!otherOrder.hasNonLocalChildIncludingVirtual());
+	CHECK_EQUALS(otherOrder.nodesToPlayOnTo().length, 0);
+});
+
 besogo.addTest("GameRoot", "KoComparisonRequiresBothCoordinatesToMatch", function()
 {
 	// Position A: ko point at (2,1)

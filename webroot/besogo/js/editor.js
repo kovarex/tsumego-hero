@@ -243,6 +243,9 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     if (!current.hasChildDependingOnAutoPlay(autoPlay))
       // Check if no children
       return; // Do nothing if no children (avoid notification)
+    // A virtual child can lead back to a position already passed (eternal life, superko), the walk stops
+    // there instead of going around the cycle forever
+    let passed = new Set([current]);
     while (current.hasChildDependingOnAutoPlay(autoPlay) && num !== 0) {
       if (navHistory.length)
         // Non-empty navigation history
@@ -261,6 +264,13 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
               ? current.children[0]
               : current.virtualChildren[0];
 
+        // The autoplay has no reply it may pick (the best one for the opponent is a local edit), so the
+        // line ends here instead of leaving the solver without an answer
+        if (!next) {
+          finish(current);
+          return;
+        }
+
         // The opponent wants to auto play into a move we already visited, potentially forcing the solver to solve part of a variation already done
         // in this case, we just stop and call this sub-variation finished and move on.
         if (
@@ -271,6 +281,8 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
           return;
         }
 
+        if (passed.has(next.target ? next.target : next)) break;
+
         if (!next.target) {
           next.cameFrom = null;
           current = next; // Go to the selected child
@@ -279,6 +291,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
           current = next.target;
         }
       }
+      passed.add(current);
       current.visited = true;
       num--;
     }
@@ -303,10 +316,15 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     if (!current.parent)
       // Check if root
       return; // Do nothing if already at root (avoid notification)
+    // Following cameFrom back through a virtual child can come round to a node already passed (eternal life,
+    // superko), the walk goes on to its parent then, so it ends at the root
+    let passed = new Set([current]);
     while (current.parent && num !== 0) {
       navHistory.push(current); // Save current into navigation history
-      if (current.cameFrom) current = current.cameFrom;
+      if (current.cameFrom && !passed.has(current.cameFrom))
+        current = current.cameFrom;
       else current = current.parent;
+      passed.add(current);
       num--;
     }
     // Notify listeners of navigation (with no tree edits)
@@ -842,8 +860,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
 	function navigateToRemainingRequiredIfNeeded(timer)
 	{
 		// remove visited nodes from the "to-do" list
-		while (remainingRequiredNodes.length > 0 && remainingRequiredNodes[0].node.visited)
-			remainingRequiredNodes.pop();
+		remainingRequiredNodes = remainingRequiredNodes.filter(element => !element.node.visited);
 		if (remainingRequiredNodes.length == 0)
 			return false;
 		performingAutoPlay = true;
