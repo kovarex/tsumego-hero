@@ -3,7 +3,6 @@
 use App\Utility\AchievementId;
 use App\Utility\Constants;
 use App\Utility\Rating;
-use App\Utility\TsumegoFilters;
 use App\Utility\Util;
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverKeys;
@@ -2358,8 +2357,8 @@ class SetsControllerTest extends TestCaseWithAuth
 		$browser->driver->getKeyboard()->sendKeys([WebDriverKeys::CONTROL, 'a']);
 		$browser->driver->getKeyboard()->sendKeys('60');
 		$browser->clickId("submit-size-button");
-		$tsumegoFilters = new TsumegoFilters();
-		$this->assertSame(60, $tsumegoFilters->collectionSize);
+		// the browser's request stored it, this process still has the user row it logged in with
+		$this->assertSame(60, $context->reloadUser()['collection_size']);
 	}
 
 	/**
