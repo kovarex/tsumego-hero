@@ -248,4 +248,33 @@ class SgfControllerUploadTest extends IntegrationTestCase
 		$this->assertSame('black A1 then w A2', $comment['message']);
 		$this->assertSame('1/18/1/19/2/19/2/1/sgf|1/19+1/18', $comment['position']);
 	}
+
+	/** A status based problem needs a status at every end position, the board editor refuses to save it otherwise and so does the file upload. */
+	public function testFileUploadOfAStatusProblemWithAnEndPositionWithoutStatusIsRefused()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => ['set_order' => 1, 'status' => 'S', 'sgf' => self::SGF]]);
+		$browser->get('/' . $context->setConnections[0]['id']);
+		$this->uploadSgfFile($browser, '(;GM[1]FF[4]ST[2]SZ[19]G[KILL](;B[aa];W[ab];B[ba]S[DEAD])(;B[da];W[aa]))');
+
+		$browser->waitUntilCssSelectorExistsWithText('#uploadProblem', 'The SGF was not saved: End position without status. (move 2)');
+		$this->assertEquals($context->tsumegos[0]['sgfs'][0]['id'], $this->newestSgf($context)['id'], 'Nothing was saved');
+		$browser->assertNoJsErrors();
+	}
+
+	public function testFileUploadOfAStatusProblemWithAllStatusesIsSaved()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => ['set_order' => 1, 'status' => 'S', 'sgf' => self::SGF]]);
+		$browser->get('/' . $context->setConnections[0]['id']);
+		$sgf = '(;GM[1]FF[4]ST[2]SZ[19]G[KILL](;B[aa];W[ab];B[ba]S[DEAD])(;B[da];W[aa]S[ALIVE]))';
+		$this->uploadSgfFile($browser, $sgf);
+
+		$browser->waitUntilJs('location.pathname === ' . json_encode('/' . $context->setConnections[0]['id']) . ' && document.readyState === "complete"');
+		$this->assertSame($sgf, $this->newestSgf($context)['sgf']);
+	}
 }
