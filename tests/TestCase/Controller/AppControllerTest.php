@@ -115,7 +115,7 @@ class AppControllerTest extends IntegrationTestCase
 
 		// Verify test user got the achievement
 		$testUserAchievement = ClassRegistry::init('AchievementCondition')->find('first', [
-			'conditions' => ['user_id' => $testUserId, 'category' => 'emerald'],
+			'conditions' => ['user_id' => $testUserId, 'achievement_condition_category_id' => AchievementCondition::CATEGORY_EMERALD],
 		]);
 		$this->assertNotEmpty($testUserAchievement, 'Test user should get emerald achievement');
 		$this->assertSame(1, (int) $testUserAchievement['AchievementCondition']['value']);
@@ -133,7 +133,7 @@ class AppControllerTest extends IntegrationTestCase
 
 		// User still has only ONE achievement (not duplicated)
 		$achievements = ClassRegistry::init('AchievementCondition')->find('all', [
-			'conditions' => ['user_id' => $testUserId, 'category' => 'emerald'],
+			'conditions' => ['user_id' => $testUserId, 'achievement_condition_category_id' => AchievementCondition::CATEGORY_EMERALD],
 		]);
 		$this->assertCount(1, $achievements, 'User should not get duplicate achievement');
 	}
@@ -160,7 +160,7 @@ class AppControllerTest extends IntegrationTestCase
 		ClassRegistry::init('AchievementCondition')->save([
 			'AchievementCondition' => [
 				'user_id' => Auth::getUserID(),
-				'category' => 'emerald',
+				'achievement_condition_category_id' => AchievementCondition::CATEGORY_EMERALD,
 				'value' => 1,
 			],
 		]);

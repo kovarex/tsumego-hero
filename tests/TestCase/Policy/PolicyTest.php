@@ -25,7 +25,7 @@ class PolicyTest extends CakeTestCase
 	{
 		if ($isAdmin === null)
 			return null;
-		$identity = ['user_role_id' => $isAdmin ? User::ROLE_ADMIN : User::ROLE_PLAYER, 'premium' => $premium, 'level' => 1, 'rating' => 1000];
+		$identity = ['user_role_id' => $isAdmin ? User::ROLE_ADMIN : User::ROLE_PLAYER, 'premium_id' => $premium ? User::PREMIUM_BASIC : null, 'level' => 1, 'rating' => 1000];
 		if ($id !== null)
 			$identity['id'] = $id;
 		return $identity;
@@ -44,7 +44,7 @@ class PolicyTest extends CakeTestCase
 
 	public function testOwnerHasTheRightsOfAnAdmin()
 	{
-		$owner = ['user_role_id' => User::ROLE_OWNER, 'premium' => 0, 'level' => 1, 'rating' => 1000];
+		$owner = ['user_role_id' => User::ROLE_OWNER, 'premium_id' => null, 'level' => 1, 'rating' => 1000];
 		$this->assertTrue(AdminPolicy::canViewAdminArea($owner));
 		$this->assertTrue(SgfPolicy::canView($owner));
 	}

@@ -202,7 +202,7 @@ class SandboxTest extends IntegrationTestCase
 
 		$tsumegoModel = ClassRegistry::init('Tsumego');
 		$tsumegoModel->create();
-		$tsumegoModel->save(['Tsumego' => ['difficulty' => 4, 'variance' => 100]]);
+		$tsumegoModel->save(['Tsumego' => ['difficulty' => 4, 'variance' => 100, 'author' => '']]);
 		$tsumegoId = $tsumegoModel->id;
 
 		$this->post('/sets/addTsumego/' . $setId, [
@@ -292,7 +292,7 @@ class SandboxTest extends IntegrationTestCase
 
 		$tsumegoModel = ClassRegistry::init('Tsumego');
 		$tsumegoModel->create();
-		$tsumegoModel->save(['description' => 'test']);
+		$tsumegoModel->save(['description' => 'test', 'author' => '']);
 
 		$connModel = ClassRegistry::init('SetConnection');
 		$connModel->create();

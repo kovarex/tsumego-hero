@@ -22,12 +22,13 @@ class Constants
 	public static int $MAX_COLLECTION_SIZE = 1000;
 	public static int $COLLECTION_SIZE_STEP = 10;
 
+	// The ids of the mode table, the mode a player plays in (user.mode_id)
 	public static int $LEVEL_MODE = 1;
 	public static int $RATING_MODE = 2;
 	public static int $TIME_MODE = 3;
 	public static int $MISTAKE_TRAINING_MODE = 5;
 
-	// Highscore page identifiers (stored in user.highscore_page)
+	// The ids of the highscore_page table, the highscore page the menu links to (user.highscore_page_id, NULL until a player opens one)
 	public static int $HIGHSCORE_LEVEL = 1;
 	public static int $HIGHSCORE_RATING = 2;
 	public static int $HIGHSCORE_DAILY = 3;

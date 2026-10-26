@@ -418,7 +418,7 @@ class AdminStatsControllerTest extends IntegrationTestCase
 		// we got redirected back to the list, the proposal shouldn't be visible anymore
 		$this->assertSame(Util::getMyAddress() . '/admin/tag-proposals', $browser->driver->getCurrentURL());
 		$this->assertSame('Tag Proposals (0)', $browser->find('#tag_connection_proposals_page_header')->getText());
-		$this->assertSame(1, ClassRegistry::init('TagConnection')->findById($context->tsumegos[0]['tag-connections'][0]['id'])['TagConnection']['approved']);
+		$this->assertTrue(ClassRegistry::init('TagConnection')->findById($context->tsumegos[0]['tag-connections'][0]['id'])['TagConnection']['approved']);
 
 		// tag approval is saved in admin activities
 		$adminActivities = ClassRegistry::init('AdminActivity')->find('all');

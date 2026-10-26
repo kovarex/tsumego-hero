@@ -58,7 +58,7 @@ class CommentsRenderer
 		$parameters = [];
 		$parameters[] = Auth::getUserID();
 
-		$queryCondition = "tsumego_comment.deleted = 0 AND tsumego.deleted IS NULL";
+		$queryCondition = "tsumego_comment.deleted IS NULL AND tsumego.deleted IS NULL";
 		if ($this->userID)
 			Util::addSqlCondition($queryCondition, "tsumego_comment.user_id = " . $this->userID);
 
@@ -73,7 +73,7 @@ SELECT
 	user.id as from_id,
 	tsumego_comment.id as id,
 	set_connection.id AS set_connection_id,
-	CONCAT(`set`.title, ' ', `set`.title2) as set_title,
+	CONCAT_WS(' ', `set`.title, `set`.title2) as set_title,
 	set_connection.num as set_num,
 	COALESCE(sgf.sgf, '') AS sgf";
 		$queryFrom = "

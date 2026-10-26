@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Tests that the pref_player_color user preference drives the
+ * Tests that the player_color_setting user preference drives the
  * player color and description on the puzzle page.
  * "Original" means the player color matches the SGF's first move.
  */
@@ -17,7 +17,7 @@ class DefaultPlayerColorTest extends IntegrationTestCase
 			'tsumego' => ['sets' => [['name' => 'originalUserSet', 'num' => 1]], 'description' => 'Black to play.', 'sgf' => ['data' => '(;GM[1]FF[4]SZ[19];B[aa])']],
 		]);
 		$this->login('originalUser');
-		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
+		Auth::saveUserField('player_color_setting', User::PLAYER_COLOR_SETTING_ORIGINAL);
 
 		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->assertResponseOk();
@@ -39,7 +39,7 @@ class DefaultPlayerColorTest extends IntegrationTestCase
 			],
 		]);
 		$this->login('originalUserWhite');
-		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
+		Auth::saveUserField('player_color_setting', User::PLAYER_COLOR_SETTING_ORIGINAL);
 
 		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->assertResponseOk();
@@ -61,7 +61,7 @@ class DefaultPlayerColorTest extends IntegrationTestCase
 			],
 		]);
 		$this->login('smallBoard');
-		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_ORIGINAL);
+		Auth::saveUserField('player_color_setting', User::PLAYER_COLOR_SETTING_ORIGINAL);
 
 		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->assertResponseOk();
@@ -77,11 +77,11 @@ class DefaultPlayerColorTest extends IntegrationTestCase
 		$context = new ContextPreparator(['user' => ['name' => 'prefStores']]);
 		$this->login('prefStores');
 
-		$this->post('/users/playerColorPreference', ['color' => User::PREF_PLAYER_COLOR_ORIGINAL]);
+		$this->post('/users/playerColorPreference', ['color' => User::PLAYER_COLOR_SETTING_ORIGINAL]);
 
 		$this->assertSame('{"status":"ok"}', $this->view);
 		$user = ClassRegistry::init('User')->findById($context->user['id']);
-		$this->assertSame(User::PREF_PLAYER_COLOR_ORIGINAL, (int) $user['User']['pref_player_color']);
+		$this->assertSame(User::PLAYER_COLOR_SETTING_ORIGINAL, (int) $user['User']['player_color_setting']);
 	}
 
 	public function testPlayerColorPreferenceClampsOutOfRangeValue(): void
@@ -96,7 +96,7 @@ class DefaultPlayerColorTest extends IntegrationTestCase
 			$this->post('/users/playerColorPreference', ['color' => $invalid]);
 
 			$user = ClassRegistry::init('User')->findById($context->user['id']);
-			$this->assertSame(User::PREF_PLAYER_COLOR_RANDOM, (int) $user['User']['pref_player_color']);
+			$this->assertSame(User::PLAYER_COLOR_SETTING_RANDOM, (int) $user['User']['player_color_setting']);
 		}
 	}
 
@@ -104,7 +104,7 @@ class DefaultPlayerColorTest extends IntegrationTestCase
 	{
 		Auth::logout();
 
-		$this->post('/users/playerColorPreference', ['color' => User::PREF_PLAYER_COLOR_ORIGINAL]);
+		$this->post('/users/playerColorPreference', ['color' => User::PLAYER_COLOR_SETTING_ORIGINAL]);
 
 		$this->assertResponseCode(401);
 	}
@@ -117,7 +117,7 @@ class DefaultPlayerColorTest extends IntegrationTestCase
 			'tsumego' => ['sets' => [['name' => 'randomSwapSet', 'num' => 1]], 'sgf' => ['data' => '(;GM[1]FF[4]SZ[19];B[aa])']],
 		]);
 		$this->login('randomSwap');
-		Auth::saveUserField('pref_player_color', User::PREF_PLAYER_COLOR_RANDOM);
+		Auth::saveUserField('player_color_setting', User::PLAYER_COLOR_SETTING_RANDOM);
 
 		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->assertResponseOk();

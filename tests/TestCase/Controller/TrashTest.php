@@ -28,9 +28,9 @@ class TrashTest extends IntegrationTestCase
 	}
 
 	/**
-	 * Every table pointing to a problem either loses its rows with the problem through its foreign
-	 * key, or is cleaned by the purge itself. A new table with a tsumego_id has to be one of them,
-	 * otherwise purging a problem leaves rows pointing nowhere, or fails on the foreign key.
+	 * Every table pointing to a problem loses its rows with the problem through its foreign key. A new
+	 * table with a tsumego_id needs one too, otherwise purging a problem leaves rows pointing nowhere,
+	 * or fails on the foreign key.
 	 */
 	public function testEveryTableOfAProblemIsCleanedByThePurge(): void
 	{
@@ -48,10 +48,7 @@ WHERE c.TABLE_SCHEMA = DATABASE() AND c.COLUMN_NAME = 'tsumego_id'");
 		foreach ($rows as $row)
 			if ($row['delete_rule'] !== 'CASCADE')
 				$withoutCascade[] = $row['table_name'];
-		sort($withoutCascade);
-		$expected = Trash::$TABLES_WITHOUT_CASCADE;
-		sort($expected);
-		$this->assertSame($expected, $withoutCascade);
+		$this->assertSame([], $withoutCascade);
 	}
 
 	public function testAdminDeletesPublishedProblemToTheTrash(): void
@@ -288,15 +285,17 @@ WHERE c.TABLE_SCHEMA = DATABASE() AND c.COLUMN_NAME = 'tsumego_id'");
 					'sets' => [['name' => 'published', 'num' => 1]],
 					'status' => 'S',
 					'comments' => [['message' => 'nice']],
-					'variants' => [['type' => 'multiple_choice', 'answer1' => 'a']]],
+					'variants' => [['tsumego_variant_type_id' => TsumegoVariant::TYPE_MULTIPLE_CHOICE, 'answer1' => 'a']]],
 				['deleted' => self::daysAgo(Trash::$RETENTION_DAYS - 1), 'sets' => [['name' => 'published', 'num' => 2]]],
 				['sets' => [['name' => 'published', 'num' => 3]]]]]);
 		$purgedID = $context->tsumegos[0]['id'];
+		ClassRegistry::init('Reject')->create();
+		ClassRegistry::init('Reject')->save(['reject_type_id' => Reject::TYPE_PROPOSAL, 'tsumego_id' => $purgedID, 'user_id' => $context->user['id']]);
 
 		$this->get('/cron/daily/' . CRON_SECRET);
 
 		$this->assertNull(self::tsumegoRow($purgedID));
-		foreach (['set_connection', 'tsumego_status', 'tsumego_comment', 'tsumego_variant'] as $table)
+		foreach (['set_connection', 'tsumego_status', 'tsumego_comment', 'tsumego_variant', 'reject'] as $table)
 			$this->assertSame(0, self::rowCount($table, 'tsumego_id = ?', [$purgedID]), $table);
 		$this->assertNotNull(self::tsumegoRow($context->tsumegos[1]['id']), 'Still within the retention');
 		$this->assertNotNull(self::tsumegoRow($context->tsumegos[2]['id']));

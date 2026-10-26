@@ -151,7 +151,7 @@ class OpenGraphSharingTest extends IntegrationTestCase
 		$context = new ContextPreparator(['other-users' => [[
 			'name' => 'alice',
 			'email' => 'alice@example.com',
-			'pref_avatar' => User::AVATAR_GRAVATAR,
+			'avatar_setting_id' => User::AVATAR_GRAVATAR,
 		]]]);
 
 		$this->get('users/view/' . $context->otherUsers[0]['id']);
@@ -169,7 +169,7 @@ class OpenGraphSharingTest extends IntegrationTestCase
 			'name' => 'alice',
 			'email' => 'alice@example.com',
 			'external_id' => '1234567890',
-			'pref_avatar' => User::AVATAR_GOOGLE,
+			'avatar_setting_id' => User::AVATAR_GOOGLE,
 			'picture' => 'https://lh3.googleusercontent.com/a/abc=s96-c',
 		]]]);
 

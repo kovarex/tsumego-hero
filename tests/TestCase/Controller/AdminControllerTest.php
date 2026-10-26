@@ -57,6 +57,33 @@ class AdminControllerTest extends IntegrationTestCase
 		$this->assertSame(0, $this->countOnLink('/tags'));
 	}
 
+	/**
+	 * No new set has a subtitle, and the lists still name the set of each problem.
+	 */
+	public function testListsNameASetWithoutSubtitle(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => [
+				'sets' => [['name' => 'Set without subtitle', 'num' => 7]],
+				'sgfs' => [
+					['data' => self::SGF, 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
+					['data' => self::SGF, 'sgf_status_id' => Sgf::STATUS_PROPOSED],
+					['data' => self::SGF, 'sgf_status_id' => Sgf::STATUS_REJECTED]],
+				'tags' => [['name' => 'snapback', 'approved' => 0]]]]);
+		Util::execute('INSERT INTO admin_activity (user_id, type, tsumego_id, old_value, new_value) VALUES (?, ?, ?, ?, ?)',
+			[$context->user['id'], AdminActivityType::DESCRIPTION_EDIT, $context->tsumegos[0]['id'], 'Old desc', 'New desc']);
+
+		// the proposals and the rejected proposals
+		$this->get('/admin/sgf-proposals');
+		$this->assertSame(2, substr_count($this->view, 'Set without subtitle - 7'));
+		foreach (['/admin/tag-proposals', '/admin/activity'] as $page)
+		{
+			$this->get($page);
+			$this->assertTextContains('Set without subtitle - 7', $this->view, $page);
+		}
+	}
+
 	public function testNothingWaitsNoCountIsShown(): void
 	{
 		new ContextPreparator(['user' => ['admin' => true]]);

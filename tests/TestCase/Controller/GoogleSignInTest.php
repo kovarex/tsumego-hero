@@ -136,7 +136,7 @@ class GoogleSignInTest extends IntegrationTestCase
 		$this->assertEquals('john.doe@gmail.com', $user['User']['email']);
 		$this->assertEquals('https://lh3.googleusercontent.com/photo.jpg', $user['User']['picture']);
 		$this->assertEquals('12345678901234567890', $user['User']['external_id']);
-		$this->assertSame(User::AVATAR_GOOGLE, (int) $user['User']['pref_avatar']);
+		$this->assertSame(User::AVATAR_GOOGLE, (int) $user['User']['avatar_setting_id']);
 	}
 
 	/**
@@ -165,7 +165,7 @@ class GoogleSignInTest extends IntegrationTestCase
 
 		$user = ClassRegistry::init('User')->findById($existingUser['id']);
 		$this->assertSame('https://lh3.googleusercontent.com/a/late-photo', $user['User']['picture']);
-		$this->assertSame(User::AVATAR_GOOGLE, (int) $user['User']['pref_avatar']);
+		$this->assertSame(User::AVATAR_GOOGLE, (int) $user['User']['avatar_setting_id']);
 	}
 
 	/**
@@ -180,7 +180,7 @@ class GoogleSignInTest extends IntegrationTestCase
 			'email' => 'picked@gmail.com',
 			'external_id' => '22222222222222222222',
 			'picture' => 'https://lh3.googleusercontent.com/a/old-photo',
-			'pref_avatar' => User::AVATAR_GRAVATAR,
+			'avatar_setting_id' => User::AVATAR_GRAVATAR,
 		]);
 
 		$this->fakeVerifier->addToken('picked_token', [
@@ -194,7 +194,7 @@ class GoogleSignInTest extends IntegrationTestCase
 
 		$user = ClassRegistry::init('User')->findById($existingUser['id']);
 		$this->assertSame('https://lh3.googleusercontent.com/a/new-photo', $user['User']['picture']);
-		$this->assertSame(User::AVATAR_GRAVATAR, (int) $user['User']['pref_avatar']);
+		$this->assertSame(User::AVATAR_GRAVATAR, (int) $user['User']['avatar_setting_id']);
 	}
 
 	/**
@@ -255,7 +255,7 @@ class GoogleSignInTest extends IntegrationTestCase
 		$_COOKIE['hackedLoggedInUserID'] = $googleUser['User']['id'];
 		$googleUserModel = ClassRegistry::init('User');
 		$googleUserModel->id = $googleUser['User']['id'];
-		$googleUserModel->saveField('pref_avatar', User::AVATAR_GOOGLE);
+		$googleUserModel->saveField('avatar_setting_id', User::AVATAR_GOOGLE);
 
 		$this->post('/tsumego-comments/add', json_encode(['tsumego_id' => $context->tsumegos[0]['id'], 'text' => 'from a google account']));
 

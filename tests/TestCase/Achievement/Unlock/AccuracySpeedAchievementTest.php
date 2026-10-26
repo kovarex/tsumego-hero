@@ -14,13 +14,13 @@ class AccuracySpeedAchievementTest extends AchievementTestCase
 			$context = new ContextPreparator();
 			$setID = $this->createSetWithTsumegosAndConnections(1200, 100);
 
-			// Add accuracy achievement condition (category='%', value=75 means 75% accuracy)
+			// Add accuracy achievement condition (category CATEGORY_SET_ACCURACY, value=75 means 75% accuracy)
 			$AchievementCondition = ClassRegistry::init('AchievementCondition');
 			$AchievementCondition->create();
 			$AchievementCondition->save([
 				'user_id' => $context->user['id'],
 				'set_id' => $setID,
-				'category' => '%',
+				'achievement_condition_category_id' => AchievementCondition::CATEGORY_SET_ACCURACY,
 				'value' => $percent]);
 
 			$browser->get('/sets/view/' . $setID);

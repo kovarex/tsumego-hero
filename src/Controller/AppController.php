@@ -43,99 +43,31 @@ class AppController extends Controller
 
 	public static function _saveDanSolveCondition(string $solvedTsumegoRank, int $tId): void
 	{
-		if ($solvedTsumegoRank == '1d' || $solvedTsumegoRank == '2d' || $solvedTsumegoRank == '3d' || $solvedTsumegoRank == '4d' || $solvedTsumegoRank == '5d')
-		{
-			$danSolveCategory = 'danSolve' . $solvedTsumegoRank;
-			$danSolveCondition = ClassRegistry::init('AchievementCondition')->find('first', [
-				'order' => 'value DESC',
-				'conditions' => [
-					'user_id' => Auth::getUserID(),
-					'category' => $danSolveCategory,
-				],
-			]);
-			if (!$danSolveCondition)
-			{
-				$danSolveCondition = [];
-				$danSolveCondition['AchievementCondition']['value'] = 0;
-				ClassRegistry::init('AchievementCondition')->create();
-			}
-			$danSolveCondition['AchievementCondition']['category'] = $danSolveCategory;
-			$danSolveCondition['AchievementCondition']['user_id'] = Auth::getUserID();
-			$danSolveCondition['AchievementCondition']['value']++;
-
-			ClassRegistry::init('AchievementCondition')->save($danSolveCondition);
-		}
+		if (isset(AchievementCondition::DAN_SOLVE_CATEGORIES[$solvedTsumegoRank]))
+			AchievementCondition::increment(Auth::getUserID(), AchievementCondition::DAN_SOLVE_CATEGORIES[$solvedTsumegoRank]);
 	}
 
 	public static function _updateSprintCondition(bool $trigger = false): void
 	{
-		if (Auth::isLoggedIn())
-		{
-			$sprintCondition = ClassRegistry::init('AchievementCondition')->find('first', [
-				'order' => 'value DESC',
-				'conditions' => [
-					'user_id' => Auth::getUserID(),
-					'category' => 'sprint',
-				],
-			]);
-			if (!$sprintCondition)
-			{
-				$sprintCondition = [];
-				$sprintCondition['AchievementCondition']['value'] = 0;
-				ClassRegistry::init('AchievementCondition')->create();
-			}
-			$sprintCondition['AchievementCondition']['category'] = 'sprint';
-			$sprintCondition['AchievementCondition']['user_id'] = Auth::getUserID();
-			if ($trigger)
-				$sprintCondition['AchievementCondition']['value']++;
-			else
-				$sprintCondition['AchievementCondition']['value'] = 0;
-			ClassRegistry::init('AchievementCondition')->save($sprintCondition);
-		}
+		if (!Auth::isLoggedIn())
+			return;
+		if ($trigger)
+			AchievementCondition::increment(Auth::getUserID(), AchievementCondition::CATEGORY_SPRINT);
+		else
+			AchievementCondition::put(Auth::getUserID(), AchievementCondition::CATEGORY_SPRINT, 0);
 	}
 
 	public static function _updateGoldenCondition(bool $trigger = false): void
 	{
-		$goldenCondition = ClassRegistry::init('AchievementCondition')->find('first', [
-			'order' => 'value DESC',
-			'conditions' => [
-				'user_id' => Auth::getUserID(),
-				'category' => 'golden',
-			],
-		]);
-		if (!$goldenCondition)
-		{
-			$goldenCondition = [];
-			$goldenCondition['AchievementCondition']['value'] = 0;
-			ClassRegistry::init('AchievementCondition')->create();
-		}
-		$goldenCondition['AchievementCondition']['category'] = 'golden';
-		$goldenCondition['AchievementCondition']['user_id'] = Auth::getUserID();
 		if ($trigger)
-			$goldenCondition['AchievementCondition']['value']++;
+			AchievementCondition::increment(Auth::getUserID(), AchievementCondition::CATEGORY_GOLDEN);
 		else
-			$goldenCondition['AchievementCondition']['value'] = 0;
-		ClassRegistry::init('AchievementCondition')->save($goldenCondition);
+			AchievementCondition::put(Auth::getUserID(), AchievementCondition::CATEGORY_GOLDEN, 0);
 	}
 
 	public static function _updatePotionCondition(): void
 	{
-		$potionCondition = ClassRegistry::init('AchievementCondition')->find('first', [
-			'conditions' => [
-				'user_id' => Auth::getUserID(),
-				'category' => 'potion',
-			],
-		]);
-		if (!$potionCondition)
-		{
-			$potionCondition = [];
-			$potionCondition['AchievementCondition']['value'] = 0;
-			ClassRegistry::init('AchievementCondition')->create();
-		}
-		$potionCondition['AchievementCondition']['category'] = 'potion';
-		$potionCondition['AchievementCondition']['user_id'] = Auth::getUserID();
-		$potionCondition['AchievementCondition']['value']++;
-		ClassRegistry::init('AchievementCondition')->save($potionCondition);
+		AchievementCondition::increment(Auth::getUserID(), AchievementCondition::CATEGORY_POTION);
 	}
 
 	public static function _updateGems(string $rank): void
@@ -167,7 +99,7 @@ class AppController extends Controller
 				if ($rank == $gemValue)
 				{
 					$counterField = 'emerald_solves';
-					$achievementCategory = 'emerald';
+					$achievementCategory = AchievementCondition::CATEGORY_EMERALD;
 					if ($dateGem['DayRecord']['emerald_solves'] + 1 == $condition1)
 						$conditionMet = true;
 				}
@@ -195,7 +127,7 @@ class AppController extends Controller
 				if ($rank == $gemValue || $rank == $gemValue2 || $rank == $gemValue3)
 				{
 					$counterField = 'sapphire_solves';
-					$achievementCategory = 'sapphire';
+					$achievementCategory = AchievementCondition::CATEGORY_SAPPHIRE;
 					if ($dateGem['DayRecord']['sapphire_solves'] + 1 == $condition2)
 						$conditionMet = true;
 				}
@@ -223,7 +155,7 @@ class AppController extends Controller
 				if ($rank == $gemValue || $rank == $gemValue2 || $rank == $gemValue3)
 				{
 					$counterField = 'ruby_solves';
-					$achievementCategory = 'ruby';
+					$achievementCategory = AchievementCondition::CATEGORY_RUBY;
 					if ($dateGem['DayRecord']['ruby_solves'] + 1 == $condition3)
 						$conditionMet = true;
 				}
@@ -235,21 +167,8 @@ class AppController extends Controller
 				$increment = 1;
 				if ($conditionMet)
 				{
-					$userHasAchievement = ClassRegistry::init('AchievementCondition')->find('first', [
-						'order' => 'value DESC',
-						'conditions' => [
-							'user_id' => Auth::getUserID(),
-							'category' => $achievementCategory,
-						],
-					]);
-					if ($userHasAchievement == null)
-					{
-						$aCondition = [];
-						$aCondition['AchievementCondition']['category'] = $achievementCategory;
-						$aCondition['AchievementCondition']['user_id'] = Auth::getUserID();
-						$aCondition['AchievementCondition']['value'] = 1;
-						ClassRegistry::init('AchievementCondition')->save($aCondition);
-					}
+					if (AchievementCondition::value(Auth::getUserID(), $achievementCategory) === null)
+						AchievementCondition::put(Auth::getUserID(), $achievementCategory, 1);
 					else
 						$increment = 0;
 				}
@@ -410,19 +329,19 @@ class AppController extends Controller
 
 			if ($lastTimeModeCategoryID = Util::clearCookie('lastTimeModeCategoryID'))
 				Auth::saveUserField('last_time_mode_category_id', $lastTimeModeCategoryID);
-			if (Auth::getUser()['highscore_page'] == Constants::$HIGHSCORE_LEVEL)
+			if (Auth::getUser()['highscore_page_id'] == Constants::$HIGHSCORE_LEVEL)
 				$highscoreLink = 'highscore';
-			elseif (Auth::getUser()['highscore_page'] == Constants::$HIGHSCORE_RATING)
+			elseif (Auth::getUser()['highscore_page_id'] == Constants::$HIGHSCORE_RATING)
 				$highscoreLink = 'rating';
-			elseif (Auth::getUser()['highscore_page'] == Constants::$HIGHSCORE_DAILY)
+			elseif (Auth::getUser()['highscore_page_id'] == Constants::$HIGHSCORE_DAILY)
 				$highscoreLink = 'leaderboard';
-			elseif (Auth::getUser()['highscore_page'] == Constants::$HIGHSCORE_TIME_MODE)
+			elseif (Auth::getUser()['highscore_page_id'] == Constants::$HIGHSCORE_TIME_MODE)
 				$highscoreLink = 'time_mode';
 
 			if (isset($_COOKIE['sound']) && $_COOKIE['sound'] != '0')
 			{
-				// The cookie says 'on' or 'off', the column holds 1 or 0
-				Auth::saveUserField('sound', $_COOKIE['sound'] === 'on' ? User::SOUND_ON : User::SOUND_OFF);
+				// The cookie says 'on' or 'off'
+				Auth::saveUserField('sound', $_COOKIE['sound'] === 'on');
 				unset($_COOKIE['sound']);
 			}
 			$this->set('user', Auth::getUser());
@@ -432,10 +351,10 @@ class AppController extends Controller
 		{
 			$lightDark = $_COOKIE['lightDark'];
 			if (Auth::isLoggedIn())
-				Auth::saveUserField('theme', $lightDark === 'dark' ? User::THEME_DARK : User::THEME_LIGHT);
+				Auth::saveUserField('theme_id', $lightDark === 'dark' ? User::THEME_DARK : User::THEME_LIGHT);
 		}
 		elseif (Auth::isLoggedIn())
-			$lightDark = (Auth::getUser()['theme'] == User::THEME_DARK) ? 'dark' : 'light';
+			$lightDark = (Auth::getUser()['theme_id'] == User::THEME_DARK) ? 'dark' : 'light';
 
 		if (Auth::isLoggedIn())
 		{
@@ -443,10 +362,10 @@ class AppController extends Controller
 			if (isset($_COOKIE['levelBar']) && $_COOKIE['levelBar'] != '0')
 			{
 				$levelBar = ((int) $_COOKIE['levelBar']) === User::LEVEL_BAR_RATING ? User::LEVEL_BAR_RATING : User::LEVEL_BAR_LEVEL;
-				Auth::saveUserField('level_bar', $levelBar);
+				Auth::saveUserField('level_bar_id', $levelBar);
 			}
 			else
-				$levelBar = ((int) Auth::getUser()['level_bar']) === User::LEVEL_BAR_RATING ? User::LEVEL_BAR_RATING : User::LEVEL_BAR_LEVEL;
+				$levelBar = ((int) Auth::getUser()['level_bar_id']) === User::LEVEL_BAR_RATING ? User::LEVEL_BAR_RATING : User::LEVEL_BAR_LEVEL;
 		}
 
 		if (HeroPowers::getSprintRemainingSeconds() == 0)

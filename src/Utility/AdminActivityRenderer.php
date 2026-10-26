@@ -29,14 +29,14 @@ SELECT
 	user.id AS user_id,
 	user.display_name AS user_display_name,
 	user.picture AS user_picture,
-	user.pref_avatar AS user_pref_avatar,
+	user.avatar_setting_id AS user_avatar_setting_id,
 	user.external_id AS user_external_id,
 	user.email AS user_email,
 	user.rating AS user_rating,
 	set_connection.id AS set_connection_id,
 	set_connection.num AS num,
 	tsumego_status.status AS status,
-	CONCAT(`set`.title, ' ', `set`.title2) AS set_title
+	CONCAT_WS(' ', `set`.title, `set`.title2) AS set_title
 FROM
 	admin_activity
 	JOIN admin_activity_type

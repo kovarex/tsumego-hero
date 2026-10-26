@@ -14,10 +14,10 @@
  *   - created (DATETIME)
  *   - user_id (INT, FK -> user)
  *   - position (VARCHAR(300) NULL) - the node the comment is anchored to, see besogo's makeCommentPosition
+ *   - deleted (DATETIME NULL) - when the comment was deleted, NULL when it is not
  *
  * The coordinates in message and position are those of the current SGF version, without the
  * transformation the board is shown with (see App\Utility\CommentCoordinates).
- *   - deleted (BOOL, default 0)
  */
 class TsumegoComment extends AppModel
 {

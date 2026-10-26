@@ -29,6 +29,6 @@ class ClassroomPolicy extends BasePolicy
 	 */
 	public static function canManage(?array $user, array $classroom): bool
 	{
-		return $user !== null && (int) $classroom['teacher_id'] === (int) $user['id'];
+		return $user !== null && (int) $classroom['teacher_user_id'] === (int) $user['id'];
 	}
 }

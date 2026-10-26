@@ -41,7 +41,7 @@ class ClassroomsControllerTest extends IntegrationTestCase
 
 	private function createClassroom(string $name = 'Lukas, Thursday'): int
 	{
-		Util::execute('INSERT INTO classroom (name, teacher_id) VALUES (?, ?)', [$name, $this->userId('teacher')]);
+		Util::execute('INSERT INTO classroom (name, teacher_user_id) VALUES (?, ?)', [$name, $this->userId('teacher')]);
 		return (int) Util::connection()->lastInsertId();
 	}
 
@@ -201,7 +201,7 @@ class ClassroomsControllerTest extends IntegrationTestCase
 
 		$classroom = ClassRegistry::init('Classroom')->find('first')['Classroom'];
 		$this->assertSame('Lukas, Thursday', $classroom['name']);
-		$this->assertSame($this->userId('teacher'), (int) $classroom['teacher_id']);
+		$this->assertSame($this->userId('teacher'), (int) $classroom['teacher_user_id']);
 		$this->assertStringEndsWith('/classes/' . $classroom['id'], $this->headerValue('Location'));
 	}
 

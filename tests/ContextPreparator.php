@@ -30,8 +30,8 @@ class ContextPreparator
 			'day_record', 'sgf', 'time_mode_attempt', 'time_mode_session', 'challenge_participant', 'challenge_problem', 'challenge',
 			'tsumego_comment', 'tsumego_issue', 'admin_activity', 'admin_page_view', 'message',
 			'achievement_condition', 'achievement_status', 'set_connection',
-			'tsumego_attempt', 'tsumego_status', 'mistake_training_review', 'mistake_training_day', 'mistake_training_pool', 'signature',
-			'tsumego_variant', 'reject', 'publish_date', 'user', 'time_mode_rank',
+			'tsumego_attempt', 'tsumego_status', 'mistake_training_review', 'mistake_training_day', 'mistake_training_pool',
+			'tsumego_variant', 'reject', 'user', 'time_mode_rank',
 			'tsumego', 'set', 'phpbb_users', 'phpbb_topics',
 		] as $table)
 			$pdo->exec("DELETE FROM `$table`");
@@ -138,7 +138,9 @@ class ContextPreparator
 		$isOwner = Util::extract('owner', $userInput) ?? false;
 		$user['user_role_id'] = $isOwner ? User::ROLE_OWNER : ($isAdmin ? User::ROLE_ADMIN : User::ROLE_PLAYER);
 		$user['rating'] = Util::extract('rating', $userInput) ?: self::$DEFAULT_USER_RATING;
-		$user['premium'] = Util::extract('premium', $userInput) ?: 0;
+		$user['highest_rating'] = Util::extract('highest_rating', $userInput) ?: $user['rating'];
+		$premium = Util::extract('premium', $userInput);
+		$user['premium_id'] = $premium ? (int) $premium : null;
 		$deleted = Util::extract('deleted', $userInput) ?: false;
 		$user['solved'] = Util::extract('solved', $userInput) ?: 0;
 		$user['xp'] = Util::extract('xp', $userInput) ?: 0;
@@ -149,7 +151,7 @@ class ContextPreparator
 		// Google Sign-In fields
 		$user['external_id'] = $externalId ?: null;
 		$user['picture'] = Util::extract('picture', $userInput) ?: null;
-		$user['pref_avatar'] = Util::extract('pref_avatar', $userInput) ?: User::AVATAR_BOARD;
+		$user['avatar_setting_id'] = Util::extract('avatar_setting_id', $userInput) ?: User::AVATAR_BOARD;
 		$user['needs_display_name_change'] = Util::extract('needs_display_name_change', $userInput) ?: false;
 		foreach ([
 			'used_refinement',
@@ -168,11 +170,11 @@ class ContextPreparator
 		else
 			$user['damage'] = Util::extract('damage', $userInput) ?? 0;
 		$user['sprint_start'] = Util::extract('sprint_start', $userInput) ?: null;
-		$user['mode'] = Util::extract('mode', $userInput) ?: Constants::$LEVEL_MODE;
-		$user['pref_player_color'] = Util::extract('pref_player_color', $userInput) ?? User::PREF_PLAYER_COLOR_RANDOM;
-		$user['pref_board_orientation'] = Util::extract('pref_board_orientation', $userInput) ?? User::PREF_BOARD_ORIENTATION_RANDOM;
+		$user['mode_id'] = Util::extract('mode', $userInput) ?: Constants::$LEVEL_MODE;
+		$user['player_color_setting'] = Util::extract('player_color_setting', $userInput) ?? User::PLAYER_COLOR_SETTING_RANDOM;
+		$user['board_orientation_setting'] = Util::extract('board_orientation_setting', $userInput) ?? User::BOARD_ORIENTATION_SETTING_RANDOM;
 		$user['date_format_id'] = Util::extract('date_format_id', $userInput) ?? User::DATE_FORMAT_ISO;
-		$user['sound'] = Util::extract('sound', $userInput) ?? 0;
+		$user['sound'] = (bool) (Util::extract('sound', $userInput) ?? false);
 		$user['email_on_new_message'] = Util::extract('email_on_new_message', $userInput) ?? 1;
 		if ($lastTimeModeCategoryID = Util::extract('last-time-mode-category-id', $userInput))
 			$user['last_time_mode_category_id'] = $lastTimeModeCategoryID;
@@ -247,10 +249,6 @@ class ContextPreparator
 		$tsumego['variance'] = Util::extract('variance', $tsumegoInput);
 		$tsumego['deleted'] = Util::extract('deleted', $tsumegoInput);
 		$tsumego['author'] = Util::extract('author', $tsumegoInput) ?: '';
-		if ($solved = Util::extract('solved', $tsumegoInput))
-			$tsumego['solved'] = $solved;
-		if ($failed = Util::extract('failed', $tsumegoInput))
-			$tsumego['failed'] = $failed;
 		ClassRegistry::init('Tsumego')->create($tsumego);
 		ClassRegistry::init('Tsumego')->save($tsumego);
 		$tsumego = ClassRegistry::init('Tsumego')->find('first', ['order' => ['id' => 'DESC']])['Tsumego'];
@@ -505,7 +503,7 @@ class ContextPreparator
 			'lapses' => $tsumegoStatus['mistake_training_lapses'] ?? 0,
 			'next_due' => $mistakeTrainingDue,
 			'last_review_day' => $tsumegoStatus['mistake_training_review_day'] ?? null,
-			'last_review_result' => $tsumegoStatus['mistake_training_review_result'] ?? null,
+			'last_mistake_training_result_id' => $tsumegoStatus['mistake_training_review_result'] ?? null,
 		];
 		if ($existing)
 		{
@@ -854,7 +852,7 @@ class ContextPreparator
 	 *
 	 * @param array|null $conditions Array of achievement condition definitions
 	 *   Each condition should have:
-	 *   - 'category' (required): The achievement category (e.g., 'accuracy', 'speed', 'uotd')
+	 *   - 'category' (required): The achievement category, an AchievementCondition::CATEGORY_ constant
 	 *   - 'value' (required): The condition value (e.g., 100 for percentage, 1 for boolean)
 	 *   - 'set_id' (optional): The set_id for set-specific conditions (defaults to null)
 	 *   - 'user_id' (optional): Override the user_id (defaults to $this->user['id'])
@@ -864,17 +862,13 @@ class ContextPreparator
 		if (!$conditions)
 			return;
 
-		$AchievementCondition = ClassRegistry::init('AchievementCondition');
 		foreach ($conditions as $conditionInput)
 		{
-			$condition = [];
-			$condition['AchievementCondition']['user_id'] = Util::extract('user_id', $conditionInput) ?: $this->user['id'];
-			$condition['AchievementCondition']['category'] = Util::extract('category', $conditionInput);
-			$condition['AchievementCondition']['value'] = Util::extract('value', $conditionInput);
-			$condition['AchievementCondition']['set_id'] = Util::extract('set_id', $conditionInput);
-
-			$AchievementCondition->create();
-			$AchievementCondition->save($condition);
+			AchievementCondition::put(
+				(int) (Util::extract('user_id', $conditionInput) ?: $this->user['id']),
+				Util::extract('category', $conditionInput),
+				Util::extract('value', $conditionInput),
+				Util::extract('set_id', $conditionInput));
 			$this->checkOptionsConsumed($conditionInput);
 		}
 	}
@@ -1085,7 +1079,7 @@ class ContextPreparator
 	{
 		Auth::saveUserFields([
 			'level' => HeroPowers::$SPRINT_MINIMUM_LEVEL,
-			'mode' => Constants::$LEVEL_MODE,
+			'mode_id' => Constants::$LEVEL_MODE,
 		]);
 	}
 

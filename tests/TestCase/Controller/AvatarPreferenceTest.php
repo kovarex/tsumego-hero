@@ -15,7 +15,7 @@ class AvatarPreferenceTest extends IntegrationTestCase
 
 		$this->assertSame('{"status":"ok"}', $result);
 		$row = ClassRegistry::init('User')->findById($context->user['id']);
-		$this->assertSame(User::AVATAR_GRAVATAR, (int) $row['User']['pref_avatar']);
+		$this->assertSame(User::AVATAR_GRAVATAR, (int) $row['User']['avatar_setting_id']);
 	}
 
 	public function testSwitchingBackToTheBoardStoresTheBoard(): void
@@ -28,7 +28,7 @@ class AvatarPreferenceTest extends IntegrationTestCase
 		$this->post('/users/avatarPreference', ['avatar' => User::AVATAR_BOARD]);
 
 		$row = ClassRegistry::init('User')->findById($context->user['id']);
-		$this->assertSame(User::AVATAR_BOARD, (int) $row['User']['pref_avatar']);
+		$this->assertSame(User::AVATAR_BOARD, (int) $row['User']['avatar_setting_id']);
 	}
 
 	public function testTheGooglePictureIsStoredForAnAccountWithOne(): void
@@ -41,7 +41,7 @@ class AvatarPreferenceTest extends IntegrationTestCase
 		$this->post('/users/avatarPreference', ['avatar' => User::AVATAR_GOOGLE]);
 
 		$row = ClassRegistry::init('User')->findById($context->user['id']);
-		$this->assertSame(User::AVATAR_GOOGLE, (int) $row['User']['pref_avatar']);
+		$this->assertSame(User::AVATAR_GOOGLE, (int) $row['User']['avatar_setting_id']);
 	}
 
 	/**
@@ -57,12 +57,12 @@ class AvatarPreferenceTest extends IntegrationTestCase
 		$this->post('/users/avatarPreference', ['avatar' => User::AVATAR_GOOGLE]);
 
 		$row = ClassRegistry::init('User')->findById($context->user['id']);
-		$this->assertSame(User::AVATAR_BOARD, (int) $row['User']['pref_avatar']);
+		$this->assertSame(User::AVATAR_BOARD, (int) $row['User']['avatar_setting_id']);
 	}
 
 	public function testAnUnknownValueIsIgnored(): void
 	{
-		foreach ([99, -5, 3] as $invalid)
+		foreach ([99, -5, 0, 4] as $invalid)
 		{
 			Auth::logout();
 			$name = 'avatarBad' . $invalid;
@@ -72,7 +72,7 @@ class AvatarPreferenceTest extends IntegrationTestCase
 			$this->post('/users/avatarPreference', ['avatar' => $invalid]);
 
 			$row = ClassRegistry::init('User')->findById($context->user['id']);
-			$this->assertSame(User::AVATAR_BOARD, (int) $row['User']['pref_avatar'], 'The value ' . $invalid . ' was stored');
+			$this->assertSame(User::AVATAR_BOARD, (int) $row['User']['avatar_setting_id'], 'The value ' . $invalid . ' was stored');
 		}
 	}
 
@@ -115,8 +115,8 @@ class AvatarPreferenceTest extends IntegrationTestCase
 	private function storeAvatar(int $userId, int $avatar): void
 	{
 		ClassRegistry::init('User')->save(
-			['User' => ['id' => $userId, 'pref_avatar' => $avatar]],
-			['validate' => false, 'fieldList' => ['pref_avatar']]
+			['User' => ['id' => $userId, 'avatar_setting_id' => $avatar]],
+			['validate' => false, 'fieldList' => ['avatar_setting_id']]
 		);
 	}
 

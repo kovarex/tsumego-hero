@@ -98,7 +98,7 @@ use App\Utility\ValueGraphRenderer;
 			</tr>
 			<tr>
 				<td>Highest rating:</td>
-				<td><?php echo $highestRating; ?></td>
+				<td><?php echo round($highestRating); ?></td>
 			</tr>
 		</table>
 	</div>

@@ -21,7 +21,7 @@ use App\Utility\CookieFlash;
 		<?php echo $this->Form->create('User', array('action' => 'resetpassword')); ?>
 		<div class="input text required">
 			<label for="UserEmail">E-Mail</label>
-			<input name="data[User][email]" maxlength="50" type="text" id="UserEmail" autocomplete="email" required="required"/>
+			<input name="data[User][email]" maxlength="<?php echo User::EMAIL_MAX_LENGTH; ?>" type="text" id="UserEmail" autocomplete="email" required="required"/>
 		</div>
 		<button type="submit" class="btn">Send reset link</button>
 		<?php echo $this->Form->end(); ?>

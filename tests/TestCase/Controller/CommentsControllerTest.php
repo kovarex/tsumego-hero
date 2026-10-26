@@ -17,7 +17,7 @@ class CommentsControllerTest extends IntegrationTestCase
 	private const TALL_SGF = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[ca][cb][cc][cd][ce][cf][cg][ch][ci][cj];B[aa];W[ab];B[ac]C[+])';
 
 	/** The board as the SGF stores it: the top-left corner and its own colours, so comments show as stored. */
-	private const STORED_BOARD = ['pref_board_orientation' => User::PREF_BOARD_ORIENTATION_ORIGINAL, 'pref_player_color' => User::PREF_PLAYER_COLOR_ORIGINAL];
+	private const STORED_BOARD = ['board_orientation_setting' => User::BOARD_ORIENTATION_SETTING_ORIGINAL, 'player_color_setting' => User::PLAYER_COLOR_SETTING_ORIGINAL];
 
 	/** Opens a tsumego the admin has already solved, so its comments and the review mode are available. */
 	private function openSolvedTsumego(Browser $browser, array $tsumego = [], array $user = []): ContextPreparator
@@ -110,7 +110,7 @@ class CommentsControllerTest extends IntegrationTestCase
 		$browser->waitUntilCssSelectorExistsWithText('#comment_' . $comment['TsumegoComment']['id'], 'My first comment');
 
 		// verify that deleted comment isn't visible
-		$comment['TsumegoComment']['deleted'] = 1;
+		$comment['TsumegoComment']['deleted'] = date('Y-m-d H:i:s');
 		ClassRegistry::init('TsumegoComment')->save($comment);
 
 		$browser->get('comments');
@@ -481,7 +481,7 @@ class CommentsControllerTest extends IntegrationTestCase
 
 		$tsumego = ClassRegistry::init('Tsumego');
 		$tsumego->create();
-		$tsumego->save(['description' => 'comment set link']);
+		$tsumego->save(['description' => 'comment set link', 'author' => '']);
 
 		// Private set connection created first, so it would win the old MIN(id) pick
 		$aliceSet = ClassRegistry::init('Set');
@@ -1362,6 +1362,22 @@ class CommentsControllerTest extends IntegrationTestCase
 
 		// Comment appears in both "All Comments" and "Your Comments" sections (= 2 times)
 		$this->assertSame(2, substr_count($this->view, 'UNIQUE_TEST_COMMENT_XYZ'));
+	}
+
+	/**
+	 * No new set has a subtitle, and the list still names the set of each comment.
+	 */
+	public function testCommentListNamesASetWithoutSubtitle()
+	{
+		new ContextPreparator([
+			'tsumego' => [
+				'sets' => [['name' => 'Set without subtitle', 'num' => 7]],
+				'status' => 'S',
+				'comments' => [['message' => 'A comment']]]]);
+
+		$this->get('comments');
+
+		$this->assertTextContains('Set without subtitle - 7', $this->view);
 	}
 
 	/**

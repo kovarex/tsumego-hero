@@ -86,7 +86,7 @@ class TimeMode
 			throw new InternalErrorException('The challenge has no problems.');
 		$this->leaveCurrentSession();
 
-		Auth::saveUserField('mode', Constants::$TIME_MODE);
+		Auth::saveUserField('mode_id', Constants::$TIME_MODE);
 		$session = [
 			'user_id' => Auth::getUserID(),
 			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
@@ -152,7 +152,7 @@ class TimeMode
 		if (!$timeModeRank)
 			throw new NotFoundException("Time mode rank category with id=" . $rankID . " not found");
 
-		Auth::saveUserField('mode', Constants::$TIME_MODE);
+		Auth::saveUserField('mode_id', Constants::$TIME_MODE);
 		$currentTimeSession = [];
 		$currentTimeSession['user_id'] = Auth::getUserID();
 		$currentTimeSession['time_mode_session_status_id'] = TimeModeUtil::$SESSION_STATUS_IN_PROGRESS;
@@ -464,7 +464,7 @@ class TimeMode
 		$session['TimeModeSession']['time_mode_session_status_id'] = $sessionSuccessful ? TimeModeUtil::$SESSION_STATUS_SOLVED : TimeModeUtil::$SESSION_STATUS_FAILED;
 		$session['TimeModeSession']['points'] = $overallPoints;
 		ClassRegistry::init('TimeModeSession')->save($session);
-		Auth::saveUserField('mode', Constants::$LEVEL_MODE);
+		Auth::saveUserField('mode_id', Constants::$LEVEL_MODE);
 	}
 
 	public static function calculatePoints(float $timeUsed, float $max): float

@@ -2,7 +2,7 @@
 
 namespace App\Utility;
 
-use ClassRegistry;
+use AchievementCondition;
 use Set;
 
 /**
@@ -12,15 +12,13 @@ use Set;
  * them with the default collection size, regardless of the size the user picked. A set of
  * 1000 problems therefore counts as 5 sets.
  *
- * The count is kept in the achievement_condition row with the category 'set'.
+ * The count is kept in the achievement condition AchievementCondition::CATEGORY_COMPLETED_SETS.
  */
 class SetCompletionCounter
 {
 	// Deliberately not Constants::$DEFAULT_COLLECTION_SIZE: changing the default partitioning
 	// of the collections page must not change how many sets the users have completed.
 	public static int $PARTITION_SIZE = 200;
-
-	public static string $CATEGORY = 'set';
 
 	public static function count(int $userID): int
 	{
@@ -55,19 +53,7 @@ LIMIT 1', [$userID, $tsumegoID, $tsumegoID]);
 
 	public static function save(int $userID, int $count): void
 	{
-		$model = ClassRegistry::init('AchievementCondition');
-		$condition = $model->find('first', [
-			'order' => 'value DESC',
-			'conditions' => ['user_id' => $userID, 'category' => self::$CATEGORY]]);
-		if (!$condition)
-		{
-			$condition = [];
-			$model->create();
-		}
-		$condition['AchievementCondition']['user_id'] = $userID;
-		$condition['AchievementCondition']['category'] = self::$CATEGORY;
-		$condition['AchievementCondition']['value'] = $count;
-		$model->save($condition);
+		AchievementCondition::put($userID, AchievementCondition::CATEGORY_COMPLETED_SETS, $count);
 	}
 
 	/**

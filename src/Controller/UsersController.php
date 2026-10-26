@@ -14,7 +14,7 @@ use App\Utility\PwnedPasswordChecker;
 use App\Utility\PwnedPasswordCheckerInterface;
 use App\Utility\SgfCommentReorientation;
 use App\Utility\TimeModeUtil;
-use App\Utility\TsumegoUtil;
+use App\Utility\UserActivitiesRenderer;
 use App\Utility\Util;
 use App\Attribute\HttpPost;
 use App\Attribute\HttpGet;
@@ -215,110 +215,28 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	}
 
 	/**
-	 * @param string|null $uid User ID
-	 * @return void
+	 * The latest attempts of all players, or of the one player given (admin only)
 	 */
 	#[HttpGet]
-	public function userstats(?string $uid = null): void
+	public function userstats(?string $userID = null): void
 	{
 		$this->Authorization->authorize('Admin');
 		$this->set('_page', 'user');
-		$this->set('_title', 'USER STATS');
-		$this->loadModel('TsumegoAttempt');
-		$this->loadModel('Set');
-		$this->loadModel('Tsumego');
-		$this->loadModel('SetConnection');
-		if ($uid == null)
-			$ur = $this->TsumegoAttempt->find('all', ['limit' => 500, 'order' => 'created DESC']);
-		elseif ($uid == 99)
-			$ur = $this->TsumegoAttempt->find('all', [
-				'order' => 'created DESC',
-				'conditions' => [
-					'tsumego_id >=' => 19752,
-					'tsumego_id <=' => 19761,
-				],
-			]);
-		else
-			$ur = $this->TsumegoAttempt->find('all', ['limit' => 500, 'order' => 'created DESC', 'conditions' => ['user_id' => $uid]]);
-
-		$urCount = count($ur);
-		for ($i = 0; $i < $urCount; $i++)
-		{
-			$u = $this->User->findById($ur[$i]['TsumegoAttempt']['user_id']);
-			$ur[$i]['TsumegoAttempt']['user_display_name'] = $u['User']['display_name'];
-			$ur[$i]['TsumegoAttempt']['level'] = $u['User']['level'];
-			$t = $this->Tsumego->findById($ur[$i]['TsumegoAttempt']['tsumego_id']);
-			$scT = $this->SetConnection->findDisplaySetConnection($t['Tsumego']['id']);
-			$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
-			$ur[$i]['TsumegoAttempt']['tsumego_num'] = $scT['SetConnection']['num'];
-			$ur[$i]['TsumegoAttempt']['tsumego_xp'] = $t['Tsumego']['difficulty'];
-			$s = $this->Set->findById($t['Tsumego']['set_id']);
-			$ur[$i]['TsumegoAttempt']['set_name'] = $s['Set']['title'];
-		}
-
-		$noIndex = false;
-		if ($uid != null)
-			$noIndex = true;
-		if (isset($this->params['url']['c']))
-			$this->set('count', 1);
-		else
-			$this->set('count', 0);
-		$this->set('noIndex', $noIndex);
-		$this->set('ur', $ur);
-		$this->set('uid', $uid);
+		$this->set('_title', 'User activities');
+		$this->set('userActivitiesRenderer', new UserActivitiesRenderer($this->params['url'], userID: $userID === null ? null : (int) $userID));
 	}
 
 	/**
-	 * @param string|null $sid Set ID
-	 * @return void
+	 * The latest attempts on the problems of the set given, of all players without one (admin only)
 	 */
 	#[HttpGet]
-	public function userstats3(?string $sid = null): void
+	public function userstats3(?string $setID = null): void
 	{
 		$this->Authorization->authorize('Admin');
 		$this->set('_page', 'user');
-		$this->set('_title', 'USER STATS');
-		$this->loadModel('TsumegoAttempt');
-		$this->loadModel('Set');
-		$this->loadModel('Tsumego');
-		$this->loadModel('SetConnection');
-
-		if ($sid == null)
-			$ur = $this->TsumegoAttempt->find('all', ['limit' => 500, 'order' => 'created DESC']);
-		else
-		{
-			$ts = TsumegoUtil::collectTsumegosFromSet((int) $sid);
-			$ids = [];
-			$tsCount = count($ts);
-			for ($i = 0; $i < $tsCount; $i++)
-				array_push($ids, $ts[$i]['Tsumego']['id']);
-			$ur = $this->TsumegoAttempt->find('all', ['order' => 'created DESC', 'conditions' => ['tsumego_id' => $ids]]);
-		}
-
-		$urCount = count($ur);
-		for ($i = 0; $i < $urCount; $i++)
-		{
-			$u = $this->User->findById($ur[$i]['TsumegoAttempt']['user_id']);
-			$ur[$i]['TsumegoAttempt']['user_display_name'] = $u['User']['display_name'];
-			$t = $this->Tsumego->findById($ur[$i]['TsumegoAttempt']['tsumego_id']);
-			$ur[$i]['TsumegoAttempt']['tsumego_num'] = $t['Tsumego']['num'];
-			$ur[$i]['TsumegoAttempt']['tsumego_xp'] = $t['Tsumego']['difficulty'];
-			$scT = $this->SetConnection->findDisplaySetConnection($t['Tsumego']['id']);
-			$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
-			$s = $this->Set->findById($t['Tsumego']['set_id']);
-			$ur[$i]['TsumegoAttempt']['set_name'] = $s['Set']['title'];
-		}
-
-		$noIndex = false;
-		if ($sid != null)
-			$noIndex = true;
-		if (isset($this->params['url']['c']))
-			$this->set('count', 1);
-		else
-			$this->set('count', 0);
-		$this->set('noIndex', $noIndex);
-		$this->set('ur', $ur);
-		//$this->set('uid', $uid);
+		$this->set('_title', 'User activities');
+		$this->set('userActivitiesRenderer', new UserActivitiesRenderer($this->params['url'], setID: $setID === null ? null : (int) $setID));
+		$this->render('userstats');
 	}
 
 	/**
@@ -688,7 +606,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		$this->set('_title', 'Tsumego Hero - Highscore');
 
 		$this->set('users', $this->queryHighscoreWithSelfView(
-			"SELECT id, display_name, external_id, picture, pref_avatar, email, rating, premium, level, xp, solved,
+			"SELECT id, display_name, external_id, picture, avatar_setting_id, email, rating, premium_id, level, xp, solved,
 				ROW_NUMBER() OVER (ORDER BY level DESC, xp DESC) as position
 			FROM user
 			WHERE deleted IS NULL",
@@ -704,14 +622,10 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		$this->set('_title', 'Tsumego Hero - Rating');
 
 		if (Auth::isLoggedIn())
-		{
-			$ux = $this->User->findById(Auth::getUserID());
-			$ux['User']['highscore_page'] = Constants::$HIGHSCORE_RATING;
-			$this->User->save($ux);
-		}
+			Auth::saveUserField('highscore_page_id', Constants::$HIGHSCORE_RATING);
 
 		$this->set('users', $this->queryHighscoreWithSelfView(
-			"SELECT id, display_name, external_id, picture, pref_avatar, email, rating, premium,
+			"SELECT id, display_name, external_id, picture, avatar_setting_id, email, rating, premium_id,
 				ROW_NUMBER() OVER (ORDER BY rating DESC) as position
 			FROM user
 			WHERE deleted IS NULL"
@@ -736,10 +650,10 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 				user.display_name as display_name,
 				user.external_id as external_id,
 				user.picture as picture,
-				user.pref_avatar as pref_avatar,
+				user.avatar_setting_id as avatar_setting_id,
 				user.email as email,
 				user.rating as rating,
-				user.premium as premium,
+				user.premium_id AS premium_id,
 				COUNT(tag_connection.id) AS tag_count,
 				ROW_NUMBER() OVER (ORDER BY COUNT(tag_connection.id) DESC) as position
 			FROM user
@@ -756,11 +670,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		$this->set('_title', 'Tsumego Hero - Achievements Highscore');
 
 		if (Auth::isLoggedIn())
-		{
-			$ux = $this->User->findById(Auth::getUserID());
-			$ux['User']['highscore_page'] = Constants::$HIGHSCORE_RATING;
-			$this->User->save($ux);
-		}
+			Auth::saveUserField('highscore_page_id', Constants::$HIGHSCORE_RATING);
 
 		$userId = Auth::isLoggedIn() ? Auth::getUserID() : -1;
 
@@ -770,9 +680,9 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 				user.display_name AS display_name,
 				user.rating AS rating,
 				user.picture AS picture,
-				user.pref_avatar AS pref_avatar,
+				user.avatar_setting_id AS avatar_setting_id,
 				user.external_id AS external_id,
-				user.premium AS premium,
+				user.premium_id AS premium_id,
 				user.email AS email,
 				COUNT(DISTINCT achievement_status.achievement_id) AS achievement_score,
 				COALESCE(SUM(CASE WHEN achievement_status.value > 1 THEN achievement_status.value ELSE 0 END), 0) AS achievement_earned_times,
@@ -809,11 +719,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		$params2 = '';
 
 		if (Auth::isLoggedIn())
-		{
-			$ux = $this->User->findById(Auth::getUserID());
-			$ux['User']['highscore_page'] = Constants::$HIGHSCORE_TIME_MODE;
-			$this->User->save($ux);
-		}
+			Auth::saveUserField('highscore_page_id', Constants::$HIGHSCORE_TIME_MODE);
 
 		if (isset($this->params['url']['category']))
 		{
@@ -845,10 +751,10 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 				user.display_name AS display_name,
 				user.external_id AS external_id,
 				user.picture AS picture,
-				user.pref_avatar AS pref_avatar,
+				user.avatar_setting_id AS avatar_setting_id,
 				user.email AS email,
 				user.rating AS rating,
-				user.premium AS premium,
+				user.premium_id AS premium_id,
 				COALESCE(MAX(time_mode_session.points), 0) AS points,
 				ROW_NUMBER() OVER (ORDER BY COALESCE(MAX(time_mode_session.points), 0) DESC) as position
 			FROM user
@@ -954,7 +860,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		$userId = Auth::isLoggedIn() ? Auth::getUserID() : -1;
 
 		$this->set('users', $this->queryHighscoreWithSelfView(
-			"SELECT id, name, display_name, external_id, picture, pref_avatar, email, rating, premium, daily_xp, daily_solved,
+			"SELECT id, name, display_name, external_id, picture, avatar_setting_id, email, rating, premium_id, daily_xp, daily_solved,
 				ROW_NUMBER() OVER (ORDER BY daily_xp DESC) as position
 			FROM user
 			WHERE (daily_xp > 0 OR id = ?) AND deleted IS NULL",
@@ -1353,7 +1259,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 			// A Google account shows the picture of its Google profile until the player
 			// picks another avatar on the profile page.
 			if ($picture)
-				$userData['User']['pref_avatar'] = User::AVATAR_GOOGLE;
+				$userData['User']['avatar_setting_id'] = User::AVATAR_GOOGLE;
 
 			$this->User->create();
 			$saveResult = $this->User->save($userData);
@@ -1377,7 +1283,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 			// in brings the first picture. A picture that only changed keeps the avatar
 			// the player picked.
 			if ($picture && empty($u['User']['picture']))
-				$updates['pref_avatar'] = User::AVATAR_GOOGLE;
+				$updates['avatar_setting_id'] = User::AVATAR_GOOGLE;
 
 			// Update email if changed and not empty
 			if ($email && $u['User']['email'] !== $email)
@@ -1681,7 +1587,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		$reject['comment'] = $comment;
 		$reject['tsumego_id'] = $proposalToReject['tsumego_id'];
 		$reject['sgf_id'] = $proposalToReject['id'];
-		$reject['type'] = 'proposal';
+		$reject['reject_type_id'] = Reject::TYPE_PROPOSAL;
 		ClassRegistry::init('Reject')->create();
 		ClassRegistry::init('Reject')->save($reject);
 		// kept, so the proposer can still see what they proposed
@@ -1801,7 +1707,9 @@ OFFSET " . $offset, [$userID, $userID]);
 		$reject['comment'] = $comment;
 		$reject['tsumego_id'] = $proposalToReject['tsumego_id'];
 		$tag = ClassRegistry::init('Tag')->findById($proposalToReject['tag_id'])['Tag'];
-		$reject['type'] = $tag['name'];
+		$reject['reject_type_id'] = Reject::TYPE_TAG;
+		$reject['tag_id'] = $tag['id'];
+		$reject['tag_name'] = $tag['name'];
 
 		AdminActivityLogger::log(AdminActivityType::REJECT_TAG, $proposalToReject['tsumego_id'], null, $tag['name'], null);
 
@@ -1857,8 +1765,7 @@ OFFSET " . $offset, [$userID, $userID]);
 			return $this->redirect('/users/settings');
 		}
 
-		// The column holds 50 characters, a longer address can not be stored
-		if (mb_strlen($email) > 50 || !Validation::email($email))
+		if (mb_strlen($email) > User::EMAIL_MAX_LENGTH || !Validation::email($email))
 		{
 			CookieFlash::set('That is not a valid e-mail address.', 'error');
 			return $this->redirect('/users/settings');
@@ -2095,11 +2002,11 @@ OFFSET " . $offset, [$userID, $userID]);
 		$this->autoRender = false;
 		$this->Authorization->authorize('User', 'editPreferences');
 
-		$color = (int) ($this->request->data['color'] ?? User::PREF_PLAYER_COLOR_RANDOM);
+		$color = (int) ($this->request->data['color'] ?? User::PLAYER_COLOR_SETTING_RANDOM);
 		if ($color < 0 || $color > 1)
-			$color = User::PREF_PLAYER_COLOR_RANDOM;
+			$color = User::PLAYER_COLOR_SETTING_RANDOM;
 
-		Auth::saveUserField('pref_player_color', $color);
+		Auth::saveUserField('player_color_setting', $color);
 
 		$this->response->statusCode(200);
 		$this->response->type('application/json');
@@ -2112,11 +2019,11 @@ OFFSET " . $offset, [$userID, $userID]);
 		$this->autoRender = false;
 		$this->Authorization->authorize('User', 'editPreferences');
 
-		$orientation = (int) ($this->request->data['orientation'] ?? User::PREF_BOARD_ORIENTATION_RANDOM);
+		$orientation = (int) ($this->request->data['orientation'] ?? User::BOARD_ORIENTATION_SETTING_RANDOM);
 		if ($orientation < 0 || $orientation > 1)
-			$orientation = User::PREF_BOARD_ORIENTATION_RANDOM;
+			$orientation = User::BOARD_ORIENTATION_SETTING_RANDOM;
 
-		Auth::saveUserField('pref_board_orientation', $orientation);
+		Auth::saveUserField('board_orientation_setting', $orientation);
 
 		$this->response->statusCode(200);
 		$this->response->type('application/json');
@@ -2169,7 +2076,7 @@ OFFSET " . $offset, [$userID, $userID]);
 
 		$choice = (int) ($this->request->data['avatar'] ?? User::AVATAR_BOARD);
 		if (array_key_exists($choice, User::avatarChoices(Auth::getUser())))
-			Auth::saveUserField('pref_avatar', $choice);
+			Auth::saveUserField('avatar_setting_id', $choice);
 
 		$this->response->statusCode(200);
 		$this->response->type('application/json');

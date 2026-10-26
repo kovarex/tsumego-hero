@@ -17,7 +17,7 @@ use App\Utility\Auth;
  * On the pages of another player, a signed-in visitor gets a button to write to them.
  *
  * @var View $this
- * @var array $user Row with the id, display_name, external_id, picture, email and pref_avatar
+ * @var array $user Row with the id, display_name, external_id, picture, email and avatar_setting_id
  * @var string $activeTab
  */
 

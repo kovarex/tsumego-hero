@@ -30,7 +30,7 @@ class DanSolveAchievementTest extends AchievementTestCase
 		{
 			$context = new ContextPreparator([
 				'user' => ['name' => "user_{$achievementId->name}"],
-				'achievement-conditions' => [['category' => "danSolve$danLevel", 'value' => 1]]]);
+				'achievement-conditions' => [['category' => AchievementCondition::DAN_SOLVE_CATEGORIES[$danLevel], 'value' => 1]]]);
 			new AchievementChecker()->checkDanSolveAchievements();
 			$this->assertAchievementUnlocked($achievementId);
 		}
@@ -48,7 +48,7 @@ class DanSolveAchievementTest extends AchievementTestCase
 
 		foreach ($achievements as [$achievementId, $danLevel])
 		{
-			$context = new ContextPreparator(['achievement-conditions' => [['category' => "danSolve$danLevel", 'value' => 10]]]);
+			$context = new ContextPreparator(['achievement-conditions' => [['category' => AchievementCondition::DAN_SOLVE_CATEGORIES[$danLevel], 'value' => 10]]]);
 			new AchievementChecker()->checkDanSolveAchievements();
 			$this->assertAchievementUnlocked($achievementId);
 		}
@@ -56,7 +56,7 @@ class DanSolveAchievementTest extends AchievementTestCase
 
 	public function testNineSolvesDoesNotUnlockTenSolveAchievement()
 	{
-		$context = new ContextPreparator(['achievement-conditions' => [['category' => 'danSolve1d', 'value' => 9]]]);
+		$context = new ContextPreparator(['achievement-conditions' => [['category' => AchievementCondition::CATEGORY_DAN_SOLVE_1D, 'value' => 9]]]);
 		new AchievementChecker()->checkDanSolveAchievements();
 		$this->assertAchievementNotUnlocked(AchievementId::SOLVE_10_1D);
 	}

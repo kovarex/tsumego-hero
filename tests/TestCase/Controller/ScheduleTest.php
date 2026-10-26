@@ -383,7 +383,7 @@ class ScheduleTest extends IntegrationTestCase
 		$context = new ContextPreparator([
 			'user' => ['name' => 'admin', 'admin' => true],
 			'tsumegos' => [
-				['sets' => [['name' => 'sandbox set', 'num' => 5, 'public' => 0]], 'solved' => 42, 'failed' => 7],
+				['sets' => [['name' => 'sandbox set', 'num' => 5, 'public' => 0]], 'status' => 'S'],
 				['sets' => [['name' => 'set 1', 'num' => 3]]],
 			],
 			'schedule' => [
@@ -394,9 +394,7 @@ class ScheduleTest extends IntegrationTestCase
 
 		SchedulePublisher::publishDue();
 
-		$tsumego = ClassRegistry::init('Tsumego')->findById($context->tsumegos[0]['id']);
-		$this->assertSame(42, (int) $tsumego['Tsumego']['solved']);
-		$this->assertSame(7, (int) $tsumego['Tsumego']['failed']);
+		$this->assertSame(1, ClassRegistry::init('TsumegoStatus')->find('count', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]]));
 	}
 
 	public function testPublishWhenAlreadyInTargetSetKeepsOneConnection(): void
@@ -488,7 +486,7 @@ class ScheduleTest extends IntegrationTestCase
 				['sets' => [
 					['name' => 'sandbox set', 'num' => 1, 'public' => 0],
 					['name' => 'existing public', 'num' => 1],
-				], 'solved' => 42, 'failed' => 7],
+				], 'status' => 'S'],
 				['sets' => [['name' => 'target set', 'num' => 1]]],
 			],
 			'schedule' => [
@@ -499,10 +497,8 @@ class ScheduleTest extends IntegrationTestCase
 
 		SchedulePublisher::publishDue();
 
-		// Stats should be preserved because tsumego is already in another public set
-		$tsumego = ClassRegistry::init('Tsumego')->findById($context->tsumegos[0]['id']);
-		$this->assertSame(42, (int) $tsumego['Tsumego']['solved']);
-		$this->assertSame(7, (int) $tsumego['Tsumego']['failed']);
+		// The statuses stay because the problem is already in another public set
+		$this->assertSame(1, ClassRegistry::init('TsumegoStatus')->find('count', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]]));
 	}
 
 	public function testPublishFailedEntryStaysPending(): void

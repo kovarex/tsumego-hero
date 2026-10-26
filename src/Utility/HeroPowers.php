@@ -35,7 +35,7 @@ class HeroPowers
 	 */
 	public static function hasPremiumUnlock(array $user): bool
 	{
-		return (int) ($user['premium'] ?? 0) > 0;
+		return ($user['premium_id'] ?? null) !== null;
 	}
 
 	/**

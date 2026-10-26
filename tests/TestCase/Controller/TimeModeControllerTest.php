@@ -178,7 +178,7 @@ class TimeModeControllerTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator([
 			'tsumego' => 1,
-			'achievement-conditions' => [['category' => 'err', 'value' => 7]],
+			'achievement-conditions' => [['category' => AchievementCondition::CATEGORY_NO_ERROR_STREAK, 'value' => 7]],
 			'time-mode-ranks' => ['5k'],
 			'time-mode-sessions' => [[
 				'category' => TimeModeUtil::$CATEGORY_BLITZ,
@@ -196,7 +196,7 @@ class TimeModeControllerTest extends IntegrationTestCase
 			'outcome' => PlayOutcome::Failed->value]);
 
 		$errCondition = ClassRegistry::init('AchievementCondition')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'category' => 'err']]);
+			'conditions' => ['user_id' => $context->user['id'], 'achievement_condition_category_id' => AchievementCondition::CATEGORY_NO_ERROR_STREAK]]);
 		$this->assertSame(7, (int) $errCondition['AchievementCondition']['value'],
 			'Time mode does not move the streak');
 	}

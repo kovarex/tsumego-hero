@@ -258,6 +258,17 @@ class Util
 	}
 
 	/**
+	 * The isolation level of the transactions of this connection, as in 'REPEATABLE-READ'. MariaDB 11.1
+	 * renamed the variable to transaction_isolation and deprecated tx_isolation, the only name 10.11
+	 * knows; the view has whichever the server has.
+	 */
+	public static function isolationLevel(): string
+	{
+		return self::query("SELECT VARIABLE_VALUE AS isolation FROM information_schema.SESSION_VARIABLES
+			WHERE VARIABLE_NAME IN ('TRANSACTION_ISOLATION', 'TX_ISOLATION') LIMIT 1")[0]['isolation'];
+	}
+
+	/**
 	 * Execute a non-SELECT SQL statement (INSERT, UPDATE, DELETE) and return the number of affected rows.
 	 */
 	public static function execute(string $sql, array $params = []): int

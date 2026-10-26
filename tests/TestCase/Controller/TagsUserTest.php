@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\Auth;
+
 /**
  * Tests for TagsController::user() - the contributions page.
  */
@@ -51,19 +53,19 @@ class TagsUserTest extends IntegrationTestCase
 		// Rejected tag name
 		$reject->create();
 		$reject->save(['Reject' => [
-			'user_id' => $userId, 'tsumego_id' => 0, 'type' => 'tag name', 'text' => 'badname',
+			'user_id' => $userId, 'reject_type_id' => Reject::TYPE_TAG_NAME, 'tag_name' => 'badname',
 		]]);
 
 		// Rejected tag on tsumego 1
 		$reject->create();
 		$reject->save(['Reject' => [
-			'user_id' => $userId, 'tsumego_id' => $context->tsumegos[0]['id'], 'type' => 'tag', 'text' => 'bad tag',
+			'user_id' => $userId, 'tsumego_id' => $context->tsumegos[0]['id'], 'reject_type_id' => Reject::TYPE_TAG, 'tag_name' => 'bad tag',
 		]]);
 
 		// Rejected proposal on tsumego 2
 		$reject->create();
 		$reject->save(['Reject' => [
-			'user_id' => $userId, 'tsumego_id' => $context->tsumegos[1]['id'], 'type' => 'proposal', 'text' => 'bad sgf',
+			'user_id' => $userId, 'tsumego_id' => $context->tsumegos[1]['id'], 'reject_type_id' => Reject::TYPE_PROPOSAL,
 		]]);
 
 		$this->get("/tags/user/{$userId}");
@@ -149,13 +151,16 @@ class TagsUserTest extends IntegrationTestCase
 		// Valid: has set_connection
 		$reject->create();
 		$reject->save(['Reject' => [
-			'user_id' => $userId, 'tsumego_id' => $context->tsumegos[0]['id'], 'type' => 'tag', 'text' => 'visible tag',
+			'user_id' => $userId, 'tsumego_id' => $context->tsumegos[0]['id'], 'reject_type_id' => Reject::TYPE_TAG, 'tag_name' => 'visible tag',
 		]]);
 
-		// Orphan: tsumego_id that has no set_connection
+		// A tsumego that has no set_connection
+		$tsumego = ClassRegistry::init('Tsumego');
+		$tsumego->create();
+		$tsumego->save(['description' => 'in no set', 'author' => '']);
 		$reject->create();
 		$reject->save(['Reject' => [
-			'user_id' => $userId, 'tsumego_id' => 999999, 'type' => 'tag', 'text' => 'hidden tag',
+			'user_id' => $userId, 'tsumego_id' => $tsumego->id, 'reject_type_id' => Reject::TYPE_TAG, 'tag_name' => 'hidden tag',
 		]]);
 
 		$this->get("/tags/user/{$userId}");
@@ -241,9 +246,8 @@ class TagsUserTest extends IntegrationTestCase
 		$reject->create();
 		$reject->save(['Reject' => [
 			'user_id' => $context->user['id'],
-			'tsumego_id' => 0,
-			'type' => 'tag name',
-			'text' => 'badname',
+			'reject_type_id' => Reject::TYPE_TAG_NAME,
+			'tag_name' => 'badname',
 		]]);
 
 		$this->get('/tags/user/' . $context->user['id']);
@@ -262,5 +266,60 @@ class TagsUserTest extends IntegrationTestCase
 		$this->assertStringContainsString('Tag', $text);
 		$this->assertStringContainsString('badname', $text);
 		$this->assertStringContainsString('rejected', $text);
+	}
+
+	// --- Rejections made by an admin ---
+
+	/** The admin 'reviewer' is signed in, 'proposer' proposed the tag snapback on a problem. */
+	private function prepareRejectedTagOnAProblem(): ContextPreparator
+	{
+		Auth::logout();
+		$context = new ContextPreparator([
+			'user' => ['name' => 'reviewer', 'admin' => true],
+			'other-users' => [['name' => 'proposer']],
+			'tsumego' => ['set_order' => 1, 'tags' => [['name' => 'snapback', 'user' => 'proposer', 'approved' => 0]]]]);
+		$this->login('reviewer');
+		$this->registerTestEmailer();
+		$this->post('/users/rejectTagConnectionProposal/' . $context->tsumegos[0]['tag-connections'][0]['id'], ['comment' => 'No snapback here.']);
+		return $context;
+	}
+
+	/** It used to show as "Tag  was created", without the tag and the problem. */
+	public function testRejectedTagOnAProblemShowsTheTagAndTheProblem()
+	{
+		$context = $this->prepareRejectedTagOnAProblem();
+
+		$this->get('/tags/user/' . $context->otherUsers[0]['id']);
+
+		$this->assertMatchesRegularExpression('/Tag\s+snapback\s+was added to\s+' . preg_quote($context->tsumegos[0]['sets'][0]['title'], '/') . ' - 1\s+rejected/', strip_tags($this->view));
+		$this->assertStringContainsString('href="/tags/view/' . $context->tags[0]['id'] . '"', $this->view);
+	}
+
+	public function testRejectedTagKeepsItsNameWhenTheTagIsDeleted()
+	{
+		$context = $this->prepareRejectedTagOnAProblem();
+		ClassRegistry::init('Tag')->delete($context->tags[0]['id']);
+
+		$this->get('/tags/user/' . $context->otherUsers[0]['id']);
+
+		$this->assertMatchesRegularExpression('/Tag\s+snapback\s+was added to\s+\S.*\s+rejected/', strip_tags($this->view));
+		$this->assertStringNotContainsString('/tags/view/', $this->view);
+	}
+
+	public function testRejectedNewTagStaysAmongTheContributions()
+	{
+		Auth::logout();
+		$context = new ContextPreparator([
+			'user' => ['name' => 'reviewer', 'admin' => true],
+			'other-users' => [['name' => 'proposer']],
+			'tags' => [['name' => 'snapback', 'approved' => 0]]]);
+		ClassRegistry::init('Tag')->save(['id' => $context->tags[0]['id'], 'user_id' => $context->otherUsers[0]['id']]);
+		$this->login('reviewer');
+		$this->registerTestEmailer();
+		$this->post('/tags/rejectTagProposal/' . $context->tags[0]['id'], ['comment' => 'We have it already.']);
+
+		$this->get('/tags/user/' . $context->otherUsers[0]['id']);
+
+		$this->assertMatchesRegularExpression('/Tag\s+snapback\s+was created\s+rejected/', strip_tags($this->view));
 	}
 }

@@ -21,7 +21,7 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$AchievementCondition->save([
 			'user_id' => $context->user['id'],
 			'set_id' => $setId,
-			'category' => '%',
+			'achievement_condition_category_id' => AchievementCondition::CATEGORY_SET_ACCURACY,
 			'value' => 100]);
 
 		new AchievementChecker()->checkSetAchievements($setId);
@@ -41,7 +41,7 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$AchievementCondition->save([
 			'user_id' => $context->user['id'],
 			'set_id' => $setId,
-			'category' => '%',
+			'achievement_condition_category_id' => AchievementCondition::CATEGORY_SET_ACCURACY,
 			'value' => 99]);
 
 		new AchievementChecker()->checkSetAchievements($setId);
@@ -128,29 +128,22 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 	}
 
 	/**
-	 * The count follows collections, not condition rows: a set whose accuracy row was
-	 * written twice is still a single collection.
+	 * The count follows collections: finishing a collection again keeps its one accuracy
+	 * record, so it is still a single collection.
 	 */
-	public function testDuplicateAccuracyRowsCountAsOneCollection()
+	public function testCollectionFinishedTwiceCountsOnce()
 	{
 		$context = new ContextPreparator();
 
 		$setId = $this->createFinishedCollection($context->user['id']);
-
-		$AchievementCondition = ClassRegistry::init('AchievementCondition');
-		$AchievementCondition->create();
-		$AchievementCondition->save([
-			'user_id' => $context->user['id'],
-			'set_id' => $setId,
-			'category' => '%',
-			'value' => 100]);
+		AchievementCondition::keepHighest($context->user['id'], AchievementCondition::CATEGORY_SET_ACCURACY, 100, $setId);
 
 		new AchievementChecker()->checkSetAchievements($setId);
 
 		$status = ClassRegistry::init('AchievementStatus')->find('first', [
 			'conditions' => ['user_id' => $context->user['id'], 'achievement_id' => AchievementId::SUPERIOR_ACCURACY->value]]);
 		$this->assertSame(1, (int) $status['AchievementStatus']['value'],
-			'two accuracy rows for one set are one collection');
+			'a collection finished twice is one collection');
 	}
 
 	/**
@@ -242,7 +235,7 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$AchievementCondition->save([
 			'user_id' => $context->user['id'],
 			'set_id' => $closeSetId,
-			'category' => '%',
+			'achievement_condition_category_id' => AchievementCondition::CATEGORY_SET_ACCURACY,
 			'value' => 96.5]);
 		$finishedSetId = $this->createFinishedCollection($context->user['id']);
 		$untouchedSetId = $this->createSetWithTsumegosAndConnections(1200, 100);
@@ -338,7 +331,7 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$AchievementCondition->save([
 			'user_id' => $userId,
 			'set_id' => $setId,
-			'category' => '%',
+			'achievement_condition_category_id' => AchievementCondition::CATEGORY_SET_ACCURACY,
 			'value' => 100]);
 
 		return $setId;

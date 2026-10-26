@@ -93,7 +93,7 @@ class TsumegoCommentsController extends AppController
 
 		// Soft delete
 		$TsumegoComment->id = $id;
-		$saveResult = $TsumegoComment->saveField('deleted', true);
+		$saveResult = $TsumegoComment->saveField('deleted', date('Y-m-d H:i:s'));
 
 		if (!$saveResult)
 			throw new InternalErrorException('Failed to delete comment');
@@ -128,7 +128,7 @@ class TsumegoCommentsController extends AppController
 			'conditions' => ['TsumegoIssue.tsumego_id' => $tsumegoId],
 			'contain' => [
 				'TsumegoComment' => [
-					'conditions' => ['TsumegoComment.deleted' => 0],
+					'conditions' => ['TsumegoComment.deleted' => null],
 					'User'
 				],
 				'User'
@@ -142,7 +142,7 @@ class TsumegoCommentsController extends AppController
 			'conditions' => [
 				'TsumegoComment.tsumego_id' => $tsumegoId,
 				'TsumegoComment.tsumego_issue_id' => null,
-				'TsumegoComment.deleted' => 0
+				'TsumegoComment.deleted' => null
 			],
 			'contain' => ['User'],
 			'order' => 'TsumegoComment.created DESC'

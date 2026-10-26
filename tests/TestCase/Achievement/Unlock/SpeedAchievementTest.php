@@ -45,7 +45,7 @@ class SpeedAchievementTest extends AchievementTestCase
 			$AchievementCondition->save([
 				'user_id' => $context->user['id'],
 				'set_id' => $setID,
-				'category' => 's',
+				'achievement_condition_category_id' => AchievementCondition::CATEGORY_SET_TIME,
 				'value' => $speed]);
 
 			$browser->get('/sets/view/' . $setID);

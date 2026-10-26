@@ -9,8 +9,8 @@ use App\Utility\TsumegoFilters;
 
 /**
  * @var View $this
- * @var array $acA
- * @var array $acS
+ * @var float|null $bestAccuracy
+ * @var float|null $bestTime
  * @var string $accuracy
  * @var float $avgTime
  * @var bool $isFav
@@ -152,10 +152,10 @@ if ($tsumegoFilters->query != 'topics')
 						$set['Set']['solved'] = 100;
 					echo '<table><tr><td><div class="setViewCompleted"><b>Completed: ' . $problemSolvedPercent . '%</b></div></td><td></td></tr></table>
 					<table><tr><td><div class="setViewAccuracy"><b>Accuracy: ' . $accuracy . '%</b></div></td><td>';
-					if($acA != null) echo '<font class="setViewAccuracy">Best completion: ' . $acA['AchievementCondition']['value'] . '%</font>';
+					if($bestAccuracy !== null) echo '<font class="setViewAccuracy">Best completion: ' . $bestAccuracy . '%</font>';
 					echo '</td></tr></table>
 					<table><tr><td><div class="setViewTime"><b>Avg. time: ' . $avgTime . 's</b></div></td><td>';
-					if($acS != null && $acS['AchievementCondition']['value'] != 60) echo '<font class="setViewTime">Best completion: ' . $acS['AchievementCondition']['value'] . 's</font>';
+					if($bestTime !== null && $bestTime != 60) echo '<font class="setViewTime">Best completion: ' . $bestTime . 's</font>';
 					echo '</td></tr></table>';
 				} ?>
 			</div>

@@ -89,13 +89,7 @@ abstract class AchievementTestCase extends IntegrationTestCase
 	protected function triggerSetCompletionAchievementCheck($completedSetsCount)
 	{
 		// Save set completion count to achievement_condition (simulates completing sets)
-		$condition = ClassRegistry::init('AchievementCondition')->find('first', [
-			'conditions' => ['user_id' => Auth::getUserID(), 'category' => 'set']]) ?: [];
-
-		$condition['AchievementCondition']['category'] = 'set';
-		$condition['AchievementCondition']['user_id'] = Auth::getUserID();
-		$condition['AchievementCondition']['value'] = $completedSetsCount;
-		ClassRegistry::init('AchievementCondition')->save($condition);
+		AchievementCondition::put(Auth::getUserID(), AchievementCondition::CATEGORY_COMPLETED_SETS, $completedSetsCount);
 
 		new AchievementChecker()->checkSetCompletedAchievements()->finalize();
 	}
@@ -130,7 +124,7 @@ abstract class AchievementTestCase extends IntegrationTestCase
 		for ($i = 0; $i < $count; $i++)
 		{
 			$Tsumego->create();
-			$Tsumego->save(['rating' => $rating]);
+			$Tsumego->save(['rating' => $rating, 'author' => '']);
 			$tsumegoId = $Tsumego->getInsertID();
 
 			$SetConnection->create();

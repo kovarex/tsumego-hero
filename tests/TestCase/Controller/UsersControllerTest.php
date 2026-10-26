@@ -166,6 +166,7 @@ class UsersControllerTest extends IntegrationTestCase
 				'level' => 66,
 				'xp' => 57,
 				'rating' => 2065,
+				'highest_rating' => 2240.4,
 				'solved' => 2],
 			'tsumegos' => [
 				[
@@ -200,7 +201,7 @@ class UsersControllerTest extends IntegrationTestCase
 			['1d'],
 			['Rating:', '2065'],
 			['Highest rank:', '2d'],
-			['Highest rating:', '2165']]);
+			['Highest rating:', '2240']]);
 
 		$browser->checkTable('#time-mode-info-table', $this, [
 			['Blitz mode rank:', '5k'],

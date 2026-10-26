@@ -108,41 +108,15 @@ class Play
 						AdminActivityLogger::log(AdminActivityType::PASS_MODE, $t['Tsumego']['id'], null, null, '0');
 					if ($data['Settings']['r43'] == 'yes' && $t['Tsumego']['pass'] != 1)
 						AdminActivityLogger::log(AdminActivityType::PASS_MODE, $t['Tsumego']['id'], null, null, '1');
-					if ($data['Settings']['r41'] == 'yes' && $tsumegoVariant == null)
+					// only a sandbox problem has these two
+					if (isset($data['Settings']['r41'], $data['Settings']['r42']))
 					{
-						AdminActivityLogger::log(AdminActivityType::MULTIPLE_CHOICE, $t['Tsumego']['id'], null, null, '1');
-						$tv1 = [];
-						$tv1['TsumegoVariant']['tsumego_id'] = $id;
-						$tv1['TsumegoVariant']['type'] = 'multiple_choice';
-						$tv1['TsumegoVariant']['answer1'] = 'Black is dead';
-						$tv1['TsumegoVariant']['answer2'] = 'White is dead';
-						$tv1['TsumegoVariant']['answer3'] = 'Ko';
-						$tv1['TsumegoVariant']['answer4'] = 'Seki';
-						$tv1['TsumegoVariant']['correct_answer'] = '1';
-						ClassRegistry::init('TsumegoVariant')->create();
-						ClassRegistry::init('TsumegoVariant')->save($tv1);
-					}
-					if ($data['Settings']['r41'] == 'no' && $tsumegoVariant != null)
-					{
-						AdminActivityLogger::log(AdminActivityType::MULTIPLE_CHOICE, $t['Tsumego']['id'], null, null, '0');
-						ClassRegistry::init('TsumegoVariant')->delete($tsumegoVariant['TsumegoVariant']['id']);
-						$tsumegoVariant = null;
-					}
-					if ($data['Settings']['r42'] == 'yes' && $tsumegoVariant == null)
-					{
-						AdminActivityLogger::log(AdminActivityType::SCORE_ESTIMATING, $t['Tsumego']['id'], null, null, '1');
-						$tv1 = [];
-						$tv1['TsumegoVariant']['tsumego_id'] = $id;
-						$tv1['TsumegoVariant']['type'] = 'score_estimating';
-						$tv1['TsumegoVariant']['correct_answer'] = '0';
-						ClassRegistry::init('TsumegoVariant')->create();
-						ClassRegistry::init('TsumegoVariant')->save($tv1);
-					}
-					if ($data['Settings']['r42'] == 'no' && $tsumegoVariant != null)
-					{
-						AdminActivityLogger::log(AdminActivityType::SCORE_ESTIMATING, $t['Tsumego']['id'], null, null, '0');
-						ClassRegistry::init('TsumegoVariant')->delete($tsumegoVariant['TsumegoVariant']['id']);
-						$tsumegoVariant = null;
+						$variantType = null;
+						if ($data['Settings']['r41'] == 'yes')
+							$variantType = TsumegoVariant::TYPE_MULTIPLE_CHOICE;
+						elseif ($data['Settings']['r42'] == 'yes')
+							$variantType = TsumegoVariant::TYPE_SCORE_ESTIMATING;
+						$tsumegoVariant = self::changeVariantType((int) $id, $tsumegoVariant, $variantType);
 					}
 					if ($data['Settings']['r39'] == 'on')
 						$t['Tsumego']['alternative_response'] = 1;
@@ -249,10 +223,10 @@ class Play
 		if (!isset($t['Tsumego']['file']) || $t['Tsumego']['file'] == '')
 			$t['Tsumego']['file'] = $currentSetConnection['SetConnection']['num'];
 		$playerColor = 'black';
-		$playerColorPreference = Auth::getPrefPlayerColor();
+		$playerColorPreference = Auth::getPlayerColorSetting();
 		$sgfColor = SgfParser::firstMoveColor($sgf['Sgf']['sgf']);
 		$swapColors = false;
-		if ($playerColorPreference === User::PREF_PLAYER_COLOR_ORIGINAL)
+		if ($playerColorPreference === User::PLAYER_COLOR_SETTING_ORIGINAL)
 		{
 			// Original: play the SGF as designed, no color swap.
 			if ($sgfColor === 'W')
@@ -283,8 +257,8 @@ class Play
 		// internally, so top-left reproduces the thumbnail), "Random" picks a
 		// random corner for variety.
 		$corner = null;
-		$orientationPreference = Auth::getPrefBoardOrientation();
-		if ($orientationPreference === User::PREF_BOARD_ORIENTATION_ORIGINAL)
+		$orientationPreference = Auth::getBoardOrientationSetting();
+		if ($orientationPreference === User::BOARD_ORIENTATION_SETTING_ORIGINAL)
 			$corner = 'top-left';
 		else
 			$corner = Play::randomCorner();
@@ -342,37 +316,6 @@ class Play
 
 		$file = 'placeholder2.sgf';
 
-
-		$existingSignatures = ClassRegistry::init('Signature')->find('all', ['conditions' => ['tsumego_id' => $id]]);
-		if ($existingSignatures == null || $existingSignatures[0]['Signature']['created'] < date('Y-m-d', strtotime('-1 week')))
-			$requestSignature = 'true';
-		else
-			$requestSignature = 'false';
-		// A signature describes the problem itself, so a public collection qualifies whatever owns it.
-		if (isset($_COOKIE['signatures']) && $set['Set']['public'] == 1)
-		{
-			$signature = explode('/', $_COOKIE['signatures']);
-			$oldSignatures = ClassRegistry::init('Signature')->find('all', ['conditions' => ['tsumego_id' => $signature[count($signature) - 1]]]);
-			if (!$oldSignatures)
-				$oldSignatures = [];
-
-			$oldSignaturesCount = count($oldSignatures);
-
-			for ($i = 0; $i < $oldSignaturesCount; $i++)
-				ClassRegistry::init('Signature')->delete($oldSignatures[$i]['Signature']['id']);
-
-			$signatureCountMinus1 = count($signature) - 1;
-			for ($i = 0; $i < $signatureCountMinus1; $i++)
-			{
-				ClassRegistry::init('Signature')->create();
-				$newSignature = [];
-				$newSignature['Signature']['tsumego_id'] = $signature[count($signature) - 1];
-				$newSignature['Signature']['signature'] = $signature[$i];
-				ClassRegistry::init('Signature')->save($newSignature);
-			}
-			unset($_COOKIE['signatures']);
-		}
-
 		$tagData = ClassRegistry::init('Tag')::getForTsumego($id);
 
 		$isAllowedToContribute = false;
@@ -428,7 +371,6 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		($this->setFunction)('hasSgfProposal', $sgfProposal != null);
 
 		($this->setFunction)('tagData', $tagData);
-		($this->setFunction)('requestSignature', $requestSignature);
 		($this->setFunction)('nothingInRange', $nothingInRange);
 		($this->setFunction)('sgf', $sgf);
 		($this->setFunction)('corner', $corner);
@@ -510,6 +452,39 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 									(' . h($set['Set']['title']) . ' ' . $setConnection['SetConnection']['num'] . '/' . $amountOfOtherCollection . ')
 								</a>
 							</font>';
+	}
+
+	/**
+	 * Makes a problem a multiple choice or a score estimating problem, or neither (null). A problem has
+	 * one variant at most, and keeps the answers of its variant while the type stays.
+	 *
+	 * @return array|null The variant the problem has now
+	 */
+	private static function changeVariantType(int $tsumegoID, ?array $variant, ?int $type): ?array
+	{
+		$activityTypes = [
+			TsumegoVariant::TYPE_MULTIPLE_CHOICE => AdminActivityType::MULTIPLE_CHOICE,
+			TsumegoVariant::TYPE_SCORE_ESTIMATING => AdminActivityType::SCORE_ESTIMATING];
+		$currentType = $variant ? (int) $variant['TsumegoVariant']['tsumego_variant_type_id'] : null;
+		if ($currentType === $type)
+			return $variant;
+		if ($variant)
+		{
+			AdminActivityLogger::log($activityTypes[$currentType], $tsumegoID, null, null, '0');
+			ClassRegistry::init('TsumegoVariant')->delete($variant['TsumegoVariant']['id']);
+		}
+		if ($type === null)
+			return null;
+
+		AdminActivityLogger::log($activityTypes[$type], $tsumegoID, null, null, '1');
+		$newVariant = ['tsumego_id' => $tsumegoID, 'tsumego_variant_type_id' => $type];
+		if ($type === TsumegoVariant::TYPE_MULTIPLE_CHOICE)
+			$newVariant += ['answer1' => 'Black is dead', 'answer2' => 'White is dead', 'answer3' => 'Ko', 'answer4' => 'Seki', 'correct_answer' => 1];
+		else // the komi, the captures of black and of white, and the score
+			$newVariant += ['answer1' => '0', 'answer2' => '0', 'answer3' => '0', 'winner' => '0'];
+		ClassRegistry::init('TsumegoVariant')->create();
+		ClassRegistry::init('TsumegoVariant')->save($newVariant);
+		return ClassRegistry::init('TsumegoVariant')->find('first', ['conditions' => ['tsumego_id' => $tsumegoID]]);
 	}
 
 	private static function randomCorner(): string

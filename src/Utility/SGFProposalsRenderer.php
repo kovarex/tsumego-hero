@@ -32,13 +32,13 @@ SELECT
     user.display_name AS user_display_name,
     user.external_id AS user_external_id,
     user.picture AS user_picture,
-    user.pref_avatar AS user_pref_avatar,
+    user.avatar_setting_id AS user_avatar_setting_id,
     user.rating AS user_rating,
     user.email AS user_email,
     sc.id AS set_connection_id,
     sc.num AS num,
     tsumego_status.status AS status,
-    CONCAT(s.title, ' ', s.title2) AS set_title
+    CONCAT_WS(' ', s.title, s.title2) AS set_title
 FROM sgf p
 JOIN (
     SELECT tsumego_id, MAX(id) AS latest_accepted_id

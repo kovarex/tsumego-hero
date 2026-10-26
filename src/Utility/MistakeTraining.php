@@ -64,13 +64,13 @@ class MistakeTraining
 	public const MIN_GROWTH = 0.5;
 
 	/**
-	 * What the last review did, stored with its day in last_review_result. A miss
-	 * keeps the problem due until it is solved; the other two mark it done for the
-	 * day.
+	 * What a review did, the rows of mistake_training_result; the pool keeps the last
+	 * one with its day. A miss keeps the problem due until it is solved; the other two
+	 * mark it done for the day.
 	 */
-	public const REVIEW_SOLVED = 'S';
-	public const REVIEW_MISSED = 'F';
-	public const REVIEW_GRADUATED = 'G';
+	public const REVIEW_SOLVED = 1;
+	public const REVIEW_MISSED = 2;
+	public const REVIEW_GRADUATED = 3;
 
 	/**
 	 * XP of the training, as shares of what the problem gives in the level mode
@@ -150,7 +150,7 @@ class MistakeTraining
 	 * review, be it a climb, a graduation or a retry. Those are returned, for the
 	 * XP of the training (awardXp()); anything else returns null.
 	 *
-	 * @return array{id: int, result: string, rung_before: int, rung_after: int, climbed: bool, cleared: bool, clear_bonus: bool}|null
+	 * @return array{id: int, result: int, rung_before: int, rung_after: int, climbed: bool, cleared: bool, clear_bonus: bool}|null
 	 */
 	public static function recordResult(int $userId, int $tsumegoId, PlayOutcome $outcome, ?string $oldStatus, bool $inTraining = false, bool $inTimeMode = false): ?array
 	{
@@ -258,14 +258,14 @@ class MistakeTraining
 	 * the first one does, so the bonus of the day is paid once, and only for a day
 	 * of at least CLEAR_DAY_MIN_PROBLEMS problems (clear_bonus).
 	 *
-	 * @return array{id: int, result: string, rung_before: int, rung_after: int, climbed: bool, cleared: bool, clear_bonus: bool}
+	 * @return array{id: int, result: int, rung_before: int, rung_after: int, climbed: bool, cleared: bool, clear_bonus: bool}
 	 */
-	private static function logReview(int $userId, int $tsumegoId, string $result, int $rungBefore, int $rungAfter, bool $climbed): array
+	private static function logReview(int $userId, int $tsumegoId, int $result, int $rungBefore, int $rungAfter, bool $climbed): array
 	{
 		$now = date('Y-m-d H:i:s');
 		$today = self::today();
 		Util::execute(
-			'INSERT INTO mistake_training_review (user_id, tsumego_id, day, result, rung_before, rung_after, xp, created)'
+			'INSERT INTO mistake_training_review (user_id, tsumego_id, day, mistake_training_result_id, rung_before, rung_after, xp, created)'
 			. ' VALUES (?, ?, ?, ?, ?, ?, 0, ?)',
 			[$userId, $tsumegoId, $today, $result, $rungBefore, $rungAfter, $now]
 		);
@@ -337,7 +337,7 @@ class MistakeTraining
 	 * day's sum: see REVIEW_XP_SHARE. $problemRating is the rating of the problem
 	 * before this play changed it.
 	 *
-	 * @param array{id: int, result: string, climbed: bool, clear_bonus: bool} $review what recordResult() returned
+	 * @param array{id: int, result: int, climbed: bool, clear_bonus: bool} $review what recordResult() returned
 	 * @return array{review: int, graduation: int, clear: int}
 	 */
 	public static function awardXp(int $userId, array $review, float $problemRating): array
@@ -387,8 +387,8 @@ class MistakeTraining
 	private static function todaysTrainingSql(): string
 	{
 		return '((p.next_due IS NOT NULL AND p.next_due <= ?)'
-			. ' OR (p.last_review_day = ? AND p.last_review_result IN ('
-			. "'" . self::REVIEW_SOLVED . "', '" . self::REVIEW_GRADUATED . "')))";
+			. ' OR (p.last_review_day = ? AND p.last_mistake_training_result_id IN ('
+			. self::REVIEW_SOLVED . ', ' . self::REVIEW_GRADUATED . ')))';
 	}
 
 	/**
@@ -431,7 +431,7 @@ class MistakeTraining
 	public static function wasSolvedToday(array $row): bool
 	{
 		return ($row['last_review_day'] ?? null) === self::today()
-			&& in_array($row['last_review_result'] ?? null, [self::REVIEW_SOLVED, self::REVIEW_GRADUATED], true);
+			&& in_array($row['last_mistake_training_result_id'] ?? null, [self::REVIEW_SOLVED, self::REVIEW_GRADUATED], true);
 	}
 
 	/**
@@ -439,7 +439,7 @@ class MistakeTraining
 	 */
 	public static function wasMissedToday(array $row): bool
 	{
-		return ($row['last_review_day'] ?? null) === self::today() && ($row['last_review_result'] ?? null) === self::REVIEW_MISSED;
+		return ($row['last_review_day'] ?? null) === self::today() && ($row['last_mistake_training_result_id'] ?? null) === self::REVIEW_MISSED;
 	}
 
 	/**
@@ -705,7 +705,7 @@ class MistakeTraining
 	public static function poolRows(int $userId): array
 	{
 		$rows = Util::query(
-			'SELECT p.tsumego_id, p.rung, p.next_due, p.last_review_day, p.last_review_result, st.title AS set_title, sc.num'
+			'SELECT p.tsumego_id, p.rung, p.next_due, p.last_review_day, p.last_mistake_training_result_id, st.title AS set_title, sc.num'
 			. ' FROM mistake_training_pool p'
 			. ' JOIN set_connection sc ON sc.id = (SELECT c.id' . self::playableConnectionsSql('p.tsumego_id')
 			. ' ORDER BY ' . SetConnection::displayOrderForSetSql('s') . ', c.id LIMIT 1)'
@@ -1036,9 +1036,9 @@ class MistakeTraining
 	 * without moving its review, because it stays due until it is solved; a solve has
 	 * moved the ladder already.
 	 */
-	private static function markReview(int $userId, int $tsumegoId, string $result, ?int $rung = null): void
+	private static function markReview(int $userId, int $tsumegoId, int $result, ?int $rung = null): void
 	{
-		$sql = 'UPDATE mistake_training_pool SET last_review_day = ?, last_review_result = ?, modified = ?';
+		$sql = 'UPDATE mistake_training_pool SET last_review_day = ?, last_mistake_training_result_id = ?, modified = ?';
 		$params = [self::today(), $result, date('Y-m-d H:i:s')];
 		if ($rung !== null)
 		{
@@ -1117,7 +1117,7 @@ class MistakeTraining
 		$displayOrder = SetConnection::displayOrderForSetSql('st');
 
 		return "
-			SELECT id, tsumego_id, set_connection_id, num, rating, sgf, rung, lapses, next_due, last_review_day, last_review_result
+			SELECT id, tsumego_id, set_connection_id, num, rating, sgf, rung, lapses, next_due, last_review_day, last_mistake_training_result_id
 			FROM (
 				SELECT
 					p.id,
@@ -1129,7 +1129,7 @@ class MistakeTraining
 					p.lapses,
 					p.next_due,
 					p.last_review_day,
-					p.last_review_result,
+					p.last_mistake_training_result_id,
 					COALESCE(sgf.sgf, '') AS sgf,
 					ROW_NUMBER() OVER (
 						PARTITION BY p.tsumego_id

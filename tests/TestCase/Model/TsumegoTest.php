@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\Util;
+
 class TsumegoTest extends CakeTestCase
 {
 	/**
@@ -17,5 +19,37 @@ class TsumegoTest extends CakeTestCase
 		]);
 
 		$this->assertSame(3, Tsumego::problemCount());
+	}
+
+	/**
+	 * A result read the problem when its request started. An admin's edit and another result that
+	 * came meanwhile stay: only the rating is written, moved from the value stored now.
+	 */
+	public function testAddToRatingKeepsWhatChangedMeanwhile(): void
+	{
+		$context = new ContextPreparator(['tsumego' => ['rating' => 1000, 'description' => 'old description']]);
+		$tsumegoID = $context->tsumegos[0]['id'];
+		Util::execute('UPDATE tsumego SET description = ?, rating = 1050 WHERE id = ?', ['new description', $tsumegoID]);
+
+		Tsumego::addToRating($tsumegoID, -10.5);
+
+		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID)['Tsumego'];
+		$this->assertSame('new description', $tsumego['description']);
+		$this->assertSame(1039.5, (float) $tsumego['rating']);
+	}
+
+	public function testAddToRatingStaysWithinTheLimits(): void
+	{
+		$context = new ContextPreparator([
+			'tsumegos' => [
+				['rating' => 1000, 'minimum_rating' => 995],
+				['rating' => 1000, 'maximum_rating' => 1005]]]);
+		[$lowest, $highest] = array_column($context->tsumegos, 'id');
+
+		Tsumego::addToRating($lowest, -10);
+		Tsumego::addToRating($highest, 10);
+
+		$this->assertSame(995.0, (float) ClassRegistry::init('Tsumego')->findById($lowest)['Tsumego']['rating']);
+		$this->assertSame(1005.0, (float) ClassRegistry::init('Tsumego')->findById($highest)['Tsumego']['rating']);
 	}
 }

@@ -40,7 +40,7 @@ class AuthIdentityTest extends CakeTestCase
 		new ContextPreparator(['user' => ['name' => 'premium', 'admin' => false, 'premium' => 1]]);
 
 		$identity = Auth::getIdentity();
-		$this->assertTrue((bool) $identity['premium']);
+		$this->assertSame(User::PREMIUM_BASIC, $identity['premium_id']);
 		$this->assertSame(User::ROLE_PLAYER, (int) $identity['user_role_id']);
 	}
 

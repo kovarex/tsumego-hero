@@ -54,7 +54,7 @@ class SetAchievementOwnershipTest extends AchievementTestCase
 		$AchievementCondition->save([
 			'user_id' => $userId,
 			'set_id' => $setId,
-			'category' => 's',
+			'achievement_condition_category_id' => AchievementCondition::CATEGORY_SET_TIME,
 			'value' => $seconds]);
 	}
 }

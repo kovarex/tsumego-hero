@@ -59,7 +59,7 @@ class SetsControllerTest extends IntegrationTestCase
 		ClassRegistry::init('Set')->create();
 		ClassRegistry::init('Set')->save(['id' => $setId, 'public' => 1, 'title' => 'set ' . $setId]);
 		ClassRegistry::init('Tsumego')->create();
-		ClassRegistry::init('Tsumego')->save(['rating' => 1000]);
+		ClassRegistry::init('Tsumego')->save(['rating' => 1000, 'author' => '']);
 		$tsumegoId = ClassRegistry::init('Tsumego')->getInsertID();
 		ClassRegistry::init('SetConnection')->create();
 		ClassRegistry::init('SetConnection')->save(['set_id' => $setId, 'tsumego_id' => $tsumegoId, 'num' => 1]);

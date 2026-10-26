@@ -113,6 +113,27 @@ class EmailChangeTest extends IntegrationTestCase
 		$this->assertNull($stored['unconfirmed_email_token']);
 	}
 
+	public function testALongAddressIsKeptWhole(): void
+	{
+		$user = $this->prepareUser('emailLong');
+		$address = str_repeat('a', 64) . '@' . str_repeat('b', 60) . '.example.com';
+		$token = $this->requestNewAddress($user['id'], $address);
+
+		$this->confirm($token);
+
+		$this->assertSame($address, $this->storedUser($user['id'])['email']);
+	}
+
+	public function testAnAddressLongerThanAnyEmailIsRefused(): void
+	{
+		$user = $this->prepareUser('emailTooLong');
+		$address = str_repeat('a', 64) . '@' . str_repeat('b', 63) . '.' . str_repeat('c', 63) . '.' . str_repeat('d', 58) . '.com';
+
+		$this->requestChange(['email' => $address, 'password' => self::PASSWORD]);
+
+		$this->assertNull($this->storedUser($user['id'])['unconfirmed_email']);
+	}
+
 	public function testTheConfirmationLinkWorksOnce(): void
 	{
 		$user = $this->prepareUser('emailOnce');

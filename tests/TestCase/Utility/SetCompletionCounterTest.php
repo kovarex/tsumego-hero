@@ -121,7 +121,7 @@ class SetCompletionCounterTest extends IntegrationTestCase
 		SetCompletionCounter::save(Auth::getUserID(), 3);
 		SetCompletionCounter::save(Auth::getUserID(), 5);
 		$conditions = ClassRegistry::init('AchievementCondition')->find('all', [
-			'conditions' => ['user_id' => Auth::getUserID(), 'category' => 'set']]);
+			'conditions' => ['user_id' => Auth::getUserID(), 'achievement_condition_category_id' => AchievementCondition::CATEGORY_COMPLETED_SETS]]);
 		$this->assertCount(1, $conditions);
 		$this->assertSame(5, (int) $conditions[0]['AchievementCondition']['value']);
 	}

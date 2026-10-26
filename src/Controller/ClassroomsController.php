@@ -46,7 +46,7 @@ class ClassroomsController extends AppController
 		}
 
 		$this->Classroom->create();
-		$this->Classroom->save(['name' => $name, 'teacher_id' => Auth::getUserID()]);
+		$this->Classroom->save(['name' => $name, 'teacher_user_id' => Auth::getUserID()]);
 		return $this->redirect(self::classUrl((int) $this->Classroom->id));
 	}
 
@@ -139,7 +139,7 @@ class ClassroomsController extends AppController
 
 		$classroom = $this->findClassroom($id);
 		$url = self::classUrl((int) $classroom['id']);
-		if ((int) $classroom['teacher_id'] === Auth::getUserID())
+		if ((int) $classroom['teacher_user_id'] === Auth::getUserID())
 			return $this->redirect($url);
 
 		$status = ClassroomMember::offer((int) $classroom['id'], Auth::getUserID(), ClassroomMemberStatus::REQUESTED);
@@ -332,7 +332,7 @@ class ClassroomsController extends AppController
 
 		// the problems of an assignment are played like the ones of a collection
 		if (!Auth::isInLevelMode())
-			Auth::saveUserField('mode', Constants::$LEVEL_MODE);
+			Auth::saveUserField('mode_id', Constants::$LEVEL_MODE);
 
 		$play = new Play(function ($name, $value) {
 			$this->set($name, $value);

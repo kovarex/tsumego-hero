@@ -107,17 +107,17 @@ class Auth
 
 	public static function hasPremium(): bool
 	{
-		return Auth::isLoggedIn() && Auth::getUser()['premium'];
+		return Auth::isLoggedIn() && Auth::getUser()['premium_id'] !== null;
 	}
 
-	public static function getPrefPlayerColor(): int
+	public static function getPlayerColorSetting(): int
 	{
-		return Auth::isLoggedIn() ? (int) Auth::getUser()['pref_player_color'] : User::PREF_PLAYER_COLOR_RANDOM;
+		return Auth::isLoggedIn() ? (int) Auth::getUser()['player_color_setting'] : User::PLAYER_COLOR_SETTING_RANDOM;
 	}
 
-	public static function getPrefBoardOrientation(): int
+	public static function getBoardOrientationSetting(): int
 	{
-		return Auth::isLoggedIn() ? (int) Auth::getUser()['pref_board_orientation'] : User::PREF_BOARD_ORIENTATION_RANDOM;
+		return Auth::isLoggedIn() ? (int) Auth::getUser()['board_orientation_setting'] : User::BOARD_ORIENTATION_SETTING_RANDOM;
 	}
 
 	public static function getDateFormat(): int
@@ -129,7 +129,7 @@ class Auth
 	 * The avatar the logged in player picked, which is the board for a visitor who
 	 * is not logged in at all.
 	 */
-	public static function getPrefAvatar(): int
+	public static function getAvatarSetting(): int
 	{
 		return Auth::isLoggedIn() ? User::avatarChoice(Auth::getUser()) : User::AVATAR_BOARD;
 	}
@@ -227,7 +227,7 @@ class Auth
 		if (Auth::$modeOverride !== null)
 			return Auth::$modeOverride;
 
-		return Auth::isLoggedIn() ? (int) Auth::getUser()['mode'] : Constants::$LEVEL_MODE;
+		return Auth::isLoggedIn() ? (int) Auth::getUser()['mode_id'] : Constants::$LEVEL_MODE;
 	}
 
 	/**
@@ -284,7 +284,7 @@ class Auth
 	public static function lightMode(): int
 	{
 		if (Auth::isLoggedIn())
-			return (Auth::getUser()['theme'] == User::THEME_DARK) ? self::$DARK_MODE : self::$LIGHT_MODE;
+			return (Auth::getUser()['theme_id'] == User::THEME_DARK) ? self::$DARK_MODE : self::$LIGHT_MODE;
 		if  (!empty($_COOKIE['lightDark']))
 			if ($_COOKIE['lightDark'] == 'dark')
 				return self::$DARK_MODE;

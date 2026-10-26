@@ -158,7 +158,7 @@ class PlayResultProcessorComponent extends Component
 	 * counts like the XP of a solve, for the level and the day's XP; the bonus for
 	 * clearing the day is not a solve, so it leaves the day's solved count alone.
 	 *
-	 * @param array{id: int, result: string, climbed: bool, clear_bonus: bool} $review
+	 * @param array{id: int, result: int, climbed: bool, clear_bonus: bool} $review
 	 * @return array{review: int, graduation: int, clear: int}
 	 */
 	private function processTrainingXp(array $review, float $problemRating): array
@@ -274,7 +274,6 @@ class PlayResultProcessorComponent extends Component
 		if (TsumegoUtil::isSolvedStatus($newStatus) && !TsumegoUtil::isSolvedStatus($previousTsumegoStatus['TsumegoStatus']['status']))
 			Auth::incrementUserField('solved', 1);
 		$previousTsumegoStatus['TsumegoStatus']['status'] = $newStatus;
-		$previousTsumegoStatus['TsumegoStatus']['created'] = date('Y-m-d H:i:s');
 		ClassRegistry::init('TsumegoStatus')->save($previousTsumegoStatus);
 		return $newStatus;
 	}
@@ -337,24 +336,26 @@ class PlayResultProcessorComponent extends Component
 
 		// After a reset of its part in the last month the problem is known, solving it again says little
 		// about the player or the problem, so neither rating changes.
-		if ($progressDeletionCount == 0)
-		{
-			$userRating = (float) Auth::getUser()['rating'];
-			$tsumegoRating = (float) $previousTsumego['Tsumego']['rating'];
+		if ($progressDeletionCount != 0)
+			return;
 
-			// Each AJAX call is a single atomic event: fail or solve, never both.
-			// Prior misplays were already processed by their own AJAX calls.
-			self::processRatingChangeStep($userRating, $tsumegoRating, $result['solved']);
+		$userRating = (float) Auth::getUser()['rating'];
+		$originalTsumegoRating = (float) $previousTsumego['Tsumego']['rating'];
+		$tsumegoRating = $originalTsumegoRating;
 
-			Auth::saveUserField('rating', $userRating);
+		// Each AJAX call is a single atomic event: fail or solve, never both.
+		// Prior misplays were already processed by their own AJAX calls.
+		self::processRatingChangeStep($userRating, $tsumegoRating, $result['solved']);
 
-			$previousTsumego['Tsumego']['rating'] = Util::clampOptional(
-				$tsumegoRating,
-				$previousTsumego['Tsumego']['minimum_rating'],
-				$previousTsumego['Tsumego']['maximum_rating']);
-		}
-		$previousTsumego['Tsumego']['activity_value']++;
-		ClassRegistry::init('Tsumego')->save($previousTsumego);
+		Auth::saveUserFields([
+			'rating' => $userRating,
+			'highest_rating' => max((float) Auth::getUser()['highest_rating'], $userRating)]);
+
+		$previousTsumego['Tsumego']['rating'] = Util::clampOptional(
+			$tsumegoRating,
+			$previousTsumego['Tsumego']['minimum_rating'],
+			$previousTsumego['Tsumego']['maximum_rating']);
+		Tsumego::addToRating((int) $previousTsumego['Tsumego']['id'], $tsumegoRating - $originalTsumegoRating);
 	}
 
 	private function processDamage(array $result, string $previousStatusValue): void
@@ -399,23 +400,12 @@ class PlayResultProcessorComponent extends Component
 		if (!Level::XPAndRatingIsGainedInTsumegoStatus($previousTsumegoStatus))
 			return;
 
-		$achievementCondition = ClassRegistry::init('AchievementCondition')->find('first', [
-			'conditions' => [
-				'user_id' => Auth::getUserID(),
-				'category' => 'err']]);
-		if (!$achievementCondition)
-		{
-			$achievementCondition = [];
-			$achievementCondition['AchievementCondition']['category'] = 'err';
-			$achievementCondition['AchievementCondition']['user_id'] = Auth::getUserID();
-			ClassRegistry::init('AchievementCondition')->create();
-		}
 		// The streak counts the problems solved since the last error: only a clean solve
 		// extends it, anything else resets it.
-		$streak = (int) ($achievementCondition['AchievementCondition']['value'] ?? 0);
-		$cleanSolve = $outcome === PlayOutcome::SolvedClean;
-		$achievementCondition['AchievementCondition']['value'] = $cleanSolve ? $streak + 1 : 0;
-		ClassRegistry::init('AchievementCondition')->save($achievementCondition);
+		if ($outcome === PlayOutcome::SolvedClean)
+			AchievementCondition::increment(Auth::getUserID(), AchievementCondition::CATEGORY_NO_ERROR_STREAK);
+		else
+			AchievementCondition::put(Auth::getUserID(), AchievementCondition::CATEGORY_NO_ERROR_STREAK, 0);
 	}
 
 	private function processUnsortedStuff(array $previousTsumego, array $result, string $previousTsumegoStatus): void

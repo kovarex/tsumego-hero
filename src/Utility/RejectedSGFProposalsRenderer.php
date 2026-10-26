@@ -27,7 +27,7 @@ SELECT
     user.display_name AS user_display_name,
     user.external_id AS user_external_id,
     user.picture AS user_picture,
-    user.pref_avatar AS user_pref_avatar,
+    user.avatar_setting_id AS user_avatar_setting_id,
     user.rating AS user_rating,
     user.email AS user_email,
     reject.created AS rejected,
@@ -36,12 +36,12 @@ SELECT
     admin.display_name AS admin_display_name,
     admin.external_id AS admin_external_id,
     admin.picture AS admin_picture,
-    admin.pref_avatar AS admin_pref_avatar,
+    admin.avatar_setting_id AS admin_avatar_setting_id,
     admin.rating AS admin_rating,
     admin.email AS admin_email,
     sc.id AS set_connection_id,
     sc.num AS num,
-    CONCAT(s.title, ' ', s.title2) AS set_title
+    CONCAT_WS(' ', s.title, s.title2) AS set_title
 FROM sgf p
 JOIN set_connection sc ON sc.id = (
     SELECT sc2.id
@@ -92,7 +92,7 @@ OFFSET " . $this->offset);
 				'user_display_name' => $item['admin_display_name'],
 				'user_external_id' => $item['admin_external_id'],
 				'user_picture' => $item['admin_picture'],
-				'user_pref_avatar' => $item['admin_pref_avatar'],
+				'user_avatar_setting_id' => $item['admin_avatar_setting_id'],
 				'user_rating' => $item['admin_rating'],
 				'user_email' => $item['admin_email']]);
 			if ($item['comment'] !== null && $item['comment'] !== '')

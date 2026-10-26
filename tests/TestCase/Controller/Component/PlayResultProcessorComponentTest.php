@@ -202,6 +202,28 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		$this->assertSame(1000.0, $this->tsumegoRating($context));
 	}
 
+	public function testGainingRatingRaisesTheHighestRating(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['rating' => 1000],
+			'tsumego' => ['rating' => 1000, 'set_order' => 1]]);
+		$this->solve($context);
+		$user = $context->reloadUser();
+		$this->assertGreaterThan(1000.0, (float) $user['rating']);
+		$this->assertSame((float) $user['rating'], (float) $user['highest_rating']);
+	}
+
+	public function testLosingRatingKeepsTheHighestRating(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['rating' => 1000, 'highest_rating' => 1200],
+			'tsumego' => ['rating' => 1000, 'set_order' => 1]]);
+		$this->failResult($context);
+		$user = $context->reloadUser();
+		$this->assertLessThan(1000.0, (float) $user['rating']);
+		$this->assertSame(1200.0, (float) $user['highest_rating']);
+	}
+
 	public function testSolvingAddsXP(): void
 	{
 		foreach (['V', 'W'] as $status)
@@ -284,7 +306,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		$this->postResult($context, $params);
 
 		$goldenCondition = ClassRegistry::init('AchievementCondition')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'category' => 'golden'],
+			'conditions' => ['user_id' => $context->user['id'], 'achievement_condition_category_id' => AchievementCondition::CATEGORY_GOLDEN],
 		]);
 		$this->assertNotNull($goldenCondition, 'golden achievement condition must be created');
 		$this->assertSame(1, (int) $goldenCondition['AchievementCondition']['value'],
@@ -294,7 +316,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 	private function goldenRunOf(ContextPreparator $context): int
 	{
 		$goldenCondition = ClassRegistry::init('AchievementCondition')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'category' => 'golden'],
+			'conditions' => ['user_id' => $context->user['id'], 'achievement_condition_category_id' => AchievementCondition::CATEGORY_GOLDEN],
 		]);
 		return $goldenCondition ? (int) $goldenCondition['AchievementCondition']['value'] : 0;
 	}
@@ -303,7 +325,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator([
 			'tsumego' => ['status' => 'G'],
-			'achievement-conditions' => [['category' => 'golden', 'value' => 5]],
+			'achievement-conditions' => [['category' => AchievementCondition::CATEGORY_GOLDEN, 'value' => 5]],
 		]);
 
 		$this->failResult($context);
@@ -315,7 +337,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator([
 			'tsumego' => ['status' => 'G'],
-			'achievement-conditions' => [['category' => 'golden', 'value' => 5]],
+			'achievement-conditions' => [['category' => AchievementCondition::CATEGORY_GOLDEN, 'value' => 5]],
 		]);
 
 		$this->solveWithMisplays($context);
@@ -327,7 +349,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator([
 			'tsumego' => ['status' => 'V'],
-			'achievement-conditions' => [['category' => 'golden', 'value' => 5]],
+			'achievement-conditions' => [['category' => AchievementCondition::CATEGORY_GOLDEN, 'value' => 5]],
 		]);
 
 		$this->failResult($context);
@@ -339,7 +361,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator([
 			'tsumego' => ['status' => 'G'],
-			'achievement-conditions' => [['category' => 'golden', 'value' => Achievement::GOLD_DIGGER_COUNT - 1]],
+			'achievement-conditions' => [['category' => AchievementCondition::CATEGORY_GOLDEN, 'value' => Achievement::GOLD_DIGGER_COUNT - 1]],
 		]);
 
 		$response = $this->solve($context);
@@ -514,7 +536,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator([
 			'tsumego' => 1,
-			'achievement-conditions' => [['category' => 'err', 'value' => 9]],  // One away from NO_ERROR_STREAK_I
+			'achievement-conditions' => [['category' => AchievementCondition::CATEGORY_NO_ERROR_STREAK, 'value' => 9]],  // One away from NO_ERROR_STREAK_I
 		]);
 
 		$this->failResult($context);
@@ -522,7 +544,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 
 		// The err counter should be reset to 0, not incremented to 10
 		$errCondition = ClassRegistry::init('AchievementCondition')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'category' => 'err'],
+			'conditions' => ['user_id' => $context->user['id'], 'achievement_condition_category_id' => AchievementCondition::CATEGORY_NO_ERROR_STREAK],
 		]);
 		$this->assertSame(0, (int) $errCondition['AchievementCondition']['value'],
 			'No-error streak should reset to 0 when solving with misplays');
@@ -532,14 +554,14 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator([
 			'tsumego' => 1,
-			'achievement-conditions' => [['category' => 'err', 'value' => 9]],
+			'achievement-conditions' => [['category' => AchievementCondition::CATEGORY_NO_ERROR_STREAK, 'value' => 9]],
 		]);
 
 		$this->solve($context);
 
 		// The err counter should be incremented to 10
 		$errCondition = ClassRegistry::init('AchievementCondition')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'category' => 'err'],
+			'conditions' => ['user_id' => $context->user['id'], 'achievement_condition_category_id' => AchievementCondition::CATEGORY_NO_ERROR_STREAK],
 		]);
 		$this->assertSame(10, (int) $errCondition['AchievementCondition']['value'],
 			'No-error streak should increment when solving without misplays');
@@ -553,7 +575,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator([
 			'tsumego' => 1,
-			'achievement-conditions' => [['category' => 'err', 'value' => 0]],
+			'achievement-conditions' => [['category' => AchievementCondition::CATEGORY_NO_ERROR_STREAK, 'value' => 0]],
 		]);
 
 		// An earlier play of this problem ended in a mistake, which broke the streak then
@@ -563,7 +585,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		$this->solve($context);
 
 		$errCondition = ClassRegistry::init('AchievementCondition')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'category' => 'err'],
+			'conditions' => ['user_id' => $context->user['id'], 'achievement_condition_category_id' => AchievementCondition::CATEGORY_NO_ERROR_STREAK],
 		]);
 		$this->assertSame(1, (int) $errCondition['AchievementCondition']['value'],
 			'A clean solve extends the streak');
@@ -608,7 +630,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 	 * Verifies the Bad Potion counter integration: when a user has potion active
 	 * (used_potion=0, level >= 50, exactly at max health) and the previous
 	 * problem was failed, the achievement_condition.value counter for
-	 * category='potion' increments because chance = 0 x 0.5% = 0%.
+	 * category CATEGORY_POTION increments because chance = 0 x 0.5% = 0%.
 	 */
 	public function testPotionConditionIncrementsOnPreviousFail(): void
 	{
@@ -630,7 +652,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		$condition = ClassRegistry::init('AchievementCondition')->find('first', [
 			'conditions' => [
 				'user_id' => $context->user['id'],
-				'category' => 'potion',
+				'achievement_condition_category_id' => AchievementCondition::CATEGORY_POTION,
 			],
 		]);
 		$this->assertNotNull($condition, 'potion achievement_condition must be created');
@@ -700,7 +722,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 	private function sprintConditionValue(ContextPreparator $context): int
 	{
 		$condition = ClassRegistry::init('AchievementCondition')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'category' => 'sprint'],
+			'conditions' => ['user_id' => $context->user['id'], 'achievement_condition_category_id' => AchievementCondition::CATEGORY_SPRINT],
 		]);
 		return $condition ? (int) $condition['AchievementCondition']['value'] : 0;
 	}
@@ -735,7 +757,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		$context = new ContextPreparator([
 			'user' => ['level' => HeroPowers::$SPRINT_MINIMUM_LEVEL],
 			'tsumego' => 1,
-			'achievement-conditions' => [['category' => 'sprint', 'value' => 12]],
+			'achievement-conditions' => [['category' => AchievementCondition::CATEGORY_SPRINT, 'value' => 12]],
 		]);
 		$this->solve($context);
 		$this->assertSame(0, $this->sprintConditionValue($context));
@@ -756,7 +778,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		$context = new ContextPreparator([
 			'user' => ['sprint_start' => date('Y-m-d H:i:s')],
 			'tsumego' => 1,
-			'achievement-conditions' => [['category' => 'sprint', 'value' => 29]],
+			'achievement-conditions' => [['category' => AchievementCondition::CATEGORY_SPRINT, 'value' => 29]],
 		]);
 		$this->solve($context);
 		$this->assertSame(30, $this->sprintConditionValue($context));
@@ -778,20 +800,20 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		// Switch to rating mode -> DB mode must be rating immediately (same request).
 		$this->loginAs($context);
 		$this->post('/ratingMode');
-		$this->assertSame(Constants::$RATING_MODE, (int) $context->reloadUser()['mode'],
+		$this->assertSame(Constants::$RATING_MODE, (int) $context->reloadUser()['mode_id'],
 			'DB mode should be RATING right after visiting /ratingMode');
 
 		// Switch back to level mode by opening a problem directly -> DB mode must be level immediately.
 		$this->loginAs($context);
 		$this->post('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$this->assertSame(Constants::$LEVEL_MODE, (int) $context->reloadUser()['mode'],
+		$this->assertSame(Constants::$LEVEL_MODE, (int) $context->reloadUser()['mode_id'],
 			'DB mode should be LEVEL right after opening a problem directly');
 		$this->assertTextContains('var mode = 1;', $this->view,
 			'Play page should render as level mode (no one-request lag)');
 
 		// Solve immediately; the mode used for the result must still be level (XP gained, mode unchanged).
 		$this->solve($context);
-		$this->assertSame(Constants::$LEVEL_MODE, (int) $context->reloadUser()['mode'],
+		$this->assertSame(Constants::$LEVEL_MODE, (int) $context->reloadUser()['mode_id'],
 			'DB mode should still be LEVEL after the solve');
 		$this->assertGreaterThan(0, (int) $context->reloadUser()['xp'],
 			'XP should be gained when solving in level mode');
@@ -807,12 +829,12 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		// Switch to rating mode and solve immediately, without touching level mode in between.
 		$this->loginAs($context);
 		$this->post('/ratingMode');
-		$this->assertSame(Constants::$RATING_MODE, (int) $context->reloadUser()['mode'],
+		$this->assertSame(Constants::$RATING_MODE, (int) $context->reloadUser()['mode_id'],
 			'DB mode should be RATING after visiting /ratingMode');
 
 		$ratingBefore = (int) $context->reloadUser()['rating'];
 		$this->solve($context);
-		$this->assertSame(Constants::$RATING_MODE, (int) $context->reloadUser()['mode'],
+		$this->assertSame(Constants::$RATING_MODE, (int) $context->reloadUser()['mode_id'],
 			'DB mode should still be RATING after solving in rating mode');
 		$this->assertNotSame($ratingBefore, (int) $context->reloadUser()['rating'],
 			'Rating should change when solving in rating mode');
@@ -843,7 +865,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 	private function completedSetsCondition(ContextPreparator $context): ?int
 	{
 		$condition = ClassRegistry::init('AchievementCondition')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'category' => 'set']]);
+			'conditions' => ['user_id' => $context->user['id'], 'achievement_condition_category_id' => AchievementCondition::CATEGORY_COMPLETED_SETS]]);
 		return $condition ? (int) $condition['AchievementCondition']['value'] : null;
 	}
 
@@ -901,7 +923,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 			$context = new ContextPreparator([
 				'tsumego' => ['sets' => [['name' => 'big set', 'num' => 1]]],
 				'tsumegos' => [['sets' => [['name' => 'big set', 'num' => 2]]]],
-				'achievement-conditions' => [['category' => 'set', 'value' => 7]],
+				'achievement-conditions' => [['category' => AchievementCondition::CATEGORY_COMPLETED_SETS, 'value' => 7]],
 			]);
 			$this->solve($context);
 			$this->assertSame(7, $this->completedSetsCondition($context), 'The stored count is only recomputed when a part gets completed');
@@ -1028,7 +1050,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
 			],
 		]);
-		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+		Auth::saveUserField('mode_id', Constants::$MISTAKE_TRAINING_MODE);
 		$this->failResult($context);
 
 		$this->assertSame(0, count($this->attemptsOf($context)), 'Training should not write to tsumego_attempt (like time mode)');
@@ -1042,7 +1064,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
 			],
 		]);
-		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+		Auth::saveUserField('mode_id', Constants::$MISTAKE_TRAINING_MODE);
 
 		$this->failResult($context);
 		$this->failResult($context);
@@ -1062,7 +1084,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 				'status' => ['name' => 'S', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
 			],
 		]);
-		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+		Auth::saveUserField('mode_id', Constants::$MISTAKE_TRAINING_MODE);
 
 		$this->failResult($context);
 
@@ -1081,7 +1103,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
 			],
 		]);
-		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+		Auth::saveUserField('mode_id', Constants::$MISTAKE_TRAINING_MODE);
 
 		$beforeSolved = (int) Auth::getUser()['solved'];
 
@@ -1112,7 +1134,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		]);
 		$userId = $context->user['id'];
 		$tsumegoId = (int) $context->tsumegos[0]['id'];
-		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+		Auth::saveUserField('mode_id', Constants::$MISTAKE_TRAINING_MODE);
 
 		$this->failResult($context);
 
@@ -1142,7 +1164,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day')), 'mistake_training_rung' => 3],
 			],
 		]);
-		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+		Auth::saveUserField('mode_id', Constants::$MISTAKE_TRAINING_MODE);
 
 		$button = $this->failResult($context)['mistake_training_button'];
 		$this->assertSame('N', $button['status'], 'A miss stays grey until it is solved');
@@ -1180,7 +1202,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day')), 'mistake_training_rung' => $rung],
 			],
 		]);
-		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+		Auth::saveUserField('mode_id', Constants::$MISTAKE_TRAINING_MODE);
 
 		$button = $this->solve($context)['mistake_training_button'];
 
@@ -1213,7 +1235,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		]);
 		$userId = $context->user['id'];
 		$tsumegoId = (int) $context->tsumegos[0]['id'];
-		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+		Auth::saveUserField('mode_id', Constants::$MISTAKE_TRAINING_MODE);
 
 		$this->solve($context);
 		$reviewed = MistakeTraining::getPoolRow($userId, $tsumegoId);
@@ -1225,7 +1247,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		$row = MistakeTraining::getPoolRow($userId, $tsumegoId);
 		$this->assertSame(2, (int) $row['rung'], 'A replay neither takes the problem down nor up');
 		$this->assertSame($reviewed['next_due'], $row['next_due']);
-		$this->assertSame(MistakeTraining::REVIEW_SOLVED, $row['last_review_result']);
+		$this->assertSame(MistakeTraining::REVIEW_SOLVED, $row['last_mistake_training_result_id']);
 	}
 
 	/**
@@ -1247,14 +1269,14 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		$row = MistakeTraining::getPoolRow($userId, $tsumegoId);
 		$this->assertSame(0, (int) $row['rung']);
 		$this->assertTrue(MistakeTraining::isRowDue($row), 'The problem waits in today\'s training until it is solved');
-		$this->assertSame(MistakeTraining::REVIEW_MISSED, $row['last_review_result']);
+		$this->assertSame(MistakeTraining::REVIEW_MISSED, $row['last_mistake_training_result_id']);
 
 		$this->solveAfterMistake($context);
 
 		$row = MistakeTraining::getPoolRow($userId, $tsumegoId);
 		$this->assertFalse(MistakeTraining::isRowDue($row), 'The solve of the same play ends the review for today');
 		$this->assertSame(0, (int) $row['rung']);
-		$this->assertSame(MistakeTraining::REVIEW_SOLVED, $row['last_review_result']);
+		$this->assertSame(MistakeTraining::REVIEW_SOLVED, $row['last_mistake_training_result_id']);
 	}
 
 	public function testPoolProblemStaysRegardlessOfStatus(): void
@@ -1289,7 +1311,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 				'attempt' => ['solved' => false, 'misplays' => 1], // real pool member (entered via fail)
 			],
 		]);
-		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+		Auth::saveUserField('mode_id', Constants::$MISTAKE_TRAINING_MODE);
 
 		$beforeXp = Auth::getUser()['xp'];
 		$beforeRating = Auth::getUser()['rating'];
@@ -1324,7 +1346,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
 			],
 		]);
-		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+		Auth::saveUserField('mode_id', Constants::$MISTAKE_TRAINING_MODE);
 
 		$beforeDamage = Auth::getUser()['damage'];
 
@@ -1388,7 +1410,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 	public function testALevelPageCountsInTheLevelModeWhileAnotherTabIsInTheTraining(): void
 	{
 		$context = new ContextPreparator(['tsumego' => 1]);
-		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+		Auth::saveUserField('mode_id', Constants::$MISTAKE_TRAINING_MODE);
 		$beforeXp = Auth::getUser()['xp'];
 
 		$this->postOutcomeFromPage($context, PlayOutcome::SolvedClean, Constants::$LEVEL_MODE);
@@ -1421,7 +1443,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		$this->assertCount(0, $this->attemptsOf($context));
 		$this->assertArrayHasKey('mistake_training_button', $response, 'The training page redraws its row');
 		$row = MistakeTraining::getPoolRow($context->user['id'], (int) $context->tsumegos[0]['id']);
-		$this->assertSame(MistakeTraining::REVIEW_MISSED, $row['last_review_result']);
+		$this->assertSame(MistakeTraining::REVIEW_MISSED, $row['last_mistake_training_result_id']);
 	}
 
 	public function testClaimingTheTrainingForAProblemOutsideItSparesNoHeart(): void
@@ -1620,7 +1642,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		// A problem that comes due again later in the day is reviewed, but the day
 		// was already cleared.
 		MistakeTraining::makeDueNow($context->user['id'], (int) $context->tsumegos[0]['id']);
-		Util::execute('UPDATE mistake_training_pool SET last_review_day = NULL, last_review_result = NULL WHERE user_id = ? AND tsumego_id = ?',
+		Util::execute('UPDATE mistake_training_pool SET last_review_day = NULL, last_mistake_training_result_id = NULL WHERE user_id = ? AND tsumego_id = ?',
 			[$context->user['id'], $context->tsumegos[0]['id']]);
 		$again = $this->playInTraining($context, PlayOutcome::SolvedClean);
 		$this->assertSame(['review' => 9, 'graduation' => 0, 'clear' => 0], $again['mistake_training_xp']);

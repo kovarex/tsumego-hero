@@ -48,7 +48,7 @@ abstract class BasePolicy
 	{
 		if ($user === null)
 			return false;
-		return static::isAdmin($user) || (bool) $user['premium'];
+		return static::isAdmin($user) || $user['premium_id'] !== null;
 	}
 
 	/**

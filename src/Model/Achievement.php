@@ -16,31 +16,31 @@ class Achievement extends AppModel
 	 * achievement has no progress to show (binary unlock or derived elsewhere).
 	 *
 	 * @param int $achievementId
-	 * @return array|null ['category' => string, 'goal' => int]
+	 * @return array|null ['category' => int, 'goal' => int], the category of AchievementCondition
 	 */
 	public static function progressDefinition(int $achievementId): ?array
 	{
 		$definitions = [
-			AchievementId::COMPLETE_SETS_I->value => ['category' => 'set', 'goal' => self::COMPLETE_SETS_I_SETS_COUNT],
-			AchievementId::COMPLETE_SETS_II->value => ['category' => 'set', 'goal' => self::COMPLETE_SETS_II_SETS_COUNT],
-			AchievementId::COMPLETE_SETS_III->value => ['category' => 'set', 'goal' => self::COMPLETE_SETS_III_SETS_COUNT],
-			AchievementId::COMPLETE_SETS_IV->value => ['category' => 'set', 'goal' => self::COMPLETE_SETS_IV_SETS_COUNT],
-			AchievementId::COMPLETE_SETS_V->value => ['category' => 'set', 'goal' => self::COMPLETE_SETS_V_SETS_COUNT],
-			AchievementId::COMPLETE_SETS_VI->value => ['category' => 'set', 'goal' => self::COMPLETE_SETS_VI_SETS_COUNT],
-			AchievementId::NO_ERROR_STREAK_I->value => ['category' => 'err', 'goal' => self::NO_ERROR_STREAK_I_STREAK_COUNT],
-			AchievementId::NO_ERROR_STREAK_II->value => ['category' => 'err', 'goal' => self::NO_ERROR_STREAK_II_STREAK_COUNT],
-			AchievementId::NO_ERROR_STREAK_III->value => ['category' => 'err', 'goal' => self::NO_ERROR_STREAK_III_STREAK_COUNT],
-			AchievementId::NO_ERROR_STREAK_IV->value => ['category' => 'err', 'goal' => self::NO_ERROR_STREAK_IV_STREAK_COUNT],
-			AchievementId::NO_ERROR_STREAK_V->value => ['category' => 'err', 'goal' => self::NO_ERROR_STREAK_V_STREAK_COUNT],
-			AchievementId::NO_ERROR_STREAK_VI->value => ['category' => 'err', 'goal' => self::NO_ERROR_STREAK_VI_STREAK_COUNT],
-			AchievementId::SPRINT->value => ['category' => 'sprint', 'goal' => self::SPRINT_COUNT],
-			AchievementId::GOLD_DIGGER->value => ['category' => 'golden', 'goal' => self::GOLD_DIGGER_COUNT],
-			AchievementId::BAD_POTION->value => ['category' => 'potion', 'goal' => HeroPowers::$BAD_POTION_THRESHOLD],
-			AchievementId::SOLVE_10_1D->value => ['category' => 'danSolve1d', 'goal' => self::SOLVE_10_COUNT],
-			AchievementId::SOLVE_10_2D->value => ['category' => 'danSolve2d', 'goal' => self::SOLVE_10_COUNT],
-			AchievementId::SOLVE_10_3D->value => ['category' => 'danSolve3d', 'goal' => self::SOLVE_10_COUNT],
-			AchievementId::SOLVE_10_4D->value => ['category' => 'danSolve4d', 'goal' => self::SOLVE_10_COUNT],
-			AchievementId::SOLVE_10_5D->value => ['category' => 'danSolve5d', 'goal' => self::SOLVE_10_COUNT],
+			AchievementId::COMPLETE_SETS_I->value => ['category' => AchievementCondition::CATEGORY_COMPLETED_SETS, 'goal' => self::COMPLETE_SETS_I_SETS_COUNT],
+			AchievementId::COMPLETE_SETS_II->value => ['category' => AchievementCondition::CATEGORY_COMPLETED_SETS, 'goal' => self::COMPLETE_SETS_II_SETS_COUNT],
+			AchievementId::COMPLETE_SETS_III->value => ['category' => AchievementCondition::CATEGORY_COMPLETED_SETS, 'goal' => self::COMPLETE_SETS_III_SETS_COUNT],
+			AchievementId::COMPLETE_SETS_IV->value => ['category' => AchievementCondition::CATEGORY_COMPLETED_SETS, 'goal' => self::COMPLETE_SETS_IV_SETS_COUNT],
+			AchievementId::COMPLETE_SETS_V->value => ['category' => AchievementCondition::CATEGORY_COMPLETED_SETS, 'goal' => self::COMPLETE_SETS_V_SETS_COUNT],
+			AchievementId::COMPLETE_SETS_VI->value => ['category' => AchievementCondition::CATEGORY_COMPLETED_SETS, 'goal' => self::COMPLETE_SETS_VI_SETS_COUNT],
+			AchievementId::NO_ERROR_STREAK_I->value => ['category' => AchievementCondition::CATEGORY_NO_ERROR_STREAK, 'goal' => self::NO_ERROR_STREAK_I_STREAK_COUNT],
+			AchievementId::NO_ERROR_STREAK_II->value => ['category' => AchievementCondition::CATEGORY_NO_ERROR_STREAK, 'goal' => self::NO_ERROR_STREAK_II_STREAK_COUNT],
+			AchievementId::NO_ERROR_STREAK_III->value => ['category' => AchievementCondition::CATEGORY_NO_ERROR_STREAK, 'goal' => self::NO_ERROR_STREAK_III_STREAK_COUNT],
+			AchievementId::NO_ERROR_STREAK_IV->value => ['category' => AchievementCondition::CATEGORY_NO_ERROR_STREAK, 'goal' => self::NO_ERROR_STREAK_IV_STREAK_COUNT],
+			AchievementId::NO_ERROR_STREAK_V->value => ['category' => AchievementCondition::CATEGORY_NO_ERROR_STREAK, 'goal' => self::NO_ERROR_STREAK_V_STREAK_COUNT],
+			AchievementId::NO_ERROR_STREAK_VI->value => ['category' => AchievementCondition::CATEGORY_NO_ERROR_STREAK, 'goal' => self::NO_ERROR_STREAK_VI_STREAK_COUNT],
+			AchievementId::SPRINT->value => ['category' => AchievementCondition::CATEGORY_SPRINT, 'goal' => self::SPRINT_COUNT],
+			AchievementId::GOLD_DIGGER->value => ['category' => AchievementCondition::CATEGORY_GOLDEN, 'goal' => self::GOLD_DIGGER_COUNT],
+			AchievementId::BAD_POTION->value => ['category' => AchievementCondition::CATEGORY_POTION, 'goal' => HeroPowers::$BAD_POTION_THRESHOLD],
+			AchievementId::SOLVE_10_1D->value => ['category' => AchievementCondition::CATEGORY_DAN_SOLVE_1D, 'goal' => self::SOLVE_10_COUNT],
+			AchievementId::SOLVE_10_2D->value => ['category' => AchievementCondition::CATEGORY_DAN_SOLVE_2D, 'goal' => self::SOLVE_10_COUNT],
+			AchievementId::SOLVE_10_3D->value => ['category' => AchievementCondition::CATEGORY_DAN_SOLVE_3D, 'goal' => self::SOLVE_10_COUNT],
+			AchievementId::SOLVE_10_4D->value => ['category' => AchievementCondition::CATEGORY_DAN_SOLVE_4D, 'goal' => self::SOLVE_10_COUNT],
+			AchievementId::SOLVE_10_5D->value => ['category' => AchievementCondition::CATEGORY_DAN_SOLVE_5D, 'goal' => self::SOLVE_10_COUNT],
 		];
 		return $definitions[$achievementId] ?? null;
 	}

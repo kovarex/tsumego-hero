@@ -28,7 +28,7 @@ class SpecialSetAchievementTest extends AchievementTestCase
 			for ($i = 0; $i < 3; $i++)
 			{
 				$Tsumego->create();
-				$Tsumego->save(['rating' => 1000]);
+				$Tsumego->save(['rating' => 1000, 'author' => '']);
 				$tsumegoId = $Tsumego->id;
 
 				// Mark as solved
@@ -98,7 +98,7 @@ class SpecialSetAchievementTest extends AchievementTestCase
 			for ($i = 0; $i < 3; $i++)
 			{
 				$Tsumego->create();
-				$Tsumego->save(['rating' => 1000]);
+				$Tsumego->save(['rating' => 1000, 'author' => '']);
 				$tsumegoId = $Tsumego->id;
 
 				$TsumegoStatus->create();

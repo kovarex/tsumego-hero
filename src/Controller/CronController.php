@@ -25,17 +25,48 @@ class CronController extends AppController
 			return $this->response;
 		}
 
-		$this->dailyTsumegoStatusReset();
-		$this->dailyStalingSolvedTsumegoStatuses();
-		self::createDayRecord();
-		$this->dailyUsersReset();
-		$this->dailyPotionConditionReset();
-		$this->updateSolvedCounts();
-		self::dropExpiredAddressChanges();
-		Trash::purgeExpired();
+		self::withReadCommitted(function () {
+			$this->dailyTsumegoStatusReset();
+			$this->dailyStalingSolvedTsumegoStatuses();
+			self::createDayRecord();
+			$this->dailyUsersReset();
+			$this->dailyPotionConditionReset();
+			self::updateSolvedCounts();
+			self::dropExpiredAddressChanges();
+			Trash::purgeExpired();
+		});
 
 		$this->response->statusCode(200);
 		return $this->response;
+	}
+
+	/**
+	 * The daily updates go through whole tables, no index fits their conditions. Under the default
+	 * REPEATABLE READ, InnoDB keeps every row such an update reads locked until the update ends, so a
+	 * player whose row it already passed waits for the rest of the table. READ COMMITTED lets go of
+	 * the rows that do not match right away.
+	 * With a binary log in the STATEMENT format, InnoDB refuses to change rows under READ COMMITTED
+	 * (error 1665), so on such a server the work keeps the level it has.
+	 */
+	private static function withReadCommitted(callable $work): void
+	{
+		if (Util::query("SELECT @@GLOBAL.log_bin AND @@SESSION.binlog_format = 'STATEMENT' AS statement_log")[0]['statement_log'])
+		{
+			$work();
+			return;
+		}
+
+		$isolation = Util::isolationLevel();
+		Util::execute('SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED');
+		try
+		{
+			$work();
+		}
+		finally
+		{
+			// the server names the level with a dash, as in REPEATABLE-READ
+			Util::execute('SET SESSION TRANSACTION ISOLATION LEVEL ' . str_replace('-', ' ', $isolation));
+		}
 	}
 
 	/**
@@ -53,25 +84,22 @@ class CronController extends AppController
 			[UsersController::$EMAIL_CHANGE_LINK_VALID_HOURS]);
 	}
 
+	/**
+	 * Only the players who played that day have anything to reset. The condition leaves the other
+	 * rows alone, so they are not written, and not kept locked either.
+	 */
 	private function dailyUsersReset(): void
 	{
-		$query = 'UPDATE user SET';
-		$query .= ' used_refinement=0';
-		$query .= ',used_sprint=0';
-		$query .= ',used_rejuvenation=0';
-		$query .= ',used_potion=0';
-		$query .= ',used_intuition=0';
-		$query .= ',used_revelation=0';
-		$query .= ',damage=0';
-		$query .= ',daily_xp=0';
-		$query .= ',daily_solved=0';
-		ClassRegistry::init('User')->query($query);
+		Util::execute('UPDATE user
+			SET used_refinement = 0, used_sprint = 0, used_rejuvenation = 0, used_potion = 0,
+				used_intuition = 0, used_revelation = 0, damage = 0, daily_xp = 0, daily_solved = 0
+			WHERE used_refinement <> 0 OR used_sprint <> 0 OR used_rejuvenation <> 0 OR used_potion <> 0
+				OR used_intuition <> 0 OR used_revelation <> 0 OR damage <> 0 OR daily_xp <> 0 OR daily_solved <> 0');
 	}
 
 	private function dailyPotionConditionReset(): void
 	{
-		ClassRegistry::init('AchievementCondition')->query(
-			"UPDATE achievement_condition SET value=0 WHERE category='potion'");
+		Util::execute('UPDATE achievement_condition SET value = 0 WHERE achievement_condition_category_id = ? AND value <> 0', [AchievementCondition::CATEGORY_POTION]);
 	}
 
 	private function dailyTsumegoStatusReset(): void
@@ -171,24 +199,27 @@ WHERE
 		$dayRecord['DayRecord']['ruby_solves'] = 0;
 		ClassRegistry::init('DayRecord')->save($dayRecord);
 
-		ClassRegistry::init('AchievementCondition')->create();
-		$achievementCondition = [];
-		$achievementCondition['AchievementCondition']['user_id'] = $userOfTheDay['User']['id'];
-		$achievementCondition['AchievementCondition']['set_id'] = null;
-		$achievementCondition['AchievementCondition']['category'] = 'uotd';
-		$achievementCondition['AchievementCondition']['value'] = 1;
-		ClassRegistry::init('AchievementCondition')->save($achievementCondition);
+		AchievementCondition::put((int) $userOfTheDay['User']['id'], AchievementCondition::CATEGORY_USER_OF_THE_DAY, 1);
 	}
 
+	/**
+	 * The solved count on the user row goes up as the player solves, the recount repairs it where it
+	 * drifted. The counts are read by a plain SELECT, which locks nothing: an UPDATE joined to the same
+	 * counts kept every status it read locked until it ended, so a player solving a problem at that
+	 * time waited for all of them. Only the players whose count changed are written.
+	 */
 	private static function updateSolvedCounts(): void
 	{
-		Util::query("UPDATE user u
-LEFT JOIN (
-    SELECT user_id, COUNT(*) AS cnt
-    FROM tsumego_status
-    WHERE status IN ('S', 'W', 'C', 'X')
-    GROUP BY user_id
-) ts ON ts.user_id = u.id
-SET u.solved = COALESCE(ts.cnt, 0)");
+		$changes = Util::query("SELECT user.id, COALESCE(counts.solved, 0) AS solved
+			FROM user
+			LEFT JOIN (
+				SELECT user_id, COUNT(*) AS solved
+				FROM tsumego_status
+				WHERE status IN ('S', 'W', 'C', 'X')
+				GROUP BY user_id
+			) AS counts ON counts.user_id = user.id
+			WHERE NOT (user.solved <=> COALESCE(counts.solved, 0))");
+		foreach ($changes as $change)
+			Util::execute('UPDATE user SET solved = ? WHERE id = ?', [$change['solved'], $change['id']]);
 	}
 }

@@ -34,14 +34,14 @@ echo 'STRINGIFY_FETCHES=' . var_export($pdo->getAttribute(PDO::ATTR_STRINGIFY_FE
 
 $checks = [
 	'int (achievement.id)' => 'SELECT id FROM achievement LIMIT 1',
-	'tinyint (tsumego_comment.deleted)' => 'SELECT deleted FROM tsumego_comment LIMIT 1',
+	'tinyint (tsumego.pass)' => 'SELECT pass FROM tsumego LIMIT 1',
 	'bigint (phinxlog.version)' => 'SELECT version FROM phinxlog LIMIT 1',
 	'decimal (time_mode_attempt.points)' => 'SELECT points FROM time_mode_attempt LIMIT 1',
 	'double (achievement_condition.value)' => 'SELECT value FROM achievement_condition LIMIT 1',
-	'float (`set`.multiplier)' => 'SELECT multiplier FROM `set` LIMIT 1',
+	'float (tsumego.rating)' => 'SELECT rating FROM tsumego LIMIT 1',
 	'date (day_record.date)' => 'SELECT date FROM day_record LIMIT 1',
 	'datetime (achievement.created)' => 'SELECT created FROM achievement LIMIT 1',
-	'timestamp (admin_activity.created)' => 'SELECT created FROM admin_activity LIMIT 1',
+	'timestamp (phinxlog.start_time)' => 'SELECT start_time FROM phinxlog LIMIT 1',
 	'varchar (achievement.additional_description)' => 'SELECT additional_description FROM achievement LIMIT 1',
 	'text (admin_activity.new_value)' => 'SELECT new_value FROM admin_activity LIMIT 1',
 ];

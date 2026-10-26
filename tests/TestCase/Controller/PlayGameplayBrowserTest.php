@@ -64,8 +64,8 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 				'name' => 'renderUser',
 				// Pin the player color and board orientation so the board is never
 				// swapped or rotated (deterministic stone coordinates and colors).
-				'pref_player_color' => User::PREF_PLAYER_COLOR_ORIGINAL,
-				'pref_board_orientation' => User::PREF_BOARD_ORIENTATION_ORIGINAL,
+				'player_color_setting' => User::PLAYER_COLOR_SETTING_ORIGINAL,
+				'board_orientation_setting' => User::BOARD_ORIENTATION_SETTING_ORIGINAL,
 			],
 			'tsumego' => ['set_order' => 1, 'sgf' => self::SGF_19],
 		]);
@@ -154,7 +154,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 				'set_order' => 1,
 				'sgf' => self::SGF_19,
 				'variants' => [[
-					'type' => 'multiple_choice',
+					'tsumego_variant_type_id' => TsumegoVariant::TYPE_MULTIPLE_CHOICE,
 					'answer1' => 'White is dead',
 					'answer2' => 'Ko',
 					'answer3' => 'Seki in sente',
@@ -186,7 +186,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 				'set_order' => 1,
 				'sgf' => self::SGF_19,
 				'variants' => [[
-					'type' => 'score_estimating',
+					'tsumego_variant_type_id' => TsumegoVariant::TYPE_SCORE_ESTIMATING,
 					'answer1' => '6.5',
 					'answer2' => '3',
 					'answer3' => '6',
@@ -872,7 +872,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 				'description' => 'Black to play. What is the result?',
 				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc]AW[dd];B[aa];W[ab];B[ba]C[+])',
 				'variants' => [[
-					'type' => 'multiple_choice',
+					'tsumego_variant_type_id' => TsumegoVariant::TYPE_MULTIPLE_CHOICE,
 					'answer1' => 'White is dead',
 					'answer2' => 'Ko',
 					'answer3' => 'Seki in sente',
@@ -898,13 +898,13 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 	public function testOrientationButtonSwapsScoreButtons(): void
 	{
 		$context = new ContextPreparator([
-			'user' => ['admin' => true, 'pref_player_color' => User::PREF_PLAYER_COLOR_ORIGINAL],
+			'user' => ['admin' => true, 'player_color_setting' => User::PLAYER_COLOR_SETTING_ORIGINAL],
 			'tsumego' => [
 				'set_order' => 1,
 				'description' => 'Who wins?',
 				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])',
 				'variants' => [[
-					'type' => 'score_estimating',
+					'tsumego_variant_type_id' => TsumegoVariant::TYPE_SCORE_ESTIMATING,
 					'answer1' => '6.5',
 					'answer2' => '3',
 					'answer3' => '6',
@@ -933,7 +933,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 	public function testOrientationButtonSwapsSemeaiButtons(): void
 	{
 		$context = new ContextPreparator([
-			'user' => ['admin' => true, 'pref_player_color' => User::PREF_PLAYER_COLOR_ORIGINAL],
+			'user' => ['admin' => true, 'player_color_setting' => User::PLAYER_COLOR_SETTING_ORIGINAL],
 			'tsumego' => [
 				'set_order' => 1,
 				'semeai_type' => 1,
@@ -968,7 +968,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 	public function testOrientationButtonSwapsSgfComment(): void
 	{
 		$context = new ContextPreparator([
-			'user' => ['admin' => true, 'pref_player_color' => User::PREF_PLAYER_COLOR_ORIGINAL],
+			'user' => ['admin' => true, 'player_color_setting' => User::PLAYER_COLOR_SETTING_ORIGINAL],
 			'tsumego' => [
 				'set_order' => 1,
 				'description' => 'Black to play.',

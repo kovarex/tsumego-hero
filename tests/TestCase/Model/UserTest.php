@@ -20,9 +20,19 @@ class UserTest extends CakeTestCase
 
 		$User = ClassRegistry::init('User');
 		$user = $User->findById($context->user['id']);
-		$user['User']['highscore_page'] = 5;
+		$user['User']['xp'] = 5;
 
 		$this->assertNotFalse($User->save($user), 'Saving an account that already has such a name must work');
+	}
+
+	/**
+	 * Only a played problem raises highest_rating, so a rating set another way (by hand in the database)
+	 * can be above it, and the profile shows the higher one.
+	 */
+	public function testTheHighestRatingIsNeverBelowTheRating(): void
+	{
+		$this->assertSame(1500.0, User::getHighestRating(['rating' => 1500, 'highest_rating' => 1200]));
+		$this->assertSame(1700.0, User::getHighestRating(['rating' => 1500, 'highest_rating' => 1700]));
 	}
 
 	// =====================================================================
@@ -35,7 +45,7 @@ class UserTest extends CakeTestCase
 	public function testGetAvatarUrlReturnsGooglePictureForGoogleUser()
 	{
 		$user = [
-			'pref_avatar' => User::AVATAR_GOOGLE,
+			'avatar_setting_id' => User::AVATAR_GOOGLE,
 			'external_id' => '123456789',
 			'picture' => 'https://lh3.googleusercontent.com/a/abc123',
 			'email' => 'test@gmail.com',
@@ -103,7 +113,7 @@ class UserTest extends CakeTestCase
 				'id' => 1,
 				'external_id' => '123',
 				'picture' => 'https://lh3.googleusercontent.com/a/x' . $suffix,
-				'pref_avatar' => User::AVATAR_GOOGLE,
+				'avatar_setting_id' => User::AVATAR_GOOGLE,
 			];
 
 			$this->assertSame(
@@ -124,7 +134,7 @@ class UserTest extends CakeTestCase
 			'id' => 1,
 			'external_id' => '123',
 			'picture' => 'https://lh3.googleusercontent.com/a/x?sz=50',
-			'pref_avatar' => User::AVATAR_GOOGLE,
+			'avatar_setting_id' => User::AVATAR_GOOGLE,
 		];
 
 		$this->assertSame('https://lh3.googleusercontent.com/a/x?sz=50', User::getAvatarUrl($user, 128));
@@ -139,7 +149,7 @@ class UserTest extends CakeTestCase
 			'id' => 1,
 			'external_id' => '123',
 			'picture' => 'https://example.com/photo.png',
-			'pref_avatar' => User::AVATAR_GOOGLE,
+			'avatar_setting_id' => User::AVATAR_GOOGLE,
 		];
 
 		$this->assertSame('https://example.com/photo.png', User::getAvatarUrl($user, 128));
@@ -152,7 +162,7 @@ class UserTest extends CakeTestCase
 			'display_name' => 'Pic',
 			'external_id' => '123',
 			'picture' => 'https://lh3.googleusercontent.com/a/x',
-			'pref_avatar' => User::AVATAR_GOOGLE,
+			'avatar_setting_id' => User::AVATAR_GOOGLE,
 		]);
 		$this->assertStringContainsString(
 			"onerror=\"this.onerror=null;this.classList.add('user-avatar--board');this.src='" . Avatar::url('Pic') . "'\"",
@@ -189,7 +199,7 @@ class UserTest extends CakeTestCase
 		$user = [
 			'id' => 1,
 			'display_name' => 'Anna',
-			'pref_avatar' => User::AVATAR_BOARD,
+			'avatar_setting_id' => User::AVATAR_BOARD,
 			'external_id' => '123',
 			'picture' => 'https://lh3.googleusercontent.com/a/x',
 		];
@@ -201,7 +211,7 @@ class UserTest extends CakeTestCase
 	{
 		$user = [
 			'id' => 1,
-			'pref_avatar' => User::AVATAR_GOOGLE,
+			'avatar_setting_id' => User::AVATAR_GOOGLE,
 			'external_id' => '123',
 			'picture' => 'https://lh3.googleusercontent.com/a/x',
 		];
@@ -211,14 +221,14 @@ class UserTest extends CakeTestCase
 
 	public function testAGoogleChoiceWithoutAPictureFallsBackToTheBoard()
 	{
-		$user = ['id' => 7, 'display_name' => 'Anna', 'pref_avatar' => User::AVATAR_GOOGLE, 'external_id' => '123', 'picture' => null];
+		$user = ['id' => 7, 'display_name' => 'Anna', 'avatar_setting_id' => User::AVATAR_GOOGLE, 'external_id' => '123', 'picture' => null];
 
 		$this->assertSame(Avatar::url('Anna'), User::getAvatarUrl($user, 24));
 	}
 
 	public function testChoosingGravatarUsesTheSha256OfTheEmail()
 	{
-		$user = ['id' => 1, 'pref_avatar' => User::AVATAR_GRAVATAR, 'email' => ' MyEmailAddress@example.com '];
+		$user = ['id' => 1, 'avatar_setting_id' => User::AVATAR_GRAVATAR, 'email' => ' MyEmailAddress@example.com '];
 
 		$this->assertSame(
 			'https://www.gravatar.com/avatar/84059b07d4be67b806386c0aad8070a23f18836bbaae342275dc0a83414c32ee?s=24&d=identicon',
@@ -241,7 +251,7 @@ class UserTest extends CakeTestCase
 
 	public function testAnUnknownChoiceFallsBackToTheBoard()
 	{
-		$user = ['id' => 8, 'display_name' => 'Anna', 'pref_avatar' => 99, 'email' => 'test@example.com'];
+		$user = ['id' => 8, 'display_name' => 'Anna', 'avatar_setting_id' => 99, 'email' => 'test@example.com'];
 
 		$this->assertSame(Avatar::url('Anna'), User::getAvatarUrl($user, 24));
 	}
@@ -283,7 +293,7 @@ class UserTest extends CakeTestCase
 		$html = User::renderLink([
 			'id' => 123,
 			'display_name' => 'GoogleUser',
-			'pref_avatar' => User::AVATAR_GOOGLE,
+			'avatar_setting_id' => User::AVATAR_GOOGLE,
 			'external_id' => 'google_ext_123',
 			'picture' => 'https://lh3.googleusercontent.com/a/abc123',
 			'rating' => 1500.0,
@@ -483,6 +493,22 @@ class UserTest extends CakeTestCase
 				'email' => 'blank@example.com',
 			]);
 			$this->assertSame($valid, $Model->validates(), 'A display name ' . $case . ($valid ? ' must validate' : ' must be refused'));
+		}
+	}
+
+	/**
+	 * An e-mail address can have 254 characters, the user table stores them all.
+	 */
+	public function testAnEmailAddressCanHaveUpTo254Characters(): void
+	{
+		$Model = ClassRegistry::init('User');
+		foreach ([57 => true, 58 => false] as $lastLabelLength => $valid)
+		{
+			// 64 + 1 + 63 + 1 + 63 + 1 + 57 + 4 = 254 characters
+			$email = str_repeat('a', 64) . '@' . str_repeat('b', 63) . '.' . str_repeat('c', 63) . '.' . str_repeat('d', $lastLabelLength) . '.com';
+			$Model->create();
+			$Model->set(['name' => 'SomeLoginName', 'display_name' => 'Player', 'email' => $email]);
+			$this->assertSame($valid, $Model->validates(), 'An address of ' . strlen($email) . ' characters' . ($valid ? ' must validate' : ' must be refused'));
 		}
 	}
 
