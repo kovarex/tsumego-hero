@@ -224,6 +224,67 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		$this->assertSame(1200.0, (float) $user['highest_rating']);
 	}
 
+	public function testOnlyTheFirstFailsInARowChangeTheRatings(): void
+	{
+		foreach ([Constants::$LEVEL_MODE, Constants::$RATING_MODE] as $mode)
+		{
+			$context = new ContextPreparator([
+				'user' => ['rating' => 1000, 'mode' => $mode],
+				'tsumego' => ['rating' => 1000, 'set_order' => 1]]);
+			for ($i = 0; $i < Constants::$MAXIMUM_RATED_FAILS_IN_A_ROW; $i++)
+			{
+				$ratingBefore = (float) $context->reloadUser()['rating'];
+				$tsumegoRatingBefore = $this->tsumegoRating($context);
+				$this->failResult($context);
+				$this->assertLessThan($ratingBefore, (float) $context->reloadUser()['rating'], 'mode ' . $mode . ', fail ' . ($i + 1));
+				$this->assertGreaterThan($tsumegoRatingBefore, $this->tsumegoRating($context), 'mode ' . $mode . ', fail ' . ($i + 1));
+			}
+
+			$ratingBefore = (float) $context->reloadUser()['rating'];
+			$tsumegoRatingBefore = $this->tsumegoRating($context);
+			$damageBefore = (int) $context->reloadUser()['damage'];
+			$response = $this->failResult($context);
+			$this->failResult($context);
+
+			$this->assertSame($ratingBefore, (float) $context->reloadUser()['rating'], 'mode ' . $mode);
+			$this->assertSame($ratingBefore, (float) $response['new_rating'], 'mode ' . $mode);
+			$this->assertSame($tsumegoRatingBefore, $this->tsumegoRating($context), 'mode ' . $mode);
+			// the fails are still fails, only the ratings stay
+			$this->assertSame(Constants::$MAXIMUM_RATED_FAILS_IN_A_ROW + 2, (int) $this->attemptsOf($context)[0]['TsumegoAttempt']['misplays']);
+			if ($mode == Constants::$LEVEL_MODE)
+				$this->assertSame($damageBefore + 2, (int) $context->reloadUser()['damage']);
+		}
+	}
+
+	public function testASolveAfterManyFailsStillRaisesTheRating(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['rating' => 1000],
+			'tsumego' => ['rating' => 1000, 'set_order' => 1, 'attempt' => ['misplays' => Constants::$MAXIMUM_RATED_FAILS_IN_A_ROW]]]);
+		$response = $this->solveAfterMistake($context);
+		$this->assertGreaterThan(1000.0, (float) $response['new_rating']);
+	}
+
+	public function testASolveStartsTheFailsInARowOver(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['rating' => 1000],
+			'tsumego' => ['rating' => 1000, 'set_order' => 1, 'status' => 'W', 'attempts' => [
+				['misplays' => Constants::$MAXIMUM_RATED_FAILS_IN_A_ROW, 'solved' => true]]]]);
+		$response = $this->failResult($context);
+		$this->assertLessThan(1000.0, (float) $response['new_rating']);
+	}
+
+	public function testFailsInARowOnAnotherProblemDontMatter(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['rating' => 1000],
+			'tsumego' => ['rating' => 1000, 'set_order' => 1],
+			'tsumegos' => [['rating' => 1000, 'set_order' => 2, 'attempt' => ['misplays' => Constants::$MAXIMUM_RATED_FAILS_IN_A_ROW]]]]);
+		$response = $this->failResult($context);
+		$this->assertLessThan(1000.0, (float) $response['new_rating']);
+	}
+
 	public function testSolvingAddsXP(): void
 	{
 		foreach (['V', 'W'] as $status)

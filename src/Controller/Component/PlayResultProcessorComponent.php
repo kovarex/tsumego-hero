@@ -109,11 +109,13 @@ class PlayResultProcessorComponent extends Component
 		// the resets of the part of the set the problem is played from, in the last month
 		$progressDeletionCount = ProgressDeletion::countRecentForProblem(Auth::getUserID(), $tsumegoID, $setConnectionID);
 
-		$this->processRatingChange($tsumego, $result, $previousStatusValue, $progressDeletionCount);
+		$lastTsumegoAttempt = TsumegoAttempt::findLast((int) Auth::getUserID(), $tsumegoID);
+
+		$this->processRatingChange($tsumego, $result, $previousStatusValue, $progressDeletionCount, TsumegoAttempt::failsInARow($lastTsumegoAttempt));
 		if (!$result['solved'])
 			$result['potion_triggered'] = $this->processPotion();
 		$this->processXpChange($tsumego, $result, $previousStatusValue, $originalTsumegoRating, $progressDeletionCount);
-		$this->updateTsumegoAttempt($tsumego, $result, $previousStatusValue, $seconds);
+		$this->updateTsumegoAttempt($tsumego, $result, $previousStatusValue, $seconds, $lastTsumegoAttempt);
 		ClassroomAssignment::recordResult((int) Auth::getUserID(), $tsumegoID, $outcome);
 		// The pool is fed from every mode: a solved problem that goes wrong enters the
 		// review ladder, a clean solve climbs it. The training says it is the one playing, since a replay there counts for nothing,
@@ -278,19 +280,12 @@ class PlayResultProcessorComponent extends Component
 		return $newStatus;
 	}
 
-	private function updateTsumegoAttempt(array $previousTsumego, array $result, string $previousTsumegoStatus, float $seconds): void
+	private function updateTsumegoAttempt(array $previousTsumego, array $result, string $previousTsumegoStatus, float $seconds, ?array $lastTsumegoAttempt): void
 	{
 		if (Auth::isInTimeMode() || Auth::isInMistakeTrainingMode())
 			return;
 		if (TsumegoUtil::isRecentlySolved($previousTsumegoStatus))
 			return;
-		$lastTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find(
-			'first',
-			['conditions'
-				=> ['user_id' => Auth::getUserID(),
-					'tsumego_id' => $previousTsumego['Tsumego']['id']],
-				'order' => 'id DESC']
-		);
 
 		// only not solved ones are updated (misplays get accumulated)
 		if (!$lastTsumegoAttempt || $lastTsumegoAttempt['TsumegoAttempt']['solved'])
@@ -327,7 +322,7 @@ class PlayResultProcessorComponent extends Component
 		$tsumegoRating += $tsumegoRatingDelta;
 	}
 
-	private function processRatingChange(array &$previousTsumego, array $result, string $previousTsumegoStatus, int $progressDeletionCount): void
+	private function processRatingChange(array &$previousTsumego, array $result, string $previousTsumegoStatus, int $progressDeletionCount, int $failsInARow): void
 	{
 		if (!Auth::ratingisGainedInCurrentMode())
 			return;
@@ -337,6 +332,11 @@ class PlayResultProcessorComponent extends Component
 		// After a reset of its part in the last month the problem is known, solving it again says little
 		// about the player or the problem, so neither rating changes.
 		if ($progressDeletionCount != 0)
+			return;
+
+		// Failing the same problem again and again tells nothing new about the player or the problem,
+		// so only the first fails in a row change the ratings, until the problem is solved.
+		if (!$result['solved'] && $failsInARow >= Constants::$MAXIMUM_RATED_FAILS_IN_A_ROW)
 			return;
 
 		$userRating = (float) Auth::getUser()['rating'];

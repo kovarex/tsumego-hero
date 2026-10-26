@@ -45,6 +45,8 @@ function showRatingShort(rating)
 
 	if (abs >= 1)
 		return String(Math.round(rating));
+	if (abs == 0)
+		return '0';
 
 	let exponent = Math.floor(Math.log10(abs));
 
