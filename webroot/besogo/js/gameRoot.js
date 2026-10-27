@@ -336,11 +336,11 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
   // Adds a child to this node
   root.addChild = function(child)
   {
-    if (this.statusSource)
-      this.statusSource = null;
     this.children.push(child);
+    // A local edit only explores the position, so the node keeps its status and correct value
     if (!child.localEdit)
     {
+      this.statusSource = null;
       this.correct = CORRECT_BAD;
       this.correctSource = false;
     }

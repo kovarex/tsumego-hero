@@ -173,6 +173,64 @@ besogo.addTest("GameRoot", "LocalEditDoesntBreakStatusBasedProblem", function()
 	CHECK_EQUALS(move3.correct, CORRECT_GOOD);
 });
 
+besogo.addTest("GameRoot", "LocalEditDoesntCountInTheStatus", function()
+{
+	let root = besogo.makeGameRoot();
+	root.goal = GOAL_KILL;
+	let killingMove = root.registerMove(1, 1);
+	let reply = killingMove.makeChild();
+	reply.playMove(1, 2);
+	reply.statusSource = besogo.makeStatusSimple(STATUS_DEAD);
+	killingMove.registerChild(reply);
+
+	let wrongMove = root.registerMove(3, 3);
+	let wrongReply = wrongMove.registerMove(2, 2);
+	let wrongLineEnd = wrongReply.makeChild();
+	wrongLineEnd.playMove(1, 1);
+	wrongLineEnd.statusSource = besogo.makeStatusSimple(STATUS_ALIVE);
+	wrongReply.registerChild(wrongLineEnd);
+
+	// the solver explores a reply the problem doesn't have, which transposes into the end of the wrong line
+	let localEditMove = killingMove.makeChild();
+	localEditMove.localEdit = true;
+	localEditMove.playMove(2, 2);
+	killingMove.registerChild(localEditMove);
+	CHECK_EQUALS(localEditMove.virtualChildren.length, 1);
+	CHECK(localEditMove.virtualChildren[0].target == wrongLineEnd);
+	CHECK_EQUALS(localEditMove.status.str(), "ALIVE");
+
+	CHECK_EQUALS(killingMove.status.str(), "DEAD");
+	CHECK_EQUALS(root.status.str(), "DEAD");
+	CHECK_EQUALS(killingMove.correct, CORRECT_GOOD);
+	CHECK_EQUALS(wrongMove.correct, CORRECT_BAD);
+});
+
+besogo.addTest("GameRoot", "LocalEditKeepsTheStatusOfTheEndOfTheLine", function()
+{
+	let root = besogo.makeGameRoot();
+	root.goal = GOAL_KILL;
+	let move1 = root.registerMove(1, 1);
+	let move2 = move1.makeChild();
+	move2.playMove(1, 2);
+	move2.statusSource = besogo.makeStatusSimple(STATUS_DEAD);
+	move1.registerChild(move2);
+
+	// the solver plays on past the end of the line
+	let localEditMove = move2.makeChild();
+	localEditMove.localEdit = true;
+	localEditMove.playMove(2, 3);
+	move2.registerChild(localEditMove);
+
+	CHECK_EQUALS(move2.status.str(), "DEAD");
+	CHECK_EQUALS(root.status.str(), "DEAD");
+	CHECK_EQUALS(move1.correct, CORRECT_GOOD);
+	CHECK_EQUALS(move2.correct, CORRECT_GOOD);
+
+	localEditMove.destroy();
+	besogo.updateCorrectValues(root);
+	CHECK_EQUALS(move2.status.str(), "DEAD");
+});
+
 besogo.addTest("GameRoot", "VirtualChildLeadingToALocalEditIsLocal", function()
 {
 	// the solver explores the same position in two orders of moves

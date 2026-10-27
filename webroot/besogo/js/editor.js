@@ -264,8 +264,8 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
               ? current.children[0]
               : current.virtualChildren[0];
 
-        // The autoplay has no reply it may pick (the best one for the opponent is a local edit), so the
-        // line ends here instead of leaving the solver without an answer
+        // The autoplay has no reply it may pick (going round a cycle can lead back to a position better for the
+        // solver than the status the cycle got), so the line ends here instead of leaving the solver without an answer
         if (!next) {
           finish(current);
           return;
