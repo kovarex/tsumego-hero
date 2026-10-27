@@ -8,8 +8,8 @@ use App\Utility\TsumegoButtons;
 
 /**
  * @var View $this
- * @var array $chartData
- * @var array $dayRecords
+ * @var array<int, array{date: string, problems: int|null, users: int|null}> $chartData
+ * @var string|null $latestPublishDate
  * @var int $levelBar
  * @var string $quote
  * @var array $recentAchievements
@@ -97,14 +97,7 @@ echo '</div>';
 					data: {
 						datasets: [{
 							label: 'Problems',
-							data: [
-								<?php
-					echo implode(",", array_map(function ($r) {
-						$y = $r['problems'] !== null ? $r['problems'] : 'null';
-						return '{ x: \'' . $r['date'] . '\', y: ' . $y . ' }';
-					}, $chartData));
-?>
-							],
+							data: <?php echo json_encode(array_map(fn($month) => ['x' => $month['date'], 'y' => $month['problems']], $chartData)); ?>,
 							fill: true,
 							borderColor: '#d19fe4',
 							backgroundColor: 'rgba(209, 159, 228, 0.25)',
@@ -115,14 +108,7 @@ echo '</div>';
 							yAxisID: 'y'
 						}, {
 							label: 'Users',
-							data: [
-								<?php
-	echo implode(",", array_map(function ($r) {
-		$y = $r['users'] !== null ? $r['users'] : 'null';
-		return '{ x: \'' . $r['date'] . '\', y: ' . $y . ' }';
-	}, $chartData));
-?>
-							],
+							data: <?php echo json_encode(array_map(fn($month) => ['x' => $month['date'], 'y' => $month['users']], $chartData)); ?>,
 							fill: false,
 							borderColor: '#5b9bd5',
 							pointRadius: 0,
@@ -722,33 +708,6 @@ else
 					<a>Show more</a>
 				</div>
 				</div>
-
-					<?php
-if(Auth::isLoggedIn())
-	if(false)
-	{
-		?>
-					<div id="sandboxVolunteers2">
-						<p class="title4">Sandbox</p>
-						<br>
-						<div align="center"><font size="4px">
-						There are new problems in the sandbox.</font>
-						<table border="0" width="300px">
-						<tr>
-						<td class="sandbox-teaser" width="33%">
-						</td>
-						<td class="sandbox-teaser" width="33%">
-							<a href="/sets/sandbox" class="link-plain"><font size="4px">Enter</font><br></a>
-						</td>
-						<td class="sandbox-teaser" width="33%">
-						</td>
-						</tr>
-						</table>
-						</div>
-					</div>
-					<?php
-	}
-?>
 			</div>
 	</div>
 
@@ -776,17 +735,4 @@ if(Auth::isLoggedIn())
 			if(initialVisible >= articles.length)
 				$("#show-more-" + side).hide();
 		});
-
-		function sandboxY(){
-			document.cookie = "sandbox=3";
-			document.getElementById("sandboxVolunteers").style = "display:none;";
-		}
-		function sandboxN(){
-			document.cookie = "sandbox=1";
-			document.getElementById("sandboxVolunteers").style = "display:none;";
-		}
-		function sandboxM(){
-			document.cookie = "sandbox=2";
-			document.getElementById("sandboxVolunteers").style = "display:none;";
-		}
 	</script>
