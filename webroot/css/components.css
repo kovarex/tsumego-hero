@@ -296,10 +296,11 @@
 	transition: background 0.2s;
 }
 
+/* The background shows the hover, the text keeps its colour and a link-button is never underlined. */
 .btn:hover
 {
-	background-color: var(--surface-button-hover);
-	color: var(--color-white);
+	background-color: var(--surface-button-pressed);
+	text-decoration: none;
 	cursor: pointer;
 }
 
@@ -338,7 +339,6 @@
 .btn--danger:hover
 {
 	background: var(--color-red-darker);
-	color: var(--color-red-light);
 }
 
 .btn--small
@@ -373,6 +373,25 @@
 	color: var(--color-white);
 }
 
+/* Goes somewhere (open, compare) rather than doing something: blue like a link,
+   white text readable in both themes. */
+.btn--navigation
+{
+	background: var(--color-blue-dark);
+	border-color: var(--color-blue-dark);
+	color: var(--color-white);
+}
+
+.btn--navigation:hover
+{
+	background: var(--color-blue-darker);
+}
+
+.btn--navigation.btn--disabled:hover
+{
+	background: var(--color-blue-dark);
+}
+
 /* Grey box + white text + wider padding: the pre-refactor .new-button look. */
 .btn--primary
 {
@@ -397,8 +416,7 @@
 
 .btn--neutral:hover
 {
-	background: var(--color-gray-dark);
-	color: var(--color-white);
+	background: var(--surface-button-neutral-hover);
 }
 
 /* ── Sub-navigation ── */
@@ -950,13 +968,13 @@
 	padding: 6px;
 }
 
-.data-table a
+.data-table a:not(.btn)
 {
 	color: inherit;
 	text-decoration: none;
 }
 
-.data-table a:hover
+.data-table a:not(.btn):hover
 {
 	text-decoration: underline;
 }

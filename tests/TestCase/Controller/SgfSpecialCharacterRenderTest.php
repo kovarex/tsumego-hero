@@ -84,7 +84,7 @@ class SgfSpecialCharacterRenderTest extends IntegrationTestCase
 		]);
 		$sgfID = $context->tsumegos[0]['sgfs'][0]['id'];
 
-		$this->get('/admin/sgf-changes');
+		$this->get('/admin/sgf-changes?show=all');
 		$this->assertResponseOk();
 		$this->assertStringNotContainsString('日本語', $this->view, 'the page does not carry the SGF');
 		$this->assertStringContainsString('id="open-' . $sgfID . '" href="/editor?sgfID=' . $sgfID . '"', $this->view);

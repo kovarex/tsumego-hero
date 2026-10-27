@@ -14,24 +14,37 @@ use User;
 //control without a decision.
 class SgfChangesRenderer extends DataTableRenderer
 {
-	//The url parameter of the list of the changes the admin did not check yet
-	public const NOT_REVIEWED_PARAMETER = 'not_reviewed';
+	//The url parameter of the list on the page, one of the keys of LISTS
+	public const LIST_PARAMETER = 'show';
+
+	//The lists of the page by the labels of their tabs, the first one is shown when the url names none
+	private const LISTS = [
+		'not-reviewed' => 'Not reviewed by me',
+		'mine' => 'My changes',
+		'all' => 'All changes'];
 
 	//The columns of a user the rows have twice, the admin who accepted the change and its author
 	private const USER_FIELDS = ['id', 'display_name', 'external_id', 'picture', 'email', 'avatar_setting_id', 'uploaded_avatar_hash', 'rating', 'deleted'];
 
 	//$newSince: When the admin looked the time before (see AdminPage::markViewed),
 	//what the others accepted since then is marked as new
+	/** @throws \BadRequestException When the url names a list the page doesn't have */
 	public function __construct(array $urlParams, private ?string $newSince = null)
 	{
 		$this->userID = Auth::getUserID();
-		$this->onlyNotReviewed = !empty($urlParams[self::NOT_REVIEWED_PARAMETER]);
-		$this->notReviewedCount = self::countNotReviewed($this->userID);
-		$this->count = $this->onlyNotReviewed
-			? $this->notReviewedCount
-			: (int) Util::query('SELECT COUNT(*) AS total FROM sgf WHERE sgf_status_id = ?', [Sgf::STATUS_ACCEPTED])[0]['total'];
-		parent::__construct($urlParams, 'sgf_changes_page', $this->onlyNotReviewed ? 'SGF changes you did not review' : 'SGF changes');
+		$this->list = $urlParams[self::LIST_PARAMETER] ?? array_key_first(self::LISTS);
+		if (!isset(self::LISTS[$this->list]))
+			throw new \BadRequestException('There is no list ' . $this->list . ' of SGF changes');
+		foreach (array_keys(self::LISTS) as $list)
+		{
+			[$condition, $parameters] = $this->conditionOf($list);
+			$this->counts[$list] = (int) Util::query('SELECT COUNT(*) AS total FROM sgf WHERE sgf.sgf_status_id = ?' . $condition, [Sgf::STATUS_ACCEPTED, ...$parameters])[0]['total'];
+		}
+		$this->count = $this->counts[$this->list];
+		// the tabs say which list it is and how many changes it has
+		parent::__construct($urlParams, 'sgf_changes_page', null);
 
+		[$condition, $parameters] = $this->conditionOf($this->list);
 		$this->data = Util::query("
 SELECT
 	sgf.id AS id,
@@ -66,25 +79,27 @@ LEFT JOIN set_connection
 	)
 LEFT JOIN `set` ON `set`.id = set_connection.set_id
 LEFT JOIN tsumego_status ON tsumego_status.user_id = ? AND tsumego_status.tsumego_id = sgf.tsumego_id
-WHERE sgf.sgf_status_id = " . Sgf::STATUS_ACCEPTED . ($this->onlyNotReviewed ? ' AND ' . self::notReviewedSql() : '') . "
+WHERE sgf.sgf_status_id = " . Sgf::STATUS_ACCEPTED . $condition . "
 ORDER BY sgf.accepted DESC, sgf.id DESC
 LIMIT " . self::$PAGE_SIZE . "
-OFFSET " . $this->offset, $this->onlyNotReviewed ? [$this->userID, $this->userID, $this->userID] : [$this->userID]);
+OFFSET " . $this->offset, [$this->userID, ...$parameters]);
 
 		$this->reviewers = SgfReview::reviewersOf(array_map(fn($item) => (int) $item['id'], $this->data));
 	}
 
-	//The changes accepted by others the admin did not review yet.
-	public static function countNotReviewed(int $userID): int
+	//The condition the changes of the list add to the query, with its parameters:
+	//- not-reviewed: accepted by others, the admin did not tick them yet
+	//- mine: what the admin made part of a problem, their own changes and the proposals they accepted
+	/** @return array{string, list<int>} */
+	private function conditionOf(string $list): array
 	{
-		return (int) Util::query('SELECT COUNT(*) AS total FROM sgf WHERE sgf.sgf_status_id = ? AND ' . self::notReviewedSql(), [Sgf::STATUS_ACCEPTED, $userID, $userID])[0]['total'];
-	}
-
-	//The condition of a change accepted by someone else the admin did not tick, the two parameters
-	//are the id of the admin.
-	private static function notReviewedSql(): string
-	{
-		return 'NOT (sgf.accepted_by_user_id <=> ?) AND NOT EXISTS (SELECT 1 FROM sgf_review WHERE sgf_review.sgf_id = sgf.id AND sgf_review.user_id = ?)';
+		return match ($list)
+		{
+			'not-reviewed' => [' AND NOT (sgf.accepted_by_user_id <=> ?) AND NOT EXISTS (SELECT 1 FROM sgf_review WHERE sgf_review.sgf_id = sgf.id AND sgf_review.user_id = ?)', [$this->userID, $this->userID]],
+			'mine' => [' AND sgf.accepted_by_user_id = ?', [$this->userID]],
+			'all' => ['', []],
+			default => throw new \InvalidArgumentException('There is no list ' . $list . ' of SGF changes'),
+		};
 	}
 
 	//The columns of the user joined as $alias, each prefixed by the alias
@@ -105,10 +120,10 @@ OFFSET " . $this->offset, $this->onlyNotReviewed ? [$this->userID, $this->userID
 
 	public function render(): void
 	{
-		echo '<div class="sgf-changes__filter" id="sgf-changes-filter">';
-		echo $this->onlyNotReviewed
-			? '<a href="?">All changes</a> | <strong>Not reviewed by me (' . $this->notReviewedCount . ')</strong>'
-			: '<strong>All changes</strong> | <a href="?' . self::NOT_REVIEWED_PARAMETER . '=1">Not reviewed by me (' . $this->notReviewedCount . ')</a>';
+		echo '<div class="subnav sgf-changes__lists" id="sgf-changes-lists">';
+		foreach (self::LISTS as $list => $label)
+			echo '<a class="subnav__link' . ($list === $this->list ? ' subnav__link--active' : '') . '" href="?' . self::LIST_PARAMETER . '=' . $list . '">'
+				. $label . ' (' . $this->counts[$list] . ')</a>';
 		echo '</div>';
 		parent::render();
 	}
@@ -158,11 +173,11 @@ OFFSET " . $this->offset, $this->onlyNotReviewed ? [$this->userID, $this->userID
 
 		echo '<td>';
 		if ($item['previous_version_id'])
-			echo '<a class="btn btn--small" id="compare-' . $id . '" href="/editor?sgfID=' . $id . '&diffID=' . (int) $item['previous_version_id'] . '">Diff</a>';
+			echo '<a class="btn btn--small btn--navigation" id="compare-' . $id . '" href="/editor?sgfID=' . $id . '&diffID=' . (int) $item['previous_version_id'] . '">Diff</a>';
 		else
-			echo '<span class="btn btn--small btn--disabled" title="The first version of the problem, there is nothing to compare it with">Diff</span>';
+			echo '<span class="btn btn--small btn--navigation btn--disabled" title="The first version of the problem, there is nothing to compare it with">Diff</span>';
 		echo '</td>';
-		echo '<td><a class="btn btn--small" id="open-' . $id . '" href="/editor?sgfID=' . $id . '">Open</a></td>';
+		echo '<td><a class="btn btn--small btn--navigation" id="open-' . $id . '" href="/editor?sgfID=' . $id . '">Open</a></td>';
 
 		echo '<td>';
 		if ($item['set_connection_id'])
@@ -200,8 +215,12 @@ OFFSET " . $this->offset, $this->onlyNotReviewed ? [$this->userID, $this->userID
 	}
 
 	private int $userID;
-	private bool $onlyNotReviewed;
-	private int $notReviewedCount;
+
+	//The key of LISTS shown
+	private string $list;
+
+	/** @var array<string, int> How many changes each of the LISTS has */
+	private array $counts = [];
 
 	/** @var array<int, list<array<string, mixed>>> */
 	private array $reviewers = [];
