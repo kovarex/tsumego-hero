@@ -7,6 +7,8 @@ import { Changelog } from './changelog/Changelog';
 import { ClassroomProgress } from './classrooms/ClassroomProgress';
 import { AssignmentEditor } from './classrooms/AssignmentEditor';
 import { Messages } from './messages/Messages';
+import { LineChart } from './charts/LineChart';
+import { BarChart } from './charts/BarChart';
 import { syncMenuNewBadge } from './changelog/changelogCount';
 import { queryClient } from './queryClient';
 import { localizeTimeElements } from './shared/dates';
@@ -22,6 +24,8 @@ function initializeApp()
 	mountApp('[data-classroom-progress-root]', ClassroomProgress);
 	mountApp('[data-assignment-editor-root]', AssignmentEditor);
 	mountApp('[data-messages-root]', Messages);
+	mountApp('[data-line-chart-root]', LineChart);
+	mountApp('[data-bar-chart-root]', BarChart);
 
 	syncMenuNewBadge();
 

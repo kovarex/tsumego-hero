@@ -326,6 +326,12 @@
 		--text-softer-color: grey;
 		--link-color: #0000EE;
 		--current-border-color: #ccc;
+		--chart-text-color: #999;
+		--chart-grid-color: rgba(0, 0, 0, 0.08);
+		--chart-background: transparent;
+		--chart-separator-color: #fff;
+		--chart-tooltip-background: rgba(20, 20, 20, 0.95);
+		--chart-tooltip-text-color: #fff;
 		--surface-bar: #f5f5f5;
 		--dark-button-icon: url("/img/light-icon1x.png");
 		--new1-gradient: linear-gradient(#fff, #f2f2f2);
@@ -372,6 +378,9 @@
 		--text-softer-color: grey;
 		--link-color: #f0f0f0;
 		--current-border-color: #444;
+		--chart-grid-color: rgba(255, 255, 255, 0.08);
+		--chart-background: #2a2a2a;
+		--chart-separator-color: #2a2a2a;
 		--surface-bar: #303030;
 		--dark-button-icon: url("/img/dark-icon1.png");
 		--new1-gradient: linear-gradient(#3c3c3c, #2a2a2a);

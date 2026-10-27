@@ -1,6 +1,7 @@
 <?php
 
 use App\Utility\Auth;
+use App\Utility\ChartRenderer;
 use App\Utility\Constants;
 use App\Utility\MistakeTraining;
 use App\Utility\TsumegoButton;
@@ -22,8 +23,6 @@ use App\Utility\TsumegoButtons;
 $this->start('script');
 ?>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <?php
 $this->end();
 ?>
@@ -90,89 +89,12 @@ echo '</div>';
 
 				<p class="title4">Site Growth</p>
 				<div class="new1">
-				<div class="chart-box"><canvas id="chartContainer"></canvas></div>
-				<script>
-				new Chart(document.getElementById('chartContainer'), {
-					type: 'line',
-					data: {
-						datasets: [{
-							label: 'Problems',
-							data: <?php echo json_encode(array_map(fn($month) => ['x' => $month['date'], 'y' => $month['problems']], $chartData)); ?>,
-							fill: true,
-							borderColor: '#d19fe4',
-							backgroundColor: 'rgba(209, 159, 228, 0.25)',
-							pointRadius: 0,
-							pointHoverRadius: 6,
-							borderWidth: 2,
-							tension: 0.1,
-							yAxisID: 'y'
-						}, {
-							label: 'Users',
-							data: <?php echo json_encode(array_map(fn($month) => ['x' => $month['date'], 'y' => $month['users']], $chartData)); ?>,
-							fill: false,
-							borderColor: '#5b9bd5',
-							pointRadius: 0,
-							pointHoverRadius: 6,
-							borderWidth: 2,
-							tension: 0.1,
-							yAxisID: 'y1'
-						}]
-					},
-					options: {
-						responsive: true,
-						maintainAspectRatio: false,
-						scales: {
-							x: {
-								type: 'time',
-								time: {
-									unit: 'month',
-									displayFormats: { month: 'MMM yy' },
-									tooltipFormat: 'MMM yyyy'
-								},
-								ticks: { color: '#999' },
-								grid: { color: 'rgba(255,255,255,0.05)' }
-							},
-							y: {
-								type: 'linear',
-								display: true,
-								position: 'left',
-								beginAtZero: true,
-								ticks: { color: '#d19fe4' },
-								grid: { color: 'rgba(255,255,255,0.05)' }
-							},
-							y1: {
-								type: 'linear',
-								display: true,
-								position: 'right',
-								beginAtZero: true,
-								ticks: { color: '#5b9bd5' },
-								grid: { drawOnChartArea: false }
-							}
-						},
-						plugins: {
-							legend: {
-								display: true,
-								labels: { color: '#999' },
-								onClick: function(e, legendItem, legend) {
-									const ci = legend.chart;
-									const meta = ci.getDatasetMeta(legendItem.datasetIndex);
-									meta.hidden = meta.hidden === null ? true : null;
-									ci.options.scales.y.display = ci.isDatasetVisible(0);
-									ci.options.scales.y1.display = ci.isDatasetVisible(1);
-									ci.update();
-								}
-							},
-							tooltip: {
-								mode: 'index',
-								intersect: false,
-								callbacks: {
-									label: function(item) { return item.dataset.label + ': ' + item.parsed.y.toLocaleString(); }
-								}
-							}
-						}
-					}
-				});
-				</script>
+				<?php
+echo ChartRenderer::line(null, [
+	['label' => 'Problems', 'color' => '#d19fe4', 'axis' => 'left', 'fill' => true, 'points' => array_map(fn($month) => [$month['date'], $month['problems']], $chartData)],
+	['label' => 'Users', 'color' => '#5b9bd5', 'axis' => 'right', 'fill' => false, 'points' => array_map(fn($month) => [$month['date'], $month['users']], $chartData)]],
+	'month', 360, true, 'chart-box');
+?>
 				<br>
 				</div>
 

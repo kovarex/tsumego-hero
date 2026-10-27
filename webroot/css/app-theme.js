@@ -24,5 +24,3 @@ import './page/auth.css';
 import './page/comments.css';
 import './page/messages.css';
 import './page/tsumego.css';
-// Third-party chart theme (unlayered; only styles apexcharts-* classes).
-import './apexcharts-theme.css';

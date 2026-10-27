@@ -485,13 +485,13 @@ class SitesControllerTest extends IntegrationTestCase
 		$browser->driver->executeScript('window.__jsErrors = [];');
 	}
 
-	//Verifies the homepage chart container exists and has data.
+	//The home page hands the growth of the site to the chart, a point a month for the problems and the users.
 	/**
 	 * @group browser
 	 * @retryAttempts 2
 	 * @retryIfException Facebook\WebDriver\Exception\WebDriverException
 	 */
-	public function testHomepageChartRenders(): void
+	public function testHomepageChartGetsTheSiteGrowth(): void
 	{
 		new ContextPreparator([
 			'user' => ['name' => 'testuser'],
@@ -502,17 +502,12 @@ class SitesControllerTest extends IntegrationTestCase
 		$browser = Browser::instance();
 		$browser->get('/');
 
-		$pageSource = $browser->driver->getPageSource();
-		$this->assertStringContainsString('chartContainer', $pageSource, 'Chart container should exist');
-		$this->assertStringContainsString("label: 'Problems'", $pageSource, 'Problems dataset should exist');
-		$this->assertStringContainsString("label: 'Users'", $pageSource, 'Users dataset should exist');
-
 		$chartData = SiteGrowth::chartData();
 		$this->assertNotEmpty($chartData);
-		$problemPoints = array_map(fn($month) => ['x' => $month['date'], 'y' => $month['problems']], $chartData);
-		$userPoints = array_map(fn($month) => ['x' => $month['date'], 'y' => $month['users']], $chartData);
-		$this->assertStringContainsString('data: ' . json_encode($problemPoints) . ',', $pageSource);
-		$this->assertStringContainsString('data: ' . json_encode($userPoints) . ',', $pageSource);
+		$props = json_decode($browser->find('.chart-box[data-line-chart-root]')->getAttribute('data-props'), true);
+		$this->assertSame(['Problems', 'Users'], array_column($props['series'], 'label'));
+		$this->assertSame(array_map(fn($month) => [$month['date'], $month['problems']], $chartData), $props['series'][0]['points']);
+		$this->assertSame(array_map(fn($month) => [$month['date'], $month['users']], $chartData), $props['series'][1]['points']);
 	}
 
 	//A logged-in user sees their account block (name + Sign Out) in the nav and
