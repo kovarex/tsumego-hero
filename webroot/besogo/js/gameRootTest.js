@@ -110,6 +110,34 @@ besogo.addTest("GameRoot", "ShiftedPositionsHaveDifferentHashes", function()
 	CHECK(first.getHash() != second.getHash());
 });
 
+besogo.addTest("GameRoot", "SetupStoneReachesTheNodesBelow", function()
+{
+	// every node has a board of its own, so a stone placed into a problem goes into the boards below too
+	let root = besogo.makeGameRoot();
+	let move = root.registerMove(3, 3);
+	let reply = move.registerMove(4, 4);
+	let otherMove = root.registerMove(1, 1);
+	CHECK(root.placeSetup(1, 1, WHITE));
+	CHECK_EQUALS(move.getStone(1, 1), WHITE);
+	CHECK_EQUALS(reply.getStone(1, 1), WHITE);
+	CHECK_EQUALS(otherMove.getStone(1, 1), BLACK); // its own move stays
+});
+
+besogo.addTest("GameRoot", "TransformationAfterASetupStoneFindsTheNodes", function()
+{
+	// the editor places a stone into a loaded problem, then the board is flipped
+	let editor = besogo.makeEditor(19, 19, {});
+	besogo.loadSgf(besogo.parseSgf("(;SZ[19]AB[cc];B[dd];W[ee])"), editor);
+	let root = editor.getRoot();
+	CHECK(root.placeSetup(1, 1, BLACK));
+	let transformation = besogo.makeTransformation();
+	transformation.hFlip = true;
+	root.applyTransformationOnRoot(transformation); // takes each node out of the node hash table under its hash first
+	for (let node = root; node; node = node.children[0])
+		CHECK(root.nodeHashTable.getSameNode(node) == node);
+	CHECK_EQUALS(root.children[0].children[0].getStone(19, 1), BLACK);
+});
+
 besogo.addTest("GameRoot", "LocalEditDoesntBreakValidVariation", function()
 {
 	let root = besogo.makeGameRoot();
