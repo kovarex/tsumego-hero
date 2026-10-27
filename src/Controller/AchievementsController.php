@@ -27,56 +27,61 @@ class AchievementsController extends AppController
 		$this->render('index');
 	}
 
+	//One card per achievement. Without a viewed user (anonymous visitor) every card is locked.
 	/** @param UserRow|null $viewedUser */
 	private function renderAchievementsPage(?array $viewedUser): void
 	{
 		$this->set('_page', 'user');
 		$this->set('_title', 'Tsumego Hero - Achievements');
 		$this->loadModel('AchievementStatus');
-		$existingAs = [];
 
-		$a = $this->Achievement->find('all', ['order' => 'order ASC']);
-		if (!$a)
-			$a = [];
-
+		$statusByAchievementId = [];
 		if ($viewedUser)
 		{
 			$this->set('viewedUser', $viewedUser);
-			$as = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $viewedUser['id']]]);
-			if (!$as)
-				$as = [];
-
-			foreach ($as as $item)
-				$existingAs[$item['AchievementStatus']['achievement_id']] = $item;
+			foreach ($this->AchievementStatus->find('all', ['conditions' => ['user_id' => $viewedUser['id']]]) as $status)
+				$statusByAchievementId[$status['AchievementStatus']['achievement_id']] = $status['AchievementStatus'];
 		}
 
-		$aCount = count($a);
-		for ($i = 0; $i < $aCount; $i++)
+		$achievements = [];
+		foreach ($this->Achievement->find('all', ['order' => 'order ASC']) as $row)
 		{
-			$a[$i]['Achievement']['unlocked'] = false;
-			$a[$i]['Achievement']['unlocked_at'] = null;
-			if (isset($existingAs[$a[$i]['Achievement']['id']]))
-			{
-				// Repeatable achievements are earned more than once: they show how often,
-				// but still count as a single completed achievement.
-				$a[$i]['Achievement']['earned_count'] = (int) $existingAs[$a[$i]['Achievement']['id']]['AchievementStatus']['value'];
-				$a[$i]['Achievement']['unlocked'] = true;
-				$a[$i]['Achievement']['unlocked_at'] = $existingAs[$a[$i]['Achievement']['id']]['AchievementStatus']['created'];
-			}
+			$achievement = $row['Achievement'];
+			$status = $statusByAchievementId[$achievement['id']] ?? null;
+			$achievements[] = [
+				'id' => (int) $achievement['id'],
+				'url' => '/achievements/view/' . $achievement['id'] . ($viewedUser ? '/' . $viewedUser['id'] : ''),
+				'name' => $achievement['name'],
+				'long_name' => strlen($achievement['name']) > 30,
+				'description' => $achievement['description'],
+				'xp' => $achievement['xp'],
+				'image' => $status ? $achievement['image'] : 'ac000i',
+				'color' => $status ? $achievement['color'] : 'achievementColorGray',
+				'unlocked' => $status !== null,
+				'unlocked_at' => $status ? $status['created'] : null,
+				//Repeatable achievements are earned more than once: they show how often,
+				//but still count as a single completed achievement.
+				'earned_count' => $status ? (int) $status['value'] : 0,
+				'progress' => null,
+				'progress_goal' => null,
+				'progress_percent' => null,
+			];
 		}
 		if ($viewedUser)
-			$this->fillProgress($a, (int) $viewedUser['id']);
-		$this->set('a', $a);
+			$this->fillProgress($achievements, (int) $viewedUser['id']);
+
+		$this->set('achievements', $achievements);
+		$this->set('unlockedCount', count(array_filter(array_column($achievements, 'unlocked'))));
 	}
 
-	//Adds progress and progress_goal to the locked set completion achievements, so their cards
-	//can show how far the user got.
+	//Fills progress, progress_goal and progress_percent of the locked set completion
+	//achievements, so their cards can show how far the user got.
 	private function fillProgress(array &$achievements, int $userID): void
 	{
 		$definitions = [];
 		foreach ($achievements as $index => $achievement)
-			if (!$achievement['Achievement']['unlocked'])
-				if ($definition = Achievement::progressDefinition((int) $achievement['Achievement']['id']))
+			if (!$achievement['unlocked'])
+				if ($definition = Achievement::progressDefinition($achievement['id']))
 					if ($definition['category'] == AchievementCondition::CATEGORY_COMPLETED_SETS)
 						$definitions[$index] = $definition;
 		if (!$definitions)
@@ -85,8 +90,10 @@ class AchievementsController extends AppController
 		$values = AchievementCondition::values($userID, array_values(array_unique(array_column($definitions, 'category'))));
 		foreach ($definitions as $index => $definition)
 		{
-			$achievements[$index]['Achievement']['progress'] = min((int) ($values[$definition['category']] ?? 0), $definition['goal']);
-			$achievements[$index]['Achievement']['progress_goal'] = $definition['goal'];
+			$progress = min((int) ($values[$definition['category']] ?? 0), $definition['goal']);
+			$achievements[$index]['progress'] = $progress;
+			$achievements[$index]['progress_goal'] = $definition['goal'];
+			$achievements[$index]['progress_percent'] = (int) round($progress / $definition['goal'] * 100);
 		}
 	}
 
