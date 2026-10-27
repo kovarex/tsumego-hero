@@ -158,11 +158,11 @@ OFFSET " . $this->offset, $this->onlyNotReviewed ? [$this->userID, $this->userID
 
 		echo '<td>';
 		if ($item['previous_version_id'])
-			echo '<a class="btn btn--small" id="compare-' . $id . '" href="/editor?sgfID=' . $id . '&diffID=' . (int) $item['previous_version_id'] . '">Diff</a>';
+			echo '<a class="btn btn--small btn--navigation" id="compare-' . $id . '" href="/editor?sgfID=' . $id . '&diffID=' . (int) $item['previous_version_id'] . '">Diff</a>';
 		else
-			echo '<span class="btn btn--small btn--disabled" title="The first version of the problem, there is nothing to compare it with">Diff</span>';
+			echo '<span class="btn btn--small btn--navigation btn--disabled" title="The first version of the problem, there is nothing to compare it with">Diff</span>';
 		echo '</td>';
-		echo '<td><a class="btn btn--small" id="open-' . $id . '" href="/editor?sgfID=' . $id . '">Open</a></td>';
+		echo '<td><a class="btn btn--small btn--navigation" id="open-' . $id . '" href="/editor?sgfID=' . $id . '">Open</a></td>';
 
 		echo '<td>';
 		if ($item['set_connection_id'])

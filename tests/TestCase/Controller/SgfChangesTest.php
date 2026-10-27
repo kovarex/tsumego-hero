@@ -285,8 +285,8 @@ class SgfChangesTest extends IntegrationTestCase
 		$this->assertStringNotContainsString('Reviewed set - 3', $this->view);
 		$this->assertMatchesRegularExpression('~<a href="/users/view/' . $this->authorID($context) . '"><img [^>]*class="user-avatar~', $this->cell('sgf-changes__accepted-by', $third), 'the admin has an avatar');
 		$this->assertStringContainsString('Added the ko variation', $this->view);
-		$this->assertStringContainsString('<a class="btn btn--small" id="open-' . $third . '" href="/editor?sgfID=' . $third . '">Open</a>', $this->view);
-		$this->assertStringContainsString('<a class="btn btn--small" id="compare-' . $third . '" href="/editor?sgfID=' . $third . '&diffID=' . $second . '">Diff</a>', $this->view);
+		$this->assertStringContainsString('<a class="btn btn--small btn--navigation" id="open-' . $third . '" href="/editor?sgfID=' . $third . '">Open</a>', $this->view);
+		$this->assertStringContainsString('<a class="btn btn--small btn--navigation" id="compare-' . $third . '" href="/editor?sgfID=' . $third . '&diffID=' . $second . '">Diff</a>', $this->view);
 		$this->assertStringNotContainsString('id="compare-' . $first . '"', $this->view, 'the first version has nothing to compare with');
 		$this->assertStringContainsString('btn--disabled', $this->view);
 		$this->assertStringNotContainsString('id="download-', $this->view);
