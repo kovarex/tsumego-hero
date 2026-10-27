@@ -279,9 +279,9 @@ besogo.addTest("GameRoot", "CanStillEndCorrectTellsTheLostLineApart", function()
 	CHECK(!wrongEnd.canStillEndCorrect());
 });
 
-besogo.addTest("GameRoot", "CanStillEndCorrectWhileTheOpponentMayPickAReplyThatLoses", function()
+besogo.addTest("GameRoot", "WrongMoveIsAnsweredOnlyByARefutation", function()
 {
-	// The move is wrong because of the refutation, but the autoplay may still pick the other reply
+	// The move is wrong because of the refutation, so the autoplay doesn't pick the other reply, which loses
 	let root = besogo.makeGameRoot();
 	let move = root.registerMove(1, 1);
 	let refutation = move.registerMove(1, 2);
@@ -290,7 +290,9 @@ besogo.addTest("GameRoot", "CanStillEndCorrectWhileTheOpponentMayPickAReplyThatL
 	losingReply.registerMove(2, 3).setCorrectSource(true);
 
 	CHECK_EQUALS(move.correct, CORRECT_BAD);
-	CHECK(move.canStillEndCorrect());
+	CHECK_EQUALS(move.countOfNonLocalChildrenIncludingVirtualWithNoBetterStatus(), 1);
+	CHECK(move.selectNonLocalChildIncludingVirtualWithNoBetterStatus(0) == refutation);
+	CHECK(!move.canStillEndCorrect()); // so the fail is sent with the move
 	CHECK(!refutation.canStillEndCorrect());
 	CHECK(losingReply.canStillEndCorrect());
 });
