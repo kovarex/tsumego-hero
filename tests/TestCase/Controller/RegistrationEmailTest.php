@@ -2,15 +2,11 @@
 
 use App\Utility\CookieFlash;
 
-/**
- * Tests for the registration endpoint: the e-mail and the login name a new account
- * gets, and the registrations it refuses.
- */
+//Tests for the registration endpoint: the e-mail and the login name a new account
+//gets, and the registrations it refuses.
 class RegistrationEmailTest extends IntegrationTestCase
 {
-	/**
-	 * Test that registration fails when email is already used by a regular user.
-	 */
+	//Test that registration fails when email is already used by a regular user.
 	public function testRegistrationFailsWhenEmailUsedByRegularUser()
 	{
 		// Create an existing regular user with ContextPreparator
@@ -50,9 +46,7 @@ class RegistrationEmailTest extends IntegrationTestCase
 			"Original user should still exist with original name");
 	}
 
-	/**
-	 * Test that registration fails when email is already used by a Google user.
-	 */
+	//Test that registration fails when email is already used by a Google user.
 	public function testRegistrationFailsWhenEmailUsedByGoogleUser()
 	{
 		// Create a Google user with ContextPreparator
@@ -92,9 +86,6 @@ class RegistrationEmailTest extends IntegrationTestCase
 			"Google user should still exist with original display_name");
 	}
 
-	/**
-	 * Test that registration succeeds with a unique email.
-	 */
 	public function testRegistrationSucceedsWithUniqueEmail()
 	{
 		// Clean state with no users
@@ -122,13 +113,10 @@ class RegistrationEmailTest extends IntegrationTestCase
 		$this->assertEquals('Registration successful.', CookieFlash::get());
 	}
 
-	/**
-	 * Test that registration handles display_name conflicts with Google accounts.
-	 *
-	 * Scenario: a Google account has no login name and holds the display name
-	 * "ConflictName". A new player registers with the login name "ConflictName",
-	 * which is free, so registration succeeds with the display name "ConflictName (2)".
-	 */
+	//Test that registration handles display_name conflicts with Google accounts.
+	//Scenario: a Google account has no login name and holds the display name
+	//"ConflictName". A new player registers with the login name "ConflictName",
+	//which is free, so registration succeeds with the display name "ConflictName (2)".
 	public function testRegistrationHandlesDisplayNameConflictWithGoogleUser()
 	{
 		// Create a Google account that holds the display name

@@ -3,19 +3,18 @@
 use App\Utility\Constants;
 use Facebook\WebDriver\WebDriverDimension;
 
+//The board of a problem and the buttons under it fit in the window, however tall the shown part
+//of the board is (forum#105).
 /**
- * The board of a problem and the buttons under it fit in the window, however tall the shown part
- * of the board is (forum#105).
- *
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
 class BoardFitsWindowTest extends IntegrationTestCase
 {
-	/** The stones of /15210 (The L Group 7/46): the shown part is taller than wide, but not enough to be turned on its side. */
+	//The stones of /15210 (The L Group 7/46): the shown part is taller than wide, but not enough to be turned on its side.
 	private const TALL_SGF = '(;GM[1]FF[4]SZ[19]ST[2]AB[bd][ca][cb][cc][cd]AW[bf][bg][ce][db][dd][de][eb]G[KILL];B[aa]C[+])';
 
-	/** Layout of the page in pixels, as the player sees it scrolled to the top */
+	//Layout of the page in pixels, as the player sees it scrolled to the top
 	private function layout(Browser $browser): array
 	{
 		return $browser->driver->executeScript(<<<'JS'

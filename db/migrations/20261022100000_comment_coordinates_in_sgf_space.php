@@ -4,28 +4,22 @@ use App\Utility\LegacyCommentConverter;
 use App\Utility\SgfTree;
 use Phinx\Migration\AbstractMigration;
 
-/**
- * Comments now keep their coordinates (in the text and in the board position they
- * are anchored to) in the coordinates and colours of the stored SGF, and the board
- * converts them exactly to the orientation each viewer sees.
- *
- * The comments written until now are in the orientation their author happened to
- * see, which was never saved, so the board guessed it every time it showed them.
- * LegacyCommentConverter makes that guess once for each comment against the
- * current SGF of its problem, and the result is stored. The "[current position]"
- * markers are removed on the way, the position column alone marks the anchor.
- *
- * Every changed comment is copied to tsumego_comment_before_sgf_coordinates first,
- * so down() can put the original text and position back.
- */
+//Comments now keep their coordinates (in the text and in the board position they
+//are anchored to) in the coordinates and colours of the stored SGF, and the board
+//converts them exactly to the orientation each viewer sees.
+//The comments written until now are in the orientation their author happened to
+//see, which was never saved, so the board guessed it every time it showed them.
+//LegacyCommentConverter makes that guess once for each comment against the
+//current SGF of its problem, and the result is stored. The "[current position]"
+//markers are removed on the way, the position column alone marks the anchor.
+//Every changed comment is copied to tsumego_comment_before_sgf_coordinates first,
+//so down() can put the original text and position back.
 class CommentCoordinatesInSgfSpace extends AbstractMigration
 {
-	/**
-	 * Comments checked by hand (2026-10-22) that were written with the colours swapped,
-	 * which only their words tell ("white can live with Ko" on a "Black to live."
-	 * problem), so the converter can't see it. Each is matched by the md5 of its text,
-	 * one edited since is left to the converter.
-	 */
+	//Comments checked by hand (2026-10-22) that were written with the colours swapped,
+	//which only their words tell ("white can live with Ko" on a "Black to live."
+	//problem), so the converter can't see it. Each is matched by the md5 of its text,
+	//one edited since is left to the converter.
 	private const COLORS_SWAPPED = [
 		790 => '1258f359d7ec248857e8b9c95795573f',
 		2113 => 'e31d59c8f2513a757c8be72115abf285',
@@ -92,7 +86,7 @@ class CommentCoordinatesInSgfSpace extends AbstractMigration
 		}
 	}
 
-	/** True for a comment of COLORS_SWAPPED as it was checked, null leaves its colours to the converter. */
+	//True for a comment of COLORS_SWAPPED as it was checked, null leaves its colours to the converter.
 	private function colorsSwappedByHand(array $comment): ?bool
 	{
 		$checked = self::COLORS_SWAPPED[(int) $comment['id']] ?? null;

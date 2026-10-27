@@ -6,13 +6,9 @@ class ChangelogController extends AppController
 {
 	public $helpers = ['Html', 'Form'];
 
-	/**
-	 * Renders the public /changelog page. The entries and the deployed revision
-	 * come from the generated changelog/index.json (produced by
-	 * scripts/changelog-generate.mjs at deploy time).
-	 *
-	 * @return void
-	 */
+	//Renders the public /changelog page. The entries and the deployed revision
+	//come from the generated changelog/index.json (produced by
+	//scripts/changelog-generate.mjs at deploy time).
 	#[HttpGet]
 	public function index(): void
 	{
@@ -33,14 +29,11 @@ class ChangelogController extends AppController
 		$this->set('entries', $entries);
 	}
 
-	/**
-	 * Timestamps of the changelog entries, newest first. Emitted inline in the
-	 * layout so the "What's new" menu badge can count new items in the client
-	 * without a round trip on every page load.
-	 *
-	 * @param string|null $file Changelog index path (overridable for tests)
-	 * @return int[]
-	 */
+	//Timestamps of the changelog entries, newest first. Emitted inline in the
+	//layout so the "What's new" menu badge can count new items in the client
+	//without a round trip on every page load.
+	//$file: Changelog index path (overridable for tests)
+	/** @return int[] */
 	#[HttpGet]
 	public static function changelogTimestamps(?string $file = null): array
 	{

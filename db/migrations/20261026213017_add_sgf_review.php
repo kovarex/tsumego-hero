@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * The admins tick the SGF changes they checked (see SgfReview), so each of them sees what is still
- * to check and who of the others checked a change already. The uploads page of the admin area is
- * called SGF changes now.
- */
+//The admins tick the SGF changes they checked (see SgfReview), so each of them sees what is still
+//to check and who of the others checked a change already. The uploads page of the admin area is
+//called SGF changes now.
 final class AddSgfReview extends AbstractMigration
 {
 	public function up(): void

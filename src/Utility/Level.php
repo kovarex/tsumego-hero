@@ -2,9 +2,7 @@
 
 namespace App\Utility;
 
-/**
- * @phpstan-import-type UserRow from \App\Utility\RowTypes
- */
+/** @phpstan-import-type UserRow from \App\Utility\RowTypes */
 class Level
 {
 	// this needs to be up to date with level code in util.js
@@ -55,9 +53,7 @@ class Level
 		return $status != 'S' && $status  != 'C'; // solved or doulbe solved is already rewarded, otherwise ok
 	}
 
-	/**
-	 * @param UserRow $user
-	 */
+	/** @param UserRow $user */
 	public static function getOverallXPGained(array $user): int
 	{
 		return Level::getXpSumToGetLevel($user['level']) + $user['xp'];

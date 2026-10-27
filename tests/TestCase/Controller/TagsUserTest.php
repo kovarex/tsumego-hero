@@ -2,14 +2,10 @@
 
 use App\Utility\Auth;
 
-/**
- * Tests for TagsController::user() - the contributions page.
- */
+//Tests for TagsController::user() - the contributions page.
 class TagsUserTest extends IntegrationTestCase
 {
-	/**
-	 * User not found returns 404.
-	 */
+	//User not found returns 404.
 	public function testUserNotFound()
 	{
 		$this->get('/tags/user/999999');
@@ -17,9 +13,7 @@ class TagsUserTest extends IntegrationTestCase
 		$this->assertResponseCode(404);
 	}
 
-	/**
-	 * User with no contributions renders the page with no rows.
-	 */
+	//User with no contributions renders the page with no rows.
 	public function testEmptyContributions()
 	{
 		new ContextPreparator(['user' => ['name' => 'lonely', 'rating' => 1500]]);
@@ -32,9 +26,7 @@ class TagsUserTest extends IntegrationTestCase
 		$this->assertStringNotContainsString('timeTableLeft', $this->view);
 	}
 
-	/**
-	 * All six contribution types render with correct labels and status colors.
-	 */
+	//All six contribution types render with correct labels and status colors.
 	public function testAllSixTypesRenderCorrectly()
 	{
 		$context = new ContextPreparator([
@@ -101,9 +93,7 @@ class TagsUserTest extends IntegrationTestCase
 		$this->assertGreaterThanOrEqual(3, $redCount);   // 3 rejected items
 	}
 
-	/**
-	 * Items are ordered by created DESC (newest first).
-	 */
+	//Items are ordered by created DESC (newest first).
 	public function testOrderingNewestFirst()
 	{
 		$context = new ContextPreparator([
@@ -133,9 +123,7 @@ class TagsUserTest extends IntegrationTestCase
 		$this->assertLessThan($posAlpha, $posOmega, 'omega (newer) should appear before alpha (older)');
 	}
 
-	/**
-	 * Rejected items referencing a tsumego without set_connection are excluded.
-	 */
+	//Rejected items referencing a tsumego without set_connection are excluded.
 	public function testRejectedItemWithoutSetConnectionIsSkipped()
 	{
 		$context = new ContextPreparator([
@@ -169,9 +157,7 @@ class TagsUserTest extends IntegrationTestCase
 		$this->assertTextNotContains('hidden tag', $this->view);
 	}
 
-	/**
-	 * The page shows the viewed user's name correctly.
-	 */
+	//The page shows the viewed user's name correctly.
 	public function testPageTitleShowsViewedUserName()
 	{
 		new ContextPreparator(['user' => ['name' => 'pageTitleUser', 'rating' => 1500]]);
@@ -184,9 +170,7 @@ class TagsUserTest extends IntegrationTestCase
 
 	// --- Pending proposals ---
 
-	/**
-	 * A pending tag name proposal (approved=0) appears in the contributions list.
-	 */
+	//A pending tag name proposal (approved=0) appears in the contributions list.
 	public function testPendingTagNameAppearsInContributions()
 	{
 		$context = new ContextPreparator([
@@ -203,9 +187,7 @@ class TagsUserTest extends IntegrationTestCase
 		$this->assertStringContainsString('pending', $text);
 	}
 
-	/**
-	 * A pending tag connection (approved=0) appears in the contributions list.
-	 */
+	//A pending tag connection (approved=0) appears in the contributions list.
 	public function testPendingTagConnectionAppearsInContributions()
 	{
 		$context = new ContextPreparator([
@@ -226,9 +208,7 @@ class TagsUserTest extends IntegrationTestCase
 		$this->assertStringContainsString('pending', $text);
 	}
 
-	/**
-	 * Pending items appear alongside accepted and rejected items.
-	 */
+	//Pending items appear alongside accepted and rejected items.
 	public function testPendingItemsMixedWithAcceptedAndRejected()
 	{
 		$context = new ContextPreparator([
@@ -270,7 +250,7 @@ class TagsUserTest extends IntegrationTestCase
 
 	// --- Rejections made by an admin ---
 
-	/** The admin 'reviewer' is signed in, 'proposer' proposed the tag snapback on a problem. */
+	//The admin 'reviewer' is signed in, 'proposer' proposed the tag snapback on a problem.
 	private function prepareRejectedTagOnAProblem(): ContextPreparator
 	{
 		Auth::logout();
@@ -284,7 +264,7 @@ class TagsUserTest extends IntegrationTestCase
 		return $context;
 	}
 
-	/** It used to show as "Tag  was created", without the tag and the problem. */
+	//It used to show as "Tag  was created", without the tag and the problem.
 	public function testRejectedTagOnAProblemShowsTheTagAndTheProblem()
 	{
 		$context = $this->prepareRejectedTagOnAProblem();

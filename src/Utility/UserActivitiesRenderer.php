@@ -5,16 +5,12 @@ namespace App\Utility;
 use SetConnection;
 use User;
 
-/**
- * The latest attempts, for the admins: of all players, of one player, or on the problems of one set.
- * One query reads the page with its players and problems.
- */
+//The latest attempts, for the admins: of all players, of one player, or on the problems of one set.
+//One query reads the page with its players and problems.
 class UserActivitiesRenderer extends DataTableRenderer
 {
-	/**
-	 * Without a filter only the latest attempts are listed: counting the whole table would read
-	 * every attempt there ever was on each page view.
-	 */
+	//Without a filter only the latest attempts are listed: counting the whole table would read
+	//every attempt there ever was on each page view.
 	public static int $UNFILTERED_LIMIT = 1000;
 
 	public function __construct(array $urlParams, ?int $userID = null, ?int $setID = null)

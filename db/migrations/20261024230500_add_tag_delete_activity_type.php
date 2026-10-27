@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * Deleting a tag is recorded in the admin activity trail as
- * AdminActivityType::DELETE_TAG, which needs its type row.
- */
+//Deleting a tag is recorded in the admin activity trail as
+//AdminActivityType::DELETE_TAG, which needs its type row.
 final class AddTagDeleteActivityType extends AbstractMigration
 {
 	public function up(): void

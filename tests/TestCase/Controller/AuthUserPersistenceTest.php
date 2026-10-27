@@ -1,22 +1,16 @@
 <?php
 
-/**
- * Tests for Auth user persistence integrity.
- *
- * These tests ensure that making HTTP requests doesn't corrupt user data.
- * The user data stored in Auth should never be modified except through
- * explicit Auth methods like saveUser() with intentional changes.
- */
+//Tests for Auth user persistence integrity.
+//These tests ensure that making HTTP requests doesn't corrupt user data.
+//The user data stored in Auth should never be modified except through
+//explicit Auth methods like saveUser() with intentional changes.
 use App\Utility\Auth;
 
 class AuthUserPersistenceTest extends IntegrationTestCase
 {
-	/**
-	 * Test that user data remains unchanged after making requests.
-	 *
-	 * When a logged-in user makes any request, their database record
-	 * should not be modified unless they explicitly change something.
-	 */
+	//Test that user data remains unchanged after making requests.
+	//When a logged-in user makes any request, their database record
+	//should not be modified unless they explicitly change something.
 	public function testUserDataUnchangedAfterSimpleRequest()
 	{
 		// Arrange: Create a user and capture their initial state
@@ -43,12 +37,9 @@ class AuthUserPersistenceTest extends IntegrationTestCase
 			'User rating should not change after making a request');
 	}
 
-	/**
-	 * Test that users with special name prefixes maintain their names.
-	 *
-	 * Google OAuth users have name=NULL and display_name set to their
-	 * visible name. After a request, these fields must be preserved.
-	 */
+	//Test that users with special name prefixes maintain their names.
+	//Google OAuth users have name=NULL and display_name set to their
+	//visible name. After a request, these fields must be preserved.
 	public function testGoogleUserFieldsPreservedInDatabase()
 	{
 		// Arrange: Create a Google account (no login name, display_name set)
@@ -77,13 +68,10 @@ class AuthUserPersistenceTest extends IntegrationTestCase
 		);
 	}
 
-	/**
-	 * Test that a Google user and a regular user with similar names can coexist.
-	 *
-	 * Google user: name=NULL, display_name='SharedName'
-	 * Regular user: name='SharedName2', display_name='SharedName2'
-	 * Both should work without conflicts.
-	 */
+	//Test that a Google user and a regular user with similar names can coexist.
+	//Google user: name=NULL, display_name='SharedName'
+	//Regular user: name='SharedName2', display_name='SharedName2'
+	//Both should work without conflicts.
 	public function testGoogleAndRegularUsersCanCoexist()
 	{
 		// Arrange: Create a Google user and a regular user
@@ -110,12 +98,8 @@ class AuthUserPersistenceTest extends IntegrationTestCase
 			'Google user must keep their display_name');
 	}
 
-	/**
-	 * Test that User::isGoogleUser correctly identifies Google users.
-	 *
-	 * Google users are identified by having a non-empty external_id.
-	 * Regular users have external_id = null.
-	 */
+	//Test that User::isGoogleUser correctly identifies Google users.
+	//Google users are identified by having a non-empty external_id. Regular users have external_id = null.
 	public function testIsGoogleUserDetection()
 	{
 		// Google user: has external_id

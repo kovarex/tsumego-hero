@@ -3,27 +3,20 @@
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Lib\Error\UnprocessableEntityException;
-/**
- * Controller for managing tsumego issues.
- *
- * Issues are reports about problems with tsumego solutions (missing moves, wrong answers, etc.).
- * Each issue contains one or more comments discussing the problem.
- */
+//Controller for managing tsumego issues.
+//Issues are reports about problems with tsumego solutions (missing moves, wrong answers, etc.).
+//Each issue contains one or more comments discussing the problem.
 use App\Utility\Auth;
 use App\Utility\Query;
 use App\Utility\Util;
 
 class TsumegoIssuesController extends AppController
 {
-	/**
-	 * API endpoint to fetch issues list with pagination and filtering.
-	 *
-	 * Query params:
-	 * - status: 'opened', 'closed', 'all' (default: 'opened')
-	 * - page: int (for pagination)
-	 *
-	 * @return CakeResponse|null
-	 */
+	//API endpoint to fetch issues list with pagination and filtering.
+	//Query params:
+	//- status: 'opened', 'closed', 'all' (default: 'opened')
+	//- page: int (for pagination)
+	/** @return CakeResponse|null */
 	#[HttpGet]
 	public function api()
 	{
@@ -54,15 +47,10 @@ class TsumegoIssuesController extends AppController
 		return $this->response;
 	}
 
-	/**
-	 * List all issues page
-	 *
-	 * Query params:
-	 * - status: 'opened', 'closed', 'all' (default: 'opened')
-	 * - page: int (for pagination)
-	 *
-	 * @return void
-	 */
+	//List all issues page
+	//Query params:
+	//- status: 'opened', 'closed', 'all' (default: 'opened')
+	//- page: int (for pagination)
 	#[HttpGet]
 	public function index(): void
 	{
@@ -77,16 +65,12 @@ class TsumegoIssuesController extends AppController
 		$this->set('currentPage', $page);
 	}
 
-	/**
-	 * Create a new issue with an initial comment.
-	 *
-	 * POST data:
-	 * - Issue.tsumego_id: int
-	 * - Issue.message: string (first comment)
-	 * - Issue.position: string|null (board position for first comment)
-	 *
-	 * @return CakeResponse|null
-	 */
+	//Create a new issue with an initial comment.
+	//POST data:
+	//- Issue.tsumego_id: int
+	//- Issue.message: string (first comment)
+	//- Issue.position: string|null (board position for first comment)
+	/** @return CakeResponse|null */
 	#[HttpPost]
 	public function create()
 	{
@@ -165,15 +149,10 @@ class TsumegoIssuesController extends AppController
 		return $this->response;
 	}
 
-	/**
-	 * Close an issue.
-	 *
-	 * Only admin or issue author can close.
-	 * Optionally add a closing comment.
-	 *
-	 * @param string $id Issue ID
-	 * @return CakeResponse|null
-	 */
+	//Close an issue.
+	//Only admin or issue author can close. Optionally add a closing comment.
+	//$id: Issue ID
+	/** @return CakeResponse|null */
 	#[HttpPost]
 	public function close(string $id)
 	{
@@ -210,14 +189,10 @@ class TsumegoIssuesController extends AppController
 		return $this->response;
 	}
 
-	/**
-	 * Reopen a closed issue.
-	 *
-	 * Admin only.
-	 *
-	 * @param string $id Issue ID
-	 * @return CakeResponse|null
-	 */
+	//Reopen a closed issue.
+	//Admin only.
+	//$id: Issue ID
+	/** @return CakeResponse|null */
 	#[HttpPost]
 	public function reopen(string $id)
 	{
@@ -238,17 +213,11 @@ class TsumegoIssuesController extends AppController
 		return $this->response;
 	}
 
-	/**
-	 * Move an existing comment into an issue (new or existing), or make it standalone.
-	 *
-	 * Admin only.
-	 *
-	 * POST data:
-	 * - Comment.tsumego_issue_id: 'standalone' | 'new' | int (issue ID)
-	 *
-	 * @param string $commentId Comment ID to move
-	 * @return CakeResponse|null
-	 */
+	//Move an existing comment into an issue (new or existing), or make it standalone.
+	//Admin only.
+	//POST data:
+	//- Comment.tsumego_issue_id: 'standalone' | 'new' | int (issue ID)
+	/** @return CakeResponse|null */
 	#[HttpPost]
 	public function moveComment(string $commentId)
 	{

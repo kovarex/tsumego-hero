@@ -4,9 +4,7 @@ use App\Utility\RungInsignia;
 
 class RungInsigniaTest extends CakeTestCase
 {
-	/**
-	 * The insignia the owner chose for the ladder of eight rungs, like military ranks.
-	 */
+	//The insignia the owner chose for the ladder of eight rungs, like military ranks.
 	public function testTheLadderOfEightRungsIsFourChevronsThenFourStars(): void
 	{
 		$this->assertSame([
@@ -46,10 +44,8 @@ class RungInsigniaTest extends CakeTestCase
 		], self::insignia(7));
 	}
 
-	/**
-	 * Four of a kind is what fits the button, so a ladder that would need a fifth
-	 * chevron gets bars between the chevrons and the stars.
-	 */
+	//Four of a kind is what fits the button, so a ladder that would need a fifth
+	//chevron gets bars between the chevrons and the stars.
 	public function testALadderOfMoreThanEightRungsGetsBarsBetweenTheChevronsAndTheStars(): void
 	{
 		$this->assertSame([
@@ -92,10 +88,7 @@ class RungInsigniaTest extends CakeTestCase
 		}
 	}
 
-	/**
-	 * Past twelve rungs the top rungs of a kind share its last badge, which is as many
-	 * symbols as fit the button.
-	 */
+	//Past twelve rungs the top rungs of a kind share its last badge, which is as many symbols as fit the button.
 	public function testALadderTooLongForThreeKindsOfFourDrawsAtMostWhatFits(): void
 	{
 		$this->assertSame(RungInsignia::MAX_SYMBOLS, max(array_column(self::insignia(12), 1)));
@@ -110,10 +103,8 @@ class RungInsigniaTest extends CakeTestCase
 		}
 	}
 
-	/**
-	 * A ladder made shorter leaves rungs above its top in the pool, which the next
-	 * clean solve graduates, so they show the top rung until then.
-	 */
+	//A ladder made shorter leaves rungs above its top in the pool, which the next
+	//clean solve graduates, so they show the top rung until then.
 	public function testARungAboveTheLadderShowsTheTopRung(): void
 	{
 		$this->assertSame([RungInsignia::STAR, 4], RungInsignia::of(9, 8));

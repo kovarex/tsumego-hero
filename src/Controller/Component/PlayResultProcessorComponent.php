@@ -16,18 +16,14 @@ use App\Utility\Util;
 
 class PlayResultProcessorComponent extends Component
 {
-	/**
-	 * Process a play result submitted via AJAX. Takes explicit values, no cookies.
-	 *
-	 * @param float $seconds Time spent on the problem, in seconds.
-	 * @param int|null $setConnectionID Part of the set the problem is played from; null means
-	 *   the display set connection is deduced instead.
-	 * @param int|null $pageMode Mode of the page the problem was played on, see playMode();
-	 *   null means the stored mode.
-	 * @return array Result with xp_gained, new_rating, new_xp, new_level, new_damage, status,
-	 *   potion_triggered and achievement_updates, and in the mistake training
-	 *   mistake_training_button.
-	 */
+	//Process a play result submitted via AJAX. Takes explicit values, no cookies.
+	//$seconds: Time spent on the problem, in seconds.
+	//$setConnectionID: Part of the set the problem is played from; null means
+	//the display set connection is deduced instead.
+	//$pageMode: Mode of the page the problem was played on, see playMode(); null means the stored mode.
+	//Returns result with xp_gained, new_rating, new_xp, new_level, new_damage, status,
+	//potion_triggered and achievement_updates, and in the mistake training
+	//mistake_training_button.
 	public function processResult(int $tsumegoID, PlayOutcome $outcome, float $seconds, ?int $setConnectionID = null, ?int $pageMode = null): array
 	{
 		Auth::overrideMode($this->playMode($tsumegoID, $pageMode));
@@ -41,16 +37,14 @@ class PlayResultProcessorComponent extends Component
 		}
 	}
 
-	/**
-	 * The mode a result counts in, when it is not the stored one. The mode is stored on
-	 * the player, and opening another mode in another tab, or going back to a page in
-	 * the browser history, switches it under a page that is still open, so the page says
-	 * which mode it was played in. A page of the training counts as training only while
-	 * the problem is in today's training, so claiming it spares no hearts on any other
-	 * problem. A page of a normal mode counts in its own mode when the stored one is the
-	 * training, which is what the other tab switched to. Any other disagreement keeps
-	 * the stored mode.
-	 */
+	//The mode a result counts in, when it is not the stored one. The mode is stored on
+	//the player, and opening another mode in another tab, or going back to a page in
+	//the browser history, switches it under a page that is still open, so the page says
+	//which mode it was played in. A page of the training counts as training only while
+	//the problem is in today's training, so claiming it spares no hearts on any other
+	//problem. A page of a normal mode counts in its own mode when the stored one is the
+	//training, which is what the other tab switched to. Any other disagreement keeps
+	//the stored mode.
 	private function playMode(int $tsumegoID, ?int $pageMode): ?int
 	{
 		$storedMode = Auth::getMode();
@@ -155,11 +149,10 @@ class PlayResultProcessorComponent extends Component
 		return $response;
 	}
 
+	//The XP of a review in the training (see MistakeTraining::REVIEW_XP_SHARE). It
+	//counts like the XP of a solve, for the level and the day's XP; the bonus for
+	//clearing the day is not a solve, so it leaves the day's solved count alone.
 	/**
-	 * The XP of a review in the training (see MistakeTraining::REVIEW_XP_SHARE). It
-	 * counts like the XP of a solve, for the level and the day's XP; the bonus for
-	 * clearing the day is not a solve, so it leaves the day's solved count alone.
-	 *
 	 * @param array{id: int, result: int, climbed: bool, clear_bonus: bool} $review
 	 * @return array{review: int, graduation: int, clear: int}
 	 */
@@ -186,9 +179,7 @@ class PlayResultProcessorComponent extends Component
 		return $xp;
 	}
 
-	/**
-	 * Marks a tsumego as visited (status 'V') if no status exists yet.
-	 */
+	//Marks a tsumego as visited (status 'V') if no status exists yet.
 	public function markAsVisited(int $tsumegoID): void
 	{
 		Util::execute(
@@ -197,9 +188,7 @@ class PlayResultProcessorComponent extends Component
 		);
 	}
 
-	/**
-	 * Potion: triggers after a fail when damage meets or exceeds max health.
-	 */
+	//Potion: triggers after a fail when damage meets or exceeds max health.
 	public function processPotion(): bool
 	{
 		if (Auth::isInMistakeTrainingMode())
@@ -428,10 +417,8 @@ class PlayResultProcessorComponent extends Component
 			AppController::_updateSprintCondition();
 	}
 
-	/**
-	 * The Gold Digger run counts the golden tsumego solved in a row. A golden tsumego is a
-	 * single attempt, so a solve moves the run one further and a fail starts it over.
-	 */
+	//The Gold Digger run counts the golden tsumego solved in a row. A golden tsumego is a
+	//single attempt, so a solve moves the run one further and a fail starts it over.
 	private function processGoldenRun(array $result, string $previousTsumegoStatus): void
 	{
 		if (Auth::isInMistakeTrainingMode())

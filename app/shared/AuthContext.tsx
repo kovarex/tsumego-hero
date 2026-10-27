@@ -20,10 +20,7 @@ export function AuthProvider({ userId, isAdmin, children }: AuthProviderProps)
 	return <AuthContext.Provider value={{ userId, isAdmin }}>{children}</AuthContext.Provider>;
 }
 
-/**
- * Hook to access current user auth state.
- * Must be used within an AuthProvider.
- */
+//Hook to access current user auth state. Must be used within an AuthProvider.
 export function useAuth(): AuthContextValue
 {
 	const context = useContext(AuthContext);

@@ -10,9 +10,7 @@ use App\Utility\TimeModeUtil;
  */
 class UsersControllerTest extends IntegrationTestCase
 {
-	/**
-	 * Test that login redirects back to the page where user came from.
-	 */
+	//Test that login redirects back to the page where user came from.
 	public function testLoginRedirectsToReferer()
 	{
 		// Create a user that can log in (password is "test" - see ContextPreparator)
@@ -41,12 +39,9 @@ class UsersControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('highscore', $currentUrl, "Expected to redirect back to highscore page, but was at: $currentUrl");
 	}
 
-	/**
-	 * Test that login page has Google Sign In option.
-	 *
-	 * The redirect for both regular and Google login uses session storage.
-	 * We can't test actual Google OAuth due to token verification.
-	 */
+	//Test that login page has Google Sign In option.
+	//The redirect for both regular and Google login uses session storage.
+	//We can't test actual Google OAuth due to token verification.
 	public function testLoginPageHasGoogleSignIn()
 	{
 		$context = new ContextPreparator(['user' => null]);
@@ -230,10 +225,8 @@ class UsersControllerTest extends IntegrationTestCase
 		$this->assertSame($context->reloadUser()['solved'], 1);
 	}
 
-	/**
-	 * A golden problem waits for its one attempt, which is not progress left behind, so
-	 * the reset keeps it while it removes what nobody touched for a year.
-	 */
+	//A golden problem waits for its one attempt, which is not progress left behind, so
+	//the reset keeps it while it removes what nobody touched for a year.
 	public function testResetKeepsAGoldenProblemInProgress(): void
 	{
 		$context = new ContextPreparator([
@@ -292,12 +285,9 @@ class UsersControllerTest extends IntegrationTestCase
 			'Solve history link should be present on profile');
 	}
 
-	/**
-	 * Test that profile achievements link to the correct achievement id.
-	 *
-	 * Achievement ids are not contiguous (id 100 is missing), so the profile
-	 * must resolve each achievement status to the matching achievement.
-	 */
+	//Test that profile achievements link to the correct achievement id.
+	//Achievement ids are not contiguous (id 100 is missing), so the profile
+	//must resolve each achievement status to the matching achievement.
 	public function testProfileAchievementLinksToCorrectAchievement(): void
 	{
 		// This only breaks because the ids are not contiguous, so pin the
@@ -324,12 +314,10 @@ class UsersControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('1000 Weiqi problems 2nd half', $this->view);
 	}
 
-	/**
-	 * The profile counts the problems the player solved over the problems the site holds, wherever the
-	 * collections of those problems stand: a solve of a problem of a collection nobody published yet
-	 * counts for the player and counts in the total. The solved number is the counter of the account,
-	 * the one the highscore shows, so a solve that outlives its problem is still in it.
-	 */
+	//The profile counts the problems the player solved over the problems the site holds, wherever the
+	//collections of those problems stand: a solve of a problem of a collection nobody published yet
+	//counts for the player and counts in the total. The solved number is the counter of the account,
+	//the one the highscore shows, so a solve that outlives its problem is still in it.
 	public function testProfileCountsTheProblemsThePlayerSolved(): void
 	{
 		$context = new ContextPreparator([
@@ -346,10 +334,7 @@ class UsersControllerTest extends IntegrationTestCase
 		$this->assertMatchesRegularExpression('#Completed:</td>\s*<td>3 of 3</td>#', $this->view);
 	}
 
-	/**
-	 * The profile counts each unlocked achievement once, even when the repeatable
-	 * one was earned several times.
-	 */
+	//The profile counts each unlocked achievement once, even when the repeatable one was earned several times.
 	public function testProfileAchievementCountCountsEachAchievementOnce(): void
 	{
 		$context = new ContextPreparator([
@@ -372,10 +357,7 @@ class UsersControllerTest extends IntegrationTestCase
 		]);
 	}
 
-	/**
-	 * The profile achievement line shows no repetitions for a user who earned
-	 * every achievement exactly once.
-	 */
+	//The profile achievement line shows no repetitions for a user who earned every achievement exactly once.
 	public function testProfileWithoutRepeatedAchievementsHasPlainCount(): void
 	{
 		$context = new ContextPreparator([
@@ -396,9 +378,7 @@ class UsersControllerTest extends IntegrationTestCase
 		]);
 	}
 
-	/**
-	 * The profile achievement card shows how often a repeatable achievement was earned.
-	 */
+	//The profile achievement card shows how often a repeatable achievement was earned.
 	public function testProfileAchievementCardShowsNumberOfEarnings(): void
 	{
 		$context = new ContextPreparator([
@@ -415,10 +395,8 @@ class UsersControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('title="Earned 3 times"', $this->view);
 	}
 
-	/**
-	 * The achievement count on the profile carries the number of times the repeatable
-	 * achievement was earned, the same number the achievement itself shows.
-	 */
+	//The achievement count on the profile carries the number of times the repeatable
+	//achievement was earned, the same number the achievement itself shows.
 	public function testProfileCountCarriesNumberOfEarnings(): void
 	{
 		$context = new ContextPreparator([
@@ -532,10 +510,8 @@ class UsersControllerTest extends IntegrationTestCase
 		$this->assertEquals(3, $remaining);
 	}
 
-	/**
-	 * Progress that was only opened is not what the button offers to reset, so it stays
-	 * and the flash repeats the number the button offered.
-	 */
+	//Progress that was only opened is not what the button offers to reset, so it stays
+	//and the flash repeats the number the button offered.
 	public function testResetKeepsProblemsThatWereOnlyOpened(): void
 	{
 		$twoYearsAgo = date('Y-m-d H:i:s', strtotime('-2 years'));

@@ -2,18 +2,13 @@
 
 use App\Utility\AchievementId;
 
-/**
- * Test all 12 Accuracy achievements (IDs 12-23)
- *
- * Structure: 3 tiers (75%, 85%, 95%) × 4 difficulty ranges (11k, 5k, 10k, 1d)
- * Difficulty ranges: <1300, 1300-1499, 1500-1699, >=1700
- */
+//Test all 12 Accuracy achievements (IDs 12-23)
+//Structure: 3 tiers (75%, 85%, 95%) × 4 difficulty ranges (11k, 5k, 10k, 1d)
+//Difficulty ranges: <1300, 1300-1499, 1500-1699, >=1700
 class AccuracyAchievementTest extends AchievementTestCase
 {
-	/**
-	 * Test all 12 Accuracy achievements in a loop
-	 * Each iteration creates a unique set with the required difficulty and accuracy
-	 */
+	//Test all 12 Accuracy achievements in a loop
+	//Each iteration creates a unique set with the required difficulty and accuracy
 	public function testAllAccuracyAchievements()
 	{
 		// Define all 12 accuracy achievements

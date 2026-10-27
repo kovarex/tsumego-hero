@@ -14,9 +14,7 @@ use Sgf;
  */
 class SimilarSearchLogic
 {
-	/**
-	 * @param SetConnectionRow $setConnection
-	 */
+	/** @param SetConnectionRow $setConnection */
 	public function __construct(array $setConnection)
 	{
 		$this->setConnection = $setConnection;

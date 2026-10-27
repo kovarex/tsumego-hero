@@ -2,38 +2,29 @@
 
 namespace App\Utility;
 
-/**
- * The trash of problems and collections.
- *
- * Deleting a problem or a collection of the site only marks it with the time of the deletion
- * (tsumego.deleted, set.deleted). It disappears from the site, an admin can still open it and take
- * it back, and after self::$RETENTION_DAYS the daily cron removes it from the database for good,
- * together with everything that belongs to it.
- *
- * A problem in the trash keeps its place in its collections, so it comes back exactly where it was.
- * A collection in the trash hides the problems that can only be reached through it, and when it is
- * purged, the problems that belong to no other collection of the site are purged with it.
- *
- * Collections a player assembled are not site content and are deleted at once (SetsController::delete).
- */
+//The trash of problems and collections.
+//Deleting a problem or a collection of the site only marks it with the time of the deletion
+//(tsumego.deleted, set.deleted). It disappears from the site, an admin can still open it and take
+//it back, and after self::$RETENTION_DAYS the daily cron removes it from the database for good,
+//together with everything that belongs to it.
+//A problem in the trash keeps its place in its collections, so it comes back exactly where it was.
+//A collection in the trash hides the problems that can only be reached through it, and when it is
+//purged, the problems that belong to no other collection of the site are purged with it.
+//Collections a player assembled are not site content and are deleted at once (SetsController::delete).
 class Trash
 {
 	public static int $RETENTION_DAYS = 30;
 
 	public static int $PURGE_BATCH_SIZE = 50;
 
-	/**
-	 * When something deleted at the given time leaves the trash for good.
-	 */
+	//When something deleted at the given time leaves the trash for good.
 	public static function purgeDate(string $deleted): string
 	{
 		return date('Y-m-d H:i:s', strtotime($deleted . ' +' . self::$RETENTION_DAYS . ' days'));
 	}
 
-	/**
-	 * Moves a problem to the trash. A collection of the site that has no other problem left goes
-	 * to the trash with it, so an empty collection does not stay on the site.
-	 */
+	//Moves a problem to the trash. A collection of the site that has no other problem left goes
+	//to the trash with it, so an empty collection does not stay on the site.
 	public static function deleteProblem(int $tsumegoID): void
 	{
 		$now = date('Y-m-d H:i:s');
@@ -48,10 +39,8 @@ class Trash
 					WHERE other.set_id = s.id)', [$tsumegoID, $now]);
 	}
 
-	/**
-	 * Takes a problem back from the trash. A collection that went to the trash with it, because it
-	 * was its last problem, comes back too. A collection deleted on its own stays in the trash.
-	 */
+	//Takes a problem back from the trash. A collection that went to the trash with it, because it
+	//was its last problem, comes back too. A collection deleted on its own stays in the trash.
 	public static function restoreProblem(int $tsumegoID): void
 	{
 		Util::execute('UPDATE `set` s
@@ -62,9 +51,7 @@ class Trash
 		Util::execute('UPDATE tsumego SET deleted = NULL WHERE id = ?', [$tsumegoID]);
 	}
 
-	/**
-	 * Moves a collection of the site to the trash, with its problems in place.
-	 */
+	//Moves a collection of the site to the trash, with its problems in place.
 	public static function deleteSet(int $setID): void
 	{
 		Util::execute('UPDATE `set` SET deleted = ? WHERE id = ? AND deleted IS NULL', [date('Y-m-d H:i:s'), $setID]);
@@ -75,16 +62,12 @@ class Trash
 		Util::execute('UPDATE `set` SET deleted = NULL WHERE id = ?', [$setID]);
 	}
 
-	/**
-	 * Removes from the database what has been in the trash for longer than self::$RETENTION_DAYS.
-	 *
-	 * The problems go in small batches, each a statement of its own, as a problem takes the statuses
-	 * and attempts of all its players with it. Should the request be cut short, the next run carries
-	 * on: the problems of an expired collection are purged before the collection itself, so they
-	 * are still found through it.
-	 *
-	 * @return array{sets: int, problems: int} How many collections and problems were removed
-	 */
+	//Removes from the database what has been in the trash for longer than self::$RETENTION_DAYS.
+	//The problems go in small batches, each a statement of its own, as a problem takes the statuses
+	//and attempts of all its players with it. Should the request be cut short, the next run carries
+	//on: the problems of an expired collection are purged before the collection itself, so they
+	//are still found through it.
+	/** @return array{sets: int, problems: int} How many collections and problems were removed */
 	public static function purgeExpired(): array
 	{
 		$limit = date('Y-m-d H:i:s', strtotime('-' . self::$RETENTION_DAYS . ' days'));
@@ -113,18 +96,14 @@ class Trash
 		return ['sets' => count($setIDs), 'problems' => count($problemIDs)];
 	}
 
-	/**
-	 * @param int[] $tsumegoIDs
-	 */
+	/** @param int[] $tsumegoIDs */
 	private static function purgeProblems(array $tsumegoIDs): void
 	{
 		// everything that belongs to the problem goes with it through the foreign keys (TrashTest makes sure of it)
 		Util::execute('DELETE FROM tsumego WHERE id IN (' . self::placeholders($tsumegoIDs) . ')', $tsumegoIDs);
 	}
 
-	/**
-	 * @return int[]
-	 */
+	/** @return int[] */
 	private static function ids(array $rows, string $column): array
 	{
 		return array_map('intval', array_column($rows, $column));

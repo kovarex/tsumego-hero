@@ -1,24 +1,18 @@
 <?php
 
-/**
- * PaginationHelper - Generates pagination controls
- *
- * Renders page navigation with Previous/Next buttons, page numbers,
- * and ellipsis for large page counts. Automatically preserves query
- * parameters and generates anchor links for smooth scrolling.
- */
+//PaginationHelper - Generates pagination controls
+//Renders page navigation with Previous/Next buttons, page numbers,
+//and ellipsis for large page counts. Automatically preserves query
+//parameters and generates anchor links for smooth scrolling.
 use App\Utility\Query;
 
 class PaginationHelper extends AppHelper
 {
-	/**
-	 * Render pagination controls
-	 *
-	 * @param int $currentPage Current page number (1-indexed)
-	 * @param int $totalPages Total number of pages
-	 * @param string $paramName Query parameter name (e.g., 'activity_page')
-	 * @return string HTML pagination controls
-	 */
+	//Render pagination controls
+	//$currentPage: Current page number (1-indexed)
+	//$totalPages: Total number of pages
+	//$paramName: Query parameter name (e.g., 'activity_page')
+	//Returns HTML pagination controls
 	public static function render(int $currentPage, int $totalPages, string $paramName): string
 	{
 		if ($totalPages <= 1)

@@ -13,9 +13,7 @@ use App\Utility\Auth;
  * @var int $deletedAccountCount
  */
 
-/**
- * A link of the admin page, with a red count when something waits there
- */
+//A link of the admin page, with a red count when something waits there
 $renderLink = function (string $url, string $label, int $count = 0, string $countMeaning = ''): void
 {
 	echo '<li><a class="admin-area__link" href="' . $url . '">' . $label;

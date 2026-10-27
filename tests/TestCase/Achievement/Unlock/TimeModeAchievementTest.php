@@ -1,13 +1,10 @@
 <?php
 
 use App\Utility\AchievementId;
-/**
- * Time Mode Achievement Test
- *
- * Tests Time Mode achievements IDs 70-91:
- * - Rank achievements (70-87): Pass ranks in Slow/Fast/Blitz modes
- * - Precision achievements (88-91): Score thresholds at specific ranks
- */
+//Time Mode Achievement Test
+//Tests Time Mode achievements IDs 70-91:
+//- Rank achievements (70-87): Pass ranks in Slow/Fast/Blitz modes
+//- Precision achievements (88-91): Score thresholds at specific ranks
 use App\Utility\AchievementChecker;
 use App\Utility\TimeModeUtil;
 
@@ -153,10 +150,8 @@ class TimeModeAchievementTest extends AchievementTestCase
 		$this->assertAchievementNotUnlocked(AchievementId::TIME_MODE_APPRENTICE_SLOW);
 	}
 
-	/**
-	 * Test Precision achievements (IDs 88-91)
-	 * Note: Precision achievements require both points AND rank threshold
-	 */
+	//Test Precision achievements (IDs 88-91)
+	//Note: Precision achievements require both points AND rank threshold
 	public function testPrecisionAchievements()
 	{
 		// Test 88: 950 points at 10k or stronger

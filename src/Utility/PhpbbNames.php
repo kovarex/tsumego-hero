@@ -5,19 +5,14 @@ namespace App\Utility;
 use PDO;
 use RuntimeException;
 
-/**
- * The name of a player in the phpBB forum tables.
- *
- * The forum shares our database and its single sign-on looks a player up by the username_clean
- * key, so that key has to be the one phpBB itself computes with utf8_clean_string(): case folded,
- * normalised, lookalike characters mapped to their latin counterparts and whitespace collapsed.
- * phpBB caches the name in a few more tables as well, so a rename writes those copies too.
- */
+//The name of a player in the phpBB forum tables.
+//The forum shares our database and its single sign-on looks a player up by the username_clean
+//key, so that key has to be the one phpBB itself computes with utf8_clean_string(): case folded,
+//normalised, lookalike characters mapped to their latin counterparts and whitespace collapsed.
+//phpBB caches the name in a few more tables as well, so a rename writes those copies too.
 class PhpbbNames
 {
-	/**
-	 * Tables caching a player's name, as [table, name column, id column of that player].
-	 */
+	//Tables caching a player's name, as [table, name column, id column of that player].
 	private const NAME_CACHES = [
 		['phpbb_topics', 'topic_first_poster_name', 'topic_poster'],
 		['phpbb_topics', 'topic_last_poster_name', 'topic_last_poster_id'],
@@ -25,14 +20,10 @@ class PhpbbNames
 		['phpbb_moderator_cache', 'username', 'user_id'],
 	];
 
-	/**
-	 * Turns a display name into the username_clean key phpBB stores for it.
-	 *
-	 * The key has to be computed by phpBB itself, because the forum looks players up by this key
-	 * and would not find one we invented.
-	 *
-	 * @throws RuntimeException when phpBB's string functions are not available
-	 */
+	//Turns a display name into the username_clean key phpBB stores for it.
+	//The key has to be computed by phpBB itself, because the forum looks players up by this key
+	//and would not find one we invented.
+	/** @throws RuntimeException when phpBB's string functions are not available */
 	public static function clean(string $displayName): string
 	{
 		self::loadPhpbb();
@@ -43,13 +34,10 @@ class PhpbbNames
 		return utf8_clean_string($displayName);
 	}
 
-	/**
-	 * Writes a player's display name into their phpBB rows.
-	 *
-	 * The ids beside the cached names are phpBB ids, so the account is translated through
-	 * external_id and only rows of that account are written; a rename never touches the
-	 * rows of another player.
-	 */
+	//Writes a player's display name into their phpBB rows.
+	//The ids beside the cached names are phpBB ids, so the account is translated through
+	//external_id and only rows of that account are written; a rename never touches the
+	//rows of another player.
 	public static function sync(PDO $connection, int $userId, string $displayName): void
 	{
 		$statement = $connection->prepare(
@@ -72,9 +60,7 @@ class PhpbbNames
 		$statement->execute([$displayName, $userId]);
 	}
 
-	/**
-	 * Loads phpBB's own string functions, so that username_clean is exactly the key phpBB expects.
-	 */
+	//Loads phpBB's own string functions, so that username_clean is exactly the key phpBB expects.
 	private static function loadPhpbb(): void
 	{
 		if (function_exists('utf8_clean_string'))

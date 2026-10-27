@@ -37,11 +37,9 @@ class RatingBounds
 			$query->conditions[] = 'tsumego.rating < ' . $this->max;
 	}
 
-	/**
-	 * How the range reads inside a sentence: "from 800 to 650", "up to 650" when nothing is below
-	 * it, "from 800" when nothing is above it, and nothing at all when it covers everything.
-	 * The leading space belongs to the phrase, the sentence around it just joins the parts.
-	 */
+	//How the range reads inside a sentence: "from 800 to 650", "up to 650" when nothing is below
+	//it, "from 800" when nothing is above it, and nothing at all when it covers everything.
+	//The leading space belongs to the phrase, the sentence around it just joins the parts.
 	public function textualDescription(): string
 	{
 		if ($this->min && $this->max)
@@ -62,11 +60,9 @@ class RatingBounds
 		return $result;
 	}
 
-	/**
-	 * Bounds of a single rank or of a range label such as "20k-16k".
-	 * Inputs that are not a range fall through to coverRank, which throws
-	 * RatingParseException for invalid ranks.
-	 */
+	//Bounds of a single rank or of a range label such as "20k-16k".
+	//Inputs that are not a range fall through to coverRank, which throws
+	//RatingParseException for invalid ranks.
 	public static function coverRankSpec(string $spec, ?string $minimalRank = null): RatingBounds
 	{
 		$range = Rating::parseReadableRankRange($spec);

@@ -6,21 +6,15 @@ use App\Lib\Error\UnprocessableEntityException;
 use App\Utility\Auth;
 use App\Utility\Util;
 
-/**
- * Messages between players. The page is drawn by React (app/messages), which talks to
- * the JSON actions here:
- *
- * - GET  /messages/conversations                   the player's conversations
- * - GET  /messages/conversations/<partner>?before=  messages with one player
- * - POST /messages/conversations/<partner>          send {"text": ...}
- * - POST /messages/conversations/<partner>/read     mark the partner's messages read
- * - GET  /messages/recipients?query=                players to write to
- */
+//Messages between players. The page is drawn by React (app/messages), which talks to the JSON actions here:
+//- GET  /messages/conversations                   the player's conversations
+//- GET  /messages/conversations/<partner>?before=  messages with one player
+//- POST /messages/conversations/<partner>          send {"text": ...}
+//- POST /messages/conversations/<partner>/read     mark the partner's messages read
+//- GET  /messages/recipients?query=                players to write to
 class MessagesController extends AppController
 {
-	/**
-	 * The messages page, with the conversation with a player open when the address names one.
-	 */
+	//The messages page, with the conversation with a player open when the address names one.
 	#[HttpGet]
 	public function index(?string $partnerUserId = null): mixed
 	{
@@ -95,12 +89,9 @@ class MessagesController extends AppController
 		return $this->json(['players' => Message::searchRecipients(Auth::getUserID(), $query)]);
 	}
 
-	/**
-	 * The other player of a conversation. A deleted account stays, so the conversation with it
-	 * can still be read, it only can't get new messages.
-	 *
-	 * @return array{id: int, displayName: string|null, avatarUrl: string|null, rating: float}
-	 */
+	//The other player of a conversation. A deleted account stays, so the conversation with it
+	//can still be read, it only can't get new messages.
+	/** @return array{id: int, displayName: string|null, avatarUrl: string|null, rating: float} */
 	private function findPartner(int $userId): array
 	{
 		$rows = Util::query(

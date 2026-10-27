@@ -2,11 +2,9 @@
 
 namespace App\Utility;
 
-/**
- * A node of an SGF game tree with its properties, for code that needs the moves
- * of all variations (SgfParser only reads the setup stones and correct moves).
- * Points are 1-based (x from the left, y from the top), as besogo uses them.
- */
+//A node of an SGF game tree with its properties, for code that needs the moves
+//of all variations (SgfParser only reads the setup stones and correct moves).
+//Points are 1-based (x from the left, y from the top), as besogo uses them.
 class SgfTree
 {
 	/** @var array<string, string[]> */
@@ -16,7 +14,7 @@ class SgfTree
 
 	public function __construct(public ?SgfTree $parent = null) {}
 
-	/** Parses the first game of the SGF, null when there is no node. */
+	//Parses the first game of the SGF, null when there is no node.
 	public static function parse(string $sgf): ?SgfTree
 	{
 		$root = null;
@@ -148,10 +146,8 @@ class SgfTree
 		return $nodes;
 	}
 
-	/**
-	 * The child whose move is at the point, looking through children without a
-	 * move (setup nodes) the way besogo's comment anchors do.
-	 */
+	//The child whose move is at the point, looking through children without a
+	//move (setup nodes) the way besogo's comment anchors do.
 	public function childWithMoveAt(int $x, int $y, int $size): ?SgfTree
 	{
 		foreach ($this->children as $child)

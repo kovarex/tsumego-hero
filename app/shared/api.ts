@@ -1,6 +1,4 @@
-/**
- * API client helpers for JSON requests
- */
+//API client helpers for JSON requests
 
 class ApiError extends Error
 {
@@ -80,10 +78,8 @@ export async function del<T>(url: string): Promise<T>
 	return handleResponse<T>(response);
 }
 
-/**
- * POST with FormData (for CakePHP bracket notation like data[Model][field]).
- * Use this when the backend expects form-encoded data instead of JSON.
- */
+//POST with FormData (for CakePHP bracket notation like data[Model][field]).
+//Use this when the backend expects form-encoded data instead of JSON.
 export async function postFormData<T>(url: string, data: Record<string, string>): Promise<T>
 {
 	const formData = new FormData();

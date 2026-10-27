@@ -9,10 +9,8 @@ use User;
 
 class AdminActivityRenderer extends DataTableRenderer
 {
-	/**
-	 * @param string|null $newSince When the admin looked the time before (see AdminPage::markViewed),
-	 *   what the others did since then is marked as new
-	 */
+	//$newSince: When the admin looked the time before (see AdminPage::markViewed),
+	//what the others did since then is marked as new
 	public function __construct(array $urlParams, private ?string $newSince = null)
 	{
 		$this->count = Util::query("SELECT COUNT(*) as total FROM admin_activity")[0]['total'];

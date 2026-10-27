@@ -1096,10 +1096,8 @@ class UserSetsControllerTest extends IntegrationTestCase
 		@rmdir(WWW_ROOT . 'img' . DS . 'sets' . DS . $setId);
 	}
 
-	/**
-	 * The cover lives in a directory the web server has to be able to write to.
-	 * When it cannot, the player is told the upload failed and no image is saved.
-	 */
+	//The cover lives in a directory the web server has to be able to write to.
+	//When it cannot, the player is told the upload failed and no image is saved.
 	public function testUploadSetImageReportsWhenTheFileCannotBeWritten(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'alice']]);

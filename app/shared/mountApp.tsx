@@ -5,12 +5,9 @@ import { AuthProvider } from './AuthContext';
 import { queryClient } from '../queryClient';
 import type { ComponentType } from 'react';
 
-/**
- * Mount a React component into all DOM elements matching `selector`.
- *
- * Props are read from a `data-props` JSON attribute on each element.
- * AuthProvider is always included (harmless if unused by the component).
- */
+//Mount a React component into all DOM elements matching `selector`.
+//Props are read from a `data-props` JSON attribute on each element.
+//AuthProvider is always included (harmless if unused by the component).
 export function mountApp(
 	selector: string,
 	Component: ComponentType<any>,

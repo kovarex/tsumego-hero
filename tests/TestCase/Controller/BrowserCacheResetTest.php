@@ -2,7 +2,7 @@
 
 class BrowserCacheResetTest extends IntegrationTestCase
 {
-	/** Two requests in a row are two page loads of the same browser. */
+	//Two requests in a row are two page loads of the same browser.
 	public function testFirstRequestClearsTheBrowserCacheOnce()
 	{
 		new ContextPreparator(['user' => ['name' => 'kovarex']]);

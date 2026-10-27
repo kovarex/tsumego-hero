@@ -6,24 +6,15 @@ use App\Utility\Util;
 use App\Attribute\HttpGet;
 use SetConnection;
 
-/**
- * @phpstan-import-type UserRow from \App\Utility\RowTypes
- */
+/** @phpstan-import-type UserRow from \App\Utility\RowTypes */
 class AchievementsController extends AppController
 {
-	/**
-	 * @return void
-	 */
 	#[HttpGet]
 	public function index(): void
 	{
 		$this->renderAchievementsPage(Auth::isLoggedIn() ? Auth::getUser() : null);
 	}
 
-	/**
-	 * @param string $userId
-	 * @return void
-	 */
 	#[HttpGet]
 	public function user(string $userId): void
 	{
@@ -36,10 +27,7 @@ class AchievementsController extends AppController
 		$this->render('index');
 	}
 
-	/**
-	 * @param UserRow|null $viewedUser
-	 * @return void
-	 */
+	/** @param UserRow|null $viewedUser */
 	private function renderAchievementsPage(?array $viewedUser): void
 	{
 		$this->set('_page', 'user');
@@ -81,14 +69,8 @@ class AchievementsController extends AppController
 		$this->set('a', $a);
 	}
 
-	/**
-	 * Adds progress and progress_goal to the locked set completion achievements, so their cards
-	 * can show how far the user got.
-	 *
-	 * @param array $achievements
-	 * @param int $userID
-	 * @return void
-	 */
+	//Adds progress and progress_goal to the locked set completion achievements, so their cards
+	//can show how far the user got.
 	private function fillProgress(array &$achievements, int $userID): void
 	{
 		$definitions = [];
@@ -108,11 +90,6 @@ class AchievementsController extends AppController
 		}
 	}
 
-	/**
-	 * @param string|null $id
-	 * @param string|null $userId
-	 * @return void
-	 */
 	#[HttpGet]
 	public function view(?string $id = null, ?string $userId = null): void
 	{
@@ -188,15 +165,9 @@ class AchievementsController extends AppController
 		$this->set('progressGoal', $progressGoal);
 	}
 
-	/**
-	 * The public collections that can earn a repeatable collection achievement, with the
-	 * best accuracy the player reached on each of them. The achievement page lists them so
-	 * a player can see which collections are still left to finish.
-	 *
-	 * @param array $achievement
-	 * @param int|null $userID
-	 * @return array
-	 */
+	//The public collections that can earn a repeatable collection achievement, with the
+	//best accuracy the player reached on each of them. The achievement page lists them so
+	//a player can see which collections are still left to finish.
 	private function fillEarningCollections(array $achievement, ?int $userID): array
 	{
 		if ((int) $achievement['Achievement']['id'] !== AchievementId::SUPERIOR_ACCURACY->value)

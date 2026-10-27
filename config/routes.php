@@ -35,25 +35,17 @@ Router::connect('/sitemap.xml', [
 	'action' => 'index'
 ]);
 
-/**
- * Connect '/' (base path) to the sites index.
- */
+//Connect '/' (base path) to the sites index.
 Router::connect('/', ['controller' => 'sites', 'action' => 'index'], ['routeClass' => 'UrlRoute']);
 
-/**
- * The board editor, see EditorController
- */
+//The board editor, see EditorController
 Router::connect('/editor', ['controller' => 'editor', 'action' => 'index']);
 Router::connect('/editor/', ['controller' => 'editor', 'action' => 'index']);
 
-/**
- * Public changelog / "what's new" page
- */
+//Public changelog / "what's new" page
 Router::connect('/changelog', ['controller' => 'changelog', 'action' => 'index']);
 
-/**
- * TsumegoComments routes - for managing comments on tsumego problems
- */
+//TsumegoComments routes - for managing comments on tsumego problems
 Router::connect(
 	'/tsumego-comments/index/:tsumegoId',
 	['controller' => 'TsumegoComments', 'action' => 'index'],
@@ -74,9 +66,7 @@ Router::connect(
 	['controller' => 'TsumegoComments', 'action' => 'add']
 );
 
-/**
- * TsumegoIssues routes - for managing issues on tsumego problems
- */
+//TsumegoIssues routes - for managing issues on tsumego problems
 Router::connect(
 	'/tsumego-issues/api',
 	['controller' => 'TsumegoIssues', 'action' => 'api']
@@ -105,9 +95,7 @@ Router::connect(
 	['pass' => ['id'], 'id' => '[0-9]+']
 );
 
-/**
- * Messages between players, see MessagesController
- */
+//Messages between players, see MessagesController
 Router::connect(
 	'/messages',
 	['controller' => 'Messages', 'action' => 'index']
@@ -141,9 +129,7 @@ Router::connect(
 	['pass' => ['partnerUserId'], 'partnerUserId' => '[0-9]+']
 );
 
-/**
- * Mistake Training
- */
+//Mistake Training
 Router::connect(
 	'/mistake-training/play/:setConnectionID',
 	['controller' => 'MistakeTraining', 'action' => 'play'],
@@ -162,20 +148,16 @@ Router::connect(
 	['controller' => 'MistakeTraining', 'action' => 'play']
 );
 
-/**
- * Tsumego image generation for Open Graph / social sharing
- */
+//Tsumego image generation for Open Graph / social sharing
 Router::connect(
 	'/tsumego-image/:id',
 	['controller' => 'TsumegoImages', 'action' => 'tsumegoImage'],
 	['pass' => ['id'], 'id' => '[0-9]+'] // ID of the SetConnection
 );
 
-/**
- * Board avatars. The url carries the key of the display name, which is what the
- * drawing is made of, so one url serves the avatar in a list and the one on a
- * profile. The png is the same drawing for the pages that share it.
- */
+//Board avatars. The url carries the key of the display name, which is what the
+//drawing is made of, so one url serves the avatar in a list and the one on a
+//profile. The png is the same drawing for the pages that share it.
 $boardKey = '[0-9a-f]{' . Avatar::KEY_LENGTH . '}';
 Router::connect(
 	'/board/:key.png',
@@ -188,40 +170,32 @@ Router::connect(
 	['pass' => ['key'], 'key' => $boardKey] // Key of a display name
 );
 
-/**
- * The board of an account, addressed by the id of the user. The lists that React
- * draws know the id of every player they show but not the display name the
- * drawing is made of, so this is how an avatar reaches its board when a picture
- * of another host is gone.
- */
+//The board of an account, addressed by the id of the user. The lists that React
+//draws know the id of every player they show but not the display name the
+//drawing is made of, so this is how an avatar reaches its board when a picture
+//of another host is gone.
 Router::connect(
 	'/avatar/:id',
 	['controller' => 'Avatars', 'action' => 'boardOfUser'],
 	['pass' => ['id'], 'id' => '[0-9]+'] // Id of a user
 );
 
-/**
- * The picture a player uploaded as their avatar, stored in the database. The hash
- * changes with the picture, so the url can be cached for good.
- */
+//The picture a player uploaded as their avatar, stored in the database. The hash
+//changes with the picture, so the url can be cached for good.
 Router::connect(
 	'/avatar/:id/:hash.webp',
 	['controller' => 'Avatars', 'action' => 'picture'],
 	['pass' => ['id', 'hash'], 'id' => '[0-9]+', 'hash' => '[0-9a-f]{' . UploadedAvatar::HASH_LENGTH . '}'] // Id of a user, hash of their picture
 );
 
-/**
- * User Sets routes
- */
+//User Sets routes
 Router::connect('/roles', ['controller' => 'Roles', 'action' => 'index']);
 Router::connect(
 	'/roles/change/:id',
 	['controller' => 'Roles', 'action' => 'change'],
 	['pass' => ['id'], 'id' => '[0-9]+'] // Id of the user
 );
-/**
- * The admin area, see AdminController
- */
+//The admin area, see AdminController
 Router::connect('/admin', ['controller' => 'Admin', 'action' => 'index']);
 Router::connect('/admin/activity', ['controller' => 'Admin', 'action' => 'activity']);
 Router::connect('/admin/sgf-proposals', ['controller' => 'Admin', 'action' => 'sgfProposals']);
@@ -312,10 +286,8 @@ Router::connect(
 	['controller' => 'sets', 'action' => 'view'],
 	['pass' => ['id', 'partition'], 'id' => '[^/]+', 'partition' => '[0-9]+', 'routeClass' => 'SetViewRoute']
 );
-/**
- * Challenges between players, see ChallengesController. The address of a challenge is the link
- * its players send to the ones who should join.
- */
+//Challenges between players, see ChallengesController. The address of a challenge is the link
+//its players send to the ones who should join.
 Router::connect(
 	'/challenges',
 	['controller' => 'Challenges', 'action' => 'index']
@@ -335,10 +307,8 @@ foreach (['join' => 'join', 'decline' => 'decline', 'invite' => 'invite', 'play'
 		['controller' => 'Challenges', 'action' => $challengeAction],
 		['pass' => ['id'], 'id' => '[0-9]+'] // Id of a challenge
 	);
-/**
- * Classes of a teacher, see ClassroomsController. The address of a class is the link the teacher
- * sends to the players who should ask to join.
- */
+//Classes of a teacher, see ClassroomsController. The address of a class is the link the teacher
+//sends to the players who should ask to join.
 Router::connect(
 	'/classes',
 	['controller' => 'Classrooms', 'action' => 'index']
@@ -437,8 +407,5 @@ Router::connect(
 
 //Router::connect('/*', ['routeClass' => 'UrlRoute']);
 
-/**
- * Load the CakePHP default routes. Only remove this if you do not want to use
- * the built-in default routes.
- */
+//Load the CakePHP default routes. Only remove this if you do not want to use the built-in default routes.
 require CAKE . 'Config' . DS . 'routes.php';

@@ -5,11 +5,11 @@ use App\Utility\Constants;
 
 class SgfControllerUploadTest extends IntegrationTestCase
 {
-	/** A problem in the top-left corner: the solution is A19, A18, B19. */
+	//A problem in the top-left corner: the solution is A19, A18, B19.
 	private const SGF = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])';
-	/** A comment on it, anchored at the second move. */
+	//A comment on it, anchored at the second move.
 	private const COMMENT = ['message' => 'black A19 then w A18', 'position' => '1/2/1/1/2/1/2/1/sgf|1/1+1/2'];
-	/** The board as the SGF stores it, so the page shows the problem in the top-left corner and its own colours. */
+	//The board as the SGF stores it, so the page shows the problem in the top-left corner and its own colours.
 	private const STORED_BOARD = ['board_orientation_setting' => User::BOARD_ORIENTATION_SETTING_ORIGINAL, 'player_color_setting' => User::PLAYER_COLOR_SETTING_ORIGINAL];
 
 	private function newestSgf(ContextPreparator $context): array
@@ -24,7 +24,7 @@ class SgfControllerUploadTest extends IntegrationTestCase
 		return ClassRegistry::init('TsumegoComment')->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]])['TsumegoComment'];
 	}
 
-	/** Opens the problem in the board editor, presses the given buttons of its tool panel and saves it. */
+	//Opens the problem in the board editor, presses the given buttons of its tool panel and saves it.
 	private function saveFromEditor(Browser $browser, ContextPreparator $context, array $buttons = []): void
 	{
 		$browser->get('/' . $context->setConnections[0]['id']);
@@ -36,7 +36,7 @@ class SgfControllerUploadTest extends IntegrationTestCase
 		$browser->waitUntilJs('location.pathname === ' . json_encode('/' . $context->setConnections[0]['id']) . ' && document.readyState === "complete"');
 	}
 
-	/** Uploads an SGF file with the admin upload of the play page the browser is on. */
+	//Uploads an SGF file with the admin upload of the play page the browser is on.
 	private function uploadSgfFile(Browser $browser, string $sgf): void
 	{
 		$browser->clickId('show4');
@@ -143,7 +143,7 @@ class SgfControllerUploadTest extends IntegrationTestCase
 		$this->assertEquals($context->tsumegos[0]['set-connections'][0]['set_id'], $activity['AdminActivity']['set_id']);
 	}
 
-	/** The problem turned in the board editor is saved turned, and its comments are turned with it. */
+	//The problem turned in the board editor is saved turned, and its comments are turned with it.
 	public function testCommentsFollowTheProblemTurnedInTheEditor()
 	{
 		$browser = Browser::instance();
@@ -165,7 +165,7 @@ class SgfControllerUploadTest extends IntegrationTestCase
 		$browser->waitUntilCssSelectorExistsWithText('.comment__text', 'white A19 then b A18');
 	}
 
-	/** The editor rotates the problem by a quarter turn, the comments follow. */
+	//The editor rotates the problem by a quarter turn, the comments follow.
 	public function testCommentsFollowTheProblemRotatedInTheEditor()
 	{
 		$browser = Browser::instance();
@@ -181,10 +181,8 @@ class SgfControllerUploadTest extends IntegrationTestCase
 		$this->assertSame('18/1/19/1/19/2/2/1/sgf|19/1+18/1', $comment['position']);
 	}
 
-	/**
-	 * The editor shows a problem stored in another corner in the top-left, so saving it there
-	 * moves it, even without any change, and the comments move with it.
-	 */
+	//The editor shows a problem stored in another corner in the top-left, so saving it there
+	//moves it, even without any change, and the comments move with it.
 	public function testCommentsFollowTheProblemTheEditorMovedToTheTopLeft()
 	{
 		$browser = Browser::instance();
@@ -203,7 +201,7 @@ class SgfControllerUploadTest extends IntegrationTestCase
 		$this->assertSame(self::COMMENT['position'], $comment['position']);
 	}
 
-	/** A proposal turned in the board editor turns the comments when an admin accepts it, not before. */
+	//A proposal turned in the board editor turns the comments when an admin accepts it, not before.
 	public function testCommentsFollowAProposalWhenItIsAccepted()
 	{
 		$browser = Browser::instance();
@@ -228,7 +226,7 @@ class SgfControllerUploadTest extends IntegrationTestCase
 		$this->assertSame('19/2/19/1/18/1/2/1/sgf|19/1+19/2', $comment['position']);
 	}
 
-	/** An uploaded file carries no transformation, its stones tell where the problem went and the comments follow. */
+	//An uploaded file carries no transformation, its stones tell where the problem went and the comments follow.
 	public function testCommentsFollowAnUploadedSgfInAnotherCorner()
 	{
 		$browser = Browser::instance();
@@ -249,7 +247,7 @@ class SgfControllerUploadTest extends IntegrationTestCase
 		$this->assertSame('1/18/1/19/2/19/2/1/sgf|1/19+1/18', $comment['position']);
 	}
 
-	/** A status based problem needs a status at every end position, the board editor refuses to save it otherwise and so does the file upload. */
+	//A status based problem needs a status at every end position, the board editor refuses to save it otherwise and so does the file upload.
 	public function testFileUploadOfAStatusProblemWithAnEndPositionWithoutStatusIsRefused()
 	{
 		$browser = Browser::instance();

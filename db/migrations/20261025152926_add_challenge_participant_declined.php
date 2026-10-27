@@ -2,9 +2,7 @@
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * A player invited to a challenge can turn it down instead of leaving it waiting in their list.
- */
+//A player invited to a challenge can turn it down instead of leaving it waiting in their list.
 class AddChallengeParticipantDeclined extends AbstractMigration
 {
 	public function up(): void

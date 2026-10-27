@@ -1,31 +1,26 @@
-/**
- * Coordinate reference parser for comment text.
- *
- * Go players reference board points in many ways in prose:
- *   - single point:        "M16", "black M16"
- *   - a sequence:          "M16-N17-M20", "R17->R19->P19", "Q2,P3,N3", "S2 S4 Q1"
- *   - alternatives:        "F2/G1", "D4 or T2"
- *   - colored moves:       "b D18, w B19", "black R19", "W-T19"
- *
- * This parser tokenizes such text into "slices": plain text or a run of
- * coordinates, tagging each run as a sequence or alternative (a lone
- * coordinate is a one-move sequence) and recording an optional color per
- * coordinate. It is orientation-agnostic (coordinates are absolute board
- * intersections) and does NOT depend on besogo.
- *
- * It deliberately uses heuristics that match the actual comment corpus and
- * degrades gracefully (a coordinate it cannot link into a run is still kept).
- */
+//Coordinate reference parser for comment text.
+//Go players reference board points in many ways in prose:
+//  - single point:        "M16", "black M16"
+//  - a sequence:          "M16-N17-M20", "R17->R19->P19", "Q2,P3,N3", "S2 S4 Q1"
+//  - alternatives:        "F2/G1", "D4 or T2"
+//  - colored moves:       "b D18, w B19", "black R19", "W-T19"
+//This parser tokenizes such text into "slices": plain text or a run of
+//coordinates, tagging each run as a sequence or alternative (a lone
+//coordinate is a one-move sequence) and recording an optional color per
+//coordinate. It is orientation-agnostic (coordinates are absolute board
+//intersections) and does NOT depend on besogo.
+//It deliberately uses heuristics that match the actual comment corpus and
+//degrades gracefully (a coordinate it cannot link into a run is still kept).
 export type CoordColor = 'b' | 'w';
 export type CoordGroupKind = 'sequence' | 'alternative';
 
 export interface CoordToken
 {
-	/** Normalized coordinate, e.g. "M16" */
+	//Normalized coordinate, e.g. "M16"
 	coord: string;
-	/** As written, e.g. "m16" */
+	//As written, e.g. "m16"
 	raw: string;
-	/** Optional color marker the author used, e.g. "b" / "white" */
+	//Optional color marker the author used, e.g. "b" / "white"
 	color?: CoordColor;
 }
 
@@ -34,7 +29,7 @@ export interface CoordRun
 	type: 'coords';
 	kind: CoordGroupKind;
 	tokens: CoordToken[];
-	/** separators[i] sits between tokens[i] and tokens[i+1] */
+	//separators[i] sits between tokens[i] and tokens[i+1]
 	separators: string[];
 }
 
@@ -161,11 +156,9 @@ function classifyGap(gap: string): 'sequence' | 'alternative' | 'break'
 	return 'sequence';
 }
 
-/**
- * Splits comment text into text slices and coordinate runs.
- * Coordinates linked by a connector are grouped into a single run; anything in
- * between that is not a recognized connector splits the run.
- */
+//Splits comment text into text slices and coordinate runs.
+//Coordinates linked by a connector are grouped into a single run; anything in
+//between that is not a recognized connector splits the run.
 export function parseCoordinateReferences(text: string): ParsedSlice[]
 {
 	const links = [...text.matchAll(LINK_RE)].map(link => [link.index, link.index + link[0].length]);

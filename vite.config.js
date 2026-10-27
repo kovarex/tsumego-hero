@@ -11,9 +11,7 @@ import { createInstrumenter } from 'istanbul-lib-instrument';
 // Never enabled for production.
 const isCoverageBuild = process.env.VITE_COVERAGE === 'true';
 
-/**
- * Legacy JS files (global-scope scripts, must remain non-module to stay in global scope).
- */
+//Legacy JS files (global-scope scripts, must remain non-module to stay in global scope).
 const LEGACY_APP_FILES = [
 	'webroot/js/util.js',
 	'webroot/js/AchievementAlerts.js',
@@ -34,9 +32,7 @@ const LEGACY_APP_FILES = [
 	'webroot/js/setProgress.js',
 ];
 
-/**
- * Besogo Go board viewer JS files (global-scope, loaded on puzzle pages).
- */
+//Besogo Go board viewer JS files (global-scope, loaded on puzzle pages).
 const LEGACY_BESOGO_FILES = [
 	'webroot/besogo/js/besogo.js',
 	'webroot/besogo/js/transformation.js',
@@ -62,13 +58,10 @@ const LEGACY_BESOGO_FILES = [
 	'webroot/besogo/js/scaleParameters.js',
 ];
 
-/**
- * Creates a plugin that concatenates legacy global-scope JS files and emits them as a plain
- * (non-module) script. Bypasses Rollup's module system entirely so functions remain globally
- * accessible. Appends a 'virtual:legacy-{name}' entry to the Vite manifest.json after the build.
- *
- * closeBundle hooks run sequentially per plugin, so two instances writing to the manifest is safe.
- */
+//Creates a plugin that concatenates legacy global-scope JS files and emits them as a plain
+//(non-module) script. Bypasses Rollup's module system entirely so functions remain globally
+//accessible. Appends a 'virtual:legacy-{name}' entry to the Vite manifest.json after the build.
+//closeBundle hooks run sequentially per plugin, so two instances writing to the manifest is safe.
 function legacyBundlePlugin(name, files, { minify = true } = {}) {
 	let outDir;
 	let rootDir;

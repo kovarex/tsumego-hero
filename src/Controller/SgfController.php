@@ -21,11 +21,9 @@ class SgfController extends AppController
 		return $this->response;
 	}
 
-	/**
-	 * What the author wrote about the version and the author as the site shows a player (avatar,
-	 * link to the profile, rank), for the diff of the version in the editor.
-	 * Allowed to whoever may fetch the version.
-	 */
+	//What the author wrote about the version and the author as the site shows a player (avatar,
+	//link to the profile, rank), for the diff of the version in the editor.
+	//Allowed to whoever may fetch the version.
 	#[HttpGet]
 	public function info(int $sgfID)
 	{

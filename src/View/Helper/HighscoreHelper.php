@@ -1,29 +1,21 @@
 <?php
 
-/**
- * HighscoreHelper - Renders highscore tables with standardized layout.
- *
- * Every highscore table has the same structure:
- *   Place | Name+Rank (with premium badge) | ...value columns...
- *
- * Gap rows (⋮) and self-view highlighting are handled automatically.
- */
+//HighscoreHelper - Renders highscore tables with standardized layout.
+//Every highscore table has the same structure:
+//  Place | Name+Rank (with premium badge) | ...value columns...
+//Gap rows (⋮) and self-view highlighting are handled automatically.
 use App\Utility\Auth;
 
 class HighscoreHelper extends AppHelper
 {
-	/**
-	 * Render a complete highscore table.
-	 *
-	 * Standard columns (Place, Name+Rank+Premium) are always included.
-	 * Only the value columns need to be specified per page.
-	 *
-	 * @param string $title Table title HTML
-	 * @param array $rows Data rows (each must have 'position' key)
-	 * @param array $valueColumns Value column definitions: [['label' => string, 'render' => callable($row)], ...]
-	 * @param int|null $totalUsers Total user count shown in footer (null to hide)
-	 * @return string Complete HTML table
-	 */
+	//Render a complete highscore table.
+	//Standard columns (Place, Name+Rank+Premium) are always included.
+	//Only the value columns need to be specified per page.
+	//$title: Table title HTML
+	//$rows: Data rows (each must have 'position' key)
+	//$valueColumns: Value column definitions: [['label' => string, 'render' => callable($row)], ...]
+	//$totalUsers: Total user count shown in footer (null to hide)
+	//Returns complete HTML table
 	public static function renderTable(
 		string $title,
 		array $rows,

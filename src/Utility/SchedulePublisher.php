@@ -6,19 +6,14 @@ use CakeLog;
 use ClassRegistry;
 use Set;
 
-/**
- * Publishes the schedule entries that are due, which the daily cron runs.
- *
- * This lives outside the controllers on purpose: a public method of a controller is an
- * action, so any url could run it, and publishing takes the ids of the entry it works on.
- */
+//Publishes the schedule entries that are due, which the daily cron runs.
+//This lives outside the controllers on purpose: a public method of a controller is an
+//action, so any url could run it, and publishing takes the ids of the entry it works on.
 class SchedulePublisher
 {
-	/**
-	 * Publish every entry that is due, oldest first. Entries of a day the cron did not
-	 * run on are published by the next run, so nothing stays pending forever. An entry
-	 * that cannot be published stays pending, so the schedule page shows it, and is logged.
-	 */
+	//Publish every entry that is due, oldest first. Entries of a day the cron did not
+	//run on are published by the next run, so nothing stays pending forever. An entry
+	//that cannot be published stays pending, so the schedule page shows it, and is logged.
 	public static function publishDue(): void
 	{
 		$date = date('Y-m-d', strtotime('today'));
@@ -45,13 +40,11 @@ class SchedulePublisher
 		}
 	}
 
-	/**
-	 * Publish a single tsumego from sandbox to the target public set.
-	 * Always moves the tsumego to the target set. Only wipes tsumego_status
-	 * if the tsumego is not already in any other public set (to preserve
-	 * solve history for existing public problems).
-	 * Returns why it could not be published, null when it was.
-	 */
+	//Publish a single tsumego from sandbox to the target public set.
+	//Always moves the tsumego to the target set. Only wipes tsumego_status
+	//if the tsumego is not already in any other public set (to preserve
+	//solve history for existing public problems).
+	//Returns why it could not be published, null when it was.
 	private static function publishSingle(int|string|null $tsumegoID = null, int|string|null $to = null): ?string
 	{
 		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID);

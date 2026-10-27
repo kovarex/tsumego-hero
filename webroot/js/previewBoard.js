@@ -88,17 +88,13 @@
 		svg.appendChild(svgCircle);
 	}
 
-/**
- * Inline SGF preview loader.
- *
- * A single delegated mouseover listener reads pre-parsed SGF data from
- * data-sgf-preview attributes and renders an SVG preview into the link element.
- * No AJAX, no delay — data is embedded at render time by TsumegoButton.
- *
- * Caching:
- *   - SVG in DOM is the cache — querySelector('svg') guard prevents re-render.
- *   - Page navigation clears everything naturally; no eviction needed.
- */
+//Inline SGF preview loader.
+//A single delegated mouseover listener reads pre-parsed SGF data from
+//data-sgf-preview attributes and renders an SVG preview into the link element.
+//No AJAX, no delay — data is embedded at render time by TsumegoButton.
+//Caching:
+//  - SVG in DOM is the cache — querySelector('svg') guard prevents re-render.
+//  - Page navigation clears everything naturally; no eviction needed.
 (function () {
 	'use strict';
 

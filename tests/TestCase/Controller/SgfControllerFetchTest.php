@@ -59,7 +59,7 @@ class SgfControllerFetchTest extends IntegrationTestCase
 		$this->assertSame($sgf['Sgf']['sgf'], $this->view);
 	}
 
-	/** The proposer gets the decision about their proposal with a link to its diff, so they see both versions. */
+	//The proposer gets the decision about their proposal with a link to its diff, so they see both versions.
 	public function testFetchReturnsEveryVersionToAProposerOfTheProblem()
 	{
 		$context = new ContextPreparator([

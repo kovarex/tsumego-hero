@@ -1,14 +1,10 @@
 <?php
 
-/**
- * Tests for the display name a new account gets at registration.
- */
+//Tests for the display name a new account gets at registration.
 class RegistrationDisplayNameTest extends IntegrationTestCase
 {
-	/**
-	 * A name the account cannot be made with gets no account: empty, or with a character above
-	 * U+FFFF that the utf8mb3 columns of the forum cannot hold (an emoji, a rare kanji).
-	 */
+	//A name the account cannot be made with gets no account: empty, or with a character above
+	//U+FFFF that the utf8mb3 columns of the forum cannot hold (an emoji, a rare kanji).
 	public function testRegistrationWithANameItCannotUseCreatesNoAccount(): void
 	{
 		new ContextPreparator(['user' => null]);

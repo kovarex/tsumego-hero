@@ -2,10 +2,8 @@
 
 use App\Utility\Constants;
 
-/**
- * The tabs over a player's pages: a player's own content is one click away, and a tab that leads
- * to nothing is not there at all.
- */
+//The tabs over a player's pages: a player's own content is one click away, and a tab that leads
+//to nothing is not there at all.
 class ProfileTabsTest extends IntegrationTestCase
 {
 	public function testProfileLinksToThePublicCollectionsOfAPlayer(): void

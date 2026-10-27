@@ -1,7 +1,5 @@
-/**
- * User link component with optional avatar and rank display
- * Replaces renderLink() HTML string builder
- */
+//User link component with optional avatar and rank display
+//Replaces renderLink() HTML string builder
 
 import { Avatar } from './Avatar';
 

@@ -2,17 +2,14 @@
 
 namespace App\Utility;
 
-/**
- * Comments keep their coordinates and colours as they are in the stored SGF,
- * without the transformation (corner, rotation, colour swap) the board is
- * shown with. The browser converts the text when it shows it and when it saves
- * it (app/comments/commentCoordinates.ts); this is the same rewrite for the
- * server, used when a new SGF version reorients the problem. Keep the two in sync.
- *
- * A label is a western coordinate such as "D4": the column letter (A-T without I)
- * from the left and the row number from the bottom. A point is 1-based x from the
- * left and y from the top, as besogo uses it.
- */
+//Comments keep their coordinates and colours as they are in the stored SGF,
+//without the transformation (corner, rotation, colour swap) the board is
+//shown with. The browser converts the text when it shows it and when it saves
+//it (app/comments/commentCoordinates.ts); this is the same rewrite for the
+//server, used when a new SGF version reorients the problem. Keep the two in sync.
+//A label is a western coordinate such as "D4": the column letter (A-T without I)
+//from the left and the row number from the bottom. A point is 1-based x from the
+//left and y from the top, as besogo uses it.
 class CommentCoordinates
 {
 	// a coordinate is not a part of a longer word or number ("d4rkm4tter", "/files/ul1/"),
@@ -61,19 +58,16 @@ class CommentCoordinates
 		return $labels;
 	}
 
-	/** The text with every link replaced by a space, to look at its coordinates. */
+	//The text with every link replaced by a space, to look at its coordinates.
 	public static function withoutLinks(string $text): string
 	{
 		return preg_replace(self::LINK_PATTERN, ' ', $text);
 	}
 
-	/**
-	 * Rewrites every coordinate in the text through $mapping (keeping the case of
-	 * its letter, a null result keeps the coordinate as written) and optionally
-	 * swaps the colours. Links stay as written.
-	 *
-	 * @param callable(string): ?string $mapping
-	 */
+	//Rewrites every coordinate in the text through $mapping (keeping the case of
+	//its letter, a null result keeps the coordinate as written) and optionally
+	//swaps the colours. Links stay as written.
+	/** @param callable(string): ?string $mapping */
 	public static function transformText(string $text, callable $mapping, bool $invertColors): string
 	{
 		// the parts at odd indexes are the links
@@ -98,10 +92,8 @@ class CommentCoordinates
 		return $invertColors ? self::swapColors($transformed) : $transformed;
 	}
 
-	/**
-	 * Swaps black and white: the words, a standalone B or W ("B kills"), and a b/w
-	 * letter marking the colour of a coordinate ("b E2", "W-T19", "bL18").
-	 */
+	//Swaps black and white: the words, a standalone B or W ("B kills"), and a b/w
+	//letter marking the colour of a coordinate ("b E2", "W-T19", "bL18").
 	private static function swapColors(string $text): string
 	{
 		$text = preg_replace_callback(self::COLOR_WORD_PATTERN, function (array $match): string {
@@ -136,10 +128,8 @@ class CommentCoordinates
 		}, $transformation->invertColors);
 	}
 
-	/**
-	 * Applies the transformation to a comment position
-	 * ("x/y/parentX/parentY/childX/childY/moveNumber/childCount/sgf|path").
-	 */
+	//Applies the transformation to a comment position
+	//("x/y/parentX/parentY/childX/childY/moveNumber/childCount/sgf|path").
 	public static function transformPosition(?string $position, BoardTransformation $transformation, int $size): ?string
 	{
 		if ($position === null || !$transformation->movesPoints())

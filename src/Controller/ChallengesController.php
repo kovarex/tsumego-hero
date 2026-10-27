@@ -8,18 +8,14 @@ use App\Utility\Rating;
 use App\Utility\TimeMode;
 use App\Utility\TimeModeUtil;
 
-/**
- * Challenges between players: one player picks a range of difficulty, the time for a problem and
- * how many problems, invites the others by their names or sends them the link, and everyone in the
- * challenge plays the same problems like a time mode run, whenever they like. The page of the
- * challenge is the table of who has how many points.
- */
+//Challenges between players: one player picks a range of difficulty, the time for a problem and
+//how many problems, invites the others by their names or sends them the link, and everyone in the
+//challenge plays the same problems like a time mode run, whenever they like. The page of the
+//challenge is the table of who has how many points.
 class ChallengesController extends AppController
 {
-	/**
-	 * The challenges of the player, and the form to start one. ?opponent=<user id> fills in the
-	 * player to invite, which is where the button on a profile leads.
-	 */
+	//The challenges of the player, and the form to start one. ?opponent=<user id> fills in the
+	//player to invite, which is where the button on a profile leads.
 	#[HttpGet]
 	public function index(): mixed
 	{
@@ -74,11 +70,9 @@ class ChallengesController extends AppController
 		return $this->redirect(self::challengeUrl($challengeID));
 	}
 
-	/**
-	 * The page of a challenge: what is played, the table of the players, and a way in for the
-	 * ones who aren't in yet. How each player did with each problem is shown to the players who
-	 * finished their own run, so nobody sees the problems before they play them.
-	 */
+	//The page of a challenge: what is played, the table of the players, and a way in for the
+	//ones who aren't in yet. How each player did with each problem is shown to the players who
+	//finished their own run, so nobody sees the problems before they play them.
 	#[HttpGet]
 	public function view(string $id): mixed
 	{
@@ -125,9 +119,7 @@ class ChallengesController extends AppController
 		return $this->redirect(self::challengeUrl((int) $challenge['id']));
 	}
 
-	/**
-	 * The player turns the challenge down, before they start their run.
-	 */
+	//The player turns the challenge down, before they start their run.
 	#[HttpPost]
 	public function decline(string $id): mixed
 	{
@@ -141,9 +133,7 @@ class ChallengesController extends AppController
 		return $this->redirect('/challenges');
 	}
 
-	/**
-	 * A player in the challenge invites others by their names, separated by commas.
-	 */
+	//A player in the challenge invites others by their names, separated by commas.
 	#[HttpPost]
 	public function invite(string $id): mixed
 	{
@@ -154,10 +144,8 @@ class ChallengesController extends AppController
 		return $this->redirect(self::challengeUrl((int) $challenge['id']));
 	}
 
-	/**
-	 * Starts the run of the player, joining the challenge first when they aren't in yet, or gets
-	 * them back to a run they left in the middle.
-	 */
+	//Starts the run of the player, joining the challenge first when they aren't in yet, or gets
+	//them back to a run they left in the middle.
 	#[HttpPost]
 	public function play(string $id): mixed
 	{
@@ -176,12 +164,9 @@ class ChallengesController extends AppController
 		return $this->redirect('/timeMode/play');
 	}
 
-	/**
-	 * Puts the player into the challenge when they aren't in yet, or declined it before, and there is room.
-	 *
-	 * @param array<string, mixed> $challenge
-	 * @return bool Whether the player is in the challenge
-	 */
+	//Puts the player into the challenge when they aren't in yet, or declined it before, and there is room.
+	//Returns whether the player is in the challenge
+	/** @param array<string, mixed> $challenge */
 	private function joinChallenge(array $challenge): bool
 	{
 		$this->Authorization->authorize('Challenge', 'join');
@@ -200,12 +185,9 @@ class ChallengesController extends AppController
 		return true;
 	}
 
-	/**
-	 * Adds the players of the names to the challenge, where it shows in their challenges and on the
-	 * count of the menu, then says what came of it.
-	 *
-	 * @param string $names Display names separated by commas
-	 */
+	//Adds the players of the names to the challenge, where it shows in their challenges and on the
+	//count of the menu, then says what came of it.
+	//$names: Display names separated by commas
 	private function inviteByNames(int $challengeID, string $names): void
 	{
 		$names = array_values(array_unique(array_filter(array_map('trim', explode(',', $names)), fn(string $name) => $name !== '')));
@@ -247,11 +229,8 @@ class ChallengesController extends AppController
 			CookieFlash::set(implode(' ', $problems), 'error');
 	}
 
-	/**
-	 * The time mode rank of the player's rating, to start the form with, or the easiest one.
-	 *
-	 * @param array<array{TimeModeRank: array<string, mixed>}> $ranks Ordered by id
-	 */
+	//The time mode rank of the player's rating, to start the form with, or the easiest one.
+	/** @param array<array{TimeModeRank: array<string, mixed>}> $ranks Ordered by id */
 	private static function rankOfPlayer(array $ranks): ?int
 	{
 		if (empty($ranks))
@@ -268,9 +247,7 @@ class ChallengesController extends AppController
 		return '/challenges/' . $challengeID;
 	}
 
-	/**
-	 * @return array<string, mixed> As Challenge::withDetails() returns it
-	 */
+	/** @return array<string, mixed> As Challenge::withDetails() returns it */
 	private function findChallenge(string $id): array
 	{
 		$challenge = Challenge::withDetails((int) $id);

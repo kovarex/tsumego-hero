@@ -2,14 +2,10 @@
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * What a pupil did with each problem of an assignment, kept for the assignment itself. A problem
- * solved before keeps its status when it is played again, and the attempts don't record such a
- * replay, so the assignment counts its results on its own: the misplays and the first solve.
- *
- * The solves since an assignment was published, which were read from the attempts until now,
- * are copied in.
- */
+//What a pupil did with each problem of an assignment, kept for the assignment itself. A problem
+//solved before keeps its status when it is played again, and the attempts don't record such a
+//replay, so the assignment counts its results on its own: the misplays and the first solve.
+//The solves since an assignment was published, which were read from the attempts until now, are copied in.
 class AddClassroomAssignmentResults extends AbstractMigration
 {
 	public function up(): void

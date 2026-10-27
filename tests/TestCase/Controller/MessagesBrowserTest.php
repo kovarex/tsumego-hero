@@ -4,10 +4,8 @@ use App\Utility\Auth;
 use App\Utility\Util;
 use Facebook\WebDriver\WebDriverKeys;
 
+//The messages page in the browser: writing to a player, reading what arrived and finding a player to write to.
 /**
- * The messages page in the browser: writing to a player, reading what arrived and
- * finding a player to write to.
- *
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */

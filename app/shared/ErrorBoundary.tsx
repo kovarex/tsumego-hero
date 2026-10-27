@@ -12,20 +12,16 @@ interface State
 	error: Error | null;
 }
 
-/**
- * Error Boundary component to catch React errors and display fallback UI
- * instead of crashing the entire app with a white screen.
- *
- * Usage:
- *   <ErrorBoundary>
- *     <YourComponent />
- *   </ErrorBoundary>
- *
- * Or with custom fallback:
- *   <ErrorBoundary fallback={<div>Custom error message</div>}>
- *     <YourComponent />
- *   </ErrorBoundary>
- */
+//Error Boundary component to catch React errors and display fallback UI
+//instead of crashing the entire app with a white screen.
+//Usage:
+//  <ErrorBoundary>
+//    <YourComponent />
+//  </ErrorBoundary>
+//Or with custom fallback:
+//  <ErrorBoundary fallback={<div>Custom error message</div>}>
+//    <YourComponent />
+//  </ErrorBoundary>
 export class ErrorBoundary extends Component<Props, State>
 {
 	constructor(props: Props)

@@ -148,12 +148,9 @@ class Rating
 		return strval($rating);
 	}
 
-	/**
-	 * All rank labels from 30k to 9d, weakest first. Colors are CSS tokens
-	 * (from --rank-30k to --rank-9d) in webroot/css/tokens.css.
-	 *
-	 * @return string[]
-	 */
+	//All rank labels from 30k to 9d, weakest first. Colors are CSS tokens
+	//(from --rank-30k to --rank-9d) in webroot/css/tokens.css.
+	/** @return string[] */
 	public static function ranks(): array
 	{
 		return [
@@ -168,21 +165,16 @@ class Rating
 		];
 	}
 
-	/**
-	 * The weakest rank of the rank list. Its band has no lower rating bound,
-	 * so every problem below it belongs to it as well.
-	 */
+	//The weakest rank of the rank list. Its band has no lower rating bound,
+	//so every problem below it belongs to it as well.
 	public static function weakestRank(): string
 	{
 		return self::ranks()[0];
 	}
 
-	/**
-	 * Splits a range label such as "20k-16k" into its weakest and strongest rank.
-	 * Returns null when the input is not exactly two valid ranks in that order.
-	 *
-	 * @return array{0: string, 1: string}|null
-	 */
+	//Splits a range label such as "20k-16k" into its weakest and strongest rank.
+	//Returns null when the input is not exactly two valid ranks in that order.
+	/** @return array{0: string, 1: string}|null */
 	public static function parseReadableRankRange(string $input): ?array
 	{
 		$parts = explode('-', $input);
@@ -193,12 +185,8 @@ class Rating
 		return [$parts[0], $parts[1]];
 	}
 
-	/**
-	 * The rank labels from the weakest to the strongest one, inclusive, in the
-	 * order of ranks().
-	 *
-	 * @return string[]
-	 */
+	//The rank labels from the weakest to the strongest one, inclusive, in the order of ranks().
+	/** @return string[] */
 	public static function ranksBetween(string $weakest, string $strongest): array
 	{
 		$allRanks = self::ranks();
@@ -209,18 +197,14 @@ class Rating
 		return array_slice($allRanks, $from, $to - $from + 1);
 	}
 
-	/**
-	 * Hex color for a rank label, referencing the CSS token (e.g. --rank-5k).
-	 */
+	//Hex color for a rank label, referencing the CSS token (e.g. --rank-5k).
 	public static function rankColorVar(string $rank): string
 	{
 		return 'var(--rank-' . $rank . ')';
 	}
 
-	/**
-	 * How far the difficulty setting of rating mode moves the player's rating: the selection
-	 * is centred on the adjusted value, so a higher setting picks stronger problems.
-	 */
+	//How far the difficulty setting of rating mode moves the player's rating: the selection
+	//is centred on the adjusted value, so a higher setting picks stronger problems.
 	public static function adjustmentForDifficulty(int|string $difficultySetting): int
 	{
 		$adjustments = [

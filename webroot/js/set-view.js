@@ -1,10 +1,6 @@
-/**
- * Set view page functionality
- */
+//Set view page functionality
 
-/**
- * Initialize set cover image zoom on hover
- */
+//Initialize set cover image zoom on hover
 function initSetImageZoom()
 {
 	document.querySelectorAll('.set-image-zoom img').forEach(img =>

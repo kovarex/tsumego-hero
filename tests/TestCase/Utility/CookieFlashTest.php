@@ -1,10 +1,7 @@
 <?php
 
-/**
- * Tests for CookieFlash utility class.
- *
- * CookieFlash provides stateless flash messages using cookies.
- */
+//Tests for CookieFlash utility class.
+//CookieFlash provides stateless flash messages using cookies.
 use App\Utility\CookieFlash;
 
 class CookieFlashTest extends CakeTestCase

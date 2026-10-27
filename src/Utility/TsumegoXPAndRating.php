@@ -5,14 +5,10 @@ namespace App\Utility;
 use ProgressDeletion;
 use TsumegoAttempt;
 
-/**
- * @phpstan-import-type TsumegoRow from \App\Utility\RowTypes
- */
+/** @phpstan-import-type TsumegoRow from \App\Utility\RowTypes */
 class TsumegoXPAndRating
 {
-	/**
-	 * @param TsumegoRow $tsumego
-	 */
+	/** @param TsumegoRow $tsumego */
 	public function __construct(array $tsumego, string $status, ?int $setConnectionID = null)
 	{
 		if ($status == 'G')

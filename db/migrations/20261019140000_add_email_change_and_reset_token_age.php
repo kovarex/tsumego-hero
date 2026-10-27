@@ -2,18 +2,13 @@
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * The columns behind the two flows that hand a link to an e-mail address:
- *
- * - a changed address waits in unconfirmed_email until the player confirms it from
- *   the link sent there, while the address that is given up gets a token that
- *   cancels the change,
- * - a password reset remembers when it was asked for, so its link stops working
- *   after a while and a second mail is not sent right away.
- *
- * A link is opened by the value of its column and nothing else, so each of the three
- * tokens is indexed.
- */
+//The columns behind the two flows that hand a link to an e-mail address:
+//- a changed address waits in unconfirmed_email until the player confirms it from
+//  the link sent there, while the address that is given up gets a token that
+//  cancels the change,
+//- a password reset remembers when it was asked for, so its link stops working
+//  after a while and a second mail is not sent right away.
+//A link is opened by the value of its column and nothing else, so each of the three tokens is indexed.
 class AddEmailChangeAndResetTokenAge extends AbstractMigration
 {
 	public function up(): void

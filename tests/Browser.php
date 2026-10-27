@@ -11,16 +11,12 @@ use Facebook\WebDriver\Interactions\WebDriverActions;
 use App\Utility\Auth;
 use App\Utility\Util;
 
-/**
- * Selenium wrapper used by every browser test.
- *
- * Two families of lookups, pick by whether the page can still change:
- *   find() / findById()         wait for the element, use these by default
- *   getElements() / idExists()  look at the page as it is right now, no waiting
- *
- * When a wait gives up it writes the page to tmp/browser-timeout-*.html, so a
- * timeout in CI comes with the HTML that caused it.
- */
+//Selenium wrapper used by every browser test.
+//Two families of lookups, pick by whether the page can still change:
+//  find() / findById()         wait for the element, use these by default
+//  getElements() / idExists()  look at the page as it is right now, no waiting
+//When a wait gives up it writes the page to tmp/browser-timeout-*.html, so a
+//timeout in CI comes with the HTML that caused it.
 class Browser
 {
 	// Counter for per-page JS coverage snapshots written to /tmp/coverage/js-raw-*.json
@@ -148,11 +144,9 @@ class Browser
 		}
 	}
 
-	/**
-	 * Snapshot window.__coverage__ (populated by vite-plugin-istanbul) to /tmp/coverage/js-raw-<n>.json.
-	 * Called when leaving a page (start of get/getAnonymous) and in shutdown(), so every visited page's
-	 * accumulated coverage is captured. Snapshots are merged afterwards by scripts/js-coverage-report.sh.
-	 */
+	//Snapshot window.__coverage__ (populated by vite-plugin-istanbul) to /tmp/coverage/js-raw-<n>.json.
+	//Called when leaving a page (start of get/getAnonymous) and in shutdown(), so every visited page's
+	//accumulated coverage is captured. Snapshots are merged afterwards by scripts/js-coverage-report.sh.
 	private function captureJsCoverage(): void
 	{
 		if (getenv('TEST_ENVIRONMENT') !== 'github-ci' || !file_exists('/tmp/coverage'))
@@ -248,11 +242,8 @@ class Browser
 		$this->assertNoErrors();
 	}
 
-	/**
-	 * Posts to a URL from the page the browser is on, the way a form on it does.
-	 *
-	 * @param array<string, string|int> $postData Fields to submit; empty for a form without fields
-	 */
+	//Posts to a URL from the page the browser is on, the way a form on it does.
+	/** @param array<string, string|int> $postData Fields to submit; empty for a form without fields */
 	public function post(string $url, array $postData = []): void
 	{
 		$this->captureJsCoverage();
@@ -307,12 +298,9 @@ class Browser
 		$this->assertNoErrors();
 	}
 
-	/**
-	 * Find an element with any lookup strategy, waiting until it shows up.
-	 *
-	 * Prefer find()/findById() where they fit. This is the escape hatch for the
-	 * strategies they do not cover (name, xpath, tag name).
-	 */
+	//Find an element with any lookup strategy, waiting until it shows up.
+	//Prefer find()/findById() where they fit. This is the escape hatch for the
+	//strategies they do not cover (name, xpath, tag name).
 	public function findBy(WebDriverBy $by, int $timeout = 10)
 	{
 		return $this->waitUntil(function ($driver) use ($by) {
@@ -320,41 +308,29 @@ class Browser
 		}, $timeout, 'element ' . $by->getMechanism() . ': ' . $by->getValue());
 	}
 
-	/**
-	 * All elements matching a lookup strategy, as they are right now.
-	 *
-	 * Unlike findBy(), this does NOT wait: use it for counting and for asserting
-	 * that something is absent.
-	 */
+	//All elements matching a lookup strategy, as they are right now.
+	//Unlike findBy(), this does NOT wait: use it for counting and for asserting that something is absent.
 	public function getAllBy(WebDriverBy $by)
 	{
 		return $this->driver->findElements($by);
 	}
 
-	/**
-	 * Find an element by CSS selector, waiting until it shows up.
-	 *
-	 * Selenium only waits for readyState when navigating, which does not cover
-	 * elements a script adds or replaces afterwards, so a lookup that does not
-	 * wait races the page and makes the test flaky.
-	 */
+	//Find an element by CSS selector, waiting until it shows up.
+	//Selenium only waits for readyState when navigating, which does not cover
+	//elements a script adds or replaces afterwards, so a lookup that does not
+	//wait races the page and makes the test flaky.
 	public function find(string $selector, int $timeout = 10)
 	{
 		return $this->findBy(WebDriverBy::cssSelector($selector), $timeout);
 	}
 
-	/**
-	 * Find an element by id, waiting until it shows up.
-	 */
+	//Find an element by id, waiting until it shows up.
 	public function findById(string $id, int $timeout = 10)
 	{
 		return $this->findBy(WebDriverBy::id($id), $timeout);
 	}
 
-	/**
-	 * All elements matching a CSS selector, as they are right now.
-	 * Does NOT wait, see getAllBy().
-	 */
+	//All elements matching a CSS selector, as they are right now. Does NOT wait, see getAllBy().
 	public function getElements(string $selector)
 	{
 		return $this->getAllBy(WebDriverBy::cssSelector($selector));
@@ -377,32 +353,24 @@ class Browser
 		}
 	}
 
-	/**
-	 * Whether an element with the given id is on the page right now.
-	 *
-	 * Unlike findById(), this does NOT wait, so it is how a test asserts that
-	 * something is absent.
-	 */
+	//Whether an element with the given id is on the page right now.
+	//Unlike findById(), this does NOT wait, so it is how a test asserts that something is absent.
 	public function idExists(string $id): bool
 	{
 		return !empty($this->driver->findElements(WebDriverBy::id($id)));
 	}
 
-	/**
-	 * Run a WebDriverWait condition, dumping the page source to tmp/ when it times out.
-	 *
-	 * Transient driver errors keep the wait going instead of ending it: while a page is
-	 * navigating or a script is re-rendering the DOM, document.body can be missing, the
-	 * execution context can be destroyed and an element reference can go stale. Those all
-	 * mean "not ready yet". WebDriverWait on its own tolerates only NoSuchElementException,
-	 * so everything else is handled here, and the last error is added to the dump context
-	 * to keep a real failure diagnosable. A dead session is not transient and still throws.
-	 *
-	 * @param callable $condition Condition passed to WebDriverWait::until()
-	 * @param int $timeout Timeout in seconds
-	 * @param int $interval Polling interval in milliseconds
-	 * @param string $context Human readable description of what is being waited for
-	 */
+	//Run a WebDriverWait condition, dumping the page source to tmp/ when it times out.
+	//Transient driver errors keep the wait going instead of ending it: while a page is
+	//navigating or a script is re-rendering the DOM, document.body can be missing, the
+	//execution context can be destroyed and an element reference can go stale. Those all
+	//mean "not ready yet". WebDriverWait on its own tolerates only NoSuchElementException,
+	//so everything else is handled here, and the last error is added to the dump context
+	//to keep a real failure diagnosable. A dead session is not transient and still throws.
+	//$condition: Condition passed to WebDriverWait::until()
+	//$timeout: Timeout in seconds
+	//$interval: Polling interval in milliseconds
+	//$context: Human readable description of what is being waited for
 	private function waitAndDumpOnTimeout(callable $condition, int $timeout, int $interval, string $context): mixed
 	{
 		$lastTransientError = null;
@@ -453,9 +421,7 @@ class Browser
 		}
 	}
 
-	/**
-	 * Single driver call for the timeout dump: the value, or the reason it failed.
-	 */
+	//Single driver call for the timeout dump: the value, or the reason it failed.
 	private function driverDump(callable $call): string
 	{
 		try
@@ -507,11 +473,9 @@ class Browser
 		);
 	}
 
-	/**
-	 * Wait until the selector matches nothing that is displayed. Covers both ways an
-	 * element can stop being visible: it was hidden, or it was removed. Use
-	 * waitUntilCssSelectorDoesntExist() when the page must really drop it from the DOM.
-	 */
+	//Wait until the selector matches nothing that is displayed. Covers both ways an
+	//element can stop being visible: it was hidden, or it was removed. Use
+	//waitUntilCssSelectorDoesntExist() when the page must really drop it from the DOM.
 	public function waitUntilCssSelectorNotDisplayed(string $selector, int $timeout = 10): void
 	{
 		$this->waitAndDumpOnTimeout(
@@ -525,13 +489,10 @@ class Browser
 		);
 	}
 
-	/**
-	 * Wait until ANY of the given selectors exist (OR logic).
-	 * Useful for waiting for React components that can render either content or empty state.
-	 *
-	 * @param string[] $selectors CSS selectors to wait for (at least one must exist)
-	 * @param int $timeout Timeout in seconds
-	 */
+	//Wait until ANY of the given selectors exist (OR logic).
+	//Useful for waiting for React components that can render either content or empty state.
+	//$timeout: Timeout in seconds
+	/** @param string[] $selectors CSS selectors to wait for (at least one must exist) */
 	public function waitUntilAnyCssSelectorExists(array $selectors, int $timeout = 10): void
 	{
 		$this->waitAndDumpOnTimeout(
@@ -550,13 +511,10 @@ class Browser
 		);
 	}
 
-	/**
-	 * Wait until a JavaScript expression evaluates truthy.
-	 * Great for besogo/board state checks that aren't exposed via the DOM.
-	 *
-	 * @param string $expression A JS expression (no surrounding `return`).
-	 * @param int $timeout Timeout in seconds
-	 */
+	//Wait until a JavaScript expression evaluates truthy.
+	//Great for besogo/board state checks that aren't exposed via the DOM.
+	//$expression: A JS expression (no surrounding `return`).
+	//$timeout: Timeout in seconds
 	public function waitUntilJs(string $expression, int $timeout = 10): void
 	{
 		$this->waitAndDumpOnTimeout(
@@ -569,14 +527,10 @@ class Browser
 		);
 	}
 
-	/**
-	 * Start recording outgoing requests (fetch and XMLHttpRequest) on the current page.
-	 * Call it right before the action and assert with requestsTo(); anything recorded
-	 * earlier is dropped, so the recording covers exactly the action under test.
-	 *
-	 * The recorder is installed into the page, so it has to be called after the page
-	 * loaded, and a navigation clears it.
-	 */
+	//Start recording outgoing requests (fetch and XMLHttpRequest) on the current page.
+	//Call it right before the action and assert with requestsTo(); anything recorded
+	//earlier is dropped, so the recording covers exactly the action under test.
+	//The recorder is installed into the page, so it has to be called after the page loaded, and a navigation clears it.
 	public function startRecordingRequests(): void
 	{
 		$this->driver->executeScript(<<<'JS'
@@ -598,10 +552,8 @@ class Browser
 			JS);
 	}
 
-	/**
-	 * The recorded request URLs containing the given fragment, in the order they were sent.
-	 * An empty result means the action sent nothing to that endpoint.
-	 */
+	//The recorded request URLs containing the given fragment, in the order they were sent.
+	//An empty result means the action sent nothing to that endpoint.
 	public function requestsTo(string $fragment): array
 	{
 		$requests = $this->driver->executeScript('return window.__testRequests || [];');
@@ -703,11 +655,8 @@ class Browser
 		}
 	}
 
-	/**
-	 * Wait until the board is drawn, and return its size in intersections.
-	 *
-	 * @return int Board size, 19 for a 19x19 board
-	 */
+	//Wait until the board is drawn, and return its size in intersections.
+	//Returns board size, 19 for a 19x19 board
 	public function waitForBoard(): int
 	{
 		return (int) $this->waitAndDumpOnTimeout(function ($driver) {
@@ -740,12 +689,10 @@ class Browser
 		Auth::logout();
 	}
 
-	/**
-	 * Check if page title contains the expected text (with wait)
-	 * @param string $expectedTitle The text expected in the page title
-	 * @param int $timeout Maximum wait time in seconds (default 5)
-	 * @return bool True if title contains expected text
-	 */
+	//Check if page title contains the expected text (with wait)
+	//$expectedTitle: The text expected in the page title
+	//$timeout: Maximum wait time in seconds (default 5)
+	//Returns true if title contains expected text
 	public function titleContains(string $expectedTitle, int $timeout = 10): bool
 	{
 		return $this->waitUntil(function ($driver) use ($expectedTitle) {
@@ -753,12 +700,9 @@ class Browser
 		}, $timeout, 'title contains: ' . $expectedTitle);
 	}
 
-	/**
-	 * The text of the page, waiting for the document to have a body first.
-	 *
-	 * A navigation can commit before the new document is parsed, and a plain read of
-	 * document.body at that moment throws instead of returning the page.
-	 */
+	//The text of the page, waiting for the document to have a body first.
+	//A navigation can commit before the new document is parsed, and a plain read of
+	//document.body at that moment throws instead of returning the page.
 	public function pageText(): string
 	{
 		$this->waitUntilJs('document.body !== null');
@@ -766,15 +710,12 @@ class Browser
 		return (string) $this->driver->executeScript('return document.body.textContent;');
 	}
 
-	/**
-	 * Wait until a condition on the PHP side becomes true, e.g. a row that only the
-	 * server round trip creates. For conditions about the page use the DOM and JS
-	 * helpers instead. Dumps the page when it gives up, like every other wait.
-	 *
-	 * @param callable $condition Function that returns truthy value when condition met
-	 * @param int $timeout Maximum wait time in seconds
-	 * @param string $context Human readable description, shown in the timeout dump
-	 */
+	//Wait until a condition on the PHP side becomes true, e.g. a row that only the
+	//server round trip creates. For conditions about the page use the DOM and JS
+	//helpers instead. Dumps the page when it gives up, like every other wait.
+	//$condition: Function that returns truthy value when condition met
+	//$timeout: Maximum wait time in seconds
+	//$context: Human readable description, shown in the timeout dump
 	public function waitUntil(callable $condition, int $timeout = 10, string $context = 'condition')
 	{
 		return $this->waitAndDumpOnTimeout(function ($driver) use ($condition) {
@@ -790,10 +731,8 @@ class Browser
 		}, $timeout, 500, $context);
 	}
 
-	/**
-	 * Wait until an element reference goes stale, i.e. the page replaced or removed it.
-	 * That is how a test knows a click navigated or a script re-rendered the element.
-	 */
+	//Wait until an element reference goes stale, i.e. the page replaced or removed it.
+	//That is how a test knows a click navigated or a script re-rendered the element.
 	public function waitUntilStale($element, int $timeout = 10): void
 	{
 		$this->waitUntil(function () use ($element) {
@@ -813,10 +752,8 @@ class Browser
 		}, $timeout, 'element went stale');
 	}
 
-	/**
-	 * Expand the comments section and wait for React to render content.
-	 * Clicks the COMMENTS tab once it is there; clicking the already active tab is harmless.
-	 */
+	//Expand the comments section and wait for React to render content.
+	//Clicks the COMMENTS tab once it is there; clicking the already active tab is harmless.
 	public function expandComments()
 	{
 		$this->find('.tsumego-comments__tab[data-filter="open"]', 5)->click();

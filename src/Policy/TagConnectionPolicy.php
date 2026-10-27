@@ -5,20 +5,18 @@ namespace App\Policy;
 use App\Utility\TsumegoUtil;
 use ClassRegistry;
 
+//Tag connections: proposing a tag requires the canPropose capability and, as tags are hints,
+//having solved the problem; removing one is allowed for admins or the proposer (unapproved
+//proposals only).
 /**
- * Tag connections: proposing a tag requires the canPropose capability and, as tags are hints,
- * having solved the problem; removing one is allowed for admins or the proposer (unapproved
- * proposals only).
- *
  * @phpstan-import-type UserRow from \App\Utility\RowTypes
  * @phpstan-import-type TagConnectionRow from \App\Utility\RowTypes
  * @phpstan-import-type TsumegoRow from \App\Utility\RowTypes
  */
 class TagConnectionPolicy extends BasePolicy
 {
+	//A player tags only a problem they solved, an admin any (forum#94).
 	/**
-	 * A player tags only a problem they solved, an admin any (forum#94).
-	 *
 	 * @param UserRow|null $user
 	 * @param TsumegoRow $tsumego
 	 */
@@ -34,9 +32,8 @@ class TagConnectionPolicy extends BasePolicy
 		return $status && TsumegoUtil::isSolvedStatus($status['TsumegoStatus']['status']);
 	}
 
+	//Removing a proposal: admins or the proposer (unapproved only).
 	/**
-	 * Removing a proposal: admins or the proposer (unapproved only).
-	 *
 	 * @param UserRow|null $user
 	 * @param TagConnectionRow $tagConnection
 	 */

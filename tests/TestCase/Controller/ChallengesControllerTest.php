@@ -7,18 +7,14 @@ use App\Utility\Rating;
 use App\Utility\TimeModeUtil;
 use App\Utility\Util;
 
-/**
- * Challenges between players: everyone in a challenge plays the same problems like a time mode
- * run, and the page of the challenge ranks them by their points.
- */
+//Challenges between players: everyone in a challenge plays the same problems like a time mode
+//run, and the page of the challenge ranks them by their points.
 class ChallengesControllerTest extends IntegrationTestCase
 {
 	private ContextPreparator $context;
 
-	/**
-	 * The player 'challenger' is signed in, 'friend' and 'stranger' can join, and there are
-	 * twelve problems of the one rank of the time mode.
-	 */
+	//The player 'challenger' is signed in, 'friend' and 'stranger' can join, and there are
+	//twelve problems of the one rank of the time mode.
 	private function prepare(int $problemCount = 12): void
 	{
 		Auth::logout();
@@ -41,9 +37,7 @@ class ChallengesControllerTest extends IntegrationTestCase
 		return (int) array_find($this->context->timeModeRanks, fn(array $rank) => $rank['name'] === $name)['id'];
 	}
 
-	/**
-	 * @param array<string, mixed> $data What the form sends, over the defaults
-	 */
+	/** @param array<string, mixed> $data What the form sends, over the defaults */
 	private function create(array $data = []): ?int
 	{
 		$this->post('/challenges/create', $data + [
@@ -57,18 +51,14 @@ class ChallengesControllerTest extends IntegrationTestCase
 		return $challenge ? (int) $challenge['Challenge']['id'] : null;
 	}
 
-	/**
-	 * @return array<int> The users in the challenge
-	 */
+	/** @return array<int> The users in the challenge */
 	private function participants(int $challengeId): array
 	{
 		return array_map(fn(array $row) => (int) $row['user_id'],
 			Util::query('SELECT user_id FROM challenge_participant WHERE challenge_id = ? ORDER BY id', [$challengeId]));
 	}
 
-	/**
-	 * @return array<array<string, mixed>> The attempts of the run of the player, in their order
-	 */
+	/** @return array<array<string, mixed>> The attempts of the run of the player, in their order */
 	private function runAttempts(int $challengeId, string $name): array
 	{
 		return Util::query('SELECT a.* FROM time_mode_attempt a
@@ -77,11 +67,8 @@ class ChallengesControllerTest extends IntegrationTestCase
 			ORDER BY a.`order`', [$challengeId, $this->userId($name)]);
 	}
 
-	/**
-	 * Plays the run of the signed-in player through the result requests the board sends.
-	 *
-	 * @param list<array{0: PlayOutcome, 1: float}> $results The outcome and seconds of each problem
-	 */
+	//Plays the run of the signed-in player through the result requests the board sends.
+	/** @param list<array{0: PlayOutcome, 1: float}> $results The outcome and seconds of each problem */
 	private function playRun(int $challengeId, array $results): void
 	{
 		$this->post('/challenges/play/' . $challengeId);
@@ -480,10 +467,8 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$this->assertSame(0, Challenge::countWaitingFor($this->userId('stranger')));
 	}
 
-	/**
-	 * The whole way through the board: the player starts their run on the page of the challenge,
-	 * solves the problems one after another and ends on the table of the challenge.
-	 */
+	//The whole way through the board: the player starts their run on the page of the challenge,
+	//solves the problems one after another and ends on the table of the challenge.
 	public function testPlayingAChallengeInTheBrowser(): void
 	{
 		$this->prepare(3);

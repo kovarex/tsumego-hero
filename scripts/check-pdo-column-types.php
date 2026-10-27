@@ -1,24 +1,19 @@
 <?php
 
-/**
- * Verifies which PHP types the application's PDO connection returns for each column type
- * present in the database schema. Companion to scripts/generate-phpstan-row-types.php -
- * documents the runtime types the generated row aliases are based on.
- *
- * Usage (inside ddev): ddev exec php scripts/check-pdo-column-types.php
- *
- * The connection options below mirror the Mysql driver in vendor/pieceofcake2/cakephp
- * (config/database.php defines no additional 'flags'), so this is exactly the runtime
- * path of Util::query() and model finds.
- *
- * Expected result on PHP 8.1+ with mysqlnd (verified on PHP 8.4 + MariaDB 11.4):
- *   - integer columns (int/bigint/mediumint/smallint/tinyint) -> integer
- *   - decimal -> string (exact text representation, e.g. '94.00')
- *   - float/double -> double
- *   - date/datetime/timestamp and all text types -> string
- * The type aliases in src/Utility/RowTypes.php use these exact types: `int` for integer
- * columns, `float` for float/double, `string` for decimal and date/text types.
- */
+//Verifies which PHP types the application's PDO connection returns for each column type
+//present in the database schema. Companion to scripts/generate-phpstan-row-types.php -
+//documents the runtime types the generated row aliases are based on.
+//Usage (inside ddev): ddev exec php scripts/check-pdo-column-types.php
+//The connection options below mirror the Mysql driver in vendor/pieceofcake2/cakephp
+//(config/database.php defines no additional 'flags'), so this is exactly the runtime
+//path of Util::query() and model finds.
+//Expected result on PHP 8.1+ with mysqlnd (verified on PHP 8.4 + MariaDB 11.4):
+//  - integer columns (int/bigint/mediumint/smallint/tinyint) -> integer
+//  - decimal -> string (exact text representation, e.g. '94.00')
+//  - float/double -> double
+//  - date/datetime/timestamp and all text types -> string
+//The type aliases in src/Utility/RowTypes.php use these exact types: `int` for integer
+//columns, `float` for float/double, `string` for decimal and date/text types.
 $pdo = new PDO(
 	'mysql:host=db;dbname=db;charset=utf8',
 	'db',

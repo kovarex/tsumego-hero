@@ -4,17 +4,13 @@ declare(strict_types=1);
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * Accounts are no longer deleted from the database, only marked as deleted (user.deleted), so their
- * sets, comments, tags and SGF edits stay, and an admin can restore the account.
- *
- * The name and Google id of a deleted account move to deleted_name and deleted_external_id, so they
- * are free for a new account; restoring moves them back. The email stays, emails don't need to be
- * unique.
- *
- * Replaces the old dbstorage column, which was reused as the "deletion requested" flag (1111); the
- * pending requests are carried out by deleting those accounts.
- */
+//Accounts are no longer deleted from the database, only marked as deleted (user.deleted), so their
+//sets, comments, tags and SGF edits stay, and an admin can restore the account.
+//The name and Google id of a deleted account move to deleted_name and deleted_external_id, so they
+//are free for a new account; restoring moves them back. The email stays, emails don't need to be
+//unique.
+//Replaces the old dbstorage column, which was reused as the "deletion requested" flag (1111); the
+//pending requests are carried out by deleting those accounts.
 final class SoftDeleteUsers extends AbstractMigration
 {
 	public function up(): void

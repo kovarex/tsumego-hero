@@ -1,8 +1,6 @@
 import { SkeletonElement } from '../shared/SkeletonElement';
 
-/**
- * Skeleton for a comment card
- */
+//Skeleton for a comment card
 export function CommentSkeleton()
 {
 	return (
@@ -30,9 +28,7 @@ export function CommentSkeleton()
 	);
 }
 
-/**
- * Skeleton for comments list (mix of comments and issues with skeletons below)
- */
+//Skeleton for comments list (mix of comments and issues with skeletons below)
 export function CommentsListSkeleton()
 {
 	return (

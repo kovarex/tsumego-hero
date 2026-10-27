@@ -2,10 +2,8 @@
 
 namespace App\Utility;
 
-/**
- * What the author of an SGF version wrote about it (sgf.description), in the tables of versions and
- * proposals. A long one is shortened to a line there, the whole text is in its tooltip.
- */
+//What the author of an SGF version wrote about it (sgf.description), in the tables of versions and
+//proposals. A long one is shortened to a line there, the whole text is in its tooltip.
 class SgfDescription
 {
 	public const SHOWN_LENGTH = 80;

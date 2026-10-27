@@ -34,9 +34,7 @@ class EditTsumegoTest extends IntegrationTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider editTsumegoProvider
-	 */
+	/** @dataProvider editTsumegoProvider */
 	public function testEditTsumego(array $testCase)
 	{
 		$context = new ContextPreparator([

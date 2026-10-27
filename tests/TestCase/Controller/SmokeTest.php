@@ -140,9 +140,7 @@ class SmokeTest extends IntegrationTestCase
 		}
 	}
 
-	/**
-	 * Test that error pages also render with the site layout (logo, CSS, no JS errors).
-	 */
+	//Test that error pages also render with the site layout (logo, CSS, no JS errors).
 	public function testErrorPagesRenderWithLayout()
 	{
 		new ContextPreparator(['user' => null]);
@@ -167,10 +165,8 @@ class SmokeTest extends IntegrationTestCase
 		$this->assertSame(200, $status, "$label: page returned HTTP $status");
 	}
 
-	/**
-	 * Switch the PHP-side auth identity and drop stale browser cookies so the
-	 * next Browser::get() injects the new user. Null userId logs out (anonymous).
-	 */
+	//Switch the PHP-side auth identity and drop stale browser cookies so the
+	//next Browser::get() injects the new user. Null userId logs out (anonymous).
 	private function switchUser($browser, ?int $userId): void
 	{
 		Auth::logout();

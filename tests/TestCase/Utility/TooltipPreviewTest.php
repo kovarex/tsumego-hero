@@ -2,9 +2,8 @@
 
 use Facebook\WebDriver\WebDriverBy;
 
+//Browser tests for inline SGF preview (data-sgf-preview attribute).
 /**
- * Browser tests for inline SGF preview (data-sgf-preview attribute).
- *
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */

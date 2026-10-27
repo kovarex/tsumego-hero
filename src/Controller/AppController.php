@@ -9,9 +9,7 @@ use App\Utility\TimeMode;
 use App\Utility\TsumegoFilters;
 use App\Utility\Util;
 
-/**
- * @phpstan-import-type UserRow from \App\Utility\RowTypes
- */
+/** @phpstan-import-type UserRow from \App\Utility\RowTypes */
 class AppController extends Controller
 {
 	public $viewClass = 'App';
@@ -29,12 +27,8 @@ class AppController extends Controller
 		return Util::query("SELECT * from tag WHERE approved = 1 ORDER BY tag.name");
 	}
 
-	/**
-	 * The pages of a deleted account (profile, its sets, tags, solve history...) are gone for
-	 * everyone but the admins.
-	 *
-	 * @param UserRow $user
-	 */
+	//The pages of a deleted account (profile, its sets, tags, solve history...) are gone for everyone but the admins.
+	/** @param UserRow $user */
 	protected function assertUserVisible(array $user): void
 	{
 		if (!empty($user['deleted']) && !Auth::isAdmin())
@@ -179,7 +173,7 @@ class AppController extends Controller
 		}
 	}
 
-	/** The mailer of a running test, and null outside of one. */
+	//The mailer of a running test, and null outside of one.
 	private static $testEmailer = null;
 
 	public static function _setTestEmailer($emailer): void
@@ -187,15 +181,11 @@ class AppController extends Controller
 		self::$testEmailer = $emailer;
 	}
 
-	/**
-	 * The mailer of the emails a controller sends.
-	 *
-	 * A test puts its own mailer here through _setTestEmailer(), so it reads what the site
-	 * wrote instead of receiving it. The test suite and the test host build the message and
-	 * stop there; the dev site hands it to the local mail catcher, like it always did.
-	 *
-	 * @return CakeEmail
-	 */
+	//The mailer of the emails a controller sends.
+	//A test puts its own mailer here through _setTestEmailer(), so it reads what the site
+	//wrote instead of receiving it. The test suite and the test host build the message and
+	//stop there; the dev site hands it to the local mail catcher, like it always did.
+	/** @return CakeEmail */
 	public function _getEmailer()
 	{
 		return self::$testEmailer
@@ -210,11 +200,9 @@ class AppController extends Controller
 			Util::setCookie('lastVisit', $vs['TsumegoStatus']['tsumego_id']);
 	}
 
-	/**
-	 * Enforce HTTP-method attributes (e.g. #[HttpPost]) on the dispatched action.
-	 * Mirrors CakePHP 5's Cake\Http\Attribute\* so migration is a use-swap: the
-	 * attributes stay, this enforcement method is deleted.
-	 */
+	//Enforce HTTP-method attributes (e.g. #[HttpPost]) on the dispatched action.
+	//Mirrors CakePHP 5's Cake\Http\Attribute\* so migration is a use-swap: the
+	//attributes stay, this enforcement method is deleted.
 	protected function enforceHttpMethodAttribute(): void
 	{
 		$action = $this->action;
@@ -253,16 +241,12 @@ class AppController extends Controller
 		}
 	}
 
-	/**
-	 * Bumped when browsers hold files that no deploy can replace: the old static editor page (until
-	 * 2026-10-23) was cached with the besogo scripts it loaded, so its users kept running the old editor.
-	 */
+	//Bumped when browsers hold files that no deploy can replace: the old static editor page (until
+	//2026-10-23) was cached with the besogo scripts it loaded, so its users kept running the old editor.
 	public const BROWSER_CACHE_VERSION = '2026-10-23';
 
-	/**
-	 * Drops the site's HTTP cache in a browser once per BROWSER_CACHE_VERSION, on whatever request of
-	 * the site comes first. The cookie keeps it from happening again.
-	 */
+	//Drops the site's HTTP cache in a browser once per BROWSER_CACHE_VERSION, on whatever request of
+	//the site comes first. The cookie keeps it from happening again.
 	private function resetStaleBrowserCache(): void
 	{
 		if (($_COOKIE['browser_cache_version'] ?? null) === self::BROWSER_CACHE_VERSION)

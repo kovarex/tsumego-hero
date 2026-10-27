@@ -4,17 +4,12 @@ use App\Lib\Error\UnprocessableEntityException;
 use App\Utility\Auth;
 use App\Utility\Util;
 
-/**
- * Messages between players: sending, the email that announces one, the conversations
- * and the search of a player to write to.
- */
+//Messages between players: sending, the email that announces one, the conversations
+//and the search of a player to write to.
 class MessagesControllerTest extends IntegrationTestCase
 {
-	/**
-	 * The player 'messageSender' is signed in, the others can be written to.
-	 *
-	 * @param list<array<string, mixed>> $others
-	 */
+	//The player 'messageSender' is signed in, the others can be written to.
+	/** @param list<array<string, mixed>> $others */
 	private function prepare(array $others = [['name' => 'messageRecipient', 'email' => 'recipient@example.com']]): ContextPreparator
 	{
 		Auth::logout();
@@ -38,9 +33,7 @@ class MessagesControllerTest extends IntegrationTestCase
 		return json_decode($this->view, true);
 	}
 
-	/**
-	 * @return string|null The message of the refusal, null when the message was sent
-	 */
+	//Returns the message of the refusal, null when the message was sent
 	private function refusal(int $recipientUserId, string $text): ?string
 	{
 		// The refusal reason is the exception message, so the exception has to reach the test.
@@ -94,10 +87,8 @@ class MessagesControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('/users/settings', $email['body']);
 	}
 
-	/**
-	 * A lively conversation would otherwise send an email for every line. The next email
-	 * comes once the recipient read what was announced.
-	 */
+	//A lively conversation would otherwise send an email for every line. The next email
+	//comes once the recipient read what was announced.
 	public function testOnlyTheFirstUnreadMessageIsEmailed(): void
 	{
 		$context = $this->prepare();
@@ -124,10 +115,8 @@ class MessagesControllerTest extends IntegrationTestCase
 		$this->assertSame([], TestEmailer::$lastEmail);
 	}
 
-	/**
-	 * The message is what the sender wanted to deliver; an email server that does not answer
-	 * only loses the announcement.
-	 */
+	//The message is what the sender wanted to deliver; an email server that does not answer
+	//only loses the announcement.
 	public function testTheMessageIsKeptWhenTheEmailCannotBeSent(): void
 	{
 		$context = $this->prepare();
@@ -178,10 +167,8 @@ class MessagesControllerTest extends IntegrationTestCase
 		$this->assertResponseCode(401);
 	}
 
-	/**
-	 * Writing to many players who never answer is what a spammer does, so it stops for the
-	 * day; players who wrote back can always be answered.
-	 */
+	//Writing to many players who never answer is what a spammer does, so it stops for the
+	//day; players who wrote back can always be answered.
 	public function testPlayersWhoDidNotAnswerAreLimitedPerDay(): void
 	{
 		$others = [];

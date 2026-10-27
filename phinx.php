@@ -1,15 +1,8 @@
 <?php
-/**
- * Phinx Configuration
- *
- * This configuration file loads database settings from CakePHP's database.php
- * and provides them to Phinx for migrations.
- *
- * Note: This loads database.php in a simplified way to avoid loading the full
- * CakePHP bootstrap, which would cause conflicts in the CLI context.
- *
- * @link https://book.cakephp.org/phinx/0/en/migrations.html
- */
+//Phinx configuration: loads the database settings from CakePHP's database.php and provides them
+//to Phinx for migrations (https://book.cakephp.org/phinx/0/en/migrations.html).
+//It loads database.php in a simplified way to avoid loading the full CakePHP bootstrap, which
+//would cause conflicts in the CLI context.
 
 // Define Configure class stub to allow database.php to load
 if (!class_exists('Configure')) {
