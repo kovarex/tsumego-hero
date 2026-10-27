@@ -1,9 +1,7 @@
 import { SkeletonElement } from '../shared/SkeletonElement';
 import { CommentSkeleton } from '../comments/CommentSkeleton';
 
-/**
- * Skeleton for an issue card
- */
+//Skeleton for an issue card
 export function IssueSkeleton()
 {
 	return (
@@ -35,9 +33,7 @@ export function IssueSkeleton()
 	);
 }
 
-/**
- * Skeleton for issues page list
- */
+//Skeleton for issues page list
 export function IssuesListSkeleton()
 {
 	return (

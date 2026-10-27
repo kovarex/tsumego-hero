@@ -1,27 +1,16 @@
 <?php
 
-/**
- * Sitemaps Controller
- *
- * Generates XML sitemap for search engines
- *
- * @link https://www.sitemaps.org/protocol.html
- */
+//Generates XML sitemap for search engines, see https://www.sitemaps.org/protocol.html
 use App\Utility\Constants;
 use App\Attribute\HttpGet;
 use App\Utility\Util;
 
 class SitemapsController extends AppController
 {
-	/**
-	 * Models
-	 */
+	//Models
 	public $uses = ['Achievement', 'Set', 'Tag'];
 
-	/**
-	 * Pages a visitor can browse without signing in. Each one is resolved
-	 * through the router before it is listed.
-	 */
+	//Pages a visitor can browse without signing in. Each one is resolved through the router before it is listed.
 	private const PUBLIC_PAGES = [
 		['controller' => 'achievements', 'action' => 'index'],
 		['controller' => 'changelog', 'action' => 'index'],
@@ -37,14 +26,8 @@ class SitemapsController extends AppController
 		['controller' => 'users', 'action' => 'time_mode'],
 	];
 
-	/**
-	 * Generate XML sitemap
-	 *
-	 * Outputs sitemap.xml with all public URLs.
-	 * Caches rendered XML for 1 day. Webserver handles gzip compression.
-	 *
-	 * @return void
-	 */
+	//Generate XML sitemap
+	//Outputs sitemap.xml with all public URLs. Caches rendered XML for 1 day. Webserver handles gzip compression.
 	#[HttpGet]
 	public function index(): void
 	{
@@ -63,14 +46,10 @@ class SitemapsController extends AppController
 		$this->autoRender = false;
 	}
 
-	/**
-	 * Generate all URLs for sitemap
-	 *
-	 * Note: Google ignores <priority> and <changefreq>, so we only use <loc>.
-	 * See: https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap
-	 *
-	 * @return string[]
-	 */
+	//Generate all URLs for sitemap
+	//Note: Google ignores <priority> and <changefreq>, so we only use <loc>.
+	//See: https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap
+	/** @return string[] */
 	private function _generateUrls(): array
 	{
 		$urls = [];
@@ -142,12 +121,8 @@ ORDER BY set_connection.id ASC");
 		return array_values(array_filter($urls));
 	}
 
-	/**
-	 * URL for a route, or null when no controller serves it, so the sitemap
-	 * only ever lists pages that answer.
-	 *
-	 * @param array<int|string, mixed> $route
-	 */
+	//URL for a route, or null when no controller serves it, so the sitemap only ever lists pages that answer.
+	/** @param array<int|string, mixed> $route */
 	public static function _urlOf(array $route): ?string
 	{
 		$controller = (string) $route['controller'];
@@ -160,11 +135,9 @@ ORDER BY set_connection.id ASC");
 		return Router::url($route, true);
 	}
 
-	/**
-	 * Whether an action a URL would point at can actually be requested. The
-	 * leading underscore keeps these helpers out of the router
-	 * (Controller::_isPrivateAction).
-	 */
+	//Whether an action a URL would point at can actually be requested. The
+	//leading underscore keeps these helpers out of the router
+	//(Controller::_isPrivateAction).
 	public static function _controllerServesAction(string $controller, string $action): bool
 	{
 		$class = Inflector::camelize($controller) . 'Controller';
@@ -172,12 +145,8 @@ ORDER BY set_connection.id ASC");
 		return class_exists($class) && method_exists($class, $action);
 	}
 
-	/**
-	 * Render URL list as XML sitemap string
-	 *
-	 * @param string[] $urls
-	 * @return string
-	 */
+	//Render URL list as XML sitemap string
+	/** @param string[] $urls */
 	private function _renderXml(array $urls): string
 	{
 		$xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";

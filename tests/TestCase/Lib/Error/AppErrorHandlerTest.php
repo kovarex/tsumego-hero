@@ -2,16 +2,11 @@
 
 use App\Lib\Error\UnprocessableEntityException;
 
-/**
- * AppErrorHandler renders JSON error bodies for JSON/AJAX requests
- * and the HTML error page for regular browser requests.
- */
+//AppErrorHandler renders JSON error bodies for JSON/AJAX requests and the HTML error page for regular browser requests.
 class AppErrorHandlerTest extends CakeTestCase
 {
-	/**
-	 * Renders the given exception through AppErrorHandler with the supplied
-	 * request headers and returns the resulting response.
-	 */
+	//Renders the given exception through AppErrorHandler with the supplied
+	//request headers and returns the resulting response.
 	private function renderError($exception, array $server = [])
 	{
 		$restoreServer = $_SERVER;

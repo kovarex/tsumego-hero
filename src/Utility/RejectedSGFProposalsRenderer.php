@@ -6,11 +6,9 @@ use Sgf;
 use SetConnection;
 use User;
 
-/**
- * The rejected SGF proposals in the admin panel, folded under the ones waiting for a decision,
- * with who rejected them and why, and a button to reopen one. Proposals rejected before the
- * rejected versions were kept are gone, so they are not listed.
- */
+//The rejected SGF proposals in the admin panel, folded under the ones waiting for a decision,
+//with who rejected them and why, and a button to reopen one. Proposals rejected before the
+//rejected versions were kept are gone, so they are not listed.
 class RejectedSGFProposalsRenderer extends DataTableRenderer
 {
 	public function __construct(array $urlParams)
@@ -63,7 +61,7 @@ LIMIT " . self::$PAGE_SIZE . "
 OFFSET " . $this->offset);
 	}
 
-	/** Folded unless the admin is paging through it. */
+	//Folded unless the admin is paging through it.
 	public function render(): void
 	{
 		echo '<details class="rejected-proposals" id="rejected-sgf-proposals"' . ($this->opened ? ' open' : '') . '>';

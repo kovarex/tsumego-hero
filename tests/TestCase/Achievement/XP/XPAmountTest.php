@@ -3,11 +3,8 @@
 use App\Utility\AchievementId;
 use App\Utility\AchievementChecker;
 
-/**
- * Achievement XP Amount Tests
- *
- * Tests that achievements grant correct XP amounts and XP is added correctly
- */
+//Achievement XP Amount Tests
+//Tests that achievements grant correct XP amounts and XP is added correctly
 class XPAmountTest extends AchievementTestCase
 {
 	public function testAchievement_PROBLEMS_1000_Grants1000XP()
@@ -20,9 +17,7 @@ class XPAmountTest extends AchievementTestCase
 		$this->assertEquals(1000, $context->XPGained());
 	}
 
-	/**
-	 * Test that Achievement #2 (2000 solved) grants 2000 XP
-	 */
+	//Test that Achievement #2 (2000 solved) grants 2000 XP
 	public function testAchievement2Grants2000XP()
 	{
 		// Arrange: User at level 69 with 2000 solved (needs 4350 to level up)
@@ -52,9 +47,6 @@ class XPAmountTest extends AchievementTestCase
 		$this->assertEquals(10, $context->reloadUser()['level'], 'Level 10 (needs 175 to reach 11, only has 100)');
 	}
 
-	/**
-	 * Test that multiple achievements grant combined XP
-	 */
 	public function testMultipleAchievementsGrantCombinedXP()
 	{
 		// Arrange: User at level 69 qualifying for both Achievement #1 (1000 solved, 1000 XP) and #2 (2000 solved, 2000 XP)
@@ -73,10 +65,8 @@ class XPAmountTest extends AchievementTestCase
 		$this->assertEquals(69, $user['User']['level'], 'User should remain at level 69');
 	}
 
-	/**
-	 * Test that existing XP is preserved when achievement unlocks
-	 * This is the critical test for the = vs += bug
-	 */
+	//Test that existing XP is preserved when achievement unlocks
+	//This is the critical test for the = vs += bug
 	public function testExistingXPIsNotOverwritten()
 	{
 		// Arrange: User at level 69 with significant existing XP (3000) - needs 4350 to level up

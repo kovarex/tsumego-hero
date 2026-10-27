@@ -2,26 +2,19 @@
 
 use PHPUnitRetry\RetryTrait;
 
+//Verifies that CSS and JS assets are properly bundled via Vite,
+//that styles are applied, and that JavaScript functions are loaded and working.
 /**
- * AssetBundlingTest
- *
- * Verifies that CSS and JS assets are properly bundled via Vite,
- * that styles are applied, and that JavaScript functions are loaded and working.
- *
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
- *
  * @group disabled
- *
  * This test is excluded from local runs (see phpunit.xml.dist).
  * It only runs in CI where assets are pre-built via .github/workflows/ci.yml
  */
 class AssetBundlingTest extends CakeTestCase
 {
 	use RetryTrait;
-	/**
-	 * Test that CSS bundles are loaded and individual files are NOT loaded
-	 */
+	//Test that CSS bundles are loaded and individual files are NOT loaded
 	public function testCssBundlesAreLoadedAndStylesApplied()
 	{
 		$browser = Browser::instance();
@@ -38,9 +31,7 @@ class AssetBundlingTest extends CakeTestCase
 		$this->assertTrue((bool) $hasTheme, 'Theme CSS bundle (dark or light) should be loaded');
 	}
 
-	/**
-	 * Test that JS bundle is loaded and individual files are NOT loaded
-	 */
+	//Test that JS bundle is loaded and individual files are NOT loaded
 	public function testJsBundleIsLoadedAndFunctional()
 	{
 		$browser = Browser::instance();
@@ -63,9 +54,7 @@ class AssetBundlingTest extends CakeTestCase
 		$this->assertTrue($hasDarkToggle, 'darkAndLight function from dark.js should be available in bundle');
 	}
 
-	/**
-	 * Test that play page loads bundles (not individual files)
-	 */
+	//Test that play page loads bundles (not individual files)
 	public function testPlayPageBundlesWork()
 	{
 		$browser = Browser::instance();
@@ -90,10 +79,8 @@ class AssetBundlingTest extends CakeTestCase
 		$this->assertTrue($hasPreviewFunctions, 'createPreviewBoard function from previewBoard.js should be available in bundle');
 	}
 
-	/**
-	 * Test that besogo library is NOT bundled into the legacy JS bundle
-	 * (it should remain separate as a third-party library)
-	 */
+	//Test that besogo library is NOT bundled into the legacy JS bundle
+	//(it should remain separate as a third-party library)
 	public function testBesogoLibraryRemainsUnbundled()
 	{
 		// Check that besogo is NOT included in the legacy-app bundle
@@ -111,9 +98,7 @@ class AssetBundlingTest extends CakeTestCase
 		$this->assertFalse($hasBesogoDef, 'Besogo library definition should NOT be in bundle');
 	}
 
-	/**
-	 * Test that minified bundle files exist
-	 */
+	//Test that minified bundle files exist
 	public function testMinifiedBundlesExist()
 	{
 		// Verify Vite bundle files exist (using wildcard pattern for hashed names)

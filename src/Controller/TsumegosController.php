@@ -256,10 +256,8 @@ class TsumegosController extends AppController
 		return $this->redirect($this->request->data['redirect']);
 	}
 
-	/**
-	 * Moves the problem to the trash and goes back to its collection, or to the list of collections
-	 * when it was the last problem of it, as the collection went to the trash with it.
-	 */
+	//Moves the problem to the trash and goes back to its collection, or to the list of collections
+	//when it was the last problem of it, as the collection went to the trash with it.
 	private function moveToTrash(int $tsumegoID): mixed
 	{
 		$setConnection = ClassRegistry::init('SetConnection')->findDisplaySetConnection($tsumegoID);

@@ -8,17 +8,13 @@ use App\Utility\Constants;
 use App\Utility\CookieFlash;
 use App\Utility\Util;
 
-/**
- * Classes: a teacher gathers players into a class, gives them problems to solve by a day and
- * watches who solved what. A player gets into a class when both sides agree: the teacher invites
- * and the player accepts, or the player asks to join and the teacher accepts.
- */
+//Classes: a teacher gathers players into a class, gives them problems to solve by a day and
+//watches who solved what. A player gets into a class when both sides agree: the teacher invites
+//and the player accepts, or the player asks to join and the teacher accepts.
 class ClassroomsController extends AppController
 {
-	/**
-	 * The classes the player teaches and the ones they are in, the invitations waiting for their
-	 * answer and the requests to join waiting for a teacher's, and the form to start a class.
-	 */
+	//The classes the player teaches and the ones they are in, the invitations waiting for their
+	//answer and the requests to join waiting for a teacher's, and the form to start a class.
 	#[HttpGet]
 	public function index(): mixed
 	{
@@ -50,12 +46,10 @@ class ClassroomsController extends AppController
 		return $this->redirect(self::classUrl((int) $this->Classroom->id));
 	}
 
-	/**
-	 * The page of a class. The teacher manages it here: the players, the invitations and requests,
-	 * the assignments with the table of who solved what. A pupil sees the assignments with their
-	 * own progress, an invited player the invitation, and anyone else a way to ask to join, which
-	 * is why the teacher sends this link around.
-	 */
+	//The page of a class. The teacher manages it here: the players, the invitations and requests,
+	//the assignments with the table of who solved what. A pupil sees the assignments with their
+	//own progress, an invited player the invitation, and anyone else a way to ask to join, which
+	//is why the teacher sends this link around.
 	#[HttpGet]
 	public function view(string $id): mixed
 	{
@@ -80,10 +74,8 @@ class ClassroomsController extends AppController
 		return null;
 	}
 
-	/**
-	 * The teacher invites a player by their name. A player who already asked to join is in the
-	 * class at once, since both sides want it.
-	 */
+	//The teacher invites a player by their name. A player who already asked to join is in the
+	//class at once, since both sides want it.
 	#[HttpPost]
 	public function invite(string $id): mixed
 	{
@@ -127,10 +119,7 @@ class ClassroomsController extends AppController
 		return $this->redirect($url);
 	}
 
-	/**
-	 * A player asks to join the class. An invited player is in the class at once, since both
-	 * sides want it.
-	 */
+	//A player asks to join the class. An invited player is in the class at once, since both sides want it.
 	#[HttpPost]
 	public function join(string $id): mixed
 	{
@@ -149,10 +138,8 @@ class ClassroomsController extends AppController
 		return $this->redirect($url);
 	}
 
-	/**
-	 * The side that did not start a membership accepts it: the invited player, or the teacher of
-	 * a player who asked to join.
-	 */
+	//The side that did not start a membership accepts it: the invited player, or the teacher of
+	//a player who asked to join.
 	#[HttpPost]
 	public function acceptMember(string $membershipId): mixed
 	{
@@ -168,11 +155,9 @@ class ClassroomsController extends AppController
 		return $this->redirect(self::classUrl((int) $classroom['id']));
 	}
 
-	/**
-	 * Ends a membership in whatever state it is: the player declines an invitation, takes back a
-	 * request or leaves, the teacher turns down a request, takes back an invitation or removes a
-	 * pupil.
-	 */
+	//Ends a membership in whatever state it is: the player declines an invitation, takes back a
+	//request or leaves, the teacher turns down a request, takes back an invitation or removes a
+	//pupil.
 	#[HttpPost]
 	public function removeMember(string $membershipId): mixed
 	{
@@ -185,10 +170,8 @@ class ClassroomsController extends AppController
 		return $this->redirect($isMember ? '/classes' : self::classUrl((int) $classroom['id']));
 	}
 
-	/**
-	 * The teacher starts a new assignment, a draft the pupils don't see until it is published,
-	 * and builds it up on its own page.
-	 */
+	//The teacher starts a new assignment, a draft the pupils don't see until it is published,
+	//and builds it up on its own page.
 	#[HttpPost]
 	public function createAssignment(string $id): mixed
 	{
@@ -204,10 +187,8 @@ class ClassroomsController extends AppController
 		return $this->redirect(self::assignmentUrl((int) $assignmentModel->id));
 	}
 
-	/**
-	 * The page where the teacher builds an assignment: the picked problems, and the picker that
-	 * adds more from the collections (app/classrooms/AssignmentEditor.tsx).
-	 */
+	//The page where the teacher builds an assignment: the picked problems, and the picker that
+	//adds more from the collections (app/classrooms/AssignmentEditor.tsx).
 	#[HttpGet]
 	public function assignment(string $assignmentId): mixed
 	{
@@ -223,9 +204,7 @@ class ClassroomsController extends AppController
 		return null;
 	}
 
-	/**
-	 * The collections the teacher can pick problems from, for the picker.
-	 */
+	//The collections the teacher can pick problems from, for the picker.
 	#[HttpGet]
 	public function collections(): CakeResponse
 	{
@@ -233,9 +212,7 @@ class ClassroomsController extends AppController
 		return $this->json(ClassroomAssignment::collectionCards(Auth::getUserID()));
 	}
 
-	/**
-	 * The problems of a collection with their previews, for the picker.
-	 */
+	//The problems of a collection with their previews, for the picker.
 	#[HttpGet]
 	public function collectionProblems(string $setId): CakeResponse
 	{
@@ -251,11 +228,9 @@ class ClassroomsController extends AppController
 		]);
 	}
 
-	/**
-	 * Saves what the teacher built: the title, the due day and the picked problems in their
-	 * order. With `publish` a draft goes to the pupils. A published assignment can still change,
-	 * but keeps some problems.
-	 */
+	//Saves what the teacher built: the title, the due day and the picked problems in their
+	//order. With `publish` a draft goes to the pupils. A published assignment can still change,
+	//but keeps some problems.
 	#[HttpPost]
 	public function saveAssignment(string $assignmentId): CakeResponse
 	{
@@ -299,12 +274,10 @@ class ClassroomsController extends AppController
 		]);
 	}
 
-	/**
-	 * A pupil plays the assignment as one row of problems, numbered from 1 under the board like a
-	 * collection of its own, with the title saying where in the assignment they are and which
-	 * problem of which collection it is. Without a problem it opens the first one they haven't
-	 * solved. The teacher can play it too, to see what the pupils see.
-	 */
+	//A pupil plays the assignment as one row of problems, numbered from 1 under the board like a
+	//collection of its own, with the title saying where in the assignment they are and which
+	//problem of which collection it is. Without a problem it opens the first one they haven't
+	//solved. The teacher can play it too, to see what the pupils see.
 	#[HttpGet]
 	public function play(string $assignmentId, ?string $setConnectionId = null): mixed
 	{
@@ -357,10 +330,8 @@ class ClassroomsController extends AppController
 		return $this->redirect(self::classUrl((int) $classroom['id']));
 	}
 
-	/**
-	 * Who solved which problem of an assignment, as JSON for the table that keeps itself up to
-	 * date: every pupil for the teacher, only their own row for a pupil.
-	 */
+	//Who solved which problem of an assignment, as JSON for the table that keeps itself up to
+	//date: every pupil for the teacher, only their own row for a pupil.
 	#[HttpGet]
 	public function progress(string $assignmentId): CakeResponse
 	{
@@ -399,9 +370,7 @@ class ClassroomsController extends AppController
 		return '/classes/assignment/' . $assignmentId;
 	}
 
-	/**
-	 * @param array<mixed> $data
-	 */
+	/** @param array<mixed> $data */
 	private function json(array $data): CakeResponse
 	{
 		$this->autoRender = false;
@@ -410,9 +379,7 @@ class ClassroomsController extends AppController
 		return $this->response;
 	}
 
-	/**
-	 * @return array<string, mixed>
-	 */
+	/** @return array<string, mixed> */
 	private function findClassroom(string $id): array
 	{
 		$classroom = $this->Classroom->findById((int) $id);
@@ -421,9 +388,7 @@ class ClassroomsController extends AppController
 		return $classroom['Classroom'];
 	}
 
-	/**
-	 * @return array<string, mixed>
-	 */
+	/** @return array<string, mixed> */
 	private function findAssignment(string $id): array
 	{
 		$assignment = ClassRegistry::init('ClassroomAssignment')->findById((int) $id);
@@ -432,9 +397,7 @@ class ClassroomsController extends AppController
 		return $assignment['ClassroomAssignment'];
 	}
 
-	/**
-	 * @return array{0: array<string, mixed>, 1: array<string, mixed>} The membership and its class
-	 */
+	/** @return array{0: array<string, mixed>, 1: array<string, mixed>} The membership and its class */
 	private function findMembership(string $id): array
 	{
 		if (!Auth::isLoggedIn())

@@ -2,11 +2,9 @@
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * When an admin last opened a page of the admin area that counts what is new since then (see
- * AdminPage): the admin activity and the uploads. The pages are rows of their own table, see the
- * AdminPage constants.
- */
+//When an admin last opened a page of the admin area that counts what is new since then (see
+//AdminPage): the admin activity and the uploads. The pages are rows of their own table, see the
+//AdminPage constants.
 class AddAdminPageView extends AbstractMigration
 {
 	public function up(): void

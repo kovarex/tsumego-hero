@@ -2,16 +2,9 @@
 
 use App\Utility\Constants;
 
-/**
- * SitemapsController Test
- *
- * Tests XML sitemap generation
- */
+//Tests XML sitemap generation
 class SitemapsControllerTest extends IntegrationTestCase
 {
-	/**
-	 * Test sitemap includes public sets
-	 */
 	public function testSitemapIncludesPublicSets()
 	{
 		$context = new ContextPreparator([
@@ -30,9 +23,7 @@ class SitemapsControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('<loc>', $result);
 	}
 
-	/**
-	 * A tag in the sitemap has to point at the page that serves tags
-	 */
+	//A tag in the sitemap has to point at the page that serves tags
 	public function testSitemapTagUrlsOpenTheTagPage()
 	{
 		$context = new ContextPreparator([
@@ -49,9 +40,7 @@ class SitemapsControllerTest extends IntegrationTestCase
 		$this->assertStringNotContainsString('/sets/tag/', $result);
 	}
 
-	/**
-	 * Only approved tags are published
-	 */
+	//Only approved tags are published
 	public function testSitemapListsOnlyApprovedTags()
 	{
 		$context = new ContextPreparator([
@@ -73,9 +62,7 @@ class SitemapsControllerTest extends IntegrationTestCase
 		$this->assertStringNotContainsString('/tags/view/' . $pending, $result);
 	}
 
-	/**
-	 * The home page is listed
-	 */
+	//The home page is listed
 	public function testSitemapIncludesTheHomePage()
 	{
 		Cache::delete('sitemap_xml', 'long');
@@ -86,9 +73,7 @@ class SitemapsControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('<loc>' . self::baseUrl() . '/</loc>', $result);
 	}
 
-	/**
-	 * Every page the site offers to a visitor is in the sitemap
-	 */
+	//Every page the site offers to a visitor is in the sitemap
 	public function testSitemapCoversThePagesTheSiteLinksTo()
 	{
 		Cache::delete('sitemap_xml', 'long');
@@ -128,9 +113,7 @@ class SitemapsControllerTest extends IntegrationTestCase
 			$this->assertStringContainsString('<loc>' . self::baseUrl() . $page . '</loc>', $sitemap);
 	}
 
-	/**
-	 * Every page in the sitemap opens without signing in
-	 */
+	//Every page in the sitemap opens without signing in
 	public function testEveryPageInTheSitemapOpensForAVisitor()
 	{
 		Cache::delete('sitemap_xml', 'long');
@@ -148,9 +131,7 @@ class SitemapsControllerTest extends IntegrationTestCase
 		}
 	}
 
-	/**
-	 * Every listed URL is served by a controller and an action
-	 */
+	//Every listed URL is served by a controller and an action
 	public function testSitemapListsOnlyUrlsThatExist()
 	{
 		$context = new ContextPreparator([
@@ -177,9 +158,7 @@ class SitemapsControllerTest extends IntegrationTestCase
 		}
 	}
 
-	/**
-	 * A route becomes a URL only when an action serves it
-	 */
+	//A route becomes a URL only when an action serves it
 	public function testSitemapPublishesOnlyUrlsWithAnAction()
 	{
 		$this->assertNull(SitemapsController::_urlOf(['controller' => 'sets', 'action' => 'tag', 'Ladder']));
@@ -207,9 +186,6 @@ class SitemapsControllerTest extends IntegrationTestCase
 		return rtrim(Router::url('/', true), '/');
 	}
 
-	/**
-	 * Test sitemap includes individual puzzles
-	 */
 	public function testSitemapIncludesIndividualPuzzles()
 	{
 		$context = new ContextPreparator([
@@ -226,9 +202,7 @@ class SitemapsControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('/' . $context->setConnections[0]['id'] . '</loc>', $result);
 	}
 
-	/**
-	 * A set longer than one page of problems is listed page by page
-	 */
+	//A set longer than one page of problems is listed page by page
 	public function testSitemapIncludesLaterPagesOfALongSet()
 	{
 		$tsumegos = [];
@@ -249,9 +223,7 @@ class SitemapsControllerTest extends IntegrationTestCase
 		$this->assertStringNotContainsString('/sets/' . $setID . '/3</loc>', $result);
 	}
 
-	/**
-	 * Every achievement has its own page, and the sitemap lists them all
-	 */
+	//Every achievement has its own page, and the sitemap lists them all
 	public function testSitemapIncludesEveryAchievementPage()
 	{
 		Cache::delete('sitemap_xml', 'long');

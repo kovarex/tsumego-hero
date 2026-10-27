@@ -1,14 +1,11 @@
 <?php
 
-/**
- * Tests that admin proposal lists link to the representative (official/public)
- * set, not to a user's private "Favorites" set connection.
- *
- * A tsumego may belong to an official public set and a user's private
- * favorites set. The SGF proposals and tag-connection proposals lists must
- * each pick the official set for the displayed link, and must not duplicate
- * rows.
- */
+//Tests that admin proposal lists link to the representative (official/public)
+//set, not to a user's private "Favorites" set connection.
+//A tsumego may belong to an official public set and a user's private
+//favorites set. The SGF proposals and tag-connection proposals lists must
+//each pick the official set for the displayed link, and must not duplicate
+//rows.
 class AdminProposalsRendererTest extends IntegrationTestCase
 {
 	public function testProposalLinksToOfficialSetNotFavorite(): void

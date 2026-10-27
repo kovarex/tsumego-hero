@@ -7,46 +7,33 @@ use Exception;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
-/**
- * JWT-based stateless authentication.
- *
- * Replaces session-based authentication with signed JWT tokens stored in cookies.
- * Tokens contain user ID and expiration, signed with HMAC-SHA256.
- *
- * Usage:
- *   JwtAuth::setAuthCookie($userId)      // Login: create token and set cookie
- *   JwtAuth::getUserIdFromCookie()       // Check auth: get user ID from cookie
- *   JwtAuth::clearAuthCookie()           // Logout: delete cookie
- */
+//JWT-based stateless authentication.
+//Replaces session-based authentication with signed JWT tokens stored in cookies.
+//Tokens contain user ID and expiration, signed with HMAC-SHA256.
+//Usage:
+//  JwtAuth::setAuthCookie($userId)      // Login: create token and set cookie
+//  JwtAuth::getUserIdFromCookie()       // Check auth: get user ID from cookie
+//  JwtAuth::clearAuthCookie()           // Logout: delete cookie
 class JwtAuth
 {
 	private const COOKIE_NAME = 'auth_token';
 	private const ALGORITHM = 'HS256';
 	private const DEFAULT_EXPIRY_SECONDS = 86400 * 30; // 30 days
 
-	/**
-	 * @var int|null Cached user ID from token validation
-	 */
+	//Cached user ID from token validation
 	private static ?int $cachedUserId = null;
 
-	/**
-	 * @var string|null Cached password claim of the token in the cookie
-	 */
+	//Cached password claim of the token in the cookie
 	private static ?string $cachedPasswordClaim = null;
 
-	/**
-	 * @var bool Whether the cookie was looked at already in this request
-	 */
+	//Whether the cookie was looked at already in this request
 	private static bool $cookieRead = false;
 
-	/**
-	 * Create a JWT token for the given user ID.
-	 *
-	 * @param int $userId The user ID to encode
-	 * @param int|null $expirySeconds Seconds until expiration (null = default 30 days)
-	 * @param string|null $passwordHash The password the session is opened with
-	 * @return string The JWT token
-	 */
+	//Create a JWT token for the given user ID.
+	//$userId: The user ID to encode
+	//$expirySeconds: Seconds until expiration (null = default 30 days)
+	//$passwordHash: The password the session is opened with
+	//Returns the JWT token
 	public static function createToken(int $userId, ?int $expirySeconds = null, ?string $passwordHash = null): string
 	{
 		$expiry = $expirySeconds ?? self::DEFAULT_EXPIRY_SECONDS;
@@ -62,50 +49,38 @@ class JwtAuth
 		return JWT::encode($payload, self::getSecret(), self::ALGORITHM);
 	}
 
-	/**
-	 * The claim a token gets from the password it is issued with. A password change
-	 * changes the hash, so tokens of the old password no longer fit the account.
-	 */
+	//The claim a token gets from the password it is issued with. A password change
+	//changes the hash, so tokens of the old password no longer fit the account.
 	public static function claimOf(?string $passwordHash): ?string
 	{
 		return $passwordHash === null ? null : self::passwordClaim($passwordHash);
 	}
 
-	/**
-	 * The password claim of the token in the cookie, or null when it has none.
-	 */
+	//The password claim of the token in the cookie, or null when it has none.
 	public static function getPasswordClaimFromCookie(): ?string
 	{
 		self::readCookie();
 		return self::$cachedPasswordClaim;
 	}
 
-	/**
-	 * Validate a JWT token and return the user ID.
-	 *
-	 * @param string $token The JWT token to validate
-	 * @return int|null The user ID, or null if token is invalid/expired
-	 */
+	//Validate a JWT token and return the user ID.
+	//$token: The JWT token to validate
+	//Returns the user ID, or null if token is invalid/expired
 	public static function validateToken(string $token): ?int
 	{
 		$payload = self::decodePayload($token);
 		return $payload === null ? null : (int) $payload->sub;
 	}
 
-	/**
-	 * Get user ID from auth cookie.
-	 *
-	 * @return int|null The user ID, or null if not authenticated
-	 */
+	//Get user ID from auth cookie.
+	//Returns the user ID, or null if not authenticated
 	public static function getUserIdFromCookie(): ?int
 	{
 		self::readCookie();
 		return self::$cachedUserId;
 	}
 
-	/**
-	 * Read the token in the cookie once per request and keep what it says.
-	 */
+	//Read the token in the cookie once per request and keep what it says.
 	private static function readCookie(): void
 	{
 		if (self::$cookieRead)
@@ -123,10 +98,8 @@ class JwtAuth
 		self::$cachedPasswordClaim = $payload->pwd ?? null;
 	}
 
-	/**
-	 * Check the signature and the expiry of a token, the one place that does it.
-	 * A token that does not check out is null for every caller.
-	 */
+	//Check the signature and the expiry of a token, the one place that does it.
+	//A token that does not check out is null for every caller.
 	private static function decodePayload(string $token): ?object
 	{
 		try
@@ -144,13 +117,9 @@ class JwtAuth
 		return substr(hash('sha256', $passwordHash), 0, 16);
 	}
 
-	/**
-	 * Set auth cookie with JWT token for the given user ID.
-	 *
-	 * @param int $userId The user ID
-	 * @param string|null $passwordHash The password the session is opened with
-	 * @return string The token that was set
-	 */
+	//Set auth cookie with JWT token for the given user ID.
+	//$passwordHash: The password the session is opened with
+	//Returns the token that was set
 	public static function setAuthCookie(int $userId, ?string $passwordHash = null): string
 	{
 		$token = self::createToken($userId, null, $passwordHash);
@@ -170,9 +139,7 @@ class JwtAuth
 		return $token;
 	}
 
-	/**
-	 * Clear auth cookie (logout).
-	 */
+	//Clear auth cookie (logout).
 	public static function clearAuthCookie(): void
 	{
 		unset($_COOKIE[self::COOKIE_NAME]);
@@ -182,9 +149,7 @@ class JwtAuth
 		self::$cookieRead = true;
 	}
 
-	/**
-	 * Clear cached user ID (for testing).
-	 */
+	//Clear cached user ID (for testing).
 	public static function clearCache(): void
 	{
 		self::$cachedUserId = null;
@@ -192,9 +157,7 @@ class JwtAuth
 		self::$cookieRead = false;
 	}
 
-	/**
-	 * Get the JWT secret key.
-	 */
+	//Get the JWT secret key.
 	private static function getSecret(): string
 	{
 		$secret = Configure::read('Security.jwtSecret');

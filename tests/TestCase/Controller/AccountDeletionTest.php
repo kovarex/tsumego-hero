@@ -59,10 +59,8 @@ class AccountDeletionTest extends IntegrationTestCase
 		$this->assertSame('google@example.com', TestEmailer::$lastEmail['to']);
 	}
 
-	/**
-	 * The deletion happens through the mailed link, so a mail that never left leaves no
-	 * token behind and the request can be repeated.
-	 */
+	//The deletion happens through the mailed link, so a mail that never left leaves no
+	//token behind and the request can be repeated.
 	public function testNoLinkIsKeptWhenTheMailCannotBeSent(): void
 	{
 		$context = new ContextPreparator();

@@ -5,18 +5,15 @@ namespace App\Policy;
 use App\Utility\TsumegoUtil;
 use ClassRegistry;
 
+//SGF viewing. The SGF admin review page (canView) is admin-only. A version can be fetched by admins,
+//by players who recently solved the problem and by players who proposed a version of it.
 /**
- * SGF viewing. The SGF admin review page (canView) is admin-only. A version can be fetched by admins,
- * by players who recently solved the problem and by players who proposed a version of it.
- *
  * @phpstan-import-type UserRow from \App\Utility\RowTypes
  * @phpstan-import-type SgfRow from \App\Utility\RowTypes
  */
 class SgfPolicy extends BasePolicy
 {
-	/**
-	 * @param UserRow|null $user
-	 */
+	/** @param UserRow|null $user */
 	public static function canView(?array $user): bool
 	{
 		return static::isAdmin($user);

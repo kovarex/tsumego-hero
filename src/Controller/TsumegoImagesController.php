@@ -3,22 +3,14 @@
 use App\Attribute\HttpGet;
 use App\Utility\Constants;
 
-/**
- * TsumegoImagesController
- *
- * Generates PNG images of tsumego puzzles for Open Graph social sharing.
- *
- * IMPORTANT: When changing the rendering algorithm below, bump
- * Constants::$TSUMEGO_IMAGE_VERSION to invalidate cached OG images.
- */
+//Generates PNG images of tsumego puzzles for Open Graph social sharing.
+//IMPORTANT: When changing the rendering algorithm below, bump
+//Constants::$TSUMEGO_IMAGE_VERSION to invalidate cached OG images.
 class TsumegoImagesController extends AppController
 {
-	/**
-	 * Generate a PNG image for a tsumego puzzle for Open Graph sharing
-	 *
-	 * @param string|null $setConnectionId The SetConnection ID (same as /id route)
-	 * @return CakeResponse PNG image with caching headers
-	 */
+	//Generate a PNG image for a tsumego puzzle for Open Graph sharing
+	//$setConnectionId: The SetConnection ID (same as /id route)
+	/** @return CakeResponse PNG image with caching headers */
 	#[HttpGet]
 	public function tsumegoImage(?string $setConnectionId = null)
 	{
@@ -60,14 +52,11 @@ class TsumegoImagesController extends AppController
 		return $this->response;
 	}
 
-	/**
-	 * Generate puzzle image using PHP GD
-	 *
-	 * @param string $sgfString SGF content
-	 * @param string $setTitle Set/collection title (e.g., "Life & Death - Intermediate")
-	 * @param string $description Problem description (e.g., "[b] to live.")
-	 * @return string PNG image data
-	 */
+	//Generate puzzle image using PHP GD
+	//$sgfString: SGF content
+	//$setTitle: Set/collection title (e.g., "Life & Death - Intermediate")
+	//$description: Problem description (e.g., "[b] to live.")
+	//Returns PNG image data
 	private function _generatePuzzleImage(string $sgfString, string $setTitle, string $description): string
 	{
 		// Parse board size from SGF (default 19)
@@ -289,19 +278,15 @@ class TsumegoImagesController extends AppController
 		return $imageData;
 	}
 
-	/**
-	 * Draw a single stone with 3D radial gradient and shadow
-	 *
-	 * Creates a realistic-looking stone using concentric circles that
-	 * interpolate from base color at edges to highlight color at an
-	 * offset point, simulating light reflection.
-	 *
-	 * @param \GdImage $img GD image resource
-	 * @param int $cx Center X coordinate
-	 * @param int $cy Center Y coordinate
-	 * @param float $radius Stone radius in pixels
-	 * @param bool $isBlack True for black stone, false for white
-	 */
+	//Draw a single stone with 3D radial gradient and shadow
+	//Creates a realistic-looking stone using concentric circles that
+	//interpolate from base color at edges to highlight color at an
+	//offset point, simulating light reflection.
+	//$img: GD image resource
+	//$cx: Center X coordinate
+	//$cy: Center Y coordinate
+	//$radius: Stone radius in pixels
+	//$isBlack: True for black stone, false for white
 	private function _drawStone(\GdImage $img, int $cx, int $cy, float $radius, bool $isBlack): void
 	{
 		// Shadow (slightly offset, darkened board color)
@@ -361,12 +346,9 @@ class TsumegoImagesController extends AppController
 		}
 	}
 
-	/**
-	 * Get star point coordinates for given board size
-	 *
-	 * @param int $size Board size (9, 13, or 19)
-	 * @return array Array of [x, y] coordinates
-	 */
+	//Get star point coordinates for given board size
+	//$size: Board size (9, 13, or 19)
+	//Returns array of [x, y] coordinates
 	private function _getStarPoints(int $size): array
 	{
 		if ($size === 19)
@@ -397,16 +379,11 @@ class TsumegoImagesController extends AppController
 		return [];
 	}
 
-	/**
-	 * Parse SGF string to extract stone positions
-	 *
-	 * Extracts AB (add black), AW (add white) tags from SGF.
-	 * Handles both single format AB[fa] and compact format AB[fa][bb][fc].
-	 * Returns initial position suitable for tsumego problems.
-	 *
-	 * @param string $sgf SGF string
-	 * @return array Array of ['x' => int, 'y' => int, 'color' => 'B'|'W']
-	 */
+	//Parse SGF string to extract stone positions
+	//Extracts AB (add black), AW (add white) tags from SGF.
+	//Handles both single format AB[fa] and compact format AB[fa][bb][fc].
+	//Returns initial position suitable for tsumego problems.
+	//Returns array of ['x' => int, 'y' => int, 'color' => 'B'|'W']
 	private function _parseSgfStones(string $sgf): array
 	{
 		$stones = [];
@@ -432,14 +409,10 @@ class TsumegoImagesController extends AppController
 		return $stones;
 	}
 
-	/**
-	 * Convert SGF coordinate (e.g., "aa", "pd") to x,y array coordinates
-	 *
-	 * SGF uses lowercase letters: a=0, b=1, ..., s=18
-	 *
-	 * @param string $coord Two-letter SGF coordinate
-	 * @return array ['x' => int, 'y' => int]
-	 */
+	//Convert SGF coordinate (e.g., "aa", "pd") to x,y array coordinates
+	//SGF uses lowercase letters: a=0, b=1, ..., s=18
+	//$coord: Two-letter SGF coordinate
+	//Returns ['x' => int, 'y' => int]
 	private function _sgfCoordToXY(string $coord): array
 	{
 		if (strlen($coord) !== 2)

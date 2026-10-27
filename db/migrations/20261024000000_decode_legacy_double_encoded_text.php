@@ -5,69 +5,56 @@ declare(strict_types=1);
 use App\Utility\PhpbbNames;
 use Phinx\Migration\AbstractMigration;
 
-/**
- * Decodes the text that the code base before the 2022 charset fix stored double
- * encoded: the UTF-8 bytes were read as Windows-1252 and saved as UTF-8 again, so
- * "Jérémie" became "JÃ©rÃ©mie" and "Аня Нильга" 19 characters of mojibake. Every
- * non-ASCII value written before that fix is affected; the value itself can be
- * restored without any loss (the characters read back as Windows-1252 bytes are
- * the UTF-8 bytes of the original text).
- *
- * Rows that carry such a value on this data: user.display_name 291, user.name 290.
- *
- * The display name migration collapsed runs of whitespace, which also turned the
- * byte A0 into a space where it sat inside a character. That byte is put back
- * wherever a character is missing one, which restores names like "魚市場" and
- * "드래곤킹". A name that lost a different byte ("Ð Ð½Ñ‚Ð¾Ð?") cannot be restored,
- * so its owner is only asked to pick a name.
- *
- * The columns of copied text are in the loop: tsumego_comment.message, its archive
- * in tsumego_comment_before_sgf_coordinates.message, set.author, tag.description and
- * user.deleted_name. A renamed account is written into the forum as well, with the
- * same PhpbbNames helper the display name migration uses, because phpBB keeps its
- * own copy of a name in phpbb_users, in the poster names it caches in topics and
- * forums and in the poster names of guest posts.
- *
- * The rest of the columns held no such value on this data; a database from a
- * different point in time may differ, which is what the loop is for. Post bodies
- * and titles in the forum stay as they are, because phpBB keeps a checksum and
- * BBCode identifiers beside them.
- *
- * user.name is deliberately left alone. It is the login identifier, unique under
- * a case and accent insensitive collation, and the site never shows it: players
- * see display_name. Rewriting it could invalidate a saved username and lock an
- * owner out, and nothing visible would be gained. Signing in with the stored
- * spelling, or with the e-mail address, keeps working for those owners.
- *
- * user.display_name is what players see and is unique as well. 71 of the 291
- * accounts would share a name after decoding, so the group keeps one account
- * under the name and numbers the others ("Gökhan (2)"), asking them to pick a
- * name of their own on the next sign in. The keeper is chosen by the rules the
- * display name migration uses for the duplicates it created: an account that
- * asked to be deleted never keeps the name, several accounts of one person count
- * as one (and the one still used keeps it), then the account that plays now, then
- * attempts, then age. An account that already shows the name it would get after
- * decoding keeps it, unless the account it competes with plays now and it does
- * not, so a readable name is only taken from somebody who stopped playing. The
- * comparison runs with the collation of the column, not in PHP, so "GÖKHAN" and
- * "Gökhan" count as the same name.
- *
- * Runs after 20261013000000, which adds user.display_name, its unique index and
- * the needs_display_name_change flag.
- *
- * IRREVERSIBLE: decoded text cannot be told apart from text that was always
- * correct, so there is nothing meaningful to roll back.
- */
+//Decodes the text that the code base before the 2022 charset fix stored double
+//encoded: the UTF-8 bytes were read as Windows-1252 and saved as UTF-8 again, so
+//"Jérémie" became "JÃ©rÃ©mie" and "Аня Нильга" 19 characters of mojibake. Every
+//non-ASCII value written before that fix is affected; the value itself can be
+//restored without any loss (the characters read back as Windows-1252 bytes are
+//the UTF-8 bytes of the original text).
+//Rows that carry such a value on this data: user.display_name 291, user.name 290.
+//The display name migration collapsed runs of whitespace, which also turned the
+//byte A0 into a space where it sat inside a character. That byte is put back
+//wherever a character is missing one, which restores names like "魚市場" and
+//"드래곤킹". A name that lost a different byte ("Ð Ð½Ñ‚Ð¾Ð?") cannot be restored,
+//so its owner is only asked to pick a name.
+//The columns of copied text are in the loop: tsumego_comment.message, its archive
+//in tsumego_comment_before_sgf_coordinates.message, set.author, tag.description and
+//user.deleted_name. A renamed account is written into the forum as well, with the
+//same PhpbbNames helper the display name migration uses, because phpBB keeps its
+//own copy of a name in phpbb_users, in the poster names it caches in topics and
+//forums and in the poster names of guest posts.
+//The rest of the columns held no such value on this data; a database from a
+//different point in time may differ, which is what the loop is for. Post bodies
+//and titles in the forum stay as they are, because phpBB keeps a checksum and
+//BBCode identifiers beside them.
+//user.name is deliberately left alone. It is the login identifier, unique under
+//a case and accent insensitive collation, and the site never shows it: players
+//see display_name. Rewriting it could invalidate a saved username and lock an
+//owner out, and nothing visible would be gained. Signing in with the stored
+//spelling, or with the e-mail address, keeps working for those owners.
+//user.display_name is what players see and is unique as well. 71 of the 291
+//accounts would share a name after decoding, so the group keeps one account
+//under the name and numbers the others ("Gökhan (2)"), asking them to pick a
+//name of their own on the next sign in. The keeper is chosen by the rules the
+//display name migration uses for the duplicates it created: an account that
+//asked to be deleted never keeps the name, several accounts of one person count
+//as one (and the one still used keeps it), then the account that plays now, then
+//attempts, then age. An account that already shows the name it would get after
+//decoding keeps it, unless the account it competes with plays now and it does
+//not, so a readable name is only taken from somebody who stopped playing. The
+//comparison runs with the collation of the column, not in PHP, so "GÖKHAN" and
+//"Gökhan" count as the same name.
+//Runs after 20261013000000, which adds user.display_name, its unique index and the needs_display_name_change flag.
+//IRREVERSIBLE: decoded text cannot be told apart from text that was always
+//correct, so there is nothing meaningful to roll back.
 final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 {
-	/** The character mbstring substitutes for a character it cannot express. */
+	//The character mbstring substitutes for a character it cannot express.
 	private const SUBSTITUTE = 0x3F;
 
-	/**
-	 * Columns holding a copy of text a player wrote, each with the column that
-	 * identifies a row. Decoding only changes values that are double encoded, so a
-	 * column that holds none today is safe to keep.
-	 */
+	//Columns holding a copy of text a player wrote, each with the column that
+	//identifies a row. Decoding only changes values that are double encoded, so a
+	//column that holds none today is safe to keep.
 	private const TEXT_COLUMNS = [
 		['tsumego_comment', 'message', 'id'],
 		['tsumego_comment_before_sgf_coordinates', 'message', 'tsumego_comment_id'],
@@ -76,27 +63,27 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 		['user', 'deleted_name', 'id'],
 	];
 
-	/** Length of user.display_name. */
+	//Length of user.display_name.
 	private const NAME_MAX_LENGTH = 50;
 
-	/** An account with fewer attempts is a stray registration, not a real player. */
+	//An account with fewer attempts is a stray registration, not a real player.
 	private const REAL_ATTEMPTS = 10;
 
-	/** Activity within this window, on this many distinct days, means "plays now". */
+	//Activity within this window, on this many distinct days, means "plays now".
 	private const RECENT_ACTIVITY_WINDOW_DAYS = 90;
 	private const RECENT_ACTIVITY_MIN_DAYS = 3;
 
-	/** An account silent for this long has stopped, so it should not hold a name. */
+	//An account silent for this long has stopped, so it should not hold a name.
 	private const ABANDONED_AFTER_DAYS = 90;
 
-	/** Distinct active days a challenger needs to take a name from such an account. */
+	//Distinct active days a challenger needs to take a name from such an account.
 	private const DISPLACEMENT_MIN_ACTIVE_DAYS = 10;
 
-	/** An account is alive with this many attempts, or with activity within this time. */
+	//An account is alive with this many attempts, or with activity within this time.
 	private const ALIVE_ATTEMPTS = 200;
 	private const ALIVE_ACTIVITY_DAYS = 180;
 
-	/** Address cores count as one person when one contains the other, or nearly matches. */
+	//Address cores count as one person when one contains the other, or nearly matches.
 	private const SAME_PERSON_MIN_SHARED_CHARS = 6;
 	private const SAME_PERSON_MAX_EDIT_DISTANCE = 2;
 	private const SAME_PERSON_FUZZY_MIN_CHARS = 8;
@@ -129,10 +116,7 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 		throw new \RuntimeException('This migration cannot be rolled back. Decoded text cannot be told apart from text that was always correct.');
 	}
 
-	/**
-	 * The original text, or null when the value does not come from a Windows-1252
-	 * connection.
-	 */
+	//The original text, or null when the value does not come from a Windows-1252 connection.
 	private static function decode(string $value): ?string
 	{
 		$bytes = self::windows1252Bytes($value);
@@ -140,15 +124,12 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 		return $bytes === null ? null : self::readableText($bytes);
 	}
 
-	/**
-	 * The original text of a value that lost the byte A0 as well, or null when the
-	 * value is not double encoded or nothing is missing from it.
-	 *
-	 * The display name migration collapsed runs of whitespace, which also turned the
-	 * byte A0 into a space where it sat inside a character. A space where a byte of a
-	 * character belongs cannot be a real space, so it is put back as A0. Text that
-	 * lost a byte any other way is not touched: nothing tells which byte it was.
-	 */
+	//The original text of a value that lost the byte A0 as well, or null when the
+	//value is not double encoded or nothing is missing from it.
+	//The display name migration collapsed runs of whitespace, which also turned the
+	//byte A0 into a space where it sat inside a character. A space where a byte of a
+	//character belongs cannot be a real space, so it is put back as A0. Text that
+	//lost a byte any other way is not touched: nothing tells which byte it was.
 	private static function restoreCollapsedSpaces(string $value): ?string
 	{
 		$bytes = self::windows1252Bytes($value);
@@ -195,21 +176,17 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 		return self::readableText($restored);
 	}
 
-	/**
-	 * The text a value held before it was stored through a Windows-1252 connection,
-	 * also when collapsing whitespace removed a byte from it.
-	 */
+	//The text a value held before it was stored through a Windows-1252 connection,
+	//also when collapsing whitespace removed a byte from it.
 	private static function originalText(string $value): ?string
 	{
 		return self::decode($value) ?? self::restoreCollapsedSpaces($value);
 	}
 
-	/**
-	 * Whether the value holds a complete multi byte character made of the stored
-	 * characters themselves. Only text that went through a Windows-1252 connection
-	 * does: in correct text like "weiß den" the space is a real space, so a byte
-	 * that would start a character followed by a space proves nothing.
-	 */
+	//Whether the value holds a complete multi byte character made of the stored
+	//characters themselves. Only text that went through a Windows-1252 connection
+	//does: in correct text like "weiß den" the space is a real space, so a byte
+	//that would start a character followed by a space proves nothing.
 	private static function looksDoubleEncoded(string $value): bool
 	{
 		$bytes = self::windows1252Bytes($value);
@@ -222,14 +199,12 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 		return preg_match('/[\xC2-\xDF][\x80-\xBF]|[\xE0-\xEF][\x80-\xBF]{2}|[\xF0-\xF4][\x80-\xBF]{3}/', $bytes) === 1;
 	}
 
-	/**
-	 * The bytes Windows-1252 gives back, which are the UTF-8 bytes of the original
-	 * text, or null when the value is not double encoded. A double encoded value only
-	 * holds characters Windows-1252 has, so text that still contains something it
-	 * cannot express (correctly written Cyrillic, CJK, an emoji) never went through
-	 * that connection and must not be converted: the conversion would turn those
-	 * characters into "?" and lose them.
-	 */
+	//The bytes Windows-1252 gives back, which are the UTF-8 bytes of the original
+	//text, or null when the value is not double encoded. A double encoded value only
+	//holds characters Windows-1252 has, so text that still contains something it
+	//cannot express (correctly written Cyrillic, CJK, an emoji) never went through
+	//that connection and must not be converted: the conversion would turn those
+	//characters into "?" and lose them.
 	private static function windows1252Bytes(string $value): ?string
 	{
 		$previous = mb_substitute_character();
@@ -255,10 +230,7 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 		return $bytes;
 	}
 
-	/**
-	 * The text of a byte string, when it is valid UTF-8 and does not still look
-	 * double encoded. Null otherwise.
-	 */
+	//The text of a byte string, when it is valid UTF-8 and does not still look double encoded. Null otherwise.
 	private static function readableText(string $bytes): ?string
 	{
 		if (!mb_check_encoding($bytes, 'UTF-8'))
@@ -270,12 +242,10 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 		return $bytes;
 	}
 
-	/**
-	 * Decodes every value of a column that is double encoded, also the ones that lost
-	 * the byte A0. Everything else is left alone: plain ASCII, text that is already
-	 * correct, and text that still contains characters Windows-1252 has no code point
-	 * for.
-	 */
+	//Decodes every value of a column that is double encoded, also the ones that lost
+	//the byte A0. Everything else is left alone: plain ASCII, text that is already
+	//correct, and text that still contains characters Windows-1252 has no code point
+	//for.
 	private function decodeColumn(string $table, string $column, string $key): int
 	{
 		$decoded = 0;
@@ -295,15 +265,12 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 		return $decoded;
 	}
 
-	/**
-	 * The forum keeps its own copy of a player's name, so every account whose name this
-	 * migration changed is written there as well, with the helper the display name
-	 * migration uses. It updates phpbb_users (including the username_clean key phpBB
-	 * looks players up by) and the poster names phpBB caches in topics, forums and guest
-	 * posts.
-	 *
-	 * @param array<int, array{name: string, needsChange: bool}> $changes
-	 */
+	//The forum keeps its own copy of a player's name, so every account whose name this
+	//migration changed is written there as well, with the helper the display name
+	//migration uses. It updates phpbb_users (including the username_clean key phpBB
+	//looks players up by) and the poster names phpBB caches in topics, forums and guest
+	//posts.
+	/** @param array<int, array{name: string, needsChange: bool}> $changes */
 	private function syncForumNames(array $changes): void
 	{
 		if ($changes === [] || !$this->hasTable('phpbb_users'))
@@ -316,9 +283,7 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 		$this->write('phpbb: synced ' . count($changes) . ' names');
 	}
 
-	/**
-	 * Decodes the display names and numbers the ones that would share a name.
-	 */
+	//Decodes the display names and numbers the ones that would share a name.
 	private function decodeDisplayNames(): void
 	{
 		$plan = $this->planDisplayNames();
@@ -336,12 +301,10 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 		$this->flagNamesThatCannotBeRestored();
 	}
 
-	/**
-	 * An account whose name is still unreadable after the restoring is asked to pick
-	 * one, and nothing uncertain is ever written to it. That is the only certain
-	 * repair: nothing tells which byte a value lost, and the login name is no
-	 * substitute, because the owner may have picked a display name of their own.
-	 */
+	//An account whose name is still unreadable after the restoring is asked to pick
+	//one, and nothing uncertain is ever written to it. That is the only certain
+	//repair: nothing tells which byte a value lost, and the login name is no
+	//substitute, because the owner may have picked a display name of their own.
 	private function flagNamesThatCannotBeRestored(): void
 	{
 		$flagged = [];
@@ -365,13 +328,10 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 				. ' names were damaged beyond restoring and left for the owner to pick (ids ' . implode(', ', $flagged) . ')');
 	}
 
-	/**
-	 * The names to write, keyed by account id. Only accounts whose display name
-	 * changes are listed. Renumbered accounts come first: their old name has to be
-	 * released before the account that keeps it can take it.
-	 *
-	 * @return array<int, array{name: string, needsChange: bool}>
-	 */
+	//The names to write, keyed by account id. Only accounts whose display name
+	//changes are listed. Renumbered accounts come first: their old name has to be
+	//released before the account that keeps it can take it.
+	/** @return array<int, array{name: string, needsChange: bool}> */
 	private function planDisplayNames(): array
 	{
 		$now = time();
@@ -412,12 +372,9 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 		return $changes;
 	}
 
-	/**
-	 * Writes the planned names. The flag is only ever set, never cleared, so an
-	 * account already asked to pick a name keeps that request.
-	 *
-	 * @param array<int, array{name: string, needsChange: bool}> $changes
-	 */
+	//Writes the planned names. The flag is only ever set, never cleared, so an
+	//account already asked to pick a name keeps that request.
+	/** @param array<int, array{name: string, needsChange: bool}> $changes */
 	private function applyNames(array $changes): int
 	{
 		$connection = $this->connection();
@@ -437,9 +394,8 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 		return count($changes);
 	}
 
+	//The account that keeps a contested name.
 	/**
-	 * The account that keeps a contested name.
-	 *
 	 * @param int[] $ids accounts that would share the name
 	 * @param array<int, array{email: string, readable: bool, attempts: int, lastActivity: string, recentDays: int, deletionRequested: bool}> $facts
 	 */
@@ -464,12 +420,11 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 		return self::preferReadableName($survivors, $keeper, $facts, $now);
 	}
 
+	//Hands the name to an account that already shows it, so that the account that
+	//loses the name is one whose name was unreadable anyway. A readable name is only
+	//taken from an account that stopped playing, and only by somebody who plays now:
+	//when both sides are silent, the name stays where it is already visible.
 	/**
-	 * Hands the name to an account that already shows it, so that the account that
-	 * loses the name is one whose name was unreadable anyway. A readable name is only
-	 * taken from an account that stopped playing, and only by somebody who plays now:
-	 * when both sides are silent, the name stays where it is already visible.
-	 *
 	 * @param int[] $survivors
 	 * @param array<int, array{email: string, readable: bool, attempts: int, lastActivity: string, recentDays: int, deletionRequested: bool}> $facts
 	 */
@@ -490,14 +445,11 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 		return (int) $candidates[0];
 	}
 
-	/**
-	 * A free name for an account that cannot keep the contested one: the name
-	 * itself when free, otherwise the first free " (N)" addition that still fits
-	 * the column. An existing " (N)" at the end of the name is replaced instead of
-	 * stacked, so a name that was numbered before does not become "Name (2) (2)".
-	 *
-	 * @param callable(string): bool $isTaken
-	 */
+	//A free name for an account that cannot keep the contested one: the name
+	//itself when free, otherwise the first free " (N)" addition that still fits
+	//the column. An existing " (N)" at the end of the name is replaced instead of
+	//stacked, so a name that was numbered before does not become "Name (2) (2)".
+	/** @param callable(string): bool $isTaken */
 	private static function number(string $name, callable $isTaken, int $maxLength = self::NAME_MAX_LENGTH): string
 	{
 		if (!$isTaken($name))
@@ -518,12 +470,11 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 		}
 	}
 
+	//The account a person still uses, within the accounts of one person: the one
+	//with the most recent activity. A name must never end up on an account its
+	//owner stopped signing in to, so attempts only break a tie between accounts
+	//used on the same day.
 	/**
-	 * The account a person still uses, within the accounts of one person: the one
-	 * with the most recent activity. A name must never end up on an account its
-	 * owner stopped signing in to, so attempts only break a tie between accounts
-	 * used on the same day.
-	 *
 	 * @param int[] $ids
 	 * @param array<int, array{email: string, readable: bool, attempts: int, lastActivity: string, recentDays: int, deletionRequested: bool}> $facts
 	 */
@@ -541,10 +492,9 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 		return $best;
 	}
 
+	//Among accounts of different people: the oldest alive one, otherwise the one
+	//that played the most, otherwise the oldest.
 	/**
-	 * Among accounts of different people: the oldest alive one, otherwise the one
-	 * that played the most, otherwise the oldest.
-	 *
 	 * @param int[] $ids
 	 * @param array<int, array{email: string, readable: bool, attempts: int, lastActivity: string, recentDays: int, deletionRequested: bool}> $facts
 	 */
@@ -563,9 +513,8 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 		return $best;
 	}
 
+	//Hands the name of an account that stopped playing to somebody who plays now.
 	/**
-	 * Hands the name of an account that stopped playing to somebody who plays now.
-	 *
 	 * @param int[] $survivors
 	 * @param array<int, array{email: string, readable: bool, attempts: int, lastActivity: string, recentDays: int, deletionRequested: bool}> $facts
 	 */
@@ -584,9 +533,7 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 		return (int) $challengers[0];
 	}
 
-	/**
-	 * @param array<int, array{email: string, readable: bool, attempts: int, lastActivity: string, recentDays: int, deletionRequested: bool}> $facts
-	 */
+	/** @param array<int, array{email: string, readable: bool, attempts: int, lastActivity: string, recentDays: int, deletionRequested: bool}> $facts */
 	private static function isAlive(int $id, array $facts, int $now): bool
 	{
 		if ($facts[$id]['attempts'] >= self::ALIVE_ATTEMPTS)
@@ -597,9 +544,7 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 		return $last !== false && $last > 0 && ($now - $last) <= self::ALIVE_ACTIVITY_DAYS * 86400;
 	}
 
-	/**
-	 * @param array<int, array{email: string, readable: bool, attempts: int, lastActivity: string, recentDays: int, deletionRequested: bool}> $facts
-	 */
+	/** @param array<int, array{email: string, readable: bool, attempts: int, lastActivity: string, recentDays: int, deletionRequested: bool}> $facts */
 	private static function daysSinceLastActivity(int $id, array $facts, int $now): int
 	{
 		$last = strtotime($facts[$id]['lastActivity']);
@@ -609,10 +554,9 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 		return (int) floor(($now - $last) / 86400);
 	}
 
+	//Groups the accounts by person, so that several accounts of one person count
+	//as one candidate instead of competing with each other.
 	/**
-	 * Groups the accounts by person, so that several accounts of one person count
-	 * as one candidate instead of competing with each other.
-	 *
 	 * @param int[] $ids
 	 * @param array<int, array{email: string, readable: bool, attempts: int, lastActivity: string, recentDays: int, deletionRequested: bool}> $facts
 	 * @return array<int, int[]>
@@ -633,9 +577,7 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 		return array_values($clusters);
 	}
 
-	/**
-	 * @param array<int, int> $parent
-	 */
+	/** @param array<int, int> $parent */
 	private static function rootOf(array &$parent, int $id): int
 	{
 		while ($parent[$id] !== $id)
@@ -687,11 +629,9 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 		return (string) preg_replace('/[^a-z0-9]/', '', $localPart);
 	}
 
-	/**
-	 * Fills the planning table with the name every account would have after the
-	 * decoding and the restoring, so that the same rules apply to both. Accounts
-	 * without a display name cannot be planned and are skipped.
-	 */
+	//Fills the planning table with the name every account would have after the
+	//decoding and the restoring, so that the same rules apply to both. Accounts
+	//without a display name cannot be planned and are skipped.
 	private function fillPlannedNames(): void
 	{
 		$connection = $this->connection();
@@ -708,17 +648,14 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 		}
 	}
 
-	/**
-	 * The name to keep for an account: the restored display name, with the spaces that
-	 * collapsing whitespace ate filled in from the login name.
-	 *
-	 * A whitespace rule ran over the display name and ate a space wherever the byte A0
-	 * was followed by one: "Ð\u{00A0} Ð¡" became "Ð Ð¡", so the space between the two
-	 * words was gone. The login name was never collapsed and still has it. Only a space
-	 * that is missing is put back, at the place where it is missing: runs are not
-	 * widened and the edges stay trimmed, so the result is a name the site itself would
-	 * store, and a name the owner chose keeps its own text because the letters differ.
-	 */
+	//The name to keep for an account: the restored display name, with the spaces that
+	//collapsing whitespace ate filled in from the login name.
+	//A whitespace rule ran over the display name and ate a space wherever the byte A0
+	//was followed by one: "Ð\u{00A0} Ð¡" became "Ð Ð¡", so the space between the two
+	//words was gone. The login name was never collapsed and still has it. Only a space
+	//that is missing is put back, at the place where it is missing: runs are not
+	//widened and the edges stay trimmed, so the result is a name the site itself would
+	//store, and a name the owner chose keeps its own text because the letters differ.
 	private static function restoredDisplayName(string $displayName, ?string $loginName): string
 	{
 		$restored = trim(self::originalText($displayName) ?? $displayName);
@@ -762,12 +699,8 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 		return $index === count($display) ? $filled : $restored;
 	}
 
-	/**
-	 * Groups of accounts that would share a name after decoding, compared with the
-	 * collation of user.display_name.
-	 *
-	 * @return array<int, int[]>
-	 */
+	//Groups of accounts that would share a name after decoding, compared with the collation of user.display_name.
+	/** @return array<int, int[]> */
 	private function groupsWithDuplicates(): array
 	{
 		$groups = [];
@@ -796,10 +729,8 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 		$statement->execute([$name, $id]);
 	}
 
-	/**
-	 * Whether another account plans to use the name. The comparison uses the
-	 * collation of the column, so a case or accent difference still counts.
-	 */
+	//Whether another account plans to use the name. The comparison uses the
+	//collation of the column, so a case or accent difference still counts.
 	private function isPlannedNameTaken(string $name, int $id): bool
 	{
 		$statement = $this->connection()->prepare('SELECT id FROM ' . self::PLANNED_TABLE
@@ -809,12 +740,9 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 		return $statement->fetch(PDO::FETCH_ASSOC) !== false;
 	}
 
-	/**
-	 * Accounts whose stored display name differs from the planned one, byte for
-	 * byte (the collation would call a case only change equal).
-	 *
-	 * @return array<int, array{int, string}>
-	 */
+	//Accounts whose stored display name differs from the planned one, byte for
+	//byte (the collation would call a case only change equal).
+	/** @return array<int, array{int, string}> */
 	private function namesThatDiffer(): array
 	{
 		$rows = $this->connection()->query('SELECT p.id, p.name FROM ' . self::PLANNED_TABLE . ' p'
@@ -827,11 +755,10 @@ final class DecodeLegacyDoubleEncodedText extends AbstractMigration
 		return $result;
 	}
 
+	//What the policy needs to know about each account: who it is, how much it
+	//played and how recently. tsumego_status.updated is not used, because every row
+	//carries the same timestamp, so it says nothing about activity.
 	/**
-	 * What the policy needs to know about each account: who it is, how much it
-	 * played and how recently. tsumego_status.updated is not used, because every row
-	 * carries the same timestamp, so it says nothing about activity.
-	 *
 	 * @param int[] $ids
 	 * @return array<int, array{email: string, readable: bool, attempts: int, lastActivity: string, recentDays: int, deletionRequested: bool}>
 	 */

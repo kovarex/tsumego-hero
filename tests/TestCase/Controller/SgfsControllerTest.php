@@ -27,10 +27,8 @@ class SgfsControllerTest extends IntegrationTestCase
 		$this->assertStringNotContainsString(md5('goner@example.com'), $html);
 	}
 
-	/**
-	 * Uploads of different problems interleave in the lists, the diff has to compare
-	 * with the previous version of the same problem, not with the row below.
-	 */
+	//Uploads of different problems interleave in the lists, the diff has to compare
+	//with the previous version of the same problem, not with the row below.
 	public function testUploadListsDiffAgainstThePreviousVersionOfTheSameProblem()
 	{
 		$context = new ContextPreparator([

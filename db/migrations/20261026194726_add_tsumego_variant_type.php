@@ -4,16 +4,13 @@ declare(strict_types=1);
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * The type of a tsumego variant comes from tsumego_variant_type (TsumegoVariant::TYPE_ constants)
- * instead of a varchar, correct_answer is the number of the answer instead of a double, and the
- * answers no longer default to '0'; the code fills in what a new variant starts with.
- *
- * A variant of a type no code knows goes, nothing showed it.
- */
+//The type of a tsumego variant comes from tsumego_variant_type (TsumegoVariant::TYPE_ constants)
+//instead of a varchar, correct_answer is the number of the answer instead of a double, and the
+//answers no longer default to '0'; the code fills in what a new variant starts with.
+//A variant of a type no code knows goes, nothing showed it.
 final class AddTsumegoVariantType extends AbstractMigration
 {
-	/** id => [the code in tsumego_variant.type, the name] */
+	//id => [the code in tsumego_variant.type, the name]
 	private const TYPES = [
 		1 => ['multiple_choice', 'multiple choice'],
 		2 => ['score_estimating', 'score estimating'],

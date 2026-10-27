@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * Deleted problems and collections go to a trash first (see App\Utility\Trash): they are only marked
- * with the time of the deletion, an admin can restore them, and the daily cron removes them from the
- * database for good once they have been in the trash for Trash::$RETENTION_DAYS.
- *
- * Problems already had tsumego.deleted, collections get the same column. Both are indexed, as the
- * cron looks for the expired ones every day.
- */
+//Deleted problems and collections go to a trash first (see App\Utility\Trash): they are only marked
+//with the time of the deletion, an admin can restore them, and the daily cron removes them from the
+//database for good once they have been in the trash for Trash::$RETENTION_DAYS.
+//Problems already had tsumego.deleted, collections get the same column. Both are indexed, as the
+//cron looks for the expired ones every day.
 final class AddTrash extends AbstractMigration
 {
 	public function up(): void

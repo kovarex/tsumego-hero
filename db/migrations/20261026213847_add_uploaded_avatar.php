@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * A player can upload a picture of their own as the avatar, next to the board, the Gravatar and the
- * Google picture.
- *
- * The picture is a row of user_avatar, so it is backed up and copied with the rest of the database
- * and the site needs no folder the web server writes into. It stays out of user, whose row every
- * request loads. user.uploaded_avatar_hash is the start of the sha256 of the picture: the lists of
- * players build the url of the picture from it without a join, and a new picture gets a new url.
- */
+//A player can upload a picture of their own as the avatar, next to the board, the Gravatar and the
+//Google picture.
+//The picture is a row of user_avatar, so it is backed up and copied with the rest of the database
+//and the site needs no folder the web server writes into. It stays out of user, whose row every
+//request loads. user.uploaded_avatar_hash is the start of the sha256 of the picture: the lists of
+//players build the url of the picture from it without a join, and a new picture gets a new url.
 final class AddUploadedAvatar extends AbstractMigration
 {
 	public function up(): void

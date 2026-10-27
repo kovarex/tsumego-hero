@@ -4,28 +4,19 @@ use App\Attribute\HttpGet;
 use App\Utility\Avatar;
 use App\Utility\UploadedAvatar;
 
-/**
- * AvatarsController
- *
- * Serves the board avatar of a player as a square svg. The url carries the key of
- * the display name, which is the whole input of the drawing, so the image endpoint
- * is a pure function of its url: it reads no row of the database, and a list of a
- * thousand players costs no query at all.
- *
- * The url that carries the id of the account instead answers where the board of that
- * account is, which is what a list uses when it knows the player but not the drawing.
- *
- * A board keeps its corners (a circle would cut the pattern off), so the callers
- * pass border-radius:0 for this avatar and keep the round shape for a picture.
- *
- * A picture a player uploaded is served here as well, from the database.
- */
+//Serves the board avatar of a player as a square svg. The url carries the key of
+//the display name, which is the whole input of the drawing, so the image endpoint
+//is a pure function of its url: it reads no row of the database, and a list of a
+//thousand players costs no query at all.
+//The url that carries the id of the account instead answers where the board of that
+//account is, which is what a list uses when it knows the player but not the drawing.
+//A board keeps its corners (a circle would cut the pattern off), so the callers
+//pass border-radius:0 for this avatar and keep the round shape for a picture.
+//A picture a player uploaded is served here as well, from the database.
 class AvatarsController extends AppController
 {
-	/**
-	 * @param string|null $key The key of a display name
-	 * @return CakeResponse svg image, cached for a year
-	 */
+	//$key: The key of a display name
+	/** @return CakeResponse svg image, cached for a year */
 	#[HttpGet]
 	public function image(?string $key = null)
 	{
@@ -40,14 +31,11 @@ class AvatarsController extends AppController
 		return $this->response;
 	}
 
-	/**
-	 * The same board as a png, which is what a page shares: several networks drop
-	 * an svg from a share preview. The drawing is a function of the key, so the
-	 * picture is still made without reading a row of the database.
-	 *
-	 * @param string|null $key The key of a display name
-	 * @return CakeResponse png image, cached for a year
-	 */
+	//The same board as a png, which is what a page shares: several networks drop
+	//an svg from a share preview. The drawing is a function of the key, so the
+	//picture is still made without reading a row of the database.
+	//$key: The key of a display name
+	/** @return CakeResponse png image, cached for a year */
 	#[HttpGet]
 	public function imagePng(?string $key = null)
 	{
@@ -62,15 +50,12 @@ class AvatarsController extends AppController
 		return $this->response;
 	}
 
-	/**
-	 * The picture a player uploaded. The url carries the hash of the picture, so what it
-	 * answers never changes and the browser keeps it for a year; the url of a picture that
-	 * was replaced or removed, or of a deleted account, answers nothing.
-	 *
-	 * @param int|null $id User id
-	 * @param string|null $hash user.uploaded_avatar_hash
-	 * @return CakeResponse webp image, cached for a year
-	 */
+	//The picture a player uploaded. The url carries the hash of the picture, so what it
+	//answers never changes and the browser keeps it for a year; the url of a picture that
+	//was replaced or removed, or of a deleted account, answers nothing.
+	//$id: User id
+	//$hash: user.uploaded_avatar_hash
+	/** @return CakeResponse webp image, cached for a year */
 	#[HttpGet]
 	public function picture(?int $id = null, ?string $hash = null)
 	{
@@ -87,15 +72,11 @@ class AvatarsController extends AppController
 		return $this->response;
 	}
 
-	/**
-	 * The board of an account, addressed by the id of its user. The avatar a player picked
-	 * is never answered here, only the board, which is what a picture that stopped working
-	 * falls back on. The answer is where that board lives, so the drawing stays on the url
-	 * that a browser keeps for a year.
-	 *
-	 * @param int|null $id User id
-	 * @return CakeResponse redirect to the board of the account
-	 */
+	//The board of an account, addressed by the id of its user. The avatar a player picked
+	//is never answered here, only the board, which is what a picture that stopped working
+	//falls back on. The answer is where that board lives, so the drawing stays on the url
+	//that a browser keeps for a year.
+	/** @return CakeResponse redirect to the board of the account */
 	#[HttpGet]
 	public function boardOfUser(?int $id = null)
 	{

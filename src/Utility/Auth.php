@@ -6,9 +6,7 @@ use ClassRegistry;
 use Exception;
 use User;
 
-/**
- * @phpstan-import-type UserRow from \App\Utility\RowTypes
- */
+/** @phpstan-import-type UserRow from \App\Utility\RowTypes */
 class Auth
 {
 	public static function init(?array $user = null): void
@@ -51,13 +49,10 @@ class Auth
 		Auth::$user = null;
 	}
 
-	/**
-	 * A token is issued with the password the session was opened with, so changing the
-	 * password ends the sessions that were opened with the old one. A token without the
-	 * claim is taken at face value.
-	 *
-	 * @param UserRow $user
-	 */
+	//A token is issued with the password the session was opened with, so changing the
+	//password ends the sessions that were opened with the old one. A token without the
+	//claim is taken at face value.
+	/** @param UserRow $user */
 	private static function tokenFitsTheAccount(array $user): bool
 	{
 		$claim = JwtAuth::getPasswordClaimFromCookie();
@@ -69,12 +64,9 @@ class Auth
 		return (bool) Auth::$user;
 	}
 
-	/**
-	 * Returns the identity (user array), or null when not logged in.
-	 * Matches CakePHP 5's $request->getAttribute('identity') contract.
-	 *
-	 * @return UserRow|null
-	 */
+	//Returns the identity (user array), or null when not logged in.
+	//Matches CakePHP 5's $request->getAttribute('identity') contract.
+	/** @return UserRow|null */
 	public static function getIdentity(): ?array
 	{
 		return Auth::$user;
@@ -85,9 +77,7 @@ class Auth
 		return Auth::$user ? Auth::$user['id'] : 0;
 	}
 
-	/**
-	 * @return UserRow
-	 */
+	/** @return UserRow */
 	public static function &getUser(): array
 	{
 		if (!Auth::$user)
@@ -125,19 +115,14 @@ class Auth
 		return Auth::isLoggedIn() ? (int) Auth::getUser()['date_format_id'] : User::DATE_FORMAT_ISO;
 	}
 
-	/**
-	 * The avatar the logged in player picked, which is the board for a visitor who
-	 * is not logged in at all.
-	 */
+	//The avatar the logged in player picked, which is the board for a visitor who is not logged in at all.
 	public static function getAvatarSetting(): int
 	{
 		return Auth::isLoggedIn() ? User::avatarChoice(Auth::getUser()) : User::AVATAR_BOARD;
 	}
 
-	/**
-	 * Throws when $field is not an existing column on the user table, so a typo
-	 * or schema mismatch fails loudly instead of being silently dropped.
-	 */
+	//Throws when $field is not an existing column on the user table, so a typo
+	//or schema mismatch fails loudly instead of being silently dropped.
 	private static function assertUserFieldExists(string $field): void
 	{
 		$schema = ClassRegistry::init('User')->schema();
@@ -183,15 +168,11 @@ class Auth
 		);
 	}
 
-	/**
-	 * Atomically increments a field only while the row satisfies $conditions.
-	 * Used for bounded counters (e.g. used_revelation) where the bound must be
-	 * enforced by the database, not only by a PHP check that can race.
-	 *
-	 * Bypasses callbacks/validation/timestamps, like incrementUserField().
-	 *
-	 * @return bool Whether the increment was applied (condition still held).
-	 */
+	//Atomically increments a field only while the row satisfies $conditions.
+	//Used for bounded counters (e.g. used_revelation) where the bound must be
+	//enforced by the database, not only by a PHP check that can race.
+	//Bypasses callbacks/validation/timestamps, like incrementUserField().
+	//Returns whether the increment was applied (condition still held).
 	public static function incrementUserFieldIf(string $field, int $delta, array $conditions): bool
 	{
 		assert(Auth::isLoggedIn());
@@ -230,11 +211,9 @@ class Auth
 		return Auth::isLoggedIn() ? (int) Auth::getUser()['mode_id'] : Constants::$LEVEL_MODE;
 	}
 
-	/**
-	 * Play by $mode instead of the stored one until it is cleared with null: a result
-	 * counts in the mode of the page it was played on, which another tab may have
-	 * switched away from since. See PlayResultProcessorComponent::playMode().
-	 */
+	//Play by $mode instead of the stored one until it is cleared with null: a result
+	//counts in the mode of the page it was played on, which another tab may have
+	//switched away from since. See PlayResultProcessorComponent::playMode().
 	public static function overrideMode(?int $mode): void
 	{
 		Auth::$modeOverride = $mode;

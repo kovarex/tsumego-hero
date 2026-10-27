@@ -10,10 +10,8 @@ use App\Utility\SgfChangesRenderer;
 use App\Utility\TagConnectionProposalsRenderer;
 use App\Utility\TagProposalsRenderer;
 
-/**
- * The admin area: one page with a link to everything an admin does, each with a count of what
- * waits there, and the pages of the proposals and of the admin activity.
- */
+//The admin area: one page with a link to everything an admin does, each with a count of what
+//waits there, and the pages of the proposals and of the admin activity.
 class AdminController extends AppController
 {
 	#[HttpGet]
@@ -52,9 +50,7 @@ class AdminController extends AppController
 		$this->set('rejectedSgfProposalsRenderer', new RejectedSGFProposalsRenderer($this->params['url']));
 	}
 
-	/**
-	 * Every saved version of a problem, for the admins to review the changes of each other
-	 */
+	//Every saved version of a problem, for the admins to review the changes of each other
 	#[HttpGet]
 	public function sgfChanges(): void
 	{
@@ -65,10 +61,8 @@ class AdminController extends AppController
 		$this->set('sgfChangesRenderer', new SgfChangesRenderer($this->params['url'], $newSince));
 	}
 
-	/**
-	 * Ticks an SGF change as reviewed by the admin (reviewed=1), or takes the tick back (reviewed=0).
-	 * The own changes are reviewed by the others.
-	 */
+	//Ticks an SGF change as reviewed by the admin (reviewed=1), or takes the tick back (reviewed=0).
+	//The own changes are reviewed by the others.
 	#[HttpPost]
 	public function reviewSgfChange(string $sgfID): CakeResponse
 	{
@@ -88,9 +82,7 @@ class AdminController extends AppController
 		return $this->response;
 	}
 
-	/**
-	 * Existing tags players want on a problem
-	 */
+	//Existing tags players want on a problem
 	#[HttpGet]
 	public function tagProposals(): void
 	{
@@ -100,9 +92,7 @@ class AdminController extends AppController
 		$this->set('tagConnectionProposalsRenderer', new TagConnectionProposalsRenderer($this->params['url']));
 	}
 
-	/**
-	 * Tags players want to be added
-	 */
+	//Tags players want to be added
 	#[HttpGet]
 	public function newTags(): void
 	{

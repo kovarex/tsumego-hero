@@ -33,10 +33,8 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->assertTextNotContains("Problems found 0", $this->view);
 	}
 
-	/**
-	 * Finishing the last problem of a set unlocks achievements on the set page, and
-	 * those achievements pop up for the player.
-	 */
+	//Finishing the last problem of a set unlocks achievements on the set page, and
+	//those achievements pop up for the player.
 	public function testSetPagePopsUpAchievementsUnlockedByTheSet(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'setViewer']]);
@@ -51,9 +49,7 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->assertTextContains('"id":' . AchievementId::LIFE_DEATH_ELEMENTARY->value, $this->view, 'The layout renders the achievements the set page unlocked');
 	}
 
-	/**
-	 * Create a public set with a single problem that the given user solved.
-	 */
+	//Create a public set with a single problem that the given user solved.
 	private function createFullySolvedSet(int $setId, int $userId): void
 	{
 		ClassRegistry::init('Set')->create();
@@ -769,10 +765,7 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->assertSame('16k', $boxes[1]->getText());
 	}
 
-	/**
-	 * A picked rank is shown in the filter bar and survives the next page load,
-	 * before Search is pressed.
-	 */
+	//A picked rank is shown in the filter bar and survives the next page load, before Search is pressed.
 	public function testAPickedRankIsKeptAcrossThePageLoad(): void
 	{
 		$contextParams['tsumegos'] = [];
@@ -1253,9 +1246,7 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->assertSame($this->getSetTitle($browser), '15k');
 	}
 
-	/**
-	 * Collections sorted by difficulty -> click problem directly (no lastSet cookie) -> shows current set only.
-	 */
+	//Collections sorted by difficulty -> click problem directly (no lastSet cookie) -> shows current set only.
 	public function testDifficultyQueryWithoutLastSetShowsCurrentSet(): void
 	{
 		$browser = Browser::instance();
@@ -1289,11 +1280,9 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->checkPlayTitle($browser, 'set 1 1/1');
 	}
 
-	/**
-	 * When query=difficulty but lastSet is an invalid rank (e.g. a topic set name left over from
-	 * a previous session), navigation should fall back to topic-based ordering within the current set.
-	 * The navigation buttons must appear in set_connection.num order, not tsumego.id order.
-	 */
+	//When query=difficulty but lastSet is an invalid rank (e.g. a topic set name left over from
+	//a previous session), navigation should fall back to topic-based ordering within the current set.
+	//The navigation buttons must appear in set_connection.num order, not tsumego.id order.
 	public function testDifficultyWithInvalidLastSetShowsCorrectNumOrder(): void
 	{
 		$browser = Browser::instance();
@@ -1318,9 +1307,7 @@ class SetsControllerTest extends IntegrationTestCase
 			0, 'V');
 	}
 
-	/**
-	 * When query=tags but lastSet is empty, navigation should fall back to topic-based ordering.
-	 */
+	//When query=tags but lastSet is empty, navigation should fall back to topic-based ordering.
 	public function testTagsWithEmptyLastSetShowsCorrectNumOrder(): void
 	{
 		$browser = Browser::instance();
@@ -1342,9 +1329,7 @@ class SetsControllerTest extends IntegrationTestCase
 			0, 'V');
 	}
 
-	/**
-	 * When query=tags but lastSet points to a nonexistent tag, navigation should fall back to topics.
-	 */
+	//When query=tags but lastSet points to a nonexistent tag, navigation should fall back to topics.
 	public function testTagsWithNonexistentTagShowsCorrectNumOrder(): void
 	{
 		$browser = Browser::instance();
@@ -1367,9 +1352,7 @@ class SetsControllerTest extends IntegrationTestCase
 			0, 'V');
 	}
 
-	/**
-	 * When query=difficulty and lastSet is empty, navigation should fall back to topics with correct order.
-	 */
+	//When query=difficulty and lastSet is empty, navigation should fall back to topics with correct order.
 	public function testDifficultyWithEmptyLastSetShowsCorrectNumOrder(): void
 	{
 		$browser = Browser::instance();
@@ -1391,9 +1374,7 @@ class SetsControllerTest extends IntegrationTestCase
 			0, 'V');
 	}
 
-	/**
-	 * The previous and next links follow the order of the set, and lead to the set at its edges.
-	 */
+	//The previous and next links follow the order of the set, and lead to the set at its edges.
 	public function testPreviousAndNextLinksInTopicMode(): void
 	{
 		$browser = Browser::instance();
@@ -1417,9 +1398,7 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->assertSame(Set::url($context->tsumegos[2]['sets'][0]['id']), $browser->driver->executeScript('return nextButtonLink;'));
 	}
 
-	/**
-	 * Navigation with a valid difficulty rank should show problems across sets in sequential order.
-	 */
+	//Navigation with a valid difficulty rank should show problems across sets in sequential order.
 	public function testDifficultyNavigationWithValidRankShowsProblemsAcrossSets(): void
 	{
 		$browser = Browser::instance();
@@ -1446,10 +1425,8 @@ class SetsControllerTest extends IntegrationTestCase
 			0, 'V');
 	}
 
-	/**
-	 * The set filter is meant for the difficulty and tag collections, the fallback to the set of the
-	 * problem shows the whole set, as when the set is opened directly.
-	 */
+	//The set filter is meant for the difficulty and tag collections, the fallback to the set of the
+	//problem shows the whole set, as when the set is opened directly.
 	public function testFallbackToTopicsIgnoresSetFilter(): void
 	{
 		$browser = Browser::instance();
@@ -1471,11 +1448,9 @@ class SetsControllerTest extends IntegrationTestCase
 			0, 'V');
 	}
 
-	/**
-	 * When the opened problem is not part of the difficulty collection (another tab switched to another
-	 * rank, or its rating moved it to another rank), the navigation shows its set instead of a
-	 * collection without the current problem.
-	 */
+	//When the opened problem is not part of the difficulty collection (another tab switched to another
+	//rank, or its rating moved it to another rank), the navigation shows its set instead of a
+	//collection without the current problem.
 	public function testDifficultyFallsBackToSetWhenProblemIsNotInTheRank(): void
 	{
 		$browser = Browser::instance();
@@ -1499,9 +1474,7 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->assertSame(Set::url($context->tsumegos[0]['sets'][0]['id']), $browser->driver->executeScript('return nextButtonLink;'));
 	}
 
-	/**
-	 * Same as above, for a tag collection the problem doesn't have.
-	 */
+	//Same as above, for a tag collection the problem doesn't have.
 	public function testTagsFallBackToSetWhenProblemDoesNotHaveTheTag(): void
 	{
 		$browser = Browser::instance();
@@ -1967,10 +1940,8 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->assertSame($problemButtons[1]->getText(), '2');
 	}
 
-	/**
-	 * Test set view Completed tab shows problem ORDER numbers (1, 2, 3...)
-	 * This is the default view - shows which problems exist in the set
-	 */
+	//Test set view Completed tab shows problem ORDER numbers (1, 2, 3...)
+	//This is the default view - shows which problems exist in the set
 	public function testSetViewCompletedTabShowsOrderNumbers()
 	{
 		// Create ONE set with THREE tsumegos
@@ -2008,10 +1979,8 @@ class SetsControllerTest extends IntegrationTestCase
 			$this->assertFalse($btn->isDisplayed(), 'Time buttons should be hidden on Completed tab');
 	}
 
-	/**
-	 * Test set view button CSS classes reflect problem status
-	 * Buttons should have statusN (not attempted), statusS (solved), statusF (failed), etc.
-	 */
+	//Test set view button CSS classes reflect problem status
+	//Buttons should have statusN (not attempted), statusS (solved), statusF (failed), etc.
 	public function testSetViewButtonStatusClasses()
 	{
 		// Create set with 3 problems: not attempted, solved, failed
@@ -2051,10 +2020,8 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('problem-nav__item--F', $listItems[2]->getAttribute('class'), 'Problem 3 should have statusF (failed)');
 	}
 
-	/**
-	 * Test set view Accuracy tab shows success/failure ratio (e.g., "3/1" = 3 solved, 1 failed)
-	 * As per UI description: "The solved and failed (s/f) attempts are displayed."
-	 */
+	//Test set view Accuracy tab shows success/failure ratio (e.g., "3/1" = 3 solved, 1 failed)
+	//As per UI description: "The solved and failed (s/f) attempts are displayed."
 	public function testSetViewAccuracyTabShowsSuccessFailureRatio()
 	{
 		// Create ONE set with TWO tsumegos, first has multiple attempts
@@ -2102,9 +2069,7 @@ class SetsControllerTest extends IntegrationTestCase
 			$this->assertFalse($btn->isDisplayed(), 'Order numbers should be hidden on Accuracy tab');
 	}
 
-	/**
-	 * Misplays on solved attempts are summed across all solve sessions.
-	 */
+	//Misplays on solved attempts are summed across all solve sessions.
 	public function testSetViewAccuracyTabSumsMisplaysAcrossSolvedAttempts()
 	{
 		$context = new ContextPreparator([
@@ -2135,10 +2100,8 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->assertSame('2/5', trim($accuracyButtons[0]->getText()), 'Two solved attempts (3 + 2 misplays) should show 2/5');
 	}
 
-	/**
-	 * Test set view Time tab shows MINIMUM (best) solve time in seconds
-	 * As per UI description: "The time (in seconds) for solving is displayed."
-	 */
+	//Test set view Time tab shows MINIMUM (best) solve time in seconds
+	//As per UI description: "The time (in seconds) for solving is displayed."
 	public function testSetViewTimeTabShowsMinimumSolveTime()
 	{
 		// Create ONE set with TWO tsumegos
@@ -2184,10 +2147,8 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->assertSame('-', trim($timeButtons[1]->getText()), 'Problem 2 time should be - (no successful solves)');
 	}
 
-	/**
-	 * The average time is of the solved problems only, so solving another one faster than the
-	 * average brings it down (forum#149). A solve without a recorded time counts as a minute.
-	 */
+	//The average time is of the solved problems only, so solving another one faster than the
+	//average brings it down (forum#149). A solve without a recorded time counts as a minute.
 	public function testSetViewAverageTimeIsOfTheSolvedProblemsOnly(): void
 	{
 		$context = new ContextPreparator([
@@ -2279,9 +2240,7 @@ class SetsControllerTest extends IntegrationTestCase
 		}
 	}
 
-	/**
-	 * Test reset button is NOT shown when partition has < 50% solved.
-	 */
+	//Test reset button is NOT shown when partition has < 50% solved.
 	public function testSetProgressDeletionNotOfferedWhenBelow50Percent()
 	{
 		$browser = Browser::instance();
@@ -2304,9 +2263,7 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->assertTextContains('You need to complete 50% to reset', $browser->driver->getPageSource());
 	}
 
-	/**
-	 * Test reset button IS shown when partition has >= 50% solved.
-	 */
+	//Test reset button IS shown when partition has >= 50% solved.
 	public function testSetProgressDeletionOfferedWhenAbove50Percent()
 	{
 		$browser = Browser::instance();
@@ -2395,10 +2352,7 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->assertSame(60, $context->reloadUser()['collection_size']);
 	}
 
-	/**
-	 * Verify that Favorites menu item appears for all logged-in users,
-	 * even those without any favorites yet.
-	 */
+	//Verify that Favorites menu item appears for all logged-in users, even those without any favorites yet.
 	public function testFavoritesMenuVisibleForAllLoggedInUsers(): void
 	{
 		new ContextPreparator(['user' => ['name' => 'regularuser']]);
@@ -2443,10 +2397,9 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->assertTextNotContains('deleted', $this->view);
 	}
 
+	//Verifies a sandbox tsumego's play page loads correctly for premium users.
+	//Smoke test to ensure the $isSandbox code path in Play.php doesn't crash.
 	/**
-	 * Verifies a sandbox tsumego's play page loads correctly for premium users.
-	 * Smoke test to ensure the $isSandbox code path in Play.php doesn't crash.
-	 *
 	 * @group browser
 	 * @retryAttempts 2
 	 * @retryIfException Facebook\WebDriver\Exception\WebDriverException
@@ -2472,10 +2425,9 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->assertTrue($browser->idExists('playTitle'), 'Play title should be present');
 	}
 
+	//Verifies non-premium users are blocked from sandbox play pages.
+	//Creates sandbox set as premium owner, then switches to a non-premium user.
 	/**
-	 * Verifies non-premium users are blocked from sandbox play pages.
-	 * Creates sandbox set as premium owner, then switches to a non-premium user.
-	 *
 	 * @group browser
 	 * @retryAttempts 2
 	 * @retryIfException Facebook\WebDriver\Exception\WebDriverException
@@ -2507,12 +2459,7 @@ class SetsControllerTest extends IntegrationTestCase
 			'Play title should not render for non-premium user');
 	}
 
-	/**
-	 * The set-title heading carries the .set-view-title class (see Sets/view.ctp).
-	 * Return its text.
-	 *
-	 * @param mixed $browser Browser instance
-	 */
+	//The set-title heading carries the .set-view-title class (see Sets/view.ctp). Return its text.
 	private function getSetTitle($browser): string
 	{
 		$titles = $browser->getElements('.set-view-title');

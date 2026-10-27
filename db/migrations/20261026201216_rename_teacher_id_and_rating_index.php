@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * classroom.teacher_id becomes teacher_user_id, as the rest of the schema names a reference to a
- * player, and the index on tsumego.rating is named rating instead of elo_index.
- */
+//classroom.teacher_id becomes teacher_user_id, as the rest of the schema names a reference to a
+//player, and the index on tsumego.rating is named rating instead of elo_index.
 final class RenameTeacherIdAndRatingIndex extends AbstractMigration
 {
 	public function up(): void

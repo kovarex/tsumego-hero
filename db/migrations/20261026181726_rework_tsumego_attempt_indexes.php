@@ -4,23 +4,18 @@ declare(strict_types=1);
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * tsumego_attempt is the biggest table and every solve writes to it, so each of its indexes costs on
- * every write and takes room in the buffer pool. Of its six secondary indexes:
- *
- * - user_id_index and tsumego_id_index repeat the start of other indexes,
- * - created only served the admin list of the latest attempts, which orders by id now (the same order),
- * - user_rating served nothing,
- * - user_id_and_user_rating only served the highest rating on the profile, which the new column
- *   user.highest_rating keeps instead: raised whenever the rating changes, filled here from the history.
- *
- * They are replaced by (user_id, created), for the history and the graph on the profile, and
- * (tsumego_id, created), for the attempts and the rating graph of a problem; (user_id, tsumego_id) stays
- * for the last attempt of a player on a problem. Both foreign keys keep an index that starts with their
- * column. The indexes are built online (LOCK=NONE), so solving goes on meanwhile.
- *
- * Every step can run again, in case a run stops halfway.
- */
+//tsumego_attempt is the biggest table and every solve writes to it, so each of its indexes costs on
+//every write and takes room in the buffer pool. Of its six secondary indexes:
+//- user_id_index and tsumego_id_index repeat the start of other indexes,
+//- created only served the admin list of the latest attempts, which orders by id now (the same order),
+//- user_rating served nothing,
+//- user_id_and_user_rating only served the highest rating on the profile, which the new column
+//  user.highest_rating keeps instead: raised whenever the rating changes, filled here from the history.
+//They are replaced by (user_id, created), for the history and the graph on the profile, and
+//(tsumego_id, created), for the attempts and the rating graph of a problem; (user_id, tsumego_id) stays
+//for the last attempt of a player on a problem. Both foreign keys keep an index that starts with their
+//column. The indexes are built online (LOCK=NONE), so solving goes on meanwhile.
+//Every step can run again, in case a run stops halfway.
 final class ReworkTsumegoAttemptIndexes extends AbstractMigration
 {
 	public function up(): void
@@ -62,9 +57,7 @@ final class ReworkTsumegoAttemptIndexes extends AbstractMigration
 		$this->execute('ALTER TABLE user DROP COLUMN IF EXISTS highest_rating');
 	}
 
-	/**
-	 * @param array<int, array{user_id: int|string, highest_rating: int|string}> $highestRatings
-	 */
+	/** @param array<int, array{user_id: int|string, highest_rating: int|string}> $highestRatings */
 	private function raiseHighestRatings(array $highestRatings): void
 	{
 		foreach (array_chunk($highestRatings, 1000) as $chunk)

@@ -2,17 +2,13 @@
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * The three preferences a player picks once each hold two values, so they are kept
- * in tinyint columns with one meaning per value. Until now each of them mixed the
- * spelling of an older version with the current one:
- *
- * - sound was a copy of the cookie ('on'/'off') next to older 1 and 0,
- * - lastLight was 0 for light and 2 for dark, with an old 1 that also meant light,
- * - levelBar was 0 for the level bar and anything else for the rating.
- *
- * The values are rewritten so that what each account sees now stays the same.
- */
+//The three preferences a player picks once each hold two values, so they are kept
+//in tinyint columns with one meaning per value. Until now each of them mixed the
+//spelling of an older version with the current one:
+//- sound was a copy of the cookie ('on'/'off') next to older 1 and 0,
+//- lastLight was 0 for light and 2 for dark, with an old 1 that also meant light,
+//- levelBar was 0 for the level bar and anything else for the rating.
+//The values are rewritten so that what each account sees now stays the same.
 class PreferencesAsTinyint extends AbstractMigration
 {
 	public function up(): void
@@ -28,10 +24,8 @@ class PreferencesAsTinyint extends AbstractMigration
 		$this->execute("ALTER TABLE `user` MODIFY `levelBar` TINYINT NOT NULL DEFAULT 1 COMMENT '1=level, 2=rating';");
 	}
 
-	/**
-	 * The values go back into the wider columns. Two spellings that meant the same
-	 * choice can not be recovered separately, so each keeps the one the interface uses.
-	 */
+	//The values go back into the wider columns. Two spellings that meant the same
+	//choice can not be recovered separately, so each keeps the one the interface uses.
 	public function down(): void
 	{
 		$this->execute("ALTER TABLE `user` MODIFY `sound` VARCHAR(11) NOT NULL DEFAULT '0';");

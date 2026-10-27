@@ -11,16 +11,13 @@ interface UseSortableDnDProps
 	onMoveComment: (commentId: number, targetIssueId: number | 'standalone') => Promise<void>;
 }
 
-/**
- * Custom hook to manage SortableJS drag-and-drop for comments and issues.
- *
- * Handles:
- * - Main content area sortable (standalone comments)
- * - Issue dropzone sortables (comments within issues)
- * - Drop overlay creation and event handling
- * - ESC key to cancel drag
- * - Cleanup on unmount
- */
+//Custom hook to manage SortableJS drag-and-drop for comments and issues.
+//Handles:
+//- Main content area sortable (standalone comments)
+//- Issue dropzone sortables (comments within issues)
+//- Drop overlay creation and event handling
+//- ESC key to cancel drag
+//- Cleanup on unmount
 export function useSortableDnD({ containerRef, isAdmin, tsumegoId, issues, onMoveComment }: UseSortableDnDProps)
 {
 	const sortablesRef = useRef<Sortable[]>([]);

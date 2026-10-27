@@ -44,10 +44,7 @@ class AvatarPreferenceTest extends IntegrationTestCase
 		$this->assertSame(User::AVATAR_GOOGLE, (int) $row['User']['avatar_setting_id']);
 	}
 
-	/**
-	 * An account without a Google picture can not pick one, so the request is
-	 * ignored and the avatar stays on the board.
-	 */
+	//An account without a Google picture can not pick one, so the request is ignored and the avatar stays on the board.
 	public function testTheGooglePictureIsIgnoredForAnAccountWithoutOne(): void
 	{
 		Auth::logout();

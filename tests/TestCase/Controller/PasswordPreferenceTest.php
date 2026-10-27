@@ -3,14 +3,10 @@
 use App\Utility\Auth;
 use App\Utility\JwtAuth;
 
-/**
- * Changing the password of a local account from the settings page.
- */
+//Changing the password of a local account from the settings page.
 class PasswordPreferenceTest extends IntegrationTestCase
 {
-	/**
-	 * The password every fixture account starts with.
-	 */
+	//The password every fixture account starts with.
 	private const CURRENT_PASSWORD = 'test';
 
 	private function changePassword(array $data): void
@@ -89,9 +85,7 @@ class PasswordPreferenceTest extends IntegrationTestCase
 		$this->assertTrue(password_verify(self::CURRENT_PASSWORD, $hash));
 	}
 
-	/**
-	 * A Google account signs in through Google and has no password to change.
-	 */
+	//A Google account signs in through Google and has no password to change.
 	public function testKeepsTheGoogleAccountWithoutAPassword(): void
 	{
 		Auth::logout();
@@ -124,9 +118,7 @@ class PasswordPreferenceTest extends IntegrationTestCase
 		$this->assertStringNotContainsString('brnoHorse42', TestEmailer::$lastEmail['body']);
 	}
 
-	/**
-	 * Session of another device, opened with the old password.
-	 */
+	//Session of another device, opened with the old password.
 	public function testAnotherDeviceIsSignedOutAfterTheChange(): void
 	{
 		$user = $this->prepareUser('passwordOtherDevice');
@@ -146,10 +138,7 @@ class PasswordPreferenceTest extends IntegrationTestCase
 		$this->assertFalse(Auth::isLoggedIn());
 	}
 
-	/**
-	 * The mail only tells what already happened, so a mail server that does not answer
-	 * leaves the new password in place.
-	 */
+	//The mail only tells what already happened, so a mail server that does not answer leaves the new password in place.
 	public function testThePasswordStaysChangedWhenTheMailCannotBeSent(): void
 	{
 		$user = $this->prepareUser('passwordMailFails');
@@ -192,10 +181,8 @@ class PasswordPreferenceTest extends IntegrationTestCase
 		$this->assertTrue(Auth::isLoggedIn());
 	}
 
-	/**
-	 * Sessions opened before a token carried the password still work, so nobody is
-	 * signed out by the change that introduced it.
-	 */
+	//Sessions opened before a token carried the password still work, so nobody is
+	//signed out by the change that introduced it.
 	public function testASessionWithoutThePasswordClaimStillWorks(): void
 	{
 		$user = $this->prepareUser('passwordOldToken');

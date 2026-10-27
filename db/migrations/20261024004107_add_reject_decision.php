@@ -2,11 +2,9 @@
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * A rejection remembers who decided and what they wrote the proposer, and for a rejected SGF
- * proposal the kept version, so an admin can reopen it (AdminActivityType::REOPEN_PROPOSAL).
- * Rejections from before have none of it.
- */
+//A rejection remembers who decided and what they wrote the proposer, and for a rejected SGF
+//proposal the kept version, so an admin can reopen it (AdminActivityType::REOPEN_PROPOSAL).
+//Rejections from before have none of it.
 class AddRejectDecision extends AbstractMigration
 {
 	public function up(): void

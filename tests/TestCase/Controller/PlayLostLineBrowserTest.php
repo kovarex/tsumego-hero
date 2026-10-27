@@ -3,20 +3,17 @@
 use App\Utility\Constants;
 use App\Utility\TimeModeUtil;
 
+//A line that can no longer end correct is sent as a fail the moment it is lost, so leaving
+//or refreshing before it is played out doesn't escape the fail (#112). The player is shown
+//nothing of it until the line is over.
 /**
- * A line that can no longer end correct is sent as a fail the moment it is lost, so leaving
- * or refreshing before it is played out doesn't escape the fail (#112). The player is shown
- * nothing of it until the line is over.
- *
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
 class PlayLostLineBrowserTest extends IntegrationTestCase
 {
-	/**
-	 * Black (1,1), white (1,2), black (2,1) is correct. Black (2,1) is lost at once, but the
-	 * line goes on: white answers (1,1) and only black (3,1) ends it.
-	 */
+	//Black (1,1), white (1,2), black (2,1) is correct. Black (2,1) is lost at once, but the
+	//line goes on: white answers (1,1) and only black (3,1) ends it.
 	private const SGF = '(;GM[1]FF[4]ST[2]SZ[19](;B[aa];W[ab];B[ba]C[+])(;B[ba];W[aa];B[ca]))';
 
 	private function prepare(Browser $browser, array $user = []): ContextPreparator
@@ -35,7 +32,7 @@ class PlayLostLineBrowserTest extends IntegrationTestCase
 		return '/' . $context->tsumegos[0]['set-connections'][0]['id'];
 	}
 
-	/** Records the results sent and the account bar animations, which are what the player sees of a result */
+	//Records the results sent and the account bar animations, which are what the player sees of a result
 	private function startWatching(Browser $browser): void
 	{
 		$browser->waitUntilJs('typeof besogo !== "undefined" && besogo.editor && typeof besogo.editor.getCurrent === "function"');
@@ -83,7 +80,7 @@ class PlayLostLineBrowserTest extends IntegrationTestCase
 		return trim($browser->driver->executeScript('return document.getElementById("status").textContent;'));
 	}
 
-	/** Plays the losing move and waits until its fail is recorded and white answered */
+	//Plays the losing move and waits until its fail is recorded and white answered
 	private function enterTheLostLine(Browser $browser): void
 	{
 		$browser->clickBoard(2, 1);
@@ -92,7 +89,7 @@ class PlayLostLineBrowserTest extends IntegrationTestCase
 		$browser->waitUntilJs('besogo.editor.getCurrent().moveNumber >= 2');
 	}
 
-	/** The request outlives the page that sent it, so the server may record it a moment after the page is gone */
+	//The request outlives the page that sent it, so the server may record it a moment after the page is gone
 	private function waitForDamage(ContextPreparator $context, int $damage): void
 	{
 		$deadline = microtime(true) + 10;

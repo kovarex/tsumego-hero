@@ -82,7 +82,7 @@ class TagTest extends IntegrationTestCase
 			'Non-contributor should not see the tag search input');
 	}
 
-	/** Tags are hints, so a player adds them only once the problem is solved (forum#94) */
+	//Tags are hints, so a player adds them only once the problem is solved (forum#94)
 	public function testTagSearchShowsOnlyAfterTheProblemIsSolved()
 	{
 		$context = new ContextPreparator([
@@ -577,9 +577,7 @@ class TagTest extends IntegrationTestCase
 		$this->assertEmpty(ClassRegistry::init('Tag')->find('all'));
 	}
 
-	/**
-	 * Test that the tag page links its author.
-	 */
+	//Test that the tag page links its author.
 	public function testTagViewLinksTheAuthor(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'tagauthor'], 'tags' => [['name' => 'snapback']]]);

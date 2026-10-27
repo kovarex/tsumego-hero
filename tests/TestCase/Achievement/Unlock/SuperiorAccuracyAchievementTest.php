@@ -48,10 +48,7 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$this->assertAchievementNotUnlocked(AchievementId::SUPERIOR_ACCURACY);
 	}
 
-	/**
-	 * The first perfect collection pays out Superior Accuracy like any other
-	 * achievement: its XP and its popup.
-	 */
+	//The first perfect collection pays out Superior Accuracy like any other achievement: its XP and its popup.
 	public function testSuperiorAccuracyPaysOutOnTheFirstCollection()
 	{
 		$context = new ContextPreparator();
@@ -70,9 +67,7 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$this->assertSame(31000, $context->XPGained());
 	}
 
-	/**
-	 * A further perfect collection raises the count without paying out again.
-	 */
+	//A further perfect collection raises the count without paying out again.
 	public function testSuperiorAccuracyGrantsNothingForAFurtherCollection()
 	{
 		$context = new ContextPreparator();
@@ -93,10 +88,8 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$this->assertSame(0, $context->XPGained(), 'A further collection should not grant XP');
 	}
 
-	/**
-	 * A collection of fewer than 100 problems does not count, however perfectly it was
-	 * finished: the achievement is for finishing a big collection.
-	 */
+	//A collection of fewer than 100 problems does not count, however perfectly it was
+	//finished: the achievement is for finishing a big collection.
 	public function testSuperiorAccuracyIgnoresACollectionSmallerThanTheSetRequirement()
 	{
 		$context = new ContextPreparator();
@@ -107,10 +100,8 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$this->assertAchievementNotUnlocked(AchievementId::SUPERIOR_ACCURACY);
 	}
 
-	/**
-	 * Only collections of 100+ problems are counted, so a small perfect collection does
-	 * not raise the count of a player who already has a big one.
-	 */
+	//Only collections of 100+ problems are counted, so a small perfect collection does
+	//not raise the count of a player who already has a big one.
 	public function testOnlyLargeCollectionsRaiseTheCount()
 	{
 		$context = new ContextPreparator();
@@ -127,10 +118,8 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 			'the small collection should not be counted');
 	}
 
-	/**
-	 * The count follows collections: finishing a collection again keeps its one accuracy
-	 * record, so it is still a single collection.
-	 */
+	//The count follows collections: finishing a collection again keeps its one accuracy
+	//record, so it is still a single collection.
 	public function testCollectionFinishedTwiceCountsOnce()
 	{
 		$context = new ContextPreparator();
@@ -146,10 +135,8 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 			'a collection finished twice is one collection');
 	}
 
-	/**
-	 * The stored count records what the player earned: it survives collections that can
-	 * no longer be recounted (removed sets, collections finished before the count existed).
-	 */
+	//The stored count records what the player earned: it survives collections that can
+	//no longer be recounted (removed sets, collections finished before the count existed).
 	public function testEarnedCountIsNotLoweredByALaterCollection()
 	{
 		$context = new ContextPreparator(['user' => ['achievement-statuses' => [
@@ -164,10 +151,8 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 			'a later collection does not lower an earned count');
 	}
 
-	/**
-	 * Only public collections earn it: a personal collection the player assembled is not
-	 * one of the site's collections, however perfectly it is finished.
-	 */
+	//Only public collections earn it: a personal collection the player assembled is not
+	//one of the site's collections, however perfectly it is finished.
 	public function testPersonalCollectionDoesNotCount()
 	{
 		$context = new ContextPreparator();
@@ -178,10 +163,8 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$this->assertAchievementNotUnlocked(AchievementId::SUPERIOR_ACCURACY);
 	}
 
-	/**
-	 * A collection owned by a player is a personal collection even when it is public, so
-	 * only collections built by the site itself earn it.
-	 */
+	//A collection owned by a player is a personal collection even when it is public, so
+	//only collections built by the site itself earn it.
 	public function testPublicCollectionOwnedByAPlayerDoesNotCount()
 	{
 		$context = new ContextPreparator();
@@ -196,10 +179,8 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$this->assertAchievementNotUnlocked(AchievementId::SUPERIOR_ACCURACY);
 	}
 
-	/**
-	 * The achievement page lists the public collections that can earn it, and marks the
-	 * ones the player already finished at 100% accuracy.
-	 */
+	//The achievement page lists the public collections that can earn it, and marks the
+	//ones the player already finished at 100% accuracy.
 	public function testAchievementPageListsCollectionsThatEarnIt()
 	{
 		$context = new ContextPreparator();
@@ -221,10 +202,8 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 			'no explanation while nothing contradicts the marked collections');
 	}
 
-	/**
-	 * The collections that did not earn it yet say how much accuracy the player reached on
-	 * them, so the list shows how far each collection is.
-	 */
+	//The collections that did not earn it yet say how much accuracy the player reached on
+	//them, so the list shows how far each collection is.
 	public function testAchievementPageShowsTheAccuracyReachedOnTheRemainingCollections()
 	{
 		$context = new ContextPreparator();
@@ -257,10 +236,8 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 			'a collection the player never opened shows no accuracy');
 	}
 
-	/**
-	 * A count earned on collections that no longer count is explained, so the marked
-	 * collections never look like they contradict the number next to them.
-	 */
+	//A count earned on collections that no longer count is explained, so the marked
+	//collections never look like they contradict the number next to them.
 	public function testAchievementPageExplainsACountWithoutMarkedCollections()
 	{
 		$context = new ContextPreparator(['user' => ['achievement-statuses' => [
@@ -274,9 +251,7 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 			'a count without marked collections is explained');
 	}
 
-	/**
-	 * Opening another player's achievement shows their collections, not the viewer's.
-	 */
+	//Opening another player's achievement shows their collections, not the viewer's.
 	public function testAchievementPageShowsTheViewedUsersCollections()
 	{
 		$context = new ContextPreparator([
@@ -300,10 +275,7 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 			'the page names whose achievement it is');
 	}
 
-	/**
-	 * The achievements list of another player keeps them in the link, so opening a card
-	 * does not switch to the viewer.
-	 */
+	//The achievements list of another player keeps them in the link, so opening a card does not switch to the viewer.
 	public function testAchievementsListOfAnotherPlayerLinksToThatPlayer()
 	{
 		$context = new ContextPreparator([
@@ -319,9 +291,7 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 			'a card of another player links to their achievement');
 	}
 
-	/**
-	 * A collection of 100+ problems finished at 100% accuracy.
-	 */
+	//A collection of 100+ problems finished at 100% accuracy.
 	private function createFinishedCollection(int $userId, int $problemCount = 100, int $public = 1): int
 	{
 		$setId = $this->createSetWithTsumegosAndConnections(1200, $problemCount, $public);

@@ -10,12 +10,12 @@ interface AssignmentEditorProps
 	assignmentId: number;
 	classroomUrl: string;
 	title: string;
-	/** The due day, YYYY-MM-DD. */
+	//The due day, YYYY-MM-DD.
 	due: string;
 	isPublished: boolean;
 	maximumProblems: number;
 	maximumTitleLength: number;
-	/** The picked problems in their order, see ClassroomAssignment::problems(). */
+	//The picked problems in their order, see ClassroomAssignment::problems().
 	problems: PickableProblem[];
 }
 
@@ -26,10 +26,8 @@ interface Collection
 	problems: PickableProblem[];
 }
 
-/**
- * The problems grouped by their collection, the collections in the order they were first picked
- * from and the problems of each in the order of their numbers, which is the order the pupils get.
- */
+//The problems grouped by their collection, the collections in the order they were first picked
+//from and the problems of each in the order of their numbers, which is the order the pupils get.
 function groupByCollection(problems: PickableProblem[]): Collection[]
 {
 	const collections = new Map<number, Collection>();
@@ -44,11 +42,9 @@ function groupByCollection(problems: PickableProblem[]): Collection[]
 	return [...collections.values()];
 }
 
-/**
- * The page where the teacher builds an assignment: picks problems from any collections in the
- * picker, takes some out again, names it and sets the due day. A draft stays the teacher's until
- * it is published; a published one can still be changed, and the pupils see the change.
- */
+//The page where the teacher builds an assignment: picks problems from any collections in the
+//picker, takes some out again, names it and sets the due day. A draft stays the teacher's until
+//it is published; a published one can still be changed, and the pupils see the change.
 export function AssignmentEditor(props: AssignmentEditorProps)
 {
 	const [title, setTitle] = useState(props.title);

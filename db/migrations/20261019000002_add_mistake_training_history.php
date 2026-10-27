@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * The history of the mistake training, which the pool does not keep: it only knows
- * where each problem stands now. mistake_training_review logs every review, a
- * result on a problem that was due, with the rung it moved from and to and the XP
- * it earned, which is also the data to fit the intervals on later.
- * mistake_training_day sums up a player's training day for the profile calendar,
- * and remembers that the day was cleared, so its bonus is paid once.
- */
+//The history of the mistake training, which the pool does not keep: it only knows
+//where each problem stands now. mistake_training_review logs every review, a
+//result on a problem that was due, with the rung it moved from and to and the XP
+//it earned, which is also the data to fit the intervals on later.
+//mistake_training_day sums up a player's training day for the profile calendar,
+//and remembers that the day was cleared, so its bonus is paid once.
 final class AddMistakeTrainingHistory extends AbstractMigration
 {
 	public function up(): void

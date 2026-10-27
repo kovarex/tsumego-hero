@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * A reset clears one part (200 problems) of a set, so the part is saved with it, and only the resets of
- * that part reduce the XP of its problems. Resets saved before have no part (NULL) and keep counting
- * for the whole set until they are a month old.
- */
+//A reset clears one part (200 problems) of a set, so the part is saved with it, and only the resets of
+//that part reduce the XP of its problems. Resets saved before have no part (NULL) and keep counting
+//for the whole set until they are a month old.
 final class ProgressDeletionPartition extends AbstractMigration
 {
 	public function up(): void

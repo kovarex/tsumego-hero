@@ -2,20 +2,15 @@
 
 use App\Utility\Util;
 
-/**
- * A player in a class, or on the way into it: invited by the teacher or asking to join, until the
- * other side accepts (ClassroomMemberStatus). Declining, cancelling, leaving and removing all
- * delete the row, so the player can be invited or ask again later.
- */
+//A player in a class, or on the way into it: invited by the teacher or asking to join, until the
+//other side accepts (ClassroomMemberStatus). Declining, cancelling, leaving and removing all
+//delete the row, so the player can be invited or ask again later.
 class ClassroomMember extends AppModel
 {
 	public $useTable = 'classroom_member';
 
-	/**
-	 * The membership of a player in a class, in whatever state it is.
-	 *
-	 * @return array<string, mixed>|null
-	 */
+	//The membership of a player in a class, in whatever state it is.
+	/** @return array<string, mixed>|null */
 	public static function of(int $classroomId, int $userId): ?array
 	{
 		$rows = Util::query('SELECT * FROM classroom_member WHERE classroom_id = ? AND user_id = ?', [$classroomId, $userId]);
@@ -28,12 +23,9 @@ class ClassroomMember extends AppModel
 		return $membership !== null && (int) $membership['classroom_member_status_id'] === ClassroomMemberStatus::ACCEPTED;
 	}
 
-	/**
-	 * The players of a class and the ones on the way into it, by the state of their membership,
-	 * ordered by name. A deleted account is left out.
-	 *
-	 * @return array<int, array<array<string, mixed>>> Rows of membership_id and USER_COLUMNS, by ClassroomMemberStatus id
-	 */
+	//The players of a class and the ones on the way into it, by the state of their membership,
+	//ordered by name. A deleted account is left out.
+	/** @return array<int, array<array<string, mixed>>> Rows of membership_id and USER_COLUMNS, by ClassroomMemberStatus id */
 	public static function ofClassroom(int $classroomId): array
 	{
 		$rows = Util::query('SELECT m.id AS membership_id, m.classroom_member_status_id, ' . Classroom::USER_COLUMNS . '
@@ -52,14 +44,11 @@ class ClassroomMember extends AppModel
 		return $byStatus;
 	}
 
-	/**
-	 * Starts a membership from one side, or completes it when the other side already started it:
-	 * an invitation to a player who asked to join, or a request to join from an invited player,
-	 * means both sides agree.
-	 *
-	 * @param int $statusId ClassroomMemberStatus::INVITED for the teacher, REQUESTED for the player
-	 * @return int The status the membership has now
-	 */
+	//Starts a membership from one side, or completes it when the other side already started it:
+	//an invitation to a player who asked to join, or a request to join from an invited player,
+	//means both sides agree.
+	//$statusId: ClassroomMemberStatus::INVITED for the teacher, REQUESTED for the player
+	//Returns the status the membership has now
 	public static function offer(int $classroomId, int $userId, int $statusId): int
 	{
 		$membership = self::of($classroomId, $userId);
@@ -89,10 +78,8 @@ class ClassroomMember extends AppModel
 		Util::execute('DELETE FROM classroom_member WHERE id = ?', [$membershipId]);
 	}
 
-	/**
-	 * How many memberships wait for the answer of a player: invitations to their classes for
-	 * them, and players asking to join the classes they teach. The menu shows it.
-	 */
+	//How many memberships wait for the answer of a player: invitations to their classes for
+	//them, and players asking to join the classes they teach. The menu shows it.
 	public static function countAwaitingAnswer(int $userId): int
 	{
 		$rows = Util::query('SELECT

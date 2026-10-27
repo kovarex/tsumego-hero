@@ -6,16 +6,14 @@ import type { Player } from './messageTypes';
 interface MessagesProps
 {
 	userId: number;
-	/** The player whose conversation the address named, /messages/<id>. */
+	//The player whose conversation the address named, /messages/<id>.
 	initialPartner: Player | null;
 	maxLength: number;
 }
 
-/**
- * The messages page: the conversations on the left, the open one on the right. On a
- * phone only one of them is shown at a time. The address follows the open conversation,
- * so it can be bookmarked and the back button closes it.
- */
+//The messages page: the conversations on the left, the open one on the right. On a
+//phone only one of them is shown at a time. The address follows the open conversation,
+//so it can be bookmarked and the back button closes it.
 export function Messages({ userId, initialPartner, maxLength }: MessagesProps)
 {
 	const [partner, setPartner] = useState<Player | null>(initialPartner);

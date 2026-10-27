@@ -4,19 +4,14 @@ declare(strict_types=1);
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * Recounts the completed sets of every user (achievement_condition category 'set').
- *
- * Sets used to be stored in parts of 200 problems, later they were merged into one set each,
- * so a set of 1000 problems only counted once. The sets are now counted in parts of 200 problems
- * again (see SetCompletionCounter), this brings the stored counts of existing users in line.
- *
- * The achievements themselves are unlocked by the regular check on the user's next page load.
- *
- * The slow recount is a plain SELECT, which doesn't lock anything (an INSERT ... SELECT would lock
- * every row it reads and block solves until the end). Only the quick delete and inserts at the
- * end take locks, in their own short transaction.
- */
+//Recounts the completed sets of every user (achievement_condition category 'set').
+//Sets used to be stored in parts of 200 problems, later they were merged into one set each,
+//so a set of 1000 problems only counted once. The sets are now counted in parts of 200 problems
+//again (see SetCompletionCounter), this brings the stored counts of existing users in line.
+//The achievements themselves are unlocked by the regular check on the user's next page load.
+//The slow recount is a plain SELECT, which doesn't lock anything (an INSERT ... SELECT would lock
+//every row it reads and block solves until the end). Only the quick delete and inserts at the
+//end take locks, in their own short transaction.
 final class RecountCompletedSets extends AbstractMigration
 {
 	private const int INSERT_BATCH_SIZE = 1000;

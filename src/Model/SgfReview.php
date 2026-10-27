@@ -2,18 +2,14 @@
 
 use App\Utility\Util;
 
-/**
- * An admin ticked an SGF change (a version in sgf) as checked, on the SGF changes page of the admin
- * area (SgfChangesRenderer). There is no "disagree": an admin who does not agree with a change
- * writes to its author, opens an issue or fixes it.
- */
+//An admin ticked an SGF change (a version in sgf) as checked, on the SGF changes page of the admin
+//area (SgfChangesRenderer). There is no "disagree": an admin who does not agree with a change
+//writes to its author, opens an issue or fixes it.
 class SgfReview extends AppModel
 {
 	public $useTable = 'sgf_review';
 
-	/**
-	 * Ticks the change as checked by the admin, or takes the tick back.
-	 */
+	//Ticks the change as checked by the admin, or takes the tick back.
 	public static function mark(int $sgfID, int $userID, bool $reviewed): void
 	{
 		if ($reviewed)
@@ -22,10 +18,9 @@ class SgfReview extends AppModel
 			Util::execute('DELETE FROM sgf_review WHERE sgf_id = ? AND user_id = ?', [$sgfID, $userID]);
 	}
 
+	//The admins who checked each of the changes, in the order they did, as rows with what an avatar
+	//needs (see User::avatarOrNull).
 	/**
-	 * The admins who checked each of the changes, in the order they did, as rows with what an avatar
-	 * needs (see User::avatarOrNull).
-	 *
 	 * @param list<int> $sgfIDs
 	 * @return array<int, list<array<string, mixed>>> sgf id => reviewers
 	 */

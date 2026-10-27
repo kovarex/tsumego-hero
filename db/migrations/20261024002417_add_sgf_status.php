@@ -2,11 +2,9 @@
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * An SGF version is proposed, accepted (one of the versions the problem had) or rejected. Rejected
- * versions used to be deleted; they are kept now, so the proposer can still see what they proposed.
- * Replaces the accepted flag, the statuses are rows of their own table (see the Sgf::STATUS_ constants).
- */
+//An SGF version is proposed, accepted (one of the versions the problem had) or rejected. Rejected
+//versions used to be deleted; they are kept now, so the proposer can still see what they proposed.
+//Replaces the accepted flag, the statuses are rows of their own table (see the Sgf::STATUS_ constants).
 class AddSgfStatus extends AbstractMigration
 {
 	public function up(): void

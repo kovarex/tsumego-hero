@@ -5,10 +5,7 @@ import { useRecipientSearch } from './useMessages';
 
 const TYPING_PAUSE_MILLISECONDS = 250;
 
-/**
- * Finds a player to write to by their name. Picking one opens the conversation with
- * them, a new one when there was none.
- */
+//Finds a player to write to by their name. Picking one opens the conversation with them, a new one when there was none.
 export function RecipientSearch({ onSelect }: { onSelect: (player: Player) => void })
 {
 	const [input, setInput] = useState('');

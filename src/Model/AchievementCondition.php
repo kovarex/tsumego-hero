@@ -2,11 +2,9 @@
 
 use App\Utility\Util;
 
-/**
- * What a player reached so far towards the achievements that take more than one solve: a value per
- * player and category, and per set for the two set records. Each exists once (a unique key), and
- * the methods below write it, creating it when it is not there yet.
- */
+//What a player reached so far towards the achievements that take more than one solve: a value per
+//player and category, and per set for the two set records. Each exists once (a unique key), and
+//the methods below write it, creating it when it is not there yet.
 class AchievementCondition extends AppModel
 {
 	// the rows of achievement_condition_category, what the value counts
@@ -27,7 +25,7 @@ class AchievementCondition extends AppModel
 	public const CATEGORY_SAPPHIRE = 15;
 	public const CATEGORY_RUBY = 16;
 
-	/** The categories counting the solved problems of a dan rank, by the rank. */
+	//The categories counting the solved problems of a dan rank, by the rank.
 	public const DAN_SOLVE_CATEGORIES = [
 		'1d' => self::CATEGORY_DAN_SOLVE_1D,
 		'2d' => self::CATEGORY_DAN_SOLVE_2D,
@@ -41,7 +39,7 @@ class AchievementCondition extends AppModel
 		parent::__construct($id, $table, $ds);
 	}
 
-	/** The value of the player's condition, null when the player has none. */
+	//The value of the player's condition, null when the player has none.
 	public static function value(int $userID, int $categoryID, ?int $setID = null): ?float
 	{
 		$rows = Util::query(
@@ -50,9 +48,8 @@ class AchievementCondition extends AppModel
 		return $rows && $rows[0]['value'] !== null ? (float) $rows[0]['value'] : null;
 	}
 
+	//The values of the player's conditions of the categories that are not per set.
 	/**
-	 * The values of the player's conditions of the categories that are not per set.
-	 *
 	 * @param int[] $categoryIDs
 	 * @return array<int, float> By category, the ones the player has
 	 */
@@ -78,7 +75,7 @@ class AchievementCondition extends AppModel
 			[$userID, $categoryID, $setID, $value]);
 	}
 
-	/** Adds one to the value of the player's condition, which starts at zero. */
+	//Adds one to the value of the player's condition, which starts at zero.
 	public static function increment(int $userID, int $categoryID): void
 	{
 		Util::execute(
@@ -87,7 +84,7 @@ class AchievementCondition extends AppModel
 			[$userID, $categoryID]);
 	}
 
-	/** Keeps the lower of the stored value and the given one, for a record like the best time. */
+	//Keeps the lower of the stored value and the given one, for a record like the best time.
 	public static function keepLowest(int $userID, int $categoryID, float $value, ?int $setID = null): void
 	{
 		Util::execute(
@@ -96,7 +93,7 @@ class AchievementCondition extends AppModel
 			[$userID, $categoryID, $setID, $value]);
 	}
 
-	/** Keeps the higher of the stored value and the given one, for a record like the best accuracy. */
+	//Keeps the higher of the stored value and the given one, for a record like the best accuracy.
 	public static function keepHighest(int $userID, int $categoryID, float $value, ?int $setID = null): void
 	{
 		Util::execute(

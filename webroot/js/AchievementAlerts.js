@@ -1,18 +1,13 @@
-/**
- * Achievement popup renderer - the single source of truth for "Achievement
- * Completed" popups.
- *
- * Both the page-load path (achievementUpdates embedded as JSON in default.ctp)
- * and the AJAX solve path (play.ctp submitResult) feed this the same pure
- * achievement data. The markup is built with createElement/textContent, so no
- * HTML is ever injected and the /tsumegos/result endpoint stays pure data.
- *
- * Data shape: { id, name, description, xp, image, color }
- *
- * The popup reuses the .toast component (components.css) with a color
- * modifier: class "toast toast--achievement <color>3". Children map to
- * .toast__banner / .toast__close / .toast__body.
- */
+//Achievement popup renderer - the single source of truth for "Achievement
+//Completed" popups.
+//Both the page-load path (achievementUpdates embedded as JSON in default.ctp)
+//and the AJAX solve path (play.ctp submitResult) feed this the same pure
+//achievement data. The markup is built with createElement/textContent, so no
+//HTML is ever injected and the /tsumegos/result endpoint stays pure data.
+//Data shape: { id, name, description, xp, image, color }
+//The popup reuses the .toast component (components.css) with a color
+//modifier: class "toast toast--achievement <color>3". Children map to
+//.toast__banner / .toast__close / .toast__body.
 function showAchievementPopup(achievement)
 {
 	if (!achievement)

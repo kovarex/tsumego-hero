@@ -66,10 +66,8 @@ class Util
 		return isset($_COOKIE[$name]) ? $_COOKIE[$name] : $default;
 	}
 
-	/**
-	 * A random string of letters and digits. It is used for tokens that end up in a
-	 * link, so it comes from the cryptographic source and not from rand().
-	 */
+	//A random string of letters and digits. It is used for tokens that end up in a
+	//link, so it comes from the cryptographic source and not from rand().
 	public static function generateRandomString(int $length = 20): string
 	{
 		$characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -161,11 +159,9 @@ class Util
 		return false;
 	}
 
-	/**
-	 * Whether this copy of the site is not the one players use, which is what allows a
-	 * test to put a fake in place of a service. It is true for the whole development
-	 * container (both its dev and its test hostname) and for the runner on GitHub.
-	 */
+	//Whether this copy of the site is not the one players use, which is what allows a
+	//test to put a fake in place of a service. It is true for the whole development
+	//container (both its dev and its test hostname) and for the runner on GitHub.
 	public static function isInTestEnvironment(): bool
 	{
 		if (@$_SERVER['DDEV_PRIMARY_URL'] && str_contains($_SERVER['DDEV_PRIMARY_URL'], "tsumego.ddev.site"))
@@ -173,12 +169,10 @@ class Util
 		return Util::isInGithubCI();
 	}
 
-	/**
-	 * Whether the request is made by the test suite: the test hostname of the same
-	 * container, the runner on GitHub, or the PHPUnit process that dispatches the
-	 * controller tests. The dev site shares its container with the test site, so
-	 * isInTestEnvironment() is true there too and says nothing about this.
-	 */
+	//Whether the request is made by the test suite: the test hostname of the same
+	//container, the runner on GitHub, or the PHPUnit process that dispatches the
+	//controller tests. The dev site shares its container with the test site, so
+	//isInTestEnvironment() is true there too and says nothing about this.
 	public static function isOnTestSite(): bool
 	{
 		if (Util::isInGithubCI())
@@ -248,29 +242,23 @@ class Util
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}
 
-	/**
-	 * The connection of the default database.
-	 */
+	//The connection of the default database.
 	public static function connection(): PDO
 	{
 		/** @phpstan-ignore-next-line */
 		return ClassRegistry::init('Tsumego')->getDataSource()->getConnection();
 	}
 
-	/**
-	 * The isolation level of the transactions of this connection, as in 'REPEATABLE-READ'. MariaDB 11.1
-	 * renamed the variable to transaction_isolation and deprecated tx_isolation, the only name 10.11
-	 * knows; the view has whichever the server has.
-	 */
+	//The isolation level of the transactions of this connection, as in 'REPEATABLE-READ'. MariaDB 11.1
+	//renamed the variable to transaction_isolation and deprecated tx_isolation, the only name 10.11
+	//knows; the view has whichever the server has.
 	public static function isolationLevel(): string
 	{
 		return self::query("SELECT VARIABLE_VALUE AS isolation FROM information_schema.SESSION_VARIABLES
 			WHERE VARIABLE_NAME IN ('TRANSACTION_ISOLATION', 'TX_ISOLATION') LIMIT 1")[0]['isolation'];
 	}
 
-	/**
-	 * Execute a non-SELECT SQL statement (INSERT, UPDATE, DELETE) and return the number of affected rows.
-	 */
+	//Execute a non-SELECT SQL statement (INSERT, UPDATE, DELETE) and return the number of affected rows.
 	public static function execute(string $sql, array $params = []): int
 	{
 		/** @phpstan-ignore-next-line */
@@ -337,19 +325,17 @@ class Util
 		return $result;
 	}
 
-	/**
-	 * Convert a MySQL datetime (an instant) to ISO 8601 for the client-side
-	 * <time datetime="..."> localizer. Timestamps are rendered in the user's
-	 * local timezone. For timezone-free calendar dates, emit the raw YYYY-MM-DD
-	 * in datetime instead; the client anchors those at UTC so the day never
-	 * shifts across timezones.
-	 */
+	//Convert a MySQL datetime (an instant) to ISO 8601 for the client-side
+	//<time datetime="..."> localizer. Timestamps are rendered in the user's
+	//local timezone. For timezone-free calendar dates, emit the raw YYYY-MM-DD
+	//in datetime instead; the client anchors those at UTC so the day never
+	//shifts across timezones.
 	public static function toIso8601(string $mysqlDatetime): string
 	{
 		return date('c', strtotime($mysqlDatetime));
 	}
 
-	/** A place in a table in words: 1st, 2nd, 3rd, 4th, 11th, 21st… */
+	//A place in a table in words: 1st, 2nd, 3rd, 4th, 11th, 21st…
 	public static function ordinal(int $number): string
 	{
 		if (in_array($number % 100, [11, 12, 13], true))

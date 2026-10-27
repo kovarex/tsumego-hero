@@ -2,17 +2,16 @@
 
 use App\Utility\Constants;
 
+//What the reviewer of a proposal sees: what the proposer wrote about it, a diff that shows more than
+//the added and removed moves, and Accept / Reject with a comment for the proposer.
 /**
- * What the reviewer of a proposal sees: what the proposer wrote about it, a diff that shows more than
- * the added and removed moves, and Accept / Reject with a comment for the proposer.
- *
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
 class ProposalReviewBrowserTest extends IntegrationTestCase
 {
 	private const SGF_VERSION_1 = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc]C[Old start];B[aa];W[ab];B[ba]C[+])';
-	/** The same moves, but the correct ends are controlled by status now, and the start comment changed. */
+	//The same moves, but the correct ends are controlled by status now, and the start comment changed.
 	private const SGF_VERSION_2 = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc]C[New start]G[KILL];B[aa];W[ab];B[ba]S[DEAD])';
 
 	public function testDiffShowsChangesOtherThanMoves(): void
@@ -68,7 +67,7 @@ class ProposalReviewBrowserTest extends IntegrationTestCase
 		$browser->assertNoJsErrors();
 	}
 
-	/** When the trees show no difference, the SGF files are compared as text, so nothing stays hidden. */
+	//When the trees show no difference, the SGF files are compared as text, so nothing stays hidden.
 	public function testNoDifferenceInTheTreeComparesTheSgfFiles(): void
 	{
 		$context = new ContextPreparator([
@@ -92,7 +91,7 @@ class ProposalReviewBrowserTest extends IntegrationTestCase
 		$browser->assertNoJsErrors();
 	}
 
-	/** Wide panels put the changes in a column of their own (sooner below the board), low narrow ones start with the list folded. */
+	//Wide panels put the changes in a column of their own (sooner below the board), low narrow ones start with the list folded.
 	public function testChangesListFitsTheRoom(): void
 	{
 		$context = new ContextPreparator([

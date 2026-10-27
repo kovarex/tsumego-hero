@@ -31,13 +31,10 @@ class TsumegoButtons extends ArrayObject
 		$this->finalize($currentSetConnectionID, $partition, $tsumegoFilters->collectionSize, $resetOrders);
 	}
 
-	/**
-	 * Build buttons directly from a row set, used by dynamic queues such as mistake training.
-	 * Rows must expose tsumego_id, set_connection_id, num, status, rating and sgf.
-	 *
-	 * $linkPrefix points every problem link at the route that owns the queue, so
-	 * following the queue does not drop the player back into plain play.
-	 */
+	//Build buttons directly from a row set, used by dynamic queues such as mistake training.
+	//Rows must expose tsumego_id, set_connection_id, num, status, rating and sgf.
+	//$linkPrefix points every problem link at the route that owns the queue, so
+	//following the queue does not drop the player back into plain play.
 	public static function fromRows(array $rows, ?int $currentSetConnectionID = null, int $collectionSize = 200, string $linkPrefix = '/'): TsumegoButtons
 	{
 		$result = new TsumegoButtons();
@@ -59,9 +56,7 @@ class TsumegoButtons extends ArrayObject
 		return $result;
 	}
 
-	/**
-	 * Apply virtual-set ordering, mark the currently opened problem and partition.
-	 */
+	//Apply virtual-set ordering, mark the currently opened problem and partition.
 	private function finalize(?int $currentSetConnectionID, ?int $partition, int $collectionSize, bool $resetOrders): void
 	{
 		$this->totalCount = count($this);
@@ -176,27 +171,21 @@ class TsumegoButtons extends ArrayObject
 		}
 	}
 
-	/**
-	 * How many pages the whole collection splits into. Pages are cut by position, so the count
-	 * follows the number of problems, not the highest problem number, which leaves gaps when
-	 * problems were moved out of the collection.
-	 */
+	//How many pages the whole collection splits into. Pages are cut by position, so the count
+	//follows the number of problems, not the highest problem number, which leaves gaps when
+	//problems were moved out of the collection.
 	public function getPageCount(int $collectionSize): int
 	{
 		return (int) ceil($this->totalCount / $collectionSize);
 	}
 
-	/**
-	 * The page of the collection a link should open, counting from one.
-	 */
+	//The page of the collection a link should open, counting from one.
 	public function getPartition(): int
 	{
 		return $this->isPartitioned ? $this->partition + 1 : 1;
 	}
 
-	/**
-	 * The page of the collection a title should name, counting from one.
-	 */
+	//The page of the collection a title should name, counting from one.
 	public function getPartitionTitleSuffix(): string
 	{
 		return $this->isPartitioned ? ' #' . $this->getPartition() : '';

@@ -4,25 +4,20 @@ declare(strict_types=1);
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * The foreign keys and NOT NULLs the tags, problem variants and the schedule were missing, and the
- * flags kept in int(11) made tinyint(1):
- *
- * - tag.user_id points to its user (SET NULL), tag.id and tag_connection.tag_id are unsigned like the
- *   other ids, a tag connection always has a tag,
- * - a problem has at most one variant (Play reads one), which goes with the problem,
- * - a schedule entry always has its problem and set,
- * - set.public, tag.approved, tag.hint, tag_connection.approved and schedule.published are 0 or 1.
- *   A set with public = -1 was deleted by the old code (and could be taken back by /sets/sandbox?restore=),
- *   it goes to the trash now.
- *
- * Rows the keys would refuse go first, the way the keys would treat them: a tag of a user who is gone
- * loses the user, a variant of a problem that is gone goes, and so do a second variant of a problem
- * (Play shows the first one), a tag connection without a tag and a schedule entry without its problem or set.
- * A tag connection without a decision (approved NULL, which no code writes) waits for one.
- *
- * down() brings back the old types; the rows that went and the sets moved to the trash stay as they are.
- */
+//The foreign keys and NOT NULLs the tags, problem variants and the schedule were missing, and the
+//flags kept in int(11) made tinyint(1):
+//- tag.user_id points to its user (SET NULL), tag.id and tag_connection.tag_id are unsigned like the
+//  other ids, a tag connection always has a tag,
+//- a problem has at most one variant (Play reads one), which goes with the problem,
+//- a schedule entry always has its problem and set,
+//- set.public, tag.approved, tag.hint, tag_connection.approved and schedule.published are 0 or 1.
+//  A set with public = -1 was deleted by the old code (and could be taken back by /sets/sandbox?restore=),
+//  it goes to the trash now.
+//Rows the keys would refuse go first, the way the keys would treat them: a tag of a user who is gone
+//loses the user, a variant of a problem that is gone goes, and so do a second variant of a problem
+//(Play shows the first one), a tag connection without a tag and a schedule entry without its problem or set.
+//A tag connection without a decision (approved NULL, which no code writes) waits for one.
+//down() brings back the old types; the rows that went and the sets moved to the trash stay as they are.
 final class AddForeignKeysAndBooleans extends AbstractMigration
 {
 	public function up(): void

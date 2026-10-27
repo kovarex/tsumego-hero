@@ -4,20 +4,15 @@ declare(strict_types=1);
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * The last camelCase columns outside the user table (done in 20261026102626) get snake_case names
- * that say what they hold:
- *
- * - gemCounter1, 2, 3 count the solves of the day's emerald, sapphire and ruby problems,
- * - numAnswer is the number of the right answer of a multiple choice problem,
- * - minLib, maxLib, libertyCount, insideLiberties, semeaiType set up the capturing race questions.
- *
- * Dead columns of tsumego are dropped: userWin and userLoss (an old success percentage and attempt
- * count, only reset when a problem got published, solved and failed replaced them) and eyeLiberties1,
- * eyeLiberties2 (nothing used them).
- *
- * IRREVERSIBLE in part: a rollback brings the dropped columns back with their defaults, the data is gone.
- */
+//The last camelCase columns outside the user table (done in 20261026102626) get snake_case names
+//that say what they hold:
+//- gemCounter1, 2, 3 count the solves of the day's emerald, sapphire and ruby problems,
+//- numAnswer is the number of the right answer of a multiple choice problem,
+//- minLib, maxLib, libertyCount, insideLiberties, semeaiType set up the capturing race questions.
+//Dead columns of tsumego are dropped: userWin and userLoss (an old success percentage and attempt
+//count, only reset when a problem got published, solved and failed replaced them) and eyeLiberties1,
+//eyeLiberties2 (nothing used them).
+//IRREVERSIBLE in part: a rollback brings the dropped columns back with their defaults, the data is gone.
 final class RenameColumnsToSnakeCase extends AbstractMigration
 {
 	public function up(): void

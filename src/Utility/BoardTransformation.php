@@ -2,12 +2,10 @@
 
 namespace App\Utility;
 
-/**
- * One of the 16 ways a square board can be reoriented: an optional transpose
- * (x and y swapped), followed by the optional flips of x and y, and an optional
- * swap of black and white. Points are 1-based (x from the left, y from the top),
- * as besogo uses them. The JSON form matches besogo's getTransformationFromSgf.
- */
+//One of the 16 ways a square board can be reoriented: an optional transpose
+//(x and y swapped), followed by the optional flips of x and y, and an optional
+//swap of black and white. Points are 1-based (x from the left, y from the top),
+//as besogo uses them. The JSON form matches besogo's getTransformationFromSgf.
 class BoardTransformation
 {
 	public function __construct(
@@ -30,7 +28,7 @@ class BoardTransformation
 			!empty($data['invertColors']));
 	}
 
-	/** Parses the JSON form; anything that is not an object reads as the identity. */
+	//Parses the JSON form; anything that is not an object reads as the identity.
 	public static function fromJson(?string $json): BoardTransformation
 	{
 		$data = $json ? json_decode($json, true) : null;
@@ -46,7 +44,7 @@ class BoardTransformation
 			'invertColors' => $this->invertColors]);
 	}
 
-	/** All 16 transformations, the identity first. */
+	//All 16 transformations, the identity first.
 	public static function all(): array
 	{
 		$result = [];
@@ -96,7 +94,7 @@ class BoardTransformation
 		return new BoardTransformation(true, $this->flipY, $this->flipX, $this->invertColors);
 	}
 
-	/** The transformation applying this one first and then $next. */
+	//The transformation applying this one first and then $next.
 	public function then(BoardTransformation $next): BoardTransformation
 	{
 		// (1, 2) lies on no symmetry axis, so its image identifies the result

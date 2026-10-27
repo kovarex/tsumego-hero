@@ -37,10 +37,8 @@ interface CloseIssueVariables
 	newStatus: IssueStatusId;
 }
 
-/**
- * All comment mutations share the same tsumegoId for invalidation.
- * Pass tsumegoId to create hooks that auto-invalidate the comments query.
- */
+//All comment mutations share the same tsumegoId for invalidation.
+//Pass tsumegoId to create hooks that auto-invalidate the comments query.
 export function useCommentMutations(tsumegoId: number)
 {
 	const queryClient = useQueryClient();
@@ -116,12 +114,8 @@ export function useCommentMutations(tsumegoId: number)
 	};
 }
 
-/**
- * Query hook for fetching comments data with automatic refetching.
- *
- * @param tsumegoId - The tsumego ID
- * @param initialData - SSR data from PHP (avoids first fetch)
- */
+//Query hook for fetching comments data with automatic refetching.
+//initialData: SSR data from PHP (avoids first fetch)
 export function useCommentsQuery(
 	tsumegoId: number,
 	enabled: boolean = true // Only fetch when tab is clicked
@@ -136,10 +130,8 @@ export function useCommentsQuery(
 	});
 }
 
-/**
- * Standalone hooks for use outside tsumego context (e.g., admin issues list).
- * These don't auto-invalidate comments - caller handles invalidation.
- */
+//Standalone hooks for use outside tsumego context (e.g., admin issues list).
+//These don't auto-invalidate comments - caller handles invalidation.
 export function useCloseReopenIssue()
 {
 	return useMutation({

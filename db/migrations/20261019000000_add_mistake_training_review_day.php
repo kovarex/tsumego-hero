@@ -4,16 +4,13 @@ declare(strict_types=1);
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * The day of the last training review of a problem and how it went: 'S' solved,
- * 'F' failed and not solved yet, 'G' graduated. A training day is a fixed list of
- * problems, so a problem solved today stays in it as done, and a problem failed
- * today stays due until it is solved instead of disappearing until tomorrow.
- *
- * And the number of lapses of a problem, the mistakes made on it since it came
- * into the training: each one makes its waits grow more slowly, so a problem that
- * keeps going wrong comes back more often than the ladder alone would bring it.
- */
+//The day of the last training review of a problem and how it went: 'S' solved,
+//'F' failed and not solved yet, 'G' graduated. A training day is a fixed list of
+//problems, so a problem solved today stays in it as done, and a problem failed
+//today stays due until it is solved instead of disappearing until tomorrow.
+//And the number of lapses of a problem, the mistakes made on it since it came
+//into the training: each one makes its waits grow more slowly, so a problem that
+//keeps going wrong comes back more often than the ladder alone would bring it.
 final class AddMistakeTrainingReviewDay extends AbstractMigration
 {
 	public function up(): void

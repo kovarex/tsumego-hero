@@ -16,10 +16,8 @@ class UploadedAvatarTest extends CakeTestCase
 		parent::tearDown();
 	}
 
-	/**
-	 * Whatever its shape, a picture becomes a square of one size, so every avatar is the
-	 * same small file and a share preview knows its size.
-	 */
+	//Whatever its shape, a picture becomes a square of one size, so every avatar is the
+	//same small file and a share preview knows its size.
 	public function testAPictureBecomesASquareWebp(): void
 	{
 		foreach ([[400, 200], [200, 400], [50, 50], [3000, 1000]] as [$width, $height])
@@ -43,10 +41,8 @@ class UploadedAvatarTest extends CakeTestCase
 		}
 	}
 
-	/**
-	 * A face is usually in the middle of a photo, so the middle square is kept and the
-	 * edges of a wide picture are cut off.
-	 */
+	//A face is usually in the middle of a photo, so the middle square is kept and the
+	//edges of a wide picture are cut off.
 	public function testTheMiddleSquareIsKept(): void
 	{
 		// Red, green and blue thirds of a picture three times as wide as high.
@@ -78,10 +74,8 @@ class UploadedAvatarTest extends CakeTestCase
 		$this->assertSame(127, imagecolorsforindex($avatar, imagecolorat($avatar, 50, 50))['alpha']);
 	}
 
-	/**
-	 * A phone stores its photo as the sensor saw it and writes how to turn it into the EXIF
-	 * data. That data is not kept, so the picture is turned before it is stored.
-	 */
+	//A phone stores its photo as the sensor saw it and writes how to turn it into the EXIF
+	//data. That data is not kept, so the picture is turned before it is stored.
 	public function testAPhotoIsTurnedTheWayItsCameraSays(): void
 	{
 		if (!function_exists('exif_read_data'))
@@ -114,9 +108,7 @@ class UploadedAvatarTest extends CakeTestCase
 		$this->assertStringNotContainsString('Exif', $avatar);
 	}
 
-	/**
-	 * The type is read from the content, so a script named like a picture is not one.
-	 */
+	//The type is read from the content, so a script named like a picture is not one.
 	public function testAFileThatIsNotAPictureIsRefused(): void
 	{
 		$path = $this->file('<?php echo "hello"; ?>');
@@ -136,10 +128,8 @@ class UploadedAvatarTest extends CakeTestCase
 		UploadedAvatar::process($path);
 	}
 
-	/**
-	 * A few bytes can claim a picture that takes gigabytes to unpack, so the size in the
-	 * header is checked before a pixel is decoded.
-	 */
+	//A few bytes can claim a picture that takes gigabytes to unpack, so the size in the
+	//header is checked before a pixel is decoded.
 	public function testAPictureWithTooManyPixelsIsRefusedBeforeItIsDecoded(): void
 	{
 		$header = pack('N', 13) . 'IHDR' . pack('NN', 20000, 20000) . "\x08\x02\x00\x00\x00";
@@ -173,10 +163,7 @@ class UploadedAvatarTest extends CakeTestCase
 		$this->assertUploadRefused(['error' => UPLOAD_ERR_FORM_SIZE], 'too large');
 	}
 
-	/**
-	 * PHP refuses a file above its own limit before the upload sees it, so that limit is the
-	 * one the player is told.
-	 */
+	//PHP refuses a file above its own limit before the upload sees it, so that limit is the one the player is told.
 	public function testTheLimitIsTheLowerOneOfThisAndOfPhp(): void
 	{
 		$this->assertLessThanOrEqual(UploadedAvatar::MAX_BYTES, UploadedAvatar::maxBytes());
@@ -198,10 +185,7 @@ class UploadedAvatarTest extends CakeTestCase
 		$this->assertSame('WEBP', substr($avatar, 8, 4));
 	}
 
-	/**
-	 * A picture is bytes and not text, so it has to come back from the database exactly as
-	 * it went in.
-	 */
+	//A picture is bytes and not text, so it has to come back from the database exactly as it went in.
 	public function testAStoredPictureComesBackByteForByte(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'pictured']]);
@@ -214,9 +198,7 @@ class UploadedAvatarTest extends CakeTestCase
 		$this->assertSame('/avatar/' . $context->user['id'] . '/' . $hash . '.webp', UploadedAvatar::url($context->user['id'], $hash));
 	}
 
-	/**
-	 * An account has one uploaded picture; the url of the one it replaced answers nothing.
-	 */
+	//An account has one uploaded picture; the url of the one it replaced answers nothing.
 	public function testANewPictureTakesThePlaceOfTheOldOne(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'pictured']]);
@@ -248,10 +230,8 @@ class UploadedAvatarTest extends CakeTestCase
 		$this->assertSame([], Util::query('SELECT user_id FROM user_avatar WHERE user_id = ?', [$context->user['id']]));
 	}
 
-	/**
-	 * A deleted account asked to be forgotten, so its picture is not served even to someone
-	 * who kept its url. The row stays, so a restored account has it back.
-	 */
+	//A deleted account asked to be forgotten, so its picture is not served even to someone
+	//who kept its url. The row stays, so a restored account has it back.
 	public function testADeletedAccountServesNoPicture(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'pictured']]);
@@ -264,7 +244,7 @@ class UploadedAvatarTest extends CakeTestCase
 		$this->assertNotNull(UploadedAvatar::picture($context->user['id'], $hash));
 	}
 
-	/** Store a picture the way an upload does: the row and the hash of the account. */
+	//Store a picture the way an upload does: the row and the hash of the account.
 	private function store(int $userID, string $avatar): string
 	{
 		$hash = UploadedAvatar::store($userID, $avatar);
@@ -285,9 +265,7 @@ class UploadedAvatarTest extends CakeTestCase
 		}
 	}
 
-	/**
-	 * A JPEG with an EXIF block that holds nothing but the orientation.
-	 */
+	//A JPEG with an EXIF block that holds nothing but the orientation.
 	private static function withOrientation(string $jpeg, int $orientation): string
 	{
 		$tiff = 'MM' . pack('n', 42) . pack('N', 8)

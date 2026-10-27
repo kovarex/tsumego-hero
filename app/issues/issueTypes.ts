@@ -1,14 +1,9 @@
-/**
- * Types for Issues.
- */
+//Types for Issues.
 
 import type { Comment } from '../comments/commentTypes';
 
-/**
- * Issue status IDs from database (tsumego_issue_status table).
- *
- * Maps to: 1 = open, 2 = closed
- */
+//Issue status IDs from database (tsumego_issue_status table).
+//Maps to: 1 = open, 2 = closed
 export const IssueStatus = {
 	OPEN: 1,
 	CLOSED: 2
@@ -16,9 +11,7 @@ export const IssueStatus = {
 
 export type IssueStatusId = (typeof IssueStatus)[keyof typeof IssueStatus];
 
-/**
- * Issue entity from database.
- */
+//Issue entity from database.
 export interface Issue
 {
 	id: number;
@@ -32,11 +25,8 @@ export interface Issue
 	comments: Comment[];
 }
 
-/**
- * Issue with context for global issues list display.
- *
- * Contains the issue itself plus metadata about which problem it belongs to.
- */
+//Issue with context for global issues list display.
+//Contains the issue itself plus metadata about which problem it belongs to.
 export interface IssueWithContext
 {
 	// The issue itself
@@ -59,9 +49,7 @@ export interface IssueWithContext
 	} | null;
 }
 
-/**
- * Response from GET /tsumego-issues/index
- */
+//Response from GET /tsumego-issues/index
 export interface IssuesListResponse
 {
 	issues: IssueWithContext[];
@@ -73,7 +61,5 @@ export interface IssuesListResponse
 	currentPage: number;
 }
 
-/**
- * Filter options for issues list
- */
+//Filter options for issues list
 export type IssueStatusFilter = 'opened' | 'closed' | 'all';

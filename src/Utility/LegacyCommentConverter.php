@@ -2,34 +2,31 @@
 
 namespace App\Utility;
 
-/**
- * Converts a comment written before comments were stored in the coordinates of
- * the SGF. Such a comment was typed while looking at the board as its author saw
- * it: normalised to the top-left, then mirrored into the author's corner (random
- * or chosen), maybe rotated, maybe with the colours swapped, and nothing of that
- * was saved with the text. This finds the orientation once, so the comment can be
- * stored in the coordinates of the SGF and shown exactly from then on.
- *
- * - The anchor (position) records the author's corner, so it is converted
- *   exactly. Its moves are looked up in the tree in that orientation first, then
- *   in the others (the board could have been rotated, or the SGF replaced).
- * - The coordinates in the text follow the anchor when there is one: the text
- *   was written on the same board. Otherwise the orientation is chosen in which
- *   most of them are moves of the tree, where a board the site could show (one
- *   of the four corners, a full board as it is, rotated when it is tall) counts
- *   as one more: any other orientation has to explain two more moves, as only an
- *   SGF replaced since could have turned it. Then the orientation with more of
- *   them on setup stones and near the stones wins. A remaining tie is decided by
- *   the problem as shown in the top-left corner (the "Original" orientation).
- * - Black and white are swapped only when the colours the text names contradict
- *   the problem: the colour written next to a coordinate against the colour of
- *   the move there in the tree (in the line of the tree, when it is one of three
- *   or more coordinates in a row playing one), and "white to kill" against the
- *   description.
- *   A hypothetical ("if w D4", "should this be white to play?") does not count.
- *   A caller that knows the colours (a comment checked by hand) gives them instead.
- * - The "[current position]" marker is removed, the anchor alone marks it now.
- */
+//Converts a comment written before comments were stored in the coordinates of
+//the SGF. Such a comment was typed while looking at the board as its author saw
+//it: normalised to the top-left, then mirrored into the author's corner (random
+//or chosen), maybe rotated, maybe with the colours swapped, and nothing of that
+//was saved with the text. This finds the orientation once, so the comment can be
+//stored in the coordinates of the SGF and shown exactly from then on.
+//- The anchor (position) records the author's corner, so it is converted
+//  exactly. Its moves are looked up in the tree in that orientation first, then
+//  in the others (the board could have been rotated, or the SGF replaced).
+//- The coordinates in the text follow the anchor when there is one: the text
+//  was written on the same board. Otherwise the orientation is chosen in which
+//  most of them are moves of the tree, where a board the site could show (one
+//  of the four corners, a full board as it is, rotated when it is tall) counts
+//  as one more: any other orientation has to explain two more moves, as only an
+//  SGF replaced since could have turned it. Then the orientation with more of
+//  them on setup stones and near the stones wins. A remaining tie is decided by
+//  the problem as shown in the top-left corner (the "Original" orientation).
+//- Black and white are swapped only when the colours the text names contradict
+//  the problem: the colour written next to a coordinate against the colour of
+//  the move there in the tree (in the line of the tree, when it is one of three
+//  or more coordinates in a row playing one), and "white to kill" against the
+//  description.
+//  A hypothetical ("if w D4", "should this be white to play?") does not count.
+//  A caller that knows the colours (a comment checked by hand) gives them instead.
+//- The "[current position]" marker is removed, the anchor alone marks it now.
 class LegacyCommentConverter
 {
 	public const MARKER = '[current position]';
@@ -57,7 +54,7 @@ class LegacyCommentConverter
 	/** @var BoardTransformation[] from the boards the site could show to the SGF */
 	private array $siteViews;
 
-	/** @param ?string $description of the problem, in the colours of the SGF */
+	//$description: of the problem, in the colours of the SGF
 	public function __construct(private SgfTree $tree, private ?string $description = null)
 	{
 		$this->size = $tree->boardSize();
@@ -116,7 +113,7 @@ class LegacyCommentConverter
 		}
 	}
 
-	/** @param ?bool $colorsSwapped known from elsewhere, null lets the colours the text names decide */
+	//$colorsSwapped: known from elsewhere, null lets the colours the text names decide
 	public function convert(string $message, ?string $position = null, ?bool $colorsSwapped = null): LegacyCommentConversion
 	{
 		$result = new LegacyCommentConversion();
@@ -150,7 +147,7 @@ class LegacyCommentConverter
 		return $result;
 	}
 
-	/** The message without the "[current position]" marker and the spaces it leaves behind. */
+	//The message without the "[current position]" marker and the spaces it leaves behind.
 	public static function withoutMarker(string $message): string
 	{
 		if (!str_contains($message, self::MARKER))
@@ -158,7 +155,7 @@ class LegacyCommentConverter
 		return trim(preg_replace('/[ \t]*' . preg_quote(self::MARKER, '/') . '[ \t]*/', ' ', $message));
 	}
 
-	/** From the board shown in the corner (normalised, then mirrored into it) to the SGF. */
+	//From the board shown in the corner (normalised, then mirrored into it) to the SGF.
 	private function cornerView(string $corner): BoardTransformation
 	{
 		if ($corner == 'full-board' || $this->fullBoard)
@@ -167,7 +164,7 @@ class LegacyCommentConverter
 		return $this->normalization->then($mirror)->inverse();
 	}
 
-	/** The same view after besogo turned the board a quarter counter-clockwise. */
+	//The same view after besogo turned the board a quarter counter-clockwise.
 	private function rotated(BoardTransformation $view): BoardTransformation
 	{
 		$counterClockwise = new BoardTransformation(true, false, true);
@@ -222,12 +219,9 @@ class LegacyCommentConverter
 		return $known;
 	}
 
-	/**
-	 * Splits a position ("x/y/parentX/parentY/childX/childY/moveNumber/childCount/corner|path")
-	 * into its fields and the moves of its path, from the root or (the old PHP form) to the root.
-	 *
-	 * @return array{string[], array<array{int, int}>}
-	 */
+	//Splits a position ("x/y/parentX/parentY/childX/childY/moveNumber/childCount/corner|path")
+	//into its fields and the moves of its path, from the root or (the old PHP form) to the root.
+	/** @return array{string[], array<array{int, int}>} */
 	private static function parsePosition(?string $position): array
 	{
 		if ($position === null || $position === '')
@@ -246,7 +240,7 @@ class LegacyCommentConverter
 		return [$fields, $path];
 	}
 
-	/** The position with its moves (not in the tree) moved by the transformation, as written. */
+	//The position with its moves (not in the tree) moved by the transformation, as written.
 	private function unresolvedPosition(?string $position, BoardTransformation $transformation): string
 	{
 		[$fields, $path] = self::parsePosition($position);
@@ -269,7 +263,7 @@ class LegacyCommentConverter
 		return $node;
 	}
 
-	/** The position string of the node, in SGF coordinates (see besogo's makeCommentPosition). */
+	//The position string of the node, in SGF coordinates (see besogo's makeCommentPosition).
 	private function positionOf(SgfTree $node): string
 	{
 		$moveOf = function (?SgfTree $node): string {
@@ -329,10 +323,9 @@ class LegacyCommentConverter
 			$result->textMethod = 'tie, decided by the top-left orientation';
 	}
 
+	//Coordinates on moves first, a board the site could show counting as one more;
+	//then a board the site could show; then coordinates on setup stones and near the stones.
 	/**
-	 * Coordinates on moves first, a board the site could show counting as one more;
-	 * then a board the site could show; then coordinates on setup stones and near the stones.
-	 *
 	 * @param array{score: array{int, int, int}, siteView: bool} $candidate
 	 * @return array{int, int, int, int}
 	 */
@@ -380,14 +373,11 @@ class LegacyCommentConverter
 		}, $labels);
 	}
 
-	/**
-	 * Compares the colour written right before a coordinate ("black D4", "w-T19")
-	 * with the colour of the moves at that point, and the side to play the text
-	 * names ("in a white to kill problem") with the one in the description,
-	 * leaving out hypotheticals.
-	 *
-	 * @return array{same: int, swapped: int}
-	 */
+	//Compares the colour written right before a coordinate ("black D4", "w-T19")
+	//with the colour of the moves at that point, and the side to play the text
+	//names ("in a white to kill problem") with the one in the description,
+	//leaving out hypotheticals.
+	/** @return array{same: int, swapped: int} */
 	private function colorEvidence(string $text, BoardTransformation $transformation): array
 	{
 		$evidence = ['same' => 0, 'swapped' => 0];
@@ -438,10 +428,9 @@ class LegacyCommentConverter
 		return array_values(array_unique($colors));
 	}
 
+	//The colours of the coordinates that play a line of the tree, LINE_LENGTH or
+	//more one after the other ("W B1, B C2, W A2"), by their index.
 	/**
-	 * The colours of the coordinates that play a line of the tree, LINE_LENGTH or
-	 * more one after the other ("W B1, B C2, W A2"), by their index.
-	 *
 	 * @param array<?array{int, int}> $points of the coordinates of the text, in order
 	 * @return array<int, string[]>
 	 */
@@ -461,7 +450,7 @@ class LegacyCommentConverter
 		return array_map(fn(array $lineColors) => array_values(array_unique($lineColors)), $colors);
 	}
 
-	/** The part of the sentence that comes before the offset. */
+	//The part of the sentence that comes before the offset.
 	private static function sentenceBefore(string $text, int $offset): string
 	{
 		$sentences = preg_split('/[.!?\n]/', substr($text, 0, $offset));

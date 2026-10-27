@@ -12,9 +12,6 @@ class SitesController extends AppController
 {
 	public $helpers = ['Html', 'Form'];
 
-	/**
-	 * @return void
-	 */
 	#[HttpGet]
 	public function index(): void
 	{
@@ -131,11 +128,7 @@ class SitesController extends AppController
 		return $chartData;
 	}
 
-	/**
-	 * Returns recent achievements for AJAX polling.
-	 *
-	 * @return void
-	 */
+	//Returns recent achievements for AJAX polling.
 	#[HttpGet]
 	public function recentAchievements(): void
 	{
@@ -146,9 +139,6 @@ class SitesController extends AppController
 		$this->response->body(json_encode(['recentAchievements' => $recentAchievements]));
 	}
 
-	/**
-	 * @return void
-	 */
 	#[HttpGet]
 	public function impressum(): void
 	{
@@ -156,9 +146,6 @@ class SitesController extends AppController
 		$this->set('_title', 'Tsumego Hero - Legal Notice');
 	}
 
-	/**
-	 * @return void
-	 */
 	#[HttpGet]
 	public function websitefunctions(): void
 	{
@@ -166,9 +153,6 @@ class SitesController extends AppController
 		$this->set('_title', 'Tsumego Hero - Website Functions');
 	}
 
-	/**
-	 * @return void
-	 */
 	#[HttpGet]
 	public function gotutorial(): void
 	{
@@ -176,9 +160,6 @@ class SitesController extends AppController
 		$this->set('_title', 'Tsumego Hero - Go Tutorial');
 	}
 
-	/**
-	 * @return void
-	 */
 	#[HttpGet]
 	public function privacypolicy(): void
 	{
@@ -186,9 +167,6 @@ class SitesController extends AppController
 		$this->set('_title', 'Tsumego Hero - Privacy Policy');
 	}
 
-	/**
-	 * @return void
-	 */
 	#[HttpGet]
 	public function about(): void
 	{
@@ -196,12 +174,8 @@ class SitesController extends AppController
 		$this->set('_title', 'Tsumego Hero - About');
 	}
 
-	/**
-	 * Blank page — renders the default layout with no content.
-	 * Used in tests as a lightweight alternative to the homepage.
-	 *
-	 * @return void
-	 */
+	//Blank page — renders the default layout with no content.
+	//Used in tests as a lightweight alternative to the homepage.
 	#[HttpGet]
 	public function blank(): void
 	{

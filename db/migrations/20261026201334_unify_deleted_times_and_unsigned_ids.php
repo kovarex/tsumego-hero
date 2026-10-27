@@ -4,29 +4,26 @@ declare(strict_types=1);
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * The last types the database review found out of line with the rest of the schema:
- *
- * - tsumego_comment.deleted and tsumego_issue.deleted hold the time of the deletion, like
- *   tsumego.deleted, set.deleted and user.deleted, instead of a flag. The rows deleted before keep
- *   the time of this migration, their real one is not known.
- * - admin_activity.created is a DATETIME like every other time, not a TIMESTAMP (the year 2038 and
- *   the conversion to the time zone of the connection). The conversion keeps the time the
- *   connection showed.
- * - tsumego.author has no default anymore: a problem saved without an author was credited to
- *   Joschka Zimdars, now the database refuses it. Both ways of creating a problem fill it.
- * - set_connection, achievement_status and progress_deletion get unsigned ids like the other
- *   tables, and so does classroom_assignment_problem.set_connection_id, which references one.
- */
+//The last types the database review found out of line with the rest of the schema:
+//- tsumego_comment.deleted and tsumego_issue.deleted hold the time of the deletion, like
+//  tsumego.deleted, set.deleted and user.deleted, instead of a flag. The rows deleted before keep
+//  the time of this migration, their real one is not known.
+//- admin_activity.created is a DATETIME like every other time, not a TIMESTAMP (the year 2038 and
+//  the conversion to the time zone of the connection). The conversion keeps the time the
+//  connection showed.
+//- tsumego.author has no default anymore: a problem saved without an author was credited to
+//  Joschka Zimdars, now the database refuses it. Both ways of creating a problem fill it.
+//- set_connection, achievement_status and progress_deletion get unsigned ids like the other
+//  tables, and so does classroom_assignment_problem.set_connection_id, which references one.
 final class UnifyDeletedTimesAndUnsignedIds extends AbstractMigration
 {
-	/** table => what the column says */
+	//table => what the column says
 	private const DELETED_COLUMNS = [
 		'tsumego_comment' => 'When the comment was deleted, NULL when it is not.',
 		'tsumego_issue' => 'When the issue was deleted, NULL when it is not.',
 	];
 
-	/** The tables whose id becomes unsigned */
+	//The tables whose id becomes unsigned
 	private const UNSIGNED_IDS = ['set_connection', 'achievement_status', 'progress_deletion'];
 
 	public function up(): void

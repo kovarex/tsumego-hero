@@ -4,9 +4,7 @@ use App\Utility\Auth;
 
 class AppControllerTest extends IntegrationTestCase
 {
-	/**
-	 * Test that updateGems correctly increments gem counters based on solved puzzle rank.
-	 */
+	//Test that updateGems correctly increments gem counters based on solved puzzle rank.
 	public function testUpdateGemsIncrementsCorrectCounter(): void
 	{
 		// Create a day record with specific gem configuration
@@ -42,9 +40,7 @@ class AppControllerTest extends IntegrationTestCase
 		$this->assertSame(1, (int) $dayRecord['DayRecord']['ruby_solves'], 'Solving 1d should increment ruby_solves');
 	}
 
-	/**
-	 * Test that updateGems correctly increments counter multiple times.
-	 */
+	//Test that updateGems correctly increments counter multiple times.
 	public function testUpdateGemsIncrementsMultipleTimes(): void
 	{
 		$context = new ContextPreparator([
@@ -65,9 +61,7 @@ class AppControllerTest extends IntegrationTestCase
 		$this->assertSame(5, (int) $dayRecord['DayRecord']['emerald_solves'], 'emerald_solves should be 5 after 5 solves');
 	}
 
-	/**
-	 * Test that updateGems ignores ranks that don't match the current gem configuration.
-	 */
+	//Test that updateGems ignores ranks that don't match the current gem configuration.
 	public function testUpdateGemsIgnoresNonMatchingRanks(): void
 	{
 		$context = new ContextPreparator([
@@ -91,9 +85,7 @@ class AppControllerTest extends IntegrationTestCase
 		$this->assertSame(0, (int) $dayRecord['DayRecord']['sapphire_solves'], 'sapphire_solves should not increment for non-matching rank');
 	}
 
-	/**
-	 * Test that counter increments beyond threshold and same user doesn't get achievement twice
-	 */
+	//Test that counter increments beyond threshold and same user doesn't get achievement twice
 	public function testCounterIncrementsBeyondThreshold(): void
 	{
 		// Create test user
@@ -138,10 +130,8 @@ class AppControllerTest extends IntegrationTestCase
 		$this->assertCount(1, $achievements, 'User should not get duplicate achievement');
 	}
 
-	/**
-	 * Test that when user already has achievement and counter is at 499, it stays at 499
-	 * This prevents users with existing achievements from "wasting" the threshold slot
-	 */
+	//Test that when user already has achievement and counter is at 499, it stays at 499
+	//This prevents users with existing achievements from "wasting" the threshold slot
 	public function testUserWithAchievementDoesNotIncrementAtThreshold(): void
 	{
 		// Create user who ALREADY has emerald achievement

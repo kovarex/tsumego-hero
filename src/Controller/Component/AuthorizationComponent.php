@@ -1,23 +1,18 @@
 <?php
 
-/**
- * Shim of CakePHP 5's AuthorizationComponent. The call site is identical:
- * $this->Authorization->authorize('Admin') in the action userstats -> App\Policy\AdminPolicy::canUserstats.
- *
- * Policies live in App\Policy and are resolved through composer (PSR-4), so a new
- * policy file is picked up without regenerating the classmap.
- *
- * Resources can be:
- * - a string (policy name, e.g. 'Admin') -> policy receives only the identity
- * - an array in the wrapped Cake form, e.g. ['Set' => $row] -> policy is resolved
- *   from the first key and receives the unwrapped row, e.g.
- *   App\Policy\SetPolicy::canView($user, $row)
- * - an object -> policy resolved from the class basename and the object is passed
- *   as the second argument (no current caller, kept for parity with CakePHP 5)
- *
- * - Not logged in        -> UnauthorizedException (401)
- * - Logged in, no grant  -> ForbiddenException (403)
- */
+//Shim of CakePHP 5's AuthorizationComponent. The call site is identical:
+//$this->Authorization->authorize('Admin') in the action userstats -> App\Policy\AdminPolicy::canUserstats.
+//Policies live in App\Policy and are resolved through composer (PSR-4), so a new
+//policy file is picked up without regenerating the classmap.
+//Resources can be:
+//- a string (policy name, e.g. 'Admin') -> policy receives only the identity
+//- an array in the wrapped Cake form, e.g. ['Set' => $row] -> policy is resolved
+//  from the first key and receives the unwrapped row, e.g.
+//  App\Policy\SetPolicy::canView($user, $row)
+//- an object -> policy resolved from the class basename and the object is passed
+//  as the second argument (no current caller, kept for parity with CakePHP 5)
+//- Not logged in        -> UnauthorizedException (401)
+//- Logged in, no grant  -> ForbiddenException (403)
 use App\Utility\Auth;
 
 class AuthorizationComponent extends Component
@@ -27,15 +22,12 @@ class AuthorizationComponent extends Component
 		self::require($this->can($resource, $action));
 	}
 
-	/**
-	 * The one place that turns a refused answer into a response: a guest is told to
-	 * sign in, a signed-in user without a grant is told no. Pass the answer of a
-	 * policy method.
-	 *
-	 * Controllers reach this through authorize(); the direct callers are only
-	 * App\Controller\Component\Play, which renders the board instead of being a
-	 * controller and so cannot use the component API.
-	 */
+	//The one place that turns a refused answer into a response: a guest is told to
+	//sign in, a signed-in user without a grant is told no. Pass the answer of a
+	//policy method.
+	//Controllers reach this through authorize(); the direct callers are only
+	//App\Controller\Component\Play, which renders the board instead of being a
+	//controller and so cannot use the component API.
 	public static function require(bool $granted): void
 	{
 		if ($granted)
@@ -74,10 +66,8 @@ class AuthorizationComponent extends Component
 		return (bool) call_user_func([$class, $method], $identity);
 	}
 
-	/**
-	 * Policy class for a policy name: 'Set' -> App\Policy\SetPolicy.
-	 * A name that already contains a namespace is reduced to its class name first.
-	 */
+	//Policy class for a policy name: 'Set' -> App\Policy\SetPolicy.
+	//A name that already contains a namespace is reduced to its class name first.
 	private static function policyClass(string $name): string
 	{
 		if (str_contains($name, '\\'))

@@ -1,8 +1,6 @@
 <?php
 
-/**
- * Local configuration overrides for CI environment
- */
+//Local configuration overrides for CI environment
 
 // Disable debug mode for production-like environment
 Configure::write('debug', 2);

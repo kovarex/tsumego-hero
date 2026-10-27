@@ -45,7 +45,7 @@ class ClientTimeDisplayTest extends IntegrationTestCase
 		}
 	}
 
-	/** A player with one attempt at 12:00 UTC, so the solve history shows one date. */
+	//A player with one attempt at 12:00 UTC, so the solve history shows one date.
 	private function prepareSolveHistory(int $dateFormat): ContextPreparator
 	{
 		$context = new ContextPreparator([

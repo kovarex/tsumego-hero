@@ -2,10 +2,8 @@
 
 use App\Utility\TimeModeUtil;
 
-/**
- * A collection a player assembled is not site content: the site's collections, pools and
- * counters never pick up its problems, whether it is shared or not.
- */
+//A collection a player assembled is not site content: the site's collections, pools and
+//counters never pick up its problems, whether it is shared or not.
 class PersonalCollectionContentTest extends IntegrationTestCase
 {
 	public function testSetsPageListsOnlyTheSitesCollections(): void
@@ -141,10 +139,8 @@ class PersonalCollectionContentTest extends IntegrationTestCase
 		}
 	}
 
-	/**
-	 * Set achievements belong to the site's collections, so a completed collection a player
-	 * assembled records nothing for them.
-	 */
+	//Set achievements belong to the site's collections, so a completed collection a player
+	//assembled records nothing for them.
 	public function testCompletedPlayerCollectionRecordsNoSetAchievementCondition(): void
 	{
 		$context = new ContextPreparator([
@@ -179,9 +175,7 @@ class PersonalCollectionContentTest extends IntegrationTestCase
 		]));
 	}
 
-	/**
-	 * A collection with one problem in it.
-	 */
+	//A collection with one problem in it.
 	private function _createCollection(string $title, ?int $userId, int $public): int
 	{
 		$set = ClassRegistry::init('Set');

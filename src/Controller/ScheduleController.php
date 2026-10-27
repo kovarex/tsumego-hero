@@ -11,9 +11,7 @@ use App\Utility\Util;
 
 class ScheduleController extends AppController
 {
-	/**
-	 * A sandbox set: an unpublished collection of the site that is not in the trash.
-	 */
+	//A sandbox set: an unpublished collection of the site that is not in the trash.
 	private const SANDBOX_CONDITION = '`Set`.public = 0 AND `Set`.user_id IS NULL AND `Set`.deleted IS NULL';
 
 	#[HttpGet]
@@ -94,13 +92,11 @@ ORDER BY schedule.date DESC, schedule.id DESC");
 		]) ?: []);
 	}
 
-	/**
-	 * Schedule sandbox problems for publishing. Admin only.
-	 * Schedules the next `count` unscheduled problems of the source set (all of them
-	 * when `count` is empty) that are not already in the target set, optionally starting from position `num`,
-	 * `per_day` of them on each day. A schedule starting today is published right
-	 * away, because the daily cron only publishes the day it runs on.
-	 */
+	//Schedule sandbox problems for publishing. Admin only.
+	//Schedules the next `count` unscheduled problems of the source set (all of them
+	//when `count` is empty) that are not already in the target set, optionally starting from position `num`,
+	//`per_day` of them on each day. A schedule starting today is published right
+	//away, because the daily cron only publishes the day it runs on.
 	#[HttpPost]
 	public function add(): void
 	{
@@ -170,10 +166,7 @@ ORDER BY schedule.date DESC, schedule.id DESC");
 		$this->redirect('/schedule');
 	}
 
-	/**
-	 * Preview which problems would be scheduled, and on which day each of them lands.
-	 * Admin only. Returns JSON.
-	 */
+	//Preview which problems would be scheduled, and on which day each of them lands. Admin only. Returns JSON.
 	#[HttpGet]
 	public function preview(): void
 	{
@@ -214,21 +207,16 @@ ORDER BY schedule.date DESC, schedule.id DESC");
 		$this->response->body(json_encode($candidates ?: []));
 	}
 
-	/**
-	 * How many problems to schedule, null for all of them, which an empty field asks for.
-	 */
+	//How many problems to schedule, null for all of them, which an empty field asks for.
 	private static function count(mixed $value): ?int
 	{
 		return $value === null || $value === '' ? null : (int) $value;
 	}
 
-	/**
-	 * The problems of the source set that the next schedule takes, in the order of the set: the
-	 * ones not waiting in the schedule already, not in the target set already and not in the
-	 * trash, from position `num` on when it is given, at most `count` of them when it is given.
-	 *
-	 * @return array<array{tsumego_id: int, sc_id: int, num: int, sgf: ?string}>
-	 */
+	//The problems of the source set that the next schedule takes, in the order of the set: the
+	//ones not waiting in the schedule already, not in the target set already and not in the
+	//trash, from position `num` on when it is given, at most `count` of them when it is given.
+	/** @return array<array{tsumego_id: int, sc_id: int, num: int, sgf: ?string}> */
 	private static function candidates(int $setIdFrom, int $targetSetId, int $num, ?int $count): array
 	{
 		return Util::query("
@@ -244,9 +232,7 @@ ORDER BY sc.num ASC" . ($count === null ? '' : "
 LIMIT " . $count), [$setIdFrom, $num, $targetSetId]);
 	}
 
-	/**
-	 * Cancel a pending schedule entry. Admin only.
-	 */
+	//Cancel a pending schedule entry. Admin only.
 	#[HttpPost]
 	public function cancel(?string $id = null): void
 	{

@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * A run of missed days of the mistake training is one row of mistake_training_day
- * instead of a row per day: the row of its first day says how many days it lasted.
- * Players often stay away for weeks, and a streak needs only to know that the run
- * was there.
- */
+//A run of missed days of the mistake training is one row of mistake_training_day
+//instead of a row per day: the row of its first day says how many days it lasted.
+//Players often stay away for weeks, and a streak needs only to know that the run
+//was there.
 final class AddMistakeTrainingMissedDays extends AbstractMigration
 {
 	public function change(): void

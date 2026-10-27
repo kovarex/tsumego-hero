@@ -4,9 +4,7 @@ namespace App\Lib\Error;
 
 use HttpException;
 
-/**
- * Represents an HTTP 422 error.
- */
+//Represents an HTTP 422 error.
 class UnprocessableEntityException extends HttpException
 {
 	public function __construct(?string $message = null, int $code = 422)

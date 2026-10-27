@@ -2,10 +2,9 @@
 
 namespace App\Utility;
 
+//Row type aliases generated from the database schema. Do not edit manually.
+//Regenerate after schema changes: ddev exec php scripts/generate-phpstan-row-types.php
 /**
- * Row type aliases generated from the database schema. Do not edit manually.
- * Regenerate after schema changes: ddev exec php scripts/generate-phpstan-row-types.php
- *
  * @phpstan-type AchievementConditionCategoryRow array{id?: int, name?: string, ...}
  * @phpstan-type AchievementConditionRow array{id?: int, value?: float|null, user_id?: int, achievement_condition_category_id?: int, set_id?: int|null, set_id_or_zero?: int|null, ...}
  * @phpstan-type AchievementRow array{id?: int, name?: string|null, description?: string|null, image?: string|null, color?: string|null, order?: int|null, xp?: int|null, additional_description?: string|null, created?: string|null, ...}

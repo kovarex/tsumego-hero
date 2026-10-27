@@ -20,7 +20,7 @@ const MANIFEST = '.vite/manifest.json';
 const FILE_LIST = '.vite/published-files.json';
 const REQUIRED_ENTRIES = ['virtual:legacy-app', 'virtual:legacy-besogo'];
 
-/** Relative paths (with forward slashes) of every file under dir, except the .vite bookkeeping. */
+//Relative paths (with forward slashes) of every file under dir, except the .vite bookkeeping.
 function listFiles(dir)
 {
 	const files = [];
@@ -39,7 +39,7 @@ function listFiles(dir)
 	return files.filter(file => !file.startsWith('.vite/')).sort();
 }
 
-/** Writes through a temporary file and a rename, so a reader sees either the old or the new content. */
+//Writes through a temporary file and a rename, so a reader sees either the old or the new content.
 function replaceFile(path, write)
 {
 	mkdirSync(dirname(path), { recursive: true });

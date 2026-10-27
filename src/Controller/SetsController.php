@@ -23,9 +23,6 @@ class SetsController extends AppController
 {
 	public $helpers = ['Html', 'Form'];
 
-	/**
-	 * @return void
-	 */
 	#[HttpGet]
 	public function sandbox(): void
 	{
@@ -232,10 +229,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 		$this->set('t', $t);
 	}
 
-	/**
-	 * Edit a set: details, problems and (for admins) re-rate and solve-mode
-	 * settings. Owner or admin only.
-	 */
+	//Edit a set: details, problems and (for admins) re-rate and solve-mode settings. Owner or admin only.
 	#[HttpGet]
 	#[HttpPost]
 	public function edit(?string $id = null)
@@ -445,9 +439,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$this->set('setRating', $setRating);
 	}
 
-	/**
-	 * Open or close the link sharing of a collection a player assembled.
-	 */
+	//Open or close the link sharing of a collection a player assembled.
 	#[HttpPost]
 	public function share(?string $id = null): mixed
 	{
@@ -579,13 +571,10 @@ ORDER BY sc.num ASC", [(int) $id]);
 	}
 
 
-	/**
-	 * Gets the first unsolved set connection ID from a collection of tsumego buttons.
-	 * Falls back to the first button if all are solved.
-	 *
-	 * @param TsumegoButtons $tsumegoButtons Iterator of TsumegoButton objects
-	 * @return int|null The setConnectionID of the first unsolved button, or first button if all solved, or null if empty
-	 */
+	//Gets the first unsolved set connection ID from a collection of tsumego buttons.
+	//Falls back to the first button if all are solved.
+	//$tsumegoButtons: Iterator of TsumegoButton objects
+	//Returns the setConnectionID of the first unsolved button, or first button if all solved, or null if empty
 	private function getFirstUnsolvedSetConnectionId(TsumegoButtons $tsumegoButtons): ?int
 	{
 		if ($firstUnsolvedButton = array_find((array) $tsumegoButtons, function ($tsumegoButton) {
@@ -679,9 +668,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		return $this->redirect('/sets/edit/' . (int) $setID);
 	}
 
-	/**
-	 * Create a new tsumego and add it to a set. Admin only.
-	 */
+	//Create a new tsumego and add it to a set. Admin only.
 	#[HttpPost]
 	public function createAndAddTsumego(string $setID)
 	{
@@ -730,9 +717,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		return $this->redirect('/sets/edit/' . (int) $setID);
 	}
 
-	/**
-	 * Get or create the user's default "Favorites" set.
-	 */
+	//Get or create the user's default "Favorites" set.
 	private function _getOrCreateDefaultFavoritesSet(): array
 	{
 		$userId = Auth::getUserID();
@@ -764,9 +749,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 		return $setModel->findById($setModel->id);
 	}
 
-	/**
-	 * Remove a tsumego from a set.
-	 */
 	#[HttpPost]
 	public function removeTsumego(string $setID)
 	{
@@ -797,9 +779,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		return $this->redirect('/sets/edit/' . (int) $setID);
 	}
 
-	/**
-	 * Swap the order of two adjacent set_connections.
-	 */
+	//Swap the order of two adjacent set_connections.
 	#[HttpPost]
 	public function reorderTsumego(string $setID)
 	{
@@ -1146,9 +1126,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$this->set('partition', $partition);
 	}
 
-	/**
-	 * Keeps the player's records on the set: the best average time and the best accuracy.
-	 */
+	//Keeps the player's records on the set: the best average time and the best accuracy.
 	private function updateAchievementConditions(int $sid, int|float $avgTime, int|float $accuracy): void
 	{
 		AchievementCondition::keepLowest(Auth::getUserID(), AchievementCondition::CATEGORY_SET_TIME, $avgTime, $sid);
@@ -1225,9 +1203,7 @@ WHERE tsumego_status.user_id = ? AND tsumego_status.tsumego_id IN(" . implode(',
 		return $this->redirect('/sets');
 	}
 
-	/**
-	 * True when an admin edits a set they do not own (elevated privilege).
-	 */
+	//True when an admin edits a set they do not own (elevated privilege).
 	private function _isElevatedSetEdit(array $set): bool
 	{
 		return Auth::isAdmin() && $set['Set']['user_id'] != Auth::getUserID();

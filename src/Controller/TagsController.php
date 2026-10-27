@@ -58,10 +58,6 @@ class TagsController extends AppController
 		return $this->redirect('/tags/view/' . $saved['id']);
 	}
 
-	/**
-	 * @param string|null $id
-	 * @return void
-	 */
 	#[HttpGet]
 	public function view(?string $id = null): void
 	{
@@ -77,10 +73,6 @@ class TagsController extends AppController
 		$this->set('canDeleteTag', $this->Authorization->can('Tag', 'delete'));
 	}
 
-	/**
-	 * @param string $id User ID
-	 * @return void
-	 */
 	#[HttpGet]
 	public function user(string $id): void
 	{
@@ -199,9 +191,7 @@ class TagsController extends AppController
 		return $this->redirect('/tags/view/' . $tagID);
 	}
 
-	/**
-	 * Deletes the tag and takes it off every problem.
-	 */
+	//Deletes the tag and takes it off every problem.
 	#[HttpPost]
 	public function delete(string $id): CakeResponse
 	{
@@ -215,9 +205,7 @@ class TagsController extends AppController
 		return $this->redirect('/tags');
 	}
 
-	/**
-	 * Every tag with how many problems carry it; each count opens the list of those problems.
-	 */
+	//Every tag with how many problems carry it; each count opens the list of those problems.
 	#[HttpGet]
 	public function index(): void
 	{
@@ -229,9 +217,7 @@ class TagsController extends AppController
 		$this->set('canDeleteTag', $this->Authorization->can('Tag', 'delete'));
 	}
 
-	/**
-	 * The problems that carry the tag or have it proposed, as JSON for the tag overview.
-	 */
+	//The problems that carry the tag or have it proposed, as JSON for the tag overview.
 	#[HttpGet]
 	public function problems(string $id): CakeResponse
 	{

@@ -1,8 +1,6 @@
 <?php
 
-/**
- * The verb an action declares is the only verb it answers to.
- */
+//The verb an action declares is the only verb it answers to.
 class HttpVerbTest extends IntegrationTestCase
 {
 	public function testAPageRefusesPost(): void
@@ -21,9 +19,7 @@ class HttpVerbTest extends IntegrationTestCase
 		$this->assertHeader('Allow', 'POST');
 	}
 
-	/**
-	 * A HEAD request asks for the headers of a page, so a page answers it like GET.
-	 */
+	//A HEAD request asks for the headers of a page, so a page answers it like GET.
 	public function testAPageAnswersHead(): void
 	{
 		$this->head('/changelog');

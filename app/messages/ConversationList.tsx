@@ -15,7 +15,7 @@ interface ConversationListProps
 	onSelect: (player: Player) => void;
 }
 
-/** Today's messages show their time, older ones their day. */
+//Today's messages show their time, older ones their day.
 function shortDate(created: string): string
 {
 	return formatDate(created, dayjs(created).isSame(dayjs(), 'day') ? 'time' : 'date');

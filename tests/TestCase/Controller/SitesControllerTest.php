@@ -189,9 +189,7 @@ class SitesControllerTest extends IntegrationTestCase
 		$this->assertCount(2, $browser->getElements('.problem-nav__number'));
 	}
 
-	/**
-	 * Test that the index page loads successfully with day_record data
-	 */
+	//Test that the index page loads successfully with day_record data
 	public function testIndexPageLoadsWithDayRecord()
 	{
 		$browser = Browser::instance();
@@ -283,9 +281,7 @@ class SitesControllerTest extends IntegrationTestCase
 			'Play button should use default tsumego ID when no lastVisit session exists');
 	}
 
-	/**
-	 * Test that quotes with existing images don't use fallback
-	 */
+	//Test that quotes with existing images don't use fallback
 	public function testQuoteWithImagesUsesOwnImages()
 	{
 		$browser = Browser::instance();
@@ -315,10 +311,8 @@ class SitesControllerTest extends IntegrationTestCase
 			'Should use q01 CSS positioning, not fallback');
 	}
 
-	/**
-	 * Test that page title is set correctly via view variables (not session)
-	 * This is part of the session elimination effort - Phase 1: View State
-	 */
+	//Test that page title is set correctly via view variables (not session)
+	//This is part of the session elimination effort - Phase 1: View State
 	public function testPageTitleSetViaViewVariable()
 	{
 		$browser = Browser::instance();
@@ -331,10 +325,8 @@ class SitesControllerTest extends IntegrationTestCase
 			'Index page should have title "Tsumego Hero"');
 	}
 
-	/**
-	 * Test that navigation highlighting works correctly for home page
-	 * This is part of the session elimination effort - Phase 1: View State
-	 */
+	//Test that navigation highlighting works correctly for home page
+	//This is part of the session elimination effort - Phase 1: View State
 	public function testNavigationHighlightingForHomePage()
 	{
 		$browser = Browser::instance();
@@ -347,9 +339,7 @@ class SitesControllerTest extends IntegrationTestCase
 			'Home page should have navigation highlighting');
 	}
 
-	/**
-	 * When a day_record exists, the user of the day name links to their profile.
-	 */
+	//When a day_record exists, the user of the day name links to their profile.
 	public function testUserOfTheDayLinksToProfile()
 	{
 		$context = new ContextPreparator([
@@ -383,9 +373,7 @@ class SitesControllerTest extends IntegrationTestCase
 		);
 	}
 
-	/**
-	 * Without a day_record the user-of-the-day section is not rendered.
-	 */
+	//Without a day_record the user-of-the-day section is not rendered.
 	public function testUserOfTheDayHiddenWithoutDayRecord()
 	{
 		$browser = Browser::instance();
@@ -397,10 +385,8 @@ class SitesControllerTest extends IntegrationTestCase
 			'User of the day should be hidden when no day_record exists');
 	}
 
-	/**
-	 * The landing page shows recent achievements in reverse chronological
-	 * order, limited to 7 rows for layout. Older entries are cut off.
-	 */
+	//The landing page shows recent achievements in reverse chronological
+	//order, limited to 7 rows for layout. Older entries are cut off.
 	public function testHomePageShowsRecentAchievements(): void
 	{
 		new ContextPreparator([
@@ -463,13 +449,10 @@ class SitesControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('DN_Charlie', $allText);
 	}
 
-	/**
-	 * A picture of another host can stop working, which the browser draws as a broken image.
-	 * The board of the account takes over, so the row keeps its square avatar.
-	 *
-	 * The picture is broken by the test instead of by the fixture: a page that loads with a
-	 * failing image records it as an error, and every navigation asserts that there are none.
-	 */
+	//A picture of another host can stop working, which the browser draws as a broken image.
+	//The board of the account takes over, so the row keeps its square avatar.
+	//The picture is broken by the test instead of by the fixture: a page that loads with a
+	//failing image records it as an error, and every navigation asserts that there are none.
 	public function testAnAvatarWhosePictureIsGoneShowsTheBoardOfTheAccount(): void
 	{
 		$context = new ContextPreparator([
@@ -501,9 +484,8 @@ class SitesControllerTest extends IntegrationTestCase
 		$browser->driver->executeScript('window.__jsErrors = [];');
 	}
 
+	//Verifies the homepage chart container exists and has data.
 	/**
-	 * Verifies the homepage chart container exists and has data.
-	 *
 	 * @group browser
 	 * @retryAttempts 2
 	 * @retryIfException Facebook\WebDriver\Exception\WebDriverException
@@ -521,10 +503,8 @@ class SitesControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString("label: 'Users'", $pageSource, 'Users dataset should exist');
 	}
 
-	/**
-	 * A logged-in user sees their account block (name + Sign Out) in the nav and
-	 * no Sign In link, and Discuss is a real link.
-	 */
+	//A logged-in user sees their account block (name + Sign Out) in the nav and
+	//no Sign In link, and Discuss is a real link.
 	public function testLoggedInNavShowsAccountAndNoSignIn()
 	{
 		new ContextPreparator(['user' => ['name' => 'testuser']]);
@@ -539,10 +519,8 @@ class SitesControllerTest extends IntegrationTestCase
 		$this->assertStringNotContainsString('class="discuss-disabled"', $pageSource, 'Logged-in nav should not show the disabled Discuss link');
 	}
 
-	/**
-	 * A logged-out user sees a Sign In link in the nav (both the desktop block and
-	 * the drawer entry) and a disabled Discuss link, and no account block.
-	 */
+	//A logged-out user sees a Sign In link in the nav (both the desktop block and
+	//the drawer entry) and a disabled Discuss link, and no account block.
 	public function testLoggedOutNavShowsSignInAndDisabledDiscuss()
 	{
 		new ContextPreparator(['user' => null]);
