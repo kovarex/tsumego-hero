@@ -708,7 +708,8 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
       return false;
     if (this.correct == CORRECT_GOOD)
       return true; // nothing better than correct;
-    if (this.status)
+    // Without a goal the statuses are none, and none is never better, so the reply has to refute the move by itself
+    if (this.status && this.getRoot().goal != GOAL_NONE)
       return !child.status.better(this.status, this.getRoot().goal);
     if (child.correct == CORRECT_BAD)
       return true;
