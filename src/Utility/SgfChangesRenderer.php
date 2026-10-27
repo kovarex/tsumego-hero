@@ -17,12 +17,11 @@ class SgfChangesRenderer extends DataTableRenderer
 	//The url parameter of the list on the page, one of the keys of LISTS
 	public const LIST_PARAMETER = 'show';
 
-	//The lists of the page, the first one is shown when the url names none:
-	//the label of its tab and the caption of its table
+	//The lists of the page by the labels of their tabs, the first one is shown when the url names none
 	private const LISTS = [
-		'not-reviewed' => ['Not reviewed by me', 'SGF changes you did not review'],
-		'mine' => ['My changes', 'Your SGF changes'],
-		'all' => ['All changes', 'SGF changes']];
+		'not-reviewed' => 'Not reviewed by me',
+		'mine' => 'My changes',
+		'all' => 'All changes'];
 
 	//The columns of a user the rows have twice, the admin who accepted the change and its author
 	private const USER_FIELDS = ['id', 'display_name', 'external_id', 'picture', 'email', 'avatar_setting_id', 'uploaded_avatar_hash', 'rating', 'deleted'];
@@ -42,7 +41,8 @@ class SgfChangesRenderer extends DataTableRenderer
 			$this->counts[$list] = (int) Util::query('SELECT COUNT(*) AS total FROM sgf WHERE sgf.sgf_status_id = ?' . $condition, [Sgf::STATUS_ACCEPTED, ...$parameters])[0]['total'];
 		}
 		$this->count = $this->counts[$this->list];
-		parent::__construct($urlParams, 'sgf_changes_page', self::LISTS[$this->list][1]);
+		// the tabs say which list it is and how many changes it has
+		parent::__construct($urlParams, 'sgf_changes_page', null);
 
 		[$condition, $parameters] = $this->conditionOf($this->list);
 		$this->data = Util::query("
@@ -121,7 +121,7 @@ OFFSET " . $this->offset, [$this->userID, ...$parameters]);
 	public function render(): void
 	{
 		echo '<div class="subnav sgf-changes__lists" id="sgf-changes-lists">';
-		foreach (self::LISTS as $list => [$label])
+		foreach (self::LISTS as $list => $label)
 			echo '<a class="subnav__link' . ($list === $this->list ? ' subnav__link--active' : '') . '" href="?' . self::LIST_PARAMETER . '=' . $list . '">'
 				. $label . ' (' . $this->counts[$list] . ')</a>';
 		echo '</div>';

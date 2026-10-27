@@ -171,7 +171,7 @@ class SgfChangesTest extends IntegrationTestCase
 		SgfReview::mark($reviewedByColleague, $this->colleagueID($context), true);
 
 		$this->get('/admin/sgf-changes?show=all');
-		$this->assertStringContainsString('SGF changes (4)', $this->view, 'the proposals waiting for a decision and the rejected ones are not changes');
+		$this->assertStringContainsString('All changes (4)</a>', $this->view, 'the proposals waiting for a decision and the rejected ones are not changes');
 		foreach ([$proposal, $rejected] as $sgfID)
 			$this->assertStringNotContainsString('id="review-' . $sgfID . '"', $this->view);
 
@@ -180,7 +180,7 @@ class SgfChangesTest extends IntegrationTestCase
 		$this->assertStringContainsString('<a class="subnav__link subnav__link--active" href="?show=not-reviewed">Not reviewed by me (2)</a>', $this->view);
 		$this->assertStringContainsString('<a class="subnav__link" href="?show=mine">My changes (1)</a>', $this->view);
 		$this->assertStringContainsString('<a class="subnav__link" href="?show=all">All changes (4)</a>', $this->view);
-		$this->assertStringContainsString('SGF changes you did not review (2)', $this->view);
+		$this->assertStringNotContainsString('<caption', $this->view, 'the tab names the list');
 		$this->assertSame(2, substr_count($this->view, 'class="sgf-review"'));
 		$this->reviewCell($reviewedByColleague);
 		$this->reviewCell($acceptedProposal);
@@ -198,7 +198,7 @@ class SgfChangesTest extends IntegrationTestCase
 		SgfReview::mark($own, $this->colleagueID($context), true);
 
 		$this->get('/admin/sgf-changes?show=mine');
-		$this->assertStringContainsString('Your SGF changes (2)', $this->view);
+		$this->assertStringContainsString('My changes (2)</a>', $this->view);
 		$this->assertStringContainsString('subnav__link--active" href="?show=mine"', $this->view);
 		$this->assertStringContainsString('Reviewed by DN_colleague', $this->reviewCell($own));
 		$this->assertStringNotContainsString('sgf-review__reviewer', $this->reviewCell($accepted), 'nobody reviewed it yet');
@@ -222,7 +222,7 @@ class SgfChangesTest extends IntegrationTestCase
 		$newest = (int) Util::query('SELECT MAX(id) AS id FROM sgf')[0]['id'];
 
 		$this->get('/admin/sgf-changes?show=all');
-		$this->assertStringContainsString('SGF changes (101)', $this->view);
+		$this->assertStringContainsString('All changes (101)</a>', $this->view);
 		$this->assertSame(100, substr_count($this->view, 'class="sgf-review"'));
 		$this->assertStringContainsString('Page 1 of 2', $this->view);
 		$this->assertMatchesRegularExpression('~<table[^>]*>.*?</tr><tr[^>]*><td class="sgf-review" id="review-' . $newest . '">~s', $this->view, 'the newest version is first');

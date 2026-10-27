@@ -6,7 +6,8 @@ use PaginationHelper;
 
 abstract class DataTableRenderer
 {
-	public function __construct(array $urlParams, string $name, string $caption)
+	//$caption: The caption of the table, the count is added to it; null for none, when the page names the list already
+	public function __construct(array $urlParams, string $name, ?string $caption)
 	{
 		$this->name = $name;
 		$this->caption = $caption;
@@ -19,7 +20,8 @@ abstract class DataTableRenderer
 	{
 		echo PaginationHelper::render($this->page, $this->pageCount, $this->name);
 		echo '<table border="0" class="data-table data-table--compact" style="border-collapse:collapse;">';
-		echo '<caption id="' . $this->name . '_header">' . $this->caption . ' (' . $this->count . ')</caption>';
+		if ($this->caption !== null)
+			echo '<caption id="' . $this->name . '_header">' . $this->caption . ' (' . $this->count . ')</caption>';
 		$this->renderHeader();
 		foreach ($this->data as $index => $item)
 		{
@@ -40,7 +42,7 @@ abstract class DataTableRenderer
 	}
 
 	protected string $name;
-	protected string $caption;
+	protected ?string $caption;
 	protected static int $PAGE_SIZE = 100;
 
 	protected array $data = [];
