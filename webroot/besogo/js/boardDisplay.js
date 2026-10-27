@@ -11,11 +11,13 @@ besogo.makeBoardDisplay = function(container, editor, corner)
 
       svg, // Holds the overall board display SVG element
       stoneGroup, // Group for stones
+      shadowGroup, // Group for the shadows of the stones, below them
+      stoneElements, // The elements of the stone shown at each point (by point index): its color, the stone and its shadows
+      koElement, // The mark of the point the ko forbids
       markupGroup, // Group for markup
       nextMoveGroup, // Group for next move markers
       hoverGroup, // Group for hover layer
       markupLayer, // Array of markup layer elements
-      hoverLayer, // Array of hover layer elements
 
       randIndex, // Random index for stone images
       lastHoverPosition = null,
@@ -71,7 +73,6 @@ besogo.makeBoardDisplay = function(container, editor, corner)
   function setTouchFlag ()
   {
     TOUCH_FLAG = true; // Set flag to prevent needless function calls
-    hoverLayer = []; // Drop hover layer references, kills events
     svg.removeChild(hoverGroup); // Remove hover group from SVG
     // Remove self when done
     container.removeEventListener('touchstart', setTouchFlag);
@@ -84,6 +85,14 @@ besogo.makeBoardDisplay = function(container, editor, corner)
 
     stoneGroup = besogo.svgEl("g");
 	svg.appendChild(stoneGroup); // Add placeholder group for stone layer
+    shadowGroup = null;
+    if (editor.SHADOWS)
+    {
+      shadowGroup = besogo.svgShadowGroup();
+      stoneGroup.appendChild(shadowGroup);
+    }
+    stoneElements = [];
+    koElement = null;
 
     markupGroup = besogo.svgEl("g");
 	svg.appendChild(markupGroup); // Add placeholder group for markup layer
@@ -95,7 +104,7 @@ besogo.makeBoardDisplay = function(container, editor, corner)
 
     if (!TOUCH_FLAG)
     {
-      hoverGroup = besogo.svgEl("g");
+      hoverGroup = besogo.svgEl("g", { opacity: 0.35 });
       svg.appendChild(hoverGroup);
     }
 
@@ -363,7 +372,7 @@ besogo.makeBoardDisplay = function(container, editor, corner)
             y: svgPos(j) - CELL_SIZE/2,
             width: CELL_SIZE,
             height: CELL_SIZE,
-            opacity: 0
+            fill: 'transparent'
         });
 
           // Add event listeners, using closures to decouple (i, j)
@@ -402,24 +411,8 @@ besogo.makeBoardDisplay = function(container, editor, corner)
       lastHoverPosition = [];
       lastHoverPosition.x = i;
       lastHoverPosition.y = j;
-      updateHoverState();
+      redrawHover(editor.getCurrent());
     };
-  }
-
-  function updateHoverState()
-  {
-	let displayHover = false;
-	if (!besogo.isEmbedded)
-		displayHover = true;
-	else if (!besogo.multipleChoice && boardLockValue==0)
-		displayHover = true;
-	if (displayHover)
-	{
-		if (lastHoverPosition == null)
-			return;
-		if (element = hoverLayer[fromXY(lastHoverPosition.x, lastHoverPosition.y)]) // Make tool action visible on hover over
-			element.setAttribute('visibility', 'visible');
-	}
   }
 
   function handleOut(i, j)  // Returns function for mouse off
@@ -427,53 +420,64 @@ besogo.makeBoardDisplay = function(container, editor, corner)
     return function()
     {
       lastHoverPosition = null;
-      if (element = hoverLayer[fromXY(i, j)]) // Make tool action invisible on hover off
-        element.setAttribute('visibility', 'hidden');
+      redrawHover(editor.getCurrent());
     };
   }
 
-  // Redraws the stones
+  // Redraws the stones that changed, the others stay as they are, so a move doesn't rebuild the whole board
   function redrawStones(current)
   {
-    var group = besogo.svgEl("g"), // New stone layer group
-        shadowGroup, // Group for shadow layer
-        i, j, x, y, color; // Scratch iteration variables
+    if (koElement)
+      koElement.remove();
+    koElement = null;
 
-    // Add group for shawdows
-    if (editor.SHADOWS)
-    {
-      shadowGroup = besogo.svgShadowGroup();
-      group.appendChild(shadowGroup);
-    }
-
-    for (i = 1; i <= sizeX; i++)
-      for (j = 1; j <= sizeY; j++)
+    // Backwards, so a new stone goes before the next one shown, keeping the order a full redraw has (the edges of
+    // neighbouring stones overlap by a pixel fraction)
+    let next = null;
+    for (let i = sizeX; i >= 1; i--)
+      for (let j = sizeY; j >= 1; j--)
       {
-        color = current.getStone(i, j);
-        if (color)
+        let index = fromXY(i, j);
+        let color = current.getStone(i, j);
+        let shown = stoneElements[index];
+        if (shown ? shown.color != color : color)
         {
-          x = svgPos(i);
-          y = svgPos(j);
-
-          if (editor.REAL_STONES) // Realistic stone
-            group.appendChild(besogo.realStone(x, y, color, randIndex[fromXY(i, j)], editor.BLACK_STONES, editor.WHITE_STONES));
-          else // SVG stone
-            group.appendChild(besogo.svgStone(x, y, color));
-
-          // Draw shadows
-          if (editor.SHADOWS)
-          {
-            shadowGroup.appendChild(besogo.svgShadow(x - 2, y - 4));
-            shadowGroup.appendChild(besogo.svgShadow(x + 2, y + 4));
-          }
+          if (shown)
+            for (let element of shown.elements)
+              element.remove();
+          shown = stoneElements[index] = color ? drawStone(i, j, color, next) : null;
         }
+        if (shown)
+          next = shown;
       }
+
     let koPosition = current.getForbiddenMoveBecauseOfKo();
     if (koPosition)
-      group.appendChild(besogo.svgSquare(svgPos(koPosition.x), svgPos(koPosition.y), "black", 2));
+    {
+      koElement = besogo.svgSquare(svgPos(koPosition.x), svgPos(koPosition.y), "black", 2);
+      stoneGroup.appendChild(koElement);
+    }
+  }
 
-    svg.replaceChild(group, stoneGroup); // Replace the stone group
-    stoneGroup = group;
+  // Draws the stone before the elements of the next one
+  function drawStone(i, j, color, next)
+  {
+    let x = svgPos(i);
+    let y = svgPos(j);
+    let elements = [];
+    if (editor.REAL_STONES) // Realistic stone
+      elements.push(besogo.realStone(x, y, color, randIndex[fromXY(i, j)], editor.BLACK_STONES, editor.WHITE_STONES));
+    else // SVG stone
+      elements.push(besogo.svgStone(x, y, color));
+    stoneGroup.insertBefore(elements[0], next ? next.elements[0] : null);
+
+    if (editor.SHADOWS) // Draw shadows
+      for (let shadow of [besogo.svgShadow(x - 2, y - 4), besogo.svgShadow(x + 2, y + 4)])
+      {
+        shadowGroup.insertBefore(shadow, next ? next.elements[1] : null);
+        elements.push(shadow);
+      }
+    return { color: color, elements: elements };
   }
 
   // Redraws the markup
@@ -710,60 +714,35 @@ besogo.makeBoardDisplay = function(container, editor, corner)
     return null;
   }
 
-  // Redraws the hover layer
+  // Redraws the hover layer: the tool action at the point under the mouse. Only that point gets an element, a hidden
+  // one at every point made a few hundred elements on every move.
   function redrawHover(current)
   {
     if (TOUCH_FLAG)
       return; // Do nothing for touch interfaces
 
-    var group = besogo.svgEl("g"); // Group holding hover layer elements
-
-    hoverLayer = []; // Clear the references to the old layer
-
-    if (editor.isPerformingAutoPlay())
-    {
-      hoverLayer = []; // Clear the references to the old layer
-      updateHoverState();
+    hoverGroup.innerHTML = "";
+    if (lastHoverPosition == null || editor.isPerformingAutoPlay())
       return;
-    }
+    if (besogo.isEmbedded && (besogo.multipleChoice || boardLockValue != 0))
+      return;
 
-    group.setAttribute('opacity', '0.35');
+    let element = getHoverElementAt(current, lastHoverPosition.x, lastHoverPosition.y);
+    if (element)
+      hoverGroup.appendChild(element);
+  }
 
-    if (editor.getTool() === 'navOnly')
-    { // Render navOnly hover by iterating over children
-      var children = current.children;
-      for (let i = 0; i < children.length; i++)
-      {
-        var stone = children[i].move;
-        if (stone && stone.x !== 0) // Child node is move and not a pass
-        {
-          var x = svgPos(stone.x);
-          var y = svgPos(stone.y);
-          var element = besogo.svgStone(x, y, stone.color);
-          element.setAttribute('visibility', 'hidden');
-          group.appendChild(element);
-          hoverLayer[ fromXY(stone.x, stone.y) ] = element;
-        }
-      }
-    }
-    else // Render hover for other tools by iterating over grid
-      for (let i = 1; i <= sizeX; i++)
-        for (let j = 1; j <= sizeY; j++)
-        {
-          var x = svgPos(i);
-          var y = svgPos(j);
-          var stone = current.getStone(i, j);
-          if (element = getHoverElement(current, x, y, stone))
-          {
-            element.setAttribute('visibility', 'hidden');
-            group.appendChild(element);
-            hoverLayer[fromXY(i, j)] = element;
-          }
-        }
-
-    svg.replaceChild(group, hoverGroup); // Replace the hover layer group
-    hoverGroup = group;
-    updateHoverState();
+  function getHoverElementAt(current, i, j)
+  {
+    var x = svgPos(i);
+    var y = svgPos(j);
+    if (editor.getTool() !== 'navOnly')
+      return getHoverElement(current, x, y, current.getStone(i, j));
+    // The navOnly tool shows only the moves of the children
+    for (let child of current.children)
+      if (child.move && child.move.x === i && child.move.y === j)
+        return besogo.svgStone(x, y, child.move.color);
+    return null;
   }
 
   // Converts (x, y) coordinates to SVG position
