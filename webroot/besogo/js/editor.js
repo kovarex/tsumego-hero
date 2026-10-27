@@ -30,7 +30,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     shift = false,
     reviewMode =
       typeof options.reviewMode === "boolean" ? options.reviewMode : true,
-    performingAutoPlay = false,
+    pendingAutoPlay = null, // The step the autoplay waits to take, see scheduleAutoPlay
     reviewEnabled =
       typeof options.reviewEnabled === "boolean" ? options.reviewEnabled : true,
     soundEnabled = false, //not used
@@ -413,7 +413,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
   function click(i, j, ctrlKey, shiftKey) {
     if (!besogo.isEmbedded) boardLockValue = 0;
     if (boardLockValue == 0) {
-      if (performingAutoPlay) return;
+      if (pendingAutoPlay) return;
       switch (tool) {
         case "navOnly":
           navigate(i, j, shiftKey);
@@ -534,15 +534,10 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
 		node.move.color == node.getRoot().firstMove &&
 		node.hasNonLocalChildIncludingVirtual())
 	{
-		performingAutoPlay = true;
 		if (addTimeForMovePlayed)
 			addTimeForMovePlayed();
-      setTimeout(function ()
+      scheduleAutoPlay(function ()
       {
-        // when autoplay was cancelled, it was reset in the meantime, so we forget about this
-        if (!performingAutoPlay)
-        	return;
-        performingAutoPlay = false;
         if (!isMutable)
         	return;
 
@@ -573,6 +568,20 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     notifyListeners({ navChange: true }); // Notify navigation (with no tree edits)
     reportIfLineIsLost(node);
     tryToFinish(node);
+  }
+
+  // The autoplay waits before its step (the opponent's reply, the jump to the next required answer), so the player
+  // sees the position first. Each step has its own token, so a step cancelled by a reset can't run later in the
+  // wait of another one.
+  function scheduleAutoPlay(step, delay) {
+    let pending = {};
+    pendingAutoPlay = pending;
+    setTimeout(function () {
+      if (pendingAutoPlay !== pending)
+        return; // cancelled by a reset in the meantime
+      pendingAutoPlay = null;
+      step();
+    }, delay);
   }
 
   // Tells the page the moment the line can no longer end correct, long before it is played out and the result shown
@@ -825,7 +834,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
   }
 
   function isPerformingAutoPlay() {
-    return performingAutoPlay;
+    return pendingAutoPlay != null;
   }
 
   function setSoundEnabled(value)
@@ -863,16 +872,10 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
 		remainingRequiredNodes = remainingRequiredNodes.filter(element => !element.node.visited);
 		if (remainingRequiredNodes.length == 0)
 			return false;
-		performingAutoPlay = true;
 		addTimeForMovePlayed(1.5);
 
-		setTimeout(function ()
+		scheduleAutoPlay(function ()
 		{
-			// when autoplay was cancelled, it was reset in the meantime, so we forget about this
-			if (!performingAutoPlay)
-				return;
-
-			performingAutoPlay = false;
 			let element = remainingRequiredNodes.pop();
 
 			element.node.cameFrom = element.cameFrom;
@@ -885,7 +888,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
 	}
 
   function resetToStart() {
-    performingAutoPlay = false;
+    pendingAutoPlay = null;
     prevNode(-1);
     remainingRequiredNodes = [];
     root.unvisit();
