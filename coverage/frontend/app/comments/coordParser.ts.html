@@ -279,19 +279,7 @@
 <a name='L214'></a><a href='#L214'>214</a>
 <a name='L215'></a><a href='#L215'>215</a>
 <a name='L216'></a><a href='#L216'>216</a>
-<a name='L217'></a><a href='#L217'>217</a>
-<a name='L218'></a><a href='#L218'>218</a>
-<a name='L219'></a><a href='#L219'>219</a>
-<a name='L220'></a><a href='#L220'>220</a>
-<a name='L221'></a><a href='#L221'>221</a>
-<a name='L222'></a><a href='#L222'>222</a>
-<a name='L223'></a><a href='#L223'>223</a>
-<a name='L224'></a><a href='#L224'>224</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L217'></a><a href='#L217'>217</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -454,8 +442,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">12x</span>
 <span class="cline-any cline-yes">12x</span>
 <span class="cline-any cline-yes">4x</span>
@@ -509,34 +495,29 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/**
- * Coordinate reference parser for comment text.
- *
- * Go players reference board points in many ways in prose:
- *   - single point:        "M16", "black M16"
- *   - a sequence:          "M16-N17-M20", "R17-&gt;R19-&gt;P19", "Q2,P3,N3", "S2 S4 Q1"
- *   - alternatives:        "F2/G1", "D4 or T2"
- *   - colored moves:       "b D18, w B19", "black R19", "W-T19"
- *
- * This parser tokenizes such text into "slices": plain text or a run of
- * coordinates, tagging each run as a sequence or alternative (a lone
- * coordinate is a one-move sequence) and recording an optional color per
- * coordinate. It is orientation-agnostic (coordinates are absolute board
- * intersections) and does NOT depend on besogo.
- *
- * It deliberately uses heuristics that match the actual comment corpus and
- * degrades gracefully (a coordinate it cannot link into a run is still kept).
- */
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">//Coordinate reference parser for comment text.
+//Go players reference board points in many ways in prose:
+//  - single point:        "M16", "black M16"
+//  - a sequence:          "M16-N17-M20", "R17-&gt;R19-&gt;P19", "Q2,P3,N3", "S2 S4 Q1"
+//  - alternatives:        "F2/G1", "D4 or T2"
+//  - colored moves:       "b D18, w B19", "black R19", "W-T19"
+//This parser tokenizes such text into "slices": plain text or a run of
+//coordinates, tagging each run as a sequence or alternative (a lone
+//coordinate is a one-move sequence) and recording an optional color per
+//coordinate. It is orientation-agnostic (coordinates are absolute board
+//intersections) and does NOT depend on besogo.
+//It deliberately uses heuristics that match the actual comment corpus and
+//degrades gracefully (a coordinate it cannot link into a run is still kept).
 export type CoordColor = 'b' | 'w';
 export type CoordGroupKind = 'sequence' | 'alternative';
 &nbsp;
 export interface CoordToken
 {
-	/** Normalized coordinate, e.g. "M16" */
+	//Normalized coordinate, e.g. "M16"
 	coord: string;
-	/** As written, e.g. "m16" */
+	//As written, e.g. "m16"
 	raw: string;
-	/** Optional color marker the author used, e.g. "b" / "white" */
+	//Optional color marker the author used, e.g. "b" / "white"
 	color?: CoordColor;
 }
 &nbsp;
@@ -545,7 +526,7 @@ export interface CoordRun
 	type: 'coords';
 	kind: CoordGroupKind;
 	tokens: CoordToken[];
-	/** separators[i] sits between tokens[i] and tokens[i+1] */
+	//separators[i] sits between tokens[i] and tokens[i+1]
 	separators: string[];
 }
 &nbsp;
@@ -672,11 +653,9 @@ function classifyGap(gap: string): 'sequence' | 'alternative' | 'break'
 	return 'sequence';
 }
 &nbsp;
-/**
- * Splits comment text into text slices and coordinate runs.
- * Coordinates linked by a connector are grouped into a single run; anything in
- * between that is not a recognized connector splits the run.
- */
+//Splits comment text into text slices and coordinate runs.
+//Coordinates linked by a connector are grouped into a single run; anything in
+//between that is not a recognized connector splits the run.
 export function parseCoordinateReferences(text: string): ParsedSlice[]
 {
 	const links = [...text.matchAll(LINK_RE)].map(<span class="fstat-no" title="function not covered" >link =&gt; <span class="cstat-no" title="statement not covered" >[</span>link.index, link.index + link[0].length])</span>;
@@ -739,7 +718,7 @@ export function parseCoordinateReferences(text: string): ParsedSlice[]
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-10-27T00:03:31.950Z
+                at 2026-10-27T10:39:47.269Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
