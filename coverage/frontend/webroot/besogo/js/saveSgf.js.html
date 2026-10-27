@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">1.13% </span>
+                <span class="strong">1.11% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>1/88</span>
+                <span class='fraction'>1/90</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/76</span>
+                <span class='fraction'>0/78</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">1.13% </span>
+                <span class="strong">1.11% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>1/88</span>
+                <span class='fraction'>1/90</span>
             </div>
         
             
@@ -248,7 +248,10 @@
 <a name='L183'></a><a href='#L183'>183</a>
 <a name='L184'></a><a href='#L184'>184</a>
 <a name='L185'></a><a href='#L185'>185</a>
-<a name='L186'></a><a href='#L186'>186</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L186'></a><a href='#L186'>186</a>
+<a name='L187'></a><a href='#L187'>187</a>
+<a name='L188'></a><a href='#L188'>188</a>
+<a name='L189'></a><a href='#L189'>189</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">84x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -261,10 +264,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -274,12 +274,18 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -438,13 +444,14 @@ besogo.composeSgf = <span class="fstat-no" title="function not covered" >fu</spa
 {
 <span class="cstat-no" title="statement not covered" >  return '(' + composeNode(editor.getRoot(), editor.getRoot(), expand) + ')';</span>
 &nbsp;
-  // Recursively composes game node tree
-  function <span class="fstat-no" title="function not covered" >composeNode(</span>root, tree, expand, moveOverride = <span class="branch-0 cbranch-no" title="branch not covered" >null)</span>
+  // Recursively composes game node tree, line holds the nodes of the composed line
+  function <span class="fstat-no" title="function not covered" >composeNode(</span>root, tree, expand, moveOverride = <span class="branch-0 cbranch-no" title="branch not covered" >null,</span> line = <span class="branch-0 cbranch-no" title="branch not covered" >new Set())</span>
   {
     var string = <span class="cstat-no" title="statement not covered" >';',</span> // Node starts with semi-colon
         children = <span class="cstat-no" title="statement not covered" >tree.children,</span>
         i; // Scratch iteration variable
 &nbsp;
+<span class="cstat-no" title="statement not covered" >    line.add(tree);</span>
 <span class="cstat-no" title="statement not covered" >    if (!tree.parent) // Null parent means node is root</span>
         // Compose root-specific properties
 <span class="cstat-no" title="statement not covered" >      string += composeRootProps(tree);</span>
@@ -452,19 +459,21 @@ besogo.composeSgf = <span class="fstat-no" title="function not covered" >fu</spa
 &nbsp;
     // Recurse composition on child nodes
 <span class="cstat-no" title="statement not covered" >    if (children.length === 1 &amp;&amp; (!expand || tree.virtualChildren.length == 0)) // Continue sequence if only one child</span>
-<span class="cstat-no" title="statement not covered" >      string += '\n' + composeNode(root, children[0], expand);</span>
+<span class="cstat-no" title="statement not covered" >      string += '\n' + composeNode(root, children[0], expand, null, line);</span>
     else
     {
 <span class="cstat-no" title="statement not covered" >      for (i = 0; i &lt; children.length; i++)</span>
-<span class="cstat-no" title="statement not covered" >        string += '\n(' + composeNode(root, children[i], expand) + ')';</span>
+<span class="cstat-no" title="statement not covered" >        string += '\n(' + composeNode(root, children[i], expand, null, line) + ')';</span>
 &nbsp;
       // Don't export alternative virtual white moves when normal moves are available
       // This is mainly because tsumego-hero can't support it
 <span class="cstat-no" title="statement not covered" >      if (expand &amp;&amp; (tree.nextIsBlack() || tree.children.length == 0))</span>
 <span class="cstat-no" title="statement not covered" >        for (i = 0; i &lt; tree.virtualChildren.length; i++)</span>
-<span class="cstat-no" title="statement not covered" >          if (tree.correct == CORRECT_GOOD || tree.virtualChildren[i].target.correct ==  CORRECT_BAD)</span>
-<span class="cstat-no" title="statement not covered" >            string += '\n(' + composeNode(root, tree.virtualChildren[i].target, expand, tree.virtualChildren[i].move) + ')';</span>
+<span class="cstat-no" title="statement not covered" >          if ((tree.correct == CORRECT_GOOD || tree.virtualChildren[i].target.correct ==  CORRECT_BAD) &amp;&amp;</span>
+              !line.has(tree.virtualChildren[i].target)) // a move back to a position of the line (a ko) would go round forever
+<span class="cstat-no" title="statement not covered" >            string += '\n(' + composeNode(root, tree.virtualChildren[i].target, expand, tree.virtualChildren[i].move, line) + ')';</span>
     }
+<span class="cstat-no" title="statement not covered" >    line.delete(tree);</span>
 <span class="cstat-no" title="statement not covered" >    return string;</span>
   }
 &nbsp;
@@ -625,7 +634,7 @@ besogo.composeSgf = <span class="fstat-no" title="function not covered" >fu</spa
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-10-27T10:39:47.269Z
+                at 2026-10-27T18:25:46.359Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

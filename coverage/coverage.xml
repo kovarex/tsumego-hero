@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1793097581">
-  <project timestamp="1793097581">
+<coverage generated="1793125541">
+  <project timestamp="1793125541">
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Attribute/HttpDelete.php">
       <class name="App\Attribute\HttpDelete" namespace="global">
         <metrics complexity="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
@@ -1634,27 +1634,27 @@
       <line num="158" type="stmt" count="13"/>
       <line num="160" type="stmt" count="13"/>
       <line num="161" type="stmt" count="13"/>
-      <line num="162" type="stmt" count="7"/>
-      <line num="163" type="stmt" count="7"/>
-      <line num="164" type="stmt" count="6"/>
-      <line num="165" type="stmt" count="2"/>
-      <line num="166" type="stmt" count="2"/>
+      <line num="162" type="stmt" count="9"/>
+      <line num="163" type="stmt" count="5"/>
+      <line num="164" type="stmt" count="2"/>
+      <line num="165" type="stmt" count="3"/>
+      <line num="166" type="stmt" count="3"/>
       <line num="167" type="stmt" count="13"/>
       <line num="168" type="stmt" count="13"/>
       <line num="169" type="stmt" count="13"/>
-      <line num="170" type="stmt" count="4"/>
-      <line num="171" type="stmt" count="10"/>
+      <line num="170" type="stmt" count="6"/>
+      <line num="171" type="stmt" count="8"/>
       <line num="172" type="stmt" count="5"/>
-      <line num="173" type="stmt" count="6"/>
-      <line num="174" type="stmt" count="6"/>
+      <line num="173" type="stmt" count="4"/>
+      <line num="174" type="stmt" count="4"/>
       <line num="175" type="stmt" count="13"/>
       <line num="176" type="stmt" count="13"/>
       <line num="177" type="stmt" count="13"/>
-      <line num="178" type="stmt" count="5"/>
-      <line num="179" type="stmt" count="9"/>
+      <line num="178" type="stmt" count="6"/>
+      <line num="179" type="stmt" count="8"/>
       <line num="180" type="stmt" count="3"/>
-      <line num="181" type="stmt" count="7"/>
-      <line num="182" type="stmt" count="7"/>
+      <line num="181" type="stmt" count="6"/>
+      <line num="182" type="stmt" count="6"/>
       <line num="183" type="stmt" count="13"/>
       <line num="185" type="stmt" count="13"/>
       <line num="186" type="stmt" count="13"/>
