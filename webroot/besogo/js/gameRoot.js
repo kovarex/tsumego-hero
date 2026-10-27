@@ -19,7 +19,7 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
   function initNode(node, parent)
   {
     node.parent = parent;
-    node.board = parent ? Object.create(parent.board) : [];
+    node.board = makeBoard(parent);
     node.children = [];
     node.virtualChildren = [];
 
@@ -28,7 +28,8 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
     node.virtualParents = [];
     node.markup = [];
     node.comment = ''; // Comment on this node
-    node.hash = 0;
+    node.hash = parent ? parent.hash : 1; // follows the stones placed until it is used, see setStone
+    node.hashUsed = false;
     node.correctSource = false;
     node.correct = CORRECT_EMPTY;
     node.superkoMeansDead = false;
@@ -40,6 +41,15 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
     node.localEdit = false;
     node.diffInfo = null; // own, so a child does not show the changes of its parent in a diff
   }
+
+  // The whole board, the color of each point by its index (see fromXY): a copy of the parent's board or the empty board
+  // of the root. A board of just the points changed over the parent's had to look most stones up through the boards of
+  // all the ancestors, which made loading a deep problem slow.
+  function makeBoard(parent)
+  {
+    return parent ? parent.board.slice() : new Array(sizeX * sizeY).fill(EMPTY);
+  }
+
   initNode(root, null); // Initialize root node with null parent
   root.relevantMoves = [];
   root.nodeHashTable = besogo.makeNodeHashTable();
@@ -211,9 +221,23 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
       // Prevent setup changes in immutable node or quit early if no change
       return false;
 
+    let replacedColor = this.getStone(x, y);
     this.setStone(x, y, color); // Place the setup stone
     this.setupStones[this.fromXY(x, y)] = color - prevColor; // Record the necessary change
+    this.placeStoneBelow(x, y, replacedColor, color);
     return true;
+  };
+
+  // The nodes below have boards of their own, so the stone goes on to the ones which don't change the point themselves
+  // (by their move, a capture or a setup stone)
+  root.placeStoneBelow = function(x, y, replacedColor, color)
+  {
+    for (let i = 0; i < this.children.length; ++i)
+      if (this.children[i].getStone(x, y) === replacedColor)
+      {
+        this.children[i].setStone(x, y, color);
+        this.children[i].placeStoneBelow(x, y, replacedColor, color);
+      }
   };
 
   // Adds markup, returns true if successful
@@ -227,8 +251,22 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
     return true;
   };
 
-  root.getStone = function(x, y) { return this.board[x + '-' + y] || EMPTY; };
-  root.setStone = function(x, y, color) { this.board[x + '-' + y] = color; }
+  root.getStone = function(x, y)
+  {
+    if (x < 1 || y < 1 || x > sizeX || y > sizeY)
+      return EMPTY;
+    return this.board[(x - 1) * sizeY + (y - 1)];
+  };
+
+  root.setStone = function(x, y, color)
+  {
+    let index = (x - 1) * sizeY + (y - 1);
+    // The node hash table files a node under its hash, so once used, the hash stays as it was (a stone placed by the
+    // editor into a position with moves below changes their boards, not their hashes, as before)
+    if (!this.hashUsed)
+      this.hash += pointHashes[index] * (color - this.board[index]);
+    this.board[index] = color;
+  };
 
   // Gets the setup stone placed at (x, y), returns false if none
   root.getSetup = function(x, y)
@@ -452,9 +490,8 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
 
   root.getHash = function()
   {
-    if (this.hash)
-      return this.hash;
-    return this.updateHash();
+    this.hashUsed = true;
+    return this.hash;
   }
 
   function hashCode(str)
@@ -483,42 +520,27 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
     return hash;
   }
 
-  // The hash is a sum over the points of the board, so a child's hash is its parent's plus the change of
-  // the points its own board overrides (its move, the captures, the setup stones). Summing the whole
-  // board instead walked every point through the boards of all the ancestors, which made loading a deep
-  // problem take seconds.
+  // The hash of each point, by its index
+  let pointHashes = [];
+  for (let x = 1; x <= sizeX; ++x)
+    for (let y = 1; y <= sizeY; ++y)
+      pointHashes.push(pointHash(x + '-' + y));
+
+  // The hash is a sum over the points of the board. A node starts with the hash of its parent and setStone adds each
+  // change, so a move costs no sum over the whole board.
   root.updateHash = function()
   {
-    if (!this.parent)
-    {
-      this.hash = 1;
-      for (var key in this.board)
-        this.hash += pointHash(key) * this.board[key];
-      return this.hash;
-    }
-    this.hash = this.parent.getHash();
-    for (let key of Object.keys(this.board))
-      this.hash += pointHash(key) * (this.board[key] - (this.parent.board[key] || EMPTY));
+    this.hash = 1;
+    for (let i = 0; i < this.board.length; ++i)
+      this.hash += pointHashes[i] * this.board[i];
     return this.hash;
   }
 
-  // A point emptied by a capture stays on the board as EMPTY, so only the stones are counted
-  function stoneCount(board)
-  {
-    let result = 0;
-    for (let key in board)
-      if (board[key] != EMPTY)
-        ++result;
-    return result;
-  }
-
-  // Whether the boards have the same stones, so a point emptied by a capture is the same as a point never played
+  // Whether the boards have the same stones, a point emptied by a capture is EMPTY like a point never played
   function sameStones(a, b)
   {
-    if (stoneCount(a) != stoneCount(b))
-      return false;
-    for (let key in a)
-      if (a[key] != EMPTY && a[key] != b[key])
+    for (let i = 0; i < a.length; ++i)
+      if (a[i] != b[i])
         return false;
     return true;
   }
@@ -844,7 +866,7 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
   {
     let oldSetupStones = this.setupStones;
     this.setupStones = [];
-    this.board = this.parent ? Object.create(this.parent.board) : [];
+    this.board = makeBoard(this.parent);
     for (let i = 0; i < oldSetupStones.length; ++i)
       if (oldSetupStones[i])
       {
