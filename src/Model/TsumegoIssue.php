@@ -1,24 +1,17 @@
 <?php
 
-/**
- * TsumegoIssue Model
- *
- * Represents an issue/problem report for a tsumego, which can contain multiple comments.
- *
- * Table: tsumego_issue
- * Columns:
- *   - id (INT, PK, AUTO_INCREMENT)
- *   - tsumego_issue_status_id (INT, FK -> tsumego_issue_status)
- *   - tsumego_id (INT, FK -> tsumego)
- *   - user_id (INT, FK -> user) - author of the issue
- *   - created (DATETIME)
- *   - deleted (DATETIME NULL) - when the issue was deleted, NULL when it is not
- *
- * Statuses (tsumego_issue_status table):
- *   - 1 = opened
- *   - 2 = closed
- *
- */
+//Represents an issue/problem report for a tsumego, which can contain multiple comments.
+//Table: tsumego_issue
+//Columns:
+//  - id (INT, PK, AUTO_INCREMENT)
+//  - tsumego_issue_status_id (INT, FK -> tsumego_issue_status)
+//  - tsumego_id (INT, FK -> tsumego)
+//  - user_id (INT, FK -> user) - author of the issue
+//  - created (DATETIME)
+//  - deleted (DATETIME NULL) - when the issue was deleted, NULL when it is not
+//Statuses (tsumego_issue_status table):
+//  - 1 = opened
+//  - 2 = closed
 use App\Utility\Util;
 
 class TsumegoIssue extends AppModel
@@ -45,15 +38,10 @@ class TsumegoIssue extends AppModel
 	private static string $LIVE_PROBLEM_CONDITION = 'TsumegoIssue.tsumego_id IN (SELECT id FROM tsumego WHERE deleted IS NULL)';
 
 
-	/**
-	 * Delete an issue if it has no non-deleted comments.
-	 *
-	 * Should be called after a comment is deleted or removed from an issue
-	 * to clean up empty issues automatically.
-	 *
-	 * @param int $issueId The issue ID to check and potentially delete
-	 * @return bool True if issue was deleted, false if it still has comments or doesn't exist
-	 */
+	//Delete an issue if it has no non-deleted comments.
+	//Should be called after a comment is deleted or removed from an issue to clean up empty issues automatically.
+	//$issueId: The issue ID to check and potentially delete
+	//Returns true if issue was deleted, false if it still has comments or doesn't exist
 	public function deleteIfEmpty(int $issueId): bool
 	{
 		/** @var TsumegoComment $commentModel */
@@ -72,17 +60,13 @@ class TsumegoIssue extends AppModel
 		return false;
 	}
 
-	/**
-	 * Find issues for the global issues index page.
-	 *
-	 * Returns issues with all their comments, formatted to be compatible with
-	 * the TsumegoIssues/issue.ctp element (same format as Tsumego::loadCommentsData).
-	 *
-	 * @param string $status 'opened', 'closed', or 'all' (default: 'opened')
-	 * @param int $limit Number of results per page (default: 20)
-	 * @param int $page Page number for pagination (default: 1)
-	 * @return array Formatted issues ready for the view (compatible with issue.ctp element)
-	 */
+	//Find issues for the global issues index page.
+	//Returns issues with all their comments, formatted to be compatible with
+	//the TsumegoIssues/issue.ctp element (same format as Tsumego::loadCommentsData).
+	//$status: 'opened', 'closed', or 'all' (default: 'opened')
+	//$limit: Number of results per page (default: 20)
+	//$page: Page number for pagination (default: 1)
+	//Returns formatted issues ready for the view (compatible with issue.ctp element)
 	public function findForIndex(string $status = 'opened', int $limit = 20, int $page = 1): array
 	{
 		$offset = ($page - 1) * $limit;
@@ -240,11 +224,8 @@ class TsumegoIssue extends AppModel
 		return $result;
 	}
 
-	/**
-	 * Get counts for the issues index tabs.
-	 *
-	 * @return array{open: int, closed: int}
-	 */
+	//Get counts for the issues index tabs.
+	/** @return array{open: int, closed: int} */
 	public function getIndexCounts(): array
 	{
 		return [
@@ -265,14 +246,9 @@ class TsumegoIssue extends AppModel
 		];
 	}
 
-	/**
-	 * Get comment section counts for a specific tsumego.
-	 *
-	 * Used for updating the comment tabs (ALL/COMMENTS/ISSUES).
-	 *
-	 * @param int $tsumegoId The tsumego ID
-	 * @return array{total: int, comments: int, issues: int, openIssues: int}
-	 */
+	//Get comment section counts for a specific tsumego.
+	//Used for updating the comment tabs (ALL/COMMENTS/ISSUES).
+	/** @return array{total: int, comments: int, issues: int, openIssues: int} */
 	public function getCommentSectionCounts(int $tsumegoId): array
 	{
 		$TsumegoComment = ClassRegistry::init('TsumegoComment');

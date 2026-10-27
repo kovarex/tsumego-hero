@@ -9,7 +9,6 @@ class SgfBoard
 	/**
 	 * @param array<int,int> $stones
 	 * @param array{int,int} $info
-	 * @param int $size
 	 */
 	public function __construct(array $stones, array $info, int $size, array $correctMoves = [])
 	{

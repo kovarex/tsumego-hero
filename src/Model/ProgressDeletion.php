@@ -2,10 +2,8 @@
 
 use App\Utility\Util;
 
-/**
- * A reset of the user's progress on one part of a set. The resets reduce the XP of the problems of
- * that part for a month.
- */
+//A reset of the user's progress on one part of a set. The resets reduce the XP of the problems of
+//that part for a month.
 class ProgressDeletion extends AppModel
 {
 	// A reset clears one part of a set: its problems ordered by number, in parts of this size. Resetting
@@ -19,13 +17,10 @@ class ProgressDeletion extends AppModel
 		parent::__construct($id, $table, $ds);
 	}
 
-	/**
-	 * The set and part of a set connection. The problems of a set are ordered by number with the
-	 * deleted ones left out, the same way the set page shows them without filters.
-	 *
-	 * @param int|null $tsumegoID when given, null is returned unless the set connection is of this problem
-	 * @return array{set_id: int, partition: int}|null
-	 */
+	//The set and part of a set connection. The problems of a set are ordered by number with the
+	//deleted ones left out, the same way the set page shows them without filters.
+	//$tsumegoID: when given, null is returned unless the set connection is of this problem
+	/** @return array{set_id: int, partition: int}|null */
 	public static function partitionOf(int $setConnectionID, ?int $tsumegoID = null): ?array
 	{
 		$rows = Util::query('
@@ -42,10 +37,8 @@ WHERE sc.id = ?', [$setConnectionID]);
 		return ['set_id' => (int) $rows[0]['set_id'], 'partition' => intdiv((int) $rows[0]['position'], self::$PARTITION_SIZE)];
 	}
 
-	/**
-	 * How many times the user reset the part of the set in the last month. Resets saved before the
-	 * part was recorded count for every part of their set.
-	 */
+	//How many times the user reset the part of the set in the last month. Resets saved before the
+	//part was recorded count for every part of their set.
 	public static function countRecent(int $userID, int $setID, int $partition): int
 	{
 		return (int) Util::query('
@@ -55,10 +48,8 @@ WHERE user_id = ? AND set_id = ? AND (set_partition = ? OR set_partition IS NULL
 			[$userID, $setID, $partition])[0]['resets'];
 	}
 
-	/**
-	 * The resets reducing the XP of a problem played from the set connection: those of its part. When
-	 * the set connection isn't of the problem, the problem's display set connection is used instead.
-	 */
+	//The resets reducing the XP of a problem played from the set connection: those of its part. When
+	//the set connection isn't of the problem, the problem's display set connection is used instead.
 	public static function countRecentForProblem(int $userID, int $tsumegoID, ?int $setConnectionID): int
 	{
 		$partition = $setConnectionID ? self::partitionOf($setConnectionID, $tsumegoID) : null;

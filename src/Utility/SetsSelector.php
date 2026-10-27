@@ -238,14 +238,11 @@ class SetsSelector
 		}
 	}
 
-	/**
-	 * Rank bands to display, weakest first, as [weakest, strongest] pairs.
-	 * Without a rank filter every rank is its own band. Each rank filter is one
-	 * band: separately picked ranks stay separate boxes, and a picked range
-	 * becomes one box spanning it.
-	 *
-	 * @return array<int, array{0: string, 1: string}>
-	 */
+	//Rank bands to display, weakest first, as [weakest, strongest] pairs.
+	//Without a rank filter every rank is its own band. Each rank filter is one
+	//band: separately picked ranks stay separate boxes, and a picked range
+	//becomes one box spanning it.
+	/** @return array<int, array{0: string, 1: string}> */
 	private function rankBands(): array
 	{
 		if (empty($this->tsumegoFilters->rankSpecs))
@@ -262,20 +259,18 @@ class SetsSelector
 		return $bands;
 	}
 
+	//Group rows by collection, split each into partitions of the user's collection size,
+	//and compute per-partition stats (count, rating sum, solved count).
+	//Items are sorted within each collection by the $itemSortKeys row fields (e.g.
+	//num, tsumego_id) so partitions always hold consecutive problems in the canonical
+	//order (the same order a collection page uses), regardless of the row order the
+	//database returns.
+	//$rows: Query rows, each with $idField, $nameField, $colorField, tsumego_id and rating.
+	//$idField: Row field identifying the collection.
+	//$nameField: Row field with the collection display name.
+	//$colorField: Row field with the collection color.
+	//$orderField: Optional row field with the collection sort key.
 	/**
-	 * Group rows by collection, split each into partitions of the user's collection size,
-	 * and compute per-partition stats (count, rating sum, solved count).
-	 *
-	 * Items are sorted within each collection by the $itemSortKeys row fields (e.g.
-	 * num, tsumego_id) so partitions always hold consecutive problems in the canonical
-	 * order (the same order a collection page uses), regardless of the row order the
-	 * database returns.
-	 *
-	 * @param array $rows Query rows, each with $idField, $nameField, $colorField, tsumego_id and rating.
-	 * @param string $idField Row field identifying the collection.
-	 * @param string $nameField Row field with the collection display name.
-	 * @param string $colorField Row field with the collection color.
-	 * @param string|null $orderField Optional row field with the collection sort key.
 	 * @param string[] $itemSortKeys Optional row fields to sort items by within each collection.
 	 * @return array[] Collection chunks, each with id, name, color, order, partition, total_count,
 	 *   usage_count, rating_sum and solved_count.
@@ -350,11 +345,8 @@ class SetsSelector
 		return $sets;
 	}
 
-	/**
-	 * The tsumego IDs the current user has solved (status S, W or C), or an empty array for guests.
-	 *
-	 * @return array<int, true>
-	 */
+	//The tsumego IDs the current user has solved (status S, W or C), or an empty array for guests.
+	/** @return array<int, true> */
 	private function getSolvedTsumegoIDs(): array
 	{
 		if (!Auth::isLoggedIn())
@@ -366,9 +358,7 @@ class SetsSelector
 		return $solved;
 	}
 
-	/**
-	 * EXISTS condition for a tsumego belonging to at least one public set (optionally limited to filtered sets).
-	 */
+	//EXISTS condition for a tsumego belonging to at least one public set (optionally limited to filtered sets).
 	private function publicMembershipCondition(string $tsumegoRef): string
 	{
 		$setCondition = Set::officialCondition();
@@ -377,17 +367,13 @@ class SetsSelector
 		return 'EXISTS (SELECT 1 FROM set_connection sc JOIN `set` ON `set`.id = sc.set_id AND ' . $setCondition . ' WHERE sc.tsumego_id = ' . $tsumegoRef . ')';
 	}
 
-	/**
-	 * EXISTS condition for a tsumego carrying any of the filtered tags.
-	 */
+	//EXISTS condition for a tsumego carrying any of the filtered tags.
 	private function tagMembershipCondition(string $tsumegoRef): string
 	{
 		return 'EXISTS (SELECT 1 FROM tag_connection tc2 WHERE tc2.tsumego_id = ' . $tsumegoRef . ' AND tc2.approved = 1 AND tc2.tag_id IN (' . implode(',', $this->tsumegoFilters->tagIDs) . '))';
 	}
 
-	/**
-	 * Rating bound conditions for the filtered ranks, referencing the unaliased tsumego table.
-	 */
+	//Rating bound conditions for the filtered ranks, referencing the unaliased tsumego table.
 	private function rankCondition(): string
 	{
 		$rankConditions = '';

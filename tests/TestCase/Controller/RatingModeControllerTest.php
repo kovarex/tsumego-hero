@@ -1,9 +1,7 @@
 <?php
 
-/**
- * Which problem rating mode picks. Solved problems give no rating, so the unsolved ones in range go first.
- * The pick is random, so each test asks several times.
- */
+//Which problem rating mode picks. Solved problems give no rating, so the unsolved ones in range go first.
+//The pick is random, so each test asks several times.
 class RatingModeControllerTest extends IntegrationTestCase
 {
 	private const PICKS = 10;
@@ -87,7 +85,7 @@ class RatingModeControllerTest extends IntegrationTestCase
 			$this->pickedTsumegoIDs(30));
 	}
 
-	/** The distinct problems rating mode opened in the given number of visits, sorted by id. */
+	//The distinct problems rating mode opened in the given number of visits, sorted by id.
 	private function pickedTsumegoIDs(int $picks = self::PICKS): array
 	{
 		$tsumegoIDs = [];

@@ -1,8 +1,6 @@
 <?php
 
-/**
- * Controller-level tests for the TsumegoIssuesController JSON API.
- */
+//Controller-level tests for the TsumegoIssuesController JSON API.
 class TsumegoIssuesControllerApiTest extends IntegrationTestCase
 {
 	public function testCreateRequiresLogin()

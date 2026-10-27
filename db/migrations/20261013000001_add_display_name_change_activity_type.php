@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * A forced display name change is recorded in the admin activity trail
- * as AdminActivityType::DISPLAY_NAME_CHANGE, which needs its type row.
- */
+//A forced display name change is recorded in the admin activity trail
+//as AdminActivityType::DISPLAY_NAME_CHANGE, which needs its type row.
 final class AddDisplayNameChangeActivityType extends AbstractMigration
 {
 	public function up(): void

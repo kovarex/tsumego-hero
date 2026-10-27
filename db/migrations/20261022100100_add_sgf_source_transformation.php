@@ -2,13 +2,11 @@
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * The board editor normalises, mirrors and may rotate the problem before it is
- * saved as a new SGF version, so the new version can be oriented differently
- * from the one it was edited from. The editor now sends that transformation
- * along; when the version becomes the current one, the comments of the problem
- * (stored in SGF coordinates) are transformed with it.
- */
+//The board editor normalises, mirrors and may rotate the problem before it is
+//saved as a new SGF version, so the new version can be oriented differently
+//from the one it was edited from. The editor now sends that transformation
+//along; when the version becomes the current one, the comments of the problem
+//(stored in SGF coordinates) are transformed with it.
 class AddSgfSourceTransformation extends AbstractMigration
 {
 	public function up(): void

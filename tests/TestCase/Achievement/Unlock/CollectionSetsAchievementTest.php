@@ -2,16 +2,14 @@
 
 use App\Utility\AchievementId;
 
-/**
- * Test Collection Sets Achievements (IDs 47-52)
- *
- * These achievements unlock when user completes specific numbers of collections:
- * - Achievement 47: 10 collections
- * - Achievement 48: 20 collections
- * - Achievement 49: 30 collections
- * - Achievement 50: 40 collections
- * - Achievement 51: 50 collections
- * - Achievement 52: 60 collections */
+//Test Collection Sets Achievements (IDs 47-52)
+//These achievements unlock when user completes specific numbers of collections:
+//- Achievement 47: 10 collections
+//- Achievement 48: 20 collections
+//- Achievement 49: 30 collections
+//- Achievement 50: 40 collections
+//- Achievement 51: 50 collections
+//- Achievement 52: 60 collections
 class CollectionSetsAchievementTest extends AchievementTestCase
 {
 	public function testAchievementCompleteSets1UnlocksAt10Sets()

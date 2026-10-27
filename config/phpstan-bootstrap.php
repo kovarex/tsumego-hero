@@ -1,10 +1,8 @@
 <?php
 
-/**
- * PHPStan bootstrap. Defines CakePHP constants that are normally set by
- * webroot/index.php. Does NOT load the full CakePHP bootstrap because
- * core.local.php triggers Cache::config() which requires the framework.
- */
+//PHPStan bootstrap. Defines CakePHP constants that are normally set by
+//webroot/index.php. Does NOT load the full CakePHP bootstrap because
+//core.local.php triggers Cache::config() which requires the framework.
 
 if (!defined('DS')) {
 	define('DS', DIRECTORY_SEPARATOR);

@@ -441,12 +441,9 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		return '<a id="playTitleA" href="' . Set::url($set['Set']['id'], $tsumegoButtons?->getPartition() ?? 1) . '">' . $set['Set']['title'] . ' ' . $tsumegoButtons?->getPartitionTitleSuffix() . ' ' . $order . '/' . $tsumegoButtons?->highestTsumegoOrder . '</a>';
 	}
 
-	/**
-	 * The title of a problem played as a part of a class assignment: the assignment and where in
-	 * it the player is, and under it which problem of which collection it really is.
-	 *
-	 * @param array<string, mixed> $assignment With its collections, see ClassroomAssignment::withCollections()
-	 */
+	//The title of a problem played as a part of a class assignment: the assignment and where in
+	//it the player is, and under it which problem of which collection it really is.
+	/** @param array<string, mixed> $assignment With its collections, see ClassroomAssignment::withCollections() */
 	public static function renderAssignmentTitle(array $assignment, TsumegoButtons $tsumegoButtons, array $setConnection, array $set, int $amountOfOtherCollection): string
 	{
 		return '<a id="playTitleA" href="/classes/' . (int) $assignment['classroom_id'] . '">'
@@ -458,12 +455,9 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 							</font>';
 	}
 
-	/**
-	 * Makes a problem a multiple choice or a score estimating problem, or neither (null). A problem has
-	 * one variant at most, and keeps the answers of its variant while the type stays.
-	 *
-	 * @return array|null The variant the problem has now
-	 */
+	//Makes a problem a multiple choice or a score estimating problem, or neither (null). A problem has
+	//one variant at most, and keeps the answers of its variant while the type stays.
+	//Returns the variant the problem has now
 	private static function changeVariantType(int $tsumegoID, ?array $variant, ?int $type): ?array
 	{
 		$activityTypes = [
@@ -497,12 +491,9 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		return $corners[array_rand($corners)];
 	}
 
-	/**
-	 * The class assignment the problem is played in, with its collections, set by its route
-	 * (ClassroomsController::play()): its problems are the row of buttons and Next walks them.
-	 *
-	 * @var array<string, mixed>|null
-	 */
+	//The class assignment the problem is played in, with its collections, set by its route
+	//(ClassroomsController::play()): its problems are the row of buttons and Next walks them.
+	/** @var array<string, mixed>|null */
 	public ?array $classroomAssignment = null;
 
 	/** @var callable */

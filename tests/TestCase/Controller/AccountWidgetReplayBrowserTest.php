@@ -2,23 +2,20 @@
 
 use App\Utility\Constants;
 
+//The account bar animates a result for a second. A page left sooner (a refresh, Next,
+//the golden tsumego redirect, a lost line left before it is played out) leaves the
+//result to the next page, which plays it as if it had just happened there.
 /**
- * The account bar animates a result for a second. A page left sooner (a refresh, Next,
- * the golden tsumego redirect, a lost line left before it is played out) leaves the
- * result to the next page, which plays it as if it had just happened there.
- *
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
 class AccountWidgetReplayBrowserTest extends IntegrationTestCase
 {
-	/** AccountWidget.unshownResultKey, Firefox doesn't let the test scripts see the class itself */
+	//AccountWidget.unshownResultKey, Firefox doesn't let the test scripts see the class itself
 	private const UNSHOWN_RESULT_KEY = 'accountWidgetUnshownResult';
 
-	/**
-	 * Black (1,1), white (1,2), black (2,1) is correct. Black (2,1) is lost at once, but the
-	 * line goes on: white answers (1,1) and only black (3,1) ends it.
-	 */
+	//Black (1,1), white (1,2), black (2,1) is correct. Black (2,1) is lost at once, but the
+	//line goes on: white answers (1,1) and only black (3,1) ends it.
 	private const SGF = '(;GM[1]FF[4]ST[2]SZ[19](;B[aa];W[ab];B[ba]C[+])(;B[ba];W[aa];B[ca]))';
 
 	private function prepare(Browser $browser, string $show = 'rating'): ContextPreparator
@@ -47,13 +44,13 @@ class AccountWidgetReplayBrowserTest extends IntegrationTestCase
 		return $browser->driver->executeScript('return document.getElementById("xp-increase-fx").style.display;') === 'inline-block';
 	}
 
-	/** The animation leaves the transition on the bar, a page that animated nothing has none */
+	//The animation leaves the transition on the bar, a page that animated nothing has none
 	private function barAnimated(Browser $browser): bool
 	{
 		return $browser->driver->executeScript('return document.getElementById("xp-bar-fill").style.webkitTransition;') !== '';
 	}
 
-	/** The request outlives the page that sent it, so the server may record it a moment after the page is gone */
+	//The request outlives the page that sent it, so the server may record it a moment after the page is gone
 	private function waitForDamage(ContextPreparator $context, int $damage): void
 	{
 		$deadline = microtime(true) + 10;
@@ -141,7 +138,7 @@ class AccountWidgetReplayBrowserTest extends IntegrationTestCase
 			0.01);
 	}
 
-	/** Watches where the replay starts and where it ends, which is over before a test could look at the bar */
+	//Watches where the replay starts and where it ends, which is over before a test could look at the bar
 	private function replay(Browser $browser, array $unshown): ?array
 	{
 		return $browser->driver->executeScript(<<<'JS'

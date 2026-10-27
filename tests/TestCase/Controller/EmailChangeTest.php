@@ -3,10 +3,8 @@
 use App\Utility\Auth;
 use App\Utility\Util;
 
-/**
- * Changing the address of an account: the new address waits for its confirmation
- * link, the old address gets a link that cancels the change.
- */
+//Changing the address of an account: the new address waits for its confirmation
+//link, the old address gets a link that cancels the change.
 class EmailChangeTest extends IntegrationTestCase
 {
 	private const PASSWORD = 'test';
@@ -62,10 +60,8 @@ class EmailChangeTest extends IntegrationTestCase
 		$this->assertNull($this->storedUser($user['id'])['unconfirmed_email']);
 	}
 
-	/**
-	 * The change is confirmed by the mailed link alone, so a mail that never left leaves
-	 * nothing to confirm: no address is kept waiting and the request can be repeated.
-	 */
+	//The change is confirmed by the mailed link alone, so a mail that never left leaves
+	//nothing to confirm: no address is kept waiting and the request can be repeated.
 	public function testNothingIsKeptWaitingWhenTheMailCannotBeSent(): void
 	{
 		$user = $this->prepareUser('emailNoMail');
@@ -158,9 +154,7 @@ class EmailChangeTest extends IntegrationTestCase
 		$this->assertSame('old@example.com', $this->storedUser($user['id'])['email']);
 	}
 
-	/**
-	 * The address was free when it was asked for, but the link works for a day.
-	 */
+	//The address was free when it was asked for, but the link works for a day.
 	public function testAnAddressThatWasTakenInTheMeantimeIsRefused(): void
 	{
 		Auth::logout();
@@ -220,9 +214,7 @@ class EmailChangeTest extends IntegrationTestCase
 			TestEmailer::$lastEmail['body']);
 	}
 
-	/**
-	 * A Google account signs in with the address of its Google account.
-	 */
+	//A Google account signs in with the address of its Google account.
 	public function testGoogleAccountKeepsItsAddress(): void
 	{
 		Auth::logout();

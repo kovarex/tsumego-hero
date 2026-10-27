@@ -1,8 +1,6 @@
 <?php
 
-/**
- * Server-side auth guards: anonymous -> 401, logged-in-without-permission -> 403.
- */
+//Server-side auth guards: anonymous -> 401, logged-in-without-permission -> 403.
 use App\Utility\Constants;
 use App\Utility\Util;
 

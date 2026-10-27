@@ -1,19 +1,15 @@
 <?php
 
-/**
- * Dry run of the migration CommentCoordinatesInSgfSpace: converts exported
- * comments with LegacyCommentConverter and prints the outcome as JSON, without
- * touching any database. The colours of the comments the migration lists as
- * checked by hand are left to the converter here.
- *
- * Export the comments with the current SGF and description of their problem (mysql --batch output):
- *   SELECT c.id, c.tsumego_id, c.message, c.position, c.created,
- *     (SELECT s.sgf FROM sgf s WHERE s.tsumego_id = c.tsumego_id AND s.sgf_status_id = 2 ORDER BY s.id DESC LIMIT 1) AS sgf,
- *     (SELECT t.description FROM tsumego t WHERE t.id = c.tsumego_id) AS description
- *   FROM tsumego_comment c WHERE c.deleted IS NULL
- *
- * Usage: php scripts/legacy-comment-conversion-report.php comments.tsv > report.json
- */
+//Dry run of the migration CommentCoordinatesInSgfSpace: converts exported
+//comments with LegacyCommentConverter and prints the outcome as JSON, without
+//touching any database. The colours of the comments the migration lists as
+//checked by hand are left to the converter here.
+//Export the comments with the current SGF and description of their problem (mysql --batch output):
+//  SELECT c.id, c.tsumego_id, c.message, c.position, c.created,
+//    (SELECT s.sgf FROM sgf s WHERE s.tsumego_id = c.tsumego_id AND s.sgf_status_id = 2 ORDER BY s.id DESC LIMIT 1) AS sgf,
+//    (SELECT t.description FROM tsumego t WHERE t.id = c.tsumego_id) AS description
+//  FROM tsumego_comment c WHERE c.deleted IS NULL
+//Usage: php scripts/legacy-comment-conversion-report.php comments.tsv > report.json
 
 foreach (['BoardTransformation', 'CommentCoordinates', 'SgfTree', 'LegacyCommentConversion', 'LegacyCommentConverter'] as $class)
 	require_once __DIR__ . '/../src/Utility/' . $class . '.php';
@@ -23,7 +19,7 @@ use App\Utility\CommentCoordinates;
 use App\Utility\LegacyCommentConverter;
 use App\Utility\SgfTree;
 
-/** Undoes the escaping of mysql --batch output. */
+//Undoes the escaping of mysql --batch output.
 function unescapeBatchValue(string $value): ?string
 {
 	if ($value === 'NULL')

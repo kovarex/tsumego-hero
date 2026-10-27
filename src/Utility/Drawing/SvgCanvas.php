@@ -2,13 +2,11 @@
 
 namespace App\Utility\Drawing;
 
-/**
- * A canvas that writes the drawing as svg, the rendition a page shows: it stays
- * sharp at any size and the browser draws it without help from the server.
- */
+//A canvas that writes the drawing as svg, the rendition a page shows: it stays
+//sharp at any size and the browser draws it without help from the server.
 class SvgCanvas implements Canvas
 {
-	/** The side of the drawing, in svg user units. */
+	//The side of the drawing, in svg user units.
 	private float $side;
 
 	private string $definitions = '';
@@ -50,11 +48,7 @@ class SvgCanvas implements Canvas
 			. '" fill="' . $color . '" opacity="' . self::number($opacity) . '"/>';
 	}
 
-	/**
-	 * The drawing as one svg document, ready for an img tag or a response body.
-	 *
-	 * @return string
-	 */
+	//The drawing as one svg document, ready for an img tag or a response body.
 	public function picture(): string
 	{
 		return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' . self::number($this->side) . ' ' . self::number($this->side) . '">'
@@ -63,16 +57,10 @@ class SvgCanvas implements Canvas
 			. '</svg>';
 	}
 
-	/**
-	 * A shading is written once however many shapes use it, so a board of 25
-	 * stones carries two stone shadings and not 25 copies of one. One name has to
-	 * mean one shading: shapes of one name and different colours would otherwise
-	 * quietly share the first of them.
-	 *
-	 * @param string $name
-	 * @param string $markup
-	 * @return void
-	 */
+	//A shading is written once however many shapes use it, so a board of 25
+	//stones carries two stone shadings and not 25 copies of one. One name has to
+	//mean one shading: shapes of one name and different colours would otherwise
+	//quietly share the first of them.
 	private function define(string $name, string $markup): void
 	{
 		if (isset($this->defined[$name]))
@@ -85,10 +73,7 @@ class SvgCanvas implements Canvas
 		$this->definitions .= $markup;
 	}
 
-	/**
-	 * @param array<int, array{0: float, 1: string}> $stops
-	 * @return string
-	 */
+	/** @param array<int, array{0: float, 1: string}> $stops */
 	private static function stops(array $stops): string
 	{
 		$markup = '';
@@ -98,13 +83,7 @@ class SvgCanvas implements Canvas
 		return $markup;
 	}
 
-	/**
-	 * Where a shape sits, left out where it sits at the start of the drawing.
-	 *
-	 * @param float $x
-	 * @param float $y
-	 * @return string
-	 */
+	//Where a shape sits, left out where it sits at the start of the drawing.
 	private static function point(float $x, float $y): string
 	{
 		return ($x == 0 ? '' : ' x="' . self::number($x) . '"') . ($y == 0 ? '' : ' y="' . self::number($y) . '"');

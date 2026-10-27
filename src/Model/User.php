@@ -9,54 +9,48 @@ use App\Utility\Rating;
 use App\Utility\UploadedAvatar;
 use App\Utility\Util;
 
-/**
- * @phpstan-import-type UserRow from \App\Utility\RowTypes
- */
+/** @phpstan-import-type UserRow from \App\Utility\RowTypes */
 class User extends AppModel
 {
-	/** The two values of player_color_setting and board_orientation_setting: random, or as in the original. */
+	//The two values of player_color_setting and board_orientation_setting: random, or as in the original.
 	public const PLAYER_COLOR_SETTING_RANDOM = 0;
 	public const PLAYER_COLOR_SETTING_ORIGINAL = 1;
 	public const BOARD_ORIENTATION_SETTING_RANDOM = 0;
 	public const BOARD_ORIENTATION_SETTING_ORIGINAL = 1;
 
-	/** The ids of the premium table, a premium_id of NULL is no premium. Premium can no longer be bought. */
+	//The ids of the premium table, a premium_id of NULL is no premium. Premium can no longer be bought.
 	public const PREMIUM_BASIC = 1;
 	public const PREMIUM_GOLDEN = 2;
 
-	/** The ids of the date_format table, how the dates are written. app/shared/dates.ts has the patterns. */
+	//The ids of the date_format table, how the dates are written. app/shared/dates.ts has the patterns.
 	public const DATE_FORMAT_ISO = 1; // 2026-10-21 14:05
 	public const DATE_FORMAT_DAY_MONTH_YEAR = 2; // 21. 10. 2026 14:05, the Czech way
 	public const DATE_FORMAT_MONTH_DAY_YEAR = 3; // 10/21/2026 2:05 PM
 	public const DATE_FORMAT_BROWSER = 4; // whatever the language of the browser uses
 
-	/**
-	 * The ids of the user_role table, what a user may do on the site. An admin edits the problems
-	 * and collections and decides the proposals. An owner can do everything an admin can, and also
-	 * decides who is an admin or an owner.
-	 */
+	//The ids of the user_role table, what a user may do on the site. An admin edits the problems
+	//and collections and decides the proposals. An owner can do everything an admin can, and also
+	//decides who is an admin or an owner.
 	public const ROLE_PLAYER = 1;
 	public const ROLE_ADMIN = 2;
 	public const ROLE_OWNER = 3;
 
-	/** The roles with the rights of an admin. */
+	//The roles with the rights of an admin.
 	public const ADMIN_ROLES = [self::ROLE_ADMIN, self::ROLE_OWNER];
 
-	/** The names of the roles, as the user_role table has them. */
+	//The names of the roles, as the user_role table has them.
 	public const ROLE_NAMES = [
 		self::ROLE_PLAYER => 'player',
 		self::ROLE_ADMIN => 'admin',
 		self::ROLE_OWNER => 'owner',
 	];
 
-	/** The ids of the theme table, the theme the player picked. */
+	//The ids of the theme table, the theme the player picked.
 	public const THEME_LIGHT = 1;
 	public const THEME_DARK = 2;
 
-	/**
-	 * The ids of the level_bar table, what the bar in the header shows. The cookie that
-	 * carries the choice has the same numbers and reads 0 as "nothing picked yet".
-	 */
+	//The ids of the level_bar table, what the bar in the header shows. The cookie that
+	//carries the choice has the same numbers and reads 0 as "nothing picked yet".
 	public const LEVEL_BAR_LEVEL = 1;
 	public const LEVEL_BAR_RATING = 2;
 
@@ -69,32 +63,28 @@ class User extends AppModel
 	// The longest e-mail address there can be (RFC 5321), and what the user table stores.
 	public const EMAIL_MAX_LENGTH = 254;
 
-	/** The ids of the avatar_setting table, the avatar a player picked: the board the site draws. */
+	//The ids of the avatar_setting table, the avatar a player picked: the board the site draws.
 	public const AVATAR_BOARD = 1;
 
-	/** The avatar a player picked: their Gravatar. */
+	//The avatar a player picked: their Gravatar.
 	public const AVATAR_GRAVATAR = 2;
 
-	/** The avatar a player picked: the picture of their Google account. */
+	//The avatar a player picked: the picture of their Google account.
 	public const AVATAR_GOOGLE = 3;
 
-	/** The avatar a player picked: a picture they uploaded (UploadedAvatar). */
+	//The avatar a player picked: a picture they uploaded (UploadedAvatar).
 	public const AVATAR_UPLOADED = 4;
 
-	/**
-	 * The pixels asked of an avatar host for the avatar in a list: twice the 24px
-	 * the list shows (--avatar-size in tokens.css), so a sharp screen has enough.
-	 */
+	//The pixels asked of an avatar host for the avatar in a list: twice the 24px
+	//the list shows (--avatar-size in tokens.css), so a sharp screen has enough.
 	public const AVATAR_PIXELS_INLINE = 48;
 
-	/** Twice the 64px a profile shows (--avatar-size-lg in tokens.css). */
+	//Twice the 64px a profile shows (--avatar-size-lg in tokens.css).
 	public const AVATAR_PIXELS_PROFILE = 128;
 
-	/**
-	 * A character above U+FFFF (an emoji, for one) takes four bytes in UTF-8. The phpBB
-	 * tables the site shares store names as utf8mb3, which cannot hold one, so a display
-	 * name with such a character would differ between the site and the forum.
-	 */
+	//A character above U+FFFF (an emoji, for one) takes four bytes in UTF-8. The phpBB
+	//tables the site shares store names as utf8mb3, which cannot hold one, so a display
+	//name with such a character would differ between the site and the forum.
 	public const UNSTORABLE_PATTERN = '/[\x{10000}-\x{10FFFF}]/u';
 
 	public function __construct(mixed $id = false, ?string $table = null, ?string $ds = null)
@@ -162,9 +152,7 @@ class User extends AppModel
 		],
 	];
 
-	/**
-	 * @param UserRow $user
-	 */
+	/** @param UserRow $user */
 	public static function renderPremium(array $user): string
 	{
 		$premiumID = $user['premium_id'] ?? null;
@@ -173,49 +161,37 @@ class User extends AppModel
 		return '';
 	}
 
-	/**
-	 * @param UserRow $user
-	 */
+	/** @param UserRow $user */
 	public static function getHighestRating(array $user): float
 	{
 		// only a played problem raises highest_rating, a rating set another way (by hand, by a test) can be above it
 		return max((float) $user['highest_rating'], (float) $user['rating']);
 	}
 
-	/**
-	 * Whether a user has the rights of an admin, which an owner has too. False for a visitor who is
-	 * not logged in (null).
-	 *
-	 * @param UserRow|array<string, mixed>|null $user
-	 */
+	//Whether a user has the rights of an admin, which an owner has too. False for a visitor who is
+	//not logged in (null).
+	/** @param UserRow|array<string, mixed>|null $user */
 	public static function isAdmin(?array $user): bool
 	{
 		return $user !== null && in_array((int) ($user['user_role_id'] ?? 0), self::ADMIN_ROLES, true);
 	}
 
-	/**
-	 * @param UserRow|array<string, mixed>|null $user
-	 */
+	/** @param UserRow|array<string, mixed>|null $user */
 	public static function isOwner(?array $user): bool
 	{
 		return $user !== null && (int) ($user['user_role_id'] ?? 0) === self::ROLE_OWNER;
 	}
 
-	/**
-	 * SQL that tells whether the user behind $roleColumn has the rights of an admin, for the raw
-	 * queries that read the role together with something else.
-	 */
+	//SQL that tells whether the user behind $roleColumn has the rights of an admin, for the raw
+	//queries that read the role together with something else.
 	public static function isAdminSql(string $roleColumn): string
 	{
 		return $roleColumn . ' IN (' . implode(', ', self::ADMIN_ROLES) . ')';
 	}
 
-	/**
-	 * Gives a user another role, which is the decision of an owner (see OwnerPolicy). The site
-	 * always keeps an owner, so the last one can't stop being one until there is another.
-	 *
-	 * @return string|null why the role can't be changed, null when the user has the role now
-	 */
+	//Gives a user another role, which is the decision of an owner (see OwnerPolicy). The site
+	//always keeps an owner, so the last one can't stop being one until there is another.
+	//Returns why the role can't be changed, null when the user has the role now
 	public static function changeRole(int $userID, int $roleID): ?string
 	{
 		if (!array_key_exists($roleID, self::ROLE_NAMES))
@@ -243,16 +219,14 @@ class User extends AppModel
 		return null;
 	}
 
-	/** How many accounts (not deleted) have the owner role. */
+	//How many accounts (not deleted) have the owner role.
 	public static function ownerCount(): int
 	{
 		return (int) Util::query('SELECT COUNT(*) AS count FROM user WHERE user_role_id = ? AND deleted IS NULL', [self::ROLE_OWNER])[0]['count'];
 	}
 
-	/**
-	 * Marks the account as deleted. Everything it created stays, but its name and Google id move to the
-	 * deleted_* columns, so they are free for a new account, and it can't sign in anymore.
-	 */
+	//Marks the account as deleted. Everything it created stays, but its name and Google id move to the
+	//deleted_* columns, so they are free for a new account, and it can't sign in anymore.
 	public static function deleteAccount(int $userID): void
 	{
 		Util::execute("UPDATE user SET
@@ -267,12 +241,8 @@ class User extends AppModel
 		self::clearDeletedCache();
 	}
 
-	/**
-	 * Restores a deleted account, unless its name or Google id was taken by another account in the
-	 * meantime.
-	 *
-	 * @return string|null why the account can't be restored, null when it was restored
-	 */
+	//Restores a deleted account, unless its name or Google id was taken by another account in the meantime.
+	//Returns why the account can't be restored, null when it was restored
 	public static function restoreAccount(int $userID): ?string
 	{
 		$user = ClassRegistry::init('User')->findById($userID);
@@ -296,13 +266,10 @@ class User extends AppModel
 		return null;
 	}
 
-	/**
-	 * Ids of the deleted accounts, loaded once per request. It answers the callers that have nothing
-	 * but an id (the payloads read the name as a plain string out of a raw query); a caller that has a
-	 * row reads the deleted column of that row instead, so a stale cache can't name a deleted account.
-	 *
-	 * @var array<int, true>|null
-	 */
+	//Ids of the deleted accounts, loaded once per request. It answers the callers that have nothing
+	//but an id (the payloads read the name as a plain string out of a raw query); a caller that has a
+	//row reads the deleted column of that row instead, so a stale cache can't name a deleted account.
+	/** @var array<int, true>|null */
 	private static ?array $deletedIDs = null;
 
 	// To be called after an account was deleted or restored, otherwise the callers that pass a bare id
@@ -312,14 +279,11 @@ class User extends AppModel
 		self::$deletedIDs = null;
 	}
 
-	/**
-	 * Whether the account of a user is not there anymore. A row answers from its own deleted column,
-	 * which every find() and contain('User') already loads; a bare id is looked up in the ids loaded
-	 * once per request. A row that carries neither an id nor the column is treated as gone, the same
-	 * way renderLink treats it.
-	 *
-	 * @param UserRow|array<string, mixed>|int|string|null $user
-	 */
+	//Whether the account of a user is not there anymore. A row answers from its own deleted column,
+	//which every find() and contain('User') already loads; a bare id is looked up in the ids loaded
+	//once per request. A row that carries neither an id nor the column is treated as gone, the same
+	//way renderLink treats it.
+	/** @param UserRow|array<string, mixed>|int|string|null $user */
 	public static function isDeleted(array|int|string|null $user): bool
 	{
 		if (is_array($user))
@@ -339,13 +303,10 @@ class User extends AppModel
 		return isset(self::$deletedIDs[(int) $user]);
 	}
 
-	/**
-	 * The display name of a user, null when there is none to show: the account is not there anymore,
-	 * or the row the caller passed carries no name. This is what the frontend gets, it renders
-	 * DELETED_NAME itself. Pass a user row, folded or built from a raw query, nothing else.
-	 *
-	 * @param UserRow|array<string, mixed>|null $user
-	 */
+	//The display name of a user, null when there is none to show: the account is not there anymore,
+	//or the row the caller passed carries no name. This is what the frontend gets, it renders
+	//DELETED_NAME itself. Pass a user row, folded or built from a raw query, nothing else.
+	/** @param UserRow|array<string, mixed>|null $user */
 	public static function displayNameOrNull(?array $user): ?string
 	{
 		if ($user === null || self::isDeleted($user))
@@ -355,10 +316,8 @@ class User extends AppModel
 		return $displayName === null || $displayName === '' ? null : $displayName;
 	}
 
-	/**
-	 * Whether a player ever proposed a tag, tagged a problem, uploaded a solution or had a proposal
-	 * rejected. A player who never did any of that has no contributions page worth opening.
-	 */
+	//Whether a player ever proposed a tag, tagged a problem, uploaded a solution or had a proposal
+	//rejected. A player who never did any of that has no contributions page worth opening.
 	public static function hasContributions(int $userId): bool
 	{
 		$rows = Util::query(
@@ -372,40 +331,27 @@ class User extends AppModel
 		return (bool) $rows[0]['found'];
 	}
 
-	/**
-	 * The same rule as displayNameOrNull() for the places that print the name instead of sending it
-	 * to the frontend: a user whose account is not there anymore is shown as DELETED_NAME.
-	 *
-	 * @param UserRow|array<string, mixed>|null $user
-	 */
+	//The same rule as displayNameOrNull() for the places that print the name instead of sending it
+	//to the frontend: a user whose account is not there anymore is shown as DELETED_NAME.
+	/** @param UserRow|array<string, mixed>|null $user */
 	public static function displayName(?array $user): string
 	{
 		return self::displayNameOrNull($user) ?? self::DELETED_NAME;
 	}
 
-	/**
-	 * The avatar to send to the frontend, null when the account is not there anymore. A deleted
-	 * account keeps its row, and a board can be drawn from any name, so without this it would keep
-	 * showing a board of someone who asked to be forgotten.
-	 *
-	 * @param UserRow|array<string, mixed> $user Row with the id, external_id, picture and email
-	 */
+	//The avatar to send to the frontend, null when the account is not there anymore. A deleted
+	//account keeps its row, and a board can be drawn from any name, so without this it would keep
+	//showing a board of someone who asked to be forgotten.
+	/** @param UserRow|array<string, mixed> $user Row with the id, external_id, picture and email */
 	public static function avatarOrNull(array $user, int $size = self::AVATAR_PIXELS_INLINE): ?string
 	{
 		return self::isDeleted($user) ? null : self::getAvatarUrl($user, $size);
 	}
 
-	/**
-	 * Render a user link with avatar and rank calculated from rating.
-	 *
-	 * @param array|int|string|null $id User row (with display_name, external_id, picture, rating,
-	 *                                  email), a bare user id, or null for a gone account
-	 * @param string|null $displayName Display name, used when $id is a bare id
-	 * @param string|null $externalID
-	 * @param string|null $picture
-	 * @param int|float|string|null $rating
-	 * @return string HTML link (or plain text for a deleted account)
-	 */
+	//Render a user link with avatar and rank calculated from rating.
+	//$id: User row (with display_name, external_id, picture, rating, email), a bare user id, or null for a gone account
+	//$displayName: Display name, used when $id is a bare id
+	//Returns HTML link (or plain text for a deleted account)
 	public static function renderLink(array|int|string|null $id, ?string $displayName = null, ?string $externalID = null, ?string $picture = null, int|float|string|null $rating = null): string
 	{
 		// A bare id (or null for a gone account): the renderers pass whole rows, this is for the
@@ -451,9 +397,7 @@ class User extends AppModel
 		return self::renderLinkInternal($user['id'], $displayName, $user['external_id'] ?? null, $user['picture'] ?? null, $user['email'] ?? null, $user['avatar_setting_id'] ?? null, $user['uploaded_avatar_hash'] ?? null, $rank);
 	}
 
-	/**
-	 * Internal function to render user link HTML.
-	 */
+	//Internal function to render user link HTML.
 	private static function renderLinkInternal(int $id, string $displayName, ?string $externalID, ?string $picture, ?string $email, ?int $avatarSettingID, ?string $uploadedAvatarHash, string $rank): string
 	{
 		assert(($externalID !== null && $picture !== null) || $email !== null, 'Must have either (externalID + picture) or email for avatar');
@@ -473,15 +417,12 @@ class User extends AppModel
 		return '<a href="/users/view/' . $id . '">' . $image . h((string) $displayName) . ($rank === '' ? '' : ' ' . $rank) . '</a>';
 	}
 
-	/**
-	 * Normalize a display name: trim surrounding whitespace and collapse any
-	 * internal runs of whitespace (including newlines/tabs) into single spaces.
-	 * This prevents lookalike names (" admin ", "admin  name") and keeps the
-	 * uniqueness check meaningful.
-	 *
-	 * @param string $name The raw display name input
-	 * @return string The normalized display name
-	 */
+	//Normalize a display name: trim surrounding whitespace and collapse any
+	//internal runs of whitespace (including newlines/tabs) into single spaces.
+	//This prevents lookalike names (" admin ", "admin  name") and keeps the
+	//uniqueness check meaningful.
+	//$name: The raw display name input
+	//Returns the normalized display name
 	public static function normalizeDisplayName(string $name): string
 	{
 		$name = trim($name);
@@ -489,36 +430,30 @@ class User extends AppModel
 		return $name;
 	}
 
-	/** Whether the name holds a character the forum cannot store, see UNSTORABLE_PATTERN. */
+	//Whether the name holds a character the forum cannot store, see UNSTORABLE_PATTERN.
 	public static function containsCharactersTheForumCannotStore(string $name): bool
 	{
 		return (bool) preg_match(self::UNSTORABLE_PATTERN, $name);
 	}
 
-	/**
-	 * The display name rule: a name the site can copy into the forum beside it. CakePHP hands
-	 * a method rule the data as an array keyed by the field.
-	 *
-	 * @param array<string, string>|string $check
-	 */
+	//The display name rule: a name the site can copy into the forum beside it. CakePHP hands
+	//a method rule the data as an array keyed by the field.
+	/** @param array<string, string>|string $check */
 	public function hasOnlyCharactersTheForumCanStore(mixed $check): bool
 	{
 		$name = is_array($check) ? (string) reset($check) : (string) $check;
 		return !self::containsCharactersTheForumCannotStore($name);
 	}
 
-	/** The name without the characters the forum cannot store, see UNSTORABLE_PATTERN. */
+	//The name without the characters the forum cannot store, see UNSTORABLE_PATTERN.
 	public static function withoutCharactersTheForumCannotStore(string $name): string
 	{
 		return (string) preg_replace(self::UNSTORABLE_PATTERN, '', $name);
 	}
 
-	/**
-	 * Generates a unique display name by adding (2), (3), etc. suffix if display_name already exists.
-	 *
-	 * @param string $name The desired base display name
-	 * @return string A unique display_name (either the original or with numbered suffix)
-	 */
+	//Generates a unique display name by adding (2), (3), etc. suffix if display_name already exists.
+	//$name: The desired base display name
+	//Returns a unique display_name (either the original or with numbered suffix)
 	public static function generateUniqueDisplayName(string $name): string
 	{
 		$name = self::normalizeDisplayName($name);
@@ -559,13 +494,9 @@ class User extends AppModel
 		}
 	}
 
-	/**
-	 * Updates a user's display_name in the main database and syncs to phpBB forum.
-	 *
-	 * @param int $userId The user ID
-	 * @param string $newDisplayName The new display name to set
-	 * @return bool True on success
-	 */
+	//Updates a user's display_name in the main database and syncs to phpBB forum.
+	//$newDisplayName: The new display name to set
+	//Returns true on success
 	public static function updateDisplayName(int $userId, string $newDisplayName): bool
 	{
 		$connection = Util::connection();
@@ -606,42 +537,30 @@ class User extends AppModel
 		return true;
 	}
 
-	/**
-	 * Syncs a user's display name to the phpBB forum tables.
-	 *
-	 * The forum shares the application database and its single sign-on reads the user table
-	 * directly, so the phpbb_* rows are written through the default connection.
-	 *
-	 * @param int $userId The user ID (maps to external_id in phpBB)
-	 * @param string $displayName The display name to sync
-	 */
+	//Syncs a user's display name to the phpBB forum tables.
+	//The forum shares the application database and its single sign-on reads the user table
+	//directly, so the phpbb_* rows are written through the default connection.
+	//$userId: The user ID (maps to external_id in phpBB)
 	private static function syncToForum(int $userId, string $displayName): void
 	{
 		PhpbbNames::sync(Util::connection(), $userId, $displayName);
 	}
 
-	/**
-	 * Check if user is a Google user (has external_id).
-	 *
-	 * @param UserRow $user
-	 * @return bool True if user is a Google user
-	 */
+	//Check if user is a Google user (has external_id).
+	//Returns true if user is a Google user
+	/** @param UserRow $user */
 	public static function isGoogleUser(array $user): bool
 	{
 		return !empty($user['external_id']);
 	}
 
-	/**
-	 * Find a local (non-Google) user by email.
-	 * Local users have external_id = NULL and use password authentication.
-	 * Use this for password login and password reset to exclude Google users.
-	 *
-	 * The address is not unique in the database, so the order makes the result of
-	 * several matching accounts deterministic (the oldest account wins).
-	 *
-	 * @param string $email Email to search for
-	 * @return array|null User data or null if not found
-	 */
+	//Find a local (non-Google) user by email.
+	//Local users have external_id = NULL and use password authentication.
+	//Use this for password login and password reset to exclude Google users.
+	//The address is not unique in the database, so the order makes the result of
+	//several matching accounts deterministic (the oldest account wins).
+	//$email: Email to search for
+	//Returns user data or null if not found
 	public function findLocalUserByEmail(string $email): ?array
 	{
 		return $this->find('first', [
@@ -653,32 +572,23 @@ class User extends AppModel
 		]) ?: null;
 	}
 
-	/**
-	 * True when the account has a picture from Google to show.
-	 *
-	 * @param array<string, mixed> $user
-	 * @return bool
-	 */
+	//True when the account has a picture from Google to show.
+	/** @param array<string, mixed> $user */
 	public static function hasGooglePicture(array $user): bool
 	{
 		return !empty($user['external_id']) && !empty($user['picture']);
 	}
 
-	/**
-	 * Whether the account wants sound.
-	 *
-	 * @param array<string, mixed> $user
-	 * @return bool
-	 */
+	//Whether the account wants sound.
+	/** @param array<string, mixed> $user */
 	public static function soundIsOn(array $user): bool
 	{
 		return (bool) ($user['sound'] ?? false);
 	}
 
+	//The avatars a player can pick, as value => label. The Google picture is only
+	//offered to an account that has one, and so is an uploaded picture.
 	/**
-	 * The avatars a player can pick, as value => label. The Google picture is only
-	 * offered to an account that has one, and so is an uploaded picture.
-	 *
 	 * @param array<string, mixed> $user
 	 * @return array<int, string>
 	 */
@@ -695,43 +605,30 @@ class User extends AppModel
 		return $choices;
 	}
 
-	/**
-	 * The avatar an account shows. Without a stored choice it is the board, and a
-	 * stored choice that is not on offer (the Google picture of an account that lost
-	 * it, a picture that was removed) falls back to the board too.
-	 *
-	 * @param array<string, mixed> $user
-	 * @return int
-	 */
+	//The avatar an account shows. Without a stored choice it is the board, and a
+	//stored choice that is not on offer (the Google picture of an account that lost
+	//it, a picture that was removed) falls back to the board too.
+	/** @param array<string, mixed> $user */
 	public static function avatarChoice(array $user): int
 	{
 		$stored = (int) ($user['avatar_setting_id'] ?? self::AVATAR_BOARD);
 		return array_key_exists($stored, self::avatarChoices($user)) ? $stored : self::AVATAR_BOARD;
 	}
 
-	/**
-	 * The Gravatar identifier of an e-mail address: the sha256 of the trimmed lower
-	 * case address, which is what Gravatar documents. The older md5 is not used.
-	 *
-	 * @param string $email
-	 * @return string
-	 */
+	//The Gravatar identifier of an e-mail address: the sha256 of the trimmed lower
+	//case address, which is what Gravatar documents. The older md5 is not used.
 	public static function gravatarHash(string $email): string
 	{
 		return hash('sha256', strtolower(trim($email)));
 	}
 
+	//Get the avatar URL for a user: the avatar the player picked, which is a picture
+	//they uploaded, the picture of a Google account, their Gravatar or the board the
+	//site draws.
+	//Only the avatar fields are needed, the callers pass either a full user row or just these values.
+	//$size: Pixels to ask an avatar host for, the board and an uploaded picture ignore it
 	/**
-	 * Get the avatar URL for a user: the avatar the player picked, which is a picture
-	 * they uploaded, the picture of a Google account, their Gravatar or the board the
-	 * site draws.
-	 *
-	 * Only the avatar fields are needed, the callers pass either a full user row or
-	 * just these values.
-	 *
 	 * @param array{id?: int, display_name?: string|null, avatar_setting_id?: int|null, uploaded_avatar_hash?: string|null, external_id?: string|null, picture?: string|null, email?: string|null} $user
-	 * @param int $size Pixels to ask an avatar host for, the board and an uploaded picture ignore it
-	 * @return string Avatar URL
 	 */
 	public static function getAvatarUrl(array $user, int $size = self::AVATAR_PIXELS_INLINE): string
 	{
@@ -765,26 +662,17 @@ class User extends AppModel
 		return self::boardUrl($user);
 	}
 
-	/**
-	 * The board of an account, which is what an avatar of another host falls back to.
-	 * The drawing comes from the display name, so the account shows the same board
-	 * wherever its name is shown.
-	 *
-	 * @param array{display_name?: string|null} $user
-	 * @return string
-	 */
+	//The board of an account, which is what an avatar of another host falls back to.
+	//The drawing comes from the display name, so the account shows the same board
+	//wherever its name is shown.
+	/** @param array{display_name?: string|null} $user */
 	public static function boardUrl(array $user): string
 	{
 		return Avatar::url((string) ($user['display_name'] ?? ''));
 	}
 
-	/**
-	 * The classes of the avatar element. A board keeps its corners, a picture of a
-	 * face is round, and the size of both lives in components.css.
-	 *
-	 * @param string|null $avatarUrl
-	 * @return string
-	 */
+	//The classes of the avatar element. A board keeps its corners, a picture of a
+	//face is round, and the size of both lives in components.css.
 	public static function avatarClass(?string $avatarUrl): string
 	{
 		return $avatarUrl !== null && str_starts_with($avatarUrl, Avatar::URL_PREFIX)
@@ -792,17 +680,13 @@ class User extends AppModel
 			: 'user-avatar';
 	}
 
-	/**
-	 * The avatar element of a player, ready to be dropped next to a name or into the
-	 * profile header. Every place that shows an avatar goes through here, so the class,
-	 * the lazy loading and the referrer policy stay the same everywhere.
-	 *
-	 * @param string|null $avatarUrl Avatar from getAvatarUrl(), null for a deleted account
-	 * @param string $extraClass Additional class, e.g. the larger avatar of the profile
-	 * @param bool $lazy False for an avatar that is on screen right away (the profile header)
-	 * @param string|null $fallbackUrl Board of the account, shown when the picture is gone
-	 * @return string
-	 */
+	//The avatar element of a player, ready to be dropped next to a name or into the
+	//profile header. Every place that shows an avatar goes through here, so the class,
+	//the lazy loading and the referrer policy stay the same everywhere.
+	//$avatarUrl: Avatar from getAvatarUrl(), null for a deleted account
+	//$extraClass: Additional class, e.g. the larger avatar of the profile
+	//$lazy: False for an avatar that is on screen right away (the profile header)
+	//$fallbackUrl: Board of the account, shown when the picture is gone
 	public static function avatarImage(?string $avatarUrl, string $extraClass = '', bool $lazy = true, ?string $fallbackUrl = null): string
 	{
 		if ($avatarUrl === null)
@@ -819,12 +703,9 @@ class User extends AppModel
 		return '<img src="' . h($avatarUrl) . '" alt="" class="' . $class . '"' . $loading . $fallback . ' decoding="async" referrerpolicy="no-referrer">';
 	}
 
-	/**
-	 * Whether the account solved enough of the problems of the site to throw away the
-	 * progress it has not touched for years.
-	 *
-	 * @param UserRow $user
-	 */
+	//Whether the account solved enough of the problems of the site to throw away the
+	//progress it has not touched for years.
+	/** @param UserRow $user */
 	public static function canResetOldProgress(array $user): bool
 	{
 		$progress = ClassRegistry::init('Tsumego')->publicProblemProgress((int) $user['id']);

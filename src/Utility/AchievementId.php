@@ -2,11 +2,9 @@
 
 namespace App\Utility;
 
-/**
- * The achievements of the site, as the ids the achievement table knows them by. An
- * achievement that asks for a number of something keeps that number elsewhere, so a
- * rule can not be mistaken for an id.
- */
+//The achievements of the site, as the ids the achievement table knows them by. An
+//achievement that asks for a number of something keeps that number elsewhere, so a
+//rule can not be mistaken for an id.
 enum AchievementId: int
 {
 	// Solved Count Achievements
@@ -161,9 +159,7 @@ enum AchievementId: int
 	case RUBY = 113;
 	case DIAMOND = 114;
 
-	/**
-	 * The number of achievements there are.
-	 */
+	//The number of achievements there are.
 	public static function count(): int
 	{
 		return count(self::cases());

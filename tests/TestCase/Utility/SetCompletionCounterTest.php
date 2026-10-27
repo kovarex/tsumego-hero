@@ -21,9 +21,7 @@ class SetCompletionCounterTest extends IntegrationTestCase
 		parent::tearDown();
 	}
 
-	/**
-	 * @param array<int, string|null> $statuses status of each problem of the set, by num
-	 */
+	/** @param array<int, string|null> $statuses status of each problem of the set, by num */
 	private static function setProblems(array $statuses, array $set = []): array
 	{
 		$problems = [];

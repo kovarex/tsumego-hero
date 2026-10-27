@@ -2,20 +2,16 @@
 
 use App\Utility\Constants;
 
+//A status based problem tells the player what a wrong line ends in, when it isn't plainly dead
+//or alive. A line ending without a status is an error in the problem and the player is told so,
+//instead of "It is undefined" (forum#111).
 /**
- * A status based problem tells the player what a wrong line ends in, when it isn't plainly dead
- * or alive. A line ending without a status is an error in the problem and the player is told so,
- * instead of "It is undefined" (forum#111).
- *
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
 class PlayStatusMessageBrowserTest extends IntegrationTestCase
 {
-	/**
-	 * Black (1,1) kills. Black (3,1) only makes seki and black (4,1) ends where white answers
-	 * (1,1) without any status.
-	 */
+	//Black (1,1) kills. Black (3,1) only makes seki and black (4,1) ends where white answers (1,1) without any status.
 	private const SGF = '(;GM[1]FF[4]ST[2]SZ[19]G[KILL](;B[aa];W[ab];B[ba]S[DEAD])(;B[ca];W[aa];B[ba]S[SEKI])(;B[da];W[aa]))';
 
 	private function playLine(array $moves): Browser

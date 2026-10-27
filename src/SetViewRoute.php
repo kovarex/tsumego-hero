@@ -1,27 +1,18 @@
 <?php
 
-/**
- * The short address of a collection: /sets/<id>.
- *
- * A bare /sets/<action> address looks exactly the same, and the default routes that answer those
- * are loaded after this one. An id that names an action of the controller is therefore left to that
- * action, so /sets/delete and /sets/index keep working, and so does every action added later.
- *
- * The address is still generated: this is what a collection is linked by, unlike ParseOnlyRoute.
- */
+//The short address of a collection: /sets/<id>.
+//A bare /sets/<action> address looks exactly the same, and the default routes that answer those
+//are loaded after this one. An id that names an action of the controller is therefore left to that
+//action, so /sets/delete and /sets/index keep working, and so does every action added later.
+//The address is still generated: this is what a collection is linked by, unlike ParseOnlyRoute.
 class SetViewRoute extends CakeRoute
 {
-	/**
-	 * The lowercase action names of each controller, read once
-	 *
-	 * @var array<string, array<string>>
-	 */
+	//The lowercase action names of each controller, read once
+	/** @var array<string, array<string>> */
 	protected static $actions = [];
 
-	/**
-	 * @param mixed $url URL to match
-	 * @return array<string, mixed>|false
-	 */
+	//$url: URL to match
+	/** @return array<string, mixed>|false */
 	public function parse($url)
 	{
 		$params = parent::parse($url);

@@ -83,9 +83,7 @@ class UserStatsTest extends IntegrationTestCase
 		$this->assertTextNotContains('first set - 1', $this->view);
 	}
 
-	/**
-	 * A problem of the set is named by its place in that set, wherever else it is shown.
-	 */
+	//A problem of the set is named by its place in that set, wherever else it is shown.
 	public function testUserstats3ShowsOnlyTheProblemsOfTheSet()
 	{
 		$context = new ContextPreparator([
@@ -102,9 +100,7 @@ class UserStatsTest extends IntegrationTestCase
 		$this->assertTextNotContains('main set - ', $this->view);
 	}
 
-	/**
-	 * The page is read by the same queries however many attempts it lists.
-	 */
+	//The page is read by the same queries however many attempts it lists.
 	public function testTheQueriesDoNotGrowWithTheAttempts()
 	{
 		$queries = [];

@@ -4,9 +4,7 @@ use App\Utility\CookieFlash;
 use App\Utility\Util;
 use Facebook\WebDriver\WebDriverSelect;
 
-/**
- * Owners decide who is an admin or an owner (RolesController, User::changeRole).
- */
+//Owners decide who is an admin or an owner (RolesController, User::changeRole).
 class RolesControllerTest extends IntegrationTestCase
 {
 	private static function roleOf(int $userID): int

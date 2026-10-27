@@ -1,13 +1,9 @@
 <?php
 
-/**
- * Every page declares the one address a search engine should keep for it.
- */
+//Every page declares the one address a search engine should keep for it.
 class CanonicalUrlTest extends IntegrationTestCase
 {
-	/**
-	 * A listing and its first page are one page, however it was asked for
-	 */
+	//A listing and its first page are one page, however it was asked for
 	public function testFirstPageIsTheListing(): void
 	{
 		$context = new ContextPreparator([
@@ -26,9 +22,7 @@ class CanonicalUrlTest extends IntegrationTestCase
 			$this->assertContains(Router::url($listing, true), $this->canonicalAddresses($url), $url);
 	}
 
-	/**
-	 * Asking a listing for a page does not move it
-	 */
+	//Asking a listing for a page does not move it
 	public function testPagingIsNotPartOfTheAddress(): void
 	{
 		$context = new ContextPreparator();
@@ -41,10 +35,7 @@ class CanonicalUrlTest extends IntegrationTestCase
 		}
 	}
 
-	/**
-	 * A page that describes itself in more detail still shares the address
-	 * search engines keep
-	 */
+	//A page that describes itself in more detail still shares the address search engines keep
 	public function testOpenGraphUrlIsTheCanonicalAddress(): void
 	{
 		$context = new ContextPreparator([
@@ -59,10 +50,7 @@ class CanonicalUrlTest extends IntegrationTestCase
 				$url);
 	}
 
-	/**
-	 * Every page the site publishes names one address, spelled out in full, in
-	 * the link and in the shared metadata alike
-	 */
+	//Every page the site publishes names one address, spelled out in full, in the link and in the shared metadata alike
 	public function testEveryPublishedPageNamesTheSameAddress(): void
 	{
 		$context = new ContextPreparator([

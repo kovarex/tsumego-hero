@@ -1,9 +1,6 @@
-/**
- * Animate set-card progress numbers from 0 to their data-target on page load.
- *
- * Progressive enhancement only: the static text (the final value, server-rendered)
- * is the fallback when JS is disabled or the user prefers reduced motion.
- */
+//Animate set-card progress numbers from 0 to their data-target on page load.
+//Progressive enhancement only: the static text (the final value, server-rendered)
+//is the fallback when JS is disabled or the user prefers reduced motion.
 (function () {
 	function init() {
 		var prefersReducedMotion = window.matchMedia

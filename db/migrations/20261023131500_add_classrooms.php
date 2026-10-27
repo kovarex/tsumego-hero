@@ -2,11 +2,9 @@
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * Classes of a teacher. A teacher invites a player or a player asks to join, and the other side
- * accepts; the state of each membership is a row of classroom_member_status. The teacher assigns
- * a collection (or a part of it) to the class with a due date, and sees who solved what.
- */
+//Classes of a teacher. A teacher invites a player or a player asks to join, and the other side
+//accepts; the state of each membership is a row of classroom_member_status. The teacher assigns
+//a collection (or a part of it) to the class with a due date, and sees who solved what.
 class AddClassrooms extends AbstractMigration
 {
 	public function up(): void

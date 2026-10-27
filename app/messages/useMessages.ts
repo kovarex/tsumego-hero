@@ -1,7 +1,5 @@
-/**
- * React Query hooks of the messages page. The conversations are polled while the page is
- * open, so a reply shows up without reloading.
- */
+//React Query hooks of the messages page. The conversations are polled while the page is
+//open, so a reply shows up without reloading.
 
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { get, post } from '../shared/api';
@@ -19,10 +17,8 @@ export function useConversations()
 	});
 }
 
-/**
- * The messages with one player. The first page is the newest messages, every next page
- * is the messages before the oldest one loaded.
- */
+//The messages with one player. The first page is the newest messages, every next page
+//is the messages before the oldest one loaded.
 export function useConversation(partnerUserId: number)
 {
 	return useInfiniteQuery({
@@ -69,7 +65,7 @@ export function useRecipientSearch(query: string)
 	});
 }
 
-/** The menu counts the unread messages from the time the page loaded, this brings it up to date. */
+//The menu counts the unread messages from the time the page loaded, this brings it up to date.
 function showUnreadCountInMenu(unreadCount: number): void
 {
 	document.querySelectorAll<HTMLElement>('[data-unread-messages]').forEach(badge =>

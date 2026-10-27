@@ -5,12 +5,12 @@ use App\Utility\SgfCommentReorientation;
 
 class SgfCommentReorientationTest extends CakeTestCase
 {
-	/** The problem in the top-left corner, the solution starts at A19 (aa). */
+	//The problem in the top-left corner, the solution starts at A19 (aa).
 	private const SGF = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc][dc]AW[bc];B[aa];W[ab];B[ba]C[+])';
-	/** The same problem mirrored left to right, into the top-right corner. */
+	//The same problem mirrored left to right, into the top-right corner.
 	private const MIRRORED_SGF = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[qc][pc]AW[rc];B[sa];W[sb];B[ra]C[+])';
 
-	/** A problem with a comment anchored at its first move. */
+	//A problem with a comment anchored at its first move.
 	private function prepare(string $sgf = self::SGF): ContextPreparator
 	{
 		return new ContextPreparator(['tsumego' => [
@@ -19,7 +19,7 @@ class SgfCommentReorientationTest extends CakeTestCase
 			'comments' => [['message' => 'black A19 then w A18', 'position' => '1/1/-1/-1/1/2/1/1/sgf|1/1']]]]);
 	}
 
-	/** Saves a new SGF version of the problem, accepted unless $sgf says otherwise, returns its id. */
+	//Saves a new SGF version of the problem, accepted unless $sgf says otherwise, returns its id.
 	private function saveVersion(ContextPreparator $context, array $sgf): int
 	{
 		$Sgf = ClassRegistry::init('Sgf');
@@ -47,10 +47,8 @@ class SgfCommentReorientationTest extends CakeTestCase
 		$this->assertSame('19/1/-1/-1/19/2/1/1/sgf|19/1', $comment['position']);
 	}
 
-	/**
-	 * A proposal edited from an older version and accepted after a newer one: the comments
-	 * go back from the newer version to the one both were edited from, then to the proposal.
-	 */
+	//A proposal edited from an older version and accepted after a newer one: the comments
+	//go back from the newer version to the one both were edited from, then to the proposal.
 	public function testCommentsFollowAProposalEditedFromAnOlderVersion()
 	{
 		$context = $this->prepare();

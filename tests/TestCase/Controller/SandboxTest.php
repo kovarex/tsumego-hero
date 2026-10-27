@@ -1,11 +1,7 @@
 <?php
 
-/**
- * Sandbox functionality tests.
- *
- * Covers access control, CRUD operations, and edge cases for the sandbox
- * (admin/premium problem curation workspace).
- */
+//Sandbox functionality tests.
+//Covers access control, CRUD operations, and edge cases for the sandbox (admin/premium problem curation workspace).
 use App\Utility\Constants;
 
 class SandboxTest extends IntegrationTestCase

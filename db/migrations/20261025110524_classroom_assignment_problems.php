@@ -2,15 +2,12 @@
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * An assignment of a class becomes a pick of problems from any collections, which the teacher
- * builds up as a draft and publishes once happy with it, in place of one collection or a numbered
- * part of it. The problems are rows of classroom_assignment_problem; published is the moment the
- * pupils got the assignment, NULL while it is a draft.
- *
- * An assignment from before keeps its problems: the ones of its collection with the numbers it
- * gave, and it counts as published when it was made.
- */
+//An assignment of a class becomes a pick of problems from any collections, which the teacher
+//builds up as a draft and publishes once happy with it, in place of one collection or a numbered
+//part of it. The problems are rows of classroom_assignment_problem; published is the moment the
+//pupils got the assignment, NULL while it is a draft.
+//An assignment from before keeps its problems: the ones of its collection with the numbers it
+//gave, and it counts as published when it was made.
 class ClassroomAssignmentProblems extends AbstractMigration
 {
 	public function up(): void
@@ -46,10 +43,8 @@ JOIN set_connection sc ON sc.set_id = a.set_id
   DROP `last_number`;');
 	}
 
-	/**
-	 * Back to one collection per assignment: the collection of its first problem with the numbers
-	 * it has there. A draft and an assignment without problems are gone.
-	 */
+	//Back to one collection per assignment: the collection of its first problem with the numbers
+	//it has there. A draft and an assignment without problems are gone.
 	public function down(): void
 	{
 		$this->execute('DELETE FROM classroom_assignment WHERE published IS NULL

@@ -70,15 +70,12 @@ class TsumegoFilters
 	}
 
 
-	/**
-	 * Process a preference item with optional transformation and new value override.
-	 *
-	 * @param string $name The preference key
-	 * @param mixed $default Default value if not set
-	 * @param callable|null $processToResult Optional callback to transform the stored string value
-	 * @param string|null $newValue Optional new value to set
-	 * @return mixed The processed value
-	 */
+	//Process a preference item with optional transformation and new value override.
+	//$name: The preference key
+	//$default: Default value if not set
+	//$processToResult: Optional callback to transform the stored string value
+	//$newValue: Optional new value to set
+	//Returns the processed value
 	private static function processItem(string $name, mixed $default, ?callable $processToResult = null, ?string $newValue = null): mixed
 	{
 		// Get current value from Preferences (handles both logged-in and guest storage)
@@ -140,9 +137,7 @@ class TsumegoFilters
 		return "Unsupported yet";
 	}
 
-	/**
-	 * Whether rank or tag filters narrow which problems a set holds.
-	 */
+	//Whether rank or tag filters narrow which problems a set holds.
 	public function hasProblemFilters(): bool
 	{
 		return !empty($this->ranks) || !empty($this->tagIDs);
@@ -163,13 +158,10 @@ class TsumegoFilters
 		$query->conditions[] = $rankConditions;
 	}
 
-	/**
-	 * The ranks the From/To selects should show: the picked range, or the one
-	 * picked rank when it fits both ends. A filter of several separate ranks
-	 * cannot be shown in the two selects, so it reports ['', ''].
-	 *
-	 * @return array{0: string, 1: string}
-	 */
+	//The ranks the From/To selects should show: the picked range, or the one
+	//picked rank when it fits both ends. A filter of several separate ranks
+	//cannot be shown in the two selects, so it reports ['', ''].
+	/** @return array{0: string, 1: string} */
 	public function rankRange(): array
 	{
 		$singleRanks = [];
@@ -185,12 +177,9 @@ class TsumegoFilters
 		return ['', ''];
 	}
 
-	/**
-	 * The rank filter labels as the user picked them: single ranks stay single,
-	 * a range stays one label such as "20k-16k".
-	 *
-	 * @return string[]
-	 */
+	//The rank filter labels as the user picked them: single ranks stay single,
+	//a range stays one label such as "20k-16k".
+	/** @return string[] */
 	public function rankFilterLabels(): array
 	{
 		return $this->rankSpecs;
@@ -217,9 +206,7 @@ class TsumegoFilters
 		$query->conditions[] = '`set`.id IN (' . implode(',', $this->setIDs) . ')';
 	}
 
-	/**
-	 * EXISTS condition for a tsumego belonging to at least one public set (optionally limited to filtered sets).
-	 */
+	//EXISTS condition for a tsumego belonging to at least one public set (optionally limited to filtered sets).
 	private function publicMembershipCondition(): string
 	{
 		$setCondition = Set::officialCondition();

@@ -29,9 +29,7 @@ class WebPServingTest extends CakeTestCase
 		$this->baseUrl = Util::getMyAddress();
 	}
 
-	/**
-	 * Test that PNG images are served as WebP when browser supports it
-	 */
+	//Test that PNG images are served as WebP when browser supports it
 	public function testPngServedAsWebpWhenBrowserSupports(): void
 	{
 		$response = $this->makeRequest('/img/1001weiqi-home.png', 'image/webp,image/png,*/*');
@@ -41,9 +39,7 @@ class WebPServingTest extends CakeTestCase
 		$this->assertStringContainsString('Accept', $response['vary'] ?? '', 'Should have Vary: Accept header');
 	}
 
-	/**
-	 * Test that PNG images are served as original PNG when browser doesn't support WebP
-	 */
+	//Test that PNG images are served as original PNG when browser doesn't support WebP
 	public function testPngServedAsPngWhenBrowserDoesNotSupportWebp(): void
 	{
 		$response = $this->makeRequest('/img/1001weiqi-home.png', 'image/png,*/*');
@@ -53,9 +49,7 @@ class WebPServingTest extends CakeTestCase
 		$this->assertStringContainsString('Accept', $response['vary'] ?? '', 'Should have Vary: Accept header');
 	}
 
-	/**
-	 * Test that JPEG images are served as WebP when browser supports it
-	 */
+	//Test that JPEG images are served as WebP when browser supports it
 	public function testJpegServedAsWebpWhenBrowserSupports(): void
 	{
 		$response = $this->makeRequest('/img/ghost.jpg', 'image/webp,*/*');
@@ -64,9 +58,7 @@ class WebPServingTest extends CakeTestCase
 		$this->assertLessThan(150000, $response['content_length'], 'WebP should be smaller than original JPG');
 	}
 
-	/**
-	 * Test that JPEG images are served as original JPEG when browser doesn't support WebP
-	 */
+	//Test that JPEG images are served as original JPEG when browser doesn't support WebP
 	public function testJpegServedAsJpegWhenBrowserDoesNotSupportWebp(): void
 	{
 		$response = $this->makeRequest('/img/ghost.jpg', 'image/jpeg,*/*');
@@ -74,9 +66,7 @@ class WebPServingTest extends CakeTestCase
 		$this->assertEquals('image/jpeg', $response['content_type'], 'Should serve JPEG content-type');
 	}
 
-	/**
-	 * Test that directly requesting .webp file works
-	 */
+	//Test that directly requesting .webp file works
 	public function testDirectWebpRequest(): void
 	{
 		$response = $this->makeRequest('/img/1001weiqi-home.webp', 'image/webp,*/*');
@@ -84,9 +74,7 @@ class WebPServingTest extends CakeTestCase
 		$this->assertEquals('image/webp', $response['content_type'], 'Should serve WebP content-type');
 	}
 
-	/**
-	 * Make an HTTP request and return response headers
-	 */
+	//Make an HTTP request and return response headers
 	private function makeRequest(string $path, string $accept): array
 	{
 		$ch = curl_init();

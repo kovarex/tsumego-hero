@@ -6,21 +6,13 @@ namespace App\Utility;
 
 class SgfParser
 {
-	/**
-	 * What is wrong with the SGF, or null when it is fit to be stored. The caller decides how to
-	 * refuse the request.
-	 */
+	//What is wrong with the SGF, or null when it is fit to be stored. The caller decides how to refuse the request.
 	public static function validationProblem(string $sgf): ?string
 	{
 		return self::validate($sgf) ?? self::validateGame($sgf);
 	}
 
-	/**
-	 * Parse SGF and return board, stones and info array.
-	 *
-	 * @param string $sgf
-	 * @return SgfBoard
-	 */
+	//Parse SGF and return board, stones and info array.
 	public static function process(string $sgf, array $correctMoves = []): SgfBoard
 	{
 		$boardSize = self::detectBoardSize($sgf);
@@ -44,12 +36,8 @@ class SgfParser
 		return new SgfBoard($stones, $tInfo, $boardSize, $correctMoves);
 	}
 
-	/**
-	 * Determine the color of the first move in an SGF string.
-	 *
-	 * @param string $sgf
-	 * @return string 'B' for black first, 'W' for white first, 'N' when the SGF has no move
-	 */
+	//Determine the color of the first move in an SGF string.
+	//Returns 'B' for black first, 'W' for white first, 'N' when the SGF has no move
 	public static function firstMoveColor(string $sgf): string
 	{
 		$blackPos = strpos($sgf, ';B[');
@@ -65,16 +53,11 @@ class SgfParser
 		return $blackPos < $whitePos ? 'B' : 'W';
 	}
 
-	/**
-	 * Validate that an SGF string is structurally well-formed for a Go problem.
-	 *
-	 * Catches malformed input that the lenient parsing used elsewhere ignores,
-	 * such as a move node that is not '-'prefixed (e.g. "AB[cc]B[aa]") or a node
-	 * that mixes setup stones with a move.
-	 *
-	 * @param string $sgf
-	 * @return string|null An error description, or null when the SGF is valid.
-	 */
+	//Validate that an SGF string is structurally well-formed for a Go problem.
+	//Catches malformed input that the lenient parsing used elsewhere ignores,
+	//such as a move node that is not '-'prefixed (e.g. "AB[cc]B[aa]") or a node
+	//that mixes setup stones with a move.
+	//Returns an error description, or null when the SGF is valid.
 	public static function validate(string $sgf): ?string
 	{
 		$maxSize = 1024 * 1024; // 1 MB
@@ -174,15 +157,10 @@ class SgfParser
 		return null;
 	}
 
-	/**
-	 * Validate that the SGF declares a Go game.
-	 *
-	 * Per the SGF spec the game (GM) property defaults to 1 (Go) when omitted,
-	 * so a missing GM is accepted. Only an explicitly non-Go GM is rejected.
-	 *
-	 * @param string $sgf
-	 * @return string|null An error description, or null when the SGF is a Go game.
-	 */
+	//Validate that the SGF declares a Go game.
+	//Per the SGF spec the game (GM) property defaults to 1 (Go) when omitted,
+	//so a missing GM is accepted. Only an explicitly non-Go GM is rejected.
+	//Returns an error description, or null when the SGF is a Go game.
 	public static function validateGame(string $sgf): ?string
 	{
 		$s = trim($sgf);

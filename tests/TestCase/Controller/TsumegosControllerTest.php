@@ -60,9 +60,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 		}
 	}
 
-	/**
-	 * The "ask the author for a solution" button is offered to the admins the policy allows
-	 */
+	//The "ask the author for a solution" button is offered to the admins the policy allows
 	public function testTheSolutionRequestButtonIsOfferedToAdminsOnly()
 	{
 		$context = new ContextPreparator(['tsumego' => ['set_order' => 666]]);
@@ -510,11 +508,9 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('White to play. Attack the black group.', $decoded);
 	}
 
-	/**
-	 * Controller test: When the edit form is shown with an inverted board it
-	 * submits color_swapped=1, so the description is swapped Black<->White
-	 * back to true-color on save.
-	 */
+	//Controller test: When the edit form is shown with an inverted board it
+	//submits color_swapped=1, so the description is swapped Black<->White
+	//back to true-color on save.
 	public function testDescriptionEditWithSwap(): void
 	{
 		$context = new ContextPreparator([
@@ -543,10 +539,8 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$this->assertSame('White to play here.', $saved['Tsumego']['description']);
 	}
 
-	/**
-	 * Controller test: When the edit form is shown without an inverted board it
-	 * submits color_swapped=0, so the description is stored as-is (true-color).
-	 */
+	//Controller test: When the edit form is shown without an inverted board it
+	//submits color_swapped=0, so the description is stored as-is (true-color).
 	public function testDescriptionEditNoSwap(): void
 	{
 		$context = new ContextPreparator([
@@ -575,10 +569,8 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$this->assertSame('Black to play first.', $saved['Tsumego']['description']);
 	}
 
-	/**
-	 * OG description uses true-color convention - no swap needed.
-	 * The OG image renders actual SGF colors, and descriptions match the board.
-	 */
+	//OG description uses true-color convention - no swap needed.
+	//The OG image renders actual SGF colors, and descriptions match the board.
 	public function testOgDescriptionUsesTrueColor(): void
 	{
 		$blackFirstSgf = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])';
@@ -605,11 +597,9 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('White to capture the black group', $m2[1]);
 	}
 
-	/**
-	 * Custom multiple-choice variant answers are stored in true colors. When the
-	 * board is inverted (?playercolor=white), the answer text is swapped so it
-	 * matches the stones the player actually sees.
-	 */
+	//Custom multiple-choice variant answers are stored in true colors. When the
+	//board is inverted (?playercolor=white), the answer text is swapped so it
+	//matches the stones the player actually sees.
 	public function testMultipleChoiceVariantAnswersSwapWhenBoardInverted(): void
 	{
 		$context = new ContextPreparator([
@@ -639,7 +629,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$this->assertStringNotContainsString('"White is dead"', $this->view);
 	}
 
-	/** An admin on a sandbox problem: a problem in a set of the site that is not published yet. */
+	//An admin on a sandbox problem: a problem in a set of the site that is not published yet.
 	private function prepareSandboxProblem(array $variants = []): ContextPreparator
 	{
 		return new ContextPreparator([
@@ -662,7 +652,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 		return Util::query('SELECT tsumego_variant_type_id, answer1 FROM tsumego_variant WHERE tsumego_id = ?', [$tsumegoID]);
 	}
 
-	/** The form comes with "multiple choice: yes, score estimating: no" checked, saving it used to delete the variant. */
+	//The form comes with "multiple choice: yes, score estimating: no" checked, saving it used to delete the variant.
 	public function testProblemSettingsKeepTheVariantAndItsAnswers(): void
 	{
 		$context = $this->prepareSandboxProblem([['tsumego_variant_type_id' => TsumegoVariant::TYPE_MULTIPLE_CHOICE, 'answer1' => 'Seki in sente']]);
@@ -672,7 +662,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$this->assertSame([['tsumego_variant_type_id' => TsumegoVariant::TYPE_MULTIPLE_CHOICE, 'answer1' => 'Seki in sente']], self::variantsOf($context->tsumegos[0]['id']));
 	}
 
-	/** A problem has one variant at most, it used to get both. */
+	//A problem has one variant at most, it used to get both.
 	public function testProblemSettingsGiveAProblemOneVariant(): void
 	{
 		$context = $this->prepareSandboxProblem();
@@ -694,11 +684,9 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$this->assertSame([], self::variantsOf($context->tsumegos[0]['id']));
 	}
 
-	/**
-	 * Score-estimating summary labels are stored in true colors. When the board
-	 * is inverted, the "Black/White captures" labels swap while the numeric
-	 * values stay in place.
-	 */
+	//Score-estimating summary labels are stored in true colors. When the board
+	//is inverted, the "Black/White captures" labels swap while the numeric
+	//values stay in place.
 	public function testScoreEstimatingLabelsSwapWhenBoardInverted(): void
 	{
 		$context = new ContextPreparator([
@@ -726,11 +714,9 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('Black captures: 6', $this->view);
 	}
 
-	/**
-	 * When the player's color opposes the SGF's first move the board is inverted and
-	 * the description swaps Black<->White so the player sees their own color as the
-	 * side to move. (?playercolor sets up the scenario.)
-	 */
+	//When the player's color opposes the SGF's first move the board is inverted and
+	//the description swaps Black<->White so the player sees their own color as the
+	//side to move. (?playercolor sets up the scenario.)
 	public function testDescriptionSwapsWhenPlayerColorOpposesFirstMove(): void
 	{
 		$blackFirst = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])';
@@ -753,16 +739,14 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$this->assertSame('Black to play.', $this->shownDescription());
 	}
 
-	/** The description the play page shows, which is the one the colour swap applies to. */
+	//The description the play page shows, which is the one the colour swap applies to.
 	private function shownDescription(): string
 	{
 		return trim((string) $this->getStringDom()->querySelector('#descriptionText')->textContent);
 	}
 
-	/**
-	 * When the player's color matches the SGF's first move the board is not inverted
-	 * and the description is shown exactly as stored. (?playercolor sets up the scenario.)
-	 */
+	//When the player's color matches the SGF's first move the board is not inverted
+	//and the description is shown exactly as stored. (?playercolor sets up the scenario.)
 	public function testDescriptionDoesNotSwapWhenPlayerColorMatchesFirstMove(): void
 	{
 		$blackFirst = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])';
@@ -785,10 +769,8 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('White to play.', $this->view);
 	}
 
-	/**
-	 * When the board is inverted, every color word in a description swaps, so a
-	 * description that names both colours stays internally consistent.
-	 */
+	//When the board is inverted, every color word in a description swaps, so a
+	//description that names both colours stays internally consistent.
 	public function testDescriptionSwapsAllColorWords(): void
 	{
 		$context = new ContextPreparator([
@@ -800,10 +782,8 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('White to play. Find the way to kill the black group.', $this->view);
 	}
 
-	/**
-	 * Color swaps match whole words only, so a colour word that is part of a larger
-	 * word (like "Blackbird") is left untouched.
-	 */
+	//Color swaps match whole words only, so a colour word that is part of a larger
+	//word (like "Blackbird") is left untouched.
 	public function testDescriptionSwapRespectsWordBoundaries(): void
 	{
 		$context = new ContextPreparator([
@@ -815,9 +795,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('White to play. The Blackbird group is black.', $this->view);
 	}
 
-	/**
-	 * Color swaps preserve the original casing of each word.
-	 */
+	//Color swaps preserve the original casing of each word.
 	public function testDescriptionSwapPreservesCase(): void
 	{
 		$context = new ContextPreparator([
@@ -829,11 +807,9 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('white stones attack Black stones.', $this->view);
 	}
 
-	/**
-	 * A White-first problem in a collection that forces the player to black (small
-	 * board) inverts the board and swaps the description automatically, without any
-	 * URL override. This is the reported "Problems from Professional Games" case.
-	 */
+	//A White-first problem in a collection that forces the player to black (small
+	//board) inverts the board and swaps the description automatically, without any
+	//URL override. This is the reported "Problems from Professional Games" case.
 	public function testForcedBlackWhiteFirstSwapsDescription(): void
 	{
 		$context = new ContextPreparator([

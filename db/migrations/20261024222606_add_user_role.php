@@ -2,11 +2,9 @@
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * What a user may do on the site: a player, an admin, or an owner, who on top of everything an
- * admin does decides who is an admin or an owner. Replaces the isAdmin flag, the roles are rows of
- * their own table (see the User::ROLE_ constants). The first owner is kovarex.
- */
+//What a user may do on the site: a player, an admin, or an owner, who on top of everything an
+//admin does decides who is an admin or an owner. Replaces the isAdmin flag, the roles are rows of
+//their own table (see the User::ROLE_ constants). The first owner is kovarex.
 class AddUserRole extends AbstractMigration
 {
 	public function up(): void

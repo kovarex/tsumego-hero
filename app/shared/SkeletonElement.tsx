@@ -1,7 +1,5 @@
-/**
- * Base skeleton element with shimmer animation
- * Reusable building block for creating skeleton screens
- */
+//Base skeleton element with shimmer animation
+//Reusable building block for creating skeleton screens
 export function SkeletonElement({
 	width,
 	height = '1rem',

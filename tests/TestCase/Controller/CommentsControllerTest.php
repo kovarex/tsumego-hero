@@ -9,17 +9,17 @@ use Facebook\WebDriver\WebDriverBy;
 
 class CommentsControllerTest extends IntegrationTestCase
 {
-	/** SGF of a solved problem with a three move solution line. */
+	//SGF of a solved problem with a three move solution line.
 	private const SOLVED_SGF = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])';
-	/** SOLVED_SGF in the bottom-right corner: the solution is T1, T2, S1. */
+	//SOLVED_SGF in the bottom-right corner: the solution is T1, T2, S1.
 	private const BOTTOM_RIGHT_SGF = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[qq];B[ss];W[sr];B[rs]C[+])';
-	/** A problem along the left edge, taller than wide, so the board turns it on its side: the solution is A19, A18, A17. */
+	//A problem along the left edge, taller than wide, so the board turns it on its side: the solution is A19, A18, A17.
 	private const TALL_SGF = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[ca][cb][cc][cd][ce][cf][cg][ch][ci][cj];B[aa];W[ab];B[ac]C[+])';
 
-	/** The board as the SGF stores it: the top-left corner and its own colours, so comments show as stored. */
+	//The board as the SGF stores it: the top-left corner and its own colours, so comments show as stored.
 	private const STORED_BOARD = ['board_orientation_setting' => User::BOARD_ORIENTATION_SETTING_ORIGINAL, 'player_color_setting' => User::PLAYER_COLOR_SETTING_ORIGINAL];
 
-	/** Opens a tsumego the admin has already solved, so its comments and the review mode are available. */
+	//Opens a tsumego the admin has already solved, so its comments and the review mode are available.
 	private function openSolvedTsumego(Browser $browser, array $tsumego = [], array $user = []): ContextPreparator
 	{
 		$context = new ContextPreparator(['user' => ['admin' => true] + $user, 'tsumego' => ['set_order' => 1, 'status' => 'S'] + $tsumego]);
@@ -32,13 +32,13 @@ class CommentsControllerTest extends IntegrationTestCase
 		$browser->driver->executeScript('besogo.editor.setReviewMode(true); besogo.editor.notifyListeners({treeChange: true, navChange: true, stoneChange: true});');
 	}
 
-	/** Turns the board as the orientation buttons do, e.g. ['hFlip' => true]. */
+	//Turns the board as the orientation buttons do, e.g. ['hFlip' => true].
 	private function transformBoard(Browser $browser, array $flags): void
 	{
 		$browser->driver->executeScript('var t = besogo.makeTransformation(); Object.assign(t, arguments[0]); besogo.editor.applyTransformation(t);', [$flags]);
 	}
 
-	/** Writes a comment in the comment form and waits until it is saved, returns it as stored. */
+	//Writes a comment in the comment form and waits until it is saved, returns it as stored.
 	private function submitComment(Browser $browser, string $message, bool $attachPosition = false): array
 	{
 		$messageField = $browser->find('.tsumego-comments__form textarea');
@@ -51,23 +51,22 @@ class CommentsControllerTest extends IntegrationTestCase
 		return ClassRegistry::init('TsumegoComment')->find('first', ['order' => 'TsumegoComment.id DESC'])['TsumegoComment'];
 	}
 
-	/** Goes to the second move of the solution, the one a comment attaches in these tests. */
+	//Goes to the second move of the solution, the one a comment attaches in these tests.
 	private function goToSecondMove(Browser $browser): void
 	{
 		$this->enterReviewMode($browser);
 		$browser->driver->executeScript('besogo.editor.setCurrent(besogo.editor.getRoot().children[0].children[0]);');
 	}
 
-	/** Where the current move is on the board as shown. */
+	//Where the current move is on the board as shown.
 	private function currentMove(Browser $browser): array
 	{
 		// the browser doesn't keep the key order of the returned object, compare with assertEquals
 		return $browser->driver->executeScript('var move = besogo.editor.getCurrent().move; return {x: move.x, y: move.y};');
 	}
 
+	//Shows a single comment and returns how its coordinates were rendered.
 	/**
-	 * Shows a single comment and returns how its coordinates were rendered.
-	 *
 	 * @return array{colors: array<string, string>, sequences: list<string>, alternatives: list<string>}
 	 * colors maps each coordinate to its colour marker ('' when there is none), sequences and
 	 * alternatives are the texts of the coordinate groups.
@@ -162,11 +161,9 @@ class CommentsControllerTest extends IntegrationTestCase
 		$this->assertCount(1, $browser->getElements('.besogo-tree-comment-badge'));
 	}
 
-	/**
-	 * Two anchored comments on two DIFFERENT nodes should produce two tree
-	 * badges - not collapse onto a single node (regression for the resolver
-	 * walking the whole subtree instead of the actual path).
-	 */
+	//Two anchored comments on two DIFFERENT nodes should produce two tree
+	//badges - not collapse onto a single node (regression for the resolver
+	//walking the whole subtree instead of the actual path).
 	public function testMultipleCommentBadgesOnDifferentNodes()
 	{
 		$browser = Browser::instance();
@@ -200,10 +197,8 @@ class CommentsControllerTest extends IntegrationTestCase
 		$this->assertCount(2, $browser->getElements('.besogo-tree-comment-badge'), 'Two anchored comments on different nodes should produce two badges');
 	}
 
-	/**
-	 * The text is stored in the coordinates and colours of the SGF and shown as the
-	 * viewer's board is turned, again whenever it is turned.
-	 */
+	//The text is stored in the coordinates and colours of the SGF and shown as the
+	//viewer's board is turned, again whenever it is turned.
 	public function testCommentTextFollowsTheBoardTransformation()
 	{
 		$browser = Browser::instance();
@@ -218,7 +213,7 @@ class CommentsControllerTest extends IntegrationTestCase
 		$this->assertSame(['T19', 'T18'], $browser->driver->executeScript('return [].map.call(document.querySelectorAll(".go-coord"), function (e) { return e.dataset.coord; });'));
 	}
 
-	/** A comment written on a turned board is stored as it refers to the SGF. */
+	//A comment written on a turned board is stored as it refers to the SGF.
 	public function testCommentWrittenOnATurnedBoardIsStoredInSgfCoordinates()
 	{
 		$browser = Browser::instance();
@@ -246,7 +241,7 @@ class CommentsControllerTest extends IntegrationTestCase
 		$this->assertSame('1/2/1/1/2/1/2/1/sgf|1/1+1/2', $comment['position']);
 	}
 
-	/** On a problem the board shows as it is stored, the comment and its position are stored as written. */
+	//On a problem the board shows as it is stored, the comment and its position are stored as written.
 	public function testCommentOnAProblemShownAsStoredIsStoredAsWritten()
 	{
 		$browser = Browser::instance();
@@ -261,11 +256,9 @@ class CommentsControllerTest extends IntegrationTestCase
 		$browser->waitUntilCssSelectorExistsWithText('.comment__text', 'black A19 then w A18');
 	}
 
-	/**
-	 * A problem stored in another corner is turned to the top-left by the board as it loads,
-	 * here also with the colours swapped. The comment is written as the viewer sees it, stored
-	 * as it refers to the SGF, and points at the same stones on a board turned another way.
-	 */
+	//A problem stored in another corner is turned to the top-left by the board as it loads,
+	//here also with the colours swapped. The comment is written as the viewer sees it, stored
+	//as it refers to the SGF, and points at the same stones on a board turned another way.
 	public function testCommentOnAProblemTheBoardTurnsIsStoredInSgfCoordinates()
 	{
 		$browser = Browser::instance();
@@ -292,7 +285,7 @@ class CommentsControllerTest extends IntegrationTestCase
 		$this->assertEquals(['x' => 19, 'y' => 2], $this->currentMove($browser));
 	}
 
-	/** On a board turned as it loads, the coordinates and colours of the comment as shown lead to its moves in the tree, as hovering them does. */
+	//On a board turned as it loads, the coordinates and colours of the comment as shown lead to its moves in the tree, as hovering them does.
 	public function testCommentOnATurnedBoardPointsAtItsMoves()
 	{
 		$browser = Browser::instance();
@@ -309,7 +302,7 @@ class CommentsControllerTest extends IntegrationTestCase
 			return hover.found ? hover.nodes.map(function (node) { return node.moveNumber; }) : null;'));
 	}
 
-	/** A problem taller than wide is turned on its side by the board, the comment follows the rotation. */
+	//A problem taller than wide is turned on its side by the board, the comment follows the rotation.
 	public function testCommentOnAProblemTheBoardRotatesIsStoredInSgfCoordinates()
 	{
 		$browser = Browser::instance();
@@ -341,7 +334,7 @@ class CommentsControllerTest extends IntegrationTestCase
 			'var current = besogo.editor.getCurrent(); return {x: current.move.x, y: current.move.y, localEdit: current.localEdit};'));
 	}
 
-	/** When the tree changed since the comment was written, its moves are played again on the board. */
+	//When the tree changed since the comment was written, its moves are played again on the board.
 	public function testPositionButtonPlaysMovesNoLongerInTheTree()
 	{
 		$browser = Browser::instance();
@@ -358,10 +351,8 @@ class CommentsControllerTest extends IntegrationTestCase
 			return {x: current.move.x, y: current.move.y, localEdit: current.localEdit, previous: {x: current.parent.move.x, y: current.parent.move.y}};'));
 	}
 
-	/**
-	 * Coordinate references in comments should be detected case-insensitively
-	 * (lowercase "r19" is common), and sequences/alternatives should be grouped.
-	 */
+	//Coordinate references in comments should be detected case-insensitively
+	//(lowercase "r19" is common), and sequences/alternatives should be grouped.
 	public function testCommentCoordinatesParseLowercaseSequencesAndAlternatives()
 	{
 		$rendered = $this->renderComment('r19-p19-q19-q18-t19 works. Alternatively F2/G1. w C1, b E2.', 9);
@@ -380,10 +371,8 @@ class CommentsControllerTest extends IntegrationTestCase
 		$this->assertSame(['C1 or B3'], $rendered['alternatives']);
 	}
 
-	/**
-	 * A lone coordinate is a one-move sequence: it renders in a sequence group so
-	 * hovering it shows the move on the board like any other sequence.
-	 */
+	//A lone coordinate is a one-move sequence: it renders in a sequence group so
+	//hovering it shows the move on the board like any other sequence.
 	public function testCommentSingleCoordinateRendersAsSequenceGroup()
 	{
 		$rendered = $this->renderComment('White lives with R19.', 1);
@@ -392,11 +381,9 @@ class CommentsControllerTest extends IntegrationTestCase
 		$this->assertSame([], $rendered['alternatives']);
 	}
 
-	/**
-	 * A comma followed by the connector word "then" (e.g. "...A16, then A18?")
-	 * is a sequence continuation, not a sentence break. The connector keeps its
-	 * spaces, so it reads "D17, then A18" rather than "D17, thenA18".
-	 */
+	//A comma followed by the connector word "then" (e.g. "...A16, then A18?")
+	//is a sequence continuation, not a sentence break. The connector keeps its
+	//spaces, so it reads "D17, then A18" rather than "D17, thenA18".
 	public function testCommentCoordinatesKeepCommaThenInSequence()
 	{
 		$rendered = $this->renderComment('F17,B16,D17, then A18?', 4);
@@ -404,12 +391,10 @@ class CommentsControllerTest extends IntegrationTestCase
 		$this->assertSame(['F17,B16,D17, then A18'], $rendered['sequences']);
 	}
 
-	/**
-	 * A sequence written with colour markers and short move phrases (e.g.
-	 * "B kills with H18") is still one sequence. Compact "w"/"b" markers after a
-	 * comma must be recognised as colours, so all five moves form a single group
-	 * with the correct black/white labels.
-	 */
+	//A sequence written with colour markers and short move phrases (e.g.
+	//"B kills with H18") is still one sequence. Compact "w"/"b" markers after a
+	//comma must be recognised as colours, so all five moves form a single group
+	//with the correct black/white labels.
 	public function testCommentCoordinatesGroupColoredMovePhrases()
 	{
 		$rendered = $this->renderComment('B H19,w K18, b L18, after w J19 B kills with H18!', 5);
@@ -419,11 +404,9 @@ class CommentsControllerTest extends IntegrationTestCase
 		$this->assertEquals(['H19' => 'b', 'K18' => 'w', 'L18' => 'b', 'J19' => 'w', 'H18' => 'b'], $rendered['colors']);
 	}
 
-	/**
-	 * A coordinate label must always map to the same absolute intersection, so
-	 * hovering distinct labels like R19 and C19 must highlight different points.
-	 * The old "spin" heuristic collapsed them onto one position.
-	 */
+	//A coordinate label must always map to the same absolute intersection, so
+	//hovering distinct labels like R19 and C19 must highlight different points.
+	//The old "spin" heuristic collapsed them onto one position.
 	public function testCoordHoverMapsLabelsToDistinctIntersections()
 	{
 		$browser = Browser::instance();
@@ -644,12 +627,9 @@ class CommentsControllerTest extends IntegrationTestCase
 		$this->assertTextNotContains('Comment to delete', $pageSource);
 	}
 
-	/**
-	 * Test deleting the last comment in an issue removes the entire issue via React.
-	 *
-	 * When the last comment in an issue is deleted, the issue itself should be
-	 * removed from the DOM immediately (not just after page refresh).
-	 */
+	//Test deleting the last comment in an issue removes the entire issue via React.
+	//When the last comment in an issue is deleted, the issue itself should be
+	//removed from the DOM immediately (not just after page refresh).
 	public function testDeleteLastCommentInIssueRemovesIssue()
 	{
 		$context = new ContextPreparator([
@@ -682,11 +662,8 @@ class CommentsControllerTest extends IntegrationTestCase
 		$this->assertEmpty($issueElements, 'Issue element should be removed from DOM after deleting last comment');
 	}
 
-	/**
-	 * Test that comment counts update via React when deleting a comment.
-	 *
-	 * The counts in the section header and tabs should update immediately after deleting.
-	 */
+	//Test that comment counts update via React when deleting a comment.
+	//The counts in the section header and tabs should update immediately after deleting.
 	public function testDeleteCommentUpdatesCountsViaReact()
 	{
 		$context = new ContextPreparator([
@@ -727,11 +704,8 @@ class CommentsControllerTest extends IntegrationTestCase
 		// CLOSED ISSUES tab shows just "CLOSED ISSUES" when empty (no number prefix)
 	}
 
-	/**
-	 * Test that closing an issue updates the tab counts via React.
-	 *
-	 * When an issue is closed on the play page, the COMMENTS and CLOSED ISSUES counts should update.
-	 */
+	//Test that closing an issue updates the tab counts via React.
+	//When an issue is closed on the play page, the COMMENTS and CLOSED ISSUES counts should update.
 	public function testCloseIssueUpdatesOpenCountBadge()
 	{
 		$context = new ContextPreparator([
@@ -769,12 +743,9 @@ class CommentsControllerTest extends IntegrationTestCase
 		$this->assertTextContains('Closed', $pageSource, 'Issue should show Closed status');
 	}
 
-	/**
-	 * Test that creating an issue via "Report as issue" checkbox works via React.
-	 *
-	 * When user checks "Report as issue" and submits, the issue should appear
-	 * without page reload and counts should update.
-	 */
+	//Test that creating an issue via "Report as issue" checkbox works via React.
+	//When user checks "Report as issue" and submits, the issue should appear
+	//without page reload and counts should update.
 	public function testCreateIssueViaCheckbox()
 	{
 		$context = new ContextPreparator(['tsumego' => ['set_order' => 1, 'status' => 'S']]);
@@ -980,12 +951,9 @@ class CommentsControllerTest extends IntegrationTestCase
 		$browser->assertNoErrors();
 	}
 
-	/**
-	 * Test that filter state (COMMENTS tab) is preserved when replying to an issue via React.
-	 *
-	 * When viewing comments tab (open issues + comments), adding a reply to an open issue
-	 * should NOT cause closed issues to become visible - the filter must be preserved.
-	 */
+	//Test that filter state (COMMENTS tab) is preserved when replying to an issue via React.
+	//When viewing comments tab (open issues + comments), adding a reply to an open issue
+	//should NOT cause closed issues to become visible - the filter must be preserved.
 	public function testFilterPreservedAfterReplyToOpenIssue()
 	{
 		// Setup: Create tsumego with one open issue AND one closed issue
@@ -1036,12 +1004,9 @@ class CommentsControllerTest extends IntegrationTestCase
 		$this->assertTrue($openIssuesAfter[0]->isDisplayed(), 'Open issue should still be visible after re-render');
 	}
 
-	/**
-	 * Test that filter state is preserved when adding a standalone comment via React.
-	 *
-	 * When viewing comments tab with closed issues present, adding a new standalone comment
-	 * should NOT cause closed issues to become visible - the filter must be preserved.
-	 */
+	//Test that filter state is preserved when adding a standalone comment via React.
+	//When viewing comments tab with closed issues present, adding a new standalone comment
+	//should NOT cause closed issues to become visible - the filter must be preserved.
 	public function testFilterPreservedAfterAddingStandaloneComment()
 	{
 		// Setup: Create tsumego with a standalone comment AND a closed issue
@@ -1084,12 +1049,9 @@ class CommentsControllerTest extends IntegrationTestCase
 		$this->assertCount(2, $standaloneCommentsAfter, 'Should have 2 standalone comments after adding');
 	}
 
-	/**
-	 * Test that filter state is preserved when deleting a comment from an open issue via React.
-	 *
-	 * When viewing comments tab with closed issues present, deleting a comment from an open issue
-	 * should NOT cause closed issues to become visible - the filter must be preserved.
-	 */
+	//Test that filter state is preserved when deleting a comment from an open issue via React.
+	//When viewing comments tab with closed issues present, deleting a comment from an open issue
+	//should NOT cause closed issues to become visible - the filter must be preserved.
 	public function testFilterPreservedAfterDeletingCommentFromOpenIssue()
 	{
 		// Setup: Create tsumego with an open issue with 2 comments AND a closed issue
@@ -1144,12 +1106,9 @@ class CommentsControllerTest extends IntegrationTestCase
 		$this->assertTrue($openIssuesAfter[0]->isDisplayed(), 'Open issue should still be visible after delete');
 	}
 
-	/**
-	 * Test that filter state is preserved when moving a comment out of an issue via drag-and-drop.
-	 *
-	 * When viewing comments tab with closed issues present, moving a comment out of an open issue
-	 * (to standalone) should NOT cause closed issues to become visible - the filter must be preserved.
-	 */
+	//Test that filter state is preserved when moving a comment out of an issue via drag-and-drop.
+	//When viewing comments tab with closed issues present, moving a comment out of an open issue
+	//(to standalone) should NOT cause closed issues to become visible - the filter must be preserved.
 	public function testFilterPreservedAfterMovingCommentOutOfIssue()
 	{
 		// Setup: Create tsumego with an open issue with 2 comments AND a closed issue
@@ -1251,11 +1210,8 @@ class CommentsControllerTest extends IntegrationTestCase
 		$this->assertTrue($formWrapper->isDisplayed(), 'Comment form should be visible when back on COMMENTS tab');
 	}
 
-	/**
-	 * Test that a newly added comment can be dragged (Make Issue button works).
-	 *
-	 * After adding a comment via React, the new comment should have a working Make Issue button.
-	 */
+	//Test that a newly added comment can be dragged (Make Issue button works).
+	//After adding a comment via React, the new comment should have a working Make Issue button.
 	public function testNewlyAddedCommentCanBeDragged()
 	{
 		$context = new ContextPreparator([
@@ -1364,9 +1320,7 @@ class CommentsControllerTest extends IntegrationTestCase
 		$this->assertSame(2, substr_count($this->view, 'UNIQUE_TEST_COMMENT_XYZ'));
 	}
 
-	/**
-	 * No new set has a subtitle, and the list still names the set of each comment.
-	 */
+	//No new set has a subtitle, and the list still names the set of each comment.
 	public function testCommentListNamesASetWithoutSubtitle()
 	{
 		new ContextPreparator([
@@ -1380,9 +1334,7 @@ class CommentsControllerTest extends IntegrationTestCase
 		$this->assertTextContains('Set without subtitle - 7', $this->view);
 	}
 
-	/**
-	 * Test that issue author's Go rank is displayed correctly on the play page.
-	 */
+	//Test that issue author's Go rank is displayed correctly on the play page.
 	public function testIssueAuthorRankOnPlayPage()
 	{
 		$context = new ContextPreparator([
@@ -1402,9 +1354,7 @@ class CommentsControllerTest extends IntegrationTestCase
 		$this->assertTextContains('6k', $pageSource);
 	}
 
-	/**
-	 * Test reopening a closed issue from the play page.
-	 */
+	//Test reopening a closed issue from the play page.
 	public function testReopenClosedIssue()
 	{
 		$context = new ContextPreparator([

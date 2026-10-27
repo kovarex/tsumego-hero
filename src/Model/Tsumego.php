@@ -10,11 +10,9 @@ class Tsumego extends AppModel
 		parent::__construct($id, $table, $ds);
 	}
 
-	/**
-	 * Moves the rating of the problem by the change a result brought, within its minimum and maximum.
-	 * Only the rating is written, and the change is added to the rating stored now: the row a request
-	 * read at its start may be older than an admin's edit or another player's result on the problem.
-	 */
+	//Moves the rating of the problem by the change a result brought, within its minimum and maximum.
+	//Only the rating is written, and the change is added to the rating stored now: the row a request
+	//read at its start may be older than an admin's edit or another player's result on the problem.
 	public static function addToRating(int $tsumegoID, float $change): void
 	{
 		Util::execute('UPDATE tsumego
@@ -26,26 +24,20 @@ class Tsumego extends AppModel
 			WHERE id = ?', [$change, $change, $change, $tsumegoID]);
 	}
 
-	/**
-	 * The problems the site holds: every problem that is not in the trash, whatever collection it
-	 * sits in and whether or not that collection is published yet. A problem that belongs to three
-	 * sets counts once. This is the number the solve counter of a player runs against on the
-	 * profile, so a solve of a problem of a collection nobody published yet is inside the fraction.
-	 */
+	//The problems the site holds: every problem that is not in the trash, whatever collection it
+	//sits in and whether or not that collection is published yet. A problem that belongs to three
+	//sets counts once. This is the number the solve counter of a player runs against on the
+	//profile, so a solve of a problem of a collection nobody published yet is inside the fraction.
 	public static function problemCount(): int
 	{
 		return (int) Util::query('SELECT COUNT(*) AS total FROM tsumego WHERE deleted IS NULL')[0]['total'];
 	}
 
-	/**
-	 * The problems of the site and how many of them the player solved.
-	 *
-	 * Both numbers are counted over the same set of problems, so the second one can never
-	 * pass the first: a solve of a problem that does not belong to a collection of the site
-	 * (a sandbox build, an upload, a player collection) counts on neither side.
-	 *
-	 * @return array{total: int, solved: int}
-	 */
+	//The problems of the site and how many of them the player solved.
+	//Both numbers are counted over the same set of problems, so the second one can never
+	//pass the first: a solve of a problem that does not belong to a collection of the site
+	//(a sandbox build, an upload, a player collection) counts on neither side.
+	/** @return array{total: int, solved: int} */
 	public static function publicProblemProgress(int $userId): array
 	{
 		$inOfficialSet = fn(string $tsumegoRef): string

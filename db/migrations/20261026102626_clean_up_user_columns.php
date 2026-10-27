@@ -4,25 +4,20 @@ declare(strict_types=1);
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * The user table is loaded on every request, these columns of it were dead:
- *
- * - lastRefresh, promoted, penalty, sortOrder, sortColor, ip, location: nothing reads or writes them,
- * - reward: the date of a donation, nothing reads it since the "member since" backfill
- *   (20261025100000) used it as evidence,
- * - login_token: the forum signs in with the JWT auth_token cookie now,
- * - readingTrial, reuse4: only the daily cron reset them, nothing read them,
- * - lastProfileLeft, lastProfileRight: the chart tab of a profile is a string ('level', 'rating'...),
- *   which never fit these INT columns, so they always stayed 0; the cookie alone remembers the tab.
- *
- * The columns left are renamed to snake_case, like the rest of the schema, and to names saying what
- * they are: t_glicko is the difficulty a player picked for the rating mode (1 easiest, 4 normal,
- * 7 hardest), reuse5 = 1 blocked the account (its play page locks the board; nothing sets the block,
- * an admin does it in the database), lastLight is the theme, lastHighscore the highscore page the
- * menu links to. The cookies that carry these choices keep their names.
- *
- * IRREVERSIBLE in part: a rollback brings the columns back with their defaults, the data is gone.
- */
+//The user table is loaded on every request, these columns of it were dead:
+//- lastRefresh, promoted, penalty, sortOrder, sortColor, ip, location: nothing reads or writes them,
+//- reward: the date of a donation, nothing reads it since the "member since" backfill
+//  (20261025100000) used it as evidence,
+//- login_token: the forum signs in with the JWT auth_token cookie now,
+//- readingTrial, reuse4: only the daily cron reset them, nothing read them,
+//- lastProfileLeft, lastProfileRight: the chart tab of a profile is a string ('level', 'rating'...),
+//  which never fit these INT columns, so they always stayed 0; the cookie alone remembers the tab.
+//The columns left are renamed to snake_case, like the rest of the schema, and to names saying what
+//they are: t_glicko is the difficulty a player picked for the rating mode (1 easiest, 4 normal,
+//7 hardest), reuse5 = 1 blocked the account (its play page locks the board; nothing sets the block,
+//an admin does it in the database), lastLight is the theme, lastHighscore the highscore page the
+//menu links to. The cookies that carry these choices keep their names.
+//IRREVERSIBLE in part: a rollback brings the columns back with their defaults, the data is gone.
 final class CleanUpUserColumns extends AbstractMigration
 {
 	public function up(): void

@@ -2,26 +2,21 @@
 
 namespace App\Utility\Drawing;
 
-/**
- * A canvas that paints the drawing into a picture with gd, the rendition a share
- * preview takes: no network accepts an svg as its preview image, and gd is the
- * one graphics library a web host is sure to have.
- *
- * The picture is painted larger than it is served and sampled down on the way
- * out, which is what gives the edges of the stones and of the grid their
- * smoothness; gd itself draws without them.
- */
+//A canvas that paints the drawing into a picture with gd, the rendition a share
+//preview takes: no network accepts an svg as its preview image, and gd is the
+//one graphics library a web host is sure to have.
+//The picture is painted larger than it is served and sampled down on the way
+//out, which is what gives the edges of the stones and of the grid their
+//smoothness; gd itself draws without them.
 class GdCanvas implements Canvas
 {
 	private \GdImage $image;
 
-	/** Pixels per unit of the drawing. */
+	//Pixels per unit of the drawing.
 	private float $scale;
 
-	/**
-	 * @param int $side Side of the picture the drawing is painted into, in pixels
-	 * @param float $units Side of the drawing itself, in its own units
-	 */
+	//$side: Side of the picture the drawing is painted into, in pixels
+	//$units: Side of the drawing itself, in its own units
 	public function __construct(int $side, float $units)
 	{
 		assert($side > 0 && $units > 0, 'A canvas needs a size');
@@ -97,14 +92,11 @@ class GdCanvas implements Canvas
 			$diameter, $diameter, $this->color($color, $opacity));
 	}
 
-	/**
-	 * The drawing as png data of the requested size. The picture is painted at
-	 * twice that size and sampled down here, which is the whole of its smoothing.
-	 * The canvas is spent afterwards: a second picture needs a second drawing.
-	 *
-	 * @param int $size Side of the picture in pixels
-	 * @return string PNG data
-	 */
+	//The drawing as png data of the requested size. The picture is painted at
+	//twice that size and sampled down here, which is the whole of its smoothing.
+	//The canvas is spent afterwards: a second picture needs a second drawing.
+	//$size: Side of the picture in pixels
+	//Returns PNG data
 	public function png(int $size): string
 	{
 		$picture = imagecreatetruecolor($size, $size);
@@ -121,11 +113,9 @@ class GdCanvas implements Canvas
 		return $data;
 	}
 
-	/**
-	 * @param array<int, array{0: float, 1: string}> $stops
-	 * @param float $position Between 0 and 1
-	 * @return int Colour handle of the picture
-	 */
+	//$position: Between 0 and 1
+	//Returns colour handle of the picture
+	/** @param array<int, array{0: float, 1: string}> $stops */
 	private function allocate(array $stops, float $position): int
 	{
 		$previousOffset = $stops[0][0];
@@ -150,11 +140,9 @@ class GdCanvas implements Canvas
 		return imagecolorallocate($this->image, ...$previousColor);
 	}
 
-	/**
-	 * @param string $hex Colour as written in the drawing
-	 * @param float $opacity How much of the colour is kept
-	 * @return int Colour handle of the picture
-	 */
+	//$hex: Colour as written in the drawing
+	//$opacity: How much of the colour is kept
+	//Returns colour handle of the picture
 	private function color(string $hex, float $opacity = 1.0): int
 	{
 		[$red, $green, $blue] = self::rgb($hex);
@@ -162,10 +150,7 @@ class GdCanvas implements Canvas
 		return imagecolorallocatealpha($this->image, $red, $green, $blue, (int) round((1 - $opacity) * 127));
 	}
 
-	/**
-	 * @param string $hex
-	 * @return array{0: int, 1: int, 2: int}
-	 */
+	/** @return array{0: int, 1: int, 2: int} */
 	private static function rgb(string $hex): array
 	{
 		$value = (int) hexdec(ltrim($hex, '#'));

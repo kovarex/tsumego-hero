@@ -27,11 +27,9 @@ class TrashTest extends IntegrationTestCase
 		return (int) Util::query('SELECT COUNT(*) AS total FROM `' . $table . '` WHERE ' . $condition, $params)[0]['total'];
 	}
 
-	/**
-	 * Every table pointing to a problem loses its rows with the problem through its foreign key. A new
-	 * table with a tsumego_id needs one too, otherwise purging a problem leaves rows pointing nowhere,
-	 * or fails on the foreign key.
-	 */
+	//Every table pointing to a problem loses its rows with the problem through its foreign key. A new
+	//table with a tsumego_id needs one too, otherwise purging a problem leaves rows pointing nowhere,
+	//or fails on the foreign key.
 	public function testEveryTableOfAProblemIsCleanedByThePurge(): void
 	{
 		$rows = Util::query("

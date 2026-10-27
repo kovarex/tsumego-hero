@@ -4,19 +4,15 @@ declare(strict_types=1);
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * What a rejection is about comes from reject_type (see the Reject::TYPE_ constants) instead of
- * reject.type, which held 'proposal', 'tag name', 'tag' with the name in reject.text, or (since
- * the end of 2025) the name of the tag itself. The contributions page took that last kind for a
- * new tag and showed "Tag  was created" without the name and the problem.
- *
- * A rejected tag on a problem keeps the tag (tag_id) and its name, which stays when the tag is
- * deleted. A rejected new tag is deleted with the rejection, so only its name is left; it has no
- * problem, so tsumego_id is NULL instead of 0. The rejection goes with its problem and its player.
- *
- * Rejections of a problem or a player that is gone go first, the way the new keys would treat them,
- * the contributions page did not show them anyway.
- */
+//What a rejection is about comes from reject_type (see the Reject::TYPE_ constants) instead of
+//reject.type, which held 'proposal', 'tag name', 'tag' with the name in reject.text, or (since
+//the end of 2025) the name of the tag itself. The contributions page took that last kind for a
+//new tag and showed "Tag  was created" without the name and the problem.
+//A rejected tag on a problem keeps the tag (tag_id) and its name, which stays when the tag is
+//deleted. A rejected new tag is deleted with the rejection, so only its name is left; it has no
+//problem, so tsumego_id is NULL instead of 0. The rejection goes with its problem and its player.
+//Rejections of a problem or a player that is gone go first, the way the new keys would treat them,
+//the contributions page did not show them anyway.
 final class ReworkReject extends AbstractMigration
 {
 	public function up(): void

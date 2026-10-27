@@ -2,22 +2,18 @@
 
 use Facebook\WebDriver\WebDriverBy;
 
+//Tests for dark/light mode theming functionality.
+//Tests verify:
+//- HTML data-theme attribute is correctly set based on cookie/preference
+//- JavaScript toggle properly switches data-theme attribute
+//- CSS custom properties are correctly applied for each mode
 /**
- * Tests for dark/light mode theming functionality.
- *
- * Tests verify:
- * - HTML data-theme attribute is correctly set based on cookie/preference
- * - JavaScript toggle properly switches data-theme attribute
- * - CSS custom properties are correctly applied for each mode
- *
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
 class DarkLightModeTest extends IntegrationTestCase
 {
-	/**
-	 * Test that html has data-theme="light" by default
-	 */
+	//Test that html has data-theme="light" by default
 	public function testDefaultDataThemeIsLight()
 	{
 		$browser = Browser::instance();
@@ -30,9 +26,7 @@ class DarkLightModeTest extends IntegrationTestCase
 		$this->assertEquals('light', $theme, 'HTML should have data-theme="light" by default');
 	}
 
-	/**
-	 * Test that html has data-theme="dark" when lightDark cookie is set to dark
-	 */
+	//Test that html has data-theme="dark" when lightDark cookie is set to dark
 	public function testDataThemeWithDarkCookie()
 	{
 		$browser = Browser::instance();
@@ -47,9 +41,7 @@ class DarkLightModeTest extends IntegrationTestCase
 		$this->assertEquals('dark', $theme, 'HTML should have data-theme="dark" when lightDark cookie is dark');
 	}
 
-	/**
-	 * Test that JavaScript toggle switches data-theme from dark to light
-	 */
+	//Test that JavaScript toggle switches data-theme from dark to light
 	public function testJavaScriptToggleDarkToLight()
 	{
 		$browser = Browser::instance();
@@ -68,9 +60,7 @@ class DarkLightModeTest extends IntegrationTestCase
 		$this->assertEquals('light', $html->getAttribute('data-theme'), 'Should switch to light after toggle from dark');
 	}
 
-	/**
-	 * Test that JavaScript toggle switches data-theme from light to dark
-	 */
+	//Test that JavaScript toggle switches data-theme from light to dark
 	public function testJavaScriptToggleLightToDark()
 	{
 		$browser = Browser::instance();
@@ -87,9 +77,7 @@ class DarkLightModeTest extends IntegrationTestCase
 		$this->assertEquals('dark', $html->getAttribute('data-theme'), 'Should switch to dark after toggle from light');
 	}
 
-	/**
-	 * Test that toggle sets cookie correctly
-	 */
+	//Test that toggle sets cookie correctly
 	public function testToggleSetsCorrectCookie()
 	{
 		$browser = Browser::instance();
@@ -124,9 +112,7 @@ class DarkLightModeTest extends IntegrationTestCase
 		);
 	}
 
-	/**
-	 * Test that preference persists after page refresh
-	 */
+	//Test that preference persists after page refresh
 	public function testPreferencePersistsAfterRefresh()
 	{
 		$browser = Browser::instance();

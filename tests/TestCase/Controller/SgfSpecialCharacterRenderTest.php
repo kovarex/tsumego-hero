@@ -1,25 +1,19 @@
 <?php
 
-/**
- * Tests that SGF data with special characters survives the round-trip
- * through json_encode → JavaScript → besogo/database without data loss or JS errors.
- */
+//Tests that SGF data with special characters survives the round-trip
+//through json_encode → JavaScript → besogo/database without data loss or JS errors.
 class SgfSpecialCharacterRenderTest extends IntegrationTestCase
 {
-	/**
-	 * SGF with characters that would break raw PHP echo in JS context:
-	 * newlines (LF, CRLF), double quotes, script-close tags, Unicode.
-	 */
+	//SGF with characters that would break raw PHP echo in JS context:
+	//newlines (LF, CRLF), double quotes, script-close tags, Unicode.
 	private static function tortureSgf(): string
 	{
 		return "(;FF[4]GM[1]SZ[19]C[line1\nline2\r\nCRLF \"quotes\" </script> 日本語]AB[dd]AW[dc];B[cd];W[cc]C[+])";
 	}
 
-	/**
-	 * Verify that SGF with special chars is correctly parsed by besogo on the play page.
-	 * play.ctp embeds SGF via: options.sgf2 = json_encode(...) and new Blob([json_encode(...)]).
-	 * Without json_encode, the JS string literal would break and besogo wouldn't initialize.
-	 */
+	//Verify that SGF with special chars is correctly parsed by besogo on the play page.
+	//play.ctp embeds SGF via: options.sgf2 = json_encode(...) and new Blob([json_encode(...)]).
+	//Without json_encode, the JS string literal would break and besogo wouldn't initialize.
 	public function testPlayPageParsesSgfWithSpecialChars()
 	{
 		$browser = Browser::instance();
@@ -44,10 +38,8 @@ class SgfSpecialCharacterRenderTest extends IntegrationTestCase
 		$this->assertStringContainsString("\n", $comment, 'Newlines should be preserved');
 	}
 
-	/**
-	 * Verify that SGF versions page (sgfs/view) correctly embeds evil SGF in Blob download.
-	 * view.ctp uses: new Blob([json_encode($sgf)]) for download buttons.
-	 */
+	//Verify that SGF versions page (sgfs/view) correctly embeds evil SGF in Blob download.
+	//view.ctp uses: new Blob([json_encode($sgf)]) for download buttons.
 	public function testSgfVersionsPageBlobContainsCorrectSgf()
 	{
 		$browser = Browser::instance();
@@ -79,9 +71,7 @@ class SgfSpecialCharacterRenderTest extends IntegrationTestCase
 		$this->assertStringContainsString('日本語', $blobContent, 'Unicode preserved in Blob');
 	}
 
-	/**
-	 * The download of the SGF changes is the SGF the server sends, not a copy embedded in the page.
-	 */
+	//The download of the SGF changes is the SGF the server sends, not a copy embedded in the page.
 	public function testSgfChangesDownloadTheSgfUnchanged()
 	{
 		$context = new ContextPreparator([
@@ -103,11 +93,9 @@ class SgfSpecialCharacterRenderTest extends IntegrationTestCase
 		$this->assertSame(self::tortureSgf(), $this->view);
 	}
 
-	/**
-	 * Upload SGF with special chars and verify it's preserved exactly in the database.
-	 * The upload flow goes through setup_new_sgf.ctp which uses json_encode to embed
-	 * the SGF in JavaScript for besogo parsing, then auto-submits to setupNewSgfStep2.
-	 */
+	//Upload SGF with special chars and verify it's preserved exactly in the database.
+	//The upload flow goes through setup_new_sgf.ctp which uses json_encode to embed
+	//the SGF in JavaScript for besogo parsing, then auto-submits to setupNewSgfStep2.
 	public function testUploadPreservesEvilSgfInDatabase()
 	{
 		$browser = Browser::instance();

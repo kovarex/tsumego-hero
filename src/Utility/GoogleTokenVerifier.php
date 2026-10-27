@@ -2,9 +2,7 @@
 
 namespace App\Utility;
 
-/**
- * Real Google token verifier using tokeninfo endpoint.
- */
+//Real Google token verifier using tokeninfo endpoint.
 class GoogleTokenVerifier implements GoogleTokenVerifierInterface
 {
 	private static ?GoogleTokenVerifierInterface $testInstance = null;
@@ -16,11 +14,9 @@ class GoogleTokenVerifier implements GoogleTokenVerifierInterface
 		$this->clientId = $clientId;
 	}
 
-	/**
-	 * Answer the token check with the given verifier instead of the network, in the test suite
-	 * only. The guard is the same one the password checker uses, so both seams can be dropped
-	 * for the same request.
-	 */
+	//Answer the token check with the given verifier instead of the network, in the test suite
+	//only. The guard is the same one the password checker uses, so both seams can be dropped
+	//for the same request.
 	public static function useForTests(?GoogleTokenVerifierInterface $verifier): void
 	{
 		self::$testInstance = Util::isOnTestSite() ? $verifier : null;
@@ -31,21 +27,16 @@ class GoogleTokenVerifier implements GoogleTokenVerifierInterface
 		return self::$testInstance;
 	}
 
-	/**
-	 * The verifier a caller should use: the one a test put in place, or one that asks
-	 * Google.
-	 */
+	//The verifier a caller should use: the one a test put in place, or one that asks
+	//Google.
 	public static function create(string $clientId): GoogleTokenVerifierInterface
 	{
 		return self::$testInstance ?? new self($clientId);
 	}
 
-	/**
-	 * Verify a Google ID token using the tokeninfo endpoint.
-	 *
-	 * @param string $idToken The ID token from Google Sign-In
-	 * @return array|null The decoded payload on success, null on failure
-	 */
+	//Verify a Google ID token using the tokeninfo endpoint.
+	//$idToken: The ID token from Google Sign-In
+	//Returns the decoded payload on success, null on failure
 	public function verify(string $idToken): ?array
 	{
 		$tokenInfoUrl = 'https://oauth2.googleapis.com/tokeninfo?id_token=' . urlencode($idToken);

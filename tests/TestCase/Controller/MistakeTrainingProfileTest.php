@@ -3,9 +3,7 @@
 use App\Utility\MistakeTraining;
 use App\Utility\Util;
 
-/**
- * The section of the mistake training on the profile of a player.
- */
+//The section of the mistake training on the profile of a player.
 class MistakeTrainingProfileTest extends IntegrationTestCase
 {
 	private function daysAgo(int $days): string
@@ -21,11 +19,9 @@ class MistakeTrainingProfileTest extends IntegrationTestCase
 		);
 	}
 
-	/**
-	 * A player with three problems in the training, at the first and the fourth
-	 * rung and graduated, who cleared today and yesterday, trained three days ago
-	 * without clearing, and missed the day five days ago.
-	 */
+	//A player with three problems in the training, at the first and the fourth
+	//rung and graduated, who cleared today and yesterday, trained three days ago
+	//without clearing, and missed the day five days ago.
 	private function playerWhoTrained(bool $viewedByAnother = false): ContextPreparator
 	{
 		$context = new ContextPreparator([

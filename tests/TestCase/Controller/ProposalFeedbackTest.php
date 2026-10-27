@@ -3,16 +3,14 @@
 use App\Utility\Auth;
 use App\Utility\Util;
 
-/**
- * An admin deciding about a proposal (a new SGF version, a tag on a problem, a new tag) writes
- * the proposer why, and the proposer gets it as a message from the admin.
- */
+//An admin deciding about a proposal (a new SGF version, a tag on a problem, a new tag) writes
+//the proposer why, and the proposer gets it as a message from the admin.
 class ProposalFeedbackTest extends IntegrationTestCase
 {
 	private const SGF_VERSION_1 = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])';
 	private const SGF_VERSION_2 = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc]AB[dd];B[aa];W[ab];B[ba]C[+])';
 
-	/** The admin 'reviewer' is signed in, 'proposer' made the proposals. */
+	//The admin 'reviewer' is signed in, 'proposer' made the proposals.
 	private function prepare(array $tsumego = [], array $tags = []): ContextPreparator
 	{
 		Auth::logout();
@@ -30,7 +28,7 @@ class ProposalFeedbackTest extends IntegrationTestCase
 		return $context;
 	}
 
-	/** A context with an accepted version and a proposal of 'proposer', which is returned. */
+	//A context with an accepted version and a proposal of 'proposer', which is returned.
 	private function prepareSgfProposal(?ContextPreparator &$context): array
 	{
 		$context = $this->prepare(['sgfs' => [
@@ -67,7 +65,7 @@ class ProposalFeedbackTest extends IntegrationTestCase
 		$this->assertSame('proposer@example.com', TestEmailer::$lastEmail['to']);
 	}
 
-	/** A rejection is listed under the waiting proposals with who decided and why, and can be taken back. */
+	//A rejection is listed under the waiting proposals with who decided and why, and can be taken back.
 	public function testRejectedSgfProposalCanBeReopened(): void
 	{
 		$proposal = $this->prepareSgfProposal($context);
@@ -172,7 +170,7 @@ class ProposalFeedbackTest extends IntegrationTestCase
 		$this->assertSame([], Util::query('SELECT * FROM message'));
 	}
 
-	/** Tags are accepted by the dozen, a message only comes with a comment. */
+	//Tags are accepted by the dozen, a message only comes with a comment.
 	public function testAcceptedTagOnProblemTellsTheProposerOnlyWithAComment(): void
 	{
 		$context = $this->prepare(['tags' => [

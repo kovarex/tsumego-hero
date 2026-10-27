@@ -2,12 +2,10 @@
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * Challenges between players: one player picks a range of difficulty, the time for a problem and
- * how many problems, the site draws the problems, and every player in the challenge plays the same
- * ones like a time mode run. The run of a player is a time_mode_session of the challenge, which has
- * no category nor rank of the time mode, since the challenge says what they would.
- */
+//Challenges between players: one player picks a range of difficulty, the time for a problem and
+//how many problems, the site draws the problems, and every player in the challenge plays the same
+//ones like a time mode run. The run of a player is a time_mode_session of the challenge, which has
+//no category nor rank of the time mode, since the challenge says what they would.
 class AddChallenges extends AbstractMigration
 {
 	public function up(): void

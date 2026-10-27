@@ -4,19 +4,14 @@ declare(strict_types=1);
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * Normalize tsumego descriptions to true-color convention.
- *
- * True-color means descriptions describe the actual stones on the board:
- * - B-first SGF: "Black to play" (Black is the solver)
- * - W-first SGF: "White to play" (White is the solver)
- *
- * This matches how SGF comments already work (always true-color).
- *
- * At display time, when the board is inverted ($swapColors), ALL color words
- * (descriptions, comments, variant answers) are swapped Black<->White
- * so they match what the player sees.
- */
+//Normalize tsumego descriptions to true-color convention.
+//True-color means descriptions describe the actual stones on the board:
+//- B-first SGF: "Black to play" (Black is the solver)
+//- W-first SGF: "White to play" (White is the solver)
+//This matches how SGF comments already work (always true-color).
+//At display time, when the board is inverted ($swapColors), ALL color words
+//(descriptions, comments, variant answers) are swapped Black<->White
+//so they match what the player sees.
 final class ReplaceBPlaceholderWithBlack extends AbstractMigration
 {
 	public function up(): void

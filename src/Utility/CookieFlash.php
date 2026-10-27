@@ -2,33 +2,24 @@
 
 namespace App\Utility;
 
-/**
- * Cookie-based flash messages for stateless operation.
- *
- * Replaces session-based flash messages with cookie storage.
- * Messages are stored as JSON in a cookie and cleared after reading.
- *
- * Usage:
- *   CookieFlash::set('Your message', 'success')  // Set flash message
- *   CookieFlash::get()                           // Get and clear message
- *   CookieFlash::getType()                       // Get message type (info/success/error)
- *   CookieFlash::has()                           // Check if message exists
- */
+//Cookie-based flash messages for stateless operation.
+//Replaces session-based flash messages with cookie storage.
+//Messages are stored as JSON in a cookie and cleared after reading.
+//Usage:
+//  CookieFlash::set('Your message', 'success')  // Set flash message
+//  CookieFlash::get()                           // Get and clear message
+//  CookieFlash::getType()                       // Get message type (info/success/error)
+//  CookieFlash::has()                           // Check if message exists
 class CookieFlash
 {
 	private const COOKIE_NAME = 'flash_message';
 
-	/**
-	 * @var array|null Cached flash data
-	 */
+	//Cached flash data
 	private static ?array $cache = null;
 
-	/**
-	 * Set a flash message.
-	 *
-	 * @param string $message The message to display
-	 * @param string $type Message type: 'info', 'success', 'error', 'warning'
-	 */
+	//Set a flash message.
+	//$message: The message to display
+	//$type: Message type: 'info', 'success', 'error', 'warning'
 	public static function set(string $message, string $type = 'info'): void
 	{
 		$data = [
@@ -42,11 +33,8 @@ class CookieFlash
 		self::$cache = $data;
 	}
 
-	/**
-	 * Get and clear the flash message.
-	 *
-	 * @return string|null The message, or null if none exists
-	 */
+	//Get and clear the flash message.
+	//Returns the message, or null if none exists
 	public static function get(): ?string
 	{
 		$data = self::load();
@@ -59,30 +47,22 @@ class CookieFlash
 		return $data['message'];
 	}
 
-	/**
-	 * Get the message type without clearing.
-	 *
-	 * @return string The type ('info', 'success', 'error', 'warning')
-	 */
+	//Get the message type without clearing.
+	//Returns the type ('info', 'success', 'error', 'warning')
 	public static function getType(): string
 	{
 		$data = self::load();
 		return $data['type'] ?? 'info';
 	}
 
-	/**
-	 * Check if a flash message exists.
-	 *
-	 * @return bool True if a message exists
-	 */
+	//Check if a flash message exists.
+	//Returns true if a message exists
 	public static function has(): bool
 	{
 		return self::load() !== null;
 	}
 
-	/**
-	 * Clear the flash message.
-	 */
+	//Clear the flash message.
 	public static function clear(): void
 	{
 		unset($_COOKIE[self::COOKIE_NAME]);
@@ -90,19 +70,14 @@ class CookieFlash
 		self::$cache = null;
 	}
 
-	/**
-	 * Clear internal cache (for testing).
-	 */
+	//Clear internal cache (for testing).
 	public static function clearCache(): void
 	{
 		self::$cache = null;
 	}
 
-	/**
-	 * Load flash data from cookie.
-	 *
-	 * @return array|null The flash data array or null
-	 */
+	//Load flash data from cookie.
+	//Returns the flash data array or null
 	private static function load(): ?array
 	{
 		if (self::$cache !== null)
@@ -119,13 +94,9 @@ class CookieFlash
 		return self::$cache;
 	}
 
-	/**
-	 * Render flash message as HTML (for use in views).
-	 *
-	 * Automatically gets type before clearing, then renders the message.
-	 *
-	 * @return string HTML output or empty string
-	 */
+	//Render flash message as HTML (for use in views).
+	//Automatically gets type before clearing, then renders the message.
+	//Returns HTML output or empty string
 	public static function render(): string
 	{
 		if (!self::has())

@@ -4,24 +4,20 @@ declare(strict_types=1);
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * The coded columns of user explained only by a comment get lookup tables like date_format, so a
- * player can only hold a value that exists:
- *
- * - premium (0 none, 1 basic, 2 golden) → premium_id, NULL without premium
- * - mode (1 level, 2 rating, 3 time, 5 mistake training) → mode_id
- * - theme (0 light, 1 dark) → theme_id
- * - level_bar (1 level, 2 rating) → level_bar_id
- * - highscore_page (1 level, 2 rating, 3 daily, 4 time mode, 0 none yet) → highscore_page_id, NULL for none yet
- * - pref_avatar (0 go board, 1 gravatar, 2 google picture) → avatar_setting_id
- *
- * The two-valued ones become booleans: sound, and pref_player_color and pref_board_orientation,
- * renamed to player_color_setting and board_orientation_setting. A value no code wrote takes the
- * default.
- */
+//The coded columns of user explained only by a comment get lookup tables like date_format, so a
+//player can only hold a value that exists:
+//- premium (0 none, 1 basic, 2 golden) → premium_id, NULL without premium
+//- mode (1 level, 2 rating, 3 time, 5 mistake training) → mode_id
+//- theme (0 light, 1 dark) → theme_id
+//- level_bar (1 level, 2 rating) → level_bar_id
+//- highscore_page (1 level, 2 rating, 3 daily, 4 time mode, 0 none yet) → highscore_page_id, NULL for none yet
+//- pref_avatar (0 go board, 1 gravatar, 2 google picture) → avatar_setting_id
+//The two-valued ones become booleans: sound, and pref_player_color and pref_board_orientation,
+//renamed to player_color_setting and board_orientation_setting. A value no code wrote takes the
+//default.
 final class AddUserSettingLookups extends AbstractMigration
 {
-	/** lookup table => [id => name] */
+	//lookup table => [id => name]
 	private const LOOKUPS = [
 		'premium' => [1 => 'basic', 2 => 'golden'],
 		'mode' => [1 => 'level', 2 => 'rating', 3 => 'time', 5 => 'mistake training'],

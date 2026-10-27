@@ -15,7 +15,7 @@ interface CommentSectionProps
 {
 	tsumegoId: number;
 	initialCounts: CommentCounts;
-	/** Slim list of position-anchored comment positions, for eager tree badges. */
+	//Slim list of position-anchored comment positions, for eager tree badges.
 	initialAnchoredPositions?: string[];
 }
 

@@ -5,7 +5,7 @@ use App\Utility\SgfTree;
 
 class LegacyCommentConverterTest extends CakeTestCase
 {
-	/** A problem in the top-right corner of the SGF, the solution starts at S18 (rb). */
+	//A problem in the top-right corner of the SGF, the solution starts at S18 (rb).
 	private const TOP_RIGHT_SGF = '(;GM[1]FF[4]SZ[19]AB[pc][qd][rd]AW[qc][rc][sd];B[rb](;W[sb];B[qb]C[+])(;W[qb];B[sb]C[+]))';
 
 	private function convert(string $message, ?string $position = null, ?bool $colorsSwapped = null): App\Utility\LegacyCommentConversion

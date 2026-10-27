@@ -1,9 +1,7 @@
 <?php
 
-/**
- * Auth::getIdentity() returns the user array, or null when not logged in.
- * Policies check user fields directly (user_role_id, premium, level, rating).
- */
+//Auth::getIdentity() returns the user array, or null when not logged in.
+//Policies check user fields directly (user_role_id, premium, level, rating).
 use App\Policy\BasePolicy;
 use App\Utility\Auth;
 use App\Utility\Constants;

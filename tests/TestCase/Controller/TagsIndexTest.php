@@ -1,9 +1,6 @@
 <?php
 
-/**
- * The tag overview (/tags): every tag with its problem count, the problems of a tag,
- * and deleting a tag.
- */
+//The tag overview (/tags): every tag with its problem count, the problems of a tag, and deleting a tag.
 class TagsIndexTest extends IntegrationTestCase
 {
 	public function testIndexListsTagsWithProblemCounts()

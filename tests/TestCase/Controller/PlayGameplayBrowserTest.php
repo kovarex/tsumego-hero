@@ -13,7 +13,7 @@ use Facebook\WebDriver\Exception\TimeoutException;
  */
 class PlayGameplayBrowserTest extends IntegrationTestCase
 {
-	/** SGF with a 19x19 board and 3 clearly positioned setup stones. */
+	//SGF with a 19x19 board and 3 clearly positioned setup stones.
 	private const SGF_19 = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc][dd]AW[ee];B[aa];W[ab];B[ba]C[+])';
 
 	private function playUrl(ContextPreparator $context): string
@@ -34,11 +34,9 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		return is_string($display) ? $display : 'missing';
 	}
 
-	/**
-	 * Read the current node's stones as [x, y, color] triplets in *logical*
-	 * board coordinates. Child nodes inherit getStone/getSize via
-	 * Object.create(this), so this is reliable on the play page.
-	 */
+	//Read the current node's stones as [x, y, color] triplets in *logical*
+	//board coordinates. Child nodes inherit getStone/getSize via
+	//Object.create(this), so this is reliable on the play page.
 	private function logicalStones(Browser $browser): array
 	{
 		$json = $browser->driver->executeScript(
@@ -493,10 +491,8 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		}
 	}
 
-	/**
-	 * Toggling review mode should NOT reset the board to the start position.
-	 * If the user navigated to a move, entering/leaving review keeps them there.
-	 */
+	//Toggling review mode should NOT reset the board to the start position.
+	//If the user navigated to a move, entering/leaving review keeps them there.
 	public function testReviewTogglePreservesBoardPosition(): void
 	{
 		$context = new ContextPreparator([
@@ -626,10 +622,8 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		}
 	}
 
-	/**
-	 * When user fails a problem, the board should NOT lock.
-	 * User should be able to continue clicking (though they won't solve it after first failure).
-	 */
+	//When user fails a problem, the board should NOT lock.
+	//User should be able to continue clicking (though they won't solve it after first failure).
 	public function testBoardDoesntLockAfterFailAllowsContinuedAttempts()
 	{
 		$context = new ContextPreparator(['tsumego' => ['set_order' => 1, 'sgf' => '(;GM[1]FF[4]ST[2]SZ[19];B[aa];W[ab];B[ca]C[+])']]);
@@ -737,11 +731,9 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$this->assertStringContainsString($secondTsumegoUrl, $currentUrl, "Should navigate to next puzzle");
 	}
 
-	/**
-	 * When in tags query mode but the lastSet cookie contains a value that
-	 * isn't a valid tag name, the play page should fall back to topics
-	 * view instead of crashing.
-	 */
+	//When in tags query mode but the lastSet cookie contains a value that
+	//isn't a valid tag name, the play page should fall back to topics
+	//view instead of crashing.
 	public function testPlayPageFallsBackToTopicsWhenLastSetCookieIsNotAValidTag(): void
 	{
 		$context = new ContextPreparator([
@@ -895,10 +887,8 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		}, 0, 'F');
 	}
 
-	/**
-	 * Browser test: clicking the color-orientation button inverts the board and
-	 * swaps the multiple-choice answer text so it matches the visual stones.
-	 */
+	//Browser test: clicking the color-orientation button inverts the board and
+	//swaps the multiple-choice answer text so it matches the visual stones.
 	public function testOrientationButtonSwapsVariantAnswers(): void
 	{
 		$context = new ContextPreparator([
@@ -962,10 +952,8 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$this->assertSame('Black wins', $browser->find('#besogo-se-white')->getAttribute('value'));
 	}
 
-	/**
-	 * Browser test: the orientation button swaps the semeai "Black is dead" /
-	 * "White is dead" buttons so they match the inverted board.
-	 */
+	//Browser test: the orientation button swaps the semeai "Black is dead" /
+	//"White is dead" buttons so they match the inverted board.
 	public function testOrientationButtonSwapsSemeaiButtons(): void
 	{
 		$context = new ContextPreparator([
@@ -997,10 +985,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$this->assertSame('Black is dead', $button2->getAttribute('value'));
 	}
 
-	/**
-	 * Browser test: the orientation button swaps the SGF comment text so it matches
-	 * the inverted board.
-	 */
+	//Browser test: the orientation button swaps the SGF comment text so it matches the inverted board.
 	public function testOrientationButtonSwapsSgfComment(): void
 	{
 		$context = new ContextPreparator([
@@ -1024,10 +1009,8 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$this->assertStringContainsString('White to play', $comment->getText());
 	}
 
-	/**
-	 * Keeps the requests that record a solve inside the browser, so the problem that was
-	 * just played is still unrecorded while the player moves on, the way a slow request does.
-	 */
+	//Keeps the requests that record a solve inside the browser, so the problem that was
+	//just played is still unrecorded while the player moves on, the way a slow request does.
 	private function holdSolveResultsInTheBrowser(Browser $browser): void
 	{
 		$browser->driver->executeScript(
@@ -1042,7 +1025,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		);
 	}
 
-	/** Plays the current problem without its result ever reaching the server. */
+	//Plays the current problem without its result ever reaching the server.
 	private function solveWhileTheSolveIsStillOnItsWay(Browser $browser): void
 	{
 		$this->holdSolveResultsInTheBrowser($browser);
@@ -1051,10 +1034,8 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$browser->dismissAchievementPopups();
 	}
 
-	/**
-	 * A time mode session the player is on the first problem of, with a result on it when a
-	 * status is given, so the player is on the problem that has not been recorded yet.
-	 */
+	//A time mode session the player is on the first problem of, with a result on it when a
+	//status is given, so the player is on the problem that has not been recorded yet.
 	private function startTimeMode(Browser $browser, ?int $firstAttemptStatus = null, int $problemCount = 2, array $firstAttemptFields = []): ContextPreparator
 	{
 		$attempts = [array_merge(['order' => 1, 'status' => $firstAttemptStatus ?? TimeModeUtil::$ATTEMPT_RESULT_QUEUED], $firstAttemptFields)];
@@ -1075,9 +1056,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		return $context;
 	}
 
-	/**
-	 * The page submits a timeout when its clock runs out.
-	 */
+	//The page submits a timeout when its clock runs out.
 	public function testTimeModeTimerSubmitsATimeoutWhenTheClockRunsOut(): void
 	{
 		$browser = Browser::instance();
@@ -1116,10 +1095,8 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 			'The position must count the problem being solved, not the recorded ones');
 	}
 
-	/**
-	 * The bonus seconds of the moves played must not eat the time the player spent before
-	 * their first move, otherwise a quick solve would always score the maximum.
-	 */
+	//The bonus seconds of the moves played must not eat the time the player spent before
+	//their first move, otherwise a quick solve would always score the maximum.
 	public function testTheTimeBeforeTheFirstMoveIsNotEatenByTheBonusSeconds(): void
 	{
 		$browser = Browser::instance();
@@ -1145,10 +1122,8 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 			'The bonus seconds cannot buy the maximum score');
 	}
 
-	/**
-	 * The measured time comes from the clock, not from the timer that draws the countdown, so a
-	 * tab in the background that hardly ever ticks cannot slow the game down.
-	 */
+	//The measured time comes from the clock, not from the timer that draws the countdown, so a
+	//tab in the background that hardly ever ticks cannot slow the game down.
 	public function testTheRecordedTimeDoesNotDependOnTheTimer(): void
 	{
 		$browser = Browser::instance();
@@ -1193,10 +1168,8 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 			'The result appears once the last result has been recorded');
 	}
 
-	/**
-	 * The result of the last problem never arrives, so the page that waits for it
-	 * keeps asking. The waiting has to end and the session has to be scored.
-	 */
+	//The result of the last problem never arrives, so the page that waits for it
+	//keeps asking. The waiting has to end and the session has to be scored.
 	public function testASessionIsScoredWhenTheLastResultNeverArrives(): void
 	{
 		$categorySeconds = TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS;
@@ -1248,11 +1221,9 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 			'Following a problem link must not be held up by the solve request');
 	}
 
-	/**
-	 * A player plays a whole session the way the pages present it: solves a problem,
-	 * misplays one, gives up on one, leaves one behind until its time is up, and reads
-	 * the score of all of them.
-	 */
+	//A player plays a whole session the way the pages present it: solves a problem,
+	//misplays one, gives up on one, leaves one behind until its time is up, and reads
+	//the score of all of them.
 	public function testPlayingAWholeTimeModeSessionRecordsEveryOutcome(): void
 	{
 		$categorySeconds = TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS;
@@ -1348,10 +1319,8 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 			'The score of the session is what its problems were worth');
 	}
 
-	/**
-	 * A player who sits on a problem without playing it: its countdown runs out while
-	 * the page is open, and the problem is given up on by itself.
-	 */
+	//A player who sits on a problem without playing it: its countdown runs out while
+	//the page is open, and the problem is given up on by itself.
 	public function testAProblemWhoseCountdownRunsOutIsGivenUpOnByItself(): void
 	{
 		$categorySeconds = TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS;

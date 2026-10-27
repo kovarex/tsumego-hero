@@ -1,8 +1,6 @@
 <?php
 
-/**
- * Tests for the generic Open Graph meta element renderer.
- */
+//Tests for the generic Open Graph meta element renderer.
 class OpenGraphMetaElementTest extends CakeTestCase
 {
 	public function testRendersAllTagsFromOgArray(): void

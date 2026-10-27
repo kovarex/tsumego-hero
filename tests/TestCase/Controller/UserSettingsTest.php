@@ -4,10 +4,9 @@ use App\Utility\UploadedAvatar;
 use App\Utility\Util;
 use Facebook\WebDriver\WebDriverKeys;
 
+//The settings page holds everything a player can change about their own account,
+//while the profile stays the public page.
 /**
- * The settings page holds everything a player can change about their own account,
- * while the profile stays the public page.
- *
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
@@ -55,10 +54,8 @@ class UserSettingsTest extends IntegrationTestCase
 		$this->assertFalse($browser->idExists('password-form'));
 	}
 
-	/**
-	 * The field is type=email and stops at the width of the column, so a bad address only
-	 * arrives in a hand made request.
-	 */
+	//The field is type=email and stops at the width of the column, so a bad address only
+	//arrives in a hand made request.
 	public function testABadAddressIsRejected(): void
 	{
 		$context = new ContextPreparator(['user' => ['email' => 'old@example.com']]);
@@ -172,9 +169,7 @@ class UserSettingsTest extends IntegrationTestCase
 		$this->assertTextContains('gravatar.com', $browser->driver->getPageSource());
 	}
 
-	/**
-	 * A picture picked in the form is the avatar of the page the browser comes back to.
-	 */
+	//A picture picked in the form is the avatar of the page the browser comes back to.
 	public function testAnUploadedPictureIsTheAvatarOfThePage(): void
 	{
 		$context = new ContextPreparator(['user' => ['avatar_setting_id' => User::AVATAR_BOARD]]);
@@ -263,10 +258,8 @@ class UserSettingsTest extends IntegrationTestCase
 		$this->assertStringContainsString('sound-icon2.png', $browser->driver->executeScript('return document.getElementById("soundButtonImage").src;'));
 	}
 
-	/**
-	 * A visitor who is not signed in has only the cookie, so it has to reach every
-	 * page and not just the few that used to be listed by hand.
-	 */
+	//A visitor who is not signed in has only the cookie, so it has to reach every
+	//page and not just the few that used to be listed by hand.
 	public function testTheSoundChoiceReachesPagesOutsideTheSettings(): void
 	{
 		new ContextPreparator(['user' => null]);
@@ -344,10 +337,8 @@ class UserSettingsTest extends IntegrationTestCase
 		$this->assertSame(User::ROLE_PLAYER, (int) $context->reloadUser()['user_role_id']);
 	}
 
-	/**
-	 * Open the change form and send it. The answer lands on the same address, so the
-	 * wait is for the new document, not for the URL to change.
-	 */
+	//Open the change form and send it. The answer lands on the same address, so the
+	//wait is for the new document, not for the URL to change.
 	private function submitEmailChange(Browser $browser, string $email): void
 	{
 		$browser->clickId('change-email');
@@ -365,12 +356,9 @@ class UserSettingsTest extends IntegrationTestCase
 		$browser->waitUntilJs('window.__submitPending === undefined && document.readyState === "complete"');
 	}
 
-	/**
-	 * The tabs under the player header, as addresses. The header menu of the site is
-	 * not included, so a link to the settings page in the menu does not count.
-	 *
-	 * @return array<int, string>
-	 */
+	//The tabs under the player header, as addresses. The header menu of the site is
+	//not included, so a link to the settings page in the menu does not count.
+	/** @return array<int, string> */
 	private function profileTabs(Browser $browser): array
 	{
 		$hrefs = $browser->driver->executeScript(
@@ -378,10 +366,7 @@ class UserSettingsTest extends IntegrationTestCase
 		return array_values((array) $hrefs);
 	}
 
-	/**
-	 * The settings are fetched one by one, so a value is only stored once the
-	 * request it started has come back.
-	 */
+	//The settings are fetched one by one, so a value is only stored once the request it started has come back.
 	private function waitForUserField(ContextPreparator $context, string $field, string $expected): void
 	{
 		for ($i = 0; $i < 100; $i++)

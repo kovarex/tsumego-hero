@@ -73,26 +73,19 @@ class TsumegoStatus extends AppModel
 		return self::$descriptions[$status] ?? '';
 	}
 
-	/**
-	 * How long untouched progress is kept. A problem nobody has touched for this long
-	 * counts as old progress, which the settings page offers to throw away.
-	 */
+	//How long untouched progress is kept. A problem nobody has touched for this long
+	//counts as old progress, which the settings page offers to throw away.
 	private static int $OLD_PROGRESS_YEARS = 1;
 
-	/**
-	 * The statuses that hold solved progress: the same ones the progress of a set is
-	 * counted from. Anything else is a marker (opened, locked), not progress.
-	 *
-	 * @return array<string>
-	 */
+	//The statuses that hold solved progress: the same ones the progress of a set is
+	//counted from. Anything else is a marker (opened, locked), not progress.
+	/** @return array<string> */
 	private static function progressStatuses(): array
 	{
 		return [self::$SOLVED, self::$REVIEW, self::$MASTERED];
 	}
 
-	/**
-	 * The old progress the settings page counts and offers to reset.
-	 */
+	//The old progress the settings page counts and offers to reset.
 	public static function countOldProgress(int $userID): int
 	{
 		return (int) Util::query('SELECT COUNT(*) AS total FROM tsumego_status
@@ -100,11 +93,9 @@ class TsumegoStatus extends AppModel
 			[$userID, ...self::progressStatuses(), self::$OLD_PROGRESS_YEARS])[0]['total'];
 	}
 
-	/**
-	 * Throws away the progress nobody touched for OLD_PROGRESS_YEARS and keeps the solved
-	 * count of the account in step. Only solved progress goes: a problem that was opened
-	 * and left is not progress, and a golden problem waits for its one attempt.
-	 */
+	//Throws away the progress nobody touched for OLD_PROGRESS_YEARS and keeps the solved
+	//count of the account in step. Only solved progress goes: a problem that was opened
+	//and left is not progress, and a golden problem waits for its one attempt.
 	public static function deleteOldProgress(int $userID): int
 	{
 		$deleted = Util::execute('DELETE FROM tsumego_status

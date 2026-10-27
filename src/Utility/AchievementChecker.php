@@ -11,9 +11,7 @@ use TimeModeCategory;
 use TimeModeRank;
 use TimeModeSessionStatus;
 
-/**
- * @phpstan-import-type AchievementRow from \App\Utility\RowTypes
- */
+/** @phpstan-import-type AchievementRow from \App\Utility\RowTypes */
 class AchievementChecker
 {
 	public function __construct()
@@ -21,13 +19,10 @@ class AchievementChecker
 		$this->fillExistingStatuses();
 	}
 
-	/**
-	 * The fields the client needs to render an achievement popup from data.
-	 * Both the /tsumegos/result response and the page-load embed use this, so
-	 * the popup payload stays pure data and the client renders the markup.
-	 *
-	 * @param AchievementRow $achievement
-	 */
+	//The fields the client needs to render an achievement popup from data.
+	//Both the /tsumegos/result response and the page-load embed use this, so
+	//the popup payload stays pure data and the client renders the markup.
+	/** @param AchievementRow $achievement */
 	public static function toPopupData(array $achievement): array
 	{
 		return [
@@ -57,12 +52,10 @@ class AchievementChecker
 		$this->updated [] = $achievement['Achievement'];
 	}
 
-	/**
-	 * Unlocks a repeatable achievement and records how often it was earned. Earning
-	 * it the first time grants the XP and the popup, later ones only raise the count.
-	 * The count records what the player earned, so a collection it can no longer
-	 * recount does not lower it.
-	 */
+	//Unlocks a repeatable achievement and records how often it was earned. Earning
+	//it the first time grants the XP and the popup, later ones only raise the count.
+	//The count records what the player earned, so a collection it can no longer
+	//recount does not lower it.
 	private function gainedTimes(AchievementId $achievementID, int $times): void
 	{
 		if ($times < 1)
@@ -579,11 +572,9 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 		return $this;
 	}
 
-	/**
-	 * How many public collections the player finished at 100% accuracy, on a set of at
-	 * least the problems a collection achievement asks for. One query instead of loading
-	 * every set's problems.
-	 */
+	//How many public collections the player finished at 100% accuracy, on a set of at
+	//least the problems a collection achievement asks for. One query instead of loading
+	//every set's problems.
 	private function countPerfectCollections(): int
 	{
 		$rows = Util::query(
@@ -612,15 +603,12 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 		return $this;
 	}
 
-	/**
-	 * Run the standard solve/progress-dependent achievement checks.
-	 *
-	 * This is the canonical set that runs after a solve (PlayResultProcessor) and
-	 * on each page load (AppController::beforeFilter). Add new solve- or
-	 * progress-dependent checks here so both call sites stay in sync.
-	 * (checkTimeModeAchievements is intentionally separate - it runs on the time
-	 * mode result page via TimeModeController.)
-	 */
+	//Run the standard solve/progress-dependent achievement checks.
+	//This is the canonical set that runs after a solve (PlayResultProcessor) and
+	//on each page load (AppController::beforeFilter). Add new solve- or
+	//progress-dependent checks here so both call sites stay in sync.
+	//(checkTimeModeAchievements is intentionally separate - it runs on the time
+	//mode result page via TimeModeController.)
 	public function checkStandardAchievements(): AchievementChecker
 	{
 		$this->checkLevelAchievements();

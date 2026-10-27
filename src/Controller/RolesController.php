@@ -6,10 +6,8 @@ use App\Utility\Auth;
 use App\Utility\CookieFlash;
 use App\Utility\Util;
 
-/**
- * Who is an admin or an owner (see User::ROLE_OWNER). Only an owner decides it: the list of the
- * admins and owners is here, the role of anyone else is changed on their profile.
- */
+//Who is an admin or an owner (see User::ROLE_OWNER). Only an owner decides it: the list of the
+//admins and owners is here, the role of anyone else is changed on their profile.
 class RolesController extends AppController
 {
 	#[HttpGet]

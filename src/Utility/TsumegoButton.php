@@ -75,15 +75,13 @@ class TsumegoButton
 		echo '</li>';
 	}
 
-	/**
-	 * The badge of a training button: the rank insignia of the rung (see
-	 * RungInsignia), chevrons for the first rungs and stars for the last reviews
-	 * before graduation, and a crown for a graduation of today, so the row tells a
-	 * fresh mistake from a late review at a glance. It shows no wait, since "1d" reads
-	 * as one dan in Go; the tooltip says when the problem comes back. The name is an
-	 * aria-label rather than a title, which would pop a second tooltip over the one
-	 * of the button. The play page swaps the badge in once a result moves the rung.
-	 */
+	//The badge of a training button: the rank insignia of the rung (see
+	//RungInsignia), chevrons for the first rungs and stars for the last reviews
+	//before graduation, and a crown for a graduation of today, so the row tells a
+	//fresh mistake from a late review at a glance. It shows no wait, since "1d" reads
+	//as one dan in Go; the tooltip says when the problem comes back. The name is an
+	//aria-label rather than a title, which would pop a second tooltip over the one
+	//of the button. The play page swaps the badge in once a result moves the rung.
 	public function renderRungBadge(): string
 	{
 		if ($this->graduated)
@@ -96,10 +94,7 @@ class TsumegoButton
 			. RungInsignia::render($kind, $count) . '</div>';
 	}
 
-	/**
-	 * Parse SGF into the JSON format that previewBoard.js expects.
-	 * Returns null if the SGF is empty or unparseable.
-	 */
+	//Parse SGF into the JSON format that previewBoard.js expects. Returns null if the SGF is empty or unparseable.
 	public static function sgfToPreviewData(string $sgf): ?array
 	{
 		if ($sgf === '')
@@ -128,22 +123,18 @@ class TsumegoButton
 	public ?int $setID = null;
 	public ?string $setTitle = null;
 
-	/**
-	 * Rung of the mistake training ladder, shown as a badge under the number. Null
-	 * outside the training, where the button shows its usual lines.
-	 */
+	//Rung of the mistake training ladder, shown as a badge under the number. Null
+	//outside the training, where the button shows its usual lines.
 	public ?int $rung = null;
 
-	/** Graduated from the training today, which has a badge of its own. */
+	//Graduated from the training today, which has a badge of its own.
 	public bool $graduated = false;
 
-	/** Missed in the training today and not solved yet: still grey, with a red ring on its badge. */
+	//Missed in the training today and not solved yet: still grey, with a red ring on its badge.
 	public bool $missedToday = false;
 
-	/**
-	 * Tooltip texts in place of the ones of the status, for a row whose colours mean
-	 * something other than the tsumego status.
-	 */
+	//Tooltip texts in place of the ones of the status, for a row whose colours mean
+	//something other than the tsumego status.
 	public ?string $label = null;
 	public ?string $description = null;
 }

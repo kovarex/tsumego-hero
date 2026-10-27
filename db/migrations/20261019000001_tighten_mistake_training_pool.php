@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * The pool table was created with the default of Phinx 0.16, which makes every
- * column nullable, so a row could miss its player or its problem, and the unique
- * index on (user_id, tsumego_id) does not stop duplicates once one of them is NULL.
- * The columns become NOT NULL, except next_due, where NULL means graduated: the row
- * stays as the memory that the training knows the problem. The rung and the lapses
- * are small counts, and the rows follow their player and problem when those are
- * deleted, like the other tables of a player.
- */
+//The pool table was created with the default of Phinx 0.16, which makes every
+//column nullable, so a row could miss its player or its problem, and the unique
+//index on (user_id, tsumego_id) does not stop duplicates once one of them is NULL.
+//The columns become NOT NULL, except next_due, where NULL means graduated: the row
+//stays as the memory that the training knows the problem. The rung and the lapses
+//are small counts, and the rows follow their player and problem when those are
+//deleted, like the other tables of a player.
 final class TightenMistakeTrainingPool extends AbstractMigration
 {
 	public function up(): void

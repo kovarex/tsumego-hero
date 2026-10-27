@@ -7,10 +7,8 @@ use App\Utility\CookieFlash;
 use App\Utility\Trash;
 use App\Utility\Util;
 
-/**
- * The problems and collections in the trash (see App\Utility\Trash), for the admins to take back
- * what should not have been deleted before the daily cron removes it for good.
- */
+//The problems and collections in the trash (see App\Utility\Trash), for the admins to take back
+//what should not have been deleted before the daily cron removes it for good.
 class TrashController extends AppController
 {
 	#[HttpGet]

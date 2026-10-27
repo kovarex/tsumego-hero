@@ -196,9 +196,7 @@ ORDER BY MIN(rating);");
 		return null;
 	}
 
-	/**
-	 * The session in the form the result page shows it, with its attempts loaded by getAttempts().
-	 */
+	//The session in the form the result page shows it, with its attempts loaded by getAttempts().
 	private static function exportSessionToShow(array $session, array $attempts, array $timeModeCategory, array $timeModeRank): array
 	{
 		$result = [];
@@ -231,10 +229,8 @@ ORDER BY MIN(rating);");
 		return $result;
 	}
 
-	/**
-	 * The attempts of the given sessions indexed by session, each with the set it is shown in.
-	 * A problem in several sets is shown in the one SetConnection::findDisplaySetConnection() picks.
-	 */
+	//The attempts of the given sessions indexed by session, each with the set it is shown in.
+	//A problem in several sets is shown in the one SetConnection::findDisplaySetConnection() picks.
 	private static function getAttempts(array $sessionIDs): array
 	{
 		if (empty($sessionIDs))
@@ -268,10 +264,8 @@ ORDER BY time_mode_attempt.`order`, time_mode_attempt.id",
 		return $result;
 	}
 
-	/**
-	 * All the finished sessions of the current user indexed by category and rank, the newest first.
-	 * Only the counts of the attempts are loaded, the attempts themselves are shown when the session is opened.
-	 */
+	//All the finished sessions of the current user indexed by category and rank, the newest first.
+	//Only the counts of the attempts are loaded, the attempts themselves are shown when the session is opened.
 	private static function getHistory(): array
 	{
 		$sessions = Util::query("
@@ -345,9 +339,7 @@ ORDER BY time_mode_session.created DESC, time_mode_session.id DESC",
 		return $unlock;
 	}
 
-	/**
-	 * A session that is still being played has no score yet, so there is nothing to show
-	 */
+	//A session that is still being played has no score yet, so there is nothing to show
 	private function renderWaitingForTheResult(): mixed
 	{
 		$this->set('_title', 'Time Mode - Result');

@@ -2,17 +2,13 @@
 
 use App\Utility\Util;
 
-/**
- * The SGF changes of the admin area (SgfChangesRenderer): every saved version, with the tick of the
- * admin who reviewed it and the avatars of the other admins who did (SgfReview).
- */
+//The SGF changes of the admin area (SgfChangesRenderer): every saved version, with the tick of the
+//admin who reviewed it and the avatars of the other admins who did (SgfReview).
 class SgfChangesTest extends IntegrationTestCase
 {
 	private const SGF = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])';
 
-	/**
-	 * The admin, the author of the changes and another admin who reviews them
-	 */
+	//The admin, the author of the changes and another admin who reviews them
 	private function prepare(int $changeCount = 2, array $sgfs = []): ContextPreparator
 	{
 		$context = new ContextPreparator([
@@ -35,17 +31,13 @@ class SgfChangesTest extends IntegrationTestCase
 		return (int) $context->otherUsers[1]['id'];
 	}
 
-	/**
-	 * @return list<int>
-	 */
+	/** @return list<int> */
 	private static function sgfIDs(ContextPreparator $context): array
 	{
 		return array_map('intval', array_column($context->tsumegos[0]['sgfs'], 'id'));
 	}
 
-	/**
-	 * The html of the review cell of the change on the page last opened
-	 */
+	//The html of the review cell of the change on the page last opened
 	private function reviewCell(int $sgfID): string
 	{
 		$this->assertMatchesRegularExpression('~<td class="sgf-review" id="review-' . $sgfID . '">.*?</td>~s', $this->view, 'change ' . $sgfID . ' is listed');
@@ -53,9 +45,7 @@ class SgfChangesTest extends IntegrationTestCase
 		return $match[1];
 	}
 
-	/**
-	 * @return list<int> The users who reviewed the change
-	 */
+	/** @return list<int> The users who reviewed the change */
 	private static function reviewerIDs(int $sgfID): array
 	{
 		return array_map('intval', array_column(Util::query('SELECT user_id FROM sgf_review WHERE sgf_id = ? ORDER BY user_id', [$sgfID]), 'user_id'));

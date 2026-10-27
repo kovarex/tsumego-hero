@@ -41,10 +41,8 @@ class SpecialSetAchievementTest extends AchievementTestCase
 		$this->assertAchievementUnlocked(AchievementId::LIFE_DEATH_ELEMENTARY, 'Life & Death Elementary should unlock when all sets 50,52,53,54 are completed');
 	}
 
-	/**
-	 * Test AchievementId::LIFE_DEATH_INTERMEDIATE
-	 * Requires completing all tsumegos in sets: 41, 49, 65, 66
-	 */
+	//Test AchievementId::LIFE_DEATH_INTERMEDIATE
+	//Requires completing all tsumegos in sets: 41, 49, 65, 66
 	public function testLifeAndDeathIntermediate()
 	{
 		$context = new ContextPreparator();

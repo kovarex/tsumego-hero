@@ -3,23 +3,18 @@
 use App\Utility\Constants;
 use App\Utility\Util;
 
+//Tests for the admin activity logging system and the pages of the admin area (AdminController)
+//- Tests the admin activity page pagination and display
+//- Tests filtering out non-admin SGF uploads
+//- Tests pagination with multiple sections (activity, proposals, tags, tagnames)
+//- Tests all 18 activity types display correctly with formatted messages
 /**
- * AdminStatsControllerTest
- *
- * Tests for the admin activity logging system and the pages of the admin area (AdminController)
- * - Tests the admin activity page pagination and display
- * - Tests filtering out non-admin SGF uploads
- * - Tests pagination with multiple sections (activity, proposals, tags, tagnames)
- * - Tests all 18 activity types display correctly with formatted messages
- *
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
 class AdminStatsControllerTest extends IntegrationTestCase
 {
-	/**
-	 * Test the admin activity page displays in browser
-	 */
+	//Test the admin activity page displays in browser
 	public function testAdminStatsPageDisplaysInBrowser()
 	{
 		$context = new ContextPreparator([
@@ -55,9 +50,7 @@ class AdminStatsControllerTest extends IntegrationTestCase
 		$this->assertTextNotContains('Admin Activity', $pageSource);
 	}
 
-	/**
-	 * Test set-level admin activities (activities without tsumego_id)
-	 */
+	//Test set-level admin activities (activities without tsumego_id)
 	public function testSetLevelActivities()
 	{
 
@@ -83,9 +76,6 @@ class AdminStatsControllerTest extends IntegrationTestCase
 		$this->assertTextContains('(Set-wide)', $pageSource);
 	}
 
-	/**
-	 * Test activity pagination
-	 */
 	public function testActivityPagination()
 	{
 
@@ -165,10 +155,8 @@ class AdminStatsControllerTest extends IntegrationTestCase
 			$this->assertStringContainsString('sgf_proposals_page=2', $query);
 	}
 
-	/**
-	 * Test all 18 activity types display correctly
-	 * Uses controller-level testing to avoid browser HTML truncation
-	 */
+	//Test all 18 activity types display correctly
+	//Uses controller-level testing to avoid browser HTML truncation
 	public function testAllActivityTypesDisplay()
 	{
 

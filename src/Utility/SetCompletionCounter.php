@@ -5,15 +5,11 @@ namespace App\Utility;
 use AchievementCondition;
 use Set;
 
-/**
- * Counts the sets a user completed, for the "complete N sets" achievements.
- *
- * Sets are counted in parts of $PARTITION_SIZE problems, the way the collections page splits
- * them with the default collection size, regardless of the size the user picked. A set of
- * 1000 problems therefore counts as 5 sets.
- *
- * The count is kept in the achievement condition AchievementCondition::CATEGORY_COMPLETED_SETS.
- */
+//Counts the sets a user completed, for the "complete N sets" achievements.
+//Sets are counted in parts of $PARTITION_SIZE problems, the way the collections page splits
+//them with the default collection size, regardless of the size the user picked. A set of
+//1000 problems therefore counts as 5 sets.
+//The count is kept in the achievement condition AchievementCondition::CATEGORY_COMPLETED_SETS.
 class SetCompletionCounter
 {
 	// Deliberately not Constants::$DEFAULT_COLLECTION_SIZE: changing the default partitioning
@@ -33,12 +29,9 @@ FROM (
 		return (int) $rows[0]['completed'];
 	}
 
-	/**
-	 * To be called when the user solved a problem that was not solved before.
-	 *
-	 * Only the sets containing the problem are checked, and the full count is recomputed just
-	 * when the solve completed one of their parts, so a regular solve stays cheap.
-	 */
+	//To be called when the user solved a problem that was not solved before.
+	//Only the sets containing the problem are checked, and the full count is recomputed just
+	//when the solve completed one of their parts, so a regular solve stays cheap.
 	public static function updateAfterSolve(int $userID, int $tsumegoID): void
 	{
 		$completedPart = Util::query('
@@ -56,11 +49,9 @@ LIMIT 1', [$userID, $tsumegoID, $tsumegoID]);
 		AchievementCondition::put($userID, AchievementCondition::CATEGORY_COMPLETED_SETS, $count);
 	}
 
-	/**
-	 * Every problem of the official public sets with the part of its set it falls into and whether
-	 * the user (the first query parameter) solved it. Problems are ordered within a set the same way
-	 * as on the collections page, so the parts match the cards shown there.
-	 */
+	//Every problem of the official public sets with the part of its set it falls into and whether
+	//the user (the first query parameter) solved it. Problems are ordered within a set the same way
+	//as on the collections page, so the parts match the cards shown there.
 	private static function partitionedProblemsSql(string $where): string
 	{
 		return '

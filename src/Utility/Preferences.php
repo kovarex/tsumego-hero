@@ -4,30 +4,22 @@ namespace App\Utility;
 
 use InvalidArgumentException;
 
-/**
- * Unified Preferences storage class.
- *
- * - For logged-in users: Uses columns of the user table (see $userColumns)
- * - For guests: Uses cookies (or in-memory storage during tests)
- *
- * Supported keys (the cookie names, used by TsumegoFilters):
- * - query
- * - collection_size
- * - filtered_sets
- * - filtered_ranks
- * - filtered_tags
- */
+//Unified Preferences storage class.
+//- For logged-in users: Uses columns of the user table (see $userColumns)
+//- For guests: Uses cookies (or in-memory storage during tests)
+//Supported keys (the cookie names, used by TsumegoFilters):
+//- query
+//- collection_size
+//- filtered_sets
+//- filtered_ranks
+//- filtered_tags
 class Preferences
 {
-	/**
-	 * In-memory storage for unit tests (where setcookie() won't work)
-	 * @var array<string, mixed>
-	 */
+	//In-memory storage for unit tests (where setcookie() won't work)
+	/** @var array<string, mixed> */
 	private static array $testStorage = [];
 
-	/**
-	 * Database default values - used to detect if a value was explicitly set
-	 */
+	//Database default values - used to detect if a value was explicitly set
 	private static array $dbDefaults = [
 		'query' => 'topics',
 		'collection_size' => 200,
@@ -36,9 +28,7 @@ class Preferences
 		'filtered_tags' => null,
 	];
 
-	/**
-	 * Valid preference keys, each with the user column that stores it
-	 */
+	//Valid preference keys, each with the user column that stores it
 	private static array $userColumns = [
 		'query' => 'collection_grouping',
 		'collection_size' => 'collection_size',
@@ -47,13 +37,10 @@ class Preferences
 		'filtered_tags' => 'filtered_tags',
 	];
 
-	/**
-	 * Get a preference value
-	 *
-	 * @param string $key The preference key
-	 * @param mixed $default Default value if not set
-	 * @return mixed The preference value
-	 */
+	//Get a preference value
+	//$key: The preference key
+	//$default: Default value if not set
+	//Returns the preference value
 	public static function get(string $key, mixed $default = null): mixed
 	{
 		self::validateKey($key);
@@ -80,12 +67,8 @@ class Preferences
 		}
 	}
 
-	/**
-	 * Set a preference value
-	 *
-	 * @param string $key The preference key
-	 * @param mixed $value The value to set
-	 */
+	//Set a preference value
+	//$key: The preference key
 	public static function set(string $key, mixed $value): void
 	{
 		self::validateKey($key);
@@ -96,10 +79,7 @@ class Preferences
 			self::setInGuestStorage($key, $value);
 	}
 
-	/**
-	 * Merge guest preferences into database on login.
-	 * Should be called after successful login.
-	 */
+	//Merge guest preferences into database on login. Should be called after successful login.
 	public static function mergeGuestPreferencesOnLogin(): void
 	{
 		if (!Auth::isLoggedIn())
@@ -123,9 +103,7 @@ class Preferences
 		}
 	}
 
-	/**
-	 * Check if a value equals the database default for a key
-	 */
+	//Check if a value equals the database default for a key
 	private static function isDefaultValue(string $key, mixed $value): bool
 	{
 		if (!isset(self::$dbDefaults[$key]))
@@ -139,27 +117,21 @@ class Preferences
 		return $value === $default;
 	}
 
-	/**
-	 * Clear all test storage (for use in test tearDown)
-	 */
+	//Clear all test storage (for use in test tearDown)
 	public static function clearTestStorage(): void
 	{
 		self::$testStorage = [];
 	}
 
-	/**
-	 * Get preference from database (for logged-in users), the user row is loaded with the login
-	 */
+	//Get preference from database (for logged-in users), the user row is loaded with the login
 	private static function getFromDatabase(string $key, mixed $default = null): mixed
 	{
 		$value = Auth::getUser()[self::$userColumns[$key]] ?? null;
 		return ($value === null || $value === '') ? $default : $value;
 	}
 
-	/**
-	 * Set preference in database (for logged-in users). TsumegoFilters stores every filter on
-	 * every page, so an unchanged value isn't written again.
-	 */
+	//Set preference in database (for logged-in users). TsumegoFilters stores every filter on
+	//every page, so an unchanged value isn't written again.
 	private static function setInDatabase(string $key, mixed $value): void
 	{
 		$column = self::$userColumns[$key];
@@ -167,9 +139,7 @@ class Preferences
 			Auth::saveUserField($column, $value);
 	}
 
-	/**
-	 * Get preference from guest storage (cookies or test memory)
-	 */
+	//Get preference from guest storage (cookies or test memory)
 	private static function getFromGuestStorage(string $key, mixed $default = null): mixed
 	{
 		// In unit tests, use memory storage
@@ -181,9 +151,7 @@ class Preferences
 		return $_COOKIE[$cookieKey] ?? $default;
 	}
 
-	/**
-	 * Set preference in guest storage (cookies or test memory)
-	 */
+	//Set preference in guest storage (cookies or test memory)
 	private static function setInGuestStorage(string $key, mixed $value): void
 	{
 		// In unit tests, use memory storage
@@ -198,9 +166,7 @@ class Preferences
 		Util::setCookie($cookieKey, $value);
 	}
 
-	/**
-	 * Clear a single key from guest storage
-	 */
+	//Clear a single key from guest storage
 	private static function clearGuestStorageKey(string $key): void
 	{
 		if (self::isInUnitTest())
@@ -213,21 +179,16 @@ class Preferences
 		Util::clearCookie($cookieKey);
 	}
 
-	/**
-	 * Check if we're running in a unit test environment
-	 *
-	 * NOTE: Only checks PHPUNIT_RUNNING, not php_sapi_name() === 'cli'
-	 * because CLI check would also trigger in production CLI commands
-	 * (cron jobs, migrations, shells) where we want real cookies, not test storage.
-	 */
+	//Check if we're running in a unit test environment
+	//NOTE: Only checks PHPUNIT_RUNNING, not php_sapi_name() === 'cli'
+	//because CLI check would also trigger in production CLI commands
+	//(cron jobs, migrations, shells) where we want real cookies, not test storage.
 	private static function isInUnitTest(): bool
 	{
 		return defined('PHPUNIT_RUNNING');
 	}
 
-	/**
-	 * Validate that the key is allowed
-	 */
+	//Validate that the key is allowed
 	private static function validateKey(string $key): void
 	{
 		if (!isset(self::$userColumns[$key]))

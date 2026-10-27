@@ -6,9 +6,7 @@ use App\Utility\Rating;
 
 class HighscoreTest extends IntegrationTestCase
 {
-	/**
-	 * Rating highscore shows users sorted by rating descending with correct positions.
-	 */
+	//Rating highscore shows users sorted by rating descending with correct positions.
 	public function testRatingHighscoreOrdering()
 	{
 		new ContextPreparator([
@@ -30,9 +28,7 @@ class HighscoreTest extends IntegrationTestCase
 		$this->assertRowContains($rows[3], '#3', 'DN_LowPlayer', '1,500');
 	}
 
-	/**
-	 * Rating highscore shows correct rank labels per rating.
-	 */
+	//Rating highscore shows correct rank labels per rating.
 	public function testRatingHighscoreRanks()
 	{
 		new ContextPreparator([
@@ -49,9 +45,7 @@ class HighscoreTest extends IntegrationTestCase
 		$this->assertTextContains('2k', $this->view);
 	}
 
-	/**
-	 * Level highscore orders by level DESC, xp DESC.
-	 */
+	//Level highscore orders by level DESC, xp DESC.
 	public function testLevelHighscoreOrdering()
 	{
 		new ContextPreparator([
@@ -76,9 +70,7 @@ class HighscoreTest extends IntegrationTestCase
 		$this->assertRowContains($rows[4], '#4', 'DN_LowLevel');
 	}
 
-	/**
-	 * Level highscore works for logged in users too.
-	 */
+	//Level highscore works for logged in users too.
 	public function testLevelHighscoreLoggedIn()
 	{
 		new ContextPreparator([
@@ -96,9 +88,7 @@ class HighscoreTest extends IntegrationTestCase
 		$this->assertRowContains($rows[2], '#2', 'DN_kovarex');
 	}
 
-	/**
-	 * Tags highscore orders by tag count descending.
-	 */
+	//Tags highscore orders by tag count descending.
 	public function testTagHighscoreOrdering()
 	{
 		$context = new ContextPreparator([
@@ -135,11 +125,9 @@ class HighscoreTest extends IntegrationTestCase
 		$this->assertRowContains($rows[2], '2', 'DN_TagNovice', '1');
 	}
 
-	/**
-	 * Achievements highscore orders by the number of unlocked achievements. Players
-	 * with the same number are separated by how often they earned the repeatable
-	 * achievement, which does not add to the completed count itself.
-	 */
+	//Achievements highscore orders by the number of unlocked achievements. Players
+	//with the same number are separated by how often they earned the repeatable
+	//achievement, which does not add to the completed count itself.
 	public function testAchievementsHighscoreOrdering()
 	{
 		new ContextPreparator([
@@ -178,9 +166,7 @@ class HighscoreTest extends IntegrationTestCase
 		$this->assertStringContainsString('Earned 8 times', $this->view);
 	}
 
-	/**
-	 * Time mode highscore shows users with highest points per category/rank combo.
-	 */
+	//Time mode highscore shows users with highest points per category/rank combo.
 	public function testTimeModeHighscoreOrdering()
 	{
 		$context = new ContextPreparator([
@@ -226,9 +212,7 @@ class HighscoreTest extends IntegrationTestCase
 		$this->assertLessThan($slowPos, $fastPos, 'FastPlayer (900pts) should appear before SlowPlayer (600pts)');
 	}
 
-	/**
-	 * Time mode highscore deduplicates: only best score per user shown.
-	 */
+	//Time mode highscore deduplicates: only best score per user shown.
 	public function testTimeModeHighscoreDedup()
 	{
 		$context = new ContextPreparator([
@@ -261,10 +245,7 @@ class HighscoreTest extends IntegrationTestCase
 		$this->assertTextContains('950', $this->view);
 	}
 
-	/**
-	 * Self-view with gap: a user outside the top 30 appears with a gap separator
-	 * and the data-table__row--self class.
-	 */
+	//Self-view with gap: a user outside the top 30 appears with a gap separator and the data-table__row--self class.
 	public function testRatingSelfViewWithGap()
 	{
 		$otherUsers = [];
@@ -283,10 +264,8 @@ class HighscoreTest extends IntegrationTestCase
 		$this->assertTextContains('#111', $this->view);
 	}
 
-	/**
-	 * The level highscore lists the top 1000 players, and a player ranked below
-	 * 1000 is still shown with a gap separator.
-	 */
+	//The level highscore lists the top 1000 players, and a player ranked below
+	//1000 is still shown with a gap separator.
 	public function testLevelHighscoreListsTop1000()
 	{
 		$otherUsers = [];
@@ -310,9 +289,7 @@ class HighscoreTest extends IntegrationTestCase
 		$this->assertTextContains('⋮', $this->view);
 	}
 
-	/**
-	 * When logged-in user IS in top 30, no gap separator appears for self.
-	 */
+	//When logged-in user IS in top 30, no gap separator appears for self.
 	public function testRatingHighscoreNoGapWhenInTop100()
 	{
 		new ContextPreparator([
@@ -328,9 +305,7 @@ class HighscoreTest extends IntegrationTestCase
 		$this->assertTextNotContains('⋮', $this->view);
 	}
 
-	/**
-	 * When not logged in, no self-view section appears.
-	 */
+	//When not logged in, no self-view section appears.
 	public function testRatingHighscoreNotLoggedIn()
 	{
 		new ContextPreparator([
@@ -347,9 +322,7 @@ class HighscoreTest extends IntegrationTestCase
 		$this->assertTextNotContains('⋮', $this->view);
 	}
 
-	/**
-	 * Achievements highscore self-view: user with no achievements appears with 0.
-	 */
+	//Achievements highscore self-view: user with no achievements appears with 0.
 	public function testAchievementsHighscoreUserWithNoAchievements()
 	{
 		new ContextPreparator([
@@ -369,10 +342,8 @@ class HighscoreTest extends IntegrationTestCase
 		$this->assertTextContains('0/' . AchievementId::count(), $this->view);
 	}
 
-	/**
-	 * Achievement highscore counts each unlocked achievement once: earning the
-	 * repeatable achievement again does not raise the score.
-	 */
+	//Achievement highscore counts each unlocked achievement once: earning the
+	//repeatable achievement again does not raise the score.
 	public function testAchievementsHighscoreCountsEachAchievementOnce()
 	{
 		new ContextPreparator([
@@ -407,9 +378,7 @@ class HighscoreTest extends IntegrationTestCase
 		$this->assertStringNotContainsString('+', $rows[2]->textContent);
 	}
 
-	/**
-	 * Tags highscore: user with no approved tags appears with 0 via self-view.
-	 */
+	//Tags highscore: user with no approved tags appears with 0 via self-view.
 	public function testTagHighscoreUserWithNoTags()
 	{
 		new ContextPreparator([
@@ -429,9 +398,7 @@ class HighscoreTest extends IntegrationTestCase
 		$this->assertTextContains('DN_kovarex', $this->view);
 	}
 
-	/**
-	 * Helper to assert that a table row's text content contains all given strings.
-	 */
+	//Helper to assert that a table row's text content contains all given strings.
 	private function assertRowContains($row, string ...$expectedTexts): void
 	{
 		$rowText = $row->textContent;

@@ -4,23 +4,19 @@ declare(strict_types=1);
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * Drops the tables and columns nothing reads:
- *
- * - cake_sessions: the sessions are PHP files (config/core.php, 'defaults' => 'php'),
- * - publish_date: the schedule took its place,
- * - signature: the board editor sent "signatures" of the correct moves in a cookie once a week per
- *   problem and the play page stored them, for a pattern search that was never written,
- * - site: old news, shown only by /sites/view, which nothing linked to,
- * - tsumego_comment_before_sgf_coordinates: the comments as they were before CommentCoordinatesInSgfSpace
- *   moved them to SGF coordinates, kept only for its down(),
- * - tsumego.part and part_increment (never used), tsumego.solved and failed (only reset on
- *   publishing), tsumego.activity_value (only counted up),
- * - set.multiplier (never read) and set.author (written for sandbox sets only),
- * - achievement_condition.created, which nothing reads, and which ON UPDATE made a time of the last change.
- *
- * down() brings the tables and columns back empty.
- */
+//Drops the tables and columns nothing reads:
+//- cake_sessions: the sessions are PHP files (config/core.php, 'defaults' => 'php'),
+//- publish_date: the schedule took its place,
+//- signature: the board editor sent "signatures" of the correct moves in a cookie once a week per
+//  problem and the play page stored them, for a pattern search that was never written,
+//- site: old news, shown only by /sites/view, which nothing linked to,
+//- tsumego_comment_before_sgf_coordinates: the comments as they were before CommentCoordinatesInSgfSpace
+//  moved them to SGF coordinates, kept only for its down(),
+//- tsumego.part and part_increment (never used), tsumego.solved and failed (only reset on
+//  publishing), tsumego.activity_value (only counted up),
+//- set.multiplier (never read) and set.author (written for sandbox sets only),
+//- achievement_condition.created, which nothing reads, and which ON UPDATE made a time of the last change.
+//down() brings the tables and columns back empty.
 final class DropDeadTablesAndColumns extends AbstractMigration
 {
 	private const TABLES = ['cake_sessions', 'publish_date', 'signature', 'site', 'tsumego_comment_before_sgf_coordinates'];

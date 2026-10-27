@@ -11,13 +11,9 @@ class Achievement extends AppModel
 		parent::__construct($id, $table, $ds);
 	}
 
-	/**
-	 * Returns the progress counter definition for an achievement, or null if the
-	 * achievement has no progress to show (binary unlock or derived elsewhere).
-	 *
-	 * @param int $achievementId
-	 * @return array|null ['category' => int, 'goal' => int], the category of AchievementCondition
-	 */
+	//Returns the progress counter definition for an achievement, or null if the
+	//achievement has no progress to show (binary unlock or derived elsewhere).
+	//Returns ['category' => int, 'goal' => int], the category of AchievementCondition
 	public static function progressDefinition(int $achievementId): ?array
 	{
 		$definitions = [
@@ -50,12 +46,8 @@ class Achievement extends AppModel
 	public const float RARITY_UNCOMMON_PERCENT = 1;
 	public const float RARITY_RARE_PERCENT = 0.1;
 
-	/**
-	 * Returns the rarity label for an achievement completion percentage.
-	 *
-	 * @param float $completionPercent Percentage of all users who completed it.
-	 * @return string
-	 */
+	//Returns the rarity label for an achievement completion percentage.
+	//$completionPercent: Percentage of all users who completed it.
 	public static function getRarityLabel(float $completionPercent): string
 	{
 		if ($completionPercent >= self::RARITY_COMMON_PERCENT)

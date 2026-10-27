@@ -9,15 +9,12 @@ use App\Utility\MistakeTraining;
 
 class MistakeTrainingController extends AppController
 {
-	/**
-	 * Show a training problem: the one the link names, or the next due one, which is
-	 * the first of today's list not tried yet, and once only misses are left, the
-	 * first of those.
-	 *
-	 * This route owns the training mode. Every queue link comes back here, so a
-	 * plain problem URL always means normal play, just like it does for the other
-	 * modes.
-	 */
+	//Show a training problem: the one the link names, or the next due one, which is
+	//the first of today's list not tried yet, and once only misses are left, the
+	//first of those.
+	//This route owns the training mode. Every queue link comes back here, so a
+	//plain problem URL always means normal play, just like it does for the other
+	//modes.
 	#[HttpGet]
 	public function play(?string $setConnectionID = null): mixed
 	{
@@ -37,11 +34,9 @@ class MistakeTrainingController extends AppController
 		return $this->playSetConnection((int) $next['set_connection_id']);
 	}
 
-	/**
-	 * The overview of the training, whatever is due: the training itself opens it only
-	 * once nothing is left, so the homepage and the title of a training problem link
-	 * here.
-	 */
+	//The overview of the training, whatever is due: the training itself opens it only
+	//once nothing is left, so the homepage and the title of a training problem link
+	//here.
 	#[HttpGet]
 	public function overview(): mixed
 	{
@@ -51,11 +46,9 @@ class MistakeTrainingController extends AppController
 		return $this->renderOverview((int) Auth::getUserID());
 	}
 
-	/**
-	 * Today's training (what is due, with the way in, or that it is all done), what
-	 * comes up in the next days, the past mistakes to add when nothing is due, and the
-	 * calendar and streak the profile shows.
-	 */
+	//Today's training (what is due, with the way in, or that it is all done), what
+	//comes up in the next days, the past mistakes to add when nothing is due, and the
+	//calendar and streak the profile shows.
 	private function renderOverview(int $userId): null
 	{
 		$this->set('_page', 'mistake-training');
@@ -80,12 +73,10 @@ class MistakeTrainingController extends AppController
 		return null;
 	}
 
-	/**
-	 * Bring the player's past mistakes into the training. Offered on the queue page
-	 * while nothing is due, because a problem solved before the training existed never
-	 * entered it by itself. What the import found is said here, so no page has to count
-	 * the attempt history to offer the button.
-	 */
+	//Bring the player's past mistakes into the training. Offered on the queue page
+	//while nothing is due, because a problem solved before the training existed never
+	//entered it by itself. What the import found is said here, so no page has to count
+	//the attempt history to offer the button.
 	#[HttpPost]
 	public function import(): mixed
 	{
@@ -103,14 +94,12 @@ class MistakeTrainingController extends AppController
 		return $this->redirect(MistakeTraining::$QUEUE_LINK);
 	}
 
-	/**
-	 * Render the shared play page for a problem of today's training. A problem that
-	 * is due is its review, also when it was missed earlier today. One solved today
-	 * stays in the row, so it can be opened again, but only as a replay that counts
-	 * for nothing, and the page says so. A link that stopped holding, because the
-	 * problem left the training or its collection is not open to the player, leads
-	 * back to the queue instead of the refusal of the play page.
-	 */
+	//Render the shared play page for a problem of today's training. A problem that
+	//is due is its review, also when it was missed earlier today. One solved today
+	//stays in the row, so it can be opened again, but only as a replay that counts
+	//for nothing, and the page says so. A link that stopped holding, because the
+	//problem left the training or its collection is not open to the player, leads
+	//back to the queue instead of the refusal of the play page.
 	private function playSetConnection(int $setConnectionID): mixed
 	{
 		$setConnection = ClassRegistry::init('SetConnection')->findById($setConnectionID);

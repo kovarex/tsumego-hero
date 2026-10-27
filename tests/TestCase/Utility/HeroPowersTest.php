@@ -308,10 +308,8 @@ class HeroPowersTest extends IntegrationTestCase
 		$this->assertSame($status2['TsumegoStatus']['status'], 'W');
 	}
 
-	/**
-	 * Full rejuvenation flow: start with 0 hearts, fail to lock the board,
-	 * rejuvenate to restore all hearts, reset and fail again to verify hearts can still be lost.
-	 */
+	//Full rejuvenation flow: start with 0 hearts, fail to lock the board,
+	//rejuvenate to restore all hearts, reset and fail again to verify hearts can still be lost.
 	public function testRejuvenationClearsTryAgainTomorrowMessage()
 	{
 		$browser = Browser::instance();

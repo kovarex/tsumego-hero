@@ -1,12 +1,8 @@
-/**
- * Preview toggle - switches between pill buttons and inline board previews.
- * Persists preference to localStorage.
- *
- * Any checkbox with class="preview-zoom-toggle" switches its own container between the two modes:
- * the element it names in data-target, else the block of boards it sits in, else the whole page.
- * A page can carry several of them, one per table. The mode the page opens in is applied through
- * the same container as a click, so the two can never disagree about where the class lives.
- */
+//Preview toggle - switches between pill buttons and inline board previews. Persists preference to localStorage.
+//Any checkbox with class="preview-zoom-toggle" switches its own container between the two modes:
+//the element it names in data-target, else the block of boards it sits in, else the whole page.
+//A page can carry several of them, one per table. The mode the page opens in is applied through
+//the same container as a click, so the two can never disagree about where the class lives.
 (function () {
 	'use strict';
 

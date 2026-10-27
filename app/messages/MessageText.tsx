@@ -1,11 +1,9 @@
-/**
- * The text of a message. It is plain text: the line breaks stay and the web addresses
- * in it become links, nothing else is interpreted.
- */
+//The text of a message. It is plain text: the line breaks stay and the web addresses
+//in it become links, nothing else is interpreted.
 
 const ADDRESS = /(https?:\/\/[^\s<>"]+)/g;
 
-/** Punctuation that ends a sentence rather than the address it follows. */
+//Punctuation that ends a sentence rather than the address it follows.
 const TRAILING_PUNCTUATION = /[.,;:!?)\]'"]+$/;
 
 export function MessageText({ text }: { text: string })

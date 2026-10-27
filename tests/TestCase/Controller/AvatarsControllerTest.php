@@ -13,10 +13,8 @@ class AvatarsControllerTest extends IntegrationTestCase
 		$this->assertContentType('image/svg+xml');
 	}
 
-	/**
-	 * The url carries the key the drawing is made of, so the board of a name is
-	 * the drawing of the key in its url and nothing else.
-	 */
+	//The url carries the key the drawing is made of, so the board of a name is
+	//the drawing of the key in its url and nothing else.
 	public function testTheImageIsTheDrawingOfTheKeyInTheUrl()
 	{
 		$key = Avatar::key('Anna');
@@ -46,10 +44,8 @@ class AvatarsControllerTest extends IntegrationTestCase
 		$this->assertNotSame($first, $second);
 	}
 
-	/**
-	 * The endpoint is a function of its url and not of an account, so a board is
-	 * drawn for any key: a page does not need a row to show a board of a name.
-	 */
+	//The endpoint is a function of its url and not of an account, so a board is
+	//drawn for any key: a page does not need a row to show a board of a name.
 	public function testABoardIsDrawnWithoutAnAccountBehindIt()
 	{
 		$key = Avatar::key('a name no account has');
@@ -59,10 +55,7 @@ class AvatarsControllerTest extends IntegrationTestCase
 		$this->assertStringStartsWith('<svg', $this->view);
 	}
 
-	/**
-	 * The browser of a visitor keeps the avatar for a year, so the response has
-	 * to say that it will not change.
-	 */
+	//The browser of a visitor keeps the avatar for a year, so the response has to say that it will not change.
 	public function testImageIsCachedForALongTime()
 	{
 		$this->get('/board/' . Avatar::key('Anna'));
@@ -72,10 +65,8 @@ class AvatarsControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('max-age=', $headers['Cache-Control']);
 	}
 
-	/**
-	 * An avatar is fetched by a plain img tag, so it must not depend on a session
-	 * or on the display name gate that sends a flagged player to the rename page.
-	 */
+	//An avatar is fetched by a plain img tag, so it must not depend on a session
+	//or on the display name gate that sends a flagged player to the rename page.
 	public function testImageLoadsForAVisitorWhoIsNotLoggedIn()
 	{
 		$this->get('/board/' . Avatar::key('Anna'));
@@ -103,11 +94,9 @@ class AvatarsControllerTest extends IntegrationTestCase
 		}
 	}
 
-	/**
-	 * A list knows the id of every player it shows but not the display name the drawing is
-	 * made of, so the board of an account is reachable by its id as well. That is what an
-	 * avatar falls back on when a picture of another host is gone.
-	 */
+	//A list knows the id of every player it shows but not the display name the drawing is
+	//made of, so the board of an account is reachable by its id as well. That is what an
+	//avatar falls back on when a picture of another host is gone.
 	public function testTheBoardOfAnAccountIsReachableByTheUserId()
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'Anna']]);
@@ -117,9 +106,7 @@ class AvatarsControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString(Avatar::url('DN_Anna'), (string) $this->headerValue('Location'));
 	}
 
-	/**
-	 * A deleted account asked to be forgotten, so its board is not drawn, not even by id.
-	 */
+	//A deleted account asked to be forgotten, so its board is not drawn, not even by id.
 	public function testADeletedAccountHasNoBoard()
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'Anna', 'deleted' => true]]);
@@ -136,10 +123,8 @@ class AvatarsControllerTest extends IntegrationTestCase
 		$this->assertResponseCode(404);
 	}
 
-	/**
-	 * A share preview takes a picture and not an svg, so the board of a key is served
-	 * as a png on the same drawing. The url says which of the two it wants.
-	 */
+	//A share preview takes a picture and not an svg, so the board of a key is served
+	//as a png on the same drawing. The url says which of the two it wants.
 	public function testTheBoardIsAlsoServedAsAPng()
 	{
 		$key = Avatar::key('Anna');

@@ -1,30 +1,18 @@
 <?php
 
-/**
- * EmptyIntegerBehavior
- *
- * Converts empty strings to appropriate values for integer columns:
- * - Empty string → 0 for NOT NULL integer columns
- * - Empty string → null for nullable integer columns
- *
- * This prevents database errors when saving form data with empty integer fields.
- */
+//Converts empty strings to appropriate values for integer columns:
+//- Empty string → 0 for NOT NULL integer columns
+//- Empty string → null for nullable integer columns
+//This prevents database errors when saving form data with empty integer fields.
 class EmptyIntegerBehavior extends ModelBehavior
 {
-	/**
-	 * Cached schema information per model
-	 *
-	 * @var array
-	 */
+	//Cached schema information per model
+	/** @var array */
 	protected $_schemaCache = [];
 
-	/**
-	 * Before save callback
-	 *
-	 * @param Model $model Model instance
-	 * @param mixed $options Options array
-	 * @return bool True to continue save, false to abort
-	 */
+	//Before save callback
+	//$options: Options array
+	//Returns true to continue save, false to abort
 	public function beforeSave(Model $model, mixed $options = []): bool
 	{
 		if (empty($model->data[$model->alias]))
@@ -81,12 +69,8 @@ class EmptyIntegerBehavior extends ModelBehavior
 		return true;
 	}
 
-	/**
-	 * Get schema for model (with caching)
-	 *
-	 * @param Model $model Model instance
-	 * @return array Schema array
-	 */
+	//Get schema for model (with caching)
+	/** @return array Schema array */
 	protected function _getSchema(Model $model)
 	{
 		$cacheKey = $model->alias;
@@ -97,12 +81,9 @@ class EmptyIntegerBehavior extends ModelBehavior
 		return $this->_schemaCache[$cacheKey];
 	}
 
-	/**
-	 * Check if a field type is an integer type
-	 *
-	 * @param string $type Field type from schema
-	 * @return bool True if integer type
-	 */
+	//Check if a field type is an integer type
+	//$type: Field type from schema
+	//Returns true if integer type
 	protected function _isIntegerType(string $type): bool
 	{
 		$integerTypes = ['integer', 'biginteger', 'smallinteger', 'tinyinteger'];

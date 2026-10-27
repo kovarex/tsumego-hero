@@ -4,9 +4,7 @@ namespace App\Utility;
 
 use DateTime;
 
-/**
- * @phpstan-import-type UserRow from \App\Utility\RowTypes
- */
+/** @phpstan-import-type UserRow from \App\Utility\RowTypes */
 class HeroPowers
 {
 	public static int $SPRINT_MINIMUM_LEVEL = 20;
@@ -30,17 +28,13 @@ class HeroPowers
 		];
 	}
 
-	/**
-	 * @param UserRow $user
-	 */
+	/** @param UserRow $user */
 	public static function hasPremiumUnlock(array $user): bool
 	{
 		return ($user['premium_id'] ?? null) !== null;
 	}
 
-	/**
-	 * @param UserRow $user
-	 */
+	/** @param UserRow $user */
 	public static function hasContributionRevelationBonus(array $user): bool
 	{
 		return !empty($user['contribution_revelation_bonus']);

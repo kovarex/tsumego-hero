@@ -162,11 +162,9 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 			'A problem that is scheduled for later is not part of today\'s queue');
 	}
 
-	/**
-	 * Problems in the training, in the order they came in. Each entry is added to the
-	 * status fixture of its problem; by default a problem is due, every one at the same
-	 * moment the way an import brings them, and untried today.
-	 */
+	//Problems in the training, in the order they came in. Each entry is added to the
+	//status fixture of its problem; by default a problem is due, every one at the same
+	//moment the way an import brings them, and untried today.
 	private function prepareTraining(array ...$problems): ContextPreparator
 	{
 		$due = date('Y-m-d H:i:s', strtotime('-1 hour'));
@@ -192,11 +190,9 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 		return (int) $context->tsumegos[$index]['set-connections'][0]['id'];
 	}
 
-	/**
-	 * Twenty problems imported at once are due at the same moment, and they come in
-	 * newest mistake first, not in the order of their set. The training must still
-	 * open at the first of them, not wherever an unordered query lands.
-	 */
+	//Twenty problems imported at once are due at the same moment, and they come in
+	//newest mistake first, not in the order of their set. The training must still
+	//open at the first of them, not wherever an unordered query lands.
 	public function testEnteringTheTrainingOpensTheFirstProblemOfTheDay()
 	{
 		$context = new ContextPreparator([
@@ -245,10 +241,8 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('Already solved today. This try does not count.', $this->view);
 	}
 
-	/**
-	 * The colour of the row comes from what today did, so a problem missed and then
-	 * solved on a retry is green when the page is drawn again, whatever its status.
-	 */
+	//The colour of the row comes from what today did, so a problem missed and then
+	//solved on a retry is green when the page is drawn again, whatever its status.
 	public function testAProblemSolvedOnARetryIsGreenInTheRow()
 	{
 		$context = $this->prepareTraining(['name' => 'F', 'mistake_training_rung' => 3]);
@@ -373,12 +367,10 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 			'Solving in training must record the result and climb the ladder.');
 	}
 
-	/**
-	 * A mistake locks the board, but the problem stays in today's training, so Reset
-	 * must open a fresh try of it. The solve that follows is the retry: it earns no
-	 * rung, and the button turns green because today is done with the problem. The
-	 * page is not reloaded after a result, so the result itself redraws the button.
-	 */
+	//A mistake locks the board, but the problem stays in today's training, so Reset
+	//must open a fresh try of it. The solve that follows is the retry: it earns no
+	//rung, and the button turns green because today is done with the problem. The
+	//page is not reloaded after a result, so the result itself redraws the button.
 	public function testAMistakeInTheTrainingCanBeTriedAgainWithReset()
 	{
 		$context = new ContextPreparator([
@@ -775,11 +767,9 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString(MistakeTraining::$QUEUE_LINK, (string) ($this->headerValue('Location') ?? ''));
 	}
 
-	/**
-	 * The way the training was tried on the test server: of three imported problems one is solved and one
-	 * missed today, the third is left alone. The next day the untouched one and the
-	 * missed one are still to do, and the solved one comes back after its two days.
-	 */
+	//The way the training was tried on the test server: of three imported problems one is solved and one
+	//missed today, the third is left alone. The next day the untouched one and the
+	//missed one are still to do, and the solved one comes back after its two days.
 	public function testANextDayKeepsWhatWasNotSolvedAndBringsBackTheSolvedOneOnTime()
 	{
 		$now = date('Y-m-d H:i:s');

@@ -2,9 +2,8 @@
 
 use App\Utility\Avatar;
 
+//Tests for TsumegoIssuesController - specifically the global issues index page.
 /**
- * Tests for TsumegoIssuesController - specifically the global issues index page.
- *
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
@@ -138,9 +137,7 @@ class TsumegoIssuesControllerTest extends IntegrationTestCase
 		$this->assertTextContains('Prev', $pageSource);
 	}
 
-	/**
-	 * Test that issue author's Go rank is displayed correctly on the issues list.
-	 */
+	//Test that issue author's Go rank is displayed correctly on the issues list.
 	public function testIssueAuthorRankDisplayedCorrectly()
 	{
 		$browser = Browser::instance();
@@ -155,9 +152,7 @@ class TsumegoIssuesControllerTest extends IntegrationTestCase
 		$this->assertTextContains('6k', $pageSource);
 	}
 
-	/**
-	 * Test closing an issue from the issues list page.
-	 */
+	//Test closing an issue from the issues list page.
 	public function testCloseIssueFromListPage()
 	{
 		$browser = Browser::instance();
@@ -183,9 +178,7 @@ class TsumegoIssuesControllerTest extends IntegrationTestCase
 		$this->assertTextNotContains('Issue to close from list', $pageSource);
 	}
 
-	/**
-	 * Test that deleted accounts show as [account deleted] on the issues list.
-	 */
+	//Test that deleted accounts show as [account deleted] on the issues list.
 	public function testDeletedUserShowsPlaceholder()
 	{
 		$browser = Browser::instance();
@@ -214,9 +207,6 @@ class TsumegoIssuesControllerTest extends IntegrationTestCase
 		$this->assertTextNotContains('doomed_user', $pageSource);
 	}
 
-	/**
-	 * Test that the issues API sends the avatar of the author.
-	 */
 	public function testIssuesApiSendsAuthorAvatars(): void
 	{
 		$context = new ContextPreparator([
@@ -232,9 +222,7 @@ class TsumegoIssuesControllerTest extends IntegrationTestCase
 		$this->assertSame($avatar, $body['issues'][0]['comments'][0]['user_avatar_url']);
 	}
 
-	/**
-	 * Test that the issues API leaves out the avatar of a deleted author.
-	 */
+	//Test that the issues API leaves out the avatar of a deleted author.
 	public function testIssuesApiLeavesOutTheAvatarOfADeletedAuthor(): void
 	{
 		$context = new ContextPreparator([
@@ -263,10 +251,8 @@ class TsumegoIssuesControllerTest extends IntegrationTestCase
 		$this->assertStringNotContainsString(md5('doomed@example.com'), $body);
 	}
 
-	/**
-	 * Wait for React to mount and fetch data on the issues index page.
-	 * The page initially shows skeletons, then React fetches and renders actual issues or empty state.
-	 */
+	//Wait for React to mount and fetch data on the issues index page.
+	//The page initially shows skeletons, then React fetches and renders actual issues or empty state.
 	private function waitForReactIssuesList($browser)
 	{
 		// Wait for skeleton to disappear and real content to appear

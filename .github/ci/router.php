@@ -1,13 +1,9 @@
 <?php
 
-/**
- * PHP Built-in Server Router Script
- *
- * This script is used with `php -S` to route requests similar to Apache's mod_rewrite.
- * Routes requests through index.php so the CakePHP dispatcher can handle them.
- *
- * Usage: php -S localhost:8080 -t webroot router.php
- */
+//PHP Built-in Server Router Script
+//This script is used with `php -S` to route requests similar to Apache's mod_rewrite.
+//Routes requests through index.php so the CakePHP dispatcher can handle them.
+//Usage: php -S localhost:8080 -t webroot router.php
 
 // Parse the URI without query string for file existence check
 $requestUri = $_SERVER['REQUEST_URI'];

@@ -628,10 +628,8 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 			'No-error streak should increment when solving without misplays');
 	}
 
-	/**
-	 * The streak counts the problems solved since the last error, so a problem
-	 * misplayed in an earlier play counts once the player solves it cleanly.
-	 */
+	//The streak counts the problems solved since the last error, so a problem
+	//misplayed in an earlier play counts once the player solves it cleanly.
 	public function testStreakCountsASolveOfAProblemMisplayedInAnEarlierPlay(): void
 	{
 		$context = new ContextPreparator([
@@ -687,12 +685,10 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		}
 	}
 
-	/**
-	 * Verifies the Bad Potion counter integration: when a user has potion active
-	 * (used_potion=0, level >= 50, exactly at max health) and the previous
-	 * problem was failed, the achievement_condition.value counter for
-	 * category CATEGORY_POTION increments because chance = 0 x 0.5% = 0%.
-	 */
+	//Verifies the Bad Potion counter integration: when a user has potion active
+	//(used_potion=0, level >= 50, exactly at max health) and the previous
+	//problem was failed, the achievement_condition.value counter for
+	//category CATEGORY_POTION increments because chance = 0 x 0.5% = 0%.
 	public function testPotionConditionIncrementsOnPreviousFail(): void
 	{
 		$maxHealth = Util::getHealthBasedOnLevel(50);
@@ -721,11 +717,9 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 			'potion condition value must increment to 1 on first miss');
 	}
 
-	/**
-	 * Verifies the potion trigger path: when damage far exceeds max health,
-	 * the progressive chance reaches 100% and potion always heals.
-	 * Also verifies the banner renders in the view output.
-	 */
+	//Verifies the potion trigger path: when damage far exceeds max health,
+	//the progressive chance reaches 100% and potion always heals.
+	//Also verifies the banner renders in the view output.
 	public function testPotionTriggersAndConsumesOnPreviousFail(): void
 	{
 		$maxHealth = Util::getHealthBasedOnLevel(50);
@@ -1182,10 +1176,8 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		$this->assertSame($beforeSolved, (int) Auth::getUser()['solved'], 'Graduation should not bump the solved counter');
 	}
 
-	/**
-	 * The board locks on a training mistake, but the problem is not gone for the day:
-	 * it stays due, grey in the row, until a later try solves it.
-	 */
+	//The board locks on a training mistake, but the problem is not gone for the day:
+	//it stays due, grey in the row, until a later try solves it.
 	public function testATrainingMistakeKeepsTheProblemDueUntilItIsSolved(): void
 	{
 		$context = new ContextPreparator([
@@ -1213,11 +1205,9 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 			'And the problem comes back tomorrow');
 	}
 
-	/**
-	 * The play page is not reloaded after a result, so the result tells it what the
-	 * button of the problem shows now: a mistake takes the rung badge to the bottom
-	 * and keeps the button grey, the solve that follows turns it green.
-	 */
+	//The play page is not reloaded after a result, so the result tells it what the
+	//button of the problem shows now: a mistake takes the rung badge to the bottom
+	//and keeps the button grey, the solve that follows turns it green.
 	public function testATrainingResultSaysWhatTheButtonOfTheProblemShowsNow(): void
 	{
 		$context = new ContextPreparator([
@@ -1250,12 +1240,8 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		];
 	}
 
-	/**
-	 * A clean solve climbs a rung, and the badge the result redraws the button with
-	 * shows the rank it climbed to.
-	 *
-	 * @dataProvider cleanSolveBadgeProvider
-	 */
+	//A clean solve climbs a rung, and the badge the result redraws the button with shows the rank it climbed to.
+	/** @dataProvider cleanSolveBadgeProvider */
 	public function testACleanSolveInTheTrainingRedrawsTheBadgeOneRankUp(int $rung, string $badge): void
 	{
 		$context = new ContextPreparator([
@@ -1283,10 +1269,8 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 			'The buttons of the level mode are not the training row');
 	}
 
-	/**
-	 * A problem solved today stays in the training row and can be opened from it, but
-	 * whatever happens on that replay must not touch the review the day already did.
-	 */
+	//A problem solved today stays in the training row and can be opened from it, but
+	//whatever happens on that replay must not touch the review the day already did.
 	public function testATrainingReplayOfAProblemSolvedTodayCountsForNothing(): void
 	{
 		$context = new ContextPreparator([
@@ -1311,10 +1295,8 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		$this->assertSame(MistakeTraining::REVIEW_SOLVED, $row['last_mistake_training_result_id']);
 	}
 
-	/**
-	 * A problem that is due is reviewed wherever it is played, so a mistake in the
-	 * level mode keeps it in today's training too.
-	 */
+	//A problem that is due is reviewed wherever it is played, so a mistake in the
+	//level mode keeps it in today's training too.
 	public function testALevelMistakeOnADueProblemKeepsItDueToday(): void
 	{
 		$context = new ContextPreparator([
@@ -1464,10 +1446,8 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		]);
 	}
 
-	/**
-	 * The stored mode is the training because another tab opened it, but the problem
-	 * was played on a level page that was still open.
-	 */
+	//The stored mode is the training because another tab opened it, but the problem
+	//was played on a level page that was still open.
 	public function testALevelPageCountsInTheLevelModeWhileAnotherTabIsInTheTraining(): void
 	{
 		$context = new ContextPreparator(['tsumego' => 1]);
@@ -1482,10 +1462,8 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		$this->assertSame(Constants::$MISTAKE_TRAINING_MODE, Auth::getMode(), 'The other tab stays in the training');
 	}
 
-	/**
-	 * The stored mode is the level mode because another tab opened a problem there,
-	 * but this one was played on the training page.
-	 */
+	//The stored mode is the level mode because another tab opened a problem there,
+	//but this one was played on the training page.
 	public function testATrainingPageCountsAsTrainingAfterAnotherTabOpenedTheLevelMode(): void
 	{
 		$context = new ContextPreparator([
@@ -1535,12 +1513,10 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		$this->assertSame(false, (bool) $attempt['TsumegoAttempt']['solved'], 'Level fail should record an unsolved attempt');
 	}
 
-	/**
-	 * A play outside the training reports its first mistake and then the solve, so
-	 * the pool sees both outcomes. On a problem waiting for its review the failure
-	 * takes it back to the bottom and the solve that needed a retry must not earn a
-	 * rung.
-	 */
+	//A play outside the training reports its first mistake and then the solve, so
+	//the pool sees both outcomes. On a problem waiting for its review the failure
+	//takes it back to the bottom and the solve that needed a retry must not earn a
+	//rung.
 	public function testARetryAfterAFailureLeavesTheLadderWhereTheFailurePutIt(): void
 	{
 		$context = new ContextPreparator(['tsumego' => 1]);
@@ -1569,10 +1545,8 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 			'A problem solved after a mistake comes back tomorrow');
 	}
 
-	/**
-	 * A solved problem is the player's to play with freely in the level mode, so a
-	 * mistake on it neither brings it into the training nor takes it down there.
-	 */
+	//A solved problem is the player's to play with freely in the level mode, so a
+	//mistake on it neither brings it into the training nor takes it down there.
 	public function testAMistakeOnASolvedProblemInTheLevelModeIsFreePlay(): void
 	{
 		$context = new ContextPreparator(['tsumego' => ['status' => 'S']]);
@@ -1586,10 +1560,8 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 
 	// ==================== The XP of the training ====================
 
-	/**
-	 * A problem rated 1500 gives 45 XP in the level mode (Rating::ratingToXP), so a
-	 * review in the training earns 9 and a graduation 23 on top.
-	 */
+	//A problem rated 1500 gives 45 XP in the level mode (Rating::ratingToXP), so a
+	//review in the training earns 9 and a graduation 23 on top.
 	private function dueInTraining(int $rung = 0, int $setOrder = 1): array
 	{
 		return [
