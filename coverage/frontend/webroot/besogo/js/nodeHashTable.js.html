@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">80% </span>
+                <span class="strong">66.66% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>28/35</span>
+                <span class='fraction'>22/33</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">70% </span>
+                <span class="strong">50% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>7/10</span>
+                <span class='fraction'>5/10</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">78.78% </span>
+                <span class="strong">67.74% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>26/33</span>
+                <span class='fraction'>21/31</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line medium'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -113,45 +113,43 @@
 <a name='L48'></a><a href='#L48'>48</a>
 <a name='L49'></a><a href='#L49'>49</a>
 <a name='L50'></a><a href='#L50'>50</a>
-<a name='L51'></a><a href='#L51'>51</a>
-<a name='L52'></a><a href='#L52'>52</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">84x</span>
+<a name='L51'></a><a href='#L51'>51</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">84x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">169x</span>
 <span class="cline-any cline-yes">169x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">169x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">462x</span>
-<span class="cline-any cline-yes">462x</span>
-<span class="cline-any cline-yes">325x</span>
-<span class="cline-any cline-yes">462x</span>
+<span class="cline-any cline-yes">169x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">450x</span>
+<span class="cline-any cline-yes">450x</span>
+<span class="cline-any cline-yes">329x</span>
+<span class="cline-any cline-yes">450x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">169x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">278x</span>
-<span class="cline-any cline-yes">278x</span>
-<span class="cline-any cline-yes">278x</span>
+<span class="cline-any cline-yes">266x</span>
+<span class="cline-any cline-yes">266x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">278x</span>
-<span class="cline-any cline-yes">278x</span>
+<span class="cline-any cline-yes">266x</span>
+<span class="cline-any cline-yes">266x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">278x</span>
-<span class="cline-any cline-yes">278x</span>
+<span class="cline-any cline-yes">266x</span>
+<span class="cline-any cline-yes">266x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">169x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">332x</span>
-<span class="cline-any cline-yes">332x</span>
-<span class="cline-any cline-yes">332x</span>
-<span class="cline-any cline-yes">237x</span>
-<span class="cline-any cline-yes">95x</span>
-<span class="cline-any cline-yes">95x</span>
-<span class="cline-any cline-yes">95x</span>
+<span class="cline-any cline-yes">236x</span>
+<span class="cline-any cline-yes">236x</span>
+<span class="cline-any cline-yes">236x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -168,20 +166,20 @@
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">besogo.makeNodeHashTable = function()
 {
   var nodeHashTable = [];
-  nodeHashTable.table = [];
+  // A map, as the hashes are big or negative numbers, which an array turns into string keys on every lookup
+  nodeHashTable.table = new Map();
 &nbsp;
   nodeHashTable.push = function(node)
   {
     var hash = node.getHash();
-    if (!this.table[hash])
-      this.table[hash] = []
-    this.table[hash].push(node);
+    if (!this.table.has(hash))
+      this.table.set(hash, []);
+    this.table.get(hash).push(node);
   }
 &nbsp;
   nodeHashTable.erase = function(node)
   {
-    var hash = node.getHash();
-    var hashPoint = this.table[hash];
+    var hashPoint = this.table.get(node.getHash());
     <span class="missing-if-branch" title="if path not taken" >I</span>if (!hashPoint)
 <span class="cstat-no" title="statement not covered" >      throw new Error('Node to be removed not found.');</span>
 &nbsp;
@@ -196,21 +194,20 @@
 &nbsp;
   nodeHashTable.getSameNode = function(node)
   {
-    var hash = node.getHash();
-    var hashPoint = this.table[hash];
+    var hashPoint = this.table.get(node.getHash());
     if (!hashPoint)
       return null;
-    for (let i = 0; i &lt; hashPoint.length; ++i)
-      if (node.samePositionAs(hashPoint[i]))
-        return hashPoint[i];
+<span class="cstat-no" title="statement not covered" >    for (let i = <span class="cstat-no" title="statement not covered" >0;</span> i &lt; hashPoint.length; ++i)</span>
+<span class="cstat-no" title="statement not covered" >      if (node.samePositionAs(hashPoint[i]))</span>
+<span class="cstat-no" title="statement not covered" >        return hashPoint[i];</span>
 <span class="cstat-no" title="statement not covered" >    return null;</span>
   }
   
   nodeHashTable.size = <span class="fstat-no" title="function not covered" >fu</span>nction()
   {
     let result = <span class="cstat-no" title="statement not covered" >0;</span>
-<span class="cstat-no" title="statement not covered" >    for (var index in this.table)</span>
-<span class="cstat-no" title="statement not covered" >      result += this.table[index].length;</span>
+<span class="cstat-no" title="statement not covered" >    for (let hashPoint of this.table.values())</span>
+<span class="cstat-no" title="statement not covered" >      result += hashPoint.length;</span>
 <span class="cstat-no" title="statement not covered" >    return result;</span>
   }
 &nbsp;
@@ -223,7 +220,7 @@
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-10-26T23:48:49.950Z
+                at 2026-10-27T00:03:31.950Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

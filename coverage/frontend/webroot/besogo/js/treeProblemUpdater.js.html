@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">67.75% </span>
+                <span class="strong">68.61% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>124/183</span>
+                <span class='fraction'>129/188</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">53.46% </span>
+                <span class="strong">54.2% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>54/101</span>
+                <span class='fraction'>58/107</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">65.68% </span>
+                <span class="strong">66.47% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>111/169</span>
+                <span class='fraction'>115/173</span>
             </div>
         
             
@@ -331,7 +331,16 @@
 <a name='L266'></a><a href='#L266'>266</a>
 <a name='L267'></a><a href='#L267'>267</a>
 <a name='L268'></a><a href='#L268'>268</a>
-<a name='L269'></a><a href='#L269'>269</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">84x</span>
+<a name='L269'></a><a href='#L269'>269</a>
+<a name='L270'></a><a href='#L270'>270</a>
+<a name='L271'></a><a href='#L271'>271</a>
+<a name='L272'></a><a href='#L272'>272</a>
+<a name='L273'></a><a href='#L273'>273</a>
+<a name='L274'></a><a href='#L274'>274</a>
+<a name='L275'></a><a href='#L275'>275</a>
+<a name='L276'></a><a href='#L276'>276</a>
+<a name='L277'></a><a href='#L277'>277</a>
+<a name='L278'></a><a href='#L278'>278</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">84x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">85x</span>
 <span class="cline-any cline-yes">85x</span>
@@ -369,24 +378,33 @@
 <span class="cline-any cline-yes">184x</span>
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">184x</span>
 <span class="cline-any cline-yes">184x</span>
 <span class="cline-any cline-yes">184x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">9872x</span>
-<span class="cline-any cline-yes">9394x</span>
-<span class="cline-any cline-yes">478x</span>
-<span class="cline-any cline-yes">478x</span>
+<span class="cline-any cline-yes">95x</span>
+<span class="cline-any cline-yes">95x</span>
+<span class="cline-any cline-yes">95x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">237x</span>
-<span class="cline-any cline-yes">237x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">184x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">9283x</span>
+<span class="cline-any cline-yes">8901x</span>
+<span class="cline-any cline-yes">382x</span>
+<span class="cline-any cline-yes">382x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">141x</span>
+<span class="cline-any cline-yes">141x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">237x</span>
-<span class="cline-any cline-yes">237x</span>
+<span class="cline-any cline-yes">141x</span>
+<span class="cline-any cline-yes">141x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -637,11 +655,20 @@ besogo.addVirtualChildren = function(root, node, addHash = true)
   if (addHash)
     root.nodeHashTable.push(node);
 &nbsp;
-  var sizeX = root.getSize().x;
-  var sizeY = root.getSize().y;
+  // A move to a child leads to the child's own position, which is no transposition. The positions in the
+  // tree are unique, so the lookup would only find the child, after comparing the whole boards.
+  let color = node.nextMove();
+  let childMoves = [];
+  for (let i = 0; i &lt; node.children.length; ++i)
+  {
+    let child = node.children[i];
+    if (child.move &amp;&amp; child.move.color == color)
+      childMoves[root.fromXY(child.move.x, child.move.y)] = true;
+  }
+&nbsp;
   for (let i = 0; i &lt; root.relevantMoves.length; ++i)
   {
-    if (!root.relevantMoves[i])
+    if (!root.relevantMoves[i] || childMoves[i])
       continue;
     var move = root.toXY(i);
     if (!node.getStone(move.x, move.y))
@@ -654,7 +681,7 @@ besogo.addVirtualChildren = function(root, node, addHash = true)
       }
 &nbsp;
       var sameNode = root.nodeHashTable.getSameNode(testChild);
-      <span class="missing-if-branch" title="if path not taken" >I</span>if (sameNode &amp;&amp; sameNode.parent != node)
+      <span class="missing-if-branch" title="if path not taken" >I</span>if (sameNode &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >sameNode.parent != node)</span>
       {
         var redirect = <span class="cstat-no" title="statement not covered" >[];</span>
 <span class="cstat-no" title="statement not covered" >        redirect.target = sameNode;</span>
@@ -821,7 +848,7 @@ besogo.updateCorrectValuesInternal = function(root, node)
     }
 &nbsp;
   for (let i = 0; i &lt; node.virtualChildren.length; ++i)
-<span class="cstat-no" title="statement not covered" >    if (!node.virtualChildren[i].localEdit)</span>
+<span class="cstat-no" title="statement not covered" >    if (!node.virtualChildren[i].target.localEdit)</span>
     {
       let parentStatus = <span class="cstat-no" title="statement not covered" >besogo.updateCorrectValuesInternal(root, node.virtualChildren[i].target);</span>
 <span class="cstat-no" title="statement not covered" >      if (parentStatus == CORRECT_GOOD)</span>
@@ -874,7 +901,7 @@ besogo.updateCorrectValuesBasedOnStatus = <span class="fstat-no" title="function
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-10-26T23:48:49.950Z
+                at 2026-10-27T00:03:31.950Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
