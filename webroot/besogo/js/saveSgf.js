@@ -3,13 +3,14 @@ besogo.composeSgf = function(editor, expand = false)
 {
   return '(' + composeNode(editor.getRoot(), editor.getRoot(), expand) + ')';
 
-  // Recursively composes game node tree
-  function composeNode(root, tree, expand, moveOverride = null)
+  // Recursively composes game node tree, line holds the nodes of the composed line
+  function composeNode(root, tree, expand, moveOverride = null, line = new Set())
   {
     var string = ';', // Node starts with semi-colon
         children = tree.children,
         i; // Scratch iteration variable
 
+    line.add(tree);
     if (!tree.parent) // Null parent means node is root
         // Compose root-specific properties
       string += composeRootProps(tree);
@@ -17,19 +18,21 @@ besogo.composeSgf = function(editor, expand = false)
 
     // Recurse composition on child nodes
     if (children.length === 1 && (!expand || tree.virtualChildren.length == 0)) // Continue sequence if only one child
-      string += '\n' + composeNode(root, children[0], expand);
+      string += '\n' + composeNode(root, children[0], expand, null, line);
     else
     {
       for (i = 0; i < children.length; i++)
-        string += '\n(' + composeNode(root, children[i], expand) + ')';
+        string += '\n(' + composeNode(root, children[i], expand, null, line) + ')';
 
       // Don't export alternative virtual white moves when normal moves are available
       // This is mainly because tsumego-hero can't support it
       if (expand && (tree.nextIsBlack() || tree.children.length == 0))
         for (i = 0; i < tree.virtualChildren.length; i++)
-          if (tree.correct == CORRECT_GOOD || tree.virtualChildren[i].target.correct ==  CORRECT_BAD)
-            string += '\n(' + composeNode(root, tree.virtualChildren[i].target, expand, tree.virtualChildren[i].move) + ')';
+          if ((tree.correct == CORRECT_GOOD || tree.virtualChildren[i].target.correct ==  CORRECT_BAD) &&
+              !line.has(tree.virtualChildren[i].target)) // a move back to a position of the line (a ko) would go round forever
+            string += '\n(' + composeNode(root, tree.virtualChildren[i].target, expand, tree.virtualChildren[i].move, line) + ')';
     }
+    line.delete(tree);
     return string;
   }
 

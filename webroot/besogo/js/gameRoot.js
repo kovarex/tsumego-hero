@@ -309,6 +309,14 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
     return child;
   };
 
+  root.isAncestorOf = function(node)
+  {
+    for (let i = node.parent; i; i = i.parent)
+      if (i == this)
+        return true;
+    return false;
+  }
+
   root.registerMove = function(x, y)
   {
     let child = this.makeChild();
@@ -494,21 +502,25 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
     return this.hash;
   }
 
-  function keyCount(a)
+  // A point emptied by a capture stays on the board as EMPTY, so only the stones are counted
+  function stoneCount(board)
   {
-    var i = 0;
-    for (var key in a) ++i;
-    return i;
+    let result = 0;
+    for (let key in board)
+      if (board[key] != EMPTY)
+        ++result;
+    return result;
   }
 
-  function compareAssociativeArrays(a, b)
+  // Whether the boards have the same stones, so a point emptied by a capture is the same as a point never played
+  function sameStones(a, b)
   {
-    if (keyCount(a) != keyCount(b))
+    if (stoneCount(a) != stoneCount(b))
       return false;
-    for (var key in a)
-      if (a[key] != b[key])
+    for (let key in a)
+      if (a[key] != EMPTY && a[key] != b[key])
         return false;
-     return true;
+    return true;
   }
 
   root.getForbiddenMoveBecauseOfKo = function()
@@ -585,7 +597,7 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
   {
     if (this.nextIsBlack() != other.nextIsBlack())
       return false;
-    if (!compareAssociativeArrays(this.board, other.board))
+    if (!sameStones(this.board, other.board))
       return false;
     return this.hasSameKoStateAs(other);
   }

@@ -88,7 +88,11 @@ besogo.pruneTree = function(root, node)
   for (let i = 0; i < node.children.length;)
   {
     var child = node.children[i];
-    if (root.nodeHashTable.getSameNode(child))
+    var sameNode = root.nodeHashTable.getSameNode(child);
+    // A position repeated in its own line (a ko, an eternal life) stays as the author played it, so the line goes on to
+    // its end, only a transposition into another line is pruned. The node found is the first one of the position, so
+    // it is an ancestor exactly when the position repeats.
+    if (sameNode && !sameNode.isAncestorOf(child))
     {
       root.prunnedMoveCount += child.treeSize();
       node.removeChild(child);
