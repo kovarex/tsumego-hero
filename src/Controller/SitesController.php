@@ -23,15 +23,10 @@ class SitesController extends AppController
 		if (empty($_COOKIE['lastVisit']))
 			Util::setCookie('lastVisit', Constants::$DEFAULT_TSUMEGO_ID);
 
-		$this->loadModel('Tsumego');
-		$this->loadModel('Set');
-		$this->loadModel('TsumegoStatus');
 		$this->loadModel('AchievementStatus');
-		$this->loadModel('User');
 		$this->loadModel('DayRecord');
 		$this->loadModel('Schedule');
-		$this->loadModel('Sgf');
-		$this->loadModel('SetConnection');
+		$this->loadModel('User');
 
 		$today = date('Y-m-d');
 		$dayRecord = $this->DayRecord->find('first', ['conditions' => ['date' => $today]]);
@@ -40,7 +35,7 @@ class SitesController extends AppController
 
 		$currentQuote = 'q01';
 
-		$latestPublishDate = ClassRegistry::init('Schedule')->field('date', ['published' => 1, 'date <=' => date('Y-m-d')], 'date DESC') ?: null;
+		$latestPublishDate = $this->Schedule->field('date', ['published' => 1, 'date <=' => date('Y-m-d')], 'date DESC') ?: null;
 		$tsumegoFilters = new TsumegoFilters('published', $latestPublishDate);
 		$tsumegoButtonsOfPublishedTsumegos = new TsumegoButtons($tsumegoFilters);
 
@@ -58,9 +53,7 @@ class SitesController extends AppController
 		$this->set('latestPublishDate', $latestPublishDate);
 		$this->set('quote', $currentQuote);
 
-		$this->loadModel('AchievementStatus');
-		$recentAchievements = $this->AchievementStatus->getRecent();
-		$this->set('recentAchievements', $recentAchievements);
+		$this->set('recentAchievements', $this->AchievementStatus->getRecent());
 
 		// The way into the mistake training: what is due today. The offer to bring past
 		// mistakes in is on the card always, without a count: counting them reads the

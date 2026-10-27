@@ -172,11 +172,6 @@ li a.menuLi.nav__link--active {
   font-size: 14px;
   color: #fff;
 }
-.sandbox-teaser {
-  text-align: center;
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-heavy);
-}
 .img-bordered {
   border: 2px solid var(--current-border-color);
 }

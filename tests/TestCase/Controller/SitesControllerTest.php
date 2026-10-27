@@ -7,6 +7,7 @@ use Facebook\WebDriver\WebDriverBy;
  */
 use App\Utility\Avatar;
 use App\Utility\Constants;
+use App\Utility\SiteGrowth;
 
 class SitesControllerTest extends IntegrationTestCase
 {
@@ -492,7 +493,11 @@ class SitesControllerTest extends IntegrationTestCase
 	 */
 	public function testHomepageChartRenders(): void
 	{
-		new ContextPreparator(['user' => ['name' => 'testuser']]);
+		new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumegos' => [['sets' => [['name' => 'public set', 'num' => 1]]]]]);
+		// the cache is a file, it would carry the graph of the previous test over
+		SiteGrowth::forget();
 
 		$browser = Browser::instance();
 		$browser->get('/');
@@ -501,6 +506,13 @@ class SitesControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('chartContainer', $pageSource, 'Chart container should exist');
 		$this->assertStringContainsString("label: 'Problems'", $pageSource, 'Problems dataset should exist');
 		$this->assertStringContainsString("label: 'Users'", $pageSource, 'Users dataset should exist');
+
+		$chartData = SiteGrowth::chartData();
+		$this->assertNotEmpty($chartData);
+		$problemPoints = array_map(fn($month) => ['x' => $month['date'], 'y' => $month['problems']], $chartData);
+		$userPoints = array_map(fn($month) => ['x' => $month['date'], 'y' => $month['users']], $chartData);
+		$this->assertStringContainsString('data: ' . json_encode($problemPoints) . ',', $pageSource);
+		$this->assertStringContainsString('data: ' . json_encode($userPoints) . ',', $pageSource);
 	}
 
 	//A logged-in user sees their account block (name + Sign Out) in the nav and
