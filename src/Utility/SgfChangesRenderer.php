@@ -7,16 +7,21 @@ use Sgf;
 use SgfReview;
 use User;
 
-//The SGF changes of the admin area: every version saved of a problem, the newest first, but the
-//rejected proposals. Each admin ticks the changes of others they checked (SgfReview) and sees who
-//of the others checked them, so they can keep the changes under control without a decision.
+//The SGF changes of the admin area: every version that became part of a problem, an admin's own
+//change or a proposal an admin accepted, the newest first. The proposals waiting for a decision
+//and the rejected ones are on the SGF proposals page. Each admin ticks the changes of others they
+//checked (SgfReview) and sees who of the others checked them, so they can keep the changes under
+//control without a decision.
 class SgfChangesRenderer extends DataTableRenderer
 {
 	//The url parameter of the list of the changes the admin did not check yet
 	public const NOT_REVIEWED_PARAMETER = 'not_reviewed';
 
+	//The columns of a user the rows have twice, the admin who accepted the change and its author
+	private const USER_FIELDS = ['id', 'display_name', 'external_id', 'picture', 'email', 'avatar_setting_id', 'uploaded_avatar_hash', 'rating', 'deleted'];
+
 	//$newSince: When the admin looked the time before (see AdminPage::markViewed),
-	//what the others saved since then is marked as new
+	//what the others accepted since then is marked as new
 	public function __construct(array $urlParams, private ?string $newSince = null)
 	{
 		$this->userID = Auth::getUserID();
@@ -24,7 +29,7 @@ class SgfChangesRenderer extends DataTableRenderer
 		$this->notReviewedCount = self::countNotReviewed($this->userID);
 		$this->count = $this->onlyNotReviewed
 			? $this->notReviewedCount
-			: (int) Util::query('SELECT COUNT(*) AS total FROM sgf WHERE sgf_status_id <> ?', [Sgf::STATUS_REJECTED])[0]['total'];
+			: (int) Util::query('SELECT COUNT(*) AS total FROM sgf WHERE sgf_status_id = ?', [Sgf::STATUS_ACCEPTED])[0]['total'];
 		parent::__construct($urlParams, 'sgf_changes_page', $this->onlyNotReviewed ? 'SGF changes you did not review' : 'SGF changes');
 
 		$this->data = Util::query("
@@ -33,26 +38,22 @@ SELECT
 	sgf.tsumego_id AS tsumego_id,
 	sgf.sgf AS sgf,
 	sgf.created AS created,
+	sgf.accepted AS accepted,
 	sgf.description AS description,
-	sgf.sgf_status_id AS sgf_status_id,
-	(SELECT COUNT(*) FROM sgf version
-		WHERE version.tsumego_id = sgf.tsumego_id AND version.sgf_status_id <> " . Sgf::STATUS_REJECTED . " AND version.id <= sgf.id) AS version,
 	(SELECT MAX(previous.id) FROM sgf previous
 		WHERE previous.tsumego_id = sgf.tsumego_id AND previous.sgf_status_id = " . Sgf::STATUS_ACCEPTED . " AND previous.id < sgf.id) AS previous_version_id,
-	user.id AS user_id,
-	user.display_name AS user_display_name,
-	user.external_id AS user_external_id,
-	user.picture AS user_picture,
-	user.avatar_setting_id AS user_avatar_setting_id,
-	user.email AS user_email,
-	user.rating AS user_rating,
-	user.deleted AS user_deleted,
+	sgf.user_id AS user_id,
+	sgf.accepted_by_user_id AS accepted_by_user_id,
+	" . self::userColumnsSql('author') . ",
+	" . self::userColumnsSql('accepted_by') . ",
 	set_connection.id AS set_connection_id,
 	set_connection.num AS num,
-	tsumego_status.status AS status,
-	CONCAT_WS(' ', `set`.title, `set`.title2) AS set_title
+	`set`.id AS set_id,
+	CONCAT_WS(' ', `set`.title, `set`.title2) AS set_title,
+	tsumego_status.status AS status
 FROM sgf
-LEFT JOIN user ON user.id = sgf.user_id
+LEFT JOIN user author ON author.id = sgf.user_id
+LEFT JOIN user accepted_by ON accepted_by.id = sgf.accepted_by_user_id
 LEFT JOIN set_connection
 	ON set_connection.tsumego_id = sgf.tsumego_id
 	AND set_connection.id = (
@@ -65,24 +66,41 @@ LEFT JOIN set_connection
 	)
 LEFT JOIN `set` ON `set`.id = set_connection.set_id
 LEFT JOIN tsumego_status ON tsumego_status.user_id = ? AND tsumego_status.tsumego_id = sgf.tsumego_id
-WHERE sgf.sgf_status_id <> " . Sgf::STATUS_REJECTED . ($this->onlyNotReviewed ? ' AND ' . self::notReviewedSql() : '') . "
-ORDER BY sgf.id DESC
+WHERE sgf.sgf_status_id = " . Sgf::STATUS_ACCEPTED . ($this->onlyNotReviewed ? ' AND ' . self::notReviewedSql() : '') . "
+ORDER BY sgf.accepted DESC, sgf.id DESC
 LIMIT " . self::$PAGE_SIZE . "
 OFFSET " . $this->offset, $this->onlyNotReviewed ? [$this->userID, $this->userID, $this->userID] : [$this->userID]);
 
 		$this->reviewers = SgfReview::reviewersOf(array_map(fn($item) => (int) $item['id'], $this->data));
 	}
 
-	//The changes of others the admin did not review yet, the rejected proposals are not on the page.
+	//The changes accepted by others the admin did not review yet.
 	public static function countNotReviewed(int $userID): int
 	{
-		return (int) Util::query('SELECT COUNT(*) AS total FROM sgf WHERE sgf.sgf_status_id <> ? AND ' . self::notReviewedSql(), [Sgf::STATUS_REJECTED, $userID, $userID])[0]['total'];
+		return (int) Util::query('SELECT COUNT(*) AS total FROM sgf WHERE sgf.sgf_status_id = ? AND ' . self::notReviewedSql(), [Sgf::STATUS_ACCEPTED, $userID, $userID])[0]['total'];
 	}
 
-	//The condition of a change of someone else the admin did not tick, the two parameters are the id of the admin.
+	//The condition of a change accepted by someone else the admin did not tick, the two parameters
+	//are the id of the admin.
 	private static function notReviewedSql(): string
 	{
-		return 'NOT (sgf.user_id <=> ?) AND NOT EXISTS (SELECT 1 FROM sgf_review WHERE sgf_review.sgf_id = sgf.id AND sgf_review.user_id = ?)';
+		return 'NOT (sgf.accepted_by_user_id <=> ?) AND NOT EXISTS (SELECT 1 FROM sgf_review WHERE sgf_review.sgf_id = sgf.id AND sgf_review.user_id = ?)';
+	}
+
+	//The columns of the user joined as $alias, each prefixed by the alias
+	private static function userColumnsSql(string $alias): string
+	{
+		return implode(', ', array_map(fn($field) => $alias . '.' . $field . ' AS ' . $alias . '_' . $field, self::USER_FIELDS));
+	}
+
+	//The user of the columns of userColumnsSql, as User::renderLink takes it
+	/** @return array<string, mixed> */
+	private static function userOf(array $item, string $alias): array
+	{
+		$user = [];
+		foreach (self::USER_FIELDS as $field)
+			$user[$field] = $item[$alias . '_' . $field];
+		return $user;
 	}
 
 	public function render(): void
@@ -98,15 +116,24 @@ OFFSET " . $this->offset, $this->onlyNotReviewed ? [$this->userID, $this->userID
 	protected function renderHeader(): void
 	{
 		echo '<tr><th title="Your tick, and the admins who reviewed the change">Reviewed</th>'
+			. '<th>Diff</th><th>Open</th>'
 			. '<th><label title="Toggle board previews"><input type="checkbox" class="preview-zoom-toggle">🔍</label></th>'
-			. '<th>Problem</th><th>Author</th><th>Description</th><th>Date</th><th></th></tr>';
+			. '<th>Collection</th>'
+			. '<th title="The admin who made the change, or who accepted the proposal">Accepted by</th>'
+			. '<th title="Who proposed the change, empty for an admin\'s own change">Original author</th>'
+			. '<th>Description</th><th>Date</th></tr>';
 	}
 
 	protected function rowClass(array $item): string
 	{
-		return $this->newSince !== null && $item['created'] > $this->newSince && (int) $item['user_id'] !== $this->userID
+		return $this->newSince !== null && $item['accepted'] > $this->newSince && !$this->isAcceptedByMe($item)
 			? 'data-table__row--new'
 			: '';
+	}
+
+	private function isAcceptedByMe(array $item): bool
+	{
+		return (int) $item['accepted_by_user_id'] === $this->userID;
 	}
 
 	public function renderItem(int $index, array $item): void
@@ -114,10 +141,11 @@ OFFSET " . $this->offset, $this->onlyNotReviewed ? [$this->userID, $this->userID
 		$id = (int) $item['id'];
 		$reviewers = $this->reviewers[$id] ?? [];
 		$reviewedByMe = in_array($this->userID, array_map(fn($reviewer) => (int) $reviewer['id'], $reviewers), true);
+		$isProposal = $item['accepted_by_user_id'] === null || (int) $item['user_id'] !== (int) $item['accepted_by_user_id'];
 
 		echo '<td class="sgf-review" id="review-' . $id . '">';
-		// the own changes are reviewed by the others
-		if ((int) $item['user_id'] === $this->userID)
+		// what the admin made part of a problem is reviewed by the others
+		if ($this->isAcceptedByMe($item))
 			echo '<span class="sgf-review__own" title="Your change, the other admins review it"></span>';
 		else
 			echo '<button type="button" class="sgf-review__tick' . ($reviewedByMe ? ' sgf-review__tick--reviewed' : '') . '"'
@@ -129,31 +157,34 @@ OFFSET " . $this->offset, $this->onlyNotReviewed ? [$this->userID, $this->userID
 		echo '</td>';
 
 		echo '<td>';
+		if ($item['previous_version_id'])
+			echo '<a class="btn btn--small" id="compare-' . $id . '" href="/editor?sgfID=' . $id . '&diffID=' . (int) $item['previous_version_id'] . '">Diff</a>';
+		else
+			echo '<span class="btn btn--small btn--disabled" title="The first version of the problem, there is nothing to compare it with">Diff</span>';
+		echo '</td>';
+		echo '<td><a class="btn btn--small" id="open-' . $id . '" href="/editor?sgfID=' . $id . '">Open</a></td>';
+
+		echo '<td>';
 		if ($item['set_connection_id'])
 			new TsumegoButton((int) $item['tsumego_id'], (int) $item['set_connection_id'], (int) $item['num'], $item['status'] ?: 'N', 0, (string) $item['sgf'])->render();
 		echo '</td>';
 
 		echo '<td>';
 		if ($item['set_connection_id'])
-			echo '<a class="adminpanel-link" href="/' . $item['set_connection_id'] . '">' . h($item['set_title']) . ' - ' . h($item['num']) . '</a>';
+			echo '<a class="adminpanel-link" href="/sets/' . (int) $item['set_id'] . '">' . h($item['set_title']) . '</a>';
 		else
 			echo 'Problem ' . (int) $item['tsumego_id'] . ' (in no collection)';
-		echo ' <a class="sgf-changes__version" href="/sgfs/view/' . (int) $item['tsumego_id'] . '" title="All versions of the problem">v' . (int) $item['version'] . '</a>';
-		if ((int) $item['sgf_status_id'] === Sgf::STATUS_PROPOSED)
-			echo ' <a class="sgf-changes__proposal" href="/admin/sgf-proposals" title="A proposal waiting for a decision">proposal</a>';
 		echo '</td>';
 
-		echo '<td>' . User::renderLink($item) . '</td>';
+		echo '<td class="sgf-changes__accepted-by">';
+		echo $item['accepted_by_user_id'] === null
+			? '<span class="sgf-changes__unknown" title="Accepted before the site recorded who accepted a proposal">unknown</span>'
+			: User::renderLink(self::userOf($item, 'accepted_by'));
+		echo '</td>';
+		echo '<td class="sgf-changes__author">' . ($isProposal ? User::renderLink(self::userOf($item, 'author')) : '') . '</td>';
 		echo '<td class="proposal-description" id="description-' . $id . '">' . SgfDescription::render($item['description']) . '</td>';
-		echo '<td><time datetime="' . Util::toIso8601($item['created']) . '" data-format="datetime">' . h($item['created']) . '</time></td>';
-
-		$fileName = ($item['set_connection_id'] ? $item['set_title'] . ' ' . $item['num'] : 'problem ' . $item['tsumego_id']) . ' v' . $item['version'] . '.sgf';
-		echo '<td class="sgf-changes__actions">';
-		echo '<a id="open-' . $id . '" href="/editor?sgfID=' . $id . '">open</a>';
-		if ($item['previous_version_id'])
-			echo ' | <a id="compare-' . $id . '" href="/editor?sgfID=' . $id . '&diffID=' . (int) $item['previous_version_id'] . '">diff</a>';
-		echo ' | <a id="download-' . $id . '" href="/sgf/fetch/' . $id . '" download="' . h($fileName) . '">download</a>';
-		echo '</td>';
+		echo '<td><time datetime="' . Util::toIso8601($item['accepted']) . '" data-format="datetime"'
+			. ($isProposal ? ' title="Proposed ' . h($item['created']) . '"' : '') . '>' . h($item['accepted']) . '</time></td>';
 	}
 
 	//The avatar of another admin who reviewed the change, their name and when in the tooltip

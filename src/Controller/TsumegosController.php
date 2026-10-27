@@ -430,7 +430,7 @@ class TsumegosController extends AppController
 		$sgf['sgf'] = $sgfData;
 		$sgf['user_id'] = Auth::getUserId();
 		$sgf['tsumego_id'] = $tsumego['id'];
-		$sgf['sgf_status_id'] = Auth::isAdmin() ? Sgf::STATUS_ACCEPTED : Sgf::STATUS_PROPOSED;
+		$sgf += Auth::isAdmin() ? Sgf::acceptedBy(Auth::getUserID()) : ['sgf_status_id' => Sgf::STATUS_PROPOSED];
 		$sgf['first_move_color'] = $firstMoveColor;
 		$sgf['correct_moves'] = $correctMoves;
 		// the admin reviewing a proposal needs to know what it is about, an admin's own edit may go without

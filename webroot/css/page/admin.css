@@ -141,13 +141,9 @@
   color: inherit;
   text-decoration: underline;
 }
-.sgf-changes__version,
-.sgf-changes__proposal {
+.sgf-changes__unknown {
   color: var(--text-softer-color);
-  font-size: 13px;
-}
-.sgf-changes__actions {
-  white-space: nowrap;
+  font-style: italic;
 }
 .sgf-review {
   white-space: nowrap;

@@ -106,29 +106,33 @@ class AdminControllerTest extends IntegrationTestCase
 		$this->assertSame(0, $this->countOnLink('/admin/activity'));
 	}
 
-	public function testCountsWhatOthersUploadedSinceTheLastLook(): void
+	public function testCountsWhatOthersAcceptedSinceTheLastLook(): void
 	{
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
-			'other-users' => [['name' => 'proposer']],
+			'other-users' => [['name' => 'colleague', 'admin' => true], ['name' => 'proposer']],
 			'tsumego' => [
 				'set_order' => 1,
 				'sgfs' => [
 					['data' => self::SGF, 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
 					['data' => self::SGF, 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
+					['data' => self::SGF, 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
+					['data' => self::SGF, 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
 					['data' => self::SGF, 'sgf_status_id' => Sgf::STATUS_PROPOSED],
 					['data' => self::SGF, 'sgf_status_id' => Sgf::STATUS_REJECTED]]]]);
-		[$oldUpload, , $proposal, $rejected] = array_column($context->tsumegos[0]['sgfs'], 'id');
+		[$oldChange, , $change, $acceptedByMe, $proposal, $rejected] = array_column($context->tsumegos[0]['sgfs'], 'id');
+		[$colleagueID, $proposerID] = array_map('intval', array_column($context->otherUsers, 'id'));
 
 		$this->get('/admin/sgf-changes');
 		self::viewedAnHourAgo(AdminPage::SGF_CHANGES);
-		Util::execute('UPDATE sgf SET user_id = ? WHERE id IN (?, ?, ?)', [$context->otherUsers[0]['id'], $oldUpload, $proposal, $rejected]);
-		Util::execute('UPDATE sgf SET created = NOW() - INTERVAL 2 HOUR WHERE id = ?', [$oldUpload]);
-		$this->assertSame(1, $this->countOnLink('/admin/sgf-changes'), 'the proposal only: the own upload and the rejected one do not count, the old one was seen');
+		Util::execute('UPDATE sgf SET user_id = ?, accepted_by_user_id = ? WHERE id IN (?, ?)', [$colleagueID, $colleagueID, $oldChange, $change]);
+		Util::execute('UPDATE sgf SET user_id = ? WHERE id IN (?, ?, ?)', [$proposerID, $acceptedByMe, $proposal, $rejected]);
+		Util::execute('UPDATE sgf SET accepted = NOW() - INTERVAL 2 HOUR WHERE id = ?', [$oldChange]);
+		$this->assertSame(1, $this->countOnLink('/admin/sgf-changes'), 'the change of the colleague only: what the admin accepted, the proposals and the old change do not count');
 
 		$this->get('/admin/sgf-changes');
 		$this->assertSame(1, substr_count($this->view, 'data-table__row--new'));
-		$this->assertStringContainsString('<tr class="data-table__row--new"><td class="sgf-review" id="review-' . $proposal . '">', $this->view);
+		$this->assertStringContainsString('<tr class="data-table__row--new"><td class="sgf-review" id="review-' . $change . '">', $this->view);
 		$this->assertSame(0, $this->countOnLink('/admin/sgf-changes'));
 	}
 

@@ -1415,7 +1415,7 @@ OFFSET " . $offset, [$userID, $userID]);
 			return $this->redirect('/admin/sgf-proposals');
 		}
 		$replacedSgfID = ClassRegistry::init('Sgf')->findCurrentVersionID((int) $proposalToApprove['tsumego_id']);
-		ClassRegistry::init('Sgf')->setStatus((int) $proposalToApprove['id'], Sgf::STATUS_ACCEPTED);
+		Sgf::accept((int) $proposalToApprove['id'], Auth::getUserID());
 		SgfCommentReorientation::afterAccepted((int) $proposalToApprove['id']);
 
 		CookieFlash::set('Sgf proposal accepted', 'success');

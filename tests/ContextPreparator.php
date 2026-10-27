@@ -324,6 +324,12 @@ class ContextPreparator
 		$sgf['sgf'] = Util::extract('data', $tsumegoSgf);
 		$this->validateFixtureSgf($sgf['sgf'], $tsumego['id']);
 		$sgf['sgf_status_id'] = Util::extractWithDefault('sgf_status_id', $tsumegoSgf, Sgf::STATUS_ACCEPTED);
+		// an accepted version is the change of the user, unless it says who accepted it
+		if ($sgf['sgf_status_id'] === Sgf::STATUS_ACCEPTED)
+		{
+			$sgf['accepted_by_user_id'] = Util::extractWithDefault('accepted_by_user_id', $tsumegoSgf, Auth::getUserID());
+			$sgf['accepted'] = date('Y-m-d H:i:s');
+		}
 		$sgf['correct_moves'] = Util::extract('correct_moves', $tsumegoSgf);
 		$sgf['first_move_color'] = Util::extract('first_move_color', $tsumegoSgf);
 		$sgf['user_id'] = Auth::getUserID();

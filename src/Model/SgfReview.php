@@ -29,7 +29,7 @@ class SgfReview extends AppModel
 		if (empty($sgfIDs))
 			return [];
 		$rows = Util::query('SELECT sgf_review.sgf_id, sgf_review.created AS reviewed,
-	user.id, user.display_name, user.external_id, user.picture, user.email, user.avatar_setting_id, user.deleted
+	user.id, user.display_name, user.external_id, user.picture, user.email, user.avatar_setting_id, user.uploaded_avatar_hash, user.deleted
 FROM sgf_review
 JOIN user ON user.id = sgf_review.user_id
 WHERE sgf_review.sgf_id IN (' . implode(',', array_fill(0, count($sgfIDs), '?')) . ')
