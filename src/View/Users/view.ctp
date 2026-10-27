@@ -1,13 +1,12 @@
 <?php
 
 use App\Utility\Auth;
+use App\Utility\ChartRenderer;
 use App\Utility\Constants;
 use App\Utility\HeroPowers;
 use App\Utility\Level;
 use App\Utility\Rating;
-use App\Utility\TimeGraphRenderer;
 use App\Utility\Util;
-use App\Utility\ValueGraphRenderer;
 
 /**
  * @var View $this
@@ -26,8 +25,6 @@ use App\Utility\ValueGraphRenderer;
  * @var array $user
  */
 ?>
-
-<?php TimeGraphRenderer::renderScriptInclude(); ?>
 
 <div>
 	<?php echo $this->element('user_header', ['user' => $user['User'], 'activeTab' => 'profile']); ?>
@@ -244,24 +241,22 @@ foreach ($heroPowers as $power)
 			<?php
 if (!function_exists('showStatistics'))
 {
-function showStatistics($side, $as, $user, $dailyResults)
+function showStatistics($side, $as, $user, $dailyResults, $timeGraph)
 {
 	echo '
 		<td width="50%">
 			<div id="userShowLevel' . $side . '">
-				<div id="chartContainer">
-					<div id="chart-level-' . $side . '"></div>
-				</div>
+				' . ChartRenderer::bar('Problems in level mode', array_reverse($dailyResults), 'day', [
+					['label' => 'Solves', 'color' => '#74d14c'],
+					['label' => 'Fails', 'color' => '#d63a49']]) . '
 			</div>
 			<div id="userShowRating' . $side . '">
-				<div id="chartContainer">';
-	TimeGraphRenderer::render('Overall rating', 'chart-rating-' . $side, $dailyResults, 'Rating');
-	echo '</div>
+				' . ChartRenderer::ratingLine('Overall rating', $dailyResults) . '
 			</div>
 			<div id="userShowTime' . $side . '">
-				<div id="chartContainer">
-					<div id="chart-time-' . $side . '"></div>
-				</div>
+				' . ChartRenderer::bar('Time mode runs', $timeGraph, 'category', [
+					['label' => 'Passes', 'color' => '#c8723d'],
+					['label' => 'Fails', 'color' => '#888888']]) . '
 			</div>
 			<div id="userShowAchievements' . $side . '">
 				<table width="95%" border="0">
@@ -300,8 +295,8 @@ function showStatistics($side, $as, $user, $dailyResults)
 <?php
 }
 } // function_exists
-showStatistics('Left', $as, $user, $dailyResults);
-showStatistics('Right', $as, $user, $dailyResults); ?>
+showStatistics('Left', $as, $user, $dailyResults, $timeGraph);
+showStatistics('Right', $as, $user, $dailyResults, $timeGraph); ?>
 	</tr></table>
 </div>
 
@@ -336,29 +331,4 @@ function activateSelection(selection, side)
 }
 
 </script>
-<script>
-<?php
-	foreach (['Left', 'Right'] as $side)
-	{
-		 ValueGraphRenderer::render(
-			'Problems in level mode',
-			'chart-level-' . $side,
-			[
-				['name' => 'Solves', 'color' => '#74d14c'],
-				['name' => 'Fails', 'color' => '#d63a49']
-			],
-			$dailyResults,
-			'day',
-			true /* reverseOrder*/);
-		ValueGraphRenderer::render(
-			'Time mode runs',
-			'chart-time-' . $side,
-			[
-				['name' => 'Passes', 'color' => '#c8723d'],
-				['name' => 'Fails', 'color' => '#888888']
-			],
-			$timeGraph,
-			'category');
-	}
-	?>
-</script>
+

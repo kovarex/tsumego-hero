@@ -284,26 +284,6 @@ class Util
 		return strval($input);
 	}
 
-	public static function getGraphColor(): string
-	{
-		return Auth::lightMode() == Auth::$LIGHT_MODE ? '#ddd' : '#3e3e3e';
-	}
-
-	public static function getGraphGridColor(): string
-	{
-		return Auth::lightMode() == Auth::$LIGHT_MODE ? '#000' : '#fff';
-	}
-
-	public static function getGraphThemeMode(): string
-	{
-		return Auth::lightMode() == Auth::$LIGHT_MODE ? 'light' : 'dark';
-	}
-
-	public static function getValueGraphHeight(array $input): int
-	{
-		return 160 + count($input) * 25;
-	}
-
 	public static function getFollowingSgfCoordinates(string $string, int $position): array
 	{
 		$result = [];
