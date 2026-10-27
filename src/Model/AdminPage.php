@@ -31,13 +31,13 @@ JOIN admin_activity ON admin_activity.created > admin_page_view.viewed AND admin
 WHERE admin_page_view.user_id = ? AND admin_page_view.admin_page_id = ?', [$userID, self::ACTIVITY])[0]['total'];
 	}
 
-	//The SGFs saved by others since the admin last looked at the SGF changes, the rejected
-	//proposals are not on the page.
+	//The changes accepted by others since the admin last looked at the SGF changes, the proposals
+	//waiting for a decision and the rejected ones are not on the page.
 	public static function countNewSgfChanges(int $userID): int
 	{
 		return (int) Util::query('SELECT COUNT(*) AS total
 FROM admin_page_view
-JOIN sgf ON sgf.created > admin_page_view.viewed AND sgf.sgf_status_id <> ? AND NOT (sgf.user_id <=> admin_page_view.user_id)
-WHERE admin_page_view.user_id = ? AND admin_page_view.admin_page_id = ?', [Sgf::STATUS_REJECTED, $userID, self::SGF_CHANGES])[0]['total'];
+JOIN sgf ON sgf.sgf_status_id = ? AND sgf.accepted > admin_page_view.viewed AND NOT (sgf.accepted_by_user_id <=> admin_page_view.user_id)
+WHERE admin_page_view.user_id = ? AND admin_page_view.admin_page_id = ?', [Sgf::STATUS_ACCEPTED, $userID, self::SGF_CHANGES])[0]['total'];
 	}
 }

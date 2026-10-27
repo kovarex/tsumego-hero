@@ -228,6 +228,7 @@ class ProposalFeedbackTest extends IntegrationTestCase
 		$this->post('/tsumegos/setupNewSgfStep2', $data + ['description' => "Added D16\r\nbecause it is needed"]);
 		$proposal = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']], 'order' => 'id DESC'])['Sgf'];
 		$this->assertEquals(Sgf::STATUS_PROPOSED, $proposal['sgf_status_id']);
+		$this->assertNull($proposal['accepted_by_user_id'], 'an admin accepts it later');
 		$this->assertSame("Added D16\nbecause it is needed", $proposal['description']);
 	}
 }

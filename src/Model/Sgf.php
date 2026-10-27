@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\Util;
+
 class Sgf extends AppModel
 {
 	//Longest description of a saved version (what was changed and why), in characters.
@@ -55,7 +57,7 @@ class Sgf extends AppModel
 	//$sgfDataOrFile: The SGF content string, or $_FILES['fieldName'] array
 	//$tsumegoID: The tsumego ID to attach the SGF to
 	//$userID: The user ID uploading the SGF
-	//$accepted: Whether the SGF is accepted (true for admin uploads)
+	//$accepted: Whether the SGF is accepted (true for admin uploads), the uploader is the admin who accepted it then
 	//Returns the saved Sgf record
 	/** @throws BadRequestException|InternalErrorException If validation fails */
 	public function uploadSgf(array|string $sgfDataOrFile, int $tsumegoID, int $userID, bool $accepted): array
@@ -84,7 +86,7 @@ class Sgf extends AppModel
 		$sgf['sgf'] = $sgfData;
 		$sgf['user_id'] = $userID;
 		$sgf['tsumego_id'] = $tsumegoID;
-		$sgf['sgf_status_id'] = $accepted ? self::STATUS_ACCEPTED : self::STATUS_PROPOSED;
+		$sgf += $accepted ? self::acceptedBy($userID) : ['sgf_status_id' => self::STATUS_PROPOSED];
 		if (!$this->save($sgf))
 		{
 			$errorMessages = array_map(function ($error) {
@@ -98,9 +100,30 @@ class Sgf extends AppModel
 		return $this->find('first', ['conditions' => ['id' => $this->id]]);
 	}
 
-	//Moves the version to the given sgf_status (see the STATUS_ constants).
+	//The fields of a version the admin makes part of the problem now, their own change or a proposal
+	//they accept.
+	/** @return array{sgf_status_id: int, accepted_by_user_id: int, accepted: string} */
+	public static function acceptedBy(int $adminID): array
+	{
+		return ['sgf_status_id' => self::STATUS_ACCEPTED, 'accepted_by_user_id' => $adminID, 'accepted' => date('Y-m-d H:i:s')];
+	}
+
+	//The admin accepts the proposal, it becomes a version of the problem.
+	public static function accept(int $sgfID, int $adminID): void
+	{
+		$accepted = self::acceptedBy($adminID);
+		$changed = Util::execute('UPDATE sgf SET sgf_status_id = ?, accepted_by_user_id = ?, accepted = ? WHERE id = ?',
+			[$accepted['sgf_status_id'], $accepted['accepted_by_user_id'], $accepted['accepted'], $sgfID]);
+		if ($changed !== 1)
+			throw new InternalErrorException('Failed to accept SGF ' . $sgfID);
+	}
+
+	//Moves the version to the given sgf_status (see the STATUS_ constants), a proposal is accepted
+	//with accept().
 	public function setStatus(int $sgfID, int $statusID): void
 	{
+		if ($statusID === self::STATUS_ACCEPTED)
+			throw new InvalidArgumentException('An accepted version needs the admin who accepted it, see accept()');
 		$this->id = $sgfID;
 		if (!$this->saveField('sgf_status_id', $statusID))
 			throw new InternalErrorException('Failed to change the status of SGF ' . $sgfID);

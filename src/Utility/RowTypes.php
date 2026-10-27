@@ -40,7 +40,7 @@ namespace App\Utility;
  * @phpstan-type ScheduleRow array{id?: int, date?: string, tsumego_id?: int, set_id?: int, published?: int, created_by_user_id?: int|null, ...}
  * @phpstan-type SetConnectionRow array{id?: int, set_id?: int, tsumego_id?: int, num?: int, created?: string, ...}
  * @phpstan-type SetRow array{id?: int, user_id?: int|null, title?: string|null, title2?: string|null, description?: string|null, image?: string|null, order?: int|null, public?: int, color?: string|null, created?: string|null, included_in_time_mode?: int, board_theme_index?: int|null, deleted?: string|null, ...}
- * @phpstan-type SgfRow array{id?: int, sgf?: string|null, user_id?: int|null, tsumego_id?: int, sgf_status_id?: int, created?: string|null, first_move_color?: string|null, correct_moves?: string|null, source_sgf_id?: int|null, transformation_from_source?: string|null, description?: string|null, ...}
+ * @phpstan-type SgfRow array{id?: int, sgf?: string|null, user_id?: int|null, accepted_by_user_id?: int|null, tsumego_id?: int, sgf_status_id?: int, created?: string|null, accepted?: string|null, first_move_color?: string|null, correct_moves?: string|null, source_sgf_id?: int|null, transformation_from_source?: string|null, description?: string|null, ...}
  * @phpstan-type SgfStatusRow array{id?: int, name?: string, ...}
  * @phpstan-type TagConnectionRow array{id?: int, tag_id?: int, user_id?: int|null, tsumego_id?: int, approved?: int, created?: string, ...}
  * @phpstan-type TagRow array{id?: int, name?: string, description?: string, link?: string|null, user_id?: int|null, approved?: int, color?: int, hint?: int, created?: string, ...}

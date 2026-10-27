@@ -50,7 +50,7 @@ class AdminController extends AppController
 		$this->set('rejectedSgfProposalsRenderer', new RejectedSGFProposalsRenderer($this->params['url']));
 	}
 
-	//Every saved version of a problem, for the admins to review the changes of each other
+	//Every version that became part of a problem, for the admins to review the changes of each other
 	#[HttpGet]
 	public function sgfChanges(): void
 	{
@@ -62,16 +62,19 @@ class AdminController extends AppController
 	}
 
 	//Ticks an SGF change as reviewed by the admin (reviewed=1), or takes the tick back (reviewed=0).
-	//The own changes are reviewed by the others.
+	//What the admin made part of a problem, their own change or a proposal they accepted, is
+	//reviewed by the others.
 	#[HttpPost]
 	public function reviewSgfChange(string $sgfID): CakeResponse
 	{
 		$this->Authorization->authorize('Admin', 'reviewSgfChange');
-		$sgf = ClassRegistry::init('Sgf')->find('first', ['fields' => ['id', 'user_id'], 'conditions' => ['id' => (int) $sgfID]]);
+		$sgf = ClassRegistry::init('Sgf')->find('first', ['fields' => ['id', 'sgf_status_id', 'accepted_by_user_id'], 'conditions' => ['id' => (int) $sgfID]]);
 		if (!$sgf)
 			throw new NotFoundException('SGF change not found');
-		if ((int) $sgf['Sgf']['user_id'] === Auth::getUserID())
-			throw new BadRequestException('Your own changes are reviewed by the other admins');
+		if ((int) $sgf['Sgf']['sgf_status_id'] !== Sgf::STATUS_ACCEPTED)
+			throw new BadRequestException('A proposal is not a change yet, it waits for the decision of an admin');
+		if ((int) $sgf['Sgf']['accepted_by_user_id'] === Auth::getUserID())
+			throw new BadRequestException('What you accepted is reviewed by the other admins');
 
 		$reviewed = !empty($this->request->data['reviewed']);
 		SgfReview::mark((int) $sgfID, Auth::getUserID(), $reviewed);

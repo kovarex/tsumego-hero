@@ -71,8 +71,8 @@ class SgfSpecialCharacterRenderTest extends IntegrationTestCase
 		$this->assertStringContainsString('日本語', $blobContent, 'Unicode preserved in Blob');
 	}
 
-	//The download of the SGF changes is the SGF the server sends, not a copy embedded in the page.
-	public function testSgfChangesDownloadTheSgfUnchanged()
+	//The SGF changes do not embed the SGFs, the editor opened from there fetches the SGF the server sends.
+	public function testSgfChangesOpenTheSgfUnchanged()
 	{
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
@@ -87,7 +87,7 @@ class SgfSpecialCharacterRenderTest extends IntegrationTestCase
 		$this->get('/admin/sgf-changes');
 		$this->assertResponseOk();
 		$this->assertStringNotContainsString('日本語', $this->view, 'the page does not carry the SGF');
-		$this->assertStringContainsString('id="download-' . $sgfID . '" href="/sgf/fetch/' . $sgfID . '"', $this->view);
+		$this->assertStringContainsString('id="open-' . $sgfID . '" href="/editor?sgfID=' . $sgfID . '"', $this->view);
 
 		$this->get('/sgf/fetch/' . $sgfID);
 		$this->assertSame(self::tortureSgf(), $this->view);
