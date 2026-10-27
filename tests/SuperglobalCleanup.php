@@ -1,9 +1,7 @@
 <?php
 
 use PHPUnit\Runner\BeforeTestHook;
-/**
- * Clears PHP superglobals before each test to prevent state bleeding.
- */
+//Clears PHP superglobals before each test to prevent state bleeding.
 use App\Utility\Auth;
 use App\Utility\CookieFlash;
 use App\Utility\JwtAuth;

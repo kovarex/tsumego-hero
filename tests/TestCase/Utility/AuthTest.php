@@ -1,10 +1,8 @@
 <?php
 
 
-/**
- * Auth::saveUserField() / saveUserFields() persist only the changed fields,
- * so a single user write cannot clobber other columns.
- */
+//Auth::saveUserField() / saveUserFields() persist only the changed fields,
+//so a single user write cannot clobber other columns.
 use App\Utility\Auth;
 
 class AuthTest extends CakeTestCase

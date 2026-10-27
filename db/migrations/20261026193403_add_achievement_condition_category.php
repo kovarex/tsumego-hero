@@ -4,22 +4,19 @@ declare(strict_types=1);
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * What an achievement condition counts comes from achievement_condition_category (see the
- * AchievementCondition::CATEGORY_ constants) instead of a varchar with short codes, and a player has
- * each condition once: a unique key on the player, the category and the set. set_id is NULL for all
- * but the two set records and a unique key lets NULLs repeat, so the key takes set_id_or_zero. That
- * column is VIRTUAL, as MariaDB refuses a stored one over set_id, whose foreign key cascades.
- * The code wrote the conditions by "find it, else create it", so a condition could be there twice;
- * now it writes them with INSERT ... ON DUPLICATE KEY UPDATE.
- *
- * Duplicates are merged into the oldest row with the value the code read: the highest one, the lowest
- * for the best time on a set. Conditions of a category no code knows, and set records without a set,
- * go; nothing read them.
- */
+//What an achievement condition counts comes from achievement_condition_category (see the
+//AchievementCondition::CATEGORY_ constants) instead of a varchar with short codes, and a player has
+//each condition once: a unique key on the player, the category and the set. set_id is NULL for all
+//but the two set records and a unique key lets NULLs repeat, so the key takes set_id_or_zero. That
+//column is VIRTUAL, as MariaDB refuses a stored one over set_id, whose foreign key cascades.
+//The code wrote the conditions by "find it, else create it", so a condition could be there twice;
+//now it writes them with INSERT ... ON DUPLICATE KEY UPDATE.
+//Duplicates are merged into the oldest row with the value the code read: the highest one, the lowest
+//for the best time on a set. Conditions of a category no code knows, and set records without a set,
+//go; nothing read them.
 final class AddAchievementConditionCategory extends AbstractMigration
 {
-	/** id => [the code in achievement_condition.category, the name] */
+	//id => [the code in achievement_condition.category, the name]
 	private const CATEGORIES = [
 		1 => ['set', 'completed sets'],
 		2 => ['s', 'set time'],

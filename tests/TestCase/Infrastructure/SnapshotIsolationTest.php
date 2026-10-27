@@ -2,11 +2,9 @@
 
 use App\Utility\Util;
 
-/**
- * MariaDB 11.6.2 and newer fail a transaction with 1020 "Record has changed since last read" when it
- * updates a row another request changed after the transaction read something (forum#35, forum#102).
- * A plain save isn't a transaction (AppModel::save), an explicit transaction still gets the check.
- */
+//MariaDB 11.6.2 and newer fail a transaction with 1020 "Record has changed since last read" when it
+//updates a row another request changed after the transaction read something (forum#35, forum#102).
+//A plain save isn't a transaction (AppModel::save), an explicit transaction still gets the check.
 class SnapshotIsolationTest extends CakeTestCase
 {
 	private const TABLE = 'snapshot_isolation_test';
@@ -24,7 +22,7 @@ class SnapshotIsolationTest extends CakeTestCase
 		parent::tearDown();
 	}
 
-	/** Another connection to the same database, like the one of a second request */
+	//Another connection to the same database, like the one of a second request
 	private static function otherConnection(): PDO
 	{
 		/** @phpstan-ignore-next-line */
@@ -41,7 +39,7 @@ class SnapshotIsolationTest extends CakeTestCase
 		return Util::query('SELECT value, other FROM ' . self::TABLE . ' WHERE id = 1')[0];
 	}
 
-	/** Another request changes the row while the save is between checking that the row exists and updating it. */
+	//Another request changes the row while the save is between checking that the row exists and updating it.
 	public function testASaveKeepsAChangeOfAnotherRequestInTheMeantime(): void
 	{
 		$model = new class (['table' => self::TABLE, 'name' => 'SnapshotIsolationRow', 'ds' => 'default']) extends AppModel {
@@ -60,7 +58,7 @@ class SnapshotIsolationTest extends CakeTestCase
 		self::otherConnection()->exec('UPDATE ' . self::TABLE . ' SET other = other + 1 WHERE id = 1');
 	}
 
-	/** A transaction that read before another request changed the row still fails, so a lost update can't hide. */
+	//A transaction that read before another request changed the row still fails, so a lost update can't hide.
 	public function testATransactionThatReadBeforeAnotherRequestChangedTheRowStillFails(): void
 	{
 		$version = Util::query('SELECT VERSION() AS version')[0]['version'];

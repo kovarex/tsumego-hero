@@ -1,9 +1,7 @@
 <?php
 
-/**
- * Authorization policies decide whether an identity may perform an action.
- * They read only the computed `permissions` list attached by Auth::getIdentity().
- */
+//Authorization policies decide whether an identity may perform an action.
+//They read only the computed `permissions` list attached by Auth::getIdentity().
 use App\Policy\AdminPolicy;
 use App\Policy\OwnerPolicy;
 use App\Policy\SgfPolicy;
@@ -18,9 +16,7 @@ use App\Utility\Constants;
 
 class PolicyTest extends CakeTestCase
 {
-	/**
-	 * Builds an identity array (like Auth::getIdentity() returns) for the given role.
-	 */
+	//Builds an identity array (like Auth::getIdentity() returns) for the given role.
 	private function identity($isAdmin, int $premium = 0, ?int $id = null): ?array
 	{
 		if ($isAdmin === null)

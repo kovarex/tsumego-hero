@@ -11,9 +11,7 @@ class TagConnection extends AppModel
 		parent::__construct($id, $table, $ds);
 	}
 
-	/**
-	 * How many tag connections the user has added today (UTC calendar day).
-	 */
+	//How many tag connections the user has added today (UTC calendar day).
 	public static function countTodaysTags(int $userId): int
 	{
 		$today = gmdate('Y-m-d');
@@ -28,9 +26,7 @@ class TagConnection extends AppModel
 		return (int) ($result[0]['cnt'] ?? 0);
 	}
 
-	/**
-	 * Whether the current user may add more tags today. Admins are never rate-limited.
-	 */
+	//Whether the current user may add more tags today. Admins are never rate-limited.
 	public static function canCurrentUserAddTag(): bool
 	{
 		if (Auth::isAdmin())

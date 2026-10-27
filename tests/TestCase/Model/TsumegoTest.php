@@ -4,10 +4,8 @@ use App\Utility\Util;
 
 class TsumegoTest extends CakeTestCase
 {
-	/**
-	 * The problems the site holds are the problems that exist: the collection a problem sits in says
-	 * nothing about it, so a collection nobody published yet still holds its problems.
-	 */
+	//The problems the site holds are the problems that exist: the collection a problem sits in says
+	//nothing about it, so a collection nobody published yet still holds its problems.
 	public function testProblemCount(): void
 	{
 		new ContextPreparator([
@@ -21,10 +19,8 @@ class TsumegoTest extends CakeTestCase
 		$this->assertSame(3, Tsumego::problemCount());
 	}
 
-	/**
-	 * A result read the problem when its request started. An admin's edit and another result that
-	 * came meanwhile stay: only the rating is written, moved from the value stored now.
-	 */
+	//A result read the problem when its request started. An admin's edit and another result that
+	//came meanwhile stay: only the rating is written, moved from the value stored now.
 	public function testAddToRatingKeepsWhatChangedMeanwhile(): void
 	{
 		$context = new ContextPreparator(['tsumego' => ['rating' => 1000, 'description' => 'old description']]);

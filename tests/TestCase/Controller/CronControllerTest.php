@@ -35,10 +35,8 @@ class CronControllerTest extends IntegrationTestCase
 		$this->assertResponseCode(403);
 	}
 
-	/**
-	 * An address change whose links have expired is forgotten overnight, so it does
-	 * not sit on the account waiting for a confirmation that can no longer come.
-	 */
+	//An address change whose links have expired is forgotten overnight, so it does
+	//not sit on the account waiting for a confirmation that can no longer come.
 	public function testCronForgetsAnAddressChangeNobodyConfirmed()
 	{
 		$context = new ContextPreparator(['user' => ['mode' => Constants::$LEVEL_MODE]]);
@@ -154,11 +152,9 @@ class CronControllerTest extends IntegrationTestCase
 		$this->assertSame($newSetConnection['SetConnection']['set_id'], $publicSetID);
 	}
 
-	/**
-	 * The other daily work runs once a day, but publishing repeats on every call
-	 * and only takes what is still pending, so a due entry is never left behind by
-	 * a day that is already recorded as done.
-	 */
+	//The other daily work runs once a day, but publishing repeats on every call
+	//and only takes what is still pending, so a due entry is never left behind by
+	//a day that is already recorded as done.
 	public function testPublishRunsWhenTheDayIsAlreadyRecorded()
 	{
 		new ContextPreparator([
@@ -218,10 +214,8 @@ class CronControllerTest extends IntegrationTestCase
 		$this->assertEquals([AchievementCondition::CATEGORY_POTION => 0, AchievementCondition::CATEGORY_GOLDEN => 2], $values);
 	}
 
-	/**
-	 * The daily work runs under READ COMMITTED, and the session gets back the level it had, as the
-	 * connection outlives the request here.
-	 */
+	//The daily work runs under READ COMMITTED, and the session gets back the level it had, as the
+	//connection outlives the request here.
 	public function testCronPutsBackTheIsolationLevel()
 	{
 		new ContextPreparator(['user' => ['mode' => Constants::$LEVEL_MODE]]);

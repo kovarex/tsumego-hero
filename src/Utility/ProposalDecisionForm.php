@@ -2,10 +2,8 @@
 
 namespace App\Utility;
 
-/**
- * The Accept and Reject buttons of a proposal in the admin panel, with the comment the proposer
- * gets in a message (see ProposalFeedback). Rejecting needs the comment, accepting doesn't.
- */
+//The Accept and Reject buttons of a proposal in the admin panel, with the comment the proposer
+//gets in a message (see ProposalFeedback). Rejecting needs the comment, accepting doesn't.
 class ProposalDecisionForm
 {
 	public static function render(string $acceptAction, string $rejectAction, string $acceptID, string $rejectID, string $commentID): void

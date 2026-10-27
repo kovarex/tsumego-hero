@@ -56,9 +56,7 @@ class ScheduleTest extends IntegrationTestCase
 		$this->assertSame(0, (int) $first['published']);
 	}
 
-	/**
-	 * An empty count asks for every problem left in the source set, without a cap.
-	 */
+	//An empty count asks for every problem left in the source set, without a cap.
 	public function testAddToScheduleWithoutCountTakesAllProblems(): void
 	{
 		[, $sandboxSetId, $targetSetId] = $this->_sandboxAndTarget(range(1, 120));
@@ -223,10 +221,8 @@ class ScheduleTest extends IntegrationTestCase
 		$this->assertStringContainsString('target set', $p[0]['target_set_title']);
 	}
 
-	/**
-	 * An entry whose problem is no longer in a sandbox set and is not in the target set
-	 * cannot be published, so the page says so instead of leaving a bare number there.
-	 */
+	//An entry whose problem is no longer in a sandbox set and is not in the target set
+	//cannot be published, so the page says so instead of leaving a bare number there.
 	public function testScheduleIndexMarksAnEntryThatCannotBePublished(): void
 	{
 		new ContextPreparator([
@@ -248,10 +244,7 @@ class ScheduleTest extends IntegrationTestCase
 		$this->assertSame(1, substr_count($result, 'cannot be published'));
 	}
 
-	/**
-	 * The preview answers the question the admin is asking: which problem goes live on
-	 * which day.
-	 */
+	//The preview answers the question the admin is asking: which problem goes live on which day.
 	public function testPreviewShowsTheDayEachProblemPublishes(): void
 	{
 		[, $sandboxSetId, $targetSetId] = $this->_sandboxAndTarget([1, 2, 3]);
@@ -270,10 +263,7 @@ class ScheduleTest extends IntegrationTestCase
 		$this->assertSame(self::futureDate(3), $body[2]['date']);
 	}
 
-	/**
-	 * Asking for problems when the set has none left says so, instead of reporting that
-	 * zero problems were scheduled.
-	 */
+	//Asking for problems when the set has none left says so, instead of reporting that zero problems were scheduled.
 	public function testAddToScheduleSaysWhenNothingIsLeft(): void
 	{
 		[, $sandboxSetId, $targetSetId] = $this->_sandboxAndTarget([1]);
@@ -677,10 +667,8 @@ class ScheduleTest extends IntegrationTestCase
 		]));
 	}
 
-	/**
-	 * Publishing moves the problem, so two entries for the same problem both end up
-	 * resolved with a single connection in the target set and none left in the sandbox.
-	 */
+	//Publishing moves the problem, so two entries for the same problem both end up
+	//resolved with a single connection in the target set and none left in the sandbox.
 	public function testPublishingTheSameProblemTwiceKeepsOneConnection(): void
 	{
 		$context = new ContextPreparator([
@@ -760,10 +748,8 @@ class ScheduleTest extends IntegrationTestCase
 		$this->assertEmpty($this->viewVariable('p'));
 	}
 
-	/**
-	 * A collection a player shared is public too, but it is not the site's, so the schedule
-	 * neither offers it nor publishes into it.
-	 */
+	//A collection a player shared is public too, but it is not the site's, so the schedule
+	//neither offers it nor publishes into it.
 	public function testTargetMustBeACollectionOfTheSite(): void
 	{
 		$context = new ContextPreparator([
@@ -810,10 +796,8 @@ class ScheduleTest extends IntegrationTestCase
 		$this->assertSame($context->tsumegos[1]['id'], (int) $schedules[0]['Schedule']['tsumego_id']);
 	}
 
-	/**
-	 * A problem deleted after it was scheduled is not published from the trash: the entry
-	 * waits, and the schedule page says where the problem is.
-	 */
+	//A problem deleted after it was scheduled is not published from the trash: the entry
+	//waits, and the schedule page says where the problem is.
 	public function testPublishLeavesAProblemInTheTrashPending(): void
 	{
 		$context = new ContextPreparator([

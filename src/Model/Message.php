@@ -2,47 +2,38 @@
 
 use App\Utility\Util;
 
-/**
- * A message one player sent to another. The messages between two players are their
- * conversation, so a conversation has no row of its own: it is addressed by the
- * other player, the partner.
- *
- * Table: message
- *   - sender_user_id, recipient_user_id (FK -> user)
- *   - text: plain text, the page turns the addresses in it into links
- *   - created
- *   - read_at: when the recipient opened the conversation, NULL while unread
- *
- * The recipient can get an email about a new message (user.email_on_new_message).
- * It is sent for the first unread message of a sender only, so a lively conversation
- * doesn't fill the inbox: the next one comes after the recipient read the previous.
- *
- * @phpstan-import-type MessageRow from \App\Utility\RowTypes
- */
+//A message one player sent to another. The messages between two players are their
+//conversation, so a conversation has no row of its own: it is addressed by the
+//other player, the partner.
+//Table: message
+//  - sender_user_id, recipient_user_id (FK -> user)
+//  - text: plain text, the page turns the addresses in it into links
+//  - created
+//  - read_at: when the recipient opened the conversation, NULL while unread
+//The recipient can get an email about a new message (user.email_on_new_message).
+//It is sent for the first unread message of a sender only, so a lively conversation
+//doesn't fill the inbox: the next one comes after the recipient read the previous.
+/** @phpstan-import-type MessageRow from \App\Utility\RowTypes */
 class Message extends AppModel
 {
 	public $useTable = 'message';
 
-	/** Longest message accepted, in characters. */
+	//Longest message accepted, in characters.
 	public const MAX_LENGTH = 5000;
 
-	/** Messages of a conversation sent to the page at once, older ones are loaded on request. */
+	//Messages of a conversation sent to the page at once, older ones are loaded on request.
 	public const PAGE_SIZE = 50;
 
-	/** Players found by the search of a recipient. */
+	//Players found by the search of a recipient.
 	public const RECIPIENT_SEARCH_LIMIT = 10;
 
-	/**
-	 * How many players who never wrote back a player can write to in a day. It keeps an account
-	 * from sending its messages (and the emails they bring) to everyone, while talking to
-	 * players who answer is never limited.
-	 */
+	//How many players who never wrote back a player can write to in a day. It keeps an account
+	//from sending its messages (and the emails they bring) to everyone, while talking to
+	//players who answer is never limited.
 	public const DAILY_UNANSWERED_RECIPIENTS = 10;
 
-	/**
-	 * Why a message can't be sent, null when it can. The sender is the one asking, so this
-	 * only looks at the recipient and the text.
-	 */
+	//Why a message can't be sent, null when it can. The sender is the one asking, so this
+	//only looks at the recipient and the text.
 	public static function problemWith(int $senderUserId, int $recipientUserId, string $text): ?string
 	{
 		if ($senderUserId === $recipientUserId)
@@ -58,15 +49,12 @@ class Message extends AppModel
 		return null;
 	}
 
-	/**
-	 * Store a message and email the recipient about it when they asked for it. This is the
-	 * one way a message is sent, whether a player wrote it or the site writes on behalf of
-	 * someone (an admin answering a proposal), so every message is announced the same way.
-	 *
-	 * @param string $text Plain text, http(s) addresses in it are shown as links
-	 * @param mixed $emailer CakeEmail from AppController::_getEmailer(), which a test replaces
-	 * @return int The id of the new message
-	 */
+	//Store a message and email the recipient about it when they asked for it. This is the
+	//one way a message is sent, whether a player wrote it or the site writes on behalf of
+	//someone (an admin answering a proposal), so every message is announced the same way.
+	//$text: Plain text, http(s) addresses in it are shown as links
+	//$emailer: CakeEmail from AppController::_getEmailer(), which a test replaces
+	//Returns the id of the new message
 	public static function send(int $senderUserId, int $recipientUserId, string $text, mixed $emailer): int
 	{
 		$problem = self::problemWith($senderUserId, $recipientUserId, $text);
@@ -83,9 +71,7 @@ class Message extends AppModel
 		return $messageId;
 	}
 
-	/**
-	 * Line ends are kept as \n and the blank space around the message is dropped.
-	 */
+	//Line ends are kept as \n and the blank space around the message is dropped.
 	public static function normalizeText(string $text): string
 	{
 		return trim(str_replace(["\r\n", "\r"], "\n", $text));
@@ -125,12 +111,9 @@ You get an email for the first message you have not read yet. You can turn these
 		}
 	}
 
-	/**
-	 * The conversations of a player, the one with the newest message first. Each carries the
-	 * partner, the newest message and how many messages of the partner are unread.
-	 *
-	 * @return list<array{partner: array<string, mixed>, lastMessage: array<string, mixed>, unreadCount: int}>
-	 */
+	//The conversations of a player, the one with the newest message first. Each carries the
+	//partner, the newest message and how many messages of the partner are unread.
+	/** @return list<array{partner: array<string, mixed>, lastMessage: array<string, mixed>, unreadCount: int}> */
 	public static function conversations(int $userId): array
 	{
 		$rows = Util::query('
@@ -161,12 +144,9 @@ You get an email for the first message you have not read yet. You can turn these
 		return $conversations;
 	}
 
-	/**
-	 * The newest messages between two players, oldest first, so they read top to bottom.
-	 *
-	 * @param int|null $beforeMessageId Only messages older than this one, to load the earlier part
-	 * @return array{messages: list<array<string, mixed>>, hasOlder: bool}
-	 */
+	//The newest messages between two players, oldest first, so they read top to bottom.
+	//$beforeMessageId: Only messages older than this one, to load the earlier part
+	/** @return array{messages: list<array<string, mixed>>, hasOlder: bool} */
 	public static function conversation(int $userId, int $partnerUserId, ?int $beforeMessageId = null): array
 	{
 		$parameters = [$userId, $partnerUserId, $partnerUserId, $userId];
@@ -191,11 +171,8 @@ You get an email for the first message you have not read yet. You can turn these
 		];
 	}
 
-	/**
-	 * Mark what the partner sent as read, which is what opening the conversation does.
-	 *
-	 * @return int How many messages became read
-	 */
+	//Mark what the partner sent as read, which is what opening the conversation does.
+	//Returns how many messages became read
 	public static function markRead(int $userId, int $partnerUserId): int
 	{
 		return Util::execute(
@@ -215,11 +192,9 @@ You get an email for the first message you have not read yet. You can turn these
 			[$userId, $senderUserId])[0]['count'];
 	}
 
-	/**
-	 * Whether the player reached the daily number of players who never wrote back, so a
-	 * message to one more of them must wait. A message to a player who wrote to them
-	 * before is always fine.
-	 */
+	//Whether the player reached the daily number of players who never wrote back, so a
+	//message to one more of them must wait. A message to a player who wrote to them
+	//before is always fine.
 	public static function reachedUnansweredRecipientLimit(int $senderUserId, int $recipientUserId): bool
 	{
 		if (self::hasWrittenTo($recipientUserId, $senderUserId))
@@ -238,12 +213,9 @@ You get an email for the first message you have not read yet. You can turn these
 		return (bool) Util::query('SELECT 1 FROM message WHERE sender_user_id = ? AND recipient_user_id = ? LIMIT 1', [$senderUserId, $recipientUserId]);
 	}
 
-	/**
-	 * Players whose display name contains the query, the ones starting with it first. The
-	 * player searching and the deleted accounts are left out, as nobody can write to them.
-	 *
-	 * @return list<array<string, mixed>>
-	 */
+	//Players whose display name contains the query, the ones starting with it first. The
+	//player searching and the deleted accounts are left out, as nobody can write to them.
+	/** @return list<array<string, mixed>> */
 	public static function searchRecipients(int $userId, string $query): array
 	{
 		$query = trim($query);
@@ -259,10 +231,8 @@ You get an email for the first message you have not read yet. You can turn these
 		return array_map(fn(array $row) => self::playerPayload($row), $rows);
 	}
 
+	//A player the way the page shows them. A deleted account has no name and no avatar, the page writes it as deleted.
 	/**
-	 * A player the way the page shows them. A deleted account has no name and no avatar,
-	 * the page writes it as deleted.
-	 *
 	 * @param array<string, mixed> $row With user_id, display_name, deleted, external_id, picture, email, avatar_setting_id, uploaded_avatar_hash, rating
 	 * @return array{id: int, displayName: string|null, avatarUrl: string|null, rating: float}
 	 */

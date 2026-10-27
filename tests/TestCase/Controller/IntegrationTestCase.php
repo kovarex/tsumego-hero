@@ -5,14 +5,12 @@ use DOM\HTMLDocument;
 use Facebook\WebDriver\WebDriverBy;
 use PHPUnitRetry\RetryTrait;
 
+//A test that dispatches a real request and asserts what a client gets back.
+//The verbs and the assertions come from Cake 5's `IntegrationTestTrait`. The fork ships it in
+//the global namespace, Cake 5 keeps it in `Cake\TestSuite\`, so the trait line below is what
+//moves at the migration; the tests themselves never name it. The body of the last response is
+//kept in `$view`, which is where the assertions that read the page look.
 /**
- * A test that dispatches a real request and asserts what a client gets back.
- *
- * The verbs and the assertions come from Cake 5's `IntegrationTestTrait`. The fork ships it in
- * the global namespace, Cake 5 keeps it in `Cake\TestSuite\`, so the trait line below is what
- * moves at the migration; the tests themselves never name it. The body of the last response is
- * kept in `$view`, which is where the assertions that read the page look.
- *
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
@@ -25,24 +23,21 @@ class IntegrationTestCase extends CakeTestCase
 
 	use RetryTrait;
 
-	/** The body of the last response, the page as the client received it. */
+	//The body of the last response, the page as the client received it.
 	protected string $view = '';
 
-	/** The body the cached DOM was parsed from, so a changed body is parsed again. */
+	//The body the cached DOM was parsed from, so a changed body is parsed again.
 	private string $domSource = '';
 
 	private ?HTMLDocument $dom = null;
 
-	/**
-	 * The cookie jar a browser keeps after the response: what the app set during the request,
-	 * plus what the request came with.
-	 *
-	 * The trait restores $_COOKIE once the request is over, so the moment to read the cookies
-	 * the app wrote is the end of the action.
-	 */
+	//The cookie jar a browser keeps after the response: what the app set during the request,
+	//plus what the request came with.
+	//The trait restores $_COOKIE once the request is over, so the moment to read the cookies
+	//the app wrote is the end of the action.
 	private ?array $responseCookies = null;
 
-	/** Whether the files of the request came from a test's $_FILES, so they are not reused. */
+	//Whether the files of the request came from a test's $_FILES, so they are not reused.
 	private bool $uploadsHandedOver = false;
 
 	public function setUp(): void
@@ -79,13 +74,10 @@ class IntegrationTestCase extends CakeTestCase
 		$this->view = $this->_getBodyAsString();
 	}
 
-	/**
-	 * The cookie jar a browser keeps after the response: what the app set during the request,
-	 * plus what the request came with.
-	 *
-	 * The trait restores $_COOKIE once the request is over, so the moment to read the cookies
-	 * the app wrote is the end of the action.
-	 */
+	//The cookie jar a browser keeps after the response: what the app set during the request,
+	//plus what the request came with.
+	//The trait restores $_COOKIE once the request is over, so the moment to read the cookies
+	//the app wrote is the end of the action.
 	public function controllerSpy(Controller $controller): void
 	{
 		$this->spyOnController($controller);
@@ -98,13 +90,13 @@ class IntegrationTestCase extends CakeTestCase
 		$events->attach($capture, 'Controller.beforeRedirect', ['priority' => 100]);
 	}
 
-	/** The cookies a browser would send along with the next request. */
+	//The cookies a browser would send along with the next request.
 	public function browserCookies(): array
 	{
 		return $this->responseCookies ?? [];
 	}
 
-	/** The fixture user has no name, so a null name signs in the one without a name. */
+	//The fixture user has no name, so a null name signs in the one without a name.
 	public function login(?string $username): void
 	{
 		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => $username]]);
@@ -130,13 +122,13 @@ class IntegrationTestCase extends CakeTestCase
 			$this->logout();
 	}
 
-	/** The emails the app sends in this test end up in TestEmailer::$lastEmail. */
+	//The emails the app sends in this test end up in TestEmailer::$lastEmail.
 	public function registerTestEmailer(): void
 	{
 		AppController::_setTestEmailer(new TestEmailer());
 	}
 
-	/** The value of a response header, or null when the response does not carry it. */
+	//The value of a response header, or null when the response does not carry it.
 	protected function headerValue(string $name): ?string
 	{
 		return $this->_response->header()[$name] ?? null;
@@ -153,12 +145,9 @@ class IntegrationTestCase extends CakeTestCase
 		return $this->dom;
 	}
 
-	/**
-	 * The navigation buttons under a problem: their order, and the status each one carries.
-	 *
-	 * The cases that read a page through Selenium use these, whether the page was opened by the
-	 * test or by a browser that plays the problem.
-	 */
+	//The navigation buttons under a problem: their order, and the status each one carries.
+	//The cases that read a page through Selenium use these, whether the page was opened by the
+	//test or by a browser that plays the problem.
 	protected function checkNavigationButtonsBeforeAndAfterSolving($browser, int $count, $context, $indexFunction, $orderFunction, int $currentIndex, string $currentStatus): void
 	{
 		$this->checkPlayNavigationButtons($browser, $count, $context, $indexFunction, $orderFunction, $currentIndex, $currentStatus);

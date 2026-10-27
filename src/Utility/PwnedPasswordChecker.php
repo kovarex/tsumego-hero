@@ -4,12 +4,9 @@ namespace App\Utility;
 
 use CakeLog;
 
-/**
- * Looks a password up in the Pwned Passwords list.
- *
- * Only the first five characters of the SHA-1 hash leave the server and the rest of
- * the hash is matched here, so the list never learns which password was asked about.
- */
+//Looks a password up in the Pwned Passwords list.
+//Only the first five characters of the SHA-1 hash leave the server and the rest of
+//the hash is matched here, so the list never learns which password was asked about.
 class PwnedPasswordChecker implements PwnedPasswordCheckerInterface
 {
 	private static ?PwnedPasswordCheckerInterface $testInstance = null;
@@ -20,25 +17,18 @@ class PwnedPasswordChecker implements PwnedPasswordCheckerInterface
 
 	private string $rangeUrl;
 
-	/**
-	 * @var callable(string): (string|null)|null Answers the request instead of the network
-	 */
+	/** @var callable(string): (string|null)|null Answers the request instead of the network */
 	private $rangeFetcher;
 
-	/**
-	 * @param string|null $rangeUrl Where the hashes live
-	 * @param callable(string): (string|null)|null $rangeFetcher Takes the address, returns what it answers
-	 */
+	//$rangeUrl: Where the hashes live
+	/** @param callable(string): (string|null)|null $rangeFetcher Takes the address, returns what it answers */
 	public function __construct(?string $rangeUrl = null, ?callable $rangeFetcher = null)
 	{
 		$this->rangeUrl = $rangeUrl ?? self::$DEFAULT_RANGE_URL;
 		$this->rangeFetcher = $rangeFetcher;
 	}
 
-	/**
-	 * Answer the password check with the given checker instead of the list, on a test
-	 * instance only.
-	 */
+	//Answer the password check with the given checker instead of the list, on a test instance only.
 	public static function useForTests(?PwnedPasswordCheckerInterface $checker): void
 	{
 		self::$testInstance = Util::isOnTestSite() ? $checker : null;
@@ -49,10 +39,8 @@ class PwnedPasswordChecker implements PwnedPasswordCheckerInterface
 		return self::$testInstance;
 	}
 
-	/**
-	 * The checker a caller should use: the one a test put in place, the fake the test site
-	 * answers with, or the real list.
-	 */
+	//The checker a caller should use: the one a test put in place, the fake the test site
+	//answers with, or the real list.
 	public static function create(): PwnedPasswordCheckerInterface
 	{
 		if (self::$testInstance !== null)
@@ -76,12 +64,10 @@ class PwnedPasswordChecker implements PwnedPasswordCheckerInterface
 		return false;
 	}
 
-	/**
-	 * The block of hashes that share the prefix, or null when the list can not be
-	 * reached. A list that does not answer must not keep a player from setting a
-	 * password, so the caller reads null as "not known to be breached". A warning is
-	 * logged, because a list that is never reached would otherwise be missed.
-	 */
+	//The block of hashes that share the prefix, or null when the list can not be
+	//reached. A list that does not answer must not keep a player from setting a
+	//password, so the caller reads null as "not known to be breached". A warning is
+	//logged, because a list that is never reached would otherwise be missed.
 	private function fetchRange(string $prefix): ?string
 	{
 		$url = $this->rangeUrl . $prefix;

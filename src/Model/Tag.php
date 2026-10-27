@@ -12,9 +12,7 @@ class Tag extends AppModel
 		parent::__construct($id, $table, $ds);
 	}
 
-	/**
-	 * Return all tags with their connection status for a given tsumego.
-	 */
+	//Return all tags with their connection status for a given tsumego.
 	public static function getForTsumego(int $tsumegoId): array
 	{
 		return Util::query("
@@ -30,12 +28,9 @@ LEFT JOIN tag_connection ON tag_connection.tag_id = tag.id AND tag_connection.ts
 ORDER BY tag.name", [Auth::getUserID(), $tsumegoId]);
 	}
 
-	/**
-	 * Every tag, proposed ones included, with how many problems carry it and how many
-	 * more only have it proposed. Deleted problems are not counted.
-	 *
-	 * @param bool $byProblemCount Most used first instead of by name
-	 */
+	//Every tag, proposed ones included, with how many problems carry it and how many
+	//more only have it proposed. Deleted problems are not counted.
+	//$byProblemCount: Most used first instead of by name
 	public static function listWithProblemCounts(bool $byProblemCount = false): array
 	{
 		$order = $byProblemCount ? 'problem_count DESC, tag.name' : 'tag.name';
@@ -55,10 +50,8 @@ GROUP BY tag.id
 ORDER BY $order");
 	}
 
-	/**
-	 * The problems that carry the tag or have it proposed, each named by the collection it is
-	 * shown in first, ordered as the collections are.
-	 */
+	//The problems that carry the tag or have it proposed, each named by the collection it is
+	//shown in first, ordered as the collections are.
 	public static function problems(int $tagId): array
 	{
 		return Util::query("
@@ -81,13 +74,10 @@ WHERE tag_connection.tag_id = ?
 ORDER BY `set`.id IS NULL, " . SetConnection::displayOrderForSetSql('`set`') . ", set_connection.num, tag_connection.tsumego_id", [$tagId]);
 	}
 
-	/**
-	 * Deletes the tag and takes it off every problem. The admin activity log keeps the tag
-	 * and the problems it was on, so a tag deleted by mistake can be put back by hand.
-	 *
-	 * @param array $tag The tag row
-	 * @return int How many problems had the tag or had it proposed
-	 */
+	//Deletes the tag and takes it off every problem. The admin activity log keeps the tag
+	//and the problems it was on, so a tag deleted by mistake can be put back by hand.
+	//$tag: The tag row
+	//Returns how many problems had the tag or had it proposed
 	public static function deleteWithConnections(array $tag): int
 	{
 		$connections = Util::query(

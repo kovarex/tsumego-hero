@@ -2,9 +2,7 @@
 
 class ChangelogControllerTest extends IntegrationTestCase
 {
-	/**
-	 * The public changelog page renders its shell and mounts the React feed.
-	 */
+	//The public changelog page renders its shell and mounts the React feed.
 	public function testIndexRendersPageShell()
 	{
 		$this->get('/changelog');
@@ -14,10 +12,8 @@ class ChangelogControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('data-changelog-root', $result);
 	}
 
-	/**
-	 * The entries are embedded as JSON in the mount element's data-props.
-	 * This holds whether or not changelog/index.json currently exists.
-	 */
+	//The entries are embedded as JSON in the mount element's data-props.
+	//This holds whether or not changelog/index.json currently exists.
 	public function testIndexEmbedsEntriesAsJson()
 	{
 		$this->get('/changelog');
@@ -32,9 +28,7 @@ class ChangelogControllerTest extends IntegrationTestCase
 		$this->assertIsArray($data['entries'], 'entries should be an array');
 	}
 
-	/**
-	 * Write a temp changelog index file and return its path.
-	 */
+	//Write a temp changelog index file and return its path.
 	private function fixture(string $json): string
 	{
 		$path = tempnam(sys_get_temp_dir(), 'changelog_') ?: sys_get_temp_dir() . '/changelog_test.json';

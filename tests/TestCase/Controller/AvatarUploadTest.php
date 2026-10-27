@@ -18,9 +18,7 @@ class AvatarUploadTest extends IntegrationTestCase
 		parent::tearDown();
 	}
 
-	/**
-	 * An upload is the avatar right away: the player who picks a picture wants to see it.
-	 */
+	//An upload is the avatar right away: the player who picks a picture wants to see it.
 	public function testAnUploadedPictureBecomesTheAvatar(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'uploader']]);
@@ -39,9 +37,7 @@ class AvatarUploadTest extends IntegrationTestCase
 		$this->assertSame(UploadedAvatar::url($context->user['id'], $row['uploaded_avatar_hash']), User::getAvatarUrl($row));
 	}
 
-	/**
-	 * An account keeps one uploaded picture, and a new one gets a new url.
-	 */
+	//An account keeps one uploaded picture, and a new one gets a new url.
 	public function testANewPictureReplacesTheOldOne(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'uploader']]);
@@ -80,9 +76,7 @@ class AvatarUploadTest extends IntegrationTestCase
 		$this->assertResponseCode(401);
 	}
 
-	/**
-	 * Without the picture the account shows the board again, the avatar it always has.
-	 */
+	//Without the picture the account shows the board again, the avatar it always has.
 	public function testRemovingThePictureBringsTheBoardBack(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'uploader']]);
@@ -98,9 +92,7 @@ class AvatarUploadTest extends IntegrationTestCase
 		$this->assertRedirect('/users/settings');
 	}
 
-	/**
-	 * A player who went back to the Gravatar and then removes the picture keeps the Gravatar.
-	 */
+	//A player who went back to the Gravatar and then removes the picture keeps the Gravatar.
 	public function testRemovingAPictureThatIsNotShownKeepsTheAvatar(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'uploader']]);
@@ -115,10 +107,8 @@ class AvatarUploadTest extends IntegrationTestCase
 		$this->assertSame(User::AVATAR_GRAVATAR, (int) $row['avatar_setting_id']);
 	}
 
-	/**
-	 * The uploaded picture is one of the avatars to pick from, so a player can go to the
-	 * board and back without uploading it again.
-	 */
+	//The uploaded picture is one of the avatars to pick from, so a player can go to the
+	//board and back without uploading it again.
 	public function testThePictureCanBePickedAgainAfterAnotherAvatar(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'uploader']]);
@@ -158,9 +148,7 @@ class AvatarUploadTest extends IntegrationTestCase
 		$this->assertStringContainsString('id="avatar-remove"', $this->view);
 	}
 
-	/**
-	 * The picture is shown wherever the name of the player is, the same way the other avatars are.
-	 */
+	//The picture is shown wherever the name of the player is, the same way the other avatars are.
 	public function testTheProfileShowsAndSharesThePicture(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'uploader']]);
@@ -176,10 +164,8 @@ class AvatarUploadTest extends IntegrationTestCase
 		$this->assertStringContainsString('<meta property="og:image:width" content="' . UploadedAvatar::SIZE . '">', $this->view);
 	}
 
-	/**
-	 * The url carries the hash of the picture, so the answer never changes and the browser
-	 * keeps it; an img tag asks for it without a session.
-	 */
+	//The url carries the hash of the picture, so the answer never changes and the browser
+	//keeps it; an img tag asks for it without a session.
 	public function testThePictureIsServedFromItsUrl(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'uploader']]);
@@ -213,9 +199,7 @@ class AvatarUploadTest extends IntegrationTestCase
 		$this->assertResponseCode(404);
 	}
 
-	/**
-	 * A deleted account asked to be forgotten, so its picture is neither shown nor served.
-	 */
+	//A deleted account asked to be forgotten, so its picture is neither shown nor served.
 	public function testADeletedAccountDoesNotShowThePicture(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'uploader']]);

@@ -170,10 +170,7 @@ class TimeModeControllerTest extends IntegrationTestCase
 		}
 	}
 
-	/**
-	 * Time mode is not part of the no-error streak: playing there neither breaks
-	 * it nor extends it.
-	 */
+	//Time mode is not part of the no-error streak: playing there neither breaks it nor extends it.
 	public function testTimeModeLeavesTheNoErrorStreakAlone()
 	{
 		$context = new ContextPreparator([
@@ -260,10 +257,7 @@ class TimeModeControllerTest extends IntegrationTestCase
 		$this->assertSame(0, (int) $attempt['TimeModeAttempt']['points']);
 	}
 
-	/**
-	 * Running out of time in time mode is recorded as a timeout with the full time
-	 * of the category.
-	 */
+	//Running out of time in time mode is recorded as a timeout with the full time of the category.
 	public function testTimeModeSubmittingATimeoutIsRecordedWithTheFullTime()
 	{
 		$context = new ContextPreparator([

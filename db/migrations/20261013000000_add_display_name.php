@@ -5,91 +5,70 @@ declare(strict_types=1);
 use App\Utility\PhpbbNames;
 use Phinx\Migration\AbstractMigration;
 
-/**
- * Add display_name column to user table and clean up legacy data.
- *
- * This migration is IRREVERSIBLE - it cleans up legacy data that cannot be restored.
- *
- * Reads the deleted and deletion_token columns of the user table (added by the soft delete
- * users migration 20261011100000, which therefore has to run first).
- *
- * Changes (in order):
- * 1. Add author_user_id FK column to tsumego table FIRST
- * 1b. Link problems stored under a known author alias (real name vs nickname of
- *     the same account) to that account, without touching the author string
- * 2. Populate author_user_id by matching tsumego.author to user.name (both still have g__ prefix)
- * 3. Clear old picture filenames (they pointed to non-deployed local files)
- * 4. Add display_name column
- * 5. Strip g__ prefix from email column (duplicates allowed)
- * 6. Strip g__ prefix from external_id column
- * 7. Strip g__ prefix from tsumego.author column
- * 8. Make name column nullable and set to NULL for Google users
- * 9. Sync the phpBB forum names (username, username_clean and the poster names cached in the
- *    topics and forums) with the display names
- *
- * Key insight: author_user_id matching must happen BEFORE any g__ stripping
- * so "g__John Smith" in tsumego.author matches "g__John Smith" in user.name.
- * The alias map in 1b also runs while user.name is untouched, before step 8 clears
- * the name of the Google accounts.
- *
- * Google users (external_id IS NOT NULL) will have name=NULL because:
- * - They can't use password login (password_hash = 'google_oauth')
- * - Display should use display_name instead
- * - phpBB SSO uses display_name for usernames
- */
+//Add display_name column to user table and clean up legacy data.
+//This migration is IRREVERSIBLE - it cleans up legacy data that cannot be restored.
+//Reads the deleted and deletion_token columns of the user table (added by the soft delete
+//users migration 20261011100000, which therefore has to run first).
+//Changes (in order):
+//1. Add author_user_id FK column to tsumego table FIRST
+//1b. Link problems stored under a known author alias (real name vs nickname of
+//    the same account) to that account, without touching the author string
+//2. Populate author_user_id by matching tsumego.author to user.name (both still have g__ prefix)
+//3. Clear old picture filenames (they pointed to non-deployed local files)
+//4. Add display_name column
+//5. Strip g__ prefix from email column (duplicates allowed)
+//6. Strip g__ prefix from external_id column
+//7. Strip g__ prefix from tsumego.author column
+//8. Make name column nullable and set to NULL for Google users
+//9. Sync the phpBB forum names (username, username_clean and the poster names cached in the
+//   topics and forums) with the display names
+//Key insight: author_user_id matching must happen BEFORE any g__ stripping
+//so "g__John Smith" in tsumego.author matches "g__John Smith" in user.name.
+//The alias map in 1b also runs while user.name is untouched, before step 8 clears
+//the name of the Google accounts.
+//Google users (external_id IS NOT NULL) will have name=NULL because:
+//- They can't use password login (password_hash = 'google_oauth')
+//- Display should use display_name instead
+//- phpBB SSO uses display_name for usernames
 final class AddDisplayName extends AbstractMigration
 {
-	/**
-	 * An account with fewer than this many attempts is considered a "non-real"
-	 * account (a stray/accidental registration or an unused ghost) and is not
-	 * allowed to keep a display name as long as any other account in the same
-	 * duplicate group has at least this many attempts.
-	 */
+	//An account with fewer than this many attempts is considered a "non-real"
+	//account (a stray/accidental registration or an unused ghost) and is not
+	//allowed to keep a display name as long as any other account in the same
+	//duplicate group has at least this many attempts.
 	private const REAL_ATTEMPTS = 10;
 
-	/**
-	 * An account is considered "actively used" (i.e. the person plays on it now)
-	 * if it has at least this many distinct activity days within the recent
-	 * window. This distinguishes real current use from a one-off stray login.
-	 */
+	//An account is considered "actively used" (i.e. the person plays on it now)
+	//if it has at least this many distinct activity days within the recent
+	//window. This distinguishes real current use from a one-off stray login.
 	private const RECENT_ACTIVITY_WINDOW_DAYS = 90;
 	private const RECENT_ACTIVITY_MIN_DAYS = 3;
 
-	/**
-	 * An account with no activity at all for this long has stopped using the site,
-	 * so it should not hold a contested name against someone who still plays.
-	 */
+	//An account with no activity at all for this long has stopped using the site,
+	//so it should not hold a contested name against someone who still plays.
 	private const ABANDONED_AFTER_DAYS = 90;
 
-	/**
-	 * How many distinct activity days within the recent window a challenger needs
-	 * before it takes a name away from an abandoned account. Ten days out of ninety
-	 * is regular use; a burst of a few days on a fresh account is not.
-	 */
+	//How many distinct activity days within the recent window a challenger needs
+	//before it takes a name away from an abandoned account. Ten days out of ninety
+	//is regular use; a burst of a few days on a fresh account is not.
 	private const DISPLACEMENT_MIN_ACTIVE_DAYS = 10;
 
-	/**
-	 * Two normalized addresses count as the same person when one contains the other
-	 * and the shared part is at least this long, so that "tom" vs "tomtom" or
-	 * "david" vs "davidlee" stay separate accounts.
-	 */
+	//Two normalized addresses count as the same person when one contains the other
+	//and the shared part is at least this long, so that "tom" vs "tomtom" or
+	//"david" vs "davidlee" stay separate accounts.
 	private const SAME_PERSON_MIN_SHARED_CHARS = 6;
 
-	/**
-	 * Addresses that only differ by these many characters ("auraauarola@" vs
-	 * "auraarola@", "geonikaido@" vs "gnikaido@") are the same person as well,
-	 * as long as both are long enough for the match to mean something.
-	 */
+	//Addresses that only differ by these many characters ("auraauarola@" vs
+	//"auraarola@", "geonikaido@" vs "gnikaido@") are the same person as well,
+	//as long as both are long enough for the match to mean something.
 	private const SAME_PERSON_MAX_EDIT_DISTANCE = 2;
 	private const SAME_PERSON_FUZZY_MIN_CHARS = 8;
 
-	/**
-	 * Author strings that were stored in `tsumego.author` while the account itself
-	 * uses a different name (a real name against a nickname, or the other way round).
-	 * Key = the value in `tsumego.author`, value = `user.name` of the account that
-	 * created those problems. Taken from the site's own authors page and from the
-	 * e-mail of the account (see the authors page in src/View/Users/authors.ctp).
-	 */
+	//Author strings that were stored in `tsumego.author` while the account itself
+	//uses a different name (a real name against a nickname, or the other way round).
+	//Key = the value in `tsumego.author`, value = `user.name` of the account that
+	//created those problems. Taken from the site's own authors page and from the
+	//e-mail of the account (see the authors page in src/View/Users/authors.ctp).
 	private const AUTHOR_ALIASES = [
 		'Joschka Zimdars' => 'd4rkm4tter',
 		'Stepan Trubitsin' => 'Stepan',
@@ -339,32 +318,26 @@ final class AddDisplayName extends AbstractMigration
 		}
 	}
 
-	/**
-	 * Among candidate user ids that share a display name, pick the one that should
-	 * KEEP the display name.
-	 *
-	 * Policy:
-	 * - Accounts that were deleted (or asked for deletion) never keep the name.
-	 * - Accounts that are the same person (same address, or one address contained
-	 *   in the other) count as one: keep the account they actually play on, else
-	 *   their MAIN account (the one with the MOST attempts).
-	 * - An account with < REAL_ATTEMPTS attempts is a stray/accidental login and
-	 *   cannot keep a name as long as any other account in the group is real.
-	 * - A name held by an account that stopped playing (no activity for
-	 *   ABANDONED_AFTER_DAYS) goes to a survivor that is in regular use
-	 *   (DISPLACEMENT_MIN_ACTIVE_DAYS distinct days in the recent window), if any.
-	 * - Otherwise an account is "alive" if it has >= 200 attempts OR had any
-	 *   activity in the last 180 days, and the OLDEST (lowest id) alive one keeps
-	 *   the name (seniority).
-	 * - If none are alive (all effectively dead), keep the one with the MOST
-	 *   attempts (least dead); ties go to the oldest (lowest id).
-	 *
-	 * Age is measured by `id` (auto-increment = true creation order), not by the
-	 * `created` timestamp, which is unreliable for OAuth/Google accounts.
-	 *
-	 * @param int[] $ids User ids sharing a display name
-	 * @return int The id of the account to keep
-	 */
+	//Among candidate user ids that share a display name, pick the one that should KEEP the display name.
+	//Policy:
+	//- Accounts that were deleted (or asked for deletion) never keep the name.
+	//- Accounts that are the same person (same address, or one address contained
+	//  in the other) count as one: keep the account they actually play on, else
+	//  their MAIN account (the one with the MOST attempts).
+	//- An account with < REAL_ATTEMPTS attempts is a stray/accidental login and
+	//  cannot keep a name as long as any other account in the group is real.
+	//- A name held by an account that stopped playing (no activity for
+	//  ABANDONED_AFTER_DAYS) goes to a survivor that is in regular use
+	//  (DISPLACEMENT_MIN_ACTIVE_DAYS distinct days in the recent window), if any.
+	//- Otherwise an account is "alive" if it has >= 200 attempts OR had any
+	//  activity in the last 180 days, and the OLDEST (lowest id) alive one keeps
+	//  the name (seniority).
+	//- If none are alive (all effectively dead), keep the one with the MOST
+	//  attempts (least dead); ties go to the oldest (lowest id).
+	//Age is measured by `id` (auto-increment = true creation order), not by the
+	//`created` timestamp, which is unreliable for OAuth/Google accounts.
+	//Returns the id of the account to keep
+	/** @param int[] $ids User ids sharing a display name */
 	private function pickKeptUserId(array $ids): int
 	{
 		// Accounts that asked to be deleted never keep the name.
@@ -422,15 +395,11 @@ final class AddDisplayName extends AbstractMigration
 		return $this->preferCurrentUser($survivors, $this->pickAmongSurvivors($survivors));
 	}
 
-	/**
-	 * Hand the name to someone who still plays instead of an account that stopped.
-	 *
-	 * The holder is only displaced when it has been silent for ABANDONED_AFTER_DAYS
-	 * AND another survivor is in regular use, so a veteran on a long break keeps the
-	 * name against a fresh account that played a few puzzles.
-	 *
-	 * @param int[] $survivors One id per person, all sharing the display name
-	 */
+	//Hand the name to someone who still plays instead of an account that stopped.
+	//The holder is only displaced when it has been silent for ABANDONED_AFTER_DAYS
+	//AND another survivor is in regular use, so a veteran on a long break keeps the
+	//name against a fresh account that played a few puzzles.
+	/** @param int[] $survivors One id per person, all sharing the display name */
 	private function preferCurrentUser(array $survivors, int $keep): int
 	{
 		if ($this->daysSinceLastActivity($keep) <= self::ABANDONED_AFTER_DAYS)
@@ -448,15 +417,11 @@ final class AddDisplayName extends AbstractMigration
 		return (int) $challengers[0]; // oldest of the current players
 	}
 
-	/**
-	 * Among ids belonging to the SAME person (same email), keep the account the
-	 * person actually plays on. If exactly one account is "actively used" (recent
-	 * sustained activity) that one wins; otherwise keep the MAIN account (the one
-	 * with the MOST attempts), ties going to the most recently used.
-	 *
-	 * @param int[] $ids
-	 * @return int
-	 */
+	//Among ids belonging to the SAME person (same email), keep the account the
+	//person actually plays on. If exactly one account is "actively used" (recent
+	//sustained activity) that one wins; otherwise keep the MAIN account (the one
+	//with the MOST attempts), ties going to the most recently used.
+	/** @param int[] $ids */
 	private function pickMainAmong(array $ids): int
 	{
 		$active = array_filter($ids, fn($id) => $this->isActivelyUsed($id));
@@ -481,19 +446,15 @@ final class AddDisplayName extends AbstractMigration
 		return $best;
 	}
 
-	/**
-	 * Whether an account is "actively used" now: at least RECENT_ACTIVITY_MIN_DAYS
-	 * distinct activity days within RECENT_ACTIVITY_WINDOW_DAYS.
-	 */
+	//Whether an account is "actively used" now: at least RECENT_ACTIVITY_MIN_DAYS
+	//distinct activity days within RECENT_ACTIVITY_WINDOW_DAYS.
 	private function isActivelyUsed(int $id): bool
 	{
 		return $this->recentActivityDays($id) >= self::RECENT_ACTIVITY_MIN_DAYS;
 	}
 
-	/**
-	 * Number of distinct days the account had any activity within the recent
-	 * window (attempts, statuses, comments, time-mode sessions, day records).
-	 */
+	//Number of distinct days the account had any activity within the recent
+	//window (attempts, statuses, comments, time-mode sessions, day records).
 	private function recentActivityDays(int $id): int
 	{
 		$cutoff = date('Y-m-d 00:00:00', time() - self::RECENT_ACTIVITY_WINDOW_DAYS * 86400);
@@ -508,13 +469,9 @@ final class AddDisplayName extends AbstractMigration
 		return (int) $row['days'];
 	}
 
-	/**
-	 * Among candidate ids (different people), apply the alive/seniority/least-dead
-	 * rule. `id` ordering is the source of "older" (lower id = older).
-	 *
-	 * @param int[] $ids
-	 * @return int
-	 */
+	//Among candidate ids (different people), apply the alive/seniority/least-dead
+	//rule. `id` ordering is the source of "older" (lower id = older).
+	/** @param int[] $ids */
 	private function pickAmongSurvivors(array $ids): int
 	{
 		sort($ids); // ascending: $ids[0] is the oldest (lowest id)
@@ -539,14 +496,11 @@ final class AddDisplayName extends AbstractMigration
 		return $best;
 	}
 
-	/**
-	 * Whether an account is "alive": has >= $attemptThreshold attempts, OR had any
-	 * activity within $activityWindowDays of the migration run.
-	 *
-	 * The `solved` count is intentionally NOT used - it is inflated by time-mode
-	 * and denormalized status transitions, so it is unreliable. `tsumego_attempt`
-	 * count is a better volume signal.
-	 */
+	//Whether an account is "alive": has >= $attemptThreshold attempts, OR had any
+	//activity within $activityWindowDays of the migration run.
+	//The `solved` count is intentionally NOT used - it is inflated by time-mode
+	//and denormalized status transitions, so it is unreliable. `tsumego_attempt`
+	//count is a better volume signal.
 	private function isAlive(int $id): bool
 	{
 		$attemptThreshold = 200;
@@ -566,40 +520,32 @@ final class AddDisplayName extends AbstractMigration
 		return (time() - $lastTime) <= $activityWindowDays * 86400;
 	}
 
-	/**
-	 * Number of tsumego_attempt rows for a user (distinct problems attempted in
-	 * regular mode). Activity-volume signal for the dedup policy.
-	 */
+	//Number of tsumego_attempt rows for a user (distinct problems attempted in
+	//regular mode). Activity-volume signal for the dedup policy.
 	private function attemptCount(int $id): int
 	{
 		$row = $this->fetchRow("SELECT COUNT(*) AS c FROM tsumego_attempt WHERE user_id = $id");
 		return (int) $row['c'];
 	}
 
-	/**
-	 * Email of a user (used to detect duplicate accounts of the same person).
-	 */
+	//Email of a user (used to detect duplicate accounts of the same person).
 	private function emailOf(int $id): string
 	{
 		$row = $this->fetchRow("SELECT email FROM user WHERE id = $id");
 		return $row['email'] ?? '';
 	}
 
-	/**
-	 * Normalize an email for comparison: lowercase and strip a leading `g__`.
-	 */
+	//Normalize an email for comparison: lowercase and strip a leading `g__`.
 	private function normalizeEmail(string $email): string
 	{
 		$email = strtolower(trim($email));
 		return str_starts_with($email, 'g__') ? substr($email, 3) : $email;
 	}
 
-	/**
-	 * Local part of an address with everything but letters and digits removed, so
-	 * two addresses of one person can be compared: "victor.diaz-caballero@" and
-	 * "victordiazcaballerogo@" become "victordiazcaballero" and
-	 * "victordiazcaballerogo".
-	 */
+	//Local part of an address with everything but letters and digits removed, so
+	//two addresses of one person can be compared: "victor.diaz-caballero@" and
+	//"victordiazcaballerogo@" become "victordiazcaballero" and
+	//"victordiazcaballerogo".
 	private function emailCore(string $email): string
 	{
 		$email = $this->normalizeEmail($email);
@@ -610,12 +556,10 @@ final class AddDisplayName extends AbstractMigration
 		return (string) preg_replace('/[^a-z0-9]/', '', $localPart);
 	}
 
-	/**
-	 * Whether two address cores belong to the same person: equal, one contained in
-	 * the other, or only a couple of characters apart. Trailing digits are ignored
-	 * ("peterlin741@" against "thepeterlin@") because they are usually a year or a
-	 * counter. Accounts without an address are never treated as the same person.
-	 */
+	//Whether two address cores belong to the same person: equal, one contained in
+	//the other, or only a couple of characters apart. Trailing digits are ignored
+	//("peterlin741@" against "thepeterlin@") because they are usually a year or a
+	//counter. Accounts without an address are never treated as the same person.
 	private function isSamePersonEmail(string $first, string $second): bool
 	{
 		if ($first === '' || $second === '')
@@ -641,9 +585,7 @@ final class AddDisplayName extends AbstractMigration
 			&& levenshtein($first, $second) <= self::SAME_PERSON_MAX_EDIT_DISTANCE;
 	}
 
-	/**
-	 * Days since the account's last activity; PHP_INT_MAX when it never had any.
-	 */
+	//Days since the account's last activity; PHP_INT_MAX when it never had any.
 	private function daysSinceLastActivity(int $id): int
 	{
 		$last = $this->lastActivityOf($id);
@@ -653,19 +595,15 @@ final class AddDisplayName extends AbstractMigration
 		return (int) floor((time() - strtotime($last)) / 86400);
 	}
 
-	/**
-	 * Whether the account is gone: soft deleted, or with a deletion requested by email.
-	 */
+	//Whether the account is gone: soft deleted, or with a deletion requested by email.
 	private function isDeletionRequested(int $id): bool
 	{
 		$row = $this->fetchRow("SELECT deleted, deletion_token FROM user WHERE id = $id");
 		return !empty($row['deleted']) || !empty($row['deletion_token']);
 	}
 
-	/**
-	 * Last activity of a user as a comparable 'YYYY-MM-DD HH:MM:SS' string.
-	 * Users with no activity return the '1970-01-01' sentinel.
-	 */
+	//Last activity of a user as a comparable 'YYYY-MM-DD HH:MM:SS' string.
+	//Users with no activity return the '1970-01-01' sentinel.
 	private function lastActivityOf(int $id): string
 	{
 		$row = $this->fetchRow("
@@ -680,16 +618,12 @@ final class AddDisplayName extends AbstractMigration
 		return $row['activity'];
 	}
 
-	/**
-	 * This migration is IRREVERSIBLE.
-	 *
-	 * Reasons:
-	 * - picture column was cleared (old filenames are gone)
-	 * - g__ prefixes stripped from email/external_id cannot be accurately restored
-	 * - Restoring would break functionality anyway
-	 *
-	 * To "undo": restore from backup before this migration.
-	 */
+	//This migration is IRREVERSIBLE.
+	//Reasons:
+	//- picture column was cleared (old filenames are gone)
+	//- g__ prefixes stripped from email/external_id cannot be accurately restored
+	//- Restoring would break functionality anyway
+	//To "undo": restore from backup before this migration.
 	public function down(): void
 	{
 		throw new \RuntimeException(

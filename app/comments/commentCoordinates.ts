@@ -1,14 +1,11 @@
-/**
- * Comments keep their coordinates and colours as they are in the stored SGF,
- * without the transformation (corner, rotation, colour swap) the board is
- * shown with. The text is converted when it is shown and when it is saved.
- *
- * The server applies the same rewrite when a new SGF version reorients the
- * problem (App\Utility\CommentCoordinates); keep the two in sync.
- */
+//Comments keep their coordinates and colours as they are in the stored SGF,
+//without the transformation (corner, rotation, colour swap) the board is
+//shown with. The text is converted when it is shown and when it is saved.
+//The server applies the same rewrite when a new SGF version reorients the
+//problem (App\Utility\CommentCoordinates); keep the two in sync.
 import { COORD_RE, LINK_RE } from './coordParser';
 
-/** Maps a coordinate label such as "D4"; null keeps the text as written. */
+//Maps a coordinate label such as "D4"; null keeps the text as written.
 export type CoordinateMapping = (label: string) => string | null;
 
 const COLOR_WORD_RE = /\b(black|white)\b/gi;
@@ -27,10 +24,8 @@ function swapColorWord(word: string): string
 	return swapped;
 }
 
-/**
- * Swaps black and white: the words, a standalone B or W ("B kills"), and a
- * b/w letter marking the colour of a coordinate ("b E2", "W-T19", "bL18").
- */
+//Swaps black and white: the words, a standalone B or W ("B kills"), and a
+//b/w letter marking the colour of a coordinate ("b E2", "W-T19", "bL18").
 export function swapColors(text: string): string
 {
 	return text
@@ -47,10 +42,8 @@ export function swapColors(text: string): string
 		});
 }
 
-/**
- * Rewrites every coordinate in the text through `mapping` (keeping the case
- * of its letter) and optionally swaps the colours. Links stay as written.
- */
+//Rewrites every coordinate in the text through `mapping` (keeping the case
+//of its letter) and optionally swaps the colours. Links stay as written.
 export function transformCommentText(text: string, mapping: CoordinateMapping, invertColors: boolean): string
 {
 	// split() keeps the links, the captured separators, at the odd indexes

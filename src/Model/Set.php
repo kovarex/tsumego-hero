@@ -2,9 +2,7 @@
 
 use App\Utility\Util;
 
-/**
- * @phpstan-import-type SetRow from \App\Utility\RowTypes
- */
+/** @phpstan-import-type SetRow from \App\Utility\RowTypes */
 class Set extends AppModel
 {
 	public function __construct(mixed $id = false, ?string $table = null, ?string $ds = null)
@@ -15,36 +13,28 @@ class Set extends AppModel
 
 	public $hasMany = ['SetConnection'];
 
-	/**
-	 * A collection the site publishes: public, owned by nobody and not in the trash. A collection
-	 * a player assembled and a sandbox build are not site content, so they do not count wherever
-	 * the site's own collections are meant.
-	 *
-	 * @param SetRow $set Unwrapped set row
-	 */
+	//A collection the site publishes: public, owned by nobody and not in the trash. A collection
+	//a player assembled and a sandbox build are not site content, so they do not count wherever
+	//the site's own collections are meant.
+	/** @param SetRow $set Unwrapped set row */
 	public static function isOfficial(array $set): bool
 	{
 		return (int) $set['public'] === 1 && ($set['user_id'] ?? null) === null && empty($set['deleted']);
 	}
 
-	/**
-	 * The same rule as isOfficial() as an SQL condition on the given table alias, for hand-written
-	 * queries and Cake's find conditions alike. A query over the site's collections uses this, never
-	 * a bare public flag, which a shared player collection carries too.
-	 */
+	//The same rule as isOfficial() as an SQL condition on the given table alias, for hand-written
+	//queries and Cake's find conditions alike. A query over the site's collections uses this, never
+	//a bare public flag, which a shared player collection carries too.
 	public static function officialCondition(string $alias = 'set'): string
 	{
 		return '`' . $alias . '`.public = 1 AND `' . $alias . '`.user_id IS NULL AND `' . $alias . '`.deleted IS NULL';
 	}
 
-	/**
-	 * The address of a collection. The pages of a long collection are numbered from one and its
-	 * first page is the collection itself, so a link to page one carries no number.
-	 *
-	 * @param int|string $id Collection id, or the readable address of a rank or tag page
-	 * @param int $partition Page of the collection, counting from one
-	 * @param bool $full Prefix the address with the site's own domain
-	 */
+	//The address of a collection. The pages of a long collection are numbered from one and its
+	//first page is the collection itself, so a link to page one carries no number.
+	//$id: Collection id, or the readable address of a rank or tag page
+	//$partition: Page of the collection, counting from one
+	//$full: Prefix the address with the site's own domain
 	public static function url(int|string $id, int $partition = 1, bool $full = false): string
 	{
 		$url = ['controller' => 'sets', 'action' => 'view', 'id' => $id];
@@ -60,13 +50,10 @@ class Set extends AppModel
 			. " WHERE set_connection.set_id = ?", [$setID])[0]["total"];
 	}
 
-	/**
-	 * How many collections of a player a viewer may open: the shared ones, and all of them for the
-	 * player whose collections they are. A player who has none is not offered a page that would be
-	 * empty.
-	 *
-	 * @param bool $includePrivate The viewer is the owner or an admin
-	 */
+	//How many collections of a player a viewer may open: the shared ones, and all of them for the
+	//player whose collections they are. A player who has none is not offered a page that would be
+	//empty.
+	//$includePrivate: The viewer is the owner or an admin
 	public static function countVisibleTo(int $userId, bool $includePrivate): int
 	{
 		$condition = $includePrivate ? '' : ' AND public = 1';

@@ -20,10 +20,6 @@
  * @license https://opensource.org/licenses/mit-license.php MIT License
  */
 
-/**
- * Application helper
- *
- * Add your application-wide methods in the class below, your helpers
- * will inherit them.
- */
+//Application helper
+//Add your application-wide methods in the class below, your helpers will inherit them.
 class AppHelper extends Helper {}

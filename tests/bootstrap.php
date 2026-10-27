@@ -1,8 +1,6 @@
 <?php
 
-/**
- * Bootstrap for PHPUnit
- */
+//Bootstrap for PHPUnit
 
 use Composer\InstalledVersions;
 

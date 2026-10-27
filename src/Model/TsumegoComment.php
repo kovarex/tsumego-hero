@@ -1,24 +1,18 @@
 <?php
 
-/**
- * TsumegoComment Model
- *
- * Represents a comment on a tsumego problem, optionally linked to a TsumegoIssue.
- *
- * Table: tsumego_comment
- * Columns:
- *   - id (INT, PK, AUTO_INCREMENT)
- *   - tsumego_id (INT, FK -> tsumego)
- *   - tsumego_issue_id (INT NULL, FK -> tsumego_issue) - NULL means standalone comment
- *   - message (VARCHAR(2048))
- *   - created (DATETIME)
- *   - user_id (INT, FK -> user)
- *   - position (VARCHAR(300) NULL) - the node the comment is anchored to, see besogo's makeCommentPosition
- *   - deleted (DATETIME NULL) - when the comment was deleted, NULL when it is not
- *
- * The coordinates in message and position are those of the current SGF version, without the
- * transformation the board is shown with (see App\Utility\CommentCoordinates).
- */
+//Represents a comment on a tsumego problem, optionally linked to a TsumegoIssue.
+//Table: tsumego_comment
+//Columns:
+//  - id (INT, PK, AUTO_INCREMENT)
+//  - tsumego_id (INT, FK -> tsumego)
+//  - tsumego_issue_id (INT NULL, FK -> tsumego_issue) - NULL means standalone comment
+//  - message (VARCHAR(2048))
+//  - created (DATETIME)
+//  - user_id (INT, FK -> user)
+//  - position (VARCHAR(300) NULL) - the node the comment is anchored to, see besogo's makeCommentPosition
+//  - deleted (DATETIME NULL) - when the comment was deleted, NULL when it is not
+//The coordinates in message and position are those of the current SGF version, without the
+//transformation the board is shown with (see App\Utility\CommentCoordinates).
 class TsumegoComment extends AppModel
 {
 	public $useTable = 'tsumego_comment';

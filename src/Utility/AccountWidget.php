@@ -88,10 +88,8 @@ class AccountWidget
 			<div id="modeSelector" class="' . $modeSelectorClass . '" onclick="accountWidget.switchBarInMenu();"></div>';
 	}
 
-	/**
-	 * The number of unread messages, hidden while there are none. The messages page updates
-	 * every badge on the page (data-unread-messages) once it marks a conversation read.
-	 */
+	//The number of unread messages, hidden while there are none. The messages page updates
+	//every badge on the page (data-unread-messages) once it marks a conversation read.
 	public static function unreadMessagesBadge(int $unreadMessageCount): string
 	{
 		return '<span class="messages-unread-count" data-unread-messages title="Unread messages"' . ($unreadMessageCount ? '' : ' hidden') . '>'

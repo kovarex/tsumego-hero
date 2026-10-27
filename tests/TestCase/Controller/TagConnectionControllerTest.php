@@ -26,7 +26,7 @@ class TagConnectionControllerTest extends IntegrationTestCase
 		$this->assertResponseCode(403);
 	}
 
-	/** Tags are hints, so only a player who solved the problem adds them (forum#94) */
+	//Tags are hints, so only a player who solved the problem adds them (forum#94)
 	public function testAddRequiresTheProblemSolved()
 	{
 		$context = new ContextPreparator([

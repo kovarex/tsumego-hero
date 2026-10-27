@@ -8,9 +8,7 @@ use App\Utility\Util;
 
 class PreferencesTest extends CakeTestCase
 {
-	/**
-	 * Test that preferences can be set and retrieved for guests
-	 */
+	//Test that preferences can be set and retrieved for guests
 	public function testGuestCanSetAndGetPreference()
 	{
 		// Arrange - ensure no user is logged in
@@ -24,9 +22,7 @@ class PreferencesTest extends CakeTestCase
 		$this->assertEquals('test_value', $result);
 	}
 
-	/**
-	 * Test that preferences return default value when not set
-	 */
+	//Test that preferences return default value when not set
 	public function testReturnsDefaultWhenNotSet()
 	{
 		// Arrange - ensure no user is logged in
@@ -39,9 +35,7 @@ class PreferencesTest extends CakeTestCase
 		$this->assertEquals('default_value', $result);
 	}
 
-	/**
-	 * Test that preferences can be set and retrieved for logged-in users
-	 */
+	//Test that preferences can be set and retrieved for logged-in users
 	public function testLoggedInUserCanSetAndGetPreference()
 	{
 		$context = new ContextPreparator();
@@ -55,9 +49,7 @@ class PreferencesTest extends CakeTestCase
 		$this->assertEquals('logged_in_value', $result);
 	}
 
-	/**
-	 * Test that preferences persist in database for logged-in users
-	 */
+	//Test that preferences persist in database for logged-in users
 	public function testLoggedInUserPreferencesSavedToDatabase()
 	{
 		$context = new ContextPreparator();
@@ -72,9 +64,7 @@ class PreferencesTest extends CakeTestCase
 		$this->assertSame('tags', ClassRegistry::init('User')->findById($userId)['User']['collection_grouping']);
 	}
 
-	/**
-	 * Test that guest preferences use internal storage (cookies set via Util::setCookie)
-	 */
+	//Test that guest preferences use internal storage (cookies set via Util::setCookie)
 	public function testGuestPreferencesUseInternalStorage()
 	{
 		// Arrange - ensure no user is logged in
@@ -88,9 +78,7 @@ class PreferencesTest extends CakeTestCase
 		$this->assertEquals('cookie_value', $result);
 	}
 
-	/**
-	 * Test merging guest preferences to database on login
-	 */
+	//Test merging guest preferences to database on login
 	public function testMergeGuestPreferencesOnLogin()
 	{
 		// Arrange - set preferences as guest
@@ -111,16 +99,12 @@ class PreferencesTest extends CakeTestCase
 		$this->assertEquals(150, $user['collection_size']);
 	}
 
-	/**
-	 * Test that guest preferences are NOT accessible via unprefixed cookie keys
-	 *
-	 * This is a regression test for a bug where:
-	 * - Guest cookies are stored as "loggedOff_query"
-	 * - But get() checks $_COOKIE[$key] directly (e.g., "query")
-	 * - So guest preferences from cookies would never be found
-	 *
-	 * Expected behavior: get() should check "loggedOff_" prefixed cookie for guests
-	 */
+	//Test that guest preferences are NOT accessible via unprefixed cookie keys
+	//This is a regression test for a bug where:
+	//- Guest cookies are stored as "loggedOff_query"
+	//- But get() checks $_COOKIE[$key] directly (e.g., "query")
+	//- So guest preferences from cookies would never be found
+	//Expected behavior: get() should check "loggedOff_" prefixed cookie for guests
 	public function testGuestCookiePrefixIsRespected()
 	{
 		// Arrange - ensure no user is logged in
@@ -137,14 +121,11 @@ class PreferencesTest extends CakeTestCase
 		$this->assertEquals('cookie_value', $result, 'get() should find guest preference from "loggedOff_query" cookie');
 	}
 
-	/**
-	 * Test that unprefixed cookie override works for logged-in users
-	 *
-	 * This tests the "cookie override" feature where:
-	 * - Logged-in users have DB preferences
-	 * - But unprefixed cookies (set by layout.ctp JS) can temporarily override them
-	 * - This is used for filters that change on each request
-	 */
+	//Test that unprefixed cookie override works for logged-in users
+	//This tests the "cookie override" feature where:
+	//- Logged-in users have DB preferences
+	//- But unprefixed cookies (set by layout.ctp JS) can temporarily override them
+	//- This is used for filters that change on each request
 	public function testUnprefixedCookieOverrideForLoggedInUser()
 	{
 		$context = new ContextPreparator();
@@ -160,18 +141,14 @@ class PreferencesTest extends CakeTestCase
 		$this->assertEquals('override_value', $result, 'Unprefixed cookie should override DB preference for logged-in users');
 	}
 
-	/**
-	 * Test collection_size type handling for both guests and logged-in users
-	 *
-	 * This documents the current behavior:
-	 * - Guests: Preferences returns string (from cookie)
-	 * - Logged-in users: Preferences returns int when loaded from the DB, the stored value after a set
-	 * - Consumers (TsumegoFilters) must handle both by casting to (int)
-	 *
-	 * This is acceptable because:
-	 * 1. TsumegoFilters already does (int) cast
-	 * 2. Both string "150" and int 150 work fine when cast
-	 */
+	//Test collection_size type handling for both guests and logged-in users
+	//This documents the current behavior:
+	//- Guests: Preferences returns string (from cookie)
+	//- Logged-in users: Preferences returns int when loaded from the DB, the stored value after a set
+	//- Consumers (TsumegoFilters) must handle both by casting to (int)
+	//This is acceptable because:
+	//1. TsumegoFilters already does (int) cast
+	//2. Both string "150" and int 150 work fine when cast
 	public function testCollectionSizeTypeHandling()
 	{
 		$context = new ContextPreparator();
@@ -201,9 +178,7 @@ class PreferencesTest extends CakeTestCase
 		$this->assertEquals(150, (int) $guestResult, 'Guest result can be cast to int');
 	}
 
-	/**
-	 * TsumegoFilters stores every filter on every page, a value that didn't change isn't written.
-	 */
+	//TsumegoFilters stores every filter on every page, a value that didn't change isn't written.
 	public function testUnchangedPreferenceIsNotWritten()
 	{
 		$context = new ContextPreparator(['user' => ['query' => 'tags']]);

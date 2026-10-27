@@ -71,11 +71,9 @@ class AchievementsControllerTest extends IntegrationTestCase
 		$this->assertStringNotContainsString('progress__fill', $result);
 	}
 
-	/**
-	 * Every achievement has exactly one card, so the completion total counts each
-	 * unlocked achievement once - earning the repeatable one again does not change
-	 * how many achievements are completed.
-	 */
+	//Every achievement has exactly one card, so the completion total counts each
+	//unlocked achievement once - earning the repeatable one again does not change
+	//how many achievements are completed.
 	public function testRepeatedAchievementsCountOnceInCompletionTotal()
 	{
 		new ContextPreparator([
@@ -99,10 +97,8 @@ class AchievementsControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('>3x<', $result);
 	}
 
-	/**
-	 * The achievement detail page explains the extra completions by showing how
-	 * often the repeatable achievement was earned.
-	 */
+	//The achievement detail page explains the extra completions by showing how
+	//often the repeatable achievement was earned.
 	public function testAchievementDetailShowsNumberOfEarnings()
 	{
 		new ContextPreparator([
@@ -122,9 +118,7 @@ class AchievementsControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('>3x<', $result);
 	}
 
-	/**
-	 * An achievement earned once shows no repeat indicator.
-	 */
+	//An achievement earned once shows no repeat indicator.
 	public function testAchievementEarnedOnceHasNoRepeatIndicator()
 	{
 		new ContextPreparator([

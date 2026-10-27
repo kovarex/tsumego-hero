@@ -2,9 +2,7 @@
 
 namespace App\Utility;
 
-/**
- * A single row in a user's contributions timeline.
- */
+//A single row in a user's contributions timeline.
 final readonly class ContributionRow
 {
 	public function __construct(

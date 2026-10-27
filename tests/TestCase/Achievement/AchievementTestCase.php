@@ -38,9 +38,8 @@ abstract class AchievementTestCase extends IntegrationTestCase
 		$this->assertEquals(0, $exists, $achievementId->name . ' should NOT be unlocked');
 	}
 
+	//Get all unlocked achievement IDs for a user
 	/**
-	 * Get all unlocked achievement IDs for a user
-	 *
 	 * @param int $userId User ID
 	 * @return array Achievement IDs
 	 */
@@ -55,12 +54,9 @@ abstract class AchievementTestCase extends IntegrationTestCase
 		return array_values($achievements);
 	}
 
-	/**
-	 * Trigger achievement check (simulates what happens after login)
-	 *
-	 * This sets the 'initialLoading' cookie and makes a request,
-	 * which causes AppController::beforeFilter to check achievements.
-	 */
+	//Trigger achievement check (simulates what happens after login)
+	//This sets the 'initialLoading' cookie and makes a request,
+	//which causes AppController::beforeFilter to check achievements.
 	protected function triggerAchievementCheck()
 	{
 		// Set the cookie that triggers achievement checking
@@ -74,18 +70,13 @@ abstract class AchievementTestCase extends IntegrationTestCase
 		$this->get('/sites/index');
 	}
 
-	/**
-	 * Trigger set completion achievement check
-	 *
-	 * This simulates having completed N sets by inserting achievement_condition
-	 * and then calling the achievement check method directly.
-	 *
-	 * Note: This is semi-black-box - we directly invoke the check method
-	 * since set completion achievements are checked immediately when completing
-	 * a set, not on every page load.
-	 *
-	 * @param int $completedSetsCount Number of completed sets
-	 */
+	//Trigger set completion achievement check
+	//This simulates having completed N sets by inserting achievement_condition
+	//and then calling the achievement check method directly.
+	//Note: This is semi-black-box - we directly invoke the check method
+	//since set completion achievements are checked immediately when completing
+	//a set, not on every page load.
+	/** @param int $completedSetsCount Number of completed sets */
 	protected function triggerSetCompletionAchievementCheck($completedSetsCount)
 	{
 		// Save set completion count to achievement_condition (simulates completing sets)
@@ -94,16 +85,14 @@ abstract class AchievementTestCase extends IntegrationTestCase
 		new AchievementChecker()->checkSetCompletedAchievements()->finalize();
 	}
 
+	//Create a set with multiple tsumegos + SetConnection records
+	//KEY DISCOVERY: TsumegoUtil::collectTsumegosFromSet() requires SetConnection records!
+	//Without them, the method returns empty array and achievements don't unlock.
+	//$public: Set visibility (1 = public)
+	//$userId: Owner of the collection (null = the site's own collection)
 	/**
-	 * Create a set with multiple tsumegos + SetConnection records
-	 *
-	 * KEY DISCOVERY: TsumegoUtil::collectTsumegosFromSet() requires SetConnection records!
-	 * Without them, the method returns empty array and achievements don't unlock.
-	 *
 	 * @param int $rating Set difficulty rating
 	 * @param int $count Number of tsumegos to create
-	 * @param int $public Set visibility (1 = public)
-	 * @param int|null $userId Owner of the collection (null = the site's own collection)
 	 * @return int Created set ID
 	 */
 	protected function createSetWithTsumegosAndConnections($rating, $count, int $public = 1, ?int $userId = null)

@@ -3,12 +3,9 @@
 use App\Utility\FakeGoogleTokenVerifier;
 use App\Utility\GoogleTokenVerifier;
 
-/**
- * Tests for Google Sign-In functionality.
- *
- * Uses FakeGoogleTokenVerifier to simulate Google OAuth without network calls.
- * Uses ContextPreparator to ensure clean database state for each test.
- */
+//Tests for Google Sign-In functionality.
+//Uses FakeGoogleTokenVerifier to simulate Google OAuth without network calls.
+//Uses ContextPreparator to ensure clean database state for each test.
 class GoogleSignInTest extends IntegrationTestCase
 {
 	private const CSRF_TOKEN = 'test-csrf-token';
@@ -31,24 +28,19 @@ class GoogleSignInTest extends IntegrationTestCase
 		parent::tearDown();
 	}
 
-	/**
-	 * Run the sign-in action with a credential and the g_csrf_token cookie and
-	 * post field that Google Sign-In sends and the CSRF check compares.
-	 *
-	 * @param string $credential The credential token to post
-	 * @param string $csrfCookie The value of the g_csrf_token cookie
-	 */
+	//Run the sign-in action with a credential and the g_csrf_token cookie and
+	//post field that Google Sign-In sends and the CSRF check compares.
+	//$credential: The credential token to post
+	//$csrfCookie: The value of the g_csrf_token cookie
 	private function googleSignIn(string $credential, string $csrfCookie = self::CSRF_TOKEN): void
 	{
 		$_COOKIE['g_csrf_token'] = $csrfCookie;
 		$this->post('/users/googlesignin', ['credential' => $credential, 'g_csrf_token' => self::CSRF_TOKEN]);
 	}
 
-	/**
-	 * Helper to create a Google user (with google_oauth password_hash).
-	 * Uses ContextPreparator for clean state, then creates Google user manually.
-	 * Note: Google users have NULL name (they can't use password login).
-	 */
+	//Helper to create a Google user (with google_oauth password_hash).
+	//Uses ContextPreparator for clean state, then creates Google user manually.
+	//Note: Google users have NULL name (they can't use password login).
 	private function createGoogleUser(array $data): array
 	{
 		$defaults = [
@@ -63,10 +55,7 @@ class GoogleSignInTest extends IntegrationTestCase
 		return $User->read()['User'];
 	}
 
-	/**
-	 * Test that a Google name longer than the column is shortened and the player
-	 * is asked to pick their own name.
-	 */
+	//Test that a Google name longer than the column is shortened and the player is asked to pick their own name.
 	public function testNameLongerThanTheColumnIsShortened(): void
 	{
 		new ContextPreparator(['user' => null]);
@@ -85,11 +74,9 @@ class GoogleSignInTest extends IntegrationTestCase
 		$this->assertEquals(true, $user['User']['needs_display_name_change']);
 	}
 
-	/**
-	 * A name Google brings with an emoji loses the character the forum cannot store. What is
-	 * left is checked for uniqueness like any other name, so the account cannot take a name an
-	 * existing account already has, and the player is asked to pick their own.
-	 */
+	//A name Google brings with an emoji loses the character the forum cannot store. What is
+	//left is checked for uniqueness like any other name, so the account cannot take a name an
+	//existing account already has, and the player is asked to pick their own.
 	public function testNameWithAnEmojiLosesItAndCannotTakeAnExistingName(): void
 	{
 		new ContextPreparator(['user' => ['display_name' => 'Player']]);
@@ -107,9 +94,7 @@ class GoogleSignInTest extends IntegrationTestCase
 		$this->assertEquals(true, $user['User']['needs_display_name_change']);
 	}
 
-	/**
-	 * Test that new Google user is created with correct data.
-	 */
+	//Test that new Google user is created with correct data.
 	public function testNewGoogleUserCreated(): void
 	{
 		// Clean DB state
@@ -139,10 +124,7 @@ class GoogleSignInTest extends IntegrationTestCase
 		$this->assertSame(User::AVATAR_GOOGLE, (int) $user['User']['avatar_setting_id']);
 	}
 
-	/**
-	 * A sign in that brings the first picture to an account that has none makes it the
-	 * avatar of that account.
-	 */
+	//A sign in that brings the first picture to an account that has none makes it the avatar of that account.
 	public function testSignInWithAPictureStartsShowingIt(): void
 	{
 		new ContextPreparator(['user' => null]);
@@ -168,9 +150,7 @@ class GoogleSignInTest extends IntegrationTestCase
 		$this->assertSame(User::AVATAR_GOOGLE, (int) $user['User']['avatar_setting_id']);
 	}
 
-	/**
-	 * A picture that only changed leaves the avatar the player picked alone.
-	 */
+	//A picture that only changed leaves the avatar the player picked alone.
 	public function testSignInWithAChangedPictureKeepsThePickedAvatar(): void
 	{
 		new ContextPreparator(['user' => null]);
@@ -197,9 +177,7 @@ class GoogleSignInTest extends IntegrationTestCase
 		$this->assertSame(User::AVATAR_GRAVATAR, (int) $user['User']['avatar_setting_id']);
 	}
 
-	/**
-	 * Test that existing Google user is logged in (not duplicated).
-	 */
+	//Test that existing Google user is logged in (not duplicated).
 	public function testExistingGoogleUserLogin(): void
 	{
 		// Clean DB state
@@ -234,9 +212,7 @@ class GoogleSignInTest extends IntegrationTestCase
 		$this->assertEquals('https://new-picture.jpg', $updatedUser['User']['picture']);
 	}
 
-	/**
-	 * Test that the picture from a Google sign-in ends up in the comments of that player.
-	 */
+	//Test that the picture from a Google sign-in ends up in the comments of that player.
 	public function testCommentBySignedInGoogleUserShowsTheirGooglePicture(): void
 	{
 		$context = new ContextPreparator(['tsumego' => ['set_order' => 1, 'status' => 'S']]);
@@ -264,9 +240,7 @@ class GoogleSignInTest extends IntegrationTestCase
 		$this->assertSame('https://lh3.googleusercontent.com/a/photo=s48', $body['user_avatar_url']);
 	}
 
-	/**
-	 * Test that email is updated on login if changed in Google.
-	 */
+	//Test that email is updated on login if changed in Google.
 	public function testEmailUpdatedOnLogin(): void
 	{
 		// Clean DB state
@@ -292,9 +266,7 @@ class GoogleSignInTest extends IntegrationTestCase
 		$this->assertEquals('new-email@gmail.com', $updatedUser['User']['email'], 'Email should be updated on login');
 	}
 
-	/**
-	 * Test that name collision is handled with unique suffix.
-	 */
+	//Test that name collision is handled with unique suffix.
 	public function testNameCollisionHandledWithSuffix(): void
 	{
 		// Clean DB state
@@ -330,9 +302,7 @@ class GoogleSignInTest extends IntegrationTestCase
 		$this->assertEquals('TestUser (2)', $newUser['User']['display_name']);
 	}
 
-	/**
-	 * Test that invalid token does not create user.
-	 */
+	//Test that invalid token does not create user.
 	public function testInvalidTokenNoUserCreated(): void
 	{
 		// Clean DB state
@@ -358,9 +328,7 @@ class GoogleSignInTest extends IntegrationTestCase
 		$this->assertEquals($countBefore, $countAfter, 'No new Google user should be created with invalid token');
 	}
 
-	/**
-	 * Test that picture URL is stored directly (not downloaded).
-	 */
+	//Test that picture URL is stored directly (not downloaded).
 	public function testPictureStoredAsUrl(): void
 	{
 		// Clean DB state
@@ -386,9 +354,7 @@ class GoogleSignInTest extends IntegrationTestCase
 		$this->assertEquals($googlePictureUrl, $user['User']['picture']);
 	}
 
-	/**
-	 * Test that missing picture is handled gracefully.
-	 */
+	//Test that missing picture is handled gracefully.
 	public function testMissingPictureHandled(): void
 	{
 		// Clean DB state
@@ -416,9 +382,7 @@ class GoogleSignInTest extends IntegrationTestCase
 		);
 	}
 
-	/**
-	 * Test that missing name falls back to "User {last6digits}".
-	 */
+	//Test that missing name falls back to "User {last6digits}".
 	public function testMissingNameUsesSubFallback(): void
 	{
 		// Clean DB state
@@ -443,9 +407,7 @@ class GoogleSignInTest extends IntegrationTestCase
 		$this->assertEquals('User 444444', $user['User']['display_name'], 'Should use last 6 digits of sub');
 	}
 
-	/**
-	 * Test that empty name also falls back to "User {last6digits}".
-	 */
+	//Test that empty name also falls back to "User {last6digits}".
 	public function testEmptyNameUsesSubFallback(): void
 	{
 		// Clean DB state
@@ -470,10 +432,7 @@ class GoogleSignInTest extends IntegrationTestCase
 		$this->assertEquals('User 555555', $user['User']['display_name'], 'Should use last 6 digits of sub');
 	}
 
-	/**
-	 * Test that a request whose g_csrf_token cookie does not match the posted
-	 * one is rejected and creates no account.
-	 */
+	//Test that a request whose g_csrf_token cookie does not match the posted one is rejected and creates no account.
 	public function testMismatchingCsrfTokenCreatesNoUser(): void
 	{
 		// Clean DB state

@@ -8,17 +8,15 @@ interface ProblemButtonProps
 	onToggle: (problem: PickableProblem) => void;
 }
 
-/** A click with a modifier key opens the link the way the browser does, in a new tab or window. */
+//A click with a modifier key opens the link the way the browser does, in a new tab or window.
 function opensElsewhere(event: MouseEvent): boolean
 {
 	return event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || event.button !== 0;
 }
 
-/**
- * A problem button like the ones of a collection page (TsumegoButton::render()): the number, and
- * the board in the tooltip, drawn by previewBoard.js on hover. A click picks the problem or takes
- * it out; a click with Ctrl or the middle button opens the problem in a new tab to look at it.
- */
+//A problem button like the ones of a collection page (TsumegoButton::render()): the number, and
+//the board in the tooltip, drawn by previewBoard.js on hover. A click picks the problem or takes
+//it out; a click with Ctrl or the middle button opens the problem in a new tab to look at it.
 export function ProblemButton({ problem, picked, onToggle }: ProblemButtonProps)
 {
 	return (

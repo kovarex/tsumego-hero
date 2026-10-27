@@ -6,20 +6,14 @@ use App\Utility\CookieFlash;
 use App\Utility\FakePwnedPasswordChecker;
 use App\Utility\PwnedPasswordChecker;
 
-/**
- * A password that already appears in a public breach is refused wherever a password
- * is set: when an account is created, changed and reset.
- */
+//A password that already appears in a public breach is refused wherever a password
+//is set: when an account is created, changed and reset.
 class PwnedPasswordTest extends IntegrationTestCase
 {
-	/**
-	 * The password every fixture account has.
-	 */
+	//The password every fixture account has.
 	private const CURRENT_PASSWORD = 'test';
 
-	/**
-	 * A password the fake list calls breached, and one it does not.
-	 */
+	//A password the fake list calls breached, and one it does not.
 	private const LEAKED = 'password123';
 	private const FRESH = 'lanternQuiet42';
 

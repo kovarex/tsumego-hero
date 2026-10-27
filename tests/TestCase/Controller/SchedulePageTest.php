@@ -7,10 +7,7 @@
  */
 class SchedulePageTest extends IntegrationTestCase
 {
-	/**
-	 * A schedule that starts today publishes straight away, so the button says that
-	 * instead of the neutral label.
-	 */
+	//A schedule that starts today publishes straight away, so the button says that instead of the neutral label.
 	public function testSubmitButtonSaysWhenItPublishesRightAway(): void
 	{
 		new ContextPreparator([

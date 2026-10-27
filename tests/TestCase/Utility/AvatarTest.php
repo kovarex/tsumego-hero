@@ -4,10 +4,8 @@ use App\Utility\Avatar;
 
 class AvatarTest extends CakeTestCase
 {
-	/**
-	 * The drawing is a 5x5 board mirrored down the middle, so 15 of the 25 cells
-	 * are free and every one of them is empty, a black stone or a white stone.
-	 */
+	//The drawing is a 5x5 board mirrored down the middle, so 15 of the 25 cells
+	//are free and every one of them is empty, a black stone or a white stone.
 	public function testPatternIsAWholeBoard()
 	{
 		foreach (['Anna', 'kovarex', 'Gonuzul', 'a name with spaces'] as $name)
@@ -29,11 +27,9 @@ class AvatarTest extends CakeTestCase
 		}
 	}
 
-	/**
-	 * A player recognises a name by the board it draws, so the drawing must not
-	 * change when the code that computes it is refactored: another drawing here
-	 * repaints the avatar of every name in this list.
-	 */
+	//A player recognises a name by the board it draws, so the drawing must not
+	//change when the code that computes it is refactored: another drawing here
+	//repaints the avatar of every name in this list.
 	public function testTheDrawingOfANameNeverChanges()
 	{
 		$this->assertSame('0212010101012102202221112', Avatar::pattern(Avatar::key('Anna')));
@@ -41,10 +37,8 @@ class AvatarTest extends CakeTestCase
 		$this->assertSame('2111221012210122121220102', Avatar::pattern(Avatar::key('Gonuzul')));
 	}
 
-	/**
-	 * A name is whatever the player typed, up to 50 characters of it, so the key
-	 * of that name has to survive being a url segment: hex and short.
-	 */
+	//A name is whatever the player typed, up to 50 characters of it, so the key
+	//of that name has to survive being a url segment: hex and short.
 	public function testTheKeyOfANameSurvivesBeingAUrl()
 	{
 		foreach (['Anna', 'a name with spaces', 'Šíleně žluťoučký', '名字', str_repeat('x', 50)] as $name)
@@ -129,10 +123,8 @@ class AvatarTest extends CakeTestCase
 		}
 	}
 
-	/**
-	 * Several networks drop an svg from a share preview, so the board is drawn as a
-	 * png as well. The drawing stays the same, only the picture of it changes.
-	 */
+	//Several networks drop an svg from a share preview, so the board is drawn as a
+	//png as well. The drawing stays the same, only the picture of it changes.
 	public function testPngIsABoardOfTheRequestedSize()
 	{
 		$png = Avatar::png(Avatar::key('Anna'), 128);
@@ -150,10 +142,8 @@ class AvatarTest extends CakeTestCase
 		$this->assertNotSame(Avatar::png(Avatar::key('Anna')), Avatar::png(Avatar::key('kovarex')));
 	}
 
-	/**
-	 * The two renditions are two pictures of one drawing, so a cell that holds a
-	 * stone in the pattern holds the same stone in the png, in the same place.
-	 */
+	//The two renditions are two pictures of one drawing, so a cell that holds a
+	//stone in the pattern holds the same stone in the png, in the same place.
 	public function testPngDrawsThePatternWhereTheSvgDrawsIt()
 	{
 		$size = 512;
@@ -191,10 +181,8 @@ class AvatarTest extends CakeTestCase
 		}
 	}
 
-	/**
-	 * The frame runs all the way round the playing surface. A frame on two sides
-	 * only reads as a mistake at 24px, where nobody sees which side is missing.
-	 */
+	//The frame runs all the way round the playing surface. A frame on two sides
+	//only reads as a mistake at 24px, where nobody sees which side is missing.
 	public function testPngFramesTheWholeBoard()
 	{
 		$size = 512;

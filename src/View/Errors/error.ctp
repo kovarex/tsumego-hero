@@ -1,9 +1,7 @@
 <?php
-/**
- * Generic Error Page
- * Handles 404, 500, and other HTTP errors
- * Uses the default site layout with full navigation
- */
+//Generic Error Page
+//Handles 404, 500, and other HTTP errors
+//Uses the default site layout with full navigation
 
 // Determine error details based on code
 $code = $this->response->statusCode();

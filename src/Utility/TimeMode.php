@@ -73,12 +73,9 @@ class TimeMode
 		$this->createSessionAttempts($currentTimeSession, array_column(array_slice($relevantTsumegos, 0, TimeModeUtil::$PROBLEM_COUNT), 'id'));
 	}
 
-	/**
-	 * Starts the run of the current player in a challenge: the problems of the challenge in its
-	 * order, each with the time the challenge gives. A player has one run in a challenge.
-	 *
-	 * @param array<string, mixed> $challenge
-	 */
+	//Starts the run of the current player in a challenge: the problems of the challenge in its
+	//order, each with the time the challenge gives. A player has one run in a challenge.
+	/** @param array<string, mixed> $challenge */
 	public function startChallenge(array $challenge): void
 	{
 		$tsumegoIDs = Challenge::problemIDs((int) $challenge['id']);
@@ -102,11 +99,9 @@ class TimeMode
 		ClassRegistry::init('TimeModeSession')->deleteAll(['user_id' => Auth::getUserID(), 'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]);
 	}
 
-	/**
-	 * Makes way for a new run. A run of the time mode left unfinished is thrown away. The run of a
-	 * challenge can't be, since the player knows its problems now and would play them again: it
-	 * ends with the problems left unplayed, which get no points.
-	 */
+	//Makes way for a new run. A run of the time mode left unfinished is thrown away. The run of a
+	//challenge can't be, since the player knows its problems now and would play them again: it
+	//ends with the problems left unplayed, which get no points.
 	private function leaveCurrentSession(): void
 	{
 		$sessionModel = ClassRegistry::init('TimeModeSession');
@@ -121,11 +116,8 @@ class TimeMode
 			self::giveUp($challengeSession);
 	}
 
-	/**
-	 * Ends a run with whatever it has: every problem not played yet counts as skipped.
-	 *
-	 * @param array{TimeModeSession: array<string, mixed>} $session
-	 */
+	//Ends a run with whatever it has: every problem not played yet counts as skipped.
+	/** @param array{TimeModeSession: array<string, mixed>} $session */
 	private static function giveUp(array $session): void
 	{
 		$attemptModel = ClassRegistry::init('TimeModeAttempt');
@@ -191,11 +183,8 @@ class TimeMode
 		return self::getTsumegosInRatingBounds(self::getRatingBounds($timeModeRankID));
 	}
 
-	/**
-	 * The problems the time mode draws from, of the ranks from one to another (both included).
-	 *
-	 * @return array<array{id: int}>
-	 */
+	//The problems the time mode draws from, of the ranks from one to another (both included).
+	/** @return array<array{id: int}> */
 	public static function getTsumegosOfRanks(int $minimumTimeModeRankID, int $maximumTimeModeRankID): array
 	{
 		return self::getTsumegosInRatingBounds(new RatingBounds(
@@ -203,9 +192,7 @@ class TimeMode
 			self::getRatingBounds($maximumTimeModeRankID)->max));
 	}
 
-	/**
-	 * @return array<array{id: int}>
-	 */
+	/** @return array<array{id: int}> */
 	private static function getTsumegosInRatingBounds(RatingBounds $ratingBounds): array
 	{
 		$query = "SELECT DISTINCT tsumego.id as id FROM tsumego JOIN set_connection ON set_connection.tsumego_id = tsumego.id JOIN `set` ON set.id = set_connection.set_id WHERE tsumego.deleted IS NULL AND `set`.included_in_time_mode = TRUE AND " . Set::officialCondition();
@@ -281,7 +268,7 @@ class TimeMode
 		$this->currentOrder++;
 	}
 
-	/** The problem to give up on: the one at the given position, when it is being played. */
+	//The problem to give up on: the one at the given position, when it is being played.
 	private function findAttemptToSkip(int $position): ?array
 	{
 		return ClassRegistry::init('TimeModeAttempt')->find('first', [
@@ -293,13 +280,10 @@ class TimeMode
 			'order' => 'id DESC']);
 	}
 
-	/**
-	 * The problem to present to the player: the one at this position when it is still open,
-	 * and otherwise the first one that follows it. A problem can stay unrecorded behind the
-	 * player, so when nothing from this position on is open, that is what they get to play.
-	 *
-	 * @return int|null the tsumego id to show, or null when there is nothing to play
-	 */
+	//The problem to present to the player: the one at this position when it is still open,
+	//and otherwise the first one that follows it. A problem can stay unrecorded behind the
+	//player, so when nothing from this position on is open, that is what they get to play.
+	//Returns the tsumego id to show, or null when there is nothing to play
 	public function prepareToSolve(int $position): ?int
 	{
 		if (!$this->currentSession)
@@ -313,11 +297,8 @@ class TimeMode
 		return $this->serve($this->findOpenAttemptFrom($position) ?: $this->findOpenAttempt());
 	}
 
-	/**
-	 * The problem to present when no position was asked for: the first one that is still open.
-	 *
-	 * @return int|null the tsumego id to show, or null when there is nothing to play
-	 */
+	//The problem to present when no position was asked for: the first one that is still open.
+	//Returns the tsumego id to show, or null when there is nothing to play
 	public function prepareWhateverIsLeft(): ?int
 	{
 		if (!$this->currentSession)
@@ -326,7 +307,7 @@ class TimeMode
 		return $this->serve($this->findOpenAttempt());
 	}
 
-	/** Starts the clock on the problem to play, or gives up on it when its time ran out. */
+	//Starts the clock on the problem to play, or gives up on it when its time ran out.
 	private function serve(?array $attempt): ?int
 	{
 		$this->secondsToSolve = $this->overallSecondsToSolve;
@@ -362,7 +343,7 @@ class TimeMode
 		return $attempt['tsumego_id'];
 	}
 
-	/** The first problem from this position on that has not been recorded yet. */
+	//The first problem from this position on that has not been recorded yet.
 	private function findOpenAttemptFrom(int $position): ?array
 	{
 		return ClassRegistry::init('TimeModeAttempt')->find('first', [
@@ -373,7 +354,7 @@ class TimeMode
 			'order' => 'TimeModeAttempt.order ASC']);
 	}
 
-	/** The first problem of the session that has not been recorded yet. */
+	//The first problem of the session that has not been recorded yet.
 	private function findOpenAttempt(): ?array
 	{
 		return ClassRegistry::init('TimeModeAttempt')->find('first', [
@@ -383,7 +364,7 @@ class TimeMode
 			'order' => 'id ASC']);
 	}
 
-	/** True while a problem has been played but its result has not been recorded yet. */
+	//True while a problem has been played but its result has not been recorded yet.
 	private function hasAResultOnItsWay(): bool
 	{
 		return (bool) ClassRegistry::init('TimeModeAttempt')->find('count', [
@@ -398,20 +379,16 @@ class TimeMode
 		return $this->servedOrder !== null && $this->servedOrder == $this->overallCount;
 	}
 
-	/**
-	 * The position to show: the problem being presented, or when none is being
-	 * presented the first one that has not been recorded yet.
-	 */
+	//The position to show: the problem being presented, or when none is being
+	//presented the first one that has not been recorded yet.
 	public function currentPosition(): ?int
 	{
 		return $this->servedOrder ?? $this->currentOrder;
 	}
 
-	/**
-	 * True while the session is still being played, so it has no score to show yet.
-	 * The score is computed from the recorded attempts, and the recording of a result
-	 * lags behind the play, so a session can be over and still have attempts queued.
-	 */
+	//True while the session is still being played, so it has no score to show yet.
+	//The score is computed from the recorded attempts, and the recording of a result
+	//lags behind the play, so a session can be over and still have attempts queued.
 	public function hasNoResultYet(int $sessionID): bool
 	{
 		$session = ClassRegistry::init('TimeModeSession')->find('first', [
@@ -440,12 +417,9 @@ class TimeMode
 		return $this->currentSession['TimeModeSession']['id'];
 	}
 
-	/**
-	 * Ends a run whose every problem has its result: sums up the points and decides whether it
-	 * passed, and gets the player back to the level mode.
-	 *
-	 * @param array{TimeModeSession: array<string, mixed>} $session
-	 */
+	//Ends a run whose every problem has its result: sums up the points and decides whether it
+	//passed, and gets the player back to the level mode.
+	/** @param array{TimeModeSession: array<string, mixed>} $session */
 	private static function score(array $session): void
 	{
 		$attempts = ClassRegistry::init('TimeModeAttempt')->find('all', ['conditions'
@@ -491,7 +465,7 @@ class TimeMode
 		return $this->rank['TimeModeRank']['name'];
 	}
 
-	/** What the run is, for the bar of the account: the time mode of a rank, or a challenge. */
+	//What the run is, for the bar of the account: the time mode of a rank, or a challenge.
 	public function getTitle(): string
 	{
 		if ($this->challenge)

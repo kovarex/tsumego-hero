@@ -14,9 +14,7 @@ use App\Utility\CookieFlash;
 class CookieFlashBrowserTest extends CakeTestCase
 {
 	use RetryTrait;
-	/**
-	 * Test that flash message appears after failed login attempt
-	 */
+	//Test that flash message appears after failed login attempt
 	public function testFlashMessageAppearsAfterFailedLogin()
 	{
 		$browser = Browser::instance();
@@ -38,9 +36,7 @@ class CookieFlashBrowserTest extends CakeTestCase
 		$this->assertStringContainsString('Wrong username or password.', $pageSource, 'Flash message should contain error text');
 	}
 
-	/**
-	 * Test that flash message disappears after being displayed once
-	 */
+	//Test that flash message disappears after being displayed once
 	public function testFlashMessageDisappearsAfterOnePageView()
 	{
 		$browser = Browser::instance();
@@ -64,9 +60,7 @@ class CookieFlashBrowserTest extends CakeTestCase
 		$this->assertStringNotContainsString('Wrong username or password.', $pageSource2, 'Flash message should not persist to next page');
 	}
 
-	/**
-	 * Test CookieFlash::render() with different message types
-	 */
+	//Test CookieFlash::render() with different message types
 	public function testFlashMessageTypesRenderWithCorrectCSS()
 	{
 		// This test requires controller support for different flash types
@@ -85,9 +79,7 @@ class CookieFlashBrowserTest extends CakeTestCase
 		$this->assertStringContainsString('alert-error', $pageSource, 'Error flash should have alert-error CSS class');
 	}
 
-	/**
-	 * Clean up after tests
-	 */
+	//Clean up after tests
 	public function tearDown(): void
 	{
 		parent::tearDown();

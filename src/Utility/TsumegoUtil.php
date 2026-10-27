@@ -6,9 +6,7 @@ use ClassRegistry;
 use SetConnection;
 use TsumegoStatus;
 
-/**
- * @phpstan-import-type TsumegoRow from \App\Utility\RowTypes
- */
+/** @phpstan-import-type TsumegoRow from \App\Utility\RowTypes */
 class TsumegoUtil
 {
 	public static function getSetConnectionsWithTitles(int $tsumegoID): array
@@ -60,10 +58,8 @@ class TsumegoUtil
 		return array_values($tsx);
 	}
 
-	/**
-	 * How many problems the set has. The same number as count(collectTsumegosFromSet()),
-	 * but the database counts them, so no tsumego rows are loaded into PHP.
-	 */
+	//How many problems the set has. The same number as count(collectTsumegosFromSet()),
+	//but the database counts them, so no tsumego rows are loaded into PHP.
 	public static function countTsumegosFromSet(int $setID): int
 	{
 		$rows = Util::query(
@@ -96,9 +92,7 @@ class TsumegoUtil
 		return $status == TsumegoStatus::$SOLVED || $status == TsumegoStatus::$MASTERED || $status == TsumegoStatus::$REVIEW;
 	}
 
-	/**
-	 * @param TsumegoRow $tsumego
-	 */
+	/** @param TsumegoRow $tsumego */
 	public static function getXpValue(array $tsumego, float $multiplier = 1.0): int
 	{
 		return Rating::ratingToXP($tsumego['rating'], $multiplier);

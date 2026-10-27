@@ -78,10 +78,8 @@ class SetImageTest extends CakeTestCase
 		return $path;
 	}
 
-	/**
-	 * A cover is stored under the set it belongs to, and the name of the file is a
-	 * part of the hash of the picture, so two sets never share one picture by name.
-	 */
+	//A cover is stored under the set it belongs to, and the name of the file is a
+	//part of the hash of the picture, so two sets never share one picture by name.
 	public function testStoreWritesTheCoverUnderItsSet(): void
 	{
 		$picture = $this->_picture('cover of a set');
@@ -100,10 +98,7 @@ class SetImageTest extends CakeTestCase
 		SetImage::removeFolder(9002);
 	}
 
-	/**
-	 * Only covers live under sets/, so a shared image of the site is never taken
-	 * with one.
-	 */
+	//Only covers live under sets/, so a shared image of the site is never taken with one.
 	public function testRemoveTakesOnlyAnUploadedCover(): void
 	{
 		$shared = WWW_ROOT . 'img' . DS . 'shared-test.png';
@@ -128,9 +123,7 @@ class SetImageTest extends CakeTestCase
 		$this->assertDirectoryDoesNotExist(WWW_ROOT . 'img' . DS . 'sets' . DS . '9004');
 	}
 
-	/**
-	 * @return array{data: string, hash: string, width: int, height: int}
-	 */
+	/** @return array{data: string, hash: string, width: int, height: int} */
 	private function _picture(string $data): array
 	{
 		return ['data' => $data, 'hash' => hash('sha256', $data), 'width' => 4, 'height' => 4];

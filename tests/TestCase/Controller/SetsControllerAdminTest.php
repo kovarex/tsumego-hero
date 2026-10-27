@@ -1,19 +1,15 @@
 <?php
 
 
+//Tests for SetsController admin functions (create set/tsumego)
 /**
- * Tests for SetsController admin functions (create set/tsumego)
- *
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
- *
  * @group browser
  */
 class SetsControllerAdminTest extends IntegrationTestCase
 {
-	/**
-	 * Test SetsController::create() - creating new set with first tsumego
-	 */
+	//Test SetsController::create() - creating new set with first tsumego
 	public function testCreateNewSetWithFirstTsumego()
 	{
 		$context = new ContextPreparator([

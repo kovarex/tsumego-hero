@@ -12,7 +12,7 @@ use App\Utility\Util;
 
 class ContextPreparator
 {
-	/** Held for the whole process, so no second run can empty the tables in the middle of a run. */
+	//Held for the whole process, so no second run can empty the tables in the middle of a run.
 	private static $testDatabaseLock = null;
 
 	public function __construct(?array $options = [])
@@ -62,12 +62,10 @@ class ContextPreparator
 			$this->lastXp = Level::getOverallXPGained($this->user);
 	}
 
-	/**
-	 * Every run empties every table before each test, so a second process would pull the rows out
-	 * from under the first one. The lock lives as long as this process does, which is exactly the
-	 * window in which the shared test database is in use. The kernel drops it however the process
-	 * ends, so a killed run leaves nothing behind to clean up.
-	 */
+	//Every run empties every table before each test, so a second process would pull the rows out
+	//from under the first one. The lock lives as long as this process does, which is exactly the
+	//window in which the shared test database is in use. The kernel drops it however the process
+	//ends, so a killed run leaves nothing behind to clean up.
 	private static function takeTestDatabaseLock(): void
 	{
 		if (self::$testDatabaseLock !== null)
@@ -794,15 +792,12 @@ class ContextPreparator
 		}
 	}
 
-	/**
-	 * Create schedule entries.
-	 *
-	 * Each entry: ['tsumego' => 0, 'set' => 'target set', 'date' => '2026-09-01', 'published' => 0]
-	 * - tsumego: index into $this->tsumegos (default 0)
-	 * - set: target set name (resolved via getOrCreateTsumegoSet)
-	 * - date: publish date
-	 * - published: 0 or 1 (default 0)
-	 */
+	//Create schedule entries.
+	//Each entry: ['tsumego' => 0, 'set' => 'target set', 'date' => '2026-09-01', 'published' => 0]
+	//- tsumego: index into $this->tsumegos (default 0)
+	//- set: target set name (resolved via getOrCreateTsumegoSet)
+	//- date: publish date
+	//- published: 0 or 1 (default 0)
 	public function prepareSchedule(?array $scheduleEntries): void
 	{
 		if (!$scheduleEntries)
@@ -847,17 +842,14 @@ class ContextPreparator
 		}
 	}
 
-	/**
-	 * Prepares achievement conditions for the test context.
-	 * Each condition is associated with the user created in this context.
-	 *
-	 * @param array|null $conditions Array of achievement condition definitions
-	 *   Each condition should have:
-	 *   - 'category' (required): The achievement category, an AchievementCondition::CATEGORY_ constant
-	 *   - 'value' (required): The condition value (e.g., 100 for percentage, 1 for boolean)
-	 *   - 'set_id' (optional): The set_id for set-specific conditions (defaults to null)
-	 *   - 'user_id' (optional): Override the user_id (defaults to $this->user['id'])
-	 */
+	//Prepares achievement conditions for the test context.
+	//Each condition is associated with the user created in this context.
+	//$conditions: Array of achievement condition definitions
+	//Each condition should have:
+	//  - 'category' (required): The achievement category, an AchievementCondition::CATEGORY_ constant
+	//  - 'value' (required): The condition value (e.g., 100 for percentage, 1 for boolean)
+	//  - 'set_id' (optional): The set_id for set-specific conditions (defaults to null)
+	//  - 'user_id' (optional): Override the user_id (defaults to $this->user['id'])
 	public function prepareAchievementConditions(?array $conditions): void
 	{
 		if (!$conditions)
@@ -894,10 +886,8 @@ class ContextPreparator
 		}
 	}
 
-	/**
-	 * Ensures admin_activity_type table is populated with correct IDs matching AdminActivityLogger constants.
-	 * This is needed because the test database might have stale or incorrect IDs.
-	 */
+	//Ensures admin_activity_type table is populated with correct IDs matching AdminActivityLogger constants.
+	//This is needed because the test database might have stale or incorrect IDs.
 	private function ensureAdminActivityTypes(): void
 	{
 

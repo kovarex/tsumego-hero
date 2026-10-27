@@ -7,20 +7,16 @@ use Sgf;
 use SgfReview;
 use User;
 
-/**
- * The SGF changes of the admin area: every version saved of a problem, the newest first, but the
- * rejected proposals. Each admin ticks the changes of others they checked (SgfReview) and sees who
- * of the others checked them, so they can keep the changes under control without a decision.
- */
+//The SGF changes of the admin area: every version saved of a problem, the newest first, but the
+//rejected proposals. Each admin ticks the changes of others they checked (SgfReview) and sees who
+//of the others checked them, so they can keep the changes under control without a decision.
 class SgfChangesRenderer extends DataTableRenderer
 {
-	/** The url parameter of the list of the changes the admin did not check yet */
+	//The url parameter of the list of the changes the admin did not check yet
 	public const NOT_REVIEWED_PARAMETER = 'not_reviewed';
 
-	/**
-	 * @param string|null $newSince When the admin looked the time before (see AdminPage::markViewed),
-	 *   what the others saved since then is marked as new
-	 */
+	//$newSince: When the admin looked the time before (see AdminPage::markViewed),
+	//what the others saved since then is marked as new
 	public function __construct(array $urlParams, private ?string $newSince = null)
 	{
 		$this->userID = Auth::getUserID();
@@ -77,18 +73,13 @@ OFFSET " . $this->offset, $this->onlyNotReviewed ? [$this->userID, $this->userID
 		$this->reviewers = SgfReview::reviewersOf(array_map(fn($item) => (int) $item['id'], $this->data));
 	}
 
-	/**
-	 * The changes of others the admin did not review yet, the rejected proposals are not on the page.
-	 */
+	//The changes of others the admin did not review yet, the rejected proposals are not on the page.
 	public static function countNotReviewed(int $userID): int
 	{
 		return (int) Util::query('SELECT COUNT(*) AS total FROM sgf WHERE sgf.sgf_status_id <> ? AND ' . self::notReviewedSql(), [Sgf::STATUS_REJECTED, $userID, $userID])[0]['total'];
 	}
 
-	/**
-	 * The condition of a change of someone else the admin did not tick, the two parameters are the
-	 * id of the admin.
-	 */
+	//The condition of a change of someone else the admin did not tick, the two parameters are the id of the admin.
 	private static function notReviewedSql(): string
 	{
 		return 'NOT (sgf.user_id <=> ?) AND NOT EXISTS (SELECT 1 FROM sgf_review WHERE sgf_review.sgf_id = sgf.id AND sgf_review.user_id = ?)';
@@ -165,11 +156,8 @@ OFFSET " . $this->offset, $this->onlyNotReviewed ? [$this->userID, $this->userID
 		echo '</td>';
 	}
 
-	/**
-	 * The avatar of another admin who reviewed the change, their name and when in the tooltip
-	 *
-	 * @param array<string, mixed> $reviewer Row of SgfReview::reviewersOf
-	 */
+	//The avatar of another admin who reviewed the change, their name and when in the tooltip
+	/** @param array<string, mixed> $reviewer Row of SgfReview::reviewersOf */
 	private static function renderReviewer(array $reviewer): string
 	{
 		$avatarUrl = User::avatarOrNull($reviewer);

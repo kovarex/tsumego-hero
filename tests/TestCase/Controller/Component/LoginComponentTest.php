@@ -70,10 +70,8 @@ class LoginComponentTest extends IntegrationTestCase
 		$this->assertStringContainsString('Wrong username or password.', $page);
 	}
 
-	/**
-	 * The hash a login compares against when the name has no account has to cost what a
-	 * stored hash costs, otherwise the quicker answer tells which names exist.
-	 */
+	//The hash a login compares against when the name has no account has to cost what a
+	//stored hash costs, otherwise the quicker answer tells which names exist.
 	public function testTheDummyHashCostsWhatAStoredHashCosts(): void
 	{
 		$this->assertSame(
@@ -183,10 +181,8 @@ class LoginComponentTest extends IntegrationTestCase
 		$this->assertStringContainsString('/users/newpassword/' . $userNew['password_reset_token'], TestEmailer::$lastEmail['body']);
 	}
 
-	/**
-	 * The reset link only exists in the mail, so a mail that never left leaves no link
-	 * behind and the next request is answered right away instead of being held back.
-	 */
+	//The reset link only exists in the mail, so a mail that never left leaves no link
+	//behind and the next request is answered right away instead of being held back.
 	public function testResetCanBeAskedForAgainWhenTheMailCouldNotBeSent(): void
 	{
 		$context = new ContextPreparator(['user' => null, 'other-users' => [['name' => 'kovarex', 'email' => 'kovarex@example.com']]]);
@@ -215,10 +211,7 @@ class LoginComponentTest extends IntegrationTestCase
 		return ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
 	}
 
-	/**
-	 * A mail just sent is not followed by another one right away, so a bot can not
-	 * fill somebody's inbox.
-	 */
+	//A mail just sent is not followed by another one right away, so a bot can not fill somebody's inbox.
 	public function testASecondResetMailIsNotSentRightAway(): void
 	{
 		$context = new ContextPreparator(['user' => null, 'other-users' => [['name' => 'kovarex', 'email' => 'kovarex@example.com']]]);
@@ -317,10 +310,8 @@ class LoginComponentTest extends IntegrationTestCase
 		$this->assertTextContains($context->user['name'], $links[0]->getText());
 	}
 
-	/**
-	 * The reset form answers the same for a Google address and for an address without an
-	 * account, so it can not be asked which addresses have one.
-	 */
+	//The reset form answers the same for a Google address and for an address without an
+	//account, so it can not be asked which addresses have one.
 	public function testTheResetFormAnswersGoogleAndUnknownAddressesAlike(): void
 	{
 		new ContextPreparator([
@@ -343,9 +334,7 @@ class LoginComponentTest extends IntegrationTestCase
 		$this->assertEmpty(TestEmailer::$lastEmail['body'] ?? null, 'Email should not be sent for Google users');
 	}
 
-	/**
-	 * Test that password reset does not send email for non-existent users.
-	 */
+	//Test that password reset does not send email for non-existent users.
 	public function testResetPasswordNoEmailForNonExistentUser(): void
 	{
 		new ContextPreparator(['user' => null]);

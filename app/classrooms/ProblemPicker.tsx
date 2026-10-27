@@ -7,23 +7,21 @@ import type { CollectionCard, CollectionCards, CollectionProblems, PickableProbl
 
 interface ProblemPickerProps
 {
-	/** The collection to show the problems of right away, null to start at the list of collections. */
+	//The collection to show the problems of right away, null to start at the list of collections.
 	collectionId: number | null;
-	/** The problems of the assignment, which show as picked. */
+	//The problems of the assignment, which show as picked.
 	pickedTsumegoIds: ReadonlySet<number>;
-	/** How many problems of each collection are picked, by collection id. */
+	//How many problems of each collection are picked, by collection id.
 	pickedCountBySet: ReadonlyMap<number, number>;
 	onPick: (problems: PickableProblem[]) => void;
 	onUnpick: (problems: PickableProblem[]) => void;
 	onClose: () => void;
 }
 
-/**
- * The popup where the teacher picks problems for an assignment: first a collection, from their own
- * ones and the ones of the site, then the problems of it, clicked one by one or as a range of
- * numbers. Every pick goes to the assignment at once, so the teacher can go back for another
- * collection and pick from that one too.
- */
+//The popup where the teacher picks problems for an assignment: first a collection, from their own
+//ones and the ones of the site, then the problems of it, clicked one by one or as a range of
+//numbers. Every pick goes to the assignment at once, so the teacher can go back for another
+//collection and pick from that one too.
 export function ProblemPicker({ collectionId, pickedTsumegoIds, pickedCountBySet, onPick, onUnpick, onClose }: ProblemPickerProps)
 {
 	const dialogRef = useRef<HTMLDialogElement>(null);
@@ -133,7 +131,7 @@ interface CollectionCardGridProps
 	onOpen: (collectionId: number) => void;
 }
 
-/** The collections as the cards of the collections page (src/View/Elements/set_card.ctp). */
+//The collections as the cards of the collections page (src/View/Elements/set_card.ctp).
 function CollectionCardGrid({ cards, pickedCountBySet, onOpen }: CollectionCardGridProps)
 {
 	return (
@@ -170,7 +168,7 @@ interface CollectionProblemListProps
 	onBack: () => void;
 }
 
-/** An empty field of the range is its open end. */
+//An empty field of the range is its open end.
 function parseNumber(value: string): number | null
 {
 	const number = parseInt(value, 10);

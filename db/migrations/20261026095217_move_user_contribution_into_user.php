@@ -4,19 +4,14 @@ declare(strict_types=1);
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * user_contribution was a 1:1 extension of user: the collection filters of a player and the
- * contribution counters. Parallel first requests of a player could insert two rows (forum topic 95,
- * PR #153), the site then read and wrote only the oldest one.
- *
- * The filters move to user, which is loaded on every request anyway. Of the contribution data only
- * reward3 was read (one more revelation per day), it becomes contribution_revelation_bonus.
- * The counters (created_tag, made_proposal, reviewed, score) were shown nowhere and reward1/reward2
- * were never read, they are dropped.
- *
- * IRREVERSIBLE in part: a rollback brings the table back with the filters and reward3, the
- * counters stay at 0.
- */
+//user_contribution was a 1:1 extension of user: the collection filters of a player and the
+//contribution counters. Parallel first requests of a player could insert two rows (forum topic 95,
+//PR #153), the site then read and wrote only the oldest one.
+//The filters move to user, which is loaded on every request anyway. Of the contribution data only
+//reward3 was read (one more revelation per day), it becomes contribution_revelation_bonus.
+//The counters (created_tag, made_proposal, reviewed, score) were shown nowhere and reward1/reward2
+//were never read, they are dropped.
+//IRREVERSIBLE in part: a rollback brings the table back with the filters and reward3, the counters stay at 0.
 final class MoveUserContributionIntoUser extends AbstractMigration
 {
 	public function up(): void

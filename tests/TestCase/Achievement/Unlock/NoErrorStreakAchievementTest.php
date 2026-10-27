@@ -5,12 +5,8 @@ use App\Utility\AchievementChecker;
 use App\Utility\Auth;
 use App\Utility\HeroPowers;
 
-/**
- * No Error Streak Achievement Test
- *
- * Tests achievements IDs 53-58 for completing streaks without errors
- * using achievement_condition table with category CATEGORY_NO_ERROR_STREAK
- */
+//Tests achievements IDs 53-58 for completing streaks without errors
+//using achievement_condition table with category CATEGORY_NO_ERROR_STREAK
 class NoErrorStreakAchievementTest extends AchievementTestCase
 {
 	public function testNoErrorStreakIncreasedThroughBrowser()
@@ -63,10 +59,7 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 		$this->assertEquals($achievementCondition['AchievementCondition']['value'], 0);
 	}
 
-	/**
-	 * A problem solved only after a mistake in the same play is not an error-free
-	 * solve.
-	 */
+	//A problem solved only after a mistake in the same play is not an error-free solve.
 	public function testSolveAfterMisplayInTheSamePlayKeepsTheStreakAtZero()
 	{
 		$browser = Browser::instance();
@@ -81,10 +74,7 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 		$this->assertSame(0, $this->noErrorStreak(), 'A solve after a mistake in the same play does not extend the streak');
 	}
 
-	/**
-	 * A problem misplayed in an earlier play still counts when it is solved
-	 * cleanly later.
-	 */
+	//A problem misplayed in an earlier play still counts when it is solved cleanly later.
 	public function testSolvingAProblemMisplayedInAnEarlierPlayExtendsTheStreak()
 	{
 		$browser = Browser::instance();
@@ -101,10 +91,7 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 		$this->assertSame(1, $this->noErrorStreak(), 'A clean solve extends the streak');
 	}
 
-	/**
-	 * A rejuvenation restores hearts only: a solve that follows a mistake in the
-	 * same play is not an error-free solve.
-	 */
+	//A rejuvenation restores hearts only: a solve that follows a mistake in the same play is not an error-free solve.
 	public function testRejuvenationKeepsTheMisplayForTheStreak()
 	{
 		$browser = Browser::instance();

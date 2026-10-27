@@ -4,19 +4,15 @@ use App\Lib\Error\UnprocessableEntityException;
 use App\Utility\PlayOutcome;
 use App\Utility\Util;
 
-/**
- * Classes of a teacher: getting into one takes both sides, the teacher gives the class problems to
- * solve by a day and sees who solved which.
- */
+//Classes of a teacher: getting into one takes both sides, the teacher gives the class problems to
+//solve by a day and sees who solved which.
 class ClassroomsControllerTest extends IntegrationTestCase
 {
 	private ContextPreparator $context;
 
-	/**
-	 * A teacher with a private collection of three problems (0-2) and a second one of one problem
-	 * (4), a collection of the site with two problems (3, and 0 again as its number 2), two players
-	 * who can become pupils and one who stays out.
-	 */
+	//A teacher with a private collection of three problems (0-2) and a second one of one problem
+	//(4), a collection of the site with two problems (3, and 0 again as its number 2), two players
+	//who can become pupils and one who stays out.
 	private function prepare(): void
 	{
 		$homework = fn(int $num) => ['name' => 'Homework', 'num' => $num, 'public' => 0, 'user_id' => 'self'];
@@ -57,18 +53,14 @@ class ClassroomsControllerTest extends IntegrationTestCase
 		return (int) $this->context->tsumegos[0]['sets'][0]['id'];
 	}
 
-	/**
-	 * The problem of the tsumego with the index in the collection with the index among its own.
-	 */
+	//The problem of the tsumego with the index in the collection with the index among its own.
 	private function setConnectionId(int $tsumegoIndex, int $setIndex = 0): int
 	{
 		return (int) $this->context->tsumegos[$tsumegoIndex]['set-connections'][$setIndex]['id'];
 	}
 
-	/**
-	 * @param string|null $published Null for a draft
-	 * @param list<int> $tsumegoIndexes The problems, from the first collection of each tsumego
-	 */
+	//$published: Null for a draft
+	/** @param list<int> $tsumegoIndexes The problems, from the first collection of each tsumego */
 	private function createAssignment(int $classroomId, ?string $published, string $due, array $tsumegoIndexes = [0, 1, 2]): int
 	{
 		Util::execute('INSERT INTO classroom_assignment (classroom_id, due, published, created) VALUES (?, ?, ?, ?)',
@@ -80,17 +72,13 @@ class ClassroomsControllerTest extends IntegrationTestCase
 		return $assignmentId;
 	}
 
-	/**
-	 * @return array<string, mixed>
-	 */
+	/** @return array<string, mixed> */
 	private function assignment(int $assignmentId): array
 	{
 		return Util::query('SELECT * FROM classroom_assignment WHERE id = ?', [$assignmentId])[0];
 	}
 
-	/**
-	 * @return list<int> The set connections of the problems of the assignment, in their order
-	 */
+	/** @return list<int> The set connections of the problems of the assignment, in their order */
 	private function assignedSetConnectionIds(int $assignmentId): array
 	{
 		return array_map('intval', array_column(Util::query(
@@ -108,18 +96,14 @@ class ClassroomsControllerTest extends IntegrationTestCase
 		return json_decode($this->view, true);
 	}
 
-	/**
-	 * @return array<string, mixed>
-	 */
+	/** @return array<string, mixed> */
 	private function getJson(string $url): array
 	{
 		$this->get($url);
 		return json_decode($this->view, true);
 	}
 
-	/**
-	 * @param string|null $solved When the problem was solved for the assignment, null for not yet
-	 */
+	//$solved: When the problem was solved for the assignment, null for not yet
 	private function addResult(int $assignmentId, string $name, int $tsumegoIndex, ?string $solved, int $misplays = 0): void
 	{
 		Util::execute('INSERT INTO classroom_assignment_result (classroom_assignment_id, user_id, tsumego_id, misplays, solved) VALUES (?, ?, ?, ?, ?)',
@@ -132,9 +116,7 @@ class ClassroomsControllerTest extends IntegrationTestCase
 			[$this->userId($name), $this->context->tsumegos[$tsumegoIndex]['id']]);
 	}
 
-	/**
-	 * @return array{misplays: int, solved: string|null}|null What the assignment counts of the player on the problem
-	 */
+	/** @return array{misplays: int, solved: string|null}|null What the assignment counts of the player on the problem */
 	private function result(int $assignmentId, string $name, int $tsumegoIndex): ?array
 	{
 		$rows = Util::query('SELECT misplays, solved FROM classroom_assignment_result WHERE classroom_assignment_id = ? AND user_id = ? AND tsumego_id = ?',
@@ -149,9 +131,7 @@ class ClassroomsControllerTest extends IntegrationTestCase
 		return empty($rows) ? null : $rows[0]['status'];
 	}
 
-	/**
-	 * The colour of the button of the problem under the board, as its status letter.
-	 */
+	//The colour of the button of the problem under the board, as its status letter.
 	private function buttonStatus(Browser $browser, int $tsumegoIndex): string
 	{
 		$class = $browser->driver->executeScript('return document.querySelector(\'.problem-nav__item > a[data-tsumego-id="\' + arguments[0] + \'"]\').parentElement.className;',
@@ -177,9 +157,7 @@ class ClassroomsControllerTest extends IntegrationTestCase
 		return $membership === null ? null : (int) $membership['classroom_member_status_id'];
 	}
 
-	/**
-	 * @return array<string, mixed>
-	 */
+	/** @return array<string, mixed> */
 	private function progress(int $assignmentId): array
 	{
 		$this->get('/classes/progress/' . $assignmentId);
@@ -589,10 +567,8 @@ class ClassroomsControllerTest extends IntegrationTestCase
 		$this->assertSame([null, null], $progress['pupils'][0]['cells']);
 	}
 
-	/**
-	 * A result on a problem counts for every published assignment of the pupil's classes that has
-	 * it: each misplay and the first solve, wherever the problem is played.
-	 */
+	//A result on a problem counts for every published assignment of the pupil's classes that has
+	//it: each misplay and the first solve, wherever the problem is played.
 	public function testAResultOfAPupilCountsForTheAssignment(): void
 	{
 		$this->prepare();
@@ -614,10 +590,8 @@ class ClassroomsControllerTest extends IntegrationTestCase
 		$this->assertNull($this->result($assignmentId, 'pupil', 1));
 	}
 
-	/**
-	 * A problem the pupil solved before is played again for the assignment. The play page sends
-	 * that solve, which leaves the status alone and gives no XP, but counts for the assignment.
-	 */
+	//A problem the pupil solved before is played again for the assignment. The play page sends
+	//that solve, which leaves the status alone and gives no XP, but counts for the assignment.
 	public function testASolveOfAProblemSolvedBeforeCountsForTheAssignment(): void
 	{
 		$this->prepare();
@@ -740,10 +714,8 @@ class ClassroomsControllerTest extends IntegrationTestCase
 		$this->assertMatchesRegularExpression('#href="/classes">Classes<span class="nav__new-badge nav__new-badge--visible"[^>]*>1</span>#', $page);
 	}
 
-	/**
-	 * The teacher keeps the page open while the class plays, and a solve shows up without a reload,
-	 * with the misplays it took.
-	 */
+	//The teacher keeps the page open while the class plays, and a solve shows up without a reload,
+	//with the misplays it took.
 	public function testTheTableShowsASolveWhileThePageIsOpen(): void
 	{
 		$this->prepare();
@@ -780,10 +752,8 @@ class ClassroomsControllerTest extends IntegrationTestCase
 		$this->assertResponseCode(404);
 	}
 
-	/**
-	 * The teacher picks problems of two collections in the popup, some one by one and some as a
-	 * range of numbers, and publishes; the class page then shows the table of the new assignment.
-	 */
+	//The teacher picks problems of two collections in the popup, some one by one and some as a
+	//range of numbers, and publishes; the class page then shows the table of the new assignment.
 	public function testTheTeacherPicksProblemsInThePopupAndPublishes(): void
 	{
 		$this->prepare();
@@ -814,13 +784,11 @@ class ClassroomsControllerTest extends IntegrationTestCase
 		$this->assertNotNull($this->assignment($assignmentId)['published']);
 	}
 
-	/**
-	 * The pupil plays the assignment as a row of its own: the buttons are numbered from 1, green
-	 * for a problem solved for the assignment, light blue (W) for one solved only before, and the
-	 * title says where in the assignment the pupil is and which problem of which collection it is.
-	 * Without a problem the route opens the first one not solved for the assignment yet, and a
-	 * solve of it is sent though it was solved before.
-	 */
+	//The pupil plays the assignment as a row of its own: the buttons are numbered from 1, green
+	//for a problem solved for the assignment, light blue (W) for one solved only before, and the
+	//title says where in the assignment the pupil is and which problem of which collection it is.
+	//Without a problem the route opens the first one not solved for the assignment yet, and a
+	//solve of it is sent though it was solved before.
 	public function testAPupilPlaysTheAssignmentAsOneRow(): void
 	{
 		$this->prepare();
@@ -849,10 +817,8 @@ class ClassroomsControllerTest extends IntegrationTestCase
 		$this->assertTrue(App\Utility\Auth::isInLevelMode());
 	}
 
-	/**
-	 * A pupil solves a new problem in the assignment row: the problem is solved like anywhere
-	 * else, with its XP, and counts for the assignment, so its button stays green on the next page.
-	 */
+	//A pupil solves a new problem in the assignment row: the problem is solved like anywhere
+	//else, with its XP, and counts for the assignment, so its button stays green on the next page.
 	public function testSolvingInTheAssignmentRowSolvesTheProblemAndTheAssignment(): void
 	{
 		$this->prepare();
@@ -878,12 +844,10 @@ class ClassroomsControllerTest extends IntegrationTestCase
 		$this->assertSame('V', $this->buttonStatus($browser, 1), 'The row opens at the problem not solved yet');
 	}
 
-	/**
-	 * A pupil plays a problem they solved before. Its button is light blue until they solve it
-	 * again in the assignment row, then green, also on the next page. The page sends that solve,
-	 * which counts for the assignment and shows in the teacher's table, but gives no XP and leaves
-	 * the problem solved as it was.
-	 */
+	//A pupil plays a problem they solved before. Its button is light blue until they solve it
+	//again in the assignment row, then green, also on the next page. The page sends that solve,
+	//which counts for the assignment and shows in the teacher's table, but gives no XP and leaves
+	//the problem solved as it was.
 	public function testSolvingAProblemSolvedBeforeInTheAssignmentRowCountsForTheAssignment(): void
 	{
 		$this->prepare();

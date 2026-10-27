@@ -3,30 +3,22 @@
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Lib\Error\UnprocessableEntityException;
-/**
- * Controller for managing tsumego comments (CRUD operations).
- *
- * Handles adding and deleting comments on tsumego problems.
- * Comments can be standalone or associated with a TsumegoIssue.
-
- */
+//Controller for managing tsumego comments (CRUD operations).
+//Handles adding and deleting comments on tsumego problems.
+//Comments can be standalone or associated with a TsumegoIssue.
 use App\Utility\Auth;
 use App\Utility\Util;
 
 class TsumegoCommentsController extends AppController
 {
-	/**
-	 * Add a new comment to a tsumego.
-	 *
-	 * Expects POST data with:
-	 * - Comment.tsumego_id: int - The tsumego to comment on
-	 * - Comment.message: string - The comment text
-	 * - Comment.tsumego_issue_id: int|null - Optional issue to attach to
-	 * - Comment.position: string|null - Optional board position
-	 * - Comment.redirect: string - URL to redirect after success
-	 *
-	 * @return CakeResponse|null
-	 */
+	//Add a new comment to a tsumego.
+	//Expects POST data with:
+	//- Comment.tsumego_id: int - The tsumego to comment on
+	//- Comment.message: string - The comment text
+	//- Comment.tsumego_issue_id: int|null - Optional issue to attach to
+	//- Comment.position: string|null - Optional board position
+	//- Comment.redirect: string - URL to redirect after success
+	/** @return CakeResponse|null */
 	#[HttpPost]
 	public function add()
 	{
@@ -68,15 +60,11 @@ class TsumegoCommentsController extends AppController
 		return $this->response;
 	}
 
-	/**
-	 * Delete a comment (soft delete).
-	 *
-	 * Only the comment author or an admin can delete a comment.
-	 * If this was the last comment in an issue, the issue is also deleted.
-	 *
-	 * @param string $id Comment ID to delete
-	 * @return CakeResponse|null
-	 */
+	//Delete a comment (soft delete).
+	//Only the comment author or an admin can delete a comment.
+	//If this was the last comment in an issue, the issue is also deleted.
+	//$id: Comment ID to delete
+	/** @return CakeResponse|null */
 	#[HttpPost]
 	public function delete(string $id)
 	{
@@ -110,14 +98,9 @@ class TsumegoCommentsController extends AppController
 		return $this->response;
 	}
 
-	/**
-	 * Get comments data for a tsumego
-	 *
-	 * Returns issues and standalone comments in the same format as initial SSR data.
-	 *
-	 * @param string $tsumegoId The tsumego ID
-	 * @return CakeResponse
-	 */
+	//Get comments data for a tsumego
+	//Returns issues and standalone comments in the same format as initial SSR data.
+	/** @return CakeResponse */
 	#[HttpGet]
 	public function index(string $tsumegoId)
 	{

@@ -64,11 +64,9 @@ function Feed({ entries }: { entries: ChangelogEntry[] })
 	);
 }
 
-/**
- * Renders the changelog feed from the mount element's data-props. New entries
- * since the player's last visit are grouped at the top; the marker advances on
- * render.
- */
+//Renders the changelog feed from the mount element's data-props. New entries
+//since the player's last visit are grouped at the top; the marker advances on
+//render.
 export function Changelog({ entries }: { entries: ChangelogEntry[] })
 {
 	// Snapshot the marker at mount; it's advanced in the effect below.

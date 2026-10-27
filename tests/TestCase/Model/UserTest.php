@@ -9,10 +9,8 @@ class UserTest extends CakeTestCase
 	// Characters the forum cannot store
 	// =====================================================================
 
-	/**
-	 * The rule guards the name of a new account, not every save of the row: an account that
-	 * already carries such a character keeps working.
-	 */
+	//The rule guards the name of a new account, not every save of the row: an account that
+	//already carries such a character keeps working.
 	public function testAnExistingNameTheForumCannotStoreDoesNotBlockSaving(): void
 	{
 		$context = new ContextPreparator(['user' => ['display_name' => 'Player']]);
@@ -25,10 +23,8 @@ class UserTest extends CakeTestCase
 		$this->assertNotFalse($User->save($user), 'Saving an account that already has such a name must work');
 	}
 
-	/**
-	 * Only a played problem raises highest_rating, so a rating set another way (by hand in the database)
-	 * can be above it, and the profile shows the higher one.
-	 */
+	//Only a played problem raises highest_rating, so a rating set another way (by hand in the database)
+	//can be above it, and the profile shows the higher one.
 	public function testTheHighestRatingIsNeverBelowTheRating(): void
 	{
 		$this->assertSame(1500.0, User::getHighestRating(['rating' => 1500, 'highest_rating' => 1200]));
@@ -39,9 +35,7 @@ class UserTest extends CakeTestCase
 	// getAvatarUrl Tests
 	// =====================================================================
 
-	/**
-	 * Test that Google users get their Google picture URL (resized).
-	 */
+	//Test that Google users get their Google picture URL (resized).
 	public function testGetAvatarUrlReturnsGooglePictureForGoogleUser()
 	{
 		$user = [
@@ -56,10 +50,7 @@ class UserTest extends CakeTestCase
 		$this->assertStringContainsString('s40', $url);
 	}
 
-	/**
-	 * Everyone without a Google picture gets the board the site draws for them, so
-	 * no request leaves for an avatar host.
-	 */
+	//Everyone without a Google picture gets the board the site draws for them, so no request leaves for an avatar host.
 	public function testGetAvatarUrlReturnsTheBoardForAPlayerWithoutAPicture()
 	{
 		$user = [
@@ -73,10 +64,8 @@ class UserTest extends CakeTestCase
 		$this->assertSame(Avatar::url('Anna'), User::getAvatarUrl($user, 20));
 	}
 
-	/**
-	 * A board belongs to a name: the same name always draws the same board, a rename
-	 * draws another one, and the account behind it does not come into it.
-	 */
+	//A board belongs to a name: the same name always draws the same board, a rename
+	//draws another one, and the account behind it does not come into it.
 	public function testTheBoardFollowsTheNameAndNotTheAccount()
 	{
 		$board = fn(string $name, int $id) => User::getAvatarUrl([
@@ -89,9 +78,7 @@ class UserTest extends CakeTestCase
 		$this->assertNotSame($board('Anna', 1), $board('Anna (2)', 1));
 	}
 
-	/**
-	 * A Google account that has no picture to show gets a board too.
-	 */
+	//A Google account that has no picture to show gets a board too.
 	public function testGetAvatarUrlReturnsTheBoardWhenAGoogleAccountHasNoPicture()
 	{
 		$user = [
@@ -124,10 +111,8 @@ class UserTest extends CakeTestCase
 		}
 	}
 
-	/**
-	 * A picture url that carries its own parameters is served as it is, so its
-	 * signature or query can not be broken by a size that is appended to it.
-	 */
+	//A picture url that carries its own parameters is served as it is, so its
+	//signature or query can not be broken by a size that is appended to it.
 	public function testAGooglePictureWithItsOwnParametersIsLeftAlone()
 	{
 		$user = [
@@ -140,9 +125,7 @@ class UserTest extends CakeTestCase
 		$this->assertSame('https://lh3.googleusercontent.com/a/x?sz=50', User::getAvatarUrl($user, 128));
 	}
 
-	/**
-	 * A picture of another host is served as it is as well.
-	 */
+	//A picture of another host is served as it is as well.
 	public function testAPictureOfAnotherHostIsLeftAlone()
 	{
 		$user = [
@@ -173,9 +156,7 @@ class UserTest extends CakeTestCase
 		$this->assertStringNotContainsString('onerror', $withBoard, 'A board avatar never fails, so it needs no fallback');
 	}
 
-	/**
-	 * One svg covers every size, so the board url does not change with it.
-	 */
+	//One svg covers every size, so the board url does not change with it.
 	public function testTheBoardUrlIsTheSameForEverySize()
 	{
 		$user = ['id' => 4242, 'display_name' => 'Anna', 'external_id' => null, 'picture' => null, 'email' => 'test@example.com'];
@@ -183,10 +164,7 @@ class UserTest extends CakeTestCase
 		$this->assertSame(User::getAvatarUrl($user, 20), User::getAvatarUrl($user, 48));
 	}
 
-	/**
-	 * Every account starts on the board, a Google picture is only shown once the
-	 * player picks it.
-	 */
+	//Every account starts on the board, a Google picture is only shown once the player picks it.
 	public function testTheBoardIsTheDefaultForAGoogleAccount()
 	{
 		$user = ['id' => 1, 'display_name' => 'Anna', 'external_id' => '123', 'picture' => 'https://lh3.googleusercontent.com/a/x'];
@@ -236,10 +214,7 @@ class UserTest extends CakeTestCase
 		);
 	}
 
-	/**
-	 * The hash is the one from the Gravatar documentation, so a change back to the
-	 * older md5 fails here.
-	 */
+	//The hash is the one from the Gravatar documentation, so a change back to the older md5 fails here.
 	public function testTheGravatarHashIsNotMd5()
 	{
 		$this->assertSame(
@@ -249,9 +224,7 @@ class UserTest extends CakeTestCase
 		$this->assertNotSame(md5('myemailaddress@example.com'), User::gravatarHash('myemailaddress@example.com'));
 	}
 
-	/**
-	 * An uploaded picture is stored at one size, so every size gets the same url.
-	 */
+	//An uploaded picture is stored at one size, so every size gets the same url.
 	public function testChoosingAnUploadedPictureUsesIt()
 	{
 		$user = ['id' => 9, 'display_name' => 'Anna', 'avatar_setting_id' => User::AVATAR_UPLOADED, 'uploaded_avatar_hash' => '0123456789abcdef'];
@@ -267,10 +240,8 @@ class UserTest extends CakeTestCase
 		$this->assertSame(Avatar::url('Anna'), User::getAvatarUrl($user, 24));
 	}
 
-	/**
-	 * A list renders its rows with renderLink(), and the uploaded picture is taken from
-	 * the prefixed columns of a raw query as well as from a plain row.
-	 */
+	//A list renders its rows with renderLink(), and the uploaded picture is taken from
+	//the prefixed columns of a raw query as well as from a plain row.
 	public function testRenderLinkShowsTheUploadedPicture()
 	{
 		$link = User::renderLink([
@@ -297,9 +268,7 @@ class UserTest extends CakeTestCase
 	// renderLink Tests - Avatar Display
 	// =====================================================================
 
-	/**
-	 * Test that renderLink includes an avatar image.
-	 */
+	//Test that renderLink includes an avatar image.
 	public function testRenderLinkIncludesAvatar()
 	{
 		$html = User::renderLink([
@@ -322,9 +291,6 @@ class UserTest extends CakeTestCase
 		$this->assertStringContainsString('referrerpolicy="no-referrer"', $html);
 	}
 
-	/**
-	 * Test that renderLink shows Google picture for Google users.
-	 */
 	public function testRenderLinkShowsGooglePictureForGoogleUser()
 	{
 		$html = User::renderLink([
@@ -344,9 +310,7 @@ class UserTest extends CakeTestCase
 		$this->assertStringContainsString('class="user-avatar"', $html);
 	}
 
-	/**
-	 * Test that renderLink handles deleted users (null id).
-	 */
+	//Test that renderLink handles deleted users (null id).
 	public function testRenderLinkHandlesDeletedUser()
 	{
 		$html = User::renderLink(null);
@@ -358,9 +322,7 @@ class UserTest extends CakeTestCase
 		$this->assertStringContainsString('[account deleted]', $html);
 	}
 
-	/**
-	 * Test that renderLink works with array input (containable result format).
-	 */
+	//Test that renderLink works with array input (containable result format).
 	public function testRenderLinkAcceptsArrayInput()
 	{
 		$user = [
@@ -380,9 +342,6 @@ class UserTest extends CakeTestCase
 		$this->assertStringContainsString('src="' . Avatar::url('ArrayUser') . '"', $html);
 	}
 
-	/**
-	 * Test that renderLink includes rank from rating.
-	 */
 	public function testRenderLinkIncludesRankFromRating()
 	{
 		$html = User::renderLink([
@@ -402,9 +361,6 @@ class UserTest extends CakeTestCase
 	// updateDisplayName Tests
 	// =====================================================================
 
-	/**
-	 * Test that updateDisplayName updates the display_name in the main database.
-	 */
 	public function testUpdateDisplayNameUpdatesMainDatabase()
 	{
 		// Create a user via ContextPreparator
@@ -426,10 +382,8 @@ class UserTest extends CakeTestCase
 		$this->assertEquals('New Display Name', $user['User']['display_name']);
 	}
 
-	/**
-	 * Test that updateDisplayName gracefully handles missing forum database.
-	 * (Forum DB is not configured in test environment)
-	 */
+	//Test that updateDisplayName gracefully handles missing forum database.
+	//(Forum DB is not configured in test environment)
 	public function testUpdateDisplayNameHandlesMissingForumDatabase()
 	{
 		// Create a user via ContextPreparator
@@ -451,10 +405,8 @@ class UserTest extends CakeTestCase
 		$this->assertEquals('Forum Test Name', $user['User']['display_name']);
 	}
 
-	/**
-	 * Test that normalizeDisplayName trims surrounding whitespace and collapses
-	 * internal runs of whitespace into single spaces.
-	 */
+	//Test that normalizeDisplayName trims surrounding whitespace and collapses
+	//internal runs of whitespace into single spaces.
 	public function testNormalizeDisplayNameTrimsAndCollapsesWhitespace()
 	{
 		$this->assertSame('Hello World', User::normalizeDisplayName('  Hello   World  '));
@@ -462,10 +414,8 @@ class UserTest extends CakeTestCase
 		$this->assertSame('John Doe', User::normalizeDisplayName("\tJohn\nDoe\t"));
 	}
 
-	/**
-	 * Test that generateUniqueDisplayName normalizes the requested name, so a
-	 * padded input cannot collide with a different existing display name.
-	 */
+	//Test that generateUniqueDisplayName normalizes the requested name, so a
+	//padded input cannot collide with a different existing display name.
 	public function testGenerateUniqueDisplayNameNormalizesInput()
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'DisplayTest', 'display_name' => 'Display Test']]);
@@ -487,18 +437,12 @@ class UserTest extends CakeTestCase
 	// isGoogleUser Tests
 	// =====================================================================
 
-	/**
-	 * Test isGoogleUser returns true for Google users.
-	 */
 	public function testIsGoogleUserReturnsTrueForGoogleUser()
 	{
 		$user = ['external_id' => 'google123', 'email' => 'test@example.com'];
 		$this->assertTrue(User::isGoogleUser($user));
 	}
 
-	/**
-	 * Test isGoogleUser returns false for regular users.
-	 */
 	public function testIsGoogleUserReturnsFalseForRegularUser()
 	{
 		$user = ['external_id' => null, 'email' => 'test@example.com'];
@@ -508,11 +452,9 @@ class UserTest extends CakeTestCase
 		$this->assertFalse(User::isGoogleUser($user2));
 	}
 
-	/**
-	 * A display name has to be one the site can store: not empty, and without a character above
-	 * U+FFFF, which the utf8mb3 columns of the forum cannot hold. Three-byte letters from any
-	 * alphabet fit and stay allowed.
-	 */
+	//A display name has to be one the site can store: not empty, and without a character above
+	//U+FFFF, which the utf8mb3 columns of the forum cannot hold. Three-byte letters from any
+	//alphabet fit and stay allowed.
 	public function testDisplayNameMustBeOneTheSiteCanStore()
 	{
 		$Model = ClassRegistry::init('User');
@@ -533,9 +475,7 @@ class UserTest extends CakeTestCase
 		}
 	}
 
-	/**
-	 * An e-mail address can have 254 characters, the user table stores them all.
-	 */
+	//An e-mail address can have 254 characters, the user table stores them all.
 	public function testAnEmailAddressCanHaveUpTo254Characters(): void
 	{
 		$Model = ClassRegistry::init('User');
@@ -549,9 +489,7 @@ class UserTest extends CakeTestCase
 		}
 	}
 
-	/**
-	 * Test that a generated display name fits the column.
-	 */
+	//Test that a generated display name fits the column.
 	public function testGenerateUniqueDisplayNameFitsTheColumn()
 	{
 		new ContextPreparator(['user' => null]);

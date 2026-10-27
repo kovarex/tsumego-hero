@@ -94,11 +94,9 @@ class TsumegoButtonsQueryBuilder
 		$this->tsumegoFilters->filterTags($this->query);
 	}
 
-	/**
-	 * Difficulty and tag queries name their collection by the lastSet cookie. When it is missing or
-	 * doesn't name a valid rank or an existing tag (another tab or device switched the collection,
-	 * or the cookie expired), we fall back to showing by topics (the set of the current tsumego).
-	 */
+	//Difficulty and tag queries name their collection by the lastSet cookie. When it is missing or
+	//doesn't name a valid rank or an existing tag (another tab or device switched the collection,
+	//or the cookie expired), we fall back to showing by topics (the set of the current tsumego).
 	private function resolveQueryType(): void
 	{
 		$lastSet = $_COOKIE['lastSet'] ?? '';

@@ -2,26 +2,20 @@
 
 use App\Utility\Util;
 
-/**
- * A class of a teacher: the players who agreed to be in it, and the problems the teacher assigns
- * to them (ClassroomMember, ClassroomAssignment). Named classroom because class is a word of PHP.
- */
+//A class of a teacher: the players who agreed to be in it, and the problems the teacher assigns
+//to them (ClassroomMember, ClassroomAssignment). Named classroom because class is a word of PHP.
 class Classroom extends AppModel
 {
 	public const MAXIMUM_NAME_LENGTH = 100;
 
 	public $useTable = 'classroom';
 
-	/**
-	 * The columns of a user that User::renderLink() and User::avatarOrNull() read, for the queries
-	 * that list players of a class, on the alias `u`.
-	 */
+	//The columns of a user that User::renderLink() and User::avatarOrNull() read, for the queries
+	//that list players of a class, on the alias `u`.
 	public const USER_COLUMNS = 'u.id AS user_id, u.display_name AS user_display_name, u.rating AS user_rating,
 		u.external_id AS user_external_id, u.picture AS user_picture, u.email AS user_email, u.avatar_setting_id AS user_avatar_setting_id, u.uploaded_avatar_hash AS user_uploaded_avatar_hash';
 
-	/**
-	 * The name a class is saved with, null when nothing is left of it.
-	 */
+	//The name a class is saved with, null when nothing is left of it.
 	public static function cleanName(string $name): ?string
 	{
 		$name = trim(preg_replace('/\s+/u', ' ', $name));
@@ -30,11 +24,8 @@ class Classroom extends AppModel
 		return mb_substr($name, 0, self::MAXIMUM_NAME_LENGTH);
 	}
 
-	/**
-	 * The classes a player teaches, with how many players are in each and how many ask to join.
-	 *
-	 * @return array<array{id: int, name: string, pupil_count: int, request_count: int}>
-	 */
+	//The classes a player teaches, with how many players are in each and how many ask to join.
+	/** @return array<array{id: int, name: string, pupil_count: int, request_count: int}> */
 	public static function taughtBy(int $teacherId): array
 	{
 		$rows = Util::query('SELECT c.id, c.name,
@@ -54,10 +45,9 @@ class Classroom extends AppModel
 		], $rows);
 	}
 
+	//The classes a player is in, is invited to or asked to join, by the state of the membership,
+	//with the teacher of each.
 	/**
-	 * The classes a player is in, is invited to or asked to join, by the state of the membership,
-	 * with the teacher of each.
-	 *
 	 * @return array<int, array<array<string, mixed>>> Rows of classroom_id, name, membership_id and the teacher's
 	 *   USER_COLUMNS, by ClassroomMemberStatus id
 	 */
@@ -80,9 +70,8 @@ class Classroom extends AppModel
 		return $byStatus;
 	}
 
+	//The teacher of a class, as a user row.
 	/**
-	 * The teacher of a class, as a user row.
-	 *
 	 * @param array<string, mixed> $classroom
 	 * @return array<string, mixed>|null
 	 */

@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * The activate table held the keys that were emailed to beta testers of the first rating mode;
- * redeeming one on /activates stored the user in its row. Nothing has read or written it since
- * ActivatesController was removed, so it goes. Rolling back recreates it empty.
- */
+//The activate table held the keys that were emailed to beta testers of the first rating mode;
+//redeeming one on /activates stored the user in its row. Nothing has read or written it since
+//ActivatesController was removed, so it goes. Rolling back recreates it empty.
 final class DropActivate extends AbstractMigration
 {
 	public function up(): void

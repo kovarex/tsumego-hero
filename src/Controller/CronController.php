@@ -40,14 +40,12 @@ class CronController extends AppController
 		return $this->response;
 	}
 
-	/**
-	 * The daily updates go through whole tables, no index fits their conditions. Under the default
-	 * REPEATABLE READ, InnoDB keeps every row such an update reads locked until the update ends, so a
-	 * player whose row it already passed waits for the rest of the table. READ COMMITTED lets go of
-	 * the rows that do not match right away.
-	 * With a binary log in the STATEMENT format, InnoDB refuses to change rows under READ COMMITTED
-	 * (error 1665), so on such a server the work keeps the level it has.
-	 */
+	//The daily updates go through whole tables, no index fits their conditions. Under the default
+	//REPEATABLE READ, InnoDB keeps every row such an update reads locked until the update ends, so a
+	//player whose row it already passed waits for the rest of the table. READ COMMITTED lets go of
+	//the rows that do not match right away.
+	//With a binary log in the STATEMENT format, InnoDB refuses to change rows under READ COMMITTED
+	//(error 1665), so on such a server the work keeps the level it has.
 	private static function withReadCommitted(callable $work): void
 	{
 		if (Util::query("SELECT @@GLOBAL.log_bin AND @@SESSION.binlog_format = 'STATEMENT' AS statement_log")[0]['statement_log'])
@@ -69,11 +67,9 @@ class CronController extends AppController
 		}
 	}
 
-	/**
-	 * Forgets address changes whose links no longer work, so a change that was never
-	 * confirmed does not stay on the account. The lifetime is the one the links were
-	 * sent with, so a change stays exactly as long as its links work.
-	 */
+	//Forgets address changes whose links no longer work, so a change that was never
+	//confirmed does not stay on the account. The lifetime is the one the links were
+	//sent with, so a change stays exactly as long as its links work.
 	private static function dropExpiredAddressChanges(): void
 	{
 		Util::execute('UPDATE user
@@ -84,10 +80,8 @@ class CronController extends AppController
 			[UsersController::$EMAIL_CHANGE_LINK_VALID_HOURS]);
 	}
 
-	/**
-	 * Only the players who played that day have anything to reset. The condition leaves the other
-	 * rows alone, so they are not written, and not kept locked either.
-	 */
+	//Only the players who played that day have anything to reset. The condition leaves the other
+	//rows alone, so they are not written, and not kept locked either.
 	private function dailyUsersReset(): void
 	{
 		Util::execute('UPDATE user
@@ -202,12 +196,10 @@ WHERE
 		AchievementCondition::put((int) $userOfTheDay['User']['id'], AchievementCondition::CATEGORY_USER_OF_THE_DAY, 1);
 	}
 
-	/**
-	 * The solved count on the user row goes up as the player solves, the recount repairs it where it
-	 * drifted. The counts are read by a plain SELECT, which locks nothing: an UPDATE joined to the same
-	 * counts kept every status it read locked until it ended, so a player solving a problem at that
-	 * time waited for all of them. Only the players whose count changed are written.
-	 */
+	//The solved count on the user row goes up as the player solves, the recount repairs it where it
+	//drifted. The counts are read by a plain SELECT, which locks nothing: an UPDATE joined to the same
+	//counts kept every status it read locked until it ended, so a player solving a problem at that
+	//time waited for all of them. Only the players whose count changed are written.
 	private static function updateSolvedCounts(): void
 	{
 		$changes = Util::query("SELECT user.id, COALESCE(counts.solved, 0) AS solved

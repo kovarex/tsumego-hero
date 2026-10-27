@@ -2,11 +2,9 @@
 
 use App\Utility\Auth;
 
-/**
- * Tests that the board_orientation_setting user preference drives the
- * board corner on the puzzle page.
- * "Original" shows the canonical orientation (matching the thumbnail).
- */
+//Tests that the board_orientation_setting user preference drives the
+//board corner on the puzzle page.
+//"Original" shows the canonical orientation (matching the thumbnail).
 class DefaultBoardOrientationTest extends IntegrationTestCase
 {
 	private static function setOrientationPreference(int $value): void

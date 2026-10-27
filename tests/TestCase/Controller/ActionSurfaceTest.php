@@ -1,23 +1,16 @@
 <?php
 
-/**
- * The methods a controller exposes.
- *
- * The dispatcher turns every public method into an address unless its name starts with an
- * underscore (Controller::_isPrivateAction), so the action surface is decided by naming alone.
- * Every action states which HTTP verbs it accepts, and nothing reachable by address may ask for
- * an object: a request only ever carries strings.
- */
+//The methods a controller exposes.
+//The dispatcher turns every public method into an address unless its name starts with an
+//underscore (Controller::_isPrivateAction), so the action surface is decided by naming alone.
+//Every action states which HTTP verbs it accepts, and nothing reachable by address may ask for
+//an object: a request only ever carries strings.
 class ActionSurfaceTest extends CakeTestCase
 {
-	/**
-	 * Callbacks the framework calls itself. They are public on purpose and are no actions.
-	 */
+	//Callbacks the framework calls itself. They are public on purpose and are no actions.
 	private const LIFECYCLE = ['beforeFilter', 'beforeRender', 'afterFilter', 'initialize', 'startupProcess', 'shutdownProcess'];
 
-	/**
-	 * The attributes AppController::_enforceHttpMethodAttribute() acts on.
-	 */
+	//The attributes AppController::_enforceHttpMethodAttribute() acts on.
 	private const VERBS = [
 		'App\Attribute\HttpGet',
 		'App\Attribute\HttpPost',
@@ -26,10 +19,8 @@ class ActionSurfaceTest extends CakeTestCase
 		'App\Attribute\HttpDelete',
 	];
 
-	/**
-	 * A request to an address only carries strings, and the verb attribute decides whether the
-	 * request may run an action at all.
-	 */
+	//A request to an address only carries strings, and the verb attribute decides whether the
+	//request may run an action at all.
 	public function testEveryActionDeclaresItsHttpVerbs(): void
 	{
 		$offenders = [];
@@ -40,10 +31,8 @@ class ActionSurfaceTest extends CakeTestCase
 		$this->assertSame([], $offenders, 'these are reachable by address yet declare no HTTP verb');
 	}
 
-	/**
-	 * An attribute that is not imported resolves to the global namespace and the enforcement
-	 * skips it, which would silently leave the action open to every verb.
-	 */
+	//An attribute that is not imported resolves to the global namespace and the enforcement
+	//skips it, which would silently leave the action open to every verb.
 	public function testEveryVerbIsAnAttributeOfThisApp(): void
 	{
 		$offenders = [];
@@ -55,10 +44,8 @@ class ActionSurfaceTest extends CakeTestCase
 		$this->assertSame([], $offenders, 'these verbs do not resolve to App\Attribute, so they are not imported');
 	}
 
-	/**
-	 * A verb on a method the dispatcher never reaches describes a rule nobody reads, and it
-	 * makes the next reader believe the method is an address.
-	 */
+	//A verb on a method the dispatcher never reaches describes a rule nobody reads, and it
+	//makes the next reader believe the method is an address.
 	public function testOnlyActionsDeclareHttpVerbs(): void
 	{
 		$offenders = [];
@@ -70,11 +57,9 @@ class ActionSurfaceTest extends CakeTestCase
 		$this->assertSame([], $offenders, 'these declare an HTTP verb yet are not reachable by address');
 	}
 
-	/**
-	 * A method reachable by address is given the pieces of that address, which are strings. One
-	 * that needs an object anywhere in its signature can only end in a TypeError when it is
-	 * reached, so it belongs behind a leading underscore or a non-public visibility.
-	 */
+	//A method reachable by address is given the pieces of that address, which are strings. One
+	//that needs an object anywhere in its signature can only end in a TypeError when it is
+	//reached, so it belongs behind a leading underscore or a non-public visibility.
 	public function testNoActionAsksForAnObject(): void
 	{
 		$offenders = [];
@@ -91,9 +76,7 @@ class ActionSurfaceTest extends CakeTestCase
 		return $method->getDeclaringClass()->getName() . '::' . $method->getName();
 	}
 
-	/**
-	 * @return array<string>
-	 */
+	/** @return array<string> */
 	private function controllerClasses(): array
 	{
 		$classes = [];
@@ -109,13 +92,10 @@ class ActionSurfaceTest extends CakeTestCase
 		return $classes;
 	}
 
-	/**
-	 * Every method the dispatcher would answer to, worked out the way
-	 * Controller::_isPrivateAction() does it: public, not leading-underscored, and not already
-	 * part of the framework controller.
-	 *
-	 * @return array<ReflectionMethod>
-	 */
+	//Every method the dispatcher would answer to, worked out the way
+	//Controller::_isPrivateAction() does it: public, not leading-underscored, and not already
+	//part of the framework controller.
+	/** @return array<ReflectionMethod> */
 	private function actions(): array
 	{
 		$actions = [];
@@ -127,11 +107,9 @@ class ActionSurfaceTest extends CakeTestCase
 		return $actions;
 	}
 
-	/**
-	 * Whether the dispatcher would answer to the method, worked out the way
-	 * Controller::_isPrivateAction() does it: public, not leading-underscored, and not already part
-	 * of the framework controller.
-	 */
+	//Whether the dispatcher would answer to the method, worked out the way
+	//Controller::_isPrivateAction() does it: public, not leading-underscored, and not already part
+	//of the framework controller.
 	private function isAction(string $className, ReflectionMethod $method): bool
 	{
 		if (!$method->isPublic() || str_starts_with($method->getName(), '_'))
@@ -143,9 +121,7 @@ class ActionSurfaceTest extends CakeTestCase
 		return in_array($method->getName(), $added, true);
 	}
 
-	/**
-	 * @return array<string> the verb attributes the action declares, by resolved class name
-	 */
+	/** @return array<string> the verb attributes the action declares, by resolved class name */
 	private function declaredVerbs(ReflectionMethod $method): array
 	{
 		$verbs = [];
@@ -156,9 +132,7 @@ class ActionSurfaceTest extends CakeTestCase
 		return $verbs;
 	}
 
-	/**
-	 * Whether a resolved attribute name is one of the verb attributes, imported or not.
-	 */
+	//Whether a resolved attribute name is one of the verb attributes, imported or not.
 	private function isVerb(string $attributeName): bool
 	{
 		return (bool) preg_match('/^(.*\\\\)?Http(Get|Post|Put|Patch|Delete)$/', $attributeName);

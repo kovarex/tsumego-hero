@@ -4,11 +4,7 @@ use App\Utility\AchievementChecker;
 use App\Utility\Auth;
 use App\Utility\Level;
 
-/**
- * Level-Up Trigger Tests
- *
- * Tests that XP grants trigger level-ups at correct thresholds
- */
+//Tests that XP grants trigger level-ups at correct thresholds
 class LevelUpTriggerTest extends AchievementTestCase
 {
 	public function testUserLevelsUpWhenXPReachesThreshold()
@@ -25,9 +21,7 @@ class LevelUpTriggerTest extends AchievementTestCase
 		$this->assertEquals(5, $context->user['xp'], 'User should have 5 XP remaining after level-up');
 	}
 
-	/**
-	 * Test that user does NOT level up when XP is below threshold
-	 */
+	//Test that user does NOT level up when XP is below threshold
 	public function testUserDoesNotLevelUpBelowThreshold()
 	{
 		// Arrange: User at level 1 with 45 XP (needs 50 to reach level 2)
@@ -45,9 +39,7 @@ class LevelUpTriggerTest extends AchievementTestCase
 		$this->assertEquals(49, $user['xp'], 'User should have 49 XP');
 	}
 
-	/**
-	 * Test that multiple level-ups occur from single large XP grant
-	 */
+	//Test that multiple level-ups occur from single large XP grant
 	public function testMultipleLevelUpsFromSingleXPGrant()
 	{
 		// Arrange: User at level 1 with 0 XP
@@ -63,9 +55,7 @@ class LevelUpTriggerTest extends AchievementTestCase
 		$this->assertLessThan(500, $context->user['xp'], 'Remaining XP should be less than original grant');
 	}
 
-	/**
-	 * Test level-up with achievement XP grant
-	 */
+	//Test level-up with achievement XP grant
 	public function testLevelUpTriggeredByAchievementXP()
 	{
 		// Arrange: User at level 10 with 165 XP (needs 175 to reach level 11)
@@ -79,9 +69,7 @@ class LevelUpTriggerTest extends AchievementTestCase
 		$this->assertGreaterThan(10, $context->reloadUser()['level'], 'User should level up past 10 from achievement XP');
 	}
 
-	/**
-	 * Test XP threshold increases at each level
-	 */
+	//Test XP threshold increases at each level
 	public function testXPThresholdIncreasesEachLevel()
 	{
 		// Test that level requirements increase
@@ -97,9 +85,7 @@ class LevelUpTriggerTest extends AchievementTestCase
 		$this->assertGreaterThan(1000, $level50Req, 'Level 50 requires over 1000 XP');
 	}
 
-	/**
-	 * Test level-up at exactly threshold (boundary test)
-	 */
+	//Test level-up at exactly threshold (boundary test)
 	public function testLevelUpAtExactThreshold()
 	{
 		// Arrange: User at level 1 with 50 XP (exactly the threshold)
@@ -113,9 +99,7 @@ class LevelUpTriggerTest extends AchievementTestCase
 		$this->assertEquals(0, $user['xp'], 'User should have 0 XP after consuming exact threshold');
 	}
 
-	/**
-	 * Test level-up doesn't occur at 1 XP below threshold
-	 */
+	//Test level-up doesn't occur at 1 XP below threshold
 	public function testNoLevelUpOneBelowThreshold()
 	{
 		// Arrange: User at level 1 with 49 XP (1 below threshold of 50)

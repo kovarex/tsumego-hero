@@ -1,22 +1,17 @@
 <?php
 
-/**
- * Application View
- *
- * Extends CakePHP's View class with enhanced error handling for templates
- */
+//Application View
+//Extends CakePHP's View class with enhanced error handling for templates
 class AppView extends View
 {
+	//Sandbox method to evaluate a template / view script with better error handling.
+	//Wraps the template include with an error handler that converts PHP errors
+	//to exceptions, ensuring that errors in templates show the correct file and
+	//line number instead of pointing to View.php.
+	//Returns rendered output
 	/**
-	 * Sandbox method to evaluate a template / view script with better error handling.
-	 *
-	 * Wraps the template include with an error handler that converts PHP errors
-	 * to exceptions, ensuring that errors in templates show the correct file and
-	 * line number instead of pointing to View.php.
-	 *
 	 * @param string $viewFile Filename of the view
 	 * @param array $dataForView Data to include in rendered view.
-	 * @return string Rendered output
 	 */
 	protected function _evaluate(mixed $viewFile, mixed $dataForView): string
 	{

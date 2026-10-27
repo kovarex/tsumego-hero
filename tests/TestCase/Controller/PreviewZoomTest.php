@@ -38,10 +38,8 @@ class PreviewZoomTest extends IntegrationTestCase
 		$this->assertTrue($zoomed);
 	}
 
-	/**
-	 * The solve history keeps its toggle inside the table it switches, so turning previews off there
-	 * has to leave the page in the numbers mode just like turning them on leaves it in previews.
-	 */
+	//The solve history keeps its toggle inside the table it switches, so turning previews off there
+	//has to leave the page in the numbers mode just like turning them on leaves it in previews.
 	public function testTurningPreviewsOffOnTheSolveHistoryBringsTheNumbersBack(): void
 	{
 		$context = new ContextPreparator([

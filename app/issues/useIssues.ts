@@ -1,19 +1,13 @@
-/**
- * React Query hooks for Issues List page.
- *
- * Handles fetching and mutating global issues list data.
- */
+//React Query hooks for Issues List page.
+//Handles fetching and mutating global issues list data.
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { del, get, post } from '../shared/api';
 import { IssueStatus, type IssuesListResponse, type IssueStatusFilter, type IssueStatusId } from './issueTypes';
 
-/**
- * Fetch issues list with filtering and pagination.
- *
- * Query key includes filter and page for proper caching.
- * Uses placeholderData for SSR, refetchOnMount ensures fresh data on filter changes.
- */
+//Fetch issues list with filtering and pagination.
+//Query key includes filter and page for proper caching.
+//Uses placeholderData for SSR, refetchOnMount ensures fresh data on filter changes.
 export function useIssuesQuery(statusFilter: IssueStatusFilter, page: number)
 {
 	return useQuery({
@@ -36,9 +30,7 @@ interface DeleteCommentVariables
 	commentId: number;
 }
 
-/**
- * Mutations for Issues List page with auto-invalidation.
- */
+//Mutations for Issues List page with auto-invalidation.
 export function useIssuesMutations()
 {
 	const queryClient = useQueryClient();

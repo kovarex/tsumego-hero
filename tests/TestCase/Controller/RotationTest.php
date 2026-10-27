@@ -2,34 +2,29 @@
 
 use App\Utility\Constants;
 
-/**
- * Tests for board rotation functionality in besogo.
- *
- * Covers:
- * - Auto-rotation of boards too tall to view without scrolling
- * - Manual CW/CCW rotation buttons
- * - Rotation cycle (4 rotations = identity)
- * - Manual rotation after auto-rotation
- * - Manual rotation of a full board, which turns the stones
- *
- * These tests lock down behavior of rotateBoard() and autoRotate()
- * in editor.js.
- */
+//Tests for board rotation functionality in besogo.
+//Covers:
+//- Auto-rotation of boards too tall to view without scrolling
+//- Manual CW/CCW rotation buttons
+//- Rotation cycle (4 rotations = identity)
+//- Manual rotation after auto-rotation
+//- Manual rotation of a full board, which turns the stones
+//These tests lock down behavior of rotateBoard() and autoRotate() in editor.js.
 class RotationTest extends IntegrationTestCase
 {
-	/** Tall regular board: the highest y exceeds x by 10, so it is turned on its side. */
+	//Tall regular board: the highest y exceeds x by 10, so it is turned on its side.
 	private const TALL_SGF = '(;GM[1]FF[4]SZ[19]AB[ab][ac][ad][ae][af][ag][ah][ai][aj][ak]AW[bb][bc][bd][be][bf][bg][bh][bi][bj][bk];B[al]C[+])';
 
-	/** Tall vertical half board: the highest y exceeds x by 14, so it is turned on its side. */
+	//Tall vertical half board: the highest y exceeds x by 14, so it is turned on its side.
 	private const VERTICAL_HALF_SGF = '(;GM[1]FF[4]SZ[19]AB[aa][ab][ac][ad][ae][af][ag][ah][ai][aj][ak][al][am][an][ao]AW[ba][bb][bc][bd][be][bf][bg][bh][bi][bj][bk][bl][bm][bn][bo];B[ap]C[+])';
 
-	/** Small corner problem — never triggers auto-rotation. */
+	//Small corner problem — never triggers auto-rotation.
 	private const NORMAL_SGF = '(;GM[1]FF[4]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])';
 
-	/** Wide horizontal half board — never triggers auto-rotation. */
+	//Wide horizontal half board — never triggers auto-rotation.
 	private const WIDE_SGF = '(;GM[1]FF[4]SZ[19]AB[ba][ca][da][ea][fa][ga][ha][ia][ja][ka]AW[bb][cb][db][eb][fb][gb][hb][ib][jb][kb];B[la]C[+])';
 
-	/** Stones in two opposite corners make the board show in full. */
+	//Stones in two opposite corners make the board show in full.
 	private const FULL_BOARD_SGF = '(;GM[1]FF[4]SZ[19]AB[aa][ss];B[jj]C[+])';
 
 	private function getRotation(Browser $browser): int
@@ -42,9 +37,7 @@ class RotationTest extends IntegrationTestCase
 		return $browser->driver->executeScript('return besogo.boardCanvasSvg.getAttribute("viewBox");');
 	}
 
-	/**
-	 * @dataProvider autoRotationProvider
-	 */
+	/** @dataProvider autoRotationProvider */
 	public function testAutoRotation(string $sgf, bool $shouldRotate, string $reason)
 	{
 		$context = new ContextPreparator([
@@ -88,9 +81,7 @@ class RotationTest extends IntegrationTestCase
 		$this->assertTrue($browser->driver->executeScript('return besogo.verticalHalfBoardRotationWidthToken;'));
 	}
 
-	/**
-	 * @dataProvider manualRotationProvider
-	 */
+	/** @dataProvider manualRotationProvider */
 	public function testManualRotation(string $buttonId, string $direction)
 	{
 		$context = new ContextPreparator([
@@ -185,7 +176,7 @@ class RotationTest extends IntegrationTestCase
 		$this->assertEquals($originalViewBox, $this->getViewBox($browser), 'A full board keeps showing the whole board');
 	}
 
-	/** Whether there is a stone (of either colour, the colours may be swapped) at A19 and at T19. */
+	//Whether there is a stone (of either colour, the colours may be swapped) at A19 and at T19.
 	private function stonesAtA19AndT19(Browser $browser): array
 	{
 		return $browser->driver->executeScript('let current = besogo.editor.getCurrent();

@@ -1,13 +1,9 @@
 <?php
 
-/**
- * The addresses the collections answer on: one per action, and a short one per collection.
- */
+//The addresses the collections answer on: one per action, and a short one per collection.
 class SetsRoutesTest extends CakeTestCase
 {
-	/**
-	 * An action is reached by its own address, not read as the name of a collection
-	 */
+	//An action is reached by its own address, not read as the name of a collection
 	public function testEveryActionKeepsItsAddress(): void
 	{
 		$actions = $this->actionNames();
@@ -23,9 +19,6 @@ class SetsRoutesTest extends CakeTestCase
 		}
 	}
 
-	/**
-	 * A collection is reached by its short address
-	 */
 	public function testCollectionIsReachedByItsShortAddress(): void
 	{
 		$params = Router::parse('/sets/4211');
@@ -34,11 +27,8 @@ class SetsRoutesTest extends CakeTestCase
 		$this->assertSame('4211', $params['id']);
 	}
 
-	/**
-	 * Every public method the sets controller declares is an address
-	 *
-	 * @return array<string>
-	 */
+	//Every public method the sets controller declares is an address
+	/** @return array<string> */
 	private function actionNames(): array
 	{
 		$controller = new ReflectionClass('SetsController');

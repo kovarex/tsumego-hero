@@ -7,23 +7,20 @@ use App\Utility\TsumegoButtons;
 use App\Utility\TsumegoUtil;
 use App\Utility\Util;
 
-/**
- * Problems a teacher gave a class to solve by a day. The teacher builds the assignment up as a
- * draft, picking problems from their own collections and the ones of the site, and the pupils get
- * it once it is published. The picked problems are rows of classroom_assignment_problem, each a
- * problem of a collection (a set_connection), so it keeps the number it has there.
- *
- * What counts as done for the class is a solve for the assignment, a row of
- * classroom_assignment_result (recordResult()). A problem a pupil solved before is shown apart, so
- * the teacher sees it was not played again for the homework.
- */
+//Problems a teacher gave a class to solve by a day. The teacher builds the assignment up as a
+//draft, picking problems from their own collections and the ones of the site, and the pupils get
+//it once it is published. The picked problems are rows of classroom_assignment_problem, each a
+//problem of a collection (a set_connection), so it keeps the number it has there.
+//What counts as done for the class is a solve for the assignment, a row of
+//classroom_assignment_result (recordResult()). A problem a pupil solved before is shown apart, so
+//the teacher sees it was not played again for the homework.
 class ClassroomAssignment extends AppModel
 {
 	public $useTable = 'classroom_assignment';
 
 	public const MAXIMUM_TITLE_LENGTH = 100;
 
-	/** More problems than a class plays in a week, and the table of who solved what stays readable. */
+	//More problems than a class plays in a week, and the table of who solved what stays readable.
 	public const MAXIMUM_PROBLEMS = 300;
 
 	public const CELL_SOLVED = 'solved';
@@ -31,7 +28,7 @@ class ClassroomAssignment extends AppModel
 	public const CELL_EARLIER = 'earlier';
 	public const CELL_TRIED = 'tried';
 
-	/** The colours of the buttons of playButtons(), as the statuses of the problem buttons. */
+	//The colours of the buttons of playButtons(), as the statuses of the problem buttons.
 	public const BUTTON_SOLVED = 'S';
 	public const BUTTON_SOLVED_BEFORE = 'W';
 	public const BUTTON_NOT_SOLVED = 'N';
@@ -41,12 +38,9 @@ class ClassroomAssignment extends AppModel
 		return $assignment['published'] !== null;
 	}
 
-	/**
-	 * The assignments of a class, the drafts first and then the latest due date first, each with
-	 * the collections its problems come from under `collections`. The pupils don't see the drafts.
-	 *
-	 * @return list<array<string, mixed>>
-	 */
+	//The assignments of a class, the drafts first and then the latest due date first, each with
+	//the collections its problems come from under `collections`. The pupils don't see the drafts.
+	/** @return list<array<string, mixed>> */
 	public static function ofClassroom(int $classroomId, bool $withDrafts): array
 	{
 		$assignments = Util::query('SELECT a.* FROM classroom_assignment a
@@ -56,10 +50,9 @@ class ClassroomAssignment extends AppModel
 		return self::withCollections($assignments);
 	}
 
+	//The assignments, each with the collections its problems come from under `collections`, in
+	//the order of their first problem, for the name of an assignment without one (title()).
 	/**
-	 * The assignments, each with the collections its problems come from under `collections`, in
-	 * the order of their first problem, for the name of an assignment without one (title()).
-	 *
 	 * @param list<array<string, mixed>> $assignments
 	 * @return list<array<string, mixed>>
 	 */
@@ -87,10 +80,8 @@ class ClassroomAssignment extends AppModel
 		return $assignments;
 	}
 
-	/**
-	 * The joins from classroom_assignment_problem `p` to the problem `sc` of the collection `s`,
-	 * which leave out a problem or a collection in the trash: nobody but an admin can open it.
-	 */
+	//The joins from classroom_assignment_problem `p` to the problem `sc` of the collection `s`,
+	//which leave out a problem or a collection in the trash: nobody but an admin can open it.
 	private static function visibleProblemJoins(): string
 	{
 		return 'JOIN set_connection sc ON sc.id = p.set_connection_id
@@ -98,11 +89,8 @@ class ClassroomAssignment extends AppModel
 			JOIN `set` s ON s.id = sc.set_id AND s.deleted IS NULL';
 	}
 
-	/**
-	 * The name of an assignment: the one the teacher gave it, or the collections it draws from.
-	 *
-	 * @param array<string, mixed> $assignment A row of ofClassroom()
-	 */
+	//The name of an assignment: the one the teacher gave it, or the collections it draws from.
+	/** @param array<string, mixed> $assignment A row of ofClassroom() */
 	public static function title(array $assignment): string
 	{
 		if ($assignment['title'] !== null && $assignment['title'] !== '')
@@ -112,9 +100,7 @@ class ClassroomAssignment extends AppModel
 		return implode(', ', array_column($assignment['collections'], 'title'));
 	}
 
-	/**
-	 * The title an assignment is saved with, null for none.
-	 */
+	//The title an assignment is saved with, null for none.
 	public static function cleanTitle(string $title): ?string
 	{
 		$title = trim(preg_replace('/\s+/u', ' ', $title));
@@ -123,12 +109,9 @@ class ClassroomAssignment extends AppModel
 		return mb_substr($title, 0, self::MAXIMUM_TITLE_LENGTH);
 	}
 
-	/**
-	 * The collections a teacher can pick problems from, as cards: their own ones, then the ones
-	 * of the site in the order of the collections page. A collection without problems is left out.
-	 *
-	 * @return array{own: list<array<string, mixed>>, site: list<array<string, mixed>>}
-	 */
+	//The collections a teacher can pick problems from, as cards: their own ones, then the ones
+	//of the site in the order of the collections page. A collection without problems is left out.
+	/** @return array{own: list<array<string, mixed>>, site: list<array<string, mixed>>} */
 	public static function collectionCards(int $teacherId): array
 	{
 		$rows = Util::query('SELECT s.id, s.title, s.color, s.user_id, COUNT(t.id) AS problem_count, AVG(t.rating) AS rating
@@ -151,21 +134,15 @@ class ClassroomAssignment extends AppModel
 		return $cards;
 	}
 
-	/**
-	 * Whether a teacher can give the problems of the collection to a class: it is theirs or the
-	 * site's.
-	 *
-	 * @param array<string, mixed> $set Unwrapped set row
-	 */
+	//Whether a teacher can give the problems of the collection to a class: it is theirs or the site's.
+	/** @param array<string, mixed> $set Unwrapped set row */
 	public static function canAssignSet(array $set, int $teacherId): bool
 	{
 		return Set::isOfficial($set) || ((int) ($set['user_id'] ?? 0) === $teacherId && empty($set['deleted']));
 	}
 
-	/**
-	 * The columns problemPayload() reads, on the aliases of visibleProblemJoins(). The preview
-	 * needs the current SGF of the problem too: PREVIEW_COLUMN with previewJoin().
-	 */
+	//The columns problemPayload() reads, on the aliases of visibleProblemJoins(). The preview
+	//needs the current SGF of the problem too: PREVIEW_COLUMN with previewJoin().
 	private const PROBLEM_COLUMNS = 'sc.id AS set_connection_id, sc.tsumego_id, sc.num, s.id AS set_id, s.title AS set_title';
 	private const PREVIEW_COLUMN = ', sgf.sgf';
 
@@ -174,10 +151,9 @@ class ClassroomAssignment extends AppModel
 		return 'LEFT JOIN sgf ON sgf.id = ' . Sgf::currentVersionIDSql('sc.tsumego_id');
 	}
 
+	//A problem as the problem buttons show it: its number in its collection and the stones of the
+	//preview in the tooltip (previewBoard.js).
 	/**
-	 * A problem as the problem buttons show it: its number in its collection and the stones of the
-	 * preview in the tooltip (previewBoard.js).
-	 *
 	 * @param array<string, mixed> $row A row with PROBLEM_COLUMNS, and PREVIEW_COLUMN for a preview
 	 * @return array<string, mixed>
 	 */
@@ -193,11 +169,8 @@ class ClassroomAssignment extends AppModel
 		];
 	}
 
-	/**
-	 * The problems of a collection in its order, to pick from.
-	 *
-	 * @return list<array<string, mixed>> What problemPayload() makes of each
-	 */
+	//The problems of a collection in its order, to pick from.
+	/** @return list<array<string, mixed>> What problemPayload() makes of each */
 	public static function collectionProblems(int $setId): array
 	{
 		$rows = Util::query('SELECT ' . self::PROBLEM_COLUMNS . self::PREVIEW_COLUMN . '
@@ -211,10 +184,9 @@ class ClassroomAssignment extends AppModel
 		return array_map(self::problemPayload(...), $rows);
 	}
 
+	//The problems of an assignment in the order the teacher put them, with the previews for the
+	//buttons when $withPreview.
 	/**
-	 * The problems of an assignment in the order the teacher put them, with the previews for the
-	 * buttons when $withPreview.
-	 *
 	 * @param array<string, mixed> $assignment
 	 * @return list<array<string, mixed>> What problemPayload() makes of each
 	 */
@@ -230,14 +202,11 @@ class ClassroomAssignment extends AppModel
 		return array_map(self::problemPayload(...), $rows);
 	}
 
-	/**
-	 * Puts the problems in the assignment in place of the ones it had, in the given order. A
-	 * problem from a collection the teacher can't give, one in the trash and one already in the
-	 * assignment from another collection are left out.
-	 *
-	 * @param list<int> $setConnectionIds
-	 * @return int How many problems the assignment has now
-	 */
+	//Puts the problems in the assignment in place of the ones it had, in the given order. A
+	//problem from a collection the teacher can't give, one in the trash and one already in the
+	//assignment from another collection are left out.
+	//Returns how many problems the assignment has now
+	/** @param list<int> $setConnectionIds */
 	public static function replaceProblems(int $assignmentId, array $setConnectionIds, int $teacherId): int
 	{
 		$rows = empty($setConnectionIds) ? [] : Util::query('SELECT sc.id, sc.tsumego_id, s.public, s.user_id, s.deleted
@@ -276,20 +245,16 @@ class ClassroomAssignment extends AppModel
 		return count($tsumegoIds);
 	}
 
-	/**
-	 * The address where a pupil plays the assignment as one row of problems, at the problem when
-	 * given, else at the first one they haven't solved (ClassroomsController::play()).
-	 */
+	//The address where a pupil plays the assignment as one row of problems, at the problem when
+	//given, else at the first one they haven't solved (ClassroomsController::play()).
 	public static function playLink(int $assignmentId, ?int $setConnectionId = null): string
 	{
 		return '/classes/play/' . $assignmentId . ($setConnectionId === null ? '' : '/' . $setConnectionId);
 	}
 
-	/**
-	 * Counts a result of the player on a problem for every published assignment of their classes
-	 * that has it: a misplay until the problem is solved for the assignment, and the first solve. A problem solved before counts too when it is
-	 * solved again (the play page sends that result in an assignment, see Play::play()).
-	 */
+	//Counts a result of the player on a problem for every published assignment of their classes
+	//that has it: a misplay until the problem is solved for the assignment, and the first solve. A problem solved before counts too when it is
+	//solved again (the play page sends that result in an assignment, see Play::play()).
 	public static function recordResult(int $userId, int $tsumegoId, PlayOutcome $outcome): void
 	{
 		if ($outcome === PlayOutcome::TimedOut)
@@ -315,9 +280,8 @@ class ClassroomAssignment extends AppModel
 				[(int) $row['id'], $userId, $tsumegoId, $misplays, $solved]);
 	}
 
+	//The problems of the assignment the player solved for it, by tsumego id.
 	/**
-	 * The problems of the assignment the player solved for it, by tsumego id.
-	 *
 	 * @param array<string, mixed> $assignment
 	 * @return array<int, true>
 	 */
@@ -329,12 +293,9 @@ class ClassroomAssignment extends AppModel
 		return array_fill_keys(array_map('intval', array_column($rows, 'tsumego_id')), true);
 	}
 
-	/**
-	 * The first problem of the assignment the player hasn't solved for it, or the first problem
-	 * once they solved them all; null for an assignment without problems.
-	 *
-	 * @param array<string, mixed> $assignment
-	 */
+	//The first problem of the assignment the player hasn't solved for it, or the first problem
+	//once they solved them all; null for an assignment without problems.
+	/** @param array<string, mixed> $assignment */
 	public static function firstUnsolvedSetConnectionId(array $assignment, int $userId): ?int
 	{
 		$problems = self::problems($assignment);
@@ -347,14 +308,11 @@ class ClassroomAssignment extends AppModel
 		return $problems[0]['setConnectionId'];
 	}
 
-	/**
-	 * The row of buttons under the board while the player plays the assignment, numbered from 1
-	 * like a collection of its own: green for a problem solved for the assignment, light blue
-	 * for one solved before but not yet for the assignment, grey for one never solved. The
-	 * tooltip names the collection and the number the problem has there.
-	 *
-	 * @param array<string, mixed> $assignment
-	 */
+	//The row of buttons under the board while the player plays the assignment, numbered from 1
+	//like a collection of its own: green for a problem solved for the assignment, light blue
+	//for one solved before but not yet for the assignment, grey for one never solved. The
+	//tooltip names the collection and the number the problem has there.
+	/** @param array<string, mixed> $assignment */
 	public static function playButtons(array $assignment, int $userId, int $currentSetConnectionId): TsumegoButtons
 	{
 		$rows = Util::query('SELECT sc.id AS set_connection_id, sc.tsumego_id, sc.num, s.title AS set_title, t.rating, ts.status AS tsumego_status' . self::PREVIEW_COLUMN . '
@@ -391,10 +349,8 @@ class ClassroomAssignment extends AppModel
 		return $buttons;
 	}
 
-	/**
-	 * Whether a problem of the collection is in a published assignment of a class the player is
-	 * in. Such a player can open the collection even when the teacher keeps it private.
-	 */
+	//Whether a problem of the collection is in a published assignment of a class the player is
+	//in. Such a player can open the collection even when the teacher keeps it private.
 	public static function isSetAssignedTo(int $userId, int $setId): bool
 	{
 		$rows = Util::query('SELECT 1 FROM classroom_assignment a
@@ -407,23 +363,19 @@ class ClassroomAssignment extends AppModel
 		return !empty($rows);
 	}
 
-	/**
-	 * The moment from which a solve is late: the end of the due day.
-	 *
-	 * @param array<string, mixed> $assignment
-	 */
+	//The moment from which a solve is late: the end of the due day.
+	/** @param array<string, mixed> $assignment */
 	public static function lateFrom(array $assignment): string
 	{
 		return date('Y-m-d H:i:s', strtotime($assignment['due'] . ' +1 day'));
 	}
 
+	//Who of the class solved which assigned problem: one row per pupil, one cell per problem.
+	//A cell is null for a problem not touched for the assignment, or says it was solved for it
+	//(late when after the due day), solved only before, or tried without a solve yet.
+	//$pupilId: Only this pupil, for the pupil looking at their own homework
 	/**
-	 * Who of the class solved which assigned problem: one row per pupil, one cell per problem.
-	 * A cell is null for a problem not touched for the assignment, or says it was solved for it
-	 * (late when after the due day), solved only before, or tried without a solve yet.
-	 *
 	 * @param array<string, mixed> $assignment A published one
-	 * @param int|null $pupilId Only this pupil, for the pupil looking at their own homework
 	 * @return array{problems: list<array<string, mixed>>, pupils: list<array<string, mixed>>}
 	 */
 	public static function progress(array $assignment, ?int $pupilId = null): array

@@ -11,19 +11,14 @@ class MistakeTrainingTest extends IntegrationTestCase
 		return MistakeTraining::getPoolRow($userId, $tsumegoId);
 	}
 
-	/**
-	 * A problem enters the training by being solved, so that is how these tests get
-	 * a row at the bottom of the ladder.
-	 */
+	//A problem enters the training by being solved, so that is how these tests get a row at the bottom of the ladder.
 	private function enterTraining(int $userId, int $tsumegoId): void
 	{
 		MistakeTraining::recordResult($userId, $tsumegoId, PlayOutcome::SolvedAfterMistake, null);
 	}
 
-	/**
-	 * The review day of a problem comes and it is solved cleanly, which is how it
-	 * climbs: a clean solve before that day does not count.
-	 */
+	//The review day of a problem comes and it is solved cleanly, which is how it
+	//climbs: a clean solve before that day does not count.
 	private function reviewCleanly(int $userId, int $tsumegoId): void
 	{
 		Util::execute(
@@ -104,10 +99,7 @@ class MistakeTrainingTest extends IntegrationTestCase
 		}
 	}
 
-	/**
-	 * A solved or mastered problem is the player's to play with freely in the level
-	 * and rating modes.
-	 */
+	//A solved or mastered problem is the player's to play with freely in the level and rating modes.
 	public function testASolvedProblemIsFreePlay(): void
 	{
 		foreach (['S', 'C'] as $status)
@@ -236,10 +228,8 @@ class MistakeTrainingTest extends IntegrationTestCase
 		$this->assertSame(1, (int) $row['rung']);
 	}
 
-	/**
-	 * Playing a problem again before its review, in the level mode, is won by the
-	 * short-term memory: Reset and solve again would otherwise graduate it in a minute.
-	 */
+	//Playing a problem again before its review, in the level mode, is won by the
+	//short-term memory: Reset and solve again would otherwise graduate it in a minute.
 	public function testACleanSolveBeforeTheReviewDayDoesNotClimb(): void
 	{
 		$context = new ContextPreparator(['tsumego' => 1]);
@@ -614,11 +604,9 @@ class MistakeTrainingTest extends IntegrationTestCase
 
 	// ==================== Today's training ====================
 
-	/**
-	 * Problems in the training, in the order they came in. Each entry is added to the
-	 * status fixture of its problem; by default a problem is due, every one at the same
-	 * moment the way an import brings them, on the bottom rung and untried today.
-	 */
+	//Problems in the training, in the order they came in. Each entry is added to the
+	//status fixture of its problem; by default a problem is due, every one at the same
+	//moment the way an import brings them, on the bottom rung and untried today.
 	private function prepareTraining(array ...$problems): ContextPreparator
 	{
 		$due = date('Y-m-d H:i:s', strtotime('-1 hour'));
@@ -628,9 +616,7 @@ class MistakeTrainingTest extends IntegrationTestCase
 		return new ContextPreparator(['user' => ['name' => 'testuser'], 'tsumegos' => $tsumegos]);
 	}
 
-	/**
-	 * A problem solved in the training today, waiting for its next review.
-	 */
+	//A problem solved in the training today, waiting for its next review.
 	private static function solvedToday(int $rung = 1): array
 	{
 		return [
@@ -651,20 +637,14 @@ class MistakeTrainingTest extends IntegrationTestCase
 		return (int) $context->tsumegos[$index]['set-connections'][0]['id'];
 	}
 
-	/**
-	 * A result of a play in the training, the way the play page reports it.
-	 */
+	//A result of a play in the training, the way the play page reports it.
 	private function playInTraining(ContextPreparator $context, int $index, PlayOutcome $outcome): void
 	{
 		MistakeTraining::recordResult($context->user['id'], $this->tsumegoId($context, $index), $outcome, null, true);
 	}
 
-	/**
-	 * The training row the play page shows with the problem at $currentIndex open,
-	 * keyed by tsumego.
-	 *
-	 * @return array<int, \App\Utility\TsumegoButton>
-	 */
+	//The training row the play page shows with the problem at $currentIndex open, keyed by tsumego.
+	/** @return array<int, \App\Utility\TsumegoButton> */
 	private function trainingButtons(ContextPreparator $context, int $currentIndex = 0): array
 	{
 		$buttons = MistakeTraining::buildQueueButtons($this->setConnectionId($context, $currentIndex));
@@ -676,13 +656,11 @@ class MistakeTrainingTest extends IntegrationTestCase
 		return $this->poolRow($context->user['id'], $this->tsumegoId($context, $index));
 	}
 
-	/**
-	 * An import brings many problems due at the same moment, newest mistake first, so
-	 * neither the due date nor the order of the problems in their set can order the
-	 * day: problems that tie on the date would come out in a different order on every
-	 * query, and the training would open at 15/20. The problems come in here in an
-	 * order that is neither theirs nor its reverse.
-	 */
+	//An import brings many problems due at the same moment, newest mistake first, so
+	//neither the due date nor the order of the problems in their set can order the
+	//day: problems that tie on the date would come out in a different order on every
+	//query, and the training would open at 15/20. The problems come in here in an
+	//order that is neither theirs nor its reverse.
 	public function testTodaysTrainingKeepsTheOrderTheProblemsCameIn(): void
 	{
 		$context = new ContextPreparator([
@@ -957,11 +935,9 @@ class MistakeTrainingTest extends IntegrationTestCase
 		$this->assertSame(1, $this->lapses($context, 0));
 	}
 
-	/**
-	 * A missed problem stays due until it is solved, and every try before that fails
-	 * on what the first miss showed already, so the day counts one lapse, also when
-	 * the problem is tried again outside the training.
-	 */
+	//A missed problem stays due until it is solved, and every try before that fails
+	//on what the first miss showed already, so the day counts one lapse, also when
+	//the problem is tried again outside the training.
 	public function testAMissAgainTheSameDayIsTheSameLapse(): void
 	{
 		$context = $this->prepareTraining([]);
@@ -1255,10 +1231,7 @@ class MistakeTrainingTest extends IntegrationTestCase
 			);
 	}
 
-	/**
-	 * Days a player trained and did not clear, $reviewed problems each: a review
-	 * that was left due.
-	 */
+	//Days a player trained and did not clear, $reviewed problems each: a review that was left due.
 	private function missedDays(int $userId, array $daysAgo, int $reviewed = 1): void
 	{
 		foreach ($daysAgo as $days)

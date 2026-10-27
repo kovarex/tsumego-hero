@@ -1,10 +1,7 @@
 <?php
 
-/**
- * Tests for JwtAuth utility class.
- *
- * JwtAuth provides stateless authentication using signed JWT tokens.
- */
+//Tests for JwtAuth utility class.
+//JwtAuth provides stateless authentication using signed JWT tokens.
 use App\Utility\JwtAuth;
 
 class JwtAuthTest extends CakeTestCase

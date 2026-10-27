@@ -1,17 +1,13 @@
 import dayjs, { type Dayjs } from 'dayjs';
 
-/**
- * The dates of the whole site are written here, in the format the player picked in the settings, ISO by default.
- *
- * The server prints dates as <time datetime="..." data-format="...">, see localizeTimeElements, and the React
- * components call formatDate directly.
- *
- * Convention:
- * - Timestamps (full ISO 8601, e.g. 2026-08-15T12:00:00+00:00) are instants: they are shown in the user's
- *   local timezone, where the day may cross over.
- * - Calendar dates (date-only YYYY-MM-DD) are timezone-free: dayjs reads them as a local day, so the day
- *   never changes across timezones.
- */
+//The dates of the whole site are written here, in the format the player picked in the settings, ISO by default.
+//The server prints dates as <time datetime="..." data-format="...">, see localizeTimeElements, and the React
+//components call formatDate directly.
+//Convention:
+//- Timestamps (full ISO 8601, e.g. 2026-08-15T12:00:00+00:00) are instants: they are shown in the user's
+//  local timezone, where the day may cross over.
+//- Calendar dates (date-only YYYY-MM-DD) are timezone-free: dayjs reads them as a local day, so the day
+//  never changes across timezones.
 const DATE_FORMATS = ['datetime', 'date', 'time', 'month-day'] as const;
 
 export type DateFormat = (typeof DATE_FORMATS)[number];
@@ -30,7 +26,7 @@ const BROWSER_OPTIONS: Record<DateFormat, Intl.DateTimeFormatOptions> = {
 	'month-day': { month: 'short', day: 'numeric' }
 };
 
-/** By the ids of the date_format table (User::DATE_FORMAT_*), the choice the layout puts on <html data-date-format>. */
+//By the ids of the date_format table (User::DATE_FORMAT_*), the choice the layout puts on <html data-date-format>.
 const FORMATTERS: Record<number, Formatter> = {
 	// ISO, 2026-10-21 14:05
 	1: patterns({ datetime: 'YYYY-MM-DD HH:mm', date: 'YYYY-MM-DD', time: 'HH:mm', 'month-day': 'MMM D' }),
@@ -42,7 +38,7 @@ const FORMATTERS: Record<number, Formatter> = {
 	4: (date, format) => date.toDate().toLocaleString(undefined, BROWSER_OPTIONS[format])
 };
 
-/** The text to show for the date, or the input itself when it is not a date. */
+//The text to show for the date, or the input itself when it is not a date.
 export function formatDate(value: string, format: DateFormat = 'datetime'): string
 {
 	const date = dayjs(value);
@@ -57,7 +53,7 @@ function isDateFormat(format: string): format is DateFormat
 	return (DATE_FORMATS as readonly string[]).includes(format);
 }
 
-/** Replaces the text of every <time datetime="..."> rendered by the server with its formatted date. */
+//Replaces the text of every <time datetime="..."> rendered by the server with its formatted date.
 export function localizeTimeElements(): void
 {
 	document.querySelectorAll<HTMLTimeElement>('time[datetime]').forEach(element =>

@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * The result of a review of the mistake training comes from mistake_training_result
- * (MistakeTraining::REVIEW_ constants) instead of a letter: mistake_training_review.result becomes
- * mistake_training_result_id and mistake_training_pool.last_review_result becomes
- * last_mistake_training_result_id.
- */
+//The result of a review of the mistake training comes from mistake_training_result
+//(MistakeTraining::REVIEW_ constants) instead of a letter: mistake_training_review.result becomes
+//mistake_training_result_id and mistake_training_pool.last_review_result becomes
+//last_mistake_training_result_id.
 final class AddMistakeTrainingResult extends AbstractMigration
 {
-	/** id => [the letter, the name] */
+	//id => [the letter, the name]
 	private const RESULTS = [
 		1 => ['S', 'solved'],
 		2 => ['F', 'missed'],

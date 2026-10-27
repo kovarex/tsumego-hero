@@ -28,11 +28,9 @@ class UsersController extends AppController
 
 	protected ?GoogleTokenVerifierInterface $tokenVerifier = null;
 
-	/**
-	 * A password that login alone would never reject, used to spend the same time on a
-	 * name that has no account. It costs what PASSWORD_DEFAULT costs, and
-	 * LoginComponentTest fails when the two drift apart.
-	 */
+	//A password that login alone would never reject, used to spend the same time on a
+	//name that has no account. It costs what PASSWORD_DEFAULT costs, and
+	//LoginComponentTest fails when the two drift apart.
 	private static string $DUMMY_PASSWORD_HASH = '$2y$12$BZ5TgNGDEJZktTLaEt5Tx.zJfbhdsQxv5/O7wfVeX0QpDwVSdTGg.';
 
 	public static function _dummyPasswordHash(): string
@@ -45,21 +43,17 @@ class UsersController extends AppController
 		return $this->passwordChecker ??= PwnedPasswordChecker::create();
 	}
 
-	/**
-	 * Whether the password is one an attacker would try first, because it is already
-	 * in a public breach. Such a password is refused wherever a password is set.
-	 */
+	//Whether the password is one an attacker would try first, because it is already
+	//in a public breach. Such a password is refused wherever a password is set.
 	private function isKnownLeaked(string $password): bool
 	{
 		return $this->getPasswordChecker()->isBreached($password);
 	}
 
-	/**
-	 * The message to show for a password that can not be used, or null when it can.
-	 * Every place that sets a password asks this, so the rules are the same when an
-	 * account is created, when the password is changed and when it is reset. Signing in
-	 * does not ask it, so an account with a shorter password still gets in.
-	 */
+	//The message to show for a password that can not be used, or null when it can.
+	//Every place that sets a password asks this, so the rules are the same when an
+	//account is created, when the password is changed and when it is reset. Signing in
+	//does not ask it, so an account with a shorter password still gets in.
 	private function passwordProblem(string $password, string $repeated): ?string
 	{
 		if (mb_strlen($password) < Constants::$MINIMUM_PASSWORD_LENGTH)
@@ -71,18 +65,13 @@ class UsersController extends AppController
 		return null;
 	}
 
-	/**
-	 * Get the Google token verifier (lazily creates real verifier if not set)
-	 */
+	//Get the Google token verifier (lazily creates real verifier if not set)
 	protected function getTokenVerifier(): GoogleTokenVerifierInterface
 	{
 		return $this->tokenVerifier ??= GoogleTokenVerifier::create(
 			'986748597524-05gdpjqrfop96k6haga9gvj1f61sji6v.apps.googleusercontent.com');
 	}
 
-	/**
-	 * @return void
-	 */
 	#[HttpGet]
 	#[HttpPost]
 	public function resetpassword(): void
@@ -133,14 +122,11 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		$this->User->save($user);
 	}
 
-	/**
-	 * Send the mail that carries a link. The token in it is remembered only when this
-	 * returns true, so a mail server that does not answer leaves nothing behind and the
-	 * user can go through the flow again right away.
-	 *
-	 * @param CakeEmail $emailer The mailer from _getEmailer(), which a test replaces
-	 * @return bool Whether the mail left
-	 */
+	//Send the mail that carries a link. The token in it is remembered only when this
+	//returns true, so a mail server that does not answer leaves nothing behind and the
+	//user can go through the flow again right away.
+	//Returns whether the mail left
+	/** @param CakeEmail $emailer The mailer from _getEmailer(), which a test replaces */
 	private function linkMailWasSent(mixed $emailer, string $body): bool
 	{
 		try
@@ -156,13 +142,10 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		return true;
 	}
 
-	/**
-	 * Send a mail that only tells the account about a change that already happened. It is
-	 * not part of the change, so a mail server that does not answer is logged instead of
-	 * turned into an error page.
-	 *
-	 * @param CakeEmail $emailer The mailer from _getEmailer(), which a test replaces
-	 */
+	//Send a mail that only tells the account about a change that already happened. It is
+	//not part of the change, so a mail server that does not answer is logged instead of
+	//turned into an error page.
+	/** @param CakeEmail $emailer The mailer from _getEmailer(), which a test replaces */
 	private function sendNotification(mixed $emailer, string $body): void
 	{
 		try
@@ -215,9 +198,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		return $this->redirect('/users/login');
 	}
 
-	/**
-	 * The latest attempts of all players, or of the one player given (admin only)
-	 */
+	//The latest attempts of all players, or of the one player given (admin only)
 	#[HttpGet]
 	public function userstats(?string $userID = null): void
 	{
@@ -227,9 +208,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		$this->set('userActivitiesRenderer', new UserActivitiesRenderer($this->params['url'], userID: $userID === null ? null : (int) $userID));
 	}
 
-	/**
-	 * The latest attempts on the problems of the set given, of all players without one (admin only)
-	 */
+	//The latest attempts on the problems of the set given, of all players without one (admin only)
 	#[HttpGet]
 	public function userstats3(?string $setID = null): void
 	{
@@ -240,18 +219,14 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		$this->render('userstats');
 	}
 
-	/**
-	 * The uploads became the SGF changes of the admin area
-	 */
+	//The uploads became the SGF changes of the admin area
 	#[HttpGet]
 	public function uploads(): CakeResponse
 	{
 		return $this->redirect('/admin/sgf-changes');
 	}
 
-	/**
-	 * The admin panel of old, its tables are pages of the admin area now
-	 */
+	//The admin panel of old, its tables are pages of the admin area now
 	#[HttpGet]
 	public function adminstats(): CakeResponse
 	{
@@ -338,19 +313,14 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		return $this->redirect($redirect);
 	}
 
-	/**
-	 * Sign a redirect URL with HMAC to prevent tampering.
-	 * This allows stateless redirect URL handling without sessions.
-	 */
+	//Sign a redirect URL with HMAC to prevent tampering. This allows stateless redirect URL handling without sessions.
 	private function signRedirectUrl(string $redirectUrl): string
 	{
 		return hash_hmac('sha256', $redirectUrl, Configure::read('Security.salt'));
 	}
 
-	/**
-	 * Verify redirect URL signature and return safe redirect URL.
-	 * Returns default redirect if signature is invalid or URL is not relative.
-	 */
+	//Verify redirect URL signature and return safe redirect URL.
+	//Returns default redirect if signature is invalid or URL is not relative.
 	private function getVerifiedRedirectUrl(?string $redirectUrl, ?string $signature): string
 	{
 		$defaultRedirect = '/sets/';
@@ -370,9 +340,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		return $redirectUrl;
 	}
 
-	/**
-	 * Check if URL is relative (starts with / but not //)
-	 */
+	//Check if URL is relative (starts with / but not //)
 	private function isRelativeUrl(string $url): bool
 	{
 		return strlen($url) > 0 && $url[0] === '/' && (strlen($url) < 2 || $url[1] !== '/');
@@ -443,12 +411,8 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		return $this->redirect(['controller' => 'sets', 'action' => 'index']);
 	}
 
-	/**
-	 * Render the forced display-name change form. Only users flagged with
-	 * needs_display_name_change can reach this (free renaming is disabled).
-	 *
-	 * @return mixed
-	 */
+	//Render the forced display-name change form. Only users flagged with
+	//needs_display_name_change can reach this (free renaming is disabled).
 	#[HttpGet]
 	public function changename()
 	{
@@ -469,12 +433,8 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		return null;
 	}
 
-	/**
-	 * Update user's display name. Only allowed while the account is flagged for it
-	 * (needs_display_name_change = 1). Clears the flag on success.
-	 *
-	 * @return mixed
-	 */
+	//Update user's display name. Only allowed while the account is flagged for it
+	//(needs_display_name_change = 1). Clears the flag on success.
 	#[HttpPost]
 	public function updatename()
 	{
@@ -555,9 +515,6 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		return $this->redirect('/sets/');
 	}
 
-	/**
-	 * @return void
-	 */
 	#[HttpGet]
 	public function highscore(): void
 	{
@@ -592,9 +549,6 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		$this->set('totalUsers', $this->countActiveUsers());
 	}
 
-	/**
-	 * @return void
-	 */
 	#[HttpGet]
 	public function added_tags(): void
 	{
@@ -657,9 +611,6 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 			GROUP BY user.id", 'id', [$userId]));
 	}
 
-	/**
-	 * @return void
-	 */
 	#[HttpGet]
 	public function time_mode(): void
 	{
@@ -762,15 +713,14 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		return $this->User->find('count', ['conditions' => ['deleted IS NULL']]);
 	}
 
+	//Run a single CTE query that returns the top ranked rows plus the rows around
+	//the current user. The $rankedQuery must be a SELECT that produces a `position`
+	//column via ROW_NUMBER().
+	//$rankedQuery: SQL SELECT with ROW_NUMBER() ... as position
+	//$idColumn: Column name used to identify the current user (default: 'id')
+	//$topRows: How many top rows are always listed
 	/**
-	 * Run a single CTE query that returns the top ranked rows plus the rows around
-	 * the current user. The $rankedQuery must be a SELECT that produces a `position`
-	 * column via ROW_NUMBER().
-	 *
-	 * @param string $rankedQuery SQL SELECT with ROW_NUMBER() ... as position
-	 * @param string $idColumn Column name used to identify the current user (default: 'id')
 	 * @param array<int, mixed> $extraParams Extra bound parameters for the ranked query
-	 * @param int $topRows How many top rows are always listed
 	 * @return array<int, array<string, mixed>>
 	 */
 	private function queryHighscoreWithSelfView(string $rankedQuery, string $idColumn = 'id', array $extraParams = [], int $topRows = 30): array
@@ -792,9 +742,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		return Util::query($sql, array_merge($extraParams, [$userId, $neighborRadius, $neighborRadius]));
 	}
 
-	/**
-	 * Build array of rank names from 15k down to 5d (matching time_mode_rank table order).
-	 */
+	//Build array of rank names from 15k down to 5d (matching time_mode_rank table order).
 	private function buildRankNames(): array
 	{
 		$names = [];
@@ -810,9 +758,6 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		return $names;
 	}
 
-	/**
-	 * @return void
-	 */
 	#[HttpGet]
 	public function leaderboard(): void
 	{
@@ -833,11 +778,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		$this->set('totalUsers', Util::query("SELECT COUNT(*) as cnt FROM user WHERE daily_xp > 0 AND deleted IS NULL")[0]['cnt']);
 	}
 
-	/**
-	 * Redirect to the logged-in user's own profile page.
-	 *
-	 * @return void
-	 */
+	//Redirect to the logged-in user's own profile page.
 	#[HttpGet]
 	public function profile(): void
 	{
@@ -1032,12 +973,10 @@ ORDER BY category DESC', [$user['User']['id']]));
 		return null;
 	}
 
-	/**
-	 * How the site behaves for the logged in player: appearance, how a problem is
-	 * dealt and the progress actions. The profile stays the public page, so
-	 * everything that only changes the player's own view lives here. The boards in
-	 * the rotation are picked in the dropdown in the header.
-	 */
+	//How the site behaves for the logged in player: appearance, how a problem is
+	//dealt and the progress actions. The profile stays the public page, so
+	//everything that only changes the player's own view lives here. The boards in
+	//the rotation are picked in the dropdown in the header.
 	#[HttpGet]
 	public function settings(): mixed
 	{
@@ -1056,12 +995,8 @@ ORDER BY category DESC', [$user['User']['id']]));
 		return null;
 	}
 
-	/**
-	 * The address an account is waiting for the confirmation of, or null when there is
-	 * none or its link is too old to work.
-	 *
-	 * @param array $user
-	 */
+	//The address an account is waiting for the confirmation of, or null when there is
+	//none or its link is too old to work.
 	private static function waitingAddress(array $user): ?string
 	{
 		if (empty($user['unconfirmed_email']) || empty($user['unconfirmed_email_created']))
@@ -1071,9 +1006,6 @@ ORDER BY category DESC', [$user['User']['id']]));
 		return (string) $user['unconfirmed_email'];
 	}
 
-	/**
-	 * @return void
-	 */
 	#[HttpGet]
 	public function authors(): void
 	{
@@ -1148,9 +1080,6 @@ ORDER BY category DESC', [$user['User']['id']]));
 		$this->set('t', $authors);
 	}
 
-	/**
-	 * @return void
-	 */
 	#[HttpGet]
 	public function logout(): void
 	{
@@ -1166,9 +1095,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 		return password_verify($data['password'], $user['User']['password_hash']);
 	}
 
-	/**
-	 * @return CakeResponse|null
-	 */
+	/** @return CakeResponse|null */
 	#[HttpPost]
 	public function googlesignin()
 	{
@@ -1291,26 +1218,18 @@ ORDER BY category DESC', [$user['User']['id']]));
 
 	private static int $DELETION_LINK_VALID_HOURS = 24;
 
-	/**
-	 * How long the two links of an address change work, in hours. The cron forgets a
-	 * change that nobody confirmed, so it reads the same value.
-	 */
+	//How long the two links of an address change work, in hours. The cron forgets a
+	//change that nobody confirmed, so it reads the same value.
 	public static int $EMAIL_CHANGE_LINK_VALID_HOURS = 24;
 
-	/**
-	 * How long the link of a password reset works, in hours.
-	 */
+	//How long the link of a password reset works, in hours.
 	private static int $PASSWORD_RESET_LINK_VALID_HOURS = 2;
 
-	/**
-	 * How long to wait before another reset mail is sent for the same account.
-	 */
+	//How long to wait before another reset mail is sent for the same account.
 	private static int $PASSWORD_RESET_MINUTES_BETWEEN_MAILS = 5;
 
-	/**
-	 * First step of deleting the account of the logged-in user: emails a link confirming the deletion
-	 * (confirm_delete_account).
-	 */
+	//First step of deleting the account of the logged-in user: emails a link confirming the deletion
+	//(confirm_delete_account).
 	#[HttpGet]
 	#[HttpPost]
 	public function delete_account()
@@ -1343,14 +1262,11 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 		return null;
 	}
 
-	/**
-	 * Second step of deleting an account, opened from the emailed link. It works without being
-	 * signed in, like the password reset. GET only shows the confirmation button (email scanners open
-	 * links), the deletion happens on POST.
-	 *
-	 * The account is only marked as deleted: everything it created stays (shown as DELETED_NAME),
-	 * it can't sign in anymore, and an admin can restore it.
-	 */
+	//Second step of deleting an account, opened from the emailed link. It works without being
+	//signed in, like the password reset. GET only shows the confirmation button (email scanners open
+	//links), the deletion happens on POST.
+	//The account is only marked as deleted: everything it created stays (shown as DELETED_NAME),
+	//it can't sign in anymore, and an admin can restore it.
 	#[HttpGet]
 	#[HttpPost]
 	public function confirm_delete_account(?string $token = null)
@@ -1376,9 +1292,7 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 		return $this->redirect('/');
 	}
 
-	/**
-	 * Restores a deleted account (admin only).
-	 */
+	//Restores a deleted account (admin only).
 	#[HttpPost]
 	public function restore_account(?string $id = null)
 	{
@@ -1399,8 +1313,6 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 		return $this->redirect('/admin/deleted-accounts');
 	}
 
-	/**
-	 */
 	#[HttpGet]
 	#[HttpPost]
 	public function demote_admin()
@@ -1580,7 +1492,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		return $this->redirect('/admin/sgf-proposals');
 	}
 
-	/** Puts a rejected SGF proposal back among the ones waiting for a decision. */
+	//Puts a rejected SGF proposal back among the ones waiting for a decision.
 	#[HttpPost]
 	public function reopenSGFProposal(string $sgfID)
 	{
@@ -1715,11 +1627,9 @@ OFFSET " . $offset, [$userID, $userID]);
 		return $this->redirect('/users/settings');
 	}
 
-	/**
-	 * Ask for a different e-mail address. The account keeps the address it has until
-	 * the player confirms the new one from the link sent there, so a session left open
-	 * somewhere can not move the account to an address of somebody else.
-	 */
+	//Ask for a different e-mail address. The account keeps the address it has until
+	//the player confirms the new one from the link sent there, so a session left open
+	//somewhere can not move the account to an address of somebody else.
 	#[HttpPost]
 	public function emailPreference(): mixed
 	{
@@ -1794,11 +1704,9 @@ OFFSET " . $offset, [$userID, $userID]);
 		return $this->redirect('/users/settings');
 	}
 
-	/**
-	 * Second step of an address change, opened from the link sent to the new address.
-	 * It works without being signed in, like the password reset. GET only shows the
-	 * confirmation button (email scanners open links), the change happens on POST.
-	 */
+	//Second step of an address change, opened from the link sent to the new address.
+	//It works without being signed in, like the password reset. GET only shows the
+	//confirmation button (email scanners open links), the change happens on POST.
 	#[HttpGet]
 	#[HttpPost]
 	public function confirmEmailChange(?string $token = null)
@@ -1849,10 +1757,8 @@ OFFSET " . $offset, [$userID, $userID]);
 		return $this->redirect(Auth::isLoggedIn() ? '/users/settings' : '/users/login');
 	}
 
-	/**
-	 * Second step of cancelling an address change, opened from the link sent to the
-	 * address that is being given up. GET only shows the button, POST cancels.
-	 */
+	//Second step of cancelling an address change, opened from the link sent to the
+	//address that is being given up. GET only shows the button, POST cancels.
 	#[HttpGet]
 	#[HttpPost]
 	public function cancelEmailChange(?string $token = null)
@@ -1876,9 +1782,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		return $this->redirect(Auth::isLoggedIn() ? '/users/settings' : '/users/login');
 	}
 
-	/**
-	 * Drop a pending address change, so the links it was sent with stop working.
-	 */
+	//Drop a pending address change, so the links it was sent with stop working.
 	private function forgetAddressChange(int $userID): void
 	{
 		$this->User->save(['User' => [
@@ -1892,11 +1796,7 @@ OFFSET " . $offset, [$userID, $userID]);
 			'unconfirmed_email_cancel_token', 'unconfirmed_email_created']]);
 	}
 
-	/**
-	 * The account waiting for the given link, or null when the link is unknown or old.
-	 *
-	 * @return array|null
-	 */
+	//The account waiting for the given link, or null when the link is unknown or old.
 	private function findByEmailChangeToken(string $field, ?string $token): ?array
 	{
 		if (!$token)
@@ -1909,11 +1809,9 @@ OFFSET " . $offset, [$userID, $userID]);
 		return $user ?: null;
 	}
 
-	/**
-	 * Change the password of a local account. The current password is asked for so
-	 * that a session left open on a shared computer is not enough to take the
-	 * account over.
-	 */
+	//Change the password of a local account. The current password is asked for so
+	//that a session left open on a shared computer is not enough to take the
+	//account over.
 	#[HttpPost]
 	public function passwordPreference(): mixed
 	{
@@ -1952,10 +1850,8 @@ OFFSET " . $offset, [$userID, $userID]);
 		return $this->redirect('/users/settings');
 	}
 
-	/**
-	 * Tell the account by mail that its password changed, so that a change made by
-	 * somebody else is noticed. The password itself is never part of the mail.
-	 */
+	//Tell the account by mail that its password changed, so that a change made by
+	//somebody else is noticed. The password itself is never part of the mail.
 	private function sendPasswordChangedMail(string $email): void
 	{
 		$emailer = $this->_getEmailer();
@@ -2017,9 +1913,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		$this->response->body(json_encode(['status' => 'ok']));
 	}
 
-	/**
-	 * Whether a new message is announced by an email, see Message::send().
-	 */
+	//Whether a new message is announced by an email, see Message::send().
 	#[HttpPost]
 	public function emailOnNewMessagePreference(): void
 	{
@@ -2033,11 +1927,9 @@ OFFSET " . $offset, [$userID, $userID]);
 		$this->response->body(json_encode(['status' => 'ok']));
 	}
 
-	/**
-	 * Store the avatar a player picked. A choice that is not on offer for this
-	 * account (a Google picture it does not have) is ignored, the same way the other
-	 * preferences ignore a value they can not store.
-	 */
+	//Store the avatar a player picked. A choice that is not on offer for this
+	//account (a Google picture it does not have) is ignored, the same way the other
+	//preferences ignore a value they can not store.
 	#[HttpPost]
 	public function avatarPreference(): void
 	{
@@ -2053,10 +1945,8 @@ OFFSET " . $offset, [$userID, $userID]);
 		$this->response->body(json_encode(['status' => 'ok']));
 	}
 
-	/**
-	 * Make a picture the player uploaded their avatar. It takes the place of the picture
-	 * they had before, so an account has one uploaded picture at most.
-	 */
+	//Make a picture the player uploaded their avatar. It takes the place of the picture
+	//they had before, so an account has one uploaded picture at most.
 	#[HttpPost]
 	public function avatarUpload(): mixed
 	{
@@ -2085,10 +1975,8 @@ OFFSET " . $offset, [$userID, $userID]);
 		return $this->redirect('/users/settings');
 	}
 
-	/**
-	 * Remove the picture the player uploaded. An account that showed it shows the board
-	 * again, the avatar every account has.
-	 */
+	//Remove the picture the player uploaded. An account that showed it shows the board
+	//again, the avatar every account has.
 	#[HttpPost]
 	public function avatarRemove(): mixed
 	{

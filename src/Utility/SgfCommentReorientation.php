@@ -5,22 +5,19 @@ namespace App\Utility;
 use ClassRegistry;
 use Sgf;
 
-/**
- * Comments store their coordinates in the coordinates of the current SGF version
- * of their problem. When a new version becomes the current one and it is oriented
- * differently (the board editor saves the problem as it showed it: normalised to
- * the top-left, maybe mirrored, rotated or with swapped colours), the comments are
- * transformed with it, so they keep pointing at the same stones.
- *
- * The transformation between the two versions is known exactly when both come
- * from the board editor (it records every transformation it applies and sends
- * them with the saved SGF). For an SGF uploaded as a file, the setup stones are
- * compared: when exactly one transformation turns the old stones into the new
- * ones, the comments follow it; otherwise they are left as they are.
- */
+//Comments store their coordinates in the coordinates of the current SGF version
+//of their problem. When a new version becomes the current one and it is oriented
+//differently (the board editor saves the problem as it showed it: normalised to
+//the top-left, maybe mirrored, rotated or with swapped colours), the comments are
+//transformed with it, so they keep pointing at the same stones.
+//The transformation between the two versions is known exactly when both come
+//from the board editor (it records every transformation it applies and sends
+//them with the saved SGF). For an SGF uploaded as a file, the setup stones are
+//compared: when exactly one transformation turns the old stones into the new
+//ones, the comments follow it; otherwise they are left as they are.
 class SgfCommentReorientation
 {
-	/** Transforms the comments if the accepted SGF version became the current one in a new orientation. */
+	//Transforms the comments if the accepted SGF version became the current one in a new orientation.
 	public static function afterAccepted(int $sgfID): void
 	{
 		$Sgf = ClassRegistry::init('Sgf');
@@ -47,7 +44,7 @@ class SgfCommentReorientation
 		self::transformComments((int) $new['tsumego_id'], $transformation, $tree->boardSize());
 	}
 
-	/** The transformation from the coordinates of $from to the coordinates of $to, null when unknown. */
+	//The transformation from the coordinates of $from to the coordinates of $to, null when unknown.
 	public static function transformationBetween(array $from, array $to): ?BoardTransformation
 	{
 		// what each editor ancestor of $to needs to become $to
@@ -60,11 +57,8 @@ class SgfCommentReorientation
 		return self::setupStonesTransformation($from['sgf'] ?? '', $to['sgf'] ?? '');
 	}
 
-	/**
-	 * Follows source_sgf_id from the version back through the editor saves.
-	 *
-	 * @return array<int, BoardTransformation> sgf id => the transformation from it to $sgf
-	 */
+	//Follows source_sgf_id from the version back through the editor saves.
+	/** @return array<int, BoardTransformation> sgf id => the transformation from it to $sgf */
 	private static function ancestors(array $sgf): array
 	{
 		$result = [$sgf['id'] => BoardTransformation::identity()];
@@ -80,7 +74,7 @@ class SgfCommentReorientation
 		return $result;
 	}
 
-	/** The only transformation turning the setup stones of one SGF into the other's, null when there is no single one. */
+	//The only transformation turning the setup stones of one SGF into the other's, null when there is no single one.
 	public static function setupStonesTransformation(string $fromSgf, string $toSgf): ?BoardTransformation
 	{
 		$fromTree = SgfTree::parse($fromSgf);

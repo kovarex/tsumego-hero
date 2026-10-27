@@ -3,18 +3,13 @@
 use App\Utility\Avatar;
 use App\Utility\Util;
 
-/**
- * Tests for the forced display-name change flow.
- *
- * Free renaming is disabled; the display name can only be changed by a user
- * who was flagged with needs_display_name_change (migration rename or a
- * duplicate Google name). On success the flag is cleared.
- */
+//Tests for the forced display-name change flow.
+//Free renaming is disabled; the display name can only be changed by a user
+//who was flagged with needs_display_name_change (migration rename or a
+//duplicate Google name). On success the flag is cleared.
 class UpdateNameTest extends IntegrationTestCase
 {
-	/**
-	 * Test that logged out users cannot update display name.
-	 */
+	//Test that logged out users cannot update display name.
 	public function testUpdateNameRequiresLogin(): void
 	{
 		// Create context but don't log in (pass null for user)
@@ -26,9 +21,7 @@ class UpdateNameTest extends IntegrationTestCase
 		$this->assertStringContainsString('/', (string) $this->headerValue('Location'));
 	}
 
-	/**
-	 * Test that a user NOT flagged cannot change their display name.
-	 */
+	//Test that a user NOT flagged cannot change their display name.
 	public function testNonForcedUserCannotChangeName(): void
 	{
 		$context = new ContextPreparator([
@@ -45,9 +38,7 @@ class UpdateNameTest extends IntegrationTestCase
 		$this->assertEquals(false, $updatedUser['User']['needs_display_name_change']);
 	}
 
-	/**
-	 * Test that a forced Google user can change their display name and the flag is cleared.
-	 */
+	//Test that a forced Google user can change their display name and the flag is cleared.
 	public function testForcedGoogleUserCanChangeName(): void
 	{
 		$context = new ContextPreparator([
@@ -66,9 +57,7 @@ class UpdateNameTest extends IntegrationTestCase
 		$this->assertEquals(false, $updatedUser['User']['needs_display_name_change']);
 	}
 
-	/**
-	 * Test that a forced regular user can change their display name and the flag is cleared.
-	 */
+	//Test that a forced regular user can change their display name and the flag is cleared.
 	public function testForcedRegularUserCanChangeName(): void
 	{
 		$context = new ContextPreparator([
@@ -86,9 +75,7 @@ class UpdateNameTest extends IntegrationTestCase
 		$this->assertEquals(false, $updatedUser['User']['needs_display_name_change']);
 	}
 
-	/**
-	 * Test that display name must be unique even when forced.
-	 */
+	//Test that display name must be unique even when forced.
 	public function testDisplayNameMustBeUnique(): void
 	{
 		$context = new ContextPreparator([
@@ -112,10 +99,7 @@ class UpdateNameTest extends IntegrationTestCase
 		$this->assertEquals('My Name', $updatedUser['User']['display_name']);
 	}
 
-	/**
-	 * An emoji is above U+FFFF, which the utf8mb3 columns the forum shares cannot hold, so a
-	 * rename cannot bring one in.
-	 */
+	//An emoji is above U+FFFF, which the utf8mb3 columns the forum shares cannot hold, so a rename cannot bring one in.
 	public function testRenameToANameWithAnEmojiIsRejected(): void
 	{
 		$context = new ContextPreparator([
@@ -133,9 +117,7 @@ class UpdateNameTest extends IntegrationTestCase
 		$this->assertEquals(true, $updatedUser['User']['needs_display_name_change']);
 	}
 
-	/**
-	 * Test that an unchanged display name is rejected even when forced.
-	 */
+	//Test that an unchanged display name is rejected even when forced.
 	public function testUnchangedNameIsRejected(): void
 	{
 		$context = new ContextPreparator([
@@ -153,9 +135,7 @@ class UpdateNameTest extends IntegrationTestCase
 		$this->assertEquals(true, $updatedUser['User']['needs_display_name_change']);
 	}
 
-	/**
-	 * Test that the length limit counts characters, not bytes.
-	 */
+	//Test that the length limit counts characters, not bytes.
 	public function testNameLengthIsCountedInCharacters(): void
 	{
 		$context = new ContextPreparator([
@@ -176,9 +156,7 @@ class UpdateNameTest extends IntegrationTestCase
 		$this->assertEquals(false, $updatedUser['User']['needs_display_name_change']);
 	}
 
-	/**
-	 * Test that display name must be at least 3 characters even when forced.
-	 */
+	//Test that display name must be at least 3 characters even when forced.
 	public function testNameMinimumLength(): void
 	{
 		$context = new ContextPreparator([
@@ -195,9 +173,7 @@ class UpdateNameTest extends IntegrationTestCase
 		$this->assertEquals('Original Name', $updatedUser['User']['display_name']);
 	}
 
-	/**
-	 * Test that empty display name is rejected even when forced.
-	 */
+	//Test that empty display name is rejected even when forced.
 	public function testEmptyNameRejected(): void
 	{
 		$context = new ContextPreparator([
@@ -214,9 +190,7 @@ class UpdateNameTest extends IntegrationTestCase
 		$this->assertEquals('My Display', $updatedUser['User']['display_name']);
 	}
 
-	/**
-	 * Test that the changename page is only reachable by a forced user.
-	 */
+	//Test that the changename page is only reachable by a forced user.
 	public function testChangenamePageRequiresForcedUser(): void
 	{
 		$context = new ContextPreparator([
@@ -230,9 +204,7 @@ class UpdateNameTest extends IntegrationTestCase
 		$this->assertStringContainsString('/', (string) $this->headerValue('Location'));
 	}
 
-	/**
-	 * Test that a visitor who is not signed in gets sent to the login page.
-	 */
+	//Test that a visitor who is not signed in gets sent to the login page.
 	public function testChangenamePageSendsAnonymousToLogin(): void
 	{
 		new ContextPreparator(['user' => null]);
@@ -241,9 +213,6 @@ class UpdateNameTest extends IntegrationTestCase
 		$this->assertStringContainsString('/users/login', $this->headerValue('Location'));
 	}
 
-	/**
-	 * Test that the changename page renders for a forced user.
-	 */
 	public function testChangenamePageRendersForForcedUser(): void
 	{
 		$context = new ContextPreparator([
@@ -259,9 +228,7 @@ class UpdateNameTest extends IntegrationTestCase
 		$this->assertStringContainsString('Choose your display name', $result);
 	}
 
-	/**
-	 * Test that a forced rename is recorded in the activity trail.
-	 */
+	//Test that a forced rename is recorded in the activity trail.
 	public function testRenamingIsRecordedInTheActivityTrail(): void
 	{
 		$context = new ContextPreparator([
@@ -282,9 +249,7 @@ class UpdateNameTest extends IntegrationTestCase
 		$this->assertEquals($context->user['id'], $activities[0]['AdminActivity']['user_id']);
 	}
 
-	/**
-	 * Test that a rejected rename is not recorded in the activity trail.
-	 */
+	//Test that a rejected rename is not recorded in the activity trail.
 	public function testRejectedRenameIsNotRecorded(): void
 	{
 		new ContextPreparator([
@@ -307,9 +272,7 @@ class UpdateNameTest extends IntegrationTestCase
 		$this->assertCount(0, ClassRegistry::init('AdminActivity')->find('all'));
 	}
 
-	/**
-	 * Test that renaming updates the linked phpBB forum user.
-	 */
+	//Test that renaming updates the linked phpBB forum user.
 	public function testRenamingKeepsTheForumUsernameInSync(): void
 	{
 		$context = new ContextPreparator([
@@ -333,9 +296,7 @@ class UpdateNameTest extends IntegrationTestCase
 		$this->assertEquals('new forum name', $forumUser[0]['username_clean']);
 	}
 
-	/**
-	 * Test that renaming updates the poster names cached in the forum topics.
-	 */
+	//Test that renaming updates the poster names cached in the forum topics.
 	public function testRenamingKeepsForumTopicNamesInSync(): void
 	{
 		$context = new ContextPreparator([
@@ -370,9 +331,7 @@ class UpdateNameTest extends IntegrationTestCase
 		$this->assertEquals('New Poster', $topic[0]['topic_last_poster_name']);
 	}
 
-	/**
-	 * Test that the forum username key is the one phpBB computes for the display name.
-	 */
+	//Test that the forum username key is the one phpBB computes for the display name.
 	public function testForumUsernameKeyUsesPhpbbCleaning(): void
 	{
 		$context = new ContextPreparator([
@@ -396,9 +355,7 @@ class UpdateNameTest extends IntegrationTestCase
 		$this->assertEquals('yiğit aydin', $forumUser[0]['username_clean']);
 	}
 
-	/**
-	 * Test that a flagged user browsing the site is sent to the rename page.
-	 */
+	//Test that a flagged user browsing the site is sent to the rename page.
 	public function testForcedUserIsSentToTheRenamePage(): void
 	{
 		new ContextPreparator([
@@ -413,9 +370,7 @@ class UpdateNameTest extends IntegrationTestCase
 		$this->assertStringContainsString('/users/changename', $this->headerValue('Location') ?? '');
 	}
 
-	/**
-	 * Test that a flagged user can open the password reset link from the e-mail.
-	 */
+	//Test that a flagged user can open the password reset link from the e-mail.
 	public function testForcedUserCanOpenThePasswordResetLink(): void
 	{
 		$context = new ContextPreparator([
@@ -433,10 +388,7 @@ class UpdateNameTest extends IntegrationTestCase
 		$this->assertStringNotContainsString('/users/changename', $this->headerValue('Location') ?? '');
 	}
 
-	/**
-	 * Test that the link in the account deletion e-mail is not sent to the rename
-	 * page.
-	 */
+	//Test that the link in the account deletion e-mail is not sent to the rename page.
 	public function testForcedUserCanConfirmTheAccountDeletion(): void
 	{
 		$context = new ContextPreparator([
@@ -456,9 +408,7 @@ class UpdateNameTest extends IntegrationTestCase
 		$this->assertNotNull(ClassRegistry::init('User')->findById($context->user['id'])['User']['deleted'], 'the account went through the deletion');
 	}
 
-	/**
-	 * Test that a flagged user can open the page that starts the account deletion.
-	 */
+	//Test that a flagged user can open the page that starts the account deletion.
 	public function testForcedUserCanOpenTheDeleteAccountPage(): void
 	{
 		new ContextPreparator([
@@ -475,11 +425,9 @@ class UpdateNameTest extends IntegrationTestCase
 		$this->assertStringNotContainsString('/users/changename', $this->headerValue('Location') ?? '');
 	}
 
-	/**
-	 * The rename page shows the board of the player, so the board itself must not be sent
-	 * to the rename page either. The request has to be a real one: a controller test runs
-	 * the action even when the gate redirected it, so it cannot tell the two apart.
-	 */
+	//The rename page shows the board of the player, so the board itself must not be sent
+	//to the rename page either. The request has to be a real one: a controller test runs
+	//the action even when the gate redirected it, so it cannot tell the two apart.
 	public function testForcedUserStillGetsTheirAvatarImage(): void
 	{
 		$context = new ContextPreparator([
@@ -496,12 +444,10 @@ class UpdateNameTest extends IntegrationTestCase
 		$this->assertStringContainsString('<svg', $browser->driver->getPageSource());
 	}
 
-	/**
-	 * A list falls back on the board of an account when the picture of an avatar is gone,
-	 * so the board has to be answered while the player still has to pick a name too. The
-	 * gate would otherwise send that request to the rename page and leave the list with a
-	 * broken image.
-	 */
+	//A list falls back on the board of an account when the picture of an avatar is gone,
+	//so the board has to be answered while the player still has to pick a name too. The
+	//gate would otherwise send that request to the rename page and leave the list with a
+	//broken image.
 	public function testForcedUserStillGetsTheirBoardByUserId(): void
 	{
 		$context = new ContextPreparator([
@@ -517,10 +463,8 @@ class UpdateNameTest extends IntegrationTestCase
 		$this->assertStringContainsString(Avatar::url('Forced Name'), $browser->driver->getCurrentURL());
 	}
 
-	/**
-	 * Test that a forum which can not be written to does not fail the rename. The
-	 * next forum sign in repairs the name (jwtauth::sync_rename).
-	 */
+	//Test that a forum which can not be written to does not fail the rename. The
+	//next forum sign in repairs the name (jwtauth::sync_rename).
 	public function testRenameSurvivesAForumFailure(): void
 	{
 		$context = new ContextPreparator([

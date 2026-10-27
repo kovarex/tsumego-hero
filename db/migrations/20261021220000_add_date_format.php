@@ -2,10 +2,8 @@
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * The format a player picked for the dates on the site, see app/shared/dates.ts. The
- * formats are rows of their own table, so a user can only hold one that exists.
- */
+//The format a player picked for the dates on the site, see app/shared/dates.ts. The
+//formats are rows of their own table, so a user can only hold one that exists.
 class AddDateFormat extends AbstractMigration
 {
 	public function up(): void

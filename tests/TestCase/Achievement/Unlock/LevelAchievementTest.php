@@ -5,19 +5,17 @@ use App\Utility\Auth;
 use App\Utility\Level;
 use App\Utility\Rating;
 
-/**
- * These achievements unlock when user reaches specific level thresholds:
- * - AchievementId::LEVEL_UP: Level 10
- * - AchievementId::FIRST_HERO_POWER: Level 20
- * - AchievementId::UPGRADED_INTUITION: Level 30
- * - AchievementId::MORE_POWER: Level 40
- * - AchievementId::HALF_WAY_TO_TOP: Level 50
- * - AchievementId::CONGRATS_MORE_PROBLEMS: Level 60
- * - AchievementId::NICE_LEVEL: Level 70
- * - AchievementId::DID_LOT_OF_TSUMEGO: Level 80
- * - AchievementId::STILL_DOING_TSUMEGO: Level 90
- * - AchievementId::THE_TOP: Level 100
- */
+//These achievements unlock when user reaches specific level thresholds:
+//- AchievementId::LEVEL_UP: Level 10
+//- AchievementId::FIRST_HERO_POWER: Level 20
+//- AchievementId::UPGRADED_INTUITION: Level 30
+//- AchievementId::MORE_POWER: Level 40
+//- AchievementId::HALF_WAY_TO_TOP: Level 50
+//- AchievementId::CONGRATS_MORE_PROBLEMS: Level 60
+//- AchievementId::NICE_LEVEL: Level 70
+//- AchievementId::DID_LOT_OF_TSUMEGO: Level 80
+//- AchievementId::STILL_DOING_TSUMEGO: Level 90
+//- AchievementId::THE_TOP: Level 100
 class LevelAchievementTest extends AchievementTestCase
 {
 	// Test that AchievementId::LEVEL_UP unlocks at level 10

@@ -6,13 +6,13 @@ import { ErrorMessage } from '../shared/ErrorMessage';
 import { UserLink } from '../shared/UserLink';
 import type { AssignmentProgress, ProgressCell, ProgressProblem } from './classroomTypes';
 
-/** How often the table asks again, so the teacher sees the solves while the pupils play. */
+//How often the table asks again, so the teacher sees the solves while the pupils play.
 const REFRESH_MILLISECONDS = 10000;
 
 interface ClassroomProgressProps
 {
 	assignmentId: number;
-	/** The teacher sees every pupil, a pupil only their own row. */
+	//The teacher sees every pupil, a pupil only their own row.
 	isTeacher: boolean;
 }
 
@@ -40,13 +40,13 @@ function cellTitle(cell: ProgressCell | null): string
 	}
 }
 
-/** A solve that took misplays, which is worth less than a clean one. */
+//A solve that took misplays, which is worth less than a clean one.
 function isSolvedAfterMisplays(cell: ProgressCell | null): boolean
 {
 	return cell !== null && (cell.state === 'solved' || cell.state === 'late') && (cell.misplays ?? 0) > 0;
 }
 
-/** A tick for a solve, with the misplays it took; the misplays alone while not solved yet. */
+//A tick for a solve, with the misplays it took; the misplays alone while not solved yet.
 function cellText(cell: ProgressCell | null): ReactNode
 {
 	if (cell === null)
@@ -72,7 +72,7 @@ interface CollectionRun
 	problemCount: number;
 }
 
-/** The problems that follow one another in the same collection, for the header above their numbers. */
+//The problems that follow one another in the same collection, for the header above their numbers.
 function collectionRuns(problems: ProgressProblem[]): CollectionRun[]
 {
 	const runs: CollectionRun[] = [];
@@ -87,10 +87,8 @@ function collectionRuns(problems: ProgressProblem[]): CollectionRun[]
 	return runs;
 }
 
-/**
- * The table of who solved which problem of an assignment: a row per pupil, a column per problem.
- * It asks the server again every few seconds, so the teacher watches the class work in real time.
- */
+//The table of who solved which problem of an assignment: a row per pupil, a column per problem.
+//It asks the server again every few seconds, so the teacher watches the class work in real time.
 export function ClassroomProgress({ assignmentId, isTeacher }: ClassroomProgressProps)
 {
 	const progressQuery = useQuery({

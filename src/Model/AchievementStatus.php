@@ -11,12 +11,8 @@ class AchievementStatus extends AppModel
 		parent::__construct($id, $table, $ds);
 	}
 
-	/**
-	 * Returns the most recent achievements with user and achievement details.
-	 *
-	 * @param int $limit Maximum number of results (default: 7)
-	 * @return array
-	 */
+	//Returns the most recent achievements with user and achievement details.
+	//$limit: Maximum number of results (default: 7)
 	public function getRecent(int $limit = 7): array
 	{
 		$cacheKey = 'recent_achievements_' . $limit;

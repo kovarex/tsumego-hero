@@ -2,21 +2,16 @@
 
 use App\Utility\Auth;
 
-/**
- * Tests for email login behavior with Google/non-Google users.
- *
- * These tests verify that:
- * - Google users cannot log in with password (must use Google Sign-In)
- * - Regular users can log in with email
- * - When both exist with same email, only regular user is matched
- */
+//Tests for email login behavior with Google/non-Google users.
+//These tests verify that:
+//- Google users cannot log in with password (must use Google Sign-In)
+//- Regular users can log in with email
+//- When both exist with same email, only regular user is matched
 class EmailLoginTest extends IntegrationTestCase
 {
 	private const TEST_PASSWORD = 'test';  // ContextPreparator uses 'test' as default password
 
-	/**
-	 * Test: Regular user can log in with email.
-	 */
+	//Test: Regular user can log in with email.
 	public function testRegularUserCanLoginWithEmail(): void
 	{
 		$context = new ContextPreparator([
@@ -39,9 +34,7 @@ class EmailLoginTest extends IntegrationTestCase
 		$this->assertRedirect();
 	}
 
-	/**
-	 * Test: Google user cannot log in with email (must use Google Sign-In).
-	 */
+	//Test: Google user cannot log in with email (must use Google Sign-In).
 	public function testGoogleUserCannotLoginWithEmail(): void
 	{
 		// Create Google user manually since ContextPreparator uses regular password
@@ -67,9 +60,7 @@ class EmailLoginTest extends IntegrationTestCase
 		$this->assertResponseOk();
 	}
 
-	/**
-	 * Test: An address shared with a Google account logs into the local account.
-	 */
+	//Test: An address shared with a Google account logs into the local account.
 	public function testSharedEmailLogsIntoTheLocalAccount(): void
 	{
 		new ContextPreparator(['user' => null]);
@@ -104,9 +95,7 @@ class EmailLoginTest extends IntegrationTestCase
 		$this->assertEquals($context->otherUsers[0]['id'], Auth::getUserID());
 	}
 
-	/**
-	 * Test: A Google account with the same address does not block the local account.
-	 */
+	//Test: A Google account with the same address does not block the local account.
 	public function testSharedEmailDoesNotBlockLoginByName(): void
 	{
 		new ContextPreparator(['user' => null]);
@@ -140,9 +129,7 @@ class EmailLoginTest extends IntegrationTestCase
 		$this->assertEquals($context->otherUsers[0]['id'], Auth::getUserID());
 	}
 
-	/**
-	 * Test: When both Google and regular user have same email, only regular user can login.
-	 */
+	//Test: When both Google and regular user have same email, only regular user can login.
 	public function testSharedEmailLoginMatchesRegularUserOnly(): void
 	{
 		$sharedEmail = 'shared@example.com';
@@ -179,9 +166,7 @@ class EmailLoginTest extends IntegrationTestCase
 		$this->assertRedirect();
 	}
 
-	/**
-	 * Test: Google user can be found by username but login fails (no valid password).
-	 */
+	//Test: Google user can be found by username but login fails (no valid password).
 	public function testGoogleUserByNameFailsPasswordValidation(): void
 	{
 		// Create Google user manually

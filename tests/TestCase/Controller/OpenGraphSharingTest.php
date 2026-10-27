@@ -3,9 +3,7 @@
 use App\Utility\Avatar;
 use App\Utility\Constants;
 
-/**
- * End-to-end tests for Open Graph social sharing tags.
- */
+//End-to-end tests for Open Graph social sharing tags.
 class OpenGraphSharingTest extends IntegrationTestCase
 {
 	public function testPuzzlePageShowsOpenGraphTags(): void
@@ -124,10 +122,8 @@ class OpenGraphSharingTest extends IntegrationTestCase
 		$this->assertStringContainsString('/users/view/' . $userId, $body);
 	}
 
-	/**
-	 * A profile is shared with the picture of the player, which is the board the
-	 * site draws for the name. A share preview takes a png and not an svg.
-	 */
+	//A profile is shared with the picture of the player, which is the board the
+	//site draws for the name. A share preview takes a png and not an svg.
 	public function testUserProfileSharesTheBoardAvatar(): void
 	{
 		$context = new ContextPreparator(['other-users' => [['name' => 'alice']]]);
@@ -143,9 +139,7 @@ class OpenGraphSharingTest extends IntegrationTestCase
 		$this->assertStringNotContainsString('Tsumego-Hero-Logo.png', $body);
 	}
 
-	/**
-	 * A picture of another host is already a picture, so it is shared as it is.
-	 */
+	//A picture of another host is already a picture, so it is shared as it is.
 	public function testUserProfileSharesThePickedGravatar(): void
 	{
 		$context = new ContextPreparator(['other-users' => [[

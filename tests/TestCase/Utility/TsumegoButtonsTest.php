@@ -76,7 +76,7 @@ class TsumegoButtonsTest extends IntegrationTestCase
 		$this->assertSame(1, $buttons->currentOrder);
 	}
 
-	/** The preview of a problem is its current version, never a proposal waiting for an admin or a rejected one. */
+	//The preview of a problem is its current version, never a proposal waiting for an admin or a rejected one.
 	public function testButtonPreviewShowsTheCurrentVersion(): void
 	{
 		$current = '(;GM[1]FF[4]SZ[19]AB[cc];B[aa])';
@@ -278,7 +278,7 @@ class TsumegoButtonsTest extends IntegrationTestCase
 		return ob_get_clean();
 	}
 
-	/** The rung badge of a rendered button. */
+	//The rung badge of a rendered button.
 	private static function badge(string $html): string
 	{
 		preg_match('~<div class="problem-nav__rung.*?</svg></div>~', $html, $match);

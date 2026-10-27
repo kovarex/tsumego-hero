@@ -2,17 +2,13 @@
 
 use App\Utility\Util;
 
-/**
- * The admin page links everything an admin does and counts what waits there (AdminController),
- * the admin activity and the SGF changes count what is new since the admin last opened them (AdminPage).
- */
+//The admin page links everything an admin does and counts what waits there (AdminController),
+//the admin activity and the SGF changes count what is new since the admin last opened them (AdminPage).
 class AdminControllerTest extends IntegrationTestCase
 {
 	private const SGF = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])';
 
-	/**
-	 * The red count on the link of the admin page to the url, 0 when there is none
-	 */
+	//The red count on the link of the admin page to the url, 0 when there is none
 	private function countOnLink(string $url): int
 	{
 		$this->get('/admin');
@@ -21,9 +17,7 @@ class AdminControllerTest extends IntegrationTestCase
 		return (int) ($match[1] ?? 0);
 	}
 
-	/**
-	 * Pretends the admin opened the page an hour ago, so what happens now is new to them
-	 */
+	//Pretends the admin opened the page an hour ago, so what happens now is new to them
 	private static function viewedAnHourAgo(int $adminPageID): void
 	{
 		Util::execute('UPDATE admin_page_view SET viewed = NOW() - INTERVAL 1 HOUR WHERE admin_page_id = ?', [$adminPageID]);
@@ -57,9 +51,7 @@ class AdminControllerTest extends IntegrationTestCase
 		$this->assertSame(0, $this->countOnLink('/tags'));
 	}
 
-	/**
-	 * No new set has a subtitle, and the lists still name the set of each problem.
-	 */
+	//No new set has a subtitle, and the lists still name the set of each problem.
 	public function testListsNameASetWithoutSubtitle(): void
 	{
 		$context = new ContextPreparator([

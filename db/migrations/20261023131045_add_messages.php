@@ -2,14 +2,11 @@
 
 use Phinx\Migration\AbstractMigration;
 
-/**
- * Messages players send each other. A conversation is the messages between two
- * players, so it needs no table of its own. The recipient can ask to get an email
- * when a message arrives.
- *
- * The migration first ran as version 20261023120000, which another branch also used. The test
- * site already holds its tables under that version, so this one leaves what is there alone.
- */
+//Messages players send each other. A conversation is the messages between two
+//players, so it needs no table of its own. The recipient can ask to get an email
+//when a message arrives.
+//The migration first ran as version 20261023120000, which another branch also used. The test
+//site already holds its tables under that version, so this one leaves what is there alone.
 class AddMessages extends AbstractMigration
 {
 	public function up(): void

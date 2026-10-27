@@ -1,10 +1,8 @@
 <?php
 
-/**
- * Tests that the player_color_setting user preference drives the
- * player color and description on the puzzle page.
- * "Original" means the player color matches the SGF's first move.
- */
+//Tests that the player_color_setting user preference drives the
+//player color and description on the puzzle page.
+//"Original" means the player color matches the SGF's first move.
 use App\Utility\Auth;
 
 class DefaultPlayerColorTest extends IntegrationTestCase

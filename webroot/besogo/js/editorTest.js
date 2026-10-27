@@ -141,3 +141,26 @@ besogo.addTest("Editor", "ExpandedSaveStopsWhereAnEternalLifeComesRound", functi
 
 	CHECK_EQUALS(sgf.split(";").length - 1, 22); // the root and the 21 moves
 });
+
+besogo.addTest("Editor", "ResetCancelsTheWaitForTheNextRequiredAnswer", function()
+{
+	let root = besogo.makeGameRoot();
+	let firstMove = root.registerMove(1, 1);
+	let answers = [firstMove.registerMove(1, 2), firstMove.registerMove(2, 1)];
+	answers[0].registerMove(5, 5).setCorrectSource(true);
+	answers[1].registerMove(6, 6).setCorrectSource(true);
+
+	withPlayEditor(root, true, function(editor, flush)
+	{
+		editor.click(1, 1, false, false);
+		flush();
+		editor.click(5, 5, false, false); // correct, the other answer is to come
+		CHECK(editor.isPerformingAutoPlay());
+
+		editor.resetToStart();
+		editor.click(1, 1, false, false);
+		// the cancelled wait used to end the wait for this reply, which then never came
+		flush();
+		CHECK(editor.getCurrent() == answers[0]);
+	});
+});

@@ -31,7 +31,7 @@ class CommentCoordinatesTest extends CakeTestCase
 		$this->assertSame(['Q16', 'D4'], CommentCoordinates::labels('Q16 (https://senseis.xmp.net/?path=%C3%A9/c3 or www.example.com/a1) D4'));
 	}
 
-	/** Must match app/comments/commentCoordinates.ts, which does the same in the browser. */
+	//Must match app/comments/commentCoordinates.ts, which does the same in the browser.
 	public function testTransformTextMirrorsCoordinatesAndSwapsColors()
 	{
 		$mirror = new BoardTransformation(false, true, false, true);
