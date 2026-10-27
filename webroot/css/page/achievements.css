@@ -260,6 +260,12 @@
   border-top-right-radius: 20px;
   border-top-left-radius: 20px;
 }
+.achievementsPage {
+  text-align: center;
+}
+.acProgress {
+  margin: 0 20px;
+}
 .achievementWrapper {
   height: 600px;
   width: 100%;
@@ -270,6 +276,10 @@
 .acTitle h1 {
   padding: 12px 6px;
   font-weight: bold;
+}
+.acTitle .acTitleLong {
+  font-weight: normal;
+  font-size: 17px;
 }
 .acTitle2 b {
   font-size: 19px;
