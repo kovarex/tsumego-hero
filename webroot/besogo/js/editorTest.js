@@ -13,8 +13,8 @@ function loadEditor(sgf)
 	return editor;
 }
 
-// Runs the method on an editor set up like the play page (autoplay, no review), with the timers of the editor
-// (the autoplay, the required answers) queued instead of waited for: flush() runs them in order.
+// Runs the method on an editor set up like the play page (embedded, autoplay, no review), with the timers of the
+// editor (the autoplay, the required answers) queued instead of waited for: flush() runs them in order.
 function withPlayEditor(root, alternativeResponse, method)
 {
 	let editor = besogo.makeEditor(19, 19, {});
@@ -29,12 +29,14 @@ function withPlayEditor(root, alternativeResponse, method)
 
 	let originalSetTimeout = window.setTimeout;
 	let originalRandom = Math.random;
-	let originalIsMutable = window.isMutable;
+	let originalIsEmbedded = besogo.isEmbedded;
+	let originalGlobals = { isMutable: window.isMutable, soundsEnabled: window.soundsEnabled, boardLockValue: window.boardLockValue };
 	let originalAlternativeResponse = besogo.alternativeResponse;
 	let queue = [];
 	window.setTimeout = callback => queue.push(callback);
 	Math.random = () => 0; // the autoplay picks the first reply
-	window.isMutable = true;
+	besogo.isEmbedded = true;
+	Object.assign(window, { isMutable: true, soundsEnabled: false, boardLockValue: 0 }); // globals of the play page
 	besogo.alternativeResponse = alternativeResponse;
 	try
 	{
@@ -44,7 +46,8 @@ function withPlayEditor(root, alternativeResponse, method)
 	{
 		window.setTimeout = originalSetTimeout;
 		Math.random = originalRandom;
-		window.isMutable = originalIsMutable;
+		besogo.isEmbedded = originalIsEmbedded;
+		Object.assign(window, originalGlobals);
 		besogo.alternativeResponse = originalAlternativeResponse;
 	}
 }
@@ -131,5 +134,89 @@ besogo.addTest("Editor", "RequiredAnswerVisitedElsewhereDoesntDropTheOthers", fu
 		editor.click(7, 7, false, false);
 		flush();
 		CHECK_EQUALS(results.join(), "S");
+	});
+});
+
+besogo.addTest("Editor", "ClickBeforeTheOnlyReplyPlaysTheReplyAndTheMove", function()
+{
+	let root = besogo.makeGameRoot();
+	let reply = root.registerMove(1, 1).registerMove(1, 2);
+	let nextMove = reply.registerMove(2, 2);
+	let lastReply = nextMove.registerMove(3, 3);
+	lastReply.setCorrectSource(true);
+
+	withPlayEditor(root, false, function(editor, flush, results)
+	{
+		editor.click(1, 1, false, false);
+		CHECK(editor.isPerformingAutoPlay());
+		editor.click(2, 2, false, false); // the reply hasn't come yet
+		CHECK(editor.getCurrent() == nextMove);
+
+		flush();
+		CHECK(editor.getCurrent() == lastReply);
+		CHECK_EQUALS(results.join(), "S");
+	});
+});
+
+besogo.addTest("Editor", "ClickBeforeOneOfSeveralRepliesOnlyPlaysTheReply", function()
+{
+	let root = besogo.makeGameRoot();
+	let move = root.registerMove(1, 1);
+	let replies = [move.registerMove(1, 2), move.registerMove(2, 1)];
+	replies[0].registerMove(5, 5).setCorrectSource(true);
+	replies[1].registerMove(6, 6).setCorrectSource(true);
+
+	withPlayEditor(root, false, function(editor, flush)
+	{
+		editor.click(1, 1, false, false);
+		editor.click(5, 5, false, false); // right after the reply that came, but the player couldn't know which one
+		CHECK(editor.getCurrent() == replies[0]);
+		CHECK(!editor.isPerformingAutoPlay());
+
+		flush();
+		CHECK(editor.getCurrent() == replies[0]);
+	});
+});
+
+besogo.addTest("Editor", "ClickBeforeTheReplyEndingTheLineIsNoMoveAfterIt", function()
+{
+	let root = besogo.makeGameRoot();
+	let reply = root.registerMove(1, 1).registerMove(1, 2);
+	reply.setCorrectSource(true);
+
+	withPlayEditor(root, false, function(editor, flush, results)
+	{
+		editor.click(1, 1, false, false);
+		// the page locks the board when the problem is solved, a click then opens the next one
+		editor.click(5, 5, false, false);
+		CHECK(editor.getCurrent() == reply);
+		CHECK_EQUALS(reply.children.length, 0);
+		CHECK_EQUALS(results.join(), "S");
+
+		flush();
+		CHECK_EQUALS(results.join(), "S");
+	});
+});
+
+besogo.addTest("Editor", "ResetCancelsTheWaitForTheNextRequiredAnswer", function()
+{
+	let root = besogo.makeGameRoot();
+	let firstMove = root.registerMove(1, 1);
+	let answers = [firstMove.registerMove(1, 2), firstMove.registerMove(2, 1)];
+	answers[0].registerMove(5, 5).setCorrectSource(true);
+	answers[1].registerMove(6, 6).setCorrectSource(true);
+
+	withPlayEditor(root, true, function(editor, flush)
+	{
+		editor.click(1, 1, false, false);
+		flush();
+		editor.click(5, 5, false, false); // correct, the other answer is to come
+		CHECK(editor.isPerformingAutoPlay());
+
+		editor.resetToStart();
+		editor.click(1, 1, false, false);
+		// the cancelled wait used to end the wait for this reply, which then never came
+		flush();
+		CHECK(editor.getCurrent() == answers[0]);
 	});
 });

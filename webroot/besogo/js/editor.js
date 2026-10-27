@@ -30,7 +30,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     shift = false,
     reviewMode =
       typeof options.reviewMode === "boolean" ? options.reviewMode : true,
-    performingAutoPlay = false,
+    pendingAutoPlay = null, // The step the autoplay is waiting to take, see scheduleAutoPlay
     reviewEnabled =
       typeof options.reviewEnabled === "boolean" ? options.reviewEnabled : true,
     soundEnabled = false, //not used
@@ -413,7 +413,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
   function click(i, j, ctrlKey, shiftKey) {
     if (!besogo.isEmbedded) boardLockValue = 0;
     if (boardLockValue == 0) {
-      if (performingAutoPlay) return;
+      if (pendingAutoPlay && !playReplyBeforeClick()) return;
       switch (tool) {
         case "navOnly":
           navigate(i, j, shiftKey);
@@ -534,45 +534,71 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
 		node.move.color == node.getRoot().firstMove &&
 		node.hasNonLocalChildIncludingVirtual())
 	{
-		performingAutoPlay = true;
 		if (addTimeForMovePlayed)
 			addTimeForMovePlayed();
-      setTimeout(function ()
-      {
-        // when autoplay was cancelled, it was reset in the meantime, so we forget about this
-        if (!performingAutoPlay)
-        	return;
-        performingAutoPlay = false;
-        if (!isMutable)
-        	return;
-
-        let selectOpponentMove = 0;
-        {
-          let selectionCount =
-            current.countOfNonLocalChildrenIncludingVirtualWithNoBetterStatus();
-          if (selectionCount > 1)
-            selectOpponentMove = Math.floor(Math.random() * selectionCount);
-        }
-
-        //if alternative response mode is turned on
-        if (besogo.alternativeResponse)
-        {
-          for (let i = 0; i < current.children.length; i++)
-            if (i !== selectOpponentMove)
-              addToRequired(current.children[i], current);
-
-          if (current.children.length == 0)
-            // alternative responses are taken from the virtual moves only if direct moves aren't there
-            for (let i = 0; i < current.virtualChildren.length; i++)
-              if (i + current.children.length !== selectOpponentMove)
-                addToRequired(current.virtualChildren[i].target, current);
-        }
-        nextNode(1, selectOpponentMove, true /* autoplay move*/);
-      }, 240);
+		scheduleAutoPlay(playReply, 240, true /* the reply */);
     }
     notifyListeners({ navChange: true }); // Notify navigation (with no tree edits)
     reportIfLineIsLost(node);
     tryToFinish(node);
+  }
+
+  // The opponent's answer to the move the player just played
+  function playReply() {
+    if (!isMutable)
+      return;
+
+    let selectOpponentMove = 0;
+    {
+      let selectionCount =
+        current.countOfNonLocalChildrenIncludingVirtualWithNoBetterStatus();
+      if (selectionCount > 1)
+        selectOpponentMove = Math.floor(Math.random() * selectionCount);
+    }
+
+    //if alternative response mode is turned on
+    if (besogo.alternativeResponse)
+    {
+      for (let i = 0; i < current.children.length; i++)
+        if (i !== selectOpponentMove)
+          addToRequired(current.children[i], current);
+
+      if (current.children.length == 0)
+        // alternative responses are taken from the virtual moves only if direct moves aren't there
+        for (let i = 0; i < current.virtualChildren.length; i++)
+          if (i + current.children.length !== selectOpponentMove)
+            addToRequired(current.virtualChildren[i].target, current);
+    }
+    nextNode(1, selectOpponentMove, true /* autoplay move*/);
+  }
+
+  // The autoplay waits before its step (the opponent's reply, the jump to the next required answer), so the player
+  // sees the position first. A reset in the meantime cancels the step, a click can play the reply at once.
+  function scheduleAutoPlay(step, delay, isReply) {
+    let pending = { step: step, isReply: isReply };
+    pendingAutoPlay = pending;
+    setTimeout(function () {
+      if (pendingAutoPlay === pending)
+        runPendingAutoPlay();
+    }, delay);
+  }
+
+  function runPendingAutoPlay() {
+    let step = pendingAutoPlay.step;
+    pendingAutoPlay = null;
+    step();
+  }
+
+  // The player clicked before the opponent's reply came (forum#61), so the reply is played at once. When it was the
+  // only possible one and the line goes on, the click is also the player's next move, as they could tell where the
+  // reply would be played. A click during the wait for the next required answer is ignored.
+  function playReplyBeforeClick() {
+    if (!pendingAutoPlay.isReply)
+      return false;
+    let movePlayed = current;
+    let replyIsForced = movePlayed.countOfNonLocalChildrenIncludingVirtualWithNoBetterStatus() == 1;
+    runPendingAutoPlay();
+    return replyIsForced && current != movePlayed && current.hasNonLocalChildIncludingVirtual();
   }
 
   // Tells the page the moment the line can no longer end correct, long before it is played out and the result shown
@@ -825,7 +851,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
   }
 
   function isPerformingAutoPlay() {
-    return performingAutoPlay;
+    return pendingAutoPlay != null;
   }
 
   function setSoundEnabled(value)
@@ -863,29 +889,23 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
 		remainingRequiredNodes = remainingRequiredNodes.filter(element => !element.node.visited);
 		if (remainingRequiredNodes.length == 0)
 			return false;
-		performingAutoPlay = true;
 		addTimeForMovePlayed(1.5);
 
-		setTimeout(function ()
+		scheduleAutoPlay(function ()
 		{
-			// when autoplay was cancelled, it was reset in the meantime, so we forget about this
-			if (!performingAutoPlay)
-				return;
-
-			performingAutoPlay = false;
 			let element = remainingRequiredNodes.pop();
 
 			element.node.cameFrom = element.cameFrom;
 			navigateToNode(element.node);
 			if (showComment)
 				showComment("Correct, but what about this answer?\n" + element.node.comment);
-		}, timer);
+		}, timer, false /* not a reply */);
 		notifyListeners({ navChange: true }); // Notify navigation (with no tree edits)
 		return true;
 	}
 
   function resetToStart() {
-    performingAutoPlay = false;
+    pendingAutoPlay = null;
     prevNode(-1);
     remainingRequiredNodes = [];
     root.unvisit();
