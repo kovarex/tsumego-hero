@@ -134,12 +134,8 @@
   border: 1px solid var(--current-border-color);
 }
 /* The SGF changes (SgfChangesRenderer): the tick of the admin and the avatars of the others who reviewed a change */
-.sgf-changes__filter {
-  margin: 0 0 8px;
-}
-.sgf-changes__filter a {
-  color: inherit;
-  text-decoration: underline;
+.sgf-changes__lists {
+  margin: 4px 0 12px;
 }
 .sgf-changes__unknown {
   color: var(--text-softer-color);

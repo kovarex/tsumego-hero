@@ -104,7 +104,7 @@ class UploadSgfTest extends IntegrationTestCase
 		Util::execute('UPDATE sgf SET created = ? WHERE id = ?', ['2026-01-01 12:00:00', $latest['Sgf']['id']]);
 
 		$browser = Browser::instance();
-		$browser->get('/admin/sgf-changes');
+		$browser->get('/admin/sgf-changes?show=all');
 		$browser->find('#compare-' . $latest['Sgf']['id'])->click();
 		$this->assertSame('Version 2', $browser->findById('commentBox')->getText());
 
