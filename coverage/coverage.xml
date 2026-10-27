@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1793141568">
-  <project timestamp="1793141568">
+<coverage generated="1793142448">
+  <project timestamp="1793142448">
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Attribute/HttpDelete.php">
       <class name="App\Attribute\HttpDelete" namespace="global">
         <metrics complexity="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
@@ -342,8 +342,8 @@
       <line num="167" type="stmt" count="1"/>
       <line num="170" type="stmt" count="4"/>
       <line num="171" type="stmt" count="3"/>
-      <line num="179" type="method" name="_setTestEmailer" visibility="public" complexity="1" crap="1" count="1603"/>
-      <line num="181" type="stmt" count="1603"/>
+      <line num="179" type="method" name="_setTestEmailer" visibility="public" complexity="1" crap="1" count="1606"/>
+      <line num="181" type="stmt" count="1606"/>
       <line num="189" type="method" name="_getEmailer" visibility="public" complexity="2" crap="2" count="47"/>
       <line num="191" type="stmt" count="47"/>
       <line num="192" type="stmt" count="47"/>
@@ -1311,7 +1311,7 @@
     </file>
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Controller/Component/PlayResultProcessorComponent.php">
       <class name="PlayResultProcessorComponent" namespace="global">
-        <metrics complexity="90" methods="16" coveredmethods="13" conditionals="0" coveredconditionals="0" statements="234" coveredstatements="231" elements="250" coveredelements="244"/>
+        <metrics complexity="90" methods="16" coveredmethods="14" conditionals="0" coveredconditionals="0" statements="234" coveredstatements="232" elements="250" coveredelements="246"/>
       </class>
       <line num="27" type="method" name="processResult" visibility="public" complexity="1" crap="1" count="114"/>
       <line num="29" type="stmt" count="114"/>
@@ -1333,7 +1333,7 @@
       <line num="69" type="stmt" count="114"/>
       <line num="71" type="stmt" count="114"/>
       <line num="72" type="stmt" count="114"/>
-      <line num="73" type="stmt" count="0"/>
+      <line num="73" type="stmt" count="1"/>
       <line num="75" type="stmt" count="114"/>
       <line num="77" type="stmt" count="12"/>
       <line num="78" type="stmt" count="12"/>
@@ -1563,7 +1563,7 @@
       <line num="426" type="stmt" count="94"/>
       <line num="427" type="stmt" count="91"/>
       <line num="428" type="stmt" count="6"/>
-      <metrics loc="431" ncloc="379" classes="1" methods="16" coveredmethods="13" conditionals="0" coveredconditionals="0" statements="234" coveredstatements="231" elements="250" coveredelements="244"/>
+      <metrics loc="431" ncloc="379" classes="1" methods="16" coveredmethods="14" conditionals="0" coveredconditionals="0" statements="234" coveredstatements="232" elements="250" coveredelements="246"/>
     </file>
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Controller/CronController.php">
       <class name="CronController" namespace="global">
@@ -1645,27 +1645,27 @@
       <line num="158" type="stmt" count="13"/>
       <line num="160" type="stmt" count="13"/>
       <line num="161" type="stmt" count="13"/>
-      <line num="162" type="stmt" count="4"/>
-      <line num="163" type="stmt" count="10"/>
+      <line num="162" type="stmt" count="7"/>
+      <line num="163" type="stmt" count="7"/>
       <line num="164" type="stmt" count="4"/>
-      <line num="165" type="stmt" count="7"/>
-      <line num="166" type="stmt" count="7"/>
+      <line num="165" type="stmt" count="4"/>
+      <line num="166" type="stmt" count="4"/>
       <line num="167" type="stmt" count="13"/>
       <line num="168" type="stmt" count="13"/>
       <line num="169" type="stmt" count="13"/>
       <line num="170" type="stmt" count="5"/>
       <line num="171" type="stmt" count="9"/>
-      <line num="172" type="stmt" count="4"/>
-      <line num="173" type="stmt" count="5"/>
-      <line num="174" type="stmt" count="5"/>
+      <line num="172" type="stmt" count="5"/>
+      <line num="173" type="stmt" count="4"/>
+      <line num="174" type="stmt" count="4"/>
       <line num="175" type="stmt" count="13"/>
       <line num="176" type="stmt" count="13"/>
       <line num="177" type="stmt" count="13"/>
-      <line num="178" type="stmt" count="5"/>
-      <line num="179" type="stmt" count="9"/>
-      <line num="180" type="stmt" count="4"/>
-      <line num="181" type="stmt" count="6"/>
-      <line num="182" type="stmt" count="6"/>
+      <line num="178" type="stmt" count="6"/>
+      <line num="179" type="stmt" count="8"/>
+      <line num="180" type="stmt" count="5"/>
+      <line num="181" type="stmt" count="4"/>
+      <line num="182" type="stmt" count="4"/>
       <line num="183" type="stmt" count="13"/>
       <line num="185" type="stmt" count="13"/>
       <line num="186" type="stmt" count="13"/>
@@ -5926,30 +5926,30 @@
       <class name="AppModel" namespace="global">
         <metrics complexity="2" methods="1" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="2" coveredstatements="2" elements="3" coveredelements="3"/>
       </class>
-      <line num="40" type="method" name="save" visibility="public" complexity="2" crap="2" count="1624"/>
-      <line num="42" type="stmt" count="1624"/>
-      <line num="43" type="stmt" count="1624"/>
+      <line num="40" type="method" name="save" visibility="public" complexity="2" crap="2" count="1627"/>
+      <line num="42" type="stmt" count="1627"/>
+      <line num="43" type="stmt" count="1627"/>
       <metrics loc="47" ncloc="19" classes="1" methods="1" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="2" coveredstatements="2" elements="3" coveredelements="3"/>
     </file>
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Model/Behavior/EmptyIntegerBehavior.php">
       <class name="EmptyIntegerBehavior" namespace="global">
         <metrics complexity="15" methods="3" coveredmethods="2" conditionals="0" coveredconditionals="0" statements="30" coveredstatements="17" elements="33" coveredelements="19"/>
       </class>
-      <line num="16" type="method" name="beforeSave" visibility="public" complexity="12" crap="34.89" count="1624"/>
-      <line num="18" type="stmt" count="1624"/>
+      <line num="16" type="method" name="beforeSave" visibility="public" complexity="12" crap="34.89" count="1627"/>
+      <line num="18" type="stmt" count="1627"/>
       <line num="19" type="stmt" count="0"/>
-      <line num="21" type="stmt" count="1624"/>
-      <line num="23" type="stmt" count="1624"/>
-      <line num="26" type="stmt" count="1624"/>
+      <line num="21" type="stmt" count="1627"/>
+      <line num="23" type="stmt" count="1627"/>
+      <line num="26" type="stmt" count="1627"/>
       <line num="27" type="stmt" count="18"/>
-      <line num="29" type="stmt" count="1624"/>
-      <line num="32" type="stmt" count="1624"/>
-      <line num="33" type="stmt" count="1623"/>
-      <line num="36" type="stmt" count="1624"/>
+      <line num="29" type="stmt" count="1627"/>
+      <line num="32" type="stmt" count="1627"/>
+      <line num="33" type="stmt" count="1626"/>
+      <line num="36" type="stmt" count="1627"/>
       <line num="39" type="stmt" count="0"/>
       <line num="42" type="stmt" count="0"/>
       <line num="47" type="stmt" count="0"/>
-      <line num="50" type="stmt" count="1624"/>
+      <line num="50" type="stmt" count="1627"/>
       <line num="54" type="stmt" count="0"/>
       <line num="55" type="stmt" count="0"/>
       <line num="56" type="stmt" count="0"/>
@@ -5959,15 +5959,15 @@
       <line num="62" type="stmt" count="0"/>
       <line num="63" type="stmt" count="0"/>
       <line num="65" type="stmt" count="0"/>
-      <line num="69" type="stmt" count="1624"/>
-      <line num="74" type="method" name="_getSchema" visibility="protected" complexity="2" crap="2" count="1624"/>
-      <line num="76" type="stmt" count="1624"/>
-      <line num="78" type="stmt" count="1624"/>
-      <line num="79" type="stmt" count="1624"/>
-      <line num="81" type="stmt" count="1624"/>
-      <line num="87" type="method" name="_isIntegerType" visibility="protected" complexity="1" crap="1" count="1624"/>
-      <line num="89" type="stmt" count="1624"/>
-      <line num="91" type="stmt" count="1624"/>
+      <line num="69" type="stmt" count="1627"/>
+      <line num="74" type="method" name="_getSchema" visibility="protected" complexity="2" crap="2" count="1627"/>
+      <line num="76" type="stmt" count="1627"/>
+      <line num="78" type="stmt" count="1627"/>
+      <line num="79" type="stmt" count="1627"/>
+      <line num="81" type="stmt" count="1627"/>
+      <line num="87" type="method" name="_isIntegerType" visibility="protected" complexity="1" crap="1" count="1627"/>
+      <line num="89" type="stmt" count="1627"/>
+      <line num="91" type="stmt" count="1627"/>
       <metrics loc="95" ncloc="72" classes="1" methods="3" coveredmethods="2" conditionals="0" coveredconditionals="0" statements="30" coveredstatements="17" elements="33" coveredelements="19"/>
     </file>
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Model/Challenge.php">
@@ -6586,7 +6586,7 @@
       <line num="26" type="stmt" count="169"/>
       <line num="34" type="stmt" count="169"/>
       <line num="35" type="stmt" count="169"/>
-      <line num="36" type="stmt" count="1"/>
+      <line num="36" type="stmt" count="2"/>
       <line num="37" type="stmt" count="169"/>
       <line num="42" type="method" name="countRecent" visibility="public" complexity="1" crap="1" count="197"/>
       <line num="44" type="stmt" count="197"/>
@@ -6621,9 +6621,9 @@
       <class name="Set" namespace="global">
         <metrics complexity="10" methods="6" coveredmethods="6" conditionals="0" coveredconditionals="0" statements="14" coveredstatements="14" elements="20" coveredelements="20"/>
       </class>
-      <line num="8" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="1458"/>
-      <line num="10" type="stmt" count="1458"/>
-      <line num="11" type="stmt" count="1458"/>
+      <line num="8" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="1461"/>
+      <line num="10" type="stmt" count="1461"/>
+      <line num="11" type="stmt" count="1461"/>
       <line num="20" type="method" name="isOfficial" visibility="public" complexity="3" crap="3" count="35"/>
       <line num="22" type="stmt" count="35"/>
       <line num="28" type="method" name="officialCondition" visibility="public" complexity="1" crap="1" count="237"/>
@@ -6647,9 +6647,9 @@
       <class name="SetConnection" namespace="global">
         <metrics complexity="12" methods="7" coveredmethods="7" conditionals="0" coveredconditionals="0" statements="30" coveredstatements="30" elements="37" coveredelements="37"/>
       </class>
-      <line num="7" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="1457"/>
-      <line num="9" type="stmt" count="1457"/>
-      <line num="10" type="stmt" count="1457"/>
+      <line num="7" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="1460"/>
+      <line num="9" type="stmt" count="1460"/>
+      <line num="10" type="stmt" count="1460"/>
       <line num="22" type="method" name="displayOrderForSetSql" visibility="public" complexity="1" crap="1" count="364"/>
       <line num="24" type="stmt" count="364"/>
       <line num="30" type="method" name="displayOrderSql" visibility="public" complexity="1" crap="1" count="288"/>
@@ -6861,18 +6861,18 @@
       <class name="TimeModeRank" namespace="global">
         <metrics complexity="1" methods="1" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="2" coveredstatements="2" elements="3" coveredelements="3"/>
       </class>
-      <line num="27" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="1623"/>
-      <line num="29" type="stmt" count="1623"/>
-      <line num="30" type="stmt" count="1623"/>
+      <line num="27" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="1626"/>
+      <line num="29" type="stmt" count="1626"/>
+      <line num="30" type="stmt" count="1626"/>
       <metrics loc="33" ncloc="32" classes="1" methods="1" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="2" coveredstatements="2" elements="3" coveredelements="3"/>
     </file>
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Model/TimeModeSession.php">
       <class name="TimeModeSession" namespace="global">
         <metrics complexity="1" methods="1" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="2" coveredstatements="2" elements="3" coveredelements="3"/>
       </class>
-      <line num="20" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="99"/>
-      <line num="22" type="stmt" count="99"/>
-      <line num="23" type="stmt" count="99"/>
+      <line num="20" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="100"/>
+      <line num="22" type="stmt" count="100"/>
+      <line num="23" type="stmt" count="100"/>
       <metrics loc="26" ncloc="26" classes="1" methods="1" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="2" coveredstatements="2" elements="3" coveredelements="3"/>
     </file>
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Model/TimeModeSessionStatus.php">
@@ -6885,9 +6885,9 @@
       <class name="Tsumego" namespace="global">
         <metrics complexity="4" methods="4" coveredmethods="4" conditionals="0" coveredconditionals="0" statements="20" coveredstatements="20" elements="24" coveredelements="24"/>
       </class>
-      <line num="7" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="1517"/>
-      <line num="9" type="stmt" count="1517"/>
-      <line num="10" type="stmt" count="1517"/>
+      <line num="7" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="1520"/>
+      <line num="9" type="stmt" count="1520"/>
+      <line num="10" type="stmt" count="1520"/>
       <line num="16" type="method" name="addToRating" visibility="public" complexity="1" crap="1" count="70"/>
       <line num="18" type="stmt" count="70"/>
       <line num="24" type="stmt" count="70"/>
@@ -6915,9 +6915,9 @@
       <class name="TsumegoAttempt" namespace="global">
         <metrics complexity="6" methods="3" coveredmethods="3" conditionals="0" coveredconditionals="0" statements="9" coveredstatements="9" elements="12" coveredelements="12"/>
       </class>
-      <line num="5" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="952"/>
-      <line num="7" type="stmt" count="952"/>
-      <line num="8" type="stmt" count="952"/>
+      <line num="5" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="954"/>
+      <line num="7" type="stmt" count="954"/>
+      <line num="8" type="stmt" count="954"/>
       <line num="13" type="method" name="findLast" visibility="public" complexity="2" crap="2" count="189"/>
       <line num="15" type="stmt" count="189"/>
       <line num="16" type="stmt" count="189"/>
@@ -7078,9 +7078,9 @@
       <class name="TsumegoStatus" namespace="global">
         <metrics complexity="18" methods="9" coveredmethods="8" conditionals="0" coveredconditionals="0" statements="27" coveredstatements="23" elements="36" coveredelements="31"/>
       </class>
-      <line num="16" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="1462"/>
-      <line num="18" type="stmt" count="1462"/>
-      <line num="19" type="stmt" count="1462"/>
+      <line num="16" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="1465"/>
+      <line num="18" type="stmt" count="1465"/>
+      <line num="19" type="stmt" count="1465"/>
       <line num="23" type="method" name="less" visibility="public" complexity="1" crap="1" count="1"/>
       <line num="25" type="stmt" count="1"/>
       <line num="28" type="method" name="value" visibility="private" complexity="10" crap="18.78" count="1"/>
@@ -7129,9 +7129,9 @@
       <class name="User" namespace="global">
         <metrics complexity="107" methods="37" coveredmethods="30" conditionals="0" coveredconditionals="0" statements="203" coveredstatements="187" elements="240" coveredelements="217"/>
       </class>
-      <line num="90" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="1649"/>
-      <line num="92" type="stmt" count="1649"/>
-      <line num="93" type="stmt" count="1649"/>
+      <line num="90" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="1652"/>
+      <line num="92" type="stmt" count="1652"/>
+      <line num="93" type="stmt" count="1652"/>
       <line num="156" type="method" name="renderPremium" visibility="public" complexity="3" crap="3" count="75"/>
       <line num="158" type="stmt" count="75"/>
       <line num="159" type="stmt" count="75"/>
@@ -7186,8 +7186,8 @@
       <line num="264" type="stmt" count="5"/>
       <line num="265" type="stmt" count="5"/>
       <line num="266" type="stmt" count="5"/>
-      <line num="277" type="method" name="clearDeletedCache" visibility="public" complexity="1" crap="1" count="1622"/>
-      <line num="279" type="stmt" count="1622"/>
+      <line num="277" type="method" name="clearDeletedCache" visibility="public" complexity="1" crap="1" count="1625"/>
+      <line num="279" type="stmt" count="1625"/>
       <line num="287" type="method" name="isDeleted" visibility="public" complexity="8" crap="8.05" count="158"/>
       <line num="289" type="stmt" count="158"/>
       <line num="291" type="stmt" count="157"/>
@@ -7258,11 +7258,11 @@
       <line num="428" type="stmt" count="34"/>
       <line num="429" type="stmt" count="34"/>
       <line num="430" type="stmt" count="34"/>
-      <line num="434" type="method" name="containsCharactersTheForumCannotStore" visibility="public" complexity="1" crap="1" count="1573"/>
-      <line num="436" type="stmt" count="1573"/>
-      <line num="442" type="method" name="hasOnlyCharactersTheForumCanStore" visibility="public" complexity="2" crap="2" count="1572"/>
-      <line num="444" type="stmt" count="1572"/>
-      <line num="445" type="stmt" count="1572"/>
+      <line num="434" type="method" name="containsCharactersTheForumCannotStore" visibility="public" complexity="1" crap="1" count="1576"/>
+      <line num="436" type="stmt" count="1576"/>
+      <line num="442" type="method" name="hasOnlyCharactersTheForumCanStore" visibility="public" complexity="2" crap="2" count="1575"/>
+      <line num="444" type="stmt" count="1575"/>
+      <line num="445" type="stmt" count="1575"/>
       <line num="449" type="method" name="withoutCharactersTheForumCannotStore" visibility="public" complexity="1" crap="1" count="13"/>
       <line num="451" type="stmt" count="13"/>
       <line num="457" type="method" name="generateUniqueDisplayName" visibility="public" complexity="7" crap="7.17" count="19"/>
@@ -8360,14 +8360,14 @@
     </file>
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Utility/Auth.php">
       <class name="App\Utility\Auth" namespace="global">
-        <metrics complexity="65" methods="30" coveredmethods="25" conditionals="0" coveredconditionals="0" statements="97" coveredstatements="92" elements="127" coveredelements="117"/>
+        <metrics complexity="60" methods="29" coveredmethods="25" conditionals="0" coveredconditionals="0" statements="91" coveredstatements="87" elements="120" coveredelements="112"/>
       </class>
-      <line num="12" type="method" name="init" visibility="public" complexity="11" crap="11" count="1630"/>
-      <line num="16" type="stmt" count="1630"/>
-      <line num="18" type="stmt" count="1513"/>
-      <line num="19" type="stmt" count="1513"/>
-      <line num="21" type="stmt" count="1511"/>
-      <line num="22" type="stmt" count="1511"/>
+      <line num="12" type="method" name="init" visibility="public" complexity="11" crap="11" count="1633"/>
+      <line num="16" type="stmt" count="1633"/>
+      <line num="18" type="stmt" count="1516"/>
+      <line num="19" type="stmt" count="1516"/>
+      <line num="21" type="stmt" count="1514"/>
+      <line num="22" type="stmt" count="1514"/>
       <line num="26" type="stmt" count="133"/>
       <line num="28" type="stmt" count="19"/>
       <line num="30" type="stmt" count="19"/>
@@ -8383,12 +8383,12 @@
       <line num="56" type="method" name="tokenFitsTheAccount" visibility="private" complexity="2" crap="2" count="4"/>
       <line num="58" type="stmt" count="4"/>
       <line num="59" type="stmt" count="4"/>
-      <line num="62" type="method" name="isLoggedIn" visibility="public" complexity="1" crap="1" count="1478"/>
-      <line num="64" type="stmt" count="1478"/>
+      <line num="62" type="method" name="isLoggedIn" visibility="public" complexity="1" crap="1" count="1481"/>
+      <line num="64" type="stmt" count="1481"/>
       <line num="70" type="method" name="getIdentity" visibility="public" complexity="1" crap="1" count="610"/>
       <line num="72" type="stmt" count="610"/>
-      <line num="75" type="method" name="getUserID" visibility="public" complexity="2" crap="2" count="1376"/>
-      <line num="77" type="stmt" count="1376"/>
+      <line num="75" type="method" name="getUserID" visibility="public" complexity="2" crap="2" count="1379"/>
+      <line num="77" type="stmt" count="1379"/>
       <line num="81" type="method" name="getUser" visibility="public" complexity="2" crap="2.15" count="914"/>
       <line num="83" type="stmt" count="914"/>
       <line num="84" type="stmt" count="0"/>
@@ -8482,14 +8482,7 @@
       <line num="258" type="stmt" count="88"/>
       <line num="259" type="stmt" count="2"/>
       <line num="260" type="stmt" count="87"/>
-      <line num="263" type="method" name="lightMode" visibility="public" complexity="5" crap="5.12" count="25"/>
-      <line num="265" type="stmt" count="25"/>
-      <line num="266" type="stmt" count="21"/>
-      <line num="267" type="stmt" count="5"/>
-      <line num="268" type="stmt" count="1"/>
-      <line num="269" type="stmt" count="0"/>
-      <line num="270" type="stmt" count="5"/>
-      <metrics loc="278" ncloc="252" classes="1" methods="30" coveredmethods="25" conditionals="0" coveredconditionals="0" statements="97" coveredstatements="92" elements="127" coveredelements="117"/>
+      <metrics loc="266" ncloc="240" classes="1" methods="29" coveredmethods="25" conditionals="0" coveredconditionals="0" statements="91" coveredstatements="87" elements="120" coveredelements="112"/>
     </file>
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Utility/Avatar.php">
       <class name="App\Utility\Avatar" namespace="global">
@@ -8881,6 +8874,29 @@
       <line num="106" type="stmt" count="22"/>
       <line num="107" type="stmt" count="0"/>
       <metrics loc="110" ncloc="100" classes="1" methods="12" coveredmethods="11" conditionals="0" coveredconditionals="0" statements="44" coveredstatements="43" elements="56" coveredelements="54"/>
+    </file>
+    <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Utility/ChartRenderer.php">
+      <class name="App\Utility\ChartRenderer" namespace="global">
+        <metrics complexity="6" methods="4" coveredmethods="4" conditionals="0" coveredconditionals="0" statements="13" coveredstatements="13" elements="17" coveredelements="17"/>
+      </class>
+      <line num="11" type="method" name="line" visibility="public" complexity="1" crap="1" count="50"/>
+      <line num="13" type="stmt" count="50"/>
+      <line num="14" type="stmt" count="50"/>
+      <line num="15" type="stmt" count="50"/>
+      <line num="16" type="stmt" count="50"/>
+      <line num="17" type="stmt" count="50"/>
+      <line num="18" type="stmt" count="50"/>
+      <line num="22" type="method" name="ratingLine" visibility="public" complexity="2" crap="2" count="25"/>
+      <line num="24" type="stmt" count="25"/>
+      <line num="25" type="stmt" count="25"/>
+      <line num="31" type="method" name="bar" visibility="public" complexity="1" crap="1" count="25"/>
+      <line num="33" type="stmt" count="25"/>
+      <line num="34" type="stmt" count="25"/>
+      <line num="35" type="stmt" count="25"/>
+      <line num="36" type="stmt" count="25"/>
+      <line num="39" type="method" name="mount" visibility="private" complexity="2" crap="2" count="50"/>
+      <line num="41" type="stmt" count="50"/>
+      <metrics loc="44" ncloc="36" classes="1" methods="4" coveredmethods="4" conditionals="0" coveredconditionals="0" statements="13" coveredstatements="13" elements="17" coveredelements="17"/>
     </file>
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Utility/CommentCoordinates.php">
       <class name="App\Utility\CommentCoordinates" namespace="global">
@@ -9825,39 +9841,39 @@
       <class name="App\Utility\Level" namespace="global">
         <metrics complexity="24" methods="10" coveredmethods="9" conditionals="0" coveredconditionals="0" statements="59" coveredstatements="58" elements="69" coveredelements="67"/>
       </class>
-      <line num="9" type="method" name="getSections" visibility="public" complexity="1" crap="1" count="1526"/>
-      <line num="11" type="stmt" count="1526"/>
-      <line num="12" type="stmt" count="1526"/>
-      <line num="13" type="stmt" count="1526"/>
-      <line num="14" type="stmt" count="1526"/>
-      <line num="15" type="stmt" count="1526"/>
-      <line num="16" type="stmt" count="1526"/>
-      <line num="17" type="stmt" count="1526"/>
-      <line num="18" type="stmt" count="1526"/>
-      <line num="19" type="stmt" count="1526"/>
-      <line num="20" type="stmt" count="1526"/>
+      <line num="9" type="method" name="getSections" visibility="public" complexity="1" crap="1" count="1529"/>
+      <line num="11" type="stmt" count="1529"/>
+      <line num="12" type="stmt" count="1529"/>
+      <line num="13" type="stmt" count="1529"/>
+      <line num="14" type="stmt" count="1529"/>
+      <line num="15" type="stmt" count="1529"/>
+      <line num="16" type="stmt" count="1529"/>
+      <line num="17" type="stmt" count="1529"/>
+      <line num="18" type="stmt" count="1529"/>
+      <line num="19" type="stmt" count="1529"/>
+      <line num="20" type="stmt" count="1529"/>
       <line num="23" type="method" name="getXPForNext" visibility="public" complexity="1" crap="1" count="525"/>
       <line num="25" type="stmt" count="525"/>
-      <line num="28" type="method" name="sectionSum" visibility="private" complexity="2" crap="2" count="1517"/>
-      <line num="30" type="stmt" count="1517"/>
-      <line num="31" type="stmt" count="1517"/>
-      <line num="32" type="stmt" count="1517"/>
+      <line num="28" type="method" name="sectionSum" visibility="private" complexity="2" crap="2" count="1520"/>
+      <line num="30" type="stmt" count="1520"/>
+      <line num="31" type="stmt" count="1520"/>
+      <line num="32" type="stmt" count="1520"/>
       <line num="33" type="stmt" count="34"/>
-      <line num="34" type="stmt" count="1517"/>
-      <line num="35" type="stmt" count="1517"/>
-      <line num="36" type="stmt" count="1517"/>
-      <line num="39" type="method" name="getXpSumToGetLevel" visibility="public" complexity="3" crap="3.03" count="1517"/>
-      <line num="41" type="stmt" count="1517"/>
-      <line num="42" type="stmt" count="1517"/>
-      <line num="43" type="stmt" count="1517"/>
-      <line num="45" type="stmt" count="1517"/>
-      <line num="46" type="stmt" count="1517"/>
-      <line num="47" type="stmt" count="1517"/>
+      <line num="34" type="stmt" count="1520"/>
+      <line num="35" type="stmt" count="1520"/>
+      <line num="36" type="stmt" count="1520"/>
+      <line num="39" type="method" name="getXpSumToGetLevel" visibility="public" complexity="3" crap="3.03" count="1520"/>
+      <line num="41" type="stmt" count="1520"/>
+      <line num="42" type="stmt" count="1520"/>
+      <line num="43" type="stmt" count="1520"/>
+      <line num="45" type="stmt" count="1520"/>
+      <line num="46" type="stmt" count="1520"/>
+      <line num="47" type="stmt" count="1520"/>
       <line num="48" type="stmt" count="0"/>
       <line num="51" type="method" name="XPAndRatingIsGainedInTsumegoStatus" visibility="public" complexity="2" crap="2" count="94"/>
       <line num="53" type="stmt" count="94"/>
-      <line num="57" type="method" name="getOverallXPGained" visibility="public" complexity="1" crap="1" count="1516"/>
-      <line num="59" type="stmt" count="1516"/>
+      <line num="57" type="method" name="getOverallXPGained" visibility="public" complexity="1" crap="1" count="1519"/>
+      <line num="59" type="stmt" count="1519"/>
       <line num="62" type="method" name="addXP" visibility="public" complexity="1" crap="1" count="118"/>
       <line num="64" type="stmt" count="118"/>
       <line num="65" type="stmt" count="118"/>
@@ -12000,8 +12016,8 @@
       <line num="26" type="stmt" count="30"/>
       <line num="27" type="stmt" count="30"/>
       <line num="29" type="stmt" count="30"/>
-      <line num="33" type="method" name="forget" visibility="public" complexity="1" crap="1" count="32"/>
-      <line num="35" type="stmt" count="32"/>
+      <line num="33" type="method" name="forget" visibility="public" complexity="1" crap="1" count="33"/>
+      <line num="35" type="stmt" count="33"/>
       <line num="39" type="method" name="build" visibility="public" complexity="2" crap="2" count="37"/>
       <line num="41" type="stmt" count="37"/>
       <line num="42" type="stmt" count="37"/>
@@ -12100,32 +12116,6 @@
       <line num="56" type="stmt" count="1"/>
       <line num="57" type="stmt" count="1"/>
       <metrics loc="60" ncloc="57" classes="1" methods="4" coveredmethods="4" conditionals="0" coveredconditionals="0" statements="17" coveredstatements="17" elements="21" coveredelements="21"/>
-    </file>
-    <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Utility/TimeGraphRenderer.php">
-      <class name="App\Utility\TimeGraphRenderer" namespace="global">
-        <metrics complexity="3" methods="2" coveredmethods="2" conditionals="0" coveredconditionals="0" statements="18" coveredstatements="18" elements="20" coveredelements="20"/>
-      </class>
-      <line num="9" type="method" name="render" visibility="public" complexity="2" crap="2" count="25"/>
-      <line num="11" type="stmt" count="25"/>
-      <line num="12" type="stmt" count="25"/>
-      <line num="13" type="stmt" count="25"/>
-      <line num="14" type="stmt" count="25"/>
-      <line num="16" type="stmt" count="1"/>
-      <line num="17" type="stmt" count="1"/>
-      <line num="20" type="stmt" count="25"/>
-      <line num="25" type="stmt" count="25"/>
-      <line num="26" type="stmt" count="25"/>
-      <line num="33" type="stmt" count="25"/>
-      <line num="36" type="stmt" count="25"/>
-      <line num="45" type="stmt" count="25"/>
-      <line num="52" type="stmt" count="25"/>
-      <line num="63" type="stmt" count="25"/>
-      <line num="66" type="stmt" count="25"/>
-      <line num="67" type="stmt" count="25"/>
-      <line num="72" type="method" name="renderScriptInclude" visibility="public" complexity="1" crap="1" count="25"/>
-      <line num="74" type="stmt" count="25"/>
-      <line num="89" type="stmt" count="25"/>
-      <metrics loc="92" ncloc="89" classes="1" methods="2" coveredmethods="2" conditionals="0" coveredconditionals="0" statements="18" coveredstatements="18" elements="20" coveredelements="20"/>
     </file>
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Utility/TimeMode.php">
       <class name="App\Utility\TimeMode" namespace="global">
@@ -13307,7 +13297,7 @@
     </file>
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Utility/Util.php">
       <class name="App\Utility\Util" namespace="global">
-        <metrics complexity="81" methods="38" coveredmethods="34" conditionals="0" coveredconditionals="0" statements="157" coveredstatements="143" elements="195" coveredelements="177"/>
+        <metrics complexity="74" methods="34" coveredmethods="30" conditionals="0" coveredconditionals="0" statements="153" coveredstatements="139" elements="187" coveredelements="169"/>
       </class>
       <line num="11" type="method" name="setCookie" visibility="public" complexity="1" crap="1" count="946"/>
       <line num="13" type="stmt" count="946"/>
@@ -13367,16 +13357,16 @@
       <line num="105" type="stmt" count="1"/>
       <line num="106" type="stmt" count="1"/>
       <line num="107" type="stmt" count="1"/>
-      <line num="110" type="method" name="extract" visibility="public" complexity="1" crap="1" count="1622"/>
-      <line num="112" type="stmt" count="1622"/>
-      <line num="113" type="stmt" count="1622"/>
-      <line num="114" type="stmt" count="1622"/>
-      <line num="117" type="method" name="extractWithDefault" visibility="public" complexity="2" crap="2" count="1004"/>
-      <line num="119" type="stmt" count="1004"/>
-      <line num="120" type="stmt" count="1004"/>
-      <line num="121" type="stmt" count="1004"/>
-      <line num="122" type="stmt" count="984"/>
-      <line num="123" type="stmt" count="1004"/>
+      <line num="110" type="method" name="extract" visibility="public" complexity="1" crap="1" count="1625"/>
+      <line num="112" type="stmt" count="1625"/>
+      <line num="113" type="stmt" count="1625"/>
+      <line num="114" type="stmt" count="1625"/>
+      <line num="117" type="method" name="extractWithDefault" visibility="public" complexity="2" crap="2" count="1007"/>
+      <line num="119" type="stmt" count="1007"/>
+      <line num="120" type="stmt" count="1007"/>
+      <line num="121" type="stmt" count="1007"/>
+      <line num="122" type="stmt" count="987"/>
+      <line num="123" type="stmt" count="1007"/>
       <line num="126" type="method" name="getRatio" visibility="public" complexity="2" crap="2" count="117"/>
       <line num="128" type="stmt" count="117"/>
       <line num="129" type="stmt" count="37"/>
@@ -13391,25 +13381,25 @@
       <line num="148" type="stmt" count="5"/>
       <line num="149" type="stmt" count="5"/>
       <line num="150" type="stmt" count="5"/>
-      <line num="153" type="method" name="isInGithubCI" visibility="public" complexity="3" crap="3" count="1660"/>
-      <line num="155" type="stmt" count="1660"/>
-      <line num="156" type="stmt" count="1651"/>
+      <line num="153" type="method" name="isInGithubCI" visibility="public" complexity="3" crap="3" count="1663"/>
+      <line num="155" type="stmt" count="1663"/>
+      <line num="156" type="stmt" count="1654"/>
       <line num="157" type="stmt" count="9"/>
       <line num="158" type="stmt" count="4"/>
       <line num="159" type="stmt" count="5"/>
-      <line num="165" type="method" name="isInTestEnvironment" visibility="public" complexity="3" crap="3" count="1633"/>
-      <line num="167" type="stmt" count="1633"/>
+      <line num="165" type="method" name="isInTestEnvironment" visibility="public" complexity="3" crap="3" count="1636"/>
+      <line num="167" type="stmt" count="1636"/>
       <line num="168" type="stmt" count="1"/>
-      <line num="169" type="stmt" count="1632"/>
+      <line num="169" type="stmt" count="1635"/>
       <line num="176" type="method" name="isOnTestSite" visibility="public" complexity="5" crap="10.40" count="44"/>
       <line num="178" type="stmt" count="44"/>
       <line num="179" type="stmt" count="44"/>
       <line num="180" type="stmt" count="0"/>
       <line num="181" type="stmt" count="0"/>
       <line num="182" type="stmt" count="0"/>
-      <line num="185" type="method" name="getMyAddress" visibility="public" complexity="4" crap="4" count="480"/>
-      <line num="187" type="stmt" count="480"/>
-      <line num="188" type="stmt" count="478"/>
+      <line num="185" type="method" name="getMyAddress" visibility="public" complexity="4" crap="4" count="483"/>
+      <line num="187" type="stmt" count="483"/>
+      <line num="188" type="stmt" count="481"/>
       <line num="189" type="stmt" count="2"/>
       <line num="190" type="stmt" count="1"/>
       <line num="191" type="stmt" count="1"/>
@@ -13460,79 +13450,43 @@
       <line num="282" type="stmt" count="3"/>
       <line num="283" type="stmt" count="1"/>
       <line num="284" type="stmt" count="3"/>
-      <line num="287" type="method" name="getGraphColor" visibility="public" complexity="2" crap="2" count="25"/>
-      <line num="289" type="stmt" count="25"/>
-      <line num="292" type="method" name="getGraphGridColor" visibility="public" complexity="2" crap="2" count="25"/>
-      <line num="294" type="stmt" count="25"/>
-      <line num="297" type="method" name="getGraphThemeMode" visibility="public" complexity="2" crap="2" count="25"/>
-      <line num="299" type="stmt" count="25"/>
-      <line num="302" type="method" name="getValueGraphHeight" visibility="public" complexity="1" crap="1" count="25"/>
-      <line num="304" type="stmt" count="25"/>
-      <line num="307" type="method" name="getFollowingSgfCoordinates" visibility="public" complexity="7" crap="20.02" count="1"/>
-      <line num="309" type="stmt" count="1"/>
-      <line num="312" type="stmt" count="1"/>
-      <line num="313" type="stmt" count="1"/>
-      <line num="314" type="stmt" count="1"/>
-      <line num="315" type="stmt" count="0"/>
-      <line num="316" type="stmt" count="0"/>
-      <line num="317" type="stmt" count="0"/>
-      <line num="318" type="stmt" count="0"/>
-      <line num="319" type="stmt" count="0"/>
-      <line num="320" type="stmt" count="0"/>
-      <line num="321" type="stmt" count="0"/>
+      <line num="287" type="method" name="getFollowingSgfCoordinates" visibility="public" complexity="7" crap="20.02" count="1"/>
+      <line num="289" type="stmt" count="1"/>
+      <line num="292" type="stmt" count="1"/>
+      <line num="293" type="stmt" count="1"/>
+      <line num="294" type="stmt" count="1"/>
+      <line num="295" type="stmt" count="0"/>
+      <line num="296" type="stmt" count="0"/>
+      <line num="297" type="stmt" count="0"/>
+      <line num="298" type="stmt" count="0"/>
+      <line num="299" type="stmt" count="0"/>
+      <line num="300" type="stmt" count="0"/>
+      <line num="301" type="stmt" count="0"/>
+      <line num="302" type="stmt" count="0"/>
+      <line num="304" type="stmt" count="0"/>
+      <line num="305" type="stmt" count="1"/>
+      <line num="313" type="method" name="toIso8601" visibility="public" complexity="1" crap="1" count="109"/>
+      <line num="315" type="stmt" count="109"/>
+      <line num="319" type="method" name="ordinal" visibility="public" complexity="2" crap="2.15" count="3"/>
+      <line num="321" type="stmt" count="3"/>
       <line num="322" type="stmt" count="0"/>
-      <line num="324" type="stmt" count="0"/>
-      <line num="325" type="stmt" count="1"/>
-      <line num="333" type="method" name="toIso8601" visibility="public" complexity="1" crap="1" count="109"/>
-      <line num="335" type="stmt" count="109"/>
-      <line num="339" type="method" name="ordinal" visibility="public" complexity="2" crap="2.15" count="3"/>
-      <line num="341" type="stmt" count="3"/>
-      <line num="342" type="stmt" count="0"/>
-      <line num="343" type="stmt" count="3"/>
-      <line num="346" type="method" name="calculateLibertyStatus" visibility="public" complexity="3" crap="3" count="1"/>
+      <line num="323" type="stmt" count="3"/>
+      <line num="326" type="method" name="calculateLibertyStatus" visibility="public" complexity="3" crap="3" count="1"/>
+      <line num="334" type="stmt" count="1"/>
+      <line num="335" type="stmt" count="1"/>
+      <line num="337" type="stmt" count="1"/>
+      <line num="339" type="stmt" count="1"/>
+      <line num="341" type="stmt" count="1"/>
+      <line num="343" type="stmt" count="1"/>
+      <line num="345" type="stmt" count="1"/>
+      <line num="348" type="stmt" count="1"/>
+      <line num="349" type="stmt" count="1"/>
+      <line num="351" type="stmt" count="1"/>
       <line num="354" type="stmt" count="1"/>
       <line num="355" type="stmt" count="1"/>
-      <line num="357" type="stmt" count="1"/>
-      <line num="359" type="stmt" count="1"/>
+      <line num="358" type="stmt" count="1"/>
       <line num="361" type="stmt" count="1"/>
-      <line num="363" type="stmt" count="1"/>
-      <line num="365" type="stmt" count="1"/>
-      <line num="368" type="stmt" count="1"/>
-      <line num="369" type="stmt" count="1"/>
-      <line num="371" type="stmt" count="1"/>
-      <line num="374" type="stmt" count="1"/>
-      <line num="375" type="stmt" count="1"/>
-      <line num="378" type="stmt" count="1"/>
-      <line num="381" type="stmt" count="1"/>
-      <metrics loc="384" ncloc="351" classes="1" methods="38" coveredmethods="34" conditionals="0" coveredconditionals="0" statements="157" coveredstatements="143" elements="195" coveredelements="177"/>
-    </file>
-    <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Utility/ValueGraphRenderer.php">
-      <class name="App\Utility\ValueGraphRenderer" namespace="global">
-        <metrics complexity="6" methods="1" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="21" coveredstatements="21" elements="22" coveredelements="22"/>
-      </class>
-      <line num="7" type="method" name="render" visibility="public" complexity="6" crap="6" count="25"/>
-      <line num="9" type="stmt" count="25"/>
-      <line num="10" type="stmt" count="25"/>
-      <line num="12" type="stmt" count="25"/>
-      <line num="13" type="stmt" count="25"/>
-      <line num="14" type="stmt" count="1"/>
-      <line num="15" type="stmt" count="25"/>
-      <line num="16" type="stmt" count="25"/>
-      <line num="17" type="stmt" count="25"/>
-      <line num="18" type="stmt" count="25"/>
-      <line num="21" type="stmt" count="25"/>
-      <line num="22" type="stmt" count="25"/>
-      <line num="23" type="stmt" count="1"/>
-      <line num="25" type="stmt" count="25"/>
-      <line num="28" type="stmt" count="25"/>
-      <line num="32" type="stmt" count="25"/>
-      <line num="34" type="stmt" count="25"/>
-      <line num="36" type="stmt" count="25"/>
-      <line num="62" type="stmt" count="25"/>
-      <line num="65" type="stmt" count="25"/>
-      <line num="76" type="stmt" count="25"/>
-      <line num="79" type="stmt" count="25"/>
-      <metrics loc="82" ncloc="82" classes="1" methods="1" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="21" coveredstatements="21" elements="22" coveredelements="22"/>
+      <metrics loc="364" ncloc="331" classes="1" methods="34" coveredmethods="30" conditionals="0" coveredconditionals="0" statements="153" coveredstatements="139" elements="187" coveredelements="169"/>
     </file>
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Utility/ViteManifest.php">
       <class name="App\Utility\ViteManifest" namespace="global">
@@ -13743,6 +13697,6 @@
       <line num="64" type="stmt" count="2"/>
       <metrics loc="67" ncloc="51" classes="1" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="30" coveredstatements="28" elements="31" coveredelements="28"/>
     </file>
-    <metrics files="187" loc="26471" ncloc="23049" classes="169" methods="1196" coveredmethods="924" conditionals="0" coveredconditionals="0" statements="11436" coveredstatements="10743" elements="12632" coveredelements="11667"/>
+    <metrics files="186" loc="26309" ncloc="22882" classes="168" methods="1192" coveredmethods="922" conditionals="0" coveredconditionals="0" statements="11400" coveredstatements="10709" elements="12592" coveredelements="11631"/>
   </project>
 </coverage>
