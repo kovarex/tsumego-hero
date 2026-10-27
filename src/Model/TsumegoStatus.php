@@ -73,6 +73,13 @@ class TsumegoStatus extends AppModel
 		return self::$descriptions[$status] ?? '';
 	}
 
+	//Sets the status of a problem for a player, whether the player has a status there yet or not.
+	public static function setStatus(int $userID, int $tsumegoID, string $status): void
+	{
+		Util::execute('INSERT INTO tsumego_status (user_id, tsumego_id, status) VALUES (?, ?, ?)
+			ON DUPLICATE KEY UPDATE status = VALUES(status)', [$userID, $tsumegoID, $status]);
+	}
+
 	//How long untouched progress is kept. A problem nobody has touched for this long
 	//counts as old progress, which the settings page offers to throw away.
 	private static int $OLD_PROGRESS_YEARS = 1;
