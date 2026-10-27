@@ -31,11 +31,13 @@ function withPlayEditor(root, alternativeResponse, method)
 	let originalRandom = Math.random;
 	let originalIsMutable = window.isMutable;
 	let originalAlternativeResponse = besogo.alternativeResponse;
+	let originalDisplayMessage = window.displayMessage;
 	let queue = [];
 	window.setTimeout = callback => queue.push(callback);
 	Math.random = () => 0; // the autoplay picks the first reply
 	window.isMutable = true;
 	besogo.alternativeResponse = alternativeResponse;
+	window.displayMessage = () => {}; // the message box of the play page
 	try
 	{
 		method(editor, () => { while (queue.length) queue.shift()(); }, results, comments);
@@ -46,6 +48,7 @@ function withPlayEditor(root, alternativeResponse, method)
 		Math.random = originalRandom;
 		window.isMutable = originalIsMutable;
 		besogo.alternativeResponse = originalAlternativeResponse;
+		window.displayMessage = originalDisplayMessage;
 	}
 }
 
@@ -74,35 +77,73 @@ besogo.addTest("Editor", "FirstNodeLeavesAnEternalLifeCycle", function()
 
 besogo.addTest("Editor", "AutoplayWithoutAReplyItMayPickEndsTheLine", function()
 {
+	// The eternal life as a problem to kill, where the solver kills at the position the cycle comes back to instead
+	let root = loadEditor(ETERNAL_LIFE_SGF).getRoot();
+	root.goal = GOAL_KILL;
+	let last = root;
+	while (last.children.length)
+		last = last.children[0];
+	let comeBack = last.virtualChildren[0].target;
+	let kill = comeBack.makeChild();
+	kill.playMove(16, 4);
+	kill.statusSource = besogo.makeStatusSimple(STATUS_DEAD);
+	comeBack.registerChild(kill);
+
+	// The status of the cycle was found while the position it comes back to was still being solved, so the only reply,
+	// which takes back to that position, is better for the solver than the cycle
+	CHECK(last.selectNonLocalChildIncludingVirtualWithNoBetterStatus(0) == null);
+
+	let line = [];
+	for (let node = last; node.parent; node = node.parent)
+		line.unshift(node);
+	withPlayEditor(root, false, function(editor, flush, results)
+	{
+		for (let node of line)
+			if (node.move.color == root.firstMove)
+			{
+				editor.click(node.move.x, node.move.y, false, false);
+				flush();
+			}
+		CHECK(editor.getCurrent() == last);
+		CHECK_EQUALS(results.join(), "F");
+	});
+});
+
+besogo.addTest("Editor", "ExploringPastTheEndKeepsTheVerdicts", function()
+{
 	let root = besogo.makeGameRoot();
 	root.goal = GOAL_KILL;
-	let wrongMove = root.registerMove(1, 1);
-	let killingMove = root.makeChild();
-	killingMove.playMove(3, 3);
-	killingMove.statusSource = besogo.makeStatusSimple(STATUS_DEAD);
-	root.registerChild(killingMove);
-
-	let reply = wrongMove.makeChild();
-	reply.playMove(1, 2);
-	reply.statusSource = besogo.makeStatusSimple(STATUS_DEAD);
-	wrongMove.registerChild(reply);
-
-	// a better answer of White, explored by the solver, which the autoplay doesn't play as it isn't part of the problem
-	let localEditMove = wrongMove.makeChild();
-	localEditMove.localEdit = true;
-	localEditMove.playMove(2, 2);
-	localEditMove.statusSource = besogo.makeStatusSimple(STATUS_ALIVE);
-	wrongMove.registerChild(localEditMove);
-
-	CHECK_EQUALS(wrongMove.correct, CORRECT_BAD);
-	CHECK(wrongMove.selectNonLocalChildIncludingVirtualWithNoBetterStatus(0) == null);
+	let reply = root.registerMove(1, 1).registerMove(1, 2);
+	let killed = reply.makeChild();
+	killed.playMove(1, 3);
+	killed.statusSource = besogo.makeStatusSimple(STATUS_DEAD);
+	reply.registerChild(killed);
+	let wrongMove = root.makeChild();
+	wrongMove.playMove(3, 3);
+	wrongMove.statusSource = besogo.makeStatusSimple(STATUS_ALIVE);
+	root.registerChild(wrongMove);
 
 	withPlayEditor(root, false, function(editor, flush, results)
 	{
 		editor.click(1, 1, false, false);
 		flush();
-		CHECK(editor.getCurrent() == wrongMove);
-		CHECK_EQUALS(results.join(), "F");
+		editor.click(1, 3, false, false);
+		CHECK_EQUALS(results.join(), "S");
+
+		// the review after solving, where the solver plays on past the end of the line
+		editor.setReviewMode(true);
+		editor.click(5, 5, false, false);
+		CHECK(editor.getCurrent().localEdit);
+		editor.setReviewMode(false);
+
+		editor.resetToStart();
+		editor.click(3, 3, false, false);
+		CHECK_EQUALS(results.join(), "S,F");
+		editor.resetToStart();
+		editor.click(1, 1, false, false);
+		flush();
+		editor.click(1, 3, false, false);
+		CHECK_EQUALS(results.join(), "S,F,S");
 	});
 });
 

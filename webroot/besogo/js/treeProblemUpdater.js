@@ -115,6 +115,7 @@ besogo.updateCorrectValues = function(root)
 {
   besogo.clearCorrectValues(root);
   besogo.updateStatusValuesInternal(root, root, root.goal);
+  besogo.updateLocalEditStatusValues(root, root, root.goal);
   if (root.goal == GOAL_NONE)
     besogo.updateCorrectValuesInternal(root, root);
   else
@@ -137,6 +138,13 @@ besogo.updateStatusResult = function(solversMove, child, status, goal, superkoMe
     return status;
 }
 
+// Whether the status of the node comes from the child too. A local edit only explores the position, it isn't part of the
+// problem, so it counts just in the status of another local edit.
+besogo.countsInStatus = function(node, child)
+{
+  return node.localEdit || !child.localEdit;
+}
+
 besogo.updateStatusValuesInternal = function(root, node, goal)
 {
   if (node.statusSource)
@@ -153,9 +161,12 @@ besogo.updateStatusValuesInternal = function(root, node, goal)
   node.status = besogo.makeStatusSimple(STATUS_ALIVE_IN_SUPER_KO);
 
   for (let i = 0; i < node.children.length; ++i)
-    besogo.updateStatusValuesInternal(root, node.children[i], goal);
+    if (besogo.countsInStatus(node, node.children[i]))
+      besogo.updateStatusValuesInternal(root, node.children[i], goal);
   for (let i = 0; i < node.virtualChildren.length; ++i)
   {
+    if (!besogo.countsInStatus(node, node.virtualChildren[i].target))
+      continue;
 	try
     {
 	    besogo.updateStatusValuesInternal(root, node.virtualChildren[i].target, goal);
@@ -177,12 +188,24 @@ besogo.updateStatusValuesInternal = function(root, node, goal)
     node.status = besogo.makeStatusSimple(STATUS_DEAD_NONE);
 
   for (let i = 0; i < node.children.length; ++i)
-    node.status = besogo.updateStatusResult(solversMove, node.children[i], node.status, goal, node.superkoMeansDead);
+    if (besogo.countsInStatus(node, node.children[i]))
+      node.status = besogo.updateStatusResult(solversMove, node.children[i], node.status, goal, node.superkoMeansDead);
   for (let i = 0; i < node.virtualChildren.length; ++i)
-    node.status = besogo.updateStatusResult(solversMove, node.virtualChildren[i].target, node.status, goal, node.superkoMeansDead);
+    if (besogo.countsInStatus(node, node.virtualChildren[i].target))
+      node.status = besogo.updateStatusResult(solversMove, node.virtualChildren[i].target, node.status, goal, node.superkoMeansDead);
 
   if (node.status.blackFirst.type == STATUS_ALIVE_NONE || node.status.blackFirst.type == STATUS_DEAD_NONE)
     node.status = besogo.makeStatusSimple(STATUS_NONE);
+}
+
+// The local edits get their statuses once the nodes of the problem have theirs, so they can't change them even through
+// the order of the recursion: a status found in a cycle depends on where the cycle was entered.
+besogo.updateLocalEditStatusValues = function(root, node, goal)
+{
+  if (node.localEdit)
+    besogo.updateStatusValuesInternal(root, node, goal);
+  for (let i = 0; i < node.children.length; ++i)
+    besogo.updateLocalEditStatusValues(root, node.children[i], goal);
 }
 
 besogo.updateCorrectValuesInternal = function(root, node)
