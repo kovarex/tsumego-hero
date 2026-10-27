@@ -133,3 +133,11 @@ besogo.addTest("Editor", "RequiredAnswerVisitedElsewhereDoesntDropTheOthers", fu
 		CHECK_EQUALS(results.join(), "S");
 	});
 });
+
+besogo.addTest("Editor", "ExpandedSaveStopsWhereAnEternalLifeComesRound", function()
+{
+	let editor = loadEditor(ETERNAL_LIFE_SGF);
+	let sgf = besogo.composeSgf(editor, true); // the virtual move back to move 16 went round until the stack overflowed
+
+	CHECK_EQUALS(sgf.split(";").length - 1, 22); // the root and the 21 moves
+});

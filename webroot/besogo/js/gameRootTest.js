@@ -56,6 +56,38 @@ besogo.addTest("GameRoot", "TwoOrderOfMovesLeadToTheSameNode", function()
   CHECK(finalChild.virtualParents[0] == otherOrder);
 });
 
+besogo.addTest("GameRoot", "CapturesOfDifferentStonesLeadToTheSameNode", function()
+{
+	// in each corner a white stone played at 2-1 or 18-1 has one liberty left, which Black takes
+	let root = besogo.makeGameRoot();
+	for (let stone of [[1, 2], [2, 2], [3, 1], [19, 2], [18, 2], [17, 1]])
+		root.placeSetup(stone[0], stone[1], BLACK);
+	let first = root.registerMove(19, 1).registerMove(2, 1).registerMove(1, 1);
+	let otherOrder = root.registerMove(1, 1).registerMove(18, 1);
+
+	// the boards differ only by the point emptied by the capture
+	CHECK_EQUALS(otherOrder.virtualChildren.length, 1);
+	CHECK(otherOrder.virtualChildren[0].target == first);
+});
+
+besogo.addTest("GameRoot", "PositionRepeatedInItsLineStaysAsPlayed", function()
+{
+	// Kanzufu 104: the stones taken in turns bring back the position after the first W[ma], and the author ends
+	// the line correct one move after it comes back
+	let editor = besogo.makeEditor(19, 19, {});
+	besogo.loadSgf(besogo.parseSgf("(;SZ[19]" +
+		"AW[ia][pa][ib][jb][nb][ob][kc][lc][mc][nc]AB[ha][hb][lb][mb][pb][qb][ic][oc][hd][jd][kd][ld][md][nd][pd]" +
+		";B[kb];W[jc];B[ka];W[ma];B[oa];W[la];B[na];W[ma];B[oa]C[+])"), editor);
+	let root = editor.getRoot();
+	let line = [root];
+	while (line[line.length - 1].children.length)
+		line.push(line[line.length - 1].children[0]);
+
+	CHECK_EQUALS(line.length, 10); // not pruned as a duplicate of its own line
+	CHECK(line[8].samePositionAs(line[4]));
+	CHECK_EQUALS(root.correct, CORRECT_GOOD);
+});
+
 besogo.addTest("GameRoot", "CapturedStoneLeavesTheHash", function()
 {
 	// the hash of a move is the hash of its parent changed by the points of the move, the captures included
