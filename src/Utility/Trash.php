@@ -37,6 +37,7 @@ class Trash
 					SELECT 1 FROM set_connection other
 					JOIN tsumego t ON t.id = other.tsumego_id AND t.deleted IS NULL
 					WHERE other.set_id = s.id)', [$tsumegoID, $now]);
+		SiteGrowth::forget();
 	}
 
 	//Takes a problem back from the trash. A collection that went to the trash with it, because it
@@ -49,17 +50,20 @@ class Trash
 			SET s.deleted = NULL
 			WHERE s.user_id IS NULL AND s.deleted = t.deleted', [$tsumegoID]);
 		Util::execute('UPDATE tsumego SET deleted = NULL WHERE id = ?', [$tsumegoID]);
+		SiteGrowth::forget();
 	}
 
 	//Moves a collection of the site to the trash, with its problems in place.
 	public static function deleteSet(int $setID): void
 	{
 		Util::execute('UPDATE `set` SET deleted = ? WHERE id = ? AND deleted IS NULL', [date('Y-m-d H:i:s'), $setID]);
+		SiteGrowth::forget();
 	}
 
 	public static function restoreSet(int $setID): void
 	{
 		Util::execute('UPDATE `set` SET deleted = NULL WHERE id = ?', [$setID]);
+		SiteGrowth::forget();
 	}
 
 	//Removes from the database what has been in the trash for longer than self::$RETENTION_DAYS.
@@ -93,6 +97,8 @@ class Trash
 			Util::execute('DELETE FROM `set` WHERE id IN (' . self::placeholders($setIDs) . ')', $setIDs);
 		foreach ($setIDs as $setID)
 			SetImage::removeFolder($setID);
+		if ($setIDs || $problemIDs)
+			SiteGrowth::forget();
 		return ['sets' => count($setIDs), 'problems' => count($problemIDs)];
 	}
 

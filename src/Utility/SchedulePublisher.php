@@ -28,6 +28,7 @@ class SchedulePublisher
 			{
 				$item['Schedule']['published'] = 1;
 				ClassRegistry::init('Schedule')->save($item);
+				SiteGrowth::forget();
 			}
 			else
 				CakeLog::warning(sprintf(
