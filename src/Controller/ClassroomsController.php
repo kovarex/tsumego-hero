@@ -5,6 +5,7 @@ use App\Attribute\HttpPost;
 use App\Lib\Error\UnprocessableEntityException;
 use App\Model\Entity\Classroom;
 use App\Model\Entity\ClassroomMember;
+use App\Model\Table\ClassroomAssignmentTable;
 use App\Model\Table\ClassroomMemberStatusTable;
 use App\Model\Table\ClassroomMemberTable;
 use App\Model\Table\ClassroomTable;
@@ -69,7 +70,7 @@ class ClassroomsController extends AppController
 		$isPupil = $membership !== null && $membership->classroom_member_status_id === ClassroomMemberStatusTable::ACCEPTED;
 		$this->set('isTeacher', $isTeacher);
 		$this->set('membership', $membership);
-		$this->set('assignments', $isTeacher || $isPupil ? ClassroomAssignment::ofClassroom($classroom->id, $isTeacher) : []);
+		$this->set('assignments', $isTeacher || $isPupil ? ClassroomAssignmentTable::ofClassroom($classroom->id, $isTeacher) : []);
 
 		if ($isTeacher)
 		{
@@ -183,13 +184,12 @@ class ClassroomsController extends AppController
 		$classroom = $this->findClassroom($id);
 		$this->Authorization->authorize(['Classroom' => $classroom], 'manage');
 
-		$assignmentModel = ClassRegistry::init('ClassroomAssignment');
-		$assignmentModel->create();
-		$assignmentModel->save([
+		$assignmentTable = $this->fetchTable('ClassroomAssignment');
+		$assignment = $assignmentTable->saveOrFail($assignmentTable->newEntity([
 			'classroom_id' => $classroom->id,
 			'due' => date('Y-m-d', strtotime('+7 days')),
-		]);
-		return $this->redirect(self::assignmentUrl((int) $assignmentModel->id));
+		]));
+		return $this->redirect(self::assignmentUrl($assignment->id));
 	}
 
 	//The page where the teacher builds an assignment: the picked problems, and the picker that
@@ -205,7 +205,7 @@ class ClassroomsController extends AppController
 		$this->set('_title', 'Tsumego Hero - ' . $classroom->name . ' - Assignment');
 		$this->set('classroom', $classroom);
 		$this->set('assignment', $assignment);
-		$this->set('problems', ClassroomAssignment::problems($assignment, true));
+		$this->set('problems', ClassroomAssignmentTable::problems($assignment, true));
 		return null;
 	}
 
@@ -214,7 +214,7 @@ class ClassroomsController extends AppController
 	public function collections(): CakeResponse
 	{
 		$this->Authorization->authorize('Classroom', 'create');
-		return $this->json(ClassroomAssignment::collectionCards(Auth::getUserID()));
+		return $this->json(ClassroomAssignmentTable::collectionCards(Auth::getUserID()));
 	}
 
 	//The problems of a collection with their previews, for the picker.
@@ -225,11 +225,11 @@ class ClassroomsController extends AppController
 		$set = ClassRegistry::init('Set')->findById((int) $setId);
 		if (!$set)
 			throw new NotFoundException('Collection not found');
-		if (!ClassroomAssignment::canAssignSet($set['Set'], Auth::getUserID()))
+		if (!ClassroomAssignmentTable::canAssignSet($set['Set'], Auth::getUserID()))
 			throw new ForbiddenException();
 		return $this->json([
 			'collection' => ['id' => (int) $set['Set']['id'], 'title' => (string) $set['Set']['title']],
-			'problems' => ClassroomAssignment::collectionProblems((int) $set['Set']['id']),
+			'problems' => ClassroomAssignmentTable::collectionProblems((int) $set['Set']['id']),
 		]);
 	}
 
@@ -252,20 +252,20 @@ class ClassroomsController extends AppController
 		$setConnectionIds = $input['setConnectionIds'] ?? null;
 		if (!is_array($setConnectionIds) || !array_is_list($setConnectionIds))
 			throw new BadRequestException('Expected a list of problems.');
-		if (count($setConnectionIds) > ClassroomAssignment::MAXIMUM_PROBLEMS)
-			throw new UnprocessableEntityException('An assignment has at most ' . ClassroomAssignment::MAXIMUM_PROBLEMS . ' problems.');
-		$publish = !empty($input['publish']) && !ClassroomAssignment::isPublished($assignment);
-		if (($publish || ClassroomAssignment::isPublished($assignment)) && empty($setConnectionIds))
+		if (count($setConnectionIds) > ClassroomAssignmentTable::MAXIMUM_PROBLEMS)
+			throw new UnprocessableEntityException('An assignment has at most ' . ClassroomAssignmentTable::MAXIMUM_PROBLEMS . ' problems.');
+		$publish = !empty($input['publish']) && !ClassroomAssignmentTable::isPublished($assignment);
+		if (($publish || ClassroomAssignmentTable::isPublished($assignment)) && empty($setConnectionIds))
 			throw new UnprocessableEntityException('Pick the problems to give first.');
 
-		$problemCount = ClassroomAssignment::replaceProblems(
+		$problemCount = ClassroomAssignmentTable::replaceProblems(
 			(int) $assignment['id'],
 			array_map('intval', $setConnectionIds),
 			Auth::getUserID());
 
 		$published = $publish ? date('Y-m-d H:i:s') : $assignment['published'];
 		Util::execute('UPDATE classroom_assignment SET title = ?, due = ?, published = ? WHERE id = ?', [
-			ClassroomAssignment::cleanTitle((string) ($input['title'] ?? '')),
+			ClassroomAssignmentTable::cleanTitle((string) ($input['title'] ?? '')),
 			$due->format('Y-m-d'),
 			$published,
 			(int) $assignment['id'],
@@ -293,20 +293,20 @@ class ClassroomsController extends AppController
 		$isTeacher = $this->Authorization->can(['Classroom' => $classroom], 'manage');
 		if (!$isTeacher && !ClassroomMemberTable::isPupil($classroom->id, Auth::getUserID()))
 			throw new ForbiddenException();
-		if (!$isTeacher && !ClassroomAssignment::isPublished($assignment))
+		if (!$isTeacher && !ClassroomAssignmentTable::isPublished($assignment))
 			throw new NotFoundException('Assignment not found');
 
-		$problems = ClassroomAssignment::problems($assignment);
+		$problems = ClassroomAssignmentTable::problems($assignment);
 		if (empty($problems))
 		{
 			CookieFlash::set('The assignment has no problems.', 'info');
 			return $this->redirect(self::classUrl($classroom->id));
 		}
 		$current = $setConnectionId === null
-			? ClassroomAssignment::firstUnsolvedSetConnectionId($assignment, Auth::getUserID())
+			? ClassroomAssignmentTable::firstUnsolvedSetConnectionId($assignment, Auth::getUserID())
 			: (int) $setConnectionId;
 		if (!in_array($current, array_column($problems, 'setConnectionId'), true))
-			return $this->redirect(ClassroomAssignment::playLink((int) $assignment['id']));
+			return $this->redirect(ClassroomAssignmentTable::playLink((int) $assignment['id']));
 
 		// the problems of an assignment are played like the ones of a collection
 		if (!Auth::isInLevelMode())
@@ -315,7 +315,7 @@ class ClassroomsController extends AppController
 		$play = new Play(function ($name, $value) {
 			$this->set($name, $value);
 		});
-		$play->classroomAssignment = ClassroomAssignment::withCollections([$assignment])[0];
+		$play->classroomAssignment = ClassroomAssignmentTable::withCollections([$assignment])[0];
 		// Same problem, same address for search engines, whichever route got here.
 		$this->set('canonicalPath', '/' . $current);
 		$play->play($current, $this->request);
@@ -331,7 +331,7 @@ class ClassroomsController extends AppController
 		$classroom = $this->findClassroom((string) $assignment['classroom_id']);
 		$this->Authorization->authorize(['Classroom' => $classroom], 'manage');
 
-		ClassRegistry::init('ClassroomAssignment')->delete((int) $assignment['id']);
+		$this->fetchTable('ClassroomAssignment')->deleteAll(['id' => (int) $assignment['id']]);
 		return $this->redirect(self::classUrl($classroom->id));
 	}
 
@@ -342,12 +342,12 @@ class ClassroomsController extends AppController
 	{
 		$assignment = $this->findAssignment($assignmentId);
 		$classroom = $this->findClassroom((string) $assignment['classroom_id']);
-		if (!ClassroomAssignment::isPublished($assignment))
+		if (!ClassroomAssignmentTable::isPublished($assignment))
 			throw new NotFoundException('Assignment not found');
 		if ($this->Authorization->can(['Classroom' => $classroom], 'manage'))
-			$progress = ClassroomAssignment::progress($assignment);
+			$progress = ClassroomAssignmentTable::progress($assignment);
 		elseif (Auth::isLoggedIn() && ClassroomMemberTable::isPupil($classroom->id, Auth::getUserID()))
-			$progress = ClassroomAssignment::progress($assignment, Auth::getUserID());
+			$progress = ClassroomAssignmentTable::progress($assignment, Auth::getUserID());
 		else
 			throw Auth::isLoggedIn() ? new ForbiddenException() : new UnauthorizedException();
 
@@ -392,13 +392,15 @@ class ClassroomsController extends AppController
 		return $classroom;
 	}
 
+	//The assignment as the plain row the helpers of ClassroomAssignmentTable read, like the rows of ofClassroom().
 	/** @return array<string, mixed> */
 	private function findAssignment(string $id): array
 	{
-		$assignment = ClassRegistry::init('ClassroomAssignment')->findById((int) $id);
+		$assignment = $this->fetchTable('ClassroomAssignment')->find()->where(['id' => (int) $id])
+			->disableHydration()->disableResultsCasting()->first();
 		if (!$assignment)
 			throw new NotFoundException('Assignment not found');
-		return $assignment['ClassroomAssignment'];
+		return $assignment;
 	}
 
 	/** @return array{0: ClassroomMember, 1: Classroom} The membership and its class */

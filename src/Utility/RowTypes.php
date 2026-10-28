@@ -7,7 +7,6 @@ namespace App\Utility;
 /**
  * @phpstan-type AchievementConditionCategoryRow array{id?: int, name?: string, ...}
  * @phpstan-type AchievementConditionRow array{id?: int, value?: float|null, user_id?: int, achievement_condition_category_id?: int, set_id?: int|null, set_id_or_zero?: int|null, ...}
- * @phpstan-type AchievementRow array{id?: int, name?: string|null, description?: string|null, image?: string|null, color?: string|null, order?: int|null, xp?: int|null, additional_description?: string|null, created?: string|null, ...}
  * @phpstan-type AdminActivityRow array{id?: int, user_id?: int, tsumego_id?: int|null, set_id?: int|null, type?: int, old_value?: string|null, new_value?: string|null, created?: string, ...}
  * @phpstan-type AdminOverviewSeenRow array{user_id?: int, admin_overview_type_id?: int, seen?: string, ...}
  * @phpstan-type AvatarSettingRow array{id?: int, name?: string, ...}
@@ -15,7 +14,6 @@ namespace App\Utility;
  * @phpstan-type ChallengeProblemRow array{id?: int, challenge_id?: int, tsumego_id?: int, order?: int, ...}
  * @phpstan-type ClassroomAssignmentProblemRow array{id?: int, classroom_assignment_id?: int, set_connection_id?: int, position?: int, ...}
  * @phpstan-type ClassroomAssignmentResultRow array{id?: int, classroom_assignment_id?: int, user_id?: int, tsumego_id?: int, misplays?: int, solved?: string|null, ...}
- * @phpstan-type ClassroomAssignmentRow array{id?: int, classroom_id?: int, title?: string|null, due?: string, published?: string|null, created?: string, ...}
  * @phpstan-type ClassroomMemberRow array{id?: int, classroom_id?: int, user_id?: int, classroom_member_status_id?: int, created?: string, ...}
  * @phpstan-type DateFormatRow array{id?: int, name?: string, ...}
  * @phpstan-type HighscorePageRow array{id?: int, name?: string, ...}
@@ -26,7 +24,6 @@ namespace App\Utility;
  * @phpstan-type MistakeTrainingReviewRow array{id?: int, user_id?: int, tsumego_id?: int, day?: string, mistake_training_result_id?: int, rung_before?: int, rung_after?: int, xp?: int, created?: string, ...}
  * @phpstan-type ModeRow array{id?: int, name?: string, ...}
  * @phpstan-type PremiumRow array{id?: int, name?: string, ...}
- * @phpstan-type ProgressDeletionRow array{id?: int, user_id?: int, set_id?: int, set_partition?: int|null, created?: string, ...}
  * @phpstan-type RejectRow array{id?: int, reject_type_id?: int, tsumego_id?: int|null, tag_id?: int|null, tag_name?: string|null, sgf_id?: int|null, user_id?: int, rejected_by_user_id?: int|null, comment?: string|null, created?: string, ...}
  * @phpstan-type RejectTypeRow array{id?: int, name?: string, ...}
  * @phpstan-type SetConnectionRow array{id?: int, set_id?: int, tsumego_id?: int, num?: int, created?: string, ...}

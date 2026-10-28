@@ -8,16 +8,10 @@ class TimeModeUtil
 	public static float $RATIO_OF_SOLVED_TO_SUCCEED = 0.79;
 	public static float $SECONDS_ADDED_PER_MOVE_PLAYED = 3;
 
-	public static int $CATEGORY_BLITZ = 1;
-	public static int $CATEGORY_FAST_SPEED = 2;
-	public static int $CATEGORY_SLOW_SPEED = 3;
-
+	//The seconds of a problem in the Slow category, the seconds of its row in time_mode_category
 	public static int $CATEGORY_SLOW_SPEED_SECONDS = 240;
 
 	public static int $WAITING_FOR_RESULT_SECONDS = 15;
-	public static int $SESSION_STATUS_IN_PROGRESS = 1;
-	public static int $SESSION_STATUS_FAILED = 2;
-	public static int $SESSION_STATUS_SOLVED = 3;
 
 	public static int $ATTEMPT_RESULT_QUEUED = 1;
 	public static int $ATTEMPT_RESULT_SOLVED = 2;

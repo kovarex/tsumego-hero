@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\AchievementTable;
 use App\Utility\AchievementId;
 
 class AchievementsControllerTest extends IntegrationTestCase
@@ -54,10 +55,10 @@ class AchievementsControllerTest extends IntegrationTestCase
 		$this->get('/achievements');
 		$result = $this->view;
 
-		$this->assertStringContainsString('27/' . Achievement::COMPLETE_SETS_III_SETS_COUNT, $result);
-		$this->assertStringContainsString('27/' . Achievement::COMPLETE_SETS_V_SETS_COUNT, $result);
-		$this->assertStringNotContainsString(Achievement::COMPLETE_SETS_I_SETS_COUNT . '/' . Achievement::COMPLETE_SETS_I_SETS_COUNT, $result, 'Unlocked achievements show their date, not progress');
-		$this->assertStringNotContainsString('7/' . Achievement::GOLD_DIGGER_COUNT, $result, 'Only the set achievements show progress on the cards so far');
+		$this->assertStringContainsString('27/' . AchievementTable::COMPLETE_SETS_III_SETS_COUNT, $result);
+		$this->assertStringContainsString('27/' . AchievementTable::COMPLETE_SETS_V_SETS_COUNT, $result);
+		$this->assertStringNotContainsString(AchievementTable::COMPLETE_SETS_I_SETS_COUNT . '/' . AchievementTable::COMPLETE_SETS_I_SETS_COUNT, $result, 'Unlocked achievements show their date, not progress');
+		$this->assertStringNotContainsString('7/' . AchievementTable::GOLD_DIGGER_COUNT, $result, 'Only the set achievements show progress on the cards so far');
 	}
 
 	public function testAnonymousSeesNoProgressOnCards()

@@ -8,7 +8,7 @@ use App\Utility\Util;
 class SitemapsController extends AppController
 {
 	//Models
-	public $uses = ['Achievement', 'Set'];
+	public $uses = ['Set'];
 
 	//Pages a visitor can browse without signing in. Each one is resolved through the router before it is listed.
 	private const PUBLIC_PAGES = [
@@ -85,13 +85,9 @@ GROUP BY set_id") as $row)
 		}
 
 		// All achievements, each with its own page
-		$achievements = $this->Achievement->find('all', [
-			'fields' => ['Achievement.id'],
-			'order' => ['Achievement.order' => 'ASC']
-		]);
-
-		foreach ($achievements as $achievement)
-			$urls[] = self::_urlOf(['controller' => 'achievements', 'action' => 'view', $achievement['Achievement']['id']]);
+		$achievementIDs = $this->fetchTable('Achievement')->find()->select(['id'])->orderBy(['order' => 'ASC'])->all()->extract('id');
+		foreach ($achievementIDs as $achievementID)
+			$urls[] = self::_urlOf(['controller' => 'achievements', 'action' => 'view', $achievementID]);
 
 		// All approved tags, on the page that serves tags
 		$tagIDs = $this->fetchTable('Tag')->find()->select(['id'])->where(['approved' => 1])->orderBy(['name' => 'ASC'])->all()->extract('id');

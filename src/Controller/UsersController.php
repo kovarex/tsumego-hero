@@ -16,12 +16,12 @@ use App\Utility\ProposalFeedback;
 use App\Utility\PwnedPasswordChecker;
 use App\Utility\PwnedPasswordCheckerInterface;
 use App\Utility\SgfCommentReorientation;
-use App\Utility\TimeModeUtil;
 use App\Utility\UploadedAvatar;
 use App\Utility\UserActivitiesRenderer;
 use App\Utility\Util;
 use App\Attribute\HttpPost;
 use App\Attribute\HttpGet;
+use App\Model\Table\TimeModeSessionStatusTable;
 
 class UsersController extends AppController
 {
@@ -808,11 +808,9 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		$this->loadModel('TsumegoAttempt');
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
-		$this->loadModel('Achievement');
 		$this->loadModel('SetConnection');
 
 		$as = $this->fetchTable('AchievementStatus')->find()->where(['user_id' => $id])->orderByDesc('created')->limit(12)->all();
-		$ach = $this->Achievement->find('all');
 
 		$user = $this->User->findById($id);
 		if (!$user)
@@ -888,7 +886,7 @@ SELECT
         JOIN time_mode_rank ON time_mode_rank.id = s2.time_mode_rank_id
         WHERE
             s2.time_mode_category_id = c.id AND
-            s2.time_mode_session_status_id = " . TimeModeUtil::$SESSION_STATUS_SOLVED . " AND
+            s2.time_mode_session_status_id = " . TimeModeSessionStatusTable::SOLVED . " AND
             s2.user_id = ?
         ORDER BY time_mode_rank.id DESC                            -- highest id = best rank
         LIMIT 1
@@ -905,8 +903,8 @@ GROUP BY c.id, c.name;", [$user['User']['id'], $user['User']['id']]));
 		$this->set('timeGraph', Util::query('
 SELECT
     DATE(time_mode_session.created) AS category,
-    SUM(CASE WHEN time_mode_session.time_mode_session_status_id = ' . TimeModeUtil::$SESSION_STATUS_SOLVED . ' THEN 1 ELSE 0 END) AS Passes,
-    SUM(CASE WHEN time_mode_session.time_mode_session_status_id = ' . TimeModeUtil::$SESSION_STATUS_FAILED . ' THEN 1 ELSE 0 END) AS Fails
+    SUM(CASE WHEN time_mode_session.time_mode_session_status_id = ' . TimeModeSessionStatusTable::SOLVED . ' THEN 1 ELSE 0 END) AS Passes,
+    SUM(CASE WHEN time_mode_session.time_mode_session_status_id = ' . TimeModeSessionStatusTable::FAILED . ' THEN 1 ELSE 0 END) AS Fails
 FROM time_mode_session
 WHERE time_mode_session.user_id = ? AND time_mode_session.challenge_id IS NULL
 GROUP BY DATE(time_mode_session.created)
@@ -919,8 +917,8 @@ ORDER BY category DESC', [$user['User']['id']]));
 		$this->set('solvedPublishedCount', $progress['solved']);
 
 		$achievementById = [];
-		foreach ($ach as $achievement)
-			$achievementById[$achievement['Achievement']['id']] = $achievement['Achievement'];
+		foreach ($this->fetchTable('Achievement')->find()->all() as $achievement)
+			$achievementById[$achievement->id] = $achievement;
 
 		$asList = [];
 		foreach ($as as $item)
@@ -929,12 +927,12 @@ ORDER BY category DESC', [$user['User']['id']]));
 				continue;
 			$achievement = $achievementById[$item->achievement_id];
 			$asList[] = [
-				'a_title' => $achievement['name'],
-				'a_description' => $achievement['description'],
-				'a_image' => $achievement['image'],
-				'a_color' => $achievement['color'],
-				'a_id' => $achievement['id'],
-				'a_xp' => $achievement['xp'],
+				'a_title' => $achievement->name,
+				'a_description' => $achievement->description,
+				'a_image' => $achievement->image,
+				'a_color' => $achievement->color,
+				'a_id' => $achievement->id,
+				'a_xp' => $achievement->xp,
 				'a_earned_count' => $item->value,
 				'created' => $item->created->format('Y-m-d H:i:s'),
 			];
@@ -955,7 +953,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 		if ($user['User']['deleted'])
 			$user['User']['display_name'] = $user['User']['deleted_name'] . ' ' . User::DELETED_NAME;
 
-		$aCount = $this->Achievement->find('all');
+		$achievementCount = $this->fetchTable('Achievement')->find()->count();
 
 		// The section of the training shows only for a player who trained.
 		$this->set('mistakeTraining', MistakeTraining::profile((int) $user['User']['id'], MistakeTraining::profileStart()));
@@ -965,7 +963,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 		$this->set('as', $as);
 		$this->set('aNum', $aNumx);
 		$this->set('aEarnedTimes', $aEarnedTimes);
-		$this->set('aCount', $aCount);
+		$this->set('achievementCount', $achievementCount);
 		return null;
 	}
 

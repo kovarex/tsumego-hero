@@ -1,6 +1,7 @@
 <?php
 
 use App\Lib\Error\UnprocessableEntityException;
+use App\Model\Table\ClassroomAssignmentTable;
 use App\Model\Table\ClassroomMemberStatusTable;
 use App\Model\Table\ClassroomMemberTable;
 use App\Utility\PlayOutcome;
@@ -65,9 +66,12 @@ class ClassroomsControllerTest extends IntegrationTestCase
 	/** @param list<int> $tsumegoIndexes The problems, from the first collection of each tsumego */
 	private function createAssignment(int $classroomId, ?string $published, string $due, array $tsumegoIndexes = [0, 1, 2]): int
 	{
-		Util::execute('INSERT INTO classroom_assignment (classroom_id, due, published, created) VALUES (?, ?, ?, ?)',
-			[$classroomId, $due, $published, $published ?? date('Y-m-d H:i:s')]);
-		$assignmentId = (int) Util::connection()->lastInsertId();
+		$assignmentTable = $this->fetchTable('ClassroomAssignment');
+		$assignmentId = $assignmentTable->saveOrFail($assignmentTable->newEntity([
+			'classroom_id' => $classroomId,
+			'due' => $due,
+			'published' => $published,
+			'created' => $published ?? date('Y-m-d H:i:s')]))->id;
 		foreach ($tsumegoIndexes as $position => $tsumegoIndex)
 			Util::execute('INSERT INTO classroom_assignment_problem (classroom_assignment_id, set_connection_id, position) VALUES (?, ?, ?)',
 				[$assignmentId, $this->setConnectionId($tsumegoIndex), $position + 1]);
@@ -77,7 +81,8 @@ class ClassroomsControllerTest extends IntegrationTestCase
 	/** @return array<string, mixed> */
 	private function assignment(int $assignmentId): array
 	{
-		return Util::query('SELECT * FROM classroom_assignment WHERE id = ?', [$assignmentId])[0];
+		return $this->fetchTable('ClassroomAssignment')->find()->where(['id' => $assignmentId])
+			->disableHydration()->disableResultsCasting()->firstOrFail();
 	}
 
 	/** @return list<int> The set connections of the problems of the assignment, in their order */
@@ -342,7 +347,7 @@ class ClassroomsControllerTest extends IntegrationTestCase
 
 		$this->post('/classes/create-assignment/' . $classroomId);
 
-		$assignment = Util::query('SELECT * FROM classroom_assignment')[0];
+		$assignment = $this->fetchTable('ClassroomAssignment')->find()->disableHydration()->disableResultsCasting()->firstOrFail();
 		$this->assertStringEndsWith('/classes/assignment/' . $assignment['id'], $this->headerValue('Location'));
 		$this->assertNull($assignment['published']);
 		$this->assertSame(date('Y-m-d', strtotime('+7 days')), $assignment['due']);
@@ -507,7 +512,7 @@ class ClassroomsControllerTest extends IntegrationTestCase
 		$this->assertForbidden(fn() => $this->post('/classes/save-assignment/' . $assignmentId, json_encode(['setConnectionIds' => []])));
 		$this->assertForbidden(fn() => $this->post('/classes/create-assignment/' . $classroomId));
 		$this->assertCount(3, $this->assignedSetConnectionIds($assignmentId));
-		$this->assertSame(1, ClassRegistry::init('ClassroomAssignment')->find('count'));
+		$this->assertSame(1, $this->fetchTable('ClassroomAssignment')->find()->count());
 	}
 
 	public function testTheEditorPageShowsThePickedProblems(): void
@@ -796,7 +801,7 @@ class ClassroomsControllerTest extends IntegrationTestCase
 		$classroomId = $this->createClassroom();
 		$this->addMember($classroomId, 'pupil');
 		$assignmentId = $this->createAssignment($classroomId, '2026-10-01 00:00:00', '2026-10-08', [3, 1, 0]);
-		Util::execute("UPDATE classroom_assignment SET title = 'Week two' WHERE id = ?", [$assignmentId]);
+		$this->fetchTable('ClassroomAssignment')->updateAll(['title' => 'Week two'], ['id' => $assignmentId]);
 		$this->addResult($assignmentId, 'pupil', 3, '2026-10-02 10:00:00');
 		$this->addSolvedStatus('pupil', 1);
 		$this->login('pupil');
@@ -830,7 +835,7 @@ class ClassroomsControllerTest extends IntegrationTestCase
 		$this->login('pupil');
 		$browser = Browser::instance();
 
-		$browser->get(ClassroomAssignment::playLink($assignmentId));
+		$browser->get(ClassroomAssignmentTable::playLink($assignmentId));
 		$this->assertFalse($browser->driver->executeScript('return assignmentReplay;'));
 		$browser->playWithResult('S');
 		$this->assertSame('S', $this->buttonStatus($browser, 0));
@@ -840,7 +845,7 @@ class ClassroomsControllerTest extends IntegrationTestCase
 		$this->assertSame(0, $this->result($assignmentId, 'pupil', 0)['misplays']);
 		$this->assertNotNull($this->result($assignmentId, 'pupil', 0)['solved']);
 
-		$browser->get(ClassroomAssignment::playLink($assignmentId));
+		$browser->get(ClassroomAssignmentTable::playLink($assignmentId));
 		$this->assertSame('S', $this->buttonStatus($browser, 0));
 		$this->assertSame('V', $this->buttonStatus($browser, 1), 'The row opens at the problem not solved yet');
 	}
@@ -860,9 +865,9 @@ class ClassroomsControllerTest extends IntegrationTestCase
 		$this->login('pupil');
 		$browser = Browser::instance();
 
-		$browser->get(ClassroomAssignment::playLink($assignmentId));
+		$browser->get(ClassroomAssignmentTable::playLink($assignmentId));
 		$this->assertSame('W', $this->buttonStatus($browser, 0));
-		$this->assertSame(['state' => 'earlier'], ClassroomAssignment::progress($this->assignment($assignmentId))['pupils'][0]['cells'][0]);
+		$this->assertSame(['state' => 'earlier'], ClassroomAssignmentTable::progress($this->assignment($assignmentId))['pupils'][0]['cells'][0]);
 		$this->assertTrue($browser->driver->executeScript('return assignmentReplay;'));
 		$browser->playWithResult('S');
 		$this->assertSame('S', $this->buttonStatus($browser, 0));
@@ -870,9 +875,9 @@ class ClassroomsControllerTest extends IntegrationTestCase
 		$this->assertNotNull($this->result($assignmentId, 'pupil', 0)['solved']);
 		$this->assertSame($xp, $this->xp('pupil'));
 		$this->assertSame('S', $this->status('pupil', 0));
-		$this->assertSame('solved', ClassroomAssignment::progress($this->assignment($assignmentId))['pupils'][0]['cells'][0]['state']);
+		$this->assertSame('solved', ClassroomAssignmentTable::progress($this->assignment($assignmentId))['pupils'][0]['cells'][0]['state']);
 
-		$browser->get(ClassroomAssignment::playLink($assignmentId, $this->setConnectionId(0)));
+		$browser->get(ClassroomAssignmentTable::playLink($assignmentId, $this->setConnectionId(0)));
 		$this->assertSame('S', $this->buttonStatus($browser, 0));
 		$this->assertFalse($browser->driver->executeScript('return assignmentReplay;'), 'Once solved for the assignment, a replay sends nothing again');
 	}
@@ -945,7 +950,7 @@ class ClassroomsControllerTest extends IntegrationTestCase
 
 		$this->assertSame(0, $this->fetchTable('Classroom')->find()->count());
 		$this->assertSame(0, $this->fetchTable('ClassroomMember')->find()->count());
-		$this->assertSame(0, ClassRegistry::init('ClassroomAssignment')->find('count'));
+		$this->assertSame(0, $this->fetchTable('ClassroomAssignment')->find()->count());
 	}
 
 	public function testOnlyTheTeacherDeletesTheClass(): void

@@ -9,11 +9,12 @@
  * @var array|null $teacher
  * @var bool $isTeacher
  * @var \App\Model\Entity\ClassroomMember|null $membership The membership of the viewer, in whatever state
- * @var array $assignments What ClassroomAssignment::ofClassroom() returned, with the drafts for the teacher
+ * @var array $assignments What ClassroomAssignmentTable::ofClassroom() returned, with the drafts for the teacher
  * @var array $members What ClassroomMemberTable::ofClassroom() returned, for the teacher
  * @var string $joinUrl The link of the class to send around, for the teacher
  */
 
+use App\Model\Table\ClassroomAssignmentTable;
 use App\Model\Table\ClassroomMemberStatusTable;
 use App\Utility\Auth;
 

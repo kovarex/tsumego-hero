@@ -2,6 +2,8 @@
 
 namespace App\Policy;
 
+use App\Model\Table\ClassroomAssignmentTable;
+
 //Set-level authorization. Sandbox access is allowed for admins and premium
 //users (premium can no longer be purchased, but existing premium users keep
 //the sandbox benefit).
@@ -43,7 +45,7 @@ class SetPolicy extends BasePolicy
 		if ($set['user_id'] !== null)
 			return static::isAdmin($user)
 				|| (int) $set['user_id'] === $user['id']
-				|| (isset($user['id'], $set['id']) && \ClassroomAssignment::isSetAssignedTo((int) $user['id'], (int) $set['id']));
+				|| (isset($user['id'], $set['id']) && ClassroomAssignmentTable::isSetAssignedTo((int) $user['id'], (int) $set['id']));
 		return true;
 	}
 

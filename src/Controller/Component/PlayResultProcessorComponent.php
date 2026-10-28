@@ -1,6 +1,8 @@
 <?php
 
+use App\Model\Table\ClassroomAssignmentTable;
 use App\Model\Table\DayRecordTable;
+use App\Model\Table\ProgressDeletionTable;
 use App\Utility\AchievementChecker;
 use App\Utility\Auth;
 use App\Utility\Constants;
@@ -102,7 +104,7 @@ class PlayResultProcessorComponent extends Component
 		$originalTsumegoRating = $tsumego['Tsumego']['rating'];
 
 		// the resets of the part of the set the problem is played from, in the last month
-		$progressDeletionCount = ProgressDeletion::countRecentForProblem(Auth::getUserID(), $tsumegoID, $setConnectionID);
+		$progressDeletionCount = ProgressDeletionTable::countRecentForProblem(Auth::getUserID(), $tsumegoID, $setConnectionID);
 
 		$lastTsumegoAttempt = TsumegoAttempt::findLast((int) Auth::getUserID(), $tsumegoID);
 
@@ -111,7 +113,7 @@ class PlayResultProcessorComponent extends Component
 			$result['potion_triggered'] = $this->processPotion();
 		$this->processXpChange($tsumego, $result, $previousStatusValue, $originalTsumegoRating, $progressDeletionCount);
 		$this->updateTsumegoAttempt($tsumego, $result, $previousStatusValue, $seconds, $lastTsumegoAttempt);
-		ClassroomAssignment::recordResult((int) Auth::getUserID(), $tsumegoID, $outcome);
+		ClassroomAssignmentTable::recordResult((int) Auth::getUserID(), $tsumegoID, $outcome);
 		// The pool is fed from every mode: a solved problem that goes wrong enters the
 		// review ladder, a clean solve climbs it. The training says it is the one playing, since a replay there counts for nothing,
 		// and so does the time mode, the one mode where a solved problem is not free play.
