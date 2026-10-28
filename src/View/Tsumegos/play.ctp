@@ -641,7 +641,7 @@ use App\Utility\ViteManifest;
 	let customMultipleChoiceAnswer = 0;
 	var boardLockValue = 0;
 	let mText = "";
-	let passEnabled = <?php echo (int) $t->pass; ?>+"";
+	let passEnabled = <?php echo $t->pass; ?>+"";
 	let besogoRotation = -1;
 	let msgFilterSelected = false;
 	const activeTopicTiles = [];

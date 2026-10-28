@@ -1,6 +1,7 @@
 <?php
 
 use App\Attribute\HttpPost;
+use App\Model\Entity\Tsumego;
 use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\TagConnectionTable;
 use App\Utility\AdminActivityLogger;
@@ -11,7 +12,7 @@ class TagConnectionController extends AppController
 	#[HttpPost]
 	public function add(string $tsumegoID, string $tagName)
 	{
-		$this->Authorization->authorize(['TagConnection' => ['id' => (int) $tsumegoID]], 'add');
+		$this->Authorization->authorize(['TagConnection' => new Tsumego(['id' => (int) $tsumegoID])], 'add');
 		if (!TagConnectionTable::canCurrentUserAddTag())
 			throw new ForbiddenException('Daily tag limit reached.');
 		$tag = $this->fetchTable('Tag')->find()->where(['name' => $tagName])->first();
