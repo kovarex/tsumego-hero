@@ -47,7 +47,6 @@ class ClassroomsController extends AppController
 		}
 
 		$classroomTable = $this->fetchTable('Classroom');
-		/** @var Classroom $classroom */
 		$classroom = $classroomTable->saveOrFail($classroomTable->newEntity(['name' => $name, 'teacher_user_id' => Auth::getUserID()]));
 		return $this->redirect(self::classUrl($classroom->id));
 	}
@@ -387,7 +386,6 @@ class ClassroomsController extends AppController
 
 	private function findClassroom(string $id): Classroom
 	{
-		/** @var Classroom|null $classroom */
 		$classroom = $this->fetchTable('Classroom')->find()->where(['id' => (int) $id])->first();
 		if ($classroom === null)
 			throw new NotFoundException('Class not found');
@@ -408,7 +406,6 @@ class ClassroomsController extends AppController
 	{
 		if (!Auth::isLoggedIn())
 			throw new UnauthorizedException();
-		/** @var ClassroomMember|null $membership */
 		$membership = $this->fetchTable('ClassroomMember')->find()->where(['id' => (int) $id])->first();
 		if ($membership === null)
 			throw new NotFoundException('Membership not found');

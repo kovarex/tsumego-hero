@@ -24,7 +24,6 @@ class SchedulePublisher
 			->where(['date <=' => $date, 'published' => false])
 			->orderBy(['date' => 'ASC'])
 			->all();
-		/** @var Schedule $item */
 		foreach ($dueSchedule as $item)
 		{
 			$failure = self::publishSingle($item->tsumego_id, $item->set_id);

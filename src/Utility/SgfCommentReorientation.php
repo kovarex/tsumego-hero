@@ -2,7 +2,6 @@
 
 namespace App\Utility;
 
-use App\Model\Entity\TsumegoComment;
 use Cake\ORM\TableRegistry;
 use ClassRegistry;
 use Sgf;
@@ -109,8 +108,7 @@ class SgfCommentReorientation
 	private static function transformComments(int $tsumegoID, BoardTransformation $transformation, int $size): void
 	{
 		$tsumegoCommentTable = TableRegistry::getTableLocator()->get('TsumegoComment');
-		/** @var TsumegoComment $comment */
-		foreach ($tsumegoCommentTable->find()->where(['tsumego_id' => $tsumegoID])->orderBy('id') as $comment)
+		foreach ($tsumegoCommentTable->find()->where(['tsumego_id' => $tsumegoID])->orderBy('id')->all() as $comment)
 		{
 			$message = CommentCoordinates::transformTextBy($comment->message, $transformation, $size);
 			$position = CommentCoordinates::transformPosition($comment->position, $transformation, $size);

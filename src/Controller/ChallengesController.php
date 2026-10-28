@@ -3,7 +3,6 @@
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Model\Entity\TimeModeRank;
-use App\Model\Entity\TimeModeSession;
 use App\Model\Table\ChallengeTable;
 use App\Model\Table\TimeModeSessionStatusTable;
 use App\Utility\Auth;
@@ -97,7 +96,6 @@ class ChallengesController extends AppController
 		$this->set('joinUrl', Router::url(self::challengeUrl($challengeID), true));
 
 		// playing this one ends the run of another challenge, so the player is told before they start
-		/** @var TimeModeSession|null $otherRun */
 		$otherRun = Auth::isLoggedIn() ? $this->fetchTable('TimeModeSession')->find()->where([
 			'user_id' => Auth::getUserID(),
 			'time_mode_session_status_id' => TimeModeSessionStatusTable::IN_PROGRESS,

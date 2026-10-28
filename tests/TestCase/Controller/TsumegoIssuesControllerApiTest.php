@@ -1,6 +1,5 @@
 <?php
 
-use App\Model\Entity\TsumegoIssue;
 use App\Model\Table\TsumegoIssueTable;
 
 //Controller-level tests for the TsumegoIssuesController JSON API.
@@ -106,7 +105,6 @@ class TsumegoIssuesControllerApiTest extends IntegrationTestCase
 		$this->post('/tsumego-issues/reopen/' . $context->issues[0]['id']);
 
 		$this->assertResponseCode(200);
-		/** @var TsumegoIssue $issue */
 		$issue = $this->fetchTable('TsumegoIssue')->get($context->issues[0]['id']);
 		$this->assertSame(TsumegoIssueTable::OPENED_STATUS, $issue->tsumego_issue_status_id);
 	}

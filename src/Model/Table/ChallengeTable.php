@@ -49,7 +49,6 @@ class ChallengeTable extends AppTable
 		shuffle($tsumegos);
 
 		$challengeTable = TableRegistry::getTableLocator()->get('Challenge');
-		/** @var Challenge $challenge */
 		$challenge = $challengeTable->saveOrFail($challengeTable->newEntity([
 			'created_by_user_id' => $creatorUserId,
 			'minimum_time_mode_rank_id' => $minimumTimeModeRankId,
@@ -247,11 +246,9 @@ class ChallengeTable extends AppTable
 	//The run of a player in a challenge, null when they haven't started it.
 	public static function runOf(int $challengeId, int $userId): ?TimeModeSession
 	{
-		/** @var TimeModeSession|null $run */
-		$run = TableRegistry::getTableLocator()->get('TimeModeSession')->find()->where([
+		return TableRegistry::getTableLocator()->get('TimeModeSession')->find()->where([
 			'challenge_id' => $challengeId,
 			'user_id' => $userId])->first();
-		return $run;
 	}
 
 	//The players of a challenge in the order of the table: the finished runs by their points

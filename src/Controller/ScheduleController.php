@@ -237,7 +237,6 @@ LIMIT " . $count), [$setIdFrom, $num, $targetSetId]);
 		$this->Authorization->authorize('Schedule');
 
 		$scheduleTable = $this->fetchTable('Schedule');
-		/** @var Schedule|null $schedule */
 		$schedule = $scheduleTable->find()->where(['id' => (int) $id])->first();
 		if (!$schedule)
 			throw new NotFoundException('Schedule entry not found.');

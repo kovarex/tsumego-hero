@@ -90,7 +90,6 @@ class TimeModeController extends AppController
 
 	private function getRanksWithTsumegoCount(): ?array
 	{
-		/** @var array<TimeModeRank> $ranks */
 		$ranks = $this->fetchTable('TimeModeRank')->find()->orderBy('id')->toArray();
 		$rankPartOfQuery = '';
 		$count = count($ranks);
@@ -162,11 +161,10 @@ ORDER BY MIN(rating);");
 		$lastTimeModeCategoryID = Auth::getUser()['last_time_mode_category_id'];
 		if (!$lastTimeModeCategoryID)
 			$lastTimeModeCategoryID = $this->fetchTable('TimeModeCategory')->find()->orderByDesc('id')->firstOrFail()->id;
-		assert($lastTimeModeCategoryID);
+		assert((bool) $lastTimeModeCategoryID);
 
 		$timeModeRankMap = $this->fetchTable('TimeModeRank')->find('list', keyField: 'id', valueField: 'name')->toArray();
 
-		/** @var array<TimeModeSession> $solvedSessions */
 		$solvedSessions = $this->fetchTable('TimeModeSession')->find()->where([
 			'user_id' => Auth::getUserID(),
 			'time_mode_session_status_id' => TimeModeSessionStatusTable::SOLVED,
@@ -192,7 +190,6 @@ ORDER BY MIN(rating);");
 			'time_mode_session_status_id !=' => TimeModeSessionStatusTable::IN_PROGRESS,
 			'challenge_id IS' => null]));
 		// a new run ends the run of a challenge, so the player is told before they start one
-		/** @var TimeModeSession|null $challengeRun */
 		$challengeRun = $this->fetchTable('TimeModeSession')->find()->where([
 			'user_id' => Auth::getUserID(),
 			'time_mode_session_status_id' => TimeModeSessionStatusTable::IN_PROGRESS,
@@ -368,7 +365,6 @@ ORDER BY time_mode_session.created DESC, time_mode_session.id DESC",
 			$passedSessionID = $finishedSessionID;
 		if (!$passedSessionID)
 			return null;
-		/** @var TimeModeSession|null $session */
 		$session = $this->fetchTable('TimeModeSession')->find()->where(['id' => $passedSessionID])->first();
 		if (!$session)
 			throw new NotFoundException('Time Mode Session not found.');
