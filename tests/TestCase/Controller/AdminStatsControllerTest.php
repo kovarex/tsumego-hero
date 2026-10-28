@@ -400,13 +400,13 @@ class AdminStatsControllerTest extends IntegrationTestCase
 		$this->assertSame('Tag Proposals (1)', $browser->find('#tag_connection_proposals_page_header')->getText());
 
 		// click the accept proposal button
-		$browser->clickId('tag-connection-accept-' . $context->tsumegos[0]['tag-connections'][0]['id']);
+		$browser->clickId('tag-connection-accept-' . $context->tsumegos[0]['tag-connections'][0]->id);
 		$browser->waitUntilCssSelectorExistsWithText('#tag_connection_proposals_page_header', 'Tag Proposals (0)');
 
 		// we got redirected back to the list, the proposal shouldn't be visible anymore
 		$this->assertSame(Util::getMyAddress() . '/admin/tag-proposals', $browser->driver->getCurrentURL());
 		$this->assertSame('Tag Proposals (0)', $browser->find('#tag_connection_proposals_page_header')->getText());
-		$this->assertTrue(ClassRegistry::init('TagConnection')->findById($context->tsumegos[0]['tag-connections'][0]['id'])['TagConnection']['approved']);
+		$this->assertTrue($this->fetchTable('TagConnection')->get($context->tsumegos[0]['tag-connections'][0]->id)->approved);
 
 		// tag approval is saved in admin activities
 		$adminActivities = ClassRegistry::init('AdminActivity')->find('all');
@@ -425,8 +425,8 @@ class AdminStatsControllerTest extends IntegrationTestCase
 		$browser->get('/admin/tag-proposals');
 		$this->assertSame('Tag Proposals (1)', $browser->find('#tag_connection_proposals_page_header')->getText());
 
-		$browser->findById('tag-connection-comment-' . $context->tsumegos[0]['tag-connections'][0]['id'])->sendKeys('There is no snapback');
-		$browser->clickId('tag-connection-reject-' . $context->tsumegos[0]['tag-connections'][0]['id']);
+		$browser->findById('tag-connection-comment-' . $context->tsumegos[0]['tag-connections'][0]->id)->sendKeys('There is no snapback');
+		$browser->clickId('tag-connection-reject-' . $context->tsumegos[0]['tag-connections'][0]->id);
 		$browser->waitUntilCssSelectorExistsWithText('#tag_connection_proposals_page_header', 'Tag Proposals (0)');
 
 		// we got redirected back to the list, the proposal shouldn't be visible anymore
@@ -434,7 +434,7 @@ class AdminStatsControllerTest extends IntegrationTestCase
 		$this->assertSame('Tag Proposals (0)', $browser->find('#tag_connection_proposals_page_header')->getText());
 
 		// the tag is deleted
-		$this->assertEmpty(ClassRegistry::init('TagConnection')->findById($context->tsumegos[0]['tag-connections'][0]['id']));
+		$this->assertFalse($this->fetchTable('TagConnection')->exists(['id' => $context->tsumegos[0]['tag-connections'][0]->id]));
 
 		// tag reject is saved in admin activities
 		$adminActivities = ClassRegistry::init('AdminActivity')->find('all');

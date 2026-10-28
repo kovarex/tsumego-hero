@@ -38,7 +38,7 @@ class TagConnectionControllerTest extends IntegrationTestCase
 		$this->post('/tagConnection/add/' . $context->tsumegos[0]['id'] . '/snapback');
 
 		$this->assertResponseCode(403);
-		$this->assertSame(0, ClassRegistry::init('TagConnection')->find('count', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]]));
+		$this->assertSame(0, $this->fetchTable('TagConnection')->find()->where(['tsumego_id' => $context->tsumegos[0]['id']])->count());
 	}
 
 	public function testAddWithUnknownTag()
@@ -64,10 +64,7 @@ class TagConnectionControllerTest extends IntegrationTestCase
 		$this->post('/tagConnection/add/' . $context->tsumegos[0]['id'] . '/snapback');
 
 		$this->assertResponseCode(200);
-		$connection = ClassRegistry::init('TagConnection')->find('first', [
-			'conditions' => ['tsumego_id' => $context->tsumegos[0]['id']],
-		]);
-		$this->assertNotEmpty($connection);
+		$this->assertTrue($this->fetchTable('TagConnection')->exists(['tsumego_id' => $context->tsumegos[0]['id']]));
 	}
 
 	public function testRemoveRequiresLogin()
@@ -89,10 +86,7 @@ class TagConnectionControllerTest extends IntegrationTestCase
 		$this->post('/tagConnection/remove/' . $context->tsumegos[0]['id'] . '/snapback');
 
 		$this->assertResponseCode(200);
-		$connection = ClassRegistry::init('TagConnection')->find('first', [
-			'conditions' => ['tsumego_id' => $context->tsumegos[0]['id']],
-		]);
-		$this->assertEmpty($connection);
+		$this->assertFalse($this->fetchTable('TagConnection')->exists(['tsumego_id' => $context->tsumegos[0]['id']]));
 	}
 
 	public function testAddBlockedWhenDailyLimitReached()
@@ -103,7 +97,7 @@ class TagConnectionControllerTest extends IntegrationTestCase
 			'tags' => [],
 		]);
 
-		$tc = ClassRegistry::init('TagConnection');
+		$tagConnectionTable = $this->fetchTable('TagConnection');
 		$tag = ClassRegistry::init('Tag');
 		$today = gmdate('Y-m-d H:i:s');
 
@@ -113,14 +107,13 @@ class TagConnectionControllerTest extends IntegrationTestCase
 			$tag->save(['Tag' => ['name' => "limit-tag-$i", 'description' => '']]);
 			$tagId = $tag->getLastInsertId();
 
-			$tc->create();
-			$tc->save(['TagConnection' => [
+			$tagConnectionTable->saveOrFail($tagConnectionTable->newEntity([
 				'tag_id' => $tagId,
 				'tsumego_id' => $context->tsumegos[0]['id'],
 				'user_id' => $context->user['id'],
 				'approved' => 0,
 				'created' => $today,
-			]]);
+			]));
 		}
 
 		// Create one more tag to try to add

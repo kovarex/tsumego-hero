@@ -4,6 +4,7 @@ namespace App\Utility;
 
 use ArrayObject;
 use Set;
+use Sgf;
 
 class TsumegoButtons extends ArrayObject
 {
@@ -104,12 +105,45 @@ class TsumegoButtons extends ArrayObject
 				$row['num'],
 				Auth::isLoggedIn() ? ($row['status'] ?: 'N') : 'N',
 				$row['rating'],
-				$row['sgf']);
+				null);
 			$tsumegoButton->setID = isset($row['set_id']) ? (int) $row['set_id'] : null;
 			$tsumegoButton->setTitle = $row['set_title'] ?? null;
 			$this [] = $tsumegoButton;
 		}
 		$this->updateHighestTsumegoOrder();
+	}
+
+	//Loads the stored preview of the current version of the buttons that have none yet, in one query.
+	//A collection is filled without them, as only the shown buttons need them: one page of a set, or
+	//the dozen around the opened problem on the play page, not the whole set.
+	public function loadPreviews(): void
+	{
+		$tsumegoIDs = [];
+		foreach ($this as $tsumegoButton)
+			if ($tsumegoButton->preview === null && $tsumegoButton->sgf === null)
+				$tsumegoIDs[] = $tsumegoButton->tsumegoID;
+		if (empty($tsumegoIDs))
+			return;
+		$previews = self::currentPreviews($tsumegoIDs);
+		foreach ($this as $tsumegoButton)
+			if ($tsumegoButton->preview === null && $tsumegoButton->sgf === null)
+				$tsumegoButton->preview = $previews[$tsumegoButton->tsumegoID] ?? '';
+	}
+
+	/**
+	 * The stored preview of the current (latest accepted) version of each of the tsumegos.
+	 * @param int[] $tsumegoIDs
+	 * @return array<int, string> by tsumego id, a tsumego without an accepted version is left out
+	 */
+	public static function currentPreviews(array $tsumegoIDs): array
+	{
+		$rows = Util::query('SELECT sgf.tsumego_id, sgf.preview FROM sgf'
+			. ' JOIN (SELECT MAX(id) AS id FROM sgf WHERE tsumego_id IN (' . implode(',', array_map('intval', array_unique($tsumegoIDs))) . ')'
+			. ' AND sgf_status_id = ' . Sgf::STATUS_ACCEPTED . ' GROUP BY tsumego_id) current_sgf ON current_sgf.id = sgf.id');
+		$result = [];
+		foreach ($rows as $row)
+			$result[(int) $row['tsumego_id']] = (string) $row['preview'];
+		return $result;
 	}
 
 	public function resetOrders(): void

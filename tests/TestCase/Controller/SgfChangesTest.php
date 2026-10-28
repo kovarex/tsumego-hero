@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Table\SgfReviewTable;
+use App\Utility\TsumegoButton;
 use App\Utility\Util;
 
 //The SGF changes of the admin area (SgfChangesRenderer): every version that became part of a
@@ -218,7 +219,7 @@ class SgfChangesTest extends IntegrationTestCase
 		$context = $this->prepare(1);
 		$tsumegoID = $context->tsumegos[0]['id'];
 		for ($i = 0; $i < 100; $i++)
-			Util::execute('INSERT INTO sgf (sgf, user_id, accepted_by_user_id, accepted, tsumego_id, sgf_status_id) VALUES (?, ?, ?, NOW(), ?, ?)', [self::SGF, $this->authorID($context), $this->authorID($context), $tsumegoID, Sgf::STATUS_ACCEPTED]);
+			Util::execute('INSERT INTO sgf (sgf, preview, user_id, accepted_by_user_id, accepted, tsumego_id, sgf_status_id) VALUES (?, ?, ?, ?, NOW(), ?, ?)', [self::SGF, TsumegoButton::sgfToPreviewJson(self::SGF), $this->authorID($context), $this->authorID($context), $tsumegoID, Sgf::STATUS_ACCEPTED]);
 		[$oldest] = self::sgfIDs($context);
 		$newest = (int) Util::query('SELECT MAX(id) AS id FROM sgf')[0]['id'];
 

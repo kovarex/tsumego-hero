@@ -3,6 +3,8 @@
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Model\Entity\TimeModeRank;
+use App\Model\Entity\TimeModeSession;
+use App\Model\Table\ChallengeTable;
 use App\Utility\Auth;
 use App\Utility\CookieFlash;
 use App\Utility\Rating;
@@ -25,7 +27,7 @@ class ChallengesController extends AppController
 
 		$this->set('_page', 'challenges');
 		$this->set('_title', 'Tsumego Hero - Challenges');
-		$this->set('challenges', Challenge::ofPlayer(Auth::getUserID()));
+		$this->set('challenges', ChallengeTable::ofPlayer(Auth::getUserID()));
 
 		$ranks = $this->fetchTable('TimeModeRank')->find()->orderBy('id')->toArray();
 		$this->set('ranks', $ranks);
@@ -53,15 +55,15 @@ class ChallengesController extends AppController
 		$rankTable = $this->fetchTable('TimeModeRank');
 		if (!$rankTable->exists(['id' => $minimumRankID]) || !$rankTable->exists(['id' => $maximumRankID]))
 			throw new BadRequestException('Unknown rank.');
-		if (!in_array($secondsPerProblem, Challenge::SECONDS_PER_PROBLEM_CHOICES, true))
+		if (!in_array($secondsPerProblem, ChallengeTable::SECONDS_PER_PROBLEM_CHOICES, true))
 			throw new BadRequestException('Unknown time for a problem.');
-		if (!in_array($problemCount, Challenge::PROBLEM_COUNT_CHOICES, true))
+		if (!in_array($problemCount, ChallengeTable::PROBLEM_COUNT_CHOICES, true))
 			throw new BadRequestException('Unknown number of problems.');
 		// the ranks go up with their ids, so a range picked the other way round is the same range
 		if ($minimumRankID > $maximumRankID)
 			[$minimumRankID, $maximumRankID] = [$maximumRankID, $minimumRankID];
 
-		$challengeID = Challenge::start(Auth::getUserID(), $minimumRankID, $maximumRankID, $secondsPerProblem, $problemCount);
+		$challengeID = ChallengeTable::start(Auth::getUserID(), $minimumRankID, $maximumRankID, $secondsPerProblem, $problemCount);
 		if ($challengeID === null)
 		{
 			CookieFlash::set('There are no problems of these ranks, pick other ones.', 'error');
@@ -80,33 +82,34 @@ class ChallengesController extends AppController
 		$challenge = $this->findChallenge($id);
 		$challengeID = (int) $challenge['id'];
 		$this->set('_page', 'challenges');
-		$this->set('_title', 'Tsumego Hero - ' . Challenge::title($challenge));
+		$this->set('_title', 'Tsumego Hero - ' . ChallengeTable::title($challenge));
 		$this->set('challenge', $challenge);
 
-		$standings = Challenge::standings($challengeID);
+		$standings = ChallengeTable::standings($challengeID);
 		$this->set('standings', $standings);
 
-		$isParticipant = Auth::isLoggedIn() && Challenge::isParticipant($challengeID, Auth::getUserID());
+		$isParticipant = Auth::isLoggedIn() && ChallengeTable::isParticipant($challengeID, Auth::getUserID());
 		$myRun = $isParticipant ? array_find($standings, fn(array $row) => (int) $row['user_id'] === Auth::getUserID()) : null;
 		$this->set('isParticipant', $isParticipant);
-		$this->set('hasDeclined', Auth::isLoggedIn() && !$isParticipant && Challenge::participation($challengeID, Auth::getUserID()) !== null);
+		$this->set('hasDeclined', Auth::isLoggedIn() && !$isParticipant && ChallengeTable::participation($challengeID, Auth::getUserID()) !== null);
 		$this->set('myRun', $myRun);
-		$this->set('isFull', !$isParticipant && Challenge::participantCount($challengeID) >= Challenge::MAXIMUM_PARTICIPANTS);
+		$this->set('isFull', !$isParticipant && ChallengeTable::participantCount($challengeID) >= ChallengeTable::MAXIMUM_PARTICIPANTS);
 		$this->set('joinUrl', Router::url(self::challengeUrl($challengeID), true));
 
 		// playing this one ends the run of another challenge, so the player is told before they start
-		$otherRun = Auth::isLoggedIn() ? ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => [
+		/** @var TimeModeSession|null $otherRun */
+		$otherRun = Auth::isLoggedIn() ? $this->fetchTable('TimeModeSession')->find()->where([
 			'user_id' => Auth::getUserID(),
 			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
-			'challenge_id NOT' => null,
-			'challenge_id !=' => $challengeID]]) : null;
-		$this->set('otherChallengeInProgressID', $otherRun ? (int) $otherRun['TimeModeSession']['challenge_id'] : null);
+			'challenge_id IS NOT' => null,
+			'challenge_id !=' => $challengeID])->first() : null;
+		$this->set('otherChallengeInProgressID', $otherRun?->challenge_id);
 
-		$showResults = $myRun !== null && $myRun['run'] === Challenge::RUN_FINISHED;
+		$showResults = $myRun !== null && $myRun['run'] === ChallengeTable::RUN_FINISHED;
 		$this->set('showResults', $showResults);
-		$attemptsByRun = $showResults ? Challenge::attemptsByRun($challengeID) : [];
+		$attemptsByRun = $showResults ? ChallengeTable::attemptsByRun($challengeID) : [];
 		$this->set('attemptsByRun', $attemptsByRun);
-		$this->set('problemButtons', $showResults ? Challenge::problemButtons($challengeID, $attemptsByRun[(int) $myRun['session_id']] ?? []) : []);
+		$this->set('problemButtons', $showResults ? ChallengeTable::problemButtons($challengeID, $attemptsByRun[(int) $myRun['session_id']] ?? []) : []);
 		return null;
 	}
 
@@ -127,8 +130,8 @@ class ChallengesController extends AppController
 		if (!Auth::isLoggedIn())
 			return $this->redirect('/users/login');
 		$challenge = $this->findChallenge($id);
-		if (Challenge::decline((int) $challenge['id'], Auth::getUserID()))
-			CookieFlash::set('You declined ' . Challenge::title($challenge) . '.', 'success');
+		if (ChallengeTable::decline((int) $challenge['id'], Auth::getUserID()))
+			CookieFlash::set('You declined ' . ChallengeTable::title($challenge) . '.', 'success');
 		else
 			CookieFlash::set('Only a challenge you haven\'t started can be declined.', 'error');
 		return $this->redirect('/challenges');
@@ -139,7 +142,7 @@ class ChallengesController extends AppController
 	public function invite(string $id): mixed
 	{
 		$challenge = $this->findChallenge($id);
-		if (!Auth::isLoggedIn() || !Challenge::isParticipant((int) $challenge['id'], Auth::getUserID()))
+		if (!Auth::isLoggedIn() || !ChallengeTable::isParticipant((int) $challenge['id'], Auth::getUserID()))
 			throw new ForbiddenException('Only the players of the challenge can invite others.');
 		$this->inviteByNames((int) $challenge['id'], (string) ($this->request->data['players'] ?? ''));
 		return $this->redirect(self::challengeUrl((int) $challenge['id']));
@@ -157,8 +160,8 @@ class ChallengesController extends AppController
 		if (!$this->joinChallenge($challenge))
 			return $this->redirect(self::challengeUrl($challengeID));
 
-		$run = Challenge::runOf($challengeID, Auth::getUserID());
-		if ($run && (int) $run['TimeModeSession']['time_mode_session_status_id'] !== TimeModeUtil::$SESSION_STATUS_IN_PROGRESS)
+		$run = ChallengeTable::runOf($challengeID, Auth::getUserID());
+		if ($run && $run->time_mode_session_status_id !== TimeModeUtil::$SESSION_STATUS_IN_PROGRESS)
 			return $this->redirect(self::challengeUrl($challengeID));
 		if (!$run)
 			new TimeMode()->startChallenge($challenge);
@@ -172,17 +175,17 @@ class ChallengesController extends AppController
 	{
 		$this->Authorization->authorize('Challenge', 'join');
 		$challengeID = (int) $challenge['id'];
-		if (Challenge::isParticipant($challengeID, Auth::getUserID()))
+		if (ChallengeTable::isParticipant($challengeID, Auth::getUserID()))
 			return true;
-		if (Challenge::participantCount($challengeID) >= Challenge::MAXIMUM_PARTICIPANTS)
+		if (ChallengeTable::participantCount($challengeID) >= ChallengeTable::MAXIMUM_PARTICIPANTS)
 		{
-			CookieFlash::set('The challenge is full, ' . Challenge::MAXIMUM_PARTICIPANTS . ' players are in it already.', 'error');
+			CookieFlash::set('The challenge is full, ' . ChallengeTable::MAXIMUM_PARTICIPANTS . ' players are in it already.', 'error');
 			return false;
 		}
-		if (Challenge::participation($challengeID, Auth::getUserID()) !== null)
-			Challenge::rejoin($challengeID, Auth::getUserID());
+		if (ChallengeTable::participation($challengeID, Auth::getUserID()) !== null)
+			ChallengeTable::rejoin($challengeID, Auth::getUserID());
 		else
-			Challenge::addParticipant($challengeID, Auth::getUserID(), null);
+			ChallengeTable::addParticipant($challengeID, Auth::getUserID(), null);
 		return true;
 	}
 
@@ -208,14 +211,14 @@ class ChallengesController extends AppController
 			$playerID = (int) $player['User']['id'];
 			if ($playerID === Auth::getUserID())
 				continue;
-			if (Challenge::participantCount($challengeID) >= Challenge::MAXIMUM_PARTICIPANTS)
+			if (ChallengeTable::participantCount($challengeID) >= ChallengeTable::MAXIMUM_PARTICIPANTS)
 			{
 				$problems[] = 'The challenge is full, ' . $name . ' can\'t be invited.';
 				continue;
 			}
-			if (!Challenge::addParticipant($challengeID, $playerID, Auth::getUserID()))
+			if (!ChallengeTable::addParticipant($challengeID, $playerID, Auth::getUserID()))
 			{
-				$problems[] = Challenge::isParticipant($challengeID, $playerID)
+				$problems[] = ChallengeTable::isParticipant($challengeID, $playerID)
 					? $name . ' is in the challenge already.'
 					: $name . ' declined the challenge.';
 				continue;
@@ -248,10 +251,10 @@ class ChallengesController extends AppController
 		return '/challenges/' . $challengeID;
 	}
 
-	/** @return array<string, mixed> As Challenge::withDetails() returns it */
+	/** @return array<string, mixed> As ChallengeTable::withDetails() returns it */
 	private function findChallenge(string $id): array
 	{
-		$challenge = Challenge::withDetails((int) $id);
+		$challenge = ChallengeTable::withDetails((int) $id);
 		if (!$challenge)
 			throw new NotFoundException('Challenge not found');
 		return $challenge;

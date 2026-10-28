@@ -256,6 +256,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 
 		// Tsumego buttons (status colors, tooltips, board previews) for the problem list
 		$tsumegoButtons = new TsumegoButtons(new TsumegoFilters('topics'), null, null, (int) $id);
+		$tsumegoButtons->loadPreviews();
 
 		if (isset($this->request->data['Set']))
 		{
@@ -892,6 +893,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$tsumegoFilters = new TsumegoFilters($queryType);
 		Util::setCookie('lastSet', $id);
 		$tsumegoButtons = new TsumegoButtons($tsumegoFilters, null, $partition, $id);
+		$tsumegoButtons->loadPreviews();
 		$this->set('startingSetConnectionID', $this->getFirstUnsolvedSetConnectionId($tsumegoButtons));
 
 		if ($tsumegoFilters->query == 'difficulty')

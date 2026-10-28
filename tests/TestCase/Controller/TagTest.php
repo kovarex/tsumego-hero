@@ -38,8 +38,7 @@ class TagTest extends IntegrationTestCase
 		$browser->find('[data-testid="tag-snapback"]');
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
-		$tagConnection = ClassRegistry::init('TagConnection')->find('first', []);
-		$this->assertNotNull($tagConnection);
+		$this->assertSame(1, $this->fetchTable('TagConnection')->find()->count());
 		$this->assertCount(1, $browser->getElements('[data-testid="tag-snapback"]'));
 	}
 
@@ -101,7 +100,7 @@ class TagTest extends IntegrationTestCase
 		$browser->clickId('tag-snapback');
 		$browser->find('[data-testid="tag-snapback"]');
 		$this->assertCount(0, $browser->getElements('[data-testid="tag-solve-first"]'));
-		$this->assertSame(1, ClassRegistry::init('TagConnection')->find('count', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]]));
+		$this->assertSame(1, $this->fetchTable('TagConnection')->find()->where(['tsumego_id' => $context->tsumegos[0]['id']])->count());
 	}
 
 	public function testShowMyUnapprovedTagsInTagListAndNotInTagsToAdd()
@@ -188,13 +187,11 @@ class TagTest extends IntegrationTestCase
 		$this->assertSame([], $browser->requestsTo('/tagConnection/'),
 			'Enter on a non-addable tag must not send a request');
 
-		$connectionCount = ClassRegistry::init('TagConnection')->find('count', [
-			'conditions' => [
-				'tsumego_id' => $context->tsumegos[0]['id'],
-				'tag_id' => $context->tsumegos[0]['tag-connections'][0]['TagConnection']['tag_id'],
-				'user_id' => $context->user['id'],
-			],
-		]);
+		$connectionCount = $this->fetchTable('TagConnection')->find()->where([
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'tag_id' => $context->tsumegos[0]['tag-connections'][0]->tag_id,
+			'user_id' => $context->user['id'],
+		])->count();
 		$this->assertSame(0, $connectionCount,
 			'Enter on non-addable tag should not create a connection');
 	}
@@ -394,13 +391,13 @@ class TagTest extends IntegrationTestCase
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
-		ClassRegistry::init('TagConnection')->create();
-		ClassRegistry::init('TagConnection')->save([
+		$tagConnectionTable = $this->fetchTable('TagConnection');
+		$tagConnectionTable->saveOrFail($tagConnectionTable->newEntity([
 			'tag_id' => $context->tags[0]['id'],
 			'tsumego_id' => $context->tsumegos[0]['id'],
 			'user_id' => $context->user['id'],
 			'approved' => 1,
-		]);
+		]));
 		$this->openEditorAndType($browser, 'snap');
 		$this->clickAndWaitForError($browser, '#tag-snapback');
 		$error = $browser->find('[data-testid="tag-error"]')->getText();
@@ -415,12 +412,12 @@ class TagTest extends IntegrationTestCase
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->assertCount(1, $browser->getElements('[data-testid="tag-atari"]'));
-		$this->assertNotEmpty(ClassRegistry::init('TagConnection')->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]]));
+		$this->assertTrue($this->fetchTable('TagConnection')->exists(['tsumego_id' => $context->tsumegos[0]['id']]));
 
 		$browser->clickId("remove-atari");
 		$browser->waitUntilCssSelectorDoesntExist('[data-testid="tag-atari"]');
 		$this->assertCount(0, $browser->getElements('[data-testid="tag-atari"]'));
-		$this->assertEmpty(ClassRegistry::init('TagConnection')->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]]));
+		$this->assertFalse($this->fetchTable('TagConnection')->exists(['tsumego_id' => $context->tsumegos[0]['id']]));
 	}
 
 	public function testTryToRemoveTagWhenNotLoggedIn()
@@ -469,7 +466,7 @@ class TagTest extends IntegrationTestCase
 			'tsumego' => ['set_order' => 1, 'tags' => [['name' => 'snapback', 'user' => 'kovarex', 'approved' => 0]]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		ClassRegistry::init('TagConnection')->deleteAll(['1=1']);
+		$this->fetchTable('TagConnection')->deleteAll([]);
 		$this->clickAndWaitForError($browser, '#remove-snapback');
 		$error = $browser->find('[data-testid="tag-error"]')->getText();
 		$this->assertTextContains("isn't assigned", $error);
@@ -830,7 +827,7 @@ class TagTest extends IntegrationTestCase
 			'other-users' => [['name' => 'proposer', 'rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE]],
 			'tsumego' => ['set_order' => 1, 'tags' => [['name' => 'snapback', 'user' => 'proposer', 'approved' => 0]]]]);
 
-		$tagConnectionId = $context->tsumegos[0]['tag-connections'][0]['id'];
+		$tagConnectionId = $context->tsumegos[0]['tag-connections'][0]->id;
 
 		$browser = Browser::instance();
 
