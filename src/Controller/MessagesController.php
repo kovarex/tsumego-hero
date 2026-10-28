@@ -1,6 +1,7 @@
 <?php
 
 use App\Attribute\HttpGet;
+use App\Model\Table\MessageTable;
 use App\Attribute\HttpPost;
 use App\Lib\Error\UnprocessableEntityException;
 use App\Utility\Auth;
@@ -40,7 +41,7 @@ class MessagesController extends AppController
 	public function conversations(): CakeResponse
 	{
 		$this->Authorization->authorize('Message', 'read');
-		return $this->json(['conversations' => Message::conversations(Auth::getUserID())]);
+		return $this->json(['conversations' => MessageTable::conversations(Auth::getUserID())]);
 	}
 
 	#[HttpGet]
@@ -49,7 +50,7 @@ class MessagesController extends AppController
 		$this->Authorization->authorize('Message', 'read');
 		$partner = $this->findPartner((int) $partnerUserId);
 		$before = $this->request->query('before');
-		$conversation = Message::conversation(Auth::getUserID(), $partner['id'], $before === null ? null : (int) $before);
+		$conversation = MessageTable::conversation(Auth::getUserID(), $partner['id'], $before === null ? null : (int) $before);
 		return $this->json(['partner' => $partner] + $conversation);
 	}
 
@@ -61,15 +62,15 @@ class MessagesController extends AppController
 		$input = json_decode((string) $this->request->input(), true);
 		$text = (string) ($input['text'] ?? '');
 
-		$problem = Message::problemWith(Auth::getUserID(), $partner['id'], $text);
-		if ($problem === null && !Auth::isAdmin() && Message::reachedUnansweredRecipientLimit(Auth::getUserID(), $partner['id']))
-			$problem = 'You wrote to ' . Message::DAILY_UNANSWERED_RECIPIENTS . ' players who did not answer yet today. Please wait for an answer or try again tomorrow.';
+		$problem = MessageTable::problemWith(Auth::getUserID(), $partner['id'], $text);
+		if ($problem === null && !Auth::isAdmin() && MessageTable::reachedUnansweredRecipientLimit(Auth::getUserID(), $partner['id']))
+			$problem = 'You wrote to ' . MessageTable::DAILY_UNANSWERED_RECIPIENTS . ' players who did not answer yet today. Please wait for an answer or try again tomorrow.';
 		if ($problem !== null)
 			throw new UnprocessableEntityException($problem);
 
-		$messageId = Message::send(Auth::getUserID(), $partner['id'], $text, $this->_getEmailer());
+		$messageId = MessageTable::send(Auth::getUserID(), $partner['id'], $text, $this->_getEmailer());
 		$row = Util::query('SELECT id, sender_user_id, text, created, read_at FROM message WHERE id = ?', [$messageId])[0];
-		return $this->json(['message' => Message::messagePayload($row)]);
+		return $this->json(['message' => MessageTable::messagePayload($row)]);
 	}
 
 	#[HttpPost]
@@ -77,8 +78,8 @@ class MessagesController extends AppController
 	{
 		$this->Authorization->authorize('Message', 'read');
 		$partner = $this->findPartner((int) $partnerUserId);
-		Message::markRead(Auth::getUserID(), $partner['id']);
-		return $this->json(['unreadCount' => Message::unreadCount(Auth::getUserID())]);
+		MessageTable::markRead(Auth::getUserID(), $partner['id']);
+		return $this->json(['unreadCount' => MessageTable::unreadCount(Auth::getUserID())]);
 	}
 
 	#[HttpGet]
@@ -86,7 +87,7 @@ class MessagesController extends AppController
 	{
 		$this->Authorization->authorize('Message', 'send');
 		$query = (string) $this->request->query('query');
-		return $this->json(['players' => Message::searchRecipients(Auth::getUserID(), $query)]);
+		return $this->json(['players' => MessageTable::searchRecipients(Auth::getUserID(), $query)]);
 	}
 
 	//The other player of a conversation. A deleted account stays, so the conversation with it
@@ -99,7 +100,7 @@ class MessagesController extends AppController
 			[$userId]);
 		if (!$rows)
 			throw new NotFoundException('Player not found');
-		return Message::playerPayload($rows[0]);
+		return MessageTable::playerPayload($rows[0]);
 	}
 
 	private function json(array $data): CakeResponse

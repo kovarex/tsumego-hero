@@ -1907,7 +1907,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		$this->response->body(json_encode(['status' => 'ok']));
 	}
 
-	//Whether a new message is announced by an email, see Message::send().
+	//Whether a new message is announced by an email, see MessageTable::send().
 	#[HttpPost]
 	public function emailOnNewMessagePreference(): void
 	{

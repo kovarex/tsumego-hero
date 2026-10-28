@@ -3,7 +3,7 @@
 namespace App\Policy;
 
 //Messages between players. Every signed-in player has their own conversations and
-//can write to anyone, the recipient and the text are checked by Message::problemWith().
+//can write to anyone, the recipient and the text are checked by MessageTable::problemWith().
 /** @phpstan-import-type UserRow from \App\Utility\RowTypes */
 class MessagePolicy extends BasePolicy
 {

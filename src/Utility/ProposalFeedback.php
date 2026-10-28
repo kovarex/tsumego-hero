@@ -2,8 +2,8 @@
 
 namespace App\Utility;
 
+use App\Model\Table\MessageTable;
 use ClassRegistry;
-use Message;
 use Router;
 use User;
 
@@ -58,9 +58,9 @@ class ProposalFeedback
 			$paragraphs[] = 'Your changes: ' . $diffUrl;
 		$text = implode("\n\n", $paragraphs);
 
-		if (Message::problemWith(Auth::getUserID(), $proposerUserID, $text) !== null)
+		if (MessageTable::problemWith(Auth::getUserID(), $proposerUserID, $text) !== null)
 			return false;
-		Message::send(Auth::getUserID(), $proposerUserID, $text, $emailer);
+		MessageTable::send(Auth::getUserID(), $proposerUserID, $text, $emailer);
 		return true;
 	}
 

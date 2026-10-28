@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\MessageTable;
 use App\Utility\AccountWidget;
 use App\Utility\AchievementChecker;
 use App\Utility\Auth;
@@ -93,7 +94,7 @@ $active = fn(string ...$pages): string => in_array($_page, $pages, true) ? 'nav_
 $lastVisitedTsumegoID = (int) ($_COOKIE['lastVisit'] ?? Constants::$DEFAULT_TSUMEGO_ID);
 if (Auth::isLoggedIn())
 {
-	$unreadMessageCount = Message::unreadCount(Auth::getUserID());
+	$unreadMessageCount = MessageTable::unreadCount(Auth::getUserID());
 	//Invitations to a class and requests to join one wait for the player's answer, which
 	//the Classes item counts, and so does Collections, where the item is hidden.
 	$classesAwaitingAnswer = ClassroomMember::countAwaitingAnswer(Auth::getUserID());

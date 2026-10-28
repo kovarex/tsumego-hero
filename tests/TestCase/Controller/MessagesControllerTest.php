@@ -1,8 +1,9 @@
 <?php
 
 use App\Lib\Error\UnprocessableEntityException;
+use App\Model\Entity\Message;
+use App\Model\Table\MessageTable;
 use App\Utility\Auth;
-use App\Utility\Util;
 
 //Messages between players: sending, the email that announces one, the conversations
 //and the search of a player to write to.
@@ -49,9 +50,16 @@ class MessagesControllerTest extends IntegrationTestCase
 		return null;
 	}
 
+	/** @return list<Message> */
 	private function storedMessages(): array
 	{
-		return Util::query('SELECT * FROM message ORDER BY id');
+		return $this->fetchTable('Message')->find()->orderBy('id')->toArray();
+	}
+
+	private function storeMessage(int $senderUserId, int $recipientUserId, string $text): void
+	{
+		$messageTable = $this->fetchTable('Message');
+		$messageTable->saveOrFail($messageTable->newEntity(['sender_user_id' => $senderUserId, 'recipient_user_id' => $recipientUserId, 'text' => $text]));
 	}
 
 	public function testSendStoresTheMessage(): void
@@ -63,11 +71,11 @@ class MessagesControllerTest extends IntegrationTestCase
 
 		$stored = $this->storedMessages();
 		$this->assertCount(1, $stored);
-		$this->assertSame($context->user['id'], (int) $stored[0]['sender_user_id']);
-		$this->assertSame($recipient['id'], (int) $stored[0]['recipient_user_id']);
-		$this->assertSame("Hello,\nnice problem!", $stored[0]['text']);
-		$this->assertNull($stored[0]['read_at']);
-		$this->assertSame((int) $stored[0]['id'], $response['message']['id']);
+		$this->assertSame($context->user['id'], $stored[0]->sender_user_id);
+		$this->assertSame($recipient['id'], $stored[0]->recipient_user_id);
+		$this->assertSame("Hello,\nnice problem!", $stored[0]->text);
+		$this->assertNull($stored[0]->read_at);
+		$this->assertSame($stored[0]->id, $response['message']['id']);
 		$this->assertSame("Hello,\nnice problem!", $response['message']['text']);
 		$this->assertSame($context->user['id'], $response['message']['senderUserId']);
 	}
@@ -100,7 +108,7 @@ class MessagesControllerTest extends IntegrationTestCase
 		$this->send($recipient['id'], 'Second');
 		$this->assertSame([], TestEmailer::$lastEmail, 'The second unread message was emailed too');
 
-		Message::markRead($recipient['id'], $context->user['id']);
+		MessageTable::markRead($recipient['id'], $context->user['id']);
 		$this->send($recipient['id'], 'Third');
 		$this->assertStringContainsString('Third', TestEmailer::$lastEmail['body']);
 	}
@@ -140,12 +148,12 @@ class MessagesControllerTest extends IntegrationTestCase
 		$recipientId = $context->otherUsers[0]['id'];
 
 		$this->assertSame('The message is empty.', $this->refusal($recipientId, " \n "));
-		$this->assertStringStartsWith('The message is too long', $this->refusal($recipientId, str_repeat('a', Message::MAX_LENGTH + 1)));
+		$this->assertStringStartsWith('The message is too long', $this->refusal($recipientId, str_repeat('a', MessageTable::MAX_LENGTH + 1)));
 		$this->assertSame('You can not send a message to yourself.', $this->refusal($context->user['id'], 'Hi me'));
 		$this->assertSame('The player does not exist.', $this->refusal($context->otherUsers[1]['id'], 'Hello'));
 		$this->assertSame([], $this->storedMessages());
 
-		$this->assertNull($this->refusal($recipientId, str_repeat('a', Message::MAX_LENGTH)));
+		$this->assertNull($this->refusal($recipientId, str_repeat('a', MessageTable::MAX_LENGTH)));
 	}
 
 	public function testUnknownRecipientIsNotFound(): void
@@ -172,27 +180,27 @@ class MessagesControllerTest extends IntegrationTestCase
 	public function testPlayersWhoDidNotAnswerAreLimitedPerDay(): void
 	{
 		$others = [];
-		for ($i = 0; $i <= Message::DAILY_UNANSWERED_RECIPIENTS + 1; $i++)
+		for ($i = 0; $i <= MessageTable::DAILY_UNANSWERED_RECIPIENTS + 1; $i++)
 			$others[] = ['name' => 'messageStranger' . $i];
 		$context = $this->prepare($others);
 		$strangers = $context->otherUsers;
 
-		for ($i = 0; $i < Message::DAILY_UNANSWERED_RECIPIENTS; $i++)
+		for ($i = 0; $i < MessageTable::DAILY_UNANSWERED_RECIPIENTS; $i++)
 			$this->assertNull($this->refusal($strangers[$i]['id'], 'Hello ' . $i));
 
-		$overLimit = $strangers[Message::DAILY_UNANSWERED_RECIPIENTS];
-		$this->assertStringStartsWith('You wrote to ' . Message::DAILY_UNANSWERED_RECIPIENTS . ' players', (string) $this->refusal($overLimit['id'], 'Hello'));
+		$overLimit = $strangers[MessageTable::DAILY_UNANSWERED_RECIPIENTS];
+		$this->assertStringStartsWith('You wrote to ' . MessageTable::DAILY_UNANSWERED_RECIPIENTS . ' players', (string) $this->refusal($overLimit['id'], 'Hello'));
 
 		// One more message to a player already written to is the same conversation.
 		$this->assertNull($this->refusal($strangers[0]['id'], 'Are you there?'));
 
 		// A player who wrote first can be answered.
-		$friend = $strangers[Message::DAILY_UNANSWERED_RECIPIENTS + 1];
-		Message::send($friend['id'], $context->user['id'], 'Hi!', new TestEmailer());
+		$friend = $strangers[MessageTable::DAILY_UNANSWERED_RECIPIENTS + 1];
+		MessageTable::send($friend['id'], $context->user['id'], 'Hi!', new TestEmailer());
 		$this->assertNull($this->refusal($friend['id'], 'Hi back'));
 
 		// An answer frees the place its sender took.
-		Message::send($strangers[1]['id'], $context->user['id'], 'Hello to you', new TestEmailer());
+		MessageTable::send($strangers[1]['id'], $context->user['id'], 'Hello to you', new TestEmailer());
 		$this->assertNull($this->refusal($overLimit['id'], 'Hello'));
 	}
 
@@ -201,10 +209,10 @@ class MessagesControllerTest extends IntegrationTestCase
 		$context = $this->prepare([['name' => 'messageOld'], ['name' => 'messageNew', 'deleted' => true]]);
 		[$old, $gone] = $context->otherUsers;
 		$me = $context->user['id'];
-		Message::send($me, $old['id'], 'Hi old friend', new TestEmailer());
-		Message::send($old['id'], $me, 'Hello', new TestEmailer());
-		Message::send($old['id'], $me, 'How are you?', new TestEmailer());
-		Util::execute('INSERT INTO message (sender_user_id, recipient_user_id, text, created) VALUES (?, ?, ?, NOW())', [$gone['id'], $me, 'Bye']);
+		MessageTable::send($me, $old['id'], 'Hi old friend', new TestEmailer());
+		MessageTable::send($old['id'], $me, 'Hello', new TestEmailer());
+		MessageTable::send($old['id'], $me, 'How are you?', new TestEmailer());
+		$this->storeMessage($gone['id'], $me, 'Bye');
 
 		$conversations = $this->getJson('/messages/conversations')['conversations'];
 
@@ -223,16 +231,17 @@ class MessagesControllerTest extends IntegrationTestCase
 		$context = $this->prepare();
 		$me = $context->user['id'];
 		$partner = $context->otherUsers[0]['id'];
-		$total = Message::PAGE_SIZE + 5;
+		$total = MessageTable::PAGE_SIZE + 5;
 		for ($i = 1; $i <= $total; $i++)
-			Util::execute(
-				'INSERT INTO message (sender_user_id, recipient_user_id, text, created) VALUES (?, ?, ?, NOW())',
-				$i % 2 ? [$me, $partner, 'Message ' . $i] : [$partner, $me, 'Message ' . $i]);
+		{
+			[$senderUserId, $recipientUserId] = $i % 2 ? [$me, $partner] : [$partner, $me];
+			$this->storeMessage($senderUserId, $recipientUserId, 'Message ' . $i);
+		}
 
 		$newest = $this->getJson('/messages/conversations/' . $partner);
 		$this->assertSame($partner, $newest['partner']['id']);
 		$this->assertTrue($newest['hasOlder']);
-		$this->assertCount(Message::PAGE_SIZE, $newest['messages']);
+		$this->assertCount(MessageTable::PAGE_SIZE, $newest['messages']);
 		$this->assertSame('Message 6', $newest['messages'][0]['text']);
 		$this->assertSame('Message ' . $total, end($newest['messages'])['text']);
 
@@ -246,16 +255,16 @@ class MessagesControllerTest extends IntegrationTestCase
 		$context = $this->prepare([['name' => 'messageFirst'], ['name' => 'messageSecond']]);
 		$me = $context->user['id'];
 		[$first, $second] = $context->otherUsers;
-		Message::send($first['id'], $me, 'From first', new TestEmailer());
-		Message::send($second['id'], $me, 'From second', new TestEmailer());
-		Message::send($me, $first['id'], 'To first', new TestEmailer());
+		MessageTable::send($first['id'], $me, 'From first', new TestEmailer());
+		MessageTable::send($second['id'], $me, 'From second', new TestEmailer());
+		MessageTable::send($me, $first['id'], 'To first', new TestEmailer());
 
 		$this->post('/messages/conversations/' . $first['id'] . '/read');
 
 		$this->assertSame(['unreadCount' => 1], json_decode($this->view, true));
-		$this->assertSame(0, Message::unreadCountFrom($me, $first['id']));
-		$this->assertSame(1, Message::unreadCountFrom($me, $second['id']));
-		$this->assertSame(1, Message::unreadCountFrom($first['id'], $me), 'The message to the partner became read too');
+		$this->assertSame(0, MessageTable::unreadCountFrom($me, $first['id']));
+		$this->assertSame(1, MessageTable::unreadCountFrom($me, $second['id']));
+		$this->assertSame(1, MessageTable::unreadCountFrom($first['id'], $me), 'The message to the partner became read too');
 	}
 
 	public function testRecipientSearch(): void

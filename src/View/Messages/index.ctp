@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\MessageTable;
 use App\Utility\Auth;
 
 /**
@@ -14,7 +15,7 @@ $props = json_encode([
 	'userId' => Auth::getUserID(),
 	'isAdmin' => Auth::isAdmin(),
 	'initialPartner' => $partner,
-	'maxLength' => Message::MAX_LENGTH,
+	'maxLength' => MessageTable::MAX_LENGTH,
 ]);
 ?>
 <div align="center">
