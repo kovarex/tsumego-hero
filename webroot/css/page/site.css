@@ -165,40 +165,6 @@ li a.menuLi.nav__link--active {
   background-color: var(--color-gray);
   color: var(--color-green);
 }
-.main-page {
-  padding: 8px 11px !important;
-}
-.btn.main-page {
-  font-size: 14px;
-  color: #fff;
-}
-.img-bordered {
-  border: 2px solid var(--current-border-color);
-}
-.img-padded {
-  margin: var(--space-1);
-}
-.chart-box {
-  width: 100%;
-}
-.text-topic {
-  color: var(--color-topic);
-}
-.text-difficulty {
-  color: var(--color-difficulty);
-}
-.text-tag {
-  color: var(--color-tag);
-}
-.mode-link--level {
-  color: var(--color-green);
-}
-.mode-link--rating {
-  color: var(--color-mode-rating);
-}
-.mode-link--time {
-  color: var(--color-mode-time);
-}
 .title {
   color: var(--color-black);
   padding: 0px;
@@ -417,13 +383,6 @@ li a.menuLi.nav__link--active {
   border-radius: 5px;
   -webkit-filter: blur(5px);
 }
-.mode-select-box {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-}
 *:focus {
   outline: none;
 }
@@ -449,13 +408,6 @@ h4 {
   font-weight: 600;
   margin-bottom: 10px;
   margin-top: 0px;
-}
-#darkButton2,
-#darkButton3,
-.darkButton2 {
-  float: left;
-  padding-top: 9px;
-  cursor: pointer;
 }
 #darkButton {
   cursor: pointer;
