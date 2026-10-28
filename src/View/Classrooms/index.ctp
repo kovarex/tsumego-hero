@@ -5,9 +5,11 @@
  * requests to join waiting for a teacher, the classes they teach and the form to start one.
  *
  * @var View $this
- * @var array $taught What Classroom::taughtBy() returned
- * @var array $memberships What Classroom::ofPupil() returned
+ * @var array $taught What ClassroomTable::taughtBy() returned
+ * @var array $memberships What ClassroomTable::ofPupil() returned
  */
+
+use App\Model\Table\ClassroomTable;
 
 $invitations = $memberships[ClassroomMemberStatus::INVITED];
 $requests = $memberships[ClassroomMemberStatus::REQUESTED];
@@ -69,7 +71,7 @@ $classes = $memberships[ClassroomMemberStatus::ACCEPTED];
 		<form class="classes__form" method="post" action="/classes/create" id="classes-create">
 			<div class="form-field">
 				<label class="form-field__label" for="classroom-name">Start a class</label>
-				<input class="form-field__control" type="text" id="classroom-name" name="name" maxlength="<?= Classroom::MAXIMUM_NAME_LENGTH ?>" placeholder="Lukas, Thursday" required>
+				<input class="form-field__control" type="text" id="classroom-name" name="name" maxlength="<?= ClassroomTable::MAXIMUM_NAME_LENGTH ?>" placeholder="Lukas, Thursday" required>
 			</div>
 			<button class="btn" type="submit">Create class</button>
 			<p class="hint">Then invite your pupils on the page of the class, or send them its link so they ask to join. Give them problems from one of your collections or of the site, and see who solved what.</p>

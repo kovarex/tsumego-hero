@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\ClassroomTable;
 use App\Utility\Util;
 
 //A player in a class, or on the way into it: invited by the teacher or asking to join, until the
@@ -28,7 +29,7 @@ class ClassroomMember extends AppModel
 	/** @return array<int, array<array<string, mixed>>> Rows of membership_id and USER_COLUMNS, by ClassroomMemberStatus id */
 	public static function ofClassroom(int $classroomId): array
 	{
-		$rows = Util::query('SELECT m.id AS membership_id, m.classroom_member_status_id, ' . Classroom::USER_COLUMNS . '
+		$rows = Util::query('SELECT m.id AS membership_id, m.classroom_member_status_id, ' . ClassroomTable::USER_COLUMNS . '
 			FROM classroom_member m
 			JOIN user u ON u.id = m.user_id AND u.deleted IS NULL
 			WHERE m.classroom_id = ?

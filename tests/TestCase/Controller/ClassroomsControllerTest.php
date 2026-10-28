@@ -177,10 +177,10 @@ class ClassroomsControllerTest extends IntegrationTestCase
 
 		$this->post('/classes/create', ['name' => '  Lukas,   Thursday ']);
 
-		$classroom = ClassRegistry::init('Classroom')->find('first')['Classroom'];
-		$this->assertSame('Lukas, Thursday', $classroom['name']);
-		$this->assertSame($this->userId('teacher'), (int) $classroom['teacher_user_id']);
-		$this->assertStringEndsWith('/classes/' . $classroom['id'], $this->headerValue('Location'));
+		$classroom = $this->fetchTable('Classroom')->find()->firstOrFail();
+		$this->assertSame('Lukas, Thursday', $classroom->name);
+		$this->assertSame($this->userId('teacher'), $classroom->teacher_user_id);
+		$this->assertStringEndsWith('/classes/' . $classroom->id, $this->headerValue('Location'));
 	}
 
 	public function testAClassNeedsAName(): void
@@ -189,7 +189,7 @@ class ClassroomsControllerTest extends IntegrationTestCase
 
 		$this->post('/classes/create', ['name' => '   ']);
 
-		$this->assertSame(0, ClassRegistry::init('Classroom')->find('count'));
+		$this->assertSame(0, $this->fetchTable('Classroom')->find()->count());
 	}
 
 	public function testCreatingAClassNeedsAnAccount(): void
@@ -942,7 +942,7 @@ class ClassroomsControllerTest extends IntegrationTestCase
 
 		$this->post('/classes/delete/' . $classroomId);
 
-		$this->assertSame(0, ClassRegistry::init('Classroom')->find('count'));
+		$this->assertSame(0, $this->fetchTable('Classroom')->find()->count());
 		$this->assertSame(0, ClassRegistry::init('ClassroomMember')->find('count'));
 		$this->assertSame(0, ClassRegistry::init('ClassroomAssignment')->find('count'));
 	}
