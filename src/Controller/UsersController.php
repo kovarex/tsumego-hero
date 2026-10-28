@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Entity\Tag;
 use App\Model\Entity\TagConnection;
 use App\Model\Table\RejectTable;
 use App\Model\Table\TimeModeCategoryTable;
@@ -1530,8 +1531,9 @@ OFFSET " . $offset, [$userID, $userID]);
 		}
 		$proposalToApprove->approved = true;
 
-		$tag = ClassRegistry::init('Tag')->findById($proposalToApprove->tag_id)['Tag'];
-		AdminActivityLogger::log(AdminActivityType::ACCEPT_TAG, $proposalToApprove->tsumego_id, null, null, $tag['name']);
+		/** @var Tag $tag */
+		$tag = $this->fetchTable('Tag')->get($proposalToApprove->tag_id);
+		AdminActivityLogger::log(AdminActivityType::ACCEPT_TAG, $proposalToApprove->tsumego_id, null, null, $tag->name);
 		$tagConnectionTable->saveOrFail($proposalToApprove);
 
 		// tags are accepted by the dozen, so the proposer only hears about it when the admin had something to say
@@ -1541,7 +1543,7 @@ OFFSET " . $offset, [$userID, $userID]);
 			$tsumegoID = $proposalToApprove->tsumego_id;
 			ProposalFeedback::send(
 				(int) $proposalToApprove->user_id,
-				'Your tag ' . $tag['name'] . ' on ' . ProposalFeedback::problemName($tsumegoID) . ' was accepted by ' . ProposalFeedback::adminName() . '.',
+				'Your tag ' . $tag->name . ' on ' . ProposalFeedback::problemName($tsumegoID) . ' was accepted by ' . ProposalFeedback::adminName() . '.',
 				$tsumegoID,
 				null,
 				$comment,
@@ -1577,9 +1579,10 @@ OFFSET " . $offset, [$userID, $userID]);
 			return $this->redirect('/admin/tag-proposals');
 		}
 
-		$tag = ClassRegistry::init('Tag')->findById($proposalToReject->tag_id)['Tag'];
+		/** @var Tag $tag */
+		$tag = $this->fetchTable('Tag')->get($proposalToReject->tag_id);
 
-		AdminActivityLogger::log(AdminActivityType::REJECT_TAG, $proposalToReject->tsumego_id, null, $tag['name'], null);
+		AdminActivityLogger::log(AdminActivityType::REJECT_TAG, $proposalToReject->tsumego_id, null, $tag->name, null);
 
 		$rejectTable = $this->fetchTable('Reject');
 		$rejectTable->saveOrFail($rejectTable->newEntity([
@@ -1588,14 +1591,14 @@ OFFSET " . $offset, [$userID, $userID]);
 			'comment' => $comment,
 			'tsumego_id' => $proposalToReject->tsumego_id,
 			'reject_type_id' => RejectTable::TYPE_TAG,
-			'tag_id' => $tag['id'],
-			'tag_name' => $tag['name']]));
+			'tag_id' => $tag->id,
+			'tag_name' => $tag->name]));
 		$tagConnectionTable->deleteOrFail($proposalToReject);
 
 		$tsumegoID = $proposalToReject->tsumego_id;
 		ProposalFeedback::send(
 			(int) $proposalToReject->user_id,
-			'Your tag ' . $tag['name'] . ' on ' . ProposalFeedback::problemName($tsumegoID) . ' was rejected by ' . ProposalFeedback::adminName() . '.',
+			'Your tag ' . $tag->name . ' on ' . ProposalFeedback::problemName($tsumegoID) . ' was rejected by ' . ProposalFeedback::adminName() . '.',
 			$tsumegoID,
 			null,
 			$comment,

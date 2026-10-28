@@ -102,15 +102,9 @@ class TagsUserTest extends IntegrationTestCase
 		$userId = $context->user['id'];
 
 		// Create two tag names with different timestamps
-		$tagModel = ClassRegistry::init('Tag');
-		$tagModel->create();
-		$tagModel->save([
-			'Tag' => ['name' => 'alpha', 'user_id' => $userId, 'approved' => 1, 'description' => 'a', 'created' => '2025-01-01 10:00:00'],
-		]);
-		$tagModel->create();
-		$tagModel->save([
-			'Tag' => ['name' => 'omega', 'user_id' => $userId, 'approved' => 1, 'description' => 'o', 'created' => '2025-06-01 10:00:00'],
-		]);
+		$tagTable = $this->fetchTable('Tag');
+		$tagTable->saveOrFail($tagTable->newEntity(['name' => 'alpha', 'user_id' => $userId, 'approved' => 1, 'description' => 'a', 'created' => '2025-01-01 10:00:00']));
+		$tagTable->saveOrFail($tagTable->newEntity(['name' => 'omega', 'user_id' => $userId, 'approved' => 1, 'description' => 'o', 'created' => '2025-06-01 10:00:00']));
 
 		$this->get("/tags/user/{$userId}");
 
@@ -267,13 +261,13 @@ class TagsUserTest extends IntegrationTestCase
 		$this->get('/tags/user/' . $context->otherUsers[0]['id']);
 
 		$this->assertMatchesRegularExpression('/Tag\s+snapback\s+was added to\s+' . preg_quote($context->tsumegos[0]['sets'][0]['title'], '/') . ' - 1\s+rejected/', strip_tags($this->view));
-		$this->assertStringContainsString('href="/tags/view/' . $context->tags[0]['id'] . '"', $this->view);
+		$this->assertStringContainsString('href="/tags/view/' . $context->tags[0]->id . '"', $this->view);
 	}
 
 	public function testRejectedTagKeepsItsNameWhenTheTagIsDeleted()
 	{
 		$context = $this->prepareRejectedTagOnAProblem();
-		ClassRegistry::init('Tag')->delete($context->tags[0]['id']);
+		$this->fetchTable('Tag')->deleteAll(['id' => $context->tags[0]->id]);
 
 		$this->get('/tags/user/' . $context->otherUsers[0]['id']);
 
@@ -288,10 +282,10 @@ class TagsUserTest extends IntegrationTestCase
 			'user' => ['name' => 'reviewer', 'admin' => true],
 			'other-users' => [['name' => 'proposer']],
 			'tags' => [['name' => 'snapback', 'approved' => 0]]]);
-		ClassRegistry::init('Tag')->save(['id' => $context->tags[0]['id'], 'user_id' => $context->otherUsers[0]['id']]);
+		$this->fetchTable('Tag')->updateAll(['user_id' => $context->otherUsers[0]['id']], ['id' => $context->tags[0]->id]);
 		$this->login('reviewer');
 		$this->registerTestEmailer();
-		$this->post('/tags/rejectTagProposal/' . $context->tags[0]['id'], ['comment' => 'We have it already.']);
+		$this->post('/tags/rejectTagProposal/' . $context->tags[0]->id, ['comment' => 'We have it already.']);
 
 		$this->get('/tags/user/' . $context->otherUsers[0]['id']);
 

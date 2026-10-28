@@ -360,7 +360,7 @@ class TagTest extends IntegrationTestCase
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->openEditorAndType($browser, 'snap');
-		ClassRegistry::init('Tag')->delete($context->tags[0]['id']);
+		$this->fetchTable('Tag')->deleteAll(['id' => $context->tags[0]->id]);
 		$this->clickAndWaitForError($browser, '#tag-snapback');
 		$error = $browser->find('[data-testid="tag-error"]')->getText();
 		$this->assertTextContains("doesn't exist", $error);
@@ -393,7 +393,7 @@ class TagTest extends IntegrationTestCase
 
 		$tagConnectionTable = $this->fetchTable('TagConnection');
 		$tagConnectionTable->saveOrFail($tagConnectionTable->newEntity([
-			'tag_id' => $context->tags[0]['id'],
+			'tag_id' => $context->tags[0]->id,
 			'tsumego_id' => $context->tsumegos[0]['id'],
 			'user_id' => $context->user['id'],
 			'approved' => 1,
@@ -440,7 +440,7 @@ class TagTest extends IntegrationTestCase
 			'tsumego' => ['set_order' => 1, 'tags' => [['name' => 'snapback', 'user' => 'kovarex', 'approved' => 0]]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		ClassRegistry::init('Tag')->delete($context->tags[0]['id']);
+		$this->fetchTable('Tag')->deleteAll(['id' => $context->tags[0]->id]);
 		$this->clickAndWaitForError($browser, '#remove-snapback');
 		$error = $browser->find('[data-testid="tag-error"]')->getText();
 		$this->assertTextContains("doesn't exist", $error);
@@ -521,14 +521,14 @@ class TagTest extends IntegrationTestCase
 
 			$browser->waitUntilJs('location.href.includes("/tags/view/")');
 
-			$tagAdded = ClassRegistry::init('Tag')->find('first')['Tag'];
-			$this->assertSame(Util::getMyAddress() . '/tags/view/' . $tagAdded['id'], $browser->driver->getCurrentURL());
-			$this->assertSame($tagAdded['name'], 'atari');
-			$this->assertSame($tagAdded['description'], 'Not the console, which is named by this by the way.');
-			$this->assertSame($tagAdded['link'], 'https://example.com');
-			$this->assertSame($isHint, $tagAdded['hint']);
-			$this->assertSame($tagAdded['user_id'], Auth::getUserID());
-			$this->assertTrue($tagAdded['approved']);
+			$tagAdded = $this->fetchTable('Tag')->find()->firstOrFail();
+			$this->assertSame(Util::getMyAddress() . '/tags/view/' . $tagAdded->id, $browser->driver->getCurrentURL());
+			$this->assertSame($tagAdded->name, 'atari');
+			$this->assertSame($tagAdded->description, 'Not the console, which is named by this by the way.');
+			$this->assertSame($tagAdded->link, 'https://example.com');
+			$this->assertSame($isHint, $tagAdded->hint);
+			$this->assertSame($tagAdded->user_id, Auth::getUserID());
+			$this->assertTrue($tagAdded->approved);
 		}
 	}
 
@@ -550,10 +550,10 @@ class TagTest extends IntegrationTestCase
 
 		$browser->waitUntilJs('location.href.includes("/tags/view/")');
 
-		$tagAdded = ClassRegistry::init('Tag')->find('first')['Tag'];
-		$this->assertSame(Util::getMyAddress() . '/tags/view/' . $tagAdded['id'], $browser->driver->getCurrentURL());
-		$this->assertSame($tagAdded['name'], 'self atari');
-		$this->assertFalse($tagAdded['approved']);
+		$tagAdded = $this->fetchTable('Tag')->find()->firstOrFail();
+		$this->assertSame(Util::getMyAddress() . '/tags/view/' . $tagAdded->id, $browser->driver->getCurrentURL());
+		$this->assertSame($tagAdded->name, 'self atari');
+		$this->assertFalse($tagAdded->approved);
 	}
 
 	public function testAddTagWithoutDescriptionShowsError()
@@ -571,17 +571,17 @@ class TagTest extends IntegrationTestCase
 		$pageSource = $browser->driver->getPageSource();
 		$this->assertStringContainsString('description', strtolower($pageSource));
 		$this->assertStringContainsString('/tags/add', $browser->driver->getCurrentURL());
-		$this->assertEmpty(ClassRegistry::init('Tag')->find('all'));
+		$this->assertSame(0, $this->fetchTable('Tag')->find()->count());
 	}
 
 	//Test that the tag page links its author.
 	public function testTagViewLinksTheAuthor(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'tagauthor'], 'tags' => [['name' => 'snapback']]]);
-		$this->get('/tags/view/' . $context->tags[0]['id']);
+		$this->get('/tags/view/' . $context->tags[0]->id);
 		$result = $this->view;
 
-		$this->assertStringContainsString('<a href="/users/view/' . $context->tags[0]['user_id'] . '"', $result);
+		$this->assertStringContainsString('<a href="/users/view/' . $context->tags[0]->user_id . '"', $result);
 		$this->assertStringContainsString($context->user['display_name'], $result);
 	}
 
@@ -591,9 +591,9 @@ class TagTest extends IntegrationTestCase
 		$context = new ContextPreparator(['user' => ['admin' => true], 'tags' => [['name' => 'snapback', 'approved' => 0]]]);
 		$browser->get('admin/new-tags');
 
-		$this->assertFalse(ClassRegistry::init('Tag')->find('first')['Tag']['approved']);
-		$browser->clickId('tag-accept-' . $context->tags[0]['id']);
-		$this->assertTrue(ClassRegistry::init('Tag')->find('first')['Tag']['approved']);
+		$this->assertFalse($this->fetchTable('Tag')->find()->firstOrFail()->approved);
+		$browser->clickId('tag-accept-' . $context->tags[0]->id);
+		$this->assertTrue($this->fetchTable('Tag')->find()->firstOrFail()->approved);
 	}
 
 	public function testRejectNewTag()
@@ -601,10 +601,9 @@ class TagTest extends IntegrationTestCase
 		$browser = Browser::instance();
 		$context = new ContextPreparator(['user' => ['admin' => true], 'tags' => [['name' => 'snapback', 'approved' => 0]]]);
 		$browser->get('admin/new-tags');
-		$browser->findById('tag-comment-' . $context->tags[0]['id'])->sendKeys('We have the tag already');
-		$browser->clickId('tag-reject-' . $context->tags[0]['id']);
-		$tagAdded = ClassRegistry::init('Tag')->find('first')['Tag'];
-		$this->assertNull($tagAdded);
+		$browser->findById('tag-comment-' . $context->tags[0]->id)->sendKeys('We have the tag already');
+		$browser->clickId('tag-reject-' . $context->tags[0]->id);
+		$this->assertNull($this->fetchTable('Tag')->find()->first());
 	}
 
 	public function testEditTag()
@@ -613,7 +612,7 @@ class TagTest extends IntegrationTestCase
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
 			'tags' => [['name' => 'snapback', 'description' => 'Hello']]]);
-		$browser->get('/tags/view/' . $context->tags[0]['id']);
+		$browser->get('/tags/view/' . $context->tags[0]->id);
 		$browser->clickId('tag-edit');
 		$descField = $browser->find('#tag_description');
 		$descField->clear();
@@ -622,10 +621,10 @@ class TagTest extends IntegrationTestCase
 		$browser->clickId('tag_link');
 		$browser->driver->getKeyboard()->sendKeys('https://example.com');
 		$browser->clickId('submit_tag');
-		$tag = ClassRegistry::init('Tag')->find('first')['Tag'];
-		$this->assertSame('World', $tag['description']);
-		$this->assertSame('https://example.com', $tag['link']);
-		$this->assertFalse($tag['hint']);
+		$tag = $this->fetchTable('Tag')->find()->firstOrFail();
+		$this->assertSame('World', $tag->description);
+		$this->assertSame('https://example.com', $tag->link);
+		$this->assertFalse($tag->hint);
 	}
 
 	public function testTagViewSanitizesDescription(): void
@@ -634,7 +633,7 @@ class TagTest extends IntegrationTestCase
 			'name' => 'snapback',
 			'description' => '<b onmouseover="alert(1)">Shape</b>',
 		]]]);
-		$this->get('/tags/view/' . $context->tags[0]['id']);
+		$this->get('/tags/view/' . $context->tags[0]->id);
 
 		$this->assertStringContainsString('<b>Shape</b>', $this->view);
 		$this->assertStringNotContainsString('onmouseover="alert', $this->view);
@@ -643,7 +642,7 @@ class TagTest extends IntegrationTestCase
 	public function testTagViewRendersHttpReferenceAsLink(): void
 	{
 		$context = new ContextPreparator(['tags' => [['name' => 'ok', 'link' => 'https://example.com/ref']]]);
-		$this->get('/tags/view/' . $context->tags[0]['id']);
+		$this->get('/tags/view/' . $context->tags[0]->id);
 
 		$this->assertStringContainsString('href="https://example.com/ref"', $this->view);
 	}
@@ -651,7 +650,7 @@ class TagTest extends IntegrationTestCase
 	public function testTagViewRendersNonUrlReferenceAsText(): void
 	{
 		$context = new ContextPreparator(['tags' => [['name' => 'ok', 'link' => 'segoe seigen tesuji jiten vol 1']]]);
-		$this->get('/tags/view/' . $context->tags[0]['id']);
+		$this->get('/tags/view/' . $context->tags[0]->id);
 
 		$this->assertStringContainsString('>segoe seigen tesuji jiten vol 1</p>', $this->view);
 		$this->assertStringNotContainsString('href="segoe seigen', $this->view);
@@ -660,7 +659,7 @@ class TagTest extends IntegrationTestCase
 	public function testTagViewDoesNotLinkifyUnsafeReference(): void
 	{
 		$context = new ContextPreparator(['tags' => [['name' => 'ok', 'link' => 'javascript:alert(1)']]]);
-		$this->get('/tags/view/' . $context->tags[0]['id']);
+		$this->get('/tags/view/' . $context->tags[0]->id);
 
 		$this->assertStringContainsString('>javascript:alert(1)</p>', $this->view);
 		$this->assertStringNotContainsString('href="javascript:', $this->view);
@@ -672,7 +671,7 @@ class TagTest extends IntegrationTestCase
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
 			'tags' => [['name' => 'snapback', 'description' => 'Hello']]]);
-		$browser->get('/tags/view/' . $context->tags[0]['id']);
+		$browser->get('/tags/view/' . $context->tags[0]->id);
 		$browser->clickId('tag-edit');
 		$descField = $browser->find('#tag_description');
 		$descField->clear();
@@ -681,7 +680,7 @@ class TagTest extends IntegrationTestCase
 		$browser->waitUntilJs('document.documentElement.outerHTML.includes("alert-error")');
 
 		$this->assertStringContainsString('/tags/edit/', $browser->driver->getCurrentURL());
-		$this->assertSame('Hello', ClassRegistry::init('Tag')->find('first')['Tag']['description']);
+		$this->assertSame('Hello', $this->fetchTable('Tag')->find()->firstOrFail()->description);
 	}
 
 	public function testEditTagEnableHint()
@@ -690,12 +689,12 @@ class TagTest extends IntegrationTestCase
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
 			'tags' => [['name' => 'snapback', 'description' => 'Hello']]]);
-		$browser->get('/tags/view/' . $context->tags[0]['id']);
+		$browser->get('/tags/view/' . $context->tags[0]->id);
 		$browser->clickId('tag-edit');
 		$browser->clickId('tag_hint_true');
 		$browser->clickId('submit_tag');
-		$tag = ClassRegistry::init('Tag')->find('first')['Tag'];
-		$this->assertTrue($tag['hint']);
+		$tag = $this->fetchTable('Tag')->find()->firstOrFail();
+		$this->assertTrue($tag->hint);
 	}
 
 	public function testEditTagDisableHint()
@@ -704,13 +703,13 @@ class TagTest extends IntegrationTestCase
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
 			'tags' => [['name' => 'snapback', 'description' => 'Hello', 'is_hint' => true]]]);
-		$this->assertTrue($context->tags[0]['hint']);
-		$browser->get('/tags/view/' . $context->tags[0]['id']);
+		$this->assertTrue($context->tags[0]->hint);
+		$browser->get('/tags/view/' . $context->tags[0]->id);
 		$browser->clickId('tag-edit');
 		$browser->clickId('tag_hint_false');
 		$browser->clickId('submit_tag');
-		$tag = ClassRegistry::init('Tag')->find('first')['Tag'];
-		$this->assertFalse($tag['hint']); // hint value was not touched
+		$tag = $this->fetchTable('Tag')->find()->firstOrFail();
+		$this->assertFalse($tag->hint); // hint value was not touched
 	}
 
 	public function testTagContributionsShowsUsersTagActivity()
@@ -745,19 +744,15 @@ class TagTest extends IntegrationTestCase
 			'user' => ['admin' => true],
 			'other-users' => [['name' => 'proposer', 'rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE]]]);
 
-		$tag = ClassRegistry::init('Tag');
-		$tag->create();
-		$tag->save([
-			'Tag' => [
-				'name' => 'tesuji',
-				'description' => 'A clever move',
-				'user_id' => $context->otherUsers[0]['id'],
-				'approved' => 0,
-			],
-		]);
-		$tagId = $tag->id;
+		$tagTable = $this->fetchTable('Tag');
+		$tagId = $tagTable->saveOrFail($tagTable->newEntity([
+			'name' => 'tesuji',
+			'description' => 'A clever move',
+			'user_id' => $context->otherUsers[0]['id'],
+			'approved' => 0,
+		]))->id;
 
-		$this->assertFalse(ClassRegistry::init('Tag')->findById($tagId)['Tag']['approved']);
+		$this->assertFalse($this->fetchTable('Tag')->get($tagId)->approved);
 
 		$browser = Browser::instance();
 		$browser->get('/admin/new-tags');
@@ -765,7 +760,7 @@ class TagTest extends IntegrationTestCase
 		$browser->waitUntilJs('document.documentElement.outerHTML.includes("was approved")');
 
 		$this->assertStringEndsWith('/admin/new-tags', $browser->driver->getCurrentURL());
-		$this->assertTrue(ClassRegistry::init('Tag')->findById($tagId)['Tag']['approved']);
+		$this->assertTrue($this->fetchTable('Tag')->get($tagId)->approved);
 	}
 
 	public function testAcceptAlreadyApprovedTagShowsError()
@@ -774,17 +769,13 @@ class TagTest extends IntegrationTestCase
 			'user' => ['admin' => true],
 			'other-users' => [['name' => 'proposer']]]);
 
-		$tag = ClassRegistry::init('Tag');
-		$tag->create();
-		$tag->save([
-			'Tag' => [
-				'name' => 'already_approved',
-				'description' => 'Test',
-				'user_id' => $context->otherUsers[0]['id'],
-				'approved' => 1,
-			],
-		]);
-		$tagId = $tag->id;
+		$tagTable = $this->fetchTable('Tag');
+		$tagId = $tagTable->saveOrFail($tagTable->newEntity([
+			'name' => 'already_approved',
+			'description' => 'Test',
+			'user_id' => $context->otherUsers[0]['id'],
+			'approved' => 1,
+		]))->id;
 
 		$browser = Browser::instance();
 		$browser->get('/admin/new-tags');
@@ -800,24 +791,20 @@ class TagTest extends IntegrationTestCase
 			'user' => ['admin' => false],
 			'other-users' => [['name' => 'proposer']]]);
 
-		$tag = ClassRegistry::init('Tag');
-		$tag->create();
-		$tag->save([
-			'Tag' => [
-				'name' => 'unapproved_tag',
-				'description' => 'Test',
-				'user_id' => $context->otherUsers[0]['id'],
-				'approved' => 0,
-			],
-		]);
-		$tagId = $tag->id;
+		$tagTable = $this->fetchTable('Tag');
+		$tagId = $tagTable->saveOrFail($tagTable->newEntity([
+			'name' => 'unapproved_tag',
+			'description' => 'Test',
+			'user_id' => $context->otherUsers[0]['id'],
+			'approved' => 0,
+		]))->id;
 
 		$browser = Browser::instance();
 		$browser->get('/users/view/' . $context->user['id']);
 		$browser->post('/tags/acceptTagProposal/' . $tagId);
 
 		$this->assertStringNotContainsString('/admin/', $browser->driver->getCurrentURL());
-		$this->assertFalse(ClassRegistry::init('Tag')->findById($tagId)['Tag']['approved']);
+		$this->assertFalse($this->fetchTable('Tag')->get($tagId)->approved);
 	}
 
 	public function testTagHighscoreUpdatesAfterAcceptance()
@@ -847,12 +834,12 @@ class TagTest extends IntegrationTestCase
 			'user' => ['name' => 'joshka', 'owner' => true],
 			'tags' => [['name' => 'snapback']]]);
 
-		$tagId = $context->tags[0]['id'];
-		$this->assertNotEmpty(ClassRegistry::init('Tag')->findById($tagId));
+		$tagId = $context->tags[0]->id;
+		$this->assertTrue($this->fetchTable('Tag')->exists(['id' => $tagId]));
 
 		$this->post('/tags/delete/' . $tagId, ['Tag' => ['delete' => $tagId]]);
 
-		$this->assertEmpty(ClassRegistry::init('Tag')->findById($tagId));
+		$this->assertFalse($this->fetchTable('Tag')->exists(['id' => $tagId]));
 	}
 
 	public function testNonOwnerAdminCannotDeleteTag()
@@ -861,7 +848,7 @@ class TagTest extends IntegrationTestCase
 			'user' => ['admin' => true],
 			'tags' => [['name' => 'snapback']]]);
 
-		$tagId = $context->tags[0]['id'];
+		$tagId = $context->tags[0]->id;
 
 		$this->post('/tags/delete/' . $tagId, ['Tag' => ['delete' => $tagId]]);
 

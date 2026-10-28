@@ -47,7 +47,7 @@ class SmokeTest extends IntegrationTestCase
 		$setId = $context->tsumegos[0]['sets'][0]['id'];
 		$tsumegoId = $context->tsumegos[0]['id'];
 		$userId = $context->user['id'];
-		$tagId = $context->tags[0]['id'];
+		$tagId = $context->tags[0]->id;
 		$finishedSessionId = $context->timeModeSessions[1]->id;
 
 		// The test scenarios (roles) and the user that plays each one; null = logged out.
