@@ -1,33 +1,20 @@
 <?php
 
-//Represents an issue/problem report for a tsumego, which can contain multiple comments.
-//Table: tsumego_issue
-//Columns:
-//  - id (INT, PK, AUTO_INCREMENT)
-//  - tsumego_issue_status_id (INT, FK -> tsumego_issue_status)
-//  - tsumego_id (INT, FK -> tsumego)
-//  - user_id (INT, FK -> user) - author of the issue
-//  - created (DATETIME)
-//  - deleted (DATETIME NULL) - when the issue was deleted, NULL when it is not
-//The comments of the issue (TsumegoCommentTable) go with it through the foreign key.
-//Statuses (tsumego_issue_status table):
-//  - 1 = opened
-//  - 2 = closed
+namespace App\Model\Table;
+
 use App\Utility\Util;
 use Cake\ORM\TableRegistry;
+use SetConnection;
+use User;
 
-class TsumegoIssue extends AppModel
+//An issue/problem report for a tsumego, which can contain multiple comments. user_id is the author
+//of the issue, deleted is when the issue was deleted, NULL when it is not.
+//The comments of the issue (TsumegoCommentTable) go with it through the foreign key.
+class TsumegoIssueTable extends AppTable
 {
-	public $useTable = 'tsumego_issue';
-	public $actsAs = ['Containable'];
-
-	public $belongsTo = [
-		'Tsumego',
-		'User',
-	];
-
-	public static int $OPENED_STATUS = 1;
-	public static int $CLOSED_STATUS = 2;
+	// the rows of tsumego_issue_status
+	public const OPENED_STATUS = 1;
+	public const CLOSED_STATUS = 2;
 
 	//The issue list leaves out the issues of a problem that is off the site: one in the trash, and one
 	//whose collections of the site are all in the trash (see App\Utility\Trash).
@@ -47,14 +34,14 @@ class TsumegoIssue extends AppModel
 	//Should be called after a comment is deleted or removed from an issue to clean up empty issues automatically.
 	//$issueId: The issue ID to check and potentially delete
 	//Returns true if issue was deleted, false if it still has comments or doesn't exist
-	public function deleteIfEmpty(int $issueId): bool
+	public static function deleteIfEmpty(int $issueId): bool
 	{
 		$count = TableRegistry::getTableLocator()->get('TsumegoComment')->find()
 			->where(['tsumego_issue_id' => $issueId, 'deleted IS' => null])
 			->count();
 
 		if ($count === 0)
-			return $this->delete($issueId);
+			return TableRegistry::getTableLocator()->get('TsumegoIssue')->deleteAll(['id' => $issueId]) > 0;
 
 		return false;
 	}
@@ -66,16 +53,16 @@ class TsumegoIssue extends AppModel
 	//$limit: Number of results per page (default: 20)
 	//$page: Page number for pagination (default: 1)
 	//Returns formatted issues ready for the view (compatible with issue.ctp element)
-	public function findForIndex(string $status = 'opened', int $limit = 20, int $page = 1): array
+	public static function findForIndex(string $status = 'opened', int $limit = 20, int $page = 1): array
 	{
 		$offset = ($page - 1) * $limit;
 
 		// Build status condition
 		$statusCondition = '';
 		if ($status === 'opened')
-			$statusCondition = 'AND tsumego_issue_status_id = ' . self::$OPENED_STATUS;
+			$statusCondition = 'AND tsumego_issue_status_id = ' . self::OPENED_STATUS;
 		elseif ($status === 'closed')
-			$statusCondition = 'AND tsumego_issue_status_id = ' . self::$CLOSED_STATUS;
+			$statusCondition = 'AND tsumego_issue_status_id = ' . self::CLOSED_STATUS;
 
 		// Query 1: Get paginated issue IDs
 		$idsSql = "
@@ -87,8 +74,7 @@ class TsumegoIssue extends AppModel
 			ORDER BY created DESC, id DESC
 			LIMIT {$limit} OFFSET {$offset}
 		";
-		$idsResult = $this->query($idsSql) ?: [];
-		$issueIds = array_column(array_column($idsResult, 'tsumego_issue'), 'id');
+		$issueIds = array_column(Util::query($idsSql), 'id');
 
 		if (empty($issueIds))
 			return [];
@@ -143,69 +129,69 @@ class TsumegoIssue extends AppModel
 			ORDER BY ti.created DESC, ti.id DESC, tc.created ASC
 		";
 
-		$rows = $this->query($sql) ?: [];
+		$rows = Util::query($sql);
 
 		// Group results by issue, maintaining order from first query
 		$issuesMap = [];
 
 		foreach ($rows as $row)
 		{
-			$issueId = $row['ti']['issue_id'];
+			$issueId = $row['issue_id'];
 
 			if (!isset($issuesMap[$issueId]))
 			{
-				$statusId = $row['ti']['tsumego_issue_status_id'];
+				$statusId = $row['tsumego_issue_status_id'];
 
 				$issuesMap[$issueId] = [
 					'issue' => [
 						'id' => $issueId,
 						'tsumego_issue_status_id' => $statusId,
-						'tsumego_id' => $row['ti']['tsumego_id'],
-						'user_id' => $row['ti']['issue_user_id'],
-						'user_display_name' => User::displayNameOrNull(['id' => $row['ti']['issue_user_id'], 'display_name' => $row['u']['issue_author_name']]),
-						'user_rating' => $row['u']['issue_author_rating'] ?? null,
+						'tsumego_id' => $row['tsumego_id'],
+						'user_id' => $row['issue_user_id'],
+						'user_display_name' => User::displayNameOrNull(['id' => $row['issue_user_id'], 'display_name' => $row['issue_author_name']]),
+						'user_rating' => $row['issue_author_rating'] ?? null,
 						'user_avatar_url' => User::avatarOrNull([
-							'id' => $row['ti']['issue_user_id'],
-							'display_name' => $row['u']['issue_author_name'] ?? null,
-							'external_id' => $row['u']['issue_author_external_id'] ?? null,
-							'picture' => $row['u']['issue_author_picture'] ?? null,
-							'avatar_setting_id' => $row['u']['issue_author_avatar_setting_id'] ?? null,
-							'uploaded_avatar_hash' => $row['u']['issue_author_uploaded_avatar_hash'] ?? null,
-							'email' => $row['u']['issue_author_email'] ?? null,
+							'id' => $row['issue_user_id'],
+							'display_name' => $row['issue_author_name'] ?? null,
+							'external_id' => $row['issue_author_external_id'] ?? null,
+							'picture' => $row['issue_author_picture'] ?? null,
+							'avatar_setting_id' => $row['issue_author_avatar_setting_id'] ?? null,
+							'uploaded_avatar_hash' => $row['issue_author_uploaded_avatar_hash'] ?? null,
+							'email' => $row['issue_author_email'] ?? null,
 						]),
-						'created' => Util::toIso8601($row['ti']['issue_created']),
+						'created' => Util::toIso8601($row['issue_created']),
 					],
 					'comments' => [],
-					'author' => ['name' => User::displayName(['id' => $row['ti']['issue_user_id'], 'display_name' => $row['u']['issue_author_name']])],
-					'tsumegoId' => $row['ti']['tsumego_id'],
-					'Set' => $row['s']['set_id'] ? [
-						'id' => $row['s']['set_id'],
-						'title' => $row['s']['set_title'],
+					'author' => ['name' => User::displayName(['id' => $row['issue_user_id'], 'display_name' => $row['issue_author_name']])],
+					'tsumegoId' => $row['tsumego_id'],
+					'Set' => $row['set_id'] ? [
+						'id' => $row['set_id'],
+						'title' => $row['set_title'],
 					] : null,
-					'TsumegoNum' => $row['sc']['tsumego_num'] ?? null,
+					'TsumegoNum' => $row['tsumego_num'] ?? null,
 				];
 			}
 
 			// Add comment if exists
-			if (!empty($row['tc']['comment_id']))
+			if (!empty($row['comment_id']))
 			{
 				$issuesMap[$issueId]['comments'][] = [
-					'id' => $row['tc']['comment_id'],
-					'text' => $row['tc']['comment_text'],
-					'created' => Util::toIso8601($row['tc']['comment_created']),
-					'user_id' => $row['tc']['comment_user_id'],
-					'user_display_name' => User::displayNameOrNull(['id' => $row['tc']['comment_user_id'], 'display_name' => $row['cu']['comment_author_name'] ?? null]),
-					'user_rating' => $row['cu']['comment_author_rating'],
+					'id' => $row['comment_id'],
+					'text' => $row['comment_text'],
+					'created' => Util::toIso8601($row['comment_created']),
+					'user_id' => $row['comment_user_id'],
+					'user_display_name' => User::displayNameOrNull(['id' => $row['comment_user_id'], 'display_name' => $row['comment_author_name'] ?? null]),
+					'user_rating' => $row['comment_author_rating'],
 					'user_avatar_url' => User::avatarOrNull([
-						'id' => $row['tc']['comment_user_id'],
-						'display_name' => $row['cu']['comment_author_name'] ?? null,
-						'external_id' => $row['cu']['comment_author_external_id'] ?? null,
-						'picture' => $row['cu']['comment_author_picture'] ?? null,
-						'avatar_setting_id' => $row['cu']['comment_author_avatar_setting_id'] ?? null,
-						'uploaded_avatar_hash' => $row['cu']['comment_author_uploaded_avatar_hash'] ?? null,
-						'email' => $row['cu']['comment_author_email'] ?? null,
+						'id' => $row['comment_user_id'],
+						'display_name' => $row['comment_author_name'] ?? null,
+						'external_id' => $row['comment_author_external_id'] ?? null,
+						'picture' => $row['comment_author_picture'] ?? null,
+						'avatar_setting_id' => $row['comment_author_avatar_setting_id'] ?? null,
+						'uploaded_avatar_hash' => $row['comment_author_uploaded_avatar_hash'] ?? null,
+						'email' => $row['comment_author_email'] ?? null,
 					]),
-					'isAdmin' => User::isAdmin(['user_role_id' => $row['cu']['comment_author_user_role_id'] ?? null]),
+					'isAdmin' => User::isAdmin(['user_role_id' => $row['comment_author_user_role_id'] ?? null]),
 				];
 			}
 		}
@@ -225,11 +211,11 @@ class TsumegoIssue extends AppModel
 
 	//Get counts for the issues index tabs.
 	/** @return array{open: int, closed: int} */
-	public function getIndexCounts(): array
+	public static function getIndexCounts(): array
 	{
 		$row = Util::query('SELECT'
-			. ' COALESCE(SUM(tsumego_issue_status_id = ' . self::$OPENED_STATUS . '), 0) AS open,'
-			. ' COALESCE(SUM(tsumego_issue_status_id = ' . self::$CLOSED_STATUS . '), 0) AS closed'
+			. ' COALESCE(SUM(tsumego_issue_status_id = ' . self::OPENED_STATUS . '), 0) AS open,'
+			. ' COALESCE(SUM(tsumego_issue_status_id = ' . self::CLOSED_STATUS . '), 0) AS closed'
 			. ' FROM tsumego_issue WHERE deleted IS NULL AND ' . self::liveProblemSql('tsumego_issue.tsumego_id'))[0];
 		return ['open' => (int) $row['open'], 'closed' => (int) $row['closed']];
 	}
@@ -237,27 +223,20 @@ class TsumegoIssue extends AppModel
 	//Get comment section counts for a specific tsumego.
 	//Used for updating the comment tabs (ALL/COMMENTS/ISSUES).
 	/** @return array{total: int, comments: int, issues: int, openIssues: int} */
-	public function getCommentSectionCounts(int $tsumegoId): array
+	public static function getCommentSectionCounts(int $tsumegoId): array
 	{
 		// Count standalone comments (not in any issue)
 		$commentCount = TableRegistry::getTableLocator()->get('TsumegoComment')->find()
 			->where(['tsumego_id' => $tsumegoId, 'tsumego_issue_id IS' => null, 'deleted IS' => null])
 			->count();
 
+		$tsumegoIssueTable = TableRegistry::getTableLocator()->get('TsumegoIssue');
+
 		// Count issues for this tsumego
-		$issueCount = $this->find('count', [
-			'conditions' => [
-				'TsumegoIssue.tsumego_id' => $tsumegoId,
-			],
-		]);
+		$issueCount = $tsumegoIssueTable->find()->where(['tsumego_id' => $tsumegoId])->count();
 
 		// Count open issues for this tsumego
-		$openIssueCount = $this->find('count', [
-			'conditions' => [
-				'TsumegoIssue.tsumego_id' => $tsumegoId,
-				'TsumegoIssue.tsumego_issue_status_id' => self::$OPENED_STATUS,
-			],
-		]);
+		$openIssueCount = $tsumegoIssueTable->find()->where(['tsumego_id' => $tsumegoId, 'tsumego_issue_status_id' => self::OPENED_STATUS])->count();
 
 		return [
 			'total' => $commentCount + $issueCount,
