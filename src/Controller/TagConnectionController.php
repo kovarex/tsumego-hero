@@ -1,6 +1,7 @@
 <?php
 
 use App\Attribute\HttpPost;
+use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\TagConnectionTable;
 use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
@@ -32,7 +33,7 @@ class TagConnectionController extends AppController
 		$tagConnection['approved'] = Auth::isAdmin() ? 1 : 0;
 
 		if($tagConnection['approved'] == 1)
-			AdminActivityLogger::log(AdminActivityType::ADD_TAG, $tagConnection['tsumego_id'], null, ' ', $tagName);
+			AdminActivityLogger::log(AdminActivityTypeTable::ADD_TAG, $tagConnection['tsumego_id'], null, ' ', $tagName);
 
 		$tagConnectionTable->saveOrFail($tagConnectionTable->newEntity($tagConnection));
 		$this->response->type('json');

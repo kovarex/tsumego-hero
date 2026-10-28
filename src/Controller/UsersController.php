@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\RejectTable;
 use App\Model\Table\TimeModeCategoryTable;
 use App\Utility\AdminActivityLogger;
@@ -507,7 +508,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		// Update display_name (including forum sync)
 		User::updateDisplayName($userId, $newDisplayName);
 
-		AdminActivityLogger::log(AdminActivityType::DISPLAY_NAME_CHANGE, null, null, $user['User']['display_name'], $newDisplayName, $userId);
+		AdminActivityLogger::log(AdminActivityTypeTable::DISPLAY_NAME_CHANGE, null, null, $user['User']['display_name'], $newDisplayName, $userId);
 
 		// Clear the forced flag and update the session
 		Auth::saveUserField('display_name', $newDisplayName);
@@ -1276,7 +1277,7 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 			return null;
 
 		$userID = (int) $user['User']['id'];
-		AdminActivityLogger::log(AdminActivityType::DELETE_USER, null, null, $user['User']['display_name'], null, $userID);
+		AdminActivityLogger::log(AdminActivityTypeTable::DELETE_USER, null, null, $user['User']['display_name'], null, $userID);
 		User::deleteAccount($userID);
 		if (Auth::getUserID() == $userID)
 			Auth::logout();
@@ -1299,7 +1300,7 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 			CookieFlash::set('Account ' . $name . ' can\'t be restored: ' . $error, 'error');
 			return $this->redirect('/admin/deleted-accounts');
 		}
-		AdminActivityLogger::log(AdminActivityType::RESTORE_USER, null, null, null, $name);
+		AdminActivityLogger::log(AdminActivityTypeTable::RESTORE_USER, null, null, null, $name);
 		CookieFlash::set('Account ' . $name . ' restored', 'success');
 		return $this->redirect('/admin/deleted-accounts');
 	}
@@ -1412,7 +1413,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		CookieFlash::set('Sgf proposal accepted', 'success');
 
 		$userToApprove = $this->User->findById($proposalToApprove['user_id']);
-		AdminActivityLogger::log(AdminActivityType::ACCEPT_PROPOSAL, $proposalToApprove['tsumego_id'], null, null, $userToApprove['User']['display_name']);
+		AdminActivityLogger::log(AdminActivityTypeTable::ACCEPT_PROPOSAL, $proposalToApprove['tsumego_id'], null, null, $userToApprove['User']['display_name']);
 
 		$tsumegoID = (int) $proposalToApprove['tsumego_id'];
 		ProposalFeedback::send(
@@ -1467,7 +1468,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		CookieFlash::set('Sgf proposal rejected', 'success');
 
 		$userToReject = $this->User->findById($proposalToReject['user_id']);
-		AdminActivityLogger::log(AdminActivityType::REJECT_PROPOSAL, $proposalToReject['tsumego_id'], null, null, $userToReject['User']['display_name']);
+		AdminActivityLogger::log(AdminActivityTypeTable::REJECT_PROPOSAL, $proposalToReject['tsumego_id'], null, null, $userToReject['User']['display_name']);
 
 		$tsumegoID = (int) $proposalToReject['tsumego_id'];
 		ProposalFeedback::send(
@@ -1501,7 +1502,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		CookieFlash::set('Sgf proposal reopened', 'success');
 
 		$proposer = $this->User->findById($proposalToReopen['user_id']);
-		AdminActivityLogger::log(AdminActivityType::REOPEN_PROPOSAL, $proposalToReopen['tsumego_id'], null, null, $proposer ? $proposer['User']['display_name'] : null);
+		AdminActivityLogger::log(AdminActivityTypeTable::REOPEN_PROPOSAL, $proposalToReopen['tsumego_id'], null, null, $proposer ? $proposer['User']['display_name'] : null);
 
 		return $this->redirect('/admin/sgf-proposals');
 	}
@@ -1527,7 +1528,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		$proposalToApprove->approved = true;
 
 		$tag = $this->fetchTable('Tag')->get($proposalToApprove->tag_id);
-		AdminActivityLogger::log(AdminActivityType::ACCEPT_TAG, $proposalToApprove->tsumego_id, null, null, $tag->name);
+		AdminActivityLogger::log(AdminActivityTypeTable::ACCEPT_TAG, $proposalToApprove->tsumego_id, null, null, $tag->name);
 		$tagConnectionTable->saveOrFail($proposalToApprove);
 
 		// tags are accepted by the dozen, so the proposer only hears about it when the admin had something to say
@@ -1574,7 +1575,7 @@ OFFSET " . $offset, [$userID, $userID]);
 
 		$tag = $this->fetchTable('Tag')->get($proposalToReject->tag_id);
 
-		AdminActivityLogger::log(AdminActivityType::REJECT_TAG, $proposalToReject->tsumego_id, null, $tag->name, null);
+		AdminActivityLogger::log(AdminActivityTypeTable::REJECT_TAG, $proposalToReject->tsumego_id, null, $tag->name, null);
 
 		$rejectTable = $this->fetchTable('Reject');
 		$rejectTable->saveOrFail($rejectTable->newEntity([

@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\AdminActivityTypeTable;
 use App\Utility\Avatar;
 use App\Utility\Util;
 
@@ -243,7 +244,7 @@ class UpdateNameTest extends IntegrationTestCase
 
 		$activities = $this->fetchTable('AdminActivity')->find()->orderBy('id')->toArray();
 		$this->assertCount(1, $activities);
-		$this->assertEquals(AdminActivityType::DISPLAY_NAME_CHANGE, $activities[0]->type);
+		$this->assertEquals(AdminActivityTypeTable::DISPLAY_NAME_CHANGE, $activities[0]->type);
 		$this->assertEquals('Name From Migration', $activities[0]->old_value);
 		$this->assertEquals('My Chosen Name', $activities[0]->new_value);
 		$this->assertEquals($context->user['id'], $activities[0]->user_id);

@@ -2,6 +2,7 @@
 
 use App\Lib\Error\ConflictException;
 use App\Model\Table\AchievementConditionTable;
+use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\ProgressDeletionTable;
 use App\Utility\AchievementChecker;
 use App\Utility\AdminActivityLogger;
@@ -285,13 +286,13 @@ ORDER BY sc.num ASC", [(int) $id]);
 			if ($this->_isElevatedSetEdit($set))
 			{
 				if ($oldTitle != $set['Set']['title'])
-					AdminActivityLogger::log(AdminActivityType::SET_TITLE_EDIT, null, (int) $id, $oldTitle, $set['Set']['title']);
+					AdminActivityLogger::log(AdminActivityTypeTable::SET_TITLE_EDIT, null, (int) $id, $oldTitle, $set['Set']['title']);
 				if ($oldDescription != $set['Set']['description'])
-					AdminActivityLogger::log(AdminActivityType::SET_DESCRIPTION_EDIT, null, (int) $id, $oldDescription, $set['Set']['description']);
+					AdminActivityLogger::log(AdminActivityTypeTable::SET_DESCRIPTION_EDIT, null, (int) $id, $oldDescription, $set['Set']['description']);
 				if ($oldColor != $set['Set']['color'])
-					AdminActivityLogger::log(AdminActivityType::SET_COLOR_EDIT, null, (int) $id, $oldColor, $set['Set']['color']);
+					AdminActivityLogger::log(AdminActivityTypeTable::SET_COLOR_EDIT, null, (int) $id, $oldColor, $set['Set']['color']);
 				if ($oldOrder != $set['Set']['order'])
-					AdminActivityLogger::log(AdminActivityType::SET_ORDER_EDIT, null, (int) $id, Util::strOrNull($oldOrder), Util::strOrNull($set['Set']['order']));
+					AdminActivityLogger::log(AdminActivityTypeTable::SET_ORDER_EDIT, null, (int) $id, Util::strOrNull($oldOrder), Util::strOrNull($set['Set']['order']));
 			}
 
 			CookieFlash::set('Set saved', 'success');
@@ -311,7 +312,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 							$tsumego['Tsumego']['maximum_rating']);
 					$this->Tsumego->save($tsumego);
 				}
-				AdminActivityLogger::log(AdminActivityType::SET_RATING_EDIT, null, (int) $id);
+				AdminActivityLogger::log(AdminActivityTypeTable::SET_RATING_EDIT, null, (int) $id);
 			}
 
 		// Alternative response / pass mode for all problems (admin only)
@@ -325,7 +326,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 					$tsumego['Tsumego']['alternative_response'] = true;
 					ClassRegistry::init('Tsumego')->save($tsumego);
 				}
-				AdminActivityLogger::log(AdminActivityType::SET_ALTERNATIVE_RESPONSE, null, (int) $id, null, '1');
+				AdminActivityLogger::log(AdminActivityTypeTable::SET_ALTERNATIVE_RESPONSE, null, (int) $id, null, '1');
 			}
 			if ($this->request->data['Settings']['r39'] == 'off')
 			{
@@ -335,7 +336,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 					$tsumego['Tsumego']['alternative_response'] = false;
 					ClassRegistry::init('Tsumego')->save($tsumego);
 				}
-				AdminActivityLogger::log(AdminActivityType::SET_ALTERNATIVE_RESPONSE, null, (int) $id, null, '0');
+				AdminActivityLogger::log(AdminActivityTypeTable::SET_ALTERNATIVE_RESPONSE, null, (int) $id, null, '0');
 			}
 			if ($this->request->data['Settings']['r43'] == 'yes')
 			{
@@ -345,7 +346,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 					$tsumego['Tsumego']['pass'] = true;
 					ClassRegistry::init('Tsumego')->save($tsumego);
 				}
-				AdminActivityLogger::log(AdminActivityType::SET_PASS_MODE, null, (int) $id, null, '1');
+				AdminActivityLogger::log(AdminActivityTypeTable::SET_PASS_MODE, null, (int) $id, null, '1');
 			}
 			if ($this->request->data['Settings']['r43'] == 'no')
 			{
@@ -355,7 +356,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 					$tsumego['Tsumego']['pass'] = false;
 					ClassRegistry::init('Tsumego')->save($tsumego);
 				}
-				AdminActivityLogger::log(AdminActivityType::SET_PASS_MODE, null, (int) $id, null, '0');
+				AdminActivityLogger::log(AdminActivityTypeTable::SET_PASS_MODE, null, (int) $id, null, '0');
 			}
 		}
 
@@ -496,7 +497,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 			return;
 		}
 		Trash::deleteSet((int) $setID);
-		AdminActivityLogger::log(AdminActivityType::SET_DELETE, null, (int) $setID, $s['Set']['title']);
+		AdminActivityLogger::log(AdminActivityTypeTable::SET_DELETE, null, (int) $setID, $s['Set']['title']);
 		CookieFlash::set('The collection ' . $s['Set']['title'] . ' was moved to the trash, it can be restored for '
 			. Trash::$RETENTION_DAYS . ' days.', 'success');
 		$this->redirect($s['Set']['public'] == 0 ? '/sets/sandbox' : '/sets');
@@ -701,7 +702,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 			if ($sgfDataOrFile)
 				ClassRegistry::init('Sgf')->uploadSgf($sgfDataOrFile, $tsumego['id'], Auth::getUserID(), Auth::isAdmin());
 			$tsumegoModel->getDataSource()->commit();
-			AdminActivityLogger::log(AdminActivityType::PROBLEM_ADD, $tsumegoModel->id, $setID);
+			AdminActivityLogger::log(AdminActivityTypeTable::PROBLEM_ADD, $tsumegoModel->id, $setID);
 		}
 		catch (Exception $e)
 		{

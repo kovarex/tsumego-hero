@@ -2,6 +2,7 @@
 
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
+use App\Model\Table\AdminActivityTypeTable;
 use App\Utility\AdminActivityLogger;
 use App\Utility\CookieFlash;
 use App\Utility\Trash;
@@ -25,7 +26,7 @@ SELECT s.id, s.title, s.public, s.deleted,
 		WHERE a.set_id = s.id AND a.type = ? ORDER BY a.id DESC LIMIT 1) AS deleted_by
 FROM `set` s
 WHERE s.deleted IS NOT NULL
-ORDER BY s.deleted DESC, s.id DESC', [AdminActivityType::SET_DELETE]));
+ORDER BY s.deleted DESC, s.id DESC', [AdminActivityTypeTable::SET_DELETE]));
 
 		$this->set('problems', Util::query('
 SELECT t.id, t.description, t.deleted,
@@ -41,7 +42,7 @@ LEFT JOIN set_connection sc ON sc.id = (
 	LIMIT 1)
 LEFT JOIN `set` s ON s.id = sc.set_id
 WHERE t.deleted IS NOT NULL
-ORDER BY t.deleted DESC, t.id DESC', [AdminActivityType::PROBLEM_DELETE]));
+ORDER BY t.deleted DESC, t.id DESC', [AdminActivityTypeTable::PROBLEM_DELETE]));
 	}
 
 	#[HttpPost]
@@ -55,7 +56,7 @@ ORDER BY t.deleted DESC, t.id DESC', [AdminActivityType::PROBLEM_DELETE]));
 		if ($tsumego['Tsumego']['deleted'])
 		{
 			Trash::restoreProblem((int) $id);
-			AdminActivityLogger::log(AdminActivityType::PROBLEM_RESTORE, (int) $id);
+			AdminActivityLogger::log(AdminActivityTypeTable::PROBLEM_RESTORE, (int) $id);
 			CookieFlash::set('The problem was restored', 'success');
 		}
 		return $this->redirect($this->referer('/trash', true));
@@ -72,7 +73,7 @@ ORDER BY t.deleted DESC, t.id DESC', [AdminActivityType::PROBLEM_DELETE]));
 		if ($set['Set']['deleted'])
 		{
 			Trash::restoreSet((int) $id);
-			AdminActivityLogger::log(AdminActivityType::SET_RESTORE, null, (int) $id, null, $set['Set']['title']);
+			AdminActivityLogger::log(AdminActivityTypeTable::SET_RESTORE, null, (int) $id, null, $set['Set']['title']);
 			CookieFlash::set('The collection ' . $set['Set']['title'] . ' was restored', 'success');
 		}
 		return $this->redirect($this->referer('/trash', true));

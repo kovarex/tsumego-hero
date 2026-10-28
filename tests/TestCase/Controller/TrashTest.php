@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\RejectTable;
 use App\Model\Table\TsumegoVariantTable;
 use App\Utility\CookieFlash;
@@ -95,8 +96,8 @@ WHERE c.TABLE_SCHEMA = DATABASE() AND c.COLUMN_NAME = 'tsumego_id'");
 		$this->assertNotNull(self::tsumegoRow($context->tsumegos[0]['id'])['deleted'], 'The other problem was deleted on its own');
 
 		$activities = $this->fetchTable('AdminActivity')->find()->orderBy('id')->toArray();
-		$this->assertSame(AdminActivityType::PROBLEM_DELETE, $activities[0]->type);
-		$this->assertSame(AdminActivityType::PROBLEM_RESTORE, $activities[1]->type);
+		$this->assertSame(AdminActivityTypeTable::PROBLEM_DELETE, $activities[0]->type);
+		$this->assertSame(AdminActivityTypeTable::PROBLEM_RESTORE, $activities[1]->type);
 	}
 
 	public function testRestoringAProblemLeavesASetDeletedOnItsOwnInTheTrash(): void
@@ -230,7 +231,7 @@ WHERE c.TABLE_SCHEMA = DATABASE() AND c.COLUMN_NAME = 'tsumego_id'");
 		$this->assertNull(self::setRow($setID)['deleted']);
 		$this->assertSame('The collection back was restored', CookieFlash::get());
 		$activity = $this->fetchTable('AdminActivity')->find()->firstOrFail();
-		$this->assertSame(AdminActivityType::SET_RESTORE, $activity->type);
+		$this->assertSame(AdminActivityTypeTable::SET_RESTORE, $activity->type);
 		$this->assertSame($setID, $activity->set_id);
 	}
 
@@ -248,7 +249,7 @@ WHERE c.TABLE_SCHEMA = DATABASE() AND c.COLUMN_NAME = 'tsumego_id'");
 		$this->assertNotNull(self::setRow($setID)['deleted']);
 		$this->assertNull(self::tsumegoRow($context->tsumegos[0]['id'])['deleted'], 'Its problems wait in the set');
 		$activity = $this->fetchTable('AdminActivity')->find()->firstOrFail();
-		$this->assertSame(AdminActivityType::SET_DELETE, $activity->type);
+		$this->assertSame(AdminActivityTypeTable::SET_DELETE, $activity->type);
 		$this->assertSame('Life and Death', $activity->old_value);
 	}
 

@@ -2,6 +2,7 @@
 
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
+use App\Model\Table\AdminActivityTypeTable;
 use App\Utility\AdminActivityLogger;
 use App\Utility\SgfParser;
 
@@ -62,7 +63,7 @@ class SgfController extends AppController
 			throw new BadRequestException('Invalid SGF format: ' . $problem);
 
 		AdminActivityLogger::log(
-			AdminActivityType::SGF_EDIT,
+			AdminActivityTypeTable::SGF_EDIT,
 			$setConnection['SetConnection']['tsumego_id'],
 			$setConnection['SetConnection']['set_id'],
 		);
