@@ -619,8 +619,6 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		$this->set('_page', 'timeHighscore');
 		$this->set('_title', 'Tsumego Hero - Time Highscore');
 
-		$this->loadModel('TimeModeSession');
-
 		// Build rank name -> ID lookup
 		$rankNameToId = $this->fetchTable('TimeModeRank')->find('list', keyField: 'name', valueField: 'id')->toArray();
 
@@ -812,7 +810,6 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		$this->loadModel('Achievement');
 		$this->loadModel('AchievementStatus');
 		$this->loadModel('SetConnection');
-		$this->loadModel('TimeModeSession');
 
 		$as = $this->AchievementStatus->find('all', ['limit' => 12, 'order' => 'created DESC', 'conditions' => ['user_id' => $id]]);
 		$ach = $this->Achievement->find('all');

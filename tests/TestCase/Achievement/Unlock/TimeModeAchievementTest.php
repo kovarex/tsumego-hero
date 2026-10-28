@@ -163,7 +163,7 @@ class TimeModeAchievementTest extends AchievementTestCase
 				'rank' => '10k']]]);
 
 		// Manually set points (ContextPreparator doesn't support 'points' field yet)
-		ClassRegistry::init('TimeModeSession')->updateAll(['points' => 950], ['user_id' => $context->user['id']]);
+		$this->fetchTable('TimeModeSession')->updateAll(['points' => 950], ['user_id' => $context->user['id']]);
 		new AchievementChecker()->checkTimeModeAchievements();
 		$this->assertAchievementUnlocked(AchievementId::TIME_MODE_PRECISION_I, "Precision I: 950+ at 10k");
 
@@ -174,7 +174,7 @@ class TimeModeAchievementTest extends AchievementTestCase
 				'category' => TimeModeUtil::$CATEGORY_SLOW_SPEED,
 				'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
 				'rank' => '8k']]]);
-		ClassRegistry::init('TimeModeSession')->updateAll(['points' => 900], ['user_id' => $context->user['id']]);
+		$this->fetchTable('TimeModeSession')->updateAll(['points' => 900], ['user_id' => $context->user['id']]);
 		new AchievementChecker()->checkTimeModeAchievements();
 		$this->assertAchievementUnlocked(AchievementId::TIME_MODE_PRECISION_II, "Precision II: 900+ at 8k");
 
@@ -185,7 +185,7 @@ class TimeModeAchievementTest extends AchievementTestCase
 				'category' => TimeModeUtil::$CATEGORY_SLOW_SPEED,
 				'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
 				'rank' => '6k']]]);
-		ClassRegistry::init('TimeModeSession')->updateAll(['points' => 875], ['user_id' => $context->user['id']]);
+		$this->fetchTable('TimeModeSession')->updateAll(['points' => 875], ['user_id' => $context->user['id']]);
 		new AchievementChecker()->checkTimeModeAchievements();
 		$this->assertAchievementUnlocked(AchievementId::TIME_MODE_PRECISION_III, "Precision III: 875+ at 6k");
 
@@ -196,7 +196,7 @@ class TimeModeAchievementTest extends AchievementTestCase
 				'category' => 3,
 				'status' => 3,
 				'rank' => '4k']]]);
-		ClassRegistry::init('TimeModeSession')->updateAll(['points' => 850], ['user_id' => $context->user['id']]);
+		$this->fetchTable('TimeModeSession')->updateAll(['points' => 850], ['user_id' => $context->user['id']]);
 		new AchievementChecker()->checkTimeModeAchievements();
 		$this->assertAchievementUnlocked(AchievementId::TIME_MODE_PRECISION_IV, "Precision IV: 850+ at 4k");
 	}

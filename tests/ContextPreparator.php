@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Entity\TimeModeRank;
+use App\Model\Entity\TimeModeSession;
 use App\Model\Table\TimeModeRankTable;
 use App\Utility\AchievementChecker;
 use App\Utility\AdminActivityLogger;
@@ -731,26 +732,22 @@ class ContextPreparator
 		if (!$timeModeSessions)
 			return;
 
+		$sessionTable = TableRegistry::getTableLocator()->get('TimeModeSession');
 		foreach ($timeModeSessions as $timeModeSessionInput)
 		{
-			$timeModeSession = [];
-			$timeModeSession['user_id'] = Auth::getUserID();
-			$timeModeSession['time_mode_category_id'] = $timeModeSessionInput['category'];
-			$timeModeSession['time_mode_session_status_id'] = $timeModeSessionInput['status'];
 			/** @var TimeModeRank|null $rank */
 			$rank = TableRegistry::getTableLocator()->get('TimeModeRank')->find()->where(['name' => $timeModeSessionInput['rank']])->first();
 			if (!$rank)
 				throw new Exception('Rank ' . $timeModeSessionInput['rank'] . ' not found');
-			$timeModeSession['time_mode_rank_id'] = $rank->id;
-			$timeModeSessionModel = ClassRegistry::init('TimeModeSession');
-			$timeModeSessionModel->create($timeModeSession);
-			$timeModeSessionModel->save($timeModeSession);
-			$newSessionId = $timeModeSessionModel->id;
-			$savedSession = $timeModeSessionModel->data['TimeModeSession'];
-			$savedSession['id'] = $newSessionId;
-			$this->timeModeSessions [] = $savedSession;
+			/** @var TimeModeSession $session */
+			$session = $sessionTable->saveOrFail($sessionTable->newEntity([
+				'user_id' => Auth::getUserID(),
+				'time_mode_category_id' => $timeModeSessionInput['category'],
+				'time_mode_session_status_id' => $timeModeSessionInput['status'],
+				'time_mode_rank_id' => $rank->id]));
+			$this->timeModeSessions [] = $session;
 			foreach (($timeModeSessionInput['attempts'] ?? []) as $attemptInput)
-				$this->prepareTimeModeAttempts($attemptInput, $newSessionId);
+				$this->prepareTimeModeAttempts($attemptInput, $session->id);
 		}
 	}
 
@@ -1089,6 +1086,7 @@ class ContextPreparator
 	public ?array $resultTsumegoStatus = null;
 	public ?array $tsumegoSets = null;
 	public array $timeModeRanks = [];
+	/** @var array<TimeModeSession> */
 	public array $timeModeSessions = [];
 	public array $tags = [];
 	public array $setConnections = [];

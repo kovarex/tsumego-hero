@@ -251,7 +251,7 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$this->post('/challenges/play/' . $challengeId);
 
 		$this->assertStringEndsWith('/challenges/' . $challengeId, $this->headerValue('Location'));
-		$this->assertSame(1, ClassRegistry::init('TimeModeSession')->find('count', ['conditions' => ['challenge_id' => $challengeId]]));
+		$this->assertSame(1, $this->fetchTable('TimeModeSession')->find()->where(['challenge_id' => $challengeId])->count());
 	}
 
 	public function testTheEndOfARunLeadsToTheTableOfTheChallenge(): void
@@ -270,9 +270,9 @@ class ChallengesControllerTest extends IntegrationTestCase
 
 		$this->post('/timeMode/play');
 		$session = Challenge::runOf($challengeId, $this->userId('challenger'));
-		$this->assertSame(Util::getInternalAddress() . '/timeMode/result/' . $session['TimeModeSession']['id'], $this->headerValue('Location'));
+		$this->assertSame(Util::getInternalAddress() . '/timeMode/result/' . $session->id, $this->headerValue('Location'));
 
-		$this->get('/timeMode/result/' . $session['TimeModeSession']['id']);
+		$this->get('/timeMode/result/' . $session->id);
 		$this->assertSame(Util::getInternalAddress() . '/challenges/' . $challengeId, $this->headerValue('Location'));
 	}
 
@@ -356,7 +356,7 @@ class ChallengesControllerTest extends IntegrationTestCase
 
 		// the problems of the challenge are known now, so its run ends instead of being thrown away
 		$session = Challenge::runOf($challengeId, $this->userId('challenger'));
-		$this->assertNotSame(TimeModeUtil::$SESSION_STATUS_IN_PROGRESS, (int) $session['TimeModeSession']['time_mode_session_status_id']);
+		$this->assertNotSame(TimeModeUtil::$SESSION_STATUS_IN_PROGRESS, $session->time_mode_session_status_id);
 		$this->assertSame(
 			[TimeModeUtil::$ATTEMPT_RESULT_SOLVED, TimeModeUtil::$ATTEMPT_STATUS_SKIPPED, TimeModeUtil::$ATTEMPT_STATUS_SKIPPED, TimeModeUtil::$ATTEMPT_STATUS_SKIPPED, TimeModeUtil::$ATTEMPT_STATUS_SKIPPED],
 			array_map(fn(array $attempt) => (int) $attempt['time_mode_attempt_status_id'], $this->runAttempts($challengeId, 'challenger')));
@@ -364,7 +364,7 @@ class ChallengesControllerTest extends IntegrationTestCase
 		// and the new time mode run is the one being played
 		$timeMode = new App\Utility\TimeMode();
 		$this->assertNull($timeMode->challenge);
-		$this->assertSame(TimeModeUtil::$CATEGORY_BLITZ, (int) $timeMode->currentSession['TimeModeSession']['time_mode_category_id']);
+		$this->assertSame(TimeModeUtil::$CATEGORY_BLITZ, $timeMode->currentSession->time_mode_category_id);
 	}
 
 	public function testPlayingAnotherChallengeEndsTheRunOfTheFirst(): void
