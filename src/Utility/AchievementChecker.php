@@ -4,7 +4,6 @@ namespace App\Utility;
 
 use Achievement;
 use AchievementCondition;
-use App\Model\Entity\AchievementStatus;
 use App\Model\Table\TimeModeCategoryTable;
 use App\Model\Table\TimeModeRankTable;
 use App\Model\Table\TimeModeSessionStatusTable;
@@ -63,7 +62,6 @@ class AchievementChecker
 		$this->gained($achievementID);
 
 		$achievementStatusTable = $this->fetchTable('AchievementStatus');
-		/** @var AchievementStatus|null $status */
 		$status = $achievementStatusTable->find()->where(['user_id' => Auth::getUserID(), 'achievement_id' => $achievementID->value])->first();
 		if (!$status || $status->value >= $times)
 			return;
@@ -75,7 +73,6 @@ class AchievementChecker
 	private function fillExistingStatuses(): void
 	{
 		$achievementStatuses = $this->fetchTable('AchievementStatus')->find()->where(['user_id' => Auth::getUserID()])->all();
-		/** @var AchievementStatus $achievementStatus */
 		foreach ($achievementStatuses as $achievementStatus)
 			$this->existingStatuses[$achievementStatus->achievement_id] = true;
 	}

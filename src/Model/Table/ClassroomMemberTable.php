@@ -14,11 +14,9 @@ class ClassroomMemberTable extends AppTable
 	//The membership of a player in a class, in whatever state it is.
 	public static function of(int $classroomId, int $userId): ?ClassroomMember
 	{
-		/** @var ClassroomMember|null $membership */
-		$membership = TableRegistry::getTableLocator()->get('ClassroomMember')->find()
+		return TableRegistry::getTableLocator()->get('ClassroomMember')->find()
 			->where(['classroom_id' => $classroomId, 'user_id' => $userId])
 			->first();
-		return $membership;
 	}
 
 	public static function isPupil(int $classroomId, int $userId): bool

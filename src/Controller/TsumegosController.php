@@ -2,7 +2,6 @@
 
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
-use App\Model\Entity\TsumegoVariant;
 use App\Model\Table\TsumegoVariantTable;
 use App\Utility\AchievementChecker;
 use App\Utility\AdminActivityLogger;
@@ -148,7 +147,6 @@ class TsumegosController extends AppController
 	{
 		$this->Authorization->authorize('Tsumego', 'editSettings');
 		$variantTable = $this->fetchTable('TsumegoVariant');
-		/** @var TsumegoVariant|null $variant */
 		$variant = $variantTable->find()->where(['tsumego_id' => (int) $tsumegoID])->first();
 		if (!$variant)
 			throw new NotFoundException('The problem has no question to answer');

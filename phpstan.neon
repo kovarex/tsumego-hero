@@ -1,11 +1,13 @@
 includes:
 	- phpstan-baseline.neon
+	- tests/PHPStan/extension.neon
 	- vendor/pieceofcake2/phpstan-cakephp2/extension.neon
 
 parameters:
 	level: 5
 	paths:
 		- src/
+		- tests/PHPStan/
 	bootstrapFiles:
 		- config/phpstan-bootstrap.php
 	treatPhpDocTypesAsCertain: false
