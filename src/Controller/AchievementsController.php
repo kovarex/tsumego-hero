@@ -1,6 +1,5 @@
 <?php
 
-use App\Model\Entity\AchievementStatus;
 use App\Utility\AchievementId;
 use App\Utility\Auth;
 use App\Utility\Util;
@@ -39,8 +38,7 @@ class AchievementsController extends AppController
 		if ($viewedUser)
 		{
 			$this->set('viewedUser', $viewedUser);
-			/** @var AchievementStatus $status */
-			foreach ($this->fetchTable('AchievementStatus')->find()->where(['user_id' => $viewedUser['id']]) as $status)
+			foreach ($this->fetchTable('AchievementStatus')->find()->where(['user_id' => $viewedUser['id']])->all() as $status)
 				$statusByAchievementId[$status->achievement_id] = $status;
 		}
 

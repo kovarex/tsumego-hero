@@ -1,7 +1,6 @@
 <?php
 
 use App\Attribute\HttpGet;
-use App\Model\Entity\DayRecord;
 use App\Utility\SchedulePublisher;
 use App\Utility\Trash;
 use App\Utility\Util;
@@ -119,7 +118,6 @@ WHERE
 		$lastDayRecords = TableRegistry::getTableLocator()->get('DayRecord')->find()->orderByDesc('date')->limit(7)->all();
 
 		$excludedUsers = [];
-		/** @var DayRecord $lastDayRecord */
 		foreach ($lastDayRecords as $lastDayRecord)
 			$excludedUsers[$lastDayRecord->user_id] = true;
 
@@ -134,7 +132,6 @@ WHERE
 	{
 		$latestDayRecords = TableRegistry::getTableLocator()->get('DayRecord')->find()->where(['date' => date('Y-m-d', strtotime('-10 days'))])->all();
 		$usedQuotes = [];
-		/** @var DayRecord $latestDayRecord */
 		foreach ($latestDayRecords as $latestDayRecord)
 			$usedQuotes[$latestDayRecord->quote] = true;
 

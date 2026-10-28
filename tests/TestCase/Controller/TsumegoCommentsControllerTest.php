@@ -1,6 +1,5 @@
 <?php
 
-use App\Model\Entity\TsumegoComment;
 use App\Utility\Avatar;
 
 class TsumegoCommentsControllerTest extends IntegrationTestCase
@@ -147,7 +146,6 @@ class TsumegoCommentsControllerTest extends IntegrationTestCase
 		$this->post('/tsumego-comments/delete/' . $comment->id);
 
 		$this->assertResponseCode(200);
-		/** @var TsumegoComment $deleted */
 		$deleted = $this->fetchTable('TsumegoComment')->get($comment->id);
 		$this->assertNotNull($deleted->deleted, 'The comment keeps the time it was deleted');
 	}
