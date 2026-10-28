@@ -155,9 +155,9 @@ class TsumegoButtonsTest extends IntegrationTestCase
 			'Queue navigation must stay on the training route, so the route can re-assert the mode');
 	}
 
-	//The buttons of a set come without their SGFs, which only the shown ones need for the preview,
-	//and loading them gives the current version.
-	public function testSetButtonsLoadTheCurrentVersionWhenAsked(): void
+	//The buttons of a set come without their previews, which only the shown ones need, and loading
+	//them gives the one stored with the current version.
+	public function testSetButtonsLoadThePreviewOfTheCurrentVersionWhenAsked(): void
 	{
 		$current = '(;GM[1]FF[4]SZ[19]AB[cc];B[aa])';
 		$context = new ContextPreparator([
@@ -172,14 +172,32 @@ class TsumegoButtonsTest extends IntegrationTestCase
 
 		$buttons = new TsumegoButtons(new TsumegoFilters('topics'), null, 0, (int) $context->tsumegos[0]['set-connections'][0]['set_id']);
 		$this->assertCount(1, $buttons);
-		$this->assertNull($buttons[0]->sgf);
+		$this->assertNull($buttons[0]->preview);
 
-		$buttons->loadSgfs();
-		$this->assertSame($current, $buttons[0]->sgf);
+		$buttons->loadPreviews();
+		$this->assertSame(TsumegoButton::sgfToPreviewJson($current), $buttons[0]->preview);
+		$this->assertStringContainsString('"black":"cc"', $buttons[0]->preview);
 	}
 
-	//The play page shows the dozen buttons around the opened problem, so only they load their SGFs.
-	public function testPlayNavigationLoadsTheSgfsOfTheShownButtonsOnly(): void
+	//Every saved version keeps the preview of its SGF, which the buttons show without parsing it.
+	public function testASavedVersionKeepsThePreviewOfItsSgf(): void
+	{
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 1]]);
+		$sgf = '(;GM[1]FF[4]SZ[19]AB[aa][ba]AW[ab];B[ca])';
+
+		$saved = ClassRegistry::init('Sgf')->uploadSgf($sgf, (int) $context->tsumegos[0]['id'], (int) $context->user['id'], true);
+
+		$this->assertSame(TsumegoButton::sgfToPreviewJson($sgf), $saved['Sgf']['preview']);
+		$this->assertSame(['aa', 'ba'], str_split(json_decode($saved['Sgf']['preview'], true)['black'], 2));
+	}
+
+	public function testAnEmptySgfHasNoPreview(): void
+	{
+		$this->assertSame('', TsumegoButton::sgfToPreviewJson(''));
+	}
+
+	//The play page shows the dozen buttons around the opened problem, so only they load their previews.
+	public function testPlayNavigationLoadsThePreviewsOfTheShownButtonsOnly(): void
 	{
 		$tsumegos = [];
 		for ($i = 1; $i <= 30; $i++)
@@ -196,8 +214,8 @@ class TsumegoButtonsTest extends IntegrationTestCase
 		$this->assertCount(30, $buttons);
 		$this->assertCount(13, $shown);
 		foreach ($shown as $button)
-			$this->assertNotNull($button->sgf);
-		$this->assertCount(13, array_filter((array) $buttons, fn($button) => $button->sgf !== null));
+			$this->assertNotNull($button->preview);
+		$this->assertCount(13, array_filter((array) $buttons, fn($button) => $button->preview !== null));
 	}
 
 	public function testTheEndsOfTheListLeadToThePageAndTheMiddleToTheNeighbour(): void

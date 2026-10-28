@@ -43,7 +43,7 @@ class SitesController extends AppController
 		$latestPublishDate = $latestPublished?->date->format('Y-m-d');
 		$tsumegoFilters = new TsumegoFilters('published', $latestPublishDate);
 		$tsumegoButtonsOfPublishedTsumegos = new TsumegoButtons($tsumegoFilters);
-		$tsumegoButtonsOfPublishedTsumegos->loadSgfs();
+		$tsumegoButtonsOfPublishedTsumegos->loadPreviews();
 
 		if ($dayRecord)
 		{
