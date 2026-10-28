@@ -98,16 +98,16 @@ class SgfControllerUploadTest extends IntegrationTestCase
 		$this->assertSame('cd', $sgfs[0]['Sgf']['correct_moves']);
 
 		// Verify admin activity was logged
-		$activity = ClassRegistry::init('AdminActivity')->find('first', [
-			'conditions' => [
+		$activity = $this->fetchTable('AdminActivity')->find()
+			->where([
 				'type' => AdminActivityType::SGF_EDIT,
 				'tsumego_id' => $context->tsumegos[0]['id'],
 				'user_id' => Auth::getUserID(),
-			],
-			'order' => 'id DESC',
-		]);
-		$this->assertNotFalse($activity, 'Admin activity should be logged after besogo SGF upload');
-		$this->assertEquals($context->tsumegos[0]['set-connections'][0]['set_id'], $activity['AdminActivity']['set_id']);
+			])
+			->orderByDesc('id')
+			->first();
+		$this->assertNotNull($activity, 'Admin activity should be logged after besogo SGF upload');
+		$this->assertEquals($context->tsumegos[0]['set-connections'][0]['set_id'], $activity->set_id);
 	}
 
 	public function testUploadSgfViaFileUpload()
@@ -131,16 +131,16 @@ class SgfControllerUploadTest extends IntegrationTestCase
 		$this->assertEquals('cd', $sgfs[0]['Sgf']['correct_moves']);
 
 		// Verify admin activity was logged
-		$activity = ClassRegistry::init('AdminActivity')->find('first', [
-			'conditions' => [
+		$activity = $this->fetchTable('AdminActivity')->find()
+			->where([
 				'type' => AdminActivityType::SGF_EDIT,
 				'tsumego_id' => $context->tsumegos[0]['id'],
 				'user_id' => Auth::getUserID(),
-			],
-			'order' => 'id DESC',
-		]);
-		$this->assertNotFalse($activity, 'Admin activity should be logged after file SGF upload');
-		$this->assertEquals($context->tsumegos[0]['set-connections'][0]['set_id'], $activity['AdminActivity']['set_id']);
+			])
+			->orderByDesc('id')
+			->first();
+		$this->assertNotNull($activity, 'Admin activity should be logged after file SGF upload');
+		$this->assertEquals($context->tsumegos[0]['set-connections'][0]['set_id'], $activity->set_id);
 	}
 
 	//The problem turned in the board editor is saved turned, and its comments are turned with it.

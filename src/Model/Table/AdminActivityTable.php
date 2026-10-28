@@ -1,23 +1,19 @@
 <?php
 
+namespace App\Model\Table;
+
+use AdminActivityType;
 use App\Utility\BoardComparator;
 use App\Utility\SgfBoard;
 use App\Utility\SgfParser;
 use App\Utility\TsumegoButton;
 
-class AdminActivity extends AppModel
+//What an admin did, for the activity log of the admin area (AdminActivityRenderer); written
+//through AdminActivityLogger. type is an AdminActivityType id.
+class AdminActivityTable extends AppTable
 {
-	public $useTable = 'admin_activity';
-	public $actsAs = ['Containable'];
-
-	public $belongsTo = [
-		'AdminActivityType' => [
-			'className' => 'AdminActivityType',
-			'foreignKey' => 'type',
-			'fields' => ['name']
-		]
-	];
-
+	//The change of a row of the activity log as HTML, the row with readable_type, the name of its type.
+	/** @param array<string, mixed> $adminActivity */
 	public static function renderChange(array $adminActivity): string
 	{
 		switch ($adminActivity['type'])
