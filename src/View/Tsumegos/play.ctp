@@ -325,7 +325,7 @@ use App\Utility\ViteManifest;
 				}
 			}
 			$getTitle = str_replace('&','and',$set['Set']['title']);
-			$getTitle .= ' '.$set['SetConnection']['num'];
+			$getTitle .= ' ' . $setConnection->num;
 		$tagEditorProps = json_encode([
 			'userId' => Auth::getUserID() ? (int) Auth::getUserID() : null,
 			'isAdmin' => Auth::isAdmin(),

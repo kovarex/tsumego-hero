@@ -27,6 +27,14 @@ class TsumegosControllerTest extends IntegrationTestCase
 		}
 	}
 
+	//The SGF download is named after the collection and the number of the problem in it.
+	public function testTheSgfDownloadIsNamedAfterTheCollectionAndTheProblemNumber(): void
+	{
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 666]]);
+		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$this->assertStringContainsString('jsCreateDownloadFile("test set 666")', $this->view);
+	}
+
 	public function testTheFirstProblemOfACollectionLeadsBackToTheCollectionPage(): void
 	{
 		$context = new ContextPreparator([
