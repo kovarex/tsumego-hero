@@ -3,7 +3,6 @@
 namespace App\Model\Table;
 
 use AdminActivityType;
-use App\Model\Entity\TsumegoVariant;
 use App\Utility\AdminActivityLogger;
 use Cake\ORM\TableRegistry;
 
@@ -24,7 +23,6 @@ class TsumegoVariantTable extends AppTable
 	public static function changeType(int $tsumegoID, ?int $type): void
 	{
 		$variantTable = TableRegistry::getTableLocator()->get('TsumegoVariant');
-		/** @var TsumegoVariant|null $variant */
 		$variant = $variantTable->find()->where(['tsumego_id' => $tsumegoID])->first();
 		$activityTypes = [
 			self::TYPE_MULTIPLE_CHOICE => AdminActivityType::MULTIPLE_CHOICE,

@@ -4,7 +4,6 @@ namespace App\Utility;
 
 use AchievementCondition;
 use App\Model\Entity\Achievement;
-use App\Model\Entity\AchievementStatus;
 use App\Model\Table\AchievementTable;
 use App\Model\Table\TimeModeCategoryTable;
 use App\Model\Table\TimeModeRankTable;
@@ -47,9 +46,7 @@ class AchievementChecker
 			'user_id' => Auth::getUserID(),
 		]));
 
-		/** @var Achievement $achievement */
-		$achievement = $this->fetchTable('Achievement')->get($achievementID->value);
-		$this->updated[] = $achievement;
+		$this->updated[] = $this->fetchTable('Achievement')->get($achievementID->value);
 	}
 
 	//Unlocks a repeatable achievement and records how often it was earned. Earning
@@ -63,7 +60,6 @@ class AchievementChecker
 		$this->gained($achievementID);
 
 		$achievementStatusTable = $this->fetchTable('AchievementStatus');
-		/** @var AchievementStatus|null $status */
 		$status = $achievementStatusTable->find()->where(['user_id' => Auth::getUserID(), 'achievement_id' => $achievementID->value])->first();
 		if (!$status || $status->value >= $times)
 			return;
@@ -75,7 +71,6 @@ class AchievementChecker
 	private function fillExistingStatuses(): void
 	{
 		$achievementStatuses = $this->fetchTable('AchievementStatus')->find()->where(['user_id' => Auth::getUserID()])->all();
-		/** @var AchievementStatus $achievementStatus */
 		foreach ($achievementStatuses as $achievementStatus)
 			$this->existingStatuses[$achievementStatus->achievement_id] = true;
 	}

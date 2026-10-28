@@ -1,7 +1,6 @@
 <?php
 
 use App\Model\Entity\Achievement;
-use App\Model\Entity\AchievementStatus;
 use App\Model\Table\AchievementTable;
 use App\Utility\AchievementId;
 use App\Utility\Auth;
@@ -41,14 +40,12 @@ class AchievementsController extends AppController
 		if ($viewedUser)
 		{
 			$this->set('viewedUser', $viewedUser);
-			/** @var AchievementStatus $status */
-			foreach ($this->fetchTable('AchievementStatus')->find()->where(['user_id' => $viewedUser['id']]) as $status)
+			foreach ($this->fetchTable('AchievementStatus')->find()->where(['user_id' => $viewedUser['id']])->all() as $status)
 				$statusByAchievementId[$status->achievement_id] = $status;
 		}
 
 		$achievements = [];
-		/** @var Achievement $achievement */
-		foreach ($this->fetchTable('Achievement')->find()->orderBy(['order' => 'ASC']) as $achievement)
+		foreach ($this->fetchTable('Achievement')->find()->orderBy(['order' => 'ASC'])->all() as $achievement)
 		{
 			$status = $statusByAchievementId[$achievement->id] ?? null;
 			$achievements[] = [
@@ -106,7 +103,6 @@ class AchievementsController extends AppController
 		$this->set('_page', 'user');
 		$this->set('_title', 'Tsumego Hero - Achievements');
 		$this->loadModel('User');
-		/** @var Achievement|null $achievement */
 		$achievement = $this->fetchTable('Achievement')->find()->where(['id' => (int) $id])->first();
 		if (!$achievement)
 			throw new NotFoundException('Achievement not found');

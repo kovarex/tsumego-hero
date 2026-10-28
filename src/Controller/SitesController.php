@@ -1,8 +1,6 @@
 <?php
 
-use App\Model\Entity\DayRecord;
 use App\Model\Table\AchievementStatusTable;
-use App\Model\Entity\Schedule;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\MistakeTraining;
@@ -30,13 +28,11 @@ class SitesController extends AppController
 
 		$today = date('Y-m-d');
 		$dayRecordTable = $this->fetchTable('DayRecord');
-		/** @var DayRecord|null $dayRecord */
 		$dayRecord = $dayRecordTable->find()->where(['date' => $today])->first()
 			?? $dayRecordTable->find()->where(['date' => date('Y-m-d', strtotime('yesterday'))])->first();
 
 		$currentQuote = 'q01';
 
-		/** @var Schedule|null $latestPublished */
 		$latestPublished = $this->fetchTable('Schedule')->find()
 			->where(['published' => 1, 'date <=' => date('Y-m-d')])
 			->orderByDesc('date')

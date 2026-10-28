@@ -1,9 +1,5 @@
 <?php
 
-use App\Model\Entity\Achievement;
-use App\Model\Entity\AchievementStatus;
-use App\Model\Entity\Tag;
-use App\Model\Entity\TagConnection;
 use App\Model\Table\RejectTable;
 use App\Model\Table\TimeModeCategoryTable;
 use App\Utility\AdminActivityLogger;
@@ -920,12 +916,10 @@ ORDER BY category DESC', [$user['User']['id']]));
 		$this->set('solvedPublishedCount', $progress['solved']);
 
 		$achievementById = [];
-		/** @var Achievement $achievement */
-		foreach ($this->fetchTable('Achievement')->find() as $achievement)
+		foreach ($this->fetchTable('Achievement')->find()->all() as $achievement)
 			$achievementById[$achievement->id] = $achievement;
 
 		$asList = [];
-		/** @var AchievementStatus $item */
 		foreach ($as as $item)
 		{
 			if (!isset($achievementById[$item->achievement_id]))
@@ -1518,7 +1512,6 @@ OFFSET " . $offset, [$userID, $userID]);
 		$this->Authorization->authorize('Admin');
 
 		$tagConnectionTable = $this->fetchTable('TagConnection');
-		/** @var TagConnection|null $proposalToApprove */
 		$proposalToApprove = $tagConnectionTable->find()->where(['id' => (int) $tagConnectionID])->first();
 		if (!$proposalToApprove)
 		{
@@ -1533,7 +1526,6 @@ OFFSET " . $offset, [$userID, $userID]);
 		}
 		$proposalToApprove->approved = true;
 
-		/** @var Tag $tag */
 		$tag = $this->fetchTable('Tag')->get($proposalToApprove->tag_id);
 		AdminActivityLogger::log(AdminActivityType::ACCEPT_TAG, $proposalToApprove->tsumego_id, null, null, $tag->name);
 		$tagConnectionTable->saveOrFail($proposalToApprove);
@@ -1560,7 +1552,6 @@ OFFSET " . $offset, [$userID, $userID]);
 		$this->Authorization->authorize('Admin');
 
 		$tagConnectionTable = $this->fetchTable('TagConnection');
-		/** @var TagConnection|null $proposalToReject */
 		$proposalToReject = $tagConnectionTable->find()->where(['id' => (int) $tagConnectionID])->first();
 		if (!$proposalToReject)
 		{
@@ -1581,7 +1572,6 @@ OFFSET " . $offset, [$userID, $userID]);
 			return $this->redirect('/admin/tag-proposals');
 		}
 
-		/** @var Tag $tag */
 		$tag = $this->fetchTable('Tag')->get($proposalToReject->tag_id);
 
 		AdminActivityLogger::log(AdminActivityType::REJECT_TAG, $proposalToReject->tsumego_id, null, $tag->name, null);

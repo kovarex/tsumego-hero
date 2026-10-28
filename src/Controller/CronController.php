@@ -1,8 +1,6 @@
 <?php
 
 use App\Attribute\HttpGet;
-use App\Model\Entity\Achievement;
-use App\Model\Entity\DayRecord;
 use App\Utility\SchedulePublisher;
 use App\Utility\Trash;
 use App\Utility\Util;
@@ -120,7 +118,6 @@ WHERE
 		$lastDayRecords = TableRegistry::getTableLocator()->get('DayRecord')->find()->orderByDesc('date')->limit(7)->all();
 
 		$excludedUsers = [];
-		/** @var DayRecord $lastDayRecord */
 		foreach ($lastDayRecords as $lastDayRecord)
 			$excludedUsers[$lastDayRecord->user_id] = true;
 
@@ -135,7 +132,6 @@ WHERE
 	{
 		$latestDayRecords = TableRegistry::getTableLocator()->get('DayRecord')->find()->where(['date' => date('Y-m-d', strtotime('-10 days'))])->all();
 		$usedQuotes = [];
-		/** @var DayRecord $latestDayRecord */
 		foreach ($latestDayRecords as $latestDayRecord)
 			$usedQuotes[$latestDayRecord->quote] = true;
 
@@ -164,7 +160,6 @@ WHERE
 		$gemRand3 = rand(0, 2);
 
 		$achievementTable = $this->fetchTable('Achievement');
-		/** @var Achievement $arch1 */
 		$arch1 = $achievementTable->get(111);
 		if ($gemRand1 == 0)
 			$arch1->description = 'Has a chance to trigger once a day on an easy ddk problem.';
@@ -173,7 +168,6 @@ WHERE
 		elseif ($gemRand1 == 2)
 			$arch1->description = 'Has a chance to trigger once a day on a difficult ddk problem.';
 		$achievementTable->saveOrFail($arch1);
-		/** @var Achievement $arch2 */
 		$arch2 = $achievementTable->get(112);
 		if ($gemRand2 == 0)
 			$arch2->description = 'Has a chance to trigger once a day on an easy sdk problem.';
@@ -182,7 +176,6 @@ WHERE
 		elseif ($gemRand2 == 2)
 			$arch2->description = 'Has a chance to trigger once a day on a difficult sdk problem.';
 		$achievementTable->saveOrFail($arch2);
-		/** @var Achievement $arch3 */
 		$arch3 = $achievementTable->get(113);
 		if ($gemRand3 == 0)
 			$arch3->description = 'Has a chance to trigger once a day on an easy dan problem.';

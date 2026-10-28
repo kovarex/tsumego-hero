@@ -3,8 +3,6 @@
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Lib\Error\UnprocessableEntityException;
-use App\Model\Entity\TsumegoComment;
-use App\Model\Entity\TsumegoIssue;
 use App\Model\Table\TsumegoIssueTable;
 //Controller for managing tsumego issues.
 //Issues are reports about problems with tsumego solutions (missing moves, wrong answers, etc.).
@@ -89,7 +87,6 @@ class TsumegoIssuesController extends AppController
 		$tsumegoCommentTable = $this->fetchTable('TsumegoComment');
 
 		// Create the issue
-		/** @var TsumegoIssue $issue */
 		$issue = $tsumegoIssueTable->saveOrFail($tsumegoIssueTable->newEntity([
 			'tsumego_id' => $tsumegoId,
 			'user_id' => Auth::getUserID(),
@@ -98,7 +95,6 @@ class TsumegoIssuesController extends AppController
 		$issueId = $issue->id;
 
 		// Create the first comment attached to this issue
-		/** @var TsumegoComment $comment */
 		$comment = $tsumegoCommentTable->newEntity([
 			'tsumego_id' => $tsumegoId,
 			'tsumego_issue_id' => $issueId,
@@ -152,7 +148,6 @@ class TsumegoIssuesController extends AppController
 	public function close(string $id)
 	{
 		$tsumegoIssueTable = $this->fetchTable('TsumegoIssue');
-		/** @var TsumegoIssue|null $issue */
 		$issue = $tsumegoIssueTable->find()->where(['id' => (int) $id])->first();
 
 		if (!$issue)
@@ -192,7 +187,6 @@ class TsumegoIssuesController extends AppController
 	public function reopen(string $id)
 	{
 		$tsumegoIssueTable = $this->fetchTable('TsumegoIssue');
-		/** @var TsumegoIssue|null $issue */
 		$issue = $tsumegoIssueTable->find()->where(['id' => (int) $id])->first();
 
 		if (!$issue)
@@ -220,7 +214,6 @@ class TsumegoIssuesController extends AppController
 		$this->Authorization->authorize('TsumegoIssue', 'moveComment');
 
 		$tsumegoCommentTable = $this->fetchTable('TsumegoComment');
-		/** @var TsumegoComment|null $comment */
 		$comment = $tsumegoCommentTable->find()->where(['id' => (int) $commentId])->first();
 
 		if (!$comment)
@@ -258,7 +251,6 @@ class TsumegoIssuesController extends AppController
 			$tsumegoIssueTable = $this->fetchTable('TsumegoIssue');
 			$User = ClassRegistry::init('User');
 
-			/** @var TsumegoIssue $issue */
 			$issue = $tsumegoIssueTable->saveOrFail($tsumegoIssueTable->newEntity([
 				'tsumego_id' => $comment->tsumego_id,
 				'user_id' => $comment->user_id, // Original comment author becomes issue author

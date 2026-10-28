@@ -70,7 +70,6 @@ class MessageTable extends AppTable
 
 		$text = self::normalizeText($text);
 		$messageTable = TableRegistry::getTableLocator()->get('Message');
-		/** @var Message $message */
 		$message = $messageTable->saveOrFail($messageTable->newEntity([
 			'sender_user_id' => $senderUserId,
 			'recipient_user_id' => $recipientUserId,
