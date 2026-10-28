@@ -27,7 +27,6 @@ namespace App\Utility;
  * @phpstan-type RejectTypeRow array{id?: int, name?: string, ...}
  * @phpstan-type SetConnectionRow array{id?: int, set_id?: int, tsumego_id?: int, num?: int, created?: string, ...}
  * @phpstan-type SetRow array{id?: int, user_id?: int|null, title?: string|null, title2?: string|null, description?: string|null, image?: string|null, order?: int|null, public?: int, color?: string|null, created?: string|null, included_in_time_mode?: int, board_theme_index?: int|null, deleted?: string|null, ...}
- * @phpstan-type SgfRow array{id?: int, sgf?: string|null, user_id?: int|null, accepted_by_user_id?: int|null, tsumego_id?: int, sgf_status_id?: int, created?: string|null, accepted?: string|null, first_move_color?: string|null, correct_moves?: string|null, source_sgf_id?: int|null, transformation_from_source?: string|null, description?: string|null, ...}
  * @phpstan-type SgfStatusRow array{id?: int, name?: string, ...}
  * @phpstan-type ThemeRow array{id?: int, name?: string, ...}
  * @phpstan-type TimeModeAttemptStatusRow array{id?: int, name?: string, ...}

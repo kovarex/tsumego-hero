@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SgfTable;
 use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\AdminOverviewTypeTable;
 use App\Model\Table\TsumegoIssueTable;
@@ -39,10 +40,10 @@ class AdminControllerTest extends IntegrationTestCase
 			'tsumego' => [
 				'set_order' => 1,
 				'sgfs' => [
-					['data' => self::SGF, 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
-					['data' => self::SGF, 'sgf_status_id' => Sgf::STATUS_PROPOSED],
-					['data' => self::SGF, 'sgf_status_id' => Sgf::STATUS_PROPOSED],
-					['data' => self::SGF, 'sgf_status_id' => Sgf::STATUS_REJECTED]],
+					['data' => self::SGF, 'sgf_status_id' => SgfTable::STATUS_ACCEPTED],
+					['data' => self::SGF, 'sgf_status_id' => SgfTable::STATUS_PROPOSED],
+					['data' => self::SGF, 'sgf_status_id' => SgfTable::STATUS_PROPOSED],
+					['data' => self::SGF, 'sgf_status_id' => SgfTable::STATUS_REJECTED]],
 				'tags' => [['name' => 'snapback', 'approved' => 0], ['name' => 'ko', 'approved' => 1]],
 				'issues' => [['message' => 'The ko is not solved'], ['message' => 'Solved already', 'status' => TsumegoIssueTable::CLOSED_STATUS]]],
 			'tags' => [['name' => 'two-step ko', 'approved' => 0], ['name' => 'ladder breaker', 'approved' => 0]]]);
@@ -62,9 +63,9 @@ class AdminControllerTest extends IntegrationTestCase
 			'tsumego' => [
 				'sets' => [['name' => 'Set without subtitle', 'num' => 7]],
 				'sgfs' => [
-					['data' => self::SGF, 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
-					['data' => self::SGF, 'sgf_status_id' => Sgf::STATUS_PROPOSED],
-					['data' => self::SGF, 'sgf_status_id' => Sgf::STATUS_REJECTED]],
+					['data' => self::SGF, 'sgf_status_id' => SgfTable::STATUS_ACCEPTED],
+					['data' => self::SGF, 'sgf_status_id' => SgfTable::STATUS_PROPOSED],
+					['data' => self::SGF, 'sgf_status_id' => SgfTable::STATUS_REJECTED]],
 				'tags' => [['name' => 'snapback', 'approved' => 0]]]]);
 		Util::execute('INSERT INTO admin_activity (user_id, type, tsumego_id, old_value, new_value) VALUES (?, ?, ?, ?, ?)',
 			[$context->user['id'], AdminActivityTypeTable::DESCRIPTION_EDIT, $context->tsumegos[0]['id'], 'Old desc', 'New desc']);
@@ -117,12 +118,12 @@ class AdminControllerTest extends IntegrationTestCase
 			'tsumego' => [
 				'set_order' => 1,
 				'sgfs' => [
-					['data' => self::SGF, 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
-					['data' => self::SGF, 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
-					['data' => self::SGF, 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
-					['data' => self::SGF, 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
-					['data' => self::SGF, 'sgf_status_id' => Sgf::STATUS_PROPOSED],
-					['data' => self::SGF, 'sgf_status_id' => Sgf::STATUS_REJECTED]]]]);
+					['data' => self::SGF, 'sgf_status_id' => SgfTable::STATUS_ACCEPTED],
+					['data' => self::SGF, 'sgf_status_id' => SgfTable::STATUS_ACCEPTED],
+					['data' => self::SGF, 'sgf_status_id' => SgfTable::STATUS_ACCEPTED],
+					['data' => self::SGF, 'sgf_status_id' => SgfTable::STATUS_ACCEPTED],
+					['data' => self::SGF, 'sgf_status_id' => SgfTable::STATUS_PROPOSED],
+					['data' => self::SGF, 'sgf_status_id' => SgfTable::STATUS_REJECTED]]]]);
 		[$oldChange, , $change, $acceptedByMe, $proposal, $rejected] = array_column($context->tsumegos[0]['sgfs'], 'id');
 		[$colleagueID, $proposerID] = array_map('intval', array_column($context->otherUsers, 'id'));
 

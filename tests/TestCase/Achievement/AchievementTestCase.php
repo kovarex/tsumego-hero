@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SgfTable;
 /**
  * Base class for all achievement tests.
  *
@@ -116,8 +117,7 @@ abstract class AchievementTestCase extends IntegrationTestCase
 			$SetConnection->create();
 			$SetConnection->save(['set_id' => $setId, 'tsumego_id' => $tsumegoId, 'num' => $i + 1]);
 
-			ClassRegistry::init('Sgf')->create();
-			ClassRegistry::init('Sgf')->save(['tsumego_id' => $tsumegoId, 'sgf' => '(;GM[1]FF[4]SZ[19])', 'user_id' => Auth::getUserID(), 'sgf_status_id' => Sgf::STATUS_ACCEPTED]);
+			$this->fetchTable('Sgf')->saveOrFail($this->fetchTable('Sgf')->newEntity(['tsumego_id' => $tsumegoId, 'sgf' => '(;GM[1]FF[4]SZ[19])', 'user_id' => Auth::getUserID(), 'sgf_status_id' => SgfTable::STATUS_ACCEPTED]));
 
 			$this->fetchTable('TsumegoStatus')->saveOrFail($this->fetchTable('TsumegoStatus')->newEntity(['tsumego_id' => $tsumegoId, 'status' => 'S', 'user_id' => Auth::getUserID()]));
 		}

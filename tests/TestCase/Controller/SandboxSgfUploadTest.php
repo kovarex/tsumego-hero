@@ -41,11 +41,9 @@ class SandboxSgfUploadTest extends IntegrationTestCase
 		$this->assertEquals(1, $setConnection['SetConnection']['num']);
 
 		// Verify SGF was uploaded
-		$sgf = ClassRegistry::init('Sgf')->find('first', [
-			'conditions' => ['tsumego_id' => $tsumego['Tsumego']['id']],
-			'order' => 'id DESC']);
+		$sgf = $this->fetchTable('Sgf')->find()->where(['tsumego_id' => $tsumego['Tsumego']['id']])->orderByDesc('id')->first();
 		$this->assertNotEmpty($sgf, 'SGF should be uploaded when file is provided');
-		$this->assertEquals($sgfContent, $sgf['Sgf']['sgf']);
+		$this->assertEquals($sgfContent, $sgf->sgf);
 
 		unlink($tmpFile);
 	}
@@ -69,10 +67,8 @@ class SandboxSgfUploadTest extends IntegrationTestCase
 		$this->assertNotEmpty($tsumego, 'Tsumego should be created');
 
 		// Verify SGF was uploaded
-		$sgf = ClassRegistry::init('Sgf')->find('first', [
-			'conditions' => ['tsumego_id' => $tsumego['Tsumego']['id']],
-			'order' => 'id DESC']);
+		$sgf = $this->fetchTable('Sgf')->find()->where(['tsumego_id' => $tsumego['Tsumego']['id']])->orderByDesc('id')->first();
 		$this->assertNotEmpty($sgf, 'SGF should be uploaded when SGF text is provided');
-		$this->assertEquals($sgfContent, $sgf['Sgf']['sgf']);
+		$this->assertEquals($sgfContent, $sgf->sgf);
 	}
 }

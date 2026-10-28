@@ -11,14 +11,14 @@ class SgfController extends AppController
 	#[HttpGet]
 	public function fetch(int $sgfID)
 	{
-		$sgf = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['id' => $sgfID], 'order' => 'id DESC']);
+		$sgf = $this->fetchTable('Sgf')->find()->where(['id' => $sgfID])->first();
 		if (!$sgf)
 			throw new NotFoundException('Sgf not found.');
 
 		$this->Authorization->authorize($sgf, 'fetch');
 
 		$this->response->statusCode(200);
-		$this->response->body($sgf['Sgf']['sgf']);
+		$this->response->body($sgf->sgf);
 		return $this->response;
 	}
 
@@ -28,17 +28,17 @@ class SgfController extends AppController
 	#[HttpGet]
 	public function info(int $sgfID)
 	{
-		$sgf = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['id' => $sgfID]]);
+		$sgf = $this->fetchTable('Sgf')->find()->select(['id', 'tsumego_id', 'user_id', 'description'])->where(['id' => $sgfID])->first();
 		if (!$sgf)
 			throw new NotFoundException('Sgf not found.');
 
 		$this->Authorization->authorize($sgf, 'fetch');
 
-		$author = $sgf['Sgf']['user_id'] ? ClassRegistry::init('User')->findById($sgf['Sgf']['user_id']) : null;
+		$author = $sgf->user_id ? ClassRegistry::init('User')->findById($sgf->user_id) : null;
 		$this->autoRender = false;
 		$this->response->type('json');
 		$this->response->body(json_encode([
-			'description' => $sgf['Sgf']['description'],
+			'description' => $sgf->description,
 			'authorLink' => User::renderLink($author ? $author['User'] : null)]));
 		return $this->response;
 	}

@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SgfTable;
 use App\Model\Entity\Tag;
 use App\Model\Table\RejectTable;
 use App\Model\Table\TagTable;
@@ -109,7 +110,7 @@ class TagsController extends AppController
 				. 'WHERE tc.user_id = ? '
 				. 'UNION ALL '
 				// Proposals (SGF uploads)
-				. 'SELECT \'proposal\', IF(sg.sgf_status_id = ' . Sgf::STATUS_ACCEPTED . ', \'accepted\', \'pending\'), sg.created, \'\', \'\', sg.tsumego_id, CONCAT(s.title, \' - \', sc.num), sg.id '
+				. 'SELECT \'proposal\', IF(sg.sgf_status_id = ' . SgfTable::STATUS_ACCEPTED . ', \'accepted\', \'pending\'), sg.created, \'\', \'\', sg.tsumego_id, CONCAT(s.title, \' - \', sc.num), sg.id '
 				. 'FROM sgf sg '
 				. 'JOIN set_connection sc ON sc.id = ('
 					. 'SELECT sc2.id FROM set_connection sc2 '
@@ -118,7 +119,7 @@ class TagsController extends AppController
 					. 'ORDER BY ' . SetConnection::displayOrderSql('s2', 'sc2') . ' LIMIT 1) '
 				. 'JOIN `set` s ON s.id = sc.set_id '
 				// the rejected ones come from their reject rows below
-				. 'WHERE sg.user_id = ? AND sg.sgf_status_id != ' . Sgf::STATUS_REJECTED . ' '
+				. 'WHERE sg.user_id = ? AND sg.sgf_status_id != ' . SgfTable::STATUS_REJECTED . ' '
 				. 'UNION ALL '
 				// Rejected items, reject_type names them like the rows above; a rejected new tag has no problem
 				. 'SELECT rt.name, \'rejected\', r.created, COALESCE(t.id, \'\'), COALESCE(t.name, r.tag_name, \'\'), COALESCE(r.tsumego_id, \'\'), '

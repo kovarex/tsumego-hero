@@ -3,7 +3,6 @@
 namespace App\Model\Table;
 
 use App\Utility\Util;
-use Sgf;
 
 //An overview of the admin area (see AdminController) whose link counts what is new since the admin last
 //saw it. When that was is a row of admin_overview_seen for each admin and overview. An admin who never
@@ -40,6 +39,6 @@ WHERE admin_overview_seen.user_id = ? AND admin_overview_seen.admin_overview_typ
 		return (int) Util::query('SELECT COUNT(*) AS total
 FROM admin_overview_seen
 JOIN sgf ON sgf.sgf_status_id = ? AND sgf.accepted > admin_overview_seen.seen AND NOT (sgf.accepted_by_user_id <=> admin_overview_seen.user_id)
-WHERE admin_overview_seen.user_id = ? AND admin_overview_seen.admin_overview_type_id = ?', [Sgf::STATUS_ACCEPTED, $userID, self::SGF_CHANGES])[0]['total'];
+WHERE admin_overview_seen.user_id = ? AND admin_overview_seen.admin_overview_type_id = ?', [SgfTable::STATUS_ACCEPTED, $userID, self::SGF_CHANGES])[0]['total'];
 	}
 }

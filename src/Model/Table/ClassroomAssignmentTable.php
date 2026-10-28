@@ -10,7 +10,6 @@ use App\Utility\TsumegoUtil;
 use App\Utility\Util;
 use Set;
 use SetConnection;
-use Sgf;
 use Throwable;
 use User;
 
@@ -153,7 +152,7 @@ class ClassroomAssignmentTable extends AppTable
 
 	private static function previewJoin(): string
 	{
-		return 'LEFT JOIN sgf ON sgf.id = ' . Sgf::currentVersionIDSql('sc.tsumego_id');
+		return 'LEFT JOIN sgf ON sgf.id = ' . SgfTable::currentVersionIDSql('sc.tsumego_id');
 	}
 
 	//A problem as the problem buttons show it: its number in its collection and the stones of the

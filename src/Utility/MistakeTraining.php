@@ -2,11 +2,11 @@
 
 namespace App\Utility;
 
+use App\Model\Table\SgfTable;
 use App\Model\Table\TsumegoStatusTable;
 use Cake\ORM\TableRegistry;
 use DateTime;
 use SetConnection;
-use Sgf;
 
 //Mistake training: spaced repetition for tsumegos you did not solve on the first attempt.
 //The pool (mistake_training_pool) is the single source of truth: one row per
@@ -991,7 +991,7 @@ class MistakeTraining
 				JOIN set_connection sc ON sc.tsumego_id = p.tsumego_id
 				JOIN `set` st ON st.id = sc.set_id AND " . SetConnection::playableSql('st') . "
 				JOIN tsumego t ON t.id = p.tsumego_id
-				LEFT JOIN sgf ON sgf.id = " . Sgf::currentVersionIDSql('p.tsumego_id') . "
+				LEFT JOIN sgf ON sgf.id = " . SgfTable::currentVersionIDSql('p.tsumego_id') . "
 				WHERE p.user_id = ?
 				  AND t.deleted IS NULL
 				  AND " . self::todaysTrainingSql() . "

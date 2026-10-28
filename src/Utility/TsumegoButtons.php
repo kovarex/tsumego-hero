@@ -2,9 +2,9 @@
 
 namespace App\Utility;
 
+use App\Model\Table\SgfTable;
 use ArrayObject;
 use Set;
-use Sgf;
 
 class TsumegoButtons extends ArrayObject
 {
@@ -139,7 +139,7 @@ class TsumegoButtons extends ArrayObject
 	{
 		$rows = Util::query('SELECT sgf.tsumego_id, sgf.preview FROM sgf'
 			. ' JOIN (SELECT MAX(id) AS id FROM sgf WHERE tsumego_id IN (' . implode(',', array_map('intval', array_unique($tsumegoIDs))) . ')'
-			. ' AND sgf_status_id = ' . Sgf::STATUS_ACCEPTED . ' GROUP BY tsumego_id) current_sgf ON current_sgf.id = sgf.id');
+			. ' AND sgf_status_id = ' . SgfTable::STATUS_ACCEPTED . ' GROUP BY tsumego_id) current_sgf ON current_sgf.id = sgf.id');
 		$result = [];
 		foreach ($rows as $row)
 			$result[(int) $row['tsumego_id']] = (string) $row['preview'];

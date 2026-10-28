@@ -2,12 +2,13 @@
 
 namespace App\Utility;
 
+use App\Model\Entity\Sgf;
+use App\Model\Table\SgfTable;
 use App\Model\Table\TsumegoStatusTable;
 use App\Model\Table\AdminActivityTypeTable;
 use Cake\ORM\TableRegistry;
 use ClassRegistry;
 use Exception;
-use Sgf;
 
 class TsumegoMerger
 {
@@ -148,6 +149,16 @@ HAVING
 			[':master_tsumego_id' => $this->masterTsumegoID, ':slave_tsumego_id' => $this->slaveTsumegoID]);
 	}
 
+	//The current version of the problem, the latest accepted one.
+	private static function currentSgf(int $tsumegoID): ?Sgf
+	{
+		return TableRegistry::getTableLocator()->get('Sgf')->find()
+			->select(['sgf', 'correct_moves', 'first_move_color'])
+			->where(['tsumego_id' => $tsumegoID, 'sgf_status_id' => SgfTable::STATUS_ACCEPTED])
+			->orderByDesc('id')
+			->first();
+	}
+
 	public function execute(): array
 	{
 		if ($result = $this->checkInput())
@@ -156,20 +167,16 @@ HAVING
 		$db = ClassRegistry::init('Tsumego')->getDataSource();
 		try
 		{
-			$masterSgf = ClassRegistry::init('Sgf')->find('first', [
-				'conditions' => ['tsumego_id' => $this->masterTsumegoID, 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
-				'order' => 'id DESC'])['Sgf'];
-			$slaveSgf = ClassRegistry::init('Sgf')->find('first', [
-				'conditions' => ['tsumego_id' => $this->slaveTsumegoID, 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
-				'order' => 'id DESC'])['Sgf'];
+			$masterSgf = self::currentSgf($this->masterTsumegoID);
+			$slaveSgf = self::currentSgf($this->slaveTsumegoID);
 			$oldData = [
 				'tsumego_old' => $this->slaveTsumegoID,
-				'master_sgf' => $masterSgf['sgf'],
-				'master_correct_moves' => $masterSgf['correct_moves'],
-				'master_first_move_color' => $masterSgf['first_move_color'],
-				'slave_sgf' => $slaveSgf['sgf'],
-				'slave_correct_moves' => $slaveSgf['correct_moves'],
-				'slave_first_move_color' => $slaveSgf['first_move_color']];
+				'master_sgf' => $masterSgf?->sgf,
+				'master_correct_moves' => $masterSgf?->correct_moves,
+				'master_first_move_color' => $masterSgf?->first_move_color,
+				'slave_sgf' => $slaveSgf?->sgf,
+				'slave_correct_moves' => $slaveSgf?->correct_moves,
+				'slave_first_move_color' => $slaveSgf?->first_move_color];
 
 			$db->begin();
 			$this->mergeSlaveSetConnections();

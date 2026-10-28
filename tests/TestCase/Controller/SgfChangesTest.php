@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SgfTable;
 use App\Model\Table\SgfReviewTable;
 use App\Utility\TsumegoButton;
 use App\Utility\Util;
@@ -21,7 +22,7 @@ class SgfChangesTest extends IntegrationTestCase
 				'sets' => [['name' => 'Reviewed set', 'num' => 3]],
 				'sgfs' => $sgfs ?: array_fill(0, $changeCount, ['data' => self::SGF])]]);
 		Util::execute('UPDATE sgf SET user_id = ?', [$this->authorID($context)]);
-		Util::execute('UPDATE sgf SET accepted_by_user_id = ? WHERE sgf_status_id = ?', [$this->authorID($context), Sgf::STATUS_ACCEPTED]);
+		Util::execute('UPDATE sgf SET accepted_by_user_id = ? WHERE sgf_status_id = ?', [$this->authorID($context), SgfTable::STATUS_ACCEPTED]);
 		return $context;
 	}
 
@@ -149,7 +150,7 @@ class SgfChangesTest extends IntegrationTestCase
 
 	public function testAProposalIsNotReviewed(): void
 	{
-		$context = $this->prepare(sgfs: [['data' => self::SGF], ['data' => self::SGF, 'sgf_status_id' => Sgf::STATUS_PROPOSED]]);
+		$context = $this->prepare(sgfs: [['data' => self::SGF], ['data' => self::SGF, 'sgf_status_id' => SgfTable::STATUS_PROPOSED]]);
 		[, $proposal] = self::sgfIDs($context);
 
 		$this->post('/admin/sgf-changes/review/' . $proposal, ['reviewed' => 1]);
@@ -164,8 +165,8 @@ class SgfChangesTest extends IntegrationTestCase
 			['data' => self::SGF],
 			['data' => self::SGF],
 			['data' => self::SGF],
-			['data' => self::SGF, 'sgf_status_id' => Sgf::STATUS_PROPOSED],
-			['data' => self::SGF, 'sgf_status_id' => Sgf::STATUS_REJECTED]]);
+			['data' => self::SGF, 'sgf_status_id' => SgfTable::STATUS_PROPOSED],
+			['data' => self::SGF, 'sgf_status_id' => SgfTable::STATUS_REJECTED]]);
 		[$reviewed, $own, $reviewedByColleague, $acceptedProposal, $proposal, $rejected] = self::sgfIDs($context);
 		Util::execute('UPDATE sgf SET user_id = ?, accepted_by_user_id = ? WHERE id = ?', [$context->user['id'], $context->user['id'], $own]);
 		Util::execute('UPDATE sgf SET user_id = ?, accepted_by_user_id = ? WHERE id = ?', [$this->proposerID($context), $this->colleagueID($context), $acceptedProposal]);
@@ -219,7 +220,7 @@ class SgfChangesTest extends IntegrationTestCase
 		$context = $this->prepare(1);
 		$tsumegoID = $context->tsumegos[0]['id'];
 		for ($i = 0; $i < 100; $i++)
-			Util::execute('INSERT INTO sgf (sgf, preview, user_id, accepted_by_user_id, accepted, tsumego_id, sgf_status_id) VALUES (?, ?, ?, ?, NOW(), ?, ?)', [self::SGF, TsumegoButton::sgfToPreviewJson(self::SGF), $this->authorID($context), $this->authorID($context), $tsumegoID, Sgf::STATUS_ACCEPTED]);
+			Util::execute('INSERT INTO sgf (sgf, preview, user_id, accepted_by_user_id, accepted, tsumego_id, sgf_status_id) VALUES (?, ?, ?, ?, NOW(), ?, ?)', [self::SGF, TsumegoButton::sgfToPreviewJson(self::SGF), $this->authorID($context), $this->authorID($context), $tsumegoID, SgfTable::STATUS_ACCEPTED]);
 		[$oldest] = self::sgfIDs($context);
 		$newest = (int) Util::query('SELECT MAX(id) AS id FROM sgf')[0]['id'];
 
@@ -238,16 +239,16 @@ class SgfChangesTest extends IntegrationTestCase
 	//A proposal accepted today is a change of today, however long it waited for the decision.
 	public function testAnAcceptedProposalIsListedWhenItWasAccepted(): void
 	{
-		$context = $this->prepare(sgfs: [['data' => self::SGF], ['data' => self::SGF, 'sgf_status_id' => Sgf::STATUS_PROPOSED], ['data' => self::SGF]]);
+		$context = $this->prepare(sgfs: [['data' => self::SGF], ['data' => self::SGF, 'sgf_status_id' => SgfTable::STATUS_PROPOSED], ['data' => self::SGF]]);
 		[$first, $proposal, $change] = self::sgfIDs($context);
 		Util::execute('UPDATE sgf SET user_id = ?, created = NOW() - INTERVAL 3 DAY WHERE id = ?', [$this->proposerID($context), $proposal]);
 		Util::execute('UPDATE sgf SET accepted = NOW() - INTERVAL 1 DAY WHERE id IN (?, ?)', [$first, $change]);
 
 		$this->post('/users/acceptSGFProposal/' . $proposal);
-		$accepted = ClassRegistry::init('Sgf')->findById($proposal)['Sgf'];
-		$this->assertEquals(Sgf::STATUS_ACCEPTED, $accepted['sgf_status_id']);
-		$this->assertEquals($context->user['id'], $accepted['accepted_by_user_id']);
-		$this->assertEqualsWithDelta(time(), strtotime($accepted['accepted']), 60);
+		$accepted = $this->fetchTable('Sgf')->get($proposal);
+		$this->assertEquals(SgfTable::STATUS_ACCEPTED, $accepted->sgf_status_id);
+		$this->assertEquals($context->user['id'], $accepted->accepted_by_user_id);
+		$this->assertEqualsWithDelta(time(), $accepted->accepted->getTimestamp(), 60);
 
 		$this->get('/admin/sgf-changes?show=all');
 		$this->assertMatchesRegularExpression('~id="review-' . $proposal . '".*id="review-' . $change . '".*id="review-' . $first . '"~s', $this->view);
@@ -263,19 +264,19 @@ class SgfChangesTest extends IntegrationTestCase
 		$tsumegoID = (int) $context->tsumegos[0]['id'];
 
 		$this->post('/tsumegos/setupNewSgfStep2', ['sgf' => self::SGF, 'firstMoveColor' => 'B', 'correctMoves' => 'aa', 'setConnectionID' => $context->setConnections[0]['id']]);
-		$saved = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['tsumego_id' => $tsumegoID], 'order' => 'id DESC'])['Sgf'];
-		$this->assertEquals(Sgf::STATUS_ACCEPTED, $saved['sgf_status_id']);
-		$this->assertEquals($context->user['id'], $saved['accepted_by_user_id']);
-		$this->assertEqualsWithDelta(time(), strtotime($saved['accepted']), 60);
+		$saved = $this->fetchTable('Sgf')->find()->where(['tsumego_id' => $tsumegoID])->orderByDesc('id')->first();
+		$this->assertEquals(SgfTable::STATUS_ACCEPTED, $saved->sgf_status_id);
+		$this->assertEquals($context->user['id'], $saved->accepted_by_user_id);
+		$this->assertEqualsWithDelta(time(), $saved->accepted->getTimestamp(), 60);
 
-		$uploaded = ClassRegistry::init('Sgf')->uploadSgf(self::SGF, $tsumegoID, $this->colleagueID($context), true)['Sgf'];
-		$this->assertEquals($this->colleagueID($context), $uploaded['accepted_by_user_id']);
-		$this->assertNotNull($uploaded['accepted']);
+		$uploaded = SgfTable::upload(self::SGF, $tsumegoID, $this->colleagueID($context), true);
+		$this->assertEquals($this->colleagueID($context), $uploaded->accepted_by_user_id);
+		$this->assertNotNull($uploaded->accepted);
 
-		$proposed = ClassRegistry::init('Sgf')->uploadSgf(self::SGF, $tsumegoID, $this->proposerID($context), false)['Sgf'];
-		$this->assertEquals(Sgf::STATUS_PROPOSED, $proposed['sgf_status_id']);
-		$this->assertNull($proposed['accepted_by_user_id']);
-		$this->assertNull($proposed['accepted']);
+		$proposed = SgfTable::upload(self::SGF, $tsumegoID, $this->proposerID($context), false);
+		$this->assertEquals(SgfTable::STATUS_PROPOSED, $proposed->sgf_status_id);
+		$this->assertNull($proposed->accepted_by_user_id);
+		$this->assertNull($proposed->accepted);
 	}
 
 	//An admin who saved a version made the change and accepted it, there is no other author.

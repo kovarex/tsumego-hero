@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SgfTable;
 use App\Model\Entity\Tag;
 use App\Model\Entity\TimeModeSession;
 use App\Model\Entity\TsumegoStatus;
@@ -328,13 +329,12 @@ class ContextPreparator
 			$tsumegoSgf = ['data' => $tsumegoSgf];
 
 		$sgf = [];
-		ClassRegistry::init('Sgf')->create($sgf);
 		$sgf['tsumego_id'] = $tsumego['id'];
 		$sgf['sgf'] = Util::extract('data', $tsumegoSgf);
 		$this->validateFixtureSgf($sgf['sgf'], $tsumego['id']);
-		$sgf['sgf_status_id'] = Util::extractWithDefault('sgf_status_id', $tsumegoSgf, Sgf::STATUS_ACCEPTED);
+		$sgf['sgf_status_id'] = Util::extractWithDefault('sgf_status_id', $tsumegoSgf, SgfTable::STATUS_ACCEPTED);
 		// an accepted version is the change of the user, unless it says who accepted it
-		if ($sgf['sgf_status_id'] === Sgf::STATUS_ACCEPTED)
+		if ($sgf['sgf_status_id'] === SgfTable::STATUS_ACCEPTED)
 		{
 			$sgf['accepted_by_user_id'] = Util::extractWithDefault('accepted_by_user_id', $tsumegoSgf, Auth::getUserID());
 			$sgf['accepted'] = date('Y-m-d H:i:s');
@@ -342,11 +342,8 @@ class ContextPreparator
 		$sgf['correct_moves'] = Util::extract('correct_moves', $tsumegoSgf);
 		$sgf['first_move_color'] = Util::extract('first_move_color', $tsumegoSgf);
 		$sgf['user_id'] = Auth::getUserID();
-		$sgfModel = ClassRegistry::init('Sgf');
-		$sgfModel->save($sgf);
-		$savedSgf = $sgfModel->data['Sgf'];
-		$savedSgf['id'] = $sgfModel->id;
-		$tsumego['sgfs'][] = $savedSgf;
+		$sgfTable = TableRegistry::getTableLocator()->get('Sgf');
+		$tsumego['sgfs'][] = $sgfTable->saveOrFail($sgfTable->newEntity($sgf))->toArray();
 		$this->checkOptionsConsumed($tsumegoSgf);
 	}
 

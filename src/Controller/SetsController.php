@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SgfTable;
 use App\Lib\Error\ConflictException;
 use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\AdminActivityTypeTable;
@@ -694,7 +695,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 			$sgfDataOrFile = $this->request->data['sgf'] ?? $fileUpload;
 
 			if ($sgfDataOrFile)
-				ClassRegistry::init('Sgf')->uploadSgf($sgfDataOrFile, $tsumego['id'], Auth::getUserID(), Auth::isAdmin());
+				SgfTable::upload($sgfDataOrFile, (int) $tsumego['id'], Auth::getUserID(), Auth::isAdmin());
 			$tsumegoModel->getDataSource()->commit();
 			AdminActivityLogger::log(AdminActivityTypeTable::PROBLEM_ADD, $tsumegoModel->id, $setID);
 		}
@@ -829,7 +830,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 		}
 
 		$this->loadModel('Tsumego');
-		$this->loadModel('Sgf');
 		$this->loadModel('SetConnection');
 		$this->loadModel('User');
 

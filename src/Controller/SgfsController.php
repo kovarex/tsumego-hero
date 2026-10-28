@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SgfTable;
 use App\Attribute\HttpGet;
 use App\Utility\Auth;
 
@@ -21,9 +22,10 @@ class SgfsController extends AppController
 
 		if (isset($this->params['url']['delete']))
 		{
-			$sDel = $this->Sgf->findById($this->params['url']['delete']);
-			if ($sDel && Auth::getUserID() == $sDel['Sgf']['user_id'])
-				$this->Sgf->delete($sDel['Sgf']['id']);
+			$sgfTable = $this->fetchTable('Sgf');
+			$sDel = $sgfTable->find()->select(['id', 'user_id'])->where(['id' => $this->params['url']['delete']])->first();
+			if ($sDel && Auth::getUserID() == $sDel->user_id)
+				$sgfTable->deleteOrFail($sDel);
 		}
 
 		if (isset($this->params['url']['duplicates']))
@@ -61,24 +63,11 @@ class SgfsController extends AppController
 
 		if (isset($this->params['url']['user']))
 		{
-			$s = $this->Sgf->find('all', [
-				'order' => 'id DESC',
-				'limit' => 100,
-				'conditions' => ['user_id' => $this->params['url']['user'], 'sgf_status_id !=' => Sgf::STATUS_REJECTED],
-			]);
-			if (!$s)
-				$s = [];
+			$s = $this->versions(['user_id' => $this->params['url']['user'], 'sgf_status_id !=' => SgfTable::STATUS_REJECTED]);
 			$type = 'user';
 		}
 		else
-		{
-			$s = $this->Sgf->find('all', [
-				'order' => 'id DESC',
-				'limit' => 100,
-				'conditions' => ['tsumego_id' => $id, 'sgf_status_id !=' => Sgf::STATUS_REJECTED]]);
-			if (!$s)
-				$s = [];
-		}
+			$s = $this->versions(['tsumego_id' => $id, 'sgf_status_id !=' => SgfTable::STATUS_REJECTED]);
 
 		//to display the correct version
 		$versionCounter = [];
@@ -88,29 +77,29 @@ class SgfsController extends AppController
 		{
 
 
-			$u = $this->User->findById($s[$i]['Sgf']['user_id']);
+			$u = $this->User->findById($s[$i]['user_id']);
 			$ux = $u ? User::displayName($u['User']) : '';
-			$s[$i]['Sgf']['user'] = $ux;
-			$t = $this->Tsumego->findById($s[$i]['Sgf']['tsumego_id']);
+			$s[$i]['user'] = $ux;
+			$t = $this->Tsumego->findById($s[$i]['tsumego_id']);
 			$scT = $this->SetConnection->findDisplaySetConnection($t['Tsumego']['id']);
 			$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 			$set = $this->Set->findById($t['Tsumego']['set_id']);
-			$s[$i]['Sgf']['title'] = $set['Set']['title'] . ' ' . $set['Set']['title2'] . ' #' . $scT['SetConnection']['num'];
-			$s[$i]['Sgf']['num'] = $scT['SetConnection']['num'];
+			$s[$i]['title'] = $set['Set']['title'] . ' ' . $set['Set']['title2'] . ' #' . $scT['SetConnection']['num'];
+			$s[$i]['num'] = $scT['SetConnection']['num'];
 
 			if(isset($versionCounter[$scT['SetConnection']['tsumego_id']]))
 				$versionCounter[$scT['SetConnection']['tsumego_id']]++;
 			else
 				$versionCounter[$scT['SetConnection']['tsumego_id']] = 0;
-			$s[$i]['Sgf']['version'] = count($this->Sgf->find('all', ['conditions' => ['tsumego_id' => $scT['SetConnection']['tsumego_id'], 'sgf_status_id !=' => Sgf::STATUS_REJECTED]])) - $versionCounter[$scT['SetConnection']['tsumego_id']];
+			$s[$i]['version'] = $this->fetchTable('Sgf')->find()->where(['tsumego_id' => $scT['SetConnection']['tsumego_id'], 'sgf_status_id !=' => SgfTable::STATUS_REJECTED])->count() - $versionCounter[$scT['SetConnection']['tsumego_id']];
 
-			if ($s[$i]['Sgf']['user'] == 'noUser')
-				$s[$i]['Sgf']['user'] = 'automatically generated';
-			if (Auth::getUserID() == $s[$i]['Sgf']['user_id'])
-				$s[$i]['Sgf']['delete'] = true;
+			if ($s[$i]['user'] == 'noUser')
+				$s[$i]['user'] = 'automatically generated';
+			if (Auth::getUserID() == $s[$i]['user_id'])
+				$s[$i]['delete'] = true;
 			else
-				$s[$i]['Sgf']['delete'] = false;
-			$s[$i]['Sgf']['diff'] = $this->Sgf->findPreviousVersionID($s[$i]['Sgf']['tsumego_id'], $s[$i]['Sgf']['id']);
+				$s[$i]['delete'] = false;
+			$s[$i]['diff'] = SgfTable::findPreviousVersionID((int) $s[$i]['tsumego_id'], (int) $s[$i]['id']);
 		}
 
 		$this->set('ux', $ux);
@@ -122,4 +111,15 @@ class SgfsController extends AppController
 		$this->set('dTitle', $dTitle);
 	}
 
+	//The newest 100 versions the conditions pick, as the rows of the database: the page adds what it shows.
+	private function versions(array $conditions): array
+	{
+		return $this->fetchTable('Sgf')->find()
+			->where($conditions)
+			->orderByDesc('id')
+			->limit(100)
+			->disableHydration()
+			->disableResultsCasting()
+			->toArray();
+	}
 }

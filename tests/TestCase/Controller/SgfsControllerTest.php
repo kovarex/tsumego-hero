@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SgfTable;
 use App\Utility\Auth;
 use App\Utility\Util;
 
@@ -39,7 +40,7 @@ class SgfsControllerTest extends IntegrationTestCase
 		$problemB = $context->tsumegos[1];
 		$a1 = (int) $problemA['sgfs'][0]['id'];
 		$b1 = (int) $problemB['sgfs'][0]['id'];
-		$a2 = (int) ClassRegistry::init('Sgf')->uploadSgf('(;GM[1]FF[4]SZ[19]C[A2];B[aa])', $problemA['id'], Auth::getUserID(), true)['Sgf']['id'];
+		$a2 = SgfTable::upload('(;GM[1]FF[4]SZ[19]C[A2];B[aa])', $problemA['id'], Auth::getUserID(), true)->id;
 		Util::execute('UPDATE sgf SET created = ? WHERE id = ?', ['2026-01-01 10:00:00', $a1]);
 		Util::execute('UPDATE sgf SET created = ? WHERE id = ?', ['2026-01-01 11:00:00', $b1]);
 		Util::execute('UPDATE sgf SET created = ? WHERE id = ?', ['2026-01-01 12:00:00', $a2]);
