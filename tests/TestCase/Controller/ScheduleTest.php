@@ -35,7 +35,6 @@ class ScheduleTest extends IntegrationTestCase
 
 	private function lastSchedule(): Schedule
 	{
-		/** @var Schedule */
 		return $this->fetchTable('Schedule')->find()->orderByDesc('id')->firstOrFail();
 	}
 

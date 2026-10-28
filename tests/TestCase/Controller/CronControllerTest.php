@@ -107,9 +107,9 @@ class CronControllerTest extends IntegrationTestCase
 		$detkov = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'Ivan Detkov']]);
 		$this->assertSame($detkov['User']['daily_xp'], 0);
 		$this->assertSame($detkov['User']['daily_solved'], 0);
-		$dayRecords = ClassRegistry::init('DayRecord')->find('all');
+		$dayRecords = $this->fetchTable('DayRecord')->find()->toArray();
 		$this->assertCount(1, $dayRecords);
-		$this->assertSame($dayRecords[0]['DayRecord']['user_id'], $context->otherUsers[0]['id']);
+		$this->assertSame($dayRecords[0]->user_id, $context->otherUsers[0]['id']);
 	}
 
 	public function testDailyCronCreatesSingleDayRecord()
@@ -120,7 +120,7 @@ class CronControllerTest extends IntegrationTestCase
 		$this->get('/cron/daily/' . CRON_SECRET);
 		$this->get('/cron/daily/' . CRON_SECRET);
 
-		$this->assertSame(1, ClassRegistry::init('DayRecord')->find('count'));
+		$this->assertSame(1, $this->fetchTable('DayRecord')->find()->count());
 		$this->assertSame(1, ClassRegistry::init('AchievementCondition')->find('count', [
 			'conditions' => ['achievement_condition_category_id' => AchievementCondition::CATEGORY_USER_OF_THE_DAY]]));
 	}

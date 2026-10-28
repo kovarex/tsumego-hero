@@ -11,8 +11,7 @@ namespace App\Utility;
  * @phpstan-type AchievementStatusRow array{id?: int, user_id?: int, achievement_id?: int, value?: int, created?: string, ...}
  * @phpstan-type AdminActivityRow array{id?: int, user_id?: int, tsumego_id?: int|null, set_id?: int|null, type?: int, old_value?: string|null, new_value?: string|null, created?: string, ...}
  * @phpstan-type AdminActivityTypeRow array{id?: int, name?: string|null, ...}
- * @phpstan-type AdminPageRow array{id?: int, name?: string, ...}
- * @phpstan-type AdminPageViewRow array{user_id?: int, admin_page_id?: int, viewed?: string, ...}
+ * @phpstan-type AdminOverviewSeenRow array{user_id?: int, admin_overview_type_id?: int, seen?: string, ...}
  * @phpstan-type AvatarSettingRow array{id?: int, name?: string, ...}
  * @phpstan-type ChallengeParticipantRow array{id?: int, challenge_id?: int, user_id?: int, invited_by_user_id?: int|null, created?: string, declined?: string|null, ...}
  * @phpstan-type ChallengeProblemRow array{id?: int, challenge_id?: int, tsumego_id?: int, order?: int, ...}
@@ -23,7 +22,6 @@ namespace App\Utility;
  * @phpstan-type ClassroomMemberRow array{id?: int, classroom_id?: int, user_id?: int, classroom_member_status_id?: int, created?: string, ...}
  * @phpstan-type ClassroomMemberStatusRow array{id?: int, name?: string, ...}
  * @phpstan-type DateFormatRow array{id?: int, name?: string, ...}
- * @phpstan-type DayRecordRow array{id?: int, user_id?: int|null, date?: string|null, quote?: string|null, gems?: string, emerald_solves?: int, sapphire_solves?: int, ruby_solves?: int, ...}
  * @phpstan-type HighscorePageRow array{id?: int, name?: string, ...}
  * @phpstan-type LevelBarRow array{id?: int, name?: string, ...}
  * @phpstan-type MistakeTrainingDayRow array{id?: int, user_id?: int, day?: string, due?: int, reviewed?: int, cleared?: int, xp?: int, cleared_at?: string|null, missed_days?: int, ...}
@@ -45,7 +43,6 @@ namespace App\Utility;
  * @phpstan-type TimeModeAttemptRow array{id?: int, tsumego_id?: int, order?: int, seconds?: string|null, points?: string|null, started?: string|null, time_mode_session_id?: int, time_mode_attempt_status_id?: int, ...}
  * @phpstan-type TimeModeAttemptStatusRow array{id?: int, name?: string, ...}
  * @phpstan-type TimeModeSessionRow array{id?: int, user_id?: int, points?: string|null, created?: string, time_mode_session_status_id?: int, time_mode_category_id?: int|null, time_mode_rank_id?: int|null, challenge_id?: int|null, ...}
- * @phpstan-type TimeModeSessionStatusRow array{id?: int, name?: string, ...}
  * @phpstan-type TsumegoAttemptRow array{id?: int, user_id?: int, tsumego_id?: int, gain?: int, solved?: int, seconds?: int, misplays?: int, user_rating?: int|null, tsumego_rating?: int, created?: string, ...}
  * @phpstan-type TsumegoCommentRow array{id?: int, tsumego_id?: int, tsumego_issue_id?: int|null, message?: string, created?: string, user_id?: int, position?: string|null, deleted?: string|null, ...}
  * @phpstan-type TsumegoIssueRow array{id?: int, tsumego_issue_status_id?: int, tsumego_id?: int, user_id?: int, created?: string, deleted?: string|null, ...}

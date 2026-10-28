@@ -6,9 +6,9 @@ use Achievement;
 use AchievementCondition;
 use App\Model\Table\TimeModeCategoryTable;
 use App\Model\Table\TimeModeRankTable;
+use App\Model\Table\TimeModeSessionStatusTable;
 use ClassRegistry;
 use SetConnection;
-use TimeModeSessionStatus;
 
 /** @phpstan-import-type AchievementRow from \App\Utility\RowTypes */
 class AchievementChecker
@@ -210,7 +210,7 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 			$rankId = isset($timeModeSession['time_mode_rank_id']) ? $timeModeSession['time_mode_rank_id'] : 0;
 			$categoryId = isset($timeModeSession['time_mode_category_id']) ? $timeModeSession['time_mode_category_id'] : 0;
 
-			if ($statusId == TimeModeSessionStatus::SOLVED)
+			if ($statusId == TimeModeSessionStatusTable::SOLVED)
 				if ($rankId == TimeModeRankTable::RANK_5K)
 				{
 					if ($categoryId == TimeModeCategoryTable::SLOW)
