@@ -1,10 +1,11 @@
 <?php
 
+use App\Model\Table\SgfReviewTable;
 use App\Utility\Util;
 
 //The SGF changes of the admin area (SgfChangesRenderer): every version that became part of a
 //problem, with who accepted it, the original author of an accepted proposal, the tick of the admin
-//who reviewed it and the avatars of the other admins who did (SgfReview).
+//who reviewed it and the avatars of the other admins who did (SgfReviewTable).
 class SgfChangesTest extends IntegrationTestCase
 {
 	private const SGF = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])';
@@ -62,9 +63,9 @@ class SgfChangesTest extends IntegrationTestCase
 	}
 
 	/** @return list<int> The users who reviewed the change */
-	private static function reviewerIDs(int $sgfID): array
+	private function reviewerIDs(int $sgfID): array
 	{
-		return array_map('intval', array_column(Util::query('SELECT user_id FROM sgf_review WHERE sgf_id = ? ORDER BY user_id', [$sgfID]), 'user_id'));
+		return $this->fetchTable('SgfReview')->find()->where(['sgf_id' => $sgfID])->orderBy('user_id')->all()->extract('user_id')->toList();
 	}
 
 	public function testAdminTicksAChangeAndTakesTheTickBack(): void
@@ -80,12 +81,12 @@ class SgfChangesTest extends IntegrationTestCase
 		$this->post('/admin/sgf-changes/review/' . $first, ['reviewed' => 1]);
 		$this->assertResponseOk();
 		$this->assertSame(['reviewed' => true], json_decode($this->view, true));
-		$this->assertSame([(int) $context->user['id']], self::reviewerIDs($first));
+		$this->assertSame([(int) $context->user['id']], $this->reviewerIDs($first));
 
 		// ticking again changes nothing
 		$this->post('/admin/sgf-changes/review/' . $first, ['reviewed' => 1]);
 		$this->assertResponseOk();
-		$this->assertSame([(int) $context->user['id']], self::reviewerIDs($first));
+		$this->assertSame([(int) $context->user['id']], $this->reviewerIDs($first));
 
 		$this->get('/admin/sgf-changes?show=all');
 		$this->assertStringContainsString('sgf-review__tick sgf-review__tick--reviewed', $this->reviewCell($first));
@@ -93,15 +94,15 @@ class SgfChangesTest extends IntegrationTestCase
 
 		$this->post('/admin/sgf-changes/review/' . $first, ['reviewed' => 0]);
 		$this->assertSame(['reviewed' => false], json_decode($this->view, true));
-		$this->assertSame([], self::reviewerIDs($first));
+		$this->assertSame([], $this->reviewerIDs($first));
 	}
 
 	public function testShowsTheOtherAdminsWhoReviewedAChange(): void
 	{
 		$context = $this->prepare();
 		[$first, $second] = self::sgfIDs($context);
-		SgfReview::mark($first, $this->colleagueID($context), true);
-		SgfReview::mark($first, $context->user['id'], true);
+		SgfReviewTable::mark($first, $this->colleagueID($context), true);
+		SgfReviewTable::mark($first, $context->user['id'], true);
 
 		$this->get('/admin/sgf-changes?show=all');
 		$cell = $this->reviewCell($first);
@@ -117,7 +118,7 @@ class SgfChangesTest extends IntegrationTestCase
 		$context = $this->prepare();
 		[$own, $other] = self::sgfIDs($context);
 		Util::execute('UPDATE sgf SET user_id = ?, accepted_by_user_id = ? WHERE id = ?', [$context->user['id'], $context->user['id'], $own]);
-		SgfReview::mark($own, $this->colleagueID($context), true);
+		SgfReviewTable::mark($own, $this->colleagueID($context), true);
 
 		$this->get('/admin/sgf-changes?show=all');
 		$this->assertStringNotContainsString('sgf-review__tick', $this->reviewCell($own));
@@ -126,7 +127,7 @@ class SgfChangesTest extends IntegrationTestCase
 
 		$this->post('/admin/sgf-changes/review/' . $own, ['reviewed' => 1]);
 		$this->assertResponseCode(400);
-		$this->assertSame([$this->colleagueID($context)], self::reviewerIDs($own));
+		$this->assertSame([$this->colleagueID($context)], $this->reviewerIDs($own));
 	}
 
 	//The admin who accepted a proposal answers for it like for their own change.
@@ -142,7 +143,7 @@ class SgfChangesTest extends IntegrationTestCase
 
 		$this->post('/admin/sgf-changes/review/' . $accepted, ['reviewed' => 1]);
 		$this->assertResponseCode(400);
-		$this->assertSame([], self::reviewerIDs($accepted));
+		$this->assertSame([], $this->reviewerIDs($accepted));
 	}
 
 	public function testAProposalIsNotReviewed(): void
@@ -152,7 +153,7 @@ class SgfChangesTest extends IntegrationTestCase
 
 		$this->post('/admin/sgf-changes/review/' . $proposal, ['reviewed' => 1]);
 		$this->assertResponseCode(400);
-		$this->assertSame([], self::reviewerIDs($proposal));
+		$this->assertSame([], $this->reviewerIDs($proposal));
 	}
 
 	public function testListsTheChangesTheAdminDidNotReview(): void
@@ -167,8 +168,8 @@ class SgfChangesTest extends IntegrationTestCase
 		[$reviewed, $own, $reviewedByColleague, $acceptedProposal, $proposal, $rejected] = self::sgfIDs($context);
 		Util::execute('UPDATE sgf SET user_id = ?, accepted_by_user_id = ? WHERE id = ?', [$context->user['id'], $context->user['id'], $own]);
 		Util::execute('UPDATE sgf SET user_id = ?, accepted_by_user_id = ? WHERE id = ?', [$this->proposerID($context), $this->colleagueID($context), $acceptedProposal]);
-		SgfReview::mark($reviewed, $context->user['id'], true);
-		SgfReview::mark($reviewedByColleague, $this->colleagueID($context), true);
+		SgfReviewTable::mark($reviewed, $context->user['id'], true);
+		SgfReviewTable::mark($reviewedByColleague, $this->colleagueID($context), true);
 
 		$this->get('/admin/sgf-changes?show=all');
 		$this->assertStringContainsString('All changes (4)</a>', $this->view, 'the proposals waiting for a decision and the rejected ones are not changes');
@@ -195,7 +196,7 @@ class SgfChangesTest extends IntegrationTestCase
 		[$other, $own, $accepted] = self::sgfIDs($context);
 		Util::execute('UPDATE sgf SET user_id = ?, accepted_by_user_id = ? WHERE id = ?', [$context->user['id'], $context->user['id'], $own]);
 		Util::execute('UPDATE sgf SET user_id = ?, accepted_by_user_id = ? WHERE id = ?', [$this->proposerID($context), $context->user['id'], $accepted]);
-		SgfReview::mark($own, $this->colleagueID($context), true);
+		SgfReviewTable::mark($own, $this->colleagueID($context), true);
 
 		$this->get('/admin/sgf-changes?show=mine');
 		$this->assertStringContainsString('My changes (2)</a>', $this->view);
@@ -349,7 +350,7 @@ class SgfChangesTest extends IntegrationTestCase
 		$tick->click();
 		$browser->waitUntilJs('document.querySelector("#review-' . $sgfID . ' .sgf-review__tick").getAttribute("aria-pressed") === "true"');
 		$this->assertStringContainsString('sgf-review__tick--reviewed', $tick->getAttribute('class'));
-		$this->assertSame([(int) $context->user['id']], self::reviewerIDs($sgfID));
+		$this->assertSame([(int) $context->user['id']], $this->reviewerIDs($sgfID));
 
 		$browser->get('/admin/sgf-changes?show=all');
 		$tick = $browser->find('#review-' . $sgfID . ' .sgf-review__tick');
@@ -357,6 +358,6 @@ class SgfChangesTest extends IntegrationTestCase
 
 		$tick->click();
 		$browser->waitUntilJs('document.querySelector("#review-' . $sgfID . ' .sgf-review__tick").getAttribute("aria-pressed") === "false"');
-		$this->assertSame([], self::reviewerIDs($sgfID));
+		$this->assertSame([], $this->reviewerIDs($sgfID));
 	}
 }

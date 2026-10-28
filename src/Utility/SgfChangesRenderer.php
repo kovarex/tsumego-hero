@@ -2,15 +2,15 @@
 
 namespace App\Utility;
 
+use App\Model\Table\SgfReviewTable;
 use SetConnection;
 use Sgf;
-use SgfReview;
 use User;
 
 //The SGF changes of the admin area: every version that became part of a problem, an admin's own
 //change or a proposal an admin accepted, the newest first. The proposals waiting for a decision
 //and the rejected ones are on the SGF proposals page. Each admin ticks the changes of others they
-//checked (SgfReview) and sees who of the others checked them, so they can keep the changes under
+//checked (SgfReviewTable) and sees who of the others checked them, so they can keep the changes under
 //control without a decision.
 class SgfChangesRenderer extends DataTableRenderer
 {
@@ -84,7 +84,7 @@ ORDER BY sgf.accepted DESC, sgf.id DESC
 LIMIT " . self::$PAGE_SIZE . "
 OFFSET " . $this->offset, [$this->userID, ...$parameters]);
 
-		$this->reviewers = SgfReview::reviewersOf(array_map(fn($item) => (int) $item['id'], $this->data));
+		$this->reviewers = SgfReviewTable::reviewersOf(array_map(fn($item) => (int) $item['id'], $this->data));
 	}
 
 	//The condition the changes of the list add to the query, with its parameters:
@@ -203,13 +203,13 @@ OFFSET " . $this->offset, [$this->userID, ...$parameters]);
 	}
 
 	//The avatar of another admin who reviewed the change, their name and when in the tooltip
-	/** @param array<string, mixed> $reviewer Row of SgfReview::reviewersOf */
+	/** @param array<string, mixed> $reviewer Row of SgfReviewTable::reviewersOf */
 	private static function renderReviewer(array $reviewer): string
 	{
 		$avatarUrl = User::avatarOrNull($reviewer);
 		if ($avatarUrl === null)
 			return '';
-		$title = 'Reviewed by ' . $reviewer['display_name'] . ' on ' . substr((string) $reviewer['reviewed'], 0, 10);
+		$title = 'Reviewed by ' . $reviewer['display_name'] . ' on ' . $reviewer['reviewed']->format('Y-m-d');
 		return '<a class="sgf-review__reviewer" href="/users/view/' . (int) $reviewer['id'] . '" title="' . h($title) . '">'
 			. User::avatarImage($avatarUrl, '', true, User::boardUrl($reviewer)) . '</a>';
 	}

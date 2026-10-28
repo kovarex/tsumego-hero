@@ -2,6 +2,7 @@
 
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
+use App\Model\Table\SgfReviewTable;
 use App\Utility\AdminActivityRenderer;
 use App\Utility\Auth;
 use App\Utility\RejectedSGFProposalsRenderer;
@@ -77,7 +78,7 @@ class AdminController extends AppController
 			throw new BadRequestException('What you accepted is reviewed by the other admins');
 
 		$reviewed = !empty($this->request->data['reviewed']);
-		SgfReview::mark((int) $sgfID, Auth::getUserID(), $reviewed);
+		SgfReviewTable::mark((int) $sgfID, Auth::getUserID(), $reviewed);
 
 		$this->autoRender = false;
 		$this->response->type('json');
