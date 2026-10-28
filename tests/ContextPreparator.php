@@ -373,7 +373,6 @@ class ContextPreparator
 
 	private function prepareTsumegoComment(array $commentInput, $tsumego, ?int $issueId = null): void
 	{
-		ClassRegistry::init('TsumegoComment')->create();
 		$comment = [];
 		$comment['message'] = Util::extract('message', $commentInput);
 		$comment['tsumego_id'] = $tsumego['id'];
@@ -384,7 +383,8 @@ class ContextPreparator
 		$created = Util::extract('created', $commentInput);
 		if ($created)
 			$comment['created'] = $created;
-		ClassRegistry::init('TsumegoComment')->save($comment);
+		$tsumegoCommentTable = TableRegistry::getTableLocator()->get('TsumegoComment');
+		$tsumegoCommentTable->saveOrFail($tsumegoCommentTable->newEntity($comment));
 		$this->checkOptionsConsumed($commentInput);
 	}
 

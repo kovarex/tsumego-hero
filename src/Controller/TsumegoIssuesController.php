@@ -3,12 +3,12 @@
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Lib\Error\UnprocessableEntityException;
+use App\Model\Entity\TsumegoComment;
 //Controller for managing tsumego issues.
 //Issues are reports about problems with tsumego solutions (missing moves, wrong answers, etc.).
 //Each issue contains one or more comments discussing the problem.
 use App\Utility\Auth;
 use App\Utility\Query;
-use App\Utility\Util;
 
 class TsumegoIssuesController extends AppController
 {
@@ -86,7 +86,7 @@ class TsumegoIssuesController extends AppController
 			throw new BadRequestException('Tsumego ID and message are required');
 
 		$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
-		$TsumegoComment = ClassRegistry::init('TsumegoComment');
+		$tsumegoCommentTable = $this->fetchTable('TsumegoComment');
 
 		// Create the issue
 		$issue = [
@@ -102,16 +102,15 @@ class TsumegoIssuesController extends AppController
 		$issueId = $TsumegoIssue->getLastInsertID();
 
 		// Create the first comment attached to this issue
-		$comment = [
+		/** @var TsumegoComment $comment */
+		$comment = $tsumegoCommentTable->newEntity([
 			'tsumego_id' => $tsumegoId,
 			'tsumego_issue_id' => $issueId,
 			'message' => $message,
 			'position' => $position,
 			'user_id' => Auth::getUserID(),
-		];
-
-		$TsumegoComment->create();
-		if (!$TsumegoComment->save($comment))
+		]);
+		if (!$tsumegoCommentTable->save($comment))
 		{
 			// Rollback: delete the issue if comment fails
 			$TsumegoIssue->delete($issueId);
@@ -132,7 +131,7 @@ class TsumegoIssuesController extends AppController
 			'user_rating' => $user['User']['rating'],
 			'isAdmin' => Auth::isAdmin(),
 			'comments' => [[
-				'id' => $TsumegoComment->getLastInsertID(),
+				'id' => $comment->id,
 				'text' => $message,
 				'user_id' => Auth::getUserID(),
 				'user_display_name' => $user['User']['display_name'],
@@ -173,15 +172,14 @@ class TsumegoIssuesController extends AppController
 		$closingMessage = $this->request->data('Issue.message');
 		if (!empty($closingMessage))
 		{
-			$TsumegoComment = ClassRegistry::init('TsumegoComment');
-			$comment = [
+			// a closing comment that fails the validation is left out, the issue is closed anyway
+			$tsumegoCommentTable = $this->fetchTable('TsumegoComment');
+			$tsumegoCommentTable->save($tsumegoCommentTable->newEntity([
 				'tsumego_id' => $issue['TsumegoIssue']['tsumego_id'],
 				'tsumego_issue_id' => $id,
 				'message' => $closingMessage,
 				'user_id' => Auth::getUserID(),
-			];
-			$TsumegoComment->create();
-			$TsumegoComment->save($comment);
+			]));
 		}
 
 		$this->response->type('json');
@@ -223,14 +221,15 @@ class TsumegoIssuesController extends AppController
 	{
 		$this->Authorization->authorize('TsumegoIssue', 'moveComment');
 
-		$TsumegoComment = ClassRegistry::init('TsumegoComment');
-		$comment = $TsumegoComment->findById($commentId);
+		$tsumegoCommentTable = $this->fetchTable('TsumegoComment');
+		/** @var TsumegoComment|null $comment */
+		$comment = $tsumegoCommentTable->find()->where(['id' => (int) $commentId])->first();
 
 		if (!$comment)
 			throw new NotFoundException('Comment not found');
 
 		$targetIssueId = $this->request->data('Comment.tsumego_issue_id');
-		$currentIssueId = $comment['TsumegoComment']['tsumego_issue_id'];
+		$currentIssueId = $comment->tsumego_issue_id;
 
 		// Handle 'standalone' - remove from issue
 		if ($targetIssueId === 'standalone')
@@ -242,8 +241,8 @@ class TsumegoIssuesController extends AppController
 				return $this->response;
 			}
 
-			$TsumegoComment->id = $commentId;
-			if ($TsumegoComment->saveField('tsumego_issue_id', null))
+			$comment->tsumego_issue_id = null;
+			if ($tsumegoCommentTable->save($comment))
 			{
 				// Check if issue is now empty and delete it
 				$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
@@ -263,8 +262,8 @@ class TsumegoIssuesController extends AppController
 			$User = ClassRegistry::init('User');
 
 			$issue = [
-				'tsumego_id' => $comment['TsumegoComment']['tsumego_id'],
-				'user_id' => $comment['TsumegoComment']['user_id'], // Original comment author becomes issue author
+				'tsumego_id' => $comment->tsumego_id,
+				'user_id' => $comment->user_id, // Original comment author becomes issue author
 				'tsumego_issue_status_id' => TsumegoIssue::$OPENED_STATUS,
 			];
 
@@ -274,30 +273,30 @@ class TsumegoIssuesController extends AppController
 			$targetIssueId = $TsumegoIssue->getLastInsertID();
 
 			// Move comment to this new issue
-			$TsumegoComment->id = $commentId;
-			$TsumegoComment->saveField('tsumego_issue_id', $targetIssueId);
+			$comment->tsumego_issue_id = (int) $targetIssueId;
+			$tsumegoCommentTable->saveOrFail($comment);
 
-			$commentUser = $User->findById($comment['TsumegoComment']['user_id']);
+			$commentUser = $User->findById($comment->user_id);
 
 			$issueData = [
 				'id' => $targetIssueId,
 				'status' => 'open',
 				'created' => date('c'),
-				'user_id' => $comment['TsumegoComment']['user_id'],
+				'user_id' => $comment->user_id,
 				'user_display_name' => User::displayNameOrNull($commentUser['User']),
 				'user_avatar_url' => User::avatarOrNull($commentUser['User']),
 				'user_rating' => $commentUser['User']['rating'],
 				'isAdmin' => User::isAdmin($commentUser['User']),
 				'comments' => [[
 					'id' => $commentId,
-					'text' => $comment['TsumegoComment']['message'],
-					'user_id' => $comment['TsumegoComment']['user_id'],
+					'text' => $comment->message,
+					'user_id' => $comment->user_id,
 					'user_display_name' => User::displayNameOrNull($commentUser['User']),
 					'user_avatar_url' => User::avatarOrNull($commentUser['User']),
 					'user_rating' => $commentUser['User']['rating'],
 					'isAdmin' => User::isAdmin($commentUser['User']),
-					'created' => Util::toIso8601($comment['TsumegoComment']['created']),
-					'position' => $comment['TsumegoComment']['position'],
+					'created' => $comment->created->format('c'),
+					'position' => $comment->position,
 				]],
 			];
 
@@ -315,8 +314,8 @@ class TsumegoIssuesController extends AppController
 		}
 
 		// Move the comment to the target issue
-		$TsumegoComment->id = $commentId;
-		if ($TsumegoComment->saveField('tsumego_issue_id', $targetIssueId))
+		$comment->tsumego_issue_id = (int) $targetIssueId;
+		if ($tsumegoCommentTable->save($comment))
 		{
 			// Check if old issue is now empty and delete it
 			if (!empty($currentIssueId))

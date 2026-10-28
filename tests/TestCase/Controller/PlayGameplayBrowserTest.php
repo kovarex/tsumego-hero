@@ -849,12 +849,12 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$context = new ContextPreparator(['user' => ['admin' => true], 'tsumego' => 1]);
 
 		// Add a comment with coordinates
-		$comment = ClassRegistry::init('TsumegoComment');
-		$comment->save([
+		$tsumegoCommentTable = $this->fetchTable('TsumegoComment');
+		$tsumegoCommentTable->saveOrFail($tsumegoCommentTable->newEntity([
 			'tsumego_id' => $context->tsumegos[0]['id'],
 			'user_id' => $context->user['id'],
 			'message' => 'Try playing at R19 or S18, they both work.',
-		]);
+		]));
 
 		$browser = Browser::instance();
 		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
