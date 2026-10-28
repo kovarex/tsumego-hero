@@ -84,9 +84,15 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 
 	private function attemptsOf(ContextPreparator $context): array
 	{
-		return ClassRegistry::init('TsumegoAttempt')->find('all', [
-			'conditions' => ['tsumego_id' => $context->tsumegos[0]['id'], 'user_id' => $context->user['id']],
-		]);
+		return $this->attemptsWhere(['tsumego_id' => $context->tsumegos[0]['id'], 'user_id' => $context->user['id']]);
+	}
+
+	//The attempts as rows under 'TsumegoAttempt', the shape the assertions of these tests read.
+	/** @return list<array{TsumegoAttempt: array<string, mixed>}> */
+	private function attemptsWhere(array $conditions): array
+	{
+		return $this->fetchTable('TsumegoAttempt')->find()->where($conditions)->orderBy(['id' => 'ASC'])->disableHydration()->all()
+			->map(fn(array $row) => ['TsumegoAttempt' => $row])->toList();
 	}
 
 	private function tsumegoRating(ContextPreparator $context): float
@@ -673,12 +679,10 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 				"Damage must not increase when misplaying on status '$status'");
 
 			// No attempt record should be created for the misplay
-			$unsolvedAttempts = ClassRegistry::init('TsumegoAttempt')->find('all', [
-				'conditions' => [
-					'tsumego_id' => $context->tsumegos[0]['id'],
-					'user_id' => $context->user['id'],
-					'solved' => false,
-				],
+			$unsolvedAttempts = $this->attemptsWhere([
+				'tsumego_id' => $context->tsumegos[0]['id'],
+				'user_id' => $context->user['id'],
+				'solved' => false,
 			]);
 			$this->assertCount(0, $unsolvedAttempts,
 				"No unsolved attempt should be created for status '$status'");
@@ -1426,10 +1430,8 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		]);
 		$this->assertSame('S', $status['TsumegoStatus']['status'], 'Level solve should mark the problem solved');
 
-		$attempt = ClassRegistry::init('TsumegoAttempt')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
-			'order' => 'id DESC',
-		]);
+		$attempts = $this->attemptsWhere(['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']]);
+		$attempt = end($attempts);
 		$this->assertSame(true, (bool) $attempt['TsumegoAttempt']['solved'], 'Level solve should record a solved attempt');
 	}
 
@@ -1505,10 +1507,8 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 
 		$this->assertGreaterThan($beforeDamage, Auth::getUser()['damage'], 'Level fail should add damage');
 
-		$attempt = ClassRegistry::init('TsumegoAttempt')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
-			'order' => 'id DESC',
-		]);
+		$attempts = $this->attemptsWhere(['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']]);
+		$attempt = end($attempts);
 		$this->assertSame(false, (bool) $attempt['TsumegoAttempt']['solved'], 'Level fail should record an unsolved attempt');
 	}
 

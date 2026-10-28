@@ -804,7 +804,6 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	{
 		$this->set('_page', 'user');
 		$this->loadModel('TsumegoStatus');
-		$this->loadModel('TsumegoAttempt');
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
 		$this->loadModel('Achievement');

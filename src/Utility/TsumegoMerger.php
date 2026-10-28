@@ -94,12 +94,7 @@ HAVING
 
 	private function mergeTsumegoAttempts(): void
 	{
-		$slaveAttempts = ClassRegistry::init('TsumegoAttempt')->find('all', ['conditions' => ['tsumego_id' => $this->slaveTsumegoID]]);
-		foreach ($slaveAttempts as $slaveAttempt)
-		{
-			$slaveAttempt['TsumegoAttempt']['tsumego_id'] = $this->masterTsumegoID;
-			ClassRegistry::init('TsumegoAttempt')->save($slaveAttempt);
-		}
+		Util::execute('UPDATE tsumego_attempt SET tsumego_id = ? WHERE tsumego_id = ?', [$this->masterTsumegoID, $this->slaveTsumegoID]);
 	}
 
 	private function mergeComments(): void

@@ -296,16 +296,17 @@ class ContextPreparator
 			return;
 
 		$tsumegoAttempt['user_id'] = Util::extract('user_id', $tsumegoAttemptInput) ?: $this->user['id'];
-		$tsumegoAttempt['user_rating'] = Util::extract('user_rating', $tsumegoAttemptInput) ?: $this->user['rating'];
+		// the ratings are floats, which MySQL rounded into the integer columns and the ORM would cut off
+		$tsumegoAttempt['user_rating'] = (int) round((float) (Util::extract('user_rating', $tsumegoAttemptInput) ?: $this->user['rating']));
 		$tsumegoAttempt['tsumego_id'] = $tsumego['id'];
 		$tsumegoAttempt['gain'] = Util::extract('gain', $tsumegoAttemptInput) ?: 0;
 		$tsumegoAttempt['seconds'] = Util::extract('seconds', $tsumegoAttemptInput) ?: 0;
 		$tsumegoAttempt['solved'] = Util::extract('solved', $tsumegoAttemptInput) ?: false;
-		$tsumegoAttempt['tsumego_rating'] = Util::extract('tsumego_rating', $tsumegoAttemptInput) ?: $tsumego['rating'];
+		$tsumegoAttempt['tsumego_rating'] = (int) round((float) (Util::extract('tsumego_rating', $tsumegoAttemptInput) ?: $tsumego['rating']));
 		$tsumegoAttempt['misplays'] = Util::extract('misplays', $tsumegoAttemptInput) ?: 0;
 		$tsumegoAttempt['created'] = Util::extract('created', $tsumegoAttemptInput) ?: date('Y-m-d H:i:s');
-		ClassRegistry::init('TsumegoAttempt')->create($tsumegoAttempt);
-		ClassRegistry::init('TsumegoAttempt')->save($tsumegoAttempt);
+		$tsumegoAttemptTable = TableRegistry::getTableLocator()->get('TsumegoAttempt');
+		$tsumegoAttemptTable->saveOrFail($tsumegoAttemptTable->newEntity($tsumegoAttempt));
 		$this->checkOptionsConsumed($tsumegoAttemptInput);
 	}
 

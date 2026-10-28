@@ -1,8 +1,10 @@
 <?php
 
+use App\Model\Entity\TsumegoAttempt;
 use App\Model\Table\ClassroomAssignmentTable;
 use App\Model\Table\DayRecordTable;
 use App\Model\Table\ProgressDeletionTable;
+use App\Model\Table\TsumegoAttemptTable;
 use App\Utility\AchievementChecker;
 use App\Utility\Auth;
 use App\Utility\Constants;
@@ -106,9 +108,9 @@ class PlayResultProcessorComponent extends Component
 		// the resets of the part of the set the problem is played from, in the last month
 		$progressDeletionCount = ProgressDeletionTable::countRecentForProblem(Auth::getUserID(), $tsumegoID, $setConnectionID);
 
-		$lastTsumegoAttempt = TsumegoAttempt::findLast((int) Auth::getUserID(), $tsumegoID);
+		$lastTsumegoAttempt = TsumegoAttemptTable::findLast((int) Auth::getUserID(), $tsumegoID);
 
-		$this->processRatingChange($tsumego, $result, $previousStatusValue, $progressDeletionCount, TsumegoAttempt::failsInARow($lastTsumegoAttempt));
+		$this->processRatingChange($tsumego, $result, $previousStatusValue, $progressDeletionCount, TsumegoAttemptTable::failsInARow($lastTsumegoAttempt));
 		if (!$result['solved'])
 			$result['potion_triggered'] = $this->processPotion();
 		$this->processXpChange($tsumego, $result, $previousStatusValue, $originalTsumegoRating, $progressDeletionCount);
@@ -272,7 +274,7 @@ class PlayResultProcessorComponent extends Component
 		return $newStatus;
 	}
 
-	private function updateTsumegoAttempt(array $previousTsumego, array $result, string $previousTsumegoStatus, float $seconds, ?array $lastTsumegoAttempt): void
+	private function updateTsumegoAttempt(array $previousTsumego, array $result, string $previousTsumegoStatus, float $seconds, ?TsumegoAttempt $lastTsumegoAttempt): void
 	{
 		if (Auth::isInTimeMode() || Auth::isInMistakeTrainingMode())
 			return;
@@ -280,30 +282,23 @@ class PlayResultProcessorComponent extends Component
 			return;
 
 		// only not solved ones are updated (misplays get accumulated)
-		if (!$lastTsumegoAttempt || $lastTsumegoAttempt['TsumegoAttempt']['solved'])
-		{
-			$tsumegoAttempt = [];
-			$tsumegoAttempt['TsumegoAttempt']['user_id'] = Auth::getUserID();
-			$tsumegoAttempt['TsumegoAttempt']['tsumego_id'] = $previousTsumego['Tsumego']['id'];
-			$tsumegoAttempt['TsumegoAttempt']['seconds'] = 0;
-			$tsumegoAttempt['TsumegoAttempt']['solved'] = $result['solved'];
-			$tsumegoAttempt['TsumegoAttempt']['tsumego_rating'] = $previousTsumego['Tsumego']['rating'];
-			$tsumegoAttempt['TsumegoAttempt']['misplays'] = 0;
-		}
+		$continued = $lastTsumegoAttempt && !$lastTsumegoAttempt->solved ? $lastTsumegoAttempt : null;
+		$values = [
+			Auth::getUser()['rating'],
+			$result['xp-gained'] ?: 0,
+			($continued ? $continued->seconds : 0) + $seconds,
+			$result['solved'] ? 1 : 0,
+			$previousTsumego['Tsumego']['rating'],
+			($continued ? $continued->misplays : 0) + ($result['solved'] ? 0 : 1),
+			date('Y-m-d H:i:s')];
+		// Plain SQL: the ratings and the seconds are floats that MySQL rounds into the integer columns,
+		// as it did for the Cake 2 save, where the ORM would cut off their fractions.
+		if ($continued)
+			Util::execute('UPDATE tsumego_attempt SET user_rating = ?, gain = ?, seconds = ?, solved = ?, tsumego_rating = ?, misplays = ?, created = ? WHERE id = ?',
+				[...$values, $continued->id]);
 		else
-			$tsumegoAttempt = $lastTsumegoAttempt;
-
-		$tsumegoAttempt['TsumegoAttempt']['user_rating'] = Auth::getUser()['rating'];
-		$tsumegoAttempt['TsumegoAttempt']['gain'] = $result['xp-gained'] ?: 0;
-		$tsumegoAttempt['TsumegoAttempt']['seconds'] += $seconds;
-		$tsumegoAttempt['TsumegoAttempt']['solved'] = $result['solved'];
-		$tsumegoAttempt['TsumegoAttempt']['tsumego_rating'] = $previousTsumego['Tsumego']['rating'];
-		if ($result['solved'])
-			$tsumegoAttempt['TsumegoAttempt']['misplays'] = (int) $tsumegoAttempt['TsumegoAttempt']['misplays'];
-		else
-			$tsumegoAttempt['TsumegoAttempt']['misplays'] = (int) $tsumegoAttempt['TsumegoAttempt']['misplays'] + 1;
-		$tsumegoAttempt['TsumegoAttempt']['created'] = date('Y-m-d H:i:s');
-		ClassRegistry::init('TsumegoAttempt')->save($tsumegoAttempt);
+			Util::execute('INSERT INTO tsumego_attempt (user_rating, gain, seconds, solved, tsumego_rating, misplays, created, user_id, tsumego_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+				[...$values, Auth::getUserID(), $previousTsumego['Tsumego']['id']]);
 	}
 
 	private static function processRatingChangeStep(float &$userRating, float &$tsumegoRating, bool $isWin): void

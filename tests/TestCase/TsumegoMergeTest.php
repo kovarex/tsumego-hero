@@ -117,7 +117,7 @@ class TsumegoMergeTest extends IntegrationTestCase
 			$this->assertSame(1, ClassRegistry::init('Tsumego')->find('count'));
 
 			// tsumego attempts got merged
-			$this->assertSame(2, ClassRegistry::init('TsumegoAttempt')->find('count'));
+			$this->assertSame(2, $this->fetchTable('TsumegoAttempt')->find()->count());
 
 			// tsumego comments got merged: 1 from master, 1 from slave, one from the slave issue
 			$comments = $this->fetchTable('TsumegoComment')->find()->orderBy('id')->all()->extract('message')->toList();
