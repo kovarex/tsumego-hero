@@ -13,8 +13,13 @@ use Cake\ORM\Locator\LocatorAwareTrait;
 /** @phpstan-import-type UserRow from \App\Utility\RowTypes */
 class AppController extends Controller
 {
-	//fetchTable() of the Cake 5 tables, as Cake 5's controllers have it
-	use LocatorAwareTrait;
+	//fetchTable() of the Cake 5 tables, as Cake 5's controllers have it. Protected, as Cake 2
+	//makes every public method an address (see ActionSurfaceTest).
+	use LocatorAwareTrait {
+		fetchTable as protected;
+		getTableLocator as protected;
+		setTableLocator as protected;
+	}
 
 	public $viewClass = 'App';
 
