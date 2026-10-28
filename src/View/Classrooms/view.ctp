@@ -8,17 +8,18 @@
  * @var \App\Model\Entity\Classroom $classroom
  * @var array|null $teacher
  * @var bool $isTeacher
- * @var array|null $membership The membership of the viewer, in whatever state
+ * @var \App\Model\Entity\ClassroomMember|null $membership The membership of the viewer, in whatever state
  * @var array $assignments What ClassroomAssignment::ofClassroom() returned, with the drafts for the teacher
- * @var array $members What ClassroomMember::ofClassroom() returned, for the teacher
+ * @var array $members What ClassroomMemberTable::ofClassroom() returned, for the teacher
  * @var string $joinUrl The link of the class to send around, for the teacher
  */
 
+use App\Model\Table\ClassroomMemberStatusTable;
 use App\Utility\Auth;
 
 $classroomId = $classroom->id;
-$membershipStatus = $membership === null ? null : (int) $membership['classroom_member_status_id'];
-$isPupil = $membershipStatus === ClassroomMemberStatus::ACCEPTED;
+$membershipStatus = $membership?->classroom_member_status_id;
+$isPupil = $membershipStatus === ClassroomMemberStatusTable::ACCEPTED;
 ?>
 <div class="classes">
 	<div class="classes__header">
@@ -31,15 +32,15 @@ $isPupil = $membershipStatus === ClassroomMemberStatus::ACCEPTED;
 	<section class="card card--green classes__section classes__join" id="classes-join">
 		<?php if (!Auth::isLoggedIn()): ?>
 		<p><a href="/users/login">Sign in</a> to ask to join this class.</p>
-		<?php elseif ($membershipStatus === ClassroomMemberStatus::INVITED): ?>
+		<?php elseif ($membershipStatus === ClassroomMemberStatusTable::INVITED): ?>
 		<p><?= User::renderLink($teacher) ?> invites you to this class. The teacher will see which of the problems they give to the class you solve.</p>
 		<span class="classes__actions">
-			<form method="post" action="/classes/accept-member/<?= (int) $membership['id'] ?>"><button class="btn btn--success" type="submit">Accept</button></form>
-			<form method="post" action="/classes/remove-member/<?= (int) $membership['id'] ?>"><button class="btn btn--neutral" type="submit">Decline</button></form>
+			<form method="post" action="/classes/accept-member/<?= $membership->id ?>"><button class="btn btn--success" type="submit">Accept</button></form>
+			<form method="post" action="/classes/remove-member/<?= $membership->id ?>"><button class="btn btn--neutral" type="submit">Decline</button></form>
 		</span>
-		<?php elseif ($membershipStatus === ClassroomMemberStatus::REQUESTED): ?>
+		<?php elseif ($membershipStatus === ClassroomMemberStatusTable::REQUESTED): ?>
 		<p>You asked to join. You are in once the teacher accepts.</p>
-		<form method="post" action="/classes/remove-member/<?= (int) $membership['id'] ?>"><button class="btn btn--neutral" type="submit">Take back</button></form>
+		<form method="post" action="/classes/remove-member/<?= $membership->id ?>"><button class="btn btn--neutral" type="submit">Take back</button></form>
 		<?php else: ?>
 		<p>Ask to join and you are in once the teacher accepts. The teacher will see which of the problems they give to the class you solve.</p>
 		<form method="post" action="/classes/join/<?= $classroomId ?>"><button class="btn" type="submit">Ask to join</button></form>
@@ -76,7 +77,7 @@ $isPupil = $membershipStatus === ClassroomMemberStatus::ACCEPTED;
 	<?php if ($isTeacher): ?>
 	<section class="card card--purple classes__section" id="classes-pupils">
 		<h2 class="classes__heading">Pupils</h2>
-		<?php foreach ($members[ClassroomMemberStatus::REQUESTED] as $member): ?>
+		<?php foreach ($members[ClassroomMemberStatusTable::REQUESTED] as $member): ?>
 		<div class="classes__row classes__row--request">
 			<span><?= User::renderLink($member) ?> <span class="hint">asks to join</span></span>
 			<span class="classes__actions">
@@ -85,10 +86,10 @@ $isPupil = $membershipStatus === ClassroomMemberStatus::ACCEPTED;
 			</span>
 		</div>
 		<?php endforeach; ?>
-		<?php if (empty($members[ClassroomMemberStatus::ACCEPTED])): ?>
+		<?php if (empty($members[ClassroomMemberStatusTable::ACCEPTED])): ?>
 		<p class="hint">No pupils yet.</p>
 		<?php endif; ?>
-		<?php foreach ($members[ClassroomMemberStatus::ACCEPTED] as $member): ?>
+		<?php foreach ($members[ClassroomMemberStatusTable::ACCEPTED] as $member): ?>
 		<div class="classes__row">
 			<span><?= User::renderLink($member) ?></span>
 			<span class="classes__actions">
@@ -96,7 +97,7 @@ $isPupil = $membershipStatus === ClassroomMemberStatus::ACCEPTED;
 			</span>
 		</div>
 		<?php endforeach; ?>
-		<?php foreach ($members[ClassroomMemberStatus::INVITED] as $member): ?>
+		<?php foreach ($members[ClassroomMemberStatusTable::INVITED] as $member): ?>
 		<div class="classes__row">
 			<span><?= User::renderLink($member) ?> <span class="hint">invited, hasn't accepted yet</span></span>
 			<span class="classes__actions">
@@ -127,7 +128,7 @@ $isPupil = $membershipStatus === ClassroomMemberStatus::ACCEPTED;
 
 	<?php if ($isPupil): ?>
 	<section class="classes__section classes__danger">
-		<form method="post" action="/classes/remove-member/<?= (int) $membership['id'] ?>" onsubmit="return confirm('Leave the class?');">
+		<form method="post" action="/classes/remove-member/<?= $membership->id ?>" onsubmit="return confirm('Leave the class?');">
 			<button class="btn btn--neutral" type="submit">Leave the class</button>
 		</form>
 	</section>

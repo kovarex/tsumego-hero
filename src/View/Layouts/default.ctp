@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\ClassroomMemberTable;
 use App\Model\Table\MessageTable;
 use App\Utility\AccountWidget;
 use App\Utility\AchievementChecker;
@@ -97,7 +98,7 @@ if (Auth::isLoggedIn())
 	$unreadMessageCount = MessageTable::unreadCount(Auth::getUserID());
 	//Invitations to a class and requests to join one wait for the player's answer, which
 	//the Classes item counts, and so does Collections, where the item is hidden.
-	$classesAwaitingAnswer = ClassroomMember::countAwaitingAnswer(Auth::getUserID());
+	$classesAwaitingAnswer = ClassroomMemberTable::countAwaitingAnswer(Auth::getUserID());
 	//Challenges the player is in and hasn't played yet: the Challenges item counts them,
 	//and so does Play, where the item is hidden.
 	$challengesWaiting = Challenge::countWaitingFor(Auth::getUserID());

@@ -1,5 +1,7 @@
 <?php
 
+use App\Model\Table\ClassroomMemberStatusTable;
+use App\Model\Table\ClassroomMemberTable;
 use App\Utility\PlayOutcome;
 use App\Utility\Rating;
 use App\Utility\TsumegoButton;
@@ -264,7 +266,7 @@ class ClassroomAssignment extends AppModel
 			JOIN classroom_assignment_problem p ON p.classroom_assignment_id = a.id
 			JOIN set_connection sc ON sc.id = p.set_connection_id AND sc.tsumego_id = ?
 			WHERE m.user_id = ? AND m.classroom_member_status_id = ?',
-			[$tsumegoId, $userId, ClassroomMemberStatus::ACCEPTED]);
+			[$tsumegoId, $userId, ClassroomMemberStatusTable::ACCEPTED]);
 		if (empty($rows))
 			return;
 
@@ -359,7 +361,7 @@ class ClassroomAssignment extends AppModel
 			JOIN set_connection sc ON sc.id = p.set_connection_id AND sc.set_id = ?
 			WHERE a.published IS NOT NULL
 			LIMIT 1',
-			[$userId, ClassroomMemberStatus::ACCEPTED, $setId]);
+			[$userId, ClassroomMemberStatusTable::ACCEPTED, $setId]);
 		return !empty($rows);
 	}
 
@@ -381,7 +383,7 @@ class ClassroomAssignment extends AppModel
 	public static function progress(array $assignment, ?int $pupilId = null): array
 	{
 		$problems = self::problems($assignment);
-		$pupils = ClassroomMember::ofClassroom((int) $assignment['classroom_id'])[ClassroomMemberStatus::ACCEPTED];
+		$pupils = ClassroomMemberTable::ofClassroom((int) $assignment['classroom_id'])[ClassroomMemberStatusTable::ACCEPTED];
 		if ($pupilId !== null)
 			$pupils = array_values(array_filter($pupils, fn(array $pupil) => (int) $pupil['user_id'] === $pupilId));
 
@@ -389,7 +391,7 @@ class ClassroomAssignment extends AppModel
 			FROM classroom_assignment_result r
 			JOIN classroom_member m ON m.user_id = r.user_id AND m.classroom_id = ? AND m.classroom_member_status_id = ?
 			WHERE r.classroom_assignment_id = ?',
-			[(int) $assignment['classroom_id'], ClassroomMemberStatus::ACCEPTED, (int) $assignment['id']]);
+			[(int) $assignment['classroom_id'], ClassroomMemberStatusTable::ACCEPTED, (int) $assignment['id']]);
 		$statuses = Util::query('SELECT ts.user_id, ts.tsumego_id, ts.status
 			FROM classroom_member m
 			JOIN tsumego_status ts ON ts.user_id = m.user_id
@@ -397,7 +399,7 @@ class ClassroomAssignment extends AppModel
 				AND ts.tsumego_id IN (SELECT sc.tsumego_id FROM classroom_assignment_problem p
 					JOIN set_connection sc ON sc.id = p.set_connection_id
 					WHERE p.classroom_assignment_id = ?)',
-			[(int) $assignment['classroom_id'], ClassroomMemberStatus::ACCEPTED, (int) $assignment['id']]);
+			[(int) $assignment['classroom_id'], ClassroomMemberStatusTable::ACCEPTED, (int) $assignment['id']]);
 
 		$lateFrom = self::lateFrom($assignment);
 		$cells = [];
