@@ -19,12 +19,6 @@ use App\Utility\TsumegoButtons;
  * @var array|null $userOfTheDay
  * @var int|null $mistakeTrainingDue Problems due in the mistake training, null when it is not offered
  */
-
-$this->start('script');
-?>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-<?php
-$this->end();
 ?>
 	<div class="split">
 			<div>
