@@ -1,7 +1,7 @@
 <?php
 
+use App\Model\Table\MessageTable;
 use App\Utility\Auth;
-use App\Utility\Util;
 use Facebook\WebDriver\WebDriverKeys;
 
 //The messages page in the browser: writing to a player, reading what arrived and finding a player to write to.
@@ -39,7 +39,7 @@ class MessagesBrowserTest extends IntegrationTestCase
 		$this->assertSame('', $browser->find('.messages-form__text')->getAttribute('value'), 'The sent text stayed in the form');
 		$browser->waitUntilCssSelectorExistsWithText('.messages-list__item--selected .messages-list__preview', 'You: Your ladder problem is wonderful, see https://tsumego.com/sets.');
 
-		$stored = Util::query('SELECT sender_user_id, recipient_user_id, text FROM message');
+		$stored = $this->fetchTable('Message')->find()->select(['sender_user_id', 'recipient_user_id', 'text'])->disableHydration()->toArray();
 		$this->assertSame([[
 			'sender_user_id' => $context->user['id'],
 			'recipient_user_id' => $recipient['id'],
@@ -51,7 +51,7 @@ class MessagesBrowserTest extends IntegrationTestCase
 		$context = $this->prepare();
 		$sender = $context->user;
 		$recipient = $context->otherUsers[0];
-		Message::send($sender['id'], $recipient['id'], 'Shall we review the game?', new TestEmailer());
+		MessageTable::send($sender['id'], $recipient['id'], 'Shall we review the game?', new TestEmailer());
 		$this->login('browserRecipient');
 		$browser = Browser::instance();
 
@@ -64,7 +64,7 @@ class MessagesBrowserTest extends IntegrationTestCase
 		$browser->waitUntilCssSelectorDoesntExist('.messages-list__item--unread');
 		$browser->waitUntilJs('document.querySelector("#account-bar-messages .messages-unread-count").hidden');
 		$this->assertSame('/messages/' . $sender['id'], $browser->driver->executeScript('return location.pathname;'));
-		$this->assertSame(0, Message::unreadCount($recipient['id']));
+		$this->assertSame(0, MessageTable::unreadCount($recipient['id']));
 
 		// The badge stays away on the next page too
 		$browser->get('messages');

@@ -23,7 +23,6 @@ namespace App\Utility;
  * @phpstan-type DateFormatRow array{id?: int, name?: string, ...}
  * @phpstan-type HighscorePageRow array{id?: int, name?: string, ...}
  * @phpstan-type LevelBarRow array{id?: int, name?: string, ...}
- * @phpstan-type MessageRow array{id?: int, sender_user_id?: int, recipient_user_id?: int, text?: string, created?: string, read_at?: string|null, ...}
  * @phpstan-type MistakeTrainingDayRow array{id?: int, user_id?: int, day?: string, due?: int, reviewed?: int, cleared?: int, xp?: int, cleared_at?: string|null, missed_days?: int, ...}
  * @phpstan-type MistakeTrainingPoolRow array{id?: int, user_id?: int, tsumego_id?: int, rung?: int, lapses?: int, next_due?: string|null, last_review_day?: string|null, last_mistake_training_result_id?: int|null, created?: string, modified?: string, ...}
  * @phpstan-type MistakeTrainingResultRow array{id?: int, name?: string, ...}

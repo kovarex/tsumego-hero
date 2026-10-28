@@ -1,6 +1,16 @@
 <?php
 
+namespace App\Model\Table;
+
+use App\Model\Entity\Message;
 use App\Utility\Util;
+use CakeLog;
+use Cake\ORM\TableRegistry;
+use ClassRegistry;
+use Exception;
+use InvalidArgumentException;
+use Router;
+use User;
 
 //A message one player sent to another. The messages between two players are their
 //conversation, so a conversation has no row of its own: it is addressed by the
@@ -13,11 +23,8 @@ use App\Utility\Util;
 //The recipient can get an email about a new message (user.email_on_new_message).
 //It is sent for the first unread message of a sender only, so a lively conversation
 //doesn't fill the inbox: the next one comes after the recipient read the previous.
-/** @phpstan-import-type MessageRow from \App\Utility\RowTypes */
-class Message extends AppModel
+class MessageTable extends AppTable
 {
-	public $useTable = 'message';
-
 	//Longest message accepted, in characters.
 	public const MAX_LENGTH = 5000;
 
@@ -62,13 +69,16 @@ class Message extends AppModel
 			throw new InvalidArgumentException($problem);
 
 		$text = self::normalizeText($text);
-		Util::execute(
-			'INSERT INTO message (sender_user_id, recipient_user_id, text, created) VALUES (?, ?, ?, ?)',
-			[$senderUserId, $recipientUserId, $text, date('Y-m-d H:i:s')]);
-		$messageId = (int) Util::connection()->lastInsertId();
+		$messageTable = TableRegistry::getTableLocator()->get('Message');
+		/** @var Message $message */
+		$message = $messageTable->saveOrFail($messageTable->newEntity([
+			'sender_user_id' => $senderUserId,
+			'recipient_user_id' => $recipientUserId,
+			'text' => $text,
+		]));
 
 		self::notifyByEmail($senderUserId, $recipientUserId, $text, $emailer);
-		return $messageId;
+		return $message->id;
 	}
 
 	//Line ends are kept as \n and the blank space around the message is dropped.
