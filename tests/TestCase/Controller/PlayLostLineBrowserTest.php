@@ -1,5 +1,7 @@
 <?php
 
+use App\Model\Table\TimeModeCategoryTable;
+use App\Model\Table\TimeModeSessionStatusTable;
 use App\Utility\Constants;
 use App\Utility\TimeModeUtil;
 
@@ -217,15 +219,15 @@ class PlayLostLineBrowserTest extends IntegrationTestCase
 
 	public function testTheClockRunningOutInALostLineDoesNotSendATimeout(): void
 	{
-		$blitzSeconds = $this->fetchTable('TimeModeCategory')->get(TimeModeUtil::$CATEGORY_BLITZ)->seconds;
+		$blitzSeconds = $this->fetchTable('TimeModeCategory')->get(TimeModeCategoryTable::BLITZ)->seconds;
 		$context = new ContextPreparator([
 			'tsumego' => ['set_order' => 1, 'sgf' => self::SGF],
 			'tsumegos' => [['set_order' => 2, 'sgf' => self::SGF]],
 			'time-mode-ranks' => ['5k'],
 			'time-mode-sessions' => [[
-				'category' => TimeModeUtil::$CATEGORY_BLITZ,
+				'category' => TimeModeCategoryTable::BLITZ,
 				'rank' => '5k',
-				'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+				'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 				'attempts' => [
 					// the attempt has been running for all but the last seconds of Blitz
 					['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'started-seconds-ago' => $blitzSeconds - 6],

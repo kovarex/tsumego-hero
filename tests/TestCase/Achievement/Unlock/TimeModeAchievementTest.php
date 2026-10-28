@@ -1,12 +1,13 @@
 <?php
 
+use App\Model\Table\TimeModeCategoryTable;
+use App\Model\Table\TimeModeSessionStatusTable;
 use App\Utility\AchievementId;
 //Time Mode Achievement Test
 //Tests Time Mode achievements IDs 70-91:
 //- Rank achievements (70-87): Pass ranks in Slow/Fast/Blitz modes
 //- Precision achievements (88-91): Score thresholds at specific ranks
 use App\Utility\AchievementChecker;
-use App\Utility\TimeModeUtil;
 
 class TimeModeAchievementTest extends AchievementTestCase
 {
@@ -17,8 +18,8 @@ class TimeModeAchievementTest extends AchievementTestCase
 		new ContextPreparator([
 			'time-mode-ranks' => ['5k'],
 			'time-mode-sessions' => [[
-				'category' => TimeModeUtil::$CATEGORY_SLOW_SPEED,
-				'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
+				'category' => TimeModeCategoryTable::SLOW,
+				'status' => TimeModeSessionStatusTable::SOLVED,
 				'rank' => '5k']]]);
 		$browser->get('timeMode/result');
 		$this->assertAchievementUnlocked(AchievementId::TIME_MODE_APPRENTICE_SLOW, "Slow 5k achievement should unlock");
@@ -33,13 +34,13 @@ class TimeModeAchievementTest extends AchievementTestCase
 			'time-mode-ranks' => ['5k'],
 			'time-mode-sessions' => [
 				[
-					'category' => TimeModeUtil::$CATEGORY_SLOW_SPEED,
-					'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
+					'category' => TimeModeCategoryTable::SLOW,
+					'status' => TimeModeSessionStatusTable::SOLVED,
 					'rank' => '5k'
 				],
 				[
-					'category' => TimeModeUtil::$CATEGORY_SLOW_SPEED,
-					'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
+					'category' => TimeModeCategoryTable::SLOW,
+					'status' => TimeModeSessionStatusTable::SOLVED,
 					'rank' => '5k'
 				]]]);
 		$browser->get('timeMode/result');
@@ -51,8 +52,8 @@ class TimeModeAchievementTest extends AchievementTestCase
 		$context = new ContextPreparator([
 			'time-mode-ranks' => ['4k'],
 			'time-mode-sessions' => [[
-				'category' => TimeModeUtil::$CATEGORY_FAST_SPEED,
-				'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
+				'category' => TimeModeCategoryTable::FAST,
+				'status' => TimeModeSessionStatusTable::SOLVED,
 				'rank' => '4k']]]);
 		new AchievementChecker()->checkTimeModeAchievements();
 		$this->assertAchievementUnlocked(AchievementId::TIME_MODE_SCHOLAR_FAST, "Fast 4k achievement should unlock");
@@ -63,8 +64,8 @@ class TimeModeAchievementTest extends AchievementTestCase
 		$context = new ContextPreparator([
 			'time-mode-ranks' => ['1d'],
 			'time-mode-sessions' => [[
-				'category' => TimeModeUtil::$CATEGORY_BLITZ,
-				'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
+				'category' => TimeModeCategoryTable::BLITZ,
+				'status' => TimeModeSessionStatusTable::SOLVED,
 				'rank' => '1d']]]);
 		new AchievementChecker()->checkTimeModeAchievements();
 		$this->assertAchievementUnlocked(AchievementId::TIME_MODE_MASTER_BLITZ, "Blitz 1d achievement should unlock");
@@ -105,8 +106,8 @@ class TimeModeAchievementTest extends AchievementTestCase
 				'tsumego' => 1,
 				'time-mode-ranks' => [$rank],
 				'time-mode-sessions' => [[
-					'category' => TimeModeUtil::$CATEGORY_SLOW_SPEED,
-					'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
+					'category' => TimeModeCategoryTable::SLOW,
+					'status' => TimeModeSessionStatusTable::SOLVED,
 					'rank' => $rank,
 					'attempts' => []]]]);
 			new AchievementChecker()->checkTimeModeAchievements();
@@ -117,8 +118,8 @@ class TimeModeAchievementTest extends AchievementTestCase
 				'tsumego' => 1,
 				'time-mode-ranks' => [$rank],
 				'time-mode-sessions' => [[
-					'category' => TimeModeUtil::$CATEGORY_FAST_SPEED,
-					'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
+					'category' => TimeModeCategoryTable::FAST,
+					'status' => TimeModeSessionStatusTable::SOLVED,
 					'rank' => $rank,
 					'attempts' => []]]]);
 			new AchievementChecker()->checkTimeModeAchievements();
@@ -129,8 +130,8 @@ class TimeModeAchievementTest extends AchievementTestCase
 				'tsumego' => 1,
 				'time-mode-ranks' => [$rank],
 				'time-mode-sessions' => [[
-					'category' => TimeModeUtil::$CATEGORY_BLITZ,
-					'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
+					'category' => TimeModeCategoryTable::BLITZ,
+					'status' => TimeModeSessionStatusTable::SOLVED,
 					'rank' => $rank,
 					'attempts' => []]]]);
 			new AchievementChecker()->checkTimeModeAchievements();
@@ -143,8 +144,8 @@ class TimeModeAchievementTest extends AchievementTestCase
 		$context = new ContextPreparator([
 			'time-mode-ranks' => ['5k'],
 			'time-mode-sessions' => [[
-				'category' => TimeModeUtil::$CATEGORY_SLOW_SPEED,
-				'status' => TimeModeUtil::$SESSION_STATUS_FAILED,
+				'category' => TimeModeCategoryTable::SLOW,
+				'status' => TimeModeSessionStatusTable::FAILED,
 				'rank' => '5k']]]);
 		new AchievementChecker()->checkTimeModeAchievements();
 		$this->assertAchievementNotUnlocked(AchievementId::TIME_MODE_APPRENTICE_SLOW);
@@ -158,8 +159,8 @@ class TimeModeAchievementTest extends AchievementTestCase
 		$context = new ContextPreparator([
 			'time-mode-ranks' => ['10k'],
 			'time-mode-sessions' => [[
-				'category' => TimeModeUtil::$CATEGORY_SLOW_SPEED,
-				'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
+				'category' => TimeModeCategoryTable::SLOW,
+				'status' => TimeModeSessionStatusTable::SOLVED,
 				'rank' => '10k']]]);
 
 		// Manually set points (ContextPreparator doesn't support 'points' field yet)
@@ -171,8 +172,8 @@ class TimeModeAchievementTest extends AchievementTestCase
 		$context = new ContextPreparator([
 			'time-mode-ranks' => ['8k'],
 			'time-mode-sessions' => [[
-				'category' => TimeModeUtil::$CATEGORY_SLOW_SPEED,
-				'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
+				'category' => TimeModeCategoryTable::SLOW,
+				'status' => TimeModeSessionStatusTable::SOLVED,
 				'rank' => '8k']]]);
 		$this->fetchTable('TimeModeSession')->updateAll(['points' => 900], ['user_id' => $context->user['id']]);
 		new AchievementChecker()->checkTimeModeAchievements();
@@ -182,8 +183,8 @@ class TimeModeAchievementTest extends AchievementTestCase
 		$context = new ContextPreparator([
 			'time-mode-ranks' => ['6k'],
 			'time-mode-sessions' => [[
-				'category' => TimeModeUtil::$CATEGORY_SLOW_SPEED,
-				'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
+				'category' => TimeModeCategoryTable::SLOW,
+				'status' => TimeModeSessionStatusTable::SOLVED,
 				'rank' => '6k']]]);
 		$this->fetchTable('TimeModeSession')->updateAll(['points' => 875], ['user_id' => $context->user['id']]);
 		new AchievementChecker()->checkTimeModeAchievements();

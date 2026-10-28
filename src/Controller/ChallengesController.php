@@ -5,11 +5,11 @@ use App\Attribute\HttpPost;
 use App\Model\Entity\TimeModeRank;
 use App\Model\Entity\TimeModeSession;
 use App\Model\Table\ChallengeTable;
+use App\Model\Table\TimeModeSessionStatusTable;
 use App\Utility\Auth;
 use App\Utility\CookieFlash;
 use App\Utility\Rating;
 use App\Utility\TimeMode;
-use App\Utility\TimeModeUtil;
 
 //Challenges between players: one player picks a range of difficulty, the time for a problem and
 //how many problems, invites the others by their names or sends them the link, and everyone in the
@@ -100,7 +100,7 @@ class ChallengesController extends AppController
 		/** @var TimeModeSession|null $otherRun */
 		$otherRun = Auth::isLoggedIn() ? $this->fetchTable('TimeModeSession')->find()->where([
 			'user_id' => Auth::getUserID(),
-			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+			'time_mode_session_status_id' => TimeModeSessionStatusTable::IN_PROGRESS,
 			'challenge_id IS NOT' => null,
 			'challenge_id !=' => $challengeID])->first() : null;
 		$this->set('otherChallengeInProgressID', $otherRun?->challenge_id);
@@ -161,7 +161,7 @@ class ChallengesController extends AppController
 			return $this->redirect(self::challengeUrl($challengeID));
 
 		$run = ChallengeTable::runOf($challengeID, Auth::getUserID());
-		if ($run && $run->time_mode_session_status_id !== TimeModeUtil::$SESSION_STATUS_IN_PROGRESS)
+		if ($run && $run->time_mode_session_status_id !== TimeModeSessionStatusTable::IN_PROGRESS)
 			return $this->redirect(self::challengeUrl($challengeID));
 		if (!$run)
 			new TimeMode()->startChallenge($challenge);

@@ -1,5 +1,7 @@
 <?php
 
+use App\Model\Table\TimeModeCategoryTable;
+use App\Model\Table\TimeModeSessionStatusTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\Rating;
@@ -89,15 +91,15 @@ class TimeModeTest extends IntegrationTestCase
 
 		$this->assertTrue(Auth::isInLevelMode());
 		$this->get('/timeMode/start'
-			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
+			. '?categoryID=' . TimeModeCategoryTable::SLOW
 			. '&rankID=' . $context->timeModeRanks[0]['id']);
 		$this->assertTrue(Auth::isInTimeMode());
 		$sessions = $this->fetchTable('TimeModeSession')->find()->where([
 			'user_id' => Auth::getUserID(),
-			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS])->toArray();
+			'time_mode_session_status_id' => TimeModeSessionStatusTable::IN_PROGRESS])->toArray();
 		$this->assertSame(count($sessions), 1);
 		$this->assertSame($sessions[0]->user_id, Auth::getUserID());
-		$this->assertSame($sessions[0]->time_mode_category_id, TimeModeUtil::$CATEGORY_SLOW_SPEED);
+		$this->assertSame($sessions[0]->time_mode_category_id, TimeModeCategoryTable::SLOW);
 		$this->assertSame($sessions[0]->time_mode_rank_id, $context->timeModeRanks[0]['id']);
 
 		$attempts = $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $sessions[0]->id])->toArray();
@@ -127,18 +129,18 @@ class TimeModeTest extends IntegrationTestCase
 
 		$this->assertEmpty($this->fetchTable('TimeModeSession')->find()->where([
 			'user_id' => Auth::getUserID(),
-			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS])->first());
+			'time_mode_session_status_id' => TimeModeSessionStatusTable::IN_PROGRESS])->first());
 
 		$this->assertTrue(Auth::isInLevelMode());
 		$browser = Browser::instance();
 
 		$browser->get('timeMode/start'
-			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
+			. '?categoryID=' . TimeModeCategoryTable::SLOW
 			. '&rankID=' . $context->timeModeRanks[0]['id']);
 
 		$session = $this->fetchTable('TimeModeSession')->find()->where([
 			'user_id' => Auth::getUserID(),
-			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS])->first();
+			'time_mode_session_status_id' => TimeModeSessionStatusTable::IN_PROGRESS])->first();
 
 		Auth::init();
 		$this->assertTrue(Auth::isInTimeMode());
@@ -181,11 +183,11 @@ class TimeModeTest extends IntegrationTestCase
 
 		$this->assertEmpty($this->fetchTable('TimeModeSession')->find()->where([
 			'user_id' => Auth::getUserID(),
-			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS])->first());
+			'time_mode_session_status_id' => TimeModeSessionStatusTable::IN_PROGRESS])->first());
 		Auth::init();
 		$this->assertFalse(Auth::isInTimeMode());
 		$session = $this->fetchTable('TimeModeSession')->find()->where(['id' => $session->id])->first();
-		$this->assertTrue($session->time_mode_session_status_id == TimeModeUtil::$SESSION_STATUS_SOLVED);
+		$this->assertTrue($session->time_mode_session_status_id == TimeModeSessionStatusTable::SOLVED);
 	}
 
 	public function testTimeModeTreatsPreviouslySolvedProblemAsFresh()
@@ -201,12 +203,12 @@ class TimeModeTest extends IntegrationTestCase
 
 		$browser = Browser::instance();
 		$browser->get('timeMode/start'
-			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
+			. '?categoryID=' . TimeModeCategoryTable::SLOW
 			. '&rankID=' . $context->timeModeRanks[0]['id']);
 
 		$session = $this->fetchTable('TimeModeSession')->find()->where([
 			'user_id' => Auth::getUserID(),
-			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS])->first();
+			'time_mode_session_status_id' => TimeModeSessionStatusTable::IN_PROGRESS])->first();
 		Auth::init();
 		$this->assertTrue(Auth::isInTimeMode());
 
@@ -254,7 +256,7 @@ class TimeModeTest extends IntegrationTestCase
 
 		$browser = Browser::instance();
 		$browser->get('timeMode/start'
-			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
+			. '?categoryID=' . TimeModeCategoryTable::SLOW
 			. '&rankID=' . $context->timeModeRanks[0]['id']);
 
 		$commentDisplay = fn() => $browser->driver->executeScript(
@@ -284,7 +286,7 @@ class TimeModeTest extends IntegrationTestCase
 
 		$browser = Browser::instance();
 		$browser->get('timeMode/start'
-			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
+			. '?categoryID=' . TimeModeCategoryTable::SLOW
 			. '&rankID=' . $context->timeModeRanks[0]['id']);
 
 		Auth::init();
@@ -334,7 +336,7 @@ class TimeModeTest extends IntegrationTestCase
 
 		$browser = Browser::instance();
 		$browser->get('timeMode/start'
-			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
+			. '?categoryID=' . TimeModeCategoryTable::SLOW
 			. '&rankID=' . $context->timeModeRanks[0]['id']);
 
 		Auth::init();
@@ -356,7 +358,7 @@ class TimeModeTest extends IntegrationTestCase
 
 		$session = $this->fetchTable('TimeModeSession')->find()->where([
 			'user_id' => Auth::getUserID(),
-			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS])->first();
+			'time_mode_session_status_id' => TimeModeSessionStatusTable::IN_PROGRESS])->first();
 		$attempt = $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $session->id])->orderBy('id')->first();
 		$this->assertSame($attempt->time_mode_attempt_status_id, TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT);
 	}
@@ -373,7 +375,7 @@ class TimeModeTest extends IntegrationTestCase
 
 		$browser = Browser::instance();
 		$browser->get('timeMode/start'
-			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
+			. '?categoryID=' . TimeModeCategoryTable::SLOW
 			. '&rankID=' . $context->timeModeRanks[0]['id']);
 
 		Auth::init();
@@ -395,7 +397,7 @@ class TimeModeTest extends IntegrationTestCase
 
 		$browser = Browser::instance();
 		$browser->get('timeMode/start'
-			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
+			. '?categoryID=' . TimeModeCategoryTable::SLOW
 			. '&rankID=' . $context->timeModeRanks[0]['id']);
 
 		Auth::init();
@@ -403,7 +405,7 @@ class TimeModeTest extends IntegrationTestCase
 		$browser->find('#besogo-next-button')->click();
 		$session = $this->fetchTable('TimeModeSession')->find()->where([
 			'user_id' => Auth::getUserID(),
-			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS])->first();
+			'time_mode_session_status_id' => TimeModeSessionStatusTable::IN_PROGRESS])->first();
 		$attempt = $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $session->id])->orderBy('id')->first();
 		$this->assertSame($attempt->time_mode_attempt_status_id, TimeModeUtil::$ATTEMPT_STATUS_SKIPPED);
 	}
@@ -420,7 +422,7 @@ class TimeModeTest extends IntegrationTestCase
 
 		$browser = Browser::instance();
 		$browser->get('timeMode/start'
-			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
+			. '?categoryID=' . TimeModeCategoryTable::SLOW
 			. '&rankID=' . $context->timeModeRanks[0]['id']);
 
 		Auth::init();
@@ -437,25 +439,25 @@ class TimeModeTest extends IntegrationTestCase
 		if ($conditions['alreadySolved'])
 		{
 			$contextParameters['time-mode-sessions'] [] = [
-				'category' => TimeModeUtil::$CATEGORY_BLITZ,
+				'category' => TimeModeCategoryTable::BLITZ,
 				'rank' => '5k',
-				'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
+				'status' => TimeModeSessionStatusTable::SOLVED,
 				'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED]]];
 		}
 		if ($conditions['higherRankPresent'])
 			$contextParameters['time-mode-ranks'] [] = '1d';
 		$contextParameters['tsumego'] = ['sets' => [['name' => 'set 1', 'num' => 1]]];
 		$contextParameters['time-mode-sessions'] [] = [
-			'category' => TimeModeUtil::$CATEGORY_BLITZ,
+			'category' => TimeModeCategoryTable::BLITZ,
 			'rank' => '5k',
-			'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+			'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 			'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]];
 		if ($conditions['failedSessionOnRankToBeUnlocked'])
 		{
 			$contextParameters['time-mode-sessions'] [] = [
-				'category' => TimeModeUtil::$CATEGORY_BLITZ,
+				'category' => TimeModeCategoryTable::BLITZ,
 				'rank' => '1d',
-				'status' => TimeModeUtil::$SESSION_STATUS_FAILED];
+				'status' => TimeModeSessionStatusTable::FAILED];
 		}
 
 		$context = new ContextPreparator($contextParameters);
@@ -470,12 +472,12 @@ class TimeModeTest extends IntegrationTestCase
 
 		$this->assertEmpty($this->fetchTable('TimeModeSession')->find()->where([
 			'user_id' => Auth::getUserID(),
-			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS])->first());
+			'time_mode_session_status_id' => TimeModeSessionStatusTable::IN_PROGRESS])->first());
 		Auth::init();
 		$this->assertFalse(Auth::isInTimeMode());
 		$session = $this->fetchTable('TimeModeSession')->find()->where(['id' => $context->timeModeSessions[0]->id])->first();
 		$this->assertSame($session->time_mode_session_status_id,
-			$conditions['actuallySolvedSession'] ? TimeModeUtil::$SESSION_STATUS_SOLVED : TimeModeUtil::$SESSION_STATUS_FAILED);
+			$conditions['actuallySolvedSession'] ? TimeModeSessionStatusTable::SOLVED : TimeModeSessionStatusTable::FAILED);
 		$alerts = $browser->getElements('#time-rank-unlock-alert');
 		if (count($alerts) == 1)
 		{
@@ -521,7 +523,7 @@ class TimeModeTest extends IntegrationTestCase
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
 		$contextParameters['time-mode-ranks'] = ['5k', '1d'];
 		foreach ($contextParameters['time-mode-ranks'] as $rank)
-			$contextParameters['time-mode-sessions'] [] = ['category' => TimeModeUtil::$CATEGORY_BLITZ, 'rank' => $rank, 'status' => TimeModeUtil::$SESSION_STATUS_SOLVED];
+			$contextParameters['time-mode-sessions'] [] = ['category' => TimeModeCategoryTable::BLITZ, 'rank' => $rank, 'status' => TimeModeSessionStatusTable::SOLVED];
 		$context = new ContextPreparator($contextParameters);
 
 		foreach ([0, 1] as $indexToShow)
@@ -545,16 +547,16 @@ class TimeModeTest extends IntegrationTestCase
 			$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
 			$contextParameters['time-mode-ranks'] = ['5k', '1d'];
 			if ($testCase === 'solve-all' || $testCase === 'solve-5k')
-				$contextParameters['time-mode-sessions'] [] = ['category' => TimeModeUtil::$CATEGORY_BLITZ, 'rank' => '5k', 'status' => TimeModeUtil::$SESSION_STATUS_SOLVED];
+				$contextParameters['time-mode-sessions'] [] = ['category' => TimeModeCategoryTable::BLITZ, 'rank' => '5k', 'status' => TimeModeSessionStatusTable::SOLVED];
 			if ($testCase === 'solve-all')
-				$contextParameters['time-mode-sessions'] [] = ['category' => TimeModeUtil::$CATEGORY_BLITZ, 'rank' => '1d', 'status' => TimeModeUtil::$SESSION_STATUS_SOLVED];
+				$contextParameters['time-mode-sessions'] [] = ['category' => TimeModeCategoryTable::BLITZ, 'rank' => '1d', 'status' => TimeModeSessionStatusTable::SOLVED];
 			$context = new ContextPreparator($contextParameters);
 			$browser->get('timeMode/overview');
 
-			$div5k = $browser->find('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . $context->timeModeRanks[0]['id']);
+			$div5k = $browser->find('#rank-selector-' . TimeModeCategoryTable::BLITZ . '-' . $context->timeModeRanks[0]['id']);
 			$links5k = $div5k->findElements(WebDriverBy::tagName('a'));
 
-			$div1d = $browser->find('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . $context->timeModeRanks[1]['id']);
+			$div1d = $browser->find('#rank-selector-' . TimeModeCategoryTable::BLITZ . '-' . $context->timeModeRanks[1]['id']);
 			$links1d = $div1d->findElements(WebDriverBy::tagName('a'));
 
 			// lowest rank is always unlocked
@@ -604,16 +606,16 @@ class TimeModeTest extends IntegrationTestCase
 		$contextParameters = [];
 		$contextParameters['user'] = [
 			'mode' => Constants::$LEVEL_MODE,
-			'last-time-mode-category-id' => TimeModeUtil::$CATEGORY_BLITZ];
+			'last-time-mode-category-id' => TimeModeCategoryTable::BLITZ];
 		$contextParameters['time-mode-ranks'] = ['5k', '1d'];
 		$context = new ContextPreparator($contextParameters);
 		$browser->get('timeMode/overview');
 
-		$div5k = $browser->find('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . $context->timeModeRanks[0]['id']);
+		$div5k = $browser->find('#rank-selector-' . TimeModeCategoryTable::BLITZ . '-' . $context->timeModeRanks[0]['id']);
 		$links5k = $div5k->findElements(WebDriverBy::tagName('a'));
 		$imgs5k = $div5k->findElements(WebDriverBy::tagName('img'));
 
-		$div1d = $browser->find('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . $context->timeModeRanks[1]['id']);
+		$div1d = $browser->find('#rank-selector-' . TimeModeCategoryTable::BLITZ . '-' . $context->timeModeRanks[1]['id']);
 		$links1d = $div1d->findElements(WebDriverBy::tagName('a'));
 		$imgs1d = $div1d->findElements(WebDriverBy::tagName('img'));
 
@@ -645,15 +647,15 @@ class TimeModeTest extends IntegrationTestCase
 	{
 		$browser = Browser::instance();
 		$contextParameters = [];
-		$contextParameters['user'] = ['last-time-mode-category-id' => TimeModeUtil::$CATEGORY_BLITZ];
+		$contextParameters['user'] = ['last-time-mode-category-id' => TimeModeCategoryTable::BLITZ];
 		$contextParameters['time-mode-ranks'] = ['5k', '1d'];
 		$context = new ContextPreparator($contextParameters);
 		$browser->get('timeMode/overview');
 
-		$div5kBlitz = $browser->find('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . $context->timeModeRanks[0]['id']);
-		$div1dBlitz = $browser->find('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . $context->timeModeRanks[1]['id']);
-		$div5kFast = $browser->find('#rank-selector-' . TimeModeUtil::$CATEGORY_FAST_SPEED . '-' . $context->timeModeRanks[0]['id']);
-		$div1dFast = $browser->find('#rank-selector-' . TimeModeUtil::$CATEGORY_FAST_SPEED . '-' . $context->timeModeRanks[1]['id']);
+		$div5kBlitz = $browser->find('#rank-selector-' . TimeModeCategoryTable::BLITZ . '-' . $context->timeModeRanks[0]['id']);
+		$div1dBlitz = $browser->find('#rank-selector-' . TimeModeCategoryTable::BLITZ . '-' . $context->timeModeRanks[1]['id']);
+		$div5kFast = $browser->find('#rank-selector-' . TimeModeCategoryTable::FAST . '-' . $context->timeModeRanks[0]['id']);
+		$div1dFast = $browser->find('#rank-selector-' . TimeModeCategoryTable::FAST . '-' . $context->timeModeRanks[1]['id']);
 
 		// blirz buttons are visible at start
 		$this->assertTrue($div5kBlitz->isDisplayed());
@@ -662,7 +664,7 @@ class TimeModeTest extends IntegrationTestCase
 		$this->assertFalse($div1dFast->isDisplayed());
 
 		// we switch to fast speed, and blitz buttons get hidden, instead we see fast buttons
-		$browser->clickId('timeMode' . TimeModeUtil::$CATEGORY_FAST_SPEED);
+		$browser->clickId('timeMode' . TimeModeCategoryTable::FAST);
 		$this->assertFalse($div5kBlitz->isDisplayed());
 		$this->assertFalse($div1dBlitz->isDisplayed());
 		$this->assertTrue($div5kFast->isDisplayed());
@@ -683,7 +685,7 @@ class TimeModeTest extends IntegrationTestCase
 		$browser = Browser::instance();
 		$browser->get('timeMode/overview');
 		$browser->get('/timeMode/start'
-			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
+			. '?categoryID=' . TimeModeCategoryTable::SLOW
 			. '&rankID=' . $context->timeModeRanks[0]['id']);
 		$this->assertSame(Util::getMyAddress() . '/timeMode/play', $browser->driver->getCurrentURL());
 
@@ -724,7 +726,7 @@ class TimeModeTest extends IntegrationTestCase
 
 		$browser = Browser::instance();
 		$browser->get('timeMode/start'
-			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
+			. '?categoryID=' . TimeModeCategoryTable::SLOW
 			. '&rankID=' . $context->timeModeRanks[0]['id']);
 
 		Auth::init();

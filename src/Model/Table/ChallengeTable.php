@@ -188,7 +188,7 @@ class ChallengeTable extends AppTable
 				(SELECT COUNT(*) FROM challenge_participant p JOIN user pu ON pu.id = p.user_id AND pu.deleted IS NULL
 					WHERE p.challenge_id = c.id AND p.declined IS NULL) AS participant_count,
 				(SELECT COUNT(*) FROM time_mode_session s JOIN user su ON su.id = s.user_id AND su.deleted IS NULL
-					WHERE s.challenge_id = c.id AND s.time_mode_session_status_id != ' . TimeModeUtil::$SESSION_STATUS_IN_PROGRESS . ') AS finished_count,
+					WHERE s.challenge_id = c.id AND s.time_mode_session_status_id != ' . TimeModeSessionStatusTable::IN_PROGRESS . ') AS finished_count,
 				' . ClassroomTable::USER_COLUMNS . '
 			FROM challenge c
 			JOIN time_mode_rank minimum_rank ON minimum_rank.id = c.minimum_time_mode_rank_id
@@ -279,7 +279,7 @@ class ChallengeTable extends AppTable
 		{
 			if ($row['session_id'] === null)
 				$row['run'] = $row['declined'] === null ? self::RUN_NOT_STARTED : self::RUN_DECLINED;
-			elseif ((int) $row['time_mode_session_status_id'] === TimeModeUtil::$SESSION_STATUS_IN_PROGRESS)
+			elseif ((int) $row['time_mode_session_status_id'] === TimeModeSessionStatusTable::IN_PROGRESS)
 				$row['run'] = self::RUN_PLAYING;
 			else
 				$row['run'] = self::RUN_FINISHED;

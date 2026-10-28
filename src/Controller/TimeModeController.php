@@ -5,6 +5,7 @@ use App\Attribute\HttpPost;
 use App\Model\Entity\TimeModeCategory;
 use App\Model\Entity\TimeModeRank;
 use App\Model\Entity\TimeModeSession;
+use App\Model\Table\TimeModeSessionStatusTable;
 use App\Utility\AchievementChecker;
 use App\Utility\Auth;
 use App\Utility\Constants;
@@ -168,7 +169,7 @@ ORDER BY MIN(rating);");
 		/** @var array<TimeModeSession> $solvedSessions */
 		$solvedSessions = $this->fetchTable('TimeModeSession')->find()->where([
 			'user_id' => Auth::getUserID(),
-			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_SOLVED,
+			'time_mode_session_status_id' => TimeModeSessionStatusTable::SOLVED,
 			'challenge_id IS' => null])->toArray();
 
 		$solvedMap = [];
@@ -188,13 +189,13 @@ ORDER BY MIN(rating);");
 		$this->set('solvedMap', $solvedMap);
 		$this->set('hasFinishedSesssion', $this->fetchTable('TimeModeSession')->exists([
 			'user_id' => Auth::getUserID(),
-			'time_mode_session_status_id !=' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+			'time_mode_session_status_id !=' => TimeModeSessionStatusTable::IN_PROGRESS,
 			'challenge_id IS' => null]));
 		// a new run ends the run of a challenge, so the player is told before they start one
 		/** @var TimeModeSession|null $challengeRun */
 		$challengeRun = $this->fetchTable('TimeModeSession')->find()->where([
 			'user_id' => Auth::getUserID(),
-			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+			'time_mode_session_status_id' => TimeModeSessionStatusTable::IN_PROGRESS,
 			'challenge_id IS NOT' => null])->first();
 		$this->set('challengeInProgressID', $challengeRun?->challenge_id);
 		return null;
@@ -215,7 +216,7 @@ ORDER BY MIN(rating);");
 	{
 		$result = [];
 		$result['id'] = $session['id'];
-		$result['status'] = $session['time_mode_session_status_id'] == TimeModeUtil::$SESSION_STATUS_SOLVED ? 'passed' : 'failed';
+		$result['status'] = $session['time_mode_session_status_id'] == TimeModeSessionStatusTable::SOLVED ? 'passed' : 'failed';
 		$result['category'] = $timeModeCategory->name;
 		$result['points'] = $session['points'];
 		$result['rank'] = $timeModeRank->name;
@@ -301,13 +302,13 @@ WHERE
 	time_mode_session.time_mode_session_status_id != ? AND
 	time_mode_session.challenge_id IS NULL
 ORDER BY time_mode_session.created DESC, time_mode_session.id DESC",
-			[TimeModeUtil::$ATTEMPT_RESULT_SOLVED, Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]);
+			[TimeModeUtil::$ATTEMPT_RESULT_SOLVED, Auth::getUserID(), TimeModeSessionStatusTable::IN_PROGRESS]);
 
 		$result = [];
 		foreach ($sessions as $session)
 			$result[$session['time_mode_category_id']][$session['time_mode_rank_id']] [] = [
 				'id' => $session['id'],
-				'status' => $session['time_mode_session_status_id'] == TimeModeUtil::$SESSION_STATUS_SOLVED ? 'passed' : 'failed',
+				'status' => $session['time_mode_session_status_id'] == TimeModeSessionStatusTable::SOLVED ? 'passed' : 'failed',
 				'points' => $session['points'],
 				'created' => $session['created'],
 				'time_mode_session_status_id' => $session['time_mode_session_status_id'],
@@ -322,7 +323,7 @@ ORDER BY time_mode_session.created DESC, time_mode_session.id DESC",
 			return null;
 
 		// the current session wasn't a success, so it logically can't unlock shit
-		if ($finishedSession->time_mode_session_status_id != TimeModeUtil::$SESSION_STATUS_SOLVED)
+		if ($finishedSession->time_mode_session_status_id != TimeModeSessionStatusTable::SOLVED)
 			return null;
 
 		// only one successful solve exists for this combination of rank and category, so it must be the one we just did
@@ -330,7 +331,7 @@ ORDER BY time_mode_session.created DESC, time_mode_session.id DESC",
 			'user_id' => Auth::getUserID(),
 			'time_mode_category_id' => $finishedSession->time_mode_category_id,
 			'time_mode_rank_id' => $finishedSession->time_mode_rank_id,
-			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_SOLVED])->count() != 1)
+			'time_mode_session_status_id' => TimeModeSessionStatusTable::SOLVED])->count() != 1)
 				return null;
 
 		$rankIndex = array_find_key($timeModeRanks, function (TimeModeRank $timeModeRank) use ($finishedSession) {

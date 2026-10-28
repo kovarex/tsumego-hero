@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\TimeModeCategoryTable;
 use Facebook\WebDriver\WebDriverKeys;
 /**
  * Tag editor tests - React component with data-testid selectors.
@@ -9,7 +10,6 @@ use Facebook\WebDriver\WebDriverKeys;
  */
 use App\Utility\Auth;
 use App\Utility\Constants;
-use App\Utility\TimeModeUtil;
 use App\Utility\Util;
 
 class TagTest extends IntegrationTestCase
@@ -894,7 +894,7 @@ class TagTest extends IntegrationTestCase
 		]);
 		$browser = Browser::instance();
 		$browser->get('timeMode/start'
-			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
+			. '?categoryID=' . TimeModeCategoryTable::SLOW
 			. '&rankID=' . $context->timeModeRanks[0]['id']);
 		$browser->find('[data-testid="tag-editor"]');
 

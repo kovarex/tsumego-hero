@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Table\ChallengeTable;
+use App\Model\Table\TimeModeSessionStatusTable;
 
 /**
  * The challenges of a player and the form to start one.
@@ -11,8 +12,6 @@ use App\Model\Table\ChallengeTable;
  * @var int|null $defaultRankID The rank of the player, to start the form with
  * @var string|null $opponent The name of the player to invite, from the button on a profile
  */
-
-use App\Utility\TimeModeUtil;
 
 ?>
 <div class="challenges">
@@ -78,7 +77,7 @@ use App\Utility\TimeModeUtil;
 				$myRun = 'you declined';
 			elseif ($challenge['my_run_status_id'] === null)
 				$myRun = '<strong>not played yet</strong>';
-			elseif ((int) $challenge['my_run_status_id'] === TimeModeUtil::$SESSION_STATUS_IN_PROGRESS)
+			elseif ((int) $challenge['my_run_status_id'] === TimeModeSessionStatusTable::IN_PROGRESS)
 				$myRun = '<strong>playing</strong>';
 			else
 				$myRun = 'your points ' . ChallengeTable::formatPoints((float) $challenge['my_points']);

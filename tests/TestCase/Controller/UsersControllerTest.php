@@ -4,7 +4,6 @@ use App\Model\Table\TimeModeCategoryTable;
 use App\Model\Table\TimeModeSessionStatusTable;
 use App\Utility\AchievementId;
 use App\Utility\Rating;
-use App\Utility\TimeModeUtil;
 
 /**
  * @retryAttempts 2
@@ -176,13 +175,13 @@ class UsersControllerTest extends IntegrationTestCase
 			'time-mode-ranks' => ['5k', '10k', '1d'],
 			'time-mode-sessions' => [
 				[
-					'category' => TimeModeUtil::$CATEGORY_BLITZ,
-					'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
+					'category' => TimeModeCategoryTable::BLITZ,
+					'status' => TimeModeSessionStatusTable::SOLVED,
 					'rank' => '5k'
 				],
 				[
-					'category' => TimeModeUtil::$CATEGORY_FAST_SPEED,
-					'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
+					'category' => TimeModeCategoryTable::FAST,
+					'status' => TimeModeSessionStatusTable::SOLVED,
 					'rank' => '10k'
 				]]]);
 		$context->unlockAchievementsWithoutEffect();
