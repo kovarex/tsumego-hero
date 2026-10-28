@@ -188,7 +188,7 @@
   height: 20px;
   margin: 0;
 }
-/* What others did since the admin looked the time before, see AdminPage::markViewed */
+/* What others did since the admin looked the time before, see AdminOverviewTypeTable::markSeen */
 .data-table tr.data-table__row--new td {
   font-weight: bold;
 }

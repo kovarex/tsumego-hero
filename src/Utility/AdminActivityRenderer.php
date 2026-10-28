@@ -9,7 +9,7 @@ use User;
 
 class AdminActivityRenderer extends DataTableRenderer
 {
-	//$newSince: When the admin looked the time before (see AdminPage::markViewed),
+	//$newSince: When the admin looked the time before (see AdminOverviewTypeTable::markSeen),
 	//what the others did since then is marked as new
 	public function __construct(array $urlParams, private ?string $newSince = null)
 	{
