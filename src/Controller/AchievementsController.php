@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Entity\Achievement;
+use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\AchievementTable;
 use App\Utility\AchievementId;
 use App\Utility\Auth;
@@ -82,12 +83,12 @@ class AchievementsController extends AppController
 		foreach ($achievements as $index => $achievement)
 			if (!$achievement['unlocked'])
 				if ($definition = AchievementTable::progressDefinition($achievement['id']))
-					if ($definition['category'] == AchievementCondition::CATEGORY_COMPLETED_SETS)
+					if ($definition['category'] == AchievementConditionTable::CATEGORY_COMPLETED_SETS)
 						$definitions[$index] = $definition;
 		if (!$definitions)
 			return;
 
-		$values = AchievementCondition::values($userID, array_values(array_unique(array_column($definitions, 'category'))));
+		$values = AchievementConditionTable::values($userID, array_values(array_unique(array_column($definitions, 'category'))));
 		foreach ($definitions as $index => $definition)
 		{
 			$progress = min((int) ($values[$definition['category']] ?? 0), $definition['goal']);
@@ -150,7 +151,7 @@ class AchievementsController extends AppController
 			$progressDefinition = AchievementTable::progressDefinition($achievement->id);
 			if ($progressDefinition)
 			{
-				$progress = (int) AchievementCondition::value($statusUserId, $progressDefinition['category']);
+				$progress = (int) AchievementConditionTable::value($statusUserId, $progressDefinition['category']);
 				$progressGoal = $progressDefinition['goal'];
 				if ($currentUserStatus)
 					$progress = $progressGoal;
@@ -189,7 +190,7 @@ class AchievementsController extends AppController
 		if ($userID)
 			foreach (Util::query(
 				'SELECT set_id, value AS accuracy FROM achievement_condition WHERE user_id = ? AND achievement_condition_category_id = ?',
-				[$userID, AchievementCondition::CATEGORY_SET_ACCURACY]) as $row)
+				[$userID, AchievementConditionTable::CATEGORY_SET_ACCURACY]) as $row)
 					$bestAccuracy[(int) $row['set_id']] = (float) $row['accuracy'];
 
 		$collections = [];

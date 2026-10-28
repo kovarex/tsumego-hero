@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\AchievementConditionTable;
 use App\Utility\AchievementId;
 
 //The accuracy and speed achievements belong to the collections the site itself
@@ -45,12 +46,11 @@ class SetAchievementOwnershipTest extends AchievementTestCase
 	//that survives the page view.
 	private function saveAverageTime(int $userId, int $setId, float $seconds): void
 	{
-		$AchievementCondition = ClassRegistry::init('AchievementCondition');
-		$AchievementCondition->create();
-		$AchievementCondition->save([
+		$achievementConditionTable = $this->fetchTable('AchievementCondition');
+		$achievementConditionTable->saveOrFail($achievementConditionTable->newEntity([
 			'user_id' => $userId,
 			'set_id' => $setId,
-			'achievement_condition_category_id' => AchievementCondition::CATEGORY_SET_TIME,
-			'value' => $seconds]);
+			'achievement_condition_category_id' => AchievementConditionTable::CATEGORY_SET_TIME,
+			'value' => $seconds]));
 	}
 }

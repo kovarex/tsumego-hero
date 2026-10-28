@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Entity\Achievement;
+use App\Model\Table\AchievementConditionTable;
 use App\Utility\AchievementId;
 /* Test AchievementId::SUPERIOR_ACCURACY
  * "Finish a collection with 100% accuracy"
@@ -17,13 +18,12 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$setId = $this->createSetWithTsumegosAndConnections(1200, 100);
 
 		// Create 100% accuracy condition
-		$AchievementCondition = ClassRegistry::init('AchievementCondition');
-		$AchievementCondition->create();
-		$AchievementCondition->save([
+		$achievementConditionTable = $this->fetchTable('AchievementCondition');
+		$achievementConditionTable->saveOrFail($achievementConditionTable->newEntity([
 			'user_id' => $context->user['id'],
 			'set_id' => $setId,
-			'achievement_condition_category_id' => AchievementCondition::CATEGORY_SET_ACCURACY,
-			'value' => 100]);
+			'achievement_condition_category_id' => AchievementConditionTable::CATEGORY_SET_ACCURACY,
+			'value' => 100]));
 
 		new AchievementChecker()->checkSetAchievements($setId);
 		$this->assertAchievementUnlocked(AchievementId::SUPERIOR_ACCURACY, 'Superior Accuracy (100%) should unlock');
@@ -37,13 +37,12 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$setId = $this->createSetWithTsumegosAndConnections(1200, 100);
 
 		// Create 99% accuracy condition (just below threshold)
-		$AchievementCondition = ClassRegistry::init('AchievementCondition');
-		$AchievementCondition->create();
-		$AchievementCondition->save([
+		$achievementConditionTable = $this->fetchTable('AchievementCondition');
+		$achievementConditionTable->saveOrFail($achievementConditionTable->newEntity([
 			'user_id' => $context->user['id'],
 			'set_id' => $setId,
-			'achievement_condition_category_id' => AchievementCondition::CATEGORY_SET_ACCURACY,
-			'value' => 99]);
+			'achievement_condition_category_id' => AchievementConditionTable::CATEGORY_SET_ACCURACY,
+			'value' => 99]));
 
 		new AchievementChecker()->checkSetAchievements($setId);
 		$this->assertAchievementNotUnlocked(AchievementId::SUPERIOR_ACCURACY);
@@ -124,7 +123,7 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$context = new ContextPreparator();
 
 		$setId = $this->createFinishedCollection($context->user['id']);
-		AchievementCondition::keepHighest($context->user['id'], AchievementCondition::CATEGORY_SET_ACCURACY, 100, $setId);
+		AchievementConditionTable::keepHighest($context->user['id'], AchievementConditionTable::CATEGORY_SET_ACCURACY, 100, $setId);
 
 		new AchievementChecker()->checkSetAchievements($setId);
 
@@ -206,13 +205,12 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$context = new ContextPreparator();
 
 		$closeSetId = $this->createSetWithTsumegosAndConnections(1200, 100);
-		$AchievementCondition = ClassRegistry::init('AchievementCondition');
-		$AchievementCondition->create();
-		$AchievementCondition->save([
+		$achievementConditionTable = $this->fetchTable('AchievementCondition');
+		$achievementConditionTable->saveOrFail($achievementConditionTable->newEntity([
 			'user_id' => $context->user['id'],
 			'set_id' => $closeSetId,
-			'achievement_condition_category_id' => AchievementCondition::CATEGORY_SET_ACCURACY,
-			'value' => 96.5]);
+			'achievement_condition_category_id' => AchievementConditionTable::CATEGORY_SET_ACCURACY,
+			'value' => 96.5]));
 		$finishedSetId = $this->createFinishedCollection($context->user['id']);
 		$untouchedSetId = $this->createSetWithTsumegosAndConnections(1200, 100);
 
@@ -293,13 +291,12 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 	{
 		$setId = $this->createSetWithTsumegosAndConnections(1200, $problemCount, $public);
 
-		$AchievementCondition = ClassRegistry::init('AchievementCondition');
-		$AchievementCondition->create();
-		$AchievementCondition->save([
+		$achievementConditionTable = $this->fetchTable('AchievementCondition');
+		$achievementConditionTable->saveOrFail($achievementConditionTable->newEntity([
 			'user_id' => $userId,
 			'set_id' => $setId,
-			'achievement_condition_category_id' => AchievementCondition::CATEGORY_SET_ACCURACY,
-			'value' => 100]);
+			'achievement_condition_category_id' => AchievementConditionTable::CATEGORY_SET_ACCURACY,
+			'value' => 100]));
 
 		return $setId;
 	}

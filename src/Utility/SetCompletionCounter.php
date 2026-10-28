@@ -2,14 +2,14 @@
 
 namespace App\Utility;
 
-use AchievementCondition;
+use App\Model\Table\AchievementConditionTable;
 use Set;
 
 //Counts the sets a user completed, for the "complete N sets" achievements.
 //Sets are counted in parts of $PARTITION_SIZE problems, the way the collections page splits
 //them with the default collection size, regardless of the size the user picked. A set of
 //1000 problems therefore counts as 5 sets.
-//The count is kept in the achievement condition AchievementCondition::CATEGORY_COMPLETED_SETS.
+//The count is kept in the achievement condition AchievementConditionTable::CATEGORY_COMPLETED_SETS.
 class SetCompletionCounter
 {
 	// Deliberately not Constants::$DEFAULT_COLLECTION_SIZE: changing the default partitioning
@@ -46,7 +46,7 @@ LIMIT 1', [$userID, $tsumegoID, $tsumegoID]);
 
 	public static function save(int $userID, int $count): void
 	{
-		AchievementCondition::put($userID, AchievementCondition::CATEGORY_COMPLETED_SETS, $count);
+		AchievementConditionTable::put($userID, AchievementConditionTable::CATEGORY_COMPLETED_SETS, $count);
 	}
 
 	//Every problem of the official public sets with the part of its set it falls into and whether

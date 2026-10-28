@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\AchievementConditionTable;
 use App\Utility\AchievementId;
 
 //Test all 12 Accuracy achievements (IDs 12-23)
@@ -37,19 +38,19 @@ class AccuracyAchievementTest extends AchievementTestCase
 			$browser = Browser::instance();
 			$context = new ContextPreparator();
 			// Clean only achievement records from previous iteration (preserve sets/user)
-			ClassRegistry::init('AchievementCondition')->deleteAll(['1 = 1']);
+			$this->fetchTable('AchievementCondition')->deleteAll(['1 = 1']);
 			$this->fetchTable('AchievementStatus')->deleteAll(['1 = 1']);
 
 			// Create set with 100 tsumegos + SetConnection records
 			$setId = $this->createSetWithTsumegosAndConnections($rating, 100);
 
 			// Create accuracy condition
-			ClassRegistry::init('AchievementCondition')->create();
-			ClassRegistry::init('AchievementCondition')->save([
+			$achievementConditionTable = $this->fetchTable('AchievementCondition');
+			$achievementConditionTable->saveOrFail($achievementConditionTable->newEntity([
 				'user_id' => $context->user['id'],
 				'set_id' => $setId,
-				'achievement_condition_category_id' => AchievementCondition::CATEGORY_SET_ACCURACY,
-				'value' => $accuracy]);
+				'achievement_condition_category_id' => AchievementConditionTable::CATEGORY_SET_ACCURACY,
+				'value' => $accuracy]));
 
 			$browser->get('/sets/view/' . $setId);
 			$this->assertAchievementUnlocked($achievementId, "Accuracy {$achievementId->name} ($accuracy% at $rank) should unlock");

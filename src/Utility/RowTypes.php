@@ -6,7 +6,6 @@ namespace App\Utility;
 //Regenerate after schema changes: ddev exec php scripts/generate-phpstan-row-types.php
 /**
  * @phpstan-type AchievementConditionCategoryRow array{id?: int, name?: string, ...}
- * @phpstan-type AchievementConditionRow array{id?: int, value?: float|null, user_id?: int, achievement_condition_category_id?: int, set_id?: int|null, set_id_or_zero?: int|null, ...}
  * @phpstan-type AdminActivityRow array{id?: int, user_id?: int, tsumego_id?: int|null, set_id?: int|null, type?: int, old_value?: string|null, new_value?: string|null, created?: string, ...}
  * @phpstan-type AdminOverviewSeenRow array{user_id?: int, admin_overview_type_id?: int, seen?: string, ...}
  * @phpstan-type AvatarSettingRow array{id?: int, name?: string, ...}

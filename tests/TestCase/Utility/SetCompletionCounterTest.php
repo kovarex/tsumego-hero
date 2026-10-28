@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\AchievementConditionTable;
 use App\Utility\Auth;
 use App\Utility\SetCompletionCounter;
 
@@ -118,9 +119,8 @@ class SetCompletionCounterTest extends IntegrationTestCase
 		new ContextPreparator();
 		SetCompletionCounter::save(Auth::getUserID(), 3);
 		SetCompletionCounter::save(Auth::getUserID(), 5);
-		$conditions = ClassRegistry::init('AchievementCondition')->find('all', [
-			'conditions' => ['user_id' => Auth::getUserID(), 'achievement_condition_category_id' => AchievementCondition::CATEGORY_COMPLETED_SETS]]);
+		$conditions = $this->fetchTable('AchievementCondition')->find()->where(['user_id' => Auth::getUserID(), 'achievement_condition_category_id' => AchievementConditionTable::CATEGORY_COMPLETED_SETS])->all()->toList();
 		$this->assertCount(1, $conditions);
-		$this->assertSame(5, (int) $conditions[0]['AchievementCondition']['value']);
+		$this->assertSame(5, (int) $conditions[0]->value);
 	}
 }

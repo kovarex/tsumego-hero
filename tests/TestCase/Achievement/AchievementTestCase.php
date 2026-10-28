@@ -6,6 +6,7 @@
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
+use App\Model\Table\AchievementConditionTable;
 use App\Utility\AchievementChecker;
 use App\Utility\AchievementId;
 use App\Utility\Auth;
@@ -76,7 +77,7 @@ abstract class AchievementTestCase extends IntegrationTestCase
 	protected function triggerSetCompletionAchievementCheck($completedSetsCount)
 	{
 		// Save set completion count to achievement_condition (simulates completing sets)
-		AchievementCondition::put(Auth::getUserID(), AchievementCondition::CATEGORY_COMPLETED_SETS, $completedSetsCount);
+		AchievementConditionTable::put(Auth::getUserID(), AchievementConditionTable::CATEGORY_COMPLETED_SETS, $completedSetsCount);
 
 		new AchievementChecker()->checkSetCompletedAchievements()->finalize();
 	}

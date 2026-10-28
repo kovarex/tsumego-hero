@@ -2,7 +2,6 @@
 
 namespace App\Model\Table;
 
-use AchievementCondition;
 use App\Utility\Auth;
 use Cake\Database\Expression\QueryExpression;
 use Cake\ORM\TableRegistry;
@@ -13,9 +12,9 @@ class DayRecordTable extends AppTable
 	//Each gem of the day has a counter column and an achievement. The digit of the day record's
 	//"gems" (e.g. "0-2-1") picks the ranks whose solves the gem counts that day.
 	private const GEMS = [
-		['counter' => 'emerald_solves', 'category' => AchievementCondition::CATEGORY_EMERALD, 'goal' => 500, 'ranks' => [['15k'], ['12k'], ['10k']]],
-		['counter' => 'sapphire_solves', 'category' => AchievementCondition::CATEGORY_SAPPHIRE, 'goal' => 200, 'ranks' => [['9k'], ['6k', '5k', '4k'], ['2k', '1k']]],
-		['counter' => 'ruby_solves', 'category' => AchievementCondition::CATEGORY_RUBY, 'goal' => 5, 'ranks' => [['1d', '2d', '3d'], ['2d', '3d', '4d'], ['5d', '6d', '7d']]],
+		['counter' => 'emerald_solves', 'category' => AchievementConditionTable::CATEGORY_EMERALD, 'goal' => 500, 'ranks' => [['15k'], ['12k'], ['10k']]],
+		['counter' => 'sapphire_solves', 'category' => AchievementConditionTable::CATEGORY_SAPPHIRE, 'goal' => 200, 'ranks' => [['9k'], ['6k', '5k', '4k'], ['2k', '1k']]],
+		['counter' => 'ruby_solves', 'category' => AchievementConditionTable::CATEGORY_RUBY, 'goal' => 5, 'ranks' => [['1d', '2d', '3d'], ['2d', '3d', '4d'], ['5d', '6d', '7d']]],
 	];
 
 	//Counts a solve of a problem of this rank towards today's gem, the solve reaching the goal
@@ -34,9 +33,9 @@ class DayRecordTable extends AppTable
 				continue;
 			if ($dayRecord->get($gem['counter']) + 1 == $gem['goal'])
 			{
-				if (AchievementCondition::value(Auth::getUserID(), $gem['category']) !== null)
+				if (AchievementConditionTable::value(Auth::getUserID(), $gem['category']) !== null)
 					return;
-				AchievementCondition::put(Auth::getUserID(), $gem['category'], 1);
+				AchievementConditionTable::put(Auth::getUserID(), $gem['category'], 1);
 			}
 			$dayRecordTable->updateAll([new QueryExpression($gem['counter'] . ' = ' . $gem['counter'] . ' + 1')], ['date' => $today]);
 			return;

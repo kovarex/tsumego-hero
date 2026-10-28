@@ -2,6 +2,7 @@
 
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
+use App\Model\Table\AchievementConditionTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\HeroPowers;
@@ -44,7 +45,7 @@ class HeroController extends AppController
 			'used_sprint' => 1,
 		]);
 		//The sprint run counts the problems solved during this sprint only
-		AchievementCondition::put(Auth::getUserID(), AchievementCondition::CATEGORY_SPRINT, 0);
+		AchievementConditionTable::put(Auth::getUserID(), AchievementConditionTable::CATEGORY_SPRINT, 0);
 		return $this->response;
 	}
 

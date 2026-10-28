@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\AchievementTable;
 use App\Utility\AchievementId;
 
@@ -46,8 +47,8 @@ class AchievementsControllerTest extends IntegrationTestCase
 		new ContextPreparator([
 			'user' => ['name' => 'achiever', 'achievement-statuses' => [['id' => AchievementId::COMPLETE_SETS_I->value]]],
 			'achievement-conditions' => [
-				['category' => AchievementCondition::CATEGORY_COMPLETED_SETS, 'value' => 27],
-				['category' => AchievementCondition::CATEGORY_GOLDEN, 'value' => 7],
+				['category' => AchievementConditionTable::CATEGORY_COMPLETED_SETS, 'value' => 27],
+				['category' => AchievementConditionTable::CATEGORY_GOLDEN, 'value' => 7],
 			],
 		]);
 		$this->login('achiever');
@@ -349,11 +350,11 @@ class AchievementsControllerTest extends IntegrationTestCase
 	{
 		new ContextPreparator([
 			'achievement-conditions' => [
-				['category' => AchievementCondition::CATEGORY_GOLDEN, 'value' => 7],
-				['category' => AchievementCondition::CATEGORY_POTION, 'value' => 3],
-				['category' => AchievementCondition::CATEGORY_COMPLETED_SETS, 'value' => 24],
-				['category' => AchievementCondition::CATEGORY_NO_ERROR_STREAK, 'value' => 41],
-				['category' => AchievementCondition::CATEGORY_DAN_SOLVE_2D, 'value' => 7],
+				['category' => AchievementConditionTable::CATEGORY_GOLDEN, 'value' => 7],
+				['category' => AchievementConditionTable::CATEGORY_POTION, 'value' => 3],
+				['category' => AchievementConditionTable::CATEGORY_COMPLETED_SETS, 'value' => 24],
+				['category' => AchievementConditionTable::CATEGORY_NO_ERROR_STREAK, 'value' => 41],
+				['category' => AchievementConditionTable::CATEGORY_DAN_SOLVE_2D, 'value' => 7],
 			],
 		]);
 
@@ -396,7 +397,7 @@ class AchievementsControllerTest extends IntegrationTestCase
 	{
 		new ContextPreparator([
 			'achievement-conditions' => [
-				['category' => AchievementCondition::CATEGORY_GOLDEN, 'value' => 7],
+				['category' => AchievementConditionTable::CATEGORY_GOLDEN, 'value' => 7],
 			],
 		]);
 
