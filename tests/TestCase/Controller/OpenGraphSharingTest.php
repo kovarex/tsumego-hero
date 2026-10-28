@@ -24,6 +24,19 @@ class OpenGraphSharingTest extends IntegrationTestCase
 		$this->assertStringContainsString('<meta name="twitter:card" content="summary_large_image">', $body);
 	}
 
+	//The title counts the problems of the set, and a problem in the trash is not in it anymore.
+	public function testPuzzlePageTitleCountsTheProblemsOfTheSet(): void
+	{
+		$context = new ContextPreparator(['tsumegos' => [
+			['sets' => [['name' => 'test set', 'num' => 1]]],
+			['sets' => [['name' => 'test set', 'num' => 2]]],
+			['sets' => [['name' => 'test set', 'num' => 3]], 'deleted' => date('Y-m-d H:i:s')]]]);
+
+		$this->get('tsumegos/play/' . $context->tsumegos[0]['id']);
+
+		$this->assertStringContainsString('<meta property="og:title" content="test set 1/2">', $this->view);
+	}
+
 	public function testSetPageShowsOpenGraphTagsWithCoverImage(): void
 	{
 		$context = new ContextPreparator(['tsumego' => ['sets' => [['name' => 'test set', 'num' => 1]]]]);
