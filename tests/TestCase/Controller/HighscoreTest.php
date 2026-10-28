@@ -180,27 +180,25 @@ class HighscoreTest extends IntegrationTestCase
 		]);
 
 		$rankId = $this->fetchTable('TimeModeRank')->find()->where(['name' => '15k'])->firstOrFail()->id;
-		$sessionModel = ClassRegistry::init('TimeModeSession');
+		$sessionTable = $this->fetchTable('TimeModeSession');
 
 		// FastPlayer: 900 points
-		$sessionModel->create();
-		$sessionModel->save(['TimeModeSession' => [
+		$sessionTable->saveOrFail($sessionTable->newEntity([
 			'user_id' => $context->otherUsers[0]['id'],
 			'time_mode_category_id' => TimeModeCategoryTable::SLOW,
 			'time_mode_rank_id' => $rankId,
 			'time_mode_session_status_id' => TimeModeSessionStatusTable::SOLVED,
 			'points' => 900,
-		]]);
+		]));
 
 		// SlowPlayer: 600 points
-		$sessionModel->create();
-		$sessionModel->save(['TimeModeSession' => [
+		$sessionTable->saveOrFail($sessionTable->newEntity([
 			'user_id' => $context->otherUsers[1]['id'],
 			'time_mode_category_id' => TimeModeCategoryTable::SLOW,
 			'time_mode_rank_id' => $rankId,
 			'time_mode_session_status_id' => TimeModeSessionStatusTable::SOLVED,
 			'points' => 600,
-		]]);
+		]));
 
 		$this->get('users/time_mode');
 		$source = $this->view;
@@ -223,20 +221,17 @@ class HighscoreTest extends IntegrationTestCase
 		]);
 
 		$rankId = $this->fetchTable('TimeModeRank')->find()->where(['name' => '15k'])->firstOrFail()->id;
-		$sessionModel = ClassRegistry::init('TimeModeSession');
+		$sessionTable = $this->fetchTable('TimeModeSession');
 
 		// MultiPlayer plays 3 times, best score = 950
 		foreach ([700, 950, 800] as $points)
-		{
-			$sessionModel->create();
-			$sessionModel->save(['TimeModeSession' => [
+			$sessionTable->saveOrFail($sessionTable->newEntity([
 				'user_id' => $context->otherUsers[0]['id'],
 				'time_mode_category_id' => TimeModeCategoryTable::SLOW,
 				'time_mode_rank_id' => $rankId,
 				'time_mode_session_status_id' => TimeModeSessionStatusTable::SOLVED,
 				'points' => $points,
-			]]);
-		}
+			]));
 
 		$this->get('users/time_mode');
 		// Should only appear once with best score

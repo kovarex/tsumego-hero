@@ -3,6 +3,7 @@
 use App\Utility\MistakeTraining;
 use App\Utility\PlayOutcome;
 use App\Utility\RungInsignia;
+use App\Utility\SetNavigationButtonsInput;
 use App\Utility\TsumegoButton;
 use App\Utility\TsumegoButtons;
 use App\Utility\TsumegoFilters;
@@ -152,6 +153,51 @@ class TsumegoButtonsTest extends IntegrationTestCase
 		$this->assertSame('', $links['previousLink'], 'Back at the start of the training has nowhere to go');
 		$this->assertSame('/mistake-training/play/' . $context->tsumegos[1]['set-connections'][0]['id'], $links['nextLink'],
 			'Queue navigation must stay on the training route, so the route can re-assert the mode');
+	}
+
+	//The buttons of a set come without their SGFs, which only the shown ones need for the preview,
+	//and loading them gives the current version.
+	public function testSetButtonsLoadTheCurrentVersionWhenAsked(): void
+	{
+		$current = '(;GM[1]FF[4]SZ[19]AB[cc];B[aa])';
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumego' => [
+				'set_order' => 1,
+				'sgfs' => [
+					['data' => '(;GM[1]FF[4]SZ[19]AB[dd];B[aa])', 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
+					['data' => $current, 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
+					['data' => '(;GM[1]FF[4]SZ[19]AB[ee];B[aa])', 'sgf_status_id' => Sgf::STATUS_PROPOSED]]],
+		]);
+
+		$buttons = new TsumegoButtons(new TsumegoFilters('topics'), null, 0, (int) $context->tsumegos[0]['set-connections'][0]['set_id']);
+		$this->assertCount(1, $buttons);
+		$this->assertNull($buttons[0]->sgf);
+
+		$buttons->loadSgfs();
+		$this->assertSame($current, $buttons[0]->sgf);
+	}
+
+	//The play page shows the dozen buttons around the opened problem, so only they load their SGFs.
+	public function testPlayNavigationLoadsTheSgfsOfTheShownButtonsOnly(): void
+	{
+		$tsumegos = [];
+		for ($i = 1; $i <= 30; $i++)
+			$tsumegos[] = ['set_order' => $i];
+		$context = new ContextPreparator(['user' => ['name' => 'testuser'], 'tsumegos' => $tsumegos]);
+		$opened = $context->tsumegos[14]['set-connections'][0];
+
+		$buttons = new TsumegoButtons(new TsumegoFilters('topics'), (int) $opened['id'], null, (int) $opened['set_id']);
+		$shown = null;
+		new SetNavigationButtonsInput(function ($name, $value) use (&$shown) {
+			$shown = $value;
+		})->execute($buttons, ['SetConnection' => $opened]);
+
+		$this->assertCount(30, $buttons);
+		$this->assertCount(13, $shown);
+		foreach ($shown as $button)
+			$this->assertNotNull($button->sgf);
+		$this->assertCount(13, array_filter((array) $buttons, fn($button) => $button->sgf !== null));
 	}
 
 	public function testTheEndsOfTheListLeadToThePageAndTheMiddleToTheNeighbour(): void

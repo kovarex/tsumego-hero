@@ -64,6 +64,8 @@ Cake\Datasource\ConnectionManager::setConfig('default', [
 	'className' => Cake\Database\Connection::class,
 	'driver' => App\Database\SharedConnectionDriver::class,
 	'cacheMetadata' => true,
+	// the columns like time_mode_attempt.order and the tables like set are reserved words of SQL
+	'quoteIdentifiers' => true,
 ]);
 
 /**

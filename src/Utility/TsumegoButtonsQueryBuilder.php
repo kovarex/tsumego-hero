@@ -5,7 +5,6 @@ namespace App\Utility;
 use ClassRegistry;
 use Set;
 use SetConnection;
-use Sgf;
 
 class TsumegoButtonsQueryBuilder
 {
@@ -25,7 +24,7 @@ class TsumegoButtonsQueryBuilder
 		if ($tsumegoFilters->query != 'topics')
 		{
 			$this->query->selects[] = "ROW_NUMBER() OVER (PARTITION BY tsumego.id ORDER BY " . SetConnection::displayOrderSql('`set`', 'set_connection') . ") AS rn";
-			$this->query->prefix = "SELECT tsumego_id, set_connection_id, num, rating, sgf";
+			$this->query->prefix = "SELECT tsumego_id, set_connection_id, num, rating";
 			if (Auth::isLoggedIn())
 				$this->query->prefix .= ", status";
 			if ($tsumegoFilters->query == 'published')
@@ -41,7 +40,6 @@ class TsumegoButtonsQueryBuilder
 		$this->query->selects[] = 'tsumego.rating as rating';
 		$this->query->selects[] = 'set_connection.id as set_connection_id';
 		$this->query->selects[] = 'set_connection.num as num';
-		$this->query->selects[] = 'COALESCE(sgf.sgf, \'\') as sgf';
 		if ($tsumegoFilters->query == 'published')
 		{
 			$this->query->selects[] = 'set_connection.set_id as set_id';
@@ -51,7 +49,6 @@ class TsumegoButtonsQueryBuilder
 			$this->query->selects[] = 'tsumego_status.status as status';
 
 		$this->query->query .= " JOIN set_connection ON set_connection.tsumego_id = tsumego.id";
-		$this->query->query .= " LEFT JOIN sgf ON sgf.id = " . Sgf::currentVersionIDSql('tsumego.id');
 		$this->query->conditions[] = 'tsumego.deleted is NULL';
 
 		// when I'm quering by topics (which means sets), and I'm viewing private set

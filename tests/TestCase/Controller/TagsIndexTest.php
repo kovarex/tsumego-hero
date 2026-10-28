@@ -129,8 +129,8 @@ class TagsIndexTest extends IntegrationTestCase
 
 		$this->assertStringEndsWith('/tags', $this->headerValue('Location'));
 		$this->assertEmpty(ClassRegistry::init('Tag')->findById($atari['id']));
-		$this->assertSame(0, ClassRegistry::init('TagConnection')->find('count', ['conditions' => ['tag_id' => $atari['id']]]));
-		$this->assertSame(1, ClassRegistry::init('TagConnection')->find('count'), 'ko stays on its problem');
+		$this->assertSame(0, $this->fetchTable('TagConnection')->find()->where(['tag_id' => $atari['id']])->count());
+		$this->assertSame(1, $this->fetchTable('TagConnection')->find()->count(), 'ko stays on its problem');
 
 		$activity = $this->fetchTable('AdminActivity')->find()->where(['type' => AdminActivityType::DELETE_TAG])->firstOrFail();
 		$deleted = json_decode($activity->old_value, true);

@@ -1,10 +1,12 @@
 <?php
 
+use App\Model\Entity\TimeModeSession;
 use App\Model\Table\ClassroomTable;
 use App\Utility\TimeMode;
 use App\Utility\TimeModeUtil;
 use App\Utility\TsumegoButton;
 use App\Utility\Util;
+use Cake\ORM\TableRegistry;
 
 //A challenge between players: one player picks a range of difficulty, the time for a problem and
 //how many problems, the site draws the problems, and every player in the challenge plays the same
@@ -241,12 +243,13 @@ class Challenge extends AppModel
 	}
 
 	//The run of a player in a challenge, null when they haven't started it.
-	/** @return array{TimeModeSession: array<string, mixed>}|null */
-	public static function runOf(int $challengeId, int $userId): ?array
+	public static function runOf(int $challengeId, int $userId): ?TimeModeSession
 	{
-		return ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => [
+		/** @var TimeModeSession|null $run */
+		$run = TableRegistry::getTableLocator()->get('TimeModeSession')->find()->where([
 			'challenge_id' => $challengeId,
-			'user_id' => $userId]]) ?: null;
+			'user_id' => $userId])->first();
+		return $run;
 	}
 
 	//The players of a challenge in the order of the table: the finished runs by their points
