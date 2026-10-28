@@ -93,9 +93,9 @@ WHERE c.TABLE_SCHEMA = DATABASE() AND c.COLUMN_NAME = 'tsumego_id'");
 		$this->assertNull(self::setRow($otherSetID)['deleted']);
 		$this->assertNotNull(self::tsumegoRow($context->tsumegos[0]['id'])['deleted'], 'The other problem was deleted on its own');
 
-		$activities = ClassRegistry::init('AdminActivity')->find('all', ['order' => 'id']);
-		$this->assertSame(AdminActivityType::PROBLEM_DELETE, $activities[0]['AdminActivity']['type']);
-		$this->assertSame(AdminActivityType::PROBLEM_RESTORE, $activities[1]['AdminActivity']['type']);
+		$activities = $this->fetchTable('AdminActivity')->find()->orderBy('id')->toArray();
+		$this->assertSame(AdminActivityType::PROBLEM_DELETE, $activities[0]->type);
+		$this->assertSame(AdminActivityType::PROBLEM_RESTORE, $activities[1]->type);
 	}
 
 	public function testRestoringAProblemLeavesASetDeletedOnItsOwnInTheTrash(): void
@@ -228,9 +228,9 @@ WHERE c.TABLE_SCHEMA = DATABASE() AND c.COLUMN_NAME = 'tsumego_id'");
 
 		$this->assertNull(self::setRow($setID)['deleted']);
 		$this->assertSame('The collection back was restored', CookieFlash::get());
-		$activity = ClassRegistry::init('AdminActivity')->find('first')['AdminActivity'];
-		$this->assertSame(AdminActivityType::SET_RESTORE, $activity['type']);
-		$this->assertSame($setID, $activity['set_id']);
+		$activity = $this->fetchTable('AdminActivity')->find()->firstOrFail();
+		$this->assertSame(AdminActivityType::SET_RESTORE, $activity->type);
+		$this->assertSame($setID, $activity->set_id);
 	}
 
 	public function testDeletingPublishedSetNeedsItsTitle(): void
@@ -246,9 +246,9 @@ WHERE c.TABLE_SCHEMA = DATABASE() AND c.COLUMN_NAME = 'tsumego_id'");
 		$this->post('/sets/delete/' . $setID, ['confirmation' => 'Life and Death']);
 		$this->assertNotNull(self::setRow($setID)['deleted']);
 		$this->assertNull(self::tsumegoRow($context->tsumegos[0]['id'])['deleted'], 'Its problems wait in the set');
-		$activity = ClassRegistry::init('AdminActivity')->find('first')['AdminActivity'];
-		$this->assertSame(AdminActivityType::SET_DELETE, $activity['type']);
-		$this->assertSame('Life and Death', $activity['old_value']);
+		$activity = $this->fetchTable('AdminActivity')->find()->firstOrFail();
+		$this->assertSame(AdminActivityType::SET_DELETE, $activity->type);
+		$this->assertSame('Life and Death', $activity->old_value);
 	}
 
 	public function testPlayerCollectionIsDeletedAtOnce(): void

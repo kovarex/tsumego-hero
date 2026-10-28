@@ -3,7 +3,7 @@
 namespace App\Utility;
 
 use AdminActivityType;
-use ClassRegistry;
+use Cake\ORM\TableRegistry;
 
 //Centralized logging utility for all admin activities.
 //Provides a simple, consistent API for recording admin actions with proper type IDs.
@@ -20,7 +20,7 @@ class AdminActivityLogger
 	//Log any admin activity
 	//$type: Activity type ID (use class constants)
 	//$userId: Who did it, when not the logged-in user (null for the logged-in user)
-	//Returns true if saved successfully, see the usage above.
+	//Returns whether it logged, false without a player to log it for; a failed save throws. See the usage above.
 	/**
 	 * @param int|null $tsumegoId Problem ID (null for set-only activities)
 	 * @param int|null $setId Set ID (null for problem-only activities)
@@ -33,20 +33,15 @@ class AdminActivityLogger
 		if (!$userId)
 			return false; // Only logged-in users
 
-		$adminActivity = ClassRegistry::init('AdminActivity');
-		$adminActivity->create();
-
-		$data = [
-			'AdminActivity' => [
-				'user_id' => $userId,
-				'tsumego_id' => $tsumegoId,
-				'set_id' => $setId,
-				'type' => $type,
-				'old_value' => $oldValue,
-				'new_value' => $newValue,
-			],
-		];
-
-		return (bool) $adminActivity->save($data, false); // Skip validation for performance
+		$adminActivityTable = TableRegistry::getTableLocator()->get('AdminActivity');
+		$adminActivityTable->saveOrFail($adminActivityTable->newEntity([
+			'user_id' => $userId,
+			'tsumego_id' => $tsumegoId,
+			'set_id' => $setId,
+			'type' => $type,
+			'old_value' => $oldValue,
+			'new_value' => $newValue,
+		]));
+		return true;
 	}
 }

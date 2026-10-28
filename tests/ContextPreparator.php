@@ -1006,8 +1006,8 @@ class ContextPreparator
 				$activity['new_value'] = (string) ($this->tsumegos[$index]['id'] ?? null);
 			}
 
-			ClassRegistry::init('AdminActivity')->create();
-			ClassRegistry::init('AdminActivity')->save(['AdminActivity' => $activity]);
+			$adminActivityTable = TableRegistry::getTableLocator()->get('AdminActivity');
+			$adminActivityTable->saveOrFail($adminActivityTable->newEntity($activity));
 			$this->checkOptionsConsumed($activityInput);
 		}
 	}
