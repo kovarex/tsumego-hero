@@ -1,5 +1,7 @@
 <?php
 
+use App\Model\Entity\TimeModeRank;
+use App\Model\Table\TimeModeRankTable;
 use App\Utility\AchievementChecker;
 use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
@@ -9,6 +11,7 @@ use App\Utility\HeroPowers;
 use App\Utility\Level;
 use App\Utility\SgfParser;
 use App\Utility\Util;
+use Cake\ORM\TableRegistry;
 
 class ContextPreparator
 {
@@ -700,30 +703,29 @@ class ContextPreparator
 	private function prepareTimeModeRanks($timeModeRanks): void
 	{
 		$allRanks = [
-			'15k' => TimeModeRank::RANK_15K, '14k' => TimeModeRank::RANK_14K,
-			'13k' => TimeModeRank::RANK_13K, '12k' => TimeModeRank::RANK_12K,
-			'11k' => TimeModeRank::RANK_11K, '10k' => TimeModeRank::RANK_10K,
-			'9k' => TimeModeRank::RANK_9K, '8k' => TimeModeRank::RANK_8K,
-			'7k' => TimeModeRank::RANK_7K, '6k' => TimeModeRank::RANK_6K,
-			'5k' => TimeModeRank::RANK_5K, '4k' => TimeModeRank::RANK_4K,
-			'3k' => TimeModeRank::RANK_3K, '2k' => TimeModeRank::RANK_2K,
-			'1k' => TimeModeRank::RANK_1K, '1d' => TimeModeRank::RANK_1D,
-			'2d' => TimeModeRank::RANK_2D, '3d' => TimeModeRank::RANK_3D,
-			'4d' => TimeModeRank::RANK_4D, '5d' => TimeModeRank::RANK_5D,
+			'15k' => TimeModeRankTable::RANK_15K, '14k' => TimeModeRankTable::RANK_14K,
+			'13k' => TimeModeRankTable::RANK_13K, '12k' => TimeModeRankTable::RANK_12K,
+			'11k' => TimeModeRankTable::RANK_11K, '10k' => TimeModeRankTable::RANK_10K,
+			'9k' => TimeModeRankTable::RANK_9K, '8k' => TimeModeRankTable::RANK_8K,
+			'7k' => TimeModeRankTable::RANK_7K, '6k' => TimeModeRankTable::RANK_6K,
+			'5k' => TimeModeRankTable::RANK_5K, '4k' => TimeModeRankTable::RANK_4K,
+			'3k' => TimeModeRankTable::RANK_3K, '2k' => TimeModeRankTable::RANK_2K,
+			'1k' => TimeModeRankTable::RANK_1K, '1d' => TimeModeRankTable::RANK_1D,
+			'2d' => TimeModeRankTable::RANK_2D, '3d' => TimeModeRankTable::RANK_3D,
+			'4d' => TimeModeRankTable::RANK_4D, '5d' => TimeModeRankTable::RANK_5D,
 		];
 
 		// If not explicitly specified, seed all ranks
 		$ranksToSeed = $timeModeRanks ?? array_keys($allRanks);
 
-		$model = ClassRegistry::init('TimeModeRank');
+		$table = TableRegistry::getTableLocator()->get('TimeModeRank');
 		$this->timeModeRanks = [];
 		foreach ($ranksToSeed as $rankInput)
 		{
 			$rankName = is_array($rankInput) ? $rankInput['name'] : $rankInput;
 			if (!isset($allRanks[$rankName]))
 				throw new Exception("Unknown rank name '$rankName'");
-			$model->create();
-			$model->save(['id' => $allRanks[$rankName], 'name' => $rankName]);
+			$table->saveOrFail($table->newEntity(['id' => $allRanks[$rankName], 'name' => $rankName], ['accessibleFields' => ['id' => true]]));
 			$this->timeModeRanks[] = ['id' => $allRanks[$rankName], 'name' => $rankName];
 		}
 	}
@@ -739,10 +741,11 @@ class ContextPreparator
 			$timeModeSession['user_id'] = Auth::getUserID();
 			$timeModeSession['time_mode_category_id'] = $timeModeSessionInput['category'];
 			$timeModeSession['time_mode_session_status_id'] = $timeModeSessionInput['status'];
-			$rank = ClassRegistry::init('TimeModeRank')->find('first', ['conditions' => ['name' => $timeModeSessionInput['rank']]]);
+			/** @var TimeModeRank|null $rank */
+			$rank = TableRegistry::getTableLocator()->get('TimeModeRank')->find()->where(['name' => $timeModeSessionInput['rank']])->first();
 			if (!$rank)
 				throw new Exception('Rank ' . $timeModeSessionInput['rank'] . ' not found');
-			$timeModeSession['time_mode_rank_id'] = $rank['TimeModeRank']['id'];
+			$timeModeSession['time_mode_rank_id'] = $rank->id;
 			$timeModeSessionModel = ClassRegistry::init('TimeModeSession');
 			$timeModeSessionModel->create($timeModeSession);
 			$timeModeSessionModel->save($timeModeSession);

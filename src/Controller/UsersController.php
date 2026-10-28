@@ -620,13 +620,9 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		$this->set('_title', 'Tsumego Hero - Time Highscore');
 
 		$this->loadModel('TimeModeSession');
-		$this->loadModel('TimeModeRank');
 
 		// Build rank name -> ID lookup
-		$allRanks = $this->TimeModeRank->find('all');
-		$rankNameToId = [];
-		foreach ($allRanks as $r)
-			$rankNameToId[$r['TimeModeRank']['name']] = $r['TimeModeRank']['id'];
+		$rankNameToId = $this->fetchTable('TimeModeRank')->find('list', keyField: 'name', valueField: 'id')->toArray();
 
 		$currentRank = '';
 		$params1 = '';

@@ -2,6 +2,7 @@
 
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
+use App\Model\Entity\TimeModeRank;
 use App\Utility\Auth;
 use App\Utility\CookieFlash;
 use App\Utility\Rating;
@@ -26,8 +27,8 @@ class ChallengesController extends AppController
 		$this->set('_title', 'Tsumego Hero - Challenges');
 		$this->set('challenges', Challenge::ofPlayer(Auth::getUserID()));
 
-		$ranks = ClassRegistry::init('TimeModeRank')->find('all', ['order' => 'id']) ?: [];
-		$this->set('ranks', array_map(fn(array $rank) => $rank['TimeModeRank'], $ranks));
+		$ranks = $this->fetchTable('TimeModeRank')->find()->orderBy('id')->toArray();
+		$this->set('ranks', $ranks);
 		$this->set('defaultRankID', self::rankOfPlayer($ranks));
 
 		$opponent = null;
@@ -49,8 +50,8 @@ class ChallengesController extends AppController
 		$maximumRankID = (int) ($data['maximum_rank'] ?? 0);
 		$secondsPerProblem = (int) ($data['seconds_per_problem'] ?? 0);
 		$problemCount = (int) ($data['problem_count'] ?? 0);
-		$rankModel = ClassRegistry::init('TimeModeRank');
-		if (!$rankModel->findById($minimumRankID) || !$rankModel->findById($maximumRankID))
+		$rankTable = $this->fetchTable('TimeModeRank');
+		if (!$rankTable->exists(['id' => $minimumRankID]) || !$rankTable->exists(['id' => $maximumRankID]))
 			throw new BadRequestException('Unknown rank.');
 		if (!in_array($secondsPerProblem, Challenge::SECONDS_PER_PROBLEM_CHOICES, true))
 			throw new BadRequestException('Unknown time for a problem.');
@@ -230,16 +231,16 @@ class ChallengesController extends AppController
 	}
 
 	//The time mode rank of the player's rating, to start the form with, or the easiest one.
-	/** @param array<array{TimeModeRank: array<string, mixed>}> $ranks Ordered by id */
+	/** @param array<TimeModeRank> $ranks Ordered by id */
 	private static function rankOfPlayer(array $ranks): ?int
 	{
 		if (empty($ranks))
 			return null;
 		$playerRank = Rating::getReadableRankFromRating((float) Auth::getUser()['rating']);
 		foreach ($ranks as $rank)
-			if ($rank['TimeModeRank']['name'] === $playerRank)
-				return (int) $rank['TimeModeRank']['id'];
-		return (int) $ranks[0]['TimeModeRank']['id'];
+			if ($rank->name === $playerRank)
+				return $rank->id;
+		return $ranks[0]->id;
 	}
 
 	private static function challengeUrl(int $challengeID): string

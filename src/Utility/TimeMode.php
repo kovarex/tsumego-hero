@@ -3,7 +3,9 @@
 namespace App\Utility;
 
 use App\Model\Entity\TimeModeCategory;
+use App\Model\Entity\TimeModeRank;
 use Cake\ORM\Locator\LocatorAwareTrait;
+use Cake\ORM\TableRegistry;
 use Challenge;
 use ClassRegistry;
 use DateTime;
@@ -61,7 +63,9 @@ class TimeMode
 			$this->overallSecondsToSolve = (int) $this->challenge['seconds_per_problem'];
 			return;
 		}
-		$this->rank = ClassRegistry::init('TimeModeRank')->findById($this->currentSession['TimeModeSession']['time_mode_rank_id']);
+		/** @var TimeModeRank|null $rank */
+		$rank = $this->fetchTable('TimeModeRank')->find()->where(['id' => $this->currentSession['TimeModeSession']['time_mode_rank_id']])->first();
+		$this->rank = $rank;
 		/** @var TimeModeCategory $category */
 		$category = $this->fetchTable('TimeModeCategory')->get($this->currentSession['TimeModeSession']['time_mode_category_id']);
 		$this->overallSecondsToSolve = $category->seconds;
@@ -145,8 +149,7 @@ class TimeMode
 		if (!$timeModeCategory)
 			throw new NotFoundException("Time mode session category with id=" . $categoryID . " not found");
 
-		$timeModeRank = ClassRegistry::init('TimeModeRank')->findById($rankID);
-		if (!$timeModeRank)
+		if (!$this->fetchTable('TimeModeRank')->exists(['id' => $rankID]))
 			throw new NotFoundException("Time mode rank category with id=" . $rankID . " not found");
 
 		Auth::saveUserField('mode_id', Constants::$TIME_MODE);
@@ -163,7 +166,7 @@ class TimeMode
 
 	public static function getRatingBounds(?int $timeModeRankID): RatingBounds
 	{
-		$timeModeRankModel = ClassRegistry::init('TimeModeRank');
+		$timeModeRankTable = TableRegistry::getTableLocator()->get('TimeModeRank');
 
 		// I'm assuming, that the entries in the time_mode_rank tables have primary id ordered in the same order as the ranks, so the next entry
 		// is the higher rank, and the previous is the lower (checked in testTimeModeRankContentsIntegrity)
@@ -171,13 +174,16 @@ class TimeMode
 		// <max_of_smaller_rank or 0 if it doesn't exit, max_of_current_rank if next rank exists or infinity]
 		// this should put every tsumego in some of the rank intervals regardless of the ranks configuration
 		$result = new RatingBounds();
-		if ($smallerRankRow = $timeModeRankModel->find('first', ['conditions' => ['id <' => $timeModeRankID], 'order' => 'id DESC']))
-			$result->min = Rating::getRankMinimalRating(Rating::GetRankFromReadableRank($smallerRankRow['TimeModeRank']['name']) + 1);
+		/** @var TimeModeRank|null $smallerRank */
+		$smallerRank = $timeModeRankTable->find()->where(['id <' => $timeModeRankID])->orderByDesc('id')->first();
+		if ($smallerRank)
+			$result->min = Rating::getRankMinimalRating(Rating::GetRankFromReadableRank($smallerRank->name) + 1);
 
-		if ($timeModeRankModel->find('first', ['conditions' => ['id >' => $timeModeRankID], 'order' => 'id ASC']))
+		if ($timeModeRankTable->exists(['id >' => $timeModeRankID]))
 		{
-			$currentRankRow = $timeModeRankModel->find('first', ['conditions' => ['id' => $timeModeRankID]]);
-			$result->max = Rating::getRankMinimalRating(Rating::GetRankFromReadableRank($currentRankRow['TimeModeRank']['name']) + 1);
+			/** @var TimeModeRank $currentRank */
+			$currentRank = $timeModeRankTable->get($timeModeRankID);
+			$result->max = Rating::getRankMinimalRating(Rating::GetRankFromReadableRank($currentRank->name) + 1);
 		}
 
 		return $result;
@@ -467,7 +473,7 @@ class TimeMode
 	{
 		if (!$this->rank)
 			return '';
-		return $this->rank['TimeModeRank']['name'];
+		return $this->rank->name;
 	}
 
 	//What the run is, for the bar of the account: the time mode of a rank, or a challenge.
@@ -479,7 +485,7 @@ class TimeMode
 	}
 
 	public $currentSession;
-	public $rank;
+	public ?TimeModeRank $rank = null;
 	/** @var array<string, mixed>|null The challenge the current run is of */
 	public ?array $challenge = null;
 	public int $secondsToSolve = 0; // remaining time

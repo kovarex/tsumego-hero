@@ -1,8 +1,11 @@
 <?php
 
-class TimeModeRank extends AppModel
+namespace App\Model\Table;
+
+//The ranks a time mode run is played at, 15k to 5d; the ids go up with the ranks.
+class TimeModeRankTable extends AppTable
 {
-	// Time mode rank IDs
+	// the rows of time_mode_rank
 	public const RANK_15K = 1;
 	public const RANK_14K = 2;
 	public const RANK_13K = 3;
@@ -23,10 +26,4 @@ class TimeModeRank extends AppModel
 	public const RANK_3D = 18;
 	public const RANK_4D = 19;
 	public const RANK_5D = 20;
-
-	public function __construct(mixed $id = false, ?string $table = null, ?string $ds = null)
-	{
-		$id['table'] = 'time_mode_rank';
-		parent::__construct($id, $table, $ds);
-	}
 }
