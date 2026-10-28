@@ -15,18 +15,18 @@ class SetsSelector
 			$this->selectByTopics();
 		elseif ($this->tsumegoFilters->query == 'difficulty')
 			$this->selectByDifficulty();
-		$this->problemsFound = $this->tsumegoFilters->calculateCount();
+		// the topics rows are the problems calculateCount() counts, under the same conditions
+		if ($this->problemsFound === null)
+			$this->problemsFound = $this->tsumegoFilters->calculateCount();
 	}
 
 	private function selectByTags(): void
 	{
+		// The name and color of a tag come once per tag below, not with each of its problems
 		$query = new Query('FROM tag_connection tc');
-		$query->selects[] = 'tag.id AS tag_id';
-		$query->selects[] = 'tag.name AS tag_name';
-		$query->selects[] = 'tag.color AS tag_color';
+		$query->selects[] = 'tc.tag_id';
 		$query->selects[] = 'tc.tsumego_id';
 		$query->selects[] = 'tsumego.rating';
-		$query->query .= ' JOIN tag ON tag.id = tc.tag_id';
 		$query->query .= ' JOIN tsumego ON tsumego.id = tc.tsumego_id';
 		$query->conditions[] = $this->publicMembershipCondition('tc.tsumego_id');
 		$query->conditions[] = 'tsumego.deleted IS NULL';
@@ -36,7 +36,10 @@ class SetsSelector
 			$query->conditions[] = $rankCondition;
 		$rows = Util::query($query->str());
 
-		$sets = $this->buildPartitionedSets($rows, 'tag_id', 'tag_name', 'tag_color', null, ['tsumego_id']);
+		$tagInfo = [];
+		foreach (Util::query('SELECT id, name, color FROM tag') as $tag)
+			$tagInfo[$tag['id']] = ['name' => $tag['name'], 'color' => $tag['color'], 'order' => null];
+		$sets = $this->buildPartitionedSets($rows, 'tag_id', null, null, null, ['tsumego_id'], $tagInfo);
 		usort($sets, function ($a, $b) {
 			if ($a['total_count'] != $b['total_count'])
 				return $b['total_count'] <=> $a['total_count'];
@@ -94,11 +97,9 @@ class SetsSelector
 
 	private function selectByTopics(): void
 	{
+		// The title, color and order of a set come once per set below, not with each of its problems
 		$query = new Query('FROM `set` s');
-		$query->selects[] = 's.`order` AS set_order';
 		$query->selects[] = 's.id AS set_id';
-		$query->selects[] = 's.title AS set_title';
-		$query->selects[] = 's.color AS set_color';
 		$query->selects[] = 'sc.num';
 		$query->selects[] = 'sc.tsumego_id';
 		$query->selects[] = 'tsumego.rating';
@@ -113,10 +114,15 @@ class SetsSelector
 		if ($rankCondition = $this->rankCondition())
 			$query->conditions[] = $rankCondition;
 		$rows = Util::query($query->str());
+		$this->problemsFound = count(array_unique(array_column($rows, 'tsumego_id')));
+
+		$setInfo = [];
+		foreach (Util::query('SELECT id, title, color, `order` FROM `set` s WHERE ' . Set::officialCondition('s')) as $set)
+			$setInfo[$set['id']] = ['name' => $set['title'], 'color' => $set['color'], 'order' => $set['order']];
 
 		// Set cards are ordered in PHP below; items are sorted within each set by
 		// buildPartitionedSets, so this query does not need an ORDER BY.
-		$sets = $this->buildPartitionedSets($rows, 'set_id', 'set_title', 'set_color', 'set_order', ['num', 'tsumego_id']);
+		$sets = $this->buildPartitionedSets($rows, 'set_id', null, null, null, ['num', 'tsumego_id'], $setInfo);
 		usort($sets, function ($a, $b) {
 			// sets without a curated order sort last, matching displayOrderForSetSql
 			$aOrder = $a['order'] ?? PHP_INT_MAX;
@@ -271,78 +277,84 @@ class SetsSelector
 	//$colorField: Row field with the collection color.
 	//$orderField: Optional row field with the collection sort key.
 	/**
-	 * @param string[] $itemSortKeys Optional row fields to sort items by within each collection.
+	 * @param string[] $itemSortKeys Optional integer row fields to sort items by within each collection, at most two.
+	 *   Each item has its own combination of them.
+	 * @param array<int|string, array{name: string, color: string, order: mixed}>|null $collectionInfo The name, color
+	 *   and order of each collection by its id, in place of the row fields.
 	 * @return array[] Collection chunks, each with id, name, color, order, partition, total_count,
 	 *   usage_count, rating_sum and solved_count.
 	 */
-	private function buildPartitionedSets(array $rows, string $idField, string $nameField, string $colorField, ?string $orderField = null, array $itemSortKeys = []): array
+	private function buildPartitionedSets(array $rows, string $idField, ?string $nameField, ?string $colorField, ?string $orderField = null, array $itemSortKeys = [], ?array $collectionInfo = null): array
 	{
+		// The catalogue has a row for every problem of every collection, so the items are kept small: the
+		// rating and the tsumego id under an integer sort key, which ksort() orders without a callback.
 		$collections = [];
-		foreach ($rows as $row)
+		$items = [];
+		$firstKey = $itemSortKeys[0] ?? null;
+		$secondKey = $itemSortKeys[1] ?? null;
+		foreach ($rows as $index => $row)
 		{
 			$id = $row[$idField];
 			if (!isset($collections[$id]))
-			{
-				$collections[$id] = [
-					'id' => $id,
+				$collections[$id] = $collectionInfo[$id] ?? [
 					'name' => $row[$nameField],
 					'color' => $row[$colorField],
 					'order' => $orderField ? $row[$orderField] : null,
-					'items' => [],
 				];
-			}
-			$collections[$id]['items'][] = $row;
+			if ($firstKey === null)
+				$sortKey = $index;
+			elseif ($secondKey === null)
+				$sortKey = (int) $row[$firstKey];
+			else
+				$sortKey = ((int) $row[$firstKey] << 32) + (int) $row[$secondKey];
+			$items[$id][$sortKey] = [(float) $row['rating'], (int) $row['tsumego_id']];
 		}
-
-		if ($itemSortKeys)
-			foreach ($collections as $id => $collection)
-				usort($collections[$id]['items'], function ($a, $b) use ($itemSortKeys) {
-					foreach ($itemSortKeys as $key)
-					{
-						$cmp = $a[$key] <=> $b[$key];
-						if ($cmp != 0)
-							return $cmp;
-					}
-					return 0;
-				});
 
 		$size = $this->tsumegoFilters->collectionSize;
 		$solved = $this->getSolvedTsumegoIDs();
 
 		$sets = [];
-		foreach ($collections as $collection)
+		foreach ($collections as $id => $collection)
 		{
-			$total = count($collection['items']);
-			$partitions = [];
-			foreach ($collection['items'] as $index => $item)
+			$collectionItems = $items[$id];
+			if ($firstKey !== null)
+				ksort($collectionItems);
+			$total = count($collectionItems);
+			$partition = $total <= $size ? -1 : 0;
+			$count = $ratingSum = $solvedCount = 0;
+			foreach ($collectionItems as [$rating, $tsumegoID])
 			{
-				$partition = ($total <= $size) ? -1 : intdiv($index, $size);
-				$partitions[$partition][] = $item;
-			}
-			foreach ($partitions as $partition => $items)
-			{
-				$ratingSum = 0.0;
-				$solvedCount = 0;
-				foreach ($items as $item)
+				$count++;
+				$ratingSum += $rating;
+				if (isset($solved[$tsumegoID]))
+					$solvedCount++;
+				if ($count === $size || $partition === -1 && $count === $total)
 				{
-					$ratingSum += (float) $item['rating'];
-					if (isset($solved[(int) $item['tsumego_id']]))
-						$solvedCount++;
+					$sets[] = self::partitionCard($id, $collection, $partition, $total, $count, $ratingSum, $solvedCount);
+					$partition++;
+					$count = $ratingSum = $solvedCount = 0;
 				}
-				$sets[] = [
-					'id' => $collection['id'],
-					'name' => $collection['name'],
-					'color' => $collection['color'],
-					'order' => $collection['order'],
-					'partition' => $partition,
-					'total_count' => $total,
-					'usage_count' => count($items),
-					'rating_sum' => $ratingSum,
-					'solved_count' => $solvedCount,
-				];
 			}
+			if ($count > 0)
+				$sets[] = self::partitionCard($id, $collection, $partition, $total, $count, $ratingSum, $solvedCount);
 		}
 		return $sets;
+	}
+
+	/** @param array{name: string, color: string, order: mixed} $collection */
+	private static function partitionCard(int|string $id, array $collection, int $partition, int $total, int $count, float $ratingSum, int $solvedCount): array
+	{
+		return [
+			'id' => $id,
+			'name' => $collection['name'],
+			'color' => $collection['color'],
+			'order' => $collection['order'],
+			'partition' => $partition,
+			'total_count' => $total,
+			'usage_count' => $count,
+			'rating_sum' => $ratingSum,
+			'solved_count' => $solvedCount,
+		];
 	}
 
 	//The tsumego IDs the current user has solved (status S, W or C), or an empty array for guests.
@@ -388,5 +400,5 @@ class SetsSelector
 
 	public TsumegoFilters $tsumegoFilters;
 	public array $sets = [];
-	public int $problemsFound = 0;
+	public ?int $problemsFound = null;
 }
