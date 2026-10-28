@@ -28,7 +28,7 @@ const LEGACY_APP_FILES = [
 	'webroot/js/multipleChoice.js',
 	'webroot/js/multipleChoiceCustom.js',
 	'webroot/js/scoreEstimatingCustom.js',
-	'webroot/js/set-view.js',
+	'webroot/js/imageZoom.js',
 	'webroot/js/setProgress.js',
 	'webroot/js/siteMenu.js',
 ];

@@ -76,20 +76,20 @@ echo HtmlSanitizer::sanitize((string) ($set['Set']['description'] ?? ''));
 if (!$noImage && $tsumegoFilters->query == 'topics' && $set['Set']['image'])
 {
 	if ($set['Set']['image'][2] != '-')
-		echo '<td width="195px" class="valign-top"><div align="center" class="set-image-zoom">
+		echo '<td width="195px" class="valign-top"><div align="center" class="set-view__cover">
 							<a href="/' . $startingSetConnectionID . '">
 							<img height="252" width="182" src="/img/' . h($set['Set']['image']) . '"
 							alt="Tsumego Collection: ' . h($setTitle) . '" title="Tsumego Collection: ' . h($setTitle) . '">
 							</a></div></td>';
 	else
-		echo '<td width="195px" class="set-view__img-bottom"><div align="center" class="set-image-zoom">
+		echo '<td width="195px" class="set-view__img-bottom"><div align="center" class="set-view__cover">
 							<a href="/' . $startingSetConnectionID . '">
 							<img height="252" width="182" src="/img/' . h($set['Set']['image']) . '"
 							alt="Tsumego Collection: ' . h($setTitle) . '" title="Tsumego Collection: ' . h($setTitle) . '" width="210">
 							</a></div></td>';
 }
 elseif (!$noImage && $tsumegoFilters->query == 'difficulty')
-	echo '<td width="195px" class="valign-top"><div class="set-image-zoom set-image-zoom--rank" align="center">
+	echo '<td width="195px" class="valign-top"><div class="set-view__cover set-view__cover--rank" align="center">
 						<a href="/' . $startingSetConnectionID . '">
 						<span class="rank-icon rank-icon-large' . (str_contains($set['Set']['id'], '-') ? ' rank-icon-large--range' : '') . '">' . h($set['Set']['id']) . '</span>
 						</a></div></td>';

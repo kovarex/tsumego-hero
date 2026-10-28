@@ -163,4 +163,22 @@
 		margin: 0 0 12px;
 	}
 }
+
+.image-zoom img {
+  border: 1px solid var(--current-border-color);
+}
+
+/* Shown by webroot/js/imageZoom.js: natural size, never larger than the viewport */
+.image-zoom__preview {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 90vw;
+  max-height: 90vh;
+  z-index: 9999;
+  pointer-events: none;
+  border: 3px solid #333;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
 }
