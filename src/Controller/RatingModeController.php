@@ -70,7 +70,7 @@ LIMIT 1";
 		$play  = new Play(function ($name, $value) {
 			$this->set($name, $value);
 		});
-		$play->play((int) $selectedTsumego['id'], $this->request, $this->request->data);
+		$play->play((int) $selectedTsumego['id'], $this->request);
 		$this->render('/Tsumegos/play');
 		return null;
 	}
