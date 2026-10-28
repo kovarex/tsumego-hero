@@ -10,7 +10,7 @@ use App\Utility\Util;
 
 /**
  * @var View $this
- * @var array $aCount
+ * @var int $achievementCount
  * @var int $aNum
  * @var int $aEarnedTimes
  * @var array $as
@@ -151,11 +151,11 @@ use App\Utility\Util;
 			</tr>
 			<tr>
 				<td>Achievements:</td>
-				<td><?php echo $aNum . ' of ' . count($aCount) . AchievementHelper::renderEarnedTimes($aEarnedTimes); ?></td>
+				<td><?php echo $aNum . ' of ' . $achievementCount . AchievementHelper::renderEarnedTimes($aEarnedTimes); ?></td>
 			</tr>
 			<tr>
 				<td colspan="2">
-					<?php $achievementPercent = count($aCount) > 0 ? round($aNum / count($aCount) * 100) : 0; ?>
+					<?php $achievementPercent = $achievementCount > 0 ? round($aNum / $achievementCount * 100) : 0; ?>
 					<div class="progress">
 						<div class="progress__fill" style="width:<?php echo $achievementPercent; ?>%"></div>
 						<div class="progress__label"><?php echo $achievementPercent; ?>%</div>

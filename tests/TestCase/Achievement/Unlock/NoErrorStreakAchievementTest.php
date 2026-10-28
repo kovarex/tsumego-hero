@@ -1,7 +1,8 @@
 <?php
 
-use App\Utility\AchievementId;
+use App\Model\Table\AchievementTable;
 use App\Utility\AchievementChecker;
+use App\Utility\AchievementId;
 use App\Utility\Auth;
 use App\Utility\HeroPowers;
 
@@ -12,11 +13,11 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 	public function testNoErrorStreakIncreasedThroughBrowser()
 	{
 		$contextInput = [];
-		for ($i = 0; $i < Achievement::NO_ERROR_STREAK_I_STREAK_COUNT; $i++)
+		for ($i = 0; $i < AchievementTable::NO_ERROR_STREAK_I_STREAK_COUNT; $i++)
 			$contextInput['tsumegos'] [] = $i + 1;
 		$browser = Browser::instance();
 		$context = new ContextPreparator($contextInput);
-		for ($i = 0; $i < Achievement::NO_ERROR_STREAK_I_STREAK_COUNT; $i++)
+		for ($i = 0; $i < AchievementTable::NO_ERROR_STREAK_I_STREAK_COUNT; $i++)
 		{
 			$browser->get('/' . $context->setConnections[$i]['id']);
 			$browser->playWithResult('S');
@@ -154,7 +155,7 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 	public function testSingleNoErrorStreakAchievements()
 	{
 		// Arrange: Create user and set err=10 (just meets threshold for AchievementId::NO_ERROR_STREAK_I)
-		$context = new ContextPreparator(['achievement-conditions' => [['category' => AchievementCondition::CATEGORY_NO_ERROR_STREAK, 'value' => Achievement::NO_ERROR_STREAK_I_STREAK_COUNT]]]);
+		$context = new ContextPreparator(['achievement-conditions' => [['category' => AchievementCondition::CATEGORY_NO_ERROR_STREAK, 'value' => AchievementTable::NO_ERROR_STREAK_I_STREAK_COUNT]]]);
 		new AchievementChecker()->checkNoErrorAchievements();
 
 		$this->assertAchievementUnlocked(AchievementId::NO_ERROR_STREAK_I, "No Error Streak I should unlock at 10");
@@ -168,7 +169,7 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 
 	public function testTwoHundredStreakUnlocksAll()
 	{
-		$context = new ContextPreparator(['achievement-conditions' => [['category' => AchievementCondition::CATEGORY_NO_ERROR_STREAK, 'value' => Achievement::NO_ERROR_STREAK_VI_STREAK_COUNT]]]);
+		$context = new ContextPreparator(['achievement-conditions' => [['category' => AchievementCondition::CATEGORY_NO_ERROR_STREAK, 'value' => AchievementTable::NO_ERROR_STREAK_VI_STREAK_COUNT]]]);
 		new AchievementChecker()->checkNoErrorAchievements();
 
 		// Assert: All 6 achievements should be unlocked
@@ -183,12 +184,12 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 	public function testAllNoErrorStreakAchievements()
 	{
 		$thresholds = [
-			[AchievementId::NO_ERROR_STREAK_I, Achievement::NO_ERROR_STREAK_I_STREAK_COUNT],
-			[AchievementId::NO_ERROR_STREAK_II, Achievement::NO_ERROR_STREAK_II_STREAK_COUNT],
-			[AchievementId::NO_ERROR_STREAK_III, Achievement::NO_ERROR_STREAK_III_STREAK_COUNT],
-			[AchievementId::NO_ERROR_STREAK_IV, Achievement::NO_ERROR_STREAK_IV_STREAK_COUNT],
-			[AchievementId::NO_ERROR_STREAK_V, Achievement::NO_ERROR_STREAK_V_STREAK_COUNT],
-			[AchievementId::NO_ERROR_STREAK_VI, Achievement::NO_ERROR_STREAK_VI_STREAK_COUNT],
+			[AchievementId::NO_ERROR_STREAK_I, AchievementTable::NO_ERROR_STREAK_I_STREAK_COUNT],
+			[AchievementId::NO_ERROR_STREAK_II, AchievementTable::NO_ERROR_STREAK_II_STREAK_COUNT],
+			[AchievementId::NO_ERROR_STREAK_III, AchievementTable::NO_ERROR_STREAK_III_STREAK_COUNT],
+			[AchievementId::NO_ERROR_STREAK_IV, AchievementTable::NO_ERROR_STREAK_IV_STREAK_COUNT],
+			[AchievementId::NO_ERROR_STREAK_V, AchievementTable::NO_ERROR_STREAK_V_STREAK_COUNT],
+			[AchievementId::NO_ERROR_STREAK_VI, AchievementTable::NO_ERROR_STREAK_VI_STREAK_COUNT],
 		];
 
 		foreach ($thresholds as [$achievementId, $errValue])

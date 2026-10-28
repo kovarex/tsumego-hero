@@ -1,16 +1,14 @@
 <?php
 
+namespace App\Model\Table;
+
+use AchievementCondition;
 use App\Utility\AchievementId;
 use App\Utility\HeroPowers;
 
-class Achievement extends AppModel
+//The achievements of the site, with what each asks for. Their ids are AchievementId.
+class AchievementTable extends AppTable
 {
-	public function __construct(mixed $id = false, ?string $table = null, ?string $ds = null)
-	{
-		$id['table'] = 'achievement';
-		parent::__construct($id, $table, $ds);
-	}
-
 	//Returns the progress counter definition for an achievement, or null if the
 	//achievement has no progress to show (binary unlock or derived elsewhere).
 	//Returns ['category' => int, 'goal' => int], the category of AchievementCondition
@@ -81,5 +79,4 @@ class Achievement extends AppModel
 
 	// Multiple solves
 	public const int SOLVE_10_COUNT = 10;
-
 }

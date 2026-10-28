@@ -2,8 +2,9 @@
 
 namespace App\Utility;
 
-use Achievement;
 use AchievementCondition;
+use App\Model\Entity\Achievement;
+use App\Model\Table\AchievementTable;
 use App\Model\Table\TimeModeCategoryTable;
 use App\Model\Table\TimeModeRankTable;
 use App\Model\Table\TimeModeSessionStatusTable;
@@ -11,7 +12,6 @@ use Cake\ORM\Locator\LocatorAwareTrait;
 use ClassRegistry;
 use SetConnection;
 
-/** @phpstan-import-type AchievementRow from \App\Utility\RowTypes */
 class AchievementChecker
 {
 	use LocatorAwareTrait;
@@ -24,16 +24,15 @@ class AchievementChecker
 	//The fields the client needs to render an achievement popup from data.
 	//Both the /tsumegos/result response and the page-load embed use this, so
 	//the popup payload stays pure data and the client renders the markup.
-	/** @param AchievementRow $achievement */
-	public static function toPopupData(array $achievement): array
+	public static function toPopupData(Achievement $achievement): array
 	{
 		return [
-			'id' => (int) $achievement['id'],
-			'name' => $achievement['name'],
-			'description' => $achievement['description'],
-			'xp' => (int) $achievement['xp'],
-			'image' => $achievement['image'],
-			'color' => $achievement['color'],
+			'id' => $achievement->id,
+			'name' => $achievement->name,
+			'description' => $achievement->description,
+			'xp' => (int) $achievement->xp,
+			'image' => $achievement->image,
+			'color' => $achievement->color,
 		];
 	}
 
@@ -47,8 +46,7 @@ class AchievementChecker
 			'user_id' => Auth::getUserID(),
 		]));
 
-		$achievement = ClassRegistry::init('Achievement')->findById($achievementID->value);
-		$this->updated [] = $achievement['Achievement'];
+		$this->updated[] = $this->fetchTable('Achievement')->get($achievementID->value);
 	}
 
 	//Unlocks a repeatable achievement and records how often it was earned. Earning
@@ -141,15 +139,15 @@ class AchievementChecker
 			$this->gained(AchievementId::SOLVE_4D);
 		if ($ac1['5d'] > 0)
 			$this->gained(AchievementId::SOLVE_5D);
-		if ($ac1['1d'] >= Achievement::SOLVE_10_COUNT)
+		if ($ac1['1d'] >= AchievementTable::SOLVE_10_COUNT)
 			$this->gained(AchievementId::SOLVE_10_1D);
-		if ($ac1['2d'] >= Achievement::SOLVE_10_COUNT)
+		if ($ac1['2d'] >= AchievementTable::SOLVE_10_COUNT)
 			$this->gained(AchievementId::SOLVE_10_2D);
-		if ($ac1['3d'] >= Achievement::SOLVE_10_COUNT)
+		if ($ac1['3d'] >= AchievementTable::SOLVE_10_COUNT)
 			$this->gained(AchievementId::SOLVE_10_3D);
-		if ($ac1['4d'] >= Achievement::SOLVE_10_COUNT)
+		if ($ac1['4d'] >= AchievementTable::SOLVE_10_COUNT)
 			$this->gained(AchievementId::SOLVE_10_4D);
-		if ($ac1['5d'] >= Achievement::SOLVE_10_COUNT)
+		if ($ac1['5d'] >= AchievementTable::SOLVE_10_COUNT)
 			$this->gained(AchievementId::SOLVE_10_5D);
 		if ($ac1['emerald'] == 1)
 			$this->gained(AchievementId::EMERALD);
@@ -162,9 +160,9 @@ class AchievementChecker
 			&& $this->unlocked(AchievementId::SAPPHIRE)
 			&& $this->unlocked(AchievementId::RUBY))
 				$this->gained(AchievementId::DIAMOND);
-		if ($ac1['sprint'] >= Achievement::SPRINT_COUNT)
+		if ($ac1['sprint'] >= AchievementTable::SPRINT_COUNT)
 			$this->gained(AchievementId::SPRINT);
-		if ($ac1['golden'] >= Achievement::GOLD_DIGGER_COUNT)
+		if ($ac1['golden'] >= AchievementTable::GOLD_DIGGER_COUNT)
 			$this->gained(AchievementId::GOLD_DIGGER);
 		if ($ac1['potion'] >= HeroPowers::$BAD_POTION_THRESHOLD)
 			$this->gained(AchievementId::BAD_POTION);
@@ -173,17 +171,17 @@ class AchievementChecker
 	public function checkNoErrorAchievements(): void
 	{
 		$streak = AchievementCondition::value(Auth::getUserID(), AchievementCondition::CATEGORY_NO_ERROR_STREAK) ?? 0;
-		if ($streak >= Achievement::NO_ERROR_STREAK_I_STREAK_COUNT)
+		if ($streak >= AchievementTable::NO_ERROR_STREAK_I_STREAK_COUNT)
 			$this->gained(AchievementId::NO_ERROR_STREAK_I);
-		if ($streak >= Achievement::NO_ERROR_STREAK_II_STREAK_COUNT)
+		if ($streak >= AchievementTable::NO_ERROR_STREAK_II_STREAK_COUNT)
 			$this->gained(AchievementId::NO_ERROR_STREAK_II);
-		if ($streak >= Achievement::NO_ERROR_STREAK_III_STREAK_COUNT)
+		if ($streak >= AchievementTable::NO_ERROR_STREAK_III_STREAK_COUNT)
 			$this->gained(AchievementId::NO_ERROR_STREAK_III);
-		if ($streak >= Achievement::NO_ERROR_STREAK_IV_STREAK_COUNT)
+		if ($streak >= AchievementTable::NO_ERROR_STREAK_IV_STREAK_COUNT)
 			$this->gained(AchievementId::NO_ERROR_STREAK_IV);
-		if ($streak >= Achievement::NO_ERROR_STREAK_V_STREAK_COUNT)
+		if ($streak >= AchievementTable::NO_ERROR_STREAK_V_STREAK_COUNT)
 			$this->gained(AchievementId::NO_ERROR_STREAK_V);
-		if ($streak >= Achievement::NO_ERROR_STREAK_VI_STREAK_COUNT)
+		if ($streak >= AchievementTable::NO_ERROR_STREAK_VI_STREAK_COUNT)
 			$this->gained(AchievementId::NO_ERROR_STREAK_VI);
 	}
 
@@ -340,17 +338,17 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeSessionStatusTable::SOLVED]);
 		$completedSets = AchievementCondition::value(Auth::getUserID(), AchievementCondition::CATEGORY_COMPLETED_SETS);
 		if ($completedSets === null)
 			return $this;
-		if ($completedSets >= Achievement::COMPLETE_SETS_I_SETS_COUNT)
+		if ($completedSets >= AchievementTable::COMPLETE_SETS_I_SETS_COUNT)
 			$this->gained(AchievementId::COMPLETE_SETS_I);
-		if ($completedSets >= Achievement::COMPLETE_SETS_II_SETS_COUNT)
+		if ($completedSets >= AchievementTable::COMPLETE_SETS_II_SETS_COUNT)
 			$this->gained(AchievementId::COMPLETE_SETS_II);
-		if ($completedSets >= Achievement::COMPLETE_SETS_III_SETS_COUNT)
+		if ($completedSets >= AchievementTable::COMPLETE_SETS_III_SETS_COUNT)
 			$this->gained(AchievementId::COMPLETE_SETS_III);
-		if ($completedSets >= Achievement::COMPLETE_SETS_IV_SETS_COUNT)
+		if ($completedSets >= AchievementTable::COMPLETE_SETS_IV_SETS_COUNT)
 			$this->gained(AchievementId::COMPLETE_SETS_IV);
-		if ($completedSets >= Achievement::COMPLETE_SETS_V_SETS_COUNT)
+		if ($completedSets >= AchievementTable::COMPLETE_SETS_V_SETS_COUNT)
 			$this->gained(AchievementId::COMPLETE_SETS_V);
-		if ($completedSets >= Achievement::COMPLETE_SETS_VI_SETS_COUNT)
+		if ($completedSets >= AchievementTable::COMPLETE_SETS_VI_SETS_COUNT)
 			$this->gained(AchievementId::COMPLETE_SETS_VI);
 		return $this;
 	}
@@ -635,7 +633,7 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeSessionStatusTable::SOLVED]);
 
 		$xpBonus = 0;
 		foreach ($this->updated as $achievement)
-			$xpBonus += $achievement['xp'];
+			$xpBonus += $achievement->xp;
 		if ($xpBonus == 0)
 			return $this;
 
@@ -649,5 +647,6 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeSessionStatusTable::SOLVED]);
 	}
 
 	private array $existingStatuses = [];
+	/** @var Achievement[] the achievements unlocked by this check, for the popups */
 	public array $updated = [];
 }

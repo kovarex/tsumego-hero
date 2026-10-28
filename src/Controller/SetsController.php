@@ -835,7 +835,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$this->loadModel('Tsumego');
 		$this->loadModel('TsumegoStatus');
 		$this->loadModel('TsumegoAttempt');
-		$this->loadModel('Achievement');
 		$this->loadModel('Sgf');
 		$this->loadModel('SetConnection');
 		$this->loadModel('User');
