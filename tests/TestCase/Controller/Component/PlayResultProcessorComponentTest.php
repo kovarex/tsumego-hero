@@ -1,5 +1,7 @@
 <?php
 
+use App\Model\Table\TsumegoStatusTable;
+use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\AchievementTable;
 use App\Utility\AchievementChecker;
 use App\Utility\AchievementId;
@@ -78,16 +80,20 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 
 	private function statusOf(ContextPreparator $context): string
 	{
-		return ClassRegistry::init('TsumegoStatus')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
-		])['TsumegoStatus']['status'];
+		return $this->fetchTable('TsumegoStatus')->find()->where(['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']])->first()->status;
 	}
 
 	private function attemptsOf(ContextPreparator $context): array
 	{
-		return ClassRegistry::init('TsumegoAttempt')->find('all', [
-			'conditions' => ['tsumego_id' => $context->tsumegos[0]['id'], 'user_id' => $context->user['id']],
-		]);
+		return $this->attemptsWhere(['tsumego_id' => $context->tsumegos[0]['id'], 'user_id' => $context->user['id']]);
+	}
+
+	//The attempts as rows under 'TsumegoAttempt', the shape the assertions of these tests read.
+	/** @return list<array{TsumegoAttempt: array<string, mixed>}> */
+	private function attemptsWhere(array $conditions): array
+	{
+		return $this->fetchTable('TsumegoAttempt')->find()->where($conditions)->orderBy(['id' => 'ASC'])->disableHydration()->all()
+			->map(fn(array $row) => ['TsumegoAttempt' => $row])->toList();
 	}
 
 	private function tsumegoRating(ContextPreparator $context): float
@@ -367,27 +373,23 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		$this->postResult($context, $params);
 		$this->postResult($context, $params);
 
-		$goldenCondition = ClassRegistry::init('AchievementCondition')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'achievement_condition_category_id' => AchievementCondition::CATEGORY_GOLDEN],
-		]);
+		$goldenCondition = $this->fetchTable('AchievementCondition')->find()->where(['user_id' => $context->user['id'], 'achievement_condition_category_id' => AchievementConditionTable::CATEGORY_GOLDEN])->first();
 		$this->assertNotNull($goldenCondition, 'golden achievement condition must be created');
-		$this->assertSame(1, (int) $goldenCondition['AchievementCondition']['value'],
+		$this->assertSame(1, (int) $goldenCondition->value,
 			'Solving the same tsumego twice must count the golden solve only once');
 	}
 
 	private function goldenRunOf(ContextPreparator $context): int
 	{
-		$goldenCondition = ClassRegistry::init('AchievementCondition')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'achievement_condition_category_id' => AchievementCondition::CATEGORY_GOLDEN],
-		]);
-		return $goldenCondition ? (int) $goldenCondition['AchievementCondition']['value'] : 0;
+		$goldenCondition = $this->fetchTable('AchievementCondition')->find()->where(['user_id' => $context->user['id'], 'achievement_condition_category_id' => AchievementConditionTable::CATEGORY_GOLDEN])->first();
+		return $goldenCondition ? (int) $goldenCondition->value : 0;
 	}
 
 	public function testFailingAGoldenTsumegoRestartsTheGoldenRun(): void
 	{
 		$context = new ContextPreparator([
 			'tsumego' => ['status' => 'G'],
-			'achievement-conditions' => [['category' => AchievementCondition::CATEGORY_GOLDEN, 'value' => 5]],
+			'achievement-conditions' => [['category' => AchievementConditionTable::CATEGORY_GOLDEN, 'value' => 5]],
 		]);
 
 		$this->failResult($context);
@@ -399,7 +401,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator([
 			'tsumego' => ['status' => 'G'],
-			'achievement-conditions' => [['category' => AchievementCondition::CATEGORY_GOLDEN, 'value' => 5]],
+			'achievement-conditions' => [['category' => AchievementConditionTable::CATEGORY_GOLDEN, 'value' => 5]],
 		]);
 
 		$this->solveWithMisplays($context);
@@ -411,7 +413,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator([
 			'tsumego' => ['status' => 'V'],
-			'achievement-conditions' => [['category' => AchievementCondition::CATEGORY_GOLDEN, 'value' => 5]],
+			'achievement-conditions' => [['category' => AchievementConditionTable::CATEGORY_GOLDEN, 'value' => 5]],
 		]);
 
 		$this->failResult($context);
@@ -423,7 +425,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator([
 			'tsumego' => ['status' => 'G'],
-			'achievement-conditions' => [['category' => AchievementCondition::CATEGORY_GOLDEN, 'value' => AchievementTable::GOLD_DIGGER_COUNT - 1]],
+			'achievement-conditions' => [['category' => AchievementConditionTable::CATEGORY_GOLDEN, 'value' => AchievementTable::GOLD_DIGGER_COUNT - 1]],
 		]);
 
 		$response = $this->solve($context);
@@ -598,17 +600,15 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator([
 			'tsumego' => 1,
-			'achievement-conditions' => [['category' => AchievementCondition::CATEGORY_NO_ERROR_STREAK, 'value' => 9]],  // One away from NO_ERROR_STREAK_I
+			'achievement-conditions' => [['category' => AchievementConditionTable::CATEGORY_NO_ERROR_STREAK, 'value' => 9]],  // One away from NO_ERROR_STREAK_I
 		]);
 
 		$this->failResult($context);
 		$this->solveAfterMistake($context);
 
 		// The err counter should be reset to 0, not incremented to 10
-		$errCondition = ClassRegistry::init('AchievementCondition')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'achievement_condition_category_id' => AchievementCondition::CATEGORY_NO_ERROR_STREAK],
-		]);
-		$this->assertSame(0, (int) $errCondition['AchievementCondition']['value'],
+		$errCondition = $this->fetchTable('AchievementCondition')->find()->where(['user_id' => $context->user['id'], 'achievement_condition_category_id' => AchievementConditionTable::CATEGORY_NO_ERROR_STREAK])->first();
+		$this->assertSame(0, (int) $errCondition->value,
 			'No-error streak should reset to 0 when solving with misplays');
 	}
 
@@ -616,16 +616,14 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator([
 			'tsumego' => 1,
-			'achievement-conditions' => [['category' => AchievementCondition::CATEGORY_NO_ERROR_STREAK, 'value' => 9]],
+			'achievement-conditions' => [['category' => AchievementConditionTable::CATEGORY_NO_ERROR_STREAK, 'value' => 9]],
 		]);
 
 		$this->solve($context);
 
 		// The err counter should be incremented to 10
-		$errCondition = ClassRegistry::init('AchievementCondition')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'achievement_condition_category_id' => AchievementCondition::CATEGORY_NO_ERROR_STREAK],
-		]);
-		$this->assertSame(10, (int) $errCondition['AchievementCondition']['value'],
+		$errCondition = $this->fetchTable('AchievementCondition')->find()->where(['user_id' => $context->user['id'], 'achievement_condition_category_id' => AchievementConditionTable::CATEGORY_NO_ERROR_STREAK])->first();
+		$this->assertSame(10, (int) $errCondition->value,
 			'No-error streak should increment when solving without misplays');
 	}
 
@@ -635,7 +633,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator([
 			'tsumego' => 1,
-			'achievement-conditions' => [['category' => AchievementCondition::CATEGORY_NO_ERROR_STREAK, 'value' => 0]],
+			'achievement-conditions' => [['category' => AchievementConditionTable::CATEGORY_NO_ERROR_STREAK, 'value' => 0]],
 		]);
 
 		// An earlier play of this problem ended in a mistake, which broke the streak then
@@ -644,10 +642,8 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		// Solving it in a later play is a clean solve
 		$this->solve($context);
 
-		$errCondition = ClassRegistry::init('AchievementCondition')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'achievement_condition_category_id' => AchievementCondition::CATEGORY_NO_ERROR_STREAK],
-		]);
-		$this->assertSame(1, (int) $errCondition['AchievementCondition']['value'],
+		$errCondition = $this->fetchTable('AchievementCondition')->find()->where(['user_id' => $context->user['id'], 'achievement_condition_category_id' => AchievementConditionTable::CATEGORY_NO_ERROR_STREAK])->first();
+		$this->assertSame(1, (int) $errCondition->value,
 			'A clean solve extends the streak');
 	}
 
@@ -674,12 +670,10 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 				"Damage must not increase when misplaying on status '$status'");
 
 			// No attempt record should be created for the misplay
-			$unsolvedAttempts = ClassRegistry::init('TsumegoAttempt')->find('all', [
-				'conditions' => [
-					'tsumego_id' => $context->tsumegos[0]['id'],
-					'user_id' => $context->user['id'],
-					'solved' => false,
-				],
+			$unsolvedAttempts = $this->attemptsWhere([
+				'tsumego_id' => $context->tsumegos[0]['id'],
+				'user_id' => $context->user['id'],
+				'solved' => false,
 			]);
 			$this->assertCount(0, $unsolvedAttempts,
 				"No unsolved attempt should be created for status '$status'");
@@ -707,14 +701,12 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		// Process a fail: damage == maxHealth, excessDeaths == 0, chance == 0%
 		$this->failResult($context);
 
-		$condition = ClassRegistry::init('AchievementCondition')->find('first', [
-			'conditions' => [
-				'user_id' => $context->user['id'],
-				'achievement_condition_category_id' => AchievementCondition::CATEGORY_POTION,
-			],
-		]);
+		$condition = $this->fetchTable('AchievementCondition')->find()->where([
+			'user_id' => $context->user['id'],
+			'achievement_condition_category_id' => AchievementConditionTable::CATEGORY_POTION,
+		])->first();
 		$this->assertNotNull($condition, 'potion achievement_condition must be created');
-		$this->assertSame(1, (int) $condition['AchievementCondition']['value'],
+		$this->assertSame(1, (int) $condition->value,
 			'potion condition value must increment to 1 on first miss');
 	}
 
@@ -777,10 +769,8 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 
 	private function sprintConditionValue(ContextPreparator $context): int
 	{
-		$condition = ClassRegistry::init('AchievementCondition')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'achievement_condition_category_id' => AchievementCondition::CATEGORY_SPRINT],
-		]);
-		return $condition ? (int) $condition['AchievementCondition']['value'] : 0;
+		$condition = $this->fetchTable('AchievementCondition')->find()->where(['user_id' => $context->user['id'], 'achievement_condition_category_id' => AchievementConditionTable::CATEGORY_SPRINT])->first();
+		return $condition ? (int) $condition->value : 0;
 	}
 
 	public function testSolveDuringSprintIncrementsSprintCounter(): void
@@ -813,7 +803,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		$context = new ContextPreparator([
 			'user' => ['level' => HeroPowers::$SPRINT_MINIMUM_LEVEL],
 			'tsumego' => 1,
-			'achievement-conditions' => [['category' => AchievementCondition::CATEGORY_SPRINT, 'value' => 12]],
+			'achievement-conditions' => [['category' => AchievementConditionTable::CATEGORY_SPRINT, 'value' => 12]],
 		]);
 		$this->solve($context);
 		$this->assertSame(0, $this->sprintConditionValue($context));
@@ -834,7 +824,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		$context = new ContextPreparator([
 			'user' => ['sprint_start' => date('Y-m-d H:i:s')],
 			'tsumego' => 1,
-			'achievement-conditions' => [['category' => AchievementCondition::CATEGORY_SPRINT, 'value' => 29]],
+			'achievement-conditions' => [['category' => AchievementConditionTable::CATEGORY_SPRINT, 'value' => 29]],
 		]);
 		$this->solve($context);
 		$this->assertSame(30, $this->sprintConditionValue($context));
@@ -919,9 +909,8 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 
 	private function completedSetsCondition(ContextPreparator $context): ?int
 	{
-		$condition = ClassRegistry::init('AchievementCondition')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'achievement_condition_category_id' => AchievementCondition::CATEGORY_COMPLETED_SETS]]);
-		return $condition ? (int) $condition['AchievementCondition']['value'] : null;
+		$condition = $this->fetchTable('AchievementCondition')->find()->where(['user_id' => $context->user['id'], 'achievement_condition_category_id' => AchievementConditionTable::CATEGORY_COMPLETED_SETS])->first();
+		return $condition ? (int) $condition->value : null;
 	}
 
 	public function testSolveCompletingSetPartUpdatesCompletedSetsCount(): void
@@ -978,7 +967,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 			$context = new ContextPreparator([
 				'tsumego' => ['sets' => [['name' => 'big set', 'num' => 1]]],
 				'tsumegos' => [['sets' => [['name' => 'big set', 'num' => 2]]]],
-				'achievement-conditions' => [['category' => AchievementCondition::CATEGORY_COMPLETED_SETS, 'value' => 7]],
+				'achievement-conditions' => [['category' => AchievementConditionTable::CATEGORY_COMPLETED_SETS, 'value' => 7]],
 			]);
 			$this->solve($context);
 			$this->assertSame(7, $this->completedSetsCondition($context), 'The stored count is only recomputed when a part gets completed');
@@ -1334,10 +1323,8 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 
 		$this->solve($context);
 
-		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
-		]);
-		$this->assertSame('S', $status['TsumegoStatus']['status'], 'Level solve should mark it solved');
+		$status = $this->fetchTable('TsumegoStatus')->find()->where(['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']])->first();
+		$this->assertSame('S', $status->status, 'Level solve should mark it solved');
 		$this->assertNotNull(
 			MistakeTraining::getPoolRow($context->user['id'], (int) $context->tsumegos[0]['id']),
 			'A solved pool problem must stay in the pool regardless of its status'
@@ -1371,10 +1358,8 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		$this->assertSame($beforeDailySolved + 1, Auth::getUser()['daily_solved'], 'A review counts as a solve of the day');
 		$this->assertSame($beforeDailyXp + $xp, Auth::getUser()['daily_xp'], 'And its XP as XP of the day');
 
-		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
-		]);
-		$this->assertSame('V', $status['TsumegoStatus']['status'], 'Training solve should not change tsumego status');
+		$status = $this->fetchTable('TsumegoStatus')->find()->where(['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']])->first();
+		$this->assertSame('V', $status->status, 'Training solve should not change tsumego status');
 
 		// Training does not write to tsumego_attempt (like time mode); it only
 		// advances the pool. A clean solve climbs one rung.
@@ -1397,10 +1382,8 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 
 		$this->assertSame($beforeDamage, Auth::getUser()['damage'], 'Training fail should not add damage');
 
-		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
-		]);
-		$this->assertSame('V', $status['TsumegoStatus']['status'], 'Training fail should not change tsumego status');
+		$status = $this->fetchTable('TsumegoStatus')->find()->where(['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']])->first();
+		$this->assertSame('V', $status->status, 'Training fail should not change tsumego status');
 
 		// Training does not write to tsumego_attempt (like time mode); it only
 		// moves the pool. A fail keeps the problem at the daily rung.
@@ -1422,15 +1405,11 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		$this->assertGreaterThan($beforeDailySolved, Auth::getUser()['daily_solved'], 'Level solve should bump daily solves');
 		$this->assertNotEquals($beforeRating, Auth::getUser()['rating'], 'Level solve should change rating');
 
-		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
-		]);
-		$this->assertSame('S', $status['TsumegoStatus']['status'], 'Level solve should mark the problem solved');
+		$status = $this->fetchTable('TsumegoStatus')->find()->where(['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']])->first();
+		$this->assertSame('S', $status->status, 'Level solve should mark the problem solved');
 
-		$attempt = ClassRegistry::init('TsumegoAttempt')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
-			'order' => 'id DESC',
-		]);
+		$attempts = $this->attemptsWhere(['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']]);
+		$attempt = end($attempts);
 		$this->assertSame(true, (bool) $attempt['TsumegoAttempt']['solved'], 'Level solve should record a solved attempt');
 	}
 
@@ -1506,10 +1485,8 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 
 		$this->assertGreaterThan($beforeDamage, Auth::getUser()['damage'], 'Level fail should add damage');
 
-		$attempt = ClassRegistry::init('TsumegoAttempt')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
-			'order' => 'id DESC',
-		]);
+		$attempts = $this->attemptsWhere(['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']]);
+		$attempt = end($attempts);
 		$this->assertSame(false, (bool) $attempt['TsumegoAttempt']['solved'], 'Level fail should record an unsolved attempt');
 	}
 
@@ -1533,7 +1510,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 			'A clean solve on the review day climbs one rung');
 
 		Util::execute('UPDATE tsumego_status SET status = ? WHERE user_id = ? AND tsumego_id = ?',
-			[TsumegoStatus::$REVIEW, $userId, $tsumegoId]);
+			[TsumegoStatusTable::$REVIEW, $userId, $tsumegoId]);
 		$this->failResult($context);
 		$this->solveAfterMistake($context);
 

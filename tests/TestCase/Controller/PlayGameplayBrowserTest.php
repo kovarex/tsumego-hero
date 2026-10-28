@@ -241,17 +241,13 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 			(int) $context->user['damage'],
 			'Hearts must not be lost for mistakes made after solving');
 
-		$attempts = ClassRegistry::init('TsumegoAttempt')->find('all', [
-			'conditions' => [
-				'tsumego_id' => $context->tsumegos[0]['id'],
-				'user_id' => $context->user['id'],
-			],
-		]);
+		$attempts = $this->fetchTable('TsumegoAttempt')->find()
+			->where(['tsumego_id' => $context->tsumegos[0]['id'], 'user_id' => $context->user['id']])->all()->toList();
 		$this->assertCount(1, $attempts,
 			'Must produce exactly one attempt record');
-		$this->assertTrue($attempts[0]['TsumegoAttempt']['solved'],
+		$this->assertTrue($attempts[0]->solved,
 			'Attempt must be marked solved');
-		$this->assertSame(0, (int) $attempts[0]['TsumegoAttempt']['misplays'],
+		$this->assertSame(0, $attempts[0]->misplays,
 			'Post-solve mistakes must not appear in attempt history');
 	}
 
@@ -353,9 +349,8 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		// Verify final state
 		$this->assertSame($originalDamage + 1, (int) $context->reloadUser()['damage'],
 			'Damage should only be from the first fail');
-		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']]]);
-		$this->assertSame('S', $status['TsumegoStatus']['status'],
+		$status = $this->fetchTable('TsumegoStatus')->find()->where(['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']])->first();
+		$this->assertSame('S', $status->status,
 			'Status should be solved');
 	}
 

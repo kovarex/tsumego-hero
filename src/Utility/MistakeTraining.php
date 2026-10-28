@@ -2,11 +2,11 @@
 
 namespace App\Utility;
 
+use App\Model\Table\TsumegoStatusTable;
 use Cake\ORM\TableRegistry;
 use DateTime;
 use SetConnection;
 use Sgf;
-use TsumegoStatus;
 
 //Mistake training: spaced repetition for tsumegos you did not solve on the first attempt.
 //The pool (mistake_training_pool) is the single source of truth: one row per
@@ -121,7 +121,7 @@ class MistakeTraining
 			return null;
 
 		$freePlay = !$inTraining && !$inTimeMode
-			&& ($oldStatus === TsumegoStatus::$SOLVED || $oldStatus === TsumegoStatus::$MASTERED);
+			&& ($oldStatus === TsumegoStatusTable::$SOLVED || $oldStatus === TsumegoStatusTable::$MASTERED);
 
 		$pool = self::getPoolRow($userId, $tsumegoId);
 
@@ -136,7 +136,7 @@ class MistakeTraining
 				return null;
 			$solvedAfterMistake = $outcome === PlayOutcome::SolvedAfterMistake;
 			$lapsed = $outcome === PlayOutcome::Failed
-				&& (TsumegoUtil::isSolvedStatus($oldStatus) || $oldStatus === TsumegoStatus::$FORGOTTEN);
+				&& (TsumegoUtil::isSolvedStatus($oldStatus) || $oldStatus === TsumegoStatusTable::$FORGOTTEN);
 			if (!$solvedAfterMistake && !$lapsed)
 				return null;
 			self::enterPool($userId, $tsumegoId);

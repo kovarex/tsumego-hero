@@ -61,7 +61,7 @@ class SpecialSetAchievementTest extends AchievementTestCase
 	{
 		$context = new ContextPreparator();
 		$tsumegoIDs = $this->createAndSolveSets($context->user['id'], [190, 193, 198]);
-		ClassRegistry::init('TsumegoStatus')->updateAll(['status' => "'F'"], ['user_id' => $context->user['id'], 'tsumego_id' => $tsumegoIDs[7]]);
+		$this->fetchTable('TsumegoStatus')->updateAll(['status' => 'F'], ['user_id' => $context->user['id'], 'tsumego_id' => $tsumegoIDs[7]]);
 		new AchievementChecker()->setAchievementSpecial('1000w1');
 		$this->assertAchievementNotUnlocked(AchievementId::WEIQI_1000_FIRST_HALF);
 	}
@@ -71,7 +71,7 @@ class SpecialSetAchievementTest extends AchievementTestCase
 	{
 		$context = new ContextPreparator();
 		$tsumegoIDs = $this->createAndSolveSets($context->user['id'], [216]);
-		ClassRegistry::init('TsumegoStatus')->deleteAll(['user_id' => $context->user['id'], 'tsumego_id' => $tsumegoIDs[1]]);
+		$this->fetchTable('TsumegoStatus')->deleteAll(['user_id' => $context->user['id'], 'tsumego_id' => $tsumegoIDs[1]]);
 		ClassRegistry::init('Tsumego')->updateAll(['deleted' => "'" . date('Y-m-d H:i:s') . "'"], ['id' => $tsumegoIDs[1]]);
 		new AchievementChecker()->setAchievementSpecial('1000w2');
 		$this->assertAchievementUnlocked(AchievementId::WEIQI_1000_SECOND_HALF, 'The problem in the trash should not be needed');
@@ -82,7 +82,7 @@ class SpecialSetAchievementTest extends AchievementTestCase
 	{
 		$Set = ClassRegistry::init('Set');
 		$Tsumego = ClassRegistry::init('Tsumego');
-		$TsumegoStatus = ClassRegistry::init('TsumegoStatus');
+		$TsumegoStatus = $this->fetchTable('TsumegoStatus');
 		$SetConnection = ClassRegistry::init('SetConnection');
 
 		$tsumegoIDs = [];
@@ -101,8 +101,7 @@ class SpecialSetAchievementTest extends AchievementTestCase
 				$SetConnection->create();
 				$SetConnection->save(['set_id' => $setId, 'tsumego_id' => $tsumegoId, 'num' => $i + 1]);
 
-				$TsumegoStatus->create();
-				$TsumegoStatus->save(['user_id' => $userId, 'tsumego_id' => $tsumegoId, 'status' => 'S']);
+				$TsumegoStatus->saveOrFail($TsumegoStatus->newEntity(['user_id' => $userId, 'tsumego_id' => $tsumegoId, 'status' => 'S']));
 			}
 		}
 		return $tsumegoIDs;

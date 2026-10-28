@@ -6,6 +6,7 @@
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
+use App\Model\Table\AchievementConditionTable;
 use App\Utility\AchievementChecker;
 use App\Utility\AchievementId;
 use App\Utility\Auth;
@@ -76,7 +77,7 @@ abstract class AchievementTestCase extends IntegrationTestCase
 	protected function triggerSetCompletionAchievementCheck($completedSetsCount)
 	{
 		// Save set completion count to achievement_condition (simulates completing sets)
-		AchievementCondition::put(Auth::getUserID(), AchievementCondition::CATEGORY_COMPLETED_SETS, $completedSetsCount);
+		AchievementConditionTable::put(Auth::getUserID(), AchievementConditionTable::CATEGORY_COMPLETED_SETS, $completedSetsCount);
 
 		new AchievementChecker()->checkSetCompletedAchievements()->finalize();
 	}
@@ -118,8 +119,7 @@ abstract class AchievementTestCase extends IntegrationTestCase
 			ClassRegistry::init('Sgf')->create();
 			ClassRegistry::init('Sgf')->save(['tsumego_id' => $tsumegoId, 'sgf' => '(;GM[1]FF[4]SZ[19])', 'user_id' => Auth::getUserID(), 'sgf_status_id' => Sgf::STATUS_ACCEPTED]);
 
-			ClassRegistry::init('TsumegoStatus')->create();
-			ClassRegistry::init('TsumegoStatus')->save(['tsumego_id' => $tsumegoId, 'status' => 'S', 'user_id' => Auth::getUserID()]);
+			$this->fetchTable('TsumegoStatus')->saveOrFail($this->fetchTable('TsumegoStatus')->newEntity(['tsumego_id' => $tsumegoId, 'status' => 'S', 'user_id' => Auth::getUserID()]));
 		}
 
 		return $setId;

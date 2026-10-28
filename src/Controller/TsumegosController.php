@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\TsumegoStatusTable;
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Model\Table\AdminActivityTypeTable;
@@ -176,11 +177,7 @@ class TsumegosController extends AppController
 		$similarSearchLogic->execute();
 
 		$this->set('result', $similarSearchLogic->result);
-		$tsumegoStatusResult = ClassRegistry::init('TsumegoStatus')->find('first', [
-			'conditions' => [
-				'user_id' => Auth::getUserID(),
-				'tsumego_id' => $similarSearchLogic->sourceTsumego['id']]]);
-		$tsumegoStatus = $tsumegoStatusResult ? $tsumegoStatusResult['TsumegoStatus']['status'] : null;
+		$tsumegoStatus = TsumegoStatusTable::statusOf(Auth::getUserID(), (int) $similarSearchLogic->sourceTsumego['id']);
 		$this->set(
 			'sourceTsumegoButton',
 			new TsumegoButton(

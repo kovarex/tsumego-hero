@@ -60,9 +60,13 @@ class AppController extends Controller
 	protected function signIn(array $user): void
 	{
 		Auth::init($user);
-		$vs = $this->TsumegoStatus->find('first', ['conditions' => ['user_id' => $user['User']['id']], 'order' => 'updated DESC']);
-		if ($vs)
-			Util::setCookie('lastVisit', $vs['TsumegoStatus']['tsumego_id']);
+		$lastStatus = $this->fetchTable('TsumegoStatus')->find()
+			->select(['tsumego_id'])
+			->where(['user_id' => $user['User']['id']])
+			->orderByDesc('updated')
+			->first();
+		if ($lastStatus)
+			Util::setCookie('lastVisit', $lastStatus->tsumego_id);
 	}
 
 	//Enforce HTTP-method attributes (e.g. #[HttpPost]) on the dispatched action.
@@ -121,8 +125,7 @@ class AppController extends Controller
 	}
 
 	//Models every controller can use as $this->Name, loaded on the first use instead of on every request
-	private const SHARED_MODELS = ['User', 'Tsumego', 'Set', 'TsumegoStatus', 'TsumegoAttempt',
-		'AchievementCondition', 'SetConnection'];
+	private const SHARED_MODELS = ['User', 'Tsumego', 'Set', 'SetConnection'];
 
 	public function __isset($name)
 	{

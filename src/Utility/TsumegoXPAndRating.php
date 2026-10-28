@@ -3,7 +3,7 @@
 namespace App\Utility;
 
 use App\Model\Table\ProgressDeletionTable;
-use TsumegoAttempt;
+use App\Model\Table\TsumegoAttemptTable;
 
 /** @phpstan-import-type TsumegoRow from \App\Utility\RowTypes */
 class TsumegoXPAndRating
@@ -20,7 +20,7 @@ class TsumegoXPAndRating
 		$this->tsumegoRating = $tsumego['rating'];
 		// the resets of the part of the set the problem is played from
 		$this->progressDeletionCount = Auth::isLoggedIn() ? ProgressDeletionTable::countRecentForProblem(Auth::getUserID(), (int) $tsumego['id'], $setConnectionID) : 0;
-		$this->failsInARow = Auth::isLoggedIn() ? TsumegoAttempt::failsInARow(TsumegoAttempt::findLast((int) Auth::getUserID(), (int) $tsumego['id'])) : 0;
+		$this->failsInARow = Auth::isLoggedIn() ? TsumegoAttemptTable::failsInARow(TsumegoAttemptTable::findLast((int) Auth::getUserID(), (int) $tsumego['id'])) : 0;
 	}
 
 	public function render(): void

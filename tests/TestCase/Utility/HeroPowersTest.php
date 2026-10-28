@@ -29,10 +29,10 @@ class HeroPowersTest extends IntegrationTestCase
 
 		// the tsumego with index '1' was selected, as it is the one with my rank
 		$this->assertSame(Util::getMyAddress() . '/' . $goldenTsumego['set-connections'][0]['id'], $browser->driver->getCurrentURL());
-		$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => [
+		$status = $this->fetchTable('TsumegoStatus')->find()->where([
 			'tsumego_id' => $goldenTsumego['id'],
-			'user_id' => Auth::getUserID()]]);
-		$this->assertSame($status['TsumegoStatus']['status'], 'G');
+			'user_id' => Auth::getUserID()])->first();
+		$this->assertSame($status->status, 'G');
 		$this->assertSame($context->reloadUser()['used_refinement'], 1); // the power is used up
 
 		// the reported xp is normal golden
@@ -42,8 +42,8 @@ class HeroPowersTest extends IntegrationTestCase
 			return $index + 1;
 		}, 1, 'G');
 		$browser->get('sets');
-		$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $goldenTsumego['id']]]);
-		$this->assertSame($status['TsumegoStatus']['status'], 'S');
+		$status = $this->fetchTable('TsumegoStatus')->find()->where(['user_id' => Auth::getUserID(), 'tsumego_id' => $goldenTsumego['id']])->first();
+		$this->assertSame($status->status, 'S');
 		$this->assertSame($context->XPGained(), $originalTsumegoXPValue);
 	}
 
@@ -66,10 +66,10 @@ class HeroPowersTest extends IntegrationTestCase
 
 		// the tsumego with index '1' was selected, as it is the one with my rank
 		$this->assertSame(Util::getMyAddress() . '/' . $goldenTsumego['set-connections'][0]['id'], $browser->driver->getCurrentURL());
-		$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => [
+		$status = $this->fetchTable('TsumegoStatus')->find()->where([
 			'tsumego_id' => $goldenTsumego['id'],
-			'user_id' => Auth::getUserID()]]);
-		$this->assertSame($status['TsumegoStatus']['status'], 'G');
+			'user_id' => Auth::getUserID()])->first();
+		$this->assertSame($status->status, 'G');
 		$this->assertSame($context->reloadUser()['used_refinement'], 1); // the power is used up
 	}
 
@@ -96,8 +96,8 @@ class HeroPowersTest extends IntegrationTestCase
 		}, function ($index) {
 			return $index + 1;
 		}, 0, 'V');
-		$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[0]['id']]]);
-		$this->assertSame($status['TsumegoStatus']['status'], 'V');
+		$status = $this->fetchTable('TsumegoStatus')->find()->where(['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[0]['id']])->first();
+		$this->assertSame($status->status, 'V');
 	}
 
 	public function testSprint()
@@ -115,8 +115,8 @@ class HeroPowersTest extends IntegrationTestCase
 		$browser->driver->executeScript("displayResult('S')"); // solve the problem
 		$browser->waitForSubmitResult();
 		$browser->get('sets');
-		$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[0]['id']]]);
-		$this->assertSame($status['TsumegoStatus']['status'], 'S');
+		$status = $this->fetchTable('TsumegoStatus')->find()->where(['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[0]['id']])->first();
+		$this->assertSame($status->status, 'S');
 		$this->assertSame($context->XPGained(), Constants::$SPRINT_MULTIPLIER * $originalTsumegoXPValue);
 		$this->assertSame($context->user['used_sprint'], 1);
 	}
@@ -222,13 +222,13 @@ class HeroPowersTest extends IntegrationTestCase
 			$this->assertSame($context->reloadUser()['used_revelation'], $expectedUsedCount);
 
 			// status was changed to 'S' (solved)
-			$tsumegoStatuses = ClassRegistry::init('TsumegoStatus')->find('all');
+			$tsumegoStatuses = $this->fetchTable('TsumegoStatus')->find()->toArray();
 			$this->assertSame(1, count($tsumegoStatuses));
-			$this->assertSame($testCase == 'normal' ? 'S' : 'V', $tsumegoStatuses[0]['TsumegoStatus']['status']);
+			$this->assertSame($testCase == 'normal' ? 'S' : 'V', $tsumegoStatuses[0]->status);
 
 			$this->assertSame($context->xpgained(), 0); // no xp was gained
 			$this->assertSame($context->reloadUser()['rating'], ContextPreparator::$DEFAULT_USER_RATING); // xp wasn't changed
-			$this->assertSame(0, count(ClassRegistry::init('TsumegoAttempt')->find('all'))); // no attempt was recorded
+			$this->assertSame(0, $this->fetchTable('TsumegoAttempt')->find()->count()); // no attempt was recorded
 		}
 	}
 
@@ -302,10 +302,10 @@ class HeroPowersTest extends IntegrationTestCase
 		$browser->waitUntilJs('getComputedStyle(document.querySelector("#rejuvenation")).cursor === "auto"');
 		$this->checkPowerIsInactive($browser, 'rejuvenation');
 		$this->checkPowerIsActive($browser, 'intuition');
-		$status1 = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[0]['id']]]);
-		$this->assertSame($status1['TsumegoStatus']['status'], 'V');
-		$status2 = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[1]['id']]]);
-		$this->assertSame($status2['TsumegoStatus']['status'], 'W');
+		$status1 = $this->fetchTable('TsumegoStatus')->find()->where(['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[0]['id']])->first();
+		$this->assertSame($status1->status, 'V');
+		$status2 = $this->fetchTable('TsumegoStatus')->find()->where(['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[1]['id']])->first();
+		$this->assertSame($status2->status, 'W');
 	}
 
 	//Full rejuvenation flow: start with 0 hearts, fail to lock the board,

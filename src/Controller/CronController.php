@@ -1,6 +1,7 @@
 <?php
 
 use App\Attribute\HttpGet;
+use App\Model\Table\AchievementConditionTable;
 use App\Utility\SchedulePublisher;
 use App\Utility\Trash;
 use App\Utility\Util;
@@ -94,18 +95,18 @@ class CronController extends AppController
 
 	private function dailyPotionConditionReset(): void
 	{
-		Util::execute('UPDATE achievement_condition SET value = 0 WHERE achievement_condition_category_id = ? AND value <> 0', [AchievementCondition::CATEGORY_POTION]);
+		Util::execute('UPDATE achievement_condition SET value = 0 WHERE achievement_condition_category_id = ? AND value <> 0', [AchievementConditionTable::CATEGORY_POTION]);
 	}
 
 	private function dailyTsumegoStatusReset(): void
 	{
-		ClassRegistry::init('TsumegoStatus')->query("UPDATE tsumego_status SET status='V' where status='F'");
-		ClassRegistry::init('TsumegoStatus')->query("UPDATE tsumego_status SET status='W' where status='X'");
+		Util::execute("UPDATE tsumego_status SET status='V' where status='F'");
+		Util::execute("UPDATE tsumego_status SET status='W' where status='X'");
 	}
 
 	private function dailyStalingSolvedTsumegoStatuses(): void
 	{
-		ClassRegistry::init('TsumegoStatus')->query("
+		Util::execute("
 UPDATE tsumego_status
 SET status='W'
 WHERE
@@ -195,7 +196,7 @@ WHERE
 			'ruby_solves' => 0,
 		]));
 
-		AchievementCondition::put((int) $userOfTheDay['User']['id'], AchievementCondition::CATEGORY_USER_OF_THE_DAY, 1);
+		AchievementConditionTable::put((int) $userOfTheDay['User']['id'], AchievementConditionTable::CATEGORY_USER_OF_THE_DAY, 1);
 	}
 
 	//The solved count on the user row goes up as the player solves, the recount repairs it where it

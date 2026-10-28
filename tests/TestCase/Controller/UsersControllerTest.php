@@ -216,13 +216,13 @@ class UsersControllerTest extends IntegrationTestCase
 		$this->assertSame('RESET OLD PROGRESS (1)', $browser->find('#reset-statuses-button')->getText());
 
 		// clicking reset removes the status
-		$this->assertNotEmpty(ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[1]['id']]]));
+		$this->assertNotEmpty($this->fetchTable('TsumegoStatus')->find()->where(['tsumego_id' => $context->tsumegos[1]['id']])->first());
 		$this->assertSame($context->reloadUser()['solved'], 2);
 
 		$browser->driver->executeScript("window.confirm = function(msg) {return true;};");
 		$browser->clickId('reset-statuses-button');
 
-		$this->assertEmpty(ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[1]['id']]]));
+		$this->assertEmpty($this->fetchTable('TsumegoStatus')->find()->where(['tsumego_id' => $context->tsumegos[1]['id']])->first());
 		$this->assertSame($context->reloadUser()['solved'], 1);
 	}
 
@@ -246,9 +246,9 @@ class UsersControllerTest extends IntegrationTestCase
 		$browser->driver->executeScript("window.confirm = function(msg) {return true;};");
 		$browser->clickId('reset-statuses-button');
 
-		$tsumegoStatus = ClassRegistry::init('TsumegoStatus');
-		$this->assertEmpty($tsumegoStatus->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]]));
-		$this->assertNotEmpty($tsumegoStatus->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[1]['id']]]));
+		$tsumegoStatus = $this->fetchTable('TsumegoStatus');
+		$this->assertEmpty($tsumegoStatus->find()->where(['tsumego_id' => $context->tsumegos[0]['id']])->first());
+		$this->assertNotEmpty($tsumegoStatus->find()->where(['tsumego_id' => $context->tsumegos[1]['id']])->first());
 	}
 
 	public function testProfileShowsRank(): void
@@ -505,9 +505,7 @@ class UsersControllerTest extends IntegrationTestCase
 
 		$browser->waitUntilJs('document.documentElement.outerHTML.includes("Deleted progress on 1 problems")');
 
-		$remaining = ClassRegistry::init('TsumegoStatus')->find('count', [
-			'conditions' => ['user_id' => $context->user['id']],
-		]);
+		$remaining = $this->fetchTable('TsumegoStatus')->find()->where(['user_id' => $context->user['id']])->count();
 		$this->assertEquals(3, $remaining);
 	}
 
@@ -535,9 +533,9 @@ class UsersControllerTest extends IntegrationTestCase
 
 		$browser->waitUntilJs('document.documentElement.outerHTML.includes("Deleted progress on 1 problems")');
 
-		$tsumegoStatus = ClassRegistry::init('TsumegoStatus');
-		$this->assertEmpty($tsumegoStatus->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]]));
-		$this->assertNotEmpty($tsumegoStatus->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[1]['id']]]));
+		$tsumegoStatus = $this->fetchTable('TsumegoStatus');
+		$this->assertEmpty($tsumegoStatus->find()->where(['tsumego_id' => $context->tsumegos[0]['id']])->first());
+		$this->assertNotEmpty($tsumegoStatus->find()->where(['tsumego_id' => $context->tsumegos[1]['id']])->first());
 	}
 
 	public function testResetOldProgressDoesNotAffectOtherUsers()
@@ -565,14 +563,10 @@ class UsersControllerTest extends IntegrationTestCase
 
 		$browser->waitUntilJs('document.documentElement.outerHTML.includes("Deleted progress on 1 problems")');
 
-		$aliceRemaining = ClassRegistry::init('TsumegoStatus')->find('count', [
-			'conditions' => ['user_id' => $context->user['id']],
-		]);
+		$aliceRemaining = $this->fetchTable('TsumegoStatus')->find()->where(['user_id' => $context->user['id']])->count();
 		$this->assertEquals(1, $aliceRemaining, "Alice's old status should have been deleted");
 
-		$bobRemaining = ClassRegistry::init('TsumegoStatus')->find('count', [
-			'conditions' => ['user_id' => $bobId],
-		]);
+		$bobRemaining = $this->fetchTable('TsumegoStatus')->find()->where(['user_id' => $bobId])->count();
 		$this->assertEquals(1, $bobRemaining, "Bob's status should not have been affected");
 	}
 

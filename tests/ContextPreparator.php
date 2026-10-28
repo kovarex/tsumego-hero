@@ -2,6 +2,8 @@
 
 use App\Model\Entity\Tag;
 use App\Model\Entity\TimeModeSession;
+use App\Model\Entity\TsumegoStatus;
+use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\TimeModeRankTable;
 use App\Model\Table\TsumegoIssueTable;
@@ -297,16 +299,17 @@ class ContextPreparator
 			return;
 
 		$tsumegoAttempt['user_id'] = Util::extract('user_id', $tsumegoAttemptInput) ?: $this->user['id'];
-		$tsumegoAttempt['user_rating'] = Util::extract('user_rating', $tsumegoAttemptInput) ?: $this->user['rating'];
+		// the ratings are floats, which MySQL rounded into the integer columns and the ORM would cut off
+		$tsumegoAttempt['user_rating'] = (int) round((float) (Util::extract('user_rating', $tsumegoAttemptInput) ?: $this->user['rating']));
 		$tsumegoAttempt['tsumego_id'] = $tsumego['id'];
 		$tsumegoAttempt['gain'] = Util::extract('gain', $tsumegoAttemptInput) ?: 0;
 		$tsumegoAttempt['seconds'] = Util::extract('seconds', $tsumegoAttemptInput) ?: 0;
 		$tsumegoAttempt['solved'] = Util::extract('solved', $tsumegoAttemptInput) ?: false;
-		$tsumegoAttempt['tsumego_rating'] = Util::extract('tsumego_rating', $tsumegoAttemptInput) ?: $tsumego['rating'];
+		$tsumegoAttempt['tsumego_rating'] = (int) round((float) (Util::extract('tsumego_rating', $tsumegoAttemptInput) ?: $tsumego['rating']));
 		$tsumegoAttempt['misplays'] = Util::extract('misplays', $tsumegoAttemptInput) ?: 0;
 		$tsumegoAttempt['created'] = Util::extract('created', $tsumegoAttemptInput) ?: date('Y-m-d H:i:s');
-		ClassRegistry::init('TsumegoAttempt')->create($tsumegoAttempt);
-		ClassRegistry::init('TsumegoAttempt')->save($tsumegoAttempt);
+		$tsumegoAttemptTable = TableRegistry::getTableLocator()->get('TsumegoAttempt');
+		$tsumegoAttemptTable->saveOrFail($tsumegoAttemptTable->newEntity($tsumegoAttempt));
 		$this->checkOptionsConsumed($tsumegoAttemptInput);
 	}
 
@@ -457,32 +460,24 @@ class ContextPreparator
 				: (self::getUserIdFromName(Util::extract('user', $tsumegoStatus)) ?: $this->user['id']))
 			: null;
 
-		$statusCondition = [
-			'conditions' => [
-				'user_id' => $userID,
-				['tsumego_id' => $tsumego['id']]]];
-
-		$originalTsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', $statusCondition);
+		$statusTable = TableRegistry::getTableLocator()->get('TsumegoStatus');
+		$originalTsumegoStatus = $userID === null ? null : $statusTable->find()->where(['user_id' => $userID, 'tsumego_id' => $tsumego['id']])->first();
 		if ($originalTsumegoStatus)
 			if (!$tsumegoStatus)
-				ClassRegistry::init('TsumegoStatus')->delete($originalTsumegoStatus['TsumegoStatus']['id']);
+				$statusTable->deleteOrFail($originalTsumegoStatus);
 			else
 			{
-				$originalTsumegoStatus['TsumegoStatus']['status'] = $statusValue;
+				$originalTsumegoStatus->status = $statusValue;
 				if ($updated)
-					$originalTsumegoStatus['TsumegoStatus']['updated'] = $updated;
-				ClassRegistry::init('TsumegoStatus')->save($originalTsumegoStatus);
+					$originalTsumegoStatus->updated = $updated;
+				$statusTable->saveOrFail($originalTsumegoStatus);
 			}
 		elseif ($tsumegoStatus)
 		{
-			$originalTsumegoStatus = [];
-			$originalTsumegoStatus['TsumegoStatus']['status'] = $statusValue;
+			$newStatus = ['status' => $statusValue, 'user_id' => $userID, 'tsumego_id' => $tsumego['id']];
 			if ($updated)
-				$originalTsumegoStatus['TsumegoStatus']['updated'] = $updated;
-			$originalTsumegoStatus['TsumegoStatus']['user_id'] = $userID;
-			$originalTsumegoStatus['TsumegoStatus']['tsumego_id'] = $tsumego['id'];
-			ClassRegistry::init('TsumegoStatus')->create($originalTsumegoStatus);
-			ClassRegistry::init('TsumegoStatus')->save($originalTsumegoStatus);
+				$newStatus['updated'] = $updated;
+			$statusTable->saveOrFail($statusTable->newEntity($newStatus));
 		}
 
 		// A status fixture with mistake_training_due now marks the problem as in
@@ -754,14 +749,12 @@ class ContextPreparator
 
 	public function checkNewTsumegoStatusCoreValues(CakeTestCase $testCase): void
 	{
-		$statusCondition = [
-			'conditions' => [
-				'user_id' => $this->user['id'],
-				'tsumego_id' => $this->tsumegos[0]['id']]];
-		$this->resultTsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', $statusCondition)['TsumegoStatus'];
+		$this->resultTsumegoStatus = TableRegistry::getTableLocator()->get('TsumegoStatus')->find()
+			->where(['user_id' => $this->user['id'], 'tsumego_id' => $this->tsumegos[0]['id']])
+			->first();
 		$testCase->assertNotEmpty($this->resultTsumegoStatus);
-		$testCase->assertSame($this->resultTsumegoStatus['user_id'], $this->user['id']);
-		$testCase->assertSame($this->resultTsumegoStatus['tsumego_id'], $this->tsumegos[0]['id']);
+		$testCase->assertSame($this->resultTsumegoStatus->user_id, $this->user['id']);
+		$testCase->assertSame($this->resultTsumegoStatus->tsumego_id, $this->tsumegos[0]['id']);
 	}
 
 	public function prepareProgressDeletion($progressDeletions)
@@ -832,7 +825,7 @@ class ContextPreparator
 	//Each condition is associated with the user created in this context.
 	//$conditions: Array of achievement condition definitions
 	//Each condition should have:
-	//  - 'category' (required): The achievement category, an AchievementCondition::CATEGORY_ constant
+	//  - 'category' (required): The achievement category, an AchievementConditionTable::CATEGORY_ constant
 	//  - 'value' (required): The condition value (e.g., 100 for percentage, 1 for boolean)
 	//  - 'set_id' (optional): The set_id for set-specific conditions (defaults to null)
 	//  - 'user_id' (optional): Override the user_id (defaults to $this->user['id'])
@@ -843,7 +836,7 @@ class ContextPreparator
 
 		foreach ($conditions as $conditionInput)
 		{
-			AchievementCondition::put(
+			AchievementConditionTable::put(
 				(int) (Util::extract('user_id', $conditionInput) ?: $this->user['id']),
 				Util::extract('category', $conditionInput),
 				Util::extract('value', $conditionInput),
@@ -1058,7 +1051,7 @@ class ContextPreparator
 	public array $tsumegos = [];
 	public array $issues = [];
 	public ?int $mode = null;
-	public ?array $resultTsumegoStatus = null;
+	public ?TsumegoStatus $resultTsumegoStatus = null;
 	public ?array $tsumegoSets = null;
 	public array $timeModeRanks = [];
 	/** @var array<TimeModeSession> */

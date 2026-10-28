@@ -1,6 +1,5 @@
 <?php
 
-use App\Utility\Constants;
 use Facebook\WebDriver\WebDriverBy;
 
 class ClientTimeDisplayTest extends IntegrationTestCase
@@ -54,20 +53,17 @@ class ClientTimeDisplayTest extends IntegrationTestCase
 		]);
 
 		// Record an attempt so solve history has data
-		ClassRegistry::init('TsumegoAttempt')->create();
-		ClassRegistry::init('TsumegoAttempt')->save([
-			'TsumegoAttempt' => [
-				'user_id' => $context->user['id'],
-				'tsumego_id' => $context->tsumegos[0]['id'],
-				'solved' => 1,
-				'misplays' => 0,
-				'mode' => Constants::$LEVEL_MODE,
-				'user_rating' => 1000,
-				'gain' => 0,
-				'seconds' => 10,
-				'created' => '2026-08-15 12:00:00',
-			],
-		]);
+		$attemptTable = $this->fetchTable('TsumegoAttempt');
+		$attemptTable->saveOrFail($attemptTable->newEntity([
+			'user_id' => $context->user['id'],
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'solved' => 1,
+			'misplays' => 0,
+			'user_rating' => 1000,
+			'gain' => 0,
+			'seconds' => 10,
+			'created' => '2026-08-15 12:00:00',
+		]));
 		return $context;
 	}
 }

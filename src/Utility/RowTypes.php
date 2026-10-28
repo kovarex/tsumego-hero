@@ -6,7 +6,6 @@ namespace App\Utility;
 //Regenerate after schema changes: ddev exec php scripts/generate-phpstan-row-types.php
 /**
  * @phpstan-type AchievementConditionCategoryRow array{id?: int, name?: string, ...}
- * @phpstan-type AchievementConditionRow array{id?: int, value?: float|null, user_id?: int, achievement_condition_category_id?: int, set_id?: int|null, set_id_or_zero?: int|null, ...}
  * @phpstan-type AdminActivityRow array{id?: int, user_id?: int, tsumego_id?: int|null, set_id?: int|null, type?: int, old_value?: string|null, new_value?: string|null, created?: string, ...}
  * @phpstan-type AdminOverviewSeenRow array{user_id?: int, admin_overview_type_id?: int, seen?: string, ...}
  * @phpstan-type AvatarSettingRow array{id?: int, name?: string, ...}
@@ -35,7 +34,6 @@ namespace App\Utility;
  * @phpstan-type TsumegoAttemptRow array{id?: int, user_id?: int, tsumego_id?: int, gain?: int, solved?: int, seconds?: int, misplays?: int, user_rating?: int|null, tsumego_rating?: int, created?: string, ...}
  * @phpstan-type TsumegoIssueStatusRow array{id?: int, name?: string, ...}
  * @phpstan-type TsumegoRow array{id?: int, description?: string|null, hint?: string|null, author?: string, author_user_id?: int|null, rating?: float, minimum_rating?: float|null, maximum_rating?: float|null, created?: string|null, minimum_liberties?: int|null, maximum_liberties?: int|null, variance?: int|null, liberty_count?: int|null, inside_liberties?: int|null, semeai_type?: int|null, alternative_response?: int, pass?: int, deleted?: string|null, ...}
- * @phpstan-type TsumegoStatusRow array{id?: int, user_id?: int, tsumego_id?: int, status?: string, updated?: string, ...}
  * @phpstan-type TsumegoVariantTypeRow array{id?: int, name?: string, ...}
  * @phpstan-type UserAvatarRow array{user_id?: int, picture?: string, ...}
  * @phpstan-type UserRoleRow array{id?: int, name?: string, ...}

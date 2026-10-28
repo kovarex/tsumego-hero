@@ -1,7 +1,9 @@
 <?php
 
+use App\Model\Table\TsumegoStatusTable;
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
+use App\Model\Table\AchievementConditionTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\HeroPowers;
@@ -30,7 +32,7 @@ class HeroController extends AppController
 		if (!$setConnection)
 			throw new Exception('No valid tsumego to choose from.');
 
-		TsumegoStatus::setStatus(Auth::getUserID(), $setConnection['tsumego_id'], TsumegoStatus::$GOLDEN);
+		TsumegoStatusTable::setStatus(Auth::getUserID(), $setConnection['tsumego_id'], TsumegoStatusTable::$GOLDEN);
 		Auth::saveUserField('used_refinement', 1);
 		return $this->redirect('/' . $setConnection['set_connection_id']);
 	}
@@ -44,7 +46,7 @@ class HeroController extends AppController
 			'used_sprint' => 1,
 		]);
 		//The sprint run counts the problems solved during this sprint only
-		AchievementCondition::put(Auth::getUserID(), AchievementCondition::CATEGORY_SPRINT, 0);
+		AchievementConditionTable::put(Auth::getUserID(), AchievementConditionTable::CATEGORY_SPRINT, 0);
 		return $this->response;
 	}
 
@@ -70,9 +72,9 @@ class HeroController extends AppController
 
 		Util::execute('UPDATE tsumego_status SET status = CASE status WHEN ? THEN ? WHEN ? THEN ? END
 			WHERE user_id = ? AND status IN (?, ?)', [
-			TsumegoStatus::$LOCKED, TsumegoStatus::$VISITED,
-			TsumegoStatus::$FORGOTTEN, TsumegoStatus::$REVIEW,
-			Auth::getUserID(), TsumegoStatus::$LOCKED, TsumegoStatus::$FORGOTTEN,
+			TsumegoStatusTable::$LOCKED, TsumegoStatusTable::$VISITED,
+			TsumegoStatusTable::$FORGOTTEN, TsumegoStatusTable::$REVIEW,
+			Auth::getUserID(), TsumegoStatusTable::$LOCKED, TsumegoStatusTable::$FORGOTTEN,
 		]);
 		return $this->response;
 	}
@@ -92,7 +94,7 @@ class HeroController extends AppController
 		if (!Auth::incrementUserFieldIf('used_revelation', 1, ['used_revelation <' => HeroPowers::getRevelationUseCount()]))
 			throw new ForbiddenException('Revelation is used up today.');
 
-		TsumegoStatus::setStatus(Auth::getUserID(), (int) $tsumegoID, TsumegoStatus::$SOLVED);
+		TsumegoStatusTable::setStatus(Auth::getUserID(), (int) $tsumegoID, TsumegoStatusTable::$SOLVED);
 		return $this->response;
 	}
 }

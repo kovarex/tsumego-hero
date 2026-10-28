@@ -2,6 +2,7 @@
 
 namespace App\Utility;
 
+use App\Model\Table\TsumegoStatusTable;
 use ClassRegistry;
 use NotFoundException;
 use Set;
@@ -99,13 +100,12 @@ WHERE tsumego.deleted IS NULL");
 		$item->title = $set['Set']['title'];
 		$item->moveCount = substr_count($candidate['sgf'], ';');
 
-		$tsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $candidate['tsumego_id']]]);
 
 		$item->tsumegoButton = new TsumegoButton(
 			$candidate['tsumego_id'],
 			$setConnection['id'],
 			$setConnection['num'],
-			$tsumegoStatus['TsumegoStatus']['status'] ?? 'N',
+			TsumegoStatusTable::statusOf(Auth::getUserID(), (int) $candidate['tsumego_id']) ?? 'N',
 			0,
 			$candidate['sgf']);
 		$item->tsumegoButton->diff = $comparisonResult->diff;

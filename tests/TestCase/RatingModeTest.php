@@ -95,7 +95,7 @@ class RatingModeTest extends IntegrationTestCase
 		$this->assertSame(0, $browser->driver->executeScript('return boardLockValue;'));
 		$browser->playWithResult('S');
 		$browser->clickId('besogo-next-button');
-		$tsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('first')['TsumegoAttempt'];
+		$tsumegoAttempt = $this->fetchTable('TsumegoAttempt')->find()->disableHydration()->firstOrFail();
 		$this->assertSame(1, $tsumegoAttempt['misplays']);
 		$this->assertSame(true, $tsumegoAttempt['solved']);
 	}

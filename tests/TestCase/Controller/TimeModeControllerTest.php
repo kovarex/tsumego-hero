@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\TimeModeCategoryTable;
 use App\Model\Table\TimeModeSessionStatusTable;
 use App\Utility\Auth;
@@ -176,7 +177,7 @@ class TimeModeControllerTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator([
 			'tsumego' => 1,
-			'achievement-conditions' => [['category' => AchievementCondition::CATEGORY_NO_ERROR_STREAK, 'value' => 7]],
+			'achievement-conditions' => [['category' => AchievementConditionTable::CATEGORY_NO_ERROR_STREAK, 'value' => 7]],
 			'time-mode-ranks' => ['5k'],
 			'time-mode-sessions' => [[
 				'category' => TimeModeCategoryTable::BLITZ,
@@ -193,9 +194,8 @@ class TimeModeControllerTest extends IntegrationTestCase
 			'seconds' => 5,
 			'outcome' => PlayOutcome::Failed->value]);
 
-		$errCondition = ClassRegistry::init('AchievementCondition')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'achievement_condition_category_id' => AchievementCondition::CATEGORY_NO_ERROR_STREAK]]);
-		$this->assertSame(7, (int) $errCondition['AchievementCondition']['value'],
+		$errCondition = $this->fetchTable('AchievementCondition')->find()->where(['user_id' => $context->user['id'], 'achievement_condition_category_id' => AchievementConditionTable::CATEGORY_NO_ERROR_STREAK])->first();
+		$this->assertSame(7, (int) $errCondition->value,
 			'Time mode does not move the streak');
 	}
 

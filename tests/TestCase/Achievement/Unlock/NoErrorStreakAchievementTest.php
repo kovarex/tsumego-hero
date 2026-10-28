@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\AchievementTable;
 use App\Utility\AchievementChecker;
 use App\Utility\AchievementId;
@@ -22,12 +23,11 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 			$browser->get('/' . $context->setConnections[$i]['id']);
 			$browser->playWithResult('S');
 			$browser->get('/' . $context->setConnections[$i]['id']);
-			$achievementCondition = ClassRegistry::init('AchievementCondition')->find('first',
-				['conditions' => [
-					'user_id' => Auth::getUserID(),
-					'achievement_condition_category_id' => AchievementCondition::CATEGORY_NO_ERROR_STREAK]]);
+			$achievementCondition = $this->fetchTable('AchievementCondition')->find()->where([
+				'user_id' => Auth::getUserID(),
+				'achievement_condition_category_id' => AchievementConditionTable::CATEGORY_NO_ERROR_STREAK])->first();
 			$this->assertNotNull($achievementCondition);
-			$this->assertEquals($achievementCondition['AchievementCondition']['value'], $i + 1);
+			$this->assertEquals($achievementCondition->value, $i + 1);
 		}
 
 		$this->assertAchievementUnlocked(AchievementId::NO_ERROR_STREAK_I, "No Error Streak I should unlock at 10");
@@ -37,27 +37,25 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 	{
 		$browser = Browser::instance();
 		$context = new ContextPreparator([
-			'achievement-conditions' => [['category' => AchievementCondition::CATEGORY_NO_ERROR_STREAK, 'value' => 1]],
+			'achievement-conditions' => [['category' => AchievementConditionTable::CATEGORY_NO_ERROR_STREAK, 'value' => 1]],
 			'tsumego' => 1]);
 
 		// we check the value is 1 to start with
-		$achievementCondition = ClassRegistry::init('AchievementCondition')->find('first',
-			['conditions' => [
-				'user_id' => Auth::getUserID(),
-				'achievement_condition_category_id' => AchievementCondition::CATEGORY_NO_ERROR_STREAK]]);
+		$achievementCondition = $this->fetchTable('AchievementCondition')->find()->where([
+			'user_id' => Auth::getUserID(),
+			'achievement_condition_category_id' => AchievementConditionTable::CATEGORY_NO_ERROR_STREAK])->first();
 		$this->assertNotNull($achievementCondition);
-		$this->assertEquals($achievementCondition['AchievementCondition']['value'], 1);
+		$this->assertEquals($achievementCondition->value, 1);
 
 		// then we get a fail, and the progress gets reset
 		$browser->get('/' . $context->setConnections[0]['id']);
 		$browser->playWithResult('F'); // one fail
 		$browser->get('/' . $context->setConnections[0]['id']);
-		$achievementCondition = ClassRegistry::init('AchievementCondition')->find('first',
-			['conditions' => [
-				'user_id' => Auth::getUserID(),
-				'achievement_condition_category_id' => AchievementCondition::CATEGORY_NO_ERROR_STREAK]]);
+		$achievementCondition = $this->fetchTable('AchievementCondition')->find()->where([
+			'user_id' => Auth::getUserID(),
+			'achievement_condition_category_id' => AchievementConditionTable::CATEGORY_NO_ERROR_STREAK])->first();
 		$this->assertNotNull($achievementCondition);
-		$this->assertEquals($achievementCondition['AchievementCondition']['value'], 0);
+		$this->assertEquals($achievementCondition->value, 0);
 	}
 
 	//A problem solved only after a mistake in the same play is not an error-free solve.
@@ -65,7 +63,7 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 	{
 		$browser = Browser::instance();
 		$context = new ContextPreparator([
-			'achievement-conditions' => [['category' => AchievementCondition::CATEGORY_NO_ERROR_STREAK, 'value' => 9]],
+			'achievement-conditions' => [['category' => AchievementConditionTable::CATEGORY_NO_ERROR_STREAK, 'value' => 9]],
 			'tsumego' => 1]);
 
 		$browser->get('/' . $context->setConnections[0]['id']);
@@ -80,7 +78,7 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 	{
 		$browser = Browser::instance();
 		$context = new ContextPreparator([
-			'achievement-conditions' => [['category' => AchievementCondition::CATEGORY_NO_ERROR_STREAK, 'value' => 9]],
+			'achievement-conditions' => [['category' => AchievementConditionTable::CATEGORY_NO_ERROR_STREAK, 'value' => 9]],
 			'tsumego' => 1]);
 		$link = '/' . $context->setConnections[0]['id'];
 
@@ -98,7 +96,7 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 		$browser = Browser::instance();
 		$context = new ContextPreparator([
 			'user' => ['level' => HeroPowers::$REJUVENATION_MINIMUM_LEVEL, 'health' => 0],
-			'achievement-conditions' => [['category' => AchievementCondition::CATEGORY_NO_ERROR_STREAK, 'value' => 9]],
+			'achievement-conditions' => [['category' => AchievementConditionTable::CATEGORY_NO_ERROR_STREAK, 'value' => 9]],
 			'tsumego' => 1]);
 		$context->changeUserSoRejuvenationCanBeUsed();
 		$browser->get('/' . $context->setConnections[0]['id']);
@@ -117,45 +115,42 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 	{
 		$browser = Browser::instance();
 		$context = new ContextPreparator([
-			'achievement-conditions' => [['category' => AchievementCondition::CATEGORY_NO_ERROR_STREAK, 'value' => 1]],
+			'achievement-conditions' => [['category' => AchievementConditionTable::CATEGORY_NO_ERROR_STREAK, 'value' => 1]],
 			'tsumego' => ['status' => 'S', 'set_order' => 1]]);
 
 		// we check the value is 1 to start with
-		$achievementCondition = ClassRegistry::init('AchievementCondition')->find('first',
-			['conditions' => [
-				'user_id' => Auth::getUserID(),
-				'achievement_condition_category_id' => AchievementCondition::CATEGORY_NO_ERROR_STREAK]]);
+		$achievementCondition = $this->fetchTable('AchievementCondition')->find()->where([
+			'user_id' => Auth::getUserID(),
+			'achievement_condition_category_id' => AchievementConditionTable::CATEGORY_NO_ERROR_STREAK])->first();
 		$this->assertNotNull($achievementCondition);
-		$this->assertEquals($achievementCondition['AchievementCondition']['value'], 1);
+		$this->assertEquals($achievementCondition->value, 1);
 
 		// First we try to solve the already solved one
 		$browser->get('/' . $context->setConnections[0]['id']);
 		$browser->playWithResult('S');
 		$browser->get('/' . $context->setConnections[0]['id']);
-		$achievementCondition = ClassRegistry::init('AchievementCondition')->find('first',
-			['conditions' => [
-				'user_id' => Auth::getUserID(),
-				'achievement_condition_category_id' => AchievementCondition::CATEGORY_NO_ERROR_STREAK]]);
+		$achievementCondition = $this->fetchTable('AchievementCondition')->find()->where([
+			'user_id' => Auth::getUserID(),
+			'achievement_condition_category_id' => AchievementConditionTable::CATEGORY_NO_ERROR_STREAK])->first();
 		$this->assertNotNull($achievementCondition);
 		// nothing happen, solving a solved tsuomego doesn't do anything
-		$this->assertEquals($achievementCondition['AchievementCondition']['value'], 1);
+		$this->assertEquals($achievementCondition->value, 1);
 
 		// then we get a fail on solved tsumego
 		$browser->playWithResult('F'); // one fail
 		$browser->get('/' . $context->setConnections[0]['id']);
-		$achievementCondition = ClassRegistry::init('AchievementCondition')->find('first',
-			['conditions' => [
-				'user_id' => Auth::getUserID(),
-				'achievement_condition_category_id' => AchievementCondition::CATEGORY_NO_ERROR_STREAK]]);
+		$achievementCondition = $this->fetchTable('AchievementCondition')->find()->where([
+			'user_id' => Auth::getUserID(),
+			'achievement_condition_category_id' => AchievementConditionTable::CATEGORY_NO_ERROR_STREAK])->first();
 		$this->assertNotNull($achievementCondition);
 		// anod nothing still happens, failing a solved tsumego doesn't matter
-		$this->assertEquals($achievementCondition['AchievementCondition']['value'], 1);
+		$this->assertEquals($achievementCondition->value, 1);
 	}
 
 	public function testSingleNoErrorStreakAchievements()
 	{
 		// Arrange: Create user and set err=10 (just meets threshold for AchievementId::NO_ERROR_STREAK_I)
-		$context = new ContextPreparator(['achievement-conditions' => [['category' => AchievementCondition::CATEGORY_NO_ERROR_STREAK, 'value' => AchievementTable::NO_ERROR_STREAK_I_STREAK_COUNT]]]);
+		$context = new ContextPreparator(['achievement-conditions' => [['category' => AchievementConditionTable::CATEGORY_NO_ERROR_STREAK, 'value' => AchievementTable::NO_ERROR_STREAK_I_STREAK_COUNT]]]);
 		new AchievementChecker()->checkNoErrorAchievements();
 
 		$this->assertAchievementUnlocked(AchievementId::NO_ERROR_STREAK_I, "No Error Streak I should unlock at 10");
@@ -169,7 +164,7 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 
 	public function testTwoHundredStreakUnlocksAll()
 	{
-		$context = new ContextPreparator(['achievement-conditions' => [['category' => AchievementCondition::CATEGORY_NO_ERROR_STREAK, 'value' => AchievementTable::NO_ERROR_STREAK_VI_STREAK_COUNT]]]);
+		$context = new ContextPreparator(['achievement-conditions' => [['category' => AchievementConditionTable::CATEGORY_NO_ERROR_STREAK, 'value' => AchievementTable::NO_ERROR_STREAK_VI_STREAK_COUNT]]]);
 		new AchievementChecker()->checkNoErrorAchievements();
 
 		// Assert: All 6 achievements should be unlocked
@@ -194,7 +189,7 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 
 		foreach ($thresholds as [$achievementId, $errValue])
 		{
-			$context = new ContextPreparator(['achievement-conditions' => [['category' => AchievementCondition::CATEGORY_NO_ERROR_STREAK, 'value' => $errValue]]]);
+			$context = new ContextPreparator(['achievement-conditions' => [['category' => AchievementConditionTable::CATEGORY_NO_ERROR_STREAK, 'value' => $errValue]]]);
 			new AchievementChecker()->checkNoErrorAchievements();
 			$this->assertAchievementUnlocked($achievementId, "Achievement {$achievementId->name} should unlock at err=$errValue");
 		}
@@ -202,10 +197,9 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 
 	private function noErrorStreak(): int
 	{
-		$condition = ClassRegistry::init('AchievementCondition')->find('first',
-			['conditions' => [
-				'user_id' => Auth::getUserID(),
-				'achievement_condition_category_id' => AchievementCondition::CATEGORY_NO_ERROR_STREAK]]);
-		return (int) $condition['AchievementCondition']['value'];
+		$condition = $this->fetchTable('AchievementCondition')->find()->where([
+			'user_id' => Auth::getUserID(),
+			'achievement_condition_category_id' => AchievementConditionTable::CATEGORY_NO_ERROR_STREAK])->first();
+		return (int) $condition->value;
 	}
 }

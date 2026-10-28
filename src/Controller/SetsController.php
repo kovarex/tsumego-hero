@@ -1,6 +1,7 @@
 <?php
 
 use App\Lib\Error\ConflictException;
+use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\ProgressDeletionTable;
 use App\Utility\AchievementChecker;
@@ -32,7 +33,6 @@ class SetsController extends AppController
 
 		$this->loadModel('User');
 		$this->loadModel('Tsumego');
-		$this->loadModel('TsumegoStatus');
 		$this->loadModel('SetConnection');
 
 		$this->set('_page', 'sandbox');
@@ -46,13 +46,9 @@ class SetsController extends AppController
 
 		if (Auth::isLoggedIn())
 		{
-			$uts = $this->TsumegoStatus->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
-			if (!$uts)
-				$uts = [];
 			$tsumegoStatusMap = [];
-			$utsCount4 = count($uts);
-			for ($l = 0; $l < $utsCount4; $l++)
-				$tsumegoStatusMap[$uts[$l]['TsumegoStatus']['tsumego_id']] = $uts[$l]['TsumegoStatus']['status'];
+			foreach (Util::query('SELECT tsumego_id, status FROM tsumego_status WHERE user_id = ?', [Auth::getUserID()]) as $userTsumegoStatus)
+				$tsumegoStatusMap[$userTsumegoStatus['tsumego_id']] = $userTsumegoStatus['status'];
 		}
 		$overallCounter = 0;
 
@@ -507,7 +503,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 	{
 		$this->loadModel('User');
 		$this->loadModel('Tsumego');
-		$this->loadModel('TsumegoStatus');
 		$this->loadModel('SetConnection');
 		$this->set('_page', 'set');
 		$this->set('_title', 'Tsumego Hero - Collections');
@@ -834,7 +829,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 		}
 
 		$this->loadModel('Tsumego');
-		$this->loadModel('TsumegoStatus');
 		$this->loadModel('Sgf');
 		$this->loadModel('SetConnection');
 		$this->loadModel('User');
@@ -982,8 +976,9 @@ ORDER BY sc.num ASC", [(int) $id]);
 		{
 			// The attempts of the player on the problems of the page, newest first, read once and
 			// sorted out by problem: a player who trains a set has dozens of attempts on each of them.
-			$attempts = empty($tsIds) ? [] : Util::query('SELECT tsumego_id, solved, seconds, misplays FROM tsumego_attempt'
-				. ' WHERE user_id = ? AND tsumego_id IN (' . implode(',', array_map('intval', $tsIds)) . ') ORDER BY created DESC, id DESC', [Auth::getUserID()]);
+			$attempts = empty($tsIds) ? [] : Util::query('SELECT tsumego_id, solved, seconds, misplays FROM tsumego_attempt
+				WHERE user_id = ? AND tsumego_id IN (' . implode(',', array_fill(0, count($tsIds), '?')) . ')
+				ORDER BY created DESC, id DESC', [Auth::getUserID(), ...$tsIds]);
 			$attemptsByTsumego = [];
 			foreach ($attempts as $attempt)
 				$attemptsByTsumego[(int) $attempt['tsumego_id']][] = $attempt;
@@ -1083,8 +1078,8 @@ ORDER BY sc.num ASC", [(int) $id]);
 				$this->set('achievementUpdates', $achievementChecker->updated);
 			}
 
-			$bestTime = AchievementCondition::value(Auth::getUserID(), AchievementCondition::CATEGORY_SET_TIME, (int) $id);
-			$bestAccuracy = AchievementCondition::value(Auth::getUserID(), AchievementCondition::CATEGORY_SET_ACCURACY, (int) $id);
+			$bestTime = AchievementConditionTable::value(Auth::getUserID(), AchievementConditionTable::CATEGORY_SET_TIME, (int) $id);
+			$bestAccuracy = AchievementConditionTable::value(Auth::getUserID(), AchievementConditionTable::CATEGORY_SET_ACCURACY, (int) $id);
 		}
 		else
 			$scoring = false;
@@ -1109,8 +1104,8 @@ ORDER BY sc.num ASC", [(int) $id]);
 	//Keeps the player's records on the set: the best average time and the best accuracy.
 	private function updateAchievementConditions(int $sid, int|float $avgTime, int|float $accuracy): void
 	{
-		AchievementCondition::keepLowest(Auth::getUserID(), AchievementCondition::CATEGORY_SET_TIME, $avgTime, $sid);
-		AchievementCondition::keepHighest(Auth::getUserID(), AchievementCondition::CATEGORY_SET_ACCURACY, $accuracy, $sid);
+		AchievementConditionTable::keepLowest(Auth::getUserID(), AchievementConditionTable::CATEGORY_SET_TIME, $avgTime, $sid);
+		AchievementConditionTable::keepHighest(Auth::getUserID(), AchievementConditionTable::CATEGORY_SET_ACCURACY, $accuracy, $sid);
 	}
 
 	#[HttpPost]

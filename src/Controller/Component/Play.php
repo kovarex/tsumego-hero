@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\TsumegoStatusTable;
 use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\ClassroomAssignmentTable;
 use App\Model\Table\TagConnectionTable;
@@ -59,7 +60,7 @@ class Play
 		$tsumegoVariant = TableRegistry::getTableLocator()->get('TsumegoVariant')->find()->where(['tsumego_id' => $tsumegoID])->first();
 		$tsumegoFilters = new TsumegoFilters();
 		$tsumegoStatus = self::tsumegoStatus($tsumegoID);
-		$goldenTsumego = $tsumegoStatus == TsumegoStatus::$GOLDEN;
+		$goldenTsumego = $tsumegoStatus == TsumegoStatusTable::$GOLDEN;
 		$amountOfOtherCollection = TsumegoUtil::countTsumegosFromSet((int) $set['Set']['id']);
 		$sgf = self::acceptedSgf($tsumegoID);
 
@@ -139,11 +140,8 @@ class Play
 	private static function tsumegoStatus(int $tsumegoID): string
 	{
 		if (!Auth::isLoggedIn())
-			return TsumegoStatus::$VISITED;
-		$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => [
-			'user_id' => Auth::getUserID(),
-			'tsumego_id' => $tsumegoID]]);
-		return $status ? $status['TsumegoStatus']['status'] : TsumegoStatus::$VISITED;
+			return TsumegoStatusTable::$VISITED;
+		return TsumegoStatusTable::statusOf(Auth::getUserID(), $tsumegoID) ?? TsumegoStatusTable::$VISITED;
 	}
 
 	//The newest accepted SGF of the problem, a placeholder board when it has none

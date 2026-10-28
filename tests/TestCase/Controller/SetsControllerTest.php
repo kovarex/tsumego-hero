@@ -61,8 +61,7 @@ class SetsControllerTest extends IntegrationTestCase
 		ClassRegistry::init('SetConnection')->save(['set_id' => $setId, 'tsumego_id' => $tsumegoId, 'num' => 1]);
 		ClassRegistry::init('Sgf')->create();
 		ClassRegistry::init('Sgf')->save(['tsumego_id' => $tsumegoId, 'sgf' => '(;GM[1]FF[4]SZ[19])', 'user_id' => $userId, 'sgf_status_id' => Sgf::STATUS_ACCEPTED]);
-		ClassRegistry::init('TsumegoStatus')->create();
-		ClassRegistry::init('TsumegoStatus')->save(['tsumego_id' => $tsumegoId, 'status' => 'S', 'user_id' => $userId]);
+		$this->fetchTable('TsumegoStatus')->saveOrFail($this->fetchTable('TsumegoStatus')->newEntity(['tsumego_id' => $tsumegoId, 'status' => 'S', 'user_id' => $userId]));
 	}
 
 	public function testIndexRankBased(): void
@@ -2206,37 +2205,37 @@ class SetsControllerTest extends IntegrationTestCase
 			$browser->clickId("reset-textfield");
 			$browser->driver->getKeyboard()->sendKeys($resetInput);
 
-			$TsumegoStatus = ClassRegistry::init('TsumegoStatus');
+			$TsumegoStatus = $this->fetchTable('TsumegoStatus');
 
-			$statusCurrentUserThisSet1 = ['conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']]];
-			$statusCurrentUserThisSet2 = ['conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[1]['id']]];
-			$statusCurrentUserOtherSet = ['conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[2]['id']]];
-			$statusOtherUserThisSet = ['conditions' => ['user_id' => $context->otherUsers[0]['id'], 'tsumego_id' => $context->tsumegos[0]['id']]];
+			$statusCurrentUserThisSet1 = ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']];
+			$statusCurrentUserThisSet2 = ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[1]['id']];
+			$statusCurrentUserOtherSet = ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[2]['id']];
+			$statusOtherUserThisSet = ['user_id' => $context->otherUsers[0]['id'], 'tsumego_id' => $context->tsumegos[0]['id']];
 
-			$this->assertNotEmpty($TsumegoStatus->find('all', $statusCurrentUserThisSet1));
-			$this->assertNotEmpty($TsumegoStatus->find('all', $statusCurrentUserThisSet2));
-			$this->assertNotEmpty($TsumegoStatus->find('all', $statusCurrentUserOtherSet));
-			$this->assertNotEmpty($TsumegoStatus->find('all', $statusOtherUserThisSet));
+			$this->assertNotEmpty($TsumegoStatus->find()->where($statusCurrentUserThisSet1)->toArray());
+			$this->assertNotEmpty($TsumegoStatus->find()->where($statusCurrentUserThisSet2)->toArray());
+			$this->assertNotEmpty($TsumegoStatus->find()->where($statusCurrentUserOtherSet)->toArray());
+			$this->assertNotEmpty($TsumegoStatus->find()->where($statusOtherUserThisSet)->toArray());
 
 			$browser->clickId("reset-submit");
 			if ($resetInput == "reset")
 			{
-				$this->assertEmpty($TsumegoStatus->find('all', $statusCurrentUserThisSet1));
-				$this->assertEmpty($TsumegoStatus->find('all', $statusCurrentUserThisSet2));
+				$this->assertEmpty($TsumegoStatus->find()->where($statusCurrentUserThisSet1)->toArray());
+				$this->assertEmpty($TsumegoStatus->find()->where($statusCurrentUserThisSet2)->toArray());
 				$this->assertSame(1, $this->fetchTable('ProgressDeletion')->find()->count());
 			}
 			else
 			{
-				$this->assertNotEmpty($TsumegoStatus->find('all', $statusCurrentUserThisSet1));
-				$this->assertNotEmpty($TsumegoStatus->find('all', $statusCurrentUserThisSet2));
+				$this->assertNotEmpty($TsumegoStatus->find()->where($statusCurrentUserThisSet1)->toArray());
+				$this->assertNotEmpty($TsumegoStatus->find()->where($statusCurrentUserThisSet2)->toArray());
 				$this->assertSame(0, $this->fetchTable('ProgressDeletion')->find()->count());
 				$this->assertTextContains('Reset check wasn\'t correctly typed', $browser->driver->getPageSource());
 			}
 
 			// other set tsumego progress not touched
-			$this->assertNotEmpty($TsumegoStatus->find('all', $statusCurrentUserOtherSet));
+			$this->assertNotEmpty($TsumegoStatus->find()->where($statusCurrentUserOtherSet)->toArray());
 			// this set but other user tsumego status untouched
-			$this->assertNotEmpty($TsumegoStatus->find('all', $statusOtherUserThisSet));
+			$this->assertNotEmpty($TsumegoStatus->find()->where($statusOtherUserThisSet)->toArray());
 		}
 	}
 
@@ -2281,7 +2280,7 @@ class SetsControllerTest extends IntegrationTestCase
 		$setId = $context->tsumegos[0]['sets'][0]['id'];
 
 		// Verify statuses were created correctly
-		$statusCount = ClassRegistry::init('TsumegoStatus')->find('count', ['conditions' => ['user_id' => $context->user['id']]]);
+		$statusCount = $this->fetchTable('TsumegoStatus')->find()->where(['user_id' => $context->user['id']])->count();
 		$this->assertEquals(102, $statusCount, "Should have 102 solved statuses");
 
 		// With 51% solved, reset button SHOULD be shown
@@ -2307,12 +2306,12 @@ class SetsControllerTest extends IntegrationTestCase
 			$browser->clickId("reset-textfield");
 			$browser->driver->getKeyboard()->sendKeys('reset');
 			$browser->clickId("reset-submit");
-			$statuses = ClassRegistry::init('TsumegoStatus')->find('all', ['order' => 'id']);
+			$statuses = $this->fetchTable('TsumegoStatus')->find()->orderBy('id')->toArray();
 
 			// 200 statuses left
 			$this->assertSame(200, count($statuses));
 			for ($i = 0; $i < 200; $i++)
-				$this->assertSame($context->tsumegos[$i + ($partition == 1 ? 200 : 0)]['id'], $statuses[$i]['TsumegoStatus']['tsumego_id']);
+				$this->assertSame($context->tsumegos[$i + ($partition == 1 ? 200 : 0)]['id'], $statuses[$i]->tsumego_id);
 		}
 	}
 
@@ -2332,7 +2331,7 @@ class SetsControllerTest extends IntegrationTestCase
 		// we try to force it on the server anyway - redirect back to the same set
 		$browser->post('/sets/resetProgress/' . $context->sets[0]['id'] . '/1', ['reset-check' => 'reset']);
 		$this->assertSame(Util::getMyAddress() . '/sets/' . $context->sets[0]['id'], $browser->driver->getCurrentURL());
-		$this->assertSame(400, count(ClassRegistry::init('TsumegoStatus')->find('all', ['order' => 'id'])));
+		$this->assertSame(400, count($this->fetchTable('TsumegoStatus')->find()->orderBy('id')->toArray()));
 	}
 
 	public function testChangeCollectionSize()
