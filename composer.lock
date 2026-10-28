@@ -4,8 +4,66 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ac7d19b28d0c3229f737ff6823013c6c",
+    "content-hash": "3b1219a1e42756c084315da5321847ba",
     "packages": [
+        {
+            "name": "cakephp/cache",
+            "version": "5.2.15",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/cakephp/cache.git",
+                "reference": "87dd7ed3529b0177e0f8d23d805b51d4c0d6a104"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/cakephp/cache/zipball/87dd7ed3529b0177e0f8d23d805b51d4c0d6a104",
+                "reference": "87dd7ed3529b0177e0f8d23d805b51d4c0d6a104",
+                "shasum": ""
+            },
+            "require": {
+                "cakephp/core": "5.2.*@dev",
+                "php": ">=8.1",
+                "psr/simple-cache": "^2.0 || ^3.0"
+            },
+            "provide": {
+                "psr/simple-cache-implementation": "^3.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-5.x": "5.2.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Cake\\Cache\\": "."
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "CakePHP Community",
+                    "homepage": "https://github.com/cakephp/cache/graphs/contributors"
+                }
+            ],
+            "description": "Easy to use Caching library with support for multiple caching backends",
+            "homepage": "https://cakephp.org",
+            "keywords": [
+                "cache",
+                "caching",
+                "cakephp"
+            ],
+            "support": {
+                "forum": "https://stackoverflow.com/tags/cakephp",
+                "irc": "irc://irc.freenode.org/cakephp",
+                "issues": "https://github.com/cakephp/cakephp/issues",
+                "source": "https://github.com/cakephp/cache"
+            },
+            "time": "2025-11-16T08:37:38+00:00"
+        },
         {
             "name": "cakephp/chronos",
             "version": "3.3.1",
@@ -66,8 +124,65 @@
             "time": "2025-10-30T13:08:23+00:00"
         },
         {
+            "name": "cakephp/collection",
+            "version": "5.2.15",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/cakephp/collection.git",
+                "reference": "eab97f4ba61c44718627697cddecc890a4726ec2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/cakephp/collection/zipball/eab97f4ba61c44718627697cddecc890a4726ec2",
+                "reference": "eab97f4ba61c44718627697cddecc890a4726ec2",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.1"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-5.x": "5.2.x-dev"
+                }
+            },
+            "autoload": {
+                "files": [
+                    "functions.php"
+                ],
+                "psr-4": {
+                    "Cake\\Collection\\": "."
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "CakePHP Community",
+                    "homepage": "https://github.com/cakephp/collection/graphs/contributors"
+                }
+            ],
+            "description": "Work easily with arrays and iterators by having a battery of utility traversal methods",
+            "homepage": "https://cakephp.org",
+            "keywords": [
+                "arrays",
+                "cakephp",
+                "collections",
+                "iterators"
+            ],
+            "support": {
+                "forum": "https://stackoverflow.com/tags/cakephp",
+                "irc": "irc://irc.freenode.org/cakephp",
+                "issues": "https://github.com/cakephp/cakephp/issues",
+                "source": "https://github.com/cakephp/collection"
+            },
+            "time": "2025-11-16T20:33:48+00:00"
+        },
+        {
             "name": "cakephp/core",
-            "version": "5.2.10",
+            "version": "5.2.15",
             "source": {
                 "type": "git",
                 "url": "https://github.com/cakephp/core.git",
@@ -134,16 +249,16 @@
         },
         {
             "name": "cakephp/database",
-            "version": "5.2.10",
+            "version": "5.2.15",
             "source": {
                 "type": "git",
                 "url": "https://github.com/cakephp/database.git",
-                "reference": "cf855540be5a0f522394827398c9552fe1656146"
+                "reference": "5f271aa7e6243ea72914a3bb47b0bf60b2142e0d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/cakephp/database/zipball/cf855540be5a0f522394827398c9552fe1656146",
-                "reference": "cf855540be5a0f522394827398c9552fe1656146",
+                "url": "https://api.github.com/repos/cakephp/database/zipball/5f271aa7e6243ea72914a3bb47b0bf60b2142e0d",
+                "reference": "5f271aa7e6243ea72914a3bb47b0bf60b2142e0d",
                 "shasum": ""
             },
             "require": {
@@ -197,11 +312,11 @@
                 "issues": "https://github.com/cakephp/cakephp/issues",
                 "source": "https://github.com/cakephp/database"
             },
-            "time": "2025-11-16T20:33:48+00:00"
+            "time": "2026-07-16T03:58:12+00:00"
         },
         {
             "name": "cakephp/datasource",
-            "version": "5.2.10",
+            "version": "5.2.15",
             "source": {
                 "type": "git",
                 "url": "https://github.com/cakephp/datasource.git",
@@ -267,8 +382,135 @@
             "time": "2025-11-14T14:52:55+00:00"
         },
         {
+            "name": "cakephp/event",
+            "version": "5.2.15",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/cakephp/event.git",
+                "reference": "4dcb3c336ed2e22f832de75dbd4b61eb55dfea96"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/cakephp/event/zipball/4dcb3c336ed2e22f832de75dbd4b61eb55dfea96",
+                "reference": "4dcb3c336ed2e22f832de75dbd4b61eb55dfea96",
+                "shasum": ""
+            },
+            "require": {
+                "cakephp/core": "5.2.*@dev",
+                "php": ">=8.1"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-5.x": "5.2.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Cake\\Event\\": "."
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "CakePHP Community",
+                    "homepage": "https://github.com/cakephp/event/graphs/contributors"
+                }
+            ],
+            "description": "CakePHP event dispatcher library that helps implementing the observer pattern",
+            "homepage": "https://cakephp.org",
+            "keywords": [
+                "cakephp",
+                "dispatcher",
+                "event",
+                "observer pattern"
+            ],
+            "support": {
+                "forum": "https://stackoverflow.com/tags/cakephp",
+                "irc": "irc://irc.freenode.org/cakephp",
+                "issues": "https://github.com/cakephp/cakephp/issues",
+                "source": "https://github.com/cakephp/event"
+            },
+            "time": "2025-07-02T13:30:58+00:00"
+        },
+        {
+            "name": "cakephp/orm",
+            "version": "5.2.15",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/cakephp/orm.git",
+                "reference": "4d5df978063526a551b15fb6adbf10835d6457f4"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/cakephp/orm/zipball/4d5df978063526a551b15fb6adbf10835d6457f4",
+                "reference": "4d5df978063526a551b15fb6adbf10835d6457f4",
+                "shasum": ""
+            },
+            "require": {
+                "cakephp/collection": "5.2.*@dev",
+                "cakephp/core": "5.2.*@dev",
+                "cakephp/database": "5.2.*@dev",
+                "cakephp/datasource": "5.2.*@dev",
+                "cakephp/event": "5.2.*@dev",
+                "cakephp/utility": "5.2.*@dev",
+                "cakephp/validation": "5.2.*@dev",
+                "php": ">=8.1"
+            },
+            "require-dev": {
+                "cakephp/cache": "5.2.*@dev",
+                "cakephp/i18n": "5.2.*@dev"
+            },
+            "suggest": {
+                "cakephp/cache": "If you decide to use Query caching.",
+                "cakephp/i18n": "If you are using Translate/TimestampBehavior or Chronos types."
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-5.x": "5.2.x-dev"
+                }
+            },
+            "autoload": {
+                "files": [
+                    "bootstrap.php"
+                ],
+                "psr-4": {
+                    "Cake\\ORM\\": "."
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "CakePHP Community",
+                    "homepage": "https://github.com/cakephp/orm/graphs/contributors"
+                }
+            ],
+            "description": "CakePHP ORM - Provides a flexible and powerful ORM implementing a data-mapper pattern.",
+            "homepage": "https://cakephp.org",
+            "keywords": [
+                "cakephp",
+                "data-mapper",
+                "data-mapper pattern",
+                "orm"
+            ],
+            "support": {
+                "forum": "https://stackoverflow.com/tags/cakephp",
+                "irc": "irc://irc.freenode.org/cakephp",
+                "issues": "https://github.com/cakephp/cakephp/issues",
+                "source": "https://github.com/cakephp/orm"
+            },
+            "time": "2025-11-18T04:03:51+00:00"
+        },
+        {
             "name": "cakephp/utility",
-            "version": "5.2.10",
+            "version": "5.2.15",
             "source": {
                 "type": "git",
                 "url": "https://github.com/cakephp/utility.git",
@@ -329,6 +571,68 @@
                 "source": "https://github.com/cakephp/utility"
             },
             "time": "2025-11-14T14:52:55+00:00"
+        },
+        {
+            "name": "cakephp/validation",
+            "version": "5.2.15",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/cakephp/validation.git",
+                "reference": "3166375d17089a35f7d4fb778b70f7bc0ab567a0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/cakephp/validation/zipball/3166375d17089a35f7d4fb778b70f7bc0ab567a0",
+                "reference": "3166375d17089a35f7d4fb778b70f7bc0ab567a0",
+                "shasum": ""
+            },
+            "require": {
+                "cakephp/core": "5.2.*@dev",
+                "cakephp/utility": "5.2.*@dev",
+                "php": ">=8.1",
+                "psr/http-message": "^1.1 || ^2.0"
+            },
+            "require-dev": {
+                "cakephp/i18n": "5.2.*@dev"
+            },
+            "suggest": {
+                "cakephp/i18n": "If you want to use Validation::localizedTime()"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-5.x": "5.2.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Cake\\Validation\\": "."
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "CakePHP Community",
+                    "homepage": "https://github.com/cakephp/validation/graphs/contributors"
+                }
+            ],
+            "description": "CakePHP Validation library",
+            "homepage": "https://cakephp.org",
+            "keywords": [
+                "cakephp",
+                "data validation",
+                "validation"
+            ],
+            "support": {
+                "forum": "https://stackoverflow.com/tags/cakephp",
+                "irc": "irc://irc.freenode.org/cakephp",
+                "issues": "https://github.com/cakephp/cakephp/issues",
+                "source": "https://github.com/cakephp/validation"
+            },
+            "time": "2025-12-26T16:35:26+00:00"
         },
         {
             "name": "composer/ca-bundle",
@@ -828,6 +1132,59 @@
                 "source": "https://github.com/php-fig/container/tree/2.0.2"
             },
             "time": "2021-11-05T16:47:00+00:00"
+        },
+        {
+            "name": "psr/http-message",
+            "version": "2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/http-message.git",
+                "reference": "402d35bcb92c70c026d1a6a9883f06b2ead23d71"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/http-message/zipball/402d35bcb92c70c026d1a6a9883f06b2ead23d71",
+                "reference": "402d35bcb92c70c026d1a6a9883f06b2ead23d71",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.2 || ^8.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\Http\\Message\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "https://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interface for HTTP messages",
+            "homepage": "https://github.com/php-fig/http-message",
+            "keywords": [
+                "http",
+                "http-message",
+                "psr",
+                "psr-7",
+                "request",
+                "response"
+            ],
+            "support": {
+                "source": "https://github.com/php-fig/http-message/tree/2.0"
+            },
+            "time": "2023-04-04T09:54:51+00:00"
         },
         {
             "name": "psr/log",

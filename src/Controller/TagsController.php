@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\RejectTable;
 use App\Utility\Auth;
 use App\Utility\ContributionRow;
 use App\Utility\CookieFlash;
@@ -132,7 +133,7 @@ class TagsController extends AppController
 					. 'WHERE sc2.tsumego_id = r.tsumego_id '
 					. 'ORDER BY ' . SetConnection::displayOrderSql('s2', 'sc2') . ' LIMIT 1) '
 				. 'LEFT JOIN `set` s ON s.id = sc.set_id '
-				. 'WHERE r.user_id = ? AND (sc.id IS NOT NULL OR r.reject_type_id = ' . Reject::TYPE_TAG_NAME . ') '
+				. 'WHERE r.user_id = ? AND (sc.id IS NOT NULL OR r.reject_type_id = ' . RejectTable::TYPE_TAG_NAME . ') '
 			. ') AS contributions '
 			. "ORDER BY created DESC, row_id DESC "
 			. "LIMIT {$pageSize} OFFSET {$offset}",
@@ -311,13 +312,13 @@ class TagsController extends AppController
 		if ($tagToReject['user_id'])
 		{
 			// the tag is gone, the proposer still sees its name among their contributions
-			ClassRegistry::init('Reject')->create();
-			ClassRegistry::init('Reject')->save([
-				'reject_type_id' => Reject::TYPE_TAG_NAME,
+			$rejectTable = $this->fetchTable('Reject');
+			$rejectTable->saveOrFail($rejectTable->newEntity([
+				'reject_type_id' => RejectTable::TYPE_TAG_NAME,
 				'tag_name' => $tagToReject['name'],
 				'user_id' => $tagToReject['user_id'],
 				'rejected_by_user_id' => Auth::getUserID(),
-				'comment' => $comment]);
+				'comment' => $comment]));
 			ProposalFeedback::send(
 				(int) $tagToReject['user_id'],
 				'Your new tag ' . $tagToReject['name'] . ' was rejected by ' . ProposalFeedback::adminName() . '.',
