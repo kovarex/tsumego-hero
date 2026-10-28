@@ -168,7 +168,6 @@ class DayRecordTest extends IntegrationTestCase
 
 	private function todaysDayRecord(): DayRecord
 	{
-		/** @var DayRecord */
 		return $this->fetchTable('DayRecord')->find()->where(['date' => date('Y-m-d')])->firstOrFail();
 	}
 }
