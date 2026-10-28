@@ -803,9 +803,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 			'conditions' => ['user_id' => $context->user['id'], 'title' => 'Favorites'],
 		]);
 		$this->assertNotEmpty($favoritesSet, 'First heart click should create the Favorites set');
-		$this->assertSame(1, ClassRegistry::init('SetConnection')->find('count', [
-			'conditions' => ['set_id' => $favoritesSet['Set']['id'], 'tsumego_id' => $tsumegoId],
-		]), 'First heart click should add the tsumego to Favorites');
+		$this->assertSame(1, $this->fetchTable('SetConnection')->find()->where(['set_id' => $favoritesSet['Set']['id'], 'tsumego_id' => $tsumegoId])->count(), 'First heart click should add the tsumego to Favorites');
 
 		// Second click removes it again
 		$browser->clickId('favButton');
@@ -830,9 +828,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		try
 		{
 			$browser->waitUntil(function () use ($setId, $tsumegoId, $expected) {
-				return ClassRegistry::init('SetConnection')->find('count', [
-					'conditions' => ['set_id' => $setId, 'tsumego_id' => $tsumegoId],
-				]) === $expected;
+				return $this->fetchTable('SetConnection')->find()->where(['set_id' => $setId, 'tsumego_id' => $tsumegoId])->count() === $expected;
 			}, 5, $message);
 		}
 		catch (TimeoutException $e)

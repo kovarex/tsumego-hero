@@ -60,7 +60,7 @@ class TsumegoMergeTest extends IntegrationTestCase
 				$favSet = ClassRegistry::init('Set')->find('first', [
 					'conditions' => ['title' => 'Favorites'],
 				]);
-				ClassRegistry::init('SetConnection')->deleteAll([
+				$this->fetchTable('SetConnection')->deleteAll([
 					'set_id' => $favSet['Set']['id'],
 					'tsumego_id' => $context->tsumegos[0]['id'],
 				]);

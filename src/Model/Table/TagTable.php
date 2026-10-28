@@ -6,7 +6,6 @@ use App\Model\Entity\Tag;
 use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
 use App\Utility\Util;
-use SetConnection;
 use Throwable;
 
 //A tag problems can carry, like snapback or ko. A player's new tag is a proposal until an admin approves it.
@@ -67,11 +66,11 @@ LEFT JOIN set_connection ON set_connection.id = (
 	SELECT sc2.id FROM set_connection sc2
 	JOIN `set` s2 ON s2.id = sc2.set_id
 	WHERE sc2.tsumego_id = tag_connection.tsumego_id
-	ORDER BY " . SetConnection::displayOrderSql('s2', 'sc2') . "
+	ORDER BY " . SetConnectionTable::displayOrderSql('s2', 'sc2') . "
 	LIMIT 1)
 LEFT JOIN `set` ON `set`.id = set_connection.set_id
 WHERE tag_connection.tag_id = ?
-ORDER BY `set`.id IS NULL, " . SetConnection::displayOrderForSetSql('`set`') . ", set_connection.num, tag_connection.tsumego_id", [$tagId]);
+ORDER BY `set`.id IS NULL, " . SetConnectionTable::displayOrderForSetSql('`set`') . ", set_connection.num, tag_connection.tsumego_id", [$tagId]);
 	}
 
 	//Deletes the tag and takes it off every problem. The admin activity log keeps the tag

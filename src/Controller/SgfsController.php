@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SetConnectionTable;
 use App\Model\Table\SgfTable;
 use App\Attribute\HttpGet;
 use App\Utility\Auth;
@@ -13,7 +14,6 @@ class SgfsController extends AppController
 		$this->set('_page', 'play');
 		$this->loadModel('Set');
 		$this->loadModel('User');
-		$this->loadModel('SetConnection');
 		$ux = '';
 		$type = 'tsumego';
 		$dId = [];
@@ -35,10 +35,10 @@ class SgfsController extends AppController
 			{
 				if (!$tsumegoTable->exists(['id' => $duplicateId]))
 					continue;
-				$scT = $this->SetConnection->findDisplaySetConnection($duplicateId);
-				if (!$scT)
+				$displaySetConnection = SetConnectionTable::findDisplaySetConnection($duplicateId);
+				if (!$displaySetConnection)
 					continue;
-				$dSet = $this->Set->findById($scT['SetConnection']['set_id']);
+				$dSet = $this->Set->findById($displaySetConnection->set_id);
 				if (!$dSet)
 					continue;
 				$dId[] = $duplicateId;
@@ -48,13 +48,13 @@ class SgfsController extends AppController
 
 		if (!$tsumegoTable->exists(['id' => $id]))
 			throw new NotFoundException('Tsumego not found');
-		$scT = $this->SetConnection->findDisplaySetConnection($id);
-		if (!$scT)
+		$displaySetConnection = SetConnectionTable::findDisplaySetConnection($id);
+		if (!$displaySetConnection)
 			throw new NotFoundException('Tsumego not found in any set');
-		$set = $this->Set->findById($scT['SetConnection']['set_id']);
+		$set = $this->Set->findById($displaySetConnection->set_id);
 		if (!$set)
 			throw new NotFoundException('Set not found');
-		$name = $set['Set']['title'] . ' ' . $set['Set']['title2'] . ' ' . $scT['SetConnection']['num'];
+		$name = $set['Set']['title'] . ' ' . $set['Set']['title2'] . ' ' . $displaySetConnection->num;
 		$this->set('_title', 'Upload History of ' . $name);
 
 		if (isset($this->params['url']['user']))
@@ -76,16 +76,16 @@ class SgfsController extends AppController
 			$user = $this->User->findById($versions[$i]['user_id']);
 			$ux = $user ? User::displayName($user['User']) : '';
 			$versions[$i]['user'] = $ux;
-			$scT = $this->SetConnection->findDisplaySetConnection((int) $versions[$i]['tsumego_id']);
-			$set = $this->Set->findById($scT['SetConnection']['set_id']);
-			$versions[$i]['title'] = $set['Set']['title'] . ' ' . $set['Set']['title2'] . ' #' . $scT['SetConnection']['num'];
-			$versions[$i]['num'] = $scT['SetConnection']['num'];
+			$displaySetConnection = SetConnectionTable::findDisplaySetConnection((int) $versions[$i]['tsumego_id']);
+			$set = $this->Set->findById($displaySetConnection->set_id);
+			$versions[$i]['title'] = $set['Set']['title'] . ' ' . $set['Set']['title2'] . ' #' . $displaySetConnection->num;
+			$versions[$i]['num'] = $displaySetConnection->num;
 
-			if(isset($versionCounter[$scT['SetConnection']['tsumego_id']]))
-				$versionCounter[$scT['SetConnection']['tsumego_id']]++;
+			if(isset($versionCounter[$displaySetConnection->tsumego_id]))
+				$versionCounter[$displaySetConnection->tsumego_id]++;
 			else
-				$versionCounter[$scT['SetConnection']['tsumego_id']] = 0;
-			$versions[$i]['version'] = $this->fetchTable('Sgf')->find()->where(['tsumego_id' => $scT['SetConnection']['tsumego_id'], 'sgf_status_id !=' => SgfTable::STATUS_REJECTED])->count() - $versionCounter[$scT['SetConnection']['tsumego_id']];
+				$versionCounter[$displaySetConnection->tsumego_id] = 0;
+			$versions[$i]['version'] = $this->fetchTable('Sgf')->find()->where(['tsumego_id' => $displaySetConnection->tsumego_id, 'sgf_status_id !=' => SgfTable::STATUS_REJECTED])->count() - $versionCounter[$displaySetConnection->tsumego_id];
 
 			if ($versions[$i]['user'] == 'noUser')
 				$versions[$i]['user'] = 'automatically generated';

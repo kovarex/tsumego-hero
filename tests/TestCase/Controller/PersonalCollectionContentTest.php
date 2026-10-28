@@ -186,9 +186,8 @@ class PersonalCollectionContentTest extends IntegrationTestCase
 		$tsumegoTable = $this->fetchTable('Tsumego');
 		$tsumegoId = $tsumegoTable->saveOrFail($tsumegoTable->newEntity(['rating' => 1000, 'author' => '']))->id;
 
-		$setConnection = ClassRegistry::init('SetConnection');
-		$setConnection->create();
-		$setConnection->save(['SetConnection' => ['set_id' => $setId, 'tsumego_id' => $tsumegoId, 'num' => 1]]);
+		$setConnectionTable = $this->fetchTable('SetConnection');
+		$setConnectionTable->saveOrFail($setConnectionTable->newEntity(['set_id' => $setId, 'tsumego_id' => $tsumegoId, 'num' => 1]));
 
 		$this->fetchTable('Sgf')->saveOrFail($this->fetchTable('Sgf')->newEntity([
 			'tsumego_id' => $tsumegoId,
@@ -201,11 +200,8 @@ class PersonalCollectionContentTest extends IntegrationTestCase
 
 	private function _firstProblemOf(int $setId): int
 	{
-		$connection = ClassRegistry::init('SetConnection')->find('first', [
-			'conditions' => ['set_id' => $setId],
-			'order' => 'num ASC',
-		]);
+		$connection = $this->fetchTable('SetConnection')->find()->where(['set_id' => $setId])->orderBy('num')->first();
 
-		return (int) $connection['SetConnection']['tsumego_id'];
+		return (int) $connection->tsumego_id;
 	}
 }

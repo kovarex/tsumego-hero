@@ -9,7 +9,6 @@ use App\Utility\TsumegoButtons;
 use App\Utility\TsumegoUtil;
 use App\Utility\Util;
 use Set;
-use SetConnection;
 use Throwable;
 use User;
 
@@ -124,7 +123,7 @@ class ClassroomAssignmentTable extends AppTable
 			JOIN tsumego t ON t.id = sc.tsumego_id AND t.deleted IS NULL
 			WHERE (s.user_id = ? AND s.deleted IS NULL) OR (' . Set::officialCondition('s') . ')
 			GROUP BY s.id, s.title, s.color, s.user_id
-			ORDER BY ' . SetConnection::displayOrderForSetSql('s'),
+			ORDER BY ' . SetConnectionTable::displayOrderForSetSql('s'),
 			[$teacherId]);
 		$cards = ['own' => [], 'site' => []];
 		foreach ($rows as $row)

@@ -1,19 +1,16 @@
 <?php
 
+namespace App\Model\Table;
+
+use App\Model\Entity\SetConnection;
 use App\Utility\Auth;
+use Cake\ORM\TableRegistry;
+use Set;
 
-class SetConnection extends AppModel
+//The problems of a collection, each with its number in it. A problem can belong to several
+//collections, so it has a connection for each.
+class SetConnectionTable extends AppTable
 {
-	public function __construct(mixed $id = false, ?string $table = null, ?string $ds = null)
-	{
-		$id['table'] =  'set_connection';
-		parent::__construct($id, $table, $ds);
-	}
-
-	public $belongsTo = [
-		'Set',
-	];
-
 	//SQL predicate for a collection a player keeps to themselves, like their Favorites.
 	public static function privateCollectionSql(string $setAlias): string
 	{
@@ -81,17 +78,13 @@ class SetConnection extends AppModel
 	}
 
 	//Find a representative set connection for a tsumego, for display only.
-	public function findDisplaySetConnection(int $tsumegoId): ?array
+	public static function findDisplaySetConnection(int $tsumegoID): ?SetConnection
 	{
-		return $this->find('first', [
-			'joins' => [[
-				'table' => 'set',
-				'alias' => 'S',
-				'type' => 'INNER',
-				'conditions' => ['S.id = SetConnection.set_id'],
-			]],
-			'conditions' => ['SetConnection.tsumego_id' => $tsumegoId],
-			'order' => self::displayOrderSql('S', 'SetConnection'),
-		]);
+		$query = TableRegistry::getTableLocator()->get('SetConnection')->find();
+		return $query
+			->innerJoin(['S' => 'set'], ['S.id = SetConnection.set_id'])
+			->where(['SetConnection.tsumego_id' => $tsumegoID])
+			->orderBy($query->newExpr(self::displayOrderSql('S', 'SetConnection')))
+			->first();
 	}
 }

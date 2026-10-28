@@ -5,7 +5,7 @@ namespace App\Utility;
 use App\Model\Entity\Tag;
 use Cake\ORM\TableRegistry;
 use Set;
-use SetConnection;
+use App\Model\Table\SetConnectionTable;
 
 class TsumegoButtonsQueryBuilder
 {
@@ -24,7 +24,7 @@ class TsumegoButtonsQueryBuilder
 		$this->resolveQueryType();
 		if ($tsumegoFilters->query != 'topics')
 		{
-			$this->query->selects[] = "ROW_NUMBER() OVER (PARTITION BY tsumego.id ORDER BY " . SetConnection::displayOrderSql('`set`', 'set_connection') . ") AS rn";
+			$this->query->selects[] = "ROW_NUMBER() OVER (PARTITION BY tsumego.id ORDER BY " . SetConnectionTable::displayOrderSql('`set`', 'set_connection') . ") AS rn";
 			$this->query->prefix = "SELECT tsumego_id, set_connection_id, num, rating";
 			if (Auth::isLoggedIn())
 				$this->query->prefix .= ", status";

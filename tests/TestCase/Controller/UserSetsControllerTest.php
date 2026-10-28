@@ -72,10 +72,8 @@ class UserSetsControllerTest extends IntegrationTestCase
 
 		$tsumego = $this->fetchTable('Tsumego')->find()->orderByDesc('id')->first();
 		$this->assertNotEmpty($tsumego);
-		$sc = ClassRegistry::init('SetConnection')->find('first', [
-			'conditions' => ['set_id' => $set['Set']['id'], 'tsumego_id' => $tsumego->id],
-		]);
-		$this->assertNotEmpty($sc);
+		$setConnection = $this->fetchTable('SetConnection')->find()->where(['set_id' => $set['Set']['id'], 'tsumego_id' => $tsumego->id])->first();
+		$this->assertNotEmpty($setConnection);
 	}
 
 	public function testCreateSandboxRequiresAdmin(): void
@@ -336,10 +334,8 @@ class UserSetsControllerTest extends IntegrationTestCase
 
 		$this->assertStringContainsString("/sets/edit/{$setId}", $this->headerValue('Location'));
 
-		$sc = ClassRegistry::init('SetConnection')->find('first', [
-			'conditions' => ['set_id' => $setId, 'tsumego_id' => $tsumegoId],
-		]);
-		$this->assertNotEmpty($sc);
+		$setConnection = $this->fetchTable('SetConnection')->find()->where(['set_id' => $setId, 'tsumego_id' => $tsumegoId])->first();
+		$this->assertNotEmpty($setConnection);
 	}
 
 	public function testAddTsumegoToOtherUserSetFails(): void
@@ -382,10 +378,8 @@ class UserSetsControllerTest extends IntegrationTestCase
 
 		$this->assertStringContainsString("/sets/edit/{$setId}", $this->headerValue('Location'));
 
-		$sc = ClassRegistry::init('SetConnection')->find('first', [
-			'conditions' => ['set_id' => $setId, 'tsumego_id' => $tsumegoId],
-		]);
-		$this->assertEmpty($sc);
+		$setConnection = $this->fetchTable('SetConnection')->find()->where(['set_id' => $setId, 'tsumego_id' => $tsumegoId])->first();
+		$this->assertEmpty($setConnection);
 	}
 
 	// ── Default "Favorites" set: lazy creation ──────────────────────────
@@ -416,10 +410,8 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$user = ClassRegistry::init('User')->findById($context->user['id']);
 		$this->assertEquals($set['Set']['id'], $user['User']['default_set_id']);
 
-		$sc = ClassRegistry::init('SetConnection')->find('first', [
-			'conditions' => ['set_id' => $set['Set']['id'], 'tsumego_id' => $tsumegoId],
-		]);
-		$this->assertNotEmpty($sc);
+		$setConnection = $this->fetchTable('SetConnection')->find()->where(['set_id' => $set['Set']['id'], 'tsumego_id' => $tsumegoId])->first();
+		$this->assertNotEmpty($setConnection);
 	}
 
 	public function testAddTsumegoToFavoritesReturnsSetId(): void
@@ -462,9 +454,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 
 		$this->assertResponseCode(409);
 
-		$count = ClassRegistry::init('SetConnection')->find('count', [
-			'conditions' => ['set_id' => $setId, 'tsumego_id' => $tsumegoId],
-		]);
+		$count = $this->fetchTable('SetConnection')->find()->where(['set_id' => $setId, 'tsumego_id' => $tsumegoId])->count();
 		$this->assertEquals(1, $count);
 	}
 
@@ -495,11 +485,8 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString("/sets/edit/{$setId}", $this->headerValue('Location'));
 
 		// Verify nums swapped
-		$scs = ClassRegistry::init('SetConnection')->find('all', [
-			'conditions' => ['set_id' => $setId],
-			'order' => 'num',
-		]);
-		$this->assertEquals($secondTsumego['id'], $scs[0]['SetConnection']['tsumego_id']);
+		$setConnections = $this->fetchTable('SetConnection')->find()->where(['set_id' => $setId])->orderBy('num')->toArray();
+		$this->assertEquals($secondTsumego['id'], $setConnections[0]->tsumego_id);
 	}
 
 	public function testReorderTsumegoDown(): void
@@ -521,11 +508,8 @@ class UserSetsControllerTest extends IntegrationTestCase
 
 		$this->post("/sets/reorderTsumego/{$setId}?tsumego_id={$firstTsumego['id']}&dir=down");
 
-		$scs = ClassRegistry::init('SetConnection')->find('all', [
-			'conditions' => ['set_id' => $setId],
-			'order' => 'num',
-		]);
-		$this->assertEquals($firstTsumego['id'], $scs[1]['SetConnection']['tsumego_id']);
+		$setConnections = $this->fetchTable('SetConnection')->find()->where(['set_id' => $setId])->orderBy('num')->toArray();
+		$this->assertEquals($firstTsumego['id'], $setConnections[1]->tsumego_id);
 	}
 
 	// ── User sets for others ────────────────────────────────────────────
@@ -779,9 +763,8 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$setId = $this->_createSet('Alice Set', $context->user['id'], 0);
 		$tsumegoTable = $this->fetchTable('Tsumego');
 		$tsumegoId = $tsumegoTable->saveOrFail($tsumegoTable->newEntity(['variance' => 100, 'author' => '']))->id;
-		$scModel = ClassRegistry::init('SetConnection');
-		$scModel->create();
-		$scModel->save(['SetConnection' => ['set_id' => $setId, 'tsumego_id' => $tsumegoId, 'num' => 1]]);
+		$setConnectionTable = $this->fetchTable('SetConnection');
+		$setConnectionTable->saveOrFail($setConnectionTable->newEntity(['set_id' => $setId, 'tsumego_id' => $tsumegoId, 'num' => 1]));
 		$this->login('bob');
 
 		$this->post("/sets/removeTsumego/{$setId}", ['tsumego_id' => $tsumegoModel->id]);
@@ -829,12 +812,9 @@ class UserSetsControllerTest extends IntegrationTestCase
 
 		$this->assertResponseCode(409);
 
-		$scs = ClassRegistry::init('SetConnection')->find('all', [
-			'conditions' => ['set_id' => $setId],
-			'order' => 'num',
-		]);
-		$this->assertEquals($context->tsumegos[0]['id'], $scs[0]['SetConnection']['tsumego_id']);
-		$this->assertEquals($context->tsumegos[1]['id'], $scs[1]['SetConnection']['tsumego_id']);
+		$setConnections = $this->fetchTable('SetConnection')->find()->where(['set_id' => $setId])->orderBy('num')->toArray();
+		$this->assertEquals($context->tsumegos[0]['id'], $setConnections[0]->tsumego_id);
+		$this->assertEquals($context->tsumegos[1]['id'], $setConnections[1]->tsumego_id);
 	}
 
 	public function testCreateAndAddTsumegoRequiresAdmin(): void

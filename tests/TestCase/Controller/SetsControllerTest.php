@@ -56,8 +56,7 @@ class SetsControllerTest extends IntegrationTestCase
 		ClassRegistry::init('Set')->create();
 		ClassRegistry::init('Set')->save(['id' => $setId, 'public' => 1, 'title' => 'set ' . $setId]);
 		$tsumegoId = $this->fetchTable('Tsumego')->saveOrFail($this->fetchTable('Tsumego')->newEntity(['rating' => 1000, 'author' => '']))->id;
-		ClassRegistry::init('SetConnection')->create();
-		ClassRegistry::init('SetConnection')->save(['set_id' => $setId, 'tsumego_id' => $tsumegoId, 'num' => 1]);
+		$this->fetchTable('SetConnection')->saveOrFail($this->fetchTable('SetConnection')->newEntity(['set_id' => $setId, 'tsumego_id' => $tsumegoId, 'num' => 1]));
 		$this->fetchTable('Sgf')->saveOrFail($this->fetchTable('Sgf')->newEntity(['tsumego_id' => $tsumegoId, 'sgf' => '(;GM[1]FF[4]SZ[19])', 'user_id' => $userId, 'sgf_status_id' => SgfTable::STATUS_ACCEPTED]));
 		$this->fetchTable('TsumegoStatus')->saveOrFail($this->fetchTable('TsumegoStatus')->newEntity(['tsumego_id' => $tsumegoId, 'status' => 'S', 'user_id' => $userId]));
 	}
@@ -314,9 +313,8 @@ class SetsControllerTest extends IntegrationTestCase
 		$set = ClassRegistry::init('Set');
 		$set->create();
 		$set->save(['title' => 'unordered set', 'public' => 1, 'order' => null]);
-		$connection = ClassRegistry::init('SetConnection');
-		$connection->create();
-		$connection->save(['tsumego_id' => $context->tsumegos[0]['id'], 'set_id' => $set->id, 'num' => 2]);
+		$setConnectionTable = $this->fetchTable('SetConnection');
+		$setConnectionTable->saveOrFail($setConnectionTable->newEntity(['tsumego_id' => $context->tsumegos[0]['id'], 'set_id' => $set->id, 'num' => 2]));
 
 		$this->get('sets');
 

@@ -27,6 +27,14 @@ class TsumegosControllerTest extends IntegrationTestCase
 		}
 	}
 
+	//The SGF download is named after the collection and the number of the problem in it.
+	public function testTheSgfDownloadIsNamedAfterTheCollectionAndTheProblemNumber(): void
+	{
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 666]]);
+		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$this->assertStringContainsString('jsCreateDownloadFile("test set 666")', $this->view);
+	}
+
 	public function testTheFirstProblemOfACollectionLeadsBackToTheCollectionPage(): void
 	{
 		$context = new ContextPreparator([
@@ -291,11 +299,10 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$set = ClassRegistry::init('Set');
 		$set->create();
 		$this->assertNotFalse($set->save(['title' => 'alice public', 'public' => 1, 'user_id' => $context->otherUsers[0]['id'], 'order' => 1]));
-		$connection = ClassRegistry::init('SetConnection');
-		$connection->create();
-		$connection->save(['tsumego_id' => $context->tsumegos[0]['id'], 'set_id' => $set->id, 'num' => 3]);
+		$setConnectionTable = $this->fetchTable('SetConnection');
+		$setConnectionTable->saveOrFail($setConnectionTable->newEntity(['tsumego_id' => $context->tsumegos[0]['id'], 'set_id' => $set->id, 'num' => 3]));
 
-		$titles = array_map(fn($row) => $row['SetConnection']['title'], TsumegoUtil::getSetConnectionsWithTitles($context->tsumegos[0]['id']));
+		$titles = array_map(fn($row) => $row['title'], TsumegoUtil::getSetConnectionsWithTitles($context->tsumegos[0]['id']));
 		$this->assertSame(['official public 10', 'second public 20'], $titles);
 	}
 
@@ -340,9 +347,8 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$set->create();
 		$set->save(['title' => $title, 'public' => $public, 'user_id' => $userId, 'order' => 1]);
 
-		$connection = ClassRegistry::init('SetConnection');
-		$connection->create();
-		$connection->save(['tsumego_id' => $tsumegoId, 'set_id' => $set->id, 'num' => $num]);
+		$setConnectionTable = $this->fetchTable('SetConnection');
+		$setConnectionTable->saveOrFail($setConnectionTable->newEntity(['tsumego_id' => $tsumegoId, 'set_id' => $set->id, 'num' => $num]));
 	}
 
 	public function testViewingTsumegoWithoutAnySGF()

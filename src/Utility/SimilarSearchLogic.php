@@ -8,19 +8,16 @@ use App\Model\Table\TsumegoStatusTable;
 use ClassRegistry;
 use NotFoundException;
 use Set;
-use SetConnection;
+use App\Model\Table\SetConnectionTable;
+use App\Model\Entity\SetConnection;
 
-/**
- * @phpstan-import-type SetConnectionRow from \App\Utility\RowTypes
- */
 class SimilarSearchLogic
 {
-	/** @param SetConnectionRow $setConnection */
-	public function __construct(array $setConnection)
+	public function __construct(SetConnection $setConnection)
 	{
 		$this->setConnection = $setConnection;
 		$this->result = new SimilarSearchResult();
-		$this->sourceTsumegoID = $this->setConnection['tsumego_id'];
+		$this->sourceTsumegoID = $this->setConnection->tsumego_id;
 		$sgf = TableRegistry::getTableLocator()->get('Sgf')->find()
 			->select(['sgf', 'correct_moves', 'first_move_color'])
 			->where(['tsumego_id' => $this->sourceTsumegoID, 'sgf_status_id' => SgfTable::STATUS_ACCEPTED])
@@ -33,7 +30,7 @@ class SimilarSearchLogic
 		$this->sourceStoneCount = $this->sourceBoard->getStoneCount();
 		$this->sourceMoveCount = substr_count($sgf->sgf, ';');
 		$this->sourceSgf = $sgf->sgf;
-		$set = ClassRegistry::init('Set')->findById($this->setConnection['set_id'])['Set'];
+		$set = ClassRegistry::init('Set')->findById($this->setConnection->set_id)['Set'];
 		$this->result->title = $set['title'];
 	}
 
@@ -53,7 +50,7 @@ JOIN set_connection sc_best ON sc_best.id = (
     FROM set_connection sc2
     JOIN `set` s2 ON s2.id = sc2.set_id
     WHERE sc2.tsumego_id = tsumego.id AND " . Set::officialCondition('s2') . "
-    ORDER BY " . SetConnection::displayOrderSql('s2', 'sc2') . "
+    ORDER BY " . SetConnectionTable::displayOrderSql('s2', 'sc2') . "
     LIMIT 1
 )
 LEFT JOIN sgf ON sgf.id = " . SgfTable::currentVersionIDSql('tsumego.id') . "
@@ -93,9 +90,9 @@ WHERE tsumego.deleted IS NULL");
 
 	private function addCandidateToResult(array $candidate, BoardComparisonResult $comparisonResult): void
 	{
-		$setConnection = ClassRegistry::init('SetConnection')->findById($candidate['set_connection_id'])['SetConnection'];
+		$setConnection = TableRegistry::getTableLocator()->get('SetConnection')->get($candidate['set_connection_id']);
 		// not so many should match, so I get the sql additional data manually instead in the original select, which is big
-		$set = ClassRegistry::init('Set')->findById($setConnection['set_id']);
+		$set = ClassRegistry::init('Set')->findById($setConnection->set_id);
 
 		$item = new SimilarSearchResultItem();
 		$item->difference = $comparisonResult->difference;
@@ -106,8 +103,8 @@ WHERE tsumego.deleted IS NULL");
 
 		$item->tsumegoButton = new TsumegoButton(
 			$candidate['tsumego_id'],
-			$setConnection['id'],
-			$setConnection['num'],
+			$setConnection->id,
+			$setConnection->num,
 			TsumegoStatusTable::statusOf(Auth::getUserID(), (int) $candidate['tsumego_id']) ?? 'N',
 			0,
 			$candidate['sgf']);
@@ -116,8 +113,7 @@ WHERE tsumego.deleted IS NULL");
 	}
 
 	public int|string $sourceTsumegoID;
-	/** @var SetConnectionRow */
-	public $setConnection;
+	public SetConnection $setConnection;
 	public int $maxDifference = 5;
 	public SgfBoard $sourceBoard;
 	public string $sourceFirstMoveColor;

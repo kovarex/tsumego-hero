@@ -189,10 +189,7 @@ ORDER BY schedule.date DESC, schedule.id DESC");
 		$candidates = self::candidates($setIdFrom, $targetSetId, $num, $count);
 
 		// Pre-parse SGF to preview data so the client doesn't need to
-		$existingNums = ClassRegistry::init('SetConnection')->find('list', [
-			'fields' => ['num', 'num'],
-			'conditions' => ['set_id' => $targetSetId],
-		]);
+		$existingNums = $this->fetchTable('SetConnection')->find('list', keyField: 'num', valueField: 'num')->where(['set_id' => $targetSetId])->toArray();
 		foreach ($candidates as $index => &$candidate)
 		{
 			$candidate['preview'] = TsumegoButton::sgfToPreviewData($candidate['sgf'] ?? '');

@@ -6,6 +6,7 @@ use App\Model\Table\MessageTable;
 use ClassRegistry;
 use Router;
 use User;
+use App\Model\Table\SetConnectionTable;
 
 //Tells a player what an admin decided about their proposal: a new version of a problem, a tag
 //on a problem or a new tag. It goes as a message from the admin, so the player sees who decided
@@ -25,11 +26,11 @@ class ProposalFeedback
 	//The name of the problem as the player knows it, the set and the number in it.
 	public static function problemName(int $tsumegoID): string
 	{
-		$setConnection = ClassRegistry::init('SetConnection')->findDisplaySetConnection($tsumegoID);
+		$setConnection = SetConnectionTable::findDisplaySetConnection($tsumegoID);
 		if (!$setConnection)
 			return 'problem ' . $tsumegoID;
-		$set = ClassRegistry::init('Set')->findById($setConnection['SetConnection']['set_id']);
-		return trim($set['Set']['title'] . ' ' . $set['Set']['title2']) . ' ' . $setConnection['SetConnection']['num'];
+		$set = ClassRegistry::init('Set')->findById($setConnection->set_id);
+		return trim($set['Set']['title'] . ' ' . $set['Set']['title2']) . ' ' . $setConnection->num;
 	}
 
 	//Sends the decision from the signed in admin to the proposer. Nothing is sent when the admin decided
@@ -50,9 +51,9 @@ class ProposalFeedback
 			$paragraphs[] = self::adminName() . ': ' . $comment;
 		if ($tsumegoID !== null)
 		{
-			$setConnection = ClassRegistry::init('SetConnection')->findDisplaySetConnection($tsumegoID);
+			$setConnection = SetConnectionTable::findDisplaySetConnection($tsumegoID);
 			if ($setConnection)
-				$paragraphs[] = Router::url('/' . $setConnection['SetConnection']['id'], true);
+				$paragraphs[] = Router::url('/' . $setConnection->id, true);
 		}
 		if ($diffUrl !== null)
 			$paragraphs[] = 'Your changes: ' . $diffUrl;

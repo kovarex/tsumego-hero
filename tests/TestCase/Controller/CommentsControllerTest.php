@@ -469,16 +469,14 @@ class CommentsControllerTest extends IntegrationTestCase
 		$aliceSet = ClassRegistry::init('Set');
 		$aliceSet->create();
 		$aliceSet->save(['title' => 'alice favorites', 'title2' => '', 'public' => 0, 'user_id' => $context->otherUsers[0]['id'], 'order' => 1]);
-		$aliceConnection = ClassRegistry::init('SetConnection');
-		$aliceConnection->create();
-		$aliceConnection->save(['tsumego_id' => $tsumego->id, 'set_id' => $aliceSet->id, 'num' => 3]);
+		$setConnectionTable = $this->fetchTable('SetConnection');
+		$setConnectionTable->saveOrFail($setConnectionTable->newEntity(['tsumego_id' => $tsumego->id, 'set_id' => $aliceSet->id, 'num' => 3]));
 
 		$publicSet = ClassRegistry::init('Set');
 		$publicSet->create();
 		$publicSet->save(['title' => 'public set', 'title2' => '', 'public' => 1, 'order' => 1]);
-		$publicConnection = ClassRegistry::init('SetConnection');
-		$publicConnection->create();
-		$publicConnection->save(['tsumego_id' => $tsumego->id, 'set_id' => $publicSet->id, 'num' => 10]);
+		$setConnectionTable = $this->fetchTable('SetConnection');
+		$setConnectionTable->saveOrFail($setConnectionTable->newEntity(['tsumego_id' => $tsumego->id, 'set_id' => $publicSet->id, 'num' => 10]));
 
 		$tsumegoCommentTable = $this->fetchTable('TsumegoComment');
 		$tsumegoCommentTable->saveOrFail($tsumegoCommentTable->newEntity(['tsumego_id' => $tsumego->id, 'user_id' => $context->user['id'], 'message' => 'hello']));

@@ -695,7 +695,7 @@ class TimeModeTest extends IntegrationTestCase
 			$tsumegosInTimeMode[$attempt->tsumego_id] = true;
 
 		$tsumegoIDNotInTimeMode = array_find($context->tsumegos, fn($tsumego) => !$tsumegosInTimeMode[$tsumego['id']])['id'];
-		$setConnectionIDNotInTimeMode = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $tsumegoIDNotInTimeMode]])['SetConnection']['id'];
+		$setConnectionIDNotInTimeMode = $this->fetchTable('SetConnection')->find()->where(['tsumego_id' => $tsumegoIDNotInTimeMode])->first()->id;
 		$browser->playWithResult('S'); // mark the problem solved
 
 		// we found the only tsumego NOT in the time mode, and we open it in no-time mode

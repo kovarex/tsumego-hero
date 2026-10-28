@@ -48,7 +48,7 @@ class SgfController extends AppController
 	{
 		$this->Authorization->authorize('Sgf', 'propose');
 
-		$setConnection = ClassRegistry::init('SetConnection')->findById($setConnectionID);
+		$setConnection = $this->fetchTable('SetConnection')->find()->where(['id' => (int) $setConnectionID])->first();
 		if (!$setConnection)
 			throw new NotFoundException("Specified set connection does not exist.");
 
@@ -64,8 +64,8 @@ class SgfController extends AppController
 
 		AdminActivityLogger::log(
 			AdminActivityTypeTable::SGF_EDIT,
-			$setConnection['SetConnection']['tsumego_id'],
-			$setConnection['SetConnection']['set_id'],
+			$setConnection->tsumego_id,
+			$setConnection->set_id,
 		);
 
 		$this->set('sgf', $sgfDataOrFile);

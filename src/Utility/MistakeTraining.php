@@ -6,7 +6,7 @@ use App\Model\Table\SgfTable;
 use App\Model\Table\TsumegoStatusTable;
 use Cake\ORM\TableRegistry;
 use DateTime;
-use SetConnection;
+use App\Model\Table\SetConnectionTable;
 
 //Mistake training: spaced repetition for tsumegos you did not solve on the first attempt.
 //The pool (mistake_training_pool) is the single source of truth: one row per
@@ -421,7 +421,7 @@ class MistakeTraining
 		return ' FROM set_connection c'
 			. ' JOIN `set` s ON s.id = c.set_id'
 			. ' WHERE c.tsumego_id = ' . $tsumegoID
-			. ' AND ' . SetConnection::playableSql('s');
+			. ' AND ' . SetConnectionTable::playableSql('s');
 	}
 
 	//The next pool row due for review, or null if none: the first due problem in
@@ -435,7 +435,7 @@ class MistakeTraining
 	{
 		$rows = Util::query(
 			'SELECT p.*, (SELECT c.id' . self::playableConnectionsSql('p.tsumego_id')
-			. ' ORDER BY ' . SetConnection::displayOrderForSetSql('s') . ', c.id LIMIT 1) AS set_connection_id'
+			. ' ORDER BY ' . SetConnectionTable::displayOrderForSetSql('s') . ', c.id LIMIT 1) AS set_connection_id'
 			. ' FROM mistake_training_pool p' . self::servableSql()
 			. ' AND p.next_due IS NOT NULL AND p.next_due <= ?'
 			. ' ORDER BY (p.last_review_day IS NOT NULL AND p.last_review_day = ?) ASC, p.id ASC LIMIT 1',
@@ -612,7 +612,7 @@ class MistakeTraining
 			'SELECT p.tsumego_id, p.rung, p.next_due, p.last_review_day, p.last_mistake_training_result_id, st.title AS set_title, sc.num'
 			. ' FROM mistake_training_pool p'
 			. ' JOIN set_connection sc ON sc.id = (SELECT c.id' . self::playableConnectionsSql('p.tsumego_id')
-			. ' ORDER BY ' . SetConnection::displayOrderForSetSql('s') . ', c.id LIMIT 1)'
+			. ' ORDER BY ' . SetConnectionTable::displayOrderForSetSql('s') . ', c.id LIMIT 1)'
 			. ' JOIN `set` st ON st.id = sc.set_id'
 			. self::servableSql()
 			. ' AND p.next_due IS NOT NULL'
@@ -966,7 +966,7 @@ class MistakeTraining
 	//moment. The tsumego status is not read, the training row does not show it.
 	private static function queueSql(): string
 	{
-		$displayOrder = SetConnection::displayOrderForSetSql('st');
+		$displayOrder = SetConnectionTable::displayOrderForSetSql('st');
 
 		return "
 			SELECT id, tsumego_id, set_connection_id, num, rating, sgf, rung, lapses, next_due, last_review_day, last_mistake_training_result_id
@@ -989,7 +989,7 @@ class MistakeTraining
 					) AS rn
 				FROM mistake_training_pool p
 				JOIN set_connection sc ON sc.tsumego_id = p.tsumego_id
-				JOIN `set` st ON st.id = sc.set_id AND " . SetConnection::playableSql('st') . "
+				JOIN `set` st ON st.id = sc.set_id AND " . SetConnectionTable::playableSql('st') . "
 				JOIN tsumego t ON t.id = p.tsumego_id
 				LEFT JOIN sgf ON sgf.id = " . SgfTable::currentVersionIDSql('p.tsumego_id') . "
 				WHERE p.user_id = ?

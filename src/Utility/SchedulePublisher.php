@@ -61,59 +61,46 @@ class SchedulePublisher
 
 		// A tsumego lives in at most one official sandbox set, but be robust to
 		// several: publishing moves it out of every sandbox set into the target.
-		$sandboxConnections = ClassRegistry::init('SetConnection')->find('all', [
-			'joins' => [[
-				'table' => 'set',
-				'alias' => 'S',
-				'type' => 'INNER',
-				'conditions' => ['S.id = SetConnection.set_id', 'S.public' => 0, 'S.user_id IS NULL'],
-			]],
-			'conditions' => ['SetConnection.tsumego_id' => $tsumegoID],
-		]) ?: [];
+		$setConnectionTable = TableRegistry::getTableLocator()->get('SetConnection');
+		$sandboxConnections = $setConnectionTable->find()
+			->innerJoin(['S' => 'set'], ['S.id = SetConnection.set_id', 'S.public' => 0, 'S.user_id IS' => null])
+			->where(['SetConnection.tsumego_id' => $tsumegoID])
+			->all()->toList();
 
-		$targetConnection = ClassRegistry::init('SetConnection')->find('first', [
-			'conditions' => ['tsumego_id' => $tsumegoID, 'set_id' => $to],
-		]);
+		$targetConnection = $setConnectionTable->exists(['tsumego_id' => $tsumegoID, 'set_id' => $to]);
 
 		// Check before the move: is this tsumego already in any public set?
 		// If so, users have solve history we must preserve.
-		$alreadyPublic = ClassRegistry::init('SetConnection')->find('first', [
-			'joins' => [[
-				'table' => 'set',
-				'alias' => 'S',
-				'type' => 'INNER',
-				'conditions' => ['S.id = SetConnection.set_id', Set::officialCondition('S')],
-			]],
-			'conditions' => ['SetConnection.tsumego_id' => $tsumegoID],
-		]);
+		$alreadyPublic = $setConnectionTable->find()
+			->innerJoin(['S' => 'set'], ['S.id = SetConnection.set_id', Set::officialCondition('S')])
+			->select(['SetConnection.id'])
+			->where(['SetConnection.tsumego_id' => $tsumegoID])
+			->first() !== null;
 
 		if ($targetConnection)
 		{
 			// Already in the target set: drop every sandbox copy, keep the target one.
 			foreach ($sandboxConnections as $sandboxConnection)
-				ClassRegistry::init('SetConnection')->delete($sandboxConnection['SetConnection']['id']);
+				$setConnectionTable->deleteOrFail($sandboxConnection);
 		}
 		elseif ($sandboxConnections)
 		{
 			// Move the canonical sandbox copy (lowest num, then lowest id) to the
 			// target, preserving its number, and drop the remaining copies.
 			usort($sandboxConnections, function ($a, $b) {
-				return [(int) $a['SetConnection']['num'], (int) $a['SetConnection']['id']] <=> [(int) $b['SetConnection']['num'], (int) $b['SetConnection']['id']];
+				return [$a->num, $a->id] <=> [$b->num, $b->id];
 			});
 			$keep = array_shift($sandboxConnections);
-			$keep['SetConnection']['set_id'] = $to;
+			$keep->set_id = (int) $to;
 			// Renumber to the next free slot if the sandbox num is already taken in the target
-			$existingNums = ClassRegistry::init('SetConnection')->find('list', [
-				'fields' => ['num', 'num'],
-				'conditions' => ['set_id' => $to],
-			]);
-			$num = (int) $keep['SetConnection']['num'];
+			$existingNums = $setConnectionTable->find('list', keyField: 'num', valueField: 'num')->where(['set_id' => $to])->toArray();
+			$num = $keep->num;
 			while (isset($existingNums[$num]))
 				$num++;
-			$keep['SetConnection']['num'] = $num;
-			ClassRegistry::init('SetConnection')->save($keep);
+			$keep->num = $num;
+			$setConnectionTable->saveOrFail($keep);
 			foreach ($sandboxConnections as $sandboxConnection)
-				ClassRegistry::init('SetConnection')->delete($sandboxConnection['SetConnection']['id']);
+				$setConnectionTable->deleteOrFail($sandboxConnection);
 		}
 		else
 			return 'the problem is in no sandbox set to move from';

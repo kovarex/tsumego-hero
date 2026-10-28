@@ -53,14 +53,8 @@ class SetsControllerAdminTest extends IntegrationTestCase
 		$this->assertNotEmpty($newTsumego, 'Should create tsumego');
 
 		// Verify SetConnection links them
-		$setConnectionModel = ClassRegistry::init('SetConnection');
-		$connection = $setConnectionModel->find('first', [
-			'conditions' => [
-				'set_id' => $newSet['Set']['id'],
-				'tsumego_id' => $newTsumego->id
-			]
-		]);
+		$connection = $this->fetchTable('SetConnection')->find()->where(['set_id' => $newSet['Set']['id'], 'tsumego_id' => $newTsumego->id])->first();
 		$this->assertNotEmpty($connection, 'SetConnection should link set and tsumego');
-		$this->assertEquals(1, $connection['SetConnection']['num'], 'First tsumego should have num=1');
+		$this->assertEquals(1, $connection->num, 'First tsumego should have num=1');
 	}
 }

@@ -112,9 +112,7 @@ class HeartDropdownTest extends IntegrationTestCase
 		$targetRow->findElement(WebDriverBy::cssSelector('input'))->click();
 		$browser->waitUntilCssSelectorExistsWithText('#favButton', '❤️');
 
-		$sc = ClassRegistry::init('SetConnection')->find('first', [
-			'conditions' => ['set_id' => $setId, 'tsumego_id' => $tsumegoId],
-		]);
-		$this->assertNotEmpty($sc, 'Checking a set should add the tsumego to it');
+		$setConnection = $this->fetchTable('SetConnection')->find()->where(['set_id' => $setId, 'tsumego_id' => $tsumegoId])->first();
+		$this->assertNotEmpty($setConnection, 'Checking a set should add the tsumego to it');
 	}
 }

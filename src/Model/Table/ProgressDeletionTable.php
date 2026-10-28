@@ -3,7 +3,6 @@
 namespace App\Model\Table;
 
 use App\Utility\Util;
-use ClassRegistry;
 
 //A reset of the user's progress on one part of a set. The resets reduce the XP of the problems of
 //that part for a month.
@@ -50,8 +49,8 @@ WHERE user_id = ? AND set_id = ? AND (set_partition = ? OR set_partition IS NULL
 	public static function countRecentForProblem(int $userID, int $tsumegoID, ?int $setConnectionID): int
 	{
 		$partition = $setConnectionID ? self::partitionOf($setConnectionID, $tsumegoID) : null;
-		if (!$partition && ($displaySetConnection = ClassRegistry::init('SetConnection')->findDisplaySetConnection($tsumegoID)))
-			$partition = self::partitionOf((int) $displaySetConnection['SetConnection']['id']);
+		if (!$partition && ($displaySetConnection = SetConnectionTable::findDisplaySetConnection($tsumegoID)))
+			$partition = self::partitionOf($displaySetConnection->id);
 		return $partition ? self::countRecent($userID, $partition['set_id'], $partition['partition']) : 0;
 	}
 }

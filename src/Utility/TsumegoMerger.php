@@ -7,7 +7,6 @@ use App\Model\Table\SgfTable;
 use App\Model\Table\TsumegoStatusTable;
 use App\Model\Table\AdminActivityTypeTable;
 use Cake\ORM\TableRegistry;
-use ClassRegistry;
 use Exception;
 
 class TsumegoMerger
@@ -34,23 +33,18 @@ class TsumegoMerger
 
 	private function mergeSlaveSetConnections(): void
 	{
-		$slaveSetConnectionBrothers = ClassRegistry::init('SetConnection')->find('all', ['conditions' => ['tsumego_id' => $this->slaveTsumegoID]]);
-		foreach ($slaveSetConnectionBrothers as $slaveTsumegoBrother)
+		$setConnectionTable = TableRegistry::getTableLocator()->get('SetConnection');
+		foreach ($setConnectionTable->find()->where(['tsumego_id' => $this->slaveTsumegoID])->all() as $slaveTsumegoBrother)
 		{
-			$setId = $slaveTsumegoBrother['SetConnection']['set_id'];
-
 			// If this set already has the master, delete the slave connection (dedup)
-			$masterExists = ClassRegistry::init('SetConnection')->find('first', [
-				'conditions' => ['set_id' => $setId, 'tsumego_id' => $this->masterTsumegoID],
-			]);
-			if ($masterExists)
+			if ($setConnectionTable->exists(['set_id' => $slaveTsumegoBrother->set_id, 'tsumego_id' => $this->masterTsumegoID]))
 			{
-				ClassRegistry::init('SetConnection')->delete($slaveTsumegoBrother['SetConnection']['id']);
+				$setConnectionTable->deleteOrFail($slaveTsumegoBrother);
 				continue;
 			}
 
-			$slaveTsumegoBrother['SetConnection']['tsumego_id'] = $this->masterTsumegoID;
-			ClassRegistry::init('SetConnection')->save($slaveTsumegoBrother);
+			$slaveTsumegoBrother->tsumego_id = $this->masterTsumegoID;
+			$setConnectionTable->saveOrFail($slaveTsumegoBrother);
 		}
 	}
 

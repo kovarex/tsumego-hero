@@ -61,7 +61,7 @@ use App\Utility\ViteManifest;
  * @var bool $requestSolution
  * @var string $reviewEnabled
  * @var array $set
- * @var array $setConnection
+ * @var \App\Model\Entity\SetConnection $setConnection
  * @var array $setConnections
  * @var \App\Model\Entity\Sgf $sgf
  * @var \App\Model\Entity\Tsumego $tsumego
@@ -125,9 +125,9 @@ use App\Utility\ViteManifest;
 	// A problem solved before is played again for a class assignment, which counts the solve on its own
 	$assignmentReplay = $classroomAssignment !== null && $solved && empty($solvedForAssignment);
 	if ($classroomAssignment !== null)
-		$resetLink = ClassroomAssignmentTable::playLink((int) $classroomAssignment['id'], (int) $setConnection['SetConnection']['id']);
+		$resetLink = ClassroomAssignmentTable::playLink((int) $classroomAssignment['id'], (int) $setConnection->id);
 	else
-		$resetLink = (Auth::isInMistakeTrainingMode() ? MistakeTraining::$PLAY_LINK_PREFIX : '/') . (int) $setConnection['SetConnection']['id'];
+		$resetLink = (Auth::isInMistakeTrainingMode() ? MistakeTraining::$PLAY_LINK_PREFIX : '/') . (int) $setConnection->id;
 	if ($tsumego->deleted !== null)
 		echo $this->element('trash_notice', [
 			'what' => 'problem',
@@ -325,7 +325,7 @@ use App\Utility\ViteManifest;
 				}
 			}
 			$getTitle = str_replace('&','and',$set['Set']['title']);
-			$getTitle .= ' '.$set['SetConnection']['num'];
+			$getTitle .= ' ' . $setConnection->num;
 		$tagEditorProps = json_encode([
 			'userId' => Auth::getUserID() ? (int) Auth::getUserID() : null,
 			'isAdmin' => Auth::isAdmin(),
@@ -353,7 +353,7 @@ use App\Utility\ViteManifest;
 		</div>
 		<br>
 		<?php
-			echo '<a id="openSgfLink" href="/editor/?setConnectionID='.$setConnection['SetConnection']['id'].'&sgfID='.$sgf->id.(Auth::isAdmin() ? '' : '&proposal=1').'" class="selectable-text mr-5" style="'.$proposalSentColor.'">'.$makeProposal.'</a>';
+			echo '<a id="openSgfLink" href="/editor/?setConnectionID='.$setConnection->id.'&sgfID='.$sgf->id.(Auth::isAdmin() ? '' : '&proposal=1').'" class="selectable-text mr-5" style="'.$proposalSentColor.'">'.$makeProposal.'</a>';
 			echo '<a id="showx3" class="selectable-text mr-5">Download SGF</a>';
 			echo '<a id="findSimilarProblems" class="selectable-text mr-5">Find Similar Problems</a>';
 			echo '<a id="showFilters" class="selectable-text">Filters<img id="greyArrowFilter" src="/img/greyArrow1.png"></a>';
@@ -368,10 +368,10 @@ use App\Utility\ViteManifest;
 		if (count($setConnections) > 1 && Auth::getMode() != Constants::$TIME_MODE)
 		{
 			echo '<div class="duplicateTable">Is duplicate group:<br>';
-			echo implode(', ', array_map(function ($setConnection)
+			echo implode(', ', array_map(function ($otherSetConnection)
 			{
-				return '<a href="/' . $setConnection['SetConnection']['id'] . '">'
-				. $setConnection['SetConnection']['title'] . '</a>';
+				return '<a href="/' . $otherSetConnection['id'] . '">'
+				. $otherSetConnection['title'] . '</a>';
 			}, $setConnections));
 			echo '</div><br>';
 		}
@@ -398,7 +398,7 @@ use App\Utility\ViteManifest;
 			{
 				echo '<div id="msg4">
 						<br>
-						<form action="/sgf/upload/' . $setConnection['SetConnection']['id'] . '" method="POST" enctype="multipart/form-data">
+						<form action="/sgf/upload/' . $setConnection->id . '" method="POST" enctype="multipart/form-data">
 							<input id="admin-upload-button" type="file" name="adminUpload" />
 							<input id="admin-upload-description" type="text" name="description" maxlength="' . SgfTable::DESCRIPTION_MAX_LENGTH . '" placeholder="What changed and why (optional)" />
 							<input id="admin-upload-submit" value="Submit" type="submit"/>
@@ -1225,11 +1225,11 @@ use App\Utility\ViteManifest;
 			jsCreateDownloadFile(<?php echo json_encode($getTitle, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>);
 		});
 		$("#showx4").click(function(){
-			jsCreateDownloadFile(<?php echo json_encode((string)$setConnection['SetConnection']['num'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>);
+			jsCreateDownloadFile(<?php echo json_encode((string)$setConnection->num, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>);
 		});
 		$("#findSimilarProblems").click(function(){
 			$('.loader-container').css({"display": "flex"});
-			window.location.href="/tsumegos/duplicatesearch/<?php echo $setConnection['SetConnection']['id']; ?>";
+			window.location.href="/tsumegos/duplicatesearch/<?php echo $setConnection->id; ?>";
 		});
 
 		var mouseX;
@@ -1253,7 +1253,7 @@ use App\Utility\ViteManifest;
 		$("#openSgfLink").css("display", "inline-block");
 		<?php if(Auth::isAdmin()){ ?>
 		$("#showx6").attr("href", "<?php echo '/sgfs/view/' . $tsumego->id; ?>");
-		$("#showx8").attr("href", "<?php echo '/tsumegos/history/'.$setConnection['SetConnection']['id']; ?>");
+		$("#showx8").attr("href", "<?php echo '/tsumegos/history/'.$setConnection->id; ?>");
 		$("#showx4").css("display", "inline-block");
 		$("#show4").css("display", "inline-block");
 		$("#show5").css("display", "inline-block");
@@ -1552,7 +1552,7 @@ use App\Utility\ViteManifest;
 		let data = {
 			tsumego_id: tsumegoID,
 			// the part of the set the problem is played from decides the XP reduction of its resets
-			set_connection_id: <?php echo (int) $setConnection['SetConnection']['id']; ?>,
+			set_connection_id: <?php echo (int) $setConnection->id; ?>,
 			seconds: takeSecondsOfTry(),
 			outcome: outcome,
 			// another tab may have switched the stored mode since this page was opened
@@ -1740,7 +1740,7 @@ use App\Utility\ViteManifest;
 					// leaving for the plain problem page would drop the player out of the training
 					if (goldenTsumego && mode != <?php echo Constants::$MISTAKE_TRAINING_MODE; ?>)
 					{
-						window.location.href = '/' + '<?php echo $setConnection['SetConnection']['id']; ?>';
+						window.location.href = '/' + '<?php echo $setConnection->id; ?>';
 						return;
 					}
 				}

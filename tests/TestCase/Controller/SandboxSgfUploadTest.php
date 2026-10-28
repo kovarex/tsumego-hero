@@ -33,12 +33,11 @@ class SandboxSgfUploadTest extends IntegrationTestCase
 		$this->assertEquals('DN_kovarex', $tsumego->author);
 
 		// Verify set connection was created with correct num
-		$setConnection = ClassRegistry::init('SetConnection')->find('first', [
-			'conditions' => [
-				'set_id' => $setID,
-				'tsumego_id' => $tsumego->id]]);
+		$setConnection = $this->fetchTable('SetConnection')->find()->where([
+			'set_id' => $setID,
+			'tsumego_id' => $tsumego->id])->first();
 		$this->assertNotEmpty($setConnection, 'SetConnection should be created');
-		$this->assertEquals(1, $setConnection['SetConnection']['num']);
+		$this->assertEquals(1, $setConnection->num);
 
 		// Verify SGF was uploaded
 		$sgf = $this->fetchTable('Sgf')->find()->where(['tsumego_id' => $tsumego->id])->orderByDesc('id')->first();

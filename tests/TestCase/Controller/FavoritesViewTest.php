@@ -35,9 +35,8 @@ class FavoritesViewTest extends IntegrationTestCase
 			'public' => 0,
 			'order' => Constants::$DEFAULT_SET_ORDER,
 		]]);
-		$scModel = ClassRegistry::init('SetConnection');
-		$scModel->create();
-		$scModel->save(['SetConnection' => ['set_id' => $setModel->id, 'tsumego_id' => $tsumegoId, 'num' => 2]]);
+		$setConnectionTable = $this->fetchTable('SetConnection');
+		$setConnectionTable->saveOrFail($setConnectionTable->newEntity(['set_id' => $setModel->id, 'tsumego_id' => $tsumegoId, 'num' => 2]));
 
 		$this->get('/tsumegos/play/' . $tsumegoId);
 		$sets = json_decode($this->viewVariable('userSetsJson'), true);
@@ -76,9 +75,8 @@ class FavoritesViewTest extends IntegrationTestCase
 				'public' => 0,
 				'order' => Constants::$DEFAULT_SET_ORDER,
 			]]);
-			$scModel = ClassRegistry::init('SetConnection');
-			$scModel->create();
-			$scModel->save(['SetConnection' => ['set_id' => $setModel->id, 'tsumego_id' => $tsumegoId, 'num' => 2]]);
+			$setConnectionTable = $this->fetchTable('SetConnection');
+			$setConnectionTable->saveOrFail($setConnectionTable->newEntity(['set_id' => $setModel->id, 'tsumego_id' => $tsumegoId, 'num' => 2]));
 		}
 
 		$this->get('/tsumegos/play/' . $tsumegoId);
@@ -107,11 +105,9 @@ class FavoritesViewTest extends IntegrationTestCase
 		// Slave only is in Favorites — after merge, master should be
 		(new TsumegoMerger($masterId, $slaveId))->execute();
 
-		$conn = ClassRegistry::init('SetConnection')->find('first', [
-			'conditions' => ['set_id' => $favSetId],
-		]);
-		$this->assertNotEmpty($conn);
-		$this->assertEquals($masterId, $conn['SetConnection']['tsumego_id']);
+		$setConnection = $this->fetchTable('SetConnection')->find()->where(['set_id' => $favSetId])->first();
+		$this->assertNotEmpty($setConnection);
+		$this->assertEquals($masterId, $setConnection->tsumego_id);
 	}
 
 	public function testMergeFavoritesBothInSetDeduplicates(): void
@@ -132,11 +128,9 @@ class FavoritesViewTest extends IntegrationTestCase
 
 		(new TsumegoMerger($masterId, $slaveId))->execute();
 
-		$connections = ClassRegistry::init('SetConnection')->find('all', [
-			'conditions' => ['set_id' => $favSetId],
-		]);
+		$connections = $this->fetchTable('SetConnection')->find()->where(['set_id' => $favSetId])->toArray();
 		$this->assertCount(1, $connections);
-		$this->assertEquals($masterId, $connections[0]['SetConnection']['tsumego_id']);
+		$this->assertEquals($masterId, $connections[0]->tsumego_id);
 	}
 
 	public function testMergeFavoritesIgnoresSandboxSets(): void
@@ -161,9 +155,7 @@ class FavoritesViewTest extends IntegrationTestCase
 		(new TsumegoMerger($masterId, $slaveId))->execute();
 
 		// Sandbox connection untouched by mergeFavorites, slave cascade doesn't fire in tests
-		$conn = ClassRegistry::init('SetConnection')->find('first', [
-			'conditions' => ['set_id' => $sandboxSetId],
-		]);
-		$this->assertNotEmpty($conn);
+		$setConnection = $this->fetchTable('SetConnection')->find()->where(['set_id' => $sandboxSetId])->first();
+		$this->assertNotEmpty($setConnection);
 	}
 }

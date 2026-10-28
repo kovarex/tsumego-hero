@@ -4,7 +4,7 @@ namespace App\Utility;
 
 use App\Model\Table\SgfTable;
 use PaginationHelper;
-use SetConnection;
+use App\Model\Table\SetConnectionTable;
 use User;
 
 class CommentsRenderer
@@ -87,8 +87,8 @@ FROM
         SELECT sc.id
         FROM set_connection sc
         JOIN `set` s ON s.id = sc.set_id
-        WHERE sc.tsumego_id = tsumego.id AND " . SetConnection::visibilitySql('s') . "
-        ORDER BY " . SetConnection::displayOrderSql('s', 'sc') . "
+        WHERE sc.tsumego_id = tsumego.id AND " . SetConnectionTable::visibilitySql('s') . "
+        ORDER BY " . SetConnectionTable::displayOrderSql('s', 'sc') . "
         LIMIT 1)
     LEFT JOIN `set` ON set_connection.set_id = `set`.id";
 

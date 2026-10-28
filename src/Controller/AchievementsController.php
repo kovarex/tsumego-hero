@@ -7,7 +7,7 @@ use App\Utility\AchievementId;
 use App\Utility\Auth;
 use App\Utility\Util;
 use App\Attribute\HttpGet;
-use SetConnection;
+use App\Model\Table\SetConnectionTable;
 
 /** @phpstan-import-type UserRow from \App\Utility\RowTypes */
 class AchievementsController extends AppController
@@ -182,8 +182,8 @@ class AchievementsController extends AppController
 
 		$rows = Util::query(
 			'SELECT s.id, s.title FROM `set` s WHERE s.id IN ('
-			. SetConnection::publicCollectionsWithMinimumProblemsSql() . ') '
-			. 'ORDER BY ' . SetConnection::displayOrderForSetSql('s')
+			. SetConnectionTable::publicCollectionsWithMinimumProblemsSql() . ') '
+			. 'ORDER BY ' . SetConnectionTable::displayOrderForSetSql('s')
 		);
 
 		$bestAccuracy = [];

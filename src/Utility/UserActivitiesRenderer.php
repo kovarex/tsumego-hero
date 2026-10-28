@@ -2,7 +2,7 @@
 
 namespace App\Utility;
 
-use SetConnection;
+use App\Model\Table\SetConnectionTable;
 use User;
 
 //The latest attempts, for the admins: of all players, of one player, or on the problems of one set.
@@ -52,7 +52,7 @@ class UserActivitiesRenderer extends DataTableRenderer
 				FROM set_connection sc2
 				JOIN `set` s2 ON s2.id = sc2.set_id
 				WHERE sc2.tsumego_id = tsumego_attempt.tsumego_id
-				ORDER BY ' . SetConnection::displayOrderSql('s2', 'sc2') . '
+				ORDER BY ' . SetConnectionTable::displayOrderSql('s2', 'sc2') . '
 				LIMIT 1
 			)';
 		$this->data = Util::query('

@@ -419,9 +419,7 @@ class ScheduleTest extends IntegrationTestCase
 
 		SchedulePublisher::publishDue();
 
-		$count = ClassRegistry::init('SetConnection')->find('count', [
-			'conditions' => ['set_id' => $targetSetId, 'tsumego_id' => $context->tsumegos[0]['id']],
-		]);
+		$count = $this->fetchTable('SetConnection')->find()->where(['set_id' => $targetSetId, 'tsumego_id' => $context->tsumegos[0]['id']])->count();
 		$this->assertSame(1, $count);
 	}
 
@@ -445,33 +443,21 @@ class ScheduleTest extends IntegrationTestCase
 		$tsumego = $context->tsumegos[0];
 		$targetSetId = $context->tsumegos[1]['set-connections'][0]['set_id'];
 
-		$sandboxBefore = ClassRegistry::init('SetConnection')->find('all', [
-			'joins' => [[
-				'table' => 'set',
-				'alias' => 'S',
-				'type' => 'INNER',
-				'conditions' => ['S.id = SetConnection.set_id', 'S.public' => 0, 'S.user_id IS NULL'],
-			]],
-			'conditions' => ['SetConnection.tsumego_id' => $tsumego['id']],
-		]);
+		$sandboxBefore = $this->fetchTable('SetConnection')->find()
+			->innerJoin(['S' => 'set'], ['S.id = SetConnection.set_id', 'S.public' => 0, 'S.user_id IS' => null])
+			->where(['SetConnection.tsumego_id' => $tsumego['id']])
+			->all()->toList();
 		$this->assertCount(2, $sandboxBefore, 'Tsumego should be in 2 sandbox sets before publish');
 
 		SchedulePublisher::publishDue();
 
-		$targetCount = ClassRegistry::init('SetConnection')->find('count', [
-			'conditions' => ['set_id' => $targetSetId, 'tsumego_id' => $tsumego['id']],
-		]);
+		$targetCount = $this->fetchTable('SetConnection')->find()->where(['set_id' => $targetSetId, 'tsumego_id' => $tsumego['id']])->count();
 		$this->assertSame(1, $targetCount, 'Should be in target set exactly once');
 
-		$sandboxAfter = ClassRegistry::init('SetConnection')->find('all', [
-			'joins' => [[
-				'table' => 'set',
-				'alias' => 'S',
-				'type' => 'INNER',
-				'conditions' => ['S.id = SetConnection.set_id', 'S.public' => 0, 'S.user_id IS NULL'],
-			]],
-			'conditions' => ['SetConnection.tsumego_id' => $tsumego['id']],
-		]);
+		$sandboxAfter = $this->fetchTable('SetConnection')->find()
+			->innerJoin(['S' => 'set'], ['S.id = SetConnection.set_id', 'S.public' => 0, 'S.user_id IS' => null])
+			->where(['SetConnection.tsumego_id' => $tsumego['id']])
+			->all()->toList();
 		$this->assertCount(0, $sandboxAfter, 'Should have no sandbox connections after publish');
 
 		$this->assertTrue($this->fetchTable('Schedule')->find()->where(['tsumego_id' => $tsumego['id']])->firstOrFail()->published);
@@ -538,17 +524,12 @@ class ScheduleTest extends IntegrationTestCase
 
 		SchedulePublisher::publishDue();
 
-		$nums = ClassRegistry::init('SetConnection')->find('list', [
-			'fields' => ['num', 'num'],
-			'conditions' => ['set_id' => $targetSetId],
-		]);
+		$nums = $this->fetchTable('SetConnection')->find('list', keyField: 'num', valueField: 'num')->where(['set_id' => $targetSetId])->toArray();
 		$this->assertCount(2, $nums, 'Both tsumegos should be in the target set');
 		$this->assertSame(2, count(array_unique($nums)), 'No duplicate nums in target set');
 
-		$moved = ClassRegistry::init('SetConnection')->find('first', [
-			'conditions' => ['set_id' => $targetSetId, 'tsumego_id' => $context->tsumegos[0]['id']],
-		]);
-		$this->assertNotSame(5, (int) $moved['SetConnection']['num'], 'Moved problem should be renumbered away from the taken slot');
+		$moved = $this->fetchTable('SetConnection')->find()->where(['set_id' => $targetSetId, 'tsumego_id' => $context->tsumegos[0]['id']])->first();
+		$this->assertNotSame(5, (int) $moved->num, 'Moved problem should be renumbered away from the taken slot');
 	}
 
 	public function testPreviewFlagsNumCollision(): void
@@ -620,9 +601,7 @@ class ScheduleTest extends IntegrationTestCase
 		]);
 
 		$this->assertTrue($this->lastSchedule()->published);
-		$this->assertSame(1, ClassRegistry::init('SetConnection')->find('count', [
-			'conditions' => ['set_id' => $targetSetId, 'tsumego_id' => $context->tsumegos[0]['id']],
-		]));
+		$this->assertSame(1, $this->fetchTable('SetConnection')->find()->where(['set_id' => $targetSetId, 'tsumego_id' => $context->tsumegos[0]['id']])->count());
 	}
 
 	public function testPublishingTwiceKeepsThePublishResult(): void
@@ -644,9 +623,7 @@ class ScheduleTest extends IntegrationTestCase
 
 		SchedulePublisher::publishDue();
 
-		$moved = ClassRegistry::init('SetConnection')->find('first', [
-			'conditions' => ['set_id' => $targetSetId, 'tsumego_id' => $tsumegoId],
-		]);
+		$moved = $this->fetchTable('SetConnection')->find()->where(['set_id' => $targetSetId, 'tsumego_id' => $tsumegoId])->first();
 		$this->fetchTable('TsumegoStatus')->saveOrFail($this->fetchTable('TsumegoStatus')->newEntity([
 			'user_id' => $context->user['id'],
 			'tsumego_id' => $tsumegoId,
@@ -655,13 +632,9 @@ class ScheduleTest extends IntegrationTestCase
 
 		SchedulePublisher::publishDue();
 
-		$movedAgain = ClassRegistry::init('SetConnection')->find('first', [
-			'conditions' => ['set_id' => $targetSetId, 'tsumego_id' => $tsumegoId],
-		]);
-		$this->assertSame((int) $moved['SetConnection']['num'], (int) $movedAgain['SetConnection']['num']);
-		$this->assertSame(1, ClassRegistry::init('SetConnection')->find('count', [
-			'conditions' => ['set_id' => $targetSetId, 'tsumego_id' => $tsumegoId],
-		]));
+		$movedAgain = $this->fetchTable('SetConnection')->find()->where(['set_id' => $targetSetId, 'tsumego_id' => $tsumegoId])->first();
+		$this->assertSame((int) $moved->num, (int) $movedAgain->num);
+		$this->assertSame(1, $this->fetchTable('SetConnection')->find()->where(['set_id' => $targetSetId, 'tsumego_id' => $tsumegoId])->count());
 		$this->assertSame(1, $this->fetchTable('TsumegoStatus')->find()->where(['tsumego_id' => $tsumegoId])->count());
 	}
 
@@ -688,12 +661,8 @@ class ScheduleTest extends IntegrationTestCase
 
 		SchedulePublisher::publishDue();
 
-		$this->assertSame(1, ClassRegistry::init('SetConnection')->find('count', [
-			'conditions' => ['set_id' => $targetSetId, 'tsumego_id' => $tsumegoId],
-		]));
-		$this->assertSame(0, ClassRegistry::init('SetConnection')->find('count', [
-			'conditions' => ['set_id' => $sandboxSetId, 'tsumego_id' => $tsumegoId],
-		]));
+		$this->assertSame(1, $this->fetchTable('SetConnection')->find()->where(['set_id' => $targetSetId, 'tsumego_id' => $tsumegoId])->count());
+		$this->assertSame(0, $this->fetchTable('SetConnection')->find()->where(['set_id' => $sandboxSetId, 'tsumego_id' => $tsumegoId])->count());
 	}
 
 	public function testPublishCatchesUpAnEntryOfAMissedDay(): void
@@ -716,9 +685,7 @@ class ScheduleTest extends IntegrationTestCase
 		SchedulePublisher::publishDue();
 
 		$this->assertTrue($this->lastSchedule()->published);
-		$this->assertSame(1, ClassRegistry::init('SetConnection')->find('count', [
-			'conditions' => ['set_id' => $targetSetId, 'tsumego_id' => $tsumegoId],
-		]));
+		$this->assertSame(1, $this->fetchTable('SetConnection')->find()->where(['set_id' => $targetSetId, 'tsumego_id' => $tsumegoId])->count());
 	}
 
 	public function testScheduleIndexListsRecentlyPublished(): void
@@ -812,9 +779,7 @@ class ScheduleTest extends IntegrationTestCase
 		SchedulePublisher::publishDue();
 
 		$this->assertFalse($this->schedules()[0]->published);
-		$this->assertSame(1, ClassRegistry::init('SetConnection')->find('count', [
-			'conditions' => ['tsumego_id' => $context->tsumegos[0]['id'], 'set_id' => $context->tsumegos[0]['set-connections'][0]['set_id']],
-		]));
+		$this->assertSame(1, $this->fetchTable('SetConnection')->find()->where(['tsumego_id' => $context->tsumegos[0]['id'], 'set_id' => $context->tsumegos[0]['set-connections'][0]['set_id']])->count());
 
 		$this->get('/schedule');
 		$result = $this->view;
