@@ -31,7 +31,7 @@ class ContextPreparator
 			'classroom_assignment_result', 'classroom_assignment_problem', 'classroom_assignment', 'classroom_member', 'classroom',
 			'tag_connection', 'tag', 'schedule', 'progress_deletion',
 			'day_record', 'sgf_review', 'sgf', 'time_mode_attempt', 'time_mode_session', 'challenge_participant', 'challenge_problem', 'challenge',
-			'tsumego_comment', 'tsumego_issue', 'admin_activity', 'admin_page_view', 'message',
+			'tsumego_comment', 'tsumego_issue', 'admin_activity', 'admin_overview_seen', 'message',
 			'achievement_condition', 'achievement_status', 'set_connection',
 			'tsumego_attempt', 'tsumego_status', 'mistake_training_review', 'mistake_training_day', 'mistake_training_pool',
 			'tsumego_variant', 'reject', 'user_avatar', 'user', 'time_mode_rank',

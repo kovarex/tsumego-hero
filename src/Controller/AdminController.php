@@ -2,7 +2,7 @@
 
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
-use App\Model\Table\AdminPageTable;
+use App\Model\Table\AdminOverviewTypeTable;
 use App\Model\Table\SgfReviewTable;
 use App\Utility\AdminActivityRenderer;
 use App\Utility\Auth;
@@ -23,12 +23,12 @@ class AdminController extends AppController
 		$this->set('_page', 'admin');
 		$this->set('_title', 'Admin');
 		$userID = Auth::getUserID();
-		$this->set('newActivityCount', AdminPageTable::countNewActivity($userID));
+		$this->set('newActivityCount', AdminOverviewTypeTable::countNewActivity($userID));
 		$this->set('sgfProposalCount', SGFProposalsRenderer::total());
 		$this->set('tagProposalCount', TagConnectionProposalsRenderer::total());
 		$this->set('newTagCount', TagProposalsRenderer::total());
 		$this->set('openIssueCount', ClassRegistry::init('TsumegoIssue')->getIndexCounts()['open']);
-		$this->set('newSgfChangeCount', AdminPageTable::countNewSgfChanges($userID));
+		$this->set('newSgfChangeCount', AdminOverviewTypeTable::countNewSgfChanges($userID));
 		$this->set('deletedAccountCount', ClassRegistry::init('User')->find('count', ['conditions' => ['deleted IS NOT NULL']]));
 	}
 
@@ -38,7 +38,7 @@ class AdminController extends AppController
 		$this->Authorization->authorize('Admin', 'viewAdminArea');
 		$this->set('_page', 'admin');
 		$this->set('_title', 'Admin activity');
-		$newSince = AdminPageTable::markViewed(Auth::getUserID(), AdminPageTable::ACTIVITY);
+		$newSince = AdminOverviewTypeTable::markSeen(Auth::getUserID(), AdminOverviewTypeTable::ACTIVITY);
 		$this->set('adminActivityRenderer', new AdminActivityRenderer($this->params['url'], $newSince));
 	}
 
@@ -59,7 +59,7 @@ class AdminController extends AppController
 		$this->Authorization->authorize('Admin', 'viewAdminArea');
 		$this->set('_page', 'admin');
 		$this->set('_title', 'SGF changes');
-		$newSince = AdminPageTable::markViewed(Auth::getUserID(), AdminPageTable::SGF_CHANGES);
+		$newSince = AdminOverviewTypeTable::markSeen(Auth::getUserID(), AdminOverviewTypeTable::SGF_CHANGES);
 		$this->set('sgfChangesRenderer', new SgfChangesRenderer($this->params['url'], $newSince));
 	}
 

@@ -11,7 +11,7 @@ namespace App\Utility;
  * @phpstan-type AchievementStatusRow array{id?: int, user_id?: int, achievement_id?: int, value?: int, created?: string, ...}
  * @phpstan-type AdminActivityRow array{id?: int, user_id?: int, tsumego_id?: int|null, set_id?: int|null, type?: int, old_value?: string|null, new_value?: string|null, created?: string, ...}
  * @phpstan-type AdminActivityTypeRow array{id?: int, name?: string|null, ...}
- * @phpstan-type AdminPageViewRow array{user_id?: int, admin_page_id?: int, viewed?: string, ...}
+ * @phpstan-type AdminOverviewSeenRow array{user_id?: int, admin_overview_type_id?: int, seen?: string, ...}
  * @phpstan-type AvatarSettingRow array{id?: int, name?: string, ...}
  * @phpstan-type ChallengeParticipantRow array{id?: int, challenge_id?: int, user_id?: int, invited_by_user_id?: int|null, created?: string, declined?: string|null, ...}
  * @phpstan-type ChallengeProblemRow array{id?: int, challenge_id?: int, tsumego_id?: int, order?: int, ...}

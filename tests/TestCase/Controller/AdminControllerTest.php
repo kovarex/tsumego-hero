@@ -1,10 +1,10 @@
 <?php
 
-use App\Model\Table\AdminPageTable;
+use App\Model\Table\AdminOverviewTypeTable;
 use App\Utility\Util;
 
 //The admin page links everything an admin does and counts what waits there (AdminController),
-//the admin activity and the SGF changes count what is new since the admin last opened them (AdminPageTable).
+//the admin activity and the SGF changes count what is new since the admin last opened them (AdminOverviewTypeTable).
 class AdminControllerTest extends IntegrationTestCase
 {
 	private const SGF = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])';
@@ -18,10 +18,10 @@ class AdminControllerTest extends IntegrationTestCase
 		return (int) ($match[1] ?? 0);
 	}
 
-	//Pretends the admin opened the page an hour ago, so what happens now is new to them
-	private static function viewedAnHourAgo(int $adminPageID): void
+	//Pretends the admin saw the overview an hour ago, so what happens now is new to them
+	private static function seenAnHourAgo(int $adminOverviewTypeID): void
 	{
-		Util::execute('UPDATE admin_page_view SET viewed = NOW() - INTERVAL 1 HOUR WHERE admin_page_id = ?', [$adminPageID]);
+		Util::execute('UPDATE admin_overview_seen SET seen = NOW() - INTERVAL 1 HOUR WHERE admin_overview_type_id = ?', [$adminOverviewTypeID]);
 	}
 
 	private static function logActivity(int $userID): void
@@ -97,7 +97,7 @@ class AdminControllerTest extends IntegrationTestCase
 
 		$this->get('/admin/activity');
 		$this->assertStringNotContainsString('data-table__row--new', $this->view, 'the first look marks nothing');
-		self::viewedAnHourAgo(AdminPageTable::ACTIVITY);
+		self::seenAnHourAgo(AdminOverviewTypeTable::ACTIVITY);
 		self::logActivity($otherID);
 		self::logActivity($context->user['id']); // what the admin did is not new to them
 		$this->assertSame(2, $this->countOnLink('/admin/activity'));
@@ -125,7 +125,7 @@ class AdminControllerTest extends IntegrationTestCase
 		[$colleagueID, $proposerID] = array_map('intval', array_column($context->otherUsers, 'id'));
 
 		$this->get('/admin/sgf-changes');
-		self::viewedAnHourAgo(AdminPageTable::SGF_CHANGES);
+		self::seenAnHourAgo(AdminOverviewTypeTable::SGF_CHANGES);
 		Util::execute('UPDATE sgf SET user_id = ?, accepted_by_user_id = ? WHERE id IN (?, ?)', [$colleagueID, $colleagueID, $oldChange, $change]);
 		Util::execute('UPDATE sgf SET user_id = ? WHERE id IN (?, ?, ?)', [$proposerID, $acceptedByMe, $proposal, $rejected]);
 		Util::execute('UPDATE sgf SET accepted = NOW() - INTERVAL 2 HOUR WHERE id = ?', [$oldChange]);
