@@ -2,14 +2,14 @@
 
 namespace App\Utility;
 
+use App\Model\Entity\Challenge;
 use App\Model\Entity\TimeModeAttempt;
 use App\Model\Entity\TimeModeCategory;
 use App\Model\Entity\TimeModeRank;
 use App\Model\Entity\TimeModeSession;
+use App\Model\Table\ChallengeTable;
 use Cake\ORM\Locator\LocatorAwareTrait;
 use Cake\ORM\TableRegistry;
-use Challenge;
-use ClassRegistry;
 use DateTimeImmutable;
 use InternalErrorException;
 use NotFoundException;
@@ -61,8 +61,10 @@ class TimeMode
 		// the run of a challenge has the time the challenge gives, a run of the time mode the time of its category
 		if ($challengeID = $this->currentSession->challenge_id)
 		{
-			$this->challenge = ClassRegistry::init('Challenge')->findById($challengeID)['Challenge'];
-			$this->overallSecondsToSolve = (int) $this->challenge['seconds_per_problem'];
+			/** @var Challenge $challenge */
+			$challenge = $this->fetchTable('Challenge')->get($challengeID);
+			$this->challenge = $challenge;
+			$this->overallSecondsToSolve = $challenge->seconds_per_problem;
 			return;
 		}
 		/** @var TimeModeRank|null $rank */
@@ -89,7 +91,7 @@ class TimeMode
 	/** @param array<string, mixed> $challenge */
 	public function startChallenge(array $challenge): void
 	{
-		$tsumegoIDs = Challenge::problemIDs((int) $challenge['id']);
+		$tsumegoIDs = ChallengeTable::problemIDs((int) $challenge['id']);
 		if (empty($tsumegoIDs))
 			throw new InternalErrorException('The challenge has no problems.');
 		$this->leaveCurrentSession();
@@ -476,8 +478,8 @@ class TimeMode
 
 	public ?TimeModeSession $currentSession = null;
 	public ?TimeModeRank $rank = null;
-	/** @var array<string, mixed>|null The challenge the current run is of */
-	public ?array $challenge = null;
+	//The challenge the current run is of
+	public ?Challenge $challenge = null;
 	public int $secondsToSolve = 0; // remaining time
 	public $overallSecondsToSolve; // the time to solve the problem
 	public int $successCount = 0;
