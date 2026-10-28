@@ -1,6 +1,8 @@
 <?php
 
 use App\Lib\Error\UnprocessableEntityException;
+use App\Model\Table\ClassroomMemberStatusTable;
+use App\Model\Table\ClassroomMemberTable;
 use App\Utility\PlayOutcome;
 use App\Utility\Util;
 
@@ -41,7 +43,7 @@ class ClassroomsControllerTest extends IntegrationTestCase
 		return (int) Util::connection()->lastInsertId();
 	}
 
-	private function addMember(int $classroomId, string $name, int $statusId = ClassroomMemberStatus::ACCEPTED): int
+	private function addMember(int $classroomId, string $name, int $statusId = ClassroomMemberStatusTable::ACCEPTED): int
 	{
 		Util::execute('INSERT INTO classroom_member (classroom_id, user_id, classroom_member_status_id) VALUES (?, ?, ?)',
 			[$classroomId, $this->userId($name), $statusId]);
@@ -153,8 +155,7 @@ class ClassroomsControllerTest extends IntegrationTestCase
 
 	private function membershipStatus(int $classroomId, string $name): ?int
 	{
-		$membership = ClassroomMember::of($classroomId, $this->userId($name));
-		return $membership === null ? null : (int) $membership['classroom_member_status_id'];
+		return ClassroomMemberTable::of($classroomId, $this->userId($name))?->classroom_member_status_id;
 	}
 
 	/** @return array<string, mixed> */
@@ -206,23 +207,23 @@ class ClassroomsControllerTest extends IntegrationTestCase
 		$classroomId = $this->createClassroom();
 
 		$this->post('/classes/invite/' . $classroomId, ['name' => 'DN_pupil']);
-		$this->assertSame(ClassroomMemberStatus::INVITED, $this->membershipStatus($classroomId, 'pupil'));
+		$this->assertSame(ClassroomMemberStatusTable::INVITED, $this->membershipStatus($classroomId, 'pupil'));
 
 		$this->login('pupil');
 		$this->get('/classes');
 		$page = $this->view;
 		$this->assertTextContains('invites you to', $page);
 
-		$membership = ClassroomMember::of($classroomId, $this->userId('pupil'));
-		$this->post('/classes/accept-member/' . $membership['id']);
-		$this->assertSame(ClassroomMemberStatus::ACCEPTED, $this->membershipStatus($classroomId, 'pupil'));
+		$membership = ClassroomMemberTable::of($classroomId, $this->userId('pupil'));
+		$this->post('/classes/accept-member/' . $membership->id);
+		$this->assertSame(ClassroomMemberStatusTable::ACCEPTED, $this->membershipStatus($classroomId, 'pupil'));
 	}
 
 	public function testTheTeacherCannotAcceptTheirOwnInvitation(): void
 	{
 		$this->prepare();
 		$classroomId = $this->createClassroom();
-		$membershipId = $this->addMember($classroomId, 'pupil', ClassroomMemberStatus::INVITED);
+		$membershipId = $this->addMember($classroomId, 'pupil', ClassroomMemberStatusTable::INVITED);
 
 		$this->post('/classes/accept-member/' . $membershipId);
 
@@ -239,22 +240,22 @@ class ClassroomsControllerTest extends IntegrationTestCase
 		$page = $this->view;
 		$this->assertTextContains('Ask to join', $page);
 		$this->post('/classes/join/' . $classroomId);
-		$this->assertSame(ClassroomMemberStatus::REQUESTED, $this->membershipStatus($classroomId, 'pupil'));
+		$this->assertSame(ClassroomMemberStatusTable::REQUESTED, $this->membershipStatus($classroomId, 'pupil'));
 
 		$this->login('teacher');
 		$this->get('/classes/' . $classroomId);
 		$page = $this->view;
 		$this->assertTextContains('asks to join', $page);
-		$membership = ClassroomMember::of($classroomId, $this->userId('pupil'));
-		$this->post('/classes/accept-member/' . $membership['id']);
-		$this->assertSame(ClassroomMemberStatus::ACCEPTED, $this->membershipStatus($classroomId, 'pupil'));
+		$membership = ClassroomMemberTable::of($classroomId, $this->userId('pupil'));
+		$this->post('/classes/accept-member/' . $membership->id);
+		$this->assertSame(ClassroomMemberStatusTable::ACCEPTED, $this->membershipStatus($classroomId, 'pupil'));
 	}
 
 	public function testAPlayerCannotAcceptTheirOwnRequest(): void
 	{
 		$this->prepare();
 		$classroomId = $this->createClassroom();
-		$membershipId = $this->addMember($classroomId, 'pupil', ClassroomMemberStatus::REQUESTED);
+		$membershipId = $this->addMember($classroomId, 'pupil', ClassroomMemberStatusTable::REQUESTED);
 		$this->login('pupil');
 
 		$this->post('/classes/accept-member/' . $membershipId);
@@ -266,23 +267,23 @@ class ClassroomsControllerTest extends IntegrationTestCase
 	{
 		$this->prepare();
 		$classroomId = $this->createClassroom();
-		$this->addMember($classroomId, 'pupil', ClassroomMemberStatus::REQUESTED);
+		$this->addMember($classroomId, 'pupil', ClassroomMemberStatusTable::REQUESTED);
 
 		$this->post('/classes/invite/' . $classroomId, ['name' => 'DN_pupil']);
 
-		$this->assertSame(ClassroomMemberStatus::ACCEPTED, $this->membershipStatus($classroomId, 'pupil'));
+		$this->assertSame(ClassroomMemberStatusTable::ACCEPTED, $this->membershipStatus($classroomId, 'pupil'));
 	}
 
 	public function testAskingToJoinWhenInvitedPutsThePlayerInTheClass(): void
 	{
 		$this->prepare();
 		$classroomId = $this->createClassroom();
-		$this->addMember($classroomId, 'pupil', ClassroomMemberStatus::INVITED);
+		$this->addMember($classroomId, 'pupil', ClassroomMemberStatusTable::INVITED);
 		$this->login('pupil');
 
 		$this->post('/classes/join/' . $classroomId);
 
-		$this->assertSame(ClassroomMemberStatus::ACCEPTED, $this->membershipStatus($classroomId, 'pupil'));
+		$this->assertSame(ClassroomMemberStatusTable::ACCEPTED, $this->membershipStatus($classroomId, 'pupil'));
 	}
 
 	public function testInvitingAnUnknownNameInvitesNobody(): void
@@ -292,7 +293,7 @@ class ClassroomsControllerTest extends IntegrationTestCase
 
 		$this->post('/classes/invite/' . $classroomId, ['name' => 'Nobody']);
 
-		$this->assertSame(0, ClassRegistry::init('ClassroomMember')->find('count'));
+		$this->assertSame(0, $this->fetchTable('ClassroomMember')->find()->count());
 	}
 
 	public function testOnlyTheTeacherInvites(): void
@@ -530,7 +531,7 @@ class ClassroomsControllerTest extends IntegrationTestCase
 		$classroomId = $this->createClassroom();
 		$this->addMember($classroomId, 'pupil');
 		$this->addMember($classroomId, 'pupil2');
-		$this->addMember($classroomId, 'outsider', ClassroomMemberStatus::INVITED);
+		$this->addMember($classroomId, 'outsider', ClassroomMemberStatusTable::INVITED);
 		$assignmentId = $this->createAssignment($classroomId, '2026-10-01 00:00:00', '2026-10-08');
 		$this->addResult($assignmentId, 'pupil', 0, '2026-10-02 10:00:00', 1);
 		$this->addResult($assignmentId, 'pupil', 1, '2026-10-09 10:00:00');
@@ -613,7 +614,7 @@ class ClassroomsControllerTest extends IntegrationTestCase
 	{
 		$this->prepare();
 		$classroomId = $this->createClassroom();
-		$this->addMember($classroomId, 'outsider', ClassroomMemberStatus::REQUESTED);
+		$this->addMember($classroomId, 'outsider', ClassroomMemberStatusTable::REQUESTED);
 		$assignmentId = $this->createAssignment($classroomId, '2026-10-01 00:00:00', '2026-10-08', [0]);
 
 		$this->postResult('outsider', 0, PlayOutcome::SolvedClean);
@@ -639,7 +640,7 @@ class ClassroomsControllerTest extends IntegrationTestCase
 	{
 		$this->prepare();
 		$classroomId = $this->createClassroom();
-		$this->addMember($classroomId, 'outsider', ClassroomMemberStatus::REQUESTED);
+		$this->addMember($classroomId, 'outsider', ClassroomMemberStatusTable::REQUESTED);
 		$assignmentId = $this->createAssignment($classroomId, '2026-10-01 00:00:00', '2026-10-08');
 		$this->login('outsider');
 
@@ -700,13 +701,13 @@ class ClassroomsControllerTest extends IntegrationTestCase
 		$this->prepare();
 		$classroomId = $this->createClassroom();
 		$otherClassroomId = $this->createClassroom('Friday');
-		$this->addMember($classroomId, 'pupil', ClassroomMemberStatus::INVITED);
-		$this->addMember($otherClassroomId, 'pupil2', ClassroomMemberStatus::REQUESTED);
-		$this->addMember($classroomId, 'pupil2', ClassroomMemberStatus::REQUESTED);
+		$this->addMember($classroomId, 'pupil', ClassroomMemberStatusTable::INVITED);
+		$this->addMember($otherClassroomId, 'pupil2', ClassroomMemberStatusTable::REQUESTED);
+		$this->addMember($classroomId, 'pupil2', ClassroomMemberStatusTable::REQUESTED);
 
-		$this->assertSame(2, ClassroomMember::countAwaitingAnswer($this->userId('teacher')));
-		$this->assertSame(1, ClassroomMember::countAwaitingAnswer($this->userId('pupil')));
-		$this->assertSame(0, ClassroomMember::countAwaitingAnswer($this->userId('pupil2')));
+		$this->assertSame(2, ClassroomMemberTable::countAwaitingAnswer($this->userId('teacher')));
+		$this->assertSame(1, ClassroomMemberTable::countAwaitingAnswer($this->userId('pupil')));
+		$this->assertSame(0, ClassroomMemberTable::countAwaitingAnswer($this->userId('pupil2')));
 
 		$this->login('pupil');
 		$this->get('/classes');
@@ -943,7 +944,7 @@ class ClassroomsControllerTest extends IntegrationTestCase
 		$this->post('/classes/delete/' . $classroomId);
 
 		$this->assertSame(0, $this->fetchTable('Classroom')->find()->count());
-		$this->assertSame(0, ClassRegistry::init('ClassroomMember')->find('count'));
+		$this->assertSame(0, $this->fetchTable('ClassroomMember')->find()->count());
 		$this->assertSame(0, ClassRegistry::init('ClassroomAssignment')->find('count'));
 	}
 
