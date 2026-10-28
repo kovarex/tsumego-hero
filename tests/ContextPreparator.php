@@ -760,10 +760,10 @@ class ContextPreparator
 		$attempt['time_mode_attempt_status_id'] = Util::extract('status', $attemptsInput);
 		$startedSecondsAgo = Util::extractWithDefault('started-seconds-ago', $attemptsInput, null);
 		if ($startedSecondsAgo !== null)
-			$attempt['started'] = date('Y-m-d H:i:s', time() - $startedSecondsAgo);
+			$attempt['started'] = new DateTimeImmutable(date('Y-m-d H:i:s', time() - $startedSecondsAgo));
 		$this->checkOptionsConsumed($attemptsInput);
-		ClassRegistry::init('TimeModeAttempt')->create($attempt);
-		ClassRegistry::init('TimeModeAttempt')->save($attempt);
+		$attemptTable = TableRegistry::getTableLocator()->get('TimeModeAttempt');
+		$attemptTable->saveOrFail($attemptTable->newEntity($attempt));
 	}
 
 	public function checkNewTsumegoStatusCoreValues(CakeTestCase $testCase): void

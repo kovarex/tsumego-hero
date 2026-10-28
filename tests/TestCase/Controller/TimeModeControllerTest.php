@@ -159,14 +159,13 @@ class TimeModeControllerTest extends IntegrationTestCase
 				'seconds' => $reported['seconds'],
 				'outcome' => PlayOutcome::SolvedClean->value]);
 
-			$attempt = ClassRegistry::init('TimeModeAttempt')->find('first', [
-				'conditions' => ['time_mode_session_id' => $context->timeModeSessions[0]->id]]);
+			$attempt = $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $context->timeModeSessions[0]->id])->first();
 			$this->assertSame(
 				TimeModeUtil::$ATTEMPT_RESULT_SOLVED,
-				(int) $attempt['TimeModeAttempt']['time_mode_attempt_status_id']);
+				(int) $attempt->time_mode_attempt_status_id);
 			$this->assertSame(
 				(float) $reported['recordedSeconds'],
-				(float) $attempt['TimeModeAttempt']['seconds']);
+				(float) $attempt->seconds);
 		}
 	}
 
@@ -221,11 +220,10 @@ class TimeModeControllerTest extends IntegrationTestCase
 			'seconds' => 5,
 			'outcome' => PlayOutcome::SolvedClean->value]);
 
-		$attempt = ClassRegistry::init('TimeModeAttempt')->find('first', [
-			'conditions' => ['time_mode_session_id' => $context->timeModeSessions[0]->id, 'order' => 1]]);
+		$attempt = $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $context->timeModeSessions[0]->id, 'order' => 1])->first();
 		$this->assertSame(
 			TimeModeUtil::$ATTEMPT_STATUS_SKIPPED,
-			(int) $attempt['TimeModeAttempt']['time_mode_attempt_status_id']);
+			(int) $attempt->time_mode_attempt_status_id);
 
 		// the problem the player is on is not disturbed by the ignored result
 		$this->post('/timeMode/play');
@@ -248,13 +246,12 @@ class TimeModeControllerTest extends IntegrationTestCase
 
 		$this->post('/timeMode/play');
 
-		$attempt = ClassRegistry::init('TimeModeAttempt')->find('first', [
-			'conditions' => ['time_mode_session_id' => $context->timeModeSessions[0]->id]]);
+		$attempt = $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $context->timeModeSessions[0]->id])->first();
 		$this->assertSame(
 			TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT,
-			(int) $attempt['TimeModeAttempt']['time_mode_attempt_status_id']);
-		$this->assertSame(TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS, (int) $attempt['TimeModeAttempt']['seconds']);
-		$this->assertSame(0, (int) $attempt['TimeModeAttempt']['points']);
+			(int) $attempt->time_mode_attempt_status_id);
+		$this->assertSame(TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS, (int) $attempt->seconds);
+		$this->assertSame(0, (int) $attempt->points);
 	}
 
 	//Running out of time in time mode is recorded as a timeout with the full time of the category.
@@ -278,14 +275,13 @@ class TimeModeControllerTest extends IntegrationTestCase
 			'seconds' => 5,
 			'outcome' => PlayOutcome::TimedOut->value]);
 
-		$attempt = ClassRegistry::init('TimeModeAttempt')->find('first', [
-			'conditions' => ['time_mode_session_id' => $context->timeModeSessions[0]->id, 'order' => 1]]);
+		$attempt = $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $context->timeModeSessions[0]->id, 'order' => 1])->first();
 		$this->assertSame(
 			TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT,
-			(int) $attempt['TimeModeAttempt']['time_mode_attempt_status_id']);
+			(int) $attempt->time_mode_attempt_status_id);
 		$this->assertSame(
 			TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS,
-			(int) $attempt['TimeModeAttempt']['seconds'],
+			(int) $attempt->seconds,
 			'Running out of time costs the full time of the category');
 	}
 
@@ -347,11 +343,9 @@ class TimeModeControllerTest extends IntegrationTestCase
 			. '&rankID=' . $context->timeModeRanks[0]['id']);
 
 		$sessionID = $this->fetchTable('TimeModeSession')->find()->where(['user_id' => $context->user['id']])->firstOrFail()->id;
-		$attempts = ClassRegistry::init('TimeModeAttempt')->find('all', [
-			'conditions' => ['time_mode_session_id' => $sessionID],
-			'order' => 'id ASC']);
+		$attempts = $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $sessionID])->orderBy('id')->toArray();
 
-		$tsumegoIDs = array_map(fn($attempt) => (int) $attempt['TimeModeAttempt']['tsumego_id'], $attempts);
+		$tsumegoIDs = array_map(fn($attempt) => (int) $attempt->tsumego_id, $attempts);
 		$this->assertSame([(int) $context->tsumegos[0]['id']], $tsumegoIDs);
 	}
 
@@ -439,11 +433,10 @@ class TimeModeControllerTest extends IntegrationTestCase
 		$this->get('/timeMode/skip/2');
 		$this->assertSame(Util::getInternalAddress() . '/timeMode/play/3', $this->headerValue('Location'));
 
-		$attempt = ClassRegistry::init('TimeModeAttempt')->find('first', [
-			'conditions' => ['time_mode_session_id' => $sessionID, 'order' => 2]]);
+		$attempt = $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $sessionID, 'order' => 2])->first();
 		$this->assertSame(
 			TimeModeUtil::$ATTEMPT_STATUS_SKIPPED,
-			(int) $attempt['TimeModeAttempt']['time_mode_attempt_status_id']);
+			(int) $attempt->time_mode_attempt_status_id);
 
 		$this->post('/timeMode/play/3');
 		$html = $this->view;
@@ -476,15 +469,13 @@ class TimeModeControllerTest extends IntegrationTestCase
 				Util::getInternalAddress() . '/timeMode/play' . ($position === null ? '' : '/2'),
 				$this->headerValue('Location'));
 
-			$attempts = ClassRegistry::init('TimeModeAttempt')->find('all', [
-				'conditions' => ['time_mode_session_id' => $sessionID],
-				'order' => 'TimeModeAttempt.order ASC']);
+			$attempts = $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $sessionID])->orderBy('order')->toArray();
 			$this->assertSame(
 				TimeModeUtil::$ATTEMPT_RESULT_SOLVED,
-				(int) $attempts[0]['TimeModeAttempt']['time_mode_attempt_status_id']);
+				(int) $attempts[0]->time_mode_attempt_status_id);
 			$this->assertSame(
 				TimeModeUtil::$ATTEMPT_RESULT_QUEUED,
-				(int) $attempts[1]['TimeModeAttempt']['time_mode_attempt_status_id']);
+				(int) $attempts[1]->time_mode_attempt_status_id);
 		}
 	}
 
@@ -511,11 +502,10 @@ class TimeModeControllerTest extends IntegrationTestCase
 		preg_match('/var tsumegoID = (\d+);/', $html, $matches);
 		$this->assertSame((int) $context->tsumegos[1]['id'], (int) ($matches[1] ?? 0));
 
-		$attempt = ClassRegistry::init('TimeModeAttempt')->find('first', [
-			'conditions' => ['time_mode_session_id' => $sessionID, 'order' => 1]]);
+		$attempt = $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $sessionID, 'order' => 1])->first();
 		$this->assertSame(
 			TimeModeUtil::$ATTEMPT_RESULT_SOLVED,
-			(int) $attempt['TimeModeAttempt']['time_mode_attempt_status_id']);
+			(int) $attempt->time_mode_attempt_status_id);
 	}
 
 	public function testTimeModeServesTheNextUnplayedProblemAfterThePositionAskedFor()
