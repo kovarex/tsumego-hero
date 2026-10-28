@@ -20,8 +20,6 @@ class AppTable extends Table
 	}
 
 	//Fills created and modified the way Cake 2 does, with the time of PHP rather than of the database.
-	//updated too: Cake 2 writes back the updated it read (so the column's ON UPDATE doesn't move it)
-	//and fills in the time only when the row has none.
 	public function beforeSave(EventInterface $event, EntityInterface $entity, ArrayObject $options): void
 	{
 		$now = new DateTimeImmutable();
@@ -29,10 +27,5 @@ class AppTable extends Table
 			$entity->set('created', $now);
 		if (!$entity->isDirty('modified') && $this->getSchema()->hasColumn('modified'))
 			$entity->set('modified', $now);
-		if ($this->getSchema()->hasColumn('updated'))
-			if ($entity->has('updated'))
-				$entity->setDirty('updated', true);
-			else
-				$entity->set('updated', $now);
 	}
 }

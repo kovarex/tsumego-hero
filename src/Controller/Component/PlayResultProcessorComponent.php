@@ -91,7 +91,9 @@ class PlayResultProcessorComponent extends Component
 		$result = [];
 		$result['solved'] = $solved;
 
+		// updated isn't loaded: the database moves it when the status changes
 		$tsumegoStatus = TableRegistry::getTableLocator()->get('TsumegoStatus')->find()
+			->select(['id', 'status'])
 			->where(['tsumego_id' => $tsumegoID, 'user_id' => Auth::getUserID()])
 			->first();
 
