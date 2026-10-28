@@ -327,7 +327,7 @@ class AdminStatsControllerTest extends IntegrationTestCase
 
 		// the reviewer gets to know what the proposal is about
 		$proposal = $this->fetchTable('Sgf')->find()->where(['tsumego_id' => $context->tsumegos[0]['id'], 'sgf_status_id' => SgfTable::STATUS_PROPOSED])->first();
-		$this->assertSame('Black D16 is correct too', $proposal['description']);
+		$this->assertSame('Black D16 is correct too', $proposal->description);
 	}
 
 	public function testAcceptSgfProposal()

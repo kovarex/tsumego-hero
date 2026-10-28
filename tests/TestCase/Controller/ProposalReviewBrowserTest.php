@@ -152,7 +152,7 @@ class ProposalReviewBrowserTest extends IntegrationTestCase
 		$browser->waitUntilJs('!location.href.includes("/editor/")');
 		$proposal = $this->fetchTable('Sgf')->find()->where(['tsumego_id' => $context->tsumegos[0]['id']])->orderByDesc('id')->first();
 		$this->assertEquals(SgfTable::STATUS_PROPOSED, $proposal->sgf_status_id);
-		$this->assertSame('Nothing really', $proposal['description']);
+		$this->assertSame('Nothing really', $proposal->description);
 	}
 
 	public function testReviewerSeesTheDescriptionAndCantRejectWithoutAComment(): void

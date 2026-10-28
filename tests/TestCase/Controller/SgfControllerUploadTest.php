@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Table\SgfTable;
+use App\Model\Entity\Sgf;
 use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Entity\TsumegoComment;
 use App\Utility\Auth;
@@ -15,9 +16,9 @@ class SgfControllerUploadTest extends IntegrationTestCase
 	//The board as the SGF stores it, so the page shows the problem in the top-left corner and its own colours.
 	private const STORED_BOARD = ['board_orientation_setting' => User::BOARD_ORIENTATION_SETTING_ORIGINAL, 'player_color_setting' => User::PLAYER_COLOR_SETTING_ORIGINAL];
 
-	private function newestSgf(ContextPreparator $context): array
+	private function newestSgf(ContextPreparator $context): Sgf
 	{
-		return $this->fetchTable('Sgf')->find()->where(['tsumego_id' => $context->tsumegos[0]['id']])->orderByDesc('id')->first();
+		return $this->fetchTable('Sgf')->find()->where(['tsumego_id' => $context->tsumegos[0]['id']])->orderByDesc('id')->firstOrFail();
 	}
 
 	private function comment(ContextPreparator $context): TsumegoComment
@@ -151,8 +152,8 @@ class SgfControllerUploadTest extends IntegrationTestCase
 
 		$saved = $this->newestSgf($context);
 		$this->assertEquals(SgfTable::STATUS_ACCEPTED, $saved->sgf_status_id);
-		$this->assertEquals($context->tsumegos[0]['sgfs'][0]['id'], $saved['source_sgf_id']);
-		$this->assertSame('{"transpose":false,"flipX":true,"flipY":false,"invertColors":true}', $saved['transformation_from_source']);
+		$this->assertEquals($context->tsumegos[0]['sgfs'][0]['id'], $saved->source_sgf_id);
+		$this->assertSame('{"transpose":false,"flipX":true,"flipY":false,"invertColors":true}', $saved->transformation_from_source);
 		$comment = $this->comment($context);
 		$this->assertSame('white T19 then b T18', $comment->message);
 		$this->assertSame('19/2/19/1/18/1/2/1/sgf|19/1+19/2', $comment->position);
@@ -172,7 +173,7 @@ class SgfControllerUploadTest extends IntegrationTestCase
 		$this->saveFromEditor($browser, $context, ['Rotate']);
 
 		// clockwise: A19 goes to T19 and A18 to S19
-		$this->assertSame('{"transpose":true,"flipX":true,"flipY":false,"invertColors":false}', $this->newestSgf($context)['transformation_from_source']);
+		$this->assertSame('{"transpose":true,"flipX":true,"flipY":false,"invertColors":false}', $this->newestSgf($context)->transformation_from_source);
 		$comment = $this->comment($context);
 		$this->assertSame('black T19 then w S19', $comment->message);
 		$this->assertSame('18/1/19/1/19/2/2/1/sgf|19/1+18/1', $comment->position);
@@ -192,7 +193,7 @@ class SgfControllerUploadTest extends IntegrationTestCase
 				'comments' => [['message' => 'black T1 then w T2', 'position' => '19/18/19/19/18/19/2/1/sgf|19/19+19/18']]]]);
 		$this->saveFromEditor($browser, $context);
 
-		$this->assertSame('{"transpose":false,"flipX":true,"flipY":true,"invertColors":false}', $this->newestSgf($context)['transformation_from_source']);
+		$this->assertSame('{"transpose":false,"flipX":true,"flipY":true,"invertColors":false}', $this->newestSgf($context)->transformation_from_source);
 		$comment = $this->comment($context);
 		$this->assertSame(self::COMMENT['message'], $comment->message);
 		$this->assertSame(self::COMMENT['position'], $comment->position);
@@ -209,14 +210,14 @@ class SgfControllerUploadTest extends IntegrationTestCase
 
 		$proposal = $this->newestSgf($context);
 		$this->assertEquals(SgfTable::STATUS_PROPOSED, $proposal->sgf_status_id);
-		$this->assertSame('{"transpose":false,"flipX":true,"flipY":false,"invertColors":false}', $proposal['transformation_from_source']);
+		$this->assertSame('{"transpose":false,"flipX":true,"flipY":false,"invertColors":false}', $proposal->transformation_from_source);
 		$comment = $this->comment($context);
 		$this->assertSame(self::COMMENT['message'], $comment->message);
 		$this->assertSame(self::COMMENT['position'], $comment->position);
 
 		ClassRegistry::init('User')->save(['id' => $context->user['id'], 'user_role_id' => User::ROLE_ADMIN]);
 		$browser->get('/admin/sgf-proposals');
-		$browser->post('/users/acceptSGFProposal/' . $proposal['id']);
+		$browser->post('/users/acceptSGFProposal/' . $proposal->id);
 
 		$comment = $this->comment($context);
 		$this->assertSame('black T19 then w T18', $comment->message);
@@ -238,7 +239,7 @@ class SgfControllerUploadTest extends IntegrationTestCase
 		// mirrored into the bottom-left corner
 		$this->uploadSgfFile($browser, '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cq][dq]AW[bq];B[as];W[ar];B[bs]C[+])');
 
-		$this->assertNull($this->newestSgf($context)['source_sgf_id']);
+		$this->assertNull($this->newestSgf($context)->source_sgf_id);
 		$comment = $this->comment($context);
 		$this->assertSame('black A1 then w A2', $comment->message);
 		$this->assertSame('1/18/1/19/2/19/2/1/sgf|1/19+1/18', $comment->position);
@@ -255,7 +256,7 @@ class SgfControllerUploadTest extends IntegrationTestCase
 		$this->uploadSgfFile($browser, '(;GM[1]FF[4]ST[2]SZ[19]G[KILL](;B[aa];W[ab];B[ba]S[DEAD])(;B[da];W[aa]))');
 
 		$browser->waitUntilCssSelectorExistsWithText('#uploadProblem', 'The SGF was not saved: End position without status. (move 2)');
-		$this->assertEquals($context->tsumegos[0]['sgfs'][0]['id'], $this->newestSgf($context)['id'], 'Nothing was saved');
+		$this->assertEquals($context->tsumegos[0]['sgfs'][0]['id'], $this->newestSgf($context)->id, 'Nothing was saved');
 		$browser->assertNoJsErrors();
 	}
 
@@ -270,6 +271,6 @@ class SgfControllerUploadTest extends IntegrationTestCase
 		$this->uploadSgfFile($browser, $sgf);
 
 		$browser->waitUntilJs('location.pathname === ' . json_encode('/' . $context->setConnections[0]['id']) . ' && document.readyState === "complete"');
-		$this->assertSame($sgf, $this->newestSgf($context)['sgf']);
+		$this->assertSame($sgf, $this->newestSgf($context)->sgf);
 	}
 }
