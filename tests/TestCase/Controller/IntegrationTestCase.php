@@ -1,6 +1,7 @@
 <?php
 
 use App\Utility\Auth;
+use Cake\ORM\Locator\LocatorAwareTrait;
 use DOM\HTMLDocument;
 use Facebook\WebDriver\WebDriverBy;
 use PHPUnitRetry\RetryTrait;
@@ -22,6 +23,9 @@ class IntegrationTestCase extends CakeTestCase
 	}
 
 	use RetryTrait;
+
+	//fetchTable() of the Cake 5 tables, as Cake 5's test cases have it
+	use LocatorAwareTrait;
 
 	//The body of the last response, the page as the client received it.
 	protected string $view = '';

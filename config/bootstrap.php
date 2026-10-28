@@ -48,6 +48,24 @@ Cache::config('long', [
 	'prefix' => 'long_',
 ]);
 
+//The Cake 5 ORM, which the models move to one by one, on the connection of Cake 2 (see SharedConnectionDriver).
+//Its schema descriptions are cached like those of Cake 2 (see _cake_model_ in core.php).
+//Its Configure is its own, the namespace is where fetchTable() looks for the table classes.
+Cake\Core\Configure::write('App.namespace', 'App');
+Cake\Cache\Cache::setConfig('_cake_model_', [
+	'className' => Cake\Cache\Engine\FileEngine::class,
+	'prefix' => 'cake5_model_',
+	'path' => CACHE . 'models' . DS,
+	'duration' => Configure::read('debug') > 0 ? '+10 seconds' : '+999 days',
+]);
+if (Configure::read('Cache.disable'))
+	Cake\Cache\Cache::disable();
+Cake\Datasource\ConnectionManager::setConfig('default', [
+	'className' => Cake\Database\Connection::class,
+	'driver' => App\Database\SharedConnectionDriver::class,
+	'cacheMetadata' => true,
+]);
+
 /**
  * Custom Inflector rules can be set to correctly pluralize or singularize table, model, controller names or whatever other
  * string is passed to the inflection functions

@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\RejectsTable;
 use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
 use App\Utility\Avatar;
@@ -1463,15 +1464,14 @@ OFFSET " . $offset, [$userID, $userID]);
 			return $this->redirect('/admin/sgf-proposals');
 		}
 
-		$reject = [];
-		$reject['user_id'] = $proposalToReject['user_id'];
-		$reject['rejected_by_user_id'] = Auth::getUserID();
-		$reject['comment'] = $comment;
-		$reject['tsumego_id'] = $proposalToReject['tsumego_id'];
-		$reject['sgf_id'] = $proposalToReject['id'];
-		$reject['reject_type_id'] = Reject::TYPE_PROPOSAL;
-		ClassRegistry::init('Reject')->create();
-		ClassRegistry::init('Reject')->save($reject);
+		$rejects = $this->fetchTable('Rejects');
+		$rejects->saveOrFail($rejects->newEntity([
+			'user_id' => $proposalToReject['user_id'],
+			'rejected_by_user_id' => Auth::getUserID(),
+			'comment' => $comment,
+			'tsumego_id' => $proposalToReject['tsumego_id'],
+			'sgf_id' => $proposalToReject['id'],
+			'reject_type_id' => RejectsTable::TYPE_PROPOSAL]));
 		// kept, so the proposer can still see what they proposed
 		ClassRegistry::init('Sgf')->setStatus((int) $proposalToReject['id'], Sgf::STATUS_REJECTED);
 		CookieFlash::set('Sgf proposal rejected', 'success');
@@ -1507,7 +1507,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		$proposalToReopen = $proposalToReopen['Sgf'];
 
 		ClassRegistry::init('Sgf')->setStatus((int) $proposalToReopen['id'], Sgf::STATUS_PROPOSED);
-		ClassRegistry::init('Reject')->deleteAll(['Reject.sgf_id' => $proposalToReopen['id']], false);
+		$this->fetchTable('Rejects')->deleteAll(['sgf_id' => $proposalToReopen['id']]);
 		CookieFlash::set('Sgf proposal reopened', 'success');
 
 		$proposer = $this->User->findById($proposalToReopen['user_id']);
@@ -1583,20 +1583,19 @@ OFFSET " . $offset, [$userID, $userID]);
 			return $this->redirect('/admin/tag-proposals');
 		}
 
-		$reject = [];
-		$reject['user_id'] = $proposalToReject['user_id'];
-		$reject['rejected_by_user_id'] = Auth::getUserID();
-		$reject['comment'] = $comment;
-		$reject['tsumego_id'] = $proposalToReject['tsumego_id'];
 		$tag = ClassRegistry::init('Tag')->findById($proposalToReject['tag_id'])['Tag'];
-		$reject['reject_type_id'] = Reject::TYPE_TAG;
-		$reject['tag_id'] = $tag['id'];
-		$reject['tag_name'] = $tag['name'];
 
 		AdminActivityLogger::log(AdminActivityType::REJECT_TAG, $proposalToReject['tsumego_id'], null, $tag['name'], null);
 
-		ClassRegistry::init('Reject')->create();
-		ClassRegistry::init('Reject')->save($reject);
+		$rejects = $this->fetchTable('Rejects');
+		$rejects->saveOrFail($rejects->newEntity([
+			'user_id' => $proposalToReject['user_id'],
+			'rejected_by_user_id' => Auth::getUserID(),
+			'comment' => $comment,
+			'tsumego_id' => $proposalToReject['tsumego_id'],
+			'reject_type_id' => RejectsTable::TYPE_TAG,
+			'tag_id' => $tag['id'],
+			'tag_name' => $tag['name']]));
 		ClassRegistry::init('TagConnection')->delete($proposalToReject['id']);
 
 		$tsumegoID = (int) $proposalToReject['tsumego_id'];

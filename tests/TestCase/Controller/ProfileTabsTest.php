@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\RejectsTable;
 use App\Utility\Constants;
 
 //The tabs over a player's pages: a player's own content is one click away, and a tab that leads
@@ -107,8 +108,8 @@ class ProfileTabsTest extends IntegrationTestCase
 			'other-users' => [['name' => 'bob']],
 		]);
 		$bobbyId = $context->otherUsers[0]['id'];
-		ClassRegistry::init('Reject')->create();
-		ClassRegistry::init('Reject')->save(['user_id' => $bobbyId, 'reject_type_id' => Reject::TYPE_TAG_NAME, 'tag_name' => 'tesuji']);
+		$rejects = $this->fetchTable('Rejects');
+		$rejects->saveOrFail($rejects->newEntity(['user_id' => $bobbyId, 'reject_type_id' => RejectsTable::TYPE_TAG_NAME, 'tag_name' => 'tesuji']));
 		$this->login('alice');
 
 		$this->get('/users/view/' . $bobbyId);
