@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Entity\Schedule;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\MistakeTraining;
@@ -25,7 +26,6 @@ class SitesController extends AppController
 
 		$this->loadModel('AchievementStatus');
 		$this->loadModel('DayRecord');
-		$this->loadModel('Schedule');
 		$this->loadModel('User');
 
 		$today = date('Y-m-d');
@@ -35,7 +35,12 @@ class SitesController extends AppController
 
 		$currentQuote = 'q01';
 
-		$latestPublishDate = $this->Schedule->field('date', ['published' => 1, 'date <=' => date('Y-m-d')], 'date DESC') ?: null;
+		/** @var Schedule|null $latestPublished */
+		$latestPublished = $this->fetchTable('Schedule')->find()
+			->where(['published' => 1, 'date <=' => date('Y-m-d')])
+			->orderByDesc('date')
+			->first();
+		$latestPublishDate = $latestPublished?->date->format('Y-m-d');
 		$tsumegoFilters = new TsumegoFilters('published', $latestPublishDate);
 		$tsumegoButtonsOfPublishedTsumegos = new TsumegoButtons($tsumegoFilters);
 

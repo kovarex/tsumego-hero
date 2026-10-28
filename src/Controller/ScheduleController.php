@@ -2,6 +2,7 @@
 
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
+use App\Model\Entity\Schedule;
 use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
 use App\Utility\CookieFlash;
@@ -134,23 +135,20 @@ ORDER BY schedule.date DESC, schedule.id DESC");
 
 		$candidates = self::candidates($setIdFrom, $targetSetId, $num, $count);
 
-		$scheduleModel = ClassRegistry::init('Schedule');
+		$scheduleTable = $this->fetchTable('Schedule');
 		$scheduled = 0;
 		$userId = Auth::getUserID();
 		foreach ($candidates as $candidate)
 		{
 			$day = intdiv($scheduled, $perDay);
 			$date = date('Y-m-d', strtotime($startDate . ' +' . $day . ' days'));
-			$scheduleModel->create();
-			$scheduleModel->save([
-				'Schedule' => [
-					'tsumego_id' => $candidate['tsumego_id'],
-					'set_id' => $targetSetId,
-					'date' => $date,
-					'published' => 0,
-					'created_by_user_id' => $userId,
-				],
-			]);
+			$scheduleTable->saveOrFail($scheduleTable->newEntity([
+				'tsumego_id' => $candidate['tsumego_id'],
+				'set_id' => $targetSetId,
+				'date' => $date,
+				'published' => false,
+				'created_by_user_id' => $userId,
+			]));
 			AdminActivityLogger::log(AdminActivityType::ADD_TO_SCHEDULE, $candidate['tsumego_id'], $targetSetId);
 			$scheduled++;
 		}
@@ -238,15 +236,16 @@ LIMIT " . $count), [$setIdFrom, $num, $targetSetId]);
 	{
 		$this->Authorization->authorize('Schedule');
 
-		$id = (int) $id;
-		$schedule = ClassRegistry::init('Schedule')->findById($id);
+		$scheduleTable = $this->fetchTable('Schedule');
+		/** @var Schedule|null $schedule */
+		$schedule = $scheduleTable->find()->where(['id' => (int) $id])->first();
 		if (!$schedule)
 			throw new NotFoundException('Schedule entry not found.');
-		if ($schedule['Schedule']['published'])
+		if ($schedule->published)
 			throw new BadRequestException('Schedule entry is already published.');
 
-		ClassRegistry::init('Schedule')->delete($id);
-		AdminActivityLogger::log(AdminActivityType::CANCEL_SCHEDULE, $schedule['Schedule']['tsumego_id'], $schedule['Schedule']['set_id']);
+		$scheduleTable->deleteAll(['id' => $schedule->id]);
+		AdminActivityLogger::log(AdminActivityType::CANCEL_SCHEDULE, $schedule->tsumego_id, $schedule->set_id);
 
 		CookieFlash::set('Schedule entry cancelled.', 'success');
 		$this->redirect('/schedule');

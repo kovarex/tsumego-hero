@@ -808,20 +808,20 @@ class ContextPreparator
 		if (!$scheduleEntries)
 			return;
 
+		$scheduleTable = TableRegistry::getTableLocator()->get('Schedule');
 		foreach ($scheduleEntries as $entry)
 		{
 			$tsumegoIndex = $entry['tsumego'] ?? 0;
 			$tsumegoId = $this->tsumegos[$tsumegoIndex]['id'];
 			$targetSetId = $this->getOrCreateTsumegoSet($entry['set'])['id'];
 
-			ClassRegistry::init('Schedule')->create();
-			ClassRegistry::init('Schedule')->save([
+			$scheduleTable->saveOrFail($scheduleTable->newEntity([
 				'tsumego_id' => $tsumegoId,
 				'set_id' => $targetSetId,
 				'date' => $entry['date'],
 				'published' => $entry['published'] ?? 0,
 				'created_by_user_id' => $this->user['id'] ?? null,
-			]);
+			]));
 		}
 	}
 

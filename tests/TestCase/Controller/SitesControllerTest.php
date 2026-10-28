@@ -50,8 +50,7 @@ class SitesControllerTest extends IntegrationTestCase
 		$context = new ContextPreparator(['tsumego' => ['set_order' => 564, 'sgf' => '(;GM[1]FF[4]SZ[19]AB[cc]AW[dd])']]);
 
 		$today = date('Y-m-d');
-		ClassRegistry::init('Schedule')->create();
-		ClassRegistry::init('Schedule')->save([
+		$this->addScheduleEntry([
 			'tsumego_id' => $context->tsumegos[0]['id'],
 			'set_id' => $context->tsumegos[0]['set-connections'][0]['set_id'],
 			'date' => $today,
@@ -79,8 +78,7 @@ class SitesControllerTest extends IntegrationTestCase
 		$context = new ContextPreparator(['tsumego' => 564]);
 
 		$pastDate = date('Y-m-d', strtotime('-20 days'));
-		ClassRegistry::init('Schedule')->create();
-		ClassRegistry::init('Schedule')->save([
+		$this->addScheduleEntry([
 			'tsumego_id' => $context->tsumegos[0]['id'],
 			'set_id' => $context->tsumegos[0]['set-connections'][0]['set_id'],
 			'date' => $pastDate,
@@ -106,15 +104,13 @@ class SitesControllerTest extends IntegrationTestCase
 		$publishedDate = date('Y-m-d', strtotime('-100 days'));
 		$unpublishedDate = date('Y-m-d', strtotime('+200 days'));
 
-		ClassRegistry::init('Schedule')->create();
-		ClassRegistry::init('Schedule')->save([
+		$this->addScheduleEntry([
 			'tsumego_id' => $context->tsumegos[0]['id'],
 			'set_id' => $context->tsumegos[0]['set-connections'][0]['set_id'],
 			'date' => $publishedDate,
 			'published' => 1,
 		]);
-		ClassRegistry::init('Schedule')->create();
-		ClassRegistry::init('Schedule')->save([
+		$this->addScheduleEntry([
 			'tsumego_id' => $context->tsumegos[0]['id'],
 			'set_id' => $context->tsumegos[0]['set-connections'][0]['set_id'],
 			'date' => $unpublishedDate,
@@ -133,8 +129,7 @@ class SitesControllerTest extends IntegrationTestCase
 		$browser = Browser::instance();
 		$context = new ContextPreparator(['tsumego' => 564]);
 
-		ClassRegistry::init('Schedule')->create();
-		ClassRegistry::init('Schedule')->save([
+		$this->addScheduleEntry([
 			'tsumego_id' => $context->tsumegos[0]['id'],
 			'set_id' => $context->tsumegos[0]['set-connections'][0]['set_id'],
 			'date' => date('Y-m-d', strtotime('+100 days')),
@@ -170,15 +165,12 @@ class SitesControllerTest extends IntegrationTestCase
 
 		$today = date('Y-m-d');
 		foreach ($context->tsumegos as $tsumego)
-		{
-			ClassRegistry::init('Schedule')->create();
-			ClassRegistry::init('Schedule')->save([
+			$this->addScheduleEntry([
 				'tsumego_id' => $tsumego['id'],
 				'set_id' => $tsumego['set-connections'][0]['set_id'],
 				'date' => $today,
 				'published' => 1,
 			]);
-		}
 
 		$browser->get('/');
 		$source = $browser->driver->getPageSource();
@@ -520,5 +512,11 @@ class SitesControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('id="signInMenu"', $pageSource, 'Logged-out nav should render the Sign In link');
 		$this->assertStringContainsString('class="discuss-disabled"', $pageSource, 'Logged-out nav should show the disabled Discuss link');
 		$this->assertStringNotContainsString('users/logout', $pageSource, 'Logged-out nav should not offer Sign Out');
+	}
+
+	private function addScheduleEntry(array $fields): void
+	{
+		$scheduleTable = $this->fetchTable('Schedule');
+		$scheduleTable->saveOrFail($scheduleTable->newEntity($fields));
 	}
 }

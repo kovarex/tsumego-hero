@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Entity\Schedule;
 use App\Utility\CookieFlash;
 use App\Utility\SchedulePublisher;
 
@@ -25,6 +26,19 @@ class ScheduleTest extends IntegrationTestCase
 		return [$context, $sandboxSetId, $targetSetId];
 	}
 
+	//The schedule entries, ordered by id or by the given column and then id.
+	/** @return Schedule[] */
+	private function schedules(string $order = 'id'): array
+	{
+		return $this->fetchTable('Schedule')->find()->orderBy([$order, 'id'])->toArray();
+	}
+
+	private function lastSchedule(): Schedule
+	{
+		/** @var Schedule */
+		return $this->fetchTable('Schedule')->find()->orderByDesc('id')->firstOrFail();
+	}
+
 	private static function futureDate(int $offset = 2): string
 	{
 		return date('Y-m-d', strtotime("+{$offset} days"));
@@ -42,18 +56,17 @@ class ScheduleTest extends IntegrationTestCase
 			'start_date' => self::futureDate(),
 		]);
 
-		$schedules = ClassRegistry::init('Schedule')->find('all', ['order' => 'date ASC']);
+		$schedules = $this->schedules('date');
 		$this->assertCount(2, $schedules);
 
-		$first = $schedules[0]['Schedule'];
-		$second = $schedules[1]['Schedule'];
-		$this->assertSame($context->tsumegos[0]['id'], (int) $first['tsumego_id']);
-		$this->assertSame($context->tsumegos[1]['id'], (int) $second['tsumego_id']);
-		$this->assertSame($targetSetId, (int) $first['set_id']);
-		$this->assertSame($targetSetId, (int) $second['set_id']);
-		$this->assertSame(self::futureDate(), $first['date']);
-		$this->assertSame(self::futureDate(3), $second['date']);
-		$this->assertSame(0, (int) $first['published']);
+		[$first, $second] = $schedules;
+		$this->assertSame($context->tsumegos[0]['id'], $first->tsumego_id);
+		$this->assertSame($context->tsumegos[1]['id'], $second->tsumego_id);
+		$this->assertSame($targetSetId, $first->set_id);
+		$this->assertSame($targetSetId, $second->set_id);
+		$this->assertSame(self::futureDate(), $first->date->format('Y-m-d'));
+		$this->assertSame(self::futureDate(3), $second->date->format('Y-m-d'));
+		$this->assertFalse($first->published);
 	}
 
 	//An empty count asks for every problem left in the source set, without a cap.
@@ -69,7 +82,7 @@ class ScheduleTest extends IntegrationTestCase
 			'start_date' => self::futureDate(),
 		]);
 
-		$this->assertSame(120, ClassRegistry::init('Schedule')->find('count'));
+		$this->assertSame(120, $this->fetchTable('Schedule')->find()->count());
 	}
 
 	public function testAddToScheduleSkipsAlreadyScheduledProblems(): void
@@ -80,10 +93,10 @@ class ScheduleTest extends IntegrationTestCase
 
 		$this->post('/schedule/add', ['set_id_from' => $sandboxSetId, 'set_id_to' => $targetSetId, 'count' => 2, 'start_date' => self::futureDate(3)]);
 
-		$schedules = ClassRegistry::init('Schedule')->find('all', ['order' => 'date ASC']);
+		$schedules = $this->schedules('date');
 		$this->assertCount(2, $schedules);
-		$this->assertSame($context->tsumegos[0]['id'], (int) $schedules[0]['Schedule']['tsumego_id']);
-		$this->assertSame($context->tsumegos[1]['id'], (int) $schedules[1]['Schedule']['tsumego_id']);
+		$this->assertSame($context->tsumegos[0]['id'], $schedules[0]->tsumego_id);
+		$this->assertSame($context->tsumegos[1]['id'], $schedules[1]->tsumego_id);
 	}
 
 	public function testAddToScheduleByNum(): void
@@ -97,10 +110,10 @@ class ScheduleTest extends IntegrationTestCase
 			'start_date' => self::futureDate(),
 		]);
 
-		$schedules = ClassRegistry::init('Schedule')->find('all');
+		$schedules = $this->schedules();
 		$this->assertCount(1, $schedules);
-		$this->assertSame($context->tsumegos[2]['id'], (int) $schedules[0]['Schedule']['tsumego_id']);
-		$this->assertSame(self::futureDate(), $schedules[0]['Schedule']['date']);
+		$this->assertSame($context->tsumegos[2]['id'], $schedules[0]->tsumego_id);
+		$this->assertSame(self::futureDate(), $schedules[0]->date->format('Y-m-d'));
 	}
 
 	public function testAddToScheduleStartsFromNum(): void
@@ -115,10 +128,10 @@ class ScheduleTest extends IntegrationTestCase
 			'start_date' => self::futureDate(),
 		]);
 
-		$schedules = ClassRegistry::init('Schedule')->find('all', ['order' => 'date ASC']);
+		$schedules = $this->schedules('date');
 		$this->assertCount(2, $schedules);
-		$this->assertSame($context->tsumegos[1]['id'], (int) $schedules[0]['Schedule']['tsumego_id']);
-		$this->assertSame($context->tsumegos[2]['id'], (int) $schedules[1]['Schedule']['tsumego_id']);
+		$this->assertSame($context->tsumegos[1]['id'], $schedules[0]->tsumego_id);
+		$this->assertSame($context->tsumegos[2]['id'], $schedules[1]->tsumego_id);
 	}
 
 	public function testAddToScheduleSkipsProblemsAlreadyInTargetSet(): void
@@ -146,10 +159,10 @@ class ScheduleTest extends IntegrationTestCase
 			'start_date' => self::futureDate(),
 		]);
 
-		$schedules = ClassRegistry::init('Schedule')->find('all', ['order' => 'date ASC']);
+		$schedules = $this->schedules('date');
 		$this->assertCount(2, $schedules);
-		$this->assertSame($context->tsumegos[0]['id'], (int) $schedules[0]['Schedule']['tsumego_id']);
-		$this->assertSame($context->tsumegos[2]['id'], (int) $schedules[1]['Schedule']['tsumego_id']);
+		$this->assertSame($context->tsumegos[0]['id'], $schedules[0]->tsumego_id);
+		$this->assertSame($context->tsumegos[2]['id'], $schedules[1]->tsumego_id);
 	}
 
 	public function testAddToScheduleRequiresAdmin(): void
@@ -306,12 +319,12 @@ class ScheduleTest extends IntegrationTestCase
 		]);
 		$this->login('admin');
 
-		$scheduleId = ClassRegistry::init('Schedule')->find('first', ['order' => 'id DESC'])['Schedule']['id'];
+		$scheduleId = $this->lastSchedule()->id;
 		$targetSetId = $context->tsumegos[1]['set-connections'][0]['set_id'];
 
 		$this->post('/schedule/cancel/' . $scheduleId);
 
-		$this->assertSame([], ClassRegistry::init('Schedule')->findById($scheduleId));
+		$this->assertNull($this->fetchTable('Schedule')->find()->where(['id' => $scheduleId])->first());
 
 		$activity = ClassRegistry::init('AdminActivity')->find('first', ['order' => 'id DESC']);
 		$this->assertSame((int) $context->user['id'], (int) $activity['AdminActivity']['user_id']);
@@ -324,13 +337,13 @@ class ScheduleTest extends IntegrationTestCase
 		[$context, $sandboxSetId, $targetSetId] = $this->_sandboxAndTarget([1]);
 
 		$this->post('/schedule/add', ['set_id_from' => $sandboxSetId, 'set_id_to' => $targetSetId, 'count' => 1, 'start_date' => self::futureDate()]);
-		$scheduleId = ClassRegistry::init('Schedule')->id;
+		$scheduleId = $this->lastSchedule()->id;
 
 		$this->post('/schedule/cancel/' . $scheduleId);
 
 		$this->post('/schedule/add', ['set_id_from' => $sandboxSetId, 'set_id_to' => $targetSetId, 'count' => 1, 'start_date' => self::futureDate()]);
 
-		$this->assertSame(1, ClassRegistry::init('Schedule')->find('count'));
+		$this->assertSame(1, $this->fetchTable('Schedule')->find()->count());
 	}
 
 	public function testCanceledRowIsRemovedFromUpcoming(): void
@@ -339,8 +352,7 @@ class ScheduleTest extends IntegrationTestCase
 
 		$this->post('/schedule/add', ['set_id_from' => $sandboxSetId, 'set_id_to' => $targetSetId, 'count' => 2, 'start_date' => self::futureDate()]);
 
-		$schedules = ClassRegistry::init('Schedule')->find('all');
-		$this->post('/schedule/cancel/' . $schedules[0]['Schedule']['id']);
+		$this->post('/schedule/cancel/' . $this->schedules()[0]->id);
 
 		$this->get('/schedule');
 
@@ -361,7 +373,7 @@ class ScheduleTest extends IntegrationTestCase
 		]);
 		$this->login('admin');
 
-		$scheduleId = ClassRegistry::init('Schedule')->find('first', ['order' => 'id DESC'])['Schedule']['id'];
+		$scheduleId = $this->lastSchedule()->id;
 
 		$this->post('/schedule/cancel/' . $scheduleId);
 
@@ -462,10 +474,7 @@ class ScheduleTest extends IntegrationTestCase
 		]);
 		$this->assertCount(0, $sandboxAfter, 'Should have no sandbox connections after publish');
 
-		$schedule = ClassRegistry::init('Schedule')->find('first', [
-			'conditions' => ['tsumego_id' => $tsumego['id']],
-		]);
-		$this->assertSame(1, (int) $schedule['Schedule']['published']);
+		$this->assertTrue($this->fetchTable('Schedule')->find()->where(['tsumego_id' => $tsumego['id']])->firstOrFail()->published);
 	}
 
 	public function testPublishPreservesStatsWhenAlreadyPublic(): void
@@ -508,10 +517,7 @@ class ScheduleTest extends IntegrationTestCase
 		SchedulePublisher::publishDue();
 
 		// The tsumego has no sandbox source to move from, so the entry stays pending
-		$schedule = ClassRegistry::init('Schedule')->find('first', [
-			'conditions' => ['tsumego_id' => $context->tsumegos[0]['id']],
-		]);
-		$this->assertSame(0, (int) $schedule['Schedule']['published']);
+		$this->assertFalse($this->fetchTable('Schedule')->find()->where(['tsumego_id' => $context->tsumegos[0]['id']])->firstOrFail()->published);
 	}
 
 	public function testPublishRenumbersOnNumCollision(): void
@@ -580,9 +586,7 @@ class ScheduleTest extends IntegrationTestCase
 			'start_date' => self::futureDate(),
 		]);
 
-		$dates = array_map(function ($row) {
-			return $row['Schedule']['date'];
-		}, ClassRegistry::init('Schedule')->find('all', ['order' => 'id ASC']));
+		$dates = array_map(fn(Schedule $schedule) => $schedule->date->format('Y-m-d'), $this->schedules());
 		$perDate = array_count_values($dates);
 		$this->assertSame(5, $perDate[self::futureDate()]);
 		$this->assertSame(2, $perDate[self::futureDate(3)]);
@@ -599,9 +603,7 @@ class ScheduleTest extends IntegrationTestCase
 			'start_date' => self::futureDate(),
 		]);
 
-		$dates = array_map(function ($row) {
-			return $row['Schedule']['date'];
-		}, ClassRegistry::init('Schedule')->find('all', ['order' => 'id ASC']));
+		$dates = array_map(fn(Schedule $schedule) => $schedule->date->format('Y-m-d'), $this->schedules());
 		$perDate = array_count_values($dates);
 		$this->assertSame(5, $perDate[self::futureDate()]);
 		$this->assertSame(1, $perDate[self::futureDate(3)]);
@@ -617,8 +619,7 @@ class ScheduleTest extends IntegrationTestCase
 			'start_date' => date('Y-m-d'),
 		]);
 
-		$schedule = ClassRegistry::init('Schedule')->find('first', ['order' => 'id DESC']);
-		$this->assertSame(1, (int) $schedule['Schedule']['published']);
+		$this->assertTrue($this->lastSchedule()->published);
 		$this->assertSame(1, ClassRegistry::init('SetConnection')->find('count', [
 			'conditions' => ['set_id' => $targetSetId, 'tsumego_id' => $context->tsumegos[0]['id']],
 		]));
@@ -717,8 +718,7 @@ class ScheduleTest extends IntegrationTestCase
 
 		SchedulePublisher::publishDue();
 
-		$schedule = ClassRegistry::init('Schedule')->find('first', ['order' => 'id DESC']);
-		$this->assertSame(1, (int) $schedule['Schedule']['published']);
+		$this->assertTrue($this->lastSchedule()->published);
 		$this->assertSame(1, ClassRegistry::init('SetConnection')->find('count', [
 			'conditions' => ['set_id' => $targetSetId, 'tsumego_id' => $tsumegoId],
 		]));
@@ -791,9 +791,9 @@ class ScheduleTest extends IntegrationTestCase
 			'start_date' => self::futureDate(),
 		]);
 
-		$schedules = ClassRegistry::init('Schedule')->find('all');
+		$schedules = $this->schedules();
 		$this->assertCount(1, $schedules);
-		$this->assertSame($context->tsumegos[1]['id'], (int) $schedules[0]['Schedule']['tsumego_id']);
+		$this->assertSame($context->tsumegos[1]['id'], $schedules[0]->tsumego_id);
 	}
 
 	//A problem deleted after it was scheduled is not published from the trash: the entry
@@ -814,8 +814,7 @@ class ScheduleTest extends IntegrationTestCase
 
 		SchedulePublisher::publishDue();
 
-		$schedule = ClassRegistry::init('Schedule')->find('first');
-		$this->assertSame(0, (int) $schedule['Schedule']['published']);
+		$this->assertFalse($this->schedules()[0]->published);
 		$this->assertSame(1, ClassRegistry::init('SetConnection')->find('count', [
 			'conditions' => ['tsumego_id' => $context->tsumegos[0]['id'], 'set_id' => $context->tsumegos[0]['set-connections'][0]['set_id']],
 		]));
