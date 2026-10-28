@@ -30,6 +30,7 @@ const LEGACY_APP_FILES = [
 	'webroot/js/scoreEstimatingCustom.js',
 	'webroot/js/set-view.js',
 	'webroot/js/setProgress.js',
+	'webroot/js/siteMenu.js',
 ];
 
 //Besogo Go board viewer JS files (global-scope, loaded on puzzle pages).
@@ -62,7 +63,7 @@ const LEGACY_BESOGO_FILES = [
 //(non-module) script. Bypasses Rollup's module system entirely so functions remain globally
 //accessible. Appends a 'virtual:legacy-{name}' entry to the Vite manifest.json after the build.
 //closeBundle hooks run sequentially per plugin, so two instances writing to the manifest is safe.
-function legacyBundlePlugin(name, files, { minify = true } = {}) {
+function legacyBundlePlugin(name, files, { minify = true, instrument = true } = {}) {
 	let outDir;
 	let rootDir;
 
@@ -87,7 +88,7 @@ function legacyBundlePlugin(name, files, { minify = true } = {}) {
 			// Concatenate all files in order. In the coverage build, instrument each legacy
 			// global-scope script (with autoWrap:false so it stays global) so it reports to
 			// window.__coverage__ as well, not just the React app modules.
-			const instrumenter = isCoverageBuild
+			const instrumenter = isCoverageBuild && instrument
 				? createInstrumenter({
 					coverageGlobalScope: 'globalThis',
 					coverageGlobalScopeFunc: false,
@@ -159,6 +160,8 @@ export default defineConfig({
 				})]
 				: []
 		),
+		//Served from our own host, pinned to the version the site was written against
+		legacyBundlePlugin('jquery', ['node_modules/jquery/dist/jquery.min.js'], { minify: false, instrument: false }),
 		legacyBundlePlugin('app', LEGACY_APP_FILES),
 		legacyBundlePlugin('besogo', LEGACY_BESOGO_FILES, { minify: false }),
 	],

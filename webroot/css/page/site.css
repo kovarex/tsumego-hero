@@ -125,12 +125,6 @@ li a.menuLi {
   line-height: 20px;
   cursor: pointer;
 }
-#refreshLinkToSandbox {
-  margin-top: 0;
-}
-#refreshLinkToLeaderboard {
-  margin-top: 0;
-}
 .menuLi:hover {
   background-color: var(--color-gray);
   color: var(--color-green);
@@ -472,6 +466,10 @@ h4 {
   width: 700px;
   left: 114px;
 }
+.board-picker .dropdown__open:checked ~ .dropdown__menu {
+  display: inline-block;
+  opacity: 1;
+}
 input.newCheck {
   width: 15px;
   height: 15px;
@@ -482,17 +480,12 @@ input.newCheck {
 #dropdowntable2 {
   font-family: var(--font-family-body);
 }
-#dropdowntable {
-  width: 700px;
-  color: var(--color-green);
-  padding: 5px;
-  display: none;
-}
+#dropdowntable,
 #dropdowntable2 {
+  display: inline-block;
   width: 700px;
   color: var(--color-green);
   padding: 5px;
-  display: none;
 }
 /* Board picker Save button: restore green button look inside the nav
    (nav a overrides the .btn color/padding otherwise). */
@@ -785,7 +778,7 @@ nav ul ul ul li {
 .newMenuLi4 li {
   width: 159px;
 }
-#tutorialLink {
+.newMenuLi4 a {
   font-weight: 400;
   font-size: 19px;
 }

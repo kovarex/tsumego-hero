@@ -371,10 +371,8 @@ class AppController extends Controller
 
 		$this->set('boardsBitmask', $boardsBitmask);
 
-		$nextDay = new DateTime('tomorrow');
 		if (Auth::isLoggedIn())
 			$this->set('user', Auth::getUser());
-		$this->set('nextDay', $nextDay->format('m/d/Y'));
 		$this->set('highscoreLink', $highscoreLink);
 		$this->set('lightDark', $lightDark);
 		$this->set('levelBar', $levelBar);

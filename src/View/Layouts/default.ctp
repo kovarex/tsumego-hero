@@ -3,6 +3,7 @@
 use App\Utility\AccountWidget;
 use App\Utility\AchievementChecker;
 use App\Utility\Auth;
+use App\Utility\Constants;
 use App\Utility\CookieFlash;
 use App\Utility\TimeMode;
 use App\Utility\Util;
@@ -11,12 +12,9 @@ use App\Utility\ViteManifest;
 /**
  * @var View $this
  * @var string $lightDark
- * @var string $lightDark
  * @var string $highscoreLink
- * @var string $discussFilter
  * @var TimeMode $timeMode
- * @var bool $achievementUpdate
- * @var string $nextDay
+ * @var array|null $achievementUpdates
  * @var string $boardsBitmask
  * @var string|null $canonicalPath Path a page with more than one address wants to be known by
  * @var bool $robotsNoIndex The page is reachable but must stay out of search results
@@ -26,70 +24,11 @@ use App\Utility\ViteManifest;
 ?>
 <!DOCTYPE html>
 <html lang="en" data-theme="<?php echo $lightDark === 'dark' ? 'dark' : 'light'; ?>" data-date-format="<?php echo Auth::getDateFormat(); ?>">
-<?php
-if (Configure::read('debug')) { ?>
-<script>
-	(function () {
-		// global arrays
-		window.__jsErrors = [];
-		window.__consoleErrors = [];
-
-		// capture uncaught errors (including early load errors)
-		window.addEventListener('error', function (e) {
-			window.__jsErrors.push({
-				raw: JSON.stringify({
-					message: e.message,
-					source: e.filename,
-					line: e.lineno,
-					column: e.colno,
-					type: e.type,
-					target: e.target && e.target.tagName ? e.target.tagName : null,
-					outerHTML: e.target && e.target.outerHTML ? e.target.outerHTML.slice(0,200) : null
-				}),
-					message: e.message,
-					source: e.filename,
-					line: e.lineno,
-					column: e.colno,
-				stack: e.error ? e.error.stack : null,
-				time: Date.now()
-			});
-		}, true);
-
-		// capture unhandled promise rejections
-		window.addEventListener('unhandledrejection', function (ev) {
-			var reason = ev.reason || {};
-			window.__jsErrors.push({
-				message: reason.message || String(reason),
-				source: null,
-				line: null,
-				column: null,
-				stack: reason.stack || null,
-				time: Date.now()
-			});
-		}, true);
-
-		// capture console.error
-		(function () {
-			var oldError = console.error;
-			console.error = function () {
-				try {
-					window.__consoleErrors.push({
-						args: Array.prototype.slice.call(arguments),
-						time: Date.now()
-					});
-				} catch (e) {}
-				oldError.apply(console, arguments);
-			};
-		})();
-		})();
-</script>
-<?php } ?>
-<?php
-$cakeDescription = __d('cake_dev', 'CakePHP: the rapid development php framework');
-$cakeVersion = __d('cake_dev', 'CakePHP %s', Configure::version());
-?>
+<head>
 <?php
 echo $this->Html->charset();
+if (Configure::read('debug'))
+	echo $this->element('javascript_error_tracking');
 ?>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>
@@ -136,9 +75,9 @@ echo $this->Html->meta('icon');
 echo $this->fetch('css');
 echo $this->fetch('script');
 ?>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 <?php
-// Legacy app.js bundle (global-scope scripts — served as plain <script>, not type="module")
+echo ViteManifest::legacyScript('jquery');
+//Global-scope scripts, served as a plain <script>, not type="module"
 echo ViteManifest::legacyScript('legacy');
 ?>
 <script>
@@ -147,15 +86,41 @@ echo ViteManifest::legacyScript('legacy');
 </head>
 
 <body>
+<?php
+$_page = $_page ?? '';
+//Marks the menu item of the page being shown
+$active = fn(string ...$pages): string => in_array($_page, $pages, true) ? 'nav__link--active' : '';
+$lastVisitedTsumegoID = (int) ($_COOKIE['lastVisit'] ?? Constants::$DEFAULT_TSUMEGO_ID);
+if (Auth::isLoggedIn())
+{
+	$unreadMessageCount = Message::unreadCount(Auth::getUserID());
+	//Invitations to a class and requests to join one wait for the player's answer, which
+	//the Classes item counts, and so does Collections, where the item is hidden.
+	$classesAwaitingAnswer = ClassroomMember::countAwaitingAnswer(Auth::getUserID());
+	//Challenges the player is in and hasn't played yet: the Challenges item counts them,
+	//and so does Play, where the item is hidden.
+	$challengesWaiting = Challenge::countWaitingFor(Auth::getUserID());
+	$soundSetting = User::soundIsOn(Auth::getUser()) ? 'on' : 'off';
+}
+else
+{
+	$unreadMessageCount = 0;
+	$classesAwaitingAnswer = 0;
+	$challengesWaiting = 0;
+	$soundSetting = in_array($_COOKIE['sound'] ?? null, ['on', 'off'], true) ? $_COOKIE['sound'] : null;
+}
+$classesBadge = $classesAwaitingAnswer > 0
+	? '<span class="nav__new-badge nav__new-badge--visible" title="Waiting for your answer in Classes">' . $classesAwaitingAnswer . '</span>'
+	: '';
+$challengesBadge = $challengesWaiting > 0
+	? '<span class="nav__new-badge nav__new-badge--visible" title="Challenges waiting for you to play them">' . $challengesWaiting . '</span>'
+	: '';
+?>
 <div id="container" align="center">
-	<div width="100%" class="whitebox1">
+	<div class="whitebox1">
 		<div align="left">
 			<a href="/">
-			<?php
-				$logo = 'tsumegoHero1';
-				$logoH = 'tsumegoHero2';
-?>
-				<img id="logo1" alt="Tsumego Hero" title="Tsumego Hero" src="/img/tsumegoHero1.png" onmouseover="typeof logoHover==='function'&&logoHover(this)" onmouseout="typeof logoNoHover==='function'&&logoNoHover(this)" height="55px">
+				<img id="logo1" alt="Tsumego Hero" title="Tsumego Hero" src="/img/tsumegoHero1.png" onmouseover="this.src='/img/tsumegoHero2.png'" onmouseout="this.src='/img/tsumegoHero1.png'" height="55px">
 			</a>
 		</div>
 		<input type="checkbox" id="nav-toggle" class="nav-toggle" aria-hidden="true">
@@ -163,12 +128,8 @@ echo ViteManifest::legacyScript('legacy');
 			<span></span><span></span><span></span>
 		</label>
 		<div class="site-nav">
-			<?php
-			// Account access at the top of the drawer (logged-in). The username
-			// links to the profile; Settings and Sign Out are listed as separate actions.
-			if (Auth::isLoggedIn()):
-				$unreadMessageCount = Message::unreadCount(Auth::getUserID());
-			?>
+			<?php if (Auth::isLoggedIn()): ?>
+			<?php //Account access at the top of the drawer: the name links to the profile, the actions follow ?>
 			<div class="site-nav__account">
 				<div class="site-nav__account-user">
 					<a href="/users/view/<?php echo Auth::getUserID(); ?>"><?php echo h(Auth::getUser()['display_name']); ?></a>
@@ -188,185 +149,78 @@ echo ViteManifest::legacyScript('legacy');
 				</div>
 			</div>
 			<?php endif; ?>
-				<?php
-			$lv = (int)($_COOKIE['lastVisit'] ?? 15352);
-
-			if(Auth::isLoggedIn()){
-				if(Auth::hasPremium()) $sand = 'onmouseover="sandboxHover()" onmouseout="sandboxNoHover()"';
-				else $sand = '';
-				if(Auth::hasPremium()) $leaderboard = 'onmouseover="leaderboardHover()" onmouseout="leaderboardNoHover()"';
-				else $leaderboard = '';
-			}else{
-				$sand = '';
-				$leaderboard = '';
-			}
-			$homeA = '';
-			$collectionsA = '';
-			$playA = '';
-			$highscoreA = '';
-			$discussA = '';
-			$sandboxA = '';
-			$leaderboardA = '';
-			$refreshLinkToStart = '';
-			$refreshLinkToSets = '';
-			$refreshLinkToHighscore = '';
-			$refreshLinkToLeaderboard = '';
-			$refreshLinkToSandbox = '';
-			$refreshLinkToFavs = '';
-			$refreshLinkToDiscuss = '';
-			$refreshLinkToLeaderboardBackup = '';
-			$refreshLinkToSandboxBackup = '';
-			$refreshLinkToDiscussBackup = '';
-			$levelHighscoreA = '';
-			$ratingHighscoreA = '';
-			$timeHighscoreA = '';
-			$achievementHighscoreA = '';
-			$dailyHighscoreA = '';
-			$tagHighscoreA = '';
-			$levelModeA = '';
-			$ratingModeA = '';
-			$timeModeA = '';
-			$websitefunctionsA = '';
-			$gotutorialA = '';
-			$aboutA = '';
-			$changelogA = '';
-			$classesA = '';
-			$challengesA = '';
-			$adminA = '';
-
-			$_page = $_page ?? '';
-			if($_page == 'home') $homeA = 'nav__link--active';
-			else if($_page == 'set') $collectionsA = 'nav__link--active';
-			else if($_page=='play' || $_page=='level mode' || $_page=='rating mode' || $_page=='time mode'){
-				$refreshLinkToStart = 'id="refreshLinkToStart"';
-				$refreshLinkToSets = 'id="refreshLinkToSets"';
-				$refreshLinkToHighscore = 'id="refreshLinkToHighscore"';
-				$refreshLinkToLeaderboard = 'id="refreshLinkToLeaderboard"';
-				$refreshLinkToSandbox = 'id="refreshLinkToSandbox"';
-				$refreshLinkToDiscuss = 'id="refreshLinkToDiscuss"';
-				if($_page == 'level mode') $levelModeA = 'nav__link--active';
-				else if($_page == 'rating mode') $ratingModeA = 'nav__link--active';
-				else if($_page == 'time mode') $timeModeA = 'nav__link--active';
-				} else if ($_page == 'highscore') $highscoreA = 'nav__link--active';
-			else if($_page == 'discuss') $discussA = 'nav__link--active';
-			else if($_page == 'sandbox') $sandboxA = 'nav__link--active';
-			else if($_page == 'leaderboard') $leaderboardA = 'nav__link--active';
-			else if($_page == 'websitefunctions') $websitefunctionsA = 'nav__link--active';
-			else if($_page == 'gotutorial') $gotutorialA = 'nav__link--active';
-			else if($_page == 'about') $aboutA = 'nav__link--active';
-			else if($_page == 'changelog') $changelogA = 'nav__link--active';
-			else if($_page == 'classes') $classesA = 'nav__link--active';
-			else if($_page == 'challenges') $challengesA = 'nav__link--active';
-			else if($_page == 'admin') $adminA = 'nav__link--active';
-			else if($_page == 'levelHighscore') $levelHighscoreA = 'nav__link--active';
-			else if($_page == 'ratingHighscore') $ratingHighscoreA = 'nav__link--active';
-			else if($_page == 'achievementHighscore') $achievementHighscoreA = 'nav__link--active';
-			else if($_page == 'timeHighscore') $timeHighscoreA = 'nav__link--active';
-			else if($_page == 'dailyHighscore') $dailyHighscoreA = 'nav__link--active';
-			else if($_page == 'tagHighscore') $tagHighscoreA = 'nav__link--active';
-			else if($_page == 'favs') $refreshLinkToFavs = 'nav__link--active';
-
-			if(Auth::isLoggedIn()){
-				if(!Auth::isAdmin())
-					$discussFilter = '';
-				else
-					$discussFilter = '?filter=false';
-				$refreshLinkToSandboxBackup = '<a id="refreshLinkToSandbox"></a>';
-				if(Auth::hasPremium()){
-			}else{
-					$refreshLinkToLeaderboardBackup = '<a id="refreshLinkToLeaderboard"></a>';
-			}
-			}else{
-				$refreshLinkToDiscussBackup = '<a id="refreshLinkToDiscuss"></a>';
-				}
-
-			?>
 			<div id="newMenu">
 				<nav>
 					<ul>
-						<?php echo '<li><a class="homeMenuLink '.$homeA.'" href="/" '.$refreshLinkToStart.'>Home</a>';
-						echo '<ul class="newMenuLi1">';
-						echo '<li><a class="'.$websitefunctionsA.'" href="/sites/websitefunctions">Functions & Modes</a></li>';
-						echo '<li><a class="'.$gotutorialA.'" href="/sites/gotutorial">Go Rules</a></li>';
-						echo '<li class="newMenuLi1-forum"><a id="forumLink" href="/forums">Forums</a></li>';
-						echo '<li><a class="'.$changelogA.'" href="/changelog">What\'s new<span class="nav__new-badge"></span></a></li>';
-						echo '<li><a class="'.$aboutA.'" href="/sites/about">About</a></li>';
-						echo '</ul>';
-						echo '</li>';
-						// Invitations to a class and requests to join one wait for the player's answer, which
-						// the Classes item counts, and so does Collections, where the item is hidden.
-						$classesAwaitingAnswer = Auth::isLoggedIn() ? ClassroomMember::countAwaitingAnswer(Auth::getUserID()) : 0;
-						$classesBadge = $classesAwaitingAnswer > 0
-							? '<span class="nav__new-badge nav__new-badge--visible" title="Waiting for your answer in Classes">'.$classesAwaitingAnswer.'</span>'
-							: '';
-						echo '<li><a '.$refreshLinkToSets.' class="'.$collectionsA.'" href="/sets">Collections'.$classesBadge.'</a>';
-						if(Auth::isLoggedIn()){
-							echo '<ul class="newMenuLi2">';
-							echo '<li><a href="/sets/mine">My Sets</a></li>';
-							echo '<li><a class="'.$refreshLinkToFavs.'" href="'.Set::url('favorites').'">Favorites</a></li>';
-							echo '<li><a class="'.$classesA.'" href="/classes">Classes'.$classesBadge.'</a></li>';
-							if(Auth::hasPremium() || Auth::isAdmin())
-								echo '<li><a '.$refreshLinkToSandbox.' class="'.$sandboxA.'" href="/sets/sandbox">Sandbox</a></li>';
-							// Everything an admin does is linked from the admin page
-							if(Auth::isAdmin())
-								echo '<li><a class="adminLink '.$adminA.'" href="/admin">Admin</a></li>';
-							echo '</ul>';
-						}
-						$sessionLastVisit = (int)($_COOKIE['lastVisit'] ?? 15352);
-						echo '</li>';
-						// Challenges the player is in and hasn't played yet: the Challenges item counts them,
-						// and so does Play, where the item is hidden.
-						$challengesWaiting = Auth::isLoggedIn() ? Challenge::countWaitingFor(Auth::getUserID()) : 0;
-						$challengesBadge = $challengesWaiting > 0
-							? '<span class="nav__new-badge nav__new-badge--visible" title="Challenges waiting for you to play them">'.$challengesWaiting.'</span>'
-							: '';
-						echo '<li><a class="homeMenuLink nav__play-link '.$playA.'" href="/tsumegos/play/'.$lv.'">Play'.$challengesBadge.'</a>';
-						echo '<ul class="newMenuLi3">';
-						echo '<li><a class="'.$levelModeA.'" href="/tsumegos/play/'.$sessionLastVisit.'?mode=1">Level</a></li>';
-						if(Auth::isLoggedIn()){
-							echo '<li><a class="'.$ratingModeA.'" href="/ratingMode">Rating</a></li>';
-							echo '<li><a class="'.$timeModeA.'" href="/timeMode/overview">Time</a></li>';
-							echo '<li><a class="'.$challengesA.'" href="/challenges">Challenges'.$challengesBadge.'</a></li>';
-						}
-								echo '</ul>';
-						echo '<li><a '.$refreshLinkToHighscore.' class="'.$highscoreA.'" href="/users/'.$highscoreLink.'">Highscore</a>';
-						echo '<ul class="newMenuLi4">';
-						echo '<li><a id="tutorialLink" class="'.$levelHighscoreA.'" href="/users/highscore">Level Highscore</a></li>';
-						echo '<li><a id="tutorialLink" class="'.$ratingHighscoreA.'" href="/users/rating">Rating Highscore</a></li>';
-						echo '<li><a id="tutorialLink" class="'.$achievementHighscoreA.'" href="/users/achievements">Achievement Highscore</a></li>';
-						echo '<li><a id="tutorialLink" class="'.$tagHighscoreA.'" href="/users/added_tags">Tag Highscore</a></li>';
-						echo '<li><a id="tutorialLink" class="'.$dailyHighscoreA.'" href="/users/leaderboard">Daily Highscore</a></li>';
-						echo '<li><a id="tutorialLink" class="'.$timeHighscoreA.'" href="/users/time_mode">Time Mode Highscore</a></li>';
-						echo '</ul>';
-						if(Auth::isLoggedIn())
-							echo '<li><a  '.$refreshLinkToDiscuss.'  class="'.$discussA.'" href="/comments'.$discussFilter.'">Discuss</a></li>';
-						else
-							echo '<li class="discuss-disabled"><a style="color:var(--surface-muted-text);">Discuss</a></li>';
-						if(Auth::isLoggedIn())
-							$soundButtonImageValue = User::soundIsOn(Auth::getUser()) ? 'sound-icon1.png' : 'sound-icon2.png';
-						else
-							$soundButtonImageValue = 'sound-icon1.png';
-
-						echo '<li class="menuIcons1">
-						<a href="#" id="soundButton" onclick="changeSound(); return false;"><img id="soundButtonImage" src="/img/'.$soundButtonImageValue.'" width="25px"></a>
-					</li>';
-						?>
+						<li><a class="homeMenuLink <?php echo $active('home'); ?>" href="/">Home</a>
+							<ul class="newMenuLi1">
+								<li><a class="<?php echo $active('websitefunctions'); ?>" href="/sites/websitefunctions">Functions & Modes</a></li>
+								<li><a class="<?php echo $active('gotutorial'); ?>" href="/sites/gotutorial">Go Rules</a></li>
+								<li class="newMenuLi1-forum"><a href="/forums">Forums</a></li>
+								<li><a class="<?php echo $active('changelog'); ?>" href="/changelog">What's new<span class="nav__new-badge"></span></a></li>
+								<li><a class="<?php echo $active('about'); ?>" href="/sites/about">About</a></li>
+							</ul>
+						</li>
+						<li><a class="<?php echo $active('set'); ?>" href="/sets">Collections<?php echo $classesBadge; ?></a>
+							<?php if (Auth::isLoggedIn()): ?>
+							<ul class="newMenuLi2">
+								<li><a href="/sets/mine">My Sets</a></li>
+								<li><a class="<?php echo $active('favs'); ?>" href="<?php echo Set::url('favorites'); ?>">Favorites</a></li>
+								<li><a class="<?php echo $active('classes'); ?>" href="/classes">Classes<?php echo $classesBadge; ?></a></li>
+								<?php if (Auth::hasPremium() || Auth::isAdmin()): ?>
+								<li><a class="<?php echo $active('sandbox'); ?>" href="/sets/sandbox">Sandbox</a></li>
+								<?php endif; ?>
+								<?php if (Auth::isAdmin()): ?>
+								<?php //Everything an admin does is linked from the admin page ?>
+								<li><a class="adminLink <?php echo $active('admin'); ?>" href="/admin">Admin</a></li>
+								<?php endif; ?>
+							</ul>
+							<?php endif; ?>
+						</li>
+						<li><a class="homeMenuLink nav__play-link" href="/tsumegos/play/<?php echo $lastVisitedTsumegoID; ?>">Play<?php echo $challengesBadge; ?></a>
+							<ul class="newMenuLi3">
+								<li><a class="<?php echo $active('level mode'); ?>" href="/tsumegos/play/<?php echo $lastVisitedTsumegoID; ?>?mode=1">Level</a></li>
+								<?php if (Auth::isLoggedIn()): ?>
+								<li><a class="<?php echo $active('rating mode'); ?>" href="/ratingMode">Rating</a></li>
+								<li><a class="<?php echo $active('time mode'); ?>" href="/timeMode/overview">Time</a></li>
+								<li><a class="<?php echo $active('challenges'); ?>" href="/challenges">Challenges<?php echo $challengesBadge; ?></a></li>
+								<?php endif; ?>
+							</ul>
+						</li>
+						<li><a class="<?php echo $active('highscore'); ?>" href="/users/<?php echo $highscoreLink; ?>">Highscore</a>
+							<ul class="newMenuLi4">
+								<li><a class="<?php echo $active('levelHighscore'); ?>" href="/users/highscore">Level Highscore</a></li>
+								<li><a class="<?php echo $active('ratingHighscore'); ?>" href="/users/rating">Rating Highscore</a></li>
+								<li><a class="<?php echo $active('achievementHighscore'); ?>" href="/users/achievements">Achievement Highscore</a></li>
+								<li><a class="<?php echo $active('tagHighscore'); ?>" href="/users/added_tags">Tag Highscore</a></li>
+								<li><a class="<?php echo $active('dailyHighscore'); ?>" href="/users/leaderboard">Daily Highscore</a></li>
+								<li><a class="<?php echo $active('timeHighscore'); ?>" href="/users/time_mode">Time Mode Highscore</a></li>
+							</ul>
+						</li>
+						<?php if (Auth::isLoggedIn()): ?>
+						<li><a class="<?php echo $active('discuss'); ?>" href="/comments<?php echo Auth::isAdmin() ? '?filter=false' : ''; ?>">Discuss</a></li>
+						<?php else: ?>
+						<li class="discuss-disabled"><a style="color:var(--surface-muted-text);">Discuss</a></li>
+						<?php endif; ?>
 						<li class="menuIcons1">
-								<div class="board-picker" id="check3">
-								<label for="dropdown-1" id="boardsInMenu" class="dropdown__trigger">
+							<a href="#" id="soundButton" onclick="changeSound(); return false;"><img id="soundButtonImage" src="/img/<?php echo $soundSetting === 'off' ? 'sound-icon2.png' : 'sound-icon1.png'; ?>" width="25px"></a>
+						</li>
+						<li class="menuIcons1">
+							<div class="board-picker">
+								<label for="board-picker-toggle" id="boardsInMenu" class="dropdown__trigger">
 									<img id="boardsButtonImage" src="/img/boards-icon1.png" width="25px">
 								</label>
-								<input class="dropdown__open" type="checkbox" id="dropdown-1" style="display:none;" onchange="check1()">
-								<label for="dropdown-1" class="dropdown__overlay"></label>
-								<div class="dropdown__menu" id="dropdown-inner-propagation">
+								<input class="dropdown__open" type="checkbox" id="board-picker-toggle" style="display:none;">
+								<label for="board-picker-toggle" class="dropdown__overlay"></label>
+								<div class="dropdown__menu">
 									<table id="dropdowntable" border="0"></table>
 									<br>
 									<div id="dropdowntable2" align="center">
-											<a class="btn btn--primary" href="<?php echo h($_SERVER['REQUEST_URI']); ?>">Save</a>
+										<a class="btn btn--primary" href="<?php echo h($_SERVER['REQUEST_URI']); ?>">Save</a>
 										<br><br>
 									</div>
-									</div>
-									</div>
+								</div>
+							</div>
 						</li>
 						<li class="menuIcons1">
 							<a class="menuIcons2" id="darkButton" onclick="darkAndLight();" title="Light or dark theme" aria-label="Switch between light and dark theme"><span class="theme-icon"></span></a>
@@ -375,296 +229,49 @@ echo ViteManifest::legacyScript('legacy');
 				</nav>
 			</div>
 		</div>
-		<?php
-		$currentPage = '';
-		if($_page == 'login')
-			$currentPage = 'nav__link--active ';
-		if(!Auth::isLoggedIn())
-			echo '<div class="site-nav__signin"><a class="menuLi '.$currentPage.'" id="signInMenu" href="/users/login">Sign In</a></div>';
-		?>
+		<?php if (!Auth::isLoggedIn()): ?>
+		<div class="site-nav__signin"><a class="menuLi <?php echo $_page == 'login' ? 'nav__link--active ' : ''; ?>" id="signInMenu" href="/users/login">Sign In</a></div>
+		<?php endif; ?>
+	</div>
+	<?php AccountWidget::render($timeMode, $unreadMessageCount); ?>
+	<div align="left" class="whitebox2">
+		<div id="content"<?php if (($set['Set']['id'] ?? null) == 60) echo ' style="height:1340px;"'; ?>>
+			<?php
+			echo CookieFlash::render();
+			echo $this->fetch('content');
+			?>
 		</div>
-			<?php AccountWidget::render($timeMode, $unreadMessageCount ?? 0); ?>
-	<div width="100%" align="left" class="whitebox2">
-		<?php
-		$setHeight = '';
-		if(isset($set)){
-			if($set['Set']['id']==60) $setHeight = 'style="height:1340px;"';
-	}
-		echo $refreshLinkToLeaderboardBackup.$refreshLinkToSandboxBackup.$refreshLinkToDiscussBackup;
-		echo '<div id="content" '.$setHeight.'>';
-		echo CookieFlash::render();
-		echo $this->fetch('content');
-		?>
 	</div>
-	</div>
-	</div>
+</div>
 <div id="footer" class="footerLinks">
 	<div class="footer-space"></div>
 	<div class="footer-space"></div>
-		<div class="footer-element">
-		Supported by Wube Software
-		</div>
-		<div class="footer-element">
-		<a href="https://www.factorio.com">
-			<img src="/img/wube-software-logo.png" title="Wube Software" alt="Wube Software">
-			</a>
-		</div>
+	<div class="footer-element">Supported by Wube Software</div>
+	<div class="footer-element">
+		<a href="https://www.factorio.com"><img src="/img/wube-software-logo.png" title="Wube Software" alt="Wube Software"></a>
+	</div>
 	<div class="footer-space"></div>
-		<div class="footer-element">
-			Tsumego Hero © <?php echo date('Y'); ?>
-	</div>
-		<div class="footer-element">
-		<a href="mailto:kovarex@gmail.com">kovarex@gmail.com</a>
-	</div>
-		<div class="footer-element">
-		<a href="/sites/impressum">Legal notice</a>
-	</div>
-		<div class="footer-element">
-		<a href="/sites/about">About</a>
-	</div>
+	<div class="footer-element">Tsumego Hero © <?php echo date('Y'); ?></div>
+	<div class="footer-element"><a href="mailto:kovarex@gmail.com">kovarex@gmail.com</a></div>
+	<div class="footer-element"><a href="/sites/impressum">Legal notice</a></div>
+	<div class="footer-element"><a href="/sites/about">About</a></div>
 	<br><br><br>
-	</div>
-<?php
-// Achievement popups are rendered client-side by the shared renderer in
-// webroot/js/AchievementAlerts.js; here we only hand it the pure data.
-?>
-<script type="text/javascript">
+</div>
+<script>
 	<?php AccountWidget::renderJS($timeMode); ?>
-	<?php
-	if (Auth::isLoggedIn() && !$_COOKIE['disable-achievements'] && !empty($achievementUpdates))
-	{
-			$popupData = array_map([AchievementChecker::class, 'toPopupData'], array_values($achievementUpdates));
-		echo 'var achievementUpdates = ' . json_encode($popupData, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) . ';';
-		echo 'if (typeof showAchievementPopup === "function") achievementUpdates.forEach(showAchievementPopup);';
-	}
-	?>
+	<?php if (Auth::isLoggedIn() && empty($_COOKIE['disable-achievements']) && !empty($achievementUpdates)): ?>
+	<?php //The popups are drawn by webroot/js/AchievementAlerts.js, the page only hands over the data ?>
+	var achievementUpdates = <?php echo json_encode(array_map([AchievementChecker::class, 'toPopupData'], array_values($achievementUpdates)), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE); ?>;
+	if (typeof showAchievementPopup === "function")
+		achievementUpdates.forEach(showAchievementPopup);
+	<?php endif; ?>
 	let light = <?php echo Util::boolString($lightDark !== 'dark'); ?>;
-	function updateSoundValue(value)
-	{
-		if (typeof besogo !== 'undefined')
-		{
-			if(typeof value === 'undefined' || value === null)
-				value = false;
-			besogo.editor.setSoundEnabled(value);
-		}
-		soundsEnabled = value;
-	}
-
-	setCookie("lightDark", <?php echo json_encode($lightDark, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>);
-	var soundsEnabled = true;
 	var notMode3 = true;
-
-	<?php if(Auth::isLoggedIn()){ ?>
-	var soundValue = 0;
-	<?php echo 'soundValue = "'.(User::soundIsOn(Auth::getUser()) ? 'on' : 'off').'";';
-	}else{
-	?>
-	soundValue = getCookie("sound");
-	<?php } ?>
-	updateSoundValue(soundValue == 'on');
-
-	$(document).ready(function(){
-		if(soundValue=="off")
-		{
-			document.getElementById("soundButtonImage").src="/img/sound-icon2.png";
-			setCookie("sound", "off");
-			updateSoundValue(false);
-		}
-		if(soundValue=="on")
-		{
-			document.getElementById("soundButtonImage").src="/img/sound-icon1.png";
-			setCookie("sound", "on");
-			updateSoundValue(true);
-		}
-
-		<?php
-		if(Auth::isLoggedIn()){
-		echo 'var end = new Date("'.$nextDay.' 00:00 AM");';
-	?>
-		var _second = 1000;
-		var _minute = _second * 60;
-		var _hour = _minute * 60;
-		var _day = _hour * 24;
-		var timer;
-		var now = new Date();
-		var distance = end - now;
-		if (distance < 0)
-		{
-			clearInterval(timer);
-			return;
-		}
-		var hours = Math.floor((distance % _day) / _hour);
-		var minutes = Math.floor((distance % _hour) / _minute);
-		var seconds = Math.floor((distance % _minute) / _second);
-		if(hours<10) hours="0"+hours;
-		if(minutes<10) minutes="0"+minutes;
-		if(seconds<10) seconds="0"+seconds;
-		if (document.getElementById("homeCountdown"))
-		{
-			document.getElementById("homeCountdown").innerHTML = hours + ":";
-			document.getElementById("homeCountdown").innerHTML += minutes + ":";
-			document.getElementById("homeCountdown").innerHTML += seconds;
-		}
-		timer = setInterval(showRemaining, 1000);
-
-		function showRemaining()
-		{
-			var now = new Date();
-			var distance = end - now;
-			if (distance < 0)
-			{
-				clearInterval(timer);
-				return;
-			}
-			var hours = Math.floor((distance % _day) / _hour);
-			var minutes = Math.floor((distance % _hour) / _minute);
-			var seconds = Math.floor((distance % _minute) / _second);
-			if(hours<10) hours="0"+hours;
-			if(minutes<10) minutes="0"+minutes;
-			if(seconds<10) seconds="0"+seconds;
-			if(document.getElementById("homeCountdown"))
-			{
-				document.getElementById("homeCountdown").innerHTML = hours + ":";
-				document.getElementById("homeCountdown").innerHTML += minutes + ":";
-				document.getElementById("homeCountdown").innerHTML += seconds;
-			}
-		}
-		<?php } ?>
-	});
-
-	function updateCookie(c1,c2)
-	{
-		document.cookie = c1+c2;
-	}
-
-	function logoHover(img)
-	{
-		img.src = '/img/<?php echo $logoH ?>.png';
-	}
-
-	function logoNoHover(img)
-	{
-		img.src = "/img/<?php echo $logo ?>.png";
-	}
-
-	function boardsHover(){
-		document.getElementById("boardsInMenu").style.color = "var(--color-green)";
-		document.getElementById("boardsInMenu").style.backgroundColor = "var(--color-gray)";
-	}
-
-	function boardsNoHover(){
-		document.getElementById("boardsInMenu").style.color = "var(--color-purple-bright)";
-		document.getElementById("boardsInMenu").style.backgroundColor = "transparent";
-	}
-
-	function check1(){
-		if(document.getElementById("dropdown-1").checked == true){
-			document.getElementById("dropdowntable").style.display = "inline-block";
-			document.getElementById("dropdowntable2").style.display = "inline-block";
-			$(".dropdown__menu").css("opacity", "1");
-			$(".dropdown__menu").css("display", "inline-block");
-	}
-		if(document.getElementById("dropdown-1").checked == false){
-			document.getElementById("dropdowntable").style.display = "none";
-			document.getElementById("dropdowntable2").style.display = "none";
-			$(".dropdown__menu").css("opacity", "0");
-			$(".dropdown__menu").css("display", "none");
-	}
-	}
-	$("#check3").click(function(e){
-		if(document.getElementById("dropdown-1").checked == true){
-			document.getElementById("dropdown-1").checked = false;
-		}else{
-			document.getElementById("dropdown-1").checked = true;
-	}
-		check1();
-		e.stopPropagation();
-	});
-
-	$("#dropdown-inner-propagation").click(function(e){
-		e.stopPropagation();
-	});
-
-	function setSoundCookie(value)
-	{
-		// One cookie for the whole site, written for path /. Copies written earlier for single
-		// page paths would still outrank it, so those are expired here.
-		document.cookie = "sound=" + value + ";path=/";
-		["/users", "/users/view", "/sets/view", "/tsumegos/play"].forEach(function (page)
-		{
-			document.cookie = "sound=;path=" + page + ";max-age=0";
-		});
-	}
-
-	function changeSound()
-	{
-		// A visitor who has not picked anything hears sound: only an explicit "off" is
-		// silent.
-		var soundIsOn = getCookie("sound") != "off";
-		document.getElementById("soundButtonImage").src = soundIsOn ? "/img/sound-icon2.png" : "/img/sound-icon1.png";
-		setSoundCookie(soundIsOn ? "off" : "on");
-		updateSoundValue(!soundIsOn);
-	}
-
-	function getCookie(cname){
-		var name = cname + "=";
-		var decodedCookie = decodeURIComponent(document.cookie);
-		var ca = decodedCookie.split(';');
-		for(var i = 0; i<ca.length; i++){
-			var c = ca[i];
-			while (c.charAt(0) == ' '){
-				c = c.substring(1);
-	}
-			if (c.indexOf(name) == 0){
-				return c.substring(name.length, c.length);
-	}
-	}
-		return "";
-	}
-
-	function sandboxHover(){
-		if(document.getElementById("sandboxLink")) document.getElementById("sandboxLink").style.display = "inline-block";
-		if(document.getElementById("collectionsInMenu")) document.getElementById("collectionsInMenu").style.color = "var(--color-green)";
-		if(document.getElementById("collectionsInMenu")) document.getElementById("collectionsInMenu").style.backgroundColor = "var(--color-gray)";
-	}
-
-	function sandboxNoHover(){
-		if(document.getElementById("sandboxLink")) document.getElementById("sandboxLink").style.display = "none";
-		if(document.getElementById("collectionsInMenu")) document.getElementById("collectionsInMenu").style.backgroundColor = "rgba(0,0,0,0)";
-		if(document.getElementById("collectionsInMenu")) document.getElementById("collectionsInMenu").style.color = "var(--color-purple-bright)";
-	}
-
-	function leaderboardHover(){
-		if(document.getElementById("leaderboardLink")) document.getElementById("leaderboardLink").style.display = "inline-block";
-		if(document.getElementById("highscoreInMenu")) document.getElementById("highscoreInMenu").style.color = "var(--color-green)";
-		if(document.getElementById("highscoreInMenu")) document.getElementById("highscoreInMenu").style.backgroundColor = "var(--color-gray)";
-	}
-
-	function leaderboardNoHover(){
-		if(document.getElementById("leaderboardLink")) document.getElementById("leaderboardLink").style.display = "none";
-		if(document.getElementById("highscoreInMenu")) document.getElementById("highscoreInMenu").style.backgroundColor = "rgba(0,0,0,0)";
-		if(document.getElementById("highscoreInMenu")) document.getElementById("highscoreInMenu").style.color = "var(--color-purple-bright)";
-	}
-
-	function deleteAllCookies()
-	{
-		const cookies = document.cookie.split(";");
-
-		for (let i = 0; i < cookies.length; i++)
-		{
-			const cookie = cookies[i];
-			const eqPos = cookie.indexOf("=");
-			const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-			document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
-		}
-	}
-
-	boardSelector = new BoardSelector(<?php echo $boardsBitmask . 'n';?>);
+	setCookie("lightDark", <?php echo json_encode($lightDark, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>);
+	initSound(<?php echo json_encode($soundSetting); ?>);
+	boardSelector = new BoardSelector(<?php echo $boardsBitmask; ?>n);
 </script>
 
-<?php
-// React app bundle
-echo ViteManifest::script('app');
-?>
+<?php echo ViteManifest::script('app'); ?>
 </body>
 </html>

@@ -35,6 +35,7 @@ class ViteManifest
 		'app'         => 'app/index.tsx',
 		'app-theme'   => 'webroot/css/app-theme.js',
 		'besogo-css'  => 'webroot/besogo/css/besogo-bundle.js',
+		'jquery'      => 'virtual:legacy-jquery',
 		'legacy'      => 'virtual:legacy-app',
 		'besogo'      => 'virtual:legacy-besogo',
 	];
