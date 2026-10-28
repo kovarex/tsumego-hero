@@ -1,40 +1,36 @@
 <?php
 
+use App\Model\Table\AchievementStatusTable;
+
 class RecentAchievementsTest extends IntegrationTestCase
 {
 	public function testGetRecentReturnsResults(): void
 	{
 		$context = new ContextPreparator();
-		$AchievementStatus = ClassRegistry::init('AchievementStatus');
+		$achievementStatusTable = $this->fetchTable('AchievementStatus');
 
-		$AchievementStatus->create();
-		$AchievementStatus->save([
-			'AchievementStatus' => [
-				'user_id' => $context->user['id'],
-				'achievement_id' => 20,
-				'created' => date('Y-m-d H:i:s'),
-			],
-		]);
+		$achievementStatusTable->saveOrFail($achievementStatusTable->newEntity([
+			'user_id' => $context->user['id'],
+			'achievement_id' => 20,
+			'created' => date('Y-m-d H:i:s'),
+		]));
 
-		$result = $AchievementStatus->getRecent(7);
+		$result = AchievementStatusTable::getRecent(7);
 		$this->assertNotEmpty($result);
 	}
 
 	public function testGetRecentReturnsCorrectStructure(): void
 	{
 		$context = new ContextPreparator();
-		$AchievementStatus = ClassRegistry::init('AchievementStatus');
+		$achievementStatusTable = $this->fetchTable('AchievementStatus');
 
-		$AchievementStatus->create();
-		$AchievementStatus->save([
-			'AchievementStatus' => [
-				'user_id' => $context->user['id'],
-				'achievement_id' => 30,
-				'created' => date('Y-m-d H:i:s'),
-			],
-		]);
+		$achievementStatusTable->saveOrFail($achievementStatusTable->newEntity([
+			'user_id' => $context->user['id'],
+			'achievement_id' => 30,
+			'created' => date('Y-m-d H:i:s'),
+		]));
 
-		$result = $AchievementStatus->getRecent(1);
+		$result = AchievementStatusTable::getRecent(1);
 		$this->assertCount(1, $result);
 
 		$item = $result[0];
@@ -58,51 +54,40 @@ class RecentAchievementsTest extends IntegrationTestCase
 	public function testGetRecentRespectsLimit(): void
 	{
 		$context = new ContextPreparator();
-		$AchievementStatus = ClassRegistry::init('AchievementStatus');
+		$achievementStatusTable = $this->fetchTable('AchievementStatus');
 
 		foreach ([2, 3, 4, 5, 6] as $i => $achievementId)
-		{
-			$AchievementStatus->create();
-			$AchievementStatus->save([
-				'AchievementStatus' => [
-					'user_id' => $context->user['id'],
-					'achievement_id' => $achievementId,
-					'created' => date('Y-m-d H:i:s', strtotime("-{$i} hour")),
-				],
-			]);
-		}
+			$achievementStatusTable->saveOrFail($achievementStatusTable->newEntity([
+				'user_id' => $context->user['id'],
+				'achievement_id' => $achievementId,
+				'created' => date('Y-m-d H:i:s', strtotime("-{$i} hour")),
+			]));
 
-		$result = $AchievementStatus->getRecent(3);
+		$result = AchievementStatusTable::getRecent(3);
 		$this->assertCount(3, $result);
 	}
 
 	public function testGetRecentReturnsNewestFirst(): void
 	{
 		$context = new ContextPreparator();
-		$AchievementStatus = ClassRegistry::init('AchievementStatus');
+		$achievementStatusTable = $this->fetchTable('AchievementStatus');
 
 		$old = date('Y-m-d H:i:s', strtotime('-2 hours'));
 		$new = date('Y-m-d H:i:s', strtotime('-1 hour'));
 
-		$AchievementStatus->create();
-		$AchievementStatus->save([
-			'AchievementStatus' => [
-				'user_id' => $context->user['id'],
-				'achievement_id' => 10,
-				'created' => $old,
-			],
-		]);
+		$achievementStatusTable->saveOrFail($achievementStatusTable->newEntity([
+			'user_id' => $context->user['id'],
+			'achievement_id' => 10,
+			'created' => $old,
+		]));
 
-		$AchievementStatus->create();
-		$AchievementStatus->save([
-			'AchievementStatus' => [
-				'user_id' => $context->user['id'],
-				'achievement_id' => 11,
-				'created' => $new,
-			],
-		]);
+		$achievementStatusTable->saveOrFail($achievementStatusTable->newEntity([
+			'user_id' => $context->user['id'],
+			'achievement_id' => 11,
+			'created' => $new,
+		]));
 
-		$result = $AchievementStatus->getRecent(2);
+		$result = AchievementStatusTable::getRecent(2);
 		$this->assertCount(2, $result);
 		$this->assertSame(11, (int) $result[0]['id'], 'Newest achievement should be first');
 		$this->assertSame(10, (int) $result[1]['id'], 'Oldest achievement should be second');

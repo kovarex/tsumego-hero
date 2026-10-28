@@ -49,7 +49,7 @@
 <div class="timeline">
   <div class="timeline__event timeline__event--type2">
     <div class="timeline__event__icon timeline_box_height1">
-    <div align="center" class="set-image-zoom">
+    <div align="center" class="image-zoom">
 					<img width="130px" src="/img/website-history-2018-01.png" alt="Website History 2018-01">	
 			  </div>
     </div>
@@ -66,7 +66,7 @@
   </div>
   <div class="timeline__event timeline__event--type1">
     <div class="timeline__event__icon timeline_box_height2">
-	      <div align="center" class="set-image-zoom">
+	      <div align="center" class="image-zoom">
 					<img width="200px" src="/img/website-history-2018-09.PNG" alt="Website History 2018-09">
 			  </div>
     </div>
@@ -81,7 +81,7 @@
   </div>
   <div class="timeline__event timeline__event--type3">
     <div class="timeline__event__icon timeline_box_height3">
-	  	  <div align="center" class="set-image-zoom">
+	  	  <div align="center" class="image-zoom">
 					<img width="200px" src="/img/website-history-2018-10.PNG" alt="Website History 2018-10">	
 			  </div>
     </div>
@@ -96,7 +96,7 @@
   </div>
   <div class="timeline__event timeline__event--type2">
     <div class="timeline__event__icon timeline_box_height4">
-	  <div align="center" class="set-image-zoom">
+	  <div align="center" class="image-zoom">
 					<img width="200px" src="/img/website-history-2019-03.png" alt="Website History 2019-03">				
 			</div>
     </div>
@@ -115,7 +115,7 @@
   </div>
   <div class="timeline__event timeline__event--type1">
     <div class="timeline__event__icon timeline_box_height5">
-	    <div align="center" class="set-image-zoom">
+	    <div align="center" class="image-zoom">
 					<img width="200px" src="/img/website-history-2023-04.PNG" alt="Website History 2023-04">
 			</div>
     </div>
@@ -140,7 +140,7 @@
     <div class="timeline__event__icon timeline_box_height6">
       <i class="lni-cake"></i>
       <div class="timeline__event__date">
-	    <div align="center" class="set-image-zoom">
+	    <div align="center" class="image-zoom">
 					<img width="150px" src="/img/website-history-2023-07-1.png" alt="Website History 2023-07-1">
 					<img width="150px" src="/img/website-history-2023-07-2.png" alt="Website History 2023-07-2">
 			</div>
@@ -157,7 +157,7 @@
   </div>
   <div class="timeline__event timeline__event--type2">
     <div class="timeline__event__icon timeline_box_height7">
-      <div align="center" class="set-image-zoom">
+      <div align="center" class="image-zoom">
 					<img width="200px" src="/img/website-history-2025-11.png" alt="Website History 2025-11">
 			</div>
     </div>

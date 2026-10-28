@@ -33,14 +33,13 @@ class AchievementsController extends AppController
 	{
 		$this->set('_page', 'user');
 		$this->set('_title', 'Tsumego Hero - Achievements');
-		$this->loadModel('AchievementStatus');
 
 		$statusByAchievementId = [];
 		if ($viewedUser)
 		{
 			$this->set('viewedUser', $viewedUser);
-			foreach ($this->AchievementStatus->find('all', ['conditions' => ['user_id' => $viewedUser['id']]]) as $status)
-				$statusByAchievementId[$status['AchievementStatus']['achievement_id']] = $status['AchievementStatus'];
+			foreach ($this->fetchTable('AchievementStatus')->find()->where(['user_id' => $viewedUser['id']])->all() as $status)
+				$statusByAchievementId[$status->achievement_id] = $status;
 		}
 
 		$achievements = [];
@@ -58,10 +57,10 @@ class AchievementsController extends AppController
 				'image' => $status ? $achievement['image'] : 'ac000i',
 				'color' => $status ? $achievement['color'] : 'achievementColorGray',
 				'unlocked' => $status !== null,
-				'unlocked_at' => $status ? $status['created'] : null,
+				'unlocked_at' => $status?->created->format('Y-m-d H:i:s'),
 				//Repeatable achievements are earned more than once: they show how often,
 				//but still count as a single completed achievement.
-				'earned_count' => $status ? (int) $status['value'] : 0,
+				'earned_count' => $status ? $status->value : 0,
 				'progress' => null,
 				'progress_goal' => null,
 				'progress_percent' => null,
@@ -102,7 +101,6 @@ class AchievementsController extends AppController
 	{
 		$this->set('_page', 'user');
 		$this->set('_title', 'Tsumego Hero - Achievements');
-		$this->loadModel('AchievementStatus');
 		$this->loadModel('User');
 		$achievement = $this->Achievement->findById($id);
 		if (!$achievement)
@@ -119,27 +117,27 @@ class AchievementsController extends AppController
 		}
 		$statusUserId = $viewedUser ? (int) $viewedUser['id'] : (Auth::isLoggedIn() ? Auth::getUserID() : null);
 
-		$currentUserStatus = [];
+		$achievementStatusTable = $this->fetchTable('AchievementStatus');
+		$currentUserStatus = null;
 		$completerConditions = [
 			'achievement_id' => $id,
 			'AchievementStatus.user_id NOT IN (SELECT id FROM user WHERE deleted IS NOT NULL)'];
-		$completerCount = $this->AchievementStatus->find('count', ['conditions' => $completerConditions]);
-		$completers = $this->AchievementStatus->find('all', [
-			'order' => 'created DESC, AchievementStatus.id DESC',
-			'conditions' => $completerConditions,
-			'limit' => 10]);
-		if (!$completers)
-			$completers = [];
+		$completerCount = $achievementStatusTable->find()->where($completerConditions)->count();
+		$completerUserIds = $achievementStatusTable->find()
+			->where($completerConditions)
+			->orderBy(['created' => 'DESC', 'AchievementStatus.id' => 'DESC'])
+			->limit(10)
+			->all()
+			->extract('user_id')
+			->toList();
 		if ($statusUserId)
-			$currentUserStatus = $this->AchievementStatus->find('first', ['conditions' => ['achievement_id' => $id, 'user_id' => $statusUserId]]);
-		$userIds = array_map(fn($item) => $item['AchievementStatus']['user_id'], $completers);
+			$currentUserStatus = $achievementStatusTable->find()->where(['achievement_id' => $id, 'user_id' => $statusUserId])->first();
 		$usersById = [];
-		if ($userIds)
-			foreach ($this->User->find('all', ['conditions' => ['id' => $userIds]]) as $u)
+		if ($completerUserIds)
+			foreach ($this->User->find('all', ['conditions' => ['id' => $completerUserIds]]) as $u)
 				$usersById[$u['User']['id']] = $u['User'];
-		foreach ($completers as &$item)
-			$item['AchievementStatus']['user'] = $usersById[$item['AchievementStatus']['user_id']] ?? null;
-		unset($item);
+		//The completers as users, null for one the users table no longer has
+		$completers = array_map(fn(int $userId) => $usersById[$userId] ?? null, $completerUserIds);
 		$userCount = $this->User->find('count', ['conditions' => ['deleted IS NULL']]);
 		$completionPercent = $userCount > 0 ? round($completerCount / $userCount * 100, 1) : 0;
 		$rarity = Achievement::getRarityLabel($completionPercent);

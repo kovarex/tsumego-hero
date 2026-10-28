@@ -1,9 +1,11 @@
 <?php
 
+use App\Model\Table\TsumegoVariantTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\TsumegoUtil;
 use App\Utility\Util;
+use Cake\ORM\TableRegistry;
 
 class TsumegosControllerTest extends IntegrationTestCase
 {
@@ -609,7 +611,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 				'description' => 'Black to play. What is the result?',
 				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])',
 				'variants' => [[
-					'tsumego_variant_type_id' => TsumegoVariant::TYPE_MULTIPLE_CHOICE,
+					'tsumego_variant_type_id' => TsumegoVariantTable::TYPE_MULTIPLE_CHOICE,
 					'answer1' => 'White is dead',
 					'answer2' => 'Ko',
 					'answer3' => 'Seki in sente',
@@ -649,35 +651,36 @@ class TsumegosControllerTest extends IntegrationTestCase
 
 	private static function variantsOf(int $tsumegoID): array
 	{
-		return Util::query('SELECT tsumego_variant_type_id, answer1 FROM tsumego_variant WHERE tsumego_id = ?', [$tsumegoID]);
+		return TableRegistry::getTableLocator()->get('TsumegoVariant')->find()
+			->select(['tsumego_variant_type_id', 'answer1'])->where(['tsumego_id' => $tsumegoID])->disableHydration()->toArray();
 	}
 
 	//The form comes with the problem's own question checked, saving it used to delete the variant.
 	public function testProblemSettingsKeepTheVariantAndItsAnswers(): void
 	{
-		$context = $this->prepareSandboxProblem([['tsumego_variant_type_id' => TsumegoVariant::TYPE_MULTIPLE_CHOICE, 'answer1' => 'Seki in sente']]);
+		$context = $this->prepareSandboxProblem([['tsumego_variant_type_id' => TsumegoVariantTable::TYPE_MULTIPLE_CHOICE, 'answer1' => 'Seki in sente']]);
 
-		$this->postProblemSettings($context, TsumegoVariant::TYPE_MULTIPLE_CHOICE);
+		$this->postProblemSettings($context, TsumegoVariantTable::TYPE_MULTIPLE_CHOICE);
 
-		$this->assertSame([['tsumego_variant_type_id' => TsumegoVariant::TYPE_MULTIPLE_CHOICE, 'answer1' => 'Seki in sente']], self::variantsOf($context->tsumegos[0]['id']));
+		$this->assertSame([['tsumego_variant_type_id' => TsumegoVariantTable::TYPE_MULTIPLE_CHOICE, 'answer1' => 'Seki in sente']], self::variantsOf($context->tsumegos[0]['id']));
 	}
 
 	public function testProblemSettingsGiveAProblemAVariant(): void
 	{
 		$context = $this->prepareSandboxProblem();
 
-		$this->postProblemSettings($context, TsumegoVariant::TYPE_MULTIPLE_CHOICE);
+		$this->postProblemSettings($context, TsumegoVariantTable::TYPE_MULTIPLE_CHOICE);
 
-		$this->assertSame([['tsumego_variant_type_id' => TsumegoVariant::TYPE_MULTIPLE_CHOICE, 'answer1' => 'Black is dead']], self::variantsOf($context->tsumegos[0]['id']));
+		$this->assertSame([['tsumego_variant_type_id' => TsumegoVariantTable::TYPE_MULTIPLE_CHOICE, 'answer1' => 'Black is dead']], self::variantsOf($context->tsumegos[0]['id']));
 	}
 
 	public function testProblemSettingsChangeTheVariant(): void
 	{
-		$context = $this->prepareSandboxProblem([['tsumego_variant_type_id' => TsumegoVariant::TYPE_MULTIPLE_CHOICE, 'answer1' => 'Seki in sente']]);
+		$context = $this->prepareSandboxProblem([['tsumego_variant_type_id' => TsumegoVariantTable::TYPE_MULTIPLE_CHOICE, 'answer1' => 'Seki in sente']]);
 
-		$this->postProblemSettings($context, TsumegoVariant::TYPE_SCORE_ESTIMATING);
+		$this->postProblemSettings($context, TsumegoVariantTable::TYPE_SCORE_ESTIMATING);
 		// a new score estimating problem starts at komi 0
-		$this->assertSame([['tsumego_variant_type_id' => TsumegoVariant::TYPE_SCORE_ESTIMATING, 'answer1' => '0']], self::variantsOf($context->tsumegos[0]['id']));
+		$this->assertSame([['tsumego_variant_type_id' => TsumegoVariantTable::TYPE_SCORE_ESTIMATING, 'answer1' => '0']], self::variantsOf($context->tsumegos[0]['id']));
 
 		$this->postProblemSettings($context, null);
 		$this->assertSame([], self::variantsOf($context->tsumegos[0]['id']));
@@ -718,7 +721,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 
 		$this->assertStringEndsWith($playPath, $browser->driver->getCurrentURL());
 		$this->assertSame(1, (int) ClassRegistry::init('Tsumego')->findById($tsumegoID)['Tsumego']['pass']);
-		$this->assertSame([['tsumego_variant_type_id' => TsumegoVariant::TYPE_SCORE_ESTIMATING, 'answer1' => '0']], self::variantsOf($tsumegoID));
+		$this->assertSame([['tsumego_variant_type_id' => TsumegoVariantTable::TYPE_SCORE_ESTIMATING, 'answer1' => '0']], self::variantsOf($tsumegoID));
 	}
 
 	public function testProblemSettingsAreForAdmins(): void
@@ -732,19 +735,20 @@ class TsumegosControllerTest extends IntegrationTestCase
 
 	public function testVariantSavesTheAnswersOfTheQuestion(): void
 	{
-		$context = $this->prepareSandboxProblem([['tsumego_variant_type_id' => TsumegoVariant::TYPE_MULTIPLE_CHOICE, 'answer1' => 'Seki in sente']]);
+		$context = $this->prepareSandboxProblem([['tsumego_variant_type_id' => TsumegoVariantTable::TYPE_MULTIPLE_CHOICE, 'answer1' => 'Seki in sente']]);
 		$tsumegoID = $context->tsumegos[0]['id'];
 
 		$this->post('tsumegos/variant/' . $tsumegoID, ['answer1' => 'Ko', 'answer2' => 'Seki', 'answer3' => 'Dead', 'answer4' => 'Alive', 'explanation' => 'Look at the eye', 'correct_answer' => 2, 'winner' => 'ignored']);
 
 		$this->assertResponseCode(302);
 		$this->assertSame([['answer1' => 'Ko', 'answer2' => 'Seki', 'answer3' => 'Dead', 'answer4' => 'Alive', 'explanation' => 'Look at the eye', 'correct_answer' => 2]],
-			Util::query('SELECT answer1, answer2, answer3, answer4, explanation, correct_answer FROM tsumego_variant WHERE tsumego_id = ?', [$tsumegoID]));
+			$this->fetchTable('TsumegoVariant')->find()
+				->select(['answer1', 'answer2', 'answer3', 'answer4', 'explanation', 'correct_answer'])->where(['tsumego_id' => $tsumegoID])->disableHydration()->toArray());
 	}
 
 	public function testVariantIsForAdmins(): void
 	{
-		$context = new ContextPreparator(['tsumego' => ['variants' => [['tsumego_variant_type_id' => TsumegoVariant::TYPE_MULTIPLE_CHOICE]]]]);
+		$context = new ContextPreparator(['tsumego' => ['variants' => [['tsumego_variant_type_id' => TsumegoVariantTable::TYPE_MULTIPLE_CHOICE]]]]);
 
 		$this->post('tsumegos/variant/' . $context->tsumegos[0]['id'], ['answer1' => 'Ko']);
 
@@ -763,7 +767,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 				'description' => 'Who wins?',
 				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])',
 				'variants' => [[
-					'tsumego_variant_type_id' => TsumegoVariant::TYPE_SCORE_ESTIMATING,
+					'tsumego_variant_type_id' => TsumegoVariantTable::TYPE_SCORE_ESTIMATING,
 					'answer1' => '6.5',
 					'answer2' => '3',
 					'answer3' => '6',

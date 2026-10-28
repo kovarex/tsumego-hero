@@ -4,10 +4,11 @@
 //They read only the computed `permissions` list attached by Auth::getIdentity().
 use App\Model\Entity\TagConnection;
 use App\Model\Entity\TsumegoComment;
+use App\Model\Entity\TsumegoIssue;
 use App\Policy\AdminPolicy;
 use App\Policy\OwnerPolicy;
-use App\Policy\SgfPolicy;
 use App\Policy\SetPolicy;
+use App\Policy\SgfPolicy;
 use App\Policy\TagConnectionPolicy;
 use App\Policy\TagPolicy;
 use App\Policy\TsumegoCommentPolicy;
@@ -180,7 +181,7 @@ class PolicyTest extends CakeTestCase
 	public function testTsumegoIssuePolicyCloseAllowsOwnerOrAdmin()
 	{
 		$policy = new TsumegoIssuePolicy();
-		$issue = ['user_id' => 7];
+		$issue = new TsumegoIssue(['user_id' => 7]);
 		$owner = $this->identity(false);
 		$owner['id'] = 7;
 
@@ -192,7 +193,7 @@ class PolicyTest extends CakeTestCase
 	public function testTsumegoIssuePolicyReopenAllowsOwnerOrAdmin()
 	{
 		$policy = new TsumegoIssuePolicy();
-		$issue = ['user_id' => 7];
+		$issue = new TsumegoIssue(['user_id' => 7]);
 		$owner = $this->identity(false);
 		$owner['id'] = 7;
 

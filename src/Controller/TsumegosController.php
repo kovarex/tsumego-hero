@@ -2,6 +2,7 @@
 
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
+use App\Model\Table\TsumegoVariantTable;
 use App\Utility\AchievementChecker;
 use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
@@ -136,7 +137,7 @@ class TsumegosController extends AppController
 		}
 		ClassRegistry::init('Tsumego')->save($tsumego, ['fieldList' => ['alternative_response', 'pass']]);
 		if (array_key_exists('variant_type', $data))
-			TsumegoVariant::changeType((int) $tsumegoID, $data['variant_type'] === '' ? null : (int) $data['variant_type']);
+			TsumegoVariantTable::changeType((int) $tsumegoID, $data['variant_type'] === '' ? null : (int) $data['variant_type']);
 		return $this->redirect($this->referer('/tsumegos/play/' . (int) $tsumegoID, true));
 	}
 
@@ -145,16 +146,15 @@ class TsumegosController extends AppController
 	public function variant(string $tsumegoID): CakeResponse
 	{
 		$this->Authorization->authorize('Tsumego', 'editSettings');
-		$variant = ClassRegistry::init('TsumegoVariant')->find('first', ['conditions' => ['tsumego_id' => $tsumegoID]]);
+		$variantTable = $this->fetchTable('TsumegoVariant');
+		$variant = $variantTable->find()->where(['tsumego_id' => (int) $tsumegoID])->first();
 		if (!$variant)
 			throw new NotFoundException('The problem has no question to answer');
-		$fields = (int) $variant['TsumegoVariant']['tsumego_variant_type_id'] === TsumegoVariant::TYPE_MULTIPLE_CHOICE
+		$fields = $variant->tsumego_variant_type_id === TsumegoVariantTable::TYPE_MULTIPLE_CHOICE
 			? ['answer1', 'answer2', 'answer3', 'answer4', 'explanation', 'correct_answer']
 			: ['winner', 'answer1', 'answer2', 'answer3'];
-		foreach ($fields as $field)
-			if (isset($this->request->data[$field]))
-				$variant['TsumegoVariant'][$field] = $this->request->data[$field];
-		ClassRegistry::init('TsumegoVariant')->save($variant);
+		$variantTable->patchEntity($variant, array_intersect_key((array) $this->request->data, array_flip($fields)));
+		$variantTable->saveOrFail($variant);
 		return $this->redirect($this->referer('/tsumegos/play/' . (int) $tsumegoID, true));
 	}
 

@@ -23,18 +23,16 @@ abstract class AchievementTestCase extends IntegrationTestCase
 
 	protected function assertAchievementUnlocked(AchievementId $achievementId, $message = null)
 	{
-		$AchievementStatus = ClassRegistry::init('AchievementStatus');
-		$exists = $AchievementStatus->find('count', [
-			'conditions' => ['user_id' => Auth::getUserID(), 'achievement_id' => $achievementId->value]]);
+		$exists = $this->fetchTable('AchievementStatus')->find()
+			->where(['user_id' => Auth::getUserID(), 'achievement_id' => $achievementId->value])->count();
 
 		$this->assertGreaterThan(0, $exists, $message ?: $achievementId->name . ' should be unlocked');
 	}
 
 	protected function assertAchievementNotUnlocked(AchievementId $achievementId)
 	{
-		$AchievementStatus = ClassRegistry::init('AchievementStatus');
-		$exists = $AchievementStatus->find('count', [
-			'conditions' => ['user_id' => Auth::getUserID(), 'achievement_id' => $achievementId->value]]);
+		$exists = $this->fetchTable('AchievementStatus')->find()
+			->where(['user_id' => Auth::getUserID(), 'achievement_id' => $achievementId->value])->count();
 		$this->assertEquals(0, $exists, $achievementId->name . ' should NOT be unlocked');
 	}
 
@@ -45,13 +43,11 @@ abstract class AchievementTestCase extends IntegrationTestCase
 	 */
 	protected function getUserAchievements($userId)
 	{
-		$AchievementStatus = ClassRegistry::init('AchievementStatus');
-		$achievements = $AchievementStatus->find('list', [
-			'conditions' => ['user_id' => $userId],
-			'fields' => ['achievement_id', 'achievement_id']
-		]);
-
-		return array_values($achievements);
+		return $this->fetchTable('AchievementStatus')->find()
+			->where(['user_id' => $userId])
+			->all()
+			->extract('achievement_id')
+			->toList();
 	}
 
 	//Trigger achievement check (simulates what happens after login)

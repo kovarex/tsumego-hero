@@ -1,7 +1,9 @@
 <?php
 
+use App\Model\Entity\Tag;
 use App\Model\Entity\TimeModeSession;
 use App\Model\Table\TimeModeRankTable;
+use App\Model\Table\TsumegoIssueTable;
 use App\Utility\AchievementChecker;
 use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
@@ -400,19 +402,15 @@ class ContextPreparator
 	{
 
 		// Create the issue
-		ClassRegistry::init('TsumegoIssue')->create();
 		$issue = [];
 		$issue['tsumego_id'] = $tsumego['id'];
 		$issue['user_id'] = $this->user['id'];
-		$issue['tsumego_issue_status_id'] = Util::extract('status', $issueInput) ?: TsumegoIssue::$OPENED_STATUS;
+		$issue['tsumego_issue_status_id'] = Util::extract('status', $issueInput) ?: TsumegoIssueTable::OPENED_STATUS;
 		$created = Util::extract('created', $issueInput);
 		if ($created)
 			$issue['created'] = $created;
-		$issueModel = ClassRegistry::init('TsumegoIssue');
-		$issueModel->save($issue);
-
-		// Get the created issue ID
-		$issueId = $issueModel->id;
+		$tsumegoIssueTable = TableRegistry::getTableLocator()->get('TsumegoIssue');
+		$issueId = $tsumegoIssueTable->saveOrFail($tsumegoIssueTable->newEntity($issue))->id;
 
 		// Store issue in array for test access
 		$this->issues[] = ['id' => $issueId, 'tsumego_id' => $issue['tsumego_id'], 'user_id' => $issue['user_id']];
@@ -435,13 +433,8 @@ class ContextPreparator
 
 	private function prepareTsumegoVariant(array $variantInput, &$tsumego): void
 	{
-		$variant = array_merge(['tsumego_id' => $tsumego['id']], $variantInput);
-		$variantModel = ClassRegistry::init('TsumegoVariant');
-		$variantModel->create($variant);
-		$variantModel->save($variant);
-		$savedVariant = $variantModel->data['TsumegoVariant'];
-		$savedVariant['id'] = $variantModel->id;
-		$tsumego['variants'][] = $savedVariant;
+		$variantTable = TableRegistry::getTableLocator()->get('TsumegoVariant');
+		$tsumego['variants'][] = $variantTable->saveOrFail($variantTable->newEntity(array_merge(['tsumego_id' => $tsumego['id']], $variantInput)));
 	}
 
 	private function prepareTsumegoStatuses($tsumegoStatuses, $tsumego): void
@@ -581,7 +574,7 @@ class ContextPreparator
 			$tagConnection = $tagConnectionTable->saveOrFail($tagConnectionTable->newEntity([
 				'tsumego_id' => $tsumego['id'],
 				'user_id' => self::getUserIdFromName(Util::extract('user', $tagInput)) ?: $this->user['id'],
-				'tag_id' => $tag['id'],
+				'tag_id' => $tag->id,
 				'approved' => !is_null($approved) ? $approved : 1]));
 			$tsumego['tags'] [] = $tag;
 			$tsumego['tag-connections'] [] = $tagConnection;
@@ -652,24 +645,19 @@ class ContextPreparator
 		ClassRegistry::init('User')->saveField('default_set_id', $setId);
 	}
 
-	private function getOrCreateTag($tagInput): array
+	private function getOrCreateTag($tagInput): Tag
 	{
 		$name = Util::extract('name', $tagInput);
-		$tag  = ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => $name]]);
+		$tagTable = TableRegistry::getTableLocator()->get('Tag');
+		$tag = $tagTable->find()->where(['name' => $name])->first();
 		if (!$tag)
-		{
-			$tag = [];
-			$tag['hint'] = Util::extractWithDefault('is_hint', $tagInput, 0);
-			$tag['approved'] = Util::extractWithDefault('approved', $tagInput, true);
-			$tag['user_id'] = $this->user['id'];
-			$tag['description'] = Util::extractWithDefault('description', $tagInput, '');
-			$tag['link'] = Util::extractWithDefault('link', $tagInput, '');
-			$tag['name'] = $name;
-			ClassRegistry::init('Tag')->create($tag);
-			ClassRegistry::init('Tag')->save($tag);
-			// reloading so the generated id is retrieved
-			$tag  = ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => $name]]);
-		}
+			$tag = $tagTable->saveOrFail($tagTable->newEntity([
+				'hint' => Util::extractWithDefault('is_hint', $tagInput, 0),
+				'approved' => Util::extractWithDefault('approved', $tagInput, true),
+				'user_id' => $this->user['id'],
+				'description' => Util::extractWithDefault('description', $tagInput, ''),
+				'link' => Util::extractWithDefault('link', $tagInput, ''),
+				'name' => $name]));
 		else
 		{
 			Util::extractWithDefault('description', $tagInput, '');
@@ -679,8 +667,8 @@ class ContextPreparator
 		}
 
 		$this->checkOptionsConsumed($tagInput);
-		$this->tags[] = $tag['Tag'];
-		return $tag['Tag'];
+		$this->tags[] = $tag;
+		return $tag;
 	}
 
 	private function checkSetClear(int $setID): void
@@ -868,7 +856,7 @@ class ContextPreparator
 		if (!$statuses)
 			return;
 
-		$AchievementStatus = ClassRegistry::init('AchievementStatus');
+		$achievementStatusTable = TableRegistry::getTableLocator()->get('AchievementStatus');
 		foreach ($statuses as $statusInput)
 		{
 			$status = [];
@@ -877,8 +865,7 @@ class ContextPreparator
 			$status['value'] = Util::extract('value', $statusInput) ?? 1;
 			$status['created'] = Util::extract('created', $statusInput) ?: date('Y-m-d H:i:s');
 
-			$AchievementStatus->create();
-			$AchievementStatus->save($status);
+			$achievementStatusTable->saveOrFail($achievementStatusTable->newEntity($status));
 			$this->checkOptionsConsumed($statusInput);
 		}
 	}

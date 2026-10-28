@@ -86,13 +86,13 @@ class ProfileTabsTest extends IntegrationTestCase
 			'other-users' => [['name' => 'bob']],
 		]);
 		$bobbyId = $context->otherUsers[0]['id'];
-		ClassRegistry::init('Tag')->create();
-		ClassRegistry::init('Tag')->save(['Tag' => [
+		$tagTable = $this->fetchTable('Tag');
+		$tagTable->saveOrFail($tagTable->newEntity([
 			'name' => 'tesuji',
 			'description' => 'A tesuji problem',
 			'user_id' => $bobbyId,
 			'approved' => 1,
-		]]);
+		]));
 		$this->login('alice');
 
 		$this->get('/users/view/' . $bobbyId);
@@ -141,13 +141,13 @@ class ProfileTabsTest extends IntegrationTestCase
 		]);
 		$bobbyId = $context->otherUsers[0]['id'];
 		$this->_createSet('Bobby Collection', $bobbyId, 1);
-		ClassRegistry::init('Tag')->create();
-		ClassRegistry::init('Tag')->save(['Tag' => [
+		$tagTable = $this->fetchTable('Tag');
+		$tagTable->saveOrFail($tagTable->newEntity([
 			'name' => 'tesuji',
 			'description' => 'A tesuji problem',
 			'user_id' => $bobbyId,
 			'approved' => 1,
-		]]);
+		]));
 		$this->login('alice');
 
 		foreach ([

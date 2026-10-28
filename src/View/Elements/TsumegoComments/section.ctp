@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\TsumegoIssueTable;
 use App\Utility\Auth;
 use Cake\ORM\TableRegistry;
 
@@ -8,7 +9,6 @@ use Cake\ORM\TableRegistry;
  *
  * Variables:
  * @var View $this
- * @var TsumegoIssue $TsumegoIssue
  * @var int $tsumegoId The tsumego ID
  * @var bool $solved Whether the problem is solved for the current mode
  */
@@ -18,8 +18,7 @@ $shouldShowComments = Auth::isAdmin() || $solved;
 $userId = Auth::isLoggedIn() ? Auth::getUserID() : null;
 
 // Calculate counts for tabs (only thing we need from server)
-$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
-$counts = $TsumegoIssue->getCommentSectionCounts($tsumegoId);
+$counts = TsumegoIssueTable::getCommentSectionCounts($tsumegoId);
 
 // Slim list of position-anchored comment positions so the review tree can show
 // badges before the user opens the comments tab (avoids fetching all comments).

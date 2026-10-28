@@ -80,9 +80,8 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$repeat = new AchievementChecker();
 		$repeat->checkSetAchievements($secondSet)->finalize();
 
-		$status = ClassRegistry::init('AchievementStatus')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'achievement_id' => AchievementId::SUPERIOR_ACCURACY->value]]);
-		$this->assertSame(2, (int) $status['AchievementStatus']['value'], 'The second collection should raise the count to 2');
+		$status = $this->fetchTable('AchievementStatus')->find()->where(['user_id' => $context->user['id'], 'achievement_id' => AchievementId::SUPERIOR_ACCURACY->value])->firstOrFail();
+		$this->assertSame(2, $status->value, 'The second collection should raise the count to 2');
 
 		$this->assertSame([], $repeat->updated, 'A further collection should not queue a popup');
 		$this->assertSame(0, $context->XPGained(), 'A further collection should not grant XP');
@@ -112,9 +111,8 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$smallSet = $this->createFinishedCollection($context->user['id'], 99);
 		new AchievementChecker()->checkSetAchievements($smallSet)->finalize();
 
-		$status = ClassRegistry::init('AchievementStatus')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'achievement_id' => AchievementId::SUPERIOR_ACCURACY->value]]);
-		$this->assertSame(1, (int) $status['AchievementStatus']['value'],
+		$status = $this->fetchTable('AchievementStatus')->find()->where(['user_id' => $context->user['id'], 'achievement_id' => AchievementId::SUPERIOR_ACCURACY->value])->firstOrFail();
+		$this->assertSame(1, $status->value,
 			'the small collection should not be counted');
 	}
 
@@ -129,9 +127,8 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 
 		new AchievementChecker()->checkSetAchievements($setId);
 
-		$status = ClassRegistry::init('AchievementStatus')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'achievement_id' => AchievementId::SUPERIOR_ACCURACY->value]]);
-		$this->assertSame(1, (int) $status['AchievementStatus']['value'],
+		$status = $this->fetchTable('AchievementStatus')->find()->where(['user_id' => $context->user['id'], 'achievement_id' => AchievementId::SUPERIOR_ACCURACY->value])->firstOrFail();
+		$this->assertSame(1, $status->value,
 			'a collection finished twice is one collection');
 	}
 
@@ -145,9 +142,8 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$setId = $this->createFinishedCollection($context->user['id']);
 		new AchievementChecker()->checkSetAchievements($setId);
 
-		$status = ClassRegistry::init('AchievementStatus')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'achievement_id' => AchievementId::SUPERIOR_ACCURACY->value]]);
-		$this->assertSame(5, (int) $status['AchievementStatus']['value'],
+		$status = $this->fetchTable('AchievementStatus')->find()->where(['user_id' => $context->user['id'], 'achievement_id' => AchievementId::SUPERIOR_ACCURACY->value])->firstOrFail();
+		$this->assertSame(5, $status->value,
 			'a later collection does not lower an earned count');
 	}
 
