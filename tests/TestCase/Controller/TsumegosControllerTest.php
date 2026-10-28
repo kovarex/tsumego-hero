@@ -584,9 +584,9 @@ class TsumegosControllerTest extends IntegrationTestCase
 		]);
 		$this->get('tsumegos/play/' . $context->tsumegos[0]['id']);
 		$result = $this->view;
-		preg_match('/property="og:description"\s+content="([^"]*)"/', $result, $m);
-		$this->assertNotEmpty($m, 'og:description should exist for Black-first SGF');
-		$this->assertStringContainsString('Black to capture the white group', $m[1]);
+		preg_match('/property="og:description"\s+content="([^"]*)"/', $result, $matches);
+		$this->assertNotEmpty($matches, 'og:description should exist for Black-first SGF');
+		$this->assertStringContainsString('Black to capture the white group', $matches[1]);
 
 		// White-first: OG description shows true-color "White"
 		$context2 = new ContextPreparator([

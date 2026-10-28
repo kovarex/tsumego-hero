@@ -98,7 +98,7 @@ use App\Utility\ViteManifest;
 	{
 		return preg_replace_callback(
 			'/\b(Black|black|White|white)\b/',
-			fn($m) => ['Black' => 'White', 'black' => 'white', 'White' => 'Black', 'white' => 'black'][$m[1]],
+			fn($match) => ['Black' => 'White', 'black' => 'white', 'White' => 'Black', 'white' => 'black'][$match[1]],
 			$text
 		);
 	};

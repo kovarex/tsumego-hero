@@ -14,17 +14,17 @@ use App\Utility\Util;
 
 if (!function_exists('_tagLink')):
 
-	function _tagLink(ContributionRow $c): string
+	function _tagLink(ContributionRow $contribution): string
 	{
-		$tag = h($c->tag);
-		if ($c->tagId)
-			return '<b><a href="/tags/view/' . $c->tagId . '"><i>' . $tag . '</i></a></b>';
+		$tag = h($contribution->tag);
+		if ($contribution->tagId)
+			return '<b><a href="/tags/view/' . $contribution->tagId . '"><i>' . $tag . '</i></a></b>';
 		return '<b><i>' . $tag . '</i></b>';
 	}
 
-	function _tsumegoLink(ContributionRow $c): string
+	function _tsumegoLink(ContributionRow $contribution): string
 	{
-		return '<b><a href="/tsumegos/play/' . $c->tsumegoId . '">' . h($c->tsumegoLabel) . '</a></b>';
+		return '<b><a href="/tsumegos/play/' . $contribution->tsumegoId . '">' . h($contribution->tsumegoLabel) . '</a></b>';
 	}
 
 endif;
@@ -43,27 +43,27 @@ endif;
 		</tr>
 		</thead>
 		<tbody>
-		<?php foreach ($contributions as $c): ?>
+		<?php foreach ($contributions as $contribution): ?>
 			<?php
-				if ($c->status === 'accepted')
+				if ($contribution->status === 'accepted')
 					$color = 'var(--color-green)';
-				elseif ($c->status === 'pending')
+				elseif ($contribution->status === 'pending')
 					$color = 'var(--color-yellow)';
 				else
 					$color = 'var(--color-red)';
 			?>
 				<tr>
 					<td>
-					<?php if ($c->type === 'proposal'): ?>
-						Proposal for <?php echo _tsumegoLink($c) ?> was submitted
-					<?php elseif ($c->type === 'tag'): ?>
-						Tag <?php echo _tagLink($c) ?> was added to <?php echo _tsumegoLink($c) ?>
+					<?php if ($contribution->type === 'proposal'): ?>
+						Proposal for <?php echo _tsumegoLink($contribution) ?> was submitted
+					<?php elseif ($contribution->type === 'tag'): ?>
+						Tag <?php echo _tagLink($contribution) ?> was added to <?php echo _tsumegoLink($contribution) ?>
 					<?php else: ?>
-						Tag <?php echo _tagLink($c) ?> was created
+						Tag <?php echo _tagLink($contribution) ?> was created
 						<?php endif; ?>
 					</td>
-					<td><b style="color:<?php echo $color ?>"><?php echo h($c->status) ?></b></td>
-					<td><time datetime="<?php echo Util::toIso8601($c->created) ?>" data-format="datetime"><?php echo h($c->created) ?></time></td>
+					<td><b style="color:<?php echo $color ?>"><?php echo h($contribution->status) ?></b></td>
+					<td><time datetime="<?php echo Util::toIso8601($contribution->created) ?>" data-format="datetime"><?php echo h($contribution->created) ?></time></td>
 				</tr>
 		<?php endforeach; ?>
 	</tbody>

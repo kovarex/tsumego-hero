@@ -1121,8 +1121,8 @@ ORDER BY category DESC', [$user['User']['id']]));
 		// 'sub' is the Google account id, it identifies the player on their next sign in
 		$externalId = $token_data['sub'];
 
-		$u = $this->User->find('first', ['conditions' => ['external_id' => $externalId]]);
-		if ($u == null)
+		$user = $this->User->find('first', ['conditions' => ['external_id' => $externalId]]);
+		if ($user == null)
 		{
 			// A Google account gets no login name, it can't sign in with a password. A
 			// taken display name gets a numbered suffix and the player is asked to choose
@@ -1149,7 +1149,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 				CookieFlash::set('Failed to create Google user', 'error');
 				return $this->redirect('/users/login');
 			}
-			$u = $this->User->find('first', ['conditions' => ['external_id' => $externalId]]);
+			$user = $this->User->find('first', ['conditions' => ['external_id' => $externalId]]);
 		}
 		else
 		{
@@ -1157,31 +1157,31 @@ ORDER BY category DESC', [$user['User']['id']]));
 			$updates = [];
 
 			// Update picture if changed
-			if ($picture && $u['User']['picture'] !== $picture)
+			if ($picture && $user['User']['picture'] !== $picture)
 				$updates['picture'] = $picture;
 
 			// An account with no picture starts showing the Google one as soon as a sign
 			// in brings the first picture. A picture that only changed keeps the avatar
 			// the player picked.
-			if ($picture && empty($u['User']['picture']))
+			if ($picture && empty($user['User']['picture']))
 				$updates['avatar_setting_id'] = User::AVATAR_GOOGLE;
 
 			// Update email if changed and not empty
-			if ($email && $u['User']['email'] !== $email)
+			if ($email && $user['User']['email'] !== $email)
 				$updates['email'] = $email;
 
 			// Apply updates if any changed
 			if (!empty($updates))
 			{
-				$this->User->id = $u['User']['id'];
+				$this->User->id = $user['User']['id'];
 				foreach ($updates as $field => $value)
 				{
 					$this->User->saveField($field, $value);
-					$u['User'][$field] = $value;
+					$user['User'][$field] = $value;
 				}
 			}
 		}
-		$this->signIn($u);
+		$this->signIn($user);
 
 		// Get redirect URL from state parameter (set via data-state in the button)
 		// Google Sign-In provides built-in CSRF protection via g_csrf_token cookie
@@ -1320,7 +1320,7 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 
 		$this->set('redirect', $redirect);
 		$this->set('status', $status);
-		$this->set('u', ['User' => $user]);
+		$this->set('admin', ['User' => $user]);
 	}
 
 	#[HttpGet]

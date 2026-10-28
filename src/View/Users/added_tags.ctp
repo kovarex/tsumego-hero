@@ -15,7 +15,7 @@
 	'Tags Added',
 	$tagContributors,
 	[
-		['label' => 'Tags', 'render' => fn($c) => $c['tag_count']],
+		['label' => 'Tags', 'render' => fn($row) => $row['tag_count']],
 	],
 	$totalUsers,
 ); ?>

@@ -1,7 +1,7 @@
 <?php
 /**
  * @var View $this
- * @var array $u
+ * @var array $admin
  * @var string $status
  * @var bool $redirect
  */
@@ -15,7 +15,7 @@
 <br><br>
 
 <?php
-	if($u['User']['external_id']==null){
+	if($admin['User']['external_id']==null){
 		echo 'Confirm demotion by entering your password.<br><br>';
 		echo $this->Form->create('User');
 		echo $this->Form->input('demote', array('value' => '', 'label' => '', 'type' => 'password', 'placeholder' => 'password'));
@@ -33,6 +33,6 @@
 </div>
 <?php
 	if($redirect){
-		echo '<script type="text/javascript">window.location.href = "/users/view/'.$u['User']['id'].'";</script>';
+		echo '<script type="text/javascript">window.location.href = "/users/view/'.$admin['User']['id'].'";</script>';
 	}
 ?>

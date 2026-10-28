@@ -22,7 +22,7 @@ class ScheduleController extends AppController
 		$this->Authorization->authorize('Schedule');
 		$this->loadModel('Set');
 
-		$p = Util::query("
+		$upcoming = Util::query("
 SELECT
 	schedule.id AS id,
 	schedule.date AS date,
@@ -64,7 +64,7 @@ LEFT JOIN `user` creator ON creator.id = schedule.created_by_user_id
 WHERE schedule.published = 0
 ORDER BY schedule.date ASC");
 
-		$this->set('p', $p);
+		$this->set('upcoming', $upcoming);
 
 		$recentlyPublished = Util::query("
 SELECT
@@ -193,14 +193,14 @@ ORDER BY schedule.date DESC, schedule.id DESC");
 			'fields' => ['num', 'num'],
 			'conditions' => ['set_id' => $targetSetId],
 		]);
-		foreach ($candidates as $index => &$c)
+		foreach ($candidates as $index => &$candidate)
 		{
-			$c['preview'] = TsumegoButton::sgfToPreviewData($c['sgf'] ?? '');
-			$c['num_collision'] = isset($existingNums[(int) $c['num']]);
-			$c['date'] = date('Y-m-d', strtotime('+' . intdiv($index, $perDay) . ' days', $startDate));
-			unset($c['sgf']);
+			$candidate['preview'] = TsumegoButton::sgfToPreviewData($candidate['sgf'] ?? '');
+			$candidate['num_collision'] = isset($existingNums[(int) $candidate['num']]);
+			$candidate['date'] = date('Y-m-d', strtotime('+' . intdiv($index, $perDay) . ' days', $startDate));
+			unset($candidate['sgf']);
 		}
-		unset($c);
+		unset($candidate);
 
 		$this->response->type('json');
 		$this->response->body(json_encode($candidates ?: []));

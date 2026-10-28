@@ -104,9 +104,9 @@ class AppController extends Controller
 
 		if (!in_array($method, $allowed, true))
 		{
-			$e = new MethodNotAllowedException();
-			$e->responseHeader('Allow', implode(', ', $allowed));
-			throw $e;
+			$exception = new MethodNotAllowedException();
+			$exception->responseHeader('Allow', implode(', ', $allowed));
+			throw $exception;
 		}
 	}
 

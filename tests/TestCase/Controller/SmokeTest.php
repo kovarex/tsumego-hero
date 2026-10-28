@@ -136,7 +136,7 @@ class SmokeTest extends IntegrationTestCase
 		foreach ($roles as $role => $roleUserId)
 		{
 			$this->switchUser($browser, $roleUserId);
-			foreach (array_filter($pages, fn($p) => in_array($role, $p['auth'], true)) as $page)
+			foreach (array_filter($pages, fn($candidate) => in_array($role, $candidate['auth'], true)) as $page)
 				$this->assertPageLoadsOk($browser, $page['url'], $page['name'] . " ($role)", $roleUserId !== null);
 		}
 	}

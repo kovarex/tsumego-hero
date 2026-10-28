@@ -59,47 +59,47 @@ class SgfsController extends AppController
 
 		if (isset($this->params['url']['user']))
 		{
-			$s = $this->versions(['user_id' => $this->params['url']['user'], 'sgf_status_id !=' => SgfTable::STATUS_REJECTED]);
+			$versions = $this->versions(['user_id' => $this->params['url']['user'], 'sgf_status_id !=' => SgfTable::STATUS_REJECTED]);
 			$type = 'user';
 		}
 		else
-			$s = $this->versions(['tsumego_id' => $id, 'sgf_status_id !=' => SgfTable::STATUS_REJECTED]);
+			$versions = $this->versions(['tsumego_id' => $id, 'sgf_status_id !=' => SgfTable::STATUS_REJECTED]);
 
 		//to display the correct version
 		$versionCounter = [];
 
-		$sCount = count($s);
+		$sCount = count($versions);
 		for ($i = 0; $i < $sCount; $i++)
 		{
 
 
-			$u = $this->User->findById($s[$i]['user_id']);
-			$ux = $u ? User::displayName($u['User']) : '';
-			$s[$i]['user'] = $ux;
-			$scT = $this->SetConnection->findDisplaySetConnection((int) $s[$i]['tsumego_id']);
+			$user = $this->User->findById($versions[$i]['user_id']);
+			$ux = $user ? User::displayName($user['User']) : '';
+			$versions[$i]['user'] = $ux;
+			$scT = $this->SetConnection->findDisplaySetConnection((int) $versions[$i]['tsumego_id']);
 			$set = $this->Set->findById($scT['SetConnection']['set_id']);
-			$s[$i]['title'] = $set['Set']['title'] . ' ' . $set['Set']['title2'] . ' #' . $scT['SetConnection']['num'];
-			$s[$i]['num'] = $scT['SetConnection']['num'];
+			$versions[$i]['title'] = $set['Set']['title'] . ' ' . $set['Set']['title2'] . ' #' . $scT['SetConnection']['num'];
+			$versions[$i]['num'] = $scT['SetConnection']['num'];
 
 			if(isset($versionCounter[$scT['SetConnection']['tsumego_id']]))
 				$versionCounter[$scT['SetConnection']['tsumego_id']]++;
 			else
 				$versionCounter[$scT['SetConnection']['tsumego_id']] = 0;
-			$s[$i]['version'] = $this->fetchTable('Sgf')->find()->where(['tsumego_id' => $scT['SetConnection']['tsumego_id'], 'sgf_status_id !=' => SgfTable::STATUS_REJECTED])->count() - $versionCounter[$scT['SetConnection']['tsumego_id']];
+			$versions[$i]['version'] = $this->fetchTable('Sgf')->find()->where(['tsumego_id' => $scT['SetConnection']['tsumego_id'], 'sgf_status_id !=' => SgfTable::STATUS_REJECTED])->count() - $versionCounter[$scT['SetConnection']['tsumego_id']];
 
-			if ($s[$i]['user'] == 'noUser')
-				$s[$i]['user'] = 'automatically generated';
-			if (Auth::getUserID() == $s[$i]['user_id'])
-				$s[$i]['delete'] = true;
+			if ($versions[$i]['user'] == 'noUser')
+				$versions[$i]['user'] = 'automatically generated';
+			if (Auth::getUserID() == $versions[$i]['user_id'])
+				$versions[$i]['delete'] = true;
 			else
-				$s[$i]['delete'] = false;
-			$s[$i]['diff'] = SgfTable::findPreviousVersionID((int) $s[$i]['tsumego_id'], (int) $s[$i]['id']);
+				$versions[$i]['delete'] = false;
+			$versions[$i]['diff'] = SgfTable::findPreviousVersionID((int) $versions[$i]['tsumego_id'], (int) $versions[$i]['id']);
 		}
 
 		$this->set('ux', $ux);
 		$this->set('type', $type);
 		$this->set('name', $name);
-		$this->set('s', $s);
+		$this->set('versions', $versions);
 		$this->set('id', $id);
 		$this->set('dId', $dId);
 		$this->set('dTitle', $dTitle);

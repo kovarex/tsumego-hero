@@ -354,11 +354,11 @@ if ($totalPages > 1):
 	$currentPage = $partition + 1;
 	?>
 	<div class="pagination">
-<?php for ($p = 1; $p <= $totalPages; $p++): ?>
-<?php if ($p === $currentPage): ?>
-		<strong><?php echo $p; ?></strong>
+<?php for ($page = 1; $page <= $totalPages; $page++): ?>
+<?php if ($page === $currentPage): ?>
+		<strong><?php echo $page; ?></strong>
 <?php else: ?>
-			<a href="<?php echo Set::url($set['Set']['id'], $p); ?>"><?php echo $p; ?></a>
+			<a href="<?php echo Set::url($set['Set']['id'], $page); ?>"><?php echo $page; ?></a>
 <?php endif; ?>
 <?php endfor; ?>
 	</div>

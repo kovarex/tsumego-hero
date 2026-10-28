@@ -439,14 +439,14 @@ ORDER BY sc.num ASC", [(int) $id]);
 		if (!$setID)
 			throw new BadRequestException();
 
-		$s = $this->Set->findById((int) $setID);
-		if (!$s)
+		$set = $this->Set->findById((int) $setID);
+		if (!$set)
 			throw new NotFoundException('Set not found');
 
-		$this->Authorization->authorize($s);
+		$this->Authorization->authorize($set);
 
 		// A collection a player assembled is theirs to throw away, the problems in it stay on the site.
-		if ($s['Set']['user_id'] !== null)
+		if ($set['Set']['user_id'] !== null)
 		{
 			$this->Set->delete($setID);
 			SetImage::removeFolder((int) $setID);
@@ -456,17 +456,17 @@ ORDER BY sc.num ASC", [(int) $id]);
 
 		// A collection of the site goes to the trash, which takes a big part of the site with it,
 		// so its title has to be typed to confirm.
-		if (trim($this->request->data['confirmation'] ?? '') !== trim((string) $s['Set']['title']))
+		if (trim($this->request->data['confirmation'] ?? '') !== trim((string) $set['Set']['title']))
 		{
 			CookieFlash::set('The collection was not deleted: type its title to confirm.', 'error');
 			$this->redirect('/sets/edit/' . (int) $setID);
 			return;
 		}
 		Trash::deleteSet((int) $setID);
-		AdminActivityLogger::log(AdminActivityTypeTable::SET_DELETE, null, (int) $setID, $s['Set']['title']);
-		CookieFlash::set('The collection ' . $s['Set']['title'] . ' was moved to the trash, it can be restored for '
+		AdminActivityLogger::log(AdminActivityTypeTable::SET_DELETE, null, (int) $setID, $set['Set']['title']);
+		CookieFlash::set('The collection ' . $set['Set']['title'] . ' was moved to the trash, it can be restored for '
 			. Trash::$RETENTION_DAYS . ' days.', 'success');
-		$this->redirect($s['Set']['public'] == 0 ? '/sets/sandbox' : '/sets');
+		$this->redirect($set['Set']['public'] == 0 ? '/sets/sandbox' : '/sets');
 	}
 
 	#[HttpGet]
