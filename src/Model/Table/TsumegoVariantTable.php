@@ -2,7 +2,6 @@
 
 namespace App\Model\Table;
 
-use AdminActivityType;
 use App\Utility\AdminActivityLogger;
 use Cake\ORM\TableRegistry;
 
@@ -25,8 +24,8 @@ class TsumegoVariantTable extends AppTable
 		$variantTable = TableRegistry::getTableLocator()->get('TsumegoVariant');
 		$variant = $variantTable->find()->where(['tsumego_id' => $tsumegoID])->first();
 		$activityTypes = [
-			self::TYPE_MULTIPLE_CHOICE => AdminActivityType::MULTIPLE_CHOICE,
-			self::TYPE_SCORE_ESTIMATING => AdminActivityType::SCORE_ESTIMATING];
+			self::TYPE_MULTIPLE_CHOICE => AdminActivityTypeTable::MULTIPLE_CHOICE,
+			self::TYPE_SCORE_ESTIMATING => AdminActivityTypeTable::SCORE_ESTIMATING];
 		$currentType = $variant ? $variant->tsumego_variant_type_id : null;
 		if ($currentType === $type)
 			return;

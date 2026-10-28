@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\ClassroomAssignmentTable;
 use App\Model\Table\TagConnectionTable;
 use App\Model\Table\TagTable;
@@ -108,7 +109,7 @@ class Play
 		if (isset($request->query['requestSolution']))
 		{
 			AuthorizationComponent::require(AdminPolicy::canRequestSolution(Auth::getIdentity()));
-			$this->set('requestSolution', AdminActivityLogger::log(AdminActivityType::SOLUTION_REQUEST, $tsumegoID));
+			$this->set('requestSolution', AdminActivityLogger::log(AdminActivityTypeTable::SOLUTION_REQUEST, $tsumegoID));
 		}
 
 		$boardsBitmask = BoardSelector::filterValidBits(Auth::isLoggedIn() ? Auth::getUser()['boards_bitmask'] : BoardSelector::$DEFAULT_BOARDS_BITMASK);

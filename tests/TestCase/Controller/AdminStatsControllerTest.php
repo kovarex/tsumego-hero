@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\AdminActivityTypeTable;
 use App\Utility\Constants;
 use App\Utility\Util;
 
@@ -22,7 +23,7 @@ class AdminStatsControllerTest extends IntegrationTestCase
 			'tsumego' => 1,
 			'admin-activities' => [
 				[
-					'type' => AdminActivityType::DESCRIPTION_EDIT,
+					'type' => AdminActivityTypeTable::DESCRIPTION_EDIT,
 					'tsumego_id' => 'other:0',
 					'old_value' => 'Old desc',
 					'new_value' => 'New desc'
@@ -59,7 +60,7 @@ class AdminStatsControllerTest extends IntegrationTestCase
 			'tsumego' => 1,
 			'admin-activities' => [
 				[
-					'type' => AdminActivityType::SET_TITLE_EDIT,
+					'type' => AdminActivityTypeTable::SET_TITLE_EDIT,
 					'set_id' => true,
 					'old_value' => 'Old Title',
 					'new_value' => 'New Title'
@@ -84,7 +85,7 @@ class AdminStatsControllerTest extends IntegrationTestCase
 		for ($i = 1; $i <= 105; $i++)
 		{
 			$activities[] = [
-				'type' => AdminActivityType::DESCRIPTION_EDIT,
+				'type' => AdminActivityTypeTable::DESCRIPTION_EDIT,
 				'tsumego_id' => true,
 				'old_value' => "Old desc $i",
 				'new_value' => "New desc $i"
@@ -124,7 +125,7 @@ class AdminStatsControllerTest extends IntegrationTestCase
 		for ($i = 1; $i <= 105; $i++)
 		{
 			$activities[] = [
-				'type' => AdminActivityType::DESCRIPTION_EDIT,
+				'type' => AdminActivityTypeTable::DESCRIPTION_EDIT,
 				'tsumego_id' => true,
 				'old_value' => "Old desc $i",
 				'new_value' => "New desc $i"
@@ -165,59 +166,59 @@ class AdminStatsControllerTest extends IntegrationTestCase
 			'tsumegos' => [1, 2],
 			'admin-activities' => [
 				// Problem edits (1-3)
-				['type' => AdminActivityType::DESCRIPTION_EDIT, 'tsumego_id' => true, 'old_value' => 'old desc', 'new_value' => 'new desc'],
-				['type' => AdminActivityType::HINT_EDIT, 'tsumego_id' => true, 'old_value' => 'old hint', 'new_value' => 'new hint'],
-				['type' => AdminActivityType::AUTHOR_EDIT, 'tsumego_id' => true, 'old_value' => 'old author', 'new_value' => 'new author'],
-				['type' => AdminActivityType::RATING_EDIT, 'tsumego_id' => true, 'old_value' => '666', 'new_value' => '777'],
-				['type' => AdminActivityType::MINIMUM_RATING_EDIT, 'tsumego_id' => true, 'old_value' => '1000', 'new_value' => '1500'],
-				['type' => AdminActivityType::MAXIMUM_RATING_EDIT, 'tsumego_id' => true, 'old_value' => '900', 'new_value' => '800'],
-				['type' => AdminActivityType::PROBLEM_DELETE, 'tsumego_id' => true],
+				['type' => AdminActivityTypeTable::DESCRIPTION_EDIT, 'tsumego_id' => true, 'old_value' => 'old desc', 'new_value' => 'new desc'],
+				['type' => AdminActivityTypeTable::HINT_EDIT, 'tsumego_id' => true, 'old_value' => 'old hint', 'new_value' => 'new hint'],
+				['type' => AdminActivityTypeTable::AUTHOR_EDIT, 'tsumego_id' => true, 'old_value' => 'old author', 'new_value' => 'new author'],
+				['type' => AdminActivityTypeTable::RATING_EDIT, 'tsumego_id' => true, 'old_value' => '666', 'new_value' => '777'],
+				['type' => AdminActivityTypeTable::MINIMUM_RATING_EDIT, 'tsumego_id' => true, 'old_value' => '1000', 'new_value' => '1500'],
+				['type' => AdminActivityTypeTable::MAXIMUM_RATING_EDIT, 'tsumego_id' => true, 'old_value' => '900', 'new_value' => '800'],
+				['type' => AdminActivityTypeTable::PROBLEM_DELETE, 'tsumego_id' => true],
 
 				// Problem settings (4-7)
-				['type' => AdminActivityType::ALTERNATIVE_RESPONSE, 'tsumego_id' => true, 'old_value' => '0', 'new_value' => '1'],
-				['type' => AdminActivityType::PASS_MODE, 'tsumego_id' => true, 'old_value' => '0', 'new_value' => '1'],
-				['type' => AdminActivityType::MULTIPLE_CHOICE, 'tsumego_id' => true, 'old_value' => '0', 'new_value' => '1'],
-				['type' => AdminActivityType::SCORE_ESTIMATING, 'tsumego_id' => true, 'old_value' => '0', 'new_value' => '1'],
+				['type' => AdminActivityTypeTable::ALTERNATIVE_RESPONSE, 'tsumego_id' => true, 'old_value' => '0', 'new_value' => '1'],
+				['type' => AdminActivityTypeTable::PASS_MODE, 'tsumego_id' => true, 'old_value' => '0', 'new_value' => '1'],
+				['type' => AdminActivityTypeTable::MULTIPLE_CHOICE, 'tsumego_id' => true, 'old_value' => '0', 'new_value' => '1'],
+				['type' => AdminActivityTypeTable::SCORE_ESTIMATING, 'tsumego_id' => true, 'old_value' => '0', 'new_value' => '1'],
 
 				// User requests (8)
-				['type' => AdminActivityType::SOLUTION_REQUEST, 'tsumego_id' => true],
+				['type' => AdminActivityTypeTable::SOLUTION_REQUEST, 'tsumego_id' => true],
 
 				// Set metadata (9-13)
-				['type' => AdminActivityType::SET_TITLE_EDIT, 'set_id' => true, 'old_value' => 'Old Set', 'new_value' => 'New Set'],
-				['type' => AdminActivityType::SET_DESCRIPTION_EDIT, 'set_id' => true, 'old_value' => 'Old desc', 'new_value' => 'New desc'],
-				['type' => AdminActivityType::SET_COLOR_EDIT, 'set_id' => true, 'old_value' => 'red', 'new_value' => 'blue'],
-				['type' => AdminActivityType::SET_ORDER_EDIT, 'set_id' => true, 'old_value' => '10', 'new_value' => '20'],
-				['type' => AdminActivityType::SET_RATING_EDIT, 'set_id' => true, 'old_value' => '1000', 'new_value' => '1100'],
+				['type' => AdminActivityTypeTable::SET_TITLE_EDIT, 'set_id' => true, 'old_value' => 'Old Set', 'new_value' => 'New Set'],
+				['type' => AdminActivityTypeTable::SET_DESCRIPTION_EDIT, 'set_id' => true, 'old_value' => 'Old desc', 'new_value' => 'New desc'],
+				['type' => AdminActivityTypeTable::SET_COLOR_EDIT, 'set_id' => true, 'old_value' => 'red', 'new_value' => 'blue'],
+				['type' => AdminActivityTypeTable::SET_ORDER_EDIT, 'set_id' => true, 'old_value' => '10', 'new_value' => '20'],
+				['type' => AdminActivityTypeTable::SET_RATING_EDIT, 'set_id' => true, 'old_value' => '1000', 'new_value' => '1100'],
 
 				// Problem management (14) - uses other-tsumegos[0]
-				['type' => AdminActivityType::PROBLEM_ADD, 'tsumego_id' => 'other:0', 'set_id' => true],
+				['type' => AdminActivityTypeTable::PROBLEM_ADD, 'tsumego_id' => 'other:0', 'set_id' => true],
 
 				// Set-wide settings (15-16)
-				['type' => AdminActivityType::SET_ALTERNATIVE_RESPONSE, 'set_id' => true, 'old_value' => '0', 'new_value' => '1'],
-				['type' => AdminActivityType::SET_PASS_MODE, 'set_id' => true, 'old_value' => '0', 'new_value' => '1'],
+				['type' => AdminActivityTypeTable::SET_ALTERNATIVE_RESPONSE, 'set_id' => true, 'old_value' => '0', 'new_value' => '1'],
+				['type' => AdminActivityTypeTable::SET_PASS_MODE, 'set_id' => true, 'old_value' => '0', 'new_value' => '1'],
 
 				// tag proposals
-				['type' => AdminActivityType::ACCEPT_TAG, 'tsumego_id' => true, 'new_value' => 'snapback'],
-				['type' => AdminActivityType::REJECT_TAG, 'tsumego_id' => true, 'old_value' => 'atari'],
+				['type' => AdminActivityTypeTable::ACCEPT_TAG, 'tsumego_id' => true, 'new_value' => 'snapback'],
+				['type' => AdminActivityTypeTable::REJECT_TAG, 'tsumego_id' => true, 'old_value' => 'atari'],
 
 				// tsumego merge
-				['type' => AdminActivityType::TSUMEGO_MERGE, 'tsumego_id' => true, 'old_value' => 'other:0'],
+				['type' => AdminActivityTypeTable::TSUMEGO_MERGE, 'tsumego_id' => true, 'old_value' => 'other:0'],
 
 				// Delete user
-				['type' => AdminActivityType::DELETE_USER, 'old_value' => 'banned_spammer'],
+				['type' => AdminActivityTypeTable::DELETE_USER, 'old_value' => 'banned_spammer'],
 
 				// Display name change
-				['type' => AdminActivityType::DISPLAY_NAME_CHANGE, 'old_value' => 'Old Name', 'new_value' => 'New Name'],
+				['type' => AdminActivityTypeTable::DISPLAY_NAME_CHANGE, 'old_value' => 'Old Name', 'new_value' => 'New Name'],
 
 				// SGF edit
-				['type' => AdminActivityType::SGF_EDIT, 'tsumego_id' => true, 'old_value' => 'old sgf', 'new_value' => 'new sgf'],
+				['type' => AdminActivityTypeTable::SGF_EDIT, 'tsumego_id' => true, 'old_value' => 'old sgf', 'new_value' => 'new sgf'],
 
 				// Tag management
-				['type' => AdminActivityType::ADD_TAG, 'tsumego_id' => true, 'new_value' => 'tesuji'],
+				['type' => AdminActivityTypeTable::ADD_TAG, 'tsumego_id' => true, 'new_value' => 'tesuji'],
 
 				// Proposal management
-				['type' => AdminActivityType::ACCEPT_PROPOSAL, 'tsumego_id' => true, 'new_value' => 'proposer1'],
-				['type' => AdminActivityType::REJECT_PROPOSAL, 'tsumego_id' => true, 'new_value' => 'proposer2'],
+				['type' => AdminActivityTypeTable::ACCEPT_PROPOSAL, 'tsumego_id' => true, 'new_value' => 'proposer1'],
+				['type' => AdminActivityTypeTable::REJECT_PROPOSAL, 'tsumego_id' => true, 'new_value' => 'proposer2'],
 			]
 		]);
 
@@ -411,7 +412,7 @@ class AdminStatsControllerTest extends IntegrationTestCase
 		// tag approval is saved in admin activities
 		$adminActivities = $this->fetchTable('AdminActivity')->find()->orderBy('id')->toArray();
 		$this->assertCount(1, $adminActivities);
-		$this->assertSame($adminActivities[0]->type, AdminActivityType::ACCEPT_TAG);
+		$this->assertSame($adminActivities[0]->type, AdminActivityTypeTable::ACCEPT_TAG);
 		$this->assertSame(null, $adminActivities[0]->old_value);
 		$this->assertSame('snapback', $adminActivities[0]->new_value);
 	}
@@ -439,7 +440,7 @@ class AdminStatsControllerTest extends IntegrationTestCase
 		// tag reject is saved in admin activities
 		$adminActivities = $this->fetchTable('AdminActivity')->find()->orderBy('id')->toArray();
 		$this->assertCount(1, $adminActivities);
-		$this->assertSame($adminActivities[0]->type, AdminActivityType::REJECT_TAG);
+		$this->assertSame($adminActivities[0]->type, AdminActivityTypeTable::REJECT_TAG);
 		$this->assertSame('snapback', $adminActivities[0]->old_value);
 		$this->assertSame(null, $adminActivities[0]->new_value);
 	}
@@ -463,7 +464,7 @@ class AdminStatsControllerTest extends IntegrationTestCase
 		// the restore is saved in admin activities
 		$adminActivities = $this->fetchTable('AdminActivity')->find()->orderBy('id')->toArray();
 		$this->assertCount(1, $adminActivities);
-		$this->assertSame($adminActivities[0]->type, AdminActivityType::RESTORE_USER);
+		$this->assertSame($adminActivities[0]->type, AdminActivityTypeTable::RESTORE_USER);
 		$this->assertSame(null, $adminActivities[0]->old_value);
 		$this->assertSame('TwT', $adminActivities[0]->new_value);
 	}

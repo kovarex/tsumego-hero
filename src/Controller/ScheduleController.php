@@ -3,6 +3,7 @@
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Model\Entity\Schedule;
+use App\Model\Table\AdminActivityTypeTable;
 use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
 use App\Utility\CookieFlash;
@@ -149,7 +150,7 @@ ORDER BY schedule.date DESC, schedule.id DESC");
 				'published' => false,
 				'created_by_user_id' => $userId,
 			]));
-			AdminActivityLogger::log(AdminActivityType::ADD_TO_SCHEDULE, $candidate['tsumego_id'], $targetSetId);
+			AdminActivityLogger::log(AdminActivityTypeTable::ADD_TO_SCHEDULE, $candidate['tsumego_id'], $targetSetId);
 			$scheduled++;
 		}
 
@@ -244,7 +245,7 @@ LIMIT " . $count), [$setIdFrom, $num, $targetSetId]);
 			throw new BadRequestException('Schedule entry is already published.');
 
 		$scheduleTable->deleteAll(['id' => $schedule->id]);
-		AdminActivityLogger::log(AdminActivityType::CANCEL_SCHEDULE, $schedule->tsumego_id, $schedule->set_id);
+		AdminActivityLogger::log(AdminActivityTypeTable::CANCEL_SCHEDULE, $schedule->tsumego_id, $schedule->set_id);
 
 		CookieFlash::set('Schedule entry cancelled.', 'success');
 		$this->redirect('/schedule');

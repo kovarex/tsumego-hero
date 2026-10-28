@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\AdminActivityTypeTable;
 use App\Utility\CookieFlash;
 use App\Utility\Util;
 use Facebook\WebDriver\WebDriverSelect;
@@ -29,7 +30,7 @@ class RolesControllerTest extends IntegrationTestCase
 		$this->assertSame(User::ROLE_ADMIN, self::roleOf($playerID));
 		$this->assertSame('The role of DN_player is admin now', CookieFlash::get());
 		$activity = $this->fetchTable('AdminActivity')->find()->firstOrFail();
-		$this->assertSame(AdminActivityType::ROLE_CHANGE, $activity->type);
+		$this->assertSame(AdminActivityTypeTable::ROLE_CHANGE, $activity->type);
 		$this->assertSame($context->user['id'], $activity->user_id);
 		$this->assertSame(['user_id' => $playerID, 'display_name' => 'DN_player', 'role' => 'player'], json_decode($activity->old_value, true));
 		$this->assertSame('admin', $activity->new_value);
