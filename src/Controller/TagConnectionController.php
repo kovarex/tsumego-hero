@@ -1,6 +1,7 @@
 <?php
 
 use App\Attribute\HttpPost;
+use App\Model\Table\TagConnectionTable;
 use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
 
@@ -10,7 +11,7 @@ class TagConnectionController extends AppController
 	public function add(string $tsumegoID, string $tagName)
 	{
 		$this->Authorization->authorize(['TagConnection' => ['id' => (int) $tsumegoID]], 'add');
-		if (!ClassRegistry::init('TagConnection')::canCurrentUserAddTag())
+		if (!TagConnectionTable::canCurrentUserAddTag())
 			throw new ForbiddenException('Daily tag limit reached.');
 		$tag = ClassRegistry::init('Tag')->findByName($tagName);
 		if (!$tag)
@@ -20,11 +21,8 @@ class TagConnectionController extends AppController
 		if (!$tsumego)
 			throw new ForbiddenException('Tsumego with id="' . $tsumegoID . '" wasn\'t found.');
 
-		$tagConnection = ClassRegistry::init('TagConnection')->find('first', [
-			'conditions' => [
-				'tsumego_id' => $tsumegoID,
-				'tag_id' => $tag['Tag']['id']]]);
-		if ($tagConnection)
+		$tagConnectionTable = $this->fetchTable('TagConnection');
+		if ($tagConnectionTable->exists(['tsumego_id' => $tsumegoID, 'tag_id' => $tag['Tag']['id']]))
 			throw new ForbiddenException('The tsumego already has tag ' . $tag['Tag']['name'] . '.');
 
 		$tagConnection = [];
@@ -36,8 +34,7 @@ class TagConnectionController extends AppController
 		if($tagConnection['approved'] == 1)
 			AdminActivityLogger::log(AdminActivityType::ADD_TAG, $tagConnection['tsumego_id'], null, ' ', $tagName);
 
-		ClassRegistry::init('TagConnection')->create();
-		ClassRegistry::init('TagConnection')->save($tagConnection);
+		$tagConnectionTable->saveOrFail($tagConnectionTable->newEntity($tagConnection));
 		$this->response->type('json');
 		$this->response->body(json_encode(['success' => true]));
 		return $this->response;
@@ -54,15 +51,14 @@ class TagConnectionController extends AppController
 		if (!$tsumego)
 			throw new ForbiddenException('Tsumego with id="' . $tsumegoID . '" wasn\'t found.');
 
-		$tagConnection = ClassRegistry::init('TagConnection')->find('first', ['conditions' => [
-			'tag_id' => $tag['Tag']['id'],
-			'tsumego_id' => $tsumegoID]]);
+		$tagConnectionTable = $this->fetchTable('TagConnection');
+		$tagConnection = $tagConnectionTable->find()->where(['tag_id' => $tag['Tag']['id'], 'tsumego_id' => $tsumegoID])->first();
 		if (!$tagConnection)
 			throw new ForbiddenException('Tag to remove isn\'t assigned to this tsumego.');
 
 		$this->Authorization->authorize($tagConnection, 'remove');
 
-		ClassRegistry::init('TagConnection')->delete($tagConnection['TagConnection']['id']);
+		$tagConnectionTable->deleteOrFail($tagConnection);
 		$this->response->type('json');
 		$this->response->body(json_encode(['success' => true]));
 		return $this->response;

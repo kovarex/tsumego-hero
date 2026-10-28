@@ -2,6 +2,7 @@
 
 namespace App\Policy;
 
+use App\Model\Entity\TagConnection;
 use App\Utility\TsumegoUtil;
 use ClassRegistry;
 
@@ -10,7 +11,6 @@ use ClassRegistry;
 //proposals only).
 /**
  * @phpstan-import-type UserRow from \App\Utility\RowTypes
- * @phpstan-import-type TagConnectionRow from \App\Utility\RowTypes
  * @phpstan-import-type TsumegoRow from \App\Utility\RowTypes
  */
 class TagConnectionPolicy extends BasePolicy
@@ -33,17 +33,14 @@ class TagConnectionPolicy extends BasePolicy
 	}
 
 	//Removing a proposal: admins or the proposer (unapproved only).
-	/**
-	 * @param UserRow|null $user
-	 * @param TagConnectionRow $tagConnection
-	 */
-	public static function canRemove(?array $user, array $tagConnection): bool
+	/** @param UserRow|null $user */
+	public static function canRemove(?array $user, TagConnection $tagConnection): bool
 	{
 		if (static::isAdmin($user))
 			return true;
 		if ($user === null)
 			return false;
-		return (int) $tagConnection['user_id'] === $user['id']
-			&& !$tagConnection['approved'];
+		return $tagConnection->user_id === (int) $user['id']
+			&& !$tagConnection->approved;
 	}
 }

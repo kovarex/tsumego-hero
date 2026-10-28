@@ -1,7 +1,9 @@
 <?php
 
+use App\Model\Table\TagConnectionTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
+use Cake\ORM\TableRegistry;
 
 class TagConnectionTest extends CakeTestCase
 {
@@ -9,7 +11,7 @@ class TagConnectionTest extends CakeTestCase
 	{
 		new ContextPreparator(['user' => ['name' => 'counter', 'rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE]]);
 
-		$this->assertSame(0, TagConnection::countTodaysTags(Auth::getUserID()));
+		$this->assertSame(0, TagConnectionTable::countTodaysTags(Auth::getUserID()));
 	}
 
 	public function testCountTodaysTagsCountsOnlyToday()
@@ -20,46 +22,43 @@ class TagConnectionTest extends CakeTestCase
 			'tags' => [['name' => 'atari'], ['name' => 'snapback'], ['name' => 'ko']],
 		]);
 
-		$tc = ClassRegistry::init('TagConnection');
+		$tagConnectionTable = TableRegistry::getTableLocator()->get('TagConnection');
 		$today = gmdate('Y-m-d H:i:s');
 		$yesterday = gmdate('Y-m-d H:i:s', strtotime('-1 day'));
 
 		// Two today
-		$tc->create();
-		$tc->save(['TagConnection' => [
+		$tagConnectionTable->saveOrFail($tagConnectionTable->newEntity([
 			'tag_id' => $context->tags[0]['id'],
 			'tsumego_id' => $context->tsumegos[0]['id'],
 			'user_id' => $context->user['id'],
 			'approved' => 0,
 			'created' => $today,
-		]]);
-		$tc->create();
-		$tc->save(['TagConnection' => [
+		]));
+		$tagConnectionTable->saveOrFail($tagConnectionTable->newEntity([
 			'tag_id' => $context->tags[1]['id'],
 			'tsumego_id' => $context->tsumegos[0]['id'],
 			'user_id' => $context->user['id'],
 			'approved' => 0,
 			'created' => $today,
-		]]);
+		]));
 
 		// One yesterday
-		$tc->create();
-		$tc->save(['TagConnection' => [
+		$tagConnectionTable->saveOrFail($tagConnectionTable->newEntity([
 			'tag_id' => $context->tags[2]['id'],
 			'tsumego_id' => $context->tsumegos[0]['id'],
 			'user_id' => $context->user['id'],
 			'approved' => 0,
 			'created' => $yesterday,
-		]]);
+		]));
 
-		$this->assertSame(2, TagConnection::countTodaysTags($context->user['id']));
+		$this->assertSame(2, TagConnectionTable::countTodaysTags($context->user['id']));
 	}
 
 	public function testCanUserAddTagAllowsWhenUnderLimit()
 	{
 		new ContextPreparator(['user' => ['name' => 'under', 'rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE]]);
 
-		$this->assertTrue(TagConnection::canCurrentUserAddTag());
+		$this->assertTrue(TagConnectionTable::canCurrentUserAddTag());
 	}
 
 	public function testCanUserAddTagBlocksAtLimit()
@@ -71,7 +70,7 @@ class TagConnectionTest extends CakeTestCase
 		]);
 
 		// Create DAILY_TAG_LIMIT tags today
-		$tc = ClassRegistry::init('TagConnection');
+		$tagConnectionTable = TableRegistry::getTableLocator()->get('TagConnection');
 		$tag = ClassRegistry::init('Tag');
 		$today = gmdate('Y-m-d H:i:s');
 		for ($i = 0; $i < Constants::$DAILY_TAG_LIMIT; $i++)
@@ -80,18 +79,17 @@ class TagConnectionTest extends CakeTestCase
 			$tag->save(['Tag' => ['name' => "rate-tag-$i", 'description' => '']]);
 			$tagId = $tag->getLastInsertId();
 
-			$tc->create();
-			$tc->save(['TagConnection' => [
+			$tagConnectionTable->saveOrFail($tagConnectionTable->newEntity([
 				'tag_id' => $tagId,
 				'tsumego_id' => $context->tsumegos[0]['id'],
 				'user_id' => $context->user['id'],
 				'approved' => 0,
 				'created' => $today,
-			]]);
+			]));
 		}
 
-		$this->assertSame(Constants::$DAILY_TAG_LIMIT, TagConnection::countTodaysTags($context->user['id']));
-		$this->assertFalse(TagConnection::canCurrentUserAddTag());
+		$this->assertSame(Constants::$DAILY_TAG_LIMIT, TagConnectionTable::countTodaysTags($context->user['id']));
+		$this->assertFalse(TagConnectionTable::canCurrentUserAddTag());
 	}
 
 	public function testCanUserAddTagBypassesLimitForAdmin()
@@ -102,7 +100,7 @@ class TagConnectionTest extends CakeTestCase
 			'tags' => [],
 		]);
 
-		$tc = ClassRegistry::init('TagConnection');
+		$tagConnectionTable = TableRegistry::getTableLocator()->get('TagConnection');
 		$tag = ClassRegistry::init('Tag');
 		$today = gmdate('Y-m-d H:i:s');
 		for ($i = 0; $i < Constants::$DAILY_TAG_LIMIT + 5; $i++)
@@ -111,17 +109,16 @@ class TagConnectionTest extends CakeTestCase
 			$tag->save(['Tag' => ['name' => "admin-tag-$i", 'description' => '']]);
 			$tagId = $tag->getLastInsertId();
 
-			$tc->create();
-			$tc->save(['TagConnection' => [
+			$tagConnectionTable->saveOrFail($tagConnectionTable->newEntity([
 				'tag_id' => $tagId,
 				'tsumego_id' => $context->tsumegos[0]['id'],
 				'user_id' => $context->user['id'],
 				'approved' => 1,
 				'created' => $today,
-			]]);
+			]));
 		}
 
-		$this->assertTrue(TagConnection::canCurrentUserAddTag());
+		$this->assertTrue(TagConnectionTable::canCurrentUserAddTag());
 	}
 
 	public function testYesterdayTagsDoNotCountTowardTodayLimit()
@@ -132,7 +129,7 @@ class TagConnectionTest extends CakeTestCase
 			'tags' => [],
 		]);
 
-		$tc = ClassRegistry::init('TagConnection');
+		$tagConnectionTable = TableRegistry::getTableLocator()->get('TagConnection');
 		$tag = ClassRegistry::init('Tag');
 		$yesterday = gmdate('Y-m-d H:i:s', strtotime('-1 day'));
 
@@ -143,17 +140,16 @@ class TagConnectionTest extends CakeTestCase
 			$tag->save(['Tag' => ['name' => "old-tag-$i", 'description' => '']]);
 			$tagId = $tag->getLastInsertId();
 
-			$tc->create();
-			$tc->save(['TagConnection' => [
+			$tagConnectionTable->saveOrFail($tagConnectionTable->newEntity([
 				'tag_id' => $tagId,
 				'tsumego_id' => $context->tsumegos[0]['id'],
 				'user_id' => $context->user['id'],
 				'approved' => 0,
 				'created' => $yesterday,
-			]]);
+			]));
 		}
 
-		$this->assertSame(0, TagConnection::countTodaysTags($context->user['id']));
-		$this->assertTrue(TagConnection::canCurrentUserAddTag());
+		$this->assertSame(0, TagConnectionTable::countTodaysTags($context->user['id']));
+		$this->assertTrue(TagConnectionTable::canCurrentUserAddTag());
 	}
 }

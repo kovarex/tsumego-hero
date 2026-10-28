@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Entity\TagConnection;
 use App\Model\Table\RejectTable;
 use App\Model\Table\TimeModeCategoryTable;
 use App\Utility\AdminActivityLogger;
@@ -1516,32 +1517,33 @@ OFFSET " . $offset, [$userID, $userID]);
 	{
 		$this->Authorization->authorize('Admin');
 
-		$proposalToApprove = ClassRegistry::init('TagConnection')->findById($tagConnectionID);
+		$tagConnectionTable = $this->fetchTable('TagConnection');
+		/** @var TagConnection|null $proposalToApprove */
+		$proposalToApprove = $tagConnectionTable->find()->where(['id' => (int) $tagConnectionID])->first();
 		if (!$proposalToApprove)
 		{
 			CookieFlash::set('Tag proposal doesn\'t exist.', 'fail');
 			return $this->redirect('/admin/tag-proposals');
 		}
 
-		$proposalToApprove = $proposalToApprove['TagConnection'];
-		if ($proposalToApprove['approved'] != 0)
+		if ($proposalToApprove->approved)
 		{
 			CookieFlash::set('Tag proposal was already accepted.', 'fail');
 			return $this->redirect('/admin/tag-proposals');
 		}
-		$proposalToApprove['approved'] = 1;
+		$proposalToApprove->approved = true;
 
-		$tag = ClassRegistry::init('Tag')->findById($proposalToApprove['tag_id'])['Tag'];
-		AdminActivityLogger::log(AdminActivityType::ACCEPT_TAG, $proposalToApprove['tsumego_id'], null, null, $tag['name']);
-		ClassRegistry::init('TagConnection')->save($proposalToApprove);
+		$tag = ClassRegistry::init('Tag')->findById($proposalToApprove->tag_id)['Tag'];
+		AdminActivityLogger::log(AdminActivityType::ACCEPT_TAG, $proposalToApprove->tsumego_id, null, null, $tag['name']);
+		$tagConnectionTable->saveOrFail($proposalToApprove);
 
 		// tags are accepted by the dozen, so the proposer only hears about it when the admin had something to say
 		$comment = ProposalFeedback::commentFromRequest($this->request->data['comment'] ?? null);
 		if ($comment !== '')
 		{
-			$tsumegoID = (int) $proposalToApprove['tsumego_id'];
+			$tsumegoID = $proposalToApprove->tsumego_id;
 			ProposalFeedback::send(
-				(int) $proposalToApprove['user_id'],
+				(int) $proposalToApprove->user_id,
 				'Your tag ' . $tag['name'] . ' on ' . ProposalFeedback::problemName($tsumegoID) . ' was accepted by ' . ProposalFeedback::adminName() . '.',
 				$tsumegoID,
 				null,
@@ -1556,16 +1558,16 @@ OFFSET " . $offset, [$userID, $userID]);
 	{
 		$this->Authorization->authorize('Admin');
 
-		$proposalToReject = ClassRegistry::init('TagConnection')->findById($tagConnectionID);
+		$tagConnectionTable = $this->fetchTable('TagConnection');
+		/** @var TagConnection|null $proposalToReject */
+		$proposalToReject = $tagConnectionTable->find()->where(['id' => (int) $tagConnectionID])->first();
 		if (!$proposalToReject)
 		{
 			CookieFlash::set('Tag proposal doesn\'t exist.', 'fail');
 			return $this->redirect('/admin/tag-proposals');
 		}
 
-		$proposalToReject = $proposalToReject['TagConnection'];
-
-		if ($proposalToReject['approved'] != 0)
+		if ($proposalToReject->approved)
 		{
 			CookieFlash::set('Tag proposal was already accepted.', 'fail');
 			return $this->redirect('/admin/tag-proposals');
@@ -1578,24 +1580,24 @@ OFFSET " . $offset, [$userID, $userID]);
 			return $this->redirect('/admin/tag-proposals');
 		}
 
-		$tag = ClassRegistry::init('Tag')->findById($proposalToReject['tag_id'])['Tag'];
+		$tag = ClassRegistry::init('Tag')->findById($proposalToReject->tag_id)['Tag'];
 
-		AdminActivityLogger::log(AdminActivityType::REJECT_TAG, $proposalToReject['tsumego_id'], null, $tag['name'], null);
+		AdminActivityLogger::log(AdminActivityType::REJECT_TAG, $proposalToReject->tsumego_id, null, $tag['name'], null);
 
 		$rejectTable = $this->fetchTable('Reject');
 		$rejectTable->saveOrFail($rejectTable->newEntity([
-			'user_id' => $proposalToReject['user_id'],
+			'user_id' => $proposalToReject->user_id,
 			'rejected_by_user_id' => Auth::getUserID(),
 			'comment' => $comment,
-			'tsumego_id' => $proposalToReject['tsumego_id'],
+			'tsumego_id' => $proposalToReject->tsumego_id,
 			'reject_type_id' => RejectTable::TYPE_TAG,
 			'tag_id' => $tag['id'],
 			'tag_name' => $tag['name']]));
-		ClassRegistry::init('TagConnection')->delete($proposalToReject['id']);
+		$tagConnectionTable->deleteOrFail($proposalToReject);
 
-		$tsumegoID = (int) $proposalToReject['tsumego_id'];
+		$tsumegoID = $proposalToReject->tsumego_id;
 		ProposalFeedback::send(
-			(int) $proposalToReject['user_id'],
+			(int) $proposalToReject->user_id,
 			'Your tag ' . $tag['name'] . ' on ' . ProposalFeedback::problemName($tsumegoID) . ' was rejected by ' . ProposalFeedback::adminName() . '.',
 			$tsumegoID,
 			null,
