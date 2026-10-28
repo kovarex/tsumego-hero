@@ -2,8 +2,8 @@
 
 namespace App\Utility;
 
-use AchievementCondition;
 use App\Model\Entity\Achievement;
+use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\AchievementTable;
 use App\Model\Table\TimeModeCategoryTable;
 use App\Model\Table\TimeModeRankTable;
@@ -104,30 +104,30 @@ class AchievementChecker
 		if ($solvedCount >= 10000)
 			$this->gained(AchievementId::PROBLEMS_10000);
 
-		if (AchievementCondition::value(Auth::getUserID(), AchievementCondition::CATEGORY_USER_OF_THE_DAY) !== null)
+		if (AchievementConditionTable::value(Auth::getUserID(), AchievementConditionTable::CATEGORY_USER_OF_THE_DAY) !== null)
 			$this->gained(AchievementId::USER_OF_THE_DAY);
 		return $this;
 	}
 
 	public function checkDanSolveAchievements(): void
 	{
-		$conditions = AchievementCondition::values(Auth::getUserID(), [
-			...array_values(AchievementCondition::DAN_SOLVE_CATEGORIES),
-			AchievementCondition::CATEGORY_EMERALD,
-			AchievementCondition::CATEGORY_SAPPHIRE,
-			AchievementCondition::CATEGORY_RUBY,
-			AchievementCondition::CATEGORY_SPRINT,
-			AchievementCondition::CATEGORY_GOLDEN,
-			AchievementCondition::CATEGORY_POTION]);
+		$conditions = AchievementConditionTable::values(Auth::getUserID(), [
+			...array_values(AchievementConditionTable::DAN_SOLVE_CATEGORIES),
+			AchievementConditionTable::CATEGORY_EMERALD,
+			AchievementConditionTable::CATEGORY_SAPPHIRE,
+			AchievementConditionTable::CATEGORY_RUBY,
+			AchievementConditionTable::CATEGORY_SPRINT,
+			AchievementConditionTable::CATEGORY_GOLDEN,
+			AchievementConditionTable::CATEGORY_POTION]);
 		$ac1 = [];
-		foreach (AchievementCondition::DAN_SOLVE_CATEGORIES as $rank => $category)
+		foreach (AchievementConditionTable::DAN_SOLVE_CATEGORIES as $rank => $category)
 			$ac1[$rank] = $conditions[$category] ?? 0;
-		$ac1['emerald'] = $conditions[AchievementCondition::CATEGORY_EMERALD] ?? 0;
-		$ac1['sapphire'] = $conditions[AchievementCondition::CATEGORY_SAPPHIRE] ?? 0;
-		$ac1['ruby'] = $conditions[AchievementCondition::CATEGORY_RUBY] ?? 0;
-		$ac1['sprint'] = $conditions[AchievementCondition::CATEGORY_SPRINT] ?? 0;
-		$ac1['golden'] = $conditions[AchievementCondition::CATEGORY_GOLDEN] ?? 0;
-		$ac1['potion'] = $conditions[AchievementCondition::CATEGORY_POTION] ?? 0;
+		$ac1['emerald'] = $conditions[AchievementConditionTable::CATEGORY_EMERALD] ?? 0;
+		$ac1['sapphire'] = $conditions[AchievementConditionTable::CATEGORY_SAPPHIRE] ?? 0;
+		$ac1['ruby'] = $conditions[AchievementConditionTable::CATEGORY_RUBY] ?? 0;
+		$ac1['sprint'] = $conditions[AchievementConditionTable::CATEGORY_SPRINT] ?? 0;
+		$ac1['golden'] = $conditions[AchievementConditionTable::CATEGORY_GOLDEN] ?? 0;
+		$ac1['potion'] = $conditions[AchievementConditionTable::CATEGORY_POTION] ?? 0;
 
 		if ($ac1['1d'] > 0)
 			$this->gained(AchievementId::SOLVE_1D);
@@ -170,7 +170,7 @@ class AchievementChecker
 
 	public function checkNoErrorAchievements(): void
 	{
-		$streak = AchievementCondition::value(Auth::getUserID(), AchievementCondition::CATEGORY_NO_ERROR_STREAK) ?? 0;
+		$streak = AchievementConditionTable::value(Auth::getUserID(), AchievementConditionTable::CATEGORY_NO_ERROR_STREAK) ?? 0;
 		if ($streak >= AchievementTable::NO_ERROR_STREAK_I_STREAK_COUNT)
 			$this->gained(AchievementId::NO_ERROR_STREAK_I);
 		if ($streak >= AchievementTable::NO_ERROR_STREAK_II_STREAK_COUNT)
@@ -335,7 +335,7 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeSessionStatusTable::SOLVED]);
 
 	public function checkSetCompletedAchievements(): AchievementChecker
 	{
-		$completedSets = AchievementCondition::value(Auth::getUserID(), AchievementCondition::CATEGORY_COMPLETED_SETS);
+		$completedSets = AchievementConditionTable::value(Auth::getUserID(), AchievementConditionTable::CATEGORY_COMPLETED_SETS);
 		if ($completedSets === null)
 			return $this;
 		if ($completedSets >= AchievementTable::COMPLETE_SETS_I_SETS_COUNT)
@@ -490,12 +490,12 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeSessionStatusTable::SOLVED]);
 
 	public function checkSetAchievements(int $sid = 0, float|int $setRating = 0): AchievementChecker
 	{
-		$accuracy = AchievementCondition::value(Auth::getUserID(), AchievementCondition::CATEGORY_SET_ACCURACY, $sid);
+		$accuracy = AchievementConditionTable::value(Auth::getUserID(), AchievementConditionTable::CATEGORY_SET_ACCURACY, $sid);
 		if ($accuracy === null)
 			return $this;
 		if (TsumegoUtil::countTsumegosFromSet($sid) < 100)
 			return $this;
-		$time = AchievementCondition::value(Auth::getUserID(), AchievementCondition::CATEGORY_SET_TIME, $sid);
+		$time = AchievementConditionTable::value(Auth::getUserID(), AchievementConditionTable::CATEGORY_SET_TIME, $sid);
 
 		if ($setRating < 1300)
 		{
@@ -576,7 +576,7 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeSessionStatusTable::SOLVED]);
 			'SELECT COUNT(*) AS total FROM achievement_condition ac '
 			. 'WHERE ac.user_id = ? AND ac.achievement_condition_category_id = ? AND ac.value >= ? '
 			. 'AND ac.set_id IN (' . SetConnection::publicCollectionsWithMinimumProblemsSql() . ')',
-			[Auth::getUserID(), AchievementCondition::CATEGORY_SET_ACCURACY, 100]
+			[Auth::getUserID(), AchievementConditionTable::CATEGORY_SET_ACCURACY, 100]
 		);
 
 		return (int) $rows[0]['total'];

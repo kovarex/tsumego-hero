@@ -1,6 +1,7 @@
 <?php
 
 use App\Lib\Error\ConflictException;
+use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\ProgressDeletionTable;
 use App\Utility\AchievementChecker;
@@ -1085,8 +1086,8 @@ ORDER BY sc.num ASC", [(int) $id]);
 				$this->set('achievementUpdates', $achievementChecker->updated);
 			}
 
-			$bestTime = AchievementCondition::value(Auth::getUserID(), AchievementCondition::CATEGORY_SET_TIME, (int) $id);
-			$bestAccuracy = AchievementCondition::value(Auth::getUserID(), AchievementCondition::CATEGORY_SET_ACCURACY, (int) $id);
+			$bestTime = AchievementConditionTable::value(Auth::getUserID(), AchievementConditionTable::CATEGORY_SET_TIME, (int) $id);
+			$bestAccuracy = AchievementConditionTable::value(Auth::getUserID(), AchievementConditionTable::CATEGORY_SET_ACCURACY, (int) $id);
 		}
 		else
 			$scoring = false;
@@ -1111,8 +1112,8 @@ ORDER BY sc.num ASC", [(int) $id]);
 	//Keeps the player's records on the set: the best average time and the best accuracy.
 	private function updateAchievementConditions(int $sid, int|float $avgTime, int|float $accuracy): void
 	{
-		AchievementCondition::keepLowest(Auth::getUserID(), AchievementCondition::CATEGORY_SET_TIME, $avgTime, $sid);
-		AchievementCondition::keepHighest(Auth::getUserID(), AchievementCondition::CATEGORY_SET_ACCURACY, $accuracy, $sid);
+		AchievementConditionTable::keepLowest(Auth::getUserID(), AchievementConditionTable::CATEGORY_SET_TIME, $avgTime, $sid);
+		AchievementConditionTable::keepHighest(Auth::getUserID(), AchievementConditionTable::CATEGORY_SET_ACCURACY, $accuracy, $sid);
 	}
 
 	#[HttpPost]

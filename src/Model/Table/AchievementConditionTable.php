@@ -1,11 +1,13 @@
 <?php
 
+namespace App\Model\Table;
+
 use App\Utility\Util;
 
 //What a player reached so far towards the achievements that take more than one solve: a value per
 //player and category, and per set for the two set records. Each exists once (a unique key), and
 //the methods below write it, creating it when it is not there yet.
-class AchievementCondition extends AppModel
+class AchievementConditionTable extends AppTable
 {
 	// the rows of achievement_condition_category, what the value counts
 	public const CATEGORY_COMPLETED_SETS = 1; // sets completed, see SetCompletionCounter
@@ -32,12 +34,6 @@ class AchievementCondition extends AppModel
 		'3d' => self::CATEGORY_DAN_SOLVE_3D,
 		'4d' => self::CATEGORY_DAN_SOLVE_4D,
 		'5d' => self::CATEGORY_DAN_SOLVE_5D];
-
-	public function __construct(mixed $id = false, ?string $table = null, ?string $ds = null)
-	{
-		$id['table'] =  'achievement_condition';
-		parent::__construct($id, $table, $ds);
-	}
 
 	//The value of the player's condition, null when the player has none.
 	public static function value(int $userID, int $categoryID, ?int $setID = null): ?float

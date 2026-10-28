@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\AchievementConditionTable;
 use App\Utility\Auth;
 use App\Utility\HeroPowers;
 use App\Utility\Util;
@@ -19,12 +20,12 @@ class HeroControllerTest extends IntegrationTestCase
 	{
 		new ContextPreparator([
 			'user' => ['name' => 'kovarex', 'level' => 100],
-			'achievement-conditions' => [['category' => AchievementCondition::CATEGORY_SPRINT, 'value' => 7]]]);
+			'achievement-conditions' => [['category' => AchievementConditionTable::CATEGORY_SPRINT, 'value' => 7]]]);
 
 		$this->post('/hero/sprint');
 
 		$this->assertResponseCode(200);
-		$this->assertSame(0.0, AchievementCondition::value(Auth::getUserID(), AchievementCondition::CATEGORY_SPRINT));
+		$this->assertSame(0.0, AchievementConditionTable::value(Auth::getUserID(), AchievementConditionTable::CATEGORY_SPRINT));
 	}
 
 	public function testIntuitionRequiresLevel()

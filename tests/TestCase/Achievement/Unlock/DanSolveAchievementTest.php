@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\AchievementConditionTable;
 use App\Utility\AchievementId;
 /* These achievements unlock when solving dan-level problems:
  * - AchievementId::SOLVE_1D: Solve 1 x 1d problem
@@ -30,7 +31,7 @@ class DanSolveAchievementTest extends AchievementTestCase
 		{
 			$context = new ContextPreparator([
 				'user' => ['name' => "user_{$achievementId->name}"],
-				'achievement-conditions' => [['category' => AchievementCondition::DAN_SOLVE_CATEGORIES[$danLevel], 'value' => 1]]]);
+				'achievement-conditions' => [['category' => AchievementConditionTable::DAN_SOLVE_CATEGORIES[$danLevel], 'value' => 1]]]);
 			new AchievementChecker()->checkDanSolveAchievements();
 			$this->assertAchievementUnlocked($achievementId);
 		}
@@ -48,7 +49,7 @@ class DanSolveAchievementTest extends AchievementTestCase
 
 		foreach ($achievements as [$achievementId, $danLevel])
 		{
-			$context = new ContextPreparator(['achievement-conditions' => [['category' => AchievementCondition::DAN_SOLVE_CATEGORIES[$danLevel], 'value' => 10]]]);
+			$context = new ContextPreparator(['achievement-conditions' => [['category' => AchievementConditionTable::DAN_SOLVE_CATEGORIES[$danLevel], 'value' => 10]]]);
 			new AchievementChecker()->checkDanSolveAchievements();
 			$this->assertAchievementUnlocked($achievementId);
 		}
@@ -56,7 +57,7 @@ class DanSolveAchievementTest extends AchievementTestCase
 
 	public function testNineSolvesDoesNotUnlockTenSolveAchievement()
 	{
-		$context = new ContextPreparator(['achievement-conditions' => [['category' => AchievementCondition::CATEGORY_DAN_SOLVE_1D, 'value' => 9]]]);
+		$context = new ContextPreparator(['achievement-conditions' => [['category' => AchievementConditionTable::CATEGORY_DAN_SOLVE_1D, 'value' => 9]]]);
 		new AchievementChecker()->checkDanSolveAchievements();
 		$this->assertAchievementNotUnlocked(AchievementId::SOLVE_10_1D);
 	}

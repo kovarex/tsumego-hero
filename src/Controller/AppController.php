@@ -121,8 +121,7 @@ class AppController extends Controller
 	}
 
 	//Models every controller can use as $this->Name, loaded on the first use instead of on every request
-	private const SHARED_MODELS = ['User', 'Tsumego', 'Set', 'TsumegoStatus',
-		'AchievementCondition', 'SetConnection'];
+	private const SHARED_MODELS = ['User', 'Tsumego', 'Set', 'TsumegoStatus', 'SetConnection'];
 
 	public function __isset($name)
 	{

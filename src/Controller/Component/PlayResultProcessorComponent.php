@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Entity\TsumegoAttempt;
+use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\ClassroomAssignmentTable;
 use App\Model\Table\DayRecordTable;
 use App\Model\Table\ProgressDeletionTable;
@@ -213,7 +214,7 @@ class PlayResultProcessorComponent extends Component
 			return true;
 		}
 
-		AchievementCondition::increment(Auth::getUserID(), AchievementCondition::CATEGORY_POTION);
+		AchievementConditionTable::increment(Auth::getUserID(), AchievementConditionTable::CATEGORY_POTION);
 		return false;
 	}
 
@@ -390,9 +391,9 @@ class PlayResultProcessorComponent extends Component
 		// The streak counts the problems solved since the last error: only a clean solve
 		// extends it, anything else resets it.
 		if ($outcome === PlayOutcome::SolvedClean)
-			AchievementCondition::increment(Auth::getUserID(), AchievementCondition::CATEGORY_NO_ERROR_STREAK);
+			AchievementConditionTable::increment(Auth::getUserID(), AchievementConditionTable::CATEGORY_NO_ERROR_STREAK);
 		else
-			AchievementCondition::put(Auth::getUserID(), AchievementCondition::CATEGORY_NO_ERROR_STREAK, 0);
+			AchievementConditionTable::put(Auth::getUserID(), AchievementConditionTable::CATEGORY_NO_ERROR_STREAK, 0);
 	}
 
 	private function processUnsortedStuff(array $previousTsumego, array $result, string $previousTsumegoStatus): void
@@ -405,14 +406,14 @@ class PlayResultProcessorComponent extends Component
 			return;
 
 		$solvedTsumegoRank = Rating::getReadableRankFromRating($previousTsumego['Tsumego']['rating']);
-		if (isset(AchievementCondition::DAN_SOLVE_CATEGORIES[$solvedTsumegoRank]))
-			AchievementCondition::increment(Auth::getUserID(), AchievementCondition::DAN_SOLVE_CATEGORIES[$solvedTsumegoRank]);
+		if (isset(AchievementConditionTable::DAN_SOLVE_CATEGORIES[$solvedTsumegoRank]))
+			AchievementConditionTable::increment(Auth::getUserID(), AchievementConditionTable::DAN_SOLVE_CATEGORIES[$solvedTsumegoRank]);
 		DayRecordTable::countGemSolve($solvedTsumegoRank);
 		//The sprint run counts the problems solved in a row while a sprint is active (user.sprint_start)
 		if (HeroPowers::getSprintRemainingSeconds() > 0)
-			AchievementCondition::increment(Auth::getUserID(), AchievementCondition::CATEGORY_SPRINT);
+			AchievementConditionTable::increment(Auth::getUserID(), AchievementConditionTable::CATEGORY_SPRINT);
 		else
-			AchievementCondition::put(Auth::getUserID(), AchievementCondition::CATEGORY_SPRINT, 0);
+			AchievementConditionTable::put(Auth::getUserID(), AchievementConditionTable::CATEGORY_SPRINT, 0);
 	}
 
 	//The Gold Digger run counts the golden tsumego solved in a row. A golden tsumego is a
@@ -424,8 +425,8 @@ class PlayResultProcessorComponent extends Component
 		if ($previousTsumegoStatus != TsumegoStatus::$GOLDEN)
 			return;
 		if ($result['solved'])
-			AchievementCondition::increment(Auth::getUserID(), AchievementCondition::CATEGORY_GOLDEN);
+			AchievementConditionTable::increment(Auth::getUserID(), AchievementConditionTable::CATEGORY_GOLDEN);
 		else
-			AchievementCondition::put(Auth::getUserID(), AchievementCondition::CATEGORY_GOLDEN, 0);
+			AchievementConditionTable::put(Auth::getUserID(), AchievementConditionTable::CATEGORY_GOLDEN, 0);
 	}
 }

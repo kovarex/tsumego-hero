@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\AchievementConditionTable;
 use App\Utility\AchievementId;
 
 //Test AchievementId::USER_OF_THE_DAY
@@ -10,7 +11,7 @@ class UserOfTheDayAchievementTest extends AchievementTestCase
 {
 	public function testUserOfTheDayAchievement()
 	{
-		new ContextPreparator(['achievement-conditions' => [['category' => AchievementCondition::CATEGORY_USER_OF_THE_DAY, 'value' => 1]]]);
+		new ContextPreparator(['achievement-conditions' => [['category' => AchievementConditionTable::CATEGORY_USER_OF_THE_DAY, 'value' => 1]]]);
 		$this->triggerAchievementCheck();
 		$this->assertAchievementUnlocked(AchievementId::USER_OF_THE_DAY);
 	}

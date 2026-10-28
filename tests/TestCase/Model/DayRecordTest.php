@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Entity\DayRecord;
+use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\DayRecordTable;
 use App\Utility\Auth;
 
@@ -108,11 +109,9 @@ class DayRecordTest extends IntegrationTestCase
 		DayRecordTable::countGemSolve('15k');
 
 		// Verify test user got the achievement
-		$testUserAchievement = ClassRegistry::init('AchievementCondition')->find('first', [
-			'conditions' => ['user_id' => $testUserId, 'achievement_condition_category_id' => AchievementCondition::CATEGORY_EMERALD],
-		]);
+		$testUserAchievement = $this->fetchTable('AchievementCondition')->find()->where(['user_id' => $testUserId, 'achievement_condition_category_id' => AchievementConditionTable::CATEGORY_EMERALD])->first();
 		$this->assertNotEmpty($testUserAchievement, 'Test user should get emerald achievement');
-		$this->assertSame(1, (int) $testUserAchievement['AchievementCondition']['value']);
+		$this->assertSame(1, (int) $testUserAchievement->value);
 
 		// Verify counter incremented to 500
 		$dayRecord = $this->todaysDayRecord();
@@ -126,9 +125,7 @@ class DayRecordTest extends IntegrationTestCase
 		$this->assertSame(501, $dayRecord->emerald_solves);
 
 		// User still has only ONE achievement (not duplicated)
-		$achievements = ClassRegistry::init('AchievementCondition')->find('all', [
-			'conditions' => ['user_id' => $testUserId, 'achievement_condition_category_id' => AchievementCondition::CATEGORY_EMERALD],
-		]);
+		$achievements = $this->fetchTable('AchievementCondition')->find()->where(['user_id' => $testUserId, 'achievement_condition_category_id' => AchievementConditionTable::CATEGORY_EMERALD])->all()->toList();
 		$this->assertCount(1, $achievements, 'User should not get duplicate achievement');
 	}
 
@@ -149,13 +146,12 @@ class DayRecordTest extends IntegrationTestCase
 		]);
 
 		// Manually create achievement for user
-		ClassRegistry::init('AchievementCondition')->save([
-			'AchievementCondition' => [
-				'user_id' => Auth::getUserID(),
-				'achievement_condition_category_id' => AchievementCondition::CATEGORY_EMERALD,
-				'value' => 1,
-			],
-		]);
+		$achievementConditionTable = $this->fetchTable('AchievementCondition');
+		$achievementConditionTable->saveOrFail($achievementConditionTable->newEntity([
+			'user_id' => Auth::getUserID(),
+			'achievement_condition_category_id' => AchievementConditionTable::CATEGORY_EMERALD,
+			'value' => 1,
+		]));
 
 		// User solves 15k problem (would cross threshold)
 		DayRecordTable::countGemSolve('15k');

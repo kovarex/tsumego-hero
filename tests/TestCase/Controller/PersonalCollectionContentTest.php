@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\TimeModeCategoryTable;
 
 //A collection a player assembled is not site content: the site's collections, pools and
@@ -149,9 +150,7 @@ class PersonalCollectionContentTest extends IntegrationTestCase
 
 		$this->get('/sets/' . $playerSetId);
 
-		$this->assertSame(0, ClassRegistry::init('AchievementCondition')->find('count', [
-			'conditions' => ['set_id' => $playerSetId],
-		]));
+		$this->assertSame(0, $this->fetchTable('AchievementCondition')->find()->where(['set_id' => $playerSetId])->count());
 	}
 
 	public function testCompletedSiteCollectionRecordsItsSetAchievementCondition(): void
@@ -166,9 +165,7 @@ class PersonalCollectionContentTest extends IntegrationTestCase
 
 		$this->get('/sets/' . $siteSetId);
 
-		$this->assertSame(1, ClassRegistry::init('AchievementCondition')->find('count', [
-			'conditions' => ['set_id' => $siteSetId, 'achievement_condition_category_id' => AchievementCondition::CATEGORY_SET_TIME],
-		]));
+		$this->assertSame(1, $this->fetchTable('AchievementCondition')->find()->where(['set_id' => $siteSetId, 'achievement_condition_category_id' => AchievementConditionTable::CATEGORY_SET_TIME])->count());
 	}
 
 	//A collection with one problem in it.

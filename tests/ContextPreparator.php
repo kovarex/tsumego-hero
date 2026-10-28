@@ -2,6 +2,7 @@
 
 use App\Model\Entity\Tag;
 use App\Model\Entity\TimeModeSession;
+use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\TimeModeRankTable;
 use App\Model\Table\TsumegoIssueTable;
@@ -833,7 +834,7 @@ class ContextPreparator
 	//Each condition is associated with the user created in this context.
 	//$conditions: Array of achievement condition definitions
 	//Each condition should have:
-	//  - 'category' (required): The achievement category, an AchievementCondition::CATEGORY_ constant
+	//  - 'category' (required): The achievement category, an AchievementConditionTable::CATEGORY_ constant
 	//  - 'value' (required): The condition value (e.g., 100 for percentage, 1 for boolean)
 	//  - 'set_id' (optional): The set_id for set-specific conditions (defaults to null)
 	//  - 'user_id' (optional): Override the user_id (defaults to $this->user['id'])
@@ -844,7 +845,7 @@ class ContextPreparator
 
 		foreach ($conditions as $conditionInput)
 		{
-			AchievementCondition::put(
+			AchievementConditionTable::put(
 				(int) (Util::extract('user_id', $conditionInput) ?: $this->user['id']),
 				Util::extract('category', $conditionInput),
 				Util::extract('value', $conditionInput),
