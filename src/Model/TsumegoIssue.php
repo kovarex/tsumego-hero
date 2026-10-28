@@ -34,8 +34,18 @@ class TsumegoIssue extends AppModel
 	public static int $OPENED_STATUS = 1;
 	public static int $CLOSED_STATUS = 2;
 
-	// the issues of a problem in the trash are left out of the issue list
-	private static string $LIVE_PROBLEM_CONDITION = 'TsumegoIssue.tsumego_id IN (SELECT id FROM tsumego WHERE deleted IS NULL)';
+	//The issue list leaves out the issues of a problem that is off the site: one in the trash, and one
+	//whose collections of the site are all in the trash (see App\Utility\Trash).
+	private static function liveProblemSql(string $tsumegoIdColumn): string
+	{
+		return $tsumegoIdColumn . ' IN (SELECT id FROM tsumego WHERE deleted IS NULL)'
+			. ' AND (EXISTS (SELECT 1 FROM set_connection live_connection'
+			. ' JOIN `set` live_set ON live_set.id = live_connection.set_id AND live_set.user_id IS NULL AND live_set.deleted IS NULL'
+			. ' WHERE live_connection.tsumego_id = ' . $tsumegoIdColumn . ')'
+			. ' OR NOT EXISTS (SELECT 1 FROM set_connection any_connection'
+			. ' JOIN `set` any_set ON any_set.id = any_connection.set_id AND any_set.user_id IS NULL'
+			. ' WHERE any_connection.tsumego_id = ' . $tsumegoIdColumn . '))';
+	}
 
 
 	//Delete an issue if it has no non-deleted comments.
@@ -83,7 +93,7 @@ class TsumegoIssue extends AppModel
 			SELECT id
 			FROM tsumego_issue
 			WHERE deleted IS NULL
-				AND tsumego_id IN (SELECT id FROM tsumego WHERE deleted IS NULL)
+				AND " . self::liveProblemSql('tsumego_issue.tsumego_id') . "
 			{$statusCondition}
 			ORDER BY created DESC, id DESC
 			LIMIT {$limit} OFFSET {$offset}
@@ -228,22 +238,11 @@ class TsumegoIssue extends AppModel
 	/** @return array{open: int, closed: int} */
 	public function getIndexCounts(): array
 	{
-		return [
-			'open' => $this->find('count', [
-				'conditions' => [
-					'tsumego_issue_status_id' => self::$OPENED_STATUS,
-					'deleted' => null,
-					self::$LIVE_PROBLEM_CONDITION,
-				],
-			]),
-			'closed' => $this->find('count', [
-				'conditions' => [
-					'tsumego_issue_status_id' => self::$CLOSED_STATUS,
-					'deleted' => null,
-					self::$LIVE_PROBLEM_CONDITION,
-				],
-			]),
-		];
+		$row = Util::query('SELECT'
+			. ' COALESCE(SUM(tsumego_issue_status_id = ' . self::$OPENED_STATUS . '), 0) AS open,'
+			. ' COALESCE(SUM(tsumego_issue_status_id = ' . self::$CLOSED_STATUS . '), 0) AS closed'
+			. ' FROM tsumego_issue WHERE deleted IS NULL AND ' . self::liveProblemSql('tsumego_issue.tsumego_id'))[0];
+		return ['open' => (int) $row['open'], 'closed' => (int) $row['closed']];
 	}
 
 	//Get comment section counts for a specific tsumego.
