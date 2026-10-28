@@ -4,6 +4,7 @@ use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Model\Table\AdminOverviewTypeTable;
 use App\Model\Table\SgfReviewTable;
+use App\Model\Table\TsumegoIssueTable;
 use App\Utility\AdminActivityRenderer;
 use App\Utility\Auth;
 use App\Utility\RejectedSGFProposalsRenderer;
@@ -27,7 +28,7 @@ class AdminController extends AppController
 		$this->set('sgfProposalCount', SGFProposalsRenderer::total());
 		$this->set('tagProposalCount', TagConnectionProposalsRenderer::total());
 		$this->set('newTagCount', TagProposalsRenderer::total());
-		$this->set('openIssueCount', ClassRegistry::init('TsumegoIssue')->getIndexCounts()['open']);
+		$this->set('openIssueCount', TsumegoIssueTable::getIndexCounts()['open']);
 		$this->set('newSgfChangeCount', AdminOverviewTypeTable::countNewSgfChanges($userID));
 		$this->set('deletedAccountCount', ClassRegistry::init('User')->find('count', ['conditions' => ['deleted IS NOT NULL']]));
 	}

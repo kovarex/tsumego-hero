@@ -448,7 +448,7 @@
 	margin: 0;
 }
 
-.set-image-zoom img
+.set-view__cover img
 {
 	border: 1px solid var(--current-border-color);
 	object-fit: cover;
@@ -519,7 +519,7 @@
 	color: var(--text-softer-color);
 }
 
-.set-image-zoom--rank
+.set-view__cover--rank
 {
 	background: var(--surface-rank-bg);
 }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\TsumegoIssueTable;
 use App\Utility\Avatar;
 
 //Tests for TsumegoIssuesController - specifically the global issues index page.
@@ -44,7 +45,7 @@ class TsumegoIssuesControllerTest extends IntegrationTestCase
 	{
 		new ContextPreparator([
 			'user' => ['admin' => true],
-			'tsumego' => ['set_order' => 1, 'issues' => [['message' => 'Closed issue', 'status' => TsumegoIssue::$CLOSED_STATUS]]]]);
+			'tsumego' => ['set_order' => 1, 'issues' => [['message' => 'Closed issue', 'status' => TsumegoIssueTable::CLOSED_STATUS]]]]);
 
 		$browser = Browser::instance();
 		$browser->get('tsumego-issues?status=closed');
@@ -189,10 +190,7 @@ class TsumegoIssuesControllerTest extends IntegrationTestCase
 
 		// Reassign the issue and its comment to the deleted user
 		$otherUserId = $context->otherUsers[0]['id'];
-		ClassRegistry::init('TsumegoIssue')->updateAll(
-			['TsumegoIssue.user_id' => $otherUserId],
-			['TsumegoIssue.id' => $context->issues[0]['id']]
-		);
+		$this->fetchTable('TsumegoIssue')->updateAll(['user_id' => $otherUserId], ['id' => $context->issues[0]['id']]);
 		$this->fetchTable('TsumegoComment')->updateAll(['user_id' => $otherUserId], ['tsumego_issue_id' => $context->issues[0]['id']]);
 
 		$browser->get('tsumego-issues');
@@ -229,10 +227,7 @@ class TsumegoIssuesControllerTest extends IntegrationTestCase
 		]);
 
 		$otherUserId = $context->otherUsers[0]['id'];
-		ClassRegistry::init('TsumegoIssue')->updateAll(
-			['TsumegoIssue.user_id' => $otherUserId],
-			['TsumegoIssue.id' => $context->issues[0]['id']]
-		);
+		$this->fetchTable('TsumegoIssue')->updateAll(['user_id' => $otherUserId], ['id' => $context->issues[0]['id']]);
 		$this->fetchTable('TsumegoComment')->updateAll(['user_id' => $otherUserId], ['tsumego_issue_id' => $context->issues[0]['id']]);
 
 		$this->get('/tsumego-issues/api');

@@ -1,5 +1,7 @@
 <?php
 
+use App\Model\Entity\TsumegoVariant;
+use App\Model\Table\TsumegoVariantTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\HeroPowers;
@@ -67,7 +69,7 @@ use App\Utility\ViteManifest;
  * @var TsumegoButtons|null $tsumegoButtons
  * @var TsumegoFilters $tsumegoFilters
  * @var TsumegoXPAndRating $tsumegoXPAndRating
- * @var array $tv
+ * @var TsumegoVariant|null $tv
  * @var string $userSetsJson
  */
 
@@ -105,7 +107,7 @@ use App\Utility\ViteManifest;
 
 	// Variant answers are stored in true colors (they describe the stones on the board as authored).
 	// When the board is inverted ($swapColors), swap Black<->White so the answers match what the player sees.
-	$displayAnswers = $tv['TsumegoVariant'] ?? null;
+	$displayAnswers = $tv?->extract(['answer1', 'answer2', 'answer3', 'answer4']);
 	if ($displayAnswers !== null && $swapColors)
 		foreach (['answer1', 'answer2', 'answer3', 'answer4'] as $answerKey)
 			if (isset($displayAnswers[$answerKey]))
@@ -176,13 +178,13 @@ use App\Utility\ViteManifest;
 			echo '<span class="hint italic">('.h($t['Tsumego']['hint']).')</span>';
 		if($tv!=null)
 		{
-			if($tv['TsumegoVariant']['tsumego_variant_type_id'] == TsumegoVariant::TYPE_SCORE_ESTIMATING)
+			if($tv->tsumego_variant_type_id == TsumegoVariantTable::TYPE_SCORE_ESTIMATING)
 			{
-				$capturesLabels = 'Black captures: '.$tv['TsumegoVariant']['answer2'].' | White captures: '.$tv['TsumegoVariant']['answer3'];
+				$capturesLabels = 'Black captures: '.$tv->answer2.' | White captures: '.$tv->answer3;
 				if ($swapColors)
 					$capturesLabels = $swapColorWords($capturesLabels);
 				echo '<br>';
-				echo '<span id="scoreEstimatingLabels">'.h($capturesLabels).' | Komi: '.h($tv['TsumegoVariant']['answer1']).'</span>';
+				echo '<span id="scoreEstimatingLabels">'.h($capturesLabels).' | Komi: '.h($tv->answer1).'</span>';
 			}
 		}
 		if(Auth::isAdmin()) { ?>
@@ -258,18 +260,18 @@ use App\Utility\ViteManifest;
 	<!-- BOARD -->
 	<div id="target"></div>
 	<div id="targetLockOverlay"></div>
-	<?php if(!is_null($t['Tsumego']['semeai_type']) && $t['Tsumego']['semeai_type'] != 0 || ($tv!=null && $tv['TsumegoVariant']['tsumego_variant_type_id'] == TsumegoVariant::TYPE_MULTIPLE_CHOICE)){ ?>
+	<?php if(!is_null($t['Tsumego']['semeai_type']) && $t['Tsumego']['semeai_type'] != 0 || ($tv!=null && $tv->tsumego_variant_type_id == TsumegoVariantTable::TYPE_MULTIPLE_CHOICE)){ ?>
 	<div align="center">
 	<br>
 		<a href="<?php echo $resetLink; ?>" title="reset problem" id="besogo-next-button">Reset</a>
 		<br><br>
 	</div>
-	<?php }else if($tv!=null && $tv['TsumegoVariant']['tsumego_variant_type_id'] == TsumegoVariant::TYPE_SCORE_ESTIMATING){ ?>
+	<?php }else if($tv!=null && $tv->tsumego_variant_type_id == TsumegoVariantTable::TYPE_SCORE_ESTIMATING){ ?>
 	<div align="center">
 		<?php if($t['Tsumego']['set_id']==262){ ?>
 			<br>
 			<a id="submitScoreEstimatingBlackWins" href="#"><?php echo $swapColors ? 'White wins' : 'Black wins'; ?></a>
-			<?php if(substr($tv['TsumegoVariant']['answer1'],-2) !== '.5') { ?>
+			<?php if(substr($tv->answer1,-2) !== '.5') { ?>
 				<a id="submitScoreEstimatingJigo" href="#">Jigo</a>
 			<?php } ?>
 			<a id="submitScoreEstimatingWhiteWins" href="#"><?php echo $swapColors ? 'Black wins' : 'White wins'; ?></a>
@@ -397,7 +399,7 @@ use App\Utility\ViteManifest;
 				echo '<a id="showx8" class="selectable-text mr-5">Rating</a>';
 				echo '<a id="show5" class="selectable-text">Settings<img id="greyArrow5" src="/img/greyArrow1.png"></a>';
 				$checked = fn(bool $isChecked): string => $isChecked ? 'checked="checked"' : '';
-				$variantType = $tv ? (int) $tv['TsumegoVariant']['tsumego_variant_type_id'] : null;
+				$variantType = $tv ? (int) $tv->tsumego_variant_type_id : null;
 			if(Auth::isAdmin())
 			{
 				echo '<div id="msg4">
@@ -426,8 +428,8 @@ use App\Utility\ViteManifest;
 					echo '<tr>
 									<td>Question</td>
 									<td><input type="radio" id="variant-type-none" name="variant_type" value="" ' . $checked($variantType === null) . '><label for="variant-type-none">none</label></td>
-									<td><input type="radio" id="variant-type-multiple-choice" name="variant_type" value="' . TsumegoVariant::TYPE_MULTIPLE_CHOICE . '" ' . $checked($variantType === TsumegoVariant::TYPE_MULTIPLE_CHOICE) . '><label for="variant-type-multiple-choice">multiple choice</label></td>
-									<td><input type="radio" id="variant-type-score-estimating" name="variant_type" value="' . TsumegoVariant::TYPE_SCORE_ESTIMATING . '" ' . $checked($variantType === TsumegoVariant::TYPE_SCORE_ESTIMATING) . '><label for="variant-type-score-estimating">score estimating</label></td>
+									<td><input type="radio" id="variant-type-multiple-choice" name="variant_type" value="' . TsumegoVariantTable::TYPE_MULTIPLE_CHOICE . '" ' . $checked($variantType === TsumegoVariantTable::TYPE_MULTIPLE_CHOICE) . '><label for="variant-type-multiple-choice">multiple choice</label></td>
+									<td><input type="radio" id="variant-type-score-estimating" name="variant_type" value="' . TsumegoVariantTable::TYPE_SCORE_ESTIMATING . '" ' . $checked($variantType === TsumegoVariantTable::TYPE_SCORE_ESTIMATING) . '><label for="variant-type-score-estimating">score estimating</label></td>
 								</tr>';
 				echo '</table>
 							<br>
@@ -438,19 +440,19 @@ use App\Utility\ViteManifest;
 			}
 			if($isSandbox && $tv!=null)
 			{
-				if($tv['TsumegoVariant']['tsumego_variant_type_id'] == TsumegoVariant::TYPE_MULTIPLE_CHOICE)
+				if($tv->tsumego_variant_type_id == TsumegoVariantTable::TYPE_MULTIPLE_CHOICE)
 				{
 						echo '<a id="showMC" class="selectable-text selectable-text--inline">Edit multiple choice
 						<img id="greyArrowMC" src="/img/greyArrow1.png"></a><br><br>';
 						echo '<div id="showxMC">';
 						echo '<form action="/tsumegos/variant/' . $t['Tsumego']['id'] . '" method="post">';
 						for ($answer = 1; $answer <= 4; $answer++)
-							echo '<div class="input text"><label for="variant-answer' . $answer . '">Answer ' . $answer . ': </label><input name="answer' . $answer . '" value="' . h($tv['TsumegoVariant']['answer' . $answer]) . '" placeholder="Answer ' . $answer . '" type="text" id="variant-answer' . $answer . '"></div>';
-						echo '<div class="input textfield"><label for="variant-explanation">Explanation: </label><input name="explanation" value="' . h($tv['TsumegoVariant']['explanation']) . '" placeholder="Explanation" type="text" id="variant-explanation"></div>';
+							echo '<div class="input text"><label for="variant-answer' . $answer . '">Answer ' . $answer . ': </label><input name="answer' . $answer . '" value="' . h($tv->get('answer' . $answer)) . '" placeholder="Answer ' . $answer . '" type="text" id="variant-answer' . $answer . '"></div>';
+						echo '<div class="input textfield"><label for="variant-explanation">Explanation: </label><input name="explanation" value="' . h($tv->explanation) . '" placeholder="Explanation" type="text" id="variant-explanation"></div>';
 						echo '<br>';
 						echo '<label>Correct: </label>';
 						for ($answer = 1; $answer <= 4; $answer++)
-							echo '<input type="radio" name="correct_answer" id="variant-correct-answer' . $answer . '" value="' . $answer . '"' . ($tv['TsumegoVariant']['correct_answer'] == $answer ? ' checked="checked"' : '') . '><label for="variant-correct-answer' . $answer . '">' . $answer . '</label>';
+							echo '<input type="radio" name="correct_answer" id="variant-correct-answer' . $answer . '" value="' . $answer . '"' . ($tv->correct_answer == $answer ? ' checked="checked"' : '') . '><label for="variant-correct-answer' . $answer . '">' . $answer . '</label>';
 						echo '<br><br>';
 						echo '<div class="submit"><input type="submit" value="Submit"></div>';
 						echo '</form>';
@@ -469,19 +471,19 @@ use App\Utility\ViteManifest;
 						echo '<table><tr><td>';
 						echo '<label for="scoreEstEditField">Correct answer: </label>';
 						echo '</td><td>';
-						echo '<input name="winner" value="'.h($tv['TsumegoVariant']['winner']).'" placeholder="Score" id="scoreEstEditField" type="text">';
+						echo '<input name="winner" value="'.h($tv->winner).'" placeholder="Score" id="scoreEstEditField" type="text">';
 						echo '</td></tr><tr><td>';
 						echo '<label for="scoreEstEditField2">Komi: </label>';
 						echo '</td><td>';
-						echo '<input name="answer1" value="'.h($tv['TsumegoVariant']['answer1']).'" placeholder="Komi" id="scoreEstEditField2" type="text">';
+						echo '<input name="answer1" value="'.h($tv->answer1).'" placeholder="Komi" id="scoreEstEditField2" type="text">';
 						echo '</td></tr><tr><td>';
 						echo '<label for="scoreEstEditField3">Black captures: </label>';
 						echo '</td><td>';
-						echo '<input name="answer2" value="'.h($tv['TsumegoVariant']['answer2']).'" placeholder="Black captures" id="scoreEstEditField3" type="text">';
+						echo '<input name="answer2" value="'.h($tv->answer2).'" placeholder="Black captures" id="scoreEstEditField3" type="text">';
 						echo '</td></tr><tr><td>';
 						echo '<label for="scoreEstEditField4">White captures: </label>';
 						echo '</td><td>';
-						echo '<input name="answer3" value="'.h($tv['TsumegoVariant']['answer3']).'" placeholder="White captures" id="scoreEstEditField4" type="text">';
+						echo '<input name="answer3" value="'.h($tv->answer3).'" placeholder="White captures" id="scoreEstEditField4" type="text">';
 						echo '</td></tr></table>';
 						echo '<br>';
 						echo '<div class="submit"><input type="submit" value="Submit" id="scoreEstEditSubmit"></div>';
@@ -505,7 +507,7 @@ use App\Utility\ViteManifest;
 		<?php
 	}
 		?>
-	<?php if(!is_null($t['Tsumego']['semeai_type']) && $t['Tsumego']['semeai_type'] != 0 || $tv!=null&&$tv['TsumegoVariant']['tsumego_variant_type_id'] == TsumegoVariant::TYPE_MULTIPLE_CHOICE){ ?>
+	<?php if(!is_null($t['Tsumego']['semeai_type']) && $t['Tsumego']['semeai_type'] != 0 || $tv!=null&&$tv->tsumego_variant_type_id == TsumegoVariantTable::TYPE_MULTIPLE_CHOICE){ ?>
 		<label>
 		<input type="checkbox" class="toast__toggle" id="alertCheckbox" autocomplete="off" />
 		<div class="toast" id="multipleChoiceAlerts">
@@ -784,8 +786,8 @@ use App\Utility\ViteManifest;
 
 <?php
 	if($tv!=null){
-	if($tv['TsumegoVariant']['tsumego_variant_type_id'] == TsumegoVariant::TYPE_MULTIPLE_CHOICE && $tv['TsumegoVariant']['explanation']!=""){
-		echo 'mText = '.json_encode($tv['TsumegoVariant']['explanation'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).';';
+	if($tv->tsumego_variant_type_id == TsumegoVariantTable::TYPE_MULTIPLE_CHOICE && $tv->explanation!=""){
+		echo 'mText = '.json_encode($tv->explanation, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).';';
 	}
 	}
 
@@ -838,11 +840,11 @@ use App\Utility\ViteManifest;
 	$("#reviewButton2").hide();
 
 	<?php if(Auth::isInRatingMode()) echo 'var ratingModeDifficultySelector = new RatingModeDifficultySelector();';	?>
-	<?php if($tv!=null&&$tv['TsumegoVariant']['tsumego_variant_type_id'] == TsumegoVariant::TYPE_SCORE_ESTIMATING){ ?>
+	<?php if($tv!=null&&$tv->tsumego_variant_type_id == TsumegoVariantTable::TYPE_SCORE_ESTIMATING){ ?>
 		$("#submitScoreEstimatingSE").click(function(e){
 			e.preventDefault();
 			if(!hasChosen){
-				let correctNum = <?php echo json_encode($tv['TsumegoVariant']['winner'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
+				let correctNum = <?php echo json_encode($tv->winner, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 				let guess = $("#ScoreEstimatingSE").val();
 				if(parseFloat(correctNum.slice(2))===0 || parseFloat(correctNum)===0)
 					correctNum = 0;
@@ -868,7 +870,7 @@ use App\Utility\ViteManifest;
 		});
 		$("#submitScoreEstimatingBlackWins").click(function(e){
 			e.preventDefault();
-			let scoreResult = <?php echo json_encode($tv['TsumegoVariant']['winner'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
+			let scoreResult = <?php echo json_encode($tv->winner, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 			if(!hasChosen){
 				let res1;
 				if(scoreResult.charAt(scoreResult.length - 1) === '0')
@@ -898,7 +900,7 @@ use App\Utility\ViteManifest;
 		});
 		$("#submitScoreEstimatingWhiteWins").click(function(e){
 			e.preventDefault();
-			let scoreResult = <?php echo json_encode($tv['TsumegoVariant']['winner'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
+			let scoreResult = <?php echo json_encode($tv->winner, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 			if(!hasChosen){
 				let res1;
 				if(scoreResult.charAt(scoreResult.length - 1) === '0')
@@ -928,7 +930,7 @@ use App\Utility\ViteManifest;
 			});
 		$("#submitScoreEstimatingJigo").click(function(e){
 			e.preventDefault();
-			let scoreResult = <?php echo json_encode($tv['TsumegoVariant']['winner'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
+			let scoreResult = <?php echo json_encode($tv->winner, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 			if(!hasChosen){
 				let res1;
 				if(scoreResult.charAt(scoreResult.length - 1) === '0')
@@ -1174,7 +1176,7 @@ use App\Utility\ViteManifest;
 			msg5selected = !msg5selected;
 		});
 		<?php if($tv!=null){ ?>
-		<?php if($tv['TsumegoVariant']['tsumego_variant_type_id'] == TsumegoVariant::TYPE_MULTIPLE_CHOICE){ ?>
+		<?php if($tv->tsumego_variant_type_id == TsumegoVariantTable::TYPE_MULTIPLE_CHOICE){ ?>
 			$("#showxMC").hide();
 			$("#showMC").click(function(){
 				if(!msgMCselected){
@@ -1908,13 +1910,13 @@ use App\Utility\ViteManifest;
 		}
 		else if($tv!=null)
 		{
-			echo 'options.multipleChoiceCustom = '.json_encode(TsumegoVariant::BOARD_TYPE_NAMES[$tv['TsumegoVariant']['tsumego_variant_type_id']], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).';';
+			echo 'options.multipleChoiceCustom = '.json_encode(TsumegoVariantTable::BOARD_TYPE_NAMES[$tv->tsumego_variant_type_id], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).';';
 			echo 'let a5 = [];
 			a5.push('.json_encode($displayAnswers['answer1'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
 			a5.push('.json_encode($displayAnswers['answer2'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
 			a5.push('.json_encode($displayAnswers['answer3'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
 			a5.push('.json_encode($displayAnswers['answer4'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
-			customMultipleChoiceAnswer = '.(int)$tv['TsumegoVariant']['correct_answer'].';
+			customMultipleChoiceAnswer = '.(int)$tv->correct_answer.';
 			options.multipleChoiceCustomSetup = a5;';
 		}
 	?>

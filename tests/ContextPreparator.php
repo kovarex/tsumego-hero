@@ -4,6 +4,7 @@ use App\Model\Entity\Tag;
 use App\Model\Entity\TimeModeRank;
 use App\Model\Entity\TimeModeSession;
 use App\Model\Table\TimeModeRankTable;
+use App\Model\Table\TsumegoIssueTable;
 use App\Utility\AchievementChecker;
 use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
@@ -402,19 +403,15 @@ class ContextPreparator
 	{
 
 		// Create the issue
-		ClassRegistry::init('TsumegoIssue')->create();
 		$issue = [];
 		$issue['tsumego_id'] = $tsumego['id'];
 		$issue['user_id'] = $this->user['id'];
-		$issue['tsumego_issue_status_id'] = Util::extract('status', $issueInput) ?: TsumegoIssue::$OPENED_STATUS;
+		$issue['tsumego_issue_status_id'] = Util::extract('status', $issueInput) ?: TsumegoIssueTable::OPENED_STATUS;
 		$created = Util::extract('created', $issueInput);
 		if ($created)
 			$issue['created'] = $created;
-		$issueModel = ClassRegistry::init('TsumegoIssue');
-		$issueModel->save($issue);
-
-		// Get the created issue ID
-		$issueId = $issueModel->id;
+		$tsumegoIssueTable = TableRegistry::getTableLocator()->get('TsumegoIssue');
+		$issueId = $tsumegoIssueTable->saveOrFail($tsumegoIssueTable->newEntity($issue))->id;
 
 		// Store issue in array for test access
 		$this->issues[] = ['id' => $issueId, 'tsumego_id' => $issue['tsumego_id'], 'user_id' => $issue['user_id']];
@@ -437,13 +434,8 @@ class ContextPreparator
 
 	private function prepareTsumegoVariant(array $variantInput, &$tsumego): void
 	{
-		$variant = array_merge(['tsumego_id' => $tsumego['id']], $variantInput);
-		$variantModel = ClassRegistry::init('TsumegoVariant');
-		$variantModel->create($variant);
-		$variantModel->save($variant);
-		$savedVariant = $variantModel->data['TsumegoVariant'];
-		$savedVariant['id'] = $variantModel->id;
-		$tsumego['variants'][] = $savedVariant;
+		$variantTable = TableRegistry::getTableLocator()->get('TsumegoVariant');
+		$tsumego['variants'][] = $variantTable->saveOrFail($variantTable->newEntity(array_merge(['tsumego_id' => $tsumego['id']], $variantInput)));
 	}
 
 	private function prepareTsumegoStatuses($tsumegoStatuses, $tsumego): void
