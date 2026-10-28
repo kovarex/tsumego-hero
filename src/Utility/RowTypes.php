@@ -37,7 +37,6 @@ namespace App\Utility;
  * @phpstan-type ProgressDeletionRow array{id?: int, user_id?: int, set_id?: int, set_partition?: int|null, created?: string, ...}
  * @phpstan-type RejectRow array{id?: int, reject_type_id?: int, tsumego_id?: int|null, tag_id?: int|null, tag_name?: string|null, sgf_id?: int|null, user_id?: int, rejected_by_user_id?: int|null, comment?: string|null, created?: string, ...}
  * @phpstan-type RejectTypeRow array{id?: int, name?: string, ...}
- * @phpstan-type ScheduleRow array{id?: int, date?: string, tsumego_id?: int, set_id?: int, published?: int, created_by_user_id?: int|null, ...}
  * @phpstan-type SetConnectionRow array{id?: int, set_id?: int, tsumego_id?: int, num?: int, created?: string, ...}
  * @phpstan-type SetRow array{id?: int, user_id?: int|null, title?: string|null, title2?: string|null, description?: string|null, image?: string|null, order?: int|null, public?: int, color?: string|null, created?: string|null, included_in_time_mode?: int, board_theme_index?: int|null, deleted?: string|null, ...}
  * @phpstan-type SgfRow array{id?: int, sgf?: string|null, user_id?: int|null, accepted_by_user_id?: int|null, tsumego_id?: int, sgf_status_id?: int, created?: string|null, accepted?: string|null, first_move_color?: string|null, correct_moves?: string|null, source_sgf_id?: int|null, transformation_from_source?: string|null, description?: string|null, ...}

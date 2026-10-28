@@ -2,6 +2,8 @@
 
 namespace App\Utility;
 
+use App\Model\Entity\Schedule;
+use Cake\ORM\TableRegistry;
 use CakeLog;
 use ClassRegistry;
 use Set;
@@ -17,25 +19,27 @@ class SchedulePublisher
 	public static function publishDue(): void
 	{
 		$date = date('Y-m-d', strtotime('today'));
-		$dueSchedule = ClassRegistry::init('Schedule')->find('all', [
-			'conditions' => ['date <=' => $date, 'published' => 0],
-			'order' => 'date ASC',
-		]) ?: [];
+		$scheduleTable = TableRegistry::getTableLocator()->get('Schedule');
+		$dueSchedule = $scheduleTable->find()
+			->where(['date <=' => $date, 'published' => false])
+			->orderBy(['date' => 'ASC'])
+			->all();
+		/** @var Schedule $item */
 		foreach ($dueSchedule as $item)
 		{
-			$failure = self::publishSingle($item['Schedule']['tsumego_id'], $item['Schedule']['set_id']);
+			$failure = self::publishSingle($item->tsumego_id, $item->set_id);
 			if ($failure === null)
 			{
-				$item['Schedule']['published'] = 1;
-				ClassRegistry::init('Schedule')->save($item);
+				$item->published = true;
+				$scheduleTable->saveOrFail($item);
 				SiteGrowth::forget();
 			}
 			else
 				CakeLog::warning(sprintf(
 					'Schedule publish failed: entry %d (tsumego %d -> set %d): %s',
-					$item['Schedule']['id'],
-					$item['Schedule']['tsumego_id'],
-					$item['Schedule']['set_id'],
+					$item->id,
+					$item->tsumego_id,
+					$item->set_id,
 					$failure
 				));
 		}

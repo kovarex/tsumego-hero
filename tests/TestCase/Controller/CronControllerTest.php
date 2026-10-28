@@ -136,13 +136,13 @@ class CronControllerTest extends IntegrationTestCase
 		$tsumegoToMigrate = $context->tsumegos[0];
 		$publicSetID = $context->tsumegos[1]['set-connections'][0]['set_id'];
 
-		ClassRegistry::init('Schedule')->create();
-		$scheduleItem = [];
-		$scheduleItem['tsumego_id'] = $tsumegoToMigrate['id'];
-		$scheduleItem['set_id'] = $publicSetID;
-		$scheduleItem['date'] = date('Y-m-d');
-		$scheduleItem['published'] = 0;
-		ClassRegistry::init('Schedule')->save($scheduleItem);
+		$scheduleTable = $this->fetchTable('Schedule');
+		$scheduleTable->saveOrFail($scheduleTable->newEntity([
+			'tsumego_id' => $tsumegoToMigrate['id'],
+			'set_id' => $publicSetID,
+			'date' => date('Y-m-d'),
+			'published' => 0,
+		]));
 
 		$this->get('/cron/daily/' . CRON_SECRET);
 		$newTsumego = ClassRegistry::init('Tsumego')->find('first', ['conditions' => ['id' => $tsumegoToMigrate['id']]]);
@@ -168,8 +168,7 @@ class CronControllerTest extends IntegrationTestCase
 
 		$this->get('/cron/daily/' . CRON_SECRET);
 
-		$schedule = ClassRegistry::init('Schedule')->find('first', ['order' => 'id ASC']);
-		$this->assertSame(1, (int) $schedule['Schedule']['published']);
+		$this->assertTrue($this->fetchTable('Schedule')->find()->orderBy('id')->firstOrFail()->published);
 	}
 
 	public function testUpdateSolved()
