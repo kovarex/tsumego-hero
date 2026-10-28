@@ -2,7 +2,7 @@
 
 namespace App\Utility;
 
-use TsumegoStatus;
+use App\Model\Table\TsumegoStatusTable;
 
 class TsumegoButton
 {
@@ -63,8 +63,8 @@ class TsumegoButton
 
 		echo '<li class="problem-nav__item problem-nav__item--' . ($this->status ?: 'N') . ($this->isCurrentlyOpened ? ' problem-nav__item--current' : '') . '">';
 		$status = $this->status ?: 'N';
-		$label = $this->label ?? TsumegoStatus::label($status);
-		$description = $this->description ?? TsumegoStatus::description($status);
+		$label = $this->label ?? TsumegoStatusTable::label($status);
+		$description = $this->description ?? TsumegoStatusTable::description($status);
 		echo '<a class="tooltip' . ($this->rung === null ? '' : ' problem-nav__rung-link') . '" href="' . $this->linkPrefix . $this->setConnectionID . '"'
 			. ' data-tsumego-id="' . $this->tsumegoID . '"'
 			. $sgfAttr . '>'

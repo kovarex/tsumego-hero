@@ -2,12 +2,12 @@
 
 namespace App\Utility;
 
+use App\Model\Table\TsumegoStatusTable;
 use App\Model\Table\AdminActivityTypeTable;
 use Cake\ORM\TableRegistry;
 use ClassRegistry;
 use Exception;
 use Sgf;
-use TsumegoStatus;
 
 class TsumegoMerger
 {
@@ -58,9 +58,10 @@ class TsumegoMerger
 	{
 		if (!$statusID1)
 		{
-			$tsumegoStatus = ClassRegistry::init('TsumegoStatus')->findById($statusID2)['TsumegoStatus'];
-			$tsumegoStatus['tsumego_id'] = $this->masterTsumegoID;
-			ClassRegistry::init('TsumegoStatus')->save($tsumegoStatus);
+			$statusTable = TableRegistry::getTableLocator()->get('TsumegoStatus');
+			$tsumegoStatus = $statusTable->get($statusID2);
+			$tsumegoStatus->tsumego_id = $this->masterTsumegoID;
+			$statusTable->saveOrFail($tsumegoStatus);
 			return;
 		}
 
@@ -68,10 +69,11 @@ class TsumegoMerger
 		if (!$statusID2)
 			return;
 
-		$masterStatus = ClassRegistry::init('TsumegoStatus')->findById($statusID1)['TsumegoStatus'];
-		$slaveStatus = ClassRegistry::init('TsumegoStatus')->findById($statusID2)['TsumegoStatus'];
-		$masterStatus['status'] = TsumegoStatus::less($masterStatus['status'], $slaveStatus['status']) ? $slaveStatus['status'] : $masterStatus['status'];
-		ClassRegistry::init('TsumegoStatus')->save($masterStatus);
+		$statusTable = TableRegistry::getTableLocator()->get('TsumegoStatus');
+		$masterStatus = $statusTable->get($statusID1);
+		$slaveStatus = $statusTable->get($statusID2);
+		$masterStatus->status = TsumegoStatusTable::less($masterStatus->status, $slaveStatus->status) ? $slaveStatus->status : $masterStatus->status;
+		$statusTable->saveOrFail($masterStatus);
 	}
 
 	private function mergeStatuses(): void

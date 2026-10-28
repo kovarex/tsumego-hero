@@ -396,7 +396,7 @@ class ScheduleTest extends IntegrationTestCase
 
 		SchedulePublisher::publishDue();
 
-		$this->assertSame(1, ClassRegistry::init('TsumegoStatus')->find('count', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]]));
+		$this->assertSame(1, $this->fetchTable('TsumegoStatus')->find()->where(['tsumego_id' => $context->tsumegos[0]['id']])->count());
 	}
 
 	public function testPublishWhenAlreadyInTargetSetKeepsOneConnection(): void
@@ -497,7 +497,7 @@ class ScheduleTest extends IntegrationTestCase
 		SchedulePublisher::publishDue();
 
 		// The statuses stay because the problem is already in another public set
-		$this->assertSame(1, ClassRegistry::init('TsumegoStatus')->find('count', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]]));
+		$this->assertSame(1, $this->fetchTable('TsumegoStatus')->find()->where(['tsumego_id' => $context->tsumegos[0]['id']])->count());
 	}
 
 	public function testPublishFailedEntryStaysPending(): void
@@ -647,12 +647,11 @@ class ScheduleTest extends IntegrationTestCase
 		$moved = ClassRegistry::init('SetConnection')->find('first', [
 			'conditions' => ['set_id' => $targetSetId, 'tsumego_id' => $tsumegoId],
 		]);
-		ClassRegistry::init('TsumegoStatus')->create();
-		ClassRegistry::init('TsumegoStatus')->save(['TsumegoStatus' => [
+		$this->fetchTable('TsumegoStatus')->saveOrFail($this->fetchTable('TsumegoStatus')->newEntity([
 			'user_id' => $context->user['id'],
 			'tsumego_id' => $tsumegoId,
 			'status' => 'S',
-		]]);
+		]));
 
 		SchedulePublisher::publishDue();
 
@@ -663,9 +662,7 @@ class ScheduleTest extends IntegrationTestCase
 		$this->assertSame(1, ClassRegistry::init('SetConnection')->find('count', [
 			'conditions' => ['set_id' => $targetSetId, 'tsumego_id' => $tsumegoId],
 		]));
-		$this->assertSame(1, ClassRegistry::init('TsumegoStatus')->find('count', [
-			'conditions' => ['tsumego_id' => $tsumegoId],
-		]));
+		$this->assertSame(1, $this->fetchTable('TsumegoStatus')->find()->where(['tsumego_id' => $tsumegoId])->count());
 	}
 
 	//Publishing moves the problem, so two entries for the same problem both end up

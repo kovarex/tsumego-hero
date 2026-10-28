@@ -1,11 +1,13 @@
 <?php
 
 use App\Model\Entity\TsumegoAttempt;
+use App\Model\Entity\TsumegoStatus;
 use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\ClassroomAssignmentTable;
 use App\Model\Table\DayRecordTable;
 use App\Model\Table\ProgressDeletionTable;
 use App\Model\Table\TsumegoAttemptTable;
+use App\Model\Table\TsumegoStatusTable;
 use App\Utility\AchievementChecker;
 use App\Utility\Auth;
 use App\Utility\Constants;
@@ -19,6 +21,7 @@ use App\Utility\TimeMode;
 use App\Utility\TsumegoUtil;
 use App\Utility\TsumegoXPAndRating;
 use App\Utility\Util;
+use Cake\ORM\TableRegistry;
 
 class PlayResultProcessorComponent extends Component
 {
@@ -88,14 +91,11 @@ class PlayResultProcessorComponent extends Component
 		$result = [];
 		$result['solved'] = $solved;
 
-		$tsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', [
-			'conditions' => [
-				'tsumego_id' => $tsumegoID,
-				'user_id' => (int) Auth::getUserID(),
-			],
-		]);
+		$tsumegoStatus = TableRegistry::getTableLocator()->get('TsumegoStatus')->find()
+			->where(['tsumego_id' => $tsumegoID, 'user_id' => Auth::getUserID()])
+			->first();
 
-		$previousStatusValue = $tsumegoStatus ? $tsumegoStatus['TsumegoStatus']['status'] : TsumegoStatus::$NOT_VISITED;
+		$previousStatusValue = $tsumegoStatus ? $tsumegoStatus->status : TsumegoStatusTable::$NOT_VISITED;
 		$this->processDamage($result, $previousStatusValue);
 		$newStatus = $this->updateTsumegoStatus($tsumego, $result, $tsumegoStatus);
 		if (TsumegoUtil::isSolvedStatus($newStatus) && !TsumegoUtil::isSolvedStatus($previousStatusValue))
@@ -190,7 +190,7 @@ class PlayResultProcessorComponent extends Component
 	{
 		Util::execute(
 			'INSERT INTO tsumego_status (user_id, tsumego_id, status) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE status = status',
-			[Auth::getUserID(), $tsumegoID, TsumegoStatus::$VISITED]
+			[Auth::getUserID(), $tsumegoID, TsumegoStatusTable::$VISITED]
 		);
 	}
 
@@ -222,56 +222,54 @@ class PlayResultProcessorComponent extends Component
 	{
 		if ($solved)
 		{
-			if ($currentStatus == TsumegoStatus::$REVIEW) // half xp state
+			if ($currentStatus == TsumegoStatusTable::$REVIEW) // half xp state
 			{$result['xp-modifier'] = ($result['xp-modifier'] ?: 1) * Constants::$SECOND_SOLVE_XP_MULTIPLIER;
-				return TsumegoStatus::$MASTERED; // double solved
+				return TsumegoStatusTable::$MASTERED; // double solved
 			}
-			if ($currentStatus == TsumegoStatus::$GOLDEN)
+			if ($currentStatus == TsumegoStatusTable::$GOLDEN)
 			{
 				$result['xp-modifier'] = ($result['xp-modifier'] ?: 1) * Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER;
-				return TsumegoStatus::$SOLVED;
+				return TsumegoStatusTable::$SOLVED;
 			}
-			if ($currentStatus == TsumegoStatus::$VISITED || $currentStatus == TsumegoStatus::$NOT_VISITED)
-				return TsumegoStatus::$SOLVED;
+			if ($currentStatus == TsumegoStatusTable::$VISITED || $currentStatus == TsumegoStatusTable::$NOT_VISITED)
+				return TsumegoStatusTable::$SOLVED;
 			return $currentStatus; // failed can't be unfailed by solving, user has to wait until next day or rejuvenation
 		}
 
 		// not solved from now
-		if ($currentStatus == TsumegoStatus::$VISITED) // if it was just visited so far (so we don't overwrite solved)
+		if ($currentStatus == TsumegoStatusTable::$VISITED) // if it was just visited so far (so we don't overwrite solved)
 		{if (Auth::getUser()['damage'] > Util::getHealthBasedOnLevel(Auth::getUser()['level']))
-			return TsumegoStatus::$LOCKED;  // only mark as failed when the user has no hearts left
+			return TsumegoStatusTable::$LOCKED;  // only mark as failed when the user has no hearts left
 			return $currentStatus;
 		}
-		if ($currentStatus == TsumegoStatus::$REVIEW)
+		if ($currentStatus == TsumegoStatusTable::$REVIEW)
 		{
 			if (Auth::getUser()['damage'] > Util::getHealthBasedOnLevel(Auth::getUser()['level']))
-				return TsumegoStatus::$FORGOTTEN; // only mark as 'stale failed' when the user has no hearts left
+				return TsumegoStatusTable::$FORGOTTEN; // only mark as 'stale failed' when the user has no hearts left
 			return $currentStatus;
 		}
-		if ($currentStatus == TsumegoStatus::$GOLDEN)
-			return TsumegoStatus::$VISITED; // failed golden tsumego
+		if ($currentStatus == TsumegoStatusTable::$GOLDEN)
+			return TsumegoStatusTable::$VISITED; // failed golden tsumego
 		return $currentStatus;
 	}
 
-	private function updateTsumegoStatus(array $previousTsumego, array &$result, ?array $previousTsumegoStatus): string
+	private function updateTsumegoStatus(array $previousTsumego, array &$result, ?TsumegoStatus $previousTsumegoStatus): string
 	{
 		if (Auth::isInMistakeTrainingMode())
-			return $previousTsumegoStatus['TsumegoStatus']['status'] ?? TsumegoStatus::$NOT_VISITED;
+			return $previousTsumegoStatus->status ?? TsumegoStatusTable::$NOT_VISITED;
 
-		if ($previousTsumegoStatus == null)
-		{
-			$previousTsumegoStatus['TsumegoStatus'] = [];
-			$previousTsumegoStatus['TsumegoStatus']['user_id'] = Auth::getUserID();
-			$previousTsumegoStatus['TsumegoStatus']['tsumego_id'] = $previousTsumego['Tsumego']['id'];
-			$previousTsumegoStatus['TsumegoStatus']['status'] = TsumegoStatus::$VISITED;
-		}
+		$statusTable = TableRegistry::getTableLocator()->get('TsumegoStatus');
+		$previousTsumegoStatus ??= $statusTable->newEntity([
+			'user_id' => Auth::getUserID(),
+			'tsumego_id' => $previousTsumego['Tsumego']['id'],
+			'status' => TsumegoStatusTable::$VISITED]);
 
-		$newStatus = $this->getNewStatus($result['solved'], $previousTsumegoStatus['TsumegoStatus']['status'], $result);
+		$newStatus = $this->getNewStatus($result['solved'], $previousTsumegoStatus->status, $result);
 
-		if (TsumegoUtil::isSolvedStatus($newStatus) && !TsumegoUtil::isSolvedStatus($previousTsumegoStatus['TsumegoStatus']['status']))
+		if (TsumegoUtil::isSolvedStatus($newStatus) && !TsumegoUtil::isSolvedStatus($previousTsumegoStatus->status))
 			Auth::incrementUserField('solved', 1);
-		$previousTsumegoStatus['TsumegoStatus']['status'] = $newStatus;
-		ClassRegistry::init('TsumegoStatus')->save($previousTsumegoStatus);
+		$previousTsumegoStatus->status = $newStatus;
+		$statusTable->saveOrFail($previousTsumegoStatus);
 		return $newStatus;
 	}
 
@@ -367,7 +365,7 @@ class PlayResultProcessorComponent extends Component
 			return;
 
 		$multiplier = ($result['xp-modifier'] ?: 1);
-		if ($previousTsumegoStatus != TsumegoStatus::$GOLDEN)
+		if ($previousTsumegoStatus != TsumegoStatusTable::$GOLDEN)
 			$multiplier *= TsumegoXPAndRating::getProgressDeletionMultiplier($progressDeletionCount);
 
 		$user = & Auth::getUser();
@@ -422,7 +420,7 @@ class PlayResultProcessorComponent extends Component
 	{
 		if (Auth::isInMistakeTrainingMode())
 			return;
-		if ($previousTsumegoStatus != TsumegoStatus::$GOLDEN)
+		if ($previousTsumegoStatus != TsumegoStatusTable::$GOLDEN)
 			return;
 		if ($result['solved'])
 			AchievementConditionTable::increment(Auth::getUserID(), AchievementConditionTable::CATEGORY_GOLDEN);

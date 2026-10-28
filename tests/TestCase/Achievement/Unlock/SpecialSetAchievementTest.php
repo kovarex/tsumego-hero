@@ -14,7 +14,7 @@ class SpecialSetAchievementTest extends AchievementTestCase
 		// Create the required sets with tsumegos
 		$Set = ClassRegistry::init('Set');
 		$Tsumego = ClassRegistry::init('Tsumego');
-		$TsumegoStatus = ClassRegistry::init('TsumegoStatus');
+		$TsumegoStatus = $this->fetchTable('TsumegoStatus');
 
 		$setIds = [50, 52, 53, 54];
 
@@ -32,8 +32,7 @@ class SpecialSetAchievementTest extends AchievementTestCase
 				$tsumegoId = $Tsumego->id;
 
 				// Mark as solved
-				$TsumegoStatus->create();
-				$TsumegoStatus->save(['user_id' => $context->user['id'], 'tsumego_id' => $tsumegoId, 'status' => 'S']); // solved
+				$TsumegoStatus->saveOrFail($TsumegoStatus->newEntity(['user_id' => $context->user['id'], 'tsumego_id' => $tsumegoId, 'status' => 'S'])); // solved
 			}
 		}
 
@@ -86,7 +85,7 @@ class SpecialSetAchievementTest extends AchievementTestCase
 	{
 		$Set = ClassRegistry::init('Set');
 		$Tsumego = ClassRegistry::init('Tsumego');
-		$TsumegoStatus = ClassRegistry::init('TsumegoStatus');
+		$TsumegoStatus = $this->fetchTable('TsumegoStatus');
 
 		foreach ($setIds as $setId)
 		{
@@ -99,8 +98,7 @@ class SpecialSetAchievementTest extends AchievementTestCase
 				$Tsumego->save(['rating' => 1000, 'author' => '']);
 				$tsumegoId = $Tsumego->id;
 
-				$TsumegoStatus->create();
-				$TsumegoStatus->save(['user_id' => $userId, 'tsumego_id' => $tsumegoId, 'status' => 'S']);
+				$TsumegoStatus->saveOrFail($TsumegoStatus->newEntity(['user_id' => $userId, 'tsumego_id' => $tsumegoId, 'status' => 'S']));
 			}
 		}
 	}

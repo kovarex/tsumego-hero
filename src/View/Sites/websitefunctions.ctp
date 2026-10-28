@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\TsumegoStatusTable;
 use App\Utility\MistakeTraining;
 
 /**
@@ -91,8 +92,8 @@ $percent = fn(float $share): string => round($share * 100) . '%';
 			<b>(5) Problem colors</b><br><br>
 		<table class="sitesTable">
 		<?php
-		foreach (TsumegoStatus::$labels as $status => $label):
-			$description = TsumegoStatus::$descriptions[$status] ?? '';
+		foreach (TsumegoStatusTable::$labels as $status => $label):
+			$description = TsumegoStatusTable::$descriptions[$status] ?? '';
 		?>
 		<tr>
 			<td>

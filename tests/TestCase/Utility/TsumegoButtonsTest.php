@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\TsumegoStatusTable;
 use App\Utility\MistakeTraining;
 use App\Utility\PlayOutcome;
 use App\Utility\RungInsignia;
@@ -332,7 +333,7 @@ class TsumegoButtonsTest extends IntegrationTestCase
 		$this->assertStringNotContainsString('problem-nav__rung', $html, 'Normal play renders the button as it always did');
 		$this->assertStringContainsString('<div class="problem-nav__ratio">-</div>', $html);
 		$this->assertStringContainsString('<div class="problem-nav__time">-</div>', $html);
-		$this->assertStringContainsString(TsumegoStatus::label('S'), $html, 'Outside the training the tooltip names the status');
+		$this->assertStringContainsString(TsumegoStatusTable::label('S'), $html, 'Outside the training the tooltip names the status');
 	}
 
 	private function renderButton(TsumegoButton $button): string

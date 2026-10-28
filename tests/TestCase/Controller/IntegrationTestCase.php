@@ -173,8 +173,8 @@ class IntegrationTestCase extends CakeTestCase
 		$this->assertSame($button->getText(), strval($order));
 		if (is_null($currentIndex) || $index != $currentIndex)
 		{
-			$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[$index]['id']]]);
-			$statusValue = $status ? $status['TsumegoStatus']['status'] : 'N';
+			$status = $this->fetchTable('TsumegoStatus')->find()->where(['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[$index]['id']])->first();
+			$statusValue = $status ? $status->status : 'N';
 		}
 		else
 			$statusValue = $currentStatus;

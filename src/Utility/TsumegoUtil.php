@@ -2,9 +2,9 @@
 
 namespace App\Utility;
 
+use App\Model\Table\TsumegoStatusTable;
 use ClassRegistry;
 use SetConnection;
-use TsumegoStatus;
 
 /** @phpstan-import-type TsumegoRow from \App\Utility\RowTypes */
 class TsumegoUtil
@@ -84,12 +84,12 @@ class TsumegoUtil
 
 	public static function isRecentlySolved(?string $status): bool
 	{
-		return $status == TsumegoStatus::$SOLVED || $status == TsumegoStatus::$MASTERED;
+		return $status == TsumegoStatusTable::$SOLVED || $status == TsumegoStatusTable::$MASTERED;
 	}
 
 	public static function isSolvedStatus(?string $status): bool
 	{
-		return $status == TsumegoStatus::$SOLVED || $status == TsumegoStatus::$MASTERED || $status == TsumegoStatus::$REVIEW;
+		return $status == TsumegoStatusTable::$SOLVED || $status == TsumegoStatusTable::$MASTERED || $status == TsumegoStatusTable::$REVIEW;
 	}
 
 	/** @param TsumegoRow $tsumego */

@@ -100,13 +100,13 @@ class CronController extends AppController
 
 	private function dailyTsumegoStatusReset(): void
 	{
-		ClassRegistry::init('TsumegoStatus')->query("UPDATE tsumego_status SET status='V' where status='F'");
-		ClassRegistry::init('TsumegoStatus')->query("UPDATE tsumego_status SET status='W' where status='X'");
+		Util::execute("UPDATE tsumego_status SET status='V' where status='F'");
+		Util::execute("UPDATE tsumego_status SET status='W' where status='X'");
 	}
 
 	private function dailyStalingSolvedTsumegoStatuses(): void
 	{
-		ClassRegistry::init('TsumegoStatus')->query("
+		Util::execute("
 UPDATE tsumego_status
 SET status='W'
 WHERE

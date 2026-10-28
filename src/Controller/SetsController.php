@@ -33,7 +33,6 @@ class SetsController extends AppController
 
 		$this->loadModel('User');
 		$this->loadModel('Tsumego');
-		$this->loadModel('TsumegoStatus');
 		$this->loadModel('SetConnection');
 
 		$this->set('_page', 'sandbox');
@@ -47,13 +46,9 @@ class SetsController extends AppController
 
 		if (Auth::isLoggedIn())
 		{
-			$uts = $this->TsumegoStatus->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
-			if (!$uts)
-				$uts = [];
 			$tsumegoStatusMap = [];
-			$utsCount4 = count($uts);
-			for ($l = 0; $l < $utsCount4; $l++)
-				$tsumegoStatusMap[$uts[$l]['TsumegoStatus']['tsumego_id']] = $uts[$l]['TsumegoStatus']['status'];
+			foreach (Util::query('SELECT tsumego_id, status FROM tsumego_status WHERE user_id = ?', [Auth::getUserID()]) as $userTsumegoStatus)
+				$tsumegoStatusMap[$userTsumegoStatus['tsumego_id']] = $userTsumegoStatus['status'];
 		}
 		$overallCounter = 0;
 
@@ -508,7 +503,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 	{
 		$this->loadModel('User');
 		$this->loadModel('Tsumego');
-		$this->loadModel('TsumegoStatus');
 		$this->loadModel('SetConnection');
 		$this->set('_page', 'set');
 		$this->set('_title', 'Tsumego Hero - Collections');
@@ -835,7 +829,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 		}
 
 		$this->loadModel('Tsumego');
-		$this->loadModel('TsumegoStatus');
 		$this->loadModel('Sgf');
 		$this->loadModel('SetConnection');
 		$this->loadModel('User');

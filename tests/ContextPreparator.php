@@ -2,6 +2,7 @@
 
 use App\Model\Entity\Tag;
 use App\Model\Entity\TimeModeSession;
+use App\Model\Entity\TsumegoStatus;
 use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\TimeModeRankTable;
@@ -459,32 +460,24 @@ class ContextPreparator
 				: (self::getUserIdFromName(Util::extract('user', $tsumegoStatus)) ?: $this->user['id']))
 			: null;
 
-		$statusCondition = [
-			'conditions' => [
-				'user_id' => $userID,
-				['tsumego_id' => $tsumego['id']]]];
-
-		$originalTsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', $statusCondition);
+		$statusTable = TableRegistry::getTableLocator()->get('TsumegoStatus');
+		$originalTsumegoStatus = $userID === null ? null : $statusTable->find()->where(['user_id' => $userID, 'tsumego_id' => $tsumego['id']])->first();
 		if ($originalTsumegoStatus)
 			if (!$tsumegoStatus)
-				ClassRegistry::init('TsumegoStatus')->delete($originalTsumegoStatus['TsumegoStatus']['id']);
+				$statusTable->deleteOrFail($originalTsumegoStatus);
 			else
 			{
-				$originalTsumegoStatus['TsumegoStatus']['status'] = $statusValue;
+				$originalTsumegoStatus->status = $statusValue;
 				if ($updated)
-					$originalTsumegoStatus['TsumegoStatus']['updated'] = $updated;
-				ClassRegistry::init('TsumegoStatus')->save($originalTsumegoStatus);
+					$originalTsumegoStatus->updated = $updated;
+				$statusTable->saveOrFail($originalTsumegoStatus);
 			}
 		elseif ($tsumegoStatus)
 		{
-			$originalTsumegoStatus = [];
-			$originalTsumegoStatus['TsumegoStatus']['status'] = $statusValue;
+			$newStatus = ['status' => $statusValue, 'user_id' => $userID, 'tsumego_id' => $tsumego['id']];
 			if ($updated)
-				$originalTsumegoStatus['TsumegoStatus']['updated'] = $updated;
-			$originalTsumegoStatus['TsumegoStatus']['user_id'] = $userID;
-			$originalTsumegoStatus['TsumegoStatus']['tsumego_id'] = $tsumego['id'];
-			ClassRegistry::init('TsumegoStatus')->create($originalTsumegoStatus);
-			ClassRegistry::init('TsumegoStatus')->save($originalTsumegoStatus);
+				$newStatus['updated'] = $updated;
+			$statusTable->saveOrFail($statusTable->newEntity($newStatus));
 		}
 
 		// A status fixture with mistake_training_due now marks the problem as in
@@ -756,14 +749,12 @@ class ContextPreparator
 
 	public function checkNewTsumegoStatusCoreValues(CakeTestCase $testCase): void
 	{
-		$statusCondition = [
-			'conditions' => [
-				'user_id' => $this->user['id'],
-				'tsumego_id' => $this->tsumegos[0]['id']]];
-		$this->resultTsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', $statusCondition)['TsumegoStatus'];
+		$this->resultTsumegoStatus = TableRegistry::getTableLocator()->get('TsumegoStatus')->find()
+			->where(['user_id' => $this->user['id'], 'tsumego_id' => $this->tsumegos[0]['id']])
+			->first();
 		$testCase->assertNotEmpty($this->resultTsumegoStatus);
-		$testCase->assertSame($this->resultTsumegoStatus['user_id'], $this->user['id']);
-		$testCase->assertSame($this->resultTsumegoStatus['tsumego_id'], $this->tsumegos[0]['id']);
+		$testCase->assertSame($this->resultTsumegoStatus->user_id, $this->user['id']);
+		$testCase->assertSame($this->resultTsumegoStatus->tsumego_id, $this->tsumegos[0]['id']);
 	}
 
 	public function prepareProgressDeletion($progressDeletions)
@@ -1060,7 +1051,7 @@ class ContextPreparator
 	public array $tsumegos = [];
 	public array $issues = [];
 	public ?int $mode = null;
-	public ?array $resultTsumegoStatus = null;
+	public ?TsumegoStatus $resultTsumegoStatus = null;
 	public ?array $tsumegoSets = null;
 	public array $timeModeRanks = [];
 	/** @var array<TimeModeSession> */

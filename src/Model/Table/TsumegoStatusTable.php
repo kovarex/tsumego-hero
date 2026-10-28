@@ -1,8 +1,14 @@
 <?php
 
-use App\Utility\Util;
+namespace App\Model\Table;
 
-class TsumegoStatus extends AppModel
+use Cake\ORM\TableRegistry;
+use App\Utility\Util;
+use Exception;
+
+//How far a player got with a problem: one row per player and problem they opened, 11.4 M of them,
+//so whatever reads many rows stays raw SQL.
+class TsumegoStatusTable extends AppTable
 {
 	public static string $NOT_VISITED = 'N';
 	public static string $VISITED = 'V';
@@ -12,12 +18,6 @@ class TsumegoStatus extends AppModel
 	public static string $LOCKED = 'F';
 	public static string $FORGOTTEN = 'X';
 	public static string $GOLDEN = 'G';
-
-	public function __construct(mixed $id = false, ?string $table = null, ?string $ds = null)
-	{
-		$id['table'] =  'tsumego_status';
-		parent::__construct($id, $table, $ds);
-	}
 
 	// when two statuses are to be merged, we need to decide which one is more valuable to keep for the user
 	public static function less(string $status1, string $status2): bool
@@ -71,6 +71,15 @@ class TsumegoStatus extends AppModel
 	public static function description(string $status): string
 	{
 		return self::$descriptions[$status] ?? '';
+	}
+
+	//The status of a problem for a player, null when they never opened it.
+	public static function statusOf(int $userID, int $tsumegoID): ?string
+	{
+		return TableRegistry::getTableLocator()->get('TsumegoStatus')->find()
+			->select(['status'])
+			->where(['user_id' => $userID, 'tsumego_id' => $tsumegoID])
+			->first()?->status;
 	}
 
 	//Sets the status of a problem for a player, whether the player has a status there yet or not.

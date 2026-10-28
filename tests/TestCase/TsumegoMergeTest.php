@@ -111,10 +111,10 @@ class TsumegoMergeTest extends IntegrationTestCase
 
 			// the tsumegos were merged
 			$this->assertSame($context->tsumegos[0]['set-connections'][0]['tsumego_id'], $context->tsumegos[0]['set-connections'][1]['tsumego_id']);
-			$masterStatus = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]]);
+			$masterStatus = $this->fetchTable('TsumegoStatus')->find()->where(['tsumego_id' => $context->tsumegos[0]['id']])->first();
 
 			// slave status is better than master, so it was merged
-			$this->assertSame('S', $masterStatus['TsumegoStatus']['status']);
+			$this->assertSame('S', $masterStatus->status);
 
 			// slave tsumego got actually deleted
 			$this->assertSame(1, ClassRegistry::init('Tsumego')->find('count'));

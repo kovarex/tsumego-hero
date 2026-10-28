@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\TsumegoStatusTable;
 use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\RejectTable;
 use App\Model\Table\TimeModeCategoryTable;
@@ -804,7 +805,6 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	public function view(?string $id = null): mixed
 	{
 		$this->set('_page', 'user');
-		$this->loadModel('TsumegoStatus');
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
 		$this->loadModel('SetConnection');
@@ -981,7 +981,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 
 		$user = Auth::getUser();
 		$this->set('user', $user);
-		$this->set('tsumegoStatusToRestCount', TsumegoStatus::countOldProgress($user['id']));
+		$this->set('tsumegoStatusToRestCount', TsumegoStatusTable::countOldProgress($user['id']));
 		$this->set('canResetOldTsumegoStatuses', User::canResetOldProgress($user));
 		$this->set('unconfirmedEmail', self::waitingAddress($user));
 
@@ -1610,7 +1610,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		if (!User::canResetOldProgress($user))
 			return $this->redirect('/users/settings');
 
-		$deleted = TsumegoStatus::deleteOldProgress((int) $user['id']);
+		$deleted = TsumegoStatusTable::deleteOldProgress((int) $user['id']);
 		CookieFlash::set('Deleted progress on ' . $deleted . ' problems', 'success');
 		return $this->redirect('/users/settings');
 	}

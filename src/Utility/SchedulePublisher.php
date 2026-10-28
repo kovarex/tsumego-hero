@@ -119,7 +119,7 @@ class SchedulePublisher
 			return 'the problem is in no sandbox set to move from';
 
 		if (!$alreadyPublic)
-			ClassRegistry::init('TsumegoStatus')->deleteAll(['tsumego_id' => $tsumego['Tsumego']['id']]);
+			TableRegistry::getTableLocator()->get('TsumegoStatus')->deleteAll(['tsumego_id' => $tsumego['Tsumego']['id']]);
 
 		return null;
 	}

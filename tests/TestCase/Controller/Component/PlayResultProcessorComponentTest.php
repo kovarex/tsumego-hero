@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\TsumegoStatusTable;
 use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\AchievementTable;
 use App\Utility\AchievementChecker;
@@ -79,9 +80,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 
 	private function statusOf(ContextPreparator $context): string
 	{
-		return ClassRegistry::init('TsumegoStatus')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
-		])['TsumegoStatus']['status'];
+		return $this->fetchTable('TsumegoStatus')->find()->where(['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']])->first()->status;
 	}
 
 	private function attemptsOf(ContextPreparator $context): array
@@ -1324,10 +1323,8 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 
 		$this->solve($context);
 
-		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
-		]);
-		$this->assertSame('S', $status['TsumegoStatus']['status'], 'Level solve should mark it solved');
+		$status = $this->fetchTable('TsumegoStatus')->find()->where(['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']])->first();
+		$this->assertSame('S', $status->status, 'Level solve should mark it solved');
 		$this->assertNotNull(
 			MistakeTraining::getPoolRow($context->user['id'], (int) $context->tsumegos[0]['id']),
 			'A solved pool problem must stay in the pool regardless of its status'
@@ -1361,10 +1358,8 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		$this->assertSame($beforeDailySolved + 1, Auth::getUser()['daily_solved'], 'A review counts as a solve of the day');
 		$this->assertSame($beforeDailyXp + $xp, Auth::getUser()['daily_xp'], 'And its XP as XP of the day');
 
-		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
-		]);
-		$this->assertSame('V', $status['TsumegoStatus']['status'], 'Training solve should not change tsumego status');
+		$status = $this->fetchTable('TsumegoStatus')->find()->where(['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']])->first();
+		$this->assertSame('V', $status->status, 'Training solve should not change tsumego status');
 
 		// Training does not write to tsumego_attempt (like time mode); it only
 		// advances the pool. A clean solve climbs one rung.
@@ -1387,10 +1382,8 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 
 		$this->assertSame($beforeDamage, Auth::getUser()['damage'], 'Training fail should not add damage');
 
-		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
-		]);
-		$this->assertSame('V', $status['TsumegoStatus']['status'], 'Training fail should not change tsumego status');
+		$status = $this->fetchTable('TsumegoStatus')->find()->where(['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']])->first();
+		$this->assertSame('V', $status->status, 'Training fail should not change tsumego status');
 
 		// Training does not write to tsumego_attempt (like time mode); it only
 		// moves the pool. A fail keeps the problem at the daily rung.
@@ -1412,10 +1405,8 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		$this->assertGreaterThan($beforeDailySolved, Auth::getUser()['daily_solved'], 'Level solve should bump daily solves');
 		$this->assertNotEquals($beforeRating, Auth::getUser()['rating'], 'Level solve should change rating');
 
-		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
-		]);
-		$this->assertSame('S', $status['TsumegoStatus']['status'], 'Level solve should mark the problem solved');
+		$status = $this->fetchTable('TsumegoStatus')->find()->where(['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']])->first();
+		$this->assertSame('S', $status->status, 'Level solve should mark the problem solved');
 
 		$attempts = $this->attemptsWhere(['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']]);
 		$attempt = end($attempts);
@@ -1519,7 +1510,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 			'A clean solve on the review day climbs one rung');
 
 		Util::execute('UPDATE tsumego_status SET status = ? WHERE user_id = ? AND tsumego_id = ?',
-			[TsumegoStatus::$REVIEW, $userId, $tsumegoId]);
+			[TsumegoStatusTable::$REVIEW, $userId, $tsumegoId]);
 		$this->failResult($context);
 		$this->solveAfterMistake($context);
 

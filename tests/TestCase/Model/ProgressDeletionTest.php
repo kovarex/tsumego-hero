@@ -199,7 +199,7 @@ class ProgressDeletionTest extends IntegrationTestCase
 		$setID = $context->tsumegos[0]['sets'][0]['id'];
 		$this->resetPart($setID, 2);
 
-		$statuses = ClassRegistry::init('TsumegoStatus')->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
+		$statuses = $this->fetchTable('TsumegoStatus')->find()->where(['user_id' => Auth::getUserID()])->toArray();
 		$this->assertCount(10, $statuses, 'Only #11 and #12 (the second part) are reset');
 		$progressDeletion = $this->fetchTable('ProgressDeletion')->find()->firstOrFail();
 		$this->assertSame($setID, $progressDeletion->set_id);
@@ -217,7 +217,7 @@ class ProgressDeletionTest extends IntegrationTestCase
 			$this->resetPart($context->tsumegos[0]['sets'][0]['id'], 1);
 
 			$this->assertSame('Reset is only possible without rank and tag filters', CookieFlash::get(), json_encode($filter));
-			$this->assertCount(12, ClassRegistry::init('TsumegoStatus')->find('all'), json_encode($filter));
+			$this->assertCount(12, $this->fetchTable('TsumegoStatus')->find()->toArray(), json_encode($filter));
 			$this->assertSame(0, $this->fetchTable('ProgressDeletion')->find()->count(), json_encode($filter));
 		}
 	}
