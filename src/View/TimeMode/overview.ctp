@@ -104,7 +104,7 @@ echo '</div>';
 	<?php
 	foreach ($timeModeCategories as $timeModeCategory)
 	{
-		$timeModeCategoryID = $timeModeCategory['TimeModeCategory']['id'];
+		$timeModeCategoryID = $timeModeCategory->id;
 		if ($bestSolvedRankID = @$solvedMap[$timeModeCategoryID]['best-solved-rank'])
 			$bestSolvedRank = $solvedMap[$timeModeCategoryID][$bestSolvedRankID];
 		else

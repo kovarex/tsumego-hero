@@ -2,7 +2,6 @@
 
 namespace App\Model\Entity;
 
-use Cake\ORM\Entity;
 use DateTimeImmutable;
 
 /**
@@ -17,7 +16,4 @@ use DateTimeImmutable;
  * @property string|null $comment
  * @property DateTimeImmutable $created
  */
-class Reject extends Entity
-{
-	protected array $_accessible = ['*' => true, 'id' => false];
-}
+class Reject extends AppEntity {}
