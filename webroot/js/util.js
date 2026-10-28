@@ -12,12 +12,11 @@ function setCookie(name, value, days = 365)
 		"; Secure";
 }
 
+//The decoded value, '' when the cookie is not set
 function getCookie(name)
 {
-    return document.cookie
-        .split('; ')
-        .find(row => row.startsWith(name + '='))
-        ?.split('=')[1] || null;
+	const row = document.cookie.split('; ').find(row => row.startsWith(name + '='));
+	return row ? decodeURIComponent(row.substring(name.length + 1)) : '';
 }
 
 function isStatusAllowingInspection(status)
