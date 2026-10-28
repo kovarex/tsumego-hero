@@ -55,7 +55,7 @@ class Play
 		$tsumegoFilters = new TsumegoFilters();
 		$tsumegoStatus = self::tsumegoStatus($tsumegoID);
 		$goldenTsumego = $tsumegoStatus == TsumegoStatus::$GOLDEN;
-		$amountOfOtherCollection = count(TsumegoUtil::collectTsumegosFromSet($set['Set']['id']));
+		$amountOfOtherCollection = TsumegoUtil::countTsumegosFromSet((int) $set['Set']['id']);
 		$sgf = self::acceptedSgf($tsumegoID);
 
 		$this->exportOpenGraph($setConnection, $set, $t, $sgf, $amountOfOtherCollection);
