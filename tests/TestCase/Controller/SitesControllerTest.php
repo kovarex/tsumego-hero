@@ -41,7 +41,7 @@ class SitesControllerTest extends IntegrationTestCase
 		catch (Exception $e)
 		{
 		} // ignoring js errors on the main page for now
-		$this->assertStringContainsString('New Collection', $browser->driver->getPageSource());
+		$this->assertStringContainsString('whats-new-list', $browser->driver->getPageSource());
 	}
 
 	public function testShowsPublishedTsumegoWithDateLabel()
@@ -217,51 +217,15 @@ class SitesControllerTest extends IntegrationTestCase
 		$browser->assertNoJsErrors();
 	}
 
-	public function testNewsColumnsRevealMoreArticlesUntilAllAreVisible()
+	//The news on the home page points to the What's new page, which lists every change.
+	public function testWhatsNewLinksToChangelog()
 	{
 		$browser = Browser::instance();
 		new ContextPreparator();
-		$browser->get('sites/index');
+		$browser->get('/');
 
-		$initialArticleCounts = ['left' => 4, 'right' => 6];
-		foreach ($initialArticleCounts as $side => $expectedInitialCount)
-		{
-			$selector = '#news-list-' . $side . ' > .news-article';
-			$visibleCount = $browser->driver->executeScript(
-				'return Array.from(document.querySelectorAll(' . json_encode($selector) . '))
-					.filter(article => getComputedStyle(article).display !== "none").length;'
-			);
-			$hiddenCount = $browser->driver->executeScript(
-				'return Array.from(document.querySelectorAll(' . json_encode($selector) . '))
-					.filter(article => getComputedStyle(article).display === "none").length;'
-			);
-			$this->assertSame($expectedInitialCount, $visibleCount, 'The ' . $side . ' news column should initially show the configured number of articles');
-			$this->assertGreaterThan(0, $hiddenCount, 'The ' . $side . ' news column should have hidden articles');
-
-			while ($hiddenCount > 0)
-			{
-				$expectedVisibleCount = $visibleCount + min(3, $hiddenCount);
-				$browser->clickId('show-more-' . $side);
-				$browser->waitUntilJs(
-					'Array.from(document.querySelectorAll(' . json_encode($selector) . '))
-						.filter(article => getComputedStyle(article).display !== "none").length >= ' . $expectedVisibleCount
-				);
-
-				$newHiddenCount = $browser->driver->executeScript(
-					'return Array.from(document.querySelectorAll(' . json_encode($selector) . '))
-						.filter(article => getComputedStyle(article).display === "none").length;'
-				);
-				$this->assertLessThan($hiddenCount, $newHiddenCount, 'Show more should reveal articles in the ' . $side . ' column');
-				$this->assertSame($expectedVisibleCount, $visibleCount + ($hiddenCount - $newHiddenCount));
-				$visibleCount = $expectedVisibleCount;
-				$hiddenCount = $newHiddenCount;
-			}
-
-			$this->assertFalse(
-				$browser->find('#show-more-' . $side)->isDisplayed(),
-				'Show more should disappear after all ' . $side . ' articles are visible'
-			);
-		}
+		$browser->find('.whats-new-list ~ a[href="/changelog"]')->click();
+		$this->assertStringContainsString('/changelog', $browser->driver->getCurrentURL());
 	}
 
 	public function testPlayButtonsWorkWithoutLastVisitSession()
