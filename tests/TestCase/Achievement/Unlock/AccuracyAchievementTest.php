@@ -38,7 +38,7 @@ class AccuracyAchievementTest extends AchievementTestCase
 			$context = new ContextPreparator();
 			// Clean only achievement records from previous iteration (preserve sets/user)
 			ClassRegistry::init('AchievementCondition')->deleteAll(['1 = 1']);
-			ClassRegistry::init('AchievementStatus')->deleteAll(['1 = 1']);
+			$this->fetchTable('AchievementStatus')->deleteAll(['1 = 1']);
 
 			// Create set with 100 tsumegos + SetConnection records
 			$setId = $this->createSetWithTsumegosAndConnections($rating, 100);

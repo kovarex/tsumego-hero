@@ -4,15 +4,19 @@ namespace App\Utility;
 
 use Achievement;
 use AchievementCondition;
+use App\Model\Entity\AchievementStatus;
 use App\Model\Table\TimeModeCategoryTable;
 use App\Model\Table\TimeModeRankTable;
 use App\Model\Table\TimeModeSessionStatusTable;
+use Cake\ORM\Locator\LocatorAwareTrait;
 use ClassRegistry;
 use SetConnection;
 
 /** @phpstan-import-type AchievementRow from \App\Utility\RowTypes */
 class AchievementChecker
 {
+	use LocatorAwareTrait;
+
 	public function __construct()
 	{
 		$this->fillExistingStatuses();
@@ -38,11 +42,11 @@ class AchievementChecker
 	{
 		if ($this->existingStatuses[$achievementID->value])
 			return;
-		$achievementStatus = [];
-		$achievementStatus['achievement_id'] = $achievementID->value;
-		$achievementStatus['user_id'] = Auth::getUserID();
-		ClassRegistry::init('AchievementStatus')->create();
-		ClassRegistry::init('AchievementStatus')->save($achievementStatus);
+		$achievementStatusTable = $this->fetchTable('AchievementStatus');
+		$achievementStatusTable->saveOrFail($achievementStatusTable->newEntity([
+			'achievement_id' => $achievementID->value,
+			'user_id' => Auth::getUserID(),
+		]));
 
 		$achievement = ClassRegistry::init('Achievement')->findById($achievementID->value);
 		$this->updated [] = $achievement['Achievement'];
@@ -58,21 +62,22 @@ class AchievementChecker
 			return;
 		$this->gained($achievementID);
 
-		$AchievementStatus = ClassRegistry::init('AchievementStatus');
-		$status = $AchievementStatus->find('first', [
-			'conditions' => ['user_id' => Auth::getUserID(), 'achievement_id' => $achievementID->value]]);
-		if (!$status || (int) $status['AchievementStatus']['value'] >= $times)
+		$achievementStatusTable = $this->fetchTable('AchievementStatus');
+		/** @var AchievementStatus|null $status */
+		$status = $achievementStatusTable->find()->where(['user_id' => Auth::getUserID(), 'achievement_id' => $achievementID->value])->first();
+		if (!$status || $status->value >= $times)
 			return;
 
-		$status['AchievementStatus']['value'] = $times;
-		$AchievementStatus->save($status);
+		$status->value = $times;
+		$achievementStatusTable->saveOrFail($status);
 	}
 
 	private function fillExistingStatuses(): void
 	{
-		$achievementStatuses = ClassRegistry::init('AchievementStatus')->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]) ?: [];
+		$achievementStatuses = $this->fetchTable('AchievementStatus')->find()->where(['user_id' => Auth::getUserID()])->all();
+		/** @var AchievementStatus $achievementStatus */
 		foreach ($achievementStatuses as $achievementStatus)
-			$this->existingStatuses[$achievementStatus['AchievementStatus']['achievement_id']] = true;
+			$this->existingStatuses[$achievementStatus->achievement_id] = true;
 	}
 
 	public function unlocked(AchievementId $achievementID): bool

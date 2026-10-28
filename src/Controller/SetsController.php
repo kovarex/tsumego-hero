@@ -1,7 +1,5 @@
 <?php
 
-use App\Attribute\HttpGet;
-use App\Attribute\HttpPost;
 use App\Lib\Error\ConflictException;
 use App\Model\Table\AdminActivityTypeTable;
 use App\Utility\AchievementChecker;
@@ -19,6 +17,8 @@ use App\Utility\TsumegoButtons;
 use App\Utility\TsumegoFilters;
 use App\Utility\TsumegoUtil;
 use App\Utility\Util;
+use App\Attribute\HttpGet;
+use App\Attribute\HttpPost;
 
 class SetsController extends AppController
 {
@@ -837,7 +837,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$this->loadModel('TsumegoAttempt');
 		$this->loadModel('ProgressDeletion');
 		$this->loadModel('Achievement');
-		$this->loadModel('AchievementStatus');
 		$this->loadModel('Sgf');
 		$this->loadModel('SetConnection');
 		$this->loadModel('User');

@@ -839,9 +839,8 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		$this->assertSame(30, $this->sprintConditionValue($context));
 		$this->loginAs($context);
 		new AchievementChecker()->checkDanSolveAchievements();
-		$unlocked = ClassRegistry::init('AchievementStatus')->find('count', [
-			'conditions' => ['user_id' => $context->user['id'], 'achievement_id' => AchievementId::SPRINT->value],
-		]);
+		$unlocked = $this->fetchTable('AchievementStatus')->find()
+			->where(['user_id' => $context->user['id'], 'achievement_id' => AchievementId::SPRINT->value])->count();
 		$this->assertGreaterThan(0, $unlocked, 'Sprint achievement should unlock at 30 solves within a sprint');
 	}
 
