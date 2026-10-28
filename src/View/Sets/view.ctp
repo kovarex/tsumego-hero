@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\ProgressDeletionTable;
 use App\Utility\Auth;
 use App\Utility\HtmlSanitizer;
 use App\Utility\Rating;
@@ -183,8 +184,8 @@ if ($tsumegoFilters->query != 'topics')
 
 					echo '<font color="gray">XP reduced by ' . $pdCounterValue . '%. (' . $pdCounter . ' reset' . $plural . ' in the last month.)</font>';
 				}
-				if ($tsumegoFilters->collectionSize != ProgressDeletion::$PARTITION_SIZE)
-					echo 'Reset is only possible when collection size is set to ' . ProgressDeletion::$PARTITION_SIZE;
+				if ($tsumegoFilters->collectionSize != ProgressDeletionTable::$PARTITION_SIZE)
+					echo 'Reset is only possible when collection size is set to ' . ProgressDeletionTable::$PARTITION_SIZE;
 				elseif ($tsumegoFilters->hasProblemFilters())
 					echo 'Reset is only possible without rank and tag filters';
 				elseif ($problemSolvedPercent < 50)
@@ -222,7 +223,7 @@ if ($tsumegoFilters->query != 'topics')
 			</td>
 			<td>
 			<?php
-			if ($problemSolvedPercent >= 50 && $tsumegoFilters->collectionSize == ProgressDeletion::$PARTITION_SIZE && !$tsumegoFilters->hasProblemFilters())
+			if ($problemSolvedPercent >= 50 && $tsumegoFilters->collectionSize == ProgressDeletionTable::$PARTITION_SIZE && !$tsumegoFilters->hasProblemFilters())
 			{
 				echo '<div id="msg2x">';
 				echo 'Type "reset" to remove all your progress on this collection.<br><br>';

@@ -1,21 +1,18 @@
 <?php
 
+namespace App\Model\Table;
+
 use App\Utility\Util;
+use ClassRegistry;
 
 //A reset of the user's progress on one part of a set. The resets reduce the XP of the problems of
 //that part for a month.
-class ProgressDeletion extends AppModel
+class ProgressDeletionTable extends AppTable
 {
 	// A reset clears one part of a set: its problems ordered by number, in parts of this size. Resetting
 	// is only possible with this collection size and without rank and tag filters, so a part is the
 	// same for everybody.
 	public static int $PARTITION_SIZE = 200;
-
-	public function __construct(mixed $id = false, ?string $table = null, ?string $ds = null)
-	{
-		$id['table'] =  'progress_deletion';
-		parent::__construct($id, $table, $ds);
-	}
 
 	//The set and part of a set connection. The problems of a set are ordered by number with the
 	//deleted ones left out, the same way the set page shows them without filters.
