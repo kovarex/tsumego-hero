@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SgfTable;
 use App\Model\Entity\TsumegoComment;
 use App\Utility\BoardTransformation;
 use App\Utility\SgfCommentReorientation;
@@ -24,10 +25,8 @@ class SgfCommentReorientationTest extends CakeTestCase
 	//Saves a new SGF version of the problem, accepted unless $sgf says otherwise, returns its id.
 	private function saveVersion(ContextPreparator $context, array $sgf): int
 	{
-		$Sgf = ClassRegistry::init('Sgf');
-		$Sgf->create();
-		$Sgf->save($sgf + ['tsumego_id' => $context->tsumegos[0]['id'], 'sgf_status_id' => Sgf::STATUS_ACCEPTED]);
-		return (int) $Sgf->id;
+		$sgfTable = $this->fetchTable('Sgf');
+		return $sgfTable->saveOrFail($sgfTable->newEntity($sgf + ['tsumego_id' => $context->tsumegos[0]['id'], 'sgf_status_id' => SgfTable::STATUS_ACCEPTED]))->id;
 	}
 
 	private function comment(ContextPreparator $context): TsumegoComment
@@ -109,7 +108,7 @@ class SgfCommentReorientationTest extends CakeTestCase
 		$context = $this->prepare();
 		SgfCommentReorientation::afterAccepted($this->saveVersion($context, [
 			'sgf' => self::MIRRORED_SGF,
-			'sgf_status_id' => Sgf::STATUS_PROPOSED,
+			'sgf_status_id' => SgfTable::STATUS_PROPOSED,
 			'source_sgf_id' => $context->tsumegos[0]['sgfs'][0]['id'],
 			'transformation_from_source' => new BoardTransformation(flipX: true)->toJson()]));
 

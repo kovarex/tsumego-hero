@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SgfTable;
 use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\TimeModeCategoryTable;
 
@@ -190,12 +191,11 @@ class PersonalCollectionContentTest extends IntegrationTestCase
 		$setConnection->create();
 		$setConnection->save(['SetConnection' => ['set_id' => $setId, 'tsumego_id' => $tsumegoId, 'num' => 1]]);
 
-		ClassRegistry::init('Sgf')->create();
-		ClassRegistry::init('Sgf')->save(['Sgf' => [
+		$this->fetchTable('Sgf')->saveOrFail($this->fetchTable('Sgf')->newEntity([
 			'tsumego_id' => $tsumegoId,
 			'sgf' => '(;GM[1]FF[4]SZ[19])',
-			'sgf_status_id' => Sgf::STATUS_ACCEPTED,
-		]]);
+			'sgf_status_id' => SgfTable::STATUS_ACCEPTED,
+		]));
 
 		return $setId;
 	}

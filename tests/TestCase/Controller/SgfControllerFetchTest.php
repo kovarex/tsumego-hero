@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SgfTable;
 use App\Utility\Util;
 
 class SgfControllerFetchTest extends IntegrationTestCase
@@ -11,11 +12,11 @@ class SgfControllerFetchTest extends IntegrationTestCase
 			'tsumego' => ['set_order' => 1, 'sgf' => '(;FF[4]GM[1]SZ[19]AB[dd])'],
 		]);
 
-		$sgf = ClassRegistry::init('Sgf')->find('first');
+		$sgf = $this->fetchTable('Sgf')->find()->first();
 
 		$this->logout();
 
-		$this->get('/sgf/fetch/' . $sgf['Sgf']['id']);
+		$this->get('/sgf/fetch/' . $sgf->id);
 
 		$this->assertResponseCode(401);
 	}
@@ -36,10 +37,10 @@ class SgfControllerFetchTest extends IntegrationTestCase
 			'tsumego' => ['set_order' => 1, 'sgf' => '(;FF[4]GM[1]SZ[19]AB[dd])'],
 		]);
 
-		$sgf = ClassRegistry::init('Sgf')->find('first');
+		$sgf = $this->fetchTable('Sgf')->find()->first();
 		Util::execute('UPDATE sgf SET user_id = NULL');
 
-		$this->get('/sgf/fetch/' . $sgf['Sgf']['id']);
+		$this->get('/sgf/fetch/' . $sgf->id);
 
 		$this->assertResponseCode(403);
 	}
@@ -51,12 +52,12 @@ class SgfControllerFetchTest extends IntegrationTestCase
 			'tsumego' => ['set_order' => 1, 'sgf' => '(;FF[4]GM[1]SZ[19]AB[dd])', 'status' => 'S'],
 		]);
 
-		$sgf = ClassRegistry::init('Sgf')->find('first');
+		$sgf = $this->fetchTable('Sgf')->find()->first();
 
-		$this->get('/sgf/fetch/' . $sgf['Sgf']['id']);
+		$this->get('/sgf/fetch/' . $sgf->id);
 
 		$this->assertResponseCode(200);
-		$this->assertSame($sgf['Sgf']['sgf'], $this->view);
+		$this->assertSame($sgf->sgf, $this->view);
 	}
 
 	//The proposer gets the decision about their proposal with a link to its diff, so they see both versions.
@@ -65,8 +66,8 @@ class SgfControllerFetchTest extends IntegrationTestCase
 		$context = new ContextPreparator([
 			'user' => ['name' => 'proposer'],
 			'tsumego' => ['set_order' => 1, 'sgfs' => [
-				['data' => '(;FF[4]GM[1]SZ[19]AB[dd])', 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
-				['data' => '(;FF[4]GM[1]SZ[19]AB[dd]AB[ee])', 'sgf_status_id' => Sgf::STATUS_ACCEPTED]]],
+				['data' => '(;FF[4]GM[1]SZ[19]AB[dd])', 'sgf_status_id' => SgfTable::STATUS_ACCEPTED],
+				['data' => '(;FF[4]GM[1]SZ[19]AB[dd]AB[ee])', 'sgf_status_id' => SgfTable::STATUS_ACCEPTED]]],
 		]);
 		[$previous, $proposal] = $context->tsumegos[0]['sgfs'];
 		Util::execute('UPDATE sgf SET user_id = NULL WHERE id = ?', [$previous['id']]);
@@ -75,7 +76,7 @@ class SgfControllerFetchTest extends IntegrationTestCase
 		{
 			$this->get('/sgf/fetch/' . $version['id']);
 			$this->assertResponseCode(200);
-			$this->assertSame(ClassRegistry::init('Sgf')->findById($version['id'])['Sgf']['sgf'], $this->view);
+			$this->assertSame($this->fetchTable('Sgf')->get($version['id'])->sgf, $this->view);
 		}
 	}
 
@@ -86,11 +87,11 @@ class SgfControllerFetchTest extends IntegrationTestCase
 			'tsumego' => ['set_order' => 1, 'sgf' => '(;FF[4]GM[1]SZ[19]AB[dd])'],
 		]);
 
-		$sgf = ClassRegistry::init('Sgf')->find('first');
+		$sgf = $this->fetchTable('Sgf')->find()->first();
 
-		$this->get('/sgf/fetch/' . $sgf['Sgf']['id']);
+		$this->get('/sgf/fetch/' . $sgf->id);
 
 		$this->assertResponseCode(200);
-		$this->assertSame($sgf['Sgf']['sgf'], $this->view);
+		$this->assertSame($sgf->sgf, $this->view);
 	}
 }

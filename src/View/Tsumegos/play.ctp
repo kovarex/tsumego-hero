@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SgfTable;
 use App\Model\Entity\TsumegoVariant;
 use App\Model\Table\ClassroomAssignmentTable;
 use App\Model\Table\TsumegoVariantTable;
@@ -62,7 +63,7 @@ use App\Utility\ViteManifest;
  * @var array $set
  * @var array $setConnection
  * @var array $setConnections
- * @var array $sgf
+ * @var \App\Model\Entity\Sgf $sgf
  * @var array $t
  * @var array $tagData
  * @var TimeMode $timeMode
@@ -360,7 +361,7 @@ use App\Utility\ViteManifest;
 		</div>
 		<br>
 		<?php
-			echo '<a id="openSgfLink" href="/editor/?setConnectionID='.$setConnection['SetConnection']['id'].'&sgfID='.$sgf['Sgf']['id'].(Auth::isAdmin() ? '' : '&proposal=1').'" class="selectable-text mr-5" style="'.$proposalSentColor.'">'.$makeProposal.'</a>';
+			echo '<a id="openSgfLink" href="/editor/?setConnectionID='.$setConnection['SetConnection']['id'].'&sgfID='.$sgf->id.(Auth::isAdmin() ? '' : '&proposal=1').'" class="selectable-text mr-5" style="'.$proposalSentColor.'">'.$makeProposal.'</a>';
 			echo '<a id="showx3" class="selectable-text mr-5">Download SGF</a>';
 			echo '<a id="findSimilarProblems" class="selectable-text mr-5">Find Similar Problems</a>';
 			echo '<a id="showFilters" class="selectable-text">Filters<img id="greyArrowFilter" src="/img/greyArrow1.png"></a>';
@@ -386,7 +387,7 @@ use App\Utility\ViteManifest;
 	{
 		if ($firstRanks==0)
 		{
-			if($sgf['Sgf']['user_id']!=33)
+			if($sgf->user_id!=33)
 				$adHighlight = 'historyLink';
 			else
 				$adHighlight = '';
@@ -407,7 +408,7 @@ use App\Utility\ViteManifest;
 						<br>
 						<form action="/sgf/upload/' . $setConnection['SetConnection']['id'] . '" method="POST" enctype="multipart/form-data">
 							<input id="admin-upload-button" type="file" name="adminUpload" />
-							<input id="admin-upload-description" type="text" name="description" maxlength="' . Sgf::DESCRIPTION_MAX_LENGTH . '" placeholder="What changed and why (optional)" />
+							<input id="admin-upload-description" type="text" name="description" maxlength="' . SgfTable::DESCRIPTION_MAX_LENGTH . '" placeholder="What changed and why (optional)" />
 							<input id="admin-upload-submit" value="Submit" type="submit"/>
 						</form>
 					</div>
@@ -1295,7 +1296,7 @@ use App\Utility\ViteManifest;
 
 	function jsCreateDownloadFile(name){
 		if(enableDownloads){
-			var blob = new Blob([<?php echo json_encode($sgf['Sgf']['sgf'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>],{
+			var blob = new Blob([<?php echo json_encode($sgf->sgf, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>],{
 				type: "sgf",
 			});
 			saveAs(blob, name+".sgf");
@@ -1929,7 +1930,7 @@ use App\Utility\ViteManifest;
 		options.themeParameters = ['<?php echo $boardSelection['black']; ?>', '<?php echo $boardSelection['white']; ?>'];
 		options.coord = 'western';
 		options.sgf = '/placeholder.sgf';
-		options.sgf2 = <?php echo json_encode($sgf['Sgf']['sgf'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
+		options.sgf2 = <?php echo json_encode($sgf->sgf, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 		options.light = <?php echo json_encode($lightDark, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 		if (options.theme) addStyleLink('/besogo/css/board-'+options.theme+'.css');
 			if (options.height && options.width && options.resize === 'fixed')

@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SgfTable;
 use App\Attribute\HttpGet;
 use App\Utility\Constants;
 
@@ -23,7 +24,7 @@ class TsumegoImagesController extends AppController
 			FROM set_connection sc
 			JOIN tsumego t ON t.id = sc.tsumego_id AND t.deleted IS NULL
 			JOIN `set` s ON s.id = sc.set_id AND s.deleted IS NULL
-			JOIN sgf ON sgf.tsumego_id = t.id AND sgf.sgf_status_id = ' . Sgf::STATUS_ACCEPTED . '
+			JOIN sgf ON sgf.tsumego_id = t.id AND sgf.sgf_status_id = ' . SgfTable::STATUS_ACCEPTED . '
 			WHERE sc.id = ?
 			ORDER BY sgf.id DESC
 			LIMIT 1',

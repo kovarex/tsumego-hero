@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SgfTable;
 use App\Model\Table\TsumegoStatusTable;
 use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\RejectTable;
@@ -1368,7 +1369,7 @@ FROM
 		WHERE sc.tsumego_id = tsumego_attempt.tsumego_id
 		ORDER BY " . SetConnection::displayOrderSql('ss', 'sc') . "
 		LIMIT 1)
-	LEFT JOIN sgf ON sgf.id = " . Sgf::currentVersionIDSql('tsumego_attempt.tsumego_id') . "
+	LEFT JOIN sgf ON sgf.id = " . SgfTable::currentVersionIDSql('tsumego_attempt.tsumego_id') . "
 	LEFT JOIN tsumego_status ON tsumego_status.user_id = ? AND tsumego_status.tsumego_id = tsumego_attempt.tsumego_id
 	LEFT JOIN `set` s ON set_connection.set_id = s.id
 WHERE
@@ -1392,37 +1393,36 @@ OFFSET " . $offset, [$userID, $userID]);
 	{
 		$this->Authorization->authorize('Admin');
 
-		$proposalToApprove = ClassRegistry::init('Sgf')->findById($sgfID);
+		$proposalToApprove = $this->fetchTable('Sgf')->find()->where(['id' => $sgfID])->first();
 		if (!$proposalToApprove)
 		{
 			CookieFlash::set('Sgf proposal doesn\'t exist.', 'fail');
 			return $this->redirect('/admin/sgf-proposals');
 		}
 
-		$proposalToApprove = $proposalToApprove['Sgf'];
-		if ($proposalToApprove['sgf_status_id'] != Sgf::STATUS_PROPOSED)
+		if ($proposalToApprove->sgf_status_id != SgfTable::STATUS_PROPOSED)
 		{
 			CookieFlash::set('Sgf proposal was already decided.', 'fail');
 			return $this->redirect('/admin/sgf-proposals');
 		}
-		$replacedSgfID = ClassRegistry::init('Sgf')->findCurrentVersionID((int) $proposalToApprove['tsumego_id']);
-		Sgf::accept((int) $proposalToApprove['id'], Auth::getUserID());
-		SgfCommentReorientation::afterAccepted((int) $proposalToApprove['id']);
+		$replacedSgfID = SgfTable::findCurrentVersionID($proposalToApprove->tsumego_id);
+		SgfTable::accept($proposalToApprove->id, Auth::getUserID());
+		SgfCommentReorientation::afterAccepted($proposalToApprove->id);
 
 		CookieFlash::set('Sgf proposal accepted', 'success');
 
-		$userToApprove = $this->User->findById($proposalToApprove['user_id']);
-		AdminActivityLogger::log(AdminActivityTypeTable::ACCEPT_PROPOSAL, $proposalToApprove['tsumego_id'], null, null, $userToApprove['User']['display_name']);
+		$userToApprove = $this->User->findById($proposalToApprove->user_id);
+		AdminActivityLogger::log(AdminActivityTypeTable::ACCEPT_PROPOSAL, $proposalToApprove->tsumego_id, null, null, $userToApprove['User']['display_name']);
 
-		$tsumegoID = (int) $proposalToApprove['tsumego_id'];
+		$tsumegoID = $proposalToApprove->tsumego_id;
 		ProposalFeedback::send(
-			(int) $proposalToApprove['user_id'],
+			(int) $proposalToApprove->user_id,
 			'Your proposal for ' . ProposalFeedback::problemName($tsumegoID) . ' was accepted by ' . ProposalFeedback::adminName() . ', it is the current version of the problem now.',
 			$tsumegoID,
-			$proposalToApprove['description'],
+			$proposalToApprove->description,
 			ProposalFeedback::commentFromRequest($this->request->data['comment'] ?? null),
 			$this->_getEmailer(),
-			ProposalFeedback::diffUrl((int) $proposalToApprove['id'], $replacedSgfID));
+			ProposalFeedback::diffUrl($proposalToApprove->id, $replacedSgfID));
 
 		return $this->redirect('/admin/sgf-proposals');
 	}
@@ -1432,16 +1432,14 @@ OFFSET " . $offset, [$userID, $userID]);
 	{
 		$this->Authorization->authorize('Admin');
 
-		$proposalToReject = ClassRegistry::init('Sgf')->findById($sgfID);
+		$proposalToReject = $this->fetchTable('Sgf')->find()->where(['id' => $sgfID])->first();
 		if (!$proposalToReject)
 		{
 			CookieFlash::set('Sgf proposal doesn\'t exist.', 'fail');
 			return $this->redirect('/admin/sgf-proposals');
 		}
 
-		$proposalToReject = $proposalToReject['Sgf'];
-
-		if ($proposalToReject['sgf_status_id'] != Sgf::STATUS_PROPOSED)
+		if ($proposalToReject->sgf_status_id != SgfTable::STATUS_PROPOSED)
 		{
 			CookieFlash::set('Sgf proposal was already decided.', 'fail');
 			return $this->redirect('/admin/sgf-proposals');
@@ -1456,28 +1454,28 @@ OFFSET " . $offset, [$userID, $userID]);
 
 		$rejectTable = $this->fetchTable('Reject');
 		$rejectTable->saveOrFail($rejectTable->newEntity([
-			'user_id' => $proposalToReject['user_id'],
+			'user_id' => $proposalToReject->user_id,
 			'rejected_by_user_id' => Auth::getUserID(),
 			'comment' => $comment,
-			'tsumego_id' => $proposalToReject['tsumego_id'],
-			'sgf_id' => $proposalToReject['id'],
+			'tsumego_id' => $proposalToReject->tsumego_id,
+			'sgf_id' => $proposalToReject->id,
 			'reject_type_id' => RejectTable::TYPE_PROPOSAL]));
 		// kept, so the proposer can still see what they proposed
-		ClassRegistry::init('Sgf')->setStatus((int) $proposalToReject['id'], Sgf::STATUS_REJECTED);
+		SgfTable::setStatus($proposalToReject->id, SgfTable::STATUS_REJECTED);
 		CookieFlash::set('Sgf proposal rejected', 'success');
 
-		$userToReject = $this->User->findById($proposalToReject['user_id']);
-		AdminActivityLogger::log(AdminActivityTypeTable::REJECT_PROPOSAL, $proposalToReject['tsumego_id'], null, null, $userToReject['User']['display_name']);
+		$userToReject = $this->User->findById($proposalToReject->user_id);
+		AdminActivityLogger::log(AdminActivityTypeTable::REJECT_PROPOSAL, $proposalToReject->tsumego_id, null, null, $userToReject['User']['display_name']);
 
-		$tsumegoID = (int) $proposalToReject['tsumego_id'];
+		$tsumegoID = $proposalToReject->tsumego_id;
 		ProposalFeedback::send(
-			(int) $proposalToReject['user_id'],
+			(int) $proposalToReject->user_id,
 			'Your proposal for ' . ProposalFeedback::problemName($tsumegoID) . ' was rejected by ' . ProposalFeedback::adminName() . '.',
 			$tsumegoID,
-			$proposalToReject['description'],
+			$proposalToReject->description,
 			$comment,
 			$this->_getEmailer(),
-			ProposalFeedback::diffUrl((int) $proposalToReject['id'], ClassRegistry::init('Sgf')->findCurrentVersionID($tsumegoID)));
+			ProposalFeedback::diffUrl($proposalToReject->id, SgfTable::findCurrentVersionID($tsumegoID)));
 
 		return $this->redirect('/admin/sgf-proposals');
 	}
@@ -1488,20 +1486,18 @@ OFFSET " . $offset, [$userID, $userID]);
 	{
 		$this->Authorization->authorize('Admin');
 
-		$proposalToReopen = ClassRegistry::init('Sgf')->findById($sgfID);
-		if (!$proposalToReopen || $proposalToReopen['Sgf']['sgf_status_id'] != Sgf::STATUS_REJECTED)
+		$proposalToReopen = $this->fetchTable('Sgf')->find()->where(['id' => $sgfID])->first();
+		if (!$proposalToReopen || $proposalToReopen->sgf_status_id != SgfTable::STATUS_REJECTED)
 		{
 			CookieFlash::set('There is no rejected sgf proposal to reopen.', 'fail');
 			return $this->redirect('/admin/sgf-proposals');
 		}
-		$proposalToReopen = $proposalToReopen['Sgf'];
-
-		ClassRegistry::init('Sgf')->setStatus((int) $proposalToReopen['id'], Sgf::STATUS_PROPOSED);
-		$this->fetchTable('Reject')->deleteAll(['sgf_id' => $proposalToReopen['id']]);
+		SgfTable::setStatus($proposalToReopen->id, SgfTable::STATUS_PROPOSED);
+		$this->fetchTable('Reject')->deleteAll(['sgf_id' => $proposalToReopen->id]);
 		CookieFlash::set('Sgf proposal reopened', 'success');
 
-		$proposer = $this->User->findById($proposalToReopen['user_id']);
-		AdminActivityLogger::log(AdminActivityTypeTable::REOPEN_PROPOSAL, $proposalToReopen['tsumego_id'], null, null, $proposer ? $proposer['User']['display_name'] : null);
+		$proposer = $this->User->findById($proposalToReopen->user_id);
+		AdminActivityLogger::log(AdminActivityTypeTable::REOPEN_PROPOSAL, $proposalToReopen->tsumego_id, null, null, $proposer ? $proposer['User']['display_name'] : null);
 
 		return $this->redirect('/admin/sgf-proposals');
 	}

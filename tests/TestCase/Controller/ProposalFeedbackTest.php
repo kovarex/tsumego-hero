@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SgfTable;
 use App\Model\Table\AdminActivityTypeTable;
 use App\Utility\Auth;
 use App\Utility\Util;
@@ -33,8 +34,8 @@ class ProposalFeedbackTest extends IntegrationTestCase
 	private function prepareSgfProposal(?ContextPreparator &$context): array
 	{
 		$context = $this->prepare(['sgfs' => [
-			['data' => self::SGF_VERSION_1, 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
-			['data' => self::SGF_VERSION_2, 'sgf_status_id' => Sgf::STATUS_PROPOSED]]]);
+			['data' => self::SGF_VERSION_1, 'sgf_status_id' => SgfTable::STATUS_ACCEPTED],
+			['data' => self::SGF_VERSION_2, 'sgf_status_id' => SgfTable::STATUS_PROPOSED]]]);
 		$proposal = $context->tsumegos[0]['sgfs'][1];
 		Util::execute('UPDATE sgf SET user_id = ?, description = ? WHERE id = ?', [$context->otherUsers[0]['id'], 'Added the stone at D16', $proposal['id']]);
 		return $proposal;
@@ -52,7 +53,7 @@ class ProposalFeedbackTest extends IntegrationTestCase
 
 		$this->post('/users/rejectSGFProposal/' . $proposal['id'], ['comment' => 'The stone at D16 changes nothing.']);
 
-		$this->assertEquals(Sgf::STATUS_REJECTED, ClassRegistry::init('Sgf')->findById($proposal['id'])['Sgf']['sgf_status_id'], 'kept for the link in the message');
+		$this->assertEquals(SgfTable::STATUS_REJECTED, $this->fetchTable('Sgf')->get($proposal['id'])->sgf_status_id, 'kept for the link in the message');
 		$messages = $this->messagesTo($proposer['id']);
 		$this->assertCount(1, $messages);
 		$this->assertSame($context->user['id'], (int) $messages[0]['sender_user_id']);
@@ -87,7 +88,7 @@ class ProposalFeedbackTest extends IntegrationTestCase
 
 		$this->post('/users/reopenSGFProposal/' . $proposal['id'], []);
 
-		$this->assertEquals(Sgf::STATUS_PROPOSED, ClassRegistry::init('Sgf')->findById($proposal['id'])['Sgf']['sgf_status_id']);
+		$this->assertEquals(SgfTable::STATUS_PROPOSED, $this->fetchTable('Sgf')->get($proposal['id'])->sgf_status_id);
 		$this->assertSame([], Util::query('SELECT * FROM reject WHERE sgf_id = ?', [$proposal['id']]), 'gone from the contributions of the proposer');
 		$this->assertSame(1, (int) Util::query('SELECT COUNT(*) AS c FROM admin_activity WHERE type = ?', [AdminActivityTypeTable::REOPEN_PROPOSAL])[0]['c']);
 		$this->assertCount(1, $this->messagesTo($proposer['id']), 'reopening sends nothing, the next decision does');
@@ -104,8 +105,8 @@ class ProposalFeedbackTest extends IntegrationTestCase
 		$this->post('/users/reopenSGFProposal/' . $context->tsumegos[0]['sgfs'][0]['id'], []);
 		$this->post('/users/reopenSGFProposal/' . $proposal['id'], []);
 
-		$this->assertEquals(Sgf::STATUS_ACCEPTED, ClassRegistry::init('Sgf')->findById($context->tsumegos[0]['sgfs'][0]['id'])['Sgf']['sgf_status_id']);
-		$this->assertEquals(Sgf::STATUS_PROPOSED, ClassRegistry::init('Sgf')->findById($proposal['id'])['Sgf']['sgf_status_id']);
+		$this->assertEquals(SgfTable::STATUS_ACCEPTED, $this->fetchTable('Sgf')->get($context->tsumegos[0]['sgfs'][0]['id'])->sgf_status_id);
+		$this->assertEquals(SgfTable::STATUS_PROPOSED, $this->fetchTable('Sgf')->get($proposal['id'])->sgf_status_id);
 		$this->assertSame([], Util::query('SELECT * FROM admin_activity'));
 	}
 
@@ -115,7 +116,7 @@ class ProposalFeedbackTest extends IntegrationTestCase
 
 		$this->post('/users/rejectSGFProposal/' . $proposal['id'], ['comment' => '  ']);
 
-		$this->assertNotEmpty(ClassRegistry::init('Sgf')->findById($proposal['id']));
+		$this->assertNotEmpty($this->fetchTable('Sgf')->find()->where(['id' => $proposal['id']])->first());
 		$this->assertSame([], $this->messagesTo($context->otherUsers[0]['id']));
 	}
 
@@ -125,7 +126,7 @@ class ProposalFeedbackTest extends IntegrationTestCase
 
 		$this->post('/users/acceptSGFProposal/' . $proposal['id'], ['comment' => '']);
 
-		$this->assertEquals(Sgf::STATUS_ACCEPTED, ClassRegistry::init('Sgf')->findById($proposal['id'])['Sgf']['sgf_status_id']);
+		$this->assertEquals(SgfTable::STATUS_ACCEPTED, $this->fetchTable('Sgf')->get($proposal['id'])->sgf_status_id);
 		$messages = $this->messagesTo($context->otherUsers[0]['id']);
 		$this->assertCount(1, $messages);
 		$this->assertStringContainsString('was accepted by DN_reviewer, it is the current version of the problem now.', $messages[0]['text']);
@@ -137,8 +138,8 @@ class ProposalFeedbackTest extends IntegrationTestCase
 	public function testAcceptingOwnProposalSendsNothing(): void
 	{
 		$context = $this->prepare(['sgfs' => [
-			['data' => self::SGF_VERSION_1, 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
-			['data' => self::SGF_VERSION_2, 'sgf_status_id' => Sgf::STATUS_PROPOSED]]]);
+			['data' => self::SGF_VERSION_1, 'sgf_status_id' => SgfTable::STATUS_ACCEPTED],
+			['data' => self::SGF_VERSION_2, 'sgf_status_id' => SgfTable::STATUS_PROPOSED]]]);
 
 		$this->post('/users/acceptSGFProposal/' . $context->tsumegos[0]['sgfs'][1]['id'], ['comment' => 'Thanks me']);
 
@@ -227,8 +228,8 @@ class ProposalFeedbackTest extends IntegrationTestCase
 		}
 
 		$this->post('/tsumegos/setupNewSgfStep2', $data + ['description' => "Added D16\r\nbecause it is needed"]);
-		$proposal = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']], 'order' => 'id DESC'])['Sgf'];
-		$this->assertEquals(Sgf::STATUS_PROPOSED, $proposal['sgf_status_id']);
+		$proposal = $this->fetchTable('Sgf')->find()->where(['tsumego_id' => $context->tsumegos[0]['id']])->orderByDesc('id')->first();
+		$this->assertEquals(SgfTable::STATUS_PROPOSED, $proposal->sgf_status_id);
 		$this->assertNull($proposal['accepted_by_user_id'], 'an admin accepts it later');
 		$this->assertSame("Added D16\nbecause it is needed", $proposal['description']);
 	}

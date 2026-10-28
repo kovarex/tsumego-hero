@@ -54,31 +54,31 @@ use App\Utility\Util;
 	</tr>
 	<?php
 		for($i=0; $i<count($s); $i++){
-			echo '<tr id="'.$s[$i]['Sgf']['id'].'">
+			echo '<tr id="'.$s[$i]['id'].'">
 			<td class="timeTableLeft versionColor" align="center">
-				<time datetime="'.Util::toIso8601($s[$i]['Sgf']['created']).'" data-format="datetime">'.$s[$i]['Sgf']['created'].'</time>
+				<time datetime="'.Util::toIso8601($s[$i]['created']).'" data-format="datetime">'.$s[$i]['created'].'</time>
 			</td>
 			<td class="timeTableMiddle versionColor" align="left">';
-			if($s[$i]['Sgf']['user_id']==33)
+			if($s[$i]['user_id']==33)
 				echo 'automatically generated';
 			else
-				echo '<a href="/sgfs/view/'.$s[$i]['Sgf']['tsumego_id'].'?user='.$s[$i]['Sgf']['user_id'].'">'.h($s[$i]['Sgf']['user']).'</a>';
+				echo '<a href="/sgfs/view/'.$s[$i]['tsumego_id'].'?user='.$s[$i]['user_id'].'">'.h($s[$i]['user']).'</a>';
 			echo '</td>';
 			echo '<td class="timeTableMiddle versionColor" align="left">';
 			if($type=='tsumego')
-				echo '<a href="/tsumegos/play/'.($s[$i]['Sgf']['tsumego_id']).'"> '.h($s[$i]['Sgf']['title']).'</a> ';
+				echo '<a href="/tsumegos/play/'.($s[$i]['tsumego_id']).'"> '.h($s[$i]['title']).'</a> ';
 			else
-				echo '<a href="/sgfs/view/'.$s[$i]['Sgf']['tsumego_id'].'"> '.h($s[$i]['Sgf']['title']).'</a> ';
-			echo '<a href="/sgfs/view/'.$s[$i]['Sgf']['tsumego_id'].'" id="dl1-'.$s[$i]['Sgf']['id'].'">v '.$s[$i]['Sgf']['version'].'</a>';
+				echo '<a href="/sgfs/view/'.$s[$i]['tsumego_id'].'"> '.h($s[$i]['title']).'</a> ';
+			echo '<a href="/sgfs/view/'.$s[$i]['tsumego_id'].'" id="dl1-'.$s[$i]['id'].'">v '.$s[$i]['version'].'</a>';
 			echo '</td>';
-			echo '<td class="timeTableMiddle versionColor proposal-description" align="left" id="description-'.$s[$i]['Sgf']['id'].'">'.SgfDescription::render($s[$i]['Sgf']['description'] ?? null).'</td>';
+			echo '<td class="timeTableMiddle versionColor proposal-description" align="left" id="description-'.$s[$i]['id'].'">'.SgfDescription::render($s[$i]['description'] ?? null).'</td>';
 			echo '<td class="timeTableRight versionColor" align="left">
-			<a id="open-'.$s[$i]['Sgf']['id'].'" class="openHistoryPointLink">open</a>&nbsp;&nbsp;&nbsp;';
-			if ($s[$i]['Sgf']['diff'])
-				echo '<a id="compare-'.$s[$i]['Sgf']['id'].'" class="openDiff" href="/editor?sgfID='.$s[$i]['Sgf']['id'].'&diffID='.$s[$i]['Sgf']['diff'].'">diff</a>&nbsp;&nbsp;&nbsp;';
-			echo '<a href="#" id="dl2-'.$s[$i]['Sgf']['id'].'">download</a>';
-			if($s[$i]['Sgf']['delete'])
-				echo '&nbsp;&nbsp;&nbsp;<a onclick="delV('.$s[$i]['Sgf']['id'].');" href="#">delete</a>';
+			<a id="open-'.$s[$i]['id'].'" class="openHistoryPointLink">open</a>&nbsp;&nbsp;&nbsp;';
+			if ($s[$i]['diff'])
+				echo '<a id="compare-'.$s[$i]['id'].'" class="openDiff" href="/editor?sgfID='.$s[$i]['id'].'&diffID='.$s[$i]['diff'].'">diff</a>&nbsp;&nbsp;&nbsp;';
+			echo '<a href="#" id="dl2-'.$s[$i]['id'].'">download</a>';
+			if($s[$i]['delete'])
+				echo '&nbsp;&nbsp;&nbsp;<a onclick="delV('.$s[$i]['id'].');" href="#">delete</a>';
 			echo '</td>
 			</tr>';
 		}
@@ -94,36 +94,36 @@ use App\Utility\Util;
 	}
 
 	<?php for($i=0; $i<count($s); $i++){ ?>
-		$("#open-<?php echo (int)$s[$i]['Sgf']['id'] ?>").attr("href", "<?php echo '/editor?sgfID=' . (int)$s[$i]['Sgf']['id']; ?>");
-		$("#dl1-<?php echo (int)$s[$i]['Sgf']['id']; ?>").click(function(){
-			var blob<?php echo (int)$s[$i]['Sgf']['id']; ?> = new Blob([<?php echo json_encode($s[$i]['Sgf']['sgf'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>],{
+		$("#open-<?php echo (int)$s[$i]['id'] ?>").attr("href", "<?php echo '/editor?sgfID=' . (int)$s[$i]['id']; ?>");
+		$("#dl1-<?php echo (int)$s[$i]['id']; ?>").click(function(){
+			var blob<?php echo (int)$s[$i]['id']; ?> = new Blob([<?php echo json_encode($s[$i]['sgf'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>],{
 				type: "sgf",
 			});
-			saveAs(blob<?php echo (int)$s[$i]['Sgf']['id']; ?>, <?php echo json_encode($s[$i]['Sgf']['title'].' v'.$s[$i]['Sgf']['version'] . '.sgf', JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>);
+			saveAs(blob<?php echo (int)$s[$i]['id']; ?>, <?php echo json_encode($s[$i]['title'].' v'.$s[$i]['version'] . '.sgf', JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>);
 		});
-		$("#dl2-<?php echo (int)$s[$i]['Sgf']['id']; ?>").click(function(){
-			var blob2<?php echo (int)$s[$i]['Sgf']['id']; ?> = new Blob([<?php echo json_encode($s[$i]['Sgf']['sgf'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>],{
+		$("#dl2-<?php echo (int)$s[$i]['id']; ?>").click(function(){
+			var blob2<?php echo (int)$s[$i]['id']; ?> = new Blob([<?php echo json_encode($s[$i]['sgf'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>],{
 				type: "sgf",
 			});
-			saveAs(blob2<?php echo (int)$s[$i]['Sgf']['id']; ?>, <?php echo json_encode($s[$i]['Sgf']['num'] . '.sgf', JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>);
+			saveAs(blob2<?php echo (int)$s[$i]['id']; ?>, <?php echo json_encode($s[$i]['num'] . '.sgf', JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>);
 		});
-		$("#<?php echo (int)$s[$i]['Sgf']['id']; ?>").hover(
+		$("#<?php echo (int)$s[$i]['id']; ?>").hover(
 		  function () {
-			$("#<?php echo (int)$s[$i]['Sgf']['id']; ?> td").css("background","linear-gradient(#f7f7f7, #b9b9b9)");
+			$("#<?php echo (int)$s[$i]['id']; ?> td").css("background","linear-gradient(#f7f7f7, #b9b9b9)");
 		  },
 		  function () {
-			$("#<?php echo (int)$s[$i]['Sgf']['id']; ?> td").css("background","");
+			$("#<?php echo (int)$s[$i]['id']; ?> td").css("background","");
 		  }
 		);
-		<?php if($s[$i]['Sgf']['diff']){ ?>
-			$("#compare-<?php echo (int)$s[$i]['Sgf']['id']; ?>").hover(
+		<?php if($s[$i]['diff']){ ?>
+			$("#compare-<?php echo (int)$s[$i]['id']; ?>").hover(
 			  function () {
-				$("#<?php echo (int)$s[$i]['Sgf']['id']; ?> td").css("background","linear-gradient(#fff, #c8c8c8)");
-				$("#<?php echo (int)$s[$i]['Sgf']['diff']; ?> td").css("background","linear-gradient(#fff, #c8c8c8)");
+				$("#<?php echo (int)$s[$i]['id']; ?> td").css("background","linear-gradient(#fff, #c8c8c8)");
+				$("#<?php echo (int)$s[$i]['diff']; ?> td").css("background","linear-gradient(#fff, #c8c8c8)");
 			  },
 			  function () {
-				$("#<?php echo (int)$s[$i]['Sgf']['id']; ?> td").css("background","");
-				$("#<?php echo (int)$s[$i]['Sgf']['diff']; ?> td").css("background","");
+				$("#<?php echo (int)$s[$i]['id']; ?> td").css("background","");
+				$("#<?php echo (int)$s[$i]['diff']; ?> td").css("background","");
 			  }
 			);
 		<?php } ?>

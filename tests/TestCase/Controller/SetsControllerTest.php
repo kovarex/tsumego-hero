@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SgfTable;
 use App\Utility\AchievementId;
 use App\Utility\Constants;
 use App\Utility\Rating;
@@ -59,8 +60,7 @@ class SetsControllerTest extends IntegrationTestCase
 		$tsumegoId = ClassRegistry::init('Tsumego')->getInsertID();
 		ClassRegistry::init('SetConnection')->create();
 		ClassRegistry::init('SetConnection')->save(['set_id' => $setId, 'tsumego_id' => $tsumegoId, 'num' => 1]);
-		ClassRegistry::init('Sgf')->create();
-		ClassRegistry::init('Sgf')->save(['tsumego_id' => $tsumegoId, 'sgf' => '(;GM[1]FF[4]SZ[19])', 'user_id' => $userId, 'sgf_status_id' => Sgf::STATUS_ACCEPTED]);
+		$this->fetchTable('Sgf')->saveOrFail($this->fetchTable('Sgf')->newEntity(['tsumego_id' => $tsumegoId, 'sgf' => '(;GM[1]FF[4]SZ[19])', 'user_id' => $userId, 'sgf_status_id' => SgfTable::STATUS_ACCEPTED]));
 		$this->fetchTable('TsumegoStatus')->saveOrFail($this->fetchTable('TsumegoStatus')->newEntity(['tsumego_id' => $tsumegoId, 'status' => 'S', 'user_id' => $userId]));
 	}
 

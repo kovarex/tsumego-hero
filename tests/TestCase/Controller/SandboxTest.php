@@ -121,13 +121,13 @@ class SandboxTest extends IntegrationTestCase
 	{
 		new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
 
-		$beforeSgfCount = ClassRegistry::init('Sgf')->find('count');
+		$beforeSgfCount = $this->fetchTable('Sgf')->find()->count();
 
 		$this->post('/sets/create', [
 			'Set' => ['title' => 'No SGF Set'],
 		]);
 
-		$this->assertEquals($beforeSgfCount, ClassRegistry::init('Sgf')->find('count'),
+		$this->assertEquals($beforeSgfCount, $this->fetchTable('Sgf')->find()->count(),
 			'Placeholder tsumego should have no SGF');
 	}
 
@@ -259,7 +259,7 @@ class SandboxTest extends IntegrationTestCase
 
 		$sgfContent = '(;GM[1]FF[4]SZ[19])';
 		$beforeTsumego = ClassRegistry::init('Tsumego')->find('count');
-		$beforeSgf = ClassRegistry::init('Sgf')->find('count');
+		$beforeSgf = $this->fetchTable('Sgf')->find()->count();
 
 		$this->post('/sets/createAndAddTsumego/' . $setId, [
 			'order' => 5,
@@ -267,7 +267,7 @@ class SandboxTest extends IntegrationTestCase
 		]);
 
 		$this->assertEquals($beforeTsumego + 1, ClassRegistry::init('Tsumego')->find('count'));
-		$this->assertEquals($beforeSgf + 1, ClassRegistry::init('Sgf')->find('count'));
+		$this->assertEquals($beforeSgf + 1, $this->fetchTable('Sgf')->find()->count());
 
 		$tsumego = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC']);
 		$connection = ClassRegistry::init('SetConnection')->find('first', [

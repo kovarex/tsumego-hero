@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SgfTable;
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Model\Table\AdminOverviewTypeTable;
@@ -71,12 +72,12 @@ class AdminController extends AppController
 	public function reviewSgfChange(string $sgfID): CakeResponse
 	{
 		$this->Authorization->authorize('Admin', 'reviewSgfChange');
-		$sgf = ClassRegistry::init('Sgf')->find('first', ['fields' => ['id', 'sgf_status_id', 'accepted_by_user_id'], 'conditions' => ['id' => (int) $sgfID]]);
+		$sgf = $this->fetchTable('Sgf')->find()->select(['id', 'sgf_status_id', 'accepted_by_user_id'])->where(['id' => (int) $sgfID])->first();
 		if (!$sgf)
 			throw new NotFoundException('SGF change not found');
-		if ((int) $sgf['Sgf']['sgf_status_id'] !== Sgf::STATUS_ACCEPTED)
+		if ($sgf->sgf_status_id !== SgfTable::STATUS_ACCEPTED)
 			throw new BadRequestException('A proposal is not a change yet, it waits for the decision of an admin');
-		if ((int) $sgf['Sgf']['accepted_by_user_id'] === Auth::getUserID())
+		if ($sgf->accepted_by_user_id === Auth::getUserID())
 			throw new BadRequestException('What you accepted is reviewed by the other admins');
 
 		$reviewed = !empty($this->request->data['reviewed']);

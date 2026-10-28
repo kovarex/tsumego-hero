@@ -2,7 +2,7 @@
 
 namespace App\Utility;
 
-use Sgf;
+use App\Model\Table\SgfTable;
 use SetConnection;
 use User;
 
@@ -13,14 +13,14 @@ class RejectedSGFProposalsRenderer extends DataTableRenderer
 {
 	public function __construct(array $urlParams)
 	{
-		$this->count = Util::query("SELECT COUNT(*) AS total FROM sgf p WHERE p.sgf_status_id = " . Sgf::STATUS_REJECTED . " AND EXISTS (SELECT 1 FROM set_connection sc WHERE sc.tsumego_id = p.tsumego_id)")[0]['total'];
+		$this->count = Util::query("SELECT COUNT(*) AS total FROM sgf p WHERE p.sgf_status_id = " . SgfTable::STATUS_REJECTED . " AND EXISTS (SELECT 1 FROM set_connection sc WHERE sc.tsumego_id = p.tsumego_id)")[0]['total'];
 		parent::__construct($urlParams, 'rejected_sgf_proposals_page', 'Rejected SGF Proposals');
 		$this->opened = isset($urlParams[$this->name]);
 		$this->data = Util::query("
 SELECT
     p.id AS rejected_id,
     p.description AS description,
-    " . Sgf::currentVersionIDSql('p.tsumego_id') . " AS current_id,
+    " . SgfTable::currentVersionIDSql('p.tsumego_id') . " AS current_id,
     p.user_id AS user_id,
     user.display_name AS user_display_name,
     user.external_id AS user_external_id,
@@ -55,7 +55,7 @@ JOIN `set` s ON s.id = sc.set_id
 LEFT JOIN user ON user.id = p.user_id
 LEFT JOIN reject ON reject.id = (SELECT MAX(r2.id) FROM reject r2 WHERE r2.sgf_id = p.id)
 LEFT JOIN user admin ON admin.id = reject.rejected_by_user_id
-WHERE p.sgf_status_id = " . Sgf::STATUS_REJECTED . "
+WHERE p.sgf_status_id = " . SgfTable::STATUS_REJECTED . "
 ORDER BY p.id DESC
 LIMIT " . self::$PAGE_SIZE . "
 OFFSET " . $this->offset);

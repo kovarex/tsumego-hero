@@ -10,7 +10,6 @@ use App\Utility\TsumegoButton;
 use App\Utility\Util;
 use Cake\ORM\TableRegistry;
 use ClassRegistry;
-use Sgf;
 
 //A challenge between players: one player picks a range of difficulty, the time for a problem and
 //how many problems, the site draws the problems, and every player in the challenge plays the same
@@ -85,7 +84,7 @@ class ChallengeTable extends AppTable
 		$rows = Util::query('SELECT p.`order`, p.tsumego_id, t.rating, sgf.sgf
 			FROM challenge_problem p
 			JOIN tsumego t ON t.id = p.tsumego_id
-			LEFT JOIN sgf ON sgf.id = ' . Sgf::currentVersionIDSql('p.tsumego_id') . '
+			LEFT JOIN sgf ON sgf.id = ' . SgfTable::currentVersionIDSql('p.tsumego_id') . '
 			WHERE p.challenge_id = ?
 			ORDER BY p.`order`', [$challengeId]);
 		$buttons = [];

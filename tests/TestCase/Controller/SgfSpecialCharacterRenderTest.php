@@ -126,13 +126,10 @@ class SgfSpecialCharacterRenderTest extends IntegrationTestCase
 		$browser->waitUntilJs('!location.href.includes("/sgf/upload/")');
 
 		// Verify the uploaded SGF was saved to the database
-		$sgfs = ClassRegistry::init('Sgf')->find('all', [
-			'conditions' => ['tsumego_id' => $context->tsumegos[0]['id']],
-			'order' => 'id DESC',
-		]);
+		$sgfs = $this->fetchTable('Sgf')->find()->where(['tsumego_id' => $context->tsumegos[0]['id']])->orderByDesc('id')->toArray();
 		$this->assertGreaterThanOrEqual(2, count($sgfs), 'Uploaded SGF should be saved');
 
-		$savedSgf = $sgfs[0]['Sgf']['sgf'];
+		$savedSgf = $sgfs[0]->sgf;
 		$this->assertStringContainsString("\n", $savedSgf, 'Newlines should be preserved in DB');
 		$this->assertStringContainsString('"quotes"', $savedSgf, 'Quotes should be preserved in DB');
 		$this->assertStringContainsString('日本語', $savedSgf, 'Unicode should be preserved in DB');

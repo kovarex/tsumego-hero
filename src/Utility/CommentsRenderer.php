@@ -2,9 +2,9 @@
 
 namespace App\Utility;
 
+use App\Model\Table\SgfTable;
 use PaginationHelper;
 use SetConnection;
-use Sgf;
 use User;
 
 class CommentsRenderer
@@ -80,7 +80,7 @@ SELECT
 FROM
 	tsumego_comment
 	JOIN tsumego ON tsumego_comment.tsumego_id = tsumego.id
-    LEFT JOIN sgf ON sgf.id = " . Sgf::currentVersionIDSql('tsumego.id') . "
+    LEFT JOIN sgf ON sgf.id = " . SgfTable::currentVersionIDSql('tsumego.id') . "
 	JOIN user ON tsumego_comment.user_id = user.id
 	LEFT JOIN tsumego_status ON tsumego_status.tsumego_id = tsumego.id AND tsumego_status.user_id = ?
     LEFT JOIN set_connection ON set_connection.id = (

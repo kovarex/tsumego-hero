@@ -19,8 +19,8 @@ class SecondarySgfDataFillingTest extends CakeTestCase
 		$browser->get('tsumegos/setupSgf');
 		$sgfs = ClassRegistry::init('sgf')->find('all');
 		$this->assertSame(1, count($sgfs));
-		$this->assertSame('B', $sgfs[0]['Sgf']['first_move_color']);
-		$this->assertSame('aa', $sgfs[0]['Sgf']['correct_moves']);
+		$this->assertSame('B', $sgfs[0]->first_move_color);
+		$this->assertSame('aa', $sgfs[0]->correct_moves);
 	}
 
 	public function testFillWhiteFirstAndMoreCorrectMoves()
@@ -32,8 +32,8 @@ class SecondarySgfDataFillingTest extends CakeTestCase
 		$browser->get('tsumegos/setupSgf');
 		$sgfs = ClassRegistry::init('sgf')->find('all');
 		$this->assertSame(1, count($sgfs));
-		$this->assertSame('W', $sgfs[0]['Sgf']['first_move_color']);
-		$this->assertSame('gghh', $sgfs[0]['Sgf']['correct_moves']);
+		$this->assertSame('W', $sgfs[0]->first_move_color);
+		$this->assertSame('gghh', $sgfs[0]->correct_moves);
 	}
 
 	public function testSearchSgfsToFillSecondaryDataInto()
@@ -51,7 +51,7 @@ class SecondarySgfDataFillingTest extends CakeTestCase
 		$browser->get('tsumegos/setupSgf');
 		$sgfs = ClassRegistry::init('sgf')->find('all', ['order' => 'Sgf.id ASC']);
 		$this->assertSame(2, count($sgfs));
-		$this->assertSame('W', $sgfs[1]['Sgf']['first_move_color']);
-		$this->assertSame('jjkk', $sgfs[1]['Sgf']['correct_moves']);
+		$this->assertSame('W', $sgfs[1]->first_move_color);
+		$this->assertSame('jjkk', $sgfs[1]->correct_moves);
 	}
 }

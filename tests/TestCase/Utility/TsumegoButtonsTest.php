@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SgfTable;
 use App\Model\Table\TsumegoStatusTable;
 use App\Utility\MistakeTraining;
 use App\Utility\PlayOutcome;
@@ -87,10 +88,10 @@ class TsumegoButtonsTest extends IntegrationTestCase
 			'tsumego' => [
 				'set_order' => 1,
 				'sgfs' => [
-					['data' => '(;GM[1]FF[4]SZ[19]AB[dd];B[aa])', 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
-					['data' => $current, 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
-					['data' => '(;GM[1]FF[4]SZ[19]AB[ee];B[aa])', 'sgf_status_id' => Sgf::STATUS_REJECTED],
-					['data' => '(;GM[1]FF[4]SZ[19]AB[ff];B[aa])', 'sgf_status_id' => Sgf::STATUS_PROPOSED]],
+					['data' => '(;GM[1]FF[4]SZ[19]AB[dd];B[aa])', 'sgf_status_id' => SgfTable::STATUS_ACCEPTED],
+					['data' => $current, 'sgf_status_id' => SgfTable::STATUS_ACCEPTED],
+					['data' => '(;GM[1]FF[4]SZ[19]AB[ee];B[aa])', 'sgf_status_id' => SgfTable::STATUS_REJECTED],
+					['data' => '(;GM[1]FF[4]SZ[19]AB[ff];B[aa])', 'sgf_status_id' => SgfTable::STATUS_PROPOSED]],
 				'status' => ['name' => 'V', 'mistake_training_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
 			],
 		]);
@@ -166,9 +167,9 @@ class TsumegoButtonsTest extends IntegrationTestCase
 			'tsumego' => [
 				'set_order' => 1,
 				'sgfs' => [
-					['data' => '(;GM[1]FF[4]SZ[19]AB[dd];B[aa])', 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
-					['data' => $current, 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
-					['data' => '(;GM[1]FF[4]SZ[19]AB[ee];B[aa])', 'sgf_status_id' => Sgf::STATUS_PROPOSED]]],
+					['data' => '(;GM[1]FF[4]SZ[19]AB[dd];B[aa])', 'sgf_status_id' => SgfTable::STATUS_ACCEPTED],
+					['data' => $current, 'sgf_status_id' => SgfTable::STATUS_ACCEPTED],
+					['data' => '(;GM[1]FF[4]SZ[19]AB[ee];B[aa])', 'sgf_status_id' => SgfTable::STATUS_PROPOSED]]],
 		]);
 
 		$buttons = new TsumegoButtons(new TsumegoFilters('topics'), null, 0, (int) $context->tsumegos[0]['set-connections'][0]['set_id']);
@@ -186,10 +187,10 @@ class TsumegoButtonsTest extends IntegrationTestCase
 		$context = new ContextPreparator(['tsumego' => ['set_order' => 1]]);
 		$sgf = '(;GM[1]FF[4]SZ[19]AB[aa][ba]AW[ab];B[ca])';
 
-		$saved = ClassRegistry::init('Sgf')->uploadSgf($sgf, (int) $context->tsumegos[0]['id'], (int) $context->user['id'], true);
+		$saved = SgfTable::upload($sgf, (int) $context->tsumegos[0]['id'], (int) $context->user['id'], true);
 
-		$this->assertSame(TsumegoButton::sgfToPreviewJson($sgf), $saved['Sgf']['preview']);
-		$this->assertSame(['aa', 'ba'], str_split(json_decode($saved['Sgf']['preview'], true)['black'], 2));
+		$this->assertSame(TsumegoButton::sgfToPreviewJson($sgf), $saved->preview);
+		$this->assertSame(['aa', 'ba'], str_split(json_decode($saved->preview, true)['black'], 2));
 	}
 
 	public function testAnEmptySgfHasNoPreview(): void

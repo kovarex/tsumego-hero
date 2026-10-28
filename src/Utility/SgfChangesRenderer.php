@@ -2,9 +2,9 @@
 
 namespace App\Utility;
 
+use App\Model\Table\SgfTable;
 use App\Model\Table\SgfReviewTable;
 use SetConnection;
-use Sgf;
 use User;
 
 //The SGF changes of the admin area: every version that became part of a problem, an admin's own
@@ -38,7 +38,7 @@ class SgfChangesRenderer extends DataTableRenderer
 		foreach (array_keys(self::LISTS) as $list)
 		{
 			[$condition, $parameters] = $this->conditionOf($list);
-			$this->counts[$list] = (int) Util::query('SELECT COUNT(*) AS total FROM sgf WHERE sgf.sgf_status_id = ?' . $condition, [Sgf::STATUS_ACCEPTED, ...$parameters])[0]['total'];
+			$this->counts[$list] = (int) Util::query('SELECT COUNT(*) AS total FROM sgf WHERE sgf.sgf_status_id = ?' . $condition, [SgfTable::STATUS_ACCEPTED, ...$parameters])[0]['total'];
 		}
 		$this->count = $this->counts[$this->list];
 		// the tabs say which list it is and how many changes it has
@@ -54,7 +54,7 @@ SELECT
 	sgf.accepted AS accepted,
 	sgf.description AS description,
 	(SELECT MAX(previous.id) FROM sgf previous
-		WHERE previous.tsumego_id = sgf.tsumego_id AND previous.sgf_status_id = " . Sgf::STATUS_ACCEPTED . " AND previous.id < sgf.id) AS previous_version_id,
+		WHERE previous.tsumego_id = sgf.tsumego_id AND previous.sgf_status_id = " . SgfTable::STATUS_ACCEPTED . " AND previous.id < sgf.id) AS previous_version_id,
 	sgf.user_id AS user_id,
 	sgf.accepted_by_user_id AS accepted_by_user_id,
 	" . self::userColumnsSql('author') . ",
@@ -79,7 +79,7 @@ LEFT JOIN set_connection
 	)
 LEFT JOIN `set` ON `set`.id = set_connection.set_id
 LEFT JOIN tsumego_status ON tsumego_status.user_id = ? AND tsumego_status.tsumego_id = sgf.tsumego_id
-WHERE sgf.sgf_status_id = " . Sgf::STATUS_ACCEPTED . $condition . "
+WHERE sgf.sgf_status_id = " . SgfTable::STATUS_ACCEPTED . $condition . "
 ORDER BY sgf.accepted DESC, sgf.id DESC
 LIMIT " . self::$PAGE_SIZE . "
 OFFSET " . $this->offset, [$this->userID, ...$parameters]);

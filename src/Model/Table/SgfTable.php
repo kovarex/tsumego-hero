@@ -1,9 +1,22 @@
 <?php
 
+namespace App\Model\Table;
+
+use App\Model\Entity\Sgf;
 use App\Utility\TsumegoButton;
 use App\Utility\Util;
+use ArrayObject;
+use BadRequestException;
+use Cake\Datasource\EntityInterface;
+use Cake\Event\EventInterface;
+use Cake\ORM\TableRegistry;
+use Cake\Validation\Validator;
+use InternalErrorException;
+use InvalidArgumentException;
 
-class Sgf extends AppModel
+//The versions of the SGF of a problem: the accepted ones (the latest is the current version), the
+//proposals waiting for an admin and the rejected ones.
+class SgfTable extends AppTable
 {
 	//Longest description of a saved version (what was changed and why), in characters.
 	public const DESCRIPTION_MAX_LENGTH = 1000;
@@ -13,37 +26,22 @@ class Sgf extends AppModel
 	public const STATUS_ACCEPTED = 2; // a version the problem had, the latest one is the current version
 	public const STATUS_REJECTED = 3; // kept so the proposer can still see what they proposed
 
-	public $validate = [
-		'tsumego_id' => [
-			'required' => [
-				'rule' => 'numeric',
-				'message' => 'Tsumego id is required',
-				'allowEmpty' => false,
-				'required' => true,
-			],
-		],
-		'sgf' => [
-			'notBlank' => [
-				'rule' => 'notBlank',
-				'message' => 'SGF content is required',
-				'allowEmpty' => false,
-				'required' => true,
-			],
-		],
-	];
-
-	public function __construct(mixed $id = false, ?string $table = null, ?string $ds = null)
+	//The rules of the Cake 2 model: a version is of a problem and has an SGF that isn't blank.
+	public function validationDefault(Validator $validator): Validator
 	{
-		$id['table'] =  'sgf';
-		parent::__construct($id, $table, $ds);
+		return $validator
+			->requirePresence('tsumego_id', 'create', 'Tsumego id is required')
+			->numeric('tsumego_id', 'Tsumego id is required')
+			->requirePresence('sgf', 'create', 'SGF content is required')
+			->notBlank('sgf', 'SGF content is required');
 	}
 
 	//A save that sets the SGF sets its preview too, so every version has the one of its SGF.
-	public function beforeSave($options = []): bool
+	public function beforeSave(EventInterface $event, EntityInterface $entity, ArrayObject $options): void
 	{
-		if (isset($this->data['Sgf']['sgf']))
-			$this->data['Sgf']['preview'] = TsumegoButton::sgfToPreviewJson((string) $this->data['Sgf']['sgf']);
-		return true;
+		parent::beforeSave($event, $entity, $options);
+		if ($entity->isDirty('sgf'))
+			$entity->set('preview', TsumegoButton::sgfToPreviewJson((string) $entity->get('sgf')));
 	}
 
 	//The description sent with a saved version: blank space dropped, null when there is none.
@@ -67,9 +65,9 @@ class Sgf extends AppModel
 	//$tsumegoID: The tsumego ID to attach the SGF to
 	//$userID: The user ID uploading the SGF
 	//$accepted: Whether the SGF is accepted (true for admin uploads), the uploader is the admin who accepted it then
-	//Returns the saved Sgf record
+	//Returns the saved version, read back with what the database filled in
 	/** @throws BadRequestException|InternalErrorException If validation fails */
-	public function uploadSgf(array|string $sgfDataOrFile, int $tsumegoID, int $userID, bool $accepted): array
+	public static function upload(array|string $sgfDataOrFile, int $tsumegoID, int $userID, bool $accepted): Sgf
 	{
 		// If it's a file upload array, extract the SGF data
 		if (is_array($sgfDataOrFile))
@@ -90,23 +88,18 @@ class Sgf extends AppModel
 		else
 			$sgfData = $sgfDataOrFile;
 
-		$this->create();
-		$sgf = [];
-		$sgf['sgf'] = $sgfData;
-		$sgf['user_id'] = $userID;
-		$sgf['tsumego_id'] = $tsumegoID;
-		$sgf += $accepted ? self::acceptedBy($userID) : ['sgf_status_id' => self::STATUS_PROPOSED];
-		if (!$this->save($sgf))
+		$sgfTable = TableRegistry::getTableLocator()->get('Sgf');
+		$sgf = $sgfTable->newEntity(['sgf' => $sgfData, 'user_id' => $userID, 'tsumego_id' => $tsumegoID]
+			+ ($accepted ? self::acceptedBy($userID) : ['sgf_status_id' => self::STATUS_PROPOSED]));
+		if ($sgf->hasErrors() || !$sgfTable->save($sgf))
 		{
-			$errorMessages = array_map(function ($error) {
-				return is_array($error) ? implode(' ', $error) : $error;
-			}, $this->validationErrors);
+			$errorMessages = array_map(fn($errors) => implode(' ', $errors), $sgf->getErrors());
 			$errorMessage = empty($errorMessages) ? 'validation failed.' : implode('; ', $errorMessages);
 			throw new InternalErrorException('Failed to save SGF: ' . $errorMessage);
 		}
 
-		// Return the saved record (includes auto-generated ID and timestamps), the model's data is cleared by the save
-		return $this->find('first', ['conditions' => ['id' => $this->id]]);
+		// read back, with the columns the database filled in
+		return $sgfTable->get($sgf->id);
 	}
 
 	//The fields of a version the admin makes part of the problem now, their own change or a proposal
@@ -129,37 +122,38 @@ class Sgf extends AppModel
 
 	//Moves the version to the given sgf_status (see the STATUS_ constants), a proposal is accepted
 	//with accept().
-	public function setStatus(int $sgfID, int $statusID): void
+	public static function setStatus(int $sgfID, int $statusID): void
 	{
 		if ($statusID === self::STATUS_ACCEPTED)
 			throw new InvalidArgumentException('An accepted version needs the admin who accepted it, see accept()');
-		$this->id = $sgfID;
-		if (!$this->saveField('sgf_status_id', $statusID))
+		$sgfTable = TableRegistry::getTableLocator()->get('Sgf');
+		if (!$sgfTable->exists(['id' => $sgfID]))
 			throw new InternalErrorException('Failed to change the status of SGF ' . $sgfID);
+		$sgfTable->updateAll(['sgf_status_id' => $statusID], ['id' => $sgfID]);
 	}
 
 	//The id of the current version of the tsumego, the latest accepted one.
-	public function findCurrentVersionID(int $tsumegoID): ?int
+	public static function findCurrentVersionID(int $tsumegoID): ?int
 	{
-		$current = $this->find('first', [
-			'fields' => ['id'],
-			'order' => 'id DESC',
-			'conditions' => ['tsumego_id' => $tsumegoID, 'sgf_status_id' => self::STATUS_ACCEPTED]]);
-		return $current ? (int) $current['Sgf']['id'] : null;
+		return TableRegistry::getTableLocator()->get('Sgf')->find()
+			->select(['id'])
+			->where(['tsumego_id' => $tsumegoID, 'sgf_status_id' => self::STATUS_ACCEPTED])
+			->orderByDesc('id')
+			->first()?->id;
 	}
 
 	//The id of the accepted version of the same tsumego saved right before the given one, the one to diff it against.
-	public function findPreviousVersionID(int $tsumegoID, int $sgfID): ?int
+	public static function findPreviousVersionID(int $tsumegoID, int $sgfID): ?int
 	{
-		$previous = $this->find('first', [
-			'fields' => ['id'],
-			'order' => 'id DESC',
-			'conditions' => ['tsumego_id' => $tsumegoID, 'sgf_status_id' => self::STATUS_ACCEPTED, 'id <' => $sgfID]]);
-		return $previous ? (int) $previous['Sgf']['id'] : null;
+		return TableRegistry::getTableLocator()->get('Sgf')->find()
+			->select(['id'])
+			->where(['tsumego_id' => $tsumegoID, 'sgf_status_id' => self::STATUS_ACCEPTED, 'id <' => $sgfID])
+			->orderByDesc('id')
+			->first()?->id;
 	}
 
 	//SQL giving the id of the current version (the latest accepted one) of the tsumego in the given SQL
-	//expression, e.g. "LEFT JOIN sgf ON sgf.id = " . Sgf::currentVersionIDSql('tsumego.id').
+	//expression, e.g. "LEFT JOIN sgf ON sgf.id = " . SgfTable::currentVersionIDSql('tsumego.id').
 	public static function currentVersionIDSql(string $tsumegoID): string
 	{
 		return '(SELECT MAX(current_sgf.id) FROM sgf current_sgf WHERE current_sgf.tsumego_id = ' . $tsumegoID

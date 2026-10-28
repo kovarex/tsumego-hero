@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SgfTable;
 use App\Model\Table\TsumegoStatusTable;
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
@@ -163,7 +164,6 @@ class TsumegosController extends AppController
 	#[HttpGet]
 	public function duplicatesearch(string $setConnectionID): mixed
 	{
-		$this->loadModel('Sgf');
 		$this->loadModel('Set');
 
 		$setConnection = ClassRegistry::init('SetConnection')->findById($setConnectionID);
@@ -376,11 +376,9 @@ class TsumegosController extends AppController
 			Hash::extract($slaveSetConnectionBrothers, '{n}.SetConnection.tsumego_id'),
 		));
 		if ($ids)
-			foreach (ClassRegistry::init('Sgf')->find('all', [
-				'fields' => ['tsumego_id', 'sgf'],
-				'conditions' => ['tsumego_id' => $ids, 'id = ' . Sgf::currentVersionIDSql('Sgf.tsumego_id')],
-			]) as $s)
-				$sgfs[$s['Sgf']['tsumego_id']] = $s['Sgf']['sgf'];
+			foreach (Util::query('SELECT sgf.tsumego_id, sgf.sgf FROM sgf WHERE sgf.tsumego_id IN (' . implode(',', array_fill(0, count($ids), '?')) . ')'
+				. ' AND sgf.id = ' . SgfTable::currentVersionIDSql('sgf.tsumego_id'), array_values($ids)) as $s)
+					$sgfs[$s['tsumego_id']] = $s['sgf'];
 
 		$masterSetConnectionBrothersButtons = [];
 		foreach ($masterSetConnectionBrothers as $masterSetConnectionBrother)
@@ -412,15 +410,17 @@ class TsumegosController extends AppController
 	{
 		$this->Authorization->authorize('Tsumego');
 
-		$sgf = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['OR' => ['first_move_color' => null, 'correct_moves' => null]]]);
+		$sgf = $this->fetchTable('Sgf')->find()
+			->select(['id', 'sgf'])
+			->where(['OR' => ['first_move_color IS' => null, 'correct_moves IS' => null]])
+			->first();
 		if (!$sgf)
 		{
 			CookieFlash::set('All sgfs converted', 'success');
 			return $this->redirect('/sets');
 		}
-		$sgf = $sgf['Sgf'];
-		$this->set('sgf', $sgf['sgf']);
-		$this->set('sgfID', $sgf['id']);
+		$this->set('sgf', $sgf->sgf);
+		$this->set('sgfID', $sgf->id);
 		return null;
 	}
 
@@ -428,18 +428,18 @@ class TsumegosController extends AppController
 	public function setupSgfStep2(string $sgfID, string $firstMoveColor, ?string $correctMoves = null)
 	{
 		$this->Authorization->authorize('Tsumego');
-		$sgf = ClassRegistry::init("Sgf")->findById($sgfID);
+		$sgfTable = $this->fetchTable('Sgf');
+		$sgf = $sgfTable->find()->select(['id', 'sgf'])->where(['id' => $sgfID])->first();
 		if (!$sgf)
 			return;
-		$sgf = $sgf['Sgf'];
-		if (empty($sgf['sgf']))
+		if (empty($sgf->sgf))
 		{
-			ClassRegistry::init("Sgf")->delete($sgfID);
+			$sgfTable->deleteOrFail($sgf);
 			return $this->redirect('/tsumegos/setupSgf');
 		}
-		$sgf['first_move_color'] = $firstMoveColor;
-		$sgf['correct_moves'] = $correctMoves ?? '';
-		ClassRegistry::init('Sgf')->save($sgf);
+		$sgf->first_move_color = $firstMoveColor;
+		$sgf->correct_moves = $correctMoves ?? '';
+		$sgfTable->saveOrFail($sgf);
 		return $this->redirect('/tsumegos/setupSgf');
 	}
 
@@ -471,21 +471,21 @@ class TsumegosController extends AppController
 		$sgf['sgf'] = $sgfData;
 		$sgf['user_id'] = Auth::getUserId();
 		$sgf['tsumego_id'] = $tsumego['id'];
-		$sgf += Auth::isAdmin() ? Sgf::acceptedBy(Auth::getUserID()) : ['sgf_status_id' => Sgf::STATUS_PROPOSED];
+		$sgf += Auth::isAdmin() ? SgfTable::acceptedBy(Auth::getUserID()) : ['sgf_status_id' => SgfTable::STATUS_PROPOSED];
 		$sgf['first_move_color'] = $firstMoveColor;
 		$sgf['correct_moves'] = $correctMoves;
 		// the admin reviewing a proposal needs to know what it is about, an admin's own edit may go without
-		$sgf['description'] = Sgf::descriptionFromRequest($this->request->data['description'] ?? null, !Auth::isAdmin());
+		$sgf['description'] = SgfTable::descriptionFromRequest($this->request->data['description'] ?? null, !Auth::isAdmin());
 		// what the board editor did to the SGF it was opened with, so the comments can follow
-		$source = ClassRegistry::init('Sgf')->findById((int) ($this->request->data['sourceSgfID'] ?? 0));
-		if ($source && $source['Sgf']['tsumego_id'] == $tsumego['id'])
+		$sgfTable = $this->fetchTable('Sgf');
+		$source = $sgfTable->find()->select(['id', 'tsumego_id'])->where(['id' => (int) ($this->request->data['sourceSgfID'] ?? 0)])->first();
+		if ($source && $source->tsumego_id == $tsumego['id'])
 		{
-			$sgf['source_sgf_id'] = $source['Sgf']['id'];
+			$sgf['source_sgf_id'] = $source->id;
 			$sgf['transformation_from_source'] = BoardTransformation::fromJson($this->request->data['transformationFromSource'] ?? null)->toJson();
 		}
-		ClassRegistry::init("Sgf")->create();
-		ClassRegistry::init("Sgf")->save($sgf);
-		SgfCommentReorientation::afterAccepted((int) ClassRegistry::init("Sgf")->id);
+		$saved = $sgfTable->saveOrFail($sgfTable->newEntity($sgf));
+		SgfCommentReorientation::afterAccepted($saved->id);
 		return $this->redirect('/' . $setConnectionID);
 	}
 

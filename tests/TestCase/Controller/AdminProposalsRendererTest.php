@@ -1,5 +1,7 @@
 <?php
 
+use App\Model\Table\SgfTable;
+
 //Tests that admin proposal lists link to the representative (official/public)
 //set, not to a user's private "Favorites" set connection.
 //A tsumego may belong to an official public set and a user's private
@@ -23,8 +25,8 @@ class AdminProposalsRendererTest extends IntegrationTestCase
 					['name' => 'favorites', 'public' => 0, 'user_id' => 'self', 'order' => 5, 'num' => 1],
 				],
 				'sgfs' => [
-					['data' => $solvedSgf, 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
-					['data' => $proposalSgf, 'sgf_status_id' => Sgf::STATUS_PROPOSED],
+					['data' => $solvedSgf, 'sgf_status_id' => SgfTable::STATUS_ACCEPTED],
+					['data' => $proposalSgf, 'sgf_status_id' => SgfTable::STATUS_PROPOSED],
 				],
 			],
 		]);

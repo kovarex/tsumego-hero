@@ -1,5 +1,7 @@
 <?php
 
+use App\Model\Entity\Sgf;
+use App\Model\Table\SgfTable;
 use App\Model\Table\TsumegoStatusTable;
 use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\ClassroomAssignmentTable;
@@ -67,8 +69,8 @@ class Play
 		$this->exportOpenGraph($setConnection, $set, $t, $sgf, $amountOfOtherCollection);
 		if (!empty($t['Tsumego']['semeai_type']))
 		{
-			$this->set('multipleChoiceTriangles', count(Util::getFollowingSgfCoordinates($sgf['Sgf']['sgf'], strpos($sgf['Sgf']['sgf'], 'TR') + 2)));
-			$this->set('multipleChoiceSquares', count(Util::getFollowingSgfCoordinates($sgf['Sgf']['sgf'], strpos($sgf['Sgf']['sgf'], 'SQ') + 2)));
+			$this->set('multipleChoiceTriangles', count(Util::getFollowingSgfCoordinates($sgf->sgf, strpos($sgf->sgf, 'TR') + 2)));
+			$this->set('multipleChoiceSquares', count(Util::getFollowingSgfCoordinates($sgf->sgf, strpos($sgf->sgf, 'SQ') + 2)));
 		}
 		$queryTitle = $this->exportNavigation($setConnection, $set, $tsumegoFilters);
 
@@ -76,7 +78,7 @@ class Play
 		if (empty($t['Tsumego']['file']))
 			$t['Tsumego']['file'] = $setConnection['SetConnection']['num'];
 		$boardSize = self::boardSizeFromSetTitle($set['Set']['title']);
-		$this->exportPlayerColor($request, $sgf['Sgf']['sgf'], $tsumegoVariant != null
+		$this->exportPlayerColor($request, $sgf->sgf, $tsumegoVariant != null
 			|| ($t['Tsumego']['semeai_type'] ?? 0) != 0
 			|| $boardSize != 19
 			|| in_array($set['Set']['id'], self::SETS_PLAYED_AS_BLACK));
@@ -103,10 +105,10 @@ class Play
 		$this->set('canAddMoreTags', Auth::isLoggedIn() && TagConnectionTable::canCurrentUserAddTag());
 		$this->set('tagData', TagTable::getForTsumego($tsumegoID));
 		$this->set('userSetsJson', json_encode(self::playerSets($tsumegoID)));
-		$this->set('hasSgfProposal', (bool) ClassRegistry::init('Sgf')->find('first', ['conditions' => [
+		$this->set('hasSgfProposal', TableRegistry::getTableLocator()->get('Sgf')->exists([
 			'tsumego_id' => $tsumegoID,
 			'user_id' => Auth::getUserID(),
-			'sgf_status_id' => Sgf::STATUS_PROPOSED]]));
+			'sgf_status_id' => SgfTable::STATUS_PROPOSED]));
 		if (isset($request->query['requestSolution']))
 		{
 			AuthorizationComponent::require(AdminPolicy::canRequestSolution(Auth::getIdentity()));
@@ -145,14 +147,14 @@ class Play
 	}
 
 	//The newest accepted SGF of the problem, a placeholder board when it has none
-	private static function acceptedSgf(int $tsumegoID): array
+	private static function acceptedSgf(int $tsumegoID): Sgf
 	{
-		$sgf = ClassRegistry::init('Sgf')->find('first', [
-			'order' => 'id DESC',
-			'conditions' => [
-				'tsumego_id' => $tsumegoID,
-				'sgf_status_id' => Sgf::STATUS_ACCEPTED]]);
-		return $sgf ?: ['Sgf' => ['sgf' => Constants::$SGF_PLACEHOLDER, 'tsumego_id' => $tsumegoID]];
+		return TableRegistry::getTableLocator()->get('Sgf')->find()
+			->select(['id', 'sgf', 'user_id', 'created'])
+			->where(['tsumego_id' => $tsumegoID, 'sgf_status_id' => SgfTable::STATUS_ACCEPTED])
+			->orderByDesc('id')
+			->first()
+			?? new Sgf(['id' => null, 'sgf' => Constants::$SGF_PLACEHOLDER, 'user_id' => null, 'created' => null]);
 	}
 
 	//A set titled e.g. "Life and death 9x9" is played on that board size, everything else on 19x19
@@ -179,7 +181,7 @@ ORDER BY s.title", [$tsumegoID, Auth::getUserID()]);
 		return array_map(fn($set) => ['id' => $set['id'], 'title' => $set['title'], 'contains' => $set['tsumego_id'] != null], $sets);
 	}
 
-	private function exportOpenGraph(array $setConnection, array $set, array $t, array $sgf, int $amountOfOtherCollection): void
+	private function exportOpenGraph(array $setConnection, array $set, array $t, Sgf $sgf, int $amountOfOtherCollection): void
 	{
 		$title = ($set['Set']['title'] ?? '') . ' ' . $setConnection['SetConnection']['num'] . '/' . $amountOfOtherCollection;
 		//The descriptions and the image both use the true colors of the SGF
@@ -190,13 +192,12 @@ ORDER BY s.title", [$tsumegoID, Auth::getUserID()]);
 		if (trim($description) === '')
 			$description = $title;
 
-		$sgfCreated = $sgf['Sgf']['created'] ?? '';
 		$this->set('og', [
 			'title' => $title,
 			'description' => $description,
 			'image' => Router::url('/tsumego-image/' . $setConnection['SetConnection']['id']
 				. '?v=' . Constants::$TSUMEGO_IMAGE_VERSION
-				. '&t=' . ($sgfCreated !== '' ? strtotime($sgfCreated) : ''), true),
+				. '&t=' . ($sgf->created?->getTimestamp() ?? ''), true),
 			'image_type' => 'image/png',
 			'image_width' => Constants::$OG_IMAGE_WIDTH,
 			'image_height' => Constants::$OG_IMAGE_HEIGHT,
