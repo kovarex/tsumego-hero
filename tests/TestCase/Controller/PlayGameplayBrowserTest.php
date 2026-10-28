@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\TsumegoVariantTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\Rating;
@@ -152,7 +153,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 				'set_order' => 1,
 				'sgf' => self::SGF_19,
 				'variants' => [[
-					'tsumego_variant_type_id' => TsumegoVariant::TYPE_MULTIPLE_CHOICE,
+					'tsumego_variant_type_id' => TsumegoVariantTable::TYPE_MULTIPLE_CHOICE,
 					'answer1' => 'White is dead',
 					'answer2' => 'Ko',
 					'answer3' => 'Seki in sente',
@@ -184,7 +185,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 				'set_order' => 1,
 				'sgf' => self::SGF_19,
 				'variants' => [[
-					'tsumego_variant_type_id' => TsumegoVariant::TYPE_SCORE_ESTIMATING,
+					'tsumego_variant_type_id' => TsumegoVariantTable::TYPE_SCORE_ESTIMATING,
 					'answer1' => '6.5',
 					'answer2' => '3',
 					'answer3' => '6',
@@ -898,7 +899,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 				'description' => 'Black to play. What is the result?',
 				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc]AW[dd];B[aa];W[ab];B[ba]C[+])',
 				'variants' => [[
-					'tsumego_variant_type_id' => TsumegoVariant::TYPE_MULTIPLE_CHOICE,
+					'tsumego_variant_type_id' => TsumegoVariantTable::TYPE_MULTIPLE_CHOICE,
 					'answer1' => 'White is dead',
 					'answer2' => 'Ko',
 					'answer3' => 'Seki in sente',
@@ -930,7 +931,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 				'description' => 'Who wins?',
 				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])',
 				'variants' => [[
-					'tsumego_variant_type_id' => TsumegoVariant::TYPE_SCORE_ESTIMATING,
+					'tsumego_variant_type_id' => TsumegoVariantTable::TYPE_SCORE_ESTIMATING,
 					'answer1' => '6.5',
 					'answer2' => '3',
 					'answer3' => '6',
