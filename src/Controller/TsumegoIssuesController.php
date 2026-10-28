@@ -3,7 +3,7 @@
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Lib\Error\UnprocessableEntityException;
-use App\Model\Entity\TsumegoComment;
+use App\Model\Table\TsumegoIssueTable;
 //Controller for managing tsumego issues.
 //Issues are reports about problems with tsumego solutions (missing moves, wrong answers, etc.).
 //Each issue contains one or more comments discussing the problem.
@@ -20,14 +20,12 @@ class TsumegoIssuesController extends AppController
 	#[HttpGet]
 	public function api()
 	{
-		$this->loadModel('TsumegoIssue');
-
 		$statusFilter = $this->request->query('status') ?: 'opened';
 		$page = (int) ($this->request->query('page') ?: 1);
 		$perPage = 20;
 
-		$issues = $this->TsumegoIssue->findForIndex($statusFilter, $perPage, $page);
-		$counts = $this->TsumegoIssue->getIndexCounts();
+		$issues = TsumegoIssueTable::findForIndex($statusFilter, $perPage, $page);
+		$counts = TsumegoIssueTable::getIndexCounts();
 
 		$totalCount = match ($statusFilter)
 		{
@@ -85,24 +83,18 @@ class TsumegoIssuesController extends AppController
 		if (empty($tsumegoId) || empty($message))
 			throw new BadRequestException('Tsumego ID and message are required');
 
-		$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
+		$tsumegoIssueTable = $this->fetchTable('TsumegoIssue');
 		$tsumegoCommentTable = $this->fetchTable('TsumegoComment');
 
 		// Create the issue
-		$issue = [
+		$issue = $tsumegoIssueTable->saveOrFail($tsumegoIssueTable->newEntity([
 			'tsumego_id' => $tsumegoId,
 			'user_id' => Auth::getUserID(),
-			'tsumego_issue_status_id' => TsumegoIssue::$OPENED_STATUS,
-		];
-
-		$TsumegoIssue->create();
-		if (!$TsumegoIssue->save($issue))
-			throw new InternalErrorException('Failed to create issue');
-
-		$issueId = $TsumegoIssue->getLastInsertID();
+			'tsumego_issue_status_id' => TsumegoIssueTable::OPENED_STATUS,
+		]));
+		$issueId = $issue->id;
 
 		// Create the first comment attached to this issue
-		/** @var TsumegoComment $comment */
 		$comment = $tsumegoCommentTable->newEntity([
 			'tsumego_id' => $tsumegoId,
 			'tsumego_issue_id' => $issueId,
@@ -113,7 +105,7 @@ class TsumegoIssuesController extends AppController
 		if (!$tsumegoCommentTable->save($comment))
 		{
 			// Rollback: delete the issue if comment fails
-			$TsumegoIssue->delete($issueId);
+			$tsumegoIssueTable->deleteAll(['id' => $issueId]);
 			throw new UnprocessableEntityException('Failed to create issue');
 		}
 
@@ -123,7 +115,7 @@ class TsumegoIssuesController extends AppController
 
 		$issueData = [
 			'id' => $issueId,
-			'tsumego_issue_status_id' => TsumegoIssue::$OPENED_STATUS,
+			'tsumego_issue_status_id' => TsumegoIssueTable::OPENED_STATUS,
 			'created' => date('c'),
 			'user_id' => Auth::getUserID(),
 			'user_display_name' => $user['User']['display_name'],
@@ -155,17 +147,17 @@ class TsumegoIssuesController extends AppController
 	#[HttpPost]
 	public function close(string $id)
 	{
-		$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
-		$issue = $TsumegoIssue->findById($id);
+		$tsumegoIssueTable = $this->fetchTable('TsumegoIssue');
+		$issue = $tsumegoIssueTable->find()->where(['id' => (int) $id])->first();
 
 		if (!$issue)
 			throw new NotFoundException('Issue not found');
 
-		$this->Authorization->authorize($issue, 'close');
+		$this->Authorization->authorize(['TsumegoIssue' => $issue], 'close');
 
 		// Update status to closed
-		$TsumegoIssue->id = $id;
-		if (!$TsumegoIssue->saveField('tsumego_issue_status_id', TsumegoIssue::$CLOSED_STATUS))
+		$issue->tsumego_issue_status_id = TsumegoIssueTable::CLOSED_STATUS;
+		if (!$tsumegoIssueTable->save($issue))
 			throw new InternalErrorException('Failed to close issue');
 
 		// Add closing comment if provided
@@ -175,8 +167,8 @@ class TsumegoIssuesController extends AppController
 			// a closing comment that fails the validation is left out, the issue is closed anyway
 			$tsumegoCommentTable = $this->fetchTable('TsumegoComment');
 			$tsumegoCommentTable->save($tsumegoCommentTable->newEntity([
-				'tsumego_id' => $issue['TsumegoIssue']['tsumego_id'],
-				'tsumego_issue_id' => $id,
+				'tsumego_id' => $issue->tsumego_id,
+				'tsumego_issue_id' => $issue->id,
 				'message' => $closingMessage,
 				'user_id' => Auth::getUserID(),
 			]));
@@ -194,16 +186,16 @@ class TsumegoIssuesController extends AppController
 	#[HttpPost]
 	public function reopen(string $id)
 	{
-		$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
-		$issue = $TsumegoIssue->findById($id);
+		$tsumegoIssueTable = $this->fetchTable('TsumegoIssue');
+		$issue = $tsumegoIssueTable->find()->where(['id' => (int) $id])->first();
 
 		if (!$issue)
 			throw new NotFoundException('Issue not found');
 
-		$this->Authorization->authorize($issue, 'reopen');
+		$this->Authorization->authorize(['TsumegoIssue' => $issue], 'reopen');
 
-		$TsumegoIssue->id = $id;
-		if (!$TsumegoIssue->saveField('tsumego_issue_status_id', TsumegoIssue::$OPENED_STATUS))
+		$issue->tsumego_issue_status_id = TsumegoIssueTable::OPENED_STATUS;
+		if (!$tsumegoIssueTable->save($issue))
 			throw new InternalErrorException('Failed to reopen issue');
 
 		$this->response->type('json');
@@ -222,7 +214,6 @@ class TsumegoIssuesController extends AppController
 		$this->Authorization->authorize('TsumegoIssue', 'moveComment');
 
 		$tsumegoCommentTable = $this->fetchTable('TsumegoComment');
-		/** @var TsumegoComment|null $comment */
 		$comment = $tsumegoCommentTable->find()->where(['id' => (int) $commentId])->first();
 
 		if (!$comment)
@@ -245,8 +236,7 @@ class TsumegoIssuesController extends AppController
 			if ($tsumegoCommentTable->save($comment))
 			{
 				// Check if issue is now empty and delete it
-				$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
-				$TsumegoIssue->deleteIfEmpty($currentIssueId);
+				TsumegoIssueTable::deleteIfEmpty($currentIssueId);
 				$this->response->type('json');
 				$this->response->body(json_encode(['success' => true]));
 				return $this->response;
@@ -258,22 +248,18 @@ class TsumegoIssuesController extends AppController
 		// Handle 'new' - create new issue
 		if ($targetIssueId === 'new')
 		{
-			$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
+			$tsumegoIssueTable = $this->fetchTable('TsumegoIssue');
 			$User = ClassRegistry::init('User');
 
-			$issue = [
+			$issue = $tsumegoIssueTable->saveOrFail($tsumegoIssueTable->newEntity([
 				'tsumego_id' => $comment->tsumego_id,
 				'user_id' => $comment->user_id, // Original comment author becomes issue author
-				'tsumego_issue_status_id' => TsumegoIssue::$OPENED_STATUS,
-			];
-
-			$TsumegoIssue->create();
-			if (!$TsumegoIssue->save($issue))
-				throw new InternalErrorException('Failed to create new issue');
-			$targetIssueId = $TsumegoIssue->getLastInsertID();
+				'tsumego_issue_status_id' => TsumegoIssueTable::OPENED_STATUS,
+			]));
+			$targetIssueId = $issue->id;
 
 			// Move comment to this new issue
-			$comment->tsumego_issue_id = (int) $targetIssueId;
+			$comment->tsumego_issue_id = $targetIssueId;
 			$tsumegoCommentTable->saveOrFail($comment);
 
 			$commentUser = $User->findById($comment->user_id);
@@ -319,10 +305,7 @@ class TsumegoIssuesController extends AppController
 		{
 			// Check if old issue is now empty and delete it
 			if (!empty($currentIssueId))
-			{
-				$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
-				$TsumegoIssue->deleteIfEmpty($currentIssueId);
-			}
+				TsumegoIssueTable::deleteIfEmpty($currentIssueId);
 			$this->response->type('json');
 			$this->response->body(json_encode(['success' => true]));
 			return $this->response;

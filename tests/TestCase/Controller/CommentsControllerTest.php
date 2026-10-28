@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Entity\TsumegoComment;
+use App\Model\Table\TsumegoIssueTable;
 use Facebook\WebDriver\WebDriverBy;
 
 /**
@@ -107,7 +108,6 @@ class CommentsControllerTest extends IntegrationTestCase
 
 		// Verify comment appears in the comments list
 		$browser->get('comments');
-		/** @var TsumegoComment $comment */
 		$comment = $this->fetchTable('TsumegoComment')->find()->orderBy('id')->firstOrFail();
 		$browser->waitUntilCssSelectorExistsWithText('#comment_' . $comment->id, 'My first comment');
 
@@ -142,7 +142,6 @@ class CommentsControllerTest extends IntegrationTestCase
 		$browser->waitUntilJs('document.querySelector(".tsumego-comments__form textarea").value === ""');
 
 		// The position is structured data, the message has no "[current position]" marker
-		/** @var TsumegoComment $comment */
 		$comment = $this->fetchTable('TsumegoComment')->find()->orderByDesc('id')->firstOrFail();
 		$this->assertNotNull($comment->position);
 		$this->assertSame('Check this move', $comment->message);
@@ -961,8 +960,8 @@ class CommentsControllerTest extends IntegrationTestCase
 			'tsumego' => [
 				'set_order' => 1,
 				'issues' => [
-					['message' => 'Open issue message', 'status' => TsumegoIssue::$OPENED_STATUS],
-					['message' => 'Closed issue message', 'status' => TsumegoIssue::$CLOSED_STATUS],
+					['message' => 'Open issue message', 'status' => TsumegoIssueTable::OPENED_STATUS],
+					['message' => 'Closed issue message', 'status' => TsumegoIssueTable::CLOSED_STATUS],
 				],
 				'status' => 'S']]);
 		$browser = Browser::instance();
@@ -1014,7 +1013,7 @@ class CommentsControllerTest extends IntegrationTestCase
 			'tsumego' => [
 				'set_order' => 1,
 				'comments' => [['message' => 'Existing standalone comment']],
-				'issues' => [['message' => 'Closed issue message', 'status' => TsumegoIssue::$CLOSED_STATUS]],
+				'issues' => [['message' => 'Closed issue message', 'status' => TsumegoIssueTable::CLOSED_STATUS]],
 				'status' => 'S']]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
@@ -1060,8 +1059,8 @@ class CommentsControllerTest extends IntegrationTestCase
 			'tsumego' => [
 				'set_order' => 1,
 				'issues' => [
-					['message' => 'Closed issue message', 'status' => TsumegoIssue::$CLOSED_STATUS],
-					['message' => 'Open issue message', 'status' => TsumegoIssue::$OPENED_STATUS]],
+					['message' => 'Closed issue message', 'status' => TsumegoIssueTable::CLOSED_STATUS],
+					['message' => 'Open issue message', 'status' => TsumegoIssueTable::OPENED_STATUS]],
 				'status' => 'S']]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
@@ -1117,8 +1116,8 @@ class CommentsControllerTest extends IntegrationTestCase
 			'tsumego' => [
 				'set_order' => 1,
 				'issues' => [
-					['message' => 'Closed issue message', 'status' => TsumegoIssue::$CLOSED_STATUS],
-					['message' => 'Open issue message', 'status' => TsumegoIssue::$OPENED_STATUS],
+					['message' => 'Closed issue message', 'status' => TsumegoIssueTable::CLOSED_STATUS],
+					['message' => 'Open issue message', 'status' => TsumegoIssueTable::OPENED_STATUS],
 				],
 				'status' => 'S']]);
 		$browser = Browser::instance();
@@ -1181,7 +1180,7 @@ class CommentsControllerTest extends IntegrationTestCase
 		$context = new ContextPreparator([
 			'tsumego' => [
 				'set_order' => 1,
-				'issues' => [['message' => 'Closed issue', 'status' => TsumegoIssue::$CLOSED_STATUS]],
+				'issues' => [['message' => 'Closed issue', 'status' => TsumegoIssueTable::CLOSED_STATUS]],
 				'status' => 'S']]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
@@ -1341,7 +1340,7 @@ class CommentsControllerTest extends IntegrationTestCase
 			'user' => ['admin' => false],
 			'tsumego' => [
 				'set_order' => 1,
-				'issues' => [['message' => 'Issue to reopen', 'status' => TsumegoIssue::$CLOSED_STATUS]],
+				'issues' => [['message' => 'Issue to reopen', 'status' => TsumegoIssueTable::CLOSED_STATUS]],
 				'status' => 'S']]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);

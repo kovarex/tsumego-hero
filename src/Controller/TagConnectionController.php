@@ -2,7 +2,6 @@
 
 use App\Attribute\HttpPost;
 use App\Model\Table\AdminActivityTypeTable;
-use App\Model\Entity\Tag;
 use App\Model\Table\TagConnectionTable;
 use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
@@ -15,7 +14,6 @@ class TagConnectionController extends AppController
 		$this->Authorization->authorize(['TagConnection' => ['id' => (int) $tsumegoID]], 'add');
 		if (!TagConnectionTable::canCurrentUserAddTag())
 			throw new ForbiddenException('Daily tag limit reached.');
-		/** @var Tag|null $tag */
 		$tag = $this->fetchTable('Tag')->find()->where(['name' => $tagName])->first();
 		if (!$tag)
 			throw new ForbiddenException('Tag "' . $tagName . '" doesn\'t exist.');
@@ -46,7 +44,6 @@ class TagConnectionController extends AppController
 	#[HttpPost]
 	public function remove(string $tsumegoID, string $tagName)
 	{
-		/** @var Tag|null $tag */
 		$tag = $this->fetchTable('Tag')->find()->where(['name' => $tagName])->first();
 		if (!$tag)
 			throw new ForbiddenException('Tag "' . $tagName . '" doesn\'t exist.');

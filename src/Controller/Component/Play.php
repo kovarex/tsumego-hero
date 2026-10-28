@@ -20,6 +20,7 @@ use App\Utility\TsumegoFilters;
 use App\Utility\TsumegoUtil;
 use App\Utility\TsumegoXPAndRating;
 use App\Utility\Util;
+use Cake\ORM\TableRegistry;
 
 class Play
 {
@@ -54,7 +55,7 @@ class Play
 		AuthorizationComponent::require(SetPolicy::canPlay(Auth::getIdentity(), $set['Set']));
 		Util::setCookie('lastVisit', $tsumegoID);
 
-		$tsumegoVariant = ClassRegistry::init('TsumegoVariant')->find('first', ['conditions' => ['tsumego_id' => $tsumegoID]]);
+		$tsumegoVariant = TableRegistry::getTableLocator()->get('TsumegoVariant')->find()->where(['tsumego_id' => $tsumegoID])->first();
 		$tsumegoFilters = new TsumegoFilters();
 		$tsumegoStatus = self::tsumegoStatus($tsumegoID);
 		$goldenTsumego = $tsumegoStatus == TsumegoStatus::$GOLDEN;

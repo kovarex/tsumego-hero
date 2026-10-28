@@ -2,6 +2,7 @@
 
 use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\AdminOverviewTypeTable;
+use App\Model\Table\TsumegoIssueTable;
 use App\Utility\Util;
 
 //The admin page links everything an admin does and counts what waits there (AdminController),
@@ -43,7 +44,7 @@ class AdminControllerTest extends IntegrationTestCase
 					['data' => self::SGF, 'sgf_status_id' => Sgf::STATUS_PROPOSED],
 					['data' => self::SGF, 'sgf_status_id' => Sgf::STATUS_REJECTED]],
 				'tags' => [['name' => 'snapback', 'approved' => 0], ['name' => 'ko', 'approved' => 1]],
-				'issues' => [['message' => 'The ko is not solved'], ['message' => 'Solved already', 'status' => TsumegoIssue::$CLOSED_STATUS]]],
+				'issues' => [['message' => 'The ko is not solved'], ['message' => 'Solved already', 'status' => TsumegoIssueTable::CLOSED_STATUS]]],
 			'tags' => [['name' => 'two-step ko', 'approved' => 0], ['name' => 'ladder breaker', 'approved' => 0]]]);
 
 		$this->assertSame(2, $this->countOnLink('/admin/sgf-proposals'));

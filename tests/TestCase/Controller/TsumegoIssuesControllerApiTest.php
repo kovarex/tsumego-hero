@@ -1,5 +1,7 @@
 <?php
 
+use App\Model\Table\TsumegoIssueTable;
+
 //Controller-level tests for the TsumegoIssuesController JSON API.
 class TsumegoIssuesControllerApiTest extends IntegrationTestCase
 {
@@ -97,14 +99,14 @@ class TsumegoIssuesControllerApiTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator([
 			'user' => ['name' => 'kovarex', 'admin' => false],
-			'tsumego' => ['set_order' => 1, 'status' => 'S', 'issues' => [['message' => 'my issue', 'status' => TsumegoIssue::$CLOSED_STATUS]]],
+			'tsumego' => ['set_order' => 1, 'status' => 'S', 'issues' => [['message' => 'my issue', 'status' => TsumegoIssueTable::CLOSED_STATUS]]],
 		]);
 
 		$this->post('/tsumego-issues/reopen/' . $context->issues[0]['id']);
 
 		$this->assertResponseCode(200);
-		$issue = ClassRegistry::init('TsumegoIssue')->findById($context->issues[0]['id']);
-		$this->assertSame(TsumegoIssue::$OPENED_STATUS, (int) $issue['TsumegoIssue']['tsumego_issue_status_id']);
+		$issue = $this->fetchTable('TsumegoIssue')->get($context->issues[0]['id']);
+		$this->assertSame(TsumegoIssueTable::OPENED_STATUS, $issue->tsumego_issue_status_id);
 	}
 
 	public function testReopenForbiddenForOtherUsersIssue()
@@ -112,14 +114,11 @@ class TsumegoIssuesControllerApiTest extends IntegrationTestCase
 		$context = new ContextPreparator([
 			'user' => ['name' => 'kovarex', 'admin' => false],
 			'other-users' => [['name' => 'Ivan Detkov']],
-			'tsumego' => ['set_order' => 1, 'status' => 'S', 'issues' => [['message' => 'someone elses issue', 'status' => TsumegoIssue::$CLOSED_STATUS]]],
+			'tsumego' => ['set_order' => 1, 'status' => 'S', 'issues' => [['message' => 'someone elses issue', 'status' => TsumegoIssueTable::CLOSED_STATUS]]],
 		]);
 
 		// The issue belongs to the acting user by default; hand it to another user
-		ClassRegistry::init('TsumegoIssue')->updateAll(
-			['TsumegoIssue.user_id' => $context->otherUsers[0]['id']],
-			['TsumegoIssue.id' => $context->issues[0]['id']]
-		);
+		$this->fetchTable('TsumegoIssue')->updateAll(['user_id' => $context->otherUsers[0]['id']], ['id' => $context->issues[0]['id']]);
 
 		$this->post('/tsumego-issues/reopen/' . $context->issues[0]['id']);
 

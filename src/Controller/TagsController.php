@@ -52,7 +52,6 @@ class TagsController extends AppController
 			return $this->redirect('/tags/add');
 		}
 
-		/** @var Tag $tag */
 		$tag = $tagTable->saveOrFail($tagTable->newEntity([
 			'name' => $tagName,
 			'description' => HtmlSanitizer::sanitize((string) $tagDescription),
@@ -71,7 +70,6 @@ class TagsController extends AppController
 		$tag = $this->fetchTable('Tag')->find()->where(['id' => (int) $id])->first();
 		if (!$tag)
 			throw new NotFoundException('Tag not found');
-		/** @var Tag $tag */
 		$user = $tag->user_id ? $this->User->findById($tag->user_id) : null;
 		$this->set('allTags', self::approvedTags());
 		$this->set('tag', $tag);
@@ -249,7 +247,6 @@ class TagsController extends AppController
 		$this->Authorization->authorize('Tag');
 
 		$tagTable = $this->fetchTable('Tag');
-		/** @var Tag|null $tagToApprove */
 		$tagToApprove = $tagTable->find()->where(['id' => (int) $tagID])->first();
 		if (!$tagToApprove)
 		{
@@ -287,7 +284,6 @@ class TagsController extends AppController
 		$this->Authorization->authorize('Tag');
 
 		$tagTable = $this->fetchTable('Tag');
-		/** @var Tag|null $tagToReject */
 		$tagToReject = $tagTable->find()->where(['id' => (int) $tagID])->first();
 		if (!$tagToReject)
 		{
