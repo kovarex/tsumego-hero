@@ -4,6 +4,7 @@ namespace App\Utility;
 
 use ArrayObject;
 use Set;
+use Sgf;
 
 class TsumegoButtons extends ArrayObject
 {
@@ -104,12 +105,45 @@ class TsumegoButtons extends ArrayObject
 				$row['num'],
 				Auth::isLoggedIn() ? ($row['status'] ?: 'N') : 'N',
 				$row['rating'],
-				$row['sgf']);
+				null);
 			$tsumegoButton->setID = isset($row['set_id']) ? (int) $row['set_id'] : null;
 			$tsumegoButton->setTitle = $row['set_title'] ?? null;
 			$this [] = $tsumegoButton;
 		}
 		$this->updateHighestTsumegoOrder();
+	}
+
+	//Loads the current SGF of the buttons that don't have it yet, in one query. A collection is
+	//filled without them, as only the shown buttons need them for their previews: one page of a
+	//set, or the dozen around the opened problem on the play page, not the whole set.
+	public function loadSgfs(): void
+	{
+		$tsumegoIDs = [];
+		foreach ($this as $tsumegoButton)
+			if ($tsumegoButton->sgf === null)
+				$tsumegoIDs[] = $tsumegoButton->tsumegoID;
+		if (empty($tsumegoIDs))
+			return;
+		$sgfs = self::currentSgfs($tsumegoIDs);
+		foreach ($this as $tsumegoButton)
+			if ($tsumegoButton->sgf === null)
+				$tsumegoButton->sgf = $sgfs[$tsumegoButton->tsumegoID] ?? '';
+	}
+
+	/**
+	 * The current (latest accepted) SGF of each of the tsumegos.
+	 * @param int[] $tsumegoIDs
+	 * @return array<int, string> by tsumego id, a tsumego without an accepted version is left out
+	 */
+	public static function currentSgfs(array $tsumegoIDs): array
+	{
+		$rows = Util::query('SELECT sgf.tsumego_id, sgf.sgf FROM sgf'
+			. ' JOIN (SELECT MAX(id) AS id FROM sgf WHERE tsumego_id IN (' . implode(',', array_map('intval', array_unique($tsumegoIDs))) . ')'
+			. ' AND sgf_status_id = ' . Sgf::STATUS_ACCEPTED . ' GROUP BY tsumego_id) current_sgf ON current_sgf.id = sgf.id');
+		$result = [];
+		foreach ($rows as $row)
+			$result[(int) $row['tsumego_id']] = (string) $row['sgf'];
+		return $result;
 	}
 
 	public function resetOrders(): void
