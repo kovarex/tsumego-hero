@@ -98,7 +98,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator(['tsumego' => 1]);
 		$this->loginAs($context);
-		$this->post('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->assertSame('V', $this->statusOf($context));
 	}
 
@@ -114,7 +114,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator(['tsumego' => ['status' => 'S', 'set_order' => 1]]);
 		$this->loginAs($context);
-		$this->post('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->assertSame('S', $this->statusOf($context));
 	}
 
@@ -860,7 +860,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 
 		// Switch back to level mode by opening a problem directly -> DB mode must be level immediately.
 		$this->loginAs($context);
-		$this->post('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->assertSame(Constants::$LEVEL_MODE, (int) $context->reloadUser()['mode_id'],
 			'DB mode should be LEVEL right after opening a problem directly');
 		$this->assertTextContains('var mode = 1;', $this->view,
@@ -1048,7 +1048,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator(['tsumego' => 1]);
 		$this->loginAs($context);
-		$this->post('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->assertNull(
 			MistakeTraining::getPoolRow($context->user['id'], (int) $context->tsumegos[0]['id']),
 			'Visit only should not enter the pool'

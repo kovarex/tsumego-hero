@@ -313,7 +313,7 @@ class ClassroomsController extends AppController
 		$play->classroomAssignment = ClassroomAssignment::withCollections([$assignment])[0];
 		// Same problem, same address for search engines, whichever route got here.
 		$this->set('canonicalPath', '/' . $current);
-		$play->play($current, $this->request, $this->request->data);
+		$play->play($current, $this->request);
 		$this->set('_page', 'classes');
 		$this->render('/Tsumegos/play');
 		return null;

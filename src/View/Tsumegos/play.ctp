@@ -51,17 +51,14 @@ use App\Utility\ViteManifest;
  * @var int $multipleChoiceTriangles
  * @var string $nextLink
  * @var bool $noSkipNextLink
- * @var bool $nothingInRange
  * @var bool $passEnabled
  * @var string $previousLink
  * @var string $queryTitle
  * @var bool $requestSolution
- * @var bool $reviewCheat
  * @var string $reviewEnabled
  * @var array $set
  * @var array $setConnection
  * @var array $setConnections
- * @var bool $set_duplicate
  * @var array $sgf
  * @var array $t
  * @var array $tagData
@@ -126,8 +123,6 @@ use App\Utility\ViteManifest;
 		$resetLink = ClassroomAssignment::playLink((int) $classroomAssignment['id'], (int) $setConnection['SetConnection']['id']);
 	else
 		$resetLink = (Auth::isInMistakeTrainingMode() ? MistakeTraining::$PLAY_LINK_PREFIX : '/') . (int) $setConnection['SetConnection']['id'];
-	if ($nothingInRange != false)
-		echo '<div align="center" class="status-message">'.$nothingInRange.'</div>';
 	if (!empty($t['Tsumego']['deleted']))
 		echo $this->element('trash_notice', [
 			'what' => 'problem',
@@ -401,60 +396,8 @@ use App\Utility\ViteManifest;
 				echo '<a id="showx6" class="selectable-text mr-5 '.$adHighlight.'">History</a>';
 				echo '<a id="showx8" class="selectable-text mr-5">Rating</a>';
 				echo '<a id="show5" class="selectable-text">Settings<img id="greyArrow5" src="/img/greyArrow1.png"></a>';
-				if($alternative_response==1)
-				{
-					$arOn = 'checked="checked"';
-					$arOff = '';
-				}
-				else
-				{
-					$arOn = '';
-					$arOff = 'checked="checked"';
-				}
-				if($passEnabled==1)
-				{
-					$passOn = 'checked="checked"';
-					$passOff = '';
-				}
-				else
-				{
-					$passOn = '';
-					$passOff = 'checked="checked"';
-				}
-				if ($set_duplicate==-1)
-				{
-					$duOn = 'checked="checked"';
-					$duOff = '';
-				}
-				else
-				{
-					$duOn = '';
-					$duOff = 'checked="checked"';
-				}
-				if ($tv==null)
-				{
-					$multipleNo = 'checked="checked"';
-					$multipleYes = '';
-					$scoreEstNo = 'checked="checked"';
-					$scoreEstYes = '';
-				}
-				else
-				{
-					if($tv['TsumegoVariant']['tsumego_variant_type_id'] == TsumegoVariant::TYPE_MULTIPLE_CHOICE)
-					{
-						$multipleNo = '';
-						$multipleYes = 'checked="checked"';
-						$scoreEstNo = 'checked="checked"';
-						$scoreEstYes = '';
-					}
-					else
-					{
-						$multipleNo = 'checked="checked"';
-						$multipleYes = '';
-						$scoreEstNo = '';
-						$scoreEstYes = 'checked="checked"';
-					}
-			}
+				$checked = fn(bool $isChecked): string => $isChecked ? 'checked="checked"' : '';
+				$variantType = $tv ? (int) $tv['TsumegoVariant']['tsumego_variant_type_id'] : null;
 			if(Auth::isAdmin())
 			{
 				echo '<div id="msg4">
@@ -467,31 +410,25 @@ use App\Utility\ViteManifest;
 					</div>
 					<div id="msg5">
 						<br>
-						<form action="" method="POST" enctype="multipart/form-data">
+						<form action="/tsumegos/settings/' . $t['Tsumego']['id'] . '" method="POST">
 							<table>
 								<tr>
 									<td>Alternative Response Mode</td>
-									<td><input type="radio" id="r39" name="data[Settings][r39]" value="on" '.$arOn.'><label for="r39">on</label></td>
-									<td><input type="radio" id="r39" name="data[Settings][r39]" value="off" '.$arOff.'><label for="r39">off</label></td>
+									<td><input type="radio" id="alternative-response-on" name="alternative_response" value="1" ' . $checked($alternative_response == 1) . '><label for="alternative-response-on">on</label></td>
+									<td><input type="radio" id="alternative-response-off" name="alternative_response" value="0" ' . $checked($alternative_response != 1) . '><label for="alternative-response-off">off</label></td>
 								</tr>
 								<tr>
 									<td>Enable passing</td>
-									<td><input type="radio" id="r43" name="data[Settings][r43]" value="no" '.$passOff.'><label for="r43">no</label></td>
-									<td><input type="radio" id="r43" name="data[Settings][r43]" value="yes" '.$passOn.'><label for="r43">yes</label></td>
+									<td><input type="radio" id="pass-off" name="pass" value="0" ' . $checked($passEnabled != 1) . '><label for="pass-off">no</label></td>
+									<td><input type="radio" id="pass-on" name="pass" value="1" ' . $checked($passEnabled == 1) . '><label for="pass-on">yes</label></td>
 								</tr>';
 				if($isSandbox)
-				{
 					echo '<tr>
-										<td>Multiple choice problem</td>
-										<td><input type="radio" id="r41" name="data[Settings][r41]" value="no" '.$multipleNo.'><label for="r41">no</label></td>
-										<td><input type="radio" id="r41" name="data[Settings][r41]" value="yes" '.$multipleYes.'><label for="r41">yes</label></td>
-									</tr>';
-					echo '<tr>
-										<td>Score estimating problem</td>
-										<td><input type="radio" id="r42" name="data[Settings][r42]" value="no" '.$scoreEstNo.'><label for="r42">no</label></td>
-										<td><input type="radio" id="r42" name="data[Settings][r42]" value="yes" '.$scoreEstYes.'><label for="r42">yes</label></td>
-									</tr>';
-				}
+									<td>Question</td>
+									<td><input type="radio" id="variant-type-none" name="variant_type" value="" ' . $checked($variantType === null) . '><label for="variant-type-none">none</label></td>
+									<td><input type="radio" id="variant-type-multiple-choice" name="variant_type" value="' . TsumegoVariant::TYPE_MULTIPLE_CHOICE . '" ' . $checked($variantType === TsumegoVariant::TYPE_MULTIPLE_CHOICE) . '><label for="variant-type-multiple-choice">multiple choice</label></td>
+									<td><input type="radio" id="variant-type-score-estimating" name="variant_type" value="' . TsumegoVariant::TYPE_SCORE_ESTIMATING . '" ' . $checked($variantType === TsumegoVariant::TYPE_SCORE_ESTIMATING) . '><label for="variant-type-score-estimating">score estimating</label></td>
+								</tr>';
 				echo '</table>
 							<br>
 							<input value="Submit" type="submit"/>
@@ -503,30 +440,20 @@ use App\Utility\ViteManifest;
 			{
 				if($tv['TsumegoVariant']['tsumego_variant_type_id'] == TsumegoVariant::TYPE_MULTIPLE_CHOICE)
 				{
-					$studyCorrectOptions = array(
-						'1'=>'1',
-						'2'=>'2',
-						'3'=>'3',
-						'4'=>'4'
-					);
-						$studyCorrectAttributes = array(
-							'legend'=>false,
-							'value'=>$tv['TsumegoVariant']['correct_answer']
-						);
 						echo '<a id="showMC" class="selectable-text selectable-text--inline">Edit multiple choice
 						<img id="greyArrowMC" src="/img/greyArrow1.png"></a><br><br>';
 						echo '<div id="showxMC">';
-						echo $this->Form->create('Study');
-						echo $this->Form->input('study1', array('value' => $tv['TsumegoVariant']['answer1'], 'label' => 'Answer 1: ', 'type' => 'text', 'placeholder' => 'Answer 1'));
-						echo $this->Form->input('study2', array('value' => $tv['TsumegoVariant']['answer2'], 'label' => 'Answer 2: ', 'type' => 'text', 'placeholder' => 'Answer 2'));
-						echo $this->Form->input('study3', array('value' => $tv['TsumegoVariant']['answer3'], 'label' => 'Answer 3: ', 'type' => 'text', 'placeholder' => 'Answer 3'));
-						echo $this->Form->input('study4', array('value' => $tv['TsumegoVariant']['answer4'], 'label' => 'Answer 4: ', 'type' => 'text', 'placeholder' => 'Answer 4'));
-						echo $this->Form->input('explanation', array('value' => $tv['TsumegoVariant']['explanation'], 'label' => 'Explanation: ', 'type' => 'textfield', 'placeholder' => 'Explanation'));
+						echo '<form action="/tsumegos/variant/' . $t['Tsumego']['id'] . '" method="post">';
+						for ($answer = 1; $answer <= 4; $answer++)
+							echo '<div class="input text"><label for="variant-answer' . $answer . '">Answer ' . $answer . ': </label><input name="answer' . $answer . '" value="' . h($tv['TsumegoVariant']['answer' . $answer]) . '" placeholder="Answer ' . $answer . '" type="text" id="variant-answer' . $answer . '"></div>';
+						echo '<div class="input textfield"><label for="variant-explanation">Explanation: </label><input name="explanation" value="' . h($tv['TsumegoVariant']['explanation']) . '" placeholder="Explanation" type="text" id="variant-explanation"></div>';
 						echo '<br>';
-						echo '<label for="studyCorrect">Correct: </label>';
-						echo $this->Form->radio('studyCorrect', $studyCorrectOptions, $studyCorrectAttributes);
+						echo '<label>Correct: </label>';
+						for ($answer = 1; $answer <= 4; $answer++)
+							echo '<input type="radio" name="correct_answer" id="variant-correct-answer' . $answer . '" value="' . $answer . '"' . ($tv['TsumegoVariant']['correct_answer'] == $answer ? ' checked="checked"' : '') . '><label for="variant-correct-answer' . $answer . '">' . $answer . '</label>';
 						echo '<br><br>';
-						echo $this->Form->end('Submit');
+						echo '<div class="submit"><input type="submit" value="Submit"></div>';
+						echo '</form>';
 						echo '<br><br>';
 						echo '</div>';
 	}else{
@@ -538,30 +465,27 @@ use App\Utility\ViteManifest;
 						echo '<input type="button" value="-" id="besogo-se-edit-less">';
 						echo '<input type="button" value="+" id="besogo-se-edit-more">';
 						echo '<br><br>';
-						echo $this->Form->create('Study2');
+						echo '<form action="/tsumegos/variant/' . $t['Tsumego']['id'] . '" method="post">';
 						echo '<table><tr><td>';
-						//echo $this->Form->input('winner', array('value' => $tv['TsumegoVariant']['winner'], 'label' => 'Correct answer: ', 'type' => 'text', 'placeholder' => 'Score', 'id' => 'scoreEstEditField'));
 						echo '<label for="scoreEstEditField">Correct answer: </label>';
 						echo '</td><td>';
-						echo '<input name="data[Study2][winner]" value="'.h($tv['TsumegoVariant']['winner']).'" placeholder="Score" id="scoreEstEditField" type="text">';
+						echo '<input name="winner" value="'.h($tv['TsumegoVariant']['winner']).'" placeholder="Score" id="scoreEstEditField" type="text">';
 						echo '</td></tr><tr><td>';
-						//echo $this->Form->input('answer1', array('value' => $tv['TsumegoVariant']['answer1'], 'label' => 'Komi: ', 'type' => 'text', 'placeholder' => 'Komi', 'id' => 'scoreEstEditField2'));
 						echo '<label for="scoreEstEditField2">Komi: </label>';
 						echo '</td><td>';
-						echo '<input name="data[Study2][answer1]" value="'.h($tv['TsumegoVariant']['answer1']).'" placeholder="Komi" id="scoreEstEditField2" type="text">';
+						echo '<input name="answer1" value="'.h($tv['TsumegoVariant']['answer1']).'" placeholder="Komi" id="scoreEstEditField2" type="text">';
 						echo '</td></tr><tr><td>';
-						//echo $this->Form->input('answer2', array('value' => $tv['TsumegoVariant']['answer2'], 'label' => 'Black captures: ', 'type' => 'text', 'placeholder' => 'Black captures', 'id' => 'scoreEstEditField3'));
 						echo '<label for="scoreEstEditField3">Black captures: </label>';
 						echo '</td><td>';
-						echo '<input name="data[Study2][answer2]" value="'.h($tv['TsumegoVariant']['answer2']).'" placeholder="Black captures" id="scoreEstEditField3" type="text">';
+						echo '<input name="answer2" value="'.h($tv['TsumegoVariant']['answer2']).'" placeholder="Black captures" id="scoreEstEditField3" type="text">';
 						echo '</td></tr><tr><td>';
-						//echo $this->Form->input('answer3', array('value' => $tv['TsumegoVariant']['answer3'], 'label' => 'White captures: ', 'type' => 'text', 'placeholder' => 'White captures', 'id' => 'scoreEstEditField4'));
 						echo '<label for="scoreEstEditField4">White captures: </label>';
 						echo '</td><td>';
-						echo '<input name="data[Study2][answer3]" value="'.h($tv['TsumegoVariant']['answer3']).'" placeholder="White captures" id="scoreEstEditField4" type="text">';
+						echo '<input name="answer3" value="'.h($tv['TsumegoVariant']['answer3']).'" placeholder="White captures" id="scoreEstEditField4" type="text">';
 						echo '</td></tr></table>';
 						echo '<br>';
 						echo '<div class="submit"><input type="submit" value="Submit" id="scoreEstEditSubmit"></div>';
+						echo '</form>';
 						echo '<br>';
 						echo '</div>';
 	}
@@ -1186,10 +1110,6 @@ use App\Utility\ViteManifest;
 					//echo 'reviewEnabled = true;';
 	}
 	}
-	}
-		if($reviewCheat){
-			$reviewEnabled = true;
-			echo 'reviewEnabled = true;';
 	}
 	?>
 

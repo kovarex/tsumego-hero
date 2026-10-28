@@ -69,7 +69,6 @@ class TsumegosController extends AppController
 
 
 	#[HttpGet]
-	#[HttpPost]
 	public function play(?string $id = null, ?string $setConnectionID = null)
 	{
 		if (Auth::isLoggedIn() && !Auth::isInLevelMode())
@@ -84,7 +83,8 @@ class TsumegosController extends AppController
 					$this->PlayResultProcessor->markAsVisited((int) $sc['SetConnection']['tsumego_id']);
 			}
 			$this->set('canonicalPath', '/' . (int) $setConnectionID);
-			return new Play(function ($name, $value) { $this->set($name, $value); })->play((int) $setConnectionID, $this->request, $this->request->data);
+			new Play(function ($name, $value) { $this->set($name, $value); })->play((int) $setConnectionID, $this->request);
+			return null;
 		}
 
 		if (!$id)
@@ -110,9 +110,52 @@ class TsumegosController extends AppController
 		$setConnection = $this->deduceRelevantSetConnection($setConnections);
 
 		$this->set('canonicalPath', '/' . $setConnections[0]['SetConnection']['id']);
-		return new Play(function ($name, $value) {
+		new Play(function ($name, $value) {
 			$this->set($name, $value);
-		})->play($setConnection['SetConnection']['id'], $this->request, $this->request->data);
+		})->play((int) $setConnection['SetConnection']['id'], $this->request);
+		return null;
+	}
+
+	//The problem settings an admin changes on the play page: the alternative response mode,
+	//passing, and on a sandbox problem whether it is a multiple choice or a score estimating one
+	#[HttpPost]
+	public function settings(string $tsumegoID): CakeResponse
+	{
+		$this->Authorization->authorize('Tsumego', 'editSettings');
+		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID);
+		if (!$tsumego)
+			throw new NotFoundException('Problem not found');
+		$data = $this->request->data;
+		foreach (['alternative_response' => AdminActivityType::ALTERNATIVE_RESPONSE, 'pass' => AdminActivityType::PASS_MODE] as $field => $activityType)
+		{
+			$value = empty($data[$field]) ? 0 : 1;
+			if ((int) $tsumego['Tsumego'][$field] === $value)
+				continue;
+			AdminActivityLogger::log($activityType, (int) $tsumegoID, null, null, (string) $value);
+			$tsumego['Tsumego'][$field] = $value;
+		}
+		ClassRegistry::init('Tsumego')->save($tsumego, ['fieldList' => ['alternative_response', 'pass']]);
+		if (array_key_exists('variant_type', $data))
+			TsumegoVariant::changeType((int) $tsumegoID, $data['variant_type'] === '' ? null : (int) $data['variant_type']);
+		return $this->redirect($this->referer('/tsumegos/play/' . (int) $tsumegoID, true));
+	}
+
+	//The answers of the problem's multiple choice or score estimating question
+	#[HttpPost]
+	public function variant(string $tsumegoID): CakeResponse
+	{
+		$this->Authorization->authorize('Tsumego', 'editSettings');
+		$variant = ClassRegistry::init('TsumegoVariant')->find('first', ['conditions' => ['tsumego_id' => $tsumegoID]]);
+		if (!$variant)
+			throw new NotFoundException('The problem has no question to answer');
+		$fields = (int) $variant['TsumegoVariant']['tsumego_variant_type_id'] === TsumegoVariant::TYPE_MULTIPLE_CHOICE
+			? ['answer1', 'answer2', 'answer3', 'answer4', 'explanation', 'correct_answer']
+			: ['winner', 'answer1', 'answer2', 'answer3'];
+		foreach ($fields as $field)
+			if (isset($this->request->data[$field]))
+				$variant['TsumegoVariant'][$field] = $this->request->data[$field];
+		ClassRegistry::init('TsumegoVariant')->save($variant);
+		return $this->redirect($this->referer('/tsumegos/play/' . (int) $tsumegoID, true));
 	}
 
 	#[HttpGet]

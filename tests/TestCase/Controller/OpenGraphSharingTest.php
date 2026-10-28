@@ -12,7 +12,7 @@ class OpenGraphSharingTest extends IntegrationTestCase
 		$tsumegoId = $context->tsumegos[0]['id'];
 		$setConnectionId = $context->tsumegos[0]['set-connections'][0]['id'];
 
-		$this->post('tsumegos/play/' . $tsumegoId);
+		$this->get('tsumegos/play/' . $tsumegoId);
 		$body = $this->view;
 
 		$this->assertStringContainsString('<meta property="og:title" content="test set 42/1">', $body);

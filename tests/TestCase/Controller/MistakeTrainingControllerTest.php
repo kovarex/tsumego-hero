@@ -333,7 +333,7 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 		$scId = (int) $context->tsumegos[0]['set-connections'][0]['id'];
 		Auth::saveUserField('mode_id', Constants::$MISTAKE_TRAINING_MODE);
 
-		$this->post('/' . $scId);
+		$this->get('/' . $scId);
 
 		$this->assertFalse(Auth::isInMistakeTrainingMode(),
 			'A plain problem link means normal play, like it does for the other modes');

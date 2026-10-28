@@ -119,7 +119,7 @@ class MistakeTrainingController extends AppController
 		$this->set('canonicalPath', '/' . $setConnectionID);
 		$this->set('_page', 'mistake-training');
 		$this->set('mistakeTrainingReplay', !MistakeTraining::isRowDue($pool));
-		$play->play($setConnectionID, $this->request, $this->request->data);
+		$play->play($setConnectionID, $this->request);
 		$this->render('/Tsumegos/play');
 		return null;
 	}
