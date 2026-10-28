@@ -47,7 +47,7 @@ class TagsIndexTest extends IntegrationTestCase
 				['set_order' => 1, 'tags' => [['name' => 'atari']]],
 				['set_order' => 3, 'tags' => [['name' => 'ko']]]]]);
 
-		$this->get('/tags/problems/' . $context->tsumegos[0]['tags'][0]['id']);
+		$this->get('/tags/problems/' . $context->tsumegos[0]['tags'][0]->id);
 		$problems = json_decode($this->view, true);
 
 		$this->assertSame([
@@ -60,7 +60,7 @@ class TagsIndexTest extends IntegrationTestCase
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
 			'tsumegos' => [['set_order' => 7, 'tags' => [['name' => 'atari']]]]]);
-		$tagId = $context->tsumegos[0]['tags'][0]['id'];
+		$tagId = $context->tsumegos[0]['tags'][0]->id;
 		$browser = Browser::instance();
 		$browser->get('tags');
 
@@ -80,14 +80,14 @@ class TagsIndexTest extends IntegrationTestCase
 		$context = new ContextPreparator([
 			'user' => ['owner' => true],
 			'tsumegos' => [['set_order' => 1, 'tags' => [['name' => 'atari'], ['name' => 'ko']]]]]);
-		$atariId = $context->tsumegos[0]['tags'][0]['id'];
+		$atariId = $context->tsumegos[0]['tags'][0]->id;
 		$browser = Browser::instance();
 		$browser->get('tags');
 
 		$browser->clickIdAndAcceptAlert('tag-delete-' . $atariId);
 		$browser->waitUntilJs('!document.getElementById("tag-' . $atariId . '")');
-		$this->assertCount(1, $browser->getElements('#tag-' . $context->tsumegos[0]['tags'][1]['id']), 'ko is still listed');
-		$this->assertEmpty(ClassRegistry::init('Tag')->findById($atariId));
+		$this->assertCount(1, $browser->getElements('#tag-' . $context->tsumegos[0]['tags'][1]->id), 'ko is still listed');
+		$this->assertFalse($this->fetchTable('Tag')->exists(['id' => $atariId]));
 	}
 
 	public function testOnlyOwnersAreOfferedTheDelete()
@@ -109,7 +109,7 @@ class TagsIndexTest extends IntegrationTestCase
 	public function testProblemsRequireAdmin()
 	{
 		$context = new ContextPreparator(['user' => ['admin' => false], 'tags' => [['name' => 'atari']]]);
-		$this->get('/tags/problems/' . $context->tags[0]['id']);
+		$this->get('/tags/problems/' . $context->tags[0]->id);
 
 		$this->assertResponseCode(403);
 	}
@@ -123,11 +123,11 @@ class TagsIndexTest extends IntegrationTestCase
 				['set_order' => 2, 'tags' => [['name' => 'atari', 'approved' => 0]]]]]);
 		$atari = $context->tsumegos[0]['tags'][0];
 
-		$this->post('/tags/delete/' . $atari['id']);
+		$this->post('/tags/delete/' . $atari->id);
 
 		$this->assertStringEndsWith('/tags', $this->headerValue('Location'));
-		$this->assertEmpty(ClassRegistry::init('Tag')->findById($atari['id']));
-		$this->assertSame(0, $this->fetchTable('TagConnection')->find()->where(['tag_id' => $atari['id']])->count());
+		$this->assertFalse($this->fetchTable('Tag')->exists(['id' => $atari->id]));
+		$this->assertSame(0, $this->fetchTable('TagConnection')->find()->where(['tag_id' => $atari->id])->count());
 		$this->assertSame(1, $this->fetchTable('TagConnection')->find()->count(), 'ko stays on its problem');
 
 		$activity = ClassRegistry::init('AdminActivity')->find('first', ['conditions' => ['type' => AdminActivityType::DELETE_TAG]])['AdminActivity'];
