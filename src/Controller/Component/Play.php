@@ -51,9 +51,9 @@ class Play
 			throw new NotFoundException("Set connection " . $setConnectionID . " wasn't found in the database.");
 		$tsumegoID = (int) $setConnection['SetConnection']['tsumego_id'];
 		//The set connection's foreign key deletes it with its problem
-		$t = TableRegistry::getTableLocator()->get('Tsumego')->get($tsumegoID);
+		$tsumego = TableRegistry::getTableLocator()->get('Tsumego')->get($tsumegoID);
 		//A problem in the trash is gone for everyone but the admins, who can take it back
-		if ($t->deleted !== null && !Auth::isAdmin())
+		if ($tsumego->deleted !== null && !Auth::isAdmin())
 			throw new NotFoundException('Problem not found');
 
 		$set = ClassRegistry::init('Set')->findById($setConnection['SetConnection']['set_id']);
@@ -67,8 +67,8 @@ class Play
 		$amountOfOtherCollection = TsumegoUtil::countTsumegosFromSet((int) $set['Set']['id']);
 		$sgf = self::acceptedSgf($tsumegoID);
 
-		$this->exportOpenGraph($setConnection, $set, $t, $sgf, $amountOfOtherCollection);
-		if (!empty($t->semeai_type))
+		$this->exportOpenGraph($setConnection, $set, $tsumego, $sgf, $amountOfOtherCollection);
+		if (!empty($tsumego->semeai_type))
 		{
 			$this->set('multipleChoiceTriangles', count(Util::getFollowingSgfCoordinates($sgf->sgf, strpos($sgf->sgf, 'TR') + 2)));
 			$this->set('multipleChoiceSquares', count(Util::getFollowingSgfCoordinates($sgf->sgf, strpos($sgf->sgf, 'SQ') + 2)));
@@ -77,7 +77,7 @@ class Play
 
 		$boardSize = self::boardSizeFromSetTitle($set['Set']['title']);
 		$this->exportPlayerColor($request, $sgf->sgf, $tsumegoVariant != null
-			|| ($t->semeai_type ?? 0) != 0
+			|| ($tsumego->semeai_type ?? 0) != 0
 			|| $boardSize != 19
 			|| in_array($set['Set']['id'], self::SETS_PLAYED_AS_BLACK));
 		//The corner is purely a visual mirror, it never affects solving. "Original" shows the
@@ -99,7 +99,7 @@ class Play
 		$this->set('emptyHeart', $maxHealth >= 8 ? 'heart2small' : 'heart2');
 
 		$this->set('isAllowedToContribute', Auth::isLoggedIn() && BasePolicy::canPropose(Auth::getIdentity()));
-		$this->set('isAllowedToTag', Auth::isLoggedIn() && TagConnectionPolicy::canAdd(Auth::getIdentity(), $t));
+		$this->set('isAllowedToTag', Auth::isLoggedIn() && TagConnectionPolicy::canAdd(Auth::getIdentity(), $tsumego));
 		$this->set('canAddMoreTags', Auth::isLoggedIn() && TagConnectionTable::canCurrentUserAddTag());
 		$this->set('tagData', TagTable::getForTsumego($tsumegoID));
 		$this->set('userSetsJson', json_encode(self::playerSets($tsumegoID)));
@@ -120,19 +120,19 @@ class Play
 		$this->set('goldenTsumego', $goldenTsumego);
 		$this->set('sgf', $sgf);
 		$this->set('set', $set);
-		$this->set('t', $t);
+		$this->set('t', $tsumego);
 		$this->set('tsumegoStatus', $tsumegoStatus);
 		$this->set('tv', $tsumegoVariant);
 		$this->set('checkBSize', $boardSize);
 		$this->set('file', 'placeholder2.sgf');
-		$this->set('alternative_response', $t->alternative_response);
-		$this->set('passEnabled', $t->pass);
+		$this->set('alternative_response', $tsumego->alternative_response);
+		$this->set('passEnabled', $tsumego->pass);
 		$this->set('setConnection', $setConnection);
 		$this->set('setConnections', TsumegoUtil::getSetConnectionsWithTitles($tsumegoID));
 		$this->set('tsumegoFilters', $tsumegoFilters);
 		$this->set('queryTitle', $queryTitle);
 		$this->set('amountOfOtherCollection', $amountOfOtherCollection);
-		$this->set('tsumegoXPAndRating', new TsumegoXPAndRating($t, $tsumegoStatus, (int) $setConnection['SetConnection']['id']));
+		$this->set('tsumegoXPAndRating', new TsumegoXPAndRating($tsumego, $tsumegoStatus, (int) $setConnection['SetConnection']['id']));
 	}
 
 	//The sets in which the player is always black: problems where the colors matter for the question
@@ -180,12 +180,12 @@ ORDER BY s.title", [$tsumegoID, Auth::getUserID()]);
 		return array_map(fn($set) => ['id' => $set['id'], 'title' => $set['title'], 'contains' => $set['tsumego_id'] != null], $sets);
 	}
 
-	private function exportOpenGraph(array $setConnection, array $set, Tsumego $t, Sgf $sgf, int $amountOfOtherCollection): void
+	private function exportOpenGraph(array $setConnection, array $set, Tsumego $tsumego, Sgf $sgf, int $amountOfOtherCollection): void
 	{
 		$title = ($set['Set']['title'] ?? '') . ' ' . $setConnection['SetConnection']['num'] . '/' . $amountOfOtherCollection;
 		//The descriptions and the image both use the true colors of the SGF
-		$description = strip_tags($t->description ?? '');
-		$author = $t->author;
+		$description = strip_tags($tsumego->description ?? '');
+		$author = $tsumego->author;
 		if ($author !== '' && $author !== 'Unknown')
 			$description .= ' - by ' . $author;
 		if (trim($description) === '')
@@ -269,7 +269,7 @@ ORDER BY s.title", [$tsumegoID, Auth::getUserID()]);
 		$this->set('swapColors', ($sgfColor === 'W' && $playerColor === 'black') || ($sgfColor === 'B' && $playerColor === 'white'));
 	}
 
-	public static function renderTitle(array $setConnection, array $set, TsumegoFilters $tsumegoFilters, ?TsumegoButtons $tsumegoButtons, int $amountOfOtherCollection, int|float|string|null $difficulty, ?TimeMode $timeMode, string $queryTitle, Tsumego $t): string
+	public static function renderTitle(array $setConnection, array $set, TsumegoFilters $tsumegoFilters, ?TsumegoButtons $tsumegoButtons, int $amountOfOtherCollection, int|float|string|null $difficulty, ?TimeMode $timeMode, string $queryTitle, Tsumego $tsumego): string
 	{
 		if (Auth::isInTimeMode())
 			return '<font size="5px">' . $timeMode?->currentPosition() . ' of ' . $timeMode?->overallCount . '</font>';
