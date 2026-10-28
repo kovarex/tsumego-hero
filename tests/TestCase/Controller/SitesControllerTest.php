@@ -282,6 +282,21 @@ class SitesControllerTest extends IntegrationTestCase
 			'Play button should use default tsumego ID when no lastVisit session exists');
 	}
 
+	//The Rating Mode tile opens the rating mode; it used to open a problem in the level mode.
+	public function testRatingModeTileOpensRatingMode()
+	{
+		$context = new ContextPreparator([
+			'user' => ['rating' => 1000, 'mode' => Constants::$LEVEL_MODE],
+			'tsumegos' => [['rating' => 1000, 'description' => '1000 rating tsumego', 'sets' => [['name' => 'set 1', 'num' => '1']]]]]);
+
+		$browser = Browser::instance();
+		$browser->get('/');
+		$browser->find('.mode-button-rating')->click();
+
+		$this->assertSame('1000 rating tsumego', $browser->find('#descriptionText')->getText());
+		$this->assertSame(Constants::$RATING_MODE, (int) $context->reloadUser()['mode_id']);
+	}
+
 	//Test that quotes with existing images don't use fallback
 	public function testQuoteWithImagesUsesOwnImages()
 	{
