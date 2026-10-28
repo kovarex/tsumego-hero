@@ -27,7 +27,6 @@ namespace App\Utility;
  * @phpstan-type MistakeTrainingReviewRow array{id?: int, user_id?: int, tsumego_id?: int, day?: string, mistake_training_result_id?: int, rung_before?: int, rung_after?: int, xp?: int, created?: string, ...}
  * @phpstan-type ModeRow array{id?: int, name?: string, ...}
  * @phpstan-type PremiumRow array{id?: int, name?: string, ...}
- * @phpstan-type ProgressDeletionRow array{id?: int, user_id?: int, set_id?: int, set_partition?: int|null, created?: string, ...}
  * @phpstan-type RejectRow array{id?: int, reject_type_id?: int, tsumego_id?: int|null, tag_id?: int|null, tag_name?: string|null, sgf_id?: int|null, user_id?: int, rejected_by_user_id?: int|null, comment?: string|null, created?: string, ...}
  * @phpstan-type RejectTypeRow array{id?: int, name?: string, ...}
  * @phpstan-type SetConnectionRow array{id?: int, set_id?: int, tsumego_id?: int, num?: int, created?: string, ...}

@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\ProgressDeletionTable;
 use App\Utility\Auth;
 use App\Utility\CookieFlash;
 use App\Utility\PlayOutcome;
@@ -14,13 +15,13 @@ class ProgressDeletionTest extends IntegrationTestCase
 	{
 		parent::setUp();
 		// small parts, so the tests don't need hundreds of problems (10 is the smallest collection size)
-		$this->originalPartitionSize = ProgressDeletion::$PARTITION_SIZE;
-		ProgressDeletion::$PARTITION_SIZE = 10;
+		$this->originalPartitionSize = ProgressDeletionTable::$PARTITION_SIZE;
+		ProgressDeletionTable::$PARTITION_SIZE = 10;
 	}
 
 	public function tearDown(): void
 	{
-		ProgressDeletion::$PARTITION_SIZE = $this->originalPartitionSize;
+		ProgressDeletionTable::$PARTITION_SIZE = $this->originalPartitionSize;
 		parent::tearDown();
 	}
 
@@ -56,10 +57,10 @@ class ProgressDeletionTest extends IntegrationTestCase
 		$setID = $context->tsumegos[0]['sets'][0]['id'];
 
 		// without the deleted #3, #11 is the 10th problem
-		$this->assertSame(['set_id' => $setID, 'partition' => 0], ProgressDeletion::partitionOf($context->tsumegos[10]['set-connections'][0]['id']));
-		$this->assertSame(['set_id' => $setID, 'partition' => 1], ProgressDeletion::partitionOf($context->tsumegos[11]['set-connections'][0]['id']));
+		$this->assertSame(['set_id' => $setID, 'partition' => 0], ProgressDeletionTable::partitionOf($context->tsumegos[10]['set-connections'][0]['id']));
+		$this->assertSame(['set_id' => $setID, 'partition' => 1], ProgressDeletionTable::partitionOf($context->tsumegos[11]['set-connections'][0]['id']));
 		// not the set connection of the given problem
-		$this->assertNull(ProgressDeletion::partitionOf($context->tsumegos[11]['set-connections'][0]['id'], $context->tsumegos[0]['id']));
+		$this->assertNull(ProgressDeletionTable::partitionOf($context->tsumegos[11]['set-connections'][0]['id'], $context->tsumegos[0]['id']));
 	}
 
 	public function testCountsTheResetsOfThePartInTheLastMonth(): void
@@ -76,9 +77,9 @@ class ProgressDeletionTest extends IntegrationTestCase
 				['set' => 'big set', 'partition' => 0, 'created' => self::now(), 'user' => 'other']]]);
 		$setID = $context->tsumegos[0]['sets'][0]['id'];
 
-		$this->assertSame(1, ProgressDeletion::countRecent($context->user['id'], $setID, 0));
-		$this->assertSame(2, ProgressDeletion::countRecent($context->user['id'], $setID, 1));
-		$this->assertSame(0, ProgressDeletion::countRecent($context->user['id'], $setID, 2));
+		$this->assertSame(1, ProgressDeletionTable::countRecent($context->user['id'], $setID, 0));
+		$this->assertSame(2, ProgressDeletionTable::countRecent($context->user['id'], $setID, 1));
+		$this->assertSame(0, ProgressDeletionTable::countRecent($context->user['id'], $setID, 2));
 	}
 
 	public function testOldResetsWithoutPartCountForTheWholeSet(): void
@@ -88,8 +89,8 @@ class ProgressDeletionTest extends IntegrationTestCase
 			'progress-deletions' => [['set' => 'big set', 'created' => self::now()]]]);
 		$setID = $context->tsumegos[0]['sets'][0]['id'];
 
-		$this->assertSame(1, ProgressDeletion::countRecent($context->user['id'], $setID, 0));
-		$this->assertSame(1, ProgressDeletion::countRecent($context->user['id'], $setID, 1));
+		$this->assertSame(1, ProgressDeletionTable::countRecent($context->user['id'], $setID, 0));
+		$this->assertSame(1, ProgressDeletionTable::countRecent($context->user['id'], $setID, 1));
 	}
 
 	// Gokyo Shumyo IV #2 got 1/100: it is also in Tsumego Master, and both sets have two parts.
@@ -200,9 +201,9 @@ class ProgressDeletionTest extends IntegrationTestCase
 
 		$statuses = ClassRegistry::init('TsumegoStatus')->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
 		$this->assertCount(10, $statuses, 'Only #11 and #12 (the second part) are reset');
-		$progressDeletion = ClassRegistry::init('ProgressDeletion')->find('first');
-		$this->assertSame($setID, $progressDeletion['ProgressDeletion']['set_id']);
-		$this->assertSame(1, $progressDeletion['ProgressDeletion']['set_partition']);
+		$progressDeletion = $this->fetchTable('ProgressDeletion')->find()->firstOrFail();
+		$this->assertSame($setID, $progressDeletion->set_id);
+		$this->assertSame(1, $progressDeletion->set_partition);
 	}
 
 	public function testResetIsRefusedWithRankOrTagFilters(): void
@@ -217,7 +218,7 @@ class ProgressDeletionTest extends IntegrationTestCase
 
 			$this->assertSame('Reset is only possible without rank and tag filters', CookieFlash::get(), json_encode($filter));
 			$this->assertCount(12, ClassRegistry::init('TsumegoStatus')->find('all'), json_encode($filter));
-			$this->assertEmpty(ClassRegistry::init('ProgressDeletion')->find('all'), json_encode($filter));
+			$this->assertSame(0, $this->fetchTable('ProgressDeletion')->find()->count(), json_encode($filter));
 		}
 	}
 

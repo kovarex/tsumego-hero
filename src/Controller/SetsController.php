@@ -1,6 +1,7 @@
 <?php
 
 use App\Lib\Error\ConflictException;
+use App\Model\Table\ProgressDeletionTable;
 use App\Utility\AchievementChecker;
 use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
@@ -834,7 +835,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$this->loadModel('Tsumego');
 		$this->loadModel('TsumegoStatus');
 		$this->loadModel('TsumegoAttempt');
-		$this->loadModel('ProgressDeletion');
 		$this->loadModel('Achievement');
 		$this->loadModel('Sgf');
 		$this->loadModel('SetConnection');
@@ -1030,7 +1030,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		if (Auth::isLoggedIn() && $tsumegoFilters->query == 'topics')
 		{
 			// the resets of this part of the set, the same count that reduces the XP of its problems
-			$pdCounter = ProgressDeletion::countRecent(Auth::getUserID(), (int) $id, $partition);
+			$pdCounter = ProgressDeletionTable::countRecent(Auth::getUserID(), (int) $id, $partition);
 			$urSecCounter = 0;
 			$urSecAvg = 0;
 			$pSsum = 0;
@@ -1134,11 +1134,11 @@ ORDER BY sc.num ASC", [(int) $id]);
 			return $this->redirect($redirectUrl);
 		}
 
-		// a reset clears one part of the set, the same for everybody (see ProgressDeletion::$PARTITION_SIZE)
+		// a reset clears one part of the set, the same for everybody (see ProgressDeletionTable::$PARTITION_SIZE)
 		$tsumegoFilters = new TsumegoFilters();
-		if ($tsumegoFilters->collectionSize != ProgressDeletion::$PARTITION_SIZE)
+		if ($tsumegoFilters->collectionSize != ProgressDeletionTable::$PARTITION_SIZE)
 		{
-			CookieFlash::set('Reset is only possible for collection size ' . ProgressDeletion::$PARTITION_SIZE, 'error');
+			CookieFlash::set('Reset is only possible for collection size ' . ProgressDeletionTable::$PARTITION_SIZE, 'error');
 			return $this->redirect($redirectUrl);
 		}
 		if ($tsumegoFilters->hasProblemFilters())
@@ -1160,12 +1160,11 @@ ORDER BY sc.num ASC", [(int) $id]);
 		Util::query("
 DELETE tsumego_status FROM tsumego_status
 WHERE tsumego_status.user_id = ? AND tsumego_status.tsumego_id IN(" . implode(',', $tsumegoIDToClear) . ")", [Auth::getUserID()]);
-		$progresDeletion = [];
-		$progresDeletion['user_id'] = Auth::getUserID();
-		$progresDeletion['set_id'] = $setID;
-		$progresDeletion['set_partition'] = $partition - 1;
-		ClassRegistry::init('ProgressDeletion')->create();
-		ClassRegistry::init('ProgressDeletion')->save($progresDeletion);
+		$progressDeletionTable = $this->fetchTable('ProgressDeletion');
+		$progressDeletionTable->saveOrFail($progressDeletionTable->newEntity([
+			'user_id' => Auth::getUserID(),
+			'set_id' => $setID,
+			'set_partition' => $partition - 1]));
 		return $this->redirect($redirectUrl);
 	}
 

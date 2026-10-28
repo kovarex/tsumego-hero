@@ -770,13 +770,13 @@ class ContextPreparator
 	{
 		foreach ($progressDeletions as $progressDeletionInput)
 		{
-			ClassRegistry::init('ProgressDeletion')->create();
 			$progressDeletion = [];
 			$progressDeletion['user_id'] = !empty($progressDeletionInput['user']) ? ClassRegistry::init('User')->find('first', ['conditions' => ['name' => $progressDeletionInput['user']]])['User']['id'] : $this->user['id'];
 			$progressDeletion['set_id'] = $this->getOrCreateTsumegoSet($progressDeletionInput['set'])['id'];
 			$progressDeletion['set_partition'] = $progressDeletionInput['partition'] ?? null; // 0 based, null for the old records without it
 			$progressDeletion['created'] = $progressDeletionInput['created'];
-			ClassRegistry::init('ProgressDeletion')->save($progressDeletion);
+			$progressDeletionTable = TableRegistry::getTableLocator()->get('ProgressDeletion');
+			$progressDeletionTable->saveOrFail($progressDeletionTable->newEntity($progressDeletion));
 		}
 	}
 
