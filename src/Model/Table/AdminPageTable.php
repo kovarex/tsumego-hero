@@ -1,16 +1,18 @@
 <?php
 
+namespace App\Model\Table;
+
 use App\Utility\Util;
+use Sgf;
 
 //A page of the admin area (see AdminController) whose link counts what is new since the admin last
 //opened it. When that was is a row of admin_page_view for each admin and page. An admin who never
 //opened a page has nothing new there yet, the counting starts with the first visit.
-class AdminPage extends AppModel
+class AdminPageTable extends AppTable
 {
+	// the rows of admin_page
 	public const ACTIVITY = 1;
 	public const SGF_CHANGES = 2;
-
-	public $useTable = 'admin_page';
 
 	//Remembers that the admin opened the page now.
 	//Returns when they opened it the time before, null the first time

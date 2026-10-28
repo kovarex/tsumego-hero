@@ -26,7 +26,7 @@ class SgfChangesRenderer extends DataTableRenderer
 	//The columns of a user the rows have twice, the admin who accepted the change and its author
 	private const USER_FIELDS = ['id', 'display_name', 'external_id', 'picture', 'email', 'avatar_setting_id', 'uploaded_avatar_hash', 'rating', 'deleted'];
 
-	//$newSince: When the admin looked the time before (see AdminPage::markViewed),
+	//$newSince: When the admin looked the time before (see AdminPageTable::markViewed),
 	//what the others accepted since then is marked as new
 	/** @throws \BadRequestException When the url names a list the page doesn't have */
 	public function __construct(array $urlParams, private ?string $newSince = null)

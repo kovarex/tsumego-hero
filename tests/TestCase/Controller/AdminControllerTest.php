@@ -1,9 +1,10 @@
 <?php
 
+use App\Model\Table\AdminPageTable;
 use App\Utility\Util;
 
 //The admin page links everything an admin does and counts what waits there (AdminController),
-//the admin activity and the SGF changes count what is new since the admin last opened them (AdminPage).
+//the admin activity and the SGF changes count what is new since the admin last opened them (AdminPageTable).
 class AdminControllerTest extends IntegrationTestCase
 {
 	private const SGF = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])';
@@ -96,7 +97,7 @@ class AdminControllerTest extends IntegrationTestCase
 
 		$this->get('/admin/activity');
 		$this->assertStringNotContainsString('data-table__row--new', $this->view, 'the first look marks nothing');
-		self::viewedAnHourAgo(AdminPage::ACTIVITY);
+		self::viewedAnHourAgo(AdminPageTable::ACTIVITY);
 		self::logActivity($otherID);
 		self::logActivity($context->user['id']); // what the admin did is not new to them
 		$this->assertSame(2, $this->countOnLink('/admin/activity'));
@@ -124,7 +125,7 @@ class AdminControllerTest extends IntegrationTestCase
 		[$colleagueID, $proposerID] = array_map('intval', array_column($context->otherUsers, 'id'));
 
 		$this->get('/admin/sgf-changes');
-		self::viewedAnHourAgo(AdminPage::SGF_CHANGES);
+		self::viewedAnHourAgo(AdminPageTable::SGF_CHANGES);
 		Util::execute('UPDATE sgf SET user_id = ?, accepted_by_user_id = ? WHERE id IN (?, ?)', [$colleagueID, $colleagueID, $oldChange, $change]);
 		Util::execute('UPDATE sgf SET user_id = ? WHERE id IN (?, ?, ?)', [$proposerID, $acceptedByMe, $proposal, $rejected]);
 		Util::execute('UPDATE sgf SET accepted = NOW() - INTERVAL 2 HOUR WHERE id = ?', [$oldChange]);
