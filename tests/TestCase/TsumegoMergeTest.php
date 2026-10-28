@@ -132,9 +132,9 @@ class TsumegoMergeTest extends IntegrationTestCase
 			$this->assertSame($context->tsumegos[0]['id'], $timeModeAttempts[0]->tsumego_id);
 
 			// issues got merged
-			$issues = ClassRegistry::init('TsumegoIssue')->find('all');
+			$issues = $this->fetchTable('TsumegoIssue')->find()->toArray();
 			$this->assertSame(1, count($issues));
-			$this->assertSame($context->tsumegos[0]['id'], $issues[0]['TsumegoIssue']['tsumego_id']);
+			$this->assertSame($context->tsumegos[0]['id'], $issues[0]->tsumego_id);
 
 			// admin activity log was created
 			$adminActivities = $this->fetchTable('AdminActivity')->find()->orderBy('id')->toArray();
