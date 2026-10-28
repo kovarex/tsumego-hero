@@ -2,7 +2,6 @@
 
 //Server-side auth guards: anonymous -> 401, logged-in-without-permission -> 403.
 use App\Utility\Constants;
-use App\Utility\Util;
 
 class AdminGuardTest extends IntegrationTestCase
 {
@@ -74,7 +73,7 @@ class AdminGuardTest extends IntegrationTestCase
 		$this->logout();
 		$this->post($url, ['reviewed' => 1]);
 		$this->assertResponseCode(401);
-		$this->assertSame(0, (int) Util::query('SELECT COUNT(*) AS total FROM sgf_review')[0]['total']);
+		$this->assertSame(0, $this->fetchTable('SgfReview')->find()->count());
 	}
 
 	public function testUserstatsRequiresLogin()
