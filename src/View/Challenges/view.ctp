@@ -1,21 +1,23 @@
 <?php
 
+use App\Model\Table\ChallengeTable;
+
 /**
  * The page of a challenge: what is played, the table of its players and a way in for the ones who
  * aren't in yet. How every player did with each problem shows to the players who finished their own
  * run, so nobody sees the problems before they play them.
  *
  * @var View $this
- * @var array $challenge What Challenge::withDetails() returned
- * @var array $standings What Challenge::standings() returned
+ * @var array $challenge What ChallengeTable::withDetails() returned
+ * @var array $standings What ChallengeTable::standings() returned
  * @var bool $isParticipant In the challenge and not declined
  * @var bool $hasDeclined The viewer declined the challenge
  * @var array|null $myRun The row of the viewer in $standings
  * @var bool $isFull The viewer isn't in the challenge and there is no room for them
  * @var string $joinUrl The link of the challenge to send around
  * @var bool $showResults Whether the viewer sees how everyone did with each problem
- * @var array<int, App\Utility\TsumegoButton> $problemButtons What Challenge::problemButtons() returned, when $showResults
- * @var array $attemptsByRun What Challenge::attemptsByRun() returned, when $showResults
+ * @var array<int, App\Utility\TsumegoButton> $problemButtons What ChallengeTable::problemButtons() returned, when $showResults
+ * @var array $attemptsByRun What ChallengeTable::attemptsByRun() returned, when $showResults
  * @var int|null $otherChallengeInProgressID Another challenge whose run the viewer is in the middle of
  */
 
@@ -23,14 +25,14 @@ use App\Utility\Auth;
 use App\Utility\Util;
 
 $challengeId = (int) $challenge['id'];
-$finishedCount = count(array_filter($standings, fn(array $row) => $row['run'] === Challenge::RUN_FINISHED));
+$finishedCount = count(array_filter($standings, fn(array $row) => $row['run'] === ChallengeTable::RUN_FINISHED));
 $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queued' => ''];
 ?>
 <div class="challenges">
 	<div class="challenges__header">
 		<p class="challenges__crumb"><a href="/challenges">Challenges</a></p>
-		<h1 class="challenges__title"><?= h(Challenge::title($challenge)) ?></h1>
-		<p class="challenges__settings" id="challenge-settings"><?= h(Challenge::describe($challenge)) ?></p>
+		<h1 class="challenges__title"><?= h(ChallengeTable::title($challenge)) ?></h1>
+		<p class="challenges__settings" id="challenge-settings"><?= h(ChallengeTable::describe($challenge)) ?></p>
 		<p class="hint">by <?= User::renderLink($challenge) ?>,
 			<time datetime="<?= Util::toIso8601($challenge['created']) ?>" data-format="datetime"><?= h($challenge['created']) ?></time></p>
 	</div>
@@ -39,8 +41,8 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 		<?php if (!Auth::isLoggedIn()): ?>
 		<p><a href="/users/login">Sign in</a> to join the challenge.</p>
 		<?php elseif ($isFull): ?>
-		<p>The challenge is full, <?= Challenge::MAXIMUM_PARTICIPANTS ?> players are in it already.</p>
-		<?php elseif ($myRun === null || $myRun['run'] === Challenge::RUN_NOT_STARTED): ?>
+		<p>The challenge is full, <?= ChallengeTable::MAXIMUM_PARTICIPANTS ?> players are in it already.</p>
+		<?php elseif ($myRun === null || $myRun['run'] === ChallengeTable::RUN_NOT_STARTED): ?>
 		<?php if ($hasDeclined): ?>
 		<p id="challenge-declined"><strong>You declined this challenge.</strong> You can still change your mind and play it.</p>
 		<?php endif; ?>
@@ -58,12 +60,12 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 			<form method="post" action="/challenges/decline/<?= $challengeId ?>" onsubmit="return confirm('Decline the challenge?');"><button class="btn btn--neutral" type="submit" id="challenge-decline">Decline</button></form>
 			<?php endif; ?>
 		</span>
-		<?php elseif ($myRun['run'] === Challenge::RUN_PLAYING): ?>
+		<?php elseif ($myRun['run'] === ChallengeTable::RUN_PLAYING): ?>
 		<p>You are in the middle of your run, <?= (int) $myRun['played_count'] ?> of <?= (int) $challenge['problem_count'] ?> problems played.</p>
 		<a class="btn btn--success" href="/timeMode/play" id="challenge-continue">Continue</a>
 		<?php else: ?>
 		<p id="challenge-my-result">You are <strong><?= Util::ordinal((int) $myRun['place']) ?></strong> of <?= $finishedCount ?>
-			with <strong><?= Challenge::formatPoints($myRun['points']) ?></strong> points,
+			with <strong><?= ChallengeTable::formatPoints($myRun['points']) ?></strong> points,
 			<?= $myRun['solved_count'] ?> of <?= (int) $challenge['problem_count'] ?> problems solved.</p>
 		<?php endif; ?>
 	</section>
@@ -87,26 +89,26 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 				<tbody>
 					<?php foreach ($standings as $row): ?>
 					<tr class="challenges__standing<?= Auth::isLoggedIn() && (int) $row['user_id'] === Auth::getUserID() ? ' challenges__standing--me' : '' ?>" data-user-id="<?= (int) $row['user_id'] ?>">
-						<?php if ($row['run'] === Challenge::RUN_FINISHED): ?>
+						<?php if ($row['run'] === ChallengeTable::RUN_FINISHED): ?>
 						<td class="challenges__place"><?= (int) $row['place'] ?></td>
 						<td class="challenges__player"><?= User::renderLink($row) ?></td>
-						<td class="challenges__points"><?= Challenge::formatPoints($row['points']) ?></td>
+						<td class="challenges__points"><?= ChallengeTable::formatPoints($row['points']) ?></td>
 						<td><?= $row['solved_count'] ?>/<?= (int) $challenge['problem_count'] ?></td>
-						<td><?= Challenge::formatSeconds($row['seconds']) ?></td>
+						<td><?= ChallengeTable::formatSeconds($row['seconds']) ?></td>
 						<?php else: ?>
 						<td></td>
 						<td class="challenges__player"><?= User::renderLink($row) ?></td>
-						<td colspan="3" class="hint"><?= $row['run'] === Challenge::RUN_PLAYING
+						<td colspan="3" class="hint"><?= $row['run'] === ChallengeTable::RUN_PLAYING
 							? 'playing, ' . $row['played_count'] . '/' . (int) $challenge['problem_count']
-							: ($row['run'] === Challenge::RUN_DECLINED ? 'declined' : 'not played yet') ?></td>
+							: ($row['run'] === ChallengeTable::RUN_DECLINED ? 'declined' : 'not played yet') ?></td>
 						<?php endif; ?>
 						<?php foreach (array_keys($problemButtons) as $order): ?>
 						<?php
 							$attempt = $row['session_id'] === null ? null : ($attemptsByRun[(int) $row['session_id']][$order] ?? null);
 							$status = $attempt['status'] ?? 'queued';
 						?>
-						<td class="challenges__cell challenges__cell--<?= h($status) ?>"<?= $attempt !== null && $attempt['seconds'] !== null ? ' title="' . Challenge::formatSeconds($attempt['seconds']) . '"' : '' ?>>
-							<?= $status === 'solved' ? Challenge::formatPoints((float) $attempt['points']) : $cellSymbols[$status] ?? '' ?>
+						<td class="challenges__cell challenges__cell--<?= h($status) ?>"<?= $attempt !== null && $attempt['seconds'] !== null ? ' title="' . ChallengeTable::formatSeconds($attempt['seconds']) . '"' : '' ?>>
+							<?= $status === 'solved' ? ChallengeTable::formatPoints((float) $attempt['points']) : $cellSymbols[$status] ?? '' ?>
 						</td>
 						<?php endforeach; ?>
 					</tr>

@@ -78,10 +78,8 @@ class PersonalCollectionContentTest extends IntegrationTestCase
 			. '&rankID=' . $context->timeModeRanks[0]['id']);
 
 		$sessionID = $this->fetchTable('TimeModeSession')->find()->where(['user_id' => $context->user['id']])->firstOrFail()->id;
-		$attempts = ClassRegistry::init('TimeModeAttempt')->find('all', [
-			'conditions' => ['time_mode_session_id' => $sessionID],
-		]);
-		$attemptTsumegoIds = array_map(fn($attempt) => (int) $attempt['TimeModeAttempt']['tsumego_id'], $attempts);
+		$attempts = $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $sessionID])->toArray();
+		$attemptTsumegoIds = array_map(fn($attempt) => (int) $attempt->tsumego_id, $attempts);
 
 		$this->assertContains($officialTsumegoId, $attemptTsumegoIds);
 		$this->assertNotContains($playerTsumegoId, $attemptTsumegoIds);

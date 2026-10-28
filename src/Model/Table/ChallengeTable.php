@@ -1,12 +1,16 @@
 <?php
 
+namespace App\Model\Table;
+
+use App\Model\Entity\Challenge;
 use App\Model\Entity\TimeModeSession;
-use App\Model\Table\ClassroomTable;
 use App\Utility\TimeMode;
 use App\Utility\TimeModeUtil;
 use App\Utility\TsumegoButton;
 use App\Utility\Util;
 use Cake\ORM\TableRegistry;
+use ClassRegistry;
+use Sgf;
 
 //A challenge between players: one player picks a range of difficulty, the time for a problem and
 //how many problems, the site draws the problems, and every player in the challenge plays the same
@@ -16,10 +20,8 @@ use Cake\ORM\TableRegistry;
 //another participant invited, and anyone who opened its link and joined. A player who hasn't
 //started their run can decline the challenge; the row stays, so the others see it and nobody
 //invites them again, and the player can still change their mind and play.
-class Challenge extends AppModel
+class ChallengeTable extends AppTable
 {
-	public $useTable = 'challenge';
-
 	//The times for a problem to choose from, in seconds.
 	public const SECONDS_PER_PROBLEM_CHOICES = [15, 30, 45, 60, 90, 120, 180, 240, 300, 600, 1800];
 	public const DEFAULT_SECONDS_PER_PROBLEM = 60;
@@ -46,15 +48,15 @@ class Challenge extends AppModel
 			return null;
 		shuffle($tsumegos);
 
-		$challengeModel = ClassRegistry::init('Challenge');
-		$challengeModel->create();
-		$challengeModel->save([
+		$challengeTable = TableRegistry::getTableLocator()->get('Challenge');
+		/** @var Challenge $challenge */
+		$challenge = $challengeTable->saveOrFail($challengeTable->newEntity([
 			'created_by_user_id' => $creatorUserId,
 			'minimum_time_mode_rank_id' => $minimumTimeModeRankId,
 			'maximum_time_mode_rank_id' => $maximumTimeModeRankId,
 			'seconds_per_problem' => $secondsPerProblem,
-		]);
-		$challengeId = (int) $challengeModel->id;
+		]));
+		$challengeId = $challenge->id;
 
 		foreach (array_slice($tsumegos, 0, $problemCount) as $index => $tsumego)
 			Util::execute('INSERT INTO challenge_problem (challenge_id, tsumego_id, `order`) VALUES (?, ?, ?)',

@@ -113,36 +113,36 @@ class TsumegoButtons extends ArrayObject
 		$this->updateHighestTsumegoOrder();
 	}
 
-	//Loads the current SGF of the buttons that don't have it yet, in one query. A collection is
-	//filled without them, as only the shown buttons need them for their previews: one page of a
-	//set, or the dozen around the opened problem on the play page, not the whole set.
-	public function loadSgfs(): void
+	//Loads the stored preview of the current version of the buttons that have none yet, in one query.
+	//A collection is filled without them, as only the shown buttons need them: one page of a set, or
+	//the dozen around the opened problem on the play page, not the whole set.
+	public function loadPreviews(): void
 	{
 		$tsumegoIDs = [];
 		foreach ($this as $tsumegoButton)
-			if ($tsumegoButton->sgf === null)
+			if ($tsumegoButton->preview === null && $tsumegoButton->sgf === null)
 				$tsumegoIDs[] = $tsumegoButton->tsumegoID;
 		if (empty($tsumegoIDs))
 			return;
-		$sgfs = self::currentSgfs($tsumegoIDs);
+		$previews = self::currentPreviews($tsumegoIDs);
 		foreach ($this as $tsumegoButton)
-			if ($tsumegoButton->sgf === null)
-				$tsumegoButton->sgf = $sgfs[$tsumegoButton->tsumegoID] ?? '';
+			if ($tsumegoButton->preview === null && $tsumegoButton->sgf === null)
+				$tsumegoButton->preview = $previews[$tsumegoButton->tsumegoID] ?? '';
 	}
 
 	/**
-	 * The current (latest accepted) SGF of each of the tsumegos.
+	 * The stored preview of the current (latest accepted) version of each of the tsumegos.
 	 * @param int[] $tsumegoIDs
 	 * @return array<int, string> by tsumego id, a tsumego without an accepted version is left out
 	 */
-	public static function currentSgfs(array $tsumegoIDs): array
+	public static function currentPreviews(array $tsumegoIDs): array
 	{
-		$rows = Util::query('SELECT sgf.tsumego_id, sgf.sgf FROM sgf'
+		$rows = Util::query('SELECT sgf.tsumego_id, sgf.preview FROM sgf'
 			. ' JOIN (SELECT MAX(id) AS id FROM sgf WHERE tsumego_id IN (' . implode(',', array_map('intval', array_unique($tsumegoIDs))) . ')'
 			. ' AND sgf_status_id = ' . Sgf::STATUS_ACCEPTED . ' GROUP BY tsumego_id) current_sgf ON current_sgf.id = sgf.id');
 		$result = [];
 		foreach ($rows as $row)
-			$result[(int) $row['tsumego_id']] = (string) $row['sgf'];
+			$result[(int) $row['tsumego_id']] = (string) $row['preview'];
 		return $result;
 	}
 

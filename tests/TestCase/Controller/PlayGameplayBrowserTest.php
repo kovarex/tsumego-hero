@@ -1072,8 +1072,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$this->assertSame("Time's up!", trim($browser->findById('status')->getText()));
 		$this->assertSame(
 			TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT,
-			(int) ClassRegistry::init('TimeModeAttempt')->find('first', [
-				'conditions' => ['time_mode_session_id' => $context->timeModeSessions[0]->id, 'order' => 1]])['TimeModeAttempt']['time_mode_attempt_status_id']);
+			(int) $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $context->timeModeSessions[0]->id, 'order' => 1])->first()->time_mode_attempt_status_id);
 	}
 
 	public function testTimeModeCountsTheProblemBeingSolvedWhileTheSolveIsStillOnItsWay(): void
@@ -1114,11 +1113,10 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$browser->waitUntilJs('window.problemSolved === true');
 		$browser->waitForSubmitResult();
 
-		$attempt = ClassRegistry::init('TimeModeAttempt')->find('first', [
-			'conditions' => ['time_mode_session_id' => $context->timeModeSessions[0]->id, 'order' => 1]]);
-		$this->assertGreaterThanOrEqual(2, (float) $attempt['TimeModeAttempt']['seconds'],
+		$attempt = $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $context->timeModeSessions[0]->id, 'order' => 1])->first();
+		$this->assertGreaterThanOrEqual(2, (float) $attempt->seconds,
 			'A solve is worth at least the time it took to play the first move');
-		$this->assertLessThan(99, (float) $attempt['TimeModeAttempt']['points'],
+		$this->assertLessThan(99, (float) $attempt->points,
 			'The bonus seconds cannot buy the maximum score');
 	}
 
@@ -1138,9 +1136,8 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$browser->waitUntilJs('window.problemSolved === true');
 		$browser->waitForSubmitResult();
 
-		$attempt = ClassRegistry::init('TimeModeAttempt')->find('first', [
-			'conditions' => ['time_mode_session_id' => $context->timeModeSessions[0]->id, 'order' => 1]]);
-		$this->assertGreaterThanOrEqual(2, (float) $attempt['TimeModeAttempt']['seconds'],
+		$attempt = $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $context->timeModeSessions[0]->id, 'order' => 1])->first();
+		$this->assertGreaterThanOrEqual(2, (float) $attempt->seconds,
 			'The two seconds without a single tick are part of the recorded time');
 	}
 
@@ -1155,12 +1152,11 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$browser->waitUntilJs('document.body.textContent.indexOf("Finishing your session") !== -1');
 
 		// the result of the last problem arrives
-		$attempt = ClassRegistry::init('TimeModeAttempt')->find('first', [
-			'conditions' => ['time_mode_session_id' => $sessionID, 'order' => 2]]);
-		$attempt['TimeModeAttempt']['time_mode_attempt_status_id'] = TimeModeUtil::$ATTEMPT_RESULT_SOLVED;
-		$attempt['TimeModeAttempt']['seconds'] = 10;
-		$attempt['TimeModeAttempt']['points'] = 50;
-		ClassRegistry::init('TimeModeAttempt')->save($attempt);
+		$attempt = $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $sessionID, 'order' => 2])->first();
+		$attempt->time_mode_attempt_status_id = TimeModeUtil::$ATTEMPT_RESULT_SOLVED;
+		$attempt->seconds = '10';
+		$attempt->points = '50';
+		$this->fetchTable('TimeModeAttempt')->saveOrFail($attempt);
 
 		// the page asks again on its own
 		$browser->waitUntilJs('document.body.textContent.indexOf("Time Mode Results") !== -1');
@@ -1250,8 +1246,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 
 		$playTitle = fn() => (string) $browser->driver->executeScript('return document.getElementById("playTitle").textContent;');
 		$status = fn() => (string) $browser->driver->executeScript('return document.getElementById("status").textContent;');
-		$attempt = fn(int $order) => ClassRegistry::init('TimeModeAttempt')->find('first', [
-			'conditions' => ['time_mode_session_id' => $sessionID, 'order' => $order]])['TimeModeAttempt'];
+		$attempt = fn(int $order) => $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $sessionID, 'order' => $order])->first();
 
 		$browser->get('/timeMode/play');
 		$this->waitForBoard($browser);
@@ -1265,8 +1260,8 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$browser->waitForSubmitResult();
 		$browser->dismissAchievementPopups();
 		$this->assertStringContainsString('Correct', $status());
-		$this->assertSame(TimeModeUtil::$ATTEMPT_RESULT_SOLVED, (int) $attempt(1)['time_mode_attempt_status_id']);
-		$this->assertGreaterThan(0, (int) $attempt(1)['points'], 'A solved problem scores');
+		$this->assertSame(TimeModeUtil::$ATTEMPT_RESULT_SOLVED, (int) $attempt(1)->time_mode_attempt_status_id);
+		$this->assertGreaterThan(0, (int) $attempt(1)->points, 'A solved problem scores');
 
 		$browser->clickId('besogo-next-button');
 		$browser->waitUntilJs('location.pathname === "/timeMode/play/2"');
@@ -1277,8 +1272,8 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$browser->clickBoard(2, 1);
 		$browser->waitUntilJs('document.getElementById("status").textContent.indexOf("Incorrect") !== -1');
 		$browser->waitForSubmitResult();
-		$this->assertSame(TimeModeUtil::$ATTEMPT_RESULT_FAILED, (int) $attempt(2)['time_mode_attempt_status_id']);
-		$this->assertSame(0, (int) $attempt(2)['points'], 'A misplayed problem scores nothing');
+		$this->assertSame(TimeModeUtil::$ATTEMPT_RESULT_FAILED, (int) $attempt(2)->time_mode_attempt_status_id);
+		$this->assertSame(0, (int) $attempt(2)->points, 'A misplayed problem scores nothing');
 
 		$browser->clickId('besogo-next-button');
 		$browser->waitUntilJs('location.pathname === "/timeMode/play/3"');
@@ -1288,12 +1283,12 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		// the third problem is given up on, which brings up the last one that ran out of time
 		$browser->clickId('besogo-next-button');
 		$browser->waitUntilJs('location.pathname === "/timeMode/result/' . $sessionID . '"');
-		$this->assertSame(TimeModeUtil::$ATTEMPT_STATUS_SKIPPED, (int) $attempt(3)['time_mode_attempt_status_id']);
-		$this->assertSame(0, (int) $attempt(3)['points'], 'A problem given up on scores nothing');
-		$this->assertSame(TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT, (int) $attempt(4)['time_mode_attempt_status_id']);
-		$this->assertSame($categorySeconds, (int) $attempt(4)['seconds'],
+		$this->assertSame(TimeModeUtil::$ATTEMPT_STATUS_SKIPPED, (int) $attempt(3)->time_mode_attempt_status_id);
+		$this->assertSame(0, (int) $attempt(3)->points, 'A problem given up on scores nothing');
+		$this->assertSame(TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT, (int) $attempt(4)->time_mode_attempt_status_id);
+		$this->assertSame($categorySeconds, (int) $attempt(4)->seconds,
 			'A problem left behind is recorded with the time it was given');
-		$this->assertSame(0, (int) $attempt(4)['points'], 'A problem that ran out of time scores nothing');
+		$this->assertSame(0, (int) $attempt(4)->points, 'A problem that ran out of time scores nothing');
 
 		foreach ([1, 2, 3, 4] as $order)
 		{
@@ -1315,7 +1310,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		// the session is closed with the outcome and the score the page showed
 		$session = $this->fetchTable('TimeModeSession')->get($sessionID);
 		$this->assertSame(TimeModeUtil::$SESSION_STATUS_FAILED, $session->time_mode_session_status_id);
-		$this->assertSame((int) $attempt(1)['points'], (int) $session->points,
+		$this->assertSame((int) $attempt(1)->points, (int) $session->points,
 			'The score of the session is what its problems were worth');
 	}
 
@@ -1340,10 +1335,9 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 
 		// the player comes to the problem with only a moment of its time left: the clock is
 		// handed back here, because getting the browser up takes longer than that moment
-		$attempt = ClassRegistry::init('TimeModeAttempt')->find('first', [
-			'conditions' => ['time_mode_session_id' => $sessionID, 'order' => 1]]);
-		$attempt['TimeModeAttempt']['started'] = date('Y-m-d H:i:s', time() - ($categorySeconds - 5));
-		ClassRegistry::init('TimeModeAttempt')->save($attempt);
+		$attempt = $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $sessionID, 'order' => 1])->first();
+		$attempt->started = new DateTimeImmutable(date('Y-m-d H:i:s', time() - ($categorySeconds - 5)));
+		$this->fetchTable('TimeModeAttempt')->saveOrFail($attempt);
 
 		$browser->get('/timeMode/play');
 		$this->waitForBoard($browser);
@@ -1354,12 +1348,11 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$browser->waitUntilJs('document.getElementById("status").textContent.indexOf("Time\'s up!") !== -1', 15);
 		$browser->waitForSubmitResult();
 
-		$attempt = ClassRegistry::init('TimeModeAttempt')->find('first', [
-			'conditions' => ['time_mode_session_id' => $sessionID, 'order' => 1]])['TimeModeAttempt'];
-		$this->assertSame(TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT, (int) $attempt['time_mode_attempt_status_id']);
-		$this->assertSame($categorySeconds, (int) $attempt['seconds'],
+		$attempt = $this->fetchTable('TimeModeAttempt')->find()->where(['time_mode_session_id' => $sessionID, 'order' => 1])->first();
+		$this->assertSame(TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT, $attempt->time_mode_attempt_status_id);
+		$this->assertSame($categorySeconds, (int) $attempt->seconds,
 			'Running out of time is recorded with the time the problem was given');
-		$this->assertSame(0, (int) $attempt['points']);
+		$this->assertSame(0, (int) $attempt->points);
 
 		// and the player moves on to the next problem
 		$browser->clickId('besogo-next-button');

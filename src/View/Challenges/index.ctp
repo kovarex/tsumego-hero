@@ -1,10 +1,12 @@
 <?php
 
+use App\Model\Table\ChallengeTable;
+
 /**
  * The challenges of a player and the form to start one.
  *
  * @var View $this
- * @var array $challenges What Challenge::ofPlayer() returned
+ * @var array $challenges What ChallengeTable::ofPlayer() returned
  * @var array<\App\Model\Entity\TimeModeRank> $ranks The rows of time_mode_rank, the easiest first
  * @var int|null $defaultRankID The rank of the player, to start the form with
  * @var string|null $opponent The name of the player to invite, from the button on a profile
@@ -41,16 +43,16 @@ use App\Utility\TimeModeUtil;
 				<div class="form-field">
 					<label class="form-field__label" for="challenge-seconds">Time for a problem</label>
 					<select class="form-field__control" id="challenge-seconds" name="seconds_per_problem">
-						<?php foreach (Challenge::SECONDS_PER_PROBLEM_CHOICES as $seconds): ?>
-						<option value="<?= $seconds ?>"<?= $seconds === Challenge::DEFAULT_SECONDS_PER_PROBLEM ? ' selected' : '' ?>><?= Challenge::formatTimeForAProblem($seconds) ?></option>
+						<?php foreach (ChallengeTable::SECONDS_PER_PROBLEM_CHOICES as $seconds): ?>
+						<option value="<?= $seconds ?>"<?= $seconds === ChallengeTable::DEFAULT_SECONDS_PER_PROBLEM ? ' selected' : '' ?>><?= ChallengeTable::formatTimeForAProblem($seconds) ?></option>
 						<?php endforeach; ?>
 					</select>
 				</div>
 				<div class="form-field">
 					<label class="form-field__label" for="challenge-problem-count">Problems</label>
 					<select class="form-field__control" id="challenge-problem-count" name="problem_count">
-						<?php foreach (Challenge::PROBLEM_COUNT_CHOICES as $count): ?>
-						<option value="<?= $count ?>"<?= $count === Challenge::DEFAULT_PROBLEM_COUNT ? ' selected' : '' ?>><?= $count ?></option>
+						<?php foreach (ChallengeTable::PROBLEM_COUNT_CHOICES as $count): ?>
+						<option value="<?= $count ?>"<?= $count === ChallengeTable::DEFAULT_PROBLEM_COUNT ? ' selected' : '' ?>><?= $count ?></option>
 						<?php endforeach; ?>
 					</select>
 				</div>
@@ -79,12 +81,12 @@ use App\Utility\TimeModeUtil;
 			elseif ((int) $challenge['my_run_status_id'] === TimeModeUtil::$SESSION_STATUS_IN_PROGRESS)
 				$myRun = '<strong>playing</strong>';
 			else
-				$myRun = 'your points ' . Challenge::formatPoints((float) $challenge['my_points']);
+				$myRun = 'your points ' . ChallengeTable::formatPoints((float) $challenge['my_points']);
 		?>
 		<div class="challenges__row">
 			<span>
-				<a href="/challenges/<?= (int) $challenge['id'] ?>"><?= h(Challenge::title($challenge)) ?></a>
-				<span class="hint"><?= h(Challenge::describe($challenge)) ?></span>
+				<a href="/challenges/<?= (int) $challenge['id'] ?>"><?= h(ChallengeTable::title($challenge)) ?></a>
+				<span class="hint"><?= h(ChallengeTable::describe($challenge)) ?></span>
 			</span>
 			<span class="hint">
 				by <?= User::renderLink($challenge) ?>
