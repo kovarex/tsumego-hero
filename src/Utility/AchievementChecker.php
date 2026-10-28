@@ -4,9 +4,9 @@ namespace App\Utility;
 
 use Achievement;
 use AchievementCondition;
+use App\Model\Table\TimeModeCategoryTable;
 use ClassRegistry;
 use SetConnection;
-use TimeModeCategory;
 use TimeModeRank;
 use TimeModeSessionStatus;
 
@@ -213,56 +213,56 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 			if ($statusId == TimeModeSessionStatus::SOLVED)
 				if ($rankId == TimeModeRank::RANK_5K)
 				{
-					if ($categoryId == TimeModeCategory::SLOW)
+					if ($categoryId == TimeModeCategoryTable::SLOW)
 						$this->gained(AchievementId::TIME_MODE_APPRENTICE_SLOW);
-					elseif ($categoryId == TimeModeCategory::FAST)
+					elseif ($categoryId == TimeModeCategoryTable::FAST)
 						$this->gained(AchievementId::TIME_MODE_APPRENTICE_FAST);
-					elseif ($categoryId == TimeModeCategory::BLITZ)
+					elseif ($categoryId == TimeModeCategoryTable::BLITZ)
 						$this->gained(AchievementId::TIME_MODE_APPRENTICE_BLITZ);
 				}
 				elseif ($rankId == TimeModeRank::RANK_4K)
 				{
-					if ($categoryId == TimeModeCategory::SLOW)
+					if ($categoryId == TimeModeCategoryTable::SLOW)
 						$this->gained(AchievementId::TIME_MODE_SCHOLAR_SLOW);
-					elseif ($categoryId == TimeModeCategory::FAST)
+					elseif ($categoryId == TimeModeCategoryTable::FAST)
 						$this->gained(AchievementId::TIME_MODE_SCHOLAR_FAST);
-					elseif ($categoryId == TimeModeCategory::BLITZ)
+					elseif ($categoryId == TimeModeCategoryTable::BLITZ)
 						$this->gained(AchievementId::TIME_MODE_SCHOLAR_BLITZ);
 
 				}
 				elseif ($rankId == TimeModeRank::RANK_3K)
 				{
-					if ($categoryId == TimeModeCategory::SLOW)
+					if ($categoryId == TimeModeCategoryTable::SLOW)
 						$this->gained(AchievementId::TIME_MODE_LABOURER_SLOW);
-					elseif ($categoryId == TimeModeCategory::FAST)
+					elseif ($categoryId == TimeModeCategoryTable::FAST)
 						$this->gained(AchievementId::TIME_MODE_LABOURER_FAST);
-					elseif ($categoryId == TimeModeCategory::BLITZ)
+					elseif ($categoryId == TimeModeCategoryTable::BLITZ)
 						$this->gained(AchievementId::TIME_MODE_LABOURER_BLITZ);
 				}
 				elseif ($rankId == TimeModeRank::RANK_2K)
 				{
-					if ($categoryId == TimeModeCategory::SLOW)
+					if ($categoryId == TimeModeCategoryTable::SLOW)
 						$this->gained(AchievementId::TIME_MODE_ADEPT_SLOW);
-					elseif ($categoryId == TimeModeCategory::FAST)
+					elseif ($categoryId == TimeModeCategoryTable::FAST)
 						$this->gained(AchievementId::TIME_MODE_ADEPT_FAST);
-					elseif ($categoryId == TimeModeCategory::BLITZ)
+					elseif ($categoryId == TimeModeCategoryTable::BLITZ)
 						$this->gained(AchievementId::TIME_MODE_ADEPT_BLITZ);
 				}
 				elseif ($rankId == TimeModeRank::RANK_1K)
 				{
-					if ($categoryId == TimeModeCategory::SLOW)
+					if ($categoryId == TimeModeCategoryTable::SLOW)
 						$this->gained(AchievementId::TIME_MODE_EXPERT_SLOW);
-					elseif ($categoryId == TimeModeCategory::FAST)
+					elseif ($categoryId == TimeModeCategoryTable::FAST)
 						$this->gained(AchievementId::TIME_MODE_EXPERT_FAST);
-					elseif ($categoryId == TimeModeCategory::BLITZ)
+					elseif ($categoryId == TimeModeCategoryTable::BLITZ)
 						$this->gained(AchievementId::TIME_MODE_EXPERT_BLITZ);
 				}
 				elseif ($rankId == TimeModeRank::RANK_1D)
-					if ($categoryId == TimeModeCategory::SLOW)
+					if ($categoryId == TimeModeCategoryTable::SLOW)
 						$this->gained(AchievementId::TIME_MODE_MASTER_SLOW);
-					elseif ($categoryId == TimeModeCategory::FAST)
+					elseif ($categoryId == TimeModeCategoryTable::FAST)
 						$this->gained(AchievementId::TIME_MODE_MASTER_FAST);
-					elseif ($categoryId == TimeModeCategory::BLITZ)
+					elseif ($categoryId == TimeModeCategoryTable::BLITZ)
 						$this->gained(AchievementId::TIME_MODE_MASTER_BLITZ);
 
 			// Precision achievements based on points and rank

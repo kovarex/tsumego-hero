@@ -47,7 +47,6 @@ namespace App\Utility;
  * @phpstan-type ThemeRow array{id?: int, name?: string, ...}
  * @phpstan-type TimeModeAttemptRow array{id?: int, tsumego_id?: int, order?: int, seconds?: string|null, points?: string|null, started?: string|null, time_mode_session_id?: int, time_mode_attempt_status_id?: int, ...}
  * @phpstan-type TimeModeAttemptStatusRow array{id?: int, name?: string, ...}
- * @phpstan-type TimeModeCategoryRow array{id?: int, name?: string, seconds?: int, ...}
  * @phpstan-type TimeModeRankRow array{id?: int, name?: string, ...}
  * @phpstan-type TimeModeSessionRow array{id?: int, user_id?: int, points?: string|null, created?: string, time_mode_session_status_id?: int, time_mode_category_id?: int|null, time_mode_rank_id?: int|null, challenge_id?: int|null, ...}
  * @phpstan-type TimeModeSessionStatusRow array{id?: int, name?: string, ...}

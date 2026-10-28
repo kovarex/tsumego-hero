@@ -2,6 +2,8 @@
 
 use App\Model\Entity\Reject;
 use App\Model\Table\RejectTable;
+use App\Model\Table\TimeModeCategoryTable;
+use Cake\Datasource\Exception\MissingPropertyException;
 
 //The Cake 5 ORM runs on the connection of Cake 2, see SharedConnectionDriver.
 class SharedConnectionDriverTest extends IntegrationTestCase
@@ -41,6 +43,15 @@ class SharedConnectionDriverTest extends IntegrationTestCase
 		$this->assertInstanceOf(RejectTable::class, $rejectTable);
 		$this->assertSame('reject', $rejectTable->getTable());
 		$this->assertSame(Reject::class, $rejectTable->getEntityClass());
+	}
+
+	//Code still reading the Cake 2 shape fails loudly, see AppEntity.
+	public function testReadingAFieldTheRowDoesNotHaveThrows(): void
+	{
+		$category = $this->fetchTable('TimeModeCategory')->get(TimeModeCategoryTable::BLITZ);
+
+		$this->expectException(MissingPropertyException::class);
+		$category['TimeModeCategory'];
 	}
 
 	public function testSavedRowIsTypedAndHasItsCreationTime(): void

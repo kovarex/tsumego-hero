@@ -2,6 +2,7 @@
 
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
+use App\Model\Entity\TimeModeCategory;
 use App\Utility\AchievementChecker;
 use App\Utility\Auth;
 use App\Utility\Constants;
@@ -156,7 +157,7 @@ ORDER BY MIN(rating);");
 
 		$lastTimeModeCategoryID = Auth::getUser()['last_time_mode_category_id'];
 		if (!$lastTimeModeCategoryID)
-			$lastTimeModeCategoryID = ClassRegistry::init('TimeModeCategory')->find('first', ['order' => 'id DESC'])['TimeModeCategory']['id'];
+			$lastTimeModeCategoryID = $this->fetchTable('TimeModeCategory')->find()->orderByDesc('id')->firstOrFail()->id;
 		assert($lastTimeModeCategoryID);
 
 		$timeModeRankMap = Util::indexByID(ClassRegistry::init('TimeModeRank')->find('all', []) ?: [], 'TimeModeRank', 'name');
@@ -179,7 +180,7 @@ ORDER BY MIN(rating);");
 		}
 
 		$this->set('lastTimeModeCategoryID', $lastTimeModeCategoryID);
-		$this->set('timeModeCategories', ClassRegistry::init('TimeModeCategory')->find('all', ['order' => 'id']));
+		$this->set('timeModeCategories', $this->fetchTable('TimeModeCategory')->find()->orderBy('id')->toArray());
 		$this->set('timeModeRanks', $this->getRanksWithTsumegoCount());
 		$this->set('solvedMap', $solvedMap);
 		$finishedSessionCount = ClassRegistry::init('TimeModeSession')->find('count', ['conditions' => [
@@ -197,12 +198,12 @@ ORDER BY MIN(rating);");
 	}
 
 	//The session in the form the result page shows it, with its attempts loaded by getAttempts().
-	private static function exportSessionToShow(array $session, array $attempts, array $timeModeCategory, array $timeModeRank): array
+	private static function exportSessionToShow(array $session, array $attempts, TimeModeCategory $timeModeCategory, array $timeModeRank): array
 	{
 		$result = [];
 		$result['id'] = $session['id'];
 		$result['status'] = $session['time_mode_session_status_id'] == TimeModeUtil::$SESSION_STATUS_SOLVED ? 'passed' : 'failed';
-		$result['category'] = $timeModeCategory['TimeModeCategory']['name'];
+		$result['category'] = $timeModeCategory->name;
 		$result['points'] = $session['points'];
 		$result['rank'] = $timeModeRank['TimeModeRank']['name'];
 		$result['created'] = $session['created'];
@@ -332,10 +333,10 @@ ORDER BY time_mode_session.created DESC, time_mode_session.id DESC",
 		$unlock = [];
 		$unlock['rank'] = $timeModeRanks[$rankIndex - 1]['TimeModeRank']['name'];
 
-		$categoryIndex = array_find_key($timeModeCategories, function ($timeModeCategory) use ($finishedSession) {
-			return $timeModeCategory['TimeModeCategory']['id'] == $finishedSession['TimeModeSession']['time_mode_category_id'];
+		$categoryIndex = array_find_key($timeModeCategories, function (TimeModeCategory $timeModeCategory) use ($finishedSession) {
+			return $timeModeCategory->id == $finishedSession['TimeModeSession']['time_mode_category_id'];
 		});
-		$unlock['category'] = $timeModeCategories[$categoryIndex]['TimeModeCategory']['name'];
+		$unlock['category'] = $timeModeCategories[$categoryIndex]->name;
 		return $unlock;
 	}
 
@@ -379,7 +380,7 @@ ORDER BY time_mode_session.created DESC, time_mode_session.id DESC",
 		$this->set('_title', 'Time Mode - Result');
 		$this->set('_page', 'time mode');
 
-		$timeModeCategories = ClassRegistry::init('TimeModeCategory')->find('all', []);
+		$timeModeCategories = $this->fetchTable('TimeModeCategory')->find()->orderBy('id')->toArray();
 		$timeModeRanks = ClassRegistry::init('TimeModeRank')->find('all', ['order' => 'id DESC']);
 		$history = self::getHistory();
 		$finishedSessionID = $finishedSession ? $finishedSession['TimeModeSession']['id'] : null;
@@ -402,7 +403,7 @@ ORDER BY time_mode_session.created DESC, time_mode_session.id DESC",
 		foreach ($timeModeCategories as $timeModeCategory)
 			foreach ($timeModeRanks as $timeModeRank)
 			{
-				$categoryID = $timeModeCategory['TimeModeCategory']['id'];
+				$categoryID = $timeModeCategory->id;
 				$rankID = $timeModeRank['TimeModeRank']['id'];
 				if (isset($finishedSession)
 					&& $finishedSession['TimeModeSession']['time_mode_category_id'] == $categoryID

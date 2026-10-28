@@ -3,10 +3,6 @@
 class TimeModeSession extends AppModel
 {
 	public $belongsTo = [
-		'TimeModeCategory' => [
-			'className' => 'TimeModeCategory',
-			'foreignKey' => 'time_mode_category_id',
-		],
 		'TimeModeSessionStatus' => [
 			'className' => 'TimeModeSessionStatus',
 			'foreignKey' => 'time_mode_session_status_id',
