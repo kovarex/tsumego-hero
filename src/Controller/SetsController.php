@@ -175,7 +175,6 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 
 		$this->loadModel('SetConnection');
 		$redirect = false;
-		$t = [];
 
 		if (isset($this->request->data['Set']))
 		{
@@ -221,7 +220,6 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 			$this->redirect('/sets/edit/' . $this->Set->id);
 			return;
 		}
-		$this->set('t', $t);
 	}
 
 	//Edit a set: details, problems and (for admins) re-rate and solve-mode settings. Owner or admin only.

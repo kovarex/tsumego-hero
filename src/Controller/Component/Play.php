@@ -120,7 +120,7 @@ class Play
 		$this->set('goldenTsumego', $goldenTsumego);
 		$this->set('sgf', $sgf);
 		$this->set('set', $set);
-		$this->set('t', $tsumego);
+		$this->set('tsumego', $tsumego);
 		$this->set('tsumegoStatus', $tsumegoStatus);
 		$this->set('tv', $tsumegoVariant);
 		$this->set('checkBSize', $boardSize);

@@ -64,7 +64,7 @@ use App\Utility\ViteManifest;
  * @var array $setConnection
  * @var array $setConnections
  * @var \App\Model\Entity\Sgf $sgf
- * @var \App\Model\Entity\Tsumego $t
+ * @var \App\Model\Entity\Tsumego $tsumego
  * @var string $tsumegoStatus The status of the problem for the player
  * @var array $tagData
  * @var TimeMode $timeMode
@@ -102,7 +102,7 @@ use App\Utility\ViteManifest;
 			$text
 		);
 	};
-	$displayDescription = $t->description;
+	$displayDescription = $tsumego->description;
 	// True-color convention: descriptions already match the actual board stones.
 	// When the board is inverted ($swapColors), swap Black<->White to match what the player sees.
 	if ($swapColors)
@@ -128,11 +128,11 @@ use App\Utility\ViteManifest;
 		$resetLink = ClassroomAssignmentTable::playLink((int) $classroomAssignment['id'], (int) $setConnection['SetConnection']['id']);
 	else
 		$resetLink = (Auth::isInMistakeTrainingMode() ? MistakeTraining::$PLAY_LINK_PREFIX : '/') . (int) $setConnection['SetConnection']['id'];
-	if ($t->deleted !== null)
+	if ($tsumego->deleted !== null)
 		echo $this->element('trash_notice', [
 			'what' => 'problem',
-			'deleted' => $t->deleted->format('Y-m-d H:i:s'),
-			'restoreAction' => '/trash/restore-problem/' . (int) $t->id]);
+			'deleted' => $tsumego->deleted->format('Y-m-d H:i:s'),
+			'restoreAction' => '/trash/restore-problem/' . (int) $tsumego->id]);
 	if (!empty($set['Set']['deleted']))
 		echo $this->element('trash_notice', [
 			'what' => 'collection',
@@ -162,7 +162,7 @@ use App\Utility\ViteManifest;
 			<div id="playTitle">
 				<?php echo $classroomAssignment !== null
 					? Play::renderAssignmentTitle($classroomAssignment, $tsumegoButtons, $setConnection, $set, $amountOfOtherCollection)
-					: Play::renderTitle($setConnection, $set, $tsumegoFilters, $tsumegoButtons, $amountOfOtherCollection, $difficulty, $timeMode, $queryTitle, $t); ?>
+					: Play::renderTitle($setConnection, $set, $tsumegoFilters, $tsumegoButtons, $amountOfOtherCollection, $difficulty, $timeMode, $queryTitle, $tsumego); ?>
 				<br>
 			</div>
 		</td>
@@ -177,8 +177,8 @@ use App\Utility\ViteManifest;
 		else
 			echo '<div id="titleDescription" class="titleDescription1">';
 		echo '<a id="descriptionText">'.h($displayDescription).'</a> ';
-		if (isset($t->hint) && $t->hint!='')
-			echo '<span class="hint italic">('.h($t->hint).')</span>';
+		if (isset($tsumego->hint) && $tsumego->hint!='')
+			echo '<span class="hint italic">('.h($tsumego->hint).')</span>';
 		if($tv!=null)
 		{
 			if($tv->tsumego_variant_type_id == TsumegoVariantTable::TYPE_SCORE_ESTIMATING)
@@ -193,8 +193,8 @@ use App\Utility\ViteManifest;
 		if(Auth::isAdmin()) { ?>
 		<a class="grey-link" id="modify-description" href="#" onclick="adminCommentOpened = !adminCommentOpened; $('.modify-description-panel').toggle(0);">(Edit)</a>
 		<div class="modify-description-panel" style="display: none;">
-			<form id="tsumego-edit" method="post" action="/tsumegos/edit/<?php echo $t->id; ?>">
-				<input type="hidden" name="tsumego_id" value="<?php echo $t->id; ?>">
+			<form id="tsumego-edit" method="post" action="/tsumegos/edit/<?php echo $tsumego->id; ?>">
+				<input type="hidden" name="tsumego_id" value="<?php echo $tsumego->id; ?>">
 				<input type="hidden" name="redirect" value="<?php echo h($_SERVER['REQUEST_URI']); ?>">
 				<input type="hidden" name="color_swapped" value="<?php echo $swapColors ? '1' : '0'; ?>">
 				<table>
@@ -207,25 +207,25 @@ use App\Utility\ViteManifest;
 					</tr>
 					<tr>
 						<td><label for="hint">Hint:</label></td>
-						<td><textarea name="hint" id="hint" rows="1" style="width: 100%;"><?php echo h($t->hint); ?></textarea></td>
+						<td><textarea name="hint" id="hint" rows="1" style="width: 100%;"><?php echo h($tsumego->hint); ?></textarea></td>
 					</tr>
 					<tr>
 						<td><label for="rating">Rating:</label></td>
-						<td><input type="text" name="rating" id="rating" value="<?php echo Rating::getReadableRankFromRatingWhenPossible($t->rating); ?>"></td>
+						<td><input type="text" name="rating" id="rating" value="<?php echo Rating::getReadableRankFromRatingWhenPossible($tsumego->rating); ?>"></td>
 					</tr>
 					<tr>
 						<td><label for="minimum-rating">Minimum rating:</label></td>
-						<td><input type="text" name="minimum-rating" id="minimum-rating" value="<?php echo Rating::getReadableRankFromRatingWhenPossible($t->minimum_rating); ?>"></td>
+						<td><input type="text" name="minimum-rating" id="minimum-rating" value="<?php echo Rating::getReadableRankFromRatingWhenPossible($tsumego->minimum_rating); ?>"></td>
 					</tr>
 					<tr>
 						<td><label for="maximum-rating">Maximum rating:</label></td>
-						<td><input type="text" name="maximum-rating" id="maximum-rating" value="<?php echo Rating::getReadableRankFromRatingWhenPossible($t->maximum_rating); ?>"></td>
+						<td><input type="text" name="maximum-rating" id="maximum-rating" value="<?php echo Rating::getReadableRankFromRatingWhenPossible($tsumego->maximum_rating); ?>"></td>
 					</tr>
 					<tr>
 						<td><label for="author">Author:</label></td>
-						<td><input type="text" name="author" id="author" value="<?php echo h($t->author); ?>"></td>
+						<td><input type="text" name="author" id="author" value="<?php echo h($tsumego->author); ?>"></td>
 					</tr>
-					<?php if (empty($t->deleted)) { ?>
+					<?php if (empty($tsumego->deleted)) { ?>
 					<tr>
 						<td><label for="delete">Delete:</label></td>
 						<td>
@@ -263,7 +263,7 @@ use App\Utility\ViteManifest;
 	<!-- BOARD -->
 	<div id="target"></div>
 	<div id="targetLockOverlay"></div>
-	<?php if(!is_null($t->semeai_type) && $t->semeai_type != 0 || ($tv!=null && $tv->tsumego_variant_type_id == TsumegoVariantTable::TYPE_MULTIPLE_CHOICE)){ ?>
+	<?php if(!is_null($tsumego->semeai_type) && $tsumego->semeai_type != 0 || ($tv!=null && $tv->tsumego_variant_type_id == TsumegoVariantTable::TYPE_MULTIPLE_CHOICE)){ ?>
 	<div align="center">
 	<br>
 		<a href="<?php echo $resetLink; ?>" title="reset problem" id="besogo-next-button">Reset</a>
@@ -329,7 +329,7 @@ use App\Utility\ViteManifest;
 		$tagEditorProps = json_encode([
 			'userId' => Auth::getUserID() ? (int) Auth::getUserID() : null,
 			'isAdmin' => Auth::isAdmin(),
-			'tsumegoId' => (int) $t->id,
+			'tsumegoId' => (int) $tsumego->id,
 			'isTimeMode' => Auth::isInTimeMode(),
 			'problemSolved' => $solved,
 			'canAddMoreTags' => $canAddMoreTags,
@@ -406,7 +406,7 @@ use App\Utility\ViteManifest;
 					</div>
 					<div id="msg5">
 						<br>
-						<form action="/tsumegos/settings/' . $t->id . '" method="POST">
+						<form action="/tsumegos/settings/' . $tsumego->id . '" method="POST">
 							<table>
 								<tr>
 									<td>Alternative Response Mode</td>
@@ -439,7 +439,7 @@ use App\Utility\ViteManifest;
 						echo '<a id="showMC" class="selectable-text selectable-text--inline">Edit multiple choice
 						<img id="greyArrowMC" src="/img/greyArrow1.png"></a><br><br>';
 						echo '<div id="showxMC">';
-						echo '<form action="/tsumegos/variant/' . $t->id . '" method="post">';
+						echo '<form action="/tsumegos/variant/' . $tsumego->id . '" method="post">';
 						for ($answer = 1; $answer <= 4; $answer++)
 							echo '<div class="input text"><label for="variant-answer' . $answer . '">Answer ' . $answer . ': </label><input name="answer' . $answer . '" value="' . h($tv->get('answer' . $answer)) . '" placeholder="Answer ' . $answer . '" type="text" id="variant-answer' . $answer . '"></div>';
 						echo '<div class="input textfield"><label for="variant-explanation">Explanation: </label><input name="explanation" value="' . h($tv->explanation) . '" placeholder="Explanation" type="text" id="variant-explanation"></div>';
@@ -461,7 +461,7 @@ use App\Utility\ViteManifest;
 						echo '<input type="button" value="-" id="besogo-se-edit-less">';
 						echo '<input type="button" value="+" id="besogo-se-edit-more">';
 						echo '<br><br>';
-						echo '<form action="/tsumegos/variant/' . $t->id . '" method="post">';
+						echo '<form action="/tsumegos/variant/' . $tsumego->id . '" method="post">';
 						echo '<table><tr><td>';
 						echo '<label for="scoreEstEditField">Correct answer: </label>';
 						echo '</td><td>';
@@ -492,7 +492,7 @@ use App\Utility\ViteManifest;
 		<table class="sandboxTable" width="62%">
 		<tr>
 				<td><?php echo $this->element('TsumegoComments/section', [
-						'tsumegoId' => $t->id,
+						'tsumegoId' => $tsumego->id,
 						'solved' => $solved,
 					]); ?></td>
 					</tr>
@@ -501,7 +501,7 @@ use App\Utility\ViteManifest;
 		<?php
 	}
 		?>
-	<?php if(!is_null($t->semeai_type) && $t->semeai_type != 0 || $tv!=null&&$tv->tsumego_variant_type_id == TsumegoVariantTable::TYPE_MULTIPLE_CHOICE){ ?>
+	<?php if(!is_null($tsumego->semeai_type) && $tsumego->semeai_type != 0 || $tv!=null&&$tv->tsumego_variant_type_id == TsumegoVariantTable::TYPE_MULTIPLE_CHOICE){ ?>
 		<label>
 		<input type="checkbox" class="toast__toggle" id="alertCheckbox" autocomplete="off" />
 		<div class="toast" id="multipleChoiceAlerts">
@@ -598,7 +598,7 @@ use App\Utility\ViteManifest;
 	var mode = <?php echo Auth::getMode(); ?>;
 	var timeModeEnabled = true;
 	var authorProblem = false;
-	var tsumegoID = <?php echo $t->id ?>;
+	var tsumegoID = <?php echo $tsumego->id ?>;
 	var playGreenColor = '<?php echo $playGreenColor; ?>';
 	var tStatus = "<?php echo $tsumegoStatus; ?>";
 	var failAlreadyReported = false;
@@ -620,8 +620,8 @@ use App\Utility\ViteManifest;
 	var isMutable = true;
 	var deleteNextMoveGroup = false;
 	var file = <?php echo json_encode($file, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
-	var tsumegoFileLink = "<?php echo $t->id; ?>";
-	var author = <?php echo json_encode($t->author, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
+	var tsumegoFileLink = "<?php echo $tsumego->id; ?>";
+	var author = <?php echo json_encode($tsumego->author, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 	var userSets = <?php echo $userSetsJson; ?>;
 	var besogoMode2Solved = false;
 	var disableAutoplay = false;
@@ -631,9 +631,9 @@ use App\Utility\ViteManifest;
 	var playerRatingCalculationModifier = <?php echo Constants::$PLAYER_RATING_CALCULATION_MODIFIER; ?>;
 	let multipleChoiceLibertiesB = 0;
 	let multipleChoiceLibertiesW = 0;
-	let multipleChoiceLibertyCount = <?php echo $t->liberty_count; ?>+"";
-	let multipleChoiceSemeaiType = <?php echo $t->semeai_type; ?>+"";
-	let multipleChoiceInsideLiberties = <?php echo $t->inside_liberties; ?>+"";
+	let multipleChoiceLibertyCount = <?php echo $tsumego->liberty_count; ?>+"";
+	let multipleChoiceSemeaiType = <?php echo $tsumego->semeai_type; ?>+"";
+	let multipleChoiceInsideLiberties = <?php echo $tsumego->inside_liberties; ?>+"";
 	let multipleChoiceEnabled = false;
 	let hasChosen = false;
 	let enableDownloads = false;
@@ -641,7 +641,7 @@ use App\Utility\ViteManifest;
 	let customMultipleChoiceAnswer = 0;
 	var boardLockValue = 0;
 	let mText = "";
-	let passEnabled = <?php echo $t->pass; ?>+"";
+	let passEnabled = <?php echo $tsumego->pass; ?>+"";
 	let besogoRotation = -1;
 	let msgFilterSelected = false;
 	const activeTopicTiles = [];
@@ -792,7 +792,7 @@ use App\Utility\ViteManifest;
 	}
 
 	// Author mode is decided by the account link, the author string can be a legacy alias.
-	$authorUserId = $t->author_user_id ?? null;
+	$authorUserId = $tsumego->author_user_id ?? null;
 	if ($authorUserId !== null && $authorUserId == Auth::getUserID())
 		echo 'authorProblem = true;';
 	if($requestSolution)
@@ -1205,12 +1205,12 @@ use App\Utility\ViteManifest;
 			if(solutionRequest)
 				displaySolutionRequest();
 			$("#showx99").click(function(){
-				window.location.href = "/tsumegos/play/"+<?php echo $t->id; ?>+"?requestSolution="+<?php echo Auth::getUserID(); ?>;
+				window.location.href = "/tsumegos/play/"+<?php echo $tsumego->id; ?>+"?requestSolution="+<?php echo Auth::getUserID(); ?>;
 				});
 		<?php }
 		} ?>
 
-		<?php if(!is_null($t->semeai_type) && $t->semeai_type != 0 || $tv!=null){ ?>
+		<?php if(!is_null($tsumego->semeai_type) && $tsumego->semeai_type != 0 || $tv!=null){ ?>
 		$("#alertCheckbox").change(function(){
 			$("#multipleChoiceAlerts").fadeOut(500);
 			});
@@ -1252,7 +1252,7 @@ use App\Utility\ViteManifest;
 		$("#findSimilarProblems").css("display", "inline-block");
 		$("#openSgfLink").css("display", "inline-block");
 		<?php if(Auth::isAdmin()){ ?>
-		$("#showx6").attr("href", "<?php echo '/sgfs/view/' . $t->id; ?>");
+		$("#showx6").attr("href", "<?php echo '/sgfs/view/' . $tsumego->id; ?>");
 		$("#showx8").attr("href", "<?php echo '/tsumegos/history/'.$setConnection['SetConnection']['id']; ?>");
 		$("#showx4").css("display", "inline-block");
 		$("#show4").css("display", "inline-block");
@@ -1844,21 +1844,21 @@ use App\Utility\ViteManifest;
 		<?php
 		if ($alternative_response != 1)
 			echo 'options.alternativeResponse = false;';
-		if (!is_null($t->semeai_type) && $t->semeai_type != 0)
+		if (!is_null($tsumego->semeai_type) && $tsumego->semeai_type != 0)
 		{
 			[$sStatusB, $sStatusW] = Util::calculateLibertyStatus(
 				$multipleChoiceSquares,
 				$multipleChoiceTriangles,
-				$t->minimum_liberties,
-				$t->maximum_liberties,
-				$t->liberty_count,
-				$t->variance);
+				$tsumego->minimum_liberties,
+				$tsumego->maximum_liberties,
+				$tsumego->liberty_count,
+				$tsumego->variance);
 			echo 'options.multipleChoice = true;';
 			echo 'let sStatusB = '.$sStatusB.';';
 			echo 'let sStatusW = '.$sStatusW.';';
 			echo 'multipleChoiceLibertiesB = sStatusB;';
 			echo 'multipleChoiceLibertiesW = sStatusW;';
-			echo 'multipleChoiceLibertyCount = '.$t->liberty_count.';';
+			echo 'multipleChoiceLibertyCount = '.$tsumego->liberty_count.';';
 			echo 'let mVariance = '.$multipleChoiceTriangles.';';
 			echo 'let a1 = []; let a2 = [];
 			for(i=0; i<mVariance; i++)
