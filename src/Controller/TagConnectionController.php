@@ -18,8 +18,7 @@ class TagConnectionController extends AppController
 		if (!$tag)
 			throw new ForbiddenException('Tag "' . $tagName . '" doesn\'t exist.');
 
-		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID);
-		if (!$tsumego)
+		if (!$this->fetchTable('Tsumego')->exists(['id' => (int) $tsumegoID]))
 			throw new ForbiddenException('Tsumego with id="' . $tsumegoID . '" wasn\'t found.');
 
 		$tagConnectionTable = $this->fetchTable('TagConnection');
@@ -48,8 +47,7 @@ class TagConnectionController extends AppController
 		if (!$tag)
 			throw new ForbiddenException('Tag "' . $tagName . '" doesn\'t exist.');
 
-		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID);
-		if (!$tsumego)
+		if (!$this->fetchTable('Tsumego')->exists(['id' => (int) $tsumegoID]))
 			throw new ForbiddenException('Tsumego with id="' . $tsumegoID . '" wasn\'t found.');
 
 		$tagConnectionTable = $this->fetchTable('TagConnection');

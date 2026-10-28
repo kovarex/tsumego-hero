@@ -20,12 +20,11 @@ class TsumegoMerger
 
 	private function checkInput(): ?array
 	{
-		$masterTsumego = ClassRegistry::init('Tsumego')->findById($this->masterTsumegoID);
-		if (!$masterTsumego)
+		$tsumegoTable = TableRegistry::getTableLocator()->get('Tsumego');
+		if (!$tsumegoTable->exists(['id' => $this->masterTsumegoID]))
 			return ['message' => 'Merge masterTsumego not found', 'type' => 'error'];
 
-		$slaveTsumego = ClassRegistry::init('Tsumego')->findById($this->slaveTsumegoID);
-		if (!$slaveTsumego)
+		if (!$tsumegoTable->exists(['id' => $this->slaveTsumegoID]))
 			return ['message' => 'Slave tsumego does not exist.', 'type' => 'error'];
 
 		if ($this->masterTsumegoID == $this->slaveTsumegoID)
@@ -164,7 +163,7 @@ HAVING
 		if ($result = $this->checkInput())
 			return $result;
 
-		$db = ClassRegistry::init('Tsumego')->getDataSource();
+		$db = Util::database();
 		try
 		{
 			$masterSgf = self::currentSgf($this->masterTsumegoID);
@@ -186,7 +185,7 @@ HAVING
 			$this->mergeTagConnections();
 			$this->mergeTimeModeAttempts();
 			$this->mergeIssues();
-			ClassRegistry::init('Tsumego')->delete($this->slaveTsumegoID);
+			TableRegistry::getTableLocator()->get('Tsumego')->deleteAll(['id' => $this->slaveTsumegoID]);
 			AdminActivityLogger::log(
 				AdminActivityTypeTable::TSUMEGO_MERGE,
 				$this->masterTsumegoID,

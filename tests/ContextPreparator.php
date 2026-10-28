@@ -257,10 +257,10 @@ class ContextPreparator
 		$tsumego['variance'] = Util::extract('variance', $tsumegoInput);
 		$tsumego['deleted'] = Util::extract('deleted', $tsumegoInput);
 		$tsumego['author'] = Util::extract('author', $tsumegoInput) ?: '';
-		ClassRegistry::init('Tsumego')->create($tsumego);
-		ClassRegistry::init('Tsumego')->save($tsumego);
-		$tsumego = ClassRegistry::init('Tsumego')->find('first', ['order' => ['id' => 'DESC']])['Tsumego'];
-		assert($tsumego['id']);
+		$tsumegoTable = TableRegistry::getTableLocator()->get('Tsumego');
+		$tsumegoID = $tsumegoTable->saveOrFail($tsumegoTable->newEntity($tsumego))->id;
+		// the row as the database has it, with the defaults and the time of creation
+		$tsumego = Util::query('SELECT * FROM tsumego WHERE id = ?', [$tsumegoID])[0];
 
 		$this->prepareTsumegoSetsFromJustNum(Util::extract('set_order', $tsumegoInput), $tsumego);
 		$this->prepareTsumegoSets(Util::extract('sets', $tsumegoInput), $tsumego);

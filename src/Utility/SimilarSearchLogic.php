@@ -12,7 +12,6 @@ use SetConnection;
 
 /**
  * @phpstan-import-type SetConnectionRow from \App\Utility\RowTypes
- * @phpstan-import-type TsumegoRow from \App\Utility\RowTypes
  */
 class SimilarSearchLogic
 {
@@ -22,7 +21,6 @@ class SimilarSearchLogic
 		$this->setConnection = $setConnection;
 		$this->result = new SimilarSearchResult();
 		$this->sourceTsumegoID = $this->setConnection['tsumego_id'];
-		$this->sourceTsumego = ClassRegistry::init('Tsumego')->findById($this->sourceTsumegoID)['Tsumego'];
 		$sgf = TableRegistry::getTableLocator()->get('Sgf')->find()
 			->select(['sgf', 'correct_moves', 'first_move_color'])
 			->where(['tsumego_id' => $this->sourceTsumegoID, 'sgf_status_id' => SgfTable::STATUS_ACCEPTED])
@@ -118,8 +116,6 @@ WHERE tsumego.deleted IS NULL");
 	}
 
 	public int|string $sourceTsumegoID;
-	/** @var TsumegoRow|null */
-	public $sourceTsumego = null;
 	/** @var SetConnectionRow */
 	public $setConnection;
 	public int $maxDifference = 5;

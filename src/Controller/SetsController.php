@@ -33,7 +33,6 @@ class SetsController extends AppController
 		$this->Authorization->authorize('Set');
 
 		$this->loadModel('User');
-		$this->loadModel('Tsumego');
 		$this->loadModel('SetConnection');
 
 		$this->set('_page', 'sandbox');
@@ -174,7 +173,6 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 	{
 		$this->Authorization->authorize('Set', 'create');
 
-		$this->loadModel('Tsumego');
 		$this->loadModel('SetConnection');
 		$redirect = false;
 		$t = [];
@@ -205,18 +203,16 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 
 			if ($isSandbox)
 			{
-				$t = [];
-				$t['Tsumego']['difficulty'] = 4;
-				$t['Tsumego']['variance'] = 100;
-				$t['Tsumego']['description'] = 'b to kill';
-				$t['Tsumego']['author'] = Auth::getUser()['display_name'];
-				$t['Tsumego']['author_user_id'] = Auth::getUserID();
-				$this->Tsumego->create();
-				$this->Tsumego->save($t);
+				$tsumegoTable = $this->fetchTable('Tsumego');
+				$tsumego = $tsumegoTable->saveOrFail($tsumegoTable->newEntity([
+					'variance' => 100,
+					'description' => 'b to kill',
+					'author' => Auth::getUser()['display_name'],
+					'author_user_id' => Auth::getUserID()]));
 
 				$sc = [];
 				$sc['SetConnection']['set_id'] = $this->Set->id;
-				$sc['SetConnection']['tsumego_id'] = $this->Tsumego->id;
+				$sc['SetConnection']['tsumego_id'] = $tsumego->id;
 				$sc['SetConnection']['num'] = 1;
 				$this->SetConnection->create();
 				$this->SetConnection->save($sc);
@@ -233,7 +229,6 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 	#[HttpPost]
 	public function edit(?string $id = null)
 	{
-		$this->loadModel('Tsumego');
 		$this->loadModel('SetConnection');
 
 		$set = $this->Set->findById((int) $id);
@@ -298,16 +293,13 @@ ORDER BY sc.num ASC", [(int) $id]);
 		if ($canEditSettings && isset($this->request->data['Set']['setDifficulty']))
 			if ($this->request->data['Set']['setDifficulty'] != 1200 && $this->request->data['Set']['setDifficulty'] >= 900 && $this->request->data['Set']['setDifficulty'] <= 2900)
 			{
-				foreach ($problems as $problem)
-				{
-					$tsumego = ClassRegistry::init('Tsumego')->findById($problem['tsumego_id']);
-					$tsumego['Tsumego']['rating']
-						= Util::clampOptional(
-							$this->request->data['Set']['setDifficulty'],
-							$tsumego['Tsumego']['minimum_rating'],
-							$tsumego['Tsumego']['maximum_rating']);
-					$this->Tsumego->save($tsumego);
-				}
+				//The new rating of each problem is raised to its minimum, then lowered to its maximum
+				//(GREATEST and LEAST give NULL for a limit the problem doesn't have)
+				$difficulty = (float) $this->request->data['Set']['setDifficulty'];
+				$problemIDs = array_column($problems, 'tsumego_id');
+				if ($problemIDs)
+					Util::execute('UPDATE tsumego SET rating = COALESCE(LEAST(COALESCE(GREATEST(?, minimum_rating), ?), maximum_rating), COALESCE(GREATEST(?, minimum_rating), ?))
+						WHERE id IN (' . implode(',', array_fill(0, count($problemIDs), '?')) . ')', [$difficulty, $difficulty, $difficulty, $difficulty, ...$problemIDs]);
 				AdminActivityLogger::log(AdminActivityTypeTable::SET_RATING_EDIT, null, (int) $id);
 			}
 
@@ -316,42 +308,22 @@ ORDER BY sc.num ASC", [(int) $id]);
 		{
 			if ($this->request->data['Settings']['r39'] == 'on')
 			{
-				foreach ($problems as $problem)
-				{
-					$tsumego = ClassRegistry::init('Tsumego')->findById($problem['tsumego_id']);
-					$tsumego['Tsumego']['alternative_response'] = true;
-					ClassRegistry::init('Tsumego')->save($tsumego);
-				}
+				$this->setProblemsField($problems, 'alternative_response', true);
 				AdminActivityLogger::log(AdminActivityTypeTable::SET_ALTERNATIVE_RESPONSE, null, (int) $id, null, '1');
 			}
 			if ($this->request->data['Settings']['r39'] == 'off')
 			{
-				foreach ($problems as $problem)
-				{
-					$tsumego = ClassRegistry::init('Tsumego')->findById($problem['tsumego_id']);
-					$tsumego['Tsumego']['alternative_response'] = false;
-					ClassRegistry::init('Tsumego')->save($tsumego);
-				}
+				$this->setProblemsField($problems, 'alternative_response', false);
 				AdminActivityLogger::log(AdminActivityTypeTable::SET_ALTERNATIVE_RESPONSE, null, (int) $id, null, '0');
 			}
 			if ($this->request->data['Settings']['r43'] == 'yes')
 			{
-				foreach ($problems as $problem)
-				{
-					$tsumego = ClassRegistry::init('Tsumego')->findById($problem['tsumego_id']);
-					$tsumego['Tsumego']['pass'] = true;
-					ClassRegistry::init('Tsumego')->save($tsumego);
-				}
+				$this->setProblemsField($problems, 'pass', true);
 				AdminActivityLogger::log(AdminActivityTypeTable::SET_PASS_MODE, null, (int) $id, null, '1');
 			}
 			if ($this->request->data['Settings']['r43'] == 'no')
 			{
-				foreach ($problems as $problem)
-				{
-					$tsumego = ClassRegistry::init('Tsumego')->findById($problem['tsumego_id']);
-					$tsumego['Tsumego']['pass'] = false;
-					ClassRegistry::init('Tsumego')->save($tsumego);
-				}
+				$this->setProblemsField($problems, 'pass', false);
 				AdminActivityLogger::log(AdminActivityTypeTable::SET_PASS_MODE, null, (int) $id, null, '0');
 			}
 		}
@@ -503,7 +475,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 	public function index(): void
 	{
 		$this->loadModel('User');
-		$this->loadModel('Tsumego');
 		$this->loadModel('SetConnection');
 		$this->set('_page', 'set');
 		$this->set('_title', 'Tsumego Hero - Collections');
@@ -614,7 +585,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$tsumegoId = (int) ($this->request->data['tsumego_id'] ?? 0);
 		if (!$tsumegoId)
 			throw new BadRequestException();
-		if (!ClassRegistry::init('Tsumego')->findById($tsumegoId))
+		if (!$this->fetchTable('Tsumego')->exists(['id' => (int) $tsumegoId]))
 			throw new NotFoundException('Tsumego not found');
 
 		$existing = ClassRegistry::init('SetConnection')->find('first', [
@@ -671,22 +642,19 @@ ORDER BY sc.num ASC", [(int) $id]);
 		if (!isset($this->request->data['order']))
 			throw new BadRequestException();
 
-		$tsumegoModel = ClassRegistry::init('Tsumego');
-		$tsumegoModel->getDataSource()->begin();
+		$database = Util::database();
+		$database->begin();
 
 		try
 		{
-			$tsumego = [];
-			$tsumego['num'] = $this->request->data['order'];
-			$tsumego['author'] = Auth::getUser()['display_name'];
-			$tsumego['author_user_id'] = Auth::getUserID();
-			$tsumegoModel->create();
-			$tsumegoModel->save($tsumego);
+			$tsumegoTable = $this->fetchTable('Tsumego');
+			$tsumego = $tsumegoTable->saveOrFail($tsumegoTable->newEntity([
+				'author' => Auth::getUser()['display_name'],
+				'author_user_id' => Auth::getUserID()]));
 
-			$tsumego['id'] = $tsumegoModel->id;
 			$setConnection = [];
 			$setConnection['set_id'] = $setID;
-			$setConnection['tsumego_id'] = $tsumego['id'];
+			$setConnection['tsumego_id'] = $tsumego->id;
 			$setConnection['num'] = $this->request->data['order'];
 			ClassRegistry::init('SetConnection')->create();
 			ClassRegistry::init('SetConnection')->save($setConnection);
@@ -695,13 +663,13 @@ ORDER BY sc.num ASC", [(int) $id]);
 			$sgfDataOrFile = $this->request->data['sgf'] ?? $fileUpload;
 
 			if ($sgfDataOrFile)
-				SgfTable::upload($sgfDataOrFile, (int) $tsumego['id'], Auth::getUserID(), Auth::isAdmin());
-			$tsumegoModel->getDataSource()->commit();
-			AdminActivityLogger::log(AdminActivityTypeTable::PROBLEM_ADD, $tsumegoModel->id, $setID);
+				SgfTable::upload($sgfDataOrFile, $tsumego->id, Auth::getUserID(), Auth::isAdmin());
+			$database->commit();
+			AdminActivityLogger::log(AdminActivityTypeTable::PROBLEM_ADD, $tsumego->id, $setID);
 		}
 		catch (Exception $e)
 		{
-			$tsumegoModel->getDataSource()->rollback();
+			$database->rollback();
 			CookieFlash::set('Unexpected error:' . $e->getMessage(), 'error');
 		}
 		return $this->redirect('/sets/edit/' . (int) $setID);
@@ -829,7 +797,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 			return;
 		}
 
-		$this->loadModel('Tsumego');
 		$this->loadModel('SetConnection');
 		$this->loadModel('User');
 
@@ -1181,5 +1148,13 @@ WHERE tsumego_status.user_id = ? AND tsumego_status.tsumego_id IN(" . implode(',
 	private function _isElevatedSetEdit(array $set): bool
 	{
 		return Auth::isAdmin() && $set['Set']['user_id'] != Auth::getUserID();
+	}
+
+	//Turns a setting of every problem of the set on or off
+	private function setProblemsField(array $problems, string $field, bool $value): void
+	{
+		$problemIDs = array_column($problems, 'tsumego_id');
+		if ($problemIDs)
+			$this->fetchTable('Tsumego')->updateAll([$field => $value], ['id IN' => $problemIDs]);
 	}
 }

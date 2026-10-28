@@ -93,7 +93,7 @@ class RatingModeControllerTest extends IntegrationTestCase
 		{
 			$this->get('/ratingMode');
 			$this->assertResponseOk();
-			$tsumegoIDs[] = (int) $this->viewVariable('t')['Tsumego']['id'];
+			$tsumegoIDs[] = (int) $this->viewVariable('t')->id;
 		}
 		$tsumegoIDs = array_values(array_unique($tsumegoIDs));
 		sort($tsumegoIDs);

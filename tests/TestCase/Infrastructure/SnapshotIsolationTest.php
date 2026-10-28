@@ -26,7 +26,7 @@ class SnapshotIsolationTest extends CakeTestCase
 	private static function otherConnection(): PDO
 	{
 		/** @phpstan-ignore-next-line */
-		$config = ClassRegistry::init('Tsumego')->getDataSource()->config;
+		$config = Util::database()->config;
 		return new PDO(
 			'mysql:host=' . $config['host'] . ';port=' . $config['port'] . ';dbname=' . $config['database'],
 			$config['login'],

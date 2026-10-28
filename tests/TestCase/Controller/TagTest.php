@@ -376,7 +376,7 @@ class TagTest extends IntegrationTestCase
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->openEditorAndType($browser, 'snap');
-		ClassRegistry::init('Tsumego')->delete($context->tsumegos[0]['id']);
+		$this->fetchTable('Tsumego')->deleteAll(['id' => $context->tsumegos[0]['id']]);
 		$this->clickAndWaitForError($browser, '#tag-snapback');
 		$error = $browser->find('[data-testid="tag-error"]')->getText();
 		$this->assertTextContains("wasn't found", $error);
@@ -453,7 +453,7 @@ class TagTest extends IntegrationTestCase
 			'tsumego' => ['set_order' => 1, 'tags' => [['name' => 'snapback', 'user' => 'kovarex', 'approved' => 0]]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		ClassRegistry::init('Tsumego')->delete($context->tsumegos[0]['id']);
+		$this->fetchTable('Tsumego')->deleteAll(['id' => $context->tsumegos[0]['id']]);
 		$this->clickAndWaitForError($browser, '#remove-snapback');
 		$error = $browser->find('[data-testid="tag-error"]')->getText();
 		$this->assertTextContains("wasn't found", $error);

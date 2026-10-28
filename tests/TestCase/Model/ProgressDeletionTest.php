@@ -131,7 +131,7 @@ class ProgressDeletionTest extends IntegrationTestCase
 	{
 		return [
 			'user' => (float) ClassRegistry::init('User')->findById($context->user['id'])['User']['rating'],
-			'tsumego' => (float) ClassRegistry::init('Tsumego')->findById($context->tsumegos[0]['id'])['Tsumego']['rating']];
+			'tsumego' => (float) $this->fetchTable('Tsumego')->get($context->tsumegos[0]['id'])->rating];
 	}
 
 	public function testRatingsDontChangeOnProblemOfRecentlyResetPart(): void

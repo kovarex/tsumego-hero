@@ -4,6 +4,7 @@ namespace App\Utility;
 
 use App\Model\Entity\Challenge;
 use App\Model\Entity\TimeModeAttempt;
+use App\Model\Entity\Tsumego;
 use App\Model\Entity\TimeModeRank;
 use App\Model\Entity\TimeModeSession;
 use App\Model\Table\ChallengeTable;
@@ -224,14 +225,14 @@ class TimeMode
 		return TimeModeUtil::$ATTEMPT_RESULT_SOLVED;
 	}
 
-	public function processPlayResult(array $previousTsumego, array $result, float $seconds = 0, bool $timeout = false): void
+	public function processPlayResult(Tsumego $previousTsumego, array $result, float $seconds = 0, bool $timeout = false): void
 	{
 		if (!$this->currentSession)
 			return;
 		$attemptTable = $this->fetchTable('TimeModeAttempt');
 		$currentAttempt = $attemptTable->find()->where([
 			'time_mode_session_id' => $this->currentSession->id,
-			'tsumego_id' => $previousTsumego['Tsumego']['id'],
+			'tsumego_id' => $previousTsumego->id,
 			'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED])->first();
 		if (!$currentAttempt)
 			return; // this tsumego is not related to our time mode session, we ignore it

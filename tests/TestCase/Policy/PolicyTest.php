@@ -5,6 +5,7 @@
 use App\Model\Entity\TagConnection;
 use App\Model\Entity\TsumegoComment;
 use App\Model\Entity\TsumegoIssue;
+use App\Model\Entity\Tsumego;
 use App\Policy\AdminPolicy;
 use App\Policy\OwnerPolicy;
 use App\Policy\SetPolicy;
@@ -222,7 +223,7 @@ class PolicyTest extends CakeTestCase
 		$policy = new TagConnectionPolicy();
 		$contributor = $this->identity(false, 0, $context->user['id']);
 		$contributor['rating'] = Constants::$MINIMUM_RATING_TO_CONTRIBUTE;
-		[$solved, $solvedLongAgo, $failed, $notVisited] = array_map(fn($tsumego) => ['id' => $tsumego['id']], $context->tsumegos);
+		[$solved, $solvedLongAgo, $failed, $notVisited] = array_map(fn($tsumego) => new Tsumego(['id' => $tsumego['id']]), $context->tsumegos);
 
 		$this->assertTrue($policy->canAdd($contributor, $solved), 'contributor tags a solved problem');
 		$this->assertTrue($policy->canAdd($contributor, $solvedLongAgo), 'a problem solved long ago is solved too');

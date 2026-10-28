@@ -29,7 +29,7 @@ class TsumegoUtil
 		])], $rows);
 	}
 
-	public static function collectTsumegosFromSet(int $setID, ?array $tsumegoConditions = null): array
+	public static function collectTsumegosFromSet(int $setID): array
 	{
 		$scIds = [];
 		$scMap = [];
@@ -42,16 +42,9 @@ class TsumegoUtil
 			$scMap[$sc[$i]['SetConnection']['tsumego_id']] = $i;
 		}
 		// a problem in the trash is not in the set anymore
-		$finalCondition = ['conditions' => ['id' => $scIds, 'deleted IS NULL']];
-		if ($tsumegoConditions)
-			$finalCondition['conditions'] [] = $tsumegoConditions;
-		$ts = ClassRegistry::init('Tsumego')->find('all', $finalCondition) ?: [];
-		$tsCount = count($ts);
-		for ($i = 0; $i < $tsCount; $i++)
-		{
-			$ts[$i]['Tsumego']['set_id'] = $setID;
-			$tsx[$scMap[$ts[$i]['Tsumego']['id']]] = $ts[$i];
-		}
+		$ts = $scIds ? Util::query('SELECT * FROM tsumego WHERE id IN (' . implode(',', array_fill(0, count($scIds), '?')) . ') AND deleted IS NULL', $scIds) : [];
+		foreach ($ts as $tsumego)
+			$tsx[$scMap[$tsumego['id']]] = ['Tsumego' => $tsumego + ['set_id' => $setID]];
 
 		// in the order of the set, and numbered from 0 even when some of its problems were left out
 		ksort($tsx);
@@ -75,11 +68,11 @@ class TsumegoUtil
 	// Whether the problem is solved for the current mode. Time mode and mistake
 	// training always present the problem as a fresh challenge, so this stays
 	// false at page load even for a problem the player has already solved.
-	public static function isSolvedForCurrentMode(array $tsumego): bool
+	public static function isSolvedForCurrentMode(string $status): bool
 	{
 		return !Auth::isInTimeMode()
 			&& !Auth::isInMistakeTrainingMode()
-			&& TsumegoUtil::isRecentlySolved($tsumego['Tsumego']['status']);
+			&& TsumegoUtil::isRecentlySolved($status);
 	}
 
 	public static function isRecentlySolved(?string $status): bool

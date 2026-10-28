@@ -1,6 +1,8 @@
 <?php
 
 use App\Utility\Util;
+use App\Model\Table\TsumegoTable;
+use Cake\ORM\TableRegistry;
 
 class TsumegoTest extends CakeTestCase
 {
@@ -16,7 +18,7 @@ class TsumegoTest extends CakeTestCase
 			],
 		]);
 
-		$this->assertSame(3, Tsumego::problemCount());
+		$this->assertSame(3, TsumegoTable::problemCount());
 	}
 
 	//A result read the problem when its request started. An admin's edit and another result that
@@ -27,11 +29,11 @@ class TsumegoTest extends CakeTestCase
 		$tsumegoID = $context->tsumegos[0]['id'];
 		Util::execute('UPDATE tsumego SET description = ?, rating = 1050 WHERE id = ?', ['new description', $tsumegoID]);
 
-		Tsumego::addToRating($tsumegoID, -10.5);
+		TsumegoTable::addToRating($tsumegoID, -10.5);
 
-		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID)['Tsumego'];
-		$this->assertSame('new description', $tsumego['description']);
-		$this->assertSame(1039.5, (float) $tsumego['rating']);
+		$tsumego = TableRegistry::getTableLocator()->get('Tsumego')->get($tsumegoID);
+		$this->assertSame('new description', $tsumego->description);
+		$this->assertSame(1039.5, $tsumego->rating);
 	}
 
 	public function testAddToRatingStaysWithinTheLimits(): void
@@ -42,10 +44,10 @@ class TsumegoTest extends CakeTestCase
 				['rating' => 1000, 'maximum_rating' => 1005]]]);
 		[$lowest, $highest] = array_column($context->tsumegos, 'id');
 
-		Tsumego::addToRating($lowest, -10);
-		Tsumego::addToRating($highest, 10);
+		TsumegoTable::addToRating($lowest, -10);
+		TsumegoTable::addToRating($highest, 10);
 
-		$this->assertSame(995.0, (float) ClassRegistry::init('Tsumego')->findById($lowest)['Tsumego']['rating']);
-		$this->assertSame(1005.0, (float) ClassRegistry::init('Tsumego')->findById($highest)['Tsumego']['rating']);
+		$this->assertSame(995.0, (float) TableRegistry::getTableLocator()->get('Tsumego')->get($lowest)->rating);
+		$this->assertSame(1005.0, (float) TableRegistry::getTableLocator()->get('Tsumego')->get($highest)->rating);
 	}
 }

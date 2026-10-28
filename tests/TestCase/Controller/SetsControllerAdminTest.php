@@ -24,9 +24,9 @@ class SetsControllerAdminTest extends IntegrationTestCase
 
 		// Get current number of sets in database
 		$setModel = ClassRegistry::init('Set');
-		$tsumegoModel = ClassRegistry::init('Tsumego');
+		$tsumegoTable = $this->fetchTable('Tsumego');
 		$initialSetCount = $setModel->find('count');
-		$initialTsumegoCount = $tsumegoModel->find('count');
+		$initialTsumegoCount = $tsumegoTable->find()->count();
 
 		// Create new set by submitting form
 		$browser->findById('SetTitle')->sendKeys('Test Auto-Increment Set');
@@ -40,7 +40,7 @@ class SetsControllerAdminTest extends IntegrationTestCase
 		$this->assertEquals($initialSetCount + 1, $newSetCount, 'Should create exactly one new set');
 
 		// Verify tsumego was created
-		$newTsumegoCount = $tsumegoModel->find('count');
+		$newTsumegoCount = $tsumegoTable->find()->count();
 		$this->assertEquals($initialTsumegoCount + 1, $newTsumegoCount, 'Should create exactly one new tsumego');
 
 		// Verify the set and tsumego are properly linked
@@ -49,7 +49,7 @@ class SetsControllerAdminTest extends IntegrationTestCase
 		$this->assertNull($newSet['Set']['user_id'], 'Sandbox set should not belong to any user');
 		$this->assertEquals(false, $newSet['Set']['public'], 'New set should be private');
 
-		$newTsumego = $tsumegoModel->find('first', ['order' => 'id DESC']);
+		$newTsumego = $tsumegoTable->find()->orderByDesc('id')->first();
 		$this->assertNotEmpty($newTsumego, 'Should create tsumego');
 
 		// Verify SetConnection links them
@@ -57,7 +57,7 @@ class SetsControllerAdminTest extends IntegrationTestCase
 		$connection = $setConnectionModel->find('first', [
 			'conditions' => [
 				'set_id' => $newSet['Set']['id'],
-				'tsumego_id' => $newTsumego['Tsumego']['id']
+				'tsumego_id' => $newTsumego->id
 			]
 		]);
 		$this->assertNotEmpty($connection, 'SetConnection should link set and tsumego');

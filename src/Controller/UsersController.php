@@ -2,6 +2,7 @@
 
 use App\Model\Table\SgfTable;
 use App\Model\Table\TsumegoStatusTable;
+use App\Model\Table\TsumegoTable;
 use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\RejectTable;
 use App\Model\Table\TimeModeCategoryTable;
@@ -806,7 +807,6 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	public function view(?string $id = null): mixed
 	{
 		$this->set('_page', 'user');
-		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
 		$this->loadModel('SetConnection');
 
@@ -910,9 +910,9 @@ WHERE time_mode_session.user_id = ? AND time_mode_session.challenge_id IS NULL
 GROUP BY DATE(time_mode_session.created)
 ORDER BY category DESC', [$user['User']['id']]));
 
-		$progress = $this->Tsumego->publicProblemProgress((int) $user['User']['id']);
+		$progress = TsumegoTable::publicProblemProgress((int) $user['User']['id']);
 		$this->set('solvedProblemCount', (int) $user['User']['solved']);
-		$this->set('tsumegoCount', $this->Tsumego->problemCount());
+		$this->set('tsumegoCount', TsumegoTable::problemCount());
 		$this->set('publishedProblemCount', $progress['total']);
 		$this->set('solvedPublishedCount', $progress['solved']);
 
@@ -1004,20 +1004,11 @@ ORDER BY category DESC', [$user['User']['id']]));
 	public function authors(): void
 	{
 		$this->loadModel('User');
-		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
 
 		$this->set('_page', 'about');
 		$this->set('_title', 'Tsumego Hero - About');
 
-		$authors = $this->Tsumego->find('all', [
-			'order' => 'created DESC',
-			'conditions' => [
-				'NOT' => [
-					'author' => ['Joschka Zimdars'],
-				],
-			],
-		]);
 		$set = $this->Set->find('all');
 		$setMap = [];
 		$setMap2 = [];
@@ -1071,7 +1062,6 @@ ORDER BY category DESC', [$user['User']['id']]));
 		$count[12]['count'] = 0;
 
 		$this->set('count', $count);
-		$this->set('t', $authors);
 	}
 
 	#[HttpGet]

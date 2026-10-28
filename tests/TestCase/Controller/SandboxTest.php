@@ -106,14 +106,14 @@ class SandboxTest extends IntegrationTestCase
 	{
 		new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
 
-		$beforeTsumegoCount = ClassRegistry::init('Tsumego')->find('count');
+		$beforeTsumegoCount = $this->fetchTable('Tsumego')->find()->count();
 		$beforeConnCount = ClassRegistry::init('SetConnection')->find('count');
 
 		$this->post('/sets/create?sandbox=1', [
 			'Set' => ['title' => 'Test Set'],
 		]);
 
-		$this->assertEquals($beforeTsumegoCount + 1, ClassRegistry::init('Tsumego')->find('count'));
+		$this->assertEquals($beforeTsumegoCount + 1, $this->fetchTable('Tsumego')->find()->count());
 		$this->assertEquals($beforeConnCount + 1, ClassRegistry::init('SetConnection')->find('count'));
 	}
 
@@ -173,14 +173,14 @@ class SandboxTest extends IntegrationTestCase
 		new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
 		$setId = $this->createSetWithTsumego('small set', 0);
 
-		$beforeCount = ClassRegistry::init('Tsumego')->find('count');
+		$beforeCount = $this->fetchTable('Tsumego')->find()->count();
 
 		$this->post('/sets/delete', [
 			'Set' => ['id' => $setId],
 			'confirmation' => 'small set',
 		]);
 
-		$this->assertEquals($beforeCount, ClassRegistry::init('Tsumego')->find('count'),
+		$this->assertEquals($beforeCount, $this->fetchTable('Tsumego')->find()->count(),
 			'Tsumegos survive set deletion (they may be in multiple sets)');
 
 		$connections = ClassRegistry::init('SetConnection')->find('all', [
@@ -196,10 +196,8 @@ class SandboxTest extends IntegrationTestCase
 			'set' => ['title' => 'target', 'public' => 0]]);
 		$setId = $context->set['id'];
 
-		$tsumegoModel = ClassRegistry::init('Tsumego');
-		$tsumegoModel->create();
-		$tsumegoModel->save(['Tsumego' => ['difficulty' => 4, 'variance' => 100, 'author' => '']]);
-		$tsumegoId = $tsumegoModel->id;
+		$tsumegoTable = $this->fetchTable('Tsumego');
+		$tsumegoId = $tsumegoTable->saveOrFail($tsumegoTable->newEntity(['variance' => 100, 'author' => '']))->id;
 
 		$this->post('/sets/addTsumego/' . $setId, [
 			'tsumego_id' => $tsumegoId,
@@ -258,7 +256,7 @@ class SandboxTest extends IntegrationTestCase
 		$setId = $context->set['id'];
 
 		$sgfContent = '(;GM[1]FF[4]SZ[19])';
-		$beforeTsumego = ClassRegistry::init('Tsumego')->find('count');
+		$beforeTsumego = $this->fetchTable('Tsumego')->find()->count();
 		$beforeSgf = $this->fetchTable('Sgf')->find()->count();
 
 		$this->post('/sets/createAndAddTsumego/' . $setId, [
@@ -266,14 +264,14 @@ class SandboxTest extends IntegrationTestCase
 			'sgf' => $sgfContent,
 		]);
 
-		$this->assertEquals($beforeTsumego + 1, ClassRegistry::init('Tsumego')->find('count'));
+		$this->assertEquals($beforeTsumego + 1, $this->fetchTable('Tsumego')->find()->count());
 		$this->assertEquals($beforeSgf + 1, $this->fetchTable('Sgf')->find()->count());
 
-		$tsumego = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC']);
+		$tsumego = $this->fetchTable('Tsumego')->find()->orderByDesc('id')->first();
 		$connection = ClassRegistry::init('SetConnection')->find('first', [
 			'conditions' => [
 				'set_id' => $setId,
-				'tsumego_id' => $tsumego['Tsumego']['id'],
+				'tsumego_id' => $tsumego->id,
 			],
 		]);
 		$this->assertNotEmpty($connection);
@@ -286,13 +284,12 @@ class SandboxTest extends IntegrationTestCase
 		$setModel->create();
 		$setModel->save(['title' => $title, 'public' => $public, 'order' => Constants::$DEFAULT_SET_ORDER]);
 
-		$tsumegoModel = ClassRegistry::init('Tsumego');
-		$tsumegoModel->create();
-		$tsumegoModel->save(['description' => 'test', 'author' => '']);
+		$tsumegoTable = $this->fetchTable('Tsumego');
+		$tsumegoId = $tsumegoTable->saveOrFail($tsumegoTable->newEntity(['description' => 'test', 'author' => '']))->id;
 
 		$connModel = ClassRegistry::init('SetConnection');
 		$connModel->create();
-		$connModel->save(['set_id' => $setModel->id, 'tsumego_id' => $tsumegoModel->id, 'num' => 1]);
+		$connModel->save(['set_id' => $setModel->id, 'tsumego_id' => $tsumegoId, 'num' => 1]);
 
 		return $setModel->id;
 	}

@@ -2,6 +2,7 @@
 
 namespace App\Policy;
 
+use App\Model\Entity\Tsumego;
 use App\Model\Table\TsumegoStatusTable;
 use App\Model\Entity\TagConnection;
 use App\Utility\TsumegoUtil;
@@ -11,22 +12,18 @@ use App\Utility\TsumegoUtil;
 //proposals only).
 /**
  * @phpstan-import-type UserRow from \App\Utility\RowTypes
- * @phpstan-import-type TsumegoRow from \App\Utility\RowTypes
  */
 class TagConnectionPolicy extends BasePolicy
 {
 	//A player tags only a problem they solved, an admin any (forum#94).
-	/**
-	 * @param UserRow|null $user
-	 * @param TsumegoRow $tsumego
-	 */
-	public static function canAdd(?array $user, array $tsumego): bool
+	/** @param UserRow|null $user */
+	public static function canAdd(?array $user, Tsumego $tsumego): bool
 	{
 		if (!static::canPropose($user))
 			return false;
 		if (static::isAdmin($user))
 			return true;
-		$status = TsumegoStatusTable::statusOf((int) $user['id'], (int) $tsumego['id']);
+		$status = TsumegoStatusTable::statusOf((int) $user['id'], $tsumego->id);
 		return $status !== null && TsumegoUtil::isSolvedStatus($status);
 	}
 

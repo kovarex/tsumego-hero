@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Entity\Tsumego;
 use App\Model\Entity\TsumegoAttempt;
 use App\Model\Entity\TsumegoStatus;
 use App\Model\Table\AchievementConditionTable;
@@ -7,6 +8,7 @@ use App\Model\Table\ClassroomAssignmentTable;
 use App\Model\Table\DayRecordTable;
 use App\Model\Table\ProgressDeletionTable;
 use App\Model\Table\TsumegoAttemptTable;
+use App\Model\Table\TsumegoTable;
 use App\Model\Table\TsumegoStatusTable;
 use App\Utility\AchievementChecker;
 use App\Utility\Auth;
@@ -77,7 +79,7 @@ class PlayResultProcessorComponent extends Component
 		$seconds = max(0.01, $seconds);
 		$solved = $outcome === PlayOutcome::SolvedClean || $outcome === PlayOutcome::SolvedAfterMistake;
 
-		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID);
+		$tsumego = TableRegistry::getTableLocator()->get('Tsumego')->find()->where(['id' => $tsumegoID])->first();
 		if (!$tsumego)
 			return ['error' => 'Tsumego not found'];
 
@@ -106,7 +108,7 @@ class PlayResultProcessorComponent extends Component
 		if (HeroPowers::getSprintRemainingSeconds() > 0)
 			$result['xp-modifier'] = ($result['xp-modifier'] ?: 1) * Constants::$SPRINT_MULTIPLIER;
 
-		$originalTsumegoRating = $tsumego['Tsumego']['rating'];
+		$originalTsumegoRating = $tsumego->rating;
 
 		// the resets of the part of the set the problem is played from, in the last month
 		$progressDeletionCount = ProgressDeletionTable::countRecentForProblem(Auth::getUserID(), $tsumegoID, $setConnectionID);
@@ -255,7 +257,7 @@ class PlayResultProcessorComponent extends Component
 		return $currentStatus;
 	}
 
-	private function updateTsumegoStatus(array $previousTsumego, array &$result, ?TsumegoStatus $previousTsumegoStatus): string
+	private function updateTsumegoStatus(Tsumego $previousTsumego, array &$result, ?TsumegoStatus $previousTsumegoStatus): string
 	{
 		if (Auth::isInMistakeTrainingMode())
 			return $previousTsumegoStatus->status ?? TsumegoStatusTable::$NOT_VISITED;
@@ -263,7 +265,7 @@ class PlayResultProcessorComponent extends Component
 		$statusTable = TableRegistry::getTableLocator()->get('TsumegoStatus');
 		$previousTsumegoStatus ??= $statusTable->newEntity([
 			'user_id' => Auth::getUserID(),
-			'tsumego_id' => $previousTsumego['Tsumego']['id'],
+			'tsumego_id' => $previousTsumego->id,
 			'status' => TsumegoStatusTable::$VISITED]);
 
 		$newStatus = $this->getNewStatus($result['solved'], $previousTsumegoStatus->status, $result);
@@ -275,7 +277,7 @@ class PlayResultProcessorComponent extends Component
 		return $newStatus;
 	}
 
-	private function updateTsumegoAttempt(array $previousTsumego, array $result, string $previousTsumegoStatus, float $seconds, ?TsumegoAttempt $lastTsumegoAttempt): void
+	private function updateTsumegoAttempt(Tsumego $previousTsumego, array $result, string $previousTsumegoStatus, float $seconds, ?TsumegoAttempt $lastTsumegoAttempt): void
 	{
 		if (Auth::isInTimeMode() || Auth::isInMistakeTrainingMode())
 			return;
@@ -289,7 +291,7 @@ class PlayResultProcessorComponent extends Component
 			$result['xp-gained'] ?: 0,
 			($continued ? $continued->seconds : 0) + $seconds,
 			$result['solved'] ? 1 : 0,
-			$previousTsumego['Tsumego']['rating'],
+			$previousTsumego->rating,
 			($continued ? $continued->misplays : 0) + ($result['solved'] ? 0 : 1),
 			date('Y-m-d H:i:s')];
 		// Plain SQL: the ratings and the seconds are floats that MySQL rounds into the integer columns,
@@ -299,7 +301,7 @@ class PlayResultProcessorComponent extends Component
 				[...$values, $continued->id]);
 		else
 			Util::execute('INSERT INTO tsumego_attempt (user_rating, gain, seconds, solved, tsumego_rating, misplays, created, user_id, tsumego_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-				[...$values, Auth::getUserID(), $previousTsumego['Tsumego']['id']]);
+				[...$values, Auth::getUserID(), $previousTsumego->id]);
 	}
 
 	private static function processRatingChangeStep(float &$userRating, float &$tsumegoRating, bool $isWin): void
@@ -310,7 +312,7 @@ class PlayResultProcessorComponent extends Component
 		$tsumegoRating += $tsumegoRatingDelta;
 	}
 
-	private function processRatingChange(array &$previousTsumego, array $result, string $previousTsumegoStatus, int $progressDeletionCount, int $failsInARow): void
+	private function processRatingChange(Tsumego $previousTsumego, array $result, string $previousTsumegoStatus, int $progressDeletionCount, int $failsInARow): void
 	{
 		if (!Auth::ratingisGainedInCurrentMode())
 			return;
@@ -328,7 +330,7 @@ class PlayResultProcessorComponent extends Component
 			return;
 
 		$userRating = (float) Auth::getUser()['rating'];
-		$originalTsumegoRating = (float) $previousTsumego['Tsumego']['rating'];
+		$originalTsumegoRating = $previousTsumego->rating;
 		$tsumegoRating = $originalTsumegoRating;
 
 		// Each AJAX call is a single atomic event: fail or solve, never both.
@@ -339,11 +341,11 @@ class PlayResultProcessorComponent extends Component
 			'rating' => $userRating,
 			'highest_rating' => max((float) Auth::getUser()['highest_rating'], $userRating)]);
 
-		$previousTsumego['Tsumego']['rating'] = Util::clampOptional(
+		$previousTsumego->rating = Util::clampOptional(
 			$tsumegoRating,
-			$previousTsumego['Tsumego']['minimum_rating'],
-			$previousTsumego['Tsumego']['maximum_rating']);
-		Tsumego::addToRating((int) $previousTsumego['Tsumego']['id'], $tsumegoRating - $originalTsumegoRating);
+			$previousTsumego->minimum_rating,
+			$previousTsumego->maximum_rating);
+		TsumegoTable::addToRating($previousTsumego->id, $tsumegoRating - $originalTsumegoRating);
 	}
 
 	private function processDamage(array $result, string $previousStatusValue): void
@@ -357,7 +359,7 @@ class PlayResultProcessorComponent extends Component
 		Auth::incrementUserField('damage', 1);
 	}
 
-	private function processXpChange(array $previousTsumego, array &$result, string $previousTsumegoStatus, int|float|string $originalTsumegoRating, int $progressDeletionCount): void
+	private function processXpChange(Tsumego $previousTsumego, array &$result, string $previousTsumegoStatus, int|float|string $originalTsumegoRating, int $progressDeletionCount): void
 	{
 		if (!Auth::XPisGainedInCurrentMode())
 			return;
@@ -396,7 +398,7 @@ class PlayResultProcessorComponent extends Component
 			AchievementConditionTable::put(Auth::getUserID(), AchievementConditionTable::CATEGORY_NO_ERROR_STREAK, 0);
 	}
 
-	private function processUnsortedStuff(array $previousTsumego, array $result, string $previousTsumegoStatus): void
+	private function processUnsortedStuff(Tsumego $previousTsumego, array $result, string $previousTsumegoStatus): void
 	{
 		if (Auth::isInMistakeTrainingMode())
 			return;
@@ -405,7 +407,7 @@ class PlayResultProcessorComponent extends Component
 		if (!$result['solved'])
 			return;
 
-		$solvedTsumegoRank = Rating::getReadableRankFromRating($previousTsumego['Tsumego']['rating']);
+		$solvedTsumegoRank = Rating::getReadableRankFromRating($previousTsumego->rating);
 		if (isset(AchievementConditionTable::DAN_SOLVE_CATEGORIES[$solvedTsumegoRank]))
 			AchievementConditionTable::increment(Auth::getUserID(), AchievementConditionTable::DAN_SOLVE_CATEGORIES[$solvedTsumegoRank]);
 		DayRecordTable::countGemSolve($solvedTsumegoRank);

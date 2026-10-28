@@ -11,7 +11,7 @@ class FavoritesAchievementTest extends AchievementTestCase
 			'user' => ['name' => 'alice'],
 			'tsumego' => ['sgf' => '(;GM[1]FF[4]SZ[19])'],
 		]);
-		$tsumegoId = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC'])['Tsumego']['id'];
+		$tsumegoId = $this->fetchTable('Tsumego')->find()->orderByDesc('id')->first()->id;
 
 		$this->post('/sets/addTsumego/favorites', ['tsumego_id' => $tsumegoId]);
 
@@ -24,7 +24,7 @@ class FavoritesAchievementTest extends AchievementTestCase
 			'user' => ['name' => 'alice'],
 			'tsumego' => ['sgf' => '(;GM[1]FF[4]SZ[19])'],
 		]);
-		$tsumegoId = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC'])['Tsumego']['id'];
+		$tsumegoId = $this->fetchTable('Tsumego')->find()->orderByDesc('id')->first()->id;
 
 		$set = ClassRegistry::init('Set');
 		$set->create();

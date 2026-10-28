@@ -94,12 +94,12 @@ class TsumegosController extends AppController
 		if (!$id)
 			throw new NotFoundException("Tsumego id not provided");
 
-		$tsumego = ClassRegistry::init('Tsumego')->findById($id);
+		$tsumego = $this->fetchTable('Tsumego')->find()->select(['id', 'deleted'])->where(['id' => (int) $id])->first();
 		if (!$tsumego)
 			throw new NotFoundException("Tsumego not found");
 		// The Play menu leads to the last visited problem, which may have been deleted since,
 		// so the player lands on the collections instead of an error.
-		if ($tsumego['Tsumego']['deleted'] && !Auth::isAdmin())
+		if ($tsumego->deleted !== null && !Auth::isAdmin())
 		{
 			CookieFlash::set('That problem was deleted', 'info');
 			return $this->redirect('/sets');
@@ -126,19 +126,20 @@ class TsumegosController extends AppController
 	public function settings(string $tsumegoID): CakeResponse
 	{
 		$this->Authorization->authorize('Tsumego', 'editSettings');
-		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID);
+		$tsumegoTable = $this->fetchTable('Tsumego');
+		$tsumego = $tsumegoTable->find()->select(['id', 'alternative_response', 'pass'])->where(['id' => (int) $tsumegoID])->first();
 		if (!$tsumego)
 			throw new NotFoundException('Problem not found');
 		$data = $this->request->data;
 		foreach (['alternative_response' => AdminActivityTypeTable::ALTERNATIVE_RESPONSE, 'pass' => AdminActivityTypeTable::PASS_MODE] as $field => $activityType)
 		{
 			$value = empty($data[$field]) ? 0 : 1;
-			if ((int) $tsumego['Tsumego'][$field] === $value)
+			if ((int) $tsumego->get($field) === $value)
 				continue;
 			AdminActivityLogger::log($activityType, (int) $tsumegoID, null, null, (string) $value);
-			$tsumego['Tsumego'][$field] = $value;
+			$tsumego->set($field, (bool) $value);
 		}
-		ClassRegistry::init('Tsumego')->save($tsumego, ['fieldList' => ['alternative_response', 'pass']]);
+		$tsumegoTable->saveOrFail($tsumego);
 		if (array_key_exists('variant_type', $data))
 			TsumegoVariantTable::changeType((int) $tsumegoID, $data['variant_type'] === '' ? null : (int) $data['variant_type']);
 		return $this->redirect($this->referer('/tsumegos/play/' . (int) $tsumegoID, true));
@@ -177,11 +178,11 @@ class TsumegosController extends AppController
 		$similarSearchLogic->execute();
 
 		$this->set('result', $similarSearchLogic->result);
-		$tsumegoStatus = TsumegoStatusTable::statusOf(Auth::getUserID(), (int) $similarSearchLogic->sourceTsumego['id']);
+		$tsumegoStatus = TsumegoStatusTable::statusOf(Auth::getUserID(), (int) $similarSearchLogic->sourceTsumegoID);
 		$this->set(
 			'sourceTsumegoButton',
 			new TsumegoButton(
-				$similarSearchLogic->sourceTsumego['id'],
+				(int) $similarSearchLogic->sourceTsumegoID,
 				(int) $setConnectionID,
 				$similarSearchLogic->setConnection['num'],
 				$tsumegoStatus ?: 'N', 0, $similarSearchLogic->sourceSgf));
@@ -194,13 +195,13 @@ class TsumegosController extends AppController
 	public function edit(string $tsumegoID)
 	{
 		$this->Authorization->authorize('Tsumego');
-		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID);
+		$tsumegoTable = $this->fetchTable('Tsumego');
+		$tsumego = $tsumegoTable->find()->where(['id' => (int) $tsumegoID])->first();
 		if (!$tsumego)
 		{
 			CookieFlash::set("Tsumego with id=" . $tsumegoID . ' doesn\'t exist.', 'error');
 			return $this->redirect('/sets');
 		}
-		$tsumego = $tsumego['Tsumego'];
 
 		if (($this->request->data['delete'] ?? '') == 'delete')
 			return $this->moveToTrash((int) $tsumegoID);
@@ -260,40 +261,40 @@ class TsumegosController extends AppController
 				$newDescription
 			);
 
-		if ($tsumego['description'] != $newDescription)
+		if ($tsumego->description != $newDescription)
 		{
-			AdminActivityLogger::log(AdminActivityTypeTable::DESCRIPTION_EDIT, $tsumegoID, null, $tsumego['description'], $newDescription);
-			$tsumego['description'] = $newDescription;
+			AdminActivityLogger::log(AdminActivityTypeTable::DESCRIPTION_EDIT, $tsumegoID, null, $tsumego->description, $newDescription);
+			$tsumego->description = $newDescription;
 		}
 
-		if ($tsumego['hint'] != $this->request->data['hint'])
+		if ($tsumego->hint != $this->request->data['hint'])
 		{
-			AdminActivityLogger::log(AdminActivityTypeTable::HINT_EDIT, $tsumegoID, null, $tsumego['hint'], $this->request->data['hint']);
-			$tsumego['hint'] = $this->request->data['hint'];
+			AdminActivityLogger::log(AdminActivityTypeTable::HINT_EDIT, $tsumegoID, null, $tsumego->hint, $this->request->data['hint']);
+			$tsumego->hint = $this->request->data['hint'];
 		}
-		if ($tsumego['author'] != $this->request->data['author'])
+		if ($tsumego->author != $this->request->data['author'])
 		{
-			AdminActivityLogger::log(AdminActivityTypeTable::AUTHOR_EDIT, $tsumegoID, null, $tsumego['author'], $this->request->data['author']);
-			$tsumego['author'] = $this->request->data['author'];
+			AdminActivityLogger::log(AdminActivityTypeTable::AUTHOR_EDIT, $tsumegoID, null, $tsumego->author, $this->request->data['author']);
+			$tsumego->author = $this->request->data['author'];
 		}
-		if ($tsumego['minimum_rating'] != $minimumRating)
+		if ($tsumego->minimum_rating != $minimumRating)
 		{
-			AdminActivityLogger::log(AdminActivityTypeTable::MINIMUM_RATING_EDIT, $tsumegoID, null, Util::strOrNull($tsumego['minimum_rating']), Util::strOrNull($minimumRating));
-			$tsumego['minimum_rating'] = $minimumRating;
-		}
-
-		if ($tsumego['maximum_rating'] != $maximumRating)
-		{
-			AdminActivityLogger::log(AdminActivityTypeTable::MAXIMUM_RATING_EDIT, $tsumegoID, null, Util::strOrNull($tsumego['maximum_rating']), Util::strOrNull($maximumRating));
-			$tsumego['maximum_rating'] = $maximumRating;
+			AdminActivityLogger::log(AdminActivityTypeTable::MINIMUM_RATING_EDIT, $tsumegoID, null, Util::strOrNull($tsumego->minimum_rating), Util::strOrNull($minimumRating));
+			$tsumego->minimum_rating = $minimumRating;
 		}
 
-		if ($tsumego['rating'] != $rating)
-			AdminActivityLogger::log(AdminActivityTypeTable::RATING_EDIT, $tsumegoID, null, Util::strOrNull($tsumego['rating']), Util::strOrNull($rating));
+		if ($tsumego->maximum_rating != $maximumRating)
+		{
+			AdminActivityLogger::log(AdminActivityTypeTable::MAXIMUM_RATING_EDIT, $tsumegoID, null, Util::strOrNull($tsumego->maximum_rating), Util::strOrNull($maximumRating));
+			$tsumego->maximum_rating = $maximumRating;
+		}
 
-		$tsumego['rating'] = Util::clampOptional($rating, $minimumRating, $maximumRating);
+		if ($tsumego->rating != $rating)
+			AdminActivityLogger::log(AdminActivityTypeTable::RATING_EDIT, $tsumegoID, null, Util::strOrNull($tsumego->rating), Util::strOrNull($rating));
 
-		ClassRegistry::init('Tsumego')->save($tsumego);
+		$tsumego->rating = Util::clampOptional($rating, $minimumRating, $maximumRating);
+
+		$tsumegoTable->saveOrFail($tsumego);
 		return $this->redirect($this->request->data['redirect']);
 	}
 
@@ -367,8 +368,6 @@ class TsumegosController extends AppController
 			]],
 			'conditions' => ['SetConnection.tsumego_id' => $slaveSetConnection['tsumego_id'], Set::officialCondition('S')],
 		]);
-		$masterTsumego = ClassRegistry::init('Tsumego')->findById($masterSetConnection['tsumego_id']);
-		$slaveTsumego = ClassRegistry::init('Tsumego')->findById($slaveSetConnection['tsumego_id']);
 
 		$sgfs = [];
 		$ids = array_unique(array_merge(
@@ -462,15 +461,13 @@ class TsumegosController extends AppController
 		if ($problem = SgfParser::validationProblem($sgfData))
 			throw new BadRequestException('Invalid SGF format: ' . $problem);
 
-		$tsumego = ClassRegistry::init("Tsumego")->findById($tsumegoID);
-		if (!$tsumego)
+		if (!$this->fetchTable('Tsumego')->exists(['id' => $tsumegoID]))
 			return;
 
-		$tsumego = $tsumego['Tsumego'];
 		$sgf = [];
 		$sgf['sgf'] = $sgfData;
 		$sgf['user_id'] = Auth::getUserId();
-		$sgf['tsumego_id'] = $tsumego['id'];
+		$sgf['tsumego_id'] = $tsumegoID;
 		$sgf += Auth::isAdmin() ? SgfTable::acceptedBy(Auth::getUserID()) : ['sgf_status_id' => SgfTable::STATUS_PROPOSED];
 		$sgf['first_move_color'] = $firstMoveColor;
 		$sgf['correct_moves'] = $correctMoves;
@@ -479,7 +476,7 @@ class TsumegosController extends AppController
 		// what the board editor did to the SGF it was opened with, so the comments can follow
 		$sgfTable = $this->fetchTable('Sgf');
 		$source = $sgfTable->find()->select(['id', 'tsumego_id'])->where(['id' => (int) ($this->request->data['sourceSgfID'] ?? 0)])->first();
-		if ($source && $source->tsumego_id == $tsumego['id'])
+		if ($source && $source->tsumego_id == $tsumegoID)
 		{
 			$sgf['source_sgf_id'] = $source->id;
 			$sgf['transformation_from_source'] = BoardTransformation::fromJson($this->request->data['transformationFromSource'] ?? null)->toJson();

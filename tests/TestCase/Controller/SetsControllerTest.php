@@ -55,9 +55,7 @@ class SetsControllerTest extends IntegrationTestCase
 	{
 		ClassRegistry::init('Set')->create();
 		ClassRegistry::init('Set')->save(['id' => $setId, 'public' => 1, 'title' => 'set ' . $setId]);
-		ClassRegistry::init('Tsumego')->create();
-		ClassRegistry::init('Tsumego')->save(['rating' => 1000, 'author' => '']);
-		$tsumegoId = ClassRegistry::init('Tsumego')->getInsertID();
+		$tsumegoId = $this->fetchTable('Tsumego')->saveOrFail($this->fetchTable('Tsumego')->newEntity(['rating' => 1000, 'author' => '']))->id;
 		ClassRegistry::init('SetConnection')->create();
 		ClassRegistry::init('SetConnection')->save(['set_id' => $setId, 'tsumego_id' => $tsumegoId, 'num' => 1]);
 		$this->fetchTable('Sgf')->saveOrFail($this->fetchTable('Sgf')->newEntity(['tsumego_id' => $tsumegoId, 'sgf' => '(;GM[1]FF[4]SZ[19])', 'user_id' => $userId, 'sgf_status_id' => SgfTable::STATUS_ACCEPTED]));

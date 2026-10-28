@@ -433,7 +433,7 @@ class MistakeTrainingControllerTest extends IntegrationTestCase
 			],
 		]);
 
-		ClassRegistry::init('Tsumego')->delete($context->tsumegos[0]['id']);
+		$this->fetchTable('Tsumego')->deleteAll(['id' => $context->tsumegos[0]['id']]);
 
 		$this->get('/mistake-training');
 		// The row went with the problem, so the training is empty

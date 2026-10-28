@@ -117,7 +117,7 @@ class TsumegoMergeTest extends IntegrationTestCase
 			$this->assertSame('S', $masterStatus->status);
 
 			// slave tsumego got actually deleted
-			$this->assertSame(1, ClassRegistry::init('Tsumego')->find('count'));
+			$this->assertSame(1, $this->fetchTable('Tsumego')->find()->count());
 
 			// tsumego attempts got merged
 			$this->assertSame(2, $this->fetchTable('TsumegoAttempt')->find()->count());

@@ -7,6 +7,8 @@ use App\Utility\CookieFlash;
 use App\Utility\Trash;
 use App\Utility\TsumegoUtil;
 use App\Utility\Util;
+use Cake\ORM\TableRegistry;
+use App\Model\Entity\Tsumego;
 
 class TrashTest extends IntegrationTestCase
 {
@@ -15,9 +17,9 @@ class TrashTest extends IntegrationTestCase
 		return date('Y-m-d H:i:s', strtotime('-' . $days . ' days'));
 	}
 
-	private static function tsumegoRow(int $id): ?array
+	private static function tsumegoRow(int $id): ?Tsumego
 	{
-		return ClassRegistry::init('Tsumego')->findById($id)['Tsumego'] ?? null;
+		return TableRegistry::getTableLocator()->get('Tsumego')->find()->where(['id' => $id])->first();
 	}
 
 	private static function setRow(int $id): ?array
@@ -63,7 +65,7 @@ WHERE c.TABLE_SCHEMA = DATABASE() AND c.COLUMN_NAME = 'tsumego_id'");
 
 		$this->post('/tsumegos/edit/' . $tsumegoID, ['delete' => 'delete']);
 
-		$this->assertNotNull(self::tsumegoRow($tsumegoID)['deleted']);
+		$this->assertNotNull(self::tsumegoRow($tsumegoID)->deleted);
 		$this->assertNull(self::setRow($context->tsumegos[0]['sets'][0]['id'])['deleted'], 'The set still has a problem');
 		$this->assertStringEndsWith(Set::url($context->tsumegos[0]['sets'][0]['id']), $this->headerValue('Location'));
 		// the problem keeps its place in the set, so it can come back there
@@ -90,10 +92,10 @@ WHERE c.TABLE_SCHEMA = DATABASE() AND c.COLUMN_NAME = 'tsumego_id'");
 		$this->assertStringEndsWith('/sets', $this->headerValue('Location'));
 
 		$this->post('/trash/restore-problem/' . $context->tsumegos[1]['id']);
-		$this->assertNull(self::tsumegoRow($context->tsumegos[1]['id'])['deleted']);
+		$this->assertNull(self::tsumegoRow($context->tsumegos[1]['id'])->deleted);
 		$this->assertNull(self::setRow($setID)['deleted'], 'The set went to the trash with the problem, so it comes back with it');
 		$this->assertNull(self::setRow($otherSetID)['deleted']);
-		$this->assertNotNull(self::tsumegoRow($context->tsumegos[0]['id'])['deleted'], 'The other problem was deleted on its own');
+		$this->assertNotNull(self::tsumegoRow($context->tsumegos[0]['id'])->deleted, 'The other problem was deleted on its own');
 
 		$activities = $this->fetchTable('AdminActivity')->find()->orderBy('id')->toArray();
 		$this->assertSame(AdminActivityTypeTable::PROBLEM_DELETE, $activities[0]->type);
@@ -114,7 +116,7 @@ WHERE c.TABLE_SCHEMA = DATABASE() AND c.COLUMN_NAME = 'tsumego_id'");
 
 		Trash::restoreProblem($context->tsumegos[0]['id']);
 
-		$this->assertNull(self::tsumegoRow($context->tsumegos[0]['id'])['deleted']);
+		$this->assertNull(self::tsumegoRow($context->tsumegos[0]['id'])->deleted);
 		$this->assertNotNull(self::setRow($setID)['deleted']);
 	}
 
@@ -247,7 +249,7 @@ WHERE c.TABLE_SCHEMA = DATABASE() AND c.COLUMN_NAME = 'tsumego_id'");
 
 		$this->post('/sets/delete/' . $setID, ['confirmation' => 'Life and Death']);
 		$this->assertNotNull(self::setRow($setID)['deleted']);
-		$this->assertNull(self::tsumegoRow($context->tsumegos[0]['id'])['deleted'], 'Its problems wait in the set');
+		$this->assertNull(self::tsumegoRow($context->tsumegos[0]['id'])->deleted, 'Its problems wait in the set');
 		$activity = $this->fetchTable('AdminActivity')->find()->firstOrFail();
 		$this->assertSame(AdminActivityTypeTable::SET_DELETE, $activity->type);
 		$this->assertSame('Life and Death', $activity->old_value);

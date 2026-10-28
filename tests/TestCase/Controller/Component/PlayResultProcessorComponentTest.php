@@ -98,7 +98,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 
 	private function tsumegoRating(ContextPreparator $context): float
 	{
-		return (float) ClassRegistry::init('Tsumego')->findById($context->tsumegos[0]['id'])['Tsumego']['rating'];
+		return (float) $this->fetchTable('Tsumego')->get($context->tsumegos[0]['id'])->rating;
 	}
 
 	public function testVisitFromEmpty(): void
