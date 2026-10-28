@@ -36,31 +36,6 @@ class TsumegoIssuesControllerApiTest extends IntegrationTestCase
 		$this->assertNotEmpty($body['issue']['id']);
 	}
 
-	//The problem of an issue is named after a collection of the site, not after someone's Favorites,
-	//even when its collection is in the trash.
-	public function testApiNamesTheProblemAfterACollectionOfTheSiteNotAfterFavorites()
-	{
-		$context = new ContextPreparator([
-			'user' => ['name' => 'kovarex'],
-			'other-users' => [['name' => 'Ivan Detkov']],
-			'tsumego' => [
-				'sets' => [
-					['name' => 'Favorites', 'public' => 0, 'user_id' => 'self', 'num' => 1],
-					['name' => 'Life and death', 'deleted' => '2026-10-01 00:00:00', 'num' => 7],
-				],
-				'issues' => [['message' => 'wrong answer']],
-			],
-		]);
-
-		$this->giveFavoritesToTheOtherUser($context);
-
-		$this->get('/tsumego-issues/api');
-
-		$issue = json_decode($this->view, true)['issues'][0];
-		$this->assertSame('Life and death', $issue['Set']['title']);
-		$this->assertSame(7, (int) $issue['TsumegoNum']);
-	}
-
 	//A problem left only in someone's Favorites is shown by its id rather than in their collection.
 	public function testApiLeavesOutAFavoritesSetAsTheOnlyCollection()
 	{
@@ -80,6 +55,33 @@ class TsumegoIssuesControllerApiTest extends IntegrationTestCase
 		$issue = json_decode($this->view, true)['issues'][0];
 		$this->assertNull($issue['Set']);
 		$this->assertNull($issue['TsumegoNum']);
+	}
+
+	//Only the issues of problems that are on the site are listed and counted: a problem in the trash
+	//and a problem whose only collection is in the trash are left out, a problem that still has a
+	//collection of the site outside the trash stays.
+	public function testApiLeavesOutTheIssuesOfProblemsOffTheSite()
+	{
+		new ContextPreparator([
+			'user' => ['name' => 'kovarex'],
+			'tsumegos' => [
+				['sets' => [['name' => 'Live collection', 'num' => 1]], 'issues' => [['message' => 'on the site']]],
+				['deleted' => '2026-10-01 00:00:00', 'sets' => [['name' => 'Live collection', 'num' => 2]], 'issues' => [['message' => 'problem in the trash']]],
+				['sets' => [['name' => 'Trashed collection', 'deleted' => '2026-10-01 00:00:00', 'num' => 1]], 'issues' => [['message' => 'collection in the trash']]],
+				['sets' => [
+					['name' => 'Trashed collection', 'deleted' => '2026-10-01 00:00:00', 'num' => 2],
+					['name' => 'Live collection', 'num' => 3],
+				], 'issues' => [['message' => 'also in a live collection']]],
+			],
+		]);
+
+		$this->get('/tsumego-issues/api');
+
+		$body = json_decode($this->view, true);
+		$messages = array_map(fn($issue) => $issue['comments'][0]['text'], $body['issues']);
+		sort($messages);
+		$this->assertSame(['also in a live collection', 'on the site'], $messages);
+		$this->assertSame(2, $body['counts']['open']);
 	}
 
 	public function testCloseNotFound()
