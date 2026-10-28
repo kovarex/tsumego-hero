@@ -208,7 +208,7 @@ class PlayResultProcessorComponent extends Component
 			return true;
 		}
 
-		AppController::_updatePotionCondition();
+		AchievementCondition::increment(Auth::getUserID(), AchievementCondition::CATEGORY_POTION);
 		return false;
 	}
 
@@ -407,14 +407,14 @@ class PlayResultProcessorComponent extends Component
 			return;
 
 		$solvedTsumegoRank = Rating::getReadableRankFromRating($previousTsumego['Tsumego']['rating']);
-		AppController::_saveDanSolveCondition($solvedTsumegoRank, $previousTsumego['Tsumego']['id']);
-		AppController::_updateGems($solvedTsumegoRank);
-		// Sprint state is server-authoritative (user.sprint_start). A solve only
-		// counts toward the sprint achievement while a sprint is actually active.
+		if (isset(AchievementCondition::DAN_SOLVE_CATEGORIES[$solvedTsumegoRank]))
+			AchievementCondition::increment(Auth::getUserID(), AchievementCondition::DAN_SOLVE_CATEGORIES[$solvedTsumegoRank]);
+		DayRecord::countGemSolve($solvedTsumegoRank);
+		//The sprint run counts the problems solved in a row while a sprint is active (user.sprint_start)
 		if (HeroPowers::getSprintRemainingSeconds() > 0)
-			AppController::_updateSprintCondition(true);
+			AchievementCondition::increment(Auth::getUserID(), AchievementCondition::CATEGORY_SPRINT);
 		else
-			AppController::_updateSprintCondition();
+			AchievementCondition::put(Auth::getUserID(), AchievementCondition::CATEGORY_SPRINT, 0);
 	}
 
 	//The Gold Digger run counts the golden tsumego solved in a row. A golden tsumego is a
@@ -425,6 +425,9 @@ class PlayResultProcessorComponent extends Component
 			return;
 		if ($previousTsumegoStatus != TsumegoStatus::$GOLDEN)
 			return;
-		AppController::_updateGoldenCondition($result['solved']);
+		if ($result['solved'])
+			AchievementCondition::increment(Auth::getUserID(), AchievementCondition::CATEGORY_GOLDEN);
+		else
+			AchievementCondition::put(Auth::getUserID(), AchievementCondition::CATEGORY_GOLDEN, 0);
 	}
 }

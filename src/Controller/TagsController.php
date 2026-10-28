@@ -11,11 +11,16 @@ use App\Attribute\HttpPost;
 
 class TagsController extends AppController
 {
+	private static function approvedTags(): array
+	{
+		return Util::query("SELECT * FROM tag WHERE approved = 1 ORDER BY tag.name");
+	}
+
 	#[HttpGet]
 	public function add(): void
 	{
 		$this->Authorization->authorize('Tag', 'add');
-		$allTags = $this->_getAllTags();
+		$allTags = self::approvedTags();
 		$this->set('allTags', $allTags);
 	}
 
@@ -64,7 +69,7 @@ class TagsController extends AppController
 		$tn = $this->Tag->findById($id);
 		if (!$tn)
 			throw new NotFoundException('Tag not found');
-		$allTags = $this->_getAllTags();
+		$allTags = self::approvedTags();
 		$user = $this->User->findById($tn['Tag']['user_id']);
 		$tn['Tag']['user'] = $user ? $user['User'] : null;
 		$this->set('allTags', $allTags);
@@ -158,7 +163,7 @@ class TagsController extends AppController
 			return $this->redirect('/tags');
 		}
 
-		$this->set('allTags', $this->_getAllTags());
+		$this->set('allTags', self::approvedTags());
 		$this->set('tag', $tag['Tag']);
 		$this->set('canAddTag', $this->Authorization->can('Tag', 'add'));
 		return null;

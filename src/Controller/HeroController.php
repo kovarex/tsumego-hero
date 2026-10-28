@@ -43,6 +43,8 @@ class HeroController extends AppController
 			'sprint_start' => date('Y-m-d H:i:s'),
 			'used_sprint' => 1,
 		]);
+		//The sprint run counts the problems solved during this sprint only
+		AchievementCondition::put(Auth::getUserID(), AchievementCondition::CATEGORY_SPRINT, 0);
 		return $this->response;
 	}
 
