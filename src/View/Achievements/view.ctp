@@ -1,16 +1,16 @@
 <?php
 
+use App\Model\Entity\AchievementStatus;
 use App\Utility\Auth;
-use App\Utility\Util;
 
 /**
  * @var View $this
  * @var array $achievement
  * @var int $completerCount
- * @var array $completers
+ * @var array<array|null> $completers
  * @var array $collections
  * @var float $completionPercent
- * @var array $currentUserStatus
+ * @var AchievementStatus|null $currentUserStatus
  * @var int|null $progress
  * @var int|null $progressGoal
  * @var string $rarity
@@ -20,8 +20,8 @@ use App\Utility\Util;
 
 // The card is grey until the player completed the achievement, and the badge on
 // it counts the completions.
-$aColor = empty($currentUserStatus) ? 'achievementColorGray' : $achievement['Achievement']['color'];
-$earnedCount = empty($currentUserStatus) ? 0 : (int) $currentUserStatus['AchievementStatus']['value'];
+$aColor = $currentUserStatus === null ? 'achievementColorGray' : $achievement['Achievement']['color'];
+$earnedCount = $currentUserStatus === null ? 0 : $currentUserStatus->value;
 
 // The player whose page this is: the one being viewed, or the logged in one.
 $profileUserID = $viewedUser['id'] ?? (Auth::isLoggedIn() ? Auth::getUserID() : null);
@@ -45,7 +45,7 @@ $profileUserID = $viewedUser['id'] ?? (Auth::isLoggedIn() ? Auth::getUserID() : 
 	<div align="center" class="achievement2 <?php
 	echo $aColor;
 $displayImage = $achievement['Achievement']['image'];
-if (empty($currentUserStatus))
+if ($currentUserStatus === null)
 	$displayImage = 'ac000i';
 ?>">
 		<div class="acTitle">
@@ -67,8 +67,8 @@ if ($achievement['Achievement']['additional_description'] != null)
 		</div>
 		<div class="acDate">
 			<?php
-			if (!empty($currentUserStatus))
-				echo '<time datetime="' . Util::toIso8601($currentUserStatus['AchievementStatus']['created']) . '" data-format="datetime">' . $currentUserStatus['AchievementStatus']['created'] . '</time>';
+			if ($currentUserStatus !== null)
+				echo '<time datetime="' . $currentUserStatus->created->format('c') . '" data-format="datetime">' . $currentUserStatus->created->format('Y-m-d H:i:s') . '</time>';
 ?>
 		</div>
 	</div>
@@ -121,8 +121,8 @@ if ($achievement['Achievement']['additional_description'] != null)
 	<?php
 			for ($i = 0; $i < count($completers); $i++)
 			{
-				if ($completers[$i]['AchievementStatus']['user'] != null)
-					echo User::renderLink($completers[$i]['AchievementStatus']['user']);
+				if ($completers[$i] != null)
+					echo User::renderLink($completers[$i]);
 				if ($i < count($completers) - 1) echo ', ';
 
 			}

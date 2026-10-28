@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Entity\AchievementStatus;
 use App\Model\Entity\Tag;
 use App\Model\Entity\TagConnection;
 use App\Model\Table\RejectTable;
@@ -810,10 +811,9 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
 		$this->loadModel('Achievement');
-		$this->loadModel('AchievementStatus');
 		$this->loadModel('SetConnection');
 
-		$as = $this->AchievementStatus->find('all', ['limit' => 12, 'order' => 'created DESC', 'conditions' => ['user_id' => $id]]);
+		$as = $this->fetchTable('AchievementStatus')->find()->where(['user_id' => $id])->orderByDesc('created')->limit(12)->all();
 		$ach = $this->Achievement->find('all');
 
 		$user = $this->User->findById($id);
@@ -925,20 +925,22 @@ ORDER BY category DESC', [$user['User']['id']]));
 			$achievementById[$achievement['Achievement']['id']] = $achievement['Achievement'];
 
 		$asList = [];
+		/** @var AchievementStatus $item */
 		foreach ($as as $item)
 		{
-			$achievementId = (int) $item['AchievementStatus']['achievement_id'];
-			if (!isset($achievementById[$achievementId]))
+			if (!isset($achievementById[$item->achievement_id]))
 				continue;
-			$achievement = $achievementById[$achievementId];
-			$item['AchievementStatus']['a_title'] = $achievement['name'];
-			$item['AchievementStatus']['a_description'] = $achievement['description'];
-			$item['AchievementStatus']['a_image'] = $achievement['image'];
-			$item['AchievementStatus']['a_color'] = $achievement['color'];
-			$item['AchievementStatus']['a_id'] = $achievement['id'];
-			$item['AchievementStatus']['a_xp'] = $achievement['xp'];
-			$item['AchievementStatus']['a_earned_count'] = (int) $item['AchievementStatus']['value'];
-			$asList[] = $item;
+			$achievement = $achievementById[$item->achievement_id];
+			$asList[] = [
+				'a_title' => $achievement['name'],
+				'a_description' => $achievement['description'],
+				'a_image' => $achievement['image'],
+				'a_color' => $achievement['color'],
+				'a_id' => $achievement['id'],
+				'a_xp' => $achievement['xp'],
+				'a_earned_count' => $item->value,
+				'created' => $item->created->format('Y-m-d H:i:s'),
+			];
 		}
 		$as = $asList;
 

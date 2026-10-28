@@ -867,7 +867,7 @@ class ContextPreparator
 		if (!$statuses)
 			return;
 
-		$AchievementStatus = ClassRegistry::init('AchievementStatus');
+		$achievementStatusTable = TableRegistry::getTableLocator()->get('AchievementStatus');
 		foreach ($statuses as $statusInput)
 		{
 			$status = [];
@@ -876,8 +876,7 @@ class ContextPreparator
 			$status['value'] = Util::extract('value', $statusInput) ?? 1;
 			$status['created'] = Util::extract('created', $statusInput) ?: date('Y-m-d H:i:s');
 
-			$AchievementStatus->create();
-			$AchievementStatus->save($status);
+			$achievementStatusTable->saveOrFail($achievementStatusTable->newEntity($status));
 			$this->checkOptionsConsumed($statusInput);
 		}
 	}
