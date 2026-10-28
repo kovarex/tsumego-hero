@@ -1073,7 +1073,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$this->assertSame(
 			TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT,
 			(int) ClassRegistry::init('TimeModeAttempt')->find('first', [
-				'conditions' => ['time_mode_session_id' => $context->timeModeSessions[0]['id'], 'order' => 1]])['TimeModeAttempt']['time_mode_attempt_status_id']);
+				'conditions' => ['time_mode_session_id' => $context->timeModeSessions[0]->id, 'order' => 1]])['TimeModeAttempt']['time_mode_attempt_status_id']);
 	}
 
 	public function testTimeModeCountsTheProblemBeingSolvedWhileTheSolveIsStillOnItsWay(): void
@@ -1115,7 +1115,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$browser->waitForSubmitResult();
 
 		$attempt = ClassRegistry::init('TimeModeAttempt')->find('first', [
-			'conditions' => ['time_mode_session_id' => $context->timeModeSessions[0]['id'], 'order' => 1]]);
+			'conditions' => ['time_mode_session_id' => $context->timeModeSessions[0]->id, 'order' => 1]]);
 		$this->assertGreaterThanOrEqual(2, (float) $attempt['TimeModeAttempt']['seconds'],
 			'A solve is worth at least the time it took to play the first move');
 		$this->assertLessThan(99, (float) $attempt['TimeModeAttempt']['points'],
@@ -1139,7 +1139,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$browser->waitForSubmitResult();
 
 		$attempt = ClassRegistry::init('TimeModeAttempt')->find('first', [
-			'conditions' => ['time_mode_session_id' => $context->timeModeSessions[0]['id'], 'order' => 1]]);
+			'conditions' => ['time_mode_session_id' => $context->timeModeSessions[0]->id, 'order' => 1]]);
 		$this->assertGreaterThanOrEqual(2, (float) $attempt['TimeModeAttempt']['seconds'],
 			'The two seconds without a single tick are part of the recorded time');
 	}
@@ -1148,7 +1148,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 	{
 		$browser = Browser::instance();
 		$context = $this->startTimeMode($browser, TimeModeUtil::$ATTEMPT_RESULT_SOLVED);
-		$sessionID = $context->timeModeSessions[0]['id'];
+		$sessionID = $context->timeModeSessions[0]->id;
 
 		// only the last problem is left and it has not been recorded yet
 		$browser->get('/timeMode/result/' . $sessionID);
@@ -1245,7 +1245,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 					// the last problem was presented and left behind, so its time ran out
 					['order' => 4, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:3',
 						'started-seconds-ago' => $categorySeconds + 1]]]]]);
-		$sessionID = $context->timeModeSessions[0]['id'];
+		$sessionID = $context->timeModeSessions[0]->id;
 		$browser = Browser::instance();
 
 		$playTitle = fn() => (string) $browser->driver->executeScript('return document.getElementById("playTitle").textContent;');
@@ -1313,9 +1313,9 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 			'A session that did not pass unlocks nothing');
 
 		// the session is closed with the outcome and the score the page showed
-		$session = ClassRegistry::init('TimeModeSession')->findById($sessionID)['TimeModeSession'];
-		$this->assertSame(TimeModeUtil::$SESSION_STATUS_FAILED, (int) $session['time_mode_session_status_id']);
-		$this->assertSame((int) $attempt(1)['points'], (int) $session['points'],
+		$session = $this->fetchTable('TimeModeSession')->get($sessionID);
+		$this->assertSame(TimeModeUtil::$SESSION_STATUS_FAILED, $session->time_mode_session_status_id);
+		$this->assertSame((int) $attempt(1)['points'], (int) $session->points,
 			'The score of the session is what its problems were worth');
 	}
 
@@ -1335,7 +1335,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 				'attempts' => [
 					['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED],
 					['order' => 2, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:1']]]]]);
-		$sessionID = $context->timeModeSessions[0]['id'];
+		$sessionID = $context->timeModeSessions[0]->id;
 		$browser = Browser::instance();
 
 		// the player comes to the problem with only a moment of its time left: the clock is

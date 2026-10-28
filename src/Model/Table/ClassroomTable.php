@@ -5,10 +5,9 @@ namespace App\Model\Table;
 use App\Model\Entity\Classroom;
 use App\Utility\Util;
 use ClassRegistry;
-use ClassroomMemberStatus;
 
 //A class of a teacher: the players who agreed to be in it, and the problems the teacher assigns
-//to them (ClassroomMember, ClassroomAssignment). Named classroom because class is a word of PHP.
+//to them (ClassroomMemberTable, ClassroomAssignment). Named classroom because class is a word of PHP.
 class ClassroomTable extends AppTable
 {
 	public const MAXIMUM_NAME_LENGTH = 100;
@@ -39,7 +38,7 @@ class ClassroomTable extends AppTable
 			FROM classroom c
 			WHERE c.teacher_user_id = ?
 			ORDER BY c.name, c.id',
-			[ClassroomMemberStatus::ACCEPTED, ClassroomMemberStatus::REQUESTED, $teacherId]);
+			[ClassroomMemberStatusTable::ACCEPTED, ClassroomMemberStatusTable::REQUESTED, $teacherId]);
 		return array_map(fn(array $row) => [
 			'id' => (int) $row['id'],
 			'name' => $row['name'],
@@ -52,7 +51,7 @@ class ClassroomTable extends AppTable
 	//with the teacher of each.
 	/**
 	 * @return array<int, array<array<string, mixed>>> Rows of classroom_id, name, membership_id and the teacher's
-	 *   USER_COLUMNS, by ClassroomMemberStatus id
+	 *   USER_COLUMNS, by ClassroomMemberStatusTable id
 	 */
 	public static function ofPupil(int $userId): array
 	{
@@ -64,9 +63,9 @@ class ClassroomTable extends AppTable
 			ORDER BY c.name, c.id',
 			[$userId]);
 		$byStatus = [
-			ClassroomMemberStatus::INVITED => [],
-			ClassroomMemberStatus::REQUESTED => [],
-			ClassroomMemberStatus::ACCEPTED => [],
+			ClassroomMemberStatusTable::INVITED => [],
+			ClassroomMemberStatusTable::REQUESTED => [],
+			ClassroomMemberStatusTable::ACCEPTED => [],
 		];
 		foreach ($rows as $row)
 			$byStatus[(int) $row['classroom_member_status_id']][] = $row;

@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Table\TimeModeCategoryTable;
+use App\Model\Table\TimeModeSessionStatusTable;
 use App\Utility\AchievementId;
 use App\Utility\Rating;
 use App\Utility\TimeModeUtil;
@@ -585,7 +586,7 @@ class UsersControllerTest extends IntegrationTestCase
 
 		$rankId = $this->fetchTable('TimeModeRank')->find()->where(['name' => '15k'])->firstOrFail()->id;
 		$rankId10k = $this->fetchTable('TimeModeRank')->find()->where(['name' => '10k'])->firstOrFail()->id;
-		$sessionModel = ClassRegistry::init('TimeModeSession');
+		$sessionTable = $this->fetchTable('TimeModeSession');
 
 		$sessions = [
 			['category' => TimeModeCategoryTable::SLOW, 'rank_id' => $rankId, 'points' => 900],
@@ -593,16 +594,13 @@ class UsersControllerTest extends IntegrationTestCase
 			['category' => TimeModeCategoryTable::SLOW, 'rank_id' => $rankId10k, 'points' => 750],
 		];
 		foreach ($sessions as $s)
-		{
-			$sessionModel->create();
-			$sessionModel->save(['TimeModeSession' => [
+			$sessionTable->saveOrFail($sessionTable->newEntity([
 				'user_id' => $context->otherUsers[0]['id'],
 				'time_mode_category_id' => $s['category'],
 				'time_mode_rank_id' => $s['rank_id'],
-				'time_mode_session_status_id' => TimeModeSessionStatus::SOLVED,
+				'time_mode_session_status_id' => TimeModeSessionStatusTable::SOLVED,
 				'points' => $s['points'],
-			]]);
-		}
+			]));
 
 		// Slow/15k: shows 900, not 600 or 750
 		$this->get('users/time_mode?category=2&rank=15k');
@@ -629,19 +627,16 @@ class UsersControllerTest extends IntegrationTestCase
 		$context = new ContextPreparator(['user' => ['name' => 'kovarex']]);
 
 		$rankId = $this->fetchTable('TimeModeRank')->find()->where(['name' => '14k'])->firstOrFail()->id;
-		$sessionModel = ClassRegistry::init('TimeModeSession');
+		$sessionTable = $this->fetchTable('TimeModeSession');
 
 		foreach ([TimeModeCategoryTable::SLOW, TimeModeCategoryTable::FAST, TimeModeCategoryTable::BLITZ] as $cat)
-		{
-			$sessionModel->create();
-			$sessionModel->save(['TimeModeSession' => [
+			$sessionTable->saveOrFail($sessionTable->newEntity([
 				'user_id' => $context->user['id'],
 				'time_mode_category_id' => $cat,
 				'time_mode_rank_id' => $rankId,
-				'time_mode_session_status_id' => TimeModeSessionStatus::SOLVED,
+				'time_mode_session_status_id' => TimeModeSessionStatusTable::SOLVED,
 				'points' => 100,
-			]]);
-		}
+			]));
 
 		// Each category's rank buttons should link back to the same category
 		foreach (['2' => 'Slow', '1' => 'Fast', '0' => 'Blitz'] as $catId => $catName)

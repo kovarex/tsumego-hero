@@ -147,11 +147,11 @@ class ProposalFeedbackTest extends IntegrationTestCase
 	public function testRejectedTagOnProblemTellsTheProposerWhy(): void
 	{
 		$context = $this->prepare(['tags' => [['name' => 'snapback', 'user' => 'proposer', 'approved' => 0]]]);
-		$tagConnectionID = $context->tsumegos[0]['tag-connections'][0]['id'];
+		$tagConnectionID = $context->tsumegos[0]['tag-connections'][0]->id;
 
 		$this->post('/users/rejectTagConnectionProposal/' . $tagConnectionID, ['comment' => 'There is no snapback here.']);
 
-		$this->assertEmpty(ClassRegistry::init('TagConnection')->findById($tagConnectionID));
+		$this->assertFalse($this->fetchTable('TagConnection')->exists(['id' => $tagConnectionID]));
 		$messages = $this->messagesTo($context->otherUsers[0]['id']);
 		$this->assertCount(1, $messages);
 		$this->assertStringContainsString('Your tag snapback on ', $messages[0]['text']);
@@ -162,11 +162,11 @@ class ProposalFeedbackTest extends IntegrationTestCase
 	public function testTagOnProblemIsNotRejectedWithoutAComment(): void
 	{
 		$context = $this->prepare(['tags' => [['name' => 'snapback', 'user' => 'proposer', 'approved' => 0]]]);
-		$tagConnectionID = $context->tsumegos[0]['tag-connections'][0]['id'];
+		$tagConnectionID = $context->tsumegos[0]['tag-connections'][0]->id;
 
 		$this->post('/users/rejectTagConnectionProposal/' . $tagConnectionID, []);
 
-		$this->assertNotEmpty(ClassRegistry::init('TagConnection')->findById($tagConnectionID));
+		$this->assertTrue($this->fetchTable('TagConnection')->exists(['id' => $tagConnectionID]));
 		$this->assertSame([], Util::query('SELECT * FROM message'));
 	}
 
@@ -178,10 +178,10 @@ class ProposalFeedbackTest extends IntegrationTestCase
 			['name' => 'ladder', 'user' => 'proposer', 'approved' => 0]]]);
 		$proposerID = $context->otherUsers[0]['id'];
 
-		$this->post('/users/acceptTagConnectionProposal/' . $context->tsumegos[0]['tag-connections'][0]['id'], ['comment' => '']);
+		$this->post('/users/acceptTagConnectionProposal/' . $context->tsumegos[0]['tag-connections'][0]->id, ['comment' => '']);
 		$this->assertSame([], $this->messagesTo($proposerID));
 
-		$this->post('/users/acceptTagConnectionProposal/' . $context->tsumegos[0]['tag-connections'][1]['id'], ['comment' => 'Nice find.']);
+		$this->post('/users/acceptTagConnectionProposal/' . $context->tsumegos[0]['tag-connections'][1]->id, ['comment' => 'Nice find.']);
 		$messages = $this->messagesTo($proposerID);
 		$this->assertCount(1, $messages);
 		$this->assertStringContainsString('Your tag ladder on ', $messages[0]['text']);

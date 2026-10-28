@@ -9,11 +9,12 @@
  * @var array $memberships What ClassroomTable::ofPupil() returned
  */
 
+use App\Model\Table\ClassroomMemberStatusTable;
 use App\Model\Table\ClassroomTable;
 
-$invitations = $memberships[ClassroomMemberStatus::INVITED];
-$requests = $memberships[ClassroomMemberStatus::REQUESTED];
-$classes = $memberships[ClassroomMemberStatus::ACCEPTED];
+$invitations = $memberships[ClassroomMemberStatusTable::INVITED];
+$requests = $memberships[ClassroomMemberStatusTable::REQUESTED];
+$classes = $memberships[ClassroomMemberStatusTable::ACCEPTED];
 ?>
 <div class="classes">
 	<h1 class="classes__title">Classes</h1>

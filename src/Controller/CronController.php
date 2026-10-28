@@ -1,9 +1,11 @@
 <?php
 
 use App\Attribute\HttpGet;
+use App\Model\Entity\DayRecord;
 use App\Utility\SchedulePublisher;
 use App\Utility\Trash;
 use App\Utility\Util;
+use Cake\ORM\TableRegistry;
 
 class CronController extends AppController
 {
@@ -19,7 +21,7 @@ class CronController extends AppController
 		SchedulePublisher::publishDue();
 
 		// Already ran today - the rest of the work is done once a day
-		if (ClassRegistry::init('DayRecord')->find('count', ['conditions' => ['date' => date('Y-m-d')]]) > 0)
+		if ($this->fetchTable('DayRecord')->find()->where(['date' => date('Y-m-d')])->count() > 0)
 		{
 			$this->response->statusCode(200);
 			return $this->response;
@@ -114,11 +116,12 @@ WHERE
 
 	private static function deduceUserOfTheDay(): ?array
 	{
-		$lastDayRecords = ClassRegistry::init('DayRecord')->find('all', ['limit' => '7', 'order' => 'date DESC']) ?: [];
+		$lastDayRecords = TableRegistry::getTableLocator()->get('DayRecord')->find()->orderByDesc('date')->limit(7)->all();
 
 		$excludedUsers = [];
+		/** @var DayRecord $lastDayRecord */
 		foreach ($lastDayRecords as $lastDayRecord)
-			$excludedUsers[$lastDayRecord['DayRecord']['user_id']] = true;
+			$excludedUsers[$lastDayRecord->user_id] = true;
 
 		$topUsers = ClassRegistry::init('User')->find('all', ['conditions' => ['deleted IS NULL'], 'limit' => '8', 'order' => 'daily_xp DESC']) ?: [];
 		foreach ($topUsers as $user)
@@ -129,10 +132,11 @@ WHERE
 
 	private static function deduceQuoteToUse(): string
 	{
-		$latestDayRecords = ClassRegistry::init('DayRecord')->find('all', ['conditions' => ['date' => date('Y-m-d', strtotime('-10 days'))]]) ?: [];
+		$latestDayRecords = TableRegistry::getTableLocator()->get('DayRecord')->find()->where(['date' => date('Y-m-d', strtotime('-10 days'))])->all();
 		$usedQuotes = [];
+		/** @var DayRecord $latestDayRecord */
 		foreach ($latestDayRecords as $latestDayRecord)
-			$usedQuotes[$latestDayRecord['DayRecord']['quote']] = true;
+			$usedQuotes[$latestDayRecord->quote] = true;
 
 		$allQuotes = [];
 		for ($i = 1; $i < 13; $i++)
@@ -147,7 +151,8 @@ WHERE
 	private function createDayRecord(): void
 	{
 		$today = date('Y-m-d');
-		if (ClassRegistry::init('DayRecord')->find('count', ['conditions' => ['date' => $today]]) > 0)
+		$dayRecordTable = $this->fetchTable('DayRecord');
+		if ($dayRecordTable->find()->where(['date' => $today])->count() > 0)
 			return;
 
 		$userOfTheDay = self::deduceUserOfTheDay();
@@ -182,16 +187,15 @@ WHERE
 			$arch3['Achievement']['description'] = 'Has a chance to trigger once a day on a difficult dan problem.';
 		ClassRegistry::init('Achievement')->save($arch3);
 
-		ClassRegistry::init('DayRecord')->create();
-		$dayRecord = [];
-		$dayRecord['DayRecord']['user_id'] = $userOfTheDay['User']['id'];
-		$dayRecord['DayRecord']['date'] = $today;
-		$dayRecord['DayRecord']['quote'] = $currentQuote;
-		$dayRecord['DayRecord']['gems'] = $gemRand1 . '-' . $gemRand2 . '-' . $gemRand3;
-		$dayRecord['DayRecord']['emerald_solves'] = 0;
-		$dayRecord['DayRecord']['sapphire_solves'] = 0;
-		$dayRecord['DayRecord']['ruby_solves'] = 0;
-		ClassRegistry::init('DayRecord')->save($dayRecord);
+		$dayRecordTable->saveOrFail($dayRecordTable->newEntity([
+			'user_id' => $userOfTheDay['User']['id'],
+			'date' => $today,
+			'quote' => $currentQuote,
+			'gems' => $gemRand1 . '-' . $gemRand2 . '-' . $gemRand3,
+			'emerald_solves' => 0,
+			'sapphire_solves' => 0,
+			'ruby_solves' => 0,
+		]));
 
 		AchievementCondition::put((int) $userOfTheDay['User']['id'], AchievementCondition::CATEGORY_USER_OF_THE_DAY, 1);
 	}

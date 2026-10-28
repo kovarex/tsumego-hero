@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Entity\TimeModeRank;
+use App\Model\Entity\TimeModeSession;
 use App\Model\Table\TimeModeRankTable;
 use App\Utility\AchievementChecker;
 use App\Utility\AdminActivityLogger;
@@ -31,7 +32,7 @@ class ContextPreparator
 			'classroom_assignment_result', 'classroom_assignment_problem', 'classroom_assignment', 'classroom_member', 'classroom',
 			'tag_connection', 'tag', 'schedule', 'progress_deletion',
 			'day_record', 'sgf_review', 'sgf', 'time_mode_attempt', 'time_mode_session', 'challenge_participant', 'challenge_problem', 'challenge',
-			'tsumego_comment', 'tsumego_issue', 'admin_activity', 'admin_page_view', 'message',
+			'tsumego_comment', 'tsumego_issue', 'admin_activity', 'admin_overview_seen', 'message',
 			'achievement_condition', 'achievement_status', 'set_connection',
 			'tsumego_attempt', 'tsumego_status', 'mistake_training_review', 'mistake_training_day', 'mistake_training_pool',
 			'tsumego_variant', 'reject', 'user_avatar', 'user', 'time_mode_rank',
@@ -576,15 +577,13 @@ class ContextPreparator
 				'name' => Util::extract('name', $tagInput),
 				'approved' => Util::extract('tag_approved', $tagInput) ?: true,
 				'is_hint' => Util::extract('is_hint', $tagInput) ?: 0]);
-			$tagConnection = [];
-			$tagConnection['TagConnection']['tsumego_id'] = $tsumego['id'];
-			$tagConnection['TagConnection']['user_id'] = self::getUserIdFromName(Util::extract('user', $tagInput)) ?: $this->user['id'];
-			$tagConnection['TagConnection']['tag_id'] = $tag['id'];
 			$approved = Util::extract('approved', $tagInput);
-			$tagConnection['TagConnection']['approved'] = !is_null($approved) ? $approved : 1;
-			ClassRegistry::init('TagConnection')->create($tagConnection);
-			ClassRegistry::init('TagConnection')->save($tagConnection);
-			$tagConnection = ClassRegistry::init('TagConnection')->find('first', ['order' => ['id' => 'DESC']])['TagConnection'];
+			$tagConnectionTable = TableRegistry::getTableLocator()->get('TagConnection');
+			$tagConnection = $tagConnectionTable->saveOrFail($tagConnectionTable->newEntity([
+				'tsumego_id' => $tsumego['id'],
+				'user_id' => self::getUserIdFromName(Util::extract('user', $tagInput)) ?: $this->user['id'],
+				'tag_id' => $tag['id'],
+				'approved' => !is_null($approved) ? $approved : 1]));
 			$tsumego['tags'] [] = $tag;
 			$tsumego['tag-connections'] [] = $tagConnection;
 			$this->checkOptionsConsumed($tagInput);
@@ -731,26 +730,22 @@ class ContextPreparator
 		if (!$timeModeSessions)
 			return;
 
+		$sessionTable = TableRegistry::getTableLocator()->get('TimeModeSession');
 		foreach ($timeModeSessions as $timeModeSessionInput)
 		{
-			$timeModeSession = [];
-			$timeModeSession['user_id'] = Auth::getUserID();
-			$timeModeSession['time_mode_category_id'] = $timeModeSessionInput['category'];
-			$timeModeSession['time_mode_session_status_id'] = $timeModeSessionInput['status'];
 			/** @var TimeModeRank|null $rank */
 			$rank = TableRegistry::getTableLocator()->get('TimeModeRank')->find()->where(['name' => $timeModeSessionInput['rank']])->first();
 			if (!$rank)
 				throw new Exception('Rank ' . $timeModeSessionInput['rank'] . ' not found');
-			$timeModeSession['time_mode_rank_id'] = $rank->id;
-			$timeModeSessionModel = ClassRegistry::init('TimeModeSession');
-			$timeModeSessionModel->create($timeModeSession);
-			$timeModeSessionModel->save($timeModeSession);
-			$newSessionId = $timeModeSessionModel->id;
-			$savedSession = $timeModeSessionModel->data['TimeModeSession'];
-			$savedSession['id'] = $newSessionId;
-			$this->timeModeSessions [] = $savedSession;
+			/** @var TimeModeSession $session */
+			$session = $sessionTable->saveOrFail($sessionTable->newEntity([
+				'user_id' => Auth::getUserID(),
+				'time_mode_category_id' => $timeModeSessionInput['category'],
+				'time_mode_session_status_id' => $timeModeSessionInput['status'],
+				'time_mode_rank_id' => $rank->id]));
+			$this->timeModeSessions [] = $session;
 			foreach (($timeModeSessionInput['attempts'] ?? []) as $attemptInput)
-				$this->prepareTimeModeAttempts($attemptInput, $newSessionId);
+				$this->prepareTimeModeAttempts($attemptInput, $session->id);
 		}
 	}
 
@@ -830,6 +825,7 @@ class ContextPreparator
 		if (!$dayRecords)
 			return;
 
+		$dayRecordTable = TableRegistry::getTableLocator()->get('DayRecord');
 		foreach ($dayRecords as $dayRecordInput)
 		{
 			$dayRecord = [];
@@ -841,8 +837,7 @@ class ContextPreparator
 			$dayRecord['sapphire_solves'] = Util::extract('sapphire_solves', $dayRecordInput) ?: 0;
 			$dayRecord['ruby_solves'] = Util::extract('ruby_solves', $dayRecordInput) ?: 0;
 
-			ClassRegistry::init('DayRecord')->create($dayRecord);
-			ClassRegistry::init('DayRecord')->save($dayRecord);
+			$dayRecordTable->saveOrFail($dayRecordTable->newEntity($dayRecord));
 			$this->checkOptionsConsumed($dayRecordInput);
 		}
 	}
@@ -1089,6 +1084,7 @@ class ContextPreparator
 	public ?array $resultTsumegoStatus = null;
 	public ?array $tsumegoSets = null;
 	public array $timeModeRanks = [];
+	/** @var array<TimeModeSession> */
 	public array $timeModeSessions = [];
 	public array $tags = [];
 	public array $setConnections = [];
