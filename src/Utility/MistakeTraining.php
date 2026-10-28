@@ -2,7 +2,7 @@
 
 namespace App\Utility;
 
-use ClassRegistry;
+use Cake\ORM\TableRegistry;
 use DateTime;
 use SetConnection;
 use Sgf;
@@ -344,13 +344,15 @@ class MistakeTraining
 			. self::REVIEW_SOLVED . ', ' . self::REVIEW_GRADUATED . ')))';
 	}
 
-	//The pool row for a user+tsumego, or null if not in training.
+	//The pool row for a user+tsumego, or null if not in training. It is the plain row the queries of the
+	//training read too, with the values as the database gives them, so the row helpers below take either.
 	public static function getPoolRow(int $userId, int $tsumegoId): ?array
 	{
-		$row = ClassRegistry::init('MistakeTrainingPool')->find('first', [
-			'conditions' => ['user_id' => $userId, 'tsumego_id' => $tsumegoId],
-		]);
-		return empty($row['MistakeTrainingPool']) ? null : $row['MistakeTrainingPool'];
+		return TableRegistry::getTableLocator()->get('MistakeTrainingPool')->find()
+			->where(['user_id' => $userId, 'tsumego_id' => $tsumegoId])
+			->disableHydration()
+			->disableResultsCasting()
+			->first();
 	}
 
 	//Whether a problem is in the pool and scheduled for review right now. This is the
