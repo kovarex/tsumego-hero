@@ -61,22 +61,6 @@ foreach ($tsumegoButtonsOfPublishedTsumegos as $tsumegoButton)
 			<div data-recent-achievements-root data-props="<?php echo h(json_encode(['initialAchievements' => $recentAchievements])); ?>"></div>
 		</div>
 
-		<p class="title4">Update 30.11.2025</p>
-		<div class="new1">
-			<p><b>Warning:</b></p>
-			<p>
-				If you have issues with problems always removing hearts on refresh, or similar, please try to clear the cookies this way:<br>
-				<img src="/img/cookies-cleanup.png" alt="This is how you clean the cookies." class="img-bordered"><br>
-				I made several changes which should make the new cookies behave properly, but I didn't find a way to remove the old ones, which are breaking stuff.
-			</p>
-			<p>There is a lot of work going on. More details can be found in the forum posts</p>
-			<a href="/forums/viewtopic.php?t=83">Version 0.5 weekly overview</a><br>
-			<a href="/forums/viewtopic.php?t=52">Version 0.4 weekly overview</a><br>
-			<a href="/forums/viewtopic.php?t=43">Version 0.3 weekly overview</a><br>
-			<a href="/forums/viewtopic.php?t=12">Version 0.2 weekly overview</a><br>
-			<a href="/forums/viewtopic.php?t=11">Version 0.1 weekly overview</a>
-		</div>
-
 		<p class="title4">Site Growth</p>
 		<div class="new1">
 			<?php echo ChartRenderer::line(
@@ -89,13 +73,6 @@ foreach ($tsumegoButtonsOfPublishedTsumegos as $tsumegoButton)
 				startAtZero: true,
 				class: 'chart-box'); ?>
 			<br>
-		</div>
-
-		<div id="news-list-left" class="news-list" data-initial-visible="4">
-			<?php echo $this->element('Home/updates', ['levelModeUrl' => $levelModeUrl]); ?>
-			<div id="show-more-left" class="show-more text-center">
-				<button type="button" class="show-more__button">Show more</button>
-			</div>
 		</div>
 	</div>
 
@@ -123,29 +100,22 @@ foreach ($tsumegoButtonsOfPublishedTsumegos as $tsumegoButton)
 			<?php endif; ?>
 		</div>
 
-		<div id="news-list-right" class="news-list" data-initial-visible="6">
-			<?php echo $this->element('Home/collections'); ?>
-			<div id="show-more-right" class="show-more text-center">
-				<button type="button" class="show-more__button">Show more</button>
+		<section>
+			<p class="title4">What's new | <time datetime="2026-10-28" data-format="date">2026-10-28</time></p>
+			<div class="new1">
+				The site changed a lot in the last months. The biggest additions:
+				<ul class="whats-new-list">
+					<li><a href="/mistake-training">Mistake Training</a>: a problem you solved with a mistake comes back for review at growing intervals until you master it.</li>
+					<li><a href="/challenges">Challenges</a>: pick a range of ranks, the time for a problem and how many problems, invite your friends, and everyone plays the same problems.</li>
+					<li><a href="/messages">Messages</a>: write to other players; the menu shows how many messages you haven't read yet.</li>
+					<li>Proposals and tags: when an admin accepts or rejects your proposal or tag, you get a message saying what happened and why.</li>
+					<li><a href="/users/settings">Settings</a>: email, password, theme, sound, date format and playing preferences have their own tab. Your avatar can be a Go board drawn from your account, your Gravatar or Google picture, or a picture you upload.</li>
+					<li><a href="/classes">Classes</a>: teachers invite their pupils, give them assignments and see who solved what.</li>
+					<li>Speed: problems with long variations open several times faster, most of all on phones.</li>
+				</ul>
+				Every change, big or small, is listed on the <a href="/changelog">What's new</a> page.
 			</div>
-		</div>
+		</section>
 	</div>
 </div>
 
-<script>
-	["left", "right"].forEach(function(side)
-	{
-		const articles = $("#news-list-" + side + " > .news-article");
-		const showMore = $("#show-more-" + side);
-		const initialVisible = Number($("#news-list-" + side).attr("data-initial-visible"));
-		articles.slice(initialVisible).prop("hidden", true);
-		showMore.toggle(articles.length > initialVisible);
-		showMore.on("click", function()
-		{
-			const hiddenArticles = articles.filter("[hidden]");
-			hiddenArticles.slice(0, 3).prop("hidden", false).hide().fadeIn(250);
-			if (hiddenArticles.length <= 3)
-				showMore.hide();
-		});
-	});
-</script>

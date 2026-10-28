@@ -86,11 +86,16 @@ class SitemapsControllerTest extends IntegrationTestCase
 		// Linked by the site but kept out of the sitemap: they need a sign-in,
 		// belong to one player, or are a tool rather than content.
 		$staysOut = [
+			'/challenges',
+			'/classes',
 			'/forums',
+			'/messages',
+			'/mistake-training',
 			'/sites/impressum',
 			'/tsumegos/duplicatesearch/',
 			'/tsumegos/play/',
 			'/users/login',
+			'/users/settings',
 			'/users/view/'
 		];
 
