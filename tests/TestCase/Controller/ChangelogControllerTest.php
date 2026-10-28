@@ -19,8 +19,8 @@ class ChangelogControllerTest extends IntegrationTestCase
 		$this->get('/changelog');
 		$result = $this->view;
 
-		$this->assertSame(1, preg_match('/data-props="([^"]*)"/', $result, $m), 'data-props attribute should be present');
-		$json = html_entity_decode($m[1], ENT_QUOTES);
+		$this->assertSame(1, preg_match('/data-props="([^"]*)"/', $result, $matches), 'data-props attribute should be present');
+		$json = html_entity_decode($matches[1], ENT_QUOTES);
 		$data = json_decode($json, true);
 
 		$this->assertIsArray($data, 'data-props should decode to a JSON object');

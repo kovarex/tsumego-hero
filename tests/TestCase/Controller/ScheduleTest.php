@@ -206,11 +206,11 @@ class ScheduleTest extends IntegrationTestCase
 
 		$this->get('/schedule');
 
-		$p = $this->viewVariable('p');
-		$this->assertCount(1, $p);
-		$this->assertSame(1, (int) $p[0]['num']);
-		$this->assertStringContainsString('sandbox set', $p[0]['sandbox_set_title']);
-		$this->assertStringNotContainsString('other set', $p[0]['sandbox_set_title']);
+		$upcoming = $this->viewVariable('upcoming');
+		$this->assertCount(1, $upcoming);
+		$this->assertSame(1, (int) $upcoming[0]['num']);
+		$this->assertStringContainsString('sandbox set', $upcoming[0]['sandbox_set_title']);
+		$this->assertStringNotContainsString('other set', $upcoming[0]['sandbox_set_title']);
 	}
 
 	public function testScheduleIndexShowsTargetSetWhenAlreadyThere(): void
@@ -228,10 +228,10 @@ class ScheduleTest extends IntegrationTestCase
 
 		$this->get('/schedule');
 
-		$p = $this->viewVariable('p');
-		$this->assertCount(1, $p);
-		$this->assertSame(436, (int) $p[0]['num']);
-		$this->assertStringContainsString('target set', $p[0]['target_set_title']);
+		$upcoming = $this->viewVariable('upcoming');
+		$this->assertCount(1, $upcoming);
+		$this->assertSame(436, (int) $upcoming[0]['num']);
+		$this->assertStringContainsString('target set', $upcoming[0]['target_set_title']);
 	}
 
 	//An entry whose problem is no longer in a sandbox set and is not in the target set
@@ -356,7 +356,7 @@ class ScheduleTest extends IntegrationTestCase
 
 		$this->get('/schedule');
 
-		$this->assertCount(1, $this->viewVariable('p'));
+		$this->assertCount(1, $this->viewVariable('upcoming'));
 	}
 
 	public function testCancelScheduleRejectsPublishedRow(): void
@@ -742,7 +742,7 @@ class ScheduleTest extends IntegrationTestCase
 		$this->assertCount(1, $recentlyPublished);
 		$this->assertSame($context->tsumegos[0]['id'], (int) $recentlyPublished[0]['tsumego_id']);
 		$this->assertSame(1, (int) $recentlyPublished[0]['num']);
-		$this->assertEmpty($this->viewVariable('p'));
+		$this->assertEmpty($this->viewVariable('upcoming'));
 	}
 
 	//A collection a player shared is public too, but it is not the site's, so the schedule

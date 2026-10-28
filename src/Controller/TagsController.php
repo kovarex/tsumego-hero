@@ -82,10 +82,10 @@ class TagsController extends AppController
 	#[HttpGet]
 	public function user(string $id): void
 	{
-		$u = $this->User->findById($id);
-		if (!$u)
+		$viewedUser = $this->User->findById($id);
+		if (!$viewedUser)
 			throw new NotFoundException('User not found');
-		$this->assertUserVisible($u['User']);
+		$this->assertUserVisible($viewedUser['User']);
 
 		$pageSize = 50;
 		$pageIndex = isset($this->request->query['page']) ? max(1, (int) $this->request->query['page']) : 1;
@@ -147,7 +147,7 @@ class TagsController extends AppController
 			$contributions[] = ContributionRow::fromQueryRow($row);
 
 		$this->set('contributions', $contributions);
-		$this->set('viewedUser', $u['User']);
+		$this->set('viewedUser', $viewedUser['User']);
 		$this->set('count', $count);
 		$this->set('pageIndex', $pageIndex);
 		$this->set('pageSize', $pageSize);

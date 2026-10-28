@@ -404,7 +404,7 @@ class SitesControllerTest extends IntegrationTestCase
 		$this->assertStringContainsString('DN_Charlie', $rows[2]->getText());
 
 		// Verify reverse chronological order
-		$allText = implode("\n", array_map(fn($r) => $r->getText(), $rows));
+		$allText = implode("\n", array_map(fn($row) => $row->getText(), $rows));
 
 		// Oldest three (Jan 1-3) should be cut off by the limit of 7
 		$this->assertStringNotContainsString('3000 Problems', $allText);

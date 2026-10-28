@@ -330,11 +330,11 @@ class TsumegoImagesController extends AppController
 			$y = $cy + $highlightOffsetY * $ratio;
 
 			// Color: interpolate from base to highlight
-			$r = (int) ($baseR + ($highlightR - $baseR) * $ratio);
-			$g = (int) ($baseG + ($highlightG - $baseG) * $ratio);
-			$b = (int) ($baseB + ($highlightB - $baseB) * $ratio);
+			$red = (int) ($baseR + ($highlightR - $baseR) * $ratio);
+			$green = (int) ($baseG + ($highlightG - $baseG) * $ratio);
+			$blue = (int) ($baseB + ($highlightB - $baseB) * $ratio);
 
-			$color = imagecolorallocate($img, $r, $g, $b);
+			$color = imagecolorallocate($img, $red, $green, $blue);
 			$currentDiameter = (int) ($radius * 2.0 * ($i + 1) / ($steps + 1));
 			imagefilledellipse($img, (int) $x, (int) $y, $currentDiameter, $currentDiameter, $color);
 		}

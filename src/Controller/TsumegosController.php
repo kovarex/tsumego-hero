@@ -257,7 +257,7 @@ class TsumegosController extends AppController
 		if (!empty($this->request->data['color_swapped']))
 			$newDescription = preg_replace_callback(
 				'/\b(Black|black|White|white)\b/',
-				fn($m) => ['Black' => 'White', 'black' => 'white', 'White' => 'Black', 'white' => 'black'][$m[1]],
+				fn($match) => ['Black' => 'White', 'black' => 'white', 'White' => 'Black', 'white' => 'black'][$match[1]],
 				$newDescription
 			);
 
@@ -376,8 +376,8 @@ class TsumegosController extends AppController
 		));
 		if ($ids)
 			foreach (Util::query('SELECT sgf.tsumego_id, sgf.sgf FROM sgf WHERE sgf.tsumego_id IN (' . implode(',', array_fill(0, count($ids), '?')) . ')'
-				. ' AND sgf.id = ' . SgfTable::currentVersionIDSql('sgf.tsumego_id'), array_values($ids)) as $s)
-					$sgfs[$s['tsumego_id']] = $s['sgf'];
+				. ' AND sgf.id = ' . SgfTable::currentVersionIDSql('sgf.tsumego_id'), array_values($ids)) as $row)
+					$sgfs[$row['tsumego_id']] = $row['sgf'];
 
 		$masterSetConnectionBrothersButtons = [];
 		foreach ($masterSetConnectionBrothers as $masterSetConnectionBrother)

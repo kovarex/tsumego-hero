@@ -367,11 +367,11 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeSessionStatusTable::SOLVED]);
 	//solved every problem of its collections that is not in the trash. It is asked each time the
 	//player looks at a finished page of one of them, so once unlocked nothing is counted again, and
 	//the database counts the problems still unsolved instead of loading them all.
-	public function setAchievementSpecial(?string $s = null): AchievementChecker
+	public function setAchievementSpecial(?string $setGroup = null): AchievementChecker
 	{
-		if (!isset(self::SPECIAL_SET_GROUPS[$s]))
+		if (!isset(self::SPECIAL_SET_GROUPS[$setGroup]))
 			return $this;
-		[$setIDs, $achievementID] = self::SPECIAL_SET_GROUPS[$s];
+		[$setIDs, $achievementID] = self::SPECIAL_SET_GROUPS[$setGroup];
 		if ($this->unlocked($achievementID))
 			return $this;
 		$unsolved = Util::query('SELECT COUNT(*) AS unsolved FROM set_connection sc'

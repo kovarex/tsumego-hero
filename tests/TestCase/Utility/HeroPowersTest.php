@@ -267,7 +267,7 @@ class HeroPowersTest extends IntegrationTestCase
 					fill: c.getAttribute('fill')
 				}));");
 		$this->assertCount(4, $circles);
-		$this->assertCount(1, array_filter($circles, fn($c) => $c['fill'] === 'green'));
+		$this->assertCount(1, array_filter($circles, fn($circle) => $circle['fill'] === 'green'));
 	}
 
 	public function testIntuitionPowerIsInactiveWhenIntuitionIsUsedUp()

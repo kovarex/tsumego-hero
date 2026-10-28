@@ -4,7 +4,7 @@ use App\Utility\TsumegoButton;
 
 /**
  * @var View $this
- * @var array $p
+ * @var array $upcoming
  * @var array $recentlyPublished
  * @var array $sandboxSets
  * @var array $publicSets
@@ -25,7 +25,7 @@ $today = date('Y-m-d');
 			.problem-nav__number--collision::before { content: "\21BB"; margin-right: 2px; font-size: 0.7em; vertical-align: 1px; color: #c0392b; }
 		</style>
 		<h2 class="card__title">Upcoming</h2>
-		<?php if (empty($p)): ?>
+		<?php if (empty($upcoming)): ?>
 			<p class="hint">No problems scheduled.</p>
 		<?php else: ?>
 		<div class="set-view-main">
@@ -41,7 +41,7 @@ $today = date('Y-m-d');
 				</tr>
 			</thead>
 			<tbody>
-			<?php foreach ($p as $row): ?>
+			<?php foreach ($upcoming as $row): ?>
 				<tr>
 					<td><time datetime="<?php echo h($row['date']); ?>" data-format="date"><?php echo h($row['date']); ?></time></td>
 					<td>

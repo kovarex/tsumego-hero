@@ -136,8 +136,8 @@ class AchievementsController extends AppController
 			$currentUserStatus = $achievementStatusTable->find()->where(['achievement_id' => $id, 'user_id' => $statusUserId])->first();
 		$usersById = [];
 		if ($completerUserIds)
-			foreach ($this->User->find('all', ['conditions' => ['id' => $completerUserIds]]) as $u)
-				$usersById[$u['User']['id']] = $u['User'];
+			foreach ($this->User->find('all', ['conditions' => ['id' => $completerUserIds]]) as $completer)
+				$usersById[$completer['User']['id']] = $completer['User'];
 		//The completers as users, null for one the users table no longer has
 		$completers = array_map(fn(int $userId) => $usersById[$userId] ?? null, $completerUserIds);
 		$userCount = $this->User->find('count', ['conditions' => ['deleted IS NULL']]);

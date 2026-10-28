@@ -194,20 +194,20 @@ class Browser
 		{
 			$msg = "JavaScript errors detected:\n";
 
-			foreach ($errors as $e)
+			foreach ($errors as $error)
 			{
 				$msg .= "[JS ERROR] ";
-				if (!empty($e['raw']))
-					$msg .= $e['raw'] . "\n\n";
+				if (!empty($error['raw']))
+					$msg .= $error['raw'] . "\n\n";
 				else
 					$msg .= sprintf(
 						"%s (%s:%d:%d)\n%s\n\n",
-						$e['message'], $e['source'], $e['line'], $e['column'], $e['stack']
+						$error['message'], $error['source'], $error['line'], $error['column'], $error['stack']
 					);
 			}
 
-			foreach ($console as $c)
-				$msg .= "[console.error] " . implode(" ", $c['args']) . "\n\n";
+			foreach ($console as $consoleError)
+				$msg .= "[console.error] " . implode(" ", $consoleError['args']) . "\n\n";
 
 			throw new Exception($msg);
 		}

@@ -586,13 +586,13 @@ class UsersControllerTest extends IntegrationTestCase
 			['category' => TimeModeCategoryTable::FAST, 'rank_id' => $rankId, 'points' => 600],
 			['category' => TimeModeCategoryTable::SLOW, 'rank_id' => $rankId10k, 'points' => 750],
 		];
-		foreach ($sessions as $s)
+		foreach ($sessions as $session)
 			$sessionTable->saveOrFail($sessionTable->newEntity([
 				'user_id' => $context->otherUsers[0]['id'],
-				'time_mode_category_id' => $s['category'],
-				'time_mode_rank_id' => $s['rank_id'],
+				'time_mode_category_id' => $session['category'],
+				'time_mode_rank_id' => $session['rank_id'],
 				'time_mode_session_status_id' => TimeModeSessionStatusTable::SOLVED,
-				'points' => $s['points'],
+				'points' => $session['points'],
 			]));
 
 		// Slow/15k: shows 900, not 600 or 750

@@ -65,34 +65,34 @@ class SetsSelector
 
 	private static function getTagColor(int $pos): string
 	{
-		$c = [];
-		$c[0] = 'rgba(217, 135, 135, [o])';
-		$c[1] = 'rgba(135, 149, 101, [o])';
-		$c[2] = 'rgba(190, 151, 131, [o])';
-		$c[3] = 'rgba(188, 116, 45, [o])';
-		$c[4] = 'rgba(153, 111, 31, [o])';
-		$c[5] = 'rgba(159, 54, 0, [o])';
-		$c[6] = 'rgba(153, 151, 31, [o])';
-		$c[7] = 'rgba(114, 9, 183, [o])';
-		$c[8] = 'rgba(149, 77, 63, [o])';
-		$c[9] = 'rgba(179, 181, 37, [o])';
-		$c[10] = 'rgba(137, 153, 31, [o])';
-		$c[11] = 'rgba(145, 61, 91, [o])';
-		$c[12] = 'rgba(79, 68, 68, [o])';
-		$c[13] = 'rgba(182, 137, 199, [o])';
-		$c[14] = 'rgba(166, 88, 125, [o])';
-		$c[15] = 'rgba(45, 37, 79, [o])';
-		$c[16] = 'rgba(154, 50, 138, [o])';
-		$c[17] = 'rgba(102, 51, 122, [o])';
-		$c[18] = 'rgba(184, 46, 126, [o])';
-		$c[19] = 'rgba(119, 50, 154, [o])';
-		$c[20] = 'rgba(187, 70, 196, [o])';
-		$c[21] = 'rgba(125, 8, 8, [o])';
-		$c[22] = 'rgba(136, 67, 56, [o])';
-		$c[23] = 'rgba(190, 165, 136, [o])';
-		$c[24] = 'rgba(128, 118, 123, [o])';
+		$colors = [];
+		$colors[0] = 'rgba(217, 135, 135, [o])';
+		$colors[1] = 'rgba(135, 149, 101, [o])';
+		$colors[2] = 'rgba(190, 151, 131, [o])';
+		$colors[3] = 'rgba(188, 116, 45, [o])';
+		$colors[4] = 'rgba(153, 111, 31, [o])';
+		$colors[5] = 'rgba(159, 54, 0, [o])';
+		$colors[6] = 'rgba(153, 151, 31, [o])';
+		$colors[7] = 'rgba(114, 9, 183, [o])';
+		$colors[8] = 'rgba(149, 77, 63, [o])';
+		$colors[9] = 'rgba(179, 181, 37, [o])';
+		$colors[10] = 'rgba(137, 153, 31, [o])';
+		$colors[11] = 'rgba(145, 61, 91, [o])';
+		$colors[12] = 'rgba(79, 68, 68, [o])';
+		$colors[13] = 'rgba(182, 137, 199, [o])';
+		$colors[14] = 'rgba(166, 88, 125, [o])';
+		$colors[15] = 'rgba(45, 37, 79, [o])';
+		$colors[16] = 'rgba(154, 50, 138, [o])';
+		$colors[17] = 'rgba(102, 51, 122, [o])';
+		$colors[18] = 'rgba(184, 46, 126, [o])';
+		$colors[19] = 'rgba(119, 50, 154, [o])';
+		$colors[20] = 'rgba(187, 70, 196, [o])';
+		$colors[21] = 'rgba(125, 8, 8, [o])';
+		$colors[22] = 'rgba(136, 67, 56, [o])';
+		$colors[23] = 'rgba(190, 165, 136, [o])';
+		$colors[24] = 'rgba(128, 118, 123, [o])';
 
-		return $c[$pos];
+		return $colors[$pos];
 	}
 
 	private function selectByTopics(): void

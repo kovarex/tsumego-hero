@@ -64,17 +64,17 @@ class SgfParser
 		if (strlen($sgf) > $maxSize)
 			return 'SGF data exceeds maximum size of 1 MB.';
 
-		$s = trim($sgf);
-		if ($s === '')
+		$text = trim($sgf);
+		if ($text === '')
 			return 'SGF data is empty.';
-		if (!str_starts_with($s, '(;'))
+		if (!str_starts_with($text, '(;'))
 			return 'Invalid SGF: must start with "(;".';
-		if (substr($s, -1) !== ')')
+		if (substr($text, -1) !== ')')
 			return 'Invalid SGF: must end with ")".';
-		if (substr_count($s, '[') !== substr_count($s, ']'))
+		if (substr_count($text, '[') !== substr_count($text, ']'))
 			return 'Invalid SGF: unbalanced brackets.';
 
-		$len = strlen($s);
+		$len = strlen($text);
 		$i = 0;
 		$nodeHasSetup = false;
 		$nodeHasMove = false;
@@ -82,7 +82,7 @@ class SgfParser
 
 		while ($i < $len)
 		{
-			$ch = $s[$i];
+			$ch = $text[$i];
 
 			if ($ch === '[')
 			{
@@ -139,10 +139,10 @@ class SgfParser
 			if (ctype_upper($ch))
 			{
 				$start = $i;
-				while ($i < $len && ctype_upper($s[$i]))
+				while ($i < $len && ctype_upper($text[$i]))
 					$i++;
-				$ident = substr($s, $start, $i - $start);
-				if ($i >= $len || $s[$i] !== '[')
+				$ident = substr($text, $start, $i - $start);
+				if ($i >= $len || $text[$i] !== '[')
 					return "Invalid SGF: property '{$ident}' must be followed by '['.";
 				if ($ident === 'AB' || $ident === 'AW' || $ident === 'AE')
 					$nodeHasSetup = true;
@@ -163,14 +163,14 @@ class SgfParser
 	//Returns an error description, or null when the SGF is a Go game.
 	public static function validateGame(string $sgf): ?string
 	{
-		$s = trim($sgf);
-		$len = strlen($s);
+		$text = trim($sgf);
+		$len = strlen($text);
 		$i = 0;
 		$inValue = false;
 
 		while ($i < $len)
 		{
-			$ch = $s[$i];
+			$ch = $text[$i];
 
 			if ($ch === '[')
 			{
@@ -202,16 +202,16 @@ class SgfParser
 			if (ctype_upper($ch))
 			{
 				$start = $i;
-				while ($i < $len && ctype_upper($s[$i]))
+				while ($i < $len && ctype_upper($text[$i]))
 					$i++;
-				$ident = substr($s, $start, $i - $start);
-				if ($ident === 'GM' && $i < $len && $s[$i] === '[')
+				$ident = substr($text, $start, $i - $start);
+				if ($ident === 'GM' && $i < $len && $text[$i] === '[')
 				{
 					$i++; // skip '['
 					$valStart = $i;
-					while ($i < $len && $s[$i] !== ']')
+					while ($i < $len && $text[$i] !== ']')
 						$i++;
-					$game = substr($s, $valStart, $i - $valStart);
+					$game = substr($text, $valStart, $i - $valStart);
 					if ($game !== '1')
 						return 'Invalid SGF: game (GM) must be Go (1).';
 				}
