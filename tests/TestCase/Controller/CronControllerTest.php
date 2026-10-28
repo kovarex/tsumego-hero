@@ -74,10 +74,10 @@ class CronControllerTest extends IntegrationTestCase
 				['set_order' => 1, 'status' => 'F'],
 				['set_order' => 2, 'status' => 'X']]]);
 		$this->get('/cron/daily/' . CRON_SECRET);
-		$status1 = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[0]['id']]]);
-		$this->assertSame($status1['TsumegoStatus']['status'], 'V');
-		$status2 = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[1]['id']]]);
-		$this->assertSame($status2['TsumegoStatus']['status'], 'W');
+		$status1 = $this->fetchTable('TsumegoStatus')->find()->where(['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[0]['id']])->first();
+		$this->assertSame($status1->status, 'V');
+		$status2 = $this->fetchTable('TsumegoStatus')->find()->where(['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[1]['id']])->first();
+		$this->assertSame($status2->status, 'W');
 	}
 
 	public function testCronChangesSolvedStatusToHalfSolved()
@@ -90,10 +90,10 @@ class CronControllerTest extends IntegrationTestCase
 				['set_order' => 1, 'status' => ['name' => 'S', 'updated' => $oldEnoughToTransfer]],
 				['set_order' => 2, 'status' => ['name' => 'S', 'updated' => $newEnoughToTransfer]]]]);
 		$this->get('/cron/daily/' . CRON_SECRET);
-		$status1 = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[0]['id']]]);
-		$this->assertSame($status1['TsumegoStatus']['status'], 'W');
-		$status2 = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[1]['id']]]);
-		$this->assertSame($status2['TsumegoStatus']['status'], 'S');
+		$status1 = $this->fetchTable('TsumegoStatus')->find()->where(['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[0]['id']])->first();
+		$this->assertSame($status1->status, 'W');
+		$status2 = $this->fetchTable('TsumegoStatus')->find()->where(['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[1]['id']])->first();
+		$this->assertSame($status2->status, 'S');
 	}
 
 	public function testUserOfTheDay()
@@ -178,7 +178,7 @@ class CronControllerTest extends IntegrationTestCase
 				['set_order' => 1, 'status' => 'S'],
 				['set_order' => 2, 'status' => 'S']],
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'solved' => 2]]);
-		ClassRegistry::init('TsumegoStatus')->deleteAll(['tsumego_id' => $context->tsumegos[0]['id']]);
+		$this->fetchTable('TsumegoStatus')->deleteAll(['tsumego_id' => $context->tsumegos[0]['id']]);
 		$this->get('/cron/daily/' . CRON_SECRET);
 		$this->assertSame($context->reloadUser()['solved'], 1);
 	}

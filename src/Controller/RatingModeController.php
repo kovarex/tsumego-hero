@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\TsumegoStatusTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\CookieFlash;
@@ -55,8 +56,8 @@ ORDER BY
 LIMIT 1";
 		$selectedTsumego = Util::query($query, [
 			Auth::getUserID(),
-			TsumegoStatus::$LOCKED, TsumegoStatus::$FORGOTTEN,
-			TsumegoStatus::$SOLVED, TsumegoStatus::$MASTERED])[0] ?? null;
+			TsumegoStatusTable::$LOCKED, TsumegoStatusTable::$FORGOTTEN,
+			TsumegoStatusTable::$SOLVED, TsumegoStatusTable::$MASTERED])[0] ?? null;
 
 		if (!$selectedTsumego)
 		{

@@ -349,9 +349,8 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		// Verify final state
 		$this->assertSame($originalDamage + 1, (int) $context->reloadUser()['damage'],
 			'Damage should only be from the first fail');
-		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']]]);
-		$this->assertSame('S', $status['TsumegoStatus']['status'],
+		$status = $this->fetchTable('TsumegoStatus')->find()->where(['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']])->first();
+		$this->assertSame('S', $status->status,
 			'Status should be solved');
 	}
 

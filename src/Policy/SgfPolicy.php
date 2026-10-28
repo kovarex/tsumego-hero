@@ -2,6 +2,7 @@
 
 namespace App\Policy;
 
+use App\Model\Table\TsumegoStatusTable;
 use App\Utility\TsumegoUtil;
 use ClassRegistry;
 
@@ -35,11 +36,9 @@ class SgfPolicy extends BasePolicy
 			'user_id' => $user['id']]]);
 		if ($ownVersionCount > 0)
 			return true;
-		$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => [
-			'tsumego_id' => $sgf['tsumego_id'],
-			'user_id' => $user['id']]]);
-		if (!$status)
+		$status = TsumegoStatusTable::statusOf((int) $user['id'], (int) $sgf['tsumego_id']);
+		if ($status === null)
 			return false;
-		return TsumegoUtil::isRecentlySolved($status['TsumegoStatus']['status']);
+		return TsumegoUtil::isRecentlySolved($status);
 	}
 }

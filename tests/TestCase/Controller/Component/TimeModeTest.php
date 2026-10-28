@@ -709,8 +709,8 @@ class TimeModeTest extends IntegrationTestCase
 
 		// I'm processing result of the play which wasn't time mode related, while time mode is also activated
 		$browser->get('/sets');
-		$statusOfNoTimeProblemPlay = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['tsumego_id' => $tsumegoIDNotInTimeMode]]);
-		$this->assertSame($statusOfNoTimeProblemPlay['TsumegoStatus']['status'], 'S');
+		$statusOfNoTimeProblemPlay = $this->fetchTable('TsumegoStatus')->find()->where(['tsumego_id' => $tsumegoIDNotInTimeMode])->first();
+		$this->assertSame($statusOfNoTimeProblemPlay->status, 'S');
 	}
 
 	public function testTimeModeTimeAddedForEachMovePlayed()

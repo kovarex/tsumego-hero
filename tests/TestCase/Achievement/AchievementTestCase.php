@@ -119,8 +119,7 @@ abstract class AchievementTestCase extends IntegrationTestCase
 			ClassRegistry::init('Sgf')->create();
 			ClassRegistry::init('Sgf')->save(['tsumego_id' => $tsumegoId, 'sgf' => '(;GM[1]FF[4]SZ[19])', 'user_id' => Auth::getUserID(), 'sgf_status_id' => Sgf::STATUS_ACCEPTED]);
 
-			ClassRegistry::init('TsumegoStatus')->create();
-			ClassRegistry::init('TsumegoStatus')->save(['tsumego_id' => $tsumegoId, 'status' => 'S', 'user_id' => Auth::getUserID()]);
+			$this->fetchTable('TsumegoStatus')->saveOrFail($this->fetchTable('TsumegoStatus')->newEntity(['tsumego_id' => $tsumegoId, 'status' => 'S', 'user_id' => Auth::getUserID()]));
 		}
 
 		return $setId;

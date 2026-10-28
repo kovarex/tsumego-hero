@@ -367,16 +367,14 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeSessionStatusTable::SOLVED]);
 			$tsCount = count($ts);
 			for ($i = 0; $i < $tsCount; $i++)
 				array_push($tsIds, $ts[$i]['Tsumego']['id']);
-			$uts = ClassRegistry::init('TsumegoStatus')->find('all', [
-				'conditions' => [
-					'user_id' => Auth::getUserID(),
-					'tsumego_id' => $tsIds]]) ?: [];
+			$uts = $tsIds ? Util::query('SELECT tsumego_id, status FROM tsumego_status WHERE user_id = ? AND tsumego_id IN ('
+				. implode(',', array_fill(0, count($tsIds), '?')) . ')', [Auth::getUserID(), ...$tsIds]) : [];
 			$counter = 0;
 			$utsCount = count($uts);
 			for ($j = 0; $j < $utsCount; $j++)
 				for ($k = 0; $k < $tsCount; $k++)
-					if ($uts[$j]['TsumegoStatus']['tsumego_id'] == $ts[$k]['Tsumego']['id'] && ($uts[$j]['TsumegoStatus']['status'] == 'S'
-					|| $uts[$j]['TsumegoStatus']['status'] == 'W' || $uts[$j]['TsumegoStatus']['status'] == 'C'))
+					if ($uts[$j]['tsumego_id'] == $ts[$k]['Tsumego']['id'] && ($uts[$j]['status'] == 'S'
+					|| $uts[$j]['status'] == 'W' || $uts[$j]['status'] == 'C'))
 						$counter++;
 			if ($counter == count($ts))
 				$completed = $s;
@@ -391,16 +389,14 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeSessionStatusTable::SOLVED]);
 			$tsCount = count($ts);
 			for ($i = 0; $i < $tsCount; $i++)
 				array_push($tsIds, $ts[$i]['Tsumego']['id']);
-			$uts = ClassRegistry::init('TsumegoStatus')->find('all', [
-				'conditions' => [
-					'user_id' => Auth::getUserID(),
-					'tsumego_id' => $tsIds]]) ?: [];
+			$uts = $tsIds ? Util::query('SELECT tsumego_id, status FROM tsumego_status WHERE user_id = ? AND tsumego_id IN ('
+				. implode(',', array_fill(0, count($tsIds), '?')) . ')', [Auth::getUserID(), ...$tsIds]) : [];
 			$counter = 0;
 			$utsCount = count($uts);
 			for ($j = 0; $j < $utsCount; $j++)
 				for ($k = 0; $k < $tsCount; $k++)
-					if ($uts[$j]['TsumegoStatus']['tsumego_id'] == $ts[$k]['Tsumego']['id'] && ($uts[$j]['TsumegoStatus']['status'] == 'S'
-					|| $uts[$j]['TsumegoStatus']['status'] == 'W' || $uts[$j]['TsumegoStatus']['status'] == 'C'))
+					if ($uts[$j]['tsumego_id'] == $ts[$k]['Tsumego']['id'] && ($uts[$j]['status'] == 'S'
+					|| $uts[$j]['status'] == 'W' || $uts[$j]['status'] == 'C'))
 						$counter++;
 			if ($counter == count($ts))
 				$completed = $s;
@@ -415,18 +411,14 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeSessionStatusTable::SOLVED]);
 			$tsCount = count($ts);
 			for ($i = 0; $i < $tsCount; $i++)
 				array_push($tsIds, $ts[$i]['Tsumego']['id']);
-			$uts = ClassRegistry::init('TsumegoStatus')->find('all', [
-				'conditions' => [
-					'user_id' => Auth::getUserID(),
-					'tsumego_id' => $tsIds,
-				],
-			]) ?: [];
+			$uts = $tsIds ? Util::query('SELECT tsumego_id, status FROM tsumego_status WHERE user_id = ? AND tsumego_id IN ('
+				. implode(',', array_fill(0, count($tsIds), '?')) . ')', [Auth::getUserID(), ...$tsIds]) : [];
 			$counter = 0;
 			$utsCount = count($uts);
 			for ($j = 0; $j < $utsCount; $j++)
 				for ($k = 0; $k < $tsCount; $k++)
-					if ($uts[$j]['TsumegoStatus']['tsumego_id'] == $ts[$k]['Tsumego']['id'] && ($uts[$j]['TsumegoStatus']['status'] == 'S'
-					|| $uts[$j]['TsumegoStatus']['status'] == 'W' || $uts[$j]['TsumegoStatus']['status'] == 'C'))
+					if ($uts[$j]['tsumego_id'] == $ts[$k]['Tsumego']['id'] && ($uts[$j]['status'] == 'S'
+					|| $uts[$j]['status'] == 'W' || $uts[$j]['status'] == 'C'))
 						$counter++;
 			if ($counter == count($ts))
 				$completed = $s;
@@ -440,16 +432,14 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeSessionStatusTable::SOLVED]);
 			$tsCount = count($ts);
 			for ($i = 0; $i < $tsCount; $i++)
 				array_push($tsIds, $ts[$i]['Tsumego']['id']);
-			$uts = ClassRegistry::init('TsumegoStatus')->find('all', [
-				'conditions' => [
-					'user_id' => Auth::getUserID(),
-					'tsumego_id' => $tsIds]]) ?: [];
+			$uts = $tsIds ? Util::query('SELECT tsumego_id, status FROM tsumego_status WHERE user_id = ? AND tsumego_id IN ('
+				. implode(',', array_fill(0, count($tsIds), '?')) . ')', [Auth::getUserID(), ...$tsIds]) : [];
 			$counter = 0;
 			$utsCount = count($uts);
 			for ($j = 0; $j < $utsCount; $j++)
 				for ($k = 0; $k < $tsCount; $k++)
-					if ($uts[$j]['TsumegoStatus']['tsumego_id'] == $ts[$k]['Tsumego']['id'] && ($uts[$j]['TsumegoStatus']['status'] == 'S'
-					|| $uts[$j]['TsumegoStatus']['status'] == 'W' || $uts[$j]['TsumegoStatus']['status'] == 'C'))
+					if ($uts[$j]['tsumego_id'] == $ts[$k]['Tsumego']['id'] && ($uts[$j]['status'] == 'S'
+					|| $uts[$j]['status'] == 'W' || $uts[$j]['status'] == 'C'))
 						$counter++;
 			if ($counter == count($ts))
 				$completed = $s;
@@ -460,16 +450,14 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeSessionStatusTable::SOLVED]);
 			$tsCount = count($ts);
 			for ($i = 0; $i < $tsCount; $i++)
 				array_push($tsIds, $ts[$i]['Tsumego']['id']);
-			$uts = ClassRegistry::init('TsumegoStatus')->find('all', [
-				'conditions' => [
-					'user_id' => Auth::getUserID(),
-					'tsumego_id' => $tsIds]]) ?: [];
+			$uts = $tsIds ? Util::query('SELECT tsumego_id, status FROM tsumego_status WHERE user_id = ? AND tsumego_id IN ('
+				. implode(',', array_fill(0, count($tsIds), '?')) . ')', [Auth::getUserID(), ...$tsIds]) : [];
 			$counter = 0;
 			$utsCount = count($uts);
 			for ($j = 0; $j < $utsCount; $j++)
 				for ($k = 0; $k < $tsCount; $k++)
-					if ($uts[$j]['TsumegoStatus']['tsumego_id'] == $ts[$k]['Tsumego']['id'] && ($uts[$j]['TsumegoStatus']['status'] == 'S'
-					|| $uts[$j]['TsumegoStatus']['status'] == 'W' || $uts[$j]['TsumegoStatus']['status'] == 'C'))
+					if ($uts[$j]['tsumego_id'] == $ts[$k]['Tsumego']['id'] && ($uts[$j]['status'] == 'S'
+					|| $uts[$j]['status'] == 'W' || $uts[$j]['status'] == 'C'))
 						$counter++;
 			if ($counter == count($ts))
 				$completed = $s;
