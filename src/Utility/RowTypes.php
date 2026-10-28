@@ -34,11 +34,9 @@ namespace App\Utility;
  * @phpstan-type SetRow array{id?: int, user_id?: int|null, title?: string|null, title2?: string|null, description?: string|null, image?: string|null, order?: int|null, public?: int, color?: string|null, created?: string|null, included_in_time_mode?: int, board_theme_index?: int|null, deleted?: string|null, ...}
  * @phpstan-type SgfRow array{id?: int, sgf?: string|null, user_id?: int|null, accepted_by_user_id?: int|null, tsumego_id?: int, sgf_status_id?: int, created?: string|null, accepted?: string|null, first_move_color?: string|null, correct_moves?: string|null, source_sgf_id?: int|null, transformation_from_source?: string|null, description?: string|null, ...}
  * @phpstan-type SgfStatusRow array{id?: int, name?: string, ...}
- * @phpstan-type TagRow array{id?: int, name?: string, description?: string, link?: string|null, user_id?: int|null, approved?: int, color?: int, hint?: int, created?: string, ...}
  * @phpstan-type ThemeRow array{id?: int, name?: string, ...}
  * @phpstan-type TimeModeAttemptStatusRow array{id?: int, name?: string, ...}
  * @phpstan-type TsumegoAttemptRow array{id?: int, user_id?: int, tsumego_id?: int, gain?: int, solved?: int, seconds?: int, misplays?: int, user_rating?: int|null, tsumego_rating?: int, created?: string, ...}
- * @phpstan-type TsumegoCommentRow array{id?: int, tsumego_id?: int, tsumego_issue_id?: int|null, message?: string, created?: string, user_id?: int, position?: string|null, deleted?: string|null, ...}
  * @phpstan-type TsumegoIssueRow array{id?: int, tsumego_issue_status_id?: int, tsumego_id?: int, user_id?: int, created?: string, deleted?: string|null, ...}
  * @phpstan-type TsumegoIssueStatusRow array{id?: int, name?: string, ...}
  * @phpstan-type TsumegoRow array{id?: int, description?: string|null, hint?: string|null, author?: string, author_user_id?: int|null, rating?: float, minimum_rating?: float|null, maximum_rating?: float|null, created?: string|null, minimum_liberties?: int|null, maximum_liberties?: int|null, variance?: int|null, liberty_count?: int|null, inside_liberties?: int|null, semeai_type?: int|null, alternative_response?: int, pass?: int, deleted?: string|null, ...}

@@ -2,6 +2,7 @@
 
 namespace App\Utility;
 
+use Cake\ORM\TableRegistry;
 use ClassRegistry;
 use Exception;
 use Set;
@@ -59,12 +60,12 @@ class TsumegoFilters
 
 		foreach ($rawTags as $tag)
 		{
-			$found = ClassRegistry::init('Tag')->findByName($tag);
+			$found = TableRegistry::getTableLocator()->get('Tag')->find()->where(['name' => $tag])->first();
 			if ($found)
 			{
 				$this->tags[] = $tag;
-				$this->tagIDs[] = $found['Tag']['id'];
-				$this->tagColors[$tag] = (int) $found['Tag']['color'];
+				$this->tagIDs[] = $found->id;
+				$this->tagColors[$tag] = $found->color;
 			}
 		}
 	}

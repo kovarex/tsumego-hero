@@ -2,6 +2,7 @@
 
 use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\TagConnectionTable;
+use App\Model\Table\TagTable;
 use App\Policy\AdminPolicy;
 use App\Policy\BasePolicy;
 use App\Policy\SetPolicy;
@@ -97,7 +98,7 @@ class Play
 		$this->set('isAllowedToContribute', Auth::isLoggedIn() && BasePolicy::canPropose(Auth::getIdentity()));
 		$this->set('isAllowedToTag', Auth::isLoggedIn() && TagConnectionPolicy::canAdd(Auth::getIdentity(), $t['Tsumego']));
 		$this->set('canAddMoreTags', Auth::isLoggedIn() && TagConnectionTable::canCurrentUserAddTag());
-		$this->set('tagData', ClassRegistry::init('Tag')::getForTsumego($tsumegoID));
+		$this->set('tagData', TagTable::getForTsumego($tsumegoID));
 		$this->set('userSetsJson', json_encode(self::playerSets($tsumegoID)));
 		$this->set('hasSgfProposal', (bool) ClassRegistry::init('Sgf')->find('first', ['conditions' => [
 			'tsumego_id' => $tsumegoID,

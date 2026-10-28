@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Entity\Tag;
 use App\Model\Entity\TimeModeRank;
 use App\Model\Entity\TimeModeSession;
 use App\Model\Table\AdminActivityTypeTable;
@@ -375,7 +376,6 @@ class ContextPreparator
 
 	private function prepareTsumegoComment(array $commentInput, $tsumego, ?int $issueId = null): void
 	{
-		ClassRegistry::init('TsumegoComment')->create();
 		$comment = [];
 		$comment['message'] = Util::extract('message', $commentInput);
 		$comment['tsumego_id'] = $tsumego['id'];
@@ -386,7 +386,8 @@ class ContextPreparator
 		$created = Util::extract('created', $commentInput);
 		if ($created)
 			$comment['created'] = $created;
-		ClassRegistry::init('TsumegoComment')->save($comment);
+		$tsumegoCommentTable = TableRegistry::getTableLocator()->get('TsumegoComment');
+		$tsumegoCommentTable->saveOrFail($tsumegoCommentTable->newEntity($comment));
 		$this->checkOptionsConsumed($commentInput);
 	}
 
@@ -583,7 +584,7 @@ class ContextPreparator
 			$tagConnection = $tagConnectionTable->saveOrFail($tagConnectionTable->newEntity([
 				'tsumego_id' => $tsumego['id'],
 				'user_id' => self::getUserIdFromName(Util::extract('user', $tagInput)) ?: $this->user['id'],
-				'tag_id' => $tag['id'],
+				'tag_id' => $tag->id,
 				'approved' => !is_null($approved) ? $approved : 1]));
 			$tsumego['tags'] [] = $tag;
 			$tsumego['tag-connections'] [] = $tagConnection;
@@ -654,24 +655,19 @@ class ContextPreparator
 		ClassRegistry::init('User')->saveField('default_set_id', $setId);
 	}
 
-	private function getOrCreateTag($tagInput): array
+	private function getOrCreateTag($tagInput): Tag
 	{
 		$name = Util::extract('name', $tagInput);
-		$tag  = ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => $name]]);
+		$tagTable = TableRegistry::getTableLocator()->get('Tag');
+		$tag = $tagTable->find()->where(['name' => $name])->first();
 		if (!$tag)
-		{
-			$tag = [];
-			$tag['hint'] = Util::extractWithDefault('is_hint', $tagInput, 0);
-			$tag['approved'] = Util::extractWithDefault('approved', $tagInput, true);
-			$tag['user_id'] = $this->user['id'];
-			$tag['description'] = Util::extractWithDefault('description', $tagInput, '');
-			$tag['link'] = Util::extractWithDefault('link', $tagInput, '');
-			$tag['name'] = $name;
-			ClassRegistry::init('Tag')->create($tag);
-			ClassRegistry::init('Tag')->save($tag);
-			// reloading so the generated id is retrieved
-			$tag  = ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => $name]]);
-		}
+			$tag = $tagTable->saveOrFail($tagTable->newEntity([
+				'hint' => Util::extractWithDefault('is_hint', $tagInput, 0),
+				'approved' => Util::extractWithDefault('approved', $tagInput, true),
+				'user_id' => $this->user['id'],
+				'description' => Util::extractWithDefault('description', $tagInput, ''),
+				'link' => Util::extractWithDefault('link', $tagInput, ''),
+				'name' => $name]));
 		else
 		{
 			Util::extractWithDefault('description', $tagInput, '');
@@ -681,8 +677,8 @@ class ContextPreparator
 		}
 
 		$this->checkOptionsConsumed($tagInput);
-		$this->tags[] = $tag['Tag'];
-		return $tag['Tag'];
+		$this->tags[] = $tag;
+		return $tag;
 	}
 
 	private function checkSetClear(int $setID): void

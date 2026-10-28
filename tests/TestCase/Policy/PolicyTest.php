@@ -3,6 +3,7 @@
 //Authorization policies decide whether an identity may perform an action.
 //They read only the computed `permissions` list attached by Auth::getIdentity().
 use App\Model\Entity\TagConnection;
+use App\Model\Entity\TsumegoComment;
 use App\Policy\AdminPolicy;
 use App\Policy\OwnerPolicy;
 use App\Policy\SgfPolicy;
@@ -164,7 +165,7 @@ class PolicyTest extends CakeTestCase
 	public function testTsumegoCommentPolicyAllowsOwnerOrAdmin()
 	{
 		$policy = new TsumegoCommentPolicy();
-		$comment = ['user_id' => 7];
+		$comment = new TsumegoComment(['user_id' => 7]);
 		$owner = $this->identity(false);
 		$owner['id'] = 7;
 		$other = $this->identity(false);

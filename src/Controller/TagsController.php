@@ -1,6 +1,8 @@
 <?php
 
+use App\Model\Entity\Tag;
 use App\Model\Table\RejectTable;
+use App\Model\Table\TagTable;
 use App\Utility\Auth;
 use App\Utility\ContributionRow;
 use App\Utility\CookieFlash;
@@ -36,8 +38,8 @@ class TagsController extends AppController
 			return $this->redirect('/tags/add');
 		}
 
-		$existingTag = ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => $tagName]]);
-		if ($existingTag)
+		$tagTable = $this->fetchTable('Tag');
+		if ($tagTable->exists(['name' => $tagName]))
 		{
 			CookieFlash::set('Tag "' . $tagName . '" already exists.', 'error');
 			return $this->redirect('/tags/add');
@@ -50,31 +52,30 @@ class TagsController extends AppController
 			return $this->redirect('/tags/add');
 		}
 
-		$tag = [];
-		$tag['name'] = $tagName;
-		$tag['description'] = HtmlSanitizer::sanitize((string) $tagDescription);
-		$tag['hint'] = (int) $this->request->data['tag_hint'];
-		$tag['link'] = trim((string) ($this->request->data['tag_reference'] ?? ''));
-		$tag['user_id'] = Auth::getUserID();
-		$tag['approved'] = Auth::isAdmin() ? 1 : 0;
-		ClassRegistry::init('Tag')->save($tag);
-		$saved = ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => $tagName]])['Tag'];
+		/** @var Tag $tag */
+		$tag = $tagTable->saveOrFail($tagTable->newEntity([
+			'name' => $tagName,
+			'description' => HtmlSanitizer::sanitize((string) $tagDescription),
+			'hint' => (int) $this->request->data['tag_hint'],
+			'link' => trim((string) ($this->request->data['tag_reference'] ?? '')),
+			'user_id' => Auth::getUserID(),
+			'approved' => Auth::isAdmin() ? 1 : 0]));
 
 		CookieFlash::set('Tag "' . $tagName . '" has been added.', 'success');
-		return $this->redirect('/tags/view/' . $saved['id']);
+		return $this->redirect('/tags/view/' . $tag->id);
 	}
 
 	#[HttpGet]
 	public function view(?string $id = null): void
 	{
-		$tn = $this->Tag->findById($id);
-		if (!$tn)
+		$tag = $this->fetchTable('Tag')->find()->where(['id' => (int) $id])->first();
+		if (!$tag)
 			throw new NotFoundException('Tag not found');
-		$allTags = self::approvedTags();
-		$user = $this->User->findById($tn['Tag']['user_id']);
-		$tn['Tag']['user'] = $user ? $user['User'] : null;
-		$this->set('allTags', $allTags);
-		$this->set('tn', $tn);
+		/** @var Tag $tag */
+		$user = $tag->user_id ? $this->User->findById($tag->user_id) : null;
+		$this->set('allTags', self::approvedTags());
+		$this->set('tag', $tag);
+		$this->set('creator', $user ? $user['User'] : null);
 		$this->set('canAddTag', $this->Authorization->can('Tag', 'add'));
 		$this->set('canDeleteTag', $this->Authorization->can('Tag', 'delete'));
 	}
@@ -157,7 +158,7 @@ class TagsController extends AppController
 	public function edit(string $tagID): ?CakeResponse
 	{
 		$this->Authorization->authorize('Tag');
-		$tag = ClassRegistry::init('Tag')->findById($tagID);
+		$tag = $this->fetchTable('Tag')->find()->where(['id' => (int) $tagID])->first();
 		if (!$tag)
 		{
 			CookieFlash::set('Tag to edit not found.', 'error');
@@ -165,7 +166,7 @@ class TagsController extends AppController
 		}
 
 		$this->set('allTags', self::approvedTags());
-		$this->set('tag', $tag['Tag']);
+		$this->set('tag', $tag);
 		$this->set('canAddTag', $this->Authorization->can('Tag', 'add'));
 		return null;
 	}
@@ -174,14 +175,13 @@ class TagsController extends AppController
 	public function editAction(string $tagID)
 	{
 		$this->Authorization->authorize('Tag', 'editAction');
-		$tag = ClassRegistry::init('Tag')->findById($tagID);
+		$tagTable = $this->fetchTable('Tag');
+		$tag = $tagTable->find()->where(['id' => (int) $tagID])->first();
 		if (!$tag)
 		{
 			CookieFlash::set('Tag to edit not found.');
-			$this->redirect('/tags');
+			return $this->redirect('/tags');
 		}
-
-		$tag = $tag['Tag'];
 
 		$tagDescription = $this->request->data['tag_description'];
 		if (empty($tagDescription))
@@ -190,10 +190,11 @@ class TagsController extends AppController
 			return $this->redirect('/tags/edit/' . $tagID);
 		}
 
-		$tag['description'] = HtmlSanitizer::sanitize((string) $tagDescription);
-		$tag['hint'] = (int) ($this->request->data['tag_hint']);
-		$tag['link'] = trim((string) ($this->request->data['tag_link'] ?? ''));
-		ClassRegistry::init('Tag')->save($tag);
+		$tagTable->patchEntity($tag, [
+			'description' => HtmlSanitizer::sanitize((string) $tagDescription),
+			'hint' => (int) ($this->request->data['tag_hint']),
+			'link' => trim((string) ($this->request->data['tag_link'] ?? ''))]);
+		$tagTable->saveOrFail($tag);
 		return $this->redirect('/tags/view/' . $tagID);
 	}
 
@@ -202,12 +203,12 @@ class TagsController extends AppController
 	public function delete(string $id): CakeResponse
 	{
 		$this->Authorization->authorize('Tag');
-		$tag = ClassRegistry::init('Tag')->findById($id);
+		$tag = $this->fetchTable('Tag')->find()->where(['id' => (int) $id])->first();
 		if (!$tag)
 			throw new NotFoundException('Tag not found');
 
-		$problemCount = Tag::deleteWithConnections($tag['Tag']);
-		CookieFlash::set('Tag "' . $tag['Tag']['name'] . '" was deleted from ' . $problemCount . ' ' . ($problemCount === 1 ? 'problem' : 'problems') . '.', 'success');
+		$problemCount = TagTable::deleteWithConnections($tag);
+		CookieFlash::set('Tag "' . $tag->name . '" was deleted from ' . $problemCount . ' ' . ($problemCount === 1 ? 'problem' : 'problems') . '.', 'success');
 		return $this->redirect('/tags');
 	}
 
@@ -218,7 +219,7 @@ class TagsController extends AppController
 		$this->Authorization->authorize('Tag');
 		$sort = ($this->request->query['sort'] ?? '') === 'problems' ? 'problems' : 'name';
 		$this->set('_title', 'Tsumego Hero - Tags');
-		$this->set('tags', Tag::listWithProblemCounts($sort === 'problems'));
+		$this->set('tags', TagTable::listWithProblemCounts($sort === 'problems'));
 		$this->set('sort', $sort);
 		$this->set('canDeleteTag', $this->Authorization->can('Tag', 'delete'));
 	}
@@ -228,11 +229,11 @@ class TagsController extends AppController
 	public function problems(string $id): CakeResponse
 	{
 		$this->Authorization->authorize('Tag');
-		if (!ClassRegistry::init('Tag')->findById($id))
+		if (!$this->fetchTable('Tag')->exists(['id' => (int) $id]))
 			throw new NotFoundException('Tag not found');
 
 		$problems = [];
-		foreach (Tag::problems((int) $id) as $row)
+		foreach (TagTable::problems((int) $id) as $row)
 			$problems[] = [
 				'url' => $row['set_connection_id'] ? '/' . $row['set_connection_id'] : '/tsumegos/play/' . $row['tsumego_id'],
 				'name' => $row['set_title'] !== null ? $row['set_title'] . ' ' . $row['num'] : 'Problem ' . $row['tsumego_id'],
@@ -247,36 +248,36 @@ class TagsController extends AppController
 	{
 		$this->Authorization->authorize('Tag');
 
-		$tagToApprove = ClassRegistry::init('Tag')->findById($tagID);
+		$tagTable = $this->fetchTable('Tag');
+		/** @var Tag|null $tagToApprove */
+		$tagToApprove = $tagTable->find()->where(['id' => (int) $tagID])->first();
 		if (!$tagToApprove)
 		{
 			CookieFlash::set('Tag to approve not found', 'error');
 			return $this->redirect('/admin/new-tags');
 		}
 
-		$tagToApprove = $tagToApprove['Tag'];
-
-		if ($tagToApprove['approved'] == 1)
+		if ($tagToApprove->approved)
 		{
 			CookieFlash::set('Tag to approve was already approved', 'error');
 			return $this->redirect('/admin/new-tags');
 		}
 
-		$tagToApprove['approved'] = '1';
-		ClassRegistry::init('Tag')->save($tagToApprove);
+		$tagToApprove->approved = true;
+		$tagTable->saveOrFail($tagToApprove);
 
 		// like a tag on a problem, the proposer only hears about it when the admin had something to say
 		$comment = ProposalFeedback::commentFromRequest($this->request->data['comment'] ?? null);
-		if ($comment !== '' && $tagToApprove['user_id'])
+		if ($comment !== '' && $tagToApprove->user_id)
 			ProposalFeedback::send(
-				(int) $tagToApprove['user_id'],
-				'Your new tag ' . $tagToApprove['name'] . ' was accepted by ' . ProposalFeedback::adminName() . '.',
+				$tagToApprove->user_id,
+				'Your new tag ' . $tagToApprove->name . ' was accepted by ' . ProposalFeedback::adminName() . '.',
 				null,
 				null,
 				$comment,
 				$this->_getEmailer());
 
-		CookieFlash::set('Tag ' . $tagToApprove['name'] . ' was approved', 'success');
+		CookieFlash::set('Tag ' . $tagToApprove->name . ' was approved', 'success');
 		return $this->redirect('/admin/new-tags');
 	}
 
@@ -285,16 +286,16 @@ class TagsController extends AppController
 	{
 		$this->Authorization->authorize('Tag');
 
-		$tagToReject = ClassRegistry::init('Tag')->findById($tagID);
+		$tagTable = $this->fetchTable('Tag');
+		/** @var Tag|null $tagToReject */
+		$tagToReject = $tagTable->find()->where(['id' => (int) $tagID])->first();
 		if (!$tagToReject)
 		{
 			CookieFlash::set('Tag to approve not found', 'error');
 			return $this->redirect('/admin/new-tags');
 		}
 
-		$tagToReject = $tagToReject['Tag'];
-
-		if ($tagToReject['approved'] == 1)
+		if ($tagToReject->approved)
 		{
 			CookieFlash::set('Tag to reject was already approved', 'error');
 			return $this->redirect('/admin/new-tags');
@@ -307,28 +308,28 @@ class TagsController extends AppController
 			return $this->redirect('/admin/new-tags');
 		}
 
-		ClassRegistry::init('Tag')->delete($tagToReject);
+		$tagTable->deleteOrFail($tagToReject);
 
-		if ($tagToReject['user_id'])
+		if ($tagToReject->user_id)
 		{
 			// the tag is gone, the proposer still sees its name among their contributions
 			$rejectTable = $this->fetchTable('Reject');
 			$rejectTable->saveOrFail($rejectTable->newEntity([
 				'reject_type_id' => RejectTable::TYPE_TAG_NAME,
-				'tag_name' => $tagToReject['name'],
-				'user_id' => $tagToReject['user_id'],
+				'tag_name' => $tagToReject->name,
+				'user_id' => $tagToReject->user_id,
 				'rejected_by_user_id' => Auth::getUserID(),
 				'comment' => $comment]));
 			ProposalFeedback::send(
-				(int) $tagToReject['user_id'],
-				'Your new tag ' . $tagToReject['name'] . ' was rejected by ' . ProposalFeedback::adminName() . '.',
+				$tagToReject->user_id,
+				'Your new tag ' . $tagToReject->name . ' was rejected by ' . ProposalFeedback::adminName() . '.',
 				null,
 				null,
 				$comment,
 				$this->_getEmailer());
 		}
 
-		CookieFlash::set('Tag ' . $tagToReject['name'] . ' was rejected', 'success');
+		CookieFlash::set('Tag ' . $tagToReject->name . ' was rejected', 'success');
 		return $this->redirect('/admin/new-tags');
 	}
 }

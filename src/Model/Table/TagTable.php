@@ -1,18 +1,18 @@
 <?php
 
-use App\Model\Table\AdminActivityTypeTable;
+namespace App\Model\Table;
+
+use App\Model\Entity\Tag;
 use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
 use App\Utility\Util;
+use ClassRegistry;
+use SetConnection;
+use Throwable;
 
-class Tag extends AppModel
+//A tag problems can carry, like snapback or ko. A player's new tag is a proposal until an admin approves it.
+class TagTable extends AppTable
 {
-	public function __construct(mixed $id = false, ?string $table = null, ?string $ds = null)
-	{
-		$id['table'] =  'tag';
-		parent::__construct($id, $table, $ds);
-	}
-
 	//Return all tags with their connection status for a given tsumego.
 	public static function getForTsumego(int $tsumegoId): array
 	{
@@ -77,22 +77,22 @@ ORDER BY `set`.id IS NULL, " . SetConnection::displayOrderForSetSql('`set`') . "
 
 	//Deletes the tag and takes it off every problem. The admin activity log keeps the tag
 	//and the problems it was on, so a tag deleted by mistake can be put back by hand.
-	//$tag: The tag row
 	//Returns how many problems had the tag or had it proposed
-	public static function deleteWithConnections(array $tag): int
+	public static function deleteWithConnections(Tag $tag): int
 	{
 		$connections = Util::query(
 			"SELECT tsumego_id, user_id, approved, created FROM tag_connection WHERE tag_id = ? ORDER BY id",
-			[$tag['id']]);
+			[$tag->id]);
 
-		$database = ClassRegistry::init('Tag')->getDataSource();
+		// The transaction is Cake 2's, the Cake 5 ORM shares its connection and never starts one.
+		$database = ClassRegistry::init('Tsumego')->getDataSource();
 		$database->begin();
 		try
 		{
-			Util::query("DELETE FROM tag_connection WHERE tag_id = ?", [$tag['id']]);
-			Util::query("DELETE FROM tag WHERE id = ?", [$tag['id']]);
+			Util::query("DELETE FROM tag_connection WHERE tag_id = ?", [$tag->id]);
+			Util::query("DELETE FROM tag WHERE id = ?", [$tag->id]);
 			AdminActivityLogger::log(AdminActivityTypeTable::DELETE_TAG, null, null, json_encode([
-				'tag' => $tag,
+				'tag' => $tag->toArray(),
 				'connections' => $connections], JSON_UNESCAPED_UNICODE));
 			$database->commit();
 		}

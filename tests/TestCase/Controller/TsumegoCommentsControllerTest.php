@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Entity\TsumegoComment;
 use App\Utility\Avatar;
 
 class TsumegoCommentsControllerTest extends IntegrationTestCase
@@ -62,6 +63,33 @@ class TsumegoCommentsControllerTest extends IntegrationTestCase
 		$this->assertSame($avatar, $body['standalone'][0]['user_avatar_url']);
 	}
 
+	//Each issue lists its comments that are not deleted, in the order they were written
+	public function testCommentsIndexGroupsTheCommentsByIssue()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'kovarex'],
+			'tsumego' => [
+				'set_order' => 1,
+				'status' => 'S',
+				'issues' => [['message' => 'older issue', 'created' => '2026-01-01 10:00:00'], ['message' => 'newer issue', 'created' => '2026-01-02 10:00:00']],
+				'comments' => [['message' => 'standalone']]],
+		]);
+		$tsumegoCommentTable = $this->fetchTable('TsumegoComment');
+		foreach (['answer', 'deleted answer'] as $message)
+			$tsumegoCommentTable->saveOrFail($tsumegoCommentTable->newEntity([
+				'tsumego_id' => $context->tsumegos[0]['id'],
+				'tsumego_issue_id' => $context->issues[0]['id'],
+				'user_id' => $context->user['id'],
+				'message' => $message,
+				'deleted' => $message === 'deleted answer' ? '2026-01-03 10:00:00' : null]));
+
+		$this->get('/tsumego-comments/index/' . $context->tsumegos[0]['id']);
+
+		$body = json_decode($this->view, true);
+		$this->assertSame([['newer issue'], ['older issue', 'answer']], array_map(fn($issue) => array_column($issue['comments'], 'text'), $body['issues']));
+		$this->assertSame(['standalone'], array_column($body['standalone'], 'text'));
+	}
+
 	public function testCommentByGoogleUserShowsTheirGooglePicture()
 	{
 		$context = new ContextPreparator([
@@ -99,11 +127,10 @@ class TsumegoCommentsControllerTest extends IntegrationTestCase
 			'tsumego' => ['set_order' => 1, 'status' => 'S', 'comments' => [['message' => 'hi']]],
 		]);
 
-		$comment = ClassRegistry::init('TsumegoComment')->find('first');
-		$comment['TsumegoComment']['user_id'] = $context->otherUsers[0]['id'];
-		ClassRegistry::init('TsumegoComment')->save($comment);
+		$this->fetchTable('TsumegoComment')->updateAll(['user_id' => $context->otherUsers[0]['id']], []);
+		$comment = $this->fetchTable('TsumegoComment')->find()->firstOrFail();
 
-		$this->post('/tsumego-comments/delete/' . $comment['TsumegoComment']['id']);
+		$this->post('/tsumego-comments/delete/' . $comment->id);
 
 		$this->assertResponseCode(403);
 	}
@@ -115,12 +142,13 @@ class TsumegoCommentsControllerTest extends IntegrationTestCase
 			'tsumego' => ['set_order' => 1, 'status' => 'S', 'comments' => [['message' => 'mine']]],
 		]);
 
-		$comment = ClassRegistry::init('TsumegoComment')->find('first');
+		$comment = $this->fetchTable('TsumegoComment')->find()->firstOrFail();
 
-		$this->post('/tsumego-comments/delete/' . $comment['TsumegoComment']['id']);
+		$this->post('/tsumego-comments/delete/' . $comment->id);
 
 		$this->assertResponseCode(200);
-		$deleted = ClassRegistry::init('TsumegoComment')->findById($comment['TsumegoComment']['id']);
-		$this->assertNotNull($deleted['TsumegoComment']['deleted'], 'The comment keeps the time it was deleted');
+		/** @var TsumegoComment $deleted */
+		$deleted = $this->fetchTable('TsumegoComment')->get($comment->id);
+		$this->assertNotNull($deleted->deleted, 'The comment keeps the time it was deleted');
 	}
 }

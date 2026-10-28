@@ -3,6 +3,7 @@
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Lib\Error\UnprocessableEntityException;
+use App\Model\Entity\TsumegoComment;
 //Controller for managing tsumego comments (CRUD operations).
 //Handles adding and deleting comments on tsumego problems.
 //Comments can be standalone or associated with a TsumegoIssue.
@@ -26,36 +27,30 @@ class TsumegoCommentsController extends AppController
 
 		$input = json_decode($this->request->input(), true);
 
-		$TsumegoComment = ClassRegistry::init('TsumegoComment');
-		$comment = [
+		$tsumegoCommentTable = $this->fetchTable('TsumegoComment');
+		/** @var TsumegoComment $comment */
+		$comment = $tsumegoCommentTable->newEntity([
 			'tsumego_id' => $input['tsumego_id'],
 			'message' => $input['text'],
 			'tsumego_issue_id' => $input['issue_id'] ?? null,
 			'position' => $input['position'] ?? null,
 			'user_id' => Auth::getUserID(),
-		];
-
-		$TsumegoComment->create();
-		if (!$TsumegoComment->save($comment))
+		]);
+		if (!$tsumegoCommentTable->save($comment))
 			throw new UnprocessableEntityException('Failed to add comment');
 
-		// Get saved comment with user data
-		$savedComment = $TsumegoComment->find('first', [
-			'conditions' => ['TsumegoComment.id' => $TsumegoComment->id],
-			'contain' => ['User']
-		]);
-
+		$author = self::authorsOf([$comment])[$comment->user_id];
 		$this->response->type('json');
 		$this->response->body(json_encode([
-			'id' => $savedComment['TsumegoComment']['id'],
-			'text' => $savedComment['TsumegoComment']['message'],
-			'user_id' => $savedComment['TsumegoComment']['user_id'],
-			'user_display_name' => $savedComment['User']['display_name'] ?? null,
-			'user_avatar_url' => User::getAvatarUrl($savedComment['User']),
-			'user_rating' => $savedComment['User']['rating'] ?? null,
-			'isAdmin' => User::isAdmin($savedComment['User'] ?? null),
-			'created' => Util::toIso8601($savedComment['TsumegoComment']['created']),
-			'position' => $savedComment['TsumegoComment']['position'],
+			'id' => $comment->id,
+			'text' => $comment->message,
+			'user_id' => $comment->user_id,
+			'user_display_name' => $author['display_name'] ?? null,
+			'user_avatar_url' => User::getAvatarUrl($author),
+			'user_rating' => $author['rating'] ?? null,
+			'isAdmin' => User::isAdmin($author),
+			'created' => $comment->created->format('c'),
+			'position' => $comment->position,
 		]));
 		return $this->response;
 	}
@@ -68,23 +63,21 @@ class TsumegoCommentsController extends AppController
 	#[HttpPost]
 	public function delete(string $id)
 	{
-		$TsumegoComment = ClassRegistry::init('TsumegoComment');
-		$comment = $TsumegoComment->findById($id);
+		$tsumegoCommentTable = $this->fetchTable('TsumegoComment');
+		/** @var TsumegoComment|null $comment */
+		$comment = $tsumegoCommentTable->find()->where(['id' => (int) $id])->first();
 
 		if (!$comment)
 			throw new NotFoundException('Comment not found');
 
-		$this->Authorization->authorize($comment, 'delete');
+		$this->Authorization->authorize(['TsumegoComment' => $comment], 'delete');
 
 		// Remember the issue ID before deleting
-		$issueId = $comment['TsumegoComment']['tsumego_issue_id'];
+		$issueId = $comment->tsumego_issue_id;
 
 		// Soft delete
-		$TsumegoComment->id = $id;
-		$saveResult = $TsumegoComment->saveField('deleted', date('Y-m-d H:i:s'));
-
-		if (!$saveResult)
-			throw new InternalErrorException('Failed to delete comment');
+		$comment->deleted = new DateTimeImmutable();
+		$tsumegoCommentTable->saveOrFail($comment);
 
 		// If comment was part of an issue, check if issue is now empty and delete it
 		if (!empty($issueId))
@@ -106,47 +99,45 @@ class TsumegoCommentsController extends AppController
 	{
 		$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
 
-		// Load issues with comments
+		// Load issues with their authors
 		$issues = $TsumegoIssue->find('all', [
 			'conditions' => ['TsumegoIssue.tsumego_id' => $tsumegoId],
-			'contain' => [
-				'TsumegoComment' => [
-					'conditions' => ['TsumegoComment.deleted' => null],
-					'User'
-				],
-				'User'
-			],
+			'contain' => ['User'],
 			'order' => 'TsumegoIssue.created DESC'
 		]);
 
+		// Load the comments of the issues, in the order they were written
+		$tsumegoCommentTable = $this->fetchTable('TsumegoComment');
+		$issueComments = empty($issues) ? [] : $tsumegoCommentTable->find()
+			->where(['tsumego_issue_id IN' => array_map(fn($issue) => (int) $issue['TsumegoIssue']['id'], $issues), 'deleted IS' => null])
+			->orderBy('id')
+			->toArray();
+
 		// Load standalone comments
-		$TsumegoComment = ClassRegistry::init('TsumegoComment');
-		$plainComments = $TsumegoComment->find('all', [
-			'conditions' => [
-				'TsumegoComment.tsumego_id' => $tsumegoId,
-				'TsumegoComment.tsumego_issue_id' => null,
-				'TsumegoComment.deleted' => null
-			],
-			'contain' => ['User'],
-			'order' => 'TsumegoComment.created DESC'
-		]);
+		$plainComments = $tsumegoCommentTable->find()
+			->where(['tsumego_id' => (int) $tsumegoId, 'tsumego_issue_id IS' => null, 'deleted IS' => null])
+			->orderByDesc('created')
+			->toArray();
+
+		$authors = self::authorsOf([...$issueComments, ...$plainComments]);
 
 		$issuesJson = [];
 		foreach ($issues as $issue)
 		{
 			$comments = [];
-			foreach ($issue['TsumegoComment'] as $comment)
-				$comments[] = [
-					'id' => $comment['id'],
-					'text' => $comment['message'],
-					'user_id' => $comment['user_id'],
-					'user_display_name' => User::displayNameOrNull($comment['User']),
-					'user_avatar_url' => User::avatarOrNull($comment['User']),
-					'user_rating' => $comment['User']['rating'] ?? null,
-					'isAdmin' => User::isAdmin($comment['User'] ?? null),
-					'created' => Util::toIso8601($comment['created']),
-					'position' => $comment['position'],
-				];
+			foreach ($issueComments as $comment)
+				if ($comment->tsumego_issue_id === (int) $issue['TsumegoIssue']['id'])
+					$comments[] = [
+						'id' => $comment->id,
+						'text' => $comment->message,
+						'user_id' => $comment->user_id,
+						'user_display_name' => User::displayNameOrNull($authors[$comment->user_id]),
+						'user_avatar_url' => User::avatarOrNull($authors[$comment->user_id]),
+						'user_rating' => $authors[$comment->user_id]['rating'] ?? null,
+						'isAdmin' => User::isAdmin($authors[$comment->user_id]),
+						'created' => $comment->created->format('c'),
+						'position' => $comment->position,
+					];
 
 
 			$issuesJson[] = [
@@ -165,15 +156,15 @@ class TsumegoCommentsController extends AppController
 		$standaloneJson = [];
 		foreach ($plainComments as $comment)
 			$standaloneJson[] = [
-				'id' => $comment['TsumegoComment']['id'],
-				'text' => $comment['TsumegoComment']['message'],
-				'user_id' => $comment['TsumegoComment']['user_id'],
-				'user_display_name' => User::displayNameOrNull($comment['User']),
-				'user_avatar_url' => User::avatarOrNull($comment['User']),
-				'user_rating' => $comment['User']['rating'] ?? null,
-				'isAdmin' => User::isAdmin($comment['User'] ?? null),
-				'created' => Util::toIso8601($comment['TsumegoComment']['created']),
-				'position' => $comment['TsumegoComment']['position'],
+				'id' => $comment->id,
+				'text' => $comment->message,
+				'user_id' => $comment->user_id,
+				'user_display_name' => User::displayNameOrNull($authors[$comment->user_id]),
+				'user_avatar_url' => User::avatarOrNull($authors[$comment->user_id]),
+				'user_rating' => $authors[$comment->user_id]['rating'] ?? null,
+				'isAdmin' => User::isAdmin($authors[$comment->user_id]),
+				'created' => $comment->created->format('c'),
+				'position' => $comment->position,
 			];
 
 		$counts = $TsumegoIssue->getCommentSectionCounts((int) $tsumegoId);
@@ -185,5 +176,20 @@ class TsumegoCommentsController extends AppController
 			'counts' => $counts,
 		]));
 		return $this->response;
+	}
+
+	//The users who wrote the comments, by id, as the rows of the user table
+	/**
+	 * @param list<TsumegoComment> $comments
+	 * @return array<int, array<string, mixed>>
+	 */
+	private static function authorsOf(array $comments): array
+	{
+		if (empty($comments))
+			return [];
+		$authors = [];
+		foreach (ClassRegistry::init('User')->find('all', ['conditions' => ['User.id' => array_values(array_unique(array_map(fn($comment) => $comment->user_id, $comments)))]]) as $user)
+			$authors[(int) $user['User']['id']] = $user['User'];
+		return $authors;
 	}
 }

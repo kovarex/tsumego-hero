@@ -192,14 +192,14 @@ class ProposalFeedbackTest extends IntegrationTestCase
 	public function testRejectedNewTagTellsTheProposerWhy(): void
 	{
 		$context = $this->prepare([], [['name' => 'snapback', 'approved' => 0]]);
-		$tagID = $context->tags[0]['id'];
-		ClassRegistry::init('Tag')->save(['id' => $tagID, 'user_id' => $context->otherUsers[0]['id']]);
+		$tagID = $context->tags[0]->id;
+		$this->fetchTable('Tag')->updateAll(['user_id' => $context->otherUsers[0]['id']], ['id' => $tagID]);
 
 		$this->post('/tags/rejectTagProposal/' . $tagID, []);
-		$this->assertNotEmpty(ClassRegistry::init('Tag')->findById($tagID), 'rejected without a comment');
+		$this->assertTrue($this->fetchTable('Tag')->exists(['id' => $tagID]), 'rejected without a comment');
 
 		$this->post('/tags/rejectTagProposal/' . $tagID, ['comment' => 'We have it already.']);
-		$this->assertEmpty(ClassRegistry::init('Tag')->findById($tagID));
+		$this->assertFalse($this->fetchTable('Tag')->exists(['id' => $tagID]));
 		$messages = $this->messagesTo($context->otherUsers[0]['id']);
 		$this->assertCount(1, $messages);
 		$this->assertStringContainsString('Your new tag snapback was rejected by DN_reviewer.', $messages[0]['text']);

@@ -531,16 +531,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$difficultyTiles = Rating::ranks();
 
 		//tagTiles
-		$tags = $this->Tag->find('all', [
-			'conditions' => [
-				'approved' => 1,
-				'NOT' => ['name' => 'Tsumego'],
-			],
-		]);
-
-		$tagTiles = [];
-		foreach ($tags as $tag)
-			$tagTiles[] = $tag['Tag']['name'];
+		$tagTiles = $this->fetchTable('Tag')->find()->select(['name'])->where(['approved' => 1, 'name !=' => 'Tsumego'])->all()->extract('name')->toList();
 
 		$setsSelector = new SetsSelector($tsumegoFilters);
 
@@ -849,7 +840,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$this->loadModel('AchievementStatus');
 		$this->loadModel('Sgf');
 		$this->loadModel('SetConnection');
-		$this->loadModel('Tag');
 		$this->loadModel('User');
 
 		if ($id === null)
@@ -885,11 +875,8 @@ ORDER BY sc.num ASC", [(int) $id]);
 		}
 
 		if ($queryType == 'tags')
-		{
-			$tag = $this->Tag->findByName($id);
-			if (!$tag)
+			if (!$this->fetchTable('Tag')->exists(['name' => $id]))
 				throw new NotFoundException("Tag not found");
-		}
 
 		$tsumegoFilters = new TsumegoFilters($queryType);
 		Util::setCookie('lastSet', $id);
@@ -913,9 +900,9 @@ ORDER BY sc.num ASC", [(int) $id]);
 			$set['Set']['id'] = $id;
 			$set['Set']['image'] = '';
 			$set['Set']['public'] = 1;
-			$tagName = $this->Tag->findByName($id);
-			if ($tagName && isset($tagName['Tag']['description']))
-				$set['Set']['description'] = $tagName['Tag']['description'];
+			$tag = $this->fetchTable('Tag')->find()->where(['name' => $id])->first();
+			if ($tag)
+				$set['Set']['description'] = $tag->description;
 			$set['Set']['title'] = $id;
 		}
 		elseif ($tsumegoFilters->query == 'topics')

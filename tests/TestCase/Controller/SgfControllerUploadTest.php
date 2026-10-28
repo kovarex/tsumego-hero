@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Table\AdminActivityTypeTable;
+use App\Model\Entity\TsumegoComment;
 use App\Utility\Auth;
 use App\Utility\Constants;
 
@@ -20,9 +21,10 @@ class SgfControllerUploadTest extends IntegrationTestCase
 			'order' => 'id DESC'])['Sgf'];
 	}
 
-	private function comment(ContextPreparator $context): array
+	private function comment(ContextPreparator $context): TsumegoComment
 	{
-		return ClassRegistry::init('TsumegoComment')->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]])['TsumegoComment'];
+		/** @var TsumegoComment */
+		return $this->fetchTable('TsumegoComment')->find()->where(['tsumego_id' => $context->tsumegos[0]['id']])->orderBy('id')->firstOrFail();
 	}
 
 	//Opens the problem in the board editor, presses the given buttons of its tool panel and saves it.
@@ -158,8 +160,8 @@ class SgfControllerUploadTest extends IntegrationTestCase
 		$this->assertEquals($context->tsumegos[0]['sgfs'][0]['id'], $saved['source_sgf_id']);
 		$this->assertSame('{"transpose":false,"flipX":true,"flipY":false,"invertColors":true}', $saved['transformation_from_source']);
 		$comment = $this->comment($context);
-		$this->assertSame('white T19 then b T18', $comment['message']);
-		$this->assertSame('19/2/19/1/18/1/2/1/sgf|19/1+19/2', $comment['position']);
+		$this->assertSame('white T19 then b T18', $comment->message);
+		$this->assertSame('19/2/19/1/18/1/2/1/sgf|19/1+19/2', $comment->position);
 
 		// the page turns the new version back into the top-left corner, where the comment points at the same stones
 		$browser->expandComments();
@@ -178,8 +180,8 @@ class SgfControllerUploadTest extends IntegrationTestCase
 		// clockwise: A19 goes to T19 and A18 to S19
 		$this->assertSame('{"transpose":true,"flipX":true,"flipY":false,"invertColors":false}', $this->newestSgf($context)['transformation_from_source']);
 		$comment = $this->comment($context);
-		$this->assertSame('black T19 then w S19', $comment['message']);
-		$this->assertSame('18/1/19/1/19/2/2/1/sgf|19/1+18/1', $comment['position']);
+		$this->assertSame('black T19 then w S19', $comment->message);
+		$this->assertSame('18/1/19/1/19/2/2/1/sgf|19/1+18/1', $comment->position);
 	}
 
 	//The editor shows a problem stored in another corner in the top-left, so saving it there
@@ -198,8 +200,8 @@ class SgfControllerUploadTest extends IntegrationTestCase
 
 		$this->assertSame('{"transpose":false,"flipX":true,"flipY":true,"invertColors":false}', $this->newestSgf($context)['transformation_from_source']);
 		$comment = $this->comment($context);
-		$this->assertSame(self::COMMENT['message'], $comment['message']);
-		$this->assertSame(self::COMMENT['position'], $comment['position']);
+		$this->assertSame(self::COMMENT['message'], $comment->message);
+		$this->assertSame(self::COMMENT['position'], $comment->position);
 	}
 
 	//A proposal turned in the board editor turns the comments when an admin accepts it, not before.
@@ -215,16 +217,16 @@ class SgfControllerUploadTest extends IntegrationTestCase
 		$this->assertEquals(Sgf::STATUS_PROPOSED, $proposal['sgf_status_id']);
 		$this->assertSame('{"transpose":false,"flipX":true,"flipY":false,"invertColors":false}', $proposal['transformation_from_source']);
 		$comment = $this->comment($context);
-		$this->assertSame(self::COMMENT['message'], $comment['message']);
-		$this->assertSame(self::COMMENT['position'], $comment['position']);
+		$this->assertSame(self::COMMENT['message'], $comment->message);
+		$this->assertSame(self::COMMENT['position'], $comment->position);
 
 		ClassRegistry::init('User')->save(['id' => $context->user['id'], 'user_role_id' => User::ROLE_ADMIN]);
 		$browser->get('/admin/sgf-proposals');
 		$browser->post('/users/acceptSGFProposal/' . $proposal['id']);
 
 		$comment = $this->comment($context);
-		$this->assertSame('black T19 then w T18', $comment['message']);
-		$this->assertSame('19/2/19/1/18/1/2/1/sgf|19/1+19/2', $comment['position']);
+		$this->assertSame('black T19 then w T18', $comment->message);
+		$this->assertSame('19/2/19/1/18/1/2/1/sgf|19/1+19/2', $comment->position);
 	}
 
 	//An uploaded file carries no transformation, its stones tell where the problem went and the comments follow.
@@ -244,8 +246,8 @@ class SgfControllerUploadTest extends IntegrationTestCase
 
 		$this->assertNull($this->newestSgf($context)['source_sgf_id']);
 		$comment = $this->comment($context);
-		$this->assertSame('black A1 then w A2', $comment['message']);
-		$this->assertSame('1/18/1/19/2/19/2/1/sgf|1/19+1/18', $comment['position']);
+		$this->assertSame('black A1 then w A2', $comment->message);
+		$this->assertSame('1/18/1/19/2/19/2/1/sgf|1/19+1/18', $comment->position);
 	}
 
 	//A status based problem needs a status at every end position, the board editor refuses to save it otherwise and so does the file upload.

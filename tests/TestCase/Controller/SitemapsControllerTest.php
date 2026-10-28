@@ -1,6 +1,7 @@
 <?php
 
 use App\Utility\Constants;
+use Cake\ORM\TableRegistry;
 
 //Tests XML sitemap generation
 class SitemapsControllerTest extends IntegrationTestCase
@@ -36,7 +37,7 @@ class SitemapsControllerTest extends IntegrationTestCase
 		$this->get('/sitemap.xml');
 		$result = $this->view;
 
-		$this->assertStringContainsString('/tags/view/' . $context->tags[0]['id'], $result);
+		$this->assertStringContainsString('/tags/view/' . $context->tags[0]->id, $result);
 		$this->assertStringNotContainsString('/sets/tag/', $result);
 	}
 
@@ -183,7 +184,7 @@ class SitemapsControllerTest extends IntegrationTestCase
 
 	private static function tagIdByName(string $name): int
 	{
-		return (int) ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => $name]])['Tag']['id'];
+		return TableRegistry::getTableLocator()->get('Tag')->find()->where(['name' => $name])->firstOrFail()->id;
 	}
 
 	private static function baseUrl(): string

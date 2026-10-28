@@ -28,14 +28,14 @@ class TagConnectionTest extends CakeTestCase
 
 		// Two today
 		$tagConnectionTable->saveOrFail($tagConnectionTable->newEntity([
-			'tag_id' => $context->tags[0]['id'],
+			'tag_id' => $context->tags[0]->id,
 			'tsumego_id' => $context->tsumegos[0]['id'],
 			'user_id' => $context->user['id'],
 			'approved' => 0,
 			'created' => $today,
 		]));
 		$tagConnectionTable->saveOrFail($tagConnectionTable->newEntity([
-			'tag_id' => $context->tags[1]['id'],
+			'tag_id' => $context->tags[1]->id,
 			'tsumego_id' => $context->tsumegos[0]['id'],
 			'user_id' => $context->user['id'],
 			'approved' => 0,
@@ -44,7 +44,7 @@ class TagConnectionTest extends CakeTestCase
 
 		// One yesterday
 		$tagConnectionTable->saveOrFail($tagConnectionTable->newEntity([
-			'tag_id' => $context->tags[2]['id'],
+			'tag_id' => $context->tags[2]->id,
 			'tsumego_id' => $context->tsumegos[0]['id'],
 			'user_id' => $context->user['id'],
 			'approved' => 0,
@@ -71,13 +71,11 @@ class TagConnectionTest extends CakeTestCase
 
 		// Create DAILY_TAG_LIMIT tags today
 		$tagConnectionTable = TableRegistry::getTableLocator()->get('TagConnection');
-		$tag = ClassRegistry::init('Tag');
+		$tagTable = TableRegistry::getTableLocator()->get('Tag');
 		$today = gmdate('Y-m-d H:i:s');
 		for ($i = 0; $i < Constants::$DAILY_TAG_LIMIT; $i++)
 		{
-			$tag->create();
-			$tag->save(['Tag' => ['name' => "rate-tag-$i", 'description' => '']]);
-			$tagId = $tag->getLastInsertId();
+			$tagId = $tagTable->saveOrFail($tagTable->newEntity(['name' => "rate-tag-$i", 'description' => '']))->id;
 
 			$tagConnectionTable->saveOrFail($tagConnectionTable->newEntity([
 				'tag_id' => $tagId,
@@ -101,13 +99,11 @@ class TagConnectionTest extends CakeTestCase
 		]);
 
 		$tagConnectionTable = TableRegistry::getTableLocator()->get('TagConnection');
-		$tag = ClassRegistry::init('Tag');
+		$tagTable = TableRegistry::getTableLocator()->get('Tag');
 		$today = gmdate('Y-m-d H:i:s');
 		for ($i = 0; $i < Constants::$DAILY_TAG_LIMIT + 5; $i++)
 		{
-			$tag->create();
-			$tag->save(['Tag' => ['name' => "admin-tag-$i", 'description' => '']]);
-			$tagId = $tag->getLastInsertId();
+			$tagId = $tagTable->saveOrFail($tagTable->newEntity(['name' => "admin-tag-$i", 'description' => '']))->id;
 
 			$tagConnectionTable->saveOrFail($tagConnectionTable->newEntity([
 				'tag_id' => $tagId,
@@ -130,15 +126,13 @@ class TagConnectionTest extends CakeTestCase
 		]);
 
 		$tagConnectionTable = TableRegistry::getTableLocator()->get('TagConnection');
-		$tag = ClassRegistry::init('Tag');
+		$tagTable = TableRegistry::getTableLocator()->get('Tag');
 		$yesterday = gmdate('Y-m-d H:i:s', strtotime('-1 day'));
 
 		// Create DAILY_TAG_LIMIT tags yesterday
 		for ($i = 0; $i < Constants::$DAILY_TAG_LIMIT; $i++)
 		{
-			$tag->create();
-			$tag->save(['Tag' => ['name' => "old-tag-$i", 'description' => '']]);
-			$tagId = $tag->getLastInsertId();
+			$tagId = $tagTable->saveOrFail($tagTable->newEntity(['name' => "old-tag-$i", 'description' => '']))->id;
 
 			$tagConnectionTable->saveOrFail($tagConnectionTable->newEntity([
 				'tag_id' => $tagId,

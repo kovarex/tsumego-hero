@@ -104,12 +104,7 @@ HAVING
 
 	private function mergeComments(): void
 	{
-		$slaveComments = ClassRegistry::init('TsumegoComment')->find('all', ['conditions' => ['tsumego_id' => $this->slaveTsumegoID]]);
-		foreach ($slaveComments as $slaveComment)
-		{
-			$slaveComment['TsumegoComment']['tsumego_id'] = $this->masterTsumegoID;
-			ClassRegistry::init('TsumegoComment')->save($slaveComment);
-		}
+		TableRegistry::getTableLocator()->get('TsumegoComment')->updateAll(['tsumego_id' => $this->masterTsumegoID], ['tsumego_id' => $this->slaveTsumegoID]);
 	}
 
 	private function mergeTagConnections(): void
