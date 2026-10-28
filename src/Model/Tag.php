@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\AdminActivityTypeTable;
 use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
 use App\Utility\Util;
@@ -90,7 +91,7 @@ ORDER BY `set`.id IS NULL, " . SetConnection::displayOrderForSetSql('`set`') . "
 		{
 			Util::query("DELETE FROM tag_connection WHERE tag_id = ?", [$tag['id']]);
 			Util::query("DELETE FROM tag WHERE id = ?", [$tag['id']]);
-			AdminActivityLogger::log(AdminActivityType::DELETE_TAG, null, null, json_encode([
+			AdminActivityLogger::log(AdminActivityTypeTable::DELETE_TAG, null, null, json_encode([
 				'tag' => $tag,
 				'connections' => $connections], JSON_UNESCAPED_UNICODE));
 			$database->commit();

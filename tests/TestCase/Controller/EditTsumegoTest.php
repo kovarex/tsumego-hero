@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\AdminActivityTypeTable;
 use App\Utility\Auth;
 use App\Utility\Rating;
 use Facebook\WebDriver\WebDriverKeys;
@@ -82,7 +83,7 @@ class EditTsumegoTest extends IntegrationTestCase
 			if ($testCase['value'] == 'delete')
 			{
 				$this->assertCount(1, $adminActivities);
-				$this->assertSame(AdminActivityType::PROBLEM_DELETE, $adminActivities[0]->type);
+				$this->assertSame(AdminActivityTypeTable::PROBLEM_DELETE, $adminActivities[0]->type);
 				$this->assertNotNull($tsumego['Tsumego']['deleted']);
 			}
 			else
@@ -115,32 +116,32 @@ class EditTsumegoTest extends IntegrationTestCase
 			$this->assertCount(1, $adminActivities);
 			if ($testCase['field'] == 'description')
 			{
-				$this->assertSame(AdminActivityType::DESCRIPTION_EDIT, $adminActivities[0]->type);
+				$this->assertSame(AdminActivityTypeTable::DESCRIPTION_EDIT, $adminActivities[0]->type);
 				$this->assertSame("foo", $adminActivities[0]->old_value);
 			}
 			if ($testCase['field'] == 'hint')
 			{
-				$this->assertSame(AdminActivityType::HINT_EDIT, $adminActivities[0]->type);
+				$this->assertSame(AdminActivityTypeTable::HINT_EDIT, $adminActivities[0]->type);
 				$this->assertSame("think", $adminActivities[0]->old_value);
 			}
 			elseif ($testCase['field'] == 'author')
 			{
-				$this->assertSame(AdminActivityType::AUTHOR_EDIT, $adminActivities[0]->type);
+				$this->assertSame(AdminActivityTypeTable::AUTHOR_EDIT, $adminActivities[0]->type);
 				$this->assertSame("Ivan Detkov", $adminActivities[0]->old_value);
 			}
 			elseif ($testCase['field'] == 'rating')
 			{
-				$this->assertSame(AdminActivityType::RATING_EDIT, $adminActivities[0]->type);
+				$this->assertSame(AdminActivityTypeTable::RATING_EDIT, $adminActivities[0]->type);
 				$this->assertSame("666", $adminActivities[0]->old_value);
 			}
 			elseif ($testCase['field'] == 'minimum-rating')
 			{
-				$this->assertSame(AdminActivityType::MINIMUM_RATING_EDIT, $adminActivities[0]->type);
+				$this->assertSame(AdminActivityTypeTable::MINIMUM_RATING_EDIT, $adminActivities[0]->type);
 				$this->assertSame(null, $adminActivities[0]->old_value);
 			}
 			elseif ($testCase['field'] == 'maximum-rating')
 			{
-				$this->assertSame(AdminActivityType::MAXIMUM_RATING_EDIT, $adminActivities[0]->type);
+				$this->assertSame(AdminActivityTypeTable::MAXIMUM_RATING_EDIT, $adminActivities[0]->type);
 				$this->assertSame(null, $adminActivities[0]->old_value);
 			}
 		}

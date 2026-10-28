@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\AdminActivityTypeTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\TsumegoUtil;
@@ -694,7 +695,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$this->assertResponseCode(302);
 		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID)['Tsumego'];
 		$this->assertSame([0, 1], [(int) $tsumego['alternative_response'], (int) $tsumego['pass']]);
-		$this->assertSame([[AdminActivityType::ALTERNATIVE_RESPONSE, '0'], [AdminActivityType::PASS_MODE, '1']], array_map(
+		$this->assertSame([[AdminActivityTypeTable::ALTERNATIVE_RESPONSE, '0'], [AdminActivityTypeTable::PASS_MODE, '1']], array_map(
 			fn($activity) => [(int) $activity['type'], $activity['new_value']],
 			Util::query('SELECT type, new_value FROM admin_activity WHERE tsumego_id = ? ORDER BY id', [$tsumegoID])));
 	}

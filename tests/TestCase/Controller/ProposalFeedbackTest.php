@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\AdminActivityTypeTable;
 use App\Utility\Auth;
 use App\Utility\Util;
 
@@ -88,7 +89,7 @@ class ProposalFeedbackTest extends IntegrationTestCase
 
 		$this->assertEquals(Sgf::STATUS_PROPOSED, ClassRegistry::init('Sgf')->findById($proposal['id'])['Sgf']['sgf_status_id']);
 		$this->assertSame([], Util::query('SELECT * FROM reject WHERE sgf_id = ?', [$proposal['id']]), 'gone from the contributions of the proposer');
-		$this->assertSame(1, (int) Util::query('SELECT COUNT(*) AS c FROM admin_activity WHERE type = ?', [AdminActivityType::REOPEN_PROPOSAL])[0]['c']);
+		$this->assertSame(1, (int) Util::query('SELECT COUNT(*) AS c FROM admin_activity WHERE type = ?', [AdminActivityTypeTable::REOPEN_PROPOSAL])[0]['c']);
 		$this->assertCount(1, $this->messagesTo($proposer['id']), 'reopening sends nothing, the next decision does');
 
 		$this->get('/admin/sgf-proposals');

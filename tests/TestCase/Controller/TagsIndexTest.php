@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Table\AdminActivityTable;
+use App\Model\Table\AdminActivityTypeTable;
 
 //The tag overview (/tags): every tag with its problem count, the problems of a tag, and deleting a tag.
 class TagsIndexTest extends IntegrationTestCase
@@ -132,7 +133,7 @@ class TagsIndexTest extends IntegrationTestCase
 		$this->assertSame(0, $this->fetchTable('TagConnection')->find()->where(['tag_id' => $atari['id']])->count());
 		$this->assertSame(1, $this->fetchTable('TagConnection')->find()->count(), 'ko stays on its problem');
 
-		$activity = $this->fetchTable('AdminActivity')->find()->where(['type' => AdminActivityType::DELETE_TAG])->firstOrFail();
+		$activity = $this->fetchTable('AdminActivity')->find()->where(['type' => AdminActivityTypeTable::DELETE_TAG])->firstOrFail();
 		$deleted = json_decode($activity->old_value, true);
 		$this->assertSame('atari', $deleted['tag']['name']);
 		$this->assertSame(

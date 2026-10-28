@@ -1,9 +1,11 @@
 <?php
 
-class AdminActivityType extends AppModel
-{
-	public $useTable = 'admin_activity_type';
+namespace App\Model\Table;
 
+//What an admin did, the type of an admin_activity row. The ids are the rows of admin_activity_type;
+//tests/ContextPreparator.php seeds them with their names.
+class AdminActivityTypeTable extends AppTable
+{
 	// Problem Edits
 	public const DESCRIPTION_EDIT = 1;
 	public const HINT_EDIT = 2;

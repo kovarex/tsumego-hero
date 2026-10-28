@@ -2,6 +2,7 @@
 
 use App\Model\Entity\TimeModeRank;
 use App\Model\Entity\TimeModeSession;
+use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\TimeModeRankTable;
 use App\Utility\AchievementChecker;
 use App\Utility\AdminActivityLogger;
@@ -893,46 +894,46 @@ class ContextPreparator
 
 		// Define all activity types with their correct IDs from AdminActivityLogger constants
 		$types = [
-			AdminActivityType::DESCRIPTION_EDIT => 'Description Edit',
-			AdminActivityType::HINT_EDIT => 'Hint Edit',
-			AdminActivityType::PROBLEM_DELETE => 'Problem Delete',
-			AdminActivityType::ALTERNATIVE_RESPONSE => 'Alternative Response',
-			AdminActivityType::PASS_MODE => 'Pass Mode',
-			AdminActivityType::MULTIPLE_CHOICE => 'Multiple Choice',
-			AdminActivityType::SCORE_ESTIMATING => 'Score Estimating',
-			AdminActivityType::SOLUTION_REQUEST => 'Solution Request',
-			AdminActivityType::SET_TITLE_EDIT => 'Set Title Edit',
-			AdminActivityType::SET_DESCRIPTION_EDIT => 'Set Description Edit',
-			AdminActivityType::SET_COLOR_EDIT => 'Set Color Edit',
-			AdminActivityType::SET_ORDER_EDIT => 'Set Order Edit',
-			AdminActivityType::SET_RATING_EDIT => 'Set Rating Edit',
-			AdminActivityType::PROBLEM_ADD => 'Problem Add',
-			AdminActivityType::SET_ALTERNATIVE_RESPONSE => 'Set Alternative Response',
-			AdminActivityType::SET_PASS_MODE => 'Set Pass Mode',
-			AdminActivityType::AUTHOR_EDIT => 'Author Edit',
-			AdminActivityType::RATING_EDIT => 'Rating Edit',
-			AdminActivityType::MINIMUM_RATING_EDIT => 'Minimum Rating Edit',
-			AdminActivityType::MAXIMUM_RATING_EDIT => 'Maximum Rating Edit',
-			AdminActivityType::ACCEPT_TAG => 'Accept Tag',
-			AdminActivityType::REJECT_TAG => 'Reject Tag',
-			AdminActivityType::SGF_EDIT => 'SGF Edit',
-			AdminActivityType::ADD_TAG => 'Add Tag',
-			AdminActivityType::DELETE_TAG => 'Tag Delete',
-			AdminActivityType::ACCEPT_PROPOSAL => 'Accept Proposal',
-			AdminActivityType::REJECT_PROPOSAL => 'Reject Proposal',
-			AdminActivityType::REOPEN_PROPOSAL => 'Reopen Proposal',
-			AdminActivityType::TSUMEGO_MERGE => 'Tsumego Merge',
-			AdminActivityType::DELETE_USER => 'Delete User',
-			AdminActivityType::RESTORE_USER => 'Restore User',
-			AdminActivityType::DISPLAY_NAME_CHANGE => 'Display Name Change',
-			AdminActivityType::ROLE_CHANGE => 'Role Change',
-			AdminActivityType::PROBLEM_RESTORE => 'Problem Restore',
-			AdminActivityType::SET_DELETE => 'Set Delete',
-			AdminActivityType::SET_RESTORE => 'Set Restore',
-			AdminActivityType::ADD_TO_SCHEDULE => 'Add to Schedule',
-			AdminActivityType::CANCEL_SCHEDULE => 'Cancel Schedule'];
+			AdminActivityTypeTable::DESCRIPTION_EDIT => 'Description Edit',
+			AdminActivityTypeTable::HINT_EDIT => 'Hint Edit',
+			AdminActivityTypeTable::PROBLEM_DELETE => 'Problem Delete',
+			AdminActivityTypeTable::ALTERNATIVE_RESPONSE => 'Alternative Response',
+			AdminActivityTypeTable::PASS_MODE => 'Pass Mode',
+			AdminActivityTypeTable::MULTIPLE_CHOICE => 'Multiple Choice',
+			AdminActivityTypeTable::SCORE_ESTIMATING => 'Score Estimating',
+			AdminActivityTypeTable::SOLUTION_REQUEST => 'Solution Request',
+			AdminActivityTypeTable::SET_TITLE_EDIT => 'Set Title Edit',
+			AdminActivityTypeTable::SET_DESCRIPTION_EDIT => 'Set Description Edit',
+			AdminActivityTypeTable::SET_COLOR_EDIT => 'Set Color Edit',
+			AdminActivityTypeTable::SET_ORDER_EDIT => 'Set Order Edit',
+			AdminActivityTypeTable::SET_RATING_EDIT => 'Set Rating Edit',
+			AdminActivityTypeTable::PROBLEM_ADD => 'Problem Add',
+			AdminActivityTypeTable::SET_ALTERNATIVE_RESPONSE => 'Set Alternative Response',
+			AdminActivityTypeTable::SET_PASS_MODE => 'Set Pass Mode',
+			AdminActivityTypeTable::AUTHOR_EDIT => 'Author Edit',
+			AdminActivityTypeTable::RATING_EDIT => 'Rating Edit',
+			AdminActivityTypeTable::MINIMUM_RATING_EDIT => 'Minimum Rating Edit',
+			AdminActivityTypeTable::MAXIMUM_RATING_EDIT => 'Maximum Rating Edit',
+			AdminActivityTypeTable::ACCEPT_TAG => 'Accept Tag',
+			AdminActivityTypeTable::REJECT_TAG => 'Reject Tag',
+			AdminActivityTypeTable::SGF_EDIT => 'SGF Edit',
+			AdminActivityTypeTable::ADD_TAG => 'Add Tag',
+			AdminActivityTypeTable::DELETE_TAG => 'Tag Delete',
+			AdminActivityTypeTable::ACCEPT_PROPOSAL => 'Accept Proposal',
+			AdminActivityTypeTable::REJECT_PROPOSAL => 'Reject Proposal',
+			AdminActivityTypeTable::REOPEN_PROPOSAL => 'Reopen Proposal',
+			AdminActivityTypeTable::TSUMEGO_MERGE => 'Tsumego Merge',
+			AdminActivityTypeTable::DELETE_USER => 'Delete User',
+			AdminActivityTypeTable::RESTORE_USER => 'Restore User',
+			AdminActivityTypeTable::DISPLAY_NAME_CHANGE => 'Display Name Change',
+			AdminActivityTypeTable::ROLE_CHANGE => 'Role Change',
+			AdminActivityTypeTable::PROBLEM_RESTORE => 'Problem Restore',
+			AdminActivityTypeTable::SET_DELETE => 'Set Delete',
+			AdminActivityTypeTable::SET_RESTORE => 'Set Restore',
+			AdminActivityTypeTable::ADD_TO_SCHEDULE => 'Add to Schedule',
+			AdminActivityTypeTable::CANCEL_SCHEDULE => 'Cancel Schedule'];
 
-		$adminActivityType = ClassRegistry::init('AdminActivityType');
+		$adminActivityTypeTable = TableRegistry::getTableLocator()->get('AdminActivityType');
 
 		// Clear and repopulate with correct IDs (this table is not in the constructor wipe)
 		$pdo = ClassRegistry::init('User')->getDataSource()->getConnection();
@@ -941,15 +942,7 @@ class ContextPreparator
 		$pdo->exec('SET FOREIGN_KEY_CHECKS = 1');
 
 		foreach ($types as $id => $name)
-		{
-			$adminActivityType->create();
-			$adminActivityType->save([
-				'AdminActivityType' => [
-					'id' => $id,
-					'name' => $name,
-				]
-			], false);
-		}
+			$adminActivityTypeTable->saveOrFail($adminActivityTypeTable->newEntity(['id' => $id, 'name' => $name], ['accessibleFields' => ['id' => true]]));
 	}
 
 	public function prepareAdminActivities(?array $adminActivities): void

@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\AdminActivityTypeTable;
 use App\Utility\AdminActivityLogger;
 
 //What makes a problem a multiple choice or a score estimating one: its answers. A problem has one variant at most.
@@ -26,8 +27,8 @@ class TsumegoVariant extends AppModel
 	{
 		$variant = ClassRegistry::init('TsumegoVariant')->find('first', ['conditions' => ['tsumego_id' => $tsumegoID]]);
 		$activityTypes = [
-			self::TYPE_MULTIPLE_CHOICE => AdminActivityType::MULTIPLE_CHOICE,
-			self::TYPE_SCORE_ESTIMATING => AdminActivityType::SCORE_ESTIMATING];
+			self::TYPE_MULTIPLE_CHOICE => AdminActivityTypeTable::MULTIPLE_CHOICE,
+			self::TYPE_SCORE_ESTIMATING => AdminActivityTypeTable::SCORE_ESTIMATING];
 		$currentType = $variant ? (int) $variant['TsumegoVariant']['tsumego_variant_type_id'] : null;
 		if ($currentType === $type)
 			return;

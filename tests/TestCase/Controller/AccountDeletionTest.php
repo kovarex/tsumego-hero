@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\AdminActivityTypeTable;
 use App\Utility\Auth;
 use App\Utility\CookieFlash;
 
@@ -91,7 +92,7 @@ class AccountDeletionTest extends IntegrationTestCase
 		$this->assertFalse(Auth::isLoggedIn());
 		$this->assertNull($this->userRow($context->user['id'])['deletion_token']);
 		$adminActivity = $this->fetchTable('AdminActivity')->find()->firstOrFail();
-		$this->assertSame(AdminActivityType::DELETE_USER, $adminActivity->type);
+		$this->assertSame(AdminActivityTypeTable::DELETE_USER, $adminActivity->type);
 		$this->assertSame($context->user['id'], $adminActivity->user_id);
 		$this->assertSame('DN_kovarex', $adminActivity->old_value, 'The activity log names the account the way players see it');
 	}

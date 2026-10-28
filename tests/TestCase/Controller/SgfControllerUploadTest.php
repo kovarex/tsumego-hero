@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\AdminActivityTypeTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
 
@@ -100,7 +101,7 @@ class SgfControllerUploadTest extends IntegrationTestCase
 		// Verify admin activity was logged
 		$activity = $this->fetchTable('AdminActivity')->find()
 			->where([
-				'type' => AdminActivityType::SGF_EDIT,
+				'type' => AdminActivityTypeTable::SGF_EDIT,
 				'tsumego_id' => $context->tsumegos[0]['id'],
 				'user_id' => Auth::getUserID(),
 			])
@@ -133,7 +134,7 @@ class SgfControllerUploadTest extends IntegrationTestCase
 		// Verify admin activity was logged
 		$activity = $this->fetchTable('AdminActivity')->find()
 			->where([
-				'type' => AdminActivityType::SGF_EDIT,
+				'type' => AdminActivityTypeTable::SGF_EDIT,
 				'tsumego_id' => $context->tsumegos[0]['id'],
 				'user_id' => Auth::getUserID(),
 			])
