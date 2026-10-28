@@ -1285,7 +1285,6 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 		$userID = (int) $user['User']['id'];
 		AdminActivityLogger::log(AdminActivityType::DELETE_USER, null, null, $user['User']['display_name'], null, $userID);
 		User::deleteAccount($userID);
-		Cache::delete('recent_achievements_7', 'default');
 		if (Auth::getUserID() == $userID)
 			Auth::logout();
 		CookieFlash::set('Your account has been deleted', 'success');
@@ -1308,7 +1307,6 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 			return $this->redirect('/admin/deleted-accounts');
 		}
 		AdminActivityLogger::log(AdminActivityType::RESTORE_USER, null, null, null, $name);
-		Cache::delete('recent_achievements_7', 'default');
 		CookieFlash::set('Account ' . $name . ' restored', 'success');
 		return $this->redirect('/admin/deleted-accounts');
 	}

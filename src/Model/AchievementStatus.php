@@ -13,13 +13,9 @@ class AchievementStatus extends AppModel
 
 	//Returns the most recent achievements with user and achievement details.
 	//$limit: Maximum number of results (default: 7)
+	//Not cached: the index on created makes it read only the $limit newest rows.
 	public function getRecent(int $limit = 7): array
 	{
-		$cacheKey = 'recent_achievements_' . $limit;
-		$cached = Cache::read($cacheKey);
-		if ($cached !== false)
-			return $cached;
-
 		$rows = $this->find('all', [
 			'joins' => [
 				[
@@ -69,7 +65,6 @@ class AchievementStatus extends AppModel
 				'created' => Util::toIso8601($row['AchievementStatus']['created']),
 			];
 		}
-		Cache::write($cacheKey, $result, 'default');
 		return $result;
 	}
 }

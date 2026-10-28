@@ -4,7 +4,6 @@ namespace App\Utility;
 
 use Achievement;
 use AchievementCondition;
-use Cache;
 use ClassRegistry;
 use SetConnection;
 use TimeModeCategory;
@@ -45,9 +44,6 @@ class AchievementChecker
 		ClassRegistry::init('AchievementStatus')->create();
 		ClassRegistry::init('AchievementStatus')->save($achievementStatus);
 
-		// Invalidate recent achievements cache so the new achievement appears immediately.
-		Cache::delete('recent_achievements_7', 'default');
-
 		$achievement = ClassRegistry::init('Achievement')->findById($achievementID->value);
 		$this->updated [] = $achievement['Achievement'];
 	}
@@ -70,7 +66,6 @@ class AchievementChecker
 
 		$status['AchievementStatus']['value'] = $times;
 		$AchievementStatus->save($status);
-		Cache::delete('recent_achievements_7', 'default');
 	}
 
 	private function fillExistingStatuses(): void
