@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Table\DayRecordTable;
+use App\Model\Table\ProgressDeletionTable;
 use App\Utility\AchievementChecker;
 use App\Utility\Auth;
 use App\Utility\Constants;
@@ -102,7 +103,7 @@ class PlayResultProcessorComponent extends Component
 		$originalTsumegoRating = $tsumego['Tsumego']['rating'];
 
 		// the resets of the part of the set the problem is played from, in the last month
-		$progressDeletionCount = ProgressDeletion::countRecentForProblem(Auth::getUserID(), $tsumegoID, $setConnectionID);
+		$progressDeletionCount = ProgressDeletionTable::countRecentForProblem(Auth::getUserID(), $tsumegoID, $setConnectionID);
 
 		$lastTsumegoAttempt = TsumegoAttempt::findLast((int) Auth::getUserID(), $tsumegoID);
 
