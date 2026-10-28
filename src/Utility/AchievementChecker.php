@@ -353,126 +353,34 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeSessionStatusTable::SOLVED]);
 		return $this;
 	}
 
+	//The achievements for solving every problem of a group of the site's collections, by the name
+	//setAchievementSpecial() takes: the ids of the collections and the achievement.
+	private const SPECIAL_SET_GROUPS = [
+		'cc1' => [[50, 52, 53, 54], AchievementId::LIFE_DEATH_ELEMENTARY],
+		'cc2' => [[41, 49, 65, 66], AchievementId::LIFE_DEATH_INTERMEDIATE],
+		'cc3' => [[186, 187, 196, 203], AchievementId::LIFE_DEATH_ADVANCED],
+		'1000w1' => [[190, 193, 198], AchievementId::WEIQI_1000_FIRST_HALF],
+		'1000w2' => [[216], AchievementId::WEIQI_1000_SECOND_HALF],
+	];
+
+	//Unlocks the achievement of a group of collections (see SPECIAL_SET_GROUPS) when the player has
+	//solved every problem of its collections that is not in the trash. It is asked each time the
+	//player looks at a finished page of one of them, so once unlocked nothing is counted again, and
+	//the database counts the problems still unsolved instead of loading them all.
 	public function setAchievementSpecial(?string $s = null): AchievementChecker
 	{
-		$tsIds = [];
-		$completed = '';
-		if ($s == 'cc1')
-		{
-			$ts1 = TsumegoUtil::collectTsumegosFromSet(50);
-			$ts2 = TsumegoUtil::collectTsumegosFromSet(52);
-			$ts3 = TsumegoUtil::collectTsumegosFromSet(53);
-			$ts4 = TsumegoUtil::collectTsumegosFromSet(54);
-			$ts = array_merge($ts1, $ts2, $ts3, $ts4);
-			$tsCount = count($ts);
-			for ($i = 0; $i < $tsCount; $i++)
-				array_push($tsIds, $ts[$i]['Tsumego']['id']);
-			$uts = $tsIds ? Util::query('SELECT tsumego_id, status FROM tsumego_status WHERE user_id = ? AND tsumego_id IN ('
-				. implode(',', array_fill(0, count($tsIds), '?')) . ')', [Auth::getUserID(), ...$tsIds]) : [];
-			$counter = 0;
-			$utsCount = count($uts);
-			for ($j = 0; $j < $utsCount; $j++)
-				for ($k = 0; $k < $tsCount; $k++)
-					if ($uts[$j]['tsumego_id'] == $ts[$k]['Tsumego']['id'] && ($uts[$j]['status'] == 'S'
-					|| $uts[$j]['status'] == 'W' || $uts[$j]['status'] == 'C'))
-						$counter++;
-			if ($counter == count($ts))
-				$completed = $s;
-		}
-		elseif ($s == 'cc2')
-		{
-			$ts1 = TsumegoUtil::collectTsumegosFromSet(41);
-			$ts2 = TsumegoUtil::collectTsumegosFromSet(49);
-			$ts3 = TsumegoUtil::collectTsumegosFromSet(65);
-			$ts4 = TsumegoUtil::collectTsumegosFromSet(66);
-			$ts = array_merge($ts1, $ts2, $ts3, $ts4);
-			$tsCount = count($ts);
-			for ($i = 0; $i < $tsCount; $i++)
-				array_push($tsIds, $ts[$i]['Tsumego']['id']);
-			$uts = $tsIds ? Util::query('SELECT tsumego_id, status FROM tsumego_status WHERE user_id = ? AND tsumego_id IN ('
-				. implode(',', array_fill(0, count($tsIds), '?')) . ')', [Auth::getUserID(), ...$tsIds]) : [];
-			$counter = 0;
-			$utsCount = count($uts);
-			for ($j = 0; $j < $utsCount; $j++)
-				for ($k = 0; $k < $tsCount; $k++)
-					if ($uts[$j]['tsumego_id'] == $ts[$k]['Tsumego']['id'] && ($uts[$j]['status'] == 'S'
-					|| $uts[$j]['status'] == 'W' || $uts[$j]['status'] == 'C'))
-						$counter++;
-			if ($counter == count($ts))
-				$completed = $s;
-		}
-		elseif ($s == 'cc3')
-		{
-			$ts1 = TsumegoUtil::collectTsumegosFromSet(186);
-			$ts2 = TsumegoUtil::collectTsumegosFromSet(187);
-			$ts3 = TsumegoUtil::collectTsumegosFromSet(196);
-			$ts4 = TsumegoUtil::collectTsumegosFromSet(203);
-			$ts = array_merge($ts1, $ts2, $ts3, $ts4);
-			$tsCount = count($ts);
-			for ($i = 0; $i < $tsCount; $i++)
-				array_push($tsIds, $ts[$i]['Tsumego']['id']);
-			$uts = $tsIds ? Util::query('SELECT tsumego_id, status FROM tsumego_status WHERE user_id = ? AND tsumego_id IN ('
-				. implode(',', array_fill(0, count($tsIds), '?')) . ')', [Auth::getUserID(), ...$tsIds]) : [];
-			$counter = 0;
-			$utsCount = count($uts);
-			for ($j = 0; $j < $utsCount; $j++)
-				for ($k = 0; $k < $tsCount; $k++)
-					if ($uts[$j]['tsumego_id'] == $ts[$k]['Tsumego']['id'] && ($uts[$j]['status'] == 'S'
-					|| $uts[$j]['status'] == 'W' || $uts[$j]['status'] == 'C'))
-						$counter++;
-			if ($counter == count($ts))
-				$completed = $s;
-		}
-		elseif ($s == '1000w1')
-		{
-			$ts1 = TsumegoUtil::collectTsumegosFromSet(190);
-			$ts2 = TsumegoUtil::collectTsumegosFromSet(193);
-			$ts3 = TsumegoUtil::collectTsumegosFromSet(198);
-			$ts = array_merge($ts1, $ts2, $ts3);
-			$tsCount = count($ts);
-			for ($i = 0; $i < $tsCount; $i++)
-				array_push($tsIds, $ts[$i]['Tsumego']['id']);
-			$uts = $tsIds ? Util::query('SELECT tsumego_id, status FROM tsumego_status WHERE user_id = ? AND tsumego_id IN ('
-				. implode(',', array_fill(0, count($tsIds), '?')) . ')', [Auth::getUserID(), ...$tsIds]) : [];
-			$counter = 0;
-			$utsCount = count($uts);
-			for ($j = 0; $j < $utsCount; $j++)
-				for ($k = 0; $k < $tsCount; $k++)
-					if ($uts[$j]['tsumego_id'] == $ts[$k]['Tsumego']['id'] && ($uts[$j]['status'] == 'S'
-					|| $uts[$j]['status'] == 'W' || $uts[$j]['status'] == 'C'))
-						$counter++;
-			if ($counter == count($ts))
-				$completed = $s;
-		}
-		elseif ($s == '1000w2')
-		{
-			$ts = TsumegoUtil::collectTsumegosFromSet(216);
-			$tsCount = count($ts);
-			for ($i = 0; $i < $tsCount; $i++)
-				array_push($tsIds, $ts[$i]['Tsumego']['id']);
-			$uts = $tsIds ? Util::query('SELECT tsumego_id, status FROM tsumego_status WHERE user_id = ? AND tsumego_id IN ('
-				. implode(',', array_fill(0, count($tsIds), '?')) . ')', [Auth::getUserID(), ...$tsIds]) : [];
-			$counter = 0;
-			$utsCount = count($uts);
-			for ($j = 0; $j < $utsCount; $j++)
-				for ($k = 0; $k < $tsCount; $k++)
-					if ($uts[$j]['tsumego_id'] == $ts[$k]['Tsumego']['id'] && ($uts[$j]['status'] == 'S'
-					|| $uts[$j]['status'] == 'W' || $uts[$j]['status'] == 'C'))
-						$counter++;
-			if ($counter == count($ts))
-				$completed = $s;
-		}
-
-		if ($completed == 'cc1')
-			$this->gained(AchievementId::LIFE_DEATH_ELEMENTARY);
-		if ($completed == 'cc2')
-			$this->gained(AchievementId::LIFE_DEATH_INTERMEDIATE);
-		if ($completed == 'cc3')
-			$this->gained(AchievementId::LIFE_DEATH_ADVANCED);
-		if ($completed == '1000w1')
-			$this->gained(AchievementId::WEIQI_1000_FIRST_HALF);
-		if ($completed == '1000w2')
-			$this->gained(AchievementId::WEIQI_1000_SECOND_HALF);
+		if (!isset(self::SPECIAL_SET_GROUPS[$s]))
+			return $this;
+		[$setIDs, $achievementID] = self::SPECIAL_SET_GROUPS[$s];
+		if ($this->unlocked($achievementID))
+			return $this;
+		$unsolved = Util::query('SELECT COUNT(*) AS unsolved FROM set_connection sc'
+			. ' JOIN tsumego ON tsumego.id = sc.tsumego_id AND tsumego.deleted IS NULL'
+			. ' LEFT JOIN tsumego_status ON tsumego_status.user_id = ? AND tsumego_status.tsumego_id = sc.tsumego_id'
+			. " AND tsumego_status.status IN ('S', 'W', 'C')"
+			. ' WHERE sc.set_id IN (' . implode(',', $setIDs) . ') AND tsumego_status.id IS NULL', [Auth::getUserID()])[0]['unsolved'];
+		if ((int) $unsolved === 0)
+			$this->gained($achievementID);
 		return $this;
 	}
 

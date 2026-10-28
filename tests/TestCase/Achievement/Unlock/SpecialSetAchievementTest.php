@@ -11,31 +11,7 @@ class SpecialSetAchievementTest extends AchievementTestCase
 	{
 		$context = new ContextPreparator();
 
-		// Create the required sets with tsumegos
-		$Set = ClassRegistry::init('Set');
-		$Tsumego = ClassRegistry::init('Tsumego');
-		$TsumegoStatus = $this->fetchTable('TsumegoStatus');
-
-		$setIds = [50, 52, 53, 54];
-
-		foreach ($setIds as $setId)
-		{
-			// Create set
-			$Set->create();
-			$Set->save(['id' => $setId, 'title' => "Test Set $setId"]);
-
-			// Create a few tsumegos in this set
-			for ($i = 0; $i < 3; $i++)
-			{
-				$Tsumego->create();
-				$Tsumego->save(['rating' => 1000, 'author' => '']);
-				$tsumegoId = $Tsumego->id;
-
-				// Mark as solved
-				$TsumegoStatus->saveOrFail($TsumegoStatus->newEntity(['user_id' => $context->user['id'], 'tsumego_id' => $tsumegoId, 'status' => 'S'])); // solved
-			}
-		}
-
+		$this->createAndSolveSets($context->user['id'], [50, 52, 53, 54]);
 		new AchievementChecker()->setAchievementSpecial('cc1');
 		$this->assertAchievementUnlocked(AchievementId::LIFE_DEATH_ELEMENTARY, 'Life & Death Elementary should unlock when all sets 50,52,53,54 are completed');
 	}
@@ -80,13 +56,36 @@ class SpecialSetAchievementTest extends AchievementTestCase
 		$this->assertAchievementUnlocked(AchievementId::WEIQI_1000_SECOND_HALF, '1000 Weiqi 2nd half should unlock');
 	}
 
-	// Helper: Create sets with tsumegos and mark them all as solved
-	private function createAndSolveSets($userId, $setIds)
+	//One problem of the sets still unsolved keeps the achievement locked
+	public function test1000WeiqiFirstHalfNeedsEveryProblemSolved()
+	{
+		$context = new ContextPreparator();
+		$tsumegoIDs = $this->createAndSolveSets($context->user['id'], [190, 193, 198]);
+		$this->fetchTable('TsumegoStatus')->updateAll(['status' => 'F'], ['user_id' => $context->user['id'], 'tsumego_id' => $tsumegoIDs[7]]);
+		new AchievementChecker()->setAchievementSpecial('1000w1');
+		$this->assertAchievementNotUnlocked(AchievementId::WEIQI_1000_FIRST_HALF);
+	}
+
+	//A problem in the trash is not in the set anymore, so it doesn't have to be solved
+	public function testAProblemInTheTrashIsNotNeeded()
+	{
+		$context = new ContextPreparator();
+		$tsumegoIDs = $this->createAndSolveSets($context->user['id'], [216]);
+		$this->fetchTable('TsumegoStatus')->deleteAll(['user_id' => $context->user['id'], 'tsumego_id' => $tsumegoIDs[1]]);
+		ClassRegistry::init('Tsumego')->updateAll(['deleted' => "'" . date('Y-m-d H:i:s') . "'"], ['id' => $tsumegoIDs[1]]);
+		new AchievementChecker()->setAchievementSpecial('1000w2');
+		$this->assertAchievementUnlocked(AchievementId::WEIQI_1000_SECOND_HALF, 'The problem in the trash should not be needed');
+	}
+
+	// Helper: Create sets with tsumegos in them and mark them all as solved, returns the tsumego ids
+	private function createAndSolveSets($userId, $setIds): array
 	{
 		$Set = ClassRegistry::init('Set');
 		$Tsumego = ClassRegistry::init('Tsumego');
 		$TsumegoStatus = $this->fetchTable('TsumegoStatus');
+		$SetConnection = ClassRegistry::init('SetConnection');
 
+		$tsumegoIDs = [];
 		foreach ($setIds as $setId)
 		{
 			$Set->create();
@@ -97,13 +96,14 @@ class SpecialSetAchievementTest extends AchievementTestCase
 				$Tsumego->create();
 				$Tsumego->save(['rating' => 1000, 'author' => '']);
 				$tsumegoId = $Tsumego->id;
+				$tsumegoIDs[] = (int) $tsumegoId;
+
+				$SetConnection->create();
+				$SetConnection->save(['set_id' => $setId, 'tsumego_id' => $tsumegoId, 'num' => $i + 1]);
 
 				$TsumegoStatus->saveOrFail($TsumegoStatus->newEntity(['user_id' => $userId, 'tsumego_id' => $tsumegoId, 'status' => 'S']));
 			}
 		}
+		return $tsumegoIDs;
 	}
-
-	// Note: Negative test skipped due to bug in production code:
-	// If TsumegoUtil::collectTsumegosFromSet() returns empty array,
-	// achievement unlocks incorrectly (0 == 0 passes the check)
 }
