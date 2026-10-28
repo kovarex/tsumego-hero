@@ -7,7 +7,7 @@ use App\Utility\Auth;
 class SgfsController extends AppController
 {
 	#[HttpGet]
-	public function view(?string $id = null): void
+	public function view(int $id): void
 	{
 		$this->Authorization->authorize('Sgf');
 		$this->set('_page', 'play');
@@ -30,25 +30,25 @@ class SgfsController extends AppController
 		$tsumegoTable = $this->fetchTable('Tsumego');
 		if (isset($this->params['url']['duplicates']))
 		{
-			$newDuplicates = explode('-', $this->params['url']['duplicates']);
+			$newDuplicates = array_map('intval', explode('-', $this->params['url']['duplicates']));
 			foreach ($newDuplicates as $duplicateId)
 			{
-				if (!$tsumegoTable->exists(['id' => (int) $duplicateId]))
+				if (!$tsumegoTable->exists(['id' => $duplicateId]))
 					continue;
-				$scT = $this->SetConnection->findDisplaySetConnection((int) $duplicateId);
+				$scT = $this->SetConnection->findDisplaySetConnection($duplicateId);
 				if (!$scT)
 					continue;
 				$dSet = $this->Set->findById($scT['SetConnection']['set_id']);
 				if (!$dSet)
 					continue;
-				$dId[] = (int) $duplicateId;
+				$dId[] = $duplicateId;
 				$dTitle[] = $dSet['Set']['title'] . ' - ';
 			}
 		}
 
-		if (!$tsumegoTable->exists(['id' => (int) $id]))
+		if (!$tsumegoTable->exists(['id' => $id]))
 			throw new NotFoundException('Tsumego not found');
-		$scT = $this->SetConnection->findDisplaySetConnection((int) $id);
+		$scT = $this->SetConnection->findDisplaySetConnection($id);
 		if (!$scT)
 			throw new NotFoundException('Tsumego not found in any set');
 		$set = $this->Set->findById($scT['SetConnection']['set_id']);

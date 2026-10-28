@@ -6,7 +6,7 @@ use App\Utility\Util;
 /**
  * @var View $this
  * @var array $dTitle
- * @var string $id
+ * @var int $id
  * @var string $name
  * @var array $s
  * @var string $type
@@ -40,7 +40,7 @@ use App\Utility\Util;
 		<?php if($type=='tsumego'){ ?>
 			<a href="/tsumegos/play/<?php echo $id; ?>">back</a>
 		<?php }else{ ?>
-			<a href="/sgfs/view/<?php echo (int)$id; ?>">back</a>
+			<a href="/sgfs/view/<?php echo $id; ?>">back</a>
 		<?php } ?>
 	</div>
 	<table class="data-table" border="0">
@@ -90,7 +90,7 @@ use App\Utility\Util;
 <script>
 	function delV(sgfid){
 		var confirmed = confirm("Are you sure?");
-		if(confirmed) window.location.href = "/sgfs/view/<?php echo (int)$id; ?>?delete="+sgfid;
+		if(confirmed) window.location.href = "/sgfs/view/<?php echo $id; ?>?delete="+sgfid;
 	}
 
 	<?php for($i=0; $i<count($s); $i++){ ?>
