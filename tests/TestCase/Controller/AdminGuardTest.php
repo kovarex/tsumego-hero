@@ -254,13 +254,13 @@ class AdminGuardTest extends IntegrationTestCase
 			'user' => ['name' => 'admin', 'admin' => true],
 			'tsumego' => ['set_order' => 1],
 		]);
-		$adminActivity = ClassRegistry::init('AdminActivity');
-		$before = $adminActivity->find('count');
+		$adminActivity = $this->fetchTable('AdminActivity');
+		$before = $adminActivity->find()->count();
 
 		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id'] . '?requestSolution=1');
 
 		$this->assertResponseCode(200);
-		$this->assertSame($before + 1, $adminActivity->find('count'));
+		$this->assertSame($before + 1, $adminActivity->find()->count());
 	}
 
 	// ── ScheduleController::index ──

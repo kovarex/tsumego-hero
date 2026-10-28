@@ -620,7 +620,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 
 		$this->post("/sets/edit/{$setId}", ['Set' => ['description' => 'New desc']]);
 
-		$this->assertSame(0, ClassRegistry::init('AdminActivity')->find('count'));
+		$this->assertSame(0, $this->fetchTable('AdminActivity')->find()->count());
 	}
 
 	public function testAdminEditingOthersSetLogsActivity(): void
@@ -635,9 +635,9 @@ class UserSetsControllerTest extends IntegrationTestCase
 
 		$this->post("/sets/edit/{$setId}", ['Set' => ['description' => 'New desc']]);
 
-		$activity = ClassRegistry::init('AdminActivity')->find('first', ['order' => 'id DESC']);
+		$activity = $this->fetchTable('AdminActivity')->find()->orderByDesc('id')->firstOrFail();
 		$this->assertNotEmpty($activity);
-		$this->assertSame(AdminActivityType::SET_DESCRIPTION_EDIT, $activity['AdminActivity']['type']);
+		$this->assertSame(AdminActivityType::SET_DESCRIPTION_EDIT, $activity->type);
 	}
 
 	public function testCreateAndAddTsumegoLogsProblemAdd(): void
@@ -651,9 +651,9 @@ class UserSetsControllerTest extends IntegrationTestCase
 
 		$this->post("/sets/createAndAddTsumego/{$setId}", ['order' => 1]);
 
-		$activity = ClassRegistry::init('AdminActivity')->find('first', ['order' => 'id DESC']);
+		$activity = $this->fetchTable('AdminActivity')->find()->orderByDesc('id')->firstOrFail();
 		$this->assertNotEmpty($activity);
-		$this->assertSame(AdminActivityType::PROBLEM_ADD, $activity['AdminActivity']['type']);
+		$this->assertSame(AdminActivityType::PROBLEM_ADD, $activity->type);
 	}
 
 	// ── Re-rate problems (admin only) ───────────────────────────────────

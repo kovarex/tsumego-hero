@@ -241,12 +241,12 @@ class UpdateNameTest extends IntegrationTestCase
 
 		$this->post('/users/updatename', ['User' => ['display_name' => 'My Chosen Name']]);
 
-		$activities = ClassRegistry::init('AdminActivity')->find('all');
+		$activities = $this->fetchTable('AdminActivity')->find()->orderBy('id')->toArray();
 		$this->assertCount(1, $activities);
-		$this->assertEquals(AdminActivityType::DISPLAY_NAME_CHANGE, $activities[0]['AdminActivity']['type']);
-		$this->assertEquals('Name From Migration', $activities[0]['AdminActivity']['old_value']);
-		$this->assertEquals('My Chosen Name', $activities[0]['AdminActivity']['new_value']);
-		$this->assertEquals($context->user['id'], $activities[0]['AdminActivity']['user_id']);
+		$this->assertEquals(AdminActivityType::DISPLAY_NAME_CHANGE, $activities[0]->type);
+		$this->assertEquals('Name From Migration', $activities[0]->old_value);
+		$this->assertEquals('My Chosen Name', $activities[0]->new_value);
+		$this->assertEquals($context->user['id'], $activities[0]->user_id);
 	}
 
 	//Test that a rejected rename is not recorded in the activity trail.
@@ -269,7 +269,7 @@ class UpdateNameTest extends IntegrationTestCase
 
 		$this->post('/users/updatename', ['User' => ['display_name' => 'Taken Name']]);
 
-		$this->assertCount(0, ClassRegistry::init('AdminActivity')->find('all'));
+		$this->assertCount(0, $this->fetchTable('AdminActivity')->find()->orderBy('id')->toArray());
 	}
 
 	//Test that renaming updates the linked phpBB forum user.
