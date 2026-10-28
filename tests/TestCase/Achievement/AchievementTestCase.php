@@ -96,7 +96,7 @@ abstract class AchievementTestCase extends IntegrationTestCase
 	protected function createSetWithTsumegosAndConnections($rating, $count, int $public = 1, ?int $userId = null)
 	{
 		$Set = ClassRegistry::init('Set');
-		$Tsumego = ClassRegistry::init('Tsumego');
+		$tsumegoTable = $this->fetchTable('Tsumego');
 		$SetConnection = ClassRegistry::init('SetConnection');
 
 		// Create Set (use auto-increment ID to avoid collisions)
@@ -110,9 +110,7 @@ abstract class AchievementTestCase extends IntegrationTestCase
 		// Create Tsumegos + SetConnection records (BOTH required!)
 		for ($i = 0; $i < $count; $i++)
 		{
-			$Tsumego->create();
-			$Tsumego->save(['rating' => $rating, 'author' => '']);
-			$tsumegoId = $Tsumego->getInsertID();
+			$tsumegoId = $tsumegoTable->saveOrFail($tsumegoTable->newEntity(['rating' => $rating, 'author' => '']))->id;
 
 			$SetConnection->create();
 			$SetConnection->save(['set_id' => $setId, 'tsumego_id' => $tsumegoId, 'num' => $i + 1]);

@@ -119,7 +119,7 @@ WHERE
 				$rankPartOfQuery .= 'WHEN rating < ' . Rating::getRankMinimalRating(Rating::getRankFromReadableRank($rank->name) + 1) . ' THEN \'' . $rank->id . '\' ';
 			else
 				$rankPartOfQuery .= 'ELSE \'' . $rank->id . '\'';
-		$counts = ClassRegistry::init('Tsumego')->query("
+		$counts = Util::query("
 SELECT
     CASE " . $rankPartOfQuery . "
     END AS bucket,
@@ -135,7 +135,7 @@ ORDER BY MIN(rating);");
 
 		$countsByRankID = [];
 		foreach ($counts as $count)
-			$countsByRankID[$count[0]['bucket']] = $count[0]['count'];
+			$countsByRankID[$count['bucket']] = $count['count'];
 
 		$result = [];
 		foreach ($ranks as $rankEntity)

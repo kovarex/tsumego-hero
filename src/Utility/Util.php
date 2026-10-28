@@ -2,9 +2,11 @@
 
 namespace App\Utility;
 
-use ClassRegistry;
 use Exception;
 use PDO;
+use ClassRegistry;
+use ConnectionManager;
+use DboSource;
 
 class Util
 {
@@ -236,17 +238,23 @@ class Util
 
 	public static function query(string $sql, array $params = []): array
 	{
-		/** @phpstan-ignore-next-line */
-		$stmt = ClassRegistry::init('Tsumego')->getDataSource()->getConnection()->prepare($sql);
+		$stmt = self::connection()->prepare($sql);
 		$stmt->execute($params);
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}
 
-	//The connection of the default database.
+	//The database of the Cake 2 models: the default one, or the test one the test suite sets for them.
+	//Its transactions cover the saves of the Cake 5 ORM too, which runs on its connection.
+	public static function database(): DboSource
+	{
+		/** @var DboSource */
+		return ConnectionManager::getDataSource(ClassRegistry::config('Model')['ds'] ?? 'default');
+	}
+
+	//The connection of the database.
 	public static function connection(): PDO
 	{
-		/** @phpstan-ignore-next-line */
-		return ClassRegistry::init('Tsumego')->getDataSource()->getConnection();
+		return self::database()->getConnection();
 	}
 
 	//The isolation level of the transactions of this connection, as in 'REPEATABLE-READ'. MariaDB 11.1
@@ -261,8 +269,7 @@ class Util
 	//Execute a non-SELECT SQL statement (INSERT, UPDATE, DELETE) and return the number of affected rows.
 	public static function execute(string $sql, array $params = []): int
 	{
-		/** @phpstan-ignore-next-line */
-		$stmt = ClassRegistry::init('Tsumego')->getDataSource()->getConnection()->prepare($sql);
+		$stmt = self::connection()->prepare($sql);
 		$stmt->execute($params);
 		return $stmt->rowCount();
 	}

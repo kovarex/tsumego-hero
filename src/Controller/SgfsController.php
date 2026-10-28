@@ -7,11 +7,10 @@ use App\Utility\Auth;
 class SgfsController extends AppController
 {
 	#[HttpGet]
-	public function view(?string $id = null): void
+	public function view(int $id): void
 	{
 		$this->Authorization->authorize('Sgf');
 		$this->set('_page', 'play');
-		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
 		$this->loadModel('User');
 		$this->loadModel('SetConnection');
@@ -28,34 +27,31 @@ class SgfsController extends AppController
 				$sgfTable->deleteOrFail($sDel);
 		}
 
+		$tsumegoTable = $this->fetchTable('Tsumego');
 		if (isset($this->params['url']['duplicates']))
 		{
-			$newDuplicates = explode('-', $this->params['url']['duplicates']);
+			$newDuplicates = array_map('intval', explode('-', $this->params['url']['duplicates']));
 			foreach ($newDuplicates as $duplicateId)
 			{
-				$dupl = $this->Tsumego->findById($duplicateId);
-				if (!$dupl)
+				if (!$tsumegoTable->exists(['id' => $duplicateId]))
 					continue;
-				$scT = $this->SetConnection->findDisplaySetConnection($dupl['Tsumego']['id']);
+				$scT = $this->SetConnection->findDisplaySetConnection($duplicateId);
 				if (!$scT)
 					continue;
-				$dupl['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
-				$dSet = $this->Set->findById($dupl['Tsumego']['set_id']);
+				$dSet = $this->Set->findById($scT['SetConnection']['set_id']);
 				if (!$dSet)
 					continue;
-				$dId[] = $dupl['Tsumego']['id'];
-				$dTitle[] = $dSet['Set']['title'] . ' - ' . $dupl['Tsumego']['num'];
+				$dId[] = $duplicateId;
+				$dTitle[] = $dSet['Set']['title'] . ' - ';
 			}
 		}
 
-		$t = $this->Tsumego->findById($id);
-		if (!$t)
+		if (!$tsumegoTable->exists(['id' => $id]))
 			throw new NotFoundException('Tsumego not found');
-		$scT = $this->SetConnection->findDisplaySetConnection($t['Tsumego']['id']);
+		$scT = $this->SetConnection->findDisplaySetConnection($id);
 		if (!$scT)
 			throw new NotFoundException('Tsumego not found in any set');
-		$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
-		$set = $this->Set->findById($t['Tsumego']['set_id']);
+		$set = $this->Set->findById($scT['SetConnection']['set_id']);
 		if (!$set)
 			throw new NotFoundException('Set not found');
 		$name = $set['Set']['title'] . ' ' . $set['Set']['title2'] . ' ' . $scT['SetConnection']['num'];
@@ -80,10 +76,8 @@ class SgfsController extends AppController
 			$u = $this->User->findById($s[$i]['user_id']);
 			$ux = $u ? User::displayName($u['User']) : '';
 			$s[$i]['user'] = $ux;
-			$t = $this->Tsumego->findById($s[$i]['tsumego_id']);
-			$scT = $this->SetConnection->findDisplaySetConnection($t['Tsumego']['id']);
-			$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
-			$set = $this->Set->findById($t['Tsumego']['set_id']);
+			$scT = $this->SetConnection->findDisplaySetConnection((int) $s[$i]['tsumego_id']);
+			$set = $this->Set->findById($scT['SetConnection']['set_id']);
 			$s[$i]['title'] = $set['Set']['title'] . ' ' . $set['Set']['title2'] . ' #' . $scT['SetConnection']['num'];
 			$s[$i]['num'] = $scT['SetConnection']['num'];
 

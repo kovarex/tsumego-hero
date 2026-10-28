@@ -51,10 +51,10 @@ class SchedulePublisher
 	//Returns why it could not be published, null when it was.
 	private static function publishSingle(int|string|null $tsumegoID = null, int|string|null $to = null): ?string
 	{
-		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID);
+		$tsumego = TableRegistry::getTableLocator()->get('Tsumego')->find()->select(['id', 'deleted'])->where(['id' => (int) $tsumegoID])->first();
 		if (!$tsumego)
 			return 'the problem does not exist';
-		if ($tsumego['Tsumego']['deleted'])
+		if ($tsumego->deleted !== null)
 			return 'the problem is in the trash';
 		if (!ClassRegistry::init('Set')->find('first', ['conditions' => ['Set.id' => $to, Set::officialCondition('Set')]]))
 			return 'the target is not a public collection of the site';
@@ -119,7 +119,7 @@ class SchedulePublisher
 			return 'the problem is in no sandbox set to move from';
 
 		if (!$alreadyPublic)
-			TableRegistry::getTableLocator()->get('TsumegoStatus')->deleteAll(['tsumego_id' => $tsumego['Tsumego']['id']]);
+			TableRegistry::getTableLocator()->get('TsumegoStatus')->deleteAll(['tsumego_id' => $tsumego->id]);
 
 		return null;
 	}

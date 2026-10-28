@@ -85,7 +85,7 @@ class HeroController extends AppController
 	{
 		$this->Authorization->authorize('Hero');
 
-		if (!ClassRegistry::init('Tsumego')->exists($tsumegoID))
+		if (!$this->fetchTable('Tsumego')->exists(['id' => (int) $tsumegoID]))
 			throw new NotFoundException('Tsumego not found');
 
 		//used_revelation is bounded by getRevelationUseCount(). Enforce the bound in the database with

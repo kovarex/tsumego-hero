@@ -1,6 +1,7 @@
 <?php
 
 use App\Attribute\HttpPost;
+use App\Model\Entity\Tsumego;
 use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\TagConnectionTable;
 use App\Utility\AdminActivityLogger;
@@ -11,15 +12,14 @@ class TagConnectionController extends AppController
 	#[HttpPost]
 	public function add(string $tsumegoID, string $tagName)
 	{
-		$this->Authorization->authorize(['TagConnection' => ['id' => (int) $tsumegoID]], 'add');
+		$this->Authorization->authorize(['TagConnection' => new Tsumego(['id' => (int) $tsumegoID])], 'add');
 		if (!TagConnectionTable::canCurrentUserAddTag())
 			throw new ForbiddenException('Daily tag limit reached.');
 		$tag = $this->fetchTable('Tag')->find()->where(['name' => $tagName])->first();
 		if (!$tag)
 			throw new ForbiddenException('Tag "' . $tagName . '" doesn\'t exist.');
 
-		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID);
-		if (!$tsumego)
+		if (!$this->fetchTable('Tsumego')->exists(['id' => (int) $tsumegoID]))
 			throw new ForbiddenException('Tsumego with id="' . $tsumegoID . '" wasn\'t found.');
 
 		$tagConnectionTable = $this->fetchTable('TagConnection');
@@ -48,8 +48,7 @@ class TagConnectionController extends AppController
 		if (!$tag)
 			throw new ForbiddenException('Tag "' . $tagName . '" doesn\'t exist.');
 
-		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID);
-		if (!$tsumego)
+		if (!$this->fetchTable('Tsumego')->exists(['id' => (int) $tsumegoID]))
 			throw new ForbiddenException('Tsumego with id="' . $tsumegoID . '" wasn\'t found.');
 
 		$tagConnectionTable = $this->fetchTable('TagConnection');

@@ -72,7 +72,7 @@ class SpecialSetAchievementTest extends AchievementTestCase
 		$context = new ContextPreparator();
 		$tsumegoIDs = $this->createAndSolveSets($context->user['id'], [216]);
 		$this->fetchTable('TsumegoStatus')->deleteAll(['user_id' => $context->user['id'], 'tsumego_id' => $tsumegoIDs[1]]);
-		ClassRegistry::init('Tsumego')->updateAll(['deleted' => "'" . date('Y-m-d H:i:s') . "'"], ['id' => $tsumegoIDs[1]]);
+		$this->fetchTable('Tsumego')->updateAll(['deleted' => date('Y-m-d H:i:s')], ['id' => $tsumegoIDs[1]]);
 		new AchievementChecker()->setAchievementSpecial('1000w2');
 		$this->assertAchievementUnlocked(AchievementId::WEIQI_1000_SECOND_HALF, 'The problem in the trash should not be needed');
 	}
@@ -81,7 +81,7 @@ class SpecialSetAchievementTest extends AchievementTestCase
 	private function createAndSolveSets($userId, $setIds): array
 	{
 		$Set = ClassRegistry::init('Set');
-		$Tsumego = ClassRegistry::init('Tsumego');
+		$tsumegoTable = $this->fetchTable('Tsumego');
 		$TsumegoStatus = $this->fetchTable('TsumegoStatus');
 		$SetConnection = ClassRegistry::init('SetConnection');
 
@@ -93,9 +93,7 @@ class SpecialSetAchievementTest extends AchievementTestCase
 
 			for ($i = 0; $i < 3; $i++)
 			{
-				$Tsumego->create();
-				$Tsumego->save(['rating' => 1000, 'author' => '']);
-				$tsumegoId = $Tsumego->id;
+				$tsumegoId = $tsumegoTable->saveOrFail($tsumegoTable->newEntity(['rating' => 1000, 'author' => '']))->id;
 				$tsumegoIDs[] = (int) $tsumegoId;
 
 				$SetConnection->create();

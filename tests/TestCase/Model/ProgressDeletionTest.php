@@ -131,7 +131,7 @@ class ProgressDeletionTest extends IntegrationTestCase
 	{
 		return [
 			'user' => (float) ClassRegistry::init('User')->findById($context->user['id'])['User']['rating'],
-			'tsumego' => (float) ClassRegistry::init('Tsumego')->findById($context->tsumegos[0]['id'])['Tsumego']['rating']];
+			'tsumego' => (float) $this->fetchTable('Tsumego')->get($context->tsumegos[0]['id'])->rating];
 	}
 
 	public function testRatingsDontChangeOnProblemOfRecentlyResetPart(): void
@@ -187,8 +187,9 @@ class ProgressDeletionTest extends IntegrationTestCase
 				['set' => 'set B', 'partition' => 0, 'created' => self::now()]]]);
 		$tsumego = $context->tsumegos[0];
 
-		$fromSetA = new TsumegoXPAndRating($tsumego, 'V', $tsumego['set-connections'][0]['id']);
-		$fromSetB = new TsumegoXPAndRating($tsumego, 'V', $tsumego['set-connections'][1]['id']);
+		$tsumegoEntity = $this->fetchTable('Tsumego')->get($tsumego['id']);
+		$fromSetA = new TsumegoXPAndRating($tsumegoEntity, 'V', $tsumego['set-connections'][0]['id']);
+		$fromSetB = new TsumegoXPAndRating($tsumegoEntity, 'V', $tsumego['set-connections'][1]['id']);
 		$this->assertEquals(1, $fromSetA->progressDeletionCount);
 		$this->assertEquals(2, $fromSetB->progressDeletionCount);
 	}

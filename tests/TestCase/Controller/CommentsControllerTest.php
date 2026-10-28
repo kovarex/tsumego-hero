@@ -462,9 +462,8 @@ class CommentsControllerTest extends IntegrationTestCase
 			'other-users' => [['name' => 'alice']],
 		]);
 
-		$tsumego = ClassRegistry::init('Tsumego');
-		$tsumego->create();
-		$tsumego->save(['description' => 'comment set link', 'author' => '']);
+		$tsumegoTable = $this->fetchTable('Tsumego');
+		$tsumego = $tsumegoTable->saveOrFail($tsumegoTable->newEntity(['description' => 'comment set link', 'author' => '']));
 
 		// Private set connection created first, so it would win the old MIN(id) pick
 		$aliceSet = ClassRegistry::init('Set');

@@ -325,9 +325,8 @@ class TsumegosControllerTest extends IntegrationTestCase
 			'other-users' => [['name' => 'alice']],
 		]);
 
-		$tsumego = ClassRegistry::init('Tsumego');
-		$tsumego->create();
-		$tsumego->save(['description' => 'private only', 'author' => '']);
+		$tsumegoTable = $this->fetchTable('Tsumego');
+		$tsumego = $tsumegoTable->saveOrFail($tsumegoTable->newEntity(['description' => 'private only', 'author' => '']));
 		$this->addSetForTsumego($tsumego->id, 'alice favorites', $context->otherUsers[0]['id'], 0, 1);
 
 		$this->get('tsumegos/play/' . $tsumego->id);
@@ -538,8 +537,8 @@ class TsumegosControllerTest extends IntegrationTestCase
 			'redirect' => '/',
 		]);
 
-		$saved = ClassRegistry::init('Tsumego')->findById($tsumegoId);
-		$this->assertSame('White to play here.', $saved['Tsumego']['description']);
+		$saved = $this->fetchTable('Tsumego')->find()->where(['id' => $tsumegoId])->first();
+		$this->assertSame('White to play here.', $saved->description);
 	}
 
 	//Controller test: When the edit form is shown without an inverted board it
@@ -568,8 +567,8 @@ class TsumegosControllerTest extends IntegrationTestCase
 			'redirect' => '/',
 		]);
 
-		$saved = ClassRegistry::init('Tsumego')->findById($tsumegoId);
-		$this->assertSame('Black to play first.', $saved['Tsumego']['description']);
+		$saved = $this->fetchTable('Tsumego')->find()->where(['id' => $tsumegoId])->first();
+		$this->assertSame('Black to play first.', $saved->description);
 	}
 
 	//OG description uses true-color convention - no swap needed.
@@ -696,8 +695,8 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$this->post('tsumegos/settings/' . $tsumegoID, ['alternative_response' => 0, 'pass' => 1]);
 
 		$this->assertResponseCode(302);
-		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID)['Tsumego'];
-		$this->assertSame([0, 1], [(int) $tsumego['alternative_response'], (int) $tsumego['pass']]);
+		$tsumego = $this->fetchTable('Tsumego')->get($tsumegoID);
+		$this->assertSame([0, 1], [(int) $tsumego->alternative_response, (int) $tsumego->pass]);
 		$this->assertSame([[AdminActivityTypeTable::ALTERNATIVE_RESPONSE, '0'], [AdminActivityTypeTable::PASS_MODE, '1']], array_map(
 			fn($activity) => [(int) $activity['type'], $activity['new_value']],
 			Util::query('SELECT type, new_value FROM admin_activity WHERE tsumego_id = ? ORDER BY id', [$tsumegoID])));
@@ -721,7 +720,7 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$browser->waitUntilAnyCssSelectorExists(['#showSE']);
 
 		$this->assertStringEndsWith($playPath, $browser->driver->getCurrentURL());
-		$this->assertSame(1, (int) ClassRegistry::init('Tsumego')->findById($tsumegoID)['Tsumego']['pass']);
+		$this->assertSame(1, (int) $this->fetchTable('Tsumego')->get($tsumegoID)->pass);
 		$this->assertSame([['tsumego_variant_type_id' => TsumegoVariantTable::TYPE_SCORE_ESTIMATING, 'answer1' => '0']], self::variantsOf($tsumegoID));
 	}
 

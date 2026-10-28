@@ -145,9 +145,9 @@ class CronControllerTest extends IntegrationTestCase
 		]));
 
 		$this->get('/cron/daily/' . CRON_SECRET);
-		$newTsumego = ClassRegistry::init('Tsumego')->find('first', ['conditions' => ['id' => $tsumegoToMigrate['id']]]);
+		$newTsumego = $this->fetchTable('Tsumego')->find()->where(['id' => $tsumegoToMigrate['id']])->first();
 		$newSetConnection = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $tsumegoToMigrate['id']]]);
-		$this->assertSame($newTsumego['Tsumego']['id'], $tsumegoToMigrate['id']);
+		$this->assertSame($newTsumego->id, $tsumegoToMigrate['id']);
 		$this->assertSame($newSetConnection['SetConnection']['id'], $tsumegoToMigrate['set-connections'][0]['id']);
 		$this->assertSame($newSetConnection['SetConnection']['set_id'], $publicSetID);
 	}

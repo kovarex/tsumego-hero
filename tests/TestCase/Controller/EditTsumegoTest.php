@@ -62,7 +62,7 @@ class EditTsumegoTest extends IntegrationTestCase
 		}
 
 		if ($testCase['invalid-tsumego'] ?? false)
-			ClassRegistry::init('Tsumego')->delete($context->tsumegos[0]['id']);
+			$this->fetchTable('Tsumego')->deleteAll(['id' => $context->tsumegos[0]['id']]);
 
 		if (($testCase['admin'] ?? null) === false)
 			Auth::saveUserField('user_role_id', User::ROLE_PLAYER);
@@ -75,7 +75,7 @@ class EditTsumegoTest extends IntegrationTestCase
 			return;
 		}
 
-		$tsumego = ClassRegistry::init('Tsumego')->findById($context->tsumegos[0]['id']);
+		$tsumego = $this->fetchTable('Tsumego')->find()->where(['id' => $context->tsumegos[0]['id']])->first();
 
 		if ($testCase['field'] == 'delete')
 		{
@@ -84,31 +84,31 @@ class EditTsumegoTest extends IntegrationTestCase
 			{
 				$this->assertCount(1, $adminActivities);
 				$this->assertSame(AdminActivityTypeTable::PROBLEM_DELETE, $adminActivities[0]->type);
-				$this->assertNotNull($tsumego['Tsumego']['deleted']);
+				$this->assertNotNull($tsumego->deleted);
 			}
 			else
 			{
 				$this->assertCount(0, $adminActivities);
-				$this->assertNull($tsumego['Tsumego']['deleted']);
+				$this->assertNull($tsumego->deleted);
 			}
 			return;
 		}
 
-		$this->assertSame($testCase['field'] == 'description' ? $testCase['result'] : 'foo', $tsumego['Tsumego']['description']);
-		$this->assertSame($testCase['field'] == 'hint' ? $testCase['result'] : 'think', $tsumego['Tsumego']['hint']);
-		$this->assertSame($testCase['field'] == 'author' ? $testCase['result'] : 'Ivan Detkov', $tsumego['Tsumego']['author']);
+		$this->assertSame($testCase['field'] == 'description' ? $testCase['result'] : 'foo', $tsumego->description);
+		$this->assertSame($testCase['field'] == 'hint' ? $testCase['result'] : 'think', $tsumego->hint);
+		$this->assertSame($testCase['field'] == 'author' ? $testCase['result'] : 'Ivan Detkov', $tsumego->author);
 		$expectedRating = 666.0;
 		if ($testCase['field'] == 'minimum-rating'
-			&& !is_null($tsumego['Tsumego']['minimum_rating'])
-			&& $tsumego['Tsumego']['minimum_rating'] > 666.0)
-				$expectedRating = $tsumego['Tsumego']['minimum_rating'];
+			&& !is_null($tsumego->minimum_rating)
+			&& $tsumego->minimum_rating > 666.0)
+				$expectedRating = $tsumego->minimum_rating;
 		if ($testCase['field'] == 'maximum-rating'
-			&& !is_null($tsumego['Tsumego']['maximum_rating'])
-			&& $tsumego['Tsumego']['maximum_rating'] < 666.0)
-				$expectedRating = $tsumego['Tsumego']['maximum_rating'];
-		$this->assertSame($testCase['field'] == 'rating' ? $testCase['result'] : $expectedRating, $tsumego['Tsumego']['rating']);
-		$this->assertSame($testCase['field'] == 'minimum-rating' ? $testCase['result'] : null, $tsumego['Tsumego']['minimum_rating']);
-		$this->assertSame($testCase['field'] == 'maximum-rating' ? $testCase['result'] : null, $tsumego['Tsumego']['maximum_rating']);
+			&& !is_null($tsumego->maximum_rating)
+			&& $tsumego->maximum_rating < 666.0)
+				$expectedRating = $tsumego->maximum_rating;
+		$this->assertSame($testCase['field'] == 'rating' ? $testCase['result'] : $expectedRating, $tsumego->rating);
+		$this->assertSame($testCase['field'] == 'minimum-rating' ? $testCase['result'] : null, $tsumego->minimum_rating);
+		$this->assertSame($testCase['field'] == 'maximum-rating' ? $testCase['result'] : null, $tsumego->maximum_rating);
 
 		$adminActivities = $this->fetchTable('AdminActivity')->find()->orderBy('id')->toArray();
 		if ($testCase['result'] == $testCase['value']) // when we expect it to succeed

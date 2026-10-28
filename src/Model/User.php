@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Table\AdminActivityTypeTable;
+use App\Model\Table\TsumegoTable;
 use App\Model\Table\RejectTable;
 use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
@@ -710,7 +711,7 @@ class User extends AppModel
 	/** @param UserRow $user */
 	public static function canResetOldProgress(array $user): bool
 	{
-		$progress = ClassRegistry::init('Tsumego')->publicProblemProgress((int) $user['id']);
+		$progress = TsumegoTable::publicProblemProgress((int) $user['id']);
 		return Util::getPercent($progress['solved'], $progress['total'])
 			>= Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED;
 	}

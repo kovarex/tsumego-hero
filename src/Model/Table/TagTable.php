@@ -6,7 +6,6 @@ use App\Model\Entity\Tag;
 use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
 use App\Utility\Util;
-use ClassRegistry;
 use SetConnection;
 use Throwable;
 
@@ -85,7 +84,7 @@ ORDER BY `set`.id IS NULL, " . SetConnection::displayOrderForSetSql('`set`') . "
 			[$tag->id]);
 
 		// The transaction is Cake 2's, the Cake 5 ORM shares its connection and never starts one.
-		$database = ClassRegistry::init('Tsumego')->getDataSource();
+		$database = Util::database();
 		$database->begin();
 		try
 		{

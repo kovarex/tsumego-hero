@@ -28,20 +28,20 @@ class SandboxSgfUploadTest extends IntegrationTestCase
 		$this->post('/sets/createAndAddTsumego/' . $setID, $data);
 
 		// Verify tsumego was created
-		$tsumego = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC']);
+		$tsumego = $this->fetchTable('Tsumego')->find()->orderByDesc('id')->first();
 		$this->assertNotEmpty($tsumego, 'Tsumego should be created');
-		$this->assertEquals('DN_kovarex', $tsumego['Tsumego']['author']);
+		$this->assertEquals('DN_kovarex', $tsumego->author);
 
 		// Verify set connection was created with correct num
 		$setConnection = ClassRegistry::init('SetConnection')->find('first', [
 			'conditions' => [
 				'set_id' => $setID,
-				'tsumego_id' => $tsumego['Tsumego']['id']]]);
+				'tsumego_id' => $tsumego->id]]);
 		$this->assertNotEmpty($setConnection, 'SetConnection should be created');
 		$this->assertEquals(1, $setConnection['SetConnection']['num']);
 
 		// Verify SGF was uploaded
-		$sgf = $this->fetchTable('Sgf')->find()->where(['tsumego_id' => $tsumego['Tsumego']['id']])->orderByDesc('id')->first();
+		$sgf = $this->fetchTable('Sgf')->find()->where(['tsumego_id' => $tsumego->id])->orderByDesc('id')->first();
 		$this->assertNotEmpty($sgf, 'SGF should be uploaded when file is provided');
 		$this->assertEquals($sgfContent, $sgf->sgf);
 
@@ -63,11 +63,11 @@ class SandboxSgfUploadTest extends IntegrationTestCase
 		$this->post('/sets/createAndAddTsumego/' . $setID, $data);
 
 		// Verify tsumego was created
-		$tsumego = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC']);
+		$tsumego = $this->fetchTable('Tsumego')->find()->orderByDesc('id')->first();
 		$this->assertNotEmpty($tsumego, 'Tsumego should be created');
 
 		// Verify SGF was uploaded
-		$sgf = $this->fetchTable('Sgf')->find()->where(['tsumego_id' => $tsumego['Tsumego']['id']])->orderByDesc('id')->first();
+		$sgf = $this->fetchTable('Sgf')->find()->where(['tsumego_id' => $tsumego->id])->orderByDesc('id')->first();
 		$this->assertNotEmpty($sgf, 'SGF should be uploaded when SGF text is provided');
 		$this->assertEquals($sgfContent, $sgf->sgf);
 	}

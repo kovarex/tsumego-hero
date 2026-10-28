@@ -3,6 +3,7 @@
 use App\Model\Table\SgfTable;
 use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\TimeModeCategoryTable;
+use App\Model\Table\TsumegoTable;
 
 //A collection a player assembled is not site content: the site's collections, pools and
 //counters never pick up its problems, whether it is shared or not.
@@ -51,7 +52,7 @@ class PersonalCollectionContentTest extends IntegrationTestCase
 	public function testPublicProblemCountDoesNotCountPlayerProblems(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'alice']]);
-		$total = fn(): int => Tsumego::publicProblemProgress($context->user['id'])['total'];
+		$total = fn(): int => TsumegoTable::publicProblemProgress($context->user['id'])['total'];
 		$before = $total();
 
 		$this->_createCollection('Site Collection', null, 1);
@@ -113,7 +114,7 @@ class PersonalCollectionContentTest extends IntegrationTestCase
 
 		$this->assertSame(
 			['total' => 1, 'solved' => 1],
-			Tsumego::publicProblemProgress($context->user['id']));
+			TsumegoTable::publicProblemProgress($context->user['id']));
 	}
 
 	public function testTimeModeRankCountsDoNotCountPlayerProblems(): void
@@ -182,10 +183,8 @@ class PersonalCollectionContentTest extends IntegrationTestCase
 		]]);
 		$setId = (int) $set->id;
 
-		$tsumego = ClassRegistry::init('Tsumego');
-		$tsumego->create();
-		$tsumego->save(['Tsumego' => ['rating' => 1000, 'author' => '']]);
-		$tsumegoId = (int) $tsumego->id;
+		$tsumegoTable = $this->fetchTable('Tsumego');
+		$tsumegoId = $tsumegoTable->saveOrFail($tsumegoTable->newEntity(['rating' => 1000, 'author' => '']))->id;
 
 		$setConnection = ClassRegistry::init('SetConnection');
 		$setConnection->create();

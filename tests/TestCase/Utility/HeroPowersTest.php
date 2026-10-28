@@ -21,7 +21,7 @@ class HeroPowersTest extends IntegrationTestCase
 		$context->unlockAchievementsWithoutEffect();
 
 		$goldenTsumego = $context->tsumegos[1];
-		$originalTsumegoXPValue = TsumegoUtil::getXpValue(ClassRegistry::init("Tsumego")->findById($goldenTsumego['id'])['Tsumego'], Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER);
+		$originalTsumegoXPValue = TsumegoUtil::getXpValue($this->fetchTable('Tsumego')->get($goldenTsumego['id'])->toArray(), Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER);
 
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		// the reported xp is normal
@@ -56,7 +56,7 @@ class HeroPowersTest extends IntegrationTestCase
 				['set_order' => 1, 'rating' => Rating::getRankMiddleRatingFromReadableRank('20k')]]]);
 		$context->unlockAchievementsWithoutEffect();
 
-		$originalTsumegoXPValue = TsumegoUtil::getXpValue(ClassRegistry::init("Tsumego")->findById($context->tsumegos[0]['id'])['Tsumego'], Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER);
+		$originalTsumegoXPValue = TsumegoUtil::getXpValue($this->fetchTable('Tsumego')->get($context->tsumegos[0]['id'])->toArray(), Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER);
 
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		// the reported xp is normal
@@ -107,7 +107,7 @@ class HeroPowersTest extends IntegrationTestCase
 		$context->changeUserSoSprintCanBeUsed();
 		$context->unlockAchievementsWithoutEffect();
 		$context->XPGained(); // to reset the lastXPgained for the final test
-		$tsumego = ClassRegistry::init("Tsumego")->findById($context->tsumegos[0]['id'])['Tsumego'];
+		$tsumego = $this->fetchTable('Tsumego')->get($context->tsumegos[0]['id'])->toArray();
 		$originalTsumegoXPValue = TsumegoUtil::getXpValue($tsumego);
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$browser->clickId('sprint');
@@ -125,8 +125,8 @@ class HeroPowersTest extends IntegrationTestCase
 	{
 		$browser = Browser::instance();
 		$context = new ContextPreparator(['tsumegos' => [1, 2]]);
-		$originalTsumego0XPValue = TsumegoUtil::getXpValue(ClassRegistry::init("Tsumego")->findById($context->tsumegos[0]['id'])['Tsumego']);
-		$originalTsumego1XPValue = TsumegoUtil::getXpValue(ClassRegistry::init("Tsumego")->findById($context->tsumegos[1]['id'])['Tsumego']);
+		$originalTsumego0XPValue = TsumegoUtil::getXpValue($this->fetchTable('Tsumego')->get($context->tsumegos[0]['id'])->toArray());
+		$originalTsumego1XPValue = TsumegoUtil::getXpValue($this->fetchTable('Tsumego')->get($context->tsumegos[1]['id'])->toArray());
 		$context->changeUserSoSprintCanBeUsed();
 		$context->unlockAchievementsWithoutEffect();
 		$context->XPGained(); // to reset the lastXPgained for the final test

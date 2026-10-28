@@ -49,11 +49,11 @@ ORDER BY t.deleted DESC, t.id DESC', [AdminActivityTypeTable::PROBLEM_DELETE]));
 	public function restoreProblem(?string $id = null): mixed
 	{
 		$this->Authorization->authorize('Admin', 'restoreFromTrash');
-		$tsumego = ClassRegistry::init('Tsumego')->findById((int) $id);
+		$tsumego = $this->fetchTable('Tsumego')->find()->select(['id', 'deleted'])->where(['id' => (int) $id])->first();
 		if (!$tsumego)
 			throw new NotFoundException('Problem not found');
 
-		if ($tsumego['Tsumego']['deleted'])
+		if ($tsumego->deleted !== null)
 		{
 			Trash::restoreProblem((int) $id);
 			AdminActivityLogger::log(AdminActivityTypeTable::PROBLEM_RESTORE, (int) $id);

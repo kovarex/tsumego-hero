@@ -134,9 +134,8 @@ class TagsUserTest extends IntegrationTestCase
 		]));
 
 		// A tsumego that has no set_connection
-		$tsumego = ClassRegistry::init('Tsumego');
-		$tsumego->create();
-		$tsumego->save(['description' => 'in no set', 'author' => '']);
+		$tsumegoTable = $this->fetchTable('Tsumego');
+		$tsumego = $tsumegoTable->saveOrFail($tsumegoTable->newEntity(['description' => 'in no set', 'author' => '']));
 		$rejectTable->saveOrFail($rejectTable->newEntity([
 			'user_id' => $userId, 'tsumego_id' => $tsumego->id, 'reject_type_id' => RejectTable::TYPE_TAG, 'tag_name' => 'hidden tag',
 		]));

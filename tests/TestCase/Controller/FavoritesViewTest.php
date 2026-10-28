@@ -24,7 +24,7 @@ class FavoritesViewTest extends IntegrationTestCase
 			'user' => ['name' => 'alice'],
 			'tsumego' => ['sgf' => '(;GM[1]FF[4]SZ[19])', 'sets' => [['name' => 'Playable Set', 'num' => 1]]],
 		]);
-		$tsumegoId = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC'])['Tsumego']['id'];
+		$tsumegoId = $this->fetchTable('Tsumego')->find()->orderByDesc('id')->first()->id;
 
 		// Create a non-Favorites set and add the tsumego to it
 		$setModel = ClassRegistry::init('Set');
@@ -64,7 +64,7 @@ class FavoritesViewTest extends IntegrationTestCase
 			'user' => ['name' => 'alice'],
 			'tsumego' => ['sgf' => '(;GM[1]FF[4]SZ[19])', 'sets' => [['name' => 'Playable Set', 'num' => 1]]],
 		]);
-		$tsumegoId = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC'])['Tsumego']['id'];
+		$tsumegoId = $this->fetchTable('Tsumego')->find()->orderByDesc('id')->first()->id;
 
 		foreach (['Favorites', 'Hard Problems'] as $title)
 		{

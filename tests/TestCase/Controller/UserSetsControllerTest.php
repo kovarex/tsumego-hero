@@ -70,10 +70,10 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$this->assertNotEmpty($set);
 		$this->assertNull($set['Set']['user_id']);
 
-		$tsumego = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC']);
+		$tsumego = $this->fetchTable('Tsumego')->find()->orderByDesc('id')->first();
 		$this->assertNotEmpty($tsumego);
 		$sc = ClassRegistry::init('SetConnection')->find('first', [
-			'conditions' => ['set_id' => $set['Set']['id'], 'tsumego_id' => $tsumego['Tsumego']['id']],
+			'conditions' => ['set_id' => $set['Set']['id'], 'tsumego_id' => $tsumego->id],
 		]);
 		$this->assertNotEmpty($sc);
 	}
@@ -245,8 +245,8 @@ class UserSetsControllerTest extends IntegrationTestCase
 
 		$this->post("/sets/edit/{$setId}", ['Settings' => ['r43' => 'yes']]);
 
-		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoId);
-		$this->assertSame(0, (int) $tsumego['Tsumego']['pass']);
+		$tsumego = $this->fetchTable('Tsumego')->find()->where(['id' => $tsumegoId])->first();
+		$this->assertSame(0, (int) $tsumego->pass);
 	}
 
 	// ── /sets/view/:id ──────────────────────────────────────────────────
@@ -327,7 +327,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 			'user' => ['name' => 'alice'],
 			'tsumego' => ['sgf' => '(;GM[1]FF[4]SZ[19])'],
 		]);
-		$tsumegoId = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC'])['Tsumego']['id'];
+		$tsumegoId = $this->fetchTable('Tsumego')->find()->orderByDesc('id')->first()->id;
 		$setId = $this->_createSet('My Set', $context->user['id'], 0);
 		$this->login('alice');
 
@@ -374,7 +374,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$set['Set']['user_id'] = $context->user['id'];
 		ClassRegistry::init('Set')->save($set);
 
-		$tsumegoId = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC'])['Tsumego']['id'];
+		$tsumegoId = $this->fetchTable('Tsumego')->find()->orderByDesc('id')->first()->id;
 		$this->login('alice');
 
 		$data = ['tsumego_id' => $tsumegoId];
@@ -396,7 +396,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 			'user' => ['name' => 'alice'],
 			'tsumego' => ['sgf' => '(;GM[1]FF[4]SZ[19])'],
 		]);
-		$tsumegoId = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC'])['Tsumego']['id'];
+		$tsumegoId = $this->fetchTable('Tsumego')->find()->orderByDesc('id')->first()->id;
 		$this->login('alice');
 
 		$before = ClassRegistry::init('Set')->find('count', [
@@ -428,7 +428,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 			'user' => ['name' => 'alice'],
 			'tsumego' => ['sgf' => '(;GM[1]FF[4]SZ[19])'],
 		]);
-		$tsumegoId = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC'])['Tsumego']['id'];
+		$tsumegoId = $this->fetchTable('Tsumego')->find()->orderByDesc('id')->first()->id;
 		$this->login('alice');
 
 		// The heart answers a JSON body to the fetch the page makes, and a redirect to a form.
@@ -451,10 +451,8 @@ class UserSetsControllerTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'alice']]);
 		$setId = $this->_createSet('Favorites', $context->user['id'], 0);
-		$tsumegoModel = ClassRegistry::init('Tsumego');
-		$tsumegoModel->create();
-		$tsumegoModel->save(['Tsumego' => ['difficulty' => 4, 'variance' => 100, 'author' => '']]);
-		$tsumegoId = $tsumegoModel->id;
+		$tsumegoTable = $this->fetchTable('Tsumego');
+		$tsumegoId = $tsumegoTable->saveOrFail($tsumegoTable->newEntity(['variance' => 100, 'author' => '']))->id;
 		$this->login('alice');
 
 		$data = ['tsumego_id' => $tsumegoId];
@@ -673,8 +671,8 @@ class UserSetsControllerTest extends IntegrationTestCase
 
 		$this->post("/sets/edit/{$setId}", ['Set' => ['setDifficulty' => 2000]]);
 
-		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoId);
-		$this->assertEquals(1000, $tsumego['Tsumego']['rating']);
+		$tsumego = $this->fetchTable('Tsumego')->find()->where(['id' => $tsumegoId])->first();
+		$this->assertEquals(1000, $tsumego->rating);
 	}
 
 	public function testAdminCanReRateProblems(): void
@@ -687,12 +685,33 @@ class UserSetsControllerTest extends IntegrationTestCase
 		]);
 		$this->login('admin');
 		$setId = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => 'Sandbox Set']])['Set']['id'];
-		$tsumegoId = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC'])['Tsumego']['id'];
+		$tsumegoId = $this->fetchTable('Tsumego')->find()->orderByDesc('id')->first()->id;
 
 		$this->post("/sets/edit/{$setId}", ['Set' => ['setDifficulty' => 2000]]);
 
-		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoId);
-		$this->assertEquals(2000, $tsumego['Tsumego']['rating']);
+		$tsumego = $this->fetchTable('Tsumego')->find()->where(['id' => $tsumegoId])->first();
+		$this->assertEquals(2000, $tsumego->rating);
+	}
+
+	//The rating column is a float: the new rating keeps its fraction, nothing cuts it to an integer
+	//(#474), and each problem stays within its own minimum and maximum.
+	public function testReRatingKeepsTheFractionAndTheLimitsOfEachProblem(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'admin', 'admin' => true],
+			'tsumegos' => [
+				['rating' => 1000, 'sets' => [['name' => 'Sandbox Set', 'num' => 1, 'public' => 0]]],
+				['rating' => 1000, 'maximum_rating' => 1500, 'sets' => [['name' => 'Sandbox Set', 'num' => 2, 'public' => 0]]],
+				['rating' => 1000, 'minimum_rating' => 1700.25, 'sets' => [['name' => 'Sandbox Set', 'num' => 3, 'public' => 0]]],
+			],
+		]);
+		$this->login('admin');
+		$setId = $context->tsumegos[0]['sets'][0]['id'];
+
+		$this->post("/sets/edit/{$setId}", ['Set' => ['setDifficulty' => '1600.5']]);
+
+		$ratings = $this->fetchTable('Tsumego')->find('list', valueField: 'rating')->where(['id IN' => array_column($context->tsumegos, 'id')])->orderBy('id')->toArray();
+		$this->assertSame([1600.5, 1500.0, 1700.25], array_values($ratings));
 	}
 
 	public function testEmptyRatingFieldDoesNotReRate(): void
@@ -705,12 +724,12 @@ class UserSetsControllerTest extends IntegrationTestCase
 		]);
 		$this->login('admin');
 		$setId = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => 'Sandbox Set']])['Set']['id'];
-		$tsumegoId = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC'])['Tsumego']['id'];
+		$tsumegoId = $this->fetchTable('Tsumego')->find()->orderByDesc('id')->first()->id;
 
 		$this->post("/sets/edit/{$setId}");
 
-		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoId);
-		$this->assertEquals(1000, $tsumego['Tsumego']['rating']);
+		$tsumego = $this->fetchTable('Tsumego')->find()->where(['id' => $tsumegoId])->first();
+		$this->assertEquals(1000, $tsumego->rating);
 	}
 
 	public function testAdminCanToggleAlternativeResponseOn(): void
@@ -723,12 +742,12 @@ class UserSetsControllerTest extends IntegrationTestCase
 		]);
 		$this->login('admin');
 		$setId = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => 'Sandbox Set']])['Set']['id'];
-		$tsumegoId = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC'])['Tsumego']['id'];
+		$tsumegoId = $this->fetchTable('Tsumego')->find()->orderByDesc('id')->first()->id;
 
 		$this->post("/sets/edit/{$setId}", ['Settings' => ['r39' => 'on']]);
 
-		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoId);
-		$this->assertSame(1, (int) $tsumego['Tsumego']['alternative_response']);
+		$tsumego = $this->fetchTable('Tsumego')->find()->where(['id' => $tsumegoId])->first();
+		$this->assertSame(1, (int) $tsumego->alternative_response);
 	}
 
 	public function testAdminCanTogglePassingOn(): void
@@ -741,12 +760,12 @@ class UserSetsControllerTest extends IntegrationTestCase
 		]);
 		$this->login('admin');
 		$setId = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => 'Sandbox Set']])['Set']['id'];
-		$tsumegoId = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC'])['Tsumego']['id'];
+		$tsumegoId = $this->fetchTable('Tsumego')->find()->orderByDesc('id')->first()->id;
 
 		$this->post("/sets/edit/{$setId}", ['Settings' => ['r43' => 'yes']]);
 
-		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoId);
-		$this->assertSame(1, (int) $tsumego['Tsumego']['pass']);
+		$tsumego = $this->fetchTable('Tsumego')->find()->where(['id' => $tsumegoId])->first();
+		$this->assertSame(1, (int) $tsumego->pass);
 	}
 
 	// ── Authorization: mutate actions on someone else's set ─────────────
@@ -758,12 +777,11 @@ class UserSetsControllerTest extends IntegrationTestCase
 			'other-users' => [['name' => 'bob']],
 		]);
 		$setId = $this->_createSet('Alice Set', $context->user['id'], 0);
-		$tsumegoModel = ClassRegistry::init('Tsumego');
-		$tsumegoModel->create();
-		$tsumegoModel->save(['Tsumego' => ['difficulty' => 4, 'variance' => 100, 'author' => '']]);
+		$tsumegoTable = $this->fetchTable('Tsumego');
+		$tsumegoId = $tsumegoTable->saveOrFail($tsumegoTable->newEntity(['variance' => 100, 'author' => '']))->id;
 		$scModel = ClassRegistry::init('SetConnection');
 		$scModel->create();
-		$scModel->save(['SetConnection' => ['set_id' => $setId, 'tsumego_id' => $tsumegoModel->id, 'num' => 1]]);
+		$scModel->save(['SetConnection' => ['set_id' => $setId, 'tsumego_id' => $tsumegoId, 'num' => 1]]);
 		$this->login('bob');
 
 		$this->post("/sets/removeTsumego/{$setId}", ['tsumego_id' => $tsumegoModel->id]);

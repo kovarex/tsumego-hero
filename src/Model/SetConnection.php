@@ -11,7 +11,6 @@ class SetConnection extends AppModel
 	}
 
 	public $belongsTo = [
-		'Tsumego',
 		'Set',
 	];
 

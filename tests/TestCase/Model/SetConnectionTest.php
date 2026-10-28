@@ -1,5 +1,7 @@
 <?php
 
+use Cake\ORM\TableRegistry;
+
 class SetConnectionTest extends CakeTestCase
 {
 	public function testDisplayPrefersOfficialOverFavorite()
@@ -112,9 +114,8 @@ class SetConnectionTest extends CakeTestCase
 
 	public function testDisplayBreaksOrderTiesByEarliestSet()
 	{
-		$tsumego = ClassRegistry::init('Tsumego');
-		$tsumego->create();
-		$tsumego->save(['description' => 'tie', 'author' => '']);
+		$tsumegoTable = TableRegistry::getTableLocator()->get('Tsumego');
+		$tsumego = $tsumegoTable->saveOrFail($tsumegoTable->newEntity(['description' => 'tie', 'author' => '']));
 
 		$set = ClassRegistry::init('Set');
 		$set->create();

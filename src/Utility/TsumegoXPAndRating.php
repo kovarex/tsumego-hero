@@ -2,14 +2,13 @@
 
 namespace App\Utility;
 
+use App\Model\Entity\Tsumego;
 use App\Model\Table\ProgressDeletionTable;
 use App\Model\Table\TsumegoAttemptTable;
 
-/** @phpstan-import-type TsumegoRow from \App\Utility\RowTypes */
 class TsumegoXPAndRating
 {
-	/** @param TsumegoRow $tsumego */
-	public function __construct(array $tsumego, string $status, ?int $setConnectionID = null)
+	public function __construct(Tsumego $tsumego, string $status, ?int $setConnectionID = null)
 	{
 		if ($status == 'G')
 			$this->goldenTsumego = true;
@@ -17,10 +16,10 @@ class TsumegoXPAndRating
 			$this->solved = true;
 		elseif ($status == 'W')
 			$this->resolving = true;
-		$this->tsumegoRating = $tsumego['rating'];
+		$this->tsumegoRating = $tsumego->rating;
 		// the resets of the part of the set the problem is played from
-		$this->progressDeletionCount = Auth::isLoggedIn() ? ProgressDeletionTable::countRecentForProblem(Auth::getUserID(), (int) $tsumego['id'], $setConnectionID) : 0;
-		$this->failsInARow = Auth::isLoggedIn() ? TsumegoAttemptTable::failsInARow(TsumegoAttemptTable::findLast((int) Auth::getUserID(), (int) $tsumego['id'])) : 0;
+		$this->progressDeletionCount = Auth::isLoggedIn() ? ProgressDeletionTable::countRecentForProblem(Auth::getUserID(), $tsumego->id, $setConnectionID) : 0;
+		$this->failsInARow = Auth::isLoggedIn() ? TsumegoAttemptTable::failsInARow(TsumegoAttemptTable::findLast((int) Auth::getUserID(), $tsumego->id)) : 0;
 	}
 
 	public function render(): void
