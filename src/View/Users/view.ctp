@@ -267,25 +267,25 @@ function showStatistics($side, $as, $user, $dailyResults, $timeGraph)
 				</table>';
 	for($i=0; $i<count($as); $i++)
 	{
-		if (strlen($as[$i]['AchievementStatus']['a_title']) > 30)
+		if (strlen($as[$i]['a_title']) > 30)
 			$adjust = 'style="font-weight:normal;font-size:17px;"';
 		else $adjust = '';
-		$earnedCount = (int) ($as[$i]['AchievementStatus']['a_earned_count'] ?? 1);
+		$earnedCount = (int) ($as[$i]['a_earned_count'] ?? 1);
 	?>
-		<a href="/achievements/view/<?php echo $as[$i]['AchievementStatus']['a_id'] . '/' . $user['User']['id']; ?>">
-		<div align="center" class="achievementSmall <?php echo $as[$i]['AchievementStatus']['a_color']; ?>">
+		<a href="/achievements/view/<?php echo $as[$i]['a_id'] . '/' . $user['User']['id']; ?>">
+		<div align="center" class="achievementSmall <?php echo $as[$i]['a_color']; ?>">
 			<div class="acTitle2">
-				<b <?php echo $adjust; ?>><?php echo h($as[$i]['AchievementStatus']['a_title']); ?></b>
+				<b <?php echo $adjust; ?>><?php echo h($as[$i]['a_title']); ?></b>
 			</div>
 			<div class="acImg">
-				<img src="/img/<?php echo h($as[$i]['AchievementStatus']['a_image']); ?>.png" title="<?php echo h($as[$i]['AchievementStatus']['a_description']); ?>">
+				<img src="/img/<?php echo h($as[$i]['a_image']); ?>.png" title="<?php echo h($as[$i]['a_description']); ?>">
 				<?php echo AchievementHelper::renderEarnedBadge($earnedCount); ?>
 				<div class="acImgXp">
-				<?php echo $as[$i]['AchievementStatus']['a_xp']; ?> XP
+				<?php echo $as[$i]['a_xp']; ?> XP
 				</div>
 			</div>
 			<div class="acDate2">
-				<time datetime="<?php echo Util::toIso8601($as[$i]['AchievementStatus']['created']) ?>" data-format="datetime"><?php echo h($as[$i]['AchievementStatus']['created']) ?></time>
+				<time datetime="<?php echo Util::toIso8601($as[$i]['created']) ?>" data-format="datetime"><?php echo h($as[$i]['created']) ?></time>
 			</div>
 		</div>
 		</a>

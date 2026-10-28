@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Entity\DayRecord;
+use App\Model\Table\AchievementStatusTable;
 use App\Model\Entity\Schedule;
 use App\Utility\Auth;
 use App\Utility\Constants;
@@ -25,7 +26,6 @@ class SitesController extends AppController
 		if (empty($_COOKIE['lastVisit']))
 			Util::setCookie('lastVisit', Constants::$DEFAULT_TSUMEGO_ID);
 
-		$this->loadModel('AchievementStatus');
 		$this->loadModel('User');
 
 		$today = date('Y-m-d');
@@ -59,7 +59,7 @@ class SitesController extends AppController
 		$this->set('latestPublishDate', $latestPublishDate);
 		$this->set('quote', $currentQuote);
 
-		$this->set('recentAchievements', $this->AchievementStatus->getRecent());
+		$this->set('recentAchievements', AchievementStatusTable::getRecent());
 
 		// The way into the mistake training: what is due today. The offer to bring past
 		// mistakes in is on the card always, without a count: counting them reads the
