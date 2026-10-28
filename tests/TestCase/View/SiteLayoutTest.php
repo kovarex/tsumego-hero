@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\Util;
+
 //The layout every page has (src/View/Layouts/default.ctp)
 /**
  * @retryAttempts 2
@@ -22,15 +24,16 @@ class SiteLayoutTest extends IntegrationTestCase
 	public function testGuestHearsSoundUntilTurningItOff()
 	{
 		$browser = Browser::instance();
-		new ContextPreparator();
-		$browser->get('sites/index');
+		new ContextPreparator(['user' => null]);
+		$browser->driver->manage()->deleteAllCookies();
+		$browser->getAnonymous('sites/index');
 		$this->assertTrue($browser->driver->executeScript('return soundsEnabled;'));
 		$this->assertStringEndsWith('/img/sound-icon1.png', $browser->find('#soundButtonImage')->getAttribute('src'));
 
 		$browser->clickId('soundButton');
 		$this->assertFalse($browser->driver->executeScript('return soundsEnabled;'));
 
-		$browser->get('sites/index');
+		$browser->getAnonymous('sites/index');
 		$this->assertFalse($browser->driver->executeScript('return soundsEnabled;'));
 		$this->assertStringEndsWith('/img/sound-icon2.png', $browser->find('#soundButtonImage')->getAttribute('src'));
 	}
