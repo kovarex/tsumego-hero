@@ -3,6 +3,7 @@
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Model\Entity\TimeModeRank;
+use App\Model\Entity\TimeModeSession;
 use App\Utility\Auth;
 use App\Utility\CookieFlash;
 use App\Utility\Rating;
@@ -95,12 +96,13 @@ class ChallengesController extends AppController
 		$this->set('joinUrl', Router::url(self::challengeUrl($challengeID), true));
 
 		// playing this one ends the run of another challenge, so the player is told before they start
-		$otherRun = Auth::isLoggedIn() ? ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => [
+		/** @var TimeModeSession|null $otherRun */
+		$otherRun = Auth::isLoggedIn() ? $this->fetchTable('TimeModeSession')->find()->where([
 			'user_id' => Auth::getUserID(),
 			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
-			'challenge_id NOT' => null,
-			'challenge_id !=' => $challengeID]]) : null;
-		$this->set('otherChallengeInProgressID', $otherRun ? (int) $otherRun['TimeModeSession']['challenge_id'] : null);
+			'challenge_id IS NOT' => null,
+			'challenge_id !=' => $challengeID])->first() : null;
+		$this->set('otherChallengeInProgressID', $otherRun?->challenge_id);
 
 		$showResults = $myRun !== null && $myRun['run'] === Challenge::RUN_FINISHED;
 		$this->set('showResults', $showResults);
@@ -158,7 +160,7 @@ class ChallengesController extends AppController
 			return $this->redirect(self::challengeUrl($challengeID));
 
 		$run = Challenge::runOf($challengeID, Auth::getUserID());
-		if ($run && (int) $run['TimeModeSession']['time_mode_session_status_id'] !== TimeModeUtil::$SESSION_STATUS_IN_PROGRESS)
+		if ($run && $run->time_mode_session_status_id !== TimeModeUtil::$SESSION_STATUS_IN_PROGRESS)
 			return $this->redirect(self::challengeUrl($challengeID));
 		if (!$run)
 			new TimeMode()->startChallenge($challenge);

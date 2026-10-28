@@ -242,6 +242,6 @@ class PlayLostLineBrowserTest extends IntegrationTestCase
 		$this->assertSame(
 			TimeModeUtil::$ATTEMPT_RESULT_FAILED,
 			(int) ClassRegistry::init('TimeModeAttempt')->find('first', [
-				'conditions' => ['time_mode_session_id' => $context->timeModeSessions[0]['id'], 'order' => 1]])['TimeModeAttempt']['time_mode_attempt_status_id']);
+				'conditions' => ['time_mode_session_id' => $context->timeModeSessions[0]->id, 'order' => 1]])['TimeModeAttempt']['time_mode_attempt_status_id']);
 	}
 }

@@ -77,11 +77,9 @@ class PersonalCollectionContentTest extends IntegrationTestCase
 		$this->get('/timeMode/start?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
 			. '&rankID=' . $context->timeModeRanks[0]['id']);
 
-		$session = ClassRegistry::init('TimeModeSession')->find('first', [
-			'conditions' => ['user_id' => $context->user['id']],
-		]);
+		$sessionID = $this->fetchTable('TimeModeSession')->find()->where(['user_id' => $context->user['id']])->firstOrFail()->id;
 		$attempts = ClassRegistry::init('TimeModeAttempt')->find('all', [
-			'conditions' => ['time_mode_session_id' => $session['TimeModeSession']['id']],
+			'conditions' => ['time_mode_session_id' => $sessionID],
 		]);
 		$attemptTsumegoIds = array_map(fn($attempt) => (int) $attempt['TimeModeAttempt']['tsumego_id'], $attempts);
 
