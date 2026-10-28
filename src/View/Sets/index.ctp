@@ -140,6 +140,12 @@ use App\Utility\TsumegoFilters;
 		$lightDarkBoxes = '4';
 	else
 		$lightDarkBoxes = '3';
+	// The page has hundreds of cards, so it includes the card template itself: as an element, each
+	// card would go through the view's events and the callbacks of every helper. The closure keeps
+	// the variables of the template to it.
+	$renderCard = function (array $set, string $backgroundImage): void {
+		include __DIR__ . '/../Elements/set_card.ctp';
+	};
 	foreach ($setsSelector->sets as $i => $set) {
 		if ($lightDark == 'light')
 		{
@@ -149,18 +155,15 @@ use App\Utility\TsumegoFilters;
 		}
 		$backgroundImage = 'linear-gradient(rgba(169, 169, 169, 0.'.$lightDarkBoxes.'0), rgba(0, 0, 0, 0.'.$lightDarkBoxes.'5));';
 
-		echo $this->element('set_card', [
-			'set' => [
-				'id' => $set['id'],
-				'name' => $set['name'],
-				'amount' => $set['amount'],
-				'color' => $set['color'],
-				'difficulty' => $set['difficulty'],
-				'solved' => $set['solved_percent'],
-				'partition' => $set['partition'],
-			],
-			'backgroundImage' => $backgroundImage,
-		]);
+		$renderCard([
+			'id' => $set['id'],
+			'name' => $set['name'],
+			'amount' => $set['amount'],
+			'color' => $set['color'],
+			'difficulty' => $set['difficulty'],
+			'solved' => $set['solved_percent'],
+			'partition' => $set['partition'],
+		], $backgroundImage);
 	} ?>
 	</div>
 	<script>

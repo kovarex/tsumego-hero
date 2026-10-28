@@ -37,6 +37,11 @@ class Set extends AppModel
 	//$full: Prefix the address with the site's own domain
 	public static function url(int|string $id, int $partition = 1, bool $full = false): string
 	{
+		// The address is put together here, as the reverse routing tries the routes one by one and the
+		// collections page links hundreds of cards. It is what the /sets/:id route gives (SetTest checks
+		// that), an id with a slash doesn't fit that route and is left to the router.
+		if (!str_contains((string) $id, '/'))
+			return Router::url('/sets/' . $id . ($partition > 1 ? '/' . $partition : ''), $full);
 		$url = ['controller' => 'sets', 'action' => 'view', 'id' => $id];
 		if ($partition > 1)
 			$url['partition'] = $partition;
