@@ -836,7 +836,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 
 		$this->loadModel('Tsumego');
 		$this->loadModel('TsumegoStatus');
-		$this->loadModel('TsumegoAttempt');
 		$this->loadModel('Sgf');
 		$this->loadModel('SetConnection');
 		$this->loadModel('User');
@@ -982,13 +981,9 @@ ORDER BY sc.num ASC", [(int) $id]);
 
 		if (Auth::isLoggedIn() && $tsumegoFilters->query == 'topics')
 		{
-			$ur = $this->TsumegoAttempt->find('all', [
-				'order' => 'created DESC',
-				'conditions' => [
-					'user_id' => Auth::getUserID(),
-					'tsumego_id' => $tsIds,
-				],
-			]) ?: [];
+			$ur = empty($tsIds) ? [] : Util::query('SELECT tsumego_id, solved, seconds, misplays FROM tsumego_attempt
+				WHERE user_id = ? AND tsumego_id IN (' . implode(',', array_fill(0, count($tsIds), '?')) . ')
+				ORDER BY created DESC', [Auth::getUserID(), ...$tsIds]);
 			$urCount2 = count($ur);
 			foreach ($tsumegoButtons as $tsumegoButton)
 			{
@@ -996,14 +991,14 @@ ORDER BY sc.num ASC", [(int) $id]);
 				$tsumegoButton->seconds = 0;
 				$solvedSeconds = []; // Track all successful solve times to find minimum (best)
 				for ($j = 0; $j < $urCount2; $j++)
-					if ($tsumegoButton->tsumegoID === (int) $ur[$j]['TsumegoAttempt']['tsumego_id'])
+					if ($tsumegoButton->tsumegoID === (int) $ur[$j]['tsumego_id'])
 					{
-						$isSolved = (bool) $ur[$j]['TsumegoAttempt']['solved'];
-						$attemptSeconds = (int) $ur[$j]['TsumegoAttempt']['seconds'];
+						$isSolved = (bool) $ur[$j]['solved'];
+						$attemptSeconds = (int) $ur[$j]['seconds'];
 						if ($isSolved && $attemptSeconds > 0)
 							$solvedSeconds[] = $attemptSeconds;
 
-						$mis = (int) $ur[$j]['TsumegoAttempt']['misplays'];
+						$mis = (int) $ur[$j]['misplays'];
 						if (!$isSolved && $mis <= 0)
 							$mis = 1;
 						while ($mis > 0)

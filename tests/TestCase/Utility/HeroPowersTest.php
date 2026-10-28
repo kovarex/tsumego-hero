@@ -228,7 +228,7 @@ class HeroPowersTest extends IntegrationTestCase
 
 			$this->assertSame($context->xpgained(), 0); // no xp was gained
 			$this->assertSame($context->reloadUser()['rating'], ContextPreparator::$DEFAULT_USER_RATING); // xp wasn't changed
-			$this->assertSame(0, count(ClassRegistry::init('TsumegoAttempt')->find('all'))); // no attempt was recorded
+			$this->assertSame(0, $this->fetchTable('TsumegoAttempt')->find()->count()); // no attempt was recorded
 		}
 	}
 

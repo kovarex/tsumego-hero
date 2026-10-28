@@ -54,7 +54,7 @@ class PlaySolveTimeBrowserTest extends IntegrationTestCase
 		$this->assertGreaterThanOrEqual(100, $firstTry, 'The failed try sends its time');
 		$this->assertLessThan(50, $secondTry, 'The solve sends only the time since the failed try');
 
-		$attempt = ClassRegistry::init('TsumegoAttempt')->find('first', ['conditions' => ['user_id' => $context->user['id']]])['TsumegoAttempt'];
+		$attempt = $this->fetchTable('TsumegoAttempt')->find()->where(['user_id' => $context->user['id']])->disableHydration()->firstOrFail();
 		$this->assertTrue((bool) $attempt['solved']);
 		$this->assertEqualsWithDelta($firstTry + $secondTry, (int) $attempt['seconds'], 1, 'The problem took the time of both tries, once');
 	}

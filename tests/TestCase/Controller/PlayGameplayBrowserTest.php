@@ -241,17 +241,13 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 			(int) $context->user['damage'],
 			'Hearts must not be lost for mistakes made after solving');
 
-		$attempts = ClassRegistry::init('TsumegoAttempt')->find('all', [
-			'conditions' => [
-				'tsumego_id' => $context->tsumegos[0]['id'],
-				'user_id' => $context->user['id'],
-			],
-		]);
+		$attempts = $this->fetchTable('TsumegoAttempt')->find()
+			->where(['tsumego_id' => $context->tsumegos[0]['id'], 'user_id' => $context->user['id']])->all()->toList();
 		$this->assertCount(1, $attempts,
 			'Must produce exactly one attempt record');
-		$this->assertTrue($attempts[0]['TsumegoAttempt']['solved'],
+		$this->assertTrue($attempts[0]->solved,
 			'Attempt must be marked solved');
-		$this->assertSame(0, (int) $attempts[0]['TsumegoAttempt']['misplays'],
+		$this->assertSame(0, $attempts[0]->misplays,
 			'Post-solve mistakes must not appear in attempt history');
 	}
 
