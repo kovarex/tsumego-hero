@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Table\RejectTable;
+use App\Model\Table\TimeModeCategoryTable;
 use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
 use App\Utility\Avatar;
@@ -648,7 +649,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 			if ($user && ($user['last_time_mode_category_id'] ?? null))
 				$categoryId = $user['last_time_mode_category_id'];
 			else
-				$categoryId = TimeModeCategory::SLOW;
+				$categoryId = TimeModeCategoryTable::SLOW;
 
 			$params1 = $categoryId - 1;
 			$params2 = '15k';

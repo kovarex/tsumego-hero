@@ -5,7 +5,7 @@
  * @var bool $hasFinishedSesssion
  * @var string $lastTimeModeCategoryID
  * @var array $solvedMap
- * @var array $timeModeCategories
+ * @var array<\App\Model\Entity\TimeModeCategory> $timeModeCategories
  * @var array $timeModeRanks
  * @var int|null $challengeInProgressID The challenge whose run the player is in the middle of
  */
@@ -31,7 +31,7 @@
 	<?php
 	foreach ($timeModeCategories as $timeModeCategory)
 	{
-		$categoryID = $timeModeCategory['TimeModeCategory']['id'];
+		$categoryID = $timeModeCategory->id;
 		echo '<img id="timeMode'.$categoryID.'"'.
 			' src="/img/timeMode'.$categoryID.'2.png" '.
 			' width="200"'.
@@ -46,7 +46,7 @@
 <?php
 foreach ($timeModeCategories as $timeModeCategory)
 {
-	$categoryID = $timeModeCategory['TimeModeCategory']['id'];
+	$categoryID = $timeModeCategory->id;
 	echo '<div id="time-mode'.$categoryID.'">';
 	$unlocked = true; // first is always unlocked
 	foreach ($timeModeRanks as $timeModeRank)
@@ -71,7 +71,7 @@ echo '</div>';
 	var timeModeCategoryID = getCookie('lastTimeModeCategoryID') || <?php echo $lastTimeModeCategoryID; ?>;
 	function setTimeModeCategory(categoryIDToSet, shouldSetCookie = true)
 	{
-		for (const categoryID of [<?php $result = []; foreach ($timeModeCategories as $timeModeCategory) $result[] = $timeModeCategory['TimeModeCategory']['id']; echo implode(',', $result); ?>])
+		for (const categoryID of [<?php $result = []; foreach ($timeModeCategories as $timeModeCategory) $result[] = $timeModeCategory->id; echo implode(',', $result); ?>])
 		{
 			var element = document.getElementById("timeMode" + categoryID);
 			element.style = "cursor: pointer;";

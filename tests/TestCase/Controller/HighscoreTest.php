@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\TimeModeCategoryTable;
 use App\Utility\AchievementId;
 use App\Utility\Level;
 use App\Utility\Rating;
@@ -186,7 +187,7 @@ class HighscoreTest extends IntegrationTestCase
 		$sessionModel->create();
 		$sessionModel->save(['TimeModeSession' => [
 			'user_id' => $context->otherUsers[0]['id'],
-			'time_mode_category_id' => TimeModeCategory::SLOW,
+			'time_mode_category_id' => TimeModeCategoryTable::SLOW,
 			'time_mode_rank_id' => $rankId,
 			'time_mode_session_status_id' => TimeModeSessionStatus::SOLVED,
 			'points' => 900,
@@ -196,7 +197,7 @@ class HighscoreTest extends IntegrationTestCase
 		$sessionModel->create();
 		$sessionModel->save(['TimeModeSession' => [
 			'user_id' => $context->otherUsers[1]['id'],
-			'time_mode_category_id' => TimeModeCategory::SLOW,
+			'time_mode_category_id' => TimeModeCategoryTable::SLOW,
 			'time_mode_rank_id' => $rankId,
 			'time_mode_session_status_id' => TimeModeSessionStatus::SOLVED,
 			'points' => 600,
@@ -232,7 +233,7 @@ class HighscoreTest extends IntegrationTestCase
 			$sessionModel->create();
 			$sessionModel->save(['TimeModeSession' => [
 				'user_id' => $context->otherUsers[0]['id'],
-				'time_mode_category_id' => TimeModeCategory::SLOW,
+				'time_mode_category_id' => TimeModeCategoryTable::SLOW,
 				'time_mode_rank_id' => $rankId,
 				'time_mode_session_status_id' => TimeModeSessionStatus::SOLVED,
 				'points' => $points,

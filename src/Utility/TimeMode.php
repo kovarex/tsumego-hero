@@ -2,6 +2,8 @@
 
 namespace App\Utility;
 
+use App\Model\Entity\TimeModeCategory;
+use Cake\ORM\Locator\LocatorAwareTrait;
 use Challenge;
 use ClassRegistry;
 use DateTime;
@@ -11,6 +13,8 @@ use Set;
 
 class TimeMode
 {
+	use LocatorAwareTrait;
+
 	public function __construct()
 	{
 		if (!Auth::isInTimeMode())
@@ -58,8 +62,9 @@ class TimeMode
 			return;
 		}
 		$this->rank = ClassRegistry::init('TimeModeRank')->findById($this->currentSession['TimeModeSession']['time_mode_rank_id']);
-		$this->overallSecondsToSolve = ClassRegistry::init('TimeModeCategory')->find('first', [
-			'conditions' => ['id' => $this->currentSession['TimeModeSession']['time_mode_category_id']]])['TimeModeCategory']['seconds'];
+		/** @var TimeModeCategory $category */
+		$category = $this->fetchTable('TimeModeCategory')->get($this->currentSession['TimeModeSession']['time_mode_category_id']);
+		$this->overallSecondsToSolve = $category->seconds;
 	}
 
 	public function startTimeMode(int $categoryID, int $rankID): void
@@ -136,7 +141,7 @@ class TimeMode
 
 	private function createNewSession(int $categoryID, int $rankID): array
 	{
-		$timeModeCategory = ClassRegistry::init('TimeModeCategory')->findById($categoryID);
+		$timeModeCategory = $this->fetchTable('TimeModeCategory')->find()->where(['id' => $categoryID])->first();
 		if (!$timeModeCategory)
 			throw new NotFoundException("Time mode session category with id=" . $categoryID . " not found");
 
@@ -148,7 +153,7 @@ class TimeMode
 		$currentTimeSession = [];
 		$currentTimeSession['user_id'] = Auth::getUserID();
 		$currentTimeSession['time_mode_session_status_id'] = TimeModeUtil::$SESSION_STATUS_IN_PROGRESS;
-		$currentTimeSession['time_mode_category_id'] = $timeModeCategory['TimeModeCategory']['id'];
+		$currentTimeSession['time_mode_category_id'] = $timeModeCategory->id;
 		$currentTimeSession['time_mode_rank_id'] = $rankID;
 		ClassRegistry::init('TimeModeSession')->create($currentTimeSession);
 		ClassRegistry::init('TimeModeSession')->save($currentTimeSession);

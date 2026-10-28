@@ -217,7 +217,7 @@ class PlayLostLineBrowserTest extends IntegrationTestCase
 
 	public function testTheClockRunningOutInALostLineDoesNotSendATimeout(): void
 	{
-		$blitzSeconds = (int) ClassRegistry::init('TimeModeCategory')->findById(TimeModeUtil::$CATEGORY_BLITZ)['TimeModeCategory']['seconds'];
+		$blitzSeconds = $this->fetchTable('TimeModeCategory')->get(TimeModeUtil::$CATEGORY_BLITZ)->seconds;
 		$context = new ContextPreparator([
 			'tsumego' => ['set_order' => 1, 'sgf' => self::SGF],
 			'tsumegos' => [['set_order' => 2, 'sgf' => self::SGF]],

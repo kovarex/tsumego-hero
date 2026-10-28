@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\TimeModeCategoryTable;
 use App\Utility\AchievementId;
 use App\Utility\Rating;
 use App\Utility\TimeModeUtil;
@@ -589,9 +590,9 @@ class UsersControllerTest extends IntegrationTestCase
 		$sessionModel = ClassRegistry::init('TimeModeSession');
 
 		$sessions = [
-			['category' => TimeModeCategory::SLOW, 'rank_id' => $rankId, 'points' => 900],
-			['category' => TimeModeCategory::FAST, 'rank_id' => $rankId, 'points' => 600],
-			['category' => TimeModeCategory::SLOW, 'rank_id' => $rankId10k, 'points' => 750],
+			['category' => TimeModeCategoryTable::SLOW, 'rank_id' => $rankId, 'points' => 900],
+			['category' => TimeModeCategoryTable::FAST, 'rank_id' => $rankId, 'points' => 600],
+			['category' => TimeModeCategoryTable::SLOW, 'rank_id' => $rankId10k, 'points' => 750],
 		];
 		foreach ($sessions as $s)
 		{
@@ -633,7 +634,7 @@ class UsersControllerTest extends IntegrationTestCase
 		$rankId = $rankRow['TimeModeRank']['id'];
 		$sessionModel = ClassRegistry::init('TimeModeSession');
 
-		foreach ([TimeModeCategory::SLOW, TimeModeCategory::FAST, TimeModeCategory::BLITZ] as $cat)
+		foreach ([TimeModeCategoryTable::SLOW, TimeModeCategoryTable::FAST, TimeModeCategoryTable::BLITZ] as $cat)
 		{
 			$sessionModel->create();
 			$sessionModel->save(['TimeModeSession' => [

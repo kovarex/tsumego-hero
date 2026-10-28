@@ -1060,7 +1060,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 	public function testTimeModeTimerSubmitsATimeoutWhenTheClockRunsOut(): void
 	{
 		$browser = Browser::instance();
-		$blitzSeconds = (int) ClassRegistry::init('TimeModeCategory')->findById(TimeModeUtil::$CATEGORY_BLITZ)['TimeModeCategory']['seconds'];
+		$blitzSeconds = $this->fetchTable('TimeModeCategory')->get(TimeModeUtil::$CATEGORY_BLITZ)->seconds;
 		// the attempt has been running for all but the last seconds of Blitz
 		$context = $this->startTimeMode($browser, null, 2, ['started-seconds-ago' => $blitzSeconds - 3]);
 
