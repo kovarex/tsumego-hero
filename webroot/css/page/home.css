@@ -12,47 +12,8 @@
   justify-content: center;
   gap: 16px;
 }
-.main-page {
-  padding: 8px 11px !important;
-}
-.btn.main-page {
-  font-size: 14px;
-  color: var(--color-white);
-}
-.img-bordered {
-  border: 2px solid var(--current-border-color);
-}
-.img-padded {
-  margin: var(--space-1);
-}
 .chart-box {
   width: 100%;
-}
-.text-topic {
-  color: var(--color-topic);
-}
-.text-difficulty {
-  color: var(--color-difficulty);
-}
-.text-tag {
-  color: var(--color-tag);
-}
-.mode-link--level {
-  color: var(--color-green);
-}
-.mode-link--rating {
-  color: var(--color-mode-rating);
-}
-.mode-link--time {
-  color: var(--color-mode-time);
-}
-/* The theme switch in the dark theme news article */
-#darkButton2,
-#darkButton3,
-.darkButton2 {
-  float: left;
-  padding-top: 9px;
-  cursor: pointer;
 }
 .gradient-heading {
   display: inline-block;
@@ -80,20 +41,25 @@
 	padding: 8px;
 	color: var(--text-color);
 }
-.show-more {
-	padding: 10px;
+/* The site floats every li (site.css), the list of the news keeps one item under the other. */
+.whats-new-list {
+	margin: var(--space-2) 0;
+	padding-left: var(--space-5);
 }
-/* A button that reads as the link it used to be */
-.show-more__button {
+.whats-new-list > li {
+	float: none;
+	list-style-type: disc;
+	margin-bottom: var(--space-1);
+}
+/* Not the white block of the menu links (li a in base.css) */
+.whats-new-list > li > a {
+	display: inline;
 	padding: 0;
-	border: 0;
-	background: none;
 	color: var(--link-color);
-	font: inherit;
+	text-align: left;
 	text-decoration: underline;
-	cursor: pointer;
 }
-.show-more__button:hover {
+.whats-new-list > li > a:hover {
 	text-decoration: none;
 }
 .latest-additions-heading {
