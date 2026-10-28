@@ -4,6 +4,9 @@ use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Lib\Error\UnprocessableEntityException;
 use App\Model\Entity\Classroom;
+use App\Model\Entity\ClassroomMember;
+use App\Model\Table\ClassroomMemberStatusTable;
+use App\Model\Table\ClassroomMemberTable;
 use App\Model\Table\ClassroomTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
@@ -63,15 +66,15 @@ class ClassroomsController extends AppController
 		$this->set('teacher', ClassroomTable::teacher($classroom));
 
 		$isTeacher = $this->Authorization->can(['Classroom' => $classroom], 'manage');
-		$membership = Auth::isLoggedIn() ? ClassroomMember::of($classroom->id, Auth::getUserID()) : null;
-		$isPupil = $membership !== null && (int) $membership['classroom_member_status_id'] === ClassroomMemberStatus::ACCEPTED;
+		$membership = Auth::isLoggedIn() ? ClassroomMemberTable::of($classroom->id, Auth::getUserID()) : null;
+		$isPupil = $membership !== null && $membership->classroom_member_status_id === ClassroomMemberStatusTable::ACCEPTED;
 		$this->set('isTeacher', $isTeacher);
 		$this->set('membership', $membership);
 		$this->set('assignments', $isTeacher || $isPupil ? ClassroomAssignment::ofClassroom($classroom->id, $isTeacher) : []);
 
 		if ($isTeacher)
 		{
-			$this->set('members', ClassroomMember::ofClassroom($classroom->id));
+			$this->set('members', ClassroomMemberTable::ofClassroom($classroom->id));
 			$this->set('joinUrl', Router::url(self::classUrl($classroom->id), true));
 		}
 		return null;
@@ -109,13 +112,13 @@ class ClassroomsController extends AppController
 			return $this->redirect($url);
 		}
 
-		$membership = ClassroomMember::of($classroom->id, $playerId);
-		$statusBefore = $membership === null ? null : (int) $membership['classroom_member_status_id'];
-		if ($statusBefore === ClassroomMemberStatus::ACCEPTED)
+		$membership = ClassroomMemberTable::of($classroom->id, $playerId);
+		$statusBefore = $membership?->classroom_member_status_id;
+		if ($statusBefore === ClassroomMemberStatusTable::ACCEPTED)
 			CookieFlash::set($playerName . ' is in the class already.', 'info');
-		elseif ($statusBefore === ClassroomMemberStatus::INVITED)
+		elseif ($statusBefore === ClassroomMemberStatusTable::INVITED)
 			CookieFlash::set($playerName . ' is invited already.', 'info');
-		elseif (ClassroomMember::offer($classroom->id, $playerId, ClassroomMemberStatus::INVITED) === ClassroomMemberStatus::ACCEPTED)
+		elseif (ClassroomMemberTable::offer($classroom->id, $playerId, ClassroomMemberStatusTable::INVITED) === ClassroomMemberStatusTable::ACCEPTED)
 			CookieFlash::set($playerName . ' asked to join before, so they are in the class now.', 'success');
 		else
 			CookieFlash::set('Invited ' . $playerName . '. They join the class once they accept.', 'success');
@@ -134,8 +137,8 @@ class ClassroomsController extends AppController
 		if ($classroom->teacher_user_id === Auth::getUserID())
 			return $this->redirect($url);
 
-		$status = ClassroomMember::offer($classroom->id, Auth::getUserID(), ClassroomMemberStatus::REQUESTED);
-		CookieFlash::set($status === ClassroomMemberStatus::ACCEPTED
+		$status = ClassroomMemberTable::offer($classroom->id, Auth::getUserID(), ClassroomMemberStatusTable::REQUESTED);
+		CookieFlash::set($status === ClassroomMemberStatusTable::ACCEPTED
 			? 'You are in the class.'
 			: 'You asked to join. You are in once the teacher accepts.', 'success');
 		return $this->redirect($url);
@@ -147,14 +150,14 @@ class ClassroomsController extends AppController
 	public function acceptMember(string $membershipId): mixed
 	{
 		[$membership, $classroom] = $this->findMembership($membershipId);
-		$statusId = (int) $membership['classroom_member_status_id'];
-		$isMember = (int) $membership['user_id'] === Auth::getUserID();
+		$statusId = $membership->classroom_member_status_id;
+		$isMember = $membership->user_id === Auth::getUserID();
 		$isTeacher = $this->Authorization->can(['Classroom' => $classroom], 'manage');
-		if (!($statusId === ClassroomMemberStatus::INVITED && $isMember)
-			&& !($statusId === ClassroomMemberStatus::REQUESTED && $isTeacher))
+		if (!($statusId === ClassroomMemberStatusTable::INVITED && $isMember)
+			&& !($statusId === ClassroomMemberStatusTable::REQUESTED && $isTeacher))
 				throw new ForbiddenException();
 
-		ClassroomMember::accept((int) $membership['id']);
+		ClassroomMemberTable::accept($membership->id);
 		return $this->redirect(self::classUrl($classroom->id));
 	}
 
@@ -165,11 +168,11 @@ class ClassroomsController extends AppController
 	public function removeMember(string $membershipId): mixed
 	{
 		[$membership, $classroom] = $this->findMembership($membershipId);
-		$isMember = (int) $membership['user_id'] === Auth::getUserID();
+		$isMember = $membership->user_id === Auth::getUserID();
 		if (!$isMember)
 			$this->Authorization->authorize(['Classroom' => $classroom], 'manage');
 
-		ClassroomMember::remove((int) $membership['id']);
+		ClassroomMemberTable::remove($membership->id);
 		return $this->redirect($isMember ? '/classes' : self::classUrl($classroom->id));
 	}
 
@@ -289,7 +292,7 @@ class ClassroomsController extends AppController
 		$assignment = $this->findAssignment($assignmentId);
 		$classroom = $this->findClassroom((string) $assignment['classroom_id']);
 		$isTeacher = $this->Authorization->can(['Classroom' => $classroom], 'manage');
-		if (!$isTeacher && !ClassroomMember::isPupil($classroom->id, Auth::getUserID()))
+		if (!$isTeacher && !ClassroomMemberTable::isPupil($classroom->id, Auth::getUserID()))
 			throw new ForbiddenException();
 		if (!$isTeacher && !ClassroomAssignment::isPublished($assignment))
 			throw new NotFoundException('Assignment not found');
@@ -344,7 +347,7 @@ class ClassroomsController extends AppController
 			throw new NotFoundException('Assignment not found');
 		if ($this->Authorization->can(['Classroom' => $classroom], 'manage'))
 			$progress = ClassroomAssignment::progress($assignment);
-		elseif (Auth::isLoggedIn() && ClassroomMember::isPupil($classroom->id, Auth::getUserID()))
+		elseif (Auth::isLoggedIn() && ClassroomMemberTable::isPupil($classroom->id, Auth::getUserID()))
 			$progress = ClassroomAssignment::progress($assignment, Auth::getUserID());
 		else
 			throw Auth::isLoggedIn() ? new ForbiddenException() : new UnauthorizedException();
@@ -400,15 +403,15 @@ class ClassroomsController extends AppController
 		return $assignment['ClassroomAssignment'];
 	}
 
-	/** @return array{0: array<string, mixed>, 1: Classroom} The membership and its class */
+	/** @return array{0: ClassroomMember, 1: Classroom} The membership and its class */
 	private function findMembership(string $id): array
 	{
 		if (!Auth::isLoggedIn())
 			throw new UnauthorizedException();
-		$membership = ClassRegistry::init('ClassroomMember')->findById((int) $id);
-		if (!$membership)
+		/** @var ClassroomMember|null $membership */
+		$membership = $this->fetchTable('ClassroomMember')->find()->where(['id' => (int) $id])->first();
+		if ($membership === null)
 			throw new NotFoundException('Membership not found');
-		$membership = $membership['ClassroomMember'];
-		return [$membership, $this->findClassroom((string) $membership['classroom_id'])];
+		return [$membership, $this->findClassroom((string) $membership->classroom_id)];
 	}
 }
