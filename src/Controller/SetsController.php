@@ -835,7 +835,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 
 		$this->loadModel('Tsumego');
 		$this->loadModel('TsumegoStatus');
-		$this->loadModel('TsumegoAttempt');
 		$this->loadModel('Sgf');
 		$this->loadModel('SetConnection');
 		$this->loadModel('User');
@@ -981,38 +980,32 @@ ORDER BY sc.num ASC", [(int) $id]);
 
 		if (Auth::isLoggedIn() && $tsumegoFilters->query == 'topics')
 		{
-			$ur = $this->TsumegoAttempt->find('all', [
-				'order' => 'created DESC',
-				'conditions' => [
-					'user_id' => Auth::getUserID(),
-					'tsumego_id' => $tsIds,
-				],
-			]) ?: [];
-			$urCount2 = count($ur);
+			// The attempts of the player on the problems of the page, newest first, read once and
+			// sorted out by problem: a player who trains a set has dozens of attempts on each of them.
+			$attempts = empty($tsIds) ? [] : Util::query('SELECT tsumego_id, solved, seconds, misplays FROM tsumego_attempt'
+				. ' WHERE user_id = ? AND tsumego_id IN (' . implode(',', array_map('intval', $tsIds)) . ') ORDER BY created DESC, id DESC', [Auth::getUserID()]);
+			$attemptsByTsumego = [];
+			foreach ($attempts as $attempt)
+				$attemptsByTsumego[(int) $attempt['tsumego_id']][] = $attempt;
 			foreach ($tsumegoButtons as $tsumegoButton)
 			{
 				$urSum = '';
 				$tsumegoButton->seconds = 0;
 				$solvedSeconds = []; // Track all successful solve times to find minimum (best)
-				for ($j = 0; $j < $urCount2; $j++)
-					if ($tsumegoButton->tsumegoID === (int) $ur[$j]['TsumegoAttempt']['tsumego_id'])
-					{
-						$isSolved = (bool) $ur[$j]['TsumegoAttempt']['solved'];
-						$attemptSeconds = (int) $ur[$j]['TsumegoAttempt']['seconds'];
-						if ($isSolved && $attemptSeconds > 0)
-							$solvedSeconds[] = $attemptSeconds;
+				foreach ($attemptsByTsumego[$tsumegoButton->tsumegoID] ?? [] as $attempt)
+				{
+					$isSolved = (bool) $attempt['solved'];
+					$attemptSeconds = (int) $attempt['seconds'];
+					if ($isSolved && $attemptSeconds > 0)
+						$solvedSeconds[] = $attemptSeconds;
 
-						$mis = (int) $ur[$j]['TsumegoAttempt']['misplays'];
-						if (!$isSolved && $mis <= 0)
-							$mis = 1;
-						while ($mis > 0)
-						{
-							$urSum .= 'F';
-							$mis--;
-						}
-						if ($isSolved)
-							$urSum .= '1';
-					}
+					$mis = (int) $attempt['misplays'];
+					if (!$isSolved && $mis <= 0)
+						$mis = 1;
+					$urSum .= str_repeat('F', max(0, $mis));
+					if ($isSolved)
+						$urSum .= '1';
+				}
 				// Use minimum (best) solve time from all successful attempts
 				if (!empty($solvedSeconds))
 					$tsumegoButton->seconds = min($solvedSeconds);
