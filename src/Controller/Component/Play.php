@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\ClassroomAssignmentTable;
 use App\Model\Table\TagConnectionTable;
 use App\Model\Table\TagTable;
 use App\Policy\AdminPolicy;
@@ -217,12 +218,12 @@ ORDER BY s.title", [$tsumegoID, Auth::getUserID()]);
 		$setConnectionID = (int) $setConnection['SetConnection']['id'];
 		if ($this->classroomAssignment !== null)
 		{
-			$buttons = ClassroomAssignment::playButtons($this->classroomAssignment, (int) Auth::getUserID(), $setConnectionID);
+			$buttons = ClassroomAssignmentTable::playButtons($this->classroomAssignment, (int) Auth::getUserID(), $setConnectionID);
 			new SetNavigationButtonsInput($this->setFunction)->execute($buttons, $setConnection);
-			$this->set('_title', ClassroomAssignment::title($this->classroomAssignment) . ' ' . $buttons->currentOrder . '/' . $buttons->highestTsumegoOrder . ' on Tsumego Hero');
+			$this->set('_title', ClassroomAssignmentTable::title($this->classroomAssignment) . ' ' . $buttons->currentOrder . '/' . $buttons->highestTsumegoOrder . ' on Tsumego Hero');
 			$this->set('classroomAssignment', $this->classroomAssignment);
 			$currentButton = array_find((array) $buttons, fn($button) => $button->setConnectionID == $setConnectionID);
-			$this->set('solvedForAssignment', $currentButton?->status === ClassroomAssignment::BUTTON_SOLVED);
+			$this->set('solvedForAssignment', $currentButton?->status === ClassroomAssignmentTable::BUTTON_SOLVED);
 			//Past either end of a class assignment is the page of its class
 			$buttons->exportCurrentAndPreviousLink($this->setFunction, null, $setConnectionID, null, '/classes/' . (int) $this->classroomAssignment['classroom_id']);
 			return '';
@@ -297,11 +298,11 @@ ORDER BY s.title", [$tsumegoID, Auth::getUserID()]);
 
 	//The title of a problem played as a part of a class assignment: the assignment and where in
 	//it the player is, and under it which problem of which collection it really is.
-	/** @param array<string, mixed> $assignment With its collections, see ClassroomAssignment::withCollections() */
+	/** @param array<string, mixed> $assignment With its collections, see ClassroomAssignmentTable::withCollections() */
 	public static function renderAssignmentTitle(array $assignment, TsumegoButtons $tsumegoButtons, array $setConnection, array $set, int $amountOfOtherCollection): string
 	{
 		return '<a id="playTitleA" href="/classes/' . (int) $assignment['classroom_id'] . '">'
-			. h(ClassroomAssignment::title($assignment)) . ' ' . $tsumegoButtons->currentOrder . '/' . $tsumegoButtons->highestTsumegoOrder . '</a><br>
+			. h(ClassroomAssignmentTable::title($assignment)) . ' ' . $tsumegoButtons->currentOrder . '/' . $tsumegoButtons->highestTsumegoOrder . '</a><br>
 							<font style="font-weight:400;" color="grey">
 								<a style="color:grey;" class="play-title__origin" href="' . Set::url($set['Set']['id']) . '">
 									(' . h($set['Set']['title']) . ' ' . $setConnection['SetConnection']['num'] . '/' . $amountOfOtherCollection . ')

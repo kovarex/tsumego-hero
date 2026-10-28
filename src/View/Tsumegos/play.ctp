@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Entity\TsumegoVariant;
+use App\Model\Table\ClassroomAssignmentTable;
 use App\Model\Table\TsumegoVariantTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
@@ -122,7 +123,7 @@ use App\Utility\ViteManifest;
 	// A problem solved before is played again for a class assignment, which counts the solve on its own
 	$assignmentReplay = $classroomAssignment !== null && $solved && empty($solvedForAssignment);
 	if ($classroomAssignment !== null)
-		$resetLink = ClassroomAssignment::playLink((int) $classroomAssignment['id'], (int) $setConnection['SetConnection']['id']);
+		$resetLink = ClassroomAssignmentTable::playLink((int) $classroomAssignment['id'], (int) $setConnection['SetConnection']['id']);
 	else
 		$resetLink = (Auth::isInMistakeTrainingMode() ? MistakeTraining::$PLAY_LINK_PREFIX : '/') . (int) $setConnection['SetConnection']['id'];
 	if (!empty($t['Tsumego']['deleted']))
