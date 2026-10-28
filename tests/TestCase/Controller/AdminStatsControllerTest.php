@@ -409,11 +409,11 @@ class AdminStatsControllerTest extends IntegrationTestCase
 		$this->assertTrue($this->fetchTable('TagConnection')->get($context->tsumegos[0]['tag-connections'][0]->id)->approved);
 
 		// tag approval is saved in admin activities
-		$adminActivities = ClassRegistry::init('AdminActivity')->find('all');
+		$adminActivities = $this->fetchTable('AdminActivity')->find()->orderBy('id')->toArray();
 		$this->assertCount(1, $adminActivities);
-		$this->assertSame($adminActivities[0]['AdminActivity']['type'], AdminActivityType::ACCEPT_TAG);
-		$this->assertSame(null, $adminActivities[0]['AdminActivity']['old_value']);
-		$this->assertSame('snapback', $adminActivities[0]['AdminActivity']['new_value']);
+		$this->assertSame($adminActivities[0]->type, AdminActivityType::ACCEPT_TAG);
+		$this->assertSame(null, $adminActivities[0]->old_value);
+		$this->assertSame('snapback', $adminActivities[0]->new_value);
 	}
 
 	public function testRejectTagProposal()
@@ -437,11 +437,11 @@ class AdminStatsControllerTest extends IntegrationTestCase
 		$this->assertFalse($this->fetchTable('TagConnection')->exists(['id' => $context->tsumegos[0]['tag-connections'][0]->id]));
 
 		// tag reject is saved in admin activities
-		$adminActivities = ClassRegistry::init('AdminActivity')->find('all');
+		$adminActivities = $this->fetchTable('AdminActivity')->find()->orderBy('id')->toArray();
 		$this->assertCount(1, $adminActivities);
-		$this->assertSame($adminActivities[0]['AdminActivity']['type'], AdminActivityType::REJECT_TAG);
-		$this->assertSame('snapback', $adminActivities[0]['AdminActivity']['old_value']);
-		$this->assertSame(null, $adminActivities[0]['AdminActivity']['new_value']);
+		$this->assertSame($adminActivities[0]->type, AdminActivityType::REJECT_TAG);
+		$this->assertSame('snapback', $adminActivities[0]->old_value);
+		$this->assertSame(null, $adminActivities[0]->new_value);
 	}
 
 	public function testRestoreDeletedUser()
@@ -461,10 +461,10 @@ class AdminStatsControllerTest extends IntegrationTestCase
 		$this->assertNull(ClassRegistry::init('User')->findById($deletedUserID)['User']['deleted']);
 
 		// the restore is saved in admin activities
-		$adminActivities = ClassRegistry::init('AdminActivity')->find('all');
+		$adminActivities = $this->fetchTable('AdminActivity')->find()->orderBy('id')->toArray();
 		$this->assertCount(1, $adminActivities);
-		$this->assertSame($adminActivities[0]['AdminActivity']['type'], AdminActivityType::RESTORE_USER);
-		$this->assertSame(null, $adminActivities[0]['AdminActivity']['old_value']);
-		$this->assertSame('TwT', $adminActivities[0]['AdminActivity']['new_value']);
+		$this->assertSame($adminActivities[0]->type, AdminActivityType::RESTORE_USER);
+		$this->assertSame(null, $adminActivities[0]->old_value);
+		$this->assertSame('TwT', $adminActivities[0]->new_value);
 	}
 }

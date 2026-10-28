@@ -28,11 +28,11 @@ class RolesControllerTest extends IntegrationTestCase
 
 		$this->assertSame(User::ROLE_ADMIN, self::roleOf($playerID));
 		$this->assertSame('The role of DN_player is admin now', CookieFlash::get());
-		$activity = ClassRegistry::init('AdminActivity')->find('first')['AdminActivity'];
-		$this->assertSame(AdminActivityType::ROLE_CHANGE, (int) $activity['type']);
-		$this->assertSame($context->user['id'], (int) $activity['user_id']);
-		$this->assertSame(['user_id' => $playerID, 'display_name' => 'DN_player', 'role' => 'player'], json_decode($activity['old_value'], true));
-		$this->assertSame('admin', $activity['new_value']);
+		$activity = $this->fetchTable('AdminActivity')->find()->firstOrFail();
+		$this->assertSame(AdminActivityType::ROLE_CHANGE, $activity->type);
+		$this->assertSame($context->user['id'], $activity->user_id);
+		$this->assertSame(['user_id' => $playerID, 'display_name' => 'DN_player', 'role' => 'player'], json_decode($activity->old_value, true));
+		$this->assertSame('admin', $activity->new_value);
 	}
 
 	public function testOwnerMakesAdminAnOwnerAndTakesItBack(): void
@@ -78,7 +78,7 @@ class RolesControllerTest extends IntegrationTestCase
 
 		$this->assertSame(User::ROLE_OWNER, self::roleOf($context->user['id']));
 		$this->assertSame('DN_owner is the last owner, make someone else an owner first.', CookieFlash::get());
-		$this->assertSame(0, ClassRegistry::init('AdminActivity')->find('count'));
+		$this->assertSame(0, $this->fetchTable('AdminActivity')->find()->count());
 	}
 
 	public function testOwnerGivesUpTheRoleWhenThereIsAnotherOwner(): void
