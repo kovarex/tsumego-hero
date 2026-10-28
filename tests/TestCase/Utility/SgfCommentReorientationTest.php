@@ -25,7 +25,7 @@ class SgfCommentReorientationTest extends CakeTestCase
 	//Saves a new SGF version of the problem, accepted unless $sgf says otherwise, returns its id.
 	private function saveVersion(ContextPreparator $context, array $sgf): int
 	{
-		$sgfTable = $this->fetchTable('Sgf');
+		$sgfTable = TableRegistry::getTableLocator()->get('Sgf');
 		return $sgfTable->saveOrFail($sgfTable->newEntity($sgf + ['tsumego_id' => $context->tsumegos[0]['id'], 'sgf_status_id' => SgfTable::STATUS_ACCEPTED]))->id;
 	}
 

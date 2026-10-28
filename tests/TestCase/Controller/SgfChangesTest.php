@@ -247,8 +247,8 @@ class SgfChangesTest extends IntegrationTestCase
 		$this->post('/users/acceptSGFProposal/' . $proposal);
 		$accepted = $this->fetchTable('Sgf')->get($proposal);
 		$this->assertEquals(SgfTable::STATUS_ACCEPTED, $accepted->sgf_status_id);
-		$this->assertEquals($context->user['id'], $accepted['accepted_by_user_id']);
-		$this->assertEqualsWithDelta(time(), strtotime($accepted['accepted']), 60);
+		$this->assertEquals($context->user['id'], $accepted->accepted_by_user_id);
+		$this->assertEqualsWithDelta(time(), $accepted->accepted->getTimestamp(), 60);
 
 		$this->get('/admin/sgf-changes?show=all');
 		$this->assertMatchesRegularExpression('~id="review-' . $proposal . '".*id="review-' . $change . '".*id="review-' . $first . '"~s', $this->view);
