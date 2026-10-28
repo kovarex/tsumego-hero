@@ -5,7 +5,7 @@
  * their own progress; an invited player answers the invitation; anyone else can ask to join.
  *
  * @var View $this
- * @var array $classroom
+ * @var \App\Model\Entity\Classroom $classroom
  * @var array|null $teacher
  * @var bool $isTeacher
  * @var array|null $membership The membership of the viewer, in whatever state
@@ -16,14 +16,14 @@
 
 use App\Utility\Auth;
 
-$classroomId = (int) $classroom['id'];
+$classroomId = $classroom->id;
 $membershipStatus = $membership === null ? null : (int) $membership['classroom_member_status_id'];
 $isPupil = $membershipStatus === ClassroomMemberStatus::ACCEPTED;
 ?>
 <div class="classes">
 	<div class="classes__header">
 		<p class="classes__crumb"><a href="/classes">Classes</a></p>
-		<h1 class="classes__title"><?= h($classroom['name']) ?></h1>
+		<h1 class="classes__title"><?= h($classroom->name) ?></h1>
 		<p class="hint">teacher <?= User::renderLink($teacher) ?></p>
 	</div>
 

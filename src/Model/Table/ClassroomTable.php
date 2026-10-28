@@ -1,14 +1,17 @@
 <?php
 
+namespace App\Model\Table;
+
+use App\Model\Entity\Classroom;
 use App\Utility\Util;
+use ClassRegistry;
+use ClassroomMemberStatus;
 
 //A class of a teacher: the players who agreed to be in it, and the problems the teacher assigns
 //to them (ClassroomMember, ClassroomAssignment). Named classroom because class is a word of PHP.
-class Classroom extends AppModel
+class ClassroomTable extends AppTable
 {
 	public const MAXIMUM_NAME_LENGTH = 100;
-
-	public $useTable = 'classroom';
 
 	//The columns of a user that User::renderLink() and User::avatarOrNull() read, for the queries
 	//that list players of a class, on the alias `u`.
@@ -71,13 +74,10 @@ class Classroom extends AppModel
 	}
 
 	//The teacher of a class, as a user row.
-	/**
-	 * @param array<string, mixed> $classroom
-	 * @return array<string, mixed>|null
-	 */
-	public static function teacher(array $classroom): ?array
+	/** @return array<string, mixed>|null */
+	public static function teacher(Classroom $classroom): ?array
 	{
-		$teacher = ClassRegistry::init('User')->findById($classroom['teacher_user_id']);
+		$teacher = ClassRegistry::init('User')->findById($classroom->teacher_user_id);
 		return $teacher ? $teacher['User'] : null;
 	}
 }

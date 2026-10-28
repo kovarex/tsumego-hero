@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\ClassroomTable;
 use App\Utility\TimeMode;
 use App\Utility\TimeModeUtil;
 use App\Utility\TsumegoButton;
@@ -184,7 +185,7 @@ class Challenge extends AppModel
 					WHERE p.challenge_id = c.id AND p.declined IS NULL) AS participant_count,
 				(SELECT COUNT(*) FROM time_mode_session s JOIN user su ON su.id = s.user_id AND su.deleted IS NULL
 					WHERE s.challenge_id = c.id AND s.time_mode_session_status_id != ' . TimeModeUtil::$SESSION_STATUS_IN_PROGRESS . ') AS finished_count,
-				' . Classroom::USER_COLUMNS . '
+				' . ClassroomTable::USER_COLUMNS . '
 			FROM challenge c
 			JOIN time_mode_rank minimum_rank ON minimum_rank.id = c.minimum_time_mode_rank_id
 			JOIN time_mode_rank maximum_rank ON maximum_rank.id = c.maximum_time_mode_rank_id
@@ -258,7 +259,7 @@ class Challenge extends AppModel
 	 */
 	public static function standings(int $challengeId): array
 	{
-		$rows = Util::query('SELECT p.created AS joined, p.declined, ' . Classroom::USER_COLUMNS . ',
+		$rows = Util::query('SELECT p.created AS joined, p.declined, ' . ClassroomTable::USER_COLUMNS . ',
 				s.id AS session_id, s.time_mode_session_status_id, s.points,
 				(SELECT COUNT(*) FROM time_mode_attempt a WHERE a.time_mode_session_id = s.id AND a.time_mode_attempt_status_id = ?) AS solved_count,
 				(SELECT COUNT(*) FROM time_mode_attempt a WHERE a.time_mode_session_id = s.id AND a.time_mode_attempt_status_id != ?) AS played_count,

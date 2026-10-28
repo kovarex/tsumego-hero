@@ -5,14 +5,14 @@
  * collections, names it, sets the due day and publishes it (app/classrooms/AssignmentEditor.tsx).
  *
  * @var View $this
- * @var array $classroom
+ * @var \App\Model\Entity\Classroom $classroom
  * @var array $assignment
  * @var array $problems What ClassroomAssignment::problems() returned, with the previews
  */
 
 $props = json_encode([
 	'assignmentId' => (int) $assignment['id'],
-	'classroomUrl' => '/classes/' . (int) $classroom['id'],
+	'classroomUrl' => '/classes/' . $classroom->id,
 	'title' => (string) ($assignment['title'] ?? ''),
 	'due' => $assignment['due'],
 	'isPublished' => ClassroomAssignment::isPublished($assignment),
@@ -23,7 +23,7 @@ $props = json_encode([
 ?>
 <div class="classes classes--wide">
 	<div class="classes__header">
-		<p class="classes__crumb"><a href="/classes">Classes</a> › <a href="/classes/<?= (int) $classroom['id'] ?>"><?= h($classroom['name']) ?></a></p>
+		<p class="classes__crumb"><a href="/classes">Classes</a> › <a href="/classes/<?= $classroom->id ?>"><?= h($classroom->name) ?></a></p>
 		<h1 class="classes__title"><?= ClassroomAssignment::isPublished($assignment) ? 'Assignment' : 'New assignment' ?></h1>
 	</div>
 	<div data-assignment-editor-root data-props="<?= h($props) ?>"></div>
