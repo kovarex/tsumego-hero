@@ -7,6 +7,7 @@ use App\Model\Entity\TimeModeAttempt;
 use App\Model\Entity\TimeModeRank;
 use App\Model\Entity\TimeModeSession;
 use App\Model\Table\ChallengeTable;
+use App\Model\Table\TimeModeSessionStatusTable;
 use Cake\ORM\Locator\LocatorAwareTrait;
 use Cake\ORM\TableRegistry;
 use DateTimeImmutable;
@@ -25,7 +26,7 @@ class TimeMode
 
 		$this->currentSession = $this->fetchTable('TimeModeSession')->find()->where([
 			'user_id' => Auth::getUserID(),
-			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS])->first();
+			'time_mode_session_status_id' => TimeModeSessionStatusTable::IN_PROGRESS])->first();
 
 		if (!$this->currentSession)
 			return;
@@ -92,14 +93,14 @@ class TimeMode
 		$sessionTable = $this->fetchTable('TimeModeSession');
 		$session = $sessionTable->saveOrFail($sessionTable->newEntity([
 			'user_id' => Auth::getUserID(),
-			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+			'time_mode_session_status_id' => TimeModeSessionStatusTable::IN_PROGRESS,
 			'challenge_id' => $challenge['id']]));
 		$this->createSessionAttempts($session->id, $tsumegoIDs);
 	}
 
 	public static function cancelTimeMode(): void
 	{
-		TableRegistry::getTableLocator()->get('TimeModeSession')->deleteAll(['user_id' => Auth::getUserID(), 'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]);
+		TableRegistry::getTableLocator()->get('TimeModeSession')->deleteAll(['user_id' => Auth::getUserID(), 'time_mode_session_status_id' => TimeModeSessionStatusTable::IN_PROGRESS]);
 	}
 
 	//Makes way for a new run. A run of the time mode left unfinished is thrown away. The run of a
@@ -110,11 +111,11 @@ class TimeMode
 		$sessionTable = $this->fetchTable('TimeModeSession');
 		$sessionTable->deleteAll([
 			'user_id' => Auth::getUserID(),
-			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+			'time_mode_session_status_id' => TimeModeSessionStatusTable::IN_PROGRESS,
 			'challenge_id IS' => null]);
 		$challengeSessions = $sessionTable->find()->where([
 			'user_id' => Auth::getUserID(),
-			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS])->toArray();
+			'time_mode_session_status_id' => TimeModeSessionStatusTable::IN_PROGRESS])->toArray();
 		foreach ($challengeSessions as $challengeSession)
 			self::giveUp($challengeSession);
 	}
@@ -149,7 +150,7 @@ class TimeMode
 		$sessionTable = $this->fetchTable('TimeModeSession');
 		return $sessionTable->saveOrFail($sessionTable->newEntity([
 			'user_id' => Auth::getUserID(),
-			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+			'time_mode_session_status_id' => TimeModeSessionStatusTable::IN_PROGRESS,
 			'time_mode_category_id' => $timeModeCategory->id,
 			'time_mode_rank_id' => $rankID]));
 	}
@@ -379,7 +380,7 @@ class TimeMode
 		if (!$this->fetchTable('TimeModeSession')->exists([
 			'id' => $sessionID,
 			'user_id' => Auth::getUserID(),
-			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]))
+			'time_mode_session_status_id' => TimeModeSessionStatusTable::IN_PROGRESS]))
 				return false;
 
 		return $this->fetchTable('TimeModeAttempt')->exists([
@@ -415,7 +416,7 @@ class TimeMode
 		}
 
 		$sessionSuccessful = Util::getRatio($correctCount, count($attempts)) >= TimeModeUtil::$RATIO_OF_SOLVED_TO_SUCCEED;
-		$session->time_mode_session_status_id = $sessionSuccessful ? TimeModeUtil::$SESSION_STATUS_SOLVED : TimeModeUtil::$SESSION_STATUS_FAILED;
+		$session->time_mode_session_status_id = $sessionSuccessful ? TimeModeSessionStatusTable::SOLVED : TimeModeSessionStatusTable::FAILED;
 		$session->points = (string) $overallPoints;
 		TableRegistry::getTableLocator()->get('TimeModeSession')->saveOrFail($session);
 		Auth::saveUserField('mode_id', Constants::$LEVEL_MODE);

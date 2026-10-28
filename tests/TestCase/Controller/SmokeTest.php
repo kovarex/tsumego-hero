@@ -9,6 +9,7 @@
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
+use App\Model\Table\TimeModeSessionStatusTable;
 use App\Utility\Auth;
 use App\Utility\TimeModeUtil;
 use App\Utility\Util;
@@ -36,10 +37,10 @@ class SmokeTest extends IntegrationTestCase
 			'time-mode-ranks' => ['15k', '14k'],
 			'time-mode-sessions' => [
 				// In-progress session for timeMode/play
-				['category' => 1, 'rank' => '15k', 'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+				['category' => 1, 'rank' => '15k', 'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 					'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]],
 				// Finished session for timeMode/result
-				['category' => 1, 'rank' => '14k', 'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
+				['category' => 1, 'rank' => '14k', 'status' => TimeModeSessionStatusTable::SOLVED,
 					'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED]]],
 			]]);
 		$browser = Browser::instance();

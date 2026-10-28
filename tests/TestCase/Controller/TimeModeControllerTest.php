@@ -1,5 +1,7 @@
 <?php
 
+use App\Model\Table\TimeModeCategoryTable;
+use App\Model\Table\TimeModeSessionStatusTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\PlayOutcome;
@@ -27,14 +29,14 @@ class TimeModeControllerTest extends IntegrationTestCase
 		$this->expectException(BadRequestException::class);
 		$this->expectExceptionMessage('Time mode rank not specified.');
 
-		$this->get('/timeMode/start?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED);
+		$this->get('/timeMode/start?categoryID=' . TimeModeCategoryTable::SLOW);
 	}
 
 	public function testStartTimeModeRequiresLogin()
 	{
 		$context = new ContextPreparator(['user' => null, 'time-mode-ranks' => ['5k']]);
 
-		$this->get('/timeMode/start?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED . '&rankID=' . $context->timeModeRanks[0]['id']);
+		$this->get('/timeMode/start?categoryID=' . TimeModeCategoryTable::SLOW . '&rankID=' . $context->timeModeRanks[0]['id']);
 
 		$this->assertResponseCode(401);
 	}
@@ -62,9 +64,9 @@ class TimeModeControllerTest extends IntegrationTestCase
 			'tsumego' => 1,
 			'time-mode-ranks' => ['5k'],
 			'time-mode-sessions' => [[
-				'category' => TimeModeUtil::$CATEGORY_BLITZ,
+				'category' => TimeModeCategoryTable::BLITZ,
 				'rank' => '5k',
-				'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+				'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 				'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED]]]]]);
 
 		// session in progress with just one attempt which is solved
@@ -78,9 +80,9 @@ class TimeModeControllerTest extends IntegrationTestCase
 			'tsumego' => 1,
 			'time-mode-ranks' => ['5k'],
 			'time-mode-sessions' => [[
-				'category' => TimeModeUtil::$CATEGORY_BLITZ,
+				'category' => TimeModeCategoryTable::BLITZ,
 				'rank' => '5k',
-				'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+				'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 				'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]]]]);
 
 		$this->post('/timeMode/play');
@@ -94,9 +96,9 @@ class TimeModeControllerTest extends IntegrationTestCase
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
 		$contextParameters['time-mode-ranks'] = ['5k'];
 		$contextParameters['time-mode-sessions'] [] = [
-			'category' => TimeModeUtil::$CATEGORY_BLITZ,
+			'category' => TimeModeCategoryTable::BLITZ,
 			'rank' => '5k',
-			'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+			'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 			'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]];
 		$context = new ContextPreparator($contextParameters);
 
@@ -135,9 +137,9 @@ class TimeModeControllerTest extends IntegrationTestCase
 	{
 		// the time the client reports is kept between a hundredth of a second and the time the problem is given
 		foreach ([
-			['category' => TimeModeUtil::$CATEGORY_BLITZ, 'seconds' => 5, 'recordedSeconds' => 5],
-			['category' => TimeModeUtil::$CATEGORY_BLITZ, 'seconds' => -3, 'recordedSeconds' => 0.01],
-			['category' => TimeModeUtil::$CATEGORY_SLOW_SPEED,
+			['category' => TimeModeCategoryTable::BLITZ, 'seconds' => 5, 'recordedSeconds' => 5],
+			['category' => TimeModeCategoryTable::BLITZ, 'seconds' => -3, 'recordedSeconds' => 0.01],
+			['category' => TimeModeCategoryTable::SLOW,
 				'seconds' => TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS * 5,
 				'recordedSeconds' => TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS]] as $reported)
 		{
@@ -147,7 +149,7 @@ class TimeModeControllerTest extends IntegrationTestCase
 				'time-mode-sessions' => [[
 					'category' => $reported['category'],
 					'rank' => '5k',
-					'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+					'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 					'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]]]]);
 
 			// the player opens the play page, which is what puts the account into time mode
@@ -177,9 +179,9 @@ class TimeModeControllerTest extends IntegrationTestCase
 			'achievement-conditions' => [['category' => AchievementCondition::CATEGORY_NO_ERROR_STREAK, 'value' => 7]],
 			'time-mode-ranks' => ['5k'],
 			'time-mode-sessions' => [[
-				'category' => TimeModeUtil::$CATEGORY_BLITZ,
+				'category' => TimeModeCategoryTable::BLITZ,
 				'rank' => '5k',
-				'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+				'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 				'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]]]]);
 
 		// the player opens the play page, which is what puts the account into time mode
@@ -204,9 +206,9 @@ class TimeModeControllerTest extends IntegrationTestCase
 			'tsumegos' => [2],
 			'time-mode-ranks' => ['5k'],
 			'time-mode-sessions' => [[
-				'category' => TimeModeUtil::$CATEGORY_BLITZ,
+				'category' => TimeModeCategoryTable::BLITZ,
 				'rank' => '5k',
-				'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+				'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 				'attempts' => [
 					// given up on in one tab, solved in another one at the same time
 					['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_STATUS_SKIPPED, 'started-seconds-ago' => 0],
@@ -237,9 +239,9 @@ class TimeModeControllerTest extends IntegrationTestCase
 			'tsumego' => 1,
 			'time-mode-ranks' => ['5k'],
 			'time-mode-sessions' => [[
-				'category' => TimeModeUtil::$CATEGORY_SLOW_SPEED,
+				'category' => TimeModeCategoryTable::SLOW,
 				'rank' => '5k',
-				'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+				'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 				'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED,
 					// the problem was presented and left behind, so its time ran out
 					'started-seconds-ago' => TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS + 1]]]]]);
@@ -262,9 +264,9 @@ class TimeModeControllerTest extends IntegrationTestCase
 			'tsumego' => 1,
 			'time-mode-ranks' => ['5k'],
 			'time-mode-sessions' => [[
-				'category' => TimeModeUtil::$CATEGORY_SLOW_SPEED,
+				'category' => TimeModeCategoryTable::SLOW,
 				'rank' => '5k',
-				'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+				'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 				'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]]]]);
 
 		$this->post('/timeMode/play');
@@ -292,9 +294,9 @@ class TimeModeControllerTest extends IntegrationTestCase
 			'tsumegos' => [2],
 			'time-mode-ranks' => ['5k'],
 			'time-mode-sessions' => [[
-				'category' => TimeModeUtil::$CATEGORY_BLITZ,
+				'category' => TimeModeCategoryTable::BLITZ,
 				'rank' => '5k',
-				'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+				'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 				'attempts' => [
 					['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED],
 					['order' => 2, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:1']]]]]);
@@ -313,9 +315,9 @@ class TimeModeControllerTest extends IntegrationTestCase
 			'tsumegos' => [2],
 			'time-mode-ranks' => ['5k'],
 			'time-mode-sessions' => [[
-				'category' => TimeModeUtil::$CATEGORY_BLITZ,
+				'category' => TimeModeCategoryTable::BLITZ,
 				'rank' => '5k',
-				'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+				'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 				'attempts' => [
 					['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED],
 					['order' => 2, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:1']]]]]);
@@ -339,7 +341,7 @@ class TimeModeControllerTest extends IntegrationTestCase
 				['name' => 'time mode set two', 'num' => 2]]],
 			'time-mode-ranks' => ['5k']]);
 
-		$this->get('/timeMode/start?categoryID=' . TimeModeUtil::$CATEGORY_BLITZ
+		$this->get('/timeMode/start?categoryID=' . TimeModeCategoryTable::BLITZ
 			. '&rankID=' . $context->timeModeRanks[0]['id']);
 
 		$sessionID = $this->fetchTable('TimeModeSession')->find()->where(['user_id' => $context->user['id']])->firstOrFail()->id;
@@ -357,9 +359,9 @@ class TimeModeControllerTest extends IntegrationTestCase
 			'tsumegos' => [2],
 			'time-mode-ranks' => ['5k'],
 			'time-mode-sessions' => [[
-				'category' => TimeModeUtil::$CATEGORY_BLITZ,
+				'category' => TimeModeCategoryTable::BLITZ,
 				'rank' => '5k',
-				'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+				'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 				'attempts' => [
 					['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED],
 					['order' => 2, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:1']]]]]);
@@ -369,7 +371,7 @@ class TimeModeControllerTest extends IntegrationTestCase
 
 		$this->assertStringContainsString('Finishing your session', $html);
 		$this->assertSame(
-			TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+			TimeModeSessionStatusTable::IN_PROGRESS,
 			$this->fetchTable('TimeModeSession')->get($context->timeModeSessions[0]->id)->time_mode_session_status_id);
 	}
 
@@ -394,9 +396,9 @@ class TimeModeControllerTest extends IntegrationTestCase
 				'tsumegos' => $tsumegos,
 				'time-mode-ranks' => ['5k'],
 				'time-mode-sessions' => [[
-					'category' => TimeModeUtil::$CATEGORY_BLITZ,
+					'category' => TimeModeCategoryTable::BLITZ,
 					'rank' => '5k',
-					'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+					'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 					'attempts' => $attempts]]]);
 
 			$this->get('/timeMode/result/' . $context->timeModeSessions[0]->id);
@@ -414,9 +416,9 @@ class TimeModeControllerTest extends IntegrationTestCase
 			'tsumegos' => [2, 3],
 			'time-mode-ranks' => ['5k'],
 			'time-mode-sessions' => [[
-				'category' => TimeModeUtil::$CATEGORY_BLITZ,
+				'category' => TimeModeCategoryTable::BLITZ,
 				'rank' => '5k',
-				'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+				'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 				'attempts' => [
 					// the first problem was solved and its result is still on its way, the second
 					// one is the one being shown
@@ -455,9 +457,9 @@ class TimeModeControllerTest extends IntegrationTestCase
 				'tsumegos' => [2],
 				'time-mode-ranks' => ['5k'],
 				'time-mode-sessions' => [[
-					'category' => TimeModeUtil::$CATEGORY_BLITZ,
+					'category' => TimeModeCategoryTable::BLITZ,
 					'rank' => '5k',
-					'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+					'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 					'attempts' => [
 						['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED],
 						// the second problem is the one being played, the first one is recorded already
@@ -487,9 +489,9 @@ class TimeModeControllerTest extends IntegrationTestCase
 			'tsumegos' => [2],
 			'time-mode-ranks' => ['5k'],
 			'time-mode-sessions' => [[
-				'category' => TimeModeUtil::$CATEGORY_BLITZ,
+				'category' => TimeModeCategoryTable::BLITZ,
 				'rank' => '5k',
-				'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+				'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 				'attempts' => [
 					// the solved problem was opened long enough ago that its time would be up
 					['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED, 'started-seconds-ago' => 3600],
@@ -516,9 +518,9 @@ class TimeModeControllerTest extends IntegrationTestCase
 			'tsumegos' => [2, 3],
 			'time-mode-ranks' => ['5k'],
 			'time-mode-sessions' => [[
-				'category' => TimeModeUtil::$CATEGORY_BLITZ,
+				'category' => TimeModeCategoryTable::BLITZ,
 				'rank' => '5k',
-				'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+				'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 				'attempts' => [
 					// the first problem is being played, its result has not been recorded yet
 					['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'started-seconds-ago' => 0],
@@ -540,9 +542,9 @@ class TimeModeControllerTest extends IntegrationTestCase
 			'tsumegos' => [2, 3],
 			'time-mode-ranks' => ['5k'],
 			'time-mode-sessions' => [[
-				'category' => TimeModeUtil::$CATEGORY_BLITZ,
+				'category' => TimeModeCategoryTable::BLITZ,
 				'rank' => '5k',
-				'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+				'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 				'attempts' => [
 					['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED],
 					['order' => 2, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:1'],
@@ -562,9 +564,9 @@ class TimeModeControllerTest extends IntegrationTestCase
 			'tsumego' => 1,
 			'time-mode-ranks' => ['5k'],
 			'time-mode-sessions' => [[
-				'category' => TimeModeUtil::$CATEGORY_BLITZ,
+				'category' => TimeModeCategoryTable::BLITZ,
 				'rank' => '5k',
-				'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+				'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 				'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED,
 					// the only problem was played, its result has not reached the database yet
 					'started-seconds-ago' => 0]]]]]);
@@ -587,14 +589,14 @@ class TimeModeControllerTest extends IntegrationTestCase
 			'tsumegos' => [2, 3],
 			'time-mode-ranks' => ['5k'],
 			'time-mode-sessions' => [
-				['category' => TimeModeUtil::$CATEGORY_BLITZ, 'rank' => '5k', 'status' => TimeModeUtil::$SESSION_STATUS_SOLVED, 'attempts' => [$solved]],
-				['category' => TimeModeUtil::$CATEGORY_BLITZ, 'rank' => '5k', 'status' => TimeModeUtil::$SESSION_STATUS_FAILED, 'attempts' => $failedRun],
-				['category' => TimeModeUtil::$CATEGORY_BLITZ, 'rank' => '5k', 'status' => TimeModeUtil::$SESSION_STATUS_SOLVED, 'attempts' => [$solved]],
+				['category' => TimeModeCategoryTable::BLITZ, 'rank' => '5k', 'status' => TimeModeSessionStatusTable::SOLVED, 'attempts' => [$solved]],
+				['category' => TimeModeCategoryTable::BLITZ, 'rank' => '5k', 'status' => TimeModeSessionStatusTable::FAILED, 'attempts' => $failedRun],
+				['category' => TimeModeCategoryTable::BLITZ, 'rank' => '5k', 'status' => TimeModeSessionStatusTable::SOLVED, 'attempts' => [$solved]],
 				// still being played, so it is not a finished run yet
-				['category' => TimeModeUtil::$CATEGORY_BLITZ, 'rank' => '5k', 'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+				['category' => TimeModeCategoryTable::BLITZ, 'rank' => '5k', 'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 					'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]],
 				// the only run of its rank and category, so there is no history to show for it
-				['category' => TimeModeUtil::$CATEGORY_SLOW_SPEED, 'rank' => '5k', 'status' => TimeModeUtil::$SESSION_STATUS_SOLVED, 'attempts' => [$solved]]]]);
+				['category' => TimeModeCategoryTable::SLOW, 'rank' => '5k', 'status' => TimeModeSessionStatusTable::SOLVED, 'attempts' => [$solved]]]]);
 
 		$this->get('/timeMode/result');
 		$html = $this->view;
@@ -623,9 +625,9 @@ class TimeModeControllerTest extends IntegrationTestCase
 				'tsumego' => 1,
 				'time-mode-ranks' => ['5k', '1d'],
 				'time-mode-sessions' => [[
-					'category' => TimeModeUtil::$CATEGORY_BLITZ,
+					'category' => TimeModeCategoryTable::BLITZ,
 					'rank' => '5k',
-					'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
+					'status' => TimeModeSessionStatusTable::SOLVED,
 					'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED]]]]]);
 
 			$this->get('/timeMode/result/' . $context->timeModeSessions[0]->id . $testCase['query']);
@@ -643,9 +645,9 @@ class TimeModeControllerTest extends IntegrationTestCase
 				['name' => 'time mode set two', 'num' => 2, 'order' => 1]]],
 			'time-mode-ranks' => ['5k'],
 			'time-mode-sessions' => [[
-				'category' => TimeModeUtil::$CATEGORY_BLITZ,
+				'category' => TimeModeCategoryTable::BLITZ,
 				'rank' => '5k',
-				'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
+				'status' => TimeModeSessionStatusTable::SOLVED,
 				'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED]]]]]);
 
 		$this->get('/timeMode/result/' . $context->timeModeSessions[0]->id);
@@ -665,9 +667,9 @@ class TimeModeControllerTest extends IntegrationTestCase
 			'tsumegos' => [2],
 			'time-mode-ranks' => ['5k'],
 			'time-mode-sessions' => [
-				['category' => TimeModeUtil::$CATEGORY_BLITZ, 'rank' => '5k', 'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
+				['category' => TimeModeCategoryTable::BLITZ, 'rank' => '5k', 'status' => TimeModeSessionStatusTable::SOLVED,
 					'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED]]],
-				['category' => TimeModeUtil::$CATEGORY_BLITZ, 'rank' => '5k', 'status' => TimeModeUtil::$SESSION_STATUS_FAILED,
+				['category' => TimeModeCategoryTable::BLITZ, 'rank' => '5k', 'status' => TimeModeSessionStatusTable::FAILED,
 					'attempts' => [
 						['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED],
 						['order' => 2, 'status' => TimeModeUtil::$ATTEMPT_RESULT_FAILED, 'tsumego_id' => 'other:1']]]]]);
@@ -694,9 +696,9 @@ class TimeModeControllerTest extends IntegrationTestCase
 			'tsumegos' => [2],
 			'time-mode-ranks' => ['5k'],
 			'time-mode-sessions' => [
-				['category' => TimeModeUtil::$CATEGORY_BLITZ, 'rank' => '5k', 'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
+				['category' => TimeModeCategoryTable::BLITZ, 'rank' => '5k', 'status' => TimeModeSessionStatusTable::SOLVED,
 					'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED]]],
-				['category' => TimeModeUtil::$CATEGORY_BLITZ, 'rank' => '5k', 'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+				['category' => TimeModeCategoryTable::BLITZ, 'rank' => '5k', 'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 					'attempts' => [
 						['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED],
 						['order' => 2, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:1']]]]]);

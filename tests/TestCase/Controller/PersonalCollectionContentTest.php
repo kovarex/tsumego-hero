@@ -1,6 +1,6 @@
 <?php
 
-use App\Utility\TimeModeUtil;
+use App\Model\Table\TimeModeCategoryTable;
 
 //A collection a player assembled is not site content: the site's collections, pools and
 //counters never pick up its problems, whether it is shared or not.
@@ -74,7 +74,7 @@ class PersonalCollectionContentTest extends IntegrationTestCase
 		$playerTsumegoId = $this->_firstProblemOf($playerSetId);
 		$this->login('alice');
 
-		$this->get('/timeMode/start?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
+		$this->get('/timeMode/start?categoryID=' . TimeModeCategoryTable::SLOW
 			. '&rankID=' . $context->timeModeRanks[0]['id']);
 
 		$sessionID = $this->fetchTable('TimeModeSession')->find()->where(['user_id' => $context->user['id']])->firstOrFail()->id;
