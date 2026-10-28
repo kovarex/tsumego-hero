@@ -2,7 +2,8 @@
 
 namespace App\Utility;
 
-use ClassRegistry;
+use App\Model\Entity\Tag;
+use Cake\ORM\TableRegistry;
 use Set;
 use SetConnection;
 
@@ -12,7 +13,7 @@ class TsumegoButtonsQueryBuilder
 	public string $description = '';
 	private TsumegoFilters $tsumegoFilters;
 	private ?RatingBounds $ratingBounds = null;
-	private ?array $tag = null;
+	private ?Tag $tag = null;
 
 	public function __construct(TsumegoFilters $tsumegoFilters, string|int|null $id)
 	{
@@ -116,7 +117,7 @@ class TsumegoButtonsQueryBuilder
 		elseif ($this->tsumegoFilters->query == 'tags')
 		{
 			if (!empty($lastSet))
-				$this->tag = ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => $lastSet]]) ?: null;
+				$this->tag = TableRegistry::getTableLocator()->get('Tag')->find()->where(['name' => $lastSet])->first();
 			if (!$this->tag)
 				$this->tsumegoFilters->query = 'topics';
 		}
@@ -135,7 +136,7 @@ class TsumegoButtonsQueryBuilder
 		if ($this->tsumegoFilters->query != 'tags')
 			return;
 		$this->query->query .= ' LEFT JOIN tag_connection ON tag_connection.tsumego_id=tsumego.id';
-		$this->query->conditions[] = 'tag_connection.tag_id=' . $this->tag['Tag']['id'];
+		$this->query->conditions[] = 'tag_connection.tag_id=' . $this->tag->id;
 	}
 
 	private function querySet(string|int|null $id): void

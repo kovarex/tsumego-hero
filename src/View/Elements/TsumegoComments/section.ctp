@@ -1,6 +1,7 @@
 <?php
 
 use App\Utility\Auth;
+use Cake\ORM\TableRegistry;
 
 /**
  * React Comments Section - Mount point for the React comments component.
@@ -22,15 +23,9 @@ $counts = $TsumegoIssue->getCommentSectionCounts($tsumegoId);
 
 // Slim list of position-anchored comment positions so the review tree can show
 // badges before the user opens the comments tab (avoids fetching all comments).
-$TsumegoComment = ClassRegistry::init('TsumegoComment');
-$anchoredPositions = $TsumegoComment->find('list', [
-	'fields' => ['id', 'position'],
-	'conditions' => [
-		'tsumego_id' => $tsumegoId,
-		'position !=' => null,
-		'deleted' => null,
-	],
-]);
+$anchoredPositions = TableRegistry::getTableLocator()->get('TsumegoComment')->find('list', keyField: 'id', valueField: 'position')
+	->where(['tsumego_id' => $tsumegoId, 'position IS NOT' => null, 'deleted IS' => null])
+	->toArray();
 
 $props = json_encode([
 	'userId' => $userId,

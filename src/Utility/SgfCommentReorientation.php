@@ -2,6 +2,8 @@
 
 namespace App\Utility;
 
+use App\Model\Entity\TsumegoComment;
+use Cake\ORM\TableRegistry;
 use ClassRegistry;
 use Sgf;
 
@@ -106,15 +108,17 @@ class SgfCommentReorientation
 
 	private static function transformComments(int $tsumegoID, BoardTransformation $transformation, int $size): void
 	{
-		$TsumegoComment = ClassRegistry::init('TsumegoComment');
-		foreach ($TsumegoComment->find('all', ['conditions' => ['tsumego_id' => $tsumegoID]]) as $comment)
+		$tsumegoCommentTable = TableRegistry::getTableLocator()->get('TsumegoComment');
+		/** @var TsumegoComment $comment */
+		foreach ($tsumegoCommentTable->find()->where(['tsumego_id' => $tsumegoID])->orderBy('id') as $comment)
 		{
-			$comment = $comment['TsumegoComment'];
-			$message = CommentCoordinates::transformTextBy($comment['message'], $transformation, $size);
-			$position = CommentCoordinates::transformPosition($comment['position'], $transformation, $size);
-			if ($message === $comment['message'] && $position === $comment['position'])
+			$message = CommentCoordinates::transformTextBy($comment->message, $transformation, $size);
+			$position = CommentCoordinates::transformPosition($comment->position, $transformation, $size);
+			if ($message === $comment->message && $position === $comment->position)
 				continue;
-			$TsumegoComment->save(['id' => $comment['id'], 'message' => $message, 'position' => $position]);
+			$comment->message = $message;
+			$comment->position = $position;
+			$tsumegoCommentTable->saveOrFail($comment);
 		}
 	}
 }

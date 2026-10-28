@@ -98,14 +98,12 @@ class TagConnectionControllerTest extends IntegrationTestCase
 		]);
 
 		$tagConnectionTable = $this->fetchTable('TagConnection');
-		$tag = ClassRegistry::init('Tag');
+		$tagTable = $this->fetchTable('Tag');
 		$today = gmdate('Y-m-d H:i:s');
 
 		for ($i = 0; $i < Constants::$DAILY_TAG_LIMIT; $i++)
 		{
-			$tag->create();
-			$tag->save(['Tag' => ['name' => "limit-tag-$i", 'description' => '']]);
-			$tagId = $tag->getLastInsertId();
+			$tagId = $tagTable->saveOrFail($tagTable->newEntity(['name' => "limit-tag-$i", 'description' => '']))->id;
 
 			$tagConnectionTable->saveOrFail($tagConnectionTable->newEntity([
 				'tag_id' => $tagId,
@@ -117,8 +115,7 @@ class TagConnectionControllerTest extends IntegrationTestCase
 		}
 
 		// Create one more tag to try to add
-		$tag->create();
-		$tag->save(['Tag' => ['name' => 'one-too-many', 'description' => '']]);
+		$tagTable->saveOrFail($tagTable->newEntity(['name' => 'one-too-many', 'description' => '']));
 
 		$this->post('/tagConnection/add/' . $context->tsumegos[0]['id'] . '/one-too-many');
 

@@ -164,7 +164,7 @@ class AdminGuardTest extends IntegrationTestCase
 			'tags' => [['name' => 'atari']],
 		]);
 
-		$this->post('/tags/delete/' . $context->tags[0]['id']);
+		$this->post('/tags/delete/' . $context->tags[0]->id);
 
 		$this->assertResponseCode(403);
 	}
@@ -283,7 +283,7 @@ class AdminGuardTest extends IntegrationTestCase
 			'tags' => [['name' => 'atari']],
 		]);
 
-		$this->get('/tags/edit/' . $context->tags[0]['id']);
+		$this->get('/tags/edit/' . $context->tags[0]->id);
 
 		$this->assertResponseCode(403);
 	}
@@ -295,7 +295,7 @@ class AdminGuardTest extends IntegrationTestCase
 			'tags' => [['name' => 'atari']],
 		]);
 
-		$this->post('/tags/editAction/' . $context->tags[0]['id'], ['tag_description' => 'test']);
+		$this->post('/tags/editAction/' . $context->tags[0]->id, ['tag_description' => 'test']);
 
 		$this->assertResponseCode(403);
 	}
@@ -344,9 +344,9 @@ class AdminGuardTest extends IntegrationTestCase
 
 		$this->post('/tags/addAction', ['tag_name' => 'contribution tag', 'tag_description' => 'desc']);
 
-		$tag = ClassRegistry::init('Tag')->findByName('contribution tag');
-		$this->assertNotEmpty($tag);
-		$this->assertSame(0, (int) $tag['Tag']['approved']);
+		$tag = $this->fetchTable('Tag')->find()->where(['name' => 'contribution tag'])->first();
+		$this->assertNotNull($tag);
+		$this->assertFalse($tag->approved);
 	}
 
 	// ── SGF proposals require the contribution capability ──

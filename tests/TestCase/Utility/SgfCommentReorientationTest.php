@@ -1,7 +1,9 @@
 <?php
 
+use App\Model\Entity\TsumegoComment;
 use App\Utility\BoardTransformation;
 use App\Utility\SgfCommentReorientation;
+use Cake\ORM\TableRegistry;
 
 class SgfCommentReorientationTest extends CakeTestCase
 {
@@ -28,9 +30,10 @@ class SgfCommentReorientationTest extends CakeTestCase
 		return (int) $Sgf->id;
 	}
 
-	private function comment(ContextPreparator $context): array
+	private function comment(ContextPreparator $context): TsumegoComment
 	{
-		return ClassRegistry::init('TsumegoComment')->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]])['TsumegoComment'];
+		/** @var TsumegoComment */
+		return TableRegistry::getTableLocator()->get('TsumegoComment')->find()->where(['tsumego_id' => $context->tsumegos[0]['id']])->orderBy('id')->firstOrFail();
 	}
 
 	public function testCommentsFollowTheTransformationTheBoardEditorRecorded()
@@ -43,8 +46,8 @@ class SgfCommentReorientationTest extends CakeTestCase
 		SgfCommentReorientation::afterAccepted($sgfID);
 
 		$comment = $this->comment($context);
-		$this->assertSame('white T19 then b T18', $comment['message']);
-		$this->assertSame('19/1/-1/-1/19/2/1/1/sgf|19/1', $comment['position']);
+		$this->assertSame('white T19 then b T18', $comment->message);
+		$this->assertSame('19/1/-1/-1/19/2/1/1/sgf|19/1', $comment->position);
 	}
 
 	//A proposal edited from an older version and accepted after a newer one: the comments
@@ -58,7 +61,7 @@ class SgfCommentReorientationTest extends CakeTestCase
 			'source_sgf_id' => $first,
 			'transformation_from_source' => new BoardTransformation(flipX: true)->toJson()]);
 		SgfCommentReorientation::afterAccepted($mirrored);
-		$this->assertSame('black T19 then w T18', $this->comment($context)['message']);
+		$this->assertSame('black T19 then w T18', $this->comment($context)->message);
 
 		$swapped = $this->saveVersion($context, [
 			'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AW[cc][dc]AB[bc];W[aa];B[ab];W[ba]C[+])',
@@ -67,8 +70,8 @@ class SgfCommentReorientationTest extends CakeTestCase
 		SgfCommentReorientation::afterAccepted($swapped);
 
 		$comment = $this->comment($context);
-		$this->assertSame('white A19 then b A18', $comment['message']);
-		$this->assertSame('1/1/-1/-1/1/2/1/1/sgf|1/1', $comment['position']);
+		$this->assertSame('white A19 then b A18', $comment->message);
+		$this->assertSame('1/1/-1/-1/1/2/1/1/sgf|1/1', $comment->position);
 	}
 
 	public function testCommentsFollowAnUploadedSgfWhenOnlyOneTransformationMatchesItsStones()
@@ -77,8 +80,8 @@ class SgfCommentReorientationTest extends CakeTestCase
 		SgfCommentReorientation::afterAccepted($this->saveVersion($context, ['sgf' => self::MIRRORED_SGF]));
 
 		$comment = $this->comment($context);
-		$this->assertSame('black T19 then w T18', $comment['message']);
-		$this->assertSame('19/1/-1/-1/19/2/1/1/sgf|19/1', $comment['position']);
+		$this->assertSame('black T19 then w T18', $comment->message);
+		$this->assertSame('19/1/-1/-1/19/2/1/1/sgf|19/1', $comment->position);
 	}
 
 	public function testCommentsStayWhenTheStonesMatchSeveralWays()
@@ -88,8 +91,8 @@ class SgfCommentReorientationTest extends CakeTestCase
 		SgfCommentReorientation::afterAccepted($this->saveVersion($context, ['sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[qc];B[sa];W[sb];B[ra]C[+])']));
 
 		$comment = $this->comment($context);
-		$this->assertSame('black A19 then w A18', $comment['message']);
-		$this->assertSame('1/1/-1/-1/1/2/1/1/sgf|1/1', $comment['position']);
+		$this->assertSame('black A19 then w A18', $comment->message);
+		$this->assertSame('1/1/-1/-1/1/2/1/1/sgf|1/1', $comment->position);
 	}
 
 	public function testCommentsStayWhenTheUploadedStonesChanged()
@@ -98,7 +101,7 @@ class SgfCommentReorientationTest extends CakeTestCase
 		$context = $this->prepare();
 		SgfCommentReorientation::afterAccepted($this->saveVersion($context, ['sgf' => str_replace('AB[qc][pc]', 'AB[qc][pc][oc]', self::MIRRORED_SGF)]));
 
-		$this->assertSame('black A19 then w A18', $this->comment($context)['message']);
+		$this->assertSame('black A19 then w A18', $this->comment($context)->message);
 	}
 
 	public function testCommentsStayWhileTheVersionIsAProposal()
@@ -110,7 +113,7 @@ class SgfCommentReorientationTest extends CakeTestCase
 			'source_sgf_id' => $context->tsumegos[0]['sgfs'][0]['id'],
 			'transformation_from_source' => new BoardTransformation(flipX: true)->toJson()]));
 
-		$this->assertSame('black A19 then w A18', $this->comment($context)['message']);
+		$this->assertSame('black A19 then w A18', $this->comment($context)->message);
 	}
 
 	public function testCommentsStayWhenANewerVersionIsShown()
@@ -120,6 +123,6 @@ class SgfCommentReorientationTest extends CakeTestCase
 		$this->saveVersion($context, ['sgf' => self::MIRRORED_SGF]);
 		SgfCommentReorientation::afterAccepted($mirrored);
 
-		$this->assertSame('black A19 then w A18', $this->comment($context)['message']);
+		$this->assertSame('black A19 then w A18', $this->comment($context)->message);
 	}
 }

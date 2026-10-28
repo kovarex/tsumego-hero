@@ -6,7 +6,7 @@
  * deleted) without leaving the page.
  *
  * @var View $this
- * @var array $tags What Tag::listWithProblemCounts() returned
+ * @var array $tags What TagTable::listWithProblemCounts() returned
  * @var string $sort 'name' or 'problems'
  * @var bool $canDeleteTag
  */

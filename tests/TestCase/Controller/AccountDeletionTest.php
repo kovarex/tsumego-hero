@@ -187,7 +187,7 @@ class AccountDeletionTest extends IntegrationTestCase
 			'user' => ['admin' => true],
 			'other-users' => [['name' => 'ghost', 'deleted' => true]],
 			'tsumego' => ['set_order' => 1, 'comments' => [['message' => 'comment by a deleted account']]]]);
-		ClassRegistry::init('TsumegoComment')->updateAll(['TsumegoComment.user_id' => $context->otherUsers[0]['id']], []);
+		$this->fetchTable('TsumegoComment')->updateAll(['user_id' => $context->otherUsers[0]['id']], []);
 
 		$this->get('/comments');
 		$result = $this->view;

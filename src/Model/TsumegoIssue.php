@@ -9,10 +9,12 @@
 //  - user_id (INT, FK -> user) - author of the issue
 //  - created (DATETIME)
 //  - deleted (DATETIME NULL) - when the issue was deleted, NULL when it is not
+//The comments of the issue (TsumegoCommentTable) go with it through the foreign key.
 //Statuses (tsumego_issue_status table):
 //  - 1 = opened
 //  - 2 = closed
 use App\Utility\Util;
+use Cake\ORM\TableRegistry;
 
 class TsumegoIssue extends AppModel
 {
@@ -22,13 +24,6 @@ class TsumegoIssue extends AppModel
 	public $belongsTo = [
 		'Tsumego',
 		'User',
-	];
-
-	public $hasMany = [
-		'TsumegoComment' => [
-			'foreignKey' => 'tsumego_issue_id',
-			'dependent' => true,
-		],
 	];
 
 	public static int $OPENED_STATUS = 1;
@@ -54,15 +49,9 @@ class TsumegoIssue extends AppModel
 	//Returns true if issue was deleted, false if it still has comments or doesn't exist
 	public function deleteIfEmpty(int $issueId): bool
 	{
-		/** @var TsumegoComment $commentModel */
-		$commentModel = ClassRegistry::init('TsumegoComment');
-
-		$count = $commentModel->find('count', [
-			'conditions' => [
-				'tsumego_issue_id' => $issueId,
-				'deleted' => null,
-			],
-		]);
+		$count = TableRegistry::getTableLocator()->get('TsumegoComment')->find()
+			->where(['tsumego_issue_id' => $issueId, 'deleted IS' => null])
+			->count();
 
 		if ($count === 0)
 			return $this->delete($issueId);
@@ -250,16 +239,10 @@ class TsumegoIssue extends AppModel
 	/** @return array{total: int, comments: int, issues: int, openIssues: int} */
 	public function getCommentSectionCounts(int $tsumegoId): array
 	{
-		$TsumegoComment = ClassRegistry::init('TsumegoComment');
-
 		// Count standalone comments (not in any issue)
-		$commentCount = $TsumegoComment->find('count', [
-			'conditions' => [
-				'TsumegoComment.tsumego_id' => $tsumegoId,
-				'TsumegoComment.tsumego_issue_id IS NULL',
-				'TsumegoComment.deleted' => null,
-			],
-		]);
+		$commentCount = TableRegistry::getTableLocator()->get('TsumegoComment')->find()
+			->where(['tsumego_id' => $tsumegoId, 'tsumego_issue_id IS' => null, 'deleted IS' => null])
+			->count();
 
 		// Count issues for this tsumego
 		$issueCount = $this->find('count', [
