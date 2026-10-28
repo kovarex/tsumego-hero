@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Entity\DayRecord;
 use App\Model\Entity\Schedule;
 use App\Utility\Auth;
 use App\Utility\Constants;
@@ -25,13 +26,13 @@ class SitesController extends AppController
 			Util::setCookie('lastVisit', Constants::$DEFAULT_TSUMEGO_ID);
 
 		$this->loadModel('AchievementStatus');
-		$this->loadModel('DayRecord');
 		$this->loadModel('User');
 
 		$today = date('Y-m-d');
-		$dayRecord = $this->DayRecord->find('first', ['conditions' => ['date' => $today]]);
-		if (!$dayRecord)
-			$dayRecord = $this->DayRecord->find('first', ['conditions' => ['date' => date('Y-m-d', strtotime('yesterday'))]]);
+		$dayRecordTable = $this->fetchTable('DayRecord');
+		/** @var DayRecord|null $dayRecord */
+		$dayRecord = $dayRecordTable->find()->where(['date' => $today])->first()
+			?? $dayRecordTable->find()->where(['date' => date('Y-m-d', strtotime('yesterday'))])->first();
 
 		$currentQuote = 'q01';
 
@@ -46,8 +47,8 @@ class SitesController extends AppController
 
 		if ($dayRecord)
 		{
-			$currentQuote = $dayRecord['DayRecord']['quote'];
-			$userOfTheDay = $this->User->find('first', ['conditions' => ['id' => $dayRecord['DayRecord']['user_id']]]);
+			$currentQuote = $dayRecord->quote;
+			$userOfTheDay = $this->User->find('first', ['conditions' => ['id' => $dayRecord->user_id]]);
 			$this->set('userOfTheDay', $userOfTheDay ? $userOfTheDay['User'] : null);
 		}
 		else

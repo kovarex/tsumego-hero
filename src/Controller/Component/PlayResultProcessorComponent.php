@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\DayRecordTable;
 use App\Utility\AchievementChecker;
 use App\Utility\Auth;
 use App\Utility\Constants;
@@ -409,7 +410,7 @@ class PlayResultProcessorComponent extends Component
 		$solvedTsumegoRank = Rating::getReadableRankFromRating($previousTsumego['Tsumego']['rating']);
 		if (isset(AchievementCondition::DAN_SOLVE_CATEGORIES[$solvedTsumegoRank]))
 			AchievementCondition::increment(Auth::getUserID(), AchievementCondition::DAN_SOLVE_CATEGORIES[$solvedTsumegoRank]);
-		DayRecord::countGemSolve($solvedTsumegoRank);
+		DayRecordTable::countGemSolve($solvedTsumegoRank);
 		//The sprint run counts the problems solved in a row while a sprint is active (user.sprint_start)
 		if (HeroPowers::getSprintRemainingSeconds() > 0)
 			AchievementCondition::increment(Auth::getUserID(), AchievementCondition::CATEGORY_SPRINT);

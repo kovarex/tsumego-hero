@@ -21,18 +21,16 @@ class SitesControllerTest extends IntegrationTestCase
 			'tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => '2']]]]);
 
 		// Ensure there is a DayRecord pointing to an existing tsumego
-		ClassRegistry::init('DayRecord')->create();
-		ClassRegistry::init('DayRecord')->save([
-			'DayRecord' => [
-				'user_id' => $context->user['id'],
-				'date' => date('Y-m-d'),
-				'quote' => 'q01',
-				'gems' => '0-0-0',
-				'emerald_solves' => 0,
-				'sapphire_solves' => 0,
-				'ruby_solves' => 0,
-			],
-		]);
+		$dayRecordTable = $this->fetchTable('DayRecord');
+		$dayRecordTable->saveOrFail($dayRecordTable->newEntity([
+			'user_id' => $context->user['id'],
+			'date' => date('Y-m-d'),
+			'quote' => 'q01',
+			'gems' => '0-0-0',
+			'emerald_solves' => 0,
+			'sapphire_solves' => 0,
+			'ruby_solves' => 0,
+		]));
 
 		try
 		{
@@ -319,18 +317,16 @@ class SitesControllerTest extends IntegrationTestCase
 			'other-users' => [['name' => 'Alice']],
 		]);
 
-		ClassRegistry::init('DayRecord')->create();
-		ClassRegistry::init('DayRecord')->save([
-			'DayRecord' => [
-				'user_id' => $context->otherUsers[0]['id'],
-				'date' => date('Y-m-d'),
-				'quote' => 'q01',
-				'gems' => '0-0-0',
-				'emerald_solves' => 0,
-				'sapphire_solves' => 0,
-				'ruby_solves' => 0,
-			],
-		]);
+		$dayRecordTable = $this->fetchTable('DayRecord');
+		$dayRecordTable->saveOrFail($dayRecordTable->newEntity([
+			'user_id' => $context->otherUsers[0]['id'],
+			'date' => date('Y-m-d'),
+			'quote' => 'q01',
+			'gems' => '0-0-0',
+			'emerald_solves' => 0,
+			'sapphire_solves' => 0,
+			'ruby_solves' => 0,
+		]));
 
 		$browser = Browser::instance();
 		$browser->get('sites/index');

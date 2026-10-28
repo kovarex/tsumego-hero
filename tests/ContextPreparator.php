@@ -830,6 +830,7 @@ class ContextPreparator
 		if (!$dayRecords)
 			return;
 
+		$dayRecordTable = TableRegistry::getTableLocator()->get('DayRecord');
 		foreach ($dayRecords as $dayRecordInput)
 		{
 			$dayRecord = [];
@@ -841,8 +842,7 @@ class ContextPreparator
 			$dayRecord['sapphire_solves'] = Util::extract('sapphire_solves', $dayRecordInput) ?: 0;
 			$dayRecord['ruby_solves'] = Util::extract('ruby_solves', $dayRecordInput) ?: 0;
 
-			ClassRegistry::init('DayRecord')->create($dayRecord);
-			ClassRegistry::init('DayRecord')->save($dayRecord);
+			$dayRecordTable->saveOrFail($dayRecordTable->newEntity($dayRecord));
 			$this->checkOptionsConsumed($dayRecordInput);
 		}
 	}
