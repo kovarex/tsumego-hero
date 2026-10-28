@@ -36,6 +36,52 @@ class TsumegoIssuesControllerApiTest extends IntegrationTestCase
 		$this->assertNotEmpty($body['issue']['id']);
 	}
 
+	//The problem of an issue is named after a collection of the site, not after someone's Favorites,
+	//even when its collection is in the trash.
+	public function testApiNamesTheProblemAfterACollectionOfTheSiteNotAfterFavorites()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'kovarex'],
+			'other-users' => [['name' => 'Ivan Detkov']],
+			'tsumego' => [
+				'sets' => [
+					['name' => 'Favorites', 'public' => 0, 'user_id' => 'self', 'num' => 1],
+					['name' => 'Life and death', 'deleted' => '2026-10-01 00:00:00', 'num' => 7],
+				],
+				'issues' => [['message' => 'wrong answer']],
+			],
+		]);
+
+		$this->giveFavoritesToTheOtherUser($context);
+
+		$this->get('/tsumego-issues/api');
+
+		$issue = json_decode($this->view, true)['issues'][0];
+		$this->assertSame('Life and death', $issue['Set']['title']);
+		$this->assertSame(7, (int) $issue['TsumegoNum']);
+	}
+
+	//A problem left only in someone's Favorites is shown by its id rather than in their collection.
+	public function testApiLeavesOutAFavoritesSetAsTheOnlyCollection()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'kovarex'],
+			'other-users' => [['name' => 'Ivan Detkov']],
+			'tsumego' => [
+				'sets' => [['name' => 'Favorites', 'public' => 0, 'user_id' => 'self', 'num' => 1]],
+				'issues' => [['message' => 'wrong answer']],
+			],
+		]);
+
+		$this->giveFavoritesToTheOtherUser($context);
+
+		$this->get('/tsumego-issues/api');
+
+		$issue = json_decode($this->view, true)['issues'][0];
+		$this->assertNull($issue['Set']);
+		$this->assertNull($issue['TsumegoNum']);
+	}
+
 	public function testCloseNotFound()
 	{
 		new ContextPreparator(['user' => ['name' => 'kovarex']]);
@@ -85,5 +131,10 @@ class TsumegoIssuesControllerApiTest extends IntegrationTestCase
 		$this->post('/tsumego-issues/move-comment/1');
 
 		$this->assertResponseCode(403);
+	}
+
+	private function giveFavoritesToTheOtherUser(ContextPreparator $context): void
+	{
+		ClassRegistry::init('Set')->updateAll(['Set.user_id' => $context->otherUsers[0]['id']], ['Set.title' => 'Favorites']);
 	}
 }

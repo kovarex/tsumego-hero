@@ -15,13 +15,20 @@ class SetConnection extends AppModel
 		'Set',
 	];
 
-	//Canonical ordering for listing sets: sets in the trash last, public before
-	//private, official (unowned) collections before user-owned, then curated
-	//order ascending (NULLs last), then earliest set. Shared by set listings so
-	//the rule lives in one place.
+	//SQL predicate for a collection a player keeps to themselves, like their Favorites.
+	public static function privateCollectionSql(string $setAlias): string
+	{
+		return "($setAlias.user_id IS NOT NULL AND $setAlias.public = 0)";
+	}
+
+	//Canonical ordering for listing sets: private player collections last (even after the
+	//trash, so a problem is never shown in someone's Favorites while it has a set of the
+	//site), then sets in the trash, public before private, official (unowned) collections
+	//before user-owned, then curated order ascending (NULLs last), then earliest set.
+	//Shared by set listings so the rule lives in one place.
 	public static function displayOrderForSetSql(string $setAlias): string
 	{
-		return "($setAlias.deleted IS NULL) DESC, $setAlias.public DESC, ($setAlias.user_id IS NULL) DESC, ($setAlias.order IS NULL) ASC, $setAlias.order ASC, $setAlias.id ASC";
+		return self::privateCollectionSql($setAlias) . " ASC, ($setAlias.deleted IS NULL) DESC, $setAlias.public DESC, ($setAlias.user_id IS NULL) DESC, ($setAlias.order IS NULL) ASC, $setAlias.order ASC, $setAlias.id ASC";
 	}
 
 	//Ordering that picks a representative set for display: the set-level
