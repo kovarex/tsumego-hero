@@ -9,6 +9,8 @@ use Cake\ORM\Table;
 use DateTimeImmutable;
 
 //The base of the Cake 5 tables, doing what AppModel does for the Cake 2 models.
+//The names are singular like the database's: TsumegoAttemptTable is the table tsumego_attempt, its rows
+//are TsumegoAttempt entities and fetchTable('TsumegoAttempt') gives it, all without configuration.
 class AppTable extends Table
 {
 	//A save is no transaction of its own, see AppModel::save().

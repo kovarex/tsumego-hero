@@ -1,6 +1,6 @@
 <?php
 
-use App\Model\Table\RejectsTable;
+use App\Model\Table\RejectTable;
 use App\Utility\Auth;
 
 //Tests for TagsController::user() - the contributions page.
@@ -41,21 +41,21 @@ class TagsUserTest extends IntegrationTestCase
 		]);
 
 		$userId = $context->user['id'];
-		$rejects = $this->fetchTable('Rejects');
+		$rejectTable = $this->fetchTable('Reject');
 
 		// Rejected tag name
-		$rejects->saveOrFail($rejects->newEntity([
-			'user_id' => $userId, 'reject_type_id' => RejectsTable::TYPE_TAG_NAME, 'tag_name' => 'badname',
+		$rejectTable->saveOrFail($rejectTable->newEntity([
+			'user_id' => $userId, 'reject_type_id' => RejectTable::TYPE_TAG_NAME, 'tag_name' => 'badname',
 		]));
 
 		// Rejected tag on tsumego 1
-		$rejects->saveOrFail($rejects->newEntity([
-			'user_id' => $userId, 'tsumego_id' => $context->tsumegos[0]['id'], 'reject_type_id' => RejectsTable::TYPE_TAG, 'tag_name' => 'bad tag',
+		$rejectTable->saveOrFail($rejectTable->newEntity([
+			'user_id' => $userId, 'tsumego_id' => $context->tsumegos[0]['id'], 'reject_type_id' => RejectTable::TYPE_TAG, 'tag_name' => 'bad tag',
 		]));
 
 		// Rejected proposal on tsumego 2
-		$rejects->saveOrFail($rejects->newEntity([
-			'user_id' => $userId, 'tsumego_id' => $context->tsumegos[1]['id'], 'reject_type_id' => RejectsTable::TYPE_PROPOSAL,
+		$rejectTable->saveOrFail($rejectTable->newEntity([
+			'user_id' => $userId, 'tsumego_id' => $context->tsumegos[1]['id'], 'reject_type_id' => RejectTable::TYPE_PROPOSAL,
 		]));
 
 		$this->get("/tags/user/{$userId}");
@@ -132,19 +132,19 @@ class TagsUserTest extends IntegrationTestCase
 		]);
 
 		$userId = $context->user['id'];
-		$rejects = $this->fetchTable('Rejects');
+		$rejectTable = $this->fetchTable('Reject');
 
 		// Valid: has set_connection
-		$rejects->saveOrFail($rejects->newEntity([
-			'user_id' => $userId, 'tsumego_id' => $context->tsumegos[0]['id'], 'reject_type_id' => RejectsTable::TYPE_TAG, 'tag_name' => 'visible tag',
+		$rejectTable->saveOrFail($rejectTable->newEntity([
+			'user_id' => $userId, 'tsumego_id' => $context->tsumegos[0]['id'], 'reject_type_id' => RejectTable::TYPE_TAG, 'tag_name' => 'visible tag',
 		]));
 
 		// A tsumego that has no set_connection
 		$tsumego = ClassRegistry::init('Tsumego');
 		$tsumego->create();
 		$tsumego->save(['description' => 'in no set', 'author' => '']);
-		$rejects->saveOrFail($rejects->newEntity([
-			'user_id' => $userId, 'tsumego_id' => $tsumego->id, 'reject_type_id' => RejectsTable::TYPE_TAG, 'tag_name' => 'hidden tag',
+		$rejectTable->saveOrFail($rejectTable->newEntity([
+			'user_id' => $userId, 'tsumego_id' => $tsumego->id, 'reject_type_id' => RejectTable::TYPE_TAG, 'tag_name' => 'hidden tag',
 		]));
 
 		$this->get("/tags/user/{$userId}");
@@ -218,10 +218,10 @@ class TagsUserTest extends IntegrationTestCase
 		]);
 
 		// Add a rejected tag name
-		$rejects = $this->fetchTable('Rejects');
-		$rejects->saveOrFail($rejects->newEntity([
+		$rejectTable = $this->fetchTable('Reject');
+		$rejectTable->saveOrFail($rejectTable->newEntity([
 			'user_id' => $context->user['id'],
-			'reject_type_id' => RejectsTable::TYPE_TAG_NAME,
+			'reject_type_id' => RejectTable::TYPE_TAG_NAME,
 			'tag_name' => 'badname',
 		]));
 

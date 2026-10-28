@@ -72,7 +72,7 @@ class ProposalFeedbackTest extends IntegrationTestCase
 		$proposer = $context->otherUsers[0];
 		$this->post('/users/rejectSGFProposal/' . $proposal['id'], ['comment' => 'The stone at D16 changes nothing.']);
 
-		$reject = $this->fetchTable('Rejects')->find()->where(['sgf_id' => $proposal['id']])->firstOrFail();
+		$reject = $this->fetchTable('Reject')->find()->where(['sgf_id' => $proposal['id']])->firstOrFail();
 		$this->assertSame($proposer['id'], $reject->user_id);
 		$this->assertSame($context->user['id'], $reject->rejected_by_user_id);
 		$this->assertSame('The stone at D16 changes nothing.', $reject->comment);

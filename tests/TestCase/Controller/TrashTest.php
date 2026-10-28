@@ -1,6 +1,6 @@
 <?php
 
-use App\Model\Table\RejectsTable;
+use App\Model\Table\RejectTable;
 use App\Utility\CookieFlash;
 use App\Utility\Trash;
 use App\Utility\TsumegoUtil;
@@ -288,8 +288,8 @@ WHERE c.TABLE_SCHEMA = DATABASE() AND c.COLUMN_NAME = 'tsumego_id'");
 				['deleted' => self::daysAgo(Trash::$RETENTION_DAYS - 1), 'sets' => [['name' => 'published', 'num' => 2]]],
 				['sets' => [['name' => 'published', 'num' => 3]]]]]);
 		$purgedID = $context->tsumegos[0]['id'];
-		$rejects = $this->fetchTable('Rejects');
-		$rejects->saveOrFail($rejects->newEntity(['reject_type_id' => RejectsTable::TYPE_PROPOSAL, 'tsumego_id' => $purgedID, 'user_id' => $context->user['id']]));
+		$rejectTable = $this->fetchTable('Reject');
+		$rejectTable->saveOrFail($rejectTable->newEntity(['reject_type_id' => RejectTable::TYPE_PROPOSAL, 'tsumego_id' => $purgedID, 'user_id' => $context->user['id']]));
 
 		$this->get('/cron/daily/' . CRON_SECRET);
 

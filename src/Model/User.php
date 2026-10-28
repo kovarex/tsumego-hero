@@ -1,6 +1,6 @@
 <?php
 
-use App\Model\Table\RejectsTable;
+use App\Model\Table\RejectTable;
 use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
 use App\Utility\Avatar;
@@ -326,7 +326,7 @@ class User extends AppModel
 				EXISTS(SELECT 1 FROM tag WHERE user_id = ?)
 				OR EXISTS(SELECT 1 FROM tag_connection WHERE user_id = ?)
 				OR EXISTS(SELECT 1 FROM sgf WHERE user_id = ?)
-				OR EXISTS(SELECT 1 FROM reject WHERE user_id = ? AND (reject_type_id = ' . RejectsTable::TYPE_TAG_NAME . '
+				OR EXISTS(SELECT 1 FROM reject WHERE user_id = ? AND (reject_type_id = ' . RejectTable::TYPE_TAG_NAME . '
 					OR EXISTS(SELECT 1 FROM set_connection WHERE tsumego_id = reject.tsumego_id))) AS found',
 			[$userId, $userId, $userId, $userId]);
 		return (bool) $rows[0]['found'];
