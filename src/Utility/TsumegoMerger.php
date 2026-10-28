@@ -128,9 +128,10 @@ HAVING
 			// master is empty, we change the slave to master
 			if (!$tagMergeSource['tag_connection_id_1'])
 			{
-				$tagConnection = ClassRegistry::init('TagConnection')->findById($tagMergeSource['tag_connection_id_2'])['TagConnection'];
-				$tagConnection['tsumego_id'] = $this->masterTsumegoID;
-				ClassRegistry::init('TagConnection')->save($tagConnection);
+				$tagConnectionTable = TableRegistry::getTableLocator()->get('TagConnection');
+				$tagConnection = $tagConnectionTable->get($tagMergeSource['tag_connection_id_2']);
+				$tagConnection->set('tsumego_id', $this->masterTsumegoID);
+				$tagConnectionTable->saveOrFail($tagConnection);
 				continue;
 			}
 			// when both master and slave is present, we don't have to do anything, the slave one will be removed by

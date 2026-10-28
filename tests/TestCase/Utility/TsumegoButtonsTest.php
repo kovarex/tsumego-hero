@@ -3,6 +3,7 @@
 use App\Utility\MistakeTraining;
 use App\Utility\PlayOutcome;
 use App\Utility\RungInsignia;
+use App\Utility\SetNavigationButtonsInput;
 use App\Utility\TsumegoButton;
 use App\Utility\TsumegoButtons;
 use App\Utility\TsumegoFilters;
@@ -152,6 +153,69 @@ class TsumegoButtonsTest extends IntegrationTestCase
 		$this->assertSame('', $links['previousLink'], 'Back at the start of the training has nowhere to go');
 		$this->assertSame('/mistake-training/play/' . $context->tsumegos[1]['set-connections'][0]['id'], $links['nextLink'],
 			'Queue navigation must stay on the training route, so the route can re-assert the mode');
+	}
+
+	//The buttons of a set come without their previews, which only the shown ones need, and loading
+	//them gives the one stored with the current version.
+	public function testSetButtonsLoadThePreviewOfTheCurrentVersionWhenAsked(): void
+	{
+		$current = '(;GM[1]FF[4]SZ[19]AB[cc];B[aa])';
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumego' => [
+				'set_order' => 1,
+				'sgfs' => [
+					['data' => '(;GM[1]FF[4]SZ[19]AB[dd];B[aa])', 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
+					['data' => $current, 'sgf_status_id' => Sgf::STATUS_ACCEPTED],
+					['data' => '(;GM[1]FF[4]SZ[19]AB[ee];B[aa])', 'sgf_status_id' => Sgf::STATUS_PROPOSED]]],
+		]);
+
+		$buttons = new TsumegoButtons(new TsumegoFilters('topics'), null, 0, (int) $context->tsumegos[0]['set-connections'][0]['set_id']);
+		$this->assertCount(1, $buttons);
+		$this->assertNull($buttons[0]->preview);
+
+		$buttons->loadPreviews();
+		$this->assertSame(TsumegoButton::sgfToPreviewJson($current), $buttons[0]->preview);
+		$this->assertStringContainsString('"black":"cc"', $buttons[0]->preview);
+	}
+
+	//Every saved version keeps the preview of its SGF, which the buttons show without parsing it.
+	public function testASavedVersionKeepsThePreviewOfItsSgf(): void
+	{
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 1]]);
+		$sgf = '(;GM[1]FF[4]SZ[19]AB[aa][ba]AW[ab];B[ca])';
+
+		$saved = ClassRegistry::init('Sgf')->uploadSgf($sgf, (int) $context->tsumegos[0]['id'], (int) $context->user['id'], true);
+
+		$this->assertSame(TsumegoButton::sgfToPreviewJson($sgf), $saved['Sgf']['preview']);
+		$this->assertSame(['aa', 'ba'], str_split(json_decode($saved['Sgf']['preview'], true)['black'], 2));
+	}
+
+	public function testAnEmptySgfHasNoPreview(): void
+	{
+		$this->assertSame('', TsumegoButton::sgfToPreviewJson(''));
+	}
+
+	//The play page shows the dozen buttons around the opened problem, so only they load their previews.
+	public function testPlayNavigationLoadsThePreviewsOfTheShownButtonsOnly(): void
+	{
+		$tsumegos = [];
+		for ($i = 1; $i <= 30; $i++)
+			$tsumegos[] = ['set_order' => $i];
+		$context = new ContextPreparator(['user' => ['name' => 'testuser'], 'tsumegos' => $tsumegos]);
+		$opened = $context->tsumegos[14]['set-connections'][0];
+
+		$buttons = new TsumegoButtons(new TsumegoFilters('topics'), (int) $opened['id'], null, (int) $opened['set_id']);
+		$shown = null;
+		new SetNavigationButtonsInput(function ($name, $value) use (&$shown) {
+			$shown = $value;
+		})->execute($buttons, ['SetConnection' => $opened]);
+
+		$this->assertCount(30, $buttons);
+		$this->assertCount(13, $shown);
+		foreach ($shown as $button)
+			$this->assertNotNull($button->preview);
+		$this->assertCount(13, array_filter((array) $buttons, fn($button) => $button->preview !== null));
 	}
 
 	public function testTheEndsOfTheListLeadToThePageAndTheMiddleToTheNeighbour(): void

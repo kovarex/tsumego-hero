@@ -255,7 +255,7 @@ class TagsUserTest extends IntegrationTestCase
 			'tsumego' => ['set_order' => 1, 'tags' => [['name' => 'snapback', 'user' => 'proposer', 'approved' => 0]]]]);
 		$this->login('reviewer');
 		$this->registerTestEmailer();
-		$this->post('/users/rejectTagConnectionProposal/' . $context->tsumegos[0]['tag-connections'][0]['id'], ['comment' => 'No snapback here.']);
+		$this->post('/users/rejectTagConnectionProposal/' . $context->tsumegos[0]['tag-connections'][0]->id, ['comment' => 'No snapback here.']);
 		return $context;
 	}
 

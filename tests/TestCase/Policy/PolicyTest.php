@@ -2,6 +2,7 @@
 
 //Authorization policies decide whether an identity may perform an action.
 //They read only the computed `permissions` list attached by Auth::getIdentity().
+use App\Model\Entity\TagConnection;
 use App\Model\Entity\TsumegoComment;
 use App\Policy\AdminPolicy;
 use App\Policy\OwnerPolicy;
@@ -234,8 +235,8 @@ class PolicyTest extends CakeTestCase
 	public function testTagConnectionPolicyRemoveAllowsOwnerOfUnapprovedOrAdmin()
 	{
 		$policy = new TagConnectionPolicy();
-		$conn = ['user_id' => 7, 'approved' => 0];
-		$approvedConn = ['user_id' => 7, 'approved' => 1];
+		$conn = new TagConnection(['user_id' => 7, 'approved' => false]);
+		$approvedConn = new TagConnection(['user_id' => 7, 'approved' => true]);
 		$owner = $this->identity(false);
 		$owner['id'] = 7;
 
