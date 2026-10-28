@@ -1,5 +1,6 @@
 <?php
 
+use App\Utility\TsumegoButton;
 use App\Utility\Util;
 
 class Sgf extends AppModel
@@ -35,6 +36,14 @@ class Sgf extends AppModel
 	{
 		$id['table'] =  'sgf';
 		parent::__construct($id, $table, $ds);
+	}
+
+	//A save that sets the SGF sets its preview too, so every version has the one of its SGF.
+	public function beforeSave($options = []): bool
+	{
+		if (isset($this->data['Sgf']['sgf']))
+			$this->data['Sgf']['preview'] = TsumegoButton::sgfToPreviewJson((string) $this->data['Sgf']['sgf']);
+		return true;
 	}
 
 	//The description sent with a saved version: blank space dropped, null when there is none.

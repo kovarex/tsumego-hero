@@ -44,19 +44,17 @@ class TsumegoButton
 			$num3 = $this->seconds . 's';
 		$num3 = '<div class="problem-nav__time">' . $num3 . '</div>';
 
-		// A button of a collection rendered without TsumegoButtons::loadSgfs() loads its own
-		if ($this->sgf === null)
-			$this->sgf = TsumegoButtons::currentSgfs([$this->tsumegoID])[$this->tsumegoID] ?? '';
 		$sgfAttr = '';
-		if ($this->sgf !== '')
+		$preview = $this->previewJson();
+		if ($preview !== '')
 		{
-			$preview = self::sgfToPreviewData($this->sgf);
-			if ($preview)
+			if ($this->diff)
 			{
-				if ($this->diff)
-					$preview['diff'] = $this->diff;
-				$sgfAttr = ' data-sgf-preview=\'' . json_encode($preview) . '\'';
+				$withDiff = json_decode($preview, true);
+				$withDiff['diff'] = $this->diff;
+				$preview = json_encode($withDiff);
 			}
+			$sgfAttr = ' data-sgf-preview=\'' . $preview . '\'';
 		}
 
 		// In the mistake training the ratio and the time are always empty, so the button
@@ -97,6 +95,33 @@ class TsumegoButton
 			. RungInsignia::render($kind, $count) . '</div>';
 	}
 
+	//The stored preview of a button of a collection (TsumegoButtons::loadPreviews()), or the preview
+	//of the SGF the button was made with. A button of a collection rendered without loading them
+	//loads its own.
+	private function previewJson(): string
+	{
+		if ($this->preview === null)
+			$this->preview = $this->sgf !== null
+				? self::sgfToPreviewJson($this->sgf)
+				: TsumegoButtons::currentPreviews([$this->tsumegoID])[$this->tsumegoID] ?? '';
+		return $this->preview;
+	}
+
+	//The preview of the SGF as stored in sgf.preview: the JSON of sgfToPreviewData(), '' when the SGF
+	//has no position to show or the parser can't read it.
+	public static function sgfToPreviewJson(string $sgf): string
+	{
+		try
+		{
+			$preview = self::sgfToPreviewData($sgf);
+		}
+		catch (\Throwable)
+		{
+			return '';
+		}
+		return $preview ? json_encode($preview) : '';
+	}
+
 	//Parse SGF into the JSON format that previewBoard.js expects. Returns null if the SGF is empty or unparseable.
 	public static function sgfToPreviewData(string $sgf): ?array
 	{
@@ -121,8 +146,11 @@ class TsumegoButton
 	public float $seconds = 0;
 	public string $performance;
 	public bool $isCurrentlyOpened = false;
-	//The current SGF, for the preview. Null until TsumegoButtons::loadSgfs() loads it.
+	//The SGF the preview is made from, null for a button of a collection, which gets the stored
+	//preview instead.
 	public ?string $sgf;
+	//The JSON of the preview (see sgfToPreviewJson()), null until it is loaded or made.
+	public ?string $preview = null;
 	public ?string $diff = null;
 	public ?int $setID = null;
 	public ?string $setTitle = null;
