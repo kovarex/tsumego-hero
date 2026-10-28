@@ -97,7 +97,7 @@ abstract class AchievementTestCase extends IntegrationTestCase
 	{
 		$Set = ClassRegistry::init('Set');
 		$tsumegoTable = $this->fetchTable('Tsumego');
-		$SetConnection = ClassRegistry::init('SetConnection');
+		$setConnectionTable = $this->fetchTable('SetConnection');
 
 		// Create Set (use auto-increment ID to avoid collisions)
 		$Set->create();
@@ -112,8 +112,7 @@ abstract class AchievementTestCase extends IntegrationTestCase
 		{
 			$tsumegoId = $tsumegoTable->saveOrFail($tsumegoTable->newEntity(['rating' => $rating, 'author' => '']))->id;
 
-			$SetConnection->create();
-			$SetConnection->save(['set_id' => $setId, 'tsumego_id' => $tsumegoId, 'num' => $i + 1]);
+			$setConnectionTable->saveOrFail($setConnectionTable->newEntity(['set_id' => $setId, 'tsumego_id' => $tsumegoId, 'num' => $i + 1]));
 
 			$this->fetchTable('Sgf')->saveOrFail($this->fetchTable('Sgf')->newEntity(['tsumego_id' => $tsumegoId, 'sgf' => '(;GM[1]FF[4]SZ[19])', 'user_id' => Auth::getUserID(), 'sgf_status_id' => SgfTable::STATUS_ACCEPTED]));
 

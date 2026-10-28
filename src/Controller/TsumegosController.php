@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SetConnectionTable;
 use App\Model\Table\SgfTable;
 use App\Model\Table\TsumegoStatusTable;
 use App\Attribute\HttpGet;
@@ -66,7 +67,7 @@ class TsumegosController extends AppController
 		if (!isset($this->request->query['sid']))
 			return $setConnections[0];
 		foreach ($setConnections as $setConnection)
-			if ($setConnection['SetConnection']['set_id'] == $this->request->query['sid'])
+			if ($setConnection['set_id'] == $this->request->query['sid'])
 				return $setConnection;
 		throw new NotFoundException("Problem doesn't exist in the specified set");
 	}
@@ -82,9 +83,9 @@ class TsumegosController extends AppController
 		{
 			if (Auth::isLoggedIn())
 			{
-				$sc = ClassRegistry::init('SetConnection')->findById($setConnectionID);
-				if ($sc)
-					$this->PlayResultProcessor->markAsVisited((int) $sc['SetConnection']['tsumego_id']);
+				$setConnection = $this->fetchTable('SetConnection')->find()->select(['tsumego_id'])->where(['id' => (int) $setConnectionID])->first();
+				if ($setConnection)
+					$this->PlayResultProcessor->markAsVisited($setConnection->tsumego_id);
 			}
 			$this->set('canonicalPath', '/' . (int) $setConnectionID);
 			new Play(function ($name, $value) { $this->set($name, $value); })->play((int) $setConnectionID, $this->request);
@@ -113,10 +114,10 @@ class TsumegosController extends AppController
 			throw new NotFoundException("Problem not found in any set");
 		$setConnection = $this->deduceRelevantSetConnection($setConnections);
 
-		$this->set('canonicalPath', '/' . $setConnections[0]['SetConnection']['id']);
+		$this->set('canonicalPath', '/' . $setConnections[0]['id']);
 		new Play(function ($name, $value) {
 			$this->set($name, $value);
-		})->play((int) $setConnection['SetConnection']['id'], $this->request);
+		})->play((int) $setConnection['id'], $this->request);
 		return null;
 	}
 
@@ -167,14 +168,14 @@ class TsumegosController extends AppController
 	{
 		$this->loadModel('Set');
 
-		$setConnection = ClassRegistry::init('SetConnection')->findById($setConnectionID);
+		$setConnection = $this->fetchTable('SetConnection')->find()->where(['id' => (int) $setConnectionID])->first();
 		if (!$setConnection)
 		{
 			CookieFlash::set('Problem not found', 'error');
 			return $this->redirect('/sets');
 		}
 
-		$similarSearchLogic = new SimilarSearchLogic($setConnection['SetConnection']);
+		$similarSearchLogic = new SimilarSearchLogic($setConnection);
 		$similarSearchLogic->execute();
 
 		$this->set('result', $similarSearchLogic->result);
@@ -184,9 +185,9 @@ class TsumegosController extends AppController
 			new TsumegoButton(
 				(int) $similarSearchLogic->sourceTsumegoID,
 				(int) $setConnectionID,
-				$similarSearchLogic->setConnection['num'],
+				$similarSearchLogic->setConnection->num,
 				$tsumegoStatus ?: 'N', 0, $similarSearchLogic->sourceSgf));
-		$this->set('sourceSetName', ClassRegistry::init('Set')->findById($setConnection['SetConnection']['set_id'])['Set']['title']);
+		$this->set('sourceSetName', ClassRegistry::init('Set')->findById($setConnection->set_id)['Set']['title']);
 		$this->set('sourceMoveCount', $similarSearchLogic->sourceMoveCount);
 		return null;
 	}
@@ -302,13 +303,13 @@ class TsumegosController extends AppController
 	//when it was the last problem of it, as the collection went to the trash with it.
 	private function moveToTrash(int $tsumegoID): mixed
 	{
-		$setConnection = ClassRegistry::init('SetConnection')->findDisplaySetConnection($tsumegoID);
+		$setConnection = SetConnectionTable::findDisplaySetConnection($tsumegoID);
 		Trash::deleteProblem($tsumegoID);
 		AdminActivityLogger::log(AdminActivityTypeTable::PROBLEM_DELETE, $tsumegoID);
 		CookieFlash::set('The problem was moved to the trash, it can be restored for ' . Trash::$RETENTION_DAYS . ' days.', 'success');
 		if (!$setConnection)
 			return $this->redirect('/sets');
-		$set = ClassRegistry::init('Set')->findById($setConnection['SetConnection']['set_id']);
+		$set = ClassRegistry::init('Set')->findById($setConnection->set_id);
 		if (!empty($set['Set']['deleted']))
 			return $this->redirect('/sets');
 		return $this->redirect(Set::url((int) $set['Set']['id']));
@@ -329,50 +330,39 @@ class TsumegosController extends AppController
 		$this->Authorization->authorize('Tsumego');
 		$masterSetConnectionID = $this->request->data['master-id'];
 		$slaveSetConnectionID = $this->request->data['slave-id'];
-		$masterSetConnection = ClassRegistry::init('SetConnection')->findById($masterSetConnectionID);
+		$setConnectionTable = $this->fetchTable('SetConnection');
+		$masterSetConnection = $setConnectionTable->find()->where(['id' => (int) $masterSetConnectionID])->first();
 		if (!$masterSetConnection)
 		{
 			CookieFlash::set('Master set connection does not exist.', 'error');
 			$this->redirect('/tsumegos/mergeForm');
 		}
-		$masterSetConnection = $masterSetConnection['SetConnection'];
 
-		$slaveSetConnection = ClassRegistry::init('SetConnection')->findById($slaveSetConnectionID);
+		$slaveSetConnection = $setConnectionTable->find()->where(['id' => (int) $slaveSetConnectionID])->first();
 		if (!$slaveSetConnection)
 		{
 			CookieFlash::set('Slave set connection does not exist.', 'error');
 			$this->redirect('/tsumegos/mergeForm');
 		}
-		$slaveSetConnection = $slaveSetConnection['SetConnection'];
 
-		if ($slaveSetConnection['tsumego_id'] == $masterSetConnection['tsumego_id'])
+		if ($slaveSetConnection->tsumego_id == $masterSetConnection->tsumego_id)
 		{
 			CookieFlash::set('These are already merged.', 'error');
 			$this->redirect('/tsumegos/mergeForm');
 		}
-		$masterSetConnectionBrothers = ClassRegistry::init('SetConnection')->find('all', [
-			'joins' => [[
-				'table' => 'set',
-				'alias' => 'S',
-				'type' => 'INNER',
-				'conditions' => ['S.id = SetConnection.set_id'],
-			]],
-			'conditions' => ['SetConnection.tsumego_id' => $masterSetConnection['tsumego_id'], Set::officialCondition('S')],
-		]);
-		$slaveSetConnectionBrothers = ClassRegistry::init('SetConnection')->find('all', [
-			'joins' => [[
-				'table' => 'set',
-				'alias' => 'S',
-				'type' => 'INNER',
-				'conditions' => ['S.id = SetConnection.set_id'],
-			]],
-			'conditions' => ['SetConnection.tsumego_id' => $slaveSetConnection['tsumego_id'], Set::officialCondition('S')],
-		]);
+		$masterSetConnectionBrothers = $setConnectionTable->find()
+			->innerJoin(['S' => 'set'], ['S.id = SetConnection.set_id'])
+			->where(['SetConnection.tsumego_id' => $masterSetConnection->tsumego_id, Set::officialCondition('S')])
+			->all()->toList();
+		$slaveSetConnectionBrothers = $setConnectionTable->find()
+			->innerJoin(['S' => 'set'], ['S.id = SetConnection.set_id'])
+			->where(['SetConnection.tsumego_id' => $slaveSetConnection->tsumego_id, Set::officialCondition('S')])
+			->all()->toList();
 
 		$sgfs = [];
 		$ids = array_unique(array_merge(
-			Hash::extract($masterSetConnectionBrothers, '{n}.SetConnection.tsumego_id'),
-			Hash::extract($slaveSetConnectionBrothers, '{n}.SetConnection.tsumego_id'),
+			array_map(fn($brother) => $brother->tsumego_id, $masterSetConnectionBrothers),
+			array_map(fn($brother) => $brother->tsumego_id, $slaveSetConnectionBrothers),
 		));
 		if ($ids)
 			foreach (Util::query('SELECT sgf.tsumego_id, sgf.sgf FROM sgf WHERE sgf.tsumego_id IN (' . implode(',', array_fill(0, count($ids), '?')) . ')'
@@ -381,15 +371,15 @@ class TsumegosController extends AppController
 
 		$masterSetConnectionBrothersButtons = [];
 		foreach ($masterSetConnectionBrothers as $masterSetConnectionBrother)
-			$masterSetConnectionBrothersButtons [] = new TsumegoButton($masterSetConnectionBrother['SetConnection']['tsumego_id'], $masterSetConnectionBrother['SetConnection']['id'], $masterSetConnectionBrother['SetConnection']['num'], 'N', 0, $sgfs[$masterSetConnectionBrother['SetConnection']['tsumego_id']] ?? '');
+			$masterSetConnectionBrothersButtons [] = new TsumegoButton($masterSetConnectionBrother->tsumego_id, $masterSetConnectionBrother->id, $masterSetConnectionBrother->num, 'N', 0, $sgfs[$masterSetConnectionBrother->tsumego_id] ?? '');
 		$this->set('masterTsumegoButtons', $masterSetConnectionBrothersButtons);
-		$this->set('masterTsumegoID', $masterSetConnection['tsumego_id']);
+		$this->set('masterTsumegoID', $masterSetConnection->tsumego_id);
 
 		$slaveSetConnectionBrothersButtons = [];
 		foreach ($slaveSetConnectionBrothers as $slaveSetConnectionBrother)
-			$slaveSetConnectionBrothersButtons [] = new TsumegoButton($slaveSetConnectionBrother['SetConnection']['tsumego_id'], $slaveSetConnectionBrother['SetConnection']['id'], $slaveSetConnectionBrother['SetConnection']['num'], 'N', 0, $sgfs[$slaveSetConnectionBrother['SetConnection']['tsumego_id']] ?? '');
+			$slaveSetConnectionBrothersButtons [] = new TsumegoButton($slaveSetConnectionBrother->tsumego_id, $slaveSetConnectionBrother->id, $slaveSetConnectionBrother->num, 'N', 0, $sgfs[$slaveSetConnectionBrother->tsumego_id] ?? '');
 		$this->set('slaveTsumegoButtons', $slaveSetConnectionBrothersButtons);
-		$this->set('slaveTsumegoID', $slaveSetConnection['tsumego_id']);
+		$this->set('slaveTsumegoID', $slaveSetConnection->tsumego_id);
 		return null;
 	}
 
@@ -449,10 +439,10 @@ class TsumegosController extends AppController
 
 		$setConnectionID = $this->request->data["setConnectionID"];
 
-		$setConnection = ClassRegistry::init("SetConnection")->findById($setConnectionID);
+		$setConnection = $this->fetchTable('SetConnection')->find()->select(['tsumego_id'])->where(['id' => (int) $setConnectionID])->first();
 		if (!$setConnection)
 			return;
-		$tsumegoID = $setConnection['SetConnection']['tsumego_id'];
+		$tsumegoID = $setConnection->tsumego_id;
 
 		$sgfData = $this->request->data['sgf'];
 		$firstMoveColor = $this->request->data['firstMoveColor'];
@@ -489,15 +479,14 @@ class TsumegosController extends AppController
 	#[HttpGet]
 	public function history(string $setConnectionID)
 	{
-		$setConnection = ClassRegistry::init("SetConnection")->findById($setConnectionID);
+		$setConnection = $this->fetchTable('SetConnection')->find()->where(['id' => (int) $setConnectionID])->first();
 		if (!$setConnection)
 		{
 			CookieFlash::set('Specified set connection not found', 'error');
 			return $this->redirect('/sets');
 		}
 
-		$setConnection = $setConnection['SetConnection'];
-		$tsumegoID = $setConnection['tsumego_id'];
+		$tsumegoID = $setConnection->tsumego_id;
 
 		$dailyResults = Util::query("
 			SELECT
@@ -511,6 +500,6 @@ class TsumegosController extends AppController
 		$this->set('dailyResults', $dailyResults);
 		$this->set('setConnection', $setConnection);
 		$this->set('urlParams', $this->params['url']);
-		$this->set('set', ClassRegistry::init("Set")->findById($setConnection['set_id'])['Set']);
+		$this->set('set', ClassRegistry::init("Set")->findById($setConnection->set_id)['Set']);
 	}
 }

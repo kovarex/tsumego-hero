@@ -4,7 +4,7 @@ namespace App\Utility;
 
 use App\Model\Table\SgfTable;
 use App\Model\Table\SgfReviewTable;
-use SetConnection;
+use App\Model\Table\SetConnectionTable;
 use User;
 
 //The SGF changes of the admin area: every version that became part of a problem, an admin's own
@@ -74,7 +74,7 @@ LEFT JOIN set_connection
 		FROM set_connection sc2
 		JOIN `set` s2 ON s2.id = sc2.set_id
 		WHERE sc2.tsumego_id = sgf.tsumego_id
-		ORDER BY " . SetConnection::displayOrderSql('s2', 'sc2') . "
+		ORDER BY " . SetConnectionTable::displayOrderSql('s2', 'sc2') . "
 		LIMIT 1
 	)
 LEFT JOIN `set` ON `set`.id = set_connection.set_id

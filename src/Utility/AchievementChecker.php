@@ -10,7 +10,7 @@ use App\Model\Table\TimeModeRankTable;
 use App\Model\Table\TimeModeSessionStatusTable;
 use Cake\ORM\Locator\LocatorAwareTrait;
 use ClassRegistry;
-use SetConnection;
+use App\Model\Table\SetConnectionTable;
 
 class AchievementChecker
 {
@@ -471,7 +471,7 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeSessionStatusTable::SOLVED]);
 		$rows = Util::query(
 			'SELECT COUNT(*) AS total FROM achievement_condition ac '
 			. 'WHERE ac.user_id = ? AND ac.achievement_condition_category_id = ? AND ac.value >= ? '
-			. 'AND ac.set_id IN (' . SetConnection::publicCollectionsWithMinimumProblemsSql() . ')',
+			. 'AND ac.set_id IN (' . SetConnectionTable::publicCollectionsWithMinimumProblemsSql() . ')',
 			[Auth::getUserID(), AchievementConditionTable::CATEGORY_SET_ACCURACY, 100]
 		);
 
@@ -487,8 +487,7 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeSessionStatusTable::SOLVED]);
 		if (!$user || empty($user['User']['default_set_id']) || $setId !== (int) $user['User']['default_set_id'])
 			return $this;
 
-		$count = ClassRegistry::init('SetConnection')->find('count', ['conditions' => ['set_id' => $setId]]);
-		if ($count > 0)
+		if ($this->fetchTable('SetConnection')->exists(['set_id' => $setId]))
 			$this->gained(AchievementId::FAVORITES);
 
 		return $this;

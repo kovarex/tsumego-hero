@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SetConnectionTable;
 use App\Model\Table\ChallengeTable;
 use App\Model\Table\TimeModeCategoryTable;
 use App\Model\Table\TimeModeSessionStatusTable;
@@ -323,7 +324,7 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$this->prepare();
 		$challengeId = $this->create(['problem_count' => 5, 'players' => 'DN_friend']);
 		$this->playRun($challengeId, array_fill(0, 5, [PlayOutcome::SolvedClean, 10]));
-		$firstProblemLink = 'href="/' . ClassRegistry::init('SetConnection')->findDisplaySetConnection(ChallengeTable::problemIDs($challengeId)[0])['SetConnection']['id'] . '"';
+		$firstProblemLink = 'href="/' . SetConnectionTable::findDisplaySetConnection(ChallengeTable::problemIDs($challengeId)[0])->id . '"';
 
 		$this->get('/challenges/' . $challengeId);
 		$page = $this->view;

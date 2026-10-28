@@ -3,6 +3,7 @@
 use App\Model\Table\SgfTable;
 use App\Attribute\HttpGet;
 use App\Utility\Constants;
+use App\Utility\Util;
 
 //Generates PNG images of tsumego puzzles for Open Graph social sharing.
 //IMPORTANT: When changing the rendering algorithm below, bump
@@ -19,7 +20,7 @@ class TsumegoImagesController extends AppController
 			throw new NotFoundException('Invalid set connection ID');
 
 		// Single query: join SetConnection → Tsumego → Sgf + Set, fetch only needed fields
-		$data = ClassRegistry::init('SetConnection')->query(
+		$data = Util::query(
 			'SELECT s.title AS set_title, t.description, t.created, sgf.sgf
 			FROM set_connection sc
 			JOIN tsumego t ON t.id = sc.tsumego_id AND t.deleted IS NULL
@@ -35,9 +36,9 @@ class TsumegoImagesController extends AppController
 			throw new NotFoundException('Puzzle not found');
 
 		$row = $data[0];
-		$sgfString = $row['sgf']['sgf'];
-		$setTitle = $row['s']['set_title'] ?? 'Tsumego';
-		$description = $row['t']['description'] ?? '';
+		$sgfString = $row['sgf'];
+		$setTitle = $row['set_title'] ?? 'Tsumego';
+		$description = $row['description'] ?? '';
 
 		if (empty($sgfString))
 			throw new NotFoundException('SGF not found');
@@ -47,7 +48,7 @@ class TsumegoImagesController extends AppController
 		$this->response->type('png');
 		$this->response->body($imageData);
 		$this->response->etag(md5(Constants::$TSUMEGO_IMAGE_VERSION . $sgfString));
-		$modified = !empty($row['t']['created']) ? $row['t']['created'] : '-1 day';
+		$modified = !empty($row['created']) ? $row['created'] : '-1 day';
 		$this->response->cache($modified, '+1 year');
 
 		return $this->response;

@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Entity\SetConnection;
 use App\Model\Entity\Sgf;
 use App\Model\Entity\Tsumego;
 use App\Model\Table\SgfTable;
@@ -46,17 +47,17 @@ class Play
 		//Only the modes that walk a list fill this one in.
 		$this->set('previousLink', '');
 
-		$setConnection = ClassRegistry::init('SetConnection')->findById($setConnectionID);
+		$setConnection = TableRegistry::getTableLocator()->get('SetConnection')->find()->where(['id' => $setConnectionID])->first();
 		if (!$setConnection)
 			throw new NotFoundException("Set connection " . $setConnectionID . " wasn't found in the database.");
-		$tsumegoID = (int) $setConnection['SetConnection']['tsumego_id'];
+		$tsumegoID = (int) $setConnection->tsumego_id;
 		//The set connection's foreign key deletes it with its problem
 		$tsumego = TableRegistry::getTableLocator()->get('Tsumego')->get($tsumegoID);
 		//A problem in the trash is gone for everyone but the admins, who can take it back
 		if ($tsumego->deleted !== null && !Auth::isAdmin())
 			throw new NotFoundException('Problem not found');
 
-		$set = ClassRegistry::init('Set')->findById($setConnection['SetConnection']['set_id']);
+		$set = ClassRegistry::init('Set')->findById($setConnection->set_id);
 		AuthorizationComponent::require(SetPolicy::canPlay(Auth::getIdentity(), $set['Set']));
 		Util::setCookie('lastVisit', $tsumegoID);
 
@@ -132,7 +133,7 @@ class Play
 		$this->set('tsumegoFilters', $tsumegoFilters);
 		$this->set('queryTitle', $queryTitle);
 		$this->set('amountOfOtherCollection', $amountOfOtherCollection);
-		$this->set('tsumegoXPAndRating', new TsumegoXPAndRating($tsumego, $tsumegoStatus, (int) $setConnection['SetConnection']['id']));
+		$this->set('tsumegoXPAndRating', new TsumegoXPAndRating($tsumego, $tsumegoStatus, (int) $setConnection->id));
 	}
 
 	//The sets in which the player is always black: problems where the colors matter for the question
@@ -180,9 +181,9 @@ ORDER BY s.title", [$tsumegoID, Auth::getUserID()]);
 		return array_map(fn($set) => ['id' => $set['id'], 'title' => $set['title'], 'contains' => $set['tsumego_id'] != null], $sets);
 	}
 
-	private function exportOpenGraph(array $setConnection, array $set, Tsumego $tsumego, Sgf $sgf, int $amountOfOtherCollection): void
+	private function exportOpenGraph(SetConnection $setConnection, array $set, Tsumego $tsumego, Sgf $sgf, int $amountOfOtherCollection): void
 	{
-		$title = ($set['Set']['title'] ?? '') . ' ' . $setConnection['SetConnection']['num'] . '/' . $amountOfOtherCollection;
+		$title = ($set['Set']['title'] ?? '') . ' ' . $setConnection->num . '/' . $amountOfOtherCollection;
 		//The descriptions and the image both use the true colors of the SGF
 		$description = strip_tags($tsumego->description ?? '');
 		$author = $tsumego->author;
@@ -194,14 +195,14 @@ ORDER BY s.title", [$tsumegoID, Auth::getUserID()]);
 		$this->set('og', [
 			'title' => $title,
 			'description' => $description,
-			'image' => Router::url('/tsumego-image/' . $setConnection['SetConnection']['id']
+			'image' => Router::url('/tsumego-image/' . $setConnection->id
 				. '?v=' . Constants::$TSUMEGO_IMAGE_VERSION
 				. '&t=' . ($sgf->created?->getTimestamp() ?? ''), true),
 			'image_type' => 'image/png',
 			'image_width' => Constants::$OG_IMAGE_WIDTH,
 			'image_height' => Constants::$OG_IMAGE_HEIGHT,
 			'image_alt' => $title,
-			'url' => Router::url('/' . $setConnection['SetConnection']['id'], true),
+			'url' => Router::url('/' . $setConnection->id, true),
 			'type' => 'website',
 			'site_name' => 'Tsumego',
 			'locale' => 'en_US',
@@ -212,9 +213,9 @@ ORDER BY s.title", [$tsumegoID, Auth::getUserID()]);
 	//The row of problem buttons, the previous and next links and the title of the modes that walk
 	//a list: a class assignment, the level mode and the mistake training. Returns the title of
 	//the collection the level mode walks.
-	private function exportNavigation(array $setConnection, array $set, TsumegoFilters $tsumegoFilters): string
+	private function exportNavigation(SetConnection $setConnection, array $set, TsumegoFilters $tsumegoFilters): string
 	{
-		$setConnectionID = (int) $setConnection['SetConnection']['id'];
+		$setConnectionID = (int) $setConnection->id;
 		if ($this->classroomAssignment !== null)
 		{
 			$buttons = ClassroomAssignmentTable::playButtons($this->classroomAssignment, (int) Auth::getUserID(), $setConnectionID);
@@ -232,7 +233,7 @@ ORDER BY s.title", [$tsumegoID, Auth::getUserID()]);
 			$buttons = new TsumegoButtons($tsumegoFilters, $setConnectionID, null, $set['Set']['id']);
 			new SetNavigationButtonsInput($this->setFunction)->execute($buttons, $setConnection);
 			$collectionTitle = $tsumegoFilters->query == 'topics' ? $set['Set']['title'] : ($_COOKIE['lastSet'] ?? 'Tsumego');
-			$this->set('_title', $collectionTitle . ' ' . $setConnection['SetConnection']['num'] . '/' . $buttons->highestTsumegoOrder . ' on Tsumego Hero');
+			$this->set('_title', $collectionTitle . ' ' . $setConnection->num . '/' . $buttons->highestTsumegoOrder . ' on Tsumego Hero');
 			$buttons->exportCurrentAndPreviousLink($this->setFunction, $tsumegoFilters, $setConnectionID, $set);
 			return $tsumegoFilters->getSetTitle($set) . $buttons->getPartitionTitleSuffix() . ' ' . $buttons->currentOrder . '/' . $buttons->highestTsumegoOrder;
 		}
@@ -269,7 +270,7 @@ ORDER BY s.title", [$tsumegoID, Auth::getUserID()]);
 		$this->set('swapColors', ($sgfColor === 'W' && $playerColor === 'black') || ($sgfColor === 'B' && $playerColor === 'white'));
 	}
 
-	public static function renderTitle(array $setConnection, array $set, TsumegoFilters $tsumegoFilters, ?TsumegoButtons $tsumegoButtons, int $amountOfOtherCollection, int|float|string|null $difficulty, ?TimeMode $timeMode, string $queryTitle, Tsumego $tsumego): string
+	public static function renderTitle(SetConnection $setConnection, array $set, TsumegoFilters $tsumegoFilters, ?TsumegoButtons $tsumegoButtons, int $amountOfOtherCollection, int|float|string|null $difficulty, ?TimeMode $timeMode, string $queryTitle, Tsumego $tsumego): string
 	{
 		if (Auth::isInTimeMode())
 			return '<font size="5px">' . $timeMode?->currentPosition() . ' of ' . $timeMode?->overallCount . '</font>';
@@ -284,7 +285,7 @@ ORDER BY s.title", [$tsumegoID, Auth::getUserID()]);
 		if (Auth::isInMistakeTrainingMode())
 			return '<a id="playTitleA" href="' . MistakeTraining::$OVERVIEW_LINK . '">Mistake Training ' . ($tsumegoButtons->currentOrder ?? 0) . '/' . ($tsumegoButtons->highestTsumegoOrder ?? 0) . '</a>';
 
-		$order = $setConnection['SetConnection']['num'];
+		$order = $setConnection->num;
 		if ($tsumegoFilters->query == 'difficulty' || $tsumegoFilters->query == 'tags')
 			return '<a id="playTitleA" href="' . Set::url($tsumegoFilters->getSetID($set), $tsumegoButtons?->getPartition() ?? 1) . '">' . $queryTitle . '</a><br>
 							<font style="font-weight:400;" color="grey">
@@ -298,13 +299,13 @@ ORDER BY s.title", [$tsumegoID, Auth::getUserID()]);
 	//The title of a problem played as a part of a class assignment: the assignment and where in
 	//it the player is, and under it which problem of which collection it really is.
 	/** @param array<string, mixed> $assignment With its collections, see ClassroomAssignmentTable::withCollections() */
-	public static function renderAssignmentTitle(array $assignment, TsumegoButtons $tsumegoButtons, array $setConnection, array $set, int $amountOfOtherCollection): string
+	public static function renderAssignmentTitle(array $assignment, TsumegoButtons $tsumegoButtons, SetConnection $setConnection, array $set, int $amountOfOtherCollection): string
 	{
 		return '<a id="playTitleA" href="/classes/' . (int) $assignment['classroom_id'] . '">'
 			. h(ClassroomAssignmentTable::title($assignment)) . ' ' . $tsumegoButtons->currentOrder . '/' . $tsumegoButtons->highestTsumegoOrder . '</a><br>
 							<font style="font-weight:400;" color="grey">
 								<a style="color:grey;" class="play-title__origin" href="' . Set::url($set['Set']['id']) . '">
-									(' . h($set['Set']['title']) . ' ' . $setConnection['SetConnection']['num'] . '/' . $amountOfOtherCollection . ')
+									(' . h($set['Set']['title']) . ' ' . $setConnection->num . '/' . $amountOfOtherCollection . ')
 								</a>
 							</font>';
 	}

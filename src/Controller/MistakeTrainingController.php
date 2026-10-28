@@ -102,13 +102,13 @@ class MistakeTrainingController extends AppController
 	//back to the queue instead of the refusal of the play page.
 	private function playSetConnection(int $setConnectionID): mixed
 	{
-		$setConnection = ClassRegistry::init('SetConnection')->findById($setConnectionID);
-		$tsumegoId = $setConnection ? (int) $setConnection['SetConnection']['tsumego_id'] : 0;
+		$setConnection = $this->fetchTable('SetConnection')->find()->where(['id' => $setConnectionID])->first();
+		$tsumegoId = $setConnection ? $setConnection->tsumego_id : 0;
 		$pool = $tsumegoId ? MistakeTraining::getPoolRow((int) Auth::getUserID(), $tsumegoId) : null;
 		if (!$pool || !MistakeTraining::isInTodaysTraining($pool))
 			return $this->redirect(MistakeTraining::$QUEUE_LINK);
 
-		$set = ClassRegistry::init('Set')->findById($setConnection['SetConnection']['set_id']);
+		$set = ClassRegistry::init('Set')->findById($setConnection->set_id);
 		if (!$set || !$this->Authorization->can(['Set' => $set['Set']], 'play'))
 			return $this->redirect(MistakeTraining::$QUEUE_LINK);
 

@@ -146,10 +146,10 @@ class CronControllerTest extends IntegrationTestCase
 
 		$this->get('/cron/daily/' . CRON_SECRET);
 		$newTsumego = $this->fetchTable('Tsumego')->find()->where(['id' => $tsumegoToMigrate['id']])->first();
-		$newSetConnection = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $tsumegoToMigrate['id']]]);
+		$newSetConnection = $this->fetchTable('SetConnection')->find()->where(['tsumego_id' => $tsumegoToMigrate['id']])->first();
 		$this->assertSame($newTsumego->id, $tsumegoToMigrate['id']);
-		$this->assertSame($newSetConnection['SetConnection']['id'], $tsumegoToMigrate['set-connections'][0]['id']);
-		$this->assertSame($newSetConnection['SetConnection']['set_id'], $publicSetID);
+		$this->assertSame($newSetConnection->id, $tsumegoToMigrate['set-connections'][0]['id']);
+		$this->assertSame($newSetConnection->set_id, $publicSetID);
 	}
 
 	//The other daily work runs once a day, but publishing repeats on every call

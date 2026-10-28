@@ -9,7 +9,6 @@ use App\Utility\TimeModeUtil;
 use App\Utility\TsumegoButton;
 use App\Utility\Util;
 use Cake\ORM\TableRegistry;
-use ClassRegistry;
 
 //A challenge between players: one player picks a range of difficulty, the time for a problem and
 //how many problems, the site draws the problems, and every player in the challenge plays the same
@@ -90,7 +89,7 @@ class ChallengeTable extends AppTable
 		$buttons = [];
 		foreach ($rows as $row)
 		{
-			$setConnection = ClassRegistry::init('SetConnection')->findDisplaySetConnection((int) $row['tsumego_id']);
+			$setConnection = SetConnectionTable::findDisplaySetConnection((int) $row['tsumego_id']);
 			if (!$setConnection)
 				continue;
 			$order = (int) $row['order'];
@@ -102,7 +101,7 @@ class ChallengeTable extends AppTable
 				'timeout' => ['F', 'Out of time', 'You ran out of time.'],
 				default => ['N', 'Skipped', 'You didn\'t play it.'],
 			};
-			$button = new TsumegoButton((int) $row['tsumego_id'], (int) $setConnection['SetConnection']['id'], $order, $status, (float) $row['rating'], $row['sgf'] ?? '');
+			$button = new TsumegoButton((int) $row['tsumego_id'], $setConnection->id, $order, $status, (float) $row['rating'], $row['sgf'] ?? '');
 			$button->label = $label;
 			$button->description = $description;
 			$buttons[$order] = $button;

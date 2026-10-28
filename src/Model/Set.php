@@ -11,8 +11,6 @@ class Set extends AppModel
 		parent::__construct($id, $table, $ds);
 	}
 
-	public $hasMany = ['SetConnection'];
-
 	//A collection the site publishes: public, owned by nobody and not in the trash. A collection
 	//a player assembled and a sandbox build are not site content, so they do not count wherever
 	//the site's own collections are meant.

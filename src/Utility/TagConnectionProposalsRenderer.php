@@ -4,7 +4,7 @@ namespace App\Utility;
 
 use App\Model\Table\SgfTable;
 use Cake\ORM\TableRegistry;
-use SetConnection;
+use App\Model\Table\SetConnectionTable;
 use User;
 
 //The proposals of players to put an existing tag on a problem. New tags are in TagProposalsRenderer.
@@ -50,7 +50,7 @@ FROM
 			FROM set_connection sc2
 			JOIN `set` s2 ON s2.id = sc2.set_id
 			WHERE sc2.tsumego_id = tag_connection.tsumego_id
-			ORDER BY " . SetConnection::displayOrderSql('s2', 'sc2') . "
+			ORDER BY " . SetConnectionTable::displayOrderSql('s2', 'sc2') . "
 			LIMIT 1
 		)
 	JOIN user ON tag_connection.user_id = user.id

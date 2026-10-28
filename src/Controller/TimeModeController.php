@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SetConnectionTable;
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Model\Entity\TimeModeCategory;
@@ -59,7 +60,7 @@ class TimeModeController extends AppController
 		if ($tsumegoID == null)
 			return $this->renderWaitingForTheResult();
 
-		$setConnection = ClassRegistry::init('SetConnection')->findDisplaySetConnection($tsumegoID);
+		$setConnection = SetConnectionTable::findDisplaySetConnection($tsumegoID);
 		if (!$setConnection)
 			throw new Exception('Time mode session contains tsumego without a set connection.');
 
@@ -71,7 +72,7 @@ class TimeModeController extends AppController
 		$play  = new Play(function ($name, $value) {
 			$this->set($name, $value);
 		});
-		$play->play($setConnection['SetConnection']['id'], $this->request);
+		$play->play($setConnection->id, $this->request);
 		$this->render('/Tsumegos/play');
 		return null;
 	}
@@ -242,7 +243,7 @@ ORDER BY MIN(rating);");
 	}
 
 	//The attempts of the given sessions indexed by session, each with the set it is shown in.
-	//A problem in several sets is shown in the one SetConnection::findDisplaySetConnection() picks.
+	//A problem in several sets is shown in the one SetConnectionTable::findDisplaySetConnection() picks.
 	private static function getAttempts(array $sessionIDs): array
 	{
 		if (empty($sessionIDs))
@@ -263,7 +264,7 @@ LEFT JOIN set_connection ON set_connection.id = (
 	SELECT display_connection.id FROM set_connection display_connection
 	JOIN `set` display_set ON display_set.id = display_connection.set_id
 	WHERE display_connection.tsumego_id = time_mode_attempt.tsumego_id
-	ORDER BY " . SetConnection::displayOrderSql('display_set', 'display_connection') . "
+	ORDER BY " . SetConnectionTable::displayOrderSql('display_set', 'display_connection') . "
 	LIMIT 1)
 LEFT JOIN `set` ON `set`.id = set_connection.set_id
 WHERE time_mode_attempt.time_mode_session_id IN (" . implode(',', array_fill(0, count($sessionIDs), '?')) . ")

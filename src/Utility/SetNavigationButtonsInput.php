@@ -2,6 +2,8 @@
 
 namespace App\Utility;
 
+use App\Model\Entity\SetConnection;
+
 class SetNavigationButtonsInput
 {
 	public function __construct(callable $setFunction)
@@ -9,18 +11,18 @@ class SetNavigationButtonsInput
 		$this->setFunction = $setFunction;
 	}
 
-	public function execute(TsumegoButtons $tsumegoButtons, array $currentSetConnection): void
+	public function execute(TsumegoButtons $tsumegoButtons, SetConnection $currentSetConnection): void
 	{
 		$navigationButtons = $this->collectFromSetConnections($tsumegoButtons, $currentSetConnection);
 		$navigationButtons->loadPreviews();
 		($this->setFunction)('tsumegoButtons', $navigationButtons);
 	}
 
-	private function collectFromSetConnections(TsumegoButtons $tsumegoButtons, array $currentSetConnection): TsumegoButtons
+	private function collectFromSetConnections(TsumegoButtons $tsumegoButtons, SetConnection $currentSetConnection): TsumegoButtons
 	{
 		$result = TsumegoButtons::deriveFrom($tsumegoButtons);
 		$currentIndex = array_find_key((array) $tsumegoButtons, function ($tsumegoButton) use ($currentSetConnection) {
-			return $tsumegoButton->setConnectionID === (int) $currentSetConnection['SetConnection']['id'];
+			return $tsumegoButton->setConnectionID === $currentSetConnection->id;
 		});
 
 		// mark the problem we are going to visit as already visited, except in the mistake

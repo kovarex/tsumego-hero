@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SetConnectionTable;
 use App\Model\Table\SgfTable;
 use App\Lib\Error\ConflictException;
 use App\Model\Table\AchievementConditionTable;
@@ -33,7 +34,6 @@ class SetsController extends AppController
 		$this->Authorization->authorize('Set');
 
 		$this->loadModel('User');
-		$this->loadModel('SetConnection');
 
 		$this->set('_page', 'sandbox');
 		$this->set('_title', 'Tsumego Hero - Collections');
@@ -173,7 +173,6 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 	{
 		$this->Authorization->authorize('Set', 'create');
 
-		$this->loadModel('SetConnection');
 		$redirect = false;
 
 		if (isset($this->request->data['Set']))
@@ -209,12 +208,11 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 					'author' => Auth::getUser()['display_name'],
 					'author_user_id' => Auth::getUserID()]));
 
-				$sc = [];
-				$sc['SetConnection']['set_id'] = $this->Set->id;
-				$sc['SetConnection']['tsumego_id'] = $tsumego->id;
-				$sc['SetConnection']['num'] = 1;
-				$this->SetConnection->create();
-				$this->SetConnection->save($sc);
+				$setConnectionTable = $this->fetchTable('SetConnection');
+				$setConnectionTable->saveOrFail($setConnectionTable->newEntity([
+					'set_id' => $this->Set->id,
+					'tsumego_id' => $tsumego->id,
+					'num' => 1]));
 			}
 
 			$this->redirect('/sets/edit/' . $this->Set->id);
@@ -227,7 +225,6 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 	#[HttpPost]
 	public function edit(?string $id = null)
 	{
-		$this->loadModel('SetConnection');
 
 		$set = $this->Set->findById((int) $id);
 		if (!$set)
@@ -473,7 +470,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 	public function index(): void
 	{
 		$this->loadModel('User');
-		$this->loadModel('SetConnection');
 		$this->set('_page', 'set');
 		$this->set('_title', 'Tsumego Hero - Collections');
 
@@ -487,7 +483,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$tsumegoFilters = new TsumegoFilters();
 		//setTiles
 		$setsRaw = $this->Set->find('all', [
-			'order' => array_map('trim', explode(',', SetConnection::displayOrderForSetSql('Set'))),
+			'order' => array_map('trim', explode(',', SetConnectionTable::displayOrderForSetSql('Set'))),
 			'conditions' => [Set::officialCondition('Set')],
 		]) ?: [];
 		foreach ($setsRaw as $set)
@@ -586,24 +582,15 @@ ORDER BY sc.num ASC", [(int) $id]);
 		if (!$this->fetchTable('Tsumego')->exists(['id' => (int) $tsumegoId]))
 			throw new NotFoundException('Tsumego not found');
 
-		$existing = ClassRegistry::init('SetConnection')->find('first', [
-			'conditions' => ['set_id' => $setID, 'tsumego_id' => $tsumegoId],
-		]);
-		if ($existing)
+		$setConnectionTable = $this->fetchTable('SetConnection');
+		if ($setConnectionTable->exists(['set_id' => $setID, 'tsumego_id' => $tsumegoId]))
 			throw new ConflictException('Already in set');
 
-		$lastSc = ClassRegistry::init('SetConnection')->find('first', [
-			'conditions' => ['set_id' => $setID],
-			'order' => 'num DESC',
-		]);
-		$nextNum = $lastSc ? $lastSc['SetConnection']['num'] + 1 : 1;
-
-		$sc = [];
-		$sc['SetConnection']['set_id'] = $setID;
-		$sc['SetConnection']['tsumego_id'] = $tsumegoId;
-		$sc['SetConnection']['num'] = $nextNum;
-		ClassRegistry::init('SetConnection')->create();
-		ClassRegistry::init('SetConnection')->save($sc);
+		$lastSetConnection = $setConnectionTable->find()->select(['num'])->where(['set_id' => $setID])->orderByDesc('num')->first();
+		$setConnectionTable->saveOrFail($setConnectionTable->newEntity([
+			'set_id' => $setID,
+			'tsumego_id' => $tsumegoId,
+			'num' => $lastSetConnection ? $lastSetConnection->num + 1 : 1]));
 
 		$achievementChecker = new AchievementChecker();
 		$achievementChecker->checkFavoritesAchievement((int) $setID);
@@ -650,12 +637,11 @@ ORDER BY sc.num ASC", [(int) $id]);
 				'author' => Auth::getUser()['display_name'],
 				'author_user_id' => Auth::getUserID()]));
 
-			$setConnection = [];
-			$setConnection['set_id'] = $setID;
-			$setConnection['tsumego_id'] = $tsumego->id;
-			$setConnection['num'] = $this->request->data['order'];
-			ClassRegistry::init('SetConnection')->create();
-			ClassRegistry::init('SetConnection')->save($setConnection);
+			$setConnectionTable = $this->fetchTable('SetConnection');
+			$setConnectionTable->saveOrFail($setConnectionTable->newEntity([
+				'set_id' => $setID,
+				'tsumego_id' => $tsumego->id,
+				'num' => $this->request->data['order']]));
 
 			$fileUpload = isset($_FILES['adminUpload']) && $_FILES['adminUpload']['error'] === UPLOAD_ERR_OK ? $_FILES['adminUpload'] : null;
 			$sgfDataOrFile = $this->request->data['sgf'] ?? $fileUpload;
@@ -718,7 +704,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		if (!$tsumegoId)
 			throw new BadRequestException();
 
-		ClassRegistry::init('SetConnection')->deleteAll([
+		$this->fetchTable('SetConnection')->deleteAll([
 			'set_id' => $setID,
 			'tsumego_id' => (int) $tsumegoId,
 		]);
@@ -750,27 +736,23 @@ ORDER BY sc.num ASC", [(int) $id]);
 		if (!$tsumegoId || !in_array($dir, ['up', 'down']))
 			throw new BadRequestException();
 
-		$scModel = ClassRegistry::init('SetConnection');
-		$current = $scModel->find('first', [
-			'conditions' => ['set_id' => $setID, 'tsumego_id' => (int) $tsumegoId],
-		]);
+		$setConnectionTable = $this->fetchTable('SetConnection');
+		$current = $setConnectionTable->find()->select(['id', 'num'])->where(['set_id' => $setID, 'tsumego_id' => (int) $tsumegoId])->first();
 		if (!$current)
 			throw new NotFoundException('Tsumego not in set');
 
-		$currentNum = $current['SetConnection']['num'];
+		$currentNum = $current->num;
 		$adjacentNum = $dir === 'up' ? $currentNum - 1 : $currentNum + 1;
 
-		$adjacent = $scModel->find('first', [
-			'conditions' => ['set_id' => $setID, 'num' => $adjacentNum],
-		]);
+		$adjacent = $setConnectionTable->find()->select(['id', 'num'])->where(['set_id' => $setID, 'num' => $adjacentNum])->first();
 		if (!$adjacent)
 			throw new ConflictException();
 
 		// Swap num values
-		$scModel->id = $current['SetConnection']['id'];
-		$scModel->saveField('num', $adjacentNum);
-		$scModel->id = $adjacent['SetConnection']['id'];
-		$scModel->saveField('num', $currentNum);
+		$current->num = $adjacentNum;
+		$setConnectionTable->saveOrFail($current);
+		$adjacent->num = $currentNum;
+		$setConnectionTable->saveOrFail($adjacent);
 
 		CookieFlash::set('Reordered', 'success');
 		return $this->redirect('/sets/edit/' . (int) $setID);
@@ -795,7 +777,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 			return;
 		}
 
-		$this->loadModel('SetConnection');
 		$this->loadModel('User');
 
 		if ($id === null)

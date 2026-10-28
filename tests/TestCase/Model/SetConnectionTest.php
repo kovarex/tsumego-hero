@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SetConnectionTable;
 use Cake\ORM\TableRegistry;
 
 class SetConnectionTest extends CakeTestCase
@@ -16,9 +17,9 @@ class SetConnectionTest extends CakeTestCase
 			],
 		]);
 
-		$display = ClassRegistry::init('SetConnection')->findDisplaySetConnection($context->tsumegos[0]['id']);
+		$display = SetConnectionTable::findDisplaySetConnection($context->tsumegos[0]['id']);
 
-		$this->assertSame($context->tsumegos[0]['sets'][0]['id'], $display['SetConnection']['set_id']);
+		$this->assertSame($context->tsumegos[0]['sets'][0]['id'], $display->set_id);
 	}
 
 	public function testDisplayPrefersUnownedOverOwnedWhenPrivate()
@@ -33,9 +34,9 @@ class SetConnectionTest extends CakeTestCase
 			],
 		]);
 
-		$display = ClassRegistry::init('SetConnection')->findDisplaySetConnection($context->tsumegos[0]['id']);
+		$display = SetConnectionTable::findDisplaySetConnection($context->tsumegos[0]['id']);
 
-		$this->assertSame($context->tsumegos[0]['sets'][0]['id'], $display['SetConnection']['set_id']);
+		$this->assertSame($context->tsumegos[0]['sets'][0]['id'], $display->set_id);
 	}
 
 	public function testDisplayPrefersLowerOrderAmongOfficial()
@@ -49,9 +50,9 @@ class SetConnectionTest extends CakeTestCase
 			],
 		]);
 
-		$display = ClassRegistry::init('SetConnection')->findDisplaySetConnection($context->tsumegos[0]['id']);
+		$display = SetConnectionTable::findDisplaySetConnection($context->tsumegos[0]['id']);
 
-		$this->assertSame($context->tsumegos[0]['sets'][1]['id'], $display['SetConnection']['set_id']);
+		$this->assertSame($context->tsumegos[0]['sets'][1]['id'], $display->set_id);
 	}
 
 	//A player's private collection is personal, so even a collection in the trash shows the problem better.
@@ -67,9 +68,9 @@ class SetConnectionTest extends CakeTestCase
 			],
 		]);
 
-		$display = ClassRegistry::init('SetConnection')->findDisplaySetConnection($context->tsumegos[0]['id']);
+		$display = SetConnectionTable::findDisplaySetConnection($context->tsumegos[0]['id']);
 
-		$this->assertSame($context->tsumegos[0]['sets'][1]['id'], $display['SetConnection']['set_id']);
+		$this->assertSame($context->tsumegos[0]['sets'][1]['id'], $display->set_id);
 	}
 
 	public function testDisplayPrefersDeletedSandboxOverFavorite()
@@ -84,9 +85,9 @@ class SetConnectionTest extends CakeTestCase
 			],
 		]);
 
-		$display = ClassRegistry::init('SetConnection')->findDisplaySetConnection($context->tsumegos[0]['id']);
+		$display = SetConnectionTable::findDisplaySetConnection($context->tsumegos[0]['id']);
 
-		$this->assertSame($context->tsumegos[0]['sets'][1]['id'], $display['SetConnection']['set_id']);
+		$this->assertSame($context->tsumegos[0]['sets'][1]['id'], $display->set_id);
 	}
 
 	public function testDisplayPutsNullOrderLast()
@@ -103,13 +104,12 @@ class SetConnectionTest extends CakeTestCase
 		$set->create();
 		$set->save(['title' => 'unordered', 'public' => 1, 'order' => null]);
 
-		$connection = ClassRegistry::init('SetConnection');
-		$connection->create();
-		$connection->save(['tsumego_id' => $context->tsumegos[0]['id'], 'set_id' => $set->id, 'num' => 1]);
+		$setConnectionTable = TableRegistry::getTableLocator()->get('SetConnection');
+		$setConnectionTable->saveOrFail($setConnectionTable->newEntity(['tsumego_id' => $context->tsumegos[0]['id'], 'set_id' => $set->id, 'num' => 1]));
 
-		$display = $connection->findDisplaySetConnection($context->tsumegos[0]['id']);
+		$display = SetConnectionTable::findDisplaySetConnection($context->tsumegos[0]['id']);
 
-		$this->assertSame($context->tsumegos[0]['sets'][0]['id'], $display['SetConnection']['set_id']);
+		$this->assertSame($context->tsumegos[0]['sets'][0]['id'], $display->set_id);
 	}
 
 	public function testDisplayBreaksOrderTiesByEarliestSet()
@@ -125,14 +125,12 @@ class SetConnectionTest extends CakeTestCase
 		$set->save(['title' => 'latest', 'public' => 1, 'order' => 10]);
 		$latestSetId = (int) $set->id;
 
-		$connection = ClassRegistry::init('SetConnection');
-		$connection->create();
-		$connection->save(['tsumego_id' => $tsumego->id, 'set_id' => $latestSetId, 'num' => 1]);
-		$connection->create();
-		$connection->save(['tsumego_id' => $tsumego->id, 'set_id' => $earliestSetId, 'num' => 1]);
+		$setConnectionTable = TableRegistry::getTableLocator()->get('SetConnection');
+		$setConnectionTable->saveOrFail($setConnectionTable->newEntity(['tsumego_id' => $tsumego->id, 'set_id' => $latestSetId, 'num' => 1]));
+		$setConnectionTable->saveOrFail($setConnectionTable->newEntity(['tsumego_id' => $tsumego->id, 'set_id' => $earliestSetId, 'num' => 1]));
 
-		$display = $connection->findDisplaySetConnection($tsumego->id);
+		$display = SetConnectionTable::findDisplaySetConnection($tsumego->id);
 
-		$this->assertSame($earliestSetId, (int) $display['SetConnection']['set_id']);
+		$this->assertSame($earliestSetId, (int) $display->set_id);
 	}
 }

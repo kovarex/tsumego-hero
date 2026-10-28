@@ -83,7 +83,7 @@ class SpecialSetAchievementTest extends AchievementTestCase
 		$Set = ClassRegistry::init('Set');
 		$tsumegoTable = $this->fetchTable('Tsumego');
 		$TsumegoStatus = $this->fetchTable('TsumegoStatus');
-		$SetConnection = ClassRegistry::init('SetConnection');
+		$setConnectionTable = $this->fetchTable('SetConnection');
 
 		$tsumegoIDs = [];
 		foreach ($setIds as $setId)
@@ -96,8 +96,7 @@ class SpecialSetAchievementTest extends AchievementTestCase
 				$tsumegoId = $tsumegoTable->saveOrFail($tsumegoTable->newEntity(['rating' => 1000, 'author' => '']))->id;
 				$tsumegoIDs[] = (int) $tsumegoId;
 
-				$SetConnection->create();
-				$SetConnection->save(['set_id' => $setId, 'tsumego_id' => $tsumegoId, 'num' => $i + 1]);
+				$setConnectionTable->saveOrFail($setConnectionTable->newEntity(['set_id' => $setId, 'tsumego_id' => $tsumegoId, 'num' => $i + 1]));
 
 				$TsumegoStatus->saveOrFail($TsumegoStatus->newEntity(['user_id' => $userId, 'tsumego_id' => $tsumegoId, 'status' => 'S']));
 			}

@@ -542,9 +542,9 @@ class ContextPreparator
 		$setConnection['tsumego_id'] = $tsumego['id'];
 		$setConnection['set_id'] = $set['id'];
 		$setConnection['num'] = Util::extract('num', $setInput);
-		ClassRegistry::init('SetConnection')->create();
-		ClassRegistry::init('SetConnection')->save($setConnection);
-		$setConnection = ClassRegistry::init('SetConnection')->find('first', ['order' => ['id' => 'DESC']])['SetConnection'];
+		$setConnectionTable = TableRegistry::getTableLocator()->get('SetConnection');
+		$setConnectionID = $setConnectionTable->saveOrFail($setConnectionTable->newEntity($setConnection))->id;
+		$setConnection = Util::query('SELECT * FROM set_connection WHERE id = ?', [$setConnectionID])[0];
 		$tsumego['sets'] [] = $set;
 		$tsumego['set-connections'] [] = $setConnection;
 		$this->setConnections [] = $setConnection;

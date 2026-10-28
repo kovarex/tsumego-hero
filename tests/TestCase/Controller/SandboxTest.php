@@ -107,14 +107,14 @@ class SandboxTest extends IntegrationTestCase
 		new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
 
 		$beforeTsumegoCount = $this->fetchTable('Tsumego')->find()->count();
-		$beforeConnCount = ClassRegistry::init('SetConnection')->find('count');
+		$beforeConnCount = $this->fetchTable('SetConnection')->find()->count();
 
 		$this->post('/sets/create?sandbox=1', [
 			'Set' => ['title' => 'Test Set'],
 		]);
 
 		$this->assertEquals($beforeTsumegoCount + 1, $this->fetchTable('Tsumego')->find()->count());
-		$this->assertEquals($beforeConnCount + 1, ClassRegistry::init('SetConnection')->find('count'));
+		$this->assertEquals($beforeConnCount + 1, $this->fetchTable('SetConnection')->find()->count());
 	}
 
 	public function testCreateDoesNotCreateSgf(): void
@@ -183,9 +183,7 @@ class SandboxTest extends IntegrationTestCase
 		$this->assertEquals($beforeCount, $this->fetchTable('Tsumego')->find()->count(),
 			'Tsumegos survive set deletion (they may be in multiple sets)');
 
-		$connections = ClassRegistry::init('SetConnection')->find('all', [
-			'conditions' => ['set_id' => $setId],
-		]);
+		$connections = $this->fetchTable('SetConnection')->find()->where(['set_id' => $setId])->toArray();
 		$this->assertCount(1, $connections, 'The set waits in the trash with its problems in place, so it can be restored');
 	}
 
@@ -268,14 +266,12 @@ class SandboxTest extends IntegrationTestCase
 		$this->assertEquals($beforeSgf + 1, $this->fetchTable('Sgf')->find()->count());
 
 		$tsumego = $this->fetchTable('Tsumego')->find()->orderByDesc('id')->first();
-		$connection = ClassRegistry::init('SetConnection')->find('first', [
-			'conditions' => [
-				'set_id' => $setId,
-				'tsumego_id' => $tsumego->id,
-			],
-		]);
+		$connection = $this->fetchTable('SetConnection')->find()->where([
+			'set_id' => $setId,
+			'tsumego_id' => $tsumego->id,
+		])->first();
 		$this->assertNotEmpty($connection);
-		$this->assertEquals(5, $connection['SetConnection']['num']);
+		$this->assertEquals(5, $connection->num);
 	}
 
 	private function createSetWithTsumego(string $title, int $public): int
@@ -287,9 +283,8 @@ class SandboxTest extends IntegrationTestCase
 		$tsumegoTable = $this->fetchTable('Tsumego');
 		$tsumegoId = $tsumegoTable->saveOrFail($tsumegoTable->newEntity(['description' => 'test', 'author' => '']))->id;
 
-		$connModel = ClassRegistry::init('SetConnection');
-		$connModel->create();
-		$connModel->save(['set_id' => $setModel->id, 'tsumego_id' => $tsumegoId, 'num' => 1]);
+		$setConnectionTable = $this->fetchTable('SetConnection');
+		$setConnectionTable->saveOrFail($setConnectionTable->newEntity(['set_id' => $setModel->id, 'tsumego_id' => $tsumegoId, 'num' => 1]));
 
 		return $setModel->id;
 	}

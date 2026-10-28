@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SetConnectionTable;
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Model\Table\AdminActivityTypeTable;
@@ -38,7 +39,7 @@ LEFT JOIN set_connection sc ON sc.id = (
 	SELECT sc2.id FROM set_connection sc2
 	JOIN `set` s2 ON s2.id = sc2.set_id
 	WHERE sc2.tsumego_id = t.id
-	ORDER BY ' . SetConnection::displayOrderSql('s2', 'sc2') . '
+	ORDER BY ' . SetConnectionTable::displayOrderSql('s2', 'sc2') . '
 	LIMIT 1)
 LEFT JOIN `set` s ON s.id = sc.set_id
 WHERE t.deleted IS NOT NULL

@@ -3,7 +3,7 @@
 namespace App\Utility;
 
 use App\Model\Table\SgfTable;
-use SetConnection;
+use App\Model\Table\SetConnectionTable;
 use User;
 
 //The rejected SGF proposals in the admin panel, folded under the ones waiting for a decision,
@@ -48,7 +48,7 @@ JOIN set_connection sc ON sc.id = (
     FROM set_connection sc2
     JOIN `set` s2 ON s2.id = sc2.set_id
     WHERE sc2.tsumego_id = p.tsumego_id
-    ORDER BY " . SetConnection::displayOrderSql('s2', 'sc2') . "
+    ORDER BY " . SetConnectionTable::displayOrderSql('s2', 'sc2') . "
     LIMIT 1
 )
 JOIN `set` s ON s.id = sc.set_id

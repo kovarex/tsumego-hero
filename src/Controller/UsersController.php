@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SetConnectionTable;
 use App\Model\Table\SgfTable;
 use App\Model\Table\TsumegoStatusTable;
 use App\Model\Table\TsumegoTable;
@@ -808,7 +809,6 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	{
 		$this->set('_page', 'user');
 		$this->loadModel('Set');
-		$this->loadModel('SetConnection');
 
 		$as = $this->fetchTable('AchievementStatus')->find()->where(['user_id' => $id])->orderByDesc('created')->limit(12)->all();
 
@@ -1357,7 +1357,7 @@ FROM
 		FROM set_connection sc
 		JOIN `set` ss ON ss.id = sc.set_id
 		WHERE sc.tsumego_id = tsumego_attempt.tsumego_id
-		ORDER BY " . SetConnection::displayOrderSql('ss', 'sc') . "
+		ORDER BY " . SetConnectionTable::displayOrderSql('ss', 'sc') . "
 		LIMIT 1)
 	LEFT JOIN sgf ON sgf.id = " . SgfTable::currentVersionIDSql('tsumego_attempt.tsumego_id') . "
 	LEFT JOIN tsumego_status ON tsumego_status.user_id = ? AND tsumego_status.tsumego_id = tsumego_attempt.tsumego_id

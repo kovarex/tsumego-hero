@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SetConnectionTable;
 use App\Model\Table\SgfTable;
 use App\Model\Entity\Tag;
 use App\Model\Table\RejectTable;
@@ -105,7 +106,7 @@ class TagsController extends AppController
 					. 'SELECT sc2.id FROM set_connection sc2 '
 					. 'JOIN `set` s2 ON s2.id = sc2.set_id '
 					. 'WHERE sc2.tsumego_id = tc.tsumego_id '
-					. 'ORDER BY ' . SetConnection::displayOrderSql('s2', 'sc2') . ' LIMIT 1) '
+					. 'ORDER BY ' . SetConnectionTable::displayOrderSql('s2', 'sc2') . ' LIMIT 1) '
 				. 'JOIN `set` s ON s.id = sc.set_id '
 				. 'WHERE tc.user_id = ? '
 				. 'UNION ALL '
@@ -116,7 +117,7 @@ class TagsController extends AppController
 					. 'SELECT sc2.id FROM set_connection sc2 '
 					. 'JOIN `set` s2 ON s2.id = sc2.set_id '
 					. 'WHERE sc2.tsumego_id = sg.tsumego_id '
-					. 'ORDER BY ' . SetConnection::displayOrderSql('s2', 'sc2') . ' LIMIT 1) '
+					. 'ORDER BY ' . SetConnectionTable::displayOrderSql('s2', 'sc2') . ' LIMIT 1) '
 				. 'JOIN `set` s ON s.id = sc.set_id '
 				// the rejected ones come from their reject rows below
 				. 'WHERE sg.user_id = ? AND sg.sgf_status_id != ' . SgfTable::STATUS_REJECTED . ' '
@@ -131,7 +132,7 @@ class TagsController extends AppController
 					. 'SELECT sc2.id FROM set_connection sc2 '
 					. 'JOIN `set` s2 ON s2.id = sc2.set_id '
 					. 'WHERE sc2.tsumego_id = r.tsumego_id '
-					. 'ORDER BY ' . SetConnection::displayOrderSql('s2', 'sc2') . ' LIMIT 1) '
+					. 'ORDER BY ' . SetConnectionTable::displayOrderSql('s2', 'sc2') . ' LIMIT 1) '
 				. 'LEFT JOIN `set` s ON s.id = sc.set_id '
 				. 'WHERE r.user_id = ? AND (sc.id IS NOT NULL OR r.reject_type_id = ' . RejectTable::TYPE_TAG_NAME . ') '
 			. ') AS contributions '
