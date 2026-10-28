@@ -5,7 +5,7 @@
  *
  * @var View $this
  * @var array $challenges What Challenge::ofPlayer() returned
- * @var array $ranks The rows of time_mode_rank, the easiest first
+ * @var array<\App\Model\Entity\TimeModeRank> $ranks The rows of time_mode_rank, the easiest first
  * @var int|null $defaultRankID The rank of the player, to start the form with
  * @var string|null $opponent The name of the player to invite, from the button on a profile
  */
@@ -26,7 +26,7 @@ use App\Utility\TimeModeUtil;
 					<label class="form-field__label" for="challenge-minimum-rank">Problems from</label>
 					<select class="form-field__control" id="challenge-minimum-rank" name="minimum_rank">
 						<?php foreach ($ranks as $rank): ?>
-						<option value="<?= (int) $rank['id'] ?>"<?= (int) $rank['id'] === $defaultRankID ? ' selected' : '' ?>><?= h($rank['name']) ?></option>
+						<option value="<?= $rank->id ?>"<?= $rank->id === $defaultRankID ? ' selected' : '' ?>><?= h($rank->name) ?></option>
 						<?php endforeach; ?>
 					</select>
 				</div>
@@ -34,7 +34,7 @@ use App\Utility\TimeModeUtil;
 					<label class="form-field__label" for="challenge-maximum-rank">to</label>
 					<select class="form-field__control" id="challenge-maximum-rank" name="maximum_rank">
 						<?php foreach ($ranks as $rank): ?>
-						<option value="<?= (int) $rank['id'] ?>"<?= (int) $rank['id'] === $defaultRankID ? ' selected' : '' ?>><?= h($rank['name']) ?></option>
+						<option value="<?= $rank->id ?>"<?= $rank->id === $defaultRankID ? ' selected' : '' ?>><?= h($rank->name) ?></option>
 						<?php endforeach; ?>
 					</select>
 				</div>

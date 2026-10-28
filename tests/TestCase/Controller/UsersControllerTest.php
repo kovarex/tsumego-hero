@@ -583,10 +583,8 @@ class UsersControllerTest extends IntegrationTestCase
 			'other-users' => [['name' => 'timeplayer']],
 		]);
 
-		$rankRow = ClassRegistry::init('TimeModeRank')->find('first', ['conditions' => ['name' => '15k']]);
-		$rankId = $rankRow['TimeModeRank']['id'];
-		$rank10kRow = ClassRegistry::init('TimeModeRank')->find('first', ['conditions' => ['name' => '10k']]);
-		$rankId10k = $rank10kRow['TimeModeRank']['id'];
+		$rankId = $this->fetchTable('TimeModeRank')->find()->where(['name' => '15k'])->firstOrFail()->id;
+		$rankId10k = $this->fetchTable('TimeModeRank')->find()->where(['name' => '10k'])->firstOrFail()->id;
 		$sessionModel = ClassRegistry::init('TimeModeSession');
 
 		$sessions = [
@@ -630,8 +628,7 @@ class UsersControllerTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'kovarex']]);
 
-		$rankRow = ClassRegistry::init('TimeModeRank')->find('first', ['conditions' => ['name' => '14k']]);
-		$rankId = $rankRow['TimeModeRank']['id'];
+		$rankId = $this->fetchTable('TimeModeRank')->find()->where(['name' => '14k'])->firstOrFail()->id;
 		$sessionModel = ClassRegistry::init('TimeModeSession');
 
 		foreach ([TimeModeCategoryTable::SLOW, TimeModeCategoryTable::FAST, TimeModeCategoryTable::BLITZ] as $cat)

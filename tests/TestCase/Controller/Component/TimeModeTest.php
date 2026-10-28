@@ -22,7 +22,7 @@ class TimeModeTest extends IntegrationTestCase
 		$context = new ContextPreparator(['time-mode-ranks' => ['1k', '1d', '2d']]);
 		// The ranks in the time_mode_rank table should be always ascending when ordered by id.
 		// This fact is used to conveniently deduce the rating range of the current rank
-		$allTimeModeRanks = ClassRegistry::init('TimeModeRank')->find('all', ['order' => 'id']) ?: [];
+		$allTimeModeRanks = $this->fetchTable('TimeModeRank')->find()->orderBy('id')->toArray();
 		$this->assertNotEmpty($allTimeModeRanks);
 
 		$previousRank = null;
@@ -30,8 +30,8 @@ class TimeModeTest extends IntegrationTestCase
 		{
 			if ($previousRank)
 			{
-				$previousRank = Rating::getRankMinimalRatingFromReadableRank($previousRank['TimeModeRank']['name']);
-				$currentRank = Rating::getRankMinimalRatingFromReadableRank($timeModeRank['TimeModeRank']['name']);
+				$previousRank = Rating::getRankMinimalRatingFromReadableRank($previousRank->name);
+				$currentRank = Rating::getRankMinimalRatingFromReadableRank($timeModeRank->name);
 				$this->assertTrue($previousRank < $currentRank);
 			}
 			$previousRank = $timeModeRank;

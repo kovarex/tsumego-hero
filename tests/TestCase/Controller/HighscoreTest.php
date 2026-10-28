@@ -178,9 +178,7 @@ class HighscoreTest extends IntegrationTestCase
 			],
 		]);
 
-		$rankRow = ClassRegistry::init('TimeModeRank')->find('first', ['conditions' => ['name' => '15k']]);
-		$this->assertNotEmpty($rankRow);
-		$rankId = $rankRow['TimeModeRank']['id'];
+		$rankId = $this->fetchTable('TimeModeRank')->find()->where(['name' => '15k'])->firstOrFail()->id;
 		$sessionModel = ClassRegistry::init('TimeModeSession');
 
 		// FastPlayer: 900 points
@@ -223,8 +221,7 @@ class HighscoreTest extends IntegrationTestCase
 			],
 		]);
 
-		$rankRow = ClassRegistry::init('TimeModeRank')->find('first', ['conditions' => ['name' => '15k']]);
-		$rankId = $rankRow['TimeModeRank']['id'];
+		$rankId = $this->fetchTable('TimeModeRank')->find()->where(['name' => '15k'])->firstOrFail()->id;
 		$sessionModel = ClassRegistry::init('TimeModeSession');
 
 		// MultiPlayer plays 3 times, best score = 950

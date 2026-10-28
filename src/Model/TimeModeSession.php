@@ -7,10 +7,6 @@ class TimeModeSession extends AppModel
 			'className' => 'TimeModeSessionStatus',
 			'foreignKey' => 'time_mode_session_status_id',
 		],
-		'TimeModeRank' => [
-			'className' => 'TimeModeRank',
-			'foreignKey' => 'time_mode_rank_id',
-		],
 	];
 
 	public function __construct(mixed $id = false, ?string $table = null, ?string $ds = null)
