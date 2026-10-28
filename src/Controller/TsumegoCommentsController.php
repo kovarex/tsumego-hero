@@ -28,7 +28,6 @@ class TsumegoCommentsController extends AppController
 		$input = json_decode($this->request->input(), true);
 
 		$tsumegoCommentTable = $this->fetchTable('TsumegoComment');
-		/** @var TsumegoComment $comment */
 		$comment = $tsumegoCommentTable->newEntity([
 			'tsumego_id' => $input['tsumego_id'],
 			'message' => $input['text'],
@@ -64,7 +63,6 @@ class TsumegoCommentsController extends AppController
 	public function delete(string $id)
 	{
 		$tsumegoCommentTable = $this->fetchTable('TsumegoComment');
-		/** @var TsumegoComment|null $comment */
 		$comment = $tsumegoCommentTable->find()->where(['id' => (int) $id])->first();
 
 		if (!$comment)

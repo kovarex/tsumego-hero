@@ -3,7 +3,6 @@
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Lib\Error\UnprocessableEntityException;
-use App\Model\Entity\TsumegoComment;
 //Controller for managing tsumego issues.
 //Issues are reports about problems with tsumego solutions (missing moves, wrong answers, etc.).
 //Each issue contains one or more comments discussing the problem.
@@ -102,7 +101,6 @@ class TsumegoIssuesController extends AppController
 		$issueId = $TsumegoIssue->getLastInsertID();
 
 		// Create the first comment attached to this issue
-		/** @var TsumegoComment $comment */
 		$comment = $tsumegoCommentTable->newEntity([
 			'tsumego_id' => $tsumegoId,
 			'tsumego_issue_id' => $issueId,
@@ -222,7 +220,6 @@ class TsumegoIssuesController extends AppController
 		$this->Authorization->authorize('TsumegoIssue', 'moveComment');
 
 		$tsumegoCommentTable = $this->fetchTable('TsumegoComment');
-		/** @var TsumegoComment|null $comment */
 		$comment = $tsumegoCommentTable->find()->where(['id' => (int) $commentId])->first();
 
 		if (!$comment)

@@ -107,7 +107,6 @@ class CommentsControllerTest extends IntegrationTestCase
 
 		// Verify comment appears in the comments list
 		$browser->get('comments');
-		/** @var TsumegoComment $comment */
 		$comment = $this->fetchTable('TsumegoComment')->find()->orderBy('id')->firstOrFail();
 		$browser->waitUntilCssSelectorExistsWithText('#comment_' . $comment->id, 'My first comment');
 
@@ -142,7 +141,6 @@ class CommentsControllerTest extends IntegrationTestCase
 		$browser->waitUntilJs('document.querySelector(".tsumego-comments__form textarea").value === ""');
 
 		// The position is structured data, the message has no "[current position]" marker
-		/** @var TsumegoComment $comment */
 		$comment = $this->fetchTable('TsumegoComment')->find()->orderByDesc('id')->firstOrFail();
 		$this->assertNotNull($comment->position);
 		$this->assertSame('Check this move', $comment->message);
