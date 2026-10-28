@@ -1,7 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { get } from '../shared/api';
 import { Avatar } from '../shared/Avatar';
 
 dayjs.extend(relativeTime);
@@ -19,22 +17,13 @@ export interface RecentAchievement {
 }
 
 interface RecentAchievementsProps {
-	initialAchievements: RecentAchievement[];
+	achievements: RecentAchievement[];
 }
 
-export function RecentAchievements({ initialAchievements }: RecentAchievementsProps)
+//The list comes with the page and is not polled: the home page is left within moments,
+//and achievements are too rare for a refresh to show anything new.
+export function RecentAchievements({ achievements }: RecentAchievementsProps)
 {
-	const query = useQuery<{ recentAchievements: RecentAchievement[] }>({
-		queryKey: ['recentAchievements'],
-		queryFn: () => get<{ recentAchievements: RecentAchievement[] }>('/sites/recentAchievements'),
-		initialData: { recentAchievements: initialAchievements },
-		refetchInterval: 5 * 60 * 1000,
-		refetchOnWindowFocus: false,
-		retry: false
-	});
-
-	const achievements = query.data.recentAchievements;
-
 	return (
 		<div id="recent-achievement-stream">
 			{achievements.map(achievement => (

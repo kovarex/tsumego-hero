@@ -65,17 +65,6 @@ class SitesController extends AppController
 		}
 	}
 
-	//Returns recent achievements for AJAX polling.
-	#[HttpGet]
-	public function recentAchievements(): void
-	{
-		$this->autoRender = false;
-		$this->loadModel('AchievementStatus');
-		$this->response->type('json');
-		$recentAchievements = $this->AchievementStatus->getRecent();
-		$this->response->body(json_encode(['recentAchievements' => $recentAchievements]));
-	}
-
 	#[HttpGet]
 	public function impressum(): void
 	{

@@ -58,7 +58,7 @@ foreach ($tsumegoButtonsOfPublishedTsumegos as $tsumegoButton)
 
 		<div class="achievements-panel">
 			<img src="/img/new_startpage/<?php echo h($quote); ?>e.png?v=4.3" class="achievement-quote-pick" alt="Most Recent Achievements" title="Most Recent Achievements">
-			<div data-recent-achievements-root data-props="<?php echo h(json_encode(['initialAchievements' => $recentAchievements])); ?>"></div>
+			<div data-recent-achievements-root data-props="<?php echo h(json_encode(['achievements' => $recentAchievements])); ?>"></div>
 		</div>
 
 		<p class="title4">Site Growth</p>
