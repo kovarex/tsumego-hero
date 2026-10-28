@@ -9,6 +9,7 @@ use App\Utility\HeroPowers;
 use App\Utility\Level;
 use App\Utility\SgfParser;
 use App\Utility\Util;
+use Cake\ORM\TableRegistry;
 
 class ContextPreparator
 {
@@ -499,9 +500,15 @@ class ContextPreparator
 
 	private function prepareMistakeTrainingPoolEntry(int $userId, int $tsumegoId, $mistakeTrainingDue, array $tsumegoStatus): void
 	{
-		$pool = ClassRegistry::init('MistakeTrainingPool');
-		$existing = $pool->find('first', ['conditions' => ['user_id' => $userId, 'tsumego_id' => $tsumegoId]]);
-		$data = [
+		$pool = TableRegistry::getTableLocator()->get('MistakeTrainingPool');
+		$existing = $pool->find()->where(['user_id' => $userId, 'tsumego_id' => $tsumegoId])->first();
+		if ($existing)
+		{
+			$existing->set('next_due', $mistakeTrainingDue);
+			$pool->saveOrFail($existing);
+			return;
+		}
+		$pool->saveOrFail($pool->newEntity([
 			'user_id' => $userId,
 			'tsumego_id' => $tsumegoId,
 			'rung' => $tsumegoStatus['mistake_training_rung'] ?? 0,
@@ -509,17 +516,7 @@ class ContextPreparator
 			'next_due' => $mistakeTrainingDue,
 			'last_review_day' => $tsumegoStatus['mistake_training_review_day'] ?? null,
 			'last_mistake_training_result_id' => $tsumegoStatus['mistake_training_review_result'] ?? null,
-		];
-		if ($existing)
-		{
-			$existing['MistakeTrainingPool']['next_due'] = $mistakeTrainingDue;
-			$pool->save($existing['MistakeTrainingPool']);
-		}
-		else
-		{
-			$pool->create();
-			$pool->save($data);
-		}
+		]));
 	}
 
 	private function prepareTsumegoSetsFromJustNum(?int $num, &$tsumego): void
