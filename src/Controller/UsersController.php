@@ -1,6 +1,5 @@
 <?php
 
-use App\Model\Entity\TagConnection;
 use App\Model\Table\RejectTable;
 use App\Model\Table\TimeModeCategoryTable;
 use App\Utility\AdminActivityLogger;
@@ -1515,7 +1514,6 @@ OFFSET " . $offset, [$userID, $userID]);
 		$this->Authorization->authorize('Admin');
 
 		$tagConnectionTable = $this->fetchTable('TagConnection');
-		/** @var TagConnection|null $proposalToApprove */
 		$proposalToApprove = $tagConnectionTable->find()->where(['id' => (int) $tagConnectionID])->first();
 		if (!$proposalToApprove)
 		{
@@ -1556,7 +1554,6 @@ OFFSET " . $offset, [$userID, $userID]);
 		$this->Authorization->authorize('Admin');
 
 		$tagConnectionTable = $this->fetchTable('TagConnection');
-		/** @var TagConnection|null $proposalToReject */
 		$proposalToReject = $tagConnectionTable->find()->where(['id' => (int) $tagConnectionID])->first();
 		if (!$proposalToReject)
 		{

@@ -1,0 +1,20 @@
+#Types of the Cake 5 tables, see CakeTables.
+services:
+	-
+		class: App\Test\PHPStan\CakeTables
+	-
+		class: App\Test\PHPStan\FetchTableReturnTypeExtension
+		tags:
+			- phpstan.broker.expressionTypeResolverExtension
+	-
+		class: App\Test\PHPStan\TableLocatorReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicMethodReturnTypeExtension
+	-
+		class: App\Test\PHPStan\TableReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicMethodReturnTypeExtension
+	-
+		class: App\Test\PHPStan\SelectQueryReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicMethodReturnTypeExtension

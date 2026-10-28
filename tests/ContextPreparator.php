@@ -1,6 +1,5 @@
 <?php
 
-use App\Model\Entity\TimeModeRank;
 use App\Model\Entity\TimeModeSession;
 use App\Model\Table\TimeModeRankTable;
 use App\Utility\AchievementChecker;
@@ -733,11 +732,9 @@ class ContextPreparator
 		$sessionTable = TableRegistry::getTableLocator()->get('TimeModeSession');
 		foreach ($timeModeSessions as $timeModeSessionInput)
 		{
-			/** @var TimeModeRank|null $rank */
 			$rank = TableRegistry::getTableLocator()->get('TimeModeRank')->find()->where(['name' => $timeModeSessionInput['rank']])->first();
 			if (!$rank)
 				throw new Exception('Rank ' . $timeModeSessionInput['rank'] . ' not found');
-			/** @var TimeModeSession $session */
 			$session = $sessionTable->saveOrFail($sessionTable->newEntity([
 				'user_id' => Auth::getUserID(),
 				'time_mode_category_id' => $timeModeSessionInput['category'],

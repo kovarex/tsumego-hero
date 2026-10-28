@@ -3,7 +3,6 @@
 namespace App\Model\Table;
 
 use AchievementCondition;
-use App\Model\Entity\DayRecord;
 use App\Utility\Auth;
 use Cake\Database\Expression\QueryExpression;
 use Cake\ORM\TableRegistry;
@@ -25,7 +24,6 @@ class DayRecordTable extends AppTable
 	{
 		$today = date('Y-m-d');
 		$dayRecordTable = TableRegistry::getTableLocator()->get('DayRecord');
-		/** @var DayRecord|null $dayRecord */
 		$dayRecord = $dayRecordTable->find()->where(['date' => $today])->first();
 		if (!$dayRecord)
 			return;

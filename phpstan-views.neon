@@ -1,5 +1,6 @@
 includes:
 	- vendor/pieceofcake2/phpstan-cakephp2/extension.neon
+	- tests/PHPStan/extension.neon
 	- phpstan-views-baseline.neon
 
 parameters:
