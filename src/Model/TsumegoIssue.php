@@ -135,7 +135,7 @@ class TsumegoIssue extends AppModel
 				SELECT sc2.id
 				FROM set_connection sc2
 				JOIN `set` s2 ON s2.id = sc2.set_id
-				WHERE sc2.tsumego_id = ti.tsumego_id
+				WHERE sc2.tsumego_id = ti.tsumego_id AND NOT " . SetConnection::privateCollectionSql('s2') . "
 				ORDER BY " . SetConnection::displayOrderSql('s2', 'sc2') . "
 				LIMIT 1
 			)

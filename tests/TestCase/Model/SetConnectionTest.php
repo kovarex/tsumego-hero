@@ -52,14 +52,32 @@ class SetConnectionTest extends CakeTestCase
 		$this->assertSame($context->tsumegos[0]['sets'][1]['id'], $display['SetConnection']['set_id']);
 	}
 
-	public function testDisplayPrefersFavoriteOverDeleted()
+	//A player's private collection is personal, so even a collection in the trash shows the problem better.
+	public function testDisplayPrefersDeletedOverFavorite()
 	{
 		$context = new ContextPreparator([
 			'user' => ['name' => 'display', 'rating' => 1000],
 			'tsumego' => [
 				'sets' => [
-					['name' => 'deleted', 'public' => 1, 'deleted' => '2026-10-01 00:00:00', 'order' => 5, 'num' => 1],
 					['name' => 'favorite', 'public' => 0, 'user_id' => 'self', 'order' => 5, 'num' => 1],
+					['name' => 'deleted', 'public' => 1, 'deleted' => '2026-10-01 00:00:00', 'order' => 5, 'num' => 1],
+				],
+			],
+		]);
+
+		$display = ClassRegistry::init('SetConnection')->findDisplaySetConnection($context->tsumegos[0]['id']);
+
+		$this->assertSame($context->tsumegos[0]['sets'][1]['id'], $display['SetConnection']['set_id']);
+	}
+
+	public function testDisplayPrefersDeletedSandboxOverFavorite()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'display', 'rating' => 1000],
+			'tsumego' => [
+				'sets' => [
+					['name' => 'favorite', 'public' => 0, 'user_id' => 'self', 'order' => 5, 'num' => 1],
+					['name' => 'deleted sandbox', 'public' => 0, 'deleted' => '2026-10-01 00:00:00', 'order' => 5, 'num' => 1],
 				],
 			],
 		]);
