@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\AchievementConditionTable;
 use App\Utility\AchievementId;
 
 class AccuracySpeedAchievementTest extends AchievementTestCase
@@ -15,13 +16,12 @@ class AccuracySpeedAchievementTest extends AchievementTestCase
 			$setID = $this->createSetWithTsumegosAndConnections(1200, 100);
 
 			// Add accuracy achievement condition (category CATEGORY_SET_ACCURACY, value=75 means 75% accuracy)
-			$AchievementCondition = ClassRegistry::init('AchievementCondition');
-			$AchievementCondition->create();
-			$AchievementCondition->save([
+			$achievementConditionTable = $this->fetchTable('AchievementCondition');
+			$achievementConditionTable->saveOrFail($achievementConditionTable->newEntity([
 				'user_id' => $context->user['id'],
 				'set_id' => $setID,
-				'achievement_condition_category_id' => AchievementCondition::CATEGORY_SET_ACCURACY,
-				'value' => $percent]);
+				'achievement_condition_category_id' => AchievementConditionTable::CATEGORY_SET_ACCURACY,
+				'value' => $percent]));
 
 			$browser->get('/sets/view/' . $setID);
 			$this->assertAchievementUnlockedWhen($percent >= 75, AchievementId::ACCURACY_I, "Accuracy I should unlock at 75% on 11k set");

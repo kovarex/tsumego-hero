@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\AchievementConditionTable;
 use App\Utility\AchievementId;
 
 /* Test all 12 Speed achievements (IDs 24-35)
@@ -38,15 +39,14 @@ class SpeedAchievementTest extends AchievementTestCase
 			// Create set with 100 tsumegos + SetConnection records
 			$setID = $this->createSetWithTsumegosAndConnections($difficulty, 100);
 
-			$AchievementCondition = ClassRegistry::init('AchievementCondition');
+			$achievementConditionTable = $this->fetchTable('AchievementCondition');
 
 			// Create speed condition
-			$AchievementCondition->create();
-			$AchievementCondition->save([
+			$achievementConditionTable->saveOrFail($achievementConditionTable->newEntity([
 				'user_id' => $context->user['id'],
 				'set_id' => $setID,
-				'achievement_condition_category_id' => AchievementCondition::CATEGORY_SET_TIME,
-				'value' => $speed]);
+				'achievement_condition_category_id' => AchievementConditionTable::CATEGORY_SET_TIME,
+				'value' => $speed]));
 
 			$browser->get('/sets/view/' . $setID);
 			$this->assertAchievementUnlocked($achievementId, "Speed {$achievementId->name} (<{$speed}s at $rank) should unlock");

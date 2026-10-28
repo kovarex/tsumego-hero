@@ -1,6 +1,7 @@
 <?php
 
 
+use App\Model\Table\AchievementConditionTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\Util;
@@ -121,8 +122,7 @@ class CronControllerTest extends IntegrationTestCase
 		$this->get('/cron/daily/' . CRON_SECRET);
 
 		$this->assertSame(1, $this->fetchTable('DayRecord')->find()->count());
-		$this->assertSame(1, ClassRegistry::init('AchievementCondition')->find('count', [
-			'conditions' => ['achievement_condition_category_id' => AchievementCondition::CATEGORY_USER_OF_THE_DAY]]));
+		$this->assertSame(1, $this->fetchTable('AchievementCondition')->find()->where(['achievement_condition_category_id' => AchievementConditionTable::CATEGORY_USER_OF_THE_DAY])->count());
 	}
 
 	public function testPublish()
@@ -202,15 +202,16 @@ class CronControllerTest extends IntegrationTestCase
 		new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE],
 			'achievement-conditions' => [
-				['category' => AchievementCondition::CATEGORY_POTION, 'value' => 2],
-				['category' => AchievementCondition::CATEGORY_GOLDEN, 'value' => 2]]]);
+				['category' => AchievementConditionTable::CATEGORY_POTION, 'value' => 2],
+				['category' => AchievementConditionTable::CATEGORY_GOLDEN, 'value' => 2]]]);
 
 		$this->get('/cron/daily/' . CRON_SECRET);
 
-		$values = ClassRegistry::init('AchievementCondition')->find('list', [
-			'fields' => ['achievement_condition_category_id', 'value'],
-			'conditions' => ['achievement_condition_category_id' => [AchievementCondition::CATEGORY_POTION, AchievementCondition::CATEGORY_GOLDEN]]]);
-		$this->assertEquals([AchievementCondition::CATEGORY_POTION => 0, AchievementCondition::CATEGORY_GOLDEN => 2], $values);
+		$values = $this->fetchTable('AchievementCondition')
+			->find('list', keyField: 'achievement_condition_category_id', valueField: 'value')
+			->where(['achievement_condition_category_id IN' => [AchievementConditionTable::CATEGORY_POTION, AchievementConditionTable::CATEGORY_GOLDEN]])
+			->toArray();
+		$this->assertEquals([AchievementConditionTable::CATEGORY_POTION => 0, AchievementConditionTable::CATEGORY_GOLDEN => 2], $values);
 	}
 
 	//The daily work runs under READ COMMITTED, and the session gets back the level it had, as the
