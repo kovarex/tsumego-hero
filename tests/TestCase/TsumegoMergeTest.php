@@ -120,11 +120,8 @@ class TsumegoMergeTest extends IntegrationTestCase
 			$this->assertSame(2, ClassRegistry::init('TsumegoAttempt')->find('count'));
 
 			// tsumego comments got merged: 1 from master, 1 from slave, one from the slave issue
-			$comments = ClassRegistry::init('TsumegoComment')->find('all');
-			$this->assertSame(3, count($comments));
-			$this->assertSame($comments[0]['TsumegoComment']['message'], 'master comment');
-			$this->assertSame($comments[1]['TsumegoComment']['message'], 'slave comment');
-			$this->assertSame($comments[2]['TsumegoComment']['message'], 'Slave issue message');
+			$comments = $this->fetchTable('TsumegoComment')->find()->orderBy('id')->all()->extract('message')->toList();
+			$this->assertSame(['master comment', 'slave comment', 'Slave issue message'], $comments);
 
 			// tags got merged
 			$this->assertSame(3, $this->fetchTable('TagConnection')->find()->count());
@@ -140,9 +137,9 @@ class TsumegoMergeTest extends IntegrationTestCase
 			$this->assertSame($context->tsumegos[0]['id'], $issues[0]['TsumegoIssue']['tsumego_id']);
 
 			// admin activity log was created
-			$adminActivities = ClassRegistry::init('AdminActivity')->find('all');
+			$adminActivities = $this->fetchTable('AdminActivity')->find()->orderBy('id')->toArray();
 			$this->assertSame(1, count($adminActivities));
-			$this->assertSame($adminActivities[0]['AdminActivity']['type'], AdminActivityType::TSUMEGO_MERGE);
+			$this->assertSame($adminActivities[0]->type, AdminActivityType::TSUMEGO_MERGE);
 		}
 	}
 }

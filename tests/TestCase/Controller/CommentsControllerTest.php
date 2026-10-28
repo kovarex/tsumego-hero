@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Entity\TsumegoComment;
 use Facebook\WebDriver\WebDriverBy;
 
 /**
@@ -39,7 +40,7 @@ class CommentsControllerTest extends IntegrationTestCase
 	}
 
 	//Writes a comment in the comment form and waits until it is saved, returns it as stored.
-	private function submitComment(Browser $browser, string $message, bool $attachPosition = false): array
+	private function submitComment(Browser $browser, string $message, bool $attachPosition = false): TsumegoComment
 	{
 		$messageField = $browser->find('.tsumego-comments__form textarea');
 		$messageField->click();
@@ -48,7 +49,8 @@ class CommentsControllerTest extends IntegrationTestCase
 			$browser->findById('attachPositionCheckbox-tsumegoCommentForm')->click();
 		$browser->find('.tsumego-comments__form button[type="submit"]')->click();
 		$browser->waitUntilJs('document.querySelector(".tsumego-comments__form textarea").value === ""');
-		return ClassRegistry::init('TsumegoComment')->find('first', ['order' => 'TsumegoComment.id DESC'])['TsumegoComment'];
+		/** @var TsumegoComment */
+		return $this->fetchTable('TsumegoComment')->find()->orderByDesc('id')->firstOrFail();
 	}
 
 	//Goes to the second move of the solution, the one a comment attaches in these tests.
@@ -105,15 +107,16 @@ class CommentsControllerTest extends IntegrationTestCase
 
 		// Verify comment appears in the comments list
 		$browser->get('comments');
-		$comment = ClassRegistry::init('TsumegoComment')->find('first');
-		$browser->waitUntilCssSelectorExistsWithText('#comment_' . $comment['TsumegoComment']['id'], 'My first comment');
+		/** @var TsumegoComment $comment */
+		$comment = $this->fetchTable('TsumegoComment')->find()->orderBy('id')->firstOrFail();
+		$browser->waitUntilCssSelectorExistsWithText('#comment_' . $comment->id, 'My first comment');
 
 		// verify that deleted comment isn't visible
-		$comment['TsumegoComment']['deleted'] = date('Y-m-d H:i:s');
-		ClassRegistry::init('TsumegoComment')->save($comment);
+		$comment->deleted = new DateTimeImmutable();
+		$this->fetchTable('TsumegoComment')->saveOrFail($comment);
 
 		$browser->get('comments');
-		$browser->waitUntilCssSelectorDoesntExist('#comment_' . $comment['TsumegoComment']['id']);
+		$browser->waitUntilCssSelectorDoesntExist('#comment_' . $comment->id);
 	}
 
 	public function testAddCommentWithBoardPositionStoresAnchorWithoutMarker()
@@ -139,9 +142,10 @@ class CommentsControllerTest extends IntegrationTestCase
 		$browser->waitUntilJs('document.querySelector(".tsumego-comments__form textarea").value === ""');
 
 		// The position is structured data, the message has no "[current position]" marker
-		$comment = ClassRegistry::init('TsumegoComment')->find('first', ['order' => 'TsumegoComment.id DESC']);
-		$this->assertNotNull($comment['TsumegoComment']['position']);
-		$this->assertSame('Check this move', $comment['TsumegoComment']['message']);
+		/** @var TsumegoComment $comment */
+		$comment = $this->fetchTable('TsumegoComment')->find()->orderByDesc('id')->firstOrFail();
+		$this->assertNotNull($comment->position);
+		$this->assertSame('Check this move', $comment->message);
 
 		// The rendered comment shows a "Move N" chip and the review tree node gets a badge
 		$this->assertStringContainsString('Move', $browser->find('.tsumego-comment__position-label')->getText());
@@ -177,17 +181,14 @@ class CommentsControllerTest extends IntegrationTestCase
 		");
 
 		// Seed one anchored comment on each of the two different nodes.
-		$commentModel = ClassRegistry::init('TsumegoComment');
+		$tsumegoCommentTable = $this->fetchTable('TsumegoComment');
 		foreach ($positions as $i => $position)
-		{
-			$commentModel->create();
-			$commentModel->save([
+			$tsumegoCommentTable->saveOrFail($tsumegoCommentTable->newEntity([
 				'tsumego_id' => $context->tsumegos[0]['id'],
 				'user_id' => $context->user['id'],
 				'message' => 'anchor ' . ($i + 1),
 				'position' => $position,
-			]);
-		}
+			]));
 
 		// Reload so the positions rendered with the page include both anchored comments.
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
@@ -223,7 +224,7 @@ class CommentsControllerTest extends IntegrationTestCase
 		$this->transformBoard($browser, ['hFlip' => true, 'invertColors' => true]);
 
 		$comment = $this->submitComment($browser, 'white T19 is the key');
-		$this->assertSame('black A19 is the key', $comment['message']);
+		$this->assertSame('black A19 is the key', $comment->message);
 		$browser->waitUntilCssSelectorExistsWithText('.comment__text', 'white T19 is the key');
 	}
 
@@ -238,7 +239,7 @@ class CommentsControllerTest extends IntegrationTestCase
 
 		$comment = $this->submitComment($browser, 'Check this move', true);
 		// the second move, W[ab], with the first move as its parent and the third as its child
-		$this->assertSame('1/2/1/1/2/1/2/1/sgf|1/1+1/2', $comment['position']);
+		$this->assertSame('1/2/1/1/2/1/2/1/sgf|1/1+1/2', $comment->position);
 	}
 
 	//On a problem the board shows as it is stored, the comment and its position are stored as written.
@@ -251,8 +252,8 @@ class CommentsControllerTest extends IntegrationTestCase
 		$this->assertEquals(['x' => 1, 'y' => 2], $this->currentMove($browser));
 
 		$comment = $this->submitComment($browser, 'black A19 then w A18', true);
-		$this->assertSame('black A19 then w A18', $comment['message']);
-		$this->assertSame('1/2/1/1/2/1/2/1/sgf|1/1+1/2', $comment['position']);
+		$this->assertSame('black A19 then w A18', $comment->message);
+		$this->assertSame('1/2/1/1/2/1/2/1/sgf|1/1+1/2', $comment->position);
 		$browser->waitUntilCssSelectorExistsWithText('.comment__text', 'black A19 then w A18');
 	}
 
@@ -271,8 +272,8 @@ class CommentsControllerTest extends IntegrationTestCase
 		$this->assertEquals(['x' => 1, 'y' => 2], $this->currentMove($browser));
 
 		$comment = $this->submitComment($browser, 'white A19 then b A18', true);
-		$this->assertSame('black T1 then w T2', $comment['message']);
-		$this->assertSame('19/18/19/19/18/19/2/1/sgf|19/19+19/18', $comment['position']);
+		$this->assertSame('black T1 then w T2', $comment->message);
+		$this->assertSame('19/18/19/19/18/19/2/1/sgf|19/19+19/18', $comment->position);
 		$browser->waitUntilCssSelectorExistsWithText('.comment__text', 'white A19 then b A18');
 
 		// in the colours of the SGF, mirrored into the top-right corner
@@ -313,8 +314,8 @@ class CommentsControllerTest extends IntegrationTestCase
 		$this->assertEquals(['x' => 2, 'y' => 19], $this->currentMove($browser));
 
 		$comment = $this->submitComment($browser, 'black A1 then w B1', true);
-		$this->assertSame('black A19 then w A18', $comment['message']);
-		$this->assertSame('1/2/1/1/1/3/2/1/sgf|1/1+1/2', $comment['position']);
+		$this->assertSame('black A19 then w A18', $comment->message);
+		$this->assertSame('1/2/1/1/1/3/2/1/sgf|1/1+1/2', $comment->position);
 		$browser->waitUntilCssSelectorExistsWithText('.comment__text', 'black A1 then w B1');
 	}
 
@@ -481,9 +482,8 @@ class CommentsControllerTest extends IntegrationTestCase
 		$publicConnection->create();
 		$publicConnection->save(['tsumego_id' => $tsumego->id, 'set_id' => $publicSet->id, 'num' => 10]);
 
-		$comment = ClassRegistry::init('TsumegoComment');
-		$comment->create();
-		$comment->save(['tsumego_id' => $tsumego->id, 'user_id' => $context->user['id'], 'message' => 'hello']);
+		$tsumegoCommentTable = $this->fetchTable('TsumegoComment');
+		$tsumegoCommentTable->saveOrFail($tsumegoCommentTable->newEntity(['tsumego_id' => $tsumego->id, 'user_id' => $context->user['id'], 'message' => 'hello']));
 
 		$this->get('comments/index');
 
@@ -1260,44 +1260,24 @@ class CommentsControllerTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator(['user' => ['admin' => true], 'tsumego' => ['set_order' => 1, 'status' => 'S']]);
 
-		$TsumegoComment = ClassRegistry::init('TsumegoComment');
+		$tsumegoCommentTable = $this->fetchTable('TsumegoComment');
 
 		// Test: comment within limit (2048 chars) should succeed
-		$validComment = str_repeat('a', 2048);
-		$TsumegoComment->create();
-		$result = $TsumegoComment->save([
+		$validComment = $tsumegoCommentTable->newEntity([
 			'tsumego_id' => $context->tsumegos[0]['id'],
-			'message' => $validComment,
+			'message' => str_repeat('a', 2048),
 			'user_id' => $context->user['id']]);
-		$this->assertTrue($result !== false, 'Valid comment (2048 chars) should save successfully');
+		$this->assertTrue($tsumegoCommentTable->save($validComment) !== false, 'Valid comment (2048 chars) should save successfully');
 
 		// Test: comment over limit (2049 chars) should fail
-		$invalidComment = str_repeat('b', 2049);
-		$TsumegoComment->create();
-		$result = $TsumegoComment->save([
+		$invalidComment = $tsumegoCommentTable->newEntity([
 			'tsumego_id' => $context->tsumegos[0]['id'],
-			'message' => $invalidComment,
+			'message' => str_repeat('b', 2049),
 			'user_id' => $context->user['id']]);
-		$this->assertFalse($result, 'Invalid comment (2049 chars) should fail validation');
+		$this->assertFalse($tsumegoCommentTable->save($invalidComment), 'Invalid comment (2049 chars) should fail validation');
 
 		// Verify the validation error message
-		$validationErrors = $TsumegoComment->validationErrors;
-		$this->assertArrayHasKey('message', $validationErrors);
-		// Check for the error message substring (it might be an array with multiple errors)
-		$messageErrors = $validationErrors['message'];
-		if (is_array($messageErrors))
-		{
-			$errorFound = false;
-			foreach ($messageErrors as $error)
-				if (strpos($error, 'too long') !== false)
-				{
-					$errorFound = true;
-					break;
-				}
-			$this->assertTrue($errorFound, 'Expected "too long" error message in validation errors: ' . print_r($messageErrors, true));
-		}
-		else
-			$this->assertStringContainsString('too long', $messageErrors);
+		$this->assertStringContainsString('too long', implode(' ', $invalidComment->getError('message')));
 	}
 
 	public function testDiscussionPageNoDuplicateCommentsForMultiSetTsumego()

@@ -90,10 +90,10 @@ class AccountDeletionTest extends IntegrationTestCase
 		$this->assertNotNull($this->deletedOf($context->user['id']));
 		$this->assertFalse(Auth::isLoggedIn());
 		$this->assertNull($this->userRow($context->user['id'])['deletion_token']);
-		$adminActivity = ClassRegistry::init('AdminActivity')->find('first');
-		$this->assertSame(AdminActivityType::DELETE_USER, $adminActivity['AdminActivity']['type']);
-		$this->assertSame($context->user['id'], $adminActivity['AdminActivity']['user_id']);
-		$this->assertSame('DN_kovarex', $adminActivity['AdminActivity']['old_value'], 'The activity log names the account the way players see it');
+		$adminActivity = $this->fetchTable('AdminActivity')->find()->firstOrFail();
+		$this->assertSame(AdminActivityType::DELETE_USER, $adminActivity->type);
+		$this->assertSame($context->user['id'], $adminActivity->user_id);
+		$this->assertSame('DN_kovarex', $adminActivity->old_value, 'The activity log names the account the way players see it');
 	}
 
 	public function testEmailedLinkWorksWithoutBeingSignedIn(): void
@@ -105,7 +105,7 @@ class AccountDeletionTest extends IntegrationTestCase
 		$this->logout();
 		$this->confirmDeletion($token);
 		$this->assertNotNull($this->deletedOf($context->user['id']));
-		$this->assertSame($context->user['id'], ClassRegistry::init('AdminActivity')->find('first')['AdminActivity']['user_id']);
+		$this->assertSame($context->user['id'], $this->fetchTable('AdminActivity')->find()->firstOrFail()->user_id);
 	}
 
 	public function testOpeningEmailedLinkOnlyAsksForConfirmation(): void
@@ -187,7 +187,7 @@ class AccountDeletionTest extends IntegrationTestCase
 			'user' => ['admin' => true],
 			'other-users' => [['name' => 'ghost', 'deleted' => true]],
 			'tsumego' => ['set_order' => 1, 'comments' => [['message' => 'comment by a deleted account']]]]);
-		ClassRegistry::init('TsumegoComment')->updateAll(['TsumegoComment.user_id' => $context->otherUsers[0]['id']], []);
+		$this->fetchTable('TsumegoComment')->updateAll(['user_id' => $context->otherUsers[0]['id']], []);
 
 		$this->get('/comments');
 		$result = $this->view;

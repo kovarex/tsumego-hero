@@ -298,10 +298,10 @@ class ScheduleTest extends IntegrationTestCase
 
 		$this->post('/schedule/add', ['set_id_from' => $sandboxSetId, 'set_id_to' => $targetSetId, 'count' => 1, 'start_date' => self::futureDate()]);
 
-		$activity = ClassRegistry::init('AdminActivity')->find('first', ['order' => 'id DESC']);
-		$this->assertSame((int) $context->user['id'], (int) $activity['AdminActivity']['user_id']);
-		$this->assertSame(AdminActivityType::ADD_TO_SCHEDULE, (int) $activity['AdminActivity']['type']);
-		$this->assertSame($targetSetId, (int) $activity['AdminActivity']['set_id']);
+		$activity = $this->fetchTable('AdminActivity')->find()->orderByDesc('id')->firstOrFail();
+		$this->assertSame((int) $context->user['id'], $activity->user_id);
+		$this->assertSame(AdminActivityType::ADD_TO_SCHEDULE, $activity->type);
+		$this->assertSame($targetSetId, $activity->set_id);
 	}
 
 	public function testCancelScheduleDeletesPendingRow(): void
@@ -325,10 +325,10 @@ class ScheduleTest extends IntegrationTestCase
 
 		$this->assertNull($this->fetchTable('Schedule')->find()->where(['id' => $scheduleId])->first());
 
-		$activity = ClassRegistry::init('AdminActivity')->find('first', ['order' => 'id DESC']);
-		$this->assertSame((int) $context->user['id'], (int) $activity['AdminActivity']['user_id']);
-		$this->assertSame(AdminActivityType::CANCEL_SCHEDULE, (int) $activity['AdminActivity']['type']);
-		$this->assertSame($targetSetId, (int) $activity['AdminActivity']['set_id']);
+		$activity = $this->fetchTable('AdminActivity')->find()->orderByDesc('id')->firstOrFail();
+		$this->assertSame((int) $context->user['id'], $activity->user_id);
+		$this->assertSame(AdminActivityType::CANCEL_SCHEDULE, $activity->type);
+		$this->assertSame($targetSetId, $activity->set_id);
 	}
 
 	public function testCanceledRowCanBeRescheduled(): void

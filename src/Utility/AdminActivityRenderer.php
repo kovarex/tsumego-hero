@@ -2,7 +2,7 @@
 
 namespace App\Utility;
 
-use AdminActivity;
+use App\Model\Table\AdminActivityTable;
 use SetConnection;
 use Sgf;
 use User;
@@ -91,7 +91,7 @@ OFFSET " . $this->offset, [Auth::getUserID()]);
 			echo '<a href="/' . $item['set_connection_id'] . '">' . h($item['set_title']) . ' - ' . h($item['num']) . '</a>';
 		else
 			echo '(Set-wide)';
-		echo '<div style="color:#666; margin-top:5px;">' . AdminActivity::renderChange($item) . '</div>
+		echo '<div style="color:#666; margin-top:5px;">' . AdminActivityTable::renderChange($item) . '</div>
 				</td>
 				<td>
 					<div><time datetime="' . Util::toIso8601($item['created']) . '" data-format="datetime">' . h($item['created']) . '</time></div>
