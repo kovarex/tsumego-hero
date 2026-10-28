@@ -1,6 +1,7 @@
 <?php
 
 use App\Attribute\HttpGet;
+use App\Model\Entity\Achievement;
 use App\Model\Entity\DayRecord;
 use App\Utility\SchedulePublisher;
 use App\Utility\Trash;
@@ -162,30 +163,34 @@ WHERE
 		$gemRand2 = rand(0, 2);
 		$gemRand3 = rand(0, 2);
 
-		$arch1 = ClassRegistry::init('Achievement')->findById(111);
+		$achievementTable = $this->fetchTable('Achievement');
+		/** @var Achievement $arch1 */
+		$arch1 = $achievementTable->get(111);
 		if ($gemRand1 == 0)
-			$arch1['Achievement']['description'] = 'Has a chance to trigger once a day on an easy ddk problem.';
+			$arch1->description = 'Has a chance to trigger once a day on an easy ddk problem.';
 		elseif ($gemRand1 == 1)
-			$arch1['Achievement']['description'] = 'Has a chance to trigger once a day on a regular ddk problem.';
+			$arch1->description = 'Has a chance to trigger once a day on a regular ddk problem.';
 		elseif ($gemRand1 == 2)
-			$arch1['Achievement']['description'] = 'Has a chance to trigger once a day on a difficult ddk problem.';
-		ClassRegistry::init('Achievement')->save($arch1);
-		$arch2 = ClassRegistry::init('Achievement')->findById(112);
+			$arch1->description = 'Has a chance to trigger once a day on a difficult ddk problem.';
+		$achievementTable->saveOrFail($arch1);
+		/** @var Achievement $arch2 */
+		$arch2 = $achievementTable->get(112);
 		if ($gemRand2 == 0)
-			$arch2['Achievement']['description'] = 'Has a chance to trigger once a day on an easy sdk problem.';
+			$arch2->description = 'Has a chance to trigger once a day on an easy sdk problem.';
 		elseif ($gemRand2 == 1)
-			$arch2['Achievement']['description'] = 'Has a chance to trigger once a day on a regular sdk problem.';
+			$arch2->description = 'Has a chance to trigger once a day on a regular sdk problem.';
 		elseif ($gemRand2 == 2)
-			$arch2['Achievement']['description'] = 'Has a chance to trigger once a day on a difficult sdk problem.';
-		ClassRegistry::init('Achievement')->save($arch2);
-		$arch3 = ClassRegistry::init('Achievement')->findById(113);
+			$arch2->description = 'Has a chance to trigger once a day on a difficult sdk problem.';
+		$achievementTable->saveOrFail($arch2);
+		/** @var Achievement $arch3 */
+		$arch3 = $achievementTable->get(113);
 		if ($gemRand3 == 0)
-			$arch3['Achievement']['description'] = 'Has a chance to trigger once a day on an easy dan problem.';
+			$arch3->description = 'Has a chance to trigger once a day on an easy dan problem.';
 		elseif ($gemRand3 == 1)
-			$arch3['Achievement']['description'] = 'Has a chance to trigger once a day on a regular dan problem.';
+			$arch3->description = 'Has a chance to trigger once a day on a regular dan problem.';
 		elseif ($gemRand3 == 2)
-			$arch3['Achievement']['description'] = 'Has a chance to trigger once a day on a difficult dan problem.';
-		ClassRegistry::init('Achievement')->save($arch3);
+			$arch3->description = 'Has a chance to trigger once a day on a difficult dan problem.';
+		$achievementTable->saveOrFail($arch3);
 
 		$dayRecordTable->saveOrFail($dayRecordTable->newEntity([
 			'user_id' => $userOfTheDay['User']['id'],

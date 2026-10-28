@@ -294,8 +294,8 @@ class UsersControllerTest extends IntegrationTestCase
 	{
 		// This only breaks because the ids are not contiguous, so pin the
 		// precondition that id 100 is absent from the achievement table.
-		$this->assertEmpty(
-			ClassRegistry::init('Achievement')->findById(100),
+		$this->assertNull(
+			$this->fetchTable('Achievement')->find()->where(['id' => 100])->first(),
 			'Test relies on achievement id 100 being absent'
 		);
 

@@ -1,7 +1,8 @@
 <?php
 
-use App\Utility\AchievementId;
+use App\Model\Table\AchievementTable;
 use App\Utility\AchievementChecker;
+use App\Utility\AchievementId;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\HeroPowers;
@@ -422,12 +423,12 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator([
 			'tsumego' => ['status' => 'G'],
-			'achievement-conditions' => [['category' => AchievementCondition::CATEGORY_GOLDEN, 'value' => Achievement::GOLD_DIGGER_COUNT - 1]],
+			'achievement-conditions' => [['category' => AchievementCondition::CATEGORY_GOLDEN, 'value' => AchievementTable::GOLD_DIGGER_COUNT - 1]],
 		]);
 
 		$response = $this->solve($context);
 
-		$this->assertSame(Achievement::GOLD_DIGGER_COUNT, $this->goldenRunOf($context));
+		$this->assertSame(AchievementTable::GOLD_DIGGER_COUNT, $this->goldenRunOf($context));
 		$this->assertContains(AchievementId::GOLD_DIGGER->value, array_column($response['achievement_updates'] ?? [], 'id'));
 	}
 
@@ -995,14 +996,14 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		try
 		{
 			$solvedProblems = [];
-			for ($num = 2; $num <= Achievement::COMPLETE_SETS_I_SETS_COUNT; $num++)
+			for ($num = 2; $num <= AchievementTable::COMPLETE_SETS_I_SETS_COUNT; $num++)
 				$solvedProblems[] = ['sets' => [['name' => 'big set', 'num' => $num]], 'status' => 'S'];
 			$context = new ContextPreparator([
 				'tsumego' => ['sets' => [['name' => 'big set', 'num' => 1]]],
 				'tsumegos' => $solvedProblems,
 			]);
 			$body = $this->solve($context);
-			$this->assertSame(Achievement::COMPLETE_SETS_I_SETS_COUNT, $this->completedSetsCondition($context));
+			$this->assertSame(AchievementTable::COMPLETE_SETS_I_SETS_COUNT, $this->completedSetsCondition($context));
 			$this->assertContains(AchievementId::COMPLETE_SETS_I->value, array_column($body['achievement_updates'] ?? [], 'id'));
 		}
 		finally

@@ -1,6 +1,8 @@
 <?php
 
+use App\Model\Entity\Achievement;
 use App\Model\Entity\AchievementStatus;
+use App\Model\Table\AchievementTable;
 use App\Utility\AchievementId;
 use App\Utility\Auth;
 use App\Utility\Util;
@@ -45,19 +47,19 @@ class AchievementsController extends AppController
 		}
 
 		$achievements = [];
-		foreach ($this->Achievement->find('all', ['order' => 'order ASC']) as $row)
+		/** @var Achievement $achievement */
+		foreach ($this->fetchTable('Achievement')->find()->orderBy(['order' => 'ASC']) as $achievement)
 		{
-			$achievement = $row['Achievement'];
-			$status = $statusByAchievementId[$achievement['id']] ?? null;
+			$status = $statusByAchievementId[$achievement->id] ?? null;
 			$achievements[] = [
-				'id' => (int) $achievement['id'],
-				'url' => '/achievements/view/' . $achievement['id'] . ($viewedUser ? '/' . $viewedUser['id'] : ''),
-				'name' => $achievement['name'],
-				'long_name' => strlen($achievement['name']) > 30,
-				'description' => $achievement['description'],
-				'xp' => $achievement['xp'],
-				'image' => $status ? $achievement['image'] : 'ac000i',
-				'color' => $status ? $achievement['color'] : 'achievementColorGray',
+				'id' => $achievement->id,
+				'url' => '/achievements/view/' . $achievement->id . ($viewedUser ? '/' . $viewedUser['id'] : ''),
+				'name' => $achievement->name,
+				'long_name' => strlen($achievement->name) > 30,
+				'description' => $achievement->description,
+				'xp' => $achievement->xp,
+				'image' => $status ? $achievement->image : 'ac000i',
+				'color' => $status ? $achievement->color : 'achievementColorGray',
 				'unlocked' => $status !== null,
 				'unlocked_at' => $status?->created->format('Y-m-d H:i:s'),
 				//Repeatable achievements are earned more than once: they show how often,
@@ -82,7 +84,7 @@ class AchievementsController extends AppController
 		$definitions = [];
 		foreach ($achievements as $index => $achievement)
 			if (!$achievement['unlocked'])
-				if ($definition = Achievement::progressDefinition($achievement['id']))
+				if ($definition = AchievementTable::progressDefinition($achievement['id']))
 					if ($definition['category'] == AchievementCondition::CATEGORY_COMPLETED_SETS)
 						$definitions[$index] = $definition;
 		if (!$definitions)
@@ -104,7 +106,8 @@ class AchievementsController extends AppController
 		$this->set('_page', 'user');
 		$this->set('_title', 'Tsumego Hero - Achievements');
 		$this->loadModel('User');
-		$achievement = $this->Achievement->findById($id);
+		/** @var Achievement|null $achievement */
+		$achievement = $this->fetchTable('Achievement')->find()->where(['id' => (int) $id])->first();
 		if (!$achievement)
 			throw new NotFoundException('Achievement not found');
 
@@ -142,13 +145,13 @@ class AchievementsController extends AppController
 		$completers = array_map(fn(int $userId) => $usersById[$userId] ?? null, $completerUserIds);
 		$userCount = $this->User->find('count', ['conditions' => ['deleted IS NULL']]);
 		$completionPercent = $userCount > 0 ? round($completerCount / $userCount * 100, 1) : 0;
-		$rarity = Achievement::getRarityLabel($completionPercent);
+		$rarity = AchievementTable::getRarityLabel($completionPercent);
 
 		$progress = null;
 		$progressGoal = null;
 		if ($statusUserId)
 		{
-			$progressDefinition = Achievement::progressDefinition((int) $achievement['Achievement']['id']);
+			$progressDefinition = AchievementTable::progressDefinition($achievement->id);
 			if ($progressDefinition)
 			{
 				$progress = (int) AchievementCondition::value($statusUserId, $progressDefinition['category']);
@@ -175,9 +178,9 @@ class AchievementsController extends AppController
 	//The public collections that can earn a repeatable collection achievement, with the
 	//best accuracy the player reached on each of them. The achievement page lists them so
 	//a player can see which collections are still left to finish.
-	private function fillEarningCollections(array $achievement, ?int $userID): array
+	private function fillEarningCollections(Achievement $achievement, ?int $userID): array
 	{
-		if ((int) $achievement['Achievement']['id'] !== AchievementId::SUPERIOR_ACCURACY->value)
+		if ($achievement->id !== AchievementId::SUPERIOR_ACCURACY->value)
 			return [];
 
 		$rows = Util::query(
