@@ -1,13 +1,18 @@
 <?php
 
-use App\Model\Table\ClassroomMemberStatusTable;
-use App\Model\Table\ClassroomMemberTable;
+namespace App\Model\Table;
+
 use App\Utility\PlayOutcome;
 use App\Utility\Rating;
 use App\Utility\TsumegoButton;
 use App\Utility\TsumegoButtons;
 use App\Utility\TsumegoUtil;
 use App\Utility\Util;
+use Set;
+use SetConnection;
+use Sgf;
+use Throwable;
+use User;
 
 //Problems a teacher gave a class to solve by a day. The teacher builds the assignment up as a
 //draft, picking problems from their own collections and the ones of the site, and the pupils get
@@ -16,10 +21,8 @@ use App\Utility\Util;
 //What counts as done for the class is a solve for the assignment, a row of
 //classroom_assignment_result (recordResult()). A problem a pupil solved before is shown apart, so
 //the teacher sees it was not played again for the homework.
-class ClassroomAssignment extends AppModel
+class ClassroomAssignmentTable extends AppTable
 {
-	public $useTable = 'classroom_assignment';
-
 	public const MAXIMUM_TITLE_LENGTH = 100;
 
 	//More problems than a class plays in a week, and the table of who solved what stays readable.

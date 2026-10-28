@@ -7,7 +7,7 @@ use App\Utility\Util;
 use ClassRegistry;
 
 //A class of a teacher: the players who agreed to be in it, and the problems the teacher assigns
-//to them (ClassroomMemberTable, ClassroomAssignment). Named classroom because class is a word of PHP.
+//to them (ClassroomMemberTable, ClassroomAssignmentTable). Named classroom because class is a word of PHP.
 class ClassroomTable extends AppTable
 {
 	public const MAXIMUM_NAME_LENGTH = 100;

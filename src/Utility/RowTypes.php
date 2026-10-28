@@ -16,7 +16,6 @@ namespace App\Utility;
  * @phpstan-type ChallengeProblemRow array{id?: int, challenge_id?: int, tsumego_id?: int, order?: int, ...}
  * @phpstan-type ClassroomAssignmentProblemRow array{id?: int, classroom_assignment_id?: int, set_connection_id?: int, position?: int, ...}
  * @phpstan-type ClassroomAssignmentResultRow array{id?: int, classroom_assignment_id?: int, user_id?: int, tsumego_id?: int, misplays?: int, solved?: string|null, ...}
- * @phpstan-type ClassroomAssignmentRow array{id?: int, classroom_id?: int, title?: string|null, due?: string, published?: string|null, created?: string, ...}
  * @phpstan-type ClassroomMemberRow array{id?: int, classroom_id?: int, user_id?: int, classroom_member_status_id?: int, created?: string, ...}
  * @phpstan-type DateFormatRow array{id?: int, name?: string, ...}
  * @phpstan-type HighscorePageRow array{id?: int, name?: string, ...}
