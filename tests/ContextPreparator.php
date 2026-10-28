@@ -437,13 +437,8 @@ class ContextPreparator
 
 	private function prepareTsumegoVariant(array $variantInput, &$tsumego): void
 	{
-		$variant = array_merge(['tsumego_id' => $tsumego['id']], $variantInput);
-		$variantModel = ClassRegistry::init('TsumegoVariant');
-		$variantModel->create($variant);
-		$variantModel->save($variant);
-		$savedVariant = $variantModel->data['TsumegoVariant'];
-		$savedVariant['id'] = $variantModel->id;
-		$tsumego['variants'][] = $savedVariant;
+		$variantTable = TableRegistry::getTableLocator()->get('TsumegoVariant');
+		$tsumego['variants'][] = $variantTable->saveOrFail($variantTable->newEntity(array_merge(['tsumego_id' => $tsumego['id']], $variantInput)));
 	}
 
 	private function prepareTsumegoStatuses($tsumegoStatuses, $tsumego): void
