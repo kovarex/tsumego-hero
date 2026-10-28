@@ -1,5 +1,6 @@
 <?php
 
+use App\Utility\Auth;
 use App\Utility\HeroPowers;
 use App\Utility\Util;
 
@@ -12,6 +13,18 @@ class HeroControllerTest extends IntegrationTestCase
 		$this->post('/hero/sprint');
 
 		$this->assertResponseCode(403);
+	}
+
+	public function testSprintStartsTheSprintRunFromZero()
+	{
+		new ContextPreparator([
+			'user' => ['name' => 'kovarex', 'level' => 100],
+			'achievement-conditions' => [['category' => AchievementCondition::CATEGORY_SPRINT, 'value' => 7]]]);
+
+		$this->post('/hero/sprint');
+
+		$this->assertResponseCode(200);
+		$this->assertSame(0.0, AchievementCondition::value(Auth::getUserID(), AchievementCondition::CATEGORY_SPRINT));
 	}
 
 	public function testIntuitionRequiresLevel()

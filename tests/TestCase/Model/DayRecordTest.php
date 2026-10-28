@@ -2,9 +2,9 @@
 
 use App\Utility\Auth;
 
-class AppControllerTest extends IntegrationTestCase
+class DayRecordTest extends IntegrationTestCase
 {
-	//Test that updateGems correctly increments gem counters based on solved puzzle rank.
+	//Test that countGemSolve correctly increments gem counters based on solved puzzle rank.
 	public function testUpdateGemsIncrementsCorrectCounter(): void
 	{
 		// Create a day record with specific gem configuration
@@ -19,28 +19,28 @@ class AppControllerTest extends IntegrationTestCase
 		]);
 
 		// Test emerald gem (15k rank)
-		AppController::_updateGems('15k');
+		DayRecord::countGemSolve('15k');
 		$dayRecord = ClassRegistry::init('DayRecord')->find('first', ['conditions' => ['date' => date('Y-m-d')]]);
 		$this->assertSame(1, (int) $dayRecord['DayRecord']['emerald_solves'], 'Solving 15k should increment emerald_solves');
 		$this->assertSame(0, (int) $dayRecord['DayRecord']['sapphire_solves'], 'sapphire_solves should remain 0');
 		$this->assertSame(0, (int) $dayRecord['DayRecord']['ruby_solves'], 'ruby_solves should remain 0');
 
 		// Test sapphire gem (9k rank)
-		AppController::_updateGems('9k');
+		DayRecord::countGemSolve('9k');
 		$dayRecord = ClassRegistry::init('DayRecord')->find('first', ['conditions' => ['date' => date('Y-m-d')]]);
 		$this->assertSame(1, (int) $dayRecord['DayRecord']['emerald_solves'], 'emerald_solves should remain 1');
 		$this->assertSame(1, (int) $dayRecord['DayRecord']['sapphire_solves'], 'Solving 9k should increment sapphire_solves');
 		$this->assertSame(0, (int) $dayRecord['DayRecord']['ruby_solves'], 'ruby_solves should remain 0');
 
 		// Test ruby gem (1d rank)
-		AppController::_updateGems('1d');
+		DayRecord::countGemSolve('1d');
 		$dayRecord = ClassRegistry::init('DayRecord')->find('first', ['conditions' => ['date' => date('Y-m-d')]]);
 		$this->assertSame(1, (int) $dayRecord['DayRecord']['emerald_solves'], 'emerald_solves should remain 1');
 		$this->assertSame(1, (int) $dayRecord['DayRecord']['sapphire_solves'], 'sapphire_solves should remain 1');
 		$this->assertSame(1, (int) $dayRecord['DayRecord']['ruby_solves'], 'Solving 1d should increment ruby_solves');
 	}
 
-	//Test that updateGems correctly increments counter multiple times.
+	//Test that countGemSolve correctly increments counter multiple times.
 	public function testUpdateGemsIncrementsMultipleTimes(): void
 	{
 		$context = new ContextPreparator([
@@ -55,13 +55,13 @@ class AppControllerTest extends IntegrationTestCase
 
 		// Solve 5 problems at 15k rank
 		for ($i = 0; $i < 5; $i++)
-			AppController::_updateGems('15k');
+			DayRecord::countGemSolve('15k');
 
 		$dayRecord = ClassRegistry::init('DayRecord')->find('first', ['conditions' => ['date' => date('Y-m-d')]]);
 		$this->assertSame(5, (int) $dayRecord['DayRecord']['emerald_solves'], 'emerald_solves should be 5 after 5 solves');
 	}
 
-	//Test that updateGems ignores ranks that don't match the current gem configuration.
+	//Test that countGemSolve ignores ranks that don't match the current gem configuration.
 	public function testUpdateGemsIgnoresNonMatchingRanks(): void
 	{
 		$context = new ContextPreparator([
@@ -75,12 +75,12 @@ class AppControllerTest extends IntegrationTestCase
 		]);
 
 		// Solve at 14k (not matching 15k gem)
-		AppController::_updateGems('14k');
+		DayRecord::countGemSolve('14k');
 		$dayRecord = ClassRegistry::init('DayRecord')->find('first', ['conditions' => ['date' => date('Y-m-d')]]);
 		$this->assertSame(0, (int) $dayRecord['DayRecord']['emerald_solves'], 'emerald_solves should not increment for non-matching rank');
 
 		// Solve at 8k (not matching 9k gem)
-		AppController::_updateGems('8k');
+		DayRecord::countGemSolve('8k');
 		$dayRecord = ClassRegistry::init('DayRecord')->find('first', ['conditions' => ['date' => date('Y-m-d')]]);
 		$this->assertSame(0, (int) $dayRecord['DayRecord']['sapphire_solves'], 'sapphire_solves should not increment for non-matching rank');
 	}
@@ -103,7 +103,7 @@ class AppControllerTest extends IntegrationTestCase
 		$testUserId = Auth::getUserID();
 
 		// Test user solves 15k problem (crosses threshold)
-		AppController::_updateGems('15k');
+		DayRecord::countGemSolve('15k');
 
 		// Verify test user got the achievement
 		$testUserAchievement = ClassRegistry::init('AchievementCondition')->find('first', [
@@ -117,7 +117,7 @@ class AppControllerTest extends IntegrationTestCase
 		$this->assertSame(500, (int) $dayRecord['DayRecord']['emerald_solves']);
 
 		// Same user solves another 15k problem
-		AppController::_updateGems('15k');
+		DayRecord::countGemSolve('15k');
 
 		// Counter increments to 501 (past threshold)
 		$dayRecord = ClassRegistry::init('DayRecord')->find('first', ['conditions' => ['date' => date('Y-m-d')]]);
@@ -156,7 +156,7 @@ class AppControllerTest extends IntegrationTestCase
 		]);
 
 		// User solves 15k problem (would cross threshold)
-		AppController::_updateGems('15k');
+		DayRecord::countGemSolve('15k');
 
 		// Counter STAYS at 499 (doesn't increment when user already has achievement)
 		// This preserves old behavior: increment 499→500, find achievement, decrement 500→499

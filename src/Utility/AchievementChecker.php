@@ -605,7 +605,7 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 
 	//Run the standard solve/progress-dependent achievement checks.
 	//This is the canonical set that runs after a solve (PlayResultProcessor) and
-	//on each page load (AppController::beforeFilter). Add new solve- or
+	//on each page load (AppController::checkAchievements). Add new solve- or
 	//progress-dependent checks here so both call sites stay in sync.
 	//(checkTimeModeAchievements is intentionally separate - it runs on the time
 	//mode result page via TimeModeController.)
