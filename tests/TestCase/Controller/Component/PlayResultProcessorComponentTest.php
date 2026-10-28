@@ -117,6 +117,27 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 		$this->assertSame('S', $response['status'], 'The response should tell the client the new status');
 	}
 
+	//updated is when the status last changed: the staling of solved problems and the old progress go by it.
+	public function testTheStatusChangeIsWhenItWasUpdated(): void
+	{
+		$context = new ContextPreparator(['tsumego' => ['status' => ['name' => 'V', 'updated' => '2020-01-01 00:00:00'], 'set_order' => 1]]);
+		$this->solve($context);
+		$this->assertSame('S', $this->statusOf($context));
+		$this->assertGreaterThan(strtotime('-1 hour'), strtotime($this->statusUpdated($context)), 'Solving moves updated to now');
+
+		Util::execute('UPDATE tsumego_status SET updated = ? WHERE user_id = ?', ['2020-01-01 00:00:00', $context->user['id']]);
+		$this->loginAs($context);
+		$this->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$this->assertSame('S', $this->statusOf($context));
+		$this->assertSame('2020-01-01 00:00:00', $this->statusUpdated($context), 'A visit that leaves the status as it is leaves updated too');
+	}
+
+	private function statusUpdated(ContextPreparator $context): string
+	{
+		return Util::query('SELECT updated FROM tsumego_status WHERE user_id = ? AND tsumego_id = ?',
+			[$context->user['id'], $context->tsumegos[0]['id']])[0]['updated'];
+	}
+
 	public function testVisitFromSolved(): void
 	{
 		$context = new ContextPreparator(['tsumego' => ['status' => 'S', 'set_order' => 1]]);
