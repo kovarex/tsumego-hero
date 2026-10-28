@@ -211,7 +211,7 @@ class TsumegoButtonsTest extends IntegrationTestCase
 		$shown = null;
 		new SetNavigationButtonsInput(function ($name, $value) use (&$shown) {
 			$shown = $value;
-		})->execute($buttons, ['SetConnection' => $opened]);
+		})->execute($buttons, $this->fetchTable('SetConnection')->get($opened['id']));
 
 		$this->assertCount(30, $buttons);
 		$this->assertCount(13, $shown);
