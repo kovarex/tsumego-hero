@@ -2,7 +2,7 @@
 
 namespace App\Utility;
 
-use ClassRegistry;
+use Cake\ORM\TableRegistry;
 use SetConnection;
 use Sgf;
 use User;
@@ -13,7 +13,7 @@ class TagConnectionProposalsRenderer extends DataTableRenderer
 	//How many tags wait for a decision to be put on a problem, the admin page shows it on the link here.
 	public static function total(): int
 	{
-		return (int) ClassRegistry::init('TagConnection')->find('count', ['conditions' => ['approved' => 0]]);
+		return TableRegistry::getTableLocator()->get('TagConnection')->find()->where(['approved' => 0])->count();
 	}
 
 	public function __construct(array $urlParams)

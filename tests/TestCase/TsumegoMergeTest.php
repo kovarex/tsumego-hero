@@ -127,8 +127,7 @@ class TsumegoMergeTest extends IntegrationTestCase
 			$this->assertSame($comments[2]['TsumegoComment']['message'], 'Slave issue message');
 
 			// tags got merged
-			$tagConnections = ClassRegistry::init('TagConnection')->find('all');
-			$this->assertSame(3, count($tagConnections));
+			$this->assertSame(3, $this->fetchTable('TagConnection')->find()->count());
 
 			// time mode attempts got merged
 			$timeModeAttempts = ClassRegistry::init('TimeModeAttempt')->find('all');
