@@ -6,7 +6,7 @@ use TsumegoStatus;
 
 class TsumegoButton
 {
-	public function __construct(int $tsumegoID, int $setConnectionID, int $order, string $status, ?float $rating, string $sgf)
+	public function __construct(int $tsumegoID, int $setConnectionID, int $order, string $status, ?float $rating, ?string $sgf)
 	{
 		$this->tsumegoID = $tsumegoID;
 		$this->setConnectionID = $setConnectionID;
@@ -44,6 +44,9 @@ class TsumegoButton
 			$num3 = $this->seconds . 's';
 		$num3 = '<div class="problem-nav__time">' . $num3 . '</div>';
 
+		// A button of a collection rendered without TsumegoButtons::loadSgfs() loads its own
+		if ($this->sgf === null)
+			$this->sgf = TsumegoButtons::currentSgfs([$this->tsumegoID])[$this->tsumegoID] ?? '';
 		$sgfAttr = '';
 		if ($this->sgf !== '')
 		{
@@ -118,7 +121,8 @@ class TsumegoButton
 	public float $seconds = 0;
 	public string $performance;
 	public bool $isCurrentlyOpened = false;
-	public string $sgf;
+	//The current SGF, for the preview. Null until TsumegoButtons::loadSgfs() loads it.
+	public ?string $sgf;
 	public ?string $diff = null;
 	public ?int $setID = null;
 	public ?string $setTitle = null;

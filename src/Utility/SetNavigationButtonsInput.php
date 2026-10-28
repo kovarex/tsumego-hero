@@ -12,6 +12,7 @@ class SetNavigationButtonsInput
 	public function execute(TsumegoButtons $tsumegoButtons, array $currentSetConnection): void
 	{
 		$navigationButtons = $this->collectFromSetConnections($tsumegoButtons, $currentSetConnection);
+		$navigationButtons->loadSgfs();
 		($this->setFunction)('tsumegoButtons', $navigationButtons);
 	}
 
