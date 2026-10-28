@@ -193,10 +193,7 @@ class TsumegoIssuesControllerTest extends IntegrationTestCase
 			['TsumegoIssue.user_id' => $otherUserId],
 			['TsumegoIssue.id' => $context->issues[0]['id']]
 		);
-		ClassRegistry::init('TsumegoComment')->updateAll(
-			['TsumegoComment.user_id' => $otherUserId],
-			['TsumegoComment.tsumego_issue_id' => $context->issues[0]['id']]
-		);
+		$this->fetchTable('TsumegoComment')->updateAll(['user_id' => $otherUserId], ['tsumego_issue_id' => $context->issues[0]['id']]);
 
 		$browser->get('tsumego-issues');
 		$this->waitForReactIssuesList($browser);
@@ -236,10 +233,7 @@ class TsumegoIssuesControllerTest extends IntegrationTestCase
 			['TsumegoIssue.user_id' => $otherUserId],
 			['TsumegoIssue.id' => $context->issues[0]['id']]
 		);
-		ClassRegistry::init('TsumegoComment')->updateAll(
-			['TsumegoComment.user_id' => $otherUserId],
-			['TsumegoComment.tsumego_issue_id' => $context->issues[0]['id']]
-		);
+		$this->fetchTable('TsumegoComment')->updateAll(['user_id' => $otherUserId], ['tsumego_issue_id' => $context->issues[0]['id']]);
 
 		$this->get('/tsumego-issues/api');
 
