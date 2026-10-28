@@ -1,5 +1,7 @@
 <?php
 
+use App\Model\Table\TimeModeCategoryTable;
+use App\Model\Table\TimeModeSessionStatusTable;
 use App\Model\Table\TsumegoVariantTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
@@ -1044,9 +1046,9 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 			'tsumegos' => array_map(fn($order) => ['set_order' => $order, 'sgf' => self::SGF_19], range(2, $problemCount)),
 			'time-mode-ranks' => ['5k'],
 			'time-mode-sessions' => [[
-				'category' => TimeModeUtil::$CATEGORY_BLITZ,
+				'category' => TimeModeCategoryTable::BLITZ,
 				'rank' => '5k',
-				'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+				'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 				'attempts' => $attempts]]]);
 		$browser->get('/timeMode/play');
 		$this->waitForBoard($browser);
@@ -1057,7 +1059,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 	public function testTimeModeTimerSubmitsATimeoutWhenTheClockRunsOut(): void
 	{
 		$browser = Browser::instance();
-		$blitzSeconds = $this->fetchTable('TimeModeCategory')->get(TimeModeUtil::$CATEGORY_BLITZ)->seconds;
+		$blitzSeconds = $this->fetchTable('TimeModeCategory')->get(TimeModeCategoryTable::BLITZ)->seconds;
 		// the attempt has been running for all but the last seconds of Blitz
 		$context = $this->startTimeMode($browser, null, 2, ['started-seconds-ago' => $blitzSeconds - 3]);
 
@@ -1171,9 +1173,9 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 			'tsumegos' => [['set_order' => 2, 'sgf' => self::SGF_19]],
 			'time-mode-ranks' => ['5k'],
 			'time-mode-sessions' => [[
-				'category' => TimeModeUtil::$CATEGORY_SLOW_SPEED,
+				'category' => TimeModeCategoryTable::SLOW,
 				'rank' => '5k',
-				'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+				'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 				'attempts' => [
 					['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED],
 					// the last problem was left behind and its result never arrived
@@ -1228,9 +1230,9 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 				['set_order' => 4, 'sgf' => self::SGF_19]],
 			'time-mode-ranks' => ['5k'],
 			'time-mode-sessions' => [[
-				'category' => TimeModeUtil::$CATEGORY_SLOW_SPEED,
+				'category' => TimeModeCategoryTable::SLOW,
 				'rank' => '5k',
-				'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+				'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 				'attempts' => [
 					['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED],
 					['order' => 2, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:1'],
@@ -1306,7 +1308,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 
 		// the session is closed with the outcome and the score the page showed
 		$session = $this->fetchTable('TimeModeSession')->get($sessionID);
-		$this->assertSame(TimeModeUtil::$SESSION_STATUS_FAILED, $session->time_mode_session_status_id);
+		$this->assertSame(TimeModeSessionStatusTable::FAILED, $session->time_mode_session_status_id);
 		$this->assertSame((int) $attempt(1)->points, (int) $session->points,
 			'The score of the session is what its problems were worth');
 	}
@@ -1321,9 +1323,9 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 			'tsumegos' => [['set_order' => 2, 'sgf' => self::SGF_19]],
 			'time-mode-ranks' => ['5k'],
 			'time-mode-sessions' => [[
-				'category' => TimeModeUtil::$CATEGORY_SLOW_SPEED,
+				'category' => TimeModeCategoryTable::SLOW,
 				'rank' => '5k',
-				'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+				'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 				'attempts' => [
 					['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED],
 					['order' => 2, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED, 'tsumego_id' => 'other:1']]]]]);

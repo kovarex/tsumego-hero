@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\AdminActivityTypeTable;
 use App\Utility\Constants;
 
 class UserSetsControllerTest extends IntegrationTestCase
@@ -637,7 +638,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 
 		$activity = $this->fetchTable('AdminActivity')->find()->orderByDesc('id')->firstOrFail();
 		$this->assertNotEmpty($activity);
-		$this->assertSame(AdminActivityType::SET_DESCRIPTION_EDIT, $activity->type);
+		$this->assertSame(AdminActivityTypeTable::SET_DESCRIPTION_EDIT, $activity->type);
 	}
 
 	public function testCreateAndAddTsumegoLogsProblemAdd(): void
@@ -653,7 +654,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 
 		$activity = $this->fetchTable('AdminActivity')->find()->orderByDesc('id')->firstOrFail();
 		$this->assertNotEmpty($activity);
-		$this->assertSame(AdminActivityType::PROBLEM_ADD, $activity->type);
+		$this->assertSame(AdminActivityTypeTable::PROBLEM_ADD, $activity->type);
 	}
 
 	// ── Re-rate problems (admin only) ───────────────────────────────────

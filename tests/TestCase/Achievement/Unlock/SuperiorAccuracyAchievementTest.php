@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Entity\Achievement;
 use App\Utility\AchievementId;
 /* Test AchievementId::SUPERIOR_ACCURACY
  * "Finish a collection with 100% accuracy"
@@ -59,7 +60,7 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 
 		$this->assertContains(
 			AchievementId::SUPERIOR_ACCURACY->value,
-			array_column($checker->updated, 'id'),
+			array_map(fn(Achievement $achievement) => $achievement->id, $checker->updated),
 			'Superior Accuracy should be among the achievements unlocked by the first perfect collection');
 
 		// 5000 XP for Superior Accuracy itself + 26000 for the accuracy and speed

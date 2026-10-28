@@ -1,6 +1,8 @@
 <?php
 
 use App\Model\Table\ChallengeTable;
+use App\Model\Table\TimeModeCategoryTable;
+use App\Model\Table\TimeModeSessionStatusTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\PlayOutcome;
@@ -352,11 +354,11 @@ class ChallengesControllerTest extends IntegrationTestCase
 		$page = $this->view;
 		$this->assertTextContains('id="challenge-in-progress"', $page);
 
-		$this->get('/timeMode/start?categoryID=' . TimeModeUtil::$CATEGORY_BLITZ . '&rankID=' . $this->rankId('5k'));
+		$this->get('/timeMode/start?categoryID=' . TimeModeCategoryTable::BLITZ . '&rankID=' . $this->rankId('5k'));
 
 		// the problems of the challenge are known now, so its run ends instead of being thrown away
 		$session = ChallengeTable::runOf($challengeId, $this->userId('challenger'));
-		$this->assertNotSame(TimeModeUtil::$SESSION_STATUS_IN_PROGRESS, $session->time_mode_session_status_id);
+		$this->assertNotSame(TimeModeSessionStatusTable::IN_PROGRESS, $session->time_mode_session_status_id);
 		$this->assertSame(
 			[TimeModeUtil::$ATTEMPT_RESULT_SOLVED, TimeModeUtil::$ATTEMPT_STATUS_SKIPPED, TimeModeUtil::$ATTEMPT_STATUS_SKIPPED, TimeModeUtil::$ATTEMPT_STATUS_SKIPPED, TimeModeUtil::$ATTEMPT_STATUS_SKIPPED],
 			array_map(fn(array $attempt) => (int) $attempt['time_mode_attempt_status_id'], $this->runAttempts($challengeId, 'challenger')));
@@ -364,7 +366,7 @@ class ChallengesControllerTest extends IntegrationTestCase
 		// and the new time mode run is the one being played
 		$timeMode = new App\Utility\TimeMode();
 		$this->assertNull($timeMode->challenge);
-		$this->assertSame(TimeModeUtil::$CATEGORY_BLITZ, $timeMode->currentSession->time_mode_category_id);
+		$this->assertSame(TimeModeCategoryTable::BLITZ, $timeMode->currentSession->time_mode_category_id);
 	}
 
 	public function testPlayingAnotherChallengeEndsTheRunOfTheFirst(): void

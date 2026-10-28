@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Entity\Schedule;
+use App\Model\Table\AdminActivityTypeTable;
 use App\Utility\CookieFlash;
 use App\Utility\SchedulePublisher;
 
@@ -300,7 +301,7 @@ class ScheduleTest extends IntegrationTestCase
 
 		$activity = $this->fetchTable('AdminActivity')->find()->orderByDesc('id')->firstOrFail();
 		$this->assertSame((int) $context->user['id'], $activity->user_id);
-		$this->assertSame(AdminActivityType::ADD_TO_SCHEDULE, $activity->type);
+		$this->assertSame(AdminActivityTypeTable::ADD_TO_SCHEDULE, $activity->type);
 		$this->assertSame($targetSetId, $activity->set_id);
 	}
 
@@ -327,7 +328,7 @@ class ScheduleTest extends IntegrationTestCase
 
 		$activity = $this->fetchTable('AdminActivity')->find()->orderByDesc('id')->firstOrFail();
 		$this->assertSame((int) $context->user['id'], $activity->user_id);
-		$this->assertSame(AdminActivityType::CANCEL_SCHEDULE, $activity->type);
+		$this->assertSame(AdminActivityTypeTable::CANCEL_SCHEDULE, $activity->type);
 		$this->assertSame($targetSetId, $activity->set_id);
 	}
 

@@ -4,6 +4,9 @@
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
+use App\Model\Table\AdminActivityTypeTable;
+use App\Model\Table\TimeModeCategoryTable;
+use App\Model\Table\TimeModeSessionStatusTable;
 use App\Utility\TimeModeUtil;
 use App\Utility\Util;
 
@@ -46,9 +49,9 @@ class TsumegoMergeTest extends IntegrationTestCase
 						'issues' => [['message' => 'Slave issue message']],
 					]],
 				'time-mode-sessions' => [[
-					'category' => TimeModeUtil::$CATEGORY_BLITZ,
+					'category' => TimeModeCategoryTable::BLITZ,
 					'rank' => '5k',
-					'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+					'status' => TimeModeSessionStatusTable::IN_PROGRESS,
 					'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED, 'tsumego_id' => 'other:1']]]]]);
 
 			// For non-double-favorite cases, remove master from Favorites
@@ -139,7 +142,7 @@ class TsumegoMergeTest extends IntegrationTestCase
 			// admin activity log was created
 			$adminActivities = $this->fetchTable('AdminActivity')->find()->orderBy('id')->toArray();
 			$this->assertSame(1, count($adminActivities));
-			$this->assertSame($adminActivities[0]->type, AdminActivityType::TSUMEGO_MERGE);
+			$this->assertSame($adminActivities[0]->type, AdminActivityTypeTable::TSUMEGO_MERGE);
 		}
 	}
 }

@@ -1,7 +1,8 @@
 <?php
 
+use App\Model\Table\TimeModeCategoryTable;
+use App\Model\Table\TimeModeSessionStatusTable;
 use App\Utility\SiteGrowth;
-use App\Utility\TimeModeUtil;
 use Facebook\WebDriver\WebDriverBy;
 
 //The charts of the site, drawn by app/charts: the growth of the site on the home page, the days of a player on the
@@ -53,8 +54,8 @@ class ChartsBrowserTest extends IntegrationTestCase
 					['solved' => false, 'user_rating' => 1480, 'created' => $yesterday . ' 10:00:00']]]],
 			'time-mode-ranks' => ['5k'],
 			'time-mode-sessions' => [
-				['category' => TimeModeUtil::$CATEGORY_BLITZ, 'status' => TimeModeUtil::$SESSION_STATUS_SOLVED, 'rank' => '5k'],
-				['category' => TimeModeUtil::$CATEGORY_BLITZ, 'status' => TimeModeUtil::$SESSION_STATUS_FAILED, 'rank' => '5k']]]);
+				['category' => TimeModeCategoryTable::BLITZ, 'status' => TimeModeSessionStatusTable::SOLVED, 'rank' => '5k'],
+				['category' => TimeModeCategoryTable::BLITZ, 'status' => TimeModeSessionStatusTable::FAILED, 'rank' => '5k']]]);
 
 		$browser = Browser::instance();
 		$browser->get('users/view/' . $context->user['id']);

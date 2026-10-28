@@ -2,7 +2,7 @@
 
 namespace App\Utility;
 
-use AdminActivityType;
+use App\Model\Table\AdminActivityTypeTable;
 use Cake\ORM\TableRegistry;
 use ClassRegistry;
 use Exception;
@@ -179,7 +179,7 @@ HAVING
 			$this->mergeIssues();
 			ClassRegistry::init('Tsumego')->delete($this->slaveTsumegoID);
 			AdminActivityLogger::log(
-				AdminActivityType::TSUMEGO_MERGE,
+				AdminActivityTypeTable::TSUMEGO_MERGE,
 				$this->masterTsumegoID,
 				null,
 				json_encode($oldData, JSON_UNESCAPED_UNICODE));

@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\AdminOverviewTypeTable;
 use App\Model\Table\TsumegoIssueTable;
 use App\Utility\Util;
@@ -28,7 +29,7 @@ class AdminControllerTest extends IntegrationTestCase
 	private static function logActivity(int $userID): void
 	{
 		Util::execute('INSERT INTO admin_activity (user_id, type, old_value, new_value) VALUES (?, ?, ?, ?)',
-			[$userID, AdminActivityType::DESCRIPTION_EDIT, 'Old desc', 'New desc']);
+			[$userID, AdminActivityTypeTable::DESCRIPTION_EDIT, 'Old desc', 'New desc']);
 	}
 
 	public function testCountsWhatWaitsForADecision(): void
@@ -66,7 +67,7 @@ class AdminControllerTest extends IntegrationTestCase
 					['data' => self::SGF, 'sgf_status_id' => Sgf::STATUS_REJECTED]],
 				'tags' => [['name' => 'snapback', 'approved' => 0]]]]);
 		Util::execute('INSERT INTO admin_activity (user_id, type, tsumego_id, old_value, new_value) VALUES (?, ?, ?, ?, ?)',
-			[$context->user['id'], AdminActivityType::DESCRIPTION_EDIT, $context->tsumegos[0]['id'], 'Old desc', 'New desc']);
+			[$context->user['id'], AdminActivityTypeTable::DESCRIPTION_EDIT, $context->tsumegos[0]['id'], 'Old desc', 'New desc']);
 
 		// the proposals and the rejected proposals
 		$this->get('/admin/sgf-proposals');

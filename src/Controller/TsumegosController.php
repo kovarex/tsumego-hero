@@ -2,6 +2,7 @@
 
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
+use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\TsumegoVariantTable;
 use App\Utility\AchievementChecker;
 use App\Utility\AdminActivityLogger;
@@ -127,7 +128,7 @@ class TsumegosController extends AppController
 		if (!$tsumego)
 			throw new NotFoundException('Problem not found');
 		$data = $this->request->data;
-		foreach (['alternative_response' => AdminActivityType::ALTERNATIVE_RESPONSE, 'pass' => AdminActivityType::PASS_MODE] as $field => $activityType)
+		foreach (['alternative_response' => AdminActivityTypeTable::ALTERNATIVE_RESPONSE, 'pass' => AdminActivityTypeTable::PASS_MODE] as $field => $activityType)
 		{
 			$value = empty($data[$field]) ? 0 : 1;
 			if ((int) $tsumego['Tsumego'][$field] === $value)
@@ -264,34 +265,34 @@ class TsumegosController extends AppController
 
 		if ($tsumego['description'] != $newDescription)
 		{
-			AdminActivityLogger::log(AdminActivityType::DESCRIPTION_EDIT, $tsumegoID, null, $tsumego['description'], $newDescription);
+			AdminActivityLogger::log(AdminActivityTypeTable::DESCRIPTION_EDIT, $tsumegoID, null, $tsumego['description'], $newDescription);
 			$tsumego['description'] = $newDescription;
 		}
 
 		if ($tsumego['hint'] != $this->request->data['hint'])
 		{
-			AdminActivityLogger::log(AdminActivityType::HINT_EDIT, $tsumegoID, null, $tsumego['hint'], $this->request->data['hint']);
+			AdminActivityLogger::log(AdminActivityTypeTable::HINT_EDIT, $tsumegoID, null, $tsumego['hint'], $this->request->data['hint']);
 			$tsumego['hint'] = $this->request->data['hint'];
 		}
 		if ($tsumego['author'] != $this->request->data['author'])
 		{
-			AdminActivityLogger::log(AdminActivityType::AUTHOR_EDIT, $tsumegoID, null, $tsumego['author'], $this->request->data['author']);
+			AdminActivityLogger::log(AdminActivityTypeTable::AUTHOR_EDIT, $tsumegoID, null, $tsumego['author'], $this->request->data['author']);
 			$tsumego['author'] = $this->request->data['author'];
 		}
 		if ($tsumego['minimum_rating'] != $minimumRating)
 		{
-			AdminActivityLogger::log(AdminActivityType::MINIMUM_RATING_EDIT, $tsumegoID, null, Util::strOrNull($tsumego['minimum_rating']), Util::strOrNull($minimumRating));
+			AdminActivityLogger::log(AdminActivityTypeTable::MINIMUM_RATING_EDIT, $tsumegoID, null, Util::strOrNull($tsumego['minimum_rating']), Util::strOrNull($minimumRating));
 			$tsumego['minimum_rating'] = $minimumRating;
 		}
 
 		if ($tsumego['maximum_rating'] != $maximumRating)
 		{
-			AdminActivityLogger::log(AdminActivityType::MAXIMUM_RATING_EDIT, $tsumegoID, null, Util::strOrNull($tsumego['maximum_rating']), Util::strOrNull($maximumRating));
+			AdminActivityLogger::log(AdminActivityTypeTable::MAXIMUM_RATING_EDIT, $tsumegoID, null, Util::strOrNull($tsumego['maximum_rating']), Util::strOrNull($maximumRating));
 			$tsumego['maximum_rating'] = $maximumRating;
 		}
 
 		if ($tsumego['rating'] != $rating)
-			AdminActivityLogger::log(AdminActivityType::RATING_EDIT, $tsumegoID, null, Util::strOrNull($tsumego['rating']), Util::strOrNull($rating));
+			AdminActivityLogger::log(AdminActivityTypeTable::RATING_EDIT, $tsumegoID, null, Util::strOrNull($tsumego['rating']), Util::strOrNull($rating));
 
 		$tsumego['rating'] = Util::clampOptional($rating, $minimumRating, $maximumRating);
 
@@ -305,7 +306,7 @@ class TsumegosController extends AppController
 	{
 		$setConnection = ClassRegistry::init('SetConnection')->findDisplaySetConnection($tsumegoID);
 		Trash::deleteProblem($tsumegoID);
-		AdminActivityLogger::log(AdminActivityType::PROBLEM_DELETE, $tsumegoID);
+		AdminActivityLogger::log(AdminActivityTypeTable::PROBLEM_DELETE, $tsumegoID);
 		CookieFlash::set('The problem was moved to the trash, it can be restored for ' . Trash::$RETENTION_DAYS . ' days.', 'success');
 		if (!$setConnection)
 			return $this->redirect('/sets');

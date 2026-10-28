@@ -1,11 +1,12 @@
 <?php
 
+use App\Model\Entity\Achievement;
 use App\Model\Entity\AchievementStatus;
 use App\Utility\Auth;
 
 /**
  * @var View $this
- * @var array $achievement
+ * @var Achievement $achievement
  * @var int $completerCount
  * @var array<array|null> $completers
  * @var array $collections
@@ -20,7 +21,7 @@ use App\Utility\Auth;
 
 // The card is grey until the player completed the achievement, and the badge on
 // it counts the completions.
-$aColor = $currentUserStatus === null ? 'achievementColorGray' : $achievement['Achievement']['color'];
+$aColor = $currentUserStatus === null ? 'achievementColorGray' : $achievement->color;
 $earnedCount = $currentUserStatus === null ? 0 : $currentUserStatus->value;
 
 // The player whose page this is: the one being viewed, or the logged in one.
@@ -44,24 +45,24 @@ $profileUserID = $viewedUser['id'] ?? (Auth::isLoggedIn() ? Auth::getUserID() : 
 	<a href="/achievements" style="text-decoration:none;">
 	<div align="center" class="achievement2 <?php
 	echo $aColor;
-$displayImage = $achievement['Achievement']['image'];
+$displayImage = $achievement->image;
 if ($currentUserStatus === null)
 	$displayImage = 'ac000i';
 ?>">
 		<div class="acTitle">
-			<h1><?php echo h($achievement['Achievement']['name']); ?></h1>
+			<h1><?php echo h($achievement->name); ?></h1>
 		</div>
 		<div class="acImg">
 			<img src="/img/<?php echo $displayImage; ?>.png">
 			<?php echo AchievementHelper::renderEarnedBadge($earnedCount); ?>
 			<div class="acImgXp">
-			<?php echo $achievement['Achievement']['xp']; ?> XP
+			<?php echo $achievement->xp; ?> XP
 			</div>
 		</div>
 		<div class="acDesc">
 			<?php
-	echo h($achievement['Achievement']['description']);
-if ($achievement['Achievement']['additional_description'] != null)
+	echo h($achievement->description);
+if ($achievement->additional_description != null)
 	echo '*';
 ?>
 		</div>
@@ -85,8 +86,8 @@ if ($achievement['Achievement']['additional_description'] != null)
 	</div>
 	<font color="gray">
 	<?php
-	if ($achievement['Achievement']['additional_description'] != null)
-		echo '*' . h($achievement['Achievement']['additional_description']);
+	if ($achievement->additional_description != null)
+		echo '*' . h($achievement->additional_description);
 ?></font>
 	<?php if ($collections): ?>
 	<div class="acCollections">

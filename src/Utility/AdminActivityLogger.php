@@ -2,7 +2,7 @@
 
 namespace App\Utility;
 
-use AdminActivityType;
+use App\Model\Table\AdminActivityTypeTable;
 use Cake\ORM\TableRegistry;
 
 //Centralized logging utility for all admin activities.
@@ -12,9 +12,9 @@ use Cake\ORM\TableRegistry;
 //- old_value/new_value: VARCHAR(500) for state changes
 //Usage:
 //  // Edit with values (old → new)
-//  AdminActivityLogger::log(AdminActivityType::DESCRIPTION_EDIT, $tsumegoId, null, $oldDesc, $newDesc);
+//  AdminActivityLogger::log(AdminActivityTypeTable::DESCRIPTION_EDIT, $tsumegoId, null, $oldDesc, $newDesc);
 //  // Simple action (no values)
-//  AdminActivityLogger::log(AdminActivityType::PROBLEM_DELETE, $tsumegoId, $setId);
+//  AdminActivityLogger::log(AdminActivityTypeTable::PROBLEM_DELETE, $tsumegoId, $setId);
 class AdminActivityLogger
 {
 	//Log any admin activity

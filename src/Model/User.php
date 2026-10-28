@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\RejectTable;
 use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
@@ -212,7 +213,7 @@ class User extends AppModel
 		else
 			Util::execute('UPDATE user SET user_role_id = ? WHERE id = ?', [$roleID, $userID]);
 		AdminActivityLogger::log(
-			AdminActivityType::ROLE_CHANGE,
+			AdminActivityTypeTable::ROLE_CHANGE,
 			null,
 			null,
 			json_encode(['user_id' => $userID, 'display_name' => $user['display_name'], 'role' => self::ROLE_NAMES[$oldRoleID]]),
