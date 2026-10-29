@@ -3,7 +3,7 @@
 use App\Utility\CookieFlash;
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  * @var string $lightDark
  * @var string $redirectSignature
  * @var string $redirectUrl

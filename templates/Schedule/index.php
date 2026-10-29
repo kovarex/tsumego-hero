@@ -3,7 +3,7 @@
 use App\Utility\TsumegoButton;
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  * @var array $upcoming
  * @var array $recentlyPublished
  * @var array $sandboxSets

@@ -2,7 +2,7 @@
 
 use App\View\Helper\HighscoreHelper;
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  * @var array $params1
  * @var string $params2
  * @var array $modes

@@ -10,7 +10,7 @@ use App\Utility\UploadedAvatar;
  * behaves. It sits next to the other profile tabs, so it is the same page for the
  * same player, only not public.
  *
- * @var View $this
+ * @var \App\View\AppView $this
  * @var array $user
  * @var int $levelBar
  * @var string $lightDark

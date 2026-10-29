@@ -4,7 +4,7 @@ use App\Utility\SgfDescription;
 use App\Utility\Util;
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  * @var array $dTitle
  * @var int $id
  * @var string $name

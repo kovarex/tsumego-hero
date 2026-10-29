@@ -16,7 +16,7 @@ use App\Utility\Util;
 use App\Utility\ViteManifest;
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  * @var string $lightDark
  * @var string $highscoreLink
  * @var TimeMode $timeMode
@@ -33,7 +33,7 @@ use App\Utility\ViteManifest;
 <head>
 <?php
 echo '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />';
-if (Configure::read('debug'))
+if (\Cake\Core\Configure::read('debug'))
 	echo $this->element('javascript_error_tracking');
 ?>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -50,7 +50,7 @@ if (Configure::read('debug'))
 <meta name="apple-mobile-web-app-title" content="Tsumego">
 <link rel="apple-touch-icon" href="/pwa/icon-192.png">
 <?php
-$canonicalUrl = \Cake\Routing\Router::url($canonicalPath ?? '/' . trim(strtok($this->request->getRequestTarget(), '?'), '/'), true);
+$canonicalUrl = \Cake\Routing\Router::url($canonicalPath ?? '/' . trim(strtok($this->getRequest()->getRequestTarget(), '?'), '/'), true);
 ?>
 <link rel="canonical" href="<?php echo h($canonicalUrl); ?>">
 <?php if (!empty($robotsNoIndex)): ?>

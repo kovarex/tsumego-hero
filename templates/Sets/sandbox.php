@@ -3,7 +3,7 @@
 use App\Utility\Auth;
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  * @var array $admins
  * @var string $lightDark
  * @var int $overallCounter

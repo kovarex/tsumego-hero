@@ -5,7 +5,7 @@ use App\Utility\SimilarSearchResult;
 use App\Utility\TsumegoButton;
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  * @var SimilarSearchResult $result
  * @var int $sourceMoveCount
  * @var string $sourceSetName

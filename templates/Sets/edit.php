@@ -7,7 +7,7 @@ use App\Utility\Trash;
 use App\Utility\TsumegoButtons;
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  * @var bool $allArActive
  * @var bool $allArInactive
  * @var bool $allPassActive

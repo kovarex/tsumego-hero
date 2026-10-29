@@ -4,7 +4,7 @@ use App\View\Helper\HighscoreHelper;
 use App\Utility\Level;
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  * @var int $totalUsers
  * @var array $users
  */

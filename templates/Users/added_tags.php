@@ -3,7 +3,7 @@
 use App\View\Helper\HighscoreHelper;
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  * @var array $tagContributors
  * @var int $totalUsers
  */

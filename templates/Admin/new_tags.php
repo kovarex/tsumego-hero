@@ -3,7 +3,7 @@
 use App\Utility\TagProposalsRenderer;
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  * @var TagProposalsRenderer $tagProposalsRenderer
  */
 ?>

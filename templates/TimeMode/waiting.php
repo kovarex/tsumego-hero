@@ -3,7 +3,7 @@
 use App\Utility\TimeModeUtil;
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  */
 
 ?>

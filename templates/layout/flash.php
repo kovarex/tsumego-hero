@@ -14,7 +14,7 @@
  * @since         CakePHP(tm) v 0.10.0.1076
  * @license       http://www.opensource.org/licenses/mit-license.php MIT License
  * 
- * @var View $this
+ * @var \App\View\AppView $this
  * @var string $message
  * @var string $pageTitle
  * @var bool $pause

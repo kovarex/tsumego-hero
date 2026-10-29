@@ -5,7 +5,7 @@ use App\Utility\Auth;
 use App\Utility\Util;
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  * @var array $achievements
  * @var int $unlockedCount
  * @var array|null $viewedUser

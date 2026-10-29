@@ -23,7 +23,7 @@ use App\Utility\Util;
 use App\Utility\ViteManifest;
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  * @var bool $accountBlocked
  * @var bool $alternative_response
  * @var int $amountOfOtherCollection

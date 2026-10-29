@@ -4,7 +4,7 @@
  * The classes of a player: the invitations waiting for their answer, the classes they are in, the
  * requests to join waiting for a teacher, the classes they teach and the form to start one.
  *
- * @var View $this
+ * @var \App\View\AppView $this
  * @var array $taught What ClassroomTable::taughtBy() returned
  * @var array $memberships What ClassroomTable::ofPupil() returned
  */

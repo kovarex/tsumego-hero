@@ -7,7 +7,7 @@ use App\Model\Table\ChallengeTable;
  * aren't in yet. How every player did with each problem shows to the players who finished their own
  * run, so nobody sees the problems before they play them.
  *
- * @var View $this
+ * @var \App\View\AppView $this
  * @var array $challenge What ChallengeTable::withDetails() returned
  * @var array $standings What ChallengeTable::standings() returned
  * @var bool $isParticipant In the challenge and not declined

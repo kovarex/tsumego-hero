@@ -3,7 +3,7 @@
 use App\Model\Entity\Tag;
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  * @var array $allTags
  * @var Tag $tag
  * @var bool $canAddTag

@@ -6,7 +6,7 @@ use App\Model\Table\ClassroomAssignmentTable;
  * The page where the teacher builds an assignment of a class: picks problems from the
  * collections, names it, sets the due day and publishes it (app/classrooms/AssignmentEditor.tsx).
  *
- * @var View $this
+ * @var \App\View\AppView $this
  * @var \App\Model\Entity\Classroom $classroom
  * @var array $assignment
  * @var array $problems What ClassroomAssignmentTable::problems() returned, with the previews

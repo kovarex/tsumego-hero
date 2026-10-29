@@ -3,12 +3,10 @@
 namespace App\Controller;
 
 use Cake\Http\Response as CakeResponse;
-
 use Cake\Controller\Controller;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
 use Cake\Event\EventInterface;
-use Cake\Mailer\Mailer as CakeEmail;
 use ReflectionMethod;
 use App\Model\Table\UserTable;
 use App\Utility\AchievementChecker;
@@ -20,7 +18,11 @@ use App\Utility\TimeMode;
 use App\Utility\TsumegoFilters;
 use App\Utility\Util;
 
-/** @phpstan-import-type UserRow from \App\Utility\RowTypes */
+/**
+ * @phpstan-import-type UserRow from \App\Utility\RowTypes
+ * @property \App\Controller\Component\AuthorizationComponent $Authorization
+ * @property \App\Controller\Component\PlayResultProcessorComponent $PlayResultProcessor
+ */
 class AppController extends Controller
 {
 	//What $viewClass, $helpers and $components of Cake 2 set up.

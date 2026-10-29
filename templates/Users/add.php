@@ -3,7 +3,7 @@ use App\Model\Table\UserTable;
 use App\Utility\Constants;
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  * @var string $lightDark
  * @var string $redirectUrl
  * @var string $redirectSignature

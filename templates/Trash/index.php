@@ -5,7 +5,7 @@ use App\Utility\Trash;
 use App\Utility\Util;
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  * @var array $sets
  * @var array $problems
  */

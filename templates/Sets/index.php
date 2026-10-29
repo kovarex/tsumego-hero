@@ -6,7 +6,7 @@ use App\Utility\SetsSelector;
 use App\Utility\TsumegoFilters;
 
 /**
- * @var AppView $this
+ * @var \App\View\AppView $this
  * @var array $setTiles
  * @var TsumegoFilters $tsumegoFilters
  * @var array $difficultyTiles

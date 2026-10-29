@@ -3,7 +3,7 @@
 /**
  * Opened from the link sent to the address that an address change would give up.
  *
- * @var View $this
+ * @var \App\View\AppView $this
  * @var bool $valid
  * @var string $address
  * @var string $token

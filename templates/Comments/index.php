@@ -3,7 +3,7 @@
 use App\Utility\CommentsRenderer;
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  * @var CommentsRenderer $allComments
  * @var CommentsRenderer $yourComments
  */

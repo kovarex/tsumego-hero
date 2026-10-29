@@ -18,7 +18,7 @@
  * - profile_username (optional, only with og:type=profile)
  * - twitter_card (optional, default 'summary')
  *
- * @var View $this
+ * @var \App\View\AppView $this
  * @var array $og
  */
 if (empty($og))

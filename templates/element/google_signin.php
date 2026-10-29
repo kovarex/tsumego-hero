@@ -4,7 +4,7 @@
  * Sign in with Google: the button Google renders, in the variant that matches the theme.
  * The state travels with the credential so the redirect survives the round trip.
  *
- * @var View $this
+ * @var \App\View\AppView $this
  * @var string $lightDark
  * @var string|null $googleState
  */

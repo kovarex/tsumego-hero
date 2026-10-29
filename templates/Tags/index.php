@@ -5,7 +5,7 @@
  * list of those problems, loaded when it is first opened, so a tag can be judged (and
  * deleted) without leaving the page.
  *
- * @var View $this
+ * @var \App\View\AppView $this
  * @var array $tags What TagTable::listWithProblemCounts() returned
  * @var string $sort 'name' or 'problems'
  * @var bool $canDeleteTag

@@ -4,7 +4,7 @@
  * Reveals what was typed into a password field. One delegated handler per page, the
  * buttons carry the id of the field they belong to.
  *
- * @var View $this
+ * @var \App\View\AppView $this
  */
 ?>
 <script>

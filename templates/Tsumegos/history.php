@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  * @var \App\Model\Entity\Set $set
  * @var \App\Model\Entity\SetConnection $setConnection
  * @var array $dailyResults

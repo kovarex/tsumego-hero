@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  * @var int $setConnectionID
  * @var string $sgf
  * @var ?string $sourceSgfID

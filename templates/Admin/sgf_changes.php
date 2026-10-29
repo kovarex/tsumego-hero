@@ -3,7 +3,7 @@
 use App\Utility\SgfChangesRenderer;
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  * @var SgfChangesRenderer $sgfChangesRenderer
  */
 ?>

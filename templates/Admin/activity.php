@@ -3,7 +3,7 @@
 use App\Utility\AdminActivityRenderer;
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  * @var AdminActivityRenderer $adminActivityRenderer
  */
 ?>

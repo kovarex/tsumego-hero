@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  * @var bool $sent
  */
 

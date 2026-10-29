@@ -7,7 +7,7 @@ use App\Utility\Auth;
  * The player's conversations with other players. React draws the page and loads the
  * conversations itself (app/messages).
  *
- * @var View $this
+ * @var \App\View\AppView $this
  * @var array{id: int, displayName: string|null, avatarUrl: string|null, rating: float}|null $partner The player whose conversation is open
  */
 

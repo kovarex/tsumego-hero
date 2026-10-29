@@ -4,7 +4,7 @@
  * The page of a class. The teacher manages the class here; a pupil sees the assignments with
  * their own progress; an invited player answers the invitation; anyone else can ask to join.
  *
- * @var View $this
+ * @var \App\View\AppView $this
  * @var \App\Model\Entity\Classroom $classroom
  * @var array|null $teacher
  * @var bool $isTeacher

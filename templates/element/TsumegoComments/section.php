@@ -8,7 +8,7 @@ use Cake\ORM\TableRegistry;
  * React Comments Section - Mount point for the React comments component.
  *
  * Variables:
- * @var View $this
+ * @var \App\View\AppView $this
  * @var int $tsumegoId The tsumego ID
  * @var bool $solved Whether the problem is solved for the current mode
  */

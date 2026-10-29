@@ -4,7 +4,7 @@ use App\Model\Table\TsumegoStatusTable;
 use App\Utility\MistakeTraining;
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  */
 
 $percent = fn(float $share): string => round($share * 100) . '%';

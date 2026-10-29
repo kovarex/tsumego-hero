@@ -3,7 +3,7 @@
 use App\Utility\TagConnectionProposalsRenderer;
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  * @var TagConnectionProposalsRenderer $tagConnectionProposalsRenderer
  */
 ?>

@@ -7,7 +7,7 @@ use App\Utility\Util;
  * Tells an admin that the problem or collection they opened is in the trash, when it leaves it
  * for good, and lets them take it back.
  *
- * @var View $this
+ * @var \App\View\AppView $this
  * @var string $what 'problem' or 'collection'
  * @var string $deleted When it was moved to the trash
  * @var string $restoreAction Where the restore form posts

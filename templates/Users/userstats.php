@@ -3,7 +3,7 @@
 use App\Utility\UserActivitiesRenderer;
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  * @var UserActivitiesRenderer $userActivitiesRenderer
  */
 ?>

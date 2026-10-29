@@ -3,7 +3,7 @@
 use App\Utility\Util;
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  */
 
 ?>
@@ -11,7 +11,7 @@ use App\Utility\Util;
 	<div class="set-edit__header">
 		<p class="set-edit__crumb"><a href="/sets/mine">My Sets</a> / New Set</p>
 		<h1 class="set-edit-title">New Set</h1>
-		<p class="hint"><?php echo $this->request->getQuery('sandbox') !== null ? 'Create a new collection for the sandbox.' : 'Create a set to organize your favorite problems.'; ?></p>
+		<p class="hint"><?php echo $this->getRequest()->getQuery('sandbox') !== null ? 'Create a new collection for the sandbox.' : 'Create a set to organize your favorite problems.'; ?></p>
 	</div>
 
 	<div class="card card--green set-edit__section">

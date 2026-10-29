@@ -5,7 +5,7 @@ use App\Utility\Constants;
 use App\Utility\CookieFlash;
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  * @var string $checksum
  * @var bool $done
  * @var bool $valid

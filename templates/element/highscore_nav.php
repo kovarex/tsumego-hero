@@ -5,7 +5,7 @@
  *
  * Tabs: level, rating, time, achievements, tags, daily
  * 
- * @var View $this
+ * @var \App\View\AppView $this
  * @var string $activeTab
  */
 

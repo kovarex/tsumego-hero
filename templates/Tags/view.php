@@ -7,7 +7,7 @@ use App\Utility\HtmlSanitizer;
 use App\Utility\Util;
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  * @var array $allTags
  * @var Tag $tag
  * @var array|null $creator The user who created the tag, null when the account is gone

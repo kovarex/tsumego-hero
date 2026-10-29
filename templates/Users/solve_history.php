@@ -6,7 +6,7 @@ use App\Utility\TsumegoButton;
 use App\Utility\Util;
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  * @var int $PAGE_SIZE
  * @var array $attempts
  * @var int $count

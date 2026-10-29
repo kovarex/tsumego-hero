@@ -13,7 +13,7 @@ use App\Utility\RungInsignia;
  * Usage: $this->element('mistake_training_profile', ['training' => MistakeTraining::profile(...)])
  * and 'title' for a heading other than "Mistake Training".
  *
- * @var View $this
+ * @var \App\View\AppView $this
  * @var string|null $title
  * @var array{days: array<string, array{reviewed: int, cleared: bool, missed: bool}>, rungs: list<int>, graduated: int, streak: int, best_streak: int} $training
  */

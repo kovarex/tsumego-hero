@@ -11,7 +11,7 @@ use App\Utility\TsumegoButtons;
 use App\Utility\TsumegoFilters;
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  * @var float|null $bestAccuracy
  * @var float|null $bestTime
  * @var string $accuracy

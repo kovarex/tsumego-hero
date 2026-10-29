@@ -3,7 +3,7 @@
 use App\Utility\TsumegoButton;
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  * @var TsumegoButton $masterTsumegoButton
  * @var array $masterTsumegoButtons
  * @var string $masterTsumegoID

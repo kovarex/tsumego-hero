@@ -1,6 +1,6 @@
 <?php
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  */
 ?>
 <?php echo $this->fetch('script'); ?>

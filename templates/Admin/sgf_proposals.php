@@ -4,7 +4,7 @@ use App\Utility\RejectedSGFProposalsRenderer;
 use App\Utility\SGFProposalsRenderer;
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  * @var RejectedSGFProposalsRenderer $rejectedSgfProposalsRenderer
  * @var SGFProposalsRenderer $sgfProposalsRenderer
  */

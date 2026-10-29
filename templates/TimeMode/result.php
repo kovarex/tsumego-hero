@@ -3,7 +3,7 @@
 use App\Utility\Util;
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  * @var array $dataForView
  * @var array $sessionsToShow
  * @var array $unlock

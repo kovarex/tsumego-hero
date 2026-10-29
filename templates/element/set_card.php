@@ -3,7 +3,7 @@ use App\Model\Table\SetTable;
 /**
  * Shared set card component used by the sets index, sandbox and "my sets" pages.
  *
- * @var View $this
+ * @var \App\View\AppView $this
  * @var array $set      Keys: id, name, amount, difficulty, solved, color. Optional: partition.
  * @var string|null $backgroundImage  Precomputed CSS background-image for the card.
  */

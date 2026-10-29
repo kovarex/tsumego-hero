@@ -10,7 +10,7 @@ use App\Utility\TsumegoButtons;
 use App\Utility\Util;
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  * @var array<int, array{date: string, problems: int|null, users: int|null}> $chartData
  * @var string|null $latestPublishDate
  * @var string $quote

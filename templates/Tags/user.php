@@ -5,7 +5,7 @@ use App\Utility\ContributionRow;
 use App\Utility\Util;
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  * @var array $viewedUser
  * @var ContributionRow[] $contributions
  * @var int $count

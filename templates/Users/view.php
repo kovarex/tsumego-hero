@@ -11,7 +11,7 @@ use App\Utility\Rating;
 use App\Utility\Util;
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  * @var int $achievementCount
  * @var int $aNum
  * @var int $aEarnedTimes

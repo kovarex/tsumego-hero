@@ -8,7 +8,7 @@ use App\Model\Table\UserTable;
 use App\Utility\Auth;
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  * @var Achievement $achievement
  * @var int $completerCount
  * @var array<array|null> $completers

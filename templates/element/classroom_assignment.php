@@ -8,7 +8,7 @@ use App\Model\Table\ClassroomAssignmentTable;
  * the table of who solved what, which keeps itself up to date (app/classrooms/ClassroomProgress.tsx).
  * A draft only the teacher sees has no table yet.
  *
- * @var View $this
+ * @var \App\View\AppView $this
  * @var array $assignment A row of ClassroomAssignmentTable::ofClassroom()
  * @var bool $isTeacher The teacher sees every pupil, and can edit and take the assignment back
  */

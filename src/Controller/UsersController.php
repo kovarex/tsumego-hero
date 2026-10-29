@@ -3,10 +3,8 @@
 namespace App\Controller;
 
 use Cake\Core\Configure;
-
 use Cake\Http\Exception\NotFoundException;
 use Cake\Http\Response as CakeResponse;
-use Cake\Log\Log as CakeLog;
 use Cake\Routing\Router;
 use Cake\Validation\Validation;
 use DateTime;

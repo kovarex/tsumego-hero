@@ -7,7 +7,7 @@ use App\Model\Table\UserTable;
 /**
  * The challenges of a player and the form to start one.
  *
- * @var View $this
+ * @var \App\View\AppView $this
  * @var array $challenges What ChallengeTable::ofPlayer() returned
  * @var array<\App\Model\Entity\TimeModeRank> $ranks The rows of time_mode_rank, the easiest first
  * @var int|null $defaultRankID The rank of the player, to start the form with

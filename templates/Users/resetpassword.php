@@ -5,7 +5,7 @@ use App\Utility\Auth;
 use App\Utility\CookieFlash;
 
 /**
- * @var View $this
+ * @var \App\View\AppView $this
  * @var string $lightDark
  * @var bool $sent
  */

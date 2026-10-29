@@ -8,7 +8,7 @@ use App\Utility\Auth;
  * React fetches all data from API. Only initial state needed here.
  *
  * Required variables:
- * @var View $this
+ * @var \App\View\AppView $this
  * @var string $statusFilter - Current filter ('opened', 'closed', 'all')
  * @var int $currentPage - Current page number (for initial state)
  */

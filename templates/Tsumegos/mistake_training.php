@@ -9,7 +9,7 @@ use App\Utility\RungInsignia;
  * "Nothing to review yet" to a player who never had a problem in the training;
  * below that what comes up next, and the calendar and streak of the profile.
  *
- * @var View $this
+ * @var \App\View\AppView $this
  * @var int $dueToday
  * @var array|null $training What MistakeTraining::profile() returned
  * @var array $poolRows What MistakeTraining::poolRows() returned

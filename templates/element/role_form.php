@@ -5,7 +5,7 @@
  *
  * Usage: $this->element('role_form', ['user' => $userRow])
  *
- * @var View $this
+ * @var \App\View\AppView $this
  * @var array $user Row with the id and user_role_id
  */
 
