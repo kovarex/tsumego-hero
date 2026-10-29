@@ -184,8 +184,6 @@ mkdir -p "$ROOT_DIR/tmp/cache/models"
 chmod 777 "$ROOT_DIR/tmp/cache/models"
 mkdir -p "$ROOT_DIR/tmp/cache/persistent"
 chmod 777 "$ROOT_DIR/tmp/cache/persistent"
-mkdir -p "$ROOT_DIR/tmp/cache/views"
-chmod 777 "$ROOT_DIR/tmp/cache/views"
 mkdir -p "$ROOT_DIR/tmp/cache/htmlpurifier"
 chmod 777 "$ROOT_DIR/tmp/cache/htmlpurifier"
 
@@ -212,11 +210,10 @@ else
     vendor/bin/phinx migrate
 fi
 
-# Clear all caches, so the new code doesn't run on stale cached models and views
+# Clear all caches, so the new code doesn't run on stale cached models
 echo "=== Clearing caches ==="
 rm -rf "$ROOT_DIR/tmp/cache/models"/*
 rm -rf "$ROOT_DIR/tmp/cache/persistent"/*
-rm -rf "$ROOT_DIR/tmp/cache/views"/*
 
 
 echo "=== Deploy complete ==="

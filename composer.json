@@ -32,11 +32,8 @@
         }
     },
     "scripts": {
-        "setup": "bin/cake generate code_completion && bin/cake generate phpstorm",
-        "annotate": "bin/cake annotate all -r && bin/cake annotate all -r -p Sandbox && bin/cake annotate all -r -p AuthSandbox && bin/cake annotate all -r -p StateMachineSandbox",
         "test": "phpunit",
         "test-coverage": "phpunit --log-junit webroot/coverage/unitreport.xml --coverage-html webroot/coverage --coverage-clover webroot/coverage/coverage.xml",
-        "cs-modified": "sh cs-modified.sh",
         "cs-check": "./vendor/bin/php-cs-fixer check",
         "cs-fix": "./vendor/bin/php-cs-fixer fix",
         "stan": "phpstan analyse @additional_args; E1=$?; phpstan analyse -c phpstan-views.neon @additional_args; E2=$?; test $E1 -eq 0 -a $E2 -eq 0",
