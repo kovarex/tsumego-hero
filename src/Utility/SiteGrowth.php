@@ -21,7 +21,7 @@ class SiteGrowth
 	public static function chartData(): array
 	{
 		$chartData = Cache::read(self::CACHE_KEY, 'long');
-		if ($chartData === false)
+		if ($chartData === null)
 		{
 			$chartData = self::build();
 			Cache::write(self::CACHE_KEY, $chartData, 'long');

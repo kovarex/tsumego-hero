@@ -114,12 +114,14 @@ Configure::write('Dispatcher.filters', [
 //through the CakeLog configuration below.
 Cake\Log\Log::setConfig('debug', [
 	'className' => Cake\Log\Engine\FileLog::class,
+	'formatter' => App\Log\LogLineFormatter::class,
 	'path' => LOGS,
 	'levels' => ['notice', 'info', 'debug'],
 	'file' => 'debug',
 ]);
 Cake\Log\Log::setConfig('error', [
 	'className' => Cake\Log\Engine\FileLog::class,
+	'formatter' => App\Log\LogLineFormatter::class,
 	'path' => LOGS,
 	'levels' => ['warning', 'error', 'critical', 'alert', 'emergency'],
 	'file' => 'error',

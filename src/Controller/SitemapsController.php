@@ -37,7 +37,7 @@ class SitemapsController extends AppController
 		$cacheKey = 'sitemap_xml';
 		$xml = Cache::read($cacheKey, 'long');
 
-		if ($xml === false)
+		if ($xml === null)
 		{
 			$urls = $this->_generateUrls();
 			$xml = $this->_renderXml($urls);
