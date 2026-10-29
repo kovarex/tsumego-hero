@@ -107,7 +107,7 @@ class AccountWidgetTest extends IntegrationTestCase
 			$browser->hover($browser->find('#account-bar-xp'));
 			$this->assertSame(strval(round(1000 + $expectedChange)), $browser->find('#account-bar-xp')->getText());
 			$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-			$this->assertWithinMargin(1000 + $expectedChange, $context->reloadUser()['rating'], 0.01);
+			$this->assertEqualsWithDelta(1000 + $expectedChange, $context->reloadUser()['rating'], 0.01);
 		}
 	}
 
