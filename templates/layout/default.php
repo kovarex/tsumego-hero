@@ -272,7 +272,6 @@ $challengesBadge = $challengesWaiting > 0
 		achievementUpdates.forEach(showAchievementPopup);
 	<?php endif; ?>
 	let light = <?php echo Util::boolString($lightDark !== 'dark'); ?>;
-	var notMode3 = true;
 	setCookie("lightDark", <?php echo json_encode($lightDark, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>);
 	initSound(<?php echo json_encode($soundSetting); ?>);
 	boardSelector = new BoardSelector(<?php echo $boardsBitmask; ?>n);

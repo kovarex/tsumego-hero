@@ -477,7 +477,6 @@ besogo.makeToolPanel = function (container, editor) {
                 $(".besogo-panels").css("overflow", "hidden");
               }
               toggleBoardLock(false);
-              deleteNextMoveGroup = true;
               editor.setReviewMode(true);
               besogo.editor.notifyListeners({
                 treeChange: true,
@@ -553,7 +552,6 @@ besogo.makeToolPanel = function (container, editor) {
                 $(".besogo-board").css("width", "50%");
                 $(".besogo-board").css("margin", "0 auto");
               }
-              deleteNextMoveGroup = false;
               editor.setReviewMode(false);
             }
             besogo.editor.setControlButtonLock(false);
@@ -571,7 +569,7 @@ besogo.makeToolPanel = function (container, editor) {
         reviewButtonId
       );
     } else if (besogo.multipleChoiceCustom === "multiple_choice") {
-      toggleBoardLock(true, true);
+      toggleBoardLock(true);
       let prevButtonId;
       prevButtonId = "besogo-back-button";
 
@@ -616,7 +614,7 @@ besogo.makeToolPanel = function (container, editor) {
       }
       makeHyperlinkText("Next", "next problem", nextButtonLink, "besogo-next-button");
     } else if (besogo.multipleChoiceCustom === "score_estimating") {
-      toggleBoardLock(true, true);
+      toggleBoardLock(true);
       let prevButtonId;
       prevButtonId = "besogo-back-button";
       makeHyperlinkText(
@@ -665,7 +663,7 @@ besogo.makeToolPanel = function (container, editor) {
         makeResultText("", "se-result-text");
       makeHyperlinkText("Next", "next problem", nextButtonLink, "besogo-next-button");
     } else {
-      toggleBoardLock(true, true);
+      toggleBoardLock(true);
       let prevButtonId;
       prevButtonId = "besogo-back-button";
 
@@ -755,7 +753,7 @@ besogo.makeToolPanel = function (container, editor) {
                 fetch("/sets/removeTsumego/" + s.id, {
                   method: "POST",
                   headers: { "Content-Type": "application/x-www-form-urlencoded", "X-Requested-With": "XMLHttpRequest" },
-                  body: "tsumego_id=" + tsumegoFileLink
+                  body: "tsumego_id=" + tsumegoID
                 })
                 .then(r => {
                   if (!r.ok)
@@ -790,7 +788,7 @@ besogo.makeToolPanel = function (container, editor) {
           fetch("/sets/addTsumego/favorites", {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded", "X-Requested-With": "XMLHttpRequest" },
-            body: "tsumego_id=" + tsumegoFileLink
+            body: "tsumego_id=" + tsumegoID
           })
           .then(r => {
             if (!r.ok)
@@ -1232,7 +1230,7 @@ besogo.makeToolPanel = function (container, editor) {
           fetch(url, {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded", "X-Requested-With": "XMLHttpRequest" },
-            body: "tsumego_id=" + tsumegoFileLink
+            body: "tsumego_id=" + tsumegoID
           }).then(r => r.json()).then(data => {
             if (data.contains !== undefined) {
               s.contains = data.contains;

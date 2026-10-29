@@ -1,65 +1,32 @@
+//The player's answer to a score estimating problem, changed by its buttons until it is submitted
+function displayScoreEstimatingResult(change)
+{
+	if (!hasChosen)
+		adjustScore($("#ScoreEstimatingSE"), change);
+}
 
-function displayScoreEstimatingResult(c){
-	let chars = "";
-	let num = 0;
-	let v = "";
-	if(!hasChosen){
-		if(c=="b"){
-			v = $("#ScoreEstimatingSE").val();
-			if(v.slice(0,2)=="B+" || v.slice(0,2)=="W+"){
-				chars = "B+";
-				num = v.slice(2);
-			}else{
-				chars = "B+";
-				num = v;
-			}
-			$("#ScoreEstimatingSE").val(chars+num);
-		}else if(c=="w"){
-			v = $("#ScoreEstimatingSE").val();
-			if(v.slice(0,2)=="B+" || v.slice(0,2)=="W+"){
-				chars = "W+";
-				num = v.slice(2);
-			}else{
-				chars = "W+";
-				num = v;
-			}
-			$("#ScoreEstimatingSE").val(chars+num);
-		}else if(c=="+"){
-			
-			v = $("#ScoreEstimatingSE").val();
-			if(v.slice(0,2)=="B+" || v.slice(0,2)=="W+"){
-				chars = v.slice(0,2);
-				num = v.slice(2);
-			}else{
-				chars = "";
-				num = v;
-			}
-			if(num=="")
-				num=0;
-			if(is_numeric(num)){
-				num = parseFloat(num);
-				num += .5;
-			}
-			$("#ScoreEstimatingSE").val(chars+num);
-		}else if(c=="-"){
-			v = $("#ScoreEstimatingSE").val();
-			if(v.slice(0,2)=="B+" || v.slice(0,2)=="W+"){
-				chars = v.slice(0,2);
-				num = v.slice(2);
-			}else{
-				chars = "";
-				num = v;
-			}
-			if(num=="")
-				num=0;
-			if(is_numeric(num)){
-				num = parseFloat(num);
-				if(num>0)
-					num -= .5;
-			}
-			$("#ScoreEstimatingSE").val(chars+num);
-		}
+//A score like "B+6.5" in a text input: 'b' and 'w' set who wins, '+' and '-' move it by half a point
+function adjustScore(input, change)
+{
+	let value = input.val();
+	let winner = value.slice(0, 2) == "B+" || value.slice(0, 2) == "W+" ? value.slice(0, 2) : "";
+	let points = winner ? value.slice(2) : value;
+	if (change == "b" || change == "w")
+	{
+		input.val((change == "b" ? "B+" : "W+") + points);
+		return;
 	}
+	if (points == "")
+		points = 0;
+	if (is_numeric(points))
+	{
+		points = parseFloat(points);
+		if (change == "+")
+			points += .5;
+		else if (points > 0)
+			points -= .5;
+	}
+	input.val(winner + points);
 }
 
 function is_numeric(str){
@@ -67,4 +34,3 @@ function is_numeric(str){
   return !isNaN(str) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
     !isNaN(parseFloat(str)) // ...and ensure strings of whitespace fail
 }
-	

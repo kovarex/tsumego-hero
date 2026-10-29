@@ -56,7 +56,7 @@ function displayMultipleChoiceResult(num) {
       mText =
         "Semeai Type 2: No eyes, 2 or more inside liberties.<br>The favorite's task is to kill.<br>The favorite counts his outside liberties plus 1 inside liberty.<br>The underdog's task is Seki.<br>The underdog counts his outside liberties plus all inside liberties.<br>";
       let underdog = "Black";
-      if (tsumegoFileLink == 29813) {
+      if (tsumegoID == 29813) {
         mText += "Seki.<br>";
         $("#besogo-multipleChoice4").css("background-color", "#3ecf78");
         correct = 4;
@@ -169,23 +169,18 @@ function displayMultipleChoiceResult(num) {
       }
     } else if (multipleChoiceSemeaiType == 3)
 	{
-		console.log("multipleChoiceLibertiesB=" + multipleChoiceLibertiesB);
-		console.log("multipleChoiceLibertiesB2=" + multipleChoiceLibertiesB2);
-		console.log("multipleChoiceLibertiesW=" + multipleChoiceLibertiesW);
-		console.log("multipleChoiceLibertiesW2=" + multipleChoiceLibertiesW2);
-		console.log(tsumegoFileLink);
 		let moreText = "";
-      if (tsumegoFileLink == 29824)
+      if (tsumegoID == 29824)
         moreText =
           "White can play 2 under the stones tesujis to gain 2 more liberties.<br>";
       if (
-        (tsumegoFileLink == 29824 &&
+        (tsumegoID == 29824 &&
           multipleChoiceLibertiesB == 1 &&
           multipleChoiceLibertiesW == 2) ||
-        (tsumegoFileLink == 29825 &&
+        (tsumegoID == 29825 &&
           multipleChoiceLibertiesB == 1 &&
           multipleChoiceLibertiesW == 2) ||
-        (tsumegoFileLink == 29826 &&
+        (tsumegoID == 29826 &&
           multipleChoiceLibertiesB == 1 &&
           multipleChoiceLibertiesW == 2)
       ) {
@@ -193,12 +188,12 @@ function displayMultipleChoiceResult(num) {
         multipleChoiceLibertiesW = 1;
         multipleChoiceLibertiesB2 = 5;
         multipleChoiceLibertiesW2 = 5;
-        if (tsumegoFileLink == 29824) {
+        if (tsumegoID == 29824) {
           multipleChoiceLibertiesB2 = 7;
           multipleChoiceLibertiesW2 = 7;
         }
       } else if (
-        tsumegoFileLink == 29827 &&
+        tsumegoID == 29827 &&
         multipleChoiceLibertiesB == 1 &&
         multipleChoiceLibertiesW == 2
       ) {
@@ -525,13 +520,11 @@ function displayMultipleChoiceResult(num) {
     }
     if (num == correct) {
       displayResult("S");
-      multipleChoiceEnabled = false;
       //$(".alertBanner").css("background-color", "rgb(18, 121, 59)");
       $(".toast__banner").addClass("toast__banner--success");
       $(".toast__banner").html('Correct!<span class="toast__close">x</span>');
     } else {
       displayResult("F");
-      multipleChoiceEnabled = false;
       //$(".alertBanner").css("background-color", "linear-gradient(rgba(214,70,74,1), rgba(201,95,105,1))");
       $(".toast__banner").addClass("toast__banner--error");
       $(".toast__banner").html('Incorrect!<span class="toast__close">x</span>');

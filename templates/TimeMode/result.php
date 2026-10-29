@@ -154,7 +154,6 @@ if (!function_exists('showRank'))
 			$("#xp-bar-fill").removeClass("xp-bar-fill-c1");
 			$("#account-bar-user a").attr("class", "xp-text-fill-c3x");
 			$("#modeSelector").hide();
-			notMode3 = false;
 
 			bartext = "<?php echo 'some rank to show'; ?>"; // TODO:
 			barPercent = "<?php echo '100'; ?>%"; // TODO:

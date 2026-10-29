@@ -25,18 +25,14 @@ use App\Utility\ViteManifest;
 /**
  * @var \App\View\AppView $this
  * @var bool $accountBlocked
- * @var bool $alternative_response
  * @var int $amountOfOtherCollection
  * @var array $boardSelection
- * @var int $checkBSize
  * @var string $playerColor 'black' or 'white'
  * @var string $corner
  * @var bool $swapColors
  * @var float|int|string|null $difficulty
  * @var string $emptyHeart
- * @var string $file
  * @var string $fullHeart
- * @var string $getTitle
  * @var bool $goldenTsumego
  * @var bool $hasSgfProposal
  * @var bool $isAllowedToContribute
@@ -52,11 +48,9 @@ use App\Utility\ViteManifest;
  * @var int $multipleChoiceTriangles
  * @var string $nextLink
  * @var bool $noSkipNextLink
- * @var bool $passEnabled
  * @var string $previousLink
  * @var string $queryTitle
  * @var bool $requestSolution
- * @var string $reviewEnabled
  * @var \App\Model\Entity\Set $set
  * @var \App\Model\Entity\SetConnection $setConnection
  * @var array $setConnections
@@ -402,13 +396,13 @@ use App\Utility\ViteManifest;
 							<table>
 								<tr>
 									<td>Alternative Response Mode</td>
-									<td><input type="radio" id="alternative-response-on" name="alternative_response" value="1" ' . $checked($alternative_response == 1) . '><label for="alternative-response-on">on</label></td>
-									<td><input type="radio" id="alternative-response-off" name="alternative_response" value="0" ' . $checked($alternative_response != 1) . '><label for="alternative-response-off">off</label></td>
+									<td><input type="radio" id="alternative-response-on" name="alternative_response" value="1" ' . $checked($tsumego->alternative_response == 1) . '><label for="alternative-response-on">on</label></td>
+									<td><input type="radio" id="alternative-response-off" name="alternative_response" value="0" ' . $checked($tsumego->alternative_response != 1) . '><label for="alternative-response-off">off</label></td>
 								</tr>
 								<tr>
 									<td>Enable passing</td>
-									<td><input type="radio" id="pass-off" name="pass" value="0" ' . $checked($passEnabled != 1) . '><label for="pass-off">no</label></td>
-									<td><input type="radio" id="pass-on" name="pass" value="1" ' . $checked($passEnabled == 1) . '><label for="pass-on">yes</label></td>
+									<td><input type="radio" id="pass-off" name="pass" value="0" ' . $checked($tsumego->pass != 1) . '><label for="pass-off">no</label></td>
+									<td><input type="radio" id="pass-on" name="pass" value="1" ' . $checked($tsumego->pass == 1) . '><label for="pass-on">yes</label></td>
 								</tr>';
 				if($isSandbox)
 					echo '<tr>
@@ -551,15 +545,7 @@ use App\Utility\ViteManifest;
 		?>
 
 <script type="text/javascript">
-	var ko = false,
-		lastMove = false;
-	var lastHover = false,
-		lastX = -1,
-		lastY = -1;
-	var move = 0;
-	var branch = "";
 	var hadMisplay = false;
-	var hoverLocked = false;
 	var tryAgainTomorrow = false;
 	var currentHealth = <?php echo Auth::getRemainingHealth(); ?>;
 	var maxHealth = <?php echo $maxHealth; ?>;
@@ -568,8 +554,6 @@ use App\Utility\ViteManifest;
 	var heartResetTime = new Date(new Date().setUTCHours(24,0,0,0)).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
 	var countDownDate = new Date();
 	var revelationUseCount = <?php echo HeroPowers::remainingRevelationUseCount(); ?>;
-	var multipleChoiceSelected = false;
-	var safetyLock = false;
 	var msg2selected = false;
 	var msg2xselected = false;
 	var msg3selected = false;
@@ -577,16 +561,13 @@ use App\Utility\ViteManifest;
 	var msg5selected = false;
 	var msgMCselected = false;
 	var msgSEselected = false;
-	var playedWrong = false;
 	var clockStart = 0;
 	var bonusSeconds = 0;
 	var timeToFirstClick = null;
 	var freePlayMode = false;
 	var reviewEnabled = false;
-	var theComment = "";
 	// The effective mode the server plays by, so the board cannot disagree with it.
 	var mode = <?php echo Auth::getMode(); ?>;
-	var timeModeEnabled = true;
 	var authorProblem = false;
 	var tsumegoID = <?php echo $tsumego->id ?>;
 	var playGreenColor = '<?php echo $playGreenColor; ?>';
@@ -599,7 +580,6 @@ use App\Utility\ViteManifest;
 	var unrevealedFail = null;
 	window._submitResultPromise = null;
 
-	var userXP = <?php echo Auth::getWithDefault('xp', 0); ?>;
 	var previousButtonLink = "<?php echo $previousLink; ?>";
 	var nextButtonLink = "<?php echo $nextLink; ?>";
 	// A training try ends at the first mistake, Reset opens the problem again for the next one
@@ -607,14 +587,8 @@ use App\Utility\ViteManifest;
 	var noSkipNextButtonLink = "<?php echo $noSkipNextLink; ?>";
 	var timeModeTimer = (mode == 3 ? new TimeModeTimer(<?php echo $timeMode->secondsToSolve; ?>) : null);
 	var setID = <?php echo $set->id ?>;
-	var isMutable = true;
-	var deleteNextMoveGroup = false;
-	var file = <?php echo json_encode($file, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
-	var tsumegoFileLink = "<?php echo $tsumego->id; ?>";
 	var author = <?php echo json_encode($tsumego->author, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 	var userSets = <?php echo $userSetsJson; ?>;
-	var besogoMode2Solved = false;
-	var disableAutoplay = false;
 	var besogoNoLogin = false;
 	var sprintSeconds = <?php echo Constants::$SPRINT_SECONDS; ?>;
 	var problemSolved = <?php echo Util::boolString($solved); ?>;
@@ -624,7 +598,6 @@ use App\Utility\ViteManifest;
 	let multipleChoiceLibertyCount = <?php echo $tsumego->liberty_count; ?>+"";
 	let multipleChoiceSemeaiType = <?php echo $tsumego->semeai_type; ?>+"";
 	let multipleChoiceInsideLiberties = <?php echo $tsumego->inside_liberties; ?>+"";
-	let multipleChoiceEnabled = false;
 	let hasChosen = false;
 	let enableDownloads = false;
 	let adminCommentOpened = false;
@@ -787,8 +760,6 @@ use App\Utility\ViteManifest;
 		echo 'authorProblem = true;';
 	if($requestSolution)
 		echo 'authorProblem = true;';
-	if(Auth::isInTimeMode())
-		echo 'var besogoMode3Next = 0;'; // probably whatever, the id doesn't matter in time mode
 	?>
 
 
@@ -852,174 +823,17 @@ use App\Utility\ViteManifest;
 				$("#submitScoreEstimatingSE").css("background-color", color);
 	}
 		});
-		$("#submitScoreEstimatingBlackWins").click(function(e){
-			e.preventDefault();
-			let scoreResult = <?php echo json_encode($tv->winner, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
-			if(!hasChosen){
-				let res1;
-				if(scoreResult.charAt(scoreResult.length - 1) === '0')
-					res1 = "Result: Jigo";
-	else
-					res1 = "Result: "+scoreResult;
-				$("#se-result-text").css("opacity", "1");
-				$("#se-result-text").text(res1);
-				let color = "#e0747f";
-				let color2 = "rgb(224, 60, 75)";
-				if (scoreResult.charAt(0) === 'B' && scoreResult.charAt(scoreResult.length - 1) !== '0') {
-					displayResult("S");
-					color = "#3ecf78";
-					color2 = "rgb(12, 187, 12)";
-	}else{
-					displayResult("F");
-					color = "#e0747f";
-					color2 = "rgb(224, 60, 75)";
-	}
-				hasChosen = true;
-				locked = true;
-				$("#submitScoreEstimatingBlackWins").css("background-color", color);
-				$("#submitScoreEstimatingWhiteWins").css("background-color", color);
-				$("#submitScoreEstimatingJigo").css("background-color", color);
-				$("#se-result-text").css("color", color2);
-	}
-		});
-		$("#submitScoreEstimatingWhiteWins").click(function(e){
-			e.preventDefault();
-			let scoreResult = <?php echo json_encode($tv->winner, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
-			if(!hasChosen){
-				let res1;
-				if(scoreResult.charAt(scoreResult.length - 1) === '0')
-					res1 = "Result: Jigo";
-	else
-					res1 = "Result: "+scoreResult;
-				$("#se-result-text").css("opacity", "1");
-				$("#se-result-text").text(res1);
-				let color = "#e0747f";
-				let color2 = "rgb(224, 60, 75)";
-				if (scoreResult.charAt(0) === 'W' && scoreResult.charAt(scoreResult.length - 1) !== '0') {
-					displayResult("S");
-					color = "#3ecf78";
-					color2 = "rgb(12, 187, 12)";
-	}else{
-					displayResult("F");
-					color = "#e0747f";
-					color2 = "rgb(224, 60, 75)";
-	}
-				hasChosen = true;
-				locked = true;
-				$("#submitScoreEstimatingBlackWins").css("background-color", color);
-				$("#submitScoreEstimatingWhiteWins").css("background-color", color);
-				$("#submitScoreEstimatingJigo").css("background-color", color);
-				$("#se-result-text").css("color", color2);
-	}
+		[['black', 'b'], ['white', 'w'], ['more', '+'], ['less', '-']].forEach(function ([button, change])
+		{
+			$("#besogo-se-edit-" + button).click(function(e){
+				e.preventDefault();
+				adjustScore($("#scoreEstEditField"), change);
 			});
-		$("#submitScoreEstimatingJigo").click(function(e){
-			e.preventDefault();
-			let scoreResult = <?php echo json_encode($tv->winner, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
-			if(!hasChosen){
-				let res1;
-				if(scoreResult.charAt(scoreResult.length - 1) === '0')
-					res1 = "Result: Jigo";
-	else
-					res1 = "Result: "+scoreResult;
-				$("#se-result-text").css("opacity", "1");
-				$("#se-result-text").text(res1);
-				let color = "#e0747f";
-				let color2 = "rgb(224, 60, 75)";
-				if (scoreResult.charAt(scoreResult.length - 1) === '0') {
-					displayResult("S");
-					color = "#3ecf78";
-					color2 = "rgb(12, 187, 12)";
-	}else{
-					displayResult("F");
-					color = "#e0747f";
-					color2 = "rgb(224, 60, 75)";
-	}
-				hasChosen = true;
-				locked = true;
-				$("#submitScoreEstimatingBlackWins").css("background-color", color);
-				$("#submitScoreEstimatingWhiteWins").css("background-color", color);
-				$("#submitScoreEstimatingJigo").css("background-color", color);
-				$("#se-result-text").css("color", color2);
-	}
-			});
-		$("#besogo-se-edit-black").click(function(e){
-			e.preventDefault();
-			let chars = "";
-			let num = 0;
-			let v = "";
-			v = $("#scoreEstEditField").val();
-			if(v.slice(0,2)=="B+" || v.slice(0,2)=="W+"){
-				chars = "B+";
-				num = v.slice(2);
-	}else{
-				chars = "B+";
-				num = v;
-	}
-			$("#scoreEstEditField").val(chars+num);
-		});
-		$("#besogo-se-edit-white").click(function(e){
-			e.preventDefault();
-			let chars = "";
-			let num = 0;
-			let v = "";
-			v = $("#scoreEstEditField").val();
-			if(v.slice(0,2)=="B+" || v.slice(0,2)=="W+"){
-				chars = "W+";
-				num = v.slice(2);
-	}else{
-				chars = "W+";
-				num = v;
-	}
-			$("#scoreEstEditField").val(chars+num);
-			});
-		$("#besogo-se-edit-more").click(function(e){
-			e.preventDefault();
-			let chars = "";
-			let num = 0;
-			let v = "";
-			v = $("#scoreEstEditField").val();
-			if(v.slice(0,2)=="B+" || v.slice(0,2)=="W+"){
-				chars = v.slice(0,2);
-				num = v.slice(2);
-	}else{
-				chars = "";
-				num = v;
-	}
-			if(num=="")
-				num=0;
-			if(is_numeric(num)){
-				num = parseFloat(num);
-				num += .5;
-	}
-			$("#scoreEstEditField").val(chars+num);
-		});
-		$("#besogo-se-edit-less").click(function(e){
-			e.preventDefault();
-			let chars = "";
-			let num = 0;
-			let v = "";
-			v = $("#scoreEstEditField").val();
-			if(v.slice(0,2)=="B+" || v.slice(0,2)=="W+"){
-				chars = v.slice(0,2);
-				num = v.slice(2);
-	}else{
-				chars = "";
-				num = v;
-	}
-			if(num=="")
-				num=0;
-			if(is_numeric(num)){
-				num = parseFloat(num);
-				if(num>0)
-					num -= .5;
-	}
-			$("#scoreEstEditField").val(chars+num);
 		});
 	<?php } ?>
 
 	<?php
-	if(Auth::isInLevelMode()){
-	}elseif(Auth::isInRatingMode()){
+	if(Auth::isInRatingMode()){
 		echo '
 			$(".problem-nav").hide();
 			$(".tsumegoNavi-middle").hide();
@@ -1061,10 +875,6 @@ use App\Utility\ViteManifest;
 
 	$(document).ready(function(){
 	<?php
-		if(Auth::isInTimeMode())
-			echo 'notMode3 = false;';
-	?>
-	<?php
 		if (!Auth::isInTimeMode() && !Auth::isInMistakeTrainingMode() && ($tsumegoStatus == 'F' || $tsumegoStatus == 'X')){
 		echo '
 				document.getElementById("status").innerHTML = \'<b class="message--locked">This problem is locked until \' + heartResetTime + \'</b>\';
@@ -1075,19 +885,8 @@ use App\Utility\ViteManifest;
 				if (resetBtn) { resetBtn.id = "besogo-reset-button-inactive"; }';
 	}
 
-		$reviewEnabled = false;
-		if($solved){
-			$reviewEnabled = true;
+		if($solved)
 			echo 'reviewEnabled = true;';
-	}
-	if(Auth::isLoggedIn()){
-					if(Auth::isAdmin()){
-	if($isSandbox){
-					//$reviewEnabled = true;
-					//echo 'reviewEnabled = true;';
-	}
-	}
-	}
 	?>
 
 		$('.besogo-board').click(function(e){
@@ -1214,13 +1013,6 @@ use App\Utility\ViteManifest;
 		$("#findSimilarProblems").click(function(){
 			$('.loader-container').css({"display": "flex"});
 			window.location.href="/tsumegos/duplicatesearch/<?php echo $setConnection->id; ?>";
-		});
-
-		var mouseX;
-		var mouseY;
-		$(document).mousemove(function(e){
-			 mouseX = e.pageX;
-			 mouseY = e.pageY;
 		});
 	});
 
@@ -1644,26 +1436,16 @@ use App\Utility\ViteManifest;
 				$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(80, 255, 0, 0.2)");
 			besogo.editor.setReviewEnabled(true);
 			besogo.editor.setControlButtonLock(false);
-			noLastMark = true;
 			$("#besogo-review-button-inactive").attr("id","besogo-review-button");
 			$("#commentSpace").show();
 
-			if (mode != 2)
-			{//mode 1 and 3 correct
-				if(mode == <?php echo Constants::$TIME_MODE; ?>)
-				{
-					timeModeEnabled = false;
-					$("#time-mode-countdown").css("color","<?php echo $playGreenColor; ?>");
-					$("#reviewButton").show();
-					$("#reviewButton-inactive").hide();
-				}
-				noXP = true;
+			if (mode == <?php echo Constants::$TIME_MODE; ?>)
+			{
+				$("#time-mode-countdown").css("color","<?php echo $playGreenColor; ?>");
+				$("#reviewButton").show();
+				$("#reviewButton-inactive").hide();
 			}
-			else
-			{//mode 2 correct
-				besogoMode2Solved = true;
-				noXP = true;
-			}
+			noXP = true;
 			toggleBoardLock(true);
 			displaySettings();
 		}
@@ -1683,13 +1465,11 @@ use App\Utility\ViteManifest;
 			// Don't lock board - let user keep trying
 			if (mode != 2)
 			{
-				branch = "no";
 				document.getElementById("status").style.color = "var(--feedback-error)";
 				document.getElementById("status").innerHTML = "<h2>Incorrect!</h2>";
 				$(".besogo-board").addClass("besogo-board-red-glow");
 				if (mode==3)
 				{
-					timeModeEnabled = false;
 					$("#time-mode-countdown").css("color","var(--feedback-error)");
 					toggleBoardLock(true);
 				}
@@ -1699,15 +1479,10 @@ use App\Utility\ViteManifest;
 					toggleBoardLock(true);
 					document.getElementById("status").innerHTML = '<h2>Incorrect!</h2><p class="mistake-training-note">Press Reset to try again.</p>';
 				}
-				noLastMark = true;
 				if (!noXP)
 				{
-					if(!freePlayMode)
-					{
-						hoverLocked = false;
-						if (mode == 1)
-							redrawHearts();
-					}
+					if(!freePlayMode && mode == 1)
+						redrawHearts();
 					freePlayMode = true;
 					if (mode == 1)
 					{
@@ -1733,32 +1508,20 @@ use App\Utility\ViteManifest;
 			}
 			else
 			{//mode 2 incorrect
-				branch = "no";
 				document.getElementById("status").style.color = "var(--feedback-error)";
 				document.getElementById("status").innerHTML = "<h2>Incorrect!</h2>";
-				noLastMark = true;
-				besogoMode2Solved = true;
 				$(".besogo-board").addClass("besogo-board-red-glow");
 				if (!noXP)
-				{
-					playedWrong = true;
-					hoverLocked = false;
 					freePlayMode = true;
-				}
 			}
 		}
 	}
 
-	function toggleBoardLock(t, multipleChoice=false)
+	function toggleBoardLock(t)
 	{
 		if (tryAgainTomorrow)
 			t = true;
-		if (t)
-			boardLockValue = 1;
-		else
-			boardLockValue = 0;
-		if(multipleChoice)
-			multipleChoiceEnabled = true;
+		boardLockValue = t ? 1 : 0;
 	}
 
 	function displayMessage(message='text', topic='Message', color='red')
@@ -1828,7 +1591,7 @@ use App\Utility\ViteManifest;
 		options.multipleChoiceSetup = [];
 		options.alternativeResponse = true;
 		<?php
-		if ($alternative_response != 1)
+		if ($tsumego->alternative_response != 1)
 			echo 'options.alternativeResponse = false;';
 		if (!is_null($tsumego->semeai_type) && $tsumego->semeai_type != 0)
 		{
@@ -1893,7 +1656,7 @@ use App\Utility\ViteManifest;
 				div.style.width = options.width + 'px';
 			}
 		options.reviewMode = false;
-		options.reviewEnabled = <?php echo $reviewEnabled ? 'true' : 'false'; ?>;
+		options.reviewEnabled = <?php echo Util::boolString($solved); ?>;
 	<?php
 		if($requestSolution)
 			echo 'options.reviewEnabled = true;';

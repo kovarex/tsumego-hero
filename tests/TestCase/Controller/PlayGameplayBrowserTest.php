@@ -211,6 +211,44 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 			'Submitting a correct score estimate should show a Correct banner');
 	}
 
+	//The buttons set who wins and move the score by half a point, for the player's estimate and for
+	//the admin's correct answer on a sandbox problem
+	public function testScoreButtonsChangeTheScore(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'seUser', 'admin' => true],
+			'tsumego' => [
+				'sgf' => self::SGF_19,
+				'sets' => [['name' => 'sandbox', 'public' => 0, 'num' => 1]],
+				'variants' => [[
+					'tsumego_variant_type_id' => TsumegoVariantTable::TYPE_SCORE_ESTIMATING,
+					'answer1' => '6.5',
+					'answer2' => '3',
+					'answer3' => '6',
+					'winner' => 'B+2',
+				]],
+			],
+		]);
+		$browser = Browser::instance();
+		$browser->get($this->playUrl($context));
+		$this->waitForBoard($browser);
+		$browser->waitUntilJs('document.getElementById("besogo-se-black") !== null');
+
+		$scoreAfter = function (array $buttons, string $input) use ($browser): string {
+			foreach ($buttons as $button)
+				$browser->clickId($button);
+			return $browser->find('#' . $input)->getAttribute('value');
+		};
+		$this->assertSame('W+0', $scoreAfter(['besogo-se-white'], 'ScoreEstimatingSE'));
+		$this->assertSame('W+1', $scoreAfter(['besogo-se-more', 'besogo-se-more'], 'ScoreEstimatingSE'));
+		$this->assertSame('B+0.5', $scoreAfter(['besogo-se-less', 'besogo-se-black'], 'ScoreEstimatingSE'));
+
+		$browser->clickId('showSE');
+		$browser->waitUntilCssSelectorDisplayed('#scoreEstEditField');
+		$this->assertSame('W+2.5', $scoreAfter(['besogo-se-edit-white', 'besogo-se-edit-more'], 'scoreEstEditField'));
+		$this->assertSame('W+2', $scoreAfter(['besogo-se-edit-less'], 'scoreEstEditField'));
+	}
+
 	public function testPostSolveMistakesAreNotPenalized(): void
 	{
 		$context = new ContextPreparator([
