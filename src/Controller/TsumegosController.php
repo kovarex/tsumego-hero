@@ -14,6 +14,7 @@ use App\Utility\Auth;
 use App\Utility\BoardTransformation;
 use App\Utility\Constants;
 use App\Utility\CookieFlash;
+use App\Utility\Play;
 use App\Utility\PlayOutcome;
 use App\Utility\Rating;
 use App\Utility\RatingParseException;

@@ -11,6 +11,7 @@ use App\Model\Table\TimeModeSessionStatusTable;
 use App\Utility\AchievementChecker;
 use App\Utility\Auth;
 use App\Utility\Constants;
+use App\Utility\Play;
 use App\Utility\Rating;
 use App\Utility\TimeMode;
 use App\Utility\TimeModeUtil;

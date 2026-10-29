@@ -12,6 +12,7 @@ use App\Model\Table\ClassroomTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\CookieFlash;
+use App\Utility\Play;
 use App\Utility\Util;
 
 //Classes: a teacher gathers players into a class, gives them problems to solve by a day and
