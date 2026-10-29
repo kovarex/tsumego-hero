@@ -15,6 +15,7 @@ use Cake\Routing\Router;
 require __DIR__ . DIRECTORY_SEPARATOR . 'paths.php';
 require CORE_PATH . 'config' . DS . 'bootstrap.php';
 require CAKE . 'Core' . DS . 'functions_global.php';
+require CAKE . 'I18n' . DS . 'functions_global.php';
 require __DIR__ . DS . 'define.php';
 require __DIR__ . DS . 'functions.php';
 
