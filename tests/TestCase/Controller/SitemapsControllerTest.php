@@ -2,8 +2,8 @@
 
 use App\Controller\SitemapsController;
 use Cake\Cache\Cache;
+use Cake\Http\ServerRequest;
 use Cake\Routing\Router;
-use Cake\Utility\Inflector;
 use App\Utility\Constants;
 use Cake\ORM\TableRegistry;
 
@@ -160,9 +160,9 @@ class SitemapsControllerTest extends IntegrationTestCase
 
 		foreach ($matches[1] as $url)
 		{
-			$route = Router::parse((string) parse_url($url, PHP_URL_PATH));
+			$route = Router::parseRequest(new ServerRequest(['url' => (string) parse_url($url, PHP_URL_PATH)]));
 			$this->assertTrue(
-				self::controllerServesAction($route['controller'], $route['action']),
+				SitemapsController::_controllerServesAction($route['controller'], $route['action']),
 				$url . ' has no ' . $route['controller'] . '::' . $route['action'] . '() to serve it'
 			);
 		}
@@ -171,19 +171,13 @@ class SitemapsControllerTest extends IntegrationTestCase
 	//A route becomes a URL only when an action serves it
 	public function testSitemapPublishesOnlyUrlsWithAnAction()
 	{
+		$this->loadRoutes();
 		$this->assertNull(SitemapsController::_urlOf(['controller' => 'sets', 'action' => 'tag', 'Ladder']));
 		$this->assertNull(SitemapsController::_urlOf(['controller' => 'hero', 'action' => 'index']));
 		$this->assertSame(
 			'/tags/view/1',
 			parse_url((string) SitemapsController::_urlOf(['controller' => 'tags', 'action' => 'view', 1]), PHP_URL_PATH)
 		);
-	}
-
-	private static function controllerServesAction(string $controller, string $action): bool
-	{
-		$class = Inflector::camelize($controller) . 'Controller';
-		App::uses($class, 'Controller');
-		return class_exists($class) && method_exists($class, $action);
 	}
 
 	private static function tagIdByName(string $name): int

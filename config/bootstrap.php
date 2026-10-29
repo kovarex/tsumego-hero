@@ -21,9 +21,10 @@ require __DIR__ . DS . 'functions.php';
 
 Configure::config('default', new PhpConfig());
 Configure::load('app', 'default', false);
-//core.local.php of each server writes with the global Configure of Cake 2 (and the forum reads the
-//salt out of its text), so it keeps working through an alias until the servers' files are rewritten.
+//core.php and the core.local.php of each server write with the global Configure of Cake 2, so they
+//keep working through an alias. core.php holds the salt, which the forum reads out of its text.
 class_alias(Configure::class, 'Configure');
+require __DIR__ . DS . 'core.php';
 if (file_exists(__DIR__ . DS . 'core.local.php'))
 	require __DIR__ . DS . 'core.local.php';
 if (is_int(Configure::read('debug')))

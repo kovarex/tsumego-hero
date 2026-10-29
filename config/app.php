@@ -31,9 +31,6 @@ return [
 			'locales' => [RESOURCES . 'locales' . DS],
 		],
 	],
-	'Security' => [
-		'salt' => 'DYhG93b0qyJfliouholkuzglR2G0FgaC9mi',
-	],
 	'Asset' => [],
 	'Cache' => [
 		'default' => ['className' => FileEngine::class, 'path' => CACHE],
