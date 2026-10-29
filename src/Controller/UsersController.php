@@ -284,7 +284,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		// On GET request, prepare redirect URL with HMAC signature (fully stateless)
 		if (!$this->request->is('post'))
 		{
-			$referer = $this->referer(null, true);
+			$referer = $this->referer('/', true);
 			// Don't redirect back to login page itself
 			$redirectUrl = ($referer && strpos($referer, '/users/login') === false) ? $referer : '/sets/';
 
