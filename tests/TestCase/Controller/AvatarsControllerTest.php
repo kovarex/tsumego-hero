@@ -116,11 +116,13 @@ class AvatarsControllerTest extends IntegrationTestCase
 		$this->assertResponseCode(404);
 	}
 
+	//The page that says so is the site's own, with its layout, like the not found page of any other address
 	public function testAnUnknownUserIdHasNoBoard()
 	{
 		$this->get('/avatar/999999999');
 
 		$this->assertResponseCode(404);
+		$this->assertStringContainsString('<html lang="en" data-theme=', $this->view);
 	}
 
 	//A share preview takes a picture and not an svg, so the board of a key is served

@@ -786,6 +786,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$bestTime = null;
 		$bestAccuracy = null;
 		$this->set('canEdit', false);
+		$this->set('isFav', false);
 		$queryType = self::decodeQueryType($id);
 
 		if ($queryType == 'topics' && is_numeric($id))
@@ -830,7 +831,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 				$this->set('_page', 'sandbox');
 			// Search engines are kept out of what a player assembled.
 			$this->set('robotsNoIndex', !SetTable::isOfficial($set));
-			$this->set('isFav', false);
 			$this->set('canEdit', $this->Authorization->can($set, 'edit'));
 			$this->set('canShare', $this->Authorization->can($set, 'share'));
 		}
