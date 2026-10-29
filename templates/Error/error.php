@@ -63,7 +63,6 @@ $this->set('title_for_layout', $errorTitle);
 		<?php echo $errorDetails; ?>
 	</p>
 	
-	<?php //only with debug on or for an admin, see AppExceptionRenderer ?>
 	<?php if (isset($error)): ?>
 		<div style="margin-top: 60px; padding: 30px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; text-align: left; position: relative; z-index: 2;">
 			<h3 style="color: var(--text-color, #333); margin-top: 0; margin-bottom: 20px;">Debug Information</h3>
