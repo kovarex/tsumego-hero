@@ -3,10 +3,9 @@
 
 //Tests for SetsController admin functions (create set/tsumego)
 /**
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  * @group browser
  */
+#[RetryOnBrowserFailure]
 class SetsControllerAdminTest extends IntegrationTestCase
 {
 	//Test SetsController::create() - creating new set with first tsumego

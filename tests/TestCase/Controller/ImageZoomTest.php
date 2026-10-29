@@ -1,9 +1,6 @@
 <?php
 
-/**
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
- */
+#[RetryOnBrowserFailure]
 class ImageZoomTest extends IntegrationTestCase
 {
 	//The set cover is shown at its natural size already, so hovering it must not blow it up

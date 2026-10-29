@@ -7,7 +7,7 @@ use Cake\ORM\TableRegistry;
 
 //A player has each achievement condition once, per set for the set records, and the writes
 //update it in place instead of adding a second one.
-class AchievementConditionTest extends CakeTestCase
+class AchievementConditionTest extends AppTestCase
 {
 	public function testValueIsNullForAConditionThePlayerDoesNotHave()
 	{

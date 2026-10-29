@@ -7,6 +7,7 @@
     "require": {
 		"php": ">=8.4",
 		"cakephp/cache": "^5.2.15",
+		"cakephp/log": "^5.2.15",
 		"cakephp/orm": "^5.2.15",
 		"ezyang/htmlpurifier": "^4.19",
 		"firebase/php-jwt": "^6.11.1",
@@ -14,7 +15,6 @@
 		"robmorgan/phinx": "^0.16.10"
 	},
     "require-dev": {
-		"bshaffer/phpunit-retry-annotations": "^0.3.0",
 		"friendsofphp/php-cs-fixer": "^3.89",
 		"php-webdriver/webdriver": "^1.15",
 		"phpstan/phpstan": "^2.1",

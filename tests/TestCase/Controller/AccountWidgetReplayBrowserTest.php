@@ -5,10 +5,7 @@ use App\Utility\Constants;
 //The account bar animates a result for a second. A page left sooner (a refresh, Next,
 //the golden tsumego redirect, a lost line left before it is played out) leaves the
 //result to the next page, which plays it as if it had just happened there.
-/**
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
- */
+#[RetryOnBrowserFailure]
 class AccountWidgetReplayBrowserTest extends IntegrationTestCase
 {
 	//AccountWidget.unshownResultKey, Firefox doesn't let the test scripts see the class itself

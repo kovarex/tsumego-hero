@@ -2,7 +2,7 @@
 
 use App\Utility\Rating;
 
-class RatingTest extends CakeTestCase
+class RatingTest extends AppTestCase
 {
 	public function testRatingToReadableRank(): void
 	{

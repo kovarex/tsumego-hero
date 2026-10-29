@@ -4,13 +4,12 @@ use Facebook\WebDriver\WebDriverBy;
 /**
  * Heart button and set dropdown on the play page.
  *
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  *
  * @group browser
  */
 use App\Utility\Constants;
 
+#[RetryOnBrowserFailure]
 class HeartDropdownTest extends IntegrationTestCase
 {
 	public function testHeartButtonShowsWithoutDropdownWhenUserHasNoSets(): void
