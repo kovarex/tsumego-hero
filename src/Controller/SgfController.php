@@ -49,7 +49,9 @@ class SgfController extends AppController
 			throw new NotFoundException("Specified set connection does not exist.");
 
 		// Use besogo textarea if provided, otherwise use file upload
-		$fileUpload = isset($_FILES['adminUpload']) && $_FILES['adminUpload']['error'] === UPLOAD_ERR_OK ? $_FILES['adminUpload'] : null;
+		$fileUpload = $this->uploadedFile('adminUpload');
+		if ($fileUpload !== null && $fileUpload['error'] !== UPLOAD_ERR_OK)
+			$fileUpload = null;
 		$sgfDataOrFile = $this->input('sgfForBesogo') ?? file_get_contents($fileUpload['tmp_name']);
 
 		if (!$sgfDataOrFile)

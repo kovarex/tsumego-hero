@@ -17,9 +17,9 @@ class Auth
 	{
 
 		// a hack to inject login in test environment
-		if (Util::isInTestEnvironment() && !empty($_COOKIE["hackedLoggedInUserID"]))
+		if (Util::isInTestEnvironment() && !empty(Util::cookie("hackedLoggedInUserID")))
 		{
-			$userData = UserTable::row((int) $_COOKIE["hackedLoggedInUserID"]);
+			$userData = UserTable::row((int) Util::cookie("hackedLoggedInUserID"));
 			if ($userData && empty($userData['deleted']))
 			{
 				Auth::$user = $userData;

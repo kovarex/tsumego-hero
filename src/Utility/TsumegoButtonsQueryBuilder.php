@@ -97,7 +97,7 @@ class TsumegoButtonsQueryBuilder
 	//or the cookie expired), we fall back to showing by topics (the set of the current tsumego).
 	private function resolveQueryType(): void
 	{
-		$lastSet = $_COOKIE['lastSet'] ?? '';
+		$lastSet = Util::cookie('lastSet') ?? '';
 		if ($this->tsumegoFilters->query == 'difficulty')
 		{
 			if (empty($lastSet))
@@ -128,7 +128,7 @@ class TsumegoButtonsQueryBuilder
 		if ($this->tsumegoFilters->query != 'difficulty')
 			return;
 		$this->ratingBounds->addQueryConditions($this->query);
-		$this->description = $_COOKIE['lastSet'] . ' are problems that have a rating' . $this->ratingBounds->textualDescription() . '.';
+		$this->description = Util::cookie('lastSet') . ' are problems that have a rating' . $this->ratingBounds->textualDescription() . '.';
 	}
 
 	private function queryTag(): void
