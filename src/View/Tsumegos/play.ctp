@@ -555,7 +555,6 @@ use App\Utility\ViteManifest;
 		</div>
 			</div>
 		<?php
-	$browser = $_SERVER['HTTP_USER_AGENT'] . "\n\n";
 	echo '<audio><source src="/sounds/newStone.ogg"></audio>';
 	echo '';
 		?>

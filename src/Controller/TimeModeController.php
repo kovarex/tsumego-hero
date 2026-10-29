@@ -24,10 +24,10 @@ class TimeModeController extends AppController
 		$this->Authorization->authorize('User', 'startTimeMode');
 
 		$timeMode = new TimeMode();
-		$categoryID = (int) $this->params['url']['categoryID'];
+		$categoryID = (int) ($this->params['url']['categoryID'] ?? 0);
 		if (!$categoryID)
 			throw new BadRequestException('Time mode category not specified.');
-		$rankID = (int) $this->params['url']['rankID'];
+		$rankID = (int) ($this->params['url']['rankID'] ?? 0);
 		if (!$rankID)
 			throw new BadRequestException('Time mode rank not specified.');
 
@@ -143,10 +143,7 @@ ORDER BY MIN(rating);");
 		foreach ($ranks as $rankEntity)
 		{
 			$rank = ['id' => $rankEntity->id, 'name' => $rankEntity->name];
-			if ($count = $countsByRankID[$rank['id']])
-				$rank['tsumego_count'] = $count;
-			else
-				$rank['tsumego_count'] = 0;
+			$rank['tsumego_count'] = $countsByRankID[$rank['id']] ?? 0;
 			$result [] = $rank;
 		}
 		return $result;
