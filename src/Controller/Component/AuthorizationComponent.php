@@ -26,7 +26,7 @@ class AuthorizationComponent extends Component
 	//sign in, a signed-in user without a grant is told no. Pass the answer of a
 	//policy method.
 	//Controllers reach this through authorize(); the direct callers are only
-	//App\Controller\Component\Play, which renders the board instead of being a
+	//App\Utility\Play, which renders the board instead of being a
 	//controller and so cannot use the component API.
 	public static function require(bool $granted): void
 	{
