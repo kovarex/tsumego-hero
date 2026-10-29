@@ -20,11 +20,6 @@ class Util
 		return (string) ($_SERVER['REQUEST_URI'] ?? '/');
 	}
 
-	public static function userAgent(): string
-	{
-		return (string) ($_SERVER['HTTP_USER_AGENT'] ?? '');
-	}
-
 	//The whole query string as an array.
 	/** @return array<string, mixed> */
 	public static function queryParams(): array
@@ -154,20 +149,17 @@ class Util
 		return openssl_decrypt(base64_decode($str), self::ENCRYPT_METHOD, $key, 0, $iv);
 	}
 
+	//Takes the value out of the array, null when the array has none: the keys extracted are options.
 	public static function extract(string $name, array &$inputArray): mixed
 	{
-		$result = $inputArray[$name];
+		$result = $inputArray[$name] ?? null;
 		unset($inputArray[$name]);
 		return $result;
 	}
 
 	public static function extractWithDefault(string $name, array &$inputArray, mixed $default): mixed
 	{
-		$result = $inputArray[$name];
-		unset($inputArray[$name]);
-		if (isset($result))
-			return $result;
-		return $default;
+		return self::extract($name, $inputArray) ?? $default;
 	}
 
 	public static function getRatio(float|int $amount, float|int $max): float
@@ -199,9 +191,9 @@ class Util
 
 	public static function isInGithubCI(): bool
 	{
-		if ($testEnvironment = @$_SERVER['TEST_ENVIRONMENT'])
+		if ($testEnvironment = $_SERVER['TEST_ENVIRONMENT'] ?? null)
 			return $testEnvironment == 'github-ci';
-		if ($host = @$_SERVER['HTTP_HOST'])
+		if ($host = $_SERVER['HTTP_HOST'] ?? null)
 			return str_contains($host, 'host.docker.internal');
 		return false;
 	}
@@ -211,7 +203,7 @@ class Util
 	//container (both its dev and its test hostname) and for the runner on GitHub.
 	public static function isInTestEnvironment(): bool
 	{
-		if (@$_SERVER['DDEV_PRIMARY_URL'] && str_contains($_SERVER['DDEV_PRIMARY_URL'], "tsumego.ddev.site"))
+		if (str_contains($_SERVER['DDEV_PRIMARY_URL'] ?? '', 'tsumego.ddev.site'))
 			return true;
 		return Util::isInGithubCI();
 	}
