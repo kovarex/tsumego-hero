@@ -18,8 +18,9 @@ concurrency:
 
 jobs:
   # The test files are split into shards of about equal time (scripts/test-shard.php), each run by its own job.
+  # The number of shards is the length of the matrix.
   test-shard:
-    name: tests (shard ${{ matrix.shard }}/4)
+    name: tests (shard ${{ matrix.shard }}/${{ strategy.job-total }})
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     strategy:
@@ -201,7 +202,7 @@ jobs:
         run: |
           mkdir -p /tmp/coverage
           # phpunit on the files of this shard, with the tests the browser alone failed run again (scripts/phpunit-retry.php)
-          php scripts/phpunit-retry.php --exclude-group apache-only --exclude-group disabled --log-junit tmp/junit.xml ${{ github.ref == 'refs/heads/master' && '--coverage-php /tmp/coverage/phpunit.cov' || '' }} $(php scripts/test-shard.php ${{ matrix.shard }} 4)
+          php scripts/phpunit-retry.php --exclude-group apache-only --exclude-group disabled --log-junit tmp/junit.xml ${{ github.ref == 'refs/heads/master' && '--coverage-php /tmp/coverage/phpunit.cov' || '' }} $(php scripts/test-shard.php ${{ matrix.shard }} ${{ strategy.job-total }})
 
       # Put together, these logs are the new tests/durations.json: php scripts/test-shard.php durations junit-*.xml
       - name: Print test durations
