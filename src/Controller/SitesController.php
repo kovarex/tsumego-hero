@@ -13,8 +13,6 @@ use App\Utility\Util;
 
 class SitesController extends AppController
 {
-	public $helpers = ['Html', 'Form'];
-
 	#[HttpGet]
 	public function index(): void
 	{

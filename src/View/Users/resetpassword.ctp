@@ -19,13 +19,13 @@ use App\Utility\CookieFlash;
 	<div class="left signin">
 		<?php echo CookieFlash::render(); ?>
 		<h1>Reset password</h1>
-		<?php echo $this->Form->create(false, ['url' => '/users/resetpassword', 'id' => 'UserResetpasswordForm']); ?>
+		<form action="/users/resetpassword" id="UserResetpasswordForm" method="post" accept-charset="utf-8"><div style="display:none;"><input type="hidden" name="_method" value="POST"/></div>
 		<div class="input text required">
 			<label for="UserEmail">E-Mail</label>
-			<input name="data[User][email]" maxlength="<?php echo UserTable::EMAIL_MAX_LENGTH; ?>" type="text" id="UserEmail" autocomplete="email" required="required"/>
+			<input name="email" maxlength="<?php echo UserTable::EMAIL_MAX_LENGTH; ?>" type="text" id="UserEmail" autocomplete="email" required="required"/>
 		</div>
 		<button type="submit" class="btn">Send reset link</button>
-		<?php echo $this->Form->end(); ?>
+		</form>
 		<p class="hint">Remembered it? <a href="/users/login">Sign in</a></p>
 		<p class="hint">Signed up with Google? Sign in there instead:</p>
 		<?php echo $this->element('google_signin'); ?>

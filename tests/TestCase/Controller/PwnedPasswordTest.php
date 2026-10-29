@@ -53,12 +53,12 @@ class PwnedPasswordTest extends IntegrationTestCase
 
 	private function register(string $name, string $password): string
 	{
-		$this->post('/users/add', ['User' => [
+		$this->post('/users/add', [
 			'name' => $name,
 			'email' => $name . '@example.com',
 			'password1' => $password,
 			'password2' => $password,
-		]]);
+		]);
 
 		return $this->view;
 	}
@@ -146,10 +146,10 @@ class PwnedPasswordTest extends IntegrationTestCase
 		$this->logout();
 		$this->checker->addBreachedPassword(self::LEAKED);
 
-		$this->post('/users/newpassword/resetLinkForLeaked', ['User' => [
+		$this->post('/users/newpassword/resetLinkForLeaked', [
 			'password1' => self::LEAKED,
 			'password2' => self::LEAKED,
-		]]);
+		]);
 
 		$this->assertTrue(password_verify(self::CURRENT_PASSWORD, $this->storedHash($context->user['id'])));
 		$this->assertStringContainsString(self::LEAKED_PASSWORD_MESSAGE, $this->view);

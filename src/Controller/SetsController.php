@@ -29,8 +29,6 @@ use App\Attribute\HttpPost;
 
 class SetsController extends AppController
 {
-	public $helpers = ['Html', 'Form'];
-
 	#[HttpGet]
 	public function sandbox(): void
 	{
@@ -174,17 +172,17 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 
 		$redirect = false;
 
-		if ($this->input('Set') !== null)
+		if ($this->inputs() !== [])
 		{
 			$isSandbox = $this->query('sandbox') !== null && $this->Authorization->can('Set', 'createSandbox');
 
 			$set = [];
-			$set['title'] = $this->input('Set.title');
+			$set['title'] = $this->input('title');
 			$set['public'] = false;
-			if ($this->input('Set.description') !== null)
-				$set['description'] = HtmlSanitizer::sanitize((string) $this->input('Set.description'));
-			if ($this->input('Set.color') !== null && $this->input('Set.color') !== '')
-				$set['color'] = $this->input('Set.color');
+			if ($this->input('description') !== null)
+				$set['description'] = HtmlSanitizer::sanitize((string) $this->input('description'));
+			if ($this->input('color') !== null && $this->input('color') !== '')
+				$set['color'] = $this->input('color');
 			else
 				$set['color'] = '#5b9bd5';
 
@@ -246,22 +244,24 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$tsumegoButtons = new TsumegoButtons(new TsumegoFilters('topics'), null, null, (int) $id);
 		$tsumegoButtons->loadPreviews();
 
-		if ($this->input('Set') !== null)
+		// Both forms of the page post here: the details, and for admins the re-rate and solve modes.
+		$formSent = $this->inputs() !== [];
+		if ($formSent)
 		{
 			$oldTitle = $set->title;
 			$oldDescription = $set->description;
 			$oldColor = $set->color;
 			$oldOrder = $set->order;
-			if (array_key_exists('title', $this->input('Set')))
-				$set->title = $this->input('Set.title');
-			if (array_key_exists('title2', $this->input('Set')))
-				$set->title2 = $this->input('Set.title2');
-			if (array_key_exists('description', $this->input('Set')))
-				$set->description = HtmlSanitizer::sanitize((string) $this->input('Set.description'));
-			if (array_key_exists('color', $this->input('Set')) && $this->input('Set.color') !== '')
-				$set->color = $this->input('Set.color');
-			if (array_key_exists('order', $this->input('Set')) && $this->input('Set.order') !== '')
-				$set->order = (int) $this->input('Set.order');
+			if ($this->input('title') !== null)
+				$set->title = $this->input('title');
+			if ($this->input('title2') !== null)
+				$set->title2 = $this->input('title2');
+			if ($this->input('description') !== null)
+				$set->description = HtmlSanitizer::sanitize((string) $this->input('description'));
+			if ($this->input('color') !== null && $this->input('color') !== '')
+				$set->color = $this->input('color');
+			if ($this->input('order') !== null && $this->input('order') !== '')
+				$set->order = (int) $this->input('order');
 			$setTable->saveOrFail($set);
 
 			if ($this->_isElevatedSetEdit($set))
@@ -280,12 +280,12 @@ ORDER BY sc.num ASC", [(int) $id]);
 		}
 
 		// Re-rate every problem in this set (admin only)
-		if ($canEditSettings && $this->input('Set.setDifficulty') !== null)
-			if ($this->input('Set.setDifficulty') != 1200 && $this->input('Set.setDifficulty') >= 900 && $this->input('Set.setDifficulty') <= 2900)
+		if ($canEditSettings && $this->input('setDifficulty') !== null)
+			if ($this->input('setDifficulty') != 1200 && $this->input('setDifficulty') >= 900 && $this->input('setDifficulty') <= 2900)
 			{
 				//The new rating of each problem is raised to its minimum, then lowered to its maximum
 				//(GREATEST and LEAST give NULL for a limit the problem doesn't have)
-				$difficulty = (float) $this->input('Set.setDifficulty');
+				$difficulty = (float) $this->input('setDifficulty');
 				$problemIDs = array_column($problems, 'tsumego_id');
 				if ($problemIDs)
 					Util::execute('UPDATE tsumego SET rating = COALESCE(LEAST(COALESCE(GREATEST(?, minimum_rating), ?), maximum_rating), COALESCE(GREATEST(?, minimum_rating), ?))
@@ -294,11 +294,11 @@ ORDER BY sc.num ASC", [(int) $id]);
 			}
 
 		// Alternative response / pass mode for all problems (admin only)
-		if ($canEditSettings && $this->input('Settings') !== null)
+		if ($canEditSettings && $formSent)
 		{
 			// each of the two settings is sent only when the admin picked a choice for it
-			$alternativeResponse = $this->input('Settings.r39');
-			$passMode = $this->input('Settings.r43');
+			$alternativeResponse = $this->input('r39');
+			$passMode = $this->input('r43');
 			if ($alternativeResponse == 'on')
 			{
 				$this->setProblemsField($problems, 'alternative_response', true);
@@ -322,7 +322,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		}
 
 		// Handle image removal
-		if (!empty($this->input('Set.remove_image')))
+		if (!empty($this->input('remove_image')))
 		{
 			SetImage::remove($set->image);
 			$set->image = '';
@@ -365,7 +365,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 			}
 		}
 
-		if ($this->input('Set') !== null || $this->input('Settings') !== null)
+		if ($formSent)
 			return $this->redirect('/sets/edit/' . (int) $id);
 
 		// Solve-mode states for the admin settings panel
@@ -431,7 +431,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 	#[HttpPost]
 	public function delete(?string $id = null): CakeResponse
 	{
-		$setID = $id ?? $this->input('Set.id');
+		$setID = $id ?? $this->input('id');
 		if (!$setID)
 			throw new BadRequestException();
 

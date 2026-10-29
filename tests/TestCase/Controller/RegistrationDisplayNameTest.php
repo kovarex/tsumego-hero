@@ -12,12 +12,10 @@ class RegistrationDisplayNameTest extends IntegrationTestCase
 		foreach (['empty' => '', 'emoji' => 'Player😀', 'rare kanji' => '𠮷野家'] as $case => $name)
 		{
 			$this->post('users/add', [
-				'User' => [
-					'name' => $name,
-					'email' => $case . '@example.com',
-					'password1' => 'Kd8#vQzP2mWx!7t',
-					'password2' => 'Kd8#vQzP2mWx!7t',
-				],
+				'name' => $name,
+				'email' => $case . '@example.com',
+				'password1' => 'Kd8#vQzP2mWx!7t',
+				'password2' => 'Kd8#vQzP2mWx!7t',
 			]);
 
 			$user = ContextPreparator::findUserRow(['email' => $case . '@example.com']);

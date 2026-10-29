@@ -108,10 +108,10 @@ class LoginComponentTest extends IntegrationTestCase
 		$browser->get('users/add');
 
 		// Fill in the signup form
-		$browser->findBy(WebDriverBy::name('data[User][name]'))->sendKeys($newUsername);
-		$browser->findBy(WebDriverBy::name('data[User][email]'))->sendKeys($newUsername . '@email.com');
-		$browser->findBy(WebDriverBy::name('data[User][password1]'))->sendKeys('hello123');
-		$browser->findBy(WebDriverBy::name('data[User][password2]'))->sendKeys('hello123');
+		$browser->findBy(WebDriverBy::name('name'))->sendKeys($newUsername);
+		$browser->findBy(WebDriverBy::name('email'))->sendKeys($newUsername . '@email.com');
+		$browser->findBy(WebDriverBy::name('password1'))->sendKeys('hello123');
+		$browser->findBy(WebDriverBy::name('password2'))->sendKeys('hello123');
 
 		// Submit the form
 		$browser->find('.signin button[type="submit"]')->click();
@@ -136,10 +136,10 @@ class LoginComponentTest extends IntegrationTestCase
 		$this->assertFalse(Auth::isLoggedIn());
 		$userWithBiggestID = $this->fetchTable('User')->find()->select(['id'])->orderByDesc('id')->first()?->id;
 		$newUsername = 'kovarex';
-		$this->post('users/add/', ['User' => ['name' => $newUsername,
+		$this->post('users/add/', ['name' => $newUsername,
 			'password1' => 'helloThere42',
 			'password2' => 'helloThere42',
-			'email' => $newUsername . '@email.com']]);
+			'email' => $newUsername . '@email.com']);
 		$userCount = $this->fetchTable('User')->find()->count();
 
 		$newUser = ContextPreparator::findUserRow(['name' => $newUsername]);
@@ -152,10 +152,10 @@ class LoginComponentTest extends IntegrationTestCase
 		$this->assertFalse(Auth::isLoggedIn());
 		$userWithBiggestID = $this->fetchTable('User')->find()->select(['id'])->orderByDesc('id')->first()?->id;
 		$newUsername = 'Kovarex';
-		$this->post('users/add/', ['User' => ['name' => $newUsername,
+		$this->post('users/add/', ['name' => $newUsername,
 			'password1' => 'helloThere42',
 			'password2' => 'helloThere42',
-			'email' => $newUsername . '@email.com']]);
+			'email' => $newUsername . '@email.com']);
 		$userCount = $this->fetchTable('User')->find()->count();
 
 		$newUser = ContextPreparator::findUserRow(['name' => $newUsername]);
@@ -169,7 +169,7 @@ class LoginComponentTest extends IntegrationTestCase
 
 		$this->assertFalse(Auth::isLoggedIn());
 		$this->registerTestEmailer();
-		$this->post('users/resetpassword/', ['User' => ['email' => $user['email']]]);
+		$this->post('users/resetpassword/', ['email' => $user['email']]);
 
 		$userNew = ContextPreparator::findUserRow(['name' => 'kovarex']);
 		$this->assertNotEmpty($userNew['password_reset_token']);
@@ -191,7 +191,7 @@ class LoginComponentTest extends IntegrationTestCase
 		try
 		{
 			TestEmailer::$unreachable = true;
-			$this->post('users/resetpassword/', ['User' => ['email' => $user['email']]]);
+			$this->post('users/resetpassword/', ['email' => $user['email']]);
 		}
 		finally
 		{
@@ -201,7 +201,7 @@ class LoginComponentTest extends IntegrationTestCase
 		$this->assertEmpty($this->resetFields()['password_reset_token']);
 
 		$this->registerTestEmailer();
-		$this->post('users/resetpassword/', ['User' => ['email' => $user['email']]]);
+		$this->post('users/resetpassword/', ['email' => $user['email']]);
 		$this->assertNotEmpty($this->resetFields()['password_reset_token']);
 	}
 
@@ -217,11 +217,11 @@ class LoginComponentTest extends IntegrationTestCase
 		$user = $context->otherUsers[0];
 
 		$this->registerTestEmailer();
-		$this->post('users/resetpassword/', ['User' => ['email' => $user['email']]]);
+		$this->post('users/resetpassword/', ['email' => $user['email']]);
 		$this->assertNotEmpty(TestEmailer::$lastEmail['to']);
 
 		TestEmailer::$lastEmail = null;
-		$this->post('users/resetpassword/', ['User' => ['email' => $user['email']]]);
+		$this->post('users/resetpassword/', ['email' => $user['email']]);
 		$this->assertArrayNotHasKey('body', TestEmailer::$lastEmail ?? [], 'the second request sends no mail');
 	}
 
@@ -275,7 +275,7 @@ class LoginComponentTest extends IntegrationTestCase
 			'password_reset_token_created' => date('Y-m-d H:i:s', strtotime('-3 hours')),
 		], ['id' => $user['id']]);
 
-		$this->post('users/newpassword/old_reset_checksum', ['User' => ['password1' => 'brnoHorse42', 'password2' => 'brnoHorse42']]);
+		$this->post('users/newpassword/old_reset_checksum', ['password1' => 'brnoHorse42', 'password2' => 'brnoHorse42']);
 
 		$after = ContextPreparator::findUserRow(['name' => 'kovarex']);
 		$this->assertSame($before, $after['password_hash']);
@@ -293,7 +293,7 @@ class LoginComponentTest extends IntegrationTestCase
 			'password_reset_token_created' => date('Y-m-d H:i:s'),
 		], ['id' => $user['id']]);
 
-		$this->post('users/newpassword/reset_checksum_twice', ['User' => ['password1' => 'brnoHorse42', 'password2' => 'brnoHorse43']]);
+		$this->post('users/newpassword/reset_checksum_twice', ['password1' => 'brnoHorse42', 'password2' => 'brnoHorse43']);
 
 		$after = ContextPreparator::findUserRow(['name' => 'kovarex']);
 		$this->assertSame($before, $after['password_hash']);
@@ -325,9 +325,9 @@ class LoginComponentTest extends IntegrationTestCase
 		]);
 
 		$this->registerTestEmailer();
-		$this->post('users/resetpassword/', ['User' => ['email' => 'googleuser@gmail.com']]);
+		$this->post('users/resetpassword/', ['email' => 'googleuser@gmail.com']);
 		$google = $this->view;
-		$this->post('users/resetpassword/', ['User' => ['email' => 'nobodyhere@example.com']]);
+		$this->post('users/resetpassword/', ['email' => 'nobodyhere@example.com']);
 		$unknown = $this->view;
 
 		$this->assertSame($unknown, $google);
@@ -341,7 +341,7 @@ class LoginComponentTest extends IntegrationTestCase
 		new ContextPreparator(['user' => null]);
 
 		$this->registerTestEmailer();
-		$this->post('users/resetpassword/', ['User' => ['email' => 'nonexistent@example.com']]);
+		$this->post('users/resetpassword/', ['email' => 'nonexistent@example.com']);
 
 		// Should NOT send email
 		$this->assertEmpty(TestEmailer::$lastEmail['body'] ?? null, 'Email should not be sent for non-existent users');
