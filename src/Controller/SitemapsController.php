@@ -5,6 +5,8 @@ use App\Model\Table\SetTable;
 use App\Utility\Constants;
 use App\Attribute\HttpGet;
 use App\Utility\Util;
+use Cake\Cache\Cache;
+use Cake\Log\Log;
 
 class SitemapsController extends AppController
 {
@@ -35,7 +37,7 @@ class SitemapsController extends AppController
 		$cacheKey = 'sitemap_xml';
 		$xml = Cache::read($cacheKey, 'long');
 
-		if ($xml === false)
+		if ($xml === null)
 		{
 			$urls = $this->_generateUrls();
 			$xml = $this->_renderXml($urls);
@@ -114,7 +116,7 @@ ORDER BY set_connection.id ASC");
 		$action = (string) $route['action'];
 		if (!self::_controllerServesAction($controller, $action))
 		{
-			CakeLog::warning('Sitemap: ' . $controller . '::' . $action . '() does not exist, leaving it out');
+			Log::warning('Sitemap: ' . $controller . '::' . $action . '() does not exist, leaving it out');
 			return null;
 		}
 		return Router::url($route, true);

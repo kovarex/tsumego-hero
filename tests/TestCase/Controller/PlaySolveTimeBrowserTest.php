@@ -4,10 +4,7 @@ use App\Utility\Constants;
 
 //The time of a problem is the time of all the tries until it is solved. Each result sends only the
 //time since the previous one, so a reset on the page doesn't count the earlier tries again (forum#149).
-/**
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
- */
+#[RetryOnBrowserFailure]
 class PlaySolveTimeBrowserTest extends IntegrationTestCase
 {
 	//Black (1,1), white (1,2), black (2,1) is correct, black (2,1) at once is wrong.

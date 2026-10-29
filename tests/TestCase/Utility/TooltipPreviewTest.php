@@ -3,10 +3,7 @@
 use Facebook\WebDriver\WebDriverBy;
 
 //Browser tests for inline SGF preview (data-sgf-preview attribute).
-/**
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
- */
+#[RetryOnBrowserFailure]
 class TooltipPreviewTest extends IntegrationTestCase
 {
 	private const SGF = '(;GM[1]FF[4]CA[UTF-8]AP[CGoban:3]ST[2]SZ[19]KM[0.00]AW[cc][cd][dc][ed]AB[cb][db][eb][fc])';

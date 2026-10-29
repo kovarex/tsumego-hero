@@ -2,7 +2,7 @@
 
 namespace App\Utility;
 
-use Cache;
+use Cake\Cache\Cache;
 
 //The "Site Growth" graph of the home page: how many problems the site offers and how many players
 //it has, month by month.
@@ -21,7 +21,7 @@ class SiteGrowth
 	public static function chartData(): array
 	{
 		$chartData = Cache::read(self::CACHE_KEY, 'long');
-		if ($chartData === false)
+		if ($chartData === null)
 		{
 			$chartData = self::build();
 			Cache::write(self::CACHE_KEY, $chartData, 'long');

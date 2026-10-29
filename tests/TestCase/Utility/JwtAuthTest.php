@@ -5,7 +5,7 @@
 use App\Utility\JwtAuth;
 use App\Utility\Util;
 
-class JwtAuthTest extends CakeTestCase
+class JwtAuthTest extends AppTestCase
 {
 	private const TEST_SECRET = 'test-secret-key-for-unit-tests-only';
 

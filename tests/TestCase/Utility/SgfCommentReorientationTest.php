@@ -6,7 +6,7 @@ use App\Utility\BoardTransformation;
 use App\Utility\SgfCommentReorientation;
 use Cake\ORM\TableRegistry;
 
-class SgfCommentReorientationTest extends CakeTestCase
+class SgfCommentReorientationTest extends AppTestCase
 {
 	//The problem in the top-left corner, the solution starts at A19 (aa).
 	private const SGF = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc][dc]AW[bc];B[aa];W[ab];B[ba]C[+])';
