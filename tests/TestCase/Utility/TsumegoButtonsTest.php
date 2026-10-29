@@ -238,11 +238,11 @@ class TsumegoButtonsTest extends IntegrationTestCase
 			$links[$name] = $value;
 		};
 
-		$buttons->exportCurrentAndPreviousLink($setFunction, new TsumegoFilters('topics'), (int) $first['id'], ['Set' => ['id' => $first['set_id']]], '/page');
+		$buttons->exportCurrentAndPreviousLink($setFunction, new TsumegoFilters('topics'), (int) $first['id'], $this->fetchTable('Set')->get($first['set_id']), '/page');
 		$this->assertSame('/page', $links['previousLink'], 'The first problem has the page behind it');
 		$this->assertSame('/' . $second['id'], $links['nextLink']);
 
-		$buttons->exportCurrentAndPreviousLink($setFunction, new TsumegoFilters('topics'), (int) $second['id'], ['Set' => ['id' => $second['set_id']]], '/page');
+		$buttons->exportCurrentAndPreviousLink($setFunction, new TsumegoFilters('topics'), (int) $second['id'], $this->fetchTable('Set')->get($second['set_id']), '/page');
 
 		$this->assertSame('/' . $first['id'], $links['previousLink'], 'The last problem has its neighbour behind it');
 		$this->assertSame('/page', $links['nextLink']);
