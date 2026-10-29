@@ -18,6 +18,7 @@
         "friendsofphp/php-cs-fixer": "^3.89",
         "php-webdriver/webdriver": "^1.15",
         "phpstan/phpstan": "^2.1",
+        "phpunit/phpcov": "^10.0",
         "phpunit/phpunit": "^11.5"
     },
     "autoload": {
@@ -33,7 +34,7 @@
     },
     "scripts": {
         "test": "phpunit",
-        "test-coverage": "phpunit --log-junit webroot/coverage/unitreport.xml --coverage-html webroot/coverage --coverage-clover webroot/coverage/coverage.xml",
+        "test-coverage": "phpunit --coverage-html coverage/php --coverage-clover coverage/coverage.xml",
         "cs-check": "./vendor/bin/php-cs-fixer check",
         "cs-fix": "./vendor/bin/php-cs-fixer fix",
         "stan": "phpstan analyse @additional_args; E1=$?; phpstan analyse -c phpstan-views.neon @additional_args; E2=$?; test $E1 -eq 0 -a $E2 -eq 0",
