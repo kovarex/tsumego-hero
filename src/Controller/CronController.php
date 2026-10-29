@@ -22,10 +22,7 @@ class CronController extends AppController
 
 		// Already ran today - the rest of the work is done once a day
 		if ($this->fetchTable('DayRecord')->find()->where(['date' => date('Y-m-d')])->count() > 0)
-		{
-			$this->response->statusCode(200);
-			return $this->response;
-		}
+			return $this->respond('');
 
 		self::withReadCommitted(function () {
 			$this->dailyTsumegoStatusReset();
@@ -38,8 +35,7 @@ class CronController extends AppController
 			Trash::purgeExpired();
 		});
 
-		$this->response->statusCode(200);
-		return $this->response;
+		return $this->respond('');
 	}
 
 	//The daily updates go through whole tables, no index fits their conditions. Under the default

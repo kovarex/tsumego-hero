@@ -3,7 +3,7 @@
 
 use App\Utility\SetImage;
 
-class SetImageTest extends CakeTestCase
+class SetImageTest extends AppTestCase
 {
 	public function testProcessConvertsPngToWebp(): void
 	{

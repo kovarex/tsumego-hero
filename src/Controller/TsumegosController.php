@@ -33,11 +33,9 @@ class TsumegosController extends AppController
 	#[HttpPost]
 	public function result()
 	{
-		$this->response->type('application/json');
-
 		$this->Authorization->authorize('User', 'reportResult');
 
-		$data = json_decode($this->request->input(), true) ?: $this->request->data;
+		$data = json_decode($this->requestBody(), true) ?: $this->inputs();
 		if (!$data || empty($data['tsumego_id']))
 			throw new BadRequestException('Missing tsumego_id');
 
@@ -58,17 +56,15 @@ class TsumegosController extends AppController
 		if (!empty($result['achievement_updates']))
 			$result['achievement_updates'] = array_map([AchievementChecker::class, 'toPopupData'], $result['achievement_updates']);
 
-		$this->response->body(json_encode($result));
-
-		return $this->response;
+		return $this->respondJson($result);
 	}
 
 	private function deduceRelevantSetConnection(array $setConnections): array
 	{
-		if (!isset($this->request->query['sid']))
+		if ($this->query('sid') === null)
 			return $setConnections[0];
 		foreach ($setConnections as $setConnection)
-			if ($setConnection['set_id'] == $this->request->query['sid'])
+			if ($setConnection['set_id'] == $this->query('sid'))
 				return $setConnection;
 		throw new NotFoundException("Problem doesn't exist in the specified set");
 	}
@@ -132,7 +128,7 @@ class TsumegosController extends AppController
 		$tsumego = $tsumegoTable->find()->select(['id', 'alternative_response', 'pass'])->where(['id' => (int) $tsumegoID])->first();
 		if (!$tsumego)
 			throw new NotFoundException('Problem not found');
-		$data = $this->request->data;
+		$data = $this->inputs();
 		foreach (['alternative_response' => AdminActivityTypeTable::ALTERNATIVE_RESPONSE, 'pass' => AdminActivityTypeTable::PASS_MODE] as $field => $activityType)
 		{
 			$value = empty($data[$field]) ? 0 : 1;
@@ -159,7 +155,7 @@ class TsumegosController extends AppController
 		$fields = $variant->tsumego_variant_type_id === TsumegoVariantTable::TYPE_MULTIPLE_CHOICE
 			? ['answer1', 'answer2', 'answer3', 'answer4', 'explanation', 'correct_answer']
 			: ['winner', 'answer1', 'answer2', 'answer3'];
-		$variantTable->patchEntity($variant, array_intersect_key((array) $this->request->data, array_flip($fields)));
+		$variantTable->patchEntity($variant, array_intersect_key($this->inputs(), array_flip($fields)));
 		$variantTable->saveOrFail($variant);
 		return $this->redirect($this->referer('/tsumegos/play/' . (int) $tsumegoID, true));
 	}
@@ -204,44 +200,44 @@ class TsumegosController extends AppController
 			return $this->redirect('/sets');
 		}
 
-		if (($this->request->data['delete'] ?? '') == 'delete')
+		if (($this->input('delete') ?? '') == 'delete')
 			return $this->moveToTrash((int) $tsumegoID);
 
 		try
 		{
-			$rating = Rating::parseRatingOrReadableRank($this->request->data['rating']);
+			$rating = Rating::parseRatingOrReadableRank($this->input('rating'));
 		}
 		catch (RatingParseException $e)
 		{
 			CookieFlash::set("Rating parse error:" . $e->getMessage(), 'error');
-			return $this->redirect($this->request->data['redirect']);
+			return $this->redirect($this->input('redirect'));
 		}
 
 		$minimumRating = null;
-		if (!empty($this->request->data['minimum-rating']))
+		if (!empty($this->input('minimum-rating')))
 		{
 			try
 			{
-				$minimumRating = Rating::parseRatingOrReadableRank($this->request->data['minimum-rating']);
+				$minimumRating = Rating::parseRatingOrReadableRank($this->input('minimum-rating'));
 			}
 			catch (RatingParseException $e)
 			{
 				CookieFlash::set("Minimum rating parse error:" . $e->getMessage(), 'error');
-				return $this->redirect($this->request->data['redirect']);
+				return $this->redirect($this->input('redirect'));
 			}
 		}
 
 		$maximumRating = null;
-		if (!empty($this->request->data['maximum-rating']))
+		if (!empty($this->input('maximum-rating')))
 		{
 			try
 			{
-				$maximumRating = Rating::parseRatingOrReadableRank($this->request->data['maximum-rating']);
+				$maximumRating = Rating::parseRatingOrReadableRank($this->input('maximum-rating'));
 			}
 			catch (RatingParseException $e)
 			{
 				CookieFlash::set("Maximum rating parse error:" . $e->getMessage(), 'error');
-				return $this->redirect($this->request->data['redirect']);
+				return $this->redirect($this->input('redirect'));
 			}
 		}
 
@@ -250,12 +246,12 @@ class TsumegosController extends AppController
 			&& $minimumRating > $maximumRating)
 		{
 			CookieFlash::set("Minimum rating can't be bigger than maximum", 'error');
-			return $this->redirect($this->request->data['redirect']);
+			return $this->redirect($this->input('redirect'));
 		}
 
 		// Normalize description: the edit form shows the display version (with colors swapped for visual context)
-		$newDescription = $this->request->data['description'];
-		if (!empty($this->request->data['color_swapped']))
+		$newDescription = $this->input('description');
+		if (!empty($this->input('color_swapped')))
 			$newDescription = preg_replace_callback(
 				'/\b(Black|black|White|white)\b/',
 				fn($match) => ['Black' => 'White', 'black' => 'white', 'White' => 'Black', 'white' => 'black'][$match[1]],
@@ -268,15 +264,15 @@ class TsumegosController extends AppController
 			$tsumego->description = $newDescription;
 		}
 
-		if ($tsumego->hint != $this->request->data['hint'])
+		if ($tsumego->hint != $this->input('hint'))
 		{
-			AdminActivityLogger::log(AdminActivityTypeTable::HINT_EDIT, $tsumegoID, null, $tsumego->hint, $this->request->data['hint']);
-			$tsumego->hint = $this->request->data['hint'];
+			AdminActivityLogger::log(AdminActivityTypeTable::HINT_EDIT, $tsumegoID, null, $tsumego->hint, $this->input('hint'));
+			$tsumego->hint = $this->input('hint');
 		}
-		if ($tsumego->author != $this->request->data['author'])
+		if ($tsumego->author != $this->input('author'))
 		{
-			AdminActivityLogger::log(AdminActivityTypeTable::AUTHOR_EDIT, $tsumegoID, null, $tsumego->author, $this->request->data['author']);
-			$tsumego->author = $this->request->data['author'];
+			AdminActivityLogger::log(AdminActivityTypeTable::AUTHOR_EDIT, $tsumegoID, null, $tsumego->author, $this->input('author'));
+			$tsumego->author = $this->input('author');
 		}
 		if ($tsumego->minimum_rating != $minimumRating)
 		{
@@ -296,7 +292,7 @@ class TsumegosController extends AppController
 		$tsumego->rating = Util::clampOptional($rating, $minimumRating, $maximumRating);
 
 		$tsumegoTable->saveOrFail($tsumego);
-		return $this->redirect($this->request->data['redirect']);
+		return $this->redirect($this->input('redirect'));
 	}
 
 	//Moves the problem to the trash and goes back to its collection, or to the list of collections
@@ -328,27 +324,27 @@ class TsumegosController extends AppController
 	public function mergeFinalForm(): mixed
 	{
 		$this->Authorization->authorize('Tsumego');
-		$masterSetConnectionID = $this->request->data['master-id'];
-		$slaveSetConnectionID = $this->request->data['slave-id'];
+		$masterSetConnectionID = $this->input('master-id');
+		$slaveSetConnectionID = $this->input('slave-id');
 		$setConnectionTable = $this->fetchTable('SetConnection');
 		$masterSetConnection = $setConnectionTable->find()->where(['id' => (int) $masterSetConnectionID])->first();
 		if (!$masterSetConnection)
 		{
 			CookieFlash::set('Master set connection does not exist.', 'error');
-			$this->redirect('/tsumegos/mergeForm');
+			return $this->redirect('/tsumegos/mergeForm');
 		}
 
 		$slaveSetConnection = $setConnectionTable->find()->where(['id' => (int) $slaveSetConnectionID])->first();
 		if (!$slaveSetConnection)
 		{
 			CookieFlash::set('Slave set connection does not exist.', 'error');
-			$this->redirect('/tsumegos/mergeForm');
+			return $this->redirect('/tsumegos/mergeForm');
 		}
 
 		if ($slaveSetConnection->tsumego_id == $masterSetConnection->tsumego_id)
 		{
 			CookieFlash::set('These are already merged.', 'error');
-			$this->redirect('/tsumegos/mergeForm');
+			return $this->redirect('/tsumegos/mergeForm');
 		}
 		$masterSetConnectionBrothers = $setConnectionTable->find()
 			->innerJoin(['S' => 'set'], ['S.id = SetConnection.set_id'])
@@ -384,14 +380,14 @@ class TsumegosController extends AppController
 	}
 
 	#[HttpPost]
-	public function performMerge(): void
+	public function performMerge(): CakeResponse
 	{
 		$this->Authorization->authorize('Tsumego');
-		$merger = new TsumegoMerger($this->request->data['master-tsumego-id'], $this->request->data['slave-tsumego-id']);
+		$merger = new TsumegoMerger($this->input('master-tsumego-id'), $this->input('slave-tsumego-id'));
 		$flash = $merger->execute();
 		if ($flash)
 			CookieFlash::set($flash['message'], $flash['type']);
-		$this->redirect('/tsumegos/mergeForm');
+		return $this->redirect('/tsumegos/mergeForm');
 	}
 
 	#[HttpGet]
@@ -437,16 +433,16 @@ class TsumegosController extends AppController
 	{
 		$this->Authorization->authorize('Sgf', 'propose');
 
-		$setConnectionID = $this->request->data["setConnectionID"];
+		$setConnectionID = $this->input('setConnectionID');
 
 		$setConnection = $this->fetchTable('SetConnection')->find()->select(['tsumego_id'])->where(['id' => (int) $setConnectionID])->first();
 		if (!$setConnection)
 			return;
 		$tsumegoID = $setConnection->tsumego_id;
 
-		$sgfData = $this->request->data['sgf'];
-		$firstMoveColor = $this->request->data['firstMoveColor'];
-		$correctMoves = $this->request->data['correctMoves'];
+		$sgfData = $this->input('sgf');
+		$firstMoveColor = $this->input('firstMoveColor');
+		$correctMoves = $this->input('correctMoves');
 
 		if ($problem = SgfParser::validationProblem($sgfData))
 			throw new BadRequestException('Invalid SGF format: ' . $problem);
@@ -462,14 +458,14 @@ class TsumegosController extends AppController
 		$sgf['first_move_color'] = $firstMoveColor;
 		$sgf['correct_moves'] = $correctMoves;
 		// the admin reviewing a proposal needs to know what it is about, an admin's own edit may go without
-		$sgf['description'] = SgfTable::descriptionFromRequest($this->request->data['description'] ?? null, !Auth::isAdmin());
+		$sgf['description'] = SgfTable::descriptionFromRequest($this->input('description'), !Auth::isAdmin());
 		// what the board editor did to the SGF it was opened with, so the comments can follow
 		$sgfTable = $this->fetchTable('Sgf');
-		$source = $sgfTable->find()->select(['id', 'tsumego_id'])->where(['id' => (int) ($this->request->data['sourceSgfID'] ?? 0)])->first();
+		$source = $sgfTable->find()->select(['id', 'tsumego_id'])->where(['id' => (int) ($this->input('sourceSgfID') ?? 0)])->first();
 		if ($source && $source->tsumego_id == $tsumegoID)
 		{
 			$sgf['source_sgf_id'] = $source->id;
-			$sgf['transformation_from_source'] = BoardTransformation::fromJson($this->request->data['transformationFromSource'] ?? null)->toJson();
+			$sgf['transformation_from_source'] = BoardTransformation::fromJson($this->input('transformationFromSource'))->toJson();
 		}
 		$saved = $sgfTable->saveOrFail($sgfTable->newEntity($sgf));
 		SgfCommentReorientation::afterAccepted($saved->id);
@@ -499,7 +495,7 @@ class TsumegosController extends AppController
 		", ['tsumego_id' => $tsumegoID]);
 		$this->set('dailyResults', $dailyResults);
 		$this->set('setConnection', $setConnection);
-		$this->set('urlParams', $this->params['url']);
+		$this->set('urlParams', $this->queries());
 		$this->set('set', $this->fetchTable('Set')->get($setConnection->set_id));
 	}
 }

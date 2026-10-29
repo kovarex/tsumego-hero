@@ -45,13 +45,9 @@ class TsumegoImagesController extends AppController
 
 		$imageData = $this->_generatePuzzleImage($sgfString, $setTitle, $description);
 
-		$this->response->type('png');
-		$this->response->body($imageData);
-		$this->response->etag(md5(Constants::$TSUMEGO_IMAGE_VERSION . $sgfString));
-		$modified = !empty($row['created']) ? $row['created'] : '-1 day';
-		$this->response->cache($modified, '+1 year');
-
-		return $this->response;
+		$this->setEtag(md5(Constants::$TSUMEGO_IMAGE_VERSION . $sgfString));
+		$this->cacheUntil(!empty($row['created']) ? $row['created'] : '-1 day', '+1 year');
+		return $this->respond($imageData, 'png');
 	}
 
 	//Generate puzzle image using PHP GD

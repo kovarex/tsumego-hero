@@ -3,7 +3,7 @@
 
 use App\Utility\RatingBounds;
 
-class RatingBoundsTest extends CakeTestCase
+class RatingBoundsTest extends AppTestCase
 {
 	public function testCoverRank1d()
 	{

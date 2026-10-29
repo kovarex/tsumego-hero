@@ -5,10 +5,7 @@ use Facebook\WebDriver\WebDriverDimension;
 
 //The board of a problem and the buttons under it fit in the window, however tall the shown part
 //of the board is (forum#105).
-/**
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
- */
+#[RetryOnBrowserFailure]
 class BoardFitsWindowTest extends IntegrationTestCase
 {
 	//The stones of /15210 (The L Group 7/46): the shown part is taller than wide, but not enough to be turned on its side.

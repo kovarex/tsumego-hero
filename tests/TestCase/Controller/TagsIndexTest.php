@@ -87,9 +87,15 @@ class TagsIndexTest extends IntegrationTestCase
 		$browser = Browser::instance();
 		$browser->get('tags');
 
+		$koId = $context->tsumegos[0]['tags'][1]->id;
+		// the delete is a form, so the overview is loaded again: wait for that page, not for the
+		// blank one in between, where atari is gone and so is everything else
+		$oldBody = $browser->find('body');
 		$browser->clickIdAndAcceptAlert('tag-delete-' . $atariId);
-		$browser->waitUntilJs('!document.getElementById("tag-' . $atariId . '")');
-		$this->assertCount(1, $browser->getElements('#tag-' . $context->tsumegos[0]['tags'][1]->id), 'ko is still listed');
+		$browser->waitUntilStale($oldBody);
+		$browser->find('#tag-' . $koId);
+		$this->assertCount(0, $browser->getElements('#tag-' . $atariId), 'atari is gone');
+		$this->assertCount(1, $browser->getElements('#tag-' . $koId), 'ko is still listed');
 		$this->assertFalse($this->fetchTable('Tag')->exists(['id' => $atariId]));
 	}
 

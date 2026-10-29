@@ -32,6 +32,99 @@ class AppController extends Controller
 		'Authorization'
 	];
 
+	//The request, read through these few methods only, so that the switch to Cake 5 changes them
+	//and not every action: there they become getData(), getQuery(), getParam(), getBody() and
+	//getHeaderLine(). A dotted name reads a nested field ('Set.title'), as in both versions.
+
+	//A field the form or the request body sent, null when it was not sent.
+	protected function input(string $name): mixed
+	{
+		return $this->request->data($name);
+	}
+
+	//Every field the form sent.
+	/** @return array<string, mixed> */
+	protected function inputs(): array
+	{
+		return (array) $this->request->data;
+	}
+
+	//A value of the query string (?name=value), null when it is not there.
+	protected function query(string $name): mixed
+	{
+		return $this->request->query($name);
+	}
+
+	//The whole query string as an array.
+	/** @return array<string, mixed> */
+	protected function queries(): array
+	{
+		return (array) $this->request->query;
+	}
+
+	//A part of the address the router recognised: controller, action, or a named route element.
+	protected function routeParam(string $name): mixed
+	{
+		return $this->request->params[$name] ?? null;
+	}
+
+	//The request body as it was sent, for the endpoints that take JSON.
+	protected function requestBody(): string
+	{
+		return (string) $this->request->input();
+	}
+
+	//GET, POST and so on.
+	protected function httpMethod(): string
+	{
+		return (string) $this->request->method();
+	}
+
+	//The size the client says the request body has, in bytes.
+	protected function contentLength(): int
+	{
+		return (int) env('CONTENT_LENGTH');
+	}
+
+	//The response, set through these few methods only, so that the switch to Cake 5, whose
+	//response is immutable (withType(), withStringBody(), withStatus(), withHeader()), changes
+	//them and not every action. An action returns what they return.
+
+	//Answers with the data as JSON in place of a rendered page.
+	protected function respondJson(mixed $data, int $status = 200): CakeResponse
+	{
+		return $this->respond((string) json_encode($data), 'json', $status);
+	}
+
+	//Answers with the body as it is in place of a rendered page. The type is a short name
+	//('xml', 'png', 'svg', 'webp') or a full mime type; without one it stays text/html.
+	protected function respond(string $body, ?string $type = null, int $status = 200): CakeResponse
+	{
+		$this->autoRender = false;
+		if ($type !== null)
+			$this->response->type($type);
+		$this->response->statusCode($status);
+		$this->response->body($body);
+		return $this->response;
+	}
+
+	protected function setResponseHeader(string $name, string $value): void
+	{
+		$this->response->header($name, $value);
+	}
+
+	//The browser asks again with this tag and gets a 304 while the answer stays the same.
+	protected function setEtag(string $etag): void
+	{
+		$this->response->etag($etag);
+	}
+
+	//The browser and proxies may keep the answer until $until (a strtotime() expression).
+	protected function cacheUntil(string $lastModified, string $until): void
+	{
+		$this->response->cache($lastModified, $until);
+	}
+
 	//The pages of a deleted account (profile, its sets, tags, solve history...) are gone for everyone but the admins.
 	/** @param UserRow $user */
 	protected function assertUserVisible(array $user): void
@@ -101,7 +194,7 @@ class AppController extends Controller
 			return;
 
 		// HEAD asks for the headers of a GET response, so a page that answers GET answers it
-		$method = $this->request->method();
+		$method = $this->httpMethod();
 		if ($method === 'HEAD' && in_array('GET', $allowed, true))
 			$method = 'GET';
 
@@ -123,7 +216,7 @@ class AppController extends Controller
 	{
 		if (($_COOKIE['browser_cache_version'] ?? null) === self::BROWSER_CACHE_VERSION)
 			return;
-		$this->response->header('Clear-Site-Data', '"cache"');
+		$this->setResponseHeader('Clear-Site-Data', '"cache"');
 		Util::setCookie('browser_cache_version', self::BROWSER_CACHE_VERSION);
 	}
 
@@ -143,7 +236,7 @@ class AppController extends Controller
 	{
 		if (empty(Auth::getUser()['needs_display_name_change']))
 			return false;
-		$page = strtolower($this->request->params['controller'] . '/' . $this->request->params['action']);
+		$page = strtolower($this->routeParam('controller') . '/' . $this->routeParam('action'));
 		return !in_array($page, self::ACTIONS_ALLOWED_BEFORE_NAME_CHANGE, true);
 	}
 
@@ -183,24 +276,21 @@ class AppController extends Controller
 		};
 	}
 
-	public function beforeFilter(): void
+	public function beforeFilter(): ?CakeResponse
 	{
 		$this->enforceHttpMethodAttribute();
 		$this->resetStaleBrowserCache();
 
 		//Boards are drawn without a session: a list of a thousand players would otherwise
 		//pay for the login of a visitor who is not there.
-		if (strtolower((string) ($this->request->params['controller'] ?? '')) === 'avatars')
-			return;
+		if (strtolower((string) ($this->routeParam('controller') ?? '')) === 'avatars')
+			return null;
 
 		Auth::init();
 		if (Auth::isLoggedIn())
 		{
 			if ($this->mustChangeDisplayNameFirst())
-			{
-				$this->redirect(['controller' => 'users', 'action' => 'changename']);
-				return;
-			}
+				return $this->redirect(['controller' => 'users', 'action' => 'changename']);
 			$this->saveSettingsFromCookies();
 			if (!$this->request->is('ajax'))
 				$this->set('achievementUpdates', new AchievementChecker()->checkStandardAchievements()->finalize()->updated);
@@ -222,5 +312,6 @@ class AppController extends Controller
 		$this->set('boardsBitmask', $boardsBitmask);
 		$this->set('timeMode', new TimeMode());
 		$this->set('changelogTimestamps', Changelog::timestamps());
+		return null;
 	}
 }

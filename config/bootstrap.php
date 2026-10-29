@@ -38,12 +38,15 @@ if (empty($_SERVER['REQUEST_URI']) && !empty($_SERVER['REDIRECT_URL']))
  */
 require 'functions.php';
 
+//The caches of the app run on Cake 5 (Cake\Cache\Cache), in the files and with the lifetimes they had on
+//Cake 2. Cake 2 keeps its own caches, _cake_core_ and _cake_model_ (see core.php).
 // Setup a 'default' cache configuration for use in the application.
-Cache::config('default', ['engine' => 'File']);
+Cake\Cache\Cache::setConfig('default', ['className' => Cake\Cache\Engine\FileEngine::class, 'path' => CACHE]);
 
 // Long-lived cache for data that changes infrequently (e.g. sitemap)
-Cache::config('long', [
-	'engine' => 'File',
+Cake\Cache\Cache::setConfig('long', [
+	'className' => Cake\Cache\Engine\FileEngine::class,
+	'path' => CACHE,
 	'duration' => '+1 day',
 	'prefix' => 'long_',
 ]);
@@ -107,6 +110,22 @@ Configure::write('Dispatcher.filters', [
 /**
  * Configures default file logging options
  */
+//The app logs through Cake 5 (Cake\Log\Log) into the same files as Cake 2, which logs its own errors
+//through the CakeLog configuration below.
+Cake\Log\Log::setConfig('debug', [
+	'className' => Cake\Log\Engine\FileLog::class,
+	'formatter' => App\Log\LogLineFormatter::class,
+	'path' => LOGS,
+	'levels' => ['notice', 'info', 'debug'],
+	'file' => 'debug',
+]);
+Cake\Log\Log::setConfig('error', [
+	'className' => Cake\Log\Engine\FileLog::class,
+	'formatter' => App\Log\LogLineFormatter::class,
+	'path' => LOGS,
+	'levels' => ['warning', 'error', 'critical', 'alert', 'emergency'],
+	'file' => 'error',
+]);
 CakeLog::config('debug', [
 	'engine' => 'File',
 	'types' => ['notice', 'info', 'debug'],
