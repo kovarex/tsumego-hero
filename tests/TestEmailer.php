@@ -1,31 +1,32 @@
 <?php
 
+use App\Utility\Mailer;
 use Cake\Network\Exception\SocketException;
 
-// this is hack until nicer solution in newer cake is possible to be used
-class TestEmailer
+//The mailer of a test (see AppController::_setTestEmailer()): it keeps the last email instead of sending it.
+class TestEmailer extends Mailer
 {
 	public function __construct()
 	{
 		self::$lastEmail = [];
 	}
 
-	public function from($from)
+	public function from(string|array $from): void
 	{
 		self::$lastEmail['from'] = $from;
 	}
 
-	public function to($to)
+	public function to(string $to): void
 	{
 		self::$lastEmail['to'] = $to;
 	}
 
-	public function subject($subject)
+	public function subject(string $subject): void
 	{
 		self::$lastEmail['subject'] = $subject;
 	}
 
-	public function send($body)
+	public function send(string $body): void
 	{
 		// A mailbox that is not reachable, the way mail() reports it
 		if (self::$unreachable)

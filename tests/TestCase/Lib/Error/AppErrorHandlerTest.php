@@ -7,7 +7,7 @@ use Cake\Routing\Router;
 use App\Lib\Error\UnprocessableEntityException;
 
 //AppErrorHandler renders JSON error bodies for JSON/AJAX requests and the HTML error page for regular browser requests.
-class AppErrorHandlerTest extends CakeTestCase
+class AppErrorHandlerTest extends AppTestCase
 {
 	//Renders the given exception through AppErrorHandler with the supplied
 	//request headers and returns the resulting response.

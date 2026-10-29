@@ -4,6 +4,7 @@ use Cake\Cache\Engine\FileEngine;
 use Cake\Database\Connection;
 use Cake\Database\Driver\Mysql;
 use Cake\Log\Engine\FileLog;
+use App\Log\LogLineFormatter;
 
 //The configuration of the app, what core.php, database.php and the configuration part of
 //bootstrap.php did on Cake 2. config/app_local.php overrides it per server (core.local.php).
@@ -93,8 +94,8 @@ return [
 		],
 	],
 	'Log' => [
-		'debug' => ['className' => FileLog::class, 'path' => LOGS, 'file' => 'debug', 'levels' => ['notice', 'info', 'debug']],
-		'error' => ['className' => FileLog::class, 'path' => LOGS, 'file' => 'error', 'levels' => ['warning', 'error', 'critical', 'alert', 'emergency']],
+		'debug' => ['className' => FileLog::class, 'formatter' => LogLineFormatter::class, 'path' => LOGS, 'file' => 'debug', 'levels' => ['notice', 'info', 'debug']],
+		'error' => ['className' => FileLog::class, 'formatter' => LogLineFormatter::class, 'path' => LOGS, 'file' => 'error', 'levels' => ['warning', 'error', 'critical', 'alert', 'emergency']],
 	],
 	'Session' => ['defaults' => 'php'],
 ];

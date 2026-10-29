@@ -24,7 +24,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<?php echo $this->Html->charset(); ?>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title><?php echo $pageTitle; ?></title>
 
 <?php
@@ -41,7 +41,7 @@ A:HOVER { text-decoration: underline; color:#44E }
 </head>
 <body>
 <p>
-	<?php echo $this->Html->link($message, $url); ?>
+	<a href="<?php echo h($url); ?>"><?php echo h($message); ?></a>
 </p>
 </body>
 </html>

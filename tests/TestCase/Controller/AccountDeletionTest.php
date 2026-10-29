@@ -7,6 +7,13 @@ use App\Utility\CookieFlash;
 
 class AccountDeletionTest extends IntegrationTestCase
 {
+	//The emailed link is made of the host the request came to, which a request from a browser always has
+	public function setUp(): void
+	{
+		parent::setUp();
+		$this->configRequest(['environment' => ['HTTP_HOST' => 'tsumego.test']]);
+	}
+
 	private function userRow(int $userID): array
 	{
 		return UserTable::row((int) $userID);
@@ -51,7 +58,7 @@ class AccountDeletionTest extends IntegrationTestCase
 		$this->assertNotEmpty($user['deletion_token']);
 		$this->assertSame('kovarex@example.com', TestEmailer::$lastEmail['to']);
 		$this->assertTextContains('Deletion of your Tsumego Hero account', TestEmailer::$lastEmail['subject']);
-		$this->assertTextContains('https://' . $_SERVER['HTTP_HOST'] . '/users/confirm_delete_account/' . $user['deletion_token'], TestEmailer::$lastEmail['body']);
+		$this->assertTextContains('https://tsumego.test/users/confirm_delete_account/' . $user['deletion_token'], TestEmailer::$lastEmail['body']);
 	}
 
 	public function testDeletionEmailGoesToTheUsersEmail(): void
@@ -286,11 +293,11 @@ class AccountDeletionTest extends IntegrationTestCase
 
 		// a new account can take the name; the email stays with the deleted account
 		$this->logout();
-		$this->post('/users/add', ['User' => [
+		$this->post('/users/add', [
 			'name' => 'kovarex',
 			'email' => 'newkovarex@example.com',
 			'password1' => 'secretChest42',
-			'password2' => 'secretChest42']]);
+			'password2' => 'secretChest42']);
 		$newAccount = ContextPreparator::findUserRow(['name' => 'kovarex']);
 		$this->assertNotEmpty($newAccount);
 		$this->assertNotEquals($oldAccountID, $newAccount['id']);

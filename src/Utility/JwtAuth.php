@@ -87,10 +87,11 @@ class JwtAuth
 			return;
 		self::$cookieRead = true;
 
-		if (empty($_COOKIE[self::COOKIE_NAME]))
+		$token = Util::cookie(self::COOKIE_NAME);
+		if (empty($token))
 			return;
 
-		$payload = self::decodePayload($_COOKIE[self::COOKIE_NAME]);
+		$payload = self::decodePayload($token);
 		if ($payload === null)
 			return;
 
@@ -123,16 +124,13 @@ class JwtAuth
 	public static function setAuthCookie(int $userId, ?string $passwordHash = null): string
 	{
 		$token = self::createToken($userId, null, $passwordHash);
-		$_COOKIE[self::COOKIE_NAME] = $token;
-		setcookie(
-			self::COOKIE_NAME,
-			$token,
-			time() + self::DEFAULT_EXPIRY_SECONDS,
-			'/',
-			'',
-			true, // secure
-			true  // httpOnly
-		);
+		// The forum (phpBB) reads this cookie too, so its attributes stay as they are: no SameSite,
+		// unreadable by scripts, the whole site.
+		Util::setCookie(self::COOKIE_NAME, $token, [
+			'expires' => time() + self::DEFAULT_EXPIRY_SECONDS,
+			'domain' => '',
+			'httponly' => true,
+			'samesite' => null]);
 		self::$cachedUserId = $userId;
 		self::$cachedPasswordClaim = self::claimOf($passwordHash);
 		self::$cookieRead = true;
@@ -142,8 +140,7 @@ class JwtAuth
 	//Clear auth cookie (logout).
 	public static function clearAuthCookie(): void
 	{
-		unset($_COOKIE[self::COOKIE_NAME]);
-		setcookie(self::COOKIE_NAME, '', time() - 3600, '/');
+		Util::clearCookie(self::COOKIE_NAME, ['secure' => false, 'samesite' => null]);
 		self::$cachedUserId = null;
 		self::$cachedPasswordClaim = null;
 		self::$cookieRead = true;

@@ -3,7 +3,7 @@
 use App\Utility\BoardTransformation;
 use App\Utility\CommentCoordinates;
 
-class CommentCoordinatesTest extends CakeTestCase
+class CommentCoordinatesTest extends AppTestCase
 {
 	public function testLabelsAndPoints()
 	{

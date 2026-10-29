@@ -161,7 +161,7 @@ use App\Utility\TsumegoFilters;
 			'name' => $set['name'],
 			'amount' => $set['amount'],
 			'color' => $set['color'],
-			'difficulty' => $set['difficulty'],
+			'difficulty' => $set['difficulty'] ?? null, // the collections of a tag have none
 			'solved' => $set['solved_percent'],
 			'partition' => $set['partition'],
 		], $backgroundImage);

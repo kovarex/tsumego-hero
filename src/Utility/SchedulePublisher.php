@@ -4,8 +4,8 @@ namespace App\Utility;
 
 use App\Model\Entity\Schedule;
 use Cake\ORM\TableRegistry;
-use Cake\Log\Log as CakeLog;
 use App\Model\Table\SetTable;
+use Cake\Log\Log;
 
 //Publishes the schedule entries that are due, which the daily cron runs.
 //This lives outside the controllers on purpose: a public method of a controller is an
@@ -33,7 +33,7 @@ class SchedulePublisher
 				SiteGrowth::forget();
 			}
 			else
-				CakeLog::warning(sprintf(
+				Log::warning(sprintf(
 					'Schedule publish failed: entry %d (tsumego %d -> set %d): %s',
 					$item->id,
 					$item->tsumego_id,

@@ -39,10 +39,10 @@ class ProposalFeedback
 	//$tsumegoID: The problem, linked at the end
 	//$proposalDescription: What the proposer wrote about their proposal, quoted so they know which one it was
 	//$comment: The admin's comment
-	//$emailer: CakeEmail from AppController::_getEmailer()
+	//$emailer: The mailer from AppController::_getEmailer()
 	//$diffUrl: The proposed version compared with the one it would replace, linked after the problem
 	//Returns whether the message was sent
-	public static function send(int $proposerUserID, string $decision, ?int $tsumegoID, ?string $proposalDescription, string $comment, mixed $emailer, ?string $diffUrl = null): bool
+	public static function send(int $proposerUserID, string $decision, ?int $tsumegoID, ?string $proposalDescription, string $comment, Mailer $emailer, ?string $diffUrl = null): bool
 	{
 		$paragraphs = [$decision];
 		if ($proposalDescription !== null && $proposalDescription !== '')

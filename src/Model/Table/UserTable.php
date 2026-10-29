@@ -11,7 +11,7 @@ use App\Utility\PhpbbNames;
 use App\Utility\Rating;
 use App\Utility\UploadedAvatar;
 use App\Utility\Util;
-use Cake\Log\Log as CakeLog;
+use Cake\Log\Log;
 use Cake\ORM\TableRegistry;
 use Cake\Validation\Validator;
 use DateTimeInterface;
@@ -513,7 +513,7 @@ class UserTable extends AppTable
 		}
 		catch (Throwable $exception)
 		{
-			CakeLog::write('warning', 'Forum name not synced for user ' . $userId . ': ' . $exception->getMessage());
+			Log::warning('Forum name not synced for user ' . $userId . ': ' . $exception->getMessage());
 		}
 
 		return true;

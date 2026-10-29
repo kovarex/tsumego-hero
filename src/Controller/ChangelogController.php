@@ -6,7 +6,6 @@ use App\Attribute\HttpGet;
 
 class ChangelogController extends AppController
 {
-
 	//Renders the public /changelog page. The entries and the deployed revision
 	//come from the generated changelog/index.json (produced by
 	//scripts/changelog-generate.mjs at deploy time).

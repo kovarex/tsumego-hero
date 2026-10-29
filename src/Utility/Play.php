@@ -1,10 +1,7 @@
 <?php
 
-namespace App\Controller\Component;
+namespace App\Utility;
 
-use Cake\Http\Exception\NotFoundException;
-use Cake\Http\ServerRequest as CakeRequest;
-use Cake\Routing\Router;
 use App\Model\Entity\Set;
 use App\Model\Table\SetTable;
 use App\Model\Entity\SetConnection;
@@ -21,20 +18,11 @@ use App\Policy\AdminPolicy;
 use App\Policy\BasePolicy;
 use App\Policy\SetPolicy;
 use App\Policy\TagConnectionPolicy;
-use App\Utility\AdminActivityLogger;
-use App\Utility\Auth;
-use App\Utility\BoardSelector;
-use App\Utility\Constants;
-use App\Utility\MistakeTraining;
-use App\Utility\SetNavigationButtonsInput;
-use App\Utility\SgfParser;
-use App\Utility\TimeMode;
-use App\Utility\TsumegoButtons;
-use App\Utility\TsumegoFilters;
-use App\Utility\TsumegoUtil;
-use App\Utility\TsumegoXPAndRating;
-use App\Utility\Util;
 use Cake\ORM\TableRegistry;
+use App\Controller\Component\AuthorizationComponent;
+use Cake\Http\Exception\NotFoundException;
+use Cake\Http\ServerRequest as CakeRequest;
+use Cake\Routing\Router;
 
 class Play
 {
@@ -116,7 +104,7 @@ class Play
 			'tsumego_id' => $tsumegoID,
 			'user_id' => Auth::getUserID(),
 			'sgf_status_id' => SgfTable::STATUS_PROPOSED]));
-		if (isset($request->query['requestSolution']))
+		if ($request->getQuery('requestSolution') !== null)
 		{
 			AuthorizationComponent::require(AdminPolicy::canRequestSolution(Auth::getIdentity()));
 			$this->set('requestSolution', AdminActivityLogger::log(AdminActivityTypeTable::SOLUTION_REQUEST, $tsumegoID));
@@ -240,7 +228,7 @@ ORDER BY s.title", [$tsumegoID, Auth::getUserID()]);
 		{
 			$buttons = new TsumegoButtons($tsumegoFilters, $setConnectionID, null, $set->id);
 			new SetNavigationButtonsInput($this->setFunction)->execute($buttons, $setConnection);
-			$collectionTitle = $tsumegoFilters->query == 'topics' ? $set->title : ($_COOKIE['lastSet'] ?? 'Tsumego');
+			$collectionTitle = $tsumegoFilters->query == 'topics' ? $set->title : (Util::cookie('lastSet') ?? 'Tsumego');
 			$this->set('_title', $collectionTitle . ' ' . $setConnection->num . '/' . $buttons->highestTsumegoOrder . ' on Tsumego Hero');
 			$buttons->exportCurrentAndPreviousLink($this->setFunction, $tsumegoFilters, $setConnectionID, $set);
 			return $tsumegoFilters->getSetTitle($set) . $buttons->getPartitionTitleSuffix() . ' ' . $buttons->currentOrder . '/' . $buttons->highestTsumegoOrder;
@@ -265,7 +253,7 @@ ORDER BY s.title", [$tsumegoID, Auth::getUserID()]);
 	private function exportPlayerColor(CakeRequest $request, string $sgf, bool $playAsBlack): void
 	{
 		$sgfColor = SgfParser::firstMoveColor($sgf);
-		$requestedColor = strtolower((string) ($request->query['playercolor'] ?? ''));
+		$requestedColor = strtolower((string) ($request->getQuery('playercolor') ?? ''));
 		if (in_array($requestedColor, ['black', 'white'], true))
 			$playerColor = $requestedColor;
 		elseif ($playAsBlack)

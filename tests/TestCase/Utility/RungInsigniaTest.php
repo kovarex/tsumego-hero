@@ -2,7 +2,7 @@
 
 use App\Utility\RungInsignia;
 
-class RungInsigniaTest extends CakeTestCase
+class RungInsigniaTest extends AppTestCase
 {
 	//The insignia the owner chose for the ladder of eight rungs, like military ranks.
 	public function testTheLadderOfEightRungsIsFourChevronsThenFourStars(): void

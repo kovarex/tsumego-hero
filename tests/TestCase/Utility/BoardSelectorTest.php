@@ -1,14 +1,10 @@
 <?php
 
-/**
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
- */
 use App\Utility\BoardSelector;
 
-class BoardSelectorTest extends CakeTestCase
+#[RetryOnBrowserFailure]
+class BoardSelectorTest extends AppTestCase
 {
-
 	public function testChangeSelection()
 	{
 		$browser = Browser::instance();

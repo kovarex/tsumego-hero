@@ -8,10 +8,7 @@ use App\Utility\TimeModeUtil;
 //A line that can no longer end correct is sent as a fail the moment it is lost, so leaving
 //or refreshing before it is played out doesn't escape the fail (#112). The player is shown
 //nothing of it until the line is over.
-/**
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
- */
+#[RetryOnBrowserFailure]
 class PlayLostLineBrowserTest extends IntegrationTestCase
 {
 	//Black (1,1), white (1,2), black (2,1) is correct. Black (2,1) is lost at once, but the

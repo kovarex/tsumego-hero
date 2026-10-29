@@ -54,7 +54,7 @@ class HeroController extends AppController
 		]);
 		//The sprint run counts the problems solved during this sprint only
 		AchievementConditionTable::put(Auth::getUserID(), AchievementConditionTable::CATEGORY_SPRINT, 0);
-		return $this->response;
+		return $this->respond('');
 	}
 
 	#[HttpPost]
@@ -62,7 +62,7 @@ class HeroController extends AppController
 	{
 		$this->Authorization->authorize('Hero');
 		Auth::saveUserField('used_intuition', 1);
-		return $this->response;
+		return $this->respond('');
 	}
 
 	//Restores health and intuition, and unlocks the problems failed today: a locked problem
@@ -83,7 +83,7 @@ class HeroController extends AppController
 			TsumegoStatusTable::$FORGOTTEN, TsumegoStatusTable::$REVIEW,
 			Auth::getUserID(), TsumegoStatusTable::$LOCKED, TsumegoStatusTable::$FORGOTTEN,
 		]);
-		return $this->response;
+		return $this->respond('');
 	}
 
 	//Marks the problem solved without any reward.
@@ -102,6 +102,6 @@ class HeroController extends AppController
 			throw new ForbiddenException('Revelation is used up today.');
 
 		TsumegoStatusTable::setStatus(Auth::getUserID(), (int) $tsumegoID, TsumegoStatusTable::$SOLVED);
-		return $this->response;
+		return $this->respond('');
 	}
 }

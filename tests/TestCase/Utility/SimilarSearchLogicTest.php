@@ -1,13 +1,8 @@
 <?php
 
-
-/**
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
- */
-class SimilarSearchLogicTest extends CakeTestCase
+#[RetryOnBrowserFailure]
+class SimilarSearchLogicTest extends AppTestCase
 {
-
 	public function testSimilarSearchSameProblem()
 	{
 		$browser = Browser::instance();

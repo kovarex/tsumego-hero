@@ -2,7 +2,7 @@
 
 namespace App\Utility;
 
-use Cake\Log\Log as CakeLog;
+use Cake\Log\Log;
 
 //Looks a password up in the Pwned Passwords list.
 //Only the first five characters of the SHA-1 hash leave the server and the rest of
@@ -78,7 +78,7 @@ class PwnedPasswordChecker implements PwnedPasswordCheckerInterface
 		$range = @file_get_contents($url, false, $context);
 		if ($range === false)
 		{
-			CakeLog::write('warning', 'The Pwned Passwords list could not be asked about the hashes starting with ' . $prefix);
+			Log::warning('The Pwned Passwords list could not be asked about the hashes starting with ' . $prefix);
 			return null;
 		}
 		return $range;

@@ -6,6 +6,7 @@ use App\Model\Table\TsumegoVariantTable;
 use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
+use App\Utility\CookieFlash;
 use App\Utility\TsumegoUtil;
 use App\Utility\Util;
 use Cake\ORM\TableRegistry;
@@ -422,6 +423,19 @@ class TsumegosControllerTest extends IntegrationTestCase
 		$result = $this->view;
 
 		$this->assertStringContainsString('data-sgf-preview', $result);
+	}
+
+	public function testMergeOfAMissingMasterGoesBackToTheForm()
+	{
+		$context = new ContextPreparator(['user' => ['admin' => true], 'tsumegos' => [['set_order' => 1]]]);
+
+		$this->post('/tsumegos/mergeFinalForm', [
+			'master-id' => 999999,
+			'slave-id' => $context->tsumegos[0]['set-connections'][0]['id'],
+		]);
+
+		$this->assertRedirect('/tsumegos/mergeForm');
+		$this->assertSame('Master set connection does not exist.', CookieFlash::get());
 	}
 
 	public function testMergeFormShowsOnlyPublicSetConnections()

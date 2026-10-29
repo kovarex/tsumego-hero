@@ -1,10 +1,7 @@
 <?php
 
 
-/**
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
- */
+#[RetryOnBrowserFailure]
 class SchedulePageTest extends IntegrationTestCase
 {
 	//A schedule that starts today publishes straight away, so the button says that instead of the neutral label.

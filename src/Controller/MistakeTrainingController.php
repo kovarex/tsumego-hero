@@ -2,13 +2,13 @@
 
 namespace App\Controller;
 
-use App\Controller\Component\Play;
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\CookieFlash;
 use App\Utility\MistakeTraining;
+use App\Utility\Play;
 
 class MistakeTrainingController extends AppController
 {

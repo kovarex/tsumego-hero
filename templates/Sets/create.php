@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\Util;
+
 /**
  * @var View $this
  */
@@ -13,12 +15,12 @@
 	</div>
 
 	<div class="card card--green set-edit__section">
-		<?php echo $this->Form->create(null, ['id' => 'set-edit-details']); ?>
+		<form action="<?php echo h(Util::requestUri()); ?>" id="set-edit-details" method="post" accept-charset="utf-8"><div style="display:none;"><input type="hidden" name="_method" value="POST"/></div>
 			<div class="form-field">
 				<label class="form-field__label" for="SetTitle">Title</label>
-				<input class="form-field__control" type="text" id="SetTitle" name="data[Set][title]" placeholder="My set name" required>
+				<input class="form-field__control" type="text" id="SetTitle" name="title" placeholder="My set name" required>
 			</div>
 			<p class="hint">You can add a description, color and image after creating, in the set editor.</p>
-		<?php echo $this->Form->end(['label' => 'Create Set', 'class' => 'btn']); ?>
+		<div class="submit"><input class="btn" type="submit" value="Create Set"/></div></form>
 	</div>
 </div>

@@ -16,14 +16,16 @@ class_alias(Cake\TestSuite\TestCase::class, 'CakeTestCase');
 ConnectionManager::alias('test', 'default');
 
 // Load test helpers globally to avoid repetition in every test file
-require_once ROOT . '/tests/SuperglobalCleanup.php';
 require_once ROOT . '/tests/Browser.php';
 require_once ROOT . '/tests/ContextPreparator.php';
 require_once ROOT . '/tests/TestEmailer.php';
+require_once ROOT . '/tests/RetryOnBrowserFailure.php';
 
 // Pin the server timezone to UTC. The Selenium browser runs in its own
 // timezone (Europe/Prague), so displayed times shift, which browser tests assert.
 date_default_timezone_set('UTC');
+require_once ROOT . '/tests/TestCase/AppTestCase.php';
 require_once ROOT . '/tests/TestCase/Controller/IntegrationTestCase.php';
 require_once ROOT . '/tests/TestCase/Achievement/AchievementTestCase.php';
+require_once ROOT . '/tests/TestCase/Json/JsonGoldenTestCase.php';
 register_shutdown_function(fn() => Browser::shutdown());

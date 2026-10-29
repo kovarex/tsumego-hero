@@ -10,37 +10,87 @@ use Cake\Datasource\ConnectionManager;
 
 class Util
 {
-	public static function setCookie(string $name, string|int $value): void
+	//Util is the one place outside AppController that reads the superglobals: the cookies and
+	//the parts of the request a view or a helper needs below, and the server's environment.
+	//In Cake 5 the request carries them, so these methods change and their callers do not.
+
+	//The address the browser asked for, with its query string.
+	public static function requestUri(): string
 	{
-		setcookie($name, (string) $value, [
-			'expires' => time() + 365 * 24 * 60 * 60,
-			'path' => '/',
-			'secure' => true,
-			'httponly' => false,
-			'samesite' => 'Lax'
-		]);
+		return (string) ($_SERVER['REQUEST_URI'] ?? '/');
+	}
+
+	public static function userAgent(): string
+	{
+		return (string) ($_SERVER['HTTP_USER_AGENT'] ?? '');
+	}
+
+	//The whole query string as an array.
+	/** @return array<string, mixed> */
+	public static function queryParams(): array
+	{
+		return $_GET;
+	}
+
+	//Every cookie of the site is read and written here.
+
+	//What setCookie() and clearCookie() send unless told otherwise.
+	private const COOKIE_DEFAULTS = ['path' => '/', 'secure' => true, 'httponly' => false, 'samesite' => 'Lax'];
+
+	//The cookies this request has set: name => ['value' => string, 'options' => the setcookie() options].
+	//The tests read them here, as the command line sends no headers.
+	/** @var array<string, array{value: string, options: array<string, mixed>}> */
+	private static array $sentCookies = [];
+
+	//The value of a cookie, or the default when the browser did not send it.
+	public static function cookie(string $name, mixed $default = null): mixed
+	{
+		return $_COOKIE[$name] ?? $default;
+	}
+
+	//Sets a cookie for a year, readable by the scripts of the page.
+	//$options: The setcookie() options (expires, path, domain, secure, httponly, samesite) that
+	//differ from the defaults; a null drops the attribute.
+	/** @param array<string, mixed> $options */
+	public static function setCookie(string $name, string|int $value, array $options = []): void
+	{
+		self::sendCookie($name, (string) $value, $options + ['expires' => time() + 365 * 24 * 60 * 60]);
 		// Also update $_COOKIE so the value is available in the current request
 		$_COOKIE[$name] = $value;
 	}
 
-	/* @return The value of the cleared cookie */
-	public static function clearCookie(string $name): ?string
+	//Tells the browser to drop the cookie. Returns the value it had.
+	//$options: As for setCookie(), for the attributes the cookie was set with
+	/** @param array<string, mixed> $options */
+	public static function clearCookie(string $name, array $options = []): ?string
 	{
 		$previous = $_COOKIE[$name] ?? null;
-
-		setcookie($name, '',
-			[
-				'expires' => time() - 3600,
-				'path' => '/',
-				'secure' => true,
-				'httponly' => false,
-				'samesite' => 'Lax'
-			]);
-
+		self::sendCookie($name, '', ['expires' => time() - 3600] + $options);
 		unset($_COOKIE[$name]);
 		if ($previous == 'deleted')
 			return null;
 		return $previous;
+	}
+
+	//Forgets a cookie for the rest of this request, without telling the browser.
+	public static function forgetCookie(string $name): void
+	{
+		unset($_COOKIE[$name]);
+	}
+
+	//The value and the options the cookie was last set with in this request, null when it was not.
+	/** @return array{value: string, options: array<string, mixed>}|null */
+	public static function sentCookie(string $name): ?array
+	{
+		return self::$sentCookies[$name] ?? null;
+	}
+
+	/** @param array<string, mixed> $options */
+	private static function sendCookie(string $name, string $value, array $options): void
+	{
+		$options = array_filter($options + self::COOKIE_DEFAULTS, fn($option) => $option !== null);
+		self::$sentCookies[$name] = ['value' => $value, 'options' => $options];
+		setcookie($name, $value, $options);
 	}
 
 	/* @return Int value of the cleared cookie, returns null if the cookeie isn't present. throws if it isn't numeric */
@@ -61,11 +111,6 @@ class Util
 		if (is_null($result))
 			throw new Exception("Cookie " . $name . " is expected to be defined, but it isn't");
 		return $result;
-	}
-
-	public static function getCookie(string $name, mixed $default = null): mixed
-	{
-		return isset($_COOKIE[$name]) ? $_COOKIE[$name] : $default;
 	}
 
 	//A random string of letters and digits. It is used for tokens that end up in a
@@ -109,20 +154,17 @@ class Util
 		return openssl_decrypt(base64_decode($str), self::ENCRYPT_METHOD, $key, 0, $iv);
 	}
 
+	//Takes the value out of the array, null when the array has none: the keys extracted are options.
 	public static function extract(string $name, array &$inputArray): mixed
 	{
-		$result = $inputArray[$name];
+		$result = $inputArray[$name] ?? null;
 		unset($inputArray[$name]);
 		return $result;
 	}
 
 	public static function extractWithDefault(string $name, array &$inputArray, mixed $default): mixed
 	{
-		$result = $inputArray[$name];
-		unset($inputArray[$name]);
-		if (isset($result))
-			return $result;
-		return $default;
+		return self::extract($name, $inputArray) ?? $default;
 	}
 
 	public static function getRatio(float|int $amount, float|int $max): float
@@ -154,9 +196,9 @@ class Util
 
 	public static function isInGithubCI(): bool
 	{
-		if ($testEnvironment = @$_SERVER['TEST_ENVIRONMENT'])
+		if ($testEnvironment = $_SERVER['TEST_ENVIRONMENT'] ?? null)
 			return $testEnvironment == 'github-ci';
-		if ($host = @$_SERVER['HTTP_HOST'])
+		if ($host = $_SERVER['HTTP_HOST'] ?? null)
 			return str_contains($host, 'host.docker.internal');
 		return false;
 	}
@@ -166,7 +208,7 @@ class Util
 	//container (both its dev and its test hostname) and for the runner on GitHub.
 	public static function isInTestEnvironment(): bool
 	{
-		if (@$_SERVER['DDEV_PRIMARY_URL'] && str_contains($_SERVER['DDEV_PRIMARY_URL'], "tsumego.ddev.site"))
+		if (str_contains($_SERVER['DDEV_PRIMARY_URL'] ?? '', 'tsumego.ddev.site'))
 			return true;
 		return Util::isInGithubCI();
 	}

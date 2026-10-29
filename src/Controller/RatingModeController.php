@@ -2,7 +2,6 @@
 
 namespace App\Controller;
 
-use App\Controller\Component\Play;
 use App\Model\Table\SetTable;
 use App\Model\Table\TsumegoStatusTable;
 use App\Utility\Auth;
@@ -12,6 +11,7 @@ use App\Utility\Rating;
 use App\Utility\RatingBounds;
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
+use App\Utility\Play;
 use App\Utility\Util;
 
 class RatingModeController extends AppController

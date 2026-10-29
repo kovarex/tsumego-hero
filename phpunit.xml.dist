@@ -9,9 +9,6 @@
     <php>
         <ini name="memory_limit" value="-1"/>
     </php>
-    <extensions>
-        <bootstrap class="SuperglobalCleanup"/>
-    </extensions>
     <testsuites>
         <testsuite name="All Tests">
             <directory>./tests/TestCase/</directory>

@@ -183,8 +183,8 @@ class AvatarUploadTest extends IntegrationTestCase
 		$this->assertContentType('image/webp');
 		$this->assertSame(UploadedAvatar::picture($context->user['id'], $hash), $this->view);
 		$this->assertSame(UploadedAvatar::SIZE, getimagesizefromstring($this->view)[0]);
-		$this->assertStringContainsString('max-age=31536000', $this->_response->getHeaderLine('Cache-Control'));
-		$this->assertStringContainsString($hash, $this->_response->getHeaderLine('Etag'));
+		$this->assertHeaderContains('Cache-Control', 'max-age=31536000');
+		$this->assertHeaderContains('Etag', $hash);
 	}
 
 	public function testTheUrlOfAReplacedPictureAnswersNothing(): void

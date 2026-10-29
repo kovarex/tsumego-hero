@@ -1,14 +1,10 @@
 <?php
 
-/**
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
- */
 use App\Utility\Util;
 
-class JavaScriptErrorTrackingTest extends CakeTestCase
+#[RetryOnBrowserFailure]
+class JavaScriptErrorTrackingTest extends AppTestCase
 {
-
 	/* Verifies that JavaScript error tracking is enabled in test environment.
 	 * This test ensures debug mode is enabled so window.__jsErrors is initialized.
 	 * Without debug mode, ALL browser tests will be blind to JavaScript errors.

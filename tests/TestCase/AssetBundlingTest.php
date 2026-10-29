@@ -1,16 +1,14 @@
 <?php
 
-
 //Verifies that CSS and JS assets are properly bundled via Vite,
 //that styles are applied, and that JavaScript functions are loaded and working.
 /**
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  * @group disabled
  * This test is excluded from local runs (see phpunit.xml.dist).
  * It only runs in CI where assets are pre-built via .github/workflows/ci.yml
  */
-class AssetBundlingTest extends CakeTestCase
+#[RetryOnBrowserFailure]
+class AssetBundlingTest extends AppTestCase
 {
 	//Test that CSS bundles are loaded and individual files are NOT loaded
 	public function testCssBundlesAreLoadedAndStylesApplied()

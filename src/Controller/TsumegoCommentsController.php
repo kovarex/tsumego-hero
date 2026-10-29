@@ -32,7 +32,7 @@ class TsumegoCommentsController extends AppController
 	{
 		$this->Authorization->authorize('TsumegoComment', 'add');
 
-		$input = json_decode((string) $this->request->getBody(), true);
+		$input = json_decode($this->requestBody(), true);
 
 		$tsumegoCommentTable = $this->fetchTable('TsumegoComment');
 		$comment = $tsumegoCommentTable->newEntity([
@@ -46,8 +46,7 @@ class TsumegoCommentsController extends AppController
 			throw new UnprocessableEntityException('Failed to add comment');
 
 		$author = self::authorsOf([$comment])[$comment->user_id];
-		$this->response = $this->response->withType('json');
-		$this->response = $this->response->withStringBody(json_encode([
+		return $this->respondJson([
 			'id' => $comment->id,
 			'text' => $comment->message,
 			'user_id' => $comment->user_id,
@@ -57,8 +56,7 @@ class TsumegoCommentsController extends AppController
 			'isAdmin' => UserTable::isAdmin($author),
 			'created' => $comment->created->format('c'),
 			'position' => $comment->position,
-		]));
-		return $this->response;
+		]);
 	}
 
 	//Delete a comment (soft delete).
@@ -88,9 +86,7 @@ class TsumegoCommentsController extends AppController
 		if (!empty($issueId))
 			TsumegoIssueTable::deleteIfEmpty($issueId);
 
-		$this->response = $this->response->withType('json');
-		$this->response = $this->response->withStringBody(json_encode(['success' => true]));
-		return $this->response;
+		return $this->respondJson(['success' => true]);
 	}
 
 	//Get comments data for a tsumego
@@ -169,13 +165,11 @@ class TsumegoCommentsController extends AppController
 
 		$counts = TsumegoIssueTable::getCommentSectionCounts((int) $tsumegoId);
 
-		$this->response = $this->response->withType('json');
-		$this->response = $this->response->withStringBody(json_encode([
+		return $this->respondJson([
 			'issues' => $issuesJson,
 			'standalone' => $standaloneJson,
 			'counts' => $counts,
-		]));
-		return $this->response;
+		]);
 	}
 
 	//The users who wrote the comments and issues, by id, as the rows of the user table

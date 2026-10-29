@@ -23,12 +23,10 @@ class RegistrationEmailTest extends IntegrationTestCase
 
 		// Try to register with the same email
 		$this->post('users/add', [
-			'User' => [
-				'name' => 'newuser',
-				'email' => 'taken@example.com',
-				'password1' => 'password123',
-				'password2' => 'password123',
-			],
+			'name' => 'newuser',
+			'email' => 'taken@example.com',
+			'password1' => 'password123',
+			'password2' => 'password123',
 		]);
 
 		// Check that no new user was created with this email/name
@@ -58,12 +56,10 @@ class RegistrationEmailTest extends IntegrationTestCase
 
 		// Try to register with the same email
 		$this->post('users/add', [
-			'User' => [
-				'name' => 'newuser2',
-				'email' => 'google@gmail.com',
-				'password1' => 'password123',
-				'password2' => 'password123',
-			],
+			'name' => 'newuser2',
+			'email' => 'google@gmail.com',
+			'password1' => 'password123',
+			'password2' => 'password123',
 		]);
 
 		// Check that no new user was created with this email/name
@@ -82,12 +78,10 @@ class RegistrationEmailTest extends IntegrationTestCase
 		new ContextPreparator(['user' => null]);
 
 		$this->post('users/add', [
-			'User' => [
-				'name' => 'uniqueuser',
-				'email' => 'unique@example.com',
-				'password1' => 'password123',
-				'password2' => 'password123',
-			],
+			'name' => 'uniqueuser',
+			'email' => 'unique@example.com',
+			'password1' => 'password123',
+			'password2' => 'password123',
 		]);
 
 		// Check the user was created
@@ -120,12 +114,10 @@ class RegistrationEmailTest extends IntegrationTestCase
 		// The new player wants the login name "ConflictName", which the Google account
 		// does not use
 		$this->post('users/add', [
-			'User' => [
-				'name' => 'ConflictName',
-				'email' => 'newuser@example.com',
-				'password1' => 'password123',
-				'password2' => 'password123',
-			],
+			'name' => 'ConflictName',
+			'email' => 'newuser@example.com',
+			'password1' => 'password123',
+			'password2' => 'password123',
 		]);
 
 		// Check the new user was created

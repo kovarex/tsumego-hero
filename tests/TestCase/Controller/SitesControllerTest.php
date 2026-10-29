@@ -2,14 +2,11 @@
 
 use App\Model\Table\UserTable;
 use Facebook\WebDriver\WebDriverBy;
-/**
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
- */
 use App\Utility\Avatar;
 use App\Utility\Constants;
 use App\Utility\SiteGrowth;
 
+#[RetryOnBrowserFailure]
 class SitesControllerTest extends IntegrationTestCase
 {
 	public function testIndex()
@@ -456,8 +453,6 @@ class SitesControllerTest extends IntegrationTestCase
 	//The home page hands the growth of the site to the chart, a point a month for the problems and the users.
 	/**
 	 * @group browser
-	 * @retryAttempts 2
-	 * @retryIfException Facebook\WebDriver\Exception\WebDriverException
 	 */
 	public function testHomepageChartGetsTheSiteGrowth(): void
 	{

@@ -39,9 +39,7 @@ class TagConnectionController extends AppController
 			AdminActivityLogger::log(AdminActivityTypeTable::ADD_TAG, $tagConnection['tsumego_id'], null, ' ', $tagName);
 
 		$tagConnectionTable->saveOrFail($tagConnectionTable->newEntity($tagConnection));
-		$this->response = $this->response->withType('json');
-		$this->response = $this->response->withStringBody(json_encode(['success' => true]));
-		return $this->response;
+		return $this->respondJson(['success' => true]);
 	}
 
 	#[HttpPost]
@@ -62,8 +60,6 @@ class TagConnectionController extends AppController
 		$this->Authorization->authorize($tagConnection, 'remove');
 
 		$tagConnectionTable->deleteOrFail($tagConnection);
-		$this->response = $this->response->withType('json');
-		$this->response = $this->response->withStringBody(json_encode(['success' => true]));
-		return $this->response;
+		return $this->respondJson(['success' => true]);
 	}
 }

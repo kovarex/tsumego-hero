@@ -3,10 +3,7 @@
 use App\Utility\Constants;
 use App\Utility\Rating;
 
-/**
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
- */
+#[RetryOnBrowserFailure]
 class AccountWidgetTest extends IntegrationTestCase
 {
 	// by default we show level

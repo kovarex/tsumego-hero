@@ -1,6 +1,5 @@
 <?php
 
-use App\Controller\Component\Play;
 use App\Model\Table\SgfTable;
 use App\Model\Entity\TsumegoVariant;
 use App\Model\Table\ClassroomAssignmentTable;
@@ -9,6 +8,7 @@ use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\HeroPowers;
 use App\Utility\MistakeTraining;
+use App\Utility\Play;
 use App\Utility\PlayOutcome;
 use App\Utility\Rating;
 use App\Utility\TimeMode;
@@ -556,7 +556,6 @@ use App\Utility\ViteManifest;
 		</div>
 			</div>
 		<?php
-	$browser = $_SERVER['HTTP_USER_AGENT'] . "\n\n";
 	echo '<audio><source src="/sounds/newStone.ogg"></audio>';
 	echo '';
 		?>

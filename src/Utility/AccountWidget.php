@@ -19,7 +19,7 @@ class AccountWidget
 			$textBarInMenu = 'Level bar';
 			$modeSelectorClass = 'modeSelectorInLevelBar';
 		}
-		elseif (Util::getCookie('showInAccountWidget') == 'rating')
+		elseif (Util::cookie('showInAccountWidget') == 'rating')
 		{
 			$textBarInMenu = "Level Bar";
 			$barClassname = 'xp-bar-fill-c2';
@@ -100,7 +100,7 @@ class AccountWidget
 	{
 		if (Auth::isInTimeMode())
 			return 'time';
-		if (Util::getCookie('showInAccountWidget') == 'rating')
+		if (Util::cookie('showInAccountWidget') == 'rating')
 			return 'rating';
 		return 'level';
 	}

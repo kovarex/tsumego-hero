@@ -26,12 +26,9 @@ class AvatarsController extends AppController
 		if ($key === null || preg_match('/^[0-9a-f]{' . Avatar::KEY_LENGTH . '}$/', $key) !== 1)
 			throw new NotFoundException('Invalid board key');
 
-		$this->response = $this->response->withType('svg');
-		$this->response = $this->response->withHeader('Cache-Control', 'public, max-age=31536000, immutable');
-		$this->response = $this->response->withEtag(md5(Avatar::VERSION . '|' . $key));
-		$this->response = $this->response->withStringBody(Avatar::svg($key));
-
-		return $this->response;
+		$this->setResponseHeader('Cache-Control', 'public, max-age=31536000, immutable');
+		$this->setEtag(md5(Avatar::VERSION . '|' . $key));
+		return $this->respond(Avatar::svg($key), 'svg');
 	}
 
 	//The same board as a png, which is what a page shares: several networks drop
@@ -45,12 +42,9 @@ class AvatarsController extends AppController
 		if ($key === null || preg_match('/^[0-9a-f]{' . Avatar::KEY_LENGTH . '}$/', $key) !== 1)
 			throw new NotFoundException('Invalid board key');
 
-		$this->response = $this->response->withType('png');
-		$this->response = $this->response->withHeader('Cache-Control', 'public, max-age=31536000, immutable');
-		$this->response = $this->response->withEtag(md5(Avatar::VERSION . '|png|' . $key));
-		$this->response = $this->response->withStringBody(Avatar::png($key));
-
-		return $this->response;
+		$this->setResponseHeader('Cache-Control', 'public, max-age=31536000, immutable');
+		$this->setEtag(md5(Avatar::VERSION . '|png|' . $key));
+		return $this->respond(Avatar::png($key), 'png');
 	}
 
 	//The picture a player uploaded. The url carries the hash of the picture, so what it
@@ -66,13 +60,9 @@ class AvatarsController extends AppController
 		if ($picture === null)
 			throw new NotFoundException('No such picture');
 
-		$this->response->setTypeMap('webp', 'image/webp');
-		$this->response = $this->response->withType('webp');
-		$this->response = $this->response->withHeader('Cache-Control', 'public, max-age=31536000, immutable');
-		$this->response = $this->response->withEtag($hash);
-		$this->response = $this->response->withStringBody($picture);
-
-		return $this->response;
+		$this->setResponseHeader('Cache-Control', 'public, max-age=31536000, immutable');
+		$this->setEtag($hash);
+		return $this->respond($picture, 'webp');
 	}
 
 	//The board of an account, addressed by the id of its user. The avatar a player picked
@@ -93,7 +83,7 @@ class AvatarsController extends AppController
 
 		// The board of a name is fixed, the name of an account is not, so this is the
 		// answer that may not be kept for long.
-		$this->response = $this->response->withHeader('Cache-Control', 'max-age=60');
+		$this->setResponseHeader('Cache-Control', 'max-age=60');
 
 		return $this->redirect(Avatar::url($user->display_name));
 	}

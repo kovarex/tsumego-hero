@@ -21,19 +21,19 @@ class SgfsController extends AppController
 		$dId = [];
 		$dTitle = [];
 
-		if (($this->request->getQuery('delete') !== null))
+		if ($this->query('delete') !== null)
 		{
 			$sgfTable = $this->fetchTable('Sgf');
-			$sDel = $sgfTable->find()->select(['id', 'user_id'])->where(['id' => $this->request->getQuery('delete')])->first();
+			$sDel = $sgfTable->find()->select(['id', 'user_id'])->where(['id' => $this->query('delete')])->first();
 			if ($sDel && Auth::getUserID() == $sDel->user_id)
 				$sgfTable->deleteOrFail($sDel);
 		}
 
 		$tsumegoTable = $this->fetchTable('Tsumego');
 		$setTable = $this->fetchTable('Set');
-		if (($this->request->getQuery('duplicates') !== null))
+		if ($this->query('duplicates') !== null)
 		{
-			$newDuplicates = array_map('intval', explode('-', $this->request->getQuery('duplicates')));
+			$newDuplicates = array_map('intval', explode('-', $this->query('duplicates')));
 			foreach ($newDuplicates as $duplicateId)
 			{
 				if (!$tsumegoTable->exists(['id' => $duplicateId]))
@@ -60,9 +60,9 @@ class SgfsController extends AppController
 		$name = $set->title . ' ' . $set->title2 . ' ' . $displaySetConnection->num;
 		$this->set('_title', 'Upload History of ' . $name);
 
-		if (($this->request->getQuery('user') !== null))
+		if ($this->query('user') !== null)
 		{
-			$versions = $this->versions(['user_id' => $this->request->getQuery('user'), 'sgf_status_id !=' => SgfTable::STATUS_REJECTED]);
+			$versions = $this->versions(['user_id' => $this->query('user'), 'sgf_status_id !=' => SgfTable::STATUS_REJECTED]);
 			$type = 'user';
 		}
 		else

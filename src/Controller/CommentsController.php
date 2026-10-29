@@ -15,8 +15,8 @@ class CommentsController extends AppController
 		$this->set('_page', 'discuss');
 		if (!Auth::isLoggedIn())
 			return $this->redirect('/users/login');
-		$this->set('yourComments', new CommentsRenderer("your_comments", Auth::getUserID(), $this->request->getQueryParams()));
-		$this->set('allComments', new CommentsRenderer("all_comments", null, $this->request->getQueryParams()));
+		$this->set('yourComments', new CommentsRenderer("your_comments", Auth::getUserID(), $this->queries()));
+		$this->set('allComments', new CommentsRenderer("all_comments", null, $this->queries()));
 		return null;
 	}
 }

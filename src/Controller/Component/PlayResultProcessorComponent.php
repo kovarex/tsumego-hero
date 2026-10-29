@@ -95,6 +95,8 @@ class PlayResultProcessorComponent extends Component
 
 		$result = [];
 		$result['solved'] = $solved;
+		$result['xp-modifier'] = 1;
+		$result['xp-gained'] = 0;
 
 		// updated isn't loaded: the database moves it when the status changes
 		$tsumegoStatus = TableRegistry::getTableLocator()->get('TsumegoStatus')->find()
@@ -109,7 +111,7 @@ class PlayResultProcessorComponent extends Component
 			SetCompletionCounter::updateAfterSolve((int) Auth::getUserID(), $tsumegoID);
 
 		if (HeroPowers::getSprintRemainingSeconds() > 0)
-			$result['xp-modifier'] = ($result['xp-modifier'] ?: 1) * Constants::$SPRINT_MULTIPLIER;
+			$result['xp-modifier'] *= Constants::$SPRINT_MULTIPLIER;
 
 		$originalTsumegoRating = $tsumego->rating;
 
@@ -141,7 +143,7 @@ class PlayResultProcessorComponent extends Component
 		$achievementChecker->checkStandardAchievements()->finalize();
 
 		$response = [
-			'xp_gained' => $trainingXp !== null ? array_sum($trainingXp) : ($result['xp-gained'] ?? 0),
+			'xp_gained' => $trainingXp !== null ? array_sum($trainingXp) : $result['xp-gained'],
 			'new_rating' => Auth::getUser()['rating'],
 			'new_xp' => Auth::getUser()['xp'],
 			'new_level' => Auth::getUser()['level'],
@@ -230,12 +232,12 @@ class PlayResultProcessorComponent extends Component
 		if ($solved)
 		{
 			if ($currentStatus == TsumegoStatusTable::$REVIEW) // half xp state
-			{$result['xp-modifier'] = ($result['xp-modifier'] ?: 1) * Constants::$SECOND_SOLVE_XP_MULTIPLIER;
+			{$result['xp-modifier'] *= Constants::$SECOND_SOLVE_XP_MULTIPLIER;
 				return TsumegoStatusTable::$MASTERED; // double solved
 			}
 			if ($currentStatus == TsumegoStatusTable::$GOLDEN)
 			{
-				$result['xp-modifier'] = ($result['xp-modifier'] ?: 1) * Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER;
+				$result['xp-modifier'] *= Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER;
 				return TsumegoStatusTable::$SOLVED;
 			}
 			if ($currentStatus == TsumegoStatusTable::$VISITED || $currentStatus == TsumegoStatusTable::$NOT_VISITED)
@@ -291,7 +293,7 @@ class PlayResultProcessorComponent extends Component
 		$continued = $lastTsumegoAttempt && !$lastTsumegoAttempt->solved ? $lastTsumegoAttempt : null;
 		$values = [
 			Auth::getUser()['rating'],
-			$result['xp-gained'] ?: 0,
+			$result['xp-gained'],
 			($continued ? $continued->seconds : 0) + $seconds,
 			$result['solved'] ? 1 : 0,
 			$previousTsumego->rating,
@@ -371,7 +373,7 @@ class PlayResultProcessorComponent extends Component
 		if (!$result['solved'])
 			return;
 
-		$multiplier = ($result['xp-modifier'] ?: 1);
+		$multiplier = $result['xp-modifier'];
 		if ($previousTsumegoStatus != TsumegoStatusTable::$GOLDEN)
 			$multiplier *= TsumegoXPAndRating::getProgressDeletionMultiplier($progressDeletionCount);
 

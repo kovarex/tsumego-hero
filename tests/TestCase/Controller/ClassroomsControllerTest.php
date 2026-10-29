@@ -131,7 +131,7 @@ class ClassroomsControllerTest extends IntegrationTestCase
 		return empty($rows) ? null : ['misplays' => (int) $rows[0]['misplays'], 'solved' => $rows[0]['solved']];
 	}
 
-	private function problemStatus(string $name, int $tsumegoIndex): ?string
+	private function tsumegoStatus(string $name, int $tsumegoIndex): ?string
 	{
 		$rows = Util::query('SELECT status FROM tsumego_status WHERE user_id = ? AND tsumego_id = ?',
 			[$this->userId($name), $this->context->tsumegos[$tsumegoIndex]['id']]);
@@ -591,7 +591,7 @@ class ClassroomsControllerTest extends IntegrationTestCase
 		$result = $this->assignmentResult($assignmentId, 'pupil', 0);
 		$this->assertSame(2, $result['misplays']);
 		$this->assertNotNull($result['solved']);
-		$this->assertSame('S', $this->problemStatus('pupil', 0), 'The solve for the assignment solves the problem too');
+		$this->assertSame('S', $this->tsumegoStatus('pupil', 0), 'The solve for the assignment solves the problem too');
 		$this->assertNull($this->assignmentResult($draftId, 'pupil', 0));
 		$this->assertNull($this->assignmentResult($assignmentId, 'pupil', 1));
 	}
@@ -612,7 +612,7 @@ class ClassroomsControllerTest extends IntegrationTestCase
 		$this->assertSame(1, $this->assignmentResult($assignmentId, 'pupil', 0)['misplays']);
 		$this->assertNotNull($this->assignmentResult($assignmentId, 'pupil', 0)['solved']);
 		$this->assertSame($xp, $this->xp('pupil'));
-		$this->assertSame('S', $this->problemStatus('pupil', 0));
+		$this->assertSame('S', $this->tsumegoStatus('pupil', 0));
 	}
 
 	public function testAResultOfAPlayerOutsideTheClassDoesntCount(): void
@@ -840,7 +840,7 @@ class ClassroomsControllerTest extends IntegrationTestCase
 		$browser->playWithResult('S');
 		$this->assertSame('S', $this->buttonStatus($browser, 0));
 
-		$this->assertSame('S', $this->problemStatus('pupil', 0));
+		$this->assertSame('S', $this->tsumegoStatus('pupil', 0));
 		$this->assertGreaterThan($xp, $this->xp('pupil'));
 		$this->assertSame(0, $this->assignmentResult($assignmentId, 'pupil', 0)['misplays']);
 		$this->assertNotNull($this->assignmentResult($assignmentId, 'pupil', 0)['solved']);
@@ -874,7 +874,7 @@ class ClassroomsControllerTest extends IntegrationTestCase
 
 		$this->assertNotNull($this->assignmentResult($assignmentId, 'pupil', 0)['solved']);
 		$this->assertSame($xp, $this->xp('pupil'));
-		$this->assertSame('S', $this->problemStatus('pupil', 0));
+		$this->assertSame('S', $this->tsumegoStatus('pupil', 0));
 		$this->assertSame('solved', ClassroomAssignmentTable::progress($this->assignment($assignmentId))['pupils'][0]['cells'][0]['state']);
 
 		$browser->get(ClassroomAssignmentTable::playLink($assignmentId, $this->setConnectionId(0)));
