@@ -195,7 +195,7 @@ jobs:
         run: |
           mkdir -p /tmp/coverage
           # phpunit, with the tests the browser alone failed run again (scripts/phpunit-retry.php)
-          php scripts/phpunit-retry.php --exclude-group apache-only --exclude-group disabled ${{ github.ref == 'refs/heads/master' && '--coverage-php /tmp/coverage/phpunit.cov' || '' }}
+          php scripts/phpunit-retry.php --exclude-group apache-only --exclude-group disabled ${{ github.ref == 'refs/heads/master' && '--coverage-clover /tmp/coverage/clover.xml --coverage-php /tmp/coverage/phpunit.cov' || '' }}
 
       - name: Upload browser timeout dumps
         if: failure()
@@ -205,10 +205,9 @@ jobs:
           path: tmp/browser-timeout-*.html
           if-no-files-found: ignore
 
-      # PHPUnit's phpunit.cov and one webserver-*.cov per request of the Selenium tests (.github/ci/xdebug-prepend.php)
       - name: Merge coverage files
         if: github.ref == 'refs/heads/master'
-        run: vendor/bin/phpcov merge --html coverage/php --clover coverage/coverage.xml /tmp/coverage
+        run: php .github/ci/merge-coverage.php
 
       - name: Generate JS coverage report
         if: github.ref == 'refs/heads/master'
