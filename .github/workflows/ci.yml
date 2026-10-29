@@ -17,9 +17,15 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
 jobs:
-  tests:
+  # The test files are split into shards of about equal time (scripts/test-shard.php), each run by its own job.
+  test-shard:
+    name: tests (shard ${{ matrix.shard }}/4)
     runs-on: ubuntu-24.04
     timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
 
     services:
       mysql:
@@ -108,7 +114,7 @@ jobs:
 
       - name: Commit generated WebP files
         uses: stefanzweifel/git-auto-commit-action@v7
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/master' && matrix.shard == 1
         with:
           commit_message: "chore: auto-generate WebP images"
           file_pattern: "webroot/img/*.webp webroot/img/**/*.webp"
@@ -194,28 +200,114 @@ jobs:
           TEST_ENVIRONMENT: github-ci
         run: |
           mkdir -p /tmp/coverage
-          # phpunit, with the tests the browser alone failed run again (scripts/phpunit-retry.php)
-          php scripts/phpunit-retry.php --exclude-group apache-only --exclude-group disabled ${{ github.ref == 'refs/heads/master' && '--coverage-php /tmp/coverage/phpunit.cov' || '' }}
+          # phpunit on the files of this shard, with the tests the browser alone failed run again (scripts/phpunit-retry.php)
+          php scripts/phpunit-retry.php --exclude-group apache-only --exclude-group disabled --log-junit tmp/junit.xml ${{ github.ref == 'refs/heads/master' && '--coverage-php /tmp/coverage/phpunit.cov' || '' }} $(php scripts/test-shard.php ${{ matrix.shard }} 4)
+
+      # Put together, these logs are the new tests/durations.json: php scripts/test-shard.php durations junit-*.xml
+      - name: Print test durations
+        if: always()
+        run: test -f tmp/junit.xml && php scripts/test-shard.php durations tmp/junit.xml || true
+
+      - name: Upload JUnit log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-${{ matrix.shard }}
+          path: tmp/junit.xml
+          if-no-files-found: ignore
 
       - name: Upload browser timeout dumps
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: browser-timeout-dumps
+          name: browser-timeout-dumps-${{ matrix.shard }}
           path: tmp/browser-timeout-*.html
           if-no-files-found: ignore
 
       # PHPUnit's phpunit.cov and one webserver-*.cov per request of the Selenium tests (.github/ci/xdebug-prepend.php)
-      - name: Merge coverage files
+      # become one file per shard, and so do the JS snapshots of Browser::captureJsCoverage(); the coverage job merges the shards.
+      - name: Merge the coverage of the shard
         if: github.ref == 'refs/heads/master'
+        run: |
+          mkdir -p /tmp/coverage-shard /tmp/coverage/js-raw
+          vendor/bin/phpcov merge --php /tmp/coverage-shard/php-${{ matrix.shard }}.cov /tmp/coverage
+          find /tmp/coverage -maxdepth 1 -name 'js-raw-*.json' -exec mv -t /tmp/coverage/js-raw {} +
+          if [ -n "$(ls -A /tmp/coverage/js-raw)" ]; then npx nyc merge /tmp/coverage/js-raw /tmp/coverage-shard/js-raw-${{ matrix.shard }}.json; fi
+
+      - name: Upload the coverage of the shard
+        if: github.ref == 'refs/heads/master'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.shard }}
+          path: /tmp/coverage-shard
+          retention-days: 1
+
+  # The check that pull requests wait for: it passes when every shard did.
+  tests:
+    if: always()
+    needs: test-shard
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check the shards
+        run: test "${{ needs.test-shard.result }}" = success
+
+  coverage:
+    if: github.ref == 'refs/heads/master'
+    needs: test-shard
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, intl, xdebug
+          coverage: xdebug
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache dependencies
+        uses: actions/cache@v6
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Composer install
+        run: composer install --prefer-dist --optimize-autoloader --no-interaction
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install pnpm dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Download the coverage of the shards
+        uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-*
+          path: /tmp/coverage
+          merge-multiple: true
+
+      - name: Merge coverage files
         run: vendor/bin/phpcov merge --html coverage/php --clover coverage/coverage.xml /tmp/coverage
 
       - name: Generate JS coverage report
-        if: github.ref == 'refs/heads/master'
         run: pnpm run coverage:js
 
       - name: Restore coverage history
-        if: github.ref == 'refs/heads/master'
         run: |
           git fetch --depth=1 origin gh-pages || true
           mkdir -p coverage
@@ -226,11 +318,9 @@ jobs:
           fi
 
       - name: Generate combined coverage index
-        if: github.ref == 'refs/heads/master'
         run: pnpm run coverage:index
 
       - name: Deploy coverage to GitHub Pages
-        if: github.ref == 'refs/heads/master'
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
