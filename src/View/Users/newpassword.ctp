@@ -24,11 +24,11 @@ use App\Utility\CookieFlash;
 		<div style="display:none;"><input type="hidden" name="_method" value="POST"></div>	
                 <div class="input">
                         <label for="password1">New password</label>
-                        <input name="data[User][password1]" maxlength="50" type="password" id="password1" autocomplete="new-password" required="required"/>
+                        <input name="password1" maxlength="50" type="password" id="password1" autocomplete="new-password" required="required"/>
                 </div>
                 <div class="input">
                         <label for="password2">New password again</label>
-                        <input name="data[User][password2]" maxlength="50" type="password" id="password2" autocomplete="new-password" required="required"/>
+                        <input name="password2" maxlength="50" type="password" id="password2" autocomplete="new-password" required="required"/>
                 </div>
                 <div class="hint">At least <?php echo Constants::$MINIMUM_PASSWORD_LENGTH; ?> characters.</div>
                 <button type="submit" class="btn" id="newpassword-submit">Submit</button>

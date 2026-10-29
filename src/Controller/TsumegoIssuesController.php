@@ -157,7 +157,7 @@ class TsumegoIssuesController extends AppController
 			throw new InternalErrorException('Failed to close issue');
 
 		// Add closing comment if provided
-		$closingMessage = $this->input('Issue.message');
+		$closingMessage = $this->input('message');
 		if (!empty($closingMessage))
 		{
 			// a closing comment that fails the validation is left out, the issue is closed anyway
@@ -211,7 +211,7 @@ class TsumegoIssuesController extends AppController
 		if (!$comment)
 			throw new NotFoundException('Comment not found');
 
-		$targetIssueId = $this->input('Comment.tsumego_issue_id');
+		$targetIssueId = $this->input('tsumego_issue_id');
 		$currentIssueId = $comment->tsumego_issue_id;
 
 		// Handle 'standalone' - remove from issue

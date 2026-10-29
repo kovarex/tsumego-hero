@@ -63,7 +63,7 @@ class UserSettingsTest extends IntegrationTestCase
 		foreach (['', 'not-an-address', 'two@@example.com', $tooLong] as $invalid)
 		{
 			$browser->get('users/settings');
-			$browser->post('users/emailPreference', ['data[User][email]' => $invalid, 'data[User][password]' => 'test']);
+			$browser->post('users/emailPreference', ['email' => $invalid, 'password' => 'test']);
 
 			$this->assertSame('old@example.com', $context->reloadUser()['email'], 'The address was replaced by "' . $invalid . '"');
 			$this->assertTextContains('That is not a valid e-mail address.', $browser->driver->getPageSource());
@@ -89,7 +89,7 @@ class UserSettingsTest extends IntegrationTestCase
 		$this->assertSame('change-email', $browser->driver->executeScript('return document.activeElement.id;'), 'The change link can not be focused');
 
 		$browser->driver->switchTo()->activeElement()->sendKeys(WebDriverKeys::ENTER);
-		$this->assertTrue($browser->find('input[name="data[User][email]"]')->isDisplayed(), 'Enter on the change link must open the form');
+		$this->assertTrue($browser->find('input[name="email"]')->isDisplayed(), 'Enter on the change link must open the form');
 	}
 
 	public function testEmailFieldIsLabelledForScreenReaders(): void
@@ -101,7 +101,7 @@ class UserSettingsTest extends IntegrationTestCase
 		$browser->clickId('change-email');
 
 		$label = $browser->driver->executeScript(
-			'var field = document.querySelector("#email-form input[name=\'data[User][email]\']");'
+			'var field = document.querySelector("#email-form input[name=\'email\']");'
 			. 'if (field.getAttribute("aria-label")) return field.getAttribute("aria-label");'
 			. 'return field.labels.length ? field.labels[0].textContent.trim() : "";');
 
@@ -340,12 +340,12 @@ class UserSettingsTest extends IntegrationTestCase
 	private function submitEmailChange(Browser $browser, string $email): void
 	{
 		$browser->clickId('change-email');
-		$field = $browser->find('input[name="data[User][email]"]');
+		$field = $browser->find('input[name="email"]');
 		$field->clear();
 		if ($email !== '')
 			$field->sendKeys($email);
 
-		$password = $browser->find('input[name="data[User][password]"]');
+		$password = $browser->find('input[name="password"]');
 		$password->clear();
 		$password->sendKeys('test');
 

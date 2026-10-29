@@ -293,11 +293,11 @@ class AccountDeletionTest extends IntegrationTestCase
 
 		// a new account can take the name; the email stays with the deleted account
 		$this->logout();
-		$this->post('/users/add', ['User' => [
+		$this->post('/users/add', [
 			'name' => 'kovarex',
 			'email' => 'newkovarex@example.com',
 			'password1' => 'secretChest42',
-			'password2' => 'secretChest42']]);
+			'password2' => 'secretChest42']);
 		$newAccount = ContextPreparator::findUserRow(['name' => 'kovarex']);
 		$this->assertNotEmpty($newAccount);
 		$this->assertNotEquals($oldAccountID, $newAccount['id']);

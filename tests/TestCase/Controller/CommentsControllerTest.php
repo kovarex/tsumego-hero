@@ -1141,7 +1141,7 @@ class CommentsControllerTest extends IntegrationTestCase
 		// Call the move-comment API and trigger React Query refetch (React-compatible approach)
 		$browser->driver->executeScript("
 			var formData = new URLSearchParams();
-			formData.append('data[Comment][tsumego_issue_id]', 'standalone');
+			formData.append('tsumego_issue_id', 'standalone');
 			fetch('/tsumego-issues/move-comment/' + " . $commentId . ", {
 				method: 'POST',
 				body: formData,

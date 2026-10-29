@@ -20,7 +20,7 @@ class EmailChangeTest extends IntegrationTestCase
 
 	private function requestChange(array $data): void
 	{
-		$this->post('/users/emailPreference', ['User' => $data]);
+		$this->post('/users/emailPreference', $data);
 	}
 
 	private function storedUser(int $userID): array
