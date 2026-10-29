@@ -296,22 +296,25 @@ ORDER BY sc.num ASC", [(int) $id]);
 		// Alternative response / pass mode for all problems (admin only)
 		if ($canEditSettings && $this->input('Settings') !== null)
 		{
-			if ($this->input('Settings.r39') == 'on')
+			// each of the two settings is sent only when the admin picked a choice for it
+			$alternativeResponse = $this->input('Settings.r39');
+			$passMode = $this->input('Settings.r43');
+			if ($alternativeResponse == 'on')
 			{
 				$this->setProblemsField($problems, 'alternative_response', true);
 				AdminActivityLogger::log(AdminActivityTypeTable::SET_ALTERNATIVE_RESPONSE, null, (int) $id, null, '1');
 			}
-			if ($this->input('Settings.r39') == 'off')
+			if ($alternativeResponse == 'off')
 			{
 				$this->setProblemsField($problems, 'alternative_response', false);
 				AdminActivityLogger::log(AdminActivityTypeTable::SET_ALTERNATIVE_RESPONSE, null, (int) $id, null, '0');
 			}
-			if ($this->input('Settings.r43') == 'yes')
+			if ($passMode == 'yes')
 			{
 				$this->setProblemsField($problems, 'pass', true);
 				AdminActivityLogger::log(AdminActivityTypeTable::SET_PASS_MODE, null, (int) $id, null, '1');
 			}
-			if ($this->input('Settings.r43') == 'no')
+			if ($passMode == 'no')
 			{
 				$this->setProblemsField($problems, 'pass', false);
 				AdminActivityLogger::log(AdminActivityTypeTable::SET_PASS_MODE, null, (int) $id, null, '0');
@@ -529,7 +532,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 			return !TsumegoUtil::isRecentlySolved($tsumegoButton->status);
 		}))
 			return $firstRecentlyUnsolved->setConnectionID;
-		return $tsumegoButtons[0]->setConnectionID;
+		return isset($tsumegoButtons[0]) ? $tsumegoButtons[0]->setConnectionID : null;
 	}
 
 	private function decodeQueryType(string $input): string
@@ -777,6 +780,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$bestTime = null;
 		$bestAccuracy = null;
 		$this->set('canEdit', false);
+		$this->set('isFav', false);
 		$queryType = self::decodeQueryType($id);
 
 		if ($queryType == 'topics' && is_numeric($id))
@@ -821,7 +825,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 				$this->set('_page', 'sandbox');
 			// Search engines are kept out of what a player assembled.
 			$this->set('robotsNoIndex', !SetTable::isOfficial($set));
-			$this->set('isFav', false);
 			$this->set('canEdit', $this->Authorization->can($set, 'edit'));
 			$this->set('canShare', $this->Authorization->can($set, 'share'));
 		}

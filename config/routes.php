@@ -36,14 +36,14 @@ Router::connect('/sitemap.xml', [
 ]);
 
 //Connect '/' (base path) to the sites index.
-Router::connect('/', ['controller' => 'sites', 'action' => 'index'], ['routeClass' => 'UrlRoute']);
+Router::connect('/', ['controller' => 'Sites', 'action' => 'index'], ['routeClass' => 'UrlRoute']);
 
 //The board editor, see EditorController
-Router::connect('/editor', ['controller' => 'editor', 'action' => 'index']);
-Router::connect('/editor/', ['controller' => 'editor', 'action' => 'index']);
+Router::connect('/editor', ['controller' => 'Editor', 'action' => 'index']);
+Router::connect('/editor/', ['controller' => 'Editor', 'action' => 'index']);
 
 //Public changelog / "what's new" page
-Router::connect('/changelog', ['controller' => 'changelog', 'action' => 'index']);
+Router::connect('/changelog', ['controller' => 'Changelog', 'action' => 'index']);
 
 //TsumegoComments routes - for managing comments on tsumego problems
 Router::connect(
@@ -222,68 +222,68 @@ Router::connect(
 
 Router::connect(
 	'/sets/mine',
-	['controller' => 'sets', 'action' => 'mine']
+	['controller' => 'Sets', 'action' => 'mine']
 );
 Router::connect(
 	'/sets/user/:userId',
-	['controller' => 'sets', 'action' => 'userSets'],
+	['controller' => 'Sets', 'action' => 'userSets'],
 	['pass' => ['userId']]
 );
 Router::connect(
 	'/sets/delete/:id',
-	['controller' => 'sets', 'action' => 'delete'],
+	['controller' => 'Sets', 'action' => 'delete'],
 	['pass' => ['id'], 'id' => '[0-9]+']
 );
 Router::connect(
 	'/sets/edit/:id',
-	['controller' => 'sets', 'action' => 'edit'],
+	['controller' => 'Sets', 'action' => 'edit'],
 	['pass' => ['id'], 'id' => '[0-9]+']
 );
 Router::connect(
 	'/sets/share/:id',
-	['controller' => 'sets', 'action' => 'share'],
+	['controller' => 'Sets', 'action' => 'share'],
 	['pass' => ['id'], 'id' => '[0-9]+']
 );
 Router::connect(
 	'/sets/addTsumego/:id',
-	['controller' => 'sets', 'action' => 'addTsumego'],
+	['controller' => 'Sets', 'action' => 'addTsumego'],
 	['pass' => ['id'], 'id' => '[0-9]+|favorites']
 );
 Router::connect(
 	'/sets/createAndAddTsumego/:id',
-	['controller' => 'sets', 'action' => 'createAndAddTsumego'],
+	['controller' => 'Sets', 'action' => 'createAndAddTsumego'],
 	['pass' => ['id'], 'id' => '[0-9]+']
 );
 Router::connect(
 	'/sets/removeTsumego/:id',
-	['controller' => 'sets', 'action' => 'removeTsumego'],
+	['controller' => 'Sets', 'action' => 'removeTsumego'],
 	['pass' => ['id'], 'id' => '[0-9]+|favorites']
 );
 Router::connect(
 	'/sets/reorderTsumego/:id',
-	['controller' => 'sets', 'action' => 'reorderTsumego'],
+	['controller' => 'Sets', 'action' => 'reorderTsumego'],
 	['pass' => ['id'], 'id' => '[0-9]+']
 );
 // The old /sets/view/<id> addresses keep answering for links written before the short ones, and the
 // short /sets/<id> ones decline an id that names an action, which the default routes then serve.
 Router::connect(
 	'/sets/view/:id',
-	['controller' => 'sets', 'action' => 'view'],
+	['controller' => 'Sets', 'action' => 'view'],
 	['pass' => ['id'], 'id' => '[^/]+', 'routeClass' => 'ParseOnlyRoute']
 );
 Router::connect(
 	'/sets/view/:id/:partition',
-	['controller' => 'sets', 'action' => 'view'],
+	['controller' => 'Sets', 'action' => 'view'],
 	['pass' => ['id', 'partition'], 'id' => '[^/]+', 'partition' => '[0-9]+', 'routeClass' => 'ParseOnlyRoute']
 );
 Router::connect(
 	'/sets/:id',
-	['controller' => 'sets', 'action' => 'view'],
+	['controller' => 'Sets', 'action' => 'view'],
 	['pass' => ['id'], 'id' => '[^/]+', 'routeClass' => 'SetViewRoute']
 );
 Router::connect(
 	'/sets/:id/:partition',
-	['controller' => 'sets', 'action' => 'view'],
+	['controller' => 'Sets', 'action' => 'view'],
 	['pass' => ['id', 'partition'], 'id' => '[^/]+', 'partition' => '[0-9]+', 'routeClass' => 'SetViewRoute']
 );
 //Challenges between players, see ChallengesController. The address of a challenge is the link

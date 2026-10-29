@@ -62,7 +62,7 @@ foreach ($timeModeCategories as $timeModeCategory)
 		if ($unlocked)
 			echo '</a>';
 		echo '</div>';
-		$unlocked = @$solvedMap[$categoryID][$rankID]; // the one after solved is unlocked
+		$unlocked = $solvedMap[$categoryID][$rankID] ?? null; // the one after solved is unlocked
 	}
 echo '</div>';
 }?>
@@ -105,7 +105,7 @@ echo '</div>';
 	foreach ($timeModeCategories as $timeModeCategory)
 	{
 		$timeModeCategoryID = $timeModeCategory->id;
-		if ($bestSolvedRankID = @$solvedMap[$timeModeCategoryID]['best-solved-rank'])
+		if ($bestSolvedRankID = $solvedMap[$timeModeCategoryID]['best-solved-rank'] ?? null)
 			$bestSolvedRank = $solvedMap[$timeModeCategoryID][$bestSolvedRankID];
 		else
 			$bestSolvedRank = 'no rank';
