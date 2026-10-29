@@ -1,8 +1,6 @@
 <?php
 
 #[RetryOnBrowserFailure]
-use PHPUnitRetry\RetryTrait;
-
 class SimilarSearchLogicTest extends AppTestCase
 {
 	public function testSimilarSearchSameProblem()
