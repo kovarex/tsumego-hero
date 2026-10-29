@@ -259,15 +259,17 @@ return function (RouteBuilder $routes): void
 		['controller' => 'Sets', 'action' => 'view'],
 		['pass' => ['id', 'partition'], 'id' => '[^/]+', 'partition' => '[0-9]+', 'routeClass' => ParseOnlyRoute::class]
 	);
-	$routes->connect(
-		'/sets/{id}',
-		['controller' => 'Sets', 'action' => 'view'],
-		['pass' => ['id'], 'id' => '[^/]+', 'routeClass' => SetViewRoute::class]
-	);
+	//The address with the partition first: Cake 5 makes an address from the first route that takes
+	//the parameters, and /sets/{id} would drop the partition.
 	$routes->connect(
 		'/sets/{id}/{partition}',
 		['controller' => 'Sets', 'action' => 'view'],
 		['pass' => ['id', 'partition'], 'id' => '[^/]+', 'partition' => '[0-9]+', 'routeClass' => SetViewRoute::class]
+	);
+	$routes->connect(
+		'/sets/{id}',
+		['controller' => 'Sets', 'action' => 'view'],
+		['pass' => ['id'], 'id' => '[^/]+', 'routeClass' => SetViewRoute::class]
 	);
 	//Challenges between players, see ChallengesController. The address of a challenge is the link
 	//its players send to the ones who should join.

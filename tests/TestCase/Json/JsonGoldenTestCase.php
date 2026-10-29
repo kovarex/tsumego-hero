@@ -56,7 +56,7 @@ abstract class JsonGoldenTestCase extends IntegrationTestCase
 
 	protected function responseStatus(): int
 	{
-		return $this->_response->statusCode();
+		return $this->_response->getStatusCode();
 	}
 
 	//The matching.
