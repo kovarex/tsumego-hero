@@ -144,7 +144,7 @@ use App\Utility\TsumegoFilters;
 	// card would go through the view's events and the callbacks of every helper. The closure keeps
 	// the variables of the template to it.
 	$renderCard = function (array $set, string $backgroundImage): void {
-		include __DIR__ . '/../Elements/set_card.ctp';
+		include __DIR__ . '/../element/set_card.php';
 	};
 	foreach ($setsSelector->sets as $i => $set) {
 		if ($lightDark == 'light')
