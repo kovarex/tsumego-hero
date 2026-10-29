@@ -182,7 +182,7 @@ class AppController extends Controller
 		};
 	}
 
-	public function beforeFilter(): void
+	public function beforeFilter(): ?CakeResponse
 	{
 		$this->enforceHttpMethodAttribute();
 		$this->resetStaleBrowserCache();
@@ -190,16 +190,13 @@ class AppController extends Controller
 		//Boards are drawn without a session: a list of a thousand players would otherwise
 		//pay for the login of a visitor who is not there.
 		if (strtolower((string) ($this->request->params['controller'] ?? '')) === 'avatars')
-			return;
+			return null;
 
 		Auth::init();
 		if (Auth::isLoggedIn())
 		{
 			if ($this->mustChangeDisplayNameFirst())
-			{
-				$this->redirect(['controller' => 'users', 'action' => 'changename']);
-				return;
-			}
+				return $this->redirect(['controller' => 'users', 'action' => 'changename']);
 			$this->saveSettingsFromCookies();
 			if (!$this->request->is('ajax'))
 				$this->set('achievementUpdates', new AchievementChecker()->checkStandardAchievements()->finalize()->updated);
@@ -221,5 +218,6 @@ class AppController extends Controller
 		$this->set('boardsBitmask', $boardsBitmask);
 		$this->set('timeMode', new TimeMode());
 		$this->set('changelogTimestamps', ChangelogController::changelogTimestamps());
+		return null;
 	}
 }

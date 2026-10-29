@@ -335,20 +335,20 @@ class TsumegosController extends AppController
 		if (!$masterSetConnection)
 		{
 			CookieFlash::set('Master set connection does not exist.', 'error');
-			$this->redirect('/tsumegos/mergeForm');
+			return $this->redirect('/tsumegos/mergeForm');
 		}
 
 		$slaveSetConnection = $setConnectionTable->find()->where(['id' => (int) $slaveSetConnectionID])->first();
 		if (!$slaveSetConnection)
 		{
 			CookieFlash::set('Slave set connection does not exist.', 'error');
-			$this->redirect('/tsumegos/mergeForm');
+			return $this->redirect('/tsumegos/mergeForm');
 		}
 
 		if ($slaveSetConnection->tsumego_id == $masterSetConnection->tsumego_id)
 		{
 			CookieFlash::set('These are already merged.', 'error');
-			$this->redirect('/tsumegos/mergeForm');
+			return $this->redirect('/tsumegos/mergeForm');
 		}
 		$masterSetConnectionBrothers = $setConnectionTable->find()
 			->innerJoin(['S' => 'set'], ['S.id = SetConnection.set_id'])
@@ -384,14 +384,14 @@ class TsumegosController extends AppController
 	}
 
 	#[HttpPost]
-	public function performMerge(): void
+	public function performMerge(): CakeResponse
 	{
 		$this->Authorization->authorize('Tsumego');
 		$merger = new TsumegoMerger($this->request->data['master-tsumego-id'], $this->request->data['slave-tsumego-id']);
 		$flash = $merger->execute();
 		if ($flash)
 			CookieFlash::set($flash['message'], $flash['type']);
-		$this->redirect('/tsumegos/mergeForm');
+		return $this->redirect('/tsumegos/mergeForm');
 	}
 
 	#[HttpGet]

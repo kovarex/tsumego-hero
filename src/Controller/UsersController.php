@@ -780,27 +780,27 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 
 	//Redirect to the logged-in user's own profile page.
 	#[HttpGet]
-	public function profile(): void
+	public function profile(): CakeResponse
 	{
 		if (!Auth::isLoggedIn())
-			$this->redirect('/users/login');
-		$this->redirect('/users/view/' . Auth::getUserID());
+			return $this->redirect('/users/login');
+		return $this->redirect('/users/view/' . Auth::getUserID());
 	}
 
 	#[HttpGet]
-	public function meSolveHistory(): void
+	public function meSolveHistory(): CakeResponse
 	{
 		if (!Auth::isLoggedIn())
-			$this->redirect('/users/login');
-		$this->redirect('/users/solveHistory/' . Auth::getUserID());
+			return $this->redirect('/users/login');
+		return $this->redirect('/users/solveHistory/' . Auth::getUserID());
 	}
 
 	#[HttpGet]
-	public function meContributions(): void
+	public function meContributions(): CakeResponse
 	{
 		if (!Auth::isLoggedIn())
-			$this->redirect('/users/login');
-		$this->redirect('/tags/user/' . Auth::getUserID());
+			return $this->redirect('/users/login');
+		return $this->redirect('/tags/user/' . Auth::getUserID());
 	}
 
 	#[HttpGet]

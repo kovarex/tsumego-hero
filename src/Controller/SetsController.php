@@ -168,7 +168,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 
 	#[HttpGet]
 	#[HttpPost]
-	public function create(): void
+	public function create(): ?CakeResponse
 	{
 		$this->Authorization->authorize('Set', 'create');
 
@@ -214,9 +214,9 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 					'num' => 1]));
 			}
 
-			$this->redirect('/sets/edit/' . $set->id);
-			return;
+			return $this->redirect('/sets/edit/' . $set->id);
 		}
+		return null;
 	}
 
 	//Edit a set: details, problems and (for admins) re-rate and solve-mode settings. Owner or admin only.
@@ -425,7 +425,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 	}
 
 	#[HttpPost]
-	public function delete(?string $id = null): void
+	public function delete(?string $id = null): CakeResponse
 	{
 		$setID = $id ?? ($this->request->data['Set']['id'] ?? null);
 		if (!$setID)
@@ -443,8 +443,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		{
 			$setTable->deleteOrFail($set);
 			SetImage::removeFolder((int) $setID);
-			$this->redirect('/sets/mine');
-			return;
+			return $this->redirect('/sets/mine');
 		}
 
 		// A collection of the site goes to the trash, which takes a big part of the site with it,
@@ -452,14 +451,13 @@ ORDER BY sc.num ASC", [(int) $id]);
 		if (trim($this->request->data['confirmation'] ?? '') !== trim((string) $set->title))
 		{
 			CookieFlash::set('The collection was not deleted: type its title to confirm.', 'error');
-			$this->redirect('/sets/edit/' . (int) $setID);
-			return;
+			return $this->redirect('/sets/edit/' . (int) $setID);
 		}
 		Trash::deleteSet((int) $setID);
 		AdminActivityLogger::log(AdminActivityTypeTable::SET_DELETE, null, (int) $setID, $set->title);
 		CookieFlash::set('The collection ' . $set->title . ' was moved to the trash, it can be restored for '
 			. Trash::$RETENTION_DAYS . ' days.', 'success');
-		$this->redirect($set->public == 0 ? '/sets/sandbox' : '/sets');
+		return $this->redirect($set->public == 0 ? '/sets/sandbox' : '/sets');
 	}
 
 	#[HttpGet]
@@ -746,7 +744,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 	}
 
 	#[HttpGet]
-	public function view(string|int|null $id = null, int $partition = 1): void
+	public function view(string|int|null $id = null, int $partition = 1): ?CakeResponse
 	{
 		// transferring from 1 indexed for humans to 0 indexed for us programmers.
 		$partition = $partition - 1;
@@ -755,20 +753,13 @@ ORDER BY sc.num ASC", [(int) $id]);
 		if ($id === 'favorites')
 		{
 			if (!Auth::isLoggedIn())
-			{
-				$this->redirect('/');
-				return;
-			}
+				return $this->redirect('/');
 			$defaultSet = $this->_getOrCreateDefaultFavoritesSet();
-			$this->redirect(SetTable::url((int) $defaultSet->id));
-			return;
+			return $this->redirect(SetTable::url((int) $defaultSet->id));
 		}
 
 		if ($id === null)
-		{
-			$this->redirect('/sets/mine');
-			return;
-		}
+			return $this->redirect('/sets/mine');
 
 		// A collection, a rank and a tag have one address whatever path led here; the partition says
 		// which page of it the link pointed at, and the first page is the collection itself.
@@ -1017,6 +1008,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$this->set('accuracy', $accuracy);
 		$this->set('scoring', $scoring);
 		$this->set('partition', $partition);
+		return null;
 	}
 
 	//Keeps the player's records on the set: the best average time and the best accuracy.
