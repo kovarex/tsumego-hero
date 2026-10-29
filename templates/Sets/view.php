@@ -29,7 +29,7 @@ use App\Utility\TsumegoFilters;
  * @var array|null $setAuthor
  * @var int $setRating
  * @var string $setTitle
- * @var bool $startingSetConnectionID
+ * @var int|null $startingSetConnectionID The problem the collection starts with, null when it has none
  * @var TsumegoButton $tsumegoButton
  * @var TsumegoButtons $tsumegoButtons
  * @var TsumegoFilters $tsumegoFilters
@@ -76,24 +76,26 @@ echo HtmlSanitizer::sanitize((string) ($set->description ?? ''));
 ?>
 			</td>
 				<?php
+// an empty collection has no problem to start with, so its cover and Start lead nowhere
+$startHref = $startingSetConnectionID === null ? '' : ' href="/' . $startingSetConnectionID . '"';
 if (!$noImage && $tsumegoFilters->query == 'topics' && $set->image)
 {
 	if ($set->image[2] != '-')
 		echo '<td width="195px" class="valign-top"><div align="center" class="set-view__cover">
-							<a href="/' . $startingSetConnectionID . '">
+							<a' . $startHref . '>
 							<img height="252" width="182" src="/img/' . h($set->image) . '"
 							alt="Tsumego Collection: ' . h($setTitle) . '" title="Tsumego Collection: ' . h($setTitle) . '">
 							</a></div></td>';
 	else
 		echo '<td width="195px" class="set-view__img-bottom"><div align="center" class="set-view__cover">
-							<a href="/' . $startingSetConnectionID . '">
+							<a' . $startHref . '>
 							<img height="252" width="182" src="/img/' . h($set->image) . '"
 							alt="Tsumego Collection: ' . h($setTitle) . '" title="Tsumego Collection: ' . h($setTitle) . '" width="210">
 							</a></div></td>';
 }
 elseif (!$noImage && $tsumegoFilters->query == 'difficulty')
 	echo '<td width="195px" class="valign-top"><div class="set-view__cover set-view__cover--rank" align="center">
-						<a href="/' . $startingSetConnectionID . '">
+						<a' . $startHref . '>
 						<span class="rank-icon rank-icon-large' . (str_contains((string) $set->id, '-') ? ' rank-icon-large--range' : '') . '">' . h((string) $set->id) . '</span>
 						</a></div></td>';
 else
@@ -129,7 +131,8 @@ if ($tsumegoFilters->query != 'topics')
 				<div align="center">
 				<br><br>
 					<?php
-					echo '<a class="btn set-view__start" href="/' . $startingSetConnectionID . '">Start</a>';
+					if ($startingSetConnectionID !== null)
+						echo '<a class="btn set-view__start" href="/' . $startingSetConnectionID . '">Start</a>';
 ?>
 				</div>
 			</td>

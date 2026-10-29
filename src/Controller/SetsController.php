@@ -537,7 +537,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 			return !TsumegoUtil::isRecentlySolved($tsumegoButton->status);
 		}))
 			return $firstRecentlyUnsolved->setConnectionID;
-		return $tsumegoButtons[0]->setConnectionID;
+		return ($tsumegoButtons[0] ?? null)?->setConnectionID;
 	}
 
 	private function decodeQueryType(string $input): string
