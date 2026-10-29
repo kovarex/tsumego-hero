@@ -1,5 +1,7 @@
 <?php
 
+use Cake\Http\Exception\BadRequestException;
+use Cake\Http\Exception\NotFoundException;
 use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\TimeModeCategoryTable;
 use App\Model\Table\TimeModeSessionStatusTable;

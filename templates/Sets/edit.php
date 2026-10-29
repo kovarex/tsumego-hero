@@ -1,0 +1,192 @@
+<?php
+
+use App\Model\Table\SetTable;
+use App\Utility\Rating;
+use App\Utility\SetEditRenderer;
+use App\Utility\Trash;
+use App\Utility\TsumegoButtons;
+
+/**
+ * @var \App\View\AppView $this
+ * @var bool $allArActive
+ * @var bool $allArInactive
+ * @var bool $allPassActive
+ * @var bool $allPassInactive
+ * @var bool $canDelete
+ * @var bool $canEditSettings
+ * @var bool $isSandbox
+ * @var array $problems
+ * @var \App\Model\Entity\Set $set
+ * @var int $setRating
+ * @var TsumegoButtons $tsumegoButtons
+ */
+
+$setId = (int) $set->id;
+$problemCount = count($problems);
+$highestOrder = $tsumegoButtons->highestTsumegoOrder ?? 0;
+$presetColors = ['#74d14c', '#5b9bd5', '#e6c832', '#d63a49', '#caa8d8', '#ff8fab', '#66ccff', '#8a8a8a'];
+$currentColor = $set->color ?? '';
+if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strtolower', $presetColors)))
+	array_unshift($presetColors, $currentColor);
+?>
+<div class="set-edit">
+	<div class="set-edit__header">
+		<p class="set-edit__crumb"><a href="/sets/mine">My Sets</a> / Edit Set</p>
+		<h1 class="set-edit-title"><?php echo h($set->title); ?></h1>
+		<p><a class="btn" href="<?php echo SetTable::url($setId); ?>">View Set</a></p>
+	</div>
+
+	<div class="set-edit__grid">
+		<div class="card card--green set-edit__section">
+			<h2 class="set-edit__heading">Details</h2>
+			<form action="/sets/edit/<?php echo $setId; ?>" id="set-edit-details" enctype="multipart/form-data" method="post" accept-charset="utf-8"><div style="display:none;"><input type="hidden" name="_method" value="POST"/></div>
+				<div class="form-field">
+					<label class="form-field__label" for="SetTitle">Title</label>
+					<input class="form-field__control" type="text" id="SetTitle" name="title" value="<?php echo h($set->title); ?>" required>
+				</div>
+				<div class="form-field">
+					<label class="form-field__label" for="SetTitle2">Subtitle</label>
+					<input class="form-field__control" type="text" id="SetTitle2" name="title2" value="<?php echo h($set->title2 ?? ''); ?>" placeholder="Optional subtitle shown after the title">
+				</div>
+				<div class="form-field">
+					<label class="form-field__label" for="SetDescription">Description</label>
+					<textarea class="form-field__control" id="SetDescription" name="description" rows="4"><?php echo h($set->description ?? ''); ?></textarea>
+					<p class="hint">Allowed tags: &lt;br&gt; &lt;a&gt; &lt;b&gt; &lt;i&gt; &lt;p&gt; &lt;ul&gt; &lt;ol&gt; &lt;li&gt; &lt;img&gt; &lt;font&gt; &lt;table&gt; &lt;tr&gt; &lt;td&gt; &lt;th&gt;</p>
+				</div>
+				<div class="form-field">
+					<label class="form-field__label">Color</label>
+					<div class="swatches">
+						<?php foreach ($presetColors as $presetColor): ?>
+							<span class="swatch" style="--swatch-color:<?php echo $presetColor; ?>" title="<?php echo $presetColor; ?>"
+								onclick="document.getElementById('set-color').value='<?php echo $presetColor; ?>'"></span>
+						<?php endforeach; ?>
+						<input type="color" id="set-color" name="color" value="<?php echo h($currentColor ?: '#74d14c'); ?>" class="color-input">
+					</div>
+				</div>
+				<div class="form-field">
+					<label class="form-field__label">Image</label>
+					<div class="set-edit__image">
+						<?php if (!empty($set->image)): ?>
+							<img class="set-edit__thumb" src="/img/<?php echo h($set->image); ?>" alt="Set image">
+							<label class="set-edit__remove"><input type="checkbox" name="remove_image" value="1"> Remove</label>
+						<?php endif; ?>
+						<input type="file" name="image" accept=".png,.jpg,.jpeg,.webp">
+					</div>
+					<p class="hint">Max 2MB, png/jpg/webp.</p>
+				</div>
+				<div class="form-field">
+					<label class="form-field__label" for="SetOrder">Order</label>
+					<input class="form-field__control" type="number" id="SetOrder" name="order" value="<?php echo h($set->order ?? ''); ?>">
+					<p class="hint">Low numbers are on top, high numbers at the bottom.</p>
+				</div>
+			<div class="submit"><input class="btn" type="submit" value="Save"/></div></form>
+		</div>
+
+		<div class="card card--purple set-edit__section">
+			<div class="set-edit__problems-head">
+				<h2 class="set-edit__heading">Problems (<?php echo $problemCount; ?>)</h2>
+				<label class="set-edit__preview-toggle" title="Toggle board previews"><input type="checkbox" class="preview-zoom-toggle">🔍 Preview</label>
+			</div>
+			<?php if ($problemCount === 0): ?>
+				<p class="hint">No problems yet.</p>
+			<?php else: ?>
+				<div class="set-edit__problems">
+					<?php foreach ($tsumegoButtons as $index => $tsumegoButton): ?>
+						<div class="set-edit__problem">
+							<ul class="set-edit__problem-button">
+								<?php $tsumegoButton->render(); ?>
+							</ul>
+							<div class="set-edit__problem-meta">
+								<span class="set-edit__problem-id">#<?php echo $tsumegoButton->tsumegoID; ?></span>
+								<span class="set-edit__rating"><?php echo h(Rating::getReadableRankFromRating($tsumegoButton->rating)); ?></span>
+							</div>
+							<span class="set-edit__actions">
+								<?php if ($index > 0): ?>
+									<form method="post" action="/sets/reorderTsumego/<?php echo $setId; ?>">
+										<input type="hidden" name="tsumego_id" value="<?php echo $tsumegoButton->tsumegoID; ?>">
+										<input type="hidden" name="dir" value="up">
+										<button type="submit" class="btn" title="Move up">▲</button>
+									</form>
+								<?php else: ?>
+									<span class="btn btn--disabled" title="Move up">▲</span>
+								<?php endif; ?>
+								<?php if ($index < $problemCount - 1): ?>
+									<form method="post" action="/sets/reorderTsumego/<?php echo $setId; ?>">
+										<input type="hidden" name="tsumego_id" value="<?php echo $tsumegoButton->tsumegoID; ?>">
+										<input type="hidden" name="dir" value="down">
+										<button type="submit" class="btn" title="Move down">▼</button>
+									</form>
+								<?php else: ?>
+									<span class="btn btn--disabled" title="Move down">▼</span>
+								<?php endif; ?>
+								<form method="post" action="/sets/removeTsumego/<?php echo $setId; ?>" onsubmit="return confirm('Remove this problem from the set?');">
+									<input type="hidden" name="tsumego_id" value="<?php echo $tsumegoButton->tsumegoID; ?>">
+									<button type="submit" class="btn btn--danger" title="Remove">✕</button>
+								</form>
+							</span>
+						</div>
+					<?php endforeach; ?>
+				</div>
+			<?php endif; ?>
+		</div>
+	</div>
+
+	<?php if ($canEditSettings): ?>
+		<div class="card card--purple set-edit__section">
+			<h2 class="set-edit__heading">Admin</h2>
+			<?php SetEditRenderer::renderAddProblemForm($setId, $highestOrder); ?>
+			<form method="post" action="/sets/edit/<?php echo $setId; ?>" id="set-edit-settings" class="set-edit__settings">
+				<h3 class="set-edit__heading">Re-rate Problems</h3>
+				<label for="SetSetDifficulty">Rating</label>
+				<input type="text" id="SetSetDifficulty" name="setDifficulty" placeholder="<?php echo h((string) $setRating); ?>">
+				<p class="hint">Sets the rating of every problem in this collection. Problems are shared, so this changes their rating everywhere. Leave empty to skip.</p>
+
+				<h3 class="set-edit__heading">Solve Modes</h3>
+				<div class="set-edit__mode">
+					<span class="set-edit__mode-label">Alternative Response</span>
+					<span class="set-edit__mode-hint"><?php echo $allArActive ? 'all on' : ($allArInactive ? 'all off' : 'mixed'); ?></span>
+					<select name="r39">
+						<option value="">no change</option>
+						<option value="on">on</option>
+						<option value="off">off</option>
+					</select>
+				</div>
+				<div class="set-edit__mode">
+					<span class="set-edit__mode-label">Passing</span>
+					<span class="set-edit__mode-hint"><?php echo $allPassActive ? 'all on' : ($allPassInactive ? 'all off' : 'mixed'); ?></span>
+					<select name="r43">
+						<option value="">no change</option>
+						<option value="yes">yes</option>
+						<option value="no">no</option>
+					</select>
+				</div>
+				<input type="submit" class="btn" value="Apply">
+			</form>
+			<?php if ($isSandbox): ?>
+				<p><a class="btn" href="/users/userstats3/<?php echo $setId; ?>">Activities</a></p>
+			<?php endif; ?>
+		</div>
+	<?php endif; ?>
+
+	<?php if (!empty($canDelete)): ?>
+		<div class="card set-edit__section set-edit__section--danger">
+			<h2 class="set-edit__heading">Danger Zone</h2>
+			<?php if ($set->user_id === null): ?>
+				<?php // a collection of the site goes to the trash with its problems, a big step, so it is confirmed by typing its title ?>
+				<form method="post" action="/sets/delete/<?php echo $setId; ?>" id="set-delete">
+					<p>
+						Deleting moves the collection and its <?php echo $problemCount; ?> problems to the trash.
+						An admin can restore it for <?php echo Trash::$RETENTION_DAYS; ?> days, then it is removed for good.
+					</p>
+					<label for="set-delete-confirmation">Type <b><?php echo h($set->title); ?></b> to confirm:</label>
+					<input type="text" name="confirmation" id="set-delete-confirmation" class="form-field__control" autocomplete="off">
+					<input type="submit" class="btn btn--danger" value="Delete Collection" id="set-delete-submit">
+				</form>
+			<?php else: ?>
+				<form method="post" action="/sets/delete/<?php echo $setId; ?>" onsubmit="return confirm('Delete this collection?');">
+					<input type="submit" class="btn btn--danger" value="Delete Collection">
+				</form>
+			<?php endif; ?>
+		</div>
+	<?php endif; ?>
+</div>

@@ -9,7 +9,7 @@ use Cake\Log\Log;
 use Cake\ORM\TableRegistry;
 use Exception;
 use InvalidArgumentException;
-use Router;
+use Cake\Routing\Router;
 
 //A message one player sent to another. The messages between two players are their
 //conversation, so a conversation has no row of its own: it is addressed by the

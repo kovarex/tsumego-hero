@@ -1,5 +1,6 @@
 <?php
 
+use App\Controller\UsersController;
 use App\Model\Table\UserTable;
 use Facebook\WebDriver\WebDriverBy;
 use App\Utility\Auth;

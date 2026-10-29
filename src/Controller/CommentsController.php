@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Controller;
+
 use App\Utility\Auth;
 use App\Attribute\HttpGet;
 use App\Utility\CommentsRenderer;

@@ -1,5 +1,7 @@
 <?php
 
+namespace App\View\Helper;
+
 //PaginationHelper - Generates pagination controls
 //Renders page navigation with Previous/Next buttons, page numbers,
 //and ellipsis for large page counts. Automatically preserves query

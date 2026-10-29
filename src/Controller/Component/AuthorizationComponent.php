@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Controller\Component;
+
 //Shim of CakePHP 5's AuthorizationComponent. The call site is identical:
 //$this->Authorization->authorize('Admin') in the action userstats -> App\Policy\AdminPolicy::canUserstats.
 //Policies live in App\Policy and are resolved through composer (PSR-4), so a new
@@ -13,6 +15,10 @@
 //  as the second argument (no current caller, kept for parity with CakePHP 5)
 //- Not logged in        -> UnauthorizedException (401)
 //- Logged in, no grant  -> ForbiddenException (403)
+use Cake\Controller\Component;
+use Cake\Http\Exception\ForbiddenException;
+use Cake\Http\Exception\UnauthorizedException;
+use RuntimeException;
 use App\Utility\Auth;
 
 class AuthorizationComponent extends Component
@@ -39,7 +45,7 @@ class AuthorizationComponent extends Component
 
 	public function can(string|array|object $resource, ?string $action = null): bool
 	{
-		$action = $action ?: $this->_Collection->getController()->request->params['action'];
+		$action = $action ?: $this->getController()->getRequest()->getParam('action');
 		if (is_array($resource))
 		{
 			$class = self::policyClass((string) key($resource)); // ['Set' => [...]] -> App\Policy\SetPolicy

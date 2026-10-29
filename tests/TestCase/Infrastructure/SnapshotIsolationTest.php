@@ -28,11 +28,10 @@ class SnapshotIsolationTest extends AppTestCase
 	//Another connection to the same database, like the one of a second request
 	private static function otherConnection(): PDO
 	{
-		/** @phpstan-ignore-next-line */
-		$config = Util::database()->config;
+		$config = Util::database()->config();
 		return new PDO(
-			'mysql:host=' . $config['host'] . ';port=' . $config['port'] . ';dbname=' . $config['database'],
-			$config['login'],
+			'mysql:host=' . $config['host'] . ';port=' . ($config['port'] ?? 3306) . ';dbname=' . $config['database'],
+			$config['username'],
 			$config['password'],
 			[PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
 	}

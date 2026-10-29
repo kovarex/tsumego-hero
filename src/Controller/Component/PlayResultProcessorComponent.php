@@ -1,5 +1,8 @@
 <?php
 
+namespace App\Controller\Component;
+
+use Cake\Controller\Component;
 use App\Model\Entity\Tsumego;
 use App\Model\Entity\TsumegoAttempt;
 use App\Model\Entity\TsumegoStatus;

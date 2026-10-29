@@ -1,5 +1,8 @@
 <?php
 
+namespace App\Controller;
+
+use Cake\Http\Exception\ForbiddenException;
 use App\Attribute\HttpPost;
 use App\Model\Entity\Tsumego;
 use App\Model\Table\AdminActivityTypeTable;

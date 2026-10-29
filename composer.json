@@ -1,56 +1,51 @@
 {
-	"name": "cakephp/app",
-	"description": "tsumego hero",
-	"type": "library",
-    "keywords": ["cakephp", "app"],
+    "name": "cakephp/app",
+    "description": "tsumego hero",
+    "type": "library",
+    "keywords": [
+        "cakephp",
+        "app"
+    ],
     "license": "proprietary",
     "require": {
-		"php": ">=8.4",
-		"cakephp/cache": "^5.2.15",
-		"cakephp/log": "^5.2.15",
-		"cakephp/orm": "^5.2.15",
-		"ezyang/htmlpurifier": "^4.19",
-		"firebase/php-jwt": "^6.11.1",
-		"pieceofcake2/cakephp": "~2.12.9",
-		"robmorgan/phinx": "^0.16.10"
-	},
+        "php": ">=8.4",
+        "ezyang/htmlpurifier": "^4.19",
+        "firebase/php-jwt": "^6.11.1",
+        "robmorgan/phinx": "^0.16.10",
+        "cakephp/cakephp": "^5.2"
+    },
     "require-dev": {
-		"friendsofphp/php-cs-fixer": "^3.89",
-		"php-webdriver/webdriver": "^1.15",
-		"phpstan/phpstan": "^2.1",
-		"phpunit/php-code-coverage": "^9.2",
-		"phpunit/phpcov": "^8.2",
-		"phpunit/phpunit": "^9.6",
-		"pieceofcake2/bake": "^1.0",
-		"pieceofcake2/debug_kit": "^2.2",
-		"pieceofcake2/phpstan-cakephp2": "^0.2.1"
-	},
+        "friendsofphp/php-cs-fixer": "^3.89",
+        "php-webdriver/webdriver": "^1.15",
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^11.5"
+    },
     "autoload": {
-        "classmap": ["src/"],
         "psr-4": {
             "App\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
+            "App\\Test\\": "tests/",
             "App\\Test\\PHPStan\\": "tests/PHPStan/"
         }
     },
-	"scripts": {
-		"setup": "bin/cake generate code_completion && bin/cake generate phpstorm",
-		"annotate": "bin/cake annotate all -r && bin/cake annotate all -r -p Sandbox && bin/cake annotate all -r -p AuthSandbox && bin/cake annotate all -r -p StateMachineSandbox",
-		"test": "phpunit",
-		"test-coverage": "phpunit --log-junit webroot/coverage/unitreport.xml --coverage-html webroot/coverage --coverage-clover webroot/coverage/coverage.xml",
-		"cs-modified": "sh cs-modified.sh",
-		"cs-check": "./vendor/bin/php-cs-fixer check",
-		"cs-fix": "./vendor/bin/php-cs-fixer fix",
-		"stan": "phpstan analyse @additional_args; E1=$?; phpstan analyse -c phpstan-views.neon @additional_args; E2=$?; test $E1 -eq 0 -a $E2 -eq 0",
-		"migrate": "vendor/bin/phinx migrate",
-		"migrate-test": "vendor/bin/phinx migrate -e test",
-		"migrate-status": "vendor/bin/phinx status",
-		"migrate-rollback": "vendor/bin/phinx rollback",
-		"images:webp": "sh scripts/convert-to-webp.sh"
-	},
+    "scripts": {
+        "setup": "bin/cake generate code_completion && bin/cake generate phpstorm",
+        "annotate": "bin/cake annotate all -r && bin/cake annotate all -r -p Sandbox && bin/cake annotate all -r -p AuthSandbox && bin/cake annotate all -r -p StateMachineSandbox",
+        "test": "phpunit",
+        "test-coverage": "phpunit --log-junit webroot/coverage/unitreport.xml --coverage-html webroot/coverage --coverage-clover webroot/coverage/coverage.xml",
+        "cs-modified": "sh cs-modified.sh",
+        "cs-check": "./vendor/bin/php-cs-fixer check",
+        "cs-fix": "./vendor/bin/php-cs-fixer fix",
+        "stan": "phpstan analyse @additional_args; E1=$?; phpstan analyse -c phpstan-views.neon @additional_args; E2=$?; test $E1 -eq 0 -a $E2 -eq 0",
+        "migrate": "vendor/bin/phinx migrate",
+        "migrate-test": "vendor/bin/phinx migrate -e test",
+        "migrate-status": "vendor/bin/phinx status",
+        "migrate-rollback": "vendor/bin/phinx rollback",
+        "images:webp": "sh scripts/convert-to-webp.sh"
+    },
     "config": {
         "sort-packages": true,
         "allow-plugins": {
@@ -60,7 +55,9 @@
     },
     "extra": {
         "installer-paths": {
-            "plugins/{$name}/": ["type:cakephp-plugin"]
+            "plugins/{$name}/": [
+                "type:cakephp-plugin"
+            ]
         }
     }
 }

@@ -1,5 +1,13 @@
 <?php
 
+namespace App\Controller;
+
+use Cake\Http\Response as CakeResponse;
+use Cake\Controller\Controller;
+use Cake\Http\Exception\MethodNotAllowedException;
+use Cake\Http\Exception\NotFoundException;
+use Cake\Event\EventInterface;
+use ReflectionMethod;
 use App\Model\Table\UserTable;
 use App\Utility\AchievementChecker;
 use App\Utility\Auth;
@@ -10,28 +18,26 @@ use App\Utility\Mailer;
 use App\Utility\TimeMode;
 use App\Utility\TsumegoFilters;
 use App\Utility\Util;
-use Cake\ORM\Locator\LocatorAwareTrait;
 
-/** @phpstan-import-type UserRow from \App\Utility\RowTypes */
+/**
+ * @phpstan-import-type UserRow from \App\Utility\RowTypes
+ * @property \App\Controller\Component\AuthorizationComponent $Authorization
+ * @property \App\Controller\Component\PlayResultProcessorComponent $PlayResultProcessor
+ */
 class AppController extends Controller
 {
-	//fetchTable() of the Cake 5 tables, as Cake 5's controllers have it. Protected, as Cake 2
-	//makes every public method an address (see ActionSurfaceTest).
-	use LocatorAwareTrait {
-		fetchTable as protected;
-		getTableLocator as protected;
-		setTableLocator as protected;
+	//What $viewClass, $helpers and $components of Cake 2 set up.
+	public function initialize(): void
+	{
+		parent::initialize();
+		$this->viewBuilder()->setClassName('App');
+		$this->viewBuilder()->addHelpers(array_merge(['Html', 'Form', 'Pagination'], static::HELPERS));
+		$this->loadComponent('PlayResultProcessor');
+		$this->loadComponent('Authorization');
 	}
 
-	public $viewClass = 'App';
-
-	public $helpers = ['Pagination'];
-
-	public $components = [
-		//'DebugKit.Toolbar',
-		'PlayResultProcessor',
-		'Authorization'
-	];
+	//The helpers a controller adds to those of every page
+	protected const HELPERS = [];
 
 	//The request, read through these few methods only, so that the switch to Cake 5 changes them
 	//and not every action: there they become getData(), getQuery(), getParam(), getBody() and
@@ -40,39 +46,39 @@ class AppController extends Controller
 	//A field the form or the request body sent, null when it was not sent.
 	protected function input(string $name): mixed
 	{
-		return $this->request->data($name);
+		return $this->request->getData($name);
 	}
 
 	//Every field the form sent.
 	/** @return array<string, mixed> */
 	protected function inputs(): array
 	{
-		return (array) $this->request->data;
+		return (array) $this->request->getData();
 	}
 
 	//A value of the query string (?name=value), null when it is not there.
 	protected function query(string $name): mixed
 	{
-		return $this->request->query($name);
+		return $this->request->getQuery($name);
 	}
 
 	//The whole query string as an array.
 	/** @return array<string, mixed> */
 	protected function queries(): array
 	{
-		return (array) $this->request->query;
+		return $this->request->getQueryParams();
 	}
 
 	//A part of the address the router recognised: controller, action, or a named route element.
 	protected function routeParam(string $name): mixed
 	{
-		return $this->request->params[$name] ?? null;
+		return $this->request->getParam($name);
 	}
 
 	//The request body as it was sent, for the endpoints that take JSON.
 	protected function requestBody(): string
 	{
-		return (string) $this->request->input();
+		return (string) $this->request->getBody();
 	}
 
 	//A file the form uploaded, as its entry of $_FILES (name, type, tmp_name, error, size), null
@@ -86,7 +92,7 @@ class AppController extends Controller
 	//GET, POST and so on.
 	protected function httpMethod(): string
 	{
-		return (string) $this->request->method();
+		return $this->request->getMethod();
 	}
 
 	//The size the client says the request body has, in bytes.
@@ -110,28 +116,27 @@ class AppController extends Controller
 	protected function respond(string $body, ?string $type = null, int $status = 200): CakeResponse
 	{
 		$this->autoRender = false;
+		$response = $this->response;
 		if ($type !== null)
-			$this->response->type($type);
-		$this->response->statusCode($status);
-		$this->response->body($body);
-		return $this->response;
+			$response = $response->withType($type);
+		return $this->response = $response->withStatus($status)->withStringBody($body);
 	}
 
 	protected function setResponseHeader(string $name, string $value): void
 	{
-		$this->response->header($name, $value);
+		$this->response = $this->response->withHeader($name, $value);
 	}
 
 	//The browser asks again with this tag and gets a 304 while the answer stays the same.
 	protected function setEtag(string $etag): void
 	{
-		$this->response->etag($etag);
+		$this->response = $this->response->withEtag($etag);
 	}
 
 	//The browser and proxies may keep the answer until $until (a strtotime() expression).
 	protected function cacheUntil(string $lastModified, string $until): void
 	{
-		$this->response->cache($lastModified, $until);
+		$this->response = $this->response->withCache($lastModified, $until);
 	}
 
 	//The pages of a deleted account (profile, its sets, tags, solve history...) are gone for everyone but the admins.
@@ -177,7 +182,7 @@ class AppController extends Controller
 	//attributes stay, this enforcement method is deleted.
 	protected function enforceHttpMethodAttribute(): void
 	{
-		$action = $this->action;
+		$action = $this->request->getParam('action');
 		if (!is_string($action) || !method_exists($this, $action))
 			return;
 
@@ -208,26 +213,8 @@ class AppController extends Controller
 		if (!in_array($method, $allowed, true))
 		{
 			$exception = new MethodNotAllowedException();
-			$exception->responseHeader('Allow', implode(', ', $allowed));
+			$exception->setHeader('Allow', implode(', ', $allowed));
 			throw $exception;
-		}
-	}
-
-	//An address whose part stands for a whole number but is not one (/users/view/abc) names
-	//nothing, so it is a 404, not the TypeError or database error a 500 would show. Cake 5 does
-	//this itself (InvalidParameterException), so this method is deleted at the switch.
-	protected function rejectMalformedIntegerArguments(): void
-	{
-		$action = $this->action;
-		if (!is_string($action) || !method_exists($this, $action))
-			return;
-
-		$parameters = new ReflectionMethod($this, $action)->getParameters();
-		foreach (array_values((array) ($this->request->params['pass'] ?? [])) as $index => $argument)
-		{
-			$type = isset($parameters[$index]) ? $parameters[$index]->getType() : null;
-			if ($type instanceof ReflectionNamedType && $type->getName() === 'int' && !preg_match('/^-?[0-9]+$/', (string) $argument))
-				throw new NotFoundException('Not found');
 		}
 	}
 
@@ -301,10 +288,20 @@ class AppController extends Controller
 		};
 	}
 
-	public function beforeFilter(): ?CakeResponse
+	public function beforeFilter(EventInterface $event): void
+	{
+		//Cake 5 takes the answer of a filter from its event
+		$response = $this->filterRequest();
+		if ($response !== null)
+		{
+			$event->setResult($response);
+			$event->stopPropagation();
+		}
+	}
+
+	private function filterRequest(): ?CakeResponse
 	{
 		$this->enforceHttpMethodAttribute();
-		$this->rejectMalformedIntegerArguments();
 		$this->resetStaleBrowserCache();
 
 		//Boards are drawn without a session: a list of a thousand players would otherwise

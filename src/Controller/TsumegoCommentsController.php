@@ -1,5 +1,10 @@
 <?php
 
+namespace App\Controller;
+
+use Cake\Http\Response as CakeResponse;
+use Cake\Http\Exception\NotFoundException;
+use DateTimeImmutable;
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Lib\Error\UnprocessableEntityException;

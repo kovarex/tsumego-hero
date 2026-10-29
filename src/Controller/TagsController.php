@@ -1,5 +1,9 @@
 <?php
 
+namespace App\Controller;
+
+use Cake\Http\Exception\NotFoundException;
+use Cake\Http\Response as CakeResponse;
 use App\Model\Table\SetConnectionTable;
 use App\Model\Table\SgfTable;
 use App\Model\Entity\Tag;

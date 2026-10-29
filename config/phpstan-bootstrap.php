@@ -1,28 +1,12 @@
 <?php
 
-//PHPStan bootstrap. Defines CakePHP constants that are normally set by
-//webroot/index.php. Does NOT load the full CakePHP bootstrap because
-//core.local.php triggers Cache::config() which requires the framework.
+//PHPStan bootstrap: the paths and constants of the app and the global functions of Cake 5
+//(__(), h(), env() ...), without the app's bootstrap, which reads the server's core.local.php.
 
-if (!defined('DS')) {
-	define('DS', DIRECTORY_SEPARATOR);
-}
-if (!defined('ROOT')) {
-	define('ROOT', dirname(__DIR__));
-}
-if (!defined('TMP')) {
-	define('TMP', sys_get_temp_dir() . DS);
-}
-if (!defined('CACHE')) {
-	define('CACHE', TMP . 'cache' . DS);
-}
-if (!defined('LOGS')) {
-	define('LOGS', TMP . 'logs' . DS);
-}
+require __DIR__ . '/paths.php';
+require CAKE . 'Core' . DS . 'functions_global.php';
+require CAKE . 'I18n' . DS . 'functions_global.php';
+require __DIR__ . '/define.php';
 
-require_once __DIR__ . '/define.php';
-
-// Minimal config from core.local.php (skip Cache::config which needs CakePHP)
-if (!defined('CRON_SECRET')) {
+if (!defined('CRON_SECRET'))
 	define('CRON_SECRET', 'example');
-}

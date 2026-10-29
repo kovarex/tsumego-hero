@@ -1,5 +1,9 @@
 <?php
 
+namespace App\Controller;
+
+use Cake\Http\Exception\ForbiddenException;
+use Exception;
 use App\Attribute\HttpGet;
 use App\Model\Table\AchievementConditionTable;
 use App\Utility\SchedulePublisher;

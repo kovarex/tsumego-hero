@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Controller;
+
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Utility\Auth;

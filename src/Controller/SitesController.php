@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Controller;
+
 use App\Model\Table\AchievementStatusTable;
 use App\Model\Table\UserTable;
 use App\Utility\Auth;

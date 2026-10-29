@@ -1,5 +1,6 @@
 <?php
 
+use Cake\Routing\Router;
 use App\Model\Table\SetTable;
 
 class SetTest extends AppTestCase
@@ -8,6 +9,7 @@ class SetTest extends AppTestCase
 	//one by one for every card of the collections page. It has to give the address the router gives.
 	public function testUrlIsTheAddressTheRouterGives(): void
 	{
+		$this->loadRoutes();
 		$ids = [5, '5', 1234567, '5k', '10k-5k', '1d', 'favorites', 'life and death', 'Ko & Seki', 'semeai+', 'ünïcode', "it's", 'a/b', 'delete', 'index'];
 		foreach ($ids as $id)
 			foreach ([1, 2, 17] as $partition)

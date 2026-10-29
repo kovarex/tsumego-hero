@@ -1,33 +1,24 @@
 <?php
 
+use Cake\Http\Exception\ForbiddenException;
+use Cake\Http\Exception\NotFoundException;
+use Cake\Http\ServerRequest as CakeRequest;
+use Cake\Routing\Router;
+use App\Error\AppExceptionRenderer;
 use App\Lib\Error\UnprocessableEntityException;
 
-//AppErrorHandler renders JSON error bodies for JSON/AJAX requests and the HTML error page for regular browser requests.
+//AppExceptionRenderer renders JSON error bodies for JSON/AJAX requests and the HTML error page for regular browser requests.
 class AppErrorHandlerTest extends AppTestCase
 {
-	//Renders the given exception through AppErrorHandler with the supplied
-	//request headers and returns the resulting response.
+	//Renders the given exception through AppExceptionRenderer with the supplied
+	//request headers and returns the resulting response and its body.
 	private function renderError($exception, array $server = [])
 	{
-		$restoreServer = $_SERVER;
-		$_SERVER = array_merge($_SERVER, $server);
-
-		$request = new CakeRequest('/tsumego-comments/add');
-		Router::setRequestInfo($request);
-		try
-		{
-			ob_start();
-			$handler = new AppErrorHandler($exception);
-			$handler->render();
-			$output = ob_get_clean();
-		}
-		finally
-		{
-			Router::popRequest();
-			$_SERVER = $restoreServer;
-		}
-
-		return [$handler->controller->response, $output];
+		$this->loadRoutes();
+		$request = new CakeRequest(['url' => '/tsumego-comments/add', 'environment' => $server + ['REQUEST_METHOD' => 'POST']]);
+		Router::setRequest($request);
+		$response = new AppExceptionRenderer($exception, $request)->render();
+		return [$response, (string) $response->getBody()];
 	}
 
 	public function testJsonRequestRendersJsonErrorBody()
@@ -36,9 +27,9 @@ class AppErrorHandlerTest extends AppTestCase
 			'HTTP_ACCEPT' => 'application/json',
 		]);
 
-		$this->assertSame(403, $response->statusCode());
-		$this->assertSame('application/json', $response->type());
-		$this->assertSame('{"error":"You are not authorized"}', $response->body());
+		$this->assertSame(403, $response->getStatusCode());
+		$this->assertSame('application/json', $response->getType());
+		$this->assertSame('{"error":"You are not authorized"}', (string) $response->getBody());
 		$this->assertSame('{"error":"You are not authorized"}', $output);
 	}
 
@@ -48,8 +39,8 @@ class AppErrorHandlerTest extends AppTestCase
 			'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest',
 		]);
 
-		$this->assertSame(404, $response->statusCode());
-		$this->assertSame('{"error":"Comment not found"}', $response->body());
+		$this->assertSame(404, $response->getStatusCode());
+		$this->assertSame('{"error":"Comment not found"}', (string) $response->getBody());
 		$this->assertSame('{"error":"Comment not found"}', $output);
 	}
 
@@ -59,8 +50,8 @@ class AppErrorHandlerTest extends AppTestCase
 			'HTTP_ACCEPT' => 'application/json',
 		]);
 
-		$this->assertSame(422, $response->statusCode());
-		$this->assertSame('{"error":"Failed to add comment"}', $response->body());
+		$this->assertSame(422, $response->getStatusCode());
+		$this->assertSame('{"error":"Failed to add comment"}', (string) $response->getBody());
 		$this->assertSame('{"error":"Failed to add comment"}', $output);
 	}
 
@@ -68,8 +59,8 @@ class AppErrorHandlerTest extends AppTestCase
 	{
 		[$response, $output] = $this->renderError(new ForbiddenException('You are not authorized'));
 
-		$this->assertSame(403, $response->statusCode());
-		$this->assertNotSame('application/json', $response->type());
+		$this->assertSame(403, $response->getStatusCode());
+		$this->assertNotSame('application/json', $response->getType());
 		$this->assertStringContainsString('Forbidden', $output);
 		$this->assertStringNotContainsString('{"error"', $output);
 	}

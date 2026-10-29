@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Controller;
+
 use App\Model\Table\SetTable;
 use App\Model\Table\TsumegoStatusTable;
 use App\Utility\Auth;

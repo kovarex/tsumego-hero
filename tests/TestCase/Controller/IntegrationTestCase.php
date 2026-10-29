@@ -1,6 +1,9 @@
 <?php
 
+use App\Controller\AppController;
 use App\Utility\Auth;
+use Cake\Controller\Controller;
+use Cake\Event\EventInterface;
 use Cake\ORM\Locator\LocatorAwareTrait;
 use DOM\HTMLDocument;
 use Facebook\WebDriver\WebDriverBy;
@@ -12,7 +15,7 @@ use Facebook\WebDriver\WebDriverBy;
 //kept in `$view`, which is where the assertions that read the page look.
 class IntegrationTestCase extends AppTestCase
 {
-	use IntegrationTestTrait {
+	use Cake\TestSuite\IntegrationTestTrait {
 		_sendRequest as private dispatchRequest;
 		controllerSpy as private spyOnController;
 	}
@@ -71,16 +74,17 @@ class IntegrationTestCase extends AppTestCase
 	//plus what the request came with.
 	//The trait restores $_COOKIE once the request is over, so the moment to read the cookies
 	//the app wrote is the end of the action.
-	public function controllerSpy(Controller $controller): void
+	public function controllerSpy(EventInterface $event, ?Controller $controller = null): void
 	{
-		$this->spyOnController($controller);
+		$this->spyOnController($event, $controller);
+		$controller ??= $event->getSubject();
 
 		$capture = function (): void {
 			$this->responseCookies = $_COOKIE;
 		};
 		$events = $controller->getEventManager();
-		$events->attach($capture, 'Controller.beforeRender', ['priority' => 100]);
-		$events->attach($capture, 'Controller.beforeRedirect', ['priority' => 100]);
+		$events->on('Controller.beforeRender', ['priority' => 100], $capture);
+		$events->on('Controller.beforeRedirect', ['priority' => 100], $capture);
 	}
 
 	//The cookies a browser would send along with the next request.
@@ -124,7 +128,7 @@ class IntegrationTestCase extends AppTestCase
 	//The value of a response header, or null when the response does not carry it.
 	protected function headerValue(string $name): ?string
 	{
-		return $this->_response->header()[$name] ?? null;
+		return $this->_response->hasHeader($name) ? $this->_response->getHeaderLine($name) : null;
 	}
 
 	public function getStringDom(): HTMLDocument

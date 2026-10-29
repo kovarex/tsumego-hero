@@ -19,10 +19,10 @@ use App\Policy\BasePolicy;
 use App\Policy\SetPolicy;
 use App\Policy\TagConnectionPolicy;
 use Cake\ORM\TableRegistry;
-use AuthorizationComponent;
-use CakeRequest;
-use NotFoundException;
-use Router;
+use App\Controller\Component\AuthorizationComponent;
+use Cake\Http\Exception\NotFoundException;
+use Cake\Http\ServerRequest as CakeRequest;
+use Cake\Routing\Router;
 
 class Play
 {
@@ -111,7 +111,7 @@ class Play
 			'tsumego_id' => $tsumegoID,
 			'user_id' => Auth::getUserID(),
 			'sgf_status_id' => SgfTable::STATUS_PROPOSED]));
-		if (isset($request->query['requestSolution']))
+		if ($request->getQuery('requestSolution') !== null)
 		{
 			AuthorizationComponent::require(AdminPolicy::canRequestSolution(Auth::getIdentity()));
 			$this->set('requestSolution', AdminActivityLogger::log(AdminActivityTypeTable::SOLUTION_REQUEST, $tsumegoID));
@@ -260,7 +260,7 @@ ORDER BY s.title", [$tsumegoID, Auth::getUserID()]);
 	private function exportPlayerColor(CakeRequest $request, string $sgf, bool $playAsBlack): void
 	{
 		$sgfColor = SgfParser::firstMoveColor($sgf);
-		$requestedColor = strtolower((string) ($request->query['playercolor'] ?? ''));
+		$requestedColor = strtolower((string) ($request->getQuery('playercolor') ?? ''));
 		if (in_array($requestedColor, ['black', 'white'], true))
 			$playerColor = $requestedColor;
 		elseif ($playAsBlack)

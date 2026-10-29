@@ -1,0 +1,25 @@
+<?php
+
+use App\Utility\CommentsRenderer;
+
+/**
+ * @var \App\View\AppView $this
+ * @var CommentsRenderer $allComments
+ * @var CommentsRenderer $yourComments
+ */
+
+?>
+	<table class="co-table" width="100%">
+	<tr>
+	<td width="50%">
+		<p class="title4">Comments</p>
+		<div class="new1" width="100%" style="margin-bottom:15px;">
+			<div align="center"><?php $allComments->render(); ?></div>
+		</div>
+	</td>
+	<td width="50%">
+		<p class="title4">Your Comments</p>
+		<div width="100%"> <?php $yourComments->render(); ?> </div>
+	</td>
+	</tr>
+	</table>

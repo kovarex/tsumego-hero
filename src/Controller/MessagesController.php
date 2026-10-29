@@ -1,5 +1,9 @@
 <?php
 
+namespace App\Controller;
+
+use Cake\Http\Exception\NotFoundException;
+use Cake\Http\Response as CakeResponse;
 use App\Attribute\HttpGet;
 use App\Model\Table\MessageTable;
 use App\Attribute\HttpPost;

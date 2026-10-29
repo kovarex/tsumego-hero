@@ -1,5 +1,11 @@
 <?php
 
+namespace App\View;
+
+use Cake\View\View;
+use RuntimeException;
+use Throwable;
+
 //Application View
 //Extends CakePHP's View class with enhanced error handling for templates
 class AppView extends View
@@ -9,11 +15,7 @@ class AppView extends View
 	//to exceptions, ensuring that errors in templates show the correct file and
 	//line number instead of pointing to View.php.
 	//Returns rendered output
-	/**
-	 * @param string $viewFile Filename of the view
-	 * @param array $dataForView Data to include in rendered view.
-	 */
-	protected function _evaluate(mixed $viewFile, mixed $dataForView): string
+	protected function _evaluate(string $viewFile, array $dataForView): string
 	{
 		$__viewFile = $viewFile;
 		extract($dataForView);

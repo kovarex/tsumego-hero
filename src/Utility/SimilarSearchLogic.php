@@ -5,7 +5,7 @@ namespace App\Utility;
 use Cake\ORM\TableRegistry;
 use App\Model\Table\SgfTable;
 use App\Model\Table\TsumegoStatusTable;
-use NotFoundException;
+use Cake\Http\Exception\NotFoundException;
 use App\Model\Table\SetTable;
 use App\Model\Table\SetConnectionTable;
 use App\Model\Entity\SetConnection;

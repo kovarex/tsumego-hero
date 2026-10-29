@@ -4,7 +4,8 @@
          bootstrap="./tests/bootstrap.php"
          backupGlobals="true"
          stderr="true"
-         colors="true">
+         colors="true"
+         cacheDirectory="tmp/phpunit-cache">
     <php>
         <ini name="memory_limit" value="-1"/>
     </php>
@@ -20,9 +21,9 @@
             <group>disabled</group>
         </exclude>
     </groups>
-    <coverage>
+    <source>
         <include>
             <directory suffix=".php">./src</directory>
         </include>
-    </coverage>
+    </source>
 </phpunit>

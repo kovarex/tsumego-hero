@@ -195,7 +195,7 @@ jobs:
         run: |
           mkdir -p /tmp/coverage
           # phpunit, with the tests the browser alone failed run again (scripts/phpunit-retry.php)
-          php scripts/phpunit-retry.php --exclude-group apache-only,disabled ${{ github.ref == 'refs/heads/master' && '--coverage-clover /tmp/coverage/clover.xml --coverage-php /tmp/coverage/phpunit.cov' || '' }}
+          php scripts/phpunit-retry.php --exclude-group apache-only --exclude-group disabled ${{ github.ref == 'refs/heads/master' && '--coverage-clover /tmp/coverage/clover.xml --coverage-php /tmp/coverage/phpunit.cov' || '' }}
 
       - name: Upload browser timeout dumps
         if: failure()

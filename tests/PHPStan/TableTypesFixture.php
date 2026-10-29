@@ -31,8 +31,8 @@ class TableTypesFixture
 		assertType('array<int, App\Model\Entity\Reject>', $table->find()->toArray());
 		foreach ($table->find()->all() as $reject)
 			assertType(Reject::class, $reject);
-		assertType('array', $table->find('list')->toArray());
-		assertType('mixed', $table->find()->disableHydration()->first());
+		assertType('array<Cake\Datasource\EntityInterface>', $table->find('list')->toArray());
+		assertType('array|Cake\Datasource\EntityInterface|null', $table->find()->disableHydration()->first());
 	}
 
 	public function unknownField(RejectTable $table): mixed

@@ -1,5 +1,7 @@
 <?php
 
+use App\View\AppView;
+
 //Tests for the generic Open Graph meta element renderer.
 class OpenGraphMetaElementTest extends AppTestCase
 {
@@ -21,7 +23,7 @@ class OpenGraphMetaElementTest extends AppTestCase
 			'twitter_card' => 'summary_large_image',
 		];
 
-		$view = new View(null);
+		$view = new AppView();
 		$view->element('open_graph_meta', ['og' => $og]);
 		$result = $view->fetch('og_meta');
 
@@ -50,7 +52,7 @@ class OpenGraphMetaElementTest extends AppTestCase
 			'url' => 'https://tsumego.com/',
 		];
 
-		$view = new View(null);
+		$view = new AppView();
 		$view->element('open_graph_meta', ['og' => $og]);
 		$result = $view->fetch('og_meta');
 
@@ -67,7 +69,7 @@ class OpenGraphMetaElementTest extends AppTestCase
 
 	public function testRendersNothingWhenOgMissing(): void
 	{
-		$view = new View(null);
+		$view = new AppView();
 		$view->element('open_graph_meta', []);
 		$this->assertSame('', $view->fetch('og_meta'));
 	}

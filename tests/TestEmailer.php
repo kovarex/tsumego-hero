@@ -1,6 +1,7 @@
 <?php
 
 use App\Utility\Mailer;
+use Cake\Network\Exception\SocketException;
 
 //The mailer of a test (see AppController::_setTestEmailer()): it keeps the last email instead of sending it.
 class TestEmailer extends Mailer

@@ -1,5 +1,10 @@
 <?php
 
+namespace App\Controller;
+
+use Cake\Http\Exception\BadRequestException;
+use Cake\Http\Exception\NotFoundException;
+use Cake\Http\Response as CakeResponse;
 use App\Model\Table\SgfTable;
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;

@@ -1,5 +1,11 @@
 <?php
 
+namespace App\Controller;
+
+use Cake\Http\Exception\ForbiddenException;
+use Cake\Http\Exception\NotFoundException;
+use Cake\Http\Response as CakeResponse;
+use Exception;
 use App\Model\Table\SetTable;
 use App\Model\Table\TsumegoStatusTable;
 use App\Attribute\HttpGet;

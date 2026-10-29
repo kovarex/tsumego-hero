@@ -2,7 +2,7 @@
 
 namespace App\Lib\Error;
 
-use HttpException;
+use Cake\Http\Exception\HttpException;
 
 //Represents an HTTP 422 error.
 class UnprocessableEntityException extends HttpException

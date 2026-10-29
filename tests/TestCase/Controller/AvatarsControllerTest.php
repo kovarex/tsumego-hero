@@ -1,5 +1,6 @@
 <?php
 
+use Cake\Http\Exception\NotFoundException;
 use App\Utility\Avatar;
 
 class AvatarsControllerTest extends IntegrationTestCase

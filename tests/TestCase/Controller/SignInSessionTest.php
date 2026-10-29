@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Table\UserTable;
+use Cake\Routing\Router;
 use App\Utility\Auth;
 use App\Utility\JwtAuth;
 use App\Utility\Util;

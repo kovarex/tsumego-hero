@@ -2,6 +2,7 @@
 
 //Tests for JwtAuth utility class.
 //JwtAuth provides stateless authentication using signed JWT tokens.
+use Cake\Core\Configure;
 use App\Utility\JwtAuth;
 use App\Utility\Util;
 

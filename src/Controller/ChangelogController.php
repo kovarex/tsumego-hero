@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Controller;
+
 use App\Attribute\HttpGet;
 
 class ChangelogController extends AppController

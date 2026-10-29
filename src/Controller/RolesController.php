@@ -1,5 +1,8 @@
 <?php
 
+namespace App\Controller;
+
+use Cake\Http\Exception\NotFoundException;
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Model\Table\UserTable;

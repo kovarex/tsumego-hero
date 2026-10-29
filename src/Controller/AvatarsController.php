@@ -1,5 +1,9 @@
 <?php
 
+namespace App\Controller;
+
+use Cake\Http\Response as CakeResponse;
+use Cake\Http\Exception\NotFoundException;
 use App\Attribute\HttpGet;
 use App\Utility\Avatar;
 use App\Utility\UploadedAvatar;

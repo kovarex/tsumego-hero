@@ -1,5 +1,12 @@
 <?php
 
+namespace App\Controller;
+
+use Cake\Http\Response as CakeResponse;
+use Cake\Http\Exception\BadRequestException;
+use Cake\Http\Exception\NotFoundException;
+use Cake\Routing\Router;
+use Exception;
 use App\Model\Entity\Set;
 use App\Model\Table\SetTable;
 use App\Model\Table\SetConnectionTable;
@@ -533,7 +540,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 			return !TsumegoUtil::isRecentlySolved($tsumegoButton->status);
 		}))
 			return $firstRecentlyUnsolved->setConnectionID;
-		return isset($tsumegoButtons[0]) ? $tsumegoButtons[0]->setConnectionID : null;
+		return ($tsumegoButtons[0] ?? null)?->setConnectionID;
 	}
 
 	private function decodeQueryType(string $input): string

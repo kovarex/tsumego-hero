@@ -1,11 +1,20 @@
 <?php
 
+use Cake\Http\ServerRequest;
+use Cake\Routing\Router;
+
 //Every address the site answers on keeps reaching the same action, and the code keeps making the
 //same addresses. The expectations are the plain data of RouteTable.php; the adapter at the end of
 //this class is all that speaks to the router, so when the routes move to Cake 5 only it changes and
 //the table checks the new routes as it is.
 class RoutesTest extends AppTestCase
 {
+	protected function setUp(): void
+	{
+		parent::setUp();
+		$this->loadRoutes();
+	}
+
 	/** @return array<string, array{string, array{string, string, array<?string>}}> */
 	public static function parseCases(): array
 	{
@@ -71,20 +80,19 @@ class RoutesTest extends AppTestCase
 		return require __DIR__ . '/RouteTable.php';
 	}
 
-	//The adapter: the only part of the test that speaks to the router of Cake 2.
+	//The adapter: the only part of the test that speaks to the router, here of Cake 5.
 
 	//The controller, action, passed and named parameters the router gives the address. The controller
 	//is the class name it dispatches to, without Controller.
 	/** @return array{controller: string, action: string, pass: array<?string>, named: array<string, string>} */
 	private static function parse(string $method, string $path): array
 	{
-		$_SERVER['REQUEST_METHOD'] = $method;
-		$params = Router::parse($path);
+		$params = Router::parseRequest(new ServerRequest(['url' => $path, 'environment' => ['REQUEST_METHOD' => $method]]));
 		return [
-			'controller' => Inflector::camelize($params['controller']),
+			'controller' => $params['controller'],
 			'action' => $params['action'],
 			'pass' => $params['pass'],
-			'named' => $params['named'] ?? [],
+			'named' => [],
 		];
 	}
 
@@ -92,21 +100,9 @@ class RoutesTest extends AppTestCase
 	/** @param array<int|string, mixed>|string $url */
 	private static function url(array|string $url, ?string $context): string
 	{
-		if ($context !== null)
-		{
-			$request = new CakeRequest('/' . $context);
-			$request->addParams(['plugin' => null, 'controller' => $context, 'action' => 'index', 'pass' => [], 'named' => []]);
-			Router::setRequestInfo($request);
-		}
-		try
-		{
-			return Router::url($url);
-		}
-		finally
-		{
-			if ($context !== null)
-				Router::popRequest();
-		}
+		$params = ['plugin' => null, 'controller' => $context, 'action' => 'index', 'pass' => []];
+		Router::setRequest(new ServerRequest(['url' => '/' . ($context ?? ''), 'params' => $params]));
+		return Router::url($url);
 	}
 
 	//The templates of the routes that none of the addresses reaches.
@@ -117,14 +113,13 @@ class RoutesTest extends AppTestCase
 	private static function routesReachedByNone(array $requests): array
 	{
 		$unreached = [];
-		foreach (Router::$routes as $route)
+		foreach (Router::getRouteCollection()->routes() as $route)
 		{
 			$reached = false;
 			foreach ($requests as $request)
 			{
 				[$method, $path] = str_contains($request, ' ') ? explode(' ', $request, 2) : ['GET', $request];
-				$_SERVER['REQUEST_METHOD'] = $method;
-				if ($route->parse($path) !== false)
+				if ($route->parse($path, $method) !== null)
 				{
 					$reached = true;
 					break;
@@ -143,10 +138,11 @@ class RoutesTest extends AppTestCase
 		$actions = [];
 		foreach (glob(APP . 'Controller' . DS . '*Controller.php') as $file)
 		{
-			$class = basename($file, '.php');
-			if ($class === 'AppController' || !class_exists($class))
+			$name = basename($file, '.php');
+			$class = 'App\\Controller\\' . $name;
+			if (in_array($name, ['AppController', 'ErrorController'], true) || !class_exists($class))
 				continue;
-			$controller = substr($class, 0, -strlen('Controller'));
+			$controller = substr($name, 0, -strlen('Controller'));
 			$actions[$controller] = [];
 			foreach ((new ReflectionClass($class))->getMethods(ReflectionMethod::IS_PUBLIC) as $method)
 				if ($method->getDeclaringClass()->getName() === $class && !str_starts_with($method->getName(), '_')

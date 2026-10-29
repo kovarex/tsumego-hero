@@ -6,7 +6,7 @@ use App\Model\Table\SgfTable;
 use App\Model\Table\SgfReviewTable;
 use App\Model\Table\SetConnectionTable;
 use App\Model\Table\UserTable;
-use BadRequestException;
+use Cake\Http\Exception\BadRequestException;
 
 //The SGF changes of the admin area: every version that became part of a problem, an admin's own
 //change or a proposal an admin accepted, the newest first. The proposals waiting for a decision

@@ -1,5 +1,10 @@
 <?php
 
+namespace App\Controller;
+
+use Cake\Http\Response as CakeResponse;
+use Cake\Http\Exception\InternalErrorException;
+use Cake\Http\Exception\NotFoundException;
 use App\Model\Table\SgfTable;
 use App\Attribute\HttpGet;
 use App\Utility\Constants;

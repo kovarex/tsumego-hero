@@ -1,5 +1,8 @@
 <?php
 
+namespace App\Controller;
+
+use Cake\Http\Exception\NotFoundException;
 use App\Model\Table\SetConnectionTable;
 use App\Model\Table\SgfTable;
 use App\Attribute\HttpGet;

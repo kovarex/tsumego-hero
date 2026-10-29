@@ -1,5 +1,11 @@
 <?php
 
+namespace App\Controller;
+
+use Cake\Http\Exception\BadRequestException;
+use Cake\Http\Exception\ForbiddenException;
+use Cake\Http\Exception\NotFoundException;
+use Cake\Routing\Router;
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Model\Entity\TimeModeRank;

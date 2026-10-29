@@ -1,5 +1,7 @@
 <?php
 
+namespace App\View\Helper;
+
 //HighscoreHelper - Renders highscore tables with standardized layout.
 //Every highscore table has the same structure:
 //  Place | Name+Rank (with premium badge) | ...value columns...

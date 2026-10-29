@@ -4,7 +4,7 @@ namespace App\Model\Table;
 
 use App\Model\Entity\Set;
 use App\Utility\Util;
-use Router;
+use Cake\Routing\Router;
 
 //The collections of problems: the ones the site publishes, the sandbox builds of the admins and
 //the collections the players assemble (their Favorites among them).
