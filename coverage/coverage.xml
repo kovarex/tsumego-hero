@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1793235858">
-  <project timestamp="1793235858">
+<coverage generated="1793236886">
+  <project timestamp="1793236886">
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Attribute/HttpDelete.php">
       <class name="App\Attribute\HttpDelete" namespace="global">
         <metrics complexity="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
@@ -1416,25 +1416,25 @@
       <line num="165" type="stmt" count="13"/>
       <line num="166" type="stmt" count="3"/>
       <line num="167" type="stmt" count="11"/>
-      <line num="168" type="stmt" count="1"/>
-      <line num="169" type="stmt" count="11"/>
-      <line num="170" type="stmt" count="11"/>
+      <line num="168" type="stmt" count="6"/>
+      <line num="169" type="stmt" count="6"/>
+      <line num="170" type="stmt" count="6"/>
       <line num="171" type="stmt" count="13"/>
       <line num="172" type="stmt" count="13"/>
       <line num="173" type="stmt" count="13"/>
-      <line num="174" type="stmt" count="6"/>
-      <line num="175" type="stmt" count="8"/>
-      <line num="176" type="stmt" count="4"/>
-      <line num="177" type="stmt" count="5"/>
-      <line num="178" type="stmt" count="5"/>
+      <line num="174" type="stmt" count="5"/>
+      <line num="175" type="stmt" count="9"/>
+      <line num="176" type="stmt" count="6"/>
+      <line num="177" type="stmt" count="4"/>
+      <line num="178" type="stmt" count="4"/>
       <line num="179" type="stmt" count="13"/>
       <line num="180" type="stmt" count="13"/>
       <line num="181" type="stmt" count="13"/>
-      <line num="182" type="stmt" count="6"/>
-      <line num="183" type="stmt" count="8"/>
-      <line num="184" type="stmt" count="2"/>
-      <line num="185" type="stmt" count="7"/>
-      <line num="186" type="stmt" count="7"/>
+      <line num="182" type="stmt" count="5"/>
+      <line num="183" type="stmt" count="9"/>
+      <line num="184" type="stmt" count="5"/>
+      <line num="185" type="stmt" count="5"/>
+      <line num="186" type="stmt" count="5"/>
       <line num="187" type="stmt" count="13"/>
       <line num="189" type="stmt" count="13"/>
       <line num="190" type="stmt" count="13"/>
@@ -2548,9 +2548,9 @@
     </file>
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Controller/SgfsController.php">
       <class name="SgfsController" namespace="global">
-        <metrics complexity="19" methods="2" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="75" coveredstatements="55" elements="77" coveredelements="56"/>
+        <metrics complexity="19" methods="2" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="75" coveredstatements="56" elements="77" coveredelements="57"/>
       </class>
-      <line num="10" type="method" name="view" visibility="public" complexity="18" crap="26.24" count="5"/>
+      <line num="10" type="method" name="view" visibility="public" complexity="18" crap="25.07" count="5"/>
       <line num="13" type="stmt" count="5"/>
       <line num="14" type="stmt" count="3"/>
       <line num="15" type="stmt" count="3"/>
@@ -2579,7 +2579,7 @@
       <line num="44" type="stmt" count="0"/>
       <line num="45" type="stmt" count="0"/>
       <line num="49" type="stmt" count="3"/>
-      <line num="50" type="stmt" count="0"/>
+      <line num="50" type="stmt" count="1"/>
       <line num="51" type="stmt" count="3"/>
       <line num="52" type="stmt" count="3"/>
       <line num="53" type="stmt" count="0"/>
@@ -2627,7 +2627,7 @@
       <line num="115" type="stmt" count="3"/>
       <line num="116" type="stmt" count="3"/>
       <line num="117" type="stmt" count="3"/>
-      <metrics loc="120" ncloc="118" classes="1" methods="2" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="75" coveredstatements="55" elements="77" coveredelements="56"/>
+      <metrics loc="120" ncloc="118" classes="1" methods="2" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="75" coveredstatements="56" elements="77" coveredelements="57"/>
     </file>
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Controller/SitemapsController.php">
       <class name="SitemapsController" namespace="global">
@@ -5236,8 +5236,8 @@
       <line num="43" type="stmt" count="0"/>
       <line num="46" type="method" name="error500" visibility="public" complexity="1" crap="2" count="0"/>
       <line num="48" type="stmt" count="0"/>
-      <line num="51" type="method" name="notFound" visibility="public" complexity="1" crap="1" count="20"/>
-      <line num="53" type="stmt" count="20"/>
+      <line num="51" type="method" name="notFound" visibility="public" complexity="1" crap="1" count="21"/>
+      <line num="53" type="stmt" count="21"/>
       <line num="56" type="method" name="missingController" visibility="public" complexity="1" crap="1" count="1"/>
       <line num="58" type="stmt" count="1"/>
       <line num="61" type="method" name="missingAction" visibility="public" complexity="1" crap="2" count="0"/>
@@ -9666,19 +9666,19 @@
       <line num="275" type="stmt" count="68"/>
       <line num="276" type="stmt" count="68"/>
       <line num="277" type="stmt" count="68"/>
-      <line num="278" type="stmt" count="35"/>
-      <line num="279" type="stmt" count="38"/>
-      <line num="280" type="stmt" count="38"/>
-      <line num="281" type="stmt" count="38"/>
-      <line num="282" type="stmt" count="38"/>
-      <line num="283" type="stmt" count="38"/>
-      <line num="284" type="stmt" count="13"/>
-      <line num="285" type="stmt" count="38"/>
-      <line num="286" type="stmt" count="38"/>
-      <line num="287" type="stmt" count="38"/>
-      <line num="288" type="stmt" count="38"/>
-      <line num="289" type="stmt" count="38"/>
-      <line num="290" type="stmt" count="38"/>
+      <line num="278" type="stmt" count="36"/>
+      <line num="279" type="stmt" count="37"/>
+      <line num="280" type="stmt" count="37"/>
+      <line num="281" type="stmt" count="37"/>
+      <line num="282" type="stmt" count="37"/>
+      <line num="283" type="stmt" count="37"/>
+      <line num="284" type="stmt" count="12"/>
+      <line num="285" type="stmt" count="37"/>
+      <line num="286" type="stmt" count="37"/>
+      <line num="287" type="stmt" count="37"/>
+      <line num="288" type="stmt" count="37"/>
+      <line num="289" type="stmt" count="37"/>
+      <line num="290" type="stmt" count="37"/>
       <line num="300" type="method" name="awardXp" visibility="public" complexity="6" crap="6" count="21"/>
       <line num="302" type="stmt" count="21"/>
       <line num="303" type="stmt" count="21"/>
@@ -9797,10 +9797,10 @@
       <line num="531" type="stmt" count="49"/>
       <line num="532" type="stmt" count="49"/>
       <line num="533" type="stmt" count="49"/>
-      <line num="534" type="stmt" count="3"/>
+      <line num="534" type="stmt" count="1"/>
       <line num="538" type="stmt" count="49"/>
-      <line num="539" type="stmt" count="5"/>
-      <line num="540" type="stmt" count="5"/>
+      <line num="539" type="stmt" count="3"/>
+      <line num="540" type="stmt" count="3"/>
       <line num="541" type="stmt" count="49"/>
       <line num="543" type="stmt" count="49"/>
       <line num="544" type="stmt" count="49"/>
@@ -9808,10 +9808,10 @@
       <line num="547" type="stmt" count="21"/>
       <line num="548" type="stmt" count="21"/>
       <line num="549" type="stmt" count="21"/>
-      <line num="550" type="stmt" count="12"/>
+      <line num="550" type="stmt" count="10"/>
       <line num="551" type="stmt" count="10"/>
-      <line num="552" type="stmt" count="10"/>
-      <line num="553" type="stmt" count="9"/>
+      <line num="552" type="stmt" count="8"/>
+      <line num="553" type="stmt" count="7"/>
       <line num="555" type="stmt" count="21"/>
       <line num="564" type="method" name="importPastMistakes" visibility="public" complexity="2" crap="2" count="10"/>
       <line num="566" type="stmt" count="10"/>
@@ -13348,6 +13348,6 @@
       <line num="64" type="stmt" count="2"/>
       <metrics loc="67" ncloc="51" classes="1" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="30" coveredstatements="28" elements="31" coveredelements="28"/>
     </file>
-    <metrics files="223" loc="26338" ncloc="22616" classes="165" methods="1202" coveredmethods="928" conditionals="0" coveredconditionals="0" statements="10819" coveredstatements="10209" elements="12021" coveredelements="11137"/>
+    <metrics files="223" loc="26338" ncloc="22616" classes="165" methods="1202" coveredmethods="928" conditionals="0" coveredconditionals="0" statements="10819" coveredstatements="10210" elements="12021" coveredelements="11138"/>
   </project>
 </coverage>
