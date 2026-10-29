@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1793264987">
-  <project timestamp="1793264987">
+<coverage generated="1793268049">
+  <project timestamp="1793268049">
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Attribute/HttpDelete.php">
       <class name="App\Attribute\HttpDelete" namespace="global">
         <metrics complexity="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
@@ -1411,27 +1411,27 @@
       <line num="168" type="stmt" count="13"/>
       <line num="169" type="stmt" count="13"/>
       <line num="170" type="stmt" count="13"/>
-      <line num="171" type="stmt" count="7"/>
-      <line num="172" type="stmt" count="7"/>
-      <line num="173" type="stmt" count="4"/>
-      <line num="174" type="stmt" count="4"/>
-      <line num="175" type="stmt" count="4"/>
+      <line num="171" type="stmt" count="4"/>
+      <line num="172" type="stmt" count="9"/>
+      <line num="173" type="stmt" count="5"/>
+      <line num="174" type="stmt" count="5"/>
+      <line num="175" type="stmt" count="5"/>
       <line num="176" type="stmt" count="13"/>
       <line num="177" type="stmt" count="13"/>
       <line num="178" type="stmt" count="13"/>
       <line num="179" type="stmt" count="4"/>
-      <line num="180" type="stmt" count="9"/>
-      <line num="181" type="stmt" count="3"/>
-      <line num="182" type="stmt" count="7"/>
-      <line num="183" type="stmt" count="7"/>
+      <line num="180" type="stmt" count="10"/>
+      <line num="181" type="stmt" count="4"/>
+      <line num="182" type="stmt" count="6"/>
+      <line num="183" type="stmt" count="6"/>
       <line num="184" type="stmt" count="13"/>
       <line num="185" type="stmt" count="13"/>
       <line num="186" type="stmt" count="13"/>
-      <line num="187" type="stmt" count="4"/>
-      <line num="188" type="stmt" count="10"/>
-      <line num="189" type="stmt" count="5"/>
-      <line num="190" type="stmt" count="6"/>
-      <line num="191" type="stmt" count="6"/>
+      <line num="187" type="stmt" count="5"/>
+      <line num="188" type="stmt" count="9"/>
+      <line num="189" type="stmt" count="2"/>
+      <line num="190" type="stmt" count="7"/>
+      <line num="191" type="stmt" count="7"/>
       <line num="192" type="stmt" count="13"/>
       <line num="194" type="stmt" count="13"/>
       <line num="195" type="stmt" count="13"/>
@@ -5184,12 +5184,12 @@
     </file>
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Lib/Error/AppErrorHandler.php">
       <class name="AppErrorHandler" namespace="global">
-        <metrics complexity="16" methods="11" coveredmethods="6" conditionals="0" coveredconditionals="0" statements="28" coveredstatements="23" elements="39" coveredelements="29"/>
+        <metrics complexity="16" methods="11" coveredmethods="8" conditionals="0" coveredconditionals="0" statements="28" coveredstatements="25" elements="39" coveredelements="33"/>
       </class>
-      <line num="5" type="method" name="renderError" visibility="private" complexity="6" crap="6.01" count="143"/>
+      <line num="5" type="method" name="renderError" visibility="private" complexity="6" crap="6" count="143"/>
       <line num="7" type="stmt" count="143"/>
       <line num="9" type="stmt" count="143"/>
-      <line num="10" type="stmt" count="0"/>
+      <line num="10" type="stmt" count="1"/>
       <line num="12" type="stmt" count="143"/>
       <line num="13" type="stmt" count="2"/>
       <line num="14" type="stmt" count="143"/>
@@ -5209,8 +5209,8 @@
       <line num="38" type="stmt" count="39"/>
       <line num="41" type="method" name="error404" visibility="public" complexity="1" crap="2" count="0"/>
       <line num="43" type="stmt" count="0"/>
-      <line num="46" type="method" name="error500" visibility="public" complexity="1" crap="2" count="0"/>
-      <line num="48" type="stmt" count="0"/>
+      <line num="46" type="method" name="error500" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="48" type="stmt" count="1"/>
       <line num="51" type="method" name="notFound" visibility="public" complexity="1" crap="1" count="20"/>
       <line num="53" type="stmt" count="20"/>
       <line num="56" type="method" name="missingController" visibility="public" complexity="1" crap="1" count="1"/>
@@ -5225,7 +5225,7 @@
       <line num="78" type="stmt" count="2"/>
       <line num="81" type="method" name="internalError" visibility="public" complexity="1" crap="2" count="0"/>
       <line num="83" type="stmt" count="0"/>
-      <metrics loc="86" ncloc="82" classes="1" methods="11" coveredmethods="6" conditionals="0" coveredconditionals="0" statements="28" coveredstatements="23" elements="39" coveredelements="29"/>
+      <metrics loc="86" ncloc="82" classes="1" methods="11" coveredmethods="8" conditionals="0" coveredconditionals="0" statements="28" coveredstatements="25" elements="39" coveredelements="33"/>
     </file>
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Lib/Error/ConflictException.php">
       <class name="App\Lib\Error\ConflictException" namespace="global">
@@ -7115,8 +7115,8 @@
       <class name="ParseOnlyRoute" namespace="global">
         <metrics complexity="1" methods="1" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="1" coveredstatements="1" elements="2" coveredelements="2"/>
       </class>
-      <line num="11" type="method" name="match" visibility="public" complexity="1" crap="1" count="31"/>
-      <line num="13" type="stmt" count="31"/>
+      <line num="11" type="method" name="match" visibility="public" complexity="1" crap="1" count="52"/>
+      <line num="13" type="stmt" count="52"/>
       <metrics loc="16" ncloc="10" classes="1" methods="1" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="1" coveredstatements="1" elements="2" coveredelements="2"/>
     </file>
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Policy/AdminPolicy.php">
@@ -7433,17 +7433,17 @@
       <class name="SetViewRoute" namespace="global">
         <metrics complexity="9" methods="2" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="18" coveredstatements="17" elements="20" coveredelements="18"/>
       </class>
-      <line num="16" type="method" name="parse" visibility="public" complexity="4" crap="4" count="721"/>
-      <line num="18" type="stmt" count="721"/>
-      <line num="19" type="stmt" count="721"/>
-      <line num="20" type="stmt" count="705"/>
-      <line num="21" type="stmt" count="45"/>
-      <line num="22" type="stmt" count="25"/>
-      <line num="23" type="stmt" count="21"/>
-      <line num="30" type="method" name="actions" visibility="protected" complexity="5" crap="5.01" count="45"/>
-      <line num="32" type="stmt" count="45"/>
-      <line num="33" type="stmt" count="45"/>
-      <line num="34" type="stmt" count="43"/>
+      <line num="16" type="method" name="parse" visibility="public" complexity="4" crap="4" count="1123"/>
+      <line num="18" type="stmt" count="1123"/>
+      <line num="19" type="stmt" count="1123"/>
+      <line num="20" type="stmt" count="1105"/>
+      <line num="21" type="stmt" count="69"/>
+      <line num="22" type="stmt" count="46"/>
+      <line num="23" type="stmt" count="24"/>
+      <line num="30" type="method" name="actions" visibility="protected" complexity="5" crap="5.01" count="69"/>
+      <line num="32" type="stmt" count="69"/>
+      <line num="33" type="stmt" count="69"/>
+      <line num="34" type="stmt" count="67"/>
       <line num="36" type="stmt" count="2"/>
       <line num="37" type="stmt" count="2"/>
       <line num="38" type="stmt" count="2"/>
@@ -7459,14 +7459,14 @@
       <class name="UrlRoute" namespace="global">
         <metrics complexity="2" methods="1" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="7" coveredstatements="7" elements="8" coveredelements="8"/>
       </class>
-      <line num="5" type="method" name="parse" visibility="public" complexity="2" crap="2" count="952"/>
-      <line num="7" type="stmt" count="952"/>
-      <line num="8" type="stmt" count="952"/>
-      <line num="9" type="stmt" count="952"/>
-      <line num="11" type="stmt" count="23"/>
-      <line num="12" type="stmt" count="23"/>
-      <line num="13" type="stmt" count="23"/>
-      <line num="15" type="stmt" count="952"/>
+      <line num="5" type="method" name="parse" visibility="public" complexity="2" crap="2" count="1423"/>
+      <line num="7" type="stmt" count="1423"/>
+      <line num="8" type="stmt" count="1423"/>
+      <line num="9" type="stmt" count="1423"/>
+      <line num="11" type="stmt" count="24"/>
+      <line num="12" type="stmt" count="24"/>
+      <line num="13" type="stmt" count="24"/>
+      <line num="15" type="stmt" count="1423"/>
       <metrics loc="18" ncloc="18" classes="1" methods="1" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="7" coveredstatements="7" elements="8" coveredelements="8"/>
     </file>
     <file name="/home/runner/work/tsumego-hero/tsumego-hero/src/Utility/AccountWidget.php">
@@ -13293,6 +13293,6 @@
       <line num="64" type="stmt" count="2"/>
       <metrics loc="67" ncloc="51" classes="1" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="30" coveredstatements="28" elements="31" coveredelements="28"/>
     </file>
-    <metrics files="223" loc="26223" ncloc="22480" classes="164" methods="1199" coveredmethods="927" conditionals="0" coveredconditionals="0" statements="10767" coveredstatements="10172" elements="11966" coveredelements="11099"/>
+    <metrics files="223" loc="26223" ncloc="22480" classes="164" methods="1199" coveredmethods="929" conditionals="0" coveredconditionals="0" statements="10767" coveredstatements="10174" elements="11966" coveredelements="11103"/>
   </project>
 </coverage>
