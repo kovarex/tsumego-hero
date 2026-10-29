@@ -2,6 +2,7 @@
 
 use App\Model\Table\SetTable;
 use App\Model\Table\ProgressDeletionTable;
+use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\HtmlSanitizer;
 use App\Utility\Rating;
@@ -46,7 +47,7 @@ if($set->id == 11969 || $set->id == 29156 || $set->id == 31813 || $set->id == 33
 		<div>
 		<?php
 		$ownerNote = $setAuthor && (int) $setAuthor['id'] !== Auth::getUserID()
-			? ' <span class="set-view__owner">by ' . User::renderLink($setAuthor) . '</span>'
+			? ' <span class="set-view__owner">by ' . UserTable::renderLink($setAuthor) . '</span>'
 			: '';
 		echo '<p class="title4 set-view-title">' . h($setTitle) . $ownerNote . '</p>';
 		if (!empty($set->deleted))

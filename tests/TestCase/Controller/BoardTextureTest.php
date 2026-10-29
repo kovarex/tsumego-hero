@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\UserTable;
 
 class BoardTextureTest extends IntegrationTestCase
 {
@@ -33,8 +34,8 @@ class BoardTextureTest extends IntegrationTestCase
 		$checkbox9 = $browser->findById('newCheck9');
 		$this->assertTrue($checkbox9->isSelected(), "Board 9 should be selected after click and reload.");
 
-		$user = ClassRegistry::init('User')->findById($context->user['id']);
-		$bitmask = (int) $user['User']['boards_bitmask'];
+		$user = UserTable::row((int) $context->user['id']);
+		$bitmask = (int) $user['boards_bitmask'];
 
 		// Board 9 is index 8. 1 << 8 = 256.
 		$this->assertTrue(($bitmask & 256) > 0, "Bitmask should have the 9th bit set.");

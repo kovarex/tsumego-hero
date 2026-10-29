@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\UserTable;
 use App\Utility\UploadedAvatar;
 use App\Utility\Util;
 use Facebook\WebDriver\WebDriverKeys;
@@ -143,27 +144,27 @@ class UserSettingsTest extends IntegrationTestCase
 
 	public function testAvatarIsStoredAndShownAsChosen(): void
 	{
-		$context = new ContextPreparator(['user' => ['avatar_setting_id' => User::AVATAR_BOARD]]);
+		$context = new ContextPreparator(['user' => ['avatar_setting_id' => UserTable::AVATAR_BOARD]]);
 		$browser = Browser::instance();
 
 		$browser->get('users/settings');
-		$browser->find('input[name="avatar"][value="' . User::AVATAR_GRAVATAR . '"]')->click();
-		$this->waitForUserField($context, 'avatar_setting_id', (string) User::AVATAR_GRAVATAR);
+		$browser->find('input[name="avatar"][value="' . UserTable::AVATAR_GRAVATAR . '"]')->click();
+		$this->waitForUserField($context, 'avatar_setting_id', (string) UserTable::AVATAR_GRAVATAR);
 
 		$browser->get('users/settings');
-		$this->assertTrue($browser->find('input[name="avatar"][value="' . User::AVATAR_GRAVATAR . '"]')->isSelected());
+		$this->assertTrue($browser->find('input[name="avatar"][value="' . UserTable::AVATAR_GRAVATAR . '"]')->isSelected());
 	}
 
 	public function testGravatarHintIsShownOnlyForTheGravatarAvatar(): void
 	{
-		$context = new ContextPreparator(['user' => ['avatar_setting_id' => User::AVATAR_BOARD]]);
+		$context = new ContextPreparator(['user' => ['avatar_setting_id' => UserTable::AVATAR_BOARD]]);
 		$browser = Browser::instance();
 
 		$browser->get('users/settings');
 		$this->assertTextNotContains('gravatar.com', $browser->driver->getPageSource());
 
-		$browser->find('input[name="avatar"][value="' . User::AVATAR_GRAVATAR . '"]')->click();
-		$this->waitForUserField($context, 'avatar_setting_id', (string) User::AVATAR_GRAVATAR);
+		$browser->find('input[name="avatar"][value="' . UserTable::AVATAR_GRAVATAR . '"]')->click();
+		$this->waitForUserField($context, 'avatar_setting_id', (string) UserTable::AVATAR_GRAVATAR);
 
 		$browser->get('users/settings');
 		$this->assertTextContains('gravatar.com', $browser->driver->getPageSource());
@@ -172,7 +173,7 @@ class UserSettingsTest extends IntegrationTestCase
 	//A picture picked in the form is the avatar of the page the browser comes back to.
 	public function testAnUploadedPictureIsTheAvatarOfThePage(): void
 	{
-		$context = new ContextPreparator(['user' => ['avatar_setting_id' => User::AVATAR_BOARD]]);
+		$context = new ContextPreparator(['user' => ['avatar_setting_id' => UserTable::AVATAR_BOARD]]);
 		$browser = Browser::instance();
 		$image = imagecreatetruecolor(300, 200);
 		imagefill($image, 0, 0, imagecolorallocate($image, 30, 140, 90));
@@ -190,11 +191,11 @@ class UserSettingsTest extends IntegrationTestCase
 			input.files = transfer.files;
 		", [base64_encode($png)]);
 		$browser->find('#avatar-upload button[type=submit]')->click();
-		$this->waitForUserField($context, 'avatar_setting_id', (string) User::AVATAR_UPLOADED);
+		$this->waitForUserField($context, 'avatar_setting_id', (string) UserTable::AVATAR_UPLOADED);
 		$url = UploadedAvatar::url($context->user['id'], $context->reloadUser()['uploaded_avatar_hash']);
 
 		$browser->waitUntilJs('document.querySelector("#avatar-remove") !== null');
-		$this->assertTrue($browser->find('input[name="avatar"][value="' . User::AVATAR_UPLOADED . '"]')->isSelected());
+		$this->assertTrue($browser->find('input[name="avatar"][value="' . UserTable::AVATAR_UPLOADED . '"]')->isSelected());
 		$this->assertStringContainsString($url, $browser->driver->getPageSource());
 		// The browser shows the picture the server sends, not a broken image.
 		$browser->waitUntilJs('Array.from(document.images).some(function(image) { return image.getAttribute("src") === ' . json_encode($url) . ' && image.complete && image.naturalWidth === ' . UploadedAvatar::SIZE . '; })');
@@ -212,26 +213,26 @@ class UserSettingsTest extends IntegrationTestCase
 	public function testPlayerColorAndBoardOrientationAreStored(): void
 	{
 		$context = new ContextPreparator(['user' => [
-			'player_color_setting' => User::PLAYER_COLOR_SETTING_RANDOM,
-			'board_orientation_setting' => User::BOARD_ORIENTATION_SETTING_RANDOM]]);
+			'player_color_setting' => UserTable::PLAYER_COLOR_SETTING_RANDOM,
+			'board_orientation_setting' => UserTable::BOARD_ORIENTATION_SETTING_RANDOM]]);
 		$browser = Browser::instance();
 
 		$browser->get('users/settings');
-		$browser->find('input[name="playerColor"][value="' . User::PLAYER_COLOR_SETTING_ORIGINAL . '"]')->click();
-		$this->waitForUserField($context, 'player_color_setting', (string) User::PLAYER_COLOR_SETTING_ORIGINAL);
+		$browser->find('input[name="playerColor"][value="' . UserTable::PLAYER_COLOR_SETTING_ORIGINAL . '"]')->click();
+		$this->waitForUserField($context, 'player_color_setting', (string) UserTable::PLAYER_COLOR_SETTING_ORIGINAL);
 
-		$browser->find('input[name="boardOrientation"][value="' . User::BOARD_ORIENTATION_SETTING_ORIGINAL . '"]')->click();
-		$this->waitForUserField($context, 'board_orientation_setting', (string) User::BOARD_ORIENTATION_SETTING_ORIGINAL);
+		$browser->find('input[name="boardOrientation"][value="' . UserTable::BOARD_ORIENTATION_SETTING_ORIGINAL . '"]')->click();
+		$this->waitForUserField($context, 'board_orientation_setting', (string) UserTable::BOARD_ORIENTATION_SETTING_ORIGINAL);
 	}
 
 	public function testDateFormatIsStored(): void
 	{
-		$context = new ContextPreparator(['user' => ['date_format_id' => User::DATE_FORMAT_ISO]]);
+		$context = new ContextPreparator(['user' => ['date_format_id' => UserTable::DATE_FORMAT_ISO]]);
 		$browser = Browser::instance();
 
 		$browser->get('users/settings');
-		$browser->find('input[name="dateFormat"][value="' . User::DATE_FORMAT_DAY_MONTH_YEAR . '"]')->click();
-		$this->waitForUserField($context, 'date_format_id', (string) User::DATE_FORMAT_DAY_MONTH_YEAR);
+		$browser->find('input[name="dateFormat"][value="' . UserTable::DATE_FORMAT_DAY_MONTH_YEAR . '"]')->click();
+		$this->waitForUserField($context, 'date_format_id', (string) UserTable::DATE_FORMAT_DAY_MONTH_YEAR);
 	}
 
 	public function testOnlyAnAdminCanStepDown(): void
@@ -283,7 +284,7 @@ class UserSettingsTest extends IntegrationTestCase
 
 		$this->assertSame('dark', $browser->driver->executeScript('return document.documentElement.dataset.theme;'));
 		$this->assertTrue($browser->find('input[name="theme"][value="dark"]')->isSelected());
-		$this->assertSame(User::THEME_DARK, $context->reloadUser()['theme_id']);
+		$this->assertSame(UserTable::THEME_DARK, $context->reloadUser()['theme_id']);
 	}
 
 	public function testResetIsNotOfferedBeforeEnoughProblemsAreSolved(): void
@@ -334,7 +335,7 @@ class UserSettingsTest extends IntegrationTestCase
 		$browser->find('input[type="submit"]')->click();
 		$browser->waitUntilJs('location.href.includes("/users/view/' . $context->user['id'] . '")');
 
-		$this->assertSame(User::ROLE_PLAYER, (int) $context->reloadUser()['user_role_id']);
+		$this->assertSame(UserTable::ROLE_PLAYER, (int) $context->reloadUser()['user_role_id']);
 	}
 
 	//Open the change form and send it. The answer lands on the same address, so the

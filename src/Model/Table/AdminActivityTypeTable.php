@@ -65,7 +65,7 @@ class AdminActivityTypeTable extends AppTable
 	// Display name
 	public const DISPLAY_NAME_CHANGE = 32;
 
-	// Roles: an owner made someone a player, an admin or an owner (see User::changeRole)
+	// Roles: an owner made someone a player, an admin or an owner (see UserTable::changeRole)
 	public const ROLE_CHANGE = 43;
 
 	// Schedule

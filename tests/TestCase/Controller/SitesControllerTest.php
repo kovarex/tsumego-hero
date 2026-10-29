@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\UserTable;
 use Facebook\WebDriver\WebDriverBy;
 /**
  * @retryAttempts 2
@@ -428,7 +429,7 @@ class SitesControllerTest extends IntegrationTestCase
 				'name' => 'Alice',
 				'external_id' => '123456789012345678901',
 				'picture' => '/img/ac036.png',
-				'avatar_setting_id' => User::AVATAR_GOOGLE,
+				'avatar_setting_id' => UserTable::AVATAR_GOOGLE,
 				'achievement-statuses' => [['id' => 1, 'created' => '2026-01-01 12:00:00']],
 			]],
 		]);

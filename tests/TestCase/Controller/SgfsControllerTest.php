@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Table\SgfTable;
+use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\Util;
 
@@ -23,7 +24,7 @@ class SgfsControllerTest extends IntegrationTestCase
 		$this->get('/sgfs/view/' . $tsumegoId . '?user=' . $uploader['id']);
 		$html = preg_replace('/\s+/', ' ', $this->view);
 
-		$this->assertStringContainsString('Upload History of ' . User::DELETED_NAME, $html);
+		$this->assertStringContainsString('Upload History of ' . UserTable::DELETED_NAME, $html);
 		$this->assertStringNotContainsString($uploader['display_name'], $html);
 		$this->assertStringNotContainsString(md5('goner@example.com'), $html);
 	}

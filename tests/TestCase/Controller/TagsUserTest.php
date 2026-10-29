@@ -18,9 +18,9 @@ class TagsUserTest extends IntegrationTestCase
 	public function testEmptyContributions()
 	{
 		new ContextPreparator(['user' => ['name' => 'lonely', 'rating' => 1500]]);
-		$user = ClassRegistry::init('User')->findByName('lonely');
+		$user = ContextPreparator::findUserRow(['name' => 'lonely']);
 
-		$this->get('/tags/user/' . $user['User']['id']);
+		$this->get('/tags/user/' . $user['id']);
 
 		$this->assertTextContains('lonely', $this->view);
 		// No legacy classes in the table
@@ -150,9 +150,9 @@ class TagsUserTest extends IntegrationTestCase
 	public function testPageTitleShowsViewedUserName()
 	{
 		new ContextPreparator(['user' => ['name' => 'pageTitleUser', 'rating' => 1500]]);
-		$user = ClassRegistry::init('User')->findByName('pageTitleUser');
+		$user = ContextPreparator::findUserRow(['name' => 'pageTitleUser']);
 
-		$this->get('/tags/user/' . $user['User']['id']);
+		$this->get('/tags/user/' . $user['id']);
 
 		$this->assertTextContains('pageTitleUser', $this->view);
 	}

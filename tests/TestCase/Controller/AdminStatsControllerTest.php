@@ -2,6 +2,7 @@
 
 use App\Model\Table\SgfTable;
 use App\Model\Table\AdminActivityTypeTable;
+use App\Model\Table\UserTable;
 use App\Utility\Constants;
 use App\Utility\Util;
 
@@ -460,7 +461,7 @@ class AdminStatsControllerTest extends IntegrationTestCase
 		// Wait for the server-side restore to be committed before asserting DB state
 		$browser->waitUntilCssSelectorDoesntExist('#restore-user-' . $deletedUserID);
 		$this->assertStringContainsString('/admin/deleted-accounts', $browser->driver->getCurrentURL());
-		$this->assertNull(ClassRegistry::init('User')->findById($deletedUserID)['User']['deleted']);
+		$this->assertNull(UserTable::row((int) $deletedUserID)['deleted']);
 
 		// the restore is saved in admin activities
 		$adminActivities = $this->fetchTable('AdminActivity')->find()->orderBy('id')->toArray();

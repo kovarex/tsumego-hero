@@ -243,8 +243,9 @@ class Util
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}
 
-	//The database of the Cake 2 models: the default one, or the test one the test suite sets for them.
-	//Its transactions cover the saves of the Cake 5 ORM too, which runs on its connection.
+	//The Cake 2 database: the default one, or the test one the Cake 2 test suite records as the
+	//datasource of the models in ClassRegistry. The Cake 5 ORM runs on its connection
+	//(SharedConnectionDriver), so its transactions cover the saves of the ORM.
 	public static function database(): DboSource
 	{
 		/** @var DboSource */

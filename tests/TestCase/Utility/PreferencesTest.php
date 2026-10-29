@@ -1,6 +1,7 @@
 <?php
 
 
+use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\Preferences;
 use App\Utility\TsumegoFilters;
@@ -61,7 +62,7 @@ class PreferencesTest extends CakeTestCase
 		Preferences::set('query', 'tags');
 
 		// Assert - check it's in the database
-		$this->assertSame('tags', ClassRegistry::init('User')->findById($userId)['User']['collection_grouping']);
+		$this->assertSame('tags', UserTable::row((int) $userId)['collection_grouping']);
 	}
 
 	//Test that guest preferences use internal storage (cookies set via Util::setCookie)
@@ -94,7 +95,7 @@ class PreferencesTest extends CakeTestCase
 		Preferences::mergeGuestPreferencesOnLogin();
 
 		// Assert - preferences should now be in database
-		$user = ClassRegistry::init('User')->findById($userId)['User'];
+		$user = UserTable::row((int) $userId);
 		$this->assertEquals('guest_query', $user['collection_grouping']);
 		$this->assertEquals(150, $user['collection_size']);
 	}
@@ -159,7 +160,7 @@ class PreferencesTest extends CakeTestCase
 		// Act - store as string (simulating cookie or form input)
 		Preferences::set('collection_size', '150');
 		$this->assertEquals(150, (int) Preferences::get('collection_size'));
-		$this->assertSame(150, ClassRegistry::init('User')->findById(Auth::getUserID())['User']['collection_size']);
+		$this->assertSame(150, UserTable::row(Auth::getUserID())['collection_size']);
 
 		// Test with numeric int value
 		Preferences::set('collection_size', 200);
@@ -186,6 +187,6 @@ class PreferencesTest extends CakeTestCase
 
 		Preferences::set('query', 'tags');
 
-		$this->assertSame('difficulty', ClassRegistry::init('User')->findById(Auth::getUserID())['User']['collection_grouping']);
+		$this->assertSame('difficulty', UserTable::row(Auth::getUserID())['collection_grouping']);
 	}
 }

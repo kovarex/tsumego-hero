@@ -3,6 +3,7 @@
 use App\Model\Table\SetTable;
 use App\Model\Entity\Achievement;
 use App\Model\Entity\AchievementStatus;
+use App\Model\Table\UserTable;
 use App\Utility\Auth;
 
 /**
@@ -124,7 +125,7 @@ if ($achievement->additional_description != null)
 			for ($i = 0; $i < count($completers); $i++)
 			{
 				if ($completers[$i] != null)
-					echo User::renderLink($completers[$i]);
+					echo UserTable::renderLink($completers[$i]);
 				if ($i < count($completers) - 1) echo ', ';
 
 			}

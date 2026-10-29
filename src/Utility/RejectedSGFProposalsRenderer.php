@@ -4,7 +4,7 @@ namespace App\Utility;
 
 use App\Model\Table\SgfTable;
 use App\Model\Table\SetConnectionTable;
-use User;
+use App\Model\Table\UserTable;
 
 //The rejected SGF proposals in the admin panel, folded under the ones waiting for a decision,
 //with who rejected them and why, and a button to reopen one. Proposals rejected before the
@@ -77,7 +77,7 @@ OFFSET " . $this->offset);
 
 	public function renderItem(int $index, array $item): void
 	{
-		echo '<td>' . User::renderLink($item) . '</td>';
+		echo '<td>' . UserTable::renderLink($item) . '</td>';
 		echo '<td><a class="adminpanel-link" href="/' . $item['set_connection_id'] . '">' . h($item['set_title']) . ' - ' . h($item['num']) . '</a></td>';
 		echo '<td class="proposal-description">' . SgfDescription::render($item['description']) . '</td>';
 		echo '<td style="white-space:nowrap">';
@@ -87,7 +87,7 @@ OFFSET " . $this->offset);
 		if ($item['rejected'] !== null)
 		{
 			echo '<time datetime="' . Util::toIso8601($item['rejected']) . '" data-format="date">' . h($item['rejected']) . '</time> ';
-			echo User::renderLink($item['admin_id'] === null ? null : [
+			echo UserTable::renderLink($item['admin_id'] === null ? null : [
 				'user_id' => $item['admin_id'],
 				'user_display_name' => $item['admin_display_name'],
 				'user_external_id' => $item['admin_external_id'],

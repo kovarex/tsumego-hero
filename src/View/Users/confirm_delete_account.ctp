@@ -5,6 +5,8 @@
  * @var bool $valid
  * @var string|null $token
  */
+
+use App\Model\Table\UserTable;
 ?>
 <div align="center">
 <p class="title">
@@ -18,7 +20,7 @@
 <?php else: ?>
 	<p>
 		Do you really want to delete your account?<br>
-		Your sets, comments and tags stay on the site, shown as <?php echo h(User::DELETED_NAME); ?>.
+		Your sets, comments and tags stay on the site, shown as <?php echo h(UserTable::DELETED_NAME); ?>.
 	</p>
 	<br>
 	<form method="post" action="/users/confirm_delete_account/<?php echo h($token); ?>">

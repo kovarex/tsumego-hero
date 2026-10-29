@@ -9,11 +9,13 @@
  * @var array $user Row with the id and user_role_id
  */
 
+use App\Model\Table\UserTable;
+
 $userID = (int) $user['id'];
 ?>
 <form method="post" action="/roles/change/<?php echo $userID; ?>" class="role-form">
 	<select name="user_role_id" id="role-select-<?php echo $userID; ?>" aria-label="Role">
-		<?php foreach (User::ROLE_NAMES as $roleID => $roleName): ?>
+		<?php foreach (UserTable::ROLE_NAMES as $roleID => $roleName): ?>
 			<option value="<?php echo $roleID; ?>"<?php echo $roleID === (int) $user['user_role_id'] ? ' selected' : ''; ?>><?php echo $roleName; ?></option>
 		<?php endforeach; ?>
 	</select>

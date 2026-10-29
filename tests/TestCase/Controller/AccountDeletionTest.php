@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Table\AdminActivityTypeTable;
+use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\CookieFlash;
 
@@ -8,7 +9,7 @@ class AccountDeletionTest extends IntegrationTestCase
 {
 	private function userRow(int $userID): array
 	{
-		return ClassRegistry::init('User')->findById($userID)['User'];
+		return UserTable::row((int) $userID);
 	}
 
 	private function deletedOf(int $userID): ?string
@@ -131,7 +132,7 @@ class AccountDeletionTest extends IntegrationTestCase
 		$this->confirmDeletion('wrong' . $token);
 		$this->assertNull($this->deletedOf($context->user['id']));
 
-		ClassRegistry::init('User')->save(['User' => ['id' => $context->user['id'], 'deletion_token_created' => date('Y-m-d H:i:s', strtotime('-25 hours'))]], false);
+		$this->fetchTable('User')->updateAll(['deletion_token_created' => date('Y-m-d H:i:s', strtotime('-25 hours'))], ['id' => $context->user['id']]);
 		$this->post('/users/confirm_delete_account/' . $token);
 		$result = $this->view;
 		$this->assertStringContainsString('deletion-link-invalid', $result);
@@ -165,7 +166,7 @@ class AccountDeletionTest extends IntegrationTestCase
 			$result = $this->view;
 			$this->assertStringContainsString('alive', $result, $url);
 			$this->assertStringNotContainsString('ghost', $result, $url);
-			$this->assertStringNotContainsString(User::DELETED_NAME, $result, $url);
+			$this->assertStringNotContainsString(UserTable::DELETED_NAME, $result, $url);
 		}
 	}
 
@@ -175,11 +176,11 @@ class AccountDeletionTest extends IntegrationTestCase
 		$ghost = $context->otherUsers[0];
 		$alive = $context->otherUsers[1];
 
-		$this->assertSame(h(User::DELETED_NAME), User::renderLink($ghost));
-		$this->assertSame(User::DELETED_NAME, User::displayName($ghost));
-		$this->assertNull(User::displayNameOrNull($ghost));
-		$this->assertStringContainsString('alive', User::renderLink($alive));
-		$this->assertSame($alive['display_name'], User::displayName($alive));
+		$this->assertSame(h(UserTable::DELETED_NAME), UserTable::renderLink($ghost));
+		$this->assertSame(UserTable::DELETED_NAME, UserTable::displayName($ghost));
+		$this->assertNull(UserTable::displayNameOrNull($ghost));
+		$this->assertStringContainsString('alive', UserTable::renderLink($alive));
+		$this->assertSame($alive['display_name'], UserTable::displayName($alive));
 	}
 
 	public function testCommentOfDeletedAccountShowsPlaceholder(): void
@@ -193,7 +194,7 @@ class AccountDeletionTest extends IntegrationTestCase
 		$this->get('/comments');
 		$result = $this->view;
 		$this->assertStringContainsString('comment by a deleted account', $result);
-		$this->assertStringContainsString(h(User::DELETED_NAME), $result);
+		$this->assertStringContainsString(h(UserTable::DELETED_NAME), $result);
 		$this->assertStringNotContainsString('ghost', $result);
 	}
 
@@ -290,19 +291,19 @@ class AccountDeletionTest extends IntegrationTestCase
 			'email' => 'newkovarex@example.com',
 			'password1' => 'secretChest42',
 			'password2' => 'secretChest42']]);
-		$newAccount = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
+		$newAccount = ContextPreparator::findUserRow(['name' => 'kovarex']);
 		$this->assertNotEmpty($newAccount);
-		$this->assertNotEquals($oldAccountID, $newAccount['User']['id']);
+		$this->assertNotEquals($oldAccountID, $newAccount['id']);
 
 		// the old account can't be restored, as its name is taken
 		$this->login('admin');
 		$this->restoreAccount($oldAccountID);
 		$this->assertNotNull($this->deletedOf($oldAccountID));
 		$this->assertSame('Account kovarex can\'t be restored: The name kovarex is used by another account now.', CookieFlash::get());
-		$this->assertSame('kovarex', $this->userRow($newAccount['User']['id'])['name']);
+		$this->assertSame('kovarex', $this->userRow($newAccount['id'])['name']);
 
 		// once the new account is deleted as well, the old one can be restored
-		User::deleteAccount($newAccount['User']['id']);
+		UserTable::deleteAccount($newAccount['id']);
 		$this->restoreAccount($oldAccountID);
 		$oldAccount = $this->userRow($oldAccountID);
 		$this->assertNull($oldAccount['deleted']);
@@ -319,7 +320,7 @@ class AccountDeletionTest extends IntegrationTestCase
 				['display_name' => 'Google User', 'email' => 'google@example.com', 'external_id' => '123', 'deleted' => true],
 				['display_name' => 'Google User 2', 'external_id' => '456', 'email' => 'other@example.com']]]);
 		// signing in with the same Google account created a new account
-		ClassRegistry::init('User')->save(['User' => ['id' => $context->otherUsers[1]['id'], 'external_id' => '123']], false);
+		$this->fetchTable('User')->updateAll(['external_id' => '123'], ['id' => $context->otherUsers[1]['id']]);
 
 		$this->restoreAccount($context->otherUsers[0]['id']);
 		$this->assertNotNull($this->deletedOf($context->otherUsers[0]['id']));

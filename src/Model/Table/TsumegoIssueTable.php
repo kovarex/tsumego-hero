@@ -4,7 +4,6 @@ namespace App\Model\Table;
 
 use App\Utility\Util;
 use Cake\ORM\TableRegistry;
-use User;
 
 //An issue/problem report for a tsumego, which can contain multiple comments. user_id is the author
 //of the issue, deleted is when the issue was deleted, NULL when it is not.
@@ -147,9 +146,9 @@ class TsumegoIssueTable extends AppTable
 						'tsumego_issue_status_id' => $statusId,
 						'tsumego_id' => $row['tsumego_id'],
 						'user_id' => $row['issue_user_id'],
-						'user_display_name' => User::displayNameOrNull(['id' => $row['issue_user_id'], 'display_name' => $row['issue_author_name']]),
+						'user_display_name' => UserTable::displayNameOrNull(['id' => $row['issue_user_id'], 'display_name' => $row['issue_author_name']]),
 						'user_rating' => $row['issue_author_rating'] ?? null,
-						'user_avatar_url' => User::avatarOrNull([
+						'user_avatar_url' => UserTable::avatarOrNull([
 							'id' => $row['issue_user_id'],
 							'display_name' => $row['issue_author_name'] ?? null,
 							'external_id' => $row['issue_author_external_id'] ?? null,
@@ -161,7 +160,7 @@ class TsumegoIssueTable extends AppTable
 						'created' => Util::toIso8601($row['issue_created']),
 					],
 					'comments' => [],
-					'author' => ['name' => User::displayName(['id' => $row['issue_user_id'], 'display_name' => $row['issue_author_name']])],
+					'author' => ['name' => UserTable::displayName(['id' => $row['issue_user_id'], 'display_name' => $row['issue_author_name']])],
 					'tsumegoId' => $row['tsumego_id'],
 					'Set' => $row['set_id'] ? [
 						'id' => $row['set_id'],
@@ -179,9 +178,9 @@ class TsumegoIssueTable extends AppTable
 					'text' => $row['comment_text'],
 					'created' => Util::toIso8601($row['comment_created']),
 					'user_id' => $row['comment_user_id'],
-					'user_display_name' => User::displayNameOrNull(['id' => $row['comment_user_id'], 'display_name' => $row['comment_author_name'] ?? null]),
+					'user_display_name' => UserTable::displayNameOrNull(['id' => $row['comment_user_id'], 'display_name' => $row['comment_author_name'] ?? null]),
 					'user_rating' => $row['comment_author_rating'],
-					'user_avatar_url' => User::avatarOrNull([
+					'user_avatar_url' => UserTable::avatarOrNull([
 						'id' => $row['comment_user_id'],
 						'display_name' => $row['comment_author_name'] ?? null,
 						'external_id' => $row['comment_author_external_id'] ?? null,
@@ -190,7 +189,7 @@ class TsumegoIssueTable extends AppTable
 						'uploaded_avatar_hash' => $row['comment_author_uploaded_avatar_hash'] ?? null,
 						'email' => $row['comment_author_email'] ?? null,
 					]),
-					'isAdmin' => User::isAdmin(['user_role_id' => $row['comment_author_user_role_id'] ?? null]),
+					'isAdmin' => UserTable::isAdmin(['user_role_id' => $row['comment_author_user_role_id'] ?? null]),
 				];
 			}
 		}

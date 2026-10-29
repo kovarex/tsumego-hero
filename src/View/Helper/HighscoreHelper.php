@@ -4,6 +4,7 @@
 //Every highscore table has the same structure:
 //  Place | Name+Rank (with premium badge) | ...value columns...
 //Gap rows (⋮) and self-view highlighting are handled automatically.
+use App\Model\Table\UserTable;
 use App\Utility\Auth;
 
 class HighscoreHelper extends AppHelper
@@ -69,12 +70,12 @@ class HighscoreHelper extends AppHelper
 					$selfClass = ' data-table__row--self';
 			}
 
-			$name = User::renderLink($row);
+			$name = UserTable::renderLink($row);
 
 			$html .= '<tr class="' . trim($selfClass . $medalClass) . '">';
 			$html .= '<td align="center">#' . $pos . '</td>';
 			$html .= '<td align="left">' . $name . '</td>';
-			$html .= '<td align="center">' . User::renderPremium($row) . '</td>';
+			$html .= '<td align="center">' . UserTable::renderPremium($row) . '</td>';
 			foreach ($valueColumns as $col)
 				$html .= '<td align="center">' . $col['render']($row) . '</td>';
 

@@ -3,6 +3,7 @@
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Model\Table\AdminActivityTypeTable;
+use App\Model\Table\UserTable;
 use App\Utility\AdminActivityLogger;
 use App\Utility\SgfParser;
 
@@ -34,12 +35,12 @@ class SgfController extends AppController
 
 		$this->Authorization->authorize($sgf, 'fetch');
 
-		$author = $sgf->user_id ? ClassRegistry::init('User')->findById($sgf->user_id) : null;
+		$author = $sgf->user_id ? UserTable::row($sgf->user_id) : null;
 		$this->autoRender = false;
 		$this->response->type('json');
 		$this->response->body(json_encode([
 			'description' => $sgf->description,
-			'authorLink' => User::renderLink($author ? $author['User'] : null)]));
+			'authorLink' => UserTable::renderLink($author)]));
 		return $this->response;
 	}
 

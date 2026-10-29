@@ -3,6 +3,7 @@
 use App\Model\Entity\Reject;
 use App\Model\Table\RejectTable;
 use App\Model\Table\TimeModeCategoryTable;
+use App\Utility\Util;
 use Cake\Datasource\Exception\MissingPropertyException;
 
 //The Cake 5 ORM runs on the connection of Cake 2, see SharedConnectionDriver.
@@ -17,7 +18,7 @@ class SharedConnectionDriverTest extends IntegrationTestCase
 	public function testTransactionOfCakeTwoCoversWhatCakeFiveSaves(): void
 	{
 		$context = new ContextPreparator();
-		$dataSource = ClassRegistry::init('User')->getDataSource();
+		$dataSource = Util::database();
 
 		$dataSource->begin();
 		$this->saveReject($context->user['id']);
@@ -32,7 +33,7 @@ class SharedConnectionDriverTest extends IntegrationTestCase
 		$context = new ContextPreparator();
 		$this->saveReject($context->user['id']);
 
-		$this->assertSame('ko', ClassRegistry::init('User')->query('SELECT tag_name FROM reject')[0]['reject']['tag_name']);
+		$this->assertSame('ko', Util::database()->fetchAll('SELECT tag_name FROM reject')[0]['reject']['tag_name']);
 	}
 
 	//The singular names of the database need no configuration, see AppTable.

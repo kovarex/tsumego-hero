@@ -1,11 +1,12 @@
 <?php
 
 use App\Model\Table\AdminActivityTypeTable;
+use App\Model\Table\UserTable;
 use App\Utility\CookieFlash;
 use App\Utility\Util;
 use Facebook\WebDriver\WebDriverSelect;
 
-//Owners decide who is an admin or an owner (RolesController, User::changeRole).
+//Owners decide who is an admin or an owner (RolesController, UserTable::changeRole).
 class RolesControllerTest extends IntegrationTestCase
 {
 	private static function roleOf(int $userID): int
@@ -25,9 +26,9 @@ class RolesControllerTest extends IntegrationTestCase
 			'other-users' => [['name' => 'player']]]);
 		$playerID = $context->otherUsers[0]['id'];
 
-		$this->changeRole($playerID, User::ROLE_ADMIN);
+		$this->changeRole($playerID, UserTable::ROLE_ADMIN);
 
-		$this->assertSame(User::ROLE_ADMIN, self::roleOf($playerID));
+		$this->assertSame(UserTable::ROLE_ADMIN, self::roleOf($playerID));
 		$this->assertSame('The role of DN_player is admin now', CookieFlash::get());
 		$activity = $this->fetchTable('AdminActivity')->find()->firstOrFail();
 		$this->assertSame(AdminActivityTypeTable::ROLE_CHANGE, $activity->type);
@@ -43,11 +44,11 @@ class RolesControllerTest extends IntegrationTestCase
 			'other-users' => [['name' => 'admin', 'admin' => true]]]);
 		$adminID = $context->otherUsers[0]['id'];
 
-		$this->changeRole($adminID, User::ROLE_OWNER);
-		$this->assertSame(User::ROLE_OWNER, self::roleOf($adminID));
+		$this->changeRole($adminID, UserTable::ROLE_OWNER);
+		$this->assertSame(UserTable::ROLE_OWNER, self::roleOf($adminID));
 
-		$this->changeRole($adminID, User::ROLE_PLAYER);
-		$this->assertSame(User::ROLE_PLAYER, self::roleOf($adminID));
+		$this->changeRole($adminID, UserTable::ROLE_PLAYER);
+		$this->assertSame(UserTable::ROLE_PLAYER, self::roleOf($adminID));
 	}
 
 	public function testAdminCantChangeRoles(): void
@@ -56,17 +57,17 @@ class RolesControllerTest extends IntegrationTestCase
 			'user' => ['name' => 'admin', 'admin' => true],
 			'other-users' => [['name' => 'player']]]);
 
-		$this->changeRole($context->otherUsers[0]['id'], User::ROLE_ADMIN);
+		$this->changeRole($context->otherUsers[0]['id'], UserTable::ROLE_ADMIN);
 
 		$this->assertResponseCode(403);
-		$this->assertSame(User::ROLE_PLAYER, self::roleOf($context->otherUsers[0]['id']));
+		$this->assertSame(UserTable::ROLE_PLAYER, self::roleOf($context->otherUsers[0]['id']));
 	}
 
 	public function testAdminCantMakeItselfAnOwner(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
 
-		$this->changeRole($context->user['id'], User::ROLE_OWNER);
+		$this->changeRole($context->user['id'], UserTable::ROLE_OWNER);
 
 		$this->assertResponseCode(403);
 	}
@@ -75,9 +76,9 @@ class RolesControllerTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'owner', 'owner' => true]]);
 
-		$this->changeRole($context->user['id'], User::ROLE_ADMIN);
+		$this->changeRole($context->user['id'], UserTable::ROLE_ADMIN);
 
-		$this->assertSame(User::ROLE_OWNER, self::roleOf($context->user['id']));
+		$this->assertSame(UserTable::ROLE_OWNER, self::roleOf($context->user['id']));
 		$this->assertSame('DN_owner is the last owner, make someone else an owner first.', CookieFlash::get());
 		$this->assertSame(0, $this->fetchTable('AdminActivity')->find()->count());
 	}
@@ -88,9 +89,9 @@ class RolesControllerTest extends IntegrationTestCase
 			'user' => ['name' => 'owner', 'owner' => true],
 			'other-users' => [['name' => 'second owner', 'owner' => true]]]);
 
-		$this->changeRole($context->user['id'], User::ROLE_ADMIN);
+		$this->changeRole($context->user['id'], UserTable::ROLE_ADMIN);
 
-		$this->assertSame(User::ROLE_ADMIN, self::roleOf($context->user['id']));
+		$this->assertSame(UserTable::ROLE_ADMIN, self::roleOf($context->user['id']));
 		// the list of the roles is for owners only, so the former owner goes to the profile
 		$this->assertRedirectContains('/users/view/' . $context->user['id']);
 	}
@@ -101,9 +102,9 @@ class RolesControllerTest extends IntegrationTestCase
 			'user' => ['name' => 'owner', 'owner' => true],
 			'other-users' => [['name' => 'gone', 'owner' => true, 'deleted' => true]]]);
 
-		$this->changeRole($context->user['id'], User::ROLE_PLAYER);
+		$this->changeRole($context->user['id'], UserTable::ROLE_PLAYER);
 
-		$this->assertSame(User::ROLE_OWNER, self::roleOf($context->user['id']));
+		$this->assertSame(UserTable::ROLE_OWNER, self::roleOf($context->user['id']));
 	}
 
 	public function testUnknownRoleIsRefused(): void
@@ -114,7 +115,7 @@ class RolesControllerTest extends IntegrationTestCase
 
 		$this->changeRole($context->otherUsers[0]['id'], 9);
 
-		$this->assertSame(User::ROLE_PLAYER, self::roleOf($context->otherUsers[0]['id']));
+		$this->assertSame(UserTable::ROLE_PLAYER, self::roleOf($context->otherUsers[0]['id']));
 		$this->assertSame('There is no such role.', CookieFlash::get());
 	}
 
@@ -164,11 +165,11 @@ class RolesControllerTest extends IntegrationTestCase
 		$browser = Browser::instance();
 
 		$browser->get('users/view/' . $playerID);
-		(new WebDriverSelect($browser->findById('role-select-' . $playerID)))->selectByValue((string) User::ROLE_ADMIN);
+		(new WebDriverSelect($browser->findById('role-select-' . $playerID)))->selectByValue((string) UserTable::ROLE_ADMIN);
 		$browser->clickId('role-submit-' . $playerID);
 		$browser->waitUntilCssSelectorExistsWithText('[role="alert"]', 'The role of DN_player is admin now');
 
-		$this->assertSame(User::ROLE_ADMIN, self::roleOf($playerID));
+		$this->assertSame(UserTable::ROLE_ADMIN, self::roleOf($playerID));
 		$browser->get('roles');
 		$this->assertStringContainsString('DN_player', $browser->find('#roles-users')->getText());
 	}

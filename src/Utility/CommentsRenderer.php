@@ -5,7 +5,7 @@ namespace App\Utility;
 use App\Model\Table\SgfTable;
 use PaginationHelper;
 use App\Model\Table\SetConnectionTable;
-use User;
+use App\Model\Table\UserTable;
 
 class CommentsRenderer
 {
@@ -32,7 +32,7 @@ class CommentsRenderer
 
 		echo '<br></div>';
 		echo '<div class="' . $commentColor . '">';
-		echo h(\User::displayName(['id' => $comment['from_id'], 'display_name' => $comment['from_display_name']])) . ':<br>';
+		echo h(UserTable::displayName(['id' => $comment['from_id'], 'display_name' => $comment['from_display_name']])) . ':<br>';
 		echo '</div>';
 		echo '<div ';
 		if($comment['from_admin'])
@@ -68,7 +68,7 @@ SELECT
 	tsumego_comment.tsumego_id AS tsumego_id,
 	tsumego_comment.created AS created,
 	tsumego_status.status AS status,
-	" . User::isAdminSql('user.user_role_id') . " AS from_admin,
+	" . UserTable::isAdminSql('user.user_role_id') . " AS from_admin,
 	user.display_name as from_display_name,
 	user.id as from_id,
 	tsumego_comment.id as id,

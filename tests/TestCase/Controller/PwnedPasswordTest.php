@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\CookieFlash;
@@ -36,17 +37,17 @@ class PwnedPasswordTest extends IntegrationTestCase
 
 	private function storedHash(int $userID): string
 	{
-		return ClassRegistry::init('User')->findById($userID)['User']['password_hash'];
+		return UserTable::row((int) $userID)['password_hash'];
 	}
 
 	private function userCount(): int
 	{
-		return count(ClassRegistry::init('User')->find('all'));
+		return $this->fetchTable('User')->find()->count();
 	}
 
 	private function userNamed(string $name): array
 	{
-		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => $name]]);
+		$user = ContextPreparator::findUserRow(['name' => $name]);
 		return $user ?: [];
 	}
 
@@ -87,7 +88,7 @@ class PwnedPasswordTest extends IntegrationTestCase
 
 		$page = $this->register('leakedSignUp', self::LEAKED);
 
-		$this->assertCount($countBefore, ClassRegistry::init('User')->find('all'));
+		$this->assertSame($countBefore, $this->fetchTable('User')->find()->count());
 		$this->assertStringContainsString(self::LEAKED_PASSWORD_MESSAGE, $page);
 	}
 
@@ -137,10 +138,11 @@ class PwnedPasswordTest extends IntegrationTestCase
 	public function testPasswordResetRefusesALeakedPassword(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'leakedReset']]);
-		$user = ClassRegistry::init('User')->findById($context->user['id']);
-		$user['User']['password_reset_token'] = 'resetLinkForLeaked';
-		$user['User']['password_reset_token_created'] = date('Y-m-d H:i:s');
-		ClassRegistry::init('User')->save($user);
+		$user = UserTable::row((int) $context->user['id']);
+		$this->fetchTable('User')->updateAll([
+			'password_reset_token' => 'resetLinkForLeaked',
+			'password_reset_token_created' => date('Y-m-d H:i:s'),
+		], ['id' => $user['id']]);
 		$this->logout();
 		$this->checker->addBreachedPassword(self::LEAKED);
 

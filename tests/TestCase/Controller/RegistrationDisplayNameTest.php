@@ -20,9 +20,7 @@ class RegistrationDisplayNameTest extends IntegrationTestCase
 				],
 			]);
 
-			$user = ClassRegistry::init('User')->find('first', [
-				'conditions' => ['email' => $case . '@example.com']
-			]);
+			$user = ContextPreparator::findUserRow(['email' => $case . '@example.com']);
 			$this->assertEmpty($user, 'A registration with an ' . $case . ' name must not create an account');
 		}
 	}

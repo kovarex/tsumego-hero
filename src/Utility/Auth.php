@@ -2,32 +2,36 @@
 
 namespace App\Utility;
 
-use ClassRegistry;
+use App\Model\Table\UserTable;
+use Cake\Database\Expression\QueryExpression;
+use Cake\ORM\TableRegistry;
 use Exception;
-use User;
 
 /** @phpstan-import-type UserRow from \App\Utility\RowTypes */
 class Auth
 {
+	//Signs in the user of the row (UserRow, see UserTable::row()) and sets the cookie of the session.
+	//Without a row it takes the user of the auth_token cookie, if there is one.
+	/** @param UserRow|null $user */
 	public static function init(?array $user = null): void
 	{
 
 		// a hack to inject login in test environment
 		if (Util::isInTestEnvironment() && !empty($_COOKIE["hackedLoggedInUserID"]))
 		{
-			$userData = ClassRegistry::init('User')->findById((int) $_COOKIE["hackedLoggedInUserID"]);
-			if ($userData && empty($userData['User']['deleted']))
+			$userData = UserTable::row((int) $_COOKIE["hackedLoggedInUserID"]);
+			if ($userData && empty($userData['deleted']))
 			{
-				Auth::$user = $userData['User'];
+				Auth::$user = $userData;
 				return;
 			}
 		}
 
-		if ($user && empty($user['User']['deleted']))
+		if ($user && empty($user['deleted']))
 		{
-			Auth::$user = $user['User'];
+			Auth::$user = $user;
 			// Set JWT cookie for stateless auth
-			JwtAuth::setAuthCookie(Auth::getUserID(), $user['User']['password_hash'] ?? null);
+			JwtAuth::setAuthCookie(Auth::getUserID(), $user['password_hash'] ?? null);
 			return;
 		}
 
@@ -35,10 +39,10 @@ class Auth
 		$userIdFromJwt = JwtAuth::getUserIdFromCookie();
 		if ($userIdFromJwt)
 		{
-			$userData = ClassRegistry::init('User')->findById($userIdFromJwt);
-			if ($userData && empty($userData['User']['deleted']) && self::tokenFitsTheAccount($userData['User']))
+			$userData = UserTable::row($userIdFromJwt);
+			if ($userData && empty($userData['deleted']) && self::tokenFitsTheAccount($userData))
 			{
-				Auth::$user = $userData['User'];
+				Auth::$user = $userData;
 				return;
 			}
 			// the account was deleted (or doesn't exist anymore), which also ends its existing sessions
@@ -87,12 +91,12 @@ class Auth
 
 	public static function isAdmin(): bool
 	{
-		return User::isAdmin(Auth::$user);
+		return UserTable::isAdmin(Auth::$user);
 	}
 
 	public static function isOwner(): bool
 	{
-		return User::isOwner(Auth::$user);
+		return UserTable::isOwner(Auth::$user);
 	}
 
 	public static function hasPremium(): bool
@@ -102,45 +106,41 @@ class Auth
 
 	public static function getPlayerColorSetting(): int
 	{
-		return Auth::isLoggedIn() ? (int) Auth::getUser()['player_color_setting'] : User::PLAYER_COLOR_SETTING_RANDOM;
+		return Auth::isLoggedIn() ? (int) Auth::getUser()['player_color_setting'] : UserTable::PLAYER_COLOR_SETTING_RANDOM;
 	}
 
 	public static function getBoardOrientationSetting(): int
 	{
-		return Auth::isLoggedIn() ? (int) Auth::getUser()['board_orientation_setting'] : User::BOARD_ORIENTATION_SETTING_RANDOM;
+		return Auth::isLoggedIn() ? (int) Auth::getUser()['board_orientation_setting'] : UserTable::BOARD_ORIENTATION_SETTING_RANDOM;
 	}
 
 	public static function getDateFormat(): int
 	{
-		return Auth::isLoggedIn() ? (int) Auth::getUser()['date_format_id'] : User::DATE_FORMAT_ISO;
+		return Auth::isLoggedIn() ? (int) Auth::getUser()['date_format_id'] : UserTable::DATE_FORMAT_ISO;
 	}
 
 	//The avatar the logged in player picked, which is the board for a visitor who is not logged in at all.
 	public static function getAvatarSetting(): int
 	{
-		return Auth::isLoggedIn() ? User::avatarChoice(Auth::getUser()) : User::AVATAR_BOARD;
+		return Auth::isLoggedIn() ? UserTable::avatarChoice(Auth::getUser()) : UserTable::AVATAR_BOARD;
 	}
 
 	//Throws when $field is not an existing column on the user table, so a typo
 	//or schema mismatch fails loudly instead of being silently dropped.
 	private static function assertUserFieldExists(string $field): void
 	{
-		$schema = ClassRegistry::init('User')->schema();
-		if (!array_key_exists($field, $schema))
+		if (!TableRegistry::getTableLocator()->get('User')->getSchema()->hasColumn($field))
 			throw new Exception("Cannot write unknown user column '{$field}' - it does not exist in the user table schema.");
 	}
 
 	public static function saveUserField(string $field, mixed $value): void
 	{
-		assert(Auth::isLoggedIn());
-		self::assertUserFieldExists($field);
-		Auth::$user[$field] = $value;
-		ClassRegistry::init('User')->save(
-			['User' => ['id' => Auth::getUserID(), $field => $value]],
-			['validate' => false, 'fieldList' => [$field]]
-		);
+		self::saveUserFields([$field => $value]);
 	}
 
+	//The fields are written by plain SQL with the values as strings, as Cake 2 sent them, so MySQL
+	//rounds a float into an integer column (xp, level...) where the ORM would cut its fraction off.
+	/** @param array<string, mixed> $fieldValues */
 	public static function saveUserFields(array $fieldValues): void
 	{
 		assert(Auth::isLoggedIn());
@@ -148,13 +148,9 @@ class Auth
 			self::assertUserFieldExists($field);
 		foreach ($fieldValues as $field => $value)
 			Auth::$user[$field] = $value;
-		$data = ['User' => ['id' => Auth::getUserID()]];
-		foreach ($fieldValues as $field => $value)
-			$data['User'][$field] = $value;
-		ClassRegistry::init('User')->save($data, [
-			'validate' => false,
-			'fieldList' => array_keys($fieldValues),
-		]);
+		$assignments = implode(', ', array_map(fn(string $field) => '`' . $field . '` = ?', array_keys($fieldValues)));
+		$values = array_map(fn(mixed $value) => is_bool($value) ? (int) $value : $value, array_values($fieldValues));
+		Util::execute('UPDATE user SET ' . $assignments . ' WHERE id = ?', [...$values, Auth::getUserID()]);
 	}
 
 	public static function incrementUserField(string $field, int $delta): void
@@ -162,10 +158,7 @@ class Auth
 		assert(Auth::isLoggedIn());
 		self::assertUserFieldExists($field);
 		Auth::$user[$field] = Auth::getUser()[$field] + $delta;
-		ClassRegistry::init('User')->updateAll(
-			[$field => $field . ' + ' . $delta],
-			['id' => Auth::getUserID()]
-		);
+		Util::execute('UPDATE user SET `' . $field . '` = `' . $field . '` + ? WHERE id = ?', [$delta, Auth::getUserID()]);
 	}
 
 	//Atomically increments a field only while the row satisfies $conditions.
@@ -173,17 +166,15 @@ class Auth
 	//enforced by the database, not only by a PHP check that can race.
 	//Bypasses callbacks/validation/timestamps, like incrementUserField().
 	//Returns whether the increment was applied (condition still held).
+	/** @param array<string, mixed> $conditions */
 	public static function incrementUserFieldIf(string $field, int $delta, array $conditions): bool
 	{
 		assert(Auth::isLoggedIn());
 		self::assertUserFieldExists($field);
 		$conditions['id'] = Auth::getUserID();
-		$model = ClassRegistry::init('User');
-		$model->updateAll(
-			[$field => $field . ' + ' . $delta],
-			$conditions
-		);
-		$affected = $model->getDataSource()->lastAffected();
+		$affected = TableRegistry::getTableLocator()->get('User')->updateAll(
+			[$field => new QueryExpression('`' . $field . '` + ' . $delta)],
+			$conditions);
 		if ($affected)
 			Auth::$user[$field] = Auth::getUser()[$field] + $delta;
 		return $affected > 0;

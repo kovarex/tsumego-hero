@@ -2,7 +2,7 @@
 
 namespace App\Utility;
 
-use User;
+use App\Model\Table\UserTable;
 
 //The new tags players proposed, waiting for an admin to accept them. Proposals to put an existing
 //tag on a problem are in TagConnectionProposalsRenderer.
@@ -45,7 +45,7 @@ OFFSET " . $this->offset);
 
 	public function renderItem(int $index, array $item): void
 	{
-		echo '<td>' . User::renderLink($item) . '</td>';
+		echo '<td>' . UserTable::renderLink($item) . '</td>';
 		echo '<td><a href="/tags/view/' . (int) $item['tag_id'] . '">' . h($item['tag_name']) . '</a></td>';
 		echo '<td>';
 		ProposalDecisionForm::render(

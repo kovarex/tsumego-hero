@@ -4,7 +4,7 @@ namespace App\Utility;
 
 use App\Model\Table\SgfTable;
 use App\Model\Table\SetConnectionTable;
-use User;
+use App\Model\Table\UserTable;
 
 class SGFProposalsRenderer extends DataTableRenderer
 {
@@ -70,7 +70,7 @@ OFFSET " . $this->offset, [Auth::getUserID()]);
 
 	public function renderItem(int $index, array $item): void
 	{
-		echo '<td>' . User::renderLink($item) . '</td>';
+		echo '<td>' . UserTable::renderLink($item) . '</td>';
 		echo '<td><a class="adminpanel-link" href="/' . $item['set_connection_id'] . '">' . h($item['set_title']) . ' - ' . h($item['num']) . '</a></td>';
 		echo '<td class="proposal-description" id="description-' . $item['proposed_id'] . '">' . SgfDescription::render($item['description']) . '</td>';
 		echo '<td style="white-space:nowrap">';

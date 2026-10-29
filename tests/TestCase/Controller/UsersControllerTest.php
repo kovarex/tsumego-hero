@@ -2,6 +2,7 @@
 
 use App\Model\Table\TimeModeCategoryTable;
 use App\Model\Table\TimeModeSessionStatusTable;
+use App\Model\Table\UserTable;
 use App\Utility\AchievementId;
 use App\Utility\Rating;
 
@@ -653,8 +654,8 @@ class UsersControllerTest extends IntegrationTestCase
 
 		$this->post('/users/demote_admin', ['User' => ['demote' => 'test']]);
 
-		$user = ClassRegistry::init('User')->findById($context->user['id']);
-		$this->assertSame(User::ROLE_PLAYER, (int) $user['User']['user_role_id']);
+		$user = UserTable::row((int) $context->user['id']);
+		$this->assertSame(UserTable::ROLE_PLAYER, (int) $user['user_role_id']);
 		// The view must redirect to the demoted user's own profile with the id filled in.
 		$this->assertStringContainsString('/users/view/' . $context->user['id'], $this->view);
 	}
@@ -671,8 +672,8 @@ class UsersControllerTest extends IntegrationTestCase
 
 		$browser->waitUntilJs('location.href.includes("/users/view/' . $context->user['id'] . '")');
 
-		$user = ClassRegistry::init('User')->findById($context->user['id']);
-		$this->assertSame(User::ROLE_PLAYER, (int) $user['User']['user_role_id']);
+		$user = UserTable::row((int) $context->user['id']);
+		$this->assertSame(UserTable::ROLE_PLAYER, (int) $user['user_role_id']);
 	}
 
 	public function testLastOwnerCantDemoteSelf()
@@ -681,8 +682,8 @@ class UsersControllerTest extends IntegrationTestCase
 
 		$this->post('/users/demote_admin', ['User' => ['demote' => 'test']]);
 
-		$user = ClassRegistry::init('User')->findById($context->user['id']);
-		$this->assertSame(User::ROLE_OWNER, (int) $user['User']['user_role_id']);
+		$user = UserTable::row((int) $context->user['id']);
+		$this->assertSame(UserTable::ROLE_OWNER, (int) $user['user_role_id']);
 		$this->assertStringContainsString('is the last owner', $this->view);
 	}
 
@@ -692,7 +693,7 @@ class UsersControllerTest extends IntegrationTestCase
 
 		$this->post('/users/demote_admin', ['User' => ['demote' => 'test']]);
 
-		$user = ClassRegistry::init('User')->findById($context->user['id']);
-		$this->assertSame(User::ROLE_PLAYER, (int) $user['User']['user_role_id']);
+		$user = UserTable::row((int) $context->user['id']);
+		$this->assertSame(UserTable::ROLE_PLAYER, (int) $user['user_role_id']);
 	}
 }

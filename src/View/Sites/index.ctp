@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Table\SetTable;
+use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\ChartRenderer;
 use App\Utility\Constants;
@@ -96,7 +97,7 @@ foreach ($tsumegoButtonsOfPublishedTsumegos as $tsumegoButton)
 			<img src="/img/new_startpage/<?php echo h($quote); ?>u.png?v=4.3" class="quote-pick-1" alt="User of the Day" title="User of the Day">
 			<?php if ($userOfTheDay !== null): ?>
 				<div class="user-pick-all user-pick-<?php echo h($quote); ?> text-center">
-					<?php echo User::renderLink($userOfTheDay); ?>
+					<?php echo UserTable::renderLink($userOfTheDay); ?>
 				</div>
 			<?php endif; ?>
 		</div>

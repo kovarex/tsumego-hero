@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\UploadedAvatar;
@@ -30,7 +31,7 @@ use App\Utility\UploadedAvatar;
 			<tr>
 				<td><strong>Email:</strong> <?php echo h($user['email']); ?></td>
 				<td>
-					<?php if (!User::isGoogleUser($user)): ?>
+					<?php if (!UserTable::isGoogleUser($user)): ?>
 						<button type="button" id="change-email" class="link">change</button>
 					<?php endif; ?>
 				</td>
@@ -45,13 +46,13 @@ use App\Utility\UploadedAvatar;
 				</td>
 			</tr>
 			<?php endif; ?>
-			<?php if (!User::isGoogleUser($user)): ?>
+			<?php if (!UserTable::isGoogleUser($user)): ?>
 			<tr>
 				<td colspan="2">
 					<div id="email-form" style="display:none;margin-top:3px;">
 						<?php
-						echo $this->Form->create('User', ['url' => ['controller' => 'users', 'action' => 'emailPreference']]);
-						echo '<div class="input"><input type="email" name="data[User][email]" placeholder="New e-mail" aria-label="New e-mail" maxlength="' . User::EMAIL_MAX_LENGTH . '" style="width:150px;" required="required"></div>';
+						echo $this->Form->create(false, ['url' => ['controller' => 'users', 'action' => 'emailPreference'], 'id' => 'UserEmailPreferenceForm']);
+						echo '<div class="input"><input type="email" name="data[User][email]" placeholder="New e-mail" aria-label="New e-mail" maxlength="' . UserTable::EMAIL_MAX_LENGTH . '" style="width:150px;" required="required"></div>';
 						echo '<div class="input"><input type="password" name="data[User][password]" placeholder="Password" aria-label="Password" autocomplete="current-password" style="width:150px;" required="required"></div>';
 						echo '<div class="hint">The address changes once you open the link sent to it.</div>';
 						echo '<div class="submit"><input class="btn" value="Submit" type="submit"></div>';
@@ -68,7 +69,7 @@ use App\Utility\UploadedAvatar;
 				<td colspan="2">
 					<div id="password-form" style="display:none;margin-top:3px;">
 						<?php
-						echo $this->Form->create('User', ['url' => ['controller' => 'users', 'action' => 'passwordPreference']]);
+						echo $this->Form->create(false, ['url' => ['controller' => 'users', 'action' => 'passwordPreference'], 'id' => 'UserPasswordPreferenceForm']);
 						echo '<div class="input"><input type="password" name="current" placeholder="Current password" aria-label="Current password" autocomplete="current-password" style="width:150px;" required="required"></div>';
 						echo '<div class="input"><input type="password" name="new1" placeholder="New password" aria-label="New password" autocomplete="new-password" style="width:150px;" required="required"></div>';
 						echo '<div class="input"><input type="password" name="new2" placeholder="New password again" aria-label="New password again" autocomplete="new-password" style="width:150px;" required="required"></div>';
@@ -88,13 +89,13 @@ use App\Utility\UploadedAvatar;
 				<td><strong>Avatar:</strong></td>
 				<td>
 					<?php
-					$chosenAvatar = User::avatarChoice($user);
-					foreach (User::avatarChoices($user) as $avatarValue => $avatarLabel)
+					$chosenAvatar = UserTable::avatarChoice($user);
+					foreach (UserTable::avatarChoices($user) as $avatarValue => $avatarLabel)
 					{
 						$avatarChecked = $chosenAvatar === $avatarValue ? 'checked="checked"' : '';
 						echo '<label class="field__option"><input type="radio" name="avatar" value="' . $avatarValue . '" onclick="avatarPreference(this.value);" ' . $avatarChecked . '> ' . h($avatarLabel) . '</label>';
 					}
-					if ($chosenAvatar === User::AVATAR_GRAVATAR)
+					if ($chosenAvatar === UserTable::AVATAR_GRAVATAR)
 						echo '<div class="hint">Change it at <a href="https://gravatar.com" target="_blank" rel="noopener">gravatar.com</a></div>';
 					?>
 					<form method="post" action="/users/avatarUpload" enctype="multipart/form-data" id="avatar-upload">
@@ -131,8 +132,8 @@ use App\Utility\UploadedAvatar;
 				<?php
 				$levelBarDisplay = (int) $levelBar;
 				?>
-				<label class="field__option"><input type="radio" id="levelBarDisplay1" name="levelBarDisplay" value="1" onclick="levelBarChange(1);" <?php echo $levelBarDisplay === User::LEVEL_BAR_LEVEL ? 'checked="checked"' : ''; ?>> Level</label>
-				<label class="field__option"><input type="radio" id="levelBarDisplay2" name="levelBarDisplay" value="2" onclick="levelBarChange(2);" <?php echo $levelBarDisplay === User::LEVEL_BAR_RATING ? 'checked="checked"' : ''; ?>> Rating</label>
+				<label class="field__option"><input type="radio" id="levelBarDisplay1" name="levelBarDisplay" value="1" onclick="levelBarChange(1);" <?php echo $levelBarDisplay === UserTable::LEVEL_BAR_LEVEL ? 'checked="checked"' : ''; ?>> Level</label>
+				<label class="field__option"><input type="radio" id="levelBarDisplay2" name="levelBarDisplay" value="2" onclick="levelBarChange(2);" <?php echo $levelBarDisplay === UserTable::LEVEL_BAR_RATING ? 'checked="checked"' : ''; ?>> Rating</label>
 			</div>
 			<div class="field">
 				<span class="field__label">Theme</span>
@@ -141,7 +142,7 @@ use App\Utility\UploadedAvatar;
 			</div>
 			<div class="field">
 				<span class="field__label">Sound</span>
-				<?php $soundIsOn = User::soundIsOn($user); ?>
+				<?php $soundIsOn = UserTable::soundIsOn($user); ?>
 				<label class="field__option"><input type="radio" name="sound" value="on" onclick="settingsSound('on');" <?php echo $soundIsOn ? 'checked="checked"' : ''; ?>> On</label>
 				<label class="field__option"><input type="radio" name="sound" value="off" onclick="settingsSound('off');" <?php echo $soundIsOn ? '' : 'checked="checked"'; ?>> Off</label>
 			</div>
@@ -150,10 +151,10 @@ use App\Utility\UploadedAvatar;
 				<?php
 				$dateFormat = Auth::getDateFormat();
 				foreach ([
-					User::DATE_FORMAT_ISO => '2026-02-28 14:05',
-					User::DATE_FORMAT_DAY_MONTH_YEAR => '28. 2. 2026 14:05',
-					User::DATE_FORMAT_MONTH_DAY_YEAR => '02/28/2026 2:05 PM',
-					User::DATE_FORMAT_BROWSER => 'Browser language'] as $dateFormatValue => $dateFormatLabel)
+					UserTable::DATE_FORMAT_ISO => '2026-02-28 14:05',
+					UserTable::DATE_FORMAT_DAY_MONTH_YEAR => '28. 2. 2026 14:05',
+					UserTable::DATE_FORMAT_MONTH_DAY_YEAR => '02/28/2026 2:05 PM',
+					UserTable::DATE_FORMAT_BROWSER => 'Browser language'] as $dateFormatValue => $dateFormatLabel)
 				{
 					$dateFormatChecked = $dateFormat === $dateFormatValue ? 'checked="checked"' : '';
 					echo '<label class="field__option"><input type="radio" name="dateFormat" value="' . $dateFormatValue . '" onclick="dateFormatPreference(this.value);" ' . $dateFormatChecked . '> ' . $dateFormatLabel . '</label>';
@@ -172,21 +173,21 @@ use App\Utility\UploadedAvatar;
 				<span class="field__label">Player color</span>
 				<?php
 				$playerColor = Auth::getPlayerColorSetting();
-				$playerColorRandomChecked = $playerColor === User::PLAYER_COLOR_SETTING_RANDOM ? 'checked="checked"' : '';
-				$playerColorOriginalChecked = $playerColor === User::PLAYER_COLOR_SETTING_ORIGINAL ? 'checked="checked"' : '';
+				$playerColorRandomChecked = $playerColor === UserTable::PLAYER_COLOR_SETTING_RANDOM ? 'checked="checked"' : '';
+				$playerColorOriginalChecked = $playerColor === UserTable::PLAYER_COLOR_SETTING_ORIGINAL ? 'checked="checked"' : '';
 				?>
-				<label class="field__option"><input type="radio" name="playerColor" value="<?php echo User::PLAYER_COLOR_SETTING_RANDOM; ?>" onclick="playerColorPreference(this.value);" <?php echo $playerColorRandomChecked; ?>> Random</label>
-				<label class="field__option"><input type="radio" name="playerColor" value="<?php echo User::PLAYER_COLOR_SETTING_ORIGINAL; ?>" onclick="playerColorPreference(this.value);" <?php echo $playerColorOriginalChecked; ?>> Original</label>
+				<label class="field__option"><input type="radio" name="playerColor" value="<?php echo UserTable::PLAYER_COLOR_SETTING_RANDOM; ?>" onclick="playerColorPreference(this.value);" <?php echo $playerColorRandomChecked; ?>> Random</label>
+				<label class="field__option"><input type="radio" name="playerColor" value="<?php echo UserTable::PLAYER_COLOR_SETTING_ORIGINAL; ?>" onclick="playerColorPreference(this.value);" <?php echo $playerColorOriginalChecked; ?>> Original</label>
 			</div>
 			<div class="field">
 				<span class="field__label">Board orientation</span>
 				<?php
 				$boardOrientation = Auth::getBoardOrientationSetting();
-				$boardOrientationRandomChecked = $boardOrientation === User::BOARD_ORIENTATION_SETTING_RANDOM ? 'checked="checked"' : '';
-				$boardOrientationOriginalChecked = $boardOrientation === User::BOARD_ORIENTATION_SETTING_ORIGINAL ? 'checked="checked"' : '';
+				$boardOrientationRandomChecked = $boardOrientation === UserTable::BOARD_ORIENTATION_SETTING_RANDOM ? 'checked="checked"' : '';
+				$boardOrientationOriginalChecked = $boardOrientation === UserTable::BOARD_ORIENTATION_SETTING_ORIGINAL ? 'checked="checked"' : '';
 				?>
-				<label class="field__option"><input type="radio" name="boardOrientation" value="<?php echo User::BOARD_ORIENTATION_SETTING_RANDOM; ?>" onclick="boardOrientationPreference(this.value);" <?php echo $boardOrientationRandomChecked; ?>> Random</label>
-				<label class="field__option"><input type="radio" name="boardOrientation" value="<?php echo User::BOARD_ORIENTATION_SETTING_ORIGINAL; ?>" onclick="boardOrientationPreference(this.value);" <?php echo $boardOrientationOriginalChecked; ?>> Original</label>
+				<label class="field__option"><input type="radio" name="boardOrientation" value="<?php echo UserTable::BOARD_ORIENTATION_SETTING_RANDOM; ?>" onclick="boardOrientationPreference(this.value);" <?php echo $boardOrientationRandomChecked; ?>> Random</label>
+				<label class="field__option"><input type="radio" name="boardOrientation" value="<?php echo UserTable::BOARD_ORIENTATION_SETTING_ORIGINAL; ?>" onclick="boardOrientationPreference(this.value);" <?php echo $boardOrientationOriginalChecked; ?>> Original</label>
 			</div>
 		</div>
 	</div>

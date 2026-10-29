@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Table\ProgressDeletionTable;
+use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\CookieFlash;
 use App\Utility\PlayOutcome;
@@ -130,7 +131,7 @@ class ProgressDeletionTest extends IntegrationTestCase
 	private function ratingsOf(ContextPreparator $context): array
 	{
 		return [
-			'user' => (float) ClassRegistry::init('User')->findById($context->user['id'])['User']['rating'],
+			'user' => (float) UserTable::row((int) $context->user['id'])['rating'],
 			'tsumego' => (float) $this->fetchTable('Tsumego')->get($context->tsumegos[0]['id'])->rating];
 	}
 

@@ -9,7 +9,7 @@ use Cake\ORM\TableRegistry;
 //writes to its author, opens an issue or fixes it.
 class SgfReviewTable extends AppTable
 {
-	//The columns of the user a row of reviewersOf has, what an avatar needs (see User::avatarOrNull)
+	//The columns of the user a row of reviewersOf has, what an avatar needs (see UserTable::avatarOrNull)
 	private const REVIEWER_FIELDS = ['id', 'display_name', 'external_id', 'picture', 'email', 'avatar_setting_id', 'uploaded_avatar_hash', 'deleted'];
 
 	//Ticks the change as checked by the admin, or takes the tick back.

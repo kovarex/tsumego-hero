@@ -34,9 +34,9 @@ class ChallengesController extends AppController
 
 		$opponent = null;
 		if ($opponentID = (int) ($this->params['url']['opponent'] ?? 0))
-			if ($opponentRow = ClassRegistry::init('User')->findById($opponentID))
-				if (!User::isDeleted($opponentRow['User']) && $opponentID !== Auth::getUserID())
-					$opponent = $opponentRow['User']['display_name'];
+			if ($opponentRow = $this->fetchTable('User')->find()->select(['display_name', 'deleted'])->where(['id' => $opponentID])->first())
+				if ($opponentRow->deleted === null && $opponentID !== Auth::getUserID())
+					$opponent = $opponentRow->display_name;
 		$this->set('opponent', $opponent);
 		return null;
 	}
@@ -200,13 +200,13 @@ class ChallengesController extends AppController
 		$problems = [];
 		foreach ($names as $name)
 		{
-			$player = ClassRegistry::init('User')->find('first', ['conditions' => ['display_name' => $name, 'deleted' => null]]);
+			$player = $this->fetchTable('User')->find()->select(['id'])->where(['display_name' => $name, 'deleted IS' => null])->first();
 			if (!$player)
 			{
 				$problems[] = 'There is no player named ' . $name . '.';
 				continue;
 			}
-			$playerID = (int) $player['User']['id'];
+			$playerID = $player->id;
 			if ($playerID === Auth::getUserID())
 				continue;
 			if (ChallengeTable::participantCount($challengeID) >= ChallengeTable::MAXIMUM_PARTICIPANTS)

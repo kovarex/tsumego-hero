@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\UserTable;
 use App\Utility\Avatar;
 use App\Utility\Constants;
 
@@ -97,7 +98,7 @@ class OpenGraphSharingTest extends IntegrationTestCase
 		$this->get('sets/' . $createdSet->id);
 		$body = $this->view;
 
-		$this->assertStringContainsString('<meta property="og:title" content="Bobby Collection by ' . h(User::DELETED_NAME) . '">', $body);
+		$this->assertStringContainsString('<meta property="og:title" content="Bobby Collection by ' . h(UserTable::DELETED_NAME) . '">', $body);
 		$this->assertStringNotContainsString('Bobby"', $body, 'the name of a deleted account stays out of the preview');
 		$this->assertStringNotContainsString('collected by Bobby', $body);
 	}
@@ -153,13 +154,13 @@ class OpenGraphSharingTest extends IntegrationTestCase
 		$context = new ContextPreparator(['other-users' => [[
 			'name' => 'alice',
 			'email' => 'alice@example.com',
-			'avatar_setting_id' => User::AVATAR_GRAVATAR,
+			'avatar_setting_id' => UserTable::AVATAR_GRAVATAR,
 		]]]);
 
 		$this->get('users/view/' . $context->otherUsers[0]['id']);
 		$body = $this->view;
 
-		$this->assertStringContainsString('og:image" content="https://www.gravatar.com/avatar/' . User::gravatarHash('alice@example.com'), $body);			// Gravatar is told which size to send, so the size of the preview is known.
+		$this->assertStringContainsString('og:image" content="https://www.gravatar.com/avatar/' . UserTable::gravatarHash('alice@example.com'), $body);			// Gravatar is told which size to send, so the size of the preview is known.
 		$this->assertStringContainsString('<meta property="og:image:width" content="' . Avatar::SHARE_SIZE . '">', $body);
 		$this->assertStringNotContainsString('og:image:type', $body);
 		$this->assertStringNotContainsString('Tsumego-Hero-Logo.png', $body);
@@ -171,7 +172,7 @@ class OpenGraphSharingTest extends IntegrationTestCase
 			'name' => 'alice',
 			'email' => 'alice@example.com',
 			'external_id' => '1234567890',
-			'avatar_setting_id' => User::AVATAR_GOOGLE,
+			'avatar_setting_id' => UserTable::AVATAR_GOOGLE,
 			'picture' => 'https://lh3.googleusercontent.com/a/abc=s96-c',
 		]]]);
 

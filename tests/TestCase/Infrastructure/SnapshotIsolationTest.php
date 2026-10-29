@@ -1,10 +1,13 @@
 <?php
 
+use App\Model\Table\AppTable;
 use App\Utility\Util;
+use Cake\Datasource\EntityInterface;
+use Cake\Event\EventInterface;
 
 //MariaDB 11.6.2 and newer fail a transaction with 1020 "Record has changed since last read" when it
 //updates a row another request changed after the transaction read something (forum#35, forum#102).
-//A plain save isn't a transaction (AppModel::save), an explicit transaction still gets the check.
+//A plain save isn't a transaction (AppTable::save), an explicit transaction still gets the check.
 class SnapshotIsolationTest extends CakeTestCase
 {
 	private const TABLE = 'snapshot_isolation_test';
@@ -42,14 +45,16 @@ class SnapshotIsolationTest extends CakeTestCase
 	//Another request changes the row while the save is between checking that the row exists and updating it.
 	public function testASaveKeepsAChangeOfAnotherRequestInTheMeantime(): void
 	{
-		$model = new class (['table' => self::TABLE, 'name' => 'SnapshotIsolationRow', 'ds' => 'default']) extends AppModel {
-			public function beforeSave($options = [])
+		$table = new class (['table' => self::TABLE, 'alias' => 'SnapshotIsolationRow']) extends AppTable {
+			public function beforeSave(EventInterface $event, EntityInterface $entity, ArrayObject $options): void
 			{
+				parent::beforeSave($event, $entity, $options);
 				SnapshotIsolationTest::changeFromAnotherRequest();
-				return true;
 			}
 		};
-		$this->assertNotFalse($model->save(['id' => 1, 'value' => 10]));
+		$row = $table->get(1);
+		$row->set('value', 10);
+		$this->assertNotFalse($table->save($row));
 		$this->assertEquals(['value' => 10, 'other' => 1], self::row(), 'Both changes are kept');
 	}
 

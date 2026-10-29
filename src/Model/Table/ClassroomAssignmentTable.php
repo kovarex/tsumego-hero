@@ -10,7 +10,6 @@ use App\Utility\TsumegoButtons;
 use App\Utility\TsumegoUtil;
 use App\Utility\Util;
 use Throwable;
-use User;
 
 //Problems a teacher gave a class to solve by a day. The teacher builds the assignment up as a
 //draft, picking problems from their own collections and the ones of the site, and the pupils get
@@ -435,8 +434,8 @@ class ClassroomAssignmentTable extends AppTable
 			}
 			$pupilRows[] = [
 				'userId' => $userId,
-				'name' => User::displayNameOrNull(['id' => $userId, 'display_name' => $pupil['user_display_name']]),
-				'avatarUrl' => User::avatarOrNull([
+				'name' => UserTable::displayNameOrNull(['id' => $userId, 'display_name' => $pupil['user_display_name']]),
+				'avatarUrl' => UserTable::avatarOrNull([
 					'id' => $userId,
 					'display_name' => $pupil['user_display_name'],
 					'external_id' => $pupil['user_external_id'],

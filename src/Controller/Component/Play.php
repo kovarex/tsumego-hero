@@ -11,6 +11,7 @@ use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\ClassroomAssignmentTable;
 use App\Model\Table\TagConnectionTable;
 use App\Model\Table\TagTable;
+use App\Model\Table\UserTable;
 use App\Policy\AdminPolicy;
 use App\Policy\BasePolicy;
 use App\Policy\SetPolicy;
@@ -85,7 +86,7 @@ class Play
 			|| in_array($set->id, self::SETS_PLAYED_AS_BLACK));
 		//The corner is purely a visual mirror, it never affects solving. "Original" shows the
 		//problem's canonical orientation, which besogo normalizes to top-left.
-		$this->set('corner', Auth::getBoardOrientationSetting() === User::BOARD_ORIENTATION_SETTING_ORIGINAL ? 'top-left' : self::randomCorner());
+		$this->set('corner', Auth::getBoardOrientationSetting() === UserTable::BOARD_ORIENTATION_SETTING_ORIGINAL ? 'top-left' : self::randomCorner());
 
 		if (Auth::isInRatingMode() || Auth::isInTimeMode())
 			$this->set('_title', 'Tsumego Hero');
@@ -264,7 +265,7 @@ ORDER BY s.title", [$tsumegoID, Auth::getUserID()]);
 			$playerColor = $requestedColor;
 		elseif ($playAsBlack)
 			$playerColor = 'black';
-		elseif (Auth::getPlayerColorSetting() === User::PLAYER_COLOR_SETTING_ORIGINAL)
+		elseif (Auth::getPlayerColorSetting() === UserTable::PLAYER_COLOR_SETTING_ORIGINAL)
 			$playerColor = $sgfColor === 'W' ? 'white' : 'black';
 		else
 			$playerColor = rand(0, 1) ? 'white' : 'black';

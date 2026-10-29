@@ -3,6 +3,7 @@
 namespace App\Test\PHPStan;
 
 use Cake\ORM\Locator\LocatorInterface;
+use Cake\ORM\TableRegistry;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;

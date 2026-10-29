@@ -4,6 +4,7 @@ use App\Model\Table\SgfTable;
 use App\Model\Entity\Sgf;
 use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Entity\TsumegoComment;
+use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
 
@@ -14,7 +15,7 @@ class SgfControllerUploadTest extends IntegrationTestCase
 	//A comment on it, anchored at the second move.
 	private const COMMENT = ['message' => 'black A19 then w A18', 'position' => '1/2/1/1/2/1/2/1/sgf|1/1+1/2'];
 	//The board as the SGF stores it, so the page shows the problem in the top-left corner and its own colours.
-	private const STORED_BOARD = ['board_orientation_setting' => User::BOARD_ORIENTATION_SETTING_ORIGINAL, 'player_color_setting' => User::PLAYER_COLOR_SETTING_ORIGINAL];
+	private const STORED_BOARD = ['board_orientation_setting' => UserTable::BOARD_ORIENTATION_SETTING_ORIGINAL, 'player_color_setting' => UserTable::PLAYER_COLOR_SETTING_ORIGINAL];
 
 	private function newestSgf(ContextPreparator $context): Sgf
 	{
@@ -215,7 +216,7 @@ class SgfControllerUploadTest extends IntegrationTestCase
 		$this->assertSame(self::COMMENT['message'], $comment->message);
 		$this->assertSame(self::COMMENT['position'], $comment->position);
 
-		ClassRegistry::init('User')->save(['id' => $context->user['id'], 'user_role_id' => User::ROLE_ADMIN]);
+		$this->fetchTable('User')->updateAll(['user_role_id' => UserTable::ROLE_ADMIN], ['id' => $context->user['id']]);
 		$browser->get('/admin/sgf-proposals');
 		$browser->post('/users/acceptSGFProposal/' . $proposal->id);
 

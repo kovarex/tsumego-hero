@@ -2,6 +2,7 @@
 
 use App\Model\Table\ChallengeTable;
 use App\Model\Table\TimeModeSessionStatusTable;
+use App\Model\Table\UserTable;
 
 /**
  * The challenges of a player and the form to start one.
@@ -88,7 +89,7 @@ use App\Model\Table\TimeModeSessionStatusTable;
 				<span class="hint"><?= h(ChallengeTable::describe($challenge)) ?></span>
 			</span>
 			<span class="hint">
-				by <?= User::renderLink($challenge) ?>
+				by <?= UserTable::renderLink($challenge) ?>
 				· <?= (int) $challenge['finished_count'] ?>/<?= (int) $challenge['participant_count'] ?> played
 				· <?= $myRun ?>
 				<?php if ($canDecline): ?>

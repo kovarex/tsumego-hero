@@ -32,17 +32,12 @@ class RegistrationEmailTest extends IntegrationTestCase
 		]);
 
 		// Check that no new user was created with this email/name
-		$userModel = ClassRegistry::init('User');
-		$newUser = $userModel->find('first', [
-			'conditions' => ['name' => 'newuser']
-		]);
+		$newUser = ContextPreparator::findUserRow(['name' => 'newuser']);
 		$this->assertEmpty($newUser, "New user should NOT have been created with duplicate email");
 
 		// Original user should still exist
-		$existingUserStill = $userModel->find('first', [
-			'conditions' => ['email' => 'taken@example.com']
-		]);
-		$this->assertEquals('existinguser', $existingUserStill['User']['name'],
+		$existingUserStill = ContextPreparator::findUserRow(['email' => 'taken@example.com']);
+		$this->assertEquals('existinguser', $existingUserStill['name'],
 			"Original user should still exist with original name");
 	}
 
@@ -72,17 +67,12 @@ class RegistrationEmailTest extends IntegrationTestCase
 		]);
 
 		// Check that no new user was created with this email/name
-		$userModel = ClassRegistry::init('User');
-		$newUser = $userModel->find('first', [
-			'conditions' => ['name' => 'newuser2']
-		]);
+		$newUser = ContextPreparator::findUserRow(['name' => 'newuser2']);
 		$this->assertEmpty($newUser, "New user should NOT have been created with Google user's email");
 
 		// Original Google user should still exist
-		$existingUserStill = $userModel->find('first', [
-			'conditions' => ['email' => 'google@gmail.com']
-		]);
-		$this->assertEquals('Google User', $existingUserStill['User']['display_name'],
+		$existingUserStill = ContextPreparator::findUserRow(['email' => 'google@gmail.com']);
+		$this->assertEquals('Google User', $existingUserStill['display_name'],
 			"Google user should still exist with original display_name");
 	}
 
@@ -101,11 +91,9 @@ class RegistrationEmailTest extends IntegrationTestCase
 		]);
 
 		// Check the user was created
-		$user = ClassRegistry::init('User')->find('first', [
-			'conditions' => ['email' => 'unique@example.com']
-		]);
+		$user = ContextPreparator::findUserRow(['email' => 'unique@example.com']);
 		$this->assertNotEmpty($user, "User should have been created");
-		$this->assertEquals('uniqueuser', $user['User']['name']);
+		$this->assertEquals('uniqueuser', $user['name']);
 
 		// Check success message
 		$this->assertTrue(CookieFlash::has(), "Flash message should be set");
@@ -121,16 +109,13 @@ class RegistrationEmailTest extends IntegrationTestCase
 	{
 		// Create a Google account that holds the display name
 		$context = new ContextPreparator(['user' => null]);
-
-		$userModel = ClassRegistry::init('User');
-		$userModel->create();
-		$userModel->save([
+		$this->fetchTable('User')->saveOrFail($this->fetchTable('User')->newEntity([
 			'name' => null,
 			'display_name' => 'ConflictName',  // This is the conflict point
 			'email' => 'google@gmail.com',
 			'password_hash' => 'google_oauth',
 			'external_id' => '123456789',
-		], false);
+		], ['validate' => false]));
 
 		// The new player wants the login name "ConflictName", which the Google account
 		// does not use
@@ -144,23 +129,19 @@ class RegistrationEmailTest extends IntegrationTestCase
 		]);
 
 		// Check the new user was created
-		$newUser = $userModel->find('first', [
-			'conditions' => ['email' => 'newuser@example.com']
-		]);
+		$newUser = ContextPreparator::findUserRow(['email' => 'newuser@example.com']);
 		$this->assertNotEmpty($newUser, "New user should have been created");
-		$this->assertEquals('ConflictName', $newUser['User']['name']);
+		$this->assertEquals('ConflictName', $newUser['name']);
 		// Display name should be unique, so it should have a suffix
-		$this->assertEquals('ConflictName (2)', $newUser['User']['display_name'],
+		$this->assertEquals('ConflictName (2)', $newUser['display_name'],
 			"display_name should be unique with suffix");
 		// A suffixed display name is not the one the player chose, so they have to
 		// pick their own before continuing (the same way a Google account is asked)
-		$this->assertEquals(true, $newUser['User']['needs_display_name_change'],
+		$this->assertEquals(true, $newUser['needs_display_name_change'],
 			"a suffixed display name should send the player to the rename page");
 
 		// Google account should still hold its display name
-		$googleUser = $userModel->find('first', [
-			'conditions' => ['external_id' => '123456789']
-		]);
-		$this->assertEquals('ConflictName', $googleUser['User']['display_name']);
+		$googleUser = ContextPreparator::findUserRow(['external_id' => '123456789']);
+		$this->assertEquals('ConflictName', $googleUser['display_name']);
 	}
 }

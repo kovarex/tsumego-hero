@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Table\AchievementStatusTable;
+use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\MistakeTraining;
@@ -24,8 +25,6 @@ class SitesController extends AppController
 		if (empty($_COOKIE['lastVisit']))
 			Util::setCookie('lastVisit', Constants::$DEFAULT_TSUMEGO_ID);
 
-		$this->loadModel('User');
-
 		$today = date('Y-m-d');
 		$dayRecordTable = $this->fetchTable('DayRecord');
 		$dayRecord = $dayRecordTable->find()->where(['date' => $today])->first()
@@ -45,8 +44,7 @@ class SitesController extends AppController
 		if ($dayRecord)
 		{
 			$currentQuote = $dayRecord->quote;
-			$userOfTheDay = $this->User->find('first', ['conditions' => ['id' => $dayRecord->user_id]]);
-			$this->set('userOfTheDay', $userOfTheDay ? $userOfTheDay['User'] : null);
+			$this->set('userOfTheDay', UserTable::row($dayRecord->user_id));
 		}
 		else
 			$this->set('userOfTheDay', null);

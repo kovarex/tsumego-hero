@@ -8,6 +8,7 @@ use App\Lib\Error\ConflictException;
 use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\ProgressDeletionTable;
+use App\Model\Table\UserTable;
 use App\Utility\AchievementChecker;
 use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
@@ -34,8 +35,6 @@ class SetsController extends AppController
 	public function sandbox(): void
 	{
 		$this->Authorization->authorize('Set');
-
-		$this->loadModel('User');
 
 		$this->set('_page', 'sandbox');
 		$this->set('_title', 'Tsumego Hero - Collections');
@@ -85,10 +84,13 @@ class SetsController extends AppController
 			array_push($setsNew, $sn);
 		}
 
-		$adminsList = $this->User->find('all', ['order' => 'id ASC', 'conditions' => ['user_role_id' => User::ADMIN_ROLES]]) ?: [];
-		$admins = [];
-		foreach ($adminsList as $item)
-			$admins[] = $item['User']['display_name'];
+		$admins = $this->fetchTable('User')->find()
+			->select(['display_name'])
+			->where(['user_role_id IN' => UserTable::ADMIN_ROLES])
+			->orderBy(['id' => 'ASC'])
+			->all()
+			->extract('display_name')
+			->toList();
 
 		$this->set('admins', $admins);
 		$this->set('setsNew', $setsNew);
@@ -112,16 +114,14 @@ class SetsController extends AppController
 
 	private function _showUserSets(int $userId): void
 	{
-		$this->loadModel('User');
-
 		$isOwn = ($userId === Auth::getUserID());
-		$profileUser = $this->User->findById($userId);
+		$profileUser = UserTable::row($userId);
 		if (!$profileUser)
 			throw new NotFoundException('User not found');
-		$this->assertUserVisible($profileUser['User']);
-		$pageTitle = $isOwn ? 'My Sets' : h($profileUser['User']['display_name']) . "'s Sets";
+		$this->assertUserVisible($profileUser);
+		$pageTitle = $isOwn ? 'My Sets' : h($profileUser['display_name']) . "'s Sets";
 		$this->set('_title', 'Tsumego Hero - ' . $pageTitle);
-		$this->set('profileUser', $profileUser['User']);
+		$this->set('profileUser', $profileUser);
 		$this->set('isOwn', $isOwn);
 		// /sets/mine is the shortcut to this page, so the page itself is known by the player's address.
 		$this->set('canonicalPath', '/sets/user/' . $userId);
@@ -465,7 +465,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 	#[HttpGet]
 	public function index(): void
 	{
-		$this->loadModel('User');
 		$this->set('_page', 'set');
 		$this->set('_title', 'Tsumego Hero - Collections');
 
@@ -765,8 +764,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 			return;
 		}
 
-		$this->loadModel('User');
-
 		if ($id === null)
 		{
 			$this->redirect('/sets/mine');
@@ -842,10 +839,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 
 		$setAuthor = null;
 		if (!empty($set->user_id))
-		{
-			$foundUser = $this->User->findById($set->user_id);
-			$setAuthor = $foundUser['User'] ?? null;
-		}
+			$setAuthor = UserTable::row($set->user_id);
 		$this->set('setAuthor', $setAuthor);
 
 		if ($tsumegoButtons->description)
@@ -861,7 +855,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 			{
 				$ogDescription = SetTable::getProblemCount($set->id) . ' go problems';
 				if ($setAuthor !== null)
-					$ogDescription .= ' collected by ' . User::displayName($setAuthor);
+					$ogDescription .= ' collected by ' . UserTable::displayName($setAuthor);
 			}
 			else
 				$ogDescription = 'Interactive go problems';
@@ -870,7 +864,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$og = [
 			'title' => $setAuthor === null
 				? $displayTitle
-				: $displayTitle . ' by ' . User::displayName($setAuthor),
+				: $displayTitle . ' by ' . UserTable::displayName($setAuthor),
 			'description' => $ogDescription,
 			'type' => 'website',
 			'site_name' => 'Tsumego',

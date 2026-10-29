@@ -1,7 +1,9 @@
 <?php
 
+use App\Model\Table\UserTable;
 use App\Utility\Avatar;
 use App\Utility\Util;
+use Cake\ORM\TableRegistry;
 
 class UserTest extends CakeTestCase
 {
@@ -15,20 +17,19 @@ class UserTest extends CakeTestCase
 	{
 		$context = new ContextPreparator(['user' => ['display_name' => 'Player']]);
 		Util::query('UPDATE user SET display_name = ? WHERE id = ?', ['Player😀', $context->user['id']]);
+		$userTable = TableRegistry::getTableLocator()->get('User');
+		$user = $userTable->get($context->user['id']);
+		$user->xp = 5;
 
-		$User = ClassRegistry::init('User');
-		$user = $User->findById($context->user['id']);
-		$user['User']['xp'] = 5;
-
-		$this->assertNotFalse($User->save($user), 'Saving an account that already has such a name must work');
+		$this->assertNotFalse($userTable->save($user), 'Saving an account that already has such a name must work');
 	}
 
 	//Only a played problem raises highest_rating, so a rating set another way (by hand in the database)
 	//can be above it, and the profile shows the higher one.
 	public function testTheHighestRatingIsNeverBelowTheRating(): void
 	{
-		$this->assertSame(1500.0, User::getHighestRating(['rating' => 1500, 'highest_rating' => 1200]));
-		$this->assertSame(1700.0, User::getHighestRating(['rating' => 1500, 'highest_rating' => 1700]));
+		$this->assertSame(1500.0, UserTable::getHighestRating(['rating' => 1500, 'highest_rating' => 1200]));
+		$this->assertSame(1700.0, UserTable::getHighestRating(['rating' => 1500, 'highest_rating' => 1700]));
 	}
 
 	// =====================================================================
@@ -39,13 +40,13 @@ class UserTest extends CakeTestCase
 	public function testGetAvatarUrlReturnsGooglePictureForGoogleUser()
 	{
 		$user = [
-			'avatar_setting_id' => User::AVATAR_GOOGLE,
+			'avatar_setting_id' => UserTable::AVATAR_GOOGLE,
 			'external_id' => '123456789',
 			'picture' => 'https://lh3.googleusercontent.com/a/abc123',
 			'email' => 'test@gmail.com',
 		];
 
-		$url = User::getAvatarUrl($user, 40);
+		$url = UserTable::getAvatarUrl($user, 40);
 		$this->assertStringContainsString('https://lh3.googleusercontent.com', $url);
 		$this->assertStringContainsString('s40', $url);
 	}
@@ -61,14 +62,14 @@ class UserTest extends CakeTestCase
 			'email' => 'test@example.com',
 		];
 
-		$this->assertSame(Avatar::url('Anna'), User::getAvatarUrl($user, 20));
+		$this->assertSame(Avatar::url('Anna'), UserTable::getAvatarUrl($user, 20));
 	}
 
 	//A board belongs to a name: the same name always draws the same board, a rename
 	//draws another one, and the account behind it does not come into it.
 	public function testTheBoardFollowsTheNameAndNotTheAccount()
 	{
-		$board = fn(string $name, int $id) => User::getAvatarUrl([
+		$board = fn(string $name, int $id) => UserTable::getAvatarUrl([
 			'id' => $id,
 			'display_name' => $name,
 			'email' => 'board@example.com',
@@ -89,7 +90,7 @@ class UserTest extends CakeTestCase
 			'email' => 'test@gmail.com',
 		];
 
-		$this->assertSame(Avatar::url('Somebody'), User::getAvatarUrl($user, 20));
+		$this->assertSame(Avatar::url('Somebody'), UserTable::getAvatarUrl($user, 20));
 	}
 
 	public function testTheGooglePictureIsAskedForInTheSizeTheAvatarIsDrawnIn()
@@ -100,12 +101,12 @@ class UserTest extends CakeTestCase
 				'id' => 1,
 				'external_id' => '123',
 				'picture' => 'https://lh3.googleusercontent.com/a/x' . $suffix,
-				'avatar_setting_id' => User::AVATAR_GOOGLE,
+				'avatar_setting_id' => UserTable::AVATAR_GOOGLE,
 			];
 
 			$this->assertSame(
 				'https://lh3.googleusercontent.com/a/x=s128',
-				User::getAvatarUrl($user, 128),
+				UserTable::getAvatarUrl($user, 128),
 				'The picture with the suffix ' . $suffix . ' was not asked for in 128 pixels'
 			);
 		}
@@ -119,10 +120,10 @@ class UserTest extends CakeTestCase
 			'id' => 1,
 			'external_id' => '123',
 			'picture' => 'https://lh3.googleusercontent.com/a/x?sz=50',
-			'avatar_setting_id' => User::AVATAR_GOOGLE,
+			'avatar_setting_id' => UserTable::AVATAR_GOOGLE,
 		];
 
-		$this->assertSame('https://lh3.googleusercontent.com/a/x?sz=50', User::getAvatarUrl($user, 128));
+		$this->assertSame('https://lh3.googleusercontent.com/a/x?sz=50', UserTable::getAvatarUrl($user, 128));
 	}
 
 	//A picture of another host is served as it is as well.
@@ -132,27 +133,27 @@ class UserTest extends CakeTestCase
 			'id' => 1,
 			'external_id' => '123',
 			'picture' => 'https://example.com/photo.png',
-			'avatar_setting_id' => User::AVATAR_GOOGLE,
+			'avatar_setting_id' => UserTable::AVATAR_GOOGLE,
 		];
 
-		$this->assertSame('https://example.com/photo.png', User::getAvatarUrl($user, 128));
+		$this->assertSame('https://example.com/photo.png', UserTable::getAvatarUrl($user, 128));
 	}
 
 	public function testAnAvatarFromAnotherHostFallsBackToTheBoardOfTheAccount()
 	{
-		$withPicture = User::renderLink([
+		$withPicture = UserTable::renderLink([
 			'id' => 4242,
 			'display_name' => 'Pic',
 			'external_id' => '123',
 			'picture' => 'https://lh3.googleusercontent.com/a/x',
-			'avatar_setting_id' => User::AVATAR_GOOGLE,
+			'avatar_setting_id' => UserTable::AVATAR_GOOGLE,
 		]);
 		$this->assertStringContainsString(
 			"onerror=\"this.onerror=null;this.classList.add('user-avatar--board');this.src='" . Avatar::url('Pic') . "'\"",
 			$withPicture
 		);
 
-		$withBoard = User::renderLink(['id' => 4242, 'display_name' => 'Pic', 'email' => 'pic@example.com']);
+		$withBoard = UserTable::renderLink(['id' => 4242, 'display_name' => 'Pic', 'email' => 'pic@example.com']);
 		$this->assertStringNotContainsString('onerror', $withBoard, 'A board avatar never fails, so it needs no fallback');
 	}
 
@@ -161,7 +162,7 @@ class UserTest extends CakeTestCase
 	{
 		$user = ['id' => 4242, 'display_name' => 'Anna', 'external_id' => null, 'picture' => null, 'email' => 'test@example.com'];
 
-		$this->assertSame(User::getAvatarUrl($user, 20), User::getAvatarUrl($user, 48));
+		$this->assertSame(UserTable::getAvatarUrl($user, 20), UserTable::getAvatarUrl($user, 48));
 	}
 
 	//Every account starts on the board, a Google picture is only shown once the player picks it.
@@ -169,7 +170,7 @@ class UserTest extends CakeTestCase
 	{
 		$user = ['id' => 1, 'display_name' => 'Anna', 'external_id' => '123', 'picture' => 'https://lh3.googleusercontent.com/a/x'];
 
-		$this->assertSame(Avatar::url('Anna'), User::getAvatarUrl($user, 24));
+		$this->assertSame(Avatar::url('Anna'), UserTable::getAvatarUrl($user, 24));
 	}
 
 	public function testChoosingTheBoardHidesTheGooglePicture()
@@ -177,40 +178,40 @@ class UserTest extends CakeTestCase
 		$user = [
 			'id' => 1,
 			'display_name' => 'Anna',
-			'avatar_setting_id' => User::AVATAR_BOARD,
+			'avatar_setting_id' => UserTable::AVATAR_BOARD,
 			'external_id' => '123',
 			'picture' => 'https://lh3.googleusercontent.com/a/x',
 		];
 
-		$this->assertSame(Avatar::url('Anna'), User::getAvatarUrl($user, 24));
+		$this->assertSame(Avatar::url('Anna'), UserTable::getAvatarUrl($user, 24));
 	}
 
 	public function testChoosingTheGooglePictureUsesIt()
 	{
 		$user = [
 			'id' => 1,
-			'avatar_setting_id' => User::AVATAR_GOOGLE,
+			'avatar_setting_id' => UserTable::AVATAR_GOOGLE,
 			'external_id' => '123',
 			'picture' => 'https://lh3.googleusercontent.com/a/x',
 		];
 
-		$this->assertSame('https://lh3.googleusercontent.com/a/x=s24', User::getAvatarUrl($user, 24));
+		$this->assertSame('https://lh3.googleusercontent.com/a/x=s24', UserTable::getAvatarUrl($user, 24));
 	}
 
 	public function testAGoogleChoiceWithoutAPictureFallsBackToTheBoard()
 	{
-		$user = ['id' => 7, 'display_name' => 'Anna', 'avatar_setting_id' => User::AVATAR_GOOGLE, 'external_id' => '123', 'picture' => null];
+		$user = ['id' => 7, 'display_name' => 'Anna', 'avatar_setting_id' => UserTable::AVATAR_GOOGLE, 'external_id' => '123', 'picture' => null];
 
-		$this->assertSame(Avatar::url('Anna'), User::getAvatarUrl($user, 24));
+		$this->assertSame(Avatar::url('Anna'), UserTable::getAvatarUrl($user, 24));
 	}
 
 	public function testChoosingGravatarUsesTheSha256OfTheEmail()
 	{
-		$user = ['id' => 1, 'avatar_setting_id' => User::AVATAR_GRAVATAR, 'email' => ' MyEmailAddress@example.com '];
+		$user = ['id' => 1, 'avatar_setting_id' => UserTable::AVATAR_GRAVATAR, 'email' => ' MyEmailAddress@example.com '];
 
 		$this->assertSame(
 			'https://www.gravatar.com/avatar/84059b07d4be67b806386c0aad8070a23f18836bbaae342275dc0a83414c32ee?s=24&d=identicon',
-			User::getAvatarUrl($user, 24)
+			UserTable::getAvatarUrl($user, 24)
 		);
 	}
 
@@ -219,36 +220,36 @@ class UserTest extends CakeTestCase
 	{
 		$this->assertSame(
 			'84059b07d4be67b806386c0aad8070a23f18836bbaae342275dc0a83414c32ee',
-			User::gravatarHash(' MyEmailAddress@example.com ')
+			UserTable::gravatarHash(' MyEmailAddress@example.com ')
 		);
-		$this->assertNotSame(md5('myemailaddress@example.com'), User::gravatarHash('myemailaddress@example.com'));
+		$this->assertNotSame(md5('myemailaddress@example.com'), UserTable::gravatarHash('myemailaddress@example.com'));
 	}
 
 	//An uploaded picture is stored at one size, so every size gets the same url.
 	public function testChoosingAnUploadedPictureUsesIt()
 	{
-		$user = ['id' => 9, 'display_name' => 'Anna', 'avatar_setting_id' => User::AVATAR_UPLOADED, 'uploaded_avatar_hash' => '0123456789abcdef'];
+		$user = ['id' => 9, 'display_name' => 'Anna', 'avatar_setting_id' => UserTable::AVATAR_UPLOADED, 'uploaded_avatar_hash' => '0123456789abcdef'];
 
-		$this->assertSame('/avatar/9/0123456789abcdef.webp', User::getAvatarUrl($user, 24));
-		$this->assertSame('/avatar/9/0123456789abcdef.webp', User::getAvatarUrl($user, User::AVATAR_PIXELS_PROFILE));
+		$this->assertSame('/avatar/9/0123456789abcdef.webp', UserTable::getAvatarUrl($user, 24));
+		$this->assertSame('/avatar/9/0123456789abcdef.webp', UserTable::getAvatarUrl($user, UserTable::AVATAR_PIXELS_PROFILE));
 	}
 
 	public function testAnUploadedChoiceWithoutAPictureFallsBackToTheBoard()
 	{
-		$user = ['id' => 9, 'display_name' => 'Anna', 'avatar_setting_id' => User::AVATAR_UPLOADED, 'uploaded_avatar_hash' => null];
+		$user = ['id' => 9, 'display_name' => 'Anna', 'avatar_setting_id' => UserTable::AVATAR_UPLOADED, 'uploaded_avatar_hash' => null];
 
-		$this->assertSame(Avatar::url('Anna'), User::getAvatarUrl($user, 24));
+		$this->assertSame(Avatar::url('Anna'), UserTable::getAvatarUrl($user, 24));
 	}
 
 	//A list renders its rows with renderLink(), and the uploaded picture is taken from
 	//the prefixed columns of a raw query as well as from a plain row.
 	public function testRenderLinkShowsTheUploadedPicture()
 	{
-		$link = User::renderLink([
+		$link = UserTable::renderLink([
 			'user_id' => 9,
 			'user_display_name' => 'Anna',
 			'user_email' => 'anna@example.com',
-			'user_avatar_setting_id' => User::AVATAR_UPLOADED,
+			'user_avatar_setting_id' => UserTable::AVATAR_UPLOADED,
 			'user_uploaded_avatar_hash' => '0123456789abcdef',
 		]);
 
@@ -261,7 +262,7 @@ class UserTest extends CakeTestCase
 	{
 		$user = ['id' => 8, 'display_name' => 'Anna', 'avatar_setting_id' => 99, 'email' => 'test@example.com'];
 
-		$this->assertSame(Avatar::url('Anna'), User::getAvatarUrl($user, 24));
+		$this->assertSame(Avatar::url('Anna'), UserTable::getAvatarUrl($user, 24));
 	}
 
 	// =====================================================================
@@ -271,7 +272,7 @@ class UserTest extends CakeTestCase
 	//Test that renderLink includes an avatar image.
 	public function testRenderLinkIncludesAvatar()
 	{
-		$html = User::renderLink([
+		$html = UserTable::renderLink([
 			'id' => 123,
 			'display_name' => 'TestUser',
 			'external_id' => null,
@@ -293,10 +294,10 @@ class UserTest extends CakeTestCase
 
 	public function testRenderLinkShowsGooglePictureForGoogleUser()
 	{
-		$html = User::renderLink([
+		$html = UserTable::renderLink([
 			'id' => 123,
 			'display_name' => 'GoogleUser',
-			'avatar_setting_id' => User::AVATAR_GOOGLE,
+			'avatar_setting_id' => UserTable::AVATAR_GOOGLE,
 			'external_id' => 'google_ext_123',
 			'picture' => 'https://lh3.googleusercontent.com/a/abc123',
 			'rating' => 1500.0,
@@ -313,12 +314,12 @@ class UserTest extends CakeTestCase
 	//Test that renderLink handles deleted users (null id).
 	public function testRenderLinkHandlesDeletedUser()
 	{
-		$html = User::renderLink(null);
+		$html = UserTable::renderLink(null);
 		$this->assertStringContainsString('[account deleted]', $html);
 		$this->assertStringNotContainsString('<a href', $html);
 
 		// Test with empty array
-		$html = User::renderLink(['id' => null, 'display_name' => 'Ghost']);
+		$html = UserTable::renderLink(['id' => null, 'display_name' => 'Ghost']);
 		$this->assertStringContainsString('[account deleted]', $html);
 	}
 
@@ -334,7 +335,7 @@ class UserTest extends CakeTestCase
 			'email' => 'array@example.com',
 		];
 
-		$html = User::renderLink($user);
+		$html = UserTable::renderLink($user);
 
 		$this->assertStringContainsString('/users/view/456', $html);
 		$this->assertStringContainsString('ArrayUser', $html);
@@ -344,7 +345,7 @@ class UserTest extends CakeTestCase
 
 	public function testRenderLinkIncludesRankFromRating()
 	{
-		$html = User::renderLink([
+		$html = UserTable::renderLink([
 			'id' => 123,
 			'display_name' => 'RankedUser',
 			'external_id' => null,
@@ -373,13 +374,12 @@ class UserTest extends CakeTestCase
 		]);
 
 		// Update the display name
-		$result = User::updateDisplayName($context->user['id'], 'New Display Name');
+		$result = UserTable::updateDisplayName($context->user['id'], 'New Display Name');
 		$this->assertTrue($result);
 
 		// Verify the display_name changed in database
-		$userModel = ClassRegistry::init('User');
-		$user = $userModel->findById($context->user['id']);
-		$this->assertEquals('New Display Name', $user['User']['display_name']);
+		$user = UserTable::row((int) $context->user['id']);
+		$this->assertEquals('New Display Name', $user['display_name']);
 	}
 
 	//Test that updateDisplayName gracefully handles missing forum database.
@@ -396,22 +396,21 @@ class UserTest extends CakeTestCase
 		]);
 
 		// This should not throw an exception even though forum DB doesn't exist
-		$result = User::updateDisplayName($context->user['id'], 'Forum Test Name');
+		$result = UserTable::updateDisplayName($context->user['id'], 'Forum Test Name');
 		$this->assertTrue($result);
 
 		// Main DB should still be updated
-		$userModel = ClassRegistry::init('User');
-		$user = $userModel->findById($context->user['id']);
-		$this->assertEquals('Forum Test Name', $user['User']['display_name']);
+		$user = UserTable::row((int) $context->user['id']);
+		$this->assertEquals('Forum Test Name', $user['display_name']);
 	}
 
 	//Test that normalizeDisplayName trims surrounding whitespace and collapses
 	//internal runs of whitespace into single spaces.
 	public function testNormalizeDisplayNameTrimsAndCollapsesWhitespace()
 	{
-		$this->assertSame('Hello World', User::normalizeDisplayName('  Hello   World  '));
-		$this->assertSame('admin', User::normalizeDisplayName('admin '));
-		$this->assertSame('John Doe', User::normalizeDisplayName("\tJohn\nDoe\t"));
+		$this->assertSame('Hello World', UserTable::normalizeDisplayName('  Hello   World  '));
+		$this->assertSame('admin', UserTable::normalizeDisplayName('admin '));
+		$this->assertSame('John Doe', UserTable::normalizeDisplayName("\tJohn\nDoe\t"));
 	}
 
 	//Test that generateUniqueDisplayName normalizes the requested name, so a
@@ -421,7 +420,7 @@ class UserTest extends CakeTestCase
 		$context = new ContextPreparator(['user' => ['name' => 'DisplayTest', 'display_name' => 'Display Test']]);
 
 		// " Display   Test " normalizes to "Display Test" (already taken -> gets a suffix)
-		$unique = User::generateUniqueDisplayName(' Display   Test ');
+		$unique = UserTable::generateUniqueDisplayName(' Display   Test ');
 		$this->assertStringStartsWith('Display Test', $unique);
 	}
 
@@ -440,16 +439,16 @@ class UserTest extends CakeTestCase
 	public function testIsGoogleUserReturnsTrueForGoogleUser()
 	{
 		$user = ['external_id' => 'google123', 'email' => 'test@example.com'];
-		$this->assertTrue(User::isGoogleUser($user));
+		$this->assertTrue(UserTable::isGoogleUser($user));
 	}
 
 	public function testIsGoogleUserReturnsFalseForRegularUser()
 	{
 		$user = ['external_id' => null, 'email' => 'test@example.com'];
-		$this->assertFalse(User::isGoogleUser($user));
+		$this->assertFalse(UserTable::isGoogleUser($user));
 
 		$user2 = ['external_id' => '', 'email' => 'test@example.com'];
-		$this->assertFalse(User::isGoogleUser($user2));
+		$this->assertFalse(UserTable::isGoogleUser($user2));
 	}
 
 	//A display name has to be one the site can store: not empty, and without a character above
@@ -457,7 +456,6 @@ class UserTest extends CakeTestCase
 	//alphabet fit and stay allowed.
 	public function testDisplayNameMustBeOneTheSiteCanStore()
 	{
-		$Model = ClassRegistry::init('User');
 		foreach ([
 			'empty' => ['', false],
 			'with an emoji' => ['Player😀', false],
@@ -465,27 +463,24 @@ class UserTest extends CakeTestCase
 			'Cyrillic' => ['Лисёнок', true],
 			'Japanese' => ['日本語', true]] as $case => [$displayName, $valid])
 		{
-			$Model->create();
-			$Model->set([
+			$user = TableRegistry::getTableLocator()->get('User')->newEntity([
 				'name' => 'SomeLoginName',
 				'display_name' => $displayName,
 				'email' => 'blank@example.com',
 			]);
-			$this->assertSame($valid, $Model->validates(), 'A display name ' . $case . ($valid ? ' must validate' : ' must be refused'));
+			$this->assertSame($valid, !$user->hasErrors(), 'A display name ' . $case . ($valid ? ' must validate' : ' must be refused'));
 		}
 	}
 
 	//An e-mail address can have 254 characters, the user table stores them all.
 	public function testAnEmailAddressCanHaveUpTo254Characters(): void
 	{
-		$Model = ClassRegistry::init('User');
 		foreach ([57 => true, 58 => false] as $lastLabelLength => $valid)
 		{
 			// 64 + 1 + 63 + 1 + 63 + 1 + 57 + 4 = 254 characters
 			$email = str_repeat('a', 64) . '@' . str_repeat('b', 63) . '.' . str_repeat('c', 63) . '.' . str_repeat('d', $lastLabelLength) . '.com';
-			$Model->create();
-			$Model->set(['name' => 'SomeLoginName', 'display_name' => 'Player', 'email' => $email]);
-			$this->assertSame($valid, $Model->validates(), 'An address of ' . strlen($email) . ' characters' . ($valid ? ' must validate' : ' must be refused'));
+			$user = TableRegistry::getTableLocator()->get('User')->newEntity(['name' => 'SomeLoginName', 'display_name' => 'Player', 'email' => $email]);
+			$this->assertSame($valid, !$user->hasErrors(), 'An address of ' . strlen($email) . ' characters' . ($valid ? ' must validate' : ' must be refused'));
 		}
 	}
 
@@ -494,7 +489,7 @@ class UserTest extends CakeTestCase
 	{
 		new ContextPreparator(['user' => null]);
 
-		$generated = User::generateUniqueDisplayName(str_repeat('A', 70));
+		$generated = UserTable::generateUniqueDisplayName(str_repeat('A', 70));
 
 		$this->assertSame(str_repeat('A', 50), $generated);
 	}

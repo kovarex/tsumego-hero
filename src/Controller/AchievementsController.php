@@ -3,6 +3,7 @@
 use App\Model\Entity\Achievement;
 use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\AchievementTable;
+use App\Model\Table\UserTable;
 use App\Utility\AchievementId;
 use App\Utility\Auth;
 use App\Utility\Util;
@@ -21,12 +22,12 @@ class AchievementsController extends AppController
 	#[HttpGet]
 	public function user(string $userId): void
 	{
-		$user = $this->User->findById($userId);
+		$user = UserTable::row((int) $userId);
 		if (!$user)
 			throw new NotFoundException('User not found');
-		$this->assertUserVisible($user['User']);
+		$this->assertUserVisible($user);
 
-		$this->renderAchievementsPage($user['User']);
+		$this->renderAchievementsPage($user);
 		$this->render('index');
 	}
 
@@ -103,7 +104,6 @@ class AchievementsController extends AppController
 	{
 		$this->set('_page', 'user');
 		$this->set('_title', 'Tsumego Hero - Achievements');
-		$this->loadModel('User');
 		$achievement = $this->fetchTable('Achievement')->find()->where(['id' => (int) $id])->first();
 		if (!$achievement)
 			throw new NotFoundException('Achievement not found');
@@ -111,11 +111,10 @@ class AchievementsController extends AppController
 		$viewedUser = null;
 		if ($userId !== null)
 		{
-			$user = $this->User->findById($userId);
-			if (!$user)
+			$viewedUser = UserTable::row((int) $userId);
+			if (!$viewedUser)
 				throw new NotFoundException('User not found');
-			$this->assertUserVisible($user['User']);
-			$viewedUser = $user['User'];
+			$this->assertUserVisible($viewedUser);
 		}
 		$statusUserId = $viewedUser ? (int) $viewedUser['id'] : (Auth::isLoggedIn() ? Auth::getUserID() : null);
 
@@ -136,11 +135,11 @@ class AchievementsController extends AppController
 			$currentUserStatus = $achievementStatusTable->find()->where(['achievement_id' => $id, 'user_id' => $statusUserId])->first();
 		$usersById = [];
 		if ($completerUserIds)
-			foreach ($this->User->find('all', ['conditions' => ['id' => $completerUserIds]]) as $completer)
-				$usersById[$completer['User']['id']] = $completer['User'];
+			foreach ($this->fetchTable('User')->find()->where(['id IN' => $completerUserIds])->all() as $completer)
+				$usersById[$completer->id] = UserTable::rowOf($completer);
 		//The completers as users, null for one the users table no longer has
 		$completers = array_map(fn(int $userId) => $usersById[$userId] ?? null, $completerUserIds);
-		$userCount = $this->User->find('count', ['conditions' => ['deleted IS NULL']]);
+		$userCount = $this->fetchTable('User')->find()->where(['deleted IS' => null])->count();
 		$completionPercent = $userCount > 0 ? round($completerCount / $userCount * 100, 1) : 0;
 		$rarity = AchievementTable::getRarityLabel($completionPercent);
 

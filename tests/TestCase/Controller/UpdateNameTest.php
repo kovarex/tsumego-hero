@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Table\AdminActivityTypeTable;
+use App\Model\Table\UserTable;
 use App\Utility\Avatar;
 use App\Utility\Util;
 
@@ -34,9 +35,9 @@ class UpdateNameTest extends IntegrationTestCase
 
 		$this->post('/users/updatename', ['User' => ['display_name' => 'Should Not Change']]);
 
-		$updatedUser = ClassRegistry::init('User')->findById($context->user['id']);
-		$this->assertEquals('Original Name', $updatedUser['User']['display_name']);
-		$this->assertEquals(false, $updatedUser['User']['needs_display_name_change']);
+		$updatedUser = UserTable::row((int) $context->user['id']);
+		$this->assertEquals('Original Name', $updatedUser['display_name']);
+		$this->assertEquals(false, $updatedUser['needs_display_name_change']);
 	}
 
 	//Test that a forced Google user can change their display name and the flag is cleared.
@@ -53,9 +54,9 @@ class UpdateNameTest extends IntegrationTestCase
 
 		$this->post('/users/updatename', ['User' => ['display_name' => 'New Name']]);
 
-		$updatedUser = ClassRegistry::init('User')->findById($context->user['id']);
-		$this->assertEquals('New Name', $updatedUser['User']['display_name']);
-		$this->assertEquals(false, $updatedUser['User']['needs_display_name_change']);
+		$updatedUser = UserTable::row((int) $context->user['id']);
+		$this->assertEquals('New Name', $updatedUser['display_name']);
+		$this->assertEquals(false, $updatedUser['needs_display_name_change']);
 	}
 
 	//Test that a forced regular user can change their display name and the flag is cleared.
@@ -71,9 +72,9 @@ class UpdateNameTest extends IntegrationTestCase
 
 		$this->post('/users/updatename', ['User' => ['display_name' => 'Updated Display']]);
 
-		$updatedUser = ClassRegistry::init('User')->findById($context->user['id']);
-		$this->assertEquals('Updated Display', $updatedUser['User']['display_name']);
-		$this->assertEquals(false, $updatedUser['User']['needs_display_name_change']);
+		$updatedUser = UserTable::row((int) $context->user['id']);
+		$this->assertEquals('Updated Display', $updatedUser['display_name']);
+		$this->assertEquals(false, $updatedUser['needs_display_name_change']);
 	}
 
 	//Test that display name must be unique even when forced.
@@ -96,8 +97,8 @@ class UpdateNameTest extends IntegrationTestCase
 
 		$this->post('/users/updatename', ['User' => ['display_name' => 'Taken Name']]);
 
-		$updatedUser = ClassRegistry::init('User')->findById($context->user['id']);
-		$this->assertEquals('My Name', $updatedUser['User']['display_name']);
+		$updatedUser = UserTable::row((int) $context->user['id']);
+		$this->assertEquals('My Name', $updatedUser['display_name']);
 	}
 
 	//An emoji is above U+FFFF, which the utf8mb3 columns the forum shares cannot hold, so a rename cannot bring one in.
@@ -113,9 +114,9 @@ class UpdateNameTest extends IntegrationTestCase
 
 		$this->post('/users/updatename', ['User' => ['display_name' => 'My Name 😀']]);
 
-		$updatedUser = ClassRegistry::init('User')->findById($context->user['id']);
-		$this->assertEquals('My Name', $updatedUser['User']['display_name']);
-		$this->assertEquals(true, $updatedUser['User']['needs_display_name_change']);
+		$updatedUser = UserTable::row((int) $context->user['id']);
+		$this->assertEquals('My Name', $updatedUser['display_name']);
+		$this->assertEquals(true, $updatedUser['needs_display_name_change']);
 	}
 
 	//Test that an unchanged display name is rejected even when forced.
@@ -131,9 +132,9 @@ class UpdateNameTest extends IntegrationTestCase
 
 		$this->post('/users/updatename', ['User' => ['display_name' => 'Andrey (2)']]);
 
-		$updatedUser = ClassRegistry::init('User')->findById($context->user['id']);
-		$this->assertEquals('Andrey (2)', $updatedUser['User']['display_name']);
-		$this->assertEquals(true, $updatedUser['User']['needs_display_name_change']);
+		$updatedUser = UserTable::row((int) $context->user['id']);
+		$this->assertEquals('Andrey (2)', $updatedUser['display_name']);
+		$this->assertEquals(true, $updatedUser['needs_display_name_change']);
 	}
 
 	//Test that the length limit counts characters, not bytes.
@@ -152,9 +153,9 @@ class UpdateNameTest extends IntegrationTestCase
 
 		$this->post('/users/updatename', ['User' => ['display_name' => $newName]]);
 
-		$updatedUser = ClassRegistry::init('User')->findById($context->user['id']);
-		$this->assertEquals($newName, $updatedUser['User']['display_name']);
-		$this->assertEquals(false, $updatedUser['User']['needs_display_name_change']);
+		$updatedUser = UserTable::row((int) $context->user['id']);
+		$this->assertEquals($newName, $updatedUser['display_name']);
+		$this->assertEquals(false, $updatedUser['needs_display_name_change']);
 	}
 
 	//Test that display name must be at least 3 characters even when forced.
@@ -170,8 +171,8 @@ class UpdateNameTest extends IntegrationTestCase
 
 		$this->post('/users/updatename', ['User' => ['display_name' => 'ab']]);
 
-		$updatedUser = ClassRegistry::init('User')->findById($context->user['id']);
-		$this->assertEquals('Original Name', $updatedUser['User']['display_name']);
+		$updatedUser = UserTable::row((int) $context->user['id']);
+		$this->assertEquals('Original Name', $updatedUser['display_name']);
 	}
 
 	//Test that empty display name is rejected even when forced.
@@ -187,8 +188,8 @@ class UpdateNameTest extends IntegrationTestCase
 
 		$this->post('/users/updatename', ['User' => ['display_name' => '']]);
 
-		$updatedUser = ClassRegistry::init('User')->findById($context->user['id']);
-		$this->assertEquals('My Display', $updatedUser['User']['display_name']);
+		$updatedUser = UserTable::row((int) $context->user['id']);
+		$this->assertEquals('My Display', $updatedUser['display_name']);
 	}
 
 	//Test that the changename page is only reachable by a forced user.
@@ -406,7 +407,7 @@ class UpdateNameTest extends IntegrationTestCase
 
 		$this->assertResponseCode(302);
 		$this->assertStringNotContainsString('/users/changename', $this->headerValue('Location') ?? '');
-		$this->assertNotNull(ClassRegistry::init('User')->findById($context->user['id'])['User']['deleted'], 'the account went through the deletion');
+		$this->assertNotNull(UserTable::row((int) $context->user['id'])['deleted'], 'the account went through the deletion');
 	}
 
 	//Test that a flagged user can open the page that starts the account deletion.
@@ -486,8 +487,8 @@ class UpdateNameTest extends IntegrationTestCase
 			Util::execute('RENAME TABLE phpbb_users_unreachable TO phpbb_users');
 		}
 
-		$user = ClassRegistry::init('User')->findById($context->user['id']);
-		$this->assertEquals('New Forum Name', $user['User']['display_name']);
-		$this->assertEquals(false, $user['User']['needs_display_name_change']);
+		$user = UserTable::row((int) $context->user['id']);
+		$this->assertEquals('New Forum Name', $user['display_name']);
+		$this->assertEquals(false, $user['needs_display_name_change']);
 	}
 }
