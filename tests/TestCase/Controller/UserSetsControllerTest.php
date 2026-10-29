@@ -1,5 +1,6 @@
 <?php
 
+use App\Utility\CookieFlash;
 use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\UserTable;
 use App\Utility\Constants;
@@ -1115,8 +1116,9 @@ class UserSetsControllerTest extends IntegrationTestCase
 
 		$set = $this->fetchTable('Set')->find()->where(['id' => $setId])->first();
 		$this->assertEmpty($set->image, 'An image was saved although its file could not be written');
-		// The edit form renders the flash it was given, so that is where the player reads it.
-		$this->assertStringContainsString('The image could not be stored', $this->view);
+		// The form redirects back to the edit page, which shows the flash.
+		$this->assertSame('error', CookieFlash::getType());
+		$this->assertStringContainsString('The image could not be stored', (string) CookieFlash::get());
 	}
 
 	public function testDeleteSetRemovesImageFolder(): void
