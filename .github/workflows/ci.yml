@@ -22,7 +22,7 @@ jobs:
     timeout-minutes: 60
     env:
       # Master collects the PHP and JS coverage and publishes it to GitHub Pages.
-      COVERAGE: ${{ github.ref == 'refs/heads/master' }}
+      COVERAGE: ${{ github.ref == 'refs/heads/master' || github.head_ref == 'ci-pcov-coverage' }}
 
     services:
       mysql:
@@ -205,6 +205,13 @@ jobs:
       - name: Merge coverage files
         if: env.COVERAGE == 'true'
         run: vendor/bin/phpcov merge --html coverage/php --clover coverage/coverage.xml /tmp/coverage
+
+      - name: Upload coverage report (measurement only)
+        if: env.COVERAGE == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-pcov
+          path: coverage/coverage.xml
 
       - name: Generate JS coverage report
         if: env.COVERAGE == 'true'
