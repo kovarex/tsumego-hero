@@ -159,44 +159,14 @@ jobs:
         run: |
           ./vendor/bin/phinx migrate -e test
 
-      - name: Start built-in PHP server
-        env:
-          TZ: UTC
-        run: |
-          mkdir -p /tmp/coverage
-          # Use router script to handle CakePHP dispatcher filter routes
-          if [ "${{ github.ref }}" = "refs/heads/master" ]; then
-            nohup php -d xdebug.mode=coverage -d xdebug.start_with_request=yes -d auto_prepend_file=/home/runner/work/tsumego-hero/tsumego-hero/.github/ci/xdebug-prepend.php -S 0.0.0.0:8080 -t webroot .github/ci/router.php > server.log 2>&1 &
-          else
-            nohup php -S 0.0.0.0:8080 -t webroot .github/ci/router.php > server.log 2>&1 &
-          fi
-          sleep 3
-
-      - name: Start Caddy HTTPS reverse proxy
-        run: |
-          nohup docker run --rm \
-            -p 8443:8443 \
-            --add-host=host.docker.internal:host-gateway \
-            --sysctl net.ipv6.conf.all.disable_ipv6=1 \
-            --sysctl net.ipv6.conf.default.disable_ipv6=1 \
-            -v "${{ github.workspace }}/Caddyfile:/etc/caddy/Caddyfile" \
-            -v "${{ github.workspace }}/webroot:/srv:ro" \
-            caddy:2 > caddy.log 2>&1 &
-          sleep 6
-          echo "Caddy log:"
-          cat caddy.log || true
-
-      - name: Run tests
+      - name: Server A/B experiment
         env:
           TZ: UTC
           SELENIUM_URL: http://localhost:4444
           SELENIUM_BROWSER: firefox
           TEST_APP_URL: https://host.docker.internal:8443
           TEST_ENVIRONMENT: github-ci
-        run: |
-          mkdir -p /tmp/coverage
-          # phpunit, with the tests the browser alone failed run again (scripts/phpunit-retry.php)
-          php scripts/phpunit-retry.php --exclude-group apache-only --exclude-group disabled ${{ github.ref == 'refs/heads/master' && '--coverage-php /tmp/coverage/phpunit.cov' || '' }}
+        run: .github/ci/server-ab.sh
 
       - name: Upload browser timeout dumps
         if: failure()
@@ -238,35 +208,3 @@ jobs:
           publish_dir: ./coverage
           destination_dir: coverage
 
-  static-analysis:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.4'
-          extensions: mbstring, intl
-
-      - name: Get composer cache directory
-        id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-
-      - name: Cache dependencies
-        uses: actions/cache@v6
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
-
-      - name: Composer install
-        run: composer install --prefer-dist --optimize-autoloader --no-interaction
-
-      - name: Run PHPStan
-        run: composer stan -- --error-format=github
-
-      - name: Run PHPCS
-        run: composer cs-check -- --diff
