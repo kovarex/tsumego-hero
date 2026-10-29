@@ -49,8 +49,10 @@ if (PHP_SAPI !== 'cli' && !Configure::read('App.fullBaseUrl'))
 		Configure::write('App.fullBaseUrl', $scheme . '://' . $_SERVER['HTTP_HOST']);
 }
 
+//Cache.disable of core.local.php sits among the cache configurations of Cake 5
+$cacheDisabled = (bool) Configure::consume('Cache.disable');
 Cache::setConfig(Configure::consume('Cache'));
-if (Configure::read('Cache.disable'))
+if ($cacheDisabled)
 	Cache::disable();
 ConnectionManager::setConfig(Configure::consume('Datasources'));
 TransportFactory::setConfig(Configure::consume('EmailTransport'));

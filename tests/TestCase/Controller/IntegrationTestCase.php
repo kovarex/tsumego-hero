@@ -1,10 +1,12 @@
 <?php
 
+use App\Controller\AppController;
 use App\Utility\Auth;
+use Cake\Controller\Controller;
+use Cake\Event\EventInterface;
 use Cake\ORM\Locator\LocatorAwareTrait;
 use DOM\HTMLDocument;
 use Facebook\WebDriver\WebDriverBy;
-use PHPUnitRetry\RetryTrait;
 
 //A test that dispatches a real request and asserts what a client gets back.
 //The verbs and the assertions come from Cake 5's `IntegrationTestTrait`. The fork ships it in
@@ -17,12 +19,10 @@ use PHPUnitRetry\RetryTrait;
  */
 class IntegrationTestCase extends CakeTestCase
 {
-	use IntegrationTestTrait {
+	use Cake\TestSuite\IntegrationTestTrait {
 		_sendRequest as private dispatchRequest;
 		controllerSpy as private spyOnController;
 	}
-
-	use RetryTrait;
 
 	//fetchTable() of the Cake 5 tables, as Cake 5's test cases have it
 	use LocatorAwareTrait;
@@ -78,16 +78,17 @@ class IntegrationTestCase extends CakeTestCase
 	//plus what the request came with.
 	//The trait restores $_COOKIE once the request is over, so the moment to read the cookies
 	//the app wrote is the end of the action.
-	public function controllerSpy(Controller $controller): void
+	public function controllerSpy(EventInterface $event, ?Controller $controller = null): void
 	{
-		$this->spyOnController($controller);
+		$this->spyOnController($event, $controller);
+		$controller ??= $event->getSubject();
 
 		$capture = function (): void {
 			$this->responseCookies = $_COOKIE;
 		};
 		$events = $controller->getEventManager();
-		$events->attach($capture, 'Controller.beforeRender', ['priority' => 100]);
-		$events->attach($capture, 'Controller.beforeRedirect', ['priority' => 100]);
+		$events->on('Controller.beforeRender', ['priority' => 100], $capture);
+		$events->on('Controller.beforeRedirect', ['priority' => 100], $capture);
 	}
 
 	//The cookies a browser would send along with the next request.
@@ -131,7 +132,7 @@ class IntegrationTestCase extends CakeTestCase
 	//The value of a response header, or null when the response does not carry it.
 	protected function headerValue(string $name): ?string
 	{
-		return $this->_response->header()[$name] ?? null;
+		return $this->_response->hasHeader($name) ? $this->_response->getHeaderLine($name) : null;
 	}
 
 	public function getStringDom(): HTMLDocument

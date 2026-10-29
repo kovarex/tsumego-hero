@@ -2,30 +2,21 @@
 
 //Bootstrap for PHPUnit
 
-use Composer\InstalledVersions;
+use Cake\Datasource\ConnectionManager;
 
-if (!defined('DS'))
-	define('DS', DIRECTORY_SEPARATOR);
-define('ROOT', dirname(__DIR__));
-define('VENDORS', ROOT . DS . 'vendor' . DS);
-define('WEBROOT_DIR', 'webroot');
-define('WWW_ROOT', ROOT . DS . WEBROOT_DIR . DS);
+require dirname(__DIR__) . '/vendor/autoload.php';
+require dirname(__DIR__) . '/config/bootstrap.php';
 
-require_once InstalledVersions::getInstallPath('pieceofcake2/cakephp') . DS . 'tests' . DS . 'bootstrap.php';
+$_SERVER['SCRIPT_NAME'] = '/index.php';
+$_SERVER['PHP_SELF'] = '/index.php';
+$_SERVER['REQUEST_URI'] = '/';
 
-// Fix redirect URLs in controller tests - CakePHP 2 needs these set before Router initializes
-// Without this, CakePHP detects /vendor/bin/phpunit as the base path and generates wrong redirect URLs
-// NOTE: This file is ONLY loaded by PHPUnit (see phpunit.xml.dist), never in production
-if (PHP_SAPI === 'cli' && !empty($_SERVER['argv']) && str_contains($_SERVER['argv'][0], 'phpunit'))
-{
-	$_SERVER['SCRIPT_NAME'] = '/index.php';
-	$_SERVER['PHP_SELF'] = '/index.php';
-	$_SERVER['REQUEST_URI'] = '/';
-	Configure::write('App.base', '');
-	Configure::write('App.baseUrl', '');
-}
+//The test cases of the suite extend the TestCase of Cake 5 under the name they had on Cake 2
+class_alias(Cake\TestSuite\TestCase::class, 'CakeTestCase');
+ConnectionManager::alias('test', 'default');
 
 // Load test helpers globally to avoid repetition in every test file
+require_once ROOT . '/tests/SuperglobalCleanup.php';
 require_once ROOT . '/tests/Browser.php';
 require_once ROOT . '/tests/ContextPreparator.php';
 require_once ROOT . '/tests/TestEmailer.php';
