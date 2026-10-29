@@ -36,14 +36,12 @@ class TsumegoIssuesController extends AppController
 		};
 		$totalPages = (int) ceil($totalCount / $perPage);
 
-		$this->response->type('json');
-		$this->response->body(json_encode([
+		return $this->respondJson([
 			'issues' => $issues,
 			'counts' => $counts,
 			'totalPages' => $totalPages,
 			'currentPage' => $page,
-		]));
-		return $this->response;
+		]);
 	}
 
 	//List all issues page
@@ -135,9 +133,7 @@ class TsumegoIssuesController extends AppController
 			]],
 		];
 
-		$this->response->type('json');
-		$this->response->body(json_encode(['success' => true, 'issue' => $issueData]));
-		return $this->response;
+		return $this->respondJson(['success' => true, 'issue' => $issueData]);
 	}
 
 	//Close an issue.
@@ -174,9 +170,7 @@ class TsumegoIssuesController extends AppController
 			]));
 		}
 
-		$this->response->type('json');
-		$this->response->body(json_encode(['success' => true]));
-		return $this->response;
+		return $this->respondJson(['success' => true]);
 	}
 
 	//Reopen a closed issue.
@@ -198,9 +192,7 @@ class TsumegoIssuesController extends AppController
 		if (!$tsumegoIssueTable->save($issue))
 			throw new InternalErrorException('Failed to reopen issue');
 
-		$this->response->type('json');
-		$this->response->body(json_encode(['success' => true]));
-		return $this->response;
+		return $this->respondJson(['success' => true]);
 	}
 
 	//Move an existing comment into an issue (new or existing), or make it standalone.
@@ -226,20 +218,14 @@ class TsumegoIssuesController extends AppController
 		if ($targetIssueId === 'standalone')
 		{
 			if (empty($currentIssueId))
-			{
-				$this->response->type('json');
-				$this->response->body(json_encode(['success' => true]));
-				return $this->response;
-			}
+				return $this->respondJson(['success' => true]);
 
 			$comment->tsumego_issue_id = null;
 			if ($tsumegoCommentTable->save($comment))
 			{
 				// Check if issue is now empty and delete it
 				TsumegoIssueTable::deleteIfEmpty($currentIssueId);
-				$this->response->type('json');
-				$this->response->body(json_encode(['success' => true]));
-				return $this->response;
+				return $this->respondJson(['success' => true]);
 			}
 
 			throw new InternalErrorException('Failed to remove comment from issue');
@@ -285,18 +271,12 @@ class TsumegoIssuesController extends AppController
 				]],
 			];
 
-			$this->response->type('json');
-			$this->response->body(json_encode(['success' => true, 'issue' => $issueData, 'comment_id' => $commentId]));
-			return $this->response;
+			return $this->respondJson(['success' => true, 'issue' => $issueData, 'comment_id' => $commentId]);
 		}
 
 		// Check if moving to same issue
 		if ($currentIssueId == $targetIssueId)
-		{
-			$this->response->type('json');
-			$this->response->body(json_encode(['success' => true]));
-			return $this->response;
-		}
+			return $this->respondJson(['success' => true]);
 
 		// Move the comment to the target issue
 		$comment->tsumego_issue_id = (int) $targetIssueId;
@@ -305,9 +285,7 @@ class TsumegoIssuesController extends AppController
 			// Check if old issue is now empty and delete it
 			if (!empty($currentIssueId))
 				TsumegoIssueTable::deleteIfEmpty($currentIssueId);
-			$this->response->type('json');
-			$this->response->body(json_encode(['success' => true]));
-			return $this->response;
+			return $this->respondJson(['success' => true]);
 		}
 
 		throw new InternalErrorException('Failed to move comment');

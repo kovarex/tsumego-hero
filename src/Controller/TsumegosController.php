@@ -33,8 +33,6 @@ class TsumegosController extends AppController
 	#[HttpPost]
 	public function result()
 	{
-		$this->response->type('application/json');
-
 		$this->Authorization->authorize('User', 'reportResult');
 
 		$data = json_decode($this->requestBody(), true) ?: $this->inputs();
@@ -58,9 +56,7 @@ class TsumegosController extends AppController
 		if (!empty($result['achievement_updates']))
 			$result['achievement_updates'] = array_map([AchievementChecker::class, 'toPopupData'], $result['achievement_updates']);
 
-		$this->response->body(json_encode($result));
-
-		return $this->response;
+		return $this->respondJson($result);
 	}
 
 	private function deduceRelevantSetConnection(array $setConnections): array

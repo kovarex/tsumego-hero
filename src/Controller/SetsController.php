@@ -587,16 +587,13 @@ ORDER BY sc.num ASC", [(int) $id]);
 
 		if ($this->request->is('ajax'))
 		{
-			$this->autoRender = false;
-			$this->response->type('application/json');
 			// Include the resolved set so the client can keep its set list in
 			// sync when the Favorites set is created on the fly (heart toggle).
-			$this->response->body(json_encode([
+			return $this->respondJson([
 				'contains' => true,
 				'set_id' => $setID,
 				'title' => $set->title,
-			]));
-			return;
+			]);
 		}
 
 		CookieFlash::set('Added to set', 'success');
@@ -695,12 +692,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		]);
 
 		if ($this->request->is('ajax'))
-		{
-			$this->autoRender = false;
-			$this->response->type('application/json');
-			$this->response->body(json_encode(['contains' => false]));
-			return;
-		}
+			return $this->respondJson(['contains' => false]);
 
 		CookieFlash::set('Removed from set', 'success');
 		return $this->redirect('/sets/edit/' . (int) $setID);

@@ -215,7 +215,7 @@ class ClassroomsController extends AppController
 	public function collections(): CakeResponse
 	{
 		$this->Authorization->authorize('Classroom', 'create');
-		return $this->json(ClassroomAssignmentTable::collectionCards(Auth::getUserID()));
+		return $this->respondJson(ClassroomAssignmentTable::collectionCards(Auth::getUserID()));
 	}
 
 	//The problems of a collection with their previews, for the picker.
@@ -228,7 +228,7 @@ class ClassroomsController extends AppController
 			throw new NotFoundException('Collection not found');
 		if (!ClassroomAssignmentTable::canAssignSet($set, Auth::getUserID()))
 			throw new ForbiddenException();
-		return $this->json([
+		return $this->respondJson([
 			'collection' => ['id' => (int) $set->id, 'title' => (string) $set->title],
 			'problems' => ClassroomAssignmentTable::collectionProblems((int) $set->id),
 		]);
@@ -273,7 +273,7 @@ class ClassroomsController extends AppController
 		]);
 		if ($publish)
 			CookieFlash::set('Published. The pupils see the assignment now.', 'success');
-		return $this->json([
+		return $this->respondJson([
 			'problemCount' => $problemCount,
 			'published' => $published === null ? null : Util::toIso8601($published),
 			'classUrl' => self::classUrl($classroom->id),
@@ -352,7 +352,7 @@ class ClassroomsController extends AppController
 		else
 			throw Auth::isLoggedIn() ? new ForbiddenException() : new UnauthorizedException();
 
-		return $this->json($progress);
+		return $this->respondJson($progress);
 	}
 
 	#[HttpPost]
@@ -374,15 +374,6 @@ class ClassroomsController extends AppController
 	private static function assignmentUrl(int $assignmentId): string
 	{
 		return '/classes/assignment/' . $assignmentId;
-	}
-
-	/** @param array<mixed> $data */
-	private function json(array $data): CakeResponse
-	{
-		$this->autoRender = false;
-		$this->response->type('json');
-		$this->response->body(json_encode($data));
-		return $this->response;
 	}
 
 	private function findClassroom(string $id): Classroom

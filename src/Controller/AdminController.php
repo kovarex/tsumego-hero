@@ -84,10 +84,7 @@ class AdminController extends AppController
 		$reviewed = !empty($this->input('reviewed'));
 		SgfReviewTable::mark((int) $sgfID, Auth::getUserID(), $reviewed);
 
-		$this->autoRender = false;
-		$this->response->type('json');
-		$this->response->body(json_encode(['reviewed' => $reviewed]));
-		return $this->response;
+		return $this->respondJson(['reviewed' => $reviewed]);
 	}
 
 	//Existing tags players want on a problem

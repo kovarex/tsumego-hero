@@ -1806,9 +1806,8 @@ OFFSET " . $offset, [$userID, $userID]);
 	}
 
 	#[HttpPost]
-	public function playerColorPreference(): void
+	public function playerColorPreference(): CakeResponse
 	{
-		$this->autoRender = false;
 		$this->Authorization->authorize('User', 'editPreferences');
 
 		$color = (int) ($this->input('color') ?? UserTable::PLAYER_COLOR_SETTING_RANDOM);
@@ -1817,15 +1816,12 @@ OFFSET " . $offset, [$userID, $userID]);
 
 		Auth::saveUserField('player_color_setting', $color);
 
-		$this->response->statusCode(200);
-		$this->response->type('application/json');
-		$this->response->body(json_encode(['status' => 'ok']));
+		return $this->respondJson(['status' => 'ok']);
 	}
 
 	#[HttpPost]
-	public function boardOrientationPreference(): void
+	public function boardOrientationPreference(): CakeResponse
 	{
-		$this->autoRender = false;
 		$this->Authorization->authorize('User', 'editPreferences');
 
 		$orientation = (int) ($this->input('orientation') ?? UserTable::BOARD_ORIENTATION_SETTING_RANDOM);
@@ -1834,15 +1830,12 @@ OFFSET " . $offset, [$userID, $userID]);
 
 		Auth::saveUserField('board_orientation_setting', $orientation);
 
-		$this->response->statusCode(200);
-		$this->response->type('application/json');
-		$this->response->body(json_encode(['status' => 'ok']));
+		return $this->respondJson(['status' => 'ok']);
 	}
 
 	#[HttpPost]
-	public function dateFormatPreference(): void
+	public function dateFormatPreference(): CakeResponse
 	{
-		$this->autoRender = false;
 		$this->Authorization->authorize('User', 'editPreferences');
 
 		$format = (int) ($this->input('format') ?? UserTable::DATE_FORMAT_ISO);
@@ -1851,41 +1844,33 @@ OFFSET " . $offset, [$userID, $userID]);
 
 		Auth::saveUserField('date_format_id', $format);
 
-		$this->response->statusCode(200);
-		$this->response->type('application/json');
-		$this->response->body(json_encode(['status' => 'ok']));
+		return $this->respondJson(['status' => 'ok']);
 	}
 
 	//Whether a new message is announced by an email, see MessageTable::send().
 	#[HttpPost]
-	public function emailOnNewMessagePreference(): void
+	public function emailOnNewMessagePreference(): CakeResponse
 	{
-		$this->autoRender = false;
 		$this->Authorization->authorize('User', 'editPreferences');
 
 		Auth::saveUserField('email_on_new_message', ($this->input('enabled') ?? '') === '1' ? 1 : 0);
 
-		$this->response->statusCode(200);
-		$this->response->type('application/json');
-		$this->response->body(json_encode(['status' => 'ok']));
+		return $this->respondJson(['status' => 'ok']);
 	}
 
 	//Store the avatar a player picked. A choice that is not on offer for this
 	//account (a Google picture it does not have) is ignored, the same way the other
 	//preferences ignore a value they can not store.
 	#[HttpPost]
-	public function avatarPreference(): void
+	public function avatarPreference(): CakeResponse
 	{
-		$this->autoRender = false;
 		$this->Authorization->authorize('User', 'editPreferences');
 
 		$choice = (int) ($this->input('avatar') ?? UserTable::AVATAR_BOARD);
 		if (array_key_exists($choice, UserTable::avatarChoices(Auth::getUser())))
 			Auth::saveUserField('avatar_setting_id', $choice);
 
-		$this->response->statusCode(200);
-		$this->response->type('application/json');
-		$this->response->body(json_encode(['status' => 'ok']));
+		return $this->respondJson(['status' => 'ok']);
 	}
 
 	//Make a picture the player uploaded their avatar. It takes the place of the picture

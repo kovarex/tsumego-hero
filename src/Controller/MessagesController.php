@@ -41,7 +41,7 @@ class MessagesController extends AppController
 	public function conversations(): CakeResponse
 	{
 		$this->Authorization->authorize('Message', 'read');
-		return $this->json(['conversations' => MessageTable::conversations(Auth::getUserID())]);
+		return $this->respondJson(['conversations' => MessageTable::conversations(Auth::getUserID())]);
 	}
 
 	#[HttpGet]
@@ -51,7 +51,7 @@ class MessagesController extends AppController
 		$partner = $this->findPartner((int) $partnerUserId);
 		$before = $this->query('before');
 		$conversation = MessageTable::conversation(Auth::getUserID(), $partner['id'], $before === null ? null : (int) $before);
-		return $this->json(['partner' => $partner] + $conversation);
+		return $this->respondJson(['partner' => $partner] + $conversation);
 	}
 
 	#[HttpPost]
@@ -70,7 +70,7 @@ class MessagesController extends AppController
 
 		$messageId = MessageTable::send(Auth::getUserID(), $partner['id'], $text, $this->_getEmailer());
 		$row = Util::query('SELECT id, sender_user_id, text, created, read_at FROM message WHERE id = ?', [$messageId])[0];
-		return $this->json(['message' => MessageTable::messagePayload($row)]);
+		return $this->respondJson(['message' => MessageTable::messagePayload($row)]);
 	}
 
 	#[HttpPost]
@@ -79,7 +79,7 @@ class MessagesController extends AppController
 		$this->Authorization->authorize('Message', 'read');
 		$partner = $this->findPartner((int) $partnerUserId);
 		MessageTable::markRead(Auth::getUserID(), $partner['id']);
-		return $this->json(['unreadCount' => MessageTable::unreadCount(Auth::getUserID())]);
+		return $this->respondJson(['unreadCount' => MessageTable::unreadCount(Auth::getUserID())]);
 	}
 
 	#[HttpGet]
@@ -87,7 +87,7 @@ class MessagesController extends AppController
 	{
 		$this->Authorization->authorize('Message', 'send');
 		$query = (string) $this->query('query');
-		return $this->json(['players' => MessageTable::searchRecipients(Auth::getUserID(), $query)]);
+		return $this->respondJson(['players' => MessageTable::searchRecipients(Auth::getUserID(), $query)]);
 	}
 
 	//The other player of a conversation. A deleted account stays, so the conversation with it
@@ -101,13 +101,5 @@ class MessagesController extends AppController
 		if (!$rows)
 			throw new NotFoundException('Player not found');
 		return MessageTable::playerPayload($rows[0]);
-	}
-
-	private function json(array $data): CakeResponse
-	{
-		$this->autoRender = false;
-		$this->response->type('json');
-		$this->response->body(json_encode($data));
-		return $this->response;
 	}
 }

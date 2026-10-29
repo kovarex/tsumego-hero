@@ -18,9 +18,7 @@ class SgfController extends AppController
 
 		$this->Authorization->authorize($sgf, 'fetch');
 
-		$this->response->statusCode(200);
-		$this->response->body($sgf->sgf);
-		return $this->response;
+		return $this->respond($sgf->sgf);
 	}
 
 	//What the author wrote about the version and the author as the site shows a player (avatar,
@@ -36,12 +34,9 @@ class SgfController extends AppController
 		$this->Authorization->authorize($sgf, 'fetch');
 
 		$author = $sgf->user_id ? UserTable::row($sgf->user_id) : null;
-		$this->autoRender = false;
-		$this->response->type('json');
-		$this->response->body(json_encode([
+		return $this->respondJson([
 			'description' => $sgf->description,
-			'authorLink' => UserTable::renderLink($author)]));
-		return $this->response;
+			'authorLink' => UserTable::renderLink($author)]);
 	}
 
 	#[HttpPost]
