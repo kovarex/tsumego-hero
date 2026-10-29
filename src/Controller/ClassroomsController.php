@@ -95,17 +95,18 @@ class ClassroomsController extends AppController
 			CookieFlash::set('Write the name of the player to invite.', 'error');
 			return $this->redirect($url);
 		}
-		$player = ClassRegistry::init('User')->find('first', [
-			'conditions' => ['display_name' => $name, 'deleted' => null],
-		]);
+		$player = $this->fetchTable('User')->find()
+			->select(['id', 'display_name'])
+			->where(['display_name' => $name, 'deleted IS' => null])
+			->first();
 		if (!$player)
 		{
 			CookieFlash::set('There is no player named ' . $name . '.', 'error');
 			return $this->redirect($url);
 		}
 
-		$playerId = (int) $player['User']['id'];
-		$playerName = $player['User']['display_name'];
+		$playerId = $player->id;
+		$playerName = $player->display_name;
 		if ($playerId === Auth::getUserID())
 		{
 			CookieFlash::set('You teach this class, you can\'t be its pupil too.', 'error');

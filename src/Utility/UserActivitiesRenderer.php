@@ -3,7 +3,7 @@
 namespace App\Utility;
 
 use App\Model\Table\SetConnectionTable;
-use User;
+use App\Model\Table\UserTable;
 
 //The latest attempts, for the admins: of all players, of one player, or on the problems of one set.
 //One query reads the page with its players and problems.
@@ -21,7 +21,7 @@ class UserActivitiesRenderer extends DataTableRenderer
 			$parameters = [$userID];
 			$order = 'tsumego_attempt.created DESC';
 			$user = Util::query('SELECT display_name, deleted FROM user WHERE id = ?', [$userID])[0] ?? null;
-			$caption = 'Attempts of ' . h($user && !$user['deleted'] ? $user['display_name'] : User::DELETED_NAME);
+			$caption = 'Attempts of ' . h($user && !$user['deleted'] ? $user['display_name'] : UserTable::DELETED_NAME);
 		}
 		elseif ($setID !== null)
 		{
@@ -93,7 +93,7 @@ OFFSET ' . $this->offset, $setID !== null ? [$setID, ...$parameters] : $paramete
 
 	public function renderItem(int $index, array $item): void
 	{
-		echo '<td>' . User::renderLink($item) . ' <a class="link-plain" href="/users/userstats/' . $item['user_id'] . '">attempts</a></td>';
+		echo '<td>' . UserTable::renderLink($item) . ' <a class="link-plain" href="/users/userstats/' . $item['user_id'] . '">attempts</a></td>';
 		echo '<td>';
 		if ($item['set_connection_id'])
 			echo '<a href="/' . $item['set_connection_id'] . '">' . h($item['set_title']) . ' - ' . h($item['num']) . '</a>';

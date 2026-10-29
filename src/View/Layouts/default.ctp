@@ -5,6 +5,7 @@ use App\Model\Table\SetTable;
 use App\Model\Table\ChallengeTable;
 use App\Model\Table\ClassroomMemberTable;
 use App\Model\Table\MessageTable;
+use App\Model\Table\UserTable;
 use App\Utility\AccountWidget;
 use App\Utility\AchievementChecker;
 use App\Utility\Auth;
@@ -105,7 +106,7 @@ if (Auth::isLoggedIn())
 	//Challenges the player is in and hasn't played yet: the Challenges item counts them,
 	//and so does Play, where the item is hidden.
 	$challengesWaiting = ChallengeTable::countWaitingFor(Auth::getUserID());
-	$soundSetting = User::soundIsOn(Auth::getUser()) ? 'on' : 'off';
+	$soundSetting = UserTable::soundIsOn(Auth::getUser()) ? 'on' : 'off';
 }
 else
 {

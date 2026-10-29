@@ -9,7 +9,6 @@ use App\Model\Table\TimeModeCategoryTable;
 use App\Model\Table\TimeModeRankTable;
 use App\Model\Table\TimeModeSessionStatusTable;
 use Cake\ORM\Locator\LocatorAwareTrait;
-use ClassRegistry;
 use App\Model\Table\SetConnectionTable;
 
 class AchievementChecker
@@ -483,8 +482,8 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeSessionStatusTable::SOLVED]);
 		if ($this->unlocked(AchievementId::FAVORITES))
 			return $this;
 
-		$user = ClassRegistry::init('User')->findById(Auth::getUserID());
-		if (!$user || empty($user['User']['default_set_id']) || $setId !== (int) $user['User']['default_set_id'])
+		$defaultSetId = $this->fetchTable('User')->find()->select(['default_set_id'])->where(['id' => Auth::getUserID()])->first()?->default_set_id;
+		if (empty($defaultSetId) || $setId !== $defaultSetId)
 			return $this;
 
 		if ($this->fetchTable('SetConnection')->exists(['set_id' => $setId]))

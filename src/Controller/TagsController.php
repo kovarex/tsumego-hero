@@ -5,6 +5,7 @@ use App\Model\Table\SgfTable;
 use App\Model\Entity\Tag;
 use App\Model\Table\RejectTable;
 use App\Model\Table\TagTable;
+use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\ContributionRow;
 use App\Utility\CookieFlash;
@@ -72,10 +73,10 @@ class TagsController extends AppController
 		$tag = $this->fetchTable('Tag')->find()->where(['id' => (int) $id])->first();
 		if (!$tag)
 			throw new NotFoundException('Tag not found');
-		$user = $tag->user_id ? $this->User->findById($tag->user_id) : null;
+		$user = $tag->user_id ? UserTable::row($tag->user_id) : null;
 		$this->set('allTags', self::approvedTags());
 		$this->set('tag', $tag);
-		$this->set('creator', $user ? $user['User'] : null);
+		$this->set('creator', $user);
 		$this->set('canAddTag', $this->Authorization->can('Tag', 'add'));
 		$this->set('canDeleteTag', $this->Authorization->can('Tag', 'delete'));
 	}
@@ -83,10 +84,10 @@ class TagsController extends AppController
 	#[HttpGet]
 	public function user(string $id): void
 	{
-		$viewedUser = $this->User->findById($id);
+		$viewedUser = UserTable::row((int) $id);
 		if (!$viewedUser)
 			throw new NotFoundException('User not found');
-		$this->assertUserVisible($viewedUser['User']);
+		$this->assertUserVisible($viewedUser);
 
 		$pageSize = 50;
 		$pageIndex = isset($this->request->query['page']) ? max(1, (int) $this->request->query['page']) : 1;
@@ -148,7 +149,7 @@ class TagsController extends AppController
 			$contributions[] = ContributionRow::fromQueryRow($row);
 
 		$this->set('contributions', $contributions);
-		$this->set('viewedUser', $viewedUser['User']);
+		$this->set('viewedUser', $viewedUser);
 		$this->set('count', $count);
 		$this->set('pageIndex', $pageIndex);
 		$this->set('pageSize', $pageSize);

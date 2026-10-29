@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\UserTable;
 use App\Utility\AchievementChecker;
 use App\Utility\Auth;
 use App\Utility\BoardSelector;
@@ -57,12 +58,13 @@ class AppController extends Controller
 			?? (Util::isOnTestSite() ? new CakeEmail(['transport' => 'Debug']) : new CakeEmail());
 	}
 
+	/** @param UserRow $user */
 	protected function signIn(array $user): void
 	{
 		Auth::init($user);
 		$lastStatus = $this->fetchTable('TsumegoStatus')->find()
 			->select(['tsumego_id'])
-			->where(['user_id' => $user['User']['id']])
+			->where(['user_id' => $user['id']])
 			->orderByDesc('updated')
 			->first();
 		if ($lastStatus)
@@ -124,16 +126,6 @@ class AppController extends Controller
 		Util::setCookie('browser_cache_version', self::BROWSER_CACHE_VERSION);
 	}
 
-	//Models every controller can use as $this->Name, loaded on the first use instead of on every request
-	private const SHARED_MODELS = ['User'];
-
-	public function __isset($name)
-	{
-		if (in_array($name, self::SHARED_MODELS, true))
-			return $this->loadModel($name);
-		return parent::__isset($name);
-	}
-
 	//The pages a player who has to pick a new display name can still open: the links that arrive
 	//by e-mail and the ways out of the account must not require picking a name first.
 	private const ACTIONS_ALLOWED_BEFORE_NAME_CHANGE = [
@@ -165,7 +157,7 @@ class AppController extends Controller
 			unset($_COOKIE['sound']);
 		}
 		if (isset($_COOKIE['lightDark']) && $_COOKIE['lightDark'] != '0')
-			Auth::saveUserField('theme_id', $_COOKIE['lightDark'] === 'dark' ? User::THEME_DARK : User::THEME_LIGHT);
+			Auth::saveUserField('theme_id', $_COOKIE['lightDark'] === 'dark' ? UserTable::THEME_DARK : UserTable::THEME_LIGHT);
 		if (isset($_COOKIE['levelBar']) && $_COOKIE['levelBar'] != '0')
 			Auth::saveUserField('level_bar_id', self::levelBar((int) $_COOKIE['levelBar']));
 		if (!is_null($boardsBitmask = Util::clearCookie('boards_bitmask')))
@@ -175,7 +167,7 @@ class AppController extends Controller
 
 	private static function levelBar(int $levelBar): int
 	{
-		return $levelBar === User::LEVEL_BAR_RATING ? User::LEVEL_BAR_RATING : User::LEVEL_BAR_LEVEL;
+		return $levelBar === UserTable::LEVEL_BAR_RATING ? UserTable::LEVEL_BAR_RATING : UserTable::LEVEL_BAR_LEVEL;
 	}
 
 	//The page the Highscore menu item opens, the one the player picked last
@@ -212,14 +204,14 @@ class AppController extends Controller
 			if (!$this->request->is('ajax'))
 				$this->set('achievementUpdates', new AchievementChecker()->checkStandardAchievements()->finalize()->updated);
 			$this->set('user', Auth::getUser());
-			$lightDark = Auth::getUser()['theme_id'] == User::THEME_DARK ? 'dark' : 'light';
+			$lightDark = Auth::getUser()['theme_id'] == UserTable::THEME_DARK ? 'dark' : 'light';
 			$levelBar = self::levelBar((int) Auth::getUser()['level_bar_id']);
 			$boardsBitmask = BoardSelector::filterValidBits(Auth::getUser()['boards_bitmask']);
 		}
 		else
 		{
 			$lightDark = ($_COOKIE['lightDark'] ?? null) === 'dark' ? 'dark' : 'light';
-			$levelBar = User::LEVEL_BAR_LEVEL;
+			$levelBar = UserTable::LEVEL_BAR_LEVEL;
 			$boardsBitmask = BoardSelector::filterValidBits((int) (Util::clearCookie('boards_bitmask') ?? BoardSelector::$DEFAULT_BOARDS_BITMASK));
 		}
 

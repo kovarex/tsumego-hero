@@ -39,16 +39,13 @@ class EmailLoginTest extends IntegrationTestCase
 	{
 		// Create Google user manually since ContextPreparator uses regular password
 		$context = new ContextPreparator(['user' => null]);
-
-		$User = ClassRegistry::init('User');
-		$User->create();
-		$User->save([
+		$this->fetchTable('User')->saveOrFail($this->fetchTable('User')->newEntity([
 			'name' => 'GoogleUser',
 			'display_name' => 'Google User',
 			'email' => 'google@gmail.com',
 			'password_hash' => 'google_oauth',
 			'external_id' => '123456',
-		], false);
+		], ['validate' => false]));
 
 		$this->post('/users/login', [
 			'username' => 'google@gmail.com',
@@ -66,15 +63,13 @@ class EmailLoginTest extends IntegrationTestCase
 		new ContextPreparator(['user' => null]);
 
 		// The Google account is older, so a lookup by address alone would pick it
-		$User = ClassRegistry::init('User');
-		$User->create();
-		$User->save([
+		$this->fetchTable('User')->saveOrFail($this->fetchTable('User')->newEntity([
 			'name' => null,
 			'display_name' => 'Google First',
 			'email' => 'shared@example.com',
 			'password_hash' => 'google_oauth',
 			'external_id' => '987654321',
-		], false);
+		], ['validate' => false]));
 
 		$context = new ContextPreparator([
 			'other-users' => [
@@ -99,16 +94,13 @@ class EmailLoginTest extends IntegrationTestCase
 	public function testSharedEmailDoesNotBlockLoginByName(): void
 	{
 		new ContextPreparator(['user' => null]);
-
-		$User = ClassRegistry::init('User');
-		$User->create();
-		$User->save([
+		$this->fetchTable('User')->saveOrFail($this->fetchTable('User')->newEntity([
 			'name' => null,
 			'display_name' => 'Google First',
 			'email' => 'shared@example.com',
 			'password_hash' => 'google_oauth',
 			'external_id' => '987654321',
-		], false);
+		], ['validate' => false]));
 
 		$context = new ContextPreparator([
 			'other-users' => [
@@ -147,15 +139,13 @@ class EmailLoginTest extends IntegrationTestCase
 		]);
 
 		// Create Google user with same email manually
-		$User = ClassRegistry::init('User');
-		$User->create();
-		$User->save([
+		$this->fetchTable('User')->saveOrFail($this->fetchTable('User')->newEntity([
 			'name' => 'GoogleJohn',
 			'display_name' => 'Google John',
 			'email' => $sharedEmail,
 			'password_hash' => 'google_oauth',
 			'external_id' => 'shared123',
-		], false);
+		], ['validate' => false]));
 
 		$this->post('/users/login', [
 			'username' => $sharedEmail,
@@ -171,16 +161,13 @@ class EmailLoginTest extends IntegrationTestCase
 	{
 		// Create Google user manually
 		$context = new ContextPreparator(['user' => null]);
-
-		$User = ClassRegistry::init('User');
-		$User->create();
-		$User->save([
+		$this->fetchTable('User')->saveOrFail($this->fetchTable('User')->newEntity([
 			'name' => 'GoogleByName',
 			'display_name' => 'Google By Name',
 			'email' => 'byname@gmail.com',
 			'password_hash' => 'google_oauth',
 			'external_id' => 'byname123',
-		], false);
+		], ['validate' => false]));
 
 		$this->post('/users/login', [
 			'username' => 'GoogleByName', // Using name, not email

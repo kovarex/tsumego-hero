@@ -198,10 +198,7 @@ class HeroPowersTest extends IntegrationTestCase
 
 			if ($testCase == 'used-up')
 			{
-				ClassRegistry::init('User')->updateAll(
-					['used_revelation' => 10],
-					['id' => $context->user['id']]
-				);
+				$this->fetchTable('User')->updateAll(['used_revelation' => 10], ['id' => $context->user['id']]);
 
 				$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 

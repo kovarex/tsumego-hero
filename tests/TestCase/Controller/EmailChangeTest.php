@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\Util;
 
@@ -24,7 +25,7 @@ class EmailChangeTest extends IntegrationTestCase
 
 	private function storedUser(int $userID): array
 	{
-		return ClassRegistry::init('User')->findById($userID)['User'];
+		return UserTable::row((int) $userID);
 	}
 
 	private function requestNewAddress(int $userID, string $address = 'new@example.com'): string

@@ -7,6 +7,7 @@ use App\Model\Table\TsumegoIssueTable;
 //Controller for managing tsumego issues.
 //Issues are reports about problems with tsumego solutions (missing moves, wrong answers, etc.).
 //Each issue contains one or more comments discussing the problem.
+use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\Query;
 
@@ -110,25 +111,24 @@ class TsumegoIssuesController extends AppController
 		}
 
 		// Return full issue data for initial state
-		$User = ClassRegistry::init('User');
-		$user = $User->findById(Auth::getUserID());
+		$user = Auth::getUser();
 
 		$issueData = [
 			'id' => $issueId,
 			'tsumego_issue_status_id' => TsumegoIssueTable::OPENED_STATUS,
 			'created' => date('c'),
 			'user_id' => Auth::getUserID(),
-			'user_display_name' => $user['User']['display_name'],
-			'user_avatar_url' => User::getAvatarUrl($user['User']),
-			'user_rating' => $user['User']['rating'],
+			'user_display_name' => $user['display_name'],
+			'user_avatar_url' => UserTable::getAvatarUrl($user),
+			'user_rating' => $user['rating'],
 			'isAdmin' => Auth::isAdmin(),
 			'comments' => [[
 				'id' => $comment->id,
 				'text' => $message,
 				'user_id' => Auth::getUserID(),
-				'user_display_name' => $user['User']['display_name'],
-				'user_avatar_url' => User::getAvatarUrl($user['User']),
-				'user_rating' => $user['User']['rating'],
+				'user_display_name' => $user['display_name'],
+				'user_avatar_url' => UserTable::getAvatarUrl($user),
+				'user_rating' => $user['rating'],
 				'isAdmin' => Auth::isAdmin(),
 				'created' => date('c'),
 				'position' => $position,
@@ -249,7 +249,6 @@ class TsumegoIssuesController extends AppController
 		if ($targetIssueId === 'new')
 		{
 			$tsumegoIssueTable = $this->fetchTable('TsumegoIssue');
-			$User = ClassRegistry::init('User');
 
 			$issue = $tsumegoIssueTable->saveOrFail($tsumegoIssueTable->newEntity([
 				'tsumego_id' => $comment->tsumego_id,
@@ -262,25 +261,25 @@ class TsumegoIssuesController extends AppController
 			$comment->tsumego_issue_id = $targetIssueId;
 			$tsumegoCommentTable->saveOrFail($comment);
 
-			$commentUser = $User->findById($comment->user_id);
+			$commentUser = UserTable::row($comment->user_id);
 
 			$issueData = [
 				'id' => $targetIssueId,
 				'status' => 'open',
 				'created' => date('c'),
 				'user_id' => $comment->user_id,
-				'user_display_name' => User::displayNameOrNull($commentUser['User']),
-				'user_avatar_url' => User::avatarOrNull($commentUser['User']),
-				'user_rating' => $commentUser['User']['rating'],
-				'isAdmin' => User::isAdmin($commentUser['User']),
+				'user_display_name' => UserTable::displayNameOrNull($commentUser),
+				'user_avatar_url' => UserTable::avatarOrNull($commentUser),
+				'user_rating' => $commentUser['rating'],
+				'isAdmin' => UserTable::isAdmin($commentUser),
 				'comments' => [[
 					'id' => $commentId,
 					'text' => $comment->message,
 					'user_id' => $comment->user_id,
-					'user_display_name' => User::displayNameOrNull($commentUser['User']),
-					'user_avatar_url' => User::avatarOrNull($commentUser['User']),
-					'user_rating' => $commentUser['User']['rating'],
-					'isAdmin' => User::isAdmin($commentUser['User']),
+					'user_display_name' => UserTable::displayNameOrNull($commentUser),
+					'user_avatar_url' => UserTable::avatarOrNull($commentUser),
+					'user_rating' => $commentUser['rating'],
+					'isAdmin' => UserTable::isAdmin($commentUser),
 					'created' => $comment->created->format('c'),
 					'position' => $comment->position,
 				]],

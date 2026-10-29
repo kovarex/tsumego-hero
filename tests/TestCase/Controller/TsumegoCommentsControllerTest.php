@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\UserTable;
 use App\Utility\Avatar;
 
 class TsumegoCommentsControllerTest extends IntegrationTestCase
@@ -35,10 +36,9 @@ class TsumegoCommentsControllerTest extends IntegrationTestCase
 		]);
 
 		// Google accounts have no login name, only a display name
-		$user = ClassRegistry::init('User');
-		$user->id = $context->user['id'];
-		$user->saveField('name', null);
-		$user->saveField('external_id', '123456789012345678901');
+		$this->fetchTable('User')->updateAll([
+			'name' => null,
+			'external_id' => '123456789012345678901'], ['id' => $context->user['id']]);
 
 		$this->post('/tsumego-comments/add', json_encode(['tsumego_id' => $context->tsumegos[0]['id'], 'text' => 'from a google account']));
 
@@ -97,11 +97,10 @@ class TsumegoCommentsControllerTest extends IntegrationTestCase
 		]);
 
 		// Google accounts show the picture of their Google profile once they pick it
-		$user = ClassRegistry::init('User');
-		$user->id = $context->user['id'];
-		$user->saveField('external_id', '123456789012345678901');
-		$user->saveField('picture', 'https://lh3.googleusercontent.com/a/abc123');
-		$user->saveField('avatar_setting_id', User::AVATAR_GOOGLE);
+		$this->fetchTable('User')->updateAll([
+			'external_id' => '123456789012345678901',
+			'picture' => 'https://lh3.googleusercontent.com/a/abc123',
+			'avatar_setting_id' => UserTable::AVATAR_GOOGLE], ['id' => $context->user['id']]);
 
 		$this->post('/tsumego-comments/add', json_encode(['tsumego_id' => $context->tsumegos[0]['id'], 'text' => 'from a google account']));
 

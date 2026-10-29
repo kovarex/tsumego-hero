@@ -114,7 +114,7 @@ WHERE
 	tsumego_status.updated < '" . date('Y-m-d H:i:s', strtotime('-7 days')) . "'");
 	}
 
-	private static function deduceUserOfTheDay(): ?array
+	private static function deduceUserOfTheDay(): ?int
 	{
 		$lastDayRecords = TableRegistry::getTableLocator()->get('DayRecord')->find()->orderByDesc('date')->limit(7)->all();
 
@@ -122,10 +122,15 @@ WHERE
 		foreach ($lastDayRecords as $lastDayRecord)
 			$excludedUsers[$lastDayRecord->user_id] = true;
 
-		$topUsers = ClassRegistry::init('User')->find('all', ['conditions' => ['deleted IS NULL'], 'limit' => '8', 'order' => 'daily_xp DESC']) ?: [];
+		$topUsers = TableRegistry::getTableLocator()->get('User')->find()
+			->select(['id'])
+			->where(['deleted IS' => null])
+			->orderByDesc('daily_xp')
+			->limit(8)
+			->all();
 		foreach ($topUsers as $user)
-			if (!isset($excludedUsers[$user['User']['id']]))
-				return $user;
+			if (!isset($excludedUsers[$user->id]))
+				return $user->id;
 		return null;
 	}
 
@@ -187,7 +192,7 @@ WHERE
 		$achievementTable->saveOrFail($arch3);
 
 		$dayRecordTable->saveOrFail($dayRecordTable->newEntity([
-			'user_id' => $userOfTheDay['User']['id'],
+			'user_id' => $userOfTheDay,
 			'date' => $today,
 			'quote' => $currentQuote,
 			'gems' => $gemRand1 . '-' . $gemRand2 . '-' . $gemRand3,
@@ -196,7 +201,7 @@ WHERE
 			'ruby_solves' => 0,
 		]));
 
-		AchievementConditionTable::put((int) $userOfTheDay['User']['id'], AchievementConditionTable::CATEGORY_USER_OF_THE_DAY, 1);
+		AchievementConditionTable::put($userOfTheDay, AchievementConditionTable::CATEGORY_USER_OF_THE_DAY, 1);
 	}
 
 	//The solved count on the user row goes up as the player solves, the recount repairs it where it

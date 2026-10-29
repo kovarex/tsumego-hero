@@ -3,6 +3,7 @@
 
 //Auth::saveUserField() / saveUserFields() persist only the changed fields,
 //so a single user write cannot clobber other columns.
+use App\Model\Table\UserTable;
 use App\Utility\Auth;
 
 class AuthTest extends CakeTestCase
@@ -17,7 +18,7 @@ class AuthTest extends CakeTestCase
 		Auth::saveUserField('rating', 1600);
 		$this->assertSame(1600.0, (float) Auth::getUser()['rating']);
 
-		$saved = ClassRegistry::init('User')->findById($userId)['User'];
+		$saved = UserTable::row((int) $userId);
 		$this->assertSame(1600.0, (float) $saved['rating']);
 		$this->assertSame(100, (int) $saved['xp']);
 		$this->assertSame('targeted', $saved['name']);
@@ -35,11 +36,37 @@ class AuthTest extends CakeTestCase
 			'level' => 2,
 		]);
 
-		$saved = ClassRegistry::init('User')->findById($userId)['User'];
+		$saved = UserTable::row((int) $userId);
 		$this->assertSame(150, (int) $saved['xp']);
 		$this->assertSame(2, (int) $saved['level']);
 		$this->assertSame(1500.0, (float) $saved['rating']);
 		$this->assertSame('bulk', $saved['name']);
+	}
+
+	//A float written into an integer column is rounded by MySQL, as Cake 2 sent it, not cut off the way
+	//the ORM would; a float column keeps its fraction.
+	public function testSaveUserFieldsRoundsAFloatIntoAnIntegerColumn()
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'rounded', 'xp' => 100, 'rating' => 1500]]);
+
+		Auth::saveUserFields(['xp' => 150.6, 'daily_xp' => 20.4, 'rating' => 1600.5]);
+
+		$saved = UserTable::row($context->user['id']);
+		$this->assertSame(151, $saved['xp']);
+		$this->assertSame(20, $saved['daily_xp']);
+		$this->assertSame(1600.5, $saved['rating']);
+	}
+
+	//The flags are written as numbers, which MySQL takes for a boolean column, and read back as bools.
+	public function testSaveUserFieldWritesABoolean()
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'flagged', 'sound' => false]]);
+
+		Auth::saveUserField('sound', true);
+		$this->assertTrue(UserTable::row($context->user['id'])['sound']);
+
+		Auth::saveUserField('sound', false);
+		$this->assertFalse(UserTable::row($context->user['id'])['sound']);
 	}
 
 	public function testIncrementUserFieldIfIncrementsOnlyWithinBound()
@@ -51,11 +78,11 @@ class AuthTest extends CakeTestCase
 
 		$incremented = Auth::incrementUserFieldIf('used_revelation', 1, ['used_revelation <' => 1]);
 		$this->assertTrue($incremented);
-		$this->assertSame(1, (int) ClassRegistry::init('User')->findById($userId)['User']['used_revelation']);
+		$this->assertSame(1, (int) UserTable::row((int) $userId)['used_revelation']);
 
 		$incremented = Auth::incrementUserFieldIf('used_revelation', 1, ['used_revelation <' => 1]);
 		$this->assertFalse($incremented);
-		$this->assertSame(1, (int) ClassRegistry::init('User')->findById($userId)['User']['used_revelation']);
+		$this->assertSame(1, (int) UserTable::row((int) $userId)['used_revelation']);
 	}
 
 	public function testSaveUserFieldThrowsOnUnknownColumn()

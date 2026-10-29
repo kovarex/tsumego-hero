@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\UserTable;
 use App\Utility\FakeGoogleTokenVerifier;
 use App\Utility\GoogleTokenVerifier;
 
@@ -48,11 +49,8 @@ class GoogleSignInTest extends IntegrationTestCase
 			'name' => null, // Google users don't have a login name
 		];
 		$userData = array_merge($defaults, $data);
-
-		$User = ClassRegistry::init('User');
-		$User->create();
-		$User->save($userData, false);
-		return $User->read()['User'];
+		$user = $this->fetchTable('User')->saveOrFail($this->fetchTable('User')->newEntity($userData, ['validate' => false]));
+		return UserTable::row($user->id);
 	}
 
 	//Test that a Google name longer than the column is shortened and the player is asked to pick their own name.
@@ -68,10 +66,10 @@ class GoogleSignInTest extends IntegrationTestCase
 
 		$this->googleSignIn('long-name-token');
 
-		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['external_id' => '123456789']]);
+		$user = ContextPreparator::findUserRow(['external_id' => '123456789']);
 		$this->assertNotEmpty($user, 'The Google sign in must create the account');
-		$this->assertSame(str_repeat('B', 50), $user['User']['display_name']);
-		$this->assertEquals(true, $user['User']['needs_display_name_change']);
+		$this->assertSame(str_repeat('B', 50), $user['display_name']);
+		$this->assertEquals(true, $user['needs_display_name_change']);
 	}
 
 	//A name Google brings with an emoji loses the character the forum cannot store. What is
@@ -88,10 +86,10 @@ class GoogleSignInTest extends IntegrationTestCase
 
 		$this->googleSignIn('emoji-token');
 
-		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['external_id' => '987654321']]);
+		$user = ContextPreparator::findUserRow(['external_id' => '987654321']);
 		$this->assertNotEmpty($user, 'The Google sign in must create the account');
-		$this->assertSame('Player (2)', $user['User']['display_name'], 'The name left without the emoji is made unique like any other name');
-		$this->assertEquals(true, $user['User']['needs_display_name_change']);
+		$this->assertSame('Player (2)', $user['display_name'], 'The name left without the emoji is made unique like any other name');
+		$this->assertEquals(true, $user['needs_display_name_change']);
 	}
 
 	//Test that new Google user is created with correct data.
@@ -110,18 +108,15 @@ class GoogleSignInTest extends IntegrationTestCase
 		$this->googleSignIn('valid_token_123');
 
 		// Verify user was created with correct data
-		$User = ClassRegistry::init('User');
-		$user = $User->find('first', [
-			'conditions' => ['external_id' => '12345678901234567890'],
-		]);
+		$user = ContextPreparator::findUserRow(['external_id' => '12345678901234567890']);
 
 		$this->assertNotEmpty($user, 'Google user should be created');
-		$this->assertNull($user['User']['name'], 'Google users should have NULL name');
-		$this->assertEquals('John Doe', $user['User']['display_name']);
-		$this->assertEquals('john.doe@gmail.com', $user['User']['email']);
-		$this->assertEquals('https://lh3.googleusercontent.com/photo.jpg', $user['User']['picture']);
-		$this->assertEquals('12345678901234567890', $user['User']['external_id']);
-		$this->assertSame(User::AVATAR_GOOGLE, (int) $user['User']['avatar_setting_id']);
+		$this->assertNull($user['name'], 'Google users should have NULL name');
+		$this->assertEquals('John Doe', $user['display_name']);
+		$this->assertEquals('john.doe@gmail.com', $user['email']);
+		$this->assertEquals('https://lh3.googleusercontent.com/photo.jpg', $user['picture']);
+		$this->assertEquals('12345678901234567890', $user['external_id']);
+		$this->assertSame(UserTable::AVATAR_GOOGLE, (int) $user['avatar_setting_id']);
 	}
 
 	//A sign in that brings the first picture to an account that has none makes it the avatar of that account.
@@ -145,9 +140,9 @@ class GoogleSignInTest extends IntegrationTestCase
 
 		$this->googleSignIn('nopicture_token');
 
-		$user = ClassRegistry::init('User')->findById($existingUser['id']);
-		$this->assertSame('https://lh3.googleusercontent.com/a/late-photo', $user['User']['picture']);
-		$this->assertSame(User::AVATAR_GOOGLE, (int) $user['User']['avatar_setting_id']);
+		$user = UserTable::row((int) $existingUser['id']);
+		$this->assertSame('https://lh3.googleusercontent.com/a/late-photo', $user['picture']);
+		$this->assertSame(UserTable::AVATAR_GOOGLE, (int) $user['avatar_setting_id']);
 	}
 
 	//A picture that only changed leaves the avatar the player picked alone.
@@ -160,7 +155,7 @@ class GoogleSignInTest extends IntegrationTestCase
 			'email' => 'picked@gmail.com',
 			'external_id' => '22222222222222222222',
 			'picture' => 'https://lh3.googleusercontent.com/a/old-photo',
-			'avatar_setting_id' => User::AVATAR_GRAVATAR,
+			'avatar_setting_id' => UserTable::AVATAR_GRAVATAR,
 		]);
 
 		$this->fakeVerifier->addToken('picked_token', [
@@ -172,9 +167,9 @@ class GoogleSignInTest extends IntegrationTestCase
 
 		$this->googleSignIn('picked_token');
 
-		$user = ClassRegistry::init('User')->findById($existingUser['id']);
-		$this->assertSame('https://lh3.googleusercontent.com/a/new-photo', $user['User']['picture']);
-		$this->assertSame(User::AVATAR_GRAVATAR, (int) $user['User']['avatar_setting_id']);
+		$user = UserTable::row((int) $existingUser['id']);
+		$this->assertSame('https://lh3.googleusercontent.com/a/new-photo', $user['picture']);
+		$this->assertSame(UserTable::AVATAR_GRAVATAR, (int) $user['avatar_setting_id']);
 	}
 
 	//Test that existing Google user is logged in (not duplicated).
@@ -201,15 +196,12 @@ class GoogleSignInTest extends IntegrationTestCase
 		$this->googleSignIn('janes_token');
 
 		// Verify no duplicate user was created
-		$User = ClassRegistry::init('User');
-		$users = $User->find('all', [
-			'conditions' => ['external_id' => '98765432109876543210'],
-		]);
+		$users = $this->fetchTable('User')->find()->where(['external_id' => '98765432109876543210'])->all()->toList();
 		$this->assertEquals(1, count($users), 'Should not create duplicate user');
 
 		// Verify picture was updated
-		$updatedUser = $User->findById($existingUser['id']);
-		$this->assertEquals('https://new-picture.jpg', $updatedUser['User']['picture']);
+		$updatedUser = UserTable::row((int) $existingUser['id']);
+		$this->assertEquals('https://new-picture.jpg', $updatedUser['picture']);
 	}
 
 	//Test that the picture from a Google sign-in ends up in the comments of that player.
@@ -227,11 +219,10 @@ class GoogleSignInTest extends IntegrationTestCase
 
 		// The test auth cookie decides who is logged in, so point it at the account
 		// the sign-in just created, like the session would in production
-		$googleUser = ClassRegistry::init('User')->find('first', ['conditions' => ['external_id' => '123456789012345678901']]);
-		$_COOKIE['hackedLoggedInUserID'] = $googleUser['User']['id'];
-		$googleUserModel = ClassRegistry::init('User');
-		$googleUserModel->id = $googleUser['User']['id'];
-		$googleUserModel->saveField('avatar_setting_id', User::AVATAR_GOOGLE);
+		$googleUser = ContextPreparator::findUserRow(['external_id' => '123456789012345678901']);
+		$_COOKIE['hackedLoggedInUserID'] = $googleUser['id'];
+		$this->fetchTable('User')->updateAll([
+			'avatar_setting_id' => UserTable::AVATAR_GOOGLE], ['id' => $googleUser['id']]);
 
 		$this->post('/tsumego-comments/add', json_encode(['tsumego_id' => $context->tsumegos[0]['id'], 'text' => 'from a google account']));
 
@@ -260,10 +251,8 @@ class GoogleSignInTest extends IntegrationTestCase
 		]);
 
 		$this->googleSignIn('email_update_token');
-
-		$User = ClassRegistry::init('User');
-		$updatedUser = $User->findById($existingUser['id']);
-		$this->assertEquals('new-email@gmail.com', $updatedUser['User']['email'], 'Email should be updated on login');
+		$updatedUser = UserTable::row((int) $existingUser['id']);
+		$this->assertEquals('new-email@gmail.com', $updatedUser['email'], 'Email should be updated on login');
 	}
 
 	//Test that name collision is handled with unique suffix.
@@ -273,14 +262,12 @@ class GoogleSignInTest extends IntegrationTestCase
 		new ContextPreparator(['user' => null]);
 
 		// Create existing user with same name
-		$User = ClassRegistry::init('User');
-		$User->create();
-		$User->save([
+		$this->fetchTable('User')->saveOrFail($this->fetchTable('User')->newEntity([
 			'name' => 'TestUser',
 			'display_name' => 'TestUser',
 			'email' => 'existing@test.com',
 			'password_hash' => 'hash123',
-		], false);
+		], ['validate' => false]));
 
 		$this->fakeVerifier->addToken('collision_token', [
 			'sub' => '11111111111111111111',
@@ -292,14 +279,12 @@ class GoogleSignInTest extends IntegrationTestCase
 		$this->googleSignIn('collision_token');
 
 		// Verify new user has unique name with suffix
-		$newUser = $User->find('first', [
-			'conditions' => ['external_id' => '11111111111111111111'],
-		]);
+		$newUser = ContextPreparator::findUserRow(['external_id' => '11111111111111111111']);
 
 		$this->assertNotEmpty($newUser);
 		// Google users have NULL name, but unique display_name with "(N)" suffix
-		$this->assertNull($newUser['User']['name'], 'Google users should have NULL name');
-		$this->assertEquals('TestUser (2)', $newUser['User']['display_name']);
+		$this->assertNull($newUser['name'], 'Google users should have NULL name');
+		$this->assertEquals('TestUser (2)', $newUser['display_name']);
 	}
 
 	//Test that invalid token does not create user.
@@ -309,10 +294,7 @@ class GoogleSignInTest extends IntegrationTestCase
 		new ContextPreparator(['user' => null]);
 
 		// Count Google users before
-		$User = ClassRegistry::init('User');
-		$countBefore = $User->find('count', [
-			'conditions' => ['external_id !=' => null],
-		]);
+		$countBefore = $this->fetchTable('User')->find()->where(['external_id IS NOT' => null])->count();
 
 		// Don't add any valid tokens - fakeVerifier will return null
 
@@ -322,9 +304,7 @@ class GoogleSignInTest extends IntegrationTestCase
 		$this->assertTrue($this->fakeVerifier->wasVerified('invalid_token'));
 
 		// No new user should be created
-		$countAfter = $User->find('count', [
-			'conditions' => ['external_id !=' => null],
-		]);
+		$countAfter = $this->fetchTable('User')->find()->where(['external_id IS NOT' => null])->count();
 		$this->assertEquals($countBefore, $countAfter, 'No new Google user should be created with invalid token');
 	}
 
@@ -344,14 +324,10 @@ class GoogleSignInTest extends IntegrationTestCase
 		]);
 
 		$this->googleSignIn('pic_token');
-
-		$User = ClassRegistry::init('User');
-		$user = $User->find('first', [
-			'conditions' => ['external_id' => '22222222222222222222'],
-		]);
+		$user = ContextPreparator::findUserRow(['external_id' => '22222222222222222222']);
 
 		// Picture should be stored as the Google URL, not downloaded
-		$this->assertEquals($googlePictureUrl, $user['User']['picture']);
+		$this->assertEquals($googlePictureUrl, $user['picture']);
 	}
 
 	//Test that missing picture is handled gracefully.
@@ -368,16 +344,12 @@ class GoogleSignInTest extends IntegrationTestCase
 		]);
 
 		$this->googleSignIn('no_pic_token');
-
-		$User = ClassRegistry::init('User');
-		$user = $User->find('first', [
-			'conditions' => ['external_id' => '33333333333333333333'],
-		]);
+		$user = ContextPreparator::findUserRow(['external_id' => '33333333333333333333']);
 
 		$this->assertNotEmpty($user);
 		// Picture should be empty string, not cause errors
 		$this->assertTrue(
-			empty($user['User']['picture']) || $user['User']['picture'] === '',
+			empty($user['picture']) || $user['picture'] === '',
 			'Missing picture should be handled gracefully'
 		);
 	}
@@ -396,15 +368,11 @@ class GoogleSignInTest extends IntegrationTestCase
 		]);
 
 		$this->googleSignIn('no_name_token');
-
-		$User = ClassRegistry::init('User');
-		$user = $User->find('first', [
-			'conditions' => ['external_id' => '44444444444444444444'],
-		]);
+		$user = ContextPreparator::findUserRow(['external_id' => '44444444444444444444']);
 
 		$this->assertNotEmpty($user, 'User should be created even without name');
-		$this->assertNull($user['User']['name'], 'Google users should have NULL name');
-		$this->assertEquals('User 444444', $user['User']['display_name'], 'Should use last 6 digits of sub');
+		$this->assertNull($user['name'], 'Google users should have NULL name');
+		$this->assertEquals('User 444444', $user['display_name'], 'Should use last 6 digits of sub');
 	}
 
 	//Test that empty name also falls back to "User {last6digits}".
@@ -421,15 +389,11 @@ class GoogleSignInTest extends IntegrationTestCase
 		]);
 
 		$this->googleSignIn('empty_name_token');
-
-		$User = ClassRegistry::init('User');
-		$user = $User->find('first', [
-			'conditions' => ['external_id' => '55555555555555555555'],
-		]);
+		$user = ContextPreparator::findUserRow(['external_id' => '55555555555555555555']);
 
 		$this->assertNotEmpty($user, 'User should be created even with empty name');
-		$this->assertNull($user['User']['name'], 'Google users should have NULL name');
-		$this->assertEquals('User 555555', $user['User']['display_name'], 'Should use last 6 digits of sub');
+		$this->assertNull($user['name'], 'Google users should have NULL name');
+		$this->assertEquals('User 555555', $user['display_name'], 'Should use last 6 digits of sub');
 	}
 
 	//Test that a request whose g_csrf_token cookie does not match the posted one is rejected and creates no account.
@@ -445,11 +409,7 @@ class GoogleSignInTest extends IntegrationTestCase
 		]);
 
 		$this->googleSignIn('csrf_token', 'a-different-token');
-
-		$User = ClassRegistry::init('User');
-		$user = $User->find('first', [
-			'conditions' => ['external_id' => '66666666666666666666'],
-		]);
+		$user = ContextPreparator::findUserRow(['external_id' => '66666666666666666666']);
 
 		$this->assertEmpty($user, 'No account should be created for a mismatching CSRF token');
 	}

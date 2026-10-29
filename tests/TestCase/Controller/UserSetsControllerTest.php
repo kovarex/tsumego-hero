@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Table\AdminActivityTypeTable;
+use App\Model\Table\UserTable;
 use App\Utility\Constants;
 
 class UserSetsControllerTest extends IntegrationTestCase
@@ -300,7 +301,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 	public function testSandboxExcludesUserSets(): void
 	{
 		new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
-		$adminId = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'admin']])['User']['id'];
+		$adminId = ContextPreparator::findUserRow(['name' => 'admin'])['id'];
 		$this->_createSet('Sandbox Set', null, 0);
 		$this->_createSet('User Set', $adminId, 0);
 		$this->login('admin');
@@ -396,8 +397,8 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$this->assertNotEmpty($set);
 		$this->assertEquals(0, $set->public);
 
-		$user = ClassRegistry::init('User')->findById($context->user['id']);
-		$this->assertEquals($set->id, $user['User']['default_set_id']);
+		$user = UserTable::row((int) $context->user['id']);
+		$this->assertEquals($set->id, $user['default_set_id']);
 
 		$setConnection = $this->fetchTable('SetConnection')->find()->where(['set_id' => $set->id, 'tsumego_id' => $tsumegoId])->first();
 		$this->assertNotEmpty($setConnection);
@@ -599,7 +600,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 			'user' => ['name' => 'admin', 'admin' => true],
 			'other-users' => [['name' => 'bob']],
 		]);
-		$bobId = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'bob']])['User']['id'];
+		$bobId = ContextPreparator::findUserRow(['name' => 'bob'])['id'];
 		$setId = $this->_createSet('Bob Set', $bobId, 0);
 		$this->login('admin');
 

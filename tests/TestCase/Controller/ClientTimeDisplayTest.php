@@ -1,12 +1,13 @@
 <?php
 
+use App\Model\Table\UserTable;
 use Facebook\WebDriver\WebDriverBy;
 
 class ClientTimeDisplayTest extends IntegrationTestCase
 {
 	public function testSolveHistoryDisplaysTimeInBrowserTimezone(): void
 	{
-		$context = $this->prepareSolveHistory(User::DATE_FORMAT_ISO);
+		$context = $this->prepareSolveHistory(UserTable::DATE_FORMAT_ISO);
 
 		$browser = Browser::instance();
 		$browser->get('users/solveHistory/' . $context->user['id']);
@@ -32,8 +33,8 @@ class ClientTimeDisplayTest extends IntegrationTestCase
 	public function testDatesAreWrittenInTheFormatThePlayerPicked(): void
 	{
 		foreach ([
-			User::DATE_FORMAT_DAY_MONTH_YEAR => '15. 8. 2026 14:00',
-			User::DATE_FORMAT_MONTH_DAY_YEAR => '08/15/2026 2:00 PM'] as $dateFormat => $expected)
+			UserTable::DATE_FORMAT_DAY_MONTH_YEAR => '15. 8. 2026 14:00',
+			UserTable::DATE_FORMAT_MONTH_DAY_YEAR => '08/15/2026 2:00 PM'] as $dateFormat => $expected)
 		{
 			$context = $this->prepareSolveHistory($dateFormat);
 

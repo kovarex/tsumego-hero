@@ -80,19 +80,18 @@ class AvatarsController extends AppController
 	#[HttpGet]
 	public function boardOfUser(?int $id = null)
 	{
-		$this->loadModel('User');
-		$user = $id === null ? null : $this->User->find('first', [
-			'fields' => ['User.display_name', 'User.deleted'],
-			'conditions' => ['User.id' => $id],
-		]);
+		$user = $id === null ? null : $this->fetchTable('User')->find()
+			->select(['display_name', 'deleted'])
+			->where(['id' => $id])
+			->first();
 
-		if ($user === null || User::isDeleted($user['User']) || empty($user['User']['display_name']))
+		if ($user === null || $user->deleted !== null || $user->display_name === '')
 			throw new NotFoundException('No board for this account');
 
 		// The board of a name is fixed, the name of an account is not, so this is the
 		// answer that may not be kept for long.
 		$this->response->header('Cache-Control', 'max-age=60');
 
-		return $this->redirect(Avatar::url($user['User']['display_name']));
+		return $this->redirect(Avatar::url($user->display_name));
 	}
 }

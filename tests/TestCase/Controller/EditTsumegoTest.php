@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Table\AdminActivityTypeTable;
+use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\Rating;
 use Facebook\WebDriver\WebDriverKeys;
@@ -65,7 +66,7 @@ class EditTsumegoTest extends IntegrationTestCase
 			$this->fetchTable('Tsumego')->deleteAll(['id' => $context->tsumegos[0]['id']]);
 
 		if (($testCase['admin'] ?? null) === false)
-			Auth::saveUserField('user_role_id', User::ROLE_PLAYER);
+			Auth::saveUserField('user_role_id', UserTable::ROLE_PLAYER);
 
 		$browser->clickId("tsumego-edit-submit");
 

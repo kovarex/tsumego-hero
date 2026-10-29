@@ -2,7 +2,7 @@
 
 namespace App\Utility;
 
-use User;
+use App\Model\Table\UserTable;
 
 class TsumegoAttemptsRenderer extends DataTableRenderer
 {
@@ -35,7 +35,7 @@ OFFSET " . $this->offset, [$tsumegoID]);
 
 	public function renderItem(int $index, array $item): void
 	{
-		echo '<td>' . User::renderLink($item) . '</td>';
+		echo '<td>' . UserTable::renderLink($item) . '</td>';
 		echo '<td>' . $item['solved'] . '</td>';
 		echo '<td>' . $item['misplays'] . '</td>';
 		echo '<td>' . $item['tsumego_rating'] . '</td>';

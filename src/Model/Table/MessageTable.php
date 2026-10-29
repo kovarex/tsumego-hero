@@ -6,11 +6,9 @@ use App\Model\Entity\Message;
 use App\Utility\Util;
 use CakeLog;
 use Cake\ORM\TableRegistry;
-use ClassRegistry;
 use Exception;
 use InvalidArgumentException;
 use Router;
-use User;
 
 //A message one player sent to another. The messages between two players are their
 //conversation, so a conversation has no row of its own: it is addressed by the
@@ -45,8 +43,8 @@ class MessageTable extends AppTable
 	{
 		if ($senderUserId === $recipientUserId)
 			return 'You can not send a message to yourself.';
-		$recipient = ClassRegistry::init('User')->findById($recipientUserId);
-		if (!$recipient || User::isDeleted($recipient['User']))
+		$recipient = UserTable::row($recipientUserId);
+		if (!$recipient || UserTable::isDeleted($recipient))
 			return 'The player does not exist.';
 		$text = self::normalizeText($text);
 		if ($text === '')
@@ -88,7 +86,7 @@ class MessageTable extends AppTable
 
 	private static function notifyByEmail(int $senderUserId, int $recipientUserId, string $text, mixed $emailer): void
 	{
-		$recipient = ClassRegistry::init('User')->findById($recipientUserId)['User'];
+		$recipient = UserTable::row($recipientUserId);
 		if (!$recipient['email_on_new_message'] || empty($recipient['email']))
 			return;
 
@@ -96,8 +94,8 @@ class MessageTable extends AppTable
 		if (self::unreadCountFrom($recipientUserId, $senderUserId) > 1)
 			return;
 
-		$sender = ClassRegistry::init('User')->findById($senderUserId)['User'];
-		$senderName = User::displayName($sender);
+		$sender = UserTable::row($senderUserId);
+		$senderName = UserTable::displayName($sender);
 		$emailer->from(['me@tsumego.com' => 'https://tsumego.com']);
 		$emailer->to($recipient['email']);
 		$emailer->subject('New message from ' . $senderName . ' on Tsumego Hero');
@@ -251,8 +249,8 @@ You get an email for the first message you have not read yet. You can turn these
 		$user['id'] = (int) $row['user_id'];
 		return [
 			'id' => $user['id'],
-			'displayName' => User::displayNameOrNull($user),
-			'avatarUrl' => User::avatarOrNull($user),
+			'displayName' => UserTable::displayNameOrNull($user),
+			'avatarUrl' => UserTable::avatarOrNull($user),
 			'rating' => (float) $row['rating'],
 		];
 	}

@@ -2,6 +2,7 @@
 
 
 use App\Model\Table\AchievementConditionTable;
+use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\Util;
@@ -105,9 +106,9 @@ class CronControllerTest extends IntegrationTestCase
 		$this->get('/cron/daily/' . CRON_SECRET);
 		$this->assertSame($context->reloadUser()['daily_xp'], 0);
 		$this->assertSame($context->reloadUser()['daily_solved'], 0);
-		$detkov = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'Ivan Detkov']]);
-		$this->assertSame($detkov['User']['daily_xp'], 0);
-		$this->assertSame($detkov['User']['daily_solved'], 0);
+		$detkov = ContextPreparator::findUserRow(['name' => 'Ivan Detkov']);
+		$this->assertSame($detkov['daily_xp'], 0);
+		$this->assertSame($detkov['daily_solved'], 0);
 		$dayRecords = $this->fetchTable('DayRecord')->find()->toArray();
 		$this->assertCount(1, $dayRecords);
 		$this->assertSame($dayRecords[0]->user_id, $context->otherUsers[0]['id']);
@@ -193,8 +194,8 @@ class CronControllerTest extends IntegrationTestCase
 		$this->get('/cron/daily/' . CRON_SECRET);
 
 		$this->assertSame(0, $context->reloadUser()['solved']);
-		$detkov = ClassRegistry::init('User')->findById($context->otherUsers[0]['id']);
-		$this->assertSame(0, $detkov['User']['solved']);
+		$detkov = UserTable::row((int) $context->otherUsers[0]['id']);
+		$this->assertSame(0, $detkov['solved']);
 	}
 
 	public function testCronResetsOnlyThePotionCondition()

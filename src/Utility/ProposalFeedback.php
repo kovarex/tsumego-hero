@@ -5,7 +5,7 @@ namespace App\Utility;
 use Cake\ORM\TableRegistry;
 use App\Model\Table\MessageTable;
 use Router;
-use User;
+use App\Model\Table\UserTable;
 use App\Model\Table\SetConnectionTable;
 
 //Tells a player what an admin decided about their proposal: a new version of a problem, a tag
@@ -77,6 +77,6 @@ class ProposalFeedback
 	//The name of the signed in admin, for the decision line.
 	public static function adminName(): string
 	{
-		return User::displayName(Auth::getUser());
+		return UserTable::displayName(Auth::getUser());
 	}
 }

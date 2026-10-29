@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\JwtAuth;
 
@@ -16,7 +17,7 @@ class PasswordPreferenceTest extends IntegrationTestCase
 
 	private function storedHash(int $userID): string
 	{
-		return ClassRegistry::init('User')->findById($userID)['User']['password_hash'];
+		return UserTable::row((int) $userID)['password_hash'];
 	}
 
 	private function prepareUser(string $name): array

@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\UserTable;
 use Facebook\WebDriver\WebDriverBy;
 use App\Utility\Auth;
 use App\Utility\Constants;
@@ -10,12 +11,11 @@ class LoginComponentTest extends IntegrationTestCase
 	public function testLogin(): void
 	{
 		new ContextPreparator(['other-users' => [['name' => 'kovarex']]]);
-		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
+		$user = ContextPreparator::findUserRow(['name' => 'kovarex']);
 		$this->assertNotEmpty($user);
 
 		// making sure the password is what we expect it to be
-		$user['User']['password_hash'] = password_hash('test', PASSWORD_DEFAULT);
-		ClassRegistry::init('User')->save($user);
+		$this->fetchTable('User')->updateAll(['password_hash' => password_hash('test', PASSWORD_DEFAULT)], ['id' => $user['id']]);
 
 		$this->assertFalse(Auth::isLoggedIn());
 		$this->post('users/login/', ['username' => 'kovarex', 'password' => 'test']);
@@ -50,9 +50,8 @@ class LoginComponentTest extends IntegrationTestCase
 	public function testAShortPasswordStillSignsIn(): void
 	{
 		$context = new ContextPreparator(['user' => null, 'other-users' => [['name' => 'oldAccount']]]);
-		$user = ClassRegistry::init('User')->findById($context->otherUsers[0]['id']);
-		$user['User']['password_hash'] = password_hash('abc', PASSWORD_DEFAULT);
-		ClassRegistry::init('User')->save($user);
+		$user = UserTable::row((int) $context->otherUsers[0]['id']);
+		$this->fetchTable('User')->updateAll(['password_hash' => password_hash('abc', PASSWORD_DEFAULT)], ['id' => $user['id']]);
 
 		$this->post('users/login/', ['username' => 'oldAccount', 'password' => 'abc']);
 
@@ -101,9 +100,9 @@ class LoginComponentTest extends IntegrationTestCase
 	{
 		// Test that the signup form works correctly with matching passwords
 		new ContextPreparator(['user' => null]);
-		$userWithBiggestID = ClassRegistry::init('User')->find('first', ['order' => 'id DESC'])['User']['id'];
+		$userWithBiggestID = $this->fetchTable('User')->find()->select(['id'])->orderByDesc('id')->first()?->id;
 		$newUsername = 'testuser' . strval($userWithBiggestID + 1);
-		$userCountBefore = count(ClassRegistry::init('User')->find('all'));
+		$userCountBefore = $this->fetchTable('User')->find()->count();
 
 		$browser = Browser::instance();
 		$browser->get('users/add');
@@ -121,46 +120,46 @@ class LoginComponentTest extends IntegrationTestCase
 		$browser->waitUntilJs('!location.href.includes("users/add")');
 
 		// Check if user was created successfully
-		$userCountAfter = count(ClassRegistry::init('User')->find('all'));
-		$newUser = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => $newUsername]]);
+		$userCountAfter = $this->fetchTable('User')->find()->count();
+		$newUser = ContextPreparator::findUserRow(['name' => $newUsername]);
 
 		// User should be created after signup
 		$this->assertNotNull($newUser, 'User should be created after signup');
 		$this->assertSame($userCountBefore + 1, $userCountAfter, 'User count should increase by 1');
-		$this->assertSame($newUser['User']['name'], $newUsername);
-		$this->assertSame($newUser['User']['email'], $newUsername . '@email.com');
+		$this->assertSame($newUser['name'], $newUsername);
+		$this->assertSame($newUser['email'], $newUsername . '@email.com');
 	}
 
 	public function testSignUpWithDupliciteName(): void
 	{
 		new ContextPreparator(['user' => null]);
 		$this->assertFalse(Auth::isLoggedIn());
-		$userWithBiggestID = ClassRegistry::init('User')->find('first', ['order' => 'id DESC'])['User']['id'];
+		$userWithBiggestID = $this->fetchTable('User')->find()->select(['id'])->orderByDesc('id')->first()?->id;
 		$newUsername = 'kovarex';
 		$this->post('users/add/', ['User' => ['name' => $newUsername,
 			'password1' => 'helloThere42',
 			'password2' => 'helloThere42',
 			'email' => $newUsername . '@email.com']]);
-		$userCount = count(ClassRegistry::init('User')->find('all'));
+		$userCount = $this->fetchTable('User')->find()->count();
 
-		$newUser = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => $newUsername]]);
-		$this->assertSame($userCount, count(ClassRegistry::init('User')->find('all'))); // no user was added
+		$newUser = ContextPreparator::findUserRow(['name' => $newUsername]);
+		$this->assertSame($userCount, $this->fetchTable('User')->find()->count()); // no user was added
 	}
 
 	public function testSignUpWithNameThatOnlyDiffersInCase(): void
 	{
 		new ContextPreparator(['user' => null]);
 		$this->assertFalse(Auth::isLoggedIn());
-		$userWithBiggestID = ClassRegistry::init('User')->find('first', ['order' => 'id DESC'])['User']['id'];
+		$userWithBiggestID = $this->fetchTable('User')->find()->select(['id'])->orderByDesc('id')->first()?->id;
 		$newUsername = 'Kovarex';
 		$this->post('users/add/', ['User' => ['name' => $newUsername,
 			'password1' => 'helloThere42',
 			'password2' => 'helloThere42',
 			'email' => $newUsername . '@email.com']]);
-		$userCount = count(ClassRegistry::init('User')->find('all'));
+		$userCount = $this->fetchTable('User')->find()->count();
 
-		$newUser = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => $newUsername]]);
-		$this->assertSame($userCount, count(ClassRegistry::init('User')->find('all'))); // no user was added
+		$newUser = ContextPreparator::findUserRow(['name' => $newUsername]);
+		$this->assertSame($userCount, $this->fetchTable('User')->find()->count()); // no user was added
 	}
 
 	public function testResetPassword(): void
@@ -172,7 +171,7 @@ class LoginComponentTest extends IntegrationTestCase
 		$this->registerTestEmailer();
 		$this->post('users/resetpassword/', ['User' => ['email' => $user['email']]]);
 
-		$userNew = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
+		$userNew = ContextPreparator::findUserRow(['name' => 'kovarex']);
 		$this->assertNotEmpty($userNew['password_reset_token']);
 		$this->assertNotEmpty($userNew['password_reset_token_created']);
 		$this->assertNotNull(TestEmailer::$lastEmail);
@@ -208,7 +207,7 @@ class LoginComponentTest extends IntegrationTestCase
 
 	private function resetFields(): array
 	{
-		return ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
+		return ContextPreparator::findUserRow(['name' => 'kovarex']);
 	}
 
 	//A mail just sent is not followed by another one right away, so a bot can not fill somebody's inbox.
@@ -230,11 +229,12 @@ class LoginComponentTest extends IntegrationTestCase
 	{
 		new ContextPreparator(['user' => null, 'other-users' => [['name' => 'kovarex', 'email' => 'kovarex@example.com']]]);
 
-		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
+		$user = ContextPreparator::findUserRow(['name' => 'kovarex']);
 		$resetSecret = 'reset_checksum_abc';
-		$user['password_reset_token'] = $resetSecret;
-		$user['password_reset_token_created'] = date('Y-m-d H:i:s');
-		ClassRegistry::init('User')->save($user);
+		$this->fetchTable('User')->updateAll([
+			'password_reset_token' => $resetSecret,
+			'password_reset_token_created' => date('Y-m-d H:i:s'),
+		], ['id' => $user['id']]);
 
 		$browser = Browser::instance();
 		$this->assertFalse(Auth::isLoggedIn());
@@ -252,7 +252,7 @@ class LoginComponentTest extends IntegrationTestCase
 		$this->assertSame(Util::getMyAddress() . '/users/login', $browser->driver->getCurrentURL());
 		$this->assertTextContains("Password changed", $browser->driver->getPageSource());
 
-		$newUser = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
+		$newUser = ContextPreparator::findUserRow(['name' => 'kovarex']);
 		$this->assertNull($newUser['password_reset_token']); // password reset was cleared
 		$this->assertNull($newUser['password_reset_token_created']);
 		$this->assertFalse(Auth::isLoggedIn());
@@ -261,23 +261,23 @@ class LoginComponentTest extends IntegrationTestCase
 		$this->assertTrue(Auth::isLoggedIn());
 
 		// changing the password to test again to not break other tests
-		$newUser['password_hash'] = password_hash('test', PASSWORD_DEFAULT);
-		ClassRegistry::init('User')->save($newUser);
+		$this->fetchTable('User')->updateAll(['password_hash' => password_hash('test', PASSWORD_DEFAULT)], ['id' => $newUser['id']]);
 	}
 
 	public function testAResetLinkStopsWorkingAfterItsTime(): void
 	{
 		new ContextPreparator(['user' => null, 'other-users' => [['name' => 'kovarex', 'email' => 'kovarex@example.com']]]);
 
-		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
+		$user = ContextPreparator::findUserRow(['name' => 'kovarex']);
 		$before = $user['password_hash'];
-		$user['password_reset_token'] = 'old_reset_checksum';
-		$user['password_reset_token_created'] = date('Y-m-d H:i:s', strtotime('-3 hours'));
-		ClassRegistry::init('User')->save($user);
+		$this->fetchTable('User')->updateAll([
+			'password_reset_token' => 'old_reset_checksum',
+			'password_reset_token_created' => date('Y-m-d H:i:s', strtotime('-3 hours')),
+		], ['id' => $user['id']]);
 
 		$this->post('users/newpassword/old_reset_checksum', ['User' => ['password1' => 'brnoHorse42', 'password2' => 'brnoHorse42']]);
 
-		$after = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
+		$after = ContextPreparator::findUserRow(['name' => 'kovarex']);
 		$this->assertSame($before, $after['password_hash']);
 		$this->assertSame('old_reset_checksum', $after['password_reset_token']);
 	}
@@ -286,15 +286,16 @@ class LoginComponentTest extends IntegrationTestCase
 	{
 		new ContextPreparator(['user' => null, 'other-users' => [['name' => 'kovarex', 'email' => 'kovarex@example.com']]]);
 
-		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
+		$user = ContextPreparator::findUserRow(['name' => 'kovarex']);
 		$before = $user['password_hash'];
-		$user['password_reset_token'] = 'reset_checksum_twice';
-		$user['password_reset_token_created'] = date('Y-m-d H:i:s');
-		ClassRegistry::init('User')->save($user);
+		$this->fetchTable('User')->updateAll([
+			'password_reset_token' => 'reset_checksum_twice',
+			'password_reset_token_created' => date('Y-m-d H:i:s'),
+		], ['id' => $user['id']]);
 
 		$this->post('users/newpassword/reset_checksum_twice', ['User' => ['password1' => 'brnoHorse42', 'password2' => 'brnoHorse43']]);
 
-		$after = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
+		$after = ContextPreparator::findUserRow(['name' => 'kovarex']);
 		$this->assertSame($before, $after['password_hash']);
 	}
 

@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\UserTable;
 use App\Utility\Util;
 
 class SgfControllerInfoTest extends IntegrationTestCase
@@ -17,7 +18,7 @@ class SgfControllerInfoTest extends IntegrationTestCase
 
 		$info = json_decode($this->view, true);
 		$this->assertSame("Added D16\nbecause", $info['description']);
-		$this->assertSame(User::renderLink(ClassRegistry::init('User')->findById($context->otherUsers[0]['id'])['User']), $info['authorLink']);
+		$this->assertSame(UserTable::renderLink(UserTable::row((int) $context->otherUsers[0]['id'])), $info['authorLink']);
 		$this->assertStringContainsString('href="/users/view/' . $context->otherUsers[0]['id'] . '"', $info['authorLink']);
 	}
 

@@ -4,7 +4,6 @@ namespace App\Model\Table;
 
 use App\Utility\Rating;
 use Cake\ORM\TableRegistry;
-use User;
 
 //An achievement a player unlocked, with how often a repeatable one was earned (value).
 class AchievementStatusTable extends AppTable
@@ -47,7 +46,7 @@ class AchievementStatusTable extends AppTable
 				'image' => $row['Achievement']['image'],
 				'user_id' => (int) $row['User']['id'],
 				'user_display_name' => $row['User']['display_name'],
-				'user_avatar_url' => User::getAvatarUrl($userData),
+				'user_avatar_url' => UserTable::getAvatarUrl($userData),
 				'user_rank' => $rating > 0 ? Rating::getReadableRankFromRating($rating) : '',
 				'created' => $row['created']->format('c'),
 			];

@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\UserTable;
 use App\Utility\Auth;
 
 class AvatarPreferenceTest extends IntegrationTestCase
@@ -10,12 +11,12 @@ class AvatarPreferenceTest extends IntegrationTestCase
 		$context = new ContextPreparator(['user' => ['name' => 'avatarStores']]);
 		$this->login('avatarStores');
 
-		$this->post('/users/avatarPreference', ['avatar' => User::AVATAR_GRAVATAR]);
+		$this->post('/users/avatarPreference', ['avatar' => UserTable::AVATAR_GRAVATAR]);
 		$result = $this->view;
 
 		$this->assertSame('{"status":"ok"}', $result);
-		$row = ClassRegistry::init('User')->findById($context->user['id']);
-		$this->assertSame(User::AVATAR_GRAVATAR, (int) $row['User']['avatar_setting_id']);
+		$row = UserTable::row((int) $context->user['id']);
+		$this->assertSame(UserTable::AVATAR_GRAVATAR, (int) $row['avatar_setting_id']);
 	}
 
 	public function testSwitchingBackToTheBoardStoresTheBoard(): void
@@ -23,12 +24,12 @@ class AvatarPreferenceTest extends IntegrationTestCase
 		Auth::logout();
 		$context = new ContextPreparator(['user' => ['name' => 'avatarBack']]);
 		$this->login('avatarBack');
-		$this->storeAvatar($context->user['id'], User::AVATAR_GRAVATAR);
+		$this->storeAvatar($context->user['id'], UserTable::AVATAR_GRAVATAR);
 
-		$this->post('/users/avatarPreference', ['avatar' => User::AVATAR_BOARD]);
+		$this->post('/users/avatarPreference', ['avatar' => UserTable::AVATAR_BOARD]);
 
-		$row = ClassRegistry::init('User')->findById($context->user['id']);
-		$this->assertSame(User::AVATAR_BOARD, (int) $row['User']['avatar_setting_id']);
+		$row = UserTable::row((int) $context->user['id']);
+		$this->assertSame(UserTable::AVATAR_BOARD, (int) $row['avatar_setting_id']);
 	}
 
 	public function testTheGooglePictureIsStoredForAnAccountWithOne(): void
@@ -38,10 +39,10 @@ class AvatarPreferenceTest extends IntegrationTestCase
 		$this->storeGooglePicture($context->user['id']);
 		$this->login('avatarGoogle');
 
-		$this->post('/users/avatarPreference', ['avatar' => User::AVATAR_GOOGLE]);
+		$this->post('/users/avatarPreference', ['avatar' => UserTable::AVATAR_GOOGLE]);
 
-		$row = ClassRegistry::init('User')->findById($context->user['id']);
-		$this->assertSame(User::AVATAR_GOOGLE, (int) $row['User']['avatar_setting_id']);
+		$row = UserTable::row((int) $context->user['id']);
+		$this->assertSame(UserTable::AVATAR_GOOGLE, (int) $row['avatar_setting_id']);
 	}
 
 	//An account without a Google picture can not pick one, so the request is ignored and the avatar stays on the board.
@@ -51,10 +52,10 @@ class AvatarPreferenceTest extends IntegrationTestCase
 		$context = new ContextPreparator(['user' => ['name' => 'avatarNoGoogle']]);
 		$this->login('avatarNoGoogle');
 
-		$this->post('/users/avatarPreference', ['avatar' => User::AVATAR_GOOGLE]);
+		$this->post('/users/avatarPreference', ['avatar' => UserTable::AVATAR_GOOGLE]);
 
-		$row = ClassRegistry::init('User')->findById($context->user['id']);
-		$this->assertSame(User::AVATAR_BOARD, (int) $row['User']['avatar_setting_id']);
+		$row = UserTable::row((int) $context->user['id']);
+		$this->assertSame(UserTable::AVATAR_BOARD, (int) $row['avatar_setting_id']);
 	}
 
 	public function testAnUnknownValueIsIgnored(): void
@@ -68,8 +69,8 @@ class AvatarPreferenceTest extends IntegrationTestCase
 
 			$this->post('/users/avatarPreference', ['avatar' => $invalid]);
 
-			$row = ClassRegistry::init('User')->findById($context->user['id']);
-			$this->assertSame(User::AVATAR_BOARD, (int) $row['User']['avatar_setting_id'], 'The value ' . $invalid . ' was stored');
+			$row = UserTable::row((int) $context->user['id']);
+			$this->assertSame(UserTable::AVATAR_BOARD, (int) $row['avatar_setting_id'], 'The value ' . $invalid . ' was stored');
 		}
 	}
 
@@ -77,7 +78,7 @@ class AvatarPreferenceTest extends IntegrationTestCase
 	{
 		Auth::logout();
 
-		$this->post('/users/avatarPreference', ['avatar' => User::AVATAR_BOARD]);
+		$this->post('/users/avatarPreference', ['avatar' => UserTable::AVATAR_BOARD]);
 
 		$this->assertResponseCode(401);
 	}
@@ -91,9 +92,9 @@ class AvatarPreferenceTest extends IntegrationTestCase
 		$this->get('/users/settings');
 		$html = $this->view;
 
-		$this->assertStringContainsString('name="avatar" value="' . User::AVATAR_BOARD . '"', $html);
-		$this->assertStringContainsString('name="avatar" value="' . User::AVATAR_GRAVATAR . '"', $html);
-		$this->assertStringNotContainsString('name="avatar" value="' . User::AVATAR_GOOGLE . '"', $html);
+		$this->assertStringContainsString('name="avatar" value="' . UserTable::AVATAR_BOARD . '"', $html);
+		$this->assertStringContainsString('name="avatar" value="' . UserTable::AVATAR_GRAVATAR . '"', $html);
+		$this->assertStringNotContainsString('name="avatar" value="' . UserTable::AVATAR_GOOGLE . '"', $html);
 	}
 
 	public function testTheSettingsPageOffersTheGooglePictureToAnAccountWithOne(): void
@@ -106,22 +107,18 @@ class AvatarPreferenceTest extends IntegrationTestCase
 		$this->get('/users/settings');
 		$html = $this->view;
 
-		$this->assertStringContainsString('name="avatar" value="' . User::AVATAR_GOOGLE . '"', $html);
+		$this->assertStringContainsString('name="avatar" value="' . UserTable::AVATAR_GOOGLE . '"', $html);
 	}
 
 	private function storeAvatar(int $userId, int $avatar): void
 	{
-		ClassRegistry::init('User')->save(
-			['User' => ['id' => $userId, 'avatar_setting_id' => $avatar]],
-			['validate' => false, 'fieldList' => ['avatar_setting_id']]
-		);
+		$this->fetchTable('User')->updateAll(['avatar_setting_id' => $avatar], ['id' => $userId]);
 	}
 
 	private function storeGooglePicture(int $userId): void
 	{
-		$user = ClassRegistry::init('User');
-		$user->id = $userId;
-		$user->saveField('external_id', '123456789012345678901');
-		$user->saveField('picture', 'https://lh3.googleusercontent.com/a/photo');
+		$this->fetchTable('User')->updateAll([
+			'external_id' => '123456789012345678901',
+			'picture' => 'https://lh3.googleusercontent.com/a/photo'], ['id' => $userId]);
 	}
 }

@@ -16,6 +16,7 @@
 
 use App\Model\Table\ClassroomAssignmentTable;
 use App\Model\Table\ClassroomMemberStatusTable;
+use App\Model\Table\UserTable;
 use App\Utility\Auth;
 
 $classroomId = $classroom->id;
@@ -26,7 +27,7 @@ $isPupil = $membershipStatus === ClassroomMemberStatusTable::ACCEPTED;
 	<div class="classes__header">
 		<p class="classes__crumb"><a href="/classes">Classes</a></p>
 		<h1 class="classes__title"><?= h($classroom->name) ?></h1>
-		<p class="hint">teacher <?= User::renderLink($teacher) ?></p>
+		<p class="hint">teacher <?= UserTable::renderLink($teacher) ?></p>
 	</div>
 
 	<?php if (!$isTeacher && !$isPupil): ?>
@@ -34,7 +35,7 @@ $isPupil = $membershipStatus === ClassroomMemberStatusTable::ACCEPTED;
 		<?php if (!Auth::isLoggedIn()): ?>
 		<p><a href="/users/login">Sign in</a> to ask to join this class.</p>
 		<?php elseif ($membershipStatus === ClassroomMemberStatusTable::INVITED): ?>
-		<p><?= User::renderLink($teacher) ?> invites you to this class. The teacher will see which of the problems they give to the class you solve.</p>
+		<p><?= UserTable::renderLink($teacher) ?> invites you to this class. The teacher will see which of the problems they give to the class you solve.</p>
 		<span class="classes__actions">
 			<form method="post" action="/classes/accept-member/<?= $membership->id ?>"><button class="btn btn--success" type="submit">Accept</button></form>
 			<form method="post" action="/classes/remove-member/<?= $membership->id ?>"><button class="btn btn--neutral" type="submit">Decline</button></form>
@@ -80,7 +81,7 @@ $isPupil = $membershipStatus === ClassroomMemberStatusTable::ACCEPTED;
 		<h2 class="classes__heading">Pupils</h2>
 		<?php foreach ($members[ClassroomMemberStatusTable::REQUESTED] as $member): ?>
 		<div class="classes__row classes__row--request">
-			<span><?= User::renderLink($member) ?> <span class="hint">asks to join</span></span>
+			<span><?= UserTable::renderLink($member) ?> <span class="hint">asks to join</span></span>
 			<span class="classes__actions">
 				<form method="post" action="/classes/accept-member/<?= (int) $member['membership_id'] ?>"><button class="btn btn--small btn--success" type="submit">Accept</button></form>
 				<form method="post" action="/classes/remove-member/<?= (int) $member['membership_id'] ?>"><button class="btn btn--small btn--neutral" type="submit">Decline</button></form>
@@ -92,7 +93,7 @@ $isPupil = $membershipStatus === ClassroomMemberStatusTable::ACCEPTED;
 		<?php endif; ?>
 		<?php foreach ($members[ClassroomMemberStatusTable::ACCEPTED] as $member): ?>
 		<div class="classes__row">
-			<span><?= User::renderLink($member) ?></span>
+			<span><?= UserTable::renderLink($member) ?></span>
 			<span class="classes__actions">
 				<form method="post" action="/classes/remove-member/<?= (int) $member['membership_id'] ?>" onsubmit="return confirm('Remove this pupil from the class?');"><button class="btn btn--small btn--neutral" type="submit">Remove</button></form>
 			</span>
@@ -100,7 +101,7 @@ $isPupil = $membershipStatus === ClassroomMemberStatusTable::ACCEPTED;
 		<?php endforeach; ?>
 		<?php foreach ($members[ClassroomMemberStatusTable::INVITED] as $member): ?>
 		<div class="classes__row">
-			<span><?= User::renderLink($member) ?> <span class="hint">invited, hasn't accepted yet</span></span>
+			<span><?= UserTable::renderLink($member) ?> <span class="hint">invited, hasn't accepted yet</span></span>
 			<span class="classes__actions">
 				<form method="post" action="/classes/remove-member/<?= (int) $member['membership_id'] ?>"><button class="btn btn--small btn--neutral" type="submit">Take back</button></form>
 			</span>

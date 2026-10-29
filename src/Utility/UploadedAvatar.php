@@ -2,6 +2,7 @@
 
 namespace App\Utility;
 
+use App\Model\Table\UserTable;
 use GdImage;
 use InvalidArgumentException;
 use RuntimeException;
@@ -19,7 +20,7 @@ use RuntimeException;
 class UploadedAvatar
 {
 	//The side of the stored picture, in pixels: twice the 128 pixels the largest avatar
-	//of a page asks for (User::AVATAR_PIXELS_PROFILE), so a share preview stays sharp too.
+	//of a page asks for (UserTable::AVATAR_PIXELS_PROFILE), so a share preview stays sharp too.
 	public const SIZE = 256;
 
 	//The largest file the upload takes, unless PHP is set to take less (maxBytes()).

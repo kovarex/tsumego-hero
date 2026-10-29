@@ -1,8 +1,8 @@
 <?php
 
-use App\Model\Table\AdminActivityTypeTable;
-use App\Model\Table\TsumegoTable;
-use App\Model\Table\RejectTable;
+namespace App\Model\Table;
+
+use App\Model\Entity\User;
 use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
 use App\Utility\Avatar;
@@ -11,9 +11,17 @@ use App\Utility\PhpbbNames;
 use App\Utility\Rating;
 use App\Utility\UploadedAvatar;
 use App\Utility\Util;
+use CakeLog;
+use Cake\ORM\TableRegistry;
+use Cake\Validation\Validator;
+use DateTimeInterface;
+use RuntimeException;
+use Throwable;
 
+//The accounts of the players. Auth keeps the signed-in one as a row (UserRow), the array
+//row() gives, and the helpers below read such rows, which raw queries build too.
 /** @phpstan-import-type UserRow from \App\Utility\RowTypes */
-class User extends AppModel
+class UserTable extends AppTable
 {
 	//The two values of player_color_setting and board_orientation_setting: random, or as in the original.
 	public const PLAYER_COLOR_SETTING_RANDOM = 0;
@@ -90,70 +98,48 @@ class User extends AppModel
 	//name with such a character would differ between the site and the forum.
 	public const UNSTORABLE_PATTERN = '/[\x{10000}-\x{10FFFF}]/u';
 
-	public function __construct(mixed $id = false, ?string $table = null, ?string $ds = null)
+	//The rules of the Cake 2 model, checked when an account is created: the login name is optional
+	//(a Google account has none), the e-mail and the display name are required.
+	public function validationDefault(Validator $validator): Validator
 	{
-		$id['table'] =  'user';
-		parent::__construct($id, $table, $ds);
-	}
-
-	public $validate = [
-		'name' => [
-
-			'notempty' => [
-				'rule' => 'notBlank',
-				'allowEmpty' => true,
-				'message' => 'Please Insert Name',
-			],
-
-			'minmax' => [
-				'rule' => ['between', 3, 30],
-				'allowEmpty' => true,
-				'message' => 'The length of the name should have at least 3 characters',
-			],
-		],
-
-		'email' => [
-			'notempty' => [
-				'rule' => 'notBlank',
-				'message' => 'Insert Email',
-			],
-
-			'email' => [
-				'rule' => ['email', false],
-				'message' => 'Enter a valid email-address',
-			],
-
-			'maxlength' => [
-				'rule' => ['maxLength', self::EMAIL_MAX_LENGTH],
-				'message' => 'An email address has at most 254 characters',
-			],
-		],
-
-		// A display name is required: every page shows it and only a flagged
-		// account may change it. The login name above stays optional because a
-		// Google account does not have one.
-		'display_name' => [
-			'notempty' => [
-				'rule' => 'notBlank',
-				'message' => 'Insert Display Name',
-			],
-
-			'maxlength' => [
-				'rule' => ['maxLength', self::DISPLAY_NAME_MAX_LENGTH],
-				'message' => 'The display name must not be longer than 50 characters',
-			],
-
+		return $validator
+			->allowEmptyString('name')
+			->lengthBetween('name', [3, 30], 'The length of the name should have at least 3 characters')
+			->requirePresence('email', 'create', 'Insert Email')
+			->notBlank('email', 'Insert Email')
+			->email('email', false, 'Enter a valid email-address')
+			->maxLength('email', self::EMAIL_MAX_LENGTH, 'An email address has at most 254 characters')
+			->requirePresence('display_name', 'create', 'Insert Display Name')
+			->notBlank('display_name', 'Insert Display Name')
+			->maxLength('display_name', self::DISPLAY_NAME_MAX_LENGTH, 'The display name must not be longer than 50 characters')
 			// The forum cannot store a character above U+FFFF (an emoji, a rare kanji), so a
 			// name the site could not copy there would be the result. It guards the name an
 			// account is created with; an account that already carries one keeps working, and
 			// a rename is checked by UsersController::updatename().
-			'storableByForum' => [
-				'rule' => 'hasOnlyCharactersTheForumCanStore',
-				'message' => 'The display name must not contain emoji or other rare symbols.',
+			->add('display_name', 'storableByForum', [
+				'rule' => fn($name) => !self::containsCharactersTheForumCannotStore((string) $name),
 				'on' => 'create',
-			],
-		],
-	];
+				'message' => 'The display name must not contain emoji or other rare symbols.']);
+	}
+
+	//The user as the row Auth keeps and the helpers read, the way Cake 2 gave it: the dates as
+	//'Y-m-d H:i:s' strings, the flags as bools. Null when there is no such user.
+	/** @return UserRow|null */
+	public static function row(int $id): ?array
+	{
+		$user = TableRegistry::getTableLocator()->get('User')->find()->where(['id' => $id])->first();
+		return $user === null ? null : self::rowOf($user);
+	}
+
+	/** @return UserRow */
+	public static function rowOf(User $user): array
+	{
+		$row = $user->toArray();
+		foreach ($row as $field => $value)
+			if ($value instanceof DateTimeInterface)
+				$row[$field] = $value->format('Y-m-d H:i:s');
+		return $row;
+	}
 
 	/** @param UserRow $user */
 	public static function renderPremium(array $user): string
@@ -199,15 +185,17 @@ class User extends AppModel
 	{
 		if (!array_key_exists($roleID, self::ROLE_NAMES))
 			return 'There is no such role.';
-		$user = ClassRegistry::init('User')->findById($userID);
-		if (!$user || $user['User']['deleted'])
+		$user = TableRegistry::getTableLocator()->get('User')->find()
+			->select(['user_role_id', 'display_name', 'deleted'])
+			->where(['id' => $userID])
+			->first();
+		if ($user === null || $user->deleted !== null)
 			return 'The account is not there.';
-		$user = $user['User'];
-		$oldRoleID = (int) $user['user_role_id'];
+		$oldRoleID = $user->user_role_id;
 		if ($oldRoleID === $roleID)
 			return null;
 		if ($oldRoleID === self::ROLE_OWNER && self::ownerCount() === 1)
-			return $user['display_name'] . ' is the last owner, make someone else an owner first.';
+			return $user->display_name . ' is the last owner, make someone else an owner first.';
 
 		if (Auth::getUserID() === $userID)
 			Auth::saveUserField('user_role_id', $roleID);
@@ -217,7 +205,7 @@ class User extends AppModel
 			AdminActivityTypeTable::ROLE_CHANGE,
 			null,
 			null,
-			json_encode(['user_id' => $userID, 'display_name' => $user['display_name'], 'role' => self::ROLE_NAMES[$oldRoleID]]),
+			json_encode(['user_id' => $userID, 'display_name' => $user->display_name, 'role' => self::ROLE_NAMES[$oldRoleID]]),
 			self::ROLE_NAMES[$roleID]);
 		return null;
 	}
@@ -248,14 +236,16 @@ class User extends AppModel
 	//Returns why the account can't be restored, null when it was restored
 	public static function restoreAccount(int $userID): ?string
 	{
-		$user = ClassRegistry::init('User')->findById($userID);
-		if (!$user || !$user['User']['deleted'])
+		$user = TableRegistry::getTableLocator()->get('User')->find()
+			->select(['deleted', 'deleted_name', 'deleted_external_id'])
+			->where(['id' => $userID])
+			->first();
+		if ($user === null || $user->deleted === null)
 			return 'The account is not deleted.';
-		$user = $user['User'];
 
-		if (Util::query('SELECT id FROM user WHERE name = ?', [$user['deleted_name']]))
-			return 'The name ' . $user['deleted_name'] . ' is used by another account now.';
-		if ($user['deleted_external_id'] !== null && Util::query('SELECT id FROM user WHERE external_id = ?', [$user['deleted_external_id']]))
+		if (Util::query('SELECT id FROM user WHERE name = ?', [$user->deleted_name]))
+			return 'The name ' . $user->deleted_name . ' is used by another account now.';
+		if ($user->deleted_external_id !== null && Util::query('SELECT id FROM user WHERE external_id = ?', [$user->deleted_external_id]))
 			return 'The Google account is linked to another account now.';
 
 		Util::execute("UPDATE user SET
@@ -283,7 +273,7 @@ class User extends AppModel
 	}
 
 	//Whether the account of a user is not there anymore. A row answers from its own deleted column,
-	//which every find() and contain('User') already loads; a bare id is looked up in the ids loaded
+	//which row() and the queries of whole rows load; a bare id is looked up in the ids loaded
 	//once per request. A row that carries neither an id nor the column is treated as gone, the same
 	//way renderLink treats it.
 	/** @param UserRow|array<string, mixed>|int|string|null $user */
@@ -439,15 +429,6 @@ class User extends AppModel
 		return (bool) preg_match(self::UNSTORABLE_PATTERN, $name);
 	}
 
-	//The display name rule: a name the site can copy into the forum beside it. CakePHP hands
-	//a method rule the data as an array keyed by the field.
-	/** @param array<string, string>|string $check */
-	public function hasOnlyCharactersTheForumCanStore(mixed $check): bool
-	{
-		$name = is_array($check) ? (string) reset($check) : (string) $check;
-		return !self::containsCharactersTheForumCannotStore($name);
-	}
-
 	//The name without the characters the forum cannot store, see UNSTORABLE_PATTERN.
 	public static function withoutCharactersTheForumCannotStore(string $name): string
 	{
@@ -466,11 +447,10 @@ class User extends AppModel
 		if (mb_strlen($name) > self::DISPLAY_NAME_MAX_LENGTH)
 			$name = mb_substr($name, 0, self::DISPLAY_NAME_MAX_LENGTH);
 
-		$userModel = ClassRegistry::init('User');
+		$userTable = TableRegistry::getTableLocator()->get('User');
 
 		// Check if base value is available
-		$exists = $userModel->find('count', ['conditions' => ['display_name' => $name]]);
-		if ($exists == 0)
+		if (!$userTable->exists(['display_name' => $name]))
 			return $name;
 
 		// Find next available suffix (2), (3), etc.
@@ -485,8 +465,7 @@ class User extends AppModel
 			$truncatedBase = $baseLength < mb_strlen($name) ? mb_substr($name, 0, $baseLength) : $name;
 			$candidate = $truncatedBase . $suffixStr;
 
-			$exists = $userModel->find('count', ['conditions' => ['display_name' => $candidate]]);
-			if ($exists == 0)
+			if (!$userTable->exists(['display_name' => $candidate]))
 				return $candidate;
 
 			$suffix++;
@@ -551,10 +530,10 @@ class User extends AppModel
 
 	//Check if user is a Google user (has external_id).
 	//Returns true if user is a Google user
-	/** @param UserRow $user */
-	public static function isGoogleUser(array $user): bool
+	/** @param UserRow|User $user */
+	public static function isGoogleUser(array|User $user): bool
 	{
-		return !empty($user['external_id']);
+		return !empty($user instanceof User ? $user->external_id : ($user['external_id'] ?? null));
 	}
 
 	//Find a local (non-Google) user by email.
@@ -563,16 +542,12 @@ class User extends AppModel
 	//The address is not unique in the database, so the order makes the result of
 	//several matching accounts deterministic (the oldest account wins).
 	//$email: Email to search for
-	//Returns user data or null if not found
-	public function findLocalUserByEmail(string $email): ?array
+	public static function findLocalUserByEmail(string $email): ?User
 	{
-		return $this->find('first', [
-			'conditions' => [
-				'email' => $email,
-				'external_id IS NULL',
-			],
-			'order' => ['id ASC'],
-		]) ?: null;
+		return TableRegistry::getTableLocator()->get('User')->find()
+			->where(['email' => $email, 'external_id IS' => null])
+			->orderBy(['id' => 'ASC'])
+			->first();
 	}
 
 	//True when the account has a picture from Google to show.

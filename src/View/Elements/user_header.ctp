@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Table\SetTable;
+use App\Model\Table\UserTable;
 use App\Utility\Auth;
 
 /**
@@ -31,7 +32,7 @@ $tabs = [
 	'contributions' => [
 		'url' => '/tags/user/' . $userID,
 		'label' => 'Contributions',
-		'filled' => User::hasContributions($userID),
+		'filled' => UserTable::hasContributions($userID),
 	],
 	'achievements' => ['url' => '/achievements/user/' . $userID, 'label' => 'Achievements'],
 	'sets' => [
@@ -51,12 +52,12 @@ if (Auth::getUserID() === $userID)
 ?>
 <div class="profile-header">
 	<p class="profile-username"><?php
-		echo User::avatarImage(User::getAvatarUrl($user, User::AVATAR_PIXELS_PROFILE), 'user-avatar--lg', false, User::boardUrl($user));
+		echo UserTable::avatarImage(UserTable::getAvatarUrl($user, UserTable::AVATAR_PIXELS_PROFILE), 'user-avatar--lg', false, UserTable::boardUrl($user));
 		echo h((string) $user['display_name']);
 		echo ' ';
-		User::renderPremium($user);
+		UserTable::renderPremium($user);
 	?></p>
-	<?php if (Auth::isLoggedIn() && Auth::getUserID() !== $userID && !User::isDeleted($user)): ?>
+	<?php if (Auth::isLoggedIn() && Auth::getUserID() !== $userID && !UserTable::isDeleted($user)): ?>
 	<a class="btn btn--small profile-header__message" href="/messages/<?php echo $userID; ?>">Send message</a>
 	<a class="btn btn--small profile-header__message" href="/challenges?opponent=<?php echo $userID; ?>" id="profile-challenge">Challenge</a>
 	<?php endif; ?>

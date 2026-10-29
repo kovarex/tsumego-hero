@@ -17,7 +17,7 @@ class SetsControllerTest extends IntegrationTestCase
 		$context = new ContextPreparator(['tsumego' => ['sets' => [
 			['name' => 'tsumego set 1', 'num' => '666'],
 			['name' => 'tsumego set 2', 'num' => '777']]]], );
-		$this->login($context->user['User']['name']);
+		$this->login($context->user['name']);
 		$this->get('sets');
 		$this->assertTextContains("tsumego set 1", $this->view);
 		$this->assertTextContains("tsumego set 2", $this->view);

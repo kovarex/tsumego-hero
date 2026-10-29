@@ -15,15 +15,15 @@
 <br><br>
 
 <?php
-	if($admin['User']['external_id']==null){
+	if($admin['external_id']==null){
 		echo 'Confirm demotion by entering your password.<br><br>';
-		echo $this->Form->create('User');
-		echo $this->Form->input('demote', array('value' => '', 'label' => '', 'type' => 'password', 'placeholder' => 'password'));
+		echo $this->Form->create(false, ['id' => 'UserDemoteAdminForm']);
+		echo '<div class="input password"><label for="UserDemote"></label><input name="data[User][demote]" value="" placeholder="password" type="password" id="UserDemote"/></div>';
 		echo '<br>';
 	}else{
 		echo 'Submit your demotion request.<br><br>';
-		echo $this->Form->create('User');
-		echo $this->Form->input('demote', array('value' => 'o474w544a4n4q5g4y2', 'label' => '', 'type' => 'hidden'));
+		echo $this->Form->create(false, ['id' => 'UserDemoteAdminForm']);
+		echo '<input type="hidden" name="data[User][demote]" value="o474w544a4n4q5g4y2" id="UserDemote"/>';
 	}
 	
 	echo $this->Form->end('Submit');
@@ -33,6 +33,6 @@
 </div>
 <?php
 	if($redirect){
-		echo '<script type="text/javascript">window.location.href = "/users/view/'.$admin['User']['id'].'";</script>';
+		echo '<script type="text/javascript">window.location.href = "/users/view/'.$admin['id'].'";</script>';
 	}
 ?>

@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\UserTable;
 use App\Utility\UploadedAvatar;
 use App\Utility\Util;
 
@@ -237,10 +238,10 @@ class UploadedAvatarTest extends CakeTestCase
 		$context = new ContextPreparator(['user' => ['name' => 'pictured']]);
 		$hash = $this->store($context->user['id'], UploadedAvatar::process($this->picture('png', 100, 100)));
 
-		User::deleteAccount($context->user['id']);
+		UserTable::deleteAccount($context->user['id']);
 		$this->assertNull(UploadedAvatar::picture($context->user['id'], $hash));
 
-		User::restoreAccount($context->user['id']);
+		UserTable::restoreAccount($context->user['id']);
 		$this->assertNotNull(UploadedAvatar::picture($context->user['id'], $hash));
 	}
 
@@ -248,7 +249,7 @@ class UploadedAvatarTest extends CakeTestCase
 	private function store(int $userID, string $avatar): string
 	{
 		$hash = UploadedAvatar::store($userID, $avatar);
-		Util::execute('UPDATE user SET uploaded_avatar_hash = ?, avatar_setting_id = ? WHERE id = ?', [$hash, User::AVATAR_UPLOADED, $userID]);
+		Util::execute('UPDATE user SET uploaded_avatar_hash = ?, avatar_setting_id = ? WHERE id = ?', [$hash, UserTable::AVATAR_UPLOADED, $userID]);
 		return $hash;
 	}
 

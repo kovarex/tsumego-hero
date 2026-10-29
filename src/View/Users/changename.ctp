@@ -11,13 +11,8 @@
 
 		<p class="current-name">Currently: <strong><?php echo h($user['display_name']); ?></strong></p>
 
-		<?php echo $this->Form->create('User', ['url' => ['controller' => 'users', 'action' => 'updatename']]); ?>
-		<?php echo $this->Form->input('display_name', [
-			'label' => 'Display name',
-			'placeholder' => 'Your display name',
-			'maxlength' => '50',
-			'autocomplete' => 'off',
-		]); ?>
+		<?php echo $this->Form->create(false, ['url' => ['controller' => 'users', 'action' => 'updatename'], 'id' => 'UserUpdatenameForm']); ?>
+		<div class="input text required"><label for="UserDisplayName">Display name</label><input name="data[User][display_name]" placeholder="Your display name" maxlength="50" autocomplete="off" type="text" id="UserDisplayName" required="required"/></div>
 		<p class="hint">Must be 3-50 characters and unique.</p>
 		<?php echo $this->Form->end('Save'); ?>
 		<p><a href="/users/logout">Log out</a></p>

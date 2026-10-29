@@ -11,6 +11,7 @@
 
 use App\Model\Table\ClassroomMemberStatusTable;
 use App\Model\Table\ClassroomTable;
+use App\Model\Table\UserTable;
 
 $invitations = $memberships[ClassroomMemberStatusTable::INVITED];
 $requests = $memberships[ClassroomMemberStatusTable::REQUESTED];
@@ -24,7 +25,7 @@ $classes = $memberships[ClassroomMemberStatusTable::ACCEPTED];
 		<h2 class="classes__heading">Invitations</h2>
 		<?php foreach ($invitations as $invitation): ?>
 		<div class="classes__row">
-			<span><?= User::renderLink($invitation) ?> invites you to <a href="/classes/<?= (int) $invitation['classroom_id'] ?>"><?= h($invitation['name']) ?></a></span>
+			<span><?= UserTable::renderLink($invitation) ?> invites you to <a href="/classes/<?= (int) $invitation['classroom_id'] ?>"><?= h($invitation['name']) ?></a></span>
 			<span class="classes__actions">
 				<form method="post" action="/classes/accept-member/<?= (int) $invitation['membership_id'] ?>"><button class="btn btn--small btn--success" type="submit">Accept</button></form>
 				<form method="post" action="/classes/remove-member/<?= (int) $invitation['membership_id'] ?>"><button class="btn btn--small btn--neutral" type="submit">Decline</button></form>
@@ -42,13 +43,13 @@ $classes = $memberships[ClassroomMemberStatusTable::ACCEPTED];
 		<?php foreach ($classes as $class): ?>
 		<div class="classes__row">
 			<span><a href="/classes/<?= (int) $class['classroom_id'] ?>"><?= h($class['name']) ?></a></span>
-			<span class="hint">teacher <?= User::renderLink($class) ?></span>
+			<span class="hint">teacher <?= UserTable::renderLink($class) ?></span>
 		</div>
 		<?php endforeach; ?>
 		<?php foreach ($requests as $request): ?>
 		<div class="classes__row">
 			<span><a href="/classes/<?= (int) $request['classroom_id'] ?>"><?= h($request['name']) ?></a>
-				<span class="hint">waiting for <?= User::renderLink($request) ?> to accept you</span></span>
+				<span class="hint">waiting for <?= UserTable::renderLink($request) ?> to accept you</span></span>
 			<span class="classes__actions">
 				<form method="post" action="/classes/remove-member/<?= (int) $request['membership_id'] ?>"><button class="btn btn--small btn--neutral" type="submit">Take back</button></form>
 			</span>

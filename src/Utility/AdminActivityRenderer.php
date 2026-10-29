@@ -5,7 +5,7 @@ namespace App\Utility;
 use App\Model\Table\SgfTable;
 use App\Model\Table\AdminActivityTable;
 use App\Model\Table\SetConnectionTable;
-use User;
+use App\Model\Table\UserTable;
 
 class AdminActivityRenderer extends DataTableRenderer
 {
@@ -95,7 +95,7 @@ OFFSET " . $this->offset, [Auth::getUserID()]);
 				</td>
 				<td>
 					<div><time datetime="' . Util::toIso8601($item['created']) . '" data-format="datetime">' . h($item['created']) . '</time></div>
-					<div style="font-size:0.9em; color:#666; margin-top:2px;">' . User::renderLink($item) . '</div>
+					<div style="font-size:0.9em; color:#666; margin-top:2px;">' . UserTable::renderLink($item) . '</div>
 				</td>';
 	}
 }

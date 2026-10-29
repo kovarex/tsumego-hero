@@ -5,7 +5,7 @@ namespace App\Utility;
 use App\Model\Table\SgfTable;
 use App\Model\Table\SgfReviewTable;
 use App\Model\Table\SetConnectionTable;
-use User;
+use App\Model\Table\UserTable;
 
 //The SGF changes of the admin area: every version that became part of a problem, an admin's own
 //change or a proposal an admin accepted, the newest first. The proposals waiting for a decision
@@ -108,7 +108,7 @@ OFFSET " . $this->offset, [$this->userID, ...$parameters]);
 		return implode(', ', array_map(fn($field) => $alias . '.' . $field . ' AS ' . $alias . '_' . $field, self::USER_FIELDS));
 	}
 
-	//The user of the columns of userColumnsSql, as User::renderLink takes it
+	//The user of the columns of userColumnsSql, as UserTable::renderLink takes it
 	/** @return array<string, mixed> */
 	private static function userOf(array $item, string $alias): array
 	{
@@ -194,9 +194,9 @@ OFFSET " . $this->offset, [$this->userID, ...$parameters]);
 		echo '<td class="sgf-changes__accepted-by">';
 		echo $item['accepted_by_user_id'] === null
 			? '<span class="sgf-changes__unknown" title="Accepted before the site recorded who accepted a proposal">unknown</span>'
-			: User::renderLink(self::userOf($item, 'accepted_by'));
+			: UserTable::renderLink(self::userOf($item, 'accepted_by'));
 		echo '</td>';
-		echo '<td class="sgf-changes__author">' . ($isProposal ? User::renderLink(self::userOf($item, 'author')) : '') . '</td>';
+		echo '<td class="sgf-changes__author">' . ($isProposal ? UserTable::renderLink(self::userOf($item, 'author')) : '') . '</td>';
 		echo '<td class="proposal-description" id="description-' . $id . '">' . SgfDescription::render($item['description']) . '</td>';
 		echo '<td><time datetime="' . Util::toIso8601($item['accepted']) . '" data-format="datetime"'
 			. ($isProposal ? ' title="Proposed ' . h($item['created']) . '"' : '') . '>' . h($item['accepted']) . '</time></td>';
@@ -206,12 +206,12 @@ OFFSET " . $this->offset, [$this->userID, ...$parameters]);
 	/** @param array<string, mixed> $reviewer Row of SgfReviewTable::reviewersOf */
 	private static function renderReviewer(array $reviewer): string
 	{
-		$avatarUrl = User::avatarOrNull($reviewer);
+		$avatarUrl = UserTable::avatarOrNull($reviewer);
 		if ($avatarUrl === null)
 			return '';
 		$title = 'Reviewed by ' . $reviewer['display_name'] . ' on ' . $reviewer['reviewed']->format('Y-m-d');
 		return '<a class="sgf-review__reviewer" href="/users/view/' . (int) $reviewer['id'] . '" title="' . h($title) . '">'
-			. User::avatarImage($avatarUrl, '', true, User::boardUrl($reviewer)) . '</a>';
+			. UserTable::avatarImage($avatarUrl, '', true, UserTable::boardUrl($reviewer)) . '</a>';
 	}
 
 	private int $userID;

@@ -4,6 +4,7 @@
 //These tests ensure that making HTTP requests doesn't corrupt user data.
 //The user data stored in Auth should never be modified except through
 //explicit Auth methods like saveUser() with intentional changes.
+use App\Model\Table\UserTable;
 use App\Utility\Auth;
 
 class AuthUserPersistenceTest extends IntegrationTestCase
@@ -23,13 +24,13 @@ class AuthUserPersistenceTest extends IntegrationTestCase
 		]);
 
 		$userId = $context->user['id'];
-		$initialUser = ClassRegistry::init('User')->findById($userId)['User'];
+		$initialUser = UserTable::row((int) $userId);
 
 		// Act: Make a simple request (triggers beforeFilter, view rendering, saveUser)
 		$this->get('/sites/index');
 
 		// Assert: User data in database should be identical
-		$userAfterRequest = ClassRegistry::init('User')->findById($userId)['User'];
+		$userAfterRequest = UserTable::row((int) $userId);
 
 		$this->assertEquals($initialUser['name'], $userAfterRequest['name'],
 			'User name should not change after making a request');
@@ -56,14 +57,14 @@ class AuthUserPersistenceTest extends IntegrationTestCase
 		$this->get('/sites/index');
 
 		// Assert: Google user fields must be preserved
-		$userAfterRequest = ClassRegistry::init('User')->findById($userId);
+		$userAfterRequest = UserTable::row((int) $userId);
 		$this->assertNull(
-			$userAfterRequest['User']['name'],
+			$userAfterRequest['name'],
 			'Google users should have name=NULL (they use display_name instead)'
 		);
 		$this->assertEquals(
 			'OAuthUser',
-			$userAfterRequest['User']['display_name'],
+			$userAfterRequest['display_name'],
 			'display_name must be preserved after request'
 		);
 	}
@@ -91,30 +92,30 @@ class AuthUserPersistenceTest extends IntegrationTestCase
 
 		$this->assertResponseCode(200);
 
-		$oauthUser = ClassRegistry::init('User')->findById($oauthUserId);
-		$this->assertNull($oauthUser['User']['name'],
+		$oauthUser = UserTable::row((int) $oauthUserId);
+		$this->assertNull($oauthUser['name'],
 			'Google user should have name=NULL');
-		$this->assertEquals('SharedName', $oauthUser['User']['display_name'],
+		$this->assertEquals('SharedName', $oauthUser['display_name'],
 			'Google user must keep their display_name');
 	}
 
-	//Test that User::isGoogleUser correctly identifies Google users.
+	//Test that UserTable::isGoogleUser correctly identifies Google users.
 	//Google users are identified by having a non-empty external_id. Regular users have external_id = null.
 	public function testIsGoogleUserDetection()
 	{
 		// Google user: has external_id
 		$googleUser = ['name' => null, 'external_id' => '12345', 'display_name' => 'GoogleUser'];
-		$this->assertTrue(User::isGoogleUser($googleUser),
+		$this->assertTrue(UserTable::isGoogleUser($googleUser),
 			'User with external_id should be detected as Google user');
 
 		// Regular user: no external_id
 		$regularUser = ['name' => 'RegularUser', 'external_id' => null, 'display_name' => 'RegularUser'];
-		$this->assertFalse(User::isGoogleUser($regularUser),
+		$this->assertFalse(UserTable::isGoogleUser($regularUser),
 			'User without external_id should not be detected as Google user');
 
 		// Edge case: empty external_id
 		$ambiguousUser = ['name' => 'Someone', 'external_id' => '', 'display_name' => 'Someone'];
-		$this->assertFalse(User::isGoogleUser($ambiguousUser),
+		$this->assertFalse(UserTable::isGoogleUser($ambiguousUser),
 			'User with empty external_id should not be detected as Google user');
 	}
 }

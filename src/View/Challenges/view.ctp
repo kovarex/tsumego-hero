@@ -21,6 +21,7 @@ use App\Model\Table\ChallengeTable;
  * @var int|null $otherChallengeInProgressID Another challenge whose run the viewer is in the middle of
  */
 
+use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\Util;
 
@@ -33,7 +34,7 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 		<p class="challenges__crumb"><a href="/challenges">Challenges</a></p>
 		<h1 class="challenges__title"><?= h(ChallengeTable::title($challenge)) ?></h1>
 		<p class="challenges__settings" id="challenge-settings"><?= h(ChallengeTable::describe($challenge)) ?></p>
-		<p class="hint">by <?= User::renderLink($challenge) ?>,
+		<p class="hint">by <?= UserTable::renderLink($challenge) ?>,
 			<time datetime="<?= Util::toIso8601($challenge['created']) ?>" data-format="datetime"><?= h($challenge['created']) ?></time></p>
 	</div>
 
@@ -91,13 +92,13 @@ $cellSymbols = ['failed' => '✗', 'timeout' => '⏱', 'skipped' => '–', 'queu
 					<tr class="challenges__standing<?= Auth::isLoggedIn() && (int) $row['user_id'] === Auth::getUserID() ? ' challenges__standing--me' : '' ?>" data-user-id="<?= (int) $row['user_id'] ?>">
 						<?php if ($row['run'] === ChallengeTable::RUN_FINISHED): ?>
 						<td class="challenges__place"><?= (int) $row['place'] ?></td>
-						<td class="challenges__player"><?= User::renderLink($row) ?></td>
+						<td class="challenges__player"><?= UserTable::renderLink($row) ?></td>
 						<td class="challenges__points"><?= ChallengeTable::formatPoints($row['points']) ?></td>
 						<td><?= $row['solved_count'] ?>/<?= (int) $challenge['problem_count'] ?></td>
 						<td><?= ChallengeTable::formatSeconds($row['seconds']) ?></td>
 						<?php else: ?>
 						<td></td>
-						<td class="challenges__player"><?= User::renderLink($row) ?></td>
+						<td class="challenges__player"><?= UserTable::renderLink($row) ?></td>
 						<td colspan="3" class="hint"><?= $row['run'] === ChallengeTable::RUN_PLAYING
 							? 'playing, ' . $row['played_count'] . '/' . (int) $challenge['problem_count']
 							: ($row['run'] === ChallengeTable::RUN_DECLINED ? 'declined' : 'not played yet') ?></td>

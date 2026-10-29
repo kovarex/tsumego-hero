@@ -173,10 +173,9 @@ class AchievementsControllerTest extends IntegrationTestCase
 		$targetUser = $context->otherUsers[0];
 
 		// Google accounts have no login name, only a display name
-		$user = ClassRegistry::init('User');
-		$user->id = $targetUser['id'];
-		$user->saveField('name', null);
-		$user->saveField('external_id', '987654321098765432109');
+		$this->fetchTable('User')->updateAll([
+			'name' => null,
+			'external_id' => '987654321098765432109'], ['id' => $targetUser['id']]);
 
 		$this->get('/achievements/user/' . $targetUser['id']);
 		$result = $this->view;

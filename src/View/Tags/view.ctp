@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Entity\Tag;
+use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\HtmlSanitizer;
 use App\Utility\Util;
@@ -30,7 +31,7 @@ use App\Utility\Util;
 	<?php if($tag->hint){ ?>
 	<p><i>This tag gives a hint.</i></p>
 	<?php } ?>
-	<p>Created by <?php echo User::renderLink($creator) ?>.</p>
+	<p>Created by <?php echo UserTable::renderLink($creator) ?>.</p>
 	<?php if(Auth::isAdmin()){ ?>
 		<a href="/tags/edit/<?php echo $tag->id; ?>" id="tag-edit">Edit</a>
 		<?php if($canDeleteTag){ ?>

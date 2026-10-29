@@ -9,7 +9,9 @@ use App\Model\Table\TsumegoIssueTable;
 //Controller for managing tsumego comments (CRUD operations).
 //Handles adding and deleting comments on tsumego problems.
 //Comments can be standalone or associated with a TsumegoIssue.
+use App\Model\Table\UserTable;
 use App\Utility\Auth;
+use Cake\ORM\TableRegistry;
 
 class TsumegoCommentsController extends AppController
 {
@@ -46,9 +48,9 @@ class TsumegoCommentsController extends AppController
 			'text' => $comment->message,
 			'user_id' => $comment->user_id,
 			'user_display_name' => $author['display_name'] ?? null,
-			'user_avatar_url' => User::getAvatarUrl($author),
+			'user_avatar_url' => UserTable::getAvatarUrl($author),
 			'user_rating' => $author['rating'] ?? null,
-			'isAdmin' => User::isAdmin($author),
+			'isAdmin' => UserTable::isAdmin($author),
 			'created' => $comment->created->format('c'),
 			'position' => $comment->position,
 		]));
@@ -125,10 +127,10 @@ class TsumegoCommentsController extends AppController
 						'id' => $comment->id,
 						'text' => $comment->message,
 						'user_id' => $comment->user_id,
-						'user_display_name' => User::displayNameOrNull($authors[$comment->user_id]),
-						'user_avatar_url' => User::avatarOrNull($authors[$comment->user_id]),
+						'user_display_name' => UserTable::displayNameOrNull($authors[$comment->user_id]),
+						'user_avatar_url' => UserTable::avatarOrNull($authors[$comment->user_id]),
 						'user_rating' => $authors[$comment->user_id]['rating'] ?? null,
-						'isAdmin' => User::isAdmin($authors[$comment->user_id]),
+						'isAdmin' => UserTable::isAdmin($authors[$comment->user_id]),
 						'created' => $comment->created->format('c'),
 						'position' => $comment->position,
 					];
@@ -139,10 +141,10 @@ class TsumegoCommentsController extends AppController
 				'tsumego_issue_status_id' => $issue->tsumego_issue_status_id,
 				'created' => $issue->created->format('c'),
 				'user_id' => $issue->user_id,
-				'user_display_name' => User::displayNameOrNull($authors[$issue->user_id]),
-				'user_avatar_url' => User::avatarOrNull($authors[$issue->user_id]),
+				'user_display_name' => UserTable::displayNameOrNull($authors[$issue->user_id]),
+				'user_avatar_url' => UserTable::avatarOrNull($authors[$issue->user_id]),
 				'user_rating' => $authors[$issue->user_id]['rating'] ?? null,
-				'isAdmin' => User::isAdmin($authors[$issue->user_id]),
+				'isAdmin' => UserTable::isAdmin($authors[$issue->user_id]),
 				'comments' => $comments,
 			];
 		}
@@ -153,10 +155,10 @@ class TsumegoCommentsController extends AppController
 				'id' => $comment->id,
 				'text' => $comment->message,
 				'user_id' => $comment->user_id,
-				'user_display_name' => User::displayNameOrNull($authors[$comment->user_id]),
-				'user_avatar_url' => User::avatarOrNull($authors[$comment->user_id]),
+				'user_display_name' => UserTable::displayNameOrNull($authors[$comment->user_id]),
+				'user_avatar_url' => UserTable::avatarOrNull($authors[$comment->user_id]),
 				'user_rating' => $authors[$comment->user_id]['rating'] ?? null,
-				'isAdmin' => User::isAdmin($authors[$comment->user_id]),
+				'isAdmin' => UserTable::isAdmin($authors[$comment->user_id]),
 				'created' => $comment->created->format('c'),
 				'position' => $comment->position,
 			];
@@ -182,8 +184,9 @@ class TsumegoCommentsController extends AppController
 		if (empty($writings))
 			return [];
 		$authors = [];
-		foreach (ClassRegistry::init('User')->find('all', ['conditions' => ['User.id' => array_values(array_unique(array_map(fn($writing) => $writing->user_id, $writings)))]]) as $user)
-			$authors[(int) $user['User']['id']] = $user['User'];
+		$authorIDs = array_values(array_unique(array_map(fn($writing) => $writing->user_id, $writings)));
+		foreach (TableRegistry::getTableLocator()->get('User')->find()->where(['id IN' => $authorIDs])->all() as $user)
+			$authors[$user->id] = UserTable::rowOf($user);
 		return $authors;
 	}
 }

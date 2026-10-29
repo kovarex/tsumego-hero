@@ -69,10 +69,6 @@ class IntegrationTestCase extends CakeTestCase
 		elseif ($this->uploadsHandedOver)
 			unset($this->_request['files']);
 
-		// A request that a real client makes starts on a fresh registry. Without this, a model a
-		// fixture saved keeps its id and the next save() updates that row instead of inserting.
-		ClassRegistry::flush();
-
 		$this->responseCookies = null;
 		$this->dispatchRequest($url, $method, $data);
 		$this->view = $this->_getBodyAsString();
@@ -103,10 +99,10 @@ class IntegrationTestCase extends CakeTestCase
 	//The fixture user has no name, so a null name signs in the one without a name.
 	public function login(?string $username): void
 	{
-		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => $username]]);
+		$user = ContextPreparator::findUserRow(['name' => $username]);
 		$this->assertNotNull($user);
-		$_COOKIE['hackedLoggedInUserID'] = $user['User']['id'];
-		$this->cookie('hackedLoggedInUserID', (string) $user['User']['id']);
+		$_COOKIE['hackedLoggedInUserID'] = $user['id'];
+		$this->cookie('hackedLoggedInUserID', (string) $user['id']);
 		// The test also reads Auth for itself, for instance to hand a browser the session.
 		Auth::init();
 	}

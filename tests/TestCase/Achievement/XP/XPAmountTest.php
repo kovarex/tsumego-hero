@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\UserTable;
 use App\Utility\AchievementId;
 use App\Utility\AchievementChecker;
 
@@ -31,9 +32,9 @@ class XPAmountTest extends AchievementTestCase
 		$this->assertAchievementUnlocked(AchievementId::PROBLEMS_2000);
 
 		// Assert: User XP is 3000 (0 + 1000 from #1 + 2000 from #2)
-		$user = ClassRegistry::init('User')->findById($context->user['id']);
-		$this->assertEquals(3000, $user['User']['xp'], 'User should have 3000 XP (1000 from #1 + 2000 from #2)');
-		$this->assertEquals(69, $user['User']['level'], 'User should remain at level 69');
+		$user = UserTable::row((int) $context->user['id']);
+		$this->assertEquals(3000, $user['xp'], 'User should have 3000 XP (1000 from #1 + 2000 from #2)');
+		$this->assertEquals(69, $user['level'], 'User should remain at level 69');
 	}
 
 	public function testLevelAchievement_LEVEL_UP_Grants100XP()
@@ -60,9 +61,9 @@ class XPAmountTest extends AchievementTestCase
 		$this->assertAchievementUnlocked(AchievementId::PROBLEMS_2000);
 
 		// Assert: User XP is 3100 (100 existing + 1000 from #1 + 2000 from #2)
-		$user = ClassRegistry::init('User')->findById($context->user['id']);
-		$this->assertEquals(3100, $user['User']['xp'], 'User should have 3100 XP (100 + 1000 + 2000)');
-		$this->assertEquals(69, $user['User']['level'], 'User should remain at level 69');
+		$user = UserTable::row((int) $context->user['id']);
+		$this->assertEquals(3100, $user['xp'], 'User should have 3100 XP (100 + 1000 + 2000)');
+		$this->assertEquals(69, $user['level'], 'User should remain at level 69');
 	}
 
 	//Test that existing XP is preserved when achievement unlocks
@@ -79,8 +80,8 @@ class XPAmountTest extends AchievementTestCase
 		$this->assertAchievementUnlocked(AchievementId::PROBLEMS_1000);
 
 		// Assert: Existing XP is NOT overwritten - should be 4000 (3000 + 1000)
-		$user = ClassRegistry::init('User')->findById($context->user['id']);
-		$this->assertEquals(4000, $user['User']['xp'], 'Existing XP should be preserved! Expected 4000 (3000 existing + 1000 from achievement), but updateXP() overwrites with = instead of +=');
-		$this->assertEquals(69, $user['User']['level'], 'User should remain at level 69');
+		$user = UserTable::row((int) $context->user['id']);
+		$this->assertEquals(4000, $user['xp'], 'Existing XP should be preserved! Expected 4000 (3000 existing + 1000 from achievement), but updateXP() overwrites with = instead of +=');
+		$this->assertEquals(69, $user['level'], 'User should remain at level 69');
 	}
 }

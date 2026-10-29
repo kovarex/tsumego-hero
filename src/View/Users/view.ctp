@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\ChartRenderer;
 use App\Utility\Constants;
@@ -22,14 +23,14 @@ use App\Utility\Util;
  * @var array $timeGraph
  * @var array $timeModeRanks
  * @var int $tsumegoCount
- * @var array $user
+ * @var array $user The row of the player (UserTable::row())
  */
 ?>
 
 <div>
-	<?php echo $this->element('user_header', ['user' => $user['User'], 'activeTab' => 'profile']); ?>
-	<?php if (Auth::isOwner() && !User::isDeleted($user['User'])): ?>
-	<div class="profile-role"><?php echo $this->element('role_form', ['user' => $user['User']]); ?></div>
+	<?php echo $this->element('user_header', ['user' => $user, 'activeTab' => 'profile']); ?>
+	<?php if (Auth::isOwner() && !UserTable::isDeleted($user)): ?>
+	<div class="profile-role"><?php echo $this->element('role_form', ['user' => $user]); ?></div>
 	<?php endif; ?>
 
 <div class="cluster cluster--stretch">
@@ -37,17 +38,17 @@ use App\Utility\Util;
 		<table class="stat" id="level-info-table">
 			<tr>
 				<td>Level:</td>
-				<td><?php echo $user['User']['level']; ?></td>
+				<td><?php echo $user['level']; ?></td>
 			</tr>
 			<tr>
 				<td>Next level:</td>
-				<td><?php echo $user['User']['xp'] . '/' . Level::getXPForNext($user['User']['level']) . ' XP'; ?></td>
+				<td><?php echo $user['xp'] . '/' . Level::getXPForNext($user['level']) . ' XP'; ?></td>
 			</tr>
 			<tr>
 				<td colspan="2">
 					<?php
-					$xpForNext = Level::getXPForNext($user['User']['level']);
-					$xpPercent = $xpForNext > 0 ? round($user['User']['xp'] / $xpForNext * 100) : 0;
+					$xpForNext = Level::getXPForNext($user['level']);
+					$xpPercent = $xpForNext > 0 ? round($user['xp'] / $xpForNext * 100) : 0;
 					?>
 					<div class="progress">
 						<div class="progress__fill" style="width:<?php echo $xpPercent; ?>%"></div>
@@ -59,8 +60,8 @@ use App\Utility\Util;
 				<td>Health:</td>
 				<td>
 					<?php
-					$maxHealth = Util::getHealthBasedOnLevel($user['User']['level']);
-					$remainingHealth = max(0, $maxHealth - ($user['User']['damage'] ?? 0));
+					$maxHealth = Util::getHealthBasedOnLevel($user['level']);
+					$remainingHealth = max(0, $maxHealth - ($user['damage'] ?? 0));
 					echo $remainingHealth . '/' . $maxHealth . ' HP';
 					?>
 				</td>
@@ -76,18 +77,18 @@ use App\Utility\Util;
 		</table>
 	</div>
 
-	<?php $highestRating = User::getHighestRating($user['User']); ?>
+	<?php $highestRating = UserTable::getHighestRating($user); ?>
 	<div class="card card--purple">
 		<table class="stat" id="rank-info-table">
 			<tr>
 				<td colspan="2" class="rank"><span class="rank__label">Rank</span></td>
 			</tr>
 			<tr>
-				<td colspan="2" class="rank"><span class="rank-icon"><?php echo Rating::getReadableRankFromRating($user['User']['rating']); ?></span></td>
+				<td colspan="2" class="rank"><span class="rank-icon"><?php echo Rating::getReadableRankFromRating($user['rating']); ?></span></td>
 			</tr>
 			<tr>
 				<td>Rating:</td>
-				<td><?php echo round($user['User']['rating']); ?></td>
+				<td><?php echo round($user['rating']); ?></td>
 			</tr>
 			<tr>
 				<td>Highest rank:</td>
@@ -113,10 +114,10 @@ use App\Utility\Util;
 
 	<div class="card card--purple">
 		<table class="stat" id="final-info-table">
-			<?php if ($user['User']['created']): ?>
+			<?php if ($user['created']): ?>
 			<tr>
 				<td>Member since:</td>
-				<td><?php echo date('F Y', strtotime($user['User']['created'])); ?></td>
+				<td><?php echo date('F Y', strtotime($user['created'])); ?></td>
 			</tr>
 			<?php endif; ?>
 			<tr>
@@ -168,12 +169,12 @@ use App\Utility\Util;
 <?php
 $heroPowers = HeroPowers::getPowers();
 $maxPowerLevel = max(array_column($heroPowers, 'level'));
-$isPremium = HeroPowers::hasPremiumUnlock($user['User']);
-$hasRevelationBonus = HeroPowers::hasContributionRevelationBonus($user['User']);
+$isPremium = HeroPowers::hasPremiumUnlock($user);
+$hasRevelationBonus = HeroPowers::hasContributionRevelationBonus($user);
 $unlockedCount = 0;
 foreach ($heroPowers as $power)
 {
-	if ($user['User']['level'] >= $power['level'])
+	if ($user['level'] >= $power['level'])
 		$unlockedCount++;
 }
 ?>
@@ -181,11 +182,11 @@ foreach ($heroPowers as $power)
 	<div class="hero-powers__title">Hero Powers: <?php echo $unlockedCount . ' of ' . count($heroPowers); ?> unlocked</div>
 	<div class="hero-powers__timeline">
 		<div class="hero-powers__track">
-			<div class="hero-powers__fill" style="width:<?php echo min(100, round($user['User']['level'] / $maxPowerLevel * 100)); ?>%"></div>
+			<div class="hero-powers__fill" style="width:<?php echo min(100, round($user['level'] / $maxPowerLevel * 100)); ?>%"></div>
 		</div>
 		<?php foreach ($heroPowers as $power):
 			$pos = round($power['level'] / $maxPowerLevel * 100);
-			$isUnlocked = $user['User']['level'] >= $power['level'];
+			$isUnlocked = $user['level'] >= $power['level'];
 		?>
 		<div class="hero-powers__marker<?php echo $isUnlocked ? ' hero-powers__marker--unlocked' : ''; ?>" style="left:<?php echo $pos; ?>%" title="<?php echo $power['description']; ?>">
 			<div class="hero-powers__dot"></div>
@@ -262,7 +263,7 @@ function showStatistics($side, $as, $user, $dailyResults, $timeGraph)
 				<table width="95%" border="0">
 					<tr>
 						<td class="h1profile"><h1 class="h1">Achievements</h1></td>
-						<td style="text-align:right;"><b class="profileTable2"><a href="/achievements/user/' . $user['User']['id'] . '">View Achievements</a></b></td>
+						<td style="text-align:right;"><b class="profileTable2"><a href="/achievements/user/' . $user['id'] . '">View Achievements</a></b></td>
 					</tr>
 				</table>';
 	for($i=0; $i<count($as); $i++)
@@ -272,7 +273,7 @@ function showStatistics($side, $as, $user, $dailyResults, $timeGraph)
 		else $adjust = '';
 		$earnedCount = (int) ($as[$i]['a_earned_count'] ?? 1);
 	?>
-		<a href="/achievements/view/<?php echo $as[$i]['a_id'] . '/' . $user['User']['id']; ?>">
+		<a href="/achievements/view/<?php echo $as[$i]['a_id'] . '/' . $user['id']; ?>">
 		<div align="center" class="achievementSmall <?php echo $as[$i]['a_color']; ?>">
 			<div class="acTitle2">
 				<b <?php echo $adjust; ?>><?php echo h($as[$i]['a_title']); ?></b>

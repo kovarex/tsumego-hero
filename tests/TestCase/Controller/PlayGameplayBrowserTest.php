@@ -3,6 +3,7 @@
 use App\Model\Table\TimeModeCategoryTable;
 use App\Model\Table\TimeModeSessionStatusTable;
 use App\Model\Table\TsumegoVariantTable;
+use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\Rating;
@@ -65,8 +66,8 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 				'name' => 'renderUser',
 				// Pin the player color and board orientation so the board is never
 				// swapped or rotated (deterministic stone coordinates and colors).
-				'player_color_setting' => User::PLAYER_COLOR_SETTING_ORIGINAL,
-				'board_orientation_setting' => User::BOARD_ORIENTATION_SETTING_ORIGINAL,
+				'player_color_setting' => UserTable::PLAYER_COLOR_SETTING_ORIGINAL,
+				'board_orientation_setting' => UserTable::BOARD_ORIENTATION_SETTING_ORIGINAL,
 			],
 			'tsumego' => ['set_order' => 1, 'sgf' => self::SGF_19],
 		]);
@@ -916,7 +917,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 	public function testOrientationButtonSwapsScoreButtons(): void
 	{
 		$context = new ContextPreparator([
-			'user' => ['admin' => true, 'player_color_setting' => User::PLAYER_COLOR_SETTING_ORIGINAL],
+			'user' => ['admin' => true, 'player_color_setting' => UserTable::PLAYER_COLOR_SETTING_ORIGINAL],
 			'tsumego' => [
 				'set_order' => 1,
 				'description' => 'Who wins?',
@@ -949,7 +950,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 	public function testOrientationButtonSwapsSemeaiButtons(): void
 	{
 		$context = new ContextPreparator([
-			'user' => ['admin' => true, 'player_color_setting' => User::PLAYER_COLOR_SETTING_ORIGINAL],
+			'user' => ['admin' => true, 'player_color_setting' => UserTable::PLAYER_COLOR_SETTING_ORIGINAL],
 			'tsumego' => [
 				'set_order' => 1,
 				'semeai_type' => 1,
@@ -981,7 +982,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 	public function testOrientationButtonSwapsSgfComment(): void
 	{
 		$context = new ContextPreparator([
-			'user' => ['admin' => true, 'player_color_setting' => User::PLAYER_COLOR_SETTING_ORIGINAL],
+			'user' => ['admin' => true, 'player_color_setting' => UserTable::PLAYER_COLOR_SETTING_ORIGINAL],
 			'tsumego' => [
 				'set_order' => 1,
 				'description' => 'Black to play.',

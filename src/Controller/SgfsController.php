@@ -3,6 +3,7 @@
 use App\Model\Table\SetConnectionTable;
 use App\Model\Table\SgfTable;
 use App\Attribute\HttpGet;
+use App\Model\Table\UserTable;
 use App\Utility\Auth;
 
 class SgfsController extends AppController
@@ -12,7 +13,6 @@ class SgfsController extends AppController
 	{
 		$this->Authorization->authorize('Sgf');
 		$this->set('_page', 'play');
-		$this->loadModel('User');
 		$ux = '';
 		$type = 'tsumego';
 		$dId = [];
@@ -73,8 +73,8 @@ class SgfsController extends AppController
 		{
 
 
-			$user = $this->User->findById($versions[$i]['user_id']);
-			$ux = $user ? User::displayName($user['User']) : '';
+			$user = UserTable::row((int) $versions[$i]['user_id']);
+			$ux = $user ? UserTable::displayName($user) : '';
 			$versions[$i]['user'] = $ux;
 			$displaySetConnection = SetConnectionTable::findDisplaySetConnection((int) $versions[$i]['tsumego_id']);
 			$set = $setTable->find()->select(['title', 'title2'])->where(['id' => $displaySetConnection->set_id])->first();

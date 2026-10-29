@@ -4,6 +4,8 @@
  * @var View $this
  * @var bool $sent
  */
+
+use App\Model\Table\UserTable;
 ?>
 <div align="center">
 <p class="title">
@@ -20,7 +22,7 @@
 <?php else: ?>
 	<p>
 		When your account is deleted, you are signed out and can't sign in with it anymore.<br>
-		Your sets, comments and tags stay on the site, shown as <?php echo h(User::DELETED_NAME); ?>.<br>
+		Your sets, comments and tags stay on the site, shown as <?php echo h(UserTable::DELETED_NAME); ?>.<br>
 		If you change your mind later, contact us and we can restore your account.
 	</p>
 	<p>To make sure it's you, we'll send you an email with a link to confirm the deletion.</p>

@@ -11,5 +11,3 @@ parameters:
 	bootstrapFiles:
 		- config/phpstan-bootstrap.php
 	treatPhpDocTypesAsCertain: false
-	ignoreErrors:
-		- '#Call to an undefined method .*\:\:findBy.+\(#'

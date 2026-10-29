@@ -3,7 +3,7 @@
 namespace App\Policy;
 
 use App\Utility\Constants;
-use User;
+use App\Model\Table\UserTable;
 
 //Shared helpers for policies. Policies are stateless decision objects; they
 //receive the identity ($user) and the resource, and when those two are not
@@ -18,14 +18,14 @@ abstract class BasePolicy
 	/** @param UserRow|null $user */
 	protected static function isAdmin(?array $user): bool
 	{
-		return User::isAdmin($user);
+		return UserTable::isAdmin($user);
 	}
 
 	//Whether the identity is an owner (false for anonymous).
 	/** @param UserRow|null $user */
 	protected static function isOwner(?array $user): bool
 	{
-		return User::isOwner($user);
+		return UserTable::isOwner($user);
 	}
 
 	//Whether the identity has sandbox access: admin or premium.

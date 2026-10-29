@@ -2,6 +2,7 @@
 
 //Auth::getIdentity() returns the user array, or null when not logged in.
 //Policies check user fields directly (user_role_id, premium, level, rating).
+use App\Model\Table\UserTable;
 use App\Policy\BasePolicy;
 use App\Utility\Auth;
 use App\Utility\Constants;
@@ -22,7 +23,7 @@ class AuthIdentityTest extends CakeTestCase
 		$identity = Auth::getIdentity();
 		$this->assertNotNull($identity);
 		$this->assertSame('regular', $identity['name']);
-		$this->assertSame(User::ROLE_PLAYER, (int) $identity['user_role_id']);
+		$this->assertSame(UserTable::ROLE_PLAYER, (int) $identity['user_role_id']);
 	}
 
 	public function testAdminIsDetected()
@@ -38,8 +39,8 @@ class AuthIdentityTest extends CakeTestCase
 		new ContextPreparator(['user' => ['name' => 'premium', 'admin' => false, 'premium' => 1]]);
 
 		$identity = Auth::getIdentity();
-		$this->assertSame(User::PREMIUM_BASIC, $identity['premium_id']);
-		$this->assertSame(User::ROLE_PLAYER, (int) $identity['user_role_id']);
+		$this->assertSame(UserTable::PREMIUM_BASIC, $identity['premium_id']);
+		$this->assertSame(UserTable::ROLE_PLAYER, (int) $identity['user_role_id']);
 	}
 
 	public function testLowRatingUserCannotContribute()

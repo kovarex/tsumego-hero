@@ -7,6 +7,7 @@ use App\Model\Entity\TagConnection;
 use App\Model\Entity\TsumegoComment;
 use App\Model\Entity\TsumegoIssue;
 use App\Model\Entity\Tsumego;
+use App\Model\Table\UserTable;
 use App\Policy\AdminPolicy;
 use App\Policy\OwnerPolicy;
 use App\Policy\SetPolicy;
@@ -26,7 +27,7 @@ class PolicyTest extends CakeTestCase
 	{
 		if ($isAdmin === null)
 			return null;
-		$identity = ['user_role_id' => $isAdmin ? User::ROLE_ADMIN : User::ROLE_PLAYER, 'premium_id' => $premium ? User::PREMIUM_BASIC : null, 'level' => 1, 'rating' => 1000];
+		$identity = ['user_role_id' => $isAdmin ? UserTable::ROLE_ADMIN : UserTable::ROLE_PLAYER, 'premium_id' => $premium ? UserTable::PREMIUM_BASIC : null, 'level' => 1, 'rating' => 1000];
 		if ($id !== null)
 			$identity['id'] = $id;
 		return $identity;
@@ -45,14 +46,14 @@ class PolicyTest extends CakeTestCase
 
 	public function testOwnerHasTheRightsOfAnAdmin()
 	{
-		$owner = ['user_role_id' => User::ROLE_OWNER, 'premium_id' => null, 'level' => 1, 'rating' => 1000];
+		$owner = ['user_role_id' => UserTable::ROLE_OWNER, 'premium_id' => null, 'level' => 1, 'rating' => 1000];
 		$this->assertTrue(AdminPolicy::canViewAdminArea($owner));
 		$this->assertTrue(SgfPolicy::canView($owner));
 	}
 
 	public function testOwnerPolicyAllowsOnlyOwners()
 	{
-		$this->assertTrue(OwnerPolicy::canManageRoles(['user_role_id' => User::ROLE_OWNER]));
+		$this->assertTrue(OwnerPolicy::canManageRoles(['user_role_id' => UserTable::ROLE_OWNER]));
 		$this->assertFalse(OwnerPolicy::canManageRoles($this->identity(true)));
 		$this->assertFalse(OwnerPolicy::canManageRoles($this->identity(false)));
 		$this->assertFalse(OwnerPolicy::canManageRoles($this->identity(null)));
@@ -80,7 +81,7 @@ class PolicyTest extends CakeTestCase
 	public function testTagDeleteReservedForOwners()
 	{
 		$policy = new TagPolicy();
-		$this->assertTrue($policy->canDelete(['user_role_id' => User::ROLE_OWNER]), 'owner can delete');
+		$this->assertTrue($policy->canDelete(['user_role_id' => UserTable::ROLE_OWNER]), 'owner can delete');
 		$this->assertFalse($policy->canDelete($this->identity(true, 0, 72)), 'admin blocked, whatever the id');
 		$this->assertFalse($policy->canDelete($this->identity(false)), 'regular user blocked');
 		$this->assertFalse($policy->canDelete($this->identity(null)), 'anonymous blocked');

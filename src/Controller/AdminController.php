@@ -13,6 +13,7 @@ use App\Utility\SGFProposalsRenderer;
 use App\Utility\SgfChangesRenderer;
 use App\Utility\TagConnectionProposalsRenderer;
 use App\Utility\TagProposalsRenderer;
+use App\Utility\Util;
 
 //The admin area: one page with a link to everything an admin does, each with a count of what
 //waits there, and the pages of the proposals and of the admin activity.
@@ -31,7 +32,7 @@ class AdminController extends AppController
 		$this->set('newTagCount', TagProposalsRenderer::total());
 		$this->set('openIssueCount', TsumegoIssueTable::getIndexCounts()['open']);
 		$this->set('newSgfChangeCount', AdminOverviewTypeTable::countNewSgfChanges($userID));
-		$this->set('deletedAccountCount', ClassRegistry::init('User')->find('count', ['conditions' => ['deleted IS NOT NULL']]));
+		$this->set('deletedAccountCount', $this->fetchTable('User')->find()->where(['deleted IS NOT' => null])->count());
 	}
 
 	#[HttpGet]
@@ -115,8 +116,6 @@ class AdminController extends AppController
 		$this->Authorization->authorize('Admin', 'viewAdminArea');
 		$this->set('_page', 'admin');
 		$this->set('_title', 'Deleted accounts');
-		$this->set('deletedUsers', ClassRegistry::init('User')->find('all', [
-			'conditions' => ['deleted IS NOT NULL'],
-			'order' => 'deleted DESC']) ?: []);
+		$this->set('deletedUsers', Util::query('SELECT id, deleted_name, deleted FROM user WHERE deleted IS NOT NULL ORDER BY deleted DESC'));
 	}
 }

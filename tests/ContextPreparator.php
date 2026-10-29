@@ -8,6 +8,7 @@ use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\TimeModeRankTable;
 use App\Model\Table\TsumegoIssueTable;
+use App\Model\Table\UserTable;
 use App\Utility\AchievementChecker;
 use App\Utility\AdminActivityLogger;
 use App\Utility\Auth;
@@ -29,9 +30,7 @@ class ContextPreparator
 		self::takeTestDatabaseLock();
 
 		// Delete all test data via raw PDO so FK check disable is guaranteed on the same connection
-		/** @var DboSource $db */
-		$db = ClassRegistry::init('User')->getDataSource();
-		$pdo = $db->getConnection();
+		$pdo = Util::connection();
 		$pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
 		foreach ([
 			'classroom_assignment_result', 'classroom_assignment_problem', 'classroom_assignment', 'classroom_member', 'classroom',
@@ -45,7 +44,7 @@ class ContextPreparator
 		] as $table)
 			$pdo->exec("DELETE FROM `$table`");
 		$pdo->exec('SET FOREIGN_KEY_CHECKS = 1');
-		User::clearDeletedCache();
+		UserTable::clearDeletedCache();
 
 		if (!array_key_exists('user', $options) && !array_key_exists('other-users', $options))
 			$this->prepareThisUser(['name' => 'kovarex']);
@@ -143,7 +142,7 @@ class ContextPreparator
 			$user['id'] = (int) $id;
 		$isAdmin = Util::extract('admin', $userInput) ?? false;
 		$isOwner = Util::extract('owner', $userInput) ?? false;
-		$user['user_role_id'] = $isOwner ? User::ROLE_OWNER : ($isAdmin ? User::ROLE_ADMIN : User::ROLE_PLAYER);
+		$user['user_role_id'] = $isOwner ? UserTable::ROLE_OWNER : ($isAdmin ? UserTable::ROLE_ADMIN : UserTable::ROLE_PLAYER);
 		$user['rating'] = Util::extract('rating', $userInput) ?: self::$DEFAULT_USER_RATING;
 		$user['highest_rating'] = Util::extract('highest_rating', $userInput) ?: $user['rating'];
 		$premium = Util::extract('premium', $userInput);
@@ -158,7 +157,7 @@ class ContextPreparator
 		// Google Sign-In fields
 		$user['external_id'] = $externalId ?: null;
 		$user['picture'] = Util::extract('picture', $userInput) ?: null;
-		$user['avatar_setting_id'] = Util::extract('avatar_setting_id', $userInput) ?: User::AVATAR_BOARD;
+		$user['avatar_setting_id'] = Util::extract('avatar_setting_id', $userInput) ?: UserTable::AVATAR_BOARD;
 		$user['uploaded_avatar_hash'] = Util::extract('uploaded_avatar_hash', $userInput) ?: null;
 		$user['needs_display_name_change'] = Util::extract('needs_display_name_change', $userInput) ?: false;
 		foreach ([
@@ -179,9 +178,9 @@ class ContextPreparator
 			$user['damage'] = Util::extract('damage', $userInput) ?? 0;
 		$user['sprint_start'] = Util::extract('sprint_start', $userInput) ?: null;
 		$user['mode_id'] = Util::extract('mode', $userInput) ?: Constants::$LEVEL_MODE;
-		$user['player_color_setting'] = Util::extract('player_color_setting', $userInput) ?? User::PLAYER_COLOR_SETTING_RANDOM;
-		$user['board_orientation_setting'] = Util::extract('board_orientation_setting', $userInput) ?? User::BOARD_ORIENTATION_SETTING_RANDOM;
-		$user['date_format_id'] = Util::extract('date_format_id', $userInput) ?? User::DATE_FORMAT_ISO;
+		$user['player_color_setting'] = Util::extract('player_color_setting', $userInput) ?? UserTable::PLAYER_COLOR_SETTING_RANDOM;
+		$user['board_orientation_setting'] = Util::extract('board_orientation_setting', $userInput) ?? UserTable::BOARD_ORIENTATION_SETTING_RANDOM;
+		$user['date_format_id'] = Util::extract('date_format_id', $userInput) ?? UserTable::DATE_FORMAT_ISO;
 		$user['sound'] = (bool) (Util::extract('sound', $userInput) ?? false);
 		$user['email_on_new_message'] = Util::extract('email_on_new_message', $userInput) ?? 1;
 		if ($lastTimeModeCategoryID = Util::extract('last-time-mode-category-id', $userInput))
@@ -196,19 +195,17 @@ class ContextPreparator
 		$user['contribution_revelation_bonus'] = Util::extract('contribution_revelation_bonus', $userInput) ?: 0;
 
 		// Save user
-		$Model = ClassRegistry::init('User');
-		$Model->create();
-		$saveResult = $Model->save($user);
-		if (!$saveResult)
-			throw new Exception("Failed to save user: " . print_r($Model->validationErrors, true));
-		// Find by display_name (works for both regular and Google users)
-		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['display_name' => $user['display_name']]])['User'];
+		$userTable = TableRegistry::getTableLocator()->get('User');
+		$entity = $userTable->newEntity($user, ['accessibleFields' => ['id' => true]]);
+		if (!$userTable->save($entity))
+			throw new Exception("Failed to save user: " . print_r($entity->getErrors(), true));
+		$user = UserTable::row($entity->id);
 
 		$this->prepareAchievementStatuses($user, Util::extract('achievement-statuses', $userInput));
 		if ($deleted)
 		{
-			User::deleteAccount($user['id']);
-			$user = ClassRegistry::init('User')->findById($user['id'])['User'];
+			UserTable::deleteAccount($user['id']);
+			$user = UserTable::row($user['id']);
 		}
 		$this->checkOptionsConsumed($userInput);
 		return $user;
@@ -634,8 +631,7 @@ class ContextPreparator
 	private function setDefaultSetId(int $setId): void
 	{
 		$this->user['default_set_id'] = $setId;
-		ClassRegistry::init('User')->id = $this->user['id'];
-		ClassRegistry::init('User')->saveField('default_set_id', $setId);
+		TableRegistry::getTableLocator()->get('User')->updateAll(['default_set_id' => $setId], ['id' => $this->user['id']]);
 	}
 
 	private function getOrCreateTag($tagInput): Tag
@@ -668,7 +664,7 @@ class ContextPreparator
 	{
 		if (isset($this->setsCleared[$setID]))
 			return;
-		$pdo = ClassRegistry::init('User')->getDataSource()->getConnection();
+		$pdo = Util::connection();
 		$pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
 		$pdo->exec("DELETE FROM `set_connection` WHERE `set_id` = " . intval($setID));
 		$pdo->exec('SET FOREIGN_KEY_CHECKS = 1');
@@ -759,7 +755,7 @@ class ContextPreparator
 		foreach ($progressDeletions as $progressDeletionInput)
 		{
 			$progressDeletion = [];
-			$progressDeletion['user_id'] = !empty($progressDeletionInput['user']) ? ClassRegistry::init('User')->find('first', ['conditions' => ['name' => $progressDeletionInput['user']]])['User']['id'] : $this->user['id'];
+			$progressDeletion['user_id'] = !empty($progressDeletionInput['user']) ? ContextPreparator::findUserRow(['name' => $progressDeletionInput['user']])['id'] : $this->user['id'];
 			$progressDeletion['set_id'] = $this->getOrCreateTsumegoSet($progressDeletionInput['set'])['id'];
 			$progressDeletion['set_partition'] = $progressDeletionInput['partition'] ?? null; // 0 based, null for the old records without it
 			$progressDeletion['created'] = $progressDeletionInput['created'];
@@ -910,7 +906,7 @@ class ContextPreparator
 		$adminActivityTypeTable = TableRegistry::getTableLocator()->get('AdminActivityType');
 
 		// Clear and repopulate with correct IDs (this table is not in the constructor wipe)
-		$pdo = ClassRegistry::init('User')->getDataSource()->getConnection();
+		$pdo = Util::connection();
 		$pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
 		$pdo->exec('DELETE FROM `admin_activity_type`');
 		$pdo->exec('SET FOREIGN_KEY_CHECKS = 1');
@@ -989,7 +985,7 @@ class ContextPreparator
 
 	public function reloadUser(): array
 	{
-		$this->user = ClassRegistry::init('User')->findById($this->user['id'])['User'];
+		$this->user = UserTable::row($this->user['id']);
 		return $this->user;
 	}
 
@@ -1006,7 +1002,19 @@ class ContextPreparator
 	{
 		if (!$input)
 			return null;
-		return ClassRegistry::init('User')->find('first', ['conditions' => ['name' => $input]])['User']['id'];
+		return TableRegistry::getTableLocator()->get('User')->find()->select(['id'])->where(['name' => $input])->first()?->id;
+	}
+
+	//The first user (by id) the conditions match, as the row UserTable::row() gives, null when none does.
+	//A null value matches NULL, as in Cake 2.
+	/** @param array<mixed> $conditions */
+	public static function findUserRow(array $conditions): ?array
+	{
+		$where = [];
+		foreach ($conditions as $field => $value)
+			$where[$value === null && is_string($field) && !str_contains($field, ' ') ? $field . ' IS' : $field] = $value;
+		$user = TableRegistry::getTableLocator()->get('User')->find()->where($where)->orderBy(['id' => 'ASC'])->first();
+		return $user === null ? null : UserTable::rowOf($user);
 	}
 
 	public function loadTsumegoID($input): ?int

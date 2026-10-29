@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\CookieFlash;
 
@@ -18,10 +19,10 @@ use App\Utility\CookieFlash;
 	<div class="left signin">
 		<?php echo CookieFlash::render(); ?>
 		<h1>Reset password</h1>
-		<?php echo $this->Form->create('User', array('action' => 'resetpassword')); ?>
+		<?php echo $this->Form->create(false, ['url' => '/users/resetpassword', 'id' => 'UserResetpasswordForm']); ?>
 		<div class="input text required">
 			<label for="UserEmail">E-Mail</label>
-			<input name="data[User][email]" maxlength="<?php echo User::EMAIL_MAX_LENGTH; ?>" type="text" id="UserEmail" autocomplete="email" required="required"/>
+			<input name="data[User][email]" maxlength="<?php echo UserTable::EMAIL_MAX_LENGTH; ?>" type="text" id="UserEmail" autocomplete="email" required="required"/>
 		</div>
 		<button type="submit" class="btn">Send reset link</button>
 		<?php echo $this->Form->end(); ?>
