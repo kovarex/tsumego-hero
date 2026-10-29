@@ -13,7 +13,7 @@ class SetTest extends CakeTestCase
 			foreach ([1, 2, 17] as $partition)
 				foreach ([false, true] as $full)
 				{
-					$url = ['controller' => 'sets', 'action' => 'view', 'id' => $id];
+					$url = ['controller' => 'Sets', 'action' => 'view', 'id' => $id];
 					if ($partition > 1)
 						$url['partition'] = $partition;
 					$this->assertSame(Router::url($url, $full), SetTable::url($id, $partition, $full), 'id ' . $id . ', page ' . $partition . ($full ? ', full' : ''));
