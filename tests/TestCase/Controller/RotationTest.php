@@ -1,6 +1,7 @@
 <?php
 
 use App\Utility\Constants;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 //Tests for board rotation functionality in besogo.
 //Covers:
@@ -37,7 +38,7 @@ class RotationTest extends IntegrationTestCase
 		return $browser->driver->executeScript('return besogo.boardCanvasSvg.getAttribute("viewBox");');
 	}
 
-	/** @dataProvider autoRotationProvider */
+	#[DataProvider('autoRotationProvider')]
 	public function testAutoRotation(string $sgf, bool $shouldRotate, string $reason)
 	{
 		$context = new ContextPreparator([
@@ -81,7 +82,7 @@ class RotationTest extends IntegrationTestCase
 		$this->assertTrue($browser->driver->executeScript('return besogo.verticalHalfBoardRotationWidthToken;'));
 	}
 
-	/** @dataProvider manualRotationProvider */
+	#[DataProvider('manualRotationProvider')]
 	public function testManualRotation(string $buttonId, string $direction)
 	{
 		$context = new ContextPreparator([

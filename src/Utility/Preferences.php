@@ -46,7 +46,7 @@ class Preferences
 		self::validateKey($key);
 
 		// Check cookie override first (applies to both guests and logged-in users)
-		// For logged-in users: Check unprefixed cookie (set by layout.ctp JS)
+		// For logged-in users: Check unprefixed cookie (set by the JS of templates/layout/default.php)
 		// For guests: Check prefixed cookie ("loggedOff_" + key)
 		if (Auth::isLoggedIn())
 		{

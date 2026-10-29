@@ -388,8 +388,6 @@ use App\Utility\ViteManifest;
 				echo '<a id="show5" class="selectable-text">Settings<img id="greyArrow5" src="/img/greyArrow1.png"></a>';
 				$checked = fn(bool $isChecked): string => $isChecked ? 'checked="checked"' : '';
 				$variantType = $tv ? (int) $tv->tsumego_variant_type_id : null;
-			if(Auth::isAdmin())
-			{
 				echo '<div id="msg4">
 						<br>
 						<form action="/sgf/upload/' . $setConnection->id . '" method="POST" enctype="multipart/form-data">
@@ -425,7 +423,6 @@ use App\Utility\ViteManifest;
 						</form>
 					</div>
 					<br><br>';
-			}
 			if($isSandbox && $tv!=null)
 			{
 				if($tv->tsumego_variant_type_id == TsumegoVariantTable::TYPE_MULTIPLE_CHOICE)

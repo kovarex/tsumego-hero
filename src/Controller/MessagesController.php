@@ -3,11 +3,11 @@
 namespace App\Controller;
 
 use Cake\Http\Exception\NotFoundException;
-use Cake\Http\Response as CakeResponse;
+use Cake\Http\Response;
 use App\Attribute\HttpGet;
 use App\Model\Table\MessageTable;
 use App\Attribute\HttpPost;
-use App\Lib\Error\UnprocessableEntityException;
+use Cake\Http\Exception\UnprocessableContentException;
 use App\Utility\Auth;
 use App\Utility\Util;
 
@@ -42,14 +42,14 @@ class MessagesController extends AppController
 	}
 
 	#[HttpGet]
-	public function conversations(): CakeResponse
+	public function conversations(): Response
 	{
 		$this->Authorization->authorize('Message', 'read');
 		return $this->respondJson(['conversations' => MessageTable::conversations(Auth::getUserID())]);
 	}
 
 	#[HttpGet]
-	public function conversation(string $partnerUserId): CakeResponse
+	public function conversation(string $partnerUserId): Response
 	{
 		$this->Authorization->authorize('Message', 'read');
 		$partner = $this->findPartner((int) $partnerUserId);
@@ -59,7 +59,7 @@ class MessagesController extends AppController
 	}
 
 	#[HttpPost]
-	public function send(string $partnerUserId): CakeResponse
+	public function send(string $partnerUserId): Response
 	{
 		$this->Authorization->authorize('Message', 'send');
 		$partner = $this->findPartner((int) $partnerUserId);
@@ -70,7 +70,7 @@ class MessagesController extends AppController
 		if ($problem === null && !Auth::isAdmin() && MessageTable::reachedUnansweredRecipientLimit(Auth::getUserID(), $partner['id']))
 			$problem = 'You wrote to ' . MessageTable::DAILY_UNANSWERED_RECIPIENTS . ' players who did not answer yet today. Please wait for an answer or try again tomorrow.';
 		if ($problem !== null)
-			throw new UnprocessableEntityException($problem);
+			throw new UnprocessableContentException($problem);
 
 		$messageId = MessageTable::send(Auth::getUserID(), $partner['id'], $text, $this->_getEmailer());
 		$row = Util::query('SELECT id, sender_user_id, text, created, read_at FROM message WHERE id = ?', [$messageId])[0];
@@ -78,7 +78,7 @@ class MessagesController extends AppController
 	}
 
 	#[HttpPost]
-	public function read(string $partnerUserId): CakeResponse
+	public function read(string $partnerUserId): Response
 	{
 		$this->Authorization->authorize('Message', 'read');
 		$partner = $this->findPartner((int) $partnerUserId);
@@ -87,7 +87,7 @@ class MessagesController extends AppController
 	}
 
 	#[HttpGet]
-	public function recipients(): CakeResponse
+	public function recipients(): Response
 	{
 		$this->Authorization->authorize('Message', 'send');
 		$query = (string) $this->query('query');

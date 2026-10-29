@@ -125,14 +125,14 @@ class PreferencesTest extends AppTestCase
 	//Test that unprefixed cookie override works for logged-in users
 	//This tests the "cookie override" feature where:
 	//- Logged-in users have DB preferences
-	//- But unprefixed cookies (set by layout.ctp JS) can temporarily override them
+	//- But unprefixed cookies (set by the JS of the layout) can temporarily override them
 	//- This is used for filters that change on each request
 	public function testUnprefixedCookieOverrideForLoggedInUser()
 	{
 		$context = new ContextPreparator();
 		Preferences::set('query', 'db_value');
 
-		// Simulate unprefixed cookie override (set by layout.ctp JS)
+		// Simulate unprefixed cookie override (set by the JS of the layout)
 		$_COOKIE['query'] = 'override_value';
 
 		// Act

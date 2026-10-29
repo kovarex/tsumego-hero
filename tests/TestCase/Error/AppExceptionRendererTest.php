@@ -2,20 +2,20 @@
 
 use Cake\Http\Exception\ForbiddenException;
 use Cake\Http\Exception\NotFoundException;
-use Cake\Http\ServerRequest as CakeRequest;
+use Cake\Http\ServerRequest;
 use Cake\Routing\Router;
 use App\Error\AppExceptionRenderer;
-use App\Lib\Error\UnprocessableEntityException;
+use Cake\Http\Exception\UnprocessableContentException;
 
 //AppExceptionRenderer renders JSON error bodies for JSON/AJAX requests and the HTML error page for regular browser requests.
-class AppErrorHandlerTest extends AppTestCase
+class AppExceptionRendererTest extends AppTestCase
 {
 	//Renders the given exception through AppExceptionRenderer with the supplied
 	//request headers and returns the resulting response and its body.
 	private function renderError($exception, array $server = [])
 	{
 		$this->loadRoutes();
-		$request = new CakeRequest(['url' => '/tsumego-comments/add', 'environment' => $server + ['REQUEST_METHOD' => 'POST']]);
+		$request = new ServerRequest(['url' => '/tsumego-comments/add', 'environment' => $server + ['REQUEST_METHOD' => 'POST']]);
 		Router::setRequest($request);
 		$response = new AppExceptionRenderer($exception, $request)->render();
 		return [$response, (string) $response->getBody()];
@@ -44,9 +44,9 @@ class AppErrorHandlerTest extends AppTestCase
 		$this->assertSame('{"error":"Comment not found"}', $output);
 	}
 
-	public function testUnprocessableEntityRenders422Json()
+	public function testUnprocessableContentRenders422Json()
 	{
-		[$response, $output] = $this->renderError(new UnprocessableEntityException('Failed to add comment'), [
+		[$response, $output] = $this->renderError(new UnprocessableContentException('Failed to add comment'), [
 			'HTTP_ACCEPT' => 'application/json',
 		]);
 

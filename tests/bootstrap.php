@@ -11,8 +11,6 @@ $_SERVER['SCRIPT_NAME'] = '/index.php';
 $_SERVER['PHP_SELF'] = '/index.php';
 $_SERVER['REQUEST_URI'] = '/';
 
-//The test cases of the suite extend the TestCase of Cake 5 under the name they had on Cake 2
-class_alias(Cake\TestSuite\TestCase::class, 'CakeTestCase');
 ConnectionManager::alias('test', 'default');
 
 // Load test helpers globally to avoid repetition in every test file

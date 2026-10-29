@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use Cake\Http\Response as CakeResponse;
+use Cake\Http\Response;
 use Cake\Http\Exception\NotFoundException;
 use App\Attribute\HttpGet;
 use App\Utility\Avatar;
@@ -20,7 +20,7 @@ use App\Utility\UploadedAvatar;
 class AvatarsController extends AppController
 {
 	//$key: The key of a display name
-	/** @return CakeResponse svg image, cached for a year */
+	/** @return Response svg image, cached for a year */
 	#[HttpGet]
 	public function image(?string $key = null)
 	{
@@ -36,7 +36,7 @@ class AvatarsController extends AppController
 	//an svg from a share preview. The drawing is a function of the key, so the
 	//picture is still made without reading a row of the database.
 	//$key: The key of a display name
-	/** @return CakeResponse png image, cached for a year */
+	/** @return Response png image, cached for a year */
 	#[HttpGet]
 	public function imagePng(?string $key = null)
 	{
@@ -53,7 +53,7 @@ class AvatarsController extends AppController
 	//was replaced or removed, or of a deleted account, answers nothing.
 	//$id: User id
 	//$hash: user.uploaded_avatar_hash
-	/** @return CakeResponse webp image, cached for a year */
+	/** @return Response webp image, cached for a year */
 	#[HttpGet]
 	public function picture(?int $id = null, ?string $hash = null)
 	{
@@ -70,7 +70,7 @@ class AvatarsController extends AppController
 	//is never answered here, only the board, which is what a picture that stopped working
 	//falls back on. The answer is where that board lives, so the drawing stays on the url
 	//that a browser keeps for a year.
-	/** @return CakeResponse redirect to the board of the account */
+	/** @return Response redirect to the board of the account */
 	#[HttpGet]
 	public function boardOfUser(?int $id = null)
 	{

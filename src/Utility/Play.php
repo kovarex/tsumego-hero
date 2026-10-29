@@ -21,7 +21,7 @@ use App\Policy\TagConnectionPolicy;
 use Cake\ORM\TableRegistry;
 use App\Controller\Component\AuthorizationComponent;
 use Cake\Http\Exception\NotFoundException;
-use Cake\Http\ServerRequest as CakeRequest;
+use Cake\Http\ServerRequest;
 use Cake\Routing\Router;
 
 class Play
@@ -36,7 +36,7 @@ class Play
 		($this->setFunction)($name, $value);
 	}
 
-	public function play(int $setConnectionID, CakeRequest $request): void
+	public function play(int $setConnectionID, ServerRequest $request): void
 	{
 		$this->set('page', 'play');
 		//The board always receives both arrows, and an empty one is the arrow turned off.
@@ -257,7 +257,7 @@ ORDER BY s.title", [$tsumegoID, Auth::getUserID()]);
 	//starts with the other color). "Original" plays the SGF as designed, "Random" picks a side.
 	//$playAsBlack: the problem is about the actual black and white groups (variants, semeai, small
 	//boards, some sets), so the player is black. ?playercolor=black|white overrides all of it.
-	private function exportPlayerColor(CakeRequest $request, string $sgf, bool $playAsBlack): void
+	private function exportPlayerColor(ServerRequest $request, string $sgf, bool $playAsBlack): void
 	{
 		$sgfColor = SgfParser::firstMoveColor($sgf);
 		$requestedColor = strtolower((string) ($request->getQuery('playercolor') ?? ''));

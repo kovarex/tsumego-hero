@@ -12,7 +12,7 @@ class SgfSpecialCharacterRenderTest extends IntegrationTestCase
 	}
 
 	//Verify that SGF with special chars is correctly parsed by besogo on the play page.
-	//play.ctp embeds SGF via: options.sgf2 = json_encode(...) and new Blob([json_encode(...)]).
+	//templates/Tsumegos/play.php embeds SGF via: options.sgf2 = json_encode(...) and new Blob([json_encode(...)]).
 	//Without json_encode, the JS string literal would break and besogo wouldn't initialize.
 	public function testPlayPageParsesSgfWithSpecialChars()
 	{
@@ -39,7 +39,7 @@ class SgfSpecialCharacterRenderTest extends IntegrationTestCase
 	}
 
 	//Verify that SGF versions page (sgfs/view) correctly embeds evil SGF in Blob download.
-	//view.ctp uses: new Blob([json_encode($sgf)]) for download buttons.
+	//The view uses: new Blob([json_encode($sgf)]) for download buttons.
 	public function testSgfVersionsPageBlobContainsCorrectSgf()
 	{
 		$browser = Browser::instance();
@@ -94,7 +94,7 @@ class SgfSpecialCharacterRenderTest extends IntegrationTestCase
 	}
 
 	//Upload SGF with special chars and verify it's preserved exactly in the database.
-	//The upload flow goes through setup_new_sgf.ctp which uses json_encode to embed
+	//The upload flow goes through templates/Tsumegos/setup_new_sgf.php, which uses json_encode to embed
 	//the SGF in JavaScript for besogo parsing, then auto-submits to setupNewSgfStep2.
 	public function testUploadPreservesEvilSgfInDatabase()
 	{
@@ -122,7 +122,7 @@ class SgfSpecialCharacterRenderTest extends IntegrationTestCase
 		", [self::tortureSgf()]);
 		$browser->clickId('admin-upload-submit');
 
-		// Wait for setup_new_sgf.ctp to process and redirect back
+		// Wait for setup_new_sgf.php to process and redirect back
 		$browser->waitUntilJs('!location.href.includes("/sgf/upload/")');
 
 		// Verify the uploaded SGF was saved to the database

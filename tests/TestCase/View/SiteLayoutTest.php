@@ -2,7 +2,7 @@
 
 use App\Utility\Util;
 
-//The layout every page has (src/View/Layouts/default.ctp)
+//The layout every page has (templates/layout/default.php)
 #[RetryOnBrowserFailure]
 class SiteLayoutTest extends IntegrationTestCase
 {

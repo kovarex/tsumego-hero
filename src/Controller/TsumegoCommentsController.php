@@ -2,12 +2,12 @@
 
 namespace App\Controller;
 
-use Cake\Http\Response as CakeResponse;
+use Cake\Http\Response;
 use Cake\Http\Exception\NotFoundException;
 use DateTimeImmutable;
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
-use App\Lib\Error\UnprocessableEntityException;
+use Cake\Http\Exception\UnprocessableContentException;
 use App\Model\Entity\TsumegoComment;
 use App\Model\Entity\TsumegoIssue;
 use App\Model\Table\TsumegoIssueTable;
@@ -27,7 +27,7 @@ class TsumegoCommentsController extends AppController
 	//- Comment.tsumego_issue_id: int|null - Optional issue to attach to
 	//- Comment.position: string|null - Optional board position
 	//- Comment.redirect: string - URL to redirect after success
-	/** @return CakeResponse|null */
+	/** @return Response|null */
 	#[HttpPost]
 	public function add()
 	{
@@ -44,7 +44,7 @@ class TsumegoCommentsController extends AppController
 			'user_id' => Auth::getUserID(),
 		]);
 		if (!$tsumegoCommentTable->save($comment))
-			throw new UnprocessableEntityException('Failed to add comment');
+			throw new UnprocessableContentException('Failed to add comment');
 
 		$author = self::authorsOf([$comment])[$comment->user_id];
 		return $this->respondJson([
@@ -64,7 +64,7 @@ class TsumegoCommentsController extends AppController
 	//Only the comment author or an admin can delete a comment.
 	//If this was the last comment in an issue, the issue is also deleted.
 	//$id: Comment ID to delete
-	/** @return CakeResponse|null */
+	/** @return Response|null */
 	#[HttpPost]
 	public function delete(string $id)
 	{
@@ -92,7 +92,7 @@ class TsumegoCommentsController extends AppController
 
 	//Get comments data for a tsumego
 	//Returns issues and standalone comments in the same format as initial SSR data.
-	/** @return CakeResponse */
+	/** @return Response */
 	#[HttpGet]
 	public function index(string $tsumegoId)
 	{
