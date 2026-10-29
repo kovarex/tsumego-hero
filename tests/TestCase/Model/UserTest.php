@@ -5,7 +5,7 @@ use App\Utility\Avatar;
 use App\Utility\Util;
 use Cake\ORM\TableRegistry;
 
-class UserTest extends CakeTestCase
+class UserTest extends AppTestCase
 {
 	// =====================================================================
 	// Characters the forum cannot store

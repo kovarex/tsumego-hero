@@ -4,14 +4,12 @@ use App\Model\Table\TimeModeCategoryTable;
 use Facebook\WebDriver\WebDriverKeys;
 /**
  * Tag editor tests - React component with data-testid selectors.
- *
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\Util;
 
+#[RetryOnBrowserFailure]
 class TagTest extends IntegrationTestCase
 {
 	private function openEditorAndType(Browser $browser, string $query): void

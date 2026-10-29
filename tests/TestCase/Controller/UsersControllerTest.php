@@ -6,10 +6,7 @@ use App\Model\Table\UserTable;
 use App\Utility\AchievementId;
 use App\Utility\Rating;
 
-/**
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
- */
+#[RetryOnBrowserFailure]
 class UsersControllerTest extends IntegrationTestCase
 {
 	//Test that login redirects back to the page where user came from.
@@ -652,7 +649,7 @@ class UsersControllerTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
 
-		$this->post('/users/demote_admin', ['User' => ['demote' => 'test']]);
+		$this->post('/users/demote_admin', ['demote' => 'test']);
 
 		$user = UserTable::row((int) $context->user['id']);
 		$this->assertSame(UserTable::ROLE_PLAYER, (int) $user['user_role_id']);
@@ -680,7 +677,7 @@ class UsersControllerTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'owner', 'owner' => true]]);
 
-		$this->post('/users/demote_admin', ['User' => ['demote' => 'test']]);
+		$this->post('/users/demote_admin', ['demote' => 'test']);
 
 		$user = UserTable::row((int) $context->user['id']);
 		$this->assertSame(UserTable::ROLE_OWNER, (int) $user['user_role_id']);
@@ -691,9 +688,20 @@ class UsersControllerTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'regular', 'admin' => false]]);
 
-		$this->post('/users/demote_admin', ['User' => ['demote' => 'test']]);
+		$this->post('/users/demote_admin', ['demote' => 'test']);
 
 		$user = UserTable::row((int) $context->user['id']);
 		$this->assertSame(UserTable::ROLE_PLAYER, (int) $user['user_role_id']);
+	}
+
+	public function testAGuestOnTheirOwnPagesIsSentToTheLogin()
+	{
+		new ContextPreparator();
+		$this->logout();
+		foreach (['/me', '/me/solve-history', '/me/contributions'] as $url)
+		{
+			$this->get($url);
+			$this->assertRedirect('/users/login', $url);
+		}
 	}
 }

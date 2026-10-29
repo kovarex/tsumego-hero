@@ -34,21 +34,17 @@ use App\Utility\ViteManifest;
  * @var bool $swapColors
  * @var float|int|string|null $difficulty
  * @var string $emptyHeart
- * @var bool $fav
  * @var string $file
- * @var int $firstRanks
  * @var string $fullHeart
  * @var string $getTitle
  * @var bool $goldenTsumego
  * @var bool $hasSgfProposal
- * @var int $i
  * @var bool $isAllowedToContribute
  * @var bool $isAllowedToTag
  * @var bool $canAddMoreTags
  * @var array|null $classroomAssignment Set by the route of a class assignment, which is the row of buttons
  * @var bool $solvedForAssignment Set with $classroomAssignment: the player solved the problem for the assignment
  * @var bool $isSandbox
- * @var bool $isSemeai
  * @var string $lightDark
  * @var int $maxHealth
  * @var bool $mistakeTrainingReplay Set by the training route: the problem was solved today already
@@ -196,7 +192,7 @@ use App\Utility\ViteManifest;
 		<div class="modify-description-panel" style="display: none;">
 			<form id="tsumego-edit" method="post" action="/tsumegos/edit/<?php echo $tsumego->id; ?>">
 				<input type="hidden" name="tsumego_id" value="<?php echo $tsumego->id; ?>">
-				<input type="hidden" name="redirect" value="<?php echo h($_SERVER['REQUEST_URI']); ?>">
+				<input type="hidden" name="redirect" value="<?php echo h(Util::requestUri()); ?>">
 				<input type="hidden" name="color_swapped" value="<?php echo $swapColors ? '1' : '0'; ?>">
 				<table>
 					<tr>
@@ -294,10 +290,9 @@ use App\Utility\ViteManifest;
 		<div class="problem-nav__inner">
 			<?php
 			foreach ($tsumegoButtons as $index => $tsumegoButton) {
-				$tsumegoButton->render($index, $fav);
+				$tsumegoButton->render();
 				if($index == 0 || $index == count($tsumegoButtons) - 2)
 					echo '<span class="gap10"></span>';
-				$i++;
 	}
 			?>
 		</div>
@@ -306,7 +301,6 @@ use App\Utility\ViteManifest;
 	<div align="center">
 	<?php
 
-		if ($firstRanks == 0)
 		{
 			$makeProposal = '';
 			$proposalSentColor = '';
@@ -378,7 +372,6 @@ use App\Utility\ViteManifest;
 		}
 	if (Auth::isLoggedIn())
 	{
-		if ($firstRanks==0)
 		{
 			if($sgf->user_id!=33)
 				$adHighlight = 'historyLink';
@@ -556,7 +549,6 @@ use App\Utility\ViteManifest;
 		</div>
 			</div>
 		<?php
-	$browser = $_SERVER['HTTP_USER_AGENT'] . "\n\n";
 	echo '<audio><source src="/sounds/newStone.ogg"></audio>';
 	echo '';
 		?>
@@ -1084,12 +1076,6 @@ use App\Utility\ViteManifest;
 				$(".besogo-board").addClass("besogo-board-red-glow");
 				var resetBtn = document.getElementById("besogo-reset-button");
 				if (resetBtn) { resetBtn.id = "besogo-reset-button-inactive"; }';
-	}
-		if($isSemeai){
-			echo '
-				tryAgainTomorrow = true;
-				locked = true;
-		';
 	}
 
 		$reviewEnabled = false;
@@ -1741,7 +1727,9 @@ use App\Utility\ViteManifest;
 					// leaving for the plain problem page would drop the player out of the training
 					if (goldenTsumego && mode != <?php echo Constants::$MISTAKE_TRAINING_MODE; ?>)
 					{
-						window.location.href = '/' + '<?php echo $setConnection->id; ?>';
+						// the page is drawn again from the stored result, so it waits for the request of the result
+						let reload = () => window.location.href = '/' + '<?php echo $setConnection->id; ?>';
+						(window._submitResultPromise || Promise.resolve()).finally(reload);
 						return;
 					}
 				}

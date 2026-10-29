@@ -51,12 +51,12 @@ use App\Utility\UploadedAvatar;
 				<td colspan="2">
 					<div id="email-form" style="display:none;margin-top:3px;">
 						<?php
-						echo $this->Form->create(false, ['url' => ['controller' => 'users', 'action' => 'emailPreference'], 'id' => 'UserEmailPreferenceForm']);
-						echo '<div class="input"><input type="email" name="data[User][email]" placeholder="New e-mail" aria-label="New e-mail" maxlength="' . UserTable::EMAIL_MAX_LENGTH . '" style="width:150px;" required="required"></div>';
-						echo '<div class="input"><input type="password" name="data[User][password]" placeholder="Password" aria-label="Password" autocomplete="current-password" style="width:150px;" required="required"></div>';
+						echo '<form action="/users/emailPreference" id="UserEmailPreferenceForm" method="post" accept-charset="utf-8"><div style="display:none;"><input type="hidden" name="_method" value="POST"/></div>';
+						echo '<div class="input"><input type="email" name="email" placeholder="New e-mail" aria-label="New e-mail" maxlength="' . UserTable::EMAIL_MAX_LENGTH . '" style="width:150px;" required="required"></div>';
+						echo '<div class="input"><input type="password" name="password" placeholder="Password" aria-label="Password" autocomplete="current-password" style="width:150px;" required="required"></div>';
 						echo '<div class="hint">The address changes once you open the link sent to it.</div>';
 						echo '<div class="submit"><input class="btn" value="Submit" type="submit"></div>';
-						echo $this->Form->end();
+						echo '</form>';
 						?>
 					</div>
 				</td>
@@ -69,13 +69,13 @@ use App\Utility\UploadedAvatar;
 				<td colspan="2">
 					<div id="password-form" style="display:none;margin-top:3px;">
 						<?php
-						echo $this->Form->create(false, ['url' => ['controller' => 'users', 'action' => 'passwordPreference'], 'id' => 'UserPasswordPreferenceForm']);
+						echo '<form action="/users/passwordPreference" id="UserPasswordPreferenceForm" method="post" accept-charset="utf-8"><div style="display:none;"><input type="hidden" name="_method" value="POST"/></div>';
 						echo '<div class="input"><input type="password" name="current" placeholder="Current password" aria-label="Current password" autocomplete="current-password" style="width:150px;" required="required"></div>';
 						echo '<div class="input"><input type="password" name="new1" placeholder="New password" aria-label="New password" autocomplete="new-password" style="width:150px;" required="required"></div>';
 						echo '<div class="input"><input type="password" name="new2" placeholder="New password again" aria-label="New password again" autocomplete="new-password" style="width:150px;" required="required"></div>';
 						echo '<div class="hint">At least ' . Constants::$MINIMUM_PASSWORD_LENGTH . ' characters.</div>';
 						echo '<div class="submit"><input class="btn" value="Submit" type="submit"></div>';
-						echo $this->Form->end();
+						echo '</form>';
 						?>
 					</div>
 				</td>

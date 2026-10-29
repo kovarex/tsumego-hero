@@ -13,8 +13,6 @@ use App\Utility\Util;
 
 class SitesController extends AppController
 {
-	public $helpers = ['Html', 'Form'];
-
 	#[HttpGet]
 	public function index(): void
 	{
@@ -22,7 +20,7 @@ class SitesController extends AppController
 		$this->set('_title', 'Tsumego Hero');
 
 		// Set default lastVisit tsumego ID if not already set (for first-time visitors)
-		if (empty($_COOKIE['lastVisit']))
+		if (empty(Util::cookie('lastVisit')))
 			Util::setCookie('lastVisit', Constants::$DEFAULT_TSUMEGO_ID);
 
 		$today = date('Y-m-d');

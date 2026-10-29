@@ -2,7 +2,7 @@
 
 use App\Model\Table\SetTable;
 
-class SetTest extends CakeTestCase
+class SetTest extends AppTestCase
 {
 	//SetTable::url() builds the address itself instead of asking the router, which would try the routes
 	//one by one for every card of the collections page. It has to give the address the router gives.
@@ -13,7 +13,7 @@ class SetTest extends CakeTestCase
 			foreach ([1, 2, 17] as $partition)
 				foreach ([false, true] as $full)
 				{
-					$url = ['controller' => 'sets', 'action' => 'view', 'id' => $id];
+					$url = ['controller' => 'Sets', 'action' => 'view', 'id' => $id];
 					if ($partition > 1)
 						$url['partition'] = $partition;
 					$this->assertSame(Router::url($url, $full), SetTable::url($id, $partition, $full), 'id ' . $id . ', page ' . $partition . ($full ? ', full' : ''));

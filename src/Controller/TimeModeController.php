@@ -25,10 +25,10 @@ class TimeModeController extends AppController
 		$this->Authorization->authorize('User', 'startTimeMode');
 
 		$timeMode = new TimeMode();
-		$categoryID = (int) $this->params['url']['categoryID'];
+		$categoryID = (int) $this->query('categoryID');
 		if (!$categoryID)
 			throw new BadRequestException('Time mode category not specified.');
-		$rankID = (int) $this->params['url']['rankID'];
+		$rankID = (int) $this->query('rankID');
 		if (!$rankID)
 			throw new BadRequestException('Time mode rank not specified.');
 
@@ -68,13 +68,13 @@ class TimeModeController extends AppController
 
 		$this->set('timeMode', $timeMode);
 		$this->set('nextLink', '/timeMode/skip/' . $timeMode->servedOrder);
-		$this->set('noSkipNextLink', $timeMode->currentWillBeLast()
-			? '/timeMode/result/' . $timeMode->currentSession->id
-			: '/timeMode/play/' . ($timeMode->servedOrder + 1));
 		$play  = new Play(function ($name, $value) {
 			$this->set($name, $value);
 		});
 		$play->play($setConnection->id, $this->request);
+		$this->set('noSkipNextLink', $timeMode->currentWillBeLast()
+			? '/timeMode/result/' . $timeMode->currentSession->id
+			: '/timeMode/play/' . ($timeMode->servedOrder + 1));
 		$this->render('/Tsumegos/play');
 		return null;
 	}
@@ -144,10 +144,7 @@ ORDER BY MIN(rating);");
 		foreach ($ranks as $rankEntity)
 		{
 			$rank = ['id' => $rankEntity->id, 'name' => $rankEntity->name];
-			if ($count = $countsByRankID[$rank['id']])
-				$rank['tsumego_count'] = $count;
-			else
-				$rank['tsumego_count'] = 0;
+			$rank['tsumego_count'] = $countsByRankID[$rank['id']] ?? 0;
 			$result [] = $rank;
 		}
 		return $result;
@@ -375,13 +372,13 @@ ORDER BY time_mode_session.created DESC, time_mode_session.id DESC",
 	}
 
 	#[HttpGet]
-	public function result(?string $timeModeSessionID = null): mixed
+	public function result(?int $timeModeSessionID = null): mixed
 	{
 		if (!Auth::isLoggedIn())
 			return $this->redirect("/users/login");
 
 		$timeMode = new TimeMode();
-		if ($timeModeSessionID && $timeMode->hasNoResultYet((int) $timeModeSessionID))
+		if ($timeModeSessionID && $timeMode->hasNoResultYet($timeModeSessionID))
 			return $this->renderWaitingForTheResult();
 
 		$finishedSession = $this->deduceFinishedSession($timeModeSessionID, $timeMode);
@@ -436,7 +433,7 @@ ORDER BY time_mode_session.created DESC, time_mode_session.id DESC",
 		$this->set('rankArrowClosed', '/img/greyArrow1.png');
 		$this->set('rankArrowOpened', '/img/greyArrow2.png');
 		// a run opened from the history unlocked whatever it unlocked when it was finished
-		$this->set('unlock', isset($this->params['url']['history'])
+		$this->set('unlock', $this->query('history') !== null
 			? null
 			: $this->deduceUnlock($finishedSession, $timeModeRanks, $timeModeCategories));
 		$this->set('achievementUpdates', new AchievementChecker()->checkTimeModeAchievements()->finalize()->updated);

@@ -5,7 +5,7 @@ use App\Utility\PwnedPasswordChecker;
 //The list of breached passwords is a service on the internet: the answers it gives
 //decide which passwords are refused, and a list that does not answer has to let
 //the player through instead of holding the sign up.
-class PwnedPasswordCheckerTest extends CakeTestCase
+class PwnedPasswordCheckerTest extends AppTestCase
 {
 	//The rest of the SHA-1 of "password123", the part the list holds next to a count.
 	private const KNOWN_PASSWORD_REST_OF_HASH = 'C6008F9CAB4083784CBD1874F76618D2A97';

@@ -60,9 +60,8 @@ class AvatarsControllerTest extends IntegrationTestCase
 	{
 		$this->get('/board/' . Avatar::key('Anna'));
 
-		$headers = $this->_response->header();
-		$this->assertNotEmpty($headers['Etag']);
-		$this->assertStringContainsString('max-age=', $headers['Cache-Control']);
+		$this->assertNotEmpty($this->headerValue('Etag'));
+		$this->assertHeaderContains('Cache-Control', 'max-age=');
 	}
 
 	//An avatar is fetched by a plain img tag, so it must not depend on a session
@@ -116,11 +115,15 @@ class AvatarsControllerTest extends IntegrationTestCase
 		$this->assertResponseCode(404);
 	}
 
+	//The error page is the site's one, with its header: the board answers without a session, but
+	//its error page needs what the layout shows.
 	public function testAnUnknownUserIdHasNoBoard()
 	{
 		$this->get('/avatar/999999999');
 
 		$this->assertResponseCode(404);
+		$this->assertResponseContains('Page Not Found');
+		$this->assertResponseContains('id="logo1"');
 	}
 
 	//A share preview takes a picture and not an svg, so the board of a key is served
@@ -143,9 +146,8 @@ class AvatarsControllerTest extends IntegrationTestCase
 	{
 		$this->get('/board/' . Avatar::key('Anna') . '.png');
 
-		$headers = $this->_response->header();
-		$this->assertNotEmpty($headers['Etag']);
-		$this->assertStringContainsString('max-age=', $headers['Cache-Control']);
+		$this->assertNotEmpty($this->headerValue('Etag'));
+		$this->assertHeaderContains('Cache-Control', 'max-age=');
 	}
 
 	public function testAPngKeyThatIsNotADrawingIsNotFound()

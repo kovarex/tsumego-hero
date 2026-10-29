@@ -33,7 +33,7 @@ class ChallengesController extends AppController
 		$this->set('defaultRankID', self::rankOfPlayer($ranks));
 
 		$opponent = null;
-		if ($opponentID = (int) ($this->params['url']['opponent'] ?? 0))
+		if ($opponentID = (int) ($this->query('opponent') ?? 0))
 			if ($opponentRow = $this->fetchTable('User')->find()->select(['display_name', 'deleted'])->where(['id' => $opponentID])->first())
 				if ($opponentRow->deleted === null && $opponentID !== Auth::getUserID())
 					$opponent = $opponentRow->display_name;
@@ -46,7 +46,7 @@ class ChallengesController extends AppController
 	{
 		$this->Authorization->authorize('Challenge', 'create');
 
-		$data = $this->request->data;
+		$data = $this->inputs();
 		$minimumRankID = (int) ($data['minimum_rank'] ?? 0);
 		$maximumRankID = (int) ($data['maximum_rank'] ?? 0);
 		$secondsPerProblem = (int) ($data['seconds_per_problem'] ?? 0);
@@ -142,7 +142,7 @@ class ChallengesController extends AppController
 		$challenge = $this->findChallenge($id);
 		if (!Auth::isLoggedIn() || !ChallengeTable::isParticipant((int) $challenge['id'], Auth::getUserID()))
 			throw new ForbiddenException('Only the players of the challenge can invite others.');
-		$this->inviteByNames((int) $challenge['id'], (string) ($this->request->data['players'] ?? ''));
+		$this->inviteByNames((int) $challenge['id'], (string) ($this->input('players') ?? ''));
 		return $this->redirect(self::challengeUrl((int) $challenge['id']));
 	}
 

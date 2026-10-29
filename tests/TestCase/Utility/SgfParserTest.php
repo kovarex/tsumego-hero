@@ -3,7 +3,7 @@
 use App\Utility\SgfBoard;
 use App\Utility\SgfParser;
 
-class SgfParserTest extends CakeTestCase
+class SgfParserTest extends AppTestCase
 {
 	public function testProcessReturnsSgfResult()
 	{

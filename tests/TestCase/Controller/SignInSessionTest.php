@@ -116,6 +116,18 @@ class SignInSessionTest extends IntegrationTestCase
 		$this->assertArrayNotHasKey('auth_token', $_COOKIE);
 	}
 
+	//The sign in goes back to the page the player came from, and to the home page when no page said so
+	public function testTheLoginPageGoesBackToTheRefererOrHome(): void
+	{
+		new ContextPreparator(['user' => null]);
+		$this->get('/users/login');
+		$this->assertSame('/', $this->viewVariable('redirectUrl'));
+
+		$this->configRequest(['headers' => ['Referer' => Router::url('/sets/5', true)]]);
+		$this->get('/users/login');
+		$this->assertSame('/sets/5', $this->viewVariable('redirectUrl'));
+	}
+
 	//The login redirect is signed, so a sign in only goes back where the site sent the player from.
 	public function testSigningInGoesToTheSignedRedirectOnly(): void
 	{

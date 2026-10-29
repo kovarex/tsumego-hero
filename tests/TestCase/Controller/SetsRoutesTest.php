@@ -1,7 +1,7 @@
 <?php
 
 //The addresses the collections answer on: one per action, and a short one per collection.
-class SetsRoutesTest extends CakeTestCase
+class SetsRoutesTest extends AppTestCase
 {
 	//An action is reached by its own address, not read as the name of a collection
 	public function testEveryActionKeepsItsAddress(): void
@@ -22,7 +22,7 @@ class SetsRoutesTest extends CakeTestCase
 	public function testCollectionIsReachedByItsShortAddress(): void
 	{
 		$params = Router::parse('/sets/4211');
-		$this->assertSame('sets', $params['controller']);
+		$this->assertSame('Sets', $params['controller']);
 		$this->assertSame('view', $params['action']);
 		$this->assertSame('4211', $params['id']);
 	}

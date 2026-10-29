@@ -29,8 +29,6 @@ use App\Attribute\HttpPost;
 
 class SetsController extends AppController
 {
-	public $helpers = ['Html', 'Form'];
-
 	#[HttpGet]
 	public function sandbox(): void
 	{
@@ -168,23 +166,23 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 
 	#[HttpGet]
 	#[HttpPost]
-	public function create(): void
+	public function create(): ?CakeResponse
 	{
 		$this->Authorization->authorize('Set', 'create');
 
 		$redirect = false;
 
-		if (isset($this->request->data['Set']))
+		if ($this->inputs() !== [])
 		{
-			$isSandbox = isset($this->params['url']['sandbox']) && $this->Authorization->can('Set', 'createSandbox');
+			$isSandbox = $this->query('sandbox') !== null && $this->Authorization->can('Set', 'createSandbox');
 
 			$set = [];
-			$set['title'] = $this->request->data['Set']['title'];
+			$set['title'] = $this->input('title');
 			$set['public'] = false;
-			if (isset($this->request->data['Set']['description']))
-				$set['description'] = HtmlSanitizer::sanitize((string) $this->request->data['Set']['description']);
-			if (isset($this->request->data['Set']['color']) && $this->request->data['Set']['color'] !== '')
-				$set['color'] = $this->request->data['Set']['color'];
+			if ($this->input('description') !== null)
+				$set['description'] = HtmlSanitizer::sanitize((string) $this->input('description'));
+			if ($this->input('color') !== null && $this->input('color') !== '')
+				$set['color'] = $this->input('color');
 			else
 				$set['color'] = '#5b9bd5';
 
@@ -214,9 +212,9 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 					'num' => 1]));
 			}
 
-			$this->redirect('/sets/edit/' . $set->id);
-			return;
+			return $this->redirect('/sets/edit/' . $set->id);
 		}
+		return null;
 	}
 
 	//Edit a set: details, problems and (for admins) re-rate and solve-mode settings. Owner or admin only.
@@ -246,22 +244,24 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$tsumegoButtons = new TsumegoButtons(new TsumegoFilters('topics'), null, null, (int) $id);
 		$tsumegoButtons->loadPreviews();
 
-		if (isset($this->request->data['Set']))
+		// Both forms of the page post here: the details, and for admins the re-rate and solve modes.
+		$formSent = $this->inputs() !== [];
+		if ($formSent)
 		{
 			$oldTitle = $set->title;
 			$oldDescription = $set->description;
 			$oldColor = $set->color;
 			$oldOrder = $set->order;
-			if (array_key_exists('title', $this->request->data['Set']))
-				$set->title = $this->request->data['Set']['title'];
-			if (array_key_exists('title2', $this->request->data['Set']))
-				$set->title2 = $this->request->data['Set']['title2'];
-			if (array_key_exists('description', $this->request->data['Set']))
-				$set->description = HtmlSanitizer::sanitize((string) $this->request->data['Set']['description']);
-			if (array_key_exists('color', $this->request->data['Set']) && $this->request->data['Set']['color'] !== '')
-				$set->color = $this->request->data['Set']['color'];
-			if (array_key_exists('order', $this->request->data['Set']) && $this->request->data['Set']['order'] !== '')
-				$set->order = (int) $this->request->data['Set']['order'];
+			if ($this->input('title') !== null)
+				$set->title = $this->input('title');
+			if ($this->input('title2') !== null)
+				$set->title2 = $this->input('title2');
+			if ($this->input('description') !== null)
+				$set->description = HtmlSanitizer::sanitize((string) $this->input('description'));
+			if ($this->input('color') !== null && $this->input('color') !== '')
+				$set->color = $this->input('color');
+			if ($this->input('order') !== null && $this->input('order') !== '')
+				$set->order = (int) $this->input('order');
 			$setTable->saveOrFail($set);
 
 			if ($this->_isElevatedSetEdit($set))
@@ -280,12 +280,12 @@ ORDER BY sc.num ASC", [(int) $id]);
 		}
 
 		// Re-rate every problem in this set (admin only)
-		if ($canEditSettings && isset($this->request->data['Set']['setDifficulty']))
-			if ($this->request->data['Set']['setDifficulty'] != 1200 && $this->request->data['Set']['setDifficulty'] >= 900 && $this->request->data['Set']['setDifficulty'] <= 2900)
+		if ($canEditSettings && $this->input('setDifficulty') !== null)
+			if ($this->input('setDifficulty') != 1200 && $this->input('setDifficulty') >= 900 && $this->input('setDifficulty') <= 2900)
 			{
 				//The new rating of each problem is raised to its minimum, then lowered to its maximum
 				//(GREATEST and LEAST give NULL for a limit the problem doesn't have)
-				$difficulty = (float) $this->request->data['Set']['setDifficulty'];
+				$difficulty = (float) $this->input('setDifficulty');
 				$problemIDs = array_column($problems, 'tsumego_id');
 				if ($problemIDs)
 					Util::execute('UPDATE tsumego SET rating = COALESCE(LEAST(COALESCE(GREATEST(?, minimum_rating), ?), maximum_rating), COALESCE(GREATEST(?, minimum_rating), ?))
@@ -294,24 +294,27 @@ ORDER BY sc.num ASC", [(int) $id]);
 			}
 
 		// Alternative response / pass mode for all problems (admin only)
-		if ($canEditSettings && isset($this->request->data['Settings']))
+		if ($canEditSettings && $formSent)
 		{
-			if ($this->request->data['Settings']['r39'] == 'on')
+			// each of the two settings is sent only when the admin picked a choice for it
+			$alternativeResponse = $this->input('r39');
+			$passMode = $this->input('r43');
+			if ($alternativeResponse == 'on')
 			{
 				$this->setProblemsField($problems, 'alternative_response', true);
 				AdminActivityLogger::log(AdminActivityTypeTable::SET_ALTERNATIVE_RESPONSE, null, (int) $id, null, '1');
 			}
-			if ($this->request->data['Settings']['r39'] == 'off')
+			if ($alternativeResponse == 'off')
 			{
 				$this->setProblemsField($problems, 'alternative_response', false);
 				AdminActivityLogger::log(AdminActivityTypeTable::SET_ALTERNATIVE_RESPONSE, null, (int) $id, null, '0');
 			}
-			if ($this->request->data['Settings']['r43'] == 'yes')
+			if ($passMode == 'yes')
 			{
 				$this->setProblemsField($problems, 'pass', true);
 				AdminActivityLogger::log(AdminActivityTypeTable::SET_PASS_MODE, null, (int) $id, null, '1');
 			}
-			if ($this->request->data['Settings']['r43'] == 'no')
+			if ($passMode == 'no')
 			{
 				$this->setProblemsField($problems, 'pass', false);
 				AdminActivityLogger::log(AdminActivityTypeTable::SET_PASS_MODE, null, (int) $id, null, '0');
@@ -319,7 +322,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		}
 
 		// Handle image removal
-		if (!empty($this->request->data['Set']['remove_image']))
+		if (!empty($this->input('remove_image')))
 		{
 			SetImage::remove($set->image);
 			$set->image = '';
@@ -328,13 +331,14 @@ ORDER BY sc.num ASC", [(int) $id]);
 		}
 
 		// Handle image upload from the details form
-		if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK)
+		$image = $this->uploadedFile('image');
+		if ($image !== null && $image['error'] === UPLOAD_ERR_OK)
 		{
-			$file_ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
+			$file_ext = strtolower(pathinfo($image['name'], PATHINFO_EXTENSION));
 
 			if (!in_array($file_ext, ['png', 'jpg', 'jpeg', 'webp']))
 				CookieFlash::set('png/jpg/webp allowed.', 'error');
-			elseif ($_FILES['image']['size'] > 2097152)
+			elseif ($image['size'] > 2097152)
 				CookieFlash::set('The file is too large (max 2MB).', 'error');
 			else
 			{
@@ -342,7 +346,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 
 				try
 				{
-					$processed = SetImage::process($_FILES['image']['tmp_name'], $file_ext);
+					$processed = SetImage::process($image['tmp_name'], $file_ext);
 					$filename = SetImage::store((int) $id, $processed);
 
 					// The name of a cover carries the hash of its picture, so an upload is a
@@ -361,7 +365,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 			}
 		}
 
-		if (isset($this->request->data['Set']) || isset($this->request->data['Settings']))
+		if ($formSent)
 			return $this->redirect('/sets/edit/' . (int) $id);
 
 		// Solve-mode states for the admin settings panel
@@ -410,7 +414,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 			throw new NotFoundException('Set not found');
 		$this->Authorization->authorize($set, 'share');
 
-		$shared = !empty($this->request->data['shared']);
+		$shared = !empty($this->input('shared'));
 		$set->public = $shared;
 		if (!$setTable->save($set))
 		{
@@ -425,9 +429,9 @@ ORDER BY sc.num ASC", [(int) $id]);
 	}
 
 	#[HttpPost]
-	public function delete(?string $id = null): void
+	public function delete(?string $id = null): CakeResponse
 	{
-		$setID = $id ?? ($this->request->data['Set']['id'] ?? null);
+		$setID = $id ?? $this->input('id');
 		if (!$setID)
 			throw new BadRequestException();
 
@@ -443,23 +447,21 @@ ORDER BY sc.num ASC", [(int) $id]);
 		{
 			$setTable->deleteOrFail($set);
 			SetImage::removeFolder((int) $setID);
-			$this->redirect('/sets/mine');
-			return;
+			return $this->redirect('/sets/mine');
 		}
 
 		// A collection of the site goes to the trash, which takes a big part of the site with it,
 		// so its title has to be typed to confirm.
-		if (trim($this->request->data['confirmation'] ?? '') !== trim((string) $set->title))
+		if (trim($this->input('confirmation') ?? '') !== trim((string) $set->title))
 		{
 			CookieFlash::set('The collection was not deleted: type its title to confirm.', 'error');
-			$this->redirect('/sets/edit/' . (int) $setID);
-			return;
+			return $this->redirect('/sets/edit/' . (int) $setID);
 		}
 		Trash::deleteSet((int) $setID);
 		AdminActivityLogger::log(AdminActivityTypeTable::SET_DELETE, null, (int) $setID, $set->title);
 		CookieFlash::set('The collection ' . $set->title . ' was moved to the trash, it can be restored for '
 			. Trash::$RETENTION_DAYS . ' days.', 'success');
-		$this->redirect($set->public == 0 ? '/sets/sandbox' : '/sets');
+		return $this->redirect($set->public == 0 ? '/sets/sandbox' : '/sets');
 	}
 
 	#[HttpGet]
@@ -531,7 +533,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 			return !TsumegoUtil::isRecentlySolved($tsumegoButton->status);
 		}))
 			return $firstRecentlyUnsolved->setConnectionID;
-		return $tsumegoButtons[0]->setConnectionID;
+		return isset($tsumegoButtons[0]) ? $tsumegoButtons[0]->setConnectionID : null;
 	}
 
 	private function decodeQueryType(string $input): string
@@ -567,7 +569,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 
 		$this->Authorization->authorize($set);
 
-		$tsumegoId = (int) ($this->request->data['tsumego_id'] ?? 0);
+		$tsumegoId = (int) ($this->input('tsumego_id') ?? 0);
 		if (!$tsumegoId)
 			throw new BadRequestException();
 		if (!$this->fetchTable('Tsumego')->exists(['id' => (int) $tsumegoId]))
@@ -587,18 +589,15 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$achievementChecker->checkFavoritesAchievement((int) $setID);
 		$achievementChecker->finalize();
 
-		if (isset($_SERVER['HTTP_X_REQUESTED_WITH']))
+		if ($this->request->is('ajax'))
 		{
-			$this->autoRender = false;
-			$this->response->type('application/json');
 			// Include the resolved set so the client can keep its set list in
 			// sync when the Favorites set is created on the fly (heart toggle).
-			$this->response->body(json_encode([
+			return $this->respondJson([
 				'contains' => true,
 				'set_id' => $setID,
 				'title' => $set->title,
-			]));
-			return;
+			]);
 		}
 
 		CookieFlash::set('Added to set', 'success');
@@ -614,7 +613,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		if (!$this->fetchTable('Set')->exists(['id' => (int) $setID]))
 			throw new NotFoundException('Set not found');
 
-		if (!isset($this->request->data['order']))
+		if ($this->input('order') === null)
 			throw new BadRequestException();
 
 		$database = Util::database();
@@ -631,10 +630,12 @@ ORDER BY sc.num ASC", [(int) $id]);
 			$setConnectionTable->saveOrFail($setConnectionTable->newEntity([
 				'set_id' => $setID,
 				'tsumego_id' => $tsumego->id,
-				'num' => $this->request->data['order']]));
+				'num' => $this->input('order')]));
 
-			$fileUpload = isset($_FILES['adminUpload']) && $_FILES['adminUpload']['error'] === UPLOAD_ERR_OK ? $_FILES['adminUpload'] : null;
-			$sgfDataOrFile = $this->request->data['sgf'] ?? $fileUpload;
+			$fileUpload = $this->uploadedFile('adminUpload');
+			if ($fileUpload !== null && $fileUpload['error'] !== UPLOAD_ERR_OK)
+				$fileUpload = null;
+			$sgfDataOrFile = $this->input('sgf') ?? $fileUpload;
 
 			if ($sgfDataOrFile)
 				SgfTable::upload($sgfDataOrFile, $tsumego->id, Auth::getUserID(), Auth::isAdmin());
@@ -679,7 +680,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 	}
 
 	#[HttpPost]
-	public function removeTsumego(string $setID)
+	public function removeTsumego(int $setID)
 	{
 		$set = $this->fetchTable('Set')->find()->where(['id' => $setID])->first();
 		if (!$set)
@@ -687,7 +688,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 
 		$this->Authorization->authorize($set);
 
-		$tsumegoId = $this->request->data['tsumego_id'] ?? null;
+		$tsumegoId = $this->input('tsumego_id');
 		if (!$tsumegoId)
 			throw new BadRequestException();
 
@@ -696,29 +697,24 @@ ORDER BY sc.num ASC", [(int) $id]);
 			'tsumego_id' => (int) $tsumegoId,
 		]);
 
-		if (isset($_SERVER['HTTP_X_REQUESTED_WITH']))
-		{
-			$this->autoRender = false;
-			$this->response->type('application/json');
-			$this->response->body(json_encode(['contains' => false]));
-			return;
-		}
+		if ($this->request->is('ajax'))
+			return $this->respondJson(['contains' => false]);
 
 		CookieFlash::set('Removed from set', 'success');
-		return $this->redirect('/sets/edit/' . (int) $setID);
+		return $this->redirect('/sets/edit/' . $setID);
 	}
 
 	//Swap the order of two adjacent set_connections.
 	#[HttpPost]
-	public function reorderTsumego(string $setID)
+	public function reorderTsumego(int $setID)
 	{
 		$set = $this->fetchTable('Set')->find()->where(['id' => $setID])->first();
 		if (!$set)
 			throw new NotFoundException('Set not found');
 		$this->Authorization->authorize($set);
 
-		$tsumegoId = $_GET['tsumego_id'] ?? $this->request->data['tsumego_id'] ?? null;
-		$dir = $_GET['dir'] ?? $this->request->data['dir'] ?? null;
+		$tsumegoId = $this->query('tsumego_id') ?? $this->input('tsumego_id');
+		$dir = $this->query('dir') ?? $this->input('dir');
 
 		if (!$tsumegoId || !in_array($dir, ['up', 'down']))
 			throw new BadRequestException();
@@ -742,11 +738,11 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$setConnectionTable->saveOrFail($adjacent);
 
 		CookieFlash::set('Reordered', 'success');
-		return $this->redirect('/sets/edit/' . (int) $setID);
+		return $this->redirect('/sets/edit/' . $setID);
 	}
 
 	#[HttpGet]
-	public function view(string|int|null $id = null, int $partition = 1): void
+	public function view(string|int|null $id = null, int $partition = 1): ?CakeResponse
 	{
 		// transferring from 1 indexed for humans to 0 indexed for us programmers.
 		$partition = $partition - 1;
@@ -755,20 +751,13 @@ ORDER BY sc.num ASC", [(int) $id]);
 		if ($id === 'favorites')
 		{
 			if (!Auth::isLoggedIn())
-			{
-				$this->redirect('/');
-				return;
-			}
+				return $this->redirect('/');
 			$defaultSet = $this->_getOrCreateDefaultFavoritesSet();
-			$this->redirect(SetTable::url((int) $defaultSet->id));
-			return;
+			return $this->redirect(SetTable::url((int) $defaultSet->id));
 		}
 
 		if ($id === null)
-		{
-			$this->redirect('/sets/mine');
-			return;
-		}
+			return $this->redirect('/sets/mine');
 
 		// A collection, a rank and a tag have one address whatever path led here; the partition says
 		// which page of it the link pointed at, and the first page is the collection itself.
@@ -786,6 +775,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$bestTime = null;
 		$bestAccuracy = null;
 		$this->set('canEdit', false);
+		$this->set('isFav', false);
 		$queryType = self::decodeQueryType($id);
 
 		if ($queryType == 'topics' && is_numeric($id))
@@ -830,7 +820,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 				$this->set('_page', 'sandbox');
 			// Search engines are kept out of what a player assembled.
 			$this->set('robotsNoIndex', !SetTable::isOfficial($set));
-			$this->set('isFav', false);
 			$this->set('canEdit', $this->Authorization->can($set, 'edit'));
 			$this->set('canShare', $this->Authorization->can($set, 'share'));
 		}
@@ -1017,6 +1006,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$this->set('accuracy', $accuracy);
 		$this->set('scoring', $scoring);
 		$this->set('partition', $partition);
+		return null;
 	}
 
 	//Keeps the player's records on the set: the best average time and the best accuracy.
@@ -1034,7 +1024,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		if (!Auth::isLoggedIn())
 			return $this->redirect($redirectUrl);
 
-		if ($this->request->data['reset-check'] != 'reset')
+		if ($this->input('reset-check') != 'reset')
 		{
 			CookieFlash::set('Reset check wasn\'t correctly typed', 'error');
 			return $this->redirect($redirectUrl);
@@ -1077,7 +1067,7 @@ WHERE tsumego_status.user_id = ? AND tsumego_status.tsumego_id IN(" . implode(',
 	#[HttpPost]
 	public function changeCollectionSize(): mixed
 	{
-		$collectionSize = $this->request->data['collection_size'] ?? null;
+		$collectionSize = $this->input('collection_size');
 		if ($collectionSize === null || $collectionSize === '')
 		{
 			CookieFlash::set('Collection size to change not provided', 'error');

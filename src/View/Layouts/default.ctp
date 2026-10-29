@@ -32,7 +32,7 @@ use App\Utility\ViteManifest;
 <html lang="en" data-theme="<?php echo $lightDark === 'dark' ? 'dark' : 'light'; ?>" data-date-format="<?php echo Auth::getDateFormat(); ?>">
 <head>
 <?php
-echo $this->Html->charset();
+echo '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />';
 if (Configure::read('debug'))
 	echo $this->element('javascript_error_tracking');
 ?>
@@ -77,7 +77,7 @@ echo $this->fetch('og_meta');
 <?php
 echo ViteManifest::css('app-theme');
 
-echo $this->Html->meta('icon');
+echo "<link href=\"/favicon.ico\" type=\"image/x-icon\" rel=\"icon\"/><link href=\"/favicon.ico\" type=\"image/x-icon\" rel=\"shortcut icon\"/>";
 echo $this->fetch('css');
 echo $this->fetch('script');
 ?>
@@ -96,7 +96,7 @@ echo ViteManifest::legacyScript('legacy');
 $_page = $_page ?? '';
 //Marks the menu item of the page being shown
 $active = fn(string ...$pages): string => in_array($_page, $pages, true) ? 'nav__link--active' : '';
-$lastVisitedTsumegoID = (int) ($_COOKIE['lastVisit'] ?? Constants::$DEFAULT_TSUMEGO_ID);
+$lastVisitedTsumegoID = (int) (Util::cookie('lastVisit') ?? Constants::$DEFAULT_TSUMEGO_ID);
 if (Auth::isLoggedIn())
 {
 	$unreadMessageCount = MessageTable::unreadCount(Auth::getUserID());
@@ -113,7 +113,7 @@ else
 	$unreadMessageCount = 0;
 	$classesAwaitingAnswer = 0;
 	$challengesWaiting = 0;
-	$soundSetting = in_array($_COOKIE['sound'] ?? null, ['on', 'off'], true) ? $_COOKIE['sound'] : null;
+	$soundSetting = in_array(Util::cookie('sound'), ['on', 'off'], true) ? Util::cookie('sound') : null;
 }
 $classesBadge = $classesAwaitingAnswer > 0
 	? '<span class="nav__new-badge nav__new-badge--visible" title="Waiting for your answer in Classes">' . $classesAwaitingAnswer . '</span>'
@@ -222,7 +222,7 @@ $challengesBadge = $challengesWaiting > 0
 									<table id="dropdowntable" border="0"></table>
 									<br>
 									<div id="dropdowntable2" align="center">
-										<a class="btn btn--primary" href="<?php echo h($_SERVER['REQUEST_URI']); ?>">Save</a>
+										<a class="btn btn--primary" href="<?php echo h(Util::requestUri()); ?>">Save</a>
 										<br><br>
 									</div>
 								</div>
@@ -265,7 +265,7 @@ $challengesBadge = $challengesWaiting > 0
 </div>
 <script>
 	<?php AccountWidget::renderJS($timeMode); ?>
-	<?php if (Auth::isLoggedIn() && empty($_COOKIE['disable-achievements']) && !empty($achievementUpdates)): ?>
+	<?php if (Auth::isLoggedIn() && empty(Util::cookie('disable-achievements')) && !empty($achievementUpdates)): ?>
 	<?php //The popups are drawn by webroot/js/AchievementAlerts.js, the page only hands over the data ?>
 	var achievementUpdates = <?php echo json_encode(array_map([AchievementChecker::class, 'toPopupData'], array_values($achievementUpdates)), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE); ?>;
 	if (typeof showAchievementPopup === "function")
