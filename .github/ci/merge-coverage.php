@@ -4,16 +4,19 @@ declare(strict_types=1);
 require __DIR__ . '/../../vendor/autoload.php';
 
 use SebastianBergmann\CodeCoverage\CodeCoverage;
-use SebastianBergmann\CodeCoverage\Driver\Xdebug3Driver;
+use SebastianBergmann\CodeCoverage\Data\RawCodeCoverageData;
+use SebastianBergmann\CodeCoverage\Driver\Driver;
 use SebastianBergmann\CodeCoverage\Filter;
-use SebastianBergmann\CodeCoverage\RawCodeCoverageData;
 use SebastianBergmann\CodeCoverage\Report\Html\Facade as HtmlReport;
+use SebastianBergmann\FileIterator\Facade as FileIterator;
 
 // The source dir to keep in the report. Defaults to the CI runner path so it works
 // on GitHub Actions, but can be overridden (e.g. COVERAGE_SRC_DIR=/var/www/html/src)
 // to run locally.
 $srcDir = getenv('COVERAGE_SRC_DIR') ?: '/home/runner/work/tsumego-hero/tsumego-hero/src';
 $includePrefix = rtrim($srcDir, '/') . '/';
+// Where the web server and PHPUnit left their coverage (overridable for a local run).
+$coverageDir = rtrim(getenv('COVERAGE_INPUT_DIR') ?: '/tmp/coverage', '/');
 
 function isExcluded($fileName): bool
 {
@@ -21,32 +24,51 @@ function isExcluded($fileName): bool
 	return !str_starts_with($fileName, $includePrefix);
 }
 
+// php-code-coverage 11 includes files, not directories, so the filter gets every PHP file of src/.
+// It also keeps the report to src/: whatever else the web server ran is left out on append.
 $filter = new Filter();
-$filter->includeDirectory($srcDir);
-$driver = new Xdebug3Driver($filter);
+$filter->includeFiles((new FileIterator())->getFilesAsArray($srcDir, '.php'));
+
+// Merging collects nothing, so the coverage needs no live Xdebug driver, only one that says so.
+$driver = new class extends Driver {
+	public function nameAndVersion(): string
+	{
+		return 'merge-coverage';
+	}
+
+	public function start(): void
+	{
+	}
+
+	public function stop(): RawCodeCoverageData
+	{
+		return RawCodeCoverageData::fromXdebugWithoutPathCoverage([]);
+	}
+};
+
 $mergedRaw = [];
 $mergedCount = 0;
 $skipped = 0;
+$fullCoverages = [];
 
-foreach (glob('/tmp/coverage/webservercoverage*.cov') as $file) {
+foreach (glob($coverageDir . '/webservercoverage*.cov') as $file) {
 	$data = @file_get_contents($file);
 	if ($data === false) continue;
 
 	$decoded = @unserialize($data);
 	if ($decoded instanceof CodeCoverage) {
-		// Directly merge newer-format files
-		$raw = $decoded->getData(true);
-		$array = $raw->asArray();
-	} elseif (is_array($decoded)) {
-		// Raw Xdebug array
-		$array = $decoded;
-	} else {
+		// A whole CodeCoverage is merged as it is, after the raw arrays
+		$fullCoverages[] = $decoded;
+		$mergedCount++;
+		continue;
+	}
+	if (!is_array($decoded)) {
 		$skipped++;
 		continue;
 	}
 
-	// Merge arrays efficiently
-	foreach ($array as $fileName => $lines) {
+	// A raw Xdebug array (line => 1 run, -1 not run, -2 dead): a line counts as run when any request ran it
+	foreach ($decoded as $fileName => $lines) {
 		if (isExcluded($fileName)) {
 			continue;
 		}
@@ -71,13 +93,15 @@ $coverage->append(
 	RawCodeCoverageData::fromXdebugWithoutPathCoverage($mergedRaw),
 	'merged'
 );
+foreach ($fullCoverages as $fullCoverage) {
+	$coverage->merge($fullCoverage);
+}
 
 // Merge PHPUnit CLI coverage if present
-$phpunitCov = '/tmp/coverage/phpunit.cov';
+$phpunitCov = $coverageDir . '/phpunit.cov';
 if (file_exists($phpunitCov)) {
 	$decoded = require($phpunitCov);
 	if ($decoded instanceof CodeCoverage) {
-		// Merge first to preserve raw hit data
 		$coverage->merge($decoded);
 		echo "[merge] Merged PHPUnit CodeCoverage successfully\n";
 	} else {
@@ -86,22 +110,6 @@ if (file_exists($phpunitCov)) {
 } else {
 	echo "[merge] The main file phpunit.cov couldn't be found.\n";
 }
-
-// Now prune unwanted files from final merged dataset
-$raw = $coverage->getData(true)->lineCoverage();
-$filtered = [];
-foreach ($raw as $fileName => $lines) {
-	if (!isExcluded($fileName)) {
-		$filtered[$fileName] = $lines;
-	}
-	else
-		echo "Excluded file {$fileName}\n";
-}
-
-// Replace with the filtered dataset once
-$finalCoverage = new CodeCoverage($driver, $filter);
-$finalCoverage->includeUncoveredFiles();
-$finalCoverage->append(RawCodeCoverageData::fromXdebugWithoutPathCoverage($filtered),'final');
 
 $reportDir = __DIR__ . '/../../coverage';
 $phpReportDir = $reportDir . '/php';
