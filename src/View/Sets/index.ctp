@@ -6,7 +6,7 @@ use App\Utility\SetsSelector;
 use App\Utility\TsumegoFilters;
 
 /**
- * @var View $this  
+ * @var AppView $this
  * @var array $setTiles
  * @var TsumegoFilters $tsumegoFilters
  * @var array $difficultyTiles
@@ -143,8 +143,9 @@ use App\Utility\TsumegoFilters;
 	// The page has hundreds of cards, so it includes the card template itself: as an element, each
 	// card would go through the view's events and the callbacks of every helper. The closure keeps
 	// the variables of the template to it.
-	$renderCard = function (array $set, string $backgroundImage): void {
-		include __DIR__ . '/../Elements/set_card.ctp';
+	$setCardFile = $this->elementFile('set_card');
+	$renderCard = function (array $set, string $backgroundImage) use ($setCardFile): void {
+		include $setCardFile;
 	};
 	foreach ($setsSelector->sets as $i => $set) {
 		if ($lightDark == 'light')
