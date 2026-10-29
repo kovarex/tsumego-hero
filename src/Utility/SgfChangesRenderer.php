@@ -6,6 +6,7 @@ use App\Model\Table\SgfTable;
 use App\Model\Table\SgfReviewTable;
 use App\Model\Table\SetConnectionTable;
 use App\Model\Table\UserTable;
+use BadRequestException;
 
 //The SGF changes of the admin area: every version that became part of a problem, an admin's own
 //change or a proposal an admin accepted, the newest first. The proposals waiting for a decision
@@ -28,13 +29,13 @@ class SgfChangesRenderer extends DataTableRenderer
 
 	//$newSince: When the admin looked the time before (see AdminOverviewTypeTable::markSeen),
 	//what the others accepted since then is marked as new
-	/** @throws \BadRequestException When the url names a list the page doesn't have */
+	/** @throws BadRequestException When the url names a list the page doesn't have */
 	public function __construct(array $urlParams, private ?string $newSince = null)
 	{
 		$this->userID = Auth::getUserID();
 		$this->list = $urlParams[self::LIST_PARAMETER] ?? array_key_first(self::LISTS);
 		if (!isset(self::LISTS[$this->list]))
-			throw new \BadRequestException('There is no list ' . $this->list . ' of SGF changes');
+			throw new BadRequestException('There is no list ' . $this->list . ' of SGF changes');
 		foreach (array_keys(self::LISTS) as $list)
 		{
 			[$condition, $parameters] = $this->conditionOf($list);

@@ -189,7 +189,7 @@ class AppController extends Controller
 
 		//Boards are drawn without a session: a list of a thousand players would otherwise
 		//pay for the login of a visitor who is not there.
-		if (strtolower((string) ($this->request->params['controller'] ?? '')) === 'avatars')
+		if ($this instanceof AvatarsController)
 			return;
 
 		Auth::init();
