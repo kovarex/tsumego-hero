@@ -321,7 +321,8 @@ class TimeMode
 			$now = new DateTimeImmutable();
 
 			$secondsSinceStarted = $now->getTimestamp() + $now->format('u') / 1e6 - ($start->getTimestamp() + $start->format('u') / 1e6);
-			$this->secondsToSolve = max(0, $this->secondsToSolve - $secondsSinceStarted);
+			// whole seconds left, the part of a second already gone counts as gone
+			$this->secondsToSolve = (int) max(0, floor($this->secondsToSolve - $secondsSinceStarted));
 			if ($this->secondsToSolve == 0)
 			{
 				$attempt->time_mode_attempt_status_id = TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT;

@@ -1,12 +1,12 @@
 <?php
 
+use PHPUnit\Framework\Attributes\Group;
+
 //Verifies that CSS and JS assets are properly bundled via Vite,
 //that styles are applied, and that JavaScript functions are loaded and working.
-/**
- * @group disabled
- * This test is excluded from local runs (see phpunit.xml.dist).
- * It only runs in CI where assets are pre-built via .github/workflows/ci.yml
- */
+//This test is excluded from local runs (see phpunit.xml.dist).
+//It only runs in CI where assets are pre-built via .github/workflows/ci.yml
+#[Group('disabled')]
 #[RetryOnBrowserFailure]
 class AssetBundlingTest extends AppTestCase
 {

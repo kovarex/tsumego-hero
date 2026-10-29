@@ -1,10 +1,9 @@
 <?php
 
+use PHPUnit\Framework\Attributes\Group;
 
 //Tests for SetsController admin functions (create set/tsumego)
-/**
- * @group browser
- */
+#[Group('browser')]
 #[RetryOnBrowserFailure]
 class SetsControllerAdminTest extends IntegrationTestCase
 {
