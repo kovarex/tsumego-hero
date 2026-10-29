@@ -195,8 +195,7 @@ class SitemapsControllerTest extends IntegrationTestCase
 	public function testSitemapIncludesIndividualPuzzles()
 	{
 		$context = new ContextPreparator([
-			'set' => ['public' => 1],
-			'tsumego' => ['sgf' => '(;GM[1]FF[4]CA[UTF-8]SZ[19];B[aa];W[ab])']
+			'tsumego' => ['sets' => [['name' => 'Public set', 'num' => 1]], 'sgf' => '(;GM[1]FF[4]CA[UTF-8]SZ[19];B[aa];W[ab])']
 		]);
 
 		Cache::delete('sitemap_xml', 'long');
@@ -205,7 +204,7 @@ class SitemapsControllerTest extends IntegrationTestCase
 		$result = $this->view;
 
 		// Verify individual puzzle URL is in sitemap (uses set_connection ID)
-		$this->assertStringContainsString('/' . $context->setConnections[0]['id'] . '</loc>', $result);
+		$this->assertStringContainsString('/' . $context->tsumegos[0]['set-connections'][0]['id'] . '</loc>', $result);
 	}
 
 	//A set longer than one page of problems is listed page by page
