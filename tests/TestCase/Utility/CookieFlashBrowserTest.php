@@ -1,6 +1,5 @@
 <?php
 
-use PHPUnitRetry\RetryTrait;
 /**
  * Browser tests for CookieFlash functionality.
  *
@@ -13,7 +12,6 @@ use App\Utility\CookieFlash;
 
 class CookieFlashBrowserTest extends CakeTestCase
 {
-	use RetryTrait;
 	//Test that flash message appears after failed login attempt
 	public function testFlashMessageAppearsAfterFailedLogin()
 	{

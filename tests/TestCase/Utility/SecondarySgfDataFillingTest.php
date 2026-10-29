@@ -1,7 +1,6 @@
 <?php
 
 use Cake\ORM\TableRegistry;
-use PHPUnitRetry\RetryTrait;
 
 /**
  * @retryAttempts 2
@@ -9,7 +8,6 @@ use PHPUnitRetry\RetryTrait;
  */
 class SecondarySgfDataFillingTest extends CakeTestCase
 {
-	use RetryTrait;
 
 	public function testFillFirstAndCorrectMoves()
 	{

@@ -1,6 +1,5 @@
 <?php
 
-use PHPUnitRetry\RetryTrait;
 
 /**
  * @retryAttempts 2
@@ -8,7 +7,6 @@ use PHPUnitRetry\RetryTrait;
  */
 class SimilarSearchLogicTest extends CakeTestCase
 {
-	use RetryTrait;
 
 	public function testSimilarSearchSameProblem()
 	{

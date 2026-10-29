@@ -1,6 +1,5 @@
 <?php
 
-use PHPUnitRetry\RetryTrait;
 /**
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
@@ -9,7 +8,6 @@ use App\Utility\BoardSelector;
 
 class BoardSelectorTest extends CakeTestCase
 {
-	use RetryTrait;
 
 	public function testChangeSelection()
 	{

@@ -1,6 +1,5 @@
 <?php
 
-use PHPUnitRetry\RetryTrait;
 
 //Verifies that CSS and JS assets are properly bundled via Vite,
 //that styles are applied, and that JavaScript functions are loaded and working.
@@ -13,7 +12,6 @@ use PHPUnitRetry\RetryTrait;
  */
 class AssetBundlingTest extends CakeTestCase
 {
-	use RetryTrait;
 	//Test that CSS bundles are loaded and individual files are NOT loaded
 	public function testCssBundlesAreLoadedAndStylesApplied()
 	{

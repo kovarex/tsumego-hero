@@ -1,6 +1,5 @@
 <?php
 
-use PHPUnitRetry\RetryTrait;
 /**
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
@@ -9,7 +8,6 @@ use App\Utility\Util;
 
 class JavaScriptErrorTrackingTest extends CakeTestCase
 {
-	use RetryTrait;
 
 	/* Verifies that JavaScript error tracking is enabled in test environment.
 	 * This test ensures debug mode is enabled so window.__jsErrors is initialized.
