@@ -28,8 +28,8 @@ class PolicyTest extends CakeTestCase
 		if ($isAdmin === null)
 			return null;
 		$identity = ['user_role_id' => $isAdmin ? UserTable::ROLE_ADMIN : UserTable::ROLE_PLAYER, 'premium_id' => $premium ? UserTable::PREMIUM_BASIC : null, 'level' => 1, 'rating' => 1000];
-		if ($id !== null)
-			$identity['id'] = $id;
+		// a player who is logged in always has an id
+		$identity['id'] = $id ?? 999;
 		return $identity;
 	}
 

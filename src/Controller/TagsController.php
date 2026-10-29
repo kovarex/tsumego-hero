@@ -58,7 +58,7 @@ class TagsController extends AppController
 		$tag = $tagTable->saveOrFail($tagTable->newEntity([
 			'name' => $tagName,
 			'description' => HtmlSanitizer::sanitize((string) $tagDescription),
-			'hint' => (int) $this->request->data['tag_hint'],
+			'hint' => (int) ($this->request->data['tag_hint'] ?? 0),
 			'link' => trim((string) ($this->request->data['tag_reference'] ?? '')),
 			'user_id' => Auth::getUserID(),
 			'approved' => Auth::isAdmin() ? 1 : 0]));

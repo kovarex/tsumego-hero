@@ -37,7 +37,7 @@ class AchievementChecker
 
 	public function gained(AchievementId $achievementID): void
 	{
-		if ($this->existingStatuses[$achievementID->value])
+		if ($this->unlocked($achievementID))
 			return;
 		$achievementStatusTable = $this->fetchTable('AchievementStatus');
 		$achievementStatusTable->saveOrFail($achievementStatusTable->newEntity([
