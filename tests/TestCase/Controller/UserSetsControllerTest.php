@@ -253,6 +253,27 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$this->assertTextContains('My Private Set', $this->view);
 	}
 
+	//A collection without problems has nothing to start with: no Start that would lead to the home page
+	public function testAnEmptyCollectionOffersNoStart(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'alice']]);
+		$setId = $this->_createSet('Still Empty', $context->user['id'], 0);
+		$this->login('alice');
+
+		$this->get("/sets/view/{$setId}");
+		$this->assertResponseOk();
+		$this->assertNull($this->getStringDom()->querySelector('.set-view__start'));
+	}
+
+	public function testACollectionStartsWithItsProblem(): void
+	{
+		$context = new ContextPreparator(['tsumego' => ['sets' => [['name' => 'one problem', 'num' => 1]]]]);
+		$setConnection = $context->tsumegos[0]['set-connections'][0];
+
+		$this->get('/sets/view/' . $setConnection['set_id']);
+		$this->assertSame('/' . $setConnection['id'], $this->getStringDom()->querySelector('.set-view__start')?->getAttribute('href'));
+	}
+
 	public function testViewOtherUserPrivateSetFails(): void
 	{
 		$context = new ContextPreparator([
