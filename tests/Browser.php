@@ -16,7 +16,8 @@ use App\Utility\Util;
 //  find() / findById()         wait for the element, use these by default
 //  getElements() / idExists()  look at the page as it is right now, no waiting
 //When a wait gives up it writes the page to tmp/browser-timeout-*.html, so a
-//timeout in CI comes with the HTML that caused it.
+//timeout in CI comes with the HTML that caused it. A failed test that used the
+//browser also leaves tmp/browser-failure-*.png and .html (see dumpFailure()).
 class Browser
 {
 	// Counter for per-page JS coverage snapshots written to /tmp/coverage/js-raw-*.json
@@ -24,6 +25,9 @@ class Browser
 
 	// Counter for page source dumps written to tmp/browser-timeout-*.html on wait timeouts
 	private static int $timeoutDumpCounter = 0;
+
+	// Whether the running test asked for the browser, so a failure of a test without one dumps nothing
+	private static bool $usedByTest = false;
 
 	public function __construct()
 	{
@@ -599,7 +603,36 @@ class Browser
 		self::$browser->driver->manage()->deleteAllCookies();
 		self::$browser->driver->get(Util::getMyAddress() . '/empty.php');
 		self::$browser->driver->executeScript('window.localStorage.clear(); window.sessionStorage.clear();');
+		self::$usedByTest = true;
 		return self::$browser;
+	}
+
+	//Called before each test (AppTestCase), so dumpFailure() knows whether the test used the browser.
+	public static function startTest(): void
+	{
+		self::$usedByTest = false;
+	}
+
+	//Saves a screenshot and the page of a failed browser test to tmp/browser-failure-<test>.png
+	//and .html, which CI uploads. Runs only when a test failed, so a green run pays nothing.
+	public static function dumpFailure(string $test): void
+	{
+		if (!self::$usedByTest || !self::$browser)
+			return;
+		$file = ROOT . '/tmp/browser-failure-' . date('Ymd-His') . '-' . preg_replace('/[^A-Za-z0-9_-]+/', '_', $test);
+		$browser = self::$browser;
+		try
+		{
+			$browser->driver->takeScreenshot($file . '.png');
+		}
+		catch (Throwable)
+		{
+			// The browser can be gone, the page dump below says why
+		}
+		$parts = ["TEST: " . $test];
+		$parts[] = "URL: " . $browser->driverDump(fn() => $browser->driver->getCurrentURL());
+		$parts[] = $browser->driverDump(fn() => $browser->driver->getPageSource());
+		@file_put_contents($file . '.html', implode("\n\n", $parts));
 	}
 
 	public function playWithResult(string $result): void
