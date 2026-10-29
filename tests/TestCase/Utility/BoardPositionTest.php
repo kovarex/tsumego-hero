@@ -2,7 +2,7 @@
 
 use App\Utility\BoardPosition;
 
-class BoardPositionTest extends CakeTestCase
+class BoardPositionTest extends AppTestCase
 {
 	public function testBoardPositionPackAndUnpack()
 	{

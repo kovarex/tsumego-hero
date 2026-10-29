@@ -7,7 +7,7 @@ use App\Policy\BasePolicy;
 use App\Utility\Auth;
 use App\Utility\Constants;
 
-class AuthIdentityTest extends CakeTestCase
+class AuthIdentityTest extends AppTestCase
 {
 	public function testIdentityIsNullWhenLoggedOut()
 	{

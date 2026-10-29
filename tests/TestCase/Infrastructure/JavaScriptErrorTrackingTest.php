@@ -3,7 +3,7 @@
 use App\Utility\Util;
 
 #[RetryOnBrowserFailure]
-class JavaScriptErrorTrackingTest extends CakeTestCase
+class JavaScriptErrorTrackingTest extends AppTestCase
 {
 	/* Verifies that JavaScript error tracking is enabled in test environment.
 	 * This test ensures debug mode is enabled so window.__jsErrors is initialized.

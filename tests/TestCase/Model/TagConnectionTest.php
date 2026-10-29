@@ -5,7 +5,7 @@ use App\Utility\Auth;
 use App\Utility\Constants;
 use Cake\ORM\TableRegistry;
 
-class TagConnectionTest extends CakeTestCase
+class TagConnectionTest extends AppTestCase
 {
 	public function testCountTodaysTagsReturnsZeroWhenNone()
 	{

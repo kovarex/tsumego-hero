@@ -3,7 +3,7 @@
 
 use App\Utility\Util;
 
-class UtilTest extends CakeTestCase
+class UtilTest extends AppTestCase
 {
 	private array $serverBackup = [];
 	private array $cookieBackup = [];

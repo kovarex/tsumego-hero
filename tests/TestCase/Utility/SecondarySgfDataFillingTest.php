@@ -3,7 +3,7 @@
 use Cake\ORM\TableRegistry;
 
 #[RetryOnBrowserFailure]
-class SecondarySgfDataFillingTest extends CakeTestCase
+class SecondarySgfDataFillingTest extends AppTestCase
 {
 	public function testFillFirstAndCorrectMoves()
 	{

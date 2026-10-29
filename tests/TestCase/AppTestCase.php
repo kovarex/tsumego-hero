@@ -1,15 +1,20 @@
 <?php
 
-use PHPUnit\Runner\BeforeTestHook;
-//Clears PHP superglobals before each test to prevent state bleeding.
 use App\Utility\Auth;
 use App\Utility\CookieFlash;
 use App\Utility\JwtAuth;
 use App\Utility\Preferences;
+use PHPUnit\Framework\Attributes\Before;
 
-final class SuperglobalCleanup implements BeforeTestHook
+//The base of every test case of the site.
+//Clears the superglobals and the caches before each test, so no state bleeds from one test
+//into the next. A before method runs ahead of setUp() on PHPUnit 9 (the annotation) and on 10
+//and later (the attribute, which they read instead of the annotation).
+abstract class AppTestCase extends CakeTestCase
 {
-	private static function cleanup(): void
+	/** @before */
+	#[Before]
+	protected function clearState(): void
 	{
 		$_FILES = [];
 		$_POST = [];
@@ -27,10 +32,5 @@ final class SuperglobalCleanup implements BeforeTestHook
 				continue;
 			Cache::clear(false, $config);
 		}
-	}
-
-	public function executeBeforeTest(string $test): void
-	{
-		self::cleanup();
 	}
 }

@@ -3,7 +3,7 @@
 use App\Utility\BoardSelector;
 
 #[RetryOnBrowserFailure]
-class BoardSelectorTest extends CakeTestCase
+class BoardSelectorTest extends AppTestCase
 {
 	public function testChangeSelection()
 	{

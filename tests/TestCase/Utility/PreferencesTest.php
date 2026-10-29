@@ -7,7 +7,7 @@ use App\Utility\Preferences;
 use App\Utility\TsumegoFilters;
 use App\Utility\Util;
 
-class PreferencesTest extends CakeTestCase
+class PreferencesTest extends AppTestCase
 {
 	//Test that preferences can be set and retrieved for guests
 	public function testGuestCanSetAndGetPreference()
