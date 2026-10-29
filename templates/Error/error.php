@@ -97,28 +97,8 @@ $this->set('title_for_layout', $errorTitle);
 							if (!empty($frame['class']))
 								$line .= $frame['class'] . ($frame['type'] ?? '->');
 							$line .= $frame['function'] . '(';
-							if (!empty($frame['args']))
-							{
-								$args = [];
-								foreach ($frame['args'] as $arg)
-								{
-									if (is_string($arg))
-										$args[] = "'" . (strlen($arg) > 50 ? substr($arg, 0, 50) . '...' : $arg) . "'";
-									elseif (is_numeric($arg))
-										$args[] = $arg;
-									elseif (is_bool($arg))
-										$args[] = $arg ? 'true' : 'false';
-									elseif (is_null($arg))
-										$args[] = 'NULL';
-									elseif (is_array($arg))
-										$args[] = 'Array';
-									elseif (is_object($arg))
-										$args[] = 'Object(' . get_class($arg) . ')';
-									else
-										$args[] = gettype($arg);
-								}
-								$line .= implode(', ', $args);
-							}
+							// the types of the arguments only: their values can be passwords, tokens, e-mails or SQL
+							$line .= implode(', ', array_map(get_debug_type(...), $frame['args'] ?? []));
 							$line .= ')';
 							$traceLines[] = h($line);
 						}
