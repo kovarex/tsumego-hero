@@ -1057,6 +1057,8 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		// watch the request the page makes when its clock runs out
 		$browser->driver->executeScript('window._sent = []; var orig = window.fetch; window.fetch = function (url) { if (String(url).indexOf("/tsumegos/result") !== -1) window._sent.push(JSON.parse(arguments[1].body)); return orig.apply(window, arguments); };');
 		$browser->waitUntilJs('window._sent.length > 0');
+		// the server stores the timeout when it answers, not when the page sends it
+		$browser->waitForSubmitResult();
 
 		$this->assertSame('timed_out', $browser->driver->executeScript('return window._sent[0].outcome;'));
 		$this->assertSame("Time's up!", trim($browser->findById('status')->getText()));
