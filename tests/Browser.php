@@ -169,48 +169,57 @@ class Browser
 		file_put_contents($file, json_encode($coverage));
 	}
 
+	//The page shows no server error and the page's scripts reported no JavaScript error, read in one
+	//call to the browser, as it runs after every page load and click.
 	public function assertNoErrors(): void
 	{
-		$this->assertNoException();
-		$this->assertNoJsErrors();
-	}
-
-	private function assertNoException(): void
-	{
-		if (str_contains($this->driver->getPageSource(), "<h2>Exception</h2>"))
-			throw new Exception($this->driver->getPageSource());
+		$this->throwErrors($this->driver->executeScript(self::READ_ERRORS));
 	}
 
 	public function assertNoJsErrors(): void
 	{
-		$errors = $this->driver->executeScript("return window.__jsErrors || [];");
-		$console = $this->driver->executeScript("return window.__consoleErrors || [];");
+		$this->throwErrors($this->driver->executeScript(self::READ_ERRORS), false);
+	}
 
-		// on some special pages, like editor, we don't have the included special error reporting
-		if (is_null($errors) || is_null($console))
+	//The status of a server error page (templates/Error/error.php), and the JavaScript errors the page
+	//collected (empty on the special pages without the error reporting, like the editor).
+	private const string READ_ERRORS = <<<'JS'
+		var errorPage = document.getElementById('error-page');
+		return {
+			serverError: errorPage ? Number(errorPage.dataset.status) : null,
+			errors: window.__jsErrors || [],
+			console: window.__consoleErrors || [],
+		};
+		JS;
+
+	private function throwErrors(array $read, bool $serverErrors = true): void
+	{
+		// An uncaught exception of the site, not a 404 or 403 that a test opens on purpose
+		if ($serverErrors && $read['serverError'] >= 500)
+			throw new Exception('The server answered with an error page (' . $read['serverError'] . "):\n" . $this->driver->getPageSource());
+
+		$errors = $read['errors'];
+		$console = $read['console'];
+		if (empty($errors) && empty($console))
 			return;
 
-		if (!empty($errors) || !empty($console))
+		$msg = "JavaScript errors detected:\n";
+		foreach ($errors as $error)
 		{
-			$msg = "JavaScript errors detected:\n";
-
-			foreach ($errors as $error)
-			{
-				$msg .= "[JS ERROR] ";
-				if (!empty($error['raw']))
-					$msg .= $error['raw'] . "\n\n";
-				else
-					$msg .= sprintf(
-						"%s (%s:%d:%d)\n%s\n\n",
-						$error['message'], $error['source'], $error['line'], $error['column'], $error['stack']
-					);
-			}
-
-			foreach ($console as $consoleError)
-				$msg .= "[console.error] " . implode(" ", $consoleError['args']) . "\n\n";
-
-			throw new Exception($msg);
+			$msg .= "[JS ERROR] ";
+			if (!empty($error['raw']))
+				$msg .= $error['raw'] . "\n\n";
+			else
+				$msg .= sprintf(
+					"%s (%s:%d:%d)\n%s\n\n",
+					$error['message'], $error['source'], $error['line'], $error['column'], $error['stack']
+				);
 		}
+
+		foreach ($console as $consoleError)
+			$msg .= "[console.error] " . implode(" ", $consoleError['args']) . "\n\n";
+
+		throw new Exception($msg);
 	}
 
 	public function get(string $url): void
