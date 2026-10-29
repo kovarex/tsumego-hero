@@ -112,6 +112,24 @@ class AppController extends Controller
 		}
 	}
 
+	//An address whose part stands for a whole number but is not one (/users/view/abc) names
+	//nothing, so it is a 404, not the TypeError or database error a 500 would show. Cake 5 does
+	//this itself (InvalidParameterException), so this method is deleted at the switch.
+	protected function rejectMalformedIntegerArguments(): void
+	{
+		$action = $this->action;
+		if (!is_string($action) || !method_exists($this, $action))
+			return;
+
+		$parameters = new ReflectionMethod($this, $action)->getParameters();
+		foreach (array_values((array) ($this->request->params['pass'] ?? [])) as $index => $argument)
+		{
+			$type = isset($parameters[$index]) ? $parameters[$index]->getType() : null;
+			if ($type instanceof ReflectionNamedType && $type->getName() === 'int' && !preg_match('/^-?[0-9]+$/', (string) $argument))
+				throw new NotFoundException('Not found');
+		}
+	}
+
 	//Bumped when browsers hold files that no deploy can replace: the old static editor page (until
 	//2026-10-23) was cached with the besogo scripts it loaded, so its users kept running the old editor.
 	public const BROWSER_CACHE_VERSION = '2026-10-23';
@@ -185,6 +203,7 @@ class AppController extends Controller
 	public function beforeFilter(): void
 	{
 		$this->enforceHttpMethodAttribute();
+		$this->rejectMalformedIntegerArguments();
 		$this->resetStaleBrowserCache();
 
 		//Boards are drawn without a session: a list of a thousand players would otherwise

@@ -679,7 +679,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 	}
 
 	#[HttpPost]
-	public function removeTsumego(string $setID)
+	public function removeTsumego(int $setID)
 	{
 		$set = $this->fetchTable('Set')->find()->where(['id' => $setID])->first();
 		if (!$set)
@@ -705,12 +705,12 @@ ORDER BY sc.num ASC", [(int) $id]);
 		}
 
 		CookieFlash::set('Removed from set', 'success');
-		return $this->redirect('/sets/edit/' . (int) $setID);
+		return $this->redirect('/sets/edit/' . $setID);
 	}
 
 	//Swap the order of two adjacent set_connections.
 	#[HttpPost]
-	public function reorderTsumego(string $setID)
+	public function reorderTsumego(int $setID)
 	{
 		$set = $this->fetchTable('Set')->find()->where(['id' => $setID])->first();
 		if (!$set)
@@ -742,7 +742,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$setConnectionTable->saveOrFail($adjacent);
 
 		CookieFlash::set('Reordered', 'success');
-		return $this->redirect('/sets/edit/' . (int) $setID);
+		return $this->redirect('/sets/edit/' . $setID);
 	}
 
 	#[HttpGet]
