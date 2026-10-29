@@ -13,6 +13,11 @@ define('WWW_ROOT', ROOT . DS . WEBROOT_DIR . DS);
 
 require_once InstalledVersions::getInstallPath('pieceofcake2/cakephp') . DS . 'tests' . DS . 'bootstrap.php';
 
+// The tests run on the test database. The fixture listener of Cake 2 recorded it as the datasource
+// of the models, which is where Util::database() looks for it; no test has fixtures, so that is all
+// the listener did.
+ClassRegistry::config('Model', ['ds' => 'test', 'testing' => true]);
+
 // Fix redirect URLs in controller tests - CakePHP 2 needs these set before Router initializes
 // Without this, CakePHP detects /vendor/bin/phpunit as the base path and generates wrong redirect URLs
 // NOTE: This file is ONLY loaded by PHPUnit (see phpunit.xml.dist), never in production
@@ -29,6 +34,7 @@ if (PHP_SAPI === 'cli' && !empty($_SERVER['argv']) && str_contains($_SERVER['arg
 require_once ROOT . '/tests/Browser.php';
 require_once ROOT . '/tests/ContextPreparator.php';
 require_once ROOT . '/tests/TestEmailer.php';
+require_once ROOT . '/tests/RetryOnBrowserFailure.php';
 
 // Pin the server timezone to UTC. The Selenium browser runs in its own
 // timezone (Europe/Prague), so displayed times shift, which browser tests assert.

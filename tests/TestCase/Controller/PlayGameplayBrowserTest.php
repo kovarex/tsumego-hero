@@ -11,10 +11,7 @@ use App\Utility\TimeModeUtil;
 use App\Utility\Util;
 use Facebook\WebDriver\Exception\TimeoutException;
 
-/**
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
- */
+#[RetryOnBrowserFailure]
 class PlayGameplayBrowserTest extends IntegrationTestCase
 {
 	//SGF with a 19x19 board and 3 clearly positioned setup stones.

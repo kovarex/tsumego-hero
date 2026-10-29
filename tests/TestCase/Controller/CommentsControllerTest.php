@@ -5,11 +5,7 @@ use App\Model\Table\TsumegoIssueTable;
 use App\Model\Table\UserTable;
 use Facebook\WebDriver\WebDriverBy;
 
-/**
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
- */
-
+#[RetryOnBrowserFailure]
 class CommentsControllerTest extends IntegrationTestCase
 {
 	//SGF of a solved problem with a three move solution line.

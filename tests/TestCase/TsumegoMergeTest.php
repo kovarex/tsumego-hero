@@ -1,15 +1,12 @@
 <?php
 
-/**
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
- */
 use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\TimeModeCategoryTable;
 use App\Model\Table\TimeModeSessionStatusTable;
 use App\Utility\TimeModeUtil;
 use App\Utility\Util;
 
+#[RetryOnBrowserFailure]
 class TsumegoMergeTest extends IntegrationTestCase
 {
 	public function testMergeTwoTsumegos()
