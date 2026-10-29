@@ -1,6 +1,7 @@
 <?php
 
 use App\Utility\Constants;
+use Cake\Cache\Cache;
 use Cake\ORM\TableRegistry;
 
 //Tests XML sitemap generation

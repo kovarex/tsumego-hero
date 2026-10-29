@@ -30,6 +30,7 @@ use App\Attribute\HttpPost;
 use App\Attribute\HttpGet;
 use App\Model\Table\TimeModeSessionStatusTable;
 use App\Utility\Mailer;
+use Cake\Log\Log;
 
 class UsersController extends AppController
 {
@@ -146,7 +147,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		}
 		catch (Exception $e)
 		{
-			CakeLog::write('error', 'A Tsumego Hero link mail could not be sent: ' . $e->getMessage());
+			Log::error('A Tsumego Hero link mail could not be sent: ' . $e->getMessage());
 			return false;
 		}
 
@@ -165,7 +166,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		}
 		catch (Exception $e)
 		{
-			CakeLog::write('error', 'A Tsumego Hero notification could not be sent: ' . $e->getMessage());
+			Log::error('A Tsumego Hero notification could not be sent: ' . $e->getMessage());
 		}
 	}
 
@@ -1072,7 +1073,7 @@ ORDER BY category DESC', [$user['id']]));
 		$csrfCookie = $_COOKIE['g_csrf_token'] ?? '';
 		if (empty($csrfToken) || $csrfToken !== $csrfCookie)
 		{
-			CakeLog::write('warning', 'GoogleSignIn: CSRF validation failed');
+			Log::warning('GoogleSignIn: CSRF validation failed');
 			CookieFlash::set('CSRF validation failed', 'error');
 			return $this->redirect('/users/login');
 		}
@@ -1085,7 +1086,7 @@ ORDER BY category DESC', [$user['id']]));
 
 		if (!$token_data)
 		{
-			CakeLog::write('debug', 'GoogleSignIn: Token verification failed');
+			Log::debug('GoogleSignIn: Token verification failed');
 			CookieFlash::set('Invalid Google token', 'error');
 			return $this->redirect('/users/login');
 		}
@@ -1912,7 +1913,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		}
 		catch (RuntimeException $e)
 		{
-			CakeLog::write('error', 'Avatar upload of user ' . Auth::getUserID() . ': ' . $e->getMessage());
+			Log::error('Avatar upload of user ' . Auth::getUserID() . ': ' . $e->getMessage());
 			CookieFlash::set('The picture could not be stored, please try again.', 'error');
 		}
 
