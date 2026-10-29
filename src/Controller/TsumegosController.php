@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\NotFoundException;
-use Cake\Http\Response as CakeResponse;
+use Cake\Http\Response;
 use App\Model\Table\SetTable;
 use App\Model\Table\SetConnectionTable;
 use App\Model\Table\SgfTable;
@@ -125,7 +125,7 @@ class TsumegosController extends AppController
 	//The problem settings an admin changes on the play page: the alternative response mode,
 	//passing, and on a sandbox problem whether it is a multiple choice or a score estimating one
 	#[HttpPost]
-	public function settings(string $tsumegoID): CakeResponse
+	public function settings(string $tsumegoID): Response
 	{
 		$this->Authorization->authorize('Tsumego', 'editSettings');
 		$tsumegoTable = $this->fetchTable('Tsumego');
@@ -149,7 +149,7 @@ class TsumegosController extends AppController
 
 	//The answers of the problem's multiple choice or score estimating question
 	#[HttpPost]
-	public function variant(string $tsumegoID): CakeResponse
+	public function variant(string $tsumegoID): Response
 	{
 		$this->Authorization->authorize('Tsumego', 'editSettings');
 		$variantTable = $this->fetchTable('TsumegoVariant');
@@ -384,7 +384,7 @@ class TsumegosController extends AppController
 	}
 
 	#[HttpPost]
-	public function performMerge(): CakeResponse
+	public function performMerge(): Response
 	{
 		$this->Authorization->authorize('Tsumego');
 		$merger = new TsumegoMerger($this->input('master-tsumego-id'), $this->input('slave-tsumego-id'));

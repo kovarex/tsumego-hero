@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use Cake\Http\Response as CakeResponse;
+use Cake\Http\Response;
 use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\InternalErrorException;
 use Cake\Http\Exception\NotFoundException;
@@ -23,7 +23,7 @@ class TsumegoIssuesController extends AppController
 	//Query params:
 	//- status: 'opened', 'closed', 'all' (default: 'opened')
 	//- page: int (for pagination)
-	/** @return CakeResponse|null */
+	/** @return Response|null */
 	#[HttpGet]
 	public function api()
 	{
@@ -73,7 +73,7 @@ class TsumegoIssuesController extends AppController
 	//- Issue.tsumego_id: int
 	//- Issue.message: string (first comment)
 	//- Issue.position: string|null (board position for first comment)
-	/** @return CakeResponse|null */
+	/** @return Response|null */
 	#[HttpPost]
 	public function create()
 	{
@@ -145,7 +145,7 @@ class TsumegoIssuesController extends AppController
 	//Close an issue.
 	//Only admin or issue author can close. Optionally add a closing comment.
 	//$id: Issue ID
-	/** @return CakeResponse|null */
+	/** @return Response|null */
 	#[HttpPost]
 	public function close(string $id)
 	{
@@ -182,7 +182,7 @@ class TsumegoIssuesController extends AppController
 	//Reopen a closed issue.
 	//Admin only.
 	//$id: Issue ID
-	/** @return CakeResponse|null */
+	/** @return Response|null */
 	#[HttpPost]
 	public function reopen(string $id)
 	{
@@ -205,7 +205,7 @@ class TsumegoIssuesController extends AppController
 	//Admin only.
 	//POST data:
 	//- Comment.tsumego_issue_id: 'standalone' | 'new' | int (issue ID)
-	/** @return CakeResponse|null */
+	/** @return Response|null */
 	#[HttpPost]
 	public function moveComment(string $commentId)
 	{

@@ -6,7 +6,7 @@ use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\ForbiddenException;
 use Cake\Http\Exception\NotFoundException;
 use Cake\Http\Exception\UnauthorizedException;
-use Cake\Http\Response as CakeResponse;
+use Cake\Http\Response;
 use Cake\Routing\Router;
 use DateTime;
 use App\Attribute\HttpGet;
@@ -222,7 +222,7 @@ class ClassroomsController extends AppController
 
 	//The collections the teacher can pick problems from, for the picker.
 	#[HttpGet]
-	public function collections(): CakeResponse
+	public function collections(): Response
 	{
 		$this->Authorization->authorize('Classroom', 'create');
 		return $this->respondJson(ClassroomAssignmentTable::collectionCards(Auth::getUserID()));
@@ -230,7 +230,7 @@ class ClassroomsController extends AppController
 
 	//The problems of a collection with their previews, for the picker.
 	#[HttpGet]
-	public function collectionProblems(string $setId): CakeResponse
+	public function collectionProblems(string $setId): Response
 	{
 		$this->Authorization->authorize('Classroom', 'create');
 		$set = $this->fetchTable('Set')->find()->where(['id' => (int) $setId])->first();
@@ -248,7 +248,7 @@ class ClassroomsController extends AppController
 	//order. With `publish` a draft goes to the pupils. A published assignment can still change,
 	//but keeps some problems.
 	#[HttpPost]
-	public function saveAssignment(string $assignmentId): CakeResponse
+	public function saveAssignment(string $assignmentId): Response
 	{
 		$assignment = $this->findAssignment($assignmentId);
 		$classroom = $this->findClassroom((string) $assignment['classroom_id']);
@@ -349,7 +349,7 @@ class ClassroomsController extends AppController
 	//Who solved which problem of an assignment, as JSON for the table that keeps itself up to
 	//date: every pupil for the teacher, only their own row for a pupil.
 	#[HttpGet]
-	public function progress(string $assignmentId): CakeResponse
+	public function progress(string $assignmentId): Response
 	{
 		$assignment = $this->findAssignment($assignmentId);
 		$classroom = $this->findClassroom((string) $assignment['classroom_id']);
