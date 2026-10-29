@@ -2,7 +2,7 @@
 
 //The JSON the endpoints answer with, the front end (React, besogo, the scripts of the pages) reads
 //it. Every case of a test makes one request from a fixed ContextPreparator state and checks the
-//whole answer against plain expected data in golden/<test class>.php: every field, in its order,
+//whole answer against plain expected data in golden/<test class>.golden.php: every field, in its order,
 //its type and its nesting, and its value where the value is the same on every run.
 //The expected data and the requests stay as they are when the controllers move to Cake 5: the
 //requests go through IntegrationTestTrait's get() and post(), which Cake 5 has too, and
@@ -12,7 +12,7 @@
 //with keys 0, 1, 2..., and '@{}' an empty object. Where a value changes from run to run, a tag
 //stands for its type: '@int', '@float', '@string', '@bool', '@digits' (an integer sent as a string),
 //'@datetime' (ISO 8601), a '?' in front (as '@?int') to allow null as well.
-//Run with JSON_GOLDEN_RECORD=1 to write the answers into golden/<test class>.php; the ids and
+//Run with JSON_GOLDEN_RECORD=1 to write the answers into golden/<test class>.golden.php; the ids and
 //dates in them become tags, the rest stays as it was answered, to be read before it is committed.
 abstract class JsonGoldenTestCase extends IntegrationTestCase
 {
@@ -31,7 +31,7 @@ abstract class JsonGoldenTestCase extends IntegrationTestCase
 		}
 
 		$expected = self::golden()[$name] ?? null;
-		$this->assertNotNull($expected, 'golden/' . static::class . '.php has no case ' . $name);
+		$this->assertNotNull($expected, 'golden/' . static::class . '.golden.php has no case ' . $name);
 		$this->assertSame($expected['status'], $actual['status'], $name . ': the status');
 		$this->assertJsonMatches($expected['json'], $actual['json'], $name);
 	}
@@ -115,7 +115,7 @@ abstract class JsonGoldenTestCase extends IntegrationTestCase
 
 	private static function goldenFile(): string
 	{
-		return __DIR__ . '/golden/' . static::class . '.php';
+		return __DIR__ . '/golden/' . static::class . '.golden.php';
 	}
 
 	private static function golden(): array
