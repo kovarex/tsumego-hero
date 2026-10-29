@@ -64,7 +64,7 @@ jobs:
           coverage: xdebug
 
       - name: Configure Xdebug for coverage
-        if: (github.ref == 'refs/heads/master' || github.head_ref == 'test-shards')
+        if: github.ref == 'refs/heads/master'
         run: |
             echo "zend_extension=$(php -i | grep -i xdebug | grep extension_dir | awk '{print $3}')/xdebug.so" >> $GITHUB_ENV
             echo "xdebug.mode=coverage" | sudo tee -a /etc/php/8.4/cli/conf.d/99-xdebug.ini
@@ -102,7 +102,7 @@ jobs:
         run: pnpm run test:scripts
 
       - name: Build React app
-        run: ${{ (github.ref == 'refs/heads/master' || github.head_ref == 'test-shards') && 'pnpm run build:coverage' || 'pnpm run build' }}
+        run: ${{ github.ref == 'refs/heads/master' && 'pnpm run build:coverage' || 'pnpm run build' }}
 
       - name: Generate WebP images
         timeout-minutes: 10
@@ -171,7 +171,7 @@ jobs:
         run: |
           mkdir -p /tmp/coverage
           # Use router script to handle CakePHP dispatcher filter routes
-          if [ "${{ github.ref }}" = "refs/heads/master" -o "${{ github.head_ref }}" = "test-shards" ]; then
+          if [ "${{ github.ref }}" = "refs/heads/master" ]; then
             nohup php -d xdebug.mode=coverage -d xdebug.start_with_request=yes -d auto_prepend_file=/home/runner/work/tsumego-hero/tsumego-hero/.github/ci/xdebug-prepend.php -S 0.0.0.0:8080 -t webroot .github/ci/router.php > server.log 2>&1 &
           else
             nohup php -S 0.0.0.0:8080 -t webroot .github/ci/router.php > server.log 2>&1 &
@@ -201,7 +201,7 @@ jobs:
         run: |
           mkdir -p /tmp/coverage
           # phpunit on the files of this shard, with the tests the browser alone failed run again (scripts/phpunit-retry.php)
-          php scripts/phpunit-retry.php --exclude-group apache-only --exclude-group disabled --log-junit tmp/junit.xml ${{ (github.ref == 'refs/heads/master' || github.head_ref == 'test-shards') && '--coverage-php /tmp/coverage/phpunit.cov' || '' }} $(php scripts/test-shard.php ${{ matrix.shard }} 4)
+          php scripts/phpunit-retry.php --exclude-group apache-only --exclude-group disabled --log-junit tmp/junit.xml ${{ github.ref == 'refs/heads/master' && '--coverage-php /tmp/coverage/phpunit.cov' || '' }} $(php scripts/test-shard.php ${{ matrix.shard }} 4)
 
       # Put together, these logs are the new tests/durations.json: php scripts/test-shard.php durations junit-*.xml
       - name: Print test durations
@@ -227,7 +227,7 @@ jobs:
       # PHPUnit's phpunit.cov and one webserver-*.cov per request of the Selenium tests (.github/ci/xdebug-prepend.php)
       # become one file per shard, and so do the JS snapshots of Browser::captureJsCoverage(); the coverage job merges the shards.
       - name: Merge the coverage of the shard
-        if: (github.ref == 'refs/heads/master' || github.head_ref == 'test-shards')
+        if: github.ref == 'refs/heads/master'
         run: |
           mkdir -p /tmp/coverage-shard /tmp/coverage/js-raw
           vendor/bin/phpcov merge --php /tmp/coverage-shard/php-${{ matrix.shard }}.cov /tmp/coverage
@@ -235,7 +235,7 @@ jobs:
           if [ -n "$(ls -A /tmp/coverage/js-raw)" ]; then npx nyc merge /tmp/coverage/js-raw /tmp/coverage-shard/js-raw-${{ matrix.shard }}.json; fi
 
       - name: Upload the coverage of the shard
-        if: (github.ref == 'refs/heads/master' || github.head_ref == 'test-shards')
+        if: github.ref == 'refs/heads/master'
         uses: actions/upload-artifact@v4
         with:
           name: coverage-${{ matrix.shard }}
@@ -253,7 +253,7 @@ jobs:
         run: test "${{ needs.test-shard.result }}" = success
 
   coverage:
-    if: (github.ref == 'refs/heads/master' || github.head_ref == 'test-shards')
+    if: github.ref == 'refs/heads/master'
     needs: test-shard
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -321,7 +321,6 @@ jobs:
         run: pnpm run coverage:index
 
       - name: Deploy coverage to GitHub Pages
-        if: github.ref == 'refs/heads/master'
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
