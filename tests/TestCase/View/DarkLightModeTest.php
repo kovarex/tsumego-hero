@@ -7,10 +7,7 @@ use Facebook\WebDriver\WebDriverBy;
 //- HTML data-theme attribute is correctly set based on cookie/preference
 //- JavaScript toggle properly switches data-theme attribute
 //- CSS custom properties are correctly applied for each mode
-/**
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
- */
+#[RetryOnBrowserFailure]
 class DarkLightModeTest extends IntegrationTestCase
 {
 	//Test that html has data-theme="light" by default

@@ -56,7 +56,7 @@ class RotationTest extends IntegrationTestCase
 			$this->assertEquals(-1, $rotation, $reason);
 	}
 
-	public function autoRotationProvider(): array
+	public static function autoRotationProvider(): array
 	{
 		return [
 			'tall → rotates' => [self::TALL_SGF, true, 'Tall problem should auto-rotate'],
@@ -104,7 +104,7 @@ class RotationTest extends IntegrationTestCase
 			"ViewBox should change after $direction rotation");
 	}
 
-	public function manualRotationProvider(): array
+	public static function manualRotationProvider(): array
 	{
 		return [
 			'counter-clockwise' => ['boardSpinCounterClockwise', 'CCW'],

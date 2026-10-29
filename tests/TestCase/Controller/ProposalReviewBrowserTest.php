@@ -5,10 +5,7 @@ use App\Utility\Constants;
 
 //What the reviewer of a proposal sees: what the proposer wrote about it, a diff that shows more than
 //the added and removed moves, and Accept / Reject with a comment for the proposer.
-/**
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
- */
+#[RetryOnBrowserFailure]
 class ProposalReviewBrowserTest extends IntegrationTestCase
 {
 	private const SGF_VERSION_1 = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc]C[Old start];B[aa];W[ab];B[ba]C[+])';
