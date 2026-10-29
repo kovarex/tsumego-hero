@@ -43,6 +43,11 @@ class ContextPreparator
 			'tsumego', 'set', 'phpbb_users', 'phpbb_topics',
 		] as $table)
 			$pdo->exec("DELETE FROM `$table`");
+		// The ids start at 1 again, so a test gets the same ids whichever tests ran before it in the
+		// process. The site treats some set and user ids specially (templates/Sets/view.php hides the
+		// problems of sets 51 to 135 listed there), so an id carried over from earlier tests changed the page.
+		foreach (['set', 'user'] as $table)
+			$pdo->exec("ALTER TABLE `$table` AUTO_INCREMENT = 1");
 		$pdo->exec('SET FOREIGN_KEY_CHECKS = 1');
 		UserTable::clearDeletedCache();
 
