@@ -1,5 +1,9 @@
 <?php
 
+namespace App\Controller;
+
+use Cake\Http\Exception\BadRequestException;
+use Cake\Http\Exception\NotFoundException;
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Model\Table\AdminActivityTypeTable;
@@ -18,8 +22,8 @@ class SgfController extends AppController
 
 		$this->Authorization->authorize($sgf, 'fetch');
 
-		$this->response->statusCode(200);
-		$this->response->body($sgf->sgf);
+		$this->response = $this->response->withStatus(200);
+		$this->response = $this->response->withStringBody($sgf->sgf);
 		return $this->response;
 	}
 
@@ -37,8 +41,8 @@ class SgfController extends AppController
 
 		$author = $sgf->user_id ? UserTable::row($sgf->user_id) : null;
 		$this->autoRender = false;
-		$this->response->type('json');
-		$this->response->body(json_encode([
+		$this->response = $this->response->withType('json');
+		$this->response = $this->response->withStringBody(json_encode([
 			'description' => $sgf->description,
 			'authorLink' => UserTable::renderLink($author)]));
 		return $this->response;
@@ -55,7 +59,7 @@ class SgfController extends AppController
 
 		// Use besogo textarea if provided, otherwise use file upload
 		$fileUpload = isset($_FILES['adminUpload']) && $_FILES['adminUpload']['error'] === UPLOAD_ERR_OK ? $_FILES['adminUpload'] : null;
-		$sgfDataOrFile = $this->request->data['sgfForBesogo'] ?? file_get_contents($fileUpload['tmp_name']);
+		$sgfDataOrFile = $this->request->getData('sgfForBesogo') ?? file_get_contents($fileUpload['tmp_name']);
 
 		if (!$sgfDataOrFile)
 			throw new BadRequestException('No SGF data provided.');
@@ -72,9 +76,9 @@ class SgfController extends AppController
 		$this->set('sgf', $sgfDataOrFile);
 		$this->set('setConnectionID', $setConnectionID);
 		// sent by the board editor, see SgfCommentReorientation
-		$this->set('sourceSgfID', $fileUpload ? null : ($this->request->data['sourceSgfID'] ?? null));
-		$this->set('transformationFromSource', $fileUpload ? null : ($this->request->data['transformationFromSource'] ?? null));
-		$this->set('description', (string) ($this->request->data['description'] ?? ''));
+		$this->set('sourceSgfID', $fileUpload ? null : ($this->request->getData('sourceSgfID') ?? null));
+		$this->set('transformationFromSource', $fileUpload ? null : ($this->request->getData('transformationFromSource') ?? null));
+		$this->set('description', (string) ($this->request->getData('description') ?? ''));
 		$this->render('/Tsumegos/setup_new_sgf');
 	}
 }

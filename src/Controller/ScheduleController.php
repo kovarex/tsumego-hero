@@ -1,5 +1,9 @@
 <?php
 
+namespace App\Controller;
+
+use Cake\Http\Exception\BadRequestException;
+use Cake\Http\Exception\NotFoundException;
 use App\Model\Table\SetTable;
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
@@ -99,12 +103,12 @@ ORDER BY schedule.date DESC, schedule.id DESC");
 	{
 		$this->Authorization->authorize('Schedule');
 
-		$setIdFrom = (int) ($this->request->data['set_id_from'] ?? 0);
-		$targetSetId = (int) ($this->request->data['set_id_to'] ?? 0);
-		$num = (int) ($this->request->data['num'] ?? 0);
-		$count = self::count($this->request->data['count'] ?? null);
-		$perDay = (int) ($this->request->data['per_day'] ?? 5);
-		$startDate = (string) ($this->request->data['start_date'] ?? '');
+		$setIdFrom = (int) ($this->request->getData('set_id_from') ?? 0);
+		$targetSetId = (int) ($this->request->getData('set_id_to') ?? 0);
+		$num = (int) ($this->request->getData('num') ?? 0);
+		$count = self::count($this->request->getData('count') ?? null);
+		$perDay = (int) ($this->request->getData('per_day') ?? 5);
+		$startDate = (string) ($this->request->getData('start_date') ?? '');
 
 		if ($setIdFrom <= 0 || $targetSetId <= 0)
 			throw new BadRequestException('Invalid set ids.');
@@ -162,17 +166,17 @@ ORDER BY schedule.date DESC, schedule.id DESC");
 		$this->Authorization->authorize('Schedule');
 		$this->autoRender = false;
 
-		$setIdFrom = (int) ($this->request->query['set_id_from'] ?? 0);
-		$targetSetId = (int) ($this->request->query['set_id_to'] ?? 0);
-		$num = (int) ($this->request->query['num'] ?? 0);
-		$count = self::count($this->request->query['count'] ?? null);
-		$perDay = max(1, (int) ($this->request->query['per_day'] ?? 5));
-		$startDate = strtotime((string) ($this->request->query['start_date'] ?? '')) ?: strtotime('today');
+		$setIdFrom = (int) ($this->request->getQuery('set_id_from') ?? 0);
+		$targetSetId = (int) ($this->request->getQuery('set_id_to') ?? 0);
+		$num = (int) ($this->request->getQuery('num') ?? 0);
+		$count = self::count($this->request->getQuery('count') ?? null);
+		$perDay = max(1, (int) ($this->request->getQuery('per_day') ?? 5));
+		$startDate = strtotime((string) ($this->request->getQuery('start_date') ?? '')) ?: strtotime('today');
 
 		if ($setIdFrom <= 0 || $targetSetId <= 0 || ($count !== null && $count < 1))
 		{
-			$this->response->type('json');
-			$this->response->body(json_encode([]));
+			$this->response = $this->response->withType('json');
+			$this->response = $this->response->withStringBody(json_encode([]));
 			return;
 		}
 
@@ -189,8 +193,8 @@ ORDER BY schedule.date DESC, schedule.id DESC");
 		}
 		unset($candidate);
 
-		$this->response->type('json');
-		$this->response->body(json_encode($candidates ?: []));
+		$this->response = $this->response->withType('json');
+		$this->response = $this->response->withStringBody(json_encode($candidates ?: []));
 	}
 
 	//How many problems to schedule, null for all of them, which an empty field asks for.

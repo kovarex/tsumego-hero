@@ -1,5 +1,10 @@
 <?php
 
+namespace App\Controller\Component;
+
+use Cake\Http\Exception\NotFoundException;
+use Cake\Http\ServerRequest as CakeRequest;
+use Cake\Routing\Router;
 use App\Model\Entity\Set;
 use App\Model\Table\SetTable;
 use App\Model\Entity\SetConnection;

@@ -1,5 +1,8 @@
 <?php
 
+namespace App\Controller;
+
+use Cake\Http\Exception\NotFoundException;
 use App\Model\Table\SetConnectionTable;
 use App\Model\Table\SgfTable;
 use App\Attribute\HttpGet;
@@ -18,19 +21,19 @@ class SgfsController extends AppController
 		$dId = [];
 		$dTitle = [];
 
-		if (isset($this->params['url']['delete']))
+		if (($this->request->getQuery('delete') !== null))
 		{
 			$sgfTable = $this->fetchTable('Sgf');
-			$sDel = $sgfTable->find()->select(['id', 'user_id'])->where(['id' => $this->params['url']['delete']])->first();
+			$sDel = $sgfTable->find()->select(['id', 'user_id'])->where(['id' => $this->request->getQuery('delete')])->first();
 			if ($sDel && Auth::getUserID() == $sDel->user_id)
 				$sgfTable->deleteOrFail($sDel);
 		}
 
 		$tsumegoTable = $this->fetchTable('Tsumego');
 		$setTable = $this->fetchTable('Set');
-		if (isset($this->params['url']['duplicates']))
+		if (($this->request->getQuery('duplicates') !== null))
 		{
-			$newDuplicates = array_map('intval', explode('-', $this->params['url']['duplicates']));
+			$newDuplicates = array_map('intval', explode('-', $this->request->getQuery('duplicates')));
 			foreach ($newDuplicates as $duplicateId)
 			{
 				if (!$tsumegoTable->exists(['id' => $duplicateId]))
@@ -57,9 +60,9 @@ class SgfsController extends AppController
 		$name = $set->title . ' ' . $set->title2 . ' ' . $displaySetConnection->num;
 		$this->set('_title', 'Upload History of ' . $name);
 
-		if (isset($this->params['url']['user']))
+		if (($this->request->getQuery('user') !== null))
 		{
-			$versions = $this->versions(['user_id' => $this->params['url']['user'], 'sgf_status_id !=' => SgfTable::STATUS_REJECTED]);
+			$versions = $this->versions(['user_id' => $this->request->getQuery('user'), 'sgf_status_id !=' => SgfTable::STATUS_REJECTED]);
 			$type = 'user';
 		}
 		else

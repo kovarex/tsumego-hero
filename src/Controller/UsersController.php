@@ -1,5 +1,18 @@
 <?php
 
+namespace App\Controller;
+
+use Cake\Core\Configure;
+
+use Cake\Http\Exception\NotFoundException;
+use Cake\Http\Response as CakeResponse;
+use Cake\Log\Log as CakeLog;
+use Cake\Routing\Router;
+use Cake\Validation\Validation;
+use DateTime;
+use Exception;
+use InvalidArgumentException;
+use RuntimeException;
 use App\Model\Entity\User;
 use App\Model\Table\SetTable;
 use App\Model\Table\SetConnectionTable;
@@ -32,7 +45,7 @@ use App\Model\Table\TimeModeSessionStatusTable;
 
 class UsersController extends AppController
 {
-	public $helpers = ['Html', 'Form', 'Highscore'];
+	protected const HELPERS = ['Highscore'];
 
 	protected ?PwnedPasswordCheckerInterface $passwordChecker = null;
 
@@ -88,11 +101,11 @@ class UsersController extends AppController
 	{
 		$this->set('_page', 'user');
 		$this->set('_title', 'Tsumego Hero - Sign In');
-		$this->set('sent', !empty($this->request->data));
-		if (empty($this->request->data))
+		$this->set('sent', !empty($this->request->getData()));
+		if (empty($this->request->getData()))
 			return;
 
-		$userEmail = $this->request->data['User']['email'];
+		$userEmail = $this->request->getData('User.email');
 
 		// Only allow password reset for local users (not Google Sign-In users)
 		$user = UserTable::findLocalUserByEmail($userEmail);
@@ -187,8 +200,8 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 			return null;
 
 		$this->set('valid', true);
-		$password = (string) ($this->request->data['User']['password1'] ?? '');
-		$repeated = (string) ($this->request->data['User']['password2'] ?? '');
+		$password = (string) ($this->request->getData('User.password1') ?? '');
+		$repeated = (string) ($this->request->getData('User.password2') ?? '');
 		if ($password === '')
 			return null;
 
@@ -215,7 +228,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		$this->Authorization->authorize('Admin');
 		$this->set('_page', 'user');
 		$this->set('_title', 'User activities');
-		$this->set('userActivitiesRenderer', new UserActivitiesRenderer($this->params['url'], userID: $userID === null ? null : (int) $userID));
+		$this->set('userActivitiesRenderer', new UserActivitiesRenderer($this->request->getQueryParams(), userID: $userID === null ? null : (int) $userID));
 	}
 
 	//The latest attempts on the problems of the set given, of all players without one (admin only)
@@ -225,7 +238,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		$this->Authorization->authorize('Admin');
 		$this->set('_page', 'user');
 		$this->set('_title', 'User activities');
-		$this->set('userActivitiesRenderer', new UserActivitiesRenderer($this->params['url'], setID: $setID === null ? null : (int) $setID));
+		$this->set('userActivitiesRenderer', new UserActivitiesRenderer($this->request->getQueryParams(), setID: $setID === null ? null : (int) $setID));
 		$this->render('userstats');
 	}
 
@@ -245,7 +258,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 
 	private function getUserFromNameOrEmail(): ?User
 	{
-		$input = $this->request->data['username'];
+		$input = $this->request->getData('username');
 		if (empty($input))
 			return null;
 
@@ -281,7 +294,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 			return null;
 		}
 
-		if (!$this->request->data['username'])
+		if (!$this->request->getData('username'))
 			return null;
 		$user = $this->getUserFromNameOrEmail();
 		if (!$user)
@@ -289,10 +302,10 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 			// A name without an account is answered the same way as a wrong password, and
 			// the hash is computed either way, so neither the message nor the time it takes
 			// tells whether the account exists.
-			password_verify((string) ($this->request->data['password'] ?? ''), self::$DUMMY_PASSWORD_HASH);
+			password_verify((string) ($this->request->getData('password') ?? ''), self::$DUMMY_PASSWORD_HASH);
 
 			// The address may belong to a Google account only, which can't log in here
-			$googleUser = $this->fetchTable('User')->find()->where(['email' => $this->request->data['username']])->first();
+			$googleUser = $this->fetchTable('User')->find()->where(['email' => $this->request->getData('username')])->first();
 			if ($googleUser && UserTable::isGoogleUser($googleUser))
 				CookieFlash::set('This account uses Google Sign-In. Please use the "Sign in with Google" button.', 'info');
 			else
@@ -307,7 +320,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 			return null;
 		}
 
-		if (!$this->validateLogin($this->request->data, $user))
+		if (!$this->validateLogin($this->request->getData(), $user))
 		{
 			CookieFlash::set('Wrong username or password.', 'error');
 			return null;
@@ -317,8 +330,8 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 
 		// Verify and use redirect URL from POST data
 		$redirect = $this->getVerifiedRedirectUrl(
-			$this->request->data('redirect'),
-			$this->request->data('redirect_signature')
+			$this->request->getData('redirect'),
+			$this->request->getData('redirect_signature')
 		);
 		return $this->redirect($redirect);
 	}
@@ -369,11 +382,11 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		$this->set('redirectUrl', $redirectUrl);
 		$this->set('redirectSignature', $signature);
 
-		if (empty($this->request->data))
+		if (empty($this->request->getData()))
 			return;
 
-		$password = (string) ($this->request->data['User']['password1'] ?? '');
-		$problem = $this->passwordProblem($password, (string) ($this->request->data['User']['password2'] ?? ''));
+		$password = (string) ($this->request->getData('User.password1') ?? '');
+		$problem = $this->passwordProblem($password, (string) ($this->request->getData('User.password2') ?? ''));
 		if ($problem)
 		{
 			CookieFlash::set($problem, 'error');
@@ -381,13 +394,13 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		}
 
 		$userTable = $this->fetchTable('User');
-		if ($userTable->exists(['email' => $this->request->data['User']['email']]))
+		if ($userTable->exists(['email' => $this->request->getData('User.email')]))
 		{
 			CookieFlash::set('Email already exists', 'error');
 			return;
 		}
 
-		$normalizedName = UserTable::normalizeDisplayName($this->request->data['User']['name']);
+		$normalizedName = UserTable::normalizeDisplayName($this->request->getData('User.name'));
 		if (UserTable::containsCharactersTheForumCannotStore($normalizedName))
 		{
 			CookieFlash::set('The name must not contain emoji or other rare symbols, please choose another one.', 'error');
@@ -395,8 +408,8 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		}
 		$uniqueDisplayName = UserTable::generateUniqueDisplayName($normalizedName);
 		$user = $userTable->newEntity([
-			'name' => $this->request->data['User']['name'],
-			'email' => $this->request->data['User']['email'],
+			'name' => $this->request->getData('User.name'),
+			'email' => $this->request->getData('User.email'),
 			'password_hash' => password_hash($password, PASSWORD_DEFAULT),
 			'display_name' => $uniqueDisplayName,
 			// A taken display name gets a numbered suffix, which is not the name the player chose,
@@ -472,7 +485,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 			return $this->redirect('/');
 		}
 
-		$newDisplayName = UserTable::normalizeDisplayName($this->request->data['User']['display_name'] ?? '');
+		$newDisplayName = UserTable::normalizeDisplayName($this->request->getData('User.display_name') ?? '');
 
 		if (empty($newDisplayName))
 		{
@@ -633,10 +646,10 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		if (Auth::isLoggedIn())
 			Auth::saveUserField('highscore_page_id', Constants::$HIGHSCORE_TIME_MODE);
 
-		if (isset($this->params['url']['category']))
+		if (($this->request->getQuery('category') !== null))
 		{
-			$params1 = $this->params['url']['category'];
-			$params2 = $this->params['url']['rank'] ?? '15k';
+			$params1 = $this->request->getQuery('category');
+			$params2 = $this->request->getQuery('rank') ?? '15k';
 			$currentRank = $params2;
 			$categoryId = intval($params1) + 1;
 			$rankId = $rankNameToId[$params2] ?? 1;
@@ -1067,7 +1080,7 @@ ORDER BY category DESC', [$user['id']]));
 	{
 		// CSRF protection: Google Sign-In provides g_csrf_token in both POST and cookie
 		// These must match to prevent cross-site request forgery
-		$csrfToken = $_POST['g_csrf_token'] ?? ($this->request->data['g_csrf_token'] ?? '');
+		$csrfToken = $_POST['g_csrf_token'] ?? ($this->request->getData('g_csrf_token') ?? '');
 		$csrfCookie = $_COOKIE['g_csrf_token'] ?? '';
 		if (empty($csrfToken) || $csrfToken !== $csrfCookie)
 		{
@@ -1076,8 +1089,8 @@ ORDER BY category DESC', [$user['id']]));
 			return $this->redirect('/users/login');
 		}
 
-		// Google Sign-In posts credential directly, but testAction uses $this->request->data
-		$id_token = $_POST['credential'] ?? ($this->request->data['credential'] ?? '');
+		// Google Sign-In posts credential directly, but testAction uses $this->request->getData()
+		$id_token = $_POST['credential'] ?? ($this->request->getData('credential') ?? '');
 
 		$verifier = $this->getTokenVerifier();
 		$token_data = $verifier->verify($id_token);
@@ -1164,7 +1177,7 @@ ORDER BY category DESC', [$user['id']]));
 		// Google Sign-In provides built-in CSRF protection via g_csrf_token cookie
 		// We use HMAC signature to prevent redirect URL tampering (stateless)
 		$redirect = '/sets/';
-		$stateJson = $_POST['state'] ?? ($this->request->data['state'] ?? null);
+		$stateJson = $_POST['state'] ?? ($this->request->getData('state') ?? null);
 		if ($stateJson)
 		{
 			$stateData = json_decode(base64_decode($stateJson), true);
@@ -1284,9 +1297,9 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 		if (!Auth::isLoggedIn())
 			return $this->redirect('/users/login');
 
-		if (!empty($this->request->data))
-			if (isset($this->request->data['User']['demote']))
-				if (password_verify($this->request->data['User']['demote'], Auth::getUser()['password_hash']))
+		if (!empty($this->request->getData()))
+			if (($this->request->getData('User.demote') !== null))
+				if (password_verify($this->request->getData('User.demote'), Auth::getUser()['password_hash']))
 				{
 					if ($error = UserTable::changeRole(Auth::getUserID(), UserTable::ROLE_PLAYER))
 						$status = '<p style="color:#d63a49">' . h($error) . '</p>';
@@ -1310,7 +1323,7 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 		$this->assertUserVisible($profileUser);
 		$userName = $profileUser['display_name'];
 		$PAGE_SIZE = 500;
-		$pageIndex = isset($this->request->query['page']) ? max(1, (int) $this->request->query['page']) : 1;
+		$pageIndex = ($this->request->getQuery('page') !== null) ? max(1, (int) $this->request->getQuery('page')) : 1;
 		$count = Util::query("SELECT COUNT(*) FROM tsumego_attempt where user_id = ?", [$userID])[0]['COUNT(*)'];
 		$offset = ($pageIndex - 1) * $PAGE_SIZE;
 
@@ -1388,7 +1401,7 @@ OFFSET " . $offset, [$userID, $userID]);
 			'Your proposal for ' . ProposalFeedback::problemName($tsumegoID) . ' was accepted by ' . ProposalFeedback::adminName() . ', it is the current version of the problem now.',
 			$tsumegoID,
 			$proposalToApprove->description,
-			ProposalFeedback::commentFromRequest($this->request->data['comment'] ?? null),
+			ProposalFeedback::commentFromRequest($this->request->getData('comment') ?? null),
 			$this->_getEmailer(),
 			ProposalFeedback::diffUrl($proposalToApprove->id, $replacedSgfID));
 
@@ -1413,7 +1426,7 @@ OFFSET " . $offset, [$userID, $userID]);
 			return $this->redirect('/admin/sgf-proposals');
 		}
 
-		$comment = ProposalFeedback::commentFromRequest($this->request->data['comment'] ?? null);
+		$comment = ProposalFeedback::commentFromRequest($this->request->getData('comment') ?? null);
 		if ($comment === '')
 		{
 			CookieFlash::set('Write the proposer why the proposal is rejected.', 'fail');
@@ -1495,7 +1508,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		$tagConnectionTable->saveOrFail($proposalToApprove);
 
 		// tags are accepted by the dozen, so the proposer only hears about it when the admin had something to say
-		$comment = ProposalFeedback::commentFromRequest($this->request->data['comment'] ?? null);
+		$comment = ProposalFeedback::commentFromRequest($this->request->getData('comment') ?? null);
 		if ($comment !== '')
 		{
 			$tsumegoID = $proposalToApprove->tsumego_id;
@@ -1529,7 +1542,7 @@ OFFSET " . $offset, [$userID, $userID]);
 			return $this->redirect('/admin/tag-proposals');
 		}
 
-		$comment = ProposalFeedback::commentFromRequest($this->request->data['comment'] ?? null);
+		$comment = ProposalFeedback::commentFromRequest($this->request->getData('comment') ?? null);
 		if ($comment === '')
 		{
 			CookieFlash::set('Write the proposer why the tag is rejected.', 'fail');
@@ -1588,8 +1601,8 @@ OFFSET " . $offset, [$userID, $userID]);
 		$this->Authorization->authorize('User', 'editPreferences');
 
 		$user = Auth::getUser();
-		$email = trim((string) ($this->request->data['User']['email'] ?? ''));
-		$password = (string) ($this->request->data['User']['password'] ?? '');
+		$email = trim((string) ($this->request->getData('User.email') ?? ''));
+		$password = (string) ($this->request->getData('User.password') ?? '');
 
 		if (UserTable::isGoogleUser($user))
 		{
@@ -1767,9 +1780,9 @@ OFFSET " . $offset, [$userID, $userID]);
 			return $this->redirect('/users/settings');
 		}
 
-		$current = (string) ($this->request->data['current'] ?? '');
-		$new = (string) ($this->request->data['new1'] ?? '');
-		$repeated = (string) ($this->request->data['new2'] ?? '');
+		$current = (string) ($this->request->getData('current') ?? '');
+		$new = (string) ($this->request->getData('new1') ?? '');
+		$repeated = (string) ($this->request->getData('new2') ?? '');
 
 		if (!password_verify($current, $user['password_hash']))
 		{
@@ -1811,15 +1824,15 @@ OFFSET " . $offset, [$userID, $userID]);
 		$this->autoRender = false;
 		$this->Authorization->authorize('User', 'editPreferences');
 
-		$color = (int) ($this->request->data['color'] ?? UserTable::PLAYER_COLOR_SETTING_RANDOM);
+		$color = (int) ($this->request->getData('color') ?? UserTable::PLAYER_COLOR_SETTING_RANDOM);
 		if ($color < 0 || $color > 1)
 			$color = UserTable::PLAYER_COLOR_SETTING_RANDOM;
 
 		Auth::saveUserField('player_color_setting', $color);
 
-		$this->response->statusCode(200);
-		$this->response->type('application/json');
-		$this->response->body(json_encode(['status' => 'ok']));
+		$this->response = $this->response->withStatus(200);
+		$this->response = $this->response->withType('application/json');
+		$this->response = $this->response->withStringBody(json_encode(['status' => 'ok']));
 	}
 
 	#[HttpPost]
@@ -1828,15 +1841,15 @@ OFFSET " . $offset, [$userID, $userID]);
 		$this->autoRender = false;
 		$this->Authorization->authorize('User', 'editPreferences');
 
-		$orientation = (int) ($this->request->data['orientation'] ?? UserTable::BOARD_ORIENTATION_SETTING_RANDOM);
+		$orientation = (int) ($this->request->getData('orientation') ?? UserTable::BOARD_ORIENTATION_SETTING_RANDOM);
 		if ($orientation < 0 || $orientation > 1)
 			$orientation = UserTable::BOARD_ORIENTATION_SETTING_RANDOM;
 
 		Auth::saveUserField('board_orientation_setting', $orientation);
 
-		$this->response->statusCode(200);
-		$this->response->type('application/json');
-		$this->response->body(json_encode(['status' => 'ok']));
+		$this->response = $this->response->withStatus(200);
+		$this->response = $this->response->withType('application/json');
+		$this->response = $this->response->withStringBody(json_encode(['status' => 'ok']));
 	}
 
 	#[HttpPost]
@@ -1845,15 +1858,15 @@ OFFSET " . $offset, [$userID, $userID]);
 		$this->autoRender = false;
 		$this->Authorization->authorize('User', 'editPreferences');
 
-		$format = (int) ($this->request->data['format'] ?? UserTable::DATE_FORMAT_ISO);
+		$format = (int) ($this->request->getData('format') ?? UserTable::DATE_FORMAT_ISO);
 		if ($format < UserTable::DATE_FORMAT_ISO || $format > UserTable::DATE_FORMAT_BROWSER)
 			$format = UserTable::DATE_FORMAT_ISO;
 
 		Auth::saveUserField('date_format_id', $format);
 
-		$this->response->statusCode(200);
-		$this->response->type('application/json');
-		$this->response->body(json_encode(['status' => 'ok']));
+		$this->response = $this->response->withStatus(200);
+		$this->response = $this->response->withType('application/json');
+		$this->response = $this->response->withStringBody(json_encode(['status' => 'ok']));
 	}
 
 	//Whether a new message is announced by an email, see MessageTable::send().
@@ -1863,11 +1876,11 @@ OFFSET " . $offset, [$userID, $userID]);
 		$this->autoRender = false;
 		$this->Authorization->authorize('User', 'editPreferences');
 
-		Auth::saveUserField('email_on_new_message', ($this->request->data['enabled'] ?? '') === '1' ? 1 : 0);
+		Auth::saveUserField('email_on_new_message', ($this->request->getData('enabled') ?? '') === '1' ? 1 : 0);
 
-		$this->response->statusCode(200);
-		$this->response->type('application/json');
-		$this->response->body(json_encode(['status' => 'ok']));
+		$this->response = $this->response->withStatus(200);
+		$this->response = $this->response->withType('application/json');
+		$this->response = $this->response->withStringBody(json_encode(['status' => 'ok']));
 	}
 
 	//Store the avatar a player picked. A choice that is not on offer for this
@@ -1879,13 +1892,13 @@ OFFSET " . $offset, [$userID, $userID]);
 		$this->autoRender = false;
 		$this->Authorization->authorize('User', 'editPreferences');
 
-		$choice = (int) ($this->request->data['avatar'] ?? UserTable::AVATAR_BOARD);
+		$choice = (int) ($this->request->getData('avatar') ?? UserTable::AVATAR_BOARD);
 		if (array_key_exists($choice, UserTable::avatarChoices(Auth::getUser())))
 			Auth::saveUserField('avatar_setting_id', $choice);
 
-		$this->response->statusCode(200);
-		$this->response->type('application/json');
-		$this->response->body(json_encode(['status' => 'ok']));
+		$this->response = $this->response->withStatus(200);
+		$this->response = $this->response->withType('application/json');
+		$this->response = $this->response->withStringBody(json_encode(['status' => 'ok']));
 	}
 
 	//Make a picture the player uploaded their avatar. It takes the place of the picture

@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Controller;
+
 use App\Attribute\HttpGet;
 
 class EditorController extends AppController
@@ -10,6 +12,6 @@ class EditorController extends AppController
 	#[HttpGet]
 	public function index(): void
 	{
-		$this->layout = false;
+		$this->viewBuilder()->disableAutoLayout();
 	}
 }

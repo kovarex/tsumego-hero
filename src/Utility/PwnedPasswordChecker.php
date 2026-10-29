@@ -2,7 +2,7 @@
 
 namespace App\Utility;
 
-use CakeLog;
+use Cake\Log\Log as CakeLog;
 
 //Looks a password up in the Pwned Passwords list.
 //Only the first five characters of the SHA-1 hash leave the server and the rest of

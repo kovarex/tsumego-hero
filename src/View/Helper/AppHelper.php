@@ -1,5 +1,9 @@
 <?php
 
+namespace App\View\Helper;
+
+use Cake\View\Helper;
+
 /**
  * Application level View Helper
  *

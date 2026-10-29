@@ -4,7 +4,7 @@ namespace App\Utility;
 
 use App\Model\Entity\Schedule;
 use Cake\ORM\TableRegistry;
-use CakeLog;
+use Cake\Log\Log as CakeLog;
 use App\Model\Table\SetTable;
 
 //Publishes the schedule entries that are due, which the daily cron runs.

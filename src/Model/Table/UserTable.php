@@ -11,7 +11,7 @@ use App\Utility\PhpbbNames;
 use App\Utility\Rating;
 use App\Utility\UploadedAvatar;
 use App\Utility\Util;
-use CakeLog;
+use Cake\Log\Log as CakeLog;
 use Cake\ORM\TableRegistry;
 use Cake\Validation\Validator;
 use DateTimeInterface;

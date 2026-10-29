@@ -1,5 +1,9 @@
 <?php
 
+namespace App\Controller;
+
+use Cake\Http\Exception\ForbiddenException;
+use Exception;
 use App\Attribute\HttpGet;
 use App\Model\Table\AchievementConditionTable;
 use App\Utility\SchedulePublisher;
@@ -23,7 +27,7 @@ class CronController extends AppController
 		// Already ran today - the rest of the work is done once a day
 		if ($this->fetchTable('DayRecord')->find()->where(['date' => date('Y-m-d')])->count() > 0)
 		{
-			$this->response->statusCode(200);
+			$this->response = $this->response->withStatus(200);
 			return $this->response;
 		}
 
@@ -38,7 +42,7 @@ class CronController extends AppController
 			Trash::purgeExpired();
 		});
 
-		$this->response->statusCode(200);
+		$this->response = $this->response->withStatus(200);
 		return $this->response;
 	}
 

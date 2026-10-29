@@ -1,0 +1,61 @@
+<?php
+
+use App\View\Helper\HighscoreHelper;
+/**
+ * @var View $this
+ * @var array $params1
+ * @var string $params2
+ * @var array $modes
+ * @var array $modes2
+ * @var array $users
+ * @var int $totalUsers
+ */
+?>
+
+<div align="center" class="highscore">
+<?php echo $this->element('highscore_nav', ['activeTab' => 'time']); ?>
+
+<?php
+$currentCategory = intval($params1);
+
+// Speed mode buttons - actual navigation links
+$categories = [2 => 'Slow', 1 => 'Fast', 0 => 'Blitz'];
+?>
+<div style="margin-bottom: 16px;">
+<?php foreach ($categories as $catIdx => $catName): ?>
+	<?php if ($catIdx == $currentCategory): ?>
+		<a class="btn btn--inactive"><?php echo $catName; ?></a>
+	<?php else: ?>
+		<a class="btn" href="/users/time_mode?category=<?php echo $catIdx; ?>&rank=<?php echo h($params2); ?>"><?php echo $catName; ?></a>
+	<?php endif; ?>
+<?php endforeach; ?>
+</div>
+
+<div style="margin-bottom: 8px;">
+<?php
+// Rank buttons - only for the current category
+for ($j = 0; $j < count($modes[$currentCategory]); $j++):
+	$hasData = ($modes[$currentCategory][$j] == '1');
+	$isSelected = ($modes2[$currentCategory][$j] == $params2);
+	if ($hasData && !$isSelected):
+		echo '<a class="btn" href="/users/time_mode?category=' . $currentCategory . '&rank=' . $modes2[$currentCategory][$j] . '">' . $modes2[$currentCategory][$j] . '</a>';
+	elseif ($isSelected):
+		echo '<a class="btn btn--inactive">' . $modes2[$currentCategory][$j] . '</a>';
+	else:
+		echo '<a class="btn btn--inactive">' . $modes2[$currentCategory][$j] . '</a>';
+	endif;
+endfor;
+?>
+</div>
+
+<?php
+echo HighscoreHelper::renderTable(
+	'Time Mode Highscore',
+	$users,
+	[
+		['label' => 'Points', 'render' => fn($user) => $user['points']],
+	],
+	$totalUsers,
+);
+?>
+</div>

@@ -1,6 +1,13 @@
 <?php
 
+namespace App\Controller;
+
+use Cake\Cache\Cache;
+
 //Generates XML sitemap for search engines, see https://www.sitemaps.org/protocol.html
+use Cake\Log\Log as CakeLog;
+use Cake\Routing\Router;
+use Cake\Utility\Inflector;
 use App\Model\Table\SetTable;
 use App\Utility\Constants;
 use App\Attribute\HttpGet;
@@ -9,7 +16,6 @@ use App\Utility\Util;
 class SitemapsController extends AppController
 {
 	//Models
-	public $uses = [];
 
 	//Pages a visitor can browse without signing in. Each one is resolved through the router before it is listed.
 	private const PUBLIC_PAGES = [
@@ -35,15 +41,15 @@ class SitemapsController extends AppController
 		$cacheKey = 'sitemap_xml';
 		$xml = Cache::read($cacheKey, 'long');
 
-		if ($xml === false)
+		if ($xml === null)
 		{
 			$urls = $this->_generateUrls();
 			$xml = $this->_renderXml($urls);
 			Cache::write($cacheKey, $xml, 'long');
 		}
 
-		$this->response->type('xml');
-		$this->response->body($xml);
+		$this->response = $this->response->withType('xml');
+		$this->response = $this->response->withStringBody($xml);
 		$this->autoRender = false;
 	}
 
@@ -127,8 +133,7 @@ ORDER BY set_connection.id ASC");
 	//(Controller::_isPrivateAction).
 	public static function _controllerServesAction(string $controller, string $action): bool
 	{
-		$class = Inflector::camelize($controller) . 'Controller';
-		App::uses($class, 'Controller');
+		$class = 'App\\Controller\\' . Inflector::camelize($controller) . 'Controller';
 		return class_exists($class) && method_exists($class, $action);
 	}
 

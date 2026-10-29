@@ -1,5 +1,9 @@
 <?php
 
+namespace App\Controller;
+
+use Cake\Http\Exception\NotFoundException;
+use Cake\Http\Response as CakeResponse;
 use App\Attribute\HttpGet;
 use App\Model\Table\MessageTable;
 use App\Attribute\HttpPost;
@@ -49,7 +53,7 @@ class MessagesController extends AppController
 	{
 		$this->Authorization->authorize('Message', 'read');
 		$partner = $this->findPartner((int) $partnerUserId);
-		$before = $this->request->query('before');
+		$before = $this->request->getQuery('before');
 		$conversation = MessageTable::conversation(Auth::getUserID(), $partner['id'], $before === null ? null : (int) $before);
 		return $this->json(['partner' => $partner] + $conversation);
 	}
@@ -59,7 +63,7 @@ class MessagesController extends AppController
 	{
 		$this->Authorization->authorize('Message', 'send');
 		$partner = $this->findPartner((int) $partnerUserId);
-		$input = json_decode((string) $this->request->input(), true);
+		$input = json_decode((string) (string) $this->request->getBody(), true);
 		$text = (string) ($input['text'] ?? '');
 
 		$problem = MessageTable::problemWith(Auth::getUserID(), $partner['id'], $text);
@@ -86,7 +90,7 @@ class MessagesController extends AppController
 	public function recipients(): CakeResponse
 	{
 		$this->Authorization->authorize('Message', 'send');
-		$query = (string) $this->request->query('query');
+		$query = (string) $this->request->getQuery('query');
 		return $this->json(['players' => MessageTable::searchRecipients(Auth::getUserID(), $query)]);
 	}
 
@@ -106,8 +110,8 @@ class MessagesController extends AppController
 	private function json(array $data): CakeResponse
 	{
 		$this->autoRender = false;
-		$this->response->type('json');
-		$this->response->body(json_encode($data));
+		$this->response = $this->response->withType('json');
+		$this->response = $this->response->withStringBody(json_encode($data));
 		return $this->response;
 	}
 }

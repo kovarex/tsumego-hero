@@ -1,5 +1,8 @@
 <?php
 
+namespace App\Controller;
+
+use Cake\Http\Exception\NotFoundException;
 use App\Attribute\HttpGet;
 use App\Utility\Avatar;
 use App\Utility\UploadedAvatar;
@@ -23,10 +26,10 @@ class AvatarsController extends AppController
 		if ($key === null || preg_match('/^[0-9a-f]{' . Avatar::KEY_LENGTH . '}$/', $key) !== 1)
 			throw new NotFoundException('Invalid board key');
 
-		$this->response->type('svg');
-		$this->response->header('Cache-Control: public, max-age=31536000, immutable');
-		$this->response->etag(md5(Avatar::VERSION . '|' . $key));
-		$this->response->body(Avatar::svg($key));
+		$this->response = $this->response->withType('svg');
+		$this->response = $this->response->withHeader('Cache-Control: public, max-age=31536000, immutable');
+		$this->response = $this->response->withEtag(md5(Avatar::VERSION . '|' . $key));
+		$this->response = $this->response->withStringBody(Avatar::svg($key));
 
 		return $this->response;
 	}
@@ -42,10 +45,10 @@ class AvatarsController extends AppController
 		if ($key === null || preg_match('/^[0-9a-f]{' . Avatar::KEY_LENGTH . '}$/', $key) !== 1)
 			throw new NotFoundException('Invalid board key');
 
-		$this->response->type('png');
-		$this->response->header('Cache-Control: public, max-age=31536000, immutable');
-		$this->response->etag(md5(Avatar::VERSION . '|png|' . $key));
-		$this->response->body(Avatar::png($key));
+		$this->response = $this->response->withType('png');
+		$this->response = $this->response->withHeader('Cache-Control: public, max-age=31536000, immutable');
+		$this->response = $this->response->withEtag(md5(Avatar::VERSION . '|png|' . $key));
+		$this->response = $this->response->withStringBody(Avatar::png($key));
 
 		return $this->response;
 	}
@@ -63,11 +66,11 @@ class AvatarsController extends AppController
 		if ($picture === null)
 			throw new NotFoundException('No such picture');
 
-		$this->response->type(['webp' => 'image/webp']);
-		$this->response->type('webp');
-		$this->response->header('Cache-Control: public, max-age=31536000, immutable');
-		$this->response->etag($hash);
-		$this->response->body($picture);
+		$this->response = $this->response->withType(['webp' => 'image/webp']);
+		$this->response = $this->response->withType('webp');
+		$this->response = $this->response->withHeader('Cache-Control: public, max-age=31536000, immutable');
+		$this->response = $this->response->withEtag($hash);
+		$this->response = $this->response->withStringBody($picture);
 
 		return $this->response;
 	}
@@ -90,7 +93,7 @@ class AvatarsController extends AppController
 
 		// The board of a name is fixed, the name of an account is not, so this is the
 		// answer that may not be kept for long.
-		$this->response->header('Cache-Control', 'max-age=60');
+		$this->response = $this->response->withHeader('Cache-Control', 'max-age=60');
 
 		return $this->redirect(Avatar::url($user->display_name));
 	}

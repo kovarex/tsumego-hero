@@ -4,9 +4,9 @@ namespace App\Utility;
 
 use Exception;
 use PDO;
-use ClassRegistry;
-use ConnectionManager;
-use DboSource;
+use App\Database\MysqlDriver;
+use Cake\Database\Connection;
+use Cake\Datasource\ConnectionManager;
 
 class Util
 {
@@ -243,19 +243,19 @@ class Util
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}
 
-	//The Cake 2 database: the default one, or the test one the Cake 2 test suite records as the
-	//datasource of the models in ClassRegistry. The Cake 5 ORM runs on its connection
-	//(SharedConnectionDriver), so its transactions cover the saves of the ORM.
-	public static function database(): DboSource
+	//The database connection of the ORM; its begin(), commit() and rollback() are those of Cake 2.
+	public static function database(): Connection
 	{
-		/** @var DboSource */
-		return ConnectionManager::getDataSource(ClassRegistry::config('Model')['ds'] ?? 'default');
+		/** @var Connection */
+		return ConnectionManager::get('default');
 	}
 
-	//The connection of the database.
+	//The PDO of the database connection.
 	public static function connection(): PDO
 	{
-		return self::database()->getConnection();
+		/** @var MysqlDriver $driver */
+		$driver = self::database()->getDriver();
+		return $driver->pdo();
 	}
 
 	//The isolation level of the transactions of this connection, as in 'REPEATABLE-READ'. MariaDB 11.1

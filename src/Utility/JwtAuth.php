@@ -2,7 +2,7 @@
 
 namespace App\Utility;
 
-use Configure;
+use Cake\Core\Configure;
 use Exception;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;

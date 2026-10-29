@@ -1,5 +1,9 @@
 <?php
 
+namespace App\Controller;
+
+use Cake\Http\Exception\NotFoundException;
+use DateTimeImmutable;
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Lib\Error\UnprocessableEntityException;
@@ -28,7 +32,7 @@ class TsumegoCommentsController extends AppController
 	{
 		$this->Authorization->authorize('TsumegoComment', 'add');
 
-		$input = json_decode($this->request->input(), true);
+		$input = json_decode((string) $this->request->getBody(), true);
 
 		$tsumegoCommentTable = $this->fetchTable('TsumegoComment');
 		$comment = $tsumegoCommentTable->newEntity([
@@ -42,8 +46,8 @@ class TsumegoCommentsController extends AppController
 			throw new UnprocessableEntityException('Failed to add comment');
 
 		$author = self::authorsOf([$comment])[$comment->user_id];
-		$this->response->type('json');
-		$this->response->body(json_encode([
+		$this->response = $this->response->withType('json');
+		$this->response = $this->response->withStringBody(json_encode([
 			'id' => $comment->id,
 			'text' => $comment->message,
 			'user_id' => $comment->user_id,
@@ -84,8 +88,8 @@ class TsumegoCommentsController extends AppController
 		if (!empty($issueId))
 			TsumegoIssueTable::deleteIfEmpty($issueId);
 
-		$this->response->type('json');
-		$this->response->body(json_encode(['success' => true]));
+		$this->response = $this->response->withType('json');
+		$this->response = $this->response->withStringBody(json_encode(['success' => true]));
 		return $this->response;
 	}
 
@@ -165,8 +169,8 @@ class TsumegoCommentsController extends AppController
 
 		$counts = TsumegoIssueTable::getCommentSectionCounts((int) $tsumegoId);
 
-		$this->response->type('json');
-		$this->response->body(json_encode([
+		$this->response = $this->response->withType('json');
+		$this->response = $this->response->withStringBody(json_encode([
 			'issues' => $issuesJson,
 			'standalone' => $standaloneJson,
 			'counts' => $counts,

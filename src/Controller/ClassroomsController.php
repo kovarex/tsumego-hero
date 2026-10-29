@@ -1,5 +1,15 @@
 <?php
 
+namespace App\Controller;
+
+use App\Controller\Component\Play;
+use Cake\Http\Exception\BadRequestException;
+use Cake\Http\Exception\ForbiddenException;
+use Cake\Http\Exception\NotFoundException;
+use Cake\Http\Exception\UnauthorizedException;
+use Cake\Http\Response as CakeResponse;
+use Cake\Routing\Router;
+use DateTime;
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Lib\Error\UnprocessableEntityException;
@@ -40,7 +50,7 @@ class ClassroomsController extends AppController
 	{
 		$this->Authorization->authorize('Classroom', 'create');
 
-		$name = ClassroomTable::cleanName((string) ($this->request->data['name'] ?? ''));
+		$name = ClassroomTable::cleanName((string) ($this->request->getData('name') ?? ''));
 		if ($name === null)
 		{
 			CookieFlash::set('A class needs a name.', 'error');
@@ -89,7 +99,7 @@ class ClassroomsController extends AppController
 		$this->Authorization->authorize(['Classroom' => $classroom], 'manage');
 		$url = self::classUrl($classroom->id);
 
-		$name = trim((string) ($this->request->data['name'] ?? ''));
+		$name = trim((string) ($this->request->getData('name') ?? ''));
 		if ($name === '')
 		{
 			CookieFlash::set('Write the name of the player to invite.', 'error');
@@ -244,7 +254,7 @@ class ClassroomsController extends AppController
 		$classroom = $this->findClassroom((string) $assignment['classroom_id']);
 		$this->Authorization->authorize(['Classroom' => $classroom], 'manage');
 
-		$input = json_decode((string) $this->request->input(), true);
+		$input = json_decode((string) (string) $this->request->getBody(), true);
 		if (!is_array($input))
 			throw new BadRequestException('Expected JSON.');
 		$due = DateTime::createFromFormat('!Y-m-d', (string) ($input['due'] ?? ''));
@@ -380,8 +390,8 @@ class ClassroomsController extends AppController
 	private function json(array $data): CakeResponse
 	{
 		$this->autoRender = false;
-		$this->response->type('json');
-		$this->response->body(json_encode($data));
+		$this->response = $this->response->withType('json');
+		$this->response = $this->response->withStringBody(json_encode($data));
 		return $this->response;
 	}
 

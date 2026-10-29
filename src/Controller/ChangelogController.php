@@ -1,10 +1,11 @@
 <?php
 
+namespace App\Controller;
+
 use App\Attribute\HttpGet;
 
 class ChangelogController extends AppController
 {
-	public $helpers = ['Html', 'Form'];
 
 	//Renders the public /changelog page. The entries and the deployed revision
 	//come from the generated changelog/index.json (produced by

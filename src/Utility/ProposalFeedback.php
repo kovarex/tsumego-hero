@@ -4,7 +4,7 @@ namespace App\Utility;
 
 use Cake\ORM\TableRegistry;
 use App\Model\Table\MessageTable;
-use Router;
+use Cake\Routing\Router;
 use App\Model\Table\UserTable;
 use App\Model\Table\SetConnectionTable;
 

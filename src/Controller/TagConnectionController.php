@@ -1,5 +1,8 @@
 <?php
 
+namespace App\Controller;
+
+use Cake\Http\Exception\ForbiddenException;
 use App\Attribute\HttpPost;
 use App\Model\Entity\Tsumego;
 use App\Model\Table\AdminActivityTypeTable;
@@ -36,8 +39,8 @@ class TagConnectionController extends AppController
 			AdminActivityLogger::log(AdminActivityTypeTable::ADD_TAG, $tagConnection['tsumego_id'], null, ' ', $tagName);
 
 		$tagConnectionTable->saveOrFail($tagConnectionTable->newEntity($tagConnection));
-		$this->response->type('json');
-		$this->response->body(json_encode(['success' => true]));
+		$this->response = $this->response->withType('json');
+		$this->response = $this->response->withStringBody(json_encode(['success' => true]));
 		return $this->response;
 	}
 
@@ -59,8 +62,8 @@ class TagConnectionController extends AppController
 		$this->Authorization->authorize($tagConnection, 'remove');
 
 		$tagConnectionTable->deleteOrFail($tagConnection);
-		$this->response->type('json');
-		$this->response->body(json_encode(['success' => true]));
+		$this->response = $this->response->withType('json');
+		$this->response = $this->response->withStringBody(json_encode(['success' => true]));
 		return $this->response;
 	}
 }

@@ -1,5 +1,8 @@
 <?php
 
+namespace App\Controller;
+
+use Cake\Http\Exception\NotFoundException;
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Model\Table\UserTable;
@@ -32,7 +35,7 @@ ORDER BY user_role_id DESC, display_name'));
 		if (!$user)
 			throw new NotFoundException('User not found');
 
-		$roleID = (int) ($this->request->data['user_role_id'] ?? 0);
+		$roleID = (int) ($this->request->getData('user_role_id') ?? 0);
 		if ($error = UserTable::changeRole((int) $userID, $roleID))
 			CookieFlash::set($error, 'error');
 		else

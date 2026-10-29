@@ -4,11 +4,11 @@ namespace App\Model\Table;
 
 use App\Model\Entity\Message;
 use App\Utility\Util;
-use CakeLog;
+use Cake\Log\Log as CakeLog;
 use Cake\ORM\TableRegistry;
 use Exception;
 use InvalidArgumentException;
-use Router;
+use Cake\Routing\Router;
 
 //A message one player sent to another. The messages between two players are their
 //conversation, so a conversation has no row of its own: it is addressed by the

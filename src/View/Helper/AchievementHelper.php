@@ -1,5 +1,7 @@
 <?php
 
+namespace App\View\Helper;
+
 //Renders the small achievement widgets that appear on several pages.
 //The same achievement is shown on the grid, on its detail page, on the profile
 //and in the achievement highscore, so the markup and its wording live here

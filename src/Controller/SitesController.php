@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Controller;
+
 use App\Model\Table\AchievementStatusTable;
 use App\Model\Table\UserTable;
 use App\Utility\Auth;
@@ -13,7 +15,6 @@ use App\Utility\Util;
 
 class SitesController extends AppController
 {
-	public $helpers = ['Html', 'Form'];
 
 	#[HttpGet]
 	public function index(): void

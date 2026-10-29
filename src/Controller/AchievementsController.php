@@ -1,5 +1,8 @@
 <?php
 
+namespace App\Controller;
+
+use Cake\Http\Exception\NotFoundException;
 use App\Model\Entity\Achievement;
 use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\AchievementTable;

@@ -1,5 +1,13 @@
 <?php
 
+namespace App\Controller;
+
+use Cake\Controller\Controller;
+use Cake\Http\Exception\MethodNotAllowedException;
+use Cake\Http\Exception\NotFoundException;
+use Cake\Event\EventInterface;
+use Cake\Mailer\Mailer as CakeEmail;
+use ReflectionMethod;
 use App\Model\Table\UserTable;
 use App\Utility\AchievementChecker;
 use App\Utility\Auth;
@@ -8,28 +16,22 @@ use App\Utility\Constants;
 use App\Utility\TimeMode;
 use App\Utility\TsumegoFilters;
 use App\Utility\Util;
-use Cake\ORM\Locator\LocatorAwareTrait;
 
 /** @phpstan-import-type UserRow from \App\Utility\RowTypes */
 class AppController extends Controller
 {
-	//fetchTable() of the Cake 5 tables, as Cake 5's controllers have it. Protected, as Cake 2
-	//makes every public method an address (see ActionSurfaceTest).
-	use LocatorAwareTrait {
-		fetchTable as protected;
-		getTableLocator as protected;
-		setTableLocator as protected;
+	//What $viewClass, $helpers and $components of Cake 2 set up.
+	public function initialize(): void
+	{
+		parent::initialize();
+		$this->viewBuilder()->setClassName('App');
+		$this->viewBuilder()->addHelpers(array_merge(['Html', 'Form', 'Pagination'], static::HELPERS));
+		$this->loadComponent('PlayResultProcessor');
+		$this->loadComponent('Authorization');
 	}
 
-	public $viewClass = 'App';
-
-	public $helpers = ['Pagination'];
-
-	public $components = [
-		//'DebugKit.Toolbar',
-		'PlayResultProcessor',
-		'Authorization'
-	];
+	//The helpers a controller adds to those of every page
+	protected const HELPERS = [];
 
 	//The pages of a deleted account (profile, its sets, tags, solve history...) are gone for everyone but the admins.
 	/** @param UserRow $user */
@@ -76,7 +78,7 @@ class AppController extends Controller
 	//attributes stay, this enforcement method is deleted.
 	protected function enforceHttpMethodAttribute(): void
 	{
-		$action = $this->action;
+		$action = $this->request->getParam('action');
 		if (!is_string($action) || !method_exists($this, $action))
 			return;
 
@@ -100,14 +102,14 @@ class AppController extends Controller
 			return;
 
 		// HEAD asks for the headers of a GET response, so a page that answers GET answers it
-		$method = $this->request->method();
+		$method = $this->request->getMethod();
 		if ($method === 'HEAD' && in_array('GET', $allowed, true))
 			$method = 'GET';
 
 		if (!in_array($method, $allowed, true))
 		{
 			$exception = new MethodNotAllowedException();
-			$exception->responseHeader('Allow', implode(', ', $allowed));
+			$exception->setHeader('Allow', implode(', ', $allowed));
 			throw $exception;
 		}
 	}
@@ -122,7 +124,7 @@ class AppController extends Controller
 	{
 		if (($_COOKIE['browser_cache_version'] ?? null) === self::BROWSER_CACHE_VERSION)
 			return;
-		$this->response->header('Clear-Site-Data', '"cache"');
+		$this->response = $this->response->withHeader('Clear-Site-Data', '"cache"');
 		Util::setCookie('browser_cache_version', self::BROWSER_CACHE_VERSION);
 	}
 
@@ -142,7 +144,7 @@ class AppController extends Controller
 	{
 		if (empty(Auth::getUser()['needs_display_name_change']))
 			return false;
-		$page = strtolower($this->request->params['controller'] . '/' . $this->request->params['action']);
+		$page = strtolower($this->request->getParam('controller') . '/' . $this->request->getParam('action'));
 		return !in_array($page, self::ACTIONS_ALLOWED_BEFORE_NAME_CHANGE, true);
 	}
 
@@ -182,14 +184,14 @@ class AppController extends Controller
 		};
 	}
 
-	public function beforeFilter(): void
+	public function beforeFilter(EventInterface $event): void
 	{
 		$this->enforceHttpMethodAttribute();
 		$this->resetStaleBrowserCache();
 
 		//Boards are drawn without a session: a list of a thousand players would otherwise
 		//pay for the login of a visitor who is not there.
-		if (strtolower((string) ($this->request->params['controller'] ?? '')) === 'avatars')
+		if (strtolower((string) ($this->request->getParam('controller') ?? '')) === 'avatars')
 			return;
 
 		Auth::init();

@@ -1,5 +1,9 @@
 <?php
 
+namespace App\Controller;
+
+use Cake\Http\Exception\InternalErrorException;
+use Cake\Http\Exception\NotFoundException;
 use App\Model\Table\SgfTable;
 use App\Attribute\HttpGet;
 use App\Utility\Constants;
@@ -45,11 +49,11 @@ class TsumegoImagesController extends AppController
 
 		$imageData = $this->_generatePuzzleImage($sgfString, $setTitle, $description);
 
-		$this->response->type('png');
-		$this->response->body($imageData);
-		$this->response->etag(md5(Constants::$TSUMEGO_IMAGE_VERSION . $sgfString));
+		$this->response = $this->response->withType('png');
+		$this->response = $this->response->withStringBody($imageData);
+		$this->response = $this->response->withEtag(md5(Constants::$TSUMEGO_IMAGE_VERSION . $sgfString));
 		$modified = !empty($row['created']) ? $row['created'] : '-1 day';
-		$this->response->cache($modified, '+1 year');
+		$this->response = $this->response->withCache($modified, '+1 year');
 
 		return $this->response;
 	}

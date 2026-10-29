@@ -1,5 +1,8 @@
 <?php
 
+namespace App\Controller;
+
+use App\Controller\Component\Play;
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Utility\Auth;
