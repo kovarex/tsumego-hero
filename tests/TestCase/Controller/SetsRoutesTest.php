@@ -22,7 +22,7 @@ class SetsRoutesTest extends AppTestCase
 	public function testCollectionIsReachedByItsShortAddress(): void
 	{
 		$params = Router::parse('/sets/4211');
-		$this->assertSame('sets', $params['controller']);
+		$this->assertSame('Sets', $params['controller']);
 		$this->assertSame('view', $params['action']);
 		$this->assertSame('4211', $params['id']);
 	}
