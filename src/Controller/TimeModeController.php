@@ -67,13 +67,13 @@ class TimeModeController extends AppController
 
 		$this->set('timeMode', $timeMode);
 		$this->set('nextLink', '/timeMode/skip/' . $timeMode->servedOrder);
-		$this->set('noSkipNextLink', $timeMode->currentWillBeLast()
-			? '/timeMode/result/' . $timeMode->currentSession->id
-			: '/timeMode/play/' . ($timeMode->servedOrder + 1));
 		$play  = new Play(function ($name, $value) {
 			$this->set($name, $value);
 		});
 		$play->play($setConnection->id, $this->request);
+		$this->set('noSkipNextLink', $timeMode->currentWillBeLast()
+			? '/timeMode/result/' . $timeMode->currentSession->id
+			: '/timeMode/play/' . ($timeMode->servedOrder + 1));
 		$this->render('/Tsumegos/play');
 		return null;
 	}
