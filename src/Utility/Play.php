@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Utility;
+
 use App\Model\Entity\Set;
 use App\Model\Table\SetTable;
 use App\Model\Entity\SetConnection;
@@ -16,20 +18,11 @@ use App\Policy\AdminPolicy;
 use App\Policy\BasePolicy;
 use App\Policy\SetPolicy;
 use App\Policy\TagConnectionPolicy;
-use App\Utility\AdminActivityLogger;
-use App\Utility\Auth;
-use App\Utility\BoardSelector;
-use App\Utility\Constants;
-use App\Utility\MistakeTraining;
-use App\Utility\SetNavigationButtonsInput;
-use App\Utility\SgfParser;
-use App\Utility\TimeMode;
-use App\Utility\TsumegoButtons;
-use App\Utility\TsumegoFilters;
-use App\Utility\TsumegoUtil;
-use App\Utility\TsumegoXPAndRating;
-use App\Utility\Util;
 use Cake\ORM\TableRegistry;
+use AuthorizationComponent;
+use CakeRequest;
+use NotFoundException;
+use Router;
 
 class Play
 {
