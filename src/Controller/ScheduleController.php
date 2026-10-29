@@ -95,7 +95,7 @@ ORDER BY schedule.date DESC, schedule.id DESC");
 	//`per_day` of them on each day. A schedule starting today is published right
 	//away, because the daily cron only publishes the day it runs on.
 	#[HttpPost]
-	public function add(): void
+	public function add(): CakeResponse
 	{
 		$this->Authorization->authorize('Schedule');
 
@@ -152,7 +152,7 @@ ORDER BY schedule.date DESC, schedule.id DESC");
 			CookieFlash::set('Nothing scheduled: everything from that position on is already published or already scheduled.', 'info');
 		else
 			CookieFlash::set($scheduled . ($startsToday ? ' problems published.' : ' problems scheduled.'), 'success');
-		$this->redirect('/schedule');
+		return $this->redirect('/schedule');
 	}
 
 	//Preview which problems would be scheduled, and on which day each of them lands. Admin only. Returns JSON.
@@ -220,7 +220,7 @@ LIMIT " . $count), [$setIdFrom, $num, $targetSetId]);
 
 	//Cancel a pending schedule entry. Admin only.
 	#[HttpPost]
-	public function cancel(?string $id = null): void
+	public function cancel(?string $id = null): CakeResponse
 	{
 		$this->Authorization->authorize('Schedule');
 
@@ -235,6 +235,6 @@ LIMIT " . $count), [$setIdFrom, $num, $targetSetId]);
 		AdminActivityLogger::log(AdminActivityTypeTable::CANCEL_SCHEDULE, $schedule->tsumego_id, $schedule->set_id);
 
 		CookieFlash::set('Schedule entry cancelled.', 'success');
-		$this->redirect('/schedule');
+		return $this->redirect('/schedule');
 	}
 }

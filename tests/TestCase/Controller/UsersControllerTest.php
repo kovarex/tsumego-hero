@@ -693,4 +693,15 @@ class UsersControllerTest extends IntegrationTestCase
 		$user = UserTable::row((int) $context->user['id']);
 		$this->assertSame(UserTable::ROLE_PLAYER, (int) $user['user_role_id']);
 	}
+
+	public function testAGuestOnTheirOwnPagesIsSentToTheLogin()
+	{
+		new ContextPreparator();
+		$this->logout();
+		foreach (['/me', '/me/solve-history', '/me/contributions'] as $url)
+		{
+			$this->get($url);
+			$this->assertRedirect('/users/login', $url);
+		}
+	}
 }
