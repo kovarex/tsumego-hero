@@ -20,7 +20,7 @@ use App\Policy\TsumegoPolicy;
 use App\Utility\Auth;
 use App\Utility\Constants;
 
-class PolicyTest extends CakeTestCase
+class PolicyTest extends AppTestCase
 {
 	//Builds an identity array (like Auth::getIdentity() returns) for the given role.
 	private function identity($isAdmin, int $premium = 0, ?int $id = null): ?array

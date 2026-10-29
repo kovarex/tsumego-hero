@@ -7,7 +7,7 @@ use PHPUnitRetry\RetryTrait;
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
-class SecondarySgfDataFillingTest extends CakeTestCase
+class SecondarySgfDataFillingTest extends AppTestCase
 {
 	use RetryTrait;
 

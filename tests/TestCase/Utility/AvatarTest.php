@@ -2,7 +2,7 @@
 
 use App\Utility\Avatar;
 
-class AvatarTest extends CakeTestCase
+class AvatarTest extends AppTestCase
 {
 	//The drawing is a 5x5 board mirrored down the middle, so 15 of the 25 cells
 	//are free and every one of them is empty, a black stone or a white stone.

@@ -7,7 +7,7 @@ use PHPUnitRetry\RetryTrait;
  */
 use App\Utility\Util;
 
-class JavaScriptErrorTrackingTest extends CakeTestCase
+class JavaScriptErrorTrackingTest extends AppTestCase
 {
 	use RetryTrait;
 

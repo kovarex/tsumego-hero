@@ -11,7 +11,7 @@ use PHPUnitRetry\RetryTrait;
  * This test is excluded from local runs (see phpunit.xml.dist).
  * It only runs in CI where assets are pre-built via .github/workflows/ci.yml
  */
-class AssetBundlingTest extends CakeTestCase
+class AssetBundlingTest extends AppTestCase
 {
 	use RetryTrait;
 	//Test that CSS bundles are loaded and individual files are NOT loaded

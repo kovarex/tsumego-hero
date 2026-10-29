@@ -2,7 +2,7 @@
 
 use App\Utility\BoardTransformation;
 
-class BoardTransformationTest extends CakeTestCase
+class BoardTransformationTest extends AppTestCase
 {
 	public function testApplyTransposesBeforeFlipping()
 	{

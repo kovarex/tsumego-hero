@@ -15,7 +15,7 @@ use PHPUnitRetry\RetryTrait;
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
-class IntegrationTestCase extends CakeTestCase
+class IntegrationTestCase extends AppTestCase
 {
 	use IntegrationTestTrait {
 		_sendRequest as private dispatchRequest;

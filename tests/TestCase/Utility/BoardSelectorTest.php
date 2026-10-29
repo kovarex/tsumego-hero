@@ -7,7 +7,7 @@ use PHPUnitRetry\RetryTrait;
  */
 use App\Utility\BoardSelector;
 
-class BoardSelectorTest extends CakeTestCase
+class BoardSelectorTest extends AppTestCase
 {
 	use RetryTrait;
 

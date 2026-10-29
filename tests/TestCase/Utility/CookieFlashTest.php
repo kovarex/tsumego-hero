@@ -4,7 +4,7 @@
 //CookieFlash provides stateless flash messages using cookies.
 use App\Utility\CookieFlash;
 
-class CookieFlashTest extends CakeTestCase
+class CookieFlashTest extends AppTestCase
 {
 	public function testSetStoresMessage(): void
 	{

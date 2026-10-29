@@ -6,7 +6,7 @@ use PHPUnitRetry\RetryTrait;
  * @retryAttempts 2
  * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
-class SimilarSearchLogicTest extends CakeTestCase
+class SimilarSearchLogicTest extends AppTestCase
 {
 	use RetryTrait;
 

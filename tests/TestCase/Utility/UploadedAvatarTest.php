@@ -4,7 +4,7 @@ use App\Model\Table\UserTable;
 use App\Utility\UploadedAvatar;
 use App\Utility\Util;
 
-class UploadedAvatarTest extends CakeTestCase
+class UploadedAvatarTest extends AppTestCase
 {
 	/** @var array<int, string> Files a test made, removed afterwards */
 	private array $files = [];
