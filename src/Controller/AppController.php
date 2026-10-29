@@ -188,9 +188,8 @@ class AppController extends Controller
 		$this->resetStaleBrowserCache();
 
 		//Boards are drawn without a session: a list of a thousand players would otherwise
-		//pay for the login of a visitor who is not there. The error page of a board is a page
-		//like any other, its controller is not this one.
-		if ($this instanceof AvatarsController)
+		//pay for the login of a visitor who is not there.
+		if (strtolower((string) ($this->request->params['controller'] ?? '')) === 'avatars')
 			return;
 
 		Auth::init();
