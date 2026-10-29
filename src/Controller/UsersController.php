@@ -29,6 +29,7 @@ use App\Utility\Util;
 use App\Attribute\HttpPost;
 use App\Attribute\HttpGet;
 use App\Model\Table\TimeModeSessionStatusTable;
+use App\Utility\Mailer;
 use Cake\Log\Log;
 
 class UsersController extends AppController
@@ -137,8 +138,8 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	//returns true, so a mail server that does not answer leaves nothing behind and the
 	//user can go through the flow again right away.
 	//Returns whether the mail left
-	/** @param CakeEmail $emailer The mailer from _getEmailer(), which a test replaces */
-	private function linkMailWasSent(mixed $emailer, string $body): bool
+	//$emailer: The mailer from _getEmailer(), which a test replaces
+	private function linkMailWasSent(Mailer $emailer, string $body): bool
 	{
 		try
 		{
@@ -156,8 +157,8 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	//Send a mail that only tells the account about a change that already happened. It is
 	//not part of the change, so a mail server that does not answer is logged instead of
 	//turned into an error page.
-	/** @param CakeEmail $emailer The mailer from _getEmailer(), which a test replaces */
-	private function sendNotification(mixed $emailer, string $body): void
+	//$emailer: The mailer from _getEmailer(), which a test replaces
+	private function sendNotification(Mailer $emailer, string $body): void
 	{
 		try
 		{
