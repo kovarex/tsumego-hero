@@ -58,7 +58,7 @@ class TimestampTest extends IntegrationTestCase
 	{
 		$id = $this->savePoolRow();
 		$poolTable = $this->fetchTable('MistakeTrainingPool');
-		$poolTable->saveOrFail($poolTable->get($id)->set(['lapses' => 1, 'modified' => '2026-01-03 10:00:00']));
+		$poolTable->saveOrFail($poolTable->get($id)->patch(['lapses' => 1, 'modified' => '2026-01-03 10:00:00']));
 
 		$this->assertSame('2026-01-03 10:00:00', self::poolRow($id)['modified']);
 	}

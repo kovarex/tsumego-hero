@@ -11,7 +11,7 @@ class UrlRoute extends Route
 		//A bare number is the address of a problem in a collection, /<set connection id>
 		$numberCandidate = substr($url, 1);
 		if (is_numeric($numberCandidate))
-			return ['controller' => 'Tsumegos', 'action' => 'play', 'pass' => [null, $numberCandidate], 'plugin' => null, '_matchedRoute' => $this->template];
+			return ['controller' => 'Tsumegos', 'action' => 'play', 'pass' => [null, $numberCandidate], 'plugin' => null, '_route' => $this, '_matchedRoute' => $this->template];
 		return parent::parse($url, $method);
 	}
 }

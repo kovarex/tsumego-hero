@@ -1172,7 +1172,7 @@ ORDER BY category DESC', [$user['id']]));
 			if (!empty($updates))
 			{
 				$userTable->updateAll($updates, ['id' => $user->id]);
-				$user->set($updates);
+				$user->patch($updates);
 			}
 		}
 		$this->signIn(UserTable::rowOf($user));
