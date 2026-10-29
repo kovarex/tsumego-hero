@@ -162,6 +162,9 @@ jobs:
       - name: Start built-in PHP server
         env:
           TZ: UTC
+          # A single php -S answers one request at a time, so a page's scripts, styles and pictures
+          # would load one after another. The workers answer them in parallel, as Apache does.
+          PHP_CLI_SERVER_WORKERS: 8
         run: |
           mkdir -p /tmp/coverage
           # Use router script to handle CakePHP dispatcher filter routes
