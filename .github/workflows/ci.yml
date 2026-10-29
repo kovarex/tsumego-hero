@@ -20,6 +20,9 @@ jobs:
   tests:
     runs-on: ubuntu-24.04
     timeout-minutes: 60
+    env:
+      # Master collects the PHP and JS coverage and publishes it to GitHub Pages.
+      COVERAGE: ${{ github.ref == 'refs/heads/master' }}
 
     services:
       mysql:
@@ -55,17 +58,9 @@ jobs:
         with:
           php-version: '8.4'
           extensions: mbstring, intl
-          # Only master collects coverage; elsewhere a loaded Xdebug would just slow every request down.
-          coverage: ${{ github.ref == 'refs/heads/master' && 'xdebug' || 'none' }}
-
-      - name: Configure Xdebug for coverage
-        if: github.ref == 'refs/heads/master'
-        run: |
-            echo "zend_extension=$(php -i | grep -i xdebug | grep extension_dir | awk '{print $3}')/xdebug.so" >> $GITHUB_ENV
-            echo "xdebug.mode=coverage" | sudo tee -a /etc/php/8.4/cli/conf.d/99-xdebug.ini
-            echo "xdebug.start_with_request=yes" | sudo tee -a /etc/php/8.4/cli/conf.d/99-xdebug.ini
-            php -v
-            php -m | grep xdebug || (echo "Xdebug not found!" && exit 1)
+          # PCOV records only src/ and costs far less than Xdebug; without coverage no driver slows the requests down.
+          coverage: ${{ env.COVERAGE == 'true' && 'pcov' || 'none' }}
+          ini-values: pcov.directory=${{ github.workspace }}/src
 
       - name: Get composer cache directory
         id: composer-cache
@@ -97,7 +92,7 @@ jobs:
         run: pnpm run test:scripts
 
       - name: Build React app
-        run: ${{ github.ref == 'refs/heads/master' && 'pnpm run build:coverage' || 'pnpm run build' }}
+        run: ${{ env.COVERAGE == 'true' && 'pnpm run build:coverage' || 'pnpm run build' }}
 
       - name: Generate WebP images
         timeout-minutes: 10
@@ -166,8 +161,8 @@ jobs:
         run: |
           mkdir -p /tmp/coverage
           # Use router script to handle CakePHP dispatcher filter routes
-          if [ "${{ github.ref }}" = "refs/heads/master" ]; then
-            nohup php -d xdebug.mode=coverage -d xdebug.start_with_request=yes -d auto_prepend_file=/home/runner/work/tsumego-hero/tsumego-hero/.github/ci/xdebug-prepend.php -S 0.0.0.0:8080 -t webroot .github/ci/router.php > server.log 2>&1 &
+          if [ "$COVERAGE" = "true" ]; then
+            nohup php -d auto_prepend_file="$PWD/.github/ci/coverage-prepend.php" -S 0.0.0.0:8080 -t webroot .github/ci/router.php > server.log 2>&1 &
           else
             nohup php -S 0.0.0.0:8080 -t webroot .github/ci/router.php > server.log 2>&1 &
           fi
@@ -196,7 +191,7 @@ jobs:
         run: |
           mkdir -p /tmp/coverage
           # phpunit, with the tests the browser alone failed run again (scripts/phpunit-retry.php)
-          php scripts/phpunit-retry.php --exclude-group apache-only --exclude-group disabled ${{ github.ref == 'refs/heads/master' && '--coverage-php /tmp/coverage/phpunit.cov' || '' }}
+          php scripts/phpunit-retry.php --exclude-group apache-only --exclude-group disabled ${{ env.COVERAGE == 'true' && '--coverage-php /tmp/coverage/phpunit.cov' || '' }}
 
       - name: Upload browser timeout dumps
         if: failure()
@@ -206,13 +201,13 @@ jobs:
           path: tmp/browser-timeout-*.html
           if-no-files-found: ignore
 
-      # PHPUnit's phpunit.cov and one webserver-*.cov per request of the Selenium tests (.github/ci/xdebug-prepend.php)
+      # PHPUnit's phpunit.cov and one webserver-*.cov per request of the Selenium tests (.github/ci/coverage-prepend.php)
       - name: Merge coverage files
-        if: github.ref == 'refs/heads/master'
+        if: env.COVERAGE == 'true'
         run: vendor/bin/phpcov merge --html coverage/php --clover coverage/coverage.xml /tmp/coverage
 
       - name: Generate JS coverage report
-        if: github.ref == 'refs/heads/master'
+        if: env.COVERAGE == 'true'
         run: pnpm run coverage:js
 
       - name: Restore coverage history
