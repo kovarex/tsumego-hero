@@ -4,6 +4,7 @@ use App\Utility\Auth;
 use App\Utility\CookieFlash;
 use App\Utility\JwtAuth;
 use App\Utility\Preferences;
+use Cake\Cache\Cache;
 use PHPUnit\Framework\Attributes\Before;
 
 //The base of every test case of the site.
@@ -30,7 +31,7 @@ abstract class AppTestCase extends CakeTestCase
 		{
 			if (str_starts_with($config, '_cake_'))
 				continue;
-			Cache::clear(false, $config);
+			Cache::clear($config);
 		}
 	}
 }
