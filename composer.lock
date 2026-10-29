@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ee72f71e0e530020f385e4b595309112",
+    "content-hash": "cb72bd8792ebbe08e6557b9ff82b69a0",
     "packages": [
         {
             "name": "cakephp/cakephp",
@@ -328,12 +328,12 @@
             "version": "v6.11.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/firebase/php-jwt.git",
+                "url": "https://github.com/googleapis/php-jwt.git",
                 "reference": "d1e91ecf8c598d073d0995afa8cd5c75c6e19e66"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/firebase/php-jwt/zipball/d1e91ecf8c598d073d0995afa8cd5c75c6e19e66",
+                "url": "https://api.github.com/repos/googleapis/php-jwt/zipball/d1e91ecf8c598d073d0995afa8cd5c75c6e19e66",
                 "reference": "d1e91ecf8c598d073d0995afa8cd5c75c6e19e66",
                 "shasum": ""
             },
@@ -2923,15 +2923,11 @@
         {
             "name": "phpstan/phpstan",
             "version": "2.1.33",
-            "source": {
-                "type": "",
-                "url": "",
-                "reference": ""
-            },
             "dist": {
-                "type": "path",
-                "url": "/opt/phpstan-src",
-                "reference": "9e800e6bee7d5bd02784d4c6069b48032d16224f"
+                "type": "zip",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/9e800e6bee7d5bd02784d4c6069b48032d16224f",
+                "reference": "9e800e6bee7d5bd02784d4c6069b48032d16224f",
+                "shasum": ""
             },
             "require": {
                 "php": "^7.4|^8.0"
@@ -2949,6 +2945,7 @@
                     "bootstrap.php"
                 ]
             },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -2958,16 +2955,23 @@
                 "static analysis"
             ],
             "support": {
-                "issues": "https://github.com/phpstan/phpstan/issues",
-                "forum": "https://github.com/phpstan/phpstan/discussions",
-                "source": "https://github.com/phpstan/phpstan-src",
                 "docs": "https://phpstan.org/user-guide/getting-started",
-                "security": "https://github.com/phpstan/phpstan/security/policy"
+                "forum": "https://github.com/phpstan/phpstan/discussions",
+                "issues": "https://github.com/phpstan/phpstan/issues",
+                "security": "https://github.com/phpstan/phpstan/security/policy",
+                "source": "https://github.com/phpstan/phpstan-src"
             },
-            "transport-options": {
-                "symlink": true,
-                "relative": false
-            }
+            "funding": [
+                {
+                    "url": "https://github.com/ondrejmirtes",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/phpstan",
+                    "type": "github"
+                }
+            ],
+            "time": "2025-12-05T10:24:31+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",

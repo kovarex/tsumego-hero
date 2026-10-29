@@ -59,17 +59,5 @@
                 "type:cakephp-plugin"
             ]
         }
-    },
-    "repositories": [
-        {
-            "type": "path",
-            "url": "/opt/phpstan-src",
-            "options": {
-                "symlink": true,
-                "versions": {
-                    "phpstan/phpstan": "2.1.33"
-                }
-            }
-        }
-    ]
+    }
 }
