@@ -175,10 +175,10 @@ class UtilTest extends CakeTestCase
 		$this->assertEmpty($_COOKIE['session']);
 	}
 
-	public function testGetCookieReturnsDefaultWhenMissing()
+	public function testCookieReturnsDefaultWhenMissing()
 	{
 		unset($_COOKIE['missing']);
-		$this->assertSame('fallback', Util::getCookie('missing', 'fallback'));
+		$this->assertSame('fallback', Util::cookie('missing', 'fallback'));
 	}
 
 	public function testGenerateRandomStringHasTheAskedLength()

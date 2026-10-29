@@ -235,7 +235,7 @@ ORDER BY s.title", [$tsumegoID, Auth::getUserID()]);
 		{
 			$buttons = new TsumegoButtons($tsumegoFilters, $setConnectionID, null, $set->id);
 			new SetNavigationButtonsInput($this->setFunction)->execute($buttons, $setConnection);
-			$collectionTitle = $tsumegoFilters->query == 'topics' ? $set->title : ($_COOKIE['lastSet'] ?? 'Tsumego');
+			$collectionTitle = $tsumegoFilters->query == 'topics' ? $set->title : (Util::cookie('lastSet') ?? 'Tsumego');
 			$this->set('_title', $collectionTitle . ' ' . $setConnection->num . '/' . $buttons->highestTsumegoOrder . ' on Tsumego Hero');
 			$buttons->exportCurrentAndPreviousLink($this->setFunction, $tsumegoFilters, $setConnectionID, $set);
 			return $tsumegoFilters->getSetTitle($set) . $buttons->getPartitionTitleSuffix() . ' ' . $buttons->currentOrder . '/' . $buttons->highestTsumegoOrder;

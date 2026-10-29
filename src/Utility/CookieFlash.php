@@ -28,8 +28,7 @@ class CookieFlash
 		];
 
 		$json = json_encode($data);
-		$_COOKIE[self::COOKIE_NAME] = $json;
-		setcookie(self::COOKIE_NAME, $json, time() + 60, '/'); // 60 second expiry
+		Util::setCookie(self::COOKIE_NAME, $json, ['expires' => time() + 60, 'secure' => false, 'samesite' => null]);
 		self::$cache = $data;
 	}
 
@@ -65,8 +64,7 @@ class CookieFlash
 	//Clear the flash message.
 	public static function clear(): void
 	{
-		unset($_COOKIE[self::COOKIE_NAME]);
-		setcookie(self::COOKIE_NAME, '', time() - 3600, '/');
+		Util::clearCookie(self::COOKIE_NAME, ['secure' => false, 'samesite' => null]);
 		self::$cache = null;
 	}
 
@@ -83,10 +81,11 @@ class CookieFlash
 		if (self::$cache !== null)
 			return self::$cache;
 
-		if (!isset($_COOKIE[self::COOKIE_NAME]) || empty($_COOKIE[self::COOKIE_NAME]))
+		$json = Util::cookie(self::COOKIE_NAME);
+		if (empty($json))
 			return null;
 
-		$decoded = json_decode($_COOKIE[self::COOKIE_NAME], true);
+		$decoded = json_decode($json, true);
 		if (!is_array($decoded) || !isset($decoded['message']))
 			return null;
 

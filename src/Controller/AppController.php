@@ -213,7 +213,7 @@ class AppController extends Controller
 	//the site comes first. The cookie keeps it from happening again.
 	private function resetStaleBrowserCache(): void
 	{
-		if (($_COOKIE['browser_cache_version'] ?? null) === self::BROWSER_CACHE_VERSION)
+		if (Util::cookie('browser_cache_version') === self::BROWSER_CACHE_VERSION)
 			return;
 		$this->setResponseHeader('Clear-Site-Data', '"cache"');
 		Util::setCookie('browser_cache_version', self::BROWSER_CACHE_VERSION);
@@ -244,15 +244,15 @@ class AppController extends Controller
 	{
 		if ($lastTimeModeCategoryID = Util::clearCookie('lastTimeModeCategoryID'))
 			Auth::saveUserField('last_time_mode_category_id', $lastTimeModeCategoryID);
-		if (isset($_COOKIE['sound']) && $_COOKIE['sound'] != '0')
+		if (Util::cookie('sound') !== null && Util::cookie('sound') != '0')
 		{
-			Auth::saveUserField('sound', $_COOKIE['sound'] === 'on');
-			unset($_COOKIE['sound']);
+			Auth::saveUserField('sound', Util::cookie('sound') === 'on');
+			Util::forgetCookie('sound');
 		}
-		if (isset($_COOKIE['lightDark']) && $_COOKIE['lightDark'] != '0')
-			Auth::saveUserField('theme_id', $_COOKIE['lightDark'] === 'dark' ? UserTable::THEME_DARK : UserTable::THEME_LIGHT);
-		if (isset($_COOKIE['levelBar']) && $_COOKIE['levelBar'] != '0')
-			Auth::saveUserField('level_bar_id', self::levelBar((int) $_COOKIE['levelBar']));
+		if (Util::cookie('lightDark') !== null && Util::cookie('lightDark') != '0')
+			Auth::saveUserField('theme_id', Util::cookie('lightDark') === 'dark' ? UserTable::THEME_DARK : UserTable::THEME_LIGHT);
+		if (Util::cookie('levelBar') !== null && Util::cookie('levelBar') != '0')
+			Auth::saveUserField('level_bar_id', self::levelBar((int) Util::cookie('levelBar')));
 		if (!is_null($boardsBitmask = Util::clearCookie('boards_bitmask')))
 			Auth::saveUserField('boards_bitmask', BoardSelector::filterValidBits((int) $boardsBitmask));
 		new TsumegoFilters(); //keeps the collection filters the pages set in cookies
@@ -300,7 +300,7 @@ class AppController extends Controller
 		}
 		else
 		{
-			$lightDark = ($_COOKIE['lightDark'] ?? null) === 'dark' ? 'dark' : 'light';
+			$lightDark = Util::cookie('lightDark') === 'dark' ? 'dark' : 'light';
 			$levelBar = UserTable::LEVEL_BAR_LEVEL;
 			$boardsBitmask = BoardSelector::filterValidBits((int) (Util::clearCookie('boards_bitmask') ?? BoardSelector::$DEFAULT_BOARDS_BITMASK));
 		}
