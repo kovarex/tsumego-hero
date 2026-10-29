@@ -41,4 +41,5 @@ require_once ROOT . '/tests/RetryOnBrowserFailure.php';
 date_default_timezone_set('UTC');
 require_once ROOT . '/tests/TestCase/Controller/IntegrationTestCase.php';
 require_once ROOT . '/tests/TestCase/Achievement/AchievementTestCase.php';
+require_once ROOT . '/tests/TestCase/Json/JsonGoldenTestCase.php';
 register_shutdown_function(fn() => Browser::shutdown());
