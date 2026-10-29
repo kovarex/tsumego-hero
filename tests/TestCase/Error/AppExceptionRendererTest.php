@@ -98,6 +98,17 @@ class AppExceptionRendererTest extends AppTestCase
 		$this->assertStringNotContainsString("'", $trace);
 	}
 
+	//The paths start at the root of the site, as in the repository: shorter to report, and they
+	//don't tell how the server is laid out.
+	public function testTheErrorPageShowsThePathsFromTheRootOfTheSite()
+	{
+		Configure::write('debug', false);
+		[, $output] = $this->renderError(new NotFoundException('There is no such page'), ['REQUEST_METHOD' => 'GET'], '/sets/nowhere');
+
+		$this->assertStringContainsString('tests/TestCase/Error/AppExceptionRendererTest.php', $output);
+		$this->assertStringNotContainsString(ROOT . DS, $output);
+	}
+
 	//The JSON answer keeps the real message for everyone, as the page does.
 	public function testAJsonAnswerKeepsTheMessageOfAnyErrorWithoutDebug()
 	{
