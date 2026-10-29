@@ -3,7 +3,7 @@
 use App\Model\Table\SetConnectionTable;
 use Cake\ORM\TableRegistry;
 
-class SetConnectionTest extends CakeTestCase
+class SetConnectionTest extends AppTestCase
 {
 	public function testDisplayPrefersOfficialOverFavorite()
 	{

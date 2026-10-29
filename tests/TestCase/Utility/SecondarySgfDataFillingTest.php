@@ -1,16 +1,10 @@
 <?php
 
 use Cake\ORM\TableRegistry;
-use PHPUnitRetry\RetryTrait;
 
-/**
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
- */
-class SecondarySgfDataFillingTest extends CakeTestCase
+#[RetryOnBrowserFailure]
+class SecondarySgfDataFillingTest extends AppTestCase
 {
-	use RetryTrait;
-
 	public function testFillFirstAndCorrectMoves()
 	{
 		$browser = Browser::instance();
