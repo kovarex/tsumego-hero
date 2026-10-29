@@ -6,6 +6,7 @@ use App\Utility\Auth;
 use App\Utility\CookieFlash;
 use App\Utility\JwtAuth;
 use App\Utility\Preferences;
+use Cake\Cache\Cache;
 
 final class SuperglobalCleanup implements BeforeTestHook
 {
@@ -25,7 +26,7 @@ final class SuperglobalCleanup implements BeforeTestHook
 		{
 			if (str_starts_with($config, '_cake_'))
 				continue;
-			Cache::clear(false, $config);
+			Cache::clear($config);
 		}
 	}
 

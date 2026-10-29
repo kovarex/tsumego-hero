@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b4d883bd2fafc0f8b8856657ac7e34cf",
+    "content-hash": "33e2d22856b3561a96aaf6bc04c7828a",
     "packages": [
         {
             "name": "cakephp/cache",
@@ -435,6 +435,65 @@
                 "source": "https://github.com/cakephp/event"
             },
             "time": "2025-07-02T13:30:58+00:00"
+        },
+        {
+            "name": "cakephp/log",
+            "version": "5.2.15",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/cakephp/log.git",
+                "reference": "0e83b2367a2a668aee61106e93e63f9a99cdc41c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/cakephp/log/zipball/0e83b2367a2a668aee61106e93e63f9a99cdc41c",
+                "reference": "0e83b2367a2a668aee61106e93e63f9a99cdc41c",
+                "shasum": ""
+            },
+            "require": {
+                "cakephp/core": "5.2.*@dev",
+                "php": ">=8.1",
+                "psr/log": "^3.0"
+            },
+            "provide": {
+                "psr/log-implementation": "^3.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-5.x": "5.2.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Cake\\Log\\": "."
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "CakePHP Community",
+                    "homepage": "https://github.com/cakephp/log/graphs/contributors"
+                }
+            ],
+            "description": "CakePHP logging library with support for multiple different streams",
+            "homepage": "https://cakephp.org",
+            "keywords": [
+                "Streams",
+                "cakephp",
+                "log",
+                "logging"
+            ],
+            "support": {
+                "forum": "https://stackoverflow.com/tags/cakephp",
+                "irc": "irc://irc.freenode.org/cakephp",
+                "issues": "https://github.com/cakephp/cakephp/issues",
+                "source": "https://github.com/cakephp/log"
+            },
+            "time": "2025-11-16T08:37:38+00:00"
         },
         {
             "name": "cakephp/orm",

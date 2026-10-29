@@ -4,7 +4,7 @@ namespace App\Model\Table;
 
 use App\Model\Entity\Message;
 use App\Utility\Util;
-use CakeLog;
+use Cake\Log\Log;
 use Cake\ORM\TableRegistry;
 use Exception;
 use InvalidArgumentException;
@@ -114,7 +114,7 @@ You get an email for the first message you have not read yet. You can turn these
 		}
 		catch (Exception $e)
 		{
-			CakeLog::write('error', 'A Tsumego Hero message notification could not be sent: ' . $e->getMessage());
+			Log::error('A Tsumego Hero message notification could not be sent: ' . $e->getMessage());
 		}
 	}
 
