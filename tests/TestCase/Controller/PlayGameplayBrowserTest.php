@@ -234,8 +234,7 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$this->waitForBoard($browser);
 		$browser->waitUntilJs('document.getElementById("besogo-se-black") !== null');
 
-		$scoreAfter = function (array $buttons, string $input) use ($browser): string
-		{
+		$scoreAfter = function (array $buttons, string $input) use ($browser): string {
 			foreach ($buttons as $button)
 				$browser->clickId($button);
 			return $browser->find('#' . $input)->getAttribute('value');
