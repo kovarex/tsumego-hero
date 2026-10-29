@@ -3,6 +3,7 @@
 namespace App\Model\Table;
 
 use App\Model\Entity\Message;
+use App\Utility\Mailer;
 use App\Utility\Util;
 use CakeLog;
 use Cake\ORM\TableRegistry;
@@ -58,9 +59,9 @@ class MessageTable extends AppTable
 	//one way a message is sent, whether a player wrote it or the site writes on behalf of
 	//someone (an admin answering a proposal), so every message is announced the same way.
 	//$text: Plain text, http(s) addresses in it are shown as links
-	//$emailer: CakeEmail from AppController::_getEmailer(), which a test replaces
+	//$emailer: The mailer from AppController::_getEmailer(), which a test replaces
 	//Returns the id of the new message
-	public static function send(int $senderUserId, int $recipientUserId, string $text, mixed $emailer): int
+	public static function send(int $senderUserId, int $recipientUserId, string $text, Mailer $emailer): int
 	{
 		$problem = self::problemWith($senderUserId, $recipientUserId, $text);
 		if ($problem !== null)
@@ -84,7 +85,7 @@ class MessageTable extends AppTable
 		return trim(str_replace(["\r\n", "\r"], "\n", $text));
 	}
 
-	private static function notifyByEmail(int $senderUserId, int $recipientUserId, string $text, mixed $emailer): void
+	private static function notifyByEmail(int $senderUserId, int $recipientUserId, string $text, Mailer $emailer): void
 	{
 		$recipient = UserTable::row($recipientUserId);
 		if (!$recipient['email_on_new_message'] || empty($recipient['email']))

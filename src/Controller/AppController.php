@@ -5,6 +5,7 @@ use App\Utility\AchievementChecker;
 use App\Utility\Auth;
 use App\Utility\BoardSelector;
 use App\Utility\Constants;
+use App\Utility\Mailer;
 use App\Utility\TimeMode;
 use App\Utility\TsumegoFilters;
 use App\Utility\Util;
@@ -40,9 +41,9 @@ class AppController extends Controller
 	}
 
 	//The mailer of a running test, and null outside of one.
-	private static $testEmailer = null;
+	private static ?Mailer $testEmailer = null;
 
-	public static function _setTestEmailer($emailer): void
+	public static function _setTestEmailer(?Mailer $emailer): void
 	{
 		self::$testEmailer = $emailer;
 	}
@@ -51,11 +52,9 @@ class AppController extends Controller
 	//A test puts its own mailer here through _setTestEmailer(), so it reads what the site
 	//wrote instead of receiving it. The test suite and the test host build the message and
 	//stop there; the dev site hands it to the local mail catcher, like it always did.
-	/** @return CakeEmail */
-	public function _getEmailer()
+	public function _getEmailer(): Mailer
 	{
-		return self::$testEmailer
-			?? (Util::isOnTestSite() ? new CakeEmail(['transport' => 'Debug']) : new CakeEmail());
+		return self::$testEmailer ?? new Mailer(Util::isOnTestSite());
 	}
 
 	/** @param UserRow $user */
