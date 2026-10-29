@@ -8,7 +8,7 @@
 use App\Utility\CookieFlash;
 
 #[RetryOnBrowserFailure]
-class CookieFlashBrowserTest extends CakeTestCase
+class CookieFlashBrowserTest extends AppTestCase
 {
 	//Test that flash message appears after failed login attempt
 	public function testFlashMessageAppearsAfterFailedLogin()

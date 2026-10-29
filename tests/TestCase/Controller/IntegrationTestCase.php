@@ -10,7 +10,7 @@ use Facebook\WebDriver\WebDriverBy;
 //the global namespace, Cake 5 keeps it in `Cake\TestSuite\`, so the trait line below is what
 //moves at the migration; the tests themselves never name it. The body of the last response is
 //kept in `$view`, which is where the assertions that read the page look.
-class IntegrationTestCase extends CakeTestCase
+class IntegrationTestCase extends AppTestCase
 {
 	use IntegrationTestTrait {
 		_sendRequest as private dispatchRequest;

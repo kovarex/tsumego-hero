@@ -8,7 +8,7 @@
  * It only runs in CI where assets are pre-built via .github/workflows/ci.yml
  */
 #[RetryOnBrowserFailure]
-class AssetBundlingTest extends CakeTestCase
+class AssetBundlingTest extends AppTestCase
 {
 	//Test that CSS bundles are loaded and individual files are NOT loaded
 	public function testCssBundlesAreLoadedAndStylesApplied()

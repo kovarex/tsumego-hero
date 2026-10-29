@@ -4,7 +4,7 @@ use App\Utility\BoardComparator;
 use App\Utility\SgfBoard;
 use App\Utility\SgfParser;
 
-class BoardComparatorTest extends CakeTestCase
+class BoardComparatorTest extends AppTestCase
 {
 	public function testCompareEmptyWithEmpty()
 	{

@@ -1,7 +1,7 @@
 <?php
 
 //The addresses the collections answer on: one per action, and a short one per collection.
-class SetsRoutesTest extends CakeTestCase
+class SetsRoutesTest extends AppTestCase
 {
 	//An action is reached by its own address, not read as the name of a collection
 	public function testEveryActionKeepsItsAddress(): void

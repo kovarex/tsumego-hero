@@ -5,7 +5,7 @@
 //underscore (Controller::_isPrivateAction), so the action surface is decided by naming alone.
 //Every action states which HTTP verbs it accepts, and nothing reachable by address may ask for
 //an object: a request only ever carries strings.
-class ActionSurfaceTest extends CakeTestCase
+class ActionSurfaceTest extends AppTestCase
 {
 	//Callbacks the framework calls itself. They are public on purpose and are no actions.
 	private const LIFECYCLE = ['beforeFilter', 'beforeRender', 'afterFilter', 'initialize', 'startupProcess', 'shutdownProcess'];
@@ -26,7 +26,7 @@ class ActionSurfaceTest extends CakeTestCase
 		$offenders = [];
 		foreach ($this->actions() as $action)
 			if ($this->declaredVerbs($action) === [])
-				$offenders[] = $this->name($action);
+				$offenders[] = $this->fullName($action);
 
 		$this->assertSame([], $offenders, 'these are reachable by address yet declare no HTTP verb');
 	}
@@ -39,7 +39,7 @@ class ActionSurfaceTest extends CakeTestCase
 		foreach ($this->actions() as $action)
 			foreach ($this->declaredVerbs($action) as $verb)
 				if (!in_array($verb, self::VERBS, true))
-					$offenders[] = $this->name($action) . ' uses ' . $verb;
+					$offenders[] = $this->fullName($action) . ' uses ' . $verb;
 
 		$this->assertSame([], $offenders, 'these verbs do not resolve to App\Attribute, so they are not imported');
 	}
@@ -52,7 +52,7 @@ class ActionSurfaceTest extends CakeTestCase
 		foreach ($this->controllerClasses() as $className)
 			foreach ((new ReflectionClass($className))->getMethods() as $method)
 				if (!$this->isAction($className, $method) && $this->declaredVerbs($method) !== [])
-					$offenders[] = $this->name($method);
+					$offenders[] = $this->fullName($method);
 
 		$this->assertSame([], $offenders, 'these declare an HTTP verb yet are not reachable by address');
 	}
@@ -65,13 +65,13 @@ class ActionSurfaceTest extends CakeTestCase
 		$offenders = [];
 		foreach ($this->actions() as $action)
 			foreach ($action->getParameters() as $parameter)
-				if ($this->isObject($parameter))
-					$offenders[] = $this->name($action) . '($' . $parameter->getName() . ')';
+				if ($this->takesAnObject($parameter))
+					$offenders[] = $this->fullName($action) . '($' . $parameter->getName() . ')';
 
 		$this->assertSame([], $offenders, 'these are reachable by address yet take an object');
 	}
 
-	private function name(ReflectionMethod $method): string
+	private function fullName(ReflectionMethod $method): string
 	{
 		return $method->getDeclaringClass()->getName() . '::' . $method->getName();
 	}
@@ -138,7 +138,7 @@ class ActionSurfaceTest extends CakeTestCase
 		return (bool) preg_match('/^(.*\\\\)?Http(Get|Post|Put|Patch|Delete)$/', $attributeName);
 	}
 
-	private function isObject(ReflectionParameter $parameter): bool
+	private function takesAnObject(ReflectionParameter $parameter): bool
 	{
 		$type = $parameter->getType();
 		return $type instanceof ReflectionNamedType && !$type->isBuiltin();
