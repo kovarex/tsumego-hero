@@ -1,5 +1,7 @@
 <?php
 
+use App\Utility\Changelog;
+
 class ChangelogControllerTest extends IntegrationTestCase
 {
 	//The public changelog page renders its shell and mounts the React feed.
@@ -39,7 +41,7 @@ class ChangelogControllerTest extends IntegrationTestCase
 
 	public function testChangelogTimestampsReturnsEmptyWhenFileMissing()
 	{
-		$this->assertSame([], ChangelogController::changelogTimestamps('/nonexistent/changelog/index.json'));
+		$this->assertSame([], Changelog::timestamps('/nonexistent/changelog/index.json'));
 	}
 
 	public function testChangelogTimestampsFiltersNonNumericAndSortsDescending()
@@ -54,7 +56,7 @@ class ChangelogControllerTest extends IntegrationTestCase
 			],
 		]));
 
-		$this->assertSame([300, 200, 100], ChangelogController::changelogTimestamps($path));
+		$this->assertSame([300, 200, 100], Changelog::timestamps($path));
 	}
 
 	public function testChangelogTimestampsReturnsEmptyWhenEntriesHaveNoTimestamps()
@@ -66,14 +68,14 @@ class ChangelogControllerTest extends IntegrationTestCase
 			],
 		]));
 
-		$this->assertSame([], ChangelogController::changelogTimestamps($path));
+		$this->assertSame([], Changelog::timestamps($path));
 	}
 
 	public function testChangelogTimestampsReturnsEmptyWhenFileIsNotValidJson()
 	{
 		$path = $this->fixture('this is not json');
 
-		$this->assertSame([], ChangelogController::changelogTimestamps($path));
+		$this->assertSame([], Changelog::timestamps($path));
 	}
 
 	public function testBeforeFilterExposesChangelogTimestampsViewVar()
@@ -81,5 +83,13 @@ class ChangelogControllerTest extends IntegrationTestCase
 		$this->get('/changelog');
 
 		$this->assertIsArray($this->viewVariable('changelogTimestamps'));
+	}
+
+	//The timestamps helper used to be a static method of the controller, which made it an
+	//address that read the file the url named.
+	public function testTheTimestampsHelperIsNoAddress()
+	{
+		$this->get('/changelog/changelogTimestamps/index.json');
+		$this->assertResponseCode(404);
 	}
 }

@@ -4,6 +4,7 @@ use App\Model\Table\UserTable;
 use App\Utility\AchievementChecker;
 use App\Utility\Auth;
 use App\Utility\BoardSelector;
+use App\Utility\Changelog;
 use App\Utility\Constants;
 use App\Utility\Mailer;
 use App\Utility\TimeMode;
@@ -336,7 +337,7 @@ class AppController extends Controller
 		$this->set('levelBar', $levelBar);
 		$this->set('boardsBitmask', $boardsBitmask);
 		$this->set('timeMode', new TimeMode());
-		$this->set('changelogTimestamps', ChangelogController::changelogTimestamps());
+		$this->set('changelogTimestamps', Changelog::timestamps());
 		return null;
 	}
 }
