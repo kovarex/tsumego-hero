@@ -1,13 +1,10 @@
 <?php
 
 use Facebook\WebDriver\Interactions\WebDriverActions;
-/**
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
- */
 use App\Utility\Auth;
 use App\Utility\Constants;
 
+#[RetryOnBrowserFailure]
 class RatingModeTest extends IntegrationTestCase
 {
 	public function testRatingMode()

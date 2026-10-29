@@ -3,10 +3,7 @@
 use App\Utility\Util;
 
 //The layout every page has (src/View/Layouts/default.ctp)
-/**
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
- */
+#[RetryOnBrowserFailure]
 class SiteLayoutTest extends IntegrationTestCase
 {
 	public function testScriptsComeFromOurOwnHost()

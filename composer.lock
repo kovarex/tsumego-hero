@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6c0ccb23499f0bd01e25be17b13fc079",
+    "content-hash": "33e2d22856b3561a96aaf6bc04c7828a",
     "packages": [
         {
             "name": "cakephp/cache",
@@ -2349,57 +2349,6 @@
         }
     ],
     "packages-dev": [
-        {
-            "name": "bshaffer/phpunit-retry-annotations",
-            "version": "v0.3",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/bshaffer/phpunit-retry-annotations.git",
-                "reference": "b53a1ee5564433a94b7034d75c5b9f7c81dac64f"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/bshaffer/phpunit-retry-annotations/zipball/b53a1ee5564433a94b7034d75c5b9f7c81dac64f",
-                "reference": "b53a1ee5564433a94b7034d75c5b9f7c81dac64f",
-                "shasum": ""
-            },
-            "require": {
-                "php": "^7.1|^8.0",
-                "phpunit/phpunit": "^7.1|^8.0|^9.0"
-            },
-            "require-dev": {
-                "friendsofphp/php-cs-fixer": "^2"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "PHPUnitRetry\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "Apache-2.0"
-            ],
-            "authors": [
-                {
-                    "name": "Brent Shaffer",
-                    "email": "bshafs@gmail.com",
-                    "homepage": "https://brentertainment.com"
-                }
-            ],
-            "description": "Traits for retrying test methods and classes in PHPUnit",
-            "homepage": "https://github.com/bshaffer/phpunit-retry",
-            "keywords": [
-                "phpunit",
-                "retry",
-                "test"
-            ],
-            "support": {
-                "issues": "https://github.com/bshaffer/phpunit-retry-annotations/issues",
-                "source": "https://github.com/bshaffer/phpunit-retry-annotations/tree/v0.3"
-            },
-            "time": "2022-07-18T23:39:59+00:00"
-        },
         {
             "name": "clue/ndjson-react",
             "version": "v1.3.0",

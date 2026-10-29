@@ -15,7 +15,6 @@
 		"robmorgan/phinx": "^0.16.10"
 	},
     "require-dev": {
-		"bshaffer/phpunit-retry-annotations": "^0.3.0",
 		"friendsofphp/php-cs-fixer": "^3.89",
 		"php-webdriver/webdriver": "^1.15",
 		"phpstan/phpstan": "^2.1",
