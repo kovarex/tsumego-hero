@@ -2,7 +2,7 @@
 
 namespace App\Utility;
 
-use Cache;
+use Cake\Cache\Cache;
 
 //The "Site Growth" graph of the home page: how many problems the site offers and how many players
 //it has, month by month.

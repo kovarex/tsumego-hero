@@ -7,6 +7,7 @@
     "require": {
 		"php": ">=8.4",
 		"cakephp/cache": "^5.2.15",
+		"cakephp/log": "^5.2.15",
 		"cakephp/orm": "^5.2.15",
 		"ezyang/htmlpurifier": "^4.19",
 		"firebase/php-jwt": "^6.11.1",
