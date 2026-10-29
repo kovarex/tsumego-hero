@@ -21,7 +21,6 @@ use App\Model\Table\ClassroomTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
 use App\Utility\CookieFlash;
-use App\Utility\Play;
 use App\Utility\Util;
 
 //Classes: a teacher gathers players into a class, gives them problems to solve by a day and
@@ -323,15 +322,10 @@ class ClassroomsController extends AppController
 		if (!Auth::isInLevelMode())
 			Auth::saveUserField('mode_id', Constants::$LEVEL_MODE);
 
-		$play = new Play(function ($name, $value) {
-			$this->set($name, $value);
-		});
-		$play->classroomAssignment = ClassroomAssignmentTable::withCollections([$assignment])[0];
-		// Same problem, same address for search engines, whichever route got here.
-		$this->set('canonicalPath', '/' . $current);
-		$play->play($current, $this->request);
-		$this->set('_page', 'classes');
-		$this->render('/Tsumegos/play');
+		$this->renderPlay($current, [
+			// Same problem, same address for search engines, whichever route got here.
+			'canonicalPath' => '/' . $current,
+			'_page' => 'classes'], ClassroomAssignmentTable::withCollections([$assignment])[0]);
 		return null;
 	}
 

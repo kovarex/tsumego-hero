@@ -5,7 +5,7 @@ use App\Model\Table\TsumegoStatusTable;
 use App\Utility\MistakeTraining;
 use App\Utility\PlayOutcome;
 use App\Utility\RungInsignia;
-use App\Utility\SetNavigationButtonsInput;
+use App\Utility\SetNavigationButtons;
 use App\Utility\TsumegoButton;
 use App\Utility\TsumegoButtons;
 use App\Utility\TsumegoFilters;
@@ -146,11 +146,7 @@ class TsumegoButtonsTest extends IntegrationTestCase
 		$scId = (int) $context->tsumegos[0]['set-connections'][0]['id'];
 
 		$buttons = MistakeTraining::buildQueueButtons($scId);
-		$links = [];
-		$setFunction = function ($name, $value) use (&$links) {
-			$links[$name] = $value;
-		};
-		$buttons->exportCurrentAndPreviousLink($setFunction, null, $scId, null, '');
+		$links = $buttons->previousAndNextLink(null, $scId, null, '');
 
 		$this->assertSame('', $links['previousLink'], 'Back at the start of the training has nowhere to go');
 		$this->assertSame('/mistake-training/play/' . $context->tsumegos[1]['set-connections'][0]['id'], $links['nextLink'],
@@ -208,10 +204,7 @@ class TsumegoButtonsTest extends IntegrationTestCase
 		$opened = $context->tsumegos[14]['set-connections'][0];
 
 		$buttons = new TsumegoButtons(new TsumegoFilters('topics'), (int) $opened['id'], null, (int) $opened['set_id']);
-		$shown = null;
-		new SetNavigationButtonsInput(function ($name, $value) use (&$shown) {
-			$shown = $value;
-		})->execute($buttons, $this->fetchTable('SetConnection')->get($opened['id']));
+		$shown = SetNavigationButtons::around($buttons, $this->fetchTable('SetConnection')->get($opened['id']));
 
 		$this->assertCount(30, $buttons);
 		$this->assertCount(13, $shown);
@@ -233,16 +226,11 @@ class TsumegoButtonsTest extends IntegrationTestCase
 			['tsumego_id' => $context->tsumegos[0]['id'], 'set_connection_id' => $first['id'], 'num' => 1, 'status' => 'S'],
 			['tsumego_id' => $context->tsumegos[1]['id'], 'set_connection_id' => $second['id'], 'num' => 2, 'status' => 'S'],
 		], (int) $first['id'], 2);
-		$links = [];
-		$setFunction = function ($name, $value) use (&$links) {
-			$links[$name] = $value;
-		};
-
-		$buttons->exportCurrentAndPreviousLink($setFunction, new TsumegoFilters('topics'), (int) $first['id'], $this->fetchTable('Set')->get($first['set_id']), '/page');
+		$links = $buttons->previousAndNextLink(new TsumegoFilters('topics'), (int) $first['id'], $this->fetchTable('Set')->get($first['set_id']), '/page');
 		$this->assertSame('/page', $links['previousLink'], 'The first problem has the page behind it');
 		$this->assertSame('/' . $second['id'], $links['nextLink']);
 
-		$buttons->exportCurrentAndPreviousLink($setFunction, new TsumegoFilters('topics'), (int) $second['id'], $this->fetchTable('Set')->get($second['set_id']), '/page');
+		$links = $buttons->previousAndNextLink(new TsumegoFilters('topics'), (int) $second['id'], $this->fetchTable('Set')->get($second['set_id']), '/page');
 
 		$this->assertSame('/' . $first['id'], $links['previousLink'], 'The last problem has its neighbour behind it');
 		$this->assertSame('/page', $links['nextLink']);
