@@ -301,8 +301,11 @@ jobs:
           path: /tmp/coverage
           merge-multiple: true
 
+      # The coverage files name the static analysis cache of the shards, which this job has to create
       - name: Merge coverage files
-        run: vendor/bin/phpcov merge --html coverage/php --clover coverage/coverage.xml /tmp/coverage
+        run: |
+          mkdir -p tmp/phpunit-cache/code-coverage
+          vendor/bin/phpcov merge --html coverage/php --clover coverage/coverage.xml /tmp/coverage
 
       - name: Generate JS coverage report
         run: pnpm run coverage:js
