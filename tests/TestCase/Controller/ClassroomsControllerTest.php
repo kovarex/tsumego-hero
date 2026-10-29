@@ -1,6 +1,6 @@
 <?php
 
-use App\Lib\Error\UnprocessableEntityException;
+use Cake\Http\Exception\UnprocessableContentException;
 use App\Model\Table\ClassroomAssignmentTable;
 use App\Model\Table\ClassroomMemberStatusTable;
 use App\Model\Table\ClassroomMemberTable;
@@ -478,7 +478,7 @@ class ClassroomsControllerTest extends IntegrationTestCase
 			$this->saveAssignment($assignmentId, ['setConnectionIds' => [], 'publish' => true]);
 			$this->fail('An empty assignment was published');
 		}
-		catch (UnprocessableEntityException $exception)
+		catch (UnprocessableContentException $exception)
 		{
 			$this->assertSame('Pick the problems to give first.', $exception->getMessage());
 		}

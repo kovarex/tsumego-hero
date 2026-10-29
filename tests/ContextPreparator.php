@@ -742,7 +742,7 @@ class ContextPreparator
 		$attemptTable->saveOrFail($attemptTable->newEntity($attempt));
 	}
 
-	public function checkNewTsumegoStatusCoreValues(CakeTestCase $testCase): void
+	public function checkNewTsumegoStatusCoreValues(\Cake\TestSuite\TestCase $testCase): void
 	{
 		$this->resultTsumegoStatus = TableRegistry::getTableLocator()->get('TsumegoStatus')->find()
 			->where(['user_id' => $this->user['id'], 'tsumego_id' => $this->tsumegos[0]['id']])

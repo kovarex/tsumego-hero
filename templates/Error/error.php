@@ -64,6 +64,10 @@ $this->set('title_for_layout', $errorTitle);
 	</p>
 	
 	<?php if (isset($error)): ?>
+		<?php
+		//the paths from the root of the site: shorter to report, and they don't tell how the server is laid out
+		$relativePath = fn(string $file): string => str_starts_with($file, ROOT . DS) ? substr($file, strlen(ROOT . DS)) : $file;
+		?>
 		<div style="margin-top: 60px; padding: 30px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; text-align: left; position: relative; z-index: 2;">
 			<h3 style="color: var(--text-color, #333); margin-top: 0; margin-bottom: 20px;">Debug Information</h3>
 			
@@ -80,7 +84,7 @@ $this->set('title_for_layout', $errorTitle);
 			<?php if (method_exists($error, 'getFile') && method_exists($error, 'getLine')): ?>
 				<p style="margin: 15px 0; padding: 10px; background: rgba(0, 0, 0, 0.05); border-radius: 4px;">
 					<strong style="color: var(--text-color, #333);">Location:</strong><br>
-				<code style="color: var(--feedback-error); background: rgba(0, 0, 0, 0.04); padding: 4px 8px; border-radius: 3px; display: inline-block; margin-top: 5px;"><?php echo h($error->getFile()); ?> (line <?php echo h($error->getLine()); ?>)</code>
+				<code style="color: var(--feedback-error); background: rgba(0, 0, 0, 0.04); padding: 4px 8px; border-radius: 3px; display: inline-block; margin-top: 5px;"><?php echo h($relativePath($error->getFile())); ?> (line <?php echo h($error->getLine()); ?>)</code>
 				</p>
 			<?php endif; ?>
 			
@@ -90,35 +94,15 @@ $this->set('title_for_layout', $errorTitle);
 					<pre style="overflow: auto; max-height: 500px; background: rgba(0, 0, 0, 0.8); color: var(--color-white); padding: 20px; border-radius: 5px; font-size: 13px; line-height: 1.6; margin-top: 10px; font-family: var(--font-family-code, monospace);"><?php
 						// Build trace with #-1 throw location
 						$traceLines = [];
-						$traceLines[] = '#-1 ' . h($error->getFile()) . '(' . h($error->getLine()) . ')';
+						$traceLines[] = '#-1 ' . h($relativePath($error->getFile())) . '(' . h($error->getLine()) . ')';
 						foreach ($error->getTrace() as $i => $frame) {
 							$line = '#' . $i . ' ';
-							$line .= ($frame['file'] ?? '[internal function]') . '(' . ($frame['line'] ?? '') . '): ';
+							$line .= (isset($frame['file']) ? $relativePath($frame['file']) : '[internal function]') . '(' . ($frame['line'] ?? '') . '): ';
 							if (!empty($frame['class']))
 								$line .= $frame['class'] . ($frame['type'] ?? '->');
 							$line .= $frame['function'] . '(';
-							if (!empty($frame['args']))
-							{
-								$args = [];
-								foreach ($frame['args'] as $arg)
-								{
-									if (is_string($arg))
-										$args[] = "'" . (strlen($arg) > 50 ? substr($arg, 0, 50) . '...' : $arg) . "'";
-									elseif (is_numeric($arg))
-										$args[] = $arg;
-									elseif (is_bool($arg))
-										$args[] = $arg ? 'true' : 'false';
-									elseif (is_null($arg))
-										$args[] = 'NULL';
-									elseif (is_array($arg))
-										$args[] = 'Array';
-									elseif (is_object($arg))
-										$args[] = 'Object(' . get_class($arg) . ')';
-									else
-										$args[] = gettype($arg);
-								}
-								$line .= implode(', ', $args);
-							}
+							// the types of the arguments only: their values can be passwords, tokens, e-mails or SQL
+							$line .= implode(', ', array_map(get_debug_type(...), $frame['args'] ?? []));
 							$line .= ')';
 							$traceLines[] = h($line);
 						}

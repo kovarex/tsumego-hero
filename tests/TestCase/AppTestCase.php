@@ -5,15 +5,14 @@ use App\Utility\CookieFlash;
 use App\Utility\JwtAuth;
 use App\Utility\Preferences;
 use Cake\Cache\Cache;
+use Cake\TestSuite\TestCase;
 use PHPUnit\Framework\Attributes\Before;
 
 //The base of every test case of the site.
 //Clears the superglobals and the caches before each test, so no state bleeds from one test
-//into the next. A before method runs ahead of setUp() on PHPUnit 9 (the annotation) and on 10
-//and later (the attribute, which they read instead of the annotation).
-abstract class AppTestCase extends CakeTestCase
+//into the next. The before method runs ahead of setUp().
+abstract class AppTestCase extends TestCase
 {
-	/** @before */
 	#[Before]
 	protected function clearState(): void
 	{

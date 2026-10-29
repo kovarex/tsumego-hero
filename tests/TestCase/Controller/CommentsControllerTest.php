@@ -51,6 +51,12 @@ class CommentsControllerTest extends IntegrationTestCase
 		return $this->fetchTable('TsumegoComment')->find()->orderByDesc('id')->firstOrFail();
 	}
 
+	//The issue the page just created: the context has none of its own.
+	private function createdIssueId(): int
+	{
+		return $this->fetchTable('TsumegoIssue')->find()->orderByDesc('id')->firstOrFail()->id;
+	}
+
 	//Goes to the second move of the solution, the one a comment attaches in these tests.
 	private function goToSecondMove(Browser $browser): void
 	{
@@ -771,8 +777,7 @@ class CommentsControllerTest extends IntegrationTestCase
 
 		// Verify the text content
 		$pageSource = $browser->driver->getPageSource();
-		// Get the created issue ID from context
-		$issueId = $context->issues[0]['id'];
+		$issueId = $this->createdIssueId();
 		$this->assertTextContains('Issue #' . $issueId, $pageSource, 'Issue should appear after submission');
 		$this->assertTextContains('This is a test issue report', $pageSource, 'Issue message should appear');
 		$this->assertTextContains('🔴 1 OPEN ISSUE', $pageSource, 'Tab should show open issue indicator');
@@ -907,8 +912,7 @@ class CommentsControllerTest extends IntegrationTestCase
 		// Verify the comment content is still there
 		$pageSource = $browser->driver->getPageSource();
 		$this->assertTextContains('Comment to become issue', $pageSource);
-		// Get the created issue ID from context
-		$issueId = $context->issues[0]['id'];
+		$issueId = $this->createdIssueId();
 		$this->assertTextContains('Issue #' . $issueId, $pageSource);
 
 		$browser->assertNoErrors();
@@ -1241,8 +1245,7 @@ class CommentsControllerTest extends IntegrationTestCase
 		// Verify the comment content is still there
 		$pageSource = $browser->driver->getPageSource();
 		$this->assertTextContains('Comment to make into issue', $pageSource);
-		// Get the created issue ID from context
-		$issueId = $context->issues[0]['id'];
+		$issueId = $this->createdIssueId();
 		$this->assertTextContains('Issue #' . $issueId, $pageSource);
 	}
 

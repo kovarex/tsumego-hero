@@ -45,12 +45,10 @@ class TsumegoIssueTable extends AppTable
 	}
 
 	//Find issues for the global issues index page.
-	//Returns issues with all their comments, formatted to be compatible with
-	//the TsumegoIssues/issue.ctp element (same format as Tsumego::loadCommentsData).
+	//Returns issues with all their comments, in the format of Tsumego::loadCommentsData.
 	//$status: 'opened', 'closed', or 'all' (default: 'opened')
 	//$limit: Number of results per page (default: 20)
 	//$page: Page number for pagination (default: 1)
-	//Returns formatted issues ready for the view (compatible with issue.ctp element)
 	public static function findForIndex(string $status = 'opened', int $limit = 20, int $page = 1): array
 	{
 		$offset = ($page - 1) * $limit;

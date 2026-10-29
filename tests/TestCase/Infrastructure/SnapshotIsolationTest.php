@@ -47,7 +47,6 @@ class SnapshotIsolationTest extends AppTestCase
 		$table = new class (['table' => self::TABLE, 'alias' => 'SnapshotIsolationRow']) extends AppTable {
 			public function beforeSave(EventInterface $event, EntityInterface $entity, ArrayObject $options): void
 			{
-				parent::beforeSave($event, $entity, $options);
 				SnapshotIsolationTest::changeFromAnotherRequest();
 			}
 		};

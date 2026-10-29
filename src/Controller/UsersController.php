@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use Cake\Core\Configure;
 use Cake\Http\Exception\NotFoundException;
-use Cake\Http\Response as CakeResponse;
+use Cake\Http\Response;
 use Cake\Routing\Router;
 use Cake\Validation\Validation;
 use DateTime;
@@ -244,14 +244,14 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 
 	//The uploads became the SGF changes of the admin area
 	#[HttpGet]
-	public function uploads(): CakeResponse
+	public function uploads(): Response
 	{
 		return $this->redirect('/admin/sgf-changes');
 	}
 
 	//The admin panel of old, its tables are pages of the admin area now
 	#[HttpGet]
-	public function adminstats(): CakeResponse
+	public function adminstats(): Response
 	{
 		return $this->redirect('/admin');
 	}
@@ -797,7 +797,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 
 	//Redirect to the logged-in user's own profile page.
 	#[HttpGet]
-	public function profile(): CakeResponse
+	public function profile(): Response
 	{
 		if (!Auth::isLoggedIn())
 			return $this->redirect('/users/login');
@@ -805,7 +805,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	}
 
 	#[HttpGet]
-	public function meSolveHistory(): CakeResponse
+	public function meSolveHistory(): Response
 	{
 		if (!Auth::isLoggedIn())
 			return $this->redirect('/users/login');
@@ -813,7 +813,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	}
 
 	#[HttpGet]
-	public function meContributions(): CakeResponse
+	public function meContributions(): Response
 	{
 		if (!Auth::isLoggedIn())
 			return $this->redirect('/users/login');
@@ -1078,7 +1078,7 @@ ORDER BY category DESC', [$user['id']]));
 		return password_verify($data['password'], $user->password_hash);
 	}
 
-	/** @return CakeResponse|null */
+	/** @return Response|null */
 	#[HttpPost]
 	public function googlesignin()
 	{
@@ -1172,7 +1172,7 @@ ORDER BY category DESC', [$user['id']]));
 			if (!empty($updates))
 			{
 				$userTable->updateAll($updates, ['id' => $user->id]);
-				$user->set($updates);
+				$user->patch($updates);
 			}
 		}
 		$this->signIn(UserTable::rowOf($user));
@@ -1823,7 +1823,7 @@ OFFSET " . $offset, [$userID, $userID]);
 	}
 
 	#[HttpPost]
-	public function playerColorPreference(): CakeResponse
+	public function playerColorPreference(): Response
 	{
 		$this->Authorization->authorize('User', 'editPreferences');
 
@@ -1837,7 +1837,7 @@ OFFSET " . $offset, [$userID, $userID]);
 	}
 
 	#[HttpPost]
-	public function boardOrientationPreference(): CakeResponse
+	public function boardOrientationPreference(): Response
 	{
 		$this->Authorization->authorize('User', 'editPreferences');
 
@@ -1851,7 +1851,7 @@ OFFSET " . $offset, [$userID, $userID]);
 	}
 
 	#[HttpPost]
-	public function dateFormatPreference(): CakeResponse
+	public function dateFormatPreference(): Response
 	{
 		$this->Authorization->authorize('User', 'editPreferences');
 
@@ -1866,7 +1866,7 @@ OFFSET " . $offset, [$userID, $userID]);
 
 	//Whether a new message is announced by an email, see MessageTable::send().
 	#[HttpPost]
-	public function emailOnNewMessagePreference(): CakeResponse
+	public function emailOnNewMessagePreference(): Response
 	{
 		$this->Authorization->authorize('User', 'editPreferences');
 
@@ -1879,7 +1879,7 @@ OFFSET " . $offset, [$userID, $userID]);
 	//account (a Google picture it does not have) is ignored, the same way the other
 	//preferences ignore a value they can not store.
 	#[HttpPost]
-	public function avatarPreference(): CakeResponse
+	public function avatarPreference(): Response
 	{
 		$this->Authorization->authorize('User', 'editPreferences');
 

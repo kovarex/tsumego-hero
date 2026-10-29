@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use Cake\Http\Response as CakeResponse;
+use Cake\Http\Response;
 use Cake\Http\Exception\InternalErrorException;
 use Cake\Http\Exception\NotFoundException;
 use App\Model\Table\SgfTable;
@@ -17,7 +17,7 @@ class TsumegoImagesController extends AppController
 {
 	//Generate a PNG image for a tsumego puzzle for Open Graph sharing
 	//$setConnectionId: The SetConnection ID (same as /id route)
-	/** @return CakeResponse PNG image with caching headers */
+	/** @return Response PNG image with caching headers */
 	#[HttpGet]
 	public function tsumegoImage(?string $setConnectionId = null)
 	{

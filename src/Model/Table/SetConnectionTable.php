@@ -83,7 +83,7 @@ class SetConnectionTable extends AppTable
 		return $query
 			->innerJoin(['S' => 'set'], ['S.id = SetConnection.set_id'])
 			->where(['SetConnection.tsumego_id' => $tsumegoID])
-			->orderBy($query->newExpr(self::displayOrderSql('S', 'SetConnection')))
+			->orderBy($query->expr(self::displayOrderSql('S', 'SetConnection')))
 			->first();
 	}
 }

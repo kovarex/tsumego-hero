@@ -694,7 +694,7 @@ class TimeModeTest extends IntegrationTestCase
 		foreach ($attempts as $attempt)
 			$tsumegosInTimeMode[$attempt->tsumego_id] = true;
 
-		$tsumegoIDNotInTimeMode = array_find($context->tsumegos, fn($tsumego) => !$tsumegosInTimeMode[$tsumego['id']])['id'];
+		$tsumegoIDNotInTimeMode = array_find($context->tsumegos, fn($tsumego) => !isset($tsumegosInTimeMode[$tsumego['id']]))['id'];
 		$setConnectionIDNotInTimeMode = $this->fetchTable('SetConnection')->find()->where(['tsumego_id' => $tsumegoIDNotInTimeMode])->first()->id;
 		$browser->playWithResult('S'); // mark the problem solved
 

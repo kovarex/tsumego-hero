@@ -1,14 +1,11 @@
 <?php
 
-use Facebook\WebDriver\WebDriverBy;
-/**
- * Heart button and set dropdown on the play page.
- *
- *
- * @group browser
- */
 use App\Utility\Constants;
+use Facebook\WebDriver\WebDriverBy;
+use PHPUnit\Framework\Attributes\Group;
 
+//The heart button and the set dropdown on the play page.
+#[Group('browser')]
 #[RetryOnBrowserFailure]
 class HeartDropdownTest extends IntegrationTestCase
 {

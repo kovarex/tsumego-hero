@@ -4,12 +4,11 @@ use App\Model\Table\TimeModeCategoryTable;
 use App\Model\Table\TimeModeSessionStatusTable;
 use App\Utility\SiteGrowth;
 use Facebook\WebDriver\WebDriverBy;
+use PHPUnit\Framework\Attributes\Group;
 
 //The charts of the site, drawn by app/charts: the growth of the site on the home page, the days of a player on the
 //profile and the rating of a problem in its history.
-/**
- * @group browser
- */
+#[Group('browser')]
 #[RetryOnBrowserFailure]
 class ChartsBrowserTest extends IntegrationTestCase
 {

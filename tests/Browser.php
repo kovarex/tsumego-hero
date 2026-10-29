@@ -643,7 +643,7 @@ class Browser
 		return $table->findElements(WebDriverBy::tagName("tr"))[$row]->findElements(WebDriverBy::tagName("td"))[$column];
 	}
 
-	public function checkTable($selector, CakeTestCase $test, $data)
+	public function checkTable($selector, \Cake\TestSuite\TestCase $test, $data)
 	{
 		$table = $this->find($selector);
 		$tableRows = $table->findElements(WebDriverBy::tagName("tr"));

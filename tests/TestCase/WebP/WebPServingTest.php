@@ -12,13 +12,12 @@
  * Requires Apache with mod_rewrite. Excluded on CI because PHP's built-in server
  * doesn't process .htaccess files. Run locally with DDEV (Apache):
  *   vendor/bin/phpunit --group apache-only
- *
- * @group apache-only
  */
 
-
 use App\Utility\Util;
+use PHPUnit\Framework\Attributes\Group;
 
+#[Group('apache-only')]
 class WebPServingTest extends AppTestCase
 {
 	private string $baseUrl;

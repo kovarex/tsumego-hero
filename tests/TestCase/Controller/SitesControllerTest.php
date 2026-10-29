@@ -5,6 +5,7 @@ use Facebook\WebDriver\WebDriverBy;
 use App\Utility\Avatar;
 use App\Utility\Constants;
 use App\Utility\SiteGrowth;
+use PHPUnit\Framework\Attributes\Group;
 
 #[RetryOnBrowserFailure]
 class SitesControllerTest extends IntegrationTestCase
@@ -451,9 +452,7 @@ class SitesControllerTest extends IntegrationTestCase
 	}
 
 	//The home page hands the growth of the site to the chart, a point a month for the problems and the users.
-	/**
-	 * @group browser
-	 */
+	#[Group('browser')]
 	public function testHomepageChartGetsTheSiteGrowth(): void
 	{
 		new ContextPreparator([
