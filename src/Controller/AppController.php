@@ -85,6 +85,45 @@ class AppController extends Controller
 		return (int) env('CONTENT_LENGTH');
 	}
 
+	//The response, set through these few methods only, so that the switch to Cake 5, whose
+	//response is immutable (withType(), withStringBody(), withStatus(), withHeader()), changes
+	//them and not every action. An action returns what they return.
+
+	//Answers with the data as JSON in place of a rendered page.
+	protected function respondJson(mixed $data, int $status = 200): CakeResponse
+	{
+		return $this->respond((string) json_encode($data), 'json', $status);
+	}
+
+	//Answers with the body as it is in place of a rendered page. The type is a short name
+	//('xml', 'png', 'svg', 'webp') or a full mime type; without one it stays text/html.
+	protected function respond(string $body, ?string $type = null, int $status = 200): CakeResponse
+	{
+		$this->autoRender = false;
+		if ($type !== null)
+			$this->response->type($type);
+		$this->response->statusCode($status);
+		$this->response->body($body);
+		return $this->response;
+	}
+
+	protected function setResponseHeader(string $name, string $value): void
+	{
+		$this->response->header($name, $value);
+	}
+
+	//The browser asks again with this tag and gets a 304 while the answer stays the same.
+	protected function setEtag(string $etag): void
+	{
+		$this->response->etag($etag);
+	}
+
+	//The browser and proxies may keep the answer until $until (a strtotime() expression).
+	protected function cacheUntil(string $lastModified, string $until): void
+	{
+		$this->response->cache($lastModified, $until);
+	}
+
 	//The pages of a deleted account (profile, its sets, tags, solve history...) are gone for everyone but the admins.
 	/** @param UserRow $user */
 	protected function assertUserVisible(array $user): void
@@ -176,7 +215,7 @@ class AppController extends Controller
 	{
 		if (($_COOKIE['browser_cache_version'] ?? null) === self::BROWSER_CACHE_VERSION)
 			return;
-		$this->response->header('Clear-Site-Data', '"cache"');
+		$this->setResponseHeader('Clear-Site-Data', '"cache"');
 		Util::setCookie('browser_cache_version', self::BROWSER_CACHE_VERSION);
 	}
 

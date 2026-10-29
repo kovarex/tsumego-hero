@@ -239,9 +239,7 @@ class TagsController extends AppController
 				'url' => $row['set_connection_id'] ? '/' . $row['set_connection_id'] : '/tsumegos/play/' . $row['tsumego_id'],
 				'name' => $row['set_title'] !== null ? $row['set_title'] . ' ' . $row['num'] : 'Problem ' . $row['tsumego_id'],
 				'approved' => (bool) $row['approved']];
-		$this->response->type('json');
-		$this->response->body(json_encode($problems));
-		return $this->response;
+		return $this->respondJson($problems);
 	}
 
 	#[HttpPost]

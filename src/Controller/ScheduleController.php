@@ -157,10 +157,9 @@ ORDER BY schedule.date DESC, schedule.id DESC");
 
 	//Preview which problems would be scheduled, and on which day each of them lands. Admin only. Returns JSON.
 	#[HttpGet]
-	public function preview(): void
+	public function preview(): CakeResponse
 	{
 		$this->Authorization->authorize('Schedule');
-		$this->autoRender = false;
 
 		$setIdFrom = (int) ($this->query('set_id_from') ?? 0);
 		$targetSetId = (int) ($this->query('set_id_to') ?? 0);
@@ -170,11 +169,7 @@ ORDER BY schedule.date DESC, schedule.id DESC");
 		$startDate = strtotime((string) ($this->query('start_date') ?? '')) ?: strtotime('today');
 
 		if ($setIdFrom <= 0 || $targetSetId <= 0 || ($count !== null && $count < 1))
-		{
-			$this->response->type('json');
-			$this->response->body(json_encode([]));
-			return;
-		}
+			return $this->respondJson([]);
 
 		$candidates = self::candidates($setIdFrom, $targetSetId, $num, $count);
 
@@ -189,8 +184,7 @@ ORDER BY schedule.date DESC, schedule.id DESC");
 		}
 		unset($candidate);
 
-		$this->response->type('json');
-		$this->response->body(json_encode($candidates ?: []));
+		return $this->respondJson($candidates ?: []);
 	}
 
 	//How many problems to schedule, null for all of them, which an empty field asks for.

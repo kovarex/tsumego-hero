@@ -32,7 +32,7 @@ class SitemapsController extends AppController
 	//Generate XML sitemap
 	//Outputs sitemap.xml with all public URLs. Caches rendered XML for 1 day. Webserver handles gzip compression.
 	#[HttpGet]
-	public function index(): void
+	public function index(): CakeResponse
 	{
 		$cacheKey = 'sitemap_xml';
 		$xml = Cache::read($cacheKey, 'long');
@@ -44,9 +44,7 @@ class SitemapsController extends AppController
 			Cache::write($cacheKey, $xml, 'long');
 		}
 
-		$this->response->type('xml');
-		$this->response->body($xml);
-		$this->autoRender = false;
+		return $this->respond($xml, 'xml');
 	}
 
 	//Generate all URLs for sitemap
