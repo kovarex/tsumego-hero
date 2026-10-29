@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SetTable;
 use App\Utility\Auth;
 
 /**
@@ -37,7 +38,7 @@ $tabs = [
 		'url' => '/sets/user/' . $userID,
 		'label' => 'Sets',
 		// The player's own collections are theirs to see; a visitor only sees what is shared.
-		'filled' => Set::countVisibleTo($userID, $viewerSeesEverything) > 0,
+		'filled' => SetTable::countVisibleTo($userID, $viewerSeesEverything) > 0,
 	],
 ];
 

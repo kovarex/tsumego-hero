@@ -2,10 +2,10 @@
 
 namespace App\Utility;
 
+use App\Model\Entity\Set;
 use Cake\ORM\TableRegistry;
-use ClassRegistry;
 use Exception;
-use Set;
+use App\Model\Table\SetTable;
 
 class TsumegoFilters
 {
@@ -28,11 +28,11 @@ class TsumegoFilters
 
 		foreach ($rawSets as $set)
 		{
-			$found = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $set, Set::officialCondition('Set')]]);
+			$found = TableRegistry::getTableLocator()->get('Set')->find()->select(['id'])->where(['title' => $set, SetTable::officialCondition('Set')])->first();
 			if ($found)
 			{
 				$this->sets[] = $set;
-				$this->setIDs[] = $found['Set']['id'];
+				$this->setIDs[] = $found->id;
 			}
 		}
 
@@ -114,10 +114,10 @@ class TsumegoFilters
 		return $processToResult ? $processToResult($stringResult) : $stringResult;
 	}
 
-	public function getSetTitle(array $set): string
+	public function getSetTitle(Set $set): string
 	{
 		if ($this->query == 'topics')
-			return $set['Set']['title'];
+			return $set->title;
 		if ($this->query == 'difficulty')
 			return $_COOKIE['lastSet'] ?? 'Tsumego';
 		if ($this->query == 'tags')
@@ -126,10 +126,10 @@ class TsumegoFilters
 		throw new Exception('Unknown query: ""' . $this->query);
 	}
 
-	public function getSetID(array $set): string
+	public function getSetID(?Set $set): string
 	{
 		if ($this->query == 'topics')
-			return $set['Set']['id'];
+			return (string) $set->id;
 		if ($this->query == 'difficulty')
 			return $_COOKIE['lastSet'] ?? 'favorites';
 		if ($this->query == 'tags')
@@ -210,7 +210,7 @@ class TsumegoFilters
 	//EXISTS condition for a tsumego belonging to at least one public set (optionally limited to filtered sets).
 	private function publicMembershipCondition(): string
 	{
-		$setCondition = Set::officialCondition();
+		$setCondition = SetTable::officialCondition();
 		if (!empty($this->setIDs))
 			$setCondition .= ' AND `set`.id IN (' . implode(',', $this->setIDs) . ')';
 		return 'EXISTS (SELECT 1 FROM set_connection sc JOIN `set` ON `set`.id = sc.set_id AND ' . $setCondition . ' WHERE sc.tsumego_id = tsumego.id)';

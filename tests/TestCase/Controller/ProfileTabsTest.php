@@ -167,16 +167,15 @@ class ProfileTabsTest extends IntegrationTestCase
 
 	private function _createSet(string $title, ?int $userId, int $public): int
 	{
-		$setModel = ClassRegistry::init('Set');
-		$setModel->create();
-		$setModel->save([
+		$setTable = $this->fetchTable('Set');
+		$createdSet = $setTable->saveOrFail($setTable->newEntity([
 			'Set' => [
 				'title' => $title,
 				'user_id' => $userId,
 				'public' => $public,
 				'order' => Constants::$DEFAULT_SET_ORDER,
 			],
-		]);
-		return (int) $setModel->id;
+		]));
+		return (int) $createdSet->id;
 	}
 }

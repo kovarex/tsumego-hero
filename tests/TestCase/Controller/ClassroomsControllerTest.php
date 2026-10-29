@@ -660,7 +660,7 @@ class ClassroomsControllerTest extends IntegrationTestCase
 		$classroomId = $this->createClassroom();
 		$this->addMember($classroomId, 'pupil');
 		$this->createAssignment($classroomId, '2026-10-01 00:00:00', '2026-10-08');
-		$set = ['id' => $this->homeworkSetId(), 'public' => 0, 'user_id' => $this->userId('teacher')];
+		$set = new App\Model\Entity\Set(['id' => $this->homeworkSetId(), 'public' => 0, 'user_id' => $this->userId('teacher')]);
 
 		$this->assertTrue(App\Policy\SetPolicy::canView(['id' => $this->userId('pupil')], $set));
 		$this->assertFalse(App\Policy\SetPolicy::canView(['id' => $this->userId('outsider')], $set));

@@ -89,9 +89,8 @@ class AchievementConditionTest extends CakeTestCase
 
 	private function createSet(string $title): int
 	{
-		$setModel = ClassRegistry::init('Set');
-		$setModel->create();
-		$setModel->save(['Set' => ['title' => $title, 'public' => 1, 'order' => Constants::$DEFAULT_SET_ORDER]]);
-		return (int) $setModel->id;
+		$setTable = TableRegistry::getTableLocator()->get('Set');
+		$createdSet = $setTable->saveOrFail($setTable->newEntity(['title' => $title, 'public' => 1, 'order' => Constants::$DEFAULT_SET_ORDER]));
+		return (int) $createdSet->id;
 	}
 }

@@ -3,7 +3,7 @@
 namespace App\Utility;
 
 use App\Model\Table\AchievementConditionTable;
-use Set;
+use App\Model\Table\SetTable;
 
 //Counts the sets a user completed, for the "complete N sets" achievements.
 //Sets are counted in parts of $PARTITION_SIZE problems, the way the collections page splits
@@ -61,7 +61,7 @@ LIMIT 1', [$userID, $tsumegoID, $tsumegoID]);
         FLOOR((ROW_NUMBER() OVER (PARTITION BY sc.set_id ORDER BY sc.num, sc.tsumego_id) - 1) / ' . self::$PARTITION_SIZE . ') AS part,
         COALESCE(ts.status IN (\'S\', \'W\', \'C\'), 0) AS solved
     FROM set_connection sc
-    JOIN `set` s ON s.id = sc.set_id AND ' . Set::officialCondition('s') . '
+    JOIN `set` s ON s.id = sc.set_id AND ' . SetTable::officialCondition('s') . '
     JOIN tsumego t ON t.id = sc.tsumego_id AND t.deleted IS NULL
     LEFT JOIN tsumego_status ts ON ts.tsumego_id = sc.tsumego_id AND ts.user_id = ?
     ' . $where;

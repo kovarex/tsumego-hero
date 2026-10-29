@@ -26,10 +26,9 @@ class FavoritesAchievementTest extends AchievementTestCase
 		]);
 		$tsumegoId = $this->fetchTable('Tsumego')->find()->orderByDesc('id')->first()->id;
 
-		$set = ClassRegistry::init('Set');
-		$set->create();
-		$set->save(['title' => 'My Set', 'public' => 0, 'user_id' => $context->user['id'], 'order' => Constants::$DEFAULT_SET_ORDER]);
-		$setId = $set->getInsertID();
+		$setTable = $this->fetchTable('Set');
+		$set = $setTable->saveOrFail($setTable->newEntity(['title' => 'My Set', 'public' => 0, 'user_id' => $context->user['id'], 'order' => Constants::$DEFAULT_SET_ORDER]));
+		$setId = $set->id;
 
 		$this->post("/sets/addTsumego/{$setId}", ['tsumego_id' => $tsumegoId]);
 

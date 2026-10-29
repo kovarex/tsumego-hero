@@ -13,7 +13,7 @@
 	</div>
 
 	<div class="card card--green set-edit__section">
-		<?php echo $this->Form->create('Set', ['id' => 'set-edit-details']); ?>
+		<?php echo $this->Form->create(false, ['id' => 'set-edit-details']); ?>
 			<div class="form-field">
 				<label class="form-field__label" for="SetTitle">Title</label>
 				<input class="form-field__control" type="text" id="SetTitle" name="data[Set][title]" placeholder="My set name" required>

@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SetTable;
 use App\Utility\Rating;
 use App\Utility\SetEditRenderer;
 use App\Utility\Trash;
@@ -15,41 +16,41 @@ use App\Utility\TsumegoButtons;
  * @var bool $canEditSettings
  * @var bool $isSandbox
  * @var array $problems
- * @var array $set
+ * @var \App\Model\Entity\Set $set
  * @var int $setRating
  * @var TsumegoButtons $tsumegoButtons
  */
 
-$setId = (int) $set['Set']['id'];
+$setId = (int) $set->id;
 $problemCount = count($problems);
 $highestOrder = $tsumegoButtons->highestTsumegoOrder ?? 0;
 $presetColors = ['#74d14c', '#5b9bd5', '#e6c832', '#d63a49', '#caa8d8', '#ff8fab', '#66ccff', '#8a8a8a'];
-$currentColor = $set['Set']['color'] ?? '';
+$currentColor = $set->color ?? '';
 if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strtolower', $presetColors)))
 	array_unshift($presetColors, $currentColor);
 ?>
 <div class="set-edit">
 	<div class="set-edit__header">
 		<p class="set-edit__crumb"><a href="/sets/mine">My Sets</a> / Edit Set</p>
-		<h1 class="set-edit-title"><?php echo h($set['Set']['title']); ?></h1>
-		<p><a class="btn" href="<?php echo Set::url($setId); ?>">View Set</a></p>
+		<h1 class="set-edit-title"><?php echo h($set->title); ?></h1>
+		<p><a class="btn" href="<?php echo SetTable::url($setId); ?>">View Set</a></p>
 	</div>
 
 	<div class="set-edit__grid">
 		<div class="card card--green set-edit__section">
 			<h2 class="set-edit__heading">Details</h2>
-			<?php echo $this->Form->create('Set', ['id' => 'set-edit-details', 'enctype' => 'multipart/form-data']); ?>
+			<?php echo $this->Form->create(false, ['id' => 'set-edit-details', 'enctype' => 'multipart/form-data']); ?>
 				<div class="form-field">
 					<label class="form-field__label" for="SetTitle">Title</label>
-					<input class="form-field__control" type="text" id="SetTitle" name="data[Set][title]" value="<?php echo h($set['Set']['title']); ?>" required>
+					<input class="form-field__control" type="text" id="SetTitle" name="data[Set][title]" value="<?php echo h($set->title); ?>" required>
 				</div>
 				<div class="form-field">
 					<label class="form-field__label" for="SetTitle2">Subtitle</label>
-					<input class="form-field__control" type="text" id="SetTitle2" name="data[Set][title2]" value="<?php echo h($set['Set']['title2'] ?? ''); ?>" placeholder="Optional subtitle shown after the title">
+					<input class="form-field__control" type="text" id="SetTitle2" name="data[Set][title2]" value="<?php echo h($set->title2 ?? ''); ?>" placeholder="Optional subtitle shown after the title">
 				</div>
 				<div class="form-field">
 					<label class="form-field__label" for="SetDescription">Description</label>
-					<textarea class="form-field__control" id="SetDescription" name="data[Set][description]" rows="4"><?php echo h($set['Set']['description'] ?? ''); ?></textarea>
+					<textarea class="form-field__control" id="SetDescription" name="data[Set][description]" rows="4"><?php echo h($set->description ?? ''); ?></textarea>
 					<p class="hint">Allowed tags: &lt;br&gt; &lt;a&gt; &lt;b&gt; &lt;i&gt; &lt;p&gt; &lt;ul&gt; &lt;ol&gt; &lt;li&gt; &lt;img&gt; &lt;font&gt; &lt;table&gt; &lt;tr&gt; &lt;td&gt; &lt;th&gt;</p>
 				</div>
 				<div class="form-field">
@@ -65,8 +66,8 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 				<div class="form-field">
 					<label class="form-field__label">Image</label>
 					<div class="set-edit__image">
-						<?php if (!empty($set['Set']['image'])): ?>
-							<img class="set-edit__thumb" src="/img/<?php echo h($set['Set']['image']); ?>" alt="Set image">
+						<?php if (!empty($set->image)): ?>
+							<img class="set-edit__thumb" src="/img/<?php echo h($set->image); ?>" alt="Set image">
 							<label class="set-edit__remove"><input type="checkbox" name="data[Set][remove_image]" value="1"> Remove</label>
 						<?php endif; ?>
 						<input type="file" name="image" accept=".png,.jpg,.jpeg,.webp">
@@ -75,7 +76,7 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 				</div>
 				<div class="form-field">
 					<label class="form-field__label" for="SetOrder">Order</label>
-					<input class="form-field__control" type="number" id="SetOrder" name="data[Set][order]" value="<?php echo h($set['Set']['order'] ?? ''); ?>">
+					<input class="form-field__control" type="number" id="SetOrder" name="data[Set][order]" value="<?php echo h($set->order ?? ''); ?>">
 					<p class="hint">Low numbers are on top, high numbers at the bottom.</p>
 				</div>
 			<?php echo $this->Form->end(['label' => 'Save', 'class' => 'btn']); ?>
@@ -170,14 +171,14 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 	<?php if (!empty($canDelete)): ?>
 		<div class="card set-edit__section set-edit__section--danger">
 			<h2 class="set-edit__heading">Danger Zone</h2>
-			<?php if ($set['Set']['user_id'] === null): ?>
+			<?php if ($set->user_id === null): ?>
 				<?php // a collection of the site goes to the trash with its problems, a big step, so it is confirmed by typing its title ?>
 				<form method="post" action="/sets/delete/<?php echo $setId; ?>" id="set-delete">
 					<p>
 						Deleting moves the collection and its <?php echo $problemCount; ?> problems to the trash.
 						An admin can restore it for <?php echo Trash::$RETENTION_DAYS; ?> days, then it is removed for good.
 					</p>
-					<label for="set-delete-confirmation">Type <b><?php echo h($set['Set']['title']); ?></b> to confirm:</label>
+					<label for="set-delete-confirmation">Type <b><?php echo h($set->title); ?></b> to confirm:</label>
 					<input type="text" name="confirmation" id="set-delete-confirmation" class="form-field__control" autocomplete="off">
 					<input type="submit" class="btn btn--danger" value="Delete Collection" id="set-delete-submit">
 				</form>

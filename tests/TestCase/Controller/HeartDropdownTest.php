@@ -86,19 +86,18 @@ class HeartDropdownTest extends IntegrationTestCase
 		]);
 
 		// Two empty user-owned sets, so the dropdown shows with a choice
-		$setModel = ClassRegistry::init('Set');
+		$setTable = $this->fetchTable('Set');
 		$setId = null;
 		foreach (['Target Set', 'Other Set'] as $title)
 		{
-			$setModel->create();
-			$setModel->save(['Set' => [
+			$createdSet = $setTable->saveOrFail($setTable->newEntity([
 				'user_id' => $context->user['id'],
 				'title' => $title,
 				'public' => 0,
 				'order' => Constants::$DEFAULT_SET_ORDER,
-			]]);
+			]));
 			if ($title === 'Target Set')
-				$setId = $setModel->id;
+				$setId = $createdSet->id;
 		}
 		$tsumegoId = $context->tsumegos[0]['id'];
 

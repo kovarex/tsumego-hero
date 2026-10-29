@@ -231,9 +231,9 @@ class ContextPreparator
 		$set['title'] = Util::extract('title', $setInput) ?: 'Test Set';
 		$set['public'] = Util::extract('public', $setInput) ?? 1;
 		$set['order'] = Util::extract('order', $setInput) ?: Constants::$DEFAULT_SET_ORDER;
-		ClassRegistry::init('Set')->create();
-		ClassRegistry::init('Set')->save($set);
-		$this->set = ClassRegistry::init('Set')->find('first', ['order' => 'id DESC'])['Set'];
+		$setTable = TableRegistry::getTableLocator()->get('Set');
+		$setID = $setTable->saveOrFail($setTable->newEntity($set))->id;
+		$this->set = Util::query('SELECT * FROM `set` WHERE id = ?', [$setID])[0];
 		$this->checkOptionsConsumed($setInput);
 	}
 
@@ -602,7 +602,7 @@ class ContextPreparator
 			$deleted = Util::extractWithDefault('deleted', $input, null);
 			$this->checkOptionsConsumed($input);
 		}
-		$set  = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $name]]);
+		$set = Util::query('SELECT * FROM `set` WHERE title = ? LIMIT 1', [$name])[0] ?? null;
 		if (!$set)
 		{
 			$set = [];
@@ -619,16 +619,16 @@ class ContextPreparator
 				$set['user_id'] = $this->user['id'];
 			elseif ($userId !== null)
 				$set['user_id'] = (int) $userId;
-			ClassRegistry::init('Set')->create($set);
-			ClassRegistry::init('Set')->save($set);
-			// reloading so the generated id is retrieved
-			$set  = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $name]]);
-			$this->sets [] = $set['Set'];
+			$setTable = TableRegistry::getTableLocator()->get('Set');
+			$setID = $setTable->saveOrFail($setTable->newEntity($set))->id;
+			// the row as the database has it, with the generated id and the defaults
+			$set = Util::query('SELECT * FROM `set` WHERE id = ?', [$setID])[0];
+			$this->sets [] = $set;
 		}
 		if ($isDefault)
-			$this->setDefaultSetId($set['Set']['id']);
-		$this->checkSetClear($set['Set']['id']);
-		return $set['Set'];
+			$this->setDefaultSetId($set['id']);
+		$this->checkSetClear($set['id']);
+		return $set;
 	}
 
 	private function setDefaultSetId(int $setId): void

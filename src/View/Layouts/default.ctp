@@ -1,5 +1,7 @@
 <?php
 
+use App\Model\Entity\Set;
+use App\Model\Table\SetTable;
 use App\Model\Table\ChallengeTable;
 use App\Model\Table\ClassroomMemberTable;
 use App\Model\Table\MessageTable;
@@ -168,7 +170,7 @@ $challengesBadge = $challengesWaiting > 0
 							<?php if (Auth::isLoggedIn()): ?>
 							<ul class="newMenuLi2">
 								<li><a href="/sets/mine">My Sets</a></li>
-								<li><a class="<?php echo $active('favs'); ?>" href="<?php echo Set::url('favorites'); ?>">Favorites</a></li>
+								<li><a class="<?php echo $active('favs'); ?>" href="<?php echo SetTable::url('favorites'); ?>">Favorites</a></li>
 								<li><a class="<?php echo $active('classes'); ?>" href="/classes">Classes<?php echo $classesBadge; ?></a></li>
 								<?php if (Auth::hasPremium() || Auth::isAdmin()): ?>
 								<li><a class="<?php echo $active('sandbox'); ?>" href="/sets/sandbox">Sandbox</a></li>
@@ -238,7 +240,7 @@ $challengesBadge = $challengesWaiting > 0
 	</div>
 	<?php AccountWidget::render($timeMode, $unreadMessageCount); ?>
 	<div align="left" class="whitebox2">
-		<div id="content"<?php if (($set['Set']['id'] ?? null) == 60) echo ' style="height:1340px;"'; ?>>
+		<div id="content"<?php if (isset($set) && $set instanceof Set && $set->id == 60) echo ' style="height:1340px;"'; ?>>
 			<?php
 			echo CookieFlash::render();
 			echo $this->fetch('content');

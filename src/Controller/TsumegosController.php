@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SetTable;
 use App\Model\Table\SetConnectionTable;
 use App\Model\Table\SgfTable;
 use App\Model\Table\TsumegoStatusTable;
@@ -166,7 +167,6 @@ class TsumegosController extends AppController
 	#[HttpGet]
 	public function duplicatesearch(string $setConnectionID): mixed
 	{
-		$this->loadModel('Set');
 
 		$setConnection = $this->fetchTable('SetConnection')->find()->where(['id' => (int) $setConnectionID])->first();
 		if (!$setConnection)
@@ -187,7 +187,7 @@ class TsumegosController extends AppController
 				(int) $setConnectionID,
 				$similarSearchLogic->setConnection->num,
 				$tsumegoStatus ?: 'N', 0, $similarSearchLogic->sourceSgf));
-		$this->set('sourceSetName', ClassRegistry::init('Set')->findById($setConnection->set_id)['Set']['title']);
+		$this->set('sourceSetName', $this->fetchTable('Set')->get($setConnection->set_id)->title);
 		$this->set('sourceMoveCount', $similarSearchLogic->sourceMoveCount);
 		return null;
 	}
@@ -309,10 +309,10 @@ class TsumegosController extends AppController
 		CookieFlash::set('The problem was moved to the trash, it can be restored for ' . Trash::$RETENTION_DAYS . ' days.', 'success');
 		if (!$setConnection)
 			return $this->redirect('/sets');
-		$set = ClassRegistry::init('Set')->findById($setConnection->set_id);
-		if (!empty($set['Set']['deleted']))
+		$set = $this->fetchTable('Set')->find()->where(['id' => $setConnection->set_id])->first();
+		if (!empty($set->deleted))
 			return $this->redirect('/sets');
-		return $this->redirect(Set::url((int) $set['Set']['id']));
+		return $this->redirect(SetTable::url((int) $set->id));
 	}
 
 	#[HttpGet]
@@ -352,11 +352,11 @@ class TsumegosController extends AppController
 		}
 		$masterSetConnectionBrothers = $setConnectionTable->find()
 			->innerJoin(['S' => 'set'], ['S.id = SetConnection.set_id'])
-			->where(['SetConnection.tsumego_id' => $masterSetConnection->tsumego_id, Set::officialCondition('S')])
+			->where(['SetConnection.tsumego_id' => $masterSetConnection->tsumego_id, SetTable::officialCondition('S')])
 			->all()->toList();
 		$slaveSetConnectionBrothers = $setConnectionTable->find()
 			->innerJoin(['S' => 'set'], ['S.id = SetConnection.set_id'])
-			->where(['SetConnection.tsumego_id' => $slaveSetConnection->tsumego_id, Set::officialCondition('S')])
+			->where(['SetConnection.tsumego_id' => $slaveSetConnection->tsumego_id, SetTable::officialCondition('S')])
 			->all()->toList();
 
 		$sgfs = [];
@@ -500,6 +500,6 @@ class TsumegosController extends AppController
 		$this->set('dailyResults', $dailyResults);
 		$this->set('setConnection', $setConnection);
 		$this->set('urlParams', $this->params['url']);
-		$this->set('set', ClassRegistry::init("Set")->findById($setConnection->set_id)['Set']);
+		$this->set('set', $this->fetchTable('Set')->get($setConnection->set_id));
 	}
 }

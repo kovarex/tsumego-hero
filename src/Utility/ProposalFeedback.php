@@ -2,8 +2,8 @@
 
 namespace App\Utility;
 
+use Cake\ORM\TableRegistry;
 use App\Model\Table\MessageTable;
-use ClassRegistry;
 use Router;
 use User;
 use App\Model\Table\SetConnectionTable;
@@ -29,8 +29,8 @@ class ProposalFeedback
 		$setConnection = SetConnectionTable::findDisplaySetConnection($tsumegoID);
 		if (!$setConnection)
 			return 'problem ' . $tsumegoID;
-		$set = ClassRegistry::init('Set')->findById($setConnection->set_id);
-		return trim($set['Set']['title'] . ' ' . $set['Set']['title2']) . ' ' . $setConnection->num;
+		$set = TableRegistry::getTableLocator()->get('Set')->find()->where(['id' => $setConnection->set_id])->first();
+		return trim($set->title . ' ' . $set->title2) . ' ' . $setConnection->num;
 	}
 
 	//Sends the decision from the signed in admin to the proposer. Nothing is sent when the admin decided

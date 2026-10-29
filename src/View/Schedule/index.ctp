@@ -128,7 +128,7 @@ $today = date('Y-m-d');
 				<label class="form-field__label" for="schedule-from">Source sandbox set</label>
 				<select class="form-field__control" id="schedule-from" name="set_id_from">
 					<?php foreach ($sandboxSets as $set): ?>
-						<option value="<?php echo $set['Set']['id']; ?>"><?php echo h($set['Set']['title']); ?></option>
+						<option value="<?php echo $set['id']; ?>"><?php echo h($set['title']); ?></option>
 					<?php endforeach; ?>
 				</select>
 				<span class="hint">Problems are taken from here, in the order the set has them.</span>
@@ -137,7 +137,7 @@ $today = date('Y-m-d');
 				<label class="form-field__label" for="schedule-to">Target public set</label>
 				<select class="form-field__control" id="schedule-to" name="set_id_to">
 					<?php foreach ($publicSets as $set): ?>
-						<option value="<?php echo $set['Set']['id']; ?>"><?php echo h($set['Set']['title']); ?></option>
+						<option value="<?php echo $set['id']; ?>"><?php echo h($set['title']); ?></option>
 					<?php endforeach; ?>
 				</select>
 				<span class="hint">Publishing takes the problem out of the sandbox and puts it here; a number that is already taken is renumbered.</span>

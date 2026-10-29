@@ -108,8 +108,8 @@ class MistakeTrainingController extends AppController
 		if (!$pool || !MistakeTraining::isInTodaysTraining($pool))
 			return $this->redirect(MistakeTraining::$QUEUE_LINK);
 
-		$set = ClassRegistry::init('Set')->findById($setConnection->set_id);
-		if (!$set || !$this->Authorization->can(['Set' => $set['Set']], 'play'))
+		$set = $this->fetchTable('Set')->find()->where(['id' => $setConnection->set_id])->first();
+		if (!$set || !$this->Authorization->can($set, 'play'))
 			return $this->redirect(MistakeTraining::$QUEUE_LINK);
 
 		$play = new Play(function ($name, $value) {

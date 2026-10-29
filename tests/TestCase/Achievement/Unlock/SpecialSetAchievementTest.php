@@ -80,7 +80,7 @@ class SpecialSetAchievementTest extends AchievementTestCase
 	// Helper: Create sets with tsumegos in them and mark them all as solved, returns the tsumego ids
 	private function createAndSolveSets($userId, $setIds): array
 	{
-		$Set = ClassRegistry::init('Set');
+		$setTable = $this->fetchTable('Set');
 		$tsumegoTable = $this->fetchTable('Tsumego');
 		$TsumegoStatus = $this->fetchTable('TsumegoStatus');
 		$setConnectionTable = $this->fetchTable('SetConnection');
@@ -88,8 +88,7 @@ class SpecialSetAchievementTest extends AchievementTestCase
 		$tsumegoIDs = [];
 		foreach ($setIds as $setId)
 		{
-			$Set->create();
-			$Set->save(['id' => $setId, 'title' => "Test Set $setId"]);
+			$createdSet = $setTable->saveOrFail($setTable->newEntity(['id' => $setId, 'title' => "Test Set $setId"], ['accessibleFields' => ['id' => true]]));
 
 			for ($i = 0; $i < 3; $i++)
 			{

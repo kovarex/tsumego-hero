@@ -2,13 +2,13 @@
 
 namespace App\Model\Table;
 
+use App\Model\Entity\Set;
 use App\Utility\PlayOutcome;
 use App\Utility\Rating;
 use App\Utility\TsumegoButton;
 use App\Utility\TsumegoButtons;
 use App\Utility\TsumegoUtil;
 use App\Utility\Util;
-use Set;
 use Throwable;
 use User;
 
@@ -121,7 +121,7 @@ class ClassroomAssignmentTable extends AppTable
 			FROM `set` s
 			JOIN set_connection sc ON sc.set_id = s.id
 			JOIN tsumego t ON t.id = sc.tsumego_id AND t.deleted IS NULL
-			WHERE (s.user_id = ? AND s.deleted IS NULL) OR (' . Set::officialCondition('s') . ')
+			WHERE (s.user_id = ? AND s.deleted IS NULL) OR (' . SetTable::officialCondition('s') . ')
 			GROUP BY s.id, s.title, s.color, s.user_id
 			ORDER BY ' . SetConnectionTable::displayOrderForSetSql('s'),
 			[$teacherId]);
@@ -138,10 +138,10 @@ class ClassroomAssignmentTable extends AppTable
 	}
 
 	//Whether a teacher can give the problems of the collection to a class: it is theirs or the site's.
-	/** @param array<string, mixed> $set Unwrapped set row */
-	public static function canAssignSet(array $set, int $teacherId): bool
+	/** @param array<string, mixed>|Set $set A set row or entity */
+	public static function canAssignSet(array|Set $set, int $teacherId): bool
 	{
-		return Set::isOfficial($set) || ((int) ($set['user_id'] ?? 0) === $teacherId && empty($set['deleted']));
+		return SetTable::isOfficial($set) || ((int) ($set['user_id'] ?? 0) === $teacherId && empty($set['deleted']));
 	}
 
 	//The columns problemPayload() reads, on the aliases of visibleProblemJoins(). The preview

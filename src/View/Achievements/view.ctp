@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SetTable;
 use App\Model\Entity\Achievement;
 use App\Model\Entity\AchievementStatus;
 use App\Utility\Auth;
@@ -103,7 +104,7 @@ if ($achievement->additional_description != null)
 		<?php endif; ?>
 		<div class="acCollections__list">
 			<?php foreach ($collections as $collection): ?>
-				<a href="<?= Set::url((int) $collection['id']) ?>" class="acCollections__link<?= $collection['earned'] ? ' acCollections__link--earned' : '' ?>"><?= h($collection['title']) ?><?php if (!$collection['earned'] && $collection['accuracy'] > 0): ?><span class="acCollections__percent"><?= h($collection['accuracy']) ?>%</span><?php endif; ?></a>
+				<a href="<?= SetTable::url((int) $collection['id']) ?>" class="acCollections__link<?= $collection['earned'] ? ' acCollections__link--earned' : '' ?>"><?= h($collection['title']) ?><?php if (!$collection['earned'] && $collection['accuracy'] > 0): ?><span class="acCollections__percent"><?= h($collection['accuracy']) ?>%</span><?php endif; ?></a>
 			<?php endforeach; ?>
 		</div>
 	</div>

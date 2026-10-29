@@ -60,7 +60,7 @@ use App\Utility\ViteManifest;
  * @var string $queryTitle
  * @var bool $requestSolution
  * @var string $reviewEnabled
- * @var array $set
+ * @var \App\Model\Entity\Set $set
  * @var \App\Model\Entity\SetConnection $setConnection
  * @var array $setConnections
  * @var \App\Model\Entity\Sgf $sgf
@@ -133,11 +133,11 @@ use App\Utility\ViteManifest;
 			'what' => 'problem',
 			'deleted' => $tsumego->deleted->format('Y-m-d H:i:s'),
 			'restoreAction' => '/trash/restore-problem/' . (int) $tsumego->id]);
-	if (!empty($set['Set']['deleted']))
+	if (!empty($set->deleted))
 		echo $this->element('trash_notice', [
 			'what' => 'collection',
-			'deleted' => $set['Set']['deleted'],
-			'restoreAction' => '/trash/restore-set/' . (int) $set['Set']['id']]);
+			'deleted' => $set->deleted->format('Y-m-d H:i:s'),
+			'restoreAction' => '/trash/restore-set/' . (int) $set->id]);
 	?>
 	<table width="100%" border="0" class="play-header-table">
 	<tr>
@@ -324,7 +324,7 @@ use App\Utility\ViteManifest;
 					$proposalSentColor = 'color:var(--text-softer-color);';
 				}
 			}
-			$getTitle = str_replace('&','and',$set['Set']['title']);
+			$getTitle = str_replace('&','and',$set->title);
 			$getTitle .= ' ' . $setConnection->num;
 		$tagEditorProps = json_encode([
 			'userId' => Auth::getUserID() ? (int) Auth::getUserID() : null,
@@ -616,7 +616,7 @@ use App\Utility\ViteManifest;
 	var resetButtonLink = "<?php echo $resetLink; ?>";
 	var noSkipNextButtonLink = "<?php echo $noSkipNextLink; ?>";
 	var timeModeTimer = (mode == 3 ? new TimeModeTimer(<?php echo $timeMode->secondsToSolve; ?>) : null);
-	var setID = <?php echo $set['Set']['id'] ?>;
+	var setID = <?php echo $set->id ?>;
 	var isMutable = true;
 	var deleteNextMoveGroup = false;
 	var file = <?php echo json_encode($file, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;

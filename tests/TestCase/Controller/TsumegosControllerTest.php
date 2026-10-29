@@ -296,9 +296,8 @@ class TsumegosControllerTest extends IntegrationTestCase
 			],
 		]);
 
-		$set = ClassRegistry::init('Set');
-		$set->create();
-		$this->assertNotFalse($set->save(['title' => 'alice public', 'public' => 1, 'user_id' => $context->otherUsers[0]['id'], 'order' => 1]));
+		$setTable = $this->fetchTable('Set');
+		$this->assertNotFalse($set = $setTable->saveOrFail($setTable->newEntity(['title' => 'alice public', 'public' => 1, 'user_id' => $context->otherUsers[0]['id'], 'order' => 1])));
 		$setConnectionTable = $this->fetchTable('SetConnection');
 		$setConnectionTable->saveOrFail($setConnectionTable->newEntity(['tsumego_id' => $context->tsumegos[0]['id'], 'set_id' => $set->id, 'num' => 3]));
 
@@ -343,9 +342,8 @@ class TsumegosControllerTest extends IntegrationTestCase
 
 	private function addSetForTsumego(int $tsumegoId, string $title, ?int $userId, int $public, int $num): void
 	{
-		$set = ClassRegistry::init('Set');
-		$set->create();
-		$set->save(['title' => $title, 'public' => $public, 'user_id' => $userId, 'order' => 1]);
+		$setTable = $this->fetchTable('Set');
+		$set = $setTable->saveOrFail($setTable->newEntity(['title' => $title, 'public' => $public, 'user_id' => $userId, 'order' => 1]));
 
 		$setConnectionTable = $this->fetchTable('SetConnection');
 		$setConnectionTable->saveOrFail($setConnectionTable->newEntity(['tsumego_id' => $tsumegoId, 'set_id' => $set->id, 'num' => $num]));
@@ -446,9 +444,9 @@ class TsumegosControllerTest extends IntegrationTestCase
 			],
 		]);
 
-		$favSet = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => 'Favorites', 'user_id' => $context->user['id']]]);
+		$favSet = $this->fetchTable('Set')->find()->where(['title' => 'Favorites', 'user_id' => $context->user['id']])->first();
 		$this->assertNotEmpty($favSet, 'Favorites set should exist from test setup');
-		$favoritesSetId = $favSet['Set']['id'];
+		$favoritesSetId = $favSet->id;
 
 		$publicConnectionIds = [];
 		$favoriteConnectionIds = [];

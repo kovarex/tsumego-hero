@@ -222,14 +222,14 @@ class ClassroomsController extends AppController
 	public function collectionProblems(string $setId): CakeResponse
 	{
 		$this->Authorization->authorize('Classroom', 'create');
-		$set = ClassRegistry::init('Set')->findById((int) $setId);
+		$set = $this->fetchTable('Set')->find()->where(['id' => (int) $setId])->first();
 		if (!$set)
 			throw new NotFoundException('Collection not found');
-		if (!ClassroomAssignmentTable::canAssignSet($set['Set'], Auth::getUserID()))
+		if (!ClassroomAssignmentTable::canAssignSet($set, Auth::getUserID()))
 			throw new ForbiddenException();
 		return $this->json([
-			'collection' => ['id' => (int) $set['Set']['id'], 'title' => (string) $set['Set']['title']],
-			'problems' => ClassroomAssignmentTable::collectionProblems((int) $set['Set']['id']),
+			'collection' => ['id' => (int) $set->id, 'title' => (string) $set->title],
+			'problems' => ClassroomAssignmentTable::collectionProblems((int) $set->id),
 		]);
 	}
 

@@ -799,15 +799,13 @@ class PlayGameplayBrowserTest extends IntegrationTestCase
 		$browser->clickId('favButton');
 		$this->waitForClientFavoritesState($browser);
 
-		$favoritesSet = ClassRegistry::init('Set')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'title' => 'Favorites'],
-		]);
+		$favoritesSet = $this->fetchTable('Set')->find()->where(['user_id' => $context->user['id'], 'title' => 'Favorites'])->first();
 		$this->assertNotEmpty($favoritesSet, 'First heart click should create the Favorites set');
-		$this->assertSame(1, $this->fetchTable('SetConnection')->find()->where(['set_id' => $favoritesSet['Set']['id'], 'tsumego_id' => $tsumegoId])->count(), 'First heart click should add the tsumego to Favorites');
+		$this->assertSame(1, $this->fetchTable('SetConnection')->find()->where(['set_id' => $favoritesSet->id, 'tsumego_id' => $tsumegoId])->count(), 'First heart click should add the tsumego to Favorites');
 
 		// Second click removes it again
 		$browser->clickId('favButton');
-		$this->waitForConnectionCount($browser, $favoritesSet['Set']['id'], $tsumegoId, 0,
+		$this->waitForConnectionCount($browser, $favoritesSet->id, $tsumegoId, 0,
 			'Second heart click should remove the tsumego from Favorites');
 	}
 

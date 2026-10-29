@@ -466,15 +466,13 @@ class CommentsControllerTest extends IntegrationTestCase
 		$tsumego = $tsumegoTable->saveOrFail($tsumegoTable->newEntity(['description' => 'comment set link', 'author' => '']));
 
 		// Private set connection created first, so it would win the old MIN(id) pick
-		$aliceSet = ClassRegistry::init('Set');
-		$aliceSet->create();
-		$aliceSet->save(['title' => 'alice favorites', 'title2' => '', 'public' => 0, 'user_id' => $context->otherUsers[0]['id'], 'order' => 1]);
+		$setTable = $this->fetchTable('Set');
+		$aliceSet = $setTable->saveOrFail($setTable->newEntity(['title' => 'alice favorites', 'title2' => '', 'public' => 0, 'user_id' => $context->otherUsers[0]['id'], 'order' => 1]));
 		$setConnectionTable = $this->fetchTable('SetConnection');
 		$setConnectionTable->saveOrFail($setConnectionTable->newEntity(['tsumego_id' => $tsumego->id, 'set_id' => $aliceSet->id, 'num' => 3]));
 
-		$publicSet = ClassRegistry::init('Set');
-		$publicSet->create();
-		$publicSet->save(['title' => 'public set', 'title2' => '', 'public' => 1, 'order' => 1]);
+		$setTable = $this->fetchTable('Set');
+		$publicSet = $setTable->saveOrFail($setTable->newEntity(['title' => 'public set', 'title2' => '', 'public' => 1, 'order' => 1]));
 		$setConnectionTable = $this->fetchTable('SetConnection');
 		$setConnectionTable->saveOrFail($setConnectionTable->newEntity(['tsumego_id' => $tsumego->id, 'set_id' => $publicSet->id, 'num' => 10]));
 

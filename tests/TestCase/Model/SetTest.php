@@ -1,8 +1,10 @@
 <?php
 
+use App\Model\Table\SetTable;
+
 class SetTest extends CakeTestCase
 {
-	//Set::url() builds the address itself instead of asking the router, which would try the routes
+	//SetTable::url() builds the address itself instead of asking the router, which would try the routes
 	//one by one for every card of the collections page. It has to give the address the router gives.
 	public function testUrlIsTheAddressTheRouterGives(): void
 	{
@@ -14,7 +16,7 @@ class SetTest extends CakeTestCase
 					$url = ['controller' => 'sets', 'action' => 'view', 'id' => $id];
 					if ($partition > 1)
 						$url['partition'] = $partition;
-					$this->assertSame(Router::url($url, $full), Set::url($id, $partition, $full), 'id ' . $id . ', page ' . $partition . ($full ? ', full' : ''));
+					$this->assertSame(Router::url($url, $full), SetTable::url($id, $partition, $full), 'id ' . $id . ', page ' . $partition . ($full ? ', full' : ''));
 				}
 	}
 }

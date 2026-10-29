@@ -5,7 +5,6 @@ namespace App\Model\Table;
 use App\Model\Entity\SetConnection;
 use App\Utility\Auth;
 use Cake\ORM\TableRegistry;
-use Set;
 
 //The problems of a collection, each with its number in it. A problem can belong to several
 //collections, so it has a connection for each.
@@ -47,7 +46,7 @@ class SetConnectionTable extends AppTable
 		return 'SELECT sc.set_id FROM set_connection sc'
 			. ' JOIN tsumego t ON t.id = sc.tsumego_id AND t.deleted IS NULL'
 			. ' JOIN `set` st ON st.id = sc.set_id'
-			. ' WHERE ' . Set::officialCondition('st')
+			. ' WHERE ' . SetTable::officialCondition('st')
 			. ' GROUP BY sc.set_id HAVING COUNT(*) >= ' . self::ACHIEVEMENT_MINIMUM_PROBLEMS;
 	}
 

@@ -5,9 +5,8 @@ namespace App\Utility;
 use Cake\ORM\TableRegistry;
 use App\Model\Table\SgfTable;
 use App\Model\Table\TsumegoStatusTable;
-use ClassRegistry;
 use NotFoundException;
-use Set;
+use App\Model\Table\SetTable;
 use App\Model\Table\SetConnectionTable;
 use App\Model\Entity\SetConnection;
 
@@ -30,8 +29,7 @@ class SimilarSearchLogic
 		$this->sourceStoneCount = $this->sourceBoard->getStoneCount();
 		$this->sourceMoveCount = substr_count($sgf->sgf, ';');
 		$this->sourceSgf = $sgf->sgf;
-		$set = ClassRegistry::init('Set')->findById($this->setConnection->set_id)['Set'];
-		$this->result->title = $set['title'];
+		$this->result->title = TableRegistry::getTableLocator()->get('Set')->get($this->setConnection->set_id)->title;
 	}
 
 	public function execute(): void
@@ -49,7 +47,7 @@ JOIN set_connection sc_best ON sc_best.id = (
     SELECT sc2.id
     FROM set_connection sc2
     JOIN `set` s2 ON s2.id = sc2.set_id
-    WHERE sc2.tsumego_id = tsumego.id AND " . Set::officialCondition('s2') . "
+    WHERE sc2.tsumego_id = tsumego.id AND " . SetTable::officialCondition('s2') . "
     ORDER BY " . SetConnectionTable::displayOrderSql('s2', 'sc2') . "
     LIMIT 1
 )
@@ -92,12 +90,12 @@ WHERE tsumego.deleted IS NULL");
 	{
 		$setConnection = TableRegistry::getTableLocator()->get('SetConnection')->get($candidate['set_connection_id']);
 		// not so many should match, so I get the sql additional data manually instead in the original select, which is big
-		$set = ClassRegistry::init('Set')->findById($setConnection->set_id);
+		$set = TableRegistry::getTableLocator()->get('Set')->find()->where(['id' => $setConnection->set_id])->first();
 
 		$item = new SimilarSearchResultItem();
 		$item->difference = $comparisonResult->difference;
 		$item->diff = $comparisonResult->diff;
-		$item->title = $set['Set']['title'];
+		$item->title = $set->title;
 		$item->moveCount = substr_count($candidate['sgf'], ';');
 
 

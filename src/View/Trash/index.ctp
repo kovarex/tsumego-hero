@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SetTable;
 use App\Utility\Trash;
 use App\Utility\Util;
 
@@ -29,7 +30,7 @@ $renderRestore = fn(string $action, string $id): string
 			<tr><th>Collection</th><th>Problems</th><th>Deleted by</th><th>Deleted</th><th>Removed for good</th><th></th></tr>
 			<?php foreach ($sets as $set): ?>
 				<tr>
-					<td><a href="<?php echo Set::url((int) $set['id']); ?>"><?php echo h($set['title']); ?></a><?php echo $set['public'] == 0 ? ' (sandbox)' : ''; ?></td>
+					<td><a href="<?php echo SetTable::url((int) $set['id']); ?>"><?php echo h($set['title']); ?></a><?php echo $set['public'] == 0 ? ' (sandbox)' : ''; ?></td>
 					<td><?php echo (int) $set['problem_count']; ?></td>
 					<td><?php echo h($set['deleted_by'] ?? ''); ?></td>
 					<?php echo $renderDates($set['deleted']); ?>

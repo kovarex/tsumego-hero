@@ -2,7 +2,7 @@
 
 namespace App\Utility;
 
-use Set;
+use App\Model\Table\SetTable;
 
 class SetsSelector
 {
@@ -105,7 +105,7 @@ class SetsSelector
 		$query->selects[] = 'tsumego.rating';
 		$query->query .= ' JOIN set_connection sc ON sc.set_id = s.id';
 		$query->query .= ' JOIN tsumego ON tsumego.id = sc.tsumego_id';
-		$query->conditions[] = Set::officialCondition('s');
+		$query->conditions[] = SetTable::officialCondition('s');
 		$query->conditions[] = 'tsumego.deleted IS NULL';
 		if (!empty($this->tsumegoFilters->setIDs))
 			$query->conditions[] = 's.id IN (' . implode(',', $this->tsumegoFilters->setIDs) . ')';
@@ -117,7 +117,7 @@ class SetsSelector
 		$this->problemsFound = count(array_unique(array_column($rows, 'tsumego_id')));
 
 		$setInfo = [];
-		foreach (Util::query('SELECT id, title, color, `order` FROM `set` s WHERE ' . Set::officialCondition('s')) as $set)
+		foreach (Util::query('SELECT id, title, color, `order` FROM `set` s WHERE ' . SetTable::officialCondition('s')) as $set)
 			$setInfo[$set['id']] = ['name' => $set['title'], 'color' => $set['color'], 'order' => $set['order']];
 
 		// Set cards are ordered in PHP below; items are sorted within each set by
@@ -373,7 +373,7 @@ class SetsSelector
 	//EXISTS condition for a tsumego belonging to at least one public set (optionally limited to filtered sets).
 	private function publicMembershipCondition(string $tsumegoRef): string
 	{
-		$setCondition = Set::officialCondition();
+		$setCondition = SetTable::officialCondition();
 		if (!empty($this->tsumegoFilters->setIDs))
 			$setCondition .= ' AND `set`.id IN (' . implode(',', $this->tsumegoFilters->setIDs) . ')';
 		return 'EXISTS (SELECT 1 FROM set_connection sc JOIN `set` ON `set`.id = sc.set_id AND ' . $setCondition . ' WHERE sc.tsumego_id = ' . $tsumegoRef . ')';

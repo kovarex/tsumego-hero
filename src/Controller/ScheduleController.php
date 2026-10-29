@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SetTable;
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 use App\Model\Entity\Schedule;
@@ -20,7 +21,6 @@ class ScheduleController extends AppController
 	public function index(): void
 	{
 		$this->Authorization->authorize('Schedule');
-		$this->loadModel('Set');
 
 		$upcoming = Util::query("
 SELECT
@@ -84,14 +84,9 @@ WHERE schedule.published = 1
 ORDER BY schedule.date DESC, schedule.id DESC");
 		$this->set('recentlyPublished', $recentlyPublished);
 
-		$this->set('sandboxSets', $this->Set->find('all', [
-			'order' => ['Set.order'],
-			'conditions' => [self::SANDBOX_CONDITION],
-		]) ?: []);
-		$this->set('publicSets', $this->Set->find('all', [
-			'order' => ['Set.order'],
-			'conditions' => [Set::officialCondition('Set')],
-		]) ?: []);
+		$setTable = $this->fetchTable('Set');
+		$this->set('sandboxSets', $setTable->find()->select(['id', 'title'])->where([self::SANDBOX_CONDITION])->orderBy('Set.order')->disableHydration()->toArray());
+		$this->set('publicSets', $setTable->find()->select(['id', 'title'])->where([SetTable::officialCondition('Set')])->orderBy('Set.order')->disableHydration()->toArray());
 	}
 
 	//Schedule sandbox problems for publishing. Admin only.
@@ -122,16 +117,11 @@ ORDER BY schedule.date DESC, schedule.id DESC");
 		if (strtotime($startDate) < strtotime('today'))
 			throw new BadRequestException('Start date must be today or later.');
 
-		$sourceSet = ClassRegistry::init('Set')->find('first', [
-			'conditions' => ['Set.id' => $setIdFrom, self::SANDBOX_CONDITION],
-		]);
-		if (!$sourceSet)
+		$setTable = $this->fetchTable('Set');
+		if (!$setTable->exists(['Set.id' => $setIdFrom, self::SANDBOX_CONDITION]))
 			throw new BadRequestException('Source set must be a sandbox set.');
 
-		$targetSet = ClassRegistry::init('Set')->find('first', [
-			'conditions' => ['Set.id' => $targetSetId, Set::officialCondition('Set')],
-		]);
-		if (!$targetSet)
+		if (!$setTable->exists(['Set.id' => $targetSetId, SetTable::officialCondition('Set')]))
 			throw new BadRequestException('Target set must be a public collection of the site.');
 
 		$candidates = self::candidates($setIdFrom, $targetSetId, $num, $count);

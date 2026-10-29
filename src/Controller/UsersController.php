@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SetTable;
 use App\Model\Table\SetConnectionTable;
 use App\Model\Table\SgfTable;
 use App\Model\Table\TsumegoStatusTable;
@@ -808,7 +809,6 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	public function view(?string $id = null): mixed
 	{
 		$this->set('_page', 'user');
-		$this->loadModel('Set');
 
 		$as = $this->fetchTable('AchievementStatus')->find()->where(['user_id' => $id])->orderByDesc('created')->limit(12)->all();
 
@@ -1004,61 +1004,49 @@ ORDER BY category DESC', [$user['User']['id']]));
 	public function authors(): void
 	{
 		$this->loadModel('User');
-		$this->loadModel('Set');
 
 		$this->set('_page', 'about');
 		$this->set('_title', 'Tsumego Hero - About');
 
-		$set = $this->Set->find('all');
-		$setMap = [];
-		$setMap2 = [];
-		$setCount = count($set);
-		for ($i = 0; $i < $setCount; $i++)
-		{
-			$divider = ' ';
-			$setMap[$set[$i]['Set']['id']] = $set[$i]['Set']['title'] . $divider . $set[$i]['Set']['title2'];
-			$setMap2[$set[$i]['Set']['id']] = $set[$i]['Set']['public'];
-		}
-
 		$count = [];
 		$count[0]['author'] = 'Innokentiy Zabirov';
-		$count[0]['collections'] = 's: <a href="' . Set::url(41) . '">Life & Death - Intermediate</a> and <a href="' . Set::url(122) . '">Gokyo Shumyo 1-4</a>';
+		$count[0]['collections'] = 's: <a href="' . SetTable::url(41) . '">Life & Death - Intermediate</a> and <a href="' . SetTable::url(122) . '">Gokyo Shumyo 1-4</a>';
 		$count[0]['count'] = 0;
 		$count[1]['author'] = 'Alexandre Dinerchtein';
-		$count[1]['collections'] = ': <a href="' . Set::url(109) . '">Problems from Professional Games</a>';
+		$count[1]['collections'] = ': <a href="' . SetTable::url(109) . '">Problems from Professional Games</a>';
 		$count[1]['count'] = 0;
 		$count[2]['author'] = 'David Ulbricht';
-		$count[2]['collections'] = ': <a href="' . Set::url(41) . '">Life & Death - Intermediate</a>';
+		$count[2]['collections'] = ': <a href="' . SetTable::url(41) . '">Life & Death - Intermediate</a>';
 		$count[2]['count'] = 0;
 		$count[3]['author'] = 'Bradford Malbon';
-		$count[3]['collections'] = 's: <a href="' . Set::url(104) . '">Easy Life</a> and <a href="' . Set::url(105) . '">Easy Kill</a>';
+		$count[3]['collections'] = 's: <a href="' . SetTable::url(104) . '">Easy Life</a> and <a href="' . SetTable::url(105) . '">Easy Kill</a>';
 		$count[3]['count'] = 0;
 		$count[4]['author'] = 'Ryan Smith';
-		$count[4]['collections'] = 's: <a href="' . Set::url(67) . '">Korean Problem Academy 1-4</a>';
+		$count[4]['collections'] = 's: <a href="' . SetTable::url(67) . '">Korean Problem Academy 1-4</a>';
 		$count[4]['count'] = 0;
 		$count[5]['author'] = 'Fupfv';
-		$count[5]['collections'] = ': <a href="' . Set::url(139) . '">Gokyo Shumyo 4</a>';
+		$count[5]['collections'] = ': <a href="' . SetTable::url(139) . '">Gokyo Shumyo 4</a>';
 		$count[5]['count'] = 0;
 		$count[6]['author'] = 'саша черных';
-		$count[6]['collections'] = ': <a href="' . Set::url(137) . '">Tsumego Master</a>';
+		$count[6]['collections'] = ': <a href="' . SetTable::url(137) . '">Tsumego Master</a>';
 		$count[6]['count'] = 0;
 		$count[7]['author'] = 'Timo Kreuzer';
-		$count[7]['collections'] = ': <a href="' . Set::url(137) . '">Tsumego Master</a>';
+		$count[7]['collections'] = ': <a href="' . SetTable::url(137) . '">Tsumego Master</a>';
 		$count[7]['count'] = 0;
 		$count[8]['author'] = 'David Mitchell';
-		$count[8]['collections'] = ': <a href="' . Set::url(143) . '">Diabolical</a>';
+		$count[8]['collections'] = ': <a href="' . SetTable::url(143) . '">Diabolical</a>';
 		$count[8]['count'] = 10;
 		$count[9]['author'] = 'Omicron';
-		$count[9]['collections'] = ': <a href="' . Set::url(145) . '">Tesujis in Real Board Positions</a>';
+		$count[9]['collections'] = ': <a href="' . SetTable::url(145) . '">Tesujis in Real Board Positions</a>';
 		$count[9]['count'] = 0;
 		$count[10]['author'] = 'Sadaharu';
-		$count[10]['collections'] = ': <a href="' . Set::url(146) . '">Tsumego of Fortitude</a>, <a href="' . Set::url(166) . '">Secret Tsumego from Hong Dojo</a>, <a href="' . Set::url(158) . '">Beautiful Tsumego</a> and more.';
+		$count[10]['collections'] = ': <a href="' . SetTable::url(146) . '">Tsumego of Fortitude</a>, <a href="' . SetTable::url(166) . '">Secret Tsumego from Hong Dojo</a>, <a href="' . SetTable::url(158) . '">Beautiful Tsumego</a> and more.';
 		$count[10]['count'] = 0;
 		$count[11]['author'] = 'Jérôme Hubert';
-		$count[11]['collections'] = ': <a href="' . Set::url(150) . '">Kanzufu</a> and more.';
+		$count[11]['collections'] = ': <a href="' . SetTable::url(150) . '">Kanzufu</a> and more.';
 		$count[11]['count'] = 0;
 		$count[12]['author'] = 'Kaan Malçok';
-		$count[12]['collections'] = ': <a href="' . Set::url(163) . '">Xuanxuan Qijing</a>';
+		$count[12]['collections'] = ': <a href="' . SetTable::url(163) . '">Xuanxuan Qijing</a>';
 		$count[12]['count'] = 0;
 
 		$this->set('count', $count);

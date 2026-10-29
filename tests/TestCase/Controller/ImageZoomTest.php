@@ -11,9 +11,7 @@ class ImageZoomTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator(['tsumego' => ['sets' => [['name' => 'test set', 'num' => 1]]]]);
 		$setId = $context->tsumegos[0]['sets'][0]['id'];
-		$setModel = ClassRegistry::init('Set');
-		$setModel->id = $setId;
-		$setModel->saveField('image', 'gokyo-shumo.png');
+		$this->fetchTable('Set')->updateAll(['image' => 'gokyo-shumo.png'], ['id' => $setId]);
 
 		$browser = Browser::instance();
 		$browser->get('sets/view/' . $setId);
