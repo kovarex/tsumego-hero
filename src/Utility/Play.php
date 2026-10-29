@@ -38,7 +38,6 @@ class Play
 
 	public function play(int $setConnectionID, ServerRequest $request): void
 	{
-		$this->set('page', 'play');
 		//The board always receives both arrows, and an empty one is the arrow turned off.
 		//Only the modes that walk a list fill this one in.
 		$this->set('previousLink', '');
@@ -90,12 +89,13 @@ class Play
 
 		if (Auth::isInRatingMode() || Auth::isInTimeMode())
 			$this->set('_title', 'Tsumego Hero');
+		//The menu item of the mode played
 		if (Auth::isInLevelMode())
-			$this->set('page', 'level mode');
+			$this->set('_page', 'level mode');
 		elseif (Auth::isInRatingMode())
-			$this->set('page', 'rating mode');
+			$this->set('_page', 'rating mode');
 		elseif (Auth::isInTimeMode())
-			$this->set('page', 'time mode');
+			$this->set('_page', 'time mode');
 
 		$maxHealth = Util::getHealthBasedOnLevel(Auth::getWithDefault('level', 0));
 		$this->set('maxHealth', $maxHealth);
@@ -127,10 +127,6 @@ class Play
 		$this->set('tsumego', $tsumego);
 		$this->set('tsumegoStatus', $tsumegoStatus);
 		$this->set('tv', $tsumegoVariant);
-		$this->set('checkBSize', $boardSize);
-		$this->set('file', 'placeholder2.sgf');
-		$this->set('alternative_response', $tsumego->alternative_response);
-		$this->set('passEnabled', $tsumego->pass);
 		$this->set('setConnection', $setConnection);
 		$this->set('setConnections', TsumegoUtil::getSetConnectionsWithTitles($tsumegoID));
 		$this->set('tsumegoFilters', $tsumegoFilters);

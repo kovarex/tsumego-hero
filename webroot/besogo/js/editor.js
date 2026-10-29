@@ -538,9 +538,6 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
 			addTimeForMovePlayed();
       scheduleAutoPlay(function ()
       {
-        if (!isMutable)
-        	return;
-
         let selectOpponentMove = 0;
         {
           let selectionCount =
@@ -823,7 +820,6 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
 
   function intuitionHeroPower() {
     besogo.intuitionActive = true;
-    deleteNextMoveGroup = true;
     besogo.editor.resetToStart();
     besogo.editor.setReviewMode(true);
     besogo.editor.notifyListeners({

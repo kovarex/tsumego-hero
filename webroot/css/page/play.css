@@ -462,7 +462,7 @@ h1 {
 #besogo-se-white:hover,
 #besogo-se-more:hover,
 #besogo-se-less:hover,
-#submitScoreEstimatingSE:hover, #submitScoreEstimatingBlackWins:hover, #submitScoreEstimatingWhiteWins:hover, #submitScoreEstimatingJigo:hover {
+#submitScoreEstimatingSE:hover {
   background-color: var(--color-purple-vivid);
 }
 #besogo-se-more,
@@ -475,7 +475,7 @@ h1 {
   padding-left: 8px;
   padding-right: 8px;
 }
-#submitScoreEstimatingSE, #submitScoreEstimatingBlackWins, #submitScoreEstimatingWhiteWins, #submitScoreEstimatingJigo {
+#submitScoreEstimatingSE {
   font-size: 16px;
   font-style: normal;
   font-variant: normal;

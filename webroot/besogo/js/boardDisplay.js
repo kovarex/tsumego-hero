@@ -394,7 +394,6 @@ besogo.makeBoardDisplay = function(container, editor, corner)
     {
       if(besogo.intuitionActive)
       {
-        deleteNextMoveGroup = false;
         editor.setReviewMode(false);
         besogo.intuitionActive = false;
       }

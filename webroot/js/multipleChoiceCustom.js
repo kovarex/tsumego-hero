@@ -8,7 +8,6 @@ function displayMultipleChoiceCustomResult(num){
 		
 		if(num==customMultipleChoiceAnswer){
 			displayResult("S");
-			multipleChoiceEnabled = false;
 			if(customMultipleChoiceAnswer==1)
 				$("#besogo-multipleChoice1").css("background-color", "#3ecf78");
 			else if(customMultipleChoiceAnswer==2)
@@ -25,7 +24,6 @@ function displayMultipleChoiceCustomResult(num){
 			}
 		}else{
 			displayResult("F");
-			multipleChoiceEnabled = false;
 		}
 		hasChosen = true;
 	}
