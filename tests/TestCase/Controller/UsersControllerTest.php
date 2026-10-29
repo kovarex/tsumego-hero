@@ -6,10 +6,7 @@ use App\Model\Table\UserTable;
 use App\Utility\AchievementId;
 use App\Utility\Rating;
 
-/**
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
- */
+#[RetryOnBrowserFailure]
 class UsersControllerTest extends IntegrationTestCase
 {
 	//Test that login redirects back to the page where user came from.

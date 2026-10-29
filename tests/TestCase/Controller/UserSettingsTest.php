@@ -7,10 +7,7 @@ use Facebook\WebDriver\WebDriverKeys;
 
 //The settings page holds everything a player can change about their own account,
 //while the profile stays the public page.
-/**
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
- */
+#[RetryOnBrowserFailure]
 class UserSettingsTest extends IntegrationTestCase
 {
 	public function testEmailIsChangedFromTheSettingsPage(): void
