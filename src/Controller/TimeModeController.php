@@ -24,10 +24,10 @@ class TimeModeController extends AppController
 		$this->Authorization->authorize('User', 'startTimeMode');
 
 		$timeMode = new TimeMode();
-		$categoryID = (int) ($this->params['url']['categoryID'] ?? 0);
+		$categoryID = (int) $this->query('categoryID');
 		if (!$categoryID)
 			throw new BadRequestException('Time mode category not specified.');
-		$rankID = (int) ($this->params['url']['rankID'] ?? 0);
+		$rankID = (int) $this->query('rankID');
 		if (!$rankID)
 			throw new BadRequestException('Time mode rank not specified.');
 
@@ -432,7 +432,7 @@ ORDER BY time_mode_session.created DESC, time_mode_session.id DESC",
 		$this->set('rankArrowClosed', '/img/greyArrow1.png');
 		$this->set('rankArrowOpened', '/img/greyArrow2.png');
 		// a run opened from the history unlocked whatever it unlocked when it was finished
-		$this->set('unlock', isset($this->params['url']['history'])
+		$this->set('unlock', $this->query('history') !== null
 			? null
 			: $this->deduceUnlock($finishedSession, $timeModeRanks, $timeModeCategories));
 		$this->set('achievementUpdates', new AchievementChecker()->checkTimeModeAchievements()->finalize()->updated);

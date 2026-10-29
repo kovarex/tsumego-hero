@@ -40,7 +40,7 @@ class ClassroomsController extends AppController
 	{
 		$this->Authorization->authorize('Classroom', 'create');
 
-		$name = ClassroomTable::cleanName((string) ($this->request->data['name'] ?? ''));
+		$name = ClassroomTable::cleanName((string) ($this->input('name') ?? ''));
 		if ($name === null)
 		{
 			CookieFlash::set('A class needs a name.', 'error');
@@ -89,7 +89,7 @@ class ClassroomsController extends AppController
 		$this->Authorization->authorize(['Classroom' => $classroom], 'manage');
 		$url = self::classUrl($classroom->id);
 
-		$name = trim((string) ($this->request->data['name'] ?? ''));
+		$name = trim((string) ($this->input('name') ?? ''));
 		if ($name === '')
 		{
 			CookieFlash::set('Write the name of the player to invite.', 'error');
@@ -244,7 +244,7 @@ class ClassroomsController extends AppController
 		$classroom = $this->findClassroom((string) $assignment['classroom_id']);
 		$this->Authorization->authorize(['Classroom' => $classroom], 'manage');
 
-		$input = json_decode((string) $this->request->input(), true);
+		$input = json_decode($this->requestBody(), true);
 		if (!is_array($input))
 			throw new BadRequestException('Expected JSON.');
 		$due = DateTime::createFromFormat('!Y-m-d', (string) ($input['due'] ?? ''));

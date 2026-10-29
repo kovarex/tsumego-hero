@@ -13,8 +13,8 @@ class CommentsController extends AppController
 		$this->set('_page', 'discuss');
 		if (!Auth::isLoggedIn())
 			return $this->redirect('/users/login');
-		$this->set('yourComments', new CommentsRenderer("your_comments", Auth::getUserID(), $this->params['url']));
-		$this->set('allComments', new CommentsRenderer("all_comments", null, $this->params['url']));
+		$this->set('yourComments', new CommentsRenderer("your_comments", Auth::getUserID(), $this->queries()));
+		$this->set('allComments', new CommentsRenderer("all_comments", null, $this->queries()));
 		return null;
 	}
 }
