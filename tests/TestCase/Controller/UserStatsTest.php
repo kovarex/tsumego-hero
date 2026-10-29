@@ -103,6 +103,11 @@ class UserStatsTest extends IntegrationTestCase
 	//The page is read by the same queries however many attempts it lists.
 	public function testTheQueriesDoNotGrowWithTheAttempts()
 	{
+		// One request ahead of the counting: the ORM of Cake 5 reads the schema of a table the first
+		// time it uses it (SHOW FULL COLUMNS, SHOW INDEXES ...), which is no work of the page.
+		new ContextPreparator(['user' => ['name' => 'statsuser', 'admin' => true]]);
+		$this->get('/users/userstats');
+
 		$queries = [];
 		foreach ([1, 10] as $attemptCount)
 		{
