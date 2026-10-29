@@ -21,27 +21,6 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 60
 
-    services:
-      mysql:
-        image: mariadb:10.11
-        env:
-          MARIADB_ROOT_PASSWORD: root
-          MARIADB_DATABASE: test
-        ports:
-          - 3306:3306
-        options: --health-cmd="mariadb-admin ping -h localhost -u root -proot" --health-interval=10s --health-timeout=5s --health-retries=3
-
-      selenium-firefox:
-        image: selenium/standalone-firefox:latest
-        env:
-          TZ: Europe/Prague
-        ports:
-          - 4444:4444
-        volumes:
-          - ".:/mnt/ddev_config"
-        options: >-
-          --add-host=host.docker.internal:host-gateway
-
     steps:
       - uses: actions/checkout@v7
         with:
@@ -49,6 +28,22 @@ jobs:
 
       - name: Restore file modification times
         uses: chetan/git-restore-mtime-action@v2
+
+      # MariaDB, Selenium and Caddy pull and start while the job installs PHP and the packages and builds;
+      # the steps that need them wait for them (as service containers they held up the job for 30 s).
+      - name: Start the containers in the background
+        run: |
+          nohup docker run --rm --name mysql \
+            -e MARIADB_ROOT_PASSWORD=root -e MARIADB_DATABASE=test \
+            -p 3306:3306 \
+            mariadb:10.11 > /tmp/mysql.log 2>&1 &
+          nohup docker run --rm --name selenium-firefox \
+            -e TZ=Europe/Prague \
+            -p 4444:4444 \
+            -v "$PWD:/mnt/ddev_config" \
+            --add-host=host.docker.internal:host-gateway \
+            selenium/standalone-firefox:latest > /tmp/selenium.log 2>&1 &
+          nohup docker pull -q caddy:2 > /dev/null 2>&1 &
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -157,6 +152,8 @@ jobs:
 
       - name: Import database schema
         run: |
+          # Over TCP, which the temporary server of MariaDB's first start doesn't listen on.
+          timeout 120 sh -c 'until docker exec mysql mariadb --protocol=tcp -h 127.0.0.1 -uroot -proot -e "SELECT 1" test > /dev/null 2>&1; do sleep 0.5; done' || (cat /tmp/mysql.log; exit 1)
           ./vendor/bin/phinx migrate -e test
 
       - name: Start built-in PHP server
@@ -184,6 +181,10 @@ jobs:
           sleep 6
           echo "Caddy log:"
           cat caddy.log || true
+
+      - name: Wait for Selenium
+        run: |
+          timeout 120 sh -c 'until curl -s http://localhost:4444/status | grep -q "\"ready\": *true"; do sleep 0.5; done' || (cat /tmp/selenium.log; exit 1)
 
       - name: Run tests
         env:
