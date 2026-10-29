@@ -409,7 +409,7 @@ class TsumegosController extends AppController
 	}
 
 	#[HttpGet]
-	public function setupSgfStep2(string $sgfID, string $firstMoveColor, ?string $correctMoves = null)
+	public function setupSgfStep2(int $sgfID, string $firstMoveColor, ?string $correctMoves = null)
 	{
 		$this->Authorization->authorize('Tsumego');
 		$sgfTable = $this->fetchTable('Sgf');

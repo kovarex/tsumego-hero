@@ -375,13 +375,13 @@ ORDER BY time_mode_session.created DESC, time_mode_session.id DESC",
 	}
 
 	#[HttpGet]
-	public function result(?string $timeModeSessionID = null): mixed
+	public function result(?int $timeModeSessionID = null): mixed
 	{
 		if (!Auth::isLoggedIn())
 			return $this->redirect("/users/login");
 
 		$timeMode = new TimeMode();
-		if ($timeModeSessionID && $timeMode->hasNoResultYet((int) $timeModeSessionID))
+		if ($timeModeSessionID && $timeMode->hasNoResultYet($timeModeSessionID))
 			return $this->renderWaitingForTheResult();
 
 		$finishedSession = $this->deduceFinishedSession($timeModeSessionID, $timeMode);
