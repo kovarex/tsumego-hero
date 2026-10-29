@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="./vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="./tests/bootstrap.php"
+         backupGlobals="true"
+         stderr="true"
+         colors="true"
+         cacheDirectory="tmp/phpunit-cache">
+    <php>
+        <ini name="memory_limit" value="-1"/>
+    </php>
+    <extensions>
+        <bootstrap class="SuperglobalCleanup"/>
+    </extensions>
+    <testsuites>
+        <testsuite name="All Tests">
+            <directory>./tests/TestCase/</directory>
+        </testsuite>
+    </testsuites>
+    <groups>
+        <exclude>
+            <group>apache-only</group>
+            <group>ci-only</group>
+            <group>disabled</group>
+        </exclude>
+    </groups>
+    <source>
+        <include>
+            <directory suffix=".php">./src</directory>
+        </include>
+    </source>
+</phpunit>
