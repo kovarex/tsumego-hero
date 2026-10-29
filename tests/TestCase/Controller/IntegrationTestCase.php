@@ -4,25 +4,18 @@ use App\Utility\Auth;
 use Cake\ORM\Locator\LocatorAwareTrait;
 use DOM\HTMLDocument;
 use Facebook\WebDriver\WebDriverBy;
-use PHPUnitRetry\RetryTrait;
 
 //A test that dispatches a real request and asserts what a client gets back.
 //The verbs and the assertions come from Cake 5's `IntegrationTestTrait`. The fork ships it in
 //the global namespace, Cake 5 keeps it in `Cake\TestSuite\`, so the trait line below is what
 //moves at the migration; the tests themselves never name it. The body of the last response is
 //kept in `$view`, which is where the assertions that read the page look.
-/**
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
- */
 class IntegrationTestCase extends AppTestCase
 {
 	use IntegrationTestTrait {
 		_sendRequest as private dispatchRequest;
 		controllerSpy as private spyOnController;
 	}
-
-	use RetryTrait;
 
 	//fetchTable() of the Cake 5 tables, as Cake 5's test cases have it
 	use LocatorAwareTrait;

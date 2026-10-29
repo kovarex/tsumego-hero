@@ -6,10 +6,7 @@ use App\Utility\Auth;
 use App\Utility\Rating;
 use Facebook\WebDriver\WebDriverKeys;
 
-/**
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
- */
+#[RetryOnBrowserFailure]
 class EditTsumegoTest extends IntegrationTestCase
 {
 	public static function editTsumegoProvider(): array

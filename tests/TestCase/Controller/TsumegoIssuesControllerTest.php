@@ -4,10 +4,7 @@ use App\Model\Table\TsumegoIssueTable;
 use App\Utility\Avatar;
 
 //Tests for TsumegoIssuesController - specifically the global issues index page.
-/**
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
- */
+#[RetryOnBrowserFailure]
 class TsumegoIssuesControllerTest extends IntegrationTestCase
 {
 	public function testIssuesIndexPageLoads()

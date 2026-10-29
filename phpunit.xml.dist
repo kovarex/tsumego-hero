@@ -8,9 +8,6 @@
     <php>
         <ini name="memory_limit" value="-1"/>
     </php>
-    <listeners>
-        <listener class="CakeFixtureInjector" file="./vendor/pieceofcake2/cakephp/src/Cake/TestSuite/Fixture/CakeFixtureInjector.php"/>
-    </listeners>
     <testsuites>
         <testsuite name="All Tests">
             <directory>./tests/TestCase/</directory>

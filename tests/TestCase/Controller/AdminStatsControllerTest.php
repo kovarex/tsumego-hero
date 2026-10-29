@@ -11,10 +11,7 @@ use App\Utility\Util;
 //- Tests filtering out non-admin SGF uploads
 //- Tests pagination with multiple sections (activity, proposals, tags, tagnames)
 //- Tests all 18 activity types display correctly with formatted messages
-/**
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
- */
+#[RetryOnBrowserFailure]
 class AdminStatsControllerTest extends IntegrationTestCase
 {
 	//Test the admin activity page displays in browser
