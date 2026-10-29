@@ -266,6 +266,9 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	{
 		$this->set('_page', 'login');
 		$this->set('_title', 'Tsumego Hero - Sign In');
+		// the form shown again after a failed sign-in has no page to go back to
+		$this->set('redirectUrl', '');
+		$this->set('redirectSignature', '');
 
 		// On GET request, prepare redirect URL with HMAC signature (fully stateless)
 		if (!$this->request->is('post'))
@@ -590,6 +593,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	{
 		$this->set('_page', 'achievementHighscore');
 		$this->set('_title', 'Tsumego Hero - Achievements Highscore');
+		$this->set('totalUsers', null); // no count of the players under this table
 
 		if (Auth::isLoggedIn())
 			Auth::saveUserField('highscore_page_id', Constants::$HIGHSCORE_RATING);
