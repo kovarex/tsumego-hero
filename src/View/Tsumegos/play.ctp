@@ -191,7 +191,7 @@ use App\Utility\ViteManifest;
 		<div class="modify-description-panel" style="display: none;">
 			<form id="tsumego-edit" method="post" action="/tsumegos/edit/<?php echo $tsumego->id; ?>">
 				<input type="hidden" name="tsumego_id" value="<?php echo $tsumego->id; ?>">
-				<input type="hidden" name="redirect" value="<?php echo h($_SERVER['REQUEST_URI']); ?>">
+				<input type="hidden" name="redirect" value="<?php echo h(Util::requestUri()); ?>">
 				<input type="hidden" name="color_swapped" value="<?php echo $swapColors ? '1' : '0'; ?>">
 				<table>
 					<tr>

@@ -331,13 +331,14 @@ ORDER BY sc.num ASC", [(int) $id]);
 		}
 
 		// Handle image upload from the details form
-		if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK)
+		$image = $this->uploadedFile('image');
+		if ($image !== null && $image['error'] === UPLOAD_ERR_OK)
 		{
-			$file_ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
+			$file_ext = strtolower(pathinfo($image['name'], PATHINFO_EXTENSION));
 
 			if (!in_array($file_ext, ['png', 'jpg', 'jpeg', 'webp']))
 				CookieFlash::set('png/jpg/webp allowed.', 'error');
-			elseif ($_FILES['image']['size'] > 2097152)
+			elseif ($image['size'] > 2097152)
 				CookieFlash::set('The file is too large (max 2MB).', 'error');
 			else
 			{
@@ -345,7 +346,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 
 				try
 				{
-					$processed = SetImage::process($_FILES['image']['tmp_name'], $file_ext);
+					$processed = SetImage::process($image['tmp_name'], $file_ext);
 					$filename = SetImage::store((int) $id, $processed);
 
 					// The name of a cover carries the hash of its picture, so an upload is a
@@ -631,7 +632,9 @@ ORDER BY sc.num ASC", [(int) $id]);
 				'tsumego_id' => $tsumego->id,
 				'num' => $this->input('order')]));
 
-			$fileUpload = isset($_FILES['adminUpload']) && $_FILES['adminUpload']['error'] === UPLOAD_ERR_OK ? $_FILES['adminUpload'] : null;
+			$fileUpload = $this->uploadedFile('adminUpload');
+			if ($fileUpload !== null && $fileUpload['error'] !== UPLOAD_ERR_OK)
+				$fileUpload = null;
 			$sgfDataOrFile = $this->input('sgf') ?? $fileUpload;
 
 			if ($sgfDataOrFile)

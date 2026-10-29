@@ -175,10 +175,10 @@ class UtilTest extends AppTestCase
 		$this->assertArrayNotHasKey('session', $_COOKIE);
 	}
 
-	public function testGetCookieReturnsDefaultWhenMissing()
+	public function testCookieReturnsDefaultWhenMissing()
 	{
 		unset($_COOKIE['missing']);
-		$this->assertSame('fallback', Util::getCookie('missing', 'fallback'));
+		$this->assertSame('fallback', Util::cookie('missing', 'fallback'));
 	}
 
 	public function testGenerateRandomStringHasTheAskedLength()

@@ -2,6 +2,7 @@
 //Generic Error Page
 //Handles 404, 500, and other HTTP errors
 //Uses the default site layout with full navigation
+use App\Utility\Util;
 
 // Determine error details based on code
 $code = $this->response->statusCode();
@@ -15,7 +16,7 @@ switch ($code)
 	case 404:
 		$errorTitle = 'Page Not Found';
 		$errorColor = '#666';
-		$errorMessage = 'The requested page <strong style="color: var(--color-green);">' . h($url ?? $_SERVER['REQUEST_URI'] ?? '/') . '</strong> could not be found on this server.';
+		$errorMessage = 'The requested page <strong style="color: var(--color-green);">' . h($url ?? Util::requestUri()) . '</strong> could not be found on this server.';
 		$errorDetails = 'The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.';
 		break;
 	case 500:

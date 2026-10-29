@@ -5,6 +5,7 @@
 //and ellipsis for large page counts. Automatically preserves query
 //parameters and generates anchor links for smooth scrolling.
 use App\Utility\Query;
+use App\Utility\Util;
 
 class PaginationHelper extends AppHelper
 {
@@ -23,7 +24,7 @@ class PaginationHelper extends AppHelper
 		$divId = 'pagination-' . str_replace('_page', '', $paramName);
 
 		// Build query string preserving other pagination parameters
-		$queryParams = $_GET;
+		$queryParams = Util::queryParams();
 		unset($queryParams[$paramName]); // Remove current param, will add it back with new value
 		$baseQuery = empty($queryParams) ? '?' : '?' . http_build_query($queryParams) . '&';
 

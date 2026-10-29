@@ -51,8 +51,8 @@ class Preferences
 		if (Auth::isLoggedIn())
 		{
 			// Logged-in users: unprefixed cookie override
-			if (isset($_COOKIE[$key]) && $_COOKIE[$key] !== '')
-				return $_COOKIE[$key];
+			if ((Util::cookie($key) ?? '') !== '')
+				return Util::cookie($key);
 			// Fall through to database
 			return self::getFromDatabase($key, $default);
 		}
@@ -60,8 +60,8 @@ class Preferences
 		{
 			// Guests: check prefixed cookie first
 			$cookieKey = 'loggedOff_' . $key;
-			if (isset($_COOKIE[$cookieKey]) && $_COOKIE[$cookieKey] !== '')
-				return $_COOKIE[$cookieKey];
+			if ((Util::cookie($cookieKey) ?? '') !== '')
+				return Util::cookie($cookieKey);
 			// Fall through to guest storage (which checks same cookie again, but that's OK)
 			return self::getFromGuestStorage($key, $default);
 		}
@@ -148,7 +148,7 @@ class Preferences
 
 		// Cookie key uses 'loggedOff_' prefix for backward compatibility
 		$cookieKey = 'loggedOff_' . $key;
-		return $_COOKIE[$cookieKey] ?? $default;
+		return Util::cookie($cookieKey) ?? $default;
 	}
 
 	//Set preference in guest storage (cookies or test memory)

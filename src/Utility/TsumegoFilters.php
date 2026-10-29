@@ -83,9 +83,9 @@ class TsumegoFilters
 		$stringResult = Preferences::get($name, '');
 
 		// Check for cookie override (used for filter links like /topics?filtered_sets=SetName)
-		if (!empty($_COOKIE[$name]))
+		if (!empty(Util::cookie($name)))
 		{
-			$stringResult = $_COOKIE[$name];
+			$stringResult = Util::cookie($name);
 			if ($stringResult == 'clear')
 			{
 				Util::clearCookie($name);
@@ -99,7 +99,7 @@ class TsumegoFilters
 			$stringResult = $newValue;
 			// Clear the cookie override so subsequent requests
 			// read from preferences instead of stale cookie value.
-			if (!empty($_COOKIE[$name]))
+			if (!empty(Util::cookie($name)))
 				Util::clearCookie($name);
 		}
 
@@ -119,9 +119,9 @@ class TsumegoFilters
 		if ($this->query == 'topics')
 			return $set->title;
 		if ($this->query == 'difficulty')
-			return $_COOKIE['lastSet'] ?? 'Tsumego';
+			return Util::cookie('lastSet') ?? 'Tsumego';
 		if ($this->query == 'tags')
-			return $_COOKIE['lastSet'] ?? 'Tsumego';
+			return Util::cookie('lastSet') ?? 'Tsumego';
 
 		throw new Exception('Unknown query: ""' . $this->query);
 	}
@@ -131,9 +131,9 @@ class TsumegoFilters
 		if ($this->query == 'topics')
 			return (string) $set->id;
 		if ($this->query == 'difficulty')
-			return $_COOKIE['lastSet'] ?? 'favorites';
+			return Util::cookie('lastSet') ?? 'favorites';
 		if ($this->query == 'tags')
-			return $_COOKIE['lastSet'] ?? 'favorites';
+			return Util::cookie('lastSet') ?? 'favorites';
 
 		return "Unsupported yet";
 	}
