@@ -2,7 +2,7 @@
 
 use App\Model\Table\SetTable;
 
-class SetTest extends CakeTestCase
+class SetTest extends AppTestCase
 {
 	//SetTable::url() builds the address itself instead of asking the router, which would try the routes
 	//one by one for every card of the collections page. It has to give the address the router gives.

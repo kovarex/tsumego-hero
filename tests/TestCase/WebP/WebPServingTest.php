@@ -19,7 +19,7 @@
 
 use App\Utility\Util;
 
-class WebPServingTest extends CakeTestCase
+class WebPServingTest extends AppTestCase
 {
 	private string $baseUrl;
 

@@ -9,9 +9,8 @@ use Facebook\WebDriver\WebDriverBy;
 //profile and the rating of a problem in its history.
 /**
  * @group browser
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
+#[RetryOnBrowserFailure]
 class ChartsBrowserTest extends IntegrationTestCase
 {
 	public function testHomePageDrawsTheProblemsAndUsersAndTheLegendHidesALine(): void

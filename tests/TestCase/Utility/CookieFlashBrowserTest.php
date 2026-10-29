@@ -1,19 +1,15 @@
 <?php
 
-use PHPUnitRetry\RetryTrait;
 /**
  * Browser tests for CookieFlash functionality.
  *
  * Tests that flash messages render correctly in the browser and auto-clear.
- *
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
 use App\Utility\CookieFlash;
 
-class CookieFlashBrowserTest extends CakeTestCase
+#[RetryOnBrowserFailure]
+class CookieFlashBrowserTest extends AppTestCase
 {
-	use RetryTrait;
 	//Test that flash message appears after failed login attempt
 	public function testFlashMessageAppearsAfterFailedLogin()
 	{
