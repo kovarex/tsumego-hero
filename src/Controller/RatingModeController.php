@@ -68,12 +68,12 @@ LIMIT 1";
 		}
 
 		$this->set('nextLink', '/ratingMode');
-		$this->set('difficulty', Auth::getUser()['rating_mode_difficulty_selection']);
 
 		$play  = new Play(function ($name, $value) {
 			$this->set($name, $value);
 		});
 		$play->play((int) $selectedTsumego['id'], $this->request);
+		$this->set('difficulty', Auth::getUser()['rating_mode_difficulty_selection']);
 		$this->render('/Tsumegos/play');
 		return null;
 	}
