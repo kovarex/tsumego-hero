@@ -20,11 +20,6 @@ class Util
 		return (string) ($_SERVER['REQUEST_URI'] ?? '/');
 	}
 
-	public static function userAgent(): string
-	{
-		return (string) ($_SERVER['HTTP_USER_AGENT'] ?? '');
-	}
-
 	//The whole query string as an array.
 	/** @return array<string, mixed> */
 	public static function queryParams(): array

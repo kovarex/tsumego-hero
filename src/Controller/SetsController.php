@@ -303,22 +303,25 @@ ORDER BY sc.num ASC", [(int) $id]);
 		// Alternative response / pass mode for all problems (admin only)
 		if ($canEditSettings && $formSent)
 		{
-			if ($this->input('r39') == 'on')
+			// each of the two settings is sent only when the admin picked a choice for it
+			$alternativeResponse = $this->input('r39');
+			$passMode = $this->input('r43');
+			if ($alternativeResponse == 'on')
 			{
 				$this->setProblemsField($problems, 'alternative_response', true);
 				AdminActivityLogger::log(AdminActivityTypeTable::SET_ALTERNATIVE_RESPONSE, null, (int) $id, null, '1');
 			}
-			if ($this->input('r39') == 'off')
+			if ($alternativeResponse == 'off')
 			{
 				$this->setProblemsField($problems, 'alternative_response', false);
 				AdminActivityLogger::log(AdminActivityTypeTable::SET_ALTERNATIVE_RESPONSE, null, (int) $id, null, '0');
 			}
-			if ($this->input('r43') == 'yes')
+			if ($passMode == 'yes')
 			{
 				$this->setProblemsField($problems, 'pass', true);
 				AdminActivityLogger::log(AdminActivityTypeTable::SET_PASS_MODE, null, (int) $id, null, '1');
 			}
-			if ($this->input('r43') == 'no')
+			if ($passMode == 'no')
 			{
 				$this->setProblemsField($problems, 'pass', false);
 				AdminActivityLogger::log(AdminActivityTypeTable::SET_PASS_MODE, null, (int) $id, null, '0');
