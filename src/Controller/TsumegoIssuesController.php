@@ -8,7 +8,7 @@ use Cake\Http\Exception\InternalErrorException;
 use Cake\Http\Exception\NotFoundException;
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
-use App\Lib\Error\UnprocessableEntityException;
+use Cake\Http\Exception\UnprocessableContentException;
 use App\Model\Table\TsumegoIssueTable;
 //Controller for managing tsumego issues.
 //Issues are reports about problems with tsumego solutions (missing moves, wrong answers, etc.).
@@ -111,7 +111,7 @@ class TsumegoIssuesController extends AppController
 		{
 			// Rollback: delete the issue if comment fails
 			$tsumegoIssueTable->deleteAll(['id' => $issueId]);
-			throw new UnprocessableEntityException('Failed to create issue');
+			throw new UnprocessableContentException('Failed to create issue');
 		}
 
 		// Return full issue data for initial state

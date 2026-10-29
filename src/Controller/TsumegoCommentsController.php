@@ -7,7 +7,7 @@ use Cake\Http\Exception\NotFoundException;
 use DateTimeImmutable;
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
-use App\Lib\Error\UnprocessableEntityException;
+use Cake\Http\Exception\UnprocessableContentException;
 use App\Model\Entity\TsumegoComment;
 use App\Model\Entity\TsumegoIssue;
 use App\Model\Table\TsumegoIssueTable;
@@ -44,7 +44,7 @@ class TsumegoCommentsController extends AppController
 			'user_id' => Auth::getUserID(),
 		]);
 		if (!$tsumegoCommentTable->save($comment))
-			throw new UnprocessableEntityException('Failed to add comment');
+			throw new UnprocessableContentException('Failed to add comment');
 
 		$author = self::authorsOf([$comment])[$comment->user_id];
 		return $this->respondJson([

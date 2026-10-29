@@ -11,7 +11,7 @@ use Cake\Routing\Router;
 use DateTime;
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
-use App\Lib\Error\UnprocessableEntityException;
+use Cake\Http\Exception\UnprocessableContentException;
 use App\Model\Entity\Classroom;
 use App\Model\Entity\ClassroomMember;
 use App\Model\Table\ClassroomAssignmentTable;
@@ -259,15 +259,15 @@ class ClassroomsController extends AppController
 			throw new BadRequestException('Expected JSON.');
 		$due = DateTime::createFromFormat('!Y-m-d', (string) ($input['due'] ?? ''));
 		if ($due === false || $due->format('Y-m-d') !== ($input['due'] ?? null))
-			throw new UnprocessableEntityException('The due date is not a date.');
+			throw new UnprocessableContentException('The due date is not a date.');
 		$setConnectionIds = $input['setConnectionIds'] ?? null;
 		if (!is_array($setConnectionIds) || !array_is_list($setConnectionIds))
 			throw new BadRequestException('Expected a list of problems.');
 		if (count($setConnectionIds) > ClassroomAssignmentTable::MAXIMUM_PROBLEMS)
-			throw new UnprocessableEntityException('An assignment has at most ' . ClassroomAssignmentTable::MAXIMUM_PROBLEMS . ' problems.');
+			throw new UnprocessableContentException('An assignment has at most ' . ClassroomAssignmentTable::MAXIMUM_PROBLEMS . ' problems.');
 		$publish = !empty($input['publish']) && !ClassroomAssignmentTable::isPublished($assignment);
 		if (($publish || ClassroomAssignmentTable::isPublished($assignment)) && empty($setConnectionIds))
-			throw new UnprocessableEntityException('Pick the problems to give first.');
+			throw new UnprocessableContentException('Pick the problems to give first.');
 
 		$problemCount = ClassroomAssignmentTable::replaceProblems(
 			(int) $assignment['id'],

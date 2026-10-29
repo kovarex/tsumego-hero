@@ -11,7 +11,7 @@ use App\Model\Entity\Set;
 use App\Model\Table\SetTable;
 use App\Model\Table\SetConnectionTable;
 use App\Model\Table\SgfTable;
-use App\Lib\Error\ConflictException;
+use Cake\Http\Exception\ConflictException;
 use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\ProgressDeletionTable;

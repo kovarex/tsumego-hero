@@ -5,6 +5,7 @@ use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\Rating;
 use Facebook\WebDriver\WebDriverKeys;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 #[RetryOnBrowserFailure]
 class EditTsumegoTest extends IntegrationTestCase
@@ -33,7 +34,7 @@ class EditTsumegoTest extends IntegrationTestCase
 		];
 	}
 
-	/** @dataProvider editTsumegoProvider */
+	#[DataProvider('editTsumegoProvider')]
 	public function testEditTsumego(array $testCase)
 	{
 		$context = new ContextPreparator([

@@ -2,6 +2,7 @@
 
 use Cake\Http\ServerRequest;
 use Cake\Routing\Router;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 //Every address the site answers on keeps reaching the same action, and the code keeps making the
 //same addresses. The expectations are the plain data of RouteTable.php; the adapter at the end of
@@ -35,10 +36,8 @@ class RoutesTest extends AppTestCase
 
 	//The address reaches its controller and action with the passed parameters, and no named ones:
 	//nothing on the site reads named parameters, and Cake 5 has none.
-	/**
-	 * @dataProvider parseCases
-	 * @param array{string, string, array<?string>} $expected
-	 */
+	/** @param array{string, string, array<?string>} $expected */
+	#[DataProvider('parseCases')]
 	public function testAddressReachesItsAction(string $request, array $expected): void
 	{
 		[$method, $path] = str_contains($request, ' ') ? explode(' ', $request, 2) : ['GET', $request];
@@ -48,10 +47,8 @@ class RoutesTest extends AppTestCase
 			self::parse($method, $path));
 	}
 
-	/**
-	 * @dataProvider urlCases
-	 * @param array<int|string, mixed>|string $url
-	 */
+	/** @param array<int|string, mixed>|string $url */
+	#[DataProvider('urlCases')]
 	public function testCodeMakesTheSameAddress(?string $context, array|string $url, string $expected): void
 	{
 		$this->assertSame($expected, self::url($url, $context));

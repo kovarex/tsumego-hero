@@ -1,6 +1,6 @@
 <?php
 
-use App\Lib\Error\UnprocessableEntityException;
+use Cake\Http\Exception\UnprocessableContentException;
 use App\Model\Entity\Message;
 use App\Model\Table\MessageTable;
 use App\Utility\Auth;
@@ -43,7 +43,7 @@ class MessagesControllerTest extends IntegrationTestCase
 		{
 			$this->send($recipientUserId, $text);
 		}
-		catch (UnprocessableEntityException $e)
+		catch (UnprocessableContentException $e)
 		{
 			return $e->getMessage();
 		}

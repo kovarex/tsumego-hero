@@ -9,6 +9,7 @@ use App\Utility\Util;
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverKeys;
 use Facebook\WebDriver\WebDriverSelect;
+use PHPUnit\Framework\Attributes\Group;
 
 class SetsControllerTest extends IntegrationTestCase
 {
@@ -2393,9 +2394,7 @@ class SetsControllerTest extends IntegrationTestCase
 
 	//Verifies a sandbox tsumego's play page loads correctly for premium users.
 	//Smoke test to ensure the $isSandbox code path in Play.php doesn't crash.
-	/**
-	 * @group browser
-	 */
+	#[Group('browser')]
 	#[RetryOnBrowserFailure]
 	public function testSandboxPlayPageLoads(): void
 	{
@@ -2420,9 +2419,7 @@ class SetsControllerTest extends IntegrationTestCase
 
 	//Verifies non-premium users are blocked from sandbox play pages.
 	//Creates sandbox set as premium owner, then switches to a non-premium user.
-	/**
-	 * @group browser
-	 */
+	#[Group('browser')]
 	#[RetryOnBrowserFailure]
 	public function testSandboxPlayPageBlocksNonPremium(): void
 	{

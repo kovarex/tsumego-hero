@@ -17,13 +17,13 @@ class AppTable extends Table
 	//transaction that read a row fails its update with 1020 "Record has changed since last read" when
 	//another request changed the row in between (forum#35, forum#102), although the save only writes
 	//the fields it was given and nothing gets lost. So a save is no transaction of its own, and it
-	//runs in the transaction Cake 2 started, if there is one; explicit transactions keep the check.
+	//runs in the transaction of the connection, if one is open; explicit transactions keep the check.
 	public function save(EntityInterface $entity, array $options = []): EntityInterface|false
 	{
 		return parent::save($entity, $options + ['atomic' => false]);
 	}
 
-	//Nor is a delete: it runs in the transaction Cake 2 started, if there is one.
+	//Nor is a delete: it runs in the transaction of the connection, if one is open.
 	public function delete(EntityInterface $entity, array $options = []): bool
 	{
 		return parent::delete($entity, $options + ['atomic' => false]);

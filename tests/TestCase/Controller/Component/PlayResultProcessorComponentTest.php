@@ -15,6 +15,7 @@ use App\Utility\RungInsignia;
 use App\Utility\SetCompletionCounter;
 use App\Utility\TsumegoUtil;
 use App\Utility\Util;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class PlayResultProcessorComponentTest extends IntegrationTestCase
 {
@@ -1251,7 +1252,7 @@ class PlayResultProcessorComponentTest extends IntegrationTestCase
 	}
 
 	//A clean solve climbs a rung, and the badge the result redraws the button with shows the rank it climbed to.
-	/** @dataProvider cleanSolveBadgeProvider */
+	#[DataProvider('cleanSolveBadgeProvider')]
 	public function testACleanSolveInTheTrainingRedrawsTheBadgeOneRankUp(int $rung, string $badge): void
 	{
 		$context = new ContextPreparator([
