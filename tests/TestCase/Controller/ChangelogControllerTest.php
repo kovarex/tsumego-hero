@@ -1,5 +1,7 @@
 <?php
 
+use App\Controller\ChangelogController;
+
 class ChangelogControllerTest extends IntegrationTestCase
 {
 	//The public changelog page renders its shell and mounts the React feed.

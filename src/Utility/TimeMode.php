@@ -12,8 +12,8 @@ use App\Model\Table\TimeModeSessionStatusTable;
 use Cake\ORM\Locator\LocatorAwareTrait;
 use Cake\ORM\TableRegistry;
 use DateTimeImmutable;
-use InternalErrorException;
-use NotFoundException;
+use Cake\Http\Exception\InternalErrorException;
+use Cake\Http\Exception\NotFoundException;
 use App\Model\Table\SetTable;
 
 class TimeMode

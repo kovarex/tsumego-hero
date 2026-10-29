@@ -1,5 +1,7 @@
 <?php
 
+use Cake\Http\Exception\BadRequestException;
+use Cake\Routing\Router;
 use App\Model\Table\SgfTable;
 use App\Model\Table\AdminActivityTypeTable;
 use App\Utility\Auth;

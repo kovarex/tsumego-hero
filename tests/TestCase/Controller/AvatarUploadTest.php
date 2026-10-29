@@ -1,5 +1,6 @@
 <?php
 
+use Cake\Routing\Router;
 use App\Model\Table\UserTable;
 use App\Utility\Auth;
 use App\Utility\CookieFlash;

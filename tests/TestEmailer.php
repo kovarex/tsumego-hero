@@ -1,5 +1,7 @@
 <?php
 
+use Cake\Network\Exception\SocketException;
+
 // this is hack until nicer solution in newer cake is possible to be used
 class TestEmailer
 {

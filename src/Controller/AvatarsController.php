@@ -27,7 +27,7 @@ class AvatarsController extends AppController
 			throw new NotFoundException('Invalid board key');
 
 		$this->response = $this->response->withType('svg');
-		$this->response = $this->response->withHeader('Cache-Control: public, max-age=31536000, immutable');
+		$this->response = $this->response->withHeader('Cache-Control', 'public, max-age=31536000, immutable');
 		$this->response = $this->response->withEtag(md5(Avatar::VERSION . '|' . $key));
 		$this->response = $this->response->withStringBody(Avatar::svg($key));
 
@@ -46,7 +46,7 @@ class AvatarsController extends AppController
 			throw new NotFoundException('Invalid board key');
 
 		$this->response = $this->response->withType('png');
-		$this->response = $this->response->withHeader('Cache-Control: public, max-age=31536000, immutable');
+		$this->response = $this->response->withHeader('Cache-Control', 'public, max-age=31536000, immutable');
 		$this->response = $this->response->withEtag(md5(Avatar::VERSION . '|png|' . $key));
 		$this->response = $this->response->withStringBody(Avatar::png($key));
 
@@ -66,9 +66,9 @@ class AvatarsController extends AppController
 		if ($picture === null)
 			throw new NotFoundException('No such picture');
 
-		$this->response = $this->response->withType(['webp' => 'image/webp']);
+		$this->response->setTypeMap('webp', 'image/webp');
 		$this->response = $this->response->withType('webp');
-		$this->response = $this->response->withHeader('Cache-Control: public, max-age=31536000, immutable');
+		$this->response = $this->response->withHeader('Cache-Control', 'public, max-age=31536000, immutable');
 		$this->response = $this->response->withEtag($hash);
 		$this->response = $this->response->withStringBody($picture);
 

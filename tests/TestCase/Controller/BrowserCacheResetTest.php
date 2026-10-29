@@ -1,5 +1,7 @@
 <?php
 
+use App\Controller\AppController;
+
 class BrowserCacheResetTest extends IntegrationTestCase
 {
 	//Two requests in a row are two page loads of the same browser.

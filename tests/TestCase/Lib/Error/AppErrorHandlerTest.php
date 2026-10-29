@@ -1,5 +1,9 @@
 <?php
 
+use Cake\Http\Exception\ForbiddenException;
+use Cake\Http\Exception\NotFoundException;
+use Cake\Http\ServerRequest as CakeRequest;
+use Cake\Routing\Router;
 use App\Lib\Error\UnprocessableEntityException;
 
 //AppErrorHandler renders JSON error bodies for JSON/AJAX requests and the HTML error page for regular browser requests.

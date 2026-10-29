@@ -1,5 +1,6 @@
 <?php
 
+use Cake\Cache\Cache;
 use App\Model\Table\SgfTable;
 use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\TimeModeCategoryTable;

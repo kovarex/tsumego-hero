@@ -2,7 +2,7 @@
 
 namespace App\Utility;
 
-use PaginationHelper;
+use App\View\Helper\PaginationHelper;
 
 abstract class DataTableRenderer
 {

@@ -26,7 +26,7 @@ class ActionSurfaceTest extends CakeTestCase
 		$offenders = [];
 		foreach ($this->actions() as $action)
 			if ($this->declaredVerbs($action) === [])
-				$offenders[] = $this->name($action);
+				$offenders[] = $this->actionName($action);
 
 		$this->assertSame([], $offenders, 'these are reachable by address yet declare no HTTP verb');
 	}
@@ -39,7 +39,7 @@ class ActionSurfaceTest extends CakeTestCase
 		foreach ($this->actions() as $action)
 			foreach ($this->declaredVerbs($action) as $verb)
 				if (!in_array($verb, self::VERBS, true))
-					$offenders[] = $this->name($action) . ' uses ' . $verb;
+					$offenders[] = $this->actionName($action) . ' uses ' . $verb;
 
 		$this->assertSame([], $offenders, 'these verbs do not resolve to App\Attribute, so they are not imported');
 	}
@@ -52,7 +52,7 @@ class ActionSurfaceTest extends CakeTestCase
 		foreach ($this->controllerClasses() as $className)
 			foreach ((new ReflectionClass($className))->getMethods() as $method)
 				if (!$this->isAction($className, $method) && $this->declaredVerbs($method) !== [])
-					$offenders[] = $this->name($method);
+					$offenders[] = $this->actionName($method);
 
 		$this->assertSame([], $offenders, 'these declare an HTTP verb yet are not reachable by address');
 	}
@@ -65,13 +65,13 @@ class ActionSurfaceTest extends CakeTestCase
 		$offenders = [];
 		foreach ($this->actions() as $action)
 			foreach ($action->getParameters() as $parameter)
-				if ($this->isObject($parameter))
-					$offenders[] = $this->name($action) . '($' . $parameter->getName() . ')';
+				if ($this->isObjectParameter($parameter))
+					$offenders[] = $this->actionName($action) . '($' . $parameter->getName() . ')';
 
 		$this->assertSame([], $offenders, 'these are reachable by address yet take an object');
 	}
 
-	private function name(ReflectionMethod $method): string
+	private function actionName(ReflectionMethod $method): string
 	{
 		return $method->getDeclaringClass()->getName() . '::' . $method->getName();
 	}
@@ -138,7 +138,7 @@ class ActionSurfaceTest extends CakeTestCase
 		return (bool) preg_match('/^(.*\\\\)?Http(Get|Post|Put|Patch|Delete)$/', $attributeName);
 	}
 
-	private function isObject(ReflectionParameter $parameter): bool
+	private function isObjectParameter(ReflectionParameter $parameter): bool
 	{
 		$type = $parameter->getType();
 		return $type instanceof ReflectionNamedType && !$type->isBuiltin();

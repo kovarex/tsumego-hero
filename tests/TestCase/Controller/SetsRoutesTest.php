@@ -1,5 +1,7 @@
 <?php
 
+use Cake\Routing\Router;
+
 //The addresses the collections answer on: one per action, and a short one per collection.
 class SetsRoutesTest extends CakeTestCase
 {

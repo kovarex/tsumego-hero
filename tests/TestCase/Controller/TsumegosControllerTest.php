@@ -1,5 +1,6 @@
 <?php
 
+use Cake\Routing\Router;
 use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\TsumegoVariantTable;
 use App\Model\Table\UserTable;

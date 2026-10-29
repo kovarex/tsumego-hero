@@ -2,8 +2,8 @@
 
 namespace App\Utility;
 
+use App\View\Helper\PaginationHelper;
 use App\Model\Table\SgfTable;
-use PaginationHelper;
 use App\Model\Table\SetConnectionTable;
 use App\Model\Table\UserTable;
 

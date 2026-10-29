@@ -6,12 +6,12 @@ use App\Model\Entity\Sgf;
 use App\Utility\TsumegoButton;
 use App\Utility\Util;
 use ArrayObject;
-use BadRequestException;
+use Cake\Http\Exception\BadRequestException;
 use Cake\Datasource\EntityInterface;
 use Cake\Event\EventInterface;
 use Cake\ORM\TableRegistry;
 use Cake\Validation\Validator;
-use InternalErrorException;
+use Cake\Http\Exception\InternalErrorException;
 use InvalidArgumentException;
 
 //The versions of the SGF of a problem: the accepted ones (the latest is the current version), the

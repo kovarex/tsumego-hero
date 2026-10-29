@@ -85,16 +85,16 @@ return function (RouteBuilder $routes): void
 	);
 	$routes->connect(
 		'/messages/conversations',
-		['controller' => 'Messages', 'action' => 'conversations', '[method]' => 'GET']
+		['controller' => 'Messages', 'action' => 'conversations', '_method' => 'GET']
 	);
 	$routes->connect(
 		'/messages/conversations/{partnerUserId}',
-		['controller' => 'Messages', 'action' => 'conversation', '[method]' => 'GET'],
+		['controller' => 'Messages', 'action' => 'conversation', '_method' => 'GET'],
 		['pass' => ['partnerUserId'], 'partnerUserId' => '[0-9]+']
 	);
 	$routes->connect(
 		'/messages/conversations/{partnerUserId}',
-		['controller' => 'Messages', 'action' => 'send', '[method]' => 'POST'],
+		['controller' => 'Messages', 'action' => 'send', '_method' => 'POST'],
 		['pass' => ['partnerUserId'], 'partnerUserId' => '[0-9]+']
 	);
 	$routes->connect(

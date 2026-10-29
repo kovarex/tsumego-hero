@@ -1,5 +1,9 @@
 <?php
 
+use App\Controller\SitemapsController;
+use Cake\Cache\Cache;
+use Cake\Routing\Router;
+use Cake\Utility\Inflector;
 use App\Utility\Constants;
 use Cake\ORM\TableRegistry;
 
