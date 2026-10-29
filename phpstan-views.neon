@@ -9,7 +9,6 @@ parameters:
 	bootstrapFiles:
 		- config/phpstan-bootstrap.php
 	treatPhpDocTypesAsCertain: true
-	reportUnmatchedIgnoredErrors: false
 	excludePaths:
 		- templates/email/*
 		- templates/Error/*
