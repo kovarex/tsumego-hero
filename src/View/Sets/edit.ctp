@@ -39,18 +39,18 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 	<div class="set-edit__grid">
 		<div class="card card--green set-edit__section">
 			<h2 class="set-edit__heading">Details</h2>
-			<?php echo $this->Form->create(false, ['id' => 'set-edit-details', 'enctype' => 'multipart/form-data']); ?>
+			<form action="/sets/edit/<?php echo $setId; ?>" id="set-edit-details" enctype="multipart/form-data" method="post" accept-charset="utf-8"><div style="display:none;"><input type="hidden" name="_method" value="POST"/></div>
 				<div class="form-field">
 					<label class="form-field__label" for="SetTitle">Title</label>
-					<input class="form-field__control" type="text" id="SetTitle" name="data[Set][title]" value="<?php echo h($set->title); ?>" required>
+					<input class="form-field__control" type="text" id="SetTitle" name="title" value="<?php echo h($set->title); ?>" required>
 				</div>
 				<div class="form-field">
 					<label class="form-field__label" for="SetTitle2">Subtitle</label>
-					<input class="form-field__control" type="text" id="SetTitle2" name="data[Set][title2]" value="<?php echo h($set->title2 ?? ''); ?>" placeholder="Optional subtitle shown after the title">
+					<input class="form-field__control" type="text" id="SetTitle2" name="title2" value="<?php echo h($set->title2 ?? ''); ?>" placeholder="Optional subtitle shown after the title">
 				</div>
 				<div class="form-field">
 					<label class="form-field__label" for="SetDescription">Description</label>
-					<textarea class="form-field__control" id="SetDescription" name="data[Set][description]" rows="4"><?php echo h($set->description ?? ''); ?></textarea>
+					<textarea class="form-field__control" id="SetDescription" name="description" rows="4"><?php echo h($set->description ?? ''); ?></textarea>
 					<p class="hint">Allowed tags: &lt;br&gt; &lt;a&gt; &lt;b&gt; &lt;i&gt; &lt;p&gt; &lt;ul&gt; &lt;ol&gt; &lt;li&gt; &lt;img&gt; &lt;font&gt; &lt;table&gt; &lt;tr&gt; &lt;td&gt; &lt;th&gt;</p>
 				</div>
 				<div class="form-field">
@@ -60,7 +60,7 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 							<span class="swatch" style="--swatch-color:<?php echo $presetColor; ?>" title="<?php echo $presetColor; ?>"
 								onclick="document.getElementById('set-color').value='<?php echo $presetColor; ?>'"></span>
 						<?php endforeach; ?>
-						<input type="color" id="set-color" name="data[Set][color]" value="<?php echo h($currentColor ?: '#74d14c'); ?>" class="color-input">
+						<input type="color" id="set-color" name="color" value="<?php echo h($currentColor ?: '#74d14c'); ?>" class="color-input">
 					</div>
 				</div>
 				<div class="form-field">
@@ -68,7 +68,7 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 					<div class="set-edit__image">
 						<?php if (!empty($set->image)): ?>
 							<img class="set-edit__thumb" src="/img/<?php echo h($set->image); ?>" alt="Set image">
-							<label class="set-edit__remove"><input type="checkbox" name="data[Set][remove_image]" value="1"> Remove</label>
+							<label class="set-edit__remove"><input type="checkbox" name="remove_image" value="1"> Remove</label>
 						<?php endif; ?>
 						<input type="file" name="image" accept=".png,.jpg,.jpeg,.webp">
 					</div>
@@ -76,10 +76,10 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 				</div>
 				<div class="form-field">
 					<label class="form-field__label" for="SetOrder">Order</label>
-					<input class="form-field__control" type="number" id="SetOrder" name="data[Set][order]" value="<?php echo h($set->order ?? ''); ?>">
+					<input class="form-field__control" type="number" id="SetOrder" name="order" value="<?php echo h($set->order ?? ''); ?>">
 					<p class="hint">Low numbers are on top, high numbers at the bottom.</p>
 				</div>
-			<?php echo $this->Form->end(['label' => 'Save', 'class' => 'btn']); ?>
+			<div class="submit"><input class="btn" type="submit" value="Save"/></div></form>
 		</div>
 
 		<div class="card card--purple set-edit__section">
@@ -138,14 +138,14 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 			<form method="post" action="/sets/edit/<?php echo $setId; ?>" id="set-edit-settings" class="set-edit__settings">
 				<h3 class="set-edit__heading">Re-rate Problems</h3>
 				<label for="SetSetDifficulty">Rating</label>
-				<input type="text" id="SetSetDifficulty" name="data[Set][setDifficulty]" placeholder="<?php echo h((string) $setRating); ?>">
+				<input type="text" id="SetSetDifficulty" name="setDifficulty" placeholder="<?php echo h((string) $setRating); ?>">
 				<p class="hint">Sets the rating of every problem in this collection. Problems are shared, so this changes their rating everywhere. Leave empty to skip.</p>
 
 				<h3 class="set-edit__heading">Solve Modes</h3>
 				<div class="set-edit__mode">
 					<span class="set-edit__mode-label">Alternative Response</span>
 					<span class="set-edit__mode-hint"><?php echo $allArActive ? 'all on' : ($allArInactive ? 'all off' : 'mixed'); ?></span>
-					<select name="data[Settings][r39]">
+					<select name="r39">
 						<option value="">no change</option>
 						<option value="on">on</option>
 						<option value="off">off</option>
@@ -154,7 +154,7 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 				<div class="set-edit__mode">
 					<span class="set-edit__mode-label">Passing</span>
 					<span class="set-edit__mode-hint"><?php echo $allPassActive ? 'all on' : ($allPassInactive ? 'all off' : 'mixed'); ?></span>
-					<select name="data[Settings][r43]">
+					<select name="r43">
 						<option value="">no change</option>
 						<option value="yes">yes</option>
 						<option value="no">no</option>

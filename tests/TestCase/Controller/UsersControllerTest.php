@@ -652,7 +652,7 @@ class UsersControllerTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
 
-		$this->post('/users/demote_admin', ['User' => ['demote' => 'test']]);
+		$this->post('/users/demote_admin', ['demote' => 'test']);
 
 		$user = UserTable::row((int) $context->user['id']);
 		$this->assertSame(UserTable::ROLE_PLAYER, (int) $user['user_role_id']);
@@ -680,7 +680,7 @@ class UsersControllerTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'owner', 'owner' => true]]);
 
-		$this->post('/users/demote_admin', ['User' => ['demote' => 'test']]);
+		$this->post('/users/demote_admin', ['demote' => 'test']);
 
 		$user = UserTable::row((int) $context->user['id']);
 		$this->assertSame(UserTable::ROLE_OWNER, (int) $user['user_role_id']);
@@ -691,7 +691,7 @@ class UsersControllerTest extends IntegrationTestCase
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'regular', 'admin' => false]]);
 
-		$this->post('/users/demote_admin', ['User' => ['demote' => 'test']]);
+		$this->post('/users/demote_admin', ['demote' => 'test']);
 
 		$user = UserTable::row((int) $context->user['id']);
 		$this->assertSame(UserTable::ROLE_PLAYER, (int) $user['user_role_id']);

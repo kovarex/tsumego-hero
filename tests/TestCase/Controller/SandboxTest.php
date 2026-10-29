@@ -81,9 +81,7 @@ class SandboxTest extends IntegrationTestCase
 	{
 		new ContextPreparator(['user' => null]);
 
-		$this->post('/sets/create', [
-			'Set' => ['title' => 'Test'],
-		]);
+		$this->post('/sets/create', ['title' => 'Test']);
 
 		$this->assertResponseCode(401);
 	}
@@ -92,9 +90,7 @@ class SandboxTest extends IntegrationTestCase
 	{
 		new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
 
-		$this->post('/sets/create', [
-			'Set' => ['title' => 'Admin Set'],
-		]);
+		$this->post('/sets/create', ['title' => 'Admin Set']);
 
 		$set = $this->fetchTable('Set')->find()->orderByDesc('id')->first();
 		$this->assertEquals('Admin Set', $set->title);
@@ -109,9 +105,7 @@ class SandboxTest extends IntegrationTestCase
 		$beforeTsumegoCount = $this->fetchTable('Tsumego')->find()->count();
 		$beforeConnCount = $this->fetchTable('SetConnection')->find()->count();
 
-		$this->post('/sets/create?sandbox=1', [
-			'Set' => ['title' => 'Test Set'],
-		]);
+		$this->post('/sets/create?sandbox=1', ['title' => 'Test Set']);
 
 		$this->assertEquals($beforeTsumegoCount + 1, $this->fetchTable('Tsumego')->find()->count());
 		$this->assertEquals($beforeConnCount + 1, $this->fetchTable('SetConnection')->find()->count());
@@ -123,9 +117,7 @@ class SandboxTest extends IntegrationTestCase
 
 		$beforeSgfCount = $this->fetchTable('Sgf')->find()->count();
 
-		$this->post('/sets/create', [
-			'Set' => ['title' => 'No SGF Set'],
-		]);
+		$this->post('/sets/create', ['title' => 'No SGF Set']);
 
 		$this->assertEquals($beforeSgfCount, $this->fetchTable('Sgf')->find()->count(),
 			'Placeholder tsumego should have no SGF');
@@ -136,9 +128,7 @@ class SandboxTest extends IntegrationTestCase
 		new ContextPreparator(['user' => ['name' => 'regular', 'admin' => false]]);
 		$setId = $this->createSetWithTsumego('victim set', 0);
 
-		$this->post('/sets/delete', [
-			'Set' => ['id' => $setId],
-		]);
+		$this->post('/sets/delete', ['id' => $setId]);
 
 		$this->assertResponseCode(403);
 	}
@@ -149,7 +139,7 @@ class SandboxTest extends IntegrationTestCase
 		$setId = $this->createSetWithTsumego('to delete', 0);
 
 		$this->post('/sets/delete', [
-			'Set' => ['id' => $setId],
+			'id' => $setId,
 			'confirmation' => 'to delete',
 		]);
 
@@ -161,9 +151,7 @@ class SandboxTest extends IntegrationTestCase
 		new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
 		$setId = $this->createSetWithTsumego('public set', 1);
 
-		$this->post('/sets/delete', [
-			'Set' => ['id' => $setId],
-		]);
+		$this->post('/sets/delete', ['id' => $setId]);
 
 		$this->assertNull($this->fetchTable('Set')->get($setId)->deleted);
 	}
@@ -176,7 +164,7 @@ class SandboxTest extends IntegrationTestCase
 		$beforeCount = $this->fetchTable('Tsumego')->find()->count();
 
 		$this->post('/sets/delete', [
-			'Set' => ['id' => $setId],
+			'id' => $setId,
 			'confirmation' => 'small set',
 		]);
 

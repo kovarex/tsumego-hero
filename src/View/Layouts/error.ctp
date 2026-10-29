@@ -23,14 +23,14 @@ use App\Utility\ViteManifest;
 <!DOCTYPE html>
 <html>
 <head>
-	<?php echo $this->Html->charset(); ?>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>
 		<?php echo $cakeDescription ?>:
 		<?php echo $this->fetch('title'); ?>
 	</title>
 	<?php
-		echo $this->Html->meta('icon');
+		echo "<link href=\"/favicon.ico\" type=\"image/x-icon\" rel=\"icon\"/><link href=\"/favicon.ico\" type=\"image/x-icon\" rel=\"shortcut icon\"/>";
 
 		echo ViteManifest::css('app-theme');
 
@@ -41,7 +41,7 @@ echo $this->fetch('script');
 <body>
 	<div id="container">
 		<div id="header">
-			<h1><?php echo $this->Html->link($cakeDescription, 'http://cakephp.org'); ?></h1>
+			<h1><a href="http://cakephp.org"><?php echo h($cakeDescription); ?></a></h1>
 		</div>
 		<div id="content">
 
@@ -50,12 +50,7 @@ echo $this->fetch('script');
 			<?php echo $this->fetch('content'); ?>
 		</div>
 		<div id="footer">
-			<?php echo $this->Html->link(
-				$this->Html->image('cake.power.gif', ['alt' => $cakeDescription, 'border' => '0']),
-				'http://www.cakephp.org/',
-				['target' => '_blank', 'escape' => false]
-			);
-?>
+			<a href="http://www.cakephp.org/" target="_blank"><img src="/img/cake.power.gif" alt="<?php echo h($cakeDescription); ?>" border="0"/></a>
 		</div>
 	</div>
 	<?php echo $this->element('sql_dump'); ?>

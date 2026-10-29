@@ -27,7 +27,7 @@ class AdminGuardTest extends IntegrationTestCase
 		// The avatar endpoint is guarded the same way, see AvatarPreferenceTest::testRequiresLogin
 		foreach (['/users/playerColorPreference', '/users/boardOrientationPreference', '/users/dateFormatPreference', '/users/emailPreference'] as $url)
 		{
-			$this->post($url, ['color' => 1, 'orientation' => 1, 'format' => 1, 'User' => ['email' => 'guest@example.com']]);
+			$this->post($url, ['color' => 1, 'orientation' => 1, 'format' => 1, 'email' => 'guest@example.com']);
 			$this->assertResponseCode(401, $url . ' let a guest through');
 		}
 	}

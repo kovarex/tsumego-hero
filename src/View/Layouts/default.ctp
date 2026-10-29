@@ -32,7 +32,7 @@ use App\Utility\ViteManifest;
 <html lang="en" data-theme="<?php echo $lightDark === 'dark' ? 'dark' : 'light'; ?>" data-date-format="<?php echo Auth::getDateFormat(); ?>">
 <head>
 <?php
-echo $this->Html->charset();
+echo '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />';
 if (Configure::read('debug'))
 	echo $this->element('javascript_error_tracking');
 ?>
@@ -77,7 +77,7 @@ echo $this->fetch('og_meta');
 <?php
 echo ViteManifest::css('app-theme');
 
-echo $this->Html->meta('icon');
+echo "<link href=\"/favicon.ico\" type=\"image/x-icon\" rel=\"icon\"/><link href=\"/favicon.ico\" type=\"image/x-icon\" rel=\"shortcut icon\"/>";
 echo $this->fetch('css');
 echo $this->fetch('script');
 ?>

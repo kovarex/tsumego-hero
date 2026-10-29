@@ -32,7 +32,7 @@ use App\Model\Table\TimeModeSessionStatusTable;
 
 class UsersController extends AppController
 {
-	public $helpers = ['Html', 'Form', 'Highscore'];
+	public $helpers = ['Highscore'];
 
 	protected ?PwnedPasswordCheckerInterface $passwordChecker = null;
 
@@ -92,7 +92,7 @@ class UsersController extends AppController
 		if (empty($this->inputs()))
 			return;
 
-		$userEmail = $this->input('User.email');
+		$userEmail = $this->input('email');
 
 		// Only allow password reset for local users (not Google Sign-In users)
 		$user = UserTable::findLocalUserByEmail($userEmail);
@@ -187,8 +187,8 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 			return null;
 
 		$this->set('valid', true);
-		$password = (string) ($this->input('User.password1') ?? '');
-		$repeated = (string) ($this->input('User.password2') ?? '');
+		$password = (string) ($this->input('password1') ?? '');
+		$repeated = (string) ($this->input('password2') ?? '');
 		if ($password === '')
 			return null;
 
@@ -372,8 +372,8 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		if (empty($this->inputs()))
 			return;
 
-		$password = (string) ($this->input('User.password1') ?? '');
-		$problem = $this->passwordProblem($password, (string) ($this->input('User.password2') ?? ''));
+		$password = (string) ($this->input('password1') ?? '');
+		$problem = $this->passwordProblem($password, (string) ($this->input('password2') ?? ''));
 		if ($problem)
 		{
 			CookieFlash::set($problem, 'error');
@@ -381,13 +381,13 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		}
 
 		$userTable = $this->fetchTable('User');
-		if ($userTable->exists(['email' => $this->input('User.email')]))
+		if ($userTable->exists(['email' => $this->input('email')]))
 		{
 			CookieFlash::set('Email already exists', 'error');
 			return;
 		}
 
-		$normalizedName = UserTable::normalizeDisplayName($this->input('User.name'));
+		$normalizedName = UserTable::normalizeDisplayName($this->input('name'));
 		if (UserTable::containsCharactersTheForumCannotStore($normalizedName))
 		{
 			CookieFlash::set('The name must not contain emoji or other rare symbols, please choose another one.', 'error');
@@ -395,8 +395,8 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 		}
 		$uniqueDisplayName = UserTable::generateUniqueDisplayName($normalizedName);
 		$user = $userTable->newEntity([
-			'name' => $this->input('User.name'),
-			'email' => $this->input('User.email'),
+			'name' => $this->input('name'),
+			'email' => $this->input('email'),
 			'password_hash' => password_hash($password, PASSWORD_DEFAULT),
 			'display_name' => $uniqueDisplayName,
 			// A taken display name gets a numbered suffix, which is not the name the player chose,
@@ -472,7 +472,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 			return $this->redirect('/');
 		}
 
-		$newDisplayName = UserTable::normalizeDisplayName($this->input('User.display_name') ?? '');
+		$newDisplayName = UserTable::normalizeDisplayName($this->input('display_name') ?? '');
 
 		if (empty($newDisplayName))
 		{
@@ -1285,8 +1285,8 @@ If you have not asked for this, ignore this email, your account stays as it is.'
 			return $this->redirect('/users/login');
 
 		if (!empty($this->inputs()))
-			if ($this->input('User.demote') !== null)
-				if (password_verify($this->input('User.demote'), Auth::getUser()['password_hash']))
+			if ($this->input('demote') !== null)
+				if (password_verify($this->input('demote'), Auth::getUser()['password_hash']))
 				{
 					if ($error = UserTable::changeRole(Auth::getUserID(), UserTable::ROLE_PLAYER))
 						$status = '<p style="color:#d63a49">' . h($error) . '</p>';
@@ -1588,8 +1588,8 @@ OFFSET " . $offset, [$userID, $userID]);
 		$this->Authorization->authorize('User', 'editPreferences');
 
 		$user = Auth::getUser();
-		$email = trim((string) ($this->input('User.email') ?? ''));
-		$password = (string) ($this->input('User.password') ?? '');
+		$email = trim((string) ($this->input('email') ?? ''));
+		$password = (string) ($this->input('password') ?? '');
 
 		if (UserTable::isGoogleUser($user))
 		{

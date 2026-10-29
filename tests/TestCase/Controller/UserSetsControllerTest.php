@@ -40,7 +40,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$context = new ContextPreparator(['user' => ['name' => 'alice']]);
 		$this->login('alice');
 
-		$data = ['Set' => ['title' => 'My New Set', 'description' => 'My collection', 'color' => '#74d14c']];
+		$data = ['title' => 'My New Set', 'description' => 'My collection', 'color' => '#74d14c'];
 		$this->post('/sets/create', $data);
 
 		$set = $this->fetchTable('Set')->find()->where(['title' => 'My New Set'])->first();
@@ -57,7 +57,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 		new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
 		$this->login('admin');
 
-		$data = ['Set' => ['title' => 'New Sandbox']];
+		$data = ['title' => 'New Sandbox'];
 		$this->post('/sets/create?sandbox=1', $data);
 
 		$this->assertStringContainsString('/sets/edit/', $this->headerValue('Location'));
@@ -77,7 +77,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$context = new ContextPreparator(['user' => ['name' => 'alice']]);
 		$this->login('alice');
 
-		$data = ['Set' => ['title' => 'Sneaky Sandbox', 'sandbox' => '1']];
+		$data = ['title' => 'Sneaky Sandbox', 'sandbox' => '1'];
 		$this->post('/sets/create', $data);
 
 		$set = $this->fetchTable('Set')->find()->where(['title' => 'Sneaky Sandbox'])->first();
@@ -87,7 +87,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 
 	public function testCreateRequiresLogin(): void
 	{
-		$data = ['Set' => ['title' => 'Guest Set']];
+		$data = ['title' => 'Guest Set'];
 
 		$this->post('/sets/create', $data);
 
@@ -102,7 +102,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$setId = $this->_createSet('My Set', $context->user['id'], 0);
 		$this->login('alice');
 
-		$data = ['Set' => ['title' => 'Renamed', 'description' => 'New desc', 'color' => '#3366cc', 'order' => '7']];
+		$data = ['title' => 'Renamed', 'description' => 'New desc', 'color' => '#3366cc', 'order' => '7'];
 		$this->post("/sets/edit/{$setId}", $data);
 
 		$set = $this->fetchTable('Set')->find()->where(['id' => $setId])->first();
@@ -167,7 +167,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$setId = $this->_createSet('Public Set', null, 1);
 		$this->login('bob');
 
-		$this->post("/sets/edit/{$setId}", ['Set' => ['title' => 'Hacked']]);
+		$this->post("/sets/edit/{$setId}", ['title' => 'Hacked']);
 
 		$this->assertResponseCode(403);
 	}
@@ -181,7 +181,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$setId = $this->_createSet('Alice Set', $context->user['id'], 0);
 		$this->login('admin');
 
-		$data = ['Set' => ['title' => 'Fixed by Admin']];
+		$data = ['title' => 'Fixed by Admin'];
 		$this->post("/sets/edit/{$setId}", $data);
 
 		$set = $this->fetchTable('Set')->find()->where(['id' => $setId])->first();
@@ -207,7 +207,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 		new ContextPreparator(['user' => null]);
 		$setId = $this->_createSet('Public Set', null, 1);
 
-		$this->post("/sets/edit/{$setId}", ['Set' => ['title' => 'Hacked']]);
+		$this->post("/sets/edit/{$setId}", ['title' => 'Hacked']);
 
 		$this->assertResponseCode(401);
 	}
@@ -218,7 +218,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$setId = $this->_createSet('Public Set', null, 1);
 		$this->login('alice');
 
-		$this->post("/sets/edit/{$setId}", ['Set' => ['title' => 'Hacked']]);
+		$this->post("/sets/edit/{$setId}", ['title' => 'Hacked']);
 
 		$this->assertResponseCode(403);
 	}
@@ -235,7 +235,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$setId = $this->fetchTable('Set')->find()->where(['title' => 'My Set'])->first()->id;
 		$tsumegoId = $context->tsumegos[0]['id'];
 
-		$this->post("/sets/edit/{$setId}", ['Settings' => ['r43' => 'yes']]);
+		$this->post("/sets/edit/{$setId}", ['r43' => 'yes']);
 
 		$tsumego = $this->fetchTable('Tsumego')->find()->where(['id' => $tsumegoId])->first();
 		$this->assertSame(0, (int) $tsumego->pass);
@@ -572,7 +572,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 
 		$description = 'External <img src="https://evil.com/tracker.png"> Internal <img src="/img/ok.png"> '
 			. '<b onmouseover="alert(1)">hi</b> <a href="javascript:alert(2)">click</a>';
-		$this->post("/sets/edit/{$setId}", ['Set' => ['description' => $description]]);
+		$this->post("/sets/edit/{$setId}", ['description' => $description]);
 
 		$set = $this->fetchTable('Set')->find()->where(['id' => $setId])->first();
 		$this->assertStringNotContainsString('evil.com', $set->description);
@@ -589,7 +589,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$setId = $this->_createSet('My Set', $context->user['id'], 0);
 		$this->login('alice');
 
-		$this->post("/sets/edit/{$setId}", ['Set' => ['description' => 'New desc']]);
+		$this->post("/sets/edit/{$setId}", ['description' => 'New desc']);
 
 		$this->assertSame(0, $this->fetchTable('AdminActivity')->find()->count());
 	}
@@ -604,7 +604,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$setId = $this->_createSet('Bob Set', $bobId, 0);
 		$this->login('admin');
 
-		$this->post("/sets/edit/{$setId}", ['Set' => ['description' => 'New desc']]);
+		$this->post("/sets/edit/{$setId}", ['description' => 'New desc']);
 
 		$activity = $this->fetchTable('AdminActivity')->find()->orderByDesc('id')->firstOrFail();
 		$this->assertNotEmpty($activity);
@@ -641,7 +641,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$setId = $this->fetchTable('Set')->find()->where(['title' => 'My Set'])->first()->id;
 		$tsumegoId = $context->tsumegos[0]['id'];
 
-		$this->post("/sets/edit/{$setId}", ['Set' => ['setDifficulty' => 2000]]);
+		$this->post("/sets/edit/{$setId}", ['setDifficulty' => 2000]);
 
 		$tsumego = $this->fetchTable('Tsumego')->find()->where(['id' => $tsumegoId])->first();
 		$this->assertEquals(1000, $tsumego->rating);
@@ -659,7 +659,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$setId = $this->fetchTable('Set')->find()->where(['title' => 'Sandbox Set'])->first()->id;
 		$tsumegoId = $this->fetchTable('Tsumego')->find()->orderByDesc('id')->first()->id;
 
-		$this->post("/sets/edit/{$setId}", ['Set' => ['setDifficulty' => 2000]]);
+		$this->post("/sets/edit/{$setId}", ['setDifficulty' => 2000]);
 
 		$tsumego = $this->fetchTable('Tsumego')->find()->where(['id' => $tsumegoId])->first();
 		$this->assertEquals(2000, $tsumego->rating);
@@ -680,7 +680,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$this->login('admin');
 		$setId = $context->tsumegos[0]['sets'][0]['id'];
 
-		$this->post("/sets/edit/{$setId}", ['Set' => ['setDifficulty' => '1600.5']]);
+		$this->post("/sets/edit/{$setId}", ['setDifficulty' => '1600.5']);
 
 		$ratings = $this->fetchTable('Tsumego')->find('list', valueField: 'rating')->where(['id IN' => array_column($context->tsumegos, 'id')])->orderBy('id')->toArray();
 		$this->assertSame([1600.5, 1500.0, 1700.25], array_values($ratings));
@@ -716,7 +716,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$setId = $this->fetchTable('Set')->find()->where(['title' => 'Sandbox Set'])->first()->id;
 		$tsumegoId = $this->fetchTable('Tsumego')->find()->orderByDesc('id')->first()->id;
 
-		$this->post("/sets/edit/{$setId}", ['Settings' => ['r39' => 'on']]);
+		$this->post("/sets/edit/{$setId}", ['r39' => 'on']);
 
 		$tsumego = $this->fetchTable('Tsumego')->find()->where(['id' => $tsumegoId])->first();
 		$this->assertSame(1, (int) $tsumego->alternative_response);
@@ -734,7 +734,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$setId = $this->fetchTable('Set')->find()->where(['title' => 'Sandbox Set'])->first()->id;
 		$tsumegoId = $this->fetchTable('Tsumego')->find()->orderByDesc('id')->first()->id;
 
-		$this->post("/sets/edit/{$setId}", ['Settings' => ['r43' => 'yes']]);
+		$this->post("/sets/edit/{$setId}", ['r43' => 'yes']);
 
 		$tsumego = $this->fetchTable('Tsumego')->find()->where(['id' => $tsumegoId])->first();
 		$this->assertSame(1, (int) $tsumego->pass);
@@ -918,7 +918,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$setId = $this->_createSet('Alice Collection', $context->user['id'], 1);
 		$this->login('alice');
 
-		$this->post("/sets/edit/{$setId}", ['Set' => ['public' => '0']]);
+		$this->post("/sets/edit/{$setId}", ['public' => '0']);
 
 		$this->assertEquals(1, $this->fetchTable('Set')->get($setId)->public,
 			'sharing is decided on the collection page, not by the edit form');
@@ -1185,7 +1185,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$imagePath = WWW_ROOT . 'img' . DS . str_replace('/', DS, $this->fetchTable('Set')->get($setId)->image);
 		$this->assertFileExists($imagePath);
 
-		$this->post("/sets/edit/{$setId}", ['Set' => ['remove_image' => '1']]);
+		$this->post("/sets/edit/{$setId}", ['remove_image' => '1']);
 
 		$set = $this->fetchTable('Set')->find()->where(['id' => $setId])->first();
 		$this->assertSame('', $set->image);

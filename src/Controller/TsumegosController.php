@@ -28,8 +28,6 @@ use App\Utility\Util;
 
 class TsumegosController extends AppController
 {
-	public $helpers = ['Html', 'Form'];
-
 	#[HttpPost]
 	public function result()
 	{

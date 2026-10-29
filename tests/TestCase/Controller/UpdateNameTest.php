@@ -17,7 +17,7 @@ class UpdateNameTest extends IntegrationTestCase
 		// Create context but don't log in (pass null for user)
 		new ContextPreparator(['user' => null]);
 
-		$this->post('/users/updatename', ['User' => ['display_name' => 'testname_new']]);
+		$this->post('/users/updatename', ['display_name' => 'testname_new']);
 
 		// Should redirect to home
 		$this->assertStringContainsString('/', (string) $this->headerValue('Location'));
@@ -33,7 +33,7 @@ class UpdateNameTest extends IntegrationTestCase
 			],
 		]);
 
-		$this->post('/users/updatename', ['User' => ['display_name' => 'Should Not Change']]);
+		$this->post('/users/updatename', ['display_name' => 'Should Not Change']);
 
 		$updatedUser = UserTable::row((int) $context->user['id']);
 		$this->assertEquals('Original Name', $updatedUser['display_name']);
@@ -52,7 +52,7 @@ class UpdateNameTest extends IntegrationTestCase
 			],
 		]);
 
-		$this->post('/users/updatename', ['User' => ['display_name' => 'New Name']]);
+		$this->post('/users/updatename', ['display_name' => 'New Name']);
 
 		$updatedUser = UserTable::row((int) $context->user['id']);
 		$this->assertEquals('New Name', $updatedUser['display_name']);
@@ -70,7 +70,7 @@ class UpdateNameTest extends IntegrationTestCase
 			],
 		]);
 
-		$this->post('/users/updatename', ['User' => ['display_name' => 'Updated Display']]);
+		$this->post('/users/updatename', ['display_name' => 'Updated Display']);
 
 		$updatedUser = UserTable::row((int) $context->user['id']);
 		$this->assertEquals('Updated Display', $updatedUser['display_name']);
@@ -95,7 +95,7 @@ class UpdateNameTest extends IntegrationTestCase
 			],
 		]);
 
-		$this->post('/users/updatename', ['User' => ['display_name' => 'Taken Name']]);
+		$this->post('/users/updatename', ['display_name' => 'Taken Name']);
 
 		$updatedUser = UserTable::row((int) $context->user['id']);
 		$this->assertEquals('My Name', $updatedUser['display_name']);
@@ -112,7 +112,7 @@ class UpdateNameTest extends IntegrationTestCase
 			],
 		]);
 
-		$this->post('/users/updatename', ['User' => ['display_name' => 'My Name 😀']]);
+		$this->post('/users/updatename', ['display_name' => 'My Name 😀']);
 
 		$updatedUser = UserTable::row((int) $context->user['id']);
 		$this->assertEquals('My Name', $updatedUser['display_name']);
@@ -130,7 +130,7 @@ class UpdateNameTest extends IntegrationTestCase
 			],
 		]);
 
-		$this->post('/users/updatename', ['User' => ['display_name' => 'Andrey (2)']]);
+		$this->post('/users/updatename', ['display_name' => 'Andrey (2)']);
 
 		$updatedUser = UserTable::row((int) $context->user['id']);
 		$this->assertEquals('Andrey (2)', $updatedUser['display_name']);
@@ -151,7 +151,7 @@ class UpdateNameTest extends IntegrationTestCase
 		// 26 cyrillic characters, which is 52 bytes
 		$newName = str_repeat("\u{042F}", 26);
 
-		$this->post('/users/updatename', ['User' => ['display_name' => $newName]]);
+		$this->post('/users/updatename', ['display_name' => $newName]);
 
 		$updatedUser = UserTable::row((int) $context->user['id']);
 		$this->assertEquals($newName, $updatedUser['display_name']);
@@ -169,7 +169,7 @@ class UpdateNameTest extends IntegrationTestCase
 			],
 		]);
 
-		$this->post('/users/updatename', ['User' => ['display_name' => 'ab']]);
+		$this->post('/users/updatename', ['display_name' => 'ab']);
 
 		$updatedUser = UserTable::row((int) $context->user['id']);
 		$this->assertEquals('Original Name', $updatedUser['display_name']);
@@ -186,7 +186,7 @@ class UpdateNameTest extends IntegrationTestCase
 			],
 		]);
 
-		$this->post('/users/updatename', ['User' => ['display_name' => '']]);
+		$this->post('/users/updatename', ['display_name' => '']);
 
 		$updatedUser = UserTable::row((int) $context->user['id']);
 		$this->assertEquals('My Display', $updatedUser['display_name']);
@@ -241,7 +241,7 @@ class UpdateNameTest extends IntegrationTestCase
 			],
 		]);
 
-		$this->post('/users/updatename', ['User' => ['display_name' => 'My Chosen Name']]);
+		$this->post('/users/updatename', ['display_name' => 'My Chosen Name']);
 
 		$activities = $this->fetchTable('AdminActivity')->find()->orderBy('id')->toArray();
 		$this->assertCount(1, $activities);
@@ -269,7 +269,7 @@ class UpdateNameTest extends IntegrationTestCase
 			],
 		]);
 
-		$this->post('/users/updatename', ['User' => ['display_name' => 'Taken Name']]);
+		$this->post('/users/updatename', ['display_name' => 'Taken Name']);
 
 		$this->assertCount(0, $this->fetchTable('AdminActivity')->find()->orderBy('id')->toArray());
 	}
@@ -291,7 +291,7 @@ class UpdateNameTest extends IntegrationTestCase
 			[700001, 'Old Forum Name', 'old forum name', $context->user['id']]
 		);
 
-		$this->post('/users/updatename', ['User' => ['display_name' => 'New Forum Name']]);
+		$this->post('/users/updatename', ['display_name' => 'New Forum Name']);
 
 		$forumUser = Util::query("SELECT username, username_clean FROM phpbb_users WHERE user_id = ?", [700001]);
 		$this->assertEquals('New Forum Name', $forumUser[0]['username']);
@@ -323,7 +323,7 @@ class UpdateNameTest extends IntegrationTestCase
 			[700002, 700002, 'Old Poster', 700002, 'Old Poster']
 		);
 
-		$this->post('/users/updatename', ['User' => ['display_name' => 'New Poster']]);
+		$this->post('/users/updatename', ['display_name' => 'New Poster']);
 
 		$topic = Util::query(
 			"SELECT topic_first_poster_name, topic_last_poster_name FROM phpbb_topics WHERE topic_id = ?",
@@ -350,7 +350,7 @@ class UpdateNameTest extends IntegrationTestCase
 			[700003, 'Old Key Name', 'old key name', $context->user['id']]
 		);
 
-		$this->post('/users/updatename', ['User' => ['display_name' => 'Yiğit Aydın']]);
+		$this->post('/users/updatename', ['display_name' => 'Yiğit Aydın']);
 
 		$forumUser = Util::query("SELECT username, username_clean FROM phpbb_users WHERE user_id = ?", [700003]);
 		$this->assertEquals('Yiğit Aydın', $forumUser[0]['username']);
@@ -480,7 +480,7 @@ class UpdateNameTest extends IntegrationTestCase
 		Util::execute('RENAME TABLE phpbb_users TO phpbb_users_unreachable');
 		try
 		{
-			$this->post('/users/updatename', ['User' => ['display_name' => 'New Forum Name']]);
+			$this->post('/users/updatename', ['display_name' => 'New Forum Name']);
 		}
 		finally
 		{

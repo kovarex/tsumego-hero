@@ -89,7 +89,7 @@ export function useCommentMutations(tsumegoId: number)
 		mutationFn: ({ commentId }: MakeIssueVariables) =>
 			postFormData<{ success: boolean; issue: Issue; comment_id: number }>(
 				`/tsumego-issues/move-comment/${commentId}`,
-				{ 'data[Comment][tsumego_issue_id]': 'new' }
+				{ tsumego_issue_id: 'new' }
 			),
 		onSuccess: invalidate
 	});
@@ -98,7 +98,7 @@ export function useCommentMutations(tsumegoId: number)
 		mutationFn: ({ commentId, targetIssueId }: MoveCommentVariables) =>
 			postFormData<{ success: boolean }>(
 				`/tsumego-issues/move-comment/${commentId}`,
-				{ 'data[Comment][tsumego_issue_id]': String(targetIssueId) }
+				{ tsumego_issue_id: String(targetIssueId) }
 			),
 		onSuccess: invalidate
 	});
