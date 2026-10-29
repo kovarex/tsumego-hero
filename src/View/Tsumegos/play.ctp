@@ -1740,7 +1740,9 @@ use App\Utility\ViteManifest;
 					// leaving for the plain problem page would drop the player out of the training
 					if (goldenTsumego && mode != <?php echo Constants::$MISTAKE_TRAINING_MODE; ?>)
 					{
-						window.location.href = '/' + '<?php echo $setConnection->id; ?>';
+						// the page is drawn again from the stored result, so it waits for the request of the result
+						let reload = () => window.location.href = '/' + '<?php echo $setConnection->id; ?>';
+						(window._submitResultPromise || Promise.resolve()).finally(reload);
 						return;
 					}
 				}
