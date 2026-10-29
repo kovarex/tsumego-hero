@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/326</span>
+                <span class='fraction'>0/319</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/308</span>
+                <span class='fraction'>0/301</span>
             </div>
         
             
@@ -599,14 +599,7 @@
 <a name='L534'></a><a href='#L534'>534</a>
 <a name='L535'></a><a href='#L535'>535</a>
 <a name='L536'></a><a href='#L536'>536</a>
-<a name='L537'></a><a href='#L537'>537</a>
-<a name='L538'></a><a href='#L538'>538</a>
-<a name='L539'></a><a href='#L539'>539</a>
-<a name='L540'></a><a href='#L540'>540</a>
-<a name='L541'></a><a href='#L541'>541</a>
-<a name='L542'></a><a href='#L542'>542</a>
-<a name='L543'></a><a href='#L543'>543</a>
-<a name='L544'></a><a href='#L544'>544</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L537'></a><a href='#L537'>537</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -780,11 +773,6 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1133,12 +1121,10 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -1207,7 +1193,7 @@
 <span class="cstat-no" title="statement not covered" >      mText =</span>
         "Semeai Type 2: No eyes, 2 or more inside liberties.&lt;br&gt;The favorite's task is to kill.&lt;br&gt;The favorite counts his outside liberties plus 1 inside liberty.&lt;br&gt;The underdog's task is Seki.&lt;br&gt;The underdog counts his outside liberties plus all inside liberties.&lt;br&gt;";
       let underdog = <span class="cstat-no" title="statement not covered" >"Black";</span>
-<span class="cstat-no" title="statement not covered" >      if (tsumegoFileLink == 29813) {</span>
+<span class="cstat-no" title="statement not covered" >      if (tsumegoID == 29813) {</span>
 <span class="cstat-no" title="statement not covered" >        mText += "Seki.&lt;br&gt;";</span>
 <span class="cstat-no" title="statement not covered" >        $("#besogo-multipleChoice4").css("background-color", "#3ecf78");</span>
 <span class="cstat-no" title="statement not covered" >        correct = 4;</span>
@@ -1320,23 +1306,18 @@
       }
     } else <span class="cstat-no" title="statement not covered" >if (multipleChoiceSemeaiType == 3)</span>
 	{
-<span class="cstat-no" title="statement not covered" >		console.log("multipleChoiceLibertiesB=" + multipleChoiceLibertiesB);</span>
-<span class="cstat-no" title="statement not covered" >		console.log("multipleChoiceLibertiesB2=" + multipleChoiceLibertiesB2);</span>
-<span class="cstat-no" title="statement not covered" >		console.log("multipleChoiceLibertiesW=" + multipleChoiceLibertiesW);</span>
-<span class="cstat-no" title="statement not covered" >		console.log("multipleChoiceLibertiesW2=" + multipleChoiceLibertiesW2);</span>
-<span class="cstat-no" title="statement not covered" >		console.log(tsumegoFileLink);</span>
 		let moreText = <span class="cstat-no" title="statement not covered" >"";</span>
-<span class="cstat-no" title="statement not covered" >      if (tsumegoFileLink == 29824)</span>
+<span class="cstat-no" title="statement not covered" >      if (tsumegoID == 29824)</span>
 <span class="cstat-no" title="statement not covered" >        moreText =</span>
           "White can play 2 under the stones tesujis to gain 2 more liberties.&lt;br&gt;";
 <span class="cstat-no" title="statement not covered" >      if (</span>
-        (tsumegoFileLink == 29824 &amp;&amp;
+        (tsumegoID == 29824 &amp;&amp;
           multipleChoiceLibertiesB == 1 &amp;&amp;
           multipleChoiceLibertiesW == 2) ||
-        (tsumegoFileLink == 29825 &amp;&amp;
+        (tsumegoID == 29825 &amp;&amp;
           multipleChoiceLibertiesB == 1 &amp;&amp;
           multipleChoiceLibertiesW == 2) ||
-        (tsumegoFileLink == 29826 &amp;&amp;
+        (tsumegoID == 29826 &amp;&amp;
           multipleChoiceLibertiesB == 1 &amp;&amp;
           multipleChoiceLibertiesW == 2)
       ) {
@@ -1344,12 +1325,12 @@
 <span class="cstat-no" title="statement not covered" >        multipleChoiceLibertiesW = 1;</span>
 <span class="cstat-no" title="statement not covered" >        multipleChoiceLibertiesB2 = 5;</span>
 <span class="cstat-no" title="statement not covered" >        multipleChoiceLibertiesW2 = 5;</span>
-<span class="cstat-no" title="statement not covered" >        if (tsumegoFileLink == 29824) {</span>
+<span class="cstat-no" title="statement not covered" >        if (tsumegoID == 29824) {</span>
 <span class="cstat-no" title="statement not covered" >          multipleChoiceLibertiesB2 = 7;</span>
 <span class="cstat-no" title="statement not covered" >          multipleChoiceLibertiesW2 = 7;</span>
         }
       } else <span class="cstat-no" title="statement not covered" >if (</span>
-        tsumegoFileLink == 29827 &amp;&amp;
+        tsumegoID == 29827 &amp;&amp;
         multipleChoiceLibertiesB == 1 &amp;&amp;
         multipleChoiceLibertiesW == 2
       ) {
@@ -1676,13 +1657,11 @@
     }
 <span class="cstat-no" title="statement not covered" >    if (num == correct) {</span>
 <span class="cstat-no" title="statement not covered" >      displayResult("S");</span>
-<span class="cstat-no" title="statement not covered" >      multipleChoiceEnabled = false;</span>
       //$(".alertBanner").css("background-color", "rgb(18, 121, 59)");
 <span class="cstat-no" title="statement not covered" >      $(".toast__banner").addClass("toast__banner--success");</span>
 <span class="cstat-no" title="statement not covered" >      $(".toast__banner").html('Correct!&lt;span class="toast__close"&gt;x&lt;/span&gt;');</span>
     } else {
 <span class="cstat-no" title="statement not covered" >      displayResult("F");</span>
-<span class="cstat-no" title="statement not covered" >      multipleChoiceEnabled = false;</span>
       //$(".alertBanner").css("background-color", "linear-gradient(rgba(214,70,74,1), rgba(201,95,105,1))");
 <span class="cstat-no" title="statement not covered" >      $(".toast__banner").addClass("toast__banner--error");</span>
 <span class="cstat-no" title="statement not covered" >      $(".toast__banner").html('Incorrect!&lt;span class="toast__close"&gt;x&lt;/span&gt;');</span>
@@ -1699,7 +1678,7 @@
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-10-29T16:58:52.151Z
+                at 2026-10-29T17:49:42.194Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

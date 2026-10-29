@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">32.72% </span>
+                <span class="strong">32.68% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>235/718</span>
+                <span class='fraction'>234/716</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">33.43% </span>
+                <span class="strong">33.38% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>229/685</span>
+                <span class='fraction'>228/683</span>
             </div>
         
             
@@ -1381,9 +1381,7 @@
 <a name='L1316'></a><a href='#L1316'>1316</a>
 <a name='L1317'></a><a href='#L1317'>1317</a>
 <a name='L1318'></a><a href='#L1318'>1318</a>
-<a name='L1319'></a><a href='#L1319'>1319</a>
-<a name='L1320'></a><a href='#L1320'>1320</a>
-<a name='L1321'></a><a href='#L1321'>1321</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">84x</span>
+<a name='L1319'></a><a href='#L1319'>1319</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">84x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1864,7 +1862,6 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1938,7 +1935,6 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
@@ -3182,7 +3178,6 @@
                 $(".besogo-panels").css("overflow", "hidden");
               }
               toggleBoardLock(false);
-              deleteNextMoveGroup = true;
               editor.setReviewMode(true);
               besogo.editor.notifyListeners({
                 treeChange: true,
@@ -3258,7 +3253,6 @@
 <span class="cstat-no" title="statement not covered" >                $(".besogo-board").css("width", "50%");</span>
 <span class="cstat-no" title="statement not covered" >                $(".besogo-board").css("margin", "0 auto");</span>
               }
-<span class="cstat-no" title="statement not covered" >              deleteNextMoveGroup = false;</span>
 <span class="cstat-no" title="statement not covered" >              editor.setReviewMode(false);</span>
             }
             besogo.editor.setControlButtonLock(false);
@@ -3276,7 +3270,7 @@
         reviewButtonId
       );
     } else <span class="cstat-no" title="statement not covered" ><span class="missing-if-branch" title="else path not taken" >E</span>if (besogo.multipleChoiceCustom === "multiple_choice") {</span>
-<span class="cstat-no" title="statement not covered" >      toggleBoardLock(true, true);</span>
+<span class="cstat-no" title="statement not covered" >      toggleBoardLock(true);</span>
       let prevButtonId;
 <span class="cstat-no" title="statement not covered" >      prevButtonId = "besogo-back-button";</span>
 &nbsp;
@@ -3321,7 +3315,7 @@
       }
 <span class="cstat-no" title="statement not covered" >      makeHyperlinkText("Next", "next problem", nextButtonLink, "besogo-next-button");</span>
     } else <span class="cstat-no" title="statement not covered" >if (besogo.multipleChoiceCustom === "score_estimating") {</span>
-<span class="cstat-no" title="statement not covered" >      toggleBoardLock(true, true);</span>
+<span class="cstat-no" title="statement not covered" >      toggleBoardLock(true);</span>
       let prevButtonId;
 <span class="cstat-no" title="statement not covered" >      prevButtonId = "besogo-back-button";</span>
 <span class="cstat-no" title="statement not covered" >      makeHyperlinkText(</span>
@@ -3370,7 +3364,7 @@
 <span class="cstat-no" title="statement not covered" >        makeResultText("", "se-result-text");</span>
 <span class="cstat-no" title="statement not covered" >      makeHyperlinkText("Next", "next problem", nextButtonLink, "besogo-next-button");</span>
     } else {
-<span class="cstat-no" title="statement not covered" >      toggleBoardLock(true, true);</span>
+<span class="cstat-no" title="statement not covered" >      toggleBoardLock(true);</span>
       let prevButtonId;
 <span class="cstat-no" title="statement not covered" >      prevButtonId = "besogo-back-button";</span>
 &nbsp;
@@ -3460,7 +3454,7 @@
                 fetch("/sets/removeTsumego/" + s.id, {
                   method: "POST",
                   headers: { "Content-Type": "application/x-www-form-urlencoded", "X-Requested-With": "XMLHttpRequest" },
-                  body: "tsumego_id=" + tsumegoFileLink
+                  body: "tsumego_id=" + tsumegoID
                 })
                 .then(<span class="fstat-no" title="function not covered" >r </span>=&gt; {
 <span class="cstat-no" title="statement not covered" >                  if (!r.ok)</span>
@@ -3495,7 +3489,7 @@
 <span class="cstat-no" title="statement not covered" >          fetch("/sets/addTsumego/favorites", {</span>
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded", "X-Requested-With": "XMLHttpRequest" },
-            body: "tsumego_id=" + tsumegoFileLink
+            body: "tsumego_id=" + tsumegoID
           })
           .then(<span class="fstat-no" title="function not covered" >r </span>=&gt; {
 <span class="cstat-no" title="statement not covered" >            if (!r.ok)</span>
@@ -3937,7 +3931,7 @@
 <span class="cstat-no" title="statement not covered" >          fetch(url, {</span>
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded", "X-Requested-With": "XMLHttpRequest" },
-            body: "tsumego_id=" + tsumegoFileLink
+            body: "tsumego_id=" + tsumegoID
           }).then(<span class="fstat-no" title="function not covered" >r </span>=&gt; <span class="cstat-no" title="statement not covered" >r.json())</span>.then(<span class="fstat-no" title="function not covered" >da</span>ta =&gt; {
 <span class="cstat-no" title="statement not covered" >            if (data.contains !== undefined) {</span>
 <span class="cstat-no" title="statement not covered" >              s.contains = data.contains;</span>
@@ -4030,7 +4024,7 @@
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-10-29T16:58:52.151Z
+                at 2026-10-29T17:49:42.194Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
