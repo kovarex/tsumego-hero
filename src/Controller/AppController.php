@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use Cake\Http\Response as CakeResponse;
+
 use Cake\Controller\Controller;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;

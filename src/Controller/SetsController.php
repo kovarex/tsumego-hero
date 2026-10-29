@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use Cake\Http\Response as CakeResponse;
+
 use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\NotFoundException;
 use Cake\Routing\Router;

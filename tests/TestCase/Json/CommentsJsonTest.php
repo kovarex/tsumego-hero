@@ -92,7 +92,7 @@ class CommentsJsonTest extends JsonGoldenTestCase
 	{
 		$context = $this->prepareDiscussion();
 		$comment = $this->fetchTable('TsumegoComment')->find()->where(['message' => 'agreed, b2 works too'])->firstOrFail();
-		$this->post('/tsumego-issues/move-comment/' . $comment->id, ['Comment' => ['tsumego_issue_id' => 'standalone']]);
+		$this->post('/tsumego-issues/move-comment/' . $comment->id, ['tsumego_issue_id' => 'standalone']);
 		$this->assertJsonGolden('move comment to its own');
 	}
 
@@ -100,7 +100,7 @@ class CommentsJsonTest extends JsonGoldenTestCase
 	{
 		$context = $this->prepareDiscussion();
 		$comment = $this->fetchTable('TsumegoComment')->find()->where(['tsumego_issue_id IS' => null])->firstOrFail();
-		$this->post('/tsumego-issues/move-comment/' . $comment->id, ['Comment' => ['tsumego_issue_id' => 'new']]);
+		$this->post('/tsumego-issues/move-comment/' . $comment->id, ['tsumego_issue_id' => 'new']);
 		$this->assertJsonGolden('move comment to a new issue');
 	}
 
@@ -108,7 +108,7 @@ class CommentsJsonTest extends JsonGoldenTestCase
 	{
 		$context = $this->prepareDiscussion();
 		$comment = $this->fetchTable('TsumegoComment')->find()->where(['tsumego_issue_id IS' => null])->firstOrFail();
-		$this->post('/tsumego-issues/move-comment/' . $comment->id, ['Comment' => ['tsumego_issue_id' => (string) $context->issues[1]['id']]]);
+		$this->post('/tsumego-issues/move-comment/' . $comment->id, ['tsumego_issue_id' => (string) $context->issues[1]['id']]);
 		$this->assertJsonGolden('move comment to an issue');
 	}
 }

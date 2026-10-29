@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use Cake\Http\Response as CakeResponse;
+
 use Cake\Cache\Cache;
 
 //Generates XML sitemap for search engines, see https://www.sitemaps.org/protocol.html
