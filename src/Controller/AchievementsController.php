@@ -103,18 +103,18 @@ class AchievementsController extends AppController
 	}
 
 	#[HttpGet]
-	public function view(?string $id = null, ?string $userId = null): void
+	public function view(?int $id = null, ?int $userId = null): void
 	{
 		$this->set('_page', 'user');
 		$this->set('_title', 'Tsumego Hero - Achievements');
-		$achievement = $this->fetchTable('Achievement')->find()->where(['id' => (int) $id])->first();
+		$achievement = $this->fetchTable('Achievement')->find()->where(['id' => $id])->first();
 		if (!$achievement)
 			throw new NotFoundException('Achievement not found');
 
 		$viewedUser = null;
 		if ($userId !== null)
 		{
-			$viewedUser = UserTable::row((int) $userId);
+			$viewedUser = UserTable::row($userId);
 			if (!$viewedUser)
 				throw new NotFoundException('User not found');
 			$this->assertUserVisible($viewedUser);

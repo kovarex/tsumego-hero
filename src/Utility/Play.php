@@ -42,6 +42,13 @@ class Play
 		//The board always receives both arrows, and an empty one is the arrow turned off.
 		//Only the modes that walk a list fill this one in.
 		$this->set('previousLink', '');
+		//What only some modes have: the row of problem buttons of the modes that walk a list, the
+		//link of the time mode to its next problem without a skip, the difficulty slider of the
+		//rating mode, and the solution an admin asked for.
+		$this->set('tsumegoButtons', null);
+		$this->set('noSkipNextLink', '');
+		$this->set('difficulty', null);
+		$this->set('requestSolution', false);
 
 		$setConnection = TableRegistry::getTableLocator()->get('SetConnection')->find()->where(['id' => $setConnectionID])->first();
 		if (!$setConnection)

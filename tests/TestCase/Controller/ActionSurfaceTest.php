@@ -71,6 +71,20 @@ class ActionSurfaceTest extends AppTestCase
 		$this->assertSame([], $offenders, 'these are reachable by address yet take an object');
 	}
 
+	//The dispatcher calls a public static method like any other action, so a helper a
+	//controller keeps for the layout or the tests is an address with whatever the url says as its
+	//arguments. A verb attribute makes no difference: it only says which requests may call it.
+	//Helpers like that belong in a utility class.
+	public function testNoActionIsStatic(): void
+	{
+		$offenders = [];
+		foreach ($this->actions() as $action)
+			if ($action->isStatic())
+				$offenders[] = $this->fullName($action);
+
+		$this->assertSame([], $offenders, 'these are static helpers, yet the dispatcher routes them');
+	}
+
 	private function fullName(ReflectionMethod $method): string
 	{
 		return $method->getDeclaringClass()->getName() . '::' . $method->getName();

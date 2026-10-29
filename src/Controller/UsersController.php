@@ -277,6 +277,9 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	{
 		$this->set('_page', 'login');
 		$this->set('_title', 'Tsumego Hero - Sign In');
+		// the form shown again after a failed sign-in has no page to go back to
+		$this->set('redirectUrl', '');
+		$this->set('redirectSignature', '');
 
 		// On GET request, prepare redirect URL with HMAC signature (fully stateless)
 		if (!$this->request->is('post'))
@@ -601,6 +604,7 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	{
 		$this->set('_page', 'achievementHighscore');
 		$this->set('_title', 'Tsumego Hero - Achievements Highscore');
+		$this->set('totalUsers', null); // no count of the players under this table
 
 		if (Auth::isLoggedIn())
 			Auth::saveUserField('highscore_page_id', Constants::$HIGHSCORE_RATING);
@@ -817,13 +821,13 @@ then ignore this email. ' . Router::url('/users/newpassword/' . $randomString, t
 	}
 
 	#[HttpGet]
-	public function view(?string $id = null): mixed
+	public function view(?int $id = null): mixed
 	{
 		$this->set('_page', 'user');
 
 		$as = $this->fetchTable('AchievementStatus')->find()->where(['user_id' => $id])->orderByDesc('created')->limit(12)->all();
 
-		$user = UserTable::row((int) $id);
+		$user = UserTable::row($id);
 		if (!$user)
 			return $this->redirect('/sets');
 		$this->assertUserVisible($user);
@@ -1370,7 +1374,7 @@ OFFSET " . $offset, [$userID, $userID]);
 	}
 
 	#[HttpPost]
-	public function acceptSGFProposal(string $sgfID)
+	public function acceptSGFProposal(int $sgfID)
 	{
 		$this->Authorization->authorize('Admin');
 
@@ -1409,7 +1413,7 @@ OFFSET " . $offset, [$userID, $userID]);
 	}
 
 	#[HttpPost]
-	public function rejectSGFProposal(string $sgfID)
+	public function rejectSGFProposal(int $sgfID)
 	{
 		$this->Authorization->authorize('Admin');
 
@@ -1463,7 +1467,7 @@ OFFSET " . $offset, [$userID, $userID]);
 
 	//Puts a rejected SGF proposal back among the ones waiting for a decision.
 	#[HttpPost]
-	public function reopenSGFProposal(string $sgfID)
+	public function reopenSGFProposal(int $sgfID)
 	{
 		$this->Authorization->authorize('Admin');
 
