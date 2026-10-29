@@ -280,7 +280,7 @@ class Util
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}
 
-	//The database connection of the ORM; its begin(), commit() and rollback() are those of Cake 2.
+	//The database connection of the ORM, with its begin(), commit() and rollback().
 	public static function database(): Connection
 	{
 		/** @var Connection */

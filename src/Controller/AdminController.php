@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\NotFoundException;
-use Cake\Http\Response as CakeResponse;
+use Cake\Http\Response;
 use App\Model\Table\SgfTable;
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
@@ -75,7 +75,7 @@ class AdminController extends AppController
 	//What the admin made part of a problem, their own change or a proposal they accepted, is
 	//reviewed by the others.
 	#[HttpPost]
-	public function reviewSgfChange(string $sgfID): CakeResponse
+	public function reviewSgfChange(string $sgfID): Response
 	{
 		$this->Authorization->authorize('Admin', 'reviewSgfChange');
 		$sgf = $this->fetchTable('Sgf')->find()->select(['id', 'sgf_status_id', 'accepted_by_user_id'])->where(['id' => (int) $sgfID])->first();

@@ -14,7 +14,6 @@
  *   vendor/bin/phpunit --group apache-only
  */
 
-
 use App\Utility\Util;
 use PHPUnit\Framework\Attributes\Group;
 

@@ -82,7 +82,7 @@ ORDER BY `set`.id IS NULL, " . SetConnectionTable::displayOrderForSetSql('`set`'
 			"SELECT tsumego_id, user_id, approved, created FROM tag_connection WHERE tag_id = ? ORDER BY id",
 			[$tag->id]);
 
-		// The transaction is Cake 2's, the Cake 5 ORM shares its connection and never starts one.
+		// The deletes and the log entry go in together or not at all.
 		$database = Util::database();
 		$database->begin();
 		try

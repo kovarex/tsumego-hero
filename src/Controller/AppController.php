@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use Cake\Http\Response as CakeResponse;
+use Cake\Http\Response;
 use Cake\Controller\Controller;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
@@ -106,14 +106,14 @@ class AppController extends Controller
 	//them and not every action. An action returns what they return.
 
 	//Answers with the data as JSON in place of a rendered page.
-	protected function respondJson(mixed $data, int $status = 200): CakeResponse
+	protected function respondJson(mixed $data, int $status = 200): Response
 	{
 		return $this->respond((string) json_encode($data), 'json', $status);
 	}
 
 	//Answers with the body as it is in place of a rendered page. The type is a short name
 	//('xml', 'png', 'svg', 'webp') or a full mime type; without one it stays text/html.
-	protected function respond(string $body, ?string $type = null, int $status = 200): CakeResponse
+	protected function respond(string $body, ?string $type = null, int $status = 200): Response
 	{
 		$this->autoRender = false;
 		$response = $this->response;
@@ -299,7 +299,7 @@ class AppController extends Controller
 		}
 	}
 
-	private function filterRequest(): ?CakeResponse
+	private function filterRequest(): ?Response
 	{
 		$this->enforceHttpMethodAttribute();
 		$this->resetStaleBrowserCache();

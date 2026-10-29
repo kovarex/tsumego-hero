@@ -7,7 +7,8 @@ use Cake\Log\Engine\FileLog;
 use App\Log\LogLineFormatter;
 
 //The configuration of the app, what core.php, database.php and the configuration part of
-//bootstrap.php did on Cake 2. config/app_local.php overrides it per server (core.local.php).
+//bootstrap.php did on Cake 2. Each server overrides it in its config/core.local.php and
+//config/database.php, which config/bootstrap.php reads after it.
 $debug = !empty($_SERVER['SERVER_NAME']) && str_contains($_SERVER['SERVER_NAME'], '.ddev.site');
 $modelCacheDuration = $debug ? '+10 seconds' : '+999 days';
 return [

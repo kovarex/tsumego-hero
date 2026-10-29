@@ -4,8 +4,8 @@
 //present in the database schema. Companion to scripts/generate-phpstan-row-types.php -
 //documents the runtime types the generated row aliases are based on.
 //Usage (inside ddev): ddev exec php scripts/check-pdo-column-types.php
-//The connection options below mirror the Mysql driver in vendor/pieceofcake2/cakephp
-//(config/database.php defines no additional 'flags'), so this is exactly the runtime
+//The connection options below mirror the Mysql driver of Cake 5, which App\Database\MysqlDriver
+//extends (config/app.php defines no additional 'flags'), so this is exactly the runtime
 //path of Util::query() and model finds.
 //Expected result on PHP 8.1+ with mysqlnd (verified on PHP 8.4 + MariaDB 11.4):
 //  - integer columns (int/bigint/mediumint/smallint/tinyint) -> integer

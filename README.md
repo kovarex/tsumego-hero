@@ -149,12 +149,9 @@ I just implement the method up, as reverse migrations are not realistic or usefu
 ## Code Quality & Testing
 ```bash
 composer test        # PHPUnit tests
-composer cs-check   # PHP CodeSniffer
+composer cs-check   # PHP CS Fixer, dry run
 composer cs-fix     # Auto-fix CS issues
 composer stan       # PHPStan on src/ + views
-
-### also:
-composer cs-modified # Only run phpcs on modified files
 ```
 
 ### Development Commands Quick Reference

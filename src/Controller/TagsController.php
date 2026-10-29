@@ -3,7 +3,7 @@
 namespace App\Controller;
 
 use Cake\Http\Exception\NotFoundException;
-use Cake\Http\Response as CakeResponse;
+use Cake\Http\Response;
 use App\Model\Table\SetConnectionTable;
 use App\Model\Table\SgfTable;
 use App\Model\Entity\Tag;
@@ -35,7 +35,7 @@ class TagsController extends AppController
 	}
 
 	#[HttpPost]
-	public function addAction(): CakeResponse
+	public function addAction(): Response
 	{
 		$this->Authorization->authorize('Tag', 'add');
 		$tagName = $this->input('tag_name');
@@ -160,7 +160,7 @@ class TagsController extends AppController
 	}
 
 	#[HttpGet]
-	public function edit(string $tagID): ?CakeResponse
+	public function edit(string $tagID): ?Response
 	{
 		$this->Authorization->authorize('Tag');
 		$tag = $this->fetchTable('Tag')->find()->where(['id' => (int) $tagID])->first();
@@ -205,7 +205,7 @@ class TagsController extends AppController
 
 	//Deletes the tag and takes it off every problem.
 	#[HttpPost]
-	public function delete(string $id): CakeResponse
+	public function delete(string $id): Response
 	{
 		$this->Authorization->authorize('Tag');
 		$tag = $this->fetchTable('Tag')->find()->where(['id' => (int) $id])->first();
@@ -231,7 +231,7 @@ class TagsController extends AppController
 
 	//The problems that carry the tag or have it proposed, as JSON for the tag overview.
 	#[HttpGet]
-	public function problems(string $id): CakeResponse
+	public function problems(string $id): Response
 	{
 		$this->Authorization->authorize('Tag');
 		if (!$this->fetchTable('Tag')->exists(['id' => (int) $id]))
@@ -247,7 +247,7 @@ class TagsController extends AppController
 	}
 
 	#[HttpPost]
-	public function acceptTagProposal(string $tagID): CakeResponse
+	public function acceptTagProposal(string $tagID): Response
 	{
 		$this->Authorization->authorize('Tag');
 
@@ -284,7 +284,7 @@ class TagsController extends AppController
 	}
 
 	#[HttpPost]
-	public function rejectTagProposal(string $tagID): CakeResponse
+	public function rejectTagProposal(string $tagID): Response
 	{
 		$this->Authorization->authorize('Tag');
 

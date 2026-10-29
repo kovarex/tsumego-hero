@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use Cake\Http\Response as CakeResponse;
+use Cake\Http\Response;
 use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\NotFoundException;
 use Cake\Routing\Router;
@@ -11,7 +11,7 @@ use App\Model\Entity\Set;
 use App\Model\Table\SetTable;
 use App\Model\Table\SetConnectionTable;
 use App\Model\Table\SgfTable;
-use App\Lib\Error\ConflictException;
+use Cake\Http\Exception\ConflictException;
 use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\AdminActivityTypeTable;
 use App\Model\Table\ProgressDeletionTable;
@@ -173,7 +173,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 
 	#[HttpGet]
 	#[HttpPost]
-	public function create(): ?CakeResponse
+	public function create(): ?Response
 	{
 		$this->Authorization->authorize('Set', 'create');
 
@@ -436,7 +436,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 	}
 
 	#[HttpPost]
-	public function delete(?string $id = null): CakeResponse
+	public function delete(?string $id = null): Response
 	{
 		$setID = $id ?? $this->input('id');
 		if (!$setID)
@@ -749,7 +749,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 	}
 
 	#[HttpGet]
-	public function view(string|int|null $id = null, int $partition = 1): ?CakeResponse
+	public function view(string|int|null $id = null, int $partition = 1): ?Response
 	{
 		// transferring from 1 indexed for humans to 0 indexed for us programmers.
 		$partition = $partition - 1;

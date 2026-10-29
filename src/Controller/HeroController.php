@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use Cake\Http\Exception\ForbiddenException;
 use Cake\Http\Exception\NotFoundException;
-use Cake\Http\Response as CakeResponse;
+use Cake\Http\Response;
 use Exception;
 use App\Model\Table\SetTable;
 use App\Model\Table\TsumegoStatusTable;
@@ -21,7 +21,7 @@ class HeroController extends AppController
 	//Makes a random problem of the official collections golden and opens it. A problem near the
 	//player's rating comes first, any other problem only when none is that close.
 	#[HttpGet]
-	public function refinement(): CakeResponse
+	public function refinement(): Response
 	{
 		$this->Authorization->authorize('Hero');
 
@@ -45,7 +45,7 @@ class HeroController extends AppController
 	}
 
 	#[HttpPost]
-	public function sprint(): CakeResponse
+	public function sprint(): Response
 	{
 		$this->Authorization->authorize('Hero');
 		Auth::saveUserFields([
@@ -58,7 +58,7 @@ class HeroController extends AppController
 	}
 
 	#[HttpPost]
-	public function intuition(): CakeResponse
+	public function intuition(): Response
 	{
 		$this->Authorization->authorize('Hero');
 		Auth::saveUserField('used_intuition', 1);
@@ -68,7 +68,7 @@ class HeroController extends AppController
 	//Restores health and intuition, and unlocks the problems failed today: a locked problem
 	//becomes visited again, a forgotten one goes back to review.
 	#[HttpPost]
-	public function rejuvenation(): CakeResponse
+	public function rejuvenation(): Response
 	{
 		$this->Authorization->authorize('Hero');
 		Auth::saveUserFields([
@@ -88,7 +88,7 @@ class HeroController extends AppController
 
 	//Marks the problem solved without any reward.
 	#[HttpPost]
-	public function revelation(string $tsumegoID): CakeResponse
+	public function revelation(string $tsumegoID): Response
 	{
 		$this->Authorization->authorize('Hero');
 

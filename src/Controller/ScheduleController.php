@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use Cake\Http\Response as CakeResponse;
+use Cake\Http\Response;
 use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\NotFoundException;
 use App\Model\Table\SetTable;
@@ -100,7 +100,7 @@ ORDER BY schedule.date DESC, schedule.id DESC");
 	//`per_day` of them on each day. A schedule starting today is published right
 	//away, because the daily cron only publishes the day it runs on.
 	#[HttpPost]
-	public function add(): CakeResponse
+	public function add(): Response
 	{
 		$this->Authorization->authorize('Schedule');
 
@@ -162,7 +162,7 @@ ORDER BY schedule.date DESC, schedule.id DESC");
 
 	//Preview which problems would be scheduled, and on which day each of them lands. Admin only. Returns JSON.
 	#[HttpGet]
-	public function preview(): CakeResponse
+	public function preview(): Response
 	{
 		$this->Authorization->authorize('Schedule');
 
@@ -219,7 +219,7 @@ LIMIT " . $count), [$setIdFrom, $num, $targetSetId]);
 
 	//Cancel a pending schedule entry. Admin only.
 	#[HttpPost]
-	public function cancel(?string $id = null): CakeResponse
+	public function cancel(?string $id = null): Response
 	{
 		$this->Authorization->authorize('Schedule');
 

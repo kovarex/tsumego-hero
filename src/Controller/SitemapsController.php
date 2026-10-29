@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use Cake\Http\Response as CakeResponse;
+use Cake\Http\Response;
 use Cake\Cache\Cache;
 //Generates XML sitemap for search engines, see https://www.sitemaps.org/protocol.html
 use Cake\Routing\Router;
@@ -36,7 +36,7 @@ class SitemapsController extends AppController
 	//Generate XML sitemap
 	//Outputs sitemap.xml with all public URLs. Caches rendered XML for 1 day. Webserver handles gzip compression.
 	#[HttpGet]
-	public function index(): CakeResponse
+	public function index(): Response
 	{
 		$cacheKey = 'sitemap_xml';
 		$xml = Cache::read($cacheKey, 'long');

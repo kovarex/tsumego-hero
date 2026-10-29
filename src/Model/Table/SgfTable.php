@@ -39,7 +39,6 @@ class SgfTable extends AppTable
 	//A save that sets the SGF sets its preview too, so every version has the one of its SGF.
 	public function beforeSave(EventInterface $event, EntityInterface $entity, ArrayObject $options): void
 	{
-		parent::beforeSave($event, $entity, $options);
 		if ($entity->isDirty('sgf'))
 			$entity->set('preview', TsumegoButton::sgfToPreviewJson((string) $entity->get('sgf')));
 	}

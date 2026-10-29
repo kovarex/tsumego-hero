@@ -13,13 +13,13 @@ class BoardTextureTest extends IntegrationTestCase
 		// Go to profile or settings page where boards are selected
 		// Based on AppController logic, board selection seems to happen via JS that sets a cookie,
 		// but the UI for it is likely in the main layout or a specific settings page.
-		// Looking at default.ctp, there are checkboxes with id "newCheckX".
+		// Looking at templates/layout/default.php, there are checkboxes with id "newCheckX".
 
-		// Any page with default.ctp layout has the board selector
+		// Any page with the default layout has the board selector
 		$browser->get('sites/blank');
 
 		// Find the "Board Settings" or similar dropdown that contains the checkboxes.
-		// In default.ctp, there is a loop creating #newCheck1 to #newCheck51
+		// In templates/layout/default.php, there is a loop creating #newCheck1 to #newCheck51
 
 		// Check board 9 (newCheck9). It is '1' (unchecked) by default.
 		$checkbox9 = $browser->findById('newCheck9');
