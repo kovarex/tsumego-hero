@@ -9,6 +9,9 @@ set -e
 
 ROOT_DIR="$(cd "$(dirname "$0")"; pwd)"
 
+#Temporary check, not for merging: is intl loaded in the CLI php?
+echo "intl in CLI php: $(php -r 'echo extension_loaded("intl") ? "yes, ICU " . INTL_ICU_VERSION : "no";') ($(php -r 'echo PHP_VERSION;'))"
+
 DB_CONFIG_FILE="$ROOT_DIR/config/database.php"
 DB_CONFIG_TEMPLATE="$ROOT_DIR/config/database.example.php"
 
