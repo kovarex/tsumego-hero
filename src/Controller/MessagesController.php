@@ -49,7 +49,7 @@ class MessagesController extends AppController
 	{
 		$this->Authorization->authorize('Message', 'read');
 		$partner = $this->findPartner((int) $partnerUserId);
-		$before = $this->request->query('before');
+		$before = $this->query('before');
 		$conversation = MessageTable::conversation(Auth::getUserID(), $partner['id'], $before === null ? null : (int) $before);
 		return $this->json(['partner' => $partner] + $conversation);
 	}
@@ -59,7 +59,7 @@ class MessagesController extends AppController
 	{
 		$this->Authorization->authorize('Message', 'send');
 		$partner = $this->findPartner((int) $partnerUserId);
-		$input = json_decode((string) $this->request->input(), true);
+		$input = json_decode($this->requestBody(), true);
 		$text = (string) ($input['text'] ?? '');
 
 		$problem = MessageTable::problemWith(Auth::getUserID(), $partner['id'], $text);
@@ -86,7 +86,7 @@ class MessagesController extends AppController
 	public function recipients(): CakeResponse
 	{
 		$this->Authorization->authorize('Message', 'send');
-		$query = (string) $this->request->query('query');
+		$query = (string) $this->query('query');
 		return $this->json(['players' => MessageTable::searchRecipients(Auth::getUserID(), $query)]);
 	}
 

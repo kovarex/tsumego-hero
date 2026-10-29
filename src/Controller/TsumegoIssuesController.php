@@ -21,8 +21,8 @@ class TsumegoIssuesController extends AppController
 	#[HttpGet]
 	public function api()
 	{
-		$statusFilter = $this->request->query('status') ?: 'opened';
-		$page = (int) ($this->request->query('page') ?: 1);
+		$statusFilter = $this->query('status') ?: 'opened';
+		$page = (int) ($this->query('page') ?: 1);
 		$perPage = 20;
 
 		$issues = TsumegoIssueTable::findForIndex($statusFilter, $perPage, $page);
@@ -57,8 +57,8 @@ class TsumegoIssuesController extends AppController
 		$this->set('_page', 'issues');
 
 		// Get filter and pagination params from URL (used for initial state)
-		$statusFilter = $this->request->query('status') ?: 'opened';
-		$page = (int) ($this->request->query('page') ?: 1);
+		$statusFilter = $this->query('status') ?: 'opened';
+		$page = (int) ($this->query('page') ?: 1);
 
 		$this->set(compact('statusFilter'));
 		$this->set('currentPage', $page);
@@ -76,7 +76,7 @@ class TsumegoIssuesController extends AppController
 		$this->Authorization->authorize('TsumegoIssue', 'create');
 
 		// Parse JSON request body
-		$input = json_decode($this->request->input(), true);
+		$input = json_decode($this->requestBody(), true);
 		$tsumegoId = $input['tsumego_id'] ?? null;
 		$message = $input['text'] ?? null;
 		$position = $input['position'] ?? null;
@@ -161,7 +161,7 @@ class TsumegoIssuesController extends AppController
 			throw new InternalErrorException('Failed to close issue');
 
 		// Add closing comment if provided
-		$closingMessage = $this->request->data('Issue.message');
+		$closingMessage = $this->input('Issue.message');
 		if (!empty($closingMessage))
 		{
 			// a closing comment that fails the validation is left out, the issue is closed anyway
@@ -219,7 +219,7 @@ class TsumegoIssuesController extends AppController
 		if (!$comment)
 			throw new NotFoundException('Comment not found');
 
-		$targetIssueId = $this->request->data('Comment.tsumego_issue_id');
+		$targetIssueId = $this->input('Comment.tsumego_issue_id');
 		$currentIssueId = $comment->tsumego_issue_id;
 
 		// Handle 'standalone' - remove from issue

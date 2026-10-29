@@ -31,6 +31,60 @@ class AppController extends Controller
 		'Authorization'
 	];
 
+	//The request, read through these few methods only, so that the switch to Cake 5 changes them
+	//and not every action: there they become getData(), getQuery(), getParam(), getBody() and
+	//getHeaderLine(). A dotted name reads a nested field ('Set.title'), as in both versions.
+
+	//A field the form or the request body sent, null when it was not sent.
+	protected function input(string $name): mixed
+	{
+		return $this->request->data($name);
+	}
+
+	//Every field the form sent.
+	/** @return array<string, mixed> */
+	protected function inputs(): array
+	{
+		return (array) $this->request->data;
+	}
+
+	//A value of the query string (?name=value), null when it is not there.
+	protected function query(string $name): mixed
+	{
+		return $this->request->query($name);
+	}
+
+	//The whole query string as an array.
+	/** @return array<string, mixed> */
+	protected function queries(): array
+	{
+		return (array) $this->request->query;
+	}
+
+	//A part of the address the router recognised: controller, action, or a named route element.
+	protected function routeParam(string $name): mixed
+	{
+		return $this->request->params[$name] ?? null;
+	}
+
+	//The request body as it was sent, for the endpoints that take JSON.
+	protected function requestBody(): string
+	{
+		return (string) $this->request->input();
+	}
+
+	//GET, POST and so on.
+	protected function httpMethod(): string
+	{
+		return (string) $this->request->method();
+	}
+
+	//The size the client says the request body has, in bytes.
+	protected function contentLength(): int
+	{
+		return (int) env('CONTENT_LENGTH');
+	}
+
 	//The pages of a deleted account (profile, its sets, tags, solve history...) are gone for everyone but the admins.
 	/** @param UserRow $user */
 	protected function assertUserVisible(array $user): void
@@ -100,7 +154,7 @@ class AppController extends Controller
 			return;
 
 		// HEAD asks for the headers of a GET response, so a page that answers GET answers it
-		$method = $this->request->method();
+		$method = $this->httpMethod();
 		if ($method === 'HEAD' && in_array('GET', $allowed, true))
 			$method = 'GET';
 
@@ -142,7 +196,7 @@ class AppController extends Controller
 	{
 		if (empty(Auth::getUser()['needs_display_name_change']))
 			return false;
-		$page = strtolower($this->request->params['controller'] . '/' . $this->request->params['action']);
+		$page = strtolower($this->routeParam('controller') . '/' . $this->routeParam('action'));
 		return !in_array($page, self::ACTIONS_ALLOWED_BEFORE_NAME_CHANGE, true);
 	}
 
@@ -189,7 +243,7 @@ class AppController extends Controller
 
 		//Boards are drawn without a session: a list of a thousand players would otherwise
 		//pay for the login of a visitor who is not there.
-		if (strtolower((string) ($this->request->params['controller'] ?? '')) === 'avatars')
+		if (strtolower((string) ($this->routeParam('controller') ?? '')) === 'avatars')
 			return null;
 
 		Auth::init();

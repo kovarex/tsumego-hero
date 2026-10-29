@@ -28,7 +28,7 @@ class TsumegoCommentsController extends AppController
 	{
 		$this->Authorization->authorize('TsumegoComment', 'add');
 
-		$input = json_decode($this->request->input(), true);
+		$input = json_decode($this->requestBody(), true);
 
 		$tsumegoCommentTable = $this->fetchTable('TsumegoComment');
 		$comment = $tsumegoCommentTable->newEntity([

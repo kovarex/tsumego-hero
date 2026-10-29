@@ -99,12 +99,12 @@ ORDER BY schedule.date DESC, schedule.id DESC");
 	{
 		$this->Authorization->authorize('Schedule');
 
-		$setIdFrom = (int) ($this->request->data['set_id_from'] ?? 0);
-		$targetSetId = (int) ($this->request->data['set_id_to'] ?? 0);
-		$num = (int) ($this->request->data['num'] ?? 0);
-		$count = self::count($this->request->data['count'] ?? null);
-		$perDay = (int) ($this->request->data['per_day'] ?? 5);
-		$startDate = (string) ($this->request->data['start_date'] ?? '');
+		$setIdFrom = (int) ($this->input('set_id_from') ?? 0);
+		$targetSetId = (int) ($this->input('set_id_to') ?? 0);
+		$num = (int) ($this->input('num') ?? 0);
+		$count = self::count($this->input('count'));
+		$perDay = (int) ($this->input('per_day') ?? 5);
+		$startDate = (string) ($this->input('start_date') ?? '');
 
 		if ($setIdFrom <= 0 || $targetSetId <= 0)
 			throw new BadRequestException('Invalid set ids.');
@@ -162,12 +162,12 @@ ORDER BY schedule.date DESC, schedule.id DESC");
 		$this->Authorization->authorize('Schedule');
 		$this->autoRender = false;
 
-		$setIdFrom = (int) ($this->request->query['set_id_from'] ?? 0);
-		$targetSetId = (int) ($this->request->query['set_id_to'] ?? 0);
-		$num = (int) ($this->request->query['num'] ?? 0);
-		$count = self::count($this->request->query['count'] ?? null);
-		$perDay = max(1, (int) ($this->request->query['per_day'] ?? 5));
-		$startDate = strtotime((string) ($this->request->query['start_date'] ?? '')) ?: strtotime('today');
+		$setIdFrom = (int) ($this->query('set_id_from') ?? 0);
+		$targetSetId = (int) ($this->query('set_id_to') ?? 0);
+		$num = (int) ($this->query('num') ?? 0);
+		$count = self::count($this->query('count'));
+		$perDay = max(1, (int) ($this->query('per_day') ?? 5));
+		$startDate = strtotime((string) ($this->query('start_date') ?? '')) ?: strtotime('today');
 
 		if ($setIdFrom <= 0 || $targetSetId <= 0 || ($count !== null && $count < 1))
 		{
