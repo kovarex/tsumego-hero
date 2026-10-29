@@ -4,7 +4,7 @@ use App\Utility\Util;
 use App\Model\Table\TsumegoTable;
 use Cake\ORM\TableRegistry;
 
-class TsumegoTest extends CakeTestCase
+class TsumegoTest extends AppTestCase
 {
 	//The problems the site holds are the problems that exist: the collection a problem sits in says
 	//nothing about it, so a collection nobody published yet still holds its problems.

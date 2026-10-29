@@ -42,7 +42,7 @@ class AdminController extends AppController
 		$this->set('_page', 'admin');
 		$this->set('_title', 'Admin activity');
 		$newSince = AdminOverviewTypeTable::markSeen(Auth::getUserID(), AdminOverviewTypeTable::ACTIVITY);
-		$this->set('adminActivityRenderer', new AdminActivityRenderer($this->params['url'], $newSince));
+		$this->set('adminActivityRenderer', new AdminActivityRenderer($this->queries(), $newSince));
 	}
 
 	#[HttpGet]
@@ -51,8 +51,8 @@ class AdminController extends AppController
 		$this->Authorization->authorize('Admin', 'viewAdminArea');
 		$this->set('_page', 'admin');
 		$this->set('_title', 'SGF proposals');
-		$this->set('sgfProposalsRenderer', new SGFProposalsRenderer($this->params['url']));
-		$this->set('rejectedSgfProposalsRenderer', new RejectedSGFProposalsRenderer($this->params['url']));
+		$this->set('sgfProposalsRenderer', new SGFProposalsRenderer($this->queries()));
+		$this->set('rejectedSgfProposalsRenderer', new RejectedSGFProposalsRenderer($this->queries()));
 	}
 
 	//Every version that became part of a problem, for the admins to review the changes of each other
@@ -63,7 +63,7 @@ class AdminController extends AppController
 		$this->set('_page', 'admin');
 		$this->set('_title', 'SGF changes');
 		$newSince = AdminOverviewTypeTable::markSeen(Auth::getUserID(), AdminOverviewTypeTable::SGF_CHANGES);
-		$this->set('sgfChangesRenderer', new SgfChangesRenderer($this->params['url'], $newSince));
+		$this->set('sgfChangesRenderer', new SgfChangesRenderer($this->queries(), $newSince));
 	}
 
 	//Ticks an SGF change as reviewed by the admin (reviewed=1), or takes the tick back (reviewed=0).
@@ -81,13 +81,10 @@ class AdminController extends AppController
 		if ($sgf->accepted_by_user_id === Auth::getUserID())
 			throw new BadRequestException('What you accepted is reviewed by the other admins');
 
-		$reviewed = !empty($this->request->data['reviewed']);
+		$reviewed = !empty($this->input('reviewed'));
 		SgfReviewTable::mark((int) $sgfID, Auth::getUserID(), $reviewed);
 
-		$this->autoRender = false;
-		$this->response->type('json');
-		$this->response->body(json_encode(['reviewed' => $reviewed]));
-		return $this->response;
+		return $this->respondJson(['reviewed' => $reviewed]);
 	}
 
 	//Existing tags players want on a problem
@@ -97,7 +94,7 @@ class AdminController extends AppController
 		$this->Authorization->authorize('Admin', 'viewAdminArea');
 		$this->set('_page', 'admin');
 		$this->set('_title', 'Tag proposals');
-		$this->set('tagConnectionProposalsRenderer', new TagConnectionProposalsRenderer($this->params['url']));
+		$this->set('tagConnectionProposalsRenderer', new TagConnectionProposalsRenderer($this->queries()));
 	}
 
 	//Tags players want to be added
@@ -107,7 +104,7 @@ class AdminController extends AppController
 		$this->Authorization->authorize('Admin', 'viewAdminArea');
 		$this->set('_page', 'admin');
 		$this->set('_title', 'New tags');
-		$this->set('tagProposalsRenderer', new TagProposalsRenderer($this->params['url']));
+		$this->set('tagProposalsRenderer', new TagProposalsRenderer($this->queries()));
 	}
 
 	#[HttpGet]

@@ -40,7 +40,7 @@ class SetTable extends AppTable
 		// that), an id with a slash doesn't fit that route and is left to the router.
 		if (!str_contains((string) $id, '/'))
 			return Router::url('/sets/' . $id . ($partition > 1 ? '/' . $partition : ''), $full);
-		$url = ['controller' => 'sets', 'action' => 'view', 'id' => $id];
+		$url = ['controller' => 'Sets', 'action' => 'view', 'id' => $id];
 		if ($partition > 1)
 			$url['partition'] = $partition;
 		return Router::url($url, $full);

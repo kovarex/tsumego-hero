@@ -34,7 +34,7 @@ class TagsController extends AppController
 	public function addAction(): CakeResponse
 	{
 		$this->Authorization->authorize('Tag', 'add');
-		$tagName = $this->request->data['tag_name'];
+		$tagName = $this->input('tag_name');
 		if (empty($tagName))
 		{
 			CookieFlash::set('Tag name not provided', 'error');
@@ -48,7 +48,7 @@ class TagsController extends AppController
 			return $this->redirect('/tags/add');
 		}
 
-		$tagDescription = $this->request->data['tag_description'];
+		$tagDescription = $this->input('tag_description');
 		if (empty($tagDescription))
 		{
 			CookieFlash::set('Tag description not provided', 'error');
@@ -58,8 +58,8 @@ class TagsController extends AppController
 		$tag = $tagTable->saveOrFail($tagTable->newEntity([
 			'name' => $tagName,
 			'description' => HtmlSanitizer::sanitize((string) $tagDescription),
-			'hint' => (int) $this->request->data['tag_hint'],
-			'link' => trim((string) ($this->request->data['tag_reference'] ?? '')),
+			'hint' => (int) $this->input('tag_hint'),
+			'link' => trim((string) ($this->input('tag_reference') ?? '')),
 			'user_id' => Auth::getUserID(),
 			'approved' => Auth::isAdmin() ? 1 : 0]));
 
@@ -90,7 +90,7 @@ class TagsController extends AppController
 		$this->assertUserVisible($viewedUser);
 
 		$pageSize = 50;
-		$pageIndex = isset($this->request->query['page']) ? max(1, (int) $this->request->query['page']) : 1;
+		$pageIndex = $this->query('page') !== null ? max(1, (int) $this->query('page')) : 1;
 		$offset = ($pageIndex - 1) * $pageSize;
 
 		$rows = Util::query(
@@ -184,7 +184,7 @@ class TagsController extends AppController
 			return $this->redirect('/tags');
 		}
 
-		$tagDescription = $this->request->data['tag_description'];
+		$tagDescription = $this->input('tag_description');
 		if (empty($tagDescription))
 		{
 			CookieFlash::set('Tag description not provided', 'error');
@@ -193,8 +193,8 @@ class TagsController extends AppController
 
 		$tagTable->patchEntity($tag, [
 			'description' => HtmlSanitizer::sanitize((string) $tagDescription),
-			'hint' => (int) ($this->request->data['tag_hint']),
-			'link' => trim((string) ($this->request->data['tag_link'] ?? ''))]);
+			'hint' => (int) $this->input('tag_hint'),
+			'link' => trim((string) ($this->input('tag_link') ?? ''))]);
 		$tagTable->saveOrFail($tag);
 		return $this->redirect('/tags/view/' . $tagID);
 	}
@@ -218,7 +218,7 @@ class TagsController extends AppController
 	public function index(): void
 	{
 		$this->Authorization->authorize('Tag');
-		$sort = ($this->request->query['sort'] ?? '') === 'problems' ? 'problems' : 'name';
+		$sort = ($this->query('sort') ?? '') === 'problems' ? 'problems' : 'name';
 		$this->set('_title', 'Tsumego Hero - Tags');
 		$this->set('tags', TagTable::listWithProblemCounts($sort === 'problems'));
 		$this->set('sort', $sort);
@@ -239,9 +239,7 @@ class TagsController extends AppController
 				'url' => $row['set_connection_id'] ? '/' . $row['set_connection_id'] : '/tsumegos/play/' . $row['tsumego_id'],
 				'name' => $row['set_title'] !== null ? $row['set_title'] . ' ' . $row['num'] : 'Problem ' . $row['tsumego_id'],
 				'approved' => (bool) $row['approved']];
-		$this->response->type('json');
-		$this->response->body(json_encode($problems));
-		return $this->response;
+		return $this->respondJson($problems);
 	}
 
 	#[HttpPost]
@@ -267,7 +265,7 @@ class TagsController extends AppController
 		$tagTable->saveOrFail($tagToApprove);
 
 		// like a tag on a problem, the proposer only hears about it when the admin had something to say
-		$comment = ProposalFeedback::commentFromRequest($this->request->data['comment'] ?? null);
+		$comment = ProposalFeedback::commentFromRequest($this->input('comment'));
 		if ($comment !== '' && $tagToApprove->user_id)
 			ProposalFeedback::send(
 				$tagToApprove->user_id,
@@ -300,7 +298,7 @@ class TagsController extends AppController
 			return $this->redirect('/admin/new-tags');
 		}
 
-		$comment = ProposalFeedback::commentFromRequest($this->request->data['comment'] ?? null);
+		$comment = ProposalFeedback::commentFromRequest($this->input('comment'));
 		if ($comment === '')
 		{
 			CookieFlash::set('Write the proposer why the tag is rejected.', 'error');

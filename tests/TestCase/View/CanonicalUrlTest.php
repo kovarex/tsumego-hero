@@ -1,5 +1,7 @@
 <?php
 
+use Cake\Cache\Cache;
+
 //Every page declares the one address a search engine should keep for it.
 class CanonicalUrlTest extends IntegrationTestCase
 {

@@ -60,9 +60,8 @@ class AvatarsControllerTest extends IntegrationTestCase
 	{
 		$this->get('/board/' . Avatar::key('Anna'));
 
-		$headers = $this->_response->header();
-		$this->assertNotEmpty($headers['Etag']);
-		$this->assertStringContainsString('max-age=', $headers['Cache-Control']);
+		$this->assertNotEmpty($this->headerValue('Etag'));
+		$this->assertHeaderContains('Cache-Control', 'max-age=');
 	}
 
 	//An avatar is fetched by a plain img tag, so it must not depend on a session
@@ -147,9 +146,8 @@ class AvatarsControllerTest extends IntegrationTestCase
 	{
 		$this->get('/board/' . Avatar::key('Anna') . '.png');
 
-		$headers = $this->_response->header();
-		$this->assertNotEmpty($headers['Etag']);
-		$this->assertStringContainsString('max-age=', $headers['Cache-Control']);
+		$this->assertNotEmpty($this->headerValue('Etag'));
+		$this->assertHeaderContains('Cache-Control', 'max-age=');
 	}
 
 	public function testAPngKeyThatIsNotADrawingIsNotFound()

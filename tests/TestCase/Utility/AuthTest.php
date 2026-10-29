@@ -6,7 +6,7 @@
 use App\Model\Table\UserTable;
 use App\Utility\Auth;
 
-class AuthTest extends CakeTestCase
+class AuthTest extends AppTestCase
 {
 	public function testSaveUserFieldPersistsOnlyThatField()
 	{

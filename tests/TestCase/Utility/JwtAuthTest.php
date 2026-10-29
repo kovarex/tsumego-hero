@@ -4,7 +4,7 @@
 //JwtAuth provides stateless authentication using signed JWT tokens.
 use App\Utility\JwtAuth;
 
-class JwtAuthTest extends CakeTestCase
+class JwtAuthTest extends AppTestCase
 {
 	private const TEST_SECRET = 'test-secret-key-for-unit-tests-only';
 

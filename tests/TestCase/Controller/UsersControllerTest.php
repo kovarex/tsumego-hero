@@ -6,10 +6,7 @@ use App\Model\Table\UserTable;
 use App\Utility\AchievementId;
 use App\Utility\Rating;
 
-/**
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
- */
+#[RetryOnBrowserFailure]
 class UsersControllerTest extends IntegrationTestCase
 {
 	//Test that login redirects back to the page where user came from.
@@ -695,5 +692,16 @@ class UsersControllerTest extends IntegrationTestCase
 
 		$user = UserTable::row((int) $context->user['id']);
 		$this->assertSame(UserTable::ROLE_PLAYER, (int) $user['user_role_id']);
+	}
+
+	public function testAGuestOnTheirOwnPagesIsSentToTheLogin()
+	{
+		new ContextPreparator();
+		$this->logout();
+		foreach (['/me', '/me/solve-history', '/me/contributions'] as $url)
+		{
+			$this->get($url);
+			$this->assertRedirect('/users/login', $url);
+		}
 	}
 }

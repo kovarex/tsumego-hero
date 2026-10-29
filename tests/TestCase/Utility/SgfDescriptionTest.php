@@ -2,7 +2,7 @@
 
 use App\Utility\SgfDescription;
 
-class SgfDescriptionTest extends CakeTestCase
+class SgfDescriptionTest extends AppTestCase
 {
 	public function testShortDescriptionIsShownWhole()
 	{
