@@ -51,4 +51,14 @@ class AppView extends View
 		return ob_get_clean();
 	}
 
+	//The file of an element, for a template that includes it itself, where the many calls of
+	//element() would cost too much. The path is the view's, so it stays right when the
+	//elements move.
+	public function elementFile(string $name): string
+	{
+		$file = $this->_getElementFileName($name);
+		if ($file === false)
+			throw new RuntimeException('Element ' . $name . ' not found');
+		return $file;
+	}
 }
