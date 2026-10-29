@@ -60,7 +60,8 @@ jobs:
           extensions: mbstring, intl
           # PCOV records only src/ and costs far less than Xdebug; without coverage no driver slows the requests down.
           coverage: ${{ env.COVERAGE == 'true' && 'pcov' || 'none' }}
-          ini-values: pcov.directory=${{ github.workspace }}/src
+          # Without opcache's optimizer, as under Xdebug: it merges and drops lines (a run of echos, a jump), and they would drop out of the coverage.
+          ini-values: pcov.directory=${{ github.workspace }}/src, opcache.optimization_level=0
 
       - name: Get composer cache directory
         id: composer-cache
