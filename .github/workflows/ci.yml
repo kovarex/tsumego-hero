@@ -54,8 +54,9 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
-          extensions: mbstring, intl, xdebug
-          coverage: xdebug
+          extensions: mbstring, intl
+          # Only master collects coverage; elsewhere a loaded Xdebug would just slow every request down.
+          coverage: ${{ github.ref == 'refs/heads/master' && 'xdebug' || 'none' }}
 
       - name: Configure Xdebug for coverage
         if: github.ref == 'refs/heads/master'
