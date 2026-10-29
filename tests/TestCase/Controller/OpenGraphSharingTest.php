@@ -42,10 +42,7 @@ class OpenGraphSharingTest extends IntegrationTestCase
 		$context = new ContextPreparator(['tsumego' => ['sets' => [['name' => 'test set', 'num' => 1]]]]);
 		$setId = $context->tsumegos[0]['sets'][0]['id'];
 
-		$setModel = ClassRegistry::init('Set');
-		$setModel->id = $setId;
-		$setModel->saveField('image', 'cover.jpg');
-		$setModel->saveField('description', 'Basic life and death problems');
+		$this->fetchTable('Set')->updateAll(['image' => 'cover.jpg', 'description' => 'Basic life and death problems'], ['id' => $setId]);
 
 		$this->get('sets/view/' . $setId);
 		$body = $this->view;
@@ -66,16 +63,15 @@ class OpenGraphSharingTest extends IntegrationTestCase
 			'user' => ['name' => 'alice'],
 			'other-users' => [['name' => 'bob', 'display_name' => 'Bobby']],
 		]);
-		$setModel = ClassRegistry::init('Set');
-		$setModel->create();
-		$setModel->save(['Set' => [
+		$setTable = $this->fetchTable('Set');
+		$createdSet = $setTable->saveOrFail($setTable->newEntity([
 			'user_id' => $context->otherUsers[0]['id'],
 			'title' => 'Bobby Collection',
 			'public' => 1,
 			'order' => Constants::$DEFAULT_SET_ORDER,
-		]]);
+		]));
 
-		$this->get('sets/' . $setModel->id);
+		$this->get('sets/' . $createdSet->id);
 		$body = $this->view;
 
 		$this->assertStringContainsString('<meta property="og:title" content="Bobby Collection by Bobby">', $body);
@@ -90,16 +86,15 @@ class OpenGraphSharingTest extends IntegrationTestCase
 			'user' => ['name' => 'alice'],
 			'other-users' => [['name' => 'bob', 'display_name' => 'Bobby', 'deleted' => true]],
 		]);
-		$setModel = ClassRegistry::init('Set');
-		$setModel->create();
-		$setModel->save(['Set' => [
+		$setTable = $this->fetchTable('Set');
+		$createdSet = $setTable->saveOrFail($setTable->newEntity([
 			'user_id' => $context->otherUsers[0]['id'],
 			'title' => 'Bobby Collection',
 			'public' => 1,
 			'order' => Constants::$DEFAULT_SET_ORDER,
-		]]);
+		]));
 
-		$this->get('sets/' . $setModel->id);
+		$this->get('sets/' . $createdSet->id);
 		$body = $this->view;
 
 		$this->assertStringContainsString('<meta property="og:title" content="Bobby Collection by ' . h(User::DELETED_NAME) . '">', $body);

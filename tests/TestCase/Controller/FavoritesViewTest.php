@@ -27,16 +27,15 @@ class FavoritesViewTest extends IntegrationTestCase
 		$tsumegoId = $this->fetchTable('Tsumego')->find()->orderByDesc('id')->first()->id;
 
 		// Create a non-Favorites set and add the tsumego to it
-		$setModel = ClassRegistry::init('Set');
-		$setModel->create();
-		$setModel->save(['Set' => [
+		$setTable = $this->fetchTable('Set');
+		$createdSet = $setTable->saveOrFail($setTable->newEntity([
 			'user_id' => $context->user['id'],
 			'title' => 'Hard Problems',
 			'public' => 0,
 			'order' => Constants::$DEFAULT_SET_ORDER,
-		]]);
+		]));
 		$setConnectionTable = $this->fetchTable('SetConnection');
-		$setConnectionTable->saveOrFail($setConnectionTable->newEntity(['set_id' => $setModel->id, 'tsumego_id' => $tsumegoId, 'num' => 2]));
+		$setConnectionTable->saveOrFail($setConnectionTable->newEntity(['set_id' => $createdSet->id, 'tsumego_id' => $tsumegoId, 'num' => 2]));
 
 		$this->get('/tsumegos/play/' . $tsumegoId);
 		$sets = json_decode($this->viewVariable('userSetsJson'), true);
@@ -67,16 +66,15 @@ class FavoritesViewTest extends IntegrationTestCase
 
 		foreach (['Favorites', 'Hard Problems'] as $title)
 		{
-			$setModel = ClassRegistry::init('Set');
-			$setModel->create();
-			$setModel->save(['Set' => [
+			$setTable = $this->fetchTable('Set');
+			$createdSet = $setTable->saveOrFail($setTable->newEntity([
 				'user_id' => $context->user['id'],
 				'title' => $title,
 				'public' => 0,
 				'order' => Constants::$DEFAULT_SET_ORDER,
-			]]);
+			]));
 			$setConnectionTable = $this->fetchTable('SetConnection');
-			$setConnectionTable->saveOrFail($setConnectionTable->newEntity(['set_id' => $setModel->id, 'tsumego_id' => $tsumegoId, 'num' => 2]));
+			$setConnectionTable->saveOrFail($setConnectionTable->newEntity(['set_id' => $createdSet->id, 'tsumego_id' => $tsumegoId, 'num' => 2]));
 		}
 
 		$this->get('/tsumegos/play/' . $tsumegoId);
@@ -148,9 +146,7 @@ class FavoritesViewTest extends IntegrationTestCase
 		$slaveId = $context->tsumegos[1]['id'];
 
 		// Sandbox set (user_id=null) should not be affected
-		$sandboxSetId = ClassRegistry::init('Set')->find('first', [
-			'conditions' => ['title' => 'sandbox set'],
-		])['Set']['id'];
+		$sandboxSetId = $this->fetchTable('Set')->find()->where(['title' => 'sandbox set'])->first()->id;
 
 		(new TsumegoMerger($masterId, $slaveId))->execute();
 

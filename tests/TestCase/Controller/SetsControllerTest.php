@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SetTable;
 use App\Model\Table\SgfTable;
 use App\Utility\AchievementId;
 use App\Utility\Constants;
@@ -53,8 +54,7 @@ class SetsControllerTest extends IntegrationTestCase
 	//Create a public set with a single problem that the given user solved.
 	private function createFullySolvedSet(int $setId, int $userId): void
 	{
-		ClassRegistry::init('Set')->create();
-		ClassRegistry::init('Set')->save(['id' => $setId, 'public' => 1, 'title' => 'set ' . $setId]);
+		$this->fetchTable('Set')->saveOrFail($this->fetchTable('Set')->newEntity(['id' => $setId, 'public' => 1, 'title' => 'set ' . $setId], ['accessibleFields' => ['id' => true]]));
 		$tsumegoId = $this->fetchTable('Tsumego')->saveOrFail($this->fetchTable('Tsumego')->newEntity(['rating' => 1000, 'author' => '']))->id;
 		$this->fetchTable('SetConnection')->saveOrFail($this->fetchTable('SetConnection')->newEntity(['set_id' => $setId, 'tsumego_id' => $tsumegoId, 'num' => 1]));
 		$this->fetchTable('Sgf')->saveOrFail($this->fetchTable('Sgf')->newEntity(['tsumego_id' => $tsumegoId, 'sgf' => '(;GM[1]FF[4]SZ[19])', 'user_id' => $userId, 'sgf_status_id' => SgfTable::STATUS_ACCEPTED]));
@@ -310,9 +310,8 @@ class SetsControllerTest extends IntegrationTestCase
 			['name' => 'ordered set', 'public' => 1, 'order' => 5, 'num' => 1]]]]);
 
 		// a public set with no curated order holding the same tsumego
-		$set = ClassRegistry::init('Set');
-		$set->create();
-		$set->save(['title' => 'unordered set', 'public' => 1, 'order' => null]);
+		$setTable = $this->fetchTable('Set');
+		$set = $setTable->saveOrFail($setTable->newEntity(['title' => 'unordered set', 'public' => 1, 'order' => null]));
 		$setConnectionTable = $this->fetchTable('SetConnection');
 		$setConnectionTable->saveOrFail($setConnectionTable->newEntity(['tsumego_id' => $context->tsumegos[0]['id'], 'set_id' => $set->id, 'num' => 2]));
 
@@ -646,13 +645,13 @@ class SetsControllerTest extends IntegrationTestCase
 		$context = new ContextPreparator($contextParams);
 		$setId = $context->tsumegos[0]['sets'][0]['id'];
 
-		$this->get(Set::url($setId));
+		$this->get(SetTable::url($setId));
 		$dom = $this->getStringDom();
 		$pageLinks = array_map(fn($node) => $node->textContent, iterator_to_array($dom->querySelectorAll('.pagination a, .pagination strong')));
 		$this->assertSame(['1', '2'], $pageLinks);
 		$this->assertCount(10, $dom->querySelectorAll('.problem-nav__number'));
 
-		$this->get(Set::url($setId, 2));
+		$this->get(SetTable::url($setId, 2));
 		$dom = $this->getStringDom();
 		$problemNumbers = array_map(fn($node) => $node->textContent, iterator_to_array($dom->querySelectorAll('.problem-nav__number')));
 		$this->assertSame(['41', '45', '49', '53', '57'], $problemNumbers);
@@ -964,7 +963,7 @@ class SetsControllerTest extends IntegrationTestCase
 
 		$browser->waitUntilCssSelectorExistsWithText('.set-edit-title', 'Renamed Set');
 
-		$this->assertSame('Renamed Set', ClassRegistry::init('Set')->findById($setId)['Set']['title']);
+		$this->assertSame('Renamed Set', $this->fetchTable('Set')->get($setId)->title);
 	}
 
 
@@ -1387,10 +1386,10 @@ class SetsControllerTest extends IntegrationTestCase
 		$this->assertSame('/' . $context->tsumegos[2]['set-connections'][0]['id'], $browser->driver->executeScript('return nextButtonLink;'));
 
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$this->assertSame(Set::url($context->tsumegos[0]['sets'][0]['id']), $browser->driver->executeScript('return previousButtonLink;'));
+		$this->assertSame(SetTable::url($context->tsumegos[0]['sets'][0]['id']), $browser->driver->executeScript('return previousButtonLink;'));
 
 		$browser->get('/' . $context->tsumegos[2]['set-connections'][0]['id']);
-		$this->assertSame(Set::url($context->tsumegos[2]['sets'][0]['id']), $browser->driver->executeScript('return nextButtonLink;'));
+		$this->assertSame(SetTable::url($context->tsumegos[2]['sets'][0]['id']), $browser->driver->executeScript('return nextButtonLink;'));
 	}
 
 	//Navigation with a valid difficulty rank should show problems across sets in sequential order.
@@ -1466,7 +1465,7 @@ class SetsControllerTest extends IntegrationTestCase
 			function ($index) { return [1, 0][$index]; },
 			function ($index) { return $index + 1; },
 			1, 'V');
-		$this->assertSame(Set::url($context->tsumegos[0]['sets'][0]['id']), $browser->driver->executeScript('return nextButtonLink;'));
+		$this->assertSame(SetTable::url($context->tsumegos[0]['sets'][0]['id']), $browser->driver->executeScript('return nextButtonLink;'));
 	}
 
 	//Same as above, for a tag collection the problem doesn't have.

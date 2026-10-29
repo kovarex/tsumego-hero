@@ -136,6 +136,6 @@ class TsumegoIssuesControllerApiTest extends IntegrationTestCase
 
 	private function giveFavoritesToTheOtherUser(ContextPreparator $context): void
 	{
-		ClassRegistry::init('Set')->updateAll(['Set.user_id' => $context->otherUsers[0]['id']], ['Set.title' => 'Favorites']);
+		$this->fetchTable('Set')->updateAll(['user_id' => $context->otherUsers[0]['id']], ['title' => 'Favorites']);
 	}
 }

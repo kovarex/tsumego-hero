@@ -23,9 +23,9 @@ class SetsControllerAdminTest extends IntegrationTestCase
 		$this->assertTrue($browser->titleContains('Tsumego Hero'), 'Should load create set page');
 
 		// Get current number of sets in database
-		$setModel = ClassRegistry::init('Set');
+		$setTable = $this->fetchTable('Set');
 		$tsumegoTable = $this->fetchTable('Tsumego');
-		$initialSetCount = $setModel->find('count');
+		$initialSetCount = $setTable->find()->count();
 		$initialTsumegoCount = $tsumegoTable->find()->count();
 
 		// Create new set by submitting form
@@ -36,7 +36,7 @@ class SetsControllerAdminTest extends IntegrationTestCase
 		$this->assertTrue($browser->titleContains('Test Auto-Increment Set'), 'Should redirect to the new set view after creating set');
 
 		// Verify set was created
-		$newSetCount = $setModel->find('count');
+		$newSetCount = $setTable->find()->count();
 		$this->assertEquals($initialSetCount + 1, $newSetCount, 'Should create exactly one new set');
 
 		// Verify tsumego was created
@@ -44,16 +44,16 @@ class SetsControllerAdminTest extends IntegrationTestCase
 		$this->assertEquals($initialTsumegoCount + 1, $newTsumegoCount, 'Should create exactly one new tsumego');
 
 		// Verify the set and tsumego are properly linked
-		$newSet = $setModel->find('first', ['order' => 'id DESC']);
-		$this->assertEquals('Test Auto-Increment Set', $newSet['Set']['title'], 'Set should have correct title');
-		$this->assertNull($newSet['Set']['user_id'], 'Sandbox set should not belong to any user');
-		$this->assertEquals(false, $newSet['Set']['public'], 'New set should be private');
+		$newSet = $setTable->find()->orderByDesc('id')->first();
+		$this->assertEquals('Test Auto-Increment Set', $newSet->title, 'Set should have correct title');
+		$this->assertNull($newSet->user_id, 'Sandbox set should not belong to any user');
+		$this->assertEquals(false, $newSet->public, 'New set should be private');
 
 		$newTsumego = $tsumegoTable->find()->orderByDesc('id')->first();
 		$this->assertNotEmpty($newTsumego, 'Should create tsumego');
 
 		// Verify SetConnection links them
-		$connection = $this->fetchTable('SetConnection')->find()->where(['set_id' => $newSet['Set']['id'], 'tsumego_id' => $newTsumego->id])->first();
+		$connection = $this->fetchTable('SetConnection')->find()->where(['set_id' => $newSet->id, 'tsumego_id' => $newTsumego->id])->first();
 		$this->assertNotEmpty($connection, 'SetConnection should link set and tsumego');
 		$this->assertEquals(1, $connection->num, 'First tsumego should have num=1');
 	}

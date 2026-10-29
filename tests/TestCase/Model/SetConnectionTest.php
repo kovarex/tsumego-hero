@@ -100,9 +100,8 @@ class SetConnectionTest extends CakeTestCase
 			],
 		]);
 
-		$set = ClassRegistry::init('Set');
-		$set->create();
-		$set->save(['title' => 'unordered', 'public' => 1, 'order' => null]);
+		$setTable = TableRegistry::getTableLocator()->get('Set');
+		$set = $setTable->saveOrFail($setTable->newEntity(['title' => 'unordered', 'public' => 1, 'order' => null]));
 
 		$setConnectionTable = TableRegistry::getTableLocator()->get('SetConnection');
 		$setConnectionTable->saveOrFail($setConnectionTable->newEntity(['tsumego_id' => $context->tsumegos[0]['id'], 'set_id' => $set->id, 'num' => 1]));
@@ -117,12 +116,10 @@ class SetConnectionTest extends CakeTestCase
 		$tsumegoTable = TableRegistry::getTableLocator()->get('Tsumego');
 		$tsumego = $tsumegoTable->saveOrFail($tsumegoTable->newEntity(['description' => 'tie', 'author' => '']));
 
-		$set = ClassRegistry::init('Set');
-		$set->create();
-		$set->save(['title' => 'earliest', 'public' => 1, 'order' => 10]);
+		$setTable = TableRegistry::getTableLocator()->get('Set');
+		$set = $setTable->saveOrFail($setTable->newEntity(['title' => 'earliest', 'public' => 1, 'order' => 10]));
 		$earliestSetId = (int) $set->id;
-		$set->create();
-		$set->save(['title' => 'latest', 'public' => 1, 'order' => 10]);
+		$set = $setTable->saveOrFail($setTable->newEntity(['title' => 'latest', 'public' => 1, 'order' => 10]));
 		$latestSetId = (int) $set->id;
 
 		$setConnectionTable = TableRegistry::getTableLocator()->get('SetConnection');

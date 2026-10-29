@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SetTable;
 use App\Model\Table\TsumegoStatusTable;
 use App\Utility\Auth;
 use App\Utility\Constants;
@@ -31,7 +32,7 @@ class RatingModeController extends AppController
 			$adjustedRating + Constants::$RATING_MODE_SELECTION_INTERVAL / 2);
 
 		$queryCondition = "";
-		Util::addSqlCondition($queryCondition, Set::officialCondition());
+		Util::addSqlCondition($queryCondition, SetTable::officialCondition());
 		Util::addSqlCondition($queryCondition, 'tsumego.deleted IS NULL');
 		$ratingBounds->addSqlConditions($queryCondition);
 		// Solved and mastered problems give no rating or XP, and locked ones can't be played today, so they

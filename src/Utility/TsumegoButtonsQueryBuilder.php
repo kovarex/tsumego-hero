@@ -4,7 +4,7 @@ namespace App\Utility;
 
 use App\Model\Entity\Tag;
 use Cake\ORM\TableRegistry;
-use Set;
+use App\Model\Table\SetTable;
 use App\Model\Table\SetConnectionTable;
 
 class TsumegoButtonsQueryBuilder
@@ -56,7 +56,7 @@ class TsumegoButtonsQueryBuilder
 		// It means I explicitelly want to view that.
 		// In all other cases, private set is not included.
 		if ($tsumegoFilters->query != 'topics')
-			$this->query->conditions [] = Set::officialCondition();
+			$this->query->conditions [] = SetTable::officialCondition();
 
 		$this->query->query .= " JOIN `set` ON `set`.id=set_connection.set_id";
 		if (Auth::isLoggedIn())

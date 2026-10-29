@@ -3,7 +3,6 @@
 namespace App\Model\Table;
 
 use App\Utility\Util;
-use Set;
 
 //The problems: what the player sees, the rating of each one and the multiple choice values of the
 //capturing races. A problem in the trash has its deleted time set.
@@ -41,7 +40,7 @@ class TsumegoTable extends AppTable
 	{
 		$inOfficialSet = fn(string $tsumegoRef): string
 			=> 'EXISTS (SELECT 1 FROM set_connection sc JOIN `set` ON `set`.id = sc.set_id'
-				. ' AND ' . Set::officialCondition() . ' WHERE sc.tsumego_id = ' . $tsumegoRef . ')';
+				. ' AND ' . SetTable::officialCondition() . ' WHERE sc.tsumego_id = ' . $tsumegoRef . ')';
 
 		$row = Util::query(
 			'SELECT '

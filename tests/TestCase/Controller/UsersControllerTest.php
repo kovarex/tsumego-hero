@@ -428,9 +428,8 @@ class UsersControllerTest extends IntegrationTestCase
 			],
 		]);
 
-		$set = ClassRegistry::init('Set');
-		$set->create();
-		$set->save(['title' => 'alice favorites', 'public' => 0, 'user_id' => $context->otherUsers[0]['id'], 'order' => 1]);
+		$setTable = $this->fetchTable('Set');
+		$set = $setTable->saveOrFail($setTable->newEntity(['title' => 'alice favorites', 'public' => 0, 'user_id' => $context->otherUsers[0]['id'], 'order' => 1]));
 		$setConnectionTable = $this->fetchTable('SetConnection');
 		$setConnectionTable->saveOrFail($setConnectionTable->newEntity(['tsumego_id' => $context->tsumegos[0]['id'], 'set_id' => $set->id, 'num' => 3]));
 

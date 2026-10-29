@@ -57,11 +57,9 @@ class TsumegoMergeTest extends IntegrationTestCase
 			// For non-double-favorite cases, remove master from Favorites
 			if ($testCase != 'mergeWithDoubleFavorite')
 			{
-				$favSet = ClassRegistry::init('Set')->find('first', [
-					'conditions' => ['title' => 'Favorites'],
-				]);
+				$favSet = $this->fetchTable('Set')->find()->where(['title' => 'Favorites'])->first();
 				$this->fetchTable('SetConnection')->deleteAll([
-					'set_id' => $favSet['Set']['id'],
+					'set_id' => $favSet->id,
 					'tsumego_id' => $context->tsumegos[0]['id'],
 				]);
 			}

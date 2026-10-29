@@ -205,7 +205,7 @@ class AdminGuardTest extends IntegrationTestCase
 
 	private function privateSetId()
 	{
-		return ClassRegistry::init('Set')->find('first', ['conditions' => ['public' => 0]])['Set']['id'];
+		return $this->fetchTable('Set')->find()->where(['public' => 0])->first()->id;
 	}
 
 	// ── TsumegosController::performMerge ──

@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SetTable;
 use App\Model\Entity\Achievement;
 use App\Model\Table\AchievementConditionTable;
 use App\Utility\AchievementId;
@@ -166,9 +167,7 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$context = new ContextPreparator();
 
 		$setId = $this->createFinishedCollection($context->user['id']);
-		$Set = ClassRegistry::init('Set');
-		$Set->id = $setId;
-		$Set->saveField('user_id', $context->user['id']);
+		$this->fetchTable('Set')->updateAll(['user_id' => $context->user['id']], ['id' => $setId]);
 
 		new AchievementChecker()->checkSetAchievements($setId);
 
@@ -188,11 +187,11 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$this->get('/achievements/view/' . AchievementId::SUPERIOR_ACCURACY->value);
 		$page = $this->view;
 
-		$this->assertStringContainsString('href="' . Set::url($earnedSetId) . '" class="acCollections__link acCollections__link--earned"', $page,
+		$this->assertStringContainsString('href="' . SetTable::url($earnedSetId) . '" class="acCollections__link acCollections__link--earned"', $page,
 			'the collection finished at 100% accuracy is marked as earned');
-		$this->assertStringContainsString('href="' . Set::url($plainSetId) . '" class="acCollections__link"', $page,
+		$this->assertStringContainsString('href="' . SetTable::url($plainSetId) . '" class="acCollections__link"', $page,
 			'a collection that can still earn it is listed without the mark');
-		$this->assertStringNotContainsString(Set::url($personalSetId) . '"', $page,
+		$this->assertStringNotContainsString(SetTable::url($personalSetId) . '"', $page,
 			'personal collections are not listed');
 		$this->assertStringNotContainsString('no longer count', $page,
 			'no explanation while nothing contradicts the marked collections');
@@ -218,15 +217,15 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$page = $this->view;
 
 		$this->assertStringContainsString(
-			'href="' . Set::url($closeSetId) . '" class="acCollections__link">Test Set (rating 1200)<span class="acCollections__percent">96.5%</span></a>',
+			'href="' . SetTable::url($closeSetId) . '" class="acCollections__link">Test Set (rating 1200)<span class="acCollections__percent">96.5%</span></a>',
 			$page,
 			'a collection the player got close on shows the accuracy reached on it');
 		$this->assertStringContainsString(
-			'href="' . Set::url($finishedSetId) . '" class="acCollections__link acCollections__link--earned">Test Set (rating 1200)</a>',
+			'href="' . SetTable::url($finishedSetId) . '" class="acCollections__link acCollections__link--earned">Test Set (rating 1200)</a>',
 			$page,
 			'a finished collection carries the mark instead of a number');
 		$this->assertStringContainsString(
-			'href="' . Set::url($untouchedSetId) . '" class="acCollections__link">Test Set (rating 1200)</a>',
+			'href="' . SetTable::url($untouchedSetId) . '" class="acCollections__link">Test Set (rating 1200)</a>',
 			$page,
 			'a collection the player never opened shows no accuracy');
 	}
@@ -260,9 +259,9 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$this->get('/achievements/view/' . AchievementId::SUPERIOR_ACCURACY->value . '/' . $otherUserId);
 		$page = $this->view;
 
-		$this->assertStringContainsString('href="' . Set::url($theirSetId) . '" class="acCollections__link acCollections__link--earned"', $page,
+		$this->assertStringContainsString('href="' . SetTable::url($theirSetId) . '" class="acCollections__link acCollections__link--earned"', $page,
 			'the viewed player\'s perfect collection is marked');
-		$this->assertStringContainsString('href="' . Set::url($mySetId) . '" class="acCollections__link"', $page,
+		$this->assertStringContainsString('href="' . SetTable::url($mySetId) . '" class="acCollections__link"', $page,
 			'the viewer\'s own perfect collection is not marked');
 		$this->assertStringContainsString('href="/achievements/user/' . $otherUserId . '"', $page,
 			'the achievements link stays with the viewed player');

@@ -1,6 +1,7 @@
 <?php
 
 //Generates XML sitemap for search engines, see https://www.sitemaps.org/protocol.html
+use App\Model\Table\SetTable;
 use App\Utility\Constants;
 use App\Attribute\HttpGet;
 use App\Utility\Util;
@@ -8,7 +9,7 @@ use App\Utility\Util;
 class SitemapsController extends AppController
 {
 	//Models
-	public $uses = ['Set'];
+	public $uses = [];
 
 	//Pages a visitor can browse without signing in. Each one is resolved through the router before it is listed.
 	private const PUBLIC_PAGES = [
@@ -63,25 +64,20 @@ class SitemapsController extends AppController
 SELECT set_id, COUNT(*) AS problems
 FROM set_connection
 	JOIN `set` ON set_connection.set_id = `set`.id
-WHERE " . Set::officialCondition() . "
+WHERE " . SetTable::officialCondition() . "
 GROUP BY set_id") as $row)
 			$setProblemCounts[$row['set_id']] = (int) $row['problems'];
 
-		$sets = $this->Set->find('all', [
-			'conditions' => [Set::officialCondition('Set')],
-			'fields' => ['Set.id'],
-			'order' => ['Set.id' => 'ASC']
-		]);
+		$setIDs = array_column(Util::query('SELECT id FROM `set` WHERE ' . SetTable::officialCondition() . ' ORDER BY id ASC'), 'id');
 
-		foreach ($sets as $set)
+		foreach ($setIDs as $setID)
 		{
-			$setID = $set['Set']['id'];
-			$urls[] = Set::url($setID, 1, true);
+			$urls[] = SetTable::url($setID, 1, true);
 
 			// A visitor sees the default number of problems per page.
 			$pages = (int) ceil(($setProblemCounts[$setID] ?? 0) / Constants::$DEFAULT_COLLECTION_SIZE);
 			for ($page = 2; $page <= $pages; $page++)
-				$urls[] = Set::url($setID, $page, true);
+				$urls[] = SetTable::url($setID, $page, true);
 		}
 
 		// All achievements, each with its own page
@@ -103,7 +99,7 @@ GROUP BY set_id") as $row)
 SELECT set_connection.id
 FROM set_connection
 	JOIN `set` ON set_connection.set_id = `set`.id
-WHERE " . Set::officialCondition() . "
+WHERE " . SetTable::officialCondition() . "
 ORDER BY set_connection.id ASC");
 
 		foreach ($puzzleIds as $row)

@@ -1,4 +1,5 @@
 <?php
+use App\Model\Table\SetTable;
 /**
  * Shared set card component used by the sets index, sandbox and "my sets" pages.
  *
@@ -19,7 +20,7 @@ else
 	$partitionText = ' #' . ($partition + 1);
 $backgroundImage = $backgroundImage ?? 'linear-gradient(rgba(169, 169, 169, 0.30), rgba(0, 0, 0, 0.35))';
 ?>
-<a href="<?= Set::url($set['id'], $partition + 1) ?>" class="set-card__link">
+<a href="<?= SetTable::url($set['id'], $partition + 1) ?>" class="set-card__link">
 	<div class="set-card topic-box<?= $set['id'] ?>"
 		style="background-color:<?= h($set['color']) ?>;background-image: <?= $backgroundImage ?>">
 		<?php if ($percent >= 100): ?>

@@ -96,10 +96,10 @@ class SandboxTest extends IntegrationTestCase
 			'Set' => ['title' => 'Admin Set'],
 		]);
 
-		$set = ClassRegistry::init('Set')->find('first', ['order' => 'id DESC']);
-		$this->assertEquals('Admin Set', $set['Set']['title']);
-		$this->assertEquals(0, $set['Set']['public']);
-		$this->assertNotEmpty($set['Set']['user_id']);
+		$set = $this->fetchTable('Set')->find()->orderByDesc('id')->first();
+		$this->assertEquals('Admin Set', $set->title);
+		$this->assertEquals(0, $set->public);
+		$this->assertNotEmpty($set->user_id);
 	}
 
 	public function testCreateMakesPlaceholderTsumegoAndConnection(): void
@@ -153,7 +153,7 @@ class SandboxTest extends IntegrationTestCase
 			'confirmation' => 'to delete',
 		]);
 
-		$this->assertNotNull(ClassRegistry::init('Set')->findById($setId)['Set']['deleted']);
+		$this->assertNotNull($this->fetchTable('Set')->get($setId)->deleted);
 	}
 
 	public function testRemoveWithoutTitleKeepsSet(): void
@@ -165,7 +165,7 @@ class SandboxTest extends IntegrationTestCase
 			'Set' => ['id' => $setId],
 		]);
 
-		$this->assertNull(ClassRegistry::init('Set')->findById($setId)['Set']['deleted']);
+		$this->assertNull($this->fetchTable('Set')->get($setId)->deleted);
 	}
 
 	public function testRemovePreservesTsumegos(): void
@@ -276,16 +276,15 @@ class SandboxTest extends IntegrationTestCase
 
 	private function createSetWithTsumego(string $title, int $public): int
 	{
-		$setModel = ClassRegistry::init('Set');
-		$setModel->create();
-		$setModel->save(['title' => $title, 'public' => $public, 'order' => Constants::$DEFAULT_SET_ORDER]);
+		$setTable = $this->fetchTable('Set');
+		$createdSet = $setTable->saveOrFail($setTable->newEntity(['title' => $title, 'public' => $public, 'order' => Constants::$DEFAULT_SET_ORDER]));
 
 		$tsumegoTable = $this->fetchTable('Tsumego');
 		$tsumegoId = $tsumegoTable->saveOrFail($tsumegoTable->newEntity(['description' => 'test', 'author' => '']))->id;
 
 		$setConnectionTable = $this->fetchTable('SetConnection');
-		$setConnectionTable->saveOrFail($setConnectionTable->newEntity(['set_id' => $setModel->id, 'tsumego_id' => $tsumegoId, 'num' => 1]));
+		$setConnectionTable->saveOrFail($setConnectionTable->newEntity(['set_id' => $createdSet->id, 'tsumego_id' => $tsumegoId, 'num' => 1]));
 
-		return $setModel->id;
+		return $createdSet->id;
 	}
 }

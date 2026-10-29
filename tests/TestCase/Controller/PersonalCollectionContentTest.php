@@ -173,14 +173,13 @@ class PersonalCollectionContentTest extends IntegrationTestCase
 	//A collection with one problem in it.
 	private function _createCollection(string $title, ?int $userId, int $public): int
 	{
-		$set = ClassRegistry::init('Set');
-		$set->create();
-		$set->save(['Set' => [
+		$setTable = $this->fetchTable('Set');
+		$set = $setTable->saveOrFail($setTable->newEntity([
 			'user_id' => $userId,
 			'title' => $title,
 			'public' => $public,
 			'order' => 999,
-		]]);
+		]));
 		$setId = (int) $set->id;
 
 		$tsumegoTable = $this->fetchTable('Tsumego');

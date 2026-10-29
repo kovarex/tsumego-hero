@@ -1,21 +1,21 @@
 <?php
 
+namespace App\Model\Table;
+
+use App\Model\Entity\Set;
 use App\Utility\Util;
+use Router;
 
+//The collections of problems: the ones the site publishes, the sandbox builds of the admins and
+//the collections the players assemble (their Favorites among them).
 /** @phpstan-import-type SetRow from \App\Utility\RowTypes */
-class Set extends AppModel
+class SetTable extends AppTable
 {
-	public function __construct(mixed $id = false, ?string $table = null, ?string $ds = null)
-	{
-		$id['table'] =  'set';
-		parent::__construct($id, $table, $ds);
-	}
-
 	//A collection the site publishes: public, owned by nobody and not in the trash. A collection
 	//a player assembled and a sandbox build are not site content, so they do not count wherever
 	//the site's own collections are meant.
-	/** @param SetRow $set Unwrapped set row */
-	public static function isOfficial(array $set): bool
+	/** @param SetRow|Set $set A set row or entity */
+	public static function isOfficial(array|Set $set): bool
 	{
 		return (int) $set['public'] === 1 && ($set['user_id'] ?? null) === null && empty($set['deleted']);
 	}
@@ -48,7 +48,7 @@ class Set extends AppModel
 
 	public static function getProblemCount(int $setID): int
 	{
-		return Util::query("SELECT COUNT(*) AS total FROM set_connection"
+		return (int) Util::query("SELECT COUNT(*) AS total FROM set_connection"
 			. " JOIN tsumego ON tsumego.id = set_connection.tsumego_id AND tsumego.deleted IS NULL"
 			. " WHERE set_connection.set_id = ?", [$setID])[0]["total"];
 	}

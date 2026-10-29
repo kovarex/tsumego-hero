@@ -5,8 +5,7 @@ namespace App\Utility;
 use App\Model\Entity\Schedule;
 use Cake\ORM\TableRegistry;
 use CakeLog;
-use ClassRegistry;
-use Set;
+use App\Model\Table\SetTable;
 
 //Publishes the schedule entries that are due, which the daily cron runs.
 //This lives outside the controllers on purpose: a public method of a controller is an
@@ -56,7 +55,7 @@ class SchedulePublisher
 			return 'the problem does not exist';
 		if ($tsumego->deleted !== null)
 			return 'the problem is in the trash';
-		if (!ClassRegistry::init('Set')->find('first', ['conditions' => ['Set.id' => $to, Set::officialCondition('Set')]]))
+		if (!TableRegistry::getTableLocator()->get('Set')->exists(['Set.id' => $to, SetTable::officialCondition('Set')]))
 			return 'the target is not a public collection of the site';
 
 		// A tsumego lives in at most one official sandbox set, but be robust to
@@ -72,7 +71,7 @@ class SchedulePublisher
 		// Check before the move: is this tsumego already in any public set?
 		// If so, users have solve history we must preserve.
 		$alreadyPublic = $setConnectionTable->find()
-			->innerJoin(['S' => 'set'], ['S.id = SetConnection.set_id', Set::officialCondition('S')])
+			->innerJoin(['S' => 'set'], ['S.id = SetConnection.set_id', SetTable::officialCondition('S')])
 			->select(['SetConnection.id'])
 			->where(['SetConnection.tsumego_id' => $tsumegoID])
 			->first() !== null;

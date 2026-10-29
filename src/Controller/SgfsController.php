@@ -12,7 +12,6 @@ class SgfsController extends AppController
 	{
 		$this->Authorization->authorize('Sgf');
 		$this->set('_page', 'play');
-		$this->loadModel('Set');
 		$this->loadModel('User');
 		$ux = '';
 		$type = 'tsumego';
@@ -28,6 +27,7 @@ class SgfsController extends AppController
 		}
 
 		$tsumegoTable = $this->fetchTable('Tsumego');
+		$setTable = $this->fetchTable('Set');
 		if (isset($this->params['url']['duplicates']))
 		{
 			$newDuplicates = array_map('intval', explode('-', $this->params['url']['duplicates']));
@@ -38,11 +38,11 @@ class SgfsController extends AppController
 				$displaySetConnection = SetConnectionTable::findDisplaySetConnection($duplicateId);
 				if (!$displaySetConnection)
 					continue;
-				$dSet = $this->Set->findById($displaySetConnection->set_id);
-				if (!$dSet)
+				$duplicateSet = $setTable->find()->select(['title'])->where(['id' => $displaySetConnection->set_id])->first();
+				if (!$duplicateSet)
 					continue;
 				$dId[] = $duplicateId;
-				$dTitle[] = $dSet['Set']['title'] . ' - ';
+				$dTitle[] = $duplicateSet->title . ' - ';
 			}
 		}
 
@@ -51,10 +51,10 @@ class SgfsController extends AppController
 		$displaySetConnection = SetConnectionTable::findDisplaySetConnection($id);
 		if (!$displaySetConnection)
 			throw new NotFoundException('Tsumego not found in any set');
-		$set = $this->Set->findById($displaySetConnection->set_id);
+		$set = $setTable->find()->select(['title', 'title2'])->where(['id' => $displaySetConnection->set_id])->first();
 		if (!$set)
 			throw new NotFoundException('Set not found');
-		$name = $set['Set']['title'] . ' ' . $set['Set']['title2'] . ' ' . $displaySetConnection->num;
+		$name = $set->title . ' ' . $set->title2 . ' ' . $displaySetConnection->num;
 		$this->set('_title', 'Upload History of ' . $name);
 
 		if (isset($this->params['url']['user']))
@@ -77,8 +77,8 @@ class SgfsController extends AppController
 			$ux = $user ? User::displayName($user['User']) : '';
 			$versions[$i]['user'] = $ux;
 			$displaySetConnection = SetConnectionTable::findDisplaySetConnection((int) $versions[$i]['tsumego_id']);
-			$set = $this->Set->findById($displaySetConnection->set_id);
-			$versions[$i]['title'] = $set['Set']['title'] . ' ' . $set['Set']['title2'] . ' #' . $displaySetConnection->num;
+			$set = $setTable->find()->select(['title', 'title2'])->where(['id' => $displaySetConnection->set_id])->first();
+			$versions[$i]['title'] = $set->title . ' ' . $set->title2 . ' #' . $displaySetConnection->num;
 			$versions[$i]['num'] = $displaySetConnection->num;
 
 			if(isset($versionCounter[$displaySetConnection->tsumego_id]))

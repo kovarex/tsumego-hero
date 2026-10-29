@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SetTable;
 use App\Model\Table\TsumegoStatusTable;
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
@@ -23,7 +24,7 @@ class HeroController extends AppController
 			FROM tsumego
 			JOIN set_connection ON set_connection.tsumego_id = tsumego.id
 			JOIN `set` ON `set`.id = set_connection.set_id
-			WHERE tsumego.deleted IS NULL AND ' . Set::officialCondition() . '
+			WHERE tsumego.deleted IS NULL AND ' . SetTable::officialCondition() . '
 			ORDER BY tsumego.rating BETWEEN ? AND ? DESC, RAND()
 			LIMIT 1', [
 			$rating - Constants::$GOLDEN_TSUMEGO_LOWER_RELATIVE_RATING_LIMIT,

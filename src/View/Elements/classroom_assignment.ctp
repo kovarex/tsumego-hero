@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SetTable;
 use App\Model\Table\ClassroomAssignmentTable;
 
 /**
@@ -14,7 +15,7 @@ use App\Model\Table\ClassroomAssignmentTable;
 
 $isPublished = ClassroomAssignmentTable::isPublished($assignment);
 $collections = array_map(
-	fn(array $collection) => '<a href="' . Set::url($collection['id']) . '">' . h($collection['title']) . '</a> '
+	fn(array $collection) => '<a href="' . SetTable::url($collection['id']) . '">' . h($collection['title']) . '</a> '
 		. '<span class="hint">' . $collection['problemCount'] . ($collection['problemCount'] == 1 ? ' problem' : ' problems') . '</span>',
 	$assignment['collections']);
 $props = json_encode([

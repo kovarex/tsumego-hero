@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SetTable;
 use App\Model\Table\ProgressDeletionTable;
 use App\Utility\Auth;
 use App\Utility\HtmlSanitizer;
@@ -23,7 +24,7 @@ use App\Utility\TsumegoFilters;
  * @var bool $refreshView
  * @var int $saNum
  * @var bool $scoring
- * @var array $set
+ * @var \App\Model\Entity\Set $set
  * @var array|null $setAuthor
  * @var int $setRating
  * @var string $setTitle
@@ -35,8 +36,8 @@ use App\Utility\TsumegoFilters;
 
 $noImage = false;
 if($isFav) $noImage = true;
-if($set['Set']['id'] == 11969 || $set['Set']['id'] == 29156 || $set['Set']['id'] == 31813 || $set['Set']['id'] == 33007
-|| $set['Set']['id'] == 71790 || $set['Set']['id'] == 74761 || $set['Set']['id'] == 81578 || $set['Set']['id'] == 88156)
+if($set->id == 11969 || $set->id == 29156 || $set->id == 31813 || $set->id == 33007
+|| $set->id == 71790 || $set->id == 74761 || $set->id == 81578 || $set->id == 88156)
 	$noImage = true;
 
 ?>
@@ -48,11 +49,11 @@ if($set['Set']['id'] == 11969 || $set['Set']['id'] == 29156 || $set['Set']['id']
 			? ' <span class="set-view__owner">by ' . User::renderLink($setAuthor) . '</span>'
 			: '';
 		echo '<p class="title4 set-view-title">' . h($setTitle) . $ownerNote . '</p>';
-		if (!empty($set['Set']['deleted']))
+		if (!empty($set->deleted))
 			echo $this->element('trash_notice', [
 				'what' => 'collection',
-				'deleted' => $set['Set']['deleted'],
-				'restoreAction' => '/trash/restore-set/' . (int) $set['Set']['id']]);
+				'deleted' => $set->deleted->format('Y-m-d H:i:s'),
+				'restoreAction' => '/trash/restore-set/' . (int) $set->id]);
 		?>
 		<div class="new1">
 		<table border="0" width="100%">
@@ -61,38 +62,38 @@ if($set['Set']['id'] == 11969 || $set['Set']['id'] == 29156 || $set['Set']['id']
 				<?php
 				$saNum = 0;
 
-if($set['Set']['image'] == 'sa-pretty.jpg') $saNum = 9;
-elseif($set['Set']['image'] == 'sa-hunting.jpg') $saNum = 8;
-elseif($set['Set']['image'] == 'sa-ghost.jpg') $saNum = 7;
-elseif($set['Set']['image'] == 'sa-carnage.jpg') $saNum = 6;
-elseif($set['Set']['image'] == 'sa-invisible.png') $saNum = 5;
-elseif($set['Set']['image'] == 'sa-giant.jpg') $saNum = 4;
-elseif($set['Set']['image'] == 'sa-resistance.jpg') $saNum = 3;
+if($set->image == 'sa-pretty.jpg') $saNum = 9;
+elseif($set->image == 'sa-hunting.jpg') $saNum = 8;
+elseif($set->image == 'sa-ghost.jpg') $saNum = 7;
+elseif($set->image == 'sa-carnage.jpg') $saNum = 6;
+elseif($set->image == 'sa-invisible.png') $saNum = 5;
+elseif($set->image == 'sa-giant.jpg') $saNum = 4;
+elseif($set->image == 'sa-resistance.jpg') $saNum = 3;
 else $saNum = 11;
 
-echo HtmlSanitizer::sanitize((string) ($set['Set']['description'] ?? ''));
+echo HtmlSanitizer::sanitize((string) ($set->description ?? ''));
 ?>
 			</td>
 				<?php
-if (!$noImage && $tsumegoFilters->query == 'topics' && $set['Set']['image'])
+if (!$noImage && $tsumegoFilters->query == 'topics' && $set->image)
 {
-	if ($set['Set']['image'][2] != '-')
+	if ($set->image[2] != '-')
 		echo '<td width="195px" class="valign-top"><div align="center" class="set-view__cover">
 							<a href="/' . $startingSetConnectionID . '">
-							<img height="252" width="182" src="/img/' . h($set['Set']['image']) . '"
+							<img height="252" width="182" src="/img/' . h($set->image) . '"
 							alt="Tsumego Collection: ' . h($setTitle) . '" title="Tsumego Collection: ' . h($setTitle) . '">
 							</a></div></td>';
 	else
 		echo '<td width="195px" class="set-view__img-bottom"><div align="center" class="set-view__cover">
 							<a href="/' . $startingSetConnectionID . '">
-							<img height="252" width="182" src="/img/' . h($set['Set']['image']) . '"
+							<img height="252" width="182" src="/img/' . h($set->image) . '"
 							alt="Tsumego Collection: ' . h($setTitle) . '" title="Tsumego Collection: ' . h($setTitle) . '" width="210">
 							</a></div></td>';
 }
 elseif (!$noImage && $tsumegoFilters->query == 'difficulty')
 	echo '<td width="195px" class="valign-top"><div class="set-view__cover set-view__cover--rank" align="center">
 						<a href="/' . $startingSetConnectionID . '">
-						<span class="rank-icon rank-icon-large' . (str_contains($set['Set']['id'], '-') ? ' rank-icon-large--range' : '') . '">' . h($set['Set']['id']) . '</span>
+						<span class="rank-icon rank-icon-large' . (str_contains((string) $set->id, '-') ? ' rank-icon-large--range' : '') . '">' . h((string) $set->id) . '</span>
 						</a></div></td>';
 else
 	echo '<td width="195px" class="valign-top"><div align="center"></div></td>';
@@ -106,14 +107,6 @@ else
 						<div align="center">
 						<br>
 						<?php
-			if(isset($set['Set']['solved']))
-			{
-				$solvedColor = '#a7a7a7';
-				if($set['Set']['solved'] > 0)
-					$solvedColor = '#247bb5';
-				if($set['Set']['solved'] == 100)
-					$solvedColor = '#3ecf78';
-			}
 echo '<b>' . count($tsumegoButtons) . ' Problems<br>';
 ?>
 						</div>
@@ -149,8 +142,6 @@ if ($tsumegoFilters->query != 'topics')
 				<?php if(Auth::isLoggedIn())
 				{ ?>
 					<?php
-					if ($set['Set']['solved'] > 100)
-						$set['Set']['solved'] = 100;
 					echo '<table><tr><td><div class="setViewCompleted"><b>Completed: ' . $problemSolvedPercent . '%</b></div></td><td></td></tr></table>
 					<table><tr><td><div class="setViewAccuracy"><b>Accuracy: ' . $accuracy . '%</b></div></td><td>';
 					if($bestAccuracy !== null) echo '<font class="setViewAccuracy">Best completion: ' . $bestAccuracy . '%</font>';
@@ -227,7 +218,7 @@ if ($tsumegoFilters->query != 'topics')
 			{
 				echo '<div id="msg2x">';
 				echo 'Type "reset" to remove all your progress on this collection.<br><br>';
-				echo '<form action="/sets/resetProgress/' . $set['Set']['id'] . '/' . ($partition + 1) . '" method="post">';
+				echo '<form action="/sets/resetProgress/' . $set->id . '/' . ($partition + 1) . '" method="post">';
 				echo '<input type="text" name="reset-check" id="reset-textfield" placeholder="reset">';
 				echo '<input type="submit" value="submit" id="reset-submit">';
 				echo '</form>';
@@ -238,24 +229,24 @@ if ($tsumegoFilters->query != 'topics')
 			<?php if (isset($canEdit) && $canEdit): ?>
 				<tr>
 					<td colspan="2" class="set-view__edit-row">
-						<a class="btn btn--primary" href="/sets/edit/<?php echo (int) $set['Set']['id']; ?>">Edit Set</a>
+						<a class="btn btn--primary" href="/sets/edit/<?php echo (int) $set->id; ?>">Edit Set</a>
 						<?php if (!empty($canShare)): ?>
-							<form method="post" action="/sets/share/<?php echo (int) $set['Set']['id']; ?>" class="set-view__share">
+							<form method="post" action="/sets/share/<?php echo (int) $set->id; ?>" class="set-view__share">
 								<label class="set-view__share-toggle">
 									<input type="hidden" name="shared" value="0">
-									<input type="checkbox" name="shared" value="1"<?php echo $set['Set']['public'] == 1 ? ' checked' : ''; ?> onchange="this.form.submit()">
+									<input type="checkbox" name="shared" value="1"<?php echo $set->public == 1 ? ' checked' : ''; ?> onchange="this.form.submit()">
 									Anyone with the link can open this collection
 								</label>
 								<noscript><button type="submit" class="btn">Save sharing</button></noscript>
-								<?php if ($set['Set']['public'] == 1): ?>
+								<?php if ($set->public == 1): ?>
 									<span class="set-view__share-link-row">
-										<input class="form-field__control set-view__share-link" type="text" id="SetShareLink" readonly value="<?php echo h(Set::url((int) $set['Set']['id'], 1, true)); ?>" onclick="this.select()">
+										<input class="form-field__control set-view__share-link" type="text" id="SetShareLink" readonly value="<?php echo h(SetTable::url((int) $set->id, 1, true)); ?>" onclick="this.select()">
 										<button type="button" class="btn set-view__share-copy" id="SetShareCopy" aria-label="Copy the link to this collection">Copy</button>
 									</span>
 									<span class="set-view__share-status" id="SetShareStatus" role="status" aria-live="polite"></span>
 								<?php endif; ?>
 							</form>
-							<?php if ($set['Set']['public'] == 1): ?>
+							<?php if ($set->public == 1): ?>
 								<script>
 									(function () {
 										const button = document.getElementById('SetShareCopy');
@@ -336,10 +327,10 @@ if ($hasActiveTiles)
 		</div>
 		<div class="set-view-main">
 		<?php
-	if($set['Set']['id'] != 58 && $set['Set']['id'] != 62 && $set['Set']['id'] != 91 && $set['Set']['id'] != 72 && $set['Set']['id'] != 73 && $set['Set']['id'] != 74
-	&& $set['Set']['id'] != 75 && $set['Set']['id'] != 76 && $set['Set']['id'] != 77 && $set['Set']['id'] != 78 && $set['Set']['id'] != 79 && $set['Set']['id'] != 80
-	&& $set['Set']['id'] != 51 && $set['Set']['id'] != 56 && $set['Set']['id'] != 57 && $set['Set']['id'] != 119
-	&& $set['Set']['id'] != 119 && $set['Set']['id'] != 126 && $set['Set']['id'] != 129 && $set['Set']['id'] != 134 && $set['Set']['id'] != 135)
+	if($set->id != 58 && $set->id != 62 && $set->id != 91 && $set->id != 72 && $set->id != 73 && $set->id != 74
+	&& $set->id != 75 && $set->id != 76 && $set->id != 77 && $set->id != 78 && $set->id != 79 && $set->id != 80
+	&& $set->id != 51 && $set->id != 56 && $set->id != 57 && $set->id != 119
+	&& $set->id != 126 && $set->id != 129 && $set->id != 134 && $set->id != 135)
 		$beta2 = false;
 	else $beta2 = true;
 if(Auth::getUserID() == 72)
@@ -358,7 +349,7 @@ if ($totalPages > 1):
 <?php if ($page === $currentPage): ?>
 		<strong><?php echo $page; ?></strong>
 <?php else: ?>
-			<a href="<?php echo Set::url($set['Set']['id'], $page); ?>"><?php echo $page; ?></a>
+			<a href="<?php echo SetTable::url($set->id, $page); ?>"><?php echo $page; ?></a>
 <?php endif; ?>
 <?php endfor; ?>
 	</div>
@@ -476,7 +467,7 @@ if ($totalPages > 1):
 
 		<?php
 if($refreshView)
-	echo 'window.location.href = "' . Set::url($set['Set']['id']) . '";';
+	echo 'window.location.href = "' . SetTable::url($set->id) . '";';
 ?>
 	</script>
 	<style>

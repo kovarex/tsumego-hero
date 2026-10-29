@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Table\SetTable;
 use App\Model\Table\SetConnectionTable;
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
@@ -109,7 +110,7 @@ FROM
 	JOIN set_connection ON set_connection.tsumego_id=tsumego.id
 	JOIN `set` ON set_connection.set_id=`set`.id
 WHERE
-	`set`.`included_in_time_mode` = 1 AND " . Set::officialCondition());
+	`set`.`included_in_time_mode` = 1 AND " . SetTable::officialCondition());
 
 			$rank['tsumego_count'] = $count[0]['count'];
 			$result[] = $rank;
@@ -130,7 +131,7 @@ FROM
 	JOIN set_connection ON set_connection.tsumego_id=tsumego.id
 	JOIN `set` ON set_connection.set_id=`set`.id
 WHERE
-	`set`.`included_in_time_mode` = 1 AND " . Set::officialCondition() . "
+	`set`.`included_in_time_mode` = 1 AND " . SetTable::officialCondition() . "
 GROUP BY bucket
 ORDER BY MIN(rating);");
 

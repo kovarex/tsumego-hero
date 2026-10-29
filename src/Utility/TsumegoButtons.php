@@ -2,9 +2,10 @@
 
 namespace App\Utility;
 
+use App\Model\Entity\Set;
 use App\Model\Table\SgfTable;
 use ArrayObject;
-use Set;
+use App\Model\Table\SetTable;
 
 class TsumegoButtons extends ArrayObject
 {
@@ -225,14 +226,14 @@ class TsumegoButtons extends ArrayObject
 		return $this->isPartitioned ? ' #' . $this->getPartition() : '';
 	}
 
-	public function exportCurrentAndPreviousLink(callable $setFunction, ?TsumegoFilters $tsumegoFilters, int $setConnectionID, ?array $set, ?string $edgeLink = null): void
+	public function exportCurrentAndPreviousLink(callable $setFunction, ?TsumegoFilters $tsumegoFilters, int $setConnectionID, ?Set $set, ?string $edgeLink = null): void
 	{
 		$indexOfCurrent = array_find_key((array) $this, function ($tsumegoButton) use ($setConnectionID) {
 			return $tsumegoButton->setConnectionID == $setConnectionID;
 		});
 
 		if ($edgeLink === null && $tsumegoFilters !== null)
-			$edgeLink = Set::url($tsumegoFilters->getSetID($set ?? []), $this->getPartition());
+			$edgeLink = SetTable::url($tsumegoFilters->getSetID($set), $this->getPartition());
 
 		if (isset($indexOfCurrent) && $indexOfCurrent > 0)
 			$previousSetConnectionID = $this[$indexOfCurrent - 1]->setConnectionID;

@@ -2,6 +2,7 @@
 
 //Authorization policies decide whether an identity may perform an action.
 //They read only the computed `permissions` list attached by Auth::getIdentity().
+use App\Model\Entity\Set;
 use App\Model\Entity\TagConnection;
 use App\Model\Entity\TsumegoComment;
 use App\Model\Entity\TsumegoIssue;
@@ -97,7 +98,7 @@ class PolicyTest extends CakeTestCase
 	public function testSetPolicyAllowsViewingPublicSetsForEveryone()
 	{
 		$policy = new SetPolicy();
-		$publicSet = ['public' => 1, 'user_id' => null];
+		$publicSet = new Set(['public' => 1, 'user_id' => null]);
 
 		$this->assertTrue($policy->canView($this->identity(null), $publicSet));
 		$this->assertTrue($policy->canView($this->identity(false), $publicSet));
@@ -106,7 +107,7 @@ class PolicyTest extends CakeTestCase
 	public function testSetPolicyRequiresLoginForPrivateSandboxSets()
 	{
 		$policy = new SetPolicy();
-		$sandboxSet = ['public' => 0, 'user_id' => null];
+		$sandboxSet = new Set(['public' => 0, 'user_id' => null]);
 
 		$this->assertTrue($policy->canView($this->identity(false), $sandboxSet), 'logged-in can view sandbox');
 		$this->assertFalse($policy->canView($this->identity(null), $sandboxSet), 'anonymous blocked');
@@ -115,7 +116,7 @@ class PolicyTest extends CakeTestCase
 	public function testSetPolicyRestrictsPrivateUserOwnedSets()
 	{
 		$policy = new SetPolicy();
-		$privateSet = ['public' => 0, 'user_id' => 7];
+		$privateSet = new Set(['public' => 0, 'user_id' => 7]);
 		$owner = $this->identity(false);
 		$owner['id'] = 7;
 
@@ -128,7 +129,7 @@ class PolicyTest extends CakeTestCase
 	public function testSetPolicyAllowsViewingSharedPlayerCollections()
 	{
 		$policy = new SetPolicy();
-		$sharedSet = ['public' => 1, 'user_id' => 7];
+		$sharedSet = new Set(['public' => 1, 'user_id' => 7]);
 
 		$this->assertTrue($policy->canView($this->identity(null), $sharedSet), 'anyone with the link');
 		$this->assertTrue($policy->canView($this->identity(false), $sharedSet));
@@ -137,8 +138,8 @@ class PolicyTest extends CakeTestCase
 	public function testSetPolicyLetsOnlyTheOwnerDecideOnSharing()
 	{
 		$policy = new SetPolicy();
-		$playerSet = ['public' => 0, 'user_id' => 7];
-		$siteSet = ['public' => 1, 'user_id' => null];
+		$playerSet = new Set(['public' => 0, 'user_id' => 7]);
+		$siteSet = new Set(['public' => 1, 'user_id' => null]);
 		$owner = $this->identity(false);
 		$owner['id'] = 7;
 		$other = $this->identity(false);
@@ -154,8 +155,8 @@ class PolicyTest extends CakeTestCase
 	public function testSetPolicyAllowsPlayingSandboxOnlyWithPermission()
 	{
 		$policy = new SetPolicy();
-		$sandboxSet = ['public' => 0, 'user_id' => null];
-		$publicSet = ['public' => 1, 'user_id' => null];
+		$sandboxSet = new Set(['public' => 0, 'user_id' => null]);
+		$publicSet = new Set(['public' => 1, 'user_id' => null]);
 
 		$this->assertTrue($policy->canPlay($this->identity(true), $sandboxSet), 'admin can play sandbox');
 		$this->assertTrue($policy->canPlay($this->identity(false, 1), $sandboxSet), 'premium can play sandbox');
@@ -262,7 +263,7 @@ class PolicyTest extends CakeTestCase
 	public function testSetPolicyEditAllowsOwnerOrAdmin()
 	{
 		$policy = new SetPolicy();
-		$set = ['user_id' => 7, 'public' => 1];
+		$set = new Set(['user_id' => 7, 'public' => 1]);
 		$owner = $this->identity(false);
 		$owner['id'] = 7;
 
@@ -275,8 +276,8 @@ class PolicyTest extends CakeTestCase
 	public function testSetPolicyDeleteAllowsOwnerOrAdminForSiteSets()
 	{
 		$policy = new SetPolicy();
-		$ownedSet = ['user_id' => 7, 'public' => 1];
-		$sandboxSet = ['user_id' => null, 'public' => 0];
+		$ownedSet = new Set(['user_id' => 7, 'public' => 1]);
+		$sandboxSet = new Set(['user_id' => null, 'public' => 0]);
 		$owner = $this->identity(false);
 		$owner['id'] = 7;
 
@@ -285,7 +286,7 @@ class PolicyTest extends CakeTestCase
 		$this->assertFalse($policy->canDelete($this->identity(false), $sandboxSet), 'regular cannot delete sandbox');
 		$this->assertFalse($policy->canDelete($this->identity(true), $ownedSet), 'admin cannot delete other user set');
 		$this->assertFalse($policy->canDelete($this->identity(null), $ownedSet), 'anonymous cannot delete');
-		$publicSet = ['user_id' => null, 'public' => 1];
+		$publicSet = new Set(['user_id' => null, 'public' => 1]);
 		$this->assertTrue($policy->canDelete($this->identity(true), $publicSet), 'admin can delete public site set (to the trash)');
 		$this->assertFalse($policy->canDelete($this->identity(false), $publicSet), 'regular cannot delete public site set');
 	}

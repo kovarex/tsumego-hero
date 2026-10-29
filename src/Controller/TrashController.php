@@ -67,15 +67,15 @@ ORDER BY t.deleted DESC, t.id DESC', [AdminActivityTypeTable::PROBLEM_DELETE]));
 	public function restoreSet(?string $id = null): mixed
 	{
 		$this->Authorization->authorize('Admin', 'restoreFromTrash');
-		$set = ClassRegistry::init('Set')->findById((int) $id);
+		$set = $this->fetchTable('Set')->find()->where(['id' => (int) $id])->first();
 		if (!$set)
 			throw new NotFoundException('Collection not found');
 
-		if ($set['Set']['deleted'])
+		if ($set->deleted)
 		{
 			Trash::restoreSet((int) $id);
-			AdminActivityLogger::log(AdminActivityTypeTable::SET_RESTORE, null, (int) $id, null, $set['Set']['title']);
-			CookieFlash::set('The collection ' . $set['Set']['title'] . ' was restored', 'success');
+			AdminActivityLogger::log(AdminActivityTypeTable::SET_RESTORE, null, (int) $id, null, $set->title);
+			CookieFlash::set('The collection ' . $set->title . ' was restored', 'success');
 		}
 		return $this->redirect($this->referer('/trash', true));
 	}

@@ -14,7 +14,7 @@ use Cake\ORM\TableRegistry;
 use DateTimeImmutable;
 use InternalErrorException;
 use NotFoundException;
-use Set;
+use App\Model\Table\SetTable;
 
 class TimeMode
 {
@@ -196,7 +196,7 @@ class TimeMode
 	/** @return array<array{id: int}> */
 	private static function getTsumegosInRatingBounds(RatingBounds $ratingBounds): array
 	{
-		$query = "SELECT DISTINCT tsumego.id as id FROM tsumego JOIN set_connection ON set_connection.tsumego_id = tsumego.id JOIN `set` ON set.id = set_connection.set_id WHERE tsumego.deleted IS NULL AND `set`.included_in_time_mode = TRUE AND " . Set::officialCondition();
+		$query = "SELECT DISTINCT tsumego.id as id FROM tsumego JOIN set_connection ON set_connection.tsumego_id = tsumego.id JOIN `set` ON set.id = set_connection.set_id WHERE tsumego.deleted IS NULL AND `set`.included_in_time_mode = TRUE AND " . SetTable::officialCondition();
 		if ($ratingBounds->min)
 			$query .= " AND rating >= " . $ratingBounds->min;
 		if ($ratingBounds->max)

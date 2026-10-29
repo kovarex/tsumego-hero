@@ -7,17 +7,16 @@ class UserSetsControllerTest extends IntegrationTestCase
 {
 	private function _createSet(string $title, ?int $userId, int $public): int
 	{
-		$setModel = ClassRegistry::init('Set');
-		$setModel->create();
-		$setModel->save([
+		$setTable = $this->fetchTable('Set');
+		$createdSet = $setTable->saveOrFail($setTable->newEntity([
 			'Set' => [
 				'title' => $title,
 				'user_id' => $userId,
 				'public' => $public,
 				'order' => Constants::$DEFAULT_SET_ORDER,
 			],
-		]);
-		return $setModel->id;
+		]));
+		return $createdSet->id;
 	}
 
 	// ── /sets/mysets ────────────────────────────────────────────────────
@@ -43,14 +42,12 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$data = ['Set' => ['title' => 'My New Set', 'description' => 'My collection', 'color' => '#74d14c']];
 		$this->post('/sets/create', $data);
 
-		$set = ClassRegistry::init('Set')->find('first', [
-			'conditions' => ['title' => 'My New Set'],
-		]);
+		$set = $this->fetchTable('Set')->find()->where(['title' => 'My New Set'])->first();
 		$this->assertNotEmpty($set);
-		$this->assertEquals($context->user['id'], $set['Set']['user_id']);
-		$this->assertEquals(0, $set['Set']['public']);
-		$this->assertEquals('My collection', $set['Set']['description']);
-		$this->assertEquals('#74d14c', $set['Set']['color']);
+		$this->assertEquals($context->user['id'], $set->user_id);
+		$this->assertEquals(0, $set->public);
+		$this->assertEquals('My collection', $set->description);
+		$this->assertEquals('#74d14c', $set->color);
 		$this->assertStringContainsString('/sets/edit/', $this->headerValue('Location'));
 	}
 
@@ -64,15 +61,13 @@ class UserSetsControllerTest extends IntegrationTestCase
 
 		$this->assertStringContainsString('/sets/edit/', $this->headerValue('Location'));
 
-		$set = ClassRegistry::init('Set')->find('first', [
-			'conditions' => ['title' => 'New Sandbox'],
-		]);
+		$set = $this->fetchTable('Set')->find()->where(['title' => 'New Sandbox'])->first();
 		$this->assertNotEmpty($set);
-		$this->assertNull($set['Set']['user_id']);
+		$this->assertNull($set->user_id);
 
 		$tsumego = $this->fetchTable('Tsumego')->find()->orderByDesc('id')->first();
 		$this->assertNotEmpty($tsumego);
-		$setConnection = $this->fetchTable('SetConnection')->find()->where(['set_id' => $set['Set']['id'], 'tsumego_id' => $tsumego->id])->first();
+		$setConnection = $this->fetchTable('SetConnection')->find()->where(['set_id' => $set->id, 'tsumego_id' => $tsumego->id])->first();
 		$this->assertNotEmpty($setConnection);
 	}
 
@@ -84,11 +79,9 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$data = ['Set' => ['title' => 'Sneaky Sandbox', 'sandbox' => '1']];
 		$this->post('/sets/create', $data);
 
-		$set = ClassRegistry::init('Set')->find('first', [
-			'conditions' => ['title' => 'Sneaky Sandbox'],
-		]);
+		$set = $this->fetchTable('Set')->find()->where(['title' => 'Sneaky Sandbox'])->first();
 		$this->assertNotEmpty($set);
-		$this->assertEquals($context->user['id'], $set['Set']['user_id']);
+		$this->assertEquals($context->user['id'], $set->user_id);
 	}
 
 	public function testCreateRequiresLogin(): void
@@ -111,11 +104,11 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$data = ['Set' => ['title' => 'Renamed', 'description' => 'New desc', 'color' => '#3366cc', 'order' => '7']];
 		$this->post("/sets/edit/{$setId}", $data);
 
-		$set = ClassRegistry::init('Set')->findById($setId);
-		$this->assertEquals('Renamed', $set['Set']['title']);
-		$this->assertEquals('New desc', $set['Set']['description']);
-		$this->assertEquals('#3366cc', $set['Set']['color']);
-		$this->assertEquals(7, $set['Set']['order']);
+		$set = $this->fetchTable('Set')->find()->where(['id' => $setId])->first();
+		$this->assertEquals('Renamed', $set->title);
+		$this->assertEquals('New desc', $set->description);
+		$this->assertEquals('#3366cc', $set->color);
+		$this->assertEquals(7, $set->order);
 	}
 
 	public function testEditPageRenders(): void
@@ -138,10 +131,10 @@ class UserSetsControllerTest extends IntegrationTestCase
 				'sgf' => '(;GM[1]FF[4]SZ[19])',
 			],
 		]);
-		$set = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => 'My Set']]);
-		$set['Set']['user_id'] = $context->user['id'];
-		ClassRegistry::init('Set')->save($set);
-		$setId = $set['Set']['id'];
+		$set = $this->fetchTable('Set')->find()->where(['title' => 'My Set'])->first();
+		$set->user_id = $context->user['id'];
+		$this->fetchTable('Set')->saveOrFail($set);
+		$setId = $set->id;
 
 		$this->login('alice');
 
@@ -190,8 +183,8 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$data = ['Set' => ['title' => 'Fixed by Admin']];
 		$this->post("/sets/edit/{$setId}", $data);
 
-		$set = ClassRegistry::init('Set')->findById($setId);
-		$this->assertEquals('Fixed by Admin', $set['Set']['title']);
+		$set = $this->fetchTable('Set')->find()->where(['id' => $setId])->first();
+		$this->assertEquals('Fixed by Admin', $set->title);
 	}
 
 	public function testEditPageAsksForTitleToDeletePublicSiteSet(): void
@@ -238,7 +231,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 			],
 		]);
 		$this->login('alice');
-		$setId = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => 'My Set']])['Set']['id'];
+		$setId = $this->fetchTable('Set')->find()->where(['title' => 'My Set'])->first()->id;
 		$tsumegoId = $context->tsumegos[0]['id'];
 
 		$this->post("/sets/edit/{$setId}", ['Settings' => ['r43' => 'yes']]);
@@ -284,7 +277,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 
 		$this->post("/sets/delete/{$setId}");
 
-		$set = ClassRegistry::init('Set')->findById($setId);
+		$set = $this->fetchTable('Set')->find()->where(['id' => $setId])->first();
 		$this->assertEmpty($set);
 	}
 
@@ -365,10 +358,10 @@ class UserSetsControllerTest extends IntegrationTestCase
 				'sgf' => '(;GM[1]FF[4]SZ[19])',
 			],
 		]);
-		$set = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => 'My Set']]);
-		$setId = $set['Set']['id'];
-		$set['Set']['user_id'] = $context->user['id'];
-		ClassRegistry::init('Set')->save($set);
+		$set = $this->fetchTable('Set')->find()->where(['title' => 'My Set'])->first();
+		$setId = $set->id;
+		$set->user_id = $context->user['id'];
+		$this->fetchTable('Set')->saveOrFail($set);
 
 		$tsumegoId = $this->fetchTable('Tsumego')->find()->orderByDesc('id')->first()->id;
 		$this->login('alice');
@@ -393,24 +386,20 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$tsumegoId = $this->fetchTable('Tsumego')->find()->orderByDesc('id')->first()->id;
 		$this->login('alice');
 
-		$before = ClassRegistry::init('Set')->find('count', [
-			'conditions' => ['user_id' => $context->user['id']],
-		]);
+		$before = $this->fetchTable('Set')->find()->where(['user_id' => $context->user['id']])->count();
 		$this->assertEquals(0, $before);
 
 		$data = ['tsumego_id' => $tsumegoId];
 		$this->post('/sets/addTsumego/favorites', $data);
 
-		$set = ClassRegistry::init('Set')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'title' => 'Favorites'],
-		]);
+		$set = $this->fetchTable('Set')->find()->where(['user_id' => $context->user['id'], 'title' => 'Favorites'])->first();
 		$this->assertNotEmpty($set);
-		$this->assertEquals(0, $set['Set']['public']);
+		$this->assertEquals(0, $set->public);
 
 		$user = ClassRegistry::init('User')->findById($context->user['id']);
-		$this->assertEquals($set['Set']['id'], $user['User']['default_set_id']);
+		$this->assertEquals($set->id, $user['User']['default_set_id']);
 
-		$setConnection = $this->fetchTable('SetConnection')->find()->where(['set_id' => $set['Set']['id'], 'tsumego_id' => $tsumegoId])->first();
+		$setConnection = $this->fetchTable('SetConnection')->find()->where(['set_id' => $set->id, 'tsumego_id' => $tsumegoId])->first();
 		$this->assertNotEmpty($setConnection);
 	}
 
@@ -430,12 +419,10 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$this->assertResponseCode(200);
 		$body = json_decode($this->view, true);
 
-		$set = ClassRegistry::init('Set')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'title' => 'Favorites'],
-		]);
+		$set = $this->fetchTable('Set')->find()->where(['user_id' => $context->user['id'], 'title' => 'Favorites'])->first();
 		$this->assertNotEmpty($set);
 		$this->assertTrue($body['contains']);
-		$this->assertSame((int) $set['Set']['id'], (int) $body['set_id']);
+		$this->assertSame((int) $set->id, (int) $body['set_id']);
 		$this->assertSame('Favorites', $body['title']);
 	}
 
@@ -469,12 +456,12 @@ class UserSetsControllerTest extends IntegrationTestCase
 				['sets' => [['name' => 'My Set', 'num' => 2, 'public' => 0]], 'sgf' => '(;GM[1]FF[4]SZ[19])'],
 			],
 		]);
-		$setId = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => 'My Set']])['Set']['id'];
+		$setId = $this->fetchTable('Set')->find()->where(['title' => 'My Set'])->first()->id;
 		$setId = (int) $setId;
 		// Set user_id
-		$set = ClassRegistry::init('Set')->findById($setId);
-		$set['Set']['user_id'] = $context->user['id'];
-		ClassRegistry::init('Set')->save($set);
+		$set = $this->fetchTable('Set')->find()->where(['id' => $setId])->first();
+		$set->user_id = $context->user['id'];
+		$this->fetchTable('Set')->saveOrFail($set);
 
 		$secondTsumego = $context->tsumegos[1];
 		$this->login('alice');
@@ -498,10 +485,10 @@ class UserSetsControllerTest extends IntegrationTestCase
 				['sets' => [['name' => 'My Set', 'num' => 2, 'public' => 0]], 'sgf' => '(;GM[1]FF[4]SZ[19])'],
 			],
 		]);
-		$setId = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => 'My Set']])['Set']['id'];
-		$set = ClassRegistry::init('Set')->findById($setId);
-		$set['Set']['user_id'] = $context->user['id'];
-		ClassRegistry::init('Set')->save($set);
+		$setId = $this->fetchTable('Set')->find()->where(['title' => 'My Set'])->first()->id;
+		$set = $this->fetchTable('Set')->find()->where(['id' => $setId])->first();
+		$set->user_id = $context->user['id'];
+		$this->fetchTable('Set')->saveOrFail($set);
 
 		$firstTsumego = $context->tsumegos[0];
 		$this->login('alice');
@@ -586,11 +573,11 @@ class UserSetsControllerTest extends IntegrationTestCase
 			. '<b onmouseover="alert(1)">hi</b> <a href="javascript:alert(2)">click</a>';
 		$this->post("/sets/edit/{$setId}", ['Set' => ['description' => $description]]);
 
-		$set = ClassRegistry::init('Set')->findById($setId);
-		$this->assertStringNotContainsString('evil.com', $set['Set']['description']);
-		$this->assertStringContainsString('/img/ok.png', $set['Set']['description']);
-		$this->assertStringNotContainsString('onmouseover', $set['Set']['description']);
-		$this->assertStringNotContainsString('javascript:', $set['Set']['description']);
+		$set = $this->fetchTable('Set')->find()->where(['id' => $setId])->first();
+		$this->assertStringNotContainsString('evil.com', $set->description);
+		$this->assertStringContainsString('/img/ok.png', $set->description);
+		$this->assertStringNotContainsString('onmouseover', $set->description);
+		$this->assertStringNotContainsString('javascript:', $set->description);
 	}
 
 	// ── Admin activity logging ──────────────────────────────────────────
@@ -650,7 +637,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 			],
 		]);
 		$this->login('alice');
-		$setId = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => 'My Set']])['Set']['id'];
+		$setId = $this->fetchTable('Set')->find()->where(['title' => 'My Set'])->first()->id;
 		$tsumegoId = $context->tsumegos[0]['id'];
 
 		$this->post("/sets/edit/{$setId}", ['Set' => ['setDifficulty' => 2000]]);
@@ -668,7 +655,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 			],
 		]);
 		$this->login('admin');
-		$setId = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => 'Sandbox Set']])['Set']['id'];
+		$setId = $this->fetchTable('Set')->find()->where(['title' => 'Sandbox Set'])->first()->id;
 		$tsumegoId = $this->fetchTable('Tsumego')->find()->orderByDesc('id')->first()->id;
 
 		$this->post("/sets/edit/{$setId}", ['Set' => ['setDifficulty' => 2000]]);
@@ -707,7 +694,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 			],
 		]);
 		$this->login('admin');
-		$setId = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => 'Sandbox Set']])['Set']['id'];
+		$setId = $this->fetchTable('Set')->find()->where(['title' => 'Sandbox Set'])->first()->id;
 		$tsumegoId = $this->fetchTable('Tsumego')->find()->orderByDesc('id')->first()->id;
 
 		$this->post("/sets/edit/{$setId}");
@@ -725,7 +712,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 			],
 		]);
 		$this->login('admin');
-		$setId = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => 'Sandbox Set']])['Set']['id'];
+		$setId = $this->fetchTable('Set')->find()->where(['title' => 'Sandbox Set'])->first()->id;
 		$tsumegoId = $this->fetchTable('Tsumego')->find()->orderByDesc('id')->first()->id;
 
 		$this->post("/sets/edit/{$setId}", ['Settings' => ['r39' => 'on']]);
@@ -743,7 +730,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 			],
 		]);
 		$this->login('admin');
-		$setId = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => 'Sandbox Set']])['Set']['id'];
+		$setId = $this->fetchTable('Set')->find()->where(['title' => 'Sandbox Set'])->first()->id;
 		$tsumegoId = $this->fetchTable('Tsumego')->find()->orderByDesc('id')->first()->id;
 
 		$this->post("/sets/edit/{$setId}", ['Settings' => ['r43' => 'yes']]);
@@ -782,10 +769,10 @@ class UserSetsControllerTest extends IntegrationTestCase
 				['sets' => [['name' => 'My Set', 'num' => 2, 'public' => 0]], 'sgf' => '(;GM[1]FF[4]SZ[19])'],
 			],
 		]);
-		$setId = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => 'My Set']])['Set']['id'];
-		$set = ClassRegistry::init('Set')->findById($setId);
-		$set['Set']['user_id'] = $context->user['id'];
-		ClassRegistry::init('Set')->save($set);
+		$setId = $this->fetchTable('Set')->find()->where(['title' => 'My Set'])->first()->id;
+		$set = $this->fetchTable('Set')->find()->where(['id' => $setId])->first();
+		$set->user_id = $context->user['id'];
+		$this->fetchTable('Set')->saveOrFail($set);
 		$this->login('bob');
 
 		$this->post("/sets/reorderTsumego/{$setId}?tsumego_id={$context->tsumegos[1]['id']}&dir=up");
@@ -802,10 +789,10 @@ class UserSetsControllerTest extends IntegrationTestCase
 				['sets' => [['name' => 'My Set', 'num' => 2, 'public' => 0]], 'sgf' => '(;GM[1]FF[4]SZ[19])'],
 			],
 		]);
-		$setId = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => 'My Set']])['Set']['id'];
-		$set = ClassRegistry::init('Set')->findById($setId);
-		$set['Set']['user_id'] = $context->user['id'];
-		ClassRegistry::init('Set')->save($set);
+		$setId = $this->fetchTable('Set')->find()->where(['title' => 'My Set'])->first()->id;
+		$set = $this->fetchTable('Set')->find()->where(['id' => $setId])->first();
+		$set->user_id = $context->user['id'];
+		$this->fetchTable('Set')->saveOrFail($set);
 		$this->login('alice');
 
 		$this->post("/sets/reorderTsumego/{$setId}?tsumego_id={$context->tsumegos[0]['id']}&dir=up");
@@ -836,7 +823,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 
 		$this->post("/sets/delete/{$setId}", ['confirmation' => 'Sandbox Set']);
 
-		$this->assertNotNull(ClassRegistry::init('Set')->findById($setId)['Set']['deleted'], 'It went to the trash');
+		$this->assertNotNull($this->fetchTable('Set')->get($setId)->deleted, 'It went to the trash');
 	}
 
 	// ── Sharing a collection with a link ────────────────────────────────
@@ -849,7 +836,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 
 		$this->post("/sets/share/{$setId}", ['shared' => '1']);
 
-		$this->assertEquals(1, ClassRegistry::init('Set')->findById($setId)['Set']['public']);
+		$this->assertEquals(1, $this->fetchTable('Set')->get($setId)->public);
 	}
 
 	public function testOwnerCanStopSharingOwnCollection(): void
@@ -860,7 +847,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 
 		$this->post("/sets/share/{$setId}", ['shared' => '0']);
 
-		$this->assertEquals(0, ClassRegistry::init('Set')->findById($setId)['Set']['public']);
+		$this->assertEquals(0, $this->fetchTable('Set')->get($setId)->public);
 	}
 
 	public function testChangingSharingReturnsToTheCollection(): void
@@ -921,7 +908,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 
 		$this->assertResponseCode(403);
 
-		$this->assertEquals(1, ClassRegistry::init('Set')->findById($setId)['Set']['public']);
+		$this->assertEquals(1, $this->fetchTable('Set')->get($setId)->public);
 	}
 
 	public function testEditFormNeverChangesTheVisibility(): void
@@ -932,7 +919,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 
 		$this->post("/sets/edit/{$setId}", ['Set' => ['public' => '0']]);
 
-		$this->assertEquals(1, ClassRegistry::init('Set')->findById($setId)['Set']['public'],
+		$this->assertEquals(1, $this->fetchTable('Set')->get($setId)->public,
 			'sharing is decided on the collection page, not by the edit form');
 	}
 
@@ -1083,10 +1070,10 @@ class UserSetsControllerTest extends IntegrationTestCase
 
 		$this->post("/sets/edit/{$setId}");
 
-		$set = ClassRegistry::init('Set')->findById($setId);
-		$this->assertMatchesRegularExpression('#^sets/' . $setId . '/[0-9a-f]{16}\.webp$#', $set['Set']['image']);
+		$set = $this->fetchTable('Set')->find()->where(['id' => $setId])->first();
+		$this->assertMatchesRegularExpression('#^sets/' . $setId . '/[0-9a-f]{16}\.webp$#', $set->image);
 
-		$path = WWW_ROOT . 'img' . DS . str_replace('/', DS, $set['Set']['image']);
+		$path = WWW_ROOT . 'img' . DS . str_replace('/', DS, $set->image);
 		$this->assertFileExists($path);
 		$this->assertSame('WEBP', substr((string) file_get_contents($path), 8, 4));
 
@@ -1125,8 +1112,8 @@ class UserSetsControllerTest extends IntegrationTestCase
 			@unlink($tmp);
 		}
 
-		$set = ClassRegistry::init('Set')->findById($setId);
-		$this->assertEmpty($set['Set']['image'], 'An image was saved although its file could not be written');
+		$set = $this->fetchTable('Set')->find()->where(['id' => $setId])->first();
+		$this->assertEmpty($set->image, 'An image was saved although its file could not be written');
 		// The edit form renders the flash it was given, so that is where the player reads it.
 		$this->assertStringContainsString('The image could not be stored', $this->view);
 	}
@@ -1153,11 +1140,11 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$this->login('alice');
 
 		$this->_uploadImage($setId, 400, 200);
-		$first = ClassRegistry::init('Set')->findById($setId)['Set']['image'];
+		$first = $this->fetchTable('Set')->get($setId)->image;
 		$firstPath = WWW_ROOT . 'img' . DS . str_replace('/', DS, $first);
 
 		$this->_uploadImage($setId, 500, 300);
-		$second = ClassRegistry::init('Set')->findById($setId)['Set']['image'];
+		$second = $this->fetchTable('Set')->get($setId)->image;
 
 		$this->assertNotSame($first, $second);
 		$this->assertFileDoesNotExist($firstPath);
@@ -1175,15 +1162,13 @@ class UserSetsControllerTest extends IntegrationTestCase
 
 		$shared = 'legacy-cover.png';
 		file_put_contents(WWW_ROOT . 'img' . DS . $shared, 'x');
-		$setModel = ClassRegistry::init('Set');
-		$setModel->id = $setId;
-		$setModel->saveField('image', $shared);
+		$this->fetchTable('Set')->updateAll(['image' => $shared], ['id' => $setId]);
 
 		$this->_uploadImage($setId, 400, 200);
 
 		$this->assertFileExists(WWW_ROOT . 'img' . DS . $shared);
 
-		$uploaded = ClassRegistry::init('Set')->findById($setId)['Set']['image'];
+		$uploaded = $this->fetchTable('Set')->get($setId)->image;
 		@unlink(WWW_ROOT . 'img' . DS . $shared);
 		@unlink(WWW_ROOT . 'img' . DS . str_replace('/', DS, $uploaded));
 		@rmdir(WWW_ROOT . 'img' . DS . 'sets' . DS . $setId);
@@ -1196,13 +1181,13 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$this->login('alice');
 
 		$this->_uploadImage($setId, 400, 200);
-		$imagePath = WWW_ROOT . 'img' . DS . str_replace('/', DS, ClassRegistry::init('Set')->findById($setId)['Set']['image']);
+		$imagePath = WWW_ROOT . 'img' . DS . str_replace('/', DS, $this->fetchTable('Set')->get($setId)->image);
 		$this->assertFileExists($imagePath);
 
 		$this->post("/sets/edit/{$setId}", ['Set' => ['remove_image' => '1']]);
 
-		$set = ClassRegistry::init('Set')->findById($setId);
-		$this->assertSame('', $set['Set']['image']);
+		$set = $this->fetchTable('Set')->find()->where(['id' => $setId])->first();
+		$this->assertSame('', $set->image);
 		$this->assertFileDoesNotExist($imagePath);
 	}
 
