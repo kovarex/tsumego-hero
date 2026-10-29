@@ -2448,7 +2448,7 @@ class SetsControllerTest extends IntegrationTestCase
 			'Play title should not render for non-premium user');
 	}
 
-	//The set-title heading carries the .set-view-title class (see Sets/view.ctp). Return its text.
+	//The set-title heading carries the .set-view-title class (see templates/Sets/view.php). Return its text.
 	private function getSetTitle($browser): string
 	{
 		$titles = $browser->getElements('.set-view-title');
