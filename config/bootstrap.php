@@ -27,6 +27,25 @@ class_alias(Configure::class, 'Configure');
 require __DIR__ . DS . 'core.php';
 if (file_exists(__DIR__ . DS . 'core.local.php'))
 	require __DIR__ . DS . 'core.local.php';
+//The database of each server is in its config/database.php of Cake 2, which deploy.sh, phinx.php
+//and the deploy hook read too. Its default connection becomes the default datasource, with the
+//switch to its test connection that its constructor makes on the test site in debug mode.
+if (file_exists(__DIR__ . DS . 'database.php'))
+{
+	require_once __DIR__ . DS . 'database.php';
+	$databaseConfig = new DATABASE_CONFIG();
+	foreach (['default' => $databaseConfig->default, 'test' => $databaseConfig->test ?? null] as $name => $connection)
+		if (is_array($connection))
+			Configure::write('Datasources.' . $name, array_merge((array) Configure::read('Datasources.' . $name), array_filter([
+				'host' => $connection['host'] ?? null,
+				'port' => $connection['port'] ?? null,
+				'username' => $connection['login'] ?? null,
+				'password' => $connection['password'] ?? null,
+				'database' => $connection['database'] ?? null,
+				'encoding' => $connection['encoding'] ?? null,
+			], fn($value) => $value !== null)));
+	unset($databaseConfig, $name, $connection);
+}
 if (is_int(Configure::read('debug')))
 	Configure::write('debug', Configure::read('debug') > 0);
 
