@@ -7,6 +7,13 @@ use App\Utility\CookieFlash;
 
 class AccountDeletionTest extends IntegrationTestCase
 {
+	//The emailed link is made of the host the request came to, which a request from a browser always has
+	public function setUp(): void
+	{
+		parent::setUp();
+		$this->configRequest(['environment' => ['HTTP_HOST' => 'tsumego.test']]);
+	}
+
 	private function userRow(int $userID): array
 	{
 		return UserTable::row((int) $userID);
@@ -51,7 +58,7 @@ class AccountDeletionTest extends IntegrationTestCase
 		$this->assertNotEmpty($user['deletion_token']);
 		$this->assertSame('kovarex@example.com', TestEmailer::$lastEmail['to']);
 		$this->assertTextContains('Deletion of your Tsumego Hero account', TestEmailer::$lastEmail['subject']);
-		$this->assertTextContains('https://' . $_SERVER['HTTP_HOST'] . '/users/confirm_delete_account/' . $user['deletion_token'], TestEmailer::$lastEmail['body']);
+		$this->assertTextContains('https://tsumego.test/users/confirm_delete_account/' . $user['deletion_token'], TestEmailer::$lastEmail['body']);
 	}
 
 	public function testDeletionEmailGoesToTheUsersEmail(): void

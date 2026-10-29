@@ -1,10 +1,7 @@
 <?php
 
 
-/**
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
- */
+#[RetryOnBrowserFailure]
 class BesogoTest extends IntegrationTestCase
 {
 	public function testBesogoTests()

@@ -284,6 +284,8 @@ class ContextPreparator
 
 	private function prepareOtherTsumegos(?array $tsumegos): void
 	{
+		if (is_null($tsumegos))
+			return;
 		foreach ($tsumegos as $tsumego)
 		{
 			$tsumego = $this->prepareTsumego($tsumego);
@@ -750,8 +752,10 @@ class ContextPreparator
 		$testCase->assertSame($this->resultTsumegoStatus->tsumego_id, $this->tsumegos[0]['id']);
 	}
 
-	public function prepareProgressDeletion($progressDeletions)
+	public function prepareProgressDeletion(?array $progressDeletions)
 	{
+		if (is_null($progressDeletions))
+			return;
 		foreach ($progressDeletions as $progressDeletionInput)
 		{
 			$progressDeletion = [];

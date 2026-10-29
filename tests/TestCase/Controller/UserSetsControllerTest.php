@@ -776,7 +776,7 @@ class UserSetsControllerTest extends IntegrationTestCase
 		$setConnectionTable->saveOrFail($setConnectionTable->newEntity(['set_id' => $setId, 'tsumego_id' => $tsumegoId, 'num' => 1]));
 		$this->login('bob');
 
-		$this->post("/sets/removeTsumego/{$setId}", ['tsumego_id' => $tsumegoModel->id]);
+		$this->post("/sets/removeTsumego/{$setId}", ['tsumego_id' => $tsumegoId]);
 
 		$this->assertResponseCode(403);
 	}

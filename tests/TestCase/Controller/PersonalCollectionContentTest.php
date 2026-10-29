@@ -4,6 +4,7 @@ use App\Model\Table\SgfTable;
 use App\Model\Table\AchievementConditionTable;
 use App\Model\Table\TimeModeCategoryTable;
 use App\Model\Table\TsumegoTable;
+use Cake\Cache\Cache;
 
 //A collection a player assembled is not site content: the site's collections, pools and
 //counters never pick up its problems, whether it is shared or not.

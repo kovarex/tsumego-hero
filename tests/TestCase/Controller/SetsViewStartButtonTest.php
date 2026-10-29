@@ -6,12 +6,10 @@ use Facebook\WebDriver\WebDriverBy;
  *
  * This test verifies that clicking the Start button on /sets/view/{setId}
  * navigates to the FIRST UNSOLVED puzzle in the set (not just the first puzzle).
- *
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
 use App\Utility\Util;
 
+#[RetryOnBrowserFailure]
 class SetsViewStartButtonTest extends IntegrationTestCase
 {
 	public function testStartButtonNavigatesToFirstUnsolvedPuzzle(): void

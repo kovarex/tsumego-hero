@@ -2395,9 +2395,8 @@ class SetsControllerTest extends IntegrationTestCase
 	//Smoke test to ensure the $isSandbox code path in Play.php doesn't crash.
 	/**
 	 * @group browser
-	 * @retryAttempts 2
-	 * @retryIfException Facebook\WebDriver\Exception\WebDriverException
 	 */
+	#[RetryOnBrowserFailure]
 	public function testSandboxPlayPageLoads(): void
 	{
 		$context = new ContextPreparator([
@@ -2423,9 +2422,8 @@ class SetsControllerTest extends IntegrationTestCase
 	//Creates sandbox set as premium owner, then switches to a non-premium user.
 	/**
 	 * @group browser
-	 * @retryAttempts 2
-	 * @retryIfException Facebook\WebDriver\Exception\WebDriverException
 	 */
+	#[RetryOnBrowserFailure]
 	public function testSandboxPlayPageBlocksNonPremium(): void
 	{
 		$context = new ContextPreparator([

@@ -8,7 +8,7 @@ use Cake\Event\EventInterface;
 //MariaDB 11.6.2 and newer fail a transaction with 1020 "Record has changed since last read" when it
 //updates a row another request changed after the transaction read something (forum#35, forum#102).
 //A plain save isn't a transaction (AppTable::save), an explicit transaction still gets the check.
-class SnapshotIsolationTest extends CakeTestCase
+class SnapshotIsolationTest extends AppTestCase
 {
 	private const TABLE = 'snapshot_isolation_test';
 

@@ -3,7 +3,7 @@
 
 use App\Utility\Util;
 
-class UtilTest extends CakeTestCase
+class UtilTest extends AppTestCase
 {
 	private array $serverBackup = [];
 	private array $cookieBackup = [];
@@ -27,7 +27,7 @@ class UtilTest extends CakeTestCase
 		$_COOKIE['number'] = '42';
 		$result = Util::clearNumericCookie('number');
 		$this->assertSame(42, $result);
-		$this->assertEmpty($_COOKIE['number']);
+		$this->assertArrayNotHasKey('number', $_COOKIE);
 	}
 
 	public function testIsHttpUrl(): void
@@ -58,20 +58,20 @@ class UtilTest extends CakeTestCase
 	{
 		$_COOKIE['hits'] = '7';
 		$this->assertSame(7, Util::clearRequiredNumericCookie('hits'));
-		$this->assertEmpty($_COOKIE['hits']);
+		$this->assertArrayNotHasKey('hits', $_COOKIE);
 	}
 
 	public function testClearCookieReturnsNullWhenNotSet()
 	{
 		$result = Util::clearCookie('unknown');
 		$this->assertNull($result);
-		$this->assertEmpty($_COOKIE['unknown']);
+		$this->assertArrayNotHasKey('unknown', $_COOKIE);
 	}
 
 	public function testClearNumericCookieReturnsNullWhenMissing()
 	{
 		$this->assertNull(Util::clearNumericCookie('missing-number'));
-		$this->assertEmpty($_COOKIE['missing-number']);
+		$this->assertArrayNotHasKey('missing-number', $_COOKIE);
 	}
 
 	public function testGetPercentButAvoid100UntilComplete()
@@ -172,7 +172,7 @@ class UtilTest extends CakeTestCase
 	{
 		$_COOKIE['session'] = 'abc';
 		$this->assertSame('abc', Util::clearCookie('session'));
-		$this->assertEmpty($_COOKIE['session']);
+		$this->assertArrayNotHasKey('session', $_COOKIE);
 	}
 
 	public function testGetCookieReturnsDefaultWhenMissing()

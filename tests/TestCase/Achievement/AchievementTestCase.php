@@ -3,9 +3,6 @@
 use App\Model\Table\SgfTable;
 /**
  * Base class for all achievement tests.
- *
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
 use App\Model\Table\AchievementConditionTable;
 use App\Utility\AchievementChecker;

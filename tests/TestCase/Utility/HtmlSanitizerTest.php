@@ -3,7 +3,7 @@
 
 use App\Utility\HtmlSanitizer;
 
-class HtmlSanitizerTest extends CakeTestCase
+class HtmlSanitizerTest extends AppTestCase
 {
 	public function testSanitizeNeutralizesXssPayloads(): void
 	{

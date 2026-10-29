@@ -5,15 +5,13 @@
  * - No JavaScript errors
  * - CSS is loaded properly
  * - Core functionality works
- *
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
 use App\Model\Table\TimeModeSessionStatusTable;
 use App\Utility\Auth;
 use App\Utility\TimeModeUtil;
 use App\Utility\Util;
 
+#[RetryOnBrowserFailure]
 class SmokeTest extends IntegrationTestCase
 {
 	public function testAllMajorPagesLoadWithoutErrors()
