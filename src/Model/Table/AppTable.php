@@ -19,6 +19,12 @@ class AppTable extends Table
 		return parent::save($entity, $options + ['atomic' => false]);
 	}
 
+	//Nor is a delete: it runs in the transaction Cake 2 started, if there is one.
+	public function delete(EntityInterface $entity, array $options = []): bool
+	{
+		return parent::delete($entity, $options + ['atomic' => false]);
+	}
+
 	//Fills created and modified the way Cake 2 does, with the time of PHP rather than of the database.
 	public function beforeSave(EventInterface $event, EntityInterface $entity, ArrayObject $options): void
 	{
