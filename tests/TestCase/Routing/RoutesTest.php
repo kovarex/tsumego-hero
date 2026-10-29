@@ -7,7 +7,7 @@ use Cake\Routing\Router;
 //same addresses. The expectations are the plain data of RouteTable.php; the adapter at the end of
 //this class is all that speaks to the router, so when the routes move to Cake 5 only it changes and
 //the table checks the new routes as it is.
-class RoutesTest extends CakeTestCase
+class RoutesTest extends AppTestCase
 {
 	protected function setUp(): void
 	{

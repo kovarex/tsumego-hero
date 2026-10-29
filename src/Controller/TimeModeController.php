@@ -149,10 +149,7 @@ ORDER BY MIN(rating);");
 		foreach ($ranks as $rankEntity)
 		{
 			$rank = ['id' => $rankEntity->id, 'name' => $rankEntity->name];
-			if ($count = $countsByRankID[$rank['id']])
-				$rank['tsumego_count'] = $count;
-			else
-				$rank['tsumego_count'] = 0;
+			$rank['tsumego_count'] = $countsByRankID[$rank['id']] ?? 0;
 			$result [] = $rank;
 		}
 		return $result;
