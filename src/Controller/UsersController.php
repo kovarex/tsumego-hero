@@ -1884,7 +1884,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		{
 			// A request larger than post_max_size arrives without any of its files, which
 			// is a picture too large and not a form sent without one.
-			$file = $_FILES['avatar'] ?? ($this->contentLength() > UploadedAvatar::maxBytes() ? ['error' => UPLOAD_ERR_INI_SIZE] : null);
+			$file = $this->uploadedFile('avatar') ?? ($this->contentLength() > UploadedAvatar::maxBytes() ? ['error' => UPLOAD_ERR_INI_SIZE] : null);
 			$avatar = UploadedAvatar::fromUpload($file);
 			$hash = UploadedAvatar::store(Auth::getUserID(), $avatar);
 			Auth::saveUserFields(['uploaded_avatar_hash' => $hash, 'avatar_setting_id' => UserTable::AVATAR_UPLOADED]);

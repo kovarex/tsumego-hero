@@ -10,8 +10,29 @@ use DboSource;
 
 class Util
 {
-	//Every cookie of the site is read and written here, so that the switch to Cake 5, whose
-	//request and response carry the cookies, changes these methods and not their callers.
+	//Util is the one place outside AppController that reads the superglobals: the cookies and
+	//the parts of the request a view or a helper needs below, and the server's environment.
+	//In Cake 5 the request carries them, so these methods change and their callers do not.
+
+	//The address the browser asked for, with its query string.
+	public static function requestUri(): string
+	{
+		return (string) ($_SERVER['REQUEST_URI'] ?? '/');
+	}
+
+	public static function userAgent(): string
+	{
+		return (string) ($_SERVER['HTTP_USER_AGENT'] ?? '');
+	}
+
+	//The whole query string as an array.
+	/** @return array<string, mixed> */
+	public static function queryParams(): array
+	{
+		return $_GET;
+	}
+
+	//Every cookie of the site is read and written here.
 
 	//What setCookie() and clearCookie() send unless told otherwise.
 	private const COOKIE_DEFAULTS = ['path' => '/', 'secure' => true, 'httponly' => false, 'samesite' => 'Lax'];

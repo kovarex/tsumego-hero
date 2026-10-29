@@ -73,6 +73,14 @@ class AppController extends Controller
 		return (string) $this->request->input();
 	}
 
+	//A file the form uploaded, as its entry of $_FILES (name, type, tmp_name, error, size), null
+	//when none came. The one place a controller reads $_FILES: in Cake 5 it is getUploadedFile().
+	/** @return array<string, mixed>|null */
+	protected function uploadedFile(string $name): ?array
+	{
+		return $_FILES[$name] ?? null;
+	}
+
 	//GET, POST and so on.
 	protected function httpMethod(): string
 	{

@@ -222,7 +222,7 @@ $challengesBadge = $challengesWaiting > 0
 									<table id="dropdowntable" border="0"></table>
 									<br>
 									<div id="dropdowntable2" align="center">
-										<a class="btn btn--primary" href="<?php echo h($_SERVER['REQUEST_URI']); ?>">Save</a>
+										<a class="btn btn--primary" href="<?php echo h(Util::requestUri()); ?>">Save</a>
 										<br><br>
 									</div>
 								</div>
