@@ -42,7 +42,9 @@ class AccountWidget
 			$modeSelectorClass = 'modeSelectorInLevelBar';
 		}
 
-		echo '<div id="account-bar-wrapper" onmouseover="accountWidget.hover();" onmouseout="accountWidget.noHover();">
+		//The bar is drawn before the script at the end of the page creates accountWidget, so a pointer
+		//already over it while the page loads must not call a widget that isn't there yet.
+		echo '<div id="account-bar-wrapper" onmouseover="window.accountWidget?.hover();" onmouseout="window.accountWidget?.noHover();">
 				  <div id="account-bar">
 						<div id="account-bar-user" class="account-bar-user-class">
 							<a href="/users/view/' . Auth::getUserID() . '">
@@ -67,25 +69,25 @@ class AccountWidget
 						</div>
 					</div>
 				</div>
-			<div id="heroProfile" onmouseover="accountWidget.hover();" onmouseout="accountWidget.noHover();">
+			<div id="heroProfile" onmouseover="window.accountWidget?.hover();" onmouseout="window.accountWidget?.noHover();">
 				<li><a href="/users/view/' . Auth::getUserID() . '">Profile</a></li>
 			</div>
-			<div id="heroBar" onmouseover="accountWidget.hover();" onmouseout="accountWidget.noHover();">
+			<div id="heroBar" onmouseover="window.accountWidget?.hover();" onmouseout="window.accountWidget?.noHover();">
 					<li><a id="textBarInMenu" onclick="accountWidget.switchBarInMenu()">' . $textBarInMenu . '</a></li>
 				</div>
-			<div id="heroAchievements" onmouseover="accountWidget.hover();" onmouseout="accountWidget.noHover();">
+			<div id="heroAchievements" onmouseover="window.accountWidget?.hover();" onmouseout="window.accountWidget?.noHover();">
 				<li><a href="/achievements">Achievements</a></li>
 			</div>
-			<div id="heroMessages" onmouseover="accountWidget.hover();" onmouseout="accountWidget.noHover();">
+			<div id="heroMessages" onmouseover="window.accountWidget?.hover();" onmouseout="window.accountWidget?.noHover();">
 				<li><a href="/messages">Messages ' . self::unreadMessagesBadge($unreadMessageCount) . '</a></li>
 			</div>
-			<div id="heroSettings" onmouseover="accountWidget.hover();" onmouseout="accountWidget.noHover();">
+			<div id="heroSettings" onmouseover="window.accountWidget?.hover();" onmouseout="window.accountWidget?.noHover();">
 				<li><a href="/users/settings">Settings</a></li>
 			</div>
-			<div id="heroLogout" onmouseover="accountWidget.hover();" onmouseout="accountWidget.noHover();">
+			<div id="heroLogout" onmouseover="window.accountWidget?.hover();" onmouseout="window.accountWidget?.noHover();">
 				<li><a href="/users/logout">Sign Out</a></li>
 			</div>
-			<div id="modeSelector" class="' . $modeSelectorClass . '" onclick="accountWidget.switchBarInMenu();"></div>';
+			<div id="modeSelector" class="' . $modeSelectorClass . '" onclick="window.accountWidget?.switchBarInMenu();"></div>';
 	}
 
 	//The number of unread messages, hidden while there are none. The messages page updates

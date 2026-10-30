@@ -226,7 +226,10 @@ class TsumegoButtons extends ArrayObject
 		return $this->isPartitioned ? ' #' . $this->getPartition() : '';
 	}
 
-	public function exportCurrentAndPreviousLink(callable $setFunction, ?TsumegoFilters $tsumegoFilters, int $setConnectionID, ?Set $set, ?string $edgeLink = null): void
+	//The links of the arrows around the problem of the set connection: the problems next to it, and
+	//past either end of the row $edgeLink, the page of the collection by default
+	/** @return array{previousLink: ?string, nextLink: ?string} */
+	public function previousAndNextLink(?TsumegoFilters $tsumegoFilters, int $setConnectionID, ?Set $set, ?string $edgeLink = null): array
 	{
 		$indexOfCurrent = array_find_key((array) $this, function ($tsumegoButton) use ($setConnectionID) {
 			return $tsumegoButton->setConnectionID == $setConnectionID;
@@ -237,11 +240,11 @@ class TsumegoButtons extends ArrayObject
 
 		if (isset($indexOfCurrent) && $indexOfCurrent > 0)
 			$previousSetConnectionID = $this[$indexOfCurrent - 1]->setConnectionID;
-		$setFunction('previousLink', isset($previousSetConnectionID) ? $this->linkPrefix . $previousSetConnectionID : $edgeLink);
-
 		if (isset($indexOfCurrent) && count($this) > $indexOfCurrent + 1)
 			$nextSetConnectionID = $this[$indexOfCurrent + 1]->setConnectionID;
-		$setFunction('nextLink', isset($nextSetConnectionID) ? $this->linkPrefix . $nextSetConnectionID : $edgeLink);
+		return [
+			'previousLink' => isset($previousSetConnectionID) ? $this->linkPrefix . $previousSetConnectionID : $edgeLink,
+			'nextLink' => isset($nextSetConnectionID) ? $this->linkPrefix . $nextSetConnectionID : $edgeLink];
 	}
 
 	public function getProblemsSolvedPercent(): float

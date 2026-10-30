@@ -51,7 +51,8 @@ switch ($code)
 
 $this->set('title_for_layout', $errorTitle);
 ?>
-<div style="position: relative; max-width: 800px; margin: 100px auto; padding: 40px; text-align: center;">
+<?php //id and data-status let the browser tests tell an error page from a page (tests/Browser.php) ?>
+<div id="error-page" data-status="<?php echo $code; ?>" style="position: relative; max-width: 800px; margin: 100px auto; padding: 40px; text-align: center;">
 	<div style="position: relative; z-index: 1;">
 		<h1 style="font-size: 120px; color: <?php echo $errorColor; ?>; opacity: 0.15; margin: 0; line-height: 1; position: absolute; top: -20px; left: 50%; transform: translateX(-50%);"><?php echo $code; ?></h1>
 		<h2 style="font-size: 36px; color: var(--text-color, #333); margin: 60px 0 20px 0; position: relative; z-index: 2;"><?php echo $errorTitle; ?></h2>
