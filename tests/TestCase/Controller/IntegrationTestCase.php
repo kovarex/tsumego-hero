@@ -135,11 +135,40 @@ class IntegrationTestCase extends AppTestCase
 	{
 		if ($this->domSource !== $this->view)
 		{
-			$this->dom = HTMLDocument::createFromString($this->view, LIBXML_HTML_NOIMPLIED);
+			$this->dom = $this->parsePage($this->view);
 			$this->domSource = $this->view;
 		}
 
 		return $this->dom;
+	}
+
+	//The page as a browser parses it. Invalid markup, like a stray closing tag, makes the browser
+	//guess what was meant, so every parse error fails the test, with the error and the line of the
+	//page it is on.
+	private function parsePage(string $html): HTMLDocument
+	{
+		$errors = [];
+		set_error_handler(function (int $level, string $message) use (&$errors): bool {
+			$errors[] = preg_replace('/^.*?createFromString\(\): /', '', $message);
+			return true;
+		}, E_WARNING);
+		try
+		{
+			$dom = HTMLDocument::createFromString($html, LIBXML_HTML_NOIMPLIED);
+		}
+		finally
+		{
+			restore_error_handler();
+		}
+		if ($errors)
+		{
+			$lines = explode("\n", $html);
+			$report = [];
+			foreach ($errors as $error)
+				$report[] = $error . (preg_match('/line: (\d+)/', $error, $line) ? "\n\t" . trim($lines[(int) $line[1] - 1] ?? '') : '');
+			$this->fail("The page is not valid HTML:\n" . implode("\n", $report));
+		}
+		return $dom;
 	}
 
 	//The navigation buttons under a problem: their order, and the status each one carries.
