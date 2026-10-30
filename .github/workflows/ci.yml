@@ -169,6 +169,10 @@ jobs:
         run: |
           ./vendor/bin/phinx migrate -e test
 
+      # The database lives as long as the job, so a commit doesn't need to reach the disk; each test makes dozens
+      - name: Let the database skip flushing each commit
+        run: mysql -h 127.0.0.1 -uroot -proot -e "SET GLOBAL innodb_flush_log_at_trx_commit = 0; SELECT @@innodb_flush_log_at_trx_commit"
+
       - name: Start built-in PHP server
         env:
           TZ: UTC
