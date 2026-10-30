@@ -1740,7 +1740,10 @@ class SetsControllerTest extends IntegrationTestCase
 	private function checkSetFinishedPercent($browser, $index, $title, $percent): void
 	{
 		$this->assertSame($browser->getElements('.set-card__top')[$index]->getText(), $title);
-		$this->assertSame($browser->getElements('.progress__label')[$index]->getText(), $percent);
+		$this->assertSame($browser->getElements('.progress__label')[$index]->getAttribute('data-target') . '%', $percent);
+		// setProgress.js counts every label up from 0% on its first frame, which can come after the page has loaded,
+		// so a label read once may be mid-way; it shows only lower numbers until it ends on the percent
+		$browser->waitUntilJs('document.querySelectorAll(".progress__label")[' . $index . '].textContent.trim() === "' . $percent . '"');
 		$barStyle = $browser->getElements('.progress__fill')[$index]->getAttribute('style');
 		$this->assertTextContains('width: ' . $percent, $barStyle);
 	}
