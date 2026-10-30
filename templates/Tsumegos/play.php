@@ -500,7 +500,6 @@ use App\Utility\ViteManifest;
 		</label>
 	<?php } ?>
 
-	<?php echo '</div>'; ?>
 	<div class="loader-container">
 		<div class="loader-content">
 			<div class="loader-text">
