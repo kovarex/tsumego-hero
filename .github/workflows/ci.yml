@@ -337,12 +337,6 @@ jobs:
       - name: Generate combined coverage index
         run: pnpm run coverage:index
 
-      - name: Upload coverage report (measurement only)
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: coverage/coverage.xml
-
       - name: Deploy coverage to GitHub Pages
         if: github.ref == 'refs/heads/master'
         uses: peaceiris/actions-gh-pages@v4
