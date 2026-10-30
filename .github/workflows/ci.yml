@@ -39,7 +39,8 @@ jobs:
         options: --health-cmd="mariadb-admin ping -h localhost -u root -proot" --health-interval=10s --health-timeout=5s --health-retries=3
 
       selenium-firefox:
-        image: selenium/standalone-firefox:latest
+        # Firefox 158.0, geckodriver 0.37.1. Pinned, so a new Firefox or Selenium arrives in its own pull request instead of in any run
+        image: selenium/standalone-firefox:4.51.0-20261010@sha256:2bb7d9e63088ba6dc7f4d5acd807f27d8410221f881853a97ac3c95f50e8d951
         env:
           TZ: Europe/Prague
         ports:
@@ -50,19 +51,28 @@ jobs:
           --add-host=host.docker.internal:host-gateway
 
     steps:
+      # The whole history, for the image times below, but no file contents beyond the checked out commit.
       - uses: actions/checkout@v7
         with:
-          fetch-depth: 0  # Required for git-restore-mtime to access full history
+          fetch-depth: 0
+          filter: blob:none
 
-      - name: Restore file modification times
-        uses: chetan/git-restore-mtime-action@v2
+      # The WebP step converts an image whose .webp is older, so each image gets the time of the last commit that changed it.
+      - name: Restore image modification times
+        run: |
+          git -c core.quotePath=false log --no-renames --format='@%ct' --name-only -- webroot/img \
+            | awk '/^@/ {time = substr($0, 2); next} NF && !seen[$0]++ {print time " " $0}' \
+            | while read -r time file; do
+                if [ -e "$file" ]; then touch -m -d "@$time" "$file"; fi
+              done
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
-          extensions: mbstring, intl, xdebug
-          coverage: xdebug
+          extensions: mbstring, intl
+          # Only master collects coverage; elsewhere a loaded Xdebug would just slow every request down.
+          coverage: ${{ github.ref == 'refs/heads/master' && 'xdebug' || 'none' }}
 
       - name: Configure Xdebug for coverage
         if: github.ref == 'refs/heads/master'
@@ -166,6 +176,10 @@ jobs:
         run: |
           ./vendor/bin/phinx migrate -e test
 
+      # The database lives as long as the job, so a commit doesn't need to reach the disk; each test makes dozens
+      - name: Let the database skip flushing each commit
+        run: mysql -h 127.0.0.1 -uroot -proot -e "SET GLOBAL innodb_flush_log_at_trx_commit = 0; SELECT @@innodb_flush_log_at_trx_commit"
+
       - name: Start built-in PHP server
         env:
           TZ: UTC
@@ -177,7 +191,8 @@ jobs:
           else
             nohup php -S 0.0.0.0:8080 -t webroot .github/ci/router.php > server.log 2>&1 &
           fi
-          sleep 3
+          # Ready once it serves a static file (no app request, so no coverage of its own); a server that never does fails the step with its log.
+          timeout 30 sh -c 'until curl -s -o /dev/null http://127.0.0.1:8080/robots.txt; do sleep 0.2; done' || (cat server.log; exit 1)
 
       - name: Start Caddy HTTPS reverse proxy
         run: |
@@ -188,9 +203,10 @@ jobs:
             --sysctl net.ipv6.conf.default.disable_ipv6=1 \
             -v "${{ github.workspace }}/Caddyfile:/etc/caddy/Caddyfile" \
             caddy:2 > caddy.log 2>&1 &
-          sleep 6
+          # Ready once it answers through to the PHP server (the image pull is part of the wait).
+          timeout 60 sh -c 'until curl -sk -o /dev/null https://localhost:8443/robots.txt; do sleep 0.2; done' || (cat caddy.log; exit 1)
           echo "Caddy log:"
-          cat caddy.log || true
+          cat caddy.log
 
       - name: Run tests
         env:
