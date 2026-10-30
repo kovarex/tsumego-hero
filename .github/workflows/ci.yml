@@ -195,6 +195,7 @@ jobs:
             --sysctl net.ipv6.conf.all.disable_ipv6=1 \
             --sysctl net.ipv6.conf.default.disable_ipv6=1 \
             -v "${{ github.workspace }}/Caddyfile:/etc/caddy/Caddyfile" \
+            -v "${{ github.workspace }}/webroot:/srv:ro" \
             caddy:2 > caddy.log 2>&1 &
           # Ready once it answers through to the PHP server (the image pull is part of the wait).
           timeout 60 sh -c 'until curl -sk -o /dev/null https://localhost:8443/robots.txt; do sleep 0.2; done' || (cat caddy.log; exit 1)

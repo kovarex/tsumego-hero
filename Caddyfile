@@ -1,9 +1,39 @@
+#The HTTPS front of the CI web server. The browser tests need HTTPS: the site's cookies are secure
+#(Util::COOKIE_DEFAULTS), and Firefox takes a secure cookie over plain HTTP only from localhost.
 https://host.docker.internal:8443, https://localhost:8443 {
     bind 0.0.0.0
     tls internal
+    root * /srv
 
-    reverse_proxy http://host.docker.internal:8080 {
-        header_up X-Forwarded-Proto https
-        header_up X-Forwarded-Host {host}
+    #The files of webroot/ come from Caddy, with the ETag and Last-Modified that Apache sends on the
+    #site, so the browser caches them between pages. php -S sends neither, so every page downloaded
+    #every script, style and picture again.
+    @static {
+        file
+        not path *.php
+    }
+    handle @static {
+        #WebP for a browser that accepts it, as webroot/.htaccess does
+        @image path_regexp image ^(.+)\.(?i:png|jpe?g)$
+        handle @image {
+            header Vary Accept
+            @webp {
+                header Accept *image/webp*
+                file {re.image.1}.webp
+            }
+            rewrite @webp {re.image.1}.webp
+            file_server
+        }
+        @webpImage path_regexp \.(?i:webp)$
+        header @webpImage Vary Accept
+        file_server
+    }
+
+    #Everything else is the site, through index.php
+    handle {
+        reverse_proxy http://host.docker.internal:8080 {
+            header_up X-Forwarded-Proto https
+            header_up X-Forwarded-Host {host}
+        }
     }
 }
