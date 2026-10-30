@@ -3,7 +3,6 @@
 namespace App\Utility;
 
 use App\Model\Entity\Set;
-use App\Model\Table\SetTable;
 use App\Model\Entity\SetConnection;
 use App\Model\Entity\Sgf;
 use App\Model\Entity\Tsumego;
@@ -26,29 +25,59 @@ use Cake\Routing\Router;
 
 class Play
 {
-	public function __construct(callable $setFunction)
+	//The play page of the problem of a set connection. Its view variables come in two parts: what the
+	//page has around any problem ($page: the player, the mode) and what changes with the problem
+	//($problem), which is all a page will need to show the next problem without loading again.
+	//$classroomAssignment: the class assignment the problem is played in, with its collections, set by
+	//its route (ClassroomsController::play()): its problems are the row of buttons and Next walks them.
+	/** @param array<string, mixed>|null $classroomAssignment */
+	public function __construct(int $setConnectionID, ServerRequest $request, private ?array $classroomAssignment = null)
 	{
-		$this->setFunction = $setFunction;
+		$this->buildPage();
+		$this->buildProblem($setConnectionID, $request);
 	}
 
-	private function set(string $name, mixed $value): void
+	//Both parts, as the view gets them
+	/** @return array<string, mixed> */
+	public function viewVars(): array
 	{
-		($this->setFunction)($name, $value);
+		return array_merge($this->page, $this->problem);
 	}
 
-	public function play(int $setConnectionID, ServerRequest $request): void
-	{
-		//The board always receives both arrows, and an empty one is the arrow turned off.
-		//Only the modes that walk a list fill this one in.
-		$this->set('previousLink', '');
-		//What only some modes have: the row of problem buttons of the modes that walk a list, the
-		//link of the time mode to its next problem without a skip, the difficulty slider of the
-		//rating mode, and the solution an admin asked for.
-		$this->set('tsumegoButtons', null);
-		$this->set('noSkipNextLink', '');
-		$this->set('difficulty', null);
-		$this->set('requestSolution', false);
+	/** @var array<string, mixed> */
+	public array $page = [];
 
+	/** @var array<string, mixed> */
+	public array $problem = [];
+
+	private function buildPage(): void
+	{
+		//What only some modes have: the link of the time mode to its next problem without a skip and
+		//the difficulty slider of the rating mode, which their routes set
+		$this->page['noSkipNextLink'] = '';
+		$this->page['difficulty'] = null;
+		if (Auth::isInRatingMode() || Auth::isInTimeMode())
+			$this->page['_title'] = 'Tsumego Hero';
+		//The menu item of the mode played
+		if (Auth::isInLevelMode())
+			$this->page['_page'] = 'level mode';
+		elseif (Auth::isInRatingMode())
+			$this->page['_page'] = 'rating mode';
+		elseif (Auth::isInTimeMode())
+			$this->page['_page'] = 'time mode';
+
+		$maxHealth = Util::getHealthBasedOnLevel(Auth::getWithDefault('level', 0));
+		$this->page['maxHealth'] = $maxHealth;
+		$this->page['fullHeart'] = $maxHealth >= 8 ? 'heart1small' : 'heart1';
+		$this->page['emptyHeart'] = $maxHealth >= 8 ? 'heart2small' : 'heart2';
+		$this->page['accountBlocked'] = Auth::isLoggedIn() && (bool) Auth::getUser()['blocked'];
+		$this->page['isAllowedToContribute'] = Auth::isLoggedIn() && BasePolicy::canPropose(Auth::getIdentity());
+		$this->page['canAddMoreTags'] = Auth::isLoggedIn() && TagConnectionTable::canCurrentUserAddTag();
+		$this->page['classroomAssignment'] = $this->classroomAssignment;
+	}
+
+	private function buildProblem(int $setConnectionID, ServerRequest $request): void
+	{
 		$setConnection = TableRegistry::getTableLocator()->get('SetConnection')->find()->where(['id' => $setConnectionID])->first();
 		if (!$setConnection)
 			throw new NotFoundException("Set connection " . $setConnectionID . " wasn't found in the database.");
@@ -69,70 +98,82 @@ class Play
 		$goldenTsumego = $tsumegoStatus == TsumegoStatusTable::$GOLDEN;
 		$amountOfOtherCollection = TsumegoUtil::countTsumegosFromSet((int) $set->id);
 		$sgf = self::acceptedSgf($tsumegoID);
+		//Solved for the current mode: in time mode every problem is presented fresh, so this stays
+		//false until it is solved
+		$solved = TsumegoUtil::isSolvedForCurrentMode($tsumegoStatus);
 
-		$this->exportOpenGraph($setConnection, $set, $tsumego, $sgf, $amountOfOtherCollection);
+		$this->problem['og'] = self::openGraph($setConnection, $set, $tsumego, $sgf, $amountOfOtherCollection);
 		if (!empty($tsumego->semeai_type))
 		{
-			$this->set('multipleChoiceTriangles', count(Util::getFollowingSgfCoordinates($sgf->sgf, strpos($sgf->sgf, 'TR') + 2)));
-			$this->set('multipleChoiceSquares', count(Util::getFollowingSgfCoordinates($sgf->sgf, strpos($sgf->sgf, 'SQ') + 2)));
+			$this->problem['multipleChoiceTriangles'] = count(Util::getFollowingSgfCoordinates($sgf->sgf, strpos($sgf->sgf, 'TR') + 2));
+			$this->problem['multipleChoiceSquares'] = count(Util::getFollowingSgfCoordinates($sgf->sgf, strpos($sgf->sgf, 'SQ') + 2));
 		}
-		$queryTitle = $this->exportNavigation($setConnection, $set, $tsumegoFilters);
+		$this->buildNavigation($setConnection, $set, $tsumegoFilters);
 
 		$boardSize = self::boardSizeFromSetTitle($set->title);
-		$this->exportPlayerColor($request, $sgf->sgf, $tsumegoVariant != null
+		$this->buildPlayerColor($request, $sgf->sgf, $tsumegoVariant != null
 			|| ($tsumego->semeai_type ?? 0) != 0
 			|| $boardSize != 19
 			|| in_array($set->id, self::SETS_PLAYED_AS_BLACK));
 		//The corner is purely a visual mirror, it never affects solving. "Original" shows the
 		//problem's canonical orientation, which besogo normalizes to top-left.
-		$this->set('corner', Auth::getBoardOrientationSetting() === UserTable::BOARD_ORIENTATION_SETTING_ORIGINAL ? 'top-left' : self::randomCorner());
+		$this->problem['corner'] = Auth::getBoardOrientationSetting() === UserTable::BOARD_ORIENTATION_SETTING_ORIGINAL ? 'top-left' : self::randomCorner();
 
-		if (Auth::isInRatingMode() || Auth::isInTimeMode())
-			$this->set('_title', 'Tsumego Hero');
-		//The menu item of the mode played
-		if (Auth::isInLevelMode())
-			$this->set('_page', 'level mode');
-		elseif (Auth::isInRatingMode())
-			$this->set('_page', 'rating mode');
-		elseif (Auth::isInTimeMode())
-			$this->set('_page', 'time mode');
+		//The description and the answers are stored in the true colors of the stones; when the board
+		//is inverted, they swap Black and White to match what the player sees
+		$swapColors = $this->problem['swapColors'];
+		$this->problem['displayDescription'] = $swapColors ? self::swapColorWords($tsumego->description) : $tsumego->description;
+		$displayAnswers = $tsumegoVariant?->extract(['answer1', 'answer2', 'answer3', 'answer4']);
+		if ($displayAnswers !== null && $swapColors)
+			$displayAnswers = array_map(fn($answer) => $answer === null ? null : self::swapColorWords($answer), $displayAnswers);
+		$this->problem['displayAnswers'] = $displayAnswers;
 
-		$maxHealth = Util::getHealthBasedOnLevel(Auth::getWithDefault('level', 0));
-		$this->set('maxHealth', $maxHealth);
-		$this->set('fullHeart', $maxHealth >= 8 ? 'heart1small' : 'heart1');
-		$this->set('emptyHeart', $maxHealth >= 8 ? 'heart2small' : 'heart2');
+		$this->problem['solved'] = $solved;
+		//A problem solved before is played again for a class assignment, which counts the solve on its own
+		$this->problem['assignmentReplay'] = $this->classroomAssignment !== null && $solved && empty($this->problem['solvedForAssignment']);
+		//Reset opens the problem again on the route it is played from, so a retry in the training or
+		//in a class assignment stays there
+		if ($this->classroomAssignment !== null)
+			$this->problem['resetLink'] = ClassroomAssignmentTable::playLink((int) $this->classroomAssignment['id'], (int) $setConnection->id);
+		else
+			$this->problem['resetLink'] = (Auth::isInMistakeTrainingMode() ? MistakeTraining::$PLAY_LINK_PREFIX : '/') . (int) $setConnection->id;
 
-		$this->set('isAllowedToContribute', Auth::isLoggedIn() && BasePolicy::canPropose(Auth::getIdentity()));
-		$this->set('isAllowedToTag', Auth::isLoggedIn() && TagConnectionPolicy::canAdd(Auth::getIdentity(), $tsumego));
-		$this->set('canAddMoreTags', Auth::isLoggedIn() && TagConnectionTable::canCurrentUserAddTag());
-		$this->set('tagData', TagTable::getForTsumego($tsumegoID));
-		$this->set('userSetsJson', json_encode(self::playerSets($tsumegoID)));
-		$this->set('hasSgfProposal', TableRegistry::getTableLocator()->get('Sgf')->exists([
+		$this->problem['isAllowedToTag'] = Auth::isLoggedIn() && TagConnectionPolicy::canAdd(Auth::getIdentity(), $tsumego);
+		$this->problem['tagData'] = TagTable::getForTsumego($tsumegoID);
+		$this->problem['userSetsJson'] = json_encode(self::playerSets($tsumegoID));
+		$this->problem['hasSgfProposal'] = TableRegistry::getTableLocator()->get('Sgf')->exists([
 			'tsumego_id' => $tsumegoID,
 			'user_id' => Auth::getUserID(),
-			'sgf_status_id' => SgfTable::STATUS_PROPOSED]));
+			'sgf_status_id' => SgfTable::STATUS_PROPOSED]);
+		$this->problem['requestSolution'] = false;
 		if ($request->getQuery('requestSolution') !== null)
 		{
 			AuthorizationComponent::require(AdminPolicy::canRequestSolution(Auth::getIdentity()));
-			$this->set('requestSolution', AdminActivityLogger::log(AdminActivityTypeTable::SOLUTION_REQUEST, $tsumegoID));
+			$this->problem['requestSolution'] = AdminActivityLogger::log(AdminActivityTypeTable::SOLUTION_REQUEST, $tsumegoID);
 		}
 
 		$boardsBitmask = BoardSelector::filterValidBits(Auth::isLoggedIn() ? Auth::getUser()['boards_bitmask'] : BoardSelector::$DEFAULT_BOARDS_BITMASK);
-		$this->set('boardSelection', BoardSelector::selectBoard($boardsBitmask, $goldenTsumego, $set->board_theme_index));
-		$this->set('accountBlocked', Auth::isLoggedIn() && (bool) Auth::getUser()['blocked']);
-		$this->set('isSandbox', $set->public == 0 && $set->user_id === null);
-		$this->set('goldenTsumego', $goldenTsumego);
-		$this->set('sgf', $sgf);
-		$this->set('set', $set);
-		$this->set('tsumego', $tsumego);
-		$this->set('tsumegoStatus', $tsumegoStatus);
-		$this->set('tv', $tsumegoVariant);
-		$this->set('setConnection', $setConnection);
-		$this->set('setConnections', TsumegoUtil::getSetConnectionsWithTitles($tsumegoID));
-		$this->set('tsumegoFilters', $tsumegoFilters);
-		$this->set('queryTitle', $queryTitle);
-		$this->set('amountOfOtherCollection', $amountOfOtherCollection);
-		$this->set('tsumegoXPAndRating', new TsumegoXPAndRating($tsumego, $tsumegoStatus, (int) $setConnection->id));
+		$this->problem['boardSelection'] = BoardSelector::selectBoard($boardsBitmask, $goldenTsumego, $set->board_theme_index);
+		$this->problem['isSandbox'] = $set->public == 0 && $set->user_id === null;
+		$this->problem['goldenTsumego'] = $goldenTsumego;
+		$this->problem['sgf'] = $sgf;
+		$this->problem['set'] = $set;
+		$this->problem['tsumego'] = $tsumego;
+		$this->problem['tsumegoStatus'] = $tsumegoStatus;
+		$this->problem['tv'] = $tsumegoVariant;
+		$this->problem['setConnection'] = $setConnection;
+		$this->problem['setConnections'] = TsumegoUtil::getSetConnectionsWithTitles($tsumegoID);
+		$this->problem['tsumegoFilters'] = $tsumegoFilters;
+		$this->problem['amountOfOtherCollection'] = $amountOfOtherCollection;
+		$this->problem['tsumegoXPAndRating'] = new TsumegoXPAndRating($tsumego, $tsumegoStatus, (int) $setConnection->id);
+	}
+
+	public static function swapColorWords(string $text): string
+	{
+		return preg_replace_callback(
+			'/\b(Black|black|White|white)\b/',
+			fn($match) => ['Black' => 'White', 'black' => 'white', 'White' => 'Black', 'white' => 'black'][$match[1]],
+			$text);
 	}
 
 	//The sets in which the player is always black: problems where the colors matter for the question
@@ -180,7 +221,8 @@ ORDER BY s.title", [$tsumegoID, Auth::getUserID()]);
 		return array_map(fn($set) => ['id' => $set['id'], 'title' => $set['title'], 'contains' => $set['tsumego_id'] != null], $sets);
 	}
 
-	private function exportOpenGraph(SetConnection $setConnection, Set $set, Tsumego $tsumego, Sgf $sgf, int $amountOfOtherCollection): void
+	/** @return array<string, mixed> */
+	private static function openGraph(SetConnection $setConnection, Set $set, Tsumego $tsumego, Sgf $sgf, int $amountOfOtherCollection): array
 	{
 		$title = ($set->title ?? '') . ' ' . $setConnection->num . '/' . $amountOfOtherCollection;
 		//The descriptions and the image both use the true colors of the SGF
@@ -191,7 +233,7 @@ ORDER BY s.title", [$tsumegoID, Auth::getUserID()]);
 		if (trim($description) === '')
 			$description = $title;
 
-		$this->set('og', [
+		return [
 			'title' => $title,
 			'description' => $description,
 			'image' => Router::url('/tsumego-image/' . $setConnection->id
@@ -206,54 +248,54 @@ ORDER BY s.title", [$tsumegoID, Auth::getUserID()]);
 			'site_name' => 'Tsumego',
 			'locale' => 'en_US',
 			'twitter_card' => 'summary_large_image',
-		]);
+		];
 	}
 
 	//The row of problem buttons, the previous and next links and the title of the modes that walk
-	//a list: a class assignment, the level mode and the mistake training. Returns the title of
-	//the collection the level mode walks.
-	private function exportNavigation(SetConnection $setConnection, Set $set, TsumegoFilters $tsumegoFilters): string
+	//a list: a class assignment, the level mode and the mistake training. The board always gets both
+	//arrows, and an empty one is the arrow turned off.
+	private function buildNavigation(SetConnection $setConnection, Set $set, TsumegoFilters $tsumegoFilters): void
 	{
 		$setConnectionID = (int) $setConnection->id;
+		$this->problem['tsumegoButtons'] = null;
+		$this->problem['previousLink'] = '';
+		$this->problem['queryTitle'] = '';
 		if ($this->classroomAssignment !== null)
 		{
 			$buttons = ClassroomAssignmentTable::playButtons($this->classroomAssignment, (int) Auth::getUserID(), $setConnectionID);
-			new SetNavigationButtonsInput($this->setFunction)->execute($buttons, $setConnection);
-			$this->set('_title', ClassroomAssignmentTable::title($this->classroomAssignment) . ' ' . $buttons->currentOrder . '/' . $buttons->highestTsumegoOrder . ' on Tsumego Hero');
-			$this->set('classroomAssignment', $this->classroomAssignment);
+			$this->problem['tsumegoButtons'] = SetNavigationButtons::around($buttons, $setConnection);
+			$this->problem['_title'] = ClassroomAssignmentTable::title($this->classroomAssignment) . ' ' . $buttons->currentOrder . '/' . $buttons->highestTsumegoOrder . ' on Tsumego Hero';
 			$currentButton = array_find((array) $buttons, fn($button) => $button->setConnectionID == $setConnectionID);
-			$this->set('solvedForAssignment', $currentButton?->status === ClassroomAssignmentTable::BUTTON_SOLVED);
+			$this->problem['solvedForAssignment'] = $currentButton?->status === ClassroomAssignmentTable::BUTTON_SOLVED;
 			//Past either end of a class assignment is the page of its class
-			$buttons->exportCurrentAndPreviousLink($this->setFunction, null, $setConnectionID, null, '/classes/' . (int) $this->classroomAssignment['classroom_id']);
-			return '';
+			$this->problem = array_merge($this->problem, $buttons->previousAndNextLink(null, $setConnectionID, null, '/classes/' . (int) $this->classroomAssignment['classroom_id']));
 		}
-		if (Auth::isInLevelMode())
+		elseif (Auth::isInLevelMode())
 		{
 			$buttons = new TsumegoButtons($tsumegoFilters, $setConnectionID, null, $set->id);
-			new SetNavigationButtonsInput($this->setFunction)->execute($buttons, $setConnection);
+			$this->problem['tsumegoButtons'] = SetNavigationButtons::around($buttons, $setConnection);
 			$collectionTitle = $tsumegoFilters->query == 'topics' ? $set->title : (Util::cookie('lastSet') ?? 'Tsumego');
-			$this->set('_title', $collectionTitle . ' ' . $setConnection->num . '/' . $buttons->highestTsumegoOrder . ' on Tsumego Hero');
-			$buttons->exportCurrentAndPreviousLink($this->setFunction, $tsumegoFilters, $setConnectionID, $set);
-			return $tsumegoFilters->getSetTitle($set) . $buttons->getPartitionTitleSuffix() . ' ' . $buttons->currentOrder . '/' . $buttons->highestTsumegoOrder;
+			$this->problem['_title'] = $collectionTitle . ' ' . $setConnection->num . '/' . $buttons->highestTsumegoOrder . ' on Tsumego Hero';
+			$this->problem = array_merge($this->problem, $buttons->previousAndNextLink($tsumegoFilters, $setConnectionID, $set));
+			$this->problem['queryTitle'] = $tsumegoFilters->getSetTitle($set) . $buttons->getPartitionTitleSuffix() . ' ' . $buttons->currentOrder . '/' . $buttons->highestTsumegoOrder;
 		}
-		if (Auth::isInMistakeTrainingMode())
+		elseif (Auth::isInMistakeTrainingMode())
 		{
 			$buttons = MistakeTraining::buildQueueButtons($setConnectionID);
-			new SetNavigationButtonsInput($this->setFunction)->execute($buttons, $setConnection);
-			$this->set('_title', 'Mistake Training ' . $buttons->currentOrder . '/' . $buttons->highestTsumegoOrder . ' on Tsumego Hero');
+			$this->problem['tsumegoButtons'] = SetNavigationButtons::around($buttons, $setConnection);
+			$this->problem['_title'] = 'Mistake Training ' . $buttons->currentOrder . '/' . $buttons->highestTsumegoOrder . ' on Tsumego Hero';
 			//No link before the first problem: the queue page would serve the first due one again
-			$buttons->exportCurrentAndPreviousLink($this->setFunction, $tsumegoFilters, $setConnectionID, $set, '');
+			$this->problem['previousLink'] = $buttons->previousAndNextLink($tsumegoFilters, $setConnectionID, $set, '')['previousLink'];
 			//The row keeps what today already solved, so "Next" skips it instead of serving the neighbour
-			$this->set('nextLink', MistakeTraining::nextLink($buttons, $setConnectionID));
+			$this->problem['nextLink'] = MistakeTraining::nextLink($buttons, $setConnectionID);
 		}
-		return '';
 	}
 
 	//Which color the player plays, and whether the board colors are swapped for it (when the SGF
 	//starts with the other color). "Original" plays the SGF as designed, "Random" picks a side.
 	//$playAsBlack: the problem is about the actual black and white groups (variants, semeai, small
 	//boards, some sets), so the player is black. ?playercolor=black|white overrides all of it.
-	private function exportPlayerColor(ServerRequest $request, string $sgf, bool $playAsBlack): void
+	private function buildPlayerColor(ServerRequest $request, string $sgf, bool $playAsBlack): void
 	{
 		$sgfColor = SgfParser::firstMoveColor($sgf);
 		$requestedColor = strtolower((string) ($request->getQuery('playercolor') ?? ''));
@@ -265,48 +307,8 @@ ORDER BY s.title", [$tsumegoID, Auth::getUserID()]);
 			$playerColor = $sgfColor === 'W' ? 'white' : 'black';
 		else
 			$playerColor = rand(0, 1) ? 'white' : 'black';
-		$this->set('playerColor', $playerColor);
-		$this->set('swapColors', ($sgfColor === 'W' && $playerColor === 'black') || ($sgfColor === 'B' && $playerColor === 'white'));
-	}
-
-	public static function renderTitle(SetConnection $setConnection, Set $set, TsumegoFilters $tsumegoFilters, ?TsumegoButtons $tsumegoButtons, int $amountOfOtherCollection, int|float|string|null $difficulty, ?TimeMode $timeMode, string $queryTitle, Tsumego $tsumego): string
-	{
-		if (Auth::isInTimeMode())
-			return '<font size="5px">' . $timeMode?->currentPosition() . ' of ' . $timeMode?->overallCount . '</font>';
-
-		if (Auth::isInRatingMode())
-			return '<div class="slidecontainer">
-						<input type="range" min="1" max="7" value="' . $difficulty . '" class="slider" id="rangeInput" name="rangeInput">
-						<div id="sliderText">regular</div>
-						</div>
-						<a id="playTitleA" href=""></a>';
-
-		if (Auth::isInMistakeTrainingMode())
-			return '<a id="playTitleA" href="' . MistakeTraining::$OVERVIEW_LINK . '">Mistake Training ' . ($tsumegoButtons->currentOrder ?? 0) . '/' . ($tsumegoButtons->highestTsumegoOrder ?? 0) . '</a>';
-
-		$order = $setConnection->num;
-		if ($tsumegoFilters->query == 'difficulty' || $tsumegoFilters->query == 'tags')
-			return '<a id="playTitleA" href="' . SetTable::url($tsumegoFilters->getSetID($set), $tsumegoButtons?->getPartition() ?? 1) . '">' . $queryTitle . '</a><br>
-							<font style="font-weight:400;" color="grey">
-											<a style="color:grey;" id="playTitleA" href="' . SetTable::url($set->id) . '">
-												(' . $set->title . ' ' . $order . '/' . $amountOfOtherCollection . ')
-											</a>
-										</font>';
-		return '<a id="playTitleA" href="' . SetTable::url($set->id, $tsumegoButtons?->getPartition() ?? 1) . '">' . $set->title . ' ' . $tsumegoButtons?->getPartitionTitleSuffix() . ' ' . $order . '/' . $tsumegoButtons?->highestTsumegoOrder . '</a>';
-	}
-
-	//The title of a problem played as a part of a class assignment: the assignment and where in
-	//it the player is, and under it which problem of which collection it really is.
-	/** @param array<string, mixed> $assignment With its collections, see ClassroomAssignmentTable::withCollections() */
-	public static function renderAssignmentTitle(array $assignment, TsumegoButtons $tsumegoButtons, SetConnection $setConnection, Set $set, int $amountOfOtherCollection): string
-	{
-		return '<a id="playTitleA" href="/classes/' . (int) $assignment['classroom_id'] . '">'
-			. h(ClassroomAssignmentTable::title($assignment)) . ' ' . $tsumegoButtons->currentOrder . '/' . $tsumegoButtons->highestTsumegoOrder . '</a><br>
-							<font style="font-weight:400;" color="grey">
-								<a style="color:grey;" class="play-title__origin" href="' . SetTable::url($set->id) . '">
-									(' . h($set->title) . ' ' . $setConnection->num . '/' . $amountOfOtherCollection . ')
-								</a>
-							</font>';
+		$this->problem['playerColor'] = $playerColor;
+		$this->problem['swapColors'] = ($sgfColor === 'W' && $playerColor === 'black') || ($sgfColor === 'B' && $playerColor === 'white');
 	}
 
 	private static function randomCorner(): string
@@ -314,12 +316,4 @@ ORDER BY s.title", [$tsumegoID, Auth::getUserID()]);
 		$corners = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
 		return $corners[array_rand($corners)];
 	}
-
-	//The class assignment the problem is played in, with its collections, set by its route
-	//(ClassroomsController::play()): its problems are the row of buttons and Next walks them.
-	/** @var array<string, mixed>|null */
-	public ?array $classroomAssignment = null;
-
-	/** @var callable */
-	private $setFunction;
 }

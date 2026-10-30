@@ -4,21 +4,18 @@ namespace App\Utility;
 
 use App\Model\Entity\SetConnection;
 
-class SetNavigationButtonsInput
+//The row of problem buttons the play page shows: the first and the last problem, and the
+//neighbours of the current one
+class SetNavigationButtons
 {
-	public function __construct(callable $setFunction)
+	public static function around(TsumegoButtons $tsumegoButtons, SetConnection $currentSetConnection): TsumegoButtons
 	{
-		$this->setFunction = $setFunction;
-	}
-
-	public function execute(TsumegoButtons $tsumegoButtons, SetConnection $currentSetConnection): void
-	{
-		$navigationButtons = $this->collectFromSetConnections($tsumegoButtons, $currentSetConnection);
+		$navigationButtons = self::collectFromSetConnections($tsumegoButtons, $currentSetConnection);
 		$navigationButtons->loadPreviews();
-		($this->setFunction)('tsumegoButtons', $navigationButtons);
+		return $navigationButtons;
 	}
 
-	private function collectFromSetConnections(TsumegoButtons $tsumegoButtons, SetConnection $currentSetConnection): TsumegoButtons
+	private static function collectFromSetConnections(TsumegoButtons $tsumegoButtons, SetConnection $currentSetConnection): TsumegoButtons
 	{
 		$result = TsumegoButtons::deriveFrom($tsumegoButtons);
 		$currentIndex = array_find_key((array) $tsumegoButtons, function ($tsumegoButton) use ($currentSetConnection) {
@@ -48,6 +45,4 @@ class SetNavigationButtonsInput
 	}
 
 	private static int $NEIGHBOUR_COUNT_TO_SHOW_ON_EACH_SIDE = 5;
-	/** @var callable */
-	private $setFunction;
 }

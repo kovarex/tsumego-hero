@@ -15,6 +15,7 @@ use App\Utility\BoardSelector;
 use App\Utility\Changelog;
 use App\Utility\Constants;
 use App\Utility\Mailer;
+use App\Utility\Play;
 use App\Utility\TimeMode;
 use App\Utility\TsumegoFilters;
 use App\Utility\Util;
@@ -44,6 +45,19 @@ class AppController extends Controller
 	//getHeaderLine(). A dotted name reads a nested field ('Set.title'), as in both versions.
 
 	//A field the form or the request body sent, null when it was not sent.
+	//Shows the problem of the set connection on the play page. $viewVars are what only the route has
+	//(its canonical address, its menu item, its links), they win over what the problem would show.
+	/**
+	 * @param array<string, mixed> $viewVars
+	 * @param array<string, mixed>|null $classroomAssignment With its collections, see ClassroomAssignmentTable::withCollections()
+	 */
+	protected function renderPlay(int $setConnectionID, array $viewVars = [], ?array $classroomAssignment = null): void
+	{
+		$this->set(new Play($setConnectionID, $this->request, $classroomAssignment)->viewVars());
+		$this->set($viewVars);
+		$this->render('/Tsumegos/play');
+	}
+
 	protected function input(string $name): mixed
 	{
 		return $this->request->getData($name);

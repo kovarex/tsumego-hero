@@ -7,6 +7,8 @@ use App\Utility\Preferences;
 use Cake\Cache\Cache;
 use Cake\TestSuite\TestCase;
 use PHPUnit\Framework\Attributes\Before;
+use PHPUnit\Framework\IncompleteTest;
+use PHPUnit\Framework\SkippedTest;
 
 //The base of every test case of the site.
 //Clears the superglobals and the caches before each test, so no state bleeds from one test
@@ -22,6 +24,7 @@ abstract class AppTestCase extends TestCase
 		$_REQUEST = [];
 		$_COOKIE = [];
 		$_SESSION = [];
+		Browser::startTest();
 		Auth::logout();
 		JwtAuth::clearCache();
 		CookieFlash::clearCache();
@@ -32,5 +35,13 @@ abstract class AppTestCase extends TestCase
 				continue;
 			Cache::clear($config);
 		}
+	}
+
+	//A failed browser test leaves a screenshot and the page in tmp/ (Browser::dumpFailure()).
+	protected function onNotSuccessfulTest(Throwable $t): never
+	{
+		if (!$t instanceof SkippedTest && !$t instanceof IncompleteTest)
+			Browser::dumpFailure(static::class . '-' . $this->name());
+		parent::onNotSuccessfulTest($t);
 	}
 }

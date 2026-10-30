@@ -201,12 +201,14 @@ jobs:
           # phpunit, with the tests the browser alone failed run again (scripts/phpunit-retry.php)
           php scripts/phpunit-retry.php --exclude-group apache-only --exclude-group disabled ${{ github.ref == 'refs/heads/master' && '--coverage-php /tmp/coverage/phpunit.cov' || '' }}
 
-      - name: Upload browser timeout dumps
+      - name: Upload browser failure dumps
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: browser-timeout-dumps
-          path: tmp/browser-timeout-*.html
+          name: browser-failure-dumps
+          path: |
+            tmp/browser-timeout-*.html
+            tmp/browser-failure-*
           if-no-files-found: ignore
 
       # PHPUnit's phpunit.cov and one webserver-*.cov per request of the Selenium tests (.github/ci/xdebug-prepend.php)

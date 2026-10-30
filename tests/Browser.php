@@ -16,7 +16,8 @@ use App\Utility\Util;
 //  find() / findById()         wait for the element, use these by default
 //  getElements() / idExists()  look at the page as it is right now, no waiting
 //When a wait gives up it writes the page to tmp/browser-timeout-*.html, so a
-//timeout in CI comes with the HTML that caused it.
+//timeout in CI comes with the HTML that caused it. A failed test that used the
+//browser also leaves tmp/browser-failure-*.png and .html (see dumpFailure()).
 class Browser
 {
 	// Counter for per-page JS coverage snapshots written to /tmp/coverage/js-raw-*.json
@@ -24,6 +25,9 @@ class Browser
 
 	// Counter for page source dumps written to tmp/browser-timeout-*.html on wait timeouts
 	private static int $timeoutDumpCounter = 0;
+
+	// Whether the running test asked for the browser, so a failure of a test without one dumps nothing
+	private static bool $usedByTest = false;
 
 	public function __construct()
 	{
@@ -169,48 +173,57 @@ class Browser
 		file_put_contents($file, json_encode($coverage));
 	}
 
+	//The page shows no server error and the page's scripts reported no JavaScript error, read in one
+	//call to the browser, as it runs after every page load and click.
 	public function assertNoErrors(): void
 	{
-		$this->assertNoException();
-		$this->assertNoJsErrors();
-	}
-
-	private function assertNoException(): void
-	{
-		if (str_contains($this->driver->getPageSource(), "<h2>Exception</h2>"))
-			throw new Exception($this->driver->getPageSource());
+		$this->throwErrors($this->driver->executeScript(self::READ_ERRORS));
 	}
 
 	public function assertNoJsErrors(): void
 	{
-		$errors = $this->driver->executeScript("return window.__jsErrors || [];");
-		$console = $this->driver->executeScript("return window.__consoleErrors || [];");
+		$this->throwErrors($this->driver->executeScript(self::READ_ERRORS), false);
+	}
 
-		// on some special pages, like editor, we don't have the included special error reporting
-		if (is_null($errors) || is_null($console))
+	//The status of a server error page (templates/Error/error.php), and the JavaScript errors the page
+	//collected (empty on the special pages without the error reporting, like the editor).
+	private const string READ_ERRORS = <<<'JS'
+		var errorPage = document.getElementById('error-page');
+		return {
+			serverError: errorPage ? Number(errorPage.dataset.status) : null,
+			errors: window.__jsErrors || [],
+			console: window.__consoleErrors || [],
+		};
+		JS;
+
+	private function throwErrors(array $read, bool $serverErrors = true): void
+	{
+		// An uncaught exception of the site, not a 404 or 403 that a test opens on purpose
+		if ($serverErrors && $read['serverError'] >= 500)
+			throw new Exception('The server answered with an error page (' . $read['serverError'] . "):\n" . $this->driver->getPageSource());
+
+		$errors = $read['errors'];
+		$console = $read['console'];
+		if (empty($errors) && empty($console))
 			return;
 
-		if (!empty($errors) || !empty($console))
+		$msg = "JavaScript errors detected:\n";
+		foreach ($errors as $error)
 		{
-			$msg = "JavaScript errors detected:\n";
-
-			foreach ($errors as $error)
-			{
-				$msg .= "[JS ERROR] ";
-				if (!empty($error['raw']))
-					$msg .= $error['raw'] . "\n\n";
-				else
-					$msg .= sprintf(
-						"%s (%s:%d:%d)\n%s\n\n",
-						$error['message'], $error['source'], $error['line'], $error['column'], $error['stack']
-					);
-			}
-
-			foreach ($console as $consoleError)
-				$msg .= "[console.error] " . implode(" ", $consoleError['args']) . "\n\n";
-
-			throw new Exception($msg);
+			$msg .= "[JS ERROR] ";
+			if (!empty($error['raw']))
+				$msg .= $error['raw'] . "\n\n";
+			else
+				$msg .= sprintf(
+					"%s (%s:%d:%d)\n%s\n\n",
+					$error['message'], $error['source'], $error['line'], $error['column'], $error['stack']
+				);
 		}
+
+		foreach ($console as $consoleError)
+			$msg .= "[console.error] " . implode(" ", $consoleError['args']) . "\n\n";
+
+		throw new Exception($msg);
 	}
 
 	public function get(string $url): void
@@ -599,7 +612,36 @@ class Browser
 		self::$browser->driver->manage()->deleteAllCookies();
 		self::$browser->driver->get(Util::getMyAddress() . '/empty.php');
 		self::$browser->driver->executeScript('window.localStorage.clear(); window.sessionStorage.clear();');
+		self::$usedByTest = true;
 		return self::$browser;
+	}
+
+	//Called before each test (AppTestCase), so dumpFailure() knows whether the test used the browser.
+	public static function startTest(): void
+	{
+		self::$usedByTest = false;
+	}
+
+	//Saves a screenshot and the page of a failed browser test to tmp/browser-failure-<test>.png
+	//and .html, which CI uploads. Runs only when a test failed, so a green run pays nothing.
+	public static function dumpFailure(string $test): void
+	{
+		if (!self::$usedByTest || !self::$browser)
+			return;
+		$file = ROOT . '/tmp/browser-failure-' . date('Ymd-His') . '-' . preg_replace('/[^A-Za-z0-9_-]+/', '_', $test);
+		$browser = self::$browser;
+		try
+		{
+			$browser->driver->takeScreenshot($file . '.png');
+		}
+		catch (Throwable)
+		{
+			// The browser can be gone, the page dump below says why
+		}
+		$parts = ["TEST: " . $test];
+		$parts[] = "URL: " . $browser->driverDump(fn() => $browser->driver->getCurrentURL());
+		$parts[] = $browser->driverDump(fn() => $browser->driver->getPageSource());
+		@file_put_contents($file . '.html', implode("\n\n", $parts));
 	}
 
 	public function playWithResult(string $result): void

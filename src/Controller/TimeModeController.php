@@ -16,7 +16,6 @@ use App\Model\Table\TimeModeSessionStatusTable;
 use App\Utility\AchievementChecker;
 use App\Utility\Auth;
 use App\Utility\Constants;
-use App\Utility\Play;
 use App\Utility\Rating;
 use App\Utility\TimeMode;
 use App\Utility\TimeModeUtil;
@@ -71,16 +70,12 @@ class TimeModeController extends AppController
 		if (!$setConnection)
 			throw new Exception('Time mode session contains tsumego without a set connection.');
 
-		$this->set('timeMode', $timeMode);
-		$this->set('nextLink', '/timeMode/skip/' . $timeMode->servedOrder);
-		$play  = new Play(function ($name, $value) {
-			$this->set($name, $value);
-		});
-		$play->play($setConnection->id, $this->request);
-		$this->set('noSkipNextLink', $timeMode->currentWillBeLast()
-			? '/timeMode/result/' . $timeMode->currentSession->id
-			: '/timeMode/play/' . ($timeMode->servedOrder + 1));
-		$this->render('/Tsumegos/play');
+		$this->renderPlay((int) $setConnection->id, [
+			'timeMode' => $timeMode,
+			'nextLink' => '/timeMode/skip/' . $timeMode->servedOrder,
+			'noSkipNextLink' => $timeMode->currentWillBeLast()
+				? '/timeMode/result/' . $timeMode->currentSession->id
+				: '/timeMode/play/' . ($timeMode->servedOrder + 1)]);
 		return null;
 	}
 

@@ -691,16 +691,26 @@ class ContextPreparator
 		// If not explicitly specified, seed all ranks
 		$ranksToSeed = $timeModeRanks ?? array_keys($allRanks);
 
-		$table = TableRegistry::getTableLocator()->get('TimeModeRank');
 		$this->timeModeRanks = [];
 		foreach ($ranksToSeed as $rankInput)
 		{
 			$rankName = is_array($rankInput) ? $rankInput['name'] : $rankInput;
 			if (!isset($allRanks[$rankName]))
 				throw new Exception("Unknown rank name '$rankName'");
-			$table->saveOrFail($table->newEntity(['id' => $allRanks[$rankName], 'name' => $rankName], ['accessibleFields' => ['id' => true]]));
 			$this->timeModeRanks[] = ['id' => $allRanks[$rankName], 'name' => $rankName];
 		}
+		self::insertRows('TimeModeRank', $this->timeModeRanks);
+	}
+
+	//One INSERT for all the rows, as every test seeds these tables and a save per row costs a query and a commit each.
+	private static function insertRows(string $tableName, array $rows): void
+	{
+		if (!$rows)
+			return;
+		$query = TableRegistry::getTableLocator()->get($tableName)->insertQuery()->insert(array_keys($rows[0]));
+		foreach ($rows as $row)
+			$query->values($row);
+		$query->execute();
 	}
 
 	private function prepareTimeModeSessions($timeModeSessions): void
@@ -907,16 +917,13 @@ class ContextPreparator
 			AdminActivityTypeTable::ADD_TO_SCHEDULE => 'Add to Schedule',
 			AdminActivityTypeTable::CANCEL_SCHEDULE => 'Cancel Schedule'];
 
-		$adminActivityTypeTable = TableRegistry::getTableLocator()->get('AdminActivityType');
-
 		// Clear and repopulate with correct IDs (this table is not in the constructor wipe)
 		$pdo = Util::connection();
 		$pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
 		$pdo->exec('DELETE FROM `admin_activity_type`');
 		$pdo->exec('SET FOREIGN_KEY_CHECKS = 1');
 
-		foreach ($types as $id => $name)
-			$adminActivityTypeTable->saveOrFail($adminActivityTypeTable->newEntity(['id' => $id, 'name' => $name], ['accessibleFields' => ['id' => true]]));
+		self::insertRows('AdminActivityType', array_map(fn($id, $name) => ['id' => $id, 'name' => $name], array_keys($types), $types));
 	}
 
 	public function prepareAdminActivities(?array $adminActivities): void

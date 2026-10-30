@@ -11,7 +11,6 @@ use App\Utility\Rating;
 use App\Utility\RatingBounds;
 use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
-use App\Utility\Play;
 use App\Utility\Util;
 
 class RatingModeController extends AppController
@@ -69,14 +68,9 @@ LIMIT 1";
 			return $this->redirect('/sets');
 		}
 
-		$this->set('nextLink', '/ratingMode');
-
-		$play  = new Play(function ($name, $value) {
-			$this->set($name, $value);
-		});
-		$play->play((int) $selectedTsumego['id'], $this->request);
-		$this->set('difficulty', Auth::getUser()['rating_mode_difficulty_selection']);
-		$this->render('/Tsumegos/play');
+		$this->renderPlay((int) $selectedTsumego['id'], [
+			'nextLink' => '/ratingMode',
+			'difficulty' => Auth::getUser()['rating_mode_difficulty_selection']]);
 		return null;
 	}
 }
