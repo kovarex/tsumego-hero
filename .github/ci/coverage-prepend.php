@@ -2,7 +2,7 @@
 
 //The code coverage of each request the CI web server answers (master only, see ci.yml), saved as a
 //php-code-coverage object in /tmp/coverage next to PHPUnit's phpunit.cov. phpcov merges them all.
-if (!extension_loaded('xdebug'))
+if (!extension_loaded('pcov'))
 	return;
 
 require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
@@ -12,7 +12,7 @@ require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
 	$filter = new SebastianBergmann\CodeCoverage\Filter();
 	$filter->includeFiles((new SebastianBergmann\FileIterator\Facade())->getFilesAsArray($sourceDir, '.php'));
 
-	// Xdebug records only src/, so a request for a picture or a script records nothing.
+	// PCOV records only src/ (pcov.directory), so a request for a picture or a script records nothing.
 	$coverage = new SebastianBergmann\CodeCoverage\CodeCoverage((new SebastianBergmann\CodeCoverage\Driver\Selector())->forLineCoverage($filter), $filter);
 	$coverage->cacheStaticAnalysis(sys_get_temp_dir() . '/coverage-static-analysis');
 	$coverage->start((string) ($_SERVER['REQUEST_URI'] ?? 'request'));
