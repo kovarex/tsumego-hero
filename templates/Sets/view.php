@@ -42,7 +42,6 @@ if($set->id == 11969 || $set->id == 29156 || $set->id == 31813 || $set->id == 33
 	$noImage = true;
 
 ?>
-</script>
 	<div class="split">
 		<div>
 		<?php
@@ -110,7 +109,7 @@ else
 						<div align="center">
 						<br>
 						<?php
-echo '<b>' . count($tsumegoButtons) . ' Problems<br>';
+echo '<b>' . count($tsumegoButtons) . ' Problems</b><br>';
 ?>
 						</div>
 						</td>
@@ -282,7 +281,6 @@ if ($tsumegoFilters->query != 'topics')
 					</td>
 				</tr>
 			<?php endif; ?>
-			</tr>
 		<?php } ?>
 
 		</table>
